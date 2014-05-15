@@ -27,4 +27,5 @@ all:
 	@echo "Just type \"sudo make install\""
 
 install:
-	@cp -fr simple $(TARGET) 
+	@cp -fr simple $(TARGET)
+	@cp -fr asd $(TARGET)
