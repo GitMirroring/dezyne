@@ -25,7 +25,8 @@
 
 (define (make-parser)
   (lalr-parser
-   (Identifier in interface 
+   (Identifier in out
+               component interface 
                lbrace rbrace semicolon
                NumericLiteral
                enum int void
@@ -36,8 +37,12 @@
          (exp - term) : `(- ,$1 ,$3)
          (interface Identifier lbrace identifier-block rbrace) : `(,$1 ,$2 ,$4)
          (term) : $1)
-   (identifier-block (term) : $1
-                     (in type Identifier semicolon) : `(,$1 ,$2 ,$3))
+   (identifier-block (event-declaration-list) : $1)
+   (event-declaration-list (event-declaration) : $1
+                           (event-declaration-list event-declaration) : `(cons* ,$2 ,$1))
+   (event-declaration (event-direction type Identifier semicolon) : `(,$1 ,$2 ,$3))
+   (event-direction (in) : 'in
+                    (out) : 'out)
    (type (int) : 'int
          (void) : 'void)
    (term (term * factor) : `(* ,$1 ,$3)
@@ -53,6 +58,6 @@
   (match src
     (('NumericLiteral x) `(const ,x))
     (('in type name) `(apply (primitive list) (const in) (const ,type) (const ,name)))
-    (('interface name) `(apply (primitive list) (const interface) (const ,name)))
+    (('out type name) `(apply (primitive list) (const out) (const ,type) (const ,name)))
     (('interface name block) `(apply (primitive list) (const interface) (const ,name) ,(comp block e)))
     ((op x y) `(apply (primitive ,op) ,(comp x e) ,(comp y e)))))
