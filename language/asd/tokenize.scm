@@ -40,11 +40,11 @@
 
 ;;; Code:
 
-(define-module (language ecmascript tokenize)
+(define-module (language asd tokenize)
   #:use-module (ice-9 rdelim)
   #:use-module ((srfi srfi-1) #:select (unfold-right))
   #:use-module (system base lalr)
-  #:export (next-token make-tokenizer make-tokenizer/1 tokenize tokenize/1))
+  #:export (next-token make-tokenizer tokenize))
 
 (define (syntax-error what loc form . args)
   (throw 'syntax-error #f what
@@ -351,6 +351,7 @@
            
 (define *punctuation*
   '(("{" . lbrace)
+    ("@" . @)  ;; simple
     ("}" . rbrace)
     ("(" . lparen)
     (")" . rparen)
@@ -438,8 +439,14 @@
        (read-char port)
        (next-token port div?))
       ((#\newline #\cr)                 ; line break
-       (read-char port)
-       (next-token port div?))
+       (if #f
+           ;; ecma
+           (begin
+             (read-char port)
+             (next-token port div?))
+           ;; simple
+           '*eoi*))
+      ;;((#\@) (make-lexical-token '@ loc (read-char port)))
       ((#\/)
        ;; division, single comment, double comment, or regexp
        (read-slash port loc div?))
@@ -447,7 +454,7 @@
        (read-string port loc))
       (else
        (cond
-        ((eof-object? c)
+        ((eof-object? c) 
          '*eoi*)
         ((or (char-alphabetic? c)
              (char=? c #\$)
@@ -459,6 +466,7 @@
          (make-lexical-token 'NumericLiteral loc (read-numeric port loc)))
         (else
          ;; punctuation
+         (format #t "PUNCT:~a\n!" c)
          (read-punctuation port loc)))))))
 
 (define (make-tokenizer port)
@@ -472,64 +480,4 @@
                               (eq? cat 'StringLiteral)))))
         tok))))
 
-(define (make-tokenizer/1 port)
-  (let ((div? #f)
-        (eoi? #f)
-        (stack '()))
-    (lambda ()
-      (if eoi?
-          '*eoi*
-          (let ((tok (next-token port div?)))
-            (case (if (lexical-token? tok) (lexical-token-category tok) tok)
-              ((lparen)
-               (set! stack (cons tok stack)))
-              ((rparen)
-               (if (and (pair? stack)
-                        (eq? (lexical-token-category (car stack)) 'lparen))
-                   (set! stack (cdr stack))
-                   (syntax-error "unexpected right parenthesis"
-                                 (lexical-token-source tok)
-                                 #f)))
-              ((lbracket)
-               (set! stack (cons tok stack)))
-              ((rbracket)
-               (if (and (pair? stack)
-                        (eq? (lexical-token-category (car stack)) 'lbracket))
-                   (set! stack (cdr stack))
-                   (syntax-error "unexpected right bracket"
-                                 (lexical-token-source tok)
-                                 #f)))
-              ((lbrace)
-               (set! stack (cons tok stack)))
-              ((rbrace)
-               (if (and (pair? stack)
-                        (eq? (lexical-token-category (car stack)) 'lbrace))
-                   (set! stack (cdr stack))
-                   (syntax-error "unexpected right brace"
-                                 (lexical-token-source tok)
-                                 #f)))
-              ((semicolon)
-               (set! eoi? (null? stack))))
-            (set! div? (and (lexical-token? tok)
-                            (let ((cat (lexical-token-category tok)))
-                              (or (eq? cat 'Identifier)
-                                  (eq? cat 'NumericLiteral)
-                                  (eq? cat 'StringLiteral)))))
-            tok)))))
-
-(define (tokenize port)
-  (let ((next (make-tokenizer port)))
-    (let lp ((out '()))
-      (let ((tok (next)))
-        (if (eq? tok '*eoi*)
-            (reverse! out)
-            (lp (cons tok out)))))))
-
-(define (tokenize/1 port)
-  (let ((next (make-tokenizer/1 port)))
-    (let lp ((out '()))
-      (let ((tok (next)))
-        (if (eq? tok '*eoi*)
-            (reverse! out)
-            (lp (cons tok out)))))))
-
+(define (xmake-tokenizer port) (lambda () (next-token port #t)))
