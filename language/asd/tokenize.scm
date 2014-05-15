@@ -15,30 +15,6 @@
 ;;;
 ;;; You should have received a copy of the GNU Affero General Public
 ;;; License along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
-;;; 
-;;; Commentary:
-;;; 
-;;; Code:
-
-;;; ECMAScript for Guile
-
-;; Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
-
-;;;; This library is free software; you can redistribute it and/or
-;;;; modify it under the terms of the GNU Lesser General Public
-;;;; License as published by the Free Software Foundation; either
-;;;; version 3 of the License, or (at your option) any later version.
-;;;; 
-;;;; This library is distributed in the hope that it will be useful,
-;;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;;;; Lesser General Public License for more details.
-;;;; 
-;;;; You should have received a copy of the GNU Lesser General Public
-;;;; License along with this library; if not, write to the Free Software
-;;;; Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-
-;;; Code:
 
 (define-module (language asd tokenize)
   #:use-module (ice-9 rdelim)
@@ -194,70 +170,20 @@
             (syntax-error "string literals may not contain newlines"
                           loc str))))))))
 
+(define (string-symbol x) (cons (symbol->string x) x))
 (define *keywords*
-  '(("break" . break)
-    ("else" . else)
-    ("new" . new)
-    ("var" . var)
-    ("case" . case)
-    ("finally" . finally)
-    ("return" . return)
-    ("void" . void)
-    ("catch" . catch)
-    ("for" . for)
-    ("switch" . switch)
-    ("while" . while)
-    ("continue" . continue)
-    ("function" . function)
-    ("this" . this)
-    ("with" . with)
-    ("default" . default)
-    ("if" . if)
-    ("throw" . throw)
-    ("delete" . delete)
-    ("in" . in)
-    ("try" . try)
-    ("do" . do)
-    ("instanceof" . instanceof)
-    ("typeof" . typeof)
-
-    ;; these aren't exactly keywords, but hey
-    ("null" . null)
-    ("true" . true)
-    ("false" . false)))
-
-(define *future-reserved-words*
-  '(("abstract" . abstract)
-    ("enum" . enum)
-    ("int" . int)
-    ("short" . short)
-    ("boolean" . boolean)
-    ("export" . export)
-    ("interface" . interface)
-    ("static" . static)
-    ("byte" . byte)
-    ("extends" . extends)
-    ("long" . long)
-    ("super" . super)
-    ("char" . char)
-    ("final" . final)
-    ("native" . native)
-    ("synchronized" . synchronized)
-    ("class" . class)
-    ("float" . float)
-    ("package" . package)
-    ("throws" . throws)
-    ("const" . const)
-    ("goto" . goto)
-    ("private" . private)
-    ("transient" . transient)
-    ("debugger" . debugger)
-    ("implements" . implements)
-    ("protected" . protected)
-    ("volatile" . volatile)
-    ("double" . double)
-    ("import" . import)
-    ("public" . public)))
+  (map string-symbol 
+       '(
+         component
+         enum
+         int
+         interface
+         on
+         provides
+         reply
+         requires
+         void
+         )))
 
 (define (read-identifier port loc)
   (let lp ((c (peek-char port)) (chars '()))
@@ -269,9 +195,6 @@
         (let ((word (list->string (reverse chars))))
           (cond ((assoc-ref *keywords* word)
                  => (lambda (x) (make-lexical-token x loc #f)))
-                ((assoc-ref *future-reserved-words* word)
-                 (syntax-error "word is reserved for the future, dude."
-                               loc word))
                 (else (make-lexical-token 'Identifier loc
                                           (string->symbol word)))))
         (begin (read-char port)
@@ -359,48 +282,23 @@
     ("]" . rbracket)
     ("." . dot)
     (";" . semicolon)
-    ("," . comma)
     ("<" . <)
     (">" . >)
     ("<=" . <=)
     (">=" . >=)
     ("==" . ==)
     ("!=" . !=)
-    ("===" . ===)
-    ("!==" . !==)
     ("+" . +)
     ("-" . -)
     ("*" . *)
-    ("%" . %)
-    ("++" . ++)
-    ("--" . --)
-    ("<<" . <<)
-    (">>" . >>)
-    (">>>" . >>>)
-    ("&" . &)
-    ("|" . bor)
-    ("^" . ^)
     ("!" . !)
-    ("~" . ~)
     ("&&" . &&)
     ("||" . or)
-    ("?" . ?)
     (":" . colon)
-    ("=" . =)
-    ("+=" . +=)
-    ("-=" . -=)
-    ("*=" . *=)
-    ("%=" . %=)
-    ("<<=" . <<=)
-    (">>=" . >>=)
-    (">>>=" . >>>=)
-    ("&=" . &=)
-    ("|=" . bor=)
-    ("^=" . ^=)))
+    ("=" . =)))
 
 (define *div-punctuation*
-  '(("/" . /)
-    ("/=" . /=)))
+  '(("/" . /)))
 
 ;; node ::= (char (symbol | #f) node*)
 (define read-punctuation
@@ -469,7 +367,7 @@
          (format #t "PUNCT:~a\n!" c)
          (read-punctuation port loc)))))))
 
-(define (make-tokenizer port)
+(define (why?-make-tokenizer port)
   (let ((div? #f))
     (lambda ()
       (let ((tok (next-token port div?)))
@@ -480,4 +378,4 @@
                               (eq? cat 'StringLiteral)))))
         tok))))
 
-(define (xmake-tokenizer port) (lambda () (next-token port #t)))
+(define (make-tokenizer port) (lambda () (next-token port #t)))
