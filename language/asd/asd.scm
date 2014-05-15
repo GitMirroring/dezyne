@@ -73,7 +73,7 @@
             (*eoi*) : (call-with-input-string "" read)) ; *eof-object*
    (exp  (exp + term) : `(+ ,$1 ,$3)
          (exp - term) : `(- ,$1 ,$3)
-         (o term) : `(,list "on")
+         (o term) : `(,list on ,$2)
          (term) : $1)
    (term (term * factor) : `(* ,$1 ,$3)
          (term / factor) : `(/ ,$1 ,$3)
@@ -84,5 +84,5 @@
 (define (comp src e)
   (match src
     (('number x) `(const ,x))
-    ((list x) (begin (format #t "LIST:~a:~a:~a\n" src e x) `(const 0)))
+    ((list x y) (begin (format #t "LIST:~a:~a:~a\n" src e x) `(apply (primitive list) (const ,x) ,(comp y e))))
     ((op x y) `(apply (primitive ,op) ,(comp x e) ,(comp y e)))))
