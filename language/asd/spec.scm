@@ -18,12 +18,13 @@
 
 (define-module (language asd spec)
   #:use-module (system base language)
-  #:use-module (language asd asd)
+    #:use-module (language asd asd)
+    #:use-module (language asd tokenize)
   #:export (asd))
  
 (define-language asd
   #:title       "asd"
   #:reader      (lambda (port env) 
-                  ((make-parser) (make-asd-tokenizer port) error))
+                  ((make-parser) (make-tokenizer port) error))
   #:compilers   `((tree-il . ,compile-tree-il))
   #:printer     write)
