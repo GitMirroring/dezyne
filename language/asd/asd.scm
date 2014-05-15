@@ -25,14 +25,21 @@
 
 (define (make-parser)
   (lalr-parser
-   (interface Identifier lbrace rbrace NumericLiteral @ (left: + -) (left: * /))
+   (Identifier in interface 
+               lbrace rbrace semicolon
+               NumericLiteral
+               enum int void
+               (left: + -) (left: * /))
    (program (exp) : $1
             (*eoi*) : (call-with-input-string "" read)) ; *eof-object*
    (exp  (exp + term) : `(+ ,$1 ,$3)
          (exp - term) : `(- ,$1 ,$3)
-         (@) : '(@)
-         (interface Identifier) : `(,$1 ,$2)
+         (interface Identifier lbrace identifier-block rbrace) : `(,$1 ,$2 ,$4)
          (term) : $1)
+   (identifier-block (term) : $1
+                     (in type Identifier semicolon) : `(,$1 ,$2 ,$3))
+   (type (int) : 'int
+         (void) : 'void)
    (term (term * factor) : `(* ,$1 ,$3)
          (term / factor) : `(/ ,$1 ,$3)
          (factor) : $1)
@@ -45,5 +52,7 @@
   (format #t "MATCHING:~a\n" src)
   (match src
     (('NumericLiteral x) `(const ,x))
+    (('in type name) `(apply (primitive list) (const in) (const ,type) (const ,name)))
     (('interface name) `(apply (primitive list) (const interface) (const ,name)))
+    (('interface name block) `(apply (primitive list) (const interface) (const ,name) ,(comp block e)))
     ((op x y) `(apply (primitive ,op) ,(comp x e) ,(comp y e)))))

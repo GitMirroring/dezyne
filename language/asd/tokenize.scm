@@ -176,9 +176,11 @@
        '(
          component
          enum
+         in
          int
          interface
          on
+         out
          provides
          reply
          requires
@@ -274,7 +276,6 @@
            
 (define *punctuation*
   '(
-    ("@" . @)  ;; simple
     ("{" . lbrace)
     ("}" . rbrace)
     ("(" . lparen)
