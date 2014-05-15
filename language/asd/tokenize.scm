@@ -194,7 +194,7 @@
                      (char=? c #\_))))
         (let ((word (list->string (reverse chars))))
           (cond ((assoc-ref *keywords* word)
-                 => (lambda (x) (make-lexical-token x loc #f)))
+                 => (lambda (x) (make-lexical-token x loc (string->symbol word))))
                 (else (make-lexical-token 'Identifier loc
                                           (string->symbol word)))))
         (begin (read-char port)
@@ -273,8 +273,9 @@
           acc)))))))
            
 (define *punctuation*
-  '(("{" . lbrace)
+  '(
     ("@" . @)  ;; simple
+    ("{" . lbrace)
     ("}" . rbrace)
     ("(" . lparen)
     (")" . rparen)

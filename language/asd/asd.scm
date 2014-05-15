@@ -25,12 +25,13 @@
 
 (define (make-parser)
   (lalr-parser
-   (NumericLiteral @ (left: + -) (left: * /))
+   (interface Identifier lbrace rbrace NumericLiteral @ (left: + -) (left: * /))
    (program (exp) : $1
             (*eoi*) : (call-with-input-string "" read)) ; *eof-object*
    (exp  (exp + term) : `(+ ,$1 ,$3)
          (exp - term) : `(- ,$1 ,$3)
          (@) : '(@)
+         (interface Identifier) : `(,$1 ,$2)
          (term) : $1)
    (term (term * factor) : `(* ,$1 ,$3)
          (term / factor) : `(/ ,$1 ,$3)
@@ -43,5 +44,6 @@
 (define (comp src e)
   (format #t "MATCHING:~a\n" src)
   (match src
-    ((NumericLiteral x) `(const ,x))
+    (('NumericLiteral x) `(const ,x))
+    (('interface name) `(apply (primitive list) (const interface) (const ,name)))
     ((op x y) `(apply (primitive ,op) ,(comp x e) ,(comp y e)))))
