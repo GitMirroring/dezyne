@@ -19,12 +19,15 @@
 (define-module (language asd tokenize)
   #:use-module (language ecmascript tokenize)
   #:use-module (system base lalr)
-  #:export (next-token make-tokenizer tokenize))
+  ;;#:export (next-token make-tokenizer make-tokenizer/1 tokenize)
+  #:export (make-tokenizer make-tokenizer/1)
+  )
 
 (define (string-symbol x) (cons (symbol->string x) x))
 (define *keywords*
   (map string-symbol 
        '(
+         behaviour
          component
          enum
          in
@@ -47,6 +50,7 @@
     ("[" . lbracket)
     ("]" . rbracket)
     ("." . dot)
+    ("," . comma)
     (";" . semicolon)
     ("<" . <)
     (">" . >)
@@ -98,3 +102,10 @@
   ((@@ (language ecmascript tokenize) next-token) port div?))
 
 (define (make-tokenizer port) (lambda () (next-token port #t)))
+;;(define (make-tokenizer/1 port) (lambda () (next-token port #t)))
+
+(define (xmake-tokenizer port)
+  ((@@ (language ecmascript tokenize) make-tokenizer) port))
+
+(define (make-tokenizer/1 port)
+  ((@@ (language ecmascript tokenize) make-tokenizer/1) port))

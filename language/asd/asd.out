@@ -1,0 +1,164 @@
+State table
+-----------
+
+state 0
+
+   *start* --> . program *eoi*    (rule 1)
+
+   *default* : reduce using rule 3
+
+state 1
+
+   program --> model-list . *eoi*    (rule 2)
+   model-list --> model-list . model    (rule 4)
+
+   *default* : Error
+   *eoi* : shift and goto state 4
+   interface : shift and goto state 3
+
+state 2
+
+   *start* --> program . *eoi*    (rule 1)
+
+   *default* : Error
+   *eoi* : shift and goto state 7
+
+state 3
+
+   interface-spec --> interface . Identifier lbrace event-list rbrace    (rule 6)
+
+   *default* : Error
+   Identifier : shift and goto state 8
+
+state 4
+
+   program --> model-list *eoi* .    (rule 2)
+
+   *default* : reduce using rule 2
+
+state 5
+
+   model --> interface-spec .    (rule 5)
+
+   *default* : reduce using rule 5
+
+state 6
+
+   model-list --> model-list model .    (rule 4)
+
+   *default* : reduce using rule 4
+
+state 7
+
+   *start* --> program *eoi* .    (rule 1)
+
+   *default* : reduce using rule 1
+   *eoi* : Accept input
+
+state 8
+
+   interface-spec --> interface Identifier . lbrace event-list rbrace    (rule 6)
+
+   *default* : Error
+   lbrace : shift and goto state 9
+
+state 9
+
+   interface-spec --> interface Identifier lbrace . event-list rbrace    (rule 6)
+
+   *default* : reduce using rule 7
+
+state 10
+
+   interface-spec --> interface Identifier lbrace event-list . rbrace    (rule 6)
+   event-list --> event-list . event    (rule 8)
+
+   *default* : Error
+   in : shift and goto state 13
+   out : shift and goto state 12
+   rbrace : shift and goto state 11
+
+state 11
+
+   interface-spec --> interface Identifier lbrace event-list rbrace .    (rule 6)
+
+   *default* : reduce using rule 6
+
+state 12
+
+   event-direction --> out .    (rule 11)
+
+   *default* : reduce using rule 11
+
+state 13
+
+   event-direction --> in .    (rule 10)
+
+   *default* : reduce using rule 10
+
+state 14
+
+   event --> event-direction . type Identifier semicolon    (rule 9)
+
+   *default* : Error
+   Identifier : shift and goto state 19
+   bool : shift and goto state 18
+   int : shift and goto state 17
+   void : shift and goto state 16
+
+state 15
+
+   event-list --> event-list event .    (rule 8)
+
+   *default* : reduce using rule 8
+
+state 16
+
+   type --> void .    (rule 15)
+
+   *default* : reduce using rule 15
+
+state 17
+
+   type --> int .    (rule 13)
+
+   *default* : reduce using rule 13
+
+state 18
+
+   type --> bool .    (rule 12)
+
+   *default* : reduce using rule 12
+
+state 19
+
+   enum-identifier --> Identifier .    (rule 16)
+
+   *default* : reduce using rule 16
+
+state 20
+
+   type --> enum-identifier .    (rule 14)
+
+   *default* : reduce using rule 14
+
+state 21
+
+   event --> event-direction type . Identifier semicolon    (rule 9)
+
+   *default* : Error
+   Identifier : shift and goto state 22
+
+state 22
+
+   event --> event-direction type Identifier . semicolon    (rule 9)
+
+   *default* : Error
+   semicolon : shift and goto state 23
+
+state 23
+
+   event --> event-direction type Identifier semicolon .    (rule 9)
+
+   *default* : reduce using rule 9
+
