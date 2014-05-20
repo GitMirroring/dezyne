@@ -31,17 +31,15 @@
                NumericLiteral
                enum int void
                (left: + -) (left: * /))
-   (program (modelDeclList) : $1
+   (program (model-list) : $1
             (*eoi*) : (call-with-input-string "" read)) ; *eof-object*
-   (modelDeclList () : '()
-                  (modelDeclList modelDecl) : (append $1 (list $2)))
-   (modelDecl (interface-decl) : $1)
-   (interface-decl (interface Identifier lbrace identifier-block rbrace) : `(,$1 ,$2 ,$4)
-    )
-   (identifier-block (event-declaration-list) : $1)
-   (event-declaration-list () : '()
-                           (event-declaration-list event-declaration) : (append $1 (list $2)))
-   (event-declaration (event-direction type Identifier semicolon) : `(,$1 ,$2 ,$3))
+   (model-list () : '()
+                  (model-list model) : (append $1 (list $2)))
+   (model (interface-spec) : $1)
+   (interface-spec (interface Identifier lbrace event-list rbrace) : `(,$1 ,$2 ,$4))
+   (event-list () : '()
+               (event-list event) : (append $1 (list $2)))
+   (event (event-direction type Identifier semicolon) : `(,$1 ,$2 ,$3))
    (event-direction (in) : 'in
                     (out) : 'out)
    (type (int) : 'int
