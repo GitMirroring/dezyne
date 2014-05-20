@@ -74,23 +74,8 @@
 
 (module-define! (resolve-module '(language ecmascript tokenize)) '*div-punctuation* *div-punctuation*)
 
-(define (port-source-location port)
-  ((@@ (language ecmascript tokenize) port-source-location) port))
-
-(define (read-slash port loc div?)
-  ((@@ (language ecmascript tokenize) read-slash) port loc div?))
-
 (define (read-identifier port loc)
   ((@@ (language ecmascript tokenize) read-identifier) port loc))
-
-(define (read-numeric port loc)
-  ((@@ (language ecmascript tokenize) read-numeric) port loc))
-
-(define (read-punctuation port loc)
-  ((@@ (language ecmascript tokenize) read-punctuation) port loc))
-
-(define (read-string port loc)
-  ((@@ (language ecmascript tokenize) read-string) port loc))
 
 (define (read-identifier port loc)
   (let lp ((c (peek-char port)) (chars '()))
@@ -107,43 +92,9 @@
         (begin (read-char port)
                (lp (peek-char port) (cons c chars))))))
 
+(module-define! (resolve-module '(language ecmascript tokenize)) 'read-identifier read-identifier)
 
 (define (next-token port div?)
-  (let ((c   (peek-char port))
-        (loc (port-source-location port)))
-    (case c
-      ((#\ht #\vt #\np #\space #\x00A0) ; whitespace
-       (read-char port)
-       (next-token port div?))
-      ((#\newline #\cr)                 ; line break
-       (if (isatty? port)
-           '*eoi*
-           (begin
-             (read-char port)
-             (next-token port div?))
-           ;; command-line
-           ))
-      ;;((#\@) (make-lexical-token '@ loc (read-char port)))
-      ((#\/)
-       ;; division, single comment, double comment, or regexp
-       (read-slash port loc div?))
-      ((#\" #\')                        ; string literal
-       (read-string port loc))
-      (else
-       (cond
-        ((eof-object? c) 
-         '*eoi*)
-        ((or (char-alphabetic? c)
-             (char=? c #\$)
-             (char=? c #\_))
-         ;; reserved word or identifier
-         (read-identifier port loc))
-        ((char-numeric? c)
-         ;; numeric -- also accept . FIXME, requires lookahead
-         (make-lexical-token 'NumericLiteral loc (read-numeric port loc)))
-        (else
-         ;; punctuation
-         (format #t "PUNCT:~a\n!" c)
-         (read-punctuation port loc)))))))
+  ((@@ (language ecmascript tokenize) next-token) port div?))
 
 (define (make-tokenizer port) (lambda () (next-token port #t)))
