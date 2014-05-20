@@ -31,24 +31,21 @@
                NumericLiteral
                enum int void
                (left: + -) (left: * /))
-   (program (exp) : $1
+   (program (modelDeclList) : $1
             (*eoi*) : (call-with-input-string "" read)) ; *eof-object*
-   (exp  (exp + term) : `(+ ,$1 ,$3)
-         (exp - term) : `(- ,$1 ,$3)
-         (interface Identifier lbrace identifier-block rbrace) : `(,$1 ,$2 ,$4)
-         (term) : $1)
+   (modelDeclList () : '()
+                  (modelDeclList modelDecl) : (append $1 (list $2)))
+   (modelDecl (interface-decl) : $1)
+   (interface-decl (interface Identifier lbrace identifier-block rbrace) : `(,$1 ,$2 ,$4)
+    )
    (identifier-block (event-declaration-list) : $1)
-   (event-declaration-list (event-declaration) : $1
-                           (event-declaration-list event-declaration) : `(cons* ,$2 ,$1))
+   (event-declaration-list () : '()
+                           (event-declaration-list event-declaration) : (append $1 (list $2)))
    (event-declaration (event-direction type Identifier semicolon) : `(,$1 ,$2 ,$3))
    (event-direction (in) : 'in
                     (out) : 'out)
    (type (int) : 'int
-         (void) : 'void)
-   (term (term * factor) : `(* ,$1 ,$3)
-         (term / factor) : `(/ ,$1 ,$3)
-         (factor) : $1)
-   (factor (NumericLiteral) : `(NumericLiteral ,$1))))
+         (void) : 'void)))
 
 (define (compile-tree-il exp env opts)
   (values (parse-tree-il (comp exp '())) env env))
@@ -56,8 +53,7 @@
 (define (comp src e)
   (format #t "MATCHING:~a\n" src)
   (match src
-    (('NumericLiteral x) `(const ,x))
-    (('in type name) `(apply (primitive list) (const in) (const ,type) (const ,name)))
-    (('out type name) `(apply (primitive list) (const out) (const ,type) (const ,name)))
+    (tree `(const tree))
     (('interface name block) `(apply (primitive list) (const interface) (const ,name) ,(comp block e)))
-    ((op x y) `(apply (primitive ,op) ,(comp x e) ,(comp y e)))))
+        (('in type name) `(apply (primitive list) (const in) (const ,type) (const ,name)))
+    (('out type name) `(apply (primitive list) (const out) (const ,type) (const ,name)))))

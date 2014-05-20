@@ -83,6 +83,9 @@
 (define (read-identifier port loc)
   ((@@ (language ecmascript tokenize) read-identifier) port loc))
 
+(define (read-numeric port loc)
+  ((@@ (language ecmascript tokenize) read-numeric) port loc))
+
 (define (read-punctuation port loc)
   ((@@ (language ecmascript tokenize) read-punctuation) port loc))
 
@@ -113,13 +116,13 @@
        (read-char port)
        (next-token port div?))
       ((#\newline #\cr)                 ; line break
-       (if #f
-           ;; ecma
+       (if (isatty? port)
+           '*eoi*
            (begin
              (read-char port)
              (next-token port div?))
-           ;; simple
-           '*eoi*))
+           ;; command-line
+           ))
       ;;((#\@) (make-lexical-token '@ loc (read-char port)))
       ((#\/)
        ;; division, single comment, double comment, or regexp
