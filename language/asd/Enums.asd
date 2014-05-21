@@ -20,7 +20,7 @@
 //
 // Code:
 
-interface Console
+interface Enums
 {
   enum Response { inactive, active };
   enum Return { foo, bar };

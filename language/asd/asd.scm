@@ -30,41 +30,64 @@
   (lalr-parser
    (out-table: "asd.out")
    (
-    lbrace rbrace lparen rparen lbracket rbracket dot semicolon comma
-    !
-    ;;(left: * /)
-    ;; (left: + -) 
+    (left: ! * /)
+    (left: + -) 
     =
+    Identifier 
+    NumericLiteral
     behaviour
     bool
+    colon
+    comma
     component
+    dot
     enum
     illegal
+    import
     in
     inevitable
     int
     interface 
+    lbrace
+    lbracket
+    lparen
     on
     optional
+    otherwise
     out
+    provides
+    rbrace
+    rbracket
+    requires
+    rparen
+    semicolon
     void
-    Identifier 
-    NumericLiteral
     )
 
    (program
-    (model-list *eoi*) : $1
-    )
+    (model-list *eoi*) : $1)
 
    (model-list 
     () : '()
-    (model-list model) : (append $1 (list $2)))
+    (model-list model-spec) : (append $1 (list $2)))
 
-   (model
-    (interface-spec) : $1)
+   (model-spec
+    (import-list) : $1
+    (interface-spec) : $1
+    (component-spec) : $1)
+
+   (import-list
+    () : '(imports)
+    (import-list import-spec) : (append $1 (list $2)))
 
    (interface-spec
     (interface Identifier lbrace type-list event-list optional-behaviour rbrace) : `(,$1 ,$2 ,$4 ,$5 ,$6))
+
+   (component-spec
+    (component Identifier lbrace port-list optional-behaviour rbrace) : `(,$1 ,$2 ,$4 ,$5))
+
+   (import-spec
+    (import Identifier semicolon) : `(,$1 ,$2))
 
    (event-list
     () : '(events)
@@ -77,10 +100,24 @@
     (in) : 'in
     (out) : 'out)
    
-   (type-list () : '(types) (type-list type-spec) : (append $1 (list $2)))
+   (port-list
+    () : '(ports)
+    (port-list port) : (append $1 (list $2)))
+
+   (port
+    (port-direction type Identifier semicolon) : `(,$1 ,$2 ,$3))
    
-  (type-spec (enum-spec) : $1)
-  
+   (port-direction
+    (provides) : 'provides
+    (requires) : 'requires)
+   
+   (type-list 
+    () : '(types) 
+    (type-list type-spec) : (append $1 (list $2)))
+   
+   (type-spec 
+    (enum-spec) : $1)
+   
    (type
     (bool) : 'bool
     (int) : 'int
@@ -89,40 +126,91 @@
 
    (enum-identifier 
     (Identifier) : $1)
-  
-  (optional-behaviour
-   () : '(behaviour)
-   (behaviour Identifier lbrace type-list variable-list behaviour-statement-list rbrace) : `(,$1 ,$2 ,$4 ,$5 ,$6))
-
-  (enum-spec 
-   (enum enum-identifier lbrace enum-value-list rbrace semicolon) : `(,$1 ,$2 ,$4))
-  
-  (enum-value-list (enum-value) : `(,$1) (enum-value-list comma enum-value) : (append $1 (list $3)))
    
-  (enum-value (Identifier) : $1)
-  
-  (expression (compound-identifier) : $1)
-  
-  (type-identifier (Identifier) : $1)
-  
-  (behaviour-statement-list () : '(statements) (behaviour-statement-list behaviour-statement) : (append $1 $2))
+   (enum-spec 
+    (enum enum-identifier lbrace enum-value-list rbrace semicolon) : `(,$1 ,$2 ,$4))
+   
+   (enum-value-list 
+    (enum-value) : `(,$1) 
+    (enum-value-list comma enum-value) : (append $1 (list $3)))
+   
+   (enum-value
+    (Identifier) : $1)
+   
+   (expression
+    (compound-identifier) : $1)
+   
+   (type-identifier 
+    (Identifier) : $1)
+   
+   (optional-behaviour
+    () : '(behaviour)
+    (behaviour lbrace type-list variable-list behaviour-statement-list rbrace) : `(,$1 #f ,$3 ,$4 ,$5)
+    (behaviour Identifier lbrace type-list variable-list behaviour-statement-list rbrace) : `(,$1 ,$2 ,$4 ,$5 ,$6))
 
-   ;;(inevitable-statement) : $1
-   ;;(optional-statement) : $1
+   (behaviour-statement-list 
+    () : '(statements) 
+    (behaviour-statement-list behaviour-statement) : (append $1 (list $2)))
 
-  (behaviour-statement (illegal-statement) : $1 (behaviour-statement-list) : $1 (guarded-statement) : $1)
+   (behaviour-statement
+    (guarded-statement) : $1
+    (compound-behaviour-statement) : $1
+    (on-event-statement) : $1 
+    (illegal-statement) : $1
+    (assignment-behaviour-statement) : $1
+    (action-statement) : $1
+    ;; (if-statement) : $1
+    ;; (reply-statement) : $1
+    )
 
-  (guarded-statement (lbracket compound-identifier rbracket behaviour-statement) : `(guard ,$2 ,$4))
+   (guarded-statement
+    (lbracket guard rbracket behaviour-statement) : `(guard ,$2 ,$4))
+   
+   (guard
+    (expression) : $1
+    (otherwise) : $1)
+   
+   (compound-behaviour-statement
+    (lbrace behaviour-statement-list rbrace) : $2)
 
-  (compound-identifier (Identifier) : $1 (Identifier dot Identifier) : `(dot ,$1 ,$3))
+   (compound-identifier
+    (Identifier) : $1 
+    (Identifier dot Identifier) : `(dot ,$1 ,$3))
+   
+   (on-event-statement
+    (on trigger-spec colon behaviour-statement) : `(,$1 ,$2 ,$4))
 
-  (illegal-statement (illegal semicolon) : $1)
-  
-  (variable-list () : '(variables) (variable-list variable) : (append $1 $2))
+   (trigger-spec
+    (trigger-list) : $1
+    (optional) : $1
+    (inevitable) : $1)
 
-  (variable (type Identifier = expression semicolon) : `(= ,$1 ,$2 ,$4))
+   (trigger-list
+    (trigger) : $1 
+    (trigger-list comma trigger) : (append $1 (list $3)))
 
-  ))
+   (trigger
+    (compound-identifier) : $1)
+
+   (illegal-statement
+    (illegal semicolon) : $1)
+   
+   (assignment-behaviour-statement
+    (Identifier = expression semicolon) : `(= ,$1 ,$3))
+   
+   (action-statement
+    (trigger semicolon) : $1)
+   
+   ;;(if-statement)
+
+   ;;(reply-statement)
+
+   (variable-list
+    () : '(variables)
+    (variable-list variable) : (append $1 (list $2)))
+
+   (variable 
+    (type Identifier = expression semicolon) : `(= ,$1 ,$2 ,$4))))
 
 (define (compile-tree-il exp env opts)
   (values (parse-tree-il (comp exp '())) env env))

@@ -19,9 +19,7 @@
 (define-module (language asd tokenize)
   #:use-module (language ecmascript tokenize)
   #:use-module (system base lalr)
-  ;;#:export (next-token make-tokenizer make-tokenizer/1 tokenize)
-  #:export (make-tokenizer make-tokenizer/1)
-  )
+  #:export (make-tokenizer make-tokenizer/1))
 
 (define (string-symbol x) (cons (symbol->string x) x))
 (define *keywords*
@@ -30,10 +28,14 @@
          behaviour
          component
          enum
+         import
          in
+         inevitable
          int
          interface
          on
+         optional
+         otherwise
          out
          provides
          reply
@@ -79,9 +81,6 @@
 (module-define! (resolve-module '(language ecmascript tokenize)) '*div-punctuation* *div-punctuation*)
 
 (define (read-identifier port loc)
-  ((@@ (language ecmascript tokenize) read-identifier) port loc))
-
-(define (read-identifier port loc)
   (let lp ((c (peek-char port)) (chars '()))
     (if (or (eof-object? c)
             (not (or (char-alphabetic? c)
@@ -98,13 +97,7 @@
 
 (module-define! (resolve-module '(language ecmascript tokenize)) 'read-identifier read-identifier)
 
-(define (next-token port div?)
-  ((@@ (language ecmascript tokenize) next-token) port div?))
-
-(define (make-tokenizer port) (lambda () (next-token port #t)))
-;;(define (make-tokenizer/1 port) (lambda () (next-token port #t)))
-
-(define (xmake-tokenizer port)
+(define (make-tokenizer port)
   ((@@ (language ecmascript tokenize) make-tokenizer) port))
 
 (define (make-tokenizer/1 port)

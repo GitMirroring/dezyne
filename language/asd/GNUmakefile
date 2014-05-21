@@ -28,8 +28,9 @@ compile:
 	guile -L .. spec.scm 
 
 check:
-	guile -L .. --language=asd -s interface-enums.asd
-	./asdgen interface-enums.asd
+	guile -L .. --language=asd -s Enums.asd
+	./asdgen Enums.asd
 	./asdgen interface-events.asd
 	./asdgen interface-reply-events.asd
 	./asdgen interface-behaviour.asd
+	./asdgen interface-imports.asd

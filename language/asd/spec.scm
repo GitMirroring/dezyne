@@ -25,6 +25,6 @@
 (define-language asd
   #:title       "asd"
   #:reader      (lambda (port env) 
-                  ((make-parser) (make-tokenizer port) error))
+                  ((make-parser) (make-tokenizer/1 port) error))
   #:compilers   `((tree-il . ,compile-tree-il))
   #:printer     write)
