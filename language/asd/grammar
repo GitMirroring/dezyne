@@ -1,0 +1,185 @@
+Grammar
+
+language:
+modelDeclList END ;
+
+modelDeclList:
+""
+| modelDeclList modelDecl ;
+
+modelDecl:
+interfaceDecl
+| componentDecl ;
+
+interfaceDecl:
+importClauseList "interface" name "{" eventDeclList optBehaviour "}" ;
+
+importClauseList:
+""
+| importClauseList importClause ;
+
+importClause:
+"import" name ";" ;
+
+name:
+[_A-Za-z][_0-9A-Za-z]* ;
+
+eventDeclList:
+""
+| eventDeclList eventDecl ;
+
+eventDecl:
+eventDirection name name optParameters ";" ;
+
+eventDirection:
+"in"
+| "out" ;
+
+optParameters:
+""
+| "(" ")" ;
+
+optBehaviour:
+""
+| behaviour ;
+
+behaviour:
+behaviourIntroName "{" typeDeclList varDeclList behaviourStmtList "}" ;
+
+behaviourIntroName:
+"behaviour"
+| "behaviour" name ;
+
+typeDeclList:
+""
+| typeDeclList typeDecl ;
+
+typeDecl:
+enumTypeDecl ;
+
+enumTypeDecl:
+"enum" name "{" enumValueDeclList "}" ";" ;
+
+enumValueDeclList:
+enumValueDecl
+| enumValueDeclList "," enumValueDecl ;
+
+
+4
+
+enumValueDecl:
+name ;
+
+varDeclList:
+""
+| varDeclList varDecl ;
+
+varDecl:
+name name "=" initialValue ";" ;
+
+initialValue:
+expression ;
+
+behaviourStmtList:
+""
+| behaviourStmtList behaviourStmt ;
+
+behaviourStmt:
+guardedStmt
+| compoundBehaviourStmt
+| onEventStmt
+| illegalStmt
+| assignmentBehaviourStmt
+| actionStmt ;
+
+guardedStmt:
+"[" guard "]" behaviourStmt ;
+
+guard:
+expressionGuard
+| otherwiseGuard ;
+
+expressionGuard:
+expression ;
+
+otherwiseGuard:
+"otherwise" ;
+
+compoundBehaviourStmt:
+"{" behaviourStmtList "}" ;
+
+onEventStmt:
+"on" onTrigger ":" behaviourStmt ;
+
+onTrigger:
+eventInstanceList
+| "optional"
+| "inevitable" ;
+
+eventInstanceList:
+eventInstance
+| eventInstanceList "," eventInstance ;
+
+eventInstance:
+compoundName optParameters ;
+
+compoundName:
+name
+| compoundName "." name ;
+
+illegalStmt:
+"illegal" ";" ;
+
+assignmentBehaviourStmt:
+name "=" expression ";" ;
+
+
+5
+
+actionStmt:
+eventInstance ";" ;
+
+componentDecl:
+importClauseList "component" name "{" interfaceVarDeclList optModelCtorDecl optBehaviour "}" ;
+
+interfaceVarDeclList:
+""
+| interfaceVarDeclList interfaceVarDecl ;
+
+interfaceVarDecl:
+interfaceDirection compoundName name ";" ;
+
+interfaceDirection:
+"provides"
+| "requires" ;
+
+optModelCtorDecl:
+""
+| name "(" ")" "{" constructorStmtList "}" ;
+
+constructorStmtList:
+""
+| constructorStmtList constructorStmt ;
+
+constructorStmt:
+instantiationStmt
+| bindingStmt ;
+
+instantiationStmt:
+compoundName optParameters name "=" compoundName optParameters ";" ;
+
+bindingStmt:
+compoundName optParameters "<=>" compoundName optParameters ";" ;
+
+expression:
+"(" expression ")"
+| "!" expression
+| expression "&&" expression
+| expression "||" expression
+| expression "==" expression
+| expression "!=" expression
+| valueExpression ;
+
+valueExpression:
+compoundName ;
+

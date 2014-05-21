@@ -30,43 +30,30 @@
   (lalr-parser
    (out-table: "asd.out")
    (
+    lbrace rbrace lparen rparen lbracket rbracket dot semicolon comma
     !
-    (left: * /)
-    (left: + -) 
+    ;;(left: * /)
+    ;; (left: + -) 
     =
-    Identifier 
-    NumericLiteral
     behaviour
     bool
-    colon
-    comma
     component
-    dot
     enum
     illegal
     in
     inevitable
     int
     interface 
-    lbrace
-    lbracket
     on
     optional
     out
-    rbrace
-    rbracket
-    semicolon
     void
+    Identifier 
+    NumericLiteral
     )
 
    (program
-    ;;(model-list) : $1
-    ;;(*eoi*) : *eof-object*
-    ;;(*eof-object*) : *eof-object*
     (model-list *eoi*) : $1
-
-    ;;(model-list *eof-object*) : $1
-    ;;(*eoi*) : (call-with-input-string "" read)  ; *eof-object*
     )
 
    (model-list 
@@ -77,13 +64,10 @@
     (interface-spec) : $1)
 
    (interface-spec
-    ;;(interface Identifier lbrace event-list optional-behaviour rbrace) : `(,$1 ,$2 ,$4 ,$5)
-    (interface Identifier lbrace event-list rbrace) : `(,$1 ,$2 ,$4)
-    ;;(interface Identifier lbrace type-list event-list rbrace) : `(,$1 ,$2 ,$4 ,$5)
-)
+    (interface Identifier lbrace type-list event-list optional-behaviour rbrace) : `(,$1 ,$2 ,$4 ,$5 ,$6))
 
    (event-list
-    () : '()
+    () : '(events)
     (event-list event) : (append $1 (list $2)))
 
    (event
@@ -93,24 +77,25 @@
     (in) : 'in
     (out) : 'out)
    
+   (type-list () : '(types) (type-list type-spec) : (append $1 (list $2)))
+   
+  (type-spec (enum-spec) : $1)
+  
    (type
     (bool) : 'bool
     (int) : 'int
     (enum-identifier) : $1
     (void) : 'void)
 
-   (enum-identifier (Identifier) : $1)
+   (enum-identifier 
+    (Identifier) : $1)
   
   (optional-behaviour
-   () : '()
-   ;;(behaviour Identifier lbrace type-list variable-list behaviour-statement-list rbrace) : `(,$1 ,$2 ,$4 ,$5 ,$6)
-   (behaviour Identifier lbrace type-list rbrace) : `(,$1 ,$2 ,$4)
-)
-  (type-list () : '() (type-list type-spec) : (append $1 $2))
+   () : '(behaviour)
+   (behaviour Identifier lbrace type-list variable-list behaviour-statement-list rbrace) : `(,$1 ,$2 ,$4 ,$5 ,$6))
 
-  (type-spec (enum-spec) : $1)
-
-  (enum-spec (enum enum-identifier lbrace enum-value-list rbrace semicolon) : `(,$1 ,$2 ,$4))
+  (enum-spec 
+   (enum enum-identifier lbrace enum-value-list rbrace semicolon) : `(,$1 ,$2 ,$4))
   
   (enum-value-list (enum-value) : `(,$1) (enum-value-list comma enum-value) : (append $1 (list $3)))
    
@@ -120,7 +105,7 @@
   
   (type-identifier (Identifier) : $1)
   
-  (behaviour-statement-list () : '() (behaviour-statement-list behaviour-statement) : (append $1 $2))
+  (behaviour-statement-list () : '(statements) (behaviour-statement-list behaviour-statement) : (append $1 $2))
 
    ;;(inevitable-statement) : $1
    ;;(optional-statement) : $1
@@ -133,7 +118,7 @@
 
   (illegal-statement (illegal semicolon) : $1)
   
-  (variable-list () : '() (variable-list variable) : (append $1 $2))
+  (variable-list () : '(variables) (variable-list variable) : (append $1 $2))
 
   (variable (type Identifier = expression semicolon) : `(= ,$1 ,$2 ,$4))
 
@@ -146,14 +131,4 @@
   (format #t "MATCHING:~a\n" src)
   (match src
     (() (exit))
-    (tree `(const ,tree))
-    (('= name expression) `(apply (primitive list) (const =) (const ,name) ,(comp expression e)))
-   ((dot name sub) `(apply (primitive list) (const dot) (const ,name) ,(const sub)))
-   (('behaviour name block) `(apply (primitive list) (const behaviour) (const ,name) ,(comp block e)))
-   (('enum name list) `(apply (primitive list) (const enum) (const ,name) (const ,list)))
-   (('guard name statement) `(apply (primitive list) (const guard) (const ,name) ,(comp statement e)))
-   (('on trigger statement) `(apply (primitive list) (const on) (const ,trigger) ,(comp statement e)))
-   (('interface name block) `(apply (primitive list) (const interface) (const ,name) ,(comp block e)))
-   ;;(('interface name block) (begin (format #t "*INTERFACE*\n") `(apply (primitive list) (const interface) (const ,name) (const ,block))))
-    (('in type name) `(apply (primitive list) (const in) (const ,type) (const ,name)))
-    (('out type name) `(apply (primitive list) (const out) (const ,type) (const ,name)))))
+    (tree `(const ,tree))))

@@ -28,8 +28,8 @@ compile:
 	guile -L .. spec.scm 
 
 check:
-	guile -L .. --language=asd -c "interface foobar { in void foo; out int bar; }"
-	guile -L .. --language=asd -c "interface foobar { in void foo; out int bar; } interface foobar { in void foo; out int bar; }"
-	guile -L .. --language=asd -s interface-events.asd
-	guile -L .. --language=asd -s interface-reply-events.asd
-	guile -L .. --language=asd -s interface-behaviour.asd
+	guile -L .. --language=asd -s interface-enums.asd
+	./asdgen interface-enums.asd
+	./asdgen interface-events.asd
+	./asdgen interface-reply-events.asd
+	./asdgen interface-behaviour.asd

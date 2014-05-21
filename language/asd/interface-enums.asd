@@ -23,16 +23,5 @@
 interface Console
 {
   enum Response { inactive, active };
-  in Response check;
-
-  behaviour bav
-  {
-    enum States 
-    {
-      Disarmed,
-      Armed,
-      Triggered,
-      Disarming
-    };
-  }
+  enum Return { foo, bar };
 }
