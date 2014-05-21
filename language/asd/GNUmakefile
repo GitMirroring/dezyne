@@ -34,3 +34,4 @@ check:
 	./asdgen interface-reply-events.asd
 	./asdgen interface-behaviour.asd
 	./asdgen interface-imports.asd
+	./asdgen alarm-component.asd

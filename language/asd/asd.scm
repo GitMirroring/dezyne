@@ -30,9 +30,12 @@
   (lalr-parser
    (out-table: "asd.out")
    (
+    != 
+    && 
     (left: ! * /)
     (left: + -) 
     =
+    ==
     Identifier 
     NumericLiteral
     behaviour
@@ -53,6 +56,7 @@
     lparen
     on
     optional
+    or
     otherwise
     out
     provides
@@ -138,6 +142,12 @@
     (Identifier) : $1)
    
    (expression
+    (lparen expression rparen) : $1
+    (! expression) : `(! ,$2)
+    (expression && expression) : `(&& ,$1 ,$3)
+    (expression or expression) : `(or ,$1 ,$3)
+    (expression == expression) : `(== ,$1 ,$3)
+    (expression != expression) : `(!= ,$1 ,$3)
     (compound-identifier) : $1)
    
    (type-identifier 
