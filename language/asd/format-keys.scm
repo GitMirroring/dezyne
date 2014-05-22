@@ -1,0 +1,67 @@
+#! /bin/sh
+exec guile -e main -s $0 "$@"
+!#
+;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
+;;
+;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;
+;; Gaiag is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU Affero General Public License as
+;; published by the Free Software Foundation, either version 3 of the
+;; License, or (at your option) any later version.
+;;
+;; Gaiag is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU Affero General Public License for more details.
+;;
+;; You should have received a copy of the GNU Affero General Public License
+;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
+
+(read-set! keywords 'prefix)
+
+(define (main . args)
+  (eval '(main (command-line)) (resolve-module '(asd format-keys))))
+
+(define-module (asd format-keys)
+  :use-module (ice-9 regex)
+  :export (format-keys map-format-keys))
+
+(define (format-keys string pairs)
+  (if (null? pairs)
+      string
+      (let ((key (format #f "%\\{~a\\}" (caar pairs)))
+            (value (format #f "~a" (cdar pairs))))
+        (format-keys (regexp-substitute/global #f key string 'pre value 'post) (cdr pairs)))))
+
+(define (map-format-keys string pairs variables)
+  (map (lambda (x)
+         (format-keys string
+                      (map (lambda (y) (cons (car y) ((cdr y) x))) pairs)))
+       '(a b c)))
+
+(define (stdout . rest)
+  (apply display rest)
+  (newline))
+
+(define (test)
+  (define (get-bar x) (format #f "BAR~a" x))
+  (define (get-foo x) (format #f "FOO~a" x))
+
+  (stdout (format-keys "%{foo} %{bar}\n" '((foo . "xxx") (bar . "yyy"))))
+  (stdout
+   (map (lambda (x)
+          (let ((foo (get-foo x)) (bar (get-bar x)))
+            (format-keys "%{foo} %{bar}" `((foo . ,foo) (bar . ,bar)))))
+        '(a b c)))
+  (stdout
+   (map-format-keys "%{foo} %{bar}" 
+                    `((foo . ,get-foo) (bar . ,get-bar)) '(a b c)))
+  (stdout 
+   (map-format-keys "%{foo} %{bar}" 
+                    `((foo . ,(lambda (x) (format #f "~a.~a" x x))) 
+                      (bar . ,(lambda (x) (format #f "~a-~a" x x))))
+                    '(a b c))))
+
+(define (main args)
+  (test))
