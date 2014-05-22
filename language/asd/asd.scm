@@ -206,7 +206,7 @@
     (illegal semicolon) : $1)
    
    (assignment-behaviour-statement
-    (Identifier = expression semicolon) : `(= ,$1 ,$3))
+    (Identifier = expression semicolon) : `(assign ,$1 ,$3))
    
    (action-statement
     (trigger semicolon) : $1)
@@ -220,7 +220,7 @@
     (variable-list variable) : (append $1 (list $2)))
 
    (variable 
-    (type Identifier = expression semicolon) : `(= ,$1 ,$2 ,$4))))
+    (type Identifier = expression semicolon) : `(declare ,$1 ,$2 ,$4))))
 
 (define (compile-tree-il exp env opts)
   (values (parse-tree-il (comp exp '())) env env))

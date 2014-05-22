@@ -28,7 +28,8 @@ exec guile -L .. -e main -s $0 "$@"
 (define-module (language asd asdgen)
   :use-module (system base language)
   :use-module (language asd asd)
-  :use-module (language asd tokenize))
+  :use-module (language asd tokenize)
+  :use-module (language asd pretty))
 
 (define (read-and-parse lang port cenv)
   (let ((exp ((language-reader lang) port cenv)))
@@ -44,5 +45,7 @@ exec guile -L .. -e main -s $0 "$@"
   (asd-reader (open-file file-name "r") (current-module)))
 
 (define (main args)
-  (let ((file-name (cadr args)))
-    (format #t "~a\n" (read-asd file-name))))
+  (let* ((file-name (cadr args))
+         (ast (read-asd file-name)))
+    ;;(format #t "~a\n" ast)
+    (format #t "~a\n" (asd->string ast))))

@@ -28,10 +28,11 @@ compile:
 	guile -L .. spec.scm 
 
 check:
-	guile -L .. --language=asd -s Enums.asd
-	./asdgen Enums.asd
-	./asdgen interface-events.asd
-	./asdgen interface-reply-events.asd
-	./asdgen interface-behaviour.asd
-	./asdgen interface-imports.asd
-	./asdgen alarm-component.asd
+	#guile -L .. --language=asd -s Enums.asd
+	#./asdgen Enums.asd
+	#./asdgen interface-events.asd
+	#./asdgen interface-reply-events.asd
+	#./asdgen interface-behaviour.asd
+	#./asdgen interface-imports.asd
+	#./asdgen alarm-component.asd
+	./asdgen alarm-component.asd | tee pretty.asd && diff -uw alarm-component.asd pretty.asd | head -20
