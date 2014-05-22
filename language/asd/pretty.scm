@@ -56,8 +56,9 @@
     (#f "false")
     (#t "true")
     (('behaviour) "")
+    ((? join?) (apply join-all (cdr src)))
     ((x ... y) (safe-eval src))
-    (? (symbol? src) (symbol->string src))
+    ((? symbol?) (symbol->string src))
     (_ (format #f "\nNO MATCH:~a\n" src))))
 
 (define (interface name types ports behaviour)
@@ -105,7 +106,6 @@
   (format #f "out ~a ~a;\n" type identifier))
 (define (import file) (format #f "import ~a;\n" file))
 
-(define (string-join-all . rest) (string-join (map ->string rest)))
-(for-each 
- (lambda (x) (module-define! *pretty* x string-join-all))
- '(events imports ports statements types variables))
+(define (join-all . rest) (string-join (map ->string rest)))
+(define join '(events imports ports statements types variables))
+(define (join? x) (and (list? x) (member (car x) join)))
