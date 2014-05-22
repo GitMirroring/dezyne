@@ -1,0 +1,6 @@
+behaviour %{name}
+{
+  %{types}
+  %{variables}
+  %{statements}
+}
