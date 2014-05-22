@@ -72,8 +72,6 @@
                     (ports . ,(->string ports))
                     (behaviour . ,(->string behaviour)))))
 
-(define (ports . x) (apply string-append (map ->string x)))
-
 (define (requires type name)
   (format #f "requires ~a ~a;\n" type name))
 
@@ -89,15 +87,10 @@
 
 (define (enum name elements)
   (format #f "enum ~a { ~a };\n" name (string-join (map symbol->string elements)  ",")))
-(define (events . x) (apply string-append (map ->string x)))
-(define (types . x) (apply string-append (map ->string x)))
-(define (variables . x) 
-  (apply string-append (map ->string x)))
 (define (declare type var value) (format #f "~a ~a = ~a;\n" type var (->string  value)))
 (define (dot x y) 
   (format #f "~a.~a" x y))
 (define (on trigger statement) (format #f "on ~a:\n{\n ~a}\n" (->string trigger) (->string statement)))
-(define (statements . x) (string-join (map ->string x)))
 (define (guard expression statements) 
   (format #f "[~a]\n{\n~a}\n" (->string expression) (->string statements)))
 (define (assign var value) 
@@ -110,5 +103,12 @@
   (format #f "in ~a ~a;\n" type identifier))
 (define (out type identifier)
   (format #f "out ~a ~a;\n" type identifier))
-(define (imports . x) (string-join (map ->string x)))
 (define (import file) (format #f "import ~a;\n" file))
+
+(define (ports . x) (apply string-append (map ->string x)))
+(define (imports . x) (string-join (map ->string x)))
+(define (events . x) (apply string-append (map ->string x)))
+(define (types . x) (apply string-append (map ->string x)))
+(define (variables . x) (apply string-append (map ->string x)))
+(define (statements . x) (string-join (map ->string x)))
+
