@@ -15,14 +15,29 @@
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
 
+(read-set! keywords 'prefix)
+
 (define-module (language asd pretty)
-  #:use-module (system base lalr)
-  #:use-module (language tree-il)
-  #:use-module (ice-9 match)
-  #:use-module (asd format-keys)
-  #:export (asd->string))
+  :use-module (ice-9 rdelim)
+  :use-module (ice-9 match)
+  :use-module (system base lalr)
+  :use-module (language tree-il)
+  :use-module (asd format-keys)
+  :export (asd->string))
 
 (define *pretty* (current-module))
+
+(define (gulp-text-file name)
+  (let* ((file (open-file name "r"))
+	 (text (read-delimited "" file)))
+    (close file)
+    text))
+
+(define (gulp-snippet name)
+  (gulp-text-file (string-join (map symbol->string `(snippets asd ,name)) "/")))
+
+(define (format-snippet name pairs) 
+  (format-keys (gulp-snippet name) pairs))
 
 (define (asd->string tree) 
   ;;(format #t "tree:~a\n" tree)
@@ -52,10 +67,10 @@
           (->string behaviour)))
 
 (define (component name ports behaviour)
-  (format-keys "component %{name}\n{\n%{ports}%{behaviour}\n}\n" 
-               `((name . ,name)
-                 (ports . ,(->string ports))
-                 (behaviour . ,(->string behaviour)))))
+  (format-snippet 'component
+                  `((name . ,name)
+                    (ports . ,(->string ports))
+                    (behaviour . ,(->string behaviour)))))
 
 (define (ports . x) (apply string-append (map ->string x)))
 
