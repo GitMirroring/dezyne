@@ -35,4 +35,4 @@ check:
 	#./asdgen interface-behaviour.asd
 	#./asdgen interface-imports.asd
 	#./asdgen alarm-component.asd
-	./asdgen alarm-component.asd | tee pretty.asd && diff -uw alarm-component.asd pretty.asd | head -20
+	./asdgen alarm-component-pretty.asd | tee pretty.asd && diff -uw alarm-component-pretty.asd pretty.asd

@@ -145,7 +145,7 @@
     (lparen expression rparen) : $1
     (! expression) : `(! ,$2)
     (expression && expression) : `(&& ,$1 ,$3)
-    (expression or expression) : `(or ,$1 ,$3)
+    (expression or expression) : `(|| ,$1 ,$3)
     (expression == expression) : `(== ,$1 ,$3)
     (expression != expression) : `(!= ,$1 ,$3)
     (compound-identifier) : $1)
@@ -209,7 +209,7 @@
     (Identifier = expression semicolon) : `(assign ,$1 ,$3))
    
    (action-statement
-    (trigger semicolon) : $1)
+    (trigger semicolon) : `(action ,$1))
    
    ;;(if-statement)
 

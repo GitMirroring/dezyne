@@ -24,22 +24,24 @@
 (define *pretty* (current-module))
 
 (define (asd->string tree) 
-  (format #t "tree:~a\n" tree)
+  ;;(format #t "tree:~a\n" tree)
   (apply string-append (map ->string tree)))
 
+(define (safe-eval src)
+  (catch #t
+    (lambda ()
+      (apply (eval (car src) *pretty*) (cdr src)))
+    (lambda (key . args)
+      (format #f "eval failed:~a ~a\n" key args))))
+
 (define (->string src) 
-  (format #t "MATCHING:~a\n" src)
+;;  (format #t "MATCHING:~a\n" src)
   (match src
-    ((b ... e) (apply (eval (car src) *pretty*) (cdr src)))
-    ;;(('or x y) (format #f "~a or ~a" "or-left" "or-right"))
-    ('false (symbol->string src))
-    ('otherwise (symbol->string src))
-    ('Disarmed (symbol->string src))
-    ((dot x y) "dot")
-    ;;(x "foo")   
-    ((x) "foo")
-    ;;(_ "noop")
-    ))
+    (#f "false")
+    (#t "true")
+    ((x ... y) (safe-eval src))
+    (? (symbol? src) (symbol->string src))
+    (_ (format #f "\nNO MATCH:~a\n" src))))
 
 (define (interface name types ports behaviour)
   (format #f "interface ~a\n{\n~a~a~a\n}\n" name 
@@ -71,21 +73,18 @@
   (format #f "enum ~a { ~a };\n" name (string-join (map symbol->string elements)  ",")))
 (define (events . x) (apply string-append (map ->string x)))
 (define (types . x) (apply string-append (map ->string x)))
-(define (variables . x) (apply string-append (map ->string x)))
+(define (variables . x) 
+  (apply string-append (map ->string x)))
 (define (declare type var value) (format #f "~a ~a = ~a;\n" type var (->string  value)))
-(define (dot struct field) (format #f "~a.~a" struct field))
-(define (on trigger statement) (format #f "on ~a:\n{\n ~a\n}\n" (->string trigger) (->string statement)))
-(define (statements . x) (apply string-append (map ->string x)))
+(define (dot x y) 
+  (format #f "~a.~a" x y))
+(define (on trigger statement) (format #f "on ~a:\n{\n ~a}\n" (->string trigger) (->string statement)))
+(define (statements . x) (string-join (map ->string x)))
 (define (guard expression statements) 
-  (format #f "[~a]\n{\n~a\n}\n" 
-          expression
-          ;; (->string expression)
-          ;;(->string statements)
-          statements
-          ))
-;(define (assign var value) (format #f "~a = ~a;\n" var (->string  value)))
+  (format #f "[~a]\n{\n~a}\n" (->string expression) (->string statements)))
 (define (assign var value) 
-  ;;"assign"
-  (format #f "~a = ~a;\n" var (->string  value))
-  )
-
+  (format #f "~a = ~a;\n" var (->string value)))
+(define (action var) 
+  (format #f "~a;\n" (->string var)))
+(define (|| x y) 
+  (format #f "~a || ~a" (->string x) (->string y)))
