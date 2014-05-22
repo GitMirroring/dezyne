@@ -105,10 +105,7 @@
   (format #f "out ~a ~a;\n" type identifier))
 (define (import file) (format #f "import ~a;\n" file))
 
-(define (ports . x) (apply string-append (map ->string x)))
-(define (imports . x) (string-join (map ->string x)))
-(define (events . x) (apply string-append (map ->string x)))
-(define (types . x) (apply string-append (map ->string x)))
-(define (variables . x) (apply string-append (map ->string x)))
-(define (statements . x) (string-join (map ->string x)))
-
+(define (string-join-all . rest) (string-join (map ->string rest)))
+(for-each 
+ (lambda (x) (module-define! *pretty* x string-join-all))
+ '(events imports ports statements types variables))
