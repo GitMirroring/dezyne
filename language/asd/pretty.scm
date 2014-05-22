@@ -19,6 +19,7 @@
   #:use-module (system base lalr)
   #:use-module (language tree-il)
   #:use-module (ice-9 match)
+  #:use-module (asd format-keys)
   #:export (asd->string))
 
 (define *pretty* (current-module))
@@ -51,9 +52,10 @@
           (->string behaviour)))
 
 (define (component name ports behaviour)
-  (format #f "component ~a\n{\n~a~a\n}\n" name 
-          (->string ports)
-          (->string behaviour)))
+  (format-keys "component %{name}\n{\n%{ports}%{behaviour}\n}\n" 
+               `((name . ,name)
+                 (ports . ,(->string ports))
+                 (behaviour . ,(->string behaviour)))))
 
 (define (ports . x) (apply string-append (map ->string x)))
 
