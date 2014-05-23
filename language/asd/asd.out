@@ -14,8 +14,8 @@ state 1
 
    *default* : reduce using rule 8
    *eoi* : shift and goto state 5
-   interface : shift and goto state 3
-   component : shift and goto state 4
+   component : shift and goto state 3
+   interface : shift and goto state 4
 
 state 2
 
@@ -26,14 +26,14 @@ state 2
 
 state 3
 
-   interface-spec --> interface . Identifier lbrace type-list event-list optional-behaviour rbrace    (rule 10)
+   component-spec --> component . Identifier lbrace port-list optional-behaviour rbrace    (rule 11)
 
    *default* : Error
    Identifier : shift and goto state 11
 
 state 4
 
-   component-spec --> component . Identifier lbrace port-list optional-behaviour rbrace    (rule 11)
+   interface-spec --> interface . Identifier lbrace type-list event-list optional-behaviour rbrace    (rule 10)
 
    *default* : Error
    Identifier : shift and goto state 12
@@ -79,14 +79,14 @@ state 10
 
 state 11
 
-   interface-spec --> interface Identifier . lbrace type-list event-list optional-behaviour rbrace    (rule 10)
+   component-spec --> component Identifier . lbrace port-list optional-behaviour rbrace    (rule 11)
 
    *default* : Error
    lbrace : shift and goto state 15
 
 state 12
 
-   component-spec --> component Identifier . lbrace port-list optional-behaviour rbrace    (rule 11)
+   interface-spec --> interface Identifier . lbrace type-list event-list optional-behaviour rbrace    (rule 10)
 
    *default* : Error
    lbrace : shift and goto state 16
@@ -106,15 +106,15 @@ state 14
 
 state 15
 
-   interface-spec --> interface Identifier lbrace . type-list event-list optional-behaviour rbrace    (rule 10)
-
-   *default* : reduce using rule 23
-
-state 16
-
    component-spec --> component Identifier lbrace . port-list optional-behaviour rbrace    (rule 11)
 
    *default* : reduce using rule 18
+
+state 16
+
+   interface-spec --> interface Identifier lbrace . type-list event-list optional-behaviour rbrace    (rule 10)
+
+   *default* : reduce using rule 23
 
 state 17
 
@@ -125,21 +125,21 @@ state 17
 
 state 18
 
-   interface-spec --> interface Identifier lbrace type-list . event-list optional-behaviour rbrace    (rule 10)
-   type-list --> type-list . type-spec    (rule 24)
-
-   *default* : reduce using rule 13
-   enum : shift and goto state 21
-
-state 19
-
    component-spec --> component Identifier lbrace port-list . optional-behaviour rbrace    (rule 11)
    port-list --> port-list . port    (rule 19)
 
    *default* : reduce using rule 43
-   requires : shift and goto state 25
-   provides : shift and goto state 26
-   behaviour : shift and goto state 27
+   requires : shift and goto state 21
+   provides : shift and goto state 22
+   behaviour : shift and goto state 23
+
+state 19
+
+   interface-spec --> interface Identifier lbrace type-list . event-list optional-behaviour rbrace    (rule 10)
+   type-list --> type-list . type-spec    (rule 24)
+
+   *default* : reduce using rule 13
+   enum : shift and goto state 27
 
 state 20
 
@@ -149,488 +149,500 @@ state 20
 
 state 21
 
-   enum-spec --> enum . enum-identifier lbrace enum-value-list rbrace semicolon    (rule 31)
-
-   *default* : Error
-   Identifier : shift and goto state 31
-
-state 22
-
-   type-spec --> enum-spec .    (rule 25)
-
-   *default* : reduce using rule 25
-
-state 23
-
-   type-list --> type-list type-spec .    (rule 24)
-
-   *default* : reduce using rule 24
-
-state 24
-
-   interface-spec --> interface Identifier lbrace type-list event-list . optional-behaviour rbrace    (rule 10)
-   event-list --> event-list . event    (rule 14)
-
-   *default* : reduce using rule 43
-   out : shift and goto state 33
-   in : shift and goto state 34
-   behaviour : shift and goto state 27
-
-state 25
-
    port-direction --> requires .    (rule 22)
 
    *default* : reduce using rule 22
 
-state 26
+state 22
 
    port-direction --> provides .    (rule 21)
 
    *default* : reduce using rule 21
 
-state 27
+state 23
 
    optional-behaviour --> behaviour . lbrace type-list variable-list behaviour-statement-list rbrace    (rule 44)
    optional-behaviour --> behaviour . Identifier lbrace type-list variable-list behaviour-statement-list rbrace    (rule 45)
 
    *default* : Error
-   Identifier : shift and goto state 39
-   lbrace : shift and goto state 38
+   lbrace : shift and goto state 32
+   Identifier : shift and goto state 31
 
-state 28
+state 24
 
    component-spec --> component Identifier lbrace port-list optional-behaviour . rbrace    (rule 11)
 
    *default* : Error
-   rbrace : shift and goto state 40
+   rbrace : shift and goto state 33
 
-state 29
+state 25
 
    port --> port-direction . type Identifier semicolon    (rule 20)
 
    *default* : Error
-   Identifier : shift and goto state 31
-   bool : shift and goto state 43
-   int : shift and goto state 42
-   void : shift and goto state 41
+   Identifier : shift and goto state 37
+   bool : shift and goto state 36
+   void : shift and goto state 35
+   int : shift and goto state 34
 
-state 30
+state 26
 
    port-list --> port-list port .    (rule 19)
 
    *default* : reduce using rule 19
 
+state 27
+
+   enum-spec --> enum . enum-identifier lbrace enum-value-list rbrace semicolon    (rule 31)
+
+   *default* : Error
+   Identifier : shift and goto state 37
+
+state 28
+
+   type-spec --> enum-spec .    (rule 25)
+
+   *default* : reduce using rule 25
+
+state 29
+
+   type-list --> type-list type-spec .    (rule 24)
+
+   *default* : reduce using rule 24
+
+state 30
+
+   interface-spec --> interface Identifier lbrace type-list event-list . optional-behaviour rbrace    (rule 10)
+   event-list --> event-list . event    (rule 14)
+
+   *default* : reduce using rule 43
+   behaviour : shift and goto state 23
+   out : shift and goto state 41
+   in : shift and goto state 42
+
 state 31
 
-   enum-identifier --> Identifier .    (rule 30)
-
-   *default* : reduce using rule 30
-
-state 32
-
-   enum-spec --> enum enum-identifier . lbrace enum-value-list rbrace semicolon    (rule 31)
+   optional-behaviour --> behaviour Identifier . lbrace type-list variable-list behaviour-statement-list rbrace    (rule 45)
 
    *default* : Error
    lbrace : shift and goto state 46
 
-state 33
-
-   event-direction --> out .    (rule 17)
-
-   *default* : reduce using rule 17
-
-state 34
-
-   event-direction --> in .    (rule 16)
-
-   *default* : reduce using rule 16
-
-state 35
-
-   interface-spec --> interface Identifier lbrace type-list event-list optional-behaviour . rbrace    (rule 10)
-
-   *default* : Error
-   rbrace : shift and goto state 47
-
-state 36
-
-   event --> event-direction . type Identifier semicolon    (rule 15)
-
-   *default* : Error
-   Identifier : shift and goto state 31
-   bool : shift and goto state 43
-   int : shift and goto state 42
-   void : shift and goto state 41
-
-state 37
-
-   event-list --> event-list event .    (rule 14)
-
-   *default* : reduce using rule 14
-
-state 38
+state 32
 
    optional-behaviour --> behaviour lbrace . type-list variable-list behaviour-statement-list rbrace    (rule 44)
 
    *default* : reduce using rule 23
 
-state 39
-
-   optional-behaviour --> behaviour Identifier . lbrace type-list variable-list behaviour-statement-list rbrace    (rule 45)
-
-   *default* : Error
-   lbrace : shift and goto state 50
-
-state 40
+state 33
 
    component-spec --> component Identifier lbrace port-list optional-behaviour rbrace .    (rule 11)
 
    *default* : reduce using rule 11
 
-state 41
-
-   type --> void .    (rule 29)
-
-   *default* : reduce using rule 29
-
-state 42
+state 34
 
    type --> int .    (rule 27)
 
    *default* : reduce using rule 27
 
-state 43
+state 35
+
+   type --> void .    (rule 29)
+
+   *default* : reduce using rule 29
+
+state 36
 
    type --> bool .    (rule 26)
 
    *default* : reduce using rule 26
 
-state 44
+state 37
+
+   enum-identifier --> Identifier .    (rule 30)
+
+   *default* : reduce using rule 30
+
+state 38
 
    type --> enum-identifier .    (rule 28)
 
    *default* : reduce using rule 28
 
-state 45
+state 39
 
    port --> port-direction type . Identifier semicolon    (rule 20)
 
    *default* : Error
-   Identifier : shift and goto state 51
+   Identifier : shift and goto state 48
+
+state 40
+
+   enum-spec --> enum enum-identifier . lbrace enum-value-list rbrace semicolon    (rule 31)
+
+   *default* : Error
+   lbrace : shift and goto state 49
+
+state 41
+
+   event-direction --> out .    (rule 17)
+
+   *default* : reduce using rule 17
+
+state 42
+
+   event-direction --> in .    (rule 16)
+
+   *default* : reduce using rule 16
+
+state 43
+
+   interface-spec --> interface Identifier lbrace type-list event-list optional-behaviour . rbrace    (rule 10)
+
+   *default* : Error
+   rbrace : shift and goto state 50
+
+state 44
+
+   event --> event-direction . type Identifier semicolon    (rule 15)
+
+   *default* : Error
+   Identifier : shift and goto state 37
+   bool : shift and goto state 36
+   void : shift and goto state 35
+   int : shift and goto state 34
+
+state 45
+
+   event-list --> event-list event .    (rule 14)
+
+   *default* : reduce using rule 14
 
 state 46
-
-   enum-spec --> enum enum-identifier lbrace . enum-value-list rbrace semicolon    (rule 31)
-
-   *default* : Error
-   Identifier : shift and goto state 52
-
-state 47
-
-   interface-spec --> interface Identifier lbrace type-list event-list optional-behaviour rbrace .    (rule 10)
-
-   *default* : reduce using rule 10
-
-state 48
-
-   event --> event-direction type . Identifier semicolon    (rule 15)
-
-   *default* : Error
-   Identifier : shift and goto state 55
-
-state 49
-
-   type-list --> type-list . type-spec    (rule 24)
-   optional-behaviour --> behaviour lbrace type-list . variable-list behaviour-statement-list rbrace    (rule 44)
-
-   *default* : reduce using rule 70
-   enum : shift and goto state 21
-
-state 50
 
    optional-behaviour --> behaviour Identifier lbrace . type-list variable-list behaviour-statement-list rbrace    (rule 45)
 
    *default* : reduce using rule 23
 
-state 51
+state 47
+
+   type-list --> type-list . type-spec    (rule 24)
+   optional-behaviour --> behaviour lbrace type-list . variable-list behaviour-statement-list rbrace    (rule 44)
+
+   *default* : reduce using rule 70
+   enum : shift and goto state 27
+
+state 48
 
    port --> port-direction type Identifier . semicolon    (rule 20)
 
    *default* : Error
-   semicolon : shift and goto state 58
+   semicolon : shift and goto state 54
+
+state 49
+
+   enum-spec --> enum enum-identifier lbrace . enum-value-list rbrace semicolon    (rule 31)
+
+   *default* : Error
+   Identifier : shift and goto state 55
+
+state 50
+
+   interface-spec --> interface Identifier lbrace type-list event-list optional-behaviour rbrace .    (rule 10)
+
+   *default* : reduce using rule 10
+
+state 51
+
+   event --> event-direction type . Identifier semicolon    (rule 15)
+
+   *default* : Error
+   Identifier : shift and goto state 58
 
 state 52
-
-   enum-value --> Identifier .    (rule 34)
-
-   *default* : reduce using rule 34
-
-state 53
-
-   enum-value-list --> enum-value .    (rule 32)
-
-   *default* : reduce using rule 32
-
-state 54
-
-   enum-spec --> enum enum-identifier lbrace enum-value-list . rbrace semicolon    (rule 31)
-   enum-value-list --> enum-value-list . comma enum-value    (rule 33)
-
-   *default* : Error
-   comma : shift and goto state 60
-   rbrace : shift and goto state 59
-
-state 55
-
-   event --> event-direction type Identifier . semicolon    (rule 15)
-
-   *default* : Error
-   semicolon : shift and goto state 61
-
-state 56
-
-   optional-behaviour --> behaviour lbrace type-list variable-list . behaviour-statement-list rbrace    (rule 44)
-   variable-list --> variable-list . variable    (rule 71)
-
-   *default* : reduce using rule 46
-   void : shift and goto state 41
-   int : shift and goto state 42
-   bool : shift and goto state 43
-   Identifier : shift and goto state 31
-
-state 57
 
    type-list --> type-list . type-spec    (rule 24)
    optional-behaviour --> behaviour Identifier lbrace type-list . variable-list behaviour-statement-list rbrace    (rule 45)
 
    *default* : reduce using rule 70
-   enum : shift and goto state 21
+   enum : shift and goto state 27
 
-state 58
+state 53
+
+   optional-behaviour --> behaviour lbrace type-list variable-list . behaviour-statement-list rbrace    (rule 44)
+   variable-list --> variable-list . variable    (rule 71)
+
+   *default* : reduce using rule 46
+   int : shift and goto state 34
+   void : shift and goto state 35
+   bool : shift and goto state 36
+   Identifier : shift and goto state 37
+
+state 54
 
    port --> port-direction type Identifier semicolon .    (rule 20)
 
    *default* : reduce using rule 20
 
+state 55
+
+   enum-value --> Identifier .    (rule 34)
+
+   *default* : reduce using rule 34
+
+state 56
+
+   enum-value-list --> enum-value .    (rule 32)
+
+   *default* : reduce using rule 32
+
+state 57
+
+   enum-spec --> enum enum-identifier lbrace enum-value-list . rbrace semicolon    (rule 31)
+   enum-value-list --> enum-value-list . comma enum-value    (rule 33)
+
+   *default* : Error
+   rbrace : shift and goto state 64
+   comma : shift and goto state 63
+
+state 58
+
+   event --> event-direction type Identifier . semicolon    (rule 15)
+
+   *default* : Error
+   semicolon : shift and goto state 65
+
 state 59
-
-   enum-spec --> enum enum-identifier lbrace enum-value-list rbrace . semicolon    (rule 31)
-
-   *default* : Error
-   semicolon : shift and goto state 66
-
-state 60
-
-   enum-value-list --> enum-value-list comma . enum-value    (rule 33)
-
-   *default* : Error
-   Identifier : shift and goto state 52
-
-state 61
-
-   event --> event-direction type Identifier semicolon .    (rule 15)
-
-   *default* : reduce using rule 15
-
-state 62
-
-   variable-list --> variable-list variable .    (rule 71)
-
-   *default* : reduce using rule 71
-
-state 63
-
-   optional-behaviour --> behaviour lbrace type-list variable-list behaviour-statement-list . rbrace    (rule 44)
-   behaviour-statement-list --> behaviour-statement-list . behaviour-statement    (rule 47)
-
-   *default* : Error
-   Identifier : shift and goto state 73
-   illegal : shift and goto state 72
-   lbrace : shift and goto state 71
-   lbracket : shift and goto state 70
-   on : shift and goto state 69
-   rbrace : shift and goto state 68
-
-state 64
-
-   variable --> type . Identifier = expression semicolon    (rule 72)
-
-   *default* : Error
-   Identifier : shift and goto state 83
-
-state 65
 
    optional-behaviour --> behaviour Identifier lbrace type-list variable-list . behaviour-statement-list rbrace    (rule 45)
    variable-list --> variable-list . variable    (rule 71)
 
    *default* : reduce using rule 46
-   void : shift and goto state 41
-   int : shift and goto state 42
-   bool : shift and goto state 43
-   Identifier : shift and goto state 31
+   int : shift and goto state 34
+   void : shift and goto state 35
+   bool : shift and goto state 36
+   Identifier : shift and goto state 37
+
+state 60
+
+   variable-list --> variable-list variable .    (rule 71)
+
+   *default* : reduce using rule 71
+
+state 61
+
+   optional-behaviour --> behaviour lbrace type-list variable-list behaviour-statement-list . rbrace    (rule 44)
+   behaviour-statement-list --> behaviour-statement-list . behaviour-statement    (rule 47)
+
+   *default* : Error
+   lbrace : shift and goto state 72
+   rbrace : shift and goto state 71
+   lbracket : shift and goto state 70
+   Identifier : shift and goto state 69
+   on : shift and goto state 68
+   illegal : shift and goto state 67
+
+state 62
+
+   variable --> type . Identifier = expression semicolon    (rule 72)
+
+   *default* : Error
+   Identifier : shift and goto state 82
+
+state 63
+
+   enum-value-list --> enum-value-list comma . enum-value    (rule 33)
+
+   *default* : Error
+   Identifier : shift and goto state 55
+
+state 64
+
+   enum-spec --> enum enum-identifier lbrace enum-value-list rbrace . semicolon    (rule 31)
+
+   *default* : Error
+   semicolon : shift and goto state 84
+
+state 65
+
+   event --> event-direction type Identifier semicolon .    (rule 15)
+
+   *default* : reduce using rule 15
 
 state 66
 
-   enum-spec --> enum enum-identifier lbrace enum-value-list rbrace semicolon .    (rule 31)
+   optional-behaviour --> behaviour Identifier lbrace type-list variable-list behaviour-statement-list . rbrace    (rule 45)
+   behaviour-statement-list --> behaviour-statement-list . behaviour-statement    (rule 47)
 
-   *default* : reduce using rule 31
+   *default* : Error
+   lbrace : shift and goto state 72
+   rbrace : shift and goto state 85
+   lbracket : shift and goto state 70
+   Identifier : shift and goto state 69
+   on : shift and goto state 68
+   illegal : shift and goto state 67
 
 state 67
-
-   enum-value-list --> enum-value-list comma enum-value .    (rule 33)
-
-   *default* : reduce using rule 33
-
-state 68
-
-   optional-behaviour --> behaviour lbrace type-list variable-list behaviour-statement-list rbrace .    (rule 44)
-
-   *default* : reduce using rule 44
-
-state 69
-
-   on-event-statement --> on . trigger-spec colon behaviour-statement    (rule 60)
-
-   *default* : Error
-   Identifier : shift and goto state 87
-   inevitable : shift and goto state 86
-   optional : shift and goto state 85
-
-state 70
-
-   guarded-statement --> lbracket . guard rbracket behaviour-statement    (rule 54)
-
-   *default* : Error
-   ! : shift and goto state 93
-   Identifier : shift and goto state 87
-   lparen : shift and goto state 92
-   otherwise : shift and goto state 91
-
-state 71
-
-   compound-behaviour-statement --> lbrace . behaviour-statement-list rbrace    (rule 57)
-
-   *default* : reduce using rule 46
-
-state 72
 
    illegal-statement --> illegal . semicolon    (rule 67)
 
    *default* : Error
-   semicolon : shift and goto state 98
+   semicolon : shift and goto state 86
 
-state 73
+state 68
+
+   on-event-statement --> on . trigger-spec colon behaviour-statement    (rule 60)
+
+   *default* : Error
+   Identifier : shift and goto state 89
+   inevitable : shift and goto state 88
+   optional : shift and goto state 87
+
+state 69
 
    compound-identifier --> Identifier .    (rule 58)
    compound-identifier --> Identifier . dot Identifier    (rule 59)
    assignment-behaviour-statement --> Identifier . = expression semicolon    (rule 68)
 
    *default* : reduce using rule 58
-   = : shift and goto state 100
-   dot : shift and goto state 99
+   dot : shift and goto state 94
+   = : shift and goto state 93
 
-state 74
+state 70
+
+   guarded-statement --> lbracket . guard rbracket behaviour-statement    (rule 54)
+
+   *default* : Error
+   lparen : shift and goto state 97
+   Identifier : shift and goto state 89
+   otherwise : shift and goto state 96
+   ! : shift and goto state 95
+
+state 71
+
+   optional-behaviour --> behaviour lbrace type-list variable-list behaviour-statement-list rbrace .    (rule 44)
+
+   *default* : reduce using rule 44
+
+state 72
+
+   compound-behaviour-statement --> lbrace . behaviour-statement-list rbrace    (rule 57)
+
+   *default* : reduce using rule 46
+
+state 73
 
    behaviour-statement --> action-statement .    (rule 53)
 
    *default* : reduce using rule 53
 
-state 75
+state 74
 
    behaviour-statement --> assignment-behaviour-statement .    (rule 52)
 
    *default* : reduce using rule 52
 
-state 76
+state 75
 
    behaviour-statement --> illegal-statement .    (rule 51)
 
    *default* : reduce using rule 51
 
-state 77
+state 76
 
    action-statement --> trigger . semicolon    (rule 69)
 
    *default* : Error
-   semicolon : shift and goto state 101
+   semicolon : shift and goto state 102
 
-state 78
+state 77
 
    behaviour-statement --> on-event-statement .    (rule 50)
 
    *default* : reduce using rule 50
 
-state 79
+state 78
 
    trigger --> compound-identifier .    (rule 66)
 
    *default* : reduce using rule 66
 
-state 80
+state 79
 
    behaviour-statement --> compound-behaviour-statement .    (rule 49)
 
    *default* : reduce using rule 49
 
-state 81
+state 80
 
    behaviour-statement --> guarded-statement .    (rule 48)
 
    *default* : reduce using rule 48
 
-state 82
+state 81
 
    behaviour-statement-list --> behaviour-statement-list behaviour-statement .    (rule 47)
 
    *default* : reduce using rule 47
 
-state 83
+state 82
 
    variable --> type Identifier . = expression semicolon    (rule 72)
 
    *default* : Error
-   = : shift and goto state 102
+   = : shift and goto state 103
+
+state 83
+
+   enum-value-list --> enum-value-list comma enum-value .    (rule 33)
+
+   *default* : reduce using rule 33
 
 state 84
 
-   optional-behaviour --> behaviour Identifier lbrace type-list variable-list behaviour-statement-list . rbrace    (rule 45)
-   behaviour-statement-list --> behaviour-statement-list . behaviour-statement    (rule 47)
+   enum-spec --> enum enum-identifier lbrace enum-value-list rbrace semicolon .    (rule 31)
 
-   *default* : Error
-   Identifier : shift and goto state 73
-   illegal : shift and goto state 72
-   lbrace : shift and goto state 71
-   lbracket : shift and goto state 70
-   on : shift and goto state 69
-   rbrace : shift and goto state 103
+   *default* : reduce using rule 31
 
 state 85
+
+   optional-behaviour --> behaviour Identifier lbrace type-list variable-list behaviour-statement-list rbrace .    (rule 45)
+
+   *default* : reduce using rule 45
+
+state 86
+
+   illegal-statement --> illegal semicolon .    (rule 67)
+
+   *default* : reduce using rule 67
+
+state 87
 
    trigger-spec --> optional .    (rule 62)
 
    *default* : reduce using rule 62
 
-state 86
+state 88
 
    trigger-spec --> inevitable .    (rule 63)
 
    *default* : reduce using rule 63
 
-state 87
+state 89
 
    compound-identifier --> Identifier .    (rule 58)
    compound-identifier --> Identifier . dot Identifier    (rule 59)
 
    *default* : reduce using rule 58
-   dot : shift and goto state 99
+   dot : shift and goto state 94
 
-state 88
+state 90
 
    trigger-list --> trigger .    (rule 64)
 
    *default* : reduce using rule 64
 
-state 89
+state 91
 
    trigger-spec --> trigger-list .    (rule 61)
    trigger-list --> trigger-list . comma trigger    (rule 65)
@@ -638,51 +650,67 @@ state 89
    *default* : reduce using rule 61
    comma : shift and goto state 104
 
-state 90
+state 92
 
    on-event-statement --> on trigger-spec . colon behaviour-statement    (rule 60)
 
    *default* : Error
    colon : shift and goto state 105
 
-state 91
+state 93
+
+   assignment-behaviour-statement --> Identifier = . expression semicolon    (rule 68)
+
+   *default* : Error
+   lparen : shift and goto state 97
+   Identifier : shift and goto state 89
+   ! : shift and goto state 95
+
+state 94
+
+   compound-identifier --> Identifier dot . Identifier    (rule 59)
+
+   *default* : Error
+   Identifier : shift and goto state 107
+
+state 95
+
+   expression --> ! . expression    (rule 36)
+
+   *default* : Error
+   lparen : shift and goto state 97
+   Identifier : shift and goto state 89
+   ! : shift and goto state 95
+
+state 96
 
    guard --> otherwise .    (rule 56)
 
    *default* : reduce using rule 56
 
-state 92
+state 97
 
    expression --> lparen . expression rparen    (rule 35)
 
    *default* : Error
-   ! : shift and goto state 93
-   Identifier : shift and goto state 87
-   lparen : shift and goto state 92
+   lparen : shift and goto state 97
+   Identifier : shift and goto state 89
+   ! : shift and goto state 95
 
-state 93
-
-   expression --> ! . expression    (rule 36)
-
-   *default* : Error
-   ! : shift and goto state 93
-   Identifier : shift and goto state 87
-   lparen : shift and goto state 92
-
-state 94
+state 98
 
    expression --> compound-identifier .    (rule 41)
 
    *default* : reduce using rule 41
 
-state 95
+state 99
 
    guarded-statement --> lbracket guard . rbracket behaviour-statement    (rule 54)
 
    *default* : Error
-   rbracket : shift and goto state 108
+   rbracket : shift and goto state 110
 
-state 96
+state 100
 
    expression --> expression . && expression    (rule 37)
    expression --> expression . or expression    (rule 38)
@@ -691,101 +719,79 @@ state 96
    guard --> expression .    (rule 55)
 
    *default* : reduce using rule 55
-   != : shift and goto state 112
-   && : shift and goto state 111
-   == : shift and goto state 110
-   or : shift and goto state 109
+   or : shift and goto state 114
+   && : shift and goto state 113
+   == : shift and goto state 112
+   != : shift and goto state 111
 
-state 97
+state 101
 
    behaviour-statement-list --> behaviour-statement-list . behaviour-statement    (rule 47)
    compound-behaviour-statement --> lbrace behaviour-statement-list . rbrace    (rule 57)
 
    *default* : Error
-   Identifier : shift and goto state 73
-   illegal : shift and goto state 72
-   lbrace : shift and goto state 71
+   lbrace : shift and goto state 72
+   rbrace : shift and goto state 115
    lbracket : shift and goto state 70
-   on : shift and goto state 69
-   rbrace : shift and goto state 113
+   Identifier : shift and goto state 69
+   on : shift and goto state 68
+   illegal : shift and goto state 67
 
-state 98
-
-   illegal-statement --> illegal semicolon .    (rule 67)
-
-   *default* : reduce using rule 67
-
-state 99
-
-   compound-identifier --> Identifier dot . Identifier    (rule 59)
-
-   *default* : Error
-   Identifier : shift and goto state 114
-
-state 100
-
-   assignment-behaviour-statement --> Identifier = . expression semicolon    (rule 68)
-
-   *default* : Error
-   ! : shift and goto state 93
-   Identifier : shift and goto state 87
-   lparen : shift and goto state 92
-
-state 101
+state 102
 
    action-statement --> trigger semicolon .    (rule 69)
 
    *default* : reduce using rule 69
 
-state 102
+state 103
 
    variable --> type Identifier = . expression semicolon    (rule 72)
 
    *default* : Error
-   ! : shift and goto state 93
-   Identifier : shift and goto state 87
-   lparen : shift and goto state 92
-
-state 103
-
-   optional-behaviour --> behaviour Identifier lbrace type-list variable-list behaviour-statement-list rbrace .    (rule 45)
-
-   *default* : reduce using rule 45
+   lparen : shift and goto state 97
+   Identifier : shift and goto state 89
+   ! : shift and goto state 95
 
 state 104
 
    trigger-list --> trigger-list comma . trigger    (rule 65)
 
    *default* : Error
-   Identifier : shift and goto state 87
+   Identifier : shift and goto state 89
 
 state 105
 
    on-event-statement --> on trigger-spec colon . behaviour-statement    (rule 60)
 
    *default* : Error
-   Identifier : shift and goto state 73
-   illegal : shift and goto state 72
-   lbrace : shift and goto state 71
+   lbrace : shift and goto state 72
    lbracket : shift and goto state 70
-   on : shift and goto state 69
+   Identifier : shift and goto state 69
+   on : shift and goto state 68
+   illegal : shift and goto state 67
 
 state 106
 
-   expression --> lparen expression . rparen    (rule 35)
    expression --> expression . && expression    (rule 37)
    expression --> expression . or expression    (rule 38)
    expression --> expression . == expression    (rule 39)
    expression --> expression . != expression    (rule 40)
+   assignment-behaviour-statement --> Identifier = expression . semicolon    (rule 68)
 
    *default* : Error
-   != : shift and goto state 112
-   && : shift and goto state 111
-   == : shift and goto state 110
-   or : shift and goto state 109
-   rparen : shift and goto state 119
+   semicolon : shift and goto state 119
+   or : shift and goto state 114
+   && : shift and goto state 113
+   == : shift and goto state 112
+   != : shift and goto state 111
 
 state 107
+
+   compound-identifier --> Identifier dot Identifier .    (rule 59)
+
+   *default* : reduce using rule 59
+
+state 108
 
    expression --> ! expression .    (rule 36)
    expression --> expression . && expression    (rule 37)
@@ -795,79 +801,73 @@ state 107
 
    *default* : reduce using rule 36
 
-state 108
-
-   guarded-statement --> lbracket guard rbracket . behaviour-statement    (rule 54)
-
-   *default* : Error
-   Identifier : shift and goto state 73
-   illegal : shift and goto state 72
-   lbrace : shift and goto state 71
-   lbracket : shift and goto state 70
-   on : shift and goto state 69
-
 state 109
 
-   expression --> expression or . expression    (rule 38)
-
-   *default* : Error
-   ! : shift and goto state 93
-   Identifier : shift and goto state 87
-   lparen : shift and goto state 92
-
-state 110
-
-   expression --> expression == . expression    (rule 39)
-
-   *default* : Error
-   ! : shift and goto state 93
-   Identifier : shift and goto state 87
-   lparen : shift and goto state 92
-
-state 111
-
-   expression --> expression && . expression    (rule 37)
-
-   *default* : Error
-   ! : shift and goto state 93
-   Identifier : shift and goto state 87
-   lparen : shift and goto state 92
-
-state 112
-
-   expression --> expression != . expression    (rule 40)
-
-   *default* : Error
-   ! : shift and goto state 93
-   Identifier : shift and goto state 87
-   lparen : shift and goto state 92
-
-state 113
-
-   compound-behaviour-statement --> lbrace behaviour-statement-list rbrace .    (rule 57)
-
-   *default* : reduce using rule 57
-
-state 114
-
-   compound-identifier --> Identifier dot Identifier .    (rule 59)
-
-   *default* : reduce using rule 59
-
-state 115
-
+   expression --> lparen expression . rparen    (rule 35)
    expression --> expression . && expression    (rule 37)
    expression --> expression . or expression    (rule 38)
    expression --> expression . == expression    (rule 39)
    expression --> expression . != expression    (rule 40)
-   assignment-behaviour-statement --> Identifier = expression . semicolon    (rule 68)
 
    *default* : Error
-   != : shift and goto state 112
-   && : shift and goto state 111
-   == : shift and goto state 110
-   or : shift and goto state 109
-   semicolon : shift and goto state 125
+   rparen : shift and goto state 120
+   or : shift and goto state 114
+   && : shift and goto state 113
+   == : shift and goto state 112
+   != : shift and goto state 111
+
+state 110
+
+   guarded-statement --> lbracket guard rbracket . behaviour-statement    (rule 54)
+
+   *default* : Error
+   lbrace : shift and goto state 72
+   lbracket : shift and goto state 70
+   Identifier : shift and goto state 69
+   on : shift and goto state 68
+   illegal : shift and goto state 67
+
+state 111
+
+   expression --> expression != . expression    (rule 40)
+
+   *default* : Error
+   lparen : shift and goto state 97
+   Identifier : shift and goto state 89
+   ! : shift and goto state 95
+
+state 112
+
+   expression --> expression == . expression    (rule 39)
+
+   *default* : Error
+   lparen : shift and goto state 97
+   Identifier : shift and goto state 89
+   ! : shift and goto state 95
+
+state 113
+
+   expression --> expression && . expression    (rule 37)
+
+   *default* : Error
+   lparen : shift and goto state 97
+   Identifier : shift and goto state 89
+   ! : shift and goto state 95
+
+state 114
+
+   expression --> expression or . expression    (rule 38)
+
+   *default* : Error
+   lparen : shift and goto state 97
+   Identifier : shift and goto state 89
+   ! : shift and goto state 95
+
+state 115
+
+   compound-behaviour-statement --> lbrace behaviour-statement-list rbrace .    (rule 57)
+
+   *default* : reduce using rule 57
 
 state 116
 
@@ -878,11 +878,11 @@ state 116
    variable --> type Identifier = expression . semicolon    (rule 72)
 
    *default* : Error
-   != : shift and goto state 112
-   && : shift and goto state 111
-   == : shift and goto state 110
-   or : shift and goto state 109
    semicolon : shift and goto state 126
+   or : shift and goto state 114
+   && : shift and goto state 113
+   == : shift and goto state 112
+   != : shift and goto state 111
 
 state 117
 
@@ -898,59 +898,23 @@ state 118
 
 state 119
 
+   assignment-behaviour-statement --> Identifier = expression semicolon .    (rule 68)
+
+   *default* : reduce using rule 68
+
+state 120
+
    expression --> lparen expression rparen .    (rule 35)
 
    *default* : reduce using rule 35
 
-state 120
+state 121
 
    guarded-statement --> lbracket guard rbracket behaviour-statement .    (rule 54)
 
    *default* : reduce using rule 54
 
-state 121
-
-   expression --> expression . && expression    (rule 37)
-   expression --> expression . or expression    (rule 38)
-   expression --> expression or expression .    (rule 38)
-   expression --> expression . == expression    (rule 39)
-   expression --> expression . != expression    (rule 40)
-
-   *default* : reduce using rule 38
-   or : shift and goto state 109
-   == : shift and goto state 110
-   && : shift and goto state 111
-   != : shift and goto state 112
-
 state 122
-
-   expression --> expression . && expression    (rule 37)
-   expression --> expression . or expression    (rule 38)
-   expression --> expression . == expression    (rule 39)
-   expression --> expression == expression .    (rule 39)
-   expression --> expression . != expression    (rule 40)
-
-   *default* : reduce using rule 39
-   or : shift and goto state 109
-   == : shift and goto state 110
-   && : shift and goto state 111
-   != : shift and goto state 112
-
-state 123
-
-   expression --> expression . && expression    (rule 37)
-   expression --> expression && expression .    (rule 37)
-   expression --> expression . or expression    (rule 38)
-   expression --> expression . == expression    (rule 39)
-   expression --> expression . != expression    (rule 40)
-
-   *default* : reduce using rule 37
-   or : shift and goto state 109
-   == : shift and goto state 110
-   && : shift and goto state 111
-   != : shift and goto state 112
-
-state 124
 
    expression --> expression . && expression    (rule 37)
    expression --> expression . or expression    (rule 38)
@@ -959,16 +923,44 @@ state 124
    expression --> expression != expression .    (rule 40)
 
    *default* : reduce using rule 40
-   or : shift and goto state 109
-   == : shift and goto state 110
-   && : shift and goto state 111
-   != : shift and goto state 112
+   != : shift and goto state 111
+   == : shift and goto state 112
+   && : shift and goto state 113
+   or : shift and goto state 114
+
+state 123
+
+   expression --> expression . && expression    (rule 37)
+   expression --> expression . or expression    (rule 38)
+   expression --> expression . == expression    (rule 39)
+   expression --> expression == expression .    (rule 39)
+   expression --> expression . != expression    (rule 40)
+
+   *default* : reduce using rule 39
+   != : shift and goto state 111
+   == : shift and goto state 112
+   && : shift and goto state 113
+   or : shift and goto state 114
+
+state 124
+
+   expression --> expression . && expression    (rule 37)
+   expression --> expression && expression .    (rule 37)
+   expression --> expression . or expression    (rule 38)
+   expression --> expression . == expression    (rule 39)
+   expression --> expression . != expression    (rule 40)
+
+   *default* : reduce using rule 37
 
 state 125
 
-   assignment-behaviour-statement --> Identifier = expression semicolon .    (rule 68)
+   expression --> expression . && expression    (rule 37)
+   expression --> expression . or expression    (rule 38)
+   expression --> expression or expression .    (rule 38)
+   expression --> expression . == expression    (rule 39)
+   expression --> expression . != expression    (rule 40)
 
-   *default* : reduce using rule 68
+   *default* : reduce using rule 38
 
 state 126
 

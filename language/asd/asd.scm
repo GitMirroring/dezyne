@@ -28,46 +28,22 @@
 
 (define (make-parser)
   (lalr-parser
+   (driver: lr)
    (out-table: "asd.out")
    (
-    != 
-    && 
-    (left: ! * /)
-    (left: + -) 
+    lbrace rbrace lparen rparen lbracket rbracket semicolon colon dot comma
     =
-    ==
     Identifier 
-    NumericLiteral
-    behaviour
-    bool
-    colon
-    comma
-    component
-    dot
-    enum
-    illegal
-    import
-    in
-    inevitable
-    int
-    interface 
-    lbrace
-    lbracket
-    lparen
-    on
-    optional
-    or
-    otherwise
-    out
-    provides
-    rbrace
-    rbracket
-    requires
-    rparen
-    semicolon
-    void
+    in out interface component system 
+    behaviour namespace on
+    illegal inevitable optional
+    provides requires otherwise import
+    if reply
+    (left: or && ! * / + -)
+    (left: bool enum void int)
+    (nonassoc: == !=)
     )
-
+   
    (program
     (model-list *eoi*) : $1)
 
