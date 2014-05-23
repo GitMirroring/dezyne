@@ -800,6 +800,8 @@ state 108
    expression --> expression . != expression    (rule 40)
 
    *default* : reduce using rule 36
+   != : shift and goto state 111
+   == : shift and goto state 112
 
 state 109
 
@@ -925,8 +927,6 @@ state 122
    *default* : reduce using rule 40
    != : shift and goto state 111
    == : shift and goto state 112
-   && : shift and goto state 113
-   or : shift and goto state 114
 
 state 123
 
@@ -939,8 +939,6 @@ state 123
    *default* : reduce using rule 39
    != : shift and goto state 111
    == : shift and goto state 112
-   && : shift and goto state 113
-   or : shift and goto state 114
 
 state 124
 
@@ -951,6 +949,8 @@ state 124
    expression --> expression . != expression    (rule 40)
 
    *default* : reduce using rule 37
+   != : shift and goto state 111
+   == : shift and goto state 112
 
 state 125
 
@@ -961,6 +961,8 @@ state 125
    expression --> expression . != expression    (rule 40)
 
    *default* : reduce using rule 38
+   != : shift and goto state 111
+   == : shift and goto state 112
 
 state 126
 
