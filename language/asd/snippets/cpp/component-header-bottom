@@ -1,0 +1,14 @@
+#ifndef __%{component}_COMPONENT_H__
+#define __%{component}_COMPONENT_H__
+
+%{includes}
+#include <boost/shared_ptr.hpp>
+
+class %{component}Component: public %{interface}Interface
+{
+public:
+  static boost::shared_ptr<%{interface}Interface> GetInstance();
+  static void ReleaseInstance();
+};
+
+#endif // __%{component}_COMPONENT_H__

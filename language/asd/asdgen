@@ -29,7 +29,10 @@ exec guile -L .. -e main -s $0 "$@"
   :use-module (system base language)
   :use-module (language asd asd)
   :use-module (language asd tokenize)
-  :use-module (language asd pretty))
+  :use-module (language asd misc)
+  :use-module (language asd pretty)
+  :use-module (language asd cpp)
+  :use-module (ice-9 getopt-long))
 
 (define (read-and-parse lang port cenv)
   (let ((exp ((language-reader lang) port cenv)))
@@ -44,8 +47,42 @@ exec guile -L .. -e main -s $0 "$@"
 (define (read-asd file-name)
   (asd-reader (open-file file-name "r") (current-module)))
 
+(define (parse-opts args)
+  (let* ((option-spec
+	  '((help (single-char #\h))
+            (language (single-char #\l) (value #t))
+	    (version (single-char #\v))))
+	 (options (getopt-long (command-line) option-spec
+		   :stop-at-first-non-option #t))
+	 (help? (option-ref options 'help #f))
+	 (files (option-ref options '() '()))
+	 (usage? (and (not help?) (null? files)))
+	 (version? (option-ref options 'version #f)))
+    (or
+     (and version?
+	  (stdout "0.1\n")
+	  (exit 0))
+      (and (or help? usage?)
+	   ((or (and usage? stderr) stdout) "\
+Usage: asdgen [OPTION]... FILE
+  -h, --help           display this help
+  -l, --language=LANG  generate output for language=LANG [asd]
+  -v, --version       display version
+")
+	   (exit (or (and usage? 2) 0)))
+     options)))
+
+(define (asd ast)
+  (format #t "~a\n" (asd->string ast)))
+
+(define pretty asd)
+
+(define (cpp ast)
+  (asd->cpp ast))
+
 (define (main args)
-  (let* ((file-name (cadr args))
-         (ast (read-asd file-name)))
-    ;;(format #t "~a\n" ast)
-    (format #t "~a\n" (asd->string ast))))
+  (let* ((options (parse-opts args))
+	 (file-name (car (option-ref options '() '())))
+         (ast (read-asd file-name))
+         (language (eval (string->symbol (option-ref options 'language "pretty")) (current-module))))
+    (language ast)))

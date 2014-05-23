@@ -18,21 +18,11 @@
 (read-set! keywords 'prefix)
 
 (define-module (language asd pretty)
-  :use-module (ice-9 rdelim)
   :use-module (ice-9 match)
   :use-module (srfi srfi-1)
-  :use-module (system base lalr)
-  :use-module (language tree-il)
-  :use-module (asd format-keys)
+  :use-module (language asd misc)
+  :use-module (language asd format-keys)
   :export (asd->string))
-
-(define *pretty* (current-module))
-
-(define (gulp-text-file name)
-  (let* ((file (open-file name "r"))
-	 (text (read-delimited "" file)))
-    (close file)
-    text))
 
 (define (gulp-snippet name)
   (gulp-text-file (string-join (map symbol->string `(snippets asd ,name)) "/")))

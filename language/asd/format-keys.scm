@@ -21,16 +21,17 @@ exec guile -e main -s $0 "$@"
 (read-set! keywords 'prefix)
 
 (define (main . args)
-  (eval '(main (command-line)) (resolve-module '(asd format-keys))))
+  (eval '(main (command-line)) (resolve-module '(language asd format-keys))))
 
-(define-module (asd format-keys)
+(define-module (language asd format-keys)
   :use-module (ice-9 regex)
-  :export (format-keys map-format-keys))
+  :use-module (language asd misc)
+  :export (format-keys map-format-keys string-map-format-keys))
 
 (define (format-keys string pairs)
   (if (null? pairs)
       string
-      (let ((key (format #f "%\\{~a\\}" (caar pairs)))
+      (let ((key (format #f "%\\{~a\\}"  (caar pairs)))
             (value (format #f "~a" (cdar pairs))))
         (format-keys (regexp-substitute/global #f key string 'pre value 'post) (cdr pairs)))))
 
@@ -38,11 +39,10 @@ exec guile -e main -s $0 "$@"
   (map (lambda (x)
          (format-keys string
                       (map (lambda (y) (cons (car y) ((cdr y) x))) pairs)))
-       '(a b c)))
+       variables))
 
-(define (stdout . rest)
-  (apply display rest)
-  (newline))
+(define (string-map-format-keys string pairs variables)
+  (string-join (map-format-keys string pairs variables) ""))
 
 (define (test)
   (define (get-bar x) (format #f "BAR~a" x))
