@@ -69,7 +69,7 @@
                   (statements . ,->string)))
     (enum . ((name . ,identity)
              (elements . ,(lambda (elements) 
-                            (string-join (map symbol->string elements) ",")))))
+                            (string-join (map symbol->string elements) ", ")))))
     (declare . ((type . ,identity)
                 (var . ,identity)
                 (value . ,->string)))
@@ -90,6 +90,6 @@
             (identifier . ,->string)))
     (import . ((file . ,->string)))))
 
-(define (join-all . rest) (string-join (map ->string rest)))
+(define (join-all . rest) (string-join (map ->string rest) ""))
 (define join '(events imports ports statements types variables))
 (define (join? x) (and (list? x) (member (car x) join)))

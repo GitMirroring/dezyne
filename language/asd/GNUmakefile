@@ -36,5 +36,5 @@ check:
 	./gaiag examples/interface-behaviour.asd
 	./gaiag examples/interface-imports.asd
 	./gaiag examples/alarm-component.asd
-	./gaiag -l asd examples/alarm-component-pretty.asd | indent | tee pretty.asd && diff -u examples/alarm-component-pretty.asd pretty.asd || :
+	./gaiag -l asd examples/alarm-component-pretty.asd | indent | tee pretty.asd && diff -uw -I '^ *$$' examples/alarm-component-pretty.asd pretty.asd
 	./gaiag -l c++ examples/alarm-component-pretty.asd

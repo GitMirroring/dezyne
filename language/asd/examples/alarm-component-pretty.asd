@@ -32,7 +32,6 @@ component Alarm_Impl
     { Disarmed, Armed, Triggered, Disarming };
     States state = States.Disarmed;
     bool sounding = false;
-
     on console.arm:
     {
       [state.Disarmed]
@@ -45,7 +44,6 @@ component Alarm_Impl
 	illegal;
       }
     }
-
     on console.disarm:
     {
       [state.Armed || state.Triggered]
@@ -53,13 +51,11 @@ component Alarm_Impl
 	sensor.disable;
 	state = States.Disarming;
       }
-
       [otherwise]
       {
 	illegal;
       }
     }
-
     on sensor.triggered:
     {
       [state.Armed]
@@ -69,13 +65,11 @@ component Alarm_Impl
 	siren.turnon;
 	state = States.Triggered;
       }
-
       [otherwise]
       {
 	illegal;
       }
     }
-
     on sensor.disabled:
     {
       [state.Disarming]
@@ -87,7 +81,6 @@ component Alarm_Impl
 	  console.deactivated;
 	  state = States.Disarmed;
 	}
-
 	[otherwise]
 	{
 	  console.deactivated;
