@@ -19,15 +19,25 @@
 
 (define-module (language asd ast)
   :export (interface
+           interface-name
            component
            component-name
            component-spec
            component-ports
-           component-interface))
+           component-interface
+           port-direction
+           port-name
+           port-interface))
 
 (define (interface ast) (assoc 'interface ast)) 
+(define (interface-name interface) (cadr interface))
+
 (define (component ast) (assoc 'component ast))
 (define (component-name component) (cadr component))
 (define (component-spec component) (cddr component)) 
 (define (component-ports component) (cdr (assoc 'ports (component-spec component)))) 
 (define (component-interface component) (car (assoc-ref (component-ports component) 'provides)))
+
+(define (port-direction port) (car port))
+(define (port-name port) (caddr port))
+(define (port-interface port) (cadr port))

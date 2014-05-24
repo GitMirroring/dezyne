@@ -35,4 +35,5 @@ check:
 	./asdgen examples/interface-behaviour.asd | indent
 	./asdgen examples/interface-imports.asd | indent
 	./asdgen examples/alarm-component.asd | indent
-	./asdgen examples/alarm-component-pretty.asd | indent | tee pretty.asd && diff -u examples/alarm-component-pretty.asd pretty.asd
+	./asdgen examples/alarm-component-pretty.asd | indent | tee pretty.asd && diff -u examples/alarm-component-pretty.asd pretty.asd || :
+	./asdgen -l cpp examples/alarm-component-pretty.asd
