@@ -23,6 +23,7 @@
   :use-module (language asd misc)
   :use-module (language asd ast)
   :use-module (language asd format-keys)
+  :use-module (language asd snippets)
   :export (asd->cpp))
 
 (define (gulp-snippet name)
@@ -74,14 +75,61 @@
      (port . ,(lambda (port) (port-name port))))
    (component-ports component)))
 
+(define (generate-enum component enum)
+  (format-keys (gulp-snippet 'component-context-class-enum)
+               `((state-type . ,(type-name-component enum component))
+                 (elements . ,(string-map-format-keys 
+                               (gulp-snippet 'enum-element)
+                               `((name . ,identity))
+                               (enum-elements enum))))))
+
+(define (expression->string e)
+  (match e
+    ((? cpp-snippet?) (apply cpp-snippet->string e))
+    ((? symbol?) (symbol->string e))
+    (_ (format #f "\nNO MATCH:~a\n" e))))
+
+(define (cpp-snippet? x)
+  (parameterize ((snippets cpp-snippets)) (snippet? x)))
+
+(define (cpp-snippet->string . x)
+  (parameterize ((snippet-dir cpp-snippet-dir) (snippets cpp-snippets))
+    (apply snippet->string x)))
+
+(define cpp-snippet-dir '(snippets cpp))
+(define cpp-snippets
+  `((dot . ((struct . ,identity)
+            (field . ,identity)))))
+
 (define (generate-context-class component)
-  (format-keys (gulp-snippet 'component-context-class)
-               `((behaviour . "/*behaviour*/")
-                 (component . ,(component-name component))
-                 (enums . "/*enums*/")
-                 (interface . "/*(getImplIntfNamecomp)*/")
-                 (no-dpc . ,(if (assoc 'required (component-ports component)) "" "NoDpc"))
-                 (ports . ,(format-ports component 'component-context-class-port)))))
+  (let* ((behaviour (component-behaviour component))
+         (enums (if behaviour
+                    (string-join (map (lambda (x) (generate-enum component x)) (behaviour-types behaviour)))
+                    ""))
+         (behaviour-format
+          (if behaviour
+              (let* ((predicates
+                      (string-map-format-keys (gulp-snippet 'predicate-element)
+                                              `((state-type . ,(lambda (x) (type-name-component x component)))
+                                                (name . ,variable-name))
+                                              (behaviour-variables behaviour)))
+                     (predicates-2
+                      (string-map-format-keys (gulp-snippet 'predicate-element-2)
+                                              `((name . ,variable-name)
+                                                (value . ,(lambda (x) (expression->string (variable-initial-value x)))))
+                                              (behaviour-variables behaviour))))
+                (format-keys (gulp-snippet 'component-context-class-behaviour)
+                             `((component . ,(component-name component))
+                               (predicates . ,predicates)
+                               (predicates-2 . ,predicates-2))))
+              "")))
+    (format-keys (gulp-snippet 'component-context-class)
+                 `((behaviour . ,behaviour-format)
+                   (component . ,(component-name component))
+                   (enums . ,enums)
+                   (interface . "/*(getImplIntfNamecomp)*/")
+                   (no-dpc . ,(if (assoc 'required (component-ports component)) "" "NoDpc"))
+                   (ports . ,(format-ports component 'component-context-class-port))))))
 
 (define (generate-component-implementation component)
   (dump-file 

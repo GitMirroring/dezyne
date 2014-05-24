@@ -18,16 +18,29 @@
 (read-set! keywords 'prefix)
 
 (define-module (language asd ast)
-  :export (interface
-           interface-name
+  :export (behaviour-types
+           behaviour-variables
+
            component
+           component-behaviour
            component-name
-           component-spec
            component-ports
            component-interface
+           type-name-component
+
+           enum-elements
+           
+           interface
+           interface-name
+           
            port-direction
            port-name
-           port-interface))
+           port-interface
+
+           type-name
+           variable-initial-value
+           variable-name
+           variable-type))
 
 (define (interface ast) (assoc 'interface ast)) 
 (define (interface-name interface) (cadr interface))
@@ -41,3 +54,20 @@
 (define (port-direction port) (car port))
 (define (port-name port) (caddr port))
 (define (port-interface port) (cadr port))
+
+(define (component-behaviour component) 
+  (assoc 'behaviour (component-spec component)))
+(define (behaviour-spec behaviour) (cddr behaviour))
+(define (behaviour-types behaviour) (assoc-ref (behaviour-spec behaviour) 'types))
+(define (behaviour-variables behaviour) (assoc-ref (behaviour-spec behaviour) 'variables))
+
+(define (variable-type variable) (cadr variable))
+(define (variable-name variable) (caddr variable))
+(define (variable-initial-value variable) (cadddr variable))
+
+(define (enum-elements enum) (caddr enum))
+
+(define (type-name type) (car type))
+
+(define (type-name-component type component)
+  (symbol-append (component-name component) (variable-type type)))
