@@ -160,7 +160,7 @@
 
    (compound-identifier
     (Identifier) : $1 
-    (Identifier dot Identifier) : `(dot ,$1 ,$3))
+    (Identifier dot Identifier) : `(field ,$1 ,$3))
    
    (on-event-statement
     (on trigger-spec colon behaviour-statement) : `(,$1 ,$2 ,$4))

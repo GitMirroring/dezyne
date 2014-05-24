@@ -88,7 +88,7 @@
 
 (define c++-snippet-dir '(snippets cpp))
 (define c++-snippets
-  `((dot . ((struct . ,identity)
+  `((field . ((struct . ,identity)
             (field . ,identity)))))
 
 (define (generate-context-class component)

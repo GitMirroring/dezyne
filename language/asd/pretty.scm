@@ -73,7 +73,7 @@
     (declare . ((type . ,identity)
                 (var . ,identity)
                 (value . ,->string)))
-    (dot . ((struct . ,identity)
+    (field . ((struct . ,identity)
             (field . ,identity)))
     (on . ((trigger . ,->string)
            (statement . ,->string)))
