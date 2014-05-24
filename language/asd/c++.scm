@@ -17,37 +17,27 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (language asd cpp)
+(define-module (language asd c++)
   :use-module (ice-9 match)
   :use-module (srfi srfi-1)
   :use-module (language asd misc)
   :use-module (language asd ast)
   :use-module (language asd format-keys)
   :use-module (language asd snippets)
-  :export (asd->cpp))
+  :export (asd-> asd->c++))
 
-(define (gulp-snippet name)
-  (gulp-text-file (string-join (map symbol->string `(snippets cpp ,name)) "/")))
+(define hh "h")
+(define cc "cpp")
 
 (define (format-snippet name pairs) 
   (format-keys (gulp-snippet name) pairs))
 
+(define (gulp-snippet name)
+  (gulp-text-file (string-join (map symbol->string `(snippets c++ ,name)) "/")))
+
 (define (generate-component-header component)
   (dump-file 
-   (format #f "~aComponent.h" (component-name component))
-   (format-keys (gulp-snippet 'component-header-bottom)
-                `((component . ,(component-name component))
-                  (includes . ,(string-map-format-keys
-                                (gulp-snippet 'component-header-include)
-                                `((interface . ,(lambda (port) (cadr port))))
-                                (component-ports component)))
-                  (interface . ,(component-interface component))
-                  (ports . "")))))
-
-
-(define (generate-component-implementation component)
-  (dump-file 
-   (format #f "~aComponent.cpp" (component-name component))
+   (format #f "~aComponent.~a" (component-name component) hh)
    (format-keys (gulp-snippet 'component-header-bottom)
                 `((component . ,(component-name component))
                   (includes . ,(string-map-format-keys
@@ -85,19 +75,19 @@
 
 (define (expression->string e)
   (match e
-    ((? cpp-snippet?) (apply cpp-snippet->string e))
+    ((? c++-snippet?) (apply c++-snippet->string e))
     ((? symbol?) (symbol->string e))
     (_ (format #f "\nNO MATCH:~a\n" e))))
 
-(define (cpp-snippet? x)
-  (parameterize ((snippets cpp-snippets)) (snippet? x)))
+(define (c++-snippet? x)
+  (parameterize ((snippets c++-snippets)) (snippet? x)))
 
-(define (cpp-snippet->string . x)
-  (parameterize ((snippet-dir cpp-snippet-dir) (snippets cpp-snippets))
+(define (c++-snippet->string . x)
+  (parameterize ((snippet-dir c++-snippet-dir) (snippets c++-snippets))
     (apply snippet->string x)))
 
-(define cpp-snippet-dir '(snippets cpp))
-(define cpp-snippets
+(define c++-snippet-dir '(snippets cpp))
+(define c++-snippets
   `((dot . ((struct . ,identity)
             (field . ,identity)))))
 
@@ -133,7 +123,7 @@
 
 (define (generate-component-implementation component)
   (dump-file 
-   (format #f "~aComponent.cpp" (component-name component))
+   (format #f "~aComponent.~a" (component-name component) cc)
    (format-keys (gulp-snippet 'component-implementation)
                 `((component . ,(component-name component))
                   (interface . ,(component-interface component))
@@ -151,8 +141,11 @@
     (generate-component-header component)
     (generate-component-implementation component))
 
-(define (asd->cpp ast)
+(define (asd->c++ ast)
   (let ((interface (interface ast))
         (component (component ast)))
     (if component 
-      (generate-component component))))
+      (generate-component component)))
+  "")
+
+(define asd-> asd->c++)

@@ -1,7 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
-;; Copyright © 2014  "Mu Lei" known as "NalaGinrut" <NalaGinrut@gmail.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -16,15 +15,11 @@
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
 
-(define-module (language asd spec)
-  #:use-module (system base language)
-  #:use-module (language asd asd)
-  #:use-module (language asd tokenize)
-  #:export (asd))
- 
-(define-language asd
-  #:title       "asd"
-  #:reader      (lambda (port env) 
-                  ((make-parser) (make-tokenizer/1 port) error))
-  #:compilers   `((tree-il . ,compile-tree-il))
-  #:printer     write)
+(read-set! keywords 'prefix)
+
+(define-module (language asd scheme)
+  :use-module (ice-9 pretty-print)
+  :export (asd-> asd->scheme))
+
+(define (asd->scheme tree) (pretty-print tree) "")
+(define asd-> asd->scheme)

@@ -25,15 +25,16 @@ default: all
 all: compile check
 
 compile:
-	guile -L .. spec.scm 
+	guile -L ../.. spec.scm 
 
 check:
-	guile -L .. --language=asd -s examples/interface-enums.asd | indent
-	./asdgen examples/interface-enums.asd | indent
-	./asdgen examples/interface-events.asd | indent
-	./asdgen examples/interface-reply-events.asd | indent
-	./asdgen examples/interface-behaviour.asd | indent
-	./asdgen examples/interface-imports.asd | indent
-	./asdgen examples/alarm-component.asd | indent
-	./asdgen examples/alarm-component-pretty.asd | indent | tee pretty.asd && diff -u examples/alarm-component-pretty.asd pretty.asd || :
-	./asdgen -l cpp examples/alarm-component-pretty.asd
+	guile -L ../.. --language=asd -s examples/interface-enums.asd | indent
+	./gaiag examples/interface-enums.asd
+	./gaiag -l asd examples/interface-enums.asd | indent
+	./gaiag examples/interface-events.asd
+	./gaiag examples/interface-reply-events.asd
+	./gaiag examples/interface-behaviour.asd
+	./gaiag examples/interface-imports.asd
+	./gaiag examples/alarm-component.asd
+	./gaiag -l asd examples/alarm-component-pretty.asd | indent | tee pretty.asd && diff -u examples/alarm-component-pretty.asd pretty.asd || :
+	./gaiag -l c++ examples/alarm-component-pretty.asd

@@ -16,12 +16,11 @@
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
 
-
 (define-module (language asd asd)
   #:use-module (system base lalr)
   #:use-module (language tree-il)
   #:use-module (ice-9 match)
-  #:export (make-asd-tokenizer make-parser compile-tree-il))
+  #:export (asd-> make-asd-tokenizer make-parser compile-tree-il))
 
 (define *eof-object*
   (call-with-input-string "" read-char))
@@ -202,7 +201,9 @@
   (values (parse-tree-il (comp exp '())) env env))
 
 (define (comp src e)
-  (format #t "MATCHING:~a\n" src)
+  ;;(format #t "MATCHING:~a\n" src)
   (match src
     (() (exit))
     (tree `(const ,tree))))
+
+(define asd-> (@ (language asd pretty) asd->))

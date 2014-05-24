@@ -23,11 +23,14 @@
   :use-module (language asd misc)
   :use-module (language asd format-keys)
   :use-module (language asd snippets)
-  :export (asd->string))
+  :export (asd-> asd->asd asd->pretty asd->string))
 
-(define (asd->string tree) 
-  ;;(format #t "tree:~a\n" tree)
-  (apply string-append (map ->string tree)))
+(define (asd->string ast) 
+  (apply string-append (map ->string ast)))
+
+(define asd-> asd->string)
+(define asd->asd asd->string)
+(define asd->pretty asd->string)
 
 (define (->string src) 
 ;;  (format #t "MATCHING:~a\n" src)
