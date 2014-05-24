@@ -120,7 +120,7 @@
     (lparen expression rparen) : $1
     (! expression) : `(! ,$2)
     (expression && expression) : `(&& ,$1 ,$3)
-    (expression or expression) : `(logic-or ,$1 ,$3)
+    (expression or expression) : `(or ,$1 ,$3)
     (expression == expression) : `(== ,$1 ,$3)
     (expression != expression) : `(!= ,$1 ,$3)
     (compound-identifier) : $1)
