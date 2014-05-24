@@ -22,13 +22,8 @@
   :use-module (srfi srfi-1)
   :use-module (language asd misc)
   :use-module (language asd format-keys)
+  :use-module (language asd snippets)
   :export (asd->string))
-
-(define (gulp-snippet name)
-  (gulp-text-file (string-join (map symbol->string `(snippets asd ,name)) "/")))
-
-(define (format-snippet name pairs) 
-  (format-keys (gulp-snippet name) pairs))
 
 (define (asd->string tree) 
   ;;(format #t "tree:~a\n" tree)
@@ -40,12 +35,20 @@
     (#f "false")
     (#t "true")
     (('behaviour) "")
-    ((? snippet?) (apply handle-snippet src))
+    ((? asd-snippet?) (apply asd-snippet->string src))
     ((? join?) (apply join-all (cdr src)))
     ((? symbol?) (symbol->string src))
     (_ (format #f "\nNO MATCH:~a\n" src))))
 
-(define snippets
+(define (asd-snippet? x)
+  (parameterize ((snippets asd-snippets)) (snippet? x)))
+
+(define (asd-snippet->string . x)
+  (parameterize ((snippet-dir asd-snippet-dir) (snippets asd-snippets))
+    (apply snippet->string x)))
+
+(define asd-snippet-dir '(snippets asd))
+(define asd-snippets
   `((component . ((name . ,identity)
                   (ports . ,->string)
                   (behaviour . ,->string)))
@@ -83,20 +86,6 @@
     (out . ((type . ,->string)
             (identifier . ,->string)))
     (import . ((file . ,->string)))))
-
-(define (snippet? x)
-  (and (list? x) (pair? (assoc (car x) snippets))))
-
-(define (handle-snippet name . rest)
-  (let ((snippet (assoc-ref snippets name)))
-    (format-snippet name (map (lambda (x)
-                                (let* ((pair (car x))
-                                       (key (car pair))
-                                       (func (cdr pair))
-                                       (data (cadr x))
-                                       (value (func data)))
-                                  (cons key value)))
-                              (zip snippet rest)))))
 
 (define (join-all . rest) (string-join (map ->string rest)))
 (define join '(events imports ports statements types variables))
