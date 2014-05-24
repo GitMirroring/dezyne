@@ -28,11 +28,11 @@ compile:
 	guile -L .. spec.scm 
 
 check:
-	guile -L .. --language=asd -s Enums.asd | indent
-	./asdgen Enums.asd | indent
-	./asdgen interface-events.asd | indent
-	./asdgen interface-reply-events.asd | indent
-	./asdgen interface-behaviour.asd | indent
-	./asdgen interface-imports.asd | indent
-	./asdgen alarm-component.asd | indent
-	./asdgen alarm-component-pretty.asd | indent | tee pretty.asd && diff -u alarm-component-pretty.asd pretty.asd
+	guile -L .. --language=asd -s examples/interface-enums.asd | indent
+	./asdgen examples/interface-enums.asd | indent
+	./asdgen examples/interface-events.asd | indent
+	./asdgen examples/interface-reply-events.asd | indent
+	./asdgen examples/interface-behaviour.asd | indent
+	./asdgen examples/interface-imports.asd | indent
+	./asdgen examples/alarm-component.asd | indent
+	./asdgen examples/alarm-component-pretty.asd | indent | tee pretty.asd && diff -u examples/alarm-component-pretty.asd pretty.asd
