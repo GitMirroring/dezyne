@@ -1,5 +1,0 @@
-  virtual void Get%{api}%{port}(boost::shared_ptr<%{interface}%{api}>* api) = 0;
-  virtual void Register%{callback}%{port}(boost::shared_ptr<%{interface}%{callback}> cb) = 0;
-#if 0
-  virtual void Get%{port}Interface(boost::shared_ptr<%{interface}Interface>* intf) = 0;
-#endif
