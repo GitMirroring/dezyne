@@ -70,7 +70,7 @@
    (component-ports component)))
 
 (define (generate-enum component enum)
-  (format-keys (gulp-snippet 'component-context-class-enum)
+  (format-keys (gulp-snippet 'component-enum)
                `((state-type . ,(type-name-component enum component))
                  (elements . ,(string-map-format-keys 
                                (gulp-snippet 'enum-element)
@@ -128,7 +128,7 @@
 (define (generate-component-implementation component)
   (dump-file 
    (format #f "~aComponent.~a" (component-name component) cc)
-   (format-keys (gulp-snippet 'component-implementation)
+   (format-keys (gulp-snippet 'component)
                 `((component . ,(component-name component))
                   (interface . ,(component-interface component))
                   (includes . "")

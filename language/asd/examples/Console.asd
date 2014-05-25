@@ -20,81 +20,70 @@
 //
 // Code:
 
-import Console;
-import Sensor;
-import Siren;
-
-component Alarm
+interface Console
 {
-  provides Console console;
-  requires Sensor sensor;
-  requires Siren siren;
+    in void arm;
+    in void disarm;
 
-  behaviour d
+    out void detected;
+    out void deactivated;
+
+  behaviour a
   {
-    enum States
-    { Disarmed, Armed, Triggered, Disarming };
+    enum States {
+        Disarmed,
+        Armed,
+        Triggered,
+        Disarming
+    };
+
     States state = States.Disarmed;
-    bool sounding = false;
-    on console.arm:
+
+    [state.Disarmed]
     {
-      [state.Disarmed]
+      on arm:
       {
-	sensor.enable;
-	state = States.Armed;
+        state = States.Armed;
       }
-      [otherwise]
-      {
-	illegal;
-      }
+      on disarm:
+        illegal;
     }
-    on console.disarm:
+
+    [state.Armed]
     {
-      [state.Armed || state.Triggered]
+      on disarm:
       {
-	sensor.disable;
-	state = States.Disarming;
+        state = States.Disarming;
       }
-      [otherwise]
+      on optional:
       {
-	illegal;
+        detected;
+        state = States.Triggered;
       }
+      on arm:
+        illegal;
     }
-    on sensor.triggered:
+
+    [state.Triggered]
     {
-      [state.Armed]
+      on disarm:
       {
-	console.detected;
-	sounding = true;
-	siren.turnon;
-	state = States.Triggered;
+        state = States.Disarming;
       }
-      [otherwise]
-      {
-	illegal;
-      }
+      on arm:
+        illegal;
     }
-    on sensor.disabled:
+
+    [state.Disarming]
     {
-      [state.Disarming]
+      on inevitable:
       {
-	[sounding]
-	{
-	  siren.turnoff;
-	  sounding = false;
-	  console.deactivated;
-	  state = States.Disarmed;
-	}
-	[otherwise]
-	{
-	  console.deactivated;
-	  state = States.Disarmed;
-	}
+        deactivated;
+        state = States.Disarmed;
       }
-      [otherwise]
-      {
-	illegal;
-      }
+      on arm, disarm:
+        illegal;
     }
   }
 }
+

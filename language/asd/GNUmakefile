@@ -21,7 +21,7 @@
 # Code:
 
 DEPTH = ../..
-diff = diff -uw -I '^ *$$'
+diff = diff -uw -I '^ *$$' -I '^ *//'
 BUILD = build-master
 asdgen = ASD_PREFIX=$(DEPTH) $(DEPTH)/$(BUILD)/asdgenerator
 
@@ -33,18 +33,33 @@ compile:
 	guile -L ../.. spec.scm 
 
 baseline:
-	$(asdgen) -l cpp examples/alarm-component-pretty.asd && mv Alarm_Impl* examples
+	$(asdgen) -l cpp examples/alarm-component-pretty.asd && mv Alarm* examples
+	$(asdgen) -l cpp examples/CommImpl.asd && mv CommImpl* examples
+	$(asdgen) -l cpp examples/Aap.asd && mv AapInt* NootComp* examples
 
-check:
-	guile -L ../.. --language=asd -s examples/interface-enums.asd | indent
+check: ast pretty c++
+
+ast:
 	./gaiag examples/interface-enums.asd
-	./gaiag -l asd examples/interface-enums.asd | indent
 	./gaiag examples/interface-events.asd
 	./gaiag examples/interface-reply-events.asd
 	./gaiag examples/interface-behaviour.asd
 	./gaiag examples/interface-imports.asd
 	./gaiag examples/alarm-component.asd
+
+pretty:
+	guile -L ../.. --language=asd -s examples/interface-enums.asd | indent
+	./gaiag -l asd examples/interface-enums.asd | indent
 	./gaiag -l asd examples/alarm-component-pretty.asd | indent | tee pretty.asd && $(diff) examples/alarm-component-pretty.asd pretty.asd
+
+c++: baseline
 	./gaiag -l c++ examples/alarm-component-pretty.asd
-	-$(diff) -uw -I '^ *$$' examples/Alarm_ImplComponent.h .
-	-$(diff) -uw -I '^ *$$' examples/Alarm_ImplComponent.cpp .
+	-$(diff) examples/AlarmComponent.h .
+	-$(diff) examples/AlarmComponent.cpp .
+	./gaiag examples/Aap.asd
+	./gaiag -l c++ examples/Aap.asd
+	[ -f examples/NootComponent.h ] && $(diff) examples/NootComponent.h .
+	-[ -f examples/NootComponent.cpp ] && $(diff) examples/NootComponent.cpp .
+	./gaiag -l c++ examples/CommImpl.asd
+	[ -f examples/CommImplComponent.h ] && $(diff) examples/CommImplComponent.h .
+	-[ -f examples/CommImplComponent.cpp ] && $(diff) examples/CommImplComponent.cpp .

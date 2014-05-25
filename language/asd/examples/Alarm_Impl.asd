@@ -1,0 +1,109 @@
+// Gaiag --- Guile in Asd In Asd in Guile.
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Gaiag.
+//
+// Gaiag is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Gaiag is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+import Console;
+import Sensor;
+import Siren;
+
+component Alarm_Impl
+{
+    provides Console console;
+    requires Sensor sensor;
+    requires Siren siren;
+
+  behaviour d
+  {
+    enum States { Disarmed, Armed, Triggered, Disarming };
+    States state = States.Disarmed;
+    bool sounding = false;
+
+    [state.Disarmed]
+    {
+      on console.arm:
+      {
+        sensor.enable;
+        state = States.Armed;
+      }
+      on console.disarm, sensor.triggered, sensor.disabled:
+        illegal;
+    }
+    [state.Armed]
+    {
+      on console.arm:
+        illegal;
+      on console.disarm:
+      {
+        sensor.disable;
+        state = States.Disarming;
+      }
+      on sensor.triggered:
+      {
+        console.detected;
+        siren.turnon;
+        sounding = true;
+        state = States.Triggered;
+      }
+      on sensor.disabled:
+        illegal;
+    }
+    [state.Disarming]
+    {
+      on console.arm, console.disarm:
+        illegal;
+      on sensor.triggered:
+      {
+        //illegal;
+      }
+      on sensor.disabled:
+      {
+        [sounding]
+        {
+          console.deactivated;
+          siren.turnoff;
+          state = States.Disarmed;
+          sounding = false;
+        }
+        [otherwise]
+        {
+          console.deactivated;
+          state = States.Disarmed;
+        }
+      }
+    }
+    [state.Triggered]
+    {
+      on console.arm:
+        illegal;
+
+      on console.disarm:
+      {
+        sensor.disable;
+        siren.turnoff;
+        sounding = false;
+        state = States.Disarming;
+      }
+      on sensor.triggered, sensor.disabled:
+        illegal;
+    }
+  }
+}
+
