@@ -19,7 +19,15 @@
 
 (define-module (language asd misc)
   :use-module (ice-9 rdelim)
-  :export (gulp-text-file dump-file stderr stdout))
+  :export (
+           =1
+           gulp-text-file
+           dump-file
+           stderr
+           stdout
+           ))
+
+(define (=1 x) (= x 1))
 
 (define (gulp-text-file name)
   (let* ((file (open-file name "r"))

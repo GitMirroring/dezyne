@@ -38,14 +38,18 @@
 (define (generate-component-header component)
   (dump-file 
    (format #f "~aComponent.~a" (component-name component) hh)
-   (format-keys (gulp-snippet 'component-header-bottom)
-                `((component . ,(component-name component))
-                  (includes . ,(string-map-format-keys
-                                (gulp-snippet 'component-header-include)
-                                `((interface . ,(lambda (port) (cadr port))))
-                                (component-ports component)))
-                  (interface . ,(component-interface component))
-                  (ports . "")))))
+   (let ((bottom? (component-bottom? component)))
+     (format-keys (gulp-snippet (if bottom? 
+                                    'component-header-bottom 'component-header))
+                  `((component . ,(component-name component))
+                    (includes . ,(string-map-format-keys
+                                  (gulp-snippet 'component-header-includes-port)
+                                  `((interface . ,(lambda (port) (cadr port))))
+                                  (component-ports component)))
+                    (interface . ,(component-interface component))
+                    (ports . ,(if bottom?
+                                  ""
+                                  (format-ports component 'component-header-port))))))))
 
 (define (API port)
     (if (eq? 'provides (port-direction port))
@@ -118,7 +122,7 @@
                    (component . ,(component-name component))
                    (enums . ,enums)
                    (interface . "/*(getImplIntfNamecomp)*/")
-                   (no-dpc . ,(if (assoc 'required (component-ports component)) "" "NoDpc"))
+                   (no-dpc . ,(if (member 'requires (map port-direction (component-ports component))) "" "NoDpc"))
                    (ports . ,(format-ports component 'component-context-class-port))))))
 
 (define (generate-component-implementation component)

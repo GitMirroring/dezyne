@@ -20,6 +20,10 @@
 //
 // Code:
 
+import Console;
+import Sensor;
+import Siren;
+
 component Alarm_Impl
 {
   provides Console console;

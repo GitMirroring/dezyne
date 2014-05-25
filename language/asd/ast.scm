@@ -18,11 +18,14 @@
 (read-set! keywords 'prefix)
 
 (define-module (language asd ast)
+  :use-module (ice-9 and-let-star)
+  :use-module (language asd misc)
   :export (behaviour-types
            behaviour-variables
 
            component
            component-behaviour
+           component-bottom?
            component-name
            component-ports
            component-interface
@@ -46,6 +49,11 @@
 (define (interface-name interface) (cadr interface))
 
 (define (component ast) (assoc 'component ast))
+(define (component-bottom? component)
+  (and-let* ((ports (component-ports component))
+             ((=1 (length ports))))
+            (eq? (port-direction (car ports)) 'provides)))
+
 (define (component-name component) (cadr component))
 (define (component-spec component) (cddr component)) 
 (define (component-ports component) (cdr (assoc 'ports (component-spec component)))) 

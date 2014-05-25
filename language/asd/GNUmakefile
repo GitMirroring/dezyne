@@ -20,12 +20,20 @@
 # 
 # Code:
 
+DEPTH = ../..
+diff = diff -uw -I '^ *$$'
+BUILD = build-master
+asdgen = ASD_PREFIX=$(DEPTH) $(DEPTH)/$(BUILD)/asdgenerator
+
 default: all
 
 all: compile check
 
 compile:
 	guile -L ../.. spec.scm 
+
+baseline:
+	$(asdgen) -l cpp examples/alarm-component-pretty.asd && mv Alarm_Impl* examples
 
 check:
 	guile -L ../.. --language=asd -s examples/interface-enums.asd | indent
@@ -36,5 +44,7 @@ check:
 	./gaiag examples/interface-behaviour.asd
 	./gaiag examples/interface-imports.asd
 	./gaiag examples/alarm-component.asd
-	./gaiag -l asd examples/alarm-component-pretty.asd | indent | tee pretty.asd && diff -uw -I '^ *$$' examples/alarm-component-pretty.asd pretty.asd
+	./gaiag -l asd examples/alarm-component-pretty.asd | indent | tee pretty.asd && $(diff) examples/alarm-component-pretty.asd pretty.asd
 	./gaiag -l c++ examples/alarm-component-pretty.asd
+	-$(diff) -uw -I '^ *$$' examples/Alarm_ImplComponent.h .
+	-$(diff) -uw -I '^ *$$' examples/Alarm_ImplComponent.cpp .
