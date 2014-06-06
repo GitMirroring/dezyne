@@ -23,10 +23,14 @@
            =1
            gulp-text-file
            dump-file
+           null-is-#f
+           one-is-#f
            stderr
            stdout
            ))
 
+(define (null-is-#f o) (if (null? o) #f o))
+(define (one-is-#f o) (if (or (null? o) (=1 (length o))) #f o))
 (define (=1 x) (= x 1))
 
 (define (gulp-text-file name)

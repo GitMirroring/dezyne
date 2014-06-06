@@ -63,3 +63,4 @@ c++: baseline
 	./gaiag -l c++ examples/CommImpl.asd
 	[ -f examples/CommImplComponent.h ] && $(diff) examples/CommImplComponent.h .
 	-[ -f examples/CommImplComponent.cpp ] && $(diff) examples/CommImplComponent.cpp .
+	./gaiag -l test examples/interface-enums.asd 

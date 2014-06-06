@@ -26,16 +26,19 @@ exec guile -L ../.. -e main -s $0 "$@"
   (eval '(main (command-line)) (resolve-module '(language asd gaiag))))
 
 (define-module (language asd gaiag)
+  :use-module (ice-9 getopt-long)
+
   :use-module (system base language)
+
   :use-module (language asd asd)
   :use-module (language asd tokenize)
   :use-module (language asd misc)
 
   :use-module (language asd c++)
-  :use-module (language asd scheme)
   :use-module (language asd pretty)
-
-  :use-module (ice-9 getopt-long))
+  :use-module (language asd scheme)
+  :use-module (language asd test)
+  )
 
 (define (read-and-parse lang port cenv)
   (let ((exp ((language-reader lang) port cenv)))
