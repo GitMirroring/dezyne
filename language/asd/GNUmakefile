@@ -36,6 +36,10 @@ baseline:
 	$(asdgen) -l cpp examples/alarm-component-pretty.asd && mv Alarm* examples
 	$(asdgen) -l cpp examples/CommImpl.asd && mv CommImpl* examples
 	$(asdgen) -l cpp examples/Aap.asd && mv AapInt* NootComp* examples
+	$(asdgen) -l cpp examples/Alarm.asd && mv Alarm* examples
+	$(asdgen) -l cpp examples/Console.asd && mv Console* examples
+	$(asdgen) -l cpp examples/Sensor.asd && mv Sensor* examples
+	$(asdgen) -l cpp examples/Siren.asd && mv Siren* examples
 
 check: ast pretty c++
 
@@ -63,4 +67,9 @@ c++: baseline
 	./gaiag -l c++ examples/CommImpl.asd
 	[ -f examples/CommImplComponent.h ] && $(diff) examples/CommImplComponent.h .
 	-[ -f examples/CommImplComponent.cpp ] && $(diff) examples/CommImplComponent.cpp .
-	./gaiag -l test examples/interface-enums.asd 
+
+test:
+	./gaiag -l test examples/Console.asd | tee ConsoleInterface.h
+	$(diff) examples/ConsoleInterface.h .
+	./gaiag -l test examples/Siren.asd | tee SirenInterface.h
+	$(diff) examples/SirenInterface.h .

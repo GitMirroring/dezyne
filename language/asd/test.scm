@@ -40,21 +40,12 @@
                 (direction . ,port-direction))
                . ,(component-ports (component ast)))))))
 
-(define (->string src) 
-  (match src
-    (#f "false")
-    (#t "true")
-    ((? string?) src)
-    ((? symbol?) (symbol->string src))
-    ((h ... t) (apply string-append (map ->string src)))
-    (_ "")))
-
 (define (asd-> ast)
   (let* ((module (make-module 31 (list 
                                   (resolve-module '(ice-9 match))
                                   (resolve-module '(language asd ast))))))
     (module-define! module 'ast ast)
-    (module-define! module '->string ->string)
+    (module-define! (resolve-module '(language asd ast)) 'ast ast)
     (string-eval (gulp-text-file "examples/interface.hh.scm") module)))
 
 (define (string-eval string module)

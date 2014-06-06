@@ -19,6 +19,7 @@
 
 (define-module (language asd ast)
   :use-module (ice-9 and-let-star)
+  :use-module (ice-9 match)
   :use-module (language asd misc)
   :export (behaviour-types
            behaviour-variables
@@ -46,12 +47,23 @@
            type-name
            variable-initial-value
            variable-name
-           variable-type))
+           variable-type
+
+           ->string
+           interface-
+           ))
 
 (define (interface ast) (assoc 'interface ast)) 
 (define (interface-name interface) (cadr interface))
 (define (interface-spec interface) (cddr interface)) 
 (define (interface-types interface) (assoc-ref (interface-spec interface) 'types))
+(define (interface-events interface) (assoc-ref (interface-spec interface) 'events))
+
+(define (event-direction event) (car event))
+(define (event-type event) (cadr event))
+(define (event-name event) (caddr event))
+(define (in-event? event) (eq? (event-direction event) 'in))
+(define (out-event? event) (eq? (event-direction event) 'out))
 
 (define (component ast) (assoc 'component ast))
 (define (component-bottom? component)
@@ -86,3 +98,36 @@
 
 (define (type-name-component type component)
   (symbol-append (component-name component) (variable-type type)))
+
+(define (->string src) 
+  (match src
+    (#f "false")
+    (#t "true")
+    ((? char?) (make-string 1 src))
+    ((? string?) src)
+    ((? symbol?) (symbol->string src))
+    ((h ... t) (apply string-append (map ->string src)))
+    (_ "")))
+
+
+
+;;;;;;;;;;FIXME experimental C++ output
+(define ast '())
+(define (*interface*) (interface-name (interface ast)))
+(define (*api-class*) (map ->string (list (*interface*) (*api*))))
+(define (*callback-class*) (map ->string (list (*interface*) (*callback*))))
+
+(define (*api-events*) (map (lambda (x) (list "  virtual void " (event-name x) "() = 0;\n")) (filter in-event? (interface-events (interface ast)))))
+(define (*callback-events*)  (map (lambda (x) (list "  virtual void " (event-name x) "() = 0;\n")) (filter out-event? (interface-events (interface ast)))))
+
+(define (*api*) 'API)
+(define (*callback*) 'CB)
+(define (*ap*) 'api)
+(define (*cb*) 'cb)
+
+(define (comma-join lst) (string-join (map symbol->string lst) ", "))
+
+(define (enum->string enum)
+  (->string (list " Enum {" (comma-join (enum-elements enum)) " };\n")))
+
+(define (*enums*) (->string (map enum->string (interface-types (interface ast)))))
