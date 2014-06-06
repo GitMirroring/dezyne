@@ -25,8 +25,9 @@ exec guile -e main -s $0 "$@"
 
 (define-module (language asd format-keys)
   :use-module (ice-9 regex)
+  :use-module (ice-9 and-let-star)
   :use-module (language asd misc)
-  :export (format-keys map-format-keys string-map-format-keys))
+  :export (format-keys format-at-keys map-format-keys string-map-format-keys))
 
 (define (format-keys string pairs)
   (if (null? pairs)
@@ -34,6 +35,29 @@ exec guile -e main -s $0 "$@"
       (let ((key (format #f "%\\{~a\\}"  (caar pairs)))
             (value (format #f "~a" (cdar pairs))))
         (format-keys (regexp-substitute/global #f key string 'pre value 'post) (cdr pairs)))))
+
+(define (replace-at string key value)
+  (stderr "REPLACE-AT: snippet:~a\n" string)
+  (stderr "REPLACE-AT: key:~a\n" key)
+  (or (and-let* ((index (string-contains string key))
+                 (end (string-contains string key (1+ index)))
+                 (key-length (string-length key))
+                 (snippet-begin (+ index key-length))
+                 (snippet-end (+ end key-length))
+                 (snippet (string-copy string snippet-begin snippet-end)))
+                (apply string-append (list (string-take string index)
+                                           (string-map-format-keys snippet pairs variables)
+                                           (string-drop string snippet-end)))))
+  string)
+
+(define (format-at-keys string pairs)
+  (stderr "format-at-keys: pairs: ~a" pairs)
+  (if (null? pairs)
+      string
+      (let ((key (format #f "@{~a}" (caar pairs)))
+            (value (cdr pairs)))
+        (format-at-keys
+         (replace-at string key value) (cdr pairs)))))
 
 (define (map-format-keys string pairs variables)
   (map (lambda (x)
