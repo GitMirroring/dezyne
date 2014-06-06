@@ -41,14 +41,21 @@
                . ,(component-ports (component ast)))))))
 
 (define (asd-> ast)
-  (let* ((module (make-module 31 (list 
-                                  (resolve-module '(ice-9 match))
-                                  (resolve-module '(language asd ast))))))
-    (module-define! module 'ast ast)
-    (module-define! (resolve-module '(language asd ast)) 'ast ast)
-    (string-eval (gulp-text-file "examples/interface.hh.scm") module)))
+  ;; (module-define! (current-module) 'ast ast) ;; FIXME
+  (module-define! (resolve-module '(language asd test)) 'ast ast)  ;; FIXME
+    
+  ;;(animate-string (c++-module ast)  (gulp-text-file "examples/interface.hh.scm"))
+  (animate-string (c++-module ast) (gulp-text-file "examples/component.cc.scm")))
 
-(define (string-eval string module)
+(define (c++-module ast)
+  (let ((module (make-module 31 (list 
+                                 (resolve-module '(ice-9 match))
+                                 (resolve-module '(language asd ast))
+                                 (resolve-module '(language asd test))))))
+    (module-define! module 'ast ast)
+    module))
+
+(define (animate-string module string)
   (let ((escape (string-index string #\%)))
     (display (if escape (string-take string escape) string))
     (if escape
@@ -58,5 +65,56 @@
           (close-input-port port)
           ;;(stderr "found expression: >>>>~a\n<<<" expression)
           (display (->string (eval expression module)))
-          (string-eval (string-drop string (+ escape skip 1)) module))
+          (animate-string module (string-drop string (+ escape skip 1))))
         "")))
+
+
+
+
+
+;;;;;;;;;;FIXME experimental C++ output
+(define ast '())
+
+
+
+;;;; INTERFACE
+
+(define (*interface*) (interface-name (interface ast)))
+(define (*api-class*) (map ->string (list (*interface*) (*api*))))
+(define (*callback-class*) (map ->string (list (*interface*) (*callback*))))
+
+(define (*api-events*) (map (lambda (x) (list "  virtual void " (event-name x) "() = 0;\n")) (filter event-in? (interface-events (interface ast)))))
+(define (*callback-events*)  (map (lambda (x) (list "  virtual void " (event-name x) "() = 0;\n")) (filter event-out? (interface-events (interface ast)))))
+
+(define (*api*) 'API)
+(define (*callback*) 'CB)
+(define (*ap*) 'api)
+(define (*cb*) 'cb)
+
+(define (comma-join lst) (string-join (map symbol->string lst) ", "))
+
+(define (enum->string enum)
+  (->string (list " Enum {" (comma-join (enum-elements enum)) " };\n")))
+
+(define (*enums*) (->string (map enum->string (interface-types (interface ast)))))
+
+
+;;;; COMPONENT
+(define (*component*) (component-name (component ast)))
+
+(for-each 
+ (lambda (x) (module-define! (current-module) x (lambda () (->string (list "/" x "/")))))
+ '(
+   *proxy-classes*
+   *state-class*
+   *context-class*
+   *component-class*
+   *proxy-methods*
+   *context-methods*
+   *component-methods*
+   *state-methods*
+   *function-definitions*))
+
+(define (*instance-getters*)
+   (map (lambda (x) (list "  virtual void " (port-name x) "() = 0;\n")) (filter port-provides? (component-ports (component ast))))
+  )

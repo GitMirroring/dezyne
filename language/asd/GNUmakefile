@@ -73,3 +73,5 @@ test:
 	$(diff) examples/ConsoleInterface.h .
 	./gaiag -l test examples/Siren.asd | tee SirenInterface.h
 	$(diff) examples/SirenInterface.h .
+	./gaiag -l test examples/Alarm.asd | tee AlarmComponent.cpp
+	$(diff) examples/AlarmComponent.cpp .

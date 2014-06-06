@@ -34,8 +34,15 @@
            type-name-component
 
            enum-elements
-           
+
+           event-direction
+           event-name
+           event-type
+           event-in?
+           event-out?
+
            interface
+           interface-events
            interface-name
            interface-types
            ;; interface-spec
@@ -43,6 +50,8 @@
            port-direction
            port-name
            port-interface
+           port-provides?
+           port-requires?
 
            type-name
            variable-initial-value
@@ -62,8 +71,8 @@
 (define (event-direction event) (car event))
 (define (event-type event) (cadr event))
 (define (event-name event) (caddr event))
-(define (in-event? event) (eq? (event-direction event) 'in))
-(define (out-event? event) (eq? (event-direction event) 'out))
+(define (event-in? event) (eq? (event-direction event) 'in))
+(define (event-out? event) (eq? (event-direction event) 'out))
 
 (define (component ast) (assoc 'component ast))
 (define (component-bottom? component)
@@ -79,6 +88,8 @@
 (define (port-direction port) (car port))
 (define (port-name port) (caddr port))
 (define (port-interface port) (cadr port))
+(define (port-provides? port) (eq? (port-direction port) 'provides))
+(define (port-requires? port) (eq? (port-direction port) 'requires))
 
 ;;(define (port-events ()))
 
@@ -109,25 +120,3 @@
     ((h ... t) (apply string-append (map ->string src)))
     (_ "")))
 
-
-
-;;;;;;;;;;FIXME experimental C++ output
-(define ast '())
-(define (*interface*) (interface-name (interface ast)))
-(define (*api-class*) (map ->string (list (*interface*) (*api*))))
-(define (*callback-class*) (map ->string (list (*interface*) (*callback*))))
-
-(define (*api-events*) (map (lambda (x) (list "  virtual void " (event-name x) "() = 0;\n")) (filter in-event? (interface-events (interface ast)))))
-(define (*callback-events*)  (map (lambda (x) (list "  virtual void " (event-name x) "() = 0;\n")) (filter out-event? (interface-events (interface ast)))))
-
-(define (*api*) 'API)
-(define (*callback*) 'CB)
-(define (*ap*) 'api)
-(define (*cb*) 'cb)
-
-(define (comma-join lst) (string-join (map symbol->string lst) ", "))
-
-(define (enum->string enum)
-  (->string (list " Enum {" (comma-join (enum-elements enum)) " };\n")))
-
-(define (*enums*) (->string (map enum->string (interface-types (interface ast)))))
