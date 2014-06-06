@@ -24,7 +24,7 @@ import Console;
 import Sensor;
 import Siren;
 
-component Alarm_Impl
+component Alarm
 {
     provides Console console;
     requires Sensor sensor;

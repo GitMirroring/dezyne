@@ -154,7 +154,7 @@ interface Sensor
   }
 }
 
-component Sensor_Impl
+component Sensor
 {
   provides Sensor sensor;
 // @external
@@ -201,7 +201,7 @@ interface Siren
   }
 }
 
-component Siren_Impl
+component Siren
 {
   provides Siren siren;
 //  @external
@@ -214,7 +214,7 @@ component Siren_Impl
 
 ////////////////////////////////////////////////////////////////////////////////
 
-component Alarm_Impl
+component Alarm
 {
     provides Console console;
     requires Sensor sensor;
@@ -297,13 +297,13 @@ component Alarm_Impl
 
 ////////////////////////////////////////////////////////////////////////////////
 
-system AlarmSystem_Impl
+system AlarmSystem
 {
   provides Console console;
 
-  Alarm_Impl alarm = Alarm_Impl();
-  Sensor_Impl sensor = Sensor_Impl();
-  Siren_Impl siren = Siren_Impl();
+  Alarm alarm;
+  Sensor sensor;
+  Siren siren;
 
   console <=> alarm.console;
   alarm.sensor <=> sensor.sensor;

@@ -184,7 +184,7 @@ interface Siren
   }
 }
 
-component Alarm_Impl
+component Alarm
 {
     provides Console console;
     requires Sensor sensor;
