@@ -21,7 +21,9 @@ class %(*api-class*) : public %(*interface*)
 {
 public:
   virtual ~%(*api-class*)() {}
-%(*api-events*)
+% (map-events
+"  virtual void %(*event*) () = 0;
+" (filter event-in? (interface-events (interface ast))))
 protected:
   %(*api-class*)() {}
 private:
@@ -33,7 +35,9 @@ class %(*callback-class*)
 {
 public:
   virtual ~%(*callback-class*)() {}
-%(*callback-events*)
+% (map-events
+"  virtual void %(*event*) () = 0;
+" (filter event-out? (interface-events (interface ast))))
 protected:
   %(*callback-class*)() {}
 private:
