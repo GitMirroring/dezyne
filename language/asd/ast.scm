@@ -28,6 +28,7 @@
            component-bottom?
            component-name
            component-ports
+           ;; component-spec
            component-interface
            type-name-component
 
@@ -35,6 +36,8 @@
            
            interface
            interface-name
+           interface-types
+           ;; interface-spec
            
            port-direction
            port-name
@@ -47,6 +50,8 @@
 
 (define (interface ast) (assoc 'interface ast)) 
 (define (interface-name interface) (cadr interface))
+(define (interface-spec interface) (cddr interface)) 
+(define (interface-types interface) (assoc-ref (interface-spec interface) 'types))
 
 (define (component ast) (assoc 'component ast))
 (define (component-bottom? component)
@@ -62,6 +67,8 @@
 (define (port-direction port) (car port))
 (define (port-name port) (caddr port))
 (define (port-interface port) (cadr port))
+
+;;(define (port-events ()))
 
 (define (component-behaviour component) 
   (assoc 'behaviour (component-spec component)))
