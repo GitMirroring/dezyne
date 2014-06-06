@@ -14,19 +14,18 @@ namespace %(*component*)ImplScope
 {
   class Context;
 %(map-ports
-"  class %(*scoped-api*)Proxy: public %(*api-class*)
+"  class %(*port*)%(*interface*)%(*api*)Proxy: public %(*interface*)%(*api*)
   {
     Context& m_Context;
     
   public:
-    %(*scoped-api*)Proxy(Context& context);
+    %(*port*)%(*interface*)%(*api*)Proxy(Context& context);
 %(map-port-events \"
-    virtual %(*interface*)::%(*type*) %(*event*)();
-\"
+    virtual %(if (eq? 'void (*type*)) (*type*) (list (*interface*) \\\"::\\\" (*type*))) %(*event*)();\"
     port (port-events port))
   private:
-    %(*scoped-api*)Proxy& operator = (const %(*scoped-api*)Proxy& other);
-    %(*scoped-api*)Proxy(const %(*scoped-api*)Proxy& other);
+    %(*port*)%(*interface*)%(*api*)Proxy& operator = (const %(*port*)%(*interface*)%(*api*)Proxy& other);
+    %(*port*)%(*interface*)%(*api*)Proxy(const %(*port*)%(*interface*)%(*api*)Proxy& other);
   };
 " (component-ports (component ast)))
 

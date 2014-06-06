@@ -96,10 +96,12 @@
     ((sensor) '((in void enable) (in void disable) (out void triggered (out void disabled))))
     ((siren) '((in void turnon) (in void turnoff)))))
 
-(define (*api*) 'API)
-(define (*callback*) 'CB)
-(define (*ap*) 'api)
-(define (*cb*) 'cb)
+(define (*port*) '(provides Foo bar))
+
+(define (*api*) (or (and (port-provides? (*port*)) 'API) 'CB))
+(define (*callback*) (or (and (port-requires? (*port*)) 'API) 'CB))
+(define (*ap*) (or (and (port-provides? (*port*)) 'api) 'cb))
+(define (*cb*) (or (and (port-requires? (*port*)) 'api) 'cb))
 
 (define (comma-join lst) (string-join (map symbol->string lst) ", "))
 
@@ -137,7 +139,7 @@
 (define (map-ports string ports)
   (map (lambda (port)
          (let ((module (c++-module ast)))
-           (module-define! module '*interface* (lambda () (port-name port)))
+           (module-define! module '*interface* (lambda () (port-interface port)))
            (module-define! module 'port port)
            (module-define! module '*port* (lambda () (port-name port)))
            (animate-string string module))) ports))
@@ -146,7 +148,7 @@
   (map (lambda (event)
          (let ((module (c++-module ast)))
            (module-define! module '*event* (lambda () (event-name event)))
-           (module-define! module '*interface* (lambda () (port-name port)))
+           (module-define! module '*interface* (lambda () (port-interface port)))
            (module-define! module '*type* (lambda () (event-type event)))
            (animate-string string module))) events))
 
@@ -154,6 +156,7 @@
   (map (lambda (event)
          (let ((module (c++-module ast)))
            (module-define! module '*event* (lambda () (event-name event)))
-           (module-define! module '*interface* (lambda () (port-name port)))
+           (module-define! module '*interface* (lambda () (port-interface port)))
+           (module-define! module '*port* (lambda () (port-name port)))
            (module-define! module '*type* (lambda () (event-type event)))
            (animate-string string module))) events))
