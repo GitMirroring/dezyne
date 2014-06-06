@@ -50,6 +50,8 @@
   (parameterize ((snippet-dir asd-snippet-dir) (snippets asd-snippets))
     (apply snippet->string x)))
 
+(define (comma-join lst) (string-join (map symbol->string lst) ", "))
+
 (define asd-snippet-dir '(snippets asd))
 (define asd-snippets
   `((component . ((name . ,identity)
@@ -68,14 +70,13 @@
                   (variables . ,->string)
                   (statements . ,->string)))
     (enum . ((name . ,identity)
-             (elements . ,(lambda (elements) 
-                            (string-join (map symbol->string elements) ", ")))))
+             (elements . ,comma-join)))
     (declare . ((type . ,identity)
                 (var . ,identity)
                 (value . ,->string)))
     (field . ((struct . ,identity)
             (field . ,identity)))
-    (on . ((trigger . ,->string)
+    (on . ((trigger . ,comma-join)
            (statement . ,->string)))
     (guard . ((expression . ,->string)
               (statement . ,->string)))

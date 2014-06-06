@@ -167,11 +167,11 @@
 
    (trigger-spec
     (trigger-list) : $1
-    (optional) : $1
-    (inevitable) : $1)
+    (optional) : `(,$1)
+    (inevitable) : `(,$1))
 
    (trigger-list
-    (trigger) : $1 
+    (trigger) : `(,$1)
     (trigger-list comma trigger) : (append $1 (list $3)))
 
    (trigger
