@@ -138,6 +138,7 @@
    *get-state*
    *methods*
    *parameters*
+   *statement*
 
    ))
 

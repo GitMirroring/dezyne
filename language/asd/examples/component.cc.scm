@@ -243,8 +243,92 @@ class State;
   }
 " (component-ports (component ast)))
 
-%(*component-methods*)
-%(*state-methods*)
+  Component::Component()
+  : m_Context()
+%(string-if (component-behaviour? (component ast))
+"%(map-ports
+\"  , m_%(*port*)%(*interface*)%(*api*)Proxy(new %(*port*)%(*interface*)%(*api*)Proxy(m_Context))
+
+\"  (component-ports (component ast)))
+")
+  {
+    ASD_TRACE_ENTER("%(*component*)", "", "", "");
+    
+    ASD_TRACE_EXIT("%(*component*)", "", "", "");
+  }
+  
+  Component::~Component()
+  {
+    ASD_TRACE_ENTER("%(*component*)", "", "", "");
+    
+    ASD_TRACE_EXIT("%(*component*)", "", "", "");
+  }
+
+%(map-ports
+"%(string-if (component-bottom? (component ast))
+\"  void Component::Get%(*api*)(boost::shared_ptr<%(*interface*)%(*api*)>* %(*ap*))
+  {
+    *%(*ap*) = m_%(*port*)%(*interface*)%(*api*)Proxy;
+  }
+  
+  void Component::Register%(*callback*)(boost::shared_ptr<%(*interface*)%(*callback*)> %(*cb*))
+  {
+    m_Context.Set%(*port*)(%(*cb*));
+  }
+  
+  void Component::Get%(*callback*)(boost::shared_ptr<%(*interface*)%(*callback*)>* /*%(*cb*)*/)
+  {
+    // empty
+  }
+  
+  void Component::Register%(*api*)(boost::shared_ptr<%(*interface*)%(*api*)> /*%(*ap*)*/)
+  {
+    // empty
+  }
+\"
+\"  void Component::Get%(*api*)%(*port*)(boost::shared_ptr<%(*interface*)%(*api*)>* %(*ap*))
+  {
+    *%(*ap*) = m_%(*port*)%(*interface*)%(*api*)Proxy;
+  }
+  
+  void Component::Register%(*callback*)%(*port*)(boost::shared_ptr<%(*interface*)%(*callback*)> %(*cb*))
+  {
+    m_Context.Set%(*port*)(%(*cb*));
+  }
+\"
+)"  (component-ports (component ast)))
+
+  void Component::Register%(*callback*)(boost::shared_ptr<asd::channels::ISingleThreaded> %(*cb*))
+  {
+    m_Context.setISingleThreaded(%(*cb*));
+  }
+
+%(string-if (component-behaviour? (component ast))
+"%(map-ports
+\"#if 0
+  void State::Processvoid(Context& /*context*/, %(*interface*)%(*callback*)::void /* stimulus */)
+  {
+  }
+#endif
+
+%(map-port-events
+\\\"
+  void State::%(*port*)%(*interface*)%(*event*)(Context& context)
+  {
+    ASD_TRACE_ENTER(\\\\\\\"%(*component*)\\\\\\\", \\\\\\\"State\\\\\\\", \\\\\\\"%(*interface*)%(*callback*)\\\\\\\", \\\\\\\"%(*event*)\\\\\\\");
+    
+    Context::Predicates predicate = context.predicates();
+
+%(*statement*)
+
+    context.predicates(predicate);
+    ASD_TRACE_EXIT(\\\\\\\"%(*component*)\\\\\\\", \\\\\\\"State\\\\\\\", \\\\\\\"%(*interface*)%(*callback*)\\\\\\\", \\\\\\\"%(*event*)\\\\\\\");
+  }\\\"
+    port (filter (event-dir-matches? port) (port-events port)))
+
+\"  (component-ports (component ast)))
+")
+
 %(*function-definitions*)
 
 %(map-ports
