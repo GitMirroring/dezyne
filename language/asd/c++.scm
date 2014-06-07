@@ -19,153 +19,258 @@
 
 (define-module (language asd c++)
   :use-module (ice-9 match)
+  :use-module (ice-9 and-let-star)
   :use-module (srfi srfi-1)
-  :use-module (language asd misc)
   :use-module (language asd ast)
+  :use-module (language asd misc)
   :use-module (language asd format-keys)
   :use-module (language asd snippets)
-  :export (asd-> asd->c++))
+  :export (asd->))
 
-(define hh "h")
-(define cc "cpp")
-
-(define (format-snippet name pairs) 
-  (format-keys (gulp-snippet name) pairs))
-
-(define (gulp-snippet name)
-  (gulp-text-file (string-join (map symbol->string `(snippets c++ ,name)) "/")))
-
-(define (generate-component-header component)
-  (dump-file 
-   (format #f "~aComponent.~a" (component-name component) hh)
-   (let ((bottom? (component-bottom? component)))
-     (format-keys (gulp-snippet (if bottom? 
-                                    'component-header-bottom 'component-header))
-                  `((component . ,(component-name component))
-                    (port-includes . ,(string-map-format-keys
-                                       (gulp-snippet 'component-header-includes-port)
-                                       `((interface . ,(lambda (port) (cadr port))))
-                                       (component-ports component)))
-                    (interface . ,(component-interface component))
-                    (port-methods . ,(if bottom?
-                                         ""
-                                         (format-ports component 'component-header-port))))))))
-
-(define (API port)
-    (if (eq? 'provides (port-direction port))
-      'API 'CB))
-
-(define (CB port)
-  (if (eq? 'provides (port-direction port))
-      'CB 'API))
-
-(define (api port)
-    (if (eq? 'provides (port-direction port))
-      'api 'cb))
-
-(define (cb port)
-  (if (eq? 'provides (port-direction port))
-      'cb 'api))
-
-(define (format-ports component snippet)
+(define (->string-map-format-keys ast) 
   (string-map-format-keys
-   (gulp-snippet snippet)
-   `((api-class . ,(lambda (x) "%{interface}%{api}"))
-     (callback-class . ,(lambda (x) "%{interface}%{callback}"))
-     (ap . ,api)
-     (cb . ,cb)
-     (api . ,API)
-     (callback . ,CB)
-     (component . ,(lambda (x) (component-name component)))
-     (interface . ,port-interface)
+   "%{port}---%{interface} %{ports}---%{direction}*****%{events} %{event-direction}\n"
+   `((interface . ,port-interface)
      (port . ,port-name))
-   (component-ports component)))
+   (component-ports (component ast))))
 
-(define (generate-enum component enum)
-  (format-keys (gulp-snippet 'component-enum)
-               `((state-type . ,(type-name-component enum component))
-                 (elements . ,(string-map-format-keys 
-                               (gulp-snippet 'enum-element)
-                               `((name . ,identity))
-                               (enum-elements enum))))))
+(define (->format-at ast) 
+  (format-at-keys
+   "class foo\n{\n @{ports}---void %{name} %{direction}();\n@{ports}\n};\n"
+   `((ports . (((name . ,identity)
+                (direction . ,port-direction))
+               . ,(component-ports (component ast)))))))
 
-(define (expression->string e)
-  (match e
-    ((? c++-snippet?) (apply c++-snippet->string e))
-    ((? symbol?) (symbol->string e))
-    (_ (format #f "\nNO MATCH:~a\n" e))))
-
-(define (c++-snippet? x)
-  (parameterize ((snippets c++-snippets)) (snippet? x)))
-
-(define (c++-snippet->string . x)
-  (parameterize ((snippet-dir c++-snippet-dir) (snippets c++-snippets))
-    (apply snippet->string x)))
-
-(define c++-snippet-dir '(snippets cpp))
-(define c++-snippets
-  `((field . ((struct . ,identity)
-            (field . ,identity)))))
-
-(define (generate-context-class component)
-  (let* ((behaviour (one-is-#f (component-behaviour component)))
-         (enums (if behaviour
-                    (string-join (map (lambda (x) (generate-enum component x)) (behaviour-types behaviour)))
-                    ""))
-         (behaviour-format
-          (if behaviour
-              (let* ((predicates
-                      (string-map-format-keys (gulp-snippet 'predicate-element)
-                                              `((state-type . ,(lambda (x) (type-name-component x component)))
-                                                (name . ,variable-name))
-                                              (behaviour-variables behaviour)))
-                     (predicates-2
-                      (string-map-format-keys (gulp-snippet 'predicate-element-2)
-                                              `((name . ,variable-name)
-                                                (value . ,(lambda (x) (expression->string (variable-initial-value x)))))
-                                              (behaviour-variables behaviour))))
-                (format-keys (gulp-snippet 'component-context-class-behaviour)
-                             `((component . ,(component-name component))
-                               (predicates . ,predicates)
-                               (predicates-2 . ,predicates-2))))
-              "/* NO BEHAVIOUR */")))
-    (format-keys (gulp-snippet 'component-context-class)
-                 `((behaviour . ,behaviour-format)
-                   (component . ,(component-name component))
-                   (enums . ,enums)
-                   (instances . "")
-                   (interface . "/*(getImplIntfNamecomp)*/")
-                   (no-dpc . ,(if (member 'requires (map port-direction (component-ports component))) "" "NoDpc"))
-                   (ports . ,(format-ports component 'component-context-class-port))))))
-
-(define (generate-component-implementation component)
-  (dump-file 
-   (format #f "~aComponent.~a" (component-name component) cc)
-   (format-keys (gulp-snippet 'component)
-                `((component . ,(component-name component))
-                  (interface . ,(component-interface component))
-                  (port-methods . "")
-                  (proxy-classes . "")
-                  (state-class . "")
-                  (context-class . ,(generate-context-class component))
-                  (component-class . "")
-                  (proxy-methods . "")
-                  (component-methods . "")
-                  (state-methods . "")
-                  (context-methods . "")
-                  (instance-includes . "")
-                  (function-definitions . "")
-                  (instance-getters . "")))))
-
-(define (generate-component component)
-    (generate-component-header component)
-    (generate-component-implementation component))
-
-(define (asd->c++ ast)
-  (let ((interface (interface ast))
-        (component (component ast)))
-    (if component 
-      (generate-component component)))
+(define (asd-> ast)
+  ;; (module-define! (current-module) 'ast ast) ;; FIXME
+  (module-define! (resolve-module '(language asd c++)) 'ast ast)  ;; FIXME
+  (if (interface ast)
+      (animate-string (gulp-text-file "examples/interface.hh.scm") (c++-module ast)))
+  (if (component ast)
+      (animate-string (gulp-text-file "examples/component.cc.scm") (c++-module ast)))
   "")
 
-(define asd-> asd->c++)
+(define (c++-module ast)
+  (let ((module (make-module 31 (list 
+                                 (resolve-module '(ice-9 match))
+                                 (resolve-module '(language asd ast))
+                                 (resolve-module '(language asd c++))))))
+    (module-define! module 'ast ast)
+    module))
+
+(define (animate-string string module)
+  (let ((escape (string-index string #\%)))
+    (display (if escape (string-take string escape) string))
+    (if escape
+        (let* ((port (open-input-string (string-drop string (1+ escape))))
+               (expression (read port))
+               (skip (ftell port)))
+          (close-input-port port)
+          ;;(stderr "found expression: >>>>~a\n<<<" expression)
+          (display (->string (eval expression module)))
+          (animate-string (string-drop string (+ escape skip 1)) module))
+        "")))
+
+
+
+
+
+;;;;;;;;;;FIXME experimental C++ output
+(define ast '())
+
+
+
+;;;; INTERFACE
+
+(define (*module*)
+  (if (interface ast) (*interface*) (*component*)))
+
+(define (*interface*) (interface-name (interface ast)))
+
+(define (*api*) (or (and (or (not (defined? '*port-def*)) (port-provides? *port-def*)) 'API) 'CB))
+(define (*callback*) (stderr "*callback*: port-def: ~a\n" (or (and (defined? '*port-def*) *port-def*) "no port" ))
+  (or (and (or (not (defined? '*port-def*)) (port-provides? *port-def*)) 'CB) 'API)
+  )
+(define (*ap*) (or (and (or (not (defined? '*port-def*)) (port-provides? *port-def*)) 'api) 'cb))
+(define (*cb*) (or (and (or (not (defined? '*port-def*)) (port-provides? *port-def*)) 'cb) 'api))
+
+(define (*if-type*) (if (port-typed-event? *port-def*) "" "#if 0"))
+(define (*else-type*) (if (port-typed-event? *port-def*) "" "#else"))
+(define (*endif-type*) (if (port-typed-event? *port-def*) "" "#endif"))
+
+(define (->join lst infix) (string-join (map ->string lst) infix))
+(define (comma-join lst) (->join lst ", "))
+(define (double-colon-join lst) (->join lst "::"))
+
+(define (enum->string enum)
+  (->string (list "enum "  (enum-name enum) " { " (comma-join (enum-elements enum)) " };\n")))
+
+;;;; COMPONENT
+(define (*component*) (component-name (component ast)))
+
+(for-each 
+ (lambda (x) (module-define! (current-module) x (lambda () (->string (list "/" x "/")))))
+ '(
+   *proxy-classes*
+   *state-class*
+   *context-class*
+   *component-class*
+   *proxy-methods*
+   *context-methods*
+   *component-methods*
+   *state-methods*
+   *function-definitions*
+   *function-declarations*
+
+  *type*
+   *return-interface-type*
+   *instances*
+   *behaviour*
+   *no-dpc*
+   *state-type*
+   *name*
+   *value*
+   *return-context-get*
+
+   *constructor-instances*
+   *bindings*
+   *destructor-ports*
+   *get-state*
+   *methods*
+   *parameters*
+   *statement*
+
+   ))
+
+(define (return-type-text port)
+  (or (and-let* ((event (null-is-#f (port-typed-event? *port-def*))))
+                (event-type event))
+      'void))
+
+(define (return-interface-type event)
+  (or (and (event-typed? event)  (list (*interface*) "::" (event-type event)))
+      'void))
+
+(define (string-if condition then . else)
+  (animate-string (if condition then (if (pair? else) (car else)  "")) (current-module)))
+
+(define (variable-value->string v)
+  (case (variable-type v)
+    ((bool) (->string (variable-initial-value v)))
+    (;;(enum)
+     else
+     (double-colon-join (append (list (*module*)) 
+                                (cdr (variable-initial-value v)))))))
+
+(define (variable-state-type v)
+  (case (variable-type v)
+    ((bool) (->string (variable-type v)))
+    (;;(enum)
+     else (double-colon-join (list 'State (variable-type v))))))
+
+(define (map-ports- string ports)
+  (map (lambda (port)
+         (let ((module (c++-module ast)))
+           (module-define! module '*interface* (lambda () (port-interface port)))
+           (module-define! module 'port port)
+           (module-define! module '*port* (lambda () (port-name port)))
+           (module-define! module '*port-def* port)
+           (module-define! module '*type* (lambda () (return-type-text port)))
+
+           ;;; FIXME
+           (module-define! (resolve-module '(language asd c++)) '*port* (lambda () (port-name port)))
+           (module-define! (resolve-module '(language asd c++)) '*port-def* port)
+           (animate-string string module))) ports))
+
+(define (map-events- string events)
+  (map (lambda (event)
+         (let ((module (c++-module ast)))
+           (module-define! module '*event* (lambda () (event-name event)))
+
+           (module-define! module 'event event)
+           (module-define! module '*event-def* event)
+
+           (module-define! module '*interface* (lambda () (port-interface port)))
+           (if (defined? '*port*)
+               (module-define! module '*port* *port*)
+               (stderr "map-events: *port* not defined?"))
+           (if (defined? '*port-def*)
+               (module-define! module '*port-def* *port-def*)
+               (stderr "map-events: *port-def* not defined?"))
+           (module-define! module '*type* (lambda () (event-type event)))
+
+
+           ;; FIXME
+           (module-define! (resolve-module '(language asd c++)) 'event event)
+           (module-define! (resolve-module '(language asd c++)) '*event-def* event)
+           (animate-string string module))) events))
+
+(define (map-port-events- string port events)
+  (map (lambda (event)
+         (let ((module (c++-module ast)))
+
+           (module-define! module 'event event)
+           (module-define! module '*event-def* event)
+
+
+           (module-define! module '*event* (lambda () (event-name event)))
+           (module-define! module '*interface* (lambda () (port-interface port)))
+           (module-define! module '*port* (lambda () (port-name port)))
+           (module-define! module 'port port)
+           (module-define! module '*port-def* port)
+           (module-define! module '*type* (lambda () (event-type event)))
+
+           ;;; FIXME
+           (module-define! (resolve-module '(language asd c++)) '*port* (lambda () (port-name port)))
+           (module-define! (resolve-module '(language asd c++)) 'port port)
+           (module-define! (resolve-module '(language asd c++)) '*port-def* port)
+           (animate-string string module))) events))
+
+(define (map-variables- string variables)
+  (map (lambda (variable)
+         (let ((module (c++-module ast))
+               (behaviour (component-behaviour (component ast)))
+               (name (variable-name variable)))
+
+           (stderr "map-variables: variable: ~a\n" variable)
+           (module-define! module '*interface* (lambda () *module*))
+           (module-define! module 'variable variable)
+           (module-define! module '*variable* (lambda () name))
+           (module-define! module '*variable-def* variable)
+           (module-define! module '*type* (lambda () (return-type-text variable)))
+
+
+           (module-define! module '*state-type* (lambda () (variable-state-type variable)))           
+           (module-define! module '*name* (lambda () (return-type-text variable)))           
+           (module-define! module '*value* (lambda () (variable-value->string variable)))
+
+
+
+
+           ;;; FIXME
+           (module-define! (resolve-module '(language asd c++)) '*variable* (lambda () (variable-name variable)))
+           (module-define! (resolve-module '(language asd c++)) '*variable-def* variable)
+           (animate-string string module))) variables))
+
+;; FIXME
+(define (map-ports string ports)
+  (let ((r (map-ports- string ports)))
+    (variable-unset! (module-variable (current-module) '*port-def*))
+    r))
+
+(define (map-events string events)
+  (let ((r (map-events- string events)))
+    (variable-unset! (module-variable (current-module) '*port-def*))
+    r))
+
+(define (map-port-events string port events)
+  (let ((r (map-port-events- string port events)))
+    (variable-unset! (module-variable (current-module) '*port-def*))
+    r))
+
+(define (map-variables string variables)
+  (let ((r (map-variables- string variables)))
+    (variable-unset! (module-variable (current-module) '*port-def*))
+  r))
+
+
