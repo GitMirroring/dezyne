@@ -44,10 +44,10 @@
 (define (asd-> ast)
   ;; (module-define! (current-module) 'ast ast) ;; FIXME
   (module-define! (resolve-module '(language asd c++)) 'ast ast)  ;; FIXME
-  (if (interface ast)
-      (animate-string (gulp-text-file "examples/interface.hh.scm") (c++-module ast)))
-  (if (component ast)
-      (animate-string (gulp-text-file "examples/component.cc.scm") (c++-module ast)))
+  ;; (if (interface ast) (animate-string (gulp-text-file "examples/interface.hh.scm") (c++-module ast)))
+  (when (component ast)
+    ;;(animate-string (gulp-text-file "examples/component.cc.scm") (c++-module ast))
+    (animate-string (gulp-text-file "examples/c2.cc.scm") (c++-module ast)))
   "")
 
 (define (c++-module ast)
@@ -100,6 +100,7 @@
 
 (define (->join lst infix) (string-join (map ->string lst) infix))
 (define (comma-join lst) (->join lst ", "))
+(define (nl-comma-join lst) (->join lst "\n  , "))
 (define (double-colon-join lst) (->join lst "::"))
 
 (define (enum->string enum)
@@ -274,3 +275,4 @@
   r))
 
 
+(define (action port event) "enable")
