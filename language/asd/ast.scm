@@ -127,8 +127,21 @@
 (define (component-behaviour? component) (and (component-behaviour component)
                                               (>1 (length (component-behaviour component)))))
 (define (behaviour-spec behaviour) (cddr behaviour))
+(define (behaviour-name behaviour) (cadr behaviour))
 (define (behaviour-types behaviour) (assoc-ref (behaviour-spec behaviour) 'types))
 (define (behaviour-variables behaviour) (assoc-ref (behaviour-spec behaviour) 'variables))
+(define (behaviour-statements behaviour) (assoc-ref (behaviour-spec behaviour) 'statements))
+
+(define (statements-of-type statements type)
+  (let loop ((statements statements) (lst '()))
+  (if (null? statements)
+      lst
+      (loop (cdr statements) (if (eq? (caar statements) type)
+                                 (cons (car statements) lst)
+                                 lst)))))
+(define (statements-guard statements)
+  (statements-of-type statements 'guard))
+(define (guard-expression guard) (cadr guard))
 
 (define (behaviour-variable behaviour variable) (assoc-ref (behaviour-variables behaviour variable)))
 (define (variable-type variable) (cadr variable))
