@@ -147,7 +147,6 @@ class State;
     virtual void Get%(*port*)Interface(boost::shared_ptr<%(*interface*)Interface>* intf);
 #endif
 \")"  (component-ports (component ast)))
-%(variable-unset! (module-variable (current-module) '*port-def*))
     virtual void Register%(*callback*)(boost::shared_ptr<asd::channels::ISingleThreaded> cb);
   };
 

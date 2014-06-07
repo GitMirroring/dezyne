@@ -137,19 +137,6 @@
                 (event-type event))
       'void))
 
-(define (map-ports string ports)
-  (map (lambda (port)
-         (let ((module (c++-module ast)))
-           (module-define! module '*interface* (lambda () (port-interface port)))
-           (module-define! module 'port port)
-           (module-define! module '*port* (lambda () (port-name port)))
-           (module-define! module '*port-def* port)
-           (module-define! module '*type* (lambda () (return-type-text port)))
-
-           ;;; FIXME
-           (module-define! (resolve-module '(language asd test)) '*port* (lambda () (port-name port)))
-           (module-define! (resolve-module '(language asd test)) '*port-def* port)
-           (animate-string string module))) ports))
 
 (define (string-if condition then else)
   (animate-string (if condition then else) (current-module)))
@@ -168,7 +155,21 @@
     (;;(enum)
      else (double-colon-join (list 'State (variable-type v))))))
 
-(define (map-events string events)
+(define (map-ports- string ports)
+  (map (lambda (port)
+         (let ((module (c++-module ast)))
+           (module-define! module '*interface* (lambda () (port-interface port)))
+           (module-define! module 'port port)
+           (module-define! module '*port* (lambda () (port-name port)))
+           (module-define! module '*port-def* port)
+           (module-define! module '*type* (lambda () (return-type-text port)))
+
+           ;;; FIXME
+           (module-define! (resolve-module '(language asd test)) '*port* (lambda () (port-name port)))
+           (module-define! (resolve-module '(language asd test)) '*port-def* port)
+           (animate-string string module))) ports))
+
+(define (map-events- string events)
   (map (lambda (event)
          (let ((module (c++-module ast)))
            (module-define! module '*event* (lambda () (event-name event)))
@@ -182,7 +183,7 @@
            (module-define! module '*type* (lambda () (event-type event)))
            (animate-string string module))) events))
 
-(define (map-port-events string port events)
+(define (map-port-events- string port events)
   (map (lambda (event)
          (let ((module (c++-module ast)))
            (module-define! module '*event* (lambda () (event-name event)))
@@ -192,7 +193,7 @@
            (module-define! module '*type* (lambda () (event-type event)))
            (animate-string string module))) events))
 
-(define (map-variables string variables)
+(define (map-variables- string variables)
   (map (lambda (variable)
          (let ((module (c++-module ast))
                (behaviour (component-behaviour (component ast)))
@@ -217,4 +218,26 @@
            (module-define! (resolve-module '(language asd test)) '*variable* (lambda () (variable-name variable)))
            (module-define! (resolve-module '(language asd test)) '*variable-def* variable)
            (animate-string string module))) variables))
+
+;; FIXME
+(define (map-ports string ports)
+  (let ((r (map-ports- string ports)))
+    (variable-unset! (module-variable (current-module) '*port-def*))
+    r))
+
+(define (map-events string events)
+  (let ((r (map-events- string events)))
+    (variable-unset! (module-variable (current-module) '*port-def*))
+    r))
+
+(define (map-port-events string port events)
+  (let ((r (map-port-events- string port events)))
+    (variable-unset! (module-variable (current-module) '*port-def*))
+    r))
+
+(define (map-variables string variables)
+  (let ((r (map-variables- string variables)))
+    (variable-unset! (module-variable (current-module) '*port-def*))
+  r))
+
 
