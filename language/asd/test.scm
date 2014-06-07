@@ -131,6 +131,14 @@
    *name*
    *value*
    *return-context-get*
+
+   *constructor-instances*
+   *bindings*
+   *destructor-ports*
+   *get-state*
+   *methods*
+   *parameters*
+
    ))
 
 (define (return-type-text port)
@@ -142,8 +150,8 @@
   (or (and (event-typed? event)  (list (*interface*) "::" (event-type event)))
       'void))
 
-(define (string-if condition then else)
-  (animate-string (if condition then else) (current-module)))
+(define (string-if condition then . else)
+  (animate-string (if condition then (if (pair? else) (car else)  "")) (current-module)))
 
 (define (variable-value->string v)
   (case (variable-type v)

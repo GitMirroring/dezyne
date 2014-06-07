@@ -27,6 +27,7 @@
 
            component
            component-behaviour
+           component-behaviour?
            component-bottom?
            component-name
            component-ports
@@ -123,6 +124,8 @@
 
 (define (component-behaviour component) 
   (assoc 'behaviour (component-spec component)))
+(define (component-behaviour? component) (and (component-behaviour component)
+                                              (>1 (length (component-behaviour component)))))
 (define (behaviour-spec behaviour) (cddr behaviour))
 (define (behaviour-types behaviour) (assoc-ref (behaviour-spec behaviour) 'types))
 (define (behaviour-variables behaviour) (assoc-ref (behaviour-spec behaviour) 'variables))

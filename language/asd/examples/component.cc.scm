@@ -183,14 +183,72 @@ class State;
   
 " (component-ports (component ast)))
 
-%(*context-methods*)
+  Context::Context()
+  : asd_0::SingleThreadedContext%(*no-dpc*)()
+%(string-if (component-behaviour? (component ast))
+"  , m_Predicates()
+  , m_State(&State::instance())
+")
+  {
+%(map-ports
+"  , m_%(*port*)%(*interface*)%(*api*)Proxy(new %(*port*)%(*interface*)%(*api*)Proxy(m_Context))
+" (component-ports (component ast)))
+%(*constructor-instances*)
+%(*bindings*)
+  }
+  
+  Context::~Context()
+  {
+% (map-ports
+"    // %(*interface*)Component::ReleaseInstance();
+" (component-ports (component ast)))
+  }
+  
+%(string-if (component-behaviour? (component ast))
+"  State& Context::getState()
+  {
+    assert(m_State);
+    return *m_State;
+  }
+")
+  
+%(map-ports
+"  void Context::Set%(*port*)(const boost::shared_ptr<%(*interface*)%(*callback*)>& cb)
+  {
+    if (m_%(*port*)%(*interface*)%(*callback*) && cb)
+    {
+      ASD_ILLEGAL(\"%(*component*)\", \"\", \"%(*interface*)%(*callback*)\", \"\");
+    }
+    m_%(*port*)%(*interface*)%(*callback*) = cb;
+  }
+  
+  %(*interface*)%(*callback*)& Context::Get%(*port*)%(*interface*)%(*callback*)() const
+  {
+    return *m_%(*port*)%(*interface*)%(*callback*);
+  }
+  
+%(*if-type*)
+  %(*interface*)%(*api*)::%(*type*) Context::Get%(*port*)%(*interface*)%(*api*)%(*type*)() const
+  {
+    return m_%(*port*)%(*interface*)%(*api*)%(*type*);
+  }
+%(*endif-type*)
+  
+  void Context::Set%(*port*)%(*interface*)%(*api*)%(*type*)(%(*parameters*))
+  {
+%(*if-type*)
+    m_%(*port*)%(*interface*)%(*api*)%(*type*) = value;
+%(*endif-type*)
+    unblock();
+  }
+" (component-ports (component ast)))
+
 %(*component-methods*)
 %(*state-methods*)
 %(*function-definitions*)
 
 %(map-ports
-"
-boost::shared_ptr<%(*interface*)Interface> %(*component*)Component::GetInstance()
+"boost::shared_ptr<%(*interface*)Interface> %(*component*)Component::GetInstance()
 {
   return boost::shared_ptr<%(*interface*)Interface>(new %(*component*)ImplScope::Component);
 }

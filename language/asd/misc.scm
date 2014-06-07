@@ -21,6 +21,7 @@
   :use-module (ice-9 rdelim)
   :export (
            =1
+           >1
            gulp-text-file
            dump-file
            null-is-#f
@@ -32,6 +33,7 @@
 (define (null-is-#f o) (if (null? o) #f o))
 (define (one-is-#f o) (if (or (null? o) (=1 (length o))) #f o))
 (define (=1 x) (= x 1))
+(define (>1 x) (> x 1))
 
 (define (gulp-text-file name)
   (let* ((file (open-file name "r"))
