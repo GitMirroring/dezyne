@@ -92,7 +92,7 @@
   (or (and (or (not (defined? '*port-def*)) (port-provides? *port-def*)) 'CB) 'API)
   )
 (define (*ap*) (or (and (or (not (defined? '*port-def*)) (port-provides? *port-def*)) 'api) 'cb))
-(define (*cb*) (or (and (or (not (defined? '*port-def*)) (port-providesc? *port-def*)) 'cb) 'api))
+(define (*cb*) (or (and (or (not (defined? '*port-def*)) (port-provides? *port-def*)) 'cb) 'api))
 
 (define (*if-type*) (if (port-typed-event? *port-def*) "" "#if 0"))
 (define (*else-type*) (if (port-typed-event? *port-def*) "" "#else"))

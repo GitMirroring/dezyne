@@ -117,7 +117,40 @@ class State;
     virtual ~Context();
   };
 
-%(*component-class*)
+  class Component: public %(*component*)Component
+  {
+  private:
+    Context m_Context;
+%(map-ports
+"    boost::shared_ptr<%(*port*)%(*interface*)%(*api*)Proxy> m_%(*port*)%(*interface*)%(*api*)Proxy;
+" (component-ports (component ast)))
+    Component(const Component&);
+    Component& operator = (const Component&);
+    
+  public:
+    Component();
+    ~Component();
+    
+%(map-ports
+"%(string-if (component-bottom? (component ast))
+\"    virtual void Get%(*api*)(boost::shared_ptr<%(*interface*)%(*api*)>* %(*ap*));
+    virtual void Register%(*callback*)(boost::shared_ptr<%(*interface*)%(*callback*)> %(*cb*));
+    virtual void Get%(*callback*)(boost::shared_ptr<%(*interface*)%(*callback*)>* %(*cb*));
+    virtual void Register%(*api*)(boost::shared_ptr<%(*interface*)%(*api*)> %(*ap*));
+#if 0
+    virtual void Get%(*port*)Interface(boost::shared_ptr<%(*interface*)Interface>* intf);
+#endif
+\"
+\"    virtual void Get%(*api*)%(*port*)(boost::shared_ptr<%(*interface*)%(*api*)>* %(*ap*));
+    virtual void Register%(*callback*)%(*port*)(boost::shared_ptr<%(*interface*)%(*callback*)> %(*cb*));
+#if 0
+    virtual void Get%(*port*)Interface(boost::shared_ptr<%(*interface*)Interface>* intf);
+#endif
+\")"  (component-ports (component ast)))
+%(variable-unset! (module-variable (current-module) '*port-def*))
+    virtual void Register%(*callback*)(boost::shared_ptr<asd::channels::ISingleThreaded> cb);
+  };
+
 %(*proxy-methods*)
 %(*context-methods*)
 %(*component-methods*)
