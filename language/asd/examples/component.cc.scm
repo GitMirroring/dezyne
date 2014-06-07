@@ -47,7 +47,7 @@ namespace %(*component*)ImplScope
 #endif
 
 %(map-port-events 
-\"    void %(port-name (*port*))%(*interface*)%(*event*)(Context& context);
+\"    void %(*port*)%(*interface*)%(*event*)(Context& context);
 \"
     port (filter (event-dir-matches? port) (port-events port)))
 " (component-ports (component ast)))
@@ -61,14 +61,68 @@ namespace %(*component*)ImplScope
 %(*function-declarations*)
   };
 class State;
-%(*context-class*)
+  class Context: public asd_0::SingleThreadedContext%(*no-dpc*)
+  {
+  public:
+%(map-ports
+"    boost::shared_ptr<%(*interface*)%(*callback*)> m_%(*port*)%(*interface*)%(*callback*);
+%(*if-type*)
+    %(*interface*)::%(*type*) m_%(*port*)%(*interface*)%(*api*)%(*type*);
+%(*endif-type*)
+    void Set%(*port*)(const boost::shared_ptr<%(*interface*)%(*callback*)>&);
+    %(*interface*)%(*callback*)& Get%(*port*)%(*interface*)%(*callback*)() const;
+%(*if-type*)
+    %(*interface*)::%(*type*) Get%(*port*)%(*interface*)%(*api*)%(*type*)() const;
+    void Set%(*port*)%(*interface*)%(*api*)%(*type*)(%(*interface*)::%(*type*) %(*ap*));
+%(*else-type*)
+    void Set%(*port*)%(*interface*)%(*api*)%(*type*)();
+%(*endif-type*)
+" (component-ports (component ast)))
+
+%(*instances*)
+% (string-if (component-behaviour (component ast))
+"    State* m_State;
+    State& getState();
+  public:
+    struct Predicates
+    {
+% (map-variables
+\"      %(*state-type*) %(*variable*);
+\" (behaviour-variables (component-behaviour (component ast))))
+      Predicates()
+      {
+% (map-variables
+\"        %(*variable*) = %(*value*);
+\" (behaviour-variables (component-behaviour (component ast))))
+      }
+    };
+    
+  private:
+    Predicates m_Predicates;
+  public:
+    const Predicates& predicates() const { return m_Predicates; }
+    void predicates(const Predicates& p) { m_Predicates = p; }
+"
+
+"")    
+  public:
+    Context* Self() { return this; }
+    
+  private:
+    Context(const Context&);
+    Context& operator = (const Context&);
+    
+  public:
+    Context();
+    virtual ~Context();
+  };
+
 %(*component-class*)
 %(*proxy-methods*)
 %(*context-methods*)
 %(*component-methods*)
 %(*state-methods*)
 %(*function-definitions*)
-}
 
 %(map-ports
 "

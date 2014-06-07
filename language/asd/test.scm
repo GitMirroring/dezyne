@@ -19,6 +19,7 @@
 
 (define-module (language asd test)
   :use-module (ice-9 match)
+  :use-module (ice-9 and-let-star)
   :use-module (srfi srfi-1)
   :use-module (language asd ast)
   :use-module (language asd misc)
@@ -85,26 +86,21 @@
   (if (interface ast) (*interface*) (*component*)))
 
 (define (*interface*) (interface-name (interface ast)))
-;;(define (*api-class*) (map ->string (list (*module*) (*api*))))
-;;(define (*callback-class*) (map ->string (list (*module*) (*callback*))))
-;;(define (*scoped-api*) (map ->string (list "port" (*module*) (*api*))))
 
-(define (port-events port)  ;;; FIXME
-  (case (port-name port) 
-    ((console) '((in void arm) (in void disarm) (out void detected (out void deactivated))))
-    ((sensor) '((in void enable) (in void disable) (out void triggered) (out void disabled)))
-    ((siren) '((in void turnon) (in void turnoff)))))
-
-;;(define (*port*) '(provides Foo bar))
-
-(define (*api*) (or (and (or (not (defined? '*port*)) (port-provides? (*port*))) 'API) 'CB))
-(define (*callback*) (stderr "*callback*: port: ~a\n" (or (and (defined? '*port*) (*port*)) "no port" ))
- (or (and (or (not (defined? '*port*)) (port-requires? (*port*))) 'CB) 'API)
+(define (*api*) (or (and (or (not (defined? '*port-def*)) (port-provides? *port-def*)) 'API) 'CB))
+(define (*callback*) (stderr "*callback*: port-def: ~a\n" (or (and (defined? '*port-def*) *port-def*) "no port" ))
+  (or (and (or (not (defined? '*port-def*)) (port-provides? *port-def*)) 'CB) 'API)
   )
-(define (*ap*) (or (and (or (not (defined? '*port*)) (port-provides? (*port*))) 'api) 'cb))
-(define (*cb*) (or (and (or (not (defined? '*port*)) (port-requires? (*port*))) 'cb) 'api))
+(define (*ap*) (or (and (or (not (defined? '*port-def*)) (port-provides? *port-def*)) 'api) 'cb))
+(define (*cb*) (or (and (or (not (defined? '*port-def*)) (port-providesc? *port-def*)) 'cb) 'api))
 
-(define (comma-join lst) (string-join (map ->string lst) ", "))
+(define (*if-type*) (if (port-typed-event? *port-def*) "" "#if 0"))
+(define (*else-type*) (if (port-typed-event? *port-def*) "" "#else"))
+(define (*endif-type*) (if (port-typed-event? *port-def*) "" "#endif"))
+
+(define (->join lst infix) (string-join (map ->string lst) infix))
+(define (comma-join lst) (->join lst ", "))
+(define (double-colon-join lst) (->join lst "::"))
 
 (define (enum->string enum)
   (->string (list "enum "  (enum-name enum) " { " (comma-join (enum-elements enum)) " };\n")))
@@ -126,28 +122,51 @@
    *function-definitions*
    *function-declarations*
 
-   ;;*scoped-api*
-   *type*
+  *type*
    *return-interface-type*
+   *instances*
+   *behaviour*
+   *no-dpc*
+   *state-type*
+   *name*
+   *value*
    ))
 
-(define (*instance-getters*)
-   (map (lambda (x) (list "  virtual void " (port-name x) "() = 0;\n")) (filter port-provides? (component-ports (component ast))))
-  )
+(define (return-type-text port)
+  (or (and-let* ((event (null-is-#f (port-typed-event? *port-def*))))
+                (event-type event))
+      'void))
 
 (define (map-ports string ports)
   (map (lambda (port)
          (let ((module (c++-module ast)))
            (module-define! module '*interface* (lambda () (port-interface port)))
            (module-define! module 'port port)
-           ;;;(module-define! module '*port* (lambda () port))
            (module-define! module '*port* (lambda () (port-name port)))
+           (module-define! module '*port-def* port)
+           (module-define! module '*type* (lambda () (return-type-text port)))
 
            ;;; FIXME
-           (module-define! (resolve-module '(language asd test)) '*port* (lambda () port))
-
-
+           (module-define! (resolve-module '(language asd test)) '*port* (lambda () (port-name port)))
+           (module-define! (resolve-module '(language asd test)) '*port-def* port)
            (animate-string string module))) ports))
+
+(define (string-if condition then else)
+  (animate-string (if condition then else) (current-module)))
+
+(define (variable-value->string v)
+  (case (variable-type v)
+    ((bool) (->string (variable-initial-value v)))
+    (;;(enum)
+     else
+     (double-colon-join (append (list (*module*)) 
+                                (cdr (variable-initial-value v)))))))
+
+(define (variable-state-type v)
+  (case (variable-type v)
+    ((bool) (->string (variable-type v)))
+    (;;(enum)
+     else (double-colon-join (list 'State (variable-type v))))))
 
 (define (map-events string events)
   (map (lambda (event)
@@ -156,8 +175,11 @@
            (module-define! module '*interface* (lambda () (port-interface port)))
            (if (defined? '*port*)
                (module-define! module '*port* *port*)
-               (stderr "map-events: *port* not defined?")
-           ) (module-define! module '*type* (lambda () (event-type event)))
+               (stderr "map-events: *port* not defined?"))
+           (if (defined? '*port-def*)
+               (module-define! module '*port-def* *port-def*)
+               (stderr "map-events: *port-def* not defined?"))
+           (module-define! module '*type* (lambda () (event-type event)))
            (animate-string string module))) events))
 
 (define (map-port-events string port events)
@@ -165,6 +187,34 @@
          (let ((module (c++-module ast)))
            (module-define! module '*event* (lambda () (event-name event)))
            (module-define! module '*interface* (lambda () (port-interface port)))
-           (module-define! module '*port* (lambda () port))
+           (module-define! module '*port* (lambda () (port-name  port)))
+           (module-define! module '*port-def* port)
            (module-define! module '*type* (lambda () (event-type event)))
            (animate-string string module))) events))
+
+(define (map-variables string variables)
+  (map (lambda (variable)
+         (let ((module (c++-module ast))
+               (behaviour (component-behaviour (component ast)))
+               (name (variable-name variable)))
+
+           (stderr "map-variables: variable: ~a\n" variable)
+           (module-define! module '*interface* (lambda () *module*))
+           (module-define! module 'variable variable)
+           (module-define! module '*variable* (lambda () name))
+           (module-define! module '*variable-def* variable)
+           (module-define! module '*type* (lambda () (return-type-text variable)))
+
+
+           (module-define! module '*state-type* (lambda () (variable-state-type variable)))           
+           (module-define! module '*name* (lambda () (return-type-text variable)))           
+           (module-define! module '*value* (lambda () (variable-value->string variable)))
+
+
+
+
+           ;;; FIXME
+           (module-define! (resolve-module '(language asd test)) '*variable* (lambda () (variable-name variable)))
+           (module-define! (resolve-module '(language asd test)) '*variable-def* variable)
+           (animate-string string module))) variables))
+

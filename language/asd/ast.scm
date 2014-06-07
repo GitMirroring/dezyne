@@ -23,6 +23,7 @@
   :use-module (language asd misc)
   :export (behaviour-types
            behaviour-variables
+           behaviour-variable
 
            component
            component-behaviour
@@ -57,7 +58,10 @@
            port-requires?
            port-in?
            port-out?
+           port-typed-event?
+           event-typed?
 
+           port-events ;; FIXME
 
            type-name
            variable-initial-value
@@ -107,9 +111,15 @@
 (define (port-in? port) (or (port-requires? port) event-in? event-out?)) 
 (define (port-out? port) (or (port-provides? port) event-out? event-in?)) 
 
+(define (event-typed? event) (not (eq? (event-type event) 'void)))
+(define (port-typed-event? port)
+  (null-is-#f (filter event-typed? (port-events port))))
 
-
-;;(define (port-events ()))
+(define (port-events port)  ;;; FIXME
+  (case (port-name port) 
+    ((console) '((in void arm) (in void disarm) (out void detected (out void deactivated))))
+    ((sensor) '((in void enable) (in void disable) (out void triggered) (out void disabled)))
+    ((siren) '((in void turnon) (in void turnoff)))))
 
 (define (component-behaviour component) 
   (assoc 'behaviour (component-spec component)))
@@ -117,6 +127,7 @@
 (define (behaviour-types behaviour) (assoc-ref (behaviour-spec behaviour) 'types))
 (define (behaviour-variables behaviour) (assoc-ref (behaviour-spec behaviour) 'variables))
 
+(define (behaviour-variable behaviour variable) (assoc-ref (behaviour-variables behaviour variable)))
 (define (variable-type variable) (cadr variable))
 (define (variable-name variable) (caddr variable))
 (define (variable-initial-value variable) (cadddr variable))
