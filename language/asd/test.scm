@@ -85,25 +85,26 @@
   (if (interface ast) (*interface*) (*component*)))
 
 (define (*interface*) (interface-name (interface ast)))
-(define (*api-class*) (map ->string (list (*module*) (*api*))))
-(define (*callback-class*) (map ->string (list (*module*) (*callback*))))
-
-(define (*scoped-api*) (map ->string (list "port" (*module*) (*api*))))
+;;(define (*api-class*) (map ->string (list (*module*) (*api*))))
+;;(define (*callback-class*) (map ->string (list (*module*) (*callback*))))
+;;(define (*scoped-api*) (map ->string (list "port" (*module*) (*api*))))
 
 (define (port-events port)  ;;; FIXME
   (case (port-name port) 
     ((console) '((in void arm) (in void disarm) (out void detected (out void deactivated))))
-    ((sensor) '((in void enable) (in void disable) (out void triggered (out void disabled))))
+    ((sensor) '((in void enable) (in void disable) (out void triggered) (out void disabled)))
     ((siren) '((in void turnon) (in void turnoff)))))
 
-(define (*port*) '(provides Foo bar))
+;;(define (*port*) '(provides Foo bar))
 
-(define (*api*) (or (and (port-provides? (*port*)) 'API) 'CB))
-(define (*callback*) (or (and (port-requires? (*port*)) 'API) 'CB))
-(define (*ap*) (or (and (port-provides? (*port*)) 'api) 'cb))
-(define (*cb*) (or (and (port-requires? (*port*)) 'api) 'cb))
+(define (*api*) (or (and (or (not (defined? '*port*)) (port-provides? (*port*))) 'API) 'CB))
+(define (*callback*) (stderr "*callback*: port: ~a\n" (or (and (defined? '*port*) (*port*)) "no port" ))
+ (or (and (or (not (defined? '*port*)) (port-requires? (*port*))) 'CB) 'API)
+  )
+(define (*ap*) (or (and (or (not (defined? '*port*)) (port-provides? (*port*))) 'api) 'cb))
+(define (*cb*) (or (and (or (not (defined? '*port*)) (port-requires? (*port*))) 'cb) 'api))
 
-(define (comma-join lst) (string-join (map symbol->string lst) ", "))
+(define (comma-join lst) (string-join (map ->string lst) ", "))
 
 (define (enum->string enum)
   (->string (list " Enum {" (comma-join (enum-elements enum)) " };\n")))
@@ -141,7 +142,13 @@
          (let ((module (c++-module ast)))
            (module-define! module '*interface* (lambda () (port-interface port)))
            (module-define! module 'port port)
+           ;;;(module-define! module '*port* (lambda () port))
            (module-define! module '*port* (lambda () (port-name port)))
+
+           ;;; FIXME
+           (module-define! (resolve-module '(language asd test)) '*port* (lambda () port))
+
+
            (animate-string string module))) ports))
 
 (define (map-events string events)
@@ -149,7 +156,10 @@
          (let ((module (c++-module ast)))
            (module-define! module '*event* (lambda () (event-name event)))
            (module-define! module '*interface* (lambda () (port-interface port)))
-           (module-define! module '*type* (lambda () (event-type event)))
+           (if (defined? '*port*)
+               (module-define! module '*port* *port*)
+               (stderr "map-events: *port* not defined?")
+           ) (module-define! module '*type* (lambda () (event-type event)))
            (animate-string string module))) events))
 
 (define (map-port-events string port events)
@@ -157,6 +167,6 @@
          (let ((module (c++-module ast)))
            (module-define! module '*event* (lambda () (event-name event)))
            (module-define! module '*interface* (lambda () (port-interface port)))
-           (module-define! module '*port* (lambda () (port-name port)))
+           (module-define! module '*port* (lambda () port))
            (module-define! module '*type* (lambda () (event-type event)))
            (animate-string string module))) events))

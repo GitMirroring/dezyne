@@ -50,7 +50,7 @@
   (parameterize ((snippet-dir asd-snippet-dir) (snippets asd-snippets))
     (apply snippet->string x)))
 
-(define (comma-join lst) (string-join (map symbol->string lst) ", "))
+(define (comma-join lst) (string-join (map ->string lst) ", "))
 
 (define asd-snippet-dir '(snippets asd))
 (define asd-snippets

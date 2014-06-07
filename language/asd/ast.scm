@@ -40,6 +40,7 @@
            event-type
            event-in?
            event-out?
+           event-dir-matches?
 
            interface
            interface-events
@@ -52,6 +53,9 @@
            port-interface
            port-provides?
            port-requires?
+           port-in?
+           port-out?
+
 
            type-name
            variable-initial-value
@@ -74,6 +78,13 @@
 (define (event-in? event) (eq? (event-direction event) 'in))
 (define (event-out? event) (eq? (event-direction event) 'out))
 
+(define (event-dir-matches? port) 
+  (lambda (event)
+    (or (and (eq? (port-direction port) 'provides)
+             (eq? (event-direction event) 'in))
+        (and (eq? (port-direction port) 'requires)
+             (eq? (event-direction event) 'out)))))
+
 (define (component ast) (assoc 'component ast))
 (define (component-bottom? component)
   (and-let* ((ports (component-ports component))
@@ -90,6 +101,11 @@
 (define (port-interface port) (cadr port))
 (define (port-provides? port) (eq? (port-direction port) 'provides))
 (define (port-requires? port) (eq? (port-direction port) 'requires))
+
+(define (port-in? port) (or (port-requires? port) event-in? event-out?)) 
+(define (port-out? port) (or (port-provides? port) event-out? event-in?)) 
+
+
 
 ;;(define (port-events ()))
 

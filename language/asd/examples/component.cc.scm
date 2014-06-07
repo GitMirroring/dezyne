@@ -22,7 +22,7 @@ namespace %(*component*)ImplScope
     %(*port*)%(*interface*)%(*api*)Proxy(Context& context);
 %(map-port-events \"
     virtual %(if (eq? 'void (*type*)) (*type*) (list (*interface*) \\\"::\\\" (*type*))) %(*event*)();\"
-    port (port-events port))
+    port (filter (event-dir-matches? port) (port-events port)))
   private:
     %(*port*)%(*interface*)%(*api*)Proxy& operator = (const %(*port*)%(*interface*)%(*api*)Proxy& other);
     %(*port*)%(*interface*)%(*api*)Proxy(const %(*port*)%(*interface*)%(*api*)Proxy& other);
