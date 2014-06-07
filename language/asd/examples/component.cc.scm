@@ -331,12 +331,22 @@ class State;
 
 %(*function-definitions*)
 
+%(string-if (component-bottom? (component ast))
+"
 %(map-ports
-"boost::shared_ptr<%(*interface*)Interface> %(*component*)Component::GetInstance()
+\"boost::shared_ptr<%(*interface*)Interface> %(*component*)Component::GetInstance()
 {
   return boost::shared_ptr<%(*interface*)Interface>(new %(*component*)ImplScope::Component);
 }
-" (component-ports (component ast)))
+\" (component-ports (component ast)))
+"
+
+"
+boost::shared_ptr<%(*component*)Component> %(*component*)Component::GetInstance()
+{
+  return boost::shared_ptr<%(*component*)Component>(new %(*component*)ImplScope::Component);
+}
+")
 
 void %(*component*)Component::ReleaseInstance()
 {
