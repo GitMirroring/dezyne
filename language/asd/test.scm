@@ -107,10 +107,7 @@
 (define (comma-join lst) (string-join (map ->string lst) ", "))
 
 (define (enum->string enum)
-  (->string (list " Enum {" (comma-join (enum-elements enum)) " };\n")))
-
-(define (*enums*) (->string (map enum->string (interface-types (interface ast)))))
-
+  (->string (list "enum "  (enum-name enum) " { " (comma-join (enum-elements enum)) " };\n")))
 
 ;;;; COMPONENT
 (define (*component*) (component-name (component ast)))
@@ -127,6 +124,7 @@
    *component-methods*
    *state-methods*
    *function-definitions*
+   *function-declarations*
 
    ;;*scoped-api*
    *type*

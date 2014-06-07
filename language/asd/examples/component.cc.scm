@@ -20,8 +20,9 @@ namespace %(*component*)ImplScope
     
   public:
     %(*port*)%(*interface*)%(*api*)Proxy(Context& context);
-%(map-port-events \"
-    virtual %(if (eq? 'void (*type*)) (*type*) (list (*interface*) \\\"::\\\" (*type*))) %(*event*)();\"
+%(map-port-events 
+\"    virtual %(if (eq? 'void (*type*)) (*type*) (list (*interface*) \\\"::\\\" (*type*))) %(*event*)();
+\"
     port (filter (event-dir-matches? port) (port-events port)))
   private:
     %(*port*)%(*interface*)%(*api*)Proxy& operator = (const %(*port*)%(*interface*)%(*api*)Proxy& other);
@@ -29,7 +30,36 @@ namespace %(*component*)ImplScope
   };
 " (component-ports (component ast)))
 
-%(*state-class*)
+  struct %(*component*)
+  {
+    %(->string (map enum->string (behaviour-types (component-behaviour (component ast)))))
+  };
+
+  class State : public %(*component*)
+  {
+  public:
+    State();
+    ~State() {}
+    static State& instance();
+%(map-ports
+"#if 0
+    void Processvoid(Context& context, ConsoleCB::void stimulus);
+#endif
+
+%(map-port-events 
+\"    void %(port-name (*port*))%(*interface*)%(*event*)(Context& context);
+\"
+    port (filter (event-dir-matches? port) (port-events port)))
+" (component-ports (component ast)))
+
+    protected:
+    std::string m_TypeName;
+    
+  private:
+    State& operator = (const State& other);
+    State(const State& other);
+%(*function-declarations*)
+  };
 class State;
 %(*context-class*)
 %(*component-class*)

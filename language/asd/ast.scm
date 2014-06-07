@@ -34,6 +34,8 @@
            type-name-component
 
            enum-elements
+           enum-name
+           enum-type
 
            event-direction
            event-name
@@ -120,8 +122,10 @@
 (define (variable-initial-value variable) (cadddr variable))
 
 (define (enum-elements enum) (caddr enum))
+(define (enum-name enum) (cadr enum))
 
 (define (type-name type) (car type))
+(define enum-type type-name)
 
 (define (type-name-component type component)
   (symbol-append (component-name component) (variable-type type)))

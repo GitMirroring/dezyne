@@ -14,7 +14,7 @@
 
 struct %(*interface*)
 {
-%(*enums*)
+ %(->string (map enum->string (interface-types (interface ast))))
 };
 
 class %(*module*)%(*api*) : public %(*interface*)
