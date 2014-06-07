@@ -130,6 +130,7 @@
    *state-type*
    *name*
    *value*
+   *return-context-get*
    ))
 
 (define (return-type-text port)
@@ -137,6 +138,9 @@
                 (event-type event))
       'void))
 
+(define (return-interface-type event)
+  (or (and (event-typed? event)  (list (*interface*) "::" (event-type event)))
+      'void))
 
 (define (string-if condition then else)
   (animate-string (if condition then else) (current-module)))
@@ -173,6 +177,10 @@
   (map (lambda (event)
          (let ((module (c++-module ast)))
            (module-define! module '*event* (lambda () (event-name event)))
+
+           (module-define! module 'event event)
+           (module-define! module '*event-def* event)
+
            (module-define! module '*interface* (lambda () (port-interface port)))
            (if (defined? '*port*)
                (module-define! module '*port* *port*)
@@ -181,16 +189,32 @@
                (module-define! module '*port-def* *port-def*)
                (stderr "map-events: *port-def* not defined?"))
            (module-define! module '*type* (lambda () (event-type event)))
+
+
+           ;; FIXME
+           (module-define! (resolve-module '(language asd test)) 'event event)
+           (module-define! (resolve-module '(language asd test)) '*event-def* event)
            (animate-string string module))) events))
 
 (define (map-port-events- string port events)
   (map (lambda (event)
          (let ((module (c++-module ast)))
+
+           (module-define! module 'event event)
+           (module-define! module '*event-def* event)
+
+
            (module-define! module '*event* (lambda () (event-name event)))
            (module-define! module '*interface* (lambda () (port-interface port)))
-           (module-define! module '*port* (lambda () (port-name  port)))
+           (module-define! module '*port* (lambda () (port-name port)))
+           (module-define! module 'port port)
            (module-define! module '*port-def* port)
            (module-define! module '*type* (lambda () (event-type event)))
+
+           ;;; FIXME
+           (module-define! (resolve-module '(language asd test)) '*port* (lambda () (port-name port)))
+           (module-define! (resolve-module '(language asd test)) 'port port)
+           (module-define! (resolve-module '(language asd test)) '*port-def* port)
            (animate-string string module))) events))
 
 (define (map-variables- string variables)

@@ -150,7 +150,39 @@ class State;
     virtual void Register%(*callback*)(boost::shared_ptr<asd::channels::ISingleThreaded> cb);
   };
 
-%(*proxy-methods*)
+// if has behaviour
+% (map-ports
+"  %(*port*)%(*interface*)%(*api*)Proxy::%(*port*)%(*interface*)%(*api*)Proxy(Context& context)
+  : m_Context(context)
+  {
+  }
+%(map-port-events
+\"
+
+%(string-if (eq? (port-direction port) 'required)
+\\\"
+  %(*return-interface-type*) %(*port*)%(*interface*)%(*api*)Proxy::%(*event*)()
+  {
+    m_Context.block();
+    m_Context.getState().%(*port*)%(*interface*)%(*event*)(m_Context);
+    m_Context.awaitUnblock();
+    %(*return-context-get*)
+  }
+\\\"
+\\\"
+  %(return-interface-type event) %(*port*)%(*interface*)%(*api*)Proxy::%(*event*)()
+  {
+    m_Context.defer(boost::bind(&State::%(*port*)%(*interface*)%(*event*),
+                    boost::bind(&Context::getState, &m_Context),
+                    boost::ref(m_Context)));
+    %(*return-context-get*)
+  }
+\\\")
+
+\" port (filter (event-dir-matches? port) (port-events port)))
+  
+" (component-ports (component ast)))
+
 %(*context-methods*)
 %(*component-methods*)
 %(*state-methods*)
