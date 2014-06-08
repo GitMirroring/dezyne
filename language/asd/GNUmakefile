@@ -22,6 +22,7 @@
 
 DEPTH = ../..
 diff = diff -uw -I '^ *$$' -I '^ *//'
+sed = sed -e 's/^-gen/gen/' -re 's/((cppbase.cpp|.hh.scm|.cc.scm):[0-9]*):/\1:warning:/'
 BUILD = build-master
 asdgen = ASD_PREFIX=$(DEPTH) $(DEPTH)/$(BUILD)/asdgenerator
 
@@ -57,21 +58,25 @@ pretty:
 	./gaiag -l asd examples/alarm-component-pretty.asd | indent | tee pretty.asd && $(diff) examples/alarm-component-pretty.asd pretty.asd
 
 c++: baseline
-	./gaiag -l c++ examples/alarm-component-pretty.asd
+	./gaiag -l c++ examples/Alarm.asd
 	-$(diff) examples/AlarmComponent.h .
 	-$(diff) examples/AlarmComponent.cpp .
 	./gaiag examples/Aap.asd
 	./gaiag -l c++ examples/Aap.asd
 	[ -f examples/NootComponent.h ] && $(diff) examples/NootComponent.h .
-	-[ -f examples/NootComponent.cpp ] && $(diff) examples/NootComponent.cpp .
-	./gaiag -l c++ examples/CommImpl.asd
-	[ -f examples/CommImplComponent.h ] && $(diff) examples/CommImplComponent.h .
-	-[ -f examples/CommImplComponent.cpp ] && $(diff) examples/CommImplComponent.cpp .
+	-[ -f examples/NootComponent.cpp ] && $(diff) examples/NootComponent.cpp .  | $(sed)
+#	./gaiag -l c++ examples/CommImpl.asd
+#	[ -f examples/CommImplComponent.h ] && $(diff) examples/CommImplComponent.h .
+#	-[ -f examples/CommImplComponent.cpp ] && $(diff) examples/CommImplComponent.cpp .
 
 test:
-#	./gaiag -l c++ examples/Console.asd | tee ConsoleInterface.h
-#	$(diff) examples/ConsoleInterface.h .
-#	./gaiag -l c++ examples/Siren.asd | tee SirenInterface.h
-#	$(diff) examples/SirenInterface.h .
-	./gaiag -l c++ examples/Alarm.asd | tee AlarmComponent.cpp
-	$(diff) examples/AlarmComponent.cpp .
+	./gaiag -l c++ examples/Console.asd
+	$(diff) examples/ConsoleInterface.h .
+	./gaiag -l c++ examples/Sensor.asd
+	$(diff) examples/SensorInterface.h .
+	./gaiag -l c++ examples/Siren.asd
+	$(diff) examples/SirenInterface.h .
+	./gaiag -l c++ examples/Alarm.asd
+	$(diff) examples/AlarmComponent.h .
+	$(diff) examples/AlarmComponent.cpp . | $(sed)
+	g++ -I ../../examples/codegen/asd_cpp_runtime --std=c++11 -c AlarmComponent.cpp

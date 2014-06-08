@@ -20,8 +20,12 @@
 (define-module (language asd ast)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 match)
+  :use-module (srfi srfi-1)
+
   :use-module (language asd misc)
-  :export (behaviour-types
+  :export (
+           behaviour-statements
+           behaviour-types
            behaviour-variables
            behaviour-variable
 
@@ -31,8 +35,10 @@
            component-bottom?
            component-name
            component-ports
+           component-port
            ;; component-spec
            component-interface
+
            type-name-component
 
            enum-elements
@@ -45,6 +51,9 @@
            event-in?
            event-out?
            event-dir-matches?
+           
+           field-type
+           field-entry
 
            interface
            interface-events
@@ -102,6 +111,8 @@
 (define (component-spec component) (cddr component)) 
 (define (component-ports component) (cdr (assoc 'ports (component-spec component)))) 
 (define (component-interface component) (car (assoc-ref (component-ports component) 'provides)))
+(define (component-port component name) (find (lambda (p) (eq? (port-name p) name)) (component-ports component)))
+
 
 (define (port-direction port) (car port))
 (define (port-name port) (caddr port))
@@ -118,6 +129,7 @@
 
 (define (port-events port)  ;;; FIXME
   (case (port-name port) 
+    ((aap) '((in AapValues is_aap)))
     ((console) '((in void arm) (in void disarm) (out void detected (out void deactivated))))
     ((sensor) '((in void enable) (in void disable) (out void triggered) (out void disabled)))
     ((siren) '((in void turnon) (in void turnoff)))))
@@ -143,7 +155,7 @@
   (statements-of-type statements 'guard))
 (define (guard-expression guard) (cadr guard))
 
-(define (behaviour-variable behaviour variable) (assoc-ref (behaviour-variables behaviour variable)))
+(define (behaviour-variable behaviour variable) (assoc-ref (behaviour-variables behaviour) variable))
 (define (variable-type variable) (cadr variable))
 (define (variable-name variable) (caddr variable))
 (define (variable-initial-value variable) (cadddr variable))
@@ -154,13 +166,14 @@
 (define (type-name type) (car type))
 (define enum-type type-name)
 
+(define (field-type field) (cadr field))
+(define (field-entry field) (caddr field))
+
 (define (type-name-component type component)
   (symbol-append (component-name component) (variable-type type)))
 
 (define (->string src) 
   (match src
-    (#f "false")
-    (#t "true")
     ((? char?) (make-string 1 src))
     ((? string?) src)
     ((? symbol?) (symbol->string src))

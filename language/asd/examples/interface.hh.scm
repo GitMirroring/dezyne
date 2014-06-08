@@ -1,5 +1,5 @@
-#ifndef __%(*interface*)_INTERFACE_H__
-#define __%(*interface*)_INTERFACE_H__
+#ifndef __%.interface _INTERFACE_H__
+#define __%.interface _INTERFACE_H__
 
 #include <boost/shared_ptr.hpp>
 
@@ -12,57 +12,57 @@
 #include "asdPassByValue.h"
 #include "asdInterfaces.h"
 
-struct %(*interface*)
+struct %.interface 
 {
- %(->string (map enum->string (interface-types (interface ast))))
+ %(->string (map declare-enum (interface-types (interface ast))))
 };
 
-class %(*module*)%(*api*) : public %(*interface*)
+class %.module %.api : public %.interface 
 {
 public:
-  virtual ~%(*module*)%(*api*)() {}
+  virtual ~%.module %.api () {}
 % (map-events
-"  virtual void %(*event*) () = 0;
+"  virtual void %.event () = 0;
 " (filter event-in? (interface-events (interface ast))))
 protected:
-  %(*module*)%(*api*)() {}
+  %.module %.api () {}
 private:
-  %(*module*)%(*api*)& operator = (const %(*module*)%(*api*)& other);
-  %(*module*)%(*api*)(const %(*module*)%(*api*)& other);
+  %.module %.api & operator = (const %.module %.api & other);
+  %.module %.api (const %.module %.api & other);
 };
 
-class %(*module*)%(*callback*)
+class %.module %.callback 
 {
 public:
-  virtual ~%(*module*)%(*callback*)() {}
+  virtual ~%.module %.callback () {}
 % (map-events
-"  virtual void %(*event*) () = 0;
+"  virtual void %.event () = 0;
 " (filter event-out? (interface-events (interface ast))))
 protected:
-  %(*module*)%(*callback*)() {}
+  %.module %.callback () {}
 private:
-  %(*module*)%(*callback*)& operator = (const %(*module*)%(*callback*)& other);
-  %(*module*)%(*callback*)(const %(*module*)%(*callback*)& other);
+  %.module %.callback & operator = (const %.module %.callback & other);
+  %.module %.callback (const %.module %.callback & other);
 };
 
 
-class %(*interface*)Interface
+class %.interface Interface
 {
 public:
-  virtual ~%(*interface*)Interface() {}
+  virtual ~%.interface Interface() {}
   // interface used as provided:
-  virtual void Get%(*api*)(boost::shared_ptr<%(*module*)%(*api*)>* %(*ap*)) = 0;
-  virtual void Register%(*callback*)(boost::shared_ptr<%(*module*)%(*callback*)> %(*cb*)) = 0;
+  virtual void Get%.api (boost::shared_ptr<%.module %.api >* %.ap ) = 0;
+  virtual void Register%.callback (boost::shared_ptr<%.module %.callback > %.cb ) = 0;
   // interface used as required:
-  virtual void Get%(*callback*)(boost::shared_ptr<%(*module*)%(*callback*)>* %(*cb*)) = 0;
-  virtual void Register%(*api*)(boost::shared_ptr<%(*module*)%(*api*)> %(*ap*)) = 0;
+  virtual void Get%.callback (boost::shared_ptr<%.module %.callback >* %.cb ) = 0;
+  virtual void Register%.api (boost::shared_ptr<%.module %.api > %.ap ) = 0;
   
-  virtual void Register%(*callback*)(boost::shared_ptr<asd::channels::ISingleThreaded> %(*cb*)) = 0;
+  virtual void Register%.callback (boost::shared_ptr<asd::channels::ISingleThreaded> %.cb ) = 0;
 protected:
-  %(*interface*)Interface() {}
+  %.interface Interface() {}
 private:
-  %(*interface*)Interface& operator = (const %(*interface*)Interface& other);
-  %(*interface*)Interface(const %(*interface*)Interface& other);
+  %.interface Interface& operator = (const %.interface Interface& other);
+  %.interface Interface(const %.interface Interface& other);
 };
 
-#endif // __%(*interface*)_INTERFACE_H__
+#endif // __%.interface _INTERFACE_H__

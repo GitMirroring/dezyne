@@ -24,11 +24,11 @@ datatype event_alphabet
 = %(pipe-join (unique (sort (append (event-names (component-ports (component ast))) '(arm return)) symbol<)))
 
 % (map-ports 
-"channel %(*interface*),%(*port*): {%(comma-join (append (map port-name (port-events *port-def*)) '(return)))}
+"channel %.interface ,%.port : {%(comma-join (append (map port-name (port-events port)) '(return)))}
 " (component-ports (component ast)))
 
-%(*component*)_%(behaviour-name (component-behaviour (component ast))) (IIG,IG) = let
-%(*component*)_%(behaviour-name (component-behaviour (component ast)))(% (comma-join (map variable-name (behaviour-variables (component-behaviour (component ast)))))) = 
+%.component _%(behaviour-name (component-behaviour (component ast))) (IIG,IG) = let
+%.component _%(behaviour-name (component-behaviour (component ast)))(% (comma-join (map variable-name (behaviour-variables (component-behaviour (component ast)))))) = 
 
 % (map-guards
 " (% (list (cadr (guard-expression *guard-def*)) '== (caddr (guard-expression *guard-def*)))) & transition_begin -> (
