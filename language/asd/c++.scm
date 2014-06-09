@@ -26,13 +26,9 @@
   :use-module (language asd ast)
   :use-module (language asd animate)
   :use-module (language asd misc)
-  :use-module (language asd format-keys)
-  :use-module (language asd snippets)
   :export (asd-> 
-           c++-snippet->string
-           statements->string
-           format-parameters
-           c++-snippet?
+;;           statements->string
+;;           format-parameters
            ))
 
 (define *ast* '())
@@ -113,8 +109,7 @@
   (match src
     ;
     (() "")
-    ;;; ((? c++-snippet?) (apply c++-snippet->string src))
-    ((? c++-anime?) (apply c++-anime->string src))
+    ;; ((? c++-anime?) (apply c++-anime->string src))
 
     (('guard expr statements ...)
      (let* ((if-clause (list "    if (predicate." expr ")"))
@@ -174,16 +169,6 @@
     ((h ... t) (apply string-append (map (lambda (x) (statements->string x port event)) src)))
     (_ (stderr "NO MATCH: ~a\n" src) ""))))
 
-
-(define (c++-snippet? x)
-  (parameterize ((snippets c++-snippets)) (snippet? x)))
-
-(define (c++-snippet->string . x)
-  (parameterize ((snippet-dir c++-snippet-dir) (snippets c++-snippets))
-    (apply snippet->string x)))
-
-(define c++-snippet-dir '(snippets c++))
-
 (define (expr->clause expr)
   (let* ((if-clause (list "    if (predicate." expr ")"))
          (else-if-clause (list "    else if (predicate." expr ")"))
@@ -191,9 +176,6 @@
          (guards (behaviour-statements (component-behaviour (component ast))))
          (first? (equal? expr (car guards)))
          (top? (member expr guards)))
-    ;; TODO: expr->string?
-    ;;(stderr "expr: ~a\n" expr)
-    ;;(stderr "top guards: ~a\n" guards)
     (statements->string (if (eq? expr 'otherwise) else-clause (if (or first? (not top?)) if-clause else-if-clause)) #f #f)))
 
 (define (lhs->string lhs)
@@ -205,18 +187,12 @@
     (->string (list prefix (statements->string lhs #f #f)))))
 
 (define (rhs->string rhs)
-  ;;(stderr "rhs: ~a\n" rhs)
   (let* ((enum? (not (or (eq? rhs 'true) (eq? rhs 'false)))))
     (if enum?
         (enum->string rhs)
         (statements->string rhs #f #f))))
 
 (define (fmt x) (format #f "/*~a*/" x))
-(define c++-snippets
-  `((xguard . ((clause . ,expr->clause)
-              (statement . ,(lambda (x) (statements->string (cdr x) #f #f)))))
-    (xassign . ((lhs . ,lhs->string)
-               (rhs . ,rhs->string)))))
 
 ;;;(define (c++-anime? x)  (parameterize ((snippets c++-snippets)) (snippet? x)))
 
@@ -252,9 +228,10 @@
 
 (define c++-animes
   `((action-illegal . (()))
+    (assign . ((.lhs . ,lhs->string)
+               (.rhs . ,rhs->string)))
     (guard . ((.clause . ,expr->clause)
               (.statement . ,(lambda (x) (statements->string (cdr x) #f #f)))))))
-
 
 (define (enum->string e)
   (let ((comp-name (component-name (component *ast*))))
