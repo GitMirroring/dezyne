@@ -28,7 +28,7 @@ asdgen = ASD_PREFIX=$(DEPTH) $(DEPTH)/$(BUILD)/asdgenerator
 
 default: all
 
-all: compile check
+all: compile check test match
 
 compile:
 	guile -L ../.. spec.scm 
@@ -80,3 +80,6 @@ test:
 	$(diff) examples/AlarmComponent.h .
 	$(diff) examples/AlarmComponent.cpp . | $(sed)
 	g++ -I ../../examples/codegen/asd_cpp_runtime --std=c++11 -c AlarmComponent.cpp
+
+match:
+	guile -L ../.. ./match.scm
