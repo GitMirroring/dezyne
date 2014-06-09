@@ -26,7 +26,14 @@
   :use-module (language asd ast)
   :use-module (language asd animate)
   :use-module (language asd misc)
-  :export (asd->))
+  :use-module (language asd format-keys)
+  :use-module (language asd snippets)
+  :export (asd-> 
+           c++-snippet->string
+           statements->string
+           format-parameters
+           c++-snippet?
+           ))
 
 (define *ast* '())
 
@@ -50,6 +57,8 @@
   (let ((module (make-module 31 (list 
                                  (resolve-module '(ice-9 match))
                                  (resolve-module '(language asd ast))
+                                 (resolve-module '(language asd format-keys))
+                                 (resolve-module '(language asd snippets))
                                  (resolve-module '(language asd c++))))))
     (module-define! module 'ast ast)
     (and-let* ((int (interface ast)))
@@ -86,6 +95,172 @@
 (define .parameters "/*parameters*/")
 (define .no-dpc "/*noDpc*/")
 
+
+
+;;;; STRINGERS
+
+(define port- #f)
+(define event- #f)
+
+(define (statements->string src port event)
+  ;;(stderr "statements->string matching: ~a\n" src)
+  (let* ((comp (component *ast*))
+         (comp-name (component-name comp)))
+
+    (if port (set! port- port) (set! port port-))
+    (if event (set! event- event) (set! event event-))
+
+  (match src
+    ;
+    (() "")
+    ;;; ((? c++-snippet?) (apply c++-snippet->string src))
+    ((? c++-anime?) (apply c++-anime->string src))
+
+    (('guard expr statements ...)
+     (let* ((if-clause (list "    if (predicate." expr ")"))
+            (else-if-clause (list "    else if (predicate." expr ")"))
+            (else-clause "    else")
+            (guards (behaviour-statements (component-behaviour (component ast))))
+            (first? (equal? src (car guards)))
+            (top? (member src guards))
+            (clause (if (eq? expr 'otherwise) else-clause (if (or first? (not top?)) if-clause else-if-clause))))
+       ;;;(stderr "OLD calling: ~a\n" statements)
+       (statements->string (list clause "\n" (statements->string statements port event)) port event)))
+
+    (('assign lhs rhs ...)
+     (let* ((state-variables (behaviour-variables (component-behaviour comp)))
+            (state? (find
+                     (lambda (v) (eq? lhs (variable-name v)))
+                     state-variables))
+            (enum? (and state? (not (eq? (variable-type state?) 'bool)))) ;; FIXME
+            (prefix (if state? "predicate." "")))
+       (->string (list prefix (statements->string lhs port event)
+                       " = "
+                       (if enum? 
+                           (enum->string (car rhs)) 
+                           (statements->string rhs port event))
+                       ";\n"
+                       ))))
+    (('on triggers statements ...)
+     (if (member (list 'field (port-name port) (event-name event)) triggers)
+         (statements->string statements port event)
+         ""))
+    (('field 'state name) (->string (list 'state " == " name)))
+    (('field struct name) (->string (list struct "." name)))
+    (('statements lst ...)
+     (let* ((block (statements->string lst port event))
+            (arguments (if (port-typed-event? port) (list (port-interface port) "::" (return-type-text port))))
+            (last (->string (list 'context.Set (port-name port) (port-interface port) (api port) (event-type event) "(" arguments ");\n")))
+            (last? (find (lambda (s) (and (pair? s) (or (eq? (car s) 'action)
+                                                        (eq? (car s) 'assign))))
+                         lst)))
+       (->string  (list "{\n" block (if last? last "") "\n}\n"))))
+    (('action 'illegal)
+     (statements->string (list 'action-illegal) port event))
+    (('action-illegal) 
+     (->string (list  "    ASD_ILLEGAL(\"" comp-name "\", \"State\", \"" (port-interface port) (callback port) "\", \"" (event-name event) "\");\n")))
+    (('action fields ...)
+     (let* ((field (car fields))
+            (int (field-type field))
+            (trigger (field-entry field))
+            (interface (component-port comp int))
+            (name (port-interface interface)))
+       (->string (list "      context.Get" int name (callback interface) "()." trigger "();\n"))
+       )
+     )
+    ((? char?) (make-string 1 src))
+    ((? string?) src)
+    ((? symbol?) (symbol->string src))
+    ((h ... t) (apply string-append (map (lambda (x) (statements->string x port event)) src)))
+    (_ (stderr "NO MATCH: ~a\n" src) ""))))
+
+
+(define (c++-snippet? x)
+  (parameterize ((snippets c++-snippets)) (snippet? x)))
+
+(define (c++-snippet->string . x)
+  (parameterize ((snippet-dir c++-snippet-dir) (snippets c++-snippets))
+    (apply snippet->string x)))
+
+(define c++-snippet-dir '(snippets c++))
+
+(define (expr->clause expr)
+  (let* ((if-clause (list "    if (predicate." expr ")"))
+         (else-if-clause (list "    else if (predicate." expr ")"))
+         (else-clause "    else")
+         (guards (behaviour-statements (component-behaviour (component ast))))
+         (first? (equal? expr (car guards)))
+         (top? (member expr guards)))
+    ;; TODO: expr->string?
+    ;;(stderr "expr: ~a\n" expr)
+    ;;(stderr "top guards: ~a\n" guards)
+    (statements->string (if (eq? expr 'otherwise) else-clause (if (or first? (not top?)) if-clause else-if-clause)) #f #f)))
+
+(define (lhs->string lhs)
+  (let* ((state-variables (behaviour-variables (component-behaviour (component ast))))
+         (state? (find
+                  (lambda (v) (eq? lhs (variable-name v)))
+                  state-variables))
+         (prefix (if state? "predicate." "")))
+    (->string (list prefix (statements->string lhs #f #f)))))
+
+(define (rhs->string rhs)
+  ;;(stderr "rhs: ~a\n" rhs)
+  (let* ((enum? (not (or (eq? rhs 'true) (eq? rhs 'false)))))
+    (if enum?
+        (enum->string rhs)
+        (statements->string rhs #f #f))))
+
+(define (fmt x) (format #f "/*~a*/" x))
+(define c++-snippets
+  `((xguard . ((clause . ,expr->clause)
+              (statement . ,(lambda (x) (statements->string (cdr x) #f #f)))))
+    (xassign . ((lhs . ,lhs->string)
+               (rhs . ,rhs->string)))))
+
+;;;(define (c++-anime? x)  (parameterize ((snippets c++-snippets)) (snippet? x)))
+
+(define (c++-anime? x)
+  (and (list? x) (pair? (assoc (car x) c++-animes))))
+
+(define (animate-anime string pairs)
+  (let ((module (current-module)))
+    (let loop ((pairs pairs))
+      (when (pair? pairs)
+        ;;(stderr "animate-anime: DEFINING: ~a = ~a\n" (caar pairs) (cdar pairs))
+        (module-define! module (caar pairs) (cdar pairs))
+        (loop (cdr pairs))))
+    (with-output-to-string
+      (lambda ()
+        (animate-string 
+         (gulp-text-file (->string (list 'snippets '/ 'c++ '/ string)))
+         module)))))
+
+(define (c++-anime->string name . rest)
+  (let ((snippet (assoc-ref 
+                  ;;(snippets)
+                  c++-animes
+                  name)))
+    (animate-anime name (map (lambda (x)
+                               (let* ((pair (car x))
+                                      (key (car pair))
+                                      (func (cdr pair))
+                                      (data (cadr x))
+                                      (value (func data)))
+                                 (cons key value)))
+                             (zip snippet rest)))))
+
+(define c++-animes
+  `((action-illegal . (()))
+    (guard . ((.clause . ,expr->clause)
+              (.statement . ,(lambda (x) (statements->string (cdr x) #f #f)))))))
+
+
+(define (enum->string e)
+  (let ((comp-name (component-name (component *ast*))))
+    (double-colon-join
+     (list comp-name (field-type e) (field-entry e)))))
+
 (define (return-type-text port)
   (or (and-let* ((event (null-is-#f (port-typed-event? port))))
                 (event-type (car event)))
@@ -99,9 +274,6 @@
   (if (event-typed? event)
       (list interface "::" (event-type event)))
   "")
-
-(define (string-if condition then . else)
-  (animate-string (if condition then (if (pair? else) (car else)  "")) (current-module)))
 
 (define (variable-value->string module v)
   (case (variable-type v)
@@ -121,6 +293,13 @@
   (if (port-typed-event? port)
       (list (port-interface port) "::" (return-type-text port) " " 'value)
       ""))
+
+
+
+
+;;;; MAPPERS
+(define (string-if condition then . else)
+  (animate-string (if condition then (if (pair? else) (car else)  "")) (current-module)))
 
 (define (map-ports string ports)
   (map (lambda (port)
@@ -156,73 +335,6 @@
               (module-define! module '.event (event-name event))
               (animate-string string module))))) events))
 
-(define (enum->string e)
-  (let ((comp-name (component-name (component *ast*))))
-    (double-colon-join
-     (list comp-name (field-type e) (field-entry e)))))
-
-(define (statements->string src port event . block)
-  (let* ((comp (component *ast*))
-         (comp-name (component-name comp))
-         (block? #f;(and (pair? block) (car block))
-          ))
-  (match src
-    (('guard expr statements ...)
-     (let* ((if-clause (list "    if (predicate." expr ")"))
-            (else-if-clause (list "    else if (predicate." expr ")"))
-            (else-clause "    else")
-            (guards (behaviour-statements (component-behaviour (component ast))))
-            (first? (equal? src (car guards)))
-            (top? (member src guards))
-            (clause (if (eq? expr 'otherwise) else-clause (if (or first? (not top?)) if-clause else-if-clause))))
-       (statements->string (list clause "\n" (statements->string statements port event block?)) port event block?)))
-    (('on triggers statements ...)
-     (if (member (list 'field (port-name port) (event-name event)) triggers)
-         (statements->string statements port event block?)
-         ""))
-    (('field 'state name ...) (->string (list 'state " == " name)))
-    (('field struct name ...) (->string (list struct "." name)))
-    (('statements lst ...)
-     (let* ((block (statements->string lst port event #t))
-            (arguments (if (port-typed-event? port) (list (port-interface port) "::" (return-type-text port))))
-            (last (->string (list 'context.Set (port-name port) (port-interface port) (api port) (event-type event) "(" arguments ");\n")))
-            (last? (find (lambda (s) (and (pair? s) (or (eq? (car s) 'action)
-                                                        (eq? (car s) 'assign))))
-                         lst)))
-       (if block?
-           block
-           (->string  (list "{\n" block (if last? last "") "\n}\n")))))
-    (('action 'illegal) 
-     (->string (list  "    ASD_ILLEGAL(\"" comp-name "\", \"State\", \"" (port-interface port) (callback port) "\", \"" (event-name event) "\");\n")))
-    (('action fields ...)
-     (let* ((field (car fields))
-            (int (field-type field))
-            (trigger (field-entry field))
-            (interface (component-port comp int))
-            (name (port-interface interface)))
-       (->string (list "      context.Get" int name (callback interface) "()." trigger "();\n"))
-       )
-     )
-    (('assign lhs rhs ...) 
-     (let* ((state-variables (behaviour-variables (component-behaviour comp)))
-            (state? (find
-                     (lambda (v) (eq? lhs (variable-name v)))
-                     state-variables))
-            (enum? (and state? (not (eq? (variable-type state?) 'bool)))) ;; FIXME
-            (prefix (if state? "predicate." "")))
-       (->string (list prefix (statements->string lhs port event block?)
-                       " = "
-                       (if enum? 
-                           (enum->string (car rhs)) 
-                           (statements->string rhs port event block?))
-                       ";\n"
-                       ))))
-    ((? char?) (make-string 1 src))
-    ((? string?) src)
-    ((? symbol?) (symbol->string src))
-    ((h ... t) (apply string-append (map (lambda (x) (statements->string x port event block?)) src)))
-    (_ ""))))
-
 (define (map-port-events string port events)
   (map (lambda (event)
          (save-module-excursion
@@ -234,6 +346,7 @@
               (module-define! module '.name (event-name event))
               (module-define! module '.event (event-name event))
               (module-define! module '.statement (statements->string (behaviour-statements (component-behaviour (component ast))) port event))
+              ;;(module-define! module '.statement "NOT NOW")
               (module-define! module '.return-interface-type (return-interface-type (port-interface port) event))
               (module-define! module '.return-context-get (return-context-get (port-interface port) event))
            (animate-string string module)))))
@@ -252,4 +365,9 @@
               (animate-string string module))))) 
        variables))
 
+
 (define (action port event) "enable")
+
+;;(display (apply c++-snippet->string '(guard (field state Disarmed) (statements (on ((field console arm)) (statements (action (field sensor enable)) (assign state (field States Armed)))) (on ((field console disarm) (field sensor triggered) (field sensor disabled)) (action illegal))))))
+
+         
