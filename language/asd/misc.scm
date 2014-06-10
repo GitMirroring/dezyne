@@ -23,7 +23,7 @@
            >0
            =1
            >1
-           1+
+           fand
            gulp-text-file
            dump-file
            *eof*
@@ -42,7 +42,9 @@
 (define (>0 x) (> x 0))
 (define (=1 x) (= x 1))
 (define (>1 x) (> x 1))
-(define (1+ x) (+ x 1))
+
+(define (fand . args)
+  (eval `(and ,@args) (current-module)))
 
 (define (gulp-text-file name)
   (let* ((file (open-file name "r"))

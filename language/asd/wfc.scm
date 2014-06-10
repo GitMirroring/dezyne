@@ -51,7 +51,7 @@
   (stderr "COUNT: ~a\n" count)
   (stderr "statement-on: ~a\n" src)
   (match src
-         (('on e s) (stderr "on: = ~a" s) (if (> count 0) #f (statement-on s :count (1+ count))))
+         (('on e s) (stderr "on: = ~a" s) (if (>0 count) #f (statement-on s :count (1+ count))))
          (('guard expr s) (stderr "guard!: s= ~a" s) (statement-on s :count count))
          (('statements s ...) (apply fand (map (lambda (x) (statement-on x :count count)) s)))
          (('assign x ...) #t)
@@ -60,6 +60,6 @@
 (define (verify-mixing ast)
   (let ((statements (behaviour-statements (interface-behaviour (interface ast)))))
     (pretty-print statements)
-    (if (and #t (map verify-on statements))
+    (if (mixing statements)
         (stderr "OK\n!")
         (stderr "MIXED!"))))
