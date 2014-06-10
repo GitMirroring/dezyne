@@ -56,6 +56,8 @@
            field-entry
 
            interface
+           interface-behaviour
+           interface-behaviour?
            interface-events
            interface-name
            interface-types
@@ -87,6 +89,11 @@
 (define (interface-spec interface) (cddr interface)) 
 (define (interface-types interface) (assoc-ref (interface-spec interface) 'types))
 (define (interface-events interface) (assoc-ref (interface-spec interface) 'events))
+
+(define (interface-behaviour interface) 
+  (assoc 'behaviour (interface-spec interface)))
+(define (interface-behaviour? interface) (and (interface-behaviour interface)
+                                              (>1 (length (interface-behaviour interface)))))
 
 (define (event-direction event) (car event))
 (define (event-type event) (cadr event))

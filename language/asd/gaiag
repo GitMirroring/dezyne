@@ -38,6 +38,7 @@ exec guile -L ../.. -e main -s $0 "$@"
   :use-module (language asd csp)
   :use-module (language asd pretty)
   :use-module (language asd scheme)
+  :use-module (language asd wfc)
   )
 
 (define (read-and-parse lang port cenv)
