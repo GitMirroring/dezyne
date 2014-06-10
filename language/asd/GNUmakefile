@@ -28,7 +28,7 @@ asdgen = ASD_PREFIX=$(DEPTH) $(DEPTH)/$(BUILD)/asdgenerator
 
 default: all
 
-all: compile check test match
+all: compile check test match wfc
 
 compile:
 	guile -L ../.. spec.scm 
@@ -83,3 +83,8 @@ test:
 
 match:
 	guile -L ../.. ./match.scm
+
+wfc:
+	./gaiag -l wfc examples/double-on.asd
+	-./gaiag -l wfc examples/double-on-compound.asd #TODO
+	./gaiag -l wfc examples/mixing.asd 
