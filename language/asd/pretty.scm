@@ -20,7 +20,10 @@
 (define-module (language asd pretty)
   :use-module (ice-9 match)
   :use-module (srfi srfi-1)
+
   :use-module (language asd misc)
+  :use-module (language asd format-keys)
+  :use-module (language asd snippets)
   :export (asd-> asd->asd asd->pretty asd->string))
 
 (define (asd->string ast) 
