@@ -21,7 +21,9 @@
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 match)
   :use-module (srfi srfi-1)
+  :use-module (system foreign)
 
+  
   :use-module (language asd misc)
   :export (
            behaviour-statements
@@ -83,6 +85,30 @@
            ->string
            interface-
            ))
+
+(define (ast-parent ast x)
+  (if (object? x)
+    (ast-id-parent ast (object-id x))
+    #f))
+
+(define (object? x) #t)
+
+(define (object-id x) (and=> x (compose pointer-address scm->pointer)))
+
+(define (ast-id-parent ast id)
+  (let loop ((ast ast) (stack '()))
+    (stderr "ast-id: ~a [~a] --> ~a\n" ast stack (object-id ast))
+    (stderr "children: ~a\n" (map object-id ast))
+    (if (null? ast)
+        (if (null? stack)
+            #f
+            (loop (car stack) (cdr stack)))
+        (let ((children (map object-id ast)))
+          (if (member object-id children)
+              ast
+              (if (pair? (car ast))
+                  (loop (car ast) (cons (cdr ast) stack))
+                  (loop (cdr ast) stack)))))))
 
 (define (interface ast) (assoc 'interface ast)) 
 (define (interface-name interface) (cadr interface))
