@@ -19,6 +19,8 @@
 (define-module (language asd tokenize)
   #:use-module (language ecmascript tokenize)
   #:use-module (system base lalr)
+
+  #:use-module (language asd misc)
   #:export (make-tokenizer make-tokenizer/1))
 
 (define (string-symbol x) (cons (symbol->string x) x))
@@ -97,8 +99,25 @@
 
 (module-define! (resolve-module '(language ecmascript tokenize)) 'read-identifier read-identifier)
 
+(define (port-source-location port)
+  ((@@ (language ecmascript tokenize) port-source-location) port))
+
+(define (next-token port div?)
+  ((@@ (language ecmascript tokenize) next-token) port div?))
+
 (define (make-tokenizer port)
-  ((@@ (language ecmascript tokenize) make-tokenizer) port))
+  (let ((div? #f))
+    (lambda ()
+      (let ((tok (next-token port div?))
+            (loc (port-source-location port)))
+;;        (stderr "token [~a] at: ~a\n" tok loc)
+;;        (stderr "token [~a] at: ~a\n" (or (and (eq? tok '*eoi*) '*eoi) (lexical-token-value tok) (lexical-token-category tok)) (source-location->source-properties loc))
+        (set! div? (and (lexical-token? tok)
+                        (let ((cat (lexical-token-category tok)))
+                          (or (eq? cat 'Identifier)
+                              (eq? cat 'NumericLiteral)
+                              (eq? cat 'StringLiteral)))))
+        tok))))
 
 (define (make-tokenizer/1 port)
   ((@@ (language ecmascript tokenize) make-tokenizer/1) port))
