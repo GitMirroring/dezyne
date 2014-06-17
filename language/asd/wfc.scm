@@ -25,41 +25,56 @@
 
 (define-module (language asd wfc)
   :use-module (ice-9 match)
+  :use-module (ice-9 and-let-star)
   :use-module (ice-9 optargs)
   :use-module (ice-9 pretty-print)
 
   :use-module (language asd ast)
   :use-module (language asd misc)
-  :export (asd-> 
-           ))
+  :use-module (language asd asd)
+  :use-module (language asd gaiag)
 
-(define *ast* '())
+  :export (ast-wellformed?))
 
 (define (asd-> ast)
-  (display (verify-on ast))
-  (display (verify-mixing ast))
+  (ast-wellformed? ast)
   "")
 
+(define (ast-wellformed? ast)
+  (and-let* ((errors (apply append 
+                            (filter null-is-#f (verify-on ast))
+                            (filter null-is-#f (verify-mixing ast)))))
+            (for-each (lambda (e) 
+                        (let ((message (car e))
+                              (properties (source-location->source-properties (cadr e))))
+                          (stderr "~a:~a:~a: error: not well-formed: ~a\n" 
+                                  (assoc-ref properties 'filename) 
+                                  (assoc-ref properties 'line) 
+                                  (assoc-ref properties 'column)
+                                  message))) errors)
+            ;; (throw 'well-formed "not well-formed")
+            (exit 1)
+            )
+  "")
+
+(define (error message lst) (list message (source-location lst)))
+
 (define (verify-on ast)
-  (let ((statements (behaviour-statements (interface-behaviour (interface ast)))))
-    (pretty-print statements)
-    (if (apply fand (map statement-on statements))
-        (stderr "OK\n!")
-        (stderr "MULTIPLE ON\n!"))))
+  (and-let* ((statements (behaviour-statements (interface-behaviour (interface ast))))
+             (error-locations (null-is-#f (filter identity (map statement-on statements)))))
+            error-locations))
 
 (define* (statement-on src :key (count 0))
-  (stderr "COUNT: ~a\n" count)
-  (stderr "statement-on: ~a\n" src)
   (match src
-         (('on e s) (stderr "on: = ~a" s) (if (>0 count) #f (statement-on s :count (1+ count))))
-         (('guard expr s) (stderr "guard!: s= ~a" s) (statement-on s :count count))
-         (('statements s ...) (apply fand (map (lambda (x) (statement-on x :count count)) s)))
-         (('assign x ...) #t)
+         (('on e s) (if (>0 count) (error "double on" src) (statement-on s :count (1+ count))))
+         (('guard expr s) (statement-on s :count count))
+         (('statements s ...) (null-is-#f
+                               (filter identity (map (lambda (x) (statement-on x :count count)) s))))
+         (('assign x ...) #f)
          (_ (throw "programming error"))))
 
 (define (verify-mixing ast)
   (let ((statements (behaviour-statements (interface-behaviour (interface ast)))))
-    (pretty-print statements)
-    (if (mixing statements)
-        (stderr "OK\n!")
-        (stderr "MIXED!"))))
+    '()))
+
+(define (mixing x) '())

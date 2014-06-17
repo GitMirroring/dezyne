@@ -39,7 +39,8 @@ exec guile -L ../.. -e main -s $0 "$@"
   :use-module (language asd pretty)
   :use-module (language asd scheme)
   :use-module (language asd wfc)
-  )
+  
+  :export (read-asd read-asd-wellformed))
 
 (define (read-and-parse lang port cenv)
   (let ((exp ((language-reader lang) port cenv)))
@@ -53,6 +54,9 @@ exec guile -L ../.. -e main -s $0 "$@"
 
 (define (read-asd file-name)
   (asd-reader (open-file file-name "r") (current-module)))
+
+(define (read-asd-wellformed file-name)
+  (ast-wellformed? (read-asd file-name)))
 
 (define (parse-opts args)
   (let* ((option-spec

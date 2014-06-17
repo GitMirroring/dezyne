@@ -19,8 +19,36 @@
 (define-module (language asd asd)
   #:use-module (system base lalr)
   #:use-module (language tree-il)
+  #:use-module (system foreign)
+
   #:use-module (ice-9 match)
-  #:export (asd-> make-asd-tokenizer make-parser compile-tree-il))
+  #:export (asd->
+            compile-tree-il
+            make-asd-tokenizer
+            make-parser
+            object?
+            object-id
+            source-location
+            source-location->source-properties))
+
+(define *locations-alist* '(()))
+
+(define (object? lst) #t)
+
+(define (object-id lst) 
+  (and=> lst (compose pointer-address scm->pointer)))
+
+(define (note-location lst)
+  (set! *locations-alist* (assoc-set! *locations-alist* (object-id lst) (current-location)))
+  lst)
+
+(define (source-location lst)
+  (assoc-ref *locations-alist* (object-id lst)))
+
+(define (source-location->source-properties loc)
+  `((filename . ,(source-location-input loc))
+    (line . ,(+ 1 (source-location-line loc)))
+    (column . ,(source-location-column loc))))
 
 (define *eof-object*
   (call-with-input-string "" read-char))
@@ -163,7 +191,7 @@
     (Identifier dot Identifier) : `(field ,$1 ,$3))
    
    (on-event-statement
-    (on trigger-spec colon behaviour-statement) : `(,$1 ,$2 ,$4))
+    (on trigger-spec colon behaviour-statement) : (note-location `(,$1 ,$2 ,$4)))
 
    (trigger-spec
     (trigger-list) : $1

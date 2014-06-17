@@ -83,22 +83,17 @@
            variable-type
 
            ->string
-           interface-
+
+           ast-parent
            ))
 
-(define (ast-parent ast x)
-  (if (object? x)
-    (ast-id-parent ast (object-id x))
+(define (ast-parent ast lst)
+  (if (object? lst)
+    (ast-id-parent ast (object-id lst))
     #f))
-
-(define (object? x) #t)
-
-(define (object-id x) (and=> x (compose pointer-address scm->pointer)))
 
 (define (ast-id-parent ast id)
   (let loop ((ast ast) (stack '()))
-    (stderr "ast-id: ~a [~a] --> ~a\n" ast stack (object-id ast))
-    (stderr "children: ~a\n" (map object-id ast))
     (if (null? ast)
         (if (null? stack)
             #f
