@@ -86,5 +86,5 @@ match:
 
 wfc: compile
 	-./gaiag -l wfc examples/double-on.asd
-	-./gaiag -l wfc examples/double-on-compound.asd #TODO
-	-./gaiag -l wfc examples/mixing.asd 
+	#-./gaiag -l wfc examples/double-on-compound.asd #TODO
+	#-./gaiag -l wfc examples/mixing.asd 
