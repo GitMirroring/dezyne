@@ -122,7 +122,7 @@
   (offset  source-location-offset)
   (length  source-location-length))
 
-
+(define current-location #f)
 
       ;; - Macros pour la gestion des vecteurs de bits
 
@@ -1881,7 +1881,9 @@
 
   (define (___value tok)
     (if (lexical-token? tok)
-        (lexical-token-value tok)
+        (let ((loc (lexical-token-source tok)))
+          (set! current-location (lambda () loc))
+          (lexical-token-value tok))
         tok))
   
   (define (___run)

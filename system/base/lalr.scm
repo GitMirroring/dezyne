@@ -38,6 +38,8 @@
             source-location-length
             source-location->source-properties
 
+            current-location
+            
             ;; `lalr-parser' is a defmacro, which produces code that refers to
             ;; these drivers.
             lr-driver glr-driver))
@@ -48,5 +50,5 @@
 
 (define (source-location->source-properties loc)
   `((filename . ,(source-location-input loc))
-    (line . ,(source-location-line loc))
+    (line . ,(+ 1 (source-location-line loc)))
     (column . ,(source-location-column loc))))
