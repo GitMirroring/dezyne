@@ -23,7 +23,7 @@
 DEPTH = ../..
 diff = diff -uw -I '^ *$$' -I '^ *//'
 sed = sed -e 's/^-gen/gen/' -re 's/((cppbase.cpp|.hh.scm|.cc.scm):[0-9]*):/\1:warning:/'
-BUILD = build-master
+BUILD = build
 asdgen = ASD_PREFIX=$(DEPTH) $(DEPTH)/$(BUILD)/asdgenerator
 
 default: all
@@ -84,7 +84,7 @@ test:
 match:
 	guile -L ../.. ./match.scm
 
-wfc:
-	./gaiag -l wfc examples/double-on.asd
+wfc: compile
+	-./gaiag -l wfc examples/double-on.asd
 	-./gaiag -l wfc examples/double-on-compound.asd #TODO
-	./gaiag -l wfc examples/mixing.asd 
+	-./gaiag -l wfc examples/mixing.asd 
