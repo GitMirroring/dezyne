@@ -27,6 +27,7 @@
   :use-module (language asd misc)
   :export (
            behaviour-statements
+           behaviour-statement
            behaviour-types
            behaviour-variables
            behaviour-variable
@@ -171,6 +172,7 @@
 (define (behaviour-types behaviour) (assoc-ref (behaviour-spec behaviour) 'types))
 (define (behaviour-variables behaviour) (assoc-ref (behaviour-spec behaviour) 'variables))
 (define (behaviour-statements behaviour) (assoc-ref (behaviour-spec behaviour) 'statements))
+(define (behaviour-statement behaviour) (cons 'statements (behaviour-statements behaviour)))
 
 (define (statements-of-type statements type)
   (let loop ((statements statements) (lst '()))
