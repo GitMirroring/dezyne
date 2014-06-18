@@ -24,7 +24,11 @@
   :use-module (system foreign)
 
   
+  :use-module (language asd asd)
   :use-module (language asd misc)
+  :use-module (language asd gaiag)
+
+
   :export (
            behaviour-statements
            behaviour-statement
@@ -57,6 +61,8 @@
            
            field-type
            field-entry
+
+           import-ast
 
            interface
            interface-behaviour
@@ -105,6 +111,13 @@
               (if (pair? (car ast))
                   (loop (car ast) (cons (cdr ast) stack))
                   (loop (cdr ast) stack)))))))
+
+(define *import-ast-alist* '())
+(define (import-ast name)
+  (or (assoc-ref *import-ast-alist* name)
+      (and-let* ((ast (read-asd (->string (list 'examples '/ name '.asd)))))
+                (set! *import-ast-alist* (assoc-set! *import-ast-alist* name ast))
+                ast)))
 
 (define (interface ast) (assoc 'interface ast)) 
 (define (interface-name interface) (cadr interface))
