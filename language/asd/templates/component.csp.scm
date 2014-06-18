@@ -3,6 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -39,11 +40,11 @@ datatype event_alphabet =
 assert %.component _%.behaviour _Component :[deadlock free]
 assert %.component _%.behaviour(true,true) :[deterministic]
 assert STOP [T= %.component _%.behaviour _Component \ diff(Events,{illegal})
-assert %.interface _%.interface-behaviour(false) [[%.interface .x<-%.port .x|x<-extensions(%.interface)] \ {%.port .optional,%.port .inevitable} [FD=
-%.component _%.behaviour _Component \ diff(Events,{|illegal,%.port |}) \ {}]
-assert %.interface _%.interface-behaviour (false) :[deadlock free]
-assert %.interface _%.interface-behaviour (true) :[livelock free] %
+assert %.interface _%.interface-behaviour(false) [[%.interface .x<-%.port .x|x<-extensions(%.interface)]] \ {%.port .optional,%.port .inevitable} [FD=
+%.component _%.behaviour _Component \ diff(Events,{|illegal,%.port |}) \ {%.port .optional,%.port .inevitable} %
 (map-ports
 "
 assert %.interface _%.behaviour(false) :[deadlock free]
 assert %.interface _%.behaviour(true) :[livelock free]" (filter port-requires? (component-ports (component ast))))
+assert %.interface _%.interface-behaviour (false) :[deadlock free]
+assert %.interface _%.interface-behaviour (true) :[livelock free]
