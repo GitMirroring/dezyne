@@ -84,7 +84,7 @@
            port-typed-event?
            event-typed?
 
-           port-events ;; FIXME
+           port-events
 
            type-name
            variable-initial-value
