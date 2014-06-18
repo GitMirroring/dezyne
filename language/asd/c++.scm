@@ -36,14 +36,14 @@
   (module-define! (resolve-module '(language asd c++)) 'ast ast)  ;; FIXME
   (and-let* ((i (interface ast))
              (file-name (list (interface-name i) 'Interface.h)))
-            (animate-file "examples/interface.hh.scm" file-name 
+            (animate-file "templates/interface.hh.scm" file-name 
                           (c++-module ast)))
   (and-let* ((comp (component ast))
              (name (component-name comp)))
-            (animate-file 'examples/component.hh.scm (list name 'Component.h) (c++-module ast))
-            (animate-file 'examples/component.cc.scm (list name 'Component.cpp)
+            (animate-file 'templates/component.hh.scm (list name 'Component.h) (c++-module ast))
+            (animate-file 'templates/component.cc.scm (list name 'Component.cpp)
                           (c++-module ast))
-            (animate-file 'examples/c2.cc.scm (list name '-c2.cc)
+            (animate-file 'templates/c2.cc.scm (list name '-c2.cc)
                           (c++-module ast)))
   "")
 

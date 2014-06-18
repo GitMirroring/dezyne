@@ -39,7 +39,7 @@
   (module-define! (resolve-module '(language asd c++)) 'ast ast)  ;; FIXME
   (and-let* ((comp (component ast))
              (name (component-name comp)))
-            (animate-file 'examples/component.csp.scm (list name '.csp) (csp-module ast)))
+            (animate-file 'templates/component.csp.scm (list name '.csp) (csp-module ast)))
   "")
 
 (define (csp-module ast)

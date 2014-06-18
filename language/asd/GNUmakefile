@@ -25,6 +25,7 @@ diff = diff -uw -I '^ *$$' -I '^ *//'
 sed = sed -e 's/^-gen/gen/' -re 's/((cppbase.cpp|.hh.scm|.cc.scm):[0-9]*):/\1:warning:/'
 BUILD = build
 asdgen = ASD_PREFIX=$(DEPTH) $(DEPTH)/$(BUILD)/asdgenerator
+baseline = baseline
 
 default: all
 
@@ -33,14 +34,17 @@ all: compile check test match wfc
 compile:
 	guile -L ../.. spec.scm 
 
-baseline:
-	$(asdgen) -l cpp examples/alarm-component-pretty.asd && mv Alarm* examples
-	$(asdgen) -l cpp examples/CommImpl.asd && mv CommImpl* examples
-	$(asdgen) -l cpp examples/Aap.asd && mv AapInt* NootComp* examples
-	$(asdgen) -l cpp examples/Alarm.asd && mv Alarm* examples
-	$(asdgen) -l cpp examples/Console.asd && mv Console* examples
-	$(asdgen) -l cpp examples/Sensor.asd && mv Sensor* examples
-	$(asdgen) -l cpp examples/Siren.asd && mv Siren* examples
+dummy:
+
+baseline: dummy
+	$(asdgen) -l cpp examples/alarm-component-pretty.asd && mv Alarm* $(baseline)
+	$(asdgen) -l cpp examples/CommImpl.asd && mv CommImpl* $(baseline)
+	$(asdgen) -l cpp examples/Aap.asd && mv AapInt* NootComp* $(baseline)
+	$(asdgen) -l cpp examples/Alarm.asd && mv Alarm* $(baseline)
+	$(asdgen) -l cpp examples/Console.asd && mv Console* $(baseline)
+	$(asdgen) -l cpp examples/Sensor.asd && mv Sensor* $(baseline)
+	$(asdgen) -l cpp examples/Siren.asd && mv Siren* $(baseline)
+	$(asdgen) -l csp examples/Alarm.asd && mv Alarm.csp $(baseline)
 
 check: ast pretty c++
 
@@ -59,26 +63,26 @@ pretty:
 
 c++: baseline
 	./gaiag -l c++ examples/Alarm.asd
-	-$(diff) examples/AlarmComponent.h .
-	-$(diff) examples/AlarmComponent.cpp .
+	-$(diff) $(baseline)/AlarmComponent.h .
+	-$(diff) $(baseline)/AlarmComponent.cpp .
 	./gaiag examples/Aap.asd
 	./gaiag -l c++ examples/Aap.asd
-	[ -f examples/NootComponent.h ] && $(diff) examples/NootComponent.h .
-	-[ -f examples/NootComponent.cpp ] && $(diff) examples/NootComponent.cpp .  | $(sed)
+	[ -f $(baseline)/NootComponent.h ] && $(diff) $(baseline)/NootComponent.h .
+	-[ -f $(baseline)/NootComponent.cpp ] && $(diff) $(baseline)/NootComponent.cpp .  | $(sed)
 #	./gaiag -l c++ examples/CommImpl.asd
-#	[ -f examples/CommImplComponent.h ] && $(diff) examples/CommImplComponent.h .
-#	-[ -f examples/CommImplComponent.cpp ] && $(diff) examples/CommImplComponent.cpp .
+#	[ -f $(baseline)/CommImplComponent.h ] && $(diff) $(baseline)/CommImplComponent.h .
+#	-[ -f $(baseline)/CommImplComponent.cpp ] && $(diff) $(baseline)/CommImplComponent.cpp .
 
 test:
 	./gaiag -l c++ examples/Console.asd
-	$(diff) examples/ConsoleInterface.h .
+	$(diff) $(baseline)/ConsoleInterface.h .
 	./gaiag -l c++ examples/Sensor.asd
-	$(diff) examples/SensorInterface.h .
+	$(diff) $(baseline)/SensorInterface.h .
 	./gaiag -l c++ examples/Siren.asd
-	$(diff) examples/SirenInterface.h .
+	$(diff) $(baseline)/SirenInterface.h .
 	./gaiag -l c++ examples/Alarm.asd
-	$(diff) examples/AlarmComponent.h .
-	$(diff) examples/AlarmComponent.cpp . | $(sed)
+	$(diff) $(baseline)/AlarmComponent.h .
+	$(diff) $(baseline)/AlarmComponent.cpp . | $(sed)
 	g++ -I ../../examples/codegen/asd_cpp_runtime --std=c++11 -c AlarmComponent.cpp
 
 match:
@@ -91,3 +95,4 @@ wfc: compile
 
 csp: compile
 	./gaiag -l csp examples/Alarm.asd && cat Alarm.csp
+	$(diff) $(baseline)/Alarm.csp .

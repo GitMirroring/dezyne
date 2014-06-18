@@ -115,13 +115,25 @@
                   (loop (cdr ast) stack)))))))
 
 (define *import-ast-alist* '())
+(define (import-add name ast)
+  (set! *import-ast-alist* (assoc-set! *import-ast-alist* name ast))
+  (car ast))
+
 (define (import-ast name)
   (or (assoc-ref *import-ast-alist* name)
       (and-let* ((ast (read-asd (->string (list 'examples '/ name '.asd)))))
-                (set! *import-ast-alist* (assoc-set! *import-ast-alist* name ast))
-                ast)))
+                (import-add name ast))))
 
-(define (interface ast) (assoc 'interface ast)) 
+(define resolve-interface import-ast)
+
+(define (interface- ast) (assoc 'interface ast))
+(define (interface ast) ;; FIXME
+  (and-let* ((interface-ast (assoc 'interface ast))
+             (name (interface-name interface-ast)))
+            (if (not (assoc-ref *import-ast-alist* name))
+                (import-add name interface-ast))
+            interface-ast))
+
 (define (interface-name interface) (cadr interface))
 (define (interface-spec interface) (cddr interface)) 
 (define (interface-types interface) (assoc-ref (interface-spec interface) 'types))
@@ -164,7 +176,8 @@
 (define (port-interface port) (cadr port))
 (define (port-provides? port) (eq? (port-direction port) 'provides))
 (define (port-requires? port) (eq? (port-direction port) 'requires))
-(define (port-behaviour port) (behaviour-name (interface-behaviour (interface (import-ast (port-interface port))))))
+(define (port-behaviour port) (behaviour-name (interface-behaviour (resolve-interface (port-interface port)))))
+(define (port-behaviour port) 'bla)
 
 (define (port-in? port) (or (port-requires? port) event-in? event-out?)) 
 (define (port-out? port) (or (port-provides? port) event-out? event-in?)) 
@@ -185,7 +198,7 @@
 (define (component-behaviour? component) (and (component-behaviour component)
                                               (>1 (length (component-behaviour component)))))
 (define (behaviour-spec behaviour) (cddr behaviour))
-(define (behaviour-name behaviour) (cadr behaviour))
+(define (behaviour-name behaviour) (or (and (>1 (length behaviour)) (cadr behaviour)) ""))
 (define (behaviour-types behaviour) (assoc-ref (behaviour-spec behaviour) 'types))
 (define (behaviour-variables behaviour) (assoc-ref (behaviour-spec behaviour) 'variables))
 (define (behaviour-statements behaviour) (assoc-ref (behaviour-spec behaviour) 'statements))
