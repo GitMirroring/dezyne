@@ -17,32 +17,32 @@ struct %.interface
  %(->string (map declare-enum (interface-types (interface ast))))
 };
 
-class %.module %.api : public %.interface 
+class %.interface %.api : public %.interface 
 {
 public:
-  virtual ~%.module %.api () {}
+  virtual ~%.interface %.api () {}
 % (map-events
 "  virtual void %.event () = 0;
 " (filter event-in? (interface-events (interface ast))))
 protected:
-  %.module %.api () {}
+  %.interface %.api () {}
 private:
-  %.module %.api & operator = (const %.module %.api & other);
-  %.module %.api (const %.module %.api & other);
+  %.interface %.api & operator = (const %.interface %.api & other);
+  %.interface %.api (const %.interface %.api & other);
 };
 
-class %.module %.callback 
+class %.interface %.callback 
 {
 public:
-  virtual ~%.module %.callback () {}
+  virtual ~%.interface %.callback () {}
 % (map-events
 "  virtual void %.event () = 0;
 " (filter event-out? (interface-events (interface ast))))
 protected:
-  %.module %.callback () {}
+  %.interface %.callback () {}
 private:
-  %.module %.callback & operator = (const %.module %.callback & other);
-  %.module %.callback (const %.module %.callback & other);
+  %.interface %.callback & operator = (const %.interface %.callback & other);
+  %.interface %.callback (const %.interface %.callback & other);
 };
 
 
@@ -51,11 +51,11 @@ class %.interface Interface
 public:
   virtual ~%.interface Interface() {}
   // interface used as provided:
-  virtual void Get%.api (boost::shared_ptr<%.module %.api >* %.ap ) = 0;
-  virtual void Register%.callback (boost::shared_ptr<%.module %.callback > %.cb ) = 0;
+  virtual void Get%.api (boost::shared_ptr<%.interface %.api >* %.ap ) = 0;
+  virtual void Register%.callback (boost::shared_ptr<%.interface %.callback > %.cb ) = 0;
   // interface used as required:
-  virtual void Get%.callback (boost::shared_ptr<%.module %.callback >* %.cb ) = 0;
-  virtual void Register%.api (boost::shared_ptr<%.module %.api > %.ap ) = 0;
+  virtual void Get%.callback (boost::shared_ptr<%.interface %.callback >* %.cb ) = 0;
+  virtual void Register%.api (boost::shared_ptr<%.interface %.api > %.ap ) = 0;
   
   virtual void Register%.callback (boost::shared_ptr<asd::channels::ISingleThreaded> %.cb ) = 0;
 protected:
