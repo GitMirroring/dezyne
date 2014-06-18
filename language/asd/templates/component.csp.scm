@@ -21,8 +21,8 @@
 ;;; 
 ;;; Code:
 
-datatype event_alphabet 
-= %(pipe-join (unique (sort (append (event-names (component-ports (component ast))) '(arm return)) symbol<)))
+datatype event_alphabet =
+%(pipe-join (append (unique (sort (append (event-names (component-ports (component ast))) '(inevitable optional)) symbol<)) '(return)))
 
 % (map-ports 
 "channel %.interface ,%.port : {%(comma-join (append (map port-name (port-events port)) '(return)))}
@@ -32,15 +32,15 @@ datatype event_alphabet
 %.component _%.behaviour (%(comma-join (map variable-name (behaviour-variables (component-behaviour (component ast)))))) = 
 
 % (map-guards
-" (% (list (cadr (guard-expression *guard-def*)) '== (caddr (guard-expression *guard-def*)))) & transition_begin -> (
+" (% (list (cadr (guard-expression *guard-def*)) '== (caddr (guard-expression *guard-def*)))) & transition_begin -> ()
 " (statements-guard (behaviour-statements (component-behaviour (component ast)))))
 
 
 assert %.component _%.behaviour _Component :[deadlock free]
 assert %.component _%.behaviour(true,true) :[deterministic]
 assert STOP [T= %.component _%.behaviour _Component \ diff(Events,{illegal})
-assert %.interface _%.interface-behaviour(false) [[%.interface .x<-%.port .x|x<-extensions(%.interface)]] \ {%.port .optional,%.port .inevitable} [FD=
-%.component _%.behaviour _Component \ diff(Events,{|illegal,%.port |}) \ {}
+assert %.interface _%.interface-behaviour(false) [[%.interface .x<-%.port .x|x<-extensions(%.interface)] \ {%.port .optional,%.port .inevitable} [FD=
+%.component _%.behaviour _Component \ diff(Events,{|illegal,%.port |}) \ {}]
 assert %.interface _%.interface-behaviour (false) :[deadlock free]
 assert %.interface _%.interface-behaviour (true) :[livelock free] %
 (map-ports

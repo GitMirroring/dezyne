@@ -114,15 +114,15 @@
                   (loop (car ast) (cons (cdr ast) stack))
                   (loop (cdr ast) stack)))))))
 
-(define *import-ast-alist* '())
+(define *import-ast-alist* '(()))
 (define (import-add name ast)
   (set! *import-ast-alist* (assoc-set! *import-ast-alist* name ast))
-  (car ast))
+  ast)
 
 (define (import-ast name)
   (or (assoc-ref *import-ast-alist* name)
       (and-let* ((ast (read-asd (->string (list 'examples '/ name '.asd)))))
-                (import-add name ast))))
+                (import-add name (car ast)))))
 
 (define resolve-interface import-ast)
 
@@ -177,7 +177,6 @@
 (define (port-provides? port) (eq? (port-direction port) 'provides))
 (define (port-requires? port) (eq? (port-direction port) 'requires))
 (define (port-behaviour port) (behaviour-name (interface-behaviour (resolve-interface (port-interface port)))))
-(define (port-behaviour port) 'bla)
 
 (define (port-in? port) (or (port-requires? port) event-in? event-out?)) 
 (define (port-out? port) (or (port-provides? port) event-out? event-in?)) 
@@ -186,12 +185,16 @@
 (define (port-typed-event? port)
   (null-is-#f (filter event-typed? (port-events port))))
 
-(define (port-events port)  ;;; FIXME
+(define (port-events port)
+  ;;; FIXME
   (case (port-name port) 
     ((aap) '((in AapValues is_aap)))
     ((console) '((in void arm) (in void disarm) (out void detected (out void deactivated))))
     ((sensor) '((in void enable) (in void disable) (out void triggered) (out void disabled)))
     ((siren) '((in void turnon) (in void turnoff)))))
+
+(define (port-events port)
+  (interface-events (resolve-interface (port-interface port))))
 
 (define (component-behaviour component) 
   (assoc 'behaviour (component-spec component)))

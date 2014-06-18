@@ -94,5 +94,5 @@ wfc: compile
 	-./gaiag -l wfc examples/mixing.asd 
 
 csp: compile
-	./gaiag -l csp examples/Alarm.asd && cat Alarm.csp
+	./gaiag -l csp examples/Alarm.asd
 	$(diff) $(baseline)/Alarm.csp .
