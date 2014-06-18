@@ -31,6 +31,8 @@
             source-location
             source-location->source-properties))
 
+(define (debug m x) (display (format #f "~a: ~a\n" m x) (current-error-port)))
+
 (define *locations-alist* '(()))
 
 (define (object? lst) #t)
@@ -38,8 +40,8 @@
 (define (object-id lst) 
   (and=> lst (compose pointer-address scm->pointer)))
 
-(define (note-location lst)
-  (set! *locations-alist* (assoc-set! *locations-alist* (object-id lst) (current-location)))
+(define (note-location lst loc)
+  (set! *locations-alist* (assoc-set! *locations-alist* (object-id lst) loc))
   lst)
 
 (define (source-location lst)
@@ -191,7 +193,7 @@
     (Identifier dot Identifier) : `(field ,$1 ,$3))
    
    (on-event-statement
-    (on trigger-spec colon behaviour-statement) : (note-location `(,$1 ,$2 ,$4)))
+    (on trigger-spec colon behaviour-statement) : (note-location `(,$1 ,$2 ,$4) @1))
 
    (trigger-spec
     (trigger-list) : $1

@@ -50,5 +50,5 @@
 
 (define (source-location->source-properties loc)
   `((filename . ,(source-location-input loc))
-    (line . ,(+ 1 (source-location-line loc)))
+    (line . ,(source-location-line loc))
     (column . ,(source-location-column loc))))
