@@ -50,7 +50,7 @@
 (define (source-location->source-properties loc)
   `((filename . ,(source-location-input loc))
     (line . ,(+ 1 (source-location-line loc)))
-    (column . ,(source-location-column loc))))
+    (column . ,(+ 1 (source-location-column loc)))))
 
 (define *eof-object*
   (call-with-input-string "" read-char))
@@ -179,7 +179,7 @@
     )
 
    (guarded-statement
-    (lbracket guard rbracket behaviour-statement) : `(guard ,$2 ,$4))
+    (lbracket guard rbracket behaviour-statement) : (note-location `(guard ,$2 ,$4) @1))
    
    (guard
     (expression) : $1
