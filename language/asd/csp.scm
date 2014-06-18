@@ -53,8 +53,8 @@
               (module-define! module '.component (component-name comp))
 	      (module-define! module '.interface (interface-name (interface ast)))
 	      (module-define! module '.behaviour (behaviour-name (component-behaviour comp)))
-	      (module-define! module '.port (port-name (component-provides comp)))
-              (module-define! module '.module (component-name comp)))
+              (module-define! module '.interface-behaviour (behaviour-name (interface-behaviour (interface ast))))
+	      (module-define! module '.port (port-name (component-provides comp))))
     module))
 
 (define (map-guards string guards)

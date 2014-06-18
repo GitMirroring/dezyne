@@ -164,7 +164,7 @@
 (define (port-interface port) (cadr port))
 (define (port-provides? port) (eq? (port-direction port) 'provides))
 (define (port-requires? port) (eq? (port-direction port) 'requires))
-(define (port-behaviour port) 'bla)
+(define (port-behaviour port) (behaviour-name (interface-behaviour (interface (import-ast (port-interface port))))))
 
 (define (port-in? port) (or (port-requires? port) event-in? event-out?)) 
 (define (port-out? port) (or (port-provides? port) event-out? event-in?)) 
