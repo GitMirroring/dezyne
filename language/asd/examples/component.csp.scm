@@ -27,10 +27,22 @@ datatype event_alphabet
 "channel %.interface ,%.port : {%(comma-join (append (map port-name (port-events port)) '(return)))}
 " (component-ports (component ast)))
 
-%.component _%(behaviour-name (component-behaviour (component ast))) (IIG,IG) = let
-%.component _%(behaviour-name (component-behaviour (component ast)))(% (comma-join (map variable-name (behaviour-variables (component-behaviour (component ast)))))) = 
+%.component _(IIG,IG) = let
+%.component _%.behaviour (%(comma-join (map variable-name (behaviour-variables (component-behaviour (component ast)))))) = 
 
 % (map-guards
 " (% (list (cadr (guard-expression *guard-def*)) '== (caddr (guard-expression *guard-def*)))) & transition_begin -> (
 " (statements-guard (behaviour-statements (component-behaviour (component ast)))))
 
+
+assert %.component _%.behaviour _Component :[deadlock free]
+assert %.component _%.behaviour(true,true) :[deterministic]
+assert STOP [T= %.component _%.behaviour _Component \ diff(Events,{illegal})
+assert %.interface _%.interface-behaviour(false) [[%.interface .x<-%.port .x|x<-extensions(%.interface)]] \ {%.port .optional,%.port .inevitable} [FD=
+%.component _%.behaviour _Component \ diff(Events,{|illegal,%.port |}) \ {}
+assert %.interface _%.interface-behaviour (false) :[deadlock free]
+assert %.interface _%.interface-behaviour (true) :[livelock free] %
+(map-ports
+"
+assert %.interface _%.behaviour(false) :[deadlock free]
+assert %.interface _%.behaviour(true) :[livelock free]" (filter port-requires? (component-ports (component ast))))

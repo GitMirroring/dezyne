@@ -20,9 +20,75 @@
 //
 // Code:
 
-import Console;
 import Sensor;
 import Siren;
+
+interface Console
+{
+    in void arm;
+    in void disarm;
+
+    out void detected;
+    out void deactivated;
+
+  behaviour a
+  {
+    enum States {
+        Disarmed,
+        Armed,
+        Triggered,
+        Disarming
+    };
+
+    States state = States.Disarmed;
+
+    [state.Disarmed]
+    {
+      on arm:
+      {
+        state = States.Armed;
+      }
+      on disarm:
+        illegal;
+    }
+
+    [state.Armed]
+    {
+      on disarm:
+      {
+        state = States.Disarming;
+      }
+      on optional:
+      {
+        detected;
+        state = States.Triggered;
+      }
+      on arm:
+        illegal;
+    }
+
+    [state.Triggered]
+    {
+      on disarm:
+      {
+        state = States.Disarming;
+      }
+      on arm:
+        illegal;
+    }
+
+    [state.Disarming]
+    {
+      on inevitable:
+      {
+        deactivated;
+        state = States.Disarmed;
+      }
+      on arm, disarm:
+        illegal;
+    }
+  }
+}
 
 component Alarm
 {

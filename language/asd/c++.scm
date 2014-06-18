@@ -290,6 +290,7 @@
               (module-define! module '.interface (port-interface port))
               (module-define! module '.name (port-name port))
               (module-define! module '.port (port-name port))
+              (module-define! module '.behaviour (port-behaviour port))
               (module-define! module '.parameters (format-parameters port))
               (module-define! module '.type (return-type-text port))
               (module-define! module '.if-typed (if (port-typed-event? port) "" "#if 0"))

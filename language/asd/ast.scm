@@ -30,6 +30,7 @@
 
 
   :export (
+	   behaviour-name
            behaviour-statements
            behaviour-statement
            behaviour-types
@@ -45,7 +46,7 @@
            component-port
            ;; component-spec
            component-interface
-
+	   component-provides
            type-name-component
 
            enum-elements
@@ -74,6 +75,7 @@
            
            port-direction
            port-name
+	   port-behaviour
            port-interface
            port-provides?
            port-requires?
@@ -152,6 +154,7 @@
 (define (component-name component) (cadr component))
 (define (component-spec component) (cddr component)) 
 (define (component-ports component) (cdr (assoc 'ports (component-spec component)))) 
+(define (component-provides component) (assoc 'provides (component-ports component)))
 (define (component-interface component) (car (assoc-ref (component-ports component) 'provides)))
 (define (component-port component name) (find (lambda (p) (eq? (port-name p) name)) (component-ports component)))
 
@@ -161,6 +164,7 @@
 (define (port-interface port) (cadr port))
 (define (port-provides? port) (eq? (port-direction port) 'provides))
 (define (port-requires? port) (eq? (port-direction port) 'requires))
+(define (port-behaviour port) 'bla)
 
 (define (port-in? port) (or (port-requires? port) event-in? event-out?)) 
 (define (port-out? port) (or (port-provides? port) event-out? event-in?)) 

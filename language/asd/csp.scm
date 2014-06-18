@@ -51,6 +51,9 @@
     (module-define! module 'ast ast)
     (and-let* ((comp (component ast)))
               (module-define! module '.component (component-name comp))
+	      (module-define! module '.interface (interface-name (interface ast)))
+	      (module-define! module '.behaviour (behaviour-name (component-behaviour comp)))
+	      (module-define! module '.port (port-name (component-provides comp)))
               (module-define! module '.module (component-name comp)))
     module))
 
