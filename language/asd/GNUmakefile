@@ -99,3 +99,4 @@ csp: compile
 
 if: compile
 	./gaiag examples/if.asd
+	./gaiag -l pretty examples/if.asd | indent
