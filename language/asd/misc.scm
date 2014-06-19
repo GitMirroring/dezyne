@@ -23,6 +23,7 @@
            >0
            =1
            >1
+           >2
            fand
            gulp-text-file
            dump-file
@@ -42,6 +43,7 @@
 (define (>0 x) (> x 0))
 (define (=1 x) (= x 1))
 (define (>1 x) (> x 1))
+(define (>2 x) (> x 2))
 
 (define (fand . args)
   (eval `(and ,@args) (current-module)))
