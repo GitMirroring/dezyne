@@ -67,7 +67,7 @@
     behaviour namespace on
     illegal inevitable optional
     provides requires otherwise import
-    if reply
+    if else reply
     (left: or && ! * / + -)
     (left: bool enum void int)
     (nonassoc: == !=)
@@ -160,40 +160,40 @@
    
    (optional-behaviour
     () : '(behaviour)
-    (behaviour lbrace type-list variable-list behaviour-statement-list rbrace) : `(,$1 #f ,$3 ,$4 ,$5)
-    (behaviour Identifier lbrace type-list variable-list behaviour-statement-list rbrace) : `(,$1 ,$2 ,$4 ,$5 ,$6))
+    (behaviour lbrace type-list variable-list statement-list rbrace) : `(,$1 #f ,$3 ,$4 ,$5)
+    (behaviour Identifier lbrace type-list variable-list statement-list rbrace) : `(,$1 ,$2 ,$4 ,$5 ,$6))
 
-   (behaviour-statement-list 
+   (statement-list 
     () : '(statements) 
-    (behaviour-statement-list behaviour-statement) : (append $1 (list $2)))
+    (statement-list statement) : (append $1 (list $2)))
 
-   (behaviour-statement
+   (statement
     (guarded-statement) : $1
-    (compound-behaviour-statement) : $1
+    (compound-statement) : $1
     (on-event-statement) : $1 
     (illegal-statement) : $1
-    (assignment-behaviour-statement) : $1
+    (assignment-statement) : $1
     (action-statement) : $1
-    ;; (if-statement) : $1
+    (if-statement) : $1
     ;; (reply-statement) : $1
     )
 
    (guarded-statement
-    (lbracket guard rbracket behaviour-statement) : (note-location `(guard ,$2 ,$4) @1))
+    (lbracket guard rbracket statement) : (note-location `(guard ,$2 ,$4) @1))
    
    (guard
     (expression) : $1
     (otherwise) : $1)
    
-   (compound-behaviour-statement
-    (lbrace behaviour-statement-list rbrace) : $2)
+   (compound-statement
+    (lbrace statement-list rbrace) : $2)
 
    (compound-identifier
     (Identifier) : $1 
     (Identifier dot Identifier) : `(field ,$1 ,$3))
    
    (on-event-statement
-    (on trigger-spec colon behaviour-statement) : (note-location `(,$1 ,$2 ,$4) @1))
+    (on trigger-spec colon statement) : (note-location `(,$1 ,$2 ,$4) @1))
 
    (trigger-spec
     (trigger-list) : $1
@@ -210,13 +210,15 @@
    (illegal-statement
     (illegal semicolon) : $1)
    
-   (assignment-behaviour-statement
+   (assignment-statement
     (Identifier = expression semicolon) : `(assign ,$1 ,$3))
    
    (action-statement
     (trigger semicolon) : `(action ,$1))
    
-   ;;(if-statement)
+   (if-statement
+    (if lparen expression rparen statement) : `(if ,$3 ,$5)
+    (if lparen expression rparen statement else statement) : `(if ,$3 ,$5 ,$7))
 
    ;;(reply-statement)
 

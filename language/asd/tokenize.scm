@@ -29,7 +29,9 @@
        '(
          behaviour
          component
+         else
          enum
+         if
          import
          in
          inevitable
