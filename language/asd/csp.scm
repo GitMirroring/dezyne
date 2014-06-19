@@ -98,3 +98,10 @@ for comparisons."
     (if (null? ports)
         events
         (loop (cdr ports) (append events (map port-name (port-events (car ports))))))))
+
+(define (enum-values comp)
+  (let ((comp-values (apply append (map enum-elements (behaviour-types (component-behaviour comp))))))
+    (let loop ((ports (component-ports comp)) (values comp-values))
+      (if (null? ports)
+          values
+          (loop (cdr ports) (append values (apply append (map enum-elements (port-behaviour-types (car ports))))))))))

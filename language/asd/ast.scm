@@ -85,6 +85,8 @@
            event-typed?
 
            port-events
+           port-behaviour-types
+           port-types
 
            type-name
            variable-initial-value
@@ -186,15 +188,12 @@
   (null-is-#f (filter event-typed? (port-events port))))
 
 (define (port-events port)
-  ;;; FIXME
-  (case (port-name port) 
-    ((aap) '((in AapValues is_aap)))
-    ((console) '((in void arm) (in void disarm) (out void detected (out void deactivated))))
-    ((sensor) '((in void enable) (in void disable) (out void triggered) (out void disabled)))
-    ((siren) '((in void turnon) (in void turnoff)))))
-
-(define (port-events port)
   (interface-events (resolve-interface (port-interface port))))
+
+(define (port-behaviour-types port)
+  (behaviour-types (interface-behaviour (resolve-interface (port-interface port)))))
+(define (port-types port)
+  (interface-types (resolve-interface (port-interface port))))
 
 (define (component-behaviour component) 
   (assoc 'behaviour (component-spec component)))
