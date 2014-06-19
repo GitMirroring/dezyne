@@ -52,6 +52,10 @@ component Noot
       S = State.S2;
       /*
       if (true)
+        S = State.S1;
+      */
+      /*
+      if (true)
       {
         if (true)
         {
