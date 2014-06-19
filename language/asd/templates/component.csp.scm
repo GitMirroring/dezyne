@@ -30,15 +30,25 @@ datatype enumeration_alphabet =
 
 channel illegal
 
-% (map-ports 
-"channel %.interface ,%.port : {%(comma-join (append (port-triggers port) '(return)))}
-" (component-ports (component ast)))
+% (map-ports "
+channel %.interface ,%.port : {%(comma-join (append (port-triggers port) '(return)))}" (component-ports (component ast)))
+
+% (map-ports "
+%.interface _%.behaviour(IG) = let
+%.interface _%.behaviour _(% (map variable-name (behaviour-variables (interface-behaviour (interface-ast .interface))))) =
+% (map-guards 
+\"  (%(list (cadr (guard-expression *guard-def*)) \\\" == \\\" (caddr (guard-expression *guard-def*)))) & (
+  )
+[]
+\" (statements-guard (behaviour-statements (interface-behaviour (interface-ast .interface)))))" (filter port-requires? (component-ports (component ast))))
 
 %.component _%.behaviour (IIG,IG) = let
-%.component _%.behaviour (%(comma-join (map variable-name (behaviour-variables (component-behaviour (component ast)))))) = 
+%.component _%.behaviour _(%(comma-join (sort (map variable-name (behaviour-variables (component-behaviour (component ast)))) symbol<))) = 
 
 % (map-guards
-" (% (list (cadr (guard-expression *guard-def*)) '== (caddr (guard-expression *guard-def*)))) & transition_begin -> ()
+" (% (list (cadr (guard-expression *guard-def*)) \" == \" (caddr (guard-expression *guard-def*)))) & transition_begin -> (
+  )
+[]
 " (statements-guard (behaviour-statements (component-behaviour (component ast)))))
 
 
