@@ -54,10 +54,14 @@
                  (column (cadr line-column))
                  (file-string (caddr line-column))
                  (string (car (assoc-ref (car args) 'line)))
+                 (args (car (or (assoc-ref (car args) 'args)
+                                (list args))))
                  (message 
-                  (if (string-contains file-string string)
-                      (format #f "~a:~a:~a: parse error:\n~a\n~a~a\n\n~a" file-name line column (string-take file-string column) (make-string column #\space) string args)
-                      (format #f "~a:~a: parse error: just before: ~a\n\n~a" file-name line string args))))
+                  (if (string? string)
+                      (if (string-contains file-string string)
+                          (format #f "~a:~a:~a: parse error:\n~a\n~a~a...\n~a\n" file-name line column (string-take file-string column) (make-string column #\space) string args)
+                          (format #f "~a:~a: parse error: just before: ~a\n~a\n" file-name line string args))
+                      (format #f "~a:~a: parse error: *eof*\n~a\n" file-name line args))))
             (stderr "~a" message)
             (throw 'parse-error message)))))
 
@@ -72,7 +76,33 @@
      ((eq? *eof* c) #f)
      (else (unread-char c)))))
 
+(define (eat-one-space-or-newline)
+  (let ((c (read-char)))
+    (cond
+     ((eq? c #\space) #t)
+     ((eq? c #\newline) #t)
+     ((eq? *eof* c) #f)
+     (else (unread-char c)))))
+
+(define (animate-hash-read-string chr port)
+  (eat-one-space-or-newline)
+  (with-output-to-string
+    (lambda ()
+      (let ((depth 1))
+        (while (and-let* (((>0 depth))
+                          (s (*eof*-is-#f (read-delimited "#" port))))
+                         (display s))
+          (let ((c (peek-char port)))
+            (cond
+             ((eq? c #\{) (set! depth (1+ depth)) (display "#"))
+             ((eq? c #\}) (set! depth (1- depth)) (if (=0 depth)
+                                                      (read-char port)
+                                                      (display "#")))
+             ((eq? *eof* c) (set! depth 0) #f)
+             (else (display "#")))))))))
+
 (define (animate-input module)
+  (read-hash-extend #\{ animate-hash-read-string)
   (while (and-let* ((s (*eof*-is-#f (read-delimited "%"))))
                    (display s))
     (let ((c (read-char)))
@@ -92,4 +122,4 @@
                                        (list (read-delimited "\n")))))
                         (args (car (or (assoc-ref (car args) 'args)
                                        (list args)))))
-                   (throw 'parse-error (append `((ftell ,tell) (line ,line) (args ,args))))))))))))
+                   (throw 'parse-error (append `((ftell ,tell) (line ,line) (args ,(apply format #f (cadr args) (caddr args))))))))))))))

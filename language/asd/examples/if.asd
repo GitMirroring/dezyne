@@ -25,6 +25,7 @@ interface i
 {
   in void a;
   out void b;
+  out void c;
 
   behaviour 
   {
@@ -32,10 +33,19 @@ interface i
     on a: 
       { 
         if (t)
+        {
           b; 
+        }
         else
-          x;
+        {
+          c;
+        }
         t = !t;
       }
   }
+}
+
+component C
+{
+  provides i I;
 }

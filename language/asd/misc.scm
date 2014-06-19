@@ -20,6 +20,7 @@
 (define-module (language asd misc)
   :use-module (ice-9 rdelim)
   :export (
+           =0
            >0
            =1
            >1
@@ -40,6 +41,7 @@
 (define (*eof*-is-#f o) (if (eq? *eof* o) #f o))
 (define (one-is-#f o) (if (or (null? o) (=1 (length o))) #f o))
 
+(define (=0 x) (= x 0))
 (define (>0 x) (> x 0))
 (define (=1 x) (= x 1))
 (define (>1 x) (> x 1))

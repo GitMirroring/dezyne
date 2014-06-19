@@ -22,8 +22,8 @@ class %.interface %.api : public %.interface
 public:
   virtual ~%.interface %.api () {}
 % (map-events
-"  virtual void %.event () = 0;
-" (filter event-in? (interface-events (interface ast))))
+#{  virtual void %.event () = 0;
+#} (filter event-in? (interface-events (interface ast))))
 protected:
   %.interface %.api () {}
 private:
@@ -36,8 +36,8 @@ class %.interface %.callback
 public:
   virtual ~%.interface %.callback () {}
 % (map-events
-"  virtual void %.event () = 0;
-" (filter event-out? (interface-events (interface ast))))
+#{  virtual void %.event () = 0;
+#} (filter event-out? (interface-events (interface ast))))
 protected:
   %.interface %.callback () {}
 private:
