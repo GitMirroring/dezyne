@@ -88,6 +88,8 @@
            port-behaviour-types
            port-types
 
+           interface-ast
+
            type-name
            variable-initial-value
            variable-name
@@ -126,7 +128,7 @@
       (and-let* ((ast (read-asd (->string (list 'examples '/ name '.asd)))))
                 (import-add name (car ast)))))
 
-(define resolve-interface import-ast)
+(define interface-ast import-ast)
 
 (define (interface- ast) (assoc 'interface ast))
 (define (interface ast) ;; FIXME
@@ -178,7 +180,7 @@
 (define (port-interface port) (cadr port))
 (define (port-provides? port) (eq? (port-direction port) 'provides))
 (define (port-requires? port) (eq? (port-direction port) 'requires))
-(define (port-behaviour port) (behaviour-name (interface-behaviour (resolve-interface (port-interface port)))))
+(define (port-behaviour port) (behaviour-name (interface-behaviour (interface-ast (port-interface port)))))
 
 (define (port-in? port) (or (port-requires? port) event-in? event-out?)) 
 (define (port-out? port) (or (port-provides? port) event-out? event-in?)) 
@@ -188,12 +190,12 @@
   (null-is-#f (filter event-typed? (port-events port))))
 
 (define (port-events port)
-  (interface-events (resolve-interface (port-interface port))))
+  (interface-events (interface-ast (port-interface port))))
 
 (define (port-behaviour-types port)
-  (behaviour-types (interface-behaviour (resolve-interface (port-interface port)))))
+  (behaviour-types (interface-behaviour (interface-ast (port-interface port)))))
 (define (port-types port)
-  (interface-types (resolve-interface (port-interface port))))
+  (interface-types (interface-ast (port-interface port))))
 
 (define (component-behaviour component) 
   (assoc 'behaviour (component-spec component)))

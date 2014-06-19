@@ -51,7 +51,7 @@
   (parameterize ((snippet-dir asd-snippet-dir) (snippets asd-snippets))
     (apply snippet->string x)))
 
-(define (comma-join lst) (string-join (map ->string lst) ", "))
+(define (comma-space-join lst) (string-join (map ->string lst) ", "))
 
 (define asd-snippet-dir '(snippets asd))
 (define asd-snippets
@@ -71,13 +71,13 @@
                   (variables . ,->string)
                   (statements . ,->string)))
     (enum . ((name . ,identity)
-             (elements . ,comma-join)))
+             (elements . ,comma-space-join)))
     (declare . ((type . ,identity)
                 (var . ,identity)
                 (value . ,->string)))
     (field . ((struct . ,identity)
             (field . ,identity)))
-    (on . ((trigger . ,comma-join)
+    (on . ((trigger . ,comma-space-join)
            (statement . ,->string)))
     (guard . ((expression . ,->string)
               (statement . ,->string)))

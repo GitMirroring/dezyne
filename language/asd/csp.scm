@@ -21,6 +21,7 @@
 (define-module (language asd csp)
   :use-module (ice-9 match)
   :use-module (ice-9 and-let-star)
+  :use-module (ice-9 optargs)
   :use-module (srfi srfi-1)
 
   :use-module (language asd animate)
@@ -29,7 +30,10 @@
   :use-module (language asd misc)
   :use-module (language asd format-keys)
   :use-module (language asd snippets)
-  :export (asd->))
+  :export (
+           asd->
+           port-triggers
+           ))
 
 (define *ast* '())
 
@@ -93,6 +97,9 @@ for comparisons."
 (define (->join lst infix) (string-join (map ->string lst) infix))
 (define (pipe-join lst) (->join lst " | "))
 
+(define (port-triggers port)
+  (interface-triggers (interface-ast (port-interface port))))
+
 (define (event-names ports)
   (let loop ((ports ports) (events '()))
     (if (null? ports)
@@ -105,3 +112,12 @@ for comparisons."
       (if (null? ports)
           values
           (loop (cdr ports) (append values (apply append (map enum-elements (port-behaviour-types (car ports))))))))))
+
+(define* (interface-triggers interface)
+  (unique (sort (append (map event-name (interface-events interface)) (apply append (map behaviour-triggers (behaviour-statements (interface-behaviour interface))))) symbol<)))
+
+(define* (behaviour-triggers src :optional (triggers '()))
+  (match src
+   (('statements t ...) (append (apply append (map behaviour-triggers t))triggers))
+    (('on triggers statements) triggers)
+    (('guard expression statements) (behaviour-triggers statements triggers))))

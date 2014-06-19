@@ -23,7 +23,7 @@
 ;;; Code:
 
 datatype event_alphabet =
-%(pipe-join (append (unique (sort (append (event-names (component-ports (component ast))) '(inevitable optional)) symbol<)) '(return)))
+%(pipe-join (append (unique (sort (apply append (map port-triggers (component-ports (component ast)))) symbol<)) '(return)))
 
 datatype enumeration_alphabet =
 %(pipe-join (unique (sort (enum-values (component ast)) symbol<)))
@@ -31,7 +31,7 @@ datatype enumeration_alphabet =
 channel illegal
 
 % (map-ports 
-"channel %.interface ,%.port : {%(comma-join (append (map port-name (port-events port)) '(return)))}
+"channel %.interface ,%.port : {%(comma-join (append (port-triggers port) '(return)))}
 " (component-ports (component ast)))
 
 %.component _%.behaviour (IIG,IG) = let
