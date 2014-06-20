@@ -1,5 +1,6 @@
 # Gaiag --- Guile in Asd In Asd in Guile.
 # Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Gaiag.
 #
@@ -97,8 +98,8 @@ wfc: compile
 	-./gaiag -l wfc examples/mixing.asd 
 
 csp: compile
-	./gaiag -l csp examples/Alarm.asd
-	$(diff) $(baseline)/Alarm.csp .
+	./gaiag -l csp examples/if.asd
+	$(diff) examples/if.csp .
 
 if: compile
 	./gaiag examples/if.asd
