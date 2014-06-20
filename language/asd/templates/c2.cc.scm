@@ -9,18 +9,18 @@ struct #.component
 #{  
   #.interface Port #.port ;
 #}
-  (component-ports (component ast)))
+  (ast:body (ast:ports (ast:component ast))))
 
   #.component ()
   : foo ()
 #(map-ports
 #{
-  , #.port {#(let* ((e (map event-name (filter (event-dir-matches? port) (port-events port))))
+  , #.port {#(let* ((e (map ast:identifier (filter (ast:dir-matches? port) (ast:body (ast:events port)))))
         (m (map (lambda (x) (list "[this]{" x "();}")) e)))
-  (if (eq? (port-direction port) 'provides)
+  (if (eq? (ast:direction port) 'provides)
      (list (comma-join m) ",{}")
      (list "{}, " (comma-join m))))}
-#} (component-ports (component ast)))
+#} (ast:body (ast:ports (ast:component ast))))
   {}
 
 #(map-ports
@@ -30,10 +30,10 @@ struct #.component
   void #.event ()
   {
     std::cout << "#.component .#.event " << std::endl;
-    #.port .#(event-direction event).#(action .port .event)();
+    #.port .#(ast:direction event).#(action .port .event)();
   }
-#} port (port-events port))
-#} (component-ports (component ast)))
+#} port (ast:body (ast:events port)))
+#} (ast:body (ast:ports (ast:component ast))))
 
 XXXhandwrittervoid disarm()
   {

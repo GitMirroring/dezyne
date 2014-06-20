@@ -98,6 +98,8 @@ wfc: compile
 	-./gaiag -l wfc examples/mixing.asd 
 
 csp: compile
+	./gaiag -l csp examples/Alarm.asd
+	-$(diff) baseline/Alarm.csp Alarm.csp
 	./gaiag -l csp examples/if.asd
 	$(diff) examples/if.csp C.csp
 

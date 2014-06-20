@@ -24,36 +24,36 @@
 
 
 datatype event_alphabet =
-#(pipe-join (append (delete-duplicates (sort (apply append (map port-triggers (component-ports (component ast)))) symbol<)) '(return)))
+#(pipe-join (append (delete-duplicates (sort (apply append (map port-triggers (ast:body (ast:ports (ast:component ast))))) symbol<)) '(return)))
 
 datatype enumeration_alphabet =
-#(pipe-join (delete-duplicates (sort (enum-values (component ast)) symbol<)))
+#(pipe-join (delete-duplicates (sort (enum-values (ast:component ast)) symbol<)))
 
 channel illegal
 
 # (map-ports #{
 channel #.interface ,#.port : {#(comma-join (append (port-triggers port) '(return)))} 
-#} (component-ports (component ast)))
+#} (ast:body (ast:ports (ast:component ast))))
 
 
 # (map-ports #{
 #.interface _#.behaviour(IG) = let
-#.interface _#.behaviour _(# (map variable-name (behaviour-variables (interface-behaviour (interface-ast .interface))))) =
+#.interface _#.behaviour _(# (map ast:identifier (ast:body (ast:variables (ast:behaviour (ast:ast .interface)))))) =
 # (map-guards
-#{  (#(list (cadr (guard-expression *guard-def*)) " == " (caddr (guard-expression *guard-def*)))) & (
+#{  (#(list (cadr (ast:expression *guard-def*)) " == " (caddr (ast:expression *guard-def*)))) & (
   )
 []
-#} (statements-guard (behaviour-statements (interface-behaviour (interface-ast .interface)))))
-#} (filter port-requires? (component-ports (component ast))))
+#} (ast:statements-guard (ast:body (ast:statements (ast:behaviour (ast:ast .interface))))))
+#} (filter ast:requires? (ast:body (ast:ports (ast:component ast)))))
 
 #.component _#.behaviour (IIG,IG) = let
-#.component _#.behaviour _(#(comma-join (sort (map variable-name (behaviour-variables (component-behaviour (component ast)))) symbol<))) = 
+#.component _#.behaviour _(#(comma-join (sort (map ast:identifier (ast:body (ast:variables (ast:behaviour (ast:component ast))))) symbol<))) = 
 
 # (map-guards #{
- (# (list (cadr (guard-expression *guard-def*)) " == " (caddr (guard-expression *guard-def*)))) & transition_begin -> (
+ (# (list (cadr (ast:expression *guard-def*)) " == " (caddr (ast:expression *guard-def*)))) & transition_begin -> (
   )
 []
-#} (statements-guard (behaviour-statements (component-behaviour (component ast)))))
+#} (ast:statements-guard (ast:body (ast:statements (ast:behaviour (ast:component ast))))))
 
 assert #.component _#.behaviour _Component :[deadlock free]
 assert #.component _#.behaviour(true,true) :[deterministic]
@@ -64,7 +64,7 @@ assert #.interface _#.interface-behaviour(false) [[#.interface .x<-#.port .x|x<-
 # (map-ports #{
 assert #.interface _#.behaviour(false) :[deadlock free]
 assert #.interface _#.behaviour(true) :[livelock free]
-#} (filter port-requires? (component-ports (component ast))))
+#} (filter ast:requires? (ast:body (ast:ports (ast:component ast)))))
 assert #.interface _#.interface-behaviour (false) :[deadlock free]
 assert #.interface _#.interface-behaviour (true) :[livelock free]
 

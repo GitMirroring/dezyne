@@ -163,4 +163,4 @@
                                        (list (read-delimited "\n")))))
                         (args (car (or (assoc-ref (car args) 'args)
                                        (list args)))))
-                   (throw 'parse-error (append `((ftell ,tell) (line ,line) (args ,(apply format #f (cadr args) (caddr args))))))))))))))
+                   (throw 'parse-error (append `((ftell ,tell) (line ,line) (args ,args))))))))))));,(apply format #f (cadr args) (caddr args))))))))))))))

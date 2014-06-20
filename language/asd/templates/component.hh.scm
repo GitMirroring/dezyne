@@ -4,14 +4,14 @@
 #(map-ports
 #{
 ##include "#.interface Interface.h"
-#} (component-ports (component ast)))
+#} (ast:body (ast:ports (ast:component ast))))
 ##include <boost/shared_ptr.hpp>
 
-class #.component Component # (string-if (component-bottom? (component ast))
+class #.component Component # (string-if (ast:bottom? (ast:component ast))
 #{: public #.interface Interface#})
 {
 public:
-# (string-if (component-bottom? (component ast))
+# (string-if (ast:bottom? (ast:component ast))
 #{
   static boost::shared_ptr<#.interface Interface> GetInstance();
 #}
@@ -19,7 +19,7 @@ public:
   static boost::shared_ptr<#.component Component> GetInstance();
 #})
   static void ReleaseInstance();
-# (string-if (not (component-bottom? (component ast)))
+# (string-if (not (ast:bottom? (ast:component ast)))
 #{
  #(map-ports
 #{
@@ -28,7 +28,7 @@ public:
 ##if 0
   virtual void Get#(list .port)Interface(boost::shared_ptr<#.interface Interface>* intf) = 0;
 ##endif
-#} (component-ports (component ast)))
+#} (ast:body (ast:ports (ast:component ast))))
 #})
 };
 

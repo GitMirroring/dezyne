@@ -25,7 +25,7 @@
   :use-module (srfi srfi-1)
 
   :use-module (language asd animate)
-  :use-module (language asd ast)
+  :use-module ((language asd ast) :renamer (symbol-prefix-proc 'ast:))
   :use-module (language asd c++)
   :use-module (language asd misc)
   :export (
@@ -39,24 +39,25 @@
   (set! *ast* ast)
   (module-define! (resolve-module '(language asd csp)) 'ast ast)  ;; FIXME
   (module-define! (resolve-module '(language asd c++)) 'ast ast)  ;; FIXME
-  (and-let* ((comp (component ast))
-             (name (component-name comp)))
+  (and-let* ((comp (ast:component ast))
+             (name (ast:name comp)))
             (animate-file 'templates/component.csp.scm (list name '.csp) (csp-module ast)))
   "")
 
 (define (csp-module ast)
   (let ((module (make-module 31 (list 
                                  (resolve-module '(ice-9 match))
-                                 (resolve-module '(language asd ast))
+                                 (resolve-interface '(language asd ast)
+                                                    :renamer (symbol-prefix-proc 'ast:))
                                  (resolve-module '(language asd c++))
                                  (resolve-module '(language asd csp))))))
     (module-define! module 'ast ast)
-    (and-let* ((comp (component ast)))
-              (module-define! module '.component (component-name comp))
-	      (module-define! module '.interface (interface-name (interface ast)))
-	      (module-define! module '.behaviour (behaviour-name (component-behaviour comp)))
-              (module-define! module '.interface-behaviour (behaviour-name (interface-behaviour (interface ast))))
-	      (module-define! module '.port (port-name (component-provides comp))))
+    (and-let* ((comp (ast:component ast)))
+              (module-define! module '.component (ast:name comp))
+	      (module-define! module '.interface (ast:name (ast:interface ast)))
+	      (module-define! module '.behaviour (ast:name (ast:behaviour comp)))
+              (module-define! module '.interface-behaviour (ast:name (ast:behaviour (ast:interface ast))))
+	      (module-define! module '.port (ast:identifier (ast:port comp))))
     module))
 
 (define (map-guards string guards)
@@ -83,26 +84,26 @@
 (define (pipe-join lst) (->join lst " | "))
 
 (define (port-triggers port)
-  (interface-triggers (interface-ast (port-interface port))))
+  (interface-triggers (ast:ast (ast:type port))))
 
 (define (event-names ports)
   (let loop ((ports ports) (events '()))
     (if (null? ports)
         events
-        (loop (cdr ports) (append events (map port-name (port-events (car ports))))))))
+        (loop (cdr ports) (append events (map ast:identifier (ast:body (ast:events (car ports)))))))))
 
 (define (enum-values comp)
-  (let ((comp-values (apply append (map enum-elements (behaviour-types (component-behaviour comp))))))
-    (let loop ((ports (component-ports comp)) (values comp-values))
+  (let ((comp-values (apply append (map ast:elements (ast:body (ast:types (ast:behaviour comp)))))))
+    (let loop ((ports (ast:body (ast:ports comp))) (values comp-values))
       (if (null? ports)
           values
-          (loop (cdr ports) (append values (apply append (map enum-elements (port-behaviour-types (car ports))))))))))
+          (loop (cdr ports) (append values (apply append (map ast:elements (ast:body (ast:types (ast:behaviour (ast:ast (ast:type (car ports))))))))))))))
 
 (define* (interface-triggers interface)
-  (delete-duplicates (sort (append (map event-name (interface-events interface)) (apply append (map behaviour-triggers (behaviour-statements (interface-behaviour interface))))) symbol<)))
+  (delete-duplicates (sort (append (map ast:identifier (ast:body (ast:events interface))) (apply append (map behaviour-triggers (ast:body (ast:statements (ast:behaviour interface)))))) symbol<)))
 
 (define* (behaviour-triggers src :optional (triggers '()))
   (match src
-   (('statements t ...) (append (apply append (map behaviour-triggers t))triggers))
+   (('statements t ...) (append (apply append (map behaviour-triggers t)) triggers))
     (('on triggers statements) triggers)
     (('guard expression statements) (behaviour-triggers statements triggers))))

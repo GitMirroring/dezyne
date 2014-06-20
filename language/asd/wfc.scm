@@ -29,7 +29,7 @@
   :use-module (ice-9 optargs)
   :use-module (ice-9 pretty-print)
 
-  :use-module (language asd ast)
+  :use-module ((language asd ast) :renamer (symbol-prefix-proc 'ast:))
   :use-module (language asd misc)
   :use-module (language asd asd)
   :use-module (language asd gaiag)
@@ -59,7 +59,7 @@
 (define (error message lst) (list message (source-location lst)))
 
 (define (verify-on ast)
-  (and-let* ((statements (behaviour-statements (interface-behaviour (interface ast))))
+  (and-let* ((statements ((compose ast:body ast:statements ast:interface) ast))
              (error-locations (null-is-#f (filter identity (map statement-on statements)))))
             error-locations))
 
@@ -72,7 +72,7 @@
          (('assign x ...) '())))
 
 (define (verify-mixing ast)
-  (let ((statement (behaviour-statement (interface-behaviour (interface ast)))))
+  (let ((statement ((compose ast:statements ast:interface) ast)))
         (list (mixing statement))))
 
 (define* (mixing s :key (guarded 0) (illegal 0) (imperative 0))

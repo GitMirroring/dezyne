@@ -20,90 +20,201 @@
 (define-module (language asd ast)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 match)
+  :use-module (ice-9 optargs)
   :use-module (srfi srfi-1)
   :use-module (system foreign)
 
-  
   :use-module (language asd asd)
   :use-module (language asd misc)
   :use-module (language asd gaiag)
 
-
   :export (
-	   behaviour-name
-           behaviour-statements
-           behaviour-statement
-           behaviour-types
-           behaviour-variables
-           behaviour-variable
-
+           ast
+           behaviour
+           body
+           bottom?
            component
-           component-behaviour
-           component-behaviour?
-           component-bottom?
-           component-name
-           component-ports
-           component-port
-           ;; component-spec
-           component-interface
-	   component-provides
-           type-name-component
-
-           enum-elements
-           enum-name
-           enum-type
-
-           event-direction
-           event-name
-           event-type
-           event-in?
-           event-out?
-           event-dir-matches?
-           
-           field-type
-           field-entry
-
-           import-ast
-
+           dir-matches?
+           direction
+           elements
+           events
+           expression
+           identifier
+           in?
+           initial-value
            interface
-           interface-behaviour
-           interface-behaviour?
-           interface-events
-           interface-name
-           interface-types
-           ;; interface-spec
-           
-           port-direction
-           port-name
-	   port-behaviour
-           port-interface
-           port-provides?
-           port-requires?
-           port-in?
-           port-out?
-           port-typed-event?
-           event-typed?
-
-           port-events
-           port-behaviour-types
-           port-types
-
-           interface-ast
-
-           type-name
-           variable-initial-value
-           variable-name
-           variable-type
-
-           ast-parent
+           name
+           out?
+           parent
+           port
+           ports
+           provides
+           provides?
+           requires?
+           statements
+           statements-guard
+           type
+           type-name-component
+           typed?
+           types
+           variable
+           variables
            ))
 
-(define (ast-parent ast lst)
+
+(define (member- ast name) (or (assoc name (body ast)) '()))
+
+(define (module? ast) (or (interface? ast) (component? ast)))
+(define (type? type ast) 
+  (and (pair? ast)
+       (let ((head (car ast)))
+         (case type
+           ((event) (member head '(in out)))
+           ((port) (member head '(provides requires)))
+         (else (eq? head type))))))
+
+(define (behaviour? ast) (type? 'behaviour ast))
+(define (component? ast) (type? 'component ast))
+(define (enum? ast) (type? 'enum ast))
+(define (event? ast) (type? 'event ast))
+(define (events? ast) (type? 'events ast))
+(define (field? ast) (type? 'field ast))
+(define (guard? ast) (type? 'guard ast))
+(define (interface? ast) (type? 'interface ast))
+(define (variable? ast) (type? 'declare ast)) ;;; FIXME
+(define (port? ast) (type? 'port ast))
+(define (ports? ast) (type? 'ports ast))
+(define (statements? ast) (type? 'statements ast))
+(define (types? ast) (type? 'types ast))
+(define (variables? ast) (type? 'variables ast))
+
+(define (body ast)
+  (match ast
+    ((or (? behaviour?) (? module?))
+     (or (and (>2 (length ast)) (cddr ast)) '()))
+    ((or (? events?) (? ports?) (? statements?) (? types?) (? variables?))
+     (cdr ast))
+    ('() ast)))
+
+(define (interface- ast) (assoc 'interface ast))
+
+(define (interface ast)
+  (and-let* ((interface-ast (interface- ast))
+             (name (name interface-ast)))
+            (if (not (assoc-ref *ast-alist* name))
+                (ast-add name interface-ast))
+            interface-ast))
+
+(define (events ast)
+  (match ast
+    ((? interface?) (member- ast 'events))
+    ((? port?) (events (import-ast (type ast))))))
+
+(define (behaviour ast)
+  (match ast
+    ((? module?) (member- ast 'behaviour))
+    ((? port?) (behaviour (import-ast (type ast))))))
+
+(define (component ast) (assoc 'component ast))
+
+(define (ports ast) (match ast ((? component?) (member- ast 'ports))))
+
+(define* (port ast :optional (name #f))
+  (if name
+      (find (lambda (p) (eq? (identifier p) name))
+            (body
+             (match ast
+               ((? ports?) ast)
+               ((? component?) (ports ast)))))
+      (match ast
+        ((? component?) (assoc 'provides (body (ports ast)))))))
+
+(define (direction ast) (match ast ((or (? event?) (? port?)) (car ast))))
+(define (elements ast) (match ast ((? enum?) (caddr ast))))
+(define (expression ast) (match ast ((? guard?) (cadr ast))))
+
+(define (identifier ast) 
+  (match ast
+    ((or (? event?) (? field?) (? port?) (? variable?)) (caddr ast))))
+
+(define (in? ast) (match ast ((? event?) (eq? (direction ast) 'in))))
+(define (out? ast) (match ast ((? event?) (eq? (direction ast) 'out))))
+
+(define (name ast)
+  (match ast
+    ((or (? behaviour?) (? enum?) (? module?))
+     (or (and (>1 (length ast)) (cadr ast)) ""))))
+
+(define (statements ast)
+  (match ast
+    ((? module?) (statements (behaviour ast)))
+    ((? behaviour?) (member- ast 'statements))))
+
+(define (type ast)
+  (match ast ((or (? event?) (? field?) (? port?) (? variable?)) (cadr ast))))
+
+(define (types ast) 
+  (match ast
+    ((or (? interface?) (? behaviour?)) (member- ast 'types))
+    ((? component?) (types (behaviour ast)))
+    ((? port?) (types (import-ast (type ast))))))
+
+(define (variables ast) 
+  (match ast
+    ((or (? interface?) (? behaviour?)) (member- ast 'variables))
+    ((? component?) (variables (behaviour ast)))
+    ((? port?) (variables (import-ast (type ast))))))
+
+
+;;;;; FIXME
+
+(define (type-name-component type component) (symbol-append (name component) (type type)))
+
+(define (enum-name enum) (cadr enum))
+
+;;;?(define (type-name type) (car type))
+
+(define (initial-value variable) (cadddr variable))
+
+
+;;; utilities
+(define (provides? ast) (eq? (direction ast) 'provides))
+(define (requires? ast) (eq? (direction ast) 'requires))
+
+(define (typed? ast) 
+  (match ast
+    ((? event?) (not (eq? (type ast) 'void)))
+    ((? port?) (null-is-#f (filter typed? (body (events ast)))))))
+
+(define (dir-matches? port) 
+  (lambda (event)
+    (or (and (eq? (direction port) 'provides)
+             (eq? (direction event) 'in))
+        (and (eq? (direction port) 'requires)
+             (eq? (direction event) 'out)))))
+
+(define (bottom? ast)
+  (and-let* ((ports (body (ports ast)))
+             ((=1 (length ports))))
+            (provides? (car ports))))
+
+;;; walkers
+(define (statements-of-type statements type)
+  (let loop ((statements statements) (lst '()))
+  (if (null? statements)
+      lst
+      (loop (cdr statements) (if (eq? (caar statements) type)
+                                 (cons (car statements) lst)
+                                 lst)))))
+
+(define (statements-guard statements) (statements-of-type statements 'guard))
+
+(define (parent ast lst)
   (if (object? lst)
-    (ast-id-parent ast (object-id lst))
+    (id-parent ast (object-id lst))
     #f))
 
-(define (ast-id-parent ast id)
+(define (id-parent ast id)
   (let loop ((ast ast) (stack '()))
     (if (null? ast)
         (if (null? stack)
@@ -116,121 +227,15 @@
                   (loop (car ast) (cons (cdr ast) stack))
                   (loop (cdr ast) stack)))))))
 
-(define *import-ast-alist* '(()))
-(define (import-add name ast)
-  (set! *import-ast-alist* (assoc-set! *import-ast-alist* name ast))
+(define *ast-alist* '(()))
+(define (ast-add name ast)
+  (set! *ast-alist* (assoc-set! *ast-alist* name ast))
   ast)
 
 (define (import-ast name)
-  (or (assoc-ref *import-ast-alist* name)
+  (or (assoc-ref *ast-alist* name)
       (and-let* ((ast (read-asd (->string (list 'examples '/ name '.asd)))))
-                (import-add name (car ast)))))
+                (ast-add name (car ast)))))
 
-(define interface-ast import-ast)
-
-(define (interface- ast) (assoc 'interface ast))
-(define (interface ast) ;; FIXME
-  (and-let* ((interface-ast (assoc 'interface ast))
-             (name (interface-name interface-ast)))
-            (if (not (assoc-ref *import-ast-alist* name))
-                (import-add name interface-ast))
-            interface-ast))
-
-(define (interface-name interface) (cadr interface))
-(define (interface-spec interface) (cddr interface)) 
-(define (interface-types interface) (assoc-ref (interface-spec interface) 'types))
-(define (interface-events interface) (assoc-ref (interface-spec interface) 'events))
-
-(define (interface-behaviour interface) 
-  (assoc 'behaviour (interface-spec interface)))
-(define (interface-behaviour? interface) (and (interface-behaviour interface)
-                                              (>1 (length (interface-behaviour interface)))))
-
-(define (event-direction event) (car event))
-(define (event-type event) (cadr event))
-(define (event-name event) (caddr event))
-(define (event-in? event) (eq? (event-direction event) 'in))
-(define (event-out? event) (eq? (event-direction event) 'out))
-
-(define (event-dir-matches? port) 
-  (lambda (event)
-    (or (and (eq? (port-direction port) 'provides)
-             (eq? (event-direction event) 'in))
-        (and (eq? (port-direction port) 'requires)
-             (eq? (event-direction event) 'out)))))
-
-(define (component ast) (assoc 'component ast))
-(define (component-bottom? component)
-  (and-let* ((ports (component-ports component))
-             ((=1 (length ports))))
-            (eq? (port-direction (car ports)) 'provides)))
-
-(define (component-name component) (cadr component))
-(define (component-spec component) (cddr component)) 
-(define (component-ports component) (cdr (assoc 'ports (component-spec component)))) 
-(define (component-provides component) (assoc 'provides (component-ports component)))
-(define (component-interface component) (car (assoc-ref (component-ports component) 'provides)))
-(define (component-port component name) (find (lambda (p) (eq? (port-name p) name)) (component-ports component)))
-
-
-(define (port-direction port) (car port))
-(define (port-name port) (caddr port))
-(define (port-interface port) (cadr port))
-(define (port-provides? port) (eq? (port-direction port) 'provides))
-(define (port-requires? port) (eq? (port-direction port) 'requires))
-(define (port-behaviour port) (behaviour-name (interface-behaviour (interface-ast (port-interface port)))))
-
-(define (port-in? port) (or (port-requires? port) event-in? event-out?)) 
-(define (port-out? port) (or (port-provides? port) event-out? event-in?)) 
-
-(define (event-typed? event) (not (eq? (event-type event) 'void)))
-(define (port-typed-event? port)
-  (null-is-#f (filter event-typed? (port-events port))))
-
-(define (port-events port)
-  (interface-events (interface-ast (port-interface port))))
-
-(define (port-behaviour-types port)
-  (behaviour-types (interface-behaviour (interface-ast (port-interface port)))))
-(define (port-types port)
-  (interface-types (interface-ast (port-interface port))))
-
-(define (component-behaviour component) 
-  (assoc 'behaviour (component-spec component)))
-(define (component-behaviour? component) (and (component-behaviour component)
-                                              (>1 (length (component-behaviour component)))))
-(define (behaviour-spec behaviour) (or (and (>2 (length behaviour)) (cddr behaviour)) '()))
-(define (behaviour-name behaviour) (or (and (>1 (length behaviour)) (cadr behaviour)) ""))
-(define (behaviour-types behaviour) (or (assoc-ref (behaviour-spec behaviour) 'types) '()))
-(define (behaviour-variables behaviour) (or (assoc-ref (behaviour-spec behaviour) 'variables) '()))
-(define (behaviour-statements behaviour) (or (assoc-ref (behaviour-spec behaviour) 'statements) '()))
-(define (behaviour-statement behaviour) (cons 'statements (behaviour-statements behaviour)))
-
-(define (statements-of-type statements type)
-  (let loop ((statements statements) (lst '()))
-  (if (null? statements)
-      lst
-      (loop (cdr statements) (if (eq? (caar statements) type)
-                                 (cons (car statements) lst)
-                                 lst)))))
-(define (statements-guard statements)
-  (statements-of-type statements 'guard))
-(define (guard-expression guard) (cadr guard))
-
-(define (behaviour-variable behaviour variable) (assoc-ref (behaviour-variables behaviour) variable))
-(define (variable-type variable) (cadr variable))
-(define (variable-name variable) (caddr variable))
-(define (variable-initial-value variable) (cadddr variable))
-
-(define (enum-elements enum) (caddr enum))
-(define (enum-name enum) (cadr enum))
-
-(define (type-name type) (car type))
-(define enum-type type-name)
-
-(define (field-type field) (cadr field))
-(define (field-entry field) (caddr field))
-
-(define (type-name-component type component)
-  (symbol-append (component-name component) (variable-type type)))
+(define ast import-ast)
 
