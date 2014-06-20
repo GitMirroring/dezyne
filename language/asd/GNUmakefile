@@ -99,7 +99,7 @@ wfc: compile
 
 csp: compile
 	./gaiag -l csp examples/if.asd
-	$(diff) examples/if.csp .
+	$(diff) examples/if.csp C.csp
 
 if: compile
 	./gaiag examples/if.asd
