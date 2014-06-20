@@ -79,19 +79,6 @@
           ((not (pair? x)) (cons x tail))
           (else (loop (car x) (loop (cdr x) tail))))))
 
-(define-public (unique lst)
-  "Uniq @var{lst}, assuming that it is sorted.  Uses @code{equal?}
-for comparisons."
-
-  (reverse!
-   (fold (lambda (x acc)
-           (if (null? acc)
-               (list x)
-               (if (equal? x (car acc))
-                   acc
-                   (cons x acc))))
-         '() lst) '()))
-
 (define (->join lst infix) (string-join (map ->string lst) infix))
 (define (pipe-join lst) (->join lst " | "))
 
@@ -112,7 +99,7 @@ for comparisons."
           (loop (cdr ports) (append values (apply append (map enum-elements (port-behaviour-types (car ports))))))))))
 
 (define* (interface-triggers interface)
-  (unique (sort (append (map event-name (interface-events interface)) (apply append (map behaviour-triggers (behaviour-statements (interface-behaviour interface))))) symbol<)))
+  (delete-duplicates (sort (append (map event-name (interface-events interface)) (apply append (map behaviour-triggers (behaviour-statements (interface-behaviour interface))))) symbol<)))
 
 (define* (behaviour-triggers src :optional (triggers '()))
   (match src

@@ -24,10 +24,10 @@
 
 
 datatype event_alphabet =
-#(pipe-join (append (unique (sort (apply append (map port-triggers (component-ports (component ast)))) symbol<)) '(return)))
+#(pipe-join (append (delete-duplicates (sort (apply append (map port-triggers (component-ports (component ast)))) symbol<)) '(return)))
 
 datatype enumeration_alphabet =
-#(pipe-join (unique (sort (enum-values (component ast)) symbol<)))
+#(pipe-join (delete-duplicates (sort (enum-values (component ast)) symbol<)))
 
 channel illegal
 
