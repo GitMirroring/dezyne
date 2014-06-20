@@ -31,6 +31,9 @@ default: all
 
 all: compile check test match wfc
 
+tags:
+	etags $(shell git ls-files)
+
 compile:
 	guile -L ../.. spec.scm 
 

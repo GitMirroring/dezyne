@@ -24,9 +24,10 @@ namespace #.component ImplScope
 #{
     virtual #(if (eq? 'void .type ) .type (list .interface "::" .type ))  #.event ();
 #}  port (filter (event-dir-matches? port) (port-events port)))
+
   private:
 /*
-examples/component.cc.scm:28: here */
+templates/component.cc.scm:29: here */
     #.port #.interface #.api Proxy& operator = (const #.port #.interface #.api Proxy& other);
     #.port #.interface #.api Proxy(const #.port #.interface #.api Proxy& other);
   };
@@ -44,7 +45,8 @@ examples/component.cc.scm:28: here */
     ~State() {}
     static State& instance();
 #(map-ports
-#{##if 0
+#{
+##if 0
     void Processvoid(Context& context, #.interface #.callback ::void stimulus);
 ##endif
 
@@ -62,7 +64,7 @@ examples/component.cc.scm:28: here */
     State& operator = (const State& other);
     State(const State& other);
 /*
-examples/component.cc.scm:63: TODO function-definitions */
+templates/component.cc.scm:65: TODO function-definitions */
   };
   class State;
   class Context: public asd_0::SingleThreadedContext#.no-dpc 
@@ -84,7 +86,7 @@ examples/component.cc.scm:63: TODO function-definitions */
 #} (component-ports (component ast)))
 
 /*
-examples/component.cc.scm:85: TODO instances */
+templates/component.cc.scm:87: TODO instances */
 
 # (string-if (component-behaviour (component ast))
 #{
@@ -138,7 +140,8 @@ examples/component.cc.scm:85: TODO instances */
     ~Component();
     
 #(map-ports
-#{#(string-if (component-bottom? (component ast))
+#{
+#(string-if (component-bottom? (component ast))
 #{
     virtual void Get#.api (boost::shared_ptr<#.interface #.api >* #.ap );
     virtual void Register#.callback (boost::shared_ptr<#.interface #.callback > #.cb );
@@ -203,9 +206,9 @@ examples/component.cc.scm:85: TODO instances */
     // m_#.port  = #.interface Component::GetInstance();
 #} (component-ports (component ast)))
 /*
-examples/component.cc.scm:202: TODO: constructor-instances */
+templates/component.cc.scm:206: TODO: constructor-instances */
 /*
-examples/component.cc.scm:204 TODO: binding */
+templates/component.cc.scm:208 TODO: binding */
   }
   
   Context::~Context()
@@ -323,7 +326,8 @@ examples/component.cc.scm:204 TODO: binding */
 #(string-if (component-behaviour? (component ast))
 #{
 #(map-ports
-#{##if 0
+#{
+##if 0
   void State::Processvoid(Context& /*context*/, #.interface #.callback ::void /* stimulus */)
   {
   }
@@ -341,14 +345,14 @@ examples/component.cc.scm:204 TODO: binding */
 
     context.predicates(predicate);
     ASD_TRACE_EXIT("#.component ", "State", "#.interface #.callback ", "#.event ");
-  }#}
+  }
+#}
     port (filter (event-dir-matches? port) (port-events port)))
-
 #}  (component-ports (component ast)))
 #})
 
 /*
-examples/component.cc.scm:340: TODO function-definitions */
+templates/component.cc.scm:351: TODO function-definitions */
 
 }
 
