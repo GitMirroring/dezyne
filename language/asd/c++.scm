@@ -103,7 +103,11 @@
         (event (statements.event)))
     (match src
       (() "")
-      ;;((? c++-template?) (parameterize ((statements.src src)) (apply c++-template->string src)))
+
+      ;; Comment-out to use pattern matching and in-line C++ code,
+      ;; enable to use list of c++-templates.
+      ((? c++-template?) (parameterize ((statements.src src)) (apply c++-template->string src)))
+
       (('guard expr statements ...)
        (statements->string (list 
                             (parameterize ((statements.src src))
@@ -196,19 +200,17 @@
     (apply template->string x)))
 
 (define c++-template-dir '(templates c++))
+;; for the pretty printer, small templates work just fine
+;; for c++, using pattern matching is better?
 (define c++-templates
   `((action-illegal . (()))
     (assign . ((.lhs . ,lhs->string)
                (.rhs . ,rhs->string)))
     (guard . ((.clause . ,expr->clause)
-              (.statement . ,(lambda (x) (statements->string (cdr x))))))
+              (.statement . ,(lambda (x) (statements->string (list (cdr x) (statement-last (cdr x))))))))
     (if . ((.expression . ,->string)
            (.statement . ,statements->string)
-           (.else . ,statements->string)))
-    (xxstatements . ((.s1 . ,(lambda (x) (statements->string x)))
-                   (.s2 . ,(lambda (x) (statements->string x)))
-                   (.s3 . ,(lambda (x) (statements->string  x)))
-                   (.s4 . ,(lambda (x) (statements->string x)))))))
+           (.else . ,statements->string)))))
 
 (define (enum->string e)
   (let ((comp-name (component-name (component *ast*))))
@@ -226,8 +228,8 @@
 
 (define (return-context-get interface event)
   (if (event-typed? event)
-      (list interface "::" (event-type event)))
-  "")
+      (c++-template->string 'return-context-get)
+      ""))
 
 (define (variable-value->string module v)
   (case (variable-type v)
@@ -305,7 +307,6 @@
                               (parameterize ((statements.port port)
                                              (statements.event event))
                                 (statements->string (behaviour-statements (component-behaviour (component ast))))))
-              ;;(module-define! module '.statement "NOT NOW")
               (module-define! module '.return-interface-type (return-interface-type (port-interface port) event))
               (module-define! module '.return-context-get (return-context-get (port-interface port) event))
            (animate-string string module)))))

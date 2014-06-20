@@ -47,7 +47,7 @@ templates/component.cc.scm:29: here */
 #(map-ports
 #{
 ##if 0
-    void Processvoid(Context& context, #.interface #.callback ::void stimulus);
+    void Process#.type(Context& context, #.interface #.callback ::#.type stimulus);
 ##endif
 
 #(map-port-events 
@@ -177,7 +177,7 @@ templates/component.cc.scm:87: TODO instances */
     m_Context.block();
     m_Context.getState().#.port #.interface #.event (m_Context);
     m_Context.awaitUnblock();
-    #return-context-get 
+    #.return-context-get 
   }
 #}
 #{
@@ -186,7 +186,7 @@ templates/component.cc.scm:87: TODO instances */
     m_Context.defer(boost::bind(&State::#.port #.interface #.event ,
                     boost::bind(&Context::getState, &m_Context),
                     boost::ref(m_Context)));
-    #return-context-get 
+    #.return-context-get 
   }
 #})
 

@@ -27,6 +27,7 @@
   :use-module (language asd misc)
   :export (animate-file
            animate-string
+           animate-template
            file-line-column-location
            gulp-template
            template?
