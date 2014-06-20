@@ -24,9 +24,47 @@
   :use-module (ice-9 rdelim)
   :use-module (srfi srfi-1)
 
-  :use-module (language asd ast)
   :use-module (language asd misc)
-  :export (animate-file animate-string file-line-column-location))
+  :export (animate-file
+           animate-string
+           file-line-column-location
+           gulp-template
+           template?
+           template->string
+           template-dir
+           templates))
+
+(define template-dir (make-parameter '(templates)))
+(define (template-file name) (string-join (map symbol->string (append (template-dir) (list name))) "/"))
+(define (gulp-template name) (gulp-text-file (template-file name)))
+
+(define templates (make-parameter
+                  `((test . ((foo . ,identity)
+                             (bar . (lambda (x) "boo"))
+                             (baz . "blaat"))))))
+
+(define (template? x)
+  (and (list? x) (pair? (assoc (car x) (templates)))))
+
+(define (template->string name . key-func-pairs)
+  (let ((template (assoc-ref (templates) name)))
+    (animate-template name (map (lambda (x)
+                               (let* ((pair (car x))
+                                      (key (car pair))
+                                      (func (cdr pair))
+                                      (data (cadr x))
+                                      (value (func data)))
+                                 (cons key value)))
+                             (zip template key-func-pairs)))))
+
+(define (animate-template name key-value-pairs)
+  (let ((module (current-module)))
+    (let loop ((pairs key-value-pairs))
+      (when (pair? pairs)
+        (module-define! module (caar pairs) (cdar pairs))
+        (loop (cdr pairs))))
+    (with-output-to-string
+      (lambda () (animate-string (gulp-template name) module)))))
 
 (define (file-line-column-location file-name tell)
   (let* ((port (open-file (->string file-name) "r")))
@@ -44,7 +82,7 @@
           (dump-file (->string out-name)
                      (with-output-to-string
                        (lambda ()
-                         (animate-string (gulp-text-file (->string file-name)) module)))))
+                         (animate-string (gulp-text-file file-name) module)))))
         (lambda (key . args)
           (let* ((tell (assoc-ref (car args) 'ftell))
                  (line-column (if (pair?  tell)
@@ -101,13 +139,15 @@
              ((eq? *eof* c) (set! depth 0) #f)
              (else (display "#")))))))))
 
+(define escape #\#)
+
 (define (animate-input module)
   (read-hash-extend #\{ animate-hash-read-string)
-  (while (and-let* ((s (*eof*-is-#f (read-delimited "%"))))
+  (while (and-let* ((s (*eof*-is-#f (read-delimited (make-string 1 escape)))))
                    (display s))
     (let ((c (read-char)))
       (cond
-       ((eq? c #\%) (display c))
+       ((eq? c escape) (display c))
        ((eq? *eof* c) #f)
        (else (unread-char c)
              (catch #t (lambda ()

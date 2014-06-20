@@ -95,8 +95,6 @@
            variable-name
            variable-type
 
-           ->string
-
            ast-parent
            ))
 
@@ -235,12 +233,4 @@
 
 (define (type-name-component type component)
   (symbol-append (component-name component) (variable-type type)))
-
-(define (->string src) 
-  (match src
-    ((? char?) (make-string 1 src))
-    ((? string?) src)
-    ((? symbol?) (symbol->string src))
-    ((h ... t) (apply string-append (map ->string src)))
-    (_ "")))
 

@@ -18,6 +18,7 @@
 (read-set! keywords 'prefix)
 
 (define-module (language asd misc)
+  :use-module (ice-9 match)
   :use-module (ice-9 rdelim)
   :export (
            =0
@@ -34,6 +35,7 @@
            one-is-#f
            stderr
            stdout
+           ->string
            ))
 
 (define *eof* (call-with-input-string "" read-char))
@@ -51,13 +53,13 @@
   (eval `(and ,@args) (current-module)))
 
 (define (gulp-text-file name)
-  (let* ((file (open-file name "r"))
+  (let* ((file (open-file (->string name) "r"))
 	 (text (read-delimited "" file)))
     (close file)
     text))
 
 (define (dump-file name string)
-  (let* ((file (open-output-file name)))
+  (let* ((file (open-output-file (->string name))))
     (display string file)
     (close file)))
 
@@ -71,3 +73,11 @@
 
 (define (stdout string . rest)
   (apply logf (cons* (current-output-port) string rest)))
+
+(define (->string src)
+  (match src
+    ((? char?) (make-string 1 src))
+    ((? string?) src)
+    ((? symbol?) (symbol->string src))
+    ((h ... t) (apply string-append (map ->string src)))
+    (_ "")))

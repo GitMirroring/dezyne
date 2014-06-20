@@ -28,8 +28,6 @@
   :use-module (language asd ast)
   :use-module (language asd c++)
   :use-module (language asd misc)
-  :use-module (language asd format-keys)
-  :use-module (language asd snippets)
   :export (
            asd->
            port-triggers

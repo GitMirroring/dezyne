@@ -22,8 +22,7 @@
   :use-module (srfi srfi-1)
 
   :use-module (language asd misc)
-  :use-module (language asd format-keys)
-  :use-module (language asd snippets)
+  :use-module (language asd animate)
   :export (asd-> asd->asd asd->pretty asd->string))
 
 (define (asd->string ast) 
@@ -40,23 +39,22 @@
     (('behaviour) "")
     (('if expr statement else) (->string (cons 'if-then-else (cdr src))))
     (('if expr statement) (->string (cons 'if-then (cdr src))))
-    ((? asd-snippet?) (apply asd-snippet->string src))
+    ((? asd-template?) (apply asd-template->string src))
     ((? join?) (apply join-all (cdr src)))
     ((? symbol?) (symbol->string src))
     ((! expression) (string-append "!" (->string expression)))
     (_ (format #f "\nNO MATCH:~a\n" src))))
 
-(define (asd-snippet? x)
-  (parameterize ((snippets asd-snippets)) (snippet? x)))
+(define (asd-template? x) (parameterize ((templates asd-templates)) (template? x)))
 
-(define (asd-snippet->string . x)
-  (parameterize ((snippet-dir asd-snippet-dir) (snippets asd-snippets))
-    (apply snippet->string x)))
+(define (asd-template->string . x)
+  (parameterize ((template-dir asd-template-dir) (templates asd-templates))
+    (apply template->string x)))
 
 (define (comma-space-join lst) (string-join (map ->string lst) ", "))
 
-(define asd-snippet-dir '(snippets asd))
-(define asd-snippets
+(define asd-template-dir '(templates asd))
+(define asd-templates
   `((component . ((name . ,identity)
                   (ports . ,->string)
                   (behaviour . ,->string)))

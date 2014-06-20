@@ -36,7 +36,7 @@
   (module-define! (resolve-module '(language asd c++)) 'ast ast)  ;; FIXME
   (and-let* ((i (interface ast))
              (file-name (list (interface-name i) 'Interface.h)))
-            (animate-file "templates/interface.hh.scm" file-name 
+            (animate-file "templates/interface.hh.scm" file-name
                           (c++-module ast)))
   (and-let* ((comp (component ast))
              (name (component-name comp)))
@@ -51,8 +51,6 @@
   (let ((module (make-module 31 (list 
                                  (resolve-module '(ice-9 match))
                                  (resolve-module '(language asd ast))
-                                 (resolve-module '(language asd format-keys))
-                                 (resolve-module '(language asd snippets))
                                  (resolve-module '(language asd c++))
                                  (resolve-module '(language asd csp))))))
     (module-define! module 'ast ast)
@@ -105,7 +103,7 @@
         (event (statements.event)))
     (match src
       (() "")
-      ;;((? c++-anime?) (parameterize ((statements.src src)) (apply c++-anime->string src)))
+      ;;((? c++-template?) (parameterize ((statements.src src)) (apply c++-template->string src)))
       (('guard expr statements ...)
        (statements->string (list 
                             (parameterize ((statements.src src))
@@ -191,41 +189,14 @@
         (enum->string rhs)
         (statements->string rhs))))
 
-(define (fmt x) (format #f "/*~a*/" x))
+(define (c++-template? x) (parameterize ((templates c++-templates)) (template? x)))
 
-;;;(define (c++-anime? x)  (parameterize ((snippets c++-snippets)) (snippet? x)))
+(define (c++-template->string . x)
+  (parameterize ((template-dir c++-template-dir) (templates c++-templates))
+    (apply template->string x)))
 
-(define (c++-anime? x)
-  (and (list? x) (pair? (assoc (car x) c++-animes))))
-
-(define (animate-anime string pairs)
-  (let ((module (current-module)))
-    (let loop ((pairs pairs))
-      (when (pair? pairs)
-        ;;(stderr "animate-anime: DEFINING: ~a = ~a\n" (caar pairs) (cdar pairs))
-        (module-define! module (caar pairs) (cdar pairs))
-        (loop (cdr pairs))))
-    (with-output-to-string
-      (lambda ()
-        (animate-string 
-         (gulp-text-file (->string (list 'snippets '/ 'c++ '/ string)))
-         module)))))
-
-(define (c++-anime->string name . rest)
-  (let ((snippet (assoc-ref 
-                  ;;(snippets)
-                  c++-animes
-                  name)))
-    (animate-anime name (map (lambda (x)
-                               (let* ((pair (car x))
-                                      (key (car pair))
-                                      (func (cdr pair))
-                                      (data (cadr x))
-                                      (value (func data)))
-                                 (cons key value)))
-                             (zip snippet rest)))))
-
-(define c++-animes
+(define c++-template-dir '(templates c++))
+(define c++-templates
   `((action-illegal . (()))
     (assign . ((.lhs . ,lhs->string)
                (.rhs . ,rhs->string)))
