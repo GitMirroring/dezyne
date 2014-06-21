@@ -23,7 +23,7 @@
   :use-module (ice-9 rdelim)
   :use-module (srfi srfi-1)
 
-  :use-module ((language asd ast) :renamer (symbol-prefix-proc 'ast:))
+  :use-module (language asd ast:)
   :use-module (language asd animate)
   :use-module (language asd misc)
   :export (asd-> 
@@ -50,10 +50,10 @@
 (define (c++-module ast)
   (let ((module (make-module 31 (list 
                                  (resolve-module '(ice-9 match))
-                                 (resolve-interface '(language asd ast)
-                                                    :renamer (symbol-prefix-proc 'ast:))
+                                 (resolve-module '(language asd ast:))
                                  (resolve-module '(language asd c++))
-                                 (resolve-module '(language asd csp))))))
+                                 (resolve-module '(language asd csp))
+                                 (resolve-module '(language asd misc))))))
     (module-define! module 'ast ast)
     (and-let* ((int (ast:interface ast)))
               (module-define! module '.interface (ast:name int))

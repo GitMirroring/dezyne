@@ -38,6 +38,9 @@ tags:
 compile:
 	guile -L ../.. spec.scm 
 
+clean:
+	rm -rf ~/.cache/guile
+
 dummy:
 
 baseline: dummy
