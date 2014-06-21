@@ -53,7 +53,6 @@
                                  (resolve-module '(ice-9 match))
                                  (resolve-module '(language asd ast:))
                                  (resolve-module '(language asd c++))
-                                 (resolve-module '(language asd csp))
                                  (resolve-module '(language asd misc))))))
     (module-define! module 'ast ast)
     (and-let* ((int (ast:interface ast)))

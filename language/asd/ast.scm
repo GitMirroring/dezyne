@@ -36,6 +36,7 @@
            behaviour?
            body
            bottom?
+           class
            component
            component?
            compound
@@ -166,6 +167,14 @@
     ((or (? behaviour?) (? enum?) (? module?))
      (or (and (>1 (length ast)) (cadr ast)) ""))))
 
+(define (class ast)
+  (match ast 
+    ((? event?) 'event)
+    ((? field?) 'field)
+    ((? port?) 'port)
+    ((? variable?) 'variable?)
+    (_ (car ast))))
+
 (define (statement ast)
   (match ast
     ((? module?) (statement (behaviour ast)))
@@ -174,7 +183,8 @@
     ((? on?) (caddr ast))))
 
 (define (type ast)
-  (match ast ((or (? event?) (? field?) (? port?) (? variable?)) (cadr ast))))
+  (match ast 
+    ((or (? event?) (? field?) (? port?) (? variable?)) (cadr ast))))
 
 (define (types ast)
   (match ast
@@ -184,7 +194,8 @@
 
 (define (variables ast)
   (match ast
-    ((or (? interface?) (? behaviour?)) (member- ast 'variables))
+    ((? behaviour?) (member- ast 'variables))
+    ((? interface?) (append (member- ast 'variables) (variables (behaviour ast))))
     ((? component?) (variables (behaviour ast)))
     ((? port?) (variables (import-ast (type ast))))))
 
