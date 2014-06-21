@@ -43,6 +43,7 @@
            in?
            initial-value
            interface
+           make
            name
            out?
            parent
@@ -61,6 +62,8 @@
            variables
            ))
 
+(define (make . t)
+  (apply (@@ (language asd asd) ast:make) t))
 
 (define (member- ast name) (or (assoc name (body ast)) '()))
 

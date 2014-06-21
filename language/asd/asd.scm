@@ -22,6 +22,7 @@
   #:use-module (system foreign)
 
   #:use-module (ice-9 match)
+
   #:export (asd->
             compile-tree-il
             make-asd-tokenizer
@@ -32,6 +33,36 @@
             source-location->source-properties))
 
 (define (debug m x) (display (format #f "~a: ~a\n" m x) (current-error-port)))
+
+(define (ast:make . t)
+  (let ((ast (if (pair? t) t (car t))))
+    (match ast
+      (('imports i ...) ast)
+      (('import type) ast)
+      (('component name ('ports p ...) ('behaviour n ...) ...) ast)
+      (('interface name ('types t ...) ('events e ...) ('behaviour n ...) ...) ast)
+      (('behaviour) ast)
+      (('behaviour name ('types t ...) ('variables v ...) ('statements s ...)) ast)
+      (('types t ...) ast)
+      (('events e ...) ast)
+      (('in type identifier) ast)
+      (('out type identifier) ast)
+      (('ports p ...) ast)
+      (('provides type identifier) ast)
+      (('variables v ...) ast)
+      (('declare type identifier value ...) ast)
+      (('requires type identifier) ast)
+      (('guard expression statement) ast)
+      (('on (trigger t ...) statement) ast)
+      (('field type identifiier) ast)
+      (('statements s ...) ast)
+      (('action 'illegal) ast)
+      (('action ('field type identifier)) ast)
+      (('assign identifier expression) ast)
+      ((x) (apply ast:make x)))))
+
+(define (make ast loc)
+  (note-location (ast:make ast) loc))
 
 (define *locations-alist* '(()))
 
@@ -179,7 +210,7 @@
     )
 
    (guarded-statement
-    (lbracket guard rbracket statement) : (note-location `(guard ,$2 ,$4) @1))
+    (lbracket guard rbracket statement) : (make `(guard ,$2 ,$4) @1))
    
    (guard
     (expression) : $1
@@ -193,7 +224,7 @@
     (Identifier dot Identifier) : `(field ,$1 ,$3))
    
    (on-event-statement
-    (on trigger-spec colon statement) : (note-location `(,$1 ,$2 ,$4) @1))
+    (on trigger-spec colon statement) : (make `(,$1 ,$2 ,$4) @1))
 
    (trigger-spec
     (trigger-list) : $1
