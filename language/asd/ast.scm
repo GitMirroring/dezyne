@@ -33,25 +33,34 @@
   :export (
            ast
            behaviour
+           behaviour?
            body
            bottom?
            component
+           component?
            compound
            dir-matches?
            direction
            elements
+           enum?
+           event?
            events
+           events?
            expression
            field?
+           guard?
            identifier
            in?
            initial-value
            interface
+           interface?
            make
+           module?
            name
            out?
            parent
            port
+           port?
            ports
            provides?
 	   read-ast
@@ -62,8 +71,11 @@
            type-name-component
            typed?
            types
+           types?
            variable
+           variable?
            variables
+           variables?
            ))
 
 (define (make . t)

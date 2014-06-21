@@ -36,6 +36,7 @@
            one-is-#f
            stderr
            stdout
+           symbol<
            ->string
            ))
 
@@ -49,6 +50,8 @@
 (define (=1 x) (= x 1))
 (define (>1 x) (> x 1))
 (define (>2 x) (> x 2))
+
+(define (symbol< a b) (string< (symbol->string a) (symbol->string b)))
 
 (define (fand . args)
   (eval `(and ,@args) (current-module)))
