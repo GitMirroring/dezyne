@@ -39,7 +39,7 @@ exec guile -L ../.. -e main -s $0 "$@"
   :use-module (language asd pretty)
   :use-module (language asd scheme)
   :use-module (language asd wfc)
-  :use-module (ice-9 debug)
+  :use-module (system repl error-handling)
   
   :export (read-asd read-asd-wellformed))
 
@@ -61,7 +61,8 @@ exec guile -L ../.. -e main -s $0 "$@"
 
 (define (parse-opts args)
   (let* ((option-spec
-	  '((help (single-char #\h))
+	  '((debug (single-char #\d))
+            (help (single-char #\h))
             (language (single-char #\l) (value #t))
 	    (version (single-char #\v))))
 	 (options (getopt-long (command-line) option-spec
@@ -77,6 +78,7 @@ exec guile -L ../.. -e main -s $0 "$@"
       (and (or help? usage?)
 	   ((or (and usage? stderr) stdout) "\
 Usage: gaiag [OPTION]... FILE
+  -d, --debug          run with debugging
   -h, --help           display this help
   -l, --language=LANG  generate output for language=LANG [scheme]
   -v, --version        display version
@@ -91,6 +93,7 @@ Languages: asd c++ scheme
 
 (define (main args)
   (let* ((options (parse-opts args))
+         (debug? (option-ref options 'debug #f))
 	 (file-name (car (option-ref options '() '())))
          (language (string->symbol (option-ref options 'language "scheme"))))
-    (file->lang file-name language)))
+    (call-with-error-handling (lambda () (file->lang file-name language)) :on-error (if debug? 'debug 'backtrace))))
