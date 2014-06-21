@@ -28,36 +28,17 @@ exec guile -L ../.. -e main -s $0 "$@"
 (define-module (language asd gaiag)
   :use-module (ice-9 getopt-long)
 
-  :use-module (system base language)
+  :use-module (system repl error-handling)
 
-  :use-module (language asd asd)
-  :use-module (language asd tokenize)
+;;  :use-module (language asd tokenize)
   :use-module (language asd misc)
+  :use-module (language asd reader)
 
   :use-module (language asd c++)
   :use-module (language asd csp)
   :use-module (language asd pretty)
   :use-module (language asd scheme)
-  :use-module (language asd wfc)
-  :use-module (system repl error-handling)
-  
-  :export (read-asd read-asd-wellformed))
-
-(define (read-and-parse lang port cenv)
-  (let ((exp ((language-reader lang) port cenv)))
-    (cond
-     ((eof-object? exp) exp)
-     ((language-parser lang) => (lambda (parse) (parse exp)))
-     (else exp))))
-
-(define (asd-reader port env)
-  ((make-parser) (make-tokenizer port) error))
-
-(define (read-asd file-name)
-  (asd-reader (open-file file-name "r") (current-module)))
-
-(define (read-asd-wellformed file-name)
-  (ast-wellformed? (read-asd file-name)))
+  :use-module (language asd wfc))
 
 (define (parse-opts args)
   (let* ((option-spec

@@ -29,12 +29,12 @@
   :use-module (ice-9 optargs)
   :use-module (ice-9 pretty-print)
 
-  :use-module ((language asd ast) :renamer (symbol-prefix-proc 'ast:))
+  :use-module (language asd ast:)
   :use-module (language asd misc)
   :use-module (language asd asd)
-  :use-module (language asd gaiag)
+  :use-module (language asd reader)
 
-  :export (ast-wellformed?))
+  :export (ast-wellformed? read-asd-wellformed))
 
 (define (asd-> ast)
   (ast-wellformed? ast)
@@ -55,6 +55,10 @@
             ;; (throw 'well-formed "not well-formed")
             (exit 1))
   "")
+
+
+(define (read-asd-wellformed file-name)
+  (ast-wellformed? (read-asd file-name)))
 
 (define (error message lst) (list message (source-location lst)))
 

@@ -26,7 +26,7 @@
 
   :use-module (language asd asd)
   :use-module (language asd misc)
-  :use-module (language asd gaiag)
+  :use-module (language asd reader)
 
   :export (
            ast
