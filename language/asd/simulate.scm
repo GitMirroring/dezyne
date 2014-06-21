@@ -36,31 +36,62 @@
   "")
 
 (define (variable-state variable . value) 
-  (cons variable (if (pair? value) (car value) (ast:initial-value variable))))
+  (cons (ast:identifier variable) (if (pair? value) (car value) (ast:initial-value variable))))
 
 (define (sim component)
   (pretty-print (simulate component)))
 
 (define (simulate component)
-  (stderr "state vector:~a\n" (ast:body (ast:variables component)))
   (let loop ((state (map variable-state (ast:body (ast:variables component))))
-;;             (state-vector '(()))
              (events (find-triggers component))) 
-;;    (stderr "events:~a\n" events)
-;;    (stderr "state:~a\n" state)
+    (stderr "events:~a\n" events)
+    (stderr "state:~a\n" state)
     (if (null? events)
         state
-        (let ((state (process state (car events)) state))
-          (if state
-              (loop )
-              )
-          )
-        (loop (append ) (cdr events)))))
+        (let ((next (null-is-#f (process (ast:statements (ast:behaviour component)) state (car events)))))
+          (stderr "next: ~a\n"next)
+          (if next
+              (loop next events)
+              (loop state (cdr events)))))))
 
-(define (process state event)
-  
+(define (var state identifier) (assoc-ref state identifier))
+
+(define (state-eval-expression state expression)
+  (stderr "eval ~a ? ~a\n" state expression)
+  (match expression
+    (('field identifier value) 
+     (stderr "FIELD: ~a =? ~a --->~a\n" (var state identifier) value (eq? (ast:identifier (var state identifier)) value))
+     (eq? (ast:identifier (var state identifier)) value))
+    ((? symbol?) 
+     (stderr "FIELD: ~a =? ~a\n" (var state expression) 'true (eq? (var state expression) 'true))
+     (eq? (var state expression) 'true))))
+
+(define (process ast state event)
+  ;; eval / apply?
   (stderr "processing: ~a\n" event)
-  (list (cons (random 100) state)))
+  (and state
+       (match ast
+         (('on t statement) 
+          (let* ((on (map ast:identifier t))
+                 (in  (member event on))
+                 (r (if in (process statement state event) #f)))
+            (stderr "ON ~a ? [~a]:~a ===>\n" event on in r)
+            r))
+         (('guard expression statement)
+          (let ((r (if (state-eval-expression state expression) (process statement state event) #f)))
+            (stderr "GUARD ~a ==>~a\n" expression r)
+            r))
+         (('assign identifier expression)
+          (stderr "assign: state=~a\n" state)
+          (stderr "assign: ~a --> ~a\n" identifier expression)
+          (stderr "assign: state=~a\n" (assoc-set! state identifier expression))
+          (assoc-set! state identifier expression))
+         (('action 'illegal) #f)
+         (('action t ...) (stderr "send: ~a" t) state)
+         (('statements t ...) (let loop ((state state) (statements t))
+                                (if (null? statements)
+                                    (and (stderr "STATEMENTS: ~a\n" state) state)
+                                    (loop (process (car statements) state event) (cdr statements))))))))
 
 (define* (find-triggers ast :optional (triggers '()))
   (match ast
@@ -71,5 +102,5 @@
     (('statements t ...) (append (apply append (map find-triggers t)) triggers))
     (('on t statement) (map find-triggers t))
     (('field type identifier) identifier)
-    (('guard expression statements) (find-triggers statements triggers))
+    (('guard expression statement) (find-triggers statement triggers))
     ((? symbol?) ast)))
