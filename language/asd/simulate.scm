@@ -45,7 +45,7 @@
 (define *state-space* '(()))
 
 (define (simulate-module module)
-  (stderr "\n\n>>>simulating: ~a ~a --> ~a\n" (ast:class module) (ast:name module) (find-triggers module))
+  (stderr "\n\n>>>simulating: ~a ~a --> ~a\n" (ast:class module) (ast:name module) (map ->string (find-in-events module)))
   (set! *module* module)
   (set! *state-space* '(()))
   (set! i 0)
@@ -65,13 +65,13 @@
   (let* ((key (list (map list-copy state) ast))
          (events (seen state ast)))
     (if (not (seen? state ast event))
-        (let ((value (delete-duplicates (sort (cons event events) symbol<))))
+        (let ((value (delete-duplicates (sort (cons event events) event<))))
           (set! *state-space* (assoc-set! *state-space* key value))))))
 
 (define* (simulate module :optional 
                    (ast (ast:statements (ast:behaviour module)))
                    (state (map variable-state (ast:body (ast:variables module))))
-                   (events (find-triggers module)))
+                   (events (find-in-events module)))
   (if (null? events)
       'events-done
       (if (not state)
@@ -87,10 +87,13 @@
                         (if (seen? state ast event)
                             'seen
                             (begin
-                              (stderr "\nevent: ~a\n" event)
+                              (stderr "event: ~a\n" (->string event))
                               (seen! state ast event)
                               (receive (state ast action)
                                   (process ast state event)
+                                (if action
+                                    (stderr "continued... ")
+                                    (stderr "\n"))
                                 (if (eq? action 'break)
                                     'break
                                     (simulate module ast state)))))))))))))
@@ -110,8 +113,7 @@
   (and state
        (match ast
          (('on t statement) 
-          (if ;;; FIXME(member event (map ast:identifier t))
-           (member event t)
+          (if (member event t equal?)
               (process statement state event)
               (values state #f #f)))
          (('guard expression statement)
@@ -120,10 +122,10 @@
               (values state #f #f)))
          (('action 'illegal) (values state #f #f))
          (('action t ...) 
-          (stderr "****action: ~a\n" t)
+          (stderr "****action: ~a\n" (->string t))
           (values state #f ast))
          (('assign identifier expression)
-          (stderr "****assign: ~a --> ~a\n" identifier expression)
+          (stderr "****assign: ~a := ~a\n" (->string identifier) (->string expression))
           (assoc-set! state identifier expression)
           (values state #f #f))
          (('if expression statement else) 
@@ -145,26 +147,35 @@
                     (process (cons 'statements t) state event)))))
          (('statements) (values state #f #f))))))
 
-(define (find-in-events ast) (find-events in? ast))
-(define (find-out-events ast) (find-events out? ast))
+(define (find-in-events ast) (find-events ast ast:in?))
+(define (find-out-events ast) (find-events ast ast:out?))
 
 (define* (find-events ast :optional (predicate identity) (events '()))
   (let ((find-events-p (lambda* (ast :optional (events '()))
                          (find-events ast predicate events))))
     (match ast
       ((? ast:component?)
-       (delete-duplicates (sort (apply append (map find-events-p (ast:body (ast:statements (ast:behaviour ast))))) symbol<)))
+       (delete-duplicates (sort (apply append (map find-events-p (ast:body (ast:statements (ast:behaviour ast))))) list<)))
       ((? ast:interface?) 
-       (let ((declared (ast:body (ast:events ast)))
-             (behaviour (map (lambda (x) (ast:make 'in 'void x)) (apply append (map find-events-p (ast:body (ast:statements (ast:behaviour ast))))))))
-         (receive (keep discard) (partition predicate declared)
-           (stderr "declared:~a\n" declared)
-           (stderr "keep:~a\n" keep)
-           (stderr "discard:~a\n" discard)
-           (stderr "behaviour:~a\n" behaviour))
-         (delete-duplicates (sort (append (map ast:identifier declared) (apply append (map find-events-p (ast:body (ast:statements (ast:behaviour ast)))))) symbol<))))
+       (let ((declared (ast:body (ast:events ast))))
+         (receive (keep discard) 
+             (partition predicate declared)
+           (let* ((behaviour (apply append (map find-events-p (ast:body (ast:statements (ast:behaviour ast))))))
+                  (behaviour-keep (filter (lambda (x) (negate (member x discard equal?))) behaviour)))
+             (map ast:identifier (delete-duplicates (sort (append keep behaviour-keep) list<) equal?))))))
       (('statements t ...) (append (apply append (map find-events-p t)) events))
       (('on t statement) (map find-events-p t))
-      (('field type identifier) identifier)
+      (('field type identifier) ast)
       (('guard expression statement) (find-events-p statement events))
-      ((? symbol?) ast))))
+      ((? symbol?) (ast:make 'in 'void ast)))))
+
+(define (->string src)
+  (match src
+    (('field struct name) (->string (list struct "." name)))
+    (((h ... t)) (->string (car src)))
+    (_ ((@ (language asd misc) ->string) src))))
+
+(define (event< a b)
+  (match a
+    ((? symbol?) (symbol< a b))
+    ((h ... t) (list))))

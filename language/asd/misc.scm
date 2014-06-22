@@ -38,6 +38,7 @@
            stderr
            stdout
            symbol<
+           list<
            ->string
            ))
 
@@ -54,6 +55,14 @@
 (define (>2 x) (> x 2))
 
 (define (symbol< a b) (string< (symbol->string a) (symbol->string b)))
+(define (list< a b) 
+  (if (null? a)
+      (not (null? b))
+      (if (null? b)
+          #f
+          (if (eq? (car a) (car b))
+              (list< (cdr a) (cdr b))
+              (symbol< (car a) (car b))))))
 
 (define (fand . args)
   (eval `(and ,@args) (current-module)))
