@@ -122,7 +122,7 @@
        (if (member (list 'field (ast:identifier port) (ast:identifier event)) triggers)
            (statements->string statements)
            ""))
-      (('field 'state name) (->string (list 'state " == " name)))
+      (('field 'state name) (->string (list 'state " == " name))) ;; FIXME name resolution
       (('field struct name) (->string (list struct "." name)))
       (('compound lst ...)
        (statements->string (list "{\n" lst (statement-last lst) "\n}\n")))

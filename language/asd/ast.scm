@@ -195,7 +195,8 @@
 (define (variables ast)
   (match ast
     ((? behaviour?) (member- ast 'variables))
-    ((? interface?) (append (member- ast 'variables) (variables (behaviour ast))))
+    ((? interface?) (make (cons 'variables (append (body (member- ast 'variables)) 
+                                                   (body (variables (behaviour ast)))))))
     ((? component?) (variables (behaviour ast)))
     ((? port?) (variables (import-ast (type ast))))))
 

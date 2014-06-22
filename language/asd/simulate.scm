@@ -28,9 +28,13 @@
   :use-module (language asd reader)
   :export (asd->))
 
+(define debug? #f)
+(define (debug . x) #t)
+(if debug?
+    (set! debug stderr))
+
 (define *ast* '())
 (define *module* #f)
-(define *state-vector* '())
 
 (define (asd-> ast)
   (set! *ast* ast)
@@ -39,7 +43,10 @@
   "")
 
 (define (variable-state variable . value) 
-  (cons (ast:identifier variable) (if (pair? value) (car value) (ast:initial-value variable))))
+  (cons (ast:identifier variable)
+        (state-eval-expression '()
+                               (if (pair? value) (car value) 
+                                   (ast:initial-value variable)))))
 
 (define i 0)
 (define *state-space* '(()))
@@ -68,55 +75,87 @@
         (let ((value (delete-duplicates (sort (cons event events) event<))))
           (set! *state-space* (assoc-set! *state-space* key value))))))
 
+(define (state-vector module)
+  (map variable-state (ast:body (ast:variables module))))
+
 (define* (simulate module :optional 
                    (ast (ast:statements (ast:behaviour module)))
-                   (state (map variable-state (ast:body (ast:variables module))))
+                   (state (state-vector module))
                    (events (find-in-events module)))
-  (if (null? events)
-      'events-done
-      (if (not state)
-          (simulate module ast)
-          (if (not (null-is-#f ast))
-              (simulate module)
-              (let ((done (seen state ast)))
-                (receive (done todo) 
-                    (partition (lambda (x) (member x done equal?)) events)
-                  (if (null? todo)
-                      'todo-done
-                      (let ((event (car todo)))
-                        (if (seen? state ast event)
-                            'seen
-                            (begin
-                              (stderr "event: ~a\n" (->string event))
-                              (seen! state ast event)
-                              (receive (state ast action)
-                                  (process ast state event)
-                                (if action
-                                    (stderr "continued... ")
-                                    (stderr "\n"))
-                                (if (eq? action 'break)
-                                    'break
-                                    (simulate module ast state)))))))))))))
+  (debug "simulate state: ~a\n" state)
+  (debug "ast: ")
+  (if (equal? ast (ast:statements (ast:behaviour module)))
+      (debug "*top*\n")
+      (if debug? (pretty-print ast)))
+
+  (let loop ((events events))
+    (if (null? events)
+        '(events-done)
+        (let ((done (seen state ast)))
+          (receive (done todo) 
+              (partition (lambda (x) (member x done equal?)) events)
+            (if (null? todo)
+                (if (not state)
+                    (simulate module ast)
+                    (if (null-is-#f ast)
+                        '(ast-done)
+                        '(state-done)))
+                (if (not state)
+                    (cons (simulate module ast) (loop (cdr events)))
+                    (if (not ast)
+                        (cons (simulate module) (loop (cdr events)))
+                        (let ((event (car todo)))
+                          (if (seen? state ast event)
+                              (loop (cdr events))
+                              (begin
+                                (stderr "[~a] " (comma-space-join (map ->string state)))
+                                (stderr "event: ~a\n" (->string event))
+                                (seen! state ast event)
+                                (append
+                                 (receive (state ast action)
+                                     (process ast state event)
+                                   (if action
+                                       (stderr "continued... ")
+                                       (stderr "\n"))
+                                   (let ((cont (if action
+                                                   (simulate module ast state)
+                                                   '()))
+                                         (result
+                                          (simulate module (ast:statements (ast:behaviour module)) state)))
+                                     (cons 
+                                      (append cont result)
+                                      (loop (cdr events)))))
+                                 (simulate module (ast:statements (ast:behaviour module)) state)))))))))))))
 
 (define (var state identifier) (assoc-ref state identifier))
 
 (define (state-eval-expression state expression)
   (match expression
-    (('field identifier value) 
-     (eq? (ast:identifier (var state identifier)) value))
-    ((? symbol?) 
-     (eq? (var state expression) 'true))))
+    (#f #f)
+    (#t #t)
+    ('false #f)
+    ('true #t)
+    (('field 'state value)  ;;; FIXME name resolution
+     (eq? (ast:identifier (var state 'state)) value))
+    (('field identifier value) expression)
+    (('! expr) (not (state-eval-expression state expr)))
+    ((? symbol?) (state-eval-expression state (var state expression)))
+    (_ (stderr  "expression NO MATCH: ~a\n" expression))))
 
 (define (process ast state event)
   (set! i (1+ i))
-  (if (> i 100) (values #f #f 'break)
+  (if (> i 2000) 
+      (throw 'break (format #f "too many iterations: ~a, state space: ~a\n" i
+                            (length *state-space*)))
   (and state
        (match ast
          (('on t statement) 
+          (debug "[~a] on: ~a: ---> ~a\n" event t (member event t equal?))
           (if (member event t equal?)
               (process statement state event)
               (values state #f #f)))
          (('guard expression statement)
+          (debug "guard: ~a? --> ~a\n" expression (state-eval-expression state expression))
           (if (state-eval-expression state expression) 
               (process statement state event) 
               (values state #f #f)))
@@ -126,8 +165,7 @@
           (values state #f ast))
          (('assign identifier expression)
           (stderr "****assign: ~a := ~a\n" (->string identifier) (->string expression))
-          (assoc-set! state identifier expression)
-          (values state #f #f))
+          (values (assoc-set! state identifier (state-eval-expression state expression)) #f #f))
          (('if expression statement else) 
           (if (state-eval-expression state expression) 
               (process statement state event) 
@@ -145,7 +183,8 @@
                 (if ast
                     (process (append ast t) state event)
                     (process (cons 'statements t) state event)))))
-         (('statements) (values state #f #f))))))
+         (('statements) (values state #f #f))
+         (_ (stderr  "process NO MATCH: ~a\n" ast))))))
 
 (define (find-in-events ast) (find-events ast ast:in?))
 (define (find-out-events ast) (find-events ast ast:out?))
@@ -171,11 +210,19 @@
 
 (define (->string src)
   (match src
+    (#f "false")
+    (#t "true")
     (('field struct name) (->string (list struct "." name)))
+    ((identifier 'field x y) (string-join (list (->string identifier)  "=" (->string (cdr src)))))
+    ((h ... t) (apply string-append (map ->string src)))
+    ((h . t) (string-join (list (->string h) "=" (->string t))))
     (((h ... t)) (->string (car src)))
     (_ ((@ (language asd misc) ->string) src))))
+
+(define (->join lst infix) (string-join (map ->string lst) infix))
+(define (comma-space-join lst) (->join lst ", "))
 
 (define (event< a b)
   (match a
     ((? symbol?) (symbol< a b))
-    ((h ... t) (list))))
+    ((h ... t) (list< a b))))

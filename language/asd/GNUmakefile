@@ -21,7 +21,7 @@
 # 
 # Code:
 
-SHELL := bash
+SHELL = /bin/bash
 DEPTH = ../..
 diff = diff -uw -I '^ *$$' -I '^ *//'
 sed = sed -e 's/^-gen/gen/' -re 's/((cppbase.cpp|.hh.scm|.cc.scm):[0-9]*):/\1:warning:/'
@@ -112,3 +112,9 @@ if: compile
 	./gaiag examples/if.asd
 	./gaiag -l pretty examples/if.asd | indent
 	./gaiag -l c++ examples/if.asd
+
+simulate: compile
+	./gaiag -l simulate examples/if.asd
+	./gaiag -l simulate examples/Alarm.asd # |& grep '^\*\*' | wc -l
+	./gaiag -l simulate examples/Alarm.asd |& grep '^\*\*' | wc -l
+
