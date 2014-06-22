@@ -79,7 +79,7 @@
               (loop (1+ line))))))))
 
 (define (animate-file file-name out-name module)
-  (catch 'parse-error
+  (catch 'xparse-error
         (lambda ()
           (dump-file (->string out-name)
                      (with-output-to-string

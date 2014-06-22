@@ -27,6 +27,7 @@ ifthenelse(E,S1,S2) = \ P, V @ if E then S1(P,V) else S2(P,V)
 semi(S1,S2) = \ P, V @ S1( \ V' @ S2(P, V'), V)
 assign(F) = \ P, V @ P(F(V))
 
+
 datatype event_alphabet =
 #(pipe-join (append (delete-duplicates (sort (apply append (map port-triggers (ast:body (ast:ports (ast:component ast))))) symbol<)) '(return)))
 

@@ -31,7 +31,7 @@ baseline = baseline
 
 default: all
 
-all: compile check test match wfc
+all: compile check test match wfc simulate
 
 tags:
 	etags $(shell git ls-files)
@@ -117,4 +117,3 @@ simulate: compile
 	./gaiag -l simulate examples/if.asd
 	./gaiag -l simulate examples/Alarm.asd # |& grep '^\*\*' | wc -l
 	./gaiag -l simulate examples/Alarm.asd |& grep '^\*\*' | wc -l
-

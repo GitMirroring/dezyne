@@ -148,7 +148,7 @@ component Alarm
           state = States.Disarmed;
           sounding = false;
         }
-        [!sounding] //otherwise]
+        [otherwise]
         {
           console.deactivated;
           state = States.Disarmed;
