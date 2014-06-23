@@ -1,0 +1,197 @@
+action(S) = \ P, V @ S; P(V)
+ifthenelse(E,S1,S2) = \ P, V @ if E then S1(P,V) else S2(P,V)
+semi(S1,S2) = \ P, V @ S1( \ V' @ S2(P, V'), V)
+assign(F) = \ P, V @ P(F(V))
+
+datatype event_alphabet =
+arm | deactivated | detected | disable | disabled | disarm | enable | inevitable | optional | triggered | turnoff | turnon | return
+
+datatype enumeration_alphabet =
+Armed | Disabled | Disabling | Disarmed | Disarming | Enabled | Off | On | Triggered
+
+channel illegal
+
+channel Console,console : {arm,deactivated,detected,disarm,inevitable,optional,return}
+channel Sensor,sensor : {disable,disabled,enable,inevitable,optional,triggered,return}
+channel Siren,siren : {turnoff,turnon,return}
+
+Sensor_b(IG) = let
+Sensor_b_((state)) =
+  (state == Triggered) & (
+    IG & Sensor?enable -> illegal -> STOP
+    []
+    Sensor?disable -> Sensor.return -> Sensor_b_((Disabling))
+  )
+  []
+  (state == Disabling) & (
+    IG & Sensor?x:{enable,disable} -> illegal -> STOP
+    []
+    Sensor?inevitable -> Sensor.disabled -> Sensor_b_((Disabled))
+  )
+  []
+  (state == Enabled) & (
+    IG & Sensor?enable -> illegal -> STOP
+    []
+    Sensor?disable -> Sensor.return -> Sensor_b_((Disabling))
+    []
+    Sensor?optional -> Sensor.triggered -> Sensor_b_((Triggered))
+  )
+  []
+  (state == Disabled) & (
+    Sensor?enable -> Sensor.return -> Sensor_b_((Enabled))
+    []
+    IG & Sensor?disable -> illegal -> STOP
+  )
+
+within Sensor_b_((Disabled)) [|{Sensor.optional}|] CHAOS({Sensor.optional})
+
+Siren_c(IG) = let
+Siren_c_((state)) =
+  (state == Off) & (
+    Siren?turnon -> Siren.return -> Siren_c_((On))
+    []
+    IG & Siren?turnoff -> illegal -> STOP
+  )
+  []
+  (state == On) & (
+    Siren?turnoff -> (Siren.return -> Siren_c_(Off))
+    []
+    IG & Siren?turnon -> illegal -> STOP
+  )
+
+within Siren_c_((Off))
+
+Console_a(IG) = let
+Console_a_((state)) =
+  (state == Disarmed) & (
+    Console?arm -> Console.return -> Console_a_((Armed))
+    []
+    IG & Console?disarm -> illegal -> STOP
+  )
+  []
+  (state == Armed) & (
+    Console?disarm -> Console.return -> Console_a_((Disarming))
+    []
+    Console?optional -> Console.detected -> Console_a_((Triggered))
+    []
+    IG & Console?arm -> illegal -> STOP
+  )
+  []
+  (state == Triggered) & (
+    Console?disarm -> Console.return -> Console_a_((Disarming))
+    []
+    IG & Console?arm -> illegal -> STOP
+  )
+  []
+  (state == Disarming) & (
+    Console?inevitable -> Console.deactivated -> Console_a_((Disarmed))
+    []
+    IG & Console?x:{arm,disarm} -> illegal -> STOP
+  )
+
+within Console_a_(Disarmed)[|{Console.optional}|] CHAOS({Console.optional})
+
+Alarm_d(IIG,IG) = let
+Alarm_d_((sounding,state)) =
+  (state == Disarmed) & transition_begin -> (
+    console?arm -> sensor.enable -> sensor.return -> console.return -> transition_end -> Alarm_d_((sounding,Armed))
+    []
+    IIG & console?disarm -> illegal -> STOP
+    []
+    IG & sensor?x:{triggered,disabled} -> illegal -> STOP
+  )
+  []
+  (state == Armed) & transition_begin -> (
+    IIG & console?arm -> illegal -> STOP
+    []
+    console?disarm -> sensor.disable -> sensor.return -> console.return -> transition_end -> Alarm_d_((sounding,Disarming))
+    []
+    sensor?triggered -> console.detected -> siren.turnon -> siren.return -> transition_end -> Alarm_d_((true,Triggered))
+    []
+    IG & sensor?disabled -> illegal -> STOP
+  )
+  []
+  (state == Disarming) & transition_begin -> (
+    IIG & console?x:{arm,disarm} -> illegal -> STOP
+    []
+    sensor?triggered -> transition_end -> Alarm_d_((sounding,state))
+    []
+    sounding & sensor?disabled -> console.deactivated -> siren.turnoff -> siren.return -> transition_end -> Alarm_d_((false,Disarmed))
+    []
+    not (sounding) & sensor?disabled -> console.deactivated -> transition_end -> Alarm_d_((sounding,Disarmed))
+  )
+[]
+  (state == Triggered) & transition_begin -> (
+    IIG & console?arm -> illegal -> STOP
+    []
+    console?disarm -> sensor.disable -> sensor.return -> siren.turnoff -> siren.return -> console.return -> transition_end -> Alarm_d_((false,Disarming))
+    []
+    IG & sensor?x:{triggered,disabled} -> illegal -> STOP
+  )
+
+within Alarm_d_((false,Disarmed))
+
+channel IN,OUT : {sensor.triggered,sensor.disabled}
+
+SINGLETHREADED = true
+
+channel transition_begin, transition_end
+
+channel reorder_in,reorder_out : {console.return}
+
+SEMANTICS(in_,out_,client_,modeling_) = let
+Q(s) = #s < card({|in_|}) & in_?x -> Q(s^<x>)
+       []
+       #s > 0 & out_!head(s) -> Q(tail(s))
+       []
+       #s == card({|in_|}) & in_?x -> illegal -> STOP
+
+R(A) = ([] x : A @ x -> R(A))
+       []
+       reorder_in?x -> reorder_out!x -> R(A)
+
+S    = let
+
+Idle(c) = transition_begin -> ([] x : union(client_,modeling_) @ x -> Busy(c,<>))
+
+Busy(c,r) = c == 0 & transition_end -> (if r == <> then Idle(0) else reorder_out!head(r) -> Idle(0))
+            []
+            c > 0 & transition_end -> transition_begin -> Busy(c,r)
+            []
+            c < card({|in_|}) & ([] x : {|in_|} @ x -> Busy(c+1,r))
+            []
+            c > 0 & ([] x : {|out_|} @ x -> Busy(c-1,r))
+            []
+            r == <> & reorder_in?x -> Busy(c,<x>)
+
+within Idle(0)
+
+within Q(<>) [|{|in_,out_|}|] if SINGLETHREADED then S else R(Union({{|in_,out_,transition_begin,transition_end|},client_,modeling_}))
+
+Alarm_d_Component = let
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+Exclude = {console.return,console.detected,console.deactivated,console.optional,console.inevitable,sensor.optional,sensor.inevitable}
+ClientCalls = {console.arm,console.disarm}
+UsedModeling = {sensor.optional,sensor.inevitable}
+within compress((Alarm_d(false,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,console,sensor,siren|},Exclude)|]
+(((Sensor_b(true) [[Sensor.x<-sensor.x|x<-extensions(Sensor)]]
+||| Siren_c(true) [[Siren.x<-siren.x|x<-extensions(Siren)]]
+) [[x<-IN.x|x<-extensions(IN)]]
+[|union({|IN|},UsedModeling)|]
+SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
+
+assert Alarm_d_Component :[deadlock free]
+assert Alarm_d(true,true) :[deterministic]
+assert STOP [T= Alarm_d_Component \ diff(Events,{illegal})
+assert Console_a(false) [[Console.x<-console.x|x<-extensions(Console)]] \ {console.optional,console.inevitable} [FD=
+Alarm_d_Component \ diff(Events,{|illegal,console|}) \ {console.optional,console.inevitable}
+assert Sensor_b(false) :[deadlock free]
+assert Sensor_b(true) :[livelock free]
+assert Siren_c(false) :[deadlock free]
+assert Siren_c(true) :[livelock free]
+assert Console_a(false) :[deadlock free]
+assert Console_a(true) :[livelock free]
