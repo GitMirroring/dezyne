@@ -27,6 +27,7 @@
            >1
            >2
            fand
+           for
            gulp-text-file
            dump-file
            *eof*
@@ -51,6 +52,9 @@
 
 (define (fand . args)
   (eval `(and ,@args) (current-module)))
+
+(define (for . args)
+  (eval `(or ,@args) (current-module)))
 
 (define (gulp-text-file name)
   (let* ((file (open-file (->string name) "r"))
