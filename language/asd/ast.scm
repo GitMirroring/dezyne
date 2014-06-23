@@ -224,7 +224,7 @@
             #f
             (loop (car stack) (cdr stack)))
         (let ((children (map object-id ast)))
-          (if (member object-id children)
+          (if (member id children)
               ast
               (if (pair? (car ast))
                   (loop (car ast) (cons (cdr ast) stack))
