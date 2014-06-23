@@ -21,9 +21,11 @@ class #.interface #.api : public #.interface
 {
 public:
   virtual ~#.interface #.api () {}
-# (map-events
-#{  virtual void #.event () = 0;
-#} (filter ast:in? (ast:body (ast:events (ast:interface ast)))))
+
+# (map-events #{
+  virtual void #.event () = 0; 
+#}  (filter ast:in? (ast:body (ast:events (ast:interface ast)))))
+
 protected:
   #.interface #.api () {}
 private:
