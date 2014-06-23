@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -54,6 +55,7 @@
            requires?
            statements
            statements-guard
+           statements-on
            type
            type-name-component
            typed?
@@ -85,6 +87,7 @@
 (define (guard? ast) (type? 'guard ast))
 (define (interface? ast) (type? 'interface ast))
 (define (variable? ast) (type? 'declare ast)) ;;; FIXME
+(define (on? ast) (type? 'on ast))
 (define (port? ast) (type? 'port ast))
 (define (ports? ast) (type? 'ports ast))
 (define (statements? ast) (type? 'statements ast))
@@ -95,7 +98,7 @@
   (match ast
     ((or (? behaviour?) (? module?))
      (or (and (>2 (length ast)) (cddr ast)) '()))
-    ((or (? events?) (? ports?) (? statements?) (? types?) (? variables?))
+    ((or (? events?) (? guard?) (? ports?) (? statements?) (? on?) (? types?) (? variables?))
      (cdr ast))
     ('() ast)))
 
@@ -148,10 +151,12 @@
     ((or (? behaviour?) (? enum?) (? module?))
      (or (and (>1 (length ast)) (cadr ast)) ""))))
 
-(define (statements ast)
+(define (statements ast) ;; FIXME: statement (for behaviour, it's always compound)
   (match ast
     ((? module?) (statements (behaviour ast)))
-    ((? behaviour?) (member- ast 'statements))))
+    ((? behaviour?) (member- ast 'statements))
+    ((? guard?) (caddr ast))
+    ((? on?) (caddr ast))))
 
 (define (type ast)
   (match ast ((or (? event?) (? field?) (? port?) (? variable?)) (cadr ast))))
@@ -211,6 +216,8 @@
                                  lst)))))
 
 (define (statements-guard statements) (statements-of-type statements 'guard))
+
+(define (statements-on statements) (statements-of-type statements 'on))
 
 (define (parent ast lst)
   (if (object? lst)

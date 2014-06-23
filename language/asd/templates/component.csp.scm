@@ -22,6 +22,10 @@
 ;;; 
 ;;; Code:
 
+action(S) = \ P, V @ S; P(V)
+ifthenelse(E,S1,S2) = \ P, V @ if E then S1(P,V) else S2(P,V)
+semi(S1,S2) = \ P, V @ S1( \ V' @ S2(P, V'), V)
+assign(F) = \ P, V @ P(F(V))
 
 datatype event_alphabet =
 #(pipe-join (append (delete-duplicates (sort (apply append (map port-triggers (ast:body (ast:ports (ast:component ast))))) symbol<)) '(return)))
@@ -35,14 +39,17 @@ channel illegal
 channel #.interface ,#.port : {#(comma-join (append (port-triggers port) '(return)))} 
 #} (ast:body (ast:ports (ast:component ast))))
 
-
 # (map-ports #{
 #.interface _#.behaviour(IG) = let
-#.interface _#.behaviour _(# (map ast:identifier (ast:body (ast:variables (ast:behaviour (ast:ast .interface)))))) =
+#.interface _#.behaviour _((# (map ast:identifier (ast:body (ast:variables (ast:behaviour (ast:ast .interface))))))) =
 # (map-guards
-#{  (#(list (cadr (ast:expression *guard-def*)) " == " (caddr (ast:expression *guard-def*)))) & (
+#{ 
+ (#(list (cadr (ast:expression *guard-def*)) #{ == #} (caddr (ast:expression *guard-def*)))) & (
+    # (map-on-events #{ #.csp-transition #}
+		     (map (lambda (statement-on) (cadr statement-on))
+			  (ast:statements-on (ast:body (ast:statements guard)))))
   )
-[]
+  []
 #} (ast:statements-guard (ast:body (ast:statements (ast:behaviour (ast:ast .interface))))))
 #} (filter ast:requires? (ast:body (ast:ports (ast:component ast)))))
 

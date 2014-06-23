@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014  Rutger van Beusekom
+;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -28,6 +29,7 @@
   :use-module (language asd ast:)
   :use-module (language asd c++)
   :use-module (language asd misc)
+  :use-module (language asd reader)
   :export (
            asd->
            port-triggers
@@ -61,7 +63,7 @@
 
 (define (map-guards string guards)
   (map (lambda (guard)
-         (let ((module (csp-module *ast*)))
+         (let ((module (current-module)))
            (module-define! module 'guard guard)
            (module-define! module '*guard-def* guard)
 
@@ -70,6 +72,14 @@
            (module-define! (resolve-module '(language asd csp)) '*guard-def* guard)
            (animate-string string module))) guards))
 
+(define (map-on-events string events)
+  (map (lambda (event) 
+	 (let* ((module (current-module))
+		(.interface (module-ref module '.interface))
+		(guard (module-ref module 'guard)))
+	   (module-define! module '.event (car event))
+	   (module-define! module '.csp-transition (csp-transition .interface guard event ))
+           (animate-string string module))) events))
 
 (define (symbol< a b) (string< (symbol->string a) (symbol->string b)))
 (define-public (flatten x)
@@ -98,7 +108,7 @@
           values
           (loop (cdr ports) (append values (apply append (map ast:elements (ast:body (ast:types (ast:behaviour (ast:ast (ast:type (car ports))))))))))))))
 
-(define* (interface-triggers interface)
+(define (interface-triggers interface)
   (delete-duplicates (sort (append (map ast:identifier (ast:body (ast:events interface))) (apply append (map behaviour-triggers (ast:body (ast:statements (ast:behaviour interface)))))) symbol<)))
 
 (define* (behaviour-triggers src :optional (triggers '()))
@@ -106,3 +116,16 @@
    (('statements t ...) (append (apply append (map behaviour-triggers t)) triggers))
     (('on triggers statements) triggers)
     (('guard expression statements) (behaviour-triggers statements triggers))))
+
+;;(define (->join lst infix) (string-join (map ->string lst) infix))
+;;(define (comma-join lst) (string-join (map ->string lst) ","))
+
+(define (csp-transition interface guard event) 
+ (let* ((on (ast:statements-on (ast:body (ast:statements guard))))
+	(event-on (find (lambda (x) (let ((triggers (cadr x))) 
+				      (equal? event triggers))) on))
+	(event-statement (ast:statements event-on))
+	(illegal? (equal? event-statement '(action illegal))))
+   (if illegal?
+       (->string (list "IG & " interface "?" (comma-join event)  " -> illegal -> STOP \n"))
+       (->string (list interface "?" (comma-join event)  " -> \n")))))

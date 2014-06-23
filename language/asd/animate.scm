@@ -1,5 +1,6 @@
 ;;; Gaiag --- Guile in Asd In Asd in Guile.
 ;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
@@ -151,11 +152,11 @@
        ((eq? c escape) (display c))
        ((eq? *eof* c) #f)
        (else (unread-char c)
-             (catch #t (lambda ()
-                         (let* ((expr (read (current-input-port)))
-                                (result (eval expr module)))
-                         (display (->string result))
-                         (eat-one-space)))
+             (catch (if (batch-mode?) #t 'no-funky-exceptions) (lambda ()
+				      (let* ((expr (read (current-input-port)))
+					     (result (eval expr module)))
+					(display (->string result))
+					(eat-one-space)))
                (lambda (key . args)
                  (let* ((tell (car (or (assoc-ref (car args) 'xftell)
                                        (list (ftell (current-input-port))))))
