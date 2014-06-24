@@ -43,23 +43,24 @@ channel #.interface ,#.port : {#(comma-join (append (port-triggers port) '(retur
 #.interface _#.behaviour(IG) = let
 #.interface _#.behaviour _((# (map ast:identifier (ast:body (ast:variables (ast:behaviour (ast:ast .interface))))))) =
 # (map-guards #{(# (list (cadr (ast:expression *guard-def*)) #{ == #} (caddr (ast:expression *guard-def*)))) & (
-    #  (map-on-events #{ #.csp-transition #}
-				   (reverse (map (lambda (statement-on) (cadr statement-on))
-					(ast:statements-on (ast:body (ast:statements guard)))))))
+# (map-on-events #{ #.csp-transition #}
+        (reverse (map (lambda (statement-on) (cadr statement-on))
+                  (ast:statements-on (ast:body (ast:statements guard)))))))
 #}
 (reverse (ast:statements-guard (ast:body (ast:statements (ast:behaviour (ast:ast .interface)))))))
-within #.interface _#.behaviour _() [||] CHAOS({})
+within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:initial-value x))) (ast:body (ast:variables (ast:behaviour (ast:ast .interface)))))))) [||] CHAOS({})
 
 #} (ast:body (ast:ports (ast:component ast))))
 
 #.component _#.behaviour (IIG,IG) = let
-#.component _#.behaviour _(#(comma-join (sort (map ast:identifier (ast:body (ast:variables (ast:behaviour (ast:component ast))))) symbol<))) =
-
-# (map-guards #{
- (# (list (cadr (ast:expression *guard-def*)) " == " (caddr (ast:expression *guard-def*)))) & transition_begin -> (
-  )
-[]
-#}(ast:statements-guard (ast:body (ast:statements (ast:behaviour (ast:component ast))))))
+#.component _#.behaviour _((#(comma-join (map ast:identifier (ast:body (ast:variables (ast:behaviour (ast:component ast)))))))) =
+# (map-guards #{(# (list (cadr (ast:expression *guard-def*)) #{ == #} (caddr (ast:expression *guard-def*)))) & (
+# (map-on-events #{ #.csp-transition #}
+        (reverse (map (lambda (statement-on) (cadr statement-on))
+                  (ast:statements-on (ast:body (ast:statements guard)))))))
+#}
+(reverse (ast:statements-guard (ast:body (ast:statements (ast:behaviour (ast:ast .interface)))))))
+within #.component _#.behaviour _((#(comma-join (map value (ast:body (ast:variables (ast:behaviour (ast:component ast))))))))
 
 channel IN,OUT : {}
 

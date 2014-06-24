@@ -61,7 +61,7 @@
 	      (module-define! module '.port (ast:identifier (ast:port comp))))
     module))
 
-(define (bracket-join lst) (string-join (map ->string lst) "    []\n    "))
+(define (bracket-join lst) (string-join (map ->string lst) "[]\n"))
 
 (define (map-guards string guards)
   (display
@@ -84,9 +84,10 @@
 		      (lambda ()
 			(let* ((module (current-module))
 			       (.interface (module-ref module '.interface))
+			       (interface (ast:interface (module-ref module 'ast)))
 			       (guard (module-ref module 'guard)))
 			  (module-define! module '.event (car event))
-			  (module-define! module '.csp-transition (csp-transition .interface guard event ))
+			  (module-define! module '.csp-transition (csp-transition interface guard event ))
 			  (animate-string string module))))) events))))
 
 (define (symbol< a b) (string< (symbol->string a) (symbol->string b)))
@@ -125,12 +126,38 @@
     (('on triggers statements) triggers)
     (('guard expression statements) (behaviour-triggers statements triggers))))
 
-(define (csp-transition interface guard event)
+(define (action-bla statement channel event)
+(stderr "bla: ~a\n" statement)
+  (match statement
+    (('statements tail ...) (map (lambda (statement) (action-bla statement channel event)) tail))
+    ('(action illegal) (->string (list "IG & " channel "?x:{" (comma-join event)  "} -> illegal -> STOP \n")))
+    (('action name) (->string (list channel "?x:{" (comma-join event)  "} -> " channel "." name " -> " "\n")))
+    (('assign name) '())
+    (_ (->string (list channel "?x:{" (comma-join event)  "} -> \n")))))
+
+(define (assign-bla statement channel event . key-vals)
+(stderr "bla: ~a\n" statement)
+  (match statement
+    (('statements tail ...) (apply append (map (lambda (statement) (assign-bla statement channel event)) tail)))
+    (('assign key val) (cons (cons key (value val)) key-vals))
+    (_ '())))
+
+(define (var-names module) 
+  (map ast:identifier (ast:body (ast:variables (ast:behaviour module)))))
+
+(define (csp-transition module guard event)
  (let* ((on (ast:statements-on (ast:body (ast:statements guard))))
 	(event-on (find (lambda (x) (let ((triggers (cadr x)))
 				      (equal? event triggers))) on))
-	(event-statement (ast:statements event-on))
-	(illegal? (equal? event-statement '(action illegal))))
-   (if illegal?
-       (->string (list "IG & " interface "?x:{" (comma-join event)  "} -> illegal -> STOP \n"))
-       (->string (list interface "?x:{" (comma-join event)  "} -> \n")))))
+	(statement (ast:statements event-on))
+	(names (var-names module))
+	(assign-key-vals (assign-bla statement (ast:name module) event))
+)
+   (action-bla statement (ast:name module) event)))
+ 
+(define (underscore-join lst) (string-join (map ->string lst) "_"))
+
+(define (value ast)
+  (match ast
+    ((? ast:field?) (caddr ast))
+    (_ ast)))

@@ -43,7 +43,7 @@ Console_a_((state)) =
     IG & Console?x:{arm,disarm} -> illegal -> STOP
   )
 
-within Console_a_(Disarmed)[|{Console.optional}|] CHAOS({Console.optional})
+within Console_a_((Disarmed))[|{Console.optional}|] CHAOS({Console.optional})
 
 Sensor_b(IG) = let
 Sensor_b_((state)) =
@@ -92,7 +92,7 @@ Siren_c_((state)) =
 within Siren_c_((Off))
 
 Alarm_d(IIG,IG) = let
-Alarm_d_((sounding,state)) =
+Alarm_d_((state,sounding)) =
   (state == Disarmed) & transition_begin -> (
     console?x:{arm} -> sensor.enable -> sensor.return -> console.return -> transition_end -> Alarm_d_((sounding,Armed))
     []
@@ -104,9 +104,9 @@ Alarm_d_((sounding,state)) =
   (state == Armed) & transition_begin -> (
     IIG & console?x:{arm} -> illegal -> STOP
     []
-    console?x:{disarm} -> sensor.disable -> sensor.return -> console.return -> transition_end -> Alarm_d_((sounding,Disarming))
+    console?x:{disarm} -> sensor.disable -> sensor.return -> console.return -> transition_end -> Alarm_d_((Disarming,sounding))
     []
-    sensor?x:{triggered} -> console.detected -> siren.turnon -> siren.return -> transition_end -> Alarm_d_((true,Triggered))
+    sensor?x:{triggered} -> console.detected -> siren.turnon -> siren.return -> transition_end -> Alarm_d_((Triggered,true))
     []
     IG & sensor?x:{disabled} -> illegal -> STOP
   )
@@ -114,22 +114,22 @@ Alarm_d_((sounding,state)) =
   (state == Disarming) & transition_begin -> (
     IIG & console?x:{arm,disarm} -> illegal -> STOP
     []
-    sensor?x:{triggered} -> transition_end -> Alarm_d_((sounding,state))
+    sensor?x:{triggered} -> transition_end -> Alarm_d_((state,sounding))
     []
-    sounding & sensor?x:{disabled} -> console.deactivated -> siren.turnoff -> siren.return -> transition_end -> Alarm_d_((false,Disarmed))
+    sounding & sensor?x:{disabled} -> console.deactivated -> siren.turnoff -> siren.return -> transition_end -> Alarm_d_((Disarmed,false))
     []
-    not (sounding) & sensor?x:{disabled} -> console.deactivated -> transition_end -> Alarm_d_((sounding,Disarmed))
+    not (sounding) & sensor?x:{disabled} -> console.deactivated -> transition_end -> Alarm_d_((Disarmed,sounding))
   )
 []
   (state == Triggered) & transition_begin -> (
     IIG & console?x:{arm} -> illegal -> STOP
     []
-    console?x:{disarm} -> sensor.disable -> sensor.return -> siren.turnoff -> siren.return -> console.return -> transition_end -> Alarm_d_((false,Disarming))
+    console?x:{disarm} -> sensor.disable -> sensor.return -> siren.turnoff -> siren.return -> console.return -> transition_end -> Alarm_d_((Disarming,false))
     []
     IG & sensor?x:{triggered,disabled} -> illegal -> STOP
   )
 
-within Alarm_d_((false,Disarmed))
+within Alarm_d_((Disarmed,false))
 
 channel IN,OUT : {sensor.triggered,sensor.disabled}
 

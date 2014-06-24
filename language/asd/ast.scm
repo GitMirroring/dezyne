@@ -40,6 +40,7 @@
            elements
            events
            expression
+           field?
            identifier
            in?
            initial-value
@@ -70,7 +71,7 @@
 (define (member- ast name) (or (assoc name (body ast)) '()))
 
 (define (module? ast) (or (interface? ast) (component? ast)))
-(define (type? type ast) 
+(define (type? type ast)
   (and (pair? ast)
        (let ((head (car ast)))
          (case type
@@ -139,7 +140,7 @@
 (define (elements ast) (match ast ((? enum?) (caddr ast))))
 (define (expression ast) (match ast ((? guard?) (cadr ast))))
 
-(define (identifier ast) 
+(define (identifier ast)
   (match ast
     ((or (? event?) (? field?) (? port?) (? variable?)) (caddr ast))))
 
@@ -161,13 +162,13 @@
 (define (type ast)
   (match ast ((or (? event?) (? field?) (? port?) (? variable?)) (cadr ast))))
 
-(define (types ast) 
+(define (types ast)
   (match ast
     ((or (? interface?) (? behaviour?)) (member- ast 'types))
     ((? component?) (types (behaviour ast)))
     ((? port?) (types (import-ast (type ast))))))
 
-(define (variables ast) 
+(define (variables ast)
   (match ast
     ((or (? interface?) (? behaviour?)) (member- ast 'variables))
     ((? component?) (variables (behaviour ast)))
@@ -189,12 +190,12 @@
 (define (provides? ast) (eq? (direction ast) 'provides))
 (define (requires? ast) (eq? (direction ast) 'requires))
 
-(define (typed? ast) 
+(define (typed? ast)
   (match ast
     ((? event?) (not (eq? (type ast) 'void)))
     ((? port?) (null-is-#f (filter typed? (body (events ast)))))))
 
-(define (dir-matches? port) 
+(define (dir-matches? port)
   (lambda (event)
     (or (and (eq? (direction port) 'provides)
              (eq? (direction event) 'in))
@@ -248,4 +249,3 @@
                 (ast-add name (car ast)))))
 
 (define ast import-ast)
-
