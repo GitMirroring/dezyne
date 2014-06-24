@@ -126,17 +126,26 @@
     (('on triggers statements) triggers)
     (('guard expression statements) (behaviour-triggers statements triggers))))
 
-(define (action-bla statement channel event)
-(stderr "bla: ~a\n" statement)
-  (match statement
-    (('statements tail ...) (map (lambda (statement) (action-bla statement channel event)) tail))
-    ('(action illegal) (->string (list "IG & " channel "?x:{" (comma-join event)  "} -> illegal -> STOP \n")))
-    (('action name) (->string (list channel "?x:{" (comma-join event)  "} -> " channel "." name " -> " "\n")))
-    (('assign name) '())
-    (_ (->string (list channel "?x:{" (comma-join event)  "} -> \n")))))
+(define* (action-bla statement module event actuals :optional (top? #t))
+  (let* ((channel (ast:name module))
+	 (behaviour(ast:name (ast:behaviour module)))
+	 (start (list channel "?x:{" (comma-join event)  "} -> "))
+	 (foobar ( stderr "event: ~a --> ~a\n" event (member event '(inevitable optional))))
+	 (return (if (or (member 'inevitable event) (member 'optional event)) "" (list channel ".return -> ")))
+	 (end (list return channel "_" behaviour "_((" (comma-join actuals) "))\n"))
+	 (illegal? #f)
+	 (body 
+	  (match statement
+	    (('statements tail ...) (map (lambda (statement) (action-bla statement module event actuals #f)) tail))
+	    ('(action illegal) (set! illegal? #t) (->string (list "illegal -> STOP \n")))
+	    (('action name) (->string (list channel "." name " -> " )))
+	    (('assign name value) "")
+	    (_ (stderr "catch-all: foobar!~a\n" statement) ""))))
+    (if top? 
+	(list (if illegal? "IG & " "") start body (if (not illegal?) end ""))
+	(list body))))
 
 (define (assign-bla statement channel event . key-vals)
-(stderr "bla: ~a\n" statement)
   (match statement
     (('statements tail ...) (apply append (map (lambda (statement) (assign-bla statement channel event)) tail)))
     (('assign key val) (cons (cons key (value val)) key-vals))
@@ -146,14 +155,23 @@
   (map ast:identifier (ast:body (ast:variables (ast:behaviour module)))))
 
 (define (csp-transition module guard event)
- (let* ((on (ast:statements-on (ast:body (ast:statements guard))))
-	(event-on (find (lambda (x) (let ((triggers (cadr x)))
-				      (equal? event triggers))) on))
-	(statement (ast:statements event-on))
-	(names (var-names module))
-	(assign-key-vals (assign-bla statement (ast:name module) event))
-)
-   (action-bla statement (ast:name module) event)))
+  (let* ((on (ast:statements-on (ast:body (ast:statements guard))))
+	 (event-on (find (lambda (x) (let ((triggers (cadr x)))
+				       (equal? event triggers))) on))
+	 (statement (ast:statements event-on))
+	 (names (var-names module))
+	 (assignments (assign-bla statement (ast:name module) event))
+	 (actuals (state-vector assignments (map (lambda (x) (cons x x)) names))))
+   (action-bla statement module event actuals)))
+
+(define (state-vector assignments formals)
+  (let loop ((assignments assignments) (formals formals))
+    (if (null? assignments)
+	(map cdr formals)
+	(let* ((assign (car assignments))
+	       (name (car assign))
+	       (value (cdr assign)))
+	  (loop (cdr assignments) (assoc-set! formals name value))))))
  
 (define (underscore-join lst) (string-join (map ->string lst) "_"))
 
