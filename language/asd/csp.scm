@@ -47,7 +47,7 @@
   "")
 
 (define (csp-module ast)
-  (let ((module (make-module 31 (list 
+  (let ((module (make-module 31 (list
                                  (resolve-module '(ice-9 match))
                                  (resolve-module '(language asd ast:))
                                  (resolve-module '(language asd c++))
@@ -61,25 +61,33 @@
 	      (module-define! module '.port (ast:identifier (ast:port comp))))
     module))
 
-(define (map-guards string guards)
-  (map (lambda (guard)
-         (let ((module (current-module)))
-           (module-define! module 'guard guard)
-           (module-define! module '*guard-def* guard)
+(define (bracket-join lst) (string-join (map ->string lst) "    []\n    "))
 
-           ;;; FIXME
-           (module-define! (resolve-module '(language asd csp)) '*guard* (lambda () (guard-name guard)))
-           (module-define! (resolve-module '(language asd csp)) '*guard-def* guard)
-           (animate-string string module))) guards))
+(define (map-guards string guards)
+  (display
+   (bracket-join (map (lambda (guard)
+			(with-output-to-string
+			  (lambda ()
+			    (let ((module (current-module)))
+			      (module-define! module 'guard guard)
+			      (module-define! module '*guard-def* guard)
+;;; FIXME
+			      (module-define! (resolve-module '(language asd csp)) '*guard* (lambda () (guard-name guard)))
+			      (module-define! (resolve-module '(language asd csp)) '*guard-def* guard)
+			      (animate-string string module))))) guards))))
 
 (define (map-on-events string events)
-  (map (lambda (event) 
-	 (let* ((module (current-module))
-		(.interface (module-ref module '.interface))
-		(guard (module-ref module 'guard)))
-	   (module-define! module '.event (car event))
-	   (module-define! module '.csp-transition (csp-transition .interface guard event ))
-           (animate-string string module))) events))
+  (display
+   (bracket-join (map
+		  (lambda (event)
+		    (with-output-to-string
+		      (lambda ()
+			(let* ((module (current-module))
+			       (.interface (module-ref module '.interface))
+			       (guard (module-ref module 'guard)))
+			  (module-define! module '.event (car event))
+			  (module-define! module '.csp-transition (csp-transition .interface guard event ))
+			  (animate-string string module))))) events))))
 
 (define (symbol< a b) (string< (symbol->string a) (symbol->string b)))
 (define-public (flatten x)
@@ -117,15 +125,12 @@
     (('on triggers statements) triggers)
     (('guard expression statements) (behaviour-triggers statements triggers))))
 
-;;(define (->join lst infix) (string-join (map ->string lst) infix))
-;;(define (comma-join lst) (string-join (map ->string lst) ","))
-
-(define (csp-transition interface guard event) 
+(define (csp-transition interface guard event)
  (let* ((on (ast:statements-on (ast:body (ast:statements guard))))
-	(event-on (find (lambda (x) (let ((triggers (cadr x))) 
+	(event-on (find (lambda (x) (let ((triggers (cadr x)))
 				      (equal? event triggers))) on))
 	(event-statement (ast:statements event-on))
 	(illegal? (equal? event-statement '(action illegal))))
    (if illegal?
-       (->string (list "IG & " interface "?" (comma-join event)  " -> illegal -> STOP \n"))
-       (->string (list interface "?" (comma-join event)  " -> \n")))))
+       (->string (list "IG & " interface "?x:{" (comma-join event)  "} -> illegal -> STOP \n"))
+       (->string (list interface "?x:{" (comma-join event)  "} -> \n")))))

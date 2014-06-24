@@ -36,37 +36,91 @@ datatype enumeration_alphabet =
 channel illegal
 
 # (map-ports #{
-channel #.interface ,#.port : {#(comma-join (append (port-triggers port) '(return)))} 
+channel #.interface ,#.port : {#(comma-join (append (port-triggers port) '(return)))}
 #} (ast:body (ast:ports (ast:component ast))))
 
 # (map-ports #{
 #.interface _#.behaviour(IG) = let
 #.interface _#.behaviour _((# (map ast:identifier (ast:body (ast:variables (ast:behaviour (ast:ast .interface))))))) =
-# (map-guards
-#{ 
- (#(list (cadr (ast:expression *guard-def*)) #{ == #} (caddr (ast:expression *guard-def*)))) & (
-    # (map-on-events #{ #.csp-transition #}
-		     (map (lambda (statement-on) (cadr statement-on))
-			  (ast:statements-on (ast:body (ast:statements guard)))))
-  )
-  []
-#} (ast:statements-guard (ast:body (ast:statements (ast:behaviour (ast:ast .interface))))))
-#} (filter ast:requires? (ast:body (ast:ports (ast:component ast)))))
+# (map-guards #{(# (list (cadr (ast:expression *guard-def*)) #{ == #} (caddr (ast:expression *guard-def*)))) & (
+    #  (map-on-events #{ #.csp-transition #}
+				   (reverse (map (lambda (statement-on) (cadr statement-on))
+					(ast:statements-on (ast:body (ast:statements guard)))))))
+#}
+(reverse (ast:statements-guard (ast:body (ast:statements (ast:behaviour (ast:ast .interface)))))))
+within #.interface _#.behaviour _() [||] CHAOS({})
+
+#} (ast:body (ast:ports (ast:component ast))))
 
 #.component _#.behaviour (IIG,IG) = let
-#.component _#.behaviour _(#(comma-join (sort (map ast:identifier (ast:body (ast:variables (ast:behaviour (ast:component ast))))) symbol<))) = 
+#.component _#.behaviour _(#(comma-join (sort (map ast:identifier (ast:body (ast:variables (ast:behaviour (ast:component ast))))) symbol<))) =
 
 # (map-guards #{
  (# (list (cadr (ast:expression *guard-def*)) " == " (caddr (ast:expression *guard-def*)))) & transition_begin -> (
   )
 []
-#} (ast:statements-guard (ast:body (ast:statements (ast:behaviour (ast:component ast))))))
+#}(ast:statements-guard (ast:body (ast:statements (ast:behaviour (ast:component ast))))))
+
+channel IN,OUT : {}
+
+SINGLETHREADED = true
+
+channel transition_begin, transition_end
+
+channel reorder_in,reorder_out : {}
+
+SEMANTICS(in_,out_,client_,modeling_) = let
+Q(s) = length(s) < card({|in_|}) & in_?x -> Q(s^<x>)
+       []
+       length(s) > 0 & out_!head(s) -> Q(tail(s))
+       []
+       length(s) == card({|in_|}) & in_?x -> illegal -> STOP
+
+R(A) = ([] x : A @ x -> R(A))
+       []
+       reorder_in?x -> reorder_out!x -> R(A)
+
+S    = let
+
+Idle(c) = transition_begin -> ([] x : union(client_,modeling_) @ x -> Busy(c,<>))
+
+Busy(c,r) = c == 0 & transition_end -> (if r == <> then Idle(0) else reorder_out!head(r) -> Idle(0))
+            []
+            c > 0 & transition_end -> transition_begin -> Busy(c,r)
+            []
+            c < card({|in_|}) & ([] x : {|in_|} @ x -> Busy(c+1,r))
+            []
+            c > 0 & ([] x : {|out_|} @ x -> Busy(c-1,r))
+            []
+            r == <> & reorder_in?x -> Busy(c,<x>)
+
+within Idle(0)
+
+within Q(<>) [|{|in_,out_|}|] if SINGLETHREADED then S else R(Union({{|in_,out_,transition_begin,transition_end|},client_,modeling_}))
+
+#.component _#.behaviour _Component = let
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+Exclude = {}
+ClientCalls = {}
+UsedModeling = {}
+Ports = {}
+within compress(#.component _#.behaviour (false,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,Ports|},Exclude)|]
+(((# (map-ports #{
+#.interface _#.behaviour(true) [[#.interface .x<-#.port .x|x<-extensions(#.interface)]]
+#} (filter ast:requires? (ast:body (ast:ports (ast:component ast)))))
+) [[x<-IN.x|x<-extensions(IN)]]
+[|union({|IN|},UsedModeling)|]
+SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 
 assert #.component _#.behaviour _Component :[deadlock free]
 assert #.component _#.behaviour(true,true) :[deterministic]
 assert STOP [T= #.component _#.behaviour _Component \ diff(Events,{illegal})
 assert #.interface _#.interface-behaviour(false) [[#.interface .x<-#.port .x|x<-extensions(#.interface)]] \ {#.port .optional,#.port .inevitable} [FD=
-#.component _#.behaviour _Component \ diff(Events,{|illegal,#.port |}) \ {#.port .optional,#.port .inevitable} 
+#.component _#.behaviour _Component \ diff(Events,{|illegal,#.port |}) \ {#.port .optional,#.port .inevitable}
 
 # (map-ports #{
 assert #.interface _#.behaviour(false) :[deadlock free]
@@ -74,4 +128,3 @@ assert #.interface _#.behaviour(true) :[livelock free]
 #} (filter ast:requires? (ast:body (ast:ports (ast:component ast)))))
 assert #.interface _#.interface-behaviour (false) :[deadlock free]
 assert #.interface _#.interface-behaviour (true) :[livelock free]
-

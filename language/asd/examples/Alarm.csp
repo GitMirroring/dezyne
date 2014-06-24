@@ -15,32 +15,62 @@ channel Console,console : {arm,deactivated,detected,disarm,inevitable,optional,r
 channel Sensor,sensor : {disable,disabled,enable,inevitable,optional,triggered,return}
 channel Siren,siren : {turnoff,turnon,return}
 
+Console_a(IG) = let
+Console_a_((state)) =
+  (state == Disarmed) & (
+    Console?x:{arm} -> Console.return -> Console_a_((Armed))
+    []
+    IG & Console?x:{disarm} -> illegal -> STOP
+  )
+  []
+  (state == Armed) & (
+    Console?x:{disarm} -> Console.return -> Console_a_((Disarming))
+    []
+    Console?x:{optional} -> Console.detected -> Console_a_((Triggered))
+    []
+    IG & Console?x:{arm} -> illegal -> STOP
+  )
+  []
+  (state == Triggered) & (
+    Console?x:{disarm} -> Console.return -> Console_a_((Disarming))
+    []
+    IG & Console?x:{arm} -> illegal -> STOP
+  )
+  []
+  (state == Disarming) & (
+    Console?x:{inevitable} -> Console.deactivated -> Console_a_((Disarmed))
+    []
+    IG & Console?x:{arm,disarm} -> illegal -> STOP
+  )
+
+within Console_a_(Disarmed)[|{Console.optional}|] CHAOS({Console.optional})
+
 Sensor_b(IG) = let
 Sensor_b_((state)) =
-  (state == Triggered) & (
-    IG & Sensor?enable -> illegal -> STOP
+  (state == Disabled) & (
+    Sensor?x:{enable} -> Sensor.return -> Sensor_b_((Enabled))
     []
-    Sensor?disable -> Sensor.return -> Sensor_b_((Disabling))
+    IG & Sensor?x:{disable} -> illegal -> STOP
+  )
+  []
+  (state == Enabled) & (
+    IG & Sensor?x:{enable} -> illegal -> STOP
+    []
+    Sensor?x:{disable} -> Sensor.return -> Sensor_b_((Disabling))
+    []
+    Sensor?x:{optional} -> Sensor.triggered -> Sensor_b_((Triggered))
   )
   []
   (state == Disabling) & (
     IG & Sensor?x:{enable,disable} -> illegal -> STOP
     []
-    Sensor?inevitable -> Sensor.disabled -> Sensor_b_((Disabled))
+    Sensor?x:{inevitable} -> Sensor.disabled -> Sensor_b_((Disabled))
   )
   []
-  (state == Enabled) & (
-    IG & Sensor?enable -> illegal -> STOP
+  (state == Triggered) & (
+    IG & Sensor?x:{enable} -> illegal -> STOP
     []
-    Sensor?disable -> Sensor.return -> Sensor_b_((Disabling))
-    []
-    Sensor?optional -> Sensor.triggered -> Sensor_b_((Triggered))
-  )
-  []
-  (state == Disabled) & (
-    Sensor?enable -> Sensor.return -> Sensor_b_((Enabled))
-    []
-    IG & Sensor?disable -> illegal -> STOP
+    Sensor?x:{disable} -> Sensor.return -> Sensor_b_((Disabling))
   )
 
 within Sensor_b_((Disabled)) [|{Sensor.optional}|] CHAOS({Sensor.optional})
@@ -48,83 +78,53 @@ within Sensor_b_((Disabled)) [|{Sensor.optional}|] CHAOS({Sensor.optional})
 Siren_c(IG) = let
 Siren_c_((state)) =
   (state == Off) & (
-    Siren?turnon -> Siren.return -> Siren_c_((On))
+    Siren?x:{turnon} -> Siren.return -> Siren_c_((On))
     []
-    IG & Siren?turnoff -> illegal -> STOP
+    IG & Siren?x:{turnoff} -> illegal -> STOP
   )
   []
   (state == On) & (
-    Siren?turnoff -> (Siren.return -> Siren_c_(Off))
+    Siren?x:{turnoff} -> (Siren.return -> Siren_c_(Off))
     []
-    IG & Siren?turnon -> illegal -> STOP
+    IG & Siren?x:{turnon} -> illegal -> STOP
   )
 
 within Siren_c_((Off))
 
-Console_a(IG) = let
-Console_a_((state)) =
-  (state == Disarmed) & (
-    Console?arm -> Console.return -> Console_a_((Armed))
-    []
-    IG & Console?disarm -> illegal -> STOP
-  )
-  []
-  (state == Armed) & (
-    Console?disarm -> Console.return -> Console_a_((Disarming))
-    []
-    Console?optional -> Console.detected -> Console_a_((Triggered))
-    []
-    IG & Console?arm -> illegal -> STOP
-  )
-  []
-  (state == Triggered) & (
-    Console?disarm -> Console.return -> Console_a_((Disarming))
-    []
-    IG & Console?arm -> illegal -> STOP
-  )
-  []
-  (state == Disarming) & (
-    Console?inevitable -> Console.deactivated -> Console_a_((Disarmed))
-    []
-    IG & Console?x:{arm,disarm} -> illegal -> STOP
-  )
-
-within Console_a_(Disarmed)[|{Console.optional}|] CHAOS({Console.optional})
-
 Alarm_d(IIG,IG) = let
 Alarm_d_((sounding,state)) =
   (state == Disarmed) & transition_begin -> (
-    console?arm -> sensor.enable -> sensor.return -> console.return -> transition_end -> Alarm_d_((sounding,Armed))
+    console?x:{arm} -> sensor.enable -> sensor.return -> console.return -> transition_end -> Alarm_d_((sounding,Armed))
     []
-    IIG & console?disarm -> illegal -> STOP
+    IIG & console?x:{disarm} -> illegal -> STOP
     []
     IG & sensor?x:{triggered,disabled} -> illegal -> STOP
   )
   []
   (state == Armed) & transition_begin -> (
-    IIG & console?arm -> illegal -> STOP
+    IIG & console?x:{arm} -> illegal -> STOP
     []
-    console?disarm -> sensor.disable -> sensor.return -> console.return -> transition_end -> Alarm_d_((sounding,Disarming))
+    console?x:{disarm} -> sensor.disable -> sensor.return -> console.return -> transition_end -> Alarm_d_((sounding,Disarming))
     []
-    sensor?triggered -> console.detected -> siren.turnon -> siren.return -> transition_end -> Alarm_d_((true,Triggered))
+    sensor?x:{triggered} -> console.detected -> siren.turnon -> siren.return -> transition_end -> Alarm_d_((true,Triggered))
     []
-    IG & sensor?disabled -> illegal -> STOP
+    IG & sensor?x:{disabled} -> illegal -> STOP
   )
   []
   (state == Disarming) & transition_begin -> (
     IIG & console?x:{arm,disarm} -> illegal -> STOP
     []
-    sensor?triggered -> transition_end -> Alarm_d_((sounding,state))
+    sensor?x:{triggered} -> transition_end -> Alarm_d_((sounding,state))
     []
-    sounding & sensor?disabled -> console.deactivated -> siren.turnoff -> siren.return -> transition_end -> Alarm_d_((false,Disarmed))
+    sounding & sensor?x:{disabled} -> console.deactivated -> siren.turnoff -> siren.return -> transition_end -> Alarm_d_((false,Disarmed))
     []
-    not (sounding) & sensor?disabled -> console.deactivated -> transition_end -> Alarm_d_((sounding,Disarmed))
+    not (sounding) & sensor?x:{disabled} -> console.deactivated -> transition_end -> Alarm_d_((sounding,Disarmed))
   )
 []
   (state == Triggered) & transition_begin -> (
-    IIG & console?arm -> illegal -> STOP
+    IIG & console?x:{arm} -> illegal -> STOP
     []
-    console?disarm -> sensor.disable -> sensor.return -> siren.turnoff -> siren.return -> console.return -> transition_end -> Alarm_d_((false,Disarming))
+    console?x:{disarm} -> sensor.disable -> sensor.return -> siren.turnoff -> siren.return -> console.return -> transition_end -> Alarm_d_((false,Disarming))
     []
     IG & sensor?x:{triggered,disabled} -> illegal -> STOP
   )
@@ -140,11 +140,11 @@ channel transition_begin, transition_end
 channel reorder_in,reorder_out : {console.return}
 
 SEMANTICS(in_,out_,client_,modeling_) = let
-Q(s) = #s < card({|in_|}) & in_?x -> Q(s^<x>)
+Q(s) = length(s) < card({|in_|}) & in_?x -> Q(s^<x>)
        []
-       #s > 0 & out_!head(s) -> Q(tail(s))
+       length(s) > 0 & out_!head(s) -> Q(tail(s))
        []
-       #s == card({|in_|}) & in_?x -> illegal -> STOP
+       length(s) == card({|in_|}) & in_?x -> illegal -> STOP
 
 R(A) = ([] x : A @ x -> R(A))
        []
