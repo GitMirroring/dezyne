@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -37,12 +38,13 @@
     (#f "false")
     (#t "true")
     (('behaviour) "")
+    (('statements s ...) (string-join (append '("{ ") (map ->string (cdr src)) '("}\n") ) ""))
     (('if expr statement else) (->string (cons 'if-then-else (cdr src))))
     (('if expr statement) (->string (cons 'if-then (cdr src))))
     ((? asd-template?) (apply asd-template->string src))
     ((? join?) (apply join-all (cdr src)))
     ((? symbol?) (symbol->string src))
-    ((! expression) (string-append "!" (->string expression)))
+    ((! expression) (string-append "!(" (->string expression) ")"))
     (_ (format #f "\nNO MATCH:~a\n" src))))
 
 (define (asd-template? x) (parameterize ((templates asd-templates)) (template? x)))
@@ -91,6 +93,8 @@
                      (else . ,->string)))
     (or . ((left . ,->string)
            (right . ,->string)))
+    (and . ((left . ,->string)
+           (right . ,->string)))
     (in . ((type . ,->string)
            (identifier . ,->string)))
     (out . ((type . ,->string)
@@ -98,5 +102,5 @@
     (import . ((file . ,->string)))))
 
 (define (join-all . rest) (string-join (map ->string rest) ""))
-(define join '(events imports ports statements types variables))
+(define join '(events imports ports types variables))
 (define (join? x) (and (list? x) (member (car x) join)))

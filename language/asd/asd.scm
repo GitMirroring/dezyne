@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2014  "Mu Lei" known as "NalaGinrut" <NalaGinrut@gmail.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -99,7 +100,7 @@
     illegal inevitable optional
     provides requires otherwise import
     if else reply
-    (left: or && ! * / + -)
+    (left: or and ! * / + -)
     (left: bool enum void int)
     (nonassoc: == !=)
     )
@@ -180,7 +181,7 @@
    (expression
     (lparen expression rparen) : $1
     (! expression) : `(! ,$2)
-    (expression && expression) : `(&& ,$1 ,$3)
+    (expression and expression) : `(and ,$1 ,$3)
     (expression or expression) : `(or ,$1 ,$3)
     (expression == expression) : `(== ,$1 ,$3)
     (expression != expression) : `(!= ,$1 ,$3)

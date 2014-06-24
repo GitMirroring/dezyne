@@ -1,5 +1,6 @@
 ;;; Gaiag --- Guile in Asd In Asd in Guile.
 ;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
@@ -68,7 +69,7 @@
     ("-" . -)
     ("*" . *)
     ("!" . !)
-    ("&&" . &&)
+    ("&&" . and)
     ("||" . or)
     (":" . colon)
     ("=" . =)))
