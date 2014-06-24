@@ -63,6 +63,20 @@
 
 (define (bracket-join lst) (string-join (map ->string lst) "[]\n"))
 
+(define (csp-map-ports string ports)
+  (map (lambda (port)
+         (save-module-excursion
+          (lambda ()
+            (let ((module (csp-module ast)))
+              (module-define! module 'port port)
+
+              (module-define! module '.optional-chaos (optional-chaos port))
+              (module-define! module '.interface (ast:type port)) ;; FIXME
+              (module-define! module '.name (ast:identifier port))
+              (module-define! module '.port (ast:identifier port))
+              (module-define! module '.behaviour (ast:name (ast:behaviour port)))
+              (animate-string string module))))) ports))
+
 (define (map-guards string guards)
   (display
    (bracket-join (map (lambda (guard)
@@ -84,7 +98,7 @@
 		      (lambda ()
 			(let* ((module (current-module))
 			       (.interface (module-ref module '.interface))
-			       (interface (ast:interface (module-ref module 'ast)))
+			       (interface (ast:ast .interface))
 			       (guard (module-ref module 'guard)))
 			  (module-define! module '.event (car event))
 			  (module-define! module '.csp-transition (csp-transition interface guard event ))
@@ -179,3 +193,9 @@
   (match ast
     ((? ast:field?) (caddr ast))
     (_ ast)))
+
+(define (optional-chaos port)
+  (let ((interface (ast:type port)))
+    (if (member 'optional (interface-triggers (ast:ast (ast:type port))))
+        (list "[|{" interface " .optional}|] " "CHAOS({" interface " .optional})")        
+        "")))

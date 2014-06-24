@@ -35,11 +35,11 @@ datatype enumeration_alphabet =
 
 channel illegal
 
-# (map-ports #{
+# (csp-map-ports #{
 channel #.interface ,#.port : {#(comma-join (append (port-triggers port) '(return)))}
 #} (ast:body (ast:ports (ast:component ast))))
 
-# (map-ports #{
+# (csp-map-ports #{
 #.interface _#.behaviour(IG) = let
 #.interface _#.behaviour _((# (map ast:identifier (ast:body (ast:variables (ast:behaviour (ast:ast .interface))))))) =
 # (map-guards #{(# (list (cadr (ast:expression *guard-def*)) #{ == #} (caddr (ast:expression *guard-def*)))) & (
@@ -48,7 +48,7 @@ channel #.interface ,#.port : {#(comma-join (append (port-triggers port) '(retur
                   (ast:statements-on (ast:body (ast:statements guard)))))))
 #}
 (reverse (ast:statements-guard (ast:body (ast:statements (ast:behaviour (ast:ast .interface)))))))
-within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:initial-value x))) (ast:body (ast:variables (ast:behaviour (ast:ast .interface)))))))) [||] CHAOS({})
+within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:initial-value x))) (ast:body (ast:variables (ast:behaviour (ast:ast .interface)))))))) #.optional-chaos
 
 #} (ast:body (ast:ports (ast:component ast))))
 
@@ -110,7 +110,7 @@ UsedModeling = {}
 Ports = {}
 within compress(#.component _#.behaviour (false,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,Ports|},Exclude)|]
-(((# (map-ports #{
+(((# (csp-map-ports #{
 #.interface _#.behaviour(true) [[#.interface .x<-#.port .x|x<-extensions(#.interface)]]
 #} (filter ast:requires? (ast:body (ast:ports (ast:component ast)))))
 ) [[x<-IN.x|x<-extensions(IN)]]
@@ -123,7 +123,7 @@ assert STOP [T= #.component _#.behaviour _Component \ diff(Events,{illegal})
 assert #.interface _#.interface-behaviour(false) [[#.interface .x<-#.port .x|x<-extensions(#.interface)]] \ {#.port .optional,#.port .inevitable} [FD=
 #.component _#.behaviour _Component \ diff(Events,{|illegal,#.port |}) \ {#.port .optional,#.port .inevitable}
 
-# (map-ports #{
+# (csp-map-ports #{
 assert #.interface _#.behaviour(false) :[deadlock free]
 assert #.interface _#.behaviour(true) :[livelock free]
 #} (filter ast:requires? (ast:body (ast:ports (ast:component ast)))))
