@@ -55,6 +55,7 @@
     (module-define! module 'ast ast)
     (and-let* ((comp (ast:component ast)))
               (module-define! module '.component (ast:name comp))
+              (module-define! module 'component comp)
 	      (module-define! module '.interface (ast:name (ast:interface ast)))
 	      (module-define! module '.behaviour (ast:name (ast:behaviour comp)))
               (module-define! module '.interface-behaviour (ast:name (ast:behaviour (ast:interface ast))))
@@ -71,7 +72,7 @@
               (module-define! module 'port port)
 
               (module-define! module '.optional-chaos (optional-chaos port))
-              (module-define! module '.interface (ast:type port)) ;; FIXME
+              (module-define! module '.interface (ast:type port)) ;; fixme
               (module-define! module '.name (ast:identifier port))
               (module-define! module '.port (ast:identifier port))
               (module-define! module '.behaviour (ast:name (ast:behaviour port)))
@@ -85,7 +86,7 @@
 			    (let ((module (current-module)))
 			      (module-define! module 'guard guard)
 			      (module-define! module '*guard-def* guard)
-;;; FIXME
+;;; fixme
 			      (module-define! (resolve-module '(language asd csp)) '*guard* (lambda () (guard-name guard)))
 			      (module-define! (resolve-module '(language asd csp)) '*guard-def* guard)
 			      (animate-string string module))))) guards))))
@@ -99,14 +100,17 @@
 			(let* ((module (current-module))
 			       (.interface (module-ref module '.interface))
 			       (interface (ast:ast .interface))
+			       (component (module-ref module 'component))
+			       (channel (module-ref module '.port))
 			       (guard (module-ref module 'guard)))
 			  (module-define! module '.event (car event))
-			  (module-define! module '.csp-transition (csp-transition interface guard event ))
+			  (module-define! module '.csp-transition (csp-transition interface guard event))
+			  (module-define! module '.csp-transition-component (csp-transition-component component channel guard event ))
 			  (animate-string string module))))) events))))
 
 (define (symbol< a b) (string< (symbol->string a) (symbol->string b)))
 (define-public (flatten x)
-  "Unnest list."
+  "unnest list."
   (let loop ((x x) (tail '()))
     (cond ((list? x) (fold-right loop tail x))
           ((not (pair? x)) (cons x tail))
@@ -144,7 +148,6 @@
   (let* ((channel (ast:name module))
 	 (behaviour(ast:name (ast:behaviour module)))
 	 (start (list channel "?x:{" (comma-join event)  "} -> "))
-	 (foobar ( stderr "event: ~a --> ~a\n" event (member event '(inevitable optional))))
 	 (return (if (or (member 'inevitable event) (member 'optional event)) "" (list channel ".return -> ")))
 	 (end (list return channel "_" behaviour "_((" (comma-join actuals) "))\n"))
 	 (illegal? #f)
@@ -178,6 +181,42 @@
 	 (actuals (state-vector assignments (map (lambda (x) (cons x x)) names))))
    (action-bla statement module event actuals)))
 
+(define *action-return* "") ;; FIXME
+(define* (action-bla-component statement module channel event actuals :optional (top? #t))
+  (if top?
+      (set! *action-return* ""))
+  (let* ((behaviour(ast:name (ast:behaviour module)))
+         (thing (if (pair? (car event)) (cadar event) (car event)))
+	 (start (list thing "?x:{" (comma-join (map (lambda (x) (if (pair? x) (caddr x) x)) event))  "} -> "))
+	 (return (if (or (member 'inevitable event) (member 'optional event)) "" (list channel ".return -> transition_end -> ")))
+	 (end (list return (ast:name module) "_" behaviour "_((" (comma-join actuals) "))\n"))
+	 (illegal? #f)
+	 (body
+	  (match statement
+	    (('statements tail ...) (map (lambda (statement) (action-bla-component statement module channel event actuals #f)) tail))
+	    ('(action illegal) (set! illegal? #t) (->string (list "illegal -> STOP \n")))
+	    (('action name) (set! *action-return* (string-append (->string (list (if (pair? name) (cadr name) name) ".return -> " ))
+                                                    *action-return* ))
+             (->string (list (->string name) " -> " )))
+	    (('assign name value) "")
+	    (_ (stderr "catch-all: foobar!~a\n" statement) ""))))
+    (if top? 
+	(list (if illegal? "IG & " "") start body (if (not illegal?) (->string (list *action-return* end)) ""))
+	(list body))))
+
+(define (csp-transition-component module channel guard event)
+  (let* ((on (ast:statements-on (ast:body (ast:statements guard))))
+         (foobar1 (stderr "on:~a\n" on))
+	 (event-on (find (lambda (x) (let ((triggers (cadr x)))
+				       (equal? event triggers))) on))
+	 (foobar2 (stderr "event-on~a\n" event-on))
+	 (statement (ast:statements event-on))
+	 (foobar3 (stderr "statement:~a\n" statement))
+	 (names (var-names module))
+	 (assignments (assign-bla statement (ast:name module) event))
+	 (actuals (state-vector assignments (map (lambda (x) (cons x x)) names))))
+    (action-bla-component statement module channel event actuals)))
+
 (define (state-vector assignments formals)
   (let loop ((assignments assignments) (formals formals))
     (if (null? assignments)
@@ -199,3 +238,8 @@
     (if (member 'optional (interface-triggers (ast:ast (ast:type port))))
         (list "[|{" interface " .optional}|] " "CHAOS({" interface " .optional})")        
         "")))
+
+(define (->string src)
+  (match src
+    (('field struct name) (->string (list struct "." name)))
+    (_ ((@ (language asd misc) ->string) src))))

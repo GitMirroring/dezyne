@@ -21,10 +21,50 @@
 ;;; 
 ;;; Code:
 
-((imports
-   (import Console)
-   (import Sensor)
-   (import Siren))
+((imports (import Sensor) (import Siren))
+ (interface
+   Console
+   (types)
+   (events
+     (in void arm)
+     (in void disarm)
+     (out void detected)
+     (out void deactivated))
+   (behaviour
+     a
+     (types (enum States
+                  (Disarmed Armed Triggered Disarming)))
+     (variables
+       (declare States state (field States Disarmed)))
+     (statements
+       (guard (field state Disarmed)
+              (statements
+                (on (arm)
+                    (statements (assign state (field States Armed))))
+                (on (disarm) (action illegal))))
+       (guard (field state Armed)
+              (statements
+                (on (disarm)
+                    (statements
+                      (assign state (field States Disarming))))
+                (on (optional)
+                    (statements
+                      (action detected)
+                      (assign state (field States Triggered))))
+                (on (arm) (action illegal))))
+       (guard (field state Triggered)
+              (statements
+                (on (disarm)
+                    (statements
+                      (assign state (field States Disarming))))
+                (on (arm) (action illegal))))
+       (guard (field state Disarming)
+              (statements
+                (on (inevitable)
+                    (statements
+                      (action deactivated)
+                      (assign state (field States Disarmed))))
+                (on (arm disarm) (action illegal)))))))
  (component
    Alarm
    (ports (provides Console console)
