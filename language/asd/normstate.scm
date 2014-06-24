@@ -3,6 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -31,10 +32,9 @@
   :use-module (system repl error-handling)
   :use-module (system vm trap-state)
   :use-module (language asd misc)
-  :use-module (language asd format-keys)
-  :use-module (language asd snippets)
   :use-module (language asd pretty)
   :use-module (language asd scheme)
+  :use-module (language asd reader)
   :export (asd-> asd->normstate))
 
 (define (asd->normstate ast) 
