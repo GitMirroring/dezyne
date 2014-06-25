@@ -31,20 +31,19 @@
   :use-module (language asd c++)
   :use-module (language asd misc)
   :use-module (language asd reader)
+  :use-module (language asd normstate)
   :export (
            asd->
            port-triggers
            ))
 
-(define *ast* '())
-
 (define (asd-> ast)
-  (set! *ast* ast)
-  (module-define! (resolve-module '(language asd csp)) 'ast ast)  ;; FIXME
-  (module-define! (resolve-module '(language asd c++)) 'ast ast)  ;; FIXME
-  (and-let* ((comp (ast:component ast))
-             (name (ast:name comp)))
-            (animate-file 'templates/component.csp.scm (list name '.csp) (csp-module ast)))
+  (let ((norm (normstate ast)))
+    (module-define! (resolve-module '(language asd csp)) 'ast norm)  ;; FIXME
+    (module-define! (resolve-module '(language asd c++)) 'ast norm)  ;; FIXME
+    (and-let* ((comp (ast:component norm))
+	       (name (ast:name comp)))
+	      (animate-file 'templates/component.csp.scm (list name '.csp) (csp-module norm))))
   "")
 
 (define (csp-module ast)
@@ -185,10 +184,7 @@
 	 (actuals (state-vector assignments (map (lambda (x) (cons x x)) names))))
    (action-prefix statement module event actuals)))
 
-(define *guard* "")
 (define* (action-prefix-component statement module channel event actuals :optional (top? #t))
-  (if top?
-      (set! *guard* ""))
   (let* ((behaviour(ast:name (ast:behaviour module)))
          (thing (if (pair? (car event)) (cadar event) (car event)))
 	 (start (list thing "?x:{" (comma-join (map (lambda (x) (if (pair? x) (caddr x) x)) event))  "} -> "))
@@ -202,10 +198,9 @@
 	    ('(action illegal) (set! illegal? #t) (->string (list "illegal -> STOP \n")))
 	    (('action name) (->string (list (->string name) " -> " (if (provides? name) "" (list (if (pair? name) (cadr name) name) ".return -> ")))))
 	    (('assign name value) "")
-	    (('guard expression statement-dont-care) (set! *guard* (->string expression)))
 	    (_ ""))))
     (if top? 
-	(list (if illegal? (if (provides? (car event)) "IIG & " "IG & ") "") *guard* start body (if (not illegal?) (->string end) ""))
+	(list (if illegal? (if (provides? (car event)) "IIG & " "IG & ") "") start body (if (not illegal?) (->string end) ""))
 	(list body))))
 
 (define (provides? x) (and (pair? x) (eq? (cadr x) 'console)))

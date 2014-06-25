@@ -42,7 +42,7 @@ channel #.interface ,#.port : {#(comma-join (append (port-triggers port) '(retur
 # (csp-map-ports #{
 #.interface _#.behaviour(IG) = let
 #.interface _#.behaviour _((# (map ast:identifier (ast:body (ast:variables (ast:behaviour (ast:ast .interface))))))) =
-# (map-guards #{(# (list (cadr (ast:expression *guard-def*)) #{ == #} (caddr (ast:expression *guard-def*)))) & (
+# (map-guards #{(# (csp-expression->string (ast:expression *guard-def*)) & (
 # (map-on-events #{ #.csp-transition #}
         (reverse (map (lambda (statement-on) (cadr statement-on))
                   (ast:statements-on (ast:body (ast:statements guard)))))))

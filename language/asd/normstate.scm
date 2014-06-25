@@ -3,6 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
@@ -35,7 +36,7 @@
   :use-module (language asd pretty)
   :use-module (language asd scheme)
   :use-module (language asd reader)
-  :export (asd-> asd->normstate))
+  :export (asd-> asd->normstate normstate))
 
 (define (asd->normstate ast) 
   (with-error-handling
@@ -44,7 +45,10 @@
 ;;  (asd->scheme (remove-otherwise '() ast))))
 ;;   (asd->pretty (remove-otherwise '() ast))))
 ;;  (asd->scheme (combine-guards (normstate ((remove-otherwise '()) ast))))))
-  (asd->pretty (flatten-compound (combine-guards (passdown-on ((remove-otherwise '()) ast)))))))
+  (asd->pretty (normstate ast))))
+
+(define (normstate ast)
+  (flatten-compound (combine-guards (passdown-on ((remove-otherwise '()) ast)))))
 
 (define (flatten-compound ast) 
   (match ast
