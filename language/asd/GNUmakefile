@@ -21,6 +21,7 @@
 # 
 # Code:
 
+SHELL := bash
 DEPTH = ../..
 diff = diff -uw -I '^ *$$' -I '^ *//'
 sed = sed -e 's/^-gen/gen/' -re 's/((cppbase.cpp|.hh.scm|.cc.scm):[0-9]*):/\1:warning:/'
@@ -102,7 +103,8 @@ wfc: compile
 
 csp: compile
 	./gaiag -l csp examples/Alarm.asd
-	-$(diff) examples/Alarm.csp Alarm.csp
+	$(diff) examples/Alarm.csp Alarm.csp || true
+	@$(diff) examples/Alarm.csp Alarm.csp | diffstat || true
 #	./gaiag -l csp examples/if.asd
 #	$(diff) examples/if.csp C.csp
 
