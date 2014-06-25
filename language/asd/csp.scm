@@ -148,7 +148,7 @@
     (('on triggers statements) triggers)
     (('guard expression statements) (behaviour-triggers statements triggers))))
 
-(define* (action-bla statement module event actuals :optional (top? #t))
+(define* (action-prefix statement module event actuals :optional (top? #t))
   (let* ((channel (ast:name module))
 	 (behaviour(ast:name (ast:behaviour module)))
 	 (start (list channel "?x:{" (comma-join event)  "} -> "))
@@ -157,18 +157,18 @@
 	 (illegal? #f)
 	 (body 
 	  (match statement
-	    (('statements tail ...) (map (lambda (statement) (action-bla statement module event actuals #f)) tail))
+	    (('statements tail ...) (map (lambda (statement) (action-prefix statement module event actuals #f)) tail))
 	    ('(action illegal) (set! illegal? #t) (->string (list "illegal -> STOP \n")))
 	    (('action name) (->string (list channel "." name " -> " )))
 	    (('assign name value) "")
-	    (_ (stderr "catch-all: foobar!~a\n" statement) ""))))
+	    (_ ""))))
     (if top? 
 	(list (if illegal? "IG & " "") start body (if (not illegal?) end ""))
 	(list body))))
 
-(define (assign-bla statement channel event . key-vals)
+(define (assign-prefix statement channel event . key-vals)
   (match statement
-    (('statements tail ...) (apply append (map (lambda (statement) (assign-bla statement channel event)) tail)))
+    (('statements tail ...) (apply append (map (lambda (statement) (assign-prefix statement channel event)) tail)))
     (('assign key val) (cons (cons key (value val)) key-vals))
     (_ '())))
 
@@ -181,11 +181,14 @@
 				       (equal? event triggers))) on))
 	 (statement (ast:statements event-on))
 	 (names (var-names module))
-	 (assignments (assign-bla statement (ast:name module) event))
+	 (assignments (assign-prefix statement (ast:name module) event))
 	 (actuals (state-vector assignments (map (lambda (x) (cons x x)) names))))
-   (action-bla statement module event actuals)))
+   (action-prefix statement module event actuals)))
 
-(define* (action-bla-component statement module channel event actuals :optional (top? #t))
+(define *guard* "")
+(define* (action-prefix-component statement module channel event actuals :optional (top? #t))
+  (if top?
+      (set! *guard* ""))
   (let* ((behaviour(ast:name (ast:behaviour module)))
          (thing (if (pair? (car event)) (cadar event) (car event)))
 	 (start (list thing "?x:{" (comma-join (map (lambda (x) (if (pair? x) (caddr x) x)) event))  "} -> "))
@@ -195,34 +198,32 @@
 	 (illegal? #f)
 	 (body
 	  (match statement
-	    (('statements tail ...) (map (lambda (statement) (action-bla-component statement module channel event actuals #f)) tail))
+	    (('statements tail ...) (map (lambda (statement) (action-prefix-component statement module channel event actuals #f)) tail))
 	    ('(action illegal) (set! illegal? #t) (->string (list "illegal -> STOP \n")))
 	    (('action name) (->string (list (->string name) " -> " (if (provides? name) "" (list (if (pair? name) (cadr name) name) ".return -> ")))))
 	    (('assign name value) "")
-	    (_ (stderr "catch-all: foobar!~a\n" statement) ""))))
+	    (('guard expression statement-dont-care) (set! *guard* (->string expression)))
+	    (_ ""))))
     (if top? 
-	(list (if illegal? (if (provides? (car event)) "IIG & " "IG & ") "") start body (if (not illegal?) (->string end) ""))
+	(list (if illegal? (if (provides? (car event)) "IIG & " "IG & ") "") *guard* start body (if (not illegal?) (->string end) ""))
 	(list body))))
 
 (define (provides? x) (and (pair? x) (eq? (cadr x) 'console)))
 
 (define (csp-transition-component module channel guard event)
   (let* ((on (ast:statements-on (ast:body (ast:statements guard))))
-         (foobar1 (stderr "on:~a\n" on))
 	 (event-on (find (lambda (x) (let ((triggers (cadr x)))
 				       (equal? event triggers))) on))
-	 (foobar2 (stderr "event-on~a\n" event-on))
 	 (statement (ast:statements event-on))
-	 (foobar3 (stderr "statement:~a\n" statement))
 	 (names (var-names module))
-	 (assignments (assign-bla statement (ast:name module) event))
+	 (assignments (assign-prefix statement (ast:name module) event))
 	 (actuals (state-vector assignments (map (lambda (x) (cons x x)) names))))
     (receive (provides requires) (partition provides? event) 
       (if (and (null? provides) (null? requires)) 
-	  (action-bla-component statement module channel event actuals)
-	  (append (if (pair? provides) (action-bla-component statement module channel provides actuals) '())
+	  (action-prefix-component statement module channel event actuals)
+	  (append (if (pair? provides) (action-prefix-component statement module channel provides actuals) '())
 		  (if (and (pair? provides) (pair? requires)) (list "\n  []\n  ") (list ""))
-		  (if (pair? requires) (action-bla-component statement module channel requires actuals) '()))))))
+		  (if (pair? requires) (action-prefix-component statement module channel requires actuals) '()))))))
 
 (define (state-vector assignments formals)
   (let loop ((assignments assignments) (formals formals))
