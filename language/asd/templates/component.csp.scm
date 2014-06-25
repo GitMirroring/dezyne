@@ -60,15 +60,18 @@ within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:ini
                   (ast:statements-on (ast:body (ast:statements guard)))))))
 #}
 (reverse (ast:statements-guard (ast:body (ast:statements (ast:behaviour (ast:component ast)))))))
-within #.component _#.behaviour _((#(comma-join (map value (ast:body (ast:variables (ast:behaviour (ast:component ast))))))))
+within #.component _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:initial-value x))) (ast:body (ast:variables (ast:behaviour (ast:component ast))))))))
 
-channel IN,OUT : {}
+channel IN,OUT : {#
+ (csp-map-ports #{
+   #(comma-join (map (lambda (x) (list .port "." (ast:identifier x))) (filter ast:out? (ast:body (ast:events port)))))#} 
+  (filter ast:requires? (ast:body (ast:ports (ast:component ast)))))}
 
 SINGLETHREADED = true
 
 channel transition_begin, transition_end
 
-channel reorder_in,reorder_out : {}
+channel reorder_in,reorder_out : {# (map (lambda (x) (list (ast:identifier x) ".return")) (filter ast:provides? (ast:body (ast:ports (ast:component ast)))))}
 
 SEMANTICS(in_,out_,client_,modeling_) = let
 Q(s) = length(s) < card({|in_|}) & in_?x -> Q(s^<x>)

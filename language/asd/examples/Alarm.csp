@@ -84,7 +84,7 @@ Siren_c_((state)) =
   )
   []
   (state == On) & (
-    Siren?x:{turnoff} -> (Siren.return -> Siren_c_(Off))
+    Siren?x:{turnoff} -> Siren.return -> Siren_c_((Off))
     []
     IG & Siren?x:{turnon} -> illegal -> STOP
   )
@@ -94,7 +94,7 @@ within Siren_c_((Off))
 Alarm_d(IIG,IG) = let
 Alarm_d_((state,sounding)) =
   (state == Disarmed) & transition_begin -> (
-    console?x:{arm} -> sensor.enable -> sensor.return -> console.return -> transition_end -> Alarm_d_((sounding,Armed))
+    console?x:{arm} -> sensor.enable -> sensor.return -> console.return -> transition_end -> Alarm_d_((Armed,sounding))
     []
     IIG & console?x:{disarm} -> illegal -> STOP
     []

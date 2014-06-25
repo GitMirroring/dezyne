@@ -23,6 +23,7 @@
   :use-module (ice-9 match)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 optargs)
+  :use-module (ice-9 receive)
   :use-module (srfi srfi-1)
 
   :use-module (language asd animate)
@@ -181,28 +182,26 @@
 	 (actuals (state-vector assignments (map (lambda (x) (cons x x)) names))))
    (action-bla statement module event actuals)))
 
-(define *action-return* "") ;; FIXME
 (define* (action-bla-component statement module channel event actuals :optional (top? #t))
-  (if top?
-      (set! *action-return* ""))
   (let* ((behaviour(ast:name (ast:behaviour module)))
          (thing (if (pair? (car event)) (cadar event) (car event)))
 	 (start (list thing "?x:{" (comma-join (map (lambda (x) (if (pair? x) (caddr x) x)) event))  "} -> "))
-	 (return (if (or (member 'inevitable event) (member 'optional event)) "" (list channel ".return -> transition_end -> ")))
+	 (xreturn (if (provides? (car event)) (->string (list channel ".return -> ")) ""))
+	 (return (if (or (member 'inevitable event) (member 'optional event)) "" (list xreturn "transition_end -> ")))
 	 (end (list return (ast:name module) "_" behaviour "_((" (comma-join actuals) "))\n"))
 	 (illegal? #f)
 	 (body
 	  (match statement
 	    (('statements tail ...) (map (lambda (statement) (action-bla-component statement module channel event actuals #f)) tail))
 	    ('(action illegal) (set! illegal? #t) (->string (list "illegal -> STOP \n")))
-	    (('action name) (set! *action-return* (string-append (->string (list (if (pair? name) (cadr name) name) ".return -> " ))
-                                                    *action-return* ))
-             (->string (list (->string name) " -> " )))
+	    (('action name) (->string (list (->string name) " -> " (if (provides? name) "" (list (if (pair? name) (cadr name) name) ".return -> ")))))
 	    (('assign name value) "")
 	    (_ (stderr "catch-all: foobar!~a\n" statement) ""))))
     (if top? 
-	(list (if illegal? "IG & " "") start body (if (not illegal?) (->string (list *action-return* end)) ""))
+	(list (if illegal? (if (provides? (car event)) "IIG & " "IG & ") "") start body (if (not illegal?) (->string end) ""))
 	(list body))))
+
+(define (provides? x) (and (pair? x) (eq? (cadr x) 'console)))
 
 (define (csp-transition-component module channel guard event)
   (let* ((on (ast:statements-on (ast:body (ast:statements guard))))
@@ -215,7 +214,12 @@
 	 (names (var-names module))
 	 (assignments (assign-bla statement (ast:name module) event))
 	 (actuals (state-vector assignments (map (lambda (x) (cons x x)) names))))
-    (action-bla-component statement module channel event actuals)))
+    (receive (provides requires) (partition provides? event) 
+      (if (and (null? provides) (null? requires)) 
+	  (action-bla-component statement module channel event actuals)
+	  (append (if (pair? provides) (action-bla-component statement module channel provides actuals) '())
+		  (if (and (pair? provides) (pair? requires)) (list "\n  []\n  ") (list ""))
+		  (if (pair? requires) (action-bla-component statement module channel requires actuals) '()))))))
 
 (define (state-vector assignments formals)
   (let loop ((assignments assignments) (formals formals))
