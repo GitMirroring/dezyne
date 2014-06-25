@@ -173,9 +173,9 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {console.return,console.detected,console.deactivated,console.optional,console.inevitable,sensor.optional,sensor.inevitable}
+Exclude = {console.return,console.detected,console.deactivated,console.inevitable,console.optional,sensor.inevitable,sensor.optional}
 ClientCalls = {console.arm,console.disarm}
-UsedModeling = {sensor.optional,sensor.inevitable}
+UsedModeling = {sensor.inevitable,sensor.optional}
 within compress((Alarm_d(false,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,console,sensor,siren|},Exclude)|]
 (((Sensor_b(true) [[Sensor.x<-sensor.x|x<-extensions(Sensor)]]

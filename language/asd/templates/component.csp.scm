@@ -107,15 +107,27 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {}
-ClientCalls = {}
-UsedModeling = {}
-Ports = {}
-within compress(#.component _#.behaviour (false,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,Ports|},Exclude)|]
+Exclude = {#.port .return,#
+ (csp-map-ports 
+#{#(comma-join (map (lambda (x) (list .port "." (ast:identifier x))) (filter ast:out? (ast:body (ast:events port))))) #} 
+   (filter ast:provides? (ast:body (ast:ports (ast:component ast))))),#
+ (csp-map-ports 
+#{#(comma-join (map (lambda (x) (list .port "." x)) (filter (lambda (x) (member x '(inevitable optional))) (port-triggers port)))) #} 
+   (ast:body (ast:ports (ast:component ast))) ",")}
+ClientCalls = {#
+ (csp-map-ports 
+#{#(comma-join (map (lambda (x) (list .port "." (ast:identifier x))) (filter ast:in? (ast:body (ast:events port))))) #} 
+   (filter ast:provides? (ast:body (ast:ports (ast:component ast)))))}
+UsedModeling = {#
+ (csp-map-ports 
+#{#(comma-join (map (lambda (x) (list .port "." x)) (filter (lambda (x) (member x '(inevitable optional))) (port-triggers port)))) #} 
+   (filter ast:requires? (ast:body (ast:ports (ast:component ast)))))}
+
+within compress((#.component _#.behaviour (false,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,#(comma-join (map ast:identifier (ast:body (ast:ports (ast:component ast)))))|},Exclude)|]
 (((# (csp-map-ports #{
 #.interface _#.behaviour(true) [[#.interface .x<-#.port .x|x<-extensions(#.interface)]]
-#} (filter ast:requires? (ast:body (ast:ports (ast:component ast)))))
+#} (filter ast:requires? (ast:body (ast:ports (ast:component ast)))) " ||| ")
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})

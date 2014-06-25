@@ -63,25 +63,28 @@
 	      (module-define! module '.port (ast:identifier (ast:port comp))))
     module))
 
-(define (bracket-join lst) (string-join (map ->string lst) "[]\n"))
+(define (externalchoice-join lst) (string-join (map ->string lst) "[]\n"))
+(define (separator-join lst separator) (string-join (map ->string (filter (negate string-null?) lst)) separator))
 
-(define (csp-map-ports string ports)
-  (map (lambda (port)
-         (save-module-excursion
-          (lambda ()
-            (let ((module (csp-module ast)))
-              (module-define! module 'port port)
-
-              (module-define! module '.optional-chaos (optional-chaos port))
-              (module-define! module '.interface (ast:type port)) ;; fixme
-              (module-define! module '.name (ast:identifier port))
-              (module-define! module '.port (ast:identifier port))
-              (module-define! module '.behaviour (ast:name (ast:behaviour port)))
-              (animate-string string module))))) ports))
+(define* (csp-map-ports string ports :optional (separator ""))
+  (display
+   (separator-join (map (lambda (port)
+			(with-output-to-string
+			  (lambda ()
+			    (save-module-excursion
+			     (lambda ()
+			       (let ((module (csp-module ast)))
+				 (module-define! module 'port port)
+				 (module-define! module '.optional-chaos (optional-chaos port))
+				 (module-define! module '.interface (ast:type port)) ;; fixme
+				 (module-define! module '.name (ast:identifier port))
+				 (module-define! module '.port (ast:identifier port))
+				 (module-define! module '.behaviour (ast:name (ast:behaviour port)))
+				 (animate-string string module))))))) ports) separator)))
 
 (define (map-guards string guards)
   (display
-   (bracket-join (map (lambda (guard)
+   (externalchoice-join (map (lambda (guard)
 			(with-output-to-string
 			  (lambda ()
 			    (let ((module (current-module)))
@@ -94,7 +97,7 @@
 
 (define (map-on-events string events)
   (display
-   (bracket-join (map
+   (externalchoice-join (map
 		  (lambda (event)
 		    (with-output-to-string
 		      (lambda ()

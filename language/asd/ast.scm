@@ -51,7 +51,6 @@
            parent
            port
            ports
-           provides
            provides?
            requires?
            statements
