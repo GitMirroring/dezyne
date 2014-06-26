@@ -52,7 +52,25 @@ within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:ini
 #.component _#.behaviour (IIG,IG) = let
 #.component _#.behaviour _((#(comma-join (map ast:identifier (ast:body (ast:variables (ast:behaviour (ast:component ast)))))))) = transition_begin -> (
 # (map-guards #{ (# (csp-expression->string (ast:expression guard))) & (
-# (map-statements-on #{ #.action-prefix #}
+# (map-statements-on #{ #
+    (when illegal? (if provides-event? "IIG & " "IG & ")) #.event-port ?x:{#
+    (comma-join (map event->string events)) } -> #
+    (map (lambda (x) (list (->string x) " -> " 
+                           (when (requires? x)
+                             (list (action->string x) ".return -> ")
+                             ))) actions) #
+    (if illegal? 
+        "illegal -> STOP"
+        (append
+         (if (or (member 'inevitable events) (member 'optional events))
+             '("")
+             (append
+              (if provides-event?
+                  (list channel ".return -> ")
+                  '())
+              '("transition_end -> ")))
+        (list .module "_" .behaviour "_((" (comma-join actuals) "))")))
+#}
     (append
       (filter identity (map (statement-on-p/r provides?) ((ast:statements-of-type 'on) (ast:statement guard))))
       (filter identity (map (statement-on-p/r requires?) ((ast:statements-of-type 'on) (ast:statement guard))))) "[]\n"))

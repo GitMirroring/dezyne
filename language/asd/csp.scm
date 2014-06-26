@@ -92,7 +92,6 @@
 			  (lambda ()
 			    (let ((module (current-module)))
 			      (module-define! module 'guard guard)
-			      (module-define! module '.prefix (csp-prefix guard))
 			      (animate-string string module))))) guards))))
 
 
@@ -127,21 +126,32 @@
                   (interface (ast-norm .interface))
                   (component (module-ref module 'component))
                   (channel (module-ref module '.port))
+                  (.channel (module-ref module '.port))
                   (guard (module-ref module 'guard))
                   (events (ast:events on-statement))
+                  (.event-port (if (pair? (car events)) (cadar events) (car events)))
                   (statement (ast:statement on-statement))
+                  (module-ast (if (eq? .channel .interface) interface component))
+                  (module-name (ast:name module-ast))
                   (assignments (assign-prefix statement (ast:type (ast:port component )) events))
                   (names (var-names component))
                   (actuals (state-vector assignments (map (lambda (x) (cons x x)) names)))
-                  (action-prefix (action-prefix-component statement component channel events actuals)))
-             (module-define! module 'statement statement)
-             (module-define! module 'events events)
-             (module-define! module 'names names)
+;;                  (action-prefix (action-prefix-component statement component channel events actuals))
+                  (illegal? (prefix-illegal? statement))
+                  (actions (prefix-actions statement)))
 
-             (module-define! module '.action-prefix action-prefix)
              (module-define! module '.channel channel)
              (module-define! module '.events (comma-join (map ->string events)))
-
+             (module-define! module 'actions actions)
+             (module-define! module 'actuals actuals)
+             (module-define! module 'channel channel)
+             (module-define! module 'events events)
+             (module-define! module 'illegal? illegal?)
+             (module-define! module '.module module-name)
+             (module-define! module '.event-port .event-port)
+             (module-define! module 'names names)
+             (module-define! module 'provides-event? (provides? (car events)))
+             (module-define! module 'statement statement)
              (animate-string string module))))) statements) separator)))
 
 (define (csp-expression->string expression)
@@ -207,16 +217,6 @@
 	(list (if illegal? "IG & " "") start body (if (not illegal?) end ""))
 	(list body))))
 
-(define* (csp-prefix statement :optional (top? #t))
-  (let ((illegal?
-         (match statement
-           (('compound tail ...) (every identity (map (lambda (statement) (csp-prefix statement #f)) tail)))
-           ('(action illegal) #t)
-           (('action name) #f)
-           (('assign name value) #f)
-           (_ #f))))
-    (if illegal? "IIG & " "IG & ")))
-
 (define (assign-prefix statement channel event . key-vals)
   (match statement
     (('compound tail ...) (apply append (map (lambda (statement) (assign-prefix statement channel event)) tail)))
@@ -248,27 +248,34 @@
       (ast:make 'on events-predicate statement)
       #f)))
 
-;;(define (statement-on-provides statement-on) (statement-on-p/r statement-on provides?))
-;;(define (statement-on-requires statement-on) (statement-on-p/r statement-on requires?))
+(define (action->string action)
+  (let ((name (cadr action)))
+    (if (pair? name) (cadr name) name)))
 
-(define* (action-prefix-component statement module channel events actuals :optional (top? #t))
-  (let* ((behaviour(ast:name (ast:behaviour module)))
-         (thing (if (pair? (car events)) (cadar events) (car events)))
-	 (start (list thing "?x:{" (comma-join (map (lambda (x) (if (pair? x) (caddr x) x)) events))  "} -> "))
-	 (xreturn (if (provides? (car events)) (->string (list channel ".return -> ")) ""))
-	 (return (if (or (member 'inevitable events) (member 'optional events)) "" (list xreturn "transition_end -> ")))
-	 (end (list return (ast:name module) "_" behaviour "_((" (comma-join actuals) "))\n"))
-	 (illegal? #f)
-	 (body
-	  (match statement
-	    (('compound tail ...) (map (lambda (statement) (action-prefix-component statement module channel events actuals #f)) tail))
-	    ('(action illegal) (set! illegal? #t) (->string (list "illegal -> STOP\n")))
-	    (('action name) (->string (list (->string name) " -> " (if (provides? name) "" (list (if (pair? name) (cadr name) name) ".return -> ")))))
-	    (('assign name value) "")
-	    (_ ""))))
-    (if top?
-	(list (if illegal? (if (provides? (car events)) "IIG & " "IG & ") "") start body (if (not illegal?) (->string end) ""))
-	(list body))))
+(define (event->string event)
+  (if (pair? event) (caddr event) events))
+
+(define (prefix-actions statement)
+  (match statement
+    (('compound tail ...) (let loop ((statements tail))
+                            (if (null? statements)
+                                '()
+                                (let ((action (prefix-actions (car statements))))
+                                  (if (null? action)
+                                      (loop (cdr statements))
+                                      (cons action (loop (cdr statements))))))))
+    ('(action illegal) '())
+    (('action name) name)
+    (_ '())))
+
+(define (prefix-illegal? statement)
+  (match statement
+    (('compound tail ...) (let loop ((statements tail))
+                            (if (null? statements)
+                                #f
+                                (or (prefix-illegal? (car statements)) (loop (cdr statements))))))
+    ('(action illegal) #t)
+    (_ #f)))
 
 (define (provides? x) (and (pair? x) (eq? (cadr x) 'console)))
 (define (requires? x) (not (provides? x)))
