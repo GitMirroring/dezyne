@@ -22,8 +22,11 @@
   :use-module (ice-9 match)
   :use-module (srfi srfi-1)
 
-  :use-module (language asd misc)
   :use-module (language asd animate)
+;;  :use-module (language asd ast:)
+  :use-module (language asd misc)
+;;  :use-module (language asd reader)
+
   :export (asd-> asd->asd asd->pretty asd->string))
 
 (define (asd->string ast) 
@@ -38,14 +41,14 @@
     (#f "false")
     (#t "true")
     (('behaviour) "")
-    (('statements s ...) (string-join (append '("{ ") (map ->string (cdr src)) '("}\n") ) ""))
+    (('compound s ...) (string-join (append '("{ ") (map ->string (cdr src)) '("}\n") ) ""))
     (('if expr statement else) (->string (cons 'if-then-else (cdr src))))
     (('if expr statement) (->string (cons 'if-then (cdr src))))
     ((? asd-template?) (apply asd-template->string src))
     ((? join?) (apply join-all (cdr src)))
     ((? symbol?) (symbol->string src))
     ((! expression) (string-append "!(" (->string expression) ")"))
-    (_ (format #f "\nNO MATCH:~a\n" src))))
+    (_ (format #f "\n~aNO MATCH:~a\n" (current-source-location) src))))
 
 (define (asd-template? x) (parameterize ((templates asd-templates)) (template? x)))
 
@@ -71,7 +74,8 @@
     (behaviour . ((name . ,(lambda (name) (if name name "")))
                   (types . ,->string)
                   (variables . ,->string)
-                  (statements . ,->string)))
+                  ;; TOP level compound does *not* have braces
+                  (compound . ,(lambda (x) (apply string-append (map ->string (cdr x)))))))
     (enum . ((name . ,identity)
              (elements . ,comma-space-join)))
     (declare . ((type . ,identity)

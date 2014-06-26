@@ -47,7 +47,7 @@
   (match src
     ((path *** ('guard ('field 'state (? (equalizer state))) statements))
      (get-statements statements state port event))
-    (('statements t ...)
+    (('compound t ...)
      (get-statements t state port event))
     ((('on clause statements) t ...)
      (or (get-statements (append (list clause) (list statements)) state port event)

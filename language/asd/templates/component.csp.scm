@@ -44,8 +44,8 @@ channel #.interface ,#.port : {#(comma-join (append (port-triggers port) '(retur
 # (map-guards #{(# (csp-expression->string (ast:expression guard))) & (
 # (map-on-events #{ #.csp-transition #}
         (map (lambda (statement-on) (ast:events statement-on))
-                  (ast:statements-on (ast:statement guard)))))
-#} (reverse (ast:statements-guard (ast:statements (ast:behaviour (ast-norm .interface))))))
+                  ((ast:statements-of-type 'on) (ast:statement guard)))))
+#} (reverse ((ast:statements-of-type 'guard) (ast:statement (ast:behaviour (ast-norm .interface))))))
 within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:initial-value x))) (ast:body (ast:variables (ast:behaviour (ast-norm .interface)))))))) #.optional-chaos
 
 #} (ast:body (ast:ports (ast:component ast))))
@@ -54,9 +54,9 @@ within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:ini
 # (map-guards #{ (# (csp-expression->string (ast:expression guard))) & (
 # (map-statements-on #{ #.action-prefix #}
     (append
-      (filter identity (map (statement-on-p/r provides?) (ast:statements-on (ast:statements guard))))
-      (filter identity (map (statement-on-p/r requires?) (ast:statements-on (ast:statements guard))))) "[]\n"))
-#} (reverse (ast:statements-guard (ast:statements (ast:behaviour (ast:component ast)))))))
+      (filter identity (map (statement-on-p/r provides?) ((ast:statements-of-type 'on) (ast:statement guard))))
+      (filter identity (map (statement-on-p/r requires?) ((ast:statements-of-type 'on) (ast:statement guard))))) "[]\n"))
+#} (reverse ((ast:statements-of-type 'guard) (ast:statement (ast:behaviour (ast:component ast)))))))
 within #.component _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:initial-value x))) (ast:body (ast:variables (ast:behaviour (ast:component ast))))))))
 
 channel IN,OUT : {#

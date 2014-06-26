@@ -36,6 +36,7 @@
            body
            bottom?
            component
+           compound
            dir-matches?
            direction
            elements
@@ -56,9 +57,7 @@
 	   read-ast
            requires?
            statement
-           statements
-           statements-guard
-           statements-on
+           statements-of-type
            type
            type-name-component
            typed?
@@ -83,6 +82,7 @@
 
 (define (behaviour? ast) (type? 'behaviour ast))
 (define (component? ast) (type? 'component ast))
+(define (compound? ast) (type? 'compound ast))
 (define (enum? ast) (type? 'enum ast))
 (define (event? ast) (type? 'event ast))
 (define (events? ast) (type? 'events ast))
@@ -93,7 +93,6 @@
 (define (on? ast) (type? 'on ast))
 (define (port? ast) (type? 'port ast))
 (define (ports? ast) (type? 'ports ast))
-(define (statements? ast) (type? 'statements ast))
 (define (types? ast) (type? 'types ast))
 (define (variables? ast) (type? 'variables ast))
 
@@ -101,7 +100,7 @@
   (match ast
     ((or (? behaviour?) (? module?))
      (or (and (>2 (length ast)) (cddr ast)) '()))
-    ((or (? events?) (? guard?) (? ports?) (? statements?) (? on?) (? types?) (? variables?))
+    ((or (? events?) (? guard?) (? ports?) (? compound?) (? on?) (? types?) (? variables?))
      (cdr ast))
     ('() ast)))
 
@@ -155,17 +154,10 @@
     ((or (? behaviour?) (? enum?) (? module?))
      (or (and (>1 (length ast)) (cadr ast)) ""))))
 
-(define (statements ast) ;; FIXME: statement (for behaviour, it's always compound)
-  (match ast
-    ((? module?) (statements (behaviour ast)))
-    ((? behaviour?) (member- ast 'statements))
-    ((? guard?) (caddr ast))
-    ((? on?) (caddr ast))))
-
 (define (statement ast)
   (match ast
     ((? module?) (statement (behaviour ast)))
-    ((? behaviour?) (member- ast 'statements)) ;; COMPOUND
+    ((? behaviour?) (assoc 'compound (body ast)))
     ((? guard?) (caddr ast))
     ((? on?) (caddr ast))))
 
@@ -222,14 +214,10 @@
 (define ((statement-of-type type) statement)
   (and (eq? (car statement) type) statement))
 
-(define (statements-of-type statement type)
+(define ((statements-of-type type) statement)
   (match statement
     ((? (statement-of-type type)) (list statement))
-    (('statements h ...) (filter identity (map (statement-of-type type) h)))))
-
-(define (statements-guard statements) (statements-of-type statements 'guard))
-
-(define (statements-on statements) (statements-of-type statements 'on))
+    (('compound h ...) (filter identity (map (statement-of-type type) h)))))
 
 (define (parent ast lst)
   (if (object? lst)

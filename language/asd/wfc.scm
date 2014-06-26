@@ -63,7 +63,7 @@
 (define (error message lst) (list message (source-location lst)))
 
 (define (verify-on ast)
-  (and-let* ((statements ((compose ast:body ast:statements ast:interface) ast))
+  (and-let* ((statements ((compose ast:body ast:statement ast:interface) ast))
              (error-locations (null-is-#f (filter identity (map statement-on statements)))))
             error-locations))
 
@@ -71,19 +71,19 @@
   (match src
          (('on e s) (if (>0 count) (error "double on" src) (statement-on s :count (1+ count))))
          (('guard expr s) (statement-on s :count count))
-         (('statements s ...) (null-is-#f
+         (('compound s ...) (null-is-#f
                                (filter identity (map (lambda (x) (statement-on x :count count)) s))))
          (('assign x ...) '())))
 
 (define (verify-mixing ast)
-  (let ((statement ((compose ast:statements ast:interface) ast)))
+  (let ((statement ((compose ast:statement ast:interface) ast)))
         (list (mixing statement))))
 
 (define* (mixing s :key (guarded 0) (illegal 0) (imperative 0))
   (stderr "MIXING ~a\n" s)
   (match s
-    (('statements) (stderr "MIXING 1\n") '())
-    (('statements s1 s2 s3 ...)
+    (('compound) (stderr "MIXING 1\n") '())
+    (('compound s1 s2 s3 ...)
      (stderr "TODO: recursive mixing on all s: ~a -->  ~a\n" s (cdr s))
      (let ((first (first-statement (cdr s))))
        (match first
@@ -94,7 +94,7 @@
                                     :imperative (1+ imperative))))
          (('on e s1) (mixing-on s))
          (_ (and (mixing-imperative s) (mixing-illegal s))))))
-    (('statements s1)
+    (('compound s1)
      (let* ((m1 (mixing s1)) 
             (m2 (match s1
                (('if e s11 ...) (mixing-imperative s1))
@@ -107,7 +107,7 @@
 
 (define (first-statement lst)
   
-  (let* ((compound? (lambda (x) (eq? x 'statements)))
+  (let* ((compound? (lambda (x) (eq? x 'compound)))
          (compounds (filter compound? lst))
          (non-compounds (filter (negate compound?) lst)))
     (if (null? non-compounds)

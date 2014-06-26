@@ -180,14 +180,14 @@
           (loop (cdr ports) (append values (apply append (map ast:elements (ast:body (ast:types (ast:behaviour (ast-norm (ast:type (car ports))))))))))))))
 
 (define (interface-triggers interface)
-  (delete-duplicates (sort (append (map ast:identifier (ast:body (ast:events interface))) (apply append (map behaviour-triggers (ast:body (ast:statements (ast:behaviour interface)))))) symbol<)))
+  (delete-duplicates (sort (append (map ast:identifier (ast:body (ast:events interface))) (apply append (map behaviour-triggers (ast:body (ast:statement (ast:behaviour interface)))))) symbol<)))
 
 (define* (behaviour-triggers src :optional (triggers '()))
   (match src
-   (('statements t ...) (append (apply append (map behaviour-triggers t)) triggers))
+   (('compound t ...) (append (apply append (map behaviour-triggers t)) triggers))
     (('on triggers statements) triggers)
     (('guard expression statements) (behaviour-triggers statements triggers))
-    (_ (stderr "NO MATCH: ~a\n"))))
+    (_ (stderr "~a: NO MATCH: ~a\n" (current-source-location) src) "")))
 
 (define* (action-prefix statement module event actuals :optional (top? #t))
   (let* ((channel (ast:name module))
@@ -198,7 +198,7 @@
 	 (illegal? #f)
 	 (body
 	  (match statement
-	    (('statements tail ...) (map (lambda (statement) (action-prefix statement module event actuals #f)) tail))
+	    (('compound tail ...) (map (lambda (statement) (action-prefix statement module event actuals #f)) tail))
 	    ('(action illegal) (set! illegal? #t) (->string (list "illegal -> STOP\n")))
 	    (('action name) (->string (list channel "." name " -> " )))
 	    (('assign name value) "")
@@ -210,7 +210,7 @@
 (define* (csp-prefix statement :optional (top? #t))
   (let ((illegal?
          (match statement
-           (('statements tail ...) (every identity (map (lambda (statement) (csp-prefix statement #f)) tail)))
+           (('compound tail ...) (every identity (map (lambda (statement) (csp-prefix statement #f)) tail)))
            ('(action illegal) #t)
            (('action name) #f)
            (('assign name value) #f)
@@ -219,7 +219,7 @@
 
 (define (assign-prefix statement channel event . key-vals)
   (match statement
-    (('statements tail ...) (apply append (map (lambda (statement) (assign-prefix statement channel event)) tail)))
+    (('compound tail ...) (apply append (map (lambda (statement) (assign-prefix statement channel event)) tail)))
     (('assign key val) (cons (cons key (value val)) key-vals))
     (_ '())))
 
@@ -227,10 +227,10 @@
   (map ast:identifier (ast:body (ast:variables (ast:behaviour module)))))
 
 (define (csp-transition module guard event)
-  (let* ((on (ast:statements-on (ast:statements guard)))
+  (let* ((on ((ast:statements-of-type 'on) (ast:statement guard)))
 	 (event-on (find (lambda (x) (let ((triggers (cadr x)))
 				       (equal? event triggers))) on))
-	 (statement (ast:statements event-on))
+	 (statement (ast:statement event-on))
 	 (names (var-names module))
 	 (assignments (assign-prefix statement (ast:name module) event))
 	 (actuals (state-vector assignments (map (lambda (x) (cons x x)) names))))
@@ -261,7 +261,7 @@
 	 (illegal? #f)
 	 (body
 	  (match statement
-	    (('statements tail ...) (map (lambda (statement) (action-prefix-component statement module channel events actuals #f)) tail))
+	    (('compound tail ...) (map (lambda (statement) (action-prefix-component statement module channel events actuals #f)) tail))
 	    ('(action illegal) (set! illegal? #t) (->string (list "illegal -> STOP\n")))
 	    (('action name) (->string (list (->string name) " -> " (if (provides? name) "" (list (if (pair? name) (cadr name) name) ".return -> ")))))
 	    (('assign name value) "")

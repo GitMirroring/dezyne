@@ -44,7 +44,9 @@
       (('component name ('ports p ...) ('behaviour n ...) ...) ast)
       (('interface name ('types t ...) ('events e ...) ('behaviour n ...) ...) ast)
       (('behaviour) ast)
-      (('behaviour name ('types t ...) ('variables v ...) ('statements s ...)) ast)
+      (('behaviour name ('types t ...) ('variables v ...) ('compound s ...)) ast)
+      (('compound lst) (cons 'compound lst))
+      (('compound s ...) ast)
       (('types t ...) ast)
       (('events e ...) ast)
       (('in type identifier) ast)
@@ -57,8 +59,6 @@
       (('guard expression statement) ast)
       (('on (trigger t ...) statement) ast)
       (('field type identifiier) ast)
-      (('statements lst) (cons 'statements lst))
-      (('statements s ...) ast)
       (('action 'illegal) ast)
       (('action ('field type identifier)) ast)
       (('assign identifier expression) ast)
@@ -198,7 +198,7 @@
     (behaviour Identifier lbrace type-list variable-list statement-list rbrace) : `(,$1 ,$2 ,$4 ,$5 ,$6))
 
    (statement-list 
-    () : '(statements) 
+    () : '(compound) 
     (statement-list statement) : (append $1 (list $2)))
 
    (statement
@@ -267,7 +267,6 @@
   (values (parse-tree-il (comp exp '())) env env))
 
 (define (comp src e)
-  ;;(format #t "MATCHING:~a\n" src)
   (match src
     (() (exit))
     (tree `(const ,tree))))

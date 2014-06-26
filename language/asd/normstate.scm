@@ -75,8 +75,8 @@
 ; vind alle ons met matching guards
 ; duw alle ons binnen de eerste guard en discard de rest
   (match ast
-    (('statements guards ...)
-     (ast:make 'statements
+    (('compound guards ...)
+     (ast:make 'compound
 	       (reverse
 			(let loop ((guards guards))
 			  (if ( null? guards)
@@ -85,14 +85,14 @@
 				  (partition (lambda (x) (guard= (car guards) x)) guards)
 				(let* ((expression (ast:expression (car shared-guards)))
 				       (aggregated-guard (ast:make 'guard expression
-								   (ast:make 'statements (map ast:statement shared-guards)))))
+								   (ast:make 'compound (map ast:statement shared-guards)))))
 				  (cons aggregated-guard (loop remainder)))))))))
     ((h ...) (map aggregate-on-stats ast))
     (_ ast)))
 
 (define (flatten-compound ast)
   (match ast
-    (('statements s ...) (cons 'statements (apply append (map flatten-compound-stat (cdr ast)))))
+    (('compound s ...) (cons 'compound (apply append (map flatten-compound-stat (cdr ast)))))
     (('on t s) ast)
     ((h ...) (map flatten-compound ast))
     (_ ast)))
@@ -100,7 +100,7 @@
 (define (flatten-compound-stat stat)
    (let ((res (flatten-compound stat)))
      (match res
-       (('statements s ...) (cdr res))
+       (('compound s ...) (cdr res))
        (_ (list res)))))
 
 (define (guards-not-or statements)
@@ -110,7 +110,7 @@
 (define ((remove-otherwise statements) ast)
   (match ast
     (('guard 'otherwise s) (list 'guard (guards-not-or statements) ((remove-otherwise '()) s)))
-    (('statements s ...) (cons 'statements (map (remove-otherwise ast) (cdr ast))))
+    (('compound s ...) (cons 'compound (map (remove-otherwise ast) (cdr ast))))
     ((h ...) (map (remove-otherwise statements) ast))
     (_ ast)))
 
@@ -122,7 +122,7 @@
 
 (define ((passdown-guard guard) statement)
   (match statement
-    (('statements s ...) (cons 'statements (map (passdown-guard guard) (cdr statement))))
+    (('compound s ...) (cons 'compound (map (passdown-guard guard) (cdr statement))))
     (('guard g s) ((passdown-guard (list 'and guard g)) s))
     (_ (list 'guard guard statement))))
 
@@ -134,7 +134,7 @@
 
 (define ((passdown-triggers triggers) statement)
   (match statement
-    (('statements ('guard g s) ...) (cons 'statements (map (passdown-triggers triggers) (cdr statement))))
+    (('compound ('guard g s) ...) (cons 'compound (map (passdown-triggers triggers) (cdr statement))))
     (('guard g s) (list 'guard g ((passdown-triggers triggers) s)))
     (_ (list 'on triggers statement))))
 

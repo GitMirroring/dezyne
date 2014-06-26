@@ -27,6 +27,7 @@
   :use-module (language asd ast:)
   :use-module (language asd animate)
   :use-module (language asd misc)
+  :use-module (language asd reader)
   :export (asd-> 
 	   comma-join
            ))
@@ -126,7 +127,7 @@
            ""))
       (('field 'state name) (->string (list 'state " == " name)))
       (('field struct name) (->string (list struct "." name)))
-      (('statements lst ...)
+      (('compound lst ...)
        (statements->string (list "{\n" lst (statement-last lst) "\n}\n")))
       (('last 'arguments)
        (statement-last->string))
@@ -138,7 +139,7 @@
       ((? string?) src)
       ((? symbol?) (symbol->string src))
       ((h ... t) (apply string-append (map (lambda (x) (statements->string x)) src)))
-      (_ (stderr "NO MATCH: ~a\n" src) ""))))
+      (_ (stderr "~a: NO MATCH: ~a\n" (current-source-location) src) ""))))
 
 (define (statement-last lst)
   (if (find (lambda (s) (and (pair? s) (or (eq? (car s) 'action)
@@ -177,7 +178,7 @@
   (let* ((if-clause (list "    if (predicate." expr ")"))
          (else-if-clause (list "    else if (predicate." expr ")"))
          (else-clause "    else")
-         (guards ((compose ast:body ast:statements ast:behaviour ast:component) ast))
+         (guards ((compose ast:body ast:statement ast:behaviour ast:component) ast))
          (first? (equal? (statements.src) (car guards)))
          (top? (member (statements.src) guards)))
     (statements->string (if (eq? expr 'otherwise) else-clause (if (or first? (not top?)) if-clause else-if-clause)))))
@@ -309,7 +310,7 @@
                               (parameterize ((statements.port port) 
                                              (statements.event event))
                                 (statements->string
-                                 ((compose ast:body ast:statements ast:behaviour ast:component) ast))))
+                                 ((compose ast:body ast:statement ast:behaviour ast:component) ast))))
               (module-define! module '.return-interface-type (return-interface-type (ast:type port) event))
               (module-define! module '.return-context-get (return-context-get (ast:type port) event))
            (animate-string string module)))))
