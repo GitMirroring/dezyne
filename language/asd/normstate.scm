@@ -49,15 +49,12 @@
 ;;  (asd->scheme (combine-guards (normstate ((remove-otherwise '()) ast))))))
   (asd->pretty (normstate ast))))
 
-;; (define (normstate ast)
-;;  (aggregate-on-stats (flatten-compound (combine-guards (passdown-on ((remove-otherwise '()) ast))))))
-
 (define (normstate ast)
   (aggregate-on-stats (flatten-compound (combine-guards (passdown-on ((remove-otherwise '()) ast))))))
 
 (define (symbol< a b) (string< (symbol->string a) (symbol->string b)))
 
-(define (list< a b) 
+(define (list< a b)
   (if (null? a)
       (not (null? b))
       (if (null? b)
@@ -80,14 +77,14 @@
   (match ast
     (('statements guards ...)
      (ast:make 'statements
-	       (reverse 
+	       (reverse
 			(let loop ((guards guards))
 			  (if ( null? guards)
 			      '()
 			      (receive (shared-guards remainder)
 				  (partition (lambda (x) (guard= (car guards) x)) guards)
 				(let* ((expression (ast:expression (car shared-guards)))
-				       (aggregated-guard (ast:make 'guard expression 
+				       (aggregated-guard (ast:make 'guard expression
 								   (ast:make 'statements (map ast:statement shared-guards)))))
 				  (cons aggregated-guard (loop remainder)))))))))
     ((h ...) (map aggregate-on-stats ast))

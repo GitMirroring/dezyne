@@ -117,7 +117,7 @@
 
 (define* (map-statements-on string statements :optional (separator ""))
   (display
-   (separator-join 
+   (separator-join
     (map
      (lambda (on-statement)
        (with-output-to-string
@@ -144,7 +144,7 @@
 
              (animate-string string module))))) statements) separator)))
 
-(define (csp-expression->string expression) 
+(define (csp-expression->string expression)
   (match expression
     (('field type identifier) (list type " == " identifier))
     ((? symbol?) expression)
@@ -196,14 +196,14 @@
 	 (return (if (or (member 'inevitable event) (member 'optional event)) "" (list channel ".return -> ")))
 	 (end (list return channel "_" behaviour "_((" (comma-join actuals) "))\n"))
 	 (illegal? #f)
-	 (body 
+	 (body
 	  (match statement
 	    (('statements tail ...) (map (lambda (statement) (action-prefix statement module event actuals #f)) tail))
-	    ('(action illegal) (set! illegal? #t) (->string (list "illegal -> STOP \n")))
+	    ('(action illegal) (set! illegal? #t) (->string (list "illegal -> STOP\n")))
 	    (('action name) (->string (list channel "." name " -> " )))
 	    (('assign name value) "")
 	    (_ ""))))
-    (if top? 
+    (if top?
 	(list (if illegal? "IG & " "") start body (if (not illegal?) end ""))
 	(list body))))
 
@@ -223,7 +223,7 @@
     (('assign key val) (cons (cons key (value val)) key-vals))
     (_ '())))
 
-(define (var-names module) 
+(define (var-names module)
   (map ast:identifier (ast:body (ast:variables (ast:behaviour module)))))
 
 (define (csp-transition module guard event)
@@ -262,11 +262,11 @@
 	 (body
 	  (match statement
 	    (('statements tail ...) (map (lambda (statement) (action-prefix-component statement module channel events actuals #f)) tail))
-	    ('(action illegal) (set! illegal? #t) (->string (list "illegal -> STOP \n")))
+	    ('(action illegal) (set! illegal? #t) (->string (list "illegal -> STOP\n")))
 	    (('action name) (->string (list (->string name) " -> " (if (provides? name) "" (list (if (pair? name) (cadr name) name) ".return -> ")))))
 	    (('assign name value) "")
 	    (_ ""))))
-    (if top? 
+    (if top?
 	(list (if illegal? (if (provides? (car events)) "IIG & " "IG & ") "") start body (if (not illegal?) (->string end) ""))
 	(list body))))
 
@@ -281,7 +281,7 @@
 	       (name (car assign))
 	       (value (cdr assign)))
 	  (loop (cdr assignments) (assoc-set! formals name value))))))
- 
+
 (define (underscore-join lst) (string-join (map ->string lst) "_"))
 
 (define (value ast)
@@ -292,7 +292,7 @@
 (define (optional-chaos port)
   (let ((interface (ast:type port)))
     (if (member 'optional (interface-triggers (ast-norm (ast:type port))))
-        (list "[|{" interface " .optional}|] " "CHAOS({" interface " .optional})")        
+        (list "[|{" interface " .optional}|] " "CHAOS({" interface " .optional})")
         "")))
 
 (define (->string src)
