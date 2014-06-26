@@ -116,7 +116,6 @@
 			  (animate-string string module))))) events))))
 
 (define* (map-statements-on string statements :optional (separator ""))
-  (stderr "MAP-STATEMENTS: ~a\n" statements)
   (display
    (separator-join 
     (map
@@ -135,9 +134,6 @@
                   (names (var-names component))
                   (actuals (state-vector assignments (map (lambda (x) (cons x x)) names)))
                   (action-prefix (action-prefix-component statement component channel events actuals)))
-             ;;(stderr "MAP-STATEMENTS: ~a\n" statement)
-             (stderr "m-s guard: ~a\n" guard)
-             (stderr "m-s events: ~a\n" events)
              (module-define! module 'statement statement)
              (module-define! module 'events events)
              (module-define! module 'names names)
@@ -256,14 +252,10 @@
 ;;(define (statement-on-requires statement-on) (statement-on-p/r statement-on requires?))
 
 (define* (action-prefix-component statement module channel events actuals :optional (top? #t))
-  (stderr "AC-component: events~a\n" events)
-  (stderr "AC-component: statement~a\n" statement)
   (let* ((behaviour(ast:name (ast:behaviour module)))
          (thing (if (pair? (car events)) (cadar events) (car events)))
 	 (start (list thing "?x:{" (comma-join (map (lambda (x) (if (pair? x) (caddr x) x)) events))  "} -> "))
 	 (xreturn (if (provides? (car events)) (->string (list channel ".return -> ")) ""))
-;;g	 (xreturn (if (eq? channel 'console) (->string (list channel ".return -> ")) " <!xret>"))
-         ;;; FIXME #t-->opt/inevt
 	 (return (if (or (member 'inevitable events) (member 'optional events)) "" (list xreturn "transition_end -> ")))
 	 (end (list return (ast:name module) "_" behaviour "_((" (comma-join actuals) "))\n"))
 	 (illegal? #f)
@@ -271,13 +263,9 @@
 	  (match statement
 	    (('statements tail ...) (map (lambda (statement) (action-prefix-component statement module channel events actuals #f)) tail))
 	    ('(action illegal) (set! illegal? #t) (->string (list "illegal -> STOP \n")))
-;;	    (('action name) (stderr "ACTION: ~a --> provides= ~a\n" name (provides? name)) (->string (list (->string name) " -> " (if (identity name) "" (list (if (pair? name) (cadr name) name) ".return -> ")))))
-	    (('action name) (stderr "ACTION: ~a --> provides= ~a\n" name (provides? channel)) (->string (list (->string name) " -> " (if (provides? channel) "" (list (if (pair? name) (cadr name) name) ".return -> ")))))
+	    (('action name) (->string (list (->string name) " -> " (if (provides? name) "" (list (if (pair? name) (cadr name) name) ".return -> ")))))
 	    (('assign name value) "")
 	    (_ ""))))
-    (stderr "channel: ~a\n" channel)
-    (stderr "car events: ~a\n" (car events))
-    (stderr "provides?: ~a\n" (provides? (car events)))
     (if top? 
 	(list (if illegal? (if (provides? (car events)) "IIG & " "IG & ") "") start body (if (not illegal?) (->string end) ""))
 	(list body))))
