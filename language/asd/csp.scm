@@ -94,26 +94,6 @@
 			      (module-define! module 'guard guard)
 			      (animate-string string module))))) guards))))
 
-
-(define (map-on-events string events)
-  (display
-   (externalchoice-join (map
-		  (lambda (event)
-		    (with-output-to-string
-		      (lambda ()
-			(let* ((module (current-module))
-			       (.interface (module-ref module '.interface))
-			       (interface (ast-norm .interface))
-			       (component (module-ref module 'component))
-			       (channel (module-ref module '.port))
-			       (guard (module-ref module 'guard)))
-			  (module-define! module '.event (car event))
-			  (module-define! module 'event event)
-			  (module-define! module 'channel channel) ;; d'oh
-			  ;;(module-define! module '.csp-transition (csp-transition interface guard event))
-			  (module-define! module '.csp-transition (->string (csp-transition interface guard event)))
-			  (animate-string string module))))) events))))
-
 (define* (map-statements-on string statements :optional (separator ""))
   (display
    (separator-join
@@ -129,14 +109,15 @@
                   (.channel (module-ref module '.port))
                   (guard (module-ref module 'guard))
                   (events (ast:events on-statement))
-                  (.event-port (if (pair? (car events)) (cadar events) (car events)))
+                  (.event (car events))
+                  (interface? (not (pair? (car events))))
+                  (.event-port (if interface? (car events) (cadar events)))
                   (statement (ast:statement on-statement))
-                  (module-ast (if (eq? .channel .interface) interface component))
+                  (module-ast (if interface? interface component))
                   (module-name (ast:name module-ast))
                   (assignments (assign-prefix statement (ast:type (ast:port component )) events))
-                  (names (var-names component))
+                  (names (var-names module-ast))
                   (actuals (state-vector assignments (map (lambda (x) (cons x x)) names)))
-;;                  (action-prefix (action-prefix-component statement component channel events actuals))
                   (illegal? (prefix-illegal? statement))
                   (actions (prefix-actions statement)))
 
@@ -146,6 +127,7 @@
              (module-define! module 'actuals actuals)
              (module-define! module 'channel channel)
              (module-define! module 'events events)
+             (module-define! module '.event .event)
              (module-define! module 'illegal? illegal?)
              (module-define! module '.module module-name)
              (module-define! module '.event-port .event-port)
@@ -199,24 +181,6 @@
     (('guard expression statements) (behaviour-triggers statements triggers))
     (_ (stderr "~a: NO MATCH: ~a\n" (current-source-location) src) "")))
 
-(define* (action-prefix statement module event actuals :optional (top? #t))
-  (let* ((channel (ast:name module))
-	 (behaviour(ast:name (ast:behaviour module)))
-	 (start (list channel "?x:{" (comma-join event)  "} -> "))
-	 (return (if (or (member 'inevitable event) (member 'optional event)) "" (list channel ".return -> ")))
-	 (end (list return channel "_" behaviour "_((" (comma-join actuals) "))\n"))
-	 (illegal? #f)
-	 (body
-	  (match statement
-	    (('compound tail ...) (map (lambda (statement) (action-prefix statement module event actuals #f)) tail))
-	    ('(action illegal) (set! illegal? #t) (->string (list "illegal -> STOP\n")))
-	    (('action name) (->string (list channel "." name " -> " )))
-	    (('assign name value) "")
-	    (_ ""))))
-    (if top?
-	(list (if illegal? "IG & " "") start body (if (not illegal?) end ""))
-	(list body))))
-
 (define (assign-prefix statement channel event . key-vals)
   (match statement
     (('compound tail ...) (apply append (map (lambda (statement) (assign-prefix statement channel event)) tail)))
@@ -225,20 +189,6 @@
 
 (define (var-names module)
   (map ast:identifier (ast:body (ast:variables (ast:behaviour module)))))
-
-(define (csp-transition module guard event)
-  (let* ((on ((ast:statements-of-type 'on) (ast:statement guard)))
-	 (event-on (find (lambda (x) (let ((triggers (cadr x)))
-				       (equal? event triggers))) on))
-	 (statement (ast:statement event-on))
-	 (names (var-names module))
-	 (assignments (assign-prefix statement (ast:name module) event))
-	 (actuals (state-vector assignments (map (lambda (x) (cons x x)) names))))
-   (action-prefix statement module event actuals)))
-
-(define (toplevel-define! name val)
-  (module-define! (current-module) name val)
-  (export name))
 
 (define ((statement-on-p/r predicate) statement-on)
   (let* ((events (ast:events statement-on))
@@ -249,11 +199,13 @@
       #f)))
 
 (define (action->string action)
-  (let ((name (cadr action)))
-    (if (pair? name) (cadr name) name)))
+  (if (pair? action)
+      (let ((name (cadr action)))
+        (if (pair? name) (cadr name) name))
+      action))
 
 (define (event->string event)
-  (if (pair? event) (caddr event) events))
+  (if (pair? event) (caddr event) event))
 
 (define (prefix-actions statement)
   (match statement

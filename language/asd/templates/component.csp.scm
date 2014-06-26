@@ -42,9 +42,26 @@ channel #.interface ,#.port : {#(comma-join (append (port-triggers port) '(retur
 #.interface _#.behaviour(IG) = let
 #.interface _#.behaviour _((# (map ast:identifier (ast:body (ast:variables (ast:behaviour (ast-norm .interface))))))) =
 # (map-guards #{(# (csp-expression->string (ast:expression guard))) & (
-# (map-on-events #{ #.csp-transition #}
-        (map (lambda (statement-on) (ast:events statement-on))
-                  ((ast:statements-of-type 'on) (ast:statement guard)))))
+# (map-statements-on #{ #
+    (when illegal? (if provides-event? "IIG & " "IG & ")) #.interface ?x:{#
+    (comma-join (map event->string events)) } -> #
+    (if illegal? 
+        "illegal -> STOP"
+        (append
+         (if provides-event?
+              (list .interface "." .event " -> ")
+              '(""))
+         (map (lambda (x) (list .interface "." (->string x) " -> " 
+                                (when (and (requires? x)
+                                           (not (or (member 'inevitable events) (member 'optional events))))
+                                  (list (action->string x) ".return -> ")))) 
+              actions)
+         (if (or (member 'inevitable events) (member 'optional events))
+             '("")
+             (list .interface ".return -> "))
+        (list .interface "_" .behaviour "_((" (comma-join actuals) "))")))
+#}
+    ((ast:statements-of-type 'on) (ast:statement guard)) "  []\n"))
 #} (reverse ((ast:statements-of-type 'guard) (ast:statement (ast:behaviour (ast-norm .interface))))))
 within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:initial-value x))) (ast:body (ast:variables (ast:behaviour (ast-norm .interface)))))))) #.optional-chaos
 
