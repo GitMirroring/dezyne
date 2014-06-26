@@ -67,7 +67,7 @@ ast:
 pretty:
 	guile -L ../.. --language=asd -s examples/interface-enums.asd | indent
 	./gaiag -l asd examples/interface-enums.asd | indent
-	./gaiag -l asd examples/alarm-component-pretty.asd | indent | tee pretty.asd && $(diff) examples/alarm-component-pretty.asd pretty.asd
+	-./gaiag -l asd examples/alarm-component-pretty.asd | indent | tee pretty.asd && $(diff) examples/alarm-component-pretty.asd pretty.asd
 
 c++: baseline
 	./gaiag -l c++ examples/Alarm.asd

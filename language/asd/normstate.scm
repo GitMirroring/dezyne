@@ -92,7 +92,7 @@
 
 (define (flatten-compound ast)
   (match ast
-    (('compound s ...) (cons 'compound (apply append (map flatten-compound-stat (cdr ast)))))
+    (('compound s ...) (ast:make 'compound (apply append (map flatten-compound-stat (cdr ast)))))
     (('on t s) ast)
     ((h ...) (map flatten-compound ast))
     (_ ast)))
@@ -109,8 +109,8 @@
 
 (define ((remove-otherwise statements) ast)
   (match ast
-    (('guard 'otherwise s) (list 'guard (guards-not-or statements) ((remove-otherwise '()) s)))
-    (('compound s ...) (cons 'compound (map (remove-otherwise ast) (cdr ast))))
+    (('guard 'otherwise s) (ast:make 'guard (guards-not-or statements) ((remove-otherwise '()) s)))
+    (('compound s ...) (ast:make 'compound (map (remove-otherwise ast) (cdr ast))))
     ((h ...) (map (remove-otherwise statements) ast))
     (_ ast)))
 
@@ -122,9 +122,9 @@
 
 (define ((passdown-guard guard) statement)
   (match statement
-    (('compound s ...) (cons 'compound (map (passdown-guard guard) (cdr statement))))
+    (('compound s ...) (ast:make 'compound (map (passdown-guard guard) (cdr statement))))
     (('guard g s) ((passdown-guard (list 'and guard g)) s))
-    (_ (list 'guard guard statement))))
+    (_ (ast:make 'guard guard statement))))
 
 (define (passdown-on ast)
   (match ast
@@ -134,8 +134,8 @@
 
 (define ((passdown-triggers triggers) statement)
   (match statement
-    (('compound ('guard g s) ...) (cons 'compound (map (passdown-triggers triggers) (cdr statement))))
-    (('guard g s) (list 'guard g ((passdown-triggers triggers) s)))
-    (_ (list 'on triggers statement))))
+    (('compound ('guard g s) ...) (ast:make 'compound (map (passdown-triggers triggers) (cdr statement))))
+    (('guard g s) (ast:make 'guard g ((passdown-triggers triggers) s)))
+    (_ (ast:make 'on triggers statement))))
 
 (define asd-> asd->normstate)
