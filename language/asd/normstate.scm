@@ -53,7 +53,7 @@
 ;;  (aggregate-on-stats (flatten-compound (combine-guards (passdown-on ((remove-otherwise '()) ast))))))
 
 (define (normstate ast)
-  (flatten-compound (combine-guards (passdown-on ((remove-otherwise '()) ast)))))
+  (aggregate-on-stats (flatten-compound (combine-guards (passdown-on ((remove-otherwise '()) ast))))))
 
 (define (symbol< a b) (string< (symbol->string a) (symbol->string b)))
 

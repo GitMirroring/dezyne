@@ -45,9 +45,9 @@ channel #.interface ,#.port : {#(comma-join (append (port-triggers port) '(retur
 # (map-guards #{(# (csp-expression->string (ast:expression guard))) & (
 # (stderr "GUARD:~a\n" guard) 
 # (map-on-events #{ #.csp-transition #}
-        (reverse (map (lambda (statement-on) (ast:events statement-on))
-                  (ast:statements-on (ast:statement guard))))))
-#}  (ast:statements-guard (ast:statements (ast:behaviour (ast-norm .interface)))))
+        (map (lambda (statement-on) (ast:events statement-on))
+                  (ast:statements-on (ast:statement guard)))))
+#} (reverse (ast:statements-guard (ast:statements (ast:behaviour (ast-norm .interface))))))
 within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:initial-value x))) (ast:body (ast:variables (ast:behaviour (ast-norm .interface)))))))) #.optional-chaos
 
 #} (ast:body (ast:ports (ast:component ast))))

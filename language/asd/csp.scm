@@ -50,8 +50,6 @@
 
 (define (ast-norm module-name) (let ((ast (car (ast:read-ast module-name)))) (normstate ast)))
 
-;;(define ast-norm ast:ast)
-
 (define (csp-module ast)
   (let ((module (make-module 31 (list
                                  (resolve-module '(ice-9 match))
@@ -94,7 +92,7 @@
 			  (lambda ()
 			    (let ((module (current-module)))
 			      (module-define! module 'guard guard)
-			      (module-define! module '.prefix (->string (csp-prefix guard)))
+			      (module-define! module '.prefix (csp-prefix guard))
 			      (animate-string string module))))) guards))))
 
 
@@ -209,25 +207,19 @@
 	    (('action name) (->string (list channel "." name " -> " )))
 	    (('assign name value) "")
 	    (_ ""))))
-    (toplevel-define! 'illegal? illegal?)
     (if top? 
 	(list (if illegal? "IG & " "") start body (if (not illegal?) end ""))
 	(list body))))
 
 (define* (csp-prefix statement :optional (top? #t))
-  (let* ((illegal? #f)
-	 (body 
-	  (match statement
-	    (('statements tail ...) (map (lambda (statement) (action-prefix statement module event actuals #f)) tail))
-	    ('(action illegal) (set! illegal? #t) )
-	    (('action name) "")
-	    (('assign name value) "")
-	    (_ ""))))
-    (toplevel-define! 'illegal? illegal?)
-    (if top? 
-	(list (if illegal? "IG & " "") start body (if (not illegal?) end ""))
-	(list body))))
-
+  (let ((illegal?
+         (match statement
+           (('statements tail ...) (every identity (map (lambda (statement) (csp-prefix statement #f)) tail)))
+           ('(action illegal) #t)
+           (('action name) #f)
+           (('assign name value) #f)
+           (_ #f))))
+    (if illegal? "IIG & " "IG & ")))
 
 (define (assign-prefix statement channel event . key-vals)
   (match statement
@@ -286,7 +278,6 @@
     (stderr "channel: ~a\n" channel)
     (stderr "car events: ~a\n" (car events))
     (stderr "provides?: ~a\n" (provides? (car events)))
-    (toplevel-define! 'illegal? illegal?)
     (if top? 
 	(list (if illegal? (if (provides? (car events)) "IIG & " "IG & ") "") start body (if (not illegal?) (->string end) ""))
 	(list body))))
