@@ -55,9 +55,14 @@ within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:ini
 #.component _#.behaviour (IIG,IG) = let
 #.component _#.behaviour _((#(comma-join (map ast:identifier (ast:body (ast:variables (ast:behaviour (ast:component ast)))))))) =
 # (map-guards #{(# (list (cadr (ast:expression *guard-def*)) #{  == #} (caddr (ast:expression *guard-def*)))) & transition_begin -> (
-# (map-on-events #{ #.csp-transition-component #}
-        (reverse (map (lambda (statement-on) (cadr statement-on))
-                  (ast:statements-on (ast:body (ast:statements guard)))))))
+
+#(format (current-error-port) "GUARD: ~a\n" guard)
+# (map-statements-on #{ 
+    
+#.action-prefix
+
+#}
+        (reverse (ast:statements-on (list (ast:statements guard)))))))
 #}
 (reverse (ast:statements-guard (ast:body (ast:statements (ast:behaviour (ast:component ast)))))))
 within #.component _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:initial-value x))) (ast:body (ast:variables (ast:behaviour (ast:component ast))))))))

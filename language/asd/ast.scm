@@ -53,6 +53,7 @@
            ports
            provides?
            requires?
+           statement
            statements
            statements-guard
            statements-on
@@ -114,6 +115,7 @@
 (define (events ast)
   (match ast
     ((? interface?) (member- ast 'events))
+    ((? on?) (cadr ast))
     ((? port?) (events (import-ast (type ast))))))
 
 (define (behaviour ast)
@@ -155,6 +157,13 @@
   (match ast
     ((? module?) (statements (behaviour ast)))
     ((? behaviour?) (member- ast 'statements))
+    ((? guard?) (caddr ast))
+    ((? on?) (caddr ast))))
+
+(define (statement ast)
+  (match ast
+    ((? module?) (statement (behaviour ast)))
+    ((? behaviour?) (member- ast 'statements)) ;; COMPOUND
     ((? guard?) (caddr ast))
     ((? on?) (caddr ast))))
 

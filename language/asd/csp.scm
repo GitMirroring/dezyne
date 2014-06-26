@@ -107,10 +107,44 @@
 			       (channel (module-ref module '.port))
 			       (guard (module-ref module 'guard)))
 			  (module-define! module '.event (car event))
+			  (module-define! module 'event event)
+			  (module-define! module 'channel channel) ;; d'oh
 			  (module-define! module '.csp-transition (csp-transition interface guard event))
-			  (module-define! module '.csp-transition-component (csp-transition-component component channel guard event ))
 			  (animate-string string module))))) events))))
 
+(define* (map-statements-on string statements :optional (separator ""))
+  (stderr "MAP-STATEMENTS: ~a\n" statements)
+  (display
+   (separator-join 
+    (map
+     (lambda (statement)
+       (with-output-to-string
+         (lambda ()
+           (let* ((module (current-module))
+                  (.interface (module-ref module '.interface))
+                  (interface (ast:ast .interface))
+                  (component (module-ref module 'component))
+                  (channel (module-ref module '.port))
+                  (guard (module-ref module 'guard))
+                  (events (ast:events statement))
+                  (assignments (assign-prefix statement (ast:type (ast:port component )) events))
+                  (names (var-names component))
+                  (actuals (state-vector assignments (map (lambda (x) (cons x x)) names)))
+                  (action-prefix (action-prefix-component statement component channel events actuals)))
+             ;;(stderr "MAP-STATEMENTS: ~a\n" statement)
+             (stderr "m-s guard: ~a\n" guard)
+             (stderr "m-s events: ~a\n" events)
+             (module-define! module 'statement statement)
+             (module-define! module 'events events)
+             (module-define! module 'names names)
+
+             (module-define! module '.action-prefix action-prefix)
+             (module-define! module '.channel channel)
+             (module-define! module '.events (comma-join (map ->string events)))
+
+             (animate-string string module))))) statements) separator)))
+
+(define (csp-expression->string expression) (->string expression))
 (define (symbol< a b) (string< (symbol->string a) (symbol->string b)))
 (define-public (flatten x)
   "unnest list."
@@ -184,6 +218,10 @@
 	 (actuals (state-vector assignments (map (lambda (x) (cons x x)) names))))
    (action-prefix statement module event actuals)))
 
+(define (toplevel-define! name val)
+  (module-define! (current-module) name val)
+  (export name))
+
 (define* (action-prefix-component statement module channel event actuals :optional (top? #t))
   (let* ((behaviour(ast:name (ast:behaviour module)))
          (thing (if (pair? (car event)) (cadar event) (car event)))
@@ -199,26 +237,12 @@
 	    (('action name) (->string (list (->string name) " -> " (if (provides? name) "" (list (if (pair? name) (cadr name) name) ".return -> ")))))
 	    (('assign name value) "")
 	    (_ ""))))
+    ;;(toplevel-define! 'illegaal "BOEEBEO")
     (if top? 
 	(list (if illegal? (if (provides? (car event)) "IIG & " "IG & ") "") start body (if (not illegal?) (->string end) ""))
 	(list body))))
 
 (define (provides? x) (and (pair? x) (eq? (cadr x) 'console)))
-
-(define (csp-transition-component module channel guard event)
-  (let* ((on (ast:statements-on (ast:body (ast:statements guard))))
-	 (event-on (find (lambda (x) (let ((triggers (cadr x)))
-				       (equal? event triggers))) on))
-	 (statement (ast:statements event-on))
-	 (names (var-names module))
-	 (assignments (assign-prefix statement (ast:name module) event))
-	 (actuals (state-vector assignments (map (lambda (x) (cons x x)) names))))
-    (receive (provides requires) (partition provides? event) 
-      (if (and (null? provides) (null? requires)) 
-	  (action-prefix-component statement module channel event actuals)
-	  (append (if (pair? provides) (action-prefix-component statement module channel provides actuals) '())
-		  (if (and (pair? provides) (pair? requires)) (list "\n  []\n  ") (list ""))
-		  (if (pair? requires) (action-prefix-component statement module channel requires actuals) '()))))))
 
 (define (state-vector assignments formals)
   (let loop ((assignments assignments) (formals formals))
@@ -245,4 +269,5 @@
 (define (->string src)
   (match src
     (('field struct name) (->string (list struct "." name)))
+;;    (_ (stderr "NO MATCH: ~a\n" src) (format #f "~a" src))
     (_ ((@ (language asd misc) ->string) src))))
