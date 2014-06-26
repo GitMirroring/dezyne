@@ -25,6 +25,7 @@
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 optargs)
   :use-module (ice-9 receive)
+  :use-module (ice-9 pretty-print)
   :use-module (srfi srfi-1)
 
   :use-module (language asd animate)
@@ -46,6 +47,10 @@
 	       (name (ast:name comp)))
 	      (animate-file 'templates/component.csp.scm (list name '.csp) (csp-module norm))))
   "")
+
+(define (ast-norm module-name) (let ((ast (car (ast:read-ast module-name)))) (normstate ast)))
+
+;;(define ast-norm ast:ast)
 
 (define (csp-module ast)
   (let ((module (make-module 31 (list
@@ -89,7 +94,9 @@
 			  (lambda ()
 			    (let ((module (current-module)))
 			      (module-define! module 'guard guard)
+			      (module-define! module '.prefix (->string (csp-prefix guard)))
 			      (animate-string string module))))) guards))))
+
 
 (define (map-on-events string events)
   (display
@@ -99,7 +106,7 @@
 		      (lambda ()
 			(let* ((module (current-module))
 			       (.interface (module-ref module '.interface))
-			       (interface (ast:ast .interface))
+			       (interface (ast-norm .interface))
 			       (component (module-ref module 'component))
 			       (channel (module-ref module '.port))
 			       (guard (module-ref module 'guard)))
@@ -107,7 +114,7 @@
 			  (module-define! module 'event event)
 			  (module-define! module 'channel channel) ;; d'oh
 			  ;;(module-define! module '.csp-transition (csp-transition interface guard event))
-			  (module-define! module '.csp-transition (string-append "\nFOOBAR\n" (->string (csp-transition interface guard event))))
+			  (module-define! module '.csp-transition (->string (csp-transition interface guard event)))
 			  (animate-string string module))))) events))))
 
 (define* (map-statements-on string statements :optional (separator ""))
@@ -120,7 +127,7 @@
          (lambda ()
            (let* ((module (current-module))
                   (.interface (module-ref module '.interface))
-                  (interface (ast:ast .interface))
+                  (interface (ast-norm .interface))
                   (component (module-ref module 'component))
                   (channel (module-ref module '.port))
                   (guard (module-ref module 'guard))
@@ -147,6 +154,8 @@
   (match expression
     (('field type identifier) (list type " == " identifier))
     ((? symbol?) expression)
+    (('and lhs rhs) (->string (list (csp-expression->string lhs) " and " (csp-expression->string rhs))))
+    (('! expression) (->string (list "not " (csp-expression->string expression))))
     (_ (format #f "~a:NO MATCH: ~a" (current-source-location) expression))))
 
 (define (symbol< a b) (string< (symbol->string a) (symbol->string b)))
@@ -161,7 +170,7 @@
 (define (pipe-join lst) (->join lst " | "))
 
 (define (port-triggers port)
-  (interface-triggers (ast:ast (ast:type port))))
+  (interface-triggers (ast-norm (ast:type port))))
 
 (define (event-names ports)
   (let loop ((ports ports) (events '()))
@@ -174,7 +183,7 @@
     (let loop ((ports (ast:body (ast:ports comp))) (values comp-values))
       (if (null? ports)
           values
-          (loop (cdr ports) (append values (apply append (map ast:elements (ast:body (ast:types (ast:behaviour (ast:ast (ast:type (car ports))))))))))))))
+          (loop (cdr ports) (append values (apply append (map ast:elements (ast:body (ast:types (ast:behaviour (ast-norm (ast:type (car ports))))))))))))))
 
 (define (interface-triggers interface)
   (delete-duplicates (sort (append (map ast:identifier (ast:body (ast:events interface))) (apply append (map behaviour-triggers (ast:body (ast:statements (ast:behaviour interface)))))) symbol<)))
@@ -183,7 +192,8 @@
   (match src
    (('statements t ...) (append (apply append (map behaviour-triggers t)) triggers))
     (('on triggers statements) triggers)
-    (('guard expression statements) (behaviour-triggers statements triggers))))
+    (('guard expression statements) (behaviour-triggers statements triggers))
+    (_ (stderr "NO MATCH: ~a\n"))))
 
 (define* (action-prefix statement module event actuals :optional (top? #t))
   (let* ((channel (ast:name module))
@@ -199,9 +209,25 @@
 	    (('action name) (->string (list channel "." name " -> " )))
 	    (('assign name value) "")
 	    (_ ""))))
+    (toplevel-define! 'illegal? illegal?)
     (if top? 
 	(list (if illegal? "IG & " "") start body (if (not illegal?) end ""))
 	(list body))))
+
+(define* (csp-prefix statement :optional (top? #t))
+  (let* ((illegal? #f)
+	 (body 
+	  (match statement
+	    (('statements tail ...) (map (lambda (statement) (action-prefix statement module event actuals #f)) tail))
+	    ('(action illegal) (set! illegal? #t) )
+	    (('action name) "")
+	    (('assign name value) "")
+	    (_ ""))))
+    (toplevel-define! 'illegal? illegal?)
+    (if top? 
+	(list (if illegal? "IG & " "") start body (if (not illegal?) end ""))
+	(list body))))
+
 
 (define (assign-prefix statement channel event . key-vals)
   (match statement
@@ -213,7 +239,7 @@
   (map ast:identifier (ast:body (ast:variables (ast:behaviour module)))))
 
 (define (csp-transition module guard event)
-  (let* ((on (ast:statements-on (ast:body (ast:statements guard))))
+  (let* ((on (ast:statements-on (ast:statements guard)))
 	 (event-on (find (lambda (x) (let ((triggers (cadr x)))
 				       (equal? event triggers))) on))
 	 (statement (ast:statements event-on))
@@ -243,7 +269,7 @@
   (let* ((behaviour(ast:name (ast:behaviour module)))
          (thing (if (pair? (car events)) (cadar events) (car events)))
 	 (start (list thing "?x:{" (comma-join (map (lambda (x) (if (pair? x) (caddr x) x)) events))  "} -> "))
-	 (xreturn (if (provides? (car events)) (->string (list channel ".return -> ")) " <!xret>"))
+	 (xreturn (if (provides? (car events)) (->string (list channel ".return -> ")) ""))
 ;;g	 (xreturn (if (eq? channel 'console) (->string (list channel ".return -> ")) " <!xret>"))
          ;;; FIXME #t-->opt/inevt
 	 (return (if (or (member 'inevitable events) (member 'optional events)) "" (list xreturn "transition_end -> ")))
@@ -260,7 +286,7 @@
     (stderr "channel: ~a\n" channel)
     (stderr "car events: ~a\n" (car events))
     (stderr "provides?: ~a\n" (provides? (car events)))
-    ;;(toplevel-define! 'illegaal "BOEEBEO")
+    (toplevel-define! 'illegal? illegal?)
     (if top? 
 	(list (if illegal? (if (provides? (car events)) "IIG & " "IG & ") "") start body (if (not illegal?) (->string end) ""))
 	(list body))))
@@ -286,7 +312,7 @@
 
 (define (optional-chaos port)
   (let ((interface (ast:type port)))
-    (if (member 'optional (interface-triggers (ast:ast (ast:type port))))
+    (if (member 'optional (interface-triggers (ast-norm (ast:type port))))
         (list "[|{" interface " .optional}|] " "CHAOS({" interface " .optional})")        
         "")))
 

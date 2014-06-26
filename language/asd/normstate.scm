@@ -49,8 +49,11 @@
 ;;  (asd->scheme (combine-guards (normstate ((remove-otherwise '()) ast))))))
   (asd->pretty (normstate ast))))
 
+;; (define (normstate ast)
+;;  (aggregate-on-stats (flatten-compound (combine-guards (passdown-on ((remove-otherwise '()) ast))))))
+
 (define (normstate ast)
-  (aggregate-on-stats (flatten-compound (combine-guards (passdown-on ((remove-otherwise '()) ast))))))
+  (flatten-compound (combine-guards (passdown-on ((remove-otherwise '()) ast)))))
 
 (define (symbol< a b) (string< (symbol->string a) (symbol->string b)))
 

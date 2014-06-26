@@ -20,6 +20,7 @@
 
 (define-module (language asd ast)
   :use-module (ice-9 and-let-star)
+  :use-module (ice-9 curried-definitions)
   :use-module (ice-9 match)
   :use-module (ice-9 optargs)
   :use-module (srfi srfi-1)
@@ -52,6 +53,7 @@
            port
            ports
            provides?
+	   read-ast
            requires?
            statement
            statements
@@ -216,13 +218,14 @@
             (provides? (car ports))))
 
 ;;; walkers
-(define (statements-of-type statements type)
-  (let loop ((statements statements) (lst '()))
-  (if (null? statements)
-      lst
-      (loop (cdr statements) (if (eq? (caar statements) type)
-                                 (cons (car statements) lst)
-                                 lst)))))
+
+(define ((statement-of-type type) statement)
+  (and (eq? (car statement) type) statement))
+
+(define (statements-of-type statement type)
+  (match statement
+    ((? (statement-of-type type)) (list statement))
+    (('statements h ...) (filter identity (map (statement-of-type type) h)))))
 
 (define (statements-guard statements) (statements-of-type statements 'guard))
 
@@ -251,9 +254,12 @@
   (set! *ast-alist* (assoc-set! *ast-alist* name ast))
   ast)
 
+(define (read-ast name)
+  (read-asd (->string (list 'examples '/ name '.asd))))
+
 (define (import-ast name)
   (or (assoc-ref *ast-alist* name)
-      (and-let* ((ast (read-asd (->string (list 'examples '/ name '.asd)))))
+      (and-let* ((ast (read-ast name)))
                 (ast-add name (car ast)))))
 
 (define ast import-ast)
