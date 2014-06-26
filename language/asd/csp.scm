@@ -22,6 +22,7 @@
 (define-module (language asd csp)
   :use-module (ice-9 match)
   :use-module (ice-9 and-let-star)
+  :use-module (ice-9 curried-definitions)
   :use-module (ice-9 optargs)
   :use-module (ice-9 receive)
   :use-module (srfi srfi-1)
@@ -88,10 +89,6 @@
 			  (lambda ()
 			    (let ((module (current-module)))
 			      (module-define! module 'guard guard)
-			      (module-define! module '*guard-def* guard)
-;;; fixme
-			      (module-define! (resolve-module '(language asd csp)) '*guard* (lambda () (guard-name guard)))
-			      (module-define! (resolve-module '(language asd csp)) '*guard-def* guard)
 			      (animate-string string module))))) guards))))
 
 (define (map-on-events string events)
@@ -109,7 +106,8 @@
 			  (module-define! module '.event (car event))
 			  (module-define! module 'event event)
 			  (module-define! module 'channel channel) ;; d'oh
-			  (module-define! module '.csp-transition (csp-transition interface guard event))
+			  ;;(module-define! module '.csp-transition (csp-transition interface guard event))
+			  (module-define! module '.csp-transition (string-append "\nFOOBAR\n" (->string (csp-transition interface guard event))))
 			  (animate-string string module))))) events))))
 
 (define* (map-statements-on string statements :optional (separator ""))
@@ -117,7 +115,7 @@
   (display
    (separator-join 
     (map
-     (lambda (statement)
+     (lambda (on-statement)
        (with-output-to-string
          (lambda ()
            (let* ((module (current-module))
@@ -126,7 +124,8 @@
                   (component (module-ref module 'component))
                   (channel (module-ref module '.port))
                   (guard (module-ref module 'guard))
-                  (events (ast:events statement))
+                  (events (ast:events on-statement))
+                  (statement (ast:statement on-statement))
                   (assignments (assign-prefix statement (ast:type (ast:port component )) events))
                   (names (var-names component))
                   (actuals (state-vector assignments (map (lambda (x) (cons x x)) names)))
@@ -144,7 +143,12 @@
 
              (animate-string string module))))) statements) separator)))
 
-(define (csp-expression->string expression) (->string expression))
+(define (csp-expression->string expression) 
+  (match expression
+    (('field type identifier) (list type " == " identifier))
+    ((? symbol?) expression)
+    (_ (format #f "~a:NO MATCH: ~a" (current-source-location) expression))))
+
 (define (symbol< a b) (string< (symbol->string a) (symbol->string b)))
 (define-public (flatten x)
   "unnest list."
@@ -222,27 +226,47 @@
   (module-define! (current-module) name val)
   (export name))
 
-(define* (action-prefix-component statement module channel event actuals :optional (top? #t))
+(define ((statement-on-p/r predicate) statement-on)
+  (let* ((events (ast:events statement-on))
+         (events-predicate (filter predicate events))
+         (statement (ast:statement statement-on)))
+  (if (pair? events-predicate)
+      (ast:make 'on events-predicate statement)
+      #f)))
+
+;;(define (statement-on-provides statement-on) (statement-on-p/r statement-on provides?))
+;;(define (statement-on-requires statement-on) (statement-on-p/r statement-on requires?))
+
+(define* (action-prefix-component statement module channel events actuals :optional (top? #t))
+  (stderr "AC-component: events~a\n" events)
+  (stderr "AC-component: statement~a\n" statement)
   (let* ((behaviour(ast:name (ast:behaviour module)))
-         (thing (if (pair? (car event)) (cadar event) (car event)))
-	 (start (list thing "?x:{" (comma-join (map (lambda (x) (if (pair? x) (caddr x) x)) event))  "} -> "))
-	 (xreturn (if (provides? (car event)) (->string (list channel ".return -> ")) ""))
-	 (return (if (or (member 'inevitable event) (member 'optional event)) "" (list xreturn "transition_end -> ")))
+         (thing (if (pair? (car events)) (cadar events) (car events)))
+	 (start (list thing "?x:{" (comma-join (map (lambda (x) (if (pair? x) (caddr x) x)) events))  "} -> "))
+	 (xreturn (if (provides? (car events)) (->string (list channel ".return -> ")) " <!xret>"))
+;;g	 (xreturn (if (eq? channel 'console) (->string (list channel ".return -> ")) " <!xret>"))
+         ;;; FIXME #t-->opt/inevt
+	 (return (if (or (member 'inevitable events) (member 'optional events)) "" (list xreturn "transition_end -> ")))
 	 (end (list return (ast:name module) "_" behaviour "_((" (comma-join actuals) "))\n"))
 	 (illegal? #f)
 	 (body
 	  (match statement
-	    (('statements tail ...) (map (lambda (statement) (action-prefix-component statement module channel event actuals #f)) tail))
+	    (('statements tail ...) (map (lambda (statement) (action-prefix-component statement module channel events actuals #f)) tail))
 	    ('(action illegal) (set! illegal? #t) (->string (list "illegal -> STOP \n")))
-	    (('action name) (->string (list (->string name) " -> " (if (provides? name) "" (list (if (pair? name) (cadr name) name) ".return -> ")))))
+;;	    (('action name) (stderr "ACTION: ~a --> provides= ~a\n" name (provides? name)) (->string (list (->string name) " -> " (if (identity name) "" (list (if (pair? name) (cadr name) name) ".return -> ")))))
+	    (('action name) (stderr "ACTION: ~a --> provides= ~a\n" name (provides? channel)) (->string (list (->string name) " -> " (if (provides? channel) "" (list (if (pair? name) (cadr name) name) ".return -> ")))))
 	    (('assign name value) "")
 	    (_ ""))))
+    (stderr "channel: ~a\n" channel)
+    (stderr "car events: ~a\n" (car events))
+    (stderr "provides?: ~a\n" (provides? (car events)))
     ;;(toplevel-define! 'illegaal "BOEEBEO")
     (if top? 
-	(list (if illegal? (if (provides? (car event)) "IIG & " "IG & ") "") start body (if (not illegal?) (->string end) ""))
+	(list (if illegal? (if (provides? (car events)) "IIG & " "IG & ") "") start body (if (not illegal?) (->string end) ""))
 	(list body))))
 
 (define (provides? x) (and (pair? x) (eq? (cadr x) 'console)))
+(define (requires? x) (not (provides? x)))
 
 (define (state-vector assignments formals)
   (let loop ((assignments assignments) (formals formals))

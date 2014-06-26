@@ -42,7 +42,7 @@ channel #.interface ,#.port : {#(comma-join (append (port-triggers port) '(retur
 # (csp-map-ports #{
 #.interface _#.behaviour(IG) = let
 #.interface _#.behaviour _((# (map ast:identifier (ast:body (ast:variables (ast:behaviour (ast:ast .interface))))))) =
-# (map-guards #{(# (csp-expression->string (ast:expression *guard-def*)) & (
+# (map-guards #{(# (csp-expression->string (ast:expression guard))) & (
 # (map-on-events #{ #.csp-transition #}
         (reverse (map (lambda (statement-on) (cadr statement-on))
                   (ast:statements-on (ast:body (ast:statements guard)))))))
@@ -52,19 +52,26 @@ within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:ini
 
 #} (ast:body (ast:ports (ast:component ast))))
 
+
+(format (current-error-port) "GUARD: ~a\n" guard)
+(format (current-error-port) "statements-on ~a\n" (ast:statements-on (list (ast:statements guard))))
+(format (current-error-port) "statements-on-prov ~a\n" (filter identity (map (statement-on-p/r provides?) (ast:statements-on (list (ast:statements guard))))))
+(format (current-error-port) "statements-on-req ~a\n" (filter identity (map (statement-on-p/r requires?) (ast:statements-on (list (ast:statements guard))))))
+
+
+
 #.component _#.behaviour (IIG,IG) = let
 #.component _#.behaviour _((#(comma-join (map ast:identifier (ast:body (ast:variables (ast:behaviour (ast:component ast)))))))) =
-# (map-guards #{(# (list (cadr (ast:expression *guard-def*)) #{  == #} (caddr (ast:expression *guard-def*)))) & transition_begin -> (
 
-#(format (current-error-port) "GUARD: ~a\n" guard)
-# (map-statements-on #{ 
-    
-#.action-prefix
+# (map-guards #{ (# (csp-expression->string (ast:expression guard))) & transition_begin -> (
 
-#}
-        (reverse (ast:statements-on (list (ast:statements guard)))))))
-#}
-(reverse (ast:statements-guard (ast:body (ast:statements (ast:behaviour (ast:component ast)))))))
+#    (map-statements-on #{ #.action-prefix  #} (filter identity (map (statement-on-p/r provides?) (ast:statements-on (list (ast:statements guard))))))
+    []
+#    (map-statements-on #{ #.action-prefix  #} (filter identity (map (statement-on-p/r requires?) (ast:statements-on (list (ast:statements guard))))))
+)
+#}  (reverse (ast:statements-guard (ast:body (ast:statements (ast:behaviour (ast:component ast)))))))
+
+
 within #.component _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:initial-value x))) (ast:body (ast:variables (ast:behaviour (ast:component ast))))))))
 
 channel IN,OUT : {#
