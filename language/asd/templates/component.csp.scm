@@ -35,10 +35,10 @@ datatype enumeration_alphabet =
 
 channel illegal
 
-# (csp-map-ports #{
+# (map-ports #{
 channel #.interface ,#.port : {#(comma-join (append (port-triggers port) '(return)))}
 #} (ast:body (ast:ports (ast:component ast))))
-# (csp-map-ports #{
+# (map-ports #{
 #.interface _#.behaviour(IG) = let
 #.interface _#.behaviour _((# (map ast:identifier (ast:body (ast:variables (ast:behaviour (ast-norm .interface))))))) =
 # (map-guards #{(# (csp-expression->string (ast:expression guard))) & (
@@ -95,7 +95,7 @@ within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:ini
 within #.component _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:initial-value x))) (ast:body (ast:variables (ast:behaviour (ast:component ast))))))))
 
 channel IN,OUT : {#
- (csp-map-ports #{
+ (map-ports #{
    #(comma-join (map (lambda (x) (list .port "." (ast:identifier x))) (filter ast:out? (ast:body (ast:events port)))))#}
   (filter ast:requires? (ast:body (ast:ports (ast:component ast)))))}
 
@@ -140,23 +140,23 @@ transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
 Exclude = {#.port .return,#
- (csp-map-ports
+ (map-ports
 #{#(comma-join (map (lambda (x) (list .port "." (ast:identifier x))) (filter ast:out? (ast:body (ast:events port))))) #}
    (filter ast:provides? (ast:body (ast:ports (ast:component ast))))),#
- (csp-map-ports
+ (map-ports
 #{#(comma-join (map (lambda (x) (list .port "." x)) (filter (lambda (x) (member x '(inevitable optional))) (port-triggers port)))) #}
    (ast:body (ast:ports (ast:component ast))) ",")}
 ClientCalls = {#
- (csp-map-ports
+ (map-ports
 #{#(comma-join (map (lambda (x) (list .port "." (ast:identifier x))) (filter ast:in? (ast:body (ast:events port))))) #}
    (filter ast:provides? (ast:body (ast:ports (ast:component ast)))))}
 UsedModeling = {#
- (csp-map-ports
+ (map-ports
 #{#(comma-join (map (lambda (x) (list .port "." x)) (filter (lambda (x) (member x '(inevitable optional))) (port-triggers port)))) #}
    (filter ast:requires? (ast:body (ast:ports (ast:component ast)))))}
 within compress((#.component _#.behaviour (false,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,#(comma-join (map ast:identifier (ast:body (ast:ports (ast:component ast)))))|},Exclude)|]
-(((# (csp-map-ports #{
+(((# (map-ports #{
 #.interface _#.behaviour(true) [[#.interface .x<-#.port .x|x<-extensions(#.interface)]]
 #} (filter ast:requires? (ast:body (ast:ports (ast:component ast)))) " ||| ")) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
@@ -167,7 +167,7 @@ assert #.component _#.behaviour(true,true) :[deterministic]
 assert STOP [T= #.component _#.behaviour _Component \ diff(Events,{illegal})
 assert #.interface _#.interface-behaviour(false) [[#.interface .x<-#.port .x|x<-extensions(#.interface)]] \ {#.port .optional,#.port .inevitable} [FD=
 #.component _#.behaviour _Component \ diff(Events,{|illegal,#.port |}) \ {#.port .optional,#.port .inevitable}
-# (csp-map-ports #{
+# (map-ports #{
 assert #.interface _#.behaviour(false) :[deadlock free]
 assert #.interface _#.behaviour(true) :[livelock free]
 #} (filter ast:requires? (ast:body (ast:ports (ast:component ast)))))

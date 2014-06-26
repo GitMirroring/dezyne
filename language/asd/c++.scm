@@ -28,9 +28,7 @@
   :use-module (language asd animate)
   :use-module (language asd misc)
   :use-module (language asd reader)
-  :export (asd-> 
-	   comma-join
-           ))
+  :export (asd-> ))
 
 (define *ast* '())
 

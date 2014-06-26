@@ -30,7 +30,6 @@
 
   :use-module (language asd animate)
   :use-module (language asd ast:)
-  :use-module (language asd c++)
   :use-module (language asd misc)
   :use-module (language asd reader)
   :use-module (language asd normstate)
@@ -42,7 +41,6 @@
 (define (asd-> ast)
   (let ((norm (normstate ast)))
     (module-define! (resolve-module '(language asd csp)) 'ast norm)  ;; FIXME
-    (module-define! (resolve-module '(language asd c++)) 'ast norm)  ;; FIXME
     (and-let* ((comp (ast:component norm))
 	       (name (ast:name comp)))
 	      (animate-file 'templates/component.csp.scm (list name '.csp) (csp-module norm))))
@@ -54,7 +52,6 @@
   (let ((module (make-module 31 (list
                                  (resolve-module '(ice-9 match))
                                  (resolve-module '(language asd ast:))
-                                 (resolve-module '(language asd c++))
                                  (resolve-module '(language asd csp))))))
     (module-define! module 'ast ast)
     (and-let* ((comp (ast:component ast)))
@@ -66,10 +63,11 @@
 	      (module-define! module '.port (ast:identifier (ast:port comp))))
     module))
 
+(define (comma-join lst) (string-join (map ->string lst) ","))
 (define (externalchoice-join lst) (string-join (map ->string lst) "[]\n"))
 (define (separator-join lst separator) (string-join (map ->string (filter (negate string-null?) lst)) separator))
 
-(define* (csp-map-ports string ports :optional (separator ""))
+(define* (map-ports string ports :optional (separator ""))
   (display
    (separator-join (map (lambda (port)
 			(with-output-to-string
