@@ -125,6 +125,9 @@
              (module-define! module 'events events)
              (module-define! module '.event .event)
              (module-define! module 'illegal? illegal?)
+             (module-define! module 'inevitable-optional?
+                             (or (member 'inevitable events) 
+                                 (member 'optional events)))
              (module-define! module '.module module-name)
              (module-define! module '.event-port .event-port)
              (module-define! module 'names names)

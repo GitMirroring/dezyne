@@ -54,10 +54,10 @@ channel #.interface ,#.port : {#(comma-join (append (port-triggers port) '(retur
               '(""))
          (map (lambda (x) (list .interface "." (->string x) " -> " 
                                 (when (and (requires? x)
-                                           (not (or (member 'inevitable events) (member 'optional events))))
+                                           (not inevitable-optional?))
                                   (list (action->string x) ".return -> ")))) 
               actions)
-         (if (or (member 'inevitable events) (member 'optional events))
+         (if inevitable-optional?
              '("")
              (list .interface ".return -> "))
         (list .interface "_" .behaviour "_((" (comma-join actuals) "))")))
@@ -80,7 +80,7 @@ within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:ini
     (if illegal? 
         "illegal -> STOP"
         (append
-         (if (or (member 'inevitable events) (member 'optional events))
+         (if inevitable-optional?
              '("")
              (append
               (if provides-event?
