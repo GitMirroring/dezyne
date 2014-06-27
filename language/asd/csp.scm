@@ -63,22 +63,21 @@
     module))
 
 (define* (map-ports string ports :optional (separator ""))
-  (display
-   ((->join separator)
-    (filter (negate string-null?)
-            (map (lambda (port)
-                   (with-output-to-string
-                     (lambda ()
-                       (save-module-excursion
-                        (lambda ()
-                          (let ((module (csp-module ast)))
-                            (module-define! module 'port port)
-                            (module-define! module '.optional-chaos (optional-chaos port))
-                            (module-define! module '.interface (ast:type port)) ;; fixme
-                            (module-define! module '.name (ast:identifier port))
-                            (module-define! module '.port (ast:identifier port))
-                            (module-define! module '.behaviour (ast:name (ast:behaviour port)))
-                            (animate-string string module))))))) ports)))))
+  ((->join separator)
+   (filter (negate string-null?)
+           (map (lambda (port)
+                  (with-output-to-string
+                    (lambda ()
+                      (save-module-excursion
+                       (lambda ()
+                         (let ((module (csp-module ast)))
+                           (module-define! module 'port port)
+                           (module-define! module '.optional-chaos (optional-chaos port))
+                           (module-define! module '.interface (ast:type port)) ;; fixme
+                           (module-define! module '.name (ast:identifier port))
+                           (module-define! module '.port (ast:identifier port))
+                           (module-define! module '.behaviour (ast:name (ast:behaviour port)))
+                           (animate-string string module))))))) ports))))
 
 (define (map-guards string guards)
   (display
