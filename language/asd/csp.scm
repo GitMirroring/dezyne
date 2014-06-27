@@ -155,12 +155,6 @@
 (define (port-triggers port)
   (sort ((ast:find-events) (ast-norm (ast:type port))) symbol<))
 
-(define (event-names ports)
-  (let loop ((ports ports) (events '()))
-    (if (null? ports)
-        events
-        (loop (cdr ports) (append events (map ast:identifier (ast:body (ast:events (car ports)))))))))
-
 (define (enum-values comp)
   (let ((comp-values (apply append (map ast:elements (ast:body (ast:types (ast:behaviour comp)))))))
     (let loop ((ports (ast:body (ast:ports comp))) (values comp-values))
