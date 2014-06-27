@@ -7,12 +7,12 @@ i_((t)) = let
           s_if = \ P, (t) @ ifthenelse(t, s_b, s_c)(P, (t))
           s_t = \ P, (t) @ P((not t))
           within
-          i?a -> semi(s_if, s_t)(\ (t') @ i_((t')),(t))
+          i?a -> semi(s_if, s_t)(\ (t) @ i_((t)),(t))
 
 recv(S) = \ P, V @ S; P(V)
 send(S) = \ P, V @ S; P(V)
 ifthenelse(E,S1,S2) = \ P, V @ if E then S1(P,V) else S2(P,V)
-semi(S1,S2) = \ P, V @ S1( \ V' @ S2(P, V'), V)
+semi(S1,S2) = \ P, V @ S1( \ V @ S2(P, V), V)
 assign(F) = \ P, V @ P(F(V))
 
 j_((t)) = let
@@ -21,7 +21,7 @@ j_((t)) = let
           s_if = \ P, (t) @ ifthenelse(t, s_b, s_c)(P,(t))
           s_t = assign(\ (t) @ (not t))
           within
-          i?a -> semi(s_if, s_t)(\ (t') @ i_((t')),(t))
+          i?a -> semi(s_if, s_t)(\ (t) @ i_((t)),(t))
 
 k_((t)) = i?a ->
            semi(\ P, (t) @
@@ -29,7 +29,7 @@ k_((t)) = i?a ->
                            send(i!b -> SKIP),
                            send(i!c -> SKIP)) (P,(t)),
                 assign(\ (t) @ (not t))
-                ) (\ (t') @ i_((t')),(t))
+                ) (\ (t) @ i_((t)),(t))
 
 assert i_((false)) [FD= j_((false))
 assert j_((false)) [FD= i_((false))

@@ -38,6 +38,7 @@ interface iimperative
     S s = S.S1;
 
     bool b = false;
+    //count c = 1;
     bool c = true;
 
     [s.S1]
