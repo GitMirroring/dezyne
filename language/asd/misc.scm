@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -120,7 +121,7 @@
           ((not (pair? x)) (cons x tail))
           (else (loop (car x) (loop (cdr x) tail))))))
 
-(define ((->join infix) lst) (string-join (map ->string lst) infix))
+(define ((->join infix) lst) (string-join (filter (negate string-null?) (map ->string lst)) infix))
 
 ;; JUNKME, just use ((->join INFIX) lst)
 (define (comma-join lst) ((->join ",") lst))

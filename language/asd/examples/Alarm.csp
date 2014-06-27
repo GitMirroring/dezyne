@@ -135,7 +135,8 @@ IG & sensor?x:{triggered,disabled} -> illegal -> STOP
 )
 within Alarm_d_((Disarmed,false))
 
-channel IN,OUT : {   sensor.triggered,sensor.disabled   }
+channel extensions_over_empty_channels_is_undefined
+channel IN,OUT : {sensor.triggered,sensor.disabled,extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
@@ -167,6 +168,8 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
             []
             r' == <> & reorder_in?x' -> Busy(c',<x'>)
+            []
+            r' != <> & reorder_in?x' -> illegal -> STOP
 
 within Idle(0)
 
@@ -191,8 +194,8 @@ SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(r
 assert Alarm_d_Component :[deadlock free]
 assert Alarm_d(true,true) :[deterministic]
 assert STOP [T= Alarm_d_Component \ diff(Events,{illegal})
-assert Console_a(false) [[Console.x<-console.x|x<-extensions(Console)]] \ {console.optional,console.inevitable} [FD=
-Alarm_d_Component \ diff(Events,{|illegal,console|}) \ {console.optional,console.inevitable}
+assert Console_a(false) [[Console.x<-console.x|x<-extensions(Console)]] \ {console.inevitable,console.optional} [FD=
+Alarm_d_Component \ diff(Events,{|illegal,console|}) \ {console.inevitable,console.optional}
 assert Sensor_b(false) :[deadlock free]
 assert Sensor_b(true) :[livelock free]
 assert Siren_c(false) :[deadlock free]

@@ -15,7 +15,7 @@ channel illegal
 channel iimperative,i: {e,f,g,h,return}
 
 iimperative_(IG) = let
-iimperative__((sbc)) =
+iimperative__((s,b,c)) =
 (s == S1) & (
 iimperative?x:{e} -> iimperative.return -> iimperative__((S2,b,c))
 )
@@ -47,7 +47,8 @@ i?x:{e} -> i.h -> i.return -> transition_end -> imperative__((I))
 )
 within imperative__((I))
 
-channel IN,OUT : {}
+channel extensions_over_empty_channels_is_undefined
+channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
@@ -79,6 +80,8 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
             []
             r' == <> & reorder_in?x' -> Busy(c',<x'>)
+            []
+            r' != <> & reorder_in?x' -> illegal -> STOP
 
 within Idle(0)
 
@@ -89,20 +92,20 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {i.return,i.f,i.g,i.h,}
+Exclude = {i.return,i.f,i.g,i.h}
 ClientCalls = {i.e}
 UsedModeling = {}
 within compress((imperative_(false,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,i|},Exclude)|]
-((() [[x<-IN.x|x<-extensions(IN)]]
+(((STOP) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 
 assert imperative__Component :[deadlock free]
 assert imperative_(true,true) :[deterministic]
 assert STOP [T= imperative__Component \ diff(Events,{illegal})
-assert iimperative_(false) [[iimperative.x<-i.x|x<-extensions(iimperative)]] \ {i.optional,i.inevitable} [FD=
-imperative__Component \ diff(Events,{|illegal,i|}) \ {i.optional,i.inevitable}
+assert iimperative_(false) [[iimperative.x<-i.x|x<-extensions(iimperative)]] \ {} [FD=
+imperative__Component \ diff(Events,{|illegal,i|}) \ {}
 
 assert iimperative_(false) :[deadlock free]
 assert iimperative_(true) :[livelock free]
