@@ -178,7 +178,7 @@
 (define (statement ast)
   (match ast
     ((? module?) (statement (behaviour ast)))
-    ((? behaviour?) (assoc 'compound (body ast)))
+    ((? behaviour?) (or (assoc 'compound (body ast)) (make 'compound '())))
     ((? guard?) (caddr ast))
     ((? on?) (caddr ast))))
 

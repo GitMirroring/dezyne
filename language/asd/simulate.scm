@@ -70,7 +70,7 @@
   (pretty-print (simulate module))
   
   (if (eq? (ast:name module) 'i)
-      (pretty-print (simulate module (ast:statements (ast:behaviour module)) (next-todo-trail-explorer module '(a a a a a a a )))))
+      (pretty-print (simulate module (ast:statement (ast:behaviour module)) (next-todo-trail-explorer module '(a a a a a a a )))))
 
   (stderr "state space: ~a\n" (length *state-space*))
   ;;(pretty-print *state-space*)
@@ -79,7 +79,7 @@
 (define sim simulate-module)
 
 (define (seen-key state ast)
-  (when (not (equal? ast (ast:statements (ast:behaviour *module*))))
+  (when (not (equal? ast (ast:statement (ast:behaviour *module*))))
     ;; it's a bug if we store a 'seen' state with a non-top AST:
     ;; only actions return mid-statements and they are continued
     ;; we alway continue until the end
@@ -103,7 +103,7 @@
   (find (lambda (x) (equal? x event)) (seen state ast)))
 
 (define (seen! state ast event)
-  (when (not (equal? ast (ast:statements (ast:behaviour *module*))))
+  (when (not (equal? ast (ast:statement (ast:behaviour *module*))))
     (stderr "seen! --> AST:~a\n" ast)
     (throw 'seen!-with-non-top-ast))
 
@@ -148,7 +148,7 @@
                   (list event)))))))
 
 (define* (simulate module :optional
-                   (ast (ast:statements (ast:behaviour module)))
+                   (ast (ast:statement (ast:behaviour module)))
                    (next-todo next-todo-space-walker))
   (let loop ((state-todo (next-todo module 'initial ast)))
     (let* ((state (car state-todo))
@@ -186,7 +186,7 @@
     (('! expr) (not (eval-expression ast state expr)))
     ('otherwise 
      (let* ((parent (ast:parent *module* ast))
-            (guards (ast:statements-guard (ast:body parent)))
+            (guards ((ast:statements-of-type 'guard) parent))
             (expressions (map ast:expression guards)))
        (receive (otherwise rest) (partition (lambda (x) (eq? x 'otherwise)) expressions)
          (if (not (equal? otherwise '(otherwise)))
@@ -194,7 +194,7 @@
          ;; otherwise is true if none of the other guards is
          (not (apply for (map (lambda (x) (eval-expression ast state x)) rest))))))
     ((? symbol?) (eval-expression ast state (var state expression)))
-    (_ (stderr  "expression NO MATCH: ~a\n" expression))))
+    (_ (throw 'match-error  (format #f "~a:expression no match: ~a\n" (current-source-location) expression)))))
 
 (define (process ast state event)
   (set! i (1+ i))
@@ -228,17 +228,17 @@
           (if (eval-expression ast state expression) 
               (process statement state event) 
               (values state #f #f)))
-         (('statements h t ...)
+         (('compound h t ...)
           (receive (state ast action) (process h state event)
             (if action
                 (if ast
                     (values state (append ast t) action)
-                    (values state (cons 'statements t) action))
+                    (values state (cons 'compound t) action))
                 (if ast
                     (process (append ast t) state event)
-                    (process (cons 'statements t) state event)))))
-         (('statements) (values state #f #f))
-         (_ (stderr  "process NO MATCH: ~a\n" ast))))))
+                    (process (cons 'compound t) state event)))))
+         (('compound) (values state #f #f))
+         (_ (throw 'match-error  (format #f "~a: process: no match: ~a\n"  (current-source-location) ast)))))))
 
 (define (find-in-events ast) (find-events ast ast:in?))
 (define (find-out-events ast) (find-events ast ast:out?))
@@ -248,15 +248,15 @@
                          (find-events ast predicate events))))
     (match ast
       ((? ast:component?)
-       (delete-duplicates (sort (apply append (map find-events-p (ast:body (ast:statements (ast:behaviour ast))))) list<)))
+       (delete-duplicates (sort (find-events-p (ast:statement (ast:behaviour ast))) list<)))
       ((? ast:interface?) 
        (let ((declared (ast:body (ast:events ast))))
          (receive (keep discard) 
              (partition predicate declared)
-           (let* ((behaviour (apply append (map find-events-p (ast:body (ast:statements (ast:behaviour ast))))))
+           (let* ((behaviour (find-events-p (ast:statement (ast:behaviour ast))))
                   (behaviour-keep (filter (lambda (x) (negate (member x discard equal?))) behaviour)))
              (map ast:identifier (delete-duplicates (sort (append keep behaviour-keep) list<) equal?))))))
-      (('statements t ...) (append (apply append (map find-events-p t)) events))
+      (('compound t ...) (append (apply append (map find-events-p t)) events))
       (('on t statement) (map find-events-p t))
       (('field type identifier) ast)
       (('guard expression statement) (find-events-p statement events))
