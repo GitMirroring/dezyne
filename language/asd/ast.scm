@@ -53,6 +53,7 @@
            find-events
            field?
            guard?
+           guard-equals?
            identifier
            in?
            initial-value
@@ -218,6 +219,8 @@
 ;;; utilities
 (define (provides? ast) (eq? (direction ast) 'provides))
 (define (requires? ast) (eq? (direction ast) 'requires))
+
+(define (guard-equals? lhs rhs) (equal? (expression lhs) (expression rhs)))
 
 (define (typed? ast)
   (match ast

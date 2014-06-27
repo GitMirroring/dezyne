@@ -27,19 +27,29 @@
            >1
            >2
            fand
+           f-is-null
            for
            gulp-text-file
            dump-file
            *eof*
            *eof*-is-#f
+           join
+           pipe-join
            null-is-#f
-           f-is-null
            one-is-#f
            stderr
            stdout
            symbol<
            list<
            ->string
+           
+           ;; FIXME
+           comma-join
+           comma-nl-join
+           comma-space-join
+           double-colon-join
+           nl-comma-join
+           pipe-join lst
            ))
 
 (define *eof* (call-with-input-string "" read-char))
@@ -55,14 +65,16 @@
 (define (>2 x) (> x 2))
 
 (define (symbol< a b) (string< (symbol->string a) (symbol->string b)))
-(define (list< a b) 
+(define (list< a b)
   (if (null? a)
       (not (null? b))
       (if (null? b)
           #f
           (if (eq? (car a) (car b))
               (list< (cdr a) (cdr b))
-              (symbol< (car a) (car b))))))
+              (if (pair? (car a))
+		  (list< (car a) (car b))
+		  (symbol< (car a) (car b)))))))
 
 (define (fand . args)
   (eval `(and ,@args) (current-module)))
@@ -100,4 +112,17 @@
     ((h ... t) (apply string-append (map ->string src)))
     (_ "")))
 
+(define-public (flatten x)
+  "unnest list."
+  (let loop ((x x) (tail '()))
+    (cond ((list? x) (fold-right loop tail x))
+          ((not (pair? x)) (cons x tail))
+          (else (loop (car x) (loop (cdr x) tail))))))
 
+(define (->join lst infix) (string-join (map ->string lst) infix))
+(define (comma-join lst) (string-join (map ->string lst) ","))
+(define (comma-nl-join lst) (->join lst ",\n"))
+(define (comma-space-join lst) (->join lst ", "))
+(define (double-colon-join lst) (->join lst "::"))
+(define (nl-comma-join lst) (->join lst "\n  , "))
+(define (pipe-join lst) (->join lst " | "))

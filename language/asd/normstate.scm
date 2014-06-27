@@ -52,25 +52,6 @@
 (define (normstate ast)
   (aggregate-on-stats (flatten-compound (combine-guards (passdown-on ((remove-otherwise '()) ast))))))
 
-(define (symbol< a b) (string< (symbol->string a) (symbol->string b)))
-
-(define (list< a b)
-  (if (null? a)
-      (not (null? b))
-      (if (null? b)
-          #f
-          (if (eq? (car a) (car b))
-              (list< (cdr a) (cdr b))
-              (if (pair? (car a))
-		  (list< (car a) (car b))
-		  (symbol< (car a) (car b)))))))
-
-(define (guard< x y)
-  (list< (ast:expression x) (ast:expression y)))
-
-(define (guard= x y)
-  (equal? (ast:expression x) (ast:expression y)))
-
 (define (aggregate-on-stats ast)
 ; vind alle ons met matching guards
 ; duw alle ons binnen de eerste guard en discard de rest
@@ -82,7 +63,7 @@
 			  (if ( null? guards)
 			      '()
 			      (receive (shared-guards remainder)
-				  (partition (lambda (x) (guard= (car guards) x)) guards)
+				  (partition (lambda (x) (ast:guard-equals? (car guards) x)) guards)
 				(let* ((expression (ast:expression (car shared-guards)))
 				       (aggregated-guard (ast:make 'guard expression
 								   (ast:make 'compound (map ast:statement shared-guards)))))

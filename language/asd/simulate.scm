@@ -252,9 +252,6 @@
     (((h ... t)) (->string (car src)))
     (_ ((@ (language asd misc) ->string) src))))
 
-(define (->join lst infix) (string-join (map ->string lst) infix))
-(define (comma-space-join lst) (->join lst ", "))
-
 (define (event< a b)
   (match a
     ((? symbol?) (symbol< a b))

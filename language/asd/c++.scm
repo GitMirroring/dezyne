@@ -71,13 +71,6 @@
 (define (ap port) (or (and (ast:provides? port) 'api) 'cb))
 (define (cb port) (or (and (ast:provides? port) 'cb) 'api))
 
-(define (->join lst infix) (string-join (map ->string lst) infix))
-(define (comma-join lst) (string-join (map ->string lst) ","))
-(define (comma-space-join lst) (->join lst ", "))
-(define (comma-nl-join lst) (->join lst ",\n"))
-(define (nl-comma-join lst) (->join lst "\n  , "))
-(define (double-colon-join lst) (->join lst "::"))
-
 (define (declare-enum enum)
   (->string (list "enum "  (ast:name enum) "\n  {\n  " (comma-nl-join (ast:elements enum)) ",\n  };\n")))
 

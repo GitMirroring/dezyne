@@ -62,7 +62,6 @@
 	      (module-define! module '.port (ast:identifier (ast:port comp))))
     module))
 
-(define (comma-join lst) (string-join (map ->string lst) ","))
 (define (externalchoice-join lst) (string-join (map ->string lst) "[]\n"))
 (define (separator-join lst separator) (string-join (map ->string (filter (negate string-null?) lst)) separator))
 
@@ -140,17 +139,6 @@
     (('and lhs rhs) (->string (list (csp-expression->string lhs) " and " (csp-expression->string rhs))))
     (('! expression) (->string (list "not " (csp-expression->string expression))))
     (_ (format #f "~a:NO MATCH: ~a" (current-source-location) expression))))
-
-(define (symbol< a b) (string< (symbol->string a) (symbol->string b)))
-(define-public (flatten x)
-  "unnest list."
-  (let loop ((x x) (tail '()))
-    (cond ((list? x) (fold-right loop tail x))
-          ((not (pair? x)) (cons x tail))
-          (else (loop (car x) (loop (cdr x) tail))))))
-
-(define (->join lst infix) (string-join (map ->string lst) infix))
-(define (pipe-join lst) (->join lst " | "))
 
 (define (port-triggers port)
   (sort ((ast:find-events) (ast-norm (ast:type port))) symbol<))
