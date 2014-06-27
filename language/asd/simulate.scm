@@ -18,6 +18,7 @@
 (read-set! keywords 'prefix)
 
 (define-module (language asd simulate)
+  :use-module (ice-9 curried-definitions)
   :use-module (ice-9 match)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 pretty-print)
@@ -63,7 +64,7 @@
 (define *state-space* '(()))
 
 (define (simulate-module module)
-   (stderr "\n\n>>>simulating: ~a ~a --> ~a\n" (ast:class module) (ast:name module) (map ->string (find-in-events module)))
+   (stderr "\n\n>>>simulating: ~a ~a --> ~a\n" (ast:class module) (ast:name module) (map ->string ((find-events ast:in?) module)))
   (set! *module* module)
   (set! *state-space* '(()))
   (set! i 0)
@@ -118,7 +119,7 @@
     (filter (negate (lambda (x) (member x done equal?))) events)))
 
 (define (next-todo-space-walker module state ast)
-  (let ((events (find-in-events module)))
+  (let ((events ((find-events ast:in?) module)))
     (if (or (null? *state-space*)
             (null? (car *state-space*)))
         (cons (state-vector module) events)
@@ -240,12 +241,9 @@
          (('compound) (values state #f #f))
          (_ (throw 'match-error  (format #f "~a: process: no match: ~a\n"  (current-source-location) ast)))))))
 
-(define (find-in-events ast) (find-events ast ast:in?))
-(define (find-out-events ast) (find-events ast ast:out?))
-
-(define* (find-events ast :optional (predicate identity) (events '()))
+(define* ((find-events predicate) ast :optional (events '()))
   (let ((find-events-p (lambda* (ast :optional (events '()))
-                         (find-events ast predicate events))))
+                         ((find-events predicate) ast events))))
     (match ast
       ((? ast:component?)
        (delete-duplicates (sort (find-events-p (ast:statement (ast:behaviour ast))) list<)))
