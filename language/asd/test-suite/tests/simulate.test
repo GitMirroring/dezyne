@@ -22,6 +22,7 @@
   :use-module (test-suite lib)
   :use-module (test-suite misc)
 
+  :use-module (language asd ast:)
   :use-module (language asd reader)
   :use-module (language asd misc)
   :use-module (language asd simulate))
@@ -31,7 +32,10 @@
 
 (pass-if "simulator-simple-trail"
   (noisy-equal?
-   (parse-asd 
-    #{ interface i { } #}
-    )
-   '((interface i (types) (events) (behaviour)))))
+   (walk-trail
+    (ast:interface (parse-asd 
+      #{ 
+        interface i { } 
+        #}))
+    '(a a a))
+   '(a a a)))

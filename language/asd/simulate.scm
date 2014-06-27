@@ -28,7 +28,9 @@
   :use-module (language asd ast:)
   :use-module (language asd misc)
   :use-module (language asd reader)
-  :export (asd->))
+  :export (asd->
+           explore-space
+           walk-trail))
 
 (define debug? #f)
 (define (debug . x) #t)
@@ -65,19 +67,20 @@
 
 (define (simulate-module module)
    (stderr "\n\n>>>simulating: ~a ~a --> ~a\n" (ast:class module) (ast:name module) (map ->string ((ast:find-events ast:in?) module)))
-  (set! *module* module)
-  (set! *state-space* '(()))
-  (set! i 0)
-  (pretty-print (simulate module))
+   (pretty-print (explore-space module))
   
-  (if (eq? (ast:name module) 'i)
-      (pretty-print (simulate module (ast:statement (ast:behaviour module)) (next-todo-trail-explorer module '(a a a a a a a )))))
-
+   (if (eq? (ast:name module) 'i)
+       (pretty-print (walk-trail module '(a a a a a a a ))))
+   
   (stderr "state space: ~a\n" (length *state-space*))
   ;;(pretty-print *state-space*)
   "")
 
-(define sim simulate-module)
+(define (explore-space ast)
+  (simulate ast))
+
+(define (walk-trail ast trail)
+  (simulate ast (next-todo-trail-walker ast trail)))
 
 (define (seen-key state ast)
   (when (not (equal? ast (ast:statement (ast:behaviour *module*))))
@@ -118,7 +121,7 @@
   (let ((done (seen state ast)))
     (filter (negate (lambda (x) (member x done equal?))) events)))
 
-(define (next-todo-space-walker module state ast)
+(define (next-todo-space-explorer module state ast)
   (let ((events ((ast:find-events ast:in?) module)))
     (if (or (null? *state-space*)
             (null? (car *state-space*)))
@@ -138,7 +141,7 @@
                           (cons state todo)
                           (loop (cdr entries)))))))))))
 
-(define (next-todo-trail-explorer module trail)
+(define (next-todo-trail-walker module trail)
   (let ((trail trail))
     (lambda (module state ast-dont-care)
       (if (null? trail)
@@ -149,8 +152,11 @@
                   (list event)))))))
 
 (define* (simulate module :optional
-                   (ast (ast:statement (ast:behaviour module)))
-                   (next-todo next-todo-space-walker))
+                   (next-todo next-todo-space-explorer)
+                   (ast (ast:statement (ast:behaviour module))))
+  (set! *module* module)
+  (set! *state-space* '(()))
+  (set! i 0)
   (let loop ((state-todo (next-todo module 'initial ast)))
     (let* ((state (car state-todo))
            (todo (null-is-#f (cdr state-todo))))
