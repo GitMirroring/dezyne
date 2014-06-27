@@ -19,6 +19,7 @@
 (read-set! keywords 'prefix)
 
 (define-module (language asd misc)
+  :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 match)
   :use-module (ice-9 rdelim)
@@ -28,10 +29,13 @@
            =1
            >1
            >2
+           eat-one-space
+           eat-one-space-or-newline
            fand
            f-is-null
            for
            gulp-text-file
+           hash-read-string
            dump-file
            *eof*
            *eof*-is-#f
@@ -130,3 +134,37 @@
 (define (double-colon-join lst) ((->join "::") lst))
 (define (nl-comma-join lst) ((->join "\n  , ") lst))
 (define (pipe-join lst) ((->join " | ") lst))
+
+
+(define (eat-one-space)
+  (let ((c (read-char)))
+    (cond
+     ((eq? c #\space) #t)
+     ((eq? *eof* c) #f)
+     (else (unread-char c)))))
+
+(define (eat-one-space-or-newline)
+  (let ((c (read-char)))
+    (cond
+     ((eq? c #\space) #t)
+     ((eq? c #\newline) #t)
+     ((eq? *eof* c) #f)
+     (else (unread-char c)))))
+
+(define (hash-read-string chr port)
+  (eat-one-space-or-newline)
+  (with-output-to-string
+    (lambda ()
+      (let ((depth 1))
+        (while (and-let* (((>0 depth))
+                          (s (*eof*-is-#f (read-delimited "#" port))))
+                         (display s))
+          (let ((c (peek-char port)))
+            (cond
+             ((eq? c #\{) (set! depth (1+ depth)) (display "#"))
+             ((eq? c #\}) (set! depth (1- depth)) (if (=0 depth)
+                                                      (read-char port)
+                                                      (display "#")))
+             ((eq? *eof* c) (set! depth 0) #f)
+             (else (display "#")))))))))
+

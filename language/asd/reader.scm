@@ -18,11 +18,15 @@
 (read-set! keywords 'prefix)
 
 (define-module (language asd reader)
+  :use-module (ice-9 and-let-star)
+  :use-module (srfi srfi-1)
+
   :use-module (system base language)
 
   :use-module (language asd asd)
+  :use-module (language asd misc)
   :use-module (language asd tokenize)
-  :export (read-asd))
+  :export (parse-asd read-asd))
 
 (define (read-and-parse lang port cenv)
   (let ((exp ((language-reader lang) port cenv)))
@@ -36,3 +40,8 @@
 
 (define (read-asd file-name)
   (asd-reader (open-file file-name "r") (current-module)))
+
+(define (parse-asd string)
+  (read-hash-extend #\{ hash-read-string)
+  (with-input-from-string string
+    (lambda () (asd-reader (current-input-port) (current-module)))))

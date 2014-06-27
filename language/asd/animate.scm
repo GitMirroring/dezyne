@@ -109,42 +109,10 @@
   (with-input-from-string string
     (lambda () (animate-input module))))
 
-(define (eat-one-space)
-  (let ((c (read-char)))
-    (cond
-     ((eq? c #\space) #t)
-     ((eq? *eof* c) #f)
-     (else (unread-char c)))))
-
-(define (eat-one-space-or-newline)
-  (let ((c (read-char)))
-    (cond
-     ((eq? c #\space) #t)
-     ((eq? c #\newline) #t)
-     ((eq? *eof* c) #f)
-     (else (unread-char c)))))
-
-(define (animate-hash-read-string chr port)
-  (eat-one-space-or-newline)
-  (with-output-to-string
-    (lambda ()
-      (let ((depth 1))
-        (while (and-let* (((>0 depth))
-                          (s (*eof*-is-#f (read-delimited "#" port))))
-                         (display s))
-          (let ((c (peek-char port)))
-            (cond
-             ((eq? c #\{) (set! depth (1+ depth)) (display "#"))
-             ((eq? c #\}) (set! depth (1- depth)) (if (=0 depth)
-                                                      (read-char port)
-                                                      (display "#")))
-             ((eq? *eof* c) (set! depth 0) #f)
-             (else (display "#")))))))))
-
 (define escape #\#)
 
 (define (animate-input module)
-  (read-hash-extend #\{ animate-hash-read-string)
+  (read-hash-extend #\{ hash-read-string)
   (while (and-let* ((s (*eof*-is-#f (read-delimited (make-string 1 escape)))))
                    (display s))
     (let ((c (read-char)))
