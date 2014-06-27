@@ -64,7 +64,7 @@
 (define *state-space* '(()))
 
 (define (simulate-module module)
-   (stderr "\n\n>>>simulating: ~a ~a --> ~a\n" (ast:class module) (ast:name module) (map ->string ((find-events ast:in?) module)))
+   (stderr "\n\n>>>simulating: ~a ~a --> ~a\n" (ast:class module) (ast:name module) (map ->string ((ast:find-events ast:in?) module)))
   (set! *module* module)
   (set! *state-space* '(()))
   (set! i 0)
@@ -119,7 +119,7 @@
     (filter (negate (lambda (x) (member x done equal?))) events)))
 
 (define (next-todo-space-walker module state ast)
-  (let ((events ((find-events ast:in?) module)))
+  (let ((events ((ast:find-events ast:in?) module)))
     (if (or (null? *state-space*)
             (null? (car *state-space*)))
         (cons (state-vector module) events)
@@ -240,25 +240,6 @@
                     (process (cons 'compound t) state event)))))
          (('compound) (values state #f #f))
          (_ (throw 'match-error  (format #f "~a: process: no match: ~a\n"  (current-source-location) ast)))))))
-
-(define* ((find-events predicate) ast :optional (events '()))
-  (let ((find-events-p (lambda* (ast :optional (events '()))
-                         ((find-events predicate) ast events))))
-    (match ast
-      ((? ast:component?)
-       (delete-duplicates (sort (find-events-p (ast:statement (ast:behaviour ast))) list<)))
-      ((? ast:interface?) 
-       (let ((declared (ast:body (ast:events ast))))
-         (receive (keep discard) 
-             (partition predicate declared)
-           (let* ((behaviour (find-events-p (ast:statement (ast:behaviour ast))))
-                  (behaviour-keep (filter (lambda (x) (negate (member x discard equal?))) behaviour)))
-             (map ast:identifier (delete-duplicates (sort (append keep behaviour-keep) list<) equal?))))))
-      (('compound t ...) (append (apply append (map find-events-p t)) events))
-      (('on t statement) (map find-events-p t))
-      (('field type identifier) ast)
-      (('guard expression statement) (find-events-p statement events))
-      ((? symbol?) (ast:make 'in 'void ast)))))
 
 (define (->string src)
   (match src

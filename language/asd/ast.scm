@@ -23,6 +23,8 @@
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 match)
   :use-module (ice-9 optargs)
+  :use-module (ice-9 receive)
+
   :use-module (srfi srfi-1)
   :use-module (system foreign)
 
@@ -48,6 +50,7 @@
            events
            events?
            expression
+           find-events
            field?
            guard?
            identifier
@@ -261,6 +264,26 @@
                   (loop (car ast) (cons (cdr ast) stack))
                   (loop (cdr ast) stack)))))))
 
+(define* ((find-events :optional (predicate identity)) ast :optional (found '()))
+  (let ((find-events-p (lambda* (ast :optional (found '()))
+                         ((find-events predicate) ast found))))
+    (match ast
+      ((? component?)
+       (delete-duplicates (sort (find-events-p (statement (behaviour ast))) list<)))
+      ((? interface?) 
+       (let ((declared (body (events ast))))
+         (receive (keep discard) 
+             (partition predicate declared)
+           (let* ((behaviour (find-events-p (statement (behaviour ast))))
+                  (behaviour-keep (filter (lambda (x) (negate (member x discard equal?))) behaviour)))
+             (map identifier (delete-duplicates (sort (append keep behaviour-keep) list<) equal?))))))
+      (('compound t ...) (append (apply append (map find-events-p t)) found))
+      (('on t statement) (map find-events-p t))
+      (('field type identifier) ast)
+      (('guard expression statement) (find-events-p statement found))
+      ((? symbol?) (make 'in 'void ast)))))
+
+;;;; reading/caching
 (define *ast-alist* '(()))
 (define (ast-add name ast)
   (set! *ast-alist* (assoc-set! *ast-alist* name ast))
@@ -275,3 +298,5 @@
                 (ast-add name (car ast)))))
 
 (define ast import-ast)
+
+

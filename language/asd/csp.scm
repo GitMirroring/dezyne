@@ -35,7 +35,6 @@
   :use-module (language asd normstate)
   :export (
            asd->
-           port-triggers
            ))
 
 (define (asd-> ast)
@@ -154,7 +153,7 @@
 (define (pipe-join lst) (->join lst " | "))
 
 (define (port-triggers port)
-  (interface-triggers (ast-norm (ast:type port))))
+  (sort ((ast:find-events) (ast-norm (ast:type port))) symbol<))
 
 (define (event-names ports)
   (let loop ((ports ports) (events '()))
@@ -168,16 +167,6 @@
       (if (null? ports)
           values
           (loop (cdr ports) (append values (apply append (map ast:elements (ast:body (ast:types (ast:behaviour (ast-norm (ast:type (car ports))))))))))))))
-
-(define (interface-triggers interface)
-  (delete-duplicates (sort (append (map ast:identifier (ast:body (ast:events interface))) (apply append (map behaviour-triggers (ast:body (ast:statement (ast:behaviour interface)))))) symbol<)))
-
-(define* (behaviour-triggers src :optional (triggers '()))
-  (match src
-   (('compound t ...) (append (apply append (map behaviour-triggers t)) triggers))
-    (('on triggers statements) triggers)
-    (('guard expression statements) (behaviour-triggers statements triggers))
-    (_ (stderr "~a: NO MATCH: ~a\n" (current-source-location) src) "")))
 
 (define (assign-prefix statement channel event . key-vals)
   (match statement
@@ -248,7 +237,7 @@
 
 (define (optional-chaos port)
   (let ((interface (ast:type port)))
-    (if (member 'optional (interface-triggers (ast-norm (ast:type port))))
+    (if (member 'optional ((ast:find-events) (ast-norm (ast:type port))))
         (list "[|{" interface " .optional}|] " "CHAOS({" interface " .optional})")
         "")))
 
