@@ -105,6 +105,9 @@ csp: compile
 	./gaiag -l csp examples/Alarm.asd
 	$(diff) examples/Alarm.csp Alarm.csp
 	@$(diff) examples/Alarm.csp Alarm.csp | diffstat || true
+	./gaiag -l csp examples/imperative.asd
+	$(diff) examples/imperative.csp imperative.csp || true
+	@$(diff) examples/imperative.csp imperative.csp | diffstat || true
 #	./gaiag -l csp examples/if.asd
 #	$(diff) examples/if.csp C.csp
 

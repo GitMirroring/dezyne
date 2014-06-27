@@ -1,0 +1,108 @@
+action(S') = \ P', V' @ S'; P'(V')
+ifthenelse(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')
+semi(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
+assign(F') = \ P', V' @ P'(F'(V'))
+
+
+datatype event_alphabet =
+e | f | g | h | return
+
+datatype enumeration_alphabet =
+I | II | III | IV | S1 | S2
+
+channel illegal
+
+channel iimperative,i: {e,f,g,h,return}
+
+iimperative_(IG) = let
+iimperative__((sbc)) =
+(s == S1) & (
+iimperative?x:{e} -> iimperative.return -> iimperative__((S2,b,c))
+)
+[]
+(s == S2) & (
+iimperative?x:{e} -> iimperative.return -> iimperative__((S1,not b,c))
+)
+
+within iimperative__((S1,false,true)) 
+
+
+imperative_(IIG,IG) = let
+imperative__((state)) = transition_begin -> (
+(state == I) & (
+i?x:{e} -> i.f -> i.return -> i.g -> i.return -> i.h -> i.return -> transition_end -> imperative__((II))
+)
+[]
+(state == II) & (
+i?x:{e} -> transition_end -> imperative__((III))
+)
+[]
+(state == III) & (
+i?x:{e} -> i.f -> i.return -> i.g -> i.return -> i.g -> i.return -> i.f -> i.return -> transition_end -> imperative__((IV))
+)
+[]
+(state == IV) & (
+i?x:{e} -> i.h -> i.return -> transition_end -> imperative__((I))
+)
+)
+within imperative__((I))
+
+channel IN,OUT : {}
+
+SINGLETHREADED = true
+
+channel transition_begin, transition_end
+
+channel reorder_in,reorder_out : {i.return}
+
+SEMANTICS(in',out',client',modeling') = let
+Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
+       []
+       length(s') > 0 & out'!head(s') -> Q'(tail(s'))
+       []
+       length(s') == card({|in'|}) & in'?x' -> illegal -> STOP
+
+R'(A') = ([] x' : A' @ x' -> R'(A'))
+       []
+       reorder_in?x' -> reorder_out!x' -> R'(A')
+
+S'    = let
+
+Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
+
+Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!head(r') -> Idle(0))
+            []
+            c' > 0 & transition_end -> transition_begin -> Busy(c',r')
+            []
+            c' < card({|in'|}) & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            []
+            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            []
+            r' == <> & reorder_in?x' -> Busy(c',<x'>)
+
+within Idle(0)
+
+within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
+
+imperative__Component = let
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+Exclude = {i.return,i.f,i.g,i.h,}
+ClientCalls = {i.e}
+UsedModeling = {}
+within compress((imperative_(false,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,i|},Exclude)|]
+((() [[x<-IN.x|x<-extensions(IN)]]
+[|union({|IN|},UsedModeling)|]
+SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
+
+assert imperative__Component :[deadlock free]
+assert imperative_(true,true) :[deterministic]
+assert STOP [T= imperative__Component \ diff(Events,{illegal})
+assert iimperative_(false) [[iimperative.x<-i.x|x<-extensions(iimperative)]] \ {i.optional,i.inevitable} [FD=
+imperative__Component \ diff(Events,{|illegal,i|}) \ {i.optional,i.inevitable}
+
+assert iimperative_(false) :[deadlock free]
+assert iimperative_(true) :[livelock free]

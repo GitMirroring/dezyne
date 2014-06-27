@@ -22,10 +22,10 @@
 ;;; 
 ;;; Code:
 
-action(S) = \ P, V @ S; P(V)
-ifthenelse(E,S1,S2) = \ P, V @ if E then S1(P,V) else S2(P,V)
-semi(S1,S2) = \ P, V @ S1( \ V' @ S2(P, V'), V)
-assign(F) = \ P, V @ P(F(V))
+action(S') = \ P', V' @ S'; P'(V')
+ifthenelse(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')
+semi(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
+assign(F') = \ P', V' @ P'(F'(V'))
 
 
 datatype event_alphabet =
@@ -56,7 +56,7 @@ channel #.interface ,#.port : {#(comma-join (append (port-triggers port) '(retur
          (if inevitable-optional?
              '("")
              (list .interface ".return -> "))
-        (list .interface "_" .behaviour "_((" (comma-join actuals) "))")))
+        (list .interface "_" .behaviour "_((" (comma-join (map csp-expression->string actuals)) "))")))
 #}
     ((ast:statements-of-type 'on) (ast:statement guard)) "  []\n"))
 #} (reverse ((ast:statements-of-type 'guard) (ast:statement (ast:behaviour (ast-norm .interface))))))
@@ -80,7 +80,7 @@ within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:ini
                   (list channel ".return -> ")
                   '())
               '("transition_end -> ")))
-        (list .module "_" .behaviour "_((" (comma-join actuals) "))")))
+        (list .module "_" .behaviour "_((" (comma-join (map csp-expression->string actuals)) "))")))
 #}
     (append
       (filter identity (map (statement-on-p/r provides?) ((ast:statements-of-type 'on) (ast:statement guard))))
@@ -99,34 +99,34 @@ channel transition_begin, transition_end
 
 channel reorder_in,reorder_out : {# (map (lambda (x) (list (ast:identifier x) ".return")) (filter ast:provides? (ast:body (ast:ports (ast:component ast)))))}
 
-SEMANTICS(in_,out_,client_,modeling_) = let
-Q(s) = length(s) < card({|in_|}) & in_?x -> Q(s^<x>)
+SEMANTICS(in',out',client',modeling') = let
+Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
        []
-       length(s) > 0 & out_!head(s) -> Q(tail(s))
+       length(s') > 0 & out'!head(s') -> Q'(tail(s'))
        []
-       length(s) == card({|in_|}) & in_?x -> illegal -> STOP
+       length(s') == card({|in'|}) & in'?x' -> illegal -> STOP
 
-R(A) = ([] x : A @ x -> R(A))
+R'(A') = ([] x' : A' @ x' -> R'(A'))
        []
-       reorder_in?x -> reorder_out!x -> R(A)
+       reorder_in?x' -> reorder_out!x' -> R'(A')
 
-S    = let
+S'    = let
 
-Idle(c) = transition_begin -> ([] x : union(client_,modeling_) @ x -> Busy(c,<>))
+Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
 
-Busy(c,r) = c == 0 & transition_end -> (if r == <> then Idle(0) else reorder_out!head(r) -> Idle(0))
+Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!head(r') -> Idle(0))
             []
-            c > 0 & transition_end -> transition_begin -> Busy(c,r)
+            c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
-            c < card({|in_|}) & ([] x : {|in_|} @ x -> Busy(c+1,r))
+            c' < card({|in'|}) & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
             []
-            c > 0 & ([] x : {|out_|} @ x -> Busy(c-1,r))
+            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
             []
-            r == <> & reorder_in?x -> Busy(c,<x>)
+            r' == <> & reorder_in?x' -> Busy(c',<x'>)
 
 within Idle(0)
 
-within Q(<>) [|{|in_,out_|}|] if SINGLETHREADED then S else R(Union({{|in_,out_,transition_begin,transition_end|},client_,modeling_}))
+within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
 #.component _#.behaviour _Component = let
 compress(x) = let
@@ -134,7 +134,7 @@ transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
 Exclude = {#.port .return,#
- (map-ports
+  (map-ports
 #{#(comma-join (map (lambda (x) (list .port "." (ast:identifier x))) (filter ast:out? (ast:body (ast:events port))))) #}
    (filter ast:provides? (ast:body (ast:ports (ast:component ast))))),#
  (map-ports
