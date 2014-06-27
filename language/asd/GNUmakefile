@@ -31,7 +31,7 @@ baseline = baseline
 
 default: all
 
-all: compile check test match wfc
+all: compile match wfc check
 
 tags:
 	etags $(shell git ls-files)
@@ -54,7 +54,9 @@ baseline: dummy
 	$(asdgen) -l cpp examples/Siren.asd && mv Siren* $(baseline)
 	$(asdgen) -l csp examples/Alarm.asd && mv Alarm.csp $(baseline)
 
-check: ast pretty c++ csp simulate
+test: check
+check: compile ast pretty c++ csp simulate
+	./test.sh
 
 ast:
 	./gaiag examples/interface-enums.asd
@@ -80,8 +82,6 @@ c++: baseline
 #	./gaiag -l c++ examples/CommImpl.asd
 #	[ -f $(baseline)/CommImplComponent.h ] && $(diff) $(baseline)/CommImplComponent.h .
 #	-[ -f $(baseline)/CommImplComponent.cpp ] && $(diff) $(baseline)/CommImplComponent.cpp .
-
-test:
 	./gaiag -l c++ examples/Console.asd
 	$(diff) $(baseline)/ConsoleInterface.h .
 	./gaiag -l c++ examples/Sensor.asd
