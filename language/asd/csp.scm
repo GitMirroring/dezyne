@@ -170,12 +170,6 @@
       (ast:make 'on events-predicate statement)
       #f)))
 
-(define (action->string action)
-  (if (pair? action)
-      (let ((name (cadr action)))
-        (if (pair? name) (cadr name) name))
-      action))
-
 (define (event->string event)
   (if (pair? event) (caddr event) event))
 
@@ -229,3 +223,14 @@
     (('field struct name) (->string (list struct "." name)))
 ;;    (_ (stderr "NO MATCH: ~a\n" src) (format #f "~a" src))
     (_ ((@ (language asd misc) ->string) src))))
+
+(define (action-name action)
+  (if (pair? action)
+      (let ((name (cadr action)))
+        (if (pair? name) (cadr name) name))
+      action))
+
+(define ((action->string .interface inevitable-optional?) action)
+  (->string (list (if .interface (list .interface ".") "") (->string action) " -> " 
+                  (when (and (requires? action) (not inevitable-optional?))
+                    (list (action-name action) ".return -> ")))))
