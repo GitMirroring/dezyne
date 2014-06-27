@@ -103,7 +103,7 @@ wfc: compile
 
 csp: compile
 	./gaiag -l csp examples/Alarm.asd
-	$(diff) examples/Alarm.csp Alarm.csp || true
+	$(diff) examples/Alarm.csp Alarm.csp
 	@$(diff) examples/Alarm.csp Alarm.csp | diffstat || true
 #	./gaiag -l csp examples/if.asd
 #	$(diff) examples/if.csp C.csp

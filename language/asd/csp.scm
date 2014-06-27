@@ -62,37 +62,37 @@
 	      (module-define! module '.port (ast:identifier (ast:port comp))))
     module))
 
-(define (externalchoice-join lst) (string-join (map ->string lst) "[]\n"))
-(define (separator-join lst separator) (string-join (map ->string (filter (negate string-null?) lst)) separator))
-
 (define* (map-ports string ports :optional (separator ""))
   (display
-   (separator-join (map (lambda (port)
-			(with-output-to-string
-			  (lambda ()
-			    (save-module-excursion
-			     (lambda ()
-			       (let ((module (csp-module ast)))
-				 (module-define! module 'port port)
-				 (module-define! module '.optional-chaos (optional-chaos port))
-				 (module-define! module '.interface (ast:type port)) ;; fixme
-				 (module-define! module '.name (ast:identifier port))
-				 (module-define! module '.port (ast:identifier port))
-				 (module-define! module '.behaviour (ast:name (ast:behaviour port)))
-				 (animate-string string module))))))) ports) separator)))
+   ((->join separator)
+    (filter (negate string-null?)
+            (map (lambda (port)
+                   (with-output-to-string
+                     (lambda ()
+                       (save-module-excursion
+                        (lambda ()
+                          (let ((module (csp-module ast)))
+                            (module-define! module 'port port)
+                            (module-define! module '.optional-chaos (optional-chaos port))
+                            (module-define! module '.interface (ast:type port)) ;; fixme
+                            (module-define! module '.name (ast:identifier port))
+                            (module-define! module '.port (ast:identifier port))
+                            (module-define! module '.behaviour (ast:name (ast:behaviour port)))
+                            (animate-string string module))))))) ports)))))
 
 (define (map-guards string guards)
   (display
-   (externalchoice-join (map (lambda (guard)
-			(with-output-to-string
-			  (lambda ()
-			    (let ((module (current-module)))
-			      (module-define! module 'guard guard)
-			      (animate-string string module))))) guards))))
+   ((->join "[]\n")
+    (map (lambda (guard)
+           (with-output-to-string
+             (lambda ()
+               (let ((module (current-module)))
+                 (module-define! module 'guard guard)
+                 (animate-string string module))))) guards))))
 
 (define* (map-statements-on string statements :optional (separator ""))
   (display
-   (separator-join
+   ((->join separator)
     (map
      (lambda (on-statement)
        (with-output-to-string
@@ -130,7 +130,7 @@
              (module-define! module 'names names)
              (module-define! module 'provides-event? (provides? (car events)))
              (module-define! module 'statement statement)
-             (animate-string string module))))) statements) separator)))
+             (animate-string string module))))) statements))))
 
 (define (csp-expression->string expression)
   (match expression
@@ -209,8 +209,6 @@
 	       (name (car assign))
 	       (value (cdr assign)))
 	  (loop (cdr assignments) (assoc-set! formals name value))))))
-
-(define (underscore-join lst) (string-join (map ->string lst) "_"))
 
 (define (value ast)
   (match ast

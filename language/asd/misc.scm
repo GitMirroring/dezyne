@@ -18,6 +18,7 @@
 (read-set! keywords 'prefix)
 
 (define-module (language asd misc)
+  :use-module (ice-9 curried-definitions)
   :use-module (ice-9 match)
   :use-module (ice-9 rdelim)
   :export (
@@ -34,7 +35,6 @@
            *eof*
            *eof*-is-#f
            join
-           pipe-join
            null-is-#f
            one-is-#f
            stderr
@@ -44,12 +44,13 @@
            ->string
            
            ;; FIXME
+           ->join
            comma-join
            comma-nl-join
            comma-space-join
            double-colon-join
            nl-comma-join
-           pipe-join lst
+           pipe-join
            ))
 
 (define *eof* (call-with-input-string "" read-char))
@@ -119,10 +120,12 @@
           ((not (pair? x)) (cons x tail))
           (else (loop (car x) (loop (cdr x) tail))))))
 
-(define (->join lst infix) (string-join (map ->string lst) infix))
-(define (comma-join lst) (string-join (map ->string lst) ","))
-(define (comma-nl-join lst) (->join lst ",\n"))
-(define (comma-space-join lst) (->join lst ", "))
-(define (double-colon-join lst) (->join lst "::"))
-(define (nl-comma-join lst) (->join lst "\n  , "))
-(define (pipe-join lst) (->join lst " | "))
+(define ((->join infix) lst) (string-join (map ->string lst) infix))
+
+;; JUNKME, just use ((->join INFIX) lst)
+(define (comma-join lst) ((->join ",") lst))
+(define (comma-nl-join lst) ((->join ",\n") lst))
+(define (comma-space-join lst) ((->join ", ") lst))
+(define (double-colon-join lst) ((->join "::") lst))
+(define (nl-comma-join lst) ((->join "\n  , ") lst))
+(define (pipe-join lst) ((->join " | ") lst))
