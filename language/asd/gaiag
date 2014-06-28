@@ -65,7 +65,7 @@ Usage: gaiag [OPTION]... FILE
   -l, --language=LANG  generate output for language=LANG [scheme]
   -v, --version        display version
 
-Languages: asd c++ scheme
+Languages: asd c++ normstate scheme simulate wfc
 ")
 	   (exit (or (and usage? 2) 0)))
      options)))
