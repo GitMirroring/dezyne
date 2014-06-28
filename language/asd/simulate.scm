@@ -25,6 +25,8 @@
   :use-module (ice-9 receive)
   :use-module (srfi srfi-1)
 
+  :use-module (json)
+
   :use-module (language asd ast:)
   :use-module (language asd misc)
   :use-module (language asd parse)
@@ -68,14 +70,18 @@
 
 (define (simulate-module module)
    (stderr "\n\n>>>simulating: ~a ~a --> ~a\n" (ast:class module) (ast:name module) (map ->string ((ast:find-events ast:in?) module)))
-   (pretty-print (map demo-trace (explore-space module)))
+   (pretty-print (map demo-trace (explore-space module)) (current-error-port))
   
    (if (eq? (ast:name module) 'i)
-       (pretty-print (map demo-trace (walk-trail module '(a a a a)))))
+       ;;(pretty-print (map demo-trace (walk-trail module '(a a a a))))
+       (let ((result (map demo-trace (walk-trail module '(a a a a)))))
+         (pretty-print result (current-error-port))
+         (display (scm->json-string result))))
+
    (if (eq? (ast:name module) 'Alarm)
-       ;;(pretty-print (map demo-trace (walk-trail module '(console.arm))))
-       (pretty-print (map demo-trace (walk-trail module '(console.arm console.disarm sensor.disabled console.arm sensor.triggered console.disarm sensor.disabled))))
-       )
+       (let ((result (map demo-trace (walk-trail module '(console.arm console.disarm sensor.disabled console.arm sensor.triggered console.disarm sensor.disabled)))))
+         (pretty-print result (current-error-port))
+         (display (scm->json-string result))))
    
   (stderr "state space: ~a\n" (length *state-space*))
   ;;(pretty-print *state-space*)

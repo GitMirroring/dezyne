@@ -1,6 +1,6 @@
 #! /bin/sh
 # -*- scheme -*-
-exec guile -L ../.. -e main -s $0 "$@"
+exec guile -L ../.. -L . -e main -s $0 "$@"
 !#
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
