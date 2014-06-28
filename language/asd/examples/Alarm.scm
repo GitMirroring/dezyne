@@ -36,32 +36,32 @@
                   (Disarmed Armed Triggered Disarming)))
      (variables
        (declare States state (field States Disarmed)))
-     (statements
+     (compound
        (guard (field state Disarmed)
-              (statements
+              (compound
                 (on (arm)
-                    (statements (assign state (field States Armed))))
+                    (compound (assign state (field States Armed))))
                 (on (disarm) (action illegal))))
        (guard (field state Armed)
-              (statements
+              (compound
                 (on (disarm)
-                    (statements
+                    (compound
                       (assign state (field States Disarming))))
                 (on (optional)
-                    (statements
+                    (compound
                       (action detected)
                       (assign state (field States Triggered))))
                 (on (arm) (action illegal))))
        (guard (field state Triggered)
-              (statements
+              (compound
                 (on (disarm)
-                    (statements
+                    (compound
                       (assign state (field States Disarming))))
                 (on (arm) (action illegal))))
        (guard (field state Disarming)
-              (statements
+              (compound
                 (on (inevitable)
-                    (statements
+                    (compound
                       (action deactivated)
                       (assign state (field States Disarmed))))
                 (on (arm disarm) (action illegal)))))))
@@ -77,11 +77,11 @@
      (variables
        (declare States state (field States Disarmed))
        (declare bool sounding false))
-     (statements
+     (compound
        (guard (field state Disarmed)
-              (statements
+              (compound
                 (on ((field console arm))
-                    (statements
+                    (compound
                       (action (field sensor enable))
                       (assign state (field States Armed))))
                 (on ((field console disarm)
@@ -89,41 +89,41 @@
                      (field sensor disabled))
                     (action illegal))))
        (guard (field state Armed)
-              (statements
+              (compound
                 (on ((field console arm)) (action illegal))
                 (on ((field console disarm))
-                    (statements
+                    (compound
                       (action (field sensor disable))
                       (assign state (field States Disarming))))
                 (on ((field sensor triggered))
-                    (statements
+                    (compound
                       (action (field console detected))
                       (action (field siren turnon))
                       (assign sounding true)
                       (assign state (field States Triggered))))
                 (on ((field sensor disabled)) (action illegal))))
        (guard (field state Disarming)
-              (statements
+              (compound
                 (on ((field console arm) (field console disarm))
                     (action illegal))
-                (on ((field sensor triggered)) (statements))
+                (on ((field sensor triggered)) (compound))
                 (on ((field sensor disabled))
-                    (statements
+                    (compound
                       (guard sounding
-                             (statements
+                             (compound
                                (action (field console deactivated))
                                (action (field siren turnoff))
                                (assign state (field States Disarmed))
                                (assign sounding false)))
                       (guard otherwise
-                             (statements
+                             (compound
                                (action (field console deactivated))
                                (assign state (field States Disarmed))))))))
        (guard (field state Triggered)
-              (statements
+              (compound
                 (on ((field console arm)) (action illegal))
                 (on ((field console disarm))
-                    (statements
+                    (compound
                       (action (field sensor disable))
                       (action (field siren turnoff))
                       (assign sounding false)

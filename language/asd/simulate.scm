@@ -25,6 +25,7 @@
   :use-module (ice-9 receive)
   :use-module (srfi srfi-1)
 
+  :use-module (language asd asd)
   :use-module (language asd ast:)
   :use-module (language asd misc)
   :use-module (language asd reader)
@@ -67,10 +68,14 @@
 
 (define (simulate-module module)
    (stderr "\n\n>>>simulating: ~a ~a --> ~a\n" (ast:class module) (ast:name module) (map ->string ((ast:find-events ast:in?) module)))
-   (pretty-print (explore-space module))
+   (pretty-print (map demo-trace (explore-space module)))
   
    (if (eq? (ast:name module) 'i)
-       (pretty-print (walk-trail module '(a a a a))))
+       (pretty-print (map demo-trace (walk-trail module '(a a a a)))))
+   (if (eq? (ast:name module) 'Alarm)
+       ;;(pretty-print (map demo-trace (walk-trail module '(console.arm))))
+       (pretty-print (map demo-trace (walk-trail module '(console.arm console.disarm sensor.disabled console.arm sensor.triggered console.disarm sensor.disabled))))
+       )
    
   (stderr "state space: ~a\n" (length *state-space*))
   ;;(pretty-print *state-space*)
@@ -80,7 +85,30 @@
   (simulate ast))
 
 (define (walk-trail ast trail)
-  (simulate ast (next-todo-trail-walker ast trail)))
+  (simulate ast (next-todo-trail-walker ast (map event->ast trail))))
+
+(define (trace-location ast)
+  (or (and-let* ((loc (source-location ast))
+                 (properties (source-location->source-properties loc)))
+                (format #f "~a:~a:~a"
+                        (assoc-ref properties 'filename) 
+                        (assoc-ref properties 'line) 
+                        (assoc-ref properties 'column)))
+      ast))
+
+(define (demo-trace tracepoint)
+  (let ((event (car tracepoint))
+        (steps (cdr tracepoint)))
+    (cons event
+          (map trace-location steps))))
+
+(define (event->ast symbol)
+  "if SYMBOL is of form INTERFACE.TRIGGER, produce (field INTERFACE TRIGGER)"
+  (or (and-let* ((string (symbol->string symbol))
+                 (interface-trigger (string-split string #\.))
+                 ((=2 (length interface-trigger))))
+               (cons 'field (map string->symbol interface-trigger)))
+      symbol))
 
 (define (seen-key state ast)
   (when (not (equal? ast (ast:statement (ast:behaviour *module*))))
@@ -207,6 +235,7 @@
     (_ (throw 'match-error  (format #f "~a:expression no match: ~a\n" (current-source-location) expression)))))
 
 (define* (process ast state event trace)
+;;;  (stderr "PROCESS: [~a] ~a\n" event ast)
   (set! i (1+ i))
   (if (> i 2000) 
       (throw 'break (format #f "too many iterations: ~a, state space: ~a\n" i
@@ -219,7 +248,7 @@
               (process statement state event (cons ast trace))
               (values state #f #f trace)))
          (('guard expression statement)
-          (debug "guard: ~a? --> ~a\n" expression (eval-expression ast state expression))
+          (debug "guard: ~a? --> ~a =====> ~a\n" expression (eval-expression ast state expression) statement)
           (if (eval-expression ast state expression) 
               (process statement state event (cons ast trace)) 
               (values state #f #f trace)))
@@ -238,15 +267,28 @@
           (if (eval-expression ast state expression) 
               (process statement state event (cons ast trace)) 
               (values state #f #f trace)))
-         (('compound h t ...)
-          (receive (state ast action tr) (process h state event trace)
-            (if action
-                (if (pair? ast)
-                    (values state (append ast t) action tr)
-                    (values state (cons 'compound t) action tr))
-                (if (pair? ast)
-                    (process (append ast t) state event (cons ast tr))
-                    (process (cons 'compound t) state event tr)))))
+         (('compound h t ... )
+          (debug "\n\n******COMPOUND******\nh:~a\n" h)
+          (debug "t:~a\n" t)
+          (let ((declarative? (ast:declarative? h)))
+            (debug "d:~a\n" declarative?)
+            (let loop ((statements (cdr ast)) (loop-state state) (loop-trace trace))
+              (debug "\n[~a] " (comma-space-join (map ->string state)))
+              (if (null? statements)
+                  (values loop-state statements #f loop-trace)
+                  (receive (new-state new-ast new-action new-trace) 
+                      (if declarative?
+                          (process (car statements) state event '())
+                          (process (car statements) loop-state event '()))
+
+                    (debug "==> [~a]\n" (comma-space-join (map ->string new-state)))
+                    (debug "==> ast:~a\n" new-ast)
+                    (debug "==> ~a [~a]\n" new-trace (car (car statements)))
+                    (if declarative?
+                        (if (pair? new-trace)
+                            (loop (cdr statements) new-state (append new-trace trace))
+                            (loop (cdr statements) loop-state loop-trace))
+                        (loop (cdr statements) new-state (append new-trace loop-trace))))))))
          (('compound) (values state '() #f trace))
          (_ (throw 'match-error  (format #f "~a: process: no match: ~a\n"  (current-source-location) ast)))))))
 
@@ -267,9 +309,9 @@
     (#t 'true)
     (('field struct name) (->symbol (list struct '. name)))
     ((h ... t) (apply symbol-append (map ->symbol src)))
-    ((h . t) (symbol-join (list (->symbol h) '= (->symbol t))))
+    ((h . t) (list (->symbol h) '= (->symbol t)))
     (((h ... t)) (->symbol (car src)))
-    ((? string?) (string->symbol))
+    ((? string?) (string->symbol src))
     ((? symbol?) src)))
 
 (define (event< a b)

@@ -115,6 +115,7 @@ component Alarm
     [state.Armed]
     {
       on console.arm:
+
         illegal;
       on console.disarm:
       {

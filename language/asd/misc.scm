@@ -28,6 +28,7 @@
            >0
            =1
            >1
+           =2
            >2
            eat-one-space
            eat-one-space-or-newline
@@ -68,6 +69,7 @@
 (define (>0 x) (> x 0))
 (define (=1 x) (= x 1))
 (define (>1 x) (> x 1))
+(define (=2 x) (= x 2))
 (define (>2 x) (> x 2))
 
 (define (symbol< a b) (string< (symbol->string a) (symbol->string b)))
@@ -167,4 +169,3 @@
                                                       (display "#")))
              ((eq? *eof* c) (set! depth 0) #f)
              (else (display "#")))))))))
-

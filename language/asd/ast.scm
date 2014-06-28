@@ -42,6 +42,7 @@
            component
            component?
            compound
+           declarative?
            dir-matches?
            direction
            elements
@@ -217,6 +218,9 @@
 
 
 ;;; utilities
+(define (declarative? statement)
+  (or (on? statement) (guard? statement)))
+
 (define (provides? ast) (eq? (direction ast) 'provides))
 (define (requires? ast) (eq? (direction ast) 'requires))
 

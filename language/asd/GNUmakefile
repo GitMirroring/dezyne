@@ -56,7 +56,7 @@ baseline: dummy
 
 test: check
 check: compile ast pretty c++ csp simulate
-	./test.sh
+	./test.sh </dev/null
 
 ast:
 	./gaiag examples/interface-enums.asd

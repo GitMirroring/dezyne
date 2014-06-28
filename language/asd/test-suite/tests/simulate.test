@@ -22,6 +22,8 @@
   :use-module (test-suite lib)
   :use-module (test-suite misc)
 
+  :use-module (ice-9 pretty-print)
+
   :use-module (language asd ast:)
   :use-module (language asd reader)
   :use-module (language asd misc)
@@ -35,7 +37,30 @@
    (walk-trail
     (ast:interface (parse-asd 
       #{ 
-        interface i { } 
-        #}))
+        interface i { behaviour { on a: b; 
+                                     } } #}))
     '(a a a))
-   '(a a a)))
+   (map 
+    (lambda (x) (cons x '((on (a) (action b)) (action b)))) 
+    '(a a a))))
+
+(pass-if "simulator-guard-trail"
+   (noisy-equal?
+    (walk-trail
+     (ast:interface 
+      (parse-asd 
+       #{ interface i { behaviour
+                        {
+                         bool t = true ;
+                              on a:
+                              [t] t = !t ; 
+                              [!t] b     ; 
+                              } } #}))
+     '(a a a))
+    '((a (on (a) (guard t (assign t (! t))))
+         (guard t (assign t (! t))) 
+         (assign t (! t))) 
+      (a (guard (! t) (action b)) 
+         (action b)) 
+      (a (guard (! t) (action b)) 
+         (action b)))))
