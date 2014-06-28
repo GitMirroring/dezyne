@@ -37,7 +37,8 @@
 (define (debug m x) (display (format #f "~a: ~a\n" m x) (current-error-port)))
 
 (define (ast:make . t)
-  (let ((ast (if (pair? t) t (car t))))
+  (let ((ast t);; (ast (if (pair? t) t (car t)))
+        )
     (match ast
       (('imports i ...) ast)
       (('import type) ast)
@@ -67,19 +68,18 @@
 (define (make ast loc)
   (note-location (ast:make ast) loc))
 
-(define *locations-alist* '(()))
-
 (define (object? lst) #t)
 
 (define (object-id lst) 
   (and=> lst (compose pointer-address scm->pointer)))
 
-(define (note-location lst loc)
-  (set! *locations-alist* (assoc-set! *locations-alist* (object-id lst) loc))
-  lst)
+(define (note-location ast loc)
+  (when (supports-source-properties? ast)
+      (set-source-property! ast 'loc loc))
+  ast)
 
 (define (source-location lst)
-  (assoc-ref *locations-alist* (object-id lst)))
+  (source-property lst 'loc))
 
 (define (source-location->source-properties loc)
   `((filename . ,(source-location-input loc))
