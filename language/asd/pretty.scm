@@ -27,14 +27,14 @@
   :use-module (language asd misc)
 ;;  :use-module (language asd reader)
 
-  :export (asd-> asd->asd asd->pretty asd->string))
+  :export (ast-> ast->asd ast->pretty ast->string))
 
-(define (asd->string ast) 
+(define (ast->string ast) 
   (apply string-append (map ->string ast)))
 
-(define asd-> asd->string)
-(define asd->asd asd->string)
-(define asd->pretty asd->string)
+(define ast-> ast->string)
+(define ast->asd ast->string)
+(define ast->pretty ast->string)
 
 (define (->string src) 
   (match src

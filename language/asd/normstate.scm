@@ -38,16 +38,16 @@
   :use-module (language asd scheme)
   :use-module (language asd reader)
   :use-module (language asd ast:)
-  :export (asd-> asd->normstate normstate))
+  :export (ast-> ast->normstate normstate))
 
-(define (asd->normstate ast)
+(define (ast->normstate ast)
   (with-error-handling
-;;  (asd->pretty (normstate ast))))
-;;  (asd->scheme (normstate ast))))
-;;  (asd->scheme (remove-otherwise '() ast))))
-;;   (asd->pretty (remove-otherwise '() ast))))
-;;  (asd->scheme (combine-guards (normstate ((remove-otherwise '()) ast))))))
-  (asd->pretty (normstate ast))))
+;;  (ast->pretty (normstate ast))))
+;;  (ast->scheme (normstate ast))))
+;;  (ast->scheme (remove-otherwise '() ast))))
+;;   (ast->pretty (remove-otherwise '() ast))))
+;;  (ast->scheme (combine-guards (normstate ((remove-otherwise '()) ast))))))
+  (ast->pretty (normstate ast))))
 
 (define (normstate ast)
   (aggregate-on-stats (flatten-compound (combine-guards (passdown-on ((remove-otherwise '()) ast))))))
@@ -124,4 +124,4 @@
     (('guard g s) (ast:make 'guard g ((passdown-triggers triggers) s)))
     (_ (ast:make 'on triggers statement))))
 
-(define asd-> asd->normstate)
+(define ast-> ast->normstate)

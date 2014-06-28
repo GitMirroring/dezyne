@@ -34,10 +34,10 @@
   :use-module (language asd reader)
   :use-module (language asd normstate)
   :export (
-           asd->
+           ast->
            ))
 
-(define (asd-> ast)
+(define (ast-> ast)
   (let ((norm (normstate ast)))
     (module-define! (resolve-module '(language asd csp)) 'ast norm)  ;; FIXME
     (and-let* ((comp (ast:component norm))

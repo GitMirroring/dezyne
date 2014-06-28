@@ -19,7 +19,7 @@
 
 (define-module (language asd scheme)
   :use-module (ice-9 pretty-print)
-  :export (asd-> asd->scheme))
+  :export (ast-> ast->scheme))
 
-(define (asd->scheme tree) (pretty-print tree) "")
-(define asd-> asd->scheme)
+(define (ast->scheme tree) (pretty-print tree) "")
+(define ast-> ast->scheme)

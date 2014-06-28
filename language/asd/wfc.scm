@@ -31,12 +31,12 @@
 
   :use-module (language asd ast:)
   :use-module (language asd misc)
-  :use-module (language asd asd)
+  :use-module (language asd parse)
   :use-module (language asd reader)
 
   :export (ast-wellformed? read-asd-wellformed))
 
-(define (asd-> ast)
+(define (ast-> ast)
   (ast-wellformed? ast)
   "")
 

@@ -28,11 +28,11 @@
   :use-module (language asd animate)
   :use-module (language asd misc)
   :use-module (language asd reader)
-  :export (asd-> ))
+  :export (ast-> ))
 
 (define *ast* '())
 
-(define (asd-> ast)
+(define (ast-> ast)
   (set! *ast* ast)
   (module-define! (resolve-module '(language asd c++)) 'ast ast)  ;; FIXME
   (and-let* ((i (ast:interface ast))

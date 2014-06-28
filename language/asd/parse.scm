@@ -1,9 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
-;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;; Copyright © 2014  "Mu Lei" known as "NalaGinrut" <NalaGinrut@gmail.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -18,14 +15,14 @@
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
 
-(define-module (language asd asd)
+(define-module (language asd parse)
   #:use-module (system base lalr)
   #:use-module (language tree-il)
   #:use-module (system foreign)
 
   #:use-module (ice-9 match)
 
-  #:export (asd->
+  #:export (ast->
             compile-tree-il
             make-asd-tokenizer
             make-parser
@@ -271,4 +268,4 @@
     (() (exit))
     (tree `(const ,tree))))
 
-(define asd-> (@ (language asd pretty) asd->))
+(define ast-> (@ (language asd pretty) ast->))

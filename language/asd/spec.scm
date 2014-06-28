@@ -18,7 +18,7 @@
 
 (define-module (language asd spec)
   #:use-module (system base language)
-  #:use-module (language asd asd)
+  #:use-module (language asd parse)
   #:use-module (language asd tokenize)
   #:export (asd))
  

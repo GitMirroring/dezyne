@@ -25,11 +25,11 @@
   :use-module (ice-9 receive)
   :use-module (srfi srfi-1)
 
-  :use-module (language asd asd)
   :use-module (language asd ast:)
   :use-module (language asd misc)
+  :use-module (language asd parse)
   :use-module (language asd reader)
-  :export (asd->
+  :export (ast->
            explore-space
            walk-trail))
 
@@ -41,7 +41,7 @@
 (define *ast* '())
 (define *module* #f)
 
-(define (asd-> ast)
+(define (ast-> ast)
   (set! *ast* ast)
   (and=> (ast:interface ast) simulate-module)
   (and=> (ast:component ast) simulate-module)

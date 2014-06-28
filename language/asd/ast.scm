@@ -28,8 +28,8 @@
   :use-module (srfi srfi-1)
   :use-module (system foreign)
 
-  :use-module (language asd asd)
   :use-module (language asd misc)
+  :use-module (language asd parse)
   :use-module (language asd reader)
 
   :export (
@@ -85,7 +85,7 @@
            ))
 
 (define (make . t)
-  (apply (@@ (language asd asd) ast:make) t))
+  (apply (@@ (language asd parse) ast:make) t))
 
 (define (member- ast name) (or (assoc name (body ast)) '()))
 

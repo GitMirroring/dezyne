@@ -31,7 +31,7 @@ baseline = baseline
 
 default: all
 
-all: compile match wfc check
+all: compile wfc check
 
 tags:
 	etags $(shell git ls-files)
@@ -92,9 +92,6 @@ c++: baseline
 	$(diff) $(baseline)/AlarmComponent.h .
 	$(diff) $(baseline)/AlarmComponent.cpp . | $(sed)
 	g++ -I ../../examples/codegen/asd_cpp_runtime --std=c++11 -c AlarmComponent.cpp
-
-match:
-	guile -L ../.. ./match.scm
 
 wfc: compile
 	-./gaiag -l wfc examples/double-on.asd

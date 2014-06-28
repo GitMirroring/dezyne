@@ -23,10 +23,16 @@
 
   :use-module (system base language)
 
-  :use-module (language asd asd)
   :use-module (language asd misc)
+  :use-module (language asd parse)
   :use-module (language asd tokenize)
-  :export (parse-asd read-asd))
+  :export (ast->ast parse-asd read-asd))
+
+(define (ast->ast x)
+  (or (and-let* ((file-name (->string x))
+                 ((file-exists? file-name)))
+                (read-asd file-name))
+      (parse-asd x)))
 
 (define (read-and-parse lang port cenv)
   (let ((exp ((language-reader lang) port cenv)))

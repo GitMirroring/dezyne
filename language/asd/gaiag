@@ -71,7 +71,7 @@ Languages: asd c++ scheme
      options)))
 
 (define (file->lang file-name language)
-  (display ((module-ref (resolve-module `(language asd ,language)) 'asd->) (read-asd file-name))))
+  (display ((module-ref (resolve-module `(language asd ,language)) 'ast->) (read-asd file-name))))
 
 (define (main args)
   (let* ((options (parse-opts args))
