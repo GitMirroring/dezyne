@@ -177,6 +177,7 @@
    ((eq? scm #nil) (json-build-null port))
    ((boolean? scm) (json-build-boolean scm port))
    ((number? scm) (json-build-number scm port))
+   ((symbol? scm) (json-build-string (symbol->string scm) port escape))
    ((string? scm) (json-build-string scm port escape))
    ((list? scm) (json-build-array scm port escape pretty level))
    ((hash-table? scm) (json-build-object scm port escape pretty level))
