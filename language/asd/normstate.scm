@@ -52,22 +52,27 @@
 (define (normstate ast)
   (aggregate-on-stats (flatten-compound (combine-guards (passdown-on ((remove-otherwise '()) ast))))))
 
+(define (wrap-compound-as-needed x)
+  (if (or (null? x) (>1 (length x)))
+      (ast:make 'compound x)
+      (car x)))
+
 (define (aggregate-on-stats ast)
 ; vind alle ons met matching guards
 ; duw alle ons binnen de eerste guard en discard de rest
   (match ast
     (('compound guards ...)
      (ast:make 'compound
-	       (reverse
-			(let loop ((guards guards))
-			  (if ( null? guards)
-			      '()
-			      (receive (shared-guards remainder)
-				  (partition (lambda (x) (ast:guard-equals? (car guards) x)) guards)
-				(let* ((expression (ast:expression (car shared-guards)))
-				       (aggregated-guard (ast:make 'guard expression
-								   (ast:make 'compound (map ast:statement shared-guards)))))
-				  (cons aggregated-guard (loop remainder)))))))))
+               (reverse
+                (let loop ((guards guards))
+                  (if ( null? guards)
+                      '()
+                      (receive (shared-guards remainder)
+                          (partition (lambda (x) (ast:guard-equals? (car guards) x)) guards)
+                        (let* ((expression (ast:expression (car shared-guards)))
+                               (aggregated-guard (ast:make 'guard expression
+                                                           (wrap-compound-as-needed (map ast:statement shared-guards)))))
+                          (cons aggregated-guard (loop remainder)))))))))
     ((h ...) (map aggregate-on-stats ast))
     (_ ast)))
 

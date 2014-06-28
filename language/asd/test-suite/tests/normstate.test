@@ -1,0 +1,90 @@
+;; -*-scheme-*-
+;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
+;;
+;; Copyright (C) 2014  Jan Nieuwenhuizen <janneke@gnu.org>
+;;
+;; Gaiag is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU Affero General Public License as
+;; published by the Free Software Foundation, either version 3 of the
+;; License, or (at your option) any later version.
+;;
+;; Gaiag is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU Affero General Public License for more details.
+;;
+;; You should have received a copy of the GNU Affero General Public License
+;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
+
+(read-set! keywords 'prefix)
+
+(define-module (test-handler)
+  :use-module (test-suite lib)
+  :use-module (test-suite misc)
+
+  :use-module (ice-9 pretty-print)
+
+  :use-module (language asd ast:)
+  :use-module (language asd reader)
+  :use-module (language asd misc)
+  :use-module (language asd normstate))
+
+(pass-if "normstate-first-dummy-test"
+	 #t)
+
+(pass-if "normstate-101" ;; FIXME: normstate eats (guard true (compound))?
+  (noisy-equal?
+   (normstate
+    (ast:interface (parse-asd 
+      #{ 
+        interface i { behaviour { on a: [true] { } } } #})))
+   '(interface i (types) (events) 
+               (behaviour #f (types) (variables) 
+                          (compound 
+                           (guard true (compound)))))))
+
+(pass-if "normstate-102"
+  (noisy-equal?
+   (normstate
+    (ast:interface (parse-asd 
+      #{ 
+        interface i { behaviour { on a: [true] b;
+                                     } } #})))
+   '(interface i (types) (events) 
+               (behaviour #f (types) (variables) 
+                          (compound 
+                           (guard true 
+                                  (on (a) 
+                                      (action b))))))))
+
+(pass-if "normstate-aggregate-passive"
+  (noisy-equal?
+   (normstate
+    (ast:interface (parse-asd 
+      #{ 
+        interface i { behaviour { on a,b,c: [true] d;
+                                     } } #})))
+   '(interface i (types) (events) 
+               (behaviour #f (types) (variables) 
+                          (compound 
+                           (guard true 
+                                  (on (a b c) 
+                                      (action d))))))))
+
+(pass-if "normstate-aggregate-active"
+  (noisy-equal?
+   (normstate
+    (ast:interface (parse-asd 
+      #{ 
+        interface i { behaviour { on a: [true] d;
+                                     on b: [true] d;
+                                     on c: [true] d;
+                                     } } #})))
+   '(interface i (types) (events) 
+               (behaviour #f (types) (variables) 
+                          (compound 
+                           (guard true 
+                                  (compound
+                                   (on (a) (action d))
+                                   (on (b) (action d))
+                                   (on (c) (action d)))))))))
