@@ -16,6 +16,27 @@
 ;;;
 ;;; You should have received a copy of the GNU Affero General Public
 ;;; License along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
+;;; 
+;;; Commentary:
+;;; 
+;;; Code:
+
+;; this file is part of gaiag, guile in asd in asd in guile.
+;;
+;; copyright (c) 2014  jan nieuwenhuizen <janneke@gnu.org>
+;;
+;; gaiag is free software: you can redistribute it and/or modify
+;; it under the terms of the gnu affero general public license as
+;; published by the free software foundation, either version 3 of the
+;; license, or (at your option) any later version.
+;;
+;; gaiag is distributed in the hope that it will be useful,
+;; but without any warranty; without even the implied warranty of
+;; merchantability or fitness for a particular purpose.  see the
+;; gnu affero general public license for more details.
+;;
+;; you should have received a copy of the gnu affero general public license
+;; along with gaiag.  if not, see <http://www.gnu.org/licenses/>.
 
 (read-set! keywords 'prefix)
 
@@ -27,6 +48,7 @@
 
   :use-module (language asd misc)
   :export (animate-file
+           animate-module-populate
            animate-string
            animate-template
            file-line-column-location
@@ -48,16 +70,29 @@
 (define (template? x)
   (and (list? x) (pair? (assoc (car x) (templates)))))
 
-(define (template->string name . key-func-pairs)
+(define (animate-module-populate module parameter key-procedure-pairs)
+  (let loop ((pairs key-procedure-pairs))
+    (if (null? pairs)
+        module
+        (let* ((pair (car pairs))
+               (key (car pair))
+               (procedure-or-data (cdr pair))
+               (value (if (procedure? procedure-or-data)
+                          (procedure-or-data parameter) 
+                          procedure-or-data)))
+          (module-define! module key value)
+          (loop (cdr pairs))))))
+
+(define (template->string name . key-procedure-pairs)
   (let ((template (assoc-ref (templates) name)))
     (animate-template name (map (lambda (x)
                                (let* ((pair (car x))
                                       (key (car pair))
-                                      (func (cdr pair))
+                                      (procedure (cdr pair))
                                       (data (cadr x))
-                                      (value (func data)))
+                                      (value (procedure data)))
                                  (cons key value)))
-                             (zip template key-func-pairs)))))
+                             (zip template key-procedure-pairs)))))
 
 (define (animate-template name key-value-pairs)
   (let ((module (current-module)))
