@@ -23,6 +23,8 @@
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 match)
   :use-module (ice-9 rdelim)
+  :use-module (srfi srfi-1)
+  :use-module (rnrs io ports)
   :export (
            =0
            >0
@@ -35,7 +37,8 @@
            fand
            f-is-null
            for
-           gulp-text-file
+           gulp-file
+           gulp-port
            hash-read-string
            dump-file
            *eof*
@@ -90,16 +93,19 @@
 (define (for . args)
   (eval `(or ,@args) (current-module)))
 
-(define (gulp-text-file name)
-  (let* ((file (open-file (->string name) "r"))
-	 (text (read-delimited "" file)))
-    (close file)
-    text))
-
-(define (dump-file name string)
-  (let* ((file (open-output-file (->string name))))
+(define (dump-file file-name string)
+  (let* ((file (open-output-file (->string file-name))))
     (display string file)
     (close file)))
+
+(define (gulp-file file-name)
+  (gulp-port (open-input-file (->string file-name))))
+
+(define (gulp-file-binary file-name)
+  (call-with-input-file (->string file-name) get-bytevector-all))
+
+(define (gulp-port . port) 
+  (read-delimited "" (if (pair? port) (car port) (current-input-port))))
 
 (define (logf port string . rest)
   (apply format (cons* port string rest))
@@ -120,7 +126,7 @@
     ((h ... t) (apply string-append (map ->string src)))
     (_ "")))
 
-(define-public (flatten x)
+(define (flatten x)
   "unnest list."
   (let loop ((x x) (tail '()))
     (cond ((list? x) (fold-right loop tail x))

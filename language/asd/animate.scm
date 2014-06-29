@@ -38,7 +38,7 @@
 
 (define template-dir (make-parameter '(templates)))
 (define (template-file name) (string-join (map symbol->string (append (template-dir) (list name))) "/"))
-(define (gulp-template name) (gulp-text-file (template-file name)))
+(define (gulp-template name) (gulp-file (template-file name)))
 
 (define templates (make-parameter
                   `((test . ((foo . ,identity)
@@ -84,7 +84,7 @@
           (dump-file (->string out-name)
                      (with-output-to-string
                        (lambda ()
-                         (animate-string (gulp-text-file file-name) module)))))
+                         (animate-string (gulp-file file-name) module)))))
         (lambda (key . args)
           (let* ((tell (assoc-ref (car args) 'ftell))
                  (line-column (if (pair?  tell)

@@ -23,9 +23,9 @@
   :use-module (srfi srfi-1)
 
   :use-module (language asd animate)
-;;  :use-module (language asd ast:)
+  :use-module (language asd ast:)
   :use-module (language asd misc)
-;;  :use-module (language asd reader)
+  :use-module (language asd reader)
 
   :export (ast-> ast->asd ast->pretty ast->string))
 
