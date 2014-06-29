@@ -27,7 +27,6 @@ diff = diff -uw -I '^ *$$' -I '^ *//'
 sed = sed -e 's/^-gen/gen/' -re 's/((cppbase.cpp|.hh.scm|.cc.scm):[0-9]*):/\1:warning:/'
 BUILD = build
 asdgen = ASD_PREFIX=$(DEPTH) $(DEPTH)/$(BUILD)/asdgenerator
-baseline = baseline
 
 default: all
 
@@ -37,28 +36,29 @@ tags:
 	etags $(shell git ls-files)
 
 compile:
-	guile -L ../.. spec.scm 
+	guile -L ../.. spec.scm
 
 clean:
-	rm -rf ~/.cache/guile
+	rm -rf ~/.cache/guile out baseline
 
 dummy:
 
 baseline: dummy
-	$(asdgen) -l cpp examples/alarm-component-pretty.asd && mv Alarm* $(baseline)
-	$(asdgen) -l cpp examples/CommImpl.asd && mv CommImpl* $(baseline)
-	$(asdgen) -l cpp examples/Aap.asd && mv AapInt* NootComp* $(baseline)
-	$(asdgen) -l cpp examples/Alarm.asd && mv Alarm* $(baseline)
-	$(asdgen) -l cpp examples/Console.asd && mv Console* $(baseline)
-	$(asdgen) -l cpp examples/Sensor.asd && mv Sensor* $(baseline)
-	$(asdgen) -l cpp examples/Siren.asd && mv Siren* $(baseline)
-	$(asdgen) -l csp examples/Alarm.asd && mv Alarm.csp $(baseline)
+	rm -rf baseline && mkdir -p baseline
+	$(asdgen) -l cpp examples/alarm-component-pretty.asd && mv Alarm* baseline
+	$(asdgen) -l cpp examples/CommImpl.asd && mv CommImpl* baseline
+	$(asdgen) -l cpp examples/Aap.asd && mv AapInt* NootComp* baseline
+	$(asdgen) -l cpp examples/Alarm.asd && mv Alarm* baseline
+	$(asdgen) -l cpp examples/Console.asd && mv Console* baseline
+	$(asdgen) -l cpp examples/Sensor.asd && mv Sensor* baseline
+	$(asdgen) -l cpp examples/Siren.asd && mv Siren* baseline
+	$(asdgen) -l csp examples/Alarm.asd && mv Alarm.csp baseline
 
 test: check
 check: compile ast pretty c++ csp simulate
 	./test.sh </dev/null
 
-ast:
+ast: compile
 	./gaiag examples/interface-enums.asd
 	./gaiag examples/interface-events.asd
 	./gaiag examples/interface-reply-events.asd
@@ -66,56 +66,58 @@ ast:
 	./gaiag examples/interface-imports.asd
 	./gaiag examples/alarm-component.asd
 
-pretty:
+pretty: compile
+	rm -rf out && mkdir out && ln -s ../examples ../templates out
 	guile -L ../.. --language=asd -s examples/interface-enums.asd | indent
 	./gaiag -l asd examples/interface-enums.asd | indent
-	-./gaiag -l asd examples/alarm-component-pretty.asd | indent | tee pretty.asd && $(diff) examples/alarm-component-pretty.asd pretty.asd
+	-./gaiag -l asd examples/alarm-component-pretty.asd | indent | tee out/pretty.asd && $(diff) examples/alarm-component-pretty.asd out/pretty.asd
 
-c++: baseline
-	./gaiag -l c++ examples/Alarm.asd
-	-$(diff) $(baseline)/AlarmComponent.h .
-	-$(diff) $(baseline)/AlarmComponent.cpp .
-	./gaiag examples/Aap.asd
-	./gaiag -l c++ examples/Aap.asd
-	[ -f $(baseline)/NootComponent.h ] && $(diff) $(baseline)/NootComponent.h .
-	-[ -f $(baseline)/NootComponent.cpp ] && $(diff) $(baseline)/NootComponent.cpp .  | $(sed)
-#	./gaiag -l c++ examples/CommImpl.asd
-#	[ -f $(baseline)/CommImplComponent.h ] && $(diff) $(baseline)/CommImplComponent.h .
-#	-[ -f $(baseline)/CommImplComponent.cpp ] && $(diff) $(baseline)/CommImplComponent.cpp .
-	./gaiag -l c++ examples/Console.asd
-	$(diff) $(baseline)/ConsoleInterface.h .
-	./gaiag -l c++ examples/Sensor.asd
-	$(diff) $(baseline)/SensorInterface.h .
-	./gaiag -l c++ examples/Siren.asd
-	$(diff) $(baseline)/SirenInterface.h .
-	./gaiag -l c++ examples/Alarm.asd
-	$(diff) $(baseline)/AlarmComponent.h .
-	$(diff) $(baseline)/AlarmComponent.cpp . | $(sed)
-	g++ -I ../../examples/codegen/asd_cpp_runtime --std=c++11 -c AlarmComponent.cpp
+c++: compile baseline
+	rm -rf out && mkdir out && ln -s ../examples ../templates out
+	cd out && ../gaiag -l c++ examples/Alarm.asd
+	-$(diff) baseline/AlarmComponent.h out
+	-$(diff) baseline/AlarmComponent.cpp out
+	cd out && ../gaiag examples/Aap.asd
+	cd out && ../gaiag -l c++ examples/Aap.asd
+	[ -f baseline/NootComponent.h ] && $(diff) baseline/NootComponent.h out
+	-[ -f baseline/NootComponent.cpp ] && $(diff) baseline/NootComponent.cpp out | $(sed)
+#	cd out && ../gaiag -l c++ examples/CommImpl.asd
+#	[ -f baseline/CommImplComponent.h ] && $(diff) baseline/CommImplComponent.h out
+#	-[ -f baseline/CommImplComponent.cpp ] && $(diff) baseline/CommImplComponent.cpp out
+	cd out && ../gaiag -l c++ examples/Console.asd
+	$(diff) baseline/ConsoleInterface.h out
+	cd out && ../gaiag -l c++ examples/Sensor.asd
+	$(diff) baseline/SensorInterface.h out
+	cd out && ../gaiag -l c++ examples/Siren.asd
+	$(diff) baseline/SirenInterface.h out
+	cd out && ../gaiag -l c++ examples/Alarm.asd
+	$(diff) baseline/AlarmComponent.h out
+	$(diff) baseline/AlarmComponent.cpp out | $(sed)
+	cd out && g++ -I ../../../examples/codegen/asd_cpp_runtime --std=c++11 -c AlarmComponent.cpp
 
 wfc: compile
 	-./gaiag -l wfc examples/double-on.asd
 	#-./gaiag -l wfc examples/double-on-compound.asd #TODO
-	-./gaiag -l wfc examples/mixing.asd 
+	-./gaiag -l wfc examples/mixing.asd
 
 csp: compile
-	./gaiag -l csp examples/Alarm.asd
-	$(diff) examples/Alarm.csp Alarm.csp
-	@$(diff) examples/Alarm.csp Alarm.csp | diffstat || true
-	./gaiag -l csp examples/imperative.asd
-	$(diff) examples/imperative.csp imperative.csp || true
-	@$(diff) examples/imperative.csp imperative.csp | diffstat || true
-#	./gaiag -l csp examples/if.asd
-#	$(diff) examples/if.csp C.csp
+	rm -rf out && mkdir out && ln -s ../examples ../templates out
+	cd out && ../gaiag -l csp examples/Alarm.asd
+	$(diff) examples/Alarm.csp out
+	@$(diff) examples/Alarm.csp out | diffstat || true
+	cd out && ../gaiag -l csp examples/imperative.asd
+	$(diff) examples/imperative.csp out || true
+	@$(diff) examples/imperative.csp out | diffstat || true
+#	cd out && ../gaiag -l csp examples/if.asd
+#	$(diff) examples/if.csp out/C.csp
 
 if: compile
 	./gaiag examples/if.asd
 	./gaiag -l pretty examples/if.asd | indent
-	./gaiag -l c++ examples/if.asd
+	cd out && ../gaiag -l c++ examples/if.asd
 
 simulate: compile
 #	./gaiag -l simulate examples/if.asd
 	./gaiag -l simulate -t '(a a a a a)' examples/if.asd
 #	./gaiag -l simulate examples/Alarm.asd |& grep '^\*\*' | wc -l
 	./gaiag -l simulate -t '$(shell cat examples/Alarm-trail.scm)' examples/Alarm.asd | ./scm2json
-

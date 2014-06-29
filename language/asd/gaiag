@@ -1,6 +1,6 @@
 #! /bin/sh
 # -*- scheme -*-
-exec guile -L ../.. -L . -e main -s $0 "$@"
+exec guile -L $(dirname $0)/../.. -L $(dirname $0) -e main -s $0 "$@"
 !#
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
@@ -30,7 +30,6 @@ exec guile -L ../.. -L . -e main -s $0 "$@"
 
   :use-module (system repl error-handling)
 
-;;  :use-module (language asd tokenize)
   :use-module (language asd misc)
   :use-module (language asd reader)
 
