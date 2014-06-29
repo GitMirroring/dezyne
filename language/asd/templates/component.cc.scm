@@ -31,7 +31,7 @@ templates/component.cc.scm:29: here */
     #.port #.interface #.api Proxy& operator = (const #.port #.interface #.api Proxy& other);
     #.port #.interface #.api Proxy(const #.port #.interface #.api Proxy& other);
   };
-#} (ast:body (ast:ports (ast:component ast))))
+#} ((compose ast:body ast:ports ast:component) ast))
 
   struct #.component 
   {
@@ -55,7 +55,7 @@ templates/component.cc.scm:29: here */
     void #.port #.interface #.event (Context& context);
 #}
     port (filter (ast:dir-matches? port) (ast:body (ast:events port))))
-#} (ast:body (ast:ports (ast:component ast))))
+#} ((compose ast:body ast:ports ast:component) ast))
 
     protected:
     std::string m_TypeName;
@@ -83,7 +83,7 @@ templates/component.cc.scm:65: TODO function-definitions */
 #.else-typed 
     void Set#.port #.interface #.api #.type ();
 #.endif-typed 
-#} (ast:body (ast:ports (ast:component ast))))
+#} ((compose ast:body ast:ports ast:component) ast))
 
 /*
 templates/component.cc.scm:87: TODO instances */
@@ -131,7 +131,7 @@ templates/component.cc.scm:87: TODO instances */
     Context m_Context;
 #(map-ports
 #{    boost::shared_ptr<#.port #.interface #.api Proxy> m_#.port #.interface #.api Proxy;
-#} (ast:body (ast:ports (ast:component ast))))
+#} ((compose ast:body ast:ports ast:component) ast))
     Component(const Component&);
     Component& operator = (const Component&);
     
@@ -157,7 +157,7 @@ templates/component.cc.scm:87: TODO instances */
 ##if 0
     virtual void Get#.port Interface(boost::shared_ptr<#.interface Interface>* intf);
 ##endif
-#})#}  (ast:body (ast:ports (ast:component ast))))
+#})#}  ((compose ast:body ast:ports ast:component) ast))
     virtual void Register#.callback (boost::shared_ptr<asd::channels::ISingleThreaded> cb);
   };
 
@@ -192,7 +192,7 @@ templates/component.cc.scm:87: TODO instances */
 
 #} port (filter (ast:dir-matches? port) (ast:body (ast:events port))))
   
-#} (ast:body (ast:ports (ast:component ast))))
+#} ((compose ast:body ast:ports ast:component) ast))
 
   Context::Context()
   : asd_0::SingleThreadedContext#.no-dpc ()
@@ -204,7 +204,7 @@ templates/component.cc.scm:87: TODO instances */
 #(map-ports
 #{     boost::shared_ptr<#.interface Interface> m_#.port ;
     // m_#.port  = #.interface Component::GetInstance();
-#} (ast:body (ast:ports (ast:component ast))))
+#} ((compose ast:body ast:ports ast:component) ast))
 /*
 templates/component.cc.scm:206: TODO: constructor-instances */
 /*
@@ -215,7 +215,7 @@ templates/component.cc.scm:208 TODO: binding */
   {
 # (map-ports
 #{    // #.interface Component::ReleaseInstance();
-#} (ast:body (ast:ports (ast:component ast))))
+#} ((compose ast:body ast:ports ast:component) ast))
   }
   
 #(string-if (ast:behaviour (ast:component ast))
@@ -257,7 +257,7 @@ templates/component.cc.scm:208 TODO: binding */
 #.endif-typed 
     unblock();
   }
-#} (ast:body (ast:ports (ast:component ast))))
+#} ((compose ast:body ast:ports ast:component) ast))
 
   Component::Component()
   : m_Context()
@@ -266,7 +266,7 @@ templates/component.cc.scm:208 TODO: binding */
 #(map-ports
 #{  , m_#.port #.interface #.api Proxy(new #.port #.interface #.api Proxy(m_Context))
 
-#}  (ast:body (ast:ports (ast:component ast))))
+#}  ((compose ast:body ast:ports ast:component) ast))
 #})
   {
     ASD_TRACE_ENTER("#.component ", "", "", "");
@@ -316,7 +316,7 @@ templates/component.cc.scm:208 TODO: binding */
     m_Context.Set#.port (#.cb );
   }
 #}
-)#}  (ast:body (ast:ports (ast:component ast))))
+)#}  ((compose ast:body ast:ports ast:component) ast))
 
   void Component::Register#.callback (boost::shared_ptr<asd::channels::ISingleThreaded> #.cb )
   {
@@ -348,7 +348,7 @@ templates/component.cc.scm:208 TODO: binding */
   }
 #}
     port (filter (ast:dir-matches? port) (ast:body (ast:events port))))
-#}  (ast:body (ast:ports (ast:component ast))))
+#}  ((compose ast:body ast:ports ast:component) ast))
 #})
 
 /*
@@ -363,7 +363,7 @@ templates/component.cc.scm:351: TODO function-definitions */
 {
   return boost::shared_ptr<#.interface Interface>(new #.component ImplScope::Component);
 }
-#} (ast:body (ast:ports (ast:component ast))))
+#} ((compose ast:body ast:ports ast:component) ast))
 #}
 #{
 boost::shared_ptr<#.component Component> #.component Component::GetInstance()

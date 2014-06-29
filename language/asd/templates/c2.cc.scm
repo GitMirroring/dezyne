@@ -9,7 +9,7 @@ struct #.component
 #{  
   #.interface Port #.port ;
 #}
-  (ast:body (ast:ports (ast:component ast))))
+ ((compose ast:body ast:ports ast:component) ast))
 
   #.component ()
   : foo ()
@@ -20,7 +20,7 @@ struct #.component
   (if (eq? (ast:direction port) 'provides)
      (list (comma-join m) ",{}")
      (list "{}, " (comma-join m))))}
-#} (ast:body (ast:ports (ast:component ast))))
+#} ((compose ast:body ast:ports ast:component) ast))
   {}
 
 #(map-ports
@@ -33,7 +33,7 @@ struct #.component
     #.port .#(ast:direction event).#(action .port .event)();
   }
 #} port (ast:body (ast:events port)))
-#} (ast:body (ast:ports (ast:component ast))))
+#} ((compose ast:body ast:ports ast:component) ast))
 
 XXXhandwrittervoid disarm()
   {

@@ -14,7 +14,7 @@
 
 struct #.interface 
 {
- #(->string (map declare-enum (ast:body (ast:types (ast:interface ast)))))
+ #(->string (map declare-enum ((compose ast:body ast:types ast:interface) ast)))
 };
 
 class #.interface #.api : public #.interface 
@@ -24,7 +24,7 @@ public:
 
 # (map-events #{
   virtual void #.event () = 0; 
-#}  (filter ast:in? (ast:body (ast:events (ast:interface ast)))))
+#}  (filter ast:in? ((compose ast:body ast:events ast:interface) ast)))
 
 protected:
   #.interface #.api () {}
@@ -39,7 +39,7 @@ public:
   virtual ~#.interface #.callback () {}
 # (map-events
 #{  virtual void #.event () = 0;
-#} (filter ast:out? (ast:body (ast:events (ast:interface ast)))))
+#} (filter ast:out? ((compose ast:body ast:events ast:interface) ast)))
 
 protected:
   #.interface #.callback () {}
