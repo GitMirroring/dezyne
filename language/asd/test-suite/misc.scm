@@ -20,7 +20,8 @@
 (define-module (test-suite misc)
   :use-module (language asd misc)
   :export (fail
-	   noisy-equal?))
+	   noisy-equal?
+           pretty-noisy-equal?))
 
 (define (fail string . rest)
   (apply stderr (cons* string rest))
@@ -29,5 +30,9 @@
 (define (noisy-equal? a b)
   (or (equal? a b)
       (fail "~a != ~a\n" a b)))
+
+(define (pretty-noisy-equal? a b)
+  (or (equal? a b)
+      (fail "~a!=\n~a" (pretty-string a) (pretty-string b))))
 
 (read-hash-extend #\{ hash-read-string)

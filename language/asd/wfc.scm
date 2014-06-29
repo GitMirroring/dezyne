@@ -34,7 +34,12 @@
   :use-module (language asd parse)
   :use-module (language asd reader)
 
-  :export (ast-wellformed? read-asd-wellformed))
+  :export (
+           ast-wellformed? 
+           read-asd-wellformed
+           verify-on
+           verify-mixing
+           ))
 
 (define (ast-> ast)
   (ast-wellformed? ast)
@@ -46,7 +51,8 @@
                             (filter null-is-#f (verify-mixing ast)))))
             (for-each (lambda (e) 
                         (let ((message (car e))
-                              (properties (source-location->source-properties (cadr e))))
+                              (properties (source-location->source-properties 
+                                           (source-location (cadr e)))))
                           (stderr "~a:~a:~a: error: not well-formed: ~a\n" 
                                   (assoc-ref properties 'filename) 
                                   (assoc-ref properties 'line) 
@@ -60,7 +66,7 @@
 (define (read-asd-wellformed file-name)
   (ast-wellformed? (read-asd file-name)))
 
-(define (error message lst) (list message (source-location lst)))
+(define (error message ast) (list message ast))
 
 (define (verify-on ast)
   (and-let* ((statements ((compose ast:body ast:statement ast:interface) ast))
@@ -69,11 +75,13 @@
 
 (define* (statement-on src :key (count 0))
   (match src
-         (('on e s) (if (>0 count) (error "double on" src) (statement-on s :count (1+ count))))
-         (('guard expr s) (statement-on s :count count))
-         (('compound s ...) (null-is-#f
-                               (filter identity (map (lambda (x) (statement-on x :count count)) s))))
-         (('assign x ...) '())))
+    (('on e s) (if (>0 count) (error "double on" src) (statement-on s :count (1+ count))))
+    (('guard expr s) (statement-on s :count count))
+    (('compound s ...) (null-is-#f
+                        (filter identity (map (lambda (x) (statement-on x :count count)) s))))
+    (('action b ...) '())
+    (('assign x ...) '())
+    (_ (throw 'match-error  (format #f "~a:statement-on: no match: ~a\n" (current-source-location) src)))))
 
 (define (verify-mixing ast)
   (let ((statement ((compose ast:statement ast:interface) ast)))

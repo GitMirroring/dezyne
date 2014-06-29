@@ -33,7 +33,7 @@
 	 #t)
 
 (pass-if "normstate-101" ;; FIXME: normstate eats (guard true (compound))?
-  (noisy-equal?
+  (pretty-noisy-equal?
    (normstate
     (ast:interface (parse-asd 
       #{ 
@@ -44,7 +44,7 @@
                            (guard true (compound)))))))
 
 (pass-if "normstate-102"
-  (noisy-equal?
+  (pretty-noisy-equal?
    (normstate
     (ast:interface (parse-asd 
       #{ 
@@ -58,7 +58,7 @@
                                       (action b))))))))
 
 (pass-if "normstate-aggregate-passive"
-  (noisy-equal?
+  (pretty-noisy-equal?
    (normstate
     (ast:interface (parse-asd 
       #{ 
@@ -72,7 +72,7 @@
                                       (action d))))))))
 
 (pass-if "normstate-aggregate-active"
-  (noisy-equal?
+  (pretty-noisy-equal?
    (normstate
     (ast:interface (parse-asd 
       #{ 

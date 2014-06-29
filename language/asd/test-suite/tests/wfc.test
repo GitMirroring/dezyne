@@ -22,23 +22,33 @@
   :use-module (test-suite lib)
   :use-module (test-suite misc)
 
-  :use-module (language asd misc)
   :use-module (language asd reader)
-  :use-module (language asd simulate))
+  :use-module (language asd wfc))
 
-(pass-if "asd-first-dummy-test"
+(pass-if "wfc-first-dummy-test"
 	 #t)
 
-(pass-if "asd-parse-interface"
+(pass-if "wfc-double-on"
   (pretty-noisy-equal?
-   (parse-asd 
-    #{ interface i { } #}
-    )
-   '((interface i (types) (events) (behaviour)))))
+   (verify-on
+    (parse-asd 
+     #{ 
+       interface i { behaviour { [true] on a: [false] on a: b;
+                                 } } #}))
+   '(("double on" 
+      (on (a) 
+          (action b))))))
 
-(pass-if "asd-parse-component"
+(pass-if "wfc-mixing"
   (pretty-noisy-equal?
-   (parse-asd 
-    #{ component c { } #}
-    )
-   '((component c (ports) (behaviour)))))
+   (verify-mixing
+    (parse-asd 
+     #{ 
+       interface i { behaviour { bool b = false;
+                                      [true] on a: b;
+                                      b = true;
+                                      } } #}))
+   '((("mixing guarded"
+       (guard true 
+              (on (a) 
+                  (action b))))))))

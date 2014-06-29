@@ -33,7 +33,7 @@
 	 #t)
 
 (pass-if "simulator-simple-trail"
-  (noisy-equal?
+  (pretty-noisy-equal?
    (walk-trail
     (ast:interface (parse-asd 
       #{ 
@@ -45,7 +45,7 @@
     '(a a a))))
 
 (pass-if "simulator-guard-trail"
-   (noisy-equal?
+   (pretty-noisy-equal?
     (walk-trail
      (ast:interface 
       (parse-asd 

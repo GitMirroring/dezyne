@@ -22,6 +22,7 @@
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 match)
+  :use-module (ice-9 pretty-print)
   :use-module (ice-9 rdelim)
   :use-module (srfi srfi-1)
   :use-module (rnrs io ports)
@@ -46,6 +47,7 @@
            join
            null-is-#f
            one-is-#f
+           pretty-string
            stderr
            stdout
            symbol<
@@ -175,3 +177,6 @@
                                                       (display "#")))
              ((eq? *eof* c) (set! depth 0) #f)
              (else (display "#")))))))))
+
+(define (pretty-string scm)
+  (with-output-to-string (lambda () (pretty-print scm))))
