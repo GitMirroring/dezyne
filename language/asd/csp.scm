@@ -35,6 +35,8 @@
   :use-module (language asd normstate)
   :export (
            ast->
+           csp-component
+           csp-module
            ))
 
 (define (ast-> ast)
@@ -42,8 +44,13 @@
     (module-define! (resolve-module '(language asd csp)) 'ast norm)  ;; FIXME
     (and-let* ((comp (ast:component norm))
 	       (name (ast:name comp)))
-	      (animate-file 'templates/component.csp.scm (list name '.csp) (csp-module norm))))
+	      (dump-output (list name '.csp) 
+                           (lambda ()
+                             (csp-component (csp-module norm))))))
   "")
+
+(define (csp-component module)
+  (animate-file 'templates/component.csp.scm module))
 
 (define (ast-norm module-name) (let ((ast (car (ast:read-ast module-name)))) (normstate ast)))
 

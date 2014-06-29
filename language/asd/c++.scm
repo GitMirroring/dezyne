@@ -28,7 +28,13 @@
   :use-module (language asd animate)
   :use-module (language asd misc)
   :use-module (language asd reader)
-  :export (ast-> ))
+  :export (ast->
+           c++-module
+           november
+           traditional-interface
+           traditional-component-header
+           traditional-component
+           ))
 
 (define *ast* '())
 
@@ -37,16 +43,33 @@
   (module-define! (resolve-module '(language asd c++)) 'ast ast)  ;; FIXME
   (and-let* ((i (ast:interface ast))
              (file-name (list (ast:name i) 'Interface.h)))
-            (animate-file "templates/interface.hh.scm" file-name
-                          (c++-module ast)))
+            (dump-output file-name 
+                         (lambda ()
+                           (traditional-interface (c++-module ast)))))
   (and-let* ((comp (ast:component ast))
              (name (ast:name comp)))
-            (animate-file 'templates/component.hh.scm (list name 'Component.h) (c++-module ast))
-            (animate-file 'templates/component.cc.scm (list name 'Component.cpp)
-                          (c++-module ast))
-            (animate-file 'templates/c2.cc.scm (list name '-c2.cc)
-                          (c++-module ast)))
+            (dump-output (list name 'Component.h)
+                         (lambda ()
+                           (traditional-component-header (c++-module ast))))
+            (dump-output (list name 'Component.cpp)
+                         (lambda ()
+                           (traditional-component (c++-module ast))))
+            (dump-output (list name '-c2.cc)
+                         (lambda ()
+                           (november (c++-module ast)))))
   "")
+
+(define (traditional-interface module)
+  (animate-file 'templates/interface.hh.scm module))
+
+(define (traditional-component-header module)
+  (animate-file 'templates/component.hh.scm module))
+
+(define (traditional-component module)
+  (animate-file 'templates/component.cc.scm module))
+
+(define (november module)
+  (animate-file 'templates/c2.cc.scm module))
 
 (define (c++-module ast)
   (let ((module (make-module 31 (list 

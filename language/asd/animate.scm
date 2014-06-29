@@ -113,32 +113,8 @@
               (list line (- tell (- (ftell port) (string-length string) 1)) string)
               (loop (1+ line))))))))
 
-(define (animate-file file-name out-name module)
-  (catch 'xparse-error
-        (lambda ()
-          (dump-file (->string out-name)
-                     (with-output-to-string
-                       (lambda ()
-                         (animate-string (gulp-file file-name) module)))))
-        (lambda (key . args)
-          (let* ((tell (assoc-ref (car args) 'ftell))
-                 (line-column (if (pair?  tell)
-                                  (file-line-column-location file-name (car tell))
-                                  (list 0 0 "")))
-                 (line (car line-column))
-                 (column (cadr line-column))
-                 (file-string (caddr line-column))
-                 (string (car (assoc-ref (car args) 'line)))
-                 (args (car (or (assoc-ref (car args) 'args)
-                                (list args))))
-                 (message 
-                  (if (string? string)
-                      (if (string-contains file-string string)
-                          (format #f "~a:~a:~a: parse error:\n~a\n~a~a...\n~a\n" file-name line column (string-take file-string column) (make-string column #\space) string args)
-                          (format #f "~a:~a: parse error: just before: ~a\n~a\n" file-name line string args))
-                      (format #f "~a:~a: parse error: *eof*\n~a\n" file-name line args))))
-            (stderr "~a" message)
-            (throw 'parse-error message)))))
+(define (animate-file file-name module)
+  (animate-string (gulp-file file-name) module))
 
 (define (animate-string string module)
   (with-input-from-string string

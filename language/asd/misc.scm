@@ -48,6 +48,7 @@
            gulp-port
            hash-read-string
            dump-file
+           dump-output
            *eof*
            *eof*-is-#f
            join
@@ -106,6 +107,10 @@
   (let* ((file (open-output-file (->string file-name))))
     (display string file)
     (close file)))
+
+(define (dump-output file-name thunk)
+  (dump-file (->string file-name)
+             (with-output-to-string thunk)))
 
 (define (gulp-file file-name)
   (gulp-port (open-input-file (->string file-name))))
