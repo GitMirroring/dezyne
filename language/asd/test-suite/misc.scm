@@ -18,10 +18,12 @@
 (read-set! keywords 'prefix)
 
 (define-module (test-suite misc)
+  :use-module (ice-9 and-let-star)
   :use-module (ice-9 regex)
 
   :use-module (language asd misc)
   :export (fail
+           diff-noisy-equal?
 	   noisy-equal?
            pretty-noisy-equal?
            whitespace-noisy-equal?)
@@ -39,9 +41,6 @@
   (or (equal? a b)
       (fail "~a!=\n~a" (pretty-string a) (pretty-string b))))
 
-(define (string-sub re sub string)
-  (regexp-substitute/global #f re string 'pre sub 'post))
-
 (define (collapse-whitespace string)
   (string-trim
    (string-sub " +" " "
@@ -54,5 +53,14 @@
         (wb (collapse-whitespace b)))
     (or (equal? wa wb)
         (fail "~a!=\n~a" wa wb))))
+
+(define (diff-noisy-equal? a b)
+  (let ((diff (diff (collapse-whitespace a) 
+                    (collapse-whitespace b)
+                    "-u"
+                    "actual"
+                    "expected")))
+    (or (string-null? diff)
+        (fail "~a" diff))))
 
 (read-hash-extend #\{ hash-read-string)

@@ -34,7 +34,7 @@ interface i
 {
 }
 #}))
-    (whitespace-noisy-equal?
+    (diff-noisy-equal?
      (ast->pretty
       (asd->ast asd))
      asd)))
@@ -45,7 +45,7 @@ component c
 {
 }
 #}))
-(whitespace-noisy-equal?
+(diff-noisy-equal?
  (ast->pretty
   (asd->ast asd))
  asd)))
@@ -57,7 +57,7 @@ interface i
   in void identifier;
 }
 #}))
-(whitespace-noisy-equal?
+(diff-noisy-equal?
  (ast->pretty
   (asd->ast asd))
  asd)))
@@ -69,7 +69,7 @@ component c
   provides Interface identifier;
 }
 #}))
-(whitespace-noisy-equal?
+(diff-noisy-equal?
  (ast->pretty
   (asd->ast asd))
  asd)))
@@ -78,10 +78,13 @@ component c
   (let ((asd #{
 interface i
 {
-  behaviour { [true || false] {} }
+  behaviour 
+  { 
+   [true || false] { } 
+  }
 }
 #}))
-(whitespace-noisy-equal?
+(diff-noisy-equal?
  (ast->pretty
   (asd->ast asd))
  asd)))

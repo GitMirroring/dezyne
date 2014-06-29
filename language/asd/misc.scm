@@ -24,8 +24,13 @@
   :use-module (ice-9 match)
   :use-module (ice-9 pretty-print)
   :use-module (ice-9 rdelim)
+  :use-module (ice-9 regex)
+
+  :use-module (os process)
   :use-module (srfi srfi-1)
   :use-module (rnrs io ports)
+
+  :use-module (language asd fifo)
   :export (
            =0
            >0
@@ -33,6 +38,7 @@
            >1
            =2
            >2
+           diff
            eat-one-space
            eat-one-space-or-newline
            fand
@@ -50,6 +56,7 @@
            pretty-string
            stderr
            stdout
+           string-sub
            symbol<
            list<
            ->string
@@ -107,7 +114,10 @@
   (call-with-input-file (->string file-name) get-bytevector-all))
 
 (define (gulp-port . port) 
-  (read-delimited "" (if (pair? port) (car port) (current-input-port))))
+  (or (and-let* ((result (read-delimited "" (if (pair? port) (car port) (current-input-port))))
+                 ((string? result)))
+                result)
+      ""))
 
 (define (logf port string . rest)
   (apply format (cons* port string rest))
@@ -180,3 +190,13 @@
 
 (define (pretty-string scm)
   (with-output-to-string (lambda () (pretty-print scm))))
+
+(define (string-sub re sub string)
+  (regexp-substitute/global #f re string 'pre sub 'post))
+
+(define* (diff a b :optional (options "-u") (virtual-name-a "a") (virtual-name-b "b"))
+  (let ((file-name-a (fifo a))
+        (file-name-b (fifo b)))
+    (string-sub file-name-a virtual-name-a
+                (string-sub file-name-b virtual-name-b
+                            (gulp-port (cdr (run-with-pipe "r" "diff" options file-name-a file-name-b)))))))
