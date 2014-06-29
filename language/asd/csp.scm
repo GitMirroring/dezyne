@@ -69,14 +69,18 @@
             (lambda ()
               (save-module-excursion
                (lambda ()
-                 (let ((module (csp-module ast)))
-                   (module-define! module 'port port)
-                   (module-define! module '.optional-chaos (optional-chaos port))
-                   (module-define! module '.interface (ast:type port)) ;; fixme
-                   (module-define! module '.name (ast:identifier port))
-                   (module-define! module '.port (ast:identifier port))
-                   (module-define! module '.behaviour (ast:name (ast:behaviour port)))
-                   (animate-string string module))))))) ports)))
+                 (animate-string
+                  string
+                  (animate-module-populate
+                   (csp-module ast)
+                   port
+                   `((port . ,identity)
+                     (.optional-chaos . ,optional-chaos)
+                     (.interface . ,ast:type) ;; FIXME
+                     (.name . ,ast:identifier)
+                     (.port . ,ast:identifier)
+                     (.behaviour . ,(compose ast:name ast:behaviour))))))))))
+        ports)))
 
 (define (map-guards string guards)
   (display
