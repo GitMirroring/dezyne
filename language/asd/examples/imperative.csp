@@ -5,7 +5,10 @@ assign(F') = \P',V' @ P'(F'(V'))
 
 
 datatype event_alphabet =
-e | f | g | h | return | I | II | III | IV | S1 | S2
+e | f | g | h | return
+
+datatype enumeration_alphabet =
+I | II | III | IV | S1 | S2
 
 channel illegal
 
@@ -13,7 +16,8 @@ channel iimperative,i: {e,f,g,h,return}
 
 iimperative_(IG) = let
 iimperative__((s,b,c)) =
- (s == S1) & (iimperative?x:{e} ->
+ (s == S1) & (
+              iimperative?x:{e} ->
               semi(\P,(s,b,c) @ ifthenelse(c or b,
                                            \P,V @ iimperative!f->iimperative!g->P(V),
                                            \P,V @ P(V)
@@ -33,17 +37,18 @@ iimperative__((s,b,c)) =
                         assign(\(s,b,c) @ (S2,b,c)))) (\(s,b,c) @ iimperative.return -> iimperative__((s,b,c)),(s,b,c))
               )
 []
-(s == S2) & (iimperative?x:{e} ->
-              semi(\P,(s,b,c) @ ifthenelse(b,
-                                           semi(\P,(s,b,c) @ ifthenelse(not c,
-                                                                        assign(\(s,b,c) @ (s,b,true)),
-                                                                        assign(\(s,b,c) @ (s,b,false))
-                                                                        )(P,(s,b,c)),
-                                                \P,V @ iimperative!h->P(V)),
-                                           \P,V @ P(V)
-                                           )(P,(s,b,c)),
-                   semi(assign(\(s,b,c) @ (s,not b,c)),
-                        assign(\(s,b,c) @ (S1,b,c)))) (\(s,b,c) @ iimperative.return -> iimperative__((s,b,c)),(s,b,c))
+(s == S2) & (
+             iimperative?x:{e} ->
+             semi(\P,(s,b,c) @ ifthenelse(b,
+                                          semi(\P,(s,b,c) @ ifthenelse(not c,
+                                                                       assign(\(s,b,c) @ (s,b,true)),
+                                                                       assign(\(s,b,c) @ (s,b,false))
+                                                                       )(P,(s,b,c)),
+                                               \P,V @ iimperative!h->P(V)),
+                                          \P,V @ P(V)
+                                          )(P,(s,b,c)),
+                  semi(assign(\(s,b,c) @ (s,not b,c)),
+                       assign(\(s,b,c) @ (S1,b,c)))) (\(s,b,c) @ iimperative.return -> iimperative__((s,b,c)),(s,b,c))
              )
 within iimperative__((S1,false,true))
 
@@ -51,19 +56,19 @@ within iimperative__((S1,false,true))
 imperative_(IIG,IG) = let
 imperative__((state)) = transition_begin -> (
 (state == I) & (
-i?x:{e} -> i.f -> i.g -> i.h -> i.return -> transition_end -> imperative__((II))
+                i?x:{e} -> i.f -> i.g -> i.h -> i.return -> transition_end -> imperative__((II))
 )
 []
 (state == II) & (
-i?x:{e} -> i.return -> transition_end -> imperative__((III))
+                 i?x:{e} -> i.return -> transition_end -> imperative__((III))
 )
 []
 (state == III) & (
-i?x:{e} -> i.f -> i.g -> i.g -> i.f -> i.return -> transition_end -> imperative__((IV))
+                  i?x:{e} -> i.f -> i.g -> i.g -> i.f -> i.return -> transition_end -> imperative__((IV))
 )
 []
 (state == IV) & (
-i?x:{e} -> i.h -> i.return -> transition_end -> imperative__((I))
+                 i?x:{e} -> i.h -> i.return -> transition_end -> imperative__((I))
 )
 )
 within imperative__((I))
@@ -125,7 +130,8 @@ SEMANTICS(IN,OUT,ClientCalls,UsedModeling))))[[reorder_out.x<-x|x<-extensions(re
 assert imperative__Component :[deadlock free]
 assert imperative_(true,true) :[deterministic]
 assert STOP [T= imperative__Component \ diff(Events,{illegal})
-assert iimperative_(false) [[iimperative.x<-i.x|x<-extensions(iimperative)]] \ {} [FD= imperative__Component \ diff(Events,{|illegal,i|}) \ {}
+assert iimperative_(false) [[iimperative.x<-i.x|x<-extensions(iimperative)]] \ {} [FD=
+imperative__Component \ diff(Events,{|illegal,i|}) \ {}
 
 assert iimperative_(false) :[deadlock free]
 assert iimperative_(true) :[livelock free]
