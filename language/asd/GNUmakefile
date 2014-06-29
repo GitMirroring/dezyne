@@ -114,6 +114,8 @@ if: compile
 	./gaiag -l c++ examples/if.asd
 
 simulate: compile
-	./gaiag -l simulate examples/if.asd
-	./gaiag -l simulate examples/Alarm.asd # |& grep '^\*\*' | wc -l
-	./gaiag -l simulate examples/Alarm.asd |& grep '^\*\*' | wc -l
+#	./gaiag -l simulate examples/if.asd
+	./gaiag -l simulate -t '(a a a a a)' examples/if.asd
+#	./gaiag -l simulate examples/Alarm.asd |& grep '^\*\*' | wc -l
+	./gaiag -l simulate -t '$(shell cat examples/Alarm-trail.scm)' examples/Alarm.asd | ./scm2json
+

@@ -19,6 +19,7 @@
 
 (define-module (language asd simulate)
   :use-module (ice-9 curried-definitions)
+  :use-module (ice-9 getopt-long)
   :use-module (ice-9 match)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 pretty-print)
@@ -28,6 +29,7 @@
   :use-module (json)
 
   :use-module (language asd ast:)
+  :use-module (language asd gaiag)
   :use-module (language asd misc)
   :use-module (language asd parse)
   :use-module (language asd reader)
@@ -40,11 +42,9 @@
 (if debug?
     (set! debug stderr))
 
-(define *ast* '())
 (define *module* #f)
 
 (define (ast-> ast)
-  (set! *ast* ast)
   (and=> (ast:interface ast) simulate-module)
   (and=> (ast:component ast) simulate-module)
   "")
@@ -70,21 +70,14 @@
 
 (define (simulate-module module)
    (stderr "\n\n>>>simulating: ~a ~a --> ~a\n" (ast:class module) (ast:name module) (map ->string ((ast:find-events ast:in?) module)))
-   (pretty-print (map demo-trace (explore-space module)) (current-error-port))
-  
-   (if (eq? (ast:name module) 'i)
-       ;;(pretty-print (map demo-trace (walk-trail module '(a a a a))))
-       (let ((result (map demo-trace (walk-trail module '(a a a a)))))
-         (pretty-print result (current-error-port))
-         (display (scm->json-string result))))
+   (let ((trail (option-ref (parse-opts (command-line)) 'trail #f)))
+     (if trail
+       (pretty-print (map demo-trace 
+                          (walk-trail module 
+                                      (with-input-from-string trail read))))
+       (pretty-print (map demo-trace (explore-space module)))))
 
-   (if (eq? (ast:name module) 'Alarm)
-       (let ((result (map demo-trace (walk-trail module '(console.arm console.disarm sensor.disabled console.arm sensor.triggered console.disarm sensor.disabled)))))
-         (pretty-print result (current-error-port))
-         (display (scm->json-string result))))
-   
-  (stderr "state space: ~a\n" (length *state-space*))
-  ;;(pretty-print *state-space*)
+   (stderr "state space: ~a\n" (length *state-space*))
   "")
 
 (define (explore-space ast)
