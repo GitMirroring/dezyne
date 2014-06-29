@@ -22,23 +22,21 @@
   :use-module (test-suite lib)
   :use-module (test-suite misc)
 
-  :use-module (language asd misc)
-  :use-module (language asd reader)
-  :use-module (language asd simulate))
+  :use-module (language asd reader))
 
 (pass-if "asd-first-dummy-test"
 	 #t)
 
 (pass-if "asd-parse-interface"
   (pretty-noisy-equal?
-   (parse-asd 
+   (asd->ast
     #{ interface i { } #}
     )
    '((interface i (types) (events) (behaviour)))))
 
 (pass-if "asd-parse-component"
   (pretty-noisy-equal?
-   (parse-asd 
+   (asd->ast
     #{ component c { } #}
     )
    '((component c (ports) (behaviour)))))

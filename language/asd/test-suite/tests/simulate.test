@@ -22,11 +22,8 @@
   :use-module (test-suite lib)
   :use-module (test-suite misc)
 
-  :use-module (ice-9 pretty-print)
-
   :use-module (language asd ast:)
   :use-module (language asd reader)
-  :use-module (language asd misc)
   :use-module (language asd simulate))
 
 (pass-if "simulator-first-dummy-test"
@@ -35,7 +32,7 @@
 (pass-if "simulator-simple-trail"
   (pretty-noisy-equal?
    (walk-trail
-    (ast:interface (parse-asd 
+    (ast:interface (asd->ast 
       #{ 
         interface i { behaviour { on a: b; 
                                      } } #}))
@@ -48,7 +45,7 @@
    (pretty-noisy-equal?
     (walk-trail
      (ast:interface 
-      (parse-asd 
+      (asd->ast 
        #{ interface i { behaviour
                         {
                          bool t = true ;

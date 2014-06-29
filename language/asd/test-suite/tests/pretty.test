@@ -23,32 +23,65 @@
   :use-module (test-suite misc)
 
   :use-module (language asd reader)
-  :use-module (language asd wfc))
+  :use-module (language asd pretty))
 
-(pass-if "wfc-first-dummy-test"
+(pass-if "pretty-first-dummy-test"
 	 #t)
 
-(pass-if "wfc-double-on"
-  (pretty-noisy-equal?
-   (verify-on
-    (asd->ast 
-     #{ 
-       interface i { behaviour { [true] on a: [false] on a: b;
-                                 } } #}))
-   '(("double on" 
-      (on (a) 
-          (action b))))))
+(pass-if "pretty-interface"
+  (let ((asd #{ 
+interface i 
+{
+}
+#}))
+    (whitespace-noisy-equal?
+     (ast->pretty
+      (asd->ast asd))
+     asd)))
 
-(pass-if "wfc-mixing"
-  (pretty-noisy-equal?
-   (verify-mixing
-    (asd->ast 
-     #{ 
-       interface i { behaviour { bool b = false;
-                                      [true] on a: b;
-                                      b = true;
-                                      } } #}))
-   '((("mixing guarded"
-       (guard true 
-              (on (a) 
-                  (action b))))))))
+(pass-if "pretty-component"
+  (let ((asd #{
+component c
+{
+}
+#}))
+(whitespace-noisy-equal?
+ (ast->pretty
+  (asd->ast asd))
+ asd)))
+
+(pass-if "pretty-in"
+  (let ((asd #{
+interface i
+{
+  in void identifier;
+}
+#}))
+(whitespace-noisy-equal?
+ (ast->pretty
+  (asd->ast asd))
+ asd)))
+
+(pass-if "pretty-provides"
+  (let ((asd #{
+component c
+{
+  provides Interface identifier;
+}
+#}))
+(whitespace-noisy-equal?
+ (ast->pretty
+  (asd->ast asd))
+ asd)))
+
+(pass-if "pretty-expression"  ;; FIXME: 878d54f Add normstate.scm broke pretty.
+  (let ((asd #{
+interface i
+{
+  behaviour { [true || false] {} }
+}
+#}))
+(whitespace-noisy-equal?
+ (ast->pretty
+  (asd->ast asd))
+ asd)))

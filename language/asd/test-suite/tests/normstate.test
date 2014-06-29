@@ -22,11 +22,8 @@
   :use-module (test-suite lib)
   :use-module (test-suite misc)
 
-  :use-module (ice-9 pretty-print)
-
   :use-module (language asd ast:)
   :use-module (language asd reader)
-  :use-module (language asd misc)
   :use-module (language asd normstate))
 
 (pass-if "normstate-first-dummy-test"
@@ -35,7 +32,7 @@
 (pass-if "normstate-101" ;; FIXME: normstate eats (guard true (compound))?
   (pretty-noisy-equal?
    (normstate
-    (ast:interface (parse-asd 
+    (ast:interface (asd->ast 
       #{ 
         interface i { behaviour { on a: [true] { } } } #})))
    '(interface i (types) (events) 
@@ -46,7 +43,7 @@
 (pass-if "normstate-102"
   (pretty-noisy-equal?
    (normstate
-    (ast:interface (parse-asd 
+    (ast:interface (asd->ast 
       #{ 
         interface i { behaviour { on a: [true] b;
                                      } } #})))
@@ -60,7 +57,7 @@
 (pass-if "normstate-aggregate-passive"
   (pretty-noisy-equal?
    (normstate
-    (ast:interface (parse-asd 
+    (ast:interface (asd->ast 
       #{ 
         interface i { behaviour { on a,b,c: [true] d;
                                      } } #})))
@@ -74,7 +71,7 @@
 (pass-if "normstate-aggregate-active"
   (pretty-noisy-equal?
    (normstate
-    (ast:interface (parse-asd 
+    (ast:interface (asd->ast 
       #{ 
         interface i { behaviour { on a: [true] d;
                                      on b: [true] d;

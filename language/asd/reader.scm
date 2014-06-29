@@ -26,9 +26,9 @@
   :use-module (language asd misc)
   :use-module (language asd parse)
   :use-module (language asd tokenize)
-  :export (ast->ast parse-asd read-asd))
+  :export (asd->ast parse-asd read-asd))
 
-(define (ast->ast x)
+(define (asd->ast x)
   (or (and-let* ((file-name (->string x))
                  ((file-exists? file-name)))
                 (read-asd file-name))
