@@ -251,76 +251,83 @@
 (define (string-if condition then . else)
   (animate-string (if (null-is-#f condition) then (if (pair? else) (car else)  "")) (current-module)))
 
-
 (define (map-ports string ports)
   (map (lambda (port)
          (save-module-excursion
           (lambda ()
-            (let ((module (c++-module ast)))
-              (module-define! module 'port port)
-              (module-define! module '.api (api port))
-              (module-define! module '.callback (callback port))
-              (module-define! module '.ap (ap port))
-              (module-define! module '.cb (cb port))
-              (module-define! module '.interface (ast:type port)) ;; FIXME
-              (module-define! module '.name (ast:identifier port))
-              (module-define! module '.port (ast:identifier port))
-              (module-define! module '.behaviour (ast:name (ast:behaviour port)))
-              (module-define! module '.parameters (format-parameters port))
-              (module-define! module '.type (return-type-text port))
-              (module-define! module '.if-typed (if (ast:typed? port) "" "#if 0"))
-              (module-define! module '.else-typed(if (ast:typed? port) "" "#else"))
-              (module-define! module '.endif-typed (if (ast:typed? port) "" "#endif"))
-              (animate-string string module))))) ports))
+            (animate-string 
+             string 
+             (animate-module-populate
+              (c++-module ast) 
+              port
+              `((port . ,identity)
+                (.api . ,api)
+                (.callback . ,callback)
+                (.ap . ,ap)
+                (.cb . ,cb)
+                (.interface . ,ast:type) ;; FIXME
+                (.name . ,ast:identifier) ;; JUNKME
+                (.port . ,ast:identifier)
+                (.behaviour . ,(compose ast:name ast:behaviour))
+                (.parameters . ,format-parameters)
+                (.type . ,return-type-text)
+                (.if-typed . ,(lambda (port) (if (ast:typed? port) "" "#if 0")))
+                (.else-typed . ,(lambda (port) (if (ast:typed? port) "" "#else")))
+                (.endif-typed . ,(lambda (port) (if (ast:typed? port) "" "#endif")))))))))
+       ports))
 
 (define (map-events string events)
   (map (lambda (event)
          (save-module-excursion
           (lambda ()
-            (let ((module (current-module)))
-              (module-define! module '.api (api '(provides)))
-              (module-define! module '.callback (callback '(provides)))
-              (module-define! module '.ap (ap '(provides)))
-              (module-define! module '.cb (cb '(provides)))
-              (module-define! module '.type (ast:type event))
-              (module-define! module '.event (ast:identifier event))
-              (animate-string string module))))) events))
+            (animate-string 
+             string 
+             (animate-module-populate
+              (current-module) 
+              event
+              `((.api . ,(api '(provides)))
+                (.callback . ,(callback '(provides)))
+                (.ap . ,(ap '(provides)))
+                (.cb . ,(cb '(provides)))
+                (.type . ,ast:type)
+                (.event . ,ast:identifier))))))) events))
 
 (define (map-port-events string port events)
   (map (lambda (event)
          (save-module-excursion
           (lambda ()
-            (let ((module (current-module)))
-              ;;(module-define! module 'port port)
-              (module-define! module 'event event)
-              (module-define! module '.type (ast:type event))
-              (module-define! module '.name (ast:identifier event))
-              (module-define! module '.event (ast:identifier event))
-              (module-define! module '.statement
-                              (parameterize ((statements.port port) 
-                                             (statements.event event))
-                                (statements->string
-                                 ((compose ast:body ast:statement ast:behaviour ast:component) ast))))
-              (module-define! module '.return-interface-type (return-interface-type (ast:type port) event))
-              (module-define! module '.return-context-get (return-context-get (ast:type port) event))
-           (animate-string string module)))))
+            (let ((port (module-ref (current-module) 'port)))
+              (animate-string
+               string
+               (animate-module-populate
+                (current-module)
+                event
+                `((event . ,identity)
+                  (.type . ,ast:type)
+                  (.name . ,ast:identifier)
+                  (.event . ,ast:identifier)
+                  (.statement . 
+                              ,(lambda (event)
+                                 (parameterize ((statements.port port) 
+                                                (statements.event event))
+                                   (statements->string
+                                    ((compose ast:body ast:statement ast:behaviour ast:component) ast)))))
+                  (.return-interface-type . ,(lambda (event) (return-interface-type (ast:type port) event)))
+                  (.return-context-get . ,(lambda (event) (return-context-get (ast:type port) event))))))))))
        events))
 
 (define (map-variables string variables)
   (map (lambda (variable)
          (save-module-excursion
           (lambda ()
-            (let* ((module (current-module))
-                  (behaviour ((compose ast:behaviour ast:component) ast))
-                  (name (ast:identifier variable)))
-              (module-define! module '.variable name)
-              (module-define! module '.state-type (ast:state-type variable))
-              (module-define! module '.value (variable-value->string (ast:name (ast:component ast)) variable))
-              (animate-string string module))))) 
+              (animate-string
+               string
+               (animate-module-populate
+                (current-module)
+                variable
+                `((.variable . ,ast:identifier)
+                  (.state-type . ,ast:state-type)
+                  (.value . ,(lambda (variable) (variable-value->string (ast:name (ast:component ast)) variable)))))))))
        variables))
 
-
 (define (action port event) "enable")
-
-
-         
