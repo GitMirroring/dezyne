@@ -88,9 +88,12 @@
     (map (lambda (guard)
            (with-output-to-string
              (lambda ()
-               (let ((module (current-module)))
-                 (module-define! module 'guard guard)
-                 (animate-string string module))))) guards))))
+               (animate-string
+                string
+                (animate-module-populate
+                 (current-module)
+                 guard
+                 `((guard . ,identity))))))) guards))))
 
 (define* (map-statements-on string statements :optional (separator ""))
   (display
