@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -23,6 +24,7 @@
 
   :use-module (system base language)
 
+  :use-module (language asd ast:)
   :use-module (language asd misc)
   :use-module (language asd parse)
   :use-module (language asd tokenize)
@@ -42,7 +44,9 @@
      (else exp))))
 
 (define (asd-reader port env)
-  ((make-parser) (make-tokenizer port) error))
+  (let* ((ast ((make-parser) (make-tokenizer port) error))
+	 (interface (ast:interface ast)))
+    ast))
 
 (define (read-asd file-name)
   (asd-reader (open-file file-name "r") (current-module)))
