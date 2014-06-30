@@ -1,0 +1,30 @@
+;; -*-scheme-*-
+
+(read-set! keywords 'prefix)
+
+(define-module (test-handler)
+  :use-module (test-suite lib)
+  :use-module (test-suite misc)
+
+  :use-module (language asd ast:)
+  :use-module (language asd reader)
+  :use-module (language asd asserts))
+
+(pass-if "asserts-first-dummy-test"
+	 #t)
+
+(pass-if "assert"
+  (pretty-noisy-equal?
+   (assert-list
+    (asd->ast 
+     #{ interface I {}
+		  component I { 
+			       provides I i ;
+			       requires I j ;
+			       } #}))
+   '((component I deadlock)
+     (component I deterministic)
+     (component I illegal)
+     (component I compliance)
+     (interface I deadlock)
+     (interface I livelock))))
