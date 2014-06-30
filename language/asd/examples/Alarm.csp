@@ -194,12 +194,16 @@ SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(r
 assert Alarm_d_Component :[deadlock free]
 assert Alarm_d(true,true) :[deterministic]
 assert STOP [T= Alarm_d_Component \ diff(Events,{illegal})
-assert Console_a(false) [[Console.x<-console.x|x<-extensions(Console)]] \ {console.inevitable,console.optional} [FD=
-Alarm_d_Component \ diff(Events,{|illegal,console|}) \ {console.inevitable,console.optional}
-assert Sensor_b(false) :[deadlock free]
-assert Sensor_b(true) :[livelock free]
-assert Siren_c(false) :[deadlock free]
-assert Siren_c(true) :[livelock free]
+assert Console_a(false) [[Console.x<-console.x|x<-extensions(Console)]] \ {console.inevitable,console.optional} [FD= Alarm_d_Component \ diff(Events,{|illegal,console|}) \ {console.inevitable,console.optional}
 
 assert Console_a(false) :[deadlock free]
+
 assert Console_a(true) :[livelock free]
+
+assert Sensor_b(false) :[deadlock free]
+
+assert Sensor_b(true) :[livelock free]
+
+assert Siren_c(false) :[deadlock free]
+
+assert Siren_c(true) :[livelock free]

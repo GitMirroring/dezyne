@@ -44,7 +44,8 @@ exec guile -L $(dirname $0)/../.. -L $(dirname $0) -e main -s $0 "$@"
 
 (define (parse-opts args)
   (let* ((option-spec
-	  '((debug (single-char #\d))
+	  '((assert (single-char #\a) (value #t))
+	    (debug (single-char #\d))
             (help (single-char #\h))
             (language (single-char #\l) (value #t))
             (trail (single-char #\t) (value #t))
@@ -62,6 +63,7 @@ exec guile -L $(dirname $0)/../.. -L $(dirname $0) -e main -s $0 "$@"
       (and (or help? usage?)
 	   ((or (and usage? stderr) stdout) "\
 Usage: gaiag [OPTION]... FILE
+  -a, --assert=ASSERT  select assert ASSERT to generate
   -d, --debug          run with debugging
   -h, --help           display this help
   -l, --language=LANG  generate output for language=LANG [scheme]

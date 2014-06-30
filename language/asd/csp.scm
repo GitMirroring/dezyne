@@ -22,6 +22,7 @@
 (define-module (language asd csp)
   :use-module (ice-9 match)
   :use-module (ice-9 and-let-star)
+  :use-module (ice-9 getopt-long)
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 optargs)
   :use-module (ice-9 receive)
@@ -29,7 +30,9 @@
   :use-module (srfi srfi-1)
 
   :use-module (language asd animate)
+  :use-module (language asd asserts)
   :use-module (language asd ast:)
+  :use-module (language asd gaiag)
   :use-module (language asd misc)
   :use-module (language asd reader)
   :use-module (language asd normstate)
@@ -43,20 +46,46 @@
   (let ((norm (normstate ast)))
     (module-define! (resolve-module '(language asd csp)) 'ast norm)  ;; FIXME
     (and-let* ((comp (ast:component norm))
-	       (name (ast:name comp)))
+	       (name (ast:name comp))
+	       (module (csp-module norm)))
 	      (dump-output (list name '.csp) 
                            (lambda ()
-                             (csp-component (csp-module norm))))))
+                             (csp-component module)
+			     (csp-asserts module)))))
   "")
 
 (define (csp-component module)
   (animate-file 'templates/component.csp.scm module))
+
+(define (csp-asserts module)
+  (let* ((asserts-string (option-ref (parse-opts (command-line)) 'assert #f))
+	 (asserts (if asserts-string (with-input-from-string asserts-string read) 
+		      (assert-list (module-ref module 'ast)))))
+    (for-each (csp-assert module) asserts)))
+
+(define ((csp-assert module) assert)
+  (let* ((class (car assert))
+	 (model (cadr assert))
+	 (check (caddr assert))
+	 (template (assoc-ref asserts-alist (list class check))))
+    (module-define! module '.model model)
+    (animate-string template module)))
+
+(define asserts-alist
+  `(
+    ((component deadlock)  . "assert #.component _#.behaviour _Component :[deadlock free]\n")
+    ((component deterministic) . "assert #.component _#.behaviour(true,true) :[deterministic]\n")
+    ((component illegal) . "assert STOP [T= #.component _#.behaviour _Component \\ diff(Events,{illegal})\n")
+    ((component compliance) . ,(gulp-file 'templates/asserts/component-compliance.csp.scm))
+    ((interface deadlock) . ,(gulp-file 'templates/asserts/interface-deadlock.csp.scm))
+    ((interface livelock) . ,(gulp-file 'templates/asserts/interface-livelock.csp.scm))))
 
 (define (ast-norm module-name) (let ((ast (car (ast:read-ast module-name)))) (normstate ast)))
 
 (define (csp-module ast)
   (let ((module (make-module 31 (list
                                  (resolve-module '(ice-9 match))
+                                 (resolve-module '(ice-9 curried-definitions))
                                  (resolve-module '(language asd ast:))
                                  (resolve-module '(language asd csp))))))
     (module-define! module 'ast ast)

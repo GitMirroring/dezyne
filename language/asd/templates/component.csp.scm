@@ -159,24 +159,3 @@ within compress((#.component _#.behaviour (false,true) [[x<-OUT.x|x<-extensions(
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 
-assert #.component _#.behaviour _Component :[deadlock free]
-assert #.component _#.behaviour(true,true) :[deterministic]
-assert STOP [T= #.component _#.behaviour _Component \ diff(Events,{illegal})
-assert #.interface _#.interface-behaviour(false) [[#.interface .x<-#.port .x|x<-extensions(#.interface)]] \ {#
-(map-ports #{#
-   (comma-join
-       (map (lambda (x) (string-join (map ->string (list .port x)) ".")) (filter
-         (lambda (x) (or (eq? x 'optional) (eq? x 'inevitable)))
-         (port-triggers port)))) #} (filter ast:provides? ((compose ast:body ast:ports ast:component) ast)))} [FD=
-#.component _#.behaviour _Component \ diff(Events,{|illegal,#.port |}) \ {#
-(map-ports #{#
-   (comma-join
-       (map (lambda (x) (string-join (map ->string (list .port x)) ".")) (filter
-         (lambda (x) (or (eq? x 'optional) (eq? x 'inevitable)))
-         (port-triggers port)))) #} (filter ast:provides? ((compose ast:body ast:ports ast:component) ast))) }
-# (map-ports #{
-assert #.interface _#.behaviour(false) :[deadlock free]
-assert #.interface _#.behaviour(true) :[livelock free]
-#} (filter ast:requires? ((compose ast:body ast:ports ast:component) ast)))
-assert #.interface _#.interface-behaviour (false) :[deadlock free]
-assert #.interface _#.interface-behaviour (true) :[livelock free]
