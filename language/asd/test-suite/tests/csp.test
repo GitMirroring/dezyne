@@ -6,6 +6,8 @@
   :use-module (test-suite lib)
   :use-module (test-suite misc)
 
+  :use-module (ice-9 pretty-print)
+
   :use-module (language asd ast:)
   :use-module (language asd csp))
 
@@ -40,8 +42,8 @@
 		 (compound))))
 
 	  ;; via:
-	  '((on (e)
-		(return (s b c))))))
+	  '(on (e)
+	       (return (s b c)))))
 
 
 (pass-if "csp-transform-action"
@@ -97,7 +99,8 @@
 	  ;; via:
 	  '(if (s b c)
 	       (expression b)
-	       (return (s b c)))))
+	       ()
+	       ())))
 
 (pass-if "csp-transform-ifthenelse"
 	 (pretty-noisy-equal?
@@ -114,51 +117,72 @@
 	  ;; via:
 	  '(if (s b c)
 	       (expression b)
-	       (return (s b c))
-	       (return (s b c)))))
+	       ()
+	       ())))
+
+
+(pass-if "csp-transform-semi"
+	 (pretty-noisy-equal?
+
+	  ;; from:
+	  (csp-transform-on 
+
+	   ast
+
+	   '(compound 
+	     (if b
+		 (compound))
+	     (assign b true)))
+
+	  ;; via:
+	  '(semi (if (s b c)
+		     (expression b)
+		     ()
+		     ())
+		 (assign (s b c) (s true c)))))
 
 (pass-if "csp-transform-on"
-	 (or #t (pretty-noisy-equal?
+	 (pretty-noisy-equal?
 
-	   ;; from:
-	   (csp-transform-on 
+	  ;; from:
+	  (csp-transform-on 
 
-	    ast
+	   ast
 
-	    '(compound
-	      (on (e)
-		  (compound
-		   (if (or c b) (compound (action f) (action g)))
-		   (if b
-		       (compound
-			(if c (compound (action g)))
-			(assign c false)
-			(action f))
-		       (compound
-			(if c
-			    (compound (assign b false) (action h))
-			    (compound (assign b true) (action g)))))
-		   (assign s (field S S2))))))
+	   '(compound
+	     (on (e)
+		 (compound
+		  
+		  (if (or c b) (compound (action f) (action g)))
+		  (if b
+		      (compound
+		       (if c (compound (action g)))
+		       (assign c false)
+		       (action f))
+		      (compound
+		       (if c
+			   (compound (assign b false) (action h))
+			   (compound (assign b true) (action g)))))
+		  (assign s (field S S2))))))
 
-	   ;; via:
-	   '((on e)
-	     (semi (if (s b c) (expression c or b)
-		       ((action f) (action g))
-		       '())
-		   (semi (if (s b c) (expression b)
-			     (semi (if (s b c) (expression c) 
-				       ((action g))
-				       '())
-				   (semi (assign (s b c) (s b false))
-					 ((action f))))
-			     (if (s b c) (expression c)
-				 (semi (assign (s b c) (s false c))
-				       ((action h)))
-				 (semi (assign (s b c) (s true c))
-				       ((action g)))))
-			 (assign (s b c) (S2 b c))))
-	     (return (s b c))))))
-
+	  ;; via:
+	  '(on (e)
+	       (semi (if (s b c) (expression (or c b))
+			 (semi (action f) (action g))
+			 ())
+		     (semi (if (s b c) (expression b)
+			       (semi (if (s b c) (expression c) 
+					 (action g)
+					 ())
+				     (semi (assign (s b c) (s b false))
+					   (action f)))
+			       (if (s b c) (expression c)
+				   (semi (assign (s b c) (s false c))
+					 (action h))
+				   (semi (assign (s b c) (s true c))
+					 (action g))))
+			   (assign (s b c) (S2 b c))))
+	    (return (s b c)))))
 ;; to:
 ;; iimperative?x:{e} ->
 ;; semi(\P,(s,b,c) @ ifthenelse(c or b,
