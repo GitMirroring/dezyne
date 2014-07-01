@@ -287,9 +287,14 @@
                     (list (action-name action) ".return -> ")))))
 
 (define (csp-transform-on ast src)
-  (stderr "ast: ~a\n" ast)
-  (match src
-    (('compound) `(return ,(var-names (ast:interface ast))))
-    (('compound t ...) (map csp-transform-on ast t))
-    (('on e s) (list 'on e (csp-transform-on ast s)))
-    (_ src)))
+  (let*
+      ((variables (var-names (ast:interface ast))))
+    (match src
+      (('compound) (list 'return variables))
+      (('compound t ...) (map csp-transform-on ast t))
+      (('on events stat) (list 'on events (csp-transform-on ast stat)))
+      (('assign var ('field type val)) (list 'assign variables (map (lambda (x) (if (eq? x var ) val x)) variables)))
+      (('assign var exp) (list 'assign variables (map (lambda (x) (if (eq? x var ) exp x)) variables)))
+      (('if pred then) (list 'if variables (list 'expression pred) (csp-transform-on ast then)))
+      (('if pred then else) (list 'if variables (list 'expression pred) (csp-transform-on ast then) (csp-transform-on ast else)))
+      (_ src))))

@@ -12,19 +12,29 @@
 (pass-if "csp-first-dummy-test"
 	 #t)
 
+(define ast `(,(ast:make 
+	       'interface 'i
+	       '(types)
+	       '(events)
+	      (ast:make 
+	       '(
+		 behaviour
+		 #f
+		 (types (enum S (S1 S2)))
+		 (variables
+		  (declare S s (field S S1))
+		  (declare bool b false)
+		  (declare bool c true))
+		 (compound))))))
+
 (pass-if "csp-transform-on-return"
 	 (pretty-noisy-equal?
 
 	  ;; from:
 	  (csp-transform-on 
-	   '((interface Blaa
-	      (behaviour
-	       #f
-	       (types (enum S (S1 S2)))
-	       (variables
-		(declare S s (field S S1))
-		(declare bool b false)
-		(declare bool c true)))))
+
+	   ast
+
 	   '(compound
 	     (on (e)
 		 (compound))))
@@ -33,19 +43,88 @@
 	  '((on (e)
 		(return (s b c))))))
 
+
+(pass-if "csp-transform-action"
+	 (pretty-noisy-equal?
+
+	  ;; from:
+	  (csp-transform-on 
+
+	   ast
+
+	   '(action h))
+
+	  ;; via:
+	  '(action h)))
+
+(pass-if "csp-transform-assign-bool"
+	 (pretty-noisy-equal?
+
+	  ;; from:
+	  (csp-transform-on 
+
+	   ast
+
+	   '(assign c true))
+
+	  ;; via:
+	  '(assign (s b c) (s b true))))
+
+(pass-if "csp-transform-assign-enum"
+	 (pretty-noisy-equal?
+
+	  ;; from:
+	  (csp-transform-on 
+
+	   ast
+
+	   '(assign s (field S S2)))
+
+	  ;; via:
+	  '(assign (s b c) (S2 b c))))
+
+(pass-if "csp-transform-ifthen"
+	 (pretty-noisy-equal?
+
+	  ;; from:
+	  (csp-transform-on 
+
+	   ast
+
+	   '(if b
+		(compound)))
+
+	  ;; via:
+	  '(if (s b c)
+	       (expression b)
+	       (return (s b c)))))
+
+(pass-if "csp-transform-ifthenelse"
+	 (pretty-noisy-equal?
+
+	  ;; from:
+	  (csp-transform-on 
+
+	   ast
+
+	   '(if b
+		(compound)
+		(compound)))
+
+	  ;; via:
+	  '(if (s b c)
+	       (expression b)
+	       (return (s b c))
+	       (return (s b c)))))
+
 (pass-if "csp-transform-on"
 	 (or #t (pretty-noisy-equal?
 
 	   ;; from:
 	   (csp-transform-on 
-	    '((component 
-	       (behaviour
-		#f
-		(types (enum S (S1 S2)))
-		(variables
-		 (declare S s (field S S1))
-		 (declare bool b false)
-		 (declare bool c true)))))
+
+	    ast
+
 	    '(compound
 	      (on (e)
 		  (compound
@@ -63,20 +142,20 @@
 
 	   ;; via:
 	   '((on e)
-	     (semi (ifthenelse (s b c) (expression c or b)
-			       ((action f) (action g))
-			       '())
-		   (semi (ifthenelse (s b c) (expression b)
-				     (semi (ifthenelse (s b c) (expression c) 
-						       ((action g))
-						       '())
-					   (semi (assign (s b c) (s b false))
-						 ((action f))))
-				     (ifthenelse (s b c) (expression c)
-						 (semi (assign (s b c) (s false c))
-						       ((action h)))
-						 (semi (assign (s b c) (s true c))
-						       ((action g)))))
+	     (semi (if (s b c) (expression c or b)
+		       ((action f) (action g))
+		       '())
+		   (semi (if (s b c) (expression b)
+			     (semi (if (s b c) (expression c) 
+				       ((action g))
+				       '())
+				   (semi (assign (s b c) (s b false))
+					 ((action f))))
+			     (if (s b c) (expression c)
+				 (semi (assign (s b c) (s false c))
+				       ((action h)))
+				 (semi (assign (s b c) (s true c))
+				       ((action g)))))
 			 (assign (s b c) (S2 b c))))
 	     (return (s b c))))))
 

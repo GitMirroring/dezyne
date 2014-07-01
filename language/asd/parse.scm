@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -60,7 +61,9 @@
       (('action 'illegal) ast)
       (('action ('field type identifier)) ast)
       (('assign identifier expression) ast)
-      ((x) (apply ast:make x)))))
+;;      ((? (lambda (ast) (and (symbol? (car ast)) (pair? (cdr ast)) (= (length ast) 2)))) (apply ast:make (cons (car ast) (cdr ast))))
+      ((x) (apply ast:make x))
+      (_ (throw 'match-error  (format #f "~a:ast:make: no match: ~a\n" (current-source-location) ast))))))
 
 (define (make ast loc)
   (note-location (ast:make ast) loc))
