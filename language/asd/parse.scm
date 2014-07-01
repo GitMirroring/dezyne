@@ -70,6 +70,9 @@
 (define (object-id lst) 
   (and=> lst (compose pointer-address scm->pointer)))
 
+(if (not (defined? 'supports-source-properties?))
+    (module-define! (current-module) 'supports-source-properties? pair?))
+
 (define (note-location ast loc)
   (when (supports-source-properties? ast)
       (set-source-property! ast 'loc loc))
