@@ -29,7 +29,7 @@ assign(F') = \ P', V' @ P'(F'(V'))
 
 
 datatype event_alphabet =
-#(pipe-join (append (delete-duplicates (sort (apply append (map port-triggers ((compose ast:body ast:ports ast:component) ast))) symbol<)) '(return)))
+#(pipe-join (append (delete-duplicates (sort (apply append (map port-triggers ((compose ast:port-list ast:component) ast))) symbol<)) '(return)))
 
 datatype enumeration_alphabet =
 #(pipe-join (delete-duplicates (sort (enum-values (ast:component ast)) symbol<)))
@@ -38,10 +38,10 @@ channel illegal
 
 # (map-ports #{
 channel #.interface ,#.port : {#(comma-join (append (port-triggers port) '(return)))}
-#} ((compose ast:body ast:ports ast:component) ast))
+#} ((compose ast:port-list ast:component) ast))
 # (map-ports #{
 #.interface _#.behaviour(IG) = let
-#.interface _#.behaviour _((# (comma-join (map ast:identifier ((compose ast:body ast:variables ast:behaviour ast-norm) .interface))))) =
+#.interface _#.behaviour _((# (comma-join (map ast:identifier ((compose ast:variable-list ast:behaviour ast-norm) .interface))))) =
 # (map-guards #{(# (csp-expression->string (ast:expression guard))) & (
 # (map-statements-on #{ #
     (when illegal? (if provides-event? "IIG & " "IG & ")) #.interface ?x:{#
@@ -60,11 +60,11 @@ channel #.interface ,#.port : {#(comma-join (append (port-triggers port) '(retur
 #}
     ((ast:statements-of-type 'on) (ast:statement guard)) "  []\n"))
 #} (reverse ((ast:statements-of-type 'guard) (ast:statement (ast:behaviour (ast-norm .interface))))))
-within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:initial-value x))) ((compose ast:body ast:variables ast:behaviour ast-norm) .interface))))) #.optional-chaos
+within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:initial-value x))) ((compose ast:variable-list ast:behaviour ast-norm) .interface))))) #.optional-chaos
 
-#} ((compose ast:body ast:ports ast:component) ast))
+#} ((compose ast:port-list ast:component) ast))
 #.component _#.behaviour (IIG,IG) = let
-#.component _#.behaviour _((#(comma-join (map ast:identifier ((compose ast:body ast:variables ast:behaviour ast:component) ast))))) = transition_begin -> (
+#.component _#.behaviour _((#(comma-join (map ast:identifier ((compose ast:variable-list ast:behaviour ast:component) ast))))) = transition_begin -> (
 # (map-guards #{ (# (csp-expression->string (ast:expression guard))) & (
 # (map-statements-on #{ #
     (when illegal? (if provides-event? "IIG & " "IG & ")) #.event-port ?x:{#
@@ -86,19 +86,19 @@ within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:ini
       (filter identity (map (statement-on-p/r (provides? component)) ((ast:statements-of-type 'on) (ast:statement guard))))
       (filter identity (map (statement-on-p/r (requires? component)) ((ast:statements-of-type 'on) (ast:statement guard))))) "[]\n"))
 #} (reverse ((ast:statements-of-type 'guard) ((compose ast:statement ast:behaviour ast:component) ast)))))
-within #.component _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:initial-value x))) ((compose ast:body ast:variables ast:behaviour ast:component) ast)))))
+within #.component _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:initial-value x))) ((compose ast:variable-list ast:behaviour ast:component) ast)))))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {#
  (comma-join (list (map-ports #{#
-(comma-join (map (lambda (x) (list .port "." (ast:identifier x))) (filter ast:out? (ast:body (ast:events port)))))#}
-  (filter ast:requires? ((compose ast:body ast:ports ast:component) ast))) 'extensions_over_empty_channels_is_undefined))}
+(comma-join (map (lambda (x) (list .port "." (ast:identifier x))) (filter ast:out? (ast:event-list port))))#}
+  (filter ast:requires? ((compose ast:port-list ast:component) ast))) 'extensions_over_empty_channels_is_undefined))}
 
 SINGLETHREADED = true
 
 channel transition_begin, transition_end
 
-channel reorder_in,reorder_out : {# (map (lambda (x) (list (ast:identifier x) ".return")) (filter ast:provides? ((compose ast:body ast:ports ast:component) ast)))}
+channel reorder_in,reorder_out : {# (map (lambda (x) (list (ast:identifier x) ".return")) (filter ast:provides? ((compose ast:port-list ast:component) ast)))}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -138,23 +138,23 @@ transparent diamond
 within sbisim(diamond(x))
 Exclude = {#.port .return,#
   (comma-join (list (map-ports
-#{#(comma-join (map (lambda (x) (list .port "." (ast:identifier x))) (filter ast:out? (ast:body (ast:events port))))) #}
-   (filter ast:provides? ((compose ast:body ast:ports ast:component) ast)))
+#{#(comma-join (map (lambda (x) (list .port "." (ast:identifier x))) (filter ast:out? (ast:event-list port)))) #}
+   (filter ast:provides? ((compose ast:port-list ast:component) ast)))
  (map-ports
 #{#(comma-join (map (lambda (x) (list .port "." x)) (filter (lambda (x) (member x '(inevitable optional))) (port-triggers port)))) #}
-   ((compose ast:body ast:ports ast:component) ast) ",")))}
+   ((compose ast:port-list ast:component) ast) ",")))}
 ClientCalls = {#
  (map-ports
-#{#(comma-join (map (lambda (x) (list .port "." (ast:identifier x))) (filter ast:in? (ast:body (ast:events port))))) #}
-   (filter ast:provides? ((compose ast:body ast:ports ast:component) ast)))}
+#{#(comma-join (map (lambda (x) (list .port "." (ast:identifier x))) (filter ast:in? (ast:event-list port)))) #}
+   (filter ast:provides? ((compose ast:port-list ast:component) ast)))}
 UsedModeling = {#
  (map-ports
 #{#(comma-join (map (lambda (x) (list .port "." x)) (filter (lambda (x) (member x '(inevitable optional))) (port-triggers port)))) #}
-   (filter ast:requires? ((compose ast:body ast:ports ast:component) ast)))}
+   (filter ast:requires? ((compose ast:port-list ast:component) ast)))}
 within compress((#.component _#.behaviour (false,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,#(comma-join (map ast:identifier ((compose ast:body ast:ports ast:component) ast)))|},Exclude)|]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,#(comma-join (map ast:identifier ((compose ast:port-list ast:component) ast)))|},Exclude)|]
 (((# (let ((required_processes (map-ports #{
 #.interface _#.behaviour(true) [[#.interface .x<-#.port .x|x<-extensions(#.interface)]]
-#} (filter ast:requires? ((compose ast:body ast:ports ast:component) ast)) " ||| "))) (if (string-null? required_processes) 'STOP required_processes))) [[x<-IN.x|x<-extensions(IN)]]
+#} (filter ast:requires? ((compose ast:port-list ast:component) ast)) " ||| "))) (if (string-null? required_processes) 'STOP required_processes))) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})

@@ -56,7 +56,7 @@
                              (ast:initial-value variable)))))
 
 (define (state-vector model)
-  (map variable-state (ast:body (ast:variables model))))
+  (map variable-state (ast:variable-list model)))
 
 (define (var state identifier) (assoc-ref state identifier))
 

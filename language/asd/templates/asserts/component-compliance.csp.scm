@@ -3,6 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -26,9 +27,9 @@ assert #.interface _#.interface-behaviour(false) [[#.interface .x<-#.port .x|x<-
    (comma-join
        (map (lambda (x) (string-join (map ->string (list .port x)) ".")) (filter
          (lambda (x) (or (eq? x 'optional) (eq? x 'inevitable)))
-         (port-triggers port)))) #} (filter ast:provides? ((compose ast:body ast:ports ast:component) ast)))} [FD= #.component _#.behaviour _Component \ diff(Events,{|illegal,#.port |}) \ {#
+         (port-triggers port)))) #} (filter ast:provides? ((compose ast:port-list ast:component) ast)))} [FD= #.component _#.behaviour _Component \ diff(Events,{|illegal,#.port |}) \ {#
 (map-ports #{#
    (comma-join
        (map (lambda (x) (string-join (map ->string (list .port x)) ".")) (filter
          (lambda (x) (or (eq? x 'optional) (eq? x 'inevitable)))
-         (port-triggers port)))) #} (filter ast:provides? ((compose ast:body ast:ports ast:component) ast))) }
+         (port-triggers port)))) #} (filter ast:provides? ((compose ast:port-list ast:component) ast))) }

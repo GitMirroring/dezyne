@@ -3,6 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -26,4 +27,4 @@
    (eq? (ast:type port) name))# 
 (map-ports #{
 assert #.interface _#.behaviour(false) :[deadlock free]
-#} (list (car (filter (the-one? .model) ((compose ast:body ast:ports ast:component) ast)))))
+#} (list (car (filter (the-one? .model) ((compose ast:port-list ast:component) ast)))))
