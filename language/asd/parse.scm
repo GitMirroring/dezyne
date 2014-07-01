@@ -53,7 +53,7 @@
       (('ports p ...) ast)
       (('provides type identifier) ast)
       (('variables v ...) ast)
-      (('declare type identifier value ...) ast)
+      (('variable type identifier value ...) ast)
       (('requires type identifier) ast)
       (('guard expression statement) ast)
       (('on (trigger t ...) statement) ast)
@@ -264,7 +264,7 @@
     (variable-list variable) : (append $1 (list $2)))
 
    (variable 
-    (type Identifier = expression semicolon) : `(declare ,$1 ,$2 ,$4))))
+    (type Identifier = expression semicolon) : `(variable ,$1 ,$2 ,$4))))
 
 (define (compile-tree-il exp env opts)
   (values (parse-tree-il (comp exp '())) env env))

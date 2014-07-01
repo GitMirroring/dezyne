@@ -78,7 +78,7 @@
                   (compound . ,(lambda (x) (apply string-append (map ->string (cdr x)))))))
     (enum . ((name . ,identity)
              (elements . ,comma-space-join)))
-    (declare . ((type . ,identity)
+    (variable . ((type . ,identity)
                 (var . ,identity)
                 (value . ,->string)))
     (field . ((struct . ,identity)

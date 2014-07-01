@@ -35,7 +35,7 @@
      (types (enum States
                   (Disarmed Armed Triggered Disarming)))
      (variables
-       (declare States state (field States Disarmed)))
+       (variable States state (field States Disarmed)))
      (compound
        (guard (field state Disarmed)
               (compound
@@ -75,8 +75,8 @@
      (types (enum States
                   (Disarmed Armed Triggered Disarming)))
      (variables
-       (declare States state (field States Disarmed))
-       (declare bool sounding false))
+       (variable States state (field States Disarmed))
+       (variable bool sounding false))
      (compound
        (guard (field state Disarmed)
               (compound

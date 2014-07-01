@@ -250,11 +250,11 @@
 
 (define (variable-value->string model v)
   (case (ast:type v)
-    ((bool) (->string (ast:initial-value v)))
+    ((bool) (->string (ast:expression v)))
     (;;(enum)
      else
      (double-colon-join (append (list model) 
-                                (cdr (ast:initial-value v)))))))
+                                (cdr (ast:expression v)))))))
 
 (define (ast:state-type v)
   (case (ast:type v)

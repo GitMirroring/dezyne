@@ -16,6 +16,54 @@
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
 
+;;; Commentary:
+;; 
+;; @subheading Gaiag AST accessors
+;;
+;;   AST:= (
+;;          (interface Interface (types) (events) (behaviour))
+;;           ^class    ^name     ^types  ^events  ^behaviour
+;;
+;;          (component Component (ports) (behaviour))
+;;           ^class    ^name     ^types  ^behaviour
+;;         )
+;;
+;;   SUB-AST (ast:types (ast:interface AST))
+;;      := ((enum     States (Disarmed Armed Triggered Disarming))
+;;           ^type    ^name  ^elements
+;;           class=>type
+;;
+;;   SUB-AST (ast:events (ast:interface AST))
+;;      := ((in           void    arm))
+;;           ^direction   ^type   ^identifier
+;;           |implicit: class=event
+;;
+;;   ideas: in   --> direction/type/...
+;;          void --> type/value/...
+;;          arm  --> identifier/name/...
+;;
+;;   SUB-AST (ast:behaviour (ast:interface AST))
+;;      := (behaviour b      (types) (variables) (compound))
+;;          ^class    ^name  ^types  ^variables  ^statement  
+;;          
+;;   SUB-AST (ast:ports (ast:interface AST))
+;;      := ((provides     Console console))
+;;           ^direction   ^type   ^identifier
+;;           |implicit: class=port
+;;
+;;   ideas: provides --> direction/type/...
+;;          Console  --> interface/model/value/type/...
+;;          console  --> identifier/name/...
+;;
+;;   SUB-AST (ast:variables (ast:behaviour (ast:interface AST)))
+;;      := ((variable States state        (field States Disarmed))
+;;           ^class   ^type  ^identifier  ^expression
+;;
+;;   ideas: States     --> type/name/...
+;;          state      --> identifier/name/...
+;;          expression --> expression/value/initial/initial-value/...
+;;
+
 (read-set! keywords 'prefix)
 
 (define-module (language asd ast)
@@ -58,7 +106,6 @@
            guard-equals?
            identifier
            in?
-           initial-value
            interface
            interfaces
            interface?
@@ -123,11 +170,11 @@
 (define (guard? ast) (type? 'guard ast))
 (define (interface? ast) (type? 'interface ast))
 (define (imports? ast) (type? 'imports ast))
-(define (variable? ast) (type? 'declare ast)) ;;; FIXME
 (define (on? ast) (type? 'on ast))
 (define (port? ast) (type? 'port ast))
 (define (ports? ast) (type? 'ports ast))
 (define (types? ast) (type? 'types ast))
+(define (variable? ast) (type? 'variable ast))
 (define (variables? ast) (type? 'variables ast))
 
 (define (body ast)
@@ -143,7 +190,7 @@
     ((('requires type identifier) t ...) ast)
     ((('provides type identifier) t ...) ast)
     ((('enum type elements) t ...) ast)
-    ((('declare type identifier expression) t ...) ast)
+    ((('variable type identifier expression) t ...) ast)
     ('() ast)
     (_ (throw 'match-error  (format #f "~a:body: no match: ~a\n" (current-source-location) ast)))))
 
@@ -214,6 +261,7 @@
 (define (expression ast) 
   (match ast
     ((? guard?) (cadr ast))
+    ((? variable?) (cadddr ast))
     (_ (throw 'match-error  (format #f "~a:expression: no match: ~a\n" (current-source-location) ast)))))
 
 (define (identifier ast)
@@ -238,10 +286,11 @@
 
 (define (class ast)
   (match ast 
+    ((? enum?) 'type)
     ((? event?) 'event)
     ((? field?) 'field)
     ((? port?) 'port)
-    ((? variable?) 'variable?)
+    ((? variable?) 'variable)
     (_ (car ast))))
 
 (define (statement ast)
@@ -279,11 +328,6 @@
 (define (type-name-component type component) (symbol-append (name component) (type type)))
 
 (define (enum-name enum) (cadr enum))
-
-;;;?(define (type-name type) (car type))
-
-(define (initial-value variable) (cadddr variable))
-
 
 ;;; utilities
 (define (declarative? statement)
@@ -367,12 +411,24 @@
   (set! *ast-alist* (assoc-set! *ast-alist* name ast))
   ast)
 
+;; procedure: ast:import MODEL-NAME
+;;
+;; Read and parse the ASD source file for MODEL-NAME, return its AST.
 (define (read-ast name)
   (read-asd (->string (list 'examples '/ name '.asd))))
 
-(define* (import-ast name :optional (transform identity))
+(define* (import-ast name #:optional (transform identity))
+  "
+procedure: ast:import MODEL-NAME
+
+Read and parse the ASD source file for MODEL-NAME, return its AST.
+
+"
   (or (assoc-ref *ast-alist* name)
       (and-let* ((ast (transform (read-ast name))))
                 (ast-add name (car ast)))))
 
+;; procedure: ast:ast MODEL-NAME
+;;
+;; Read and parse the ASD source file for MODEL-NAME, return its AST.
 (define ast import-ast)

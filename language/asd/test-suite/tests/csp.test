@@ -24,9 +24,9 @@
 		 #f
 		 (types (enum S (S1 S2)))
 		 (variables
-		  (declare S s (field S S1))
-		  (declare bool b false)
-		  (declare bool c true))
+		  (variable S s (field S S1))
+		  (variable bool b false)
+		  (variable bool c true))
 		 (compound))))))
 
 (pass-if "csp-transform-on-return"

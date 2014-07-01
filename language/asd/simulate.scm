@@ -53,7 +53,7 @@
   (cons (ast:identifier variable)
         (eval-expression '() '()
                          (if (pair? value) (car value) 
-                             (ast:initial-value variable)))))
+                             (ast:expression variable)))))
 
 (define (state-vector model)
   (map variable-state (ast:variables model)))

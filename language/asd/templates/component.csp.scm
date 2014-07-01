@@ -60,7 +60,7 @@ channel #.interface ,#.port : {#(comma-join (append (port-triggers port) '(retur
 #}
     ((ast:statements-of-type 'on) (ast:statement guard)) "  []\n"))
 #} (reverse ((ast:statements-of-type 'guard) (ast:statement (ast:behaviour (ast-norm .interface))))))
-within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:initial-value x))) ((compose ast:variables ast:behaviour ast-norm) .interface))))) #.optional-chaos
+within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:expression x))) ((compose ast:variables ast:behaviour ast-norm) .interface))))) #.optional-chaos
 
 #} ((compose ast:ports ast:component) ast))
 #.component _#.behaviour (IIG,IG) = let
@@ -86,7 +86,7 @@ within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:ini
       (filter identity (map (statement-on-p/r (provides? component)) ((ast:statements-of-type 'on) (ast:statement guard))))
       (filter identity (map (statement-on-p/r (requires? component)) ((ast:statements-of-type 'on) (ast:statement guard))))) "[]\n"))
 #} (reverse ((ast:statements-of-type 'guard) ((compose ast:statement ast:behaviour ast:component) ast)))))
-within #.component _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:initial-value x))) ((compose ast:variables ast:behaviour ast:component) ast)))))
+within #.component _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:expression x))) ((compose ast:variables ast:behaviour ast:component) ast)))))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {#
