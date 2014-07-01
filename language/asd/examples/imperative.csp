@@ -50,6 +50,7 @@ iimperative__((s,b,c)) =
                   semi(assign(\(s,b,c) @ (s,not b,c)),
                        assign(\(s,b,c) @ (S1,b,c)))) (\(s,b,c) @ iimperative.return -> iimperative__((s,b,c)),(s,b,c))
              )
+
 within iimperative__((S1,false,true))
 
 
@@ -130,8 +131,7 @@ SEMANTICS(IN,OUT,ClientCalls,UsedModeling))))[[reorder_out.x<-x|x<-extensions(re
 assert imperative__Component :[deadlock free]
 assert imperative_(true,true) :[deterministic]
 assert STOP [T= imperative__Component \ diff(Events,{illegal})
-assert iimperative_(false) [[iimperative.x<-i.x|x<-extensions(iimperative)]] \ {} [FD=
-imperative__Component \ diff(Events,{|illegal,i|}) \ {}
+assert iimperative_(false) [[iimperative.x<-i.x|x<-extensions(iimperative)]] \ {} [FD= imperative__Component \ diff(Events,{|illegal,i|}) \ {}
 
 assert iimperative_(false) :[deadlock free]
 assert iimperative_(true) :[livelock free]
