@@ -80,7 +80,8 @@
     ((interface deadlock) . ,(gulp-file 'templates/asserts/interface-deadlock.csp.scm))
     ((interface livelock) . ,(gulp-file 'templates/asserts/interface-livelock.csp.scm))))
 
-(define (ast-norm module-name) (let ((ast (car (ast:read-ast module-name)))) (normstate ast)))
+(define (ast-norm module-name)
+  (ast:ast module-name normstate))
 
 (define (csp-module ast)
   (let ((module (make-module 31 (list

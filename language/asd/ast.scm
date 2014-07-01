@@ -40,6 +40,7 @@
            bottom?
            class
            component
+           components
            component?
            compound
            declarative?
@@ -59,6 +60,7 @@
            in?
            initial-value
            interface
+           interfaces
            interface?
            make
            module?
@@ -69,7 +71,7 @@
            port?
            ports
            provides?
-	   read-ast
+           register
            requires?
            statement
            statements-of-type
@@ -122,7 +124,10 @@
      (cdr ast))
     ('() ast)))
 
-(define (interface- ast) (assoc 'interface ast))
+(define (interface- ast) 
+  (if (interface? ast)
+      ast
+      (assoc 'interface ast)))
 
 (define (interface ast)
   (and-let* ((interface-ast (interface- ast))
@@ -130,6 +135,13 @@
             (if (not (assoc-ref *ast-alist* name))
                 (ast-add name interface-ast))
             interface-ast))
+
+(define (interfaces ast)
+  (filter (lambda (model) (interface? model)) ast))
+
+(define (register ast)
+  (for-each interface (interfaces ast))
+  ast)
 
 (define (events ast)
   (match ast
@@ -299,11 +311,9 @@
 (define (read-ast name)
   (read-asd (->string (list 'examples '/ name '.asd))))
 
-(define (import-ast name)
+(define* (import-ast name :optional (transform identity))
   (or (assoc-ref *ast-alist* name)
-      (and-let* ((ast (read-ast name)))
+      (and-let* ((ast (transform (read-ast name))))
                 (ast-add name (car ast)))))
 
 (define ast import-ast)
-
-

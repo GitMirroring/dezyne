@@ -21,7 +21,7 @@
 # 
 # Code:
 
-SHELL = /bin/bash
+SHELL := /bin/bash
 DEPTH = ../..
 diff = diff -uw -I '^ *$$' -I '^ *//'
 sed = sed -e 's/^-gen/gen/' -re 's/((cppbase.cpp|.hh.scm|.cc.scm):[0-9]*):/\1:warning:/'
@@ -45,14 +45,16 @@ dummy:
 
 baseline: dummy
 	rm -rf baseline && mkdir -p baseline
-	$(asdgen) -l cpp examples/alarm-component-pretty.asd && mv Alarm* baseline
-	$(asdgen) -l cpp examples/CommImpl.asd && mv CommImpl* baseline
-	$(asdgen) -l cpp examples/Aap.asd && mv AapInt* NootComp* baseline
-	$(asdgen) -l cpp examples/Alarm.asd && mv Alarm* baseline
-	$(asdgen) -l cpp examples/Console.asd && mv Console* baseline
-	$(asdgen) -l cpp examples/Sensor.asd && mv Sensor* baseline
-	$(asdgen) -l cpp examples/Siren.asd && mv Siren* baseline
-	$(asdgen) -l csp examples/Alarm.asd && mv Alarm.csp baseline
+	cp examples/*asd baseline
+	sed -rie 's/^(import .*);/\1.asd;/' baseline/*.asd
+	$(asdgen) -l cpp baseline/alarm-component-pretty.asd && mv Alarm* baseline
+	$(asdgen) -l cpp baseline/CommImpl.asd && mv CommImpl* baseline
+	$(asdgen) -l cpp baseline/Aap.asd && mv AapInt* NootComp* baseline
+	$(asdgen) -l cpp baseline/Alarm.asd && mv Alarm* baseline
+	$(asdgen) -l cpp baseline/Console.asd && mv Console* baseline
+	$(asdgen) -l cpp baseline/Sensor.asd && mv Sensor* baseline
+	$(asdgen) -l cpp baseline/Siren.asd && mv Siren* baseline
+	$(asdgen) -l csp baseline/Alarm.asd && mv Alarm.csp baseline
 
 test: check
 check: compile ast pretty c++ csp simulate

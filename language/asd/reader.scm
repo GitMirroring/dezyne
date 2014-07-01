@@ -44,9 +44,7 @@
      (else exp))))
 
 (define (asd-reader port env)
-  (let* ((ast ((make-parser) (make-tokenizer port) error))
-	 (interface (ast:interface ast)))
-    ast))
+  (ast:register ((make-parser) (make-tokenizer port) error)))
 
 (define (read-asd file-name)
   (asd-reader (open-file file-name "r") (current-module)))
