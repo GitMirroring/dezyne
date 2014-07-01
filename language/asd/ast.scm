@@ -63,7 +63,7 @@
            interfaces
            interface?
            make
-           module?
+           model?
            name
            out?
            parent
@@ -91,7 +91,7 @@
 
 (define (member- ast name) (or (assoc name (body ast)) '()))
 
-(define (module? ast) (or (interface? ast) (component? ast)))
+(define (model? ast) (or (interface? ast) (component? ast)))
 (define (type? type ast)
   (and (pair? ast)
        (let ((head (car ast)))
@@ -118,7 +118,7 @@
 
 (define (body ast)
   (match ast
-    ((or (? behaviour?) (? module?))
+    ((or (? behaviour?) (? model?))
      (or (and (>2 (length ast)) (cddr ast)) '()))
     ((or (? events?) (? guard?) (? ports?) (? compound?) (? on?) (? types?) (? variables?))
      (cdr ast))
@@ -155,7 +155,7 @@
 
 (define (behaviour ast)
   (match ast
-    ((? module?) (member- ast 'behaviour))
+    ((? model?) (member- ast 'behaviour))
     ((? port?) (behaviour (import-ast (type ast))))
     (_ (throw 'match-error  (format #f "~a:behaviour: no match: ~a\n" (current-source-location) ast)))))
 
@@ -192,7 +192,7 @@
 
 (define (name ast)
   (match ast
-    ((or (? behaviour?) (? enum?) (? module?))
+    ((or (? behaviour?) (? enum?) (? model?))
      (or (and (>1 (length ast)) (cadr ast)) ""))
     (_ (throw 'match-error  (format #f "~a:name: no match: ~a\n" (current-source-location) ast)))))
 
@@ -206,7 +206,7 @@
 
 (define (statement ast)
   (match ast
-    ((? module?) (statement (behaviour ast)))
+    ((? model?) (statement (behaviour ast)))
     ((? behaviour?) (or (assoc 'compound (body ast)) (make 'compound '())))
     ((? guard?) (caddr ast))
     ((? on?) (caddr ast))

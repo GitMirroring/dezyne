@@ -80,7 +80,7 @@ within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:ini
                   (list channel ".return -> ")
                   '())
               '("transition_end -> ")))
-        (list .module "_" .behaviour "_((" (comma-join (map csp-expression->string actuals)) "))")))
+        (list .model "_" .behaviour "_((" (comma-join (map csp-expression->string actuals)) "))")))
 #}
     (append
       (filter identity (map (statement-on-p/r (provides? component)) ((ast:statements-of-type 'on) (ast:statement guard))))

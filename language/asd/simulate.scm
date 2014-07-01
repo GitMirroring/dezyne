@@ -42,11 +42,11 @@
 (if debug?
     (set! debug stderr))
 
-(define *module* #f)
+(define *model* #f)
 
 (define (ast-> ast)
-  (and=> (ast:interface ast) simulate-module)
-  (and=> (ast:component ast) simulate-module)
+  (and=> (ast:interface ast) simulate-model)
+  (and=> (ast:component ast) simulate-model)
   "")
 
 (define (variable-state variable . value) 
@@ -55,8 +55,8 @@
                          (if (pair? value) (car value) 
                              (ast:initial-value variable)))))
 
-(define (state-vector module)
-  (map variable-state (ast:body (ast:variables module))))
+(define (state-vector model)
+  (map variable-state (ast:body (ast:variables model))))
 
 (define (var state identifier) (assoc-ref state identifier))
 
@@ -68,14 +68,14 @@
 (define i 0)
 (define *state-space* '(()))
 
-(define (simulate-module module)
-   (stderr "\n\n>>>simulating: ~a ~a --> ~a\n" (ast:class module) (ast:name module) (map ->string ((ast:find-events ast:in?) module)))
+(define (simulate-model model)
+   (stderr "\n\n>>>simulating: ~a ~a --> ~a\n" (ast:class model) (ast:name model) (map ->string ((ast:find-events ast:in?) model)))
    (let ((trail (option-ref (parse-opts (command-line)) 'trail #f)))
      (if trail
        (pretty-print (map demo-trace 
-                          (walk-trail module 
+                          (walk-trail model 
                                       (with-input-from-string trail read))))
-       (pretty-print (map demo-trace (explore-space module)))))
+       (pretty-print (map demo-trace (explore-space model)))))
 
    (stderr "state space: ~a\n" (length *state-space*))
   "")
@@ -110,7 +110,7 @@
       symbol))
 
 (define (seen-key state ast)
-  (when (not (equal? ast (ast:statement (ast:behaviour *module*))))
+  (when (not (equal? ast (ast:statement (ast:behaviour *model*))))
     ;; it's a bug if we store a 'seen' state with a non-top AST:
     ;; only actions return mid-statements and they are continued
     ;; we alway continue until the end
@@ -134,7 +134,7 @@
   (find (lambda (x) (equal? x event)) (seen state ast)))
 
 (define (seen! state ast event)
-  (when (not (equal? ast (ast:statement (ast:behaviour *module*))))
+  (when (not (equal? ast (ast:statement (ast:behaviour *model*))))
     (stderr "seen! --> AST:~a\n" ast)
     (throw 'seen!-with-non-top-ast))
 
@@ -148,11 +148,11 @@
   (let ((done (seen state ast)))
     (filter (negate (lambda (x) (member x done equal?))) events)))
 
-(define (next-todo-space-explorer module state ast)
-  (let ((events ((ast:find-events ast:in?) module)))
+(define (next-todo-space-explorer model state ast)
+  (let ((events ((ast:find-events ast:in?) model)))
     (if (or (null? *state-space*)
             (null? (car *state-space*)))
-        (cons (state-vector module) events)
+        (cons (state-vector model) events)
         (let ((todo (state-ast-todo state ast events)))
           (if (pair? todo)
               (cons state todo)
@@ -168,23 +168,23 @@
                           (cons state todo)
                           (loop (cdr entries)))))))))))
 
-(define (next-todo-trail-walker module trail)
+(define (next-todo-trail-walker model trail)
   (let ((trail trail))
-    (lambda (module state ast-dont-care)
+    (lambda (model state ast-dont-care)
       (if (null? trail)
           (cons #f '())
           (let ((event (car trail)))
             (set! trail (cdr trail))
-            (cons (if (eq? state 'initial) (state-vector module) state)
+            (cons (if (eq? state 'initial) (state-vector model) state)
                   (list event)))))))
 
-(define* (simulate module :optional
+(define* (simulate model :optional
                    (next-todo next-todo-space-explorer)
-                   (ast (ast:statement (ast:behaviour module))))
-  (set! *module* module)
+                   (ast (ast:statement (ast:behaviour model))))
+  (set! *model* model)
   (set! *state-space* '(()))
   (set! i 0)
-  (let loop ((state-todo (next-todo module 'initial ast)))
+  (let loop ((state-todo (next-todo model 'initial ast)))
     (let* ((state (car state-todo))
            (todo (null-is-#f (cdr state-todo))))
       (if (or (not state) (not todo))
@@ -192,7 +192,7 @@
           (let* ((event (car todo)))
             (receive (state trace)
                 (process-event ast state event)
-              (cons (cons (->symbol event) trace) (loop (next-todo module state ast)))))))))
+              (cons (cons (->symbol event) trace) (loop (next-todo model state ast)))))))))
 
 (define* (process-event ast state event)
   (stderr "[~a] " (comma-space-join (map ->string state)))
@@ -222,7 +222,7 @@
     (('field identifier value) expression)
     (('! expr) (not (eval-expression ast state expr)))
     ('otherwise 
-     (let* ((parent (ast:parent *module* ast))
+     (let* ((parent (ast:parent *model* ast))
             (guards ((ast:statements-of-type 'guard) parent))
             (expressions (map ast:expression guards)))
        (receive (otherwise rest) (partition (lambda (x) (eq? x 'otherwise)) expressions)

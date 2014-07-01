@@ -82,8 +82,8 @@
     ((interface deadlock) . ,(gulp-file 'templates/asserts/interface-deadlock.csp.scm))
     ((interface livelock) . ,(gulp-file 'templates/asserts/interface-livelock.csp.scm))))
 
-(define (ast-norm module-name)
-  (ast:ast module-name normstate))
+(define (ast-norm model-name)
+  (ast:ast model-name normstate))
 
 (define (csp-module ast)
   (let ((module (make-module 31 (list
@@ -148,10 +148,10 @@
                   (events (ast:events on-statement))
                   (.event (car events))
                   (interface? (not (pair? (car events))))
-                  (module-ast (if interface? interface component))
+                  (model-ast (if interface? interface component))
                   (statement (ast:statement on-statement))
                   (assignments (assign-prefix statement (ast:type (ast:port component)) events))
-                  (names (var-names module-ast))
+                  (names (var-names model-ast))
                   (actuals (state-vector assignments (map (lambda (x) (cons x x)) names))))
              (animate-string
               string
@@ -169,7 +169,7 @@
                  (inevitable-optional? . ,(or (member 'inevitable events)
                                               (member 'optional events)))
 		 (interface . ,interface)
-                 (.module . ,(ast:name module-ast))
+                 (.model . ,(ast:name model-ast))
                  (.event-port . ,(if interface? (car events) (cadar events)))
                  (names . ,names)
                  (provides-event? . ,(compose (provides? (if interface? interface component)) car ast:events))
@@ -200,8 +200,8 @@
     (('assign key val) (cons (cons key (value val)) key-vals))
     (_ '())))
 
-(define (var-names module)
-  (map ast:identifier (ast:body (ast:variables (ast:behaviour module)))))
+(define (var-names model)
+  (map ast:identifier (ast:body (ast:variables (ast:behaviour model)))))
 
 (define ((statement-on-p/r predicate) statement-on)
   (let* ((events (ast:events statement-on))

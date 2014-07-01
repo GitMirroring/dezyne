@@ -80,10 +80,10 @@
     (module-define! module 'ast ast)
     (and-let* ((int (ast:interface ast)))
               (module-define! module '.interface (ast:name int))
-              (module-define! module '.module (ast:name int)))
+              (module-define! module '.model (ast:name int)))
     (and-let* ((comp (ast:component ast)))
               (module-define! module '.component (ast:name comp))
-              (module-define! module '.module (ast:name comp)))
+              (module-define! module '.model (ast:name comp)))
     module))
 
 ;;;; INTERFACE
@@ -248,12 +248,12 @@
       (c++-template->string 'return-context-get)
       ""))
 
-(define (variable-value->string module v)
+(define (variable-value->string model v)
   (case (ast:type v)
     ((bool) (->string (ast:initial-value v)))
     (;;(enum)
      else
-     (double-colon-join (append (list module) 
+     (double-colon-join (append (list model) 
                                 (cdr (ast:initial-value v)))))))
 
 (define (ast:state-type v)
