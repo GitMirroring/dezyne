@@ -1,0 +1,104 @@
+;; -*-scheme-*-
+
+(read-set! keywords 'prefix)
+
+(define-module (test-handler)
+  :use-module (test-suite lib)
+  :use-module (test-suite misc)
+
+  :use-module (language asd ast:)
+  :use-module (language asd csp))
+
+(pass-if "csp-first-dummy-test"
+	 #t)
+
+(pass-if "csp-transform-on-return"
+	 (pretty-noisy-equal?
+
+	  ;; from:
+	  (csp-transform-on 
+	   '((interface Blaa
+	      (behaviour
+	       #f
+	       (types (enum S (S1 S2)))
+	       (variables
+		(declare S s (field S S1))
+		(declare bool b false)
+		(declare bool c true)))))
+	   '(compound
+	     (on (e)
+		 (compound))))
+
+	  ;; via:
+	  '((on (e)
+		(return (s b c))))))
+
+(pass-if "csp-transform-on"
+	 (or #t (pretty-noisy-equal?
+
+	   ;; from:
+	   (csp-transform-on 
+	    '((component 
+	       (behaviour
+		#f
+		(types (enum S (S1 S2)))
+		(variables
+		 (declare S s (field S S1))
+		 (declare bool b false)
+		 (declare bool c true)))))
+	    '(compound
+	      (on (e)
+		  (compound
+		   (if (or c b) (compound (action f) (action g)))
+		   (if b
+		       (compound
+			(if c (compound (action g)))
+			(assign c false)
+			(action f))
+		       (compound
+			(if c
+			    (compound (assign b false) (action h))
+			    (compound (assign b true) (action g)))))
+		   (assign s (field S S2))))))
+
+	   ;; via:
+	   '((on e)
+	     (semi (ifthenelse (s b c) (expression c or b)
+			       ((action f) (action g))
+			       '())
+		   (semi (ifthenelse (s b c) (expression b)
+				     (semi (ifthenelse (s b c) (expression c) 
+						       ((action g))
+						       '())
+					   (semi (assign (s b c) (s b false))
+						 ((action f))))
+				     (ifthenelse (s b c) (expression c)
+						 (semi (assign (s b c) (s false c))
+						       ((action h)))
+						 (semi (assign (s b c) (s true c))
+						       ((action g)))))
+			 (assign (s b c) (S2 b c))))
+	     (return (s b c))))))
+
+;; to:
+;; iimperative?x:{e} ->
+;; semi(\P,(s,b,c) @ ifthenelse(c or b,
+;;                              \P,V @ iimperative!f->iimperative!g->P(V),
+;;                              \P,V @ P(V)
+;;                              )(P,(s,b,c)),
+;;      semi(\P,(s,b,c) @ ifthenelse(b,
+;;                                   semi(\P,(s,b,c) @ ifthenelse(c,
+;;                                                                \P,V @ iimperative!g->P(V),
+;;                                                                \P,V @ P(V)
+;;                                                                )(P,(s,b,c)),
+;;                                        semi(assign(\(s,b,c) @ (s,b,false)),
+;;                                             \P,V @ iimperative!f->P(V))),
+;;                                   \P,(s,b,c) @ ifthenelse(c,
+;;                                                           semi(assign(\(s,b,c) @ (s,false,c)),
+;;                                                                \P,V @ iimperative!h->P(V)),
+;;                                                           semi(assign(\(s,b,c) @ (s,true,c)),
+;;                                                                \P,V @ iimperative!g->P(V))
+;;                                                           )(P,(s,b,c))
+;;                                   )(P,(s,b,c)),
+;;           assign(\(s,b,c) @ (S2,b,c)))) (\(s,b,c) @ iimperative.return -> iimperative__((s,b,c)),(s,b,c))
+
