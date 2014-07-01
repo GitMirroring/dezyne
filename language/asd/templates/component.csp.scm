@@ -50,9 +50,9 @@ channel #.interface ,#.port : {#(comma-join (append (port-triggers port) '(retur
         "illegal -> STOP"
         (append
          (if provides-event?
-              (list .interface "." .event " -> ")
+              (list .interface  "." .event " -> ")
               '(""))
-         (map (action->string .interface inevitable-optional?) actions)
+         (map (action->string interface inevitable-optional?) actions)
          (if inevitable-optional?
              '("")
              (list .interface ".return -> "))
@@ -69,8 +69,8 @@ within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:ini
 # (map-statements-on #{ #
     (when illegal? (if provides-event? "IIG & " "IG & ")) #.event-port ?x:{#
     (comma-join (map event->string events)) } -> #
-    (map (action->string #f inevitable-optional?) actions) #
-    (if illegal? 
+    (map (action->string component inevitable-optional?) actions) #
+    (if illegal?
         "illegal -> STOP"
         (append
          (if inevitable-optional?
@@ -83,8 +83,8 @@ within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:ini
         (list .module "_" .behaviour "_((" (comma-join (map csp-expression->string actuals)) "))")))
 #}
     (append
-      (filter identity (map (statement-on-p/r provides?) ((ast:statements-of-type 'on) (ast:statement guard))))
-      (filter identity (map (statement-on-p/r requires?) ((ast:statements-of-type 'on) (ast:statement guard))))) "[]\n"))
+      (filter identity (map (statement-on-p/r (provides? component)) ((ast:statements-of-type 'on) (ast:statement guard))))
+      (filter identity (map (statement-on-p/r (requires? component)) ((ast:statements-of-type 'on) (ast:statement guard))))) "[]\n"))
 #} (reverse ((ast:statements-of-type 'guard) ((compose ast:statement ast:behaviour ast:component) ast)))))
 within #.component _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:initial-value x))) ((compose ast:body ast:variables ast:behaviour ast:component) ast)))))
 
@@ -158,4 +158,3 @@ within compress((#.component _#.behaviour (false,true) [[x<-OUT.x|x<-extensions(
 #} (filter ast:requires? ((compose ast:body ast:ports ast:component) ast)) " ||| "))) (if (string-null? required_processes) 'STOP required_processes))) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
-

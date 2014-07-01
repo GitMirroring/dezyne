@@ -48,7 +48,7 @@
     (and-let* ((comp (ast:component norm))
 	       (name (ast:name comp))
 	       (module (csp-module norm)))
-	      (dump-output (list name '.csp) 
+	      (dump-output (list name '.csp)
                            (lambda ()
                              (csp-component module)
 			     (csp-asserts module)))))
@@ -59,7 +59,7 @@
 
 (define (csp-asserts module)
   (let* ((asserts-string (option-ref (parse-opts (command-line)) 'assert #f))
-	 (asserts (if asserts-string (with-input-from-string asserts-string read) 
+	 (asserts (if asserts-string (with-input-from-string asserts-string read)
 		      (assert-list (module-ref module 'ast)))))
     (for-each (csp-assert module) asserts)))
 
@@ -163,12 +163,13 @@
                  (events . ,ast:events)
                  (.event . ,(compose car ast:events))
                  (illegal? . ,(compose prefix-illegal? ast:statement))
-                 (inevitable-optional? . ,(or (member 'inevitable events) 
+                 (inevitable-optional? . ,(or (member 'inevitable events)
                                               (member 'optional events)))
+		 (interface . ,interface)
                  (.module . ,(ast:name module-ast))
                  (.event-port . ,(if interface? (car events) (cadar events)))
                  (names . ,names)
-                 (provides-event? . ,(compose provides? car ast:events))
+                 (provides-event? . ,(compose (provides? (if interface? interface component)) car ast:events))
                  (statement . ,ast:statement))))))))
      statements))))
 
@@ -232,8 +233,19 @@
     ('(action illegal) #t)
     (_ #f)))
 
-(define (provides? x) (and (pair? x) (eq? (cadr x) 'console)))
-(define (requires? x) (not (provides? x)))
+(define (((provides-or-requires? type) component) event)
+  (if (ast:component? component)
+      (pair?
+       (filter
+	(lambda (port) (and (equal? type (car port)) (equal? (if (pair? event) (cadr event) event) (caddr port))))
+	((compose ast:body ast:ports) component)))
+      #f))
+
+(define ((provides? component) event)
+  (((provides-or-requires? 'provides) component)  event))
+
+(define ((requires? component) event)
+  (((provides-or-requires? 'requires) component)  event))
 
 (define (state-vector assignments formals)
   (let loop ((assignments assignments) (formals formals))
@@ -267,7 +279,7 @@
         (if (pair? name) (cadr name) name))
       action))
 
-(define ((action->string .interface inevitable-optional?) action)
-  (->string (list (if .interface (list .interface ".") "") (->string action) " -> " 
-                  (when (and (requires? action) (not inevitable-optional?))
+(define ((action->string ast inevitable-optional?) action)
+  (->string (list (if (ast:interface? ast) (list (ast:name ast) ".") "") (->string action) " -> "
+                  (when (and (not (ast:interface? ast)) ((requires? ast) action) (not inevitable-optional?))
                     (list (action-name action) ".return -> ")))))
