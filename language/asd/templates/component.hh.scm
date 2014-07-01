@@ -4,7 +4,7 @@
 #(map-ports
 #{
 ##include "#.interface Interface.h"
-#} ((compose ast:port-list ast:component) ast))
+#} ((compose ast:ports ast:component) ast))
 ##include <boost/shared_ptr.hpp>
 
 class #.component Component # (string-if (ast:bottom? (ast:component ast))
@@ -28,7 +28,7 @@ public:
 ##if 0
   virtual void Get#(list .port)Interface(boost::shared_ptr<#.interface Interface>* intf) = 0;
 ##endif
-#} ((compose ast:port-list ast:component) ast))
+#} ((compose ast:ports ast:component) ast))
 #})
 };
 

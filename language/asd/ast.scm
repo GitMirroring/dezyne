@@ -85,12 +85,11 @@
            variables
            variables?
 
-           ;;
-           event-list
-           import-list
-           port-list
-           type-list
-           variable-list
+           events-element
+           imports-element
+           ports-element
+           types-element
+           variables-element
            ))
 
 (define (make . t)
@@ -98,6 +97,12 @@
 
 (define (element ast name)
   (or (assoc name (body ast)) '()))
+
+(define (events-element ast) (element ast 'events))
+(define (imports-element ast) (element ast 'imports))
+(define (ports-element ast) (element ast 'ports))
+(define (types-element ast) (element ast 'types))
+(define (variables-element ast) (element ast 'variables))
 
 (define (model? ast) (or (interface? ast) (component? ast)))
 (define (type? type ast)
@@ -142,12 +147,6 @@
     ('() ast)
     (_ (throw 'match-error  (format #f "~a:body: no match: ~a\n" (current-source-location) ast)))))
 
-(define (event-list ast) (body (events ast)))
-(define (import-list ast) (body (imports ast)))
-(define (port-list ast) (body (ports ast)))
-(define (type-list ast) (body (types ast)))
-(define (variable-list ast) (body (variables ast)))
-
 (define (interface- ast) 
   (if (interface? ast)
       ast
@@ -171,7 +170,7 @@
 
 (define (events ast)
   (match ast
-    ((? interface?) (element ast 'events))
+    ((? interface?) (body (events-element ast)))
     ((? on?) (cadr ast))
     ((? port?) (events (import-ast (type ast))))
     (_ (throw 'match-error  (format #f "~a:events: no match: ~a\n" (current-source-location) ast)))))
@@ -184,12 +183,12 @@
 
 (define (component ast) (assoc 'component ast))
 
-(define (ports ast) 
+(define (ports ast)
   (match ast
-    ((? component?) (element ast 'ports))
+    ((? component?) (body (ports-element ast)))
     (_ (throw 'match-error  (format #f "~a:ports: no match: ~a\n" (current-source-location) ast)))))
 
-(define (imports ast) (element ast 'imports))
+(define (imports ast) (body (imports-element ast)))
 
 (define* (port ast :optional (name #f))
   (if name
@@ -197,18 +196,30 @@
             (body
              (match ast
                ((? ports?) ast)
-               ((? component?) (ports ast))
+               ((? component?) (ports-element ast))
                (_ (throw 'match-error  (format #f "~a:port: no match: ~a\n" (current-source-location) ast))))))
       (match ast
-        ((? component?) (assoc 'provides (port-list ast))))))
+        ((? component?) (assoc 'provides (ports ast))))))
 
-(define (direction ast) (match ast ((or (? event?) (? port?)) (car ast))))
-(define (elements ast) (match ast ((? enum?) (caddr ast))))
-(define (expression ast) (match ast ((? guard?) (cadr ast))))
+(define (direction ast) 
+  (match ast 
+    ((or (? event?) (? port?)) (car ast))
+    (_ (throw 'match-error  (format #f "~a:direction: no match: ~a\n" (current-source-location) ast)))))
+
+(define (elements ast) 
+  (match ast 
+    ((? enum?) (caddr ast))
+    (_ (throw 'match-error  (format #f "~a:elements: no match: ~a\n" (current-source-location) ast)))))
+
+(define (expression ast) 
+  (match ast
+    ((? guard?) (cadr ast))
+    (_ (throw 'match-error  (format #f "~a:expression: no match: ~a\n" (current-source-location) ast)))))
 
 (define (identifier ast)
   (match ast
-    ((or (? event?) (? field?) (? port?) (? variable?)) (caddr ast))))
+    ((or (? event?) (? field?) (? port?) (? variable?)) (caddr ast))
+    (_ (throw 'match-error  (format #f "~a:identifier: no match: ~a\n" (current-source-location) ast)))))
 
 (define (in? ast) 
   (match ast 
@@ -248,19 +259,19 @@
 
 (define (types ast)
   (match ast
-    ((or (? interface?) (? behaviour?)) (element ast 'types))
+    ((or (? interface?) (? behaviour?)) (body (types-element ast)))
     ((? component?) (types (behaviour ast)))
     ((? port?) (types (import-ast (type ast))))
     (_ (throw 'match-error  (format #f "~a:types: no match: ~a\n" (current-source-location) ast)))))
 
 (define (variables ast)
   (match ast
-    ((? behaviour?) (element ast 'variables))
-    ((? interface?) (make (cons 'variables (append (body (element ast 'variables)) 
-                                                   (variable-list (behaviour ast))))))
+    ((? behaviour?) (body (variables-element ast)))
+    ((? interface?) (append (body (variables-element ast)) 
+                            (variables (behaviour ast))))
     ((? component?) (variables (behaviour ast)))
     ((? port?) (variables (import-ast (type ast))))
-    (_ (throw 'match-error  (format #f "~a:variables: no match: ~a\n" (current-source-location) ast)))))
+               (_ (throw 'match-error  (format #f "~a:variables: no match: ~a\n" (current-source-location) ast)))))
 
 
 ;;;;; FIXME
@@ -286,7 +297,7 @@
 (define (typed? ast)
   (match ast
     ((? event?) (not (eq? (type ast) 'void)))
-    ((? port?) (null-is-#f (filter typed? (event-list ast))))
+    ((? port?) (null-is-#f (filter typed? (events ast))))
     (_ (throw 'match-error  (format #f "~a:typed?: no match: ~a\n" (current-source-location) ast)))))
 
 (define (dir-matches? port)
@@ -297,7 +308,7 @@
              (eq? (direction event) 'out)))))
 
 (define (bottom? ast)
-  (and-let* ((ports (port-list ast))
+  (and-let* ((ports (ports ast))
              ((=1 (length ports))))
             (provides? (car ports))))
 
@@ -337,7 +348,7 @@
       ((? component?)
        (delete-duplicates (sort (find-events-p (statement (behaviour ast))) list<)))
       ((? interface?) 
-       (let ((declared (event-list ast)))
+       (let ((declared (events ast)))
          (receive (keep discard) 
              (partition predicate declared)
            (let* ((behaviour (find-events-p (statement (behaviour ast))))

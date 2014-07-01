@@ -27,4 +27,4 @@
    (eq? (ast:type port) name))# 
 (map-ports #{
 assert #.interface _#.behaviour(true) :[livelock free]
-#} (list (car (filter (the-one? .model) ((compose ast:port-list ast:component) ast)))))
+#} (list (car (filter (the-one? .model) ((compose ast:ports ast:component) ast)))))

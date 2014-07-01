@@ -188,11 +188,11 @@
   (sort ((ast:find-events) (ast-norm (ast:type port))) symbol<))
 
 (define (enum-values comp)
-  (let ((comp-values (apply append (map ast:elements (ast:type-list (ast:behaviour comp))))))
-    (let loop ((ports (ast:port-list comp)) (values comp-values))
+  (let ((comp-values (apply append (map ast:elements (ast:types (ast:behaviour comp))))))
+    (let loop ((ports (ast:ports comp)) (values comp-values))
       (if (null? ports)
           values
-          (loop (cdr ports) (append values (apply append (map ast:elements (ast:type-list (ast:behaviour (ast-norm (ast:type (car ports)))))))))))))
+          (loop (cdr ports) (append values (apply append (map ast:elements (ast:types (ast:behaviour (ast-norm (ast:type (car ports)))))))))))))
 
 (define (assign-prefix statement channel event . key-vals)
   (match statement
@@ -201,7 +201,7 @@
     (_ '())))
 
 (define (var-names model)
-  (map ast:identifier (ast:variable-list (ast:behaviour model))))
+  (map ast:identifier (ast:variables (ast:behaviour model))))
 
 (define ((statement-on-p/r predicate) statement-on)
   (let* ((events (ast:events statement-on))
@@ -241,7 +241,7 @@
       (pair?
        (filter
 	(lambda (port) (and (equal? type (car port)) (equal? (if (pair? event) (cadr event) event) (caddr port))))
-	(ast:port-list component)))
+	(ast:ports component)))
       #f))
 
 (define ((provides? component) event)

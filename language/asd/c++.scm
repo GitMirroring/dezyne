@@ -197,7 +197,7 @@
     (statements->string (if (eq? expr 'otherwise) else-clause (if (or first? (not top?)) if-clause else-if-clause)))))
 
 (define (lhs->string lhs)
-  (let* ((state-variables ((compose ast:variable-list ast:behaviour ast:component) ast))
+  (let* ((state-variables ((compose ast:variables ast:behaviour ast:component) ast))
          (state? (find
                   (lambda (v) (eq? lhs (ast:identifier v)))
                   state-variables))
