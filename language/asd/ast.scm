@@ -140,7 +140,9 @@
 (define (interfaces ast)
   (filter (lambda (model) (interface? model)) ast))
 
-(define (register ast)
+(define* (register ast :optional (clear? #f))
+  (if clear?
+      (set! *ast-alist* '(())))
   (for-each interface (interfaces ast))
   ast)
 

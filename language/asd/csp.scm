@@ -45,6 +45,7 @@
 
 (define (ast-> ast)
   (let ((norm (normstate ast)))
+    (ast:register norm #t)
     (module-define! (resolve-module '(language asd csp)) 'ast norm)  ;; FIXME
     (and-let* ((comp (ast:component norm))
 	       (name (ast:name comp))
