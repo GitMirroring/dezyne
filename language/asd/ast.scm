@@ -122,7 +122,8 @@
      (or (and (>2 (length ast)) (cddr ast)) '()))
     ((or (? events?) (? guard?) (? ports?) (? compound?) (? on?) (? types?) (? variables?))
      (cdr ast))
-    ('() ast)))
+    ('() ast)
+    (_ (throw 'match-error  (format #f "~a:body: no match: ~a\n" (current-source-location) ast)))))
 
 (define (interface- ast) 
   (if (interface? ast)
@@ -147,12 +148,14 @@
   (match ast
     ((? interface?) (member- ast 'events))
     ((? on?) (cadr ast))
-    ((? port?) (events (import-ast (type ast))))))
+    ((? port?) (events (import-ast (type ast))))
+    (_ (throw 'match-error  (format #f "~a:events: no match: ~a\n" (current-source-location) ast)))))
 
 (define (behaviour ast)
   (match ast
     ((? module?) (member- ast 'behaviour))
-    ((? port?) (behaviour (import-ast (type ast))))))
+    ((? port?) (behaviour (import-ast (type ast))))
+    (_ (throw 'match-error  (format #f "~a:behaviour: no match: ~a\n" (current-source-location) ast)))))
 
 (define (component ast) (assoc 'component ast))
 
@@ -176,13 +179,20 @@
   (match ast
     ((or (? event?) (? field?) (? port?) (? variable?)) (caddr ast))))
 
-(define (in? ast) (match ast ((? event?) (eq? (direction ast) 'in))))
-(define (out? ast) (match ast ((? event?) (eq? (direction ast) 'out))))
+(define (in? ast) 
+  (match ast 
+    ((? event?) (eq? (direction ast) 'in))
+    (_ (throw 'match-error  (format #f "~a:in?: no match: ~a\n" (current-source-location) ast)))))
+
+(define (out? ast)
+  (match ast ((? event?) (eq? (direction ast) 'out))
+    (_ (throw 'match-error  (format #f "~a:out?: no match: ~a\n" (current-source-location) ast)))))
 
 (define (name ast)
   (match ast
     ((or (? behaviour?) (? enum?) (? module?))
-     (or (and (>1 (length ast)) (cadr ast)) ""))))
+     (or (and (>1 (length ast)) (cadr ast)) ""))
+    (_ (throw 'match-error  (format #f "~a:name: no match: ~a\n" (current-source-location) ast)))))
 
 (define (class ast)
   (match ast 
@@ -197,17 +207,20 @@
     ((? module?) (statement (behaviour ast)))
     ((? behaviour?) (or (assoc 'compound (body ast)) (make 'compound '())))
     ((? guard?) (caddr ast))
-    ((? on?) (caddr ast))))
+    ((? on?) (caddr ast))
+    (_ (throw 'match-error  (format #f "~a:statement: no match: ~a\n" (current-source-location) ast)))))
 
 (define (type ast)
   (match ast 
-    ((or (? event?) (? field?) (? port?) (? variable?)) (cadr ast))))
+    ((or (? event?) (? field?) (? port?) (? variable?)) (cadr ast))
+    (_ (throw 'match-error  (format #f "~a:type: no match: ~a\n" (current-source-location) ast)))))
 
 (define (types ast)
   (match ast
     ((or (? interface?) (? behaviour?)) (member- ast 'types))
     ((? component?) (types (behaviour ast)))
-    ((? port?) (types (import-ast (type ast))))))
+    ((? port?) (types (import-ast (type ast))))
+    (_ (throw 'match-error  (format #f "~a:types: no match: ~a\n" (current-source-location) ast)))))
 
 (define (variables ast)
   (match ast
@@ -215,7 +228,8 @@
     ((? interface?) (make (cons 'variables (append (body (member- ast 'variables)) 
                                                    (body (variables (behaviour ast)))))))
     ((? component?) (variables (behaviour ast)))
-    ((? port?) (variables (import-ast (type ast))))))
+    ((? port?) (variables (import-ast (type ast))))
+    (_ (throw 'match-error  (format #f "~a:variables: no match: ~a\n" (current-source-location) ast)))))
 
 
 ;;;;; FIXME
@@ -241,7 +255,8 @@
 (define (typed? ast)
   (match ast
     ((? event?) (not (eq? (type ast) 'void)))
-    ((? port?) (null-is-#f (filter typed? (body (events ast)))))))
+    ((? port?) (null-is-#f (filter typed? (body (events ast)))))
+    (_ (throw 'match-error  (format #f "~a:typed?: no match: ~a\n" (current-source-location) ast)))))
 
 (define (dir-matches? port)
   (lambda (event)
@@ -263,7 +278,8 @@
 (define ((statements-of-type type) statement)
   (match statement
     ((? (statement-of-type type)) (list statement))
-    (('compound h ...) (filter identity (map (statement-of-type type) h)))))
+    (('compound h ...) (filter identity (map (statement-of-type type) h)))
+    (_ (throw 'match-error  (format #f "~a:statements-of-type, type: ~a: no match: ~a\n" (current-source-location) type statement)))))
 
 (define (parent ast lst)
   (if (object? lst)
@@ -300,7 +316,8 @@
       (('on t statement) (map find-events-p t))
       (('field type identifier) ast)
       (('guard expression statement) (find-events-p statement found))
-      ((? symbol?) (make 'in 'void ast)))))
+      ((? symbol?) (make 'in 'void ast))
+      (_ (throw 'match-error  (format #f "~a:find-events: no match: ~a\n" (current-source-location) ast))))))
 
 ;;;; reading/caching
 (define *ast-alist* '(()))
