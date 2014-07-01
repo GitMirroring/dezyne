@@ -40,6 +40,7 @@
            ast->
            csp-component
            csp-module
+	   csp-transform-on
            ))
 
 (define (ast-> ast)
@@ -284,3 +285,11 @@
   (->string (list (if (ast:interface? ast) (list (ast:name ast) ".") "") (->string action) " -> "
                   (when (and (not (ast:interface? ast)) ((requires? ast) action) (not inevitable-optional?))
                     (list (action-name action) ".return -> ")))))
+
+(define (csp-transform-on ast src)
+  (stderr "ast: ~a\n" ast)
+  (match src
+    (('compound) `(return ,(var-names (ast:interface ast))))
+    (('compound t ...) (map csp-transform-on ast t))
+    (('on e s) (list 'on e (csp-transform-on ast s)))
+    (_ src)))

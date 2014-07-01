@@ -30,10 +30,12 @@ iimperative__((s,b,c)) =
                                                      semi(assign(\(s,b,c) @ (s,b,false)),
                                                           \P,V @ iimperative!f->P(V))),
                                                 \P,(s,b,c) @ ifthenelse(c,
-                                                           semi(assign(\(s,b,c) @ (s,false,c)),
-                                                                \P,V @ iimperative!h->P(V)),
-                                                           semi(assign(\(s,b,c) @ (s,true,c)),
-                                                                \P,V @ iimperative!g->P(V)))(P,(s,b,c)))(P,(s,b,c)),
+                                                                        semi(assign(\(s,b,c) @ (s,false,c)),
+                                                                             \P,V @ iimperative!h->P(V)),
+                                                                        semi(assign(\(s,b,c) @ (s,true,c)),
+                                                                             \P,V @ iimperative!g->P(V))
+                                                                        )(P,(s,b,c))
+                                                )(P,(s,b,c)),
                         assign(\(s,b,c) @ (S2,b,c)))) (\(s,b,c) @ iimperative.return -> iimperative__((s,b,c)),(s,b,c))
               )
 []
