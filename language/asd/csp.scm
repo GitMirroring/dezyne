@@ -135,48 +135,6 @@
                  guard
                  `((guard . ,identity))))))) guards))))
 
-(define* (map-statements-on string statements :optional (separator ""))
-  (display
-   ((->join separator)
-    (map
-     (lambda (on-statement)
-       (with-output-to-string
-         (lambda ()
-           (let* ((module (current-module))
-                  (.interface (module-ref module '.interface))
-                  (interface (ast-norm .interface))
-                  (component (module-ref module 'component))
-                  (events (ast:triggers on-statement))
-                  (.event (car events))
-                  (interface? (not (pair? (car events))))
-                  (model-ast (if interface? interface component))
-                  (statement (ast:statement on-statement))
-                  (assignments (assign-prefix statement (ast:type (ast:port component)) events))
-                  (names (var-names model-ast))
-                  (actuals (state-vector assignments (map (lambda (x) (cons x x)) names))))
-             (animate-string
-              string
-              (animate-module-populate
-               (current-module)
-               on-statement
-               `((.channel . ,(module-ref module '.port))
-                 (.events . ,(comma-join (map ->string events)))
-                 (actions . ,(compose prefix-actions ast:statement))
-                 (actuals . ,actuals)
-                 (channel . ,(module-ref module '.port))
-                 (events . ,ast:events)
-                 (.event . ,(compose car ast:events))
-                 (illegal? . ,(compose prefix-illegal? ast:statement))
-                 (inevitable-optional? . ,(or (member 'inevitable events)
-                                              (member 'optional events)))
-		 (interface . ,interface)
-                 (.model . ,(ast:name model-ast))
-                 (.event-port . ,(if interface? (car events) (cadar events)))
-                 (names . ,names)
-                 (provides-event? . ,(compose (provides? (if interface? interface component)) car ast:events))
-                 (statement . ,ast:statement))))))))
-     statements))))
-
 (define (csp-expression->string expression)
   (match expression
     (('value type field) (list type " == " field))
@@ -195,12 +153,6 @@
           values
           (loop (cdr ports) (append values (apply append (map ast:elements (ast:types (ast:behaviour (ast-norm (ast:type (car ports)))))))))))))
 
-(define (assign-prefix statement channel event . key-vals)
-  (match statement
-    (('compound tail ...) (apply append (map (lambda (statement) (assign-prefix statement channel event)) tail)))
-    (('assign key val) (cons (cons key (value val)) key-vals))
-    (_ '())))
-
 (define (var-names model)
   (map ast:name (ast:variables (ast:behaviour model))))
 
@@ -214,19 +166,6 @@
 
 (define (event->string event)
   (if (pair? event) (caddr event) event))
-
-(define (prefix-actions statement)
-  (match statement
-    (('compound tail ...) (let loop ((statements tail))
-                            (if (null? statements)
-                                '()
-                                (let ((action (prefix-actions (car statements))))
-                                  (if (null? action)
-                                      (loop (cdr statements))
-                                      (cons action (loop (cdr statements))))))))
-    ('(action illegal) '())
-    (('action name) name)
-    (_ '())))
 
 (define (prefix-illegal? statement)
   (match statement
@@ -250,15 +189,6 @@
 
 (define ((requires? component) event)
   (((provides-or-requires? 'requires) component)  event))
-
-(define (state-vector assignments formals)
-  (let loop ((assignments assignments) (formals formals))
-    (if (null? assignments)
-	(map cdr formals)
-	(let* ((assign (car assignments))
-	       (name (car assign))
-	       (value (cdr assign)))
-	  (loop (cdr assignments) (assoc-set! formals name value))))))
 
 (define (value ast)
   (match ast

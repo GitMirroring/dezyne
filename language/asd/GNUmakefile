@@ -57,7 +57,7 @@ baseline: dummy
 	$(asdgen) -l csp baseline/Alarm.asd && mv Alarm.csp baseline
 
 test: check
-check: compile ast pretty c++ csp simulate
+check: compile
 	./test.sh </dev/null
 
 ast: compile
