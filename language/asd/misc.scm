@@ -135,13 +135,14 @@
 (define (stdout string . rest)
   (apply logf (cons* (current-output-port) string rest)))
 
-(define (->string src)
-  (match src
-    ((? char?) (make-string 1 src))
-    ((? string?) src)
-    ((? symbol?) (symbol->string src))
-    ((h ... t) (apply string-append (map ->string src)))
-    (_ "")))
+(define (->string h . t)
+  (let ((src (if (pair? t) (cons h t) h))) 
+    (match src
+      ((? char?) (make-string 1 src))
+      ((? string?) src)
+      ((? symbol?) (symbol->string src))
+      ((h ... t) (apply string-append (map ->string src)))
+      (_ ""))))
 
 (define (flatten x)
   "unnest list."
