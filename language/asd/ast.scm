@@ -57,12 +57,12 @@
 ;;      := ((variable States state        (field States Disarmed))
 ;;           ^class   ^type  ^name  ^expression
 ;;
-;; FIXME 2 field flavours: enum and (action, on-event)
-;;      (field   console     arm)
-;;       ^class  ^port-name  ^event-name
+;;   SUB-AST (ast:events (ast:component AST))
+;;      (event  console arm)
+;;       ^class ^port   ^event
 ;;
-;;      (field   xx yy)
-;;       ^class  ^port-name  ^event-name
+;;   SUB-AST (ast:types (ast:interface ast))
+;;      (value type field)
 ;;    
 
 ;;; Code:
@@ -235,8 +235,10 @@
 (define (events ast)
   (match ast
     ((? interface?) (body (events-element ast)))
+    ((? component?) (events (statement ast)))
     ((? on?) (cadr ast))
     ((? port?) (events (import-ast (type ast))))
+    ((? compound?) (apply append (map events ((statements-of-type 'on) ast))))
     (_ (throw 'match-error  (format #f "~a:events: no match: ~a\n" (current-source-location) ast)))))
 
 (define (behaviour ast)
@@ -379,7 +381,10 @@
 (define ((statements-of-type type) statement)
   (match statement
     ((? (statement-of-type type)) (list statement))
-    (('compound h ...) (filter identity (map (statement-of-type type) h)))
+    (('compound t ...) (filter identity (apply append (map (statements-of-type type) t))))
+    (('guard expr s) (filter identity ((statements-of-type type) s)))
+    ('() '())
+    ((t ...) (filter identity (apply append (map (statements-of-type type) t))))
     (_ (throw 'match-error  (format #f "~a:statements-of-type, type: ~a: no match: ~a\n" (current-source-location) type statement)))))
 
 (define (parent ast lst)
