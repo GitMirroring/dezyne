@@ -20,50 +20,91 @@
 //
 // Code:
 
-component Alarm_Impl
+import Sensor;
+import Siren;
+import Console;
+
+component Alarm
 {
-  provides Console console;
-  requires Sensor sensor;
-  requires Siren siren;
-  
+    provides Console console;
+    requires Sensor sensor;
+    requires Siren siren;
+
   behaviour d
   {
     enum States { Disarmed, Armed, Triggered, Disarming };
     States state = States.Disarmed;
     bool sounding = false;
-    
-    on console.arm:                                                                                              
-                          {                                                                                 
-                            [state.Disarmed]           { sensor.enable;      state = States.Armed;    }
-                            [otherwise]                { illegal;                                     }
-                          }                                                                                 
 
-    on console.disarm:
-                          {                                                                                 
-                            [state.Armed                                                                 
-                             || state.Triggered]       { sensor.disable;        state = States.Disarming;}         
+    [state.Disarmed]
+    {
+      on console.arm:
+      {
+        sensor.enable;
+        state = States.Armed;
+      }
+      on console.disarm, sensor.triggered, sensor.disabled:
+        illegal;
+    }
+    [state.Armed]
+    {
+      on console.arm:
 
-                            [otherwise]                { illegal;                                        }
-                          }                                                                                 
+        illegal;
+      on console.disarm:
+      {
+        sensor.disable;
+        state = States.Disarming;
+      }
+      on sensor.triggered:
+      {
+        console.detected;
+        siren.turnon;
+        sounding = true;
+        state = States.Triggered;
+      }
+      on sensor.disabled:
+        illegal;
+    }
+    [state.Disarming]
+    {
+      on console.arm, console.disarm:
+        illegal;
+      on sensor.triggered:
+      {
+        //illegal;
+      }
+      on sensor.disabled:
+      {
+        [sounding]
+        {
+          console.deactivated;
+          siren.turnoff;
+          state = States.Disarmed;
+          sounding = false;
+        }
+        [otherwise]
+        {
+          console.deactivated;
+          state = States.Disarmed;
+        }
+      }
+    }
+    [state.Triggered]
+    {
+      on console.arm:
+        illegal;
 
-    on sensor.triggered:                                                                               
-                          {                                                                                 
-                            [state.Armed]              { console.detected;      sounding = true;          
-                                                         siren.turnon;          state = States.Triggered;}
-
-                            [otherwise]                { illegal;                                        }
-                          }                                                                                 
-
-    on sensor.disabled:
-                          {                                                                                 
-                            [state.Disarming]                                                                 
-                              {                                                                                 
-                                [sounding]             { siren.turnoff;         sounding = false;         
-                                                         console.deactivated;   state = States.Disarmed; }
-
-                                [otherwise]            { console.deactivated;   state = States.Disarmed; }
-                              }                                                                                 
-                            [otherwise]                { illegal;                                        }
-                          }                                                                                
+      on console.disarm:
+      {
+        sensor.disable;
+        siren.turnoff;
+        sounding = false;
+        state = States.Disarming;
+      }
+      on sensor.triggered, sensor.disabled:
+        illegal;
+    }
   }
 }
+
