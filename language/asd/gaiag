@@ -1,5 +1,6 @@
 #! /bin/sh
 # -*- scheme -*-
+guile -L $(dirname $0)/../.. -L $(dirname $0) $(dirname $0)/spec.scm
 exec guile -L $(dirname $0)/../.. -L $(dirname $0) -e main -s $0 "$@"
 !#
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
