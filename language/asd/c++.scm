@@ -135,7 +135,7 @@
       (('assign lhs rhs ...)
        (->string (list (lhs->string lhs) " = " (rhs->string (car rhs)) ";\n")))
       (('on triggers statements ...)
-       (if (member (list 'field (ast:identifier port) (ast:identifier event)) triggers)
+       (if (member (list 'field (ast:name port) (ast:name event)) triggers)
            (statements->string statements)
            ""))
       (('field 'state name) (->string (list 'state " == " name))) ;; FIXME name resolution
@@ -164,7 +164,7 @@
 (define (action-statement->string lst)
   (let* ((field (car lst))
          (int (ast:type field))
-         (trigger (ast:identifier field))
+         (trigger (ast:name field))
          (interface (ast:port (ast:component ast) int))
          (name (ast:type interface)))
     (statements->string (list "      context.Get" int name (callback interface) "()." trigger "();\n"))))
@@ -172,13 +172,13 @@
 (define (statement-illegal)
   (let ((port (statements.port))
         (event (statements.event)))
-    (statements->string (list  "    ASD_ILLEGAL(\"" (ast:name (ast:component ast)) "\", \"State\", \"" (ast:type port) (callback port) "\", \"" (ast:identifier event) "\");\n"))))
+    (statements->string (list  "    ASD_ILLEGAL(\"" (ast:name (ast:component ast)) "\", \"State\", \"" (ast:type port) (callback port) "\", \"" (ast:name event) "\");\n"))))
 
 (define (statement-last->string)
   (let ((port (statements.port))
         (event (statements.event))
         (arguments (arguments->string)))
-    (statements->string (list 'context.Set (ast:identifier port) (ast:type port) (api port) (ast:type event) "(" arguments ");\n"))))
+    (statements->string (list 'context.Set (ast:name port) (ast:type port) (api port) (ast:type event) "(" arguments ");\n"))))
 
 (define (arguments->string)
   (let ((port (statements.port)))
@@ -199,7 +199,7 @@
 (define (lhs->string lhs)
   (let* ((state-variables ((compose ast:variables ast:behaviour ast:component) ast))
          (state? (find
-                  (lambda (v) (eq? lhs (ast:identifier v)))
+                  (lambda (v) (eq? lhs (ast:name v)))
                   state-variables))
          (prefix (if state? "predicate." "")))
     (->string (list prefix (statements->string lhs)))))
@@ -232,7 +232,7 @@
 (define (ast:>string e)
   (let ((comp-name (ast:name (ast:component *ast*))))
     (double-colon-join
-     (list comp-name (ast:type e) (ast:identifier e)))))
+     (list comp-name (ast:type e) (ast:name e)))))
 
 (define (return-type-text port)
   (or (and-let* ((event (null-is-#f (ast:typed? port))))
@@ -289,8 +289,8 @@
                 (.ap . ,ap)
                 (.cb . ,cb)
                 (.interface . ,ast:type) ;; FIXME
-                (.name . ,ast:identifier) ;; JUNKME
-                (.port . ,ast:identifier)
+                (.name . ,ast:name) ;; JUNKME
+                (.port . ,ast:name)
                 (.behaviour . ,(compose ast:name ast:behaviour))
                 (.parameters . ,format-parameters)
                 (.type . ,return-type-text)
@@ -313,7 +313,7 @@
                 (.ap . ,(ap '(provides)))
                 (.cb . ,(cb '(provides)))
                 (.type . ,ast:type)
-                (.event . ,ast:identifier))))))) events))
+                (.event . ,ast:name))))))) events))
 
 (define (map-port-events string port events)
   (map (lambda (event)
@@ -327,8 +327,8 @@
                 event
                 `((event . ,identity)
                   (.type . ,ast:type)
-                  (.name . ,ast:identifier)
-                  (.event . ,ast:identifier)
+                  (.name . ,ast:name)
+                  (.event . ,ast:name)
                   (.statement . 
                               ,(lambda (event)
                                  (parameterize ((statements.port port) 
@@ -348,7 +348,7 @@
                (animate-module-populate
                 (current-module)
                 variable
-                `((.variable . ,ast:identifier)
+                `((.variable . ,ast:name)
                   (.state-type . ,ast:state-type)
                   (.value . ,(lambda (variable) (variable-value->string (ast:name (ast:component ast)) variable)))))))))
        variables))

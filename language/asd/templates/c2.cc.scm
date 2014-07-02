@@ -15,7 +15,7 @@ struct #.component
   : foo ()
 #(map-ports
 #{
-  , #.port {#(let* ((e (map ast:identifier (filter (ast:dir-matches? port) (ast:events port))))
+  , #.port {#(let* ((e (map ast:name (filter (ast:dir-matches? port) (ast:events port))))
         (m (map (lambda (x) (list "[this]{" x "();}")) e)))
   (if (eq? (ast:direction port) 'provides)
      (list (comma-join m) ",{}")

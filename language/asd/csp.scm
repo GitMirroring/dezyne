@@ -98,7 +98,7 @@
 	      (module-define! module '.interface (ast:name (ast:interface ast)))
 	      (module-define! module '.behaviour (ast:name (ast:behaviour comp)))
               (module-define! module '.interface-behaviour (ast:name (ast:behaviour (ast:interface ast))))
-	      (module-define! module '.port (ast:identifier (ast:port comp))))
+	      (module-define! module '.port (ast:name (ast:port comp))))
     module))
 
 (define* (map-ports string ports :optional (separator ""))
@@ -116,8 +116,8 @@
                    `((port . ,identity)
                      (.optional-chaos . ,optional-chaos)
                      (.interface . ,ast:type) ;; FIXME
-                     (.name . ,ast:identifier)
-                     (.port . ,ast:identifier)
+                     (.name . ,ast:name)
+                     (.port . ,ast:name)
                      (.behaviour . ,(compose ast:name ast:behaviour))))))))))
         ports)))
 
@@ -178,7 +178,7 @@
 
 (define (csp-expression->string expression)
   (match expression
-    (('field type identifier) (list type " == " identifier))
+    (('field type name) (list type " == " name))
     ((? symbol?) expression)
     (('and lhs rhs) (->string (list (csp-expression->string lhs) " and " (csp-expression->string rhs))))
     (('! expression) (->string (list "not " (csp-expression->string expression))))
@@ -201,7 +201,7 @@
     (_ '())))
 
 (define (var-names model)
-  (map ast:identifier (ast:variables (ast:behaviour model))))
+  (map ast:name (ast:variables (ast:behaviour model))))
 
 (define ((statement-on-p/r predicate) statement-on)
   (let* ((events (ast:events statement-on))

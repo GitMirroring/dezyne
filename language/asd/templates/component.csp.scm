@@ -41,7 +41,7 @@ channel #.interface ,#.port : {#(comma-join (append (port-triggers port) '(retur
 #} ((compose ast:ports ast:component) ast))
 # (map-ports #{
 #.interface _#.behaviour(IG) = let
-#.interface _#.behaviour _((# (comma-join (map ast:identifier ((compose ast:variables ast:behaviour ast-norm) .interface))))) =
+#.interface _#.behaviour _((# (comma-join (map ast:name ((compose ast:variables ast:behaviour ast-norm) .interface))))) =
 # (map-guards #{(# (csp-expression->string (ast:expression guard))) & (
 # (map-statements-on #{ #
     (when illegal? (if provides-event? "IIG & " "IG & ")) #.interface ?x:{#
@@ -64,7 +64,7 @@ within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:exp
 
 #} ((compose ast:ports ast:component) ast))
 #.component _#.behaviour (IIG,IG) = let
-#.component _#.behaviour _((#(comma-join (map ast:identifier ((compose ast:variables ast:behaviour ast:component) ast))))) = transition_begin -> (
+#.component _#.behaviour _((#(comma-join (map ast:name ((compose ast:variables ast:behaviour ast:component) ast))))) = transition_begin -> (
 # (map-guards #{ (# (csp-expression->string (ast:expression guard))) & (
 # (map-statements-on #{ #
     (when illegal? (if provides-event? "IIG & " "IG & ")) #.event-port ?x:{#
@@ -91,14 +91,14 @@ within #.component _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:exp
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {#
  (comma-join (list (map-ports #{#
-(comma-join (map (lambda (x) (list .port "." (ast:identifier x))) (filter ast:out? (ast:events port))))#}
+(comma-join (map (lambda (x) (list .port "." (ast:name x))) (filter ast:out? (ast:events port))))#}
   (filter ast:requires? ((compose ast:ports ast:component) ast))) 'extensions_over_empty_channels_is_undefined))}
 
 SINGLETHREADED = true
 
 channel transition_begin, transition_end
 
-channel reorder_in,reorder_out : {# (map (lambda (x) (list (ast:identifier x) ".return")) (filter ast:provides? ((compose ast:ports ast:component) ast)))}
+channel reorder_in,reorder_out : {# (map (lambda (x) (list (ast:name x) ".return")) (filter ast:provides? ((compose ast:ports ast:component) ast)))}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -138,21 +138,21 @@ transparent diamond
 within sbisim(diamond(x))
 Exclude = {#.port .return,#
   (comma-join (list (map-ports
-#{#(comma-join (map (lambda (x) (list .port "." (ast:identifier x))) (filter ast:out? (ast:events port)))) #}
+#{#(comma-join (map (lambda (x) (list .port "." (ast:name x))) (filter ast:out? (ast:events port)))) #}
    (filter ast:provides? ((compose ast:ports ast:component) ast)))
  (map-ports
 #{#(comma-join (map (lambda (x) (list .port "." x)) (filter (lambda (x) (member x '(inevitable optional))) (port-triggers port)))) #}
    ((compose ast:ports ast:component) ast) ",")))}
 ClientCalls = {#
  (map-ports
-#{#(comma-join (map (lambda (x) (list .port "." (ast:identifier x))) (filter ast:in? (ast:events port)))) #}
+#{#(comma-join (map (lambda (x) (list .port "." (ast:name x))) (filter ast:in? (ast:events port)))) #}
    (filter ast:provides? ((compose ast:ports ast:component) ast)))}
 UsedModeling = {#
  (map-ports
 #{#(comma-join (map (lambda (x) (list .port "." x)) (filter (lambda (x) (member x '(inevitable optional))) (port-triggers port)))) #}
    (filter ast:requires? ((compose ast:ports ast:component) ast)))}
 within compress((#.component _#.behaviour (false,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,#(comma-join (map ast:identifier ((compose ast:ports ast:component) ast)))|},Exclude)|]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,#(comma-join (map ast:name ((compose ast:ports ast:component) ast)))|},Exclude)|]
 (((# (let ((required_processes (map-ports #{
 #.interface _#.behaviour(true) [[#.interface .x<-#.port .x|x<-extensions(#.interface)]]
 #} (filter ast:requires? ((compose ast:ports ast:component) ast)) " ||| "))) (if (string-null? required_processes) 'STOP required_processes))) [[x<-IN.x|x<-extensions(IN)]]

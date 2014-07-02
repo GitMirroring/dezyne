@@ -20,27 +20,27 @@
 ;; 
 ;; @subheading Gaiag AST accessors
 ;;
+;;   (read-asd "examples/Alarm.asd")
+;;     ==>
 ;;   AST:= (
-;;          (interface Interface (types) (events) (behaviour))
-;;           ^class    ^name     ^types  ^events  ^behaviour
+;;          (interface Console (types) (events) (behaviour))
+;;           ^class    ^name   ^types  ^events  ^behaviour
 ;;
-;;          (component Component (ports) (behaviour))
-;;           ^class    ^name     ^types  ^behaviour
+;;          (component Alarm   (ports) (behaviour))
+;;           ^class    ^name   ^ports  ^behaviour
 ;;         )
 ;;
 ;;   SUB-AST (ast:types (ast:interface AST))
 ;;      := ((enum     States (Disarmed Armed Triggered Disarming))
 ;;           ^type    ^name  ^elements
-;;           class=>type
+;;           |implicit: class=type
 ;;
-;;   SUB-AST (ast:events (ast:interface AST))
-;;      := ((in           void    arm))
-;;           ^direction   ^type   ^identifier
+;;   SUB-AST (ast:events (ast:interface AST))  base class event: (event type name) 
+;;      := ((in           void    arm)
+;;           ^direction   ^type   ^name
 ;;           |implicit: class=event
 ;;
-;;   ideas: in   --> direction/type/...
-;;          void --> type/value/...
-;;          arm  --> identifier/name/...
+;;   ideas: void --> RETURN-TYPE  (later: rsn? SIGNATURE)
 ;;
 ;;   SUB-AST (ast:behaviour (ast:interface AST))
 ;;      := (behaviour b      (types) (variables) (compound))
@@ -48,21 +48,18 @@
 ;;          
 ;;   SUB-AST (ast:ports (ast:interface AST))
 ;;      := ((provides     Console console))
-;;           ^direction   ^type   ^identifier
+;;           ^direction   ^type   ^name
 ;;           |implicit: class=port
 ;;
-;;   ideas: provides --> direction/type/...
-;;          Console  --> interface/model/value/type/...
-;;          console  --> identifier/name/...
+;;    (ast:interface port) --> '(interface Console ..))
 ;;
 ;;   SUB-AST (ast:variables (ast:behaviour (ast:interface AST)))
 ;;      := ((variable States state        (field States Disarmed))
-;;           ^class   ^type  ^identifier  ^expression
+;;           ^class   ^type  ^name  ^expression
 ;;
-;;   ideas: States     --> type/name/...
-;;          state      --> identifier/name/...
-;;          expression --> expression/value/initial/initial-value/...
 ;;
+
+;;; Code:
 
 (read-set! keywords 'prefix)
 
@@ -104,7 +101,6 @@
            field?
            guard?
            guard-equals?
-           identifier
            in?
            interface
            interfaces
@@ -184,13 +180,13 @@
     ((or (? events?) (? guard?) (? imports?) (? ports?) (? compound?) (? on?) (? types?) (? variables?))
      (cdr ast))
     ;; be permissive for events, imports ports, types, variable
-    ((('in type identifier) t ...) ast)
-    ((('out type identifier) t ...) ast)
-    ((('imports type identifier expression) t ...) ast)
-    ((('requires type identifier) t ...) ast)
-    ((('provides type identifier) t ...) ast)
+    ((('in type name) t ...) ast)
+    ((('out type name) t ...) ast)
+    ((('imports type name expression) t ...) ast)
+    ((('requires type name) t ...) ast)
+    ((('provides type name) t ...) ast)
     ((('enum type elements) t ...) ast)
-    ((('variable type identifier expression) t ...) ast)
+    ((('variable type name expression) t ...) ast)
     ('() ast)
     (_ (throw 'match-error  (format #f "~a:body: no match: ~a\n" (current-source-location) ast)))))
 
@@ -237,9 +233,9 @@
 
 (define (imports ast) (body (imports-element ast)))
 
-(define* (port ast :optional (name #f))
-  (if name
-      (find (lambda (p) (eq? (identifier p) name))
+(define* (port ast :optional (identifier #f))
+  (if identifier
+      (find (lambda (p) (eq? (name p) identifier))
             (body
              (match ast
                ((? ports?) ast)
@@ -264,11 +260,6 @@
     ((? variable?) (cadddr ast))
     (_ (throw 'match-error  (format #f "~a:expression: no match: ~a\n" (current-source-location) ast)))))
 
-(define (identifier ast)
-  (match ast
-    ((or (? event?) (? field?) (? port?) (? variable?)) (caddr ast))
-    (_ (throw 'match-error  (format #f "~a:identifier: no match: ~a\n" (current-source-location) ast)))))
-
 (define (in? ast) 
   (match ast 
     ((? event?) (eq? (direction ast) 'in))
@@ -280,8 +271,8 @@
 
 (define (name ast)
   (match ast
-    ((or (? behaviour?) (? enum?) (? model?))
-     (or (and (>1 (length ast)) (cadr ast)) ""))
+    ((or (? behaviour?) (? enum?) (? model?)) (or (and (>1 (length ast)) (cadr ast)) ""))
+    ((or (? event?) (? field?) (? port?) (? variable?)) (caddr ast))
     (_ (throw 'match-error  (format #f "~a:name: no match: ~a\n" (current-source-location) ast)))))
 
 (define (class ast)
@@ -397,10 +388,10 @@
              (partition predicate declared)
            (let* ((behaviour (find-events-p (statement (behaviour ast))))
                   (behaviour-keep (filter (lambda (x) (negate (member x discard equal?))) behaviour)))
-             (map identifier (delete-duplicates (sort (append keep behaviour-keep) list<) equal?))))))
+             (map name (delete-duplicates (sort (append keep behaviour-keep) list<) equal?))))))
       (('compound t ...) (append (apply append (map find-events-p t)) found))
       (('on t statement) (map find-events-p t))
-      (('field type identifier) ast)
+      (('field type name) ast)
       (('guard expression statement) (find-events-p statement found))
       ((? symbol?) (make 'in 'void ast))
       (_ (throw 'match-error  (format #f "~a:find-events: no match: ~a\n" (current-source-location) ast))))))

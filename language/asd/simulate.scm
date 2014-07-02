@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -50,7 +51,7 @@
   "")
 
 (define (variable-state variable . value) 
-  (cons (ast:identifier variable)
+  (cons (ast:name variable)
         (eval-expression '() '()
                          (if (pair? value) (car value) 
                              (ast:expression variable)))))
@@ -218,7 +219,7 @@
     ('false #f)
     ('true #t)
     (('field 'state value)  ;;; FIXME name resolution
-     (eq? (ast:identifier (var state 'state)) value))
+     (eq? (ast:name (var state 'state)) value))
     (('field identifier value) expression)
     (('! expr) (not (eval-expression ast state expr)))
     ('otherwise 
