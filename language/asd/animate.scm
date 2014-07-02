@@ -41,8 +41,9 @@
 (read-set! keywords 'prefix)
 
 (define-module (language asd animate)
-  :use-module (ice-9 match)
   :use-module (ice-9 and-let-star)
+  :use-module (ice-9 match)
+  :use-module (ice-9 optargs)
   :use-module (ice-9 rdelim)
   :use-module (srfi srfi-1)
 
@@ -116,7 +117,7 @@
 (define (animate-file file-name module)
   (animate-string (gulp-file file-name) module))
 
-(define (animate-string string module)
+(define* (animate-string string :optional (module (current-module)))
   (with-input-from-string string
     (lambda () (animate-input module))))
 

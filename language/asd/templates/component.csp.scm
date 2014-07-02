@@ -43,22 +43,8 @@ channel #.interface ,#.port : {#(comma-join (append (port-triggers port) '(retur
 #.interface _#.behaviour(IG) = let
 #.interface _#.behaviour _((# (comma-join (map ast:name ((compose ast:variables ast:behaviour ast-norm) .interface))))) =
 # (map-guards #{(# (csp-expression->string (ast:expression guard))) & (
-# (map-statements-on #{ #
-    (when illegal? (if provides-event? "IIG & " "IG & ")) #.interface ?x:{#
-    (comma-join (map event->string events)) } -> #
-    (if illegal?
-        "illegal -> STOP"
-        (append
-         (if provides-event?
-              (list .interface  "." .event " -> ")
-              '(""))
-         (map (action->string interface inevitable-optional?) actions)
-         (if inevitable-optional?
-             '("")
-             (list .interface ".return -> "))
-        (list .interface "_" .behaviour "_((" (comma-join (map csp-expression->string actuals)) "))")))
-#}
-    ((ast:statements-of-type 'on) (ast:statement guard)) "  []\n"))
+# ((->join "\n  []\n  ") (map (lambda (on) (csp-transform (ast:ast .interface) (ast-transform (ast:ast .interface) on)))
+   ((ast:statements-of-type 'on) (ast:statement guard)))))
 #} (reverse ((ast:statements-of-type 'guard) (ast:statement (ast:behaviour (ast-norm .interface))))))
 within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:expression x))) ((compose ast:variables ast:behaviour ast-norm) .interface))))) #.optional-chaos
 
@@ -66,25 +52,15 @@ within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:exp
 #.component _#.behaviour (IIG,IG) = let
 #.component _#.behaviour _((#(comma-join (map ast:name ((compose ast:variables ast:behaviour ast:component) ast))))) = transition_begin -> (
 # (map-guards #{ (# (csp-expression->string (ast:expression guard))) & (
-# (map-statements-on #{ #
-    (when illegal? (if provides-event? "IIG & " "IG & ")) #.event-port ?x:{#
-    (comma-join (map event->string events)) } -> #
-    (map (action->string component inevitable-optional?) actions) #
-    (if illegal?
-        "illegal -> STOP"
-        (append
-         (if inevitable-optional?
-             '("")
-             (append
-              (if provides-event?
-                  (list channel ".return -> ")
-                  '())
-              '("transition_end -> ")))
-        (list .model "_" .behaviour "_((" (comma-join (map csp-expression->string actuals)) "))")))
-#}
+
+
+# ((->join "\n  []\n  ") (map (lambda (on) (csp-transform component (ast-transform component on)))
     (append
       (filter identity (map (statement-on-p/r (provides? component)) ((ast:statements-of-type 'on) (ast:statement guard))))
-      (filter identity (map (statement-on-p/r (requires? component)) ((ast:statements-of-type 'on) (ast:statement guard))))) "[]\n"))
+      (filter identity (map (statement-on-p/r (requires? component)) ((ast:statements-of-type 'on) (ast:statement guard))))))))
+
+
+
 #} (reverse ((ast:statements-of-type 'guard) ((compose ast:statement ast:behaviour ast:component) ast)))))
 within #.component _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:expression x))) ((compose ast:variables ast:behaviour ast:component) ast)))))
 

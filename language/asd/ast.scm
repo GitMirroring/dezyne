@@ -57,7 +57,13 @@
 ;;      := ((variable States state        (field States Disarmed))
 ;;           ^class   ^type  ^name  ^expression
 ;;
+;; FIXME 2 field flavours: enum and (action, on-event)
+;;      (field   console     arm)
+;;       ^class  ^port-name  ^event-name
 ;;
+;;      (field   xx yy)
+;;       ^class  ^port-name  ^event-name
+;;    
 
 ;;; Code:
 
@@ -94,6 +100,7 @@
            elements
            enum?
            event?
+	   event-name
            events
            events?
            expression
@@ -112,6 +119,7 @@
            parent
            port
            port?
+	   port-name
            ports
            provides?
            register
@@ -193,7 +201,9 @@
 (define (interface- ast) 
   (if (interface? ast)
       ast
-      (assoc 'interface ast)))
+      (if (component? ast)
+	  #f
+	  (assoc 'interface ast))))
 
 (define (interface ast)
   (and-let* ((interface-ast (interface- ast))
@@ -211,6 +221,17 @@
   (for-each interface (interfaces ast))
   ast)
 
+(define (port-name ast)
+  (match ast
+    ((? field?) (cadr ast))
+    (_ (throw 'match-error  (format #f "~a:port-name: no match: ~a\n" (current-source-location) ast)))))
+
+(define (event-name ast)
+  (match ast
+    ((? symbol?) ast)
+    ((? field?) (caddr ast))
+    (_ (throw 'match-error  (format #f "~a:event-name: no match: ~a\n" (current-source-location) ast)))))
+
 (define (events ast)
   (match ast
     ((? interface?) (body (events-element ast)))
@@ -224,7 +245,10 @@
     ((? port?) (behaviour (import-ast (type ast))))
     (_ (throw 'match-error  (format #f "~a:behaviour: no match: ~a\n" (current-source-location) ast)))))
 
-(define (component ast) (assoc 'component ast))
+(define (component ast) 
+  (if (component? ast)
+      ast
+      (assoc 'component ast)))
 
 (define (ports ast)
   (match ast
