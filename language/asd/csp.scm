@@ -146,7 +146,7 @@
                   (.interface (module-ref module '.interface))
                   (interface (ast-norm .interface))
                   (component (module-ref module 'component))
-                  (events (ast:events on-statement))
+                  (events (ast:triggers on-statement))
                   (.event (car events))
                   (interface? (not (pair? (car events))))
                   (model-ast (if interface? interface component))
@@ -179,7 +179,7 @@
 
 (define (csp-expression->string expression)
   (match expression
-    (('field type name) (list type " == " name))
+    (('value type field) (list type " == " field))
     ((? symbol?) expression)
     (('and lhs rhs) (->string (list (csp-expression->string lhs) " and " (csp-expression->string rhs))))
     (('! expression) (->string (list "not " (csp-expression->string expression))))
@@ -205,7 +205,7 @@
   (map ast:name (ast:variables (ast:behaviour model))))
 
 (define ((statement-on-p/r predicate) statement-on)
-  (let* ((events (ast:events statement-on))
+  (let* ((events (ast:triggers statement-on))
          (events-predicate (filter predicate events))
          (statement (ast:statement statement-on)))
   (if (pair? events-predicate)
@@ -262,7 +262,7 @@
 
 (define (value ast)
   (match ast
-    ((? ast:field?) (caddr ast))
+    ((? ast:trigger?) (caddr ast))
     (_ ast)))
 
 (define (optional-chaos port)
@@ -273,7 +273,8 @@
 
 (define (->string src)
   (match src
-    (('field struct name) (->string (list struct "." name)))
+    (('value type field) (->string (list type "." field)))
+    (('trigger port event) (->string (list port "." event)))
 ;;    (_ (stderr "NO MATCH: ~a\n" src) (format #f "~a" src))
     (_ ((@ (language asd misc) ->string) src))))
 
@@ -306,7 +307,7 @@
 	     (if (null? result)
 	      (list 'on events (list 'return variables))
 	      (list 'on events result (list 'return variables))))))
-      (('assign var ('field type val)) (list 'assign variables (map (lambda (x) (if (eq? x var ) val x)) variables)))
+      (('assign var ('value type field)) (list 'assign variables (map (lambda (x) (if (eq? x var ) field x)) variables)))
       (('assign var exp) (list 'assign variables (map (lambda (x) (if (eq? x var ) exp x)) variables)))
       (('if pred then) (list 'if variables (list 'expression (if (prefix-illegal? then) (list 'and 'IG pred) pred)) (ast-transform ast then return) '()))
       (('if expr then else) 

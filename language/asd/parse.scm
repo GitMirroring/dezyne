@@ -52,12 +52,13 @@
       (('out type name) ast)
       (('ports p ...) ast)
       (('provides type name) ast)
+      (('value type field) ast)
       (('variables v ...) ast)
       (('variable type name value ...) ast)
       (('requires type name) ast)
+      (('trigger port event) ast)
       (('guard expression statement) ast)
       (('on (trigger t ...) statement) ast)
-      (('field type identifiier) ast)
       (('action 'illegal) ast)
       (('action ('field type name)) ast)
       (('assign name expression) ast)
@@ -227,7 +228,7 @@
 
    (compound-identifier
     (Identifier) : $1 
-    (Identifier dot Identifier) : `(field ,$1 ,$3))
+    (Identifier dot Identifier) : `(value ,$1 ,$3))
    
    (on-event-statement
     (on trigger-spec colon statement) : (make `(,$1 ,$2 ,$4) @1))
@@ -242,7 +243,12 @@
     (trigger-list comma trigger) : (append $1 (list $3)))
 
    (trigger
-    (compound-identifier) : $1)
+    (compound-trigger) : $1)
+
+   (compound-trigger
+    (Identifier) : $1 
+
+    (Identifier dot Identifier) : `(trigger ,$1 ,$3))
 
    (illegal-statement
     (illegal semicolon) : $1)

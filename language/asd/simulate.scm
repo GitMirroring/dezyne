@@ -103,11 +103,11 @@
           (map trace-location steps))))
 
 (define (event->ast symbol)
-  "if SYMBOL is of form INTERFACE.TRIGGER, produce (field INTERFACE TRIGGER)"
+  "if SYMBOL is of form INTERFACE.TRIGGER, produce (trigger PORT EVENT)"
   (or (and-let* ((string (symbol->string symbol))
                  (interface-trigger (string-split string #\.))
                  ((=2 (length interface-trigger))))
-               (cons 'field (map string->symbol interface-trigger)))
+               (cons 'trigger (map string->symbol interface-trigger)))
       symbol))
 
 (define (seen-key state ast)
@@ -218,9 +218,9 @@
     (#t #t)
     ('false #f)
     ('true #t)
-    (('field 'state value)  ;;; FIXME name resolution
-     (eq? (ast:name (var state 'state)) value))
-    (('field identifier value) expression)
+    (('value 'state field)
+     (eq? (ast:field (var state 'state)) field)) ;;; FIXME name resolution
+    (('value identifier value) expression)
     (('! expr) (not (eval-expression ast state expr)))
     ('otherwise 
      (let* ((parent (ast:parent *model* ast))
@@ -296,7 +296,8 @@
   (match src
     (#f "false")
     (#t "true")
-    (('field struct name) (->string (list struct "." name)))
+    (('value type field) (->string (list type "." field)))
+    (('trigger port event) (->string (list port "." event)))
     ((identifier 'field x y) (string-join (list (->string identifier)  "=" (->string (cdr src)))))
     ((h ... t) (apply string-append (map ->string src)))
     ((h . t) (string-join (list (->string h) "=" (->string t))))

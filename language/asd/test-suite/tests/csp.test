@@ -24,7 +24,7 @@
 		 B
 		 (types (enum S (S1 S2)))
 		 (variables
-		  (variable S s (field S S1))
+		  (variable S s (trigger S S1))
 		  (variable bool b false)
 		  (variable bool c true))
 		 (compound))))))
@@ -168,7 +168,7 @@
 
 	   i-ast
 
-	   '(assign s (field S S2)))
+	   '(assign s (value S S2)))
 
 	  ;; via:
 	  '(assign (s b c) (S2 b c))))
@@ -350,7 +350,7 @@
 		       (if c
 			   (compound (assign b false) (action h))
 			   (compound (assign b true) (action g)))))
-		  (assign s (field S S2))))))
+		  (assign s (value S S2))))))
 
 	  ;; via:
 	  '(on (e)
@@ -437,7 +437,7 @@
 		 B
 		 (types (enum S (S1 S2)))
 		 (variables
-		  (variable S s (field S S1))
+		  (variable S s (value S S1))
 		  (variable bool b false)
 		  (variable bool c true))
 		 (compound))))))
@@ -451,11 +451,11 @@
 	   c-ast
 
 	   '(compound
-	     (on ((field j e))
+	     (on ((trigger j e))
 		 (compound))))
 
 	  ;; via:
-	  '(on ((field j e))
+	  '(on ((trigger j e))
 	       (return (s b c)))))
 
 (pass-if "c-csp-transform-return"
@@ -466,7 +466,7 @@
 
 	   c-ast
 
-	   '(on ((field j e))
+	   '(on ((trigger j e))
 		(return (s b c))))
 
 	  ;; via:
@@ -481,10 +481,10 @@
 
 	   c-ast
 
-	   '(action (field j h)))
+	   '(action (trigger j h)))
 
 	  ;; via:
-	  '(action (field j h))))
+	  '(action (trigger j h))))
 
 
 (pass-if "c-csp-transform-illegal-action"
@@ -495,7 +495,7 @@
 
 	   c-ast
 
-	   '(on ((field j e)) IG
+	   '(on ((trigger j e)) IG
 		(action illegal)))
 
 	  ;; via:
@@ -510,7 +510,7 @@
 
 	   c-ast
 
-	   '(action (field k e)))
+	   '(action (trigger k e)))
 
 	  ;; via:
 	  "\\P,V @ k!e -> k.return -> P(V)"))
@@ -523,8 +523,8 @@
 
 	   c-ast
 
-	   '(on ((field j e))
-		(semi (action (field j h))
+	   '(on ((trigger j e))
+		(semi (action (trigger j h))
 		      (return (s b c)))))
 
 	  ;; via:
@@ -538,7 +538,7 @@
 
 	   c-ast
 
-	   '(on ((field k e))
+	   '(on ((trigger k e))
 		      (return (s b c))))
 
 	  ;; via:

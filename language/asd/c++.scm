@@ -135,11 +135,11 @@
       (('assign lhs rhs ...)
        (->string (list (lhs->string lhs) " = " (rhs->string (car rhs)) ";\n")))
       (('on triggers statements ...)
-       (if (member (list 'field (ast:name port) (ast:name event)) triggers)
+       (if (member (list 'trigger (ast:name port) (ast:name event)) triggers)
            (statements->string statements)
            ""))
-      (('field 'state name) (->string (list 'state " == " name))) ;; FIXME name resolution
-      (('field struct name) (->string (list struct "." name)))
+      (('value 'state field) (->string (list 'state " == " field))) ;; FIXME name resolution
+      (('value struct name) (->string (list struct "." name)))
       (('compound lst ...)
        (statements->string (list "{\n" lst (statement-last lst) "\n}\n")))
       (('last 'arguments)
@@ -162,12 +162,12 @@
       ""))
 
 (define (action-statement->string lst)
-  (let* ((field (car lst))
-         (int (ast:type field))
-         (trigger (ast:name field))
-         (interface (ast:port (ast:component ast) int))
+  (let* ((trigger (car lst))
+         (port-name (ast:port-name trigger))
+         (event-name (ast:event-name trigger))
+         (interface (ast:port (ast:component ast) port-name))
          (name (ast:type interface)))
-    (statements->string (list "      context.Get" int name (callback interface) "()." trigger "();\n"))))
+    (statements->string (list "      context.Get" port-name name (callback interface) "()." event-name "();\n"))))
        
 (define (statement-illegal)
   (let ((port (statements.port))
@@ -207,7 +207,7 @@
 (define (rhs->string rhs)
   (let* ((enum? (not (or (eq? rhs 'true) (eq? rhs 'false)))))
     (if enum?
-        (ast:>string rhs)
+        (value->string rhs)
         (statements->string rhs))))
 
 (define (c++-template? x) (parameterize ((templates c++-templates)) (template? x)))
@@ -229,10 +229,10 @@
            (.statement . ,statements->string)
            (.else . ,statements->string)))))
 
-(define (ast:>string e)
+(define (value->string value)
   (let ((comp-name (ast:name (ast:component *ast*))))
     (double-colon-join
-     (list comp-name (ast:type e) (ast:name e)))))
+     (list comp-name (ast:type value) (ast:field value)))))
 
 (define (return-type-text port)
   (or (and-let* ((event (null-is-#f (ast:typed? port))))

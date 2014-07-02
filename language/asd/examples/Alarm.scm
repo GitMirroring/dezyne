@@ -35,35 +35,35 @@
      (types (enum States
                   (Disarmed Armed Triggered Disarming)))
      (variables
-       (variable States state (field States Disarmed)))
+       (variable States state (value States Disarmed)))
      (compound
-       (guard (field state Disarmed)
+       (guard (value state Disarmed)
               (compound
                 (on (arm)
-                    (compound (assign state (field States Armed))))
+                    (compound (assign state (value States Armed))))
                 (on (disarm) (action illegal))))
-       (guard (field state Armed)
+       (guard (value state Armed)
               (compound
                 (on (disarm)
                     (compound
-                      (assign state (field States Disarming))))
+                      (assign state (value States Disarming))))
                 (on (optional)
                     (compound
                       (action detected)
-                      (assign state (field States Triggered))))
+                      (assign state (value States Triggered))))
                 (on (arm) (action illegal))))
-       (guard (field state Triggered)
+       (guard (value state Triggered)
               (compound
                 (on (disarm)
                     (compound
-                      (assign state (field States Disarming))))
+                      (assign state (value States Disarming))))
                 (on (arm) (action illegal))))
-       (guard (field state Disarming)
+       (guard (value state Disarming)
               (compound
                 (on (inevitable)
                     (compound
                       (action deactivated)
-                      (assign state (field States Disarmed))))
+                      (assign state (value States Disarmed))))
                 (on (arm disarm) (action illegal)))))))
  (component
    Alarm
@@ -75,59 +75,59 @@
      (types (enum States
                   (Disarmed Armed Triggered Disarming)))
      (variables
-       (variable States state (field States Disarmed))
+       (variable States state (value States Disarmed))
        (variable bool sounding false))
      (compound
-       (guard (field state Disarmed)
+       (guard (value state Disarmed)
               (compound
-                (on ((field console arm))
+                (on ((trigger console arm))
                     (compound
-                      (action (field sensor enable))
-                      (assign state (field States Armed))))
-                (on ((field console disarm)
-                     (field sensor triggered)
-                     (field sensor disabled))
+                      (action (trigger sensor enable))
+                      (assign state (value States Armed))))
+                (on ((trigger console disarm)
+                     (trigger sensor triggered)
+                     (trigger sensor disabled))
                     (action illegal))))
-       (guard (field state Armed)
+       (guard (value state Armed)
               (compound
-                (on ((field console arm)) (action illegal))
-                (on ((field console disarm))
+                (on ((trigger console arm)) (action illegal))
+                (on ((trigger console disarm))
                     (compound
-                      (action (field sensor disable))
-                      (assign state (field States Disarming))))
-                (on ((field sensor triggered))
+                      (action (trigger sensor disable))
+                      (assign state (value States Disarming))))
+                (on ((trigger sensor triggered))
                     (compound
-                      (action (field console detected))
-                      (action (field siren turnon))
+                      (action (trigger console detected))
+                      (action (trigger siren turnon))
                       (assign sounding true)
-                      (assign state (field States Triggered))))
-                (on ((field sensor disabled)) (action illegal))))
-       (guard (field state Disarming)
+                      (assign state (value States Triggered))))
+                (on ((trigger sensor disabled)) (action illegal))))
+       (guard (value state Disarming)
               (compound
-                (on ((field console arm) (field console disarm))
+                (on ((trigger console arm) (trigger console disarm))
                     (action illegal))
-                (on ((field sensor triggered)) (compound))
-                (on ((field sensor disabled))
+                (on ((trigger sensor triggered)) (compound))
+                (on ((trigger sensor disabled))
                     (compound
                       (guard sounding
                              (compound
-                               (action (field console deactivated))
-                               (action (field siren turnoff))
-                               (assign state (field States Disarmed))
+                               (action (trigger console deactivated))
+                               (action (trigger siren turnoff))
+                               (assign state (value States Disarmed))
                                (assign sounding false)))
                       (guard otherwise
                              (compound
-                               (action (field console deactivated))
-                               (assign state (field States Disarmed))))))))
-       (guard (field state Triggered)
+                               (action (trigger console deactivated))
+                               (assign state (value States Disarmed))))))))
+       (guard (value state Triggered)
               (compound
-                (on ((field console arm)) (action illegal))
-                (on ((field console disarm))
+                (on ((trigger console arm)) (action illegal))
+                (on ((trigger console disarm))
                     (compound
-                      (action (field sensor disable))
-                      (action (field siren turnoff))
+                      (action (trigger sensor disable))
+                      (action (trigger siren turnoff))
                       (assign sounding false)
-                      (assign state (field States Disarming))))
-                (on ((field sensor triggered)
-                     (field sensor disabled))
+                      (assign state (value States Disarming))))
+                (on ((trigger sensor triggered)
+                     (trigger sensor disabled))
                     (action illegal))))))))

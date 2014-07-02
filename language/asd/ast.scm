@@ -29,41 +29,64 @@
 ;;          (component Alarm   (ports) (behaviour))
 ;;           ^class    ^name   ^ports  ^behaviour
 ;;         )
-;;
-;;   SUB-AST (ast:types (ast:interface AST))
+;; 
+;;          
+;;   (ast:types (ast:interface AST))
+;;      ==>
+;;   SUB-AST 
 ;;      := ((enum     States (Disarmed Armed Triggered Disarming))
 ;;           ^type    ^name  ^elements
 ;;           |implicit: class=type
 ;;
-;;   SUB-AST (ast:events (ast:interface AST))  base class event: (event type name) 
+;;          
+;;   (ast:events (ast:interface AST))
+;;      ==>
+;;   SUB-AST 
 ;;      := ((in           void    arm)
 ;;           ^direction   ^type   ^name
 ;;           |implicit: class=event
 ;;
-;;   ideas: void --> RETURN-TYPE  (later: rsn? SIGNATURE)
+;;   ideas: void --> (void) SIGNATURE
+;;          void --> RETURN-TYPE
+;;          
 ;;
-;;   SUB-AST (ast:behaviour (ast:interface AST))
+;;   (ast:behaviour (ast:interface AST))
+;;      ==>
+;;   SUB-AST
 ;;      := (behaviour b      (types) (variables) (compound))
 ;;          ^class    ^name  ^types  ^variables  ^statement  
 ;;          
-;;   SUB-AST (ast:ports (ast:interface AST))
+;;          
+;;   (ast:ports (ast:interface AST))
+;;      ==>
+;;   SUB-AST 
 ;;      := ((provides     Console console))
 ;;           ^direction   ^type   ^name
 ;;           |implicit: class=port
 ;;
-;;    (ast:interface port) --> '(interface Console ..))
+;;  note:  (ast:interface port-name) --> '(interface Console ..))
+;;  TODO:  (ast:interface port) --> '(interface Console ..))
 ;;
-;;   SUB-AST (ast:variables (ast:behaviour (ast:interface AST)))
-;;      := ((variable States state        (field States Disarmed))
+;;
+;;   (ast:variables (ast:behaviour (ast:interface AST)))
+;;      ==>
+;;   SUB-AST
+;;      := ((variable States state  (value States Disarmed))
 ;;           ^class   ^type  ^name  ^expression
 ;;
-;;   SUB-AST (ast:events (ast:component AST))
-;;      (event  console arm)
-;;       ^class ^port   ^event
 ;;
-;;   SUB-AST (ast:types (ast:interface ast))
-;;      (value type field)
-;;    
+;;   (ast:triggers (ast:component AST))
+;;      ==>
+;;   SUB-AST
+;;      (trigger console      arm)
+;;       ^class  ^port-name   ^event-name
+;;
+;;
+;;   (ast:types (ast:interface ast))
+;;      ==>
+;;   SUB-AST
+;;      (value  type    field)
+;;       ^class ^type   ^field;;    
 
 ;;; Code:
 
@@ -104,8 +127,10 @@
            events
            events?
            expression
+           field
            find-events
-           field?
+           trigger?
+           value?
            guard?
            guard-equals?
            in?
@@ -126,6 +151,7 @@
            requires?
            statement
            statements-of-type
+           triggers
            type
            type-name-component
            typed?
@@ -170,14 +196,15 @@
 (define (enum? ast) (type? 'enum ast))
 (define (event? ast) (type? 'event ast))
 (define (events? ast) (type? 'events ast))
-(define (field? ast) (type? 'field ast))
 (define (guard? ast) (type? 'guard ast))
 (define (interface? ast) (type? 'interface ast))
 (define (imports? ast) (type? 'imports ast))
 (define (on? ast) (type? 'on ast))
 (define (port? ast) (type? 'port ast))
 (define (ports? ast) (type? 'ports ast))
+(define (trigger? ast) (type? 'trigger ast))
 (define (types? ast) (type? 'types ast))
+(define (value? ast) (type? 'value ast))
 (define (variable? ast) (type? 'variable ast))
 (define (variables? ast) (type? 'variables ast))
 
@@ -223,23 +250,31 @@
 
 (define (port-name ast)
   (match ast
-    ((? field?) (cadr ast))
+    ((? port?) (name ast))
+    ((? trigger?) (cadr ast))
     (_ (throw 'match-error  (format #f "~a:port-name: no match: ~a\n" (current-source-location) ast)))))
 
 (define (event-name ast)
   (match ast
     ((? symbol?) ast)
-    ((? field?) (caddr ast))
+    ((? trigger?) (caddr ast))
     (_ (throw 'match-error  (format #f "~a:event-name: no match: ~a\n" (current-source-location) ast)))))
 
 (define (events ast)
   (match ast
     ((? interface?) (body (events-element ast)))
-    ((? component?) (events (statement ast)))
-    ((? on?) (cadr ast))
+    ((? component?) (triggers ast))
     ((? port?) (events (import-ast (type ast))))
-    ((? compound?) (apply append (map events ((statements-of-type 'on) ast))))
     (_ (throw 'match-error  (format #f "~a:events: no match: ~a\n" (current-source-location) ast)))))
+
+(define (triggers ast)
+  (match ast
+    ((? interface?) (events ast))
+    ((? component?) (triggers (statement ast)))
+    ((? on?) (cadr ast))
+    ((? port?) (events ast))
+    ((? compound?) (apply append (map triggers ((statements-of-type 'on) ast))))
+    (_ (throw 'match-error  (format #f "~a:triggers: no match: ~a\n" (current-source-location) ast)))))
 
 (define (behaviour ast)
   (match ast
@@ -298,15 +333,16 @@
 (define (name ast)
   (match ast
     ((or (? behaviour?) (? enum?) (? model?)) (or (and (>1 (length ast)) (cadr ast)) ""))
-    ((or (? event?) (? field?) (? port?) (? variable?)) (caddr ast))
+    ((or (? event?) (? port?) (? variable?)) (caddr ast))
     (_ (throw 'match-error  (format #f "~a:name: no match: ~a\n" (current-source-location) ast)))))
 
 (define (class ast)
   (match ast 
     ((? enum?) 'type)
     ((? event?) 'event)
-    ((? field?) 'field)
     ((? port?) 'port)
+    ((? trigger?) 'trigger)
+    ((? value?) 'value)
     ((? variable?) 'variable)
     (_ (car ast))))
 
@@ -320,8 +356,13 @@
 
 (define (type ast)
   (match ast 
-    ((or (? event?) (? field?) (? port?) (? variable?)) (cadr ast))
+    ((or (? event?) (? port?) (? value?) (? variable?)) (cadr ast))
     (_ (throw 'match-error  (format #f "~a:type: no match: ~a\n" (current-source-location) ast)))))
+
+(define (field ast)
+  (match ast 
+    ((? value?) (caddr ast))
+    (_ (throw 'match-error  (format #f "~a:field: no match: ~a\n" (current-source-location) ast)))))
 
 (define (types ast)
   (match ast
@@ -420,7 +461,7 @@
              (map name (delete-duplicates (sort (append keep behaviour-keep) list<) equal?))))))
       (('compound t ...) (append (apply append (map find-events-p t)) found))
       (('on t statement) (map find-events-p t))
-      (('field type name) ast)
+      (('trigger port event) ast)
       (('guard expression statement) (find-events-p statement found))
       ((? symbol?) (make 'in 'void ast))
       (_ (throw 'match-error  (format #f "~a:find-events: no match: ~a\n" (current-source-location) ast))))))
