@@ -53,7 +53,8 @@
 (define (variable-state variable . value) 
   (cons (ast:name variable)
         (eval-expression '() '()
-                         (if (pair? value) (car value) 
+                         (if (pair? value) 
+                             (car value) 
                              (ast:expression variable)))))
 
 (define (state-vector model)
@@ -296,7 +297,8 @@
   (match src
     (#f "false")
     (#t "true")
-    (('value type field) (->string (list type "." field)))
+    (('value type field) (->string (list (->string type) "." field)))
+    ((identifier 'value type field) (->string (list (->string identifier) " = " (->string type) "." field)))
     (('trigger port event) (->string (list port "." event)))
     ((identifier 'field x y) (string-join (list (->string identifier)  "=" (->string (cdr src)))))
     ((h ... t) (apply string-append (map ->string src)))
@@ -308,7 +310,9 @@
   (match src
     (#f 'false)
     (#t 'true)
-    (('field struct name) (->symbol (list struct '. name)))
+    (('value type field) (->symbol (list (->string type) "." field)))
+    (('trigger port event) (->symbol (list port "." event)))
+    ((identifier 'value type field) (->symbol (list (->symbol identifier) " = "(->symbol type) "." field)))
     ((h ... t) (apply symbol-append (map ->symbol src)))
     ((h . t) (list (->symbol h) '= (->symbol t)))
     (((h ... t)) (->symbol (car src)))

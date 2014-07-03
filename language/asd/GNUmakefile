@@ -123,8 +123,8 @@ simulate: compile
 	./gaiag -l simulate -t '(a a a)' examples/simulate.asd
 	./gaiag -l simulate -t '(a a a a a)' examples/if.asd
 #	./gaiag -l simulate examples/Alarm.asd |& grep '^\*\*' | wc -l
-	./gaiag -l simulate -t '$(shell cat examples/Alarm-trail.scm)' examples/Console.asd | ./scm2json
-	./gaiag -l simulate -t '$(shell cat examples/Alarm-trail.scm)' examples/alarm-component.asd | ./scm2json
+	./gaiag -l simulate -t '$(shell cat examples/Alarm-trail.scm)' examples/Console.asd | ./scm2json | sed -e 's/, /,\n /g'
+	./gaiag -l simulate -t '$(shell cat examples/Alarm-trail.scm)' examples/alarm-component.asd | ./scm2json | sed -e 's/, /,\n /g'
 
 log:
 	make simulate | sed s'/, /,\n/g' > simulate$$$$.log
