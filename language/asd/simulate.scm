@@ -99,9 +99,12 @@
 
 (define (demo-trace tracepoint)
   (let ((event (car tracepoint))
-        (steps (cdr tracepoint)))
+        (state (cadr tracepoint))
+        (steps (cddr tracepoint)))
     (cons event
-          (map trace-location steps))))
+          (cons
+           (map ->string state)
+           (map trace-location steps)))))
 
 (define (event->ast symbol)
   "if SYMBOL is of form INTERFACE.TRIGGER, produce (trigger PORT EVENT)"
@@ -192,9 +195,9 @@
       (if (or (not state) (not todo))
           '()
           (let* ((event (car todo)))
-            (receive (state trace)
+            (receive (new-state trace)
                 (process-event ast state event)
-              (cons (cons (->symbol event) trace) (loop (next-todo model state ast)))))))))
+              (cons (cons (->symbol event) (cons state trace)) (loop (next-todo model new-state ast)))))))))
 
 (define* (process-event ast state event)
   (stderr "[~a] " (comma-space-join (map ->string state)))
