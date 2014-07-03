@@ -52,15 +52,10 @@ within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:exp
 #.component _#.behaviour (IIG,IG) = let
 #.component _#.behaviour _((#(comma-join (map ast:name ((compose ast:variables ast:behaviour ast:component) ast))))) = transition_begin -> (
 # (map-guards #{ (# (csp-expression->string (ast:expression guard))) & (
-
-
 # ((->join "\n  []\n  ") (map (lambda (on) (csp-transform component (ast-transform component on)))
     (append
       (filter identity (map (statement-on-p/r (provides? component)) ((ast:statements-of-type 'on) (ast:statement guard))))
       (filter identity (map (statement-on-p/r (requires? component)) ((ast:statements-of-type 'on) (ast:statement guard))))))))
-
-
-
 #} (reverse ((ast:statements-of-type 'guard) ((compose ast:statement ast:behaviour ast:component) ast)))))
 within #.component _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:expression x))) ((compose ast:variables ast:behaviour ast:component) ast)))))
 

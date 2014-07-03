@@ -12,379 +12,453 @@
   :use-module (language asd csp))
 
 (pass-if "csp-first-dummy-test"
-	 #t)
+         #t)
 
-(define i-ast `(,(ast:make 
-	       'interface 'i
-	       '(types)
-	       '(events)
-	      (ast:make 
-	       '(
-		 behaviour
-		 B
-		 (types (enum S (S1 S2)))
-		 (variables
-		  (variable S s (trigger S S1))
-		  (variable bool b false)
-		  (variable bool c true))
-		 (compound))))))
+(define i-ast `(,(ast:make
+               'interface 'i
+               '(types)
+               '(events)
+              (ast:make
+               '(
+                 behaviour
+                 B
+                 (types (enum S (S1 S2)))
+                 (variables
+                  (variable S s (trigger S S1))
+                  (variable bool b false)
+                  (variable bool c true))
+                 (compound))))))
 
 (pass-if "ast-transform-return"
-	 (pretty-noisy-equal?
+         (pretty-noisy-equal?
 
-	  ;; from:
-	  (ast-transform 
+          ;; from:
+          (ast-transform-return
 
-	   i-ast
+           i-ast
 
-	   '(compound
-	     (on (e)
-		 (compound))))
+           '(compound
+             (on (e)
+                 (compound))))
 
-	  ;; via:
-	  '(on (e)
-	       (return (s b c)))))
+          ;; via:
+          '(on (e)
+	      (compound
+	       (return))
+              (the-end (s b c)))))
+
 
 (pass-if "csp-transform-return"
-	 (noisy-equal?
+         (diff-noisy-equal?
 
-	  ;; from:
-	  (csp-transform 
+          ;; from:
+          (csp-transform
 
-	   i-ast
+           i-ast
 
-	   '(on (e)
-	       (return (s b c))))
+           '(on (e)
+               (return)
+               (the-end (s b c))))
 
-	  ;; via:
-	  "i?x:{e} -> (\\(s,b,c) @ i.return -> i_B_((s,b,c)),(s,b,c))"))
+          ;; via:
+          "i?x:{e} ->
+(\\P,V @ i.return -> P(V))(\\(s,b,c) @ i_B_((s,b,c)),(s,b,c))"))
+
+
+(pass-if "ast-transform-return-reply"
+         (pretty-noisy-equal?
+
+          ;; from:
+          (ast-transform-return
+
+           i-ast
+
+           '(compound
+             (on (e)
+                 (reply (value Status Yes)))))
+
+          ;; via:
+          '(on (e)
+	       (compound
+		(reply (value Status Yes))
+		(return))
+               (the-end (s b c)))))
+
+(pass-if "csp-transform-return-reply"
+         (pretty-noisy-equal?
+
+          ;; from:
+          (csp-transform
+
+           i-ast
+
+           '(on (e)
+	       (semi
+		(reply (value Status Yes))
+		(return))
+               (the-end (s b c))))
+
+          ;; via:
+          "i?x:{e} ->\nsemi(\\P,V @ i.Status_Yes -> P(V),
+(\\P,V @ i.return -> P(V)))(\\(s,b,c) @ i_B_((s,b,c)),(s,b,c))"))
+
+
+(pass-if "ast-transform-reply"
+         (pretty-noisy-equal?
+
+          ;; from:
+          (ast-transform
+
+           i-ast
+
+           '(compound
+             (on (e)
+                 (reply (value Status Yes)))))
+
+          ;; via:
+          '(on (e)
+               (semi
+                (reply (value Status Yes))
+                (return))
+               (the-end (s b c)))))
+
+(pass-if "ast-transform-compound-reply"
+         (pretty-noisy-equal?
+
+          ;; from:
+          (ast-transform
+
+           i-ast
+
+           '(compound
+             (on (e)
+                 (compound
+                  (reply (value Status Yes))))))
+
+          ;; via:
+          '(on (e)
+               (semi
+                (reply (value Status Yes))
+                (return))
+               (the-end (s b c)))))
+
+(pass-if "csp-transform-reply"
+         (noisy-equal?
+
+          ;; from:
+          (csp-transform
+
+           i-ast
+
+           '(on (e)
+               (semi
+                (reply (value Status Yes))
+                (return))
+               (the-end (s b c))))
+
+          ;; via:
+          "i?x:{e} ->
+semi(\\P,V @ i.Status_Yes -> P(V),
+(\\P,V @ i.return -> P(V)))(\\(s,b,c) @ i_B_((s,b,c)),(s,b,c))"))
 
 
 (pass-if "ast-transform-action"
-	 (pretty-noisy-equal?
+         (pretty-noisy-equal?
 
-	  ;; from:
-	  (ast-transform 
+          ;; from:
+          (ast-transform
 
-	   i-ast
+           i-ast
 
-	   '(action h))
+           '(action h))
 
-	  ;; via:
-	  '(action h)))
+          ;; via:
+          '(action h)))
 
 (pass-if "csp-transform-action"
-	 (pretty-noisy-equal?
+         (diff-noisy-equal?
 
-	  ;; from:
-	  (csp-transform 
+          ;; from:
+          (csp-transform
 
-	   i-ast
+           i-ast
 
-	   '(on (e)
-		(semi (action h)
-		      (return (s b c)))))
+           '(on (e)
+                (semi (action h)
+                      (return))
+                (the-end (s b c))))
 
-	  ;; via:
-	  "i?x:{e} -> semi(\\P,V @ i!h -> P(V),(\\(s,b,c) @ i.return -> i_B_((s,b,c)),(s,b,c)))"))
+          ;; via:
+          "i?x:{e} ->
+semi(\\P,V @ i!h -> P(V),
+(\\P,V @ i.return -> P(V)))(\\(s,b,c) @ i_B_((s,b,c)),(s,b,c))"))
 
 (pass-if "ast-transform-illegal-action"
-	 (pretty-noisy-equal?
+         (pretty-noisy-equal?
 
-	  ;; from:
-	  (ast-transform
+          ;; from:
+          (ast-transform
 
-	   i-ast
+           i-ast
 
-	   '(compound
-	     (on (e)
-		 (compound
-		  (action illegal)))))
+           '(compound
+             (on (e)
+                 (compound
+                  (action illegal)))))
 
-	  ;; via:
-	  '(on (e) IG
-	       (action illegal))))
-
-(pass-if "csp-transform-illegal-action"
-	 (pretty-noisy-equal?
-
-	  ;; from:
-	  (csp-transform 
-
-	   i-ast
-
-	   '(action illegal))
-
-	  ;; via:
-	  "illegal -> STOP"))
-
+          ;; via:
+          '(on (e) IG
+               (action illegal))))
 
 (pass-if "csp-transform-illegal-action"
-	 (pretty-noisy-equal?
+         (noisy-equal?
 
-	  ;; from:
-	  (csp-transform 
+          ;; from:
+          (csp-transform
 
-	   i-ast
+           i-ast
 
-	   '(on (e) IG
-		(action illegal)))
+           '(on (e) IG
+                (action illegal)))
 
-	  ;; via:
-	  "IG & i?x:{e} -> illegal -> STOP"))
+          ;; via:
+          "IG & i?x:{e} ->
+illegal -> STOP"))
 
 (pass-if "ast-transform-assign-bool"
-	 (pretty-noisy-equal?
+         (pretty-noisy-equal?
 
-	  ;; from:
-	  (ast-transform 
+          ;; from:
+          (ast-transform
 
-	   i-ast
+           i-ast
 
-	   '(assign c true))
+           '(assign c true))
 
-	  ;; via:
-	  '(assign (s b c) (s b true))))
+          ;; via:
+          '(assign (s b c) (s b true))))
 
 (pass-if "csp-transform-assign-bool"
-	 (pretty-noisy-equal?
+         (noisy-equal?
 
-	  ;; from:
-	  (csp-transform 
+          ;; from:
+          (csp-transform
 
-	   i-ast
+           i-ast
 
-	   '(assign (s b c) (s b true)))
+           '(assign (s b c) (s b true)))
 
-	  ;; via:
-	  "assign(\\(s,b,c) @ (s,b,true))"))
+          ;; via:
+          "assign(\\(s,b,c) @ (s,b,true))"))
 
 
 (pass-if "ast-transform-assign-enum"
-	 (pretty-noisy-equal?
+         (pretty-noisy-equal?
 
-	  ;; from:
-	  (ast-transform 
+          ;; from:
+          (ast-transform
 
-	   i-ast
+           i-ast
 
-	   '(assign s (value S S2)))
+           '(assign s (value S S2)))
 
-	  ;; via:
-	  '(assign (s b c) (S2 b c))))
+          ;; via:
+          '(assign (s b c) (S2 b c))))
 
 (pass-if "csp-transform-assign-enum"
-	 (pretty-noisy-equal?
+         (noisy-equal?
 
-	  ;; from:
-	  (csp-transform 
+          ;; from:
+          (csp-transform
 
-	   i-ast
+           i-ast
 
-	   '(assign (s b c) (S2 b c)))
+           '(assign (s b c) (S2 b c)))
 
-	  ;; via:
-	  "assign(\\(s,b,c) @ (S2,b,c))"))
+          ;; via:
+          "assign(\\(s,b,c) @ (S2,b,c))"))
 
 
 (pass-if "ast-transform-ifthen"
-	 (pretty-noisy-equal?
+         (pretty-noisy-equal?
 
-	  ;; from:
-	  (ast-transform 
+          ;; from:
+          (ast-transform
 
-	   i-ast
+           i-ast
 
-	   '(if b
-		(compound)))
+           '(if b
+                (compound)))
 
-	  ;; via:
-	  '(if (s b c)
-	       (expression b)
-	       ()
-	       ())))
+          ;; via:
+          '(if (s b c)
+               (expression b)
+               ()
+               ())))
 
 
 (pass-if "csp-transform-expression"
-	 (pretty-noisy-equal?
+         (noisy-equal?
 
-	  ;; from:
-	  (csp-transform 
+          ;; from:
+          (csp-transform
 
-	   i-ast
+           i-ast
 
-	   '(expression (! (and (or (!= c  b) true) (== c b)))))
+           '(expression (! (and (or (!= c  b) true) (== c b)))))
 
-	  ;; via:
-	  "not ((c != b or true) and c == b)"))
+          ;; via:
+          "not ((c != b or true) and c == b)"))
 
 
 (pass-if "ast-transform-ifthenelse"
-	 (pretty-noisy-equal?
+         (pretty-noisy-equal?
 
-	  ;; from:
-	  (ast-transform 
+          ;; from:
+          (ast-transform
 
-	   i-ast
+           i-ast
 
-	   '(if b
-		(compound)
-		(compound)))
+           '(if b
+                (compound)
+                (compound)))
 
-	  ;; via:
-	  '(if (s b c)
-	       (expression b)
-	       ()
-	       ())))
+          ;; via:
+          '(if (s b c)
+               (expression b)
+               ()
+               ())))
 
 (pass-if "csp-transform-ifthenelse"
-	 (pretty-noisy-equal?
+         (diff-noisy-equal?
 
-	  ;; from:
-	  (csp-transform 
+          ;; from:
+          (csp-transform
 
-	   i-ast
+           i-ast
 
-	   '(if (s b c)
-	       (expression b)
-	       ()
-	       ()))
+           '(if (s b c)
+               (expression b)
+               ()
+               ()))
 
-	  ;; via:
-	  "\\P,(s,b,c) @ ifthenelse(b,\\P,V @ P(V),\\P,V @ P(V))(P,(s,b,c))"))
+          ;; via:
+          "\\P,(s,b,c) @ ifthenelse(b,
+\\P,V @ P(V),
+\\P,V @ P(V)
+)(P,(s,b,c))"))
 
 
 (pass-if "ast-transform-ifthen-illegal"
-	 (pretty-noisy-equal?
+         (pretty-noisy-equal?
 
-	  ;; from:
-	  (ast-transform 
+          ;; from:
+          (ast-transform
 
-	   i-ast
+           i-ast
 
-	   '(if b
-		(action illegal)
-		()))
+           '(if b
+                (action illegal)
+                ()))
 
-	  ;; via:
-	  '(if (s b c)
-	       (expression (and IG b))
-	       (action illegal)
-	       ())))
+          ;; via:
+          '(if (s b c)
+               (expression (and IG b))
+               (action illegal)
+               ())))
 
 (pass-if "ast-transform-ifthenelse-illegal"
-	 (pretty-noisy-equal?
+         (pretty-noisy-equal?
 
-	  ;; from:
-	  (ast-transform 
+          ;; from:
+          (ast-transform
 
-	   i-ast
+           i-ast
 
-	   '(if b
-		()
-		(action illegal)))
+           '(if b
+                ()
+                (action illegal)))
 
-	  ;; via:
-	  '(if (s b c)
-	       (expression (and (! IG) b))
-	       ()
-	       (action illegal))))
+          ;; via:
+          '(if (s b c)
+               (expression (and (! IG) b))
+               ()
+               (action illegal))))
 
 (pass-if "ast-transform-semi"
-	 (pretty-noisy-equal?
+         (pretty-noisy-equal?
 
-	  ;; from:
-	  (ast-transform 
+          ;; from:
+          (ast-transform
 
-	   i-ast
+           i-ast
 
-	   '(compound 
-	     (if b
-		 (compound))
-	     (assign b true)))
+           '(compound
+             (if b
+                 (compound))
+             (assign b true)))
 
-	  ;; via:
-	  '(semi (if (s b c)
-		     (expression b)
-		     ()
-		     ())
-		 (assign (s b c) (s true c)))))
+          ;; via:
+          '(semi (if (s b c)
+                     (expression b)
+                     ()
+                     ())
+                 (assign (s b c) (s true c)))))
 
 (pass-if "csp-transform-semi"
-	 (pretty-noisy-equal?
+         (diff-noisy-equal?
 
-	  ;; from:
-	  (csp-transform 
+          ;; from:
+          (csp-transform
 
-	   i-ast
+           i-ast
 
-	   '(semi (if (s b c)
-		     (expression b)
-		     ()
-		     ())
-		 (assign (s b c) (s true c))))
+           '(semi (if (s b c)
+                     (expression b)
+                     ()
+                     ())
+                 (assign (s b c) (s true c))))
 
-	  ;; via:
-	  "semi(\\P,(s,b,c) @ ifthenelse(b,\\P,V @ P(V),\\P,V @ P(V))(P,(s,b,c)),assign(\\(s,b,c) @ (s,true,c)))"))
+          ;; via:
+          "semi(\\P,(s,b,c) @ ifthenelse(b,
+\\P,V @ P(V),
+\\P,V @ P(V)
+)(P,(s,b,c)),
+assign(\\(s,b,c) @ (s,true,c)))"))
 
 
 (pass-if "ast-transform"
-	 (pretty-noisy-equal?
+         (pretty-noisy-equal?
 
-	  ;; from:
-	  (ast-transform 
+          ;; from:
+          (ast-transform
 
-	   i-ast
+           i-ast
 
-	   '(compound
-	     (on (e)
-		 (compound
-		  
-		  (if (or c b) (compound (action f) (action g)))
-		  (if b
-		      (compound
-		       (if c (compound (action g)))
-		       (assign c false)
-		       (action f))
-		      (compound
-		       (if c
-			   (compound (assign b false) (action h))
-			   (compound (assign b true) (action g)))))
-		  (assign s (value S S2))))))
+           '(compound
+             (on (e)
+                 (compound
 
-	  ;; via:
-	  '(on (e)
-	       (semi (if (s b c) (expression (or c b))
-			 (semi (action f) (action g))
-			 ())
-		     (semi (if (s b c) (expression b)
-			       (semi (if (s b c) (expression c) 
-					 (action g)
-					 ())
-				     (semi (assign (s b c) (s b false))
-					   (action f)))
-			       (if (s b c) (expression c)
-				   (semi (assign (s b c) (s false c))
-					 (action h))
-				   (semi (assign (s b c) (s true c))
-					 (action g))))
-			   (assign (s b c) (S2 b c))))
-	    (return (s b c)))))
+                  (if (or c b) (compound (action f) (action g)))
+                  (if b
+                      (compound
+                       (if c (compound (action g)))
+                       (assign c false)
+                       (action f))
+                      (compound
+                       (if c
+                           (compound (assign b false) (action h))
+                           (compound (assign b true) (action g)))))
+                  (assign s (value S S2))))))
 
-(pass-if "csp-transform"
-	 (pretty-noisy-equal?
-
-	  ;; from:
-	  (csp-transform 
-
-	   i-ast
-
-	   '(on (e)
+          ;; via:
+          '(on (e)
+               (semi
 		(semi (if (s b c) (expression (or c b))
 			  (semi (action f) (action g))
 			  ())
 		      (semi (if (s b c) (expression b)
-				(semi (if (s b c) (expression c) 
+				(semi (if (s b c) (expression c)
 					  (action g)
 					  ())
 				      (semi (assign (s b c) (s b false))
@@ -395,11 +469,67 @@
 				    (semi (assign (s b c) (s true c))
 					  (action g))))
 			    (assign (s b c) (S2 b c))))
-		(return (s b c))))
+		            (return))
+               (the-end (s b c)))))
 
-	  ;; via:
-	  "i?x:{e} -> semi(\\P,(s,b,c) @ ifthenelse((c or b),semi(\\P,V @ i!f -> P(V),\\P,V @ i!g -> P(V)),\\P,V @ P(V))(P,(s,b,c)),semi(\\P,(s,b,c) @ ifthenelse(b,semi(\\P,(s,b,c) @ ifthenelse(c,\\P,V @ i!g -> P(V),\\P,V @ P(V))(P,(s,b,c)),semi(assign(\\(s,b,c) @ (s,b,false)),\\P,V @ i!f -> P(V))),\\P,(s,b,c) @ ifthenelse(c,semi(assign(\\(s,b,c) @ (s,false,c)),\\P,V @ i!h -> P(V)),semi(assign(\\(s,b,c) @ (s,true,c)),\\P,V @ i!g -> P(V)))(P,(s,b,c)))(P,(s,b,c)),assign(\\(s,b,c) @ (S2,b,c))))(\\(s,b,c) @ i.return -> i_B_((s,b,c)),(s,b,c))"))
+(pass-if "csp-transform"
+         (diff-noisy-equal?
 
+          ;; from:
+          (csp-transform
+
+           i-ast
+
+           '(on (e)
+                (semi (semi (if (s b c) (expression (or c b))
+                           (semi (action f) (action g))
+                           ())
+                       (semi (if (s b c) (expression b)
+                                 (semi (if (s b c) (expression c)
+                                           (action g)
+                                           ())
+                                       (semi (assign (s b c) (s b false))
+                                             (action f)))
+                                 (if (s b c) (expression c)
+                                     (semi (assign (s b c) (s false c))
+                                           (action h))
+                                     (semi (assign (s b c) (s true c))
+                                           (action g))))
+                             (assign (s b c) (S2 b c))))
+                      (return))
+                (the-end (s b c))))
+
+          ;; via:
+          "i?x:{e} ->
+semi(semi(\\P,(s,b,c) @ ifthenelse((c or b),
+                             semi(\\P,V @ i!f -> P(V),
+                                  \\P,V @ i!g -> P(V)),
+                             \\P,V @ P(V)
+                             )(P,(s,b,c)),
+     semi(\\P,(s,b,c) @ ifthenelse(b,
+                                  semi(\\P,(s,b,c) @ ifthenelse(c,
+                                                               \\P,V @ i!g -> P(V),
+                                                               \\P,V @ P(V)
+                                                               )(P,(s,b,c)),
+                                       semi(assign(\\(s,b,c) @ (s,b,false)),
+                                            \\P,V @ i!f -> P(V))),
+                                  \\P,(s,b,c) @ ifthenelse(c,
+                                                          semi(assign(\\(s,b,c) @ (s,false,c)),
+                                                               \\P,V @ i!h -> P(V)),
+                                                          semi(assign(\\(s,b,c) @ (s,true,c)),
+                                                               \\P,V @ i!g -> P(V))
+                                                          )(P,(s,b,c))
+                                  )(P,(s,b,c)),
+          assign(\\(s,b,c) @ (S2,b,c)))),
+(\\P,V @ i.return -> P(V)))(\\(s,b,c) @ i_B_((s,b,c)),(s,b,c))"))
+
+;; "i?x:{e} ->
+;; semi(\\P,(s,b,c) @ ifthenelse((c or b),
+;;                               semi(\\P,V @ i!f -> P(V),
+;;                                    \\P,V @ i!g -> P(V)),
+;;                               \\P,V @ P(V)
+;;                               )(P,(s,b,c)),
+;;      semi(\\P,(s,b,c) @ ifthenelse(b,semi(\\P,(s,b,c) @ ifthenelse(c,\\P,V @ i!g -> P(V),\\P,V @ P(V))(P,(s,b,c)),semi(assign(\\(s,b,c) @ (s,b,false)),\\P,V @ i!f -> P(V))),\\P,(s,b,c) @ ifthenelse(c,semi(assign(\\(s,b,c) @ (s,false,c)),\\P,V @ i!h -> P(V)),semi(assign(\\(s,b,c) @ (s,true,c)),\\P,V @ i!g -> P(V)))(P,(s,b,c)))(P,(s,b,c)),assign(\\(s,b,c) @ (S2,b,c))))(\\(s,b,c) @ i.return -> i_B_((s,b,c)),(s,b,c))"
 
 ;; to:
 ;; i?x:{e} ->
@@ -425,121 +555,128 @@
 
 
 
-
-
-(define c-ast `(,(ast:make 
-	       'component 'c
-	       '(ports (provides i j)
-		       (requires i k))
-	      (ast:make 
-	       '(
-		 behaviour
-		 B
-		 (types (enum S (S1 S2)))
-		 (variables
-		  (variable S s (value S S1))
-		  (variable bool b false)
-		  (variable bool c true))
-		 (compound))))))
+(define c-ast `(,(ast:make
+               'component 'c
+               '(ports (provides i j)
+                       (requires i k))
+              (ast:make
+               '(
+                 behaviour
+                 B
+                 (types (enum S (S1 S2)))
+                 (variables
+                  (variable S s (value S S1))
+                  (variable bool b false)
+                  (variable bool c true))
+                 (compound))))))
 
 (pass-if "c-ast-transform-return"
-	 (pretty-noisy-equal?
+         (pretty-noisy-equal?
 
-	  ;; from:
-	  (ast-transform 
+          ;; from:
+          (ast-transform
 
-	   c-ast
+           c-ast
 
-	   '(compound
-	     (on ((trigger j e))
-		 (compound))))
+           '(compound
+             (on ((trigger j e))
+                 (compound))))
 
-	  ;; via:
-	  '(on ((trigger j e))
-	       (return (s b c)))))
+          ;; via:
+          '(on ((trigger j e))
+               (return)
+               (the-end (s b c)))))
 
 (pass-if "c-csp-transform-return"
-	 (pretty-noisy-equal?
+         (noisy-equal?
 
-	  ;; from:
-	  (csp-transform 
+          ;; from:
+          (csp-transform
 
-	   c-ast
+           c-ast
 
-	   '(on ((trigger j e))
-		(return (s b c))))
+           '(on ((trigger j e))
+                (return)
+                (the-end (s b c))))
 
-	  ;; via:
-	  "j?x:{e} -> (\\(s,b,c) @ j.return -> transition_end -> c_B_((s,b,c)),(s,b,c))"))
+          ;; via:
+          "j?x:{e} ->
+(\\P,V @ j.return -> P(V))(\\(s,b,c) @ transition_end -> c_B_((s,b,c)),(s,b,c))"))
 
 
 (pass-if "c-ast-transform-provided-action"
-	 (pretty-noisy-equal?
+         (pretty-noisy-equal?
 
-	  ;; from:
-	  (ast-transform 
+          ;; from:
+          (ast-transform
 
-	   c-ast
+           c-ast
 
-	   '(action (trigger j h)))
+           '(action (trigger j h)))
 
-	  ;; via:
-	  '(action (trigger j h))))
+          ;; via:
+          '(action (trigger j h))))
 
 
 (pass-if "c-csp-transform-illegal-action"
-	 (pretty-noisy-equal?
+         (diff-noisy-equal?
 
-	  ;; from:
-	  (csp-transform 
+          ;; from:
+          (csp-transform
 
-	   c-ast
+           c-ast
 
-	   '(on ((trigger j e)) IG
-		(action illegal)))
+           '(on ((trigger j e)) IG
+                (action illegal)))
 
-	  ;; via:
-	  "IIG & j?x:{e} -> illegal -> STOP"))
+          ;; via:
+          "IIG & j?x:{e} ->
+illegal -> STOP"))
 
 
 (pass-if "c-csp-transform-required-action"
-	 (pretty-noisy-equal?
+         (noisy-equal?
 
-	  ;; from:
-	  (csp-transform 
+          ;; from:
+          (csp-transform
 
-	   c-ast
+           c-ast
 
-	   '(action (trigger k e)))
+           '(action (trigger k e)))
 
-	  ;; via:
-	  "\\P,V @ k!e -> k.return -> P(V)"))
+          ;; via:
+          "\\P,V @ k!e -> k.return -> P(V)"))
 
 (pass-if "c-csp-transform-provided-action"
-	 (pretty-noisy-equal?
+         (diff-noisy-equal?
 
-	  ;; from:
-	  (csp-transform 
+          ;; from:
+          (csp-transform
 
-	   c-ast
+           c-ast
 
-	   '(on ((trigger j e))
-		(semi (action (trigger j h))
-		      (return (s b c)))))
+           '(on ((trigger j e))
+                (semi (action (trigger j h))
+                      (return))
+                (the-end (s b c))))
 
-	  ;; via:
-	  "j?x:{e} -> semi(\\P,V @ j!h -> P(V),(\\(s,b,c) @ j.return -> transition_end -> c_B_((s,b,c)),(s,b,c)))"))
+          ;; via:
+          "j?x:{e} ->
+semi(\\P,V @ j!h -> P(V),
+(\\P,V @ j.return -> P(V)))(\\(s,b,c) @ transition_end -> c_B_((s,b,c)),(s,b,c))"))
 
 (pass-if "c-csp-transform-required-on"
-	 (pretty-noisy-equal?
+         (noisy-equal?
 
-	  ;; from:
-	  (csp-transform 
+          ;; from:
+          (csp-transform
 
-	   c-ast
+           c-ast
 
-	   '(on ((trigger k e))
-		      (return (s b c))))
+           '(on ((trigger k e))
+                      (return)
+                      (the-end (s b c))))
 
-	  ;; via:
-	  "k?x:{e} -> (\\(s,b,c) @ transition_end -> c_B_((s,b,c)),(s,b,c))"))
+          ;; via:
+          "k?x:{e} ->
+(\\(s,b,c) @ transition_end -> c_B_((s,b,c)),(s,b,c))"))

@@ -1,7 +1,7 @@
-action(S') = \P',V' @ S'; P'(V')
-ifthenelse(E',S1',S2') = \P',V' @ if E' then S1'(P',V') else S2'(P',V')
-semi(S1',S2') = \P',V' @ S1'( \V'' @ S2'(P',V''),V')
-assign(F') = \P',V' @ P'(F'(V'))
+action(S') = \ P', V' @ S'; P'(V')
+ifthenelse(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')
+semi(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
+assign(F') = \ P', V' @ P'(F'(V'))
 
 
 datatype event_alphabet =
@@ -16,63 +16,70 @@ channel iimperative,i: {e,f,g,h,return}
 
 iimperative_(IG) = let
 iimperative__((s,b,c)) =
- (s == S1) & (
-              iimperative?x:{e} ->
-              semi(\P,(s,b,c) @ ifthenelse(c or b,
-                                           \P,V @ iimperative!f->iimperative!g->P(V),
-                                           \P,V @ P(V)
-                                           )(P,(s,b,c)),
-                   semi(\P,(s,b,c) @ ifthenelse(b,
-                                                semi(\P,(s,b,c) @ ifthenelse(c,
-                                                                             \P,V @ iimperative!g->P(V),
-                                                                             \P,V @ P(V)
-                                                                             )(P,(s,b,c)),
-                                                     semi(assign(\(s,b,c) @ (s,b,false)),
-                                                          \P,V @ iimperative!f->P(V))),
-                                                \P,(s,b,c) @ ifthenelse(c,
-                                                                        semi(assign(\(s,b,c) @ (s,false,c)),
-                                                                             \P,V @ iimperative!h->P(V)),
-                                                                        semi(assign(\(s,b,c) @ (s,true,c)),
-                                                                             \P,V @ iimperative!g->P(V))
-                                                                        )(P,(s,b,c))
-                                                )(P,(s,b,c)),
-                        assign(\(s,b,c) @ (S2,b,c)))) (\(s,b,c) @ iimperative.return -> iimperative__((s,b,c)),(s,b,c))
-              )
+(s == S1) & (
+iimperative?x:{e} ->
+semi(\P,(s,b,c) @ ifthenelse((c or b),
+semi(\P,V @ iimperative!f -> P(V),
+\P,V @ iimperative!g -> P(V)),
+\P,V @ P(V)
+)(P,(s,b,c)),
+semi(\P,(s,b,c) @ ifthenelse(b,
+semi(\P,(s,b,c) @ ifthenelse(c,
+\P,V @ iimperative!g -> P(V),
+\P,V @ P(V)
+)(P,(s,b,c)),
+semi(assign(\(s,b,c) @ (s,b,false)),
+\P,V @ iimperative!f -> P(V))),
+\P,(s,b,c) @ ifthenelse(c,
+semi(assign(\(s,b,c) @ (s,false,c)),
+\P,V @ iimperative!h -> P(V)),
+semi(assign(\(s,b,c) @ (s,true,c)),
+\P,V @ iimperative!g -> P(V))
+)(P,(s,b,c))
+)(P,(s,b,c)),
+assign(\(s,b,c) @ (S2,b,c))))(\(s,b,c) @ iimperative.return -> iimperative__((s,b,c)),(s,b,c)))
 []
 (s == S2) & (
-             iimperative?x:{e} ->
-             semi(\P,(s,b,c) @ ifthenelse(b,
-                                          semi(\P,(s,b,c) @ ifthenelse(not c,
-                                                                       assign(\(s,b,c) @ (s,b,true)),
-                                                                       assign(\(s,b,c) @ (s,b,false))
-                                                                       )(P,(s,b,c)),
-                                               \P,V @ iimperative!h->P(V)),
-                                          \P,V @ P(V)
-                                          )(P,(s,b,c)),
-                  semi(assign(\(s,b,c) @ (s,not b,c)),
-                       assign(\(s,b,c) @ (S1,b,c)))) (\(s,b,c) @ iimperative.return -> iimperative__((s,b,c)),(s,b,c))
-             )
+iimperative?x:{e} ->
+semi(\P,(s,b,c) @ ifthenelse(b,
+semi(\P,(s,b,c) @ ifthenelse(not (c),
+assign(\(s,b,c) @ (s,b,true)),
+assign(\(s,b,c) @ (s,b,false))
+)(P,(s,b,c)),
+\P,V @ iimperative!h -> P(V)),
+\P,V @ P(V)
+)(P,(s,b,c)),
+semi(assign(\(s,b,c) @ (s,not (b),c)),
+assign(\(s,b,c) @ (S1,b,c))))(\(s,b,c) @ iimperative.return -> iimperative__((s,b,c)),(s,b,c)))
 
-within iimperative__((S1,false,true))
+within iimperative__((S1,false,true)) 
 
 
 imperative_(IIG,IG) = let
 imperative__((state)) = transition_begin -> (
 (state == I) & (
-                i?x:{e} -> i.f -> i.g -> i.h -> i.return -> transition_end -> imperative__((II))
-)
+i?x:{e} ->
+semi(\P,V @ i!f -> P(V),
+semi(\P,V @ i!g -> P(V),
+semi(\P,V @ i!h -> P(V),
+assign(\(state) @ (II)))))(\(state) @ i.return -> transition_end -> imperative__((state)),(state)))
 []
 (state == II) & (
-                 i?x:{e} -> i.return -> transition_end -> imperative__((III))
-)
+i?x:{e} ->
+assign(\(state) @ (III))(\(state) @ i.return -> transition_end -> imperative__((state)),(state)))
 []
 (state == III) & (
-                  i?x:{e} -> i.f -> i.g -> i.g -> i.f -> i.return -> transition_end -> imperative__((IV))
-)
+i?x:{e} ->
+semi(\P,V @ i!f -> P(V),
+semi(\P,V @ i!g -> P(V),
+semi(\P,V @ i!g -> P(V),
+semi(\P,V @ i!f -> P(V),
+assign(\(state) @ (IV))))))(\(state) @ i.return -> transition_end -> imperative__((state)),(state)))
 []
 (state == IV) & (
-                 i?x:{e} -> i.h -> i.return -> transition_end -> imperative__((I))
-)
+i?x:{e} ->
+semi(\P,V @ i!h -> P(V),
+assign(\(state) @ (I)))(\(state) @ i.return -> transition_end -> imperative__((state)),(state)))
 )
 within imperative__((I))
 
@@ -128,12 +135,12 @@ within compress((imperative_(false,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-re
 [|diff({|OUT,transition_begin,transition_end,reorder_in,i|},Exclude)|]
 (((STOP) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
-SEMANTICS(IN,OUT,ClientCalls,UsedModeling))))[[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
-
+SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 assert imperative__Component :[deadlock free]
 assert imperative_(true,true) :[deterministic]
 assert STOP [T= imperative__Component \ diff(Events,{illegal})
 assert iimperative_(false) [[iimperative.x<-i.x|x<-extensions(iimperative)]] \ {} [FD= imperative__Component \ diff(Events,{|illegal,i|}) \ {}
-
 assert iimperative_(false) :[deadlock free]
+
 assert iimperative_(true) :[livelock free]
+

@@ -30,7 +30,7 @@ asdgen = ASD_PREFIX=$(DEPTH) $(DEPTH)/$(BUILD)/asdgenerator
 
 default: all
 
-all: compile wfc ast pretty c++ csp simulate check
+all: compile wfc ast pretty csp simulate check c++
 
 tags:
 	etags $(shell git ls-files)
@@ -105,8 +105,8 @@ wfc: compile
 csp: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
 	cd out && ../gaiag -l csp examples/Alarm.asd
-	-$(diff) examples/Alarm.csp out
-	-@$(diff) examples/Alarm.csp out | diffstat || true
+	$(diff) examples/Alarm.csp out
+	@$(diff) examples/Alarm.csp out | diffstat || true
 	cd out && ../gaiag -l csp examples/imperative.asd
 	$(diff) examples/imperative.csp out || true
 	@$(diff) examples/imperative.csp out | diffstat || true
