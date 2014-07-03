@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2013, 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -35,7 +36,7 @@
 
 (define (noisy-equal? a b)
   (or (equal? a b)
-      (fail "~a != ~a\n" a b)))
+      (fail "~a\n!=\n~a\n" a b)))
 
 (define (pretty-noisy-equal? a b)
   (or (equal? a b)
