@@ -249,7 +249,7 @@
       ""))
 
 (define (variable-value->string model v)
-  (case (ast:type v)
+  (case (ast:type (ast:type v))
     ((bool) (->string (ast:expression v)))
     (;;(enum)
      else
@@ -257,7 +257,7 @@
                                 (cdr (ast:expression v)))))))
 
 (define (ast:state-type v)
-  (case (ast:type v)
+  (case (ast:type (ast:type v))
     ((bool) (->string (ast:type v)))
     (;;(enum)
      else (double-colon-join (list 'State (ast:type v))))))

@@ -152,7 +152,7 @@
     (port-list port) : (append $1 (list $2)))
 
    (port
-    (port-direction type Identifier semicolon) : `(,$1 ,$2 ,$3))
+    (port-direction Identifier Identifier semicolon) : `(,$1 ,$2 ,$3))
    
    (port-direction
     (provides) : 'provides
@@ -166,10 +166,14 @@
     (enum-spec) : $1)
    
    (type
-    (bool) : 'bool
-    (int) : 'int
-    (enum-identifier) : $1
-    (void) : 'void)
+    (bool) : '(type bool)
+    (int) : '(type int)
+    (enum-identifier) : `(type ,$1)
+    (void) : '(type void))
+
+   (compound-type
+    (type) : $1
+    (Identifier dot type) : `(type ,$1 ,$3))
 
    (enum-identifier 
     (Identifier) : $1)
@@ -213,7 +217,8 @@
     (assignment-statement) : $1
     (action-statement) : $1
     (if-statement) : $1
-    (reply-statement) : $1)
+    (reply-statement) : $1
+    (variable-statement) : $1)
 
    (guarded-statement
     (lbracket guard rbracket statement) : (make `(guard ,$2 ,$4) @1))
@@ -265,6 +270,9 @@
 
    (reply-statement
     (reply lparen expression rparen semicolon) : `(,$1 ,$3))
+
+   (variable-statement
+    (compound-type Identifier = expression semicolon) : `(variable ,$1 ,$2 ,$4))
 
    (variable-list
     () : '(variables)

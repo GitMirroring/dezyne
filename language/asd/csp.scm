@@ -192,7 +192,8 @@
 
 (define (value ast)
   (match ast
-    ((? ast:trigger?) (caddr ast))
+    ((? ast:trigger?) (ast:event-name ast))
+    ((? ast:value?) (ast:field ast))
     (_ ast)))
 
 (define (optional-chaos port)

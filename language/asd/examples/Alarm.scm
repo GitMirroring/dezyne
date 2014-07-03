@@ -3,6 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -26,16 +27,19 @@
    Console
    (types)
    (events
-     (in void arm)
-     (in void disarm)
-     (out void detected)
-     (out void deactivated))
+     (in ((type void)) arm)
+     (in ((type void)) disarm)
+     (out ((type void)) detected)
+     (out ((type void)) deactivated))
    (behaviour
      a
      (types (enum States
                   (Disarmed Armed Triggered Disarming)))
      (variables
-       (variable States state (value States Disarmed)))
+       (variable
+         (type States)
+         state
+         (value States Disarmed)))
      (compound
        (guard (value state Disarmed)
               (compound
@@ -75,8 +79,11 @@
      (types (enum States
                   (Disarmed Armed Triggered Disarming)))
      (variables
-       (variable States state (value States Disarmed))
-       (variable bool sounding false))
+       (variable
+         (type States)
+         state
+         (value States Disarmed))
+       (variable (type bool) sounding false))
      (compound
        (guard (value state Disarmed)
               (compound

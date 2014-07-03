@@ -42,13 +42,11 @@
 ;;   (ast:events (ast:interface AST))
 ;;      ==>
 ;;   SUB-AST 
-;;      := ((in           (void)    arm)  virtual base class: (event (void) arm)
-;;           ^direction   ^type   ^name
+;;      := ((in           ((type void))  arm)  virtual base class: (event (type void) arm)
+;;           ^direction   ^signature     ^name
 ;;           |implicit: class=event
 ;;
-;;   ideas: void --> (void) SIGNATURE
-;;          void --> RETURN-TYPE
-;;          
+;;  note:  (ast:return-type '((type void))) --> '(type void)
 ;;
 ;;   (ast:behaviour (ast:interface AST))
 ;;      ==>
@@ -86,7 +84,7 @@
 ;;      ==>
 ;;   SUB-AST
 ;;      (value  type    field)
-;;       ^class ^type   ^field;;  ^optional  
+;;       ^class ^type   ^field;;
 ;;
 ;;
 ;;   FIXME (ast:types (ast:interface ast))
@@ -94,6 +92,14 @@
 ;;   SUB-AST
 ;;      (literal  Interface    type    field)
 ;;       ^class   ^scope       ^type   ^field
+;;
+;;
+;;   FIXME (ast:types (ast:interface ast))
+;;      ==>
+;;   SUB-AST
+;;      (type   type    field)
+;;       ^class ^type   ^field;;
+;;
 
 ;;; Code:
 
@@ -160,11 +166,13 @@
 	   return-type
 	   scope
 	   signature
+	   signature?
            statement
            statements-of-type
            triggers
            type
            type-name-component
+           type?
            typed?
            types
            types?
@@ -193,34 +201,35 @@
 (define (variables-element ast) (element ast 'variables))
 
 (define (model? ast) (or (interface? ast) (component? ast)))
-(define (type? type ast)
+(define (type-helper? type ast)
   (and (pair? ast)
        (let ((head (car ast)))
          (case type
            ((event) (member head '(in out)))
            ((port) (member head '(provides requires)))
-	   ((signature) (and (=1 (length ast)) (symbol? (car ast))))
+	   ((signature) (and (=1 (length ast)) (type? (car ast))))
          (else (eq? head type))))))
 
-(define (behaviour? ast) (type? 'behaviour ast))
-(define (component? ast) (type? 'component ast))
-(define (compound? ast) (type? 'compound ast))
-(define (enum? ast) (type? 'enum ast))
-(define (event? ast) (type? 'event ast))
-(define (events? ast) (type? 'events ast))
-(define (guard? ast) (type? 'guard ast))
-(define (interface? ast) (type? 'interface ast))
-(define (imports? ast) (type? 'imports ast))
-(define (literal? ast) (type? 'literal ast))
-(define (on? ast) (type? 'on ast))
-(define (port? ast) (type? 'port ast))
-(define (ports? ast) (type? 'ports ast))
-(define (signature? ast) (type? 'signature ast))
-(define (trigger? ast) (type? 'trigger ast))
-(define (types? ast) (type? 'types ast))
-(define (value? ast) (type? 'value ast))
-(define (variable? ast) (type? 'variable ast))
-(define (variables? ast) (type? 'variables ast))
+(define (behaviour? ast) (type-helper? 'behaviour ast))
+(define (component? ast) (type-helper? 'component ast))
+(define (compound? ast) (type-helper? 'compound ast))
+(define (enum? ast) (type-helper? 'enum ast))
+(define (event? ast) (type-helper? 'event ast))
+(define (events? ast) (type-helper? 'events ast))
+(define (guard? ast) (type-helper? 'guard ast))
+(define (interface? ast) (type-helper? 'interface ast))
+(define (imports? ast) (type-helper? 'imports ast))
+(define (literal? ast) (type-helper? 'literal ast))
+(define (on? ast) (type-helper? 'on ast))
+(define (port? ast) (type-helper? 'port ast))
+(define (ports? ast) (type-helper? 'ports ast))
+(define (signature? ast) (type-helper? 'signature ast))
+(define (trigger? ast) (type-helper? 'trigger ast))
+(define (type? ast) (type-helper? 'type ast))
+(define (types? ast) (type-helper? 'types ast))
+(define (value? ast) (type-helper? 'value ast))
+(define (variable? ast) (type-helper? 'variable ast))
+(define (variables? ast) (type-helper? 'variables ast))
 
 (define (body ast)
   (match ast
@@ -389,7 +398,7 @@
   (match ast 
     ((? event?) (return-type ast)) ;; FIXME junk relaxed accessor
     ((? literal?) (caddr ast))
-    ((or (? port?) (? value?) (? variable?)) (cadr ast))
+    ((or (? port?) (? type?) (? value?) (? variable?)) (cadr ast))
     (_ (throw 'match-error  (format #f "~a:type: no match: ~a\n" (current-source-location) ast)))))
 
 (define (field ast)
@@ -432,7 +441,7 @@
 
 (define (typed? ast)
   (match ast
-    ((? event?) (not (eq? (type ast) 'void)))
+    ((? event?) (not (equal? (return-type ast) '(type void))))
     ((? port?) (null-is-#f (filter typed? (events ast))))
     (_ (throw 'match-error  (format #f "~a:typed?: no match: ~a\n" (current-source-location) ast)))))
 
@@ -497,7 +506,7 @@
       (('on t statement) (map find-events-p t))
       (('trigger port event) ast)
       (('guard expression statement) (find-events-p statement found))
-      ((? symbol?) (make 'in '(void) ast))
+      ((? symbol?) (make 'in '((type void)) ast))
       (_ (throw 'match-error  (format #f "~a:find-events: no match: ~a\n" (current-source-location) ast))))))
 
 ;;;; reading/caching
