@@ -43,8 +43,8 @@
 
           ;; via:
           '(on (e)
-	      (compound
-	       (return))
+              (compound
+               (return))
               (the-end (s b c)))))
 
 
@@ -79,9 +79,9 @@
 
           ;; via:
           '(on (e)
-	       (compound
-		(reply (value Status Yes))
-		(return))
+               (compound
+                (reply (value Status Yes))
+                (return))
                (the-end (s b c)))))
 
 (pass-if "csp-transform-return-reply"
@@ -93,14 +93,15 @@
            i-ast
 
            '(on (e)
-	       (semi
-		(reply (value Status Yes))
-		(return))
+               (semi
+                (reply (value Status Yes))
+                (return))
                (the-end (s b c))))
 
           ;; via:
           "i?x:{e} ->\nsemi(\\P,V @ i.Status_Yes -> P(V),
 (\\P,V @ i.return -> P(V)))(\\(s,b,c) @ i_B_((s,b,c)),(s,b,c))"))
+
 
 
 (pass-if "ast-transform-reply"
@@ -454,22 +455,22 @@ assign(\\(s,b,c) @ (s,true,c)))"))
           ;; via:
           '(on (e)
                (semi
-		(semi (if (s b c) (expression (or c b))
-			  (semi (action f) (action g))
-			  ())
-		      (semi (if (s b c) (expression b)
-				(semi (if (s b c) (expression c)
-					  (action g)
-					  ())
-				      (semi (assign (s b c) (s b false))
-					    (action f)))
-				(if (s b c) (expression c)
-				    (semi (assign (s b c) (s false c))
-					  (action h))
-				    (semi (assign (s b c) (s true c))
-					  (action g))))
-			    (assign (s b c) (S2 b c))))
-		            (return))
+                (semi (if (s b c) (expression (or c b))
+                          (semi (action f) (action g))
+                          ())
+                      (semi (if (s b c) (expression b)
+                                (semi (if (s b c) (expression c)
+                                          (action g)
+                                          ())
+                                      (semi (assign (s b c) (s b false))
+                                            (action f)))
+                                (if (s b c) (expression c)
+                                    (semi (assign (s b c) (s false c))
+                                          (action h))
+                                    (semi (assign (s b c) (s true c))
+                                          (action g))))
+                            (assign (s b c) (S2 b c))))
+                            (return))
                (the-end (s b c)))))
 
 (pass-if "csp-transform"
@@ -679,4 +680,57 @@ semi(\\P,V @ j!h -> P(V),
 
           ;; via:
           "k?x:{e} ->
-(\\(s,b,c) @ transition_end -> c_B_((s,b,c)),(s,b,c))"))
+(\\P,V @ P(V))(\\(s,b,c) @ transition_end -> c_B_((s,b,c)),(s,b,c))"))
+
+
+(pass-if "c-ast-transform-alarm-snippet"
+         (pretty-noisy-equal?
+
+          ;; from:
+          (ast-transform
+
+           c-ast
+
+           '(on ((trigger sensor triggered))
+                (compound
+                 (action (trigger console detected))
+                 (action (trigger siren turnon))
+                 (assign sounding true)
+                 (assign state (value States Triggered)))))
+
+          ;; via:
+         '(on ((trigger sensor triggered))
+              (semi
+               (semi
+                (action (trigger console detected))
+                (semi (action (trigger siren turnon))
+                      (semi (assign (s b c) (s b c))
+                            (assign (s b c) (s b c)))))
+               (return))
+              (the-end (s b c)))))
+
+(pass-if "c-csp-transform-alarm-snippet"
+         (noisy-equal?
+
+          ;; from:
+          (csp-transform c-ast
+           (ast-transform
+
+            c-ast
+
+            '(on ((trigger sensor triggered))
+                 (compound
+                  (action (trigger console detected))
+                  (action (trigger siren turnon))
+                  (assign sounding true)
+                  (assign state (value States Triggered))))))
+
+          ;; via:
+
+"sensor?x:{triggered} ->
+semi(semi(\\P,V @ console!detected -> P(V),
+semi(\\P,V @ siren!turnon -> P(V),
+semi(assign(\\(s,b,c) @ (s,b,c)),
+assign(\\(s,b,c) @ (s,b,c))))),
+(\\P,V @ P(V)))(\\(s,b,c) @ transition_end -> c_B_((s,b,c)),(s,b,c))"
+))

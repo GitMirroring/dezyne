@@ -18,7 +18,7 @@ iimperative_(IG) = let
 iimperative__((s,b,c)) =
 (s == S1) & (
 iimperative?x:{e} ->
-semi(\P,(s,b,c) @ ifthenelse((c or b),
+semi(semi(\P,(s,b,c) @ ifthenelse((c or b),
 semi(\P,V @ iimperative!f -> P(V),
 \P,V @ iimperative!g -> P(V)),
 \P,V @ P(V)
@@ -37,11 +37,12 @@ semi(assign(\(s,b,c) @ (s,true,c)),
 \P,V @ iimperative!g -> P(V))
 )(P,(s,b,c))
 )(P,(s,b,c)),
-assign(\(s,b,c) @ (S2,b,c))))(\(s,b,c) @ iimperative.return -> iimperative__((s,b,c)),(s,b,c)))
+assign(\(s,b,c) @ (S2,b,c)))),
+(\P,V @ iimperative.return -> P(V)))(\(s,b,c) @ iimperative__((s,b,c)),(s,b,c)))
 []
 (s == S2) & (
 iimperative?x:{e} ->
-semi(\P,(s,b,c) @ ifthenelse(b,
+semi(semi(\P,(s,b,c) @ ifthenelse(b,
 semi(\P,(s,b,c) @ ifthenelse(not (c),
 assign(\(s,b,c) @ (s,b,true)),
 assign(\(s,b,c) @ (s,b,false))
@@ -50,7 +51,8 @@ assign(\(s,b,c) @ (s,b,false))
 \P,V @ P(V)
 )(P,(s,b,c)),
 semi(assign(\(s,b,c) @ (s,not (b),c)),
-assign(\(s,b,c) @ (S1,b,c))))(\(s,b,c) @ iimperative.return -> iimperative__((s,b,c)),(s,b,c)))
+assign(\(s,b,c) @ (S1,b,c)))),
+(\P,V @ iimperative.return -> P(V)))(\(s,b,c) @ iimperative__((s,b,c)),(s,b,c)))
 
 within iimperative__((S1,false,true)) 
 
@@ -59,27 +61,31 @@ imperative_(IIG,IG) = let
 imperative__((state)) = transition_begin -> (
 (state == I) & (
 i?x:{e} ->
-semi(\P,V @ i!f -> P(V),
+semi(semi(\P,V @ i!f -> P(V),
 semi(\P,V @ i!g -> P(V),
 semi(\P,V @ i!h -> P(V),
-assign(\(state) @ (II)))))(\(state) @ i.return -> transition_end -> imperative__((state)),(state)))
+assign(\(state) @ (II))))),
+(\P,V @ i.return -> P(V)))(\(state) @ transition_end -> imperative__((state)),(state)))
 []
 (state == II) & (
 i?x:{e} ->
-assign(\(state) @ (III))(\(state) @ i.return -> transition_end -> imperative__((state)),(state)))
+semi(assign(\(state) @ (III)),
+(\P,V @ i.return -> P(V)))(\(state) @ transition_end -> imperative__((state)),(state)))
 []
 (state == III) & (
 i?x:{e} ->
-semi(\P,V @ i!f -> P(V),
+semi(semi(\P,V @ i!f -> P(V),
 semi(\P,V @ i!g -> P(V),
 semi(\P,V @ i!g -> P(V),
 semi(\P,V @ i!f -> P(V),
-assign(\(state) @ (IV))))))(\(state) @ i.return -> transition_end -> imperative__((state)),(state)))
+assign(\(state) @ (IV)))))),
+(\P,V @ i.return -> P(V)))(\(state) @ transition_end -> imperative__((state)),(state)))
 []
 (state == IV) & (
 i?x:{e} ->
-semi(\P,V @ i!h -> P(V),
-assign(\(state) @ (I)))(\(state) @ i.return -> transition_end -> imperative__((state)),(state)))
+semi(semi(\P,V @ i!h -> P(V),
+assign(\(state) @ (I))),
+(\P,V @ i.return -> P(V)))(\(state) @ transition_end -> imperative__((state)),(state)))
 )
 within imperative__((I))
 
