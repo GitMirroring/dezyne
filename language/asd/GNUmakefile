@@ -30,7 +30,7 @@ asdgen = ASD_PREFIX=$(DEPTH) $(DEPTH)/$(BUILD)/asdgenerator
 
 default: all
 
-all: compile wfc ast pretty csp simulate check c++
+all: compile wfc ast pretty c++ csp simulate check
 
 tags:
 	etags $(shell git ls-files)

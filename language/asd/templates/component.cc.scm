@@ -22,7 +22,7 @@ namespace #.component ImplScope
     #.port #.interface #.api Proxy(Context& context);
 #(map-port-events 
 #{
-    virtual #(if (eq? 'void .type ) .type (list .interface "::" .type ))  #.event ();
+    virtual #(if (eq? 'void .type) .type (list .interface "::" .type ))  #.event ();
 #}  port (filter (ast:dir-matches? port) (ast:events port)))
 
   private:

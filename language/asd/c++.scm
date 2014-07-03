@@ -178,7 +178,7 @@
   (let ((port (statements.port))
         (event (statements.event))
         (arguments (arguments->string)))
-    (statements->string (list 'context.Set (ast:name port) (ast:type port) (api port) (ast:type event) "(" arguments ");\n"))))
+    (statements->string (list 'context.Set (ast:name port) (ast:type port) (api port) (ast:type (ast:return-type event)) "(" arguments ");\n"))))
 
 (define (arguments->string)
   (let ((port (statements.port)))
@@ -235,12 +235,17 @@
      (list comp-name (ast:type value) (ast:field value)))))
 
 (define (return-type-text port)
-  (or (and-let* ((event (null-is-#f (ast:typed? port))))
-                (ast:type (car event)))
-      'void))
+  (let ((result
+         (or (and-let* ((event (null-is-#f (ast:typed? port))))
+                       (ast:return-type (car event)))
+             'void)
+         ))
+    (stderr "return-type-text ~a [~a]--> ~a\n" port (ast:typed? port) result  )
+    result
+    ))
 
 (define (return-interface-type interface event)
-  (or (and (ast:typed? event)  (list interface "::" (ast:type event)))
+  (or (and (ast:typed? event) (list interface "::" (ast:type (ast:return-type event))))
       'void))
 
 (define (return-context-get interface event)
@@ -258,9 +263,9 @@
 
 (define (ast:state-type v)
   (case (ast:type (ast:type v))
-    ((bool) (->string (ast:type v)))
+    ((bool) (->string (ast:type (ast:type v))))
     (;;(enum)
-     else (double-colon-join (list 'State (ast:type v))))))
+     else (double-colon-join (list 'State (ast:type (ast:type v)))))))
 
 (define (format-parameters port)
   (if (ast:typed? port)
@@ -312,7 +317,7 @@
                 (.callback . ,(callback '(provides)))
                 (.ap . ,(ap '(provides)))
                 (.cb . ,(cb '(provides)))
-                (.type . ,ast:type)
+                (.type . ,(compose ast:type ast:return-type))
                 (.event . ,ast:name))))))) events))
 
 (define (map-port-events string port events)
@@ -326,7 +331,7 @@
                 (current-module)
                 event
                 `((event . ,identity)
-                  (.type . ,ast:type)
+                  (.type . ,(compose ast:type ast:return-type))
                   (.name . ,ast:name)
                   (.event . ,ast:name)
                   (.statement . 
