@@ -213,8 +213,7 @@
     (assignment-statement) : $1
     (action-statement) : $1
     (if-statement) : $1
-    ;; (reply-statement) : $1
-    )
+    (reply-statement) : $1)
 
    (guarded-statement
     (lbracket guard rbracket statement) : (make `(guard ,$2 ,$4) @1))
@@ -228,7 +227,8 @@
 
    (compound-identifier
     (Identifier) : $1 
-    (Identifier dot Identifier) : `(value ,$1 ,$3))
+    (Identifier dot Identifier) : `(value ,$1 ,$3)
+    (Identifier dot Identifier dot Identifier) : `(literal ,$1 ,$3 ,$5))
    
    (on-event-statement
     (on trigger-spec colon statement) : (make `(,$1 ,$2 ,$4) @1))
@@ -263,7 +263,8 @@
     (if lparen expression rparen statement) : `(if ,$3 ,$5)
     (if lparen expression rparen statement else statement) : `(if ,$3 ,$5 ,$7))
 
-   ;;(reply-statement)
+   (reply-statement
+    (reply lparen expression rparen semicolon) : `(,$1 ,$3))
 
    (variable-list
     () : '(variables)

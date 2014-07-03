@@ -86,7 +86,14 @@
 ;;      ==>
 ;;   SUB-AST
 ;;      (value  type    field)
-;;       ^class ^type   ^field;;    
+;;       ^class ^type   ^field;;  ^optional  
+;;
+;;
+;;   FIXME (ast:types (ast:interface ast))
+;;      ==>
+;;   SUB-AST
+;;      (literal  Interface    type    field)
+;;       ^class   ^scope       ^type   ^field
 
 ;;; Code:
 
@@ -137,6 +144,7 @@
            interface
            interfaces
            interface?
+	   literal?
            make
            model?
            name
@@ -150,6 +158,7 @@
            register
            requires?
 	   return-type
+	   scope
 	   signature
            statement
            statements-of-type
@@ -202,6 +211,7 @@
 (define (guard? ast) (type? 'guard ast))
 (define (interface? ast) (type? 'interface ast))
 (define (imports? ast) (type? 'imports ast))
+(define (literal? ast) (type? 'literal ast))
 (define (on? ast) (type? 'on ast))
 (define (port? ast) (type? 'port ast))
 (define (ports? ast) (type? 'ports ast))
@@ -252,10 +262,16 @@
   (for-each interface (interfaces ast))
   ast)
 
+(define (scope ast)
+  (match ast
+    ((? literal?) (cadr ast))
+    (_ (throw 'match-error  (format #f "~a:scope: no match: ~a\n" (current-source-location) ast)))))
+
 (define (signature ast)
   (match ast
     ((? event?) (cadr ast))
-    (_ (throw 'match-error  (format #f "~a:signature: no match: ~a\n" (current-source-location) ast))))  )
+    (_ (throw 'match-error  (format #f "~a:signature: no match: ~a\n" (current-source-location) ast)))))
+
 
 (define (return-type ast)
   (match ast
@@ -372,11 +388,13 @@
 (define (type ast)
   (match ast 
     ((? event?) (return-type ast)) ;; FIXME junk relaxed accessor
+    ((? literal?) (caddr ast))
     ((or (? port?) (? value?) (? variable?)) (cadr ast))
     (_ (throw 'match-error  (format #f "~a:type: no match: ~a\n" (current-source-location) ast)))))
 
 (define (field ast)
   (match ast 
+    ((? literal?) (cadddr ast))
     ((? value?) (caddr ast))
     (_ (throw 'match-error  (format #f "~a:field: no match: ~a\n" (current-source-location) ast)))))
 
