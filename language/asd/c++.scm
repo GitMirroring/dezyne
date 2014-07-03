@@ -235,14 +235,9 @@
      (list comp-name (ast:type value) (ast:field value)))))
 
 (define (return-type-text port)
-  (let ((result
-         (or (and-let* ((event (null-is-#f (ast:typed? port))))
-                       (ast:return-type (car event)))
-             'void)
-         ))
-    (stderr "return-type-text ~a [~a]--> ~a\n" port (ast:typed? port) result  )
-    result
-    ))
+  (or (and-let* ((event (null-is-#f (ast:typed? port))))
+                (ast:return-type (car event)))
+      'void))
 
 (define (return-interface-type interface event)
   (or (and (ast:typed? event) (list interface "::" (ast:type (ast:return-type event))))
