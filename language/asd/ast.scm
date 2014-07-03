@@ -42,7 +42,7 @@
 ;;   (ast:events (ast:interface AST))
 ;;      ==>
 ;;   SUB-AST 
-;;      := ((in           void    arm)
+;;      := ((in           (void)    arm)  virtual base class: (event (void) arm)
 ;;           ^direction   ^type   ^name
 ;;           |implicit: class=event
 ;;
@@ -78,7 +78,7 @@
 ;;   (ast:triggers (ast:component AST))
 ;;      ==>
 ;;   SUB-AST
-;;      (trigger console      arm)
+;;      (trigger  console      arm)
 ;;       ^class  ^port-name   ^event-name
 ;;
 ;;
@@ -149,6 +149,8 @@
            provides?
            register
            requires?
+	   return-type
+	   signature
            statement
            statements-of-type
            triggers
@@ -188,6 +190,7 @@
          (case type
            ((event) (member head '(in out)))
            ((port) (member head '(provides requires)))
+	   ((signature) (and (=1 (length ast)) (symbol? (car ast))))
          (else (eq? head type))))))
 
 (define (behaviour? ast) (type? 'behaviour ast))
@@ -202,6 +205,7 @@
 (define (on? ast) (type? 'on ast))
 (define (port? ast) (type? 'port ast))
 (define (ports? ast) (type? 'ports ast))
+(define (signature? ast) (type? 'signature ast))
 (define (trigger? ast) (type? 'trigger ast))
 (define (types? ast) (type? 'types ast))
 (define (value? ast) (type? 'value ast))
@@ -247,6 +251,17 @@
       (set! *ast-alist* '(())))
   (for-each interface (interfaces ast))
   ast)
+
+(define (signature ast)
+  (match ast
+    ((? event?) (cadr ast))
+    (_ (throw 'match-error  (format #f "~a:signature: no match: ~a\n" (current-source-location) ast))))  )
+
+(define (return-type ast)
+  (match ast
+    ((? event?) (return-type (signature ast)))
+    ((? signature?) (car ast))
+    (_ (throw 'match-error  (format #f "~a:return-type: no match: ~a\n" (current-source-location) ast))))  )
 
 (define (port-name ast)
   (match ast
@@ -356,7 +371,8 @@
 
 (define (type ast)
   (match ast 
-    ((or (? event?) (? port?) (? value?) (? variable?)) (cadr ast))
+    ((? event?) (return-type ast)) ;; FIXME junk relaxed accessor
+    ((or (? port?) (? value?) (? variable?)) (cadr ast))
     (_ (throw 'match-error  (format #f "~a:type: no match: ~a\n" (current-source-location) ast)))))
 
 (define (field ast)
@@ -463,7 +479,7 @@
       (('on t statement) (map find-events-p t))
       (('trigger port event) ast)
       (('guard expression statement) (find-events-p statement found))
-      ((? symbol?) (make 'in 'void ast))
+      ((? symbol?) (make 'in '(void) ast))
       (_ (throw 'match-error  (format #f "~a:find-events: no match: ~a\n" (current-source-location) ast))))))
 
 ;;;; reading/caching

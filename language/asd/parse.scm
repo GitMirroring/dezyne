@@ -141,7 +141,7 @@
     (event-list event) : (append $1 (list $2)))
 
    (event
-    (event-direction type Identifier semicolon) : `(,$1 ,$2 ,$3))
+    (event-direction type Identifier semicolon) : `(,$1 (,$2) ,$3))
    
    (event-direction
     (in) : 'in

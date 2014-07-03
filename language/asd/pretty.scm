@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -48,7 +49,8 @@
     ((? join?) (apply join-all (cdr src)))
     ((? symbol?) (symbol->string src))
     ((! expression) (string-append "!(" (->string expression) ")"))
-    (_ (format #f "\n~aNO MATCH:~a\n" (current-source-location) src))))
+    ('(void) 'void)
+    (_ (format #f "~a:->string:no match:~a\n" (current-source-location) src))))
 
 (define (asd-template? x) (parameterize ((templates asd-templates)) (template? x)))
 
