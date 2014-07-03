@@ -66,18 +66,21 @@ component C1
 
   behaviour
   {
-    on i.done:
+    [true]
     {
-      U.Status s = u.what;
+      on i.done:
+      {
+        U.Status s = u.what;
 
-      // if(s == u.Status.Ok)
-      // {
-      //   reply(i.Status.Yes);
-      // }
-      // else
-      // {
+        // if(s == u.Status.Ok)
+        // {
+        //   reply(i.Status.Yes);
+        // }
+        // else
+        // {
         reply(I123.Status.No);
-      // }
+        // }
+      }
     }
   }
 }
