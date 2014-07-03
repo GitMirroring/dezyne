@@ -507,6 +507,7 @@
       (('trigger port event) ast)
       (('guard expression statement) (find-events-p statement found))
       ((? symbol?) (make 'in '((type void)) ast))
+      (('action x) '())
       (_ (throw 'match-error  (format #f "~a:find-events: no match: ~a\n" (current-source-location) ast))))))
 
 ;;;; reading/caching

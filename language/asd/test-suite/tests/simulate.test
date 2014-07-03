@@ -46,18 +46,34 @@
     (walk-trail
      (ast:interface 
       (asd->ast 
-       #{ interface i { behaviour
-                        {
-                         bool t = true ;
-                              on a:
-                              [t] t = !t ; 
-                              [!t] b     ; 
-                              } } #}))
+       #{ interface i 
+                    { 
+                     behaviour
+                     {
+                      bool t = true ;
+                           on a:
+                           {
+                            [t] t = !t ; 
+                            [!t] b     ; 
+                            }
+                           } 
+                     } #}))
      '(a a a))
-    '((a (on (a) (guard t (assign t (! t))))
-         (guard t (assign t (! t))) 
-         (assign t (! t))) 
-      (a (guard (! t) (action b)) 
-         (action b)) 
-      (a (guard (! t) (action b)) 
-         (action b)))))
+    '((a (on (a)
+        (compound
+          (guard t (assign t (! t)))
+          (guard (! t) (action b))))
+    (guard t (assign t (! t)))
+    (assign t (! t)))
+ (a (on (a)
+        (compound
+          (guard t (assign t (! t)))
+          (guard (! t) (action b))))
+    (guard (! t) (action b))
+    (action b))
+ (a (on (a)
+        (compound
+          (guard t (assign t (! t)))
+          (guard (! t) (action b))))
+    (guard (! t) (action b))
+    (action b)))))

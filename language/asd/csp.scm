@@ -247,8 +247,10 @@
 (define* (ast-transform- ast src :optional (return #t))
   (let* ((model (or (ast:interface ast) (ast:component ast)))
 	 (variables (var-names model)))
+    (stderr "ast-transform- ~a\n" src)
     (match src
       (('compound t ...)
+       (stderr "ast-transform- compound ~a\n" src )
        (let loop ((statements (map (lambda (x) (ast-transform- ast x #f)) t)))
 	 (if (null? statements)
 	     '()
