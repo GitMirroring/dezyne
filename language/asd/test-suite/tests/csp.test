@@ -734,3 +734,86 @@ semi(assign(\\(s,b,c) @ (s,b,c)),
 assign(\\(s,b,c) @ (s,b,c))))),
 (\\P,V @ P(V)))(\\(s,b,c) @ transition_end -> c_B_((s,b,c)),(s,b,c))"
 ))
+
+
+
+
+
+;; reply event
+
+(define i-reply-ast
+  '(interface I
+     (types (enum Status (Yes No)))
+     (events (in ((type Status)) done))
+     (behaviour
+      #f
+      (types)
+      (variables)
+      (compound
+       (on (done)
+           (compound
+            (guard true
+                   (compound (reply (value Status Yes))))
+            (guard true (compound (reply (value Status No))))))))))
+
+(define u-reply-ast
+  '(interface U
+     (types (enum Status (Ok Nok)))
+     (events (in ((type Status)) what))
+     (behaviour
+      #f
+      (types)
+      (variables)
+      (compound
+       (on (what)
+           (compound
+            (guard true (compound (reply (value Status Ok))))
+            (guard true
+                   (compound (reply (value Status Nok))))))))))
+
+(define c-reply-ast
+  '(component C
+              (ports (provides I i) (requires U u))
+              (behaviour
+               #f
+               (types)
+               (variables)
+               (compound
+                (guard true
+                       (compound
+                        (on ((trigger i done))
+                            (compound
+                             (variable
+                              (type U (type Status))
+                              s
+                              (value u what))
+                             (if (== s (literal u Status Ok))
+                                 (compound (reply (literal I Status Yes)))
+                                 (compound (reply (literal I Status No))))))))))))
+
+
+(pass-if "ast-transform-variable"
+         (pretty-noisy-equal?
+
+          ;; from:
+          (ast-transform-return
+
+           c-reply-ast
+
+           '(on ((trigger i done))
+               (compound
+                (variable (type U (type Status)) s (value u what))
+                (if (== s (literal u Status Ok))
+                    (compound (reply (literal I Status Yes)))
+                    (compound (reply (literal I Status No)))))))
+
+          ;; via:
+          '(on ((trigger i done))
+               (semi
+                (semi
+                 (assign (variable (type U (type Status)) s (value u what)))
+                 (if (== s (literal u Status Ok))
+                     (reply (literal I Status Yes))
+                     (reply (literal I Status No))))
+                (return))
+               (the-end ()))))
