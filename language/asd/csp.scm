@@ -77,9 +77,9 @@
 
 (define asserts-alist
   `(
-    ((component deadlock)  . "assert #.component _#.behaviour _Component :[deadlock free]\n")
     ((component deterministic) . "assert #.component _#.behaviour(true,true) :[deterministic]\n")
-    ((component illegal) . "assert STOP [T= #.component _#.behaviour _Component \\ diff(Events,{illegal})\n")
+    ((component illegal) . "assert STOP [T= #.component _#.behaviour _Component(false) \\ diff(Events,{illegal})\n")
+    ((component deadlock)  . "assert #.component _#.behaviour _Component(false) :[deadlock free]\n")
     ((component compliance) . ,(gulp-file 'templates/asserts/component-compliance.csp.scm))
     ((interface deadlock) . ,(gulp-file 'templates/asserts/interface-deadlock.csp.scm))
     ((interface livelock) . ,(gulp-file 'templates/asserts/interface-livelock.csp.scm))))

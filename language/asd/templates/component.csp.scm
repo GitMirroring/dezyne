@@ -102,7 +102,7 @@ within Idle(0)
 
 within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-#.component _#.behaviour _Component = let
+#.component _#.behaviour _Component(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
@@ -122,7 +122,7 @@ UsedModeling = {#
  (map-ports
 #{#(comma-join (map (lambda (x) (list .port "." x)) (filter (lambda (x) (member x '(inevitable optional))) (port-triggers port)))) #}
    (filter ast:requires? ((compose ast:ports ast:component) ast)))}
-within compress((#.component _#.behaviour (false,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+within compress((#.component _#.behaviour (IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,#(comma-join (map ast:name ((compose ast:ports ast:component) ast)))|},Exclude)|]
 (((# (let ((required_processes (map-ports #{
 #.interface _#.behaviour(true) [[#.interface .x<-#.port .x|x<-extensions(#.interface)]]

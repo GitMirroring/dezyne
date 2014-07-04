@@ -129,7 +129,7 @@ within Idle(0)
 
 within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-imperative__Component = let
+imperative__Component(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
@@ -137,15 +137,15 @@ within sbisim(diamond(x))
 Exclude = {i.return,i.f,i.g,i.h}
 ClientCalls = {i.e}
 UsedModeling = {}
-within compress((imperative_(false,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+within compress((imperative_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,i|},Exclude)|]
 (((STOP) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
-assert imperative__Component :[deadlock free]
+assert imperative__Component(false) :[deadlock free]
 assert imperative_(true,true) :[deterministic]
-assert STOP [T= imperative__Component \ diff(Events,{illegal})
-assert iimperative_(false) [[iimperative.x<-i.x|x<-extensions(iimperative)]] \ {} [FD= imperative__Component \ diff(Events,{|illegal,i|}) \ {}
+assert STOP [T= imperative__Component(false) \ diff(Events,{illegal})
+assert iimperative_(true) [[iimperative.x<-i.x|x<-extensions(iimperative)]] \ {} [FD= imperative__Component(true) \ diff(Events,{|illegal,i|}) \ {}
 assert iimperative_(false) :[deadlock free]
 
 assert iimperative_(true) :[livelock free]

@@ -22,12 +22,12 @@
 ;;; 
 ;;; Code:
 
-assert #.interface _#.interface-behaviour(false) [[#.interface .x<-#.port .x|x<-extensions(#.interface)]] \ {#
+assert #.interface _#.interface-behaviour(true) [[#.interface .x<-#.port .x|x<-extensions(#.interface)]] \ {#
 (map-ports #{#
    (comma-join
        (map (lambda (x) (string-join (map ->string (list .port x)) ".")) (filter
          (lambda (x) (or (eq? x 'optional) (eq? x 'inevitable)))
-         (port-triggers port)))) #} (filter ast:provides? ((compose ast:ports ast:component) ast)))} [FD= #.component _#.behaviour _Component \ diff(Events,{|illegal,#.port |}) \ {#
+         (port-triggers port)))) #} (filter ast:provides? ((compose ast:ports ast:component) ast)))} [FD= #.component _#.behaviour _Component(true) \ diff(Events,{|illegal,#.port |}) \ {#
 (map-ports #{#
    (comma-join
        (map (lambda (x) (string-join (map ->string (list .port x)) ".")) (filter
