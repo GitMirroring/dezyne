@@ -21,7 +21,7 @@
 //
 // Code:
 
-interface I123
+interface I
 {
   enum Status { Yes, No };
 
@@ -29,6 +29,8 @@ interface I123
 
   behaviour
   {
+    bool dummy = false;
+
     on done:
     {
       [true] { reply(Status.Yes); }
@@ -45,6 +47,8 @@ interface U
 
   behaviour
   {
+    bool dummy = false;
+
     on what:
     {
       [true]
@@ -59,27 +63,29 @@ interface U
   }
 }
 
-component C1
+component C
 {
-  provides I123 i;
+  provides I i;
   requires U u;
 
   behaviour
   {
+    bool dummy = false;
+
     [true]
     {
       on i.done:
       {
         U.Status s = u.what;
 
-        // if(s == u.Status.Ok)
-        // {
-        //   reply(i.Status.Yes);
-        // }
-        // else
-        // {
-        reply(I123.Status.No);
-        // }
+        if(s == u.Status.Ok)
+        {
+          reply(I.Status.Yes);
+        }
+        else
+        {
+          reply(I.Status.No);
+        }
       }
     }
   }

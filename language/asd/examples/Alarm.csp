@@ -4,11 +4,8 @@ semi(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
 assign(F') = \ P', V' @ P'(F'(V'))
 
 
-datatype event_alphabet =
-arm | deactivated | detected | disable | disabled | disarm | enable | inevitable | optional | triggered | turnoff | turnon | return
-
-datatype enumeration_alphabet =
-Armed | Disabled | Disabling | Disarmed | Disarming | Enabled | Off | On | Triggered
+datatype event_enumeration_alphabet =
+Armed | Disabled | Disabling | Disarmed | Disarming | Enabled | Off | On | Triggered | arm | deactivated | detected | disable | disabled | disarm | enable | inevitable | optional | triggered | turnoff | turnon | return
 
 channel illegal
 

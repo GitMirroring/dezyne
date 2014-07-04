@@ -796,7 +796,7 @@ assign(\\(s,b,c) @ (s,b,c))))),
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform-return
+          (ast-transform
 
            c-reply-ast
 
@@ -811,9 +811,38 @@ assign(\\(s,b,c) @ (s,b,c))))),
           '(on ((trigger i done))
                (semi
                 (semi
-                 (assign (variable (type U (type Status)) s (value u what)))
-                 (if (== s (literal u Status Ok))
+                 (assign
+                  (variable (type U (type Status)) s (value u what)))
+                 (if () (expression (== s (literal u Status Ok)))
                      (reply (literal I Status Yes))
                      (reply (literal I Status No))))
                 (return))
                (the-end ()))))
+
+(pass-if "csp-transform-variable"
+         (diff-noisy-equal?
+
+          ;; from:
+          (csp-transform
+
+           c-reply-ast
+
+           '(on ((trigger i done))
+               (semi
+                (semi
+                 (assign
+                  (variable (type U (type Status)) s (value u what)))
+                 (if () (expression (== s (literal u Status Ok)))
+                     (reply (literal I Status Yes))
+                     (reply (literal I Status No))))
+                (return))
+               (the-end ())))
+
+          ;; via:
+          "i?x:{done} ->
+semi(semi(\\P',V' @ u!what -> u?s -> P'(V'),
+\\P,() @ ifthenelse(s == Status_Ok,
+\\P',V' @ i.Status_Yes -> P'(V'),
+\\P',V' @ i.Status_No -> P'(V')
+)(P,())),
+(\\P',V' @ i.return -> P'(V')))(\\() @ transition_end -> C__(()),())"))

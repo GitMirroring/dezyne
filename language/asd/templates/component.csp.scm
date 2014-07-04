@@ -28,11 +28,14 @@ semi(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
 assign(F') = \ P', V' @ P'(F'(V'))
 
 
-datatype event_alphabet =
-#(pipe-join (append (delete-duplicates (sort (apply append (map port-triggers ((compose ast:ports ast:component) ast))) symbol<)) '(return)))
-
-datatype enumeration_alphabet =
-#(pipe-join (delete-duplicates (sort (enum-values (ast:component ast)) symbol<)))
+datatype event_enumeration_alphabet =
+#(pipe-join (append
+             (delete-duplicates
+              (sort
+               (append (apply append (map port-triggers ((compose ast:ports ast:component) ast)))
+                       (enum-values (ast:component ast))
+                       (return-values (ast:component ast)))
+             symbol<)) '(return)))
 
 channel illegal
 

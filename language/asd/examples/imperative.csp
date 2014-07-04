@@ -4,11 +4,8 @@ semi(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
 assign(F') = \ P', V' @ P'(F'(V'))
 
 
-datatype event_alphabet =
-e | f | g | h | return
-
-datatype enumeration_alphabet =
-I | II | III | IV | S1 | S2
+datatype event_enumeration_alphabet =
+I | II | III | IV | S1 | S2 | e | f | g | h | return
 
 channel illegal
 
