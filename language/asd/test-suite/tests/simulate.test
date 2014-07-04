@@ -38,7 +38,7 @@
                                      } } #}))
     '(a a a))
    (map 
-    (lambda (x) (cons x '((on (a) (action b)) (action b)))) 
+    (lambda (x) (cons x (cons '() '((on (a) (action b)) (action b)))))
     '(a a a))))
 
 (pass-if "simulator-guard-trail"
@@ -59,21 +59,27 @@
                            } 
                      } #}))
      '(a a a))
-    '((a (on (a)
-        (compound
-          (guard t (assign t (! t)))
-          (guard (! t) (action b))))
-    (guard t (assign t (! t)))
-    (assign t (! t)))
- (a (on (a)
-        (compound
-          (guard t (assign t (! t)))
-          (guard (! t) (action b))))
-    (guard (! t) (action b))
-    (action b))
- (a (on (a)
-        (compound
-          (guard t (assign t (! t)))
-          (guard (! t) (action b))))
-    (guard (! t) (action b))
-    (action b)))))
+    '((a 
+       ((t . #t))
+       (on (a)
+           (compound
+            (guard t (assign t (! t)))
+            (guard (! t) (action b))))
+       (guard t (assign t (! t)))
+       (assign t (! t)))
+      (a 
+       ((t . #f))
+       (on (a)
+           (compound
+            (guard t (assign t (! t)))
+            (guard (! t) (action b))))
+       (guard (! t) (action b))
+       (action b))
+      (a
+       ((t . #f))
+       (on (a)
+           (compound
+            (guard t (assign t (! t)))
+            (guard (! t) (action b))))
+       (guard (! t) (action b))
+       (action b)))))
