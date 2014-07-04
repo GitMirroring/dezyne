@@ -96,7 +96,7 @@
 (define (make-parser)
   (lalr-parser
    (driver: lr)
-   (out-table: "asd.out")
+   ;; (out-table: "asd.out")
    (
     lbrace rbrace lparen rparen lbracket rbracket semicolon colon dot comma
     =
