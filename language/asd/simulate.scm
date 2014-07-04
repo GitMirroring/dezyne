@@ -97,14 +97,27 @@
                         (assoc-ref properties 'column)))
       ast))
 
+(define (from steps) (ast:name *model*)) ;; WTF?
+
+(define (to steps)
+  (and-let* ((actions (null-is-#f ((ast:statements-of-type 'action) steps)))
+             (action (last actions))
+             (event (ast:event action)))
+            (if (pair? event)
+                (ast:port-name event)
+                'out  ;; FIXME
+                )))
+
 (define (demo-trace tracepoint)
   (let ((event (car tracepoint))
         (state (cadr tracepoint))
         (steps (cddr tracepoint)))
     (cons event
-          (cons
-           (map ->string state)
-           (map trace-location steps)))))
+          (list
+           (list 'state (map (lambda (x) (list (car x) (cdr x)))  state))
+           (list 'from (from steps)) 
+           (list 'to (to steps)) 
+           (list 'trace (map trace-location steps))))))
 
 (define (event->ast symbol)
   "if SYMBOL is of form INTERFACE.TRIGGER, produce (trigger PORT EVENT)"

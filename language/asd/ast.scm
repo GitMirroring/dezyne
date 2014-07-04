@@ -100,6 +100,11 @@
 ;;      (type   type    field)
 ;;       ^class ^type   ^field;;
 ;;
+;;   SUB-AST
+;;      (action (trigger console arm))
+;;       ^class ^event
+;;
+
 
 ;;; Code:
 
@@ -120,6 +125,7 @@
   :use-module (language asd reader)
 
   :export (
+           action?
            ast
            behaviour
            behaviour?
@@ -135,6 +141,7 @@
            direction
            elements
            enum?
+           event
            event?
 	   event-name
            events
@@ -168,6 +175,7 @@
 	   signature
 	   signature?
            statement
+           statement?
            statements-of-type
            triggers
            type
@@ -210,6 +218,7 @@
 	   ((signature) (and (=1 (length ast)) (type? (car ast))))
          (else (eq? head type))))))
 
+(define (action? ast) (type-helper? 'action ast))
 (define (behaviour? ast) (type-helper? 'behaviour ast))
 (define (component? ast) (type-helper? 'component ast))
 (define (compound? ast) (type-helper? 'compound ast))
@@ -230,6 +239,9 @@
 (define (value? ast) (type-helper? 'value ast))
 (define (variable? ast) (type-helper? 'variable ast))
 (define (variables? ast) (type-helper? 'variables ast))
+
+(define (statement? ast)
+  (member (class ast) '(action assign compound guard if on reply variable)))
 
 (define (body ast)
   (match ast
@@ -270,6 +282,11 @@
       (set! *ast-alist* '(())))
   (for-each interface (interfaces ast))
   ast)
+
+(define (event ast)
+  (match ast
+    ((? action?) (cadr ast))
+    (_ (throw 'match-error  (format #f "~a:event: no match: ~a\n" (current-source-location) ast)))))
 
 (define (scope ast)
   (match ast
@@ -384,6 +401,8 @@
     ((? trigger?) 'trigger)
     ((? value?) 'value)
     ((? variable?) 'variable)
+    ('() #f)
+    (#f #f)
     (_ (car ast))))
 
 (define (statement ast)
@@ -460,13 +479,14 @@
 ;;; walkers
 
 (define ((statement-of-type type) statement)
-  (and (eq? (car statement) type) statement))
+  (and (pair? statement) (eq? (car statement) type) statement))
 
 (define ((statements-of-type type) statement)
   (match statement
     ((? (statement-of-type type)) (list statement))
-    (('compound t ...) (filter identity (apply append (map (statements-of-type type) t))))
+    (('compound t ...) (filter identity (apply append (map (statements-of-type type) t)))) ;; FIXME: do we want to go deep?! this is for flat list, no?
     (('guard expr s) (filter identity ((statements-of-type type) s)))
+    ((? statement?) '())
     ('() '())
     ((t ...) (filter identity (apply append (map (statements-of-type type) t))))
     (_ (throw 'match-error  (format #f "~a:statements-of-type, type: ~a: no match: ~a\n" (current-source-location) type statement)))))
