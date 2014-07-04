@@ -62,7 +62,7 @@
 
           ;; via:
           "i?x:{e} ->
-(\\P,V @ i.return -> P(V))(\\(s,b,c) @ i_B_((s,b,c)),(s,b,c))"))
+(\\P',V' @ i.return -> P'(V'))(\\(s,b,c) @ i_B_((s,b,c)),(s,b,c))"))
 
 
 (pass-if "ast-transform-return-reply"
@@ -99,8 +99,8 @@
                (the-end (s b c))))
 
           ;; via:
-          "i?x:{e} ->\nsemi(\\P,V @ i.Status_Yes -> P(V),
-(\\P,V @ i.return -> P(V)))(\\(s,b,c) @ i_B_((s,b,c)),(s,b,c))"))
+          "i?x:{e} ->\nsemi(\\P',V' @ i.Status_Yes -> P'(V'),
+(\\P',V' @ i.return -> P'(V')))(\\(s,b,c) @ i_B_((s,b,c)),(s,b,c))"))
 
 
 
@@ -159,8 +159,8 @@
 
           ;; via:
           "i?x:{e} ->
-semi(\\P,V @ i.Status_Yes -> P(V),
-(\\P,V @ i.return -> P(V)))(\\(s,b,c) @ i_B_((s,b,c)),(s,b,c))"))
+semi(\\P',V' @ i.Status_Yes -> P'(V'),
+(\\P',V' @ i.return -> P'(V')))(\\(s,b,c) @ i_B_((s,b,c)),(s,b,c))"))
 
 
 (pass-if "ast-transform-action"
@@ -191,8 +191,8 @@ semi(\\P,V @ i.Status_Yes -> P(V),
 
           ;; via:
           "i?x:{e} ->
-semi(\\P,V @ i!h -> P(V),
-(\\P,V @ i.return -> P(V)))(\\(s,b,c) @ i_B_((s,b,c)),(s,b,c))"))
+semi(\\P',V' @ i!h -> P'(V'),
+(\\P',V' @ i.return -> P'(V')))(\\(s,b,c) @ i_B_((s,b,c)),(s,b,c))"))
 
 (pass-if "ast-transform-illegal-action"
          (pretty-noisy-equal?
@@ -345,8 +345,8 @@ illegal -> STOP"))
 
           ;; via:
           "\\P,(s,b,c) @ ifthenelse(b,
-\\P,V @ P(V),
-\\P,V @ P(V)
+\\P',V' @ P'(V'),
+\\P',V' @ P'(V')
 )(P,(s,b,c))"))
 
 
@@ -422,8 +422,8 @@ illegal -> STOP"))
 
           ;; via:
           "semi(\\P,(s,b,c) @ ifthenelse(b,
-\\P,V @ P(V),
-\\P,V @ P(V)
+\\P',V' @ P'(V'),
+\\P',V' @ P'(V')
 )(P,(s,b,c)),
 assign(\\(s,b,c) @ (s,true,c)))"))
 
@@ -503,53 +503,53 @@ assign(\\(s,b,c) @ (s,true,c)))"))
           ;; via:
           "i?x:{e} ->
 semi(semi(\\P,(s,b,c) @ ifthenelse((c or b),
-                             semi(\\P,V @ i!f -> P(V),
-                                  \\P,V @ i!g -> P(V)),
-                             \\P,V @ P(V)
+                             semi(\\P',V' @ i!f -> P'(V'),
+                                  \\P',V' @ i!g -> P'(V')),
+                             \\P',V' @ P'(V')
                              )(P,(s,b,c)),
      semi(\\P,(s,b,c) @ ifthenelse(b,
                                   semi(\\P,(s,b,c) @ ifthenelse(c,
-                                                               \\P,V @ i!g -> P(V),
-                                                               \\P,V @ P(V)
+                                                               \\P',V' @ i!g -> P'(V'),
+                                                               \\P',V' @ P'(V')
                                                                )(P,(s,b,c)),
                                        semi(assign(\\(s,b,c) @ (s,b,false)),
-                                            \\P,V @ i!f -> P(V))),
+                                            \\P',V' @ i!f -> P'(V'))),
                                   \\P,(s,b,c) @ ifthenelse(c,
                                                           semi(assign(\\(s,b,c) @ (s,false,c)),
-                                                               \\P,V @ i!h -> P(V)),
+                                                               \\P',V' @ i!h -> P'(V')),
                                                           semi(assign(\\(s,b,c) @ (s,true,c)),
-                                                               \\P,V @ i!g -> P(V))
+                                                               \\P',V' @ i!g -> P'(V'))
                                                           )(P,(s,b,c))
                                   )(P,(s,b,c)),
           assign(\\(s,b,c) @ (S2,b,c)))),
-(\\P,V @ i.return -> P(V)))(\\(s,b,c) @ i_B_((s,b,c)),(s,b,c))"))
+(\\P',V' @ i.return -> P'(V')))(\\(s,b,c) @ i_B_((s,b,c)),(s,b,c))"))
 
 ;; "i?x:{e} ->
 ;; semi(\\P,(s,b,c) @ ifthenelse((c or b),
-;;                               semi(\\P,V @ i!f -> P(V),
-;;                                    \\P,V @ i!g -> P(V)),
-;;                               \\P,V @ P(V)
+;;                               semi(\\P',V' @ i!f -> P'(V'),
+;;                                    \\P',V' @ i!g -> P'(V')),
+;;                               \\P',V' @ P'(V')
 ;;                               )(P,(s,b,c)),
-;;      semi(\\P,(s,b,c) @ ifthenelse(b,semi(\\P,(s,b,c) @ ifthenelse(c,\\P,V @ i!g -> P(V),\\P,V @ P(V))(P,(s,b,c)),semi(assign(\\(s,b,c) @ (s,b,false)),\\P,V @ i!f -> P(V))),\\P,(s,b,c) @ ifthenelse(c,semi(assign(\\(s,b,c) @ (s,false,c)),\\P,V @ i!h -> P(V)),semi(assign(\\(s,b,c) @ (s,true,c)),\\P,V @ i!g -> P(V)))(P,(s,b,c)))(P,(s,b,c)),assign(\\(s,b,c) @ (S2,b,c))))(\\(s,b,c) @ i.return -> i_B_((s,b,c)),(s,b,c))"
+;;      semi(\\P,(s,b,c) @ ifthenelse(b,semi(\\P,(s,b,c) @ ifthenelse(c,\\P',V' @ i!g -> P'(V'),\\P',V' @ P'(V'))(P,(s,b,c)),semi(assign(\\(s,b,c) @ (s,b,false)),\\P',V' @ i!f -> P'(V'))),\\P,(s,b,c) @ ifthenelse(c,semi(assign(\\(s,b,c) @ (s,false,c)),\\P',V' @ i!h -> P'(V')),semi(assign(\\(s,b,c) @ (s,true,c)),\\P',V' @ i!g -> P'(V')))(P,(s,b,c)))(P,(s,b,c)),assign(\\(s,b,c) @ (S2,b,c))))(\\(s,b,c) @ i.return -> i_B_((s,b,c)),(s,b,c))"
 
 ;; to:
 ;; i?x:{e} ->
 ;; semi(\\P,(s,b,c) @ ifthenelse(c or b,
-;;                              \\P,V @ i!f->i!g->P(V),
-;;                              \\P,V @ P(V)
+;;                              \\P',V' @ i!f->i!g->P'(V'),
+;;                              \\P',V' @ P'(V')
 ;;                              )(P,(s,b,c)),
 ;;      semi(\\P,(s,b,c) @ ifthenelse(b,
 ;;                                   semi(\\P,(s,b,c) @ ifthenelse(c,
-;;                                                                \\P,V @ i!g->P(V),
-;;                                                                \\P,V @ P(V)
+;;                                                                \\P',V' @ i!g->P'(V'),
+;;                                                                \\P',V' @ P'(V')
 ;;                                                                )(P,(s,b,c)),
 ;;                                        semi(assign(\\(s,b,c) @ (s,b,false)),
-;;                                             \\P,V @ i!f->P(V))),
+;;                                             \\P',V' @ i!f->P'(V'))),
 ;;                                   \\P,(s,b,c) @ ifthenelse(c,
 ;;                                                           semi(assign(\\(s,b,c) @ (s,false,c)),
-;;                                                                \\P,V @ i!h->P(V)),
+;;                                                                \\P',V' @ i!h->P'(V')),
 ;;                                                           semi(assign(\\(s,b,c) @ (s,true,c)),
-;;                                                                \\P,V @ i!g->P(V))
+;;                                                                \\P',V' @ i!g->P'(V'))
 ;;                                                           )(P,(s,b,c))
 ;;                                   )(P,(s,b,c)),
 ;;           assign(\\(s,b,c) @ (S2,b,c)))) (\\(s,b,c) @ i.return -> i_B_((s,b,c)),(s,b,c))
@@ -602,7 +602,7 @@ semi(semi(\\P,(s,b,c) @ ifthenelse((c or b),
 
           ;; via:
           "j?x:{e} ->
-(\\P,V @ j.return -> P(V))(\\(s,b,c) @ transition_end -> c_B_((s,b,c)),(s,b,c))"))
+(\\P',V' @ j.return -> P'(V'))(\\(s,b,c) @ transition_end -> c_B_((s,b,c)),(s,b,c))"))
 
 
 (pass-if "c-ast-transform-provided-action"
@@ -646,7 +646,7 @@ illegal -> STOP"))
            '(action (trigger k e)))
 
           ;; via:
-          "\\P,V @ k!e -> k.return -> P(V)"))
+          "\\P',V' @ k!e -> k.return -> P'(V')"))
 
 (pass-if "c-csp-transform-provided-action"
          (diff-noisy-equal?
@@ -663,8 +663,8 @@ illegal -> STOP"))
 
           ;; via:
           "j?x:{e} ->
-semi(\\P,V @ j!h -> P(V),
-(\\P,V @ j.return -> P(V)))(\\(s,b,c) @ transition_end -> c_B_((s,b,c)),(s,b,c))"))
+semi(\\P',V' @ j!h -> P'(V'),
+(\\P',V' @ j.return -> P'(V')))(\\(s,b,c) @ transition_end -> c_B_((s,b,c)),(s,b,c))"))
 
 (pass-if "c-csp-transform-required-on"
          (noisy-equal?
@@ -680,7 +680,7 @@ semi(\\P,V @ j!h -> P(V),
 
           ;; via:
           "k?x:{e} ->
-(\\P,V @ P(V))(\\(s,b,c) @ transition_end -> c_B_((s,b,c)),(s,b,c))"))
+(\\P',V' @ P'(V'))(\\(s,b,c) @ transition_end -> c_B_((s,b,c)),(s,b,c))"))
 
 
 (pass-if "c-ast-transform-alarm-snippet"
@@ -728,11 +728,11 @@ semi(\\P,V @ j!h -> P(V),
           ;; via:
 
 "sensor?x:{triggered} ->
-semi(semi(\\P,V @ console!detected -> P(V),
-semi(\\P,V @ siren!turnon -> P(V),
+semi(semi(\\P',V' @ console!detected -> P'(V'),
+semi(\\P',V' @ siren!turnon -> P'(V'),
 semi(assign(\\(s,b,c) @ (s,b,c)),
 assign(\\(s,b,c) @ (s,b,c))))),
-(\\P,V @ P(V)))(\\(s,b,c) @ transition_end -> c_B_((s,b,c)),(s,b,c))"
+(\\P',V' @ P'(V')))(\\(s,b,c) @ transition_end -> c_B_((s,b,c)),(s,b,c))"
 ))
 
 
