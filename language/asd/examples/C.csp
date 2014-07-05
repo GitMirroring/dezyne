@@ -2,13 +2,12 @@ ifthenelse(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')
 semi(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
 assign(F') = \ P', V' @ P'(F'(V'))
 
-
 datatype event_enumeration_alphabet =
-return_Status_No | return_Status_Nok | return_Status_Ok | return_Status_Yes | done | what
+done | return_Status_No | return_Status_Nok | return_Status_Ok | return_Status_Yes | what
 
 channel illegal
 
-channel I,i: {done,done,return_Status_No,return_Status_Yes}
+channel I,i: {done,done,return_Status_Yes,return_Status_No}
 channel U,u: {what,what,return_Status_Ok,return_Status_Nok}
 
 I_(IG) = let

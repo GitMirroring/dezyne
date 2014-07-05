@@ -70,7 +70,7 @@ SINGLETHREADED = true
 
 channel transition_begin, transition_end
 
-channel reorder_in,reorder_out : {# (map (lambda (x) (list (ast:name x) ".return")) (filter ast:provides? ((compose ast:ports ast:component) ast)))}
+channel reorder_in,reorder_out : {# (map (lambda (x) (comma-join (map (lambda (y) (symbol-append (ast:name x) '. y)) (return-values-port x)))) (filter ast:provides? ((compose ast:ports ast:component) ast)))}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -109,7 +109,7 @@ transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
 Exclude = {#
-  (comma-join (list (->string (list .port '.return)) (map-ports
+  (comma-join (list (map (lambda (x) (comma-join (map (lambda (y) (symbol-append (ast:name x) '. y)) (return-values-port x)))) (filter ast:provides? ((compose ast:ports ast:component) ast))) (map-ports
 #{#(comma-join (map (lambda (x) (list .port "." (ast:name x))) (filter ast:out? (ast:events port)))) #}
    (filter ast:provides? ((compose ast:ports ast:component) ast)))
  (map-ports
