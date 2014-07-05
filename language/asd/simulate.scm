@@ -23,18 +23,17 @@
   :use-module (ice-9 getopt-long)
   :use-module (ice-9 match)
   :use-module (ice-9 and-let-star)
-  :use-module (ice-9 pretty-print)
   :use-module (ice-9 receive)
   :use-module (srfi srfi-1)
-
-  :use-module (json)
 
   :use-module (language asd ast:)
   :use-module (language asd gaiag)
   :use-module (language asd misc)
   :use-module (language asd parse)
+  :use-module (language asd pretty-print)
   :use-module (language asd reader)
-  :export (ast->
+
+  :export (ast->a
            explore-space
            walk-trail))
 
@@ -76,7 +75,7 @@
           (trace (if trail
                      (walk-trail model (with-input-from-string trail read))
                      (explore-space model))))
-     (mangle-trace trace))
+     (pretty-print (mangle-trace trace)))
    (newline)
    (stderr "state space: ~a\n" (length *state-space*))
   "")
@@ -84,8 +83,8 @@
 (define (mangle-trace trace)
   (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))
     (if json?
-        (scm->json (apply append (map json-trace trace)))
-        (pretty-print (map demo-trace trace)))))
+        (apply append (map json-trace trace))
+        (map demo-trace trace))))
 
 (define (explore-space ast)
   (simulate ast))
@@ -149,7 +148,7 @@
                  `((file . ,(assoc-ref properties 'filename))
                    (line . ,(assoc-ref properties 'line))
                    (colum . ,(assoc-ref properties 'column))))
-       '())))
+      '())))
 
 (define (json-trace tracepoint)
   (let* ((event (car tracepoint))

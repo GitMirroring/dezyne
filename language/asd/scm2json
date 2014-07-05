@@ -28,7 +28,10 @@ exec guile -L ../.. -L . -e main -s $0 "$@"
   :use-module (system repl error-handling)
   :use-module (ice-9 getopt-long)
 
+  :use-module (srfi srfi-10)
+
   :use-module (json)
+  :use-module (language asd hash)
   :use-module (language asd misc))
 
 (define (parse-opts args)

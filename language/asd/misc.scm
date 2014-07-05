@@ -220,5 +220,5 @@
     table))
 
 (define (hash-table->alist table)
-  (hash-map->list const table))
+  (hash-map->list cons table))
 

@@ -81,7 +81,7 @@ Examples:
   ./gaiag -l csp examples/Alarm.asd
   ./gaiag -l wfc examples/double-on.asd
   ./gaiag -l simulate -t '(a a a a)' examples/if.asd
-  ./gaiag -l simulate -t '(a a a a)' -j examples/if.asd
+  ./gaiag -l simulate -t '(a a a a)' -j examples/if.asd | ./scm2json
 ")
 	   (exit (or (and usage? 2) 0)))
      options)))
