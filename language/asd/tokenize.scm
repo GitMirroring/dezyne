@@ -45,6 +45,7 @@
          provides
          reply
          requires
+         system
          void
          )))
 
@@ -61,6 +62,7 @@
     (";" . semicolon)
     ("<" . <)
     (">" . >)
+    ("<=>" . <=>)
     ("<=" . <=)
     (">=" . >=)
     ("==" . ==)
@@ -81,9 +83,43 @@
 
 (module-define! (resolve-module '(language ecmascript tokenize)) '*keywords* *keywords*)
 
+(module-define! (resolve-module '(language ecmascript tokenize)) '*punctuation* *punctuation*)
+
 (module-define! (resolve-module '(language ecmascript tokenize)) '*future-reserved-words* *future-reserved-words*)
 
 (module-define! (resolve-module '(language ecmascript tokenize)) '*div-punctuation* *div-punctuation*)
+
+;; FIXME: unchanged copy from ecmascript
+;; find a way to have it use our punctuation
+(define read-punctuation
+  (let ((punc-tree (let lp ((nodes '()) (puncs *punctuation*))
+                     (cond ((null? puncs)
+                            nodes)
+                           ((assv-ref nodes (string-ref (caar puncs) 0))
+                            => (lambda (node-tail)
+                                 (if (= (string-length (caar puncs)) 1)
+                                     (set-car! node-tail (cdar puncs))
+                                     (set-cdr! node-tail
+                                               (lp (cdr node-tail)
+                                                   `((,(substring (caar puncs) 1)
+                                                      . ,(cdar puncs))))))
+                                 (lp nodes (cdr puncs))))
+                           (else
+                            (lp (cons (list (string-ref (caar puncs) 0) #f) nodes)
+                                puncs))))))
+    (lambda (port loc)
+      (let lp ((c (peek-char port)) (tree punc-tree) (candidate #f))
+        (cond
+         ((assv-ref tree c)
+          => (lambda (node-tail)
+               (read-char port)
+               (lp (peek-char port) (cdr node-tail) (car node-tail))))
+         (candidate
+          (make-lexical-token candidate loc #f))
+         (else
+          (syntax-error "bad syntax: character not allowed" loc c)))))))
+
+(module-define! (resolve-module '(language ecmascript tokenize)) 'read-punctuation read-punctuation)
 
 (define (read-identifier port loc)
   (let lp ((c (peek-char port)) (chars '()))

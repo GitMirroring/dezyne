@@ -108,7 +108,7 @@
     if else reply
     (left: or and ! * / + -)
     (left: bool enum void int)
-    (nonassoc: == !=)
+    (nonassoc: == != <=>)
     )
    
    (program
@@ -121,7 +121,8 @@
    (model-spec
     (import-list) : $1
     (interface-spec) : $1
-    (component-spec) : $1)
+    (component-spec) : $1
+    (system-spec) : $1)
 
    (import-list
     () : '(imports)
@@ -132,6 +133,23 @@
 
    (component-spec
     (component Identifier lbrace port-list optional-behaviour rbrace) : `(,$1 ,$2 ,$4 ,$5))
+
+   (system-spec
+    (system Identifier lbrace port-list system-statement-list rbrace) : `(,$1 ,$2 ,$4 ,$5))
+
+   (system-statement-list
+    () : '(system-statement)
+    (system-statement-list system-statement) : (append $1 (list $2)))
+
+   (system-statement
+    (binding) : $1
+    (instantiation) : $1)
+
+   (binding
+    (compound-identifier <=> compound-identifier semicolon) : `(bind ,$1 ,$3))
+
+   (instantiation
+    (compound-identifier Identifier semicolon) : `(instantiate ,$1 ,$2))
 
    (import-spec
     (import Identifier semicolon) : `(,$1 ,$2))
