@@ -127,6 +127,8 @@
       (display (number->string (exact->inexact scm)) port)
       (display (number->string scm) port)))
 
+(define (->string x) (if (symbol? x) (symbol->string x) x))
+
 (define (json-build-string scm port escape)
   (display "\"" port)
   (display
@@ -143,7 +145,7 @@
                      ((#\ht) '(#\\ #\t))
                      ((#\/) (if escape `(#\\ ,c) (list c)))
                      (else (string->list (build-char-string c)))))
-                 (string->list scm))))
+                 (string->list (->string scm)))))
    port)
   (display "\"" port))
 
