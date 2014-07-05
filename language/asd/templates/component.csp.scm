@@ -26,7 +26,6 @@ ifthenelse(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')
 semi(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
 assign(F') = \ P', V' @ P'(F'(V'))
 
-
 datatype event_enumeration_alphabet =
 #(pipe-join (append
              (delete-duplicates
@@ -34,12 +33,12 @@ datatype event_enumeration_alphabet =
                (append (apply append (map port-triggers ((compose ast:ports ast:component) ast)))
                        (enum-values (ast:component ast))
                        (return-values (ast:component ast)))
-             symbol<)) '(return)))
+             symbol<))))
 
 channel illegal
 
 # (map-ports #{
-channel #.interface ,#.port : {#(comma-join (append (port-triggers port) '(return)))}
+channel #.interface ,#.port : {#(comma-join (append (port-triggers port) (return-values-port port)))}
 #} ((compose ast:ports ast:component) ast))
 # (map-ports #{
 #.interface _#.behaviour(IG) = let
@@ -109,8 +108,8 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {#.port .return,#
-  (comma-join (list (map-ports
+Exclude = {#
+  (comma-join (list (->string (list .port '.return)) (map-ports
 #{#(comma-join (map (lambda (x) (list .port "." (ast:name x))) (filter ast:out? (ast:events port)))) #}
    (filter ast:provides? ((compose ast:ports ast:component) ast)))
  (map-ports

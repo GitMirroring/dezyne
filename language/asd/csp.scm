@@ -154,11 +154,22 @@
           values
           (loop (cdr ports) (append values (apply append (map ast:elements (ast:types (ast:behaviour (ast-norm (ast:type (car ports)))))))))))))
 
+(define (return-value enum)
+  (map (lambda (value) (symbol-append 'return '_ (ast:name enum) '_ value)) (ast:elements enum)))
+
+(define (add-return-if-empty returns)
+  (if (null? returns)
+      '(return)
+      returns))
+
+(define (return-values-port port)
+  (add-return-if-empty (map return-value (ast:types (ast-norm (ast:type port))))))
+
 (define (return-values comp)
     (let loop ((ports (ast:ports comp)) (result '()))
       (if (null? ports)
           result
-          (loop (cdr ports) (append result (apply append (map (lambda (x) (map (lambda (y) (string->symbol (->string (list (ast:name x) "_" y)))) (ast:elements x))) (ast:types (ast-norm (ast:type (car ports)))))))))))
+          (loop (cdr ports) (append result (return-values-port (car ports)))))))
 
 (define (var-names model)
   (map ast:name (ast:variables (ast:behaviour model))))
@@ -321,7 +332,7 @@
        (('the-end vars) (let* ((transition-end (if component? "transition_end -> "))
                               (vars (comma-join vars))
                               (end (if (not inevitable-optional?) (list transition-end))))
-			  (list "(\\(" vars ") @ " end model-name "_" behaviour "_" "((" vars ")),(" vars "))")))
+			  (list "(\\V' @ " end model-name "_" behaviour "_" "(V'),(" vars "))")))
        (('action 'illegal) "illegal -> STOP")
        (('action event)
         (let* ((channel (if (ast:interface? model) model-name (ast:port-name event)))

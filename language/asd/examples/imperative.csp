@@ -2,7 +2,6 @@ ifthenelse(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')
 semi(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
 assign(F') = \ P', V' @ P'(F'(V'))
 
-
 datatype event_enumeration_alphabet =
 I | II | III | IV | S1 | S2 | e | f | g | h | return
 
@@ -34,7 +33,7 @@ semi(assign(\(s,b,c) @ (s,true,c)),
 )(P,(s,b,c))
 )(P,(s,b,c)),
 assign(\(s,b,c) @ (S2,b,c)))),
-(\P',V' @ iimperative.return -> P'(V')))(\(s,b,c) @ iimperative__((s,b,c)),(s,b,c)))
+(\P',V' @ iimperative.return -> P'(V')))(\V' @ iimperative__(V'),(s,b,c)))
 []
 (s == S2) & (
 iimperative?x:{e} ->
@@ -48,7 +47,7 @@ assign(\(s,b,c) @ (s,b,false))
 )(P,(s,b,c)),
 semi(assign(\(s,b,c) @ (s,not (b),c)),
 assign(\(s,b,c) @ (S1,b,c)))),
-(\P',V' @ iimperative.return -> P'(V')))(\(s,b,c) @ iimperative__((s,b,c)),(s,b,c)))
+(\P',V' @ iimperative.return -> P'(V')))(\V' @ iimperative__(V'),(s,b,c)))
 
 within iimperative__((S1,false,true)) 
 
@@ -61,12 +60,12 @@ semi(semi(\P',V' @ i!f -> P'(V'),
 semi(\P',V' @ i!g -> P'(V'),
 semi(\P',V' @ i!h -> P'(V'),
 assign(\(state) @ (II))))),
-(\P',V' @ i.return -> P'(V')))(\(state) @ transition_end -> imperative__((state)),(state)))
+(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> imperative__(V'),(state)))
 []
 (state == II) & (
 i?x:{e} ->
 semi(assign(\(state) @ (III)),
-(\P',V' @ i.return -> P'(V')))(\(state) @ transition_end -> imperative__((state)),(state)))
+(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> imperative__(V'),(state)))
 []
 (state == III) & (
 i?x:{e} ->
@@ -75,13 +74,13 @@ semi(\P',V' @ i!g -> P'(V'),
 semi(\P',V' @ i!g -> P'(V'),
 semi(\P',V' @ i!f -> P'(V'),
 assign(\(state) @ (IV)))))),
-(\P',V' @ i.return -> P'(V')))(\(state) @ transition_end -> imperative__((state)),(state)))
+(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> imperative__(V'),(state)))
 []
 (state == IV) & (
 i?x:{e} ->
 semi(semi(\P',V' @ i!h -> P'(V'),
 assign(\(state) @ (I))),
-(\P',V' @ i.return -> P'(V')))(\(state) @ transition_end -> imperative__((state)),(state)))
+(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> imperative__(V'),(state)))
 )
 within imperative__((I))
 
