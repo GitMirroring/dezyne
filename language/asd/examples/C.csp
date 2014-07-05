@@ -1,4 +1,3 @@
-action(S') = \ P', V' @ S'; P'(V')
 ifthenelse(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')
 semi(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
 assign(F') = \ P', V' @ P'(F'(V'))
@@ -37,13 +36,13 @@ C_(IIG,IG) = let
 C__((dummy)) = transition_begin -> (
 (true) & (
 i?x:{done} ->
-semi(\P',V' @ u!what -> u?s -> P'(s),
-\P',(s) @ ifthenelse(s == return_Status_Ok,
+semi(\P',V' @ u!what -> u?s -> P'((V',s)),
+\P',(V',s) @ ifthenelse(s == return_Status_Ok,
 \P',V' @ i.return_Status_Yes -> P'(V'),
 \P',V' @ i.return_Status_No -> P'(V')
-)(P',(s))) (\(dummy) @ transition_end -> C__((dummy)),(dummy)))
+)(P',V')) (\(dummy) @ transition_end -> C__((dummy)),(dummy)))
 )
-within C__((return_Status_Ok))
+within C__((false))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
