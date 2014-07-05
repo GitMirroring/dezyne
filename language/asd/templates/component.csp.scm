@@ -22,7 +22,6 @@
 ;;; 
 ;;; Code:
 
-action(S') = \ P', V' @ S'; P'(V')
 ifthenelse(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')
 semi(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
 assign(F') = \ P', V' @ P'(F'(V'))
