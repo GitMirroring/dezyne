@@ -28,6 +28,7 @@
 
   :use-module (language asd ast:)
   :use-module (language asd gaiag)
+  :use-module (language asd hash)
   :use-module (language asd misc)
   :use-module (language asd parse)
   :use-module (language asd pretty-print)
@@ -141,14 +142,18 @@
                     (ast:port-name event))
           'out)))
 
+(eval-when (expand)
+  (define-reader-ctor 'chash
+    (lambda elems
+      `(hash-table ,@elems))))
+
 (define (json-location ast)
-  (alist->hash-table
-   (or (and-let* ((loc (source-location ast))
-                  (properties (source-location->source-properties loc)))
-                 `((file . ,(assoc-ref properties 'filename))
-                   (line . ,(assoc-ref properties 'line))
-                   (colum . ,(assoc-ref properties 'column))))
-      '())))
+  (or (and-let* ((loc (source-location ast))
+                 (properties (source-location->source-properties loc)))
+                #,(chash ('file (assoc-ref properties 'filename))
+                         ('line (assoc-ref properties 'line))
+                         ('colum (assoc-ref properties 'column))))
+      #,(chash)))
 
 (define (json-trace tracepoint)
   (let* ((event (car tracepoint))
@@ -160,30 +165,27 @@
              (class (and=> statement ast:class))
              (type (if (eq? class 'assign) 'update 'transition))
              (message
-              (alist->hash-table
-               (if (eq? type 'update)
-                   (let ((variable (ast:variable statement)))
-                     `((type . update)
-                       (comp . ,model)
-                       (,variable . ,(->symbol (var state variable)))))
-                   (let ((kind (assoc-ref '((#f . return) 
-                                            (on . call)
-                                            (action . call))
-                                          (ast:class statement)))
-                         (json-event (cond 
-                                      ((ast:on? statement) (ast:event-name event))
-                                      ((ast:action? statement) (ast:event-name (ast:event statement)))
-                                      (else 'return))))
-                     `((type . transition)
-                       (kind . ,kind)
-                       (from . ,(from event statement)) 
-                       (to  . ,(to statement))
-                       (event . ,json-event)
-                       (location . 
-                                 ,(alist->hash-table
-                                   `((begin . ,(json-location statement))
-                                     (end . ,(json-location statement)))))))))
-              )) ;;TODO
+              (if (eq? type 'update)
+                  (let ((variable (ast:variable statement)))
+                    #,(chash ('type 'update)
+                             ('comp model)
+                             (variable (->symbol (var state variable)))))
+                  (let ((kind (assoc-ref '((#f . return) 
+                                           (on . call)
+                                           (action . call))
+                                         (ast:class statement)))
+                        (json-event (cond 
+                                     ((ast:on? statement) (ast:event-name event))
+                                     ((ast:action? statement) (ast:event-name (ast:event statement)))
+                                     (else 'return))))
+                    #,(chash ('type 'transition)
+                             ('kind kind)
+                             ('from (from event statement)) 
+                             ('to (to statement))
+                             ('event json-event)
+                             ('location
+                              #,(chash ('begin (json-location statement))
+                                       ('end (json-location statement))))))))) ;;TODO
         (if (not statement)
             (list message)
             (cons message (loop (cdr statements))))))))
