@@ -20,7 +20,11 @@
 //
 // Code:
 
-import Alarm;
+import alarmcomponent;
+
+import Sensor;
+import Siren;
+
 
 system AlarmSystem
 {

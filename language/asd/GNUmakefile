@@ -54,6 +54,8 @@ baseline: dummy
 	$(asdgen) -l cpp baseline/Console.asd && mv Console* baseline
 	$(asdgen) -l cpp baseline/Sensor.asd && mv Sensor* baseline
 	$(asdgen) -l cpp baseline/Siren.asd && mv Siren* baseline
+	-cp /home/janneke/vc/verum/development/generator/baseline/AlarmSystem* baseline
+	-$(asdgen) -l cpp baseline/AlarmSystem.asd && mv Alarm* baseline
 	$(asdgen) -l csp baseline/Alarm.asd && mv Alarm.csp baseline
 
 test: check
@@ -66,7 +68,7 @@ ast: compile
 	./gaiag examples/interface-reply-events.asd
 	./gaiag examples/interface-behaviour.asd
 	./gaiag examples/interface-imports.asd
-	./gaiag examples/alarm-component.asd
+	./gaiag examples/alarmcomponent.asd
 
 pretty: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
@@ -96,6 +98,10 @@ c++: compile baseline
 	$(diff) baseline/AlarmComponent.h out
 	$(diff) baseline/AlarmComponent.cpp out | $(sed)
 	cd out && g++ -I ../../../examples/codegen/asd_cpp_runtime --std=c++11 -c AlarmComponent.cpp
+	cd out && ../gaiag -l c++ examples/AlarmSystem.asd
+	$(diff) baseline/AlarmSystemComponent.hpp out | $(sed)	
+	$(diff) baseline/AlarmSystemComponent.cpp out | $(sed)	
+	cd out && g++ -I ../../../examples/codegen/asd_cpp_runtime --std=c++11 -c AlarmSystemComponent.cpp
 
 wfc: compile
 	-./gaiag -l wfc examples/double-on.asd

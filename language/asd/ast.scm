@@ -28,6 +28,9 @@
 ;;
 ;;          (component Alarm   (ports) (behaviour))
 ;;           ^class    ^name   ^ports  ^behaviour
+;;
+;;          (system    AlarmSystem  (ports) (compound))
+;;           ^class    ^name        ^ports  ^statement
 ;;         )
 ;; 
 ;;          
@@ -130,6 +133,8 @@
            ast
            behaviour
            behaviour?
+           bind?
+           binds
            body
            bottom?
            class
@@ -155,6 +160,9 @@
            guard?
            guard-equals?
            in?
+           instance
+           instance?
+           instances
            interface
            interfaces
            interface?
@@ -179,6 +187,8 @@
            statement
            statement?
            statements-of-type
+           system
+           system?
            triggers
            type
            type-name-component
@@ -210,7 +220,7 @@
 (define (types-element ast) (element ast 'types))
 (define (variables-element ast) (element ast 'variables))
 
-(define (model? ast) (or (interface? ast) (component? ast)))
+(define (model? ast) (or (interface? ast) (component? ast) (system? ast)))
 (define (type-helper? type ast)
   (and (pair? ast)
        (let ((head (car ast)))
@@ -223,12 +233,14 @@
 (define (action? ast) (type-helper? 'action ast))
 (define (assign? ast) (type-helper? 'assign ast))
 (define (behaviour? ast) (type-helper? 'behaviour ast))
+(define (bind? ast) (type-helper? 'bind ast))
 (define (component? ast) (type-helper? 'component ast))
 (define (compound? ast) (type-helper? 'compound ast))
 (define (enum? ast) (type-helper? 'enum ast))
 (define (event? ast) (type-helper? 'event ast))
 (define (events? ast) (type-helper? 'events ast))
 (define (guard? ast) (type-helper? 'guard ast))
+(define (instance? ast) (type-helper? 'instance ast))
 (define (interface? ast) (type-helper? 'interface ast))
 (define (imports? ast) (type-helper? 'imports ast))
 (define (literal? ast) (type-helper? 'literal ast))
@@ -236,6 +248,7 @@
 (define (port? ast) (type-helper? 'port ast))
 (define (ports? ast) (type-helper? 'ports ast))
 (define (signature? ast) (type-helper? 'signature ast))
+(define (system? ast) (type-helper? 'system ast))
 (define (trigger? ast) (type-helper? 'trigger ast))
 (define (type? ast) (type-helper? 'type ast))
 (define (types? ast) (type-helper? 'types ast))
@@ -244,7 +257,7 @@
 (define (variables? ast) (type-helper? 'variables ast))
 
 (define (statement? ast)
-  (member (class ast) '(action assign compound guard if on reply variable)))
+  (member (class ast) '(action assign bind compound guard if instance on reply variable)))
 
 (define (body ast)
   (match ast
@@ -285,6 +298,20 @@
       (set! *ast-alist* '(())))
   (for-each interface (interfaces ast))
   ast)
+
+(define (binds ast)
+  (match ast
+    ((? compound?) ((statements-of-type 'bind) ast))
+    ((? system?) (binds (statement ast)))
+    ((? model?) '())
+    (_ (throw 'match-error (format #f "~a:binds: no match: ~a\n" (current-source-location) ast)))))
+
+(define (instances ast)
+  (match ast
+    ((? compound?) ((statements-of-type 'instance) ast))
+    ((? system?) (instances (statement ast)))
+    ((? model?) '())
+    (_ (throw 'match-error (format #f "~a:instances: no match: ~a\n" (current-source-location) ast)))))
 
 (define (event ast)
   (match ast
@@ -352,9 +379,14 @@
       ast
       (assoc 'component ast)))
 
+(define (system ast) 
+  (if (system? ast)
+      ast
+      (assoc 'system ast)))
+
 (define (ports ast)
   (match ast
-    ((? component?) (body (ports-element ast)))
+    ((or (? component?) (? system?)) (body (ports-element ast)))
     ((? interface?) '())
     (_ (throw 'match-error  (format #f "~a:ports: no match: ~a\n" (current-source-location) ast)))))
 
@@ -366,10 +398,10 @@
             (body
              (match ast
                ((? ports?) ast)
-               ((? component?) (ports-element ast))
+               ((or (? component?) (? system?)) (ports-element ast))
                (_ (throw 'match-error  (format #f "~a:port: no match: ~a\n" (current-source-location) ast))))))
       (match ast
-        ((? component?) (assoc 'provides (ports ast))))))
+        ((or (? component?) (? system?)) (assoc 'provides (ports ast))))))
 
 (define (direction ast) 
   (match ast 
@@ -400,7 +432,7 @@
 (define (name ast)
   (match ast
     ((or (? behaviour?) (? enum?) (? model?)) (or (and (>1 (length ast)) (cadr ast)) ""))
-    ((or (? event?) (? port?) (? variable?)) (caddr ast))
+    ((or (? event?) (? instance?) (? port?) (? variable?)) (caddr ast))
     (_ (throw 'match-error  (format #f "~a:name: no match: ~a\n" (current-source-location) ast)))))
 
 (define (class ast)
@@ -417,6 +449,7 @@
 
 (define (statement ast)
   (match ast
+    ((? system?) (or (assoc 'compound (body ast)) (make 'compound '())))
     ((? model?) (statement (behaviour ast)))
     ((? behaviour?) (or (assoc 'compound (body ast)) (make 'compound '())))
     ((? guard?) (caddr ast))
@@ -441,6 +474,8 @@
     ((or (? interface?) (? behaviour?)) (body (types-element ast)))
     ((? component?) (types (behaviour ast)))
     ((? port?) (types (import-ast (type ast))))
+    ((? system?) '())
+    ('() ast)
     (_ (throw 'match-error  (format #f "~a:types: no match: ~a\n" (current-source-location) ast)))))
 
 (define (variables ast)

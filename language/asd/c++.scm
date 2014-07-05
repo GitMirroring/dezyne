@@ -19,6 +19,7 @@
 (read-set! keywords 'prefix)
 
 (define-module (language asd c++)
+  :use-module (ice-9 curried-definitions)
   :use-module (ice-9 match)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 rdelim)
@@ -41,35 +42,41 @@
 (define (ast-> ast)
   (set! *ast* ast)
   (module-define! (resolve-module '(language asd c++)) 'ast ast)  ;; FIXME
-  (and-let* ((i (ast:interface ast))
-             (file-name (list (ast:name i) 'Interface.h)))
-            (dump-output file-name 
-                         (lambda ()
-                           (traditional-interface (c++-module ast)))))
-  (and-let* ((comp (ast:component ast))
-             (name (ast:name comp)))
-            (dump-output (list name 'Component.h)
-                         (lambda ()
-                           (traditional-component-header (c++-module ast))))
-            (dump-output (list name 'Component.cpp)
-                         (lambda ()
-                           (traditional-component (c++-module ast))))
-            (dump-output (list name '-c2.cc)
-                         (lambda ()
-                           (november (c++-module ast)))))
+  (and=> (ast:interface ast) dump-interface)
+  (and=> (ast:component ast) dump-component)
+  (and=> (ast:system ast) dump-system)
   "")
 
-(define (traditional-interface module)
-  (animate-file 'templates/interface.hh.scm module))
 
-(define (traditional-component-header module)
-  (animate-file 'templates/component.hh.scm module))
+(define (dump-interface model)
+  (let ((file-name (list (ast:name model) 'Interface.h)))
+    (dump-output file-name 
+                 (lambda ()
+                   ((animate-template 'interface.hh.scm) (c++-module ast))))))
 
-(define (traditional-component module)
-  (animate-file 'templates/component.cc.scm module))
+(define (dump-component model)
+  (let ((name (ast:name model)))
+    (dump-output (list name 'Component.h)
+                 (lambda ()
+                   ((animate-template 'component.hh.scm) (c++-module ast))))
+    (dump-output (list name 'Component.cpp)
+                 (lambda ()
+                   ((animate-template 'component.cc.scm) (c++-module ast))))
+    (dump-output (list name '-c2.cc)
+                 (lambda ()
+                   ((animate-template 'c2.cc.scm) (c++-module ast))))))
 
-(define (november module)
-  (animate-file 'templates/c2.cc.scm module))
+(define (dump-system model)
+  (let ((name (ast:name model)))
+    (dump-output (list name 'Component.h)
+                 (lambda ()
+                   ((animate-template 'system.hh.scm) (c++-module ast))))
+    (dump-output (list name 'Component.cpp)
+                 (lambda ()
+                   ((animate-template 'system.cc.scm) (c++-module ast))))))
+
+(define ((animate-template file-name) module)
+  (animate-file (symbol-append 'templates/ file-name) module))
 
 (define (c++-module ast)
   (let ((module (make-module 31 (list 
@@ -83,6 +90,11 @@
               (module-define! module '.model (ast:name int)))
     (and-let* ((comp (ast:component ast)))
               (module-define! module '.component (ast:name comp))
+              (module-define! module '.interface (ast:type (ast:port comp)))
+              (module-define! module '.model (ast:name comp)))
+    (and-let* ((comp (ast:system ast)))
+              (module-define! module '.component (ast:name comp))
+              (module-define! module '.interface (ast:type (ast:port comp)))
               (module-define! module '.model (ast:name comp)))
     module))
 
@@ -299,6 +311,38 @@
                 (.endif-typed . ,(lambda (port) (if (ast:typed? port) "" "#endif")))))))))
        ports))
 
+(define (map-instances string instances)
+  (map (lambda (instance)
+         (save-module-excursion
+          (lambda ()
+            (animate-string 
+             string 
+             (animate-module-populate
+              (c++-module ast) 
+              instance
+              `((instance . ,identity)
+                (.instance . ,ast:name)))))))
+       instances))
+
+(define (map-binds string binds)
+  (map (lambda (bind)
+         (save-module-excursion
+          (lambda ()
+            (animate-string 
+             string 
+             (animate-module-populate
+              (c++-module ast) 
+              bind
+              `((.left . left)
+                (.left-api . left-api)
+                (.left-callback . left-callback)
+                (.left-interface . left-interface)
+                (.left-postfix . left-postfix)
+
+                (.right . right)
+                (.right-postfix . right-postfix)))))))
+       binds))
+
 (define (map-events string events)
   (map (lambda (event)
          (save-module-excursion
@@ -330,11 +374,13 @@
                   (.name . ,ast:name)
                   (.event . ,ast:name)
                   (.statement . 
-                              ,(lambda (event)
-                                 (parameterize ((statements.port port) 
-                                                (statements.event event))
-                                   (statements->string
-                                    ((compose ast:body ast:statement ast:behaviour ast:component) ast)))))
+                              ,(if (ast:component ast) 
+                                   (lambda (event)
+                                     (parameterize ((statements.port port) 
+                                                    (statements.event event))
+                                       (statements->string
+                                        ((compose ast:body ast:statement ast:behaviour ast:component) ast))))
+                                   ""))
                   (.return-interface-type . ,(lambda (event) (return-interface-type (ast:type port) event)))
                   (.return-context-get . ,(lambda (event) (return-context-get (ast:type port) event))))))))))
        events))
