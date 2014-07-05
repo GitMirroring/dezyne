@@ -138,7 +138,7 @@
     (system Identifier lbrace port-list system-statement-list rbrace) : `(,$1 ,$2 ,$4 ,$5))
 
    (system-statement-list
-    () : '(system-statement)
+    () : '(compound)
     (system-statement-list system-statement) : (append $1 (list $2)))
 
    (system-statement
