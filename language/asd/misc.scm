@@ -32,26 +32,31 @@
 
   :use-module (language asd fifo)
   :export (
+           *eof*
+           *eof*-is-#f
+           ->join
+           ->string
            =0
-           >0
            =1
-           >1
            =2
+           >0
+           >1
            >2
+           alist->hash-table
            diff
+           dump-file
+           dump-output
            eat-one-space
            eat-one-space-or-newline
-           fand
            f-is-null
+           fand
            for
            gulp-file
            gulp-port
            hash-read-string
-           dump-file
-           dump-output
-           *eof*
-           *eof*-is-#f
+           hash-table->alist
            join
+           list<
            null-is-#f
            one-is-#f
            pretty-string
@@ -59,11 +64,9 @@
            stdout
            string-sub
            symbol<
-           list<
-           ->string
            
            ;; FIXME
-           ->join
+
            comma-join
            comma-nl-join
            comma-space-join
@@ -206,3 +209,16 @@
     (string-sub file-name-a virtual-name-a
                 (string-sub file-name-b virtual-name-b
                             (gulp-port (cdr (run-with-pipe "r" "diff" options file-name-a file-name-b)))))))
+
+(define (alist->hash-table alist)
+  (let ((table (make-hash-table (length alist))))
+    (for-each (lambda (entry)
+                (let ((key (car entry))
+                      (value (cdr entry)))
+                  (hash-set! table key value)))
+              alist)
+    table))
+
+(define (hash-table->alist table)
+  (hash-map->list const table))
+

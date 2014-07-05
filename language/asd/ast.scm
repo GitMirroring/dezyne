@@ -126,6 +126,7 @@
 
   :export (
            action?
+           assign?
            ast
            behaviour
            behaviour?
@@ -161,6 +162,7 @@
            make
            model?
            name
+           on?
            out?
            parent
            port
@@ -219,6 +221,7 @@
          (else (eq? head type))))))
 
 (define (action? ast) (type-helper? 'action ast))
+(define (assign? ast) (type-helper? 'assign ast))
 (define (behaviour? ast) (type-helper? 'behaviour ast))
 (define (component? ast) (type-helper? 'component ast))
 (define (compound? ast) (type-helper? 'compound ast))
@@ -298,6 +301,11 @@
     ((? event?) (cadr ast))
     (_ (throw 'match-error  (format #f "~a:signature: no match: ~a\n" (current-source-location) ast)))))
 
+(define (variable ast)
+  (match ast
+    ((? assign?) (cadr ast))
+    (_ (throw 'match-error  (format #f "~a:variable: no match: ~a\n" (current-source-location) ast)))))
+
 
 (define (return-type ast)
   (match ast
@@ -374,6 +382,7 @@
 
 (define (expression ast) 
   (match ast
+    ((? assign?) (caddr ast))
     ((? guard?) (cadr ast))
     ((? variable?) (cadddr ast))
     (_ (throw 'match-error  (format #f "~a:expression: no match: ~a\n" (current-source-location) ast)))))

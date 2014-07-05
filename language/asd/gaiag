@@ -48,6 +48,7 @@ exec guile -L $(dirname $0)/../.. -L $(dirname $0) -e main -s $0 "$@"
 	  '((assert (single-char #\a) (value #t))
 	    (debug (single-char #\d))
             (help (single-char #\h))
+            (json (single-char #\j))
             (language (single-char #\l) (value #t))
             (trail (single-char #\t) (value #t))
 	    (version (single-char #\v))))
@@ -67,6 +68,7 @@ Usage: gaiag [OPTION]... FILE
   -a, --assert=ASSERT  select assert ASSERT to generate
   -d, --debug          run with debugging
   -h, --help           display this help
+  -j, --json           use json-friendly format; strings and hash tables
   -l, --language=LANG  generate output for language=LANG [scheme]
   -t, --trail=TRAIL    specify trail TRAIL for trail-walker 
   -v, --version        display version
@@ -79,6 +81,7 @@ Examples:
   ./gaiag -l csp examples/Alarm.asd
   ./gaiag -l wfc examples/double-on.asd
   ./gaiag -l simulate -t '(a a a a)' examples/if.asd
+  ./gaiag -l simulate -t '(a a a a)' -j examples/if.asd
 ")
 	   (exit (or (and usage? 2) 0)))
      options)))
