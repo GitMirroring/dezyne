@@ -355,6 +355,7 @@
 (define (ports ast)
   (match ast
     ((? component?) (body (ports-element ast)))
+    ((? interface?) '())
     (_ (throw 'match-error  (format #f "~a:ports: no match: ~a\n" (current-source-location) ast)))))
 
 (define (imports ast) (body (imports-element ast)))

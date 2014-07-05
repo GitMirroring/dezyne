@@ -28,6 +28,7 @@
 
   :use-module (language asd ast:)
   :use-module (language asd gaiag)
+  :use-module (language asd json-trace)
   :use-module (language asd misc)
   :use-module (language asd parse)
   :use-module (language asd pretty-print)
@@ -35,7 +36,9 @@
 
   :export (ast->a
            explore-space
-           walk-trail))
+           walk-trail
+           ->symbol
+           var))
 
 (define debug? #f)
 (define (debug . x) #t)
@@ -83,7 +86,11 @@
 (define (mangle-trace trace)
   (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))
     (if json?
-        (apply append (map json-trace trace))
+        (append
+         (list 
+          (json-init *model*)
+          (json-state (state-vector *model*)))
+         (apply append (map json-trace trace))) 
         (map demo-trace trace))))
 
 (define (explore-space ast)
@@ -110,83 +117,6 @@
           (list
            (list 'state (map (lambda (x) (list (car x) (cdr x)))  state))
            (list 'trace (map trace-location steps))))))
-
-
-;; JSON output mangling disaster area
-
-;; FIXME: mangling the trace output into the current json format takes
-;; about as much effort as producing it?
-(define (from event statement)
-  (if (ast:on? statement)
-      (if (pair? event)
-          (ast:port-name event)
-          'in)
-      (ast:name *model*)))
-
-(define (to statement)
-  (if (ast:on? statement)
-      (ast:name *model*)
-      (or (and-let* (((ast:action? statement))
-                     (event (ast:event statement))     
-                     ((pair? event)))
-                    (ast:port-name event))
-          'out)))
-
-(define (event statement)
-  (if (ast:on? statement)
-      (ast:event-name (ast:event statement))
-      (or (and-let* (((ast:action? statement))
-                     (event (ast:event statement))     
-                     ((pair? event)))
-                    (ast:port-name event))
-          'out)))
-
-(define (json-location ast)
-  (alist->hash-table
-   (or (and-let* ((loc (source-location ast))
-                  (properties (source-location->source-properties loc)))
-                 `((file . ,(assoc-ref properties 'filename))
-                   (line . ,(assoc-ref properties 'line))
-                   (colum . ,(assoc-ref properties 'column))))
-      '())))
-
-(define (json-trace tracepoint)
-  (let* ((event (car tracepoint))
-         (state (cadr tracepoint))
-         (steps (cddr tracepoint))
-         (model (ast:name *model*)))
-    (let loop ((statements steps))
-      (let* ((statement (if (null? statements) #f (car statements)))
-             (class (and=> statement ast:class))
-             (type (if (eq? class 'assign) 'update 'transition))
-             (message
-              (alist->hash-table
-               (if (eq? type 'update)
-                   (let ((variable (ast:variable statement)))
-                     `((type . update)
-                       (comp . ,model)
-                       (,variable . ,(->symbol (var state variable)))))
-                   (let ((kind (assoc-ref '((#f . return) 
-                                            (on . call)
-                                            (action . call))
-                                          (ast:class statement)))
-                         (json-event (cond 
-                                      ((ast:on? statement) (ast:event-name event))
-                                      ((ast:action? statement) (ast:event-name (ast:event statement)))
-                                      (else 'return))))
-                     `((type . transition)
-                       (kind . ,kind)
-                       (from . ,(from event statement)) 
-                       (to  . ,(to statement))
-                       (event . ,json-event)
-                       (location . 
-                                 ,(alist->hash-table
-                                   `((begin . ,(json-location statement))
-                                     (end . ,(json-location statement)))))))))
-              )) ;;TODO
-        (if (not statement)
-            (list message)
-            (cons message (loop (cdr statements))))))))
 
 (define (event->ast symbol)
   "if SYMBOL is of form INTERFACE.TRIGGER, produce (trigger PORT EVENT)"
