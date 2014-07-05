@@ -142,14 +142,14 @@
     (system-statement-list system-statement) : (append $1 (list $2)))
 
    (system-statement
-    (binding) : $1
-    (instantiation) : $1)
+    (bind) : $1
+    (instance) : $1)
 
-   (binding
+   (bind
     (compound-identifier <=> compound-identifier semicolon) : `(bind ,$1 ,$3))
 
-   (instantiation
-    (compound-identifier Identifier semicolon) : `(instantiate ,$1 ,$2))
+   (instance
+    (compound-identifier Identifier semicolon) : `(instance ,$1 ,$2))
 
    (import-spec
     (import Identifier semicolon) : `(,$1 ,$2))
