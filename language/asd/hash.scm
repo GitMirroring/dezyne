@@ -26,7 +26,6 @@
   :use-module (language asd misc)
   :use-module (language asd pretty-print)
   :use-module (language asd reader)
-  :export (chash build-hash-table hash-table)
   :re-export (hash define-reader-ctor))
  
 (define-reader-ctor 'hash
@@ -60,6 +59,6 @@
     (build-hash-table table (key value) ...)))
 
 (eval-when (expand)
-           (define-reader-ctor 'chash
-             (lambda elems
-               `(hash-table ,@elems))))
+  (define-reader-ctor 'chash
+    (lambda elems
+      `(hash-table ,@elems))))
