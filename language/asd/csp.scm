@@ -160,7 +160,7 @@
 (define (add-return-if-empty returns)
   (if (null? returns)
       '(return)
-      returns))
+      (apply append returns)))
 
 (define (return-values-port port)
   (add-return-if-empty (map return-value (ast:types (ast-norm (ast:type port))))))
