@@ -31,7 +31,7 @@ templates/component.cc.scm:29: here */
     #.port #.interface #.api Proxy& operator = (const #.port #.interface #.api Proxy& other);
     #.port #.interface #.api Proxy(const #.port #.interface #.api Proxy& other);
   };
-#} (ast:ports model))
+#} (if (ast:component? model) (ast:ports model) '()))
 
   struct #.component 
   {
