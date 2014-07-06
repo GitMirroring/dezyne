@@ -3,30 +3,32 @@ semi(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
 assign(F') = \ P', V' @ P'(F'(V'))
 
 datatype event_enumeration_alphabet =
-done | return_Status_No | return_Status_Nok | return_Status_Ok | return_Status_Yes | what
+Status_No | Status_Nok | Status_Ok | Status_Yes | done | what
 
 channel illegal
 
-channel I,i: {done,done,return_Status_Yes,return_Status_No}
-channel U,u: {what,what,return_Status_Ok,return_Status_Nok}
+channel I,i: {done,done,Status_Yes,Status_No}
+channel U,u: {what,what,Status_Ok,Status_Nok}
 
 I_(IG) = let
 I__((dummy)) =
 (true) & (
-I?x:{done} -> (\P',V' @ I.return_Status_Yes -> P'(V')) (\V' @ I__(V'),(dummy))
+I?x:{done} ->
+(\P',V' @ I.Status_Yes -> P'(V')) (\V' @ I__(V'),(dummy))
 []
-I?x:{done} -> (\P',V' @ I.return_Status_No -> P'(V')) (\V' @ I__(V'),(dummy))
-)
+I?x:{done} ->
+(\P',V' @ I.Status_No -> P'(V')) (\V' @ I__(V'),(dummy)))
 
 within I__((false))
 
 U_(IG) = let
 U__((dummy)) =
 (true) & (
-U?x:{what} -> (\P',V' @ U.return_Status_Ok -> P'(V')) (\V' @ U__(V'),(dummy))
+U?x:{what} ->
+(\P',V' @ U.Status_Ok -> P'(V')) (\V' @ U__(V'),(dummy))
 []
-U?x:{what} -> (\P',V' @ U.return_Status_Nok -> P'(V')) (\V' @ U__(V'),(dummy))
-)
+U?x:{what} ->
+(\P',V' @ U.Status_Nok -> P'(V')) (\V' @ U__(V'),(dummy)))
 
 within U__((false))
 
@@ -35,11 +37,11 @@ C_(IIG,IG) = let
 C__((dummy)) = transition_begin -> (
 (true) & (
 i?x:{done} ->
-semi(\P',V' @ u!what -> u?s -> P'((V',s)),
-\P',(V',s) @ ifthenelse(s == return_Status_Ok,
-\P',V' @ i.return_Status_Yes -> P'(V'),
-\P',V' @ i.return_Status_No -> P'(V')
-)(P',V')) (\V' @ transition_end -> C__(V'),(dummy)))
+semi((\P',V' @ u!what -> u?s -> P'((V',s))),
+\P',((dummy),s) @ ifthenelse(s == Status_Ok,
+(\P',V' @ i.Status_Yes -> P'(V')),
+(\P',V' @ i.Status_No -> P'(V'))
+)(P',(dummy))) (\V' @ transition_end -> C__(V'),(dummy)))
 )
 within C__((false))
 
@@ -50,7 +52,7 @@ SINGLETHREADED = true
 
 channel transition_begin, transition_end
 
-channel reorder_in,reorder_out : {i.return_Status_Yes,i.return_Status_No}
+channel reorder_in,reorder_out : {i.Status_Yes,i.Status_No}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -88,7 +90,7 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {i.return_Status_Yes, i.return_Status_No}
+Exclude = {i.Status_Yes, i.Status_No}
 ClientCalls = {i.done}
 UsedModeling = {}
 within compress((C_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]

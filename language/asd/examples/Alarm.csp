@@ -27,7 +27,7 @@ semi(assign(\(state) @ (Disarming)),
 (\P',V' @ Console.return -> P'(V')))(\V' @ Console_a_(V'),(state))
   []
   Console?x:{optional} ->
-semi(semi(\P',V' @ Console!detected -> P'(V'),
+semi(semi((\P',V' @ Console!detected -> P'(V')),
 assign(\(state) @ (Triggered))),
 (\P',V' @ P'(V')))(\V' @ Console_a_(V'),(state))
   []
@@ -44,7 +44,7 @@ illegal -> STOP)
 []
 (state == Disarming) & (
 Console?x:{inevitable} ->
-semi(semi(\P',V' @ Console!deactivated -> P'(V'),
+semi(semi((\P',V' @ Console!deactivated -> P'(V')),
 assign(\(state) @ (Disarmed))),
 (\P',V' @ P'(V')))(\V' @ Console_a_(V'),(state))
   []
@@ -72,7 +72,7 @@ semi(assign(\(state) @ (Disabling)),
 (\P',V' @ Sensor.return -> P'(V')))(\V' @ Sensor_b_(V'),(state))
   []
   Sensor?x:{optional} ->
-semi(semi(\P',V' @ Sensor!triggered -> P'(V'),
+semi(semi((\P',V' @ Sensor!triggered -> P'(V')),
 assign(\(state) @ (Triggered))),
 (\P',V' @ P'(V')))(\V' @ Sensor_b_(V'),(state)))
 []
@@ -81,7 +81,7 @@ IG & Sensor?x:{enable,disable} ->
 illegal -> STOP
   []
   Sensor?x:{inevitable} ->
-semi(semi(\P',V' @ Sensor!disabled -> P'(V'),
+semi(semi((\P',V' @ Sensor!disabled -> P'(V')),
 assign(\(state) @ (Disabled))),
 (\P',V' @ P'(V')))(\V' @ Sensor_b_(V'),(state)))
 []
@@ -120,7 +120,7 @@ Alarm_d(IIG,IG) = let
 Alarm_d_((state,sounding)) = transition_begin -> (
 (state == Disarmed) & (
 console?x:{arm} ->
-semi(semi(\P',V' @ sensor!enable -> sensor.return -> P'(V'),
+semi(semi((\P',V' @ sensor!enable -> sensor.return -> P'(V')),
 assign(\(state,sounding) @ (Armed,sounding))),
 (\P',V' @ console.return -> P'(V')))(\V' @ transition_end -> Alarm_d_(V'),(state,sounding))
   []
@@ -135,13 +135,13 @@ IIG & console?x:{arm} ->
 illegal -> STOP
   []
   console?x:{disarm} ->
-semi(semi(\P',V' @ sensor!disable -> sensor.return -> P'(V'),
+semi(semi((\P',V' @ sensor!disable -> sensor.return -> P'(V')),
 assign(\(state,sounding) @ (Disarming,sounding))),
 (\P',V' @ console.return -> P'(V')))(\V' @ transition_end -> Alarm_d_(V'),(state,sounding))
   []
   sensor?x:{triggered} ->
-semi(semi(\P',V' @ console!detected -> P'(V'),
-semi(\P',V' @ siren!turnon -> siren.return -> P'(V'),
+semi(semi((\P',V' @ console!detected -> P'(V')),
+semi((\P',V' @ siren!turnon -> siren.return -> P'(V')),
 semi(assign(\(state,sounding) @ (state,true)),
 assign(\(state,sounding) @ (Triggered,sounding))))),
 (\P',V' @ P'(V')))(\V' @ transition_end -> Alarm_d_(V'),(state,sounding))
@@ -155,15 +155,15 @@ illegal -> STOP)
 []
 (state == Disarming and sounding) & (
 sensor?x:{disabled} ->
-semi(semi(\P',V' @ console!deactivated -> P'(V'),
-semi(\P',V' @ siren!turnoff -> siren.return -> P'(V'),
+semi(semi((\P',V' @ console!deactivated -> P'(V')),
+semi((\P',V' @ siren!turnoff -> siren.return -> P'(V')),
 semi(assign(\(state,sounding) @ (Disarmed,sounding)),
 assign(\(state,sounding) @ (state,false))))),
 (\P',V' @ P'(V')))(\V' @ transition_end -> Alarm_d_(V'),(state,sounding)))
 []
 (state == Disarming and not sounding) & (
 sensor?x:{disabled} ->
-semi(semi(\P',V' @ console!deactivated -> P'(V'),
+semi(semi((\P',V' @ console!deactivated -> P'(V')),
 assign(\(state,sounding) @ (Disarmed,sounding))),
 (\P',V' @ P'(V')))(\V' @ transition_end -> Alarm_d_(V'),(state,sounding)))
 []
@@ -172,8 +172,8 @@ IIG & console?x:{arm} ->
 illegal -> STOP
   []
   console?x:{disarm} ->
-semi(semi(\P',V' @ sensor!disable -> sensor.return -> P'(V'),
-semi(\P',V' @ siren!turnoff -> siren.return -> P'(V'),
+semi(semi((\P',V' @ sensor!disable -> sensor.return -> P'(V')),
+semi((\P',V' @ siren!turnoff -> siren.return -> P'(V')),
 semi(assign(\(state,sounding) @ (state,false)),
 assign(\(state,sounding) @ (Disarming,sounding))))),
 (\P',V' @ console.return -> P'(V')))(\V' @ transition_end -> Alarm_d_(V'),(state,sounding))
