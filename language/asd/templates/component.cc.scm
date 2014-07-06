@@ -31,11 +31,11 @@ templates/component.cc.scm:29: here */
     #.port #.interface #.api Proxy& operator = (const #.port #.interface #.api Proxy& other);
     #.port #.interface #.api Proxy(const #.port #.interface #.api Proxy& other);
   };
-#} ((compose ast:ports ast:component) ast))
+#} (ast:ports model))
 
   struct #.component 
   {
-    #(->string (map declare-enum (ast:types (ast:behaviour (ast:component ast)))))
+    #(->string (map declare-enum (ast:types (ast:behaviour model))))
   };
 
   class State : public #.component 
@@ -55,7 +55,7 @@ templates/component.cc.scm:29: here */
     void #.port #.interface #.event (Context& context);
 #}
     port (filter (ast:dir-matches? port) (ast:events port)))
-#} ((compose ast:ports ast:component) ast))
+#} (ast:ports model))
 
     protected:
     std::string m_TypeName;
@@ -83,12 +83,15 @@ templates/component.cc.scm:65: TODO function-definitions */
 #.else-typed 
     void Set#.port #.interface #.api #.type ();
 #.endif-typed 
-#} ((compose ast:ports ast:component) ast))
+#} (ast:ports model))
 
-/*
-templates/component.cc.scm:87: TODO instances */
 
-# (string-if (ast:behaviour (ast:component ast))
+#(map-instances
+#{
+    boost::shared_ptr<#.component Component> m_#.instance ;
+#} (ast:instances model))
+
+# (string-if (ast:behaviour model)
 #{
     State* m_State;
     State& getState();
@@ -97,12 +100,12 @@ templates/component.cc.scm:87: TODO instances */
     {
 # (map-variables
 #{      #.state-type  #.variable ;
-#} (ast:variables (ast:behaviour (ast:component ast))))
+#} (ast:variables (ast:behaviour model)))
       Predicates()
       {
 # (map-variables
 #{        #.variable  = #.value ;
-#} (ast:variables (ast:behaviour (ast:component ast))))
+#} (ast:variables (ast:behaviour model)))
       }
     };
     
@@ -131,7 +134,7 @@ templates/component.cc.scm:87: TODO instances */
     Context m_Context;
 #(map-ports
 #{    boost::shared_ptr<#.port #.interface #.api Proxy> m_#.port #.interface #.api Proxy;
-#} ((compose ast:ports ast:component) ast))
+#} (ast:ports model))
     Component(const Component&);
     Component& operator = (const Component&);
     
@@ -141,7 +144,7 @@ templates/component.cc.scm:87: TODO instances */
     
 #(map-ports
 #{
-#(string-if (ast:bottom? (ast:component ast))
+#(string-if (ast:bottom? model)
 #{
     virtual void Get#.api (boost::shared_ptr<#.interface #.api >* #.ap );
     virtual void Register#.callback (boost::shared_ptr<#.interface #.callback > #.cb );
@@ -157,11 +160,12 @@ templates/component.cc.scm:87: TODO instances */
 ##if 0
     virtual void Get#.port Interface(boost::shared_ptr<#.interface Interface>* intf);
 ##endif
-#})#}  ((compose ast:ports ast:component) ast))
+#})#}  (ast:ports model))
     virtual void Register#.callback (boost::shared_ptr<asd::channels::ISingleThreaded> cb);
   };
 
-// if has behaviour
+# (string-if (ast:behaviour model)
+#{
 # (map-ports
 #{  #.port #.interface #.api Proxy::#.port #.interface #.api Proxy(Context& context)
   : m_Context(context)
@@ -192,33 +196,45 @@ templates/component.cc.scm:87: TODO instances */
 
 #} port (filter (ast:dir-matches? port) (ast:events port)))
   
-#} ((compose ast:ports ast:component) ast))
-
+#} (ast:ports model))
+#})
   Context::Context()
   : asd_0::SingleThreadedContext#.no-dpc ()
-#(string-if (ast:behaviour (ast:component ast))
-"  , m_Predicates()
+#(string-if (ast:behaviour model)
+#{  , m_Predicates()
   , m_State(&State::instance())
-")
+#})
   {
 #(map-ports
 #{     boost::shared_ptr<#.interface Interface> m_#.port ;
     // m_#.port  = #.interface Component::GetInstance();
-#} ((compose ast:ports ast:component) ast))
-/*
-templates/component.cc.scm:206: TODO: constructor-instances */
-/*
-templates/component.cc.scm:208 TODO: binding */
+#} (ast:ports model))
+#(map-instances
+#{
+    m_#.instance  = #.component Component::GetInstance();
+#}  (ast:instances model))
+
+#(map-binds
+#{
+    {
+      boost::shared_ptr<#.left-interface #.left-api > api;
+      m_#.left ->Get#.left-api #.left-postfix  (&api);
+      m_#.right ->Register#.left-api #.right-postfix (api);
+      boost::shared_ptr<#.left-interface #.left-callback > cb;
+      m_#.right ->Get#.left-callback #.right-postfix (&cb);
+      m_#.left ->Register#.left-callback #.left-postfix (cb);
+    }
+#} (ast:binds model))
   }
   
   Context::~Context()
   {
 # (map-ports
 #{    // #.interface Component::ReleaseInstance();
-#} ((compose ast:ports ast:component) ast))
+#} (ast:ports model))
   }
   
-#(string-if (ast:behaviour (ast:component ast))
+#(string-if (ast:behaviour model)
 #{
   State& Context::getState()
   {
@@ -257,16 +273,16 @@ templates/component.cc.scm:208 TODO: binding */
 #.endif-typed 
     unblock();
   }
-#} ((compose ast:ports ast:component) ast))
+#} (ast:ports model))
 
   Component::Component()
   : m_Context()
-#(string-if (ast:behaviour (ast:component ast))
+#(string-if (ast:behaviour model)
 #{
 #(map-ports
 #{  , m_#.port #.interface #.api Proxy(new #.port #.interface #.api Proxy(m_Context))
 
-#}  ((compose ast:ports ast:component) ast))
+#}  (ast:ports model))
 #})
   {
     ASD_TRACE_ENTER("#.component ", "", "", "");
@@ -283,7 +299,7 @@ templates/component.cc.scm:208 TODO: binding */
 
 #(map-ports
 #{
-#(string-if (ast:bottom? (ast:component ast))
+#(string-if (ast:bottom? model)
 #{
   void Component::Get#.api (boost::shared_ptr<#.interface #.api >* #.ap )
   {
@@ -316,14 +332,14 @@ templates/component.cc.scm:208 TODO: binding */
     m_Context.Set#.port (#.cb );
   }
 #}
-)#}  ((compose ast:ports ast:component) ast))
+)#}  (ast:ports model))
 
   void Component::Register#.callback (boost::shared_ptr<asd::channels::ISingleThreaded> #.cb )
   {
     m_Context.setISingleThreaded(#.cb );
   }
 
-#(string-if (ast:behaviour (ast:component ast))
+#(string-if (ast:behaviour model)
 #{
 #(map-ports
 #{
@@ -348,7 +364,7 @@ templates/component.cc.scm:208 TODO: binding */
   }
 #}
     port (filter (ast:dir-matches? port) (ast:events port)))
-#} ((compose ast:ports ast:component) ast))
+#} (ast:ports model))
 #})
 
 /*
@@ -356,14 +372,14 @@ templates/component.cc.scm:351: TODO function-definitions */
 
 }
 
-#(string-if (ast:bottom? (ast:component ast))
+#(string-if (ast:bottom? model)
 #{
 #(map-ports
 #{boost::shared_ptr<#.interface Interface> #.component Component::GetInstance()
 {
   return boost::shared_ptr<#.interface Interface>(new #.component ImplScope::Component);
 }
-#} ((compose ast:ports ast:component) ast))
+#} (ast:ports model))
 #}
 #{
 boost::shared_ptr<#.component Component> #.component Component::GetInstance()
