@@ -466,14 +466,6 @@
           ((h ...) ast)
           (_ (throw 'match-error  (format #f "~a:instance-: no match: ~a\n" (current-source-location) ast))))))
 
-;; PORT    ((? value?) (port (import-ast (type identifier)) (field identifier)))
-;; PORT
-    ;; ((? value?) (find (lambda (i) (eq? (name i) identifier))
-    ;;                   (match ast
-    ;;                     ((? system?) (instances ast))
-    ;;                     ((h ...) ast)
-    ;;                     (_ (throw 'match-error  (format #f "~a:instance: no match: ~a\n" (current-source-location) ast))))))
-
 (define (instance ast identifier)
   (match ast
     ((? system?) (if (value? identifier)

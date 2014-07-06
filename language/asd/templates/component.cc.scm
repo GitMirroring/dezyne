@@ -1,7 +1,7 @@
 ##include "#.component Component.h"
 #(map-instances
 #{
-##include "#.type #.Class .h"
+##include "#.type Component.h"
 #} (ast:instances model))
 
 ##include "asdSingleThreaded.h"
@@ -141,7 +141,7 @@ templates/component.cc.scm:65: TODO function-definitions */
     Context m_Context;
 #(map-ports
 #{    boost::shared_ptr<#.port #.interface #.api Proxy> m_#.port #.interface #.api Proxy;
-#} (if (ast:behaviour model) (ast:ports model) '()))
+#} (if (pair? (ast:behaviour model)) (ast:ports model) '()))
     Component(const Component&);
     Component& operator = (const Component&);
     
@@ -218,14 +218,14 @@ templates/component.cc.scm:65: TODO function-definitions */
 #} (ast:ports model))
 #(map-instances
 #{
-    m_#.instance  = #.type #.Class ::GetInstance();
+    m_#.instance  = #.type Component::GetInstance();
 #}  (ast:instances model))
 
 #(map-binds
 #{
     {
       boost::shared_ptr<#.left-interface #.left-api > api;
-      m_#.left ->Get#.left-api #.left-postfix  (&api);
+      m_#.left ->Get#.left-api #.left-postfix (&api);
       m_#.right ->Register#.left-api #.right-postfix (api);
       boost::shared_ptr<#.left-interface #.left-callback > cb;
       m_#.right ->Get#.left-callback #.right-postfix (&cb);
@@ -312,12 +312,28 @@ templates/component.cc.scm:65: TODO function-definitions */
 #{
   void Component::Get#.api (boost::shared_ptr<#.interface #.api >* #.ap )
   {
+#(string-if (ast:component? model)
+#{
     *#.ap = m_#.port #.interface #.api Proxy;
+#}
+#{
+  #(string-if other #{
+    m_Context.m_#.other ->Get#.other-api #.other-postfix (#.ap );
+#})
+#})
   }
   
   void Component::Register#.callback (boost::shared_ptr<#.interface #.callback > #.cb )
   {
+#(string-if (ast:component? model)
+#{
     m_Context.Set#.port (#.cb );
+#}
+#{
+  #(string-if other #{
+    m_Context.m_#.other ->Register#.other-callback #.other-postfix (#.cb );
+#})
+#})
   }
   
   void Component::Get#.callback (boost::shared_ptr<#.interface #.callback >* /*#.cb */)
@@ -333,12 +349,28 @@ templates/component.cc.scm:65: TODO function-definitions */
 #{
   void Component::Get#.api #.port (boost::shared_ptr<#.interface #.api >* #.ap )
   {
+#(string-if (ast:component? model)
+#{
     *#.ap = m_#.port #.interface #.api Proxy;
+#}
+#{
+  #(string-if other #{
+    m_Context.m_#.other ->Get#.other-api #.other-postfix (#.ap );
+#})
+#})
   }
   
   void Component::Register#.callback #.port (boost::shared_ptr<#.interface #.callback > #.cb )
   {
+#(string-if (ast:component? model)
+#{
     m_Context.Set#.port (#.cb );
+#}
+#{
+  #(string-if other #{
+    m_Context.m_#.other ->Register#.other-callback #.other-postfix (#.cb );
+#})
+#})
   }
 #}
 )#}  (ast:ports model))

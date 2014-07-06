@@ -26,7 +26,7 @@ DEPTH = ../..
 diff = diff -uw -I '^ *$$' -I '^ *//'
 sed = sed -e 's/^-gen/gen/' -re 's/((cppbase.cpp|.hh.scm|.cc.scm):[0-9]*):/\1:warning:/'
 BUILD = build
-asdgen = ASD_PREFIX=$(DEPTH) $(DEPTH)/$(BUILD)/asdgenerator
+asdgen = ASD_PREFIX=$(DEPTH)/.. $(DEPTH)/../$(BUILD)/asdgenerator
 
 default: all
 
@@ -47,16 +47,17 @@ baseline: dummy
 	rm -rf baseline && mkdir -p baseline
 	cp examples/*asd baseline
 	sed -rie 's/^(import .*);/\1.asd;/' baseline/*.asd
-	$(asdgen) -l cpp baseline/alarm-component-pretty.asd && mv Alarm* baseline
-	$(asdgen) -l cpp baseline/CommImpl.asd && mv CommImpl* baseline
-	$(asdgen) -l cpp baseline/Aap.asd && mv AapInt* NootComp* baseline
-	$(asdgen) -l cpp baseline/Alarm.asd && mv Alarm* baseline
-	$(asdgen) -l cpp baseline/Console.asd && mv Console* baseline
-	$(asdgen) -l cpp baseline/Sensor.asd && mv Sensor* baseline
-	$(asdgen) -l cpp baseline/Siren.asd && mv Siren* baseline
-	-cp /home/janneke/vc/verum/development/generator/baseline/AlarmSystem* baseline
-	-$(asdgen) -l cpp baseline/AlarmSystem.asd && mv Alarm* baseline
-	$(asdgen) -l csp baseline/Alarm.asd && mv Alarm.csp baseline
+	cd baseline && $(asdgen) -l cpp alarm-component-pretty.asd
+	cd baseline && $(asdgen) -l cpp CommImpl.asd
+	cd baseline && $(asdgen) -l cpp Aap.asd
+	cd baseline && $(asdgen) -l cpp Alarm.asd
+	cd baseline && $(asdgen) -l cpp Console.asd
+	cd baseline && $(asdgen) -l cpp Sensor.asd
+	cd baseline && $(asdgen) -l cpp Siren.asd
+	-cd baseline && $(asdgen) -l cpp AlarmSystem.asd # FIXME?
+	cd baseline && $(asdgen) -l cpp $(DEPTH)/../examples/alarmsystem.asd
+	cd baseline && $(asdgen) -l cpp webdemo.asd
+	cd baseline && $(asdgen) -l csp Alarm.asd
 
 test: check
 check: compile
@@ -68,7 +69,7 @@ ast: compile
 	./gaiag examples/interface-reply-events.asd
 	./gaiag examples/interface-behaviour.asd
 	./gaiag examples/interface-imports.asd
-	./gaiag examples/alarmcomponent.asd
+	./gaiag examples/alarm-component.asd
 
 pretty: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
@@ -88,6 +89,7 @@ c++: compile baseline
 #	cd out && ../gaiag -l c++ examples/CommImpl.asd
 #	[ -f baseline/CommImplComponent.h ] && $(diff) baseline/CommImplComponent.h out
 #	-[ -f baseline/CommImplComponent.cpp ] && $(diff) baseline/CommImplComponent.cpp out
+
 	cd out && ../gaiag -l c++ examples/Console.asd
 	$(diff) baseline/ConsoleInterface.h out
 	cd out && ../gaiag -l c++ examples/Sensor.asd
@@ -98,8 +100,14 @@ c++: compile baseline
 	$(diff) baseline/AlarmComponent.h out
 	$(diff) baseline/AlarmComponent.cpp out | $(sed)
 	cd out && g++ -I ../../../examples/codegen/asd_cpp_runtime --std=c++11 -c AlarmComponent.cpp
+
+	#system
 	cd out && ../gaiag -l c++ examples/AlarmSystem.asd
-	$(diff) baseline/AlarmSystemComponent.hpp out | $(sed)	
+	-$(diff) baseline/SensorComponent.h out
+	-$(diff) baseline/SensorComponent.cpp out
+	-$(diff) baseline/SirenComponent.h out
+	-$(diff) baseline/SirenComponent.cpp out
+	$(diff) baseline/AlarmSystemComponent.h out | $(sed)	
 	$(diff) baseline/AlarmSystemComponent.cpp out | $(sed)	
 	-cd out && g++ -I ../../../examples/codegen/asd_cpp_runtime --std=c++11 -c AlarmSystemComponent.cpp
 
@@ -133,7 +141,7 @@ simulate: compile
 	./gaiag -l simulate -t '(a a a a a)' examples/if.asd
 #	./gaiag -l simulate examples/Alarm.asd |& grep '^\*\*' | wc -l
 #	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" examples/Console.asd | ./scm2json | sed -e "s/, /,\n /g"
-	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" examples/alarmcomponent.asd
+	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" examples/alarm-component.asd
 	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" -j examples/alarm-component.asd | ./scm2json | sed -e 's/, /,\n /g'
 
 

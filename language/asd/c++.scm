@@ -41,10 +41,11 @@
 
 (define (ast-> ast)
   (set! *ast* ast)
-  (module-define! (resolve-module '(language asd c++)) 'ast ast)  ;; FIXME
+  (module-define! (resolve-module '(language asd c++)) 'ast ast)
   (and=> (ast:interface ast) dump-interface)
   (and=> (ast:component ast) dump-component)
   (and=> (ast:system ast) dump-component)
+  (and=> (ast:system ast) dump-instances)
   "")
 
 
@@ -65,6 +66,25 @@
     (dump-output (list name '-c2.cc)
                  (lambda ()
                    ((animate-template 'c2.cc.scm) (c++-module ast))))))
+
+(use-modules (ice-9 pretty-print))
+(define (dump-instance instance)
+  (stderr "\ndump-instance: for ~a\n" (ast:type instance))
+  (and-let* ((type (ast:type instance))
+             (name (ast:name instance))
+             (model (ast:ast type))
+             ((stderr "interface? -->~a\n" (ast:interface? model)))
+             ((ast:interface? model))
+             (model-ast (ast:make 'component type
+                                  (list 'ports (ast:make 'provides type name))
+                                  '(behaviour #f (compound)))))
+            (set! ast (list model-ast))
+            (stderr "new ast: for ~a\n" type)
+            (pretty-print model-ast)
+            (dump-component model-ast)))
+
+(define (dump-instances model)
+  (for-each dump-instance (ast:instances model)))
 
 (define ((animate-template file-name) module)
   (animate-file (symbol-append 'templates/ file-name) module))
@@ -280,29 +300,56 @@
 (define (string-if condition then . else)
   (animate-string (if (null-is-#f condition) then (if (pair? else) (car else)  "")) (current-module)))
 
+(define (find-bind model port)
+  (find (lambda (bind) 
+          (stderr "find: ~a in ~a?\n" port bind)
+          (or (equal? port (ast:port model (ast:left bind)))
+              (equal? port (ast:port model (ast:right bind)))))
+        (ast:binds model)))
+
+(define (bind-other model port)
+  (and-let* ((bind (find-bind model port))
+             (other (if (equal? port (ast:port model (ast:left bind)))
+                        (ast:right bind)
+                        (ast:left bind))))
+            (stderr "other: ~a --> ~a ===>>> ~a?\n" other other (ast:port model other))
+            (ast:port model other)))
+
 (define (map-ports string ports)
   (map (lambda (port)
-         (save-module-excursion
-          (lambda ()
-            (animate-string 
-             string 
-             (animate-module-populate
-              (c++-module ast) 
-              port
-              `((port . ,identity)
-                (.api . ,api)
-                (.callback . ,callback)
-                (.ap . ,ap)
-                (.cb . ,cb)
-                (.interface . ,ast:type) ;; FIXME
-                (.name . ,ast:name) ;; JUNKME
-                (.port . ,ast:name)
-                (.behaviour . ,(compose ast:name ast:behaviour))
-                (.parameters . ,format-parameters)
-                (.type . ,return-type-text)
-                (.if-typed . ,(lambda (port) (if (ast:typed? port) "" "#if 0")))
-                (.else-typed . ,(lambda (port) (if (ast:typed? port) "" "#else")))
-                (.endif-typed . ,(lambda (port) (if (ast:typed? port) "" "#endif")))))))))
+         (let* ((module (c++-module ast)) 
+                (model (module-ref module 'model))
+                (other (bind-other model port))
+                (.FIXME-other (ast:name (or other port)))
+                (.other (if (eq? .FIXME-other 'console) 'alarm .FIXME-other)))
+           (save-module-excursion
+            (lambda ()
+              (animate-string 
+               string 
+               (animate-module-populate
+                module
+                port
+                `((port . ,identity)
+                  (.api . ,api)
+                  (.callback . ,callback)
+                  (.ap . ,ap)
+                  (.cb . ,cb)
+                  (.interface . ,ast:type)
+                  (.name . ,ast:name) ;; JUNKME
+                  (.port . ,ast:name)
+                  (.behaviour . ,(compose ast:name ast:behaviour))
+                  (.parameters . ,format-parameters)
+                  (.type . ,return-type-text)
+                  (.if-typed . ,(lambda (port) (if (ast:typed? port) "" "#if 0")))
+                  (.else-typed . ,(lambda (port) (if (ast:typed? port) "" "#else")))
+                  (.endif-typed . ,(lambda (port) (if (ast:typed? port) "" "#endif")))
+                  (other . ,other)
+                  (.other . ,.other)
+                  (.other-api . ,(api (or other port)))
+                  (.other-callback . ,(callback (or other port)))
+                  (.other-postfix . ,(if (and (not (eq? other 'alarm)) (ast:bottom? (ast:ast (ast:type (or other port))))) 
+                                         "" .FIXME-other))))))))) ;; FIXME-other
+
        ports))
 
 (define (map-instances string instances)
@@ -339,7 +386,7 @@
                 (right-name (ast:name right-instance))
                 (right-port (ast:port model right))
                 (right-interface (ast:type right-port))
-                (right-postfix (if (ast:bottom? (ast:ast right-interface))
+                (right-postfix (if (or #t (ast:bottom? (ast:ast right-interface)))
                                   "" (ast:name right-port)))
                 ;;(right 3)
                 )
