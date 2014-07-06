@@ -64,6 +64,7 @@
            stdout
            string-sub
            symbol<
+           symbol-capitalize
            
            ;; FIXME
 
@@ -87,6 +88,9 @@
 (define (>1 x) (> x 1))
 (define (=2 x) (= x 2))
 (define (>2 x) (> x 2))
+
+(define (symbol-capitalize symbol)
+  ((compose string->symbol string-capitalize symbol->string) symbol))
 
 (define (symbol< a b) (string< (symbol->string a) (symbol->string b)))
 (define (list< a b)

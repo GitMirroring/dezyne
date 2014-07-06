@@ -22,15 +22,16 @@
 ;;
 ;;   (read-asd "examples/Alarm.asd")
 ;;     ==>
-;;   AST:= (
+;;    AST
+;;       (
 ;;          (interface Console (types) (events) (behaviour))
 ;;           ^class    ^name   ^types  ^events  ^behaviour
 ;;
 ;;          (component Alarm   (ports) (behaviour))
 ;;           ^class    ^name   ^ports  ^behaviour
 ;;
-;;          (system    AlarmSystem  (ports) (compound))
-;;           ^class    ^name        ^ports  ^statement
+;;          (system    AlarmSystem  (ports) (compound)) *see below
+;;          ^class    ^name        ^ports  ^statement
 ;;         )
 ;; 
 ;;          
@@ -107,7 +108,22 @@
 ;;      (action (trigger console arm))
 ;;       ^class ^event
 ;;
-
+;;
+;;  (read-asd "examples/AlarmSystem.asd")
+;;     ==>
+;;    AST
+;;       (
+;;          (system    AlarmSystem  (ports) (compound)) *see below
+;;          ^class    ^name        ^ports  ^statement
+;;         )
+;; 
+;;   (ast:instances (ast:system AST))
+;;      ==>
+;;   SUB-AST 
+;;      := ((instance     Alarm   alarm))
+;;           ^class       ^type   ^name
+;;
+;;
 
 ;;; Code:
 
@@ -128,6 +144,7 @@
   :use-module (language asd reader)
 
   :export (
+           Class
            action?
            assign?
            ast
@@ -283,20 +300,40 @@
 	  #f
 	  (assoc 'interface ast))))
 
-(define (interface ast)
-  (and-let* ((interface-ast (interface- ast))
-             (name (name interface-ast)))
+(define (component- ast) 
+  (if (component? ast)
+      ast
+      (assoc 'component ast)))
+
+(define (system- ast) 
+  (if (system? ast)
+      ast
+      (assoc 'system ast)))
+
+(define ((model model-) ast)
+  (and-let* ((model-ast (model- ast))
+             (name (name model-ast)))
             (if (not (assoc-ref *ast-alist* name))
-                (ast-add name interface-ast))
-            interface-ast))
+                (ast-add name model-ast))
+            model-ast))
+
+(define (component ast) ((model component-) ast))
+(define (interface ast) ((model interface-) ast))
+(define (system ast) ((model system-) ast))
 
 (define (interfaces ast)
-  (filter (lambda (model) (interface? model)) ast))
+  (filter (lambda (x) (interface? x)) ast))
+
+(define (models ast)
+  (filter (lambda (x) (model? x)) ast))
 
 (define* (register ast :optional (clear? #f))
   (if clear?
-      (set! *ast-alist* '(())))
-  (for-each interface (interfaces ast))
+      (set! *ast-alist* '()))
+  (for-each (lambda (x) ((model (case (class x) 
+                                  ((interface) interface-)
+                                  ((component) component-)
+                                  ((system) system-))) x)) (models ast))
   ast)
 
 (define (binds ast)
@@ -374,16 +411,6 @@
     ((? port?) (behaviour (import-ast (type ast))))
     (_ (throw 'match-error  (format #f "~a:behaviour: no match: ~a\n" (current-source-location) ast)))))
 
-(define (component ast) 
-  (if (component? ast)
-      ast
-      (assoc 'component ast)))
-
-(define (system ast) 
-  (if (system? ast)
-      ast
-      (assoc 'system ast)))
-
 (define (ports ast)
   (match ast
     ((or (? component?) (? system?)) (body (ports-element ast)))
@@ -447,6 +474,9 @@
     (#f #f)
     (_ (car ast))))
 
+(define (Class ast)
+  (symbol-capitalize (class ast)))
+
 (define (statement ast)
   (match ast
     ((? system?) (or (assoc 'compound (body ast)) (make 'compound '())))
@@ -460,7 +490,7 @@
   (match ast 
     ((? event?) (return-type ast)) ;; FIXME junk relaxed accessor
     ((? literal?) (caddr ast))
-    ((or (? port?) (? type?) (? value?) (? variable?)) (cadr ast))
+    ((or (? instance?) (? port?) (? type?) (? value?) (? variable?)) (cadr ast))
     (_ (throw 'match-error  (format #f "~a:type: no match: ~a\n" (current-source-location) ast)))))
 
 (define (field ast)
@@ -576,7 +606,7 @@
       (_ (throw 'match-error  (format #f "~a:find-events: no match: ~a\n" (current-source-location) ast))))))
 
 ;;;; reading/caching
-(define *ast-alist* '(()))
+(define *ast-alist* '())
 (define (ast-add name ast)
   (set! *ast-alist* (assoc-set! *ast-alist* name ast))
   ast)
@@ -584,8 +614,10 @@
 ;; procedure: ast:import MODEL-NAME
 ;;
 ;; Read and parse the ASD source file for MODEL-NAME, return its AST.
-(define (read-ast name)
-  (read-asd (->string (list 'examples '/ name '.asd))))
+(define (read-ast model-name)
+  (and-let* ((ast (null-is-#f (read-asd (->string (list 'examples '/ model-name '.asd)))))
+             (models (null-is-#f (models ast))))
+            (find (lambda (model) (eq? (name model) model-name)) models)))
 
 (define* (import-ast name #:optional (transform identity))
   "
@@ -596,7 +628,7 @@ Read and parse the ASD source file for MODEL-NAME, return its AST.
 "
   (or (assoc-ref *ast-alist* name)
       (and-let* ((ast (transform (read-ast name))))
-                (ast-add name (car ast)))))
+                (ast-add name ast))))
 
 ;; procedure: ast:ast MODEL-NAME
 ;;
