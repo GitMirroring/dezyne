@@ -315,7 +315,9 @@
               (c++-module ast) 
               instance
               `((instance . ,identity)
-                (.instance . ,ast:name)))))))
+                (.instance . ,ast:name)
+                (.Class . ,(compose ast:Class ast:ast ast:type))
+                (.type . ,ast:type)))))))
        instances))
 
 (define (map-binds string binds)

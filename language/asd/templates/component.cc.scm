@@ -1,4 +1,8 @@
 ##include "#.component Component.h"
+#(map-instances
+#{
+##include "#.type #.Class .h"
+#} (ast:instances model))
 
 ##include "asdSingleThreaded.h"
 ##include "asdUsedServiceRef.h"
@@ -33,6 +37,8 @@ templates/component.cc.scm:29: here */
   };
 #} (if (ast:component? model) (ast:ports model) '()))
 
+# (string-if (ast:behaviour model)
+#{
   struct #.component 
   {
     #(->string (map declare-enum (ast:types (ast:behaviour model))))
@@ -67,6 +73,7 @@ templates/component.cc.scm:29: here */
 templates/component.cc.scm:65: TODO function-definitions */
   };
   class State;
+#})
   class Context: public asd_0::SingleThreadedContext#.no-dpc 
   {
   public:
@@ -79,7 +86,7 @@ templates/component.cc.scm:65: TODO function-definitions */
     #.interface #.callback & Get#.port #.interface #.callback () const;
 #.if-typed 
     #.interface ::#.type  Get#.port #.interface #.api #.type () const;
-    void Set#.port #.interface #.api #.type (#.interface ::#.type #.ap );
+    void Set#.port #.interface #.api #.type (#.interface ::#.type  #.ap );
 #.else-typed 
     void Set#.port #.interface #.api #.type ();
 #.endif-typed 
@@ -88,7 +95,7 @@ templates/component.cc.scm:65: TODO function-definitions */
 
 #(map-instances
 #{
-    boost::shared_ptr<#.component Component> m_#.instance ;
+    boost::shared_ptr<#.type #.Class > m_#.instance ;
 #} (ast:instances model))
 
 # (string-if (ast:behaviour model)
@@ -134,7 +141,7 @@ templates/component.cc.scm:65: TODO function-definitions */
     Context m_Context;
 #(map-ports
 #{    boost::shared_ptr<#.port #.interface #.api Proxy> m_#.port #.interface #.api Proxy;
-#} (ast:ports model))
+#} (if (ast:behaviour model) (ast:ports model) '()))
     Component(const Component&);
     Component& operator = (const Component&);
     
@@ -211,7 +218,7 @@ templates/component.cc.scm:65: TODO function-definitions */
 #} (ast:ports model))
 #(map-instances
 #{
-    m_#.instance  = #.component Component::GetInstance();
+    m_#.instance  = #.type #.Class ::GetInstance();
 #}  (ast:instances model))
 
 #(map-binds
