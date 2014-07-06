@@ -322,21 +322,45 @@
 
 (define (map-binds string binds)
   (map (lambda (bind)
-         (save-module-excursion
-          (lambda ()
-            (animate-string 
-             string 
-             (animate-module-populate
-              (c++-module ast) 
-              bind
-              `((.left . left)
-                (.left-api . left-api)
-                (.left-callback . left-callback)
-                (.left-interface . left-interface)
-                (.left-postfix . left-postfix)
+         (let* ((module (c++-module ast)) 
+                (model (module-ref module 'model))
+                (left (ast:left bind))
+                (left-instance (ast:instance model left))
+                (left-name (ast:name left-instance))
+                (left-port (ast:port model left))
+                (left-api (api left-port))
+                (left-callback (callback left-port))
+                (left-interface (ast:type left-port))
+                (left-postfix (if (ast:bottom? (ast:ast left-interface))
+                                  "" (ast:name left-port)))
 
-                (.right . right)
-                (.right-postfix . right-postfix)))))))
+                (right (ast:right bind))
+                (right-instance (ast:instance model right))
+                (right-name (ast:name right-instance))
+                (right-port (ast:port model right))
+                (right-interface (ast:type right-port))
+                (right-postfix (if (ast:bottom? (ast:ast right-interface))
+                                  "" (ast:name right-port)))
+                ;;(right 3)
+                )
+           (save-module-excursion
+            (lambda ()
+              (animate-string 
+               string 
+               (animate-module-populate
+                module
+                bind
+                `((left . ,left)
+                  (.left . ,left-name)
+                  (.left-api . ,left-api)
+                  (.left-callback . ,left-callback)
+                  (.left-interface . ,left-interface)
+                  (.left-postfix . ,left-postfix)
+                  
+                  (right . ,right)
+                  (.right . ,right-name)
+                  (.right-interface . ,right-interface)
+                  (.right-postfix . ,right-postfix))))))))
        binds))
 
 (define (map-events string events)

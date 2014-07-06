@@ -101,7 +101,7 @@ c++: compile baseline
 	cd out && ../gaiag -l c++ examples/AlarmSystem.asd
 	$(diff) baseline/AlarmSystemComponent.hpp out | $(sed)	
 	$(diff) baseline/AlarmSystemComponent.cpp out | $(sed)	
-	cd out && g++ -I ../../../examples/codegen/asd_cpp_runtime --std=c++11 -c AlarmSystemComponent.cpp
+	-cd out && g++ -I ../../../examples/codegen/asd_cpp_runtime --std=c++11 -c AlarmSystemComponent.cpp
 
 wfc: compile
 	-./gaiag -l wfc examples/double-on.asd
@@ -133,7 +133,7 @@ simulate: compile
 	./gaiag -l simulate -t '(a a a a a)' examples/if.asd
 #	./gaiag -l simulate examples/Alarm.asd |& grep '^\*\*' | wc -l
 #	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" examples/Console.asd | ./scm2json | sed -e "s/, /,\n /g"
-	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" examples/alarm-component.asd
+	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" examples/alarmcomponent.asd
 	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" -j examples/alarm-component.asd | ./scm2json | sed -e 's/, /,\n /g'
 
 

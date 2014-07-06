@@ -231,7 +231,9 @@ templates/component.cc.scm:65: TODO function-definitions */
       m_#.right ->Get#.left-callback #.right-postfix (&cb);
       m_#.left ->Register#.left-callback #.left-postfix (cb);
     }
-#} (ast:binds model))
+#} (filter (lambda (bind) (and (ast:value? (ast:left bind))
+                               (ast:value? (ast:right bind))))
+           (ast:binds model)))
   }
   
   Context::~Context()

@@ -116,6 +116,7 @@
 ;;          (system    AlarmSystem  (ports) (compound)) *see below
 ;;          ^class    ^name        ^ports  ^statement
 ;;         )
+;;
 ;; 
 ;;   (ast:instances (ast:system AST))
 ;;      ==>
@@ -124,7 +125,13 @@
 ;;           ^class       ^type   ^name
 ;;
 ;;
-
+;;   (ast:binds (ast:system AST))
+;;      ==>
+;;   SUB-AST 
+;;    := ((bind   console (value alarm console)))
+;;         ^class  ^left  ^right
+;;
+;;
 ;;; Code:
 
 (read-set! keywords 'prefix)
@@ -180,9 +187,11 @@
            instance
            instance?
            instances
+           instances?
            interface
            interfaces
            interface?
+           left
 	   literal?
            make
            model?
@@ -198,6 +207,7 @@
            register
            requires?
 	   return-type
+           right
 	   scope
 	   signature
 	   signature?
@@ -258,6 +268,7 @@
 (define (events? ast) (type-helper? 'events ast))
 (define (guard? ast) (type-helper? 'guard ast))
 (define (instance? ast) (type-helper? 'instance ast))
+(define (instances? ast) (type-helper? 'instances ast))
 (define (interface? ast) (type-helper? 'interface ast))
 (define (imports? ast) (type-helper? 'imports ast))
 (define (literal? ast) (type-helper? 'literal ast))
@@ -335,6 +346,16 @@
                                   ((component) component-)
                                   ((system) system-))) x)) (models ast))
   ast)
+
+(define (left ast)
+  (match ast
+    ((? bind?) (cadr ast))
+    (_ (throw 'match-error (format #f "~a:left: no match: ~a\n" (current-source-location) ast)))))
+
+(define (right ast)
+  (match ast
+    ((? bind?) (caddr ast))
+    (_ (throw 'match-error (format #f "~a:left: no match: ~a\n" (current-source-location) ast)))))
 
 (define (binds ast)
   (match ast
@@ -420,15 +441,48 @@
 (define (imports ast) (body (imports-element ast)))
 
 (define* (port ast :optional (identifier #f))
-  (if identifier
-      (find (lambda (p) (eq? (name p) identifier))
-            (body
-             (match ast
-               ((? ports?) ast)
-               ((or (? component?) (? system?)) (ports-element ast))
-               (_ (throw 'match-error  (format #f "~a:port: no match: ~a\n" (current-source-location) ast))))))
-      (match ast
-        ((or (? component?) (? system?)) (assoc 'provides (ports ast))))))
+  (match identifier
+    (#f (match ast
+          ((or (? component?) (? system?)) (assoc 'provides (ports ast)))
+          (_ (throw 'match-error  (format #f "~a:port: no match: ~a\n" (current-source-location) ast)))))
+    ((? symbol?)  
+     (find (lambda (p) (eq? (name p) identifier))
+           (body
+            (match ast
+              ((? ports?) ast)
+              ((or (? component?) (? system?)) (ports-element ast))
+              (_ (throw 'match-error  (format #f "~a:port: no match: ~a\n" (current-source-location) ast)))))))
+    ((? value?) (let* ((t (type identifier))
+                       (f (field identifier))
+                       (i (instance ast t)))
+                  (if (eq? t f) ;; FIXME
+                      (port (import-ast 'Alarm) f) ;; FIXME
+                      (port (import-ast (type i)) f))))))
+
+(define (instance- ast identifier)
+  (find (lambda (i) (eq? (name i) identifier))
+        (match ast
+          ((? system?) (instances ast))
+          ((h ...) ast)
+          (_ (throw 'match-error  (format #f "~a:instance-: no match: ~a\n" (current-source-location) ast))))))
+
+;; PORT    ((? value?) (port (import-ast (type identifier)) (field identifier)))
+;; PORT
+    ;; ((? value?) (find (lambda (i) (eq? (name i) identifier))
+    ;;                   (match ast
+    ;;                     ((? system?) (instances ast))
+    ;;                     ((h ...) ast)
+    ;;                     (_ (throw 'match-error  (format #f "~a:instance: no match: ~a\n" (current-source-location) ast))))))
+
+(define (instance ast identifier)
+  (match ast
+    ((? system?) (if (value? identifier)
+                     (instance- ast (type identifier))
+                     (or (instance- ast identifier)
+                         (and-let* ((provides (port ast identifier))
+                                    ((eq? (name provides) identifier)))
+                                   identifier))))
+    (_ (throw 'match-error  (format #f "~a:instance: no match: ~a\n" (current-source-location) ast)))))
 
 (define (direction ast) 
   (match ast 
@@ -460,6 +514,7 @@
   (match ast
     ((or (? behaviour?) (? enum?) (? model?)) (or (and (>1 (length ast)) (cadr ast)) ""))
     ((or (? event?) (? instance?) (? port?) (? variable?)) (caddr ast))
+    ((? symbol?) ast)
     (_ (throw 'match-error  (format #f "~a:name: no match: ~a\n" (current-source-location) ast)))))
 
 (define (class ast)
