@@ -242,7 +242,7 @@
 
 (define (return-type-text port)
   (or (and-let* ((event (null-is-#f (ast:typed? port))))
-                (ast:return-type (car event)))
+                (ast:type (ast:return-type (car event))))
       'void))
 
 (define (return-interface-type interface event)
