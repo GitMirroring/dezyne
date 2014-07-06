@@ -24,6 +24,11 @@
   #:use-module (language asd misc)
   #:export (make-tokenizer make-tokenizer/1))
 
+(define (syntax-error what loc form . args)
+  (throw 'syntax-error #f what
+         (and=> loc source-location->source-properties)
+         form #f args))
+
 (define (string-symbol x) (cons (symbol->string x) x))
 (define *keywords*
   (map string-symbol 
