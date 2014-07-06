@@ -44,7 +44,7 @@
   (module-define! (resolve-module '(language asd c++)) 'ast ast)  ;; FIXME
   (and=> (ast:interface ast) dump-interface)
   (and=> (ast:component ast) dump-component)
-  (and=> (ast:system ast) dump-system)
+  (and=> (ast:system ast) dump-component)
   "")
 
 
@@ -65,15 +65,6 @@
     (dump-output (list name '-c2.cc)
                  (lambda ()
                    ((animate-template 'c2.cc.scm) (c++-module ast))))))
-
-(define (dump-system model)
-  (let ((name (ast:name model)))
-    (dump-output (list name 'Component.h)
-                 (lambda ()
-                   ((animate-template 'component.hh.scm) (c++-module ast))))
-    (dump-output (list name 'Component.cpp)
-                 (lambda ()
-                   ((animate-template 'component.cc.scm) (c++-module ast))))))
 
 (define ((animate-template file-name) module)
   (animate-file (symbol-append 'templates/ file-name) module))

@@ -3,15 +3,15 @@
 ##include <map>
 ##include <string>
 
-struct #.component 
+struct #.model 
 {
 #(map-ports
 #{  
   #.interface Port #.port ;
 #}
- ((compose ast:ports ast:component) ast))
+ (ast:ports model))
 
-  #.component ()
+  #.model ()
   : foo ()
 #(map-ports
 #{
@@ -20,7 +20,7 @@ struct #.component
   (if (eq? (ast:direction port) 'provides)
      (list (comma-join m) ",{}")
      (list "{}, " (comma-join m))))}
-#} ((compose ast:ports ast:component) ast))
+#} (ast:ports model))
   {}
 
 #(map-ports
@@ -29,27 +29,27 @@ struct #.component
 #{
   void #.event ()
   {
-    std::cout << "#.component .#.event " << std::endl;
+    std::cout << "#.model .#.event " << std::endl;
     #.port .#(ast:direction event).#(action .port .event)();
   }
 #} port (ast:events port)))
-#} ((compose ast:ports ast:component) ast))
+#} (ast:ports model))
 
 XXXhandwrittervoid disarm()
   {
-    std::cout << "#.component .disarm" << std::endl;
+    std::cout << "#.model .disarm" << std::endl;
     sensor.in.disable();
   }
 
   void triggered()
   {
-    std::cout << "#.component .triggered" << std::endl;
+    std::cout << "#.model .triggered" << std::endl;
     siren.in.on();
     console.out.tripped();
   }
   void deactivated()
   {
-    std::cout << "#.component .deactivated" << std::endl;
+    std::cout << "#.model .deactivated" << std::endl;
     siren.in.off();
     console.out.switched_off();
   }};
