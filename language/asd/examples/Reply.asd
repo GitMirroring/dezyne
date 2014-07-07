@@ -86,7 +86,6 @@ component Reply
         {
           reply(I.Status.No);
         }
-        dummy = true;
       }
     }
   }
