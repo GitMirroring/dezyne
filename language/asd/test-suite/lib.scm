@@ -3,6 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -100,16 +101,16 @@
 
 ;;;; CORE FUNCTIONS
 ;;;;
-;;;; The function (run-test name expected-result thunk) is the heart of the
+;;;; The function (run-test name location expected-result thunk) is the heart of the
 ;;;; testing environment.  The first parameter NAME is a unique name for the
 ;;;; test to be executed (for an explanation of this parameter see below under
-;;;; TEST NAMES).  The second parameter EXPECTED-RESULT is a boolean value
+;;;; TEST NAMES).  The third parameter EXPECTED-RESULT is a boolean value
 ;;;; that indicates whether the corresponding test is expected to pass.  If
 ;;;; EXPECTED-RESULT is #t the test is expected to pass, if EXPECTED-RESULT is
 ;;;; #f the test is expected to fail.  Finally, THUNK is the function that
 ;;;; actually performs the test.  For example:
 ;;;;
-;;;;    (run-test "integer addition" #t (lambda () (= 2 (+ 1 1))))
+;;;;    (run-test "integer addition" (current-source-location) #t (lambda () (= 2 (+ 1 1))))
 ;;;;
 ;;;; To report success, THUNK should either return #t or throw 'pass.  To
 ;;;; report failure, THUNK should either return #f or throw 'fail.  If THUNK
@@ -127,9 +128,9 @@
 ;;;; Convenience macros for tests expected to pass or fail
 ;;;;
 ;;;; * (pass-if name body) is a short form for
-;;;;   (run-test name #t (lambda () body))
+;;;;   (run-test name (current-source-location) #t (lambda () body))
 ;;;; * (expect-fail name body) is a short form for
-;;;;   (run-test name #f (lambda () body))
+;;;;   (run-test name (current-source-location) #f (lambda () body))
 ;;;;
 ;;;; For example:
 ;;;;
@@ -182,9 +183,9 @@
 ;;;; a test name in such cases.
 ;;;;
 ;;;; * (pass-if expression) is a short form for
-;;;;   (run-test 'expression #t (lambda () expression))
+;;;;   (run-test 'expression location #t (lambda () expression))
 ;;;; * (expect-fail expression) is a short form for
-;;;;   (run-test 'expression #f (lambda () expression))
+;;;;   (run-test 'expression location #f (lambda () expression))
 ;;;;
 ;;;; For example:
 ;;;;
@@ -340,7 +341,7 @@
 ;;; The idea is taken from Greg, the GNUstep regression test environment.
 (define run-test
   (let ((test-running #f))
-    (lambda (name expect-pass thunk)
+    (lambda (name location expect-pass thunk)
       (if test-running
           (error "Nested calls to run-test are not permitted."))
       (let ((test-name (full-name name)))
@@ -354,20 +355,21 @@
               (lambda (key . args)
                 (case key
                   ((pass)
-                   (report (if expect-pass 'pass 'upass) test-name))
+                   (report (if expect-pass 'pass 'upass) test-name location))
                   ((fail)
                    ;; ARGS may contain extra info about the failure,
                    ;; such as the expected and actual value.
                    (apply report (if expect-pass 'fail 'xfail)
                           test-name
+                          location
                           args))
                   ((unresolved untested unsupported)
-                   (report key test-name))
+                   (report key test-name location))
                   ((quit)
-                   (report 'unresolved test-name)
+                   (report 'unresolved test-name location)
                    (quit))
                   (else
-                   (report 'error test-name (cons key args))))))
+                   (report 'error test-name location (cons key args))))))
             (set! test-running #f)))))
 
 ;;; A short form for tests that are expected to pass, taken from Greg.
@@ -376,9 +378,9 @@
     ((_ name)
      ;; presume this is a simple test, i.e. (pass-if (even? 2))
      ;; where the body should also be the name.
-     (run-test 'name #t (lambda () name)))
+     (run-test 'name (current-source-location) #t (lambda () name)))
     ((_ name rest ...)
-     (run-test name #t (lambda () rest ...)))))
+     (run-test name (current-source-location) #t (lambda () rest ...)))))
 
 (define-syntax pass-if-equal
   (syntax-rules ()
@@ -386,7 +388,7 @@
     ((_ expected body)
      (pass-if-equal 'body expected body))
     ((_ name expected body ...)
-     (run-test name #t
+     (run-test name (current-source-location) #t
                (lambda ()
                  (let ((result (begin body ...)))
                    (or (equal? expected result)
@@ -400,12 +402,12 @@
     ((_ name)
      ;; presume this is a simple test, i.e. (expect-fail (even? 2))
      ;; where the body should also be the name.
-     (run-test 'name #f (lambda () name)))
+     (run-test 'name (current-source-location) #f (lambda () name)))
     ((_ name rest ...)
-     (run-test name #f (lambda () rest ...)))))
+     (run-test name (current-source-location) #f (lambda () rest ...)))))
 
 ;;; A helper function to implement the macros that test for exceptions.
-(define (run-test-exception name exception expect-pass thunk)
+(define (run-test-exception name location exception expect-pass thunk)
   (match exception
     ((expected-key . expected-pattern)
      (run-test
@@ -431,13 +433,13 @@
 (define-syntax pass-if-exception
   (syntax-rules ()
     ((_ name exception body rest ...)
-     (run-test-exception name exception #t (lambda () body rest ...)))))
+     (run-test-exception name (current-source-location) exception #t (lambda () body rest ...)))))
 
 ;;; A short form for tests expected to fail to throw a certain exception.
 (define-syntax expect-fail-exception
   (syntax-rules ()
     ((_ name exception body rest ...)
-     (run-test-exception name exception #f (lambda () body rest ...)))))
+     (run-test-exception name (current-source-location) exception #f (lambda () body rest ...)))))
 
 
 ;;;; TEST NAMES
@@ -643,11 +645,13 @@
   '(fail upass unresolved error))
 
 ;;; Display a single test result in formatted form to the given port
-(define (print-result port result name . args)
+(define (print-result port result name location . args)
   (let* ((tag (assq result result-tags))
 	 (label (if tag (cadr tag) #f)))
     (if label
 	(begin
+          (if (not (eq? result 'pass))
+              (format port "~a:~a:" (assoc-ref location 'filename) (1+ (assoc-ref location 'line))))
 	  (display label port)
 	  (display ": " port)
 	  (display (format-test-name name) port)
