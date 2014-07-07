@@ -14,10 +14,10 @@ I_(IG) = let
 I__((dummy)) =
 (true) & (
 I?x:{done} ->
-(\P',V' @ I.Status_Yes -> P'(V')) (\V' @ I__(V'),(dummy))
-[]
-I?x:{done} ->
-(\P',V' @ I.Status_No -> P'(V')) (\V' @ I__(V'),(dummy)))
+(\P',V' @ I.Status_Yes -> P'(V'))(\V' @ I__(V'),((dummy)))
+  []
+  I?x:{done} ->
+(\P',V' @ I.Status_No -> P'(V'))(\V' @ I__(V'),((dummy))))
 
 within I__((false))
 
@@ -25,25 +25,25 @@ U_(IG) = let
 U__((dummy)) =
 (true) & (
 U?x:{what} ->
-(\P',V' @ U.Status_Ok -> P'(V')) (\V' @ U__(V'),(dummy))
-[]
-U?x:{what} ->
-(\P',V' @ U.Status_Nok -> P'(V')) (\V' @ U__(V'),(dummy)))
+(\P',V' @ U.Status_Ok -> P'(V'))(\V' @ U__(V'),((dummy)))
+  []
+  U?x:{what} ->
+(\P',V' @ U.Status_Nok -> P'(V'))(\V' @ U__(V'),((dummy))))
 
 within U__((false))
 
 
-C_(IIG,IG) = let
-C__((dummy)) = transition_begin -> (
+Reply_(IIG,IG) = let
+Reply__((dummy)) = transition_begin -> (
 (true) & (
 i?x:{done} ->
 semi((\P',V' @ u!what -> u?s -> P'((V',s))),
 \P',((dummy),s) @ ifthenelse(s == Status_Ok,
 (\P',V' @ i.Status_Yes -> P'(V')),
 (\P',V' @ i.Status_No -> P'(V'))
-)(P',(dummy))) (\V' @ transition_end -> C__(V'),(dummy)))
+)(P',(dummy)))(\V' @ transition_end -> Reply__(V'),((dummy))))
 )
-within C__((false))
+within Reply__((false))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
@@ -85,24 +85,24 @@ within Idle(0)
 
 within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-C__Component(IIG) = let
+Reply__Component(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {i.Status_Yes, i.Status_No}
+Exclude = {i.Status_Yes,i.Status_No}
 ClientCalls = {i.done}
 UsedModeling = {}
-within compress((C_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+within compress((Reply_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,i,u|},Exclude)|]
 (((U_(true) [[U.x<-u.x|x<-extensions(U)]]
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
-assert C__Component(false) :[deadlock free]
-assert C_(true,true) :[deterministic]
-assert STOP [T= C__Component(false) \ diff(Events,{illegal})
-assert I_(true) [[I.x<-i.x|x<-extensions(I)]] \ {} [FD= C__Component(true) \ diff(Events,{|illegal,i|}) \ {}
+assert Reply__Component(false) :[deadlock free]
+assert Reply_(true,true) :[deterministic]
+assert STOP [T= Reply__Component(false) \ diff(Events,{illegal})
+assert I_(true) [[I.x<-i.x|x<-extensions(I)]] \ {} [FD= Reply__Component(true) \ diff(Events,{|illegal,i|}) \ {}
 assert I_(false) :[deadlock free]
 
 assert I_(true) :[livelock free]

@@ -63,7 +63,7 @@ interface U
   }
 }
 
-component C
+component Reply
 {
   provides I i;
   requires U u;
@@ -86,6 +86,7 @@ component C
         {
           reply(I.Status.No);
         }
+        dummy = true;
       }
     }
   }
