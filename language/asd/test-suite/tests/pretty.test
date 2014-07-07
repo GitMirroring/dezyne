@@ -80,7 +80,7 @@ interface i
 {
   behaviour 
   { 
-   [true || false] { } 
+   [(true || false)] { } 
   }
 }
 #}))
