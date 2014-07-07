@@ -13,41 +13,41 @@ iimperative_(IG) = let
 iimperative__((s,b,c)) =
 (s == S1) & (
 iimperative?x:{e} ->
-semi(semi(\P',(s,b,c) @ ifthenelse((c or b),
+semi(semi(\P',((s,b,c)) @ ifthenelse((c or b),
 semi((\P',V' @ iimperative!f -> P'(V')),
 (\P',V' @ iimperative!g -> P'(V'))),
 (\P',V' @ P'(V'))
-)(P',(s,b,c)),
-semi(\P',(s,b,c) @ ifthenelse(b,
-semi(\P',(s,b,c) @ ifthenelse(c,
+)(P',((s,b,c))),
+semi(\P',((s,b,c)) @ ifthenelse(b,
+semi(\P',((s,b,c)) @ ifthenelse(c,
 (\P',V' @ iimperative!g -> P'(V')),
 (\P',V' @ P'(V'))
-)(P',(s,b,c)),
-semi(assign(\(s,b,c) @ (s,b,false)),
+)(P',((s,b,c))),
+semi(assign(\((s,b,c)) @ (s,b,false)),
 (\P',V' @ iimperative!f -> P'(V')))),
-\P',(s,b,c) @ ifthenelse(c,
-semi(assign(\(s,b,c) @ (s,false,c)),
+\P',((s,b,c)) @ ifthenelse(c,
+semi(assign(\((s,b,c)) @ (s,false,c)),
 (\P',V' @ iimperative!h -> P'(V'))),
-semi(assign(\(s,b,c) @ (s,true,c)),
+semi(assign(\((s,b,c)) @ (s,true,c)),
 (\P',V' @ iimperative!g -> P'(V')))
-)(P',(s,b,c))
-)(P',(s,b,c)),
-assign(\(s,b,c) @ (S2,b,c)))),
-(\P',V' @ iimperative.return -> P'(V')))(\V' @ iimperative__(V'),(s,b,c)))
+)(P',((s,b,c)))
+)(P',((s,b,c))),
+assign(\((s,b,c)) @ (S2,b,c)))),
+(\P',V' @ iimperative.return -> P'(V')))(\V' @ iimperative__(V'),((s,b,c))))
 []
 (s == S2) & (
 iimperative?x:{e} ->
-semi(semi(\P',(s,b,c) @ ifthenelse(b,
-semi(\P',(s,b,c) @ ifthenelse(not (c),
-assign(\(s,b,c) @ (s,b,true)),
-assign(\(s,b,c) @ (s,b,false))
-)(P',(s,b,c)),
+semi(semi(\P',((s,b,c)) @ ifthenelse(b,
+semi(\P',((s,b,c)) @ ifthenelse(not (c),
+assign(\((s,b,c)) @ (s,b,true)),
+assign(\((s,b,c)) @ (s,b,false))
+)(P',((s,b,c))),
 (\P',V' @ iimperative!h -> P'(V'))),
 (\P',V' @ P'(V'))
-)(P',(s,b,c)),
-semi(assign(\(s,b,c) @ (s,not (b),c)),
-assign(\(s,b,c) @ (S1,b,c)))),
-(\P',V' @ iimperative.return -> P'(V')))(\V' @ iimperative__(V'),(s,b,c)))
+)(P',((s,b,c))),
+semi(assign(\((s,b,c)) @ (s,not (b),c)),
+assign(\((s,b,c)) @ (S1,b,c)))),
+(\P',V' @ iimperative.return -> P'(V')))(\V' @ iimperative__(V'),((s,b,c))))
 
 within iimperative__((S1,false,true)) 
 
@@ -59,13 +59,13 @@ i?x:{e} ->
 semi(semi((\P',V' @ i!f -> P'(V')),
 semi((\P',V' @ i!g -> P'(V')),
 semi((\P',V' @ i!h -> P'(V')),
-assign(\(state) @ (II))))),
-(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> imperative__(V'),(state)))
+assign(\((state)) @ (II))))),
+(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> imperative__(V'),((state))))
 []
 (state == II) & (
 i?x:{e} ->
-semi(assign(\(state) @ (III)),
-(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> imperative__(V'),(state)))
+semi(assign(\((state)) @ (III)),
+(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> imperative__(V'),((state))))
 []
 (state == III) & (
 i?x:{e} ->
@@ -73,14 +73,14 @@ semi(semi((\P',V' @ i!f -> P'(V')),
 semi((\P',V' @ i!g -> P'(V')),
 semi((\P',V' @ i!g -> P'(V')),
 semi((\P',V' @ i!f -> P'(V')),
-assign(\(state) @ (IV)))))),
-(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> imperative__(V'),(state)))
+assign(\((state)) @ (IV)))))),
+(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> imperative__(V'),((state))))
 []
 (state == IV) & (
 i?x:{e} ->
 semi(semi((\P',V' @ i!h -> P'(V')),
-assign(\(state) @ (I))),
-(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> imperative__(V'),(state)))
+assign(\((state)) @ (I))),
+(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> imperative__(V'),((state))))
 )
 within imperative__((I))
 
