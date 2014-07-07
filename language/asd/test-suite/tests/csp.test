@@ -232,7 +232,7 @@ illegal -> STOP"))
            '(assign c true))
 
           ;; via:
-          '(assign ((s b c)) ((s b true)))))
+          '(assign ((s b c)) () ((s b true)))))
 
 (pass-if "csp-transform-assign-bool"
          (noisy-equal?
@@ -242,7 +242,7 @@ illegal -> STOP"))
 
            i-ast
 
-           '(assign ((s b c)) ((s b true))))
+           '(assign ((s b c)) () ((s b true))))
 
           ;; via:
           "assign(\\((s,b,c)) @ (s,b,true))"))
@@ -259,7 +259,7 @@ illegal -> STOP"))
            '(assign s (value S S2)))
 
           ;; via:
-          '(assign ((s b c)) ((S2 b c)))))
+          '(assign ((s b c)) () ((S2 b c)))))
 
 (pass-if "csp-transform-assign-enum"
          (noisy-equal?
@@ -269,7 +269,7 @@ illegal -> STOP"))
 
            i-ast
 
-           '(assign ((s b c)) ((S2 b c))))
+           '(assign ((s b c)) () ((S2 b c))))
 
           ;; via:
           "assign(\\((s,b,c)) @ (S2,b,c))"))
@@ -287,7 +287,7 @@ illegal -> STOP"))
                 (compound)))
 
           ;; via:
-          '(if ((s b c))
+          '(if ((s b c)) ()
                (expression b)
                ()
                ())))
@@ -320,7 +320,7 @@ illegal -> STOP"))
                 (compound)))
 
           ;; via:
-          '(if ((s b c))
+          '(if ((s b c)) ()
                (expression b)
                ()
                ())))
@@ -333,7 +333,7 @@ illegal -> STOP"))
 
            i-ast
 
-           '(if ((s b c))
+           '(if ((s b c)) ()
                (expression b)
                ()
                ()))
@@ -358,7 +358,7 @@ illegal -> STOP"))
                 ()))
 
           ;; via:
-          '(if ((s b c))
+          '(if ((s b c)) ()
                (expression (and IG b))
                (action illegal)
                ())))
@@ -376,7 +376,7 @@ illegal -> STOP"))
                 (action illegal)))
 
           ;; via:
-          '(if ((s b c))
+          '(if ((s b c)) ()
                (expression (and (! IG) b))
                ()
                (action illegal))))
@@ -395,11 +395,11 @@ illegal -> STOP"))
              (assign b true)))
 
           ;; via:
-          '(semi (if ((s b c))
+          '(semi (if ((s b c)) ()
                      (expression b)
                      ()
                      ())
-                 (assign ((s b c)) ((s true c))))))
+                 (assign ((s b c)) () ((s true c))))))
 
 (pass-if "csp-transform-semi"
          (diff-noisy-equal?
@@ -409,11 +409,11 @@ illegal -> STOP"))
 
            i-ast
 
-           '(semi (if ((s b c))
+           '(semi (if ((s b c)) ()
                      (expression b)
                      ()
                      ())
-                 (assign ((s b c)) ((s true c)))))
+                 (assign ((s b c)) () ((s true c)))))
 
           ;; via:
           "semi(\\P',((s,b,c)) @ ifthenelse(b,
@@ -450,21 +450,21 @@ assign(\\((s,b,c)) @ (s,true,c)))"))
           ;; via:
           '(on (e)
                (semi
-                (semi (if ((s b c)) (expression (or c b))
+                (semi (if ((s b c)) () (expression (or c b))
                           (semi (action f) (action g))
                           ())
-                      (semi (if ((s b c)) (expression b)
-                                (semi (if ((s b c)) (expression c)
+                      (semi (if ((s b c)) () (expression b)
+                                (semi (if ((s b c)) () (expression c)
                                           (action g)
                                           ())
-                                      (semi (assign ((s b c)) ((s b false)))
+                                      (semi (assign ((s b c)) () ((s b false)))
                                             (action f)))
-                                (if ((s b c)) (expression c)
-                                    (semi (assign ((s b c)) ((s false c)))
+                                (if ((s b c)) () (expression c)
+                                    (semi (assign ((s b c)) () ((s false c)))
                                           (action h))
-                                    (semi (assign ((s b c)) ((s true c)))
+                                    (semi (assign ((s b c)) () ((s true c)))
                                           (action g))))
-                            (assign ((s b c)) ((S2 b c)))))
+                            (assign ((s b c)) () ((S2 b c)))))
                             (return))
                (the-end (s b c)))))
 
@@ -477,21 +477,21 @@ assign(\\((s,b,c)) @ (s,true,c)))"))
            i-ast
 
            '(on (e)
-                (semi (semi (if ((s b c)) (expression (or c b))
+                (semi (semi (if ((s b c)) () (expression (or c b))
                            (semi (action f) (action g))
                            ())
-                       (semi (if ((s b c)) (expression b)
-                                 (semi (if ((s b c)) (expression c)
+                       (semi (if ((s b c)) () (expression b)
+                                 (semi (if ((s b c)) () (expression c)
                                            (action g)
                                            ())
-                                       (semi (assign ((s b c)) ((s b false)))
+                                       (semi (assign ((s b c)) () ((s b false)))
                                              (action f)))
-                                 (if ((s b c)) (expression c)
-                                     (semi (assign ((s b c)) ((s false c)))
+                                 (if ((s b c)) () (expression c)
+                                     (semi (assign ((s b c)) () ((s false c)))
                                            (action h))
-                                     (semi (assign ((s b c)) ((s true c)))
+                                     (semi (assign ((s b c)) () ((s true c)))
                                            (action g))))
-                             (assign ((s b c)) ((S2 b c)))))
+                             (assign ((s b c)) () ((S2 b c)))))
                       (return))
                 (the-end (s b c))))
 
@@ -684,8 +684,8 @@ semi((\\P',V' @ j!h -> P'(V')),
           '(on ((trigger sensor triggered))
                (semi (semi (action (trigger console detected))
                            (semi (action (trigger siren turnon))
-                                 (semi (assign ((state sounding)) ((state true)))
-                                       (assign ((state sounding)) ((Triggered sounding))))))
+                                 (semi (assign ((state sounding)) () ((state true)))
+                                       (assign ((state sounding)) () ((Triggered sounding))))))
                      (return))
                (the-end (state sounding)))))
 
@@ -701,8 +701,8 @@ semi((\\P',V' @ j!h -> P'(V')),
             '(on ((trigger sensor triggered))
                  (semi (semi (action (trigger console detected))
                              (semi (action (trigger siren turnon))
-                                   (semi (assign ((state sounding)) ((state true)))
-                                         (assign ((state sounding)) ((Triggered sounding))))))
+                                   (semi (assign ((state sounding)) () ((state true)))
+                                         (assign ((state sounding)) () ((Triggered sounding))))))
                        (return))
                  (the-end (state sounding)))))
           ;; via:
@@ -793,7 +793,7 @@ assign(\\((state,sounding)) @ (Triggered,sounding))))),
                (semi
                 (assign
                  (variable (type U (type Status)) s (value u what)))
-                (if ((dummy) s) (expression (== s (literal u Status Ok)))
+                (if ((dummy)) (s) (expression (== s (literal u Status Ok)))
                     (reply (literal I Status Yes))
                     (reply (literal I Status No))))
                (the-end (dummy)))))
@@ -811,17 +811,17 @@ assign(\\((state,sounding)) @ (Triggered,sounding))))),
                 (semi
                  (assign
                   (variable (type U (type Status)) s (value u what)))
-                 (if (()) (expression (== s (literal u Status Ok)))
+                 (if ((dummy)) (s) (expression (== s (literal u Status Ok)))
                      (reply (literal I Status Yes))
                      (reply (literal I Status No))))
                 (return))
-               (the-end ())))
+               (the-end (dummy))))
 
           ;; via:
           "i?x:{done} ->
 semi(semi((\\P',V' @ u!what -> u?s -> P'((V',s))),
-\\P',(()) @ ifthenelse(s == Status_Ok,
+\\P',((dummy),s) @ ifthenelse(s == Status_Ok,
 (\\P',V' @ i.Status_Yes -> P'(V')),
 (\\P',V' @ i.Status_No -> P'(V'))
-)(P',(()))),
-(\\P',V' @ i.return -> P'(V')))(\\V' @ transition_end -> C__(V'),(()))"))
+)(P',((dummy),s))),
+(\\P',V' @ i.return -> P'(V')))(\\V' @ transition_end -> C__(V'),((dummy)))"))
