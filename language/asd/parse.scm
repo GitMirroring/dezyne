@@ -71,7 +71,7 @@
 
 (define (object? lst) #t)
 
-(define (object-id lst) 
+(define (object-id lst)
   (and=> lst (compose pointer-address scm->pointer)))
 
 (if (not (defined? 'supports-source-properties?))
@@ -100,8 +100,8 @@
    (
     lbrace rbrace lparen rparen lbracket rbracket semicolon colon dot comma
     =
-    Identifier 
-    in out interface component system 
+    Identifier
+    in out interface component system
     behaviour namespace on
     illegal inevitable optional
     provides requires otherwise import
@@ -110,11 +110,11 @@
     (left: bool enum void int)
     (nonassoc: == != <=>)
     )
-   
+
    (program
     (model-list *eoi*) : $1)
 
-   (model-list 
+   (model-list
     () : '()
     (model-list model-spec) : (append $1 (list $2)))
 
@@ -160,29 +160,29 @@
 
    (event
     (event-direction type Identifier semicolon) : `(,$1 (,$2) ,$3))
-   
+
    (event-direction
     (in) : 'in
     (out) : 'out)
-   
+
    (port-list
     () : '(ports)
     (port-list port) : (append $1 (list $2)))
 
    (port
     (port-direction Identifier Identifier semicolon) : `(,$1 ,$2 ,$3))
-   
+
    (port-direction
     (provides) : 'provides
     (requires) : 'requires)
-   
-   (type-list 
-    () : '(types) 
+
+   (type-list
+    () : '(types)
     (type-list type-spec) : (append $1 (list $2)))
-   
-   (type-spec 
+
+   (type-spec
     (enum-spec) : $1)
-   
+
    (type
     (bool) : '(type bool)
     (int) : '(type int)
@@ -193,19 +193,19 @@
     (type) : $1
     (Identifier dot type) : `(type ,$1 ,$3))
 
-   (enum-identifier 
+   (enum-identifier
     (Identifier) : $1)
-   
-   (enum-spec 
+
+   (enum-spec
     (enum enum-identifier lbrace enum-value-list rbrace semicolon) : `(,$1 ,$2 ,$4))
-   
-   (enum-value-list 
-    (enum-value) : `(,$1) 
+
+   (enum-value-list
+    (enum-value) : `(,$1)
     (enum-value-list comma enum-value) : (append $1 (list $3)))
-   
+
    (enum-value
     (Identifier) : $1)
-   
+
    (expression
     (lparen expression rparen) : $1
     (! expression) : `(! ,$2)
@@ -214,23 +214,31 @@
     (expression == expression) : `(== ,$1 ,$3)
     (expression != expression) : `(!= ,$1 ,$3)
     (compound-identifier) : $1)
-   
-   (type-identifier 
+
+   (type-identifier
     (Identifier) : $1)
-   
+
    (optional-behaviour
     () : '(behaviour)
-    (behaviour lbrace type-list variable-list statement-list rbrace) : `(,$1 #f ,$3 ,$4 ,$5)
-    (behaviour Identifier lbrace type-list variable-list statement-list rbrace) : `(,$1 ,$2 ,$4 ,$5 ,$6))
+    (behaviour lbrace type-list variable-list function-list statement-list rbrace) : `(,$1 #f ,$3 ,$4 ,$5 ,$6)
+    (behaviour Identifier lbrace type-list variable-list function-list statement-list rbrace) : `(,$1 ,$2 ,$4 ,$5 ,$6 ,$7))
 
-   (statement-list 
-    () : '(compound) 
+   (function
+    (type Identifier lparen rparen compound-statement) : `(function ,$2 ,$1 ,$5))
+
+   (function-list
+    () : '(functions)
+    (function) : `(functions ,$1) ;; FIXME?
+    (function-list function) : (append $1 (list $2)))
+
+   (statement-list
+    () : '(compound)
     (statement-list statement) : (append $1 (list $2)))
 
    (statement
     (guarded-statement) : $1
     (compound-statement) : $1
-    (on-event-statement) : $1 
+    (on-event-statement) : $1
     (illegal-statement) : $1
     (assignment-statement) : $1
     (action-statement) : $1
@@ -240,19 +248,19 @@
 
    (guarded-statement
     (lbracket guard rbracket statement) : (make `(guard ,$2 ,$4) @1))
-   
+
    (guard
     (expression) : $1
     (otherwise) : $1)
-   
+
    (compound-statement
     (lbrace statement-list rbrace) : $2)
 
    (compound-identifier
-    (Identifier) : $1 
+    (Identifier) : $1
     (Identifier dot Identifier) : `(value ,$1 ,$3)
     (Identifier dot Identifier dot Identifier) : `(literal ,$1 ,$3 ,$5))
-   
+
    (on-event-statement
     (on trigger-spec colon statement) : (make `(,$1 ,$2 ,$4) @1))
 
@@ -269,19 +277,19 @@
     (compound-trigger) : $1)
 
    (compound-trigger
-    (Identifier) : $1 
+    (Identifier) : $1
 
     (Identifier dot Identifier) : `(trigger ,$1 ,$3))
 
    (illegal-statement
     (illegal semicolon) : $1)
-   
+
    (assignment-statement
     (Identifier = expression semicolon) : `(assign ,$1 ,$3))
-   
+
    (action-statement
     (trigger semicolon) : `(action ,$1))
-   
+
    (if-statement
     (if lparen expression rparen statement) : `(if ,$3 ,$5)
     (if lparen expression rparen statement else statement) : `(if ,$3 ,$5 ,$7))
@@ -296,7 +304,7 @@
     () : '(variables)
     (variable-list variable) : (append $1 (list $2)))
 
-   (variable 
+   (variable
     (type Identifier = expression semicolon) : `(variable ,$1 ,$2 ,$4))))
 
 (define (compile-tree-il exp env opts)
