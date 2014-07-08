@@ -24,7 +24,6 @@
 
   :use-module (system base language)
 
-  :use-module (language asd ast:)
   :use-module (language asd misc)
   :use-module (language asd parse)
   :use-module (language asd tokenize)
@@ -44,7 +43,7 @@
      (else exp))))
 
 (define (asd-reader port env)
-  (ast:register ((make-parser) (make-tokenizer port) error)))
+  ((@(language asd ast) register) ((make-parser) (make-tokenizer port) error)))
 
 (define (read-asd file-name)
   (asd-reader (open-file file-name "r") (current-module)))

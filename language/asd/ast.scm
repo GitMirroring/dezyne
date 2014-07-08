@@ -79,9 +79,17 @@
 ;;   (ast:functions (ast:behaviour (ast:interface AST)))
 ;;      ==>
 ;;   SUB-AST
-;;      := ((function name  (type void) (compound)))
-;;           ^class   ^name ^type       ^statement
+;;      := ((function name  ((type void)  (parameters (((type bool) b))) (compound)))
+;;           ^class   ^name ^^return-type ^parameters ^parameter         ^statement
+;;                          |signature    
 ;;
+;;   (ast:parameters function)
+;;      ==>
+;;   SUB-AST
+;;     :=  ( ((type bool) a)))
+;;           ^^type ^name ^name
+;;           |parameter
+;; 
 ;;   (ast:triggers (ast:component AST))
 ;;      ==>
 ;;   SUB-AST
@@ -93,8 +101,7 @@
 ;;      ==>
 ;;   SUB-AST
 ;;      (value  type    field)
-;;       ^class ^type   ^field;;
-;;
+;;       ^class ^type   ^field
 ;;
 ;;   FIXME (ast:types (ast:interface ast))
 ;;      ==>
@@ -204,6 +211,10 @@
            name
            on?
            out?
+           parameter
+           parameter?
+           parameters
+           parameters?
            parent
            port
            port?
@@ -235,7 +246,9 @@
            variables?
 
            events-element
+           functions-element
            imports-element
+           parameters-element
            ports-element
            types-element
            variables-element
@@ -250,6 +263,7 @@
 (define (events-element ast) (element ast 'events))
 (define (imports-element ast) (element ast 'imports))
 (define (functions-element ast) (element ast 'functions))
+(define (parameters-element ast) (element ast 'parameters))
 (define (ports-element ast) (element ast 'ports))
 (define (types-element ast) (element ast 'types))
 (define (variables-element ast) (element ast 'variables))
@@ -260,8 +274,12 @@
        (let ((head (car ast)))
          (case type
            ((event) (member head '(in out)))
+           ((parameter) (and (=2 (length ast)) (type? (car ast)) (symbol? (cadr ast))))
            ((port) (member head '(provides requires)))
-	   ((signature) (and (=1 (length ast)) (type? (car ast))))
+	   ((signature) (or (and (=1 (length ast)) (type? (car ast)))
+                            (and (=2 (length ast))
+                                 (type? (car ast))
+                                 (parameters? (cadr ast)))))
          (else (eq? head type))))))
 
 (define (action? ast) (type-helper? 'action ast))
@@ -282,6 +300,8 @@
 (define (imports? ast) (type-helper? 'imports ast))
 (define (literal? ast) (type-helper? 'literal ast))
 (define (on? ast) (type-helper? 'on ast))
+(define (parameter? ast) (type-helper? 'parameter ast))
+(define (parameters? ast) (type-helper? 'parameters ast))
 (define (port? ast) (type-helper? 'port ast))
 (define (ports? ast) (type-helper? 'ports ast))
 (define (signature? ast) (type-helper? 'signature ast))
@@ -300,7 +320,7 @@
   (match ast
     ((or (? behaviour?) (? model?))
      (or (and (>2 (length ast)) (cddr ast)) '()))
-    ((or  (? compound?) (? events?) (? functions?) (? guard?) (? imports?) (? on?) (? ports?) (? types?) (? variables?))
+    ((or  (? compound?) (? events?) (? functions?) (? guard?) (? imports?) (? on?) (? parameters?) (? ports?) (? types?) (? variables?))
      (cdr ast))
     ;; be permissive for events, imports ports, types, variable
     ((('in type name) t ...) ast)
@@ -385,6 +405,12 @@
     ((? action?) (cadr ast))
     (_ (throw 'match-error  (format #f "~a:event: no match: ~a\n" (current-source-location) ast)))))
 
+(define (parameters ast)
+  (match ast
+    ((? function?) (parameters (signature ast)))
+    ((? signature?) (body (cadr ast)))
+    (_ (throw 'match-error  (format #f "~a:parameters: no match: ~a\n" (current-source-location) ast)))))
+
 (define (scope ast)
   (match ast
     ((? literal?) (cadr ast))
@@ -393,6 +419,7 @@
 (define (signature ast)
   (match ast
     ((? event?) (cadr ast))
+    ((? function?) (caddr ast))
     (_ (throw 'match-error  (format #f "~a:signature: no match: ~a\n" (current-source-location) ast)))))
 
 (define (variable ast)
@@ -403,7 +430,7 @@
 
 (define (return-type ast)
   (match ast
-    ((? event?) (return-type (signature ast)))
+    ((or (? event?) (? function?)) (return-type (signature ast)))
     ((? signature?) (car ast))
     (_ (throw 'match-error  (format #f "~a:return-type: no match: ~a\n" (current-source-location) ast))))  )
 
@@ -513,7 +540,7 @@
 
 (define (name ast)
   (match ast
-    ((or (? behaviour?) (? enum?) (? function?) (? model?)) (or (and (>1 (length ast)) (cadr ast)) ""))
+    ((or (? behaviour?) (? enum?) (? function?) (? model?) (? parameter?)) (or (and (>1 (length ast)) (cadr ast)) ""))
     ((or (? event?) (? instance?) (? port?) (? variable?)) (caddr ast))
     ((? symbol?) ast)
     (_ (throw 'match-error  (format #f "~a:name: no match: ~a\n" (current-source-location) ast)))))
@@ -545,6 +572,7 @@
 (define (type ast)
   (match ast
     ((? event?) (return-type ast)) ;; FIXME junk relaxed accessor
+    ((? parameter?) (car ast))
     ((? literal?) (caddr ast))
     ((or (? instance?) (? port?) (? type?) (? value?) (? variable?)) (cadr ast))
     (_ (throw 'match-error  (format #f "~a:type: no match: ~a\n" (current-source-location) ast)))))

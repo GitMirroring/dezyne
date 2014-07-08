@@ -224,7 +224,15 @@
     (behaviour Identifier lbrace type-list variable-list function-list statement-list rbrace) : `(,$1 ,$2 ,$4 ,$5 ,$6 ,$7))
 
    (function
-    (type Identifier lparen rparen compound-statement) : `(function ,$2 ,$1 ,$5))
+    (type Identifier lparen rparen compound-statement) : `(function ,$2 (,$1) ,$5)
+    (type Identifier lparen parameter-list rparen compound-statement) : `(function ,$2 (,$1 ,$4) ,$6))
+
+   (parameter-list
+    (parameter) : `(parameters ,$1)
+    (parameter-list comma parameter) : (append $1 (list $3)))
+
+   (parameter
+    (type Identifier): `(,$1 ,$2))
 
    (function-list
     () : '(functions)
