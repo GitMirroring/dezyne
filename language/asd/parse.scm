@@ -213,10 +213,16 @@
     (expression or expression) : `(or ,$1 ,$3)
     (expression == expression) : `(== ,$1 ,$3)
     (expression != expression) : `(!= ,$1 ,$3)
-    (compound-identifier) : $1)
+    (compound-identifier) : $1
+    (function-call) : $1)
 
-   (type-identifier
-    (Identifier) : $1)
+   (function-call
+    (Identifier lparen rparen) : `(call ,$1)
+    (Identifier lparen argument-list rparen) : `(call ,$1 ,$3))
+
+   (argument-list
+    (Identifier) : `(arguments ,$1)
+    (argument-list comma Identifier) : (append $1 (list $3)))
 
    (optional-behaviour
     () : '(behaviour)

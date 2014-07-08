@@ -83,12 +83,27 @@
 ;;           ^class   ^name ^^return-type ^parameters ^parameter         ^statement
 ;;                          |signature    
 ;;
+;; 
 ;;   (ast:parameters function)
 ;;      ==>
 ;;   SUB-AST
 ;;     :=  ( ((type bool) a)))
 ;;           ^^type ^name ^name
 ;;           |parameter
+;; 
+;; 
+;;   (call   f      (arguments a b c)
+;;    ^class ^name  ^arguments
+;; 
+;; 
+;; 
+;;   (ast:arguments call)
+;;      ==>
+;;   SUB-AST
+;;     :=  ( ((type bool) a)))
+;;           ^^type ^name ^name
+;;           |parameter
+;; 
 ;; 
 ;;   (ast:triggers (ast:component AST))
 ;;      ==>
@@ -165,6 +180,8 @@
   :export (
            Class
            action?
+           arguments
+           arguments?
            assign?
            ast
            behaviour
@@ -173,6 +190,7 @@
            binds
            body
            bottom?
+           call?
            class
            component
            components
@@ -245,6 +263,7 @@
            variables
            variables?
 
+           arguments-element
            events-element
            functions-element
            imports-element
@@ -260,6 +279,7 @@
 (define (element ast name)
   (or (assoc name (body ast)) '()))
 
+(define (arguments-element ast) (element ast 'arguments))
 (define (events-element ast) (element ast 'events))
 (define (imports-element ast) (element ast 'imports))
 (define (functions-element ast) (element ast 'functions))
@@ -283,9 +303,11 @@
          (else (eq? head type))))))
 
 (define (action? ast) (type-helper? 'action ast))
+(define (arguments? ast) (type-helper? 'arguments ast))
 (define (assign? ast) (type-helper? 'assign ast))
 (define (behaviour? ast) (type-helper? 'behaviour ast))
 (define (bind? ast) (type-helper? 'bind ast))
+(define (call? ast) (type-helper? 'call ast))
 (define (component? ast) (type-helper? 'component ast))
 (define (compound? ast) (type-helper? 'compound ast))
 (define (enum? ast) (type-helper? 'enum ast))
@@ -320,7 +342,7 @@
   (match ast
     ((or (? behaviour?) (? model?))
      (or (and (>2 (length ast)) (cddr ast)) '()))
-    ((or  (? compound?) (? events?) (? functions?) (? guard?) (? imports?) (? on?) (? parameters?) (? ports?) (? types?) (? variables?))
+    ((or  (? arguments?) (? compound?) (? events?) (? functions?) (? guard?) (? imports?) (? on?) (? parameters?) (? ports?) (? types?) (? variables?))
      (cdr ast))
     ;; be permissive for events, imports ports, types, variable
     ((('in type name) t ...) ast)
@@ -375,6 +397,12 @@
                                   ((component) component-)
                                   ((system) system-))) x)) (models ast))
   ast)
+
+(define (arguments ast)
+  (match ast
+    ((? call?) (body (if (>2 (length ast)) (caddr ast) '())))
+    (_ (throw 'match-error (format #f "~a:arguments: no match: ~a\n" (current-source-location) ast)))))
+
 
 (define (left ast)
   (match ast
