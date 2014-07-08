@@ -50,6 +50,7 @@
          provides
          reply
          requires
+         return
          system
          void
          )))

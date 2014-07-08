@@ -105,7 +105,7 @@
     behaviour namespace on
     illegal inevitable optional
     provides requires otherwise import
-    if else reply
+    if else reply return
     (left: or and ! * / + -)
     (left: bool enum void int)
     (nonassoc: == != <=>)
@@ -244,6 +244,7 @@
     (action-statement) : $1
     (if-statement) : $1
     (reply-statement) : $1
+    (return-statement) : $1
     (variable-statement) : $1)
 
    (guarded-statement
@@ -296,6 +297,10 @@
 
    (reply-statement
     (reply lparen expression rparen semicolon) : `(,$1 ,$3))
+
+   (return-statement
+    (return semicolon) : `(return)
+    (return expression semicolon) : `(return ,$2))
 
    (variable-statement
     (compound-type Identifier = expression semicolon) : `(variable ,$1 ,$2 ,$4))
