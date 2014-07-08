@@ -36,7 +36,7 @@
       #{
         interface i { behaviour { on a: [true] { } } } #})))
    '(interface i (types) (events)
-               (behaviour #f (types) (variables)
+               (behaviour #f (types) (variables) (functions)
                           (compound
                            (guard true (on (a) (compound))))))))
 
@@ -48,7 +48,7 @@
         interface i { behaviour { on a: [true] b;
                                      } } #})))
    '(interface i (types) (events)
-               (behaviour #f (types) (variables)
+               (behaviour #f (types) (variables) (functions)
                           (compound
                            (guard true
                                   (on (a)
@@ -62,7 +62,7 @@
         interface i { behaviour { on a,b,c: [true] d;
                                      } } #})))
    '(interface i (types) (events)
-               (behaviour #f (types) (variables)
+               (behaviour #f (types) (variables) (functions)
                           (compound
                            (guard true
                                   (on (a b c)
@@ -78,10 +78,24 @@
                                      on c: [true] d;
                                      } } #})))
    '(interface i (types) (events)
-               (behaviour #f (types) (variables)
+               (behaviour #f (types) (variables) (functions)
                           (compound
                            (guard true
                                   (compound
                                    (on (a) (action d))
                                    (on (b) (action d))
                                    (on (c) (action d)))))))))
+
+(pass-if "normstate-function-call"
+  (pretty-noisy-equal?
+   (normstate
+    (ast:interface (asd->ast
+      #{
+        interface i { behaviour { void foo(){ if(true){}} on a,b,c: [true] d ;
+                                                 } } #})))
+   '(interface i (types) (events)
+               (behaviour #f (types) (variables) (functions (function foo (type void) (compound (if true (compound)))))
+                          (compound
+                           (guard true
+                                  (on (a b c)
+                                      (action d))))))))

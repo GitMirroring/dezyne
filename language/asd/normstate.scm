@@ -30,27 +30,21 @@
   :use-module (ice-9 receive)
   :use-module (ice-9 match)
   :use-module (ice-9 curried-definitions)
+
   :use-module (srfi srfi-1)
-  :use-module (system repl error-handling)
-  :use-module (system vm trap-state)
+
+  :use-module (language asd ast:)
   :use-module (language asd misc)
   :use-module (language asd pretty)
-  :use-module (language asd scheme)
   :use-module (language asd reader)
-  :use-module (language asd ast:)
-  :export (ast-> ast->normstate normstate))
+  :use-module (language asd scheme)
 
-(define (ast->normstate ast)
-  (with-error-handling
-;;  (ast->pretty (normstate ast))))
-;;  (ast->scheme (normstate ast))))
-;;  (ast->scheme (remove-otherwise '() ast))))
-;;   (ast->pretty (remove-otherwise '() ast))))
-;;  (ast->scheme (combine-guards (normstate ((remove-otherwise '()) ast))))))
-  (ast->pretty (normstate ast))))
+  :export (ast-> normstate))
 
 (define (normstate ast)
   (aggregate-on-stats (flatten-compound (combine-guards (passdown-on ((remove-otherwise '()) ast))))))
+
+(define ast-> normstate)
 
 (define (wrap-compound-as-needed x)
   (if (or (null? x) (>1 (length x)))
@@ -73,6 +67,7 @@
                                (aggregated-guard (ast:make 'guard expression
                                                            (wrap-compound-as-needed (map ast:statement shared-guards)))))
                           (cons aggregated-guard (loop remainder)))))))))
+    (('functions f ...) ast)
     ((h ...) (map aggregate-on-stats ast))
     (_ ast)))
 
@@ -123,5 +118,3 @@
     (('compound ('guard g s) ...) (ast:make 'compound (map (passdown-triggers triggers) (cdr statement))))
     (('guard g s) (ast:make 'guard g ((passdown-triggers triggers) s)))
     (_ (ast:make 'on triggers statement))))
-
-(define ast-> ast->normstate)
