@@ -33,10 +33,16 @@ interface I
   {
     bool f = false;
 
-    void foo() {}
-
-    on a:{ if(f){ c; } f = !f; }
-    on b:{ d; }
+    void toggle()
+    {
+      if(f){c;}
+      f = !f;
+    }
+    [true]
+    {
+      on a: {toggle;}
+      on b: {toggle; toggle; d;}
+    }
   }
 }
 
@@ -53,8 +59,10 @@ component function
       if(f){i.c;}
       f = !f;
     }
-
-    on i.a: {toggle;}
-    on i.b: {toggle; toggle; d;}
+    [true]
+    {
+      on i.a: {toggle;}
+      on i.b: {toggle; toggle; i.d;}
+    }
   }
 }

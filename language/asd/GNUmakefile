@@ -107,8 +107,8 @@ c++: compile baseline
 	-$(diff) baseline/SensorComponent.cpp out
 	-$(diff) baseline/SirenComponent.h out
 	-$(diff) baseline/SirenComponent.cpp out
-	$(diff) baseline/AlarmSystemComponent.h out | $(sed)	
-	$(diff) baseline/AlarmSystemComponent.cpp out | $(sed)	
+	$(diff) baseline/AlarmSystemComponent.h out | $(sed)
+	$(diff) baseline/AlarmSystemComponent.cpp out | $(sed)
 	-cd out && g++ -I ../../../examples/codegen/asd_cpp_runtime --std=c++11 -c AlarmSystemComponent.cpp
 
 wfc: compile
@@ -127,6 +127,9 @@ csp: compile
 	cd out && ../gaiag -l csp examples/Reply.asd
 	$(diff) examples/Reply.csp out || true
 	@$(diff) examples/Reply.csp out | diffstat || true
+	cd out && ../gaiag -l csp examples/function.asd
+	$(diff) examples/function.csp out || true
+	@$(diff) examples/function.csp out | diffstat || true
 #	cd out && ../gaiag -l csp examples/if.asd
 #	$(diff) examples/if.csp out/C.csp
 

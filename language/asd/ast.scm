@@ -17,7 +17,7 @@
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;; 
+;;
 ;; @subheading Gaiag AST accessors
 ;;
 ;;   (read-asd "examples/Alarm.asd")
@@ -33,19 +33,19 @@
 ;;          (system    AlarmSystem  (ports) (compound)) *see below
 ;;          ^class    ^name        ^ports  ^statement
 ;;         )
-;; 
-;;          
+;;
+;;
 ;;   (ast:types (ast:interface AST))
 ;;      ==>
-;;   SUB-AST 
+;;   SUB-AST
 ;;      := ((enum     States (Disarmed Armed Triggered Disarming))
 ;;           ^type    ^name  ^elements
 ;;           |implicit: class=type
 ;;
-;;          
+;;
 ;;   (ast:events (ast:interface AST))
 ;;      ==>
-;;   SUB-AST 
+;;   SUB-AST
 ;;      := ((in           ((type void))  arm)  virtual base class: (event (type void) arm)
 ;;           ^direction   ^signature     ^name
 ;;           |implicit: class=event
@@ -55,13 +55,13 @@
 ;;   (ast:behaviour (ast:interface AST))
 ;;      ==>
 ;;   SUB-AST
-;;      := (behaviour b      (types) (variables) (compound))
-;;          ^class    ^name  ^types  ^variables  ^statement  
-;;          
-;;          
+;;      := (behaviour b      (types) (variables) (function) (compound))
+;;          ^class    ^name  ^types  ^variables  ^functions  ^statement
+;;
+;;
 ;;   (ast:ports (ast:interface AST))
 ;;      ==>
-;;   SUB-AST 
+;;   SUB-AST
 ;;      := ((provides     Console console))
 ;;           ^direction   ^type   ^name
 ;;           |implicit: class=port
@@ -76,6 +76,11 @@
 ;;      := ((variable States state  (value States Disarmed))
 ;;           ^class   ^type  ^name  ^expression
 ;;
+;;   (ast:functions (ast:behaviour (ast:interface AST)))
+;;      ==>
+;;   SUB-AST
+;;      := ((function name  (type void) (compound)))
+;;           ^class   ^name ^type       ^statement
 ;;
 ;;   (ast:triggers (ast:component AST))
 ;;      ==>
@@ -117,17 +122,17 @@
 ;;          ^class    ^name        ^ports  ^statement
 ;;         )
 ;;
-;; 
+;;
 ;;   (ast:instances (ast:system AST))
 ;;      ==>
-;;   SUB-AST 
+;;   SUB-AST
 ;;      := ((instance     Alarm   alarm))
 ;;           ^class       ^type   ^name
 ;;
 ;;
 ;;   (ast:binds (ast:system AST))
 ;;      ==>
-;;   SUB-AST 
+;;   SUB-AST
 ;;    := ((bind   console (value alarm console)))
 ;;         ^class  ^left  ^right
 ;;
@@ -179,6 +184,7 @@
            expression
            field
            find-events
+           functions
            trigger?
            value?
            guard?
@@ -243,6 +249,7 @@
 
 (define (events-element ast) (element ast 'events))
 (define (imports-element ast) (element ast 'imports))
+(define (functions-element ast) (element ast 'functions))
 (define (ports-element ast) (element ast 'ports))
 (define (types-element ast) (element ast 'types))
 (define (variables-element ast) (element ast 'variables))
@@ -266,6 +273,8 @@
 (define (enum? ast) (type-helper? 'enum ast))
 (define (event? ast) (type-helper? 'event ast))
 (define (events? ast) (type-helper? 'events ast))
+(define (function? ast) (type-helper? 'function ast))
+(define (functions? ast) (type-helper? 'functions ast))
 (define (guard? ast) (type-helper? 'guard ast))
 (define (instance? ast) (type-helper? 'instance ast))
 (define (instances? ast) (type-helper? 'instances ast))
@@ -291,7 +300,7 @@
   (match ast
     ((or (? behaviour?) (? model?))
      (or (and (>2 (length ast)) (cddr ast)) '()))
-    ((or (? events?) (? guard?) (? imports?) (? ports?) (? compound?) (? on?) (? types?) (? variables?))
+    ((or  (? compound?) (? events?) (? functions?) (? guard?) (? imports?) (? on?) (? ports?) (? types?) (? variables?))
      (cdr ast))
     ;; be permissive for events, imports ports, types, variable
     ((('in type name) t ...) ast)
@@ -304,19 +313,19 @@
     ('() ast)
     (_ (throw 'match-error  (format #f "~a:body: no match: ~a\n" (current-source-location) ast)))))
 
-(define (interface- ast) 
+(define (interface- ast)
   (if (interface? ast)
       ast
       (if (component? ast)
 	  #f
 	  (assoc 'interface ast))))
 
-(define (component- ast) 
+(define (component- ast)
   (if (component? ast)
       ast
       (assoc 'component ast)))
 
-(define (system- ast) 
+(define (system- ast)
   (if (system? ast)
       ast
       (assoc 'system ast)))
@@ -341,7 +350,7 @@
 (define* (register ast :optional (clear? #f))
   (if clear?
       (set! *ast-alist* '()))
-  (for-each (lambda (x) ((model (case (class x) 
+  (for-each (lambda (x) ((model (case (class x)
                                   ((interface) interface-)
                                   ((component) component-)
                                   ((system) system-))) x)) (models ast))
@@ -445,7 +454,7 @@
     (#f (match ast
           ((or (? component?) (? system?)) (assoc 'provides (ports ast)))
           (_ (throw 'match-error  (format #f "~a:port: no match: ~a\n" (current-source-location) ast)))))
-    ((? symbol?)  
+    ((? symbol?)
      (find (lambda (p) (eq? (name p) identifier))
            (body
             (match ast
@@ -476,25 +485,25 @@
                                    identifier))))
     (_ (throw 'match-error  (format #f "~a:instance: no match: ~a\n" (current-source-location) ast)))))
 
-(define (direction ast) 
-  (match ast 
+(define (direction ast)
+  (match ast
     ((or (? event?) (? port?)) (car ast))
     (_ (throw 'match-error  (format #f "~a:direction: no match: ~a\n" (current-source-location) ast)))))
 
-(define (elements ast) 
-  (match ast 
+(define (elements ast)
+  (match ast
     ((? enum?) (caddr ast))
     (_ (throw 'match-error  (format #f "~a:elements: no match: ~a\n" (current-source-location) ast)))))
 
-(define (expression ast) 
+(define (expression ast)
   (match ast
     ((? assign?) (caddr ast))
     ((? guard?) (cadr ast))
     ((? variable?) (cadddr ast))
     (_ (throw 'match-error  (format #f "~a:expression: no match: ~a\n" (current-source-location) ast)))))
 
-(define (in? ast) 
-  (match ast 
+(define (in? ast)
+  (match ast
     ((? event?) (eq? (direction ast) 'in))
     (_ (throw 'match-error  (format #f "~a:in?: no match: ~a\n" (current-source-location) ast)))))
 
@@ -504,13 +513,13 @@
 
 (define (name ast)
   (match ast
-    ((or (? behaviour?) (? enum?) (? model?)) (or (and (>1 (length ast)) (cadr ast)) ""))
+    ((or (? behaviour?) (? enum?) (? function?) (? model?)) (or (and (>1 (length ast)) (cadr ast)) ""))
     ((or (? event?) (? instance?) (? port?) (? variable?)) (caddr ast))
     ((? symbol?) ast)
     (_ (throw 'match-error  (format #f "~a:name: no match: ~a\n" (current-source-location) ast)))))
 
 (define (class ast)
-  (match ast 
+  (match ast
     ((? enum?) 'type)
     ((? event?) 'event)
     ((? port?) 'port)
@@ -534,17 +543,26 @@
     (_ (throw 'match-error  (format #f "~a:statement: no match: ~a\n" (current-source-location) ast)))))
 
 (define (type ast)
-  (match ast 
+  (match ast
     ((? event?) (return-type ast)) ;; FIXME junk relaxed accessor
     ((? literal?) (caddr ast))
     ((or (? instance?) (? port?) (? type?) (? value?) (? variable?)) (cadr ast))
     (_ (throw 'match-error  (format #f "~a:type: no match: ~a\n" (current-source-location) ast)))))
 
 (define (field ast)
-  (match ast 
+  (match ast
     ((? literal?) (cadddr ast))
     ((? value?) (caddr ast))
     (_ (throw 'match-error  (format #f "~a:field: no match: ~a\n" (current-source-location) ast)))))
+
+(define (functions ast)
+  (match ast
+    ((? behaviour?) (body (functions-element ast)))
+    ((? interface?) (append (body (functions-element ast))
+                            (functions (behaviour ast))))
+    ((? component?) (functions (behaviour ast)))
+    ((? port?) (functions (import-ast (type ast))))
+               (_ (throw 'match-error  (format #f "~a:functions: no match: ~a\n" (current-source-location) ast)))))
 
 (define (types ast)
   (match ast
@@ -558,7 +576,7 @@
 (define (variables ast)
   (match ast
     ((? behaviour?) (body (variables-element ast)))
-    ((? interface?) (append (body (variables-element ast)) 
+    ((? interface?) (append (body (variables-element ast))
                             (variables (behaviour ast))))
     ((? component?) (variables (behaviour ast)))
     ((? port?) (variables (import-ast (type ast))))
@@ -637,9 +655,9 @@
     (match ast
       ((? component?)
        (delete-duplicates (sort (find-events-p (statement (behaviour ast))) list<)))
-      ((? interface?) 
+      ((? interface?)
        (let ((declared (events ast)))
-         (receive (keep discard) 
+         (receive (keep discard)
              (partition predicate declared)
            (let* ((behaviour (find-events-p (statement (behaviour ast))))
                   (behaviour-keep (filter (lambda (x) (negate (member x discard equal?))) behaviour)))

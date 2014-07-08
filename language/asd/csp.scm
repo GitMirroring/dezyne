@@ -41,6 +41,7 @@
            csp-component
            csp-module
 	   ast-transform
+	   ast-transform-function-call
 	   ast-transform-return
 	   csp-transform
            ))
@@ -255,7 +256,17 @@
                     (list (action-name action) ".return -> ")))))
 
 (define* (ast-transform ast src)
-  (ast-transform- ast (ast-transform-return ast src)))
+  (ast-transform- ast (ast-transform-return ast (ast-transform-function-call ast src))))
+
+(define (ast-transform-function-call ast src)
+  (let ((model (or (ast:interface ast) (ast:component ast))))
+    (match src
+      (('action name)
+       (if (member name (map ast:name (ast:functions (ast:behaviour model))))
+           (list 'call name)
+           src))
+      ((h ...) (map (lambda (x) (ast-transform-function-call ast x)) src))
+      (_ src))))
 
 (define* (ast-transform-return ast src :optional (top? #t))
   (let* ((model (or (ast:interface ast) (ast:component ast)))
@@ -370,6 +381,7 @@
                (event-name (ast:event-name event))
                (channel-return (if ((requires-event? model) event) (list " -> " channel ".return"))))
           (list "(\\P',V' @ " channel "!" event-name channel-return " -> P'(V'))")))
+       (('call function) `(,function))
        (('assign ('variable type var action))
         (list "(\\P',V' @ " (cadr action) "!" (caddr action) " -> " (cadr action) "?" var " -> P'((V'," var ")))"))
        (('assign vars frame last? (expressions locals ...))
