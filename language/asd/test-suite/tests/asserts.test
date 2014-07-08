@@ -18,13 +18,13 @@
    (assert-list
     (asd->ast 
      #{ interface I {}
-		  component I { 
+		  component C { 
 			       provides I i ;
 			       requires I j ;
 			       } #}))
-   '((component I deadlock)
-     (component I deterministic)
-     (component I illegal)
-     (component I compliance)
+   '((component C deadlock)
+     (component C deterministic)
+     (component C illegal)
+     (component C compliance)
      (interface I deadlock)
      (interface I livelock))))
