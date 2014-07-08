@@ -34,13 +34,13 @@
   (apply stderr (cons* string rest))
   #f)
 
-(define (noisy-equal? a b)
-  (or (equal? a b)
-      (fail "~a\n!=\n~a\n" a b)))
+(define (noisy-equal? actual expected)
+  (or (equal? actual expected)
+      (fail "~a\n!=\n~a\n" expected actual)))
 
-(define (pretty-noisy-equal? a b)
-  (or (equal? a b)
-      (fail "~a!=\n~a" (pretty-string a) (pretty-string b))))
+(define (pretty-noisy-equal? actual expected)
+  (or (equal? actual expected)
+      (fail "~a!=\n~a" (pretty-string expected) (pretty-string actual))))
 
 (define (collapse-whitespace string)
   (string-trim
@@ -49,18 +49,18 @@
                            (string-sub "\n +" "\n"
                                        (string-sub " +\n" "\n" string))))))
 
-(define (whitespace-noisy-equal? a b)
-  (let ((wa (collapse-whitespace a))
-        (wb (collapse-whitespace b)))
-    (or (equal? wa wb)
-        (fail "~a!=\n~a" wa wb))))
+(define (whitespace-noisy-equal? actual expected)
+  (let ((wexpected (collapse-whitespace expected))
+        (wactual (collapse-whitespace actual)))
+    (or (equal? wactual wexpected)
+        (fail "~a!=\n~a" wexpected wactual))))
 
-(define (diff-noisy-equal? a b)
-  (let ((diff (diff (collapse-whitespace a) 
-                    (collapse-whitespace b)
+(define (diff-noisy-equal? actual expected)
+  (let ((diff (diff (collapse-whitespace expected)
+                    (collapse-whitespace actual)
                     "-u"
-                    "actual"
-                    "expected")))
+                    "expected"
+                    "actual")))
     (or (string-null? diff)
         (fail "~a" diff))))
 
