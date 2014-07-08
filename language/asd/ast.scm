@@ -538,8 +538,8 @@
     ((? system?) (or (assoc 'compound (body ast)) (make 'compound '())))
     ((? model?) (statement (behaviour ast)))
     ((? behaviour?) (or (assoc 'compound (body ast)) (make 'compound '())))
-    ((? guard?) (caddr ast))
-    ((? on?) (caddr ast))
+    ((or (? guard?) (? on?)) (caddr ast))
+    ((? function?) (cadddr ast))
     (_ (throw 'match-error  (format #f "~a:statement: no match: ~a\n" (current-source-location) ast)))))
 
 (define (type ast)
