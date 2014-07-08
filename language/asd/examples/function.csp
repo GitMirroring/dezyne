@@ -9,28 +9,27 @@ channel illegal
 
 channel I,i: {a,b,c,d,return}
 
-I_x(IG) = let
+I_(IG) = let
 toggle(P',V') =
 semi(\P',((f)) @ ifthenelse(f,
-(\P',V' @ i!c -> P'(V')),
+(\P',V' @ I!c -> P'(V')),
 (\P',V' @ P'(V'))
 )(P',((f))),
 assign(\((f)) @ (not (f))))(P',V')
 
-I_x_((f)) =
+I__((f)) =
 (true) & (
- I?x:{a} ->
- semi(toggle,
-      (\P',V' @ I.return -> P'(V'))) (\V' @ I_x_(V'),((f)))
+I?x:{a} ->
+semi(toggle,
+(\P',V' @ I.return -> P'(V')))(\V' @ I__(V'),((f)))
+  []
+  I?x:{b} ->
+semi(semi(toggle,
+semi(toggle,
+(\P',V' @ I!d -> P'(V')))),
+(\P',V' @ I.return -> P'(V')))(\V' @ I__(V'),((f))))
 
- []
- I?x:{b} ->
- semi(semi(semi(toggle,
-                toggle),
-           (\P',V' @ I!d -> P'(V'))),
-      (\P',V' @ i.return -> P'(V')))(\V' @ I_x_(V'),((f)))
-)
-within I_x_((false))
+within I__((false)) 
 
 
 function_(IIG,IG) = let
@@ -41,19 +40,18 @@ semi(\P',((f)) @ ifthenelse(f,
 )(P',((f))),
 assign(\((f)) @ (not (f))))(P',V')
 
-function__((f)) = transition_begin -> ((true) &
-(
- i?x:{a} ->
- semi(toggle,
-      (\P',V' @ i.return -> P'(V'))) (\V' @ transition_end -> function__(V'),((f)))
-
- []
- i?x:{b} ->
- semi(semi(semi(toggle,
-                toggle),
-           (\P',V' @ i!d -> P'(V'))),
-      (\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> function__(V'),((f)))
-))
+function__((f)) = transition_begin -> (
+(true) & (
+i?x:{a} ->
+semi(toggle,
+(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> function__(V'),((f)))
+  []
+  i?x:{b} ->
+semi(semi(toggle,
+semi(toggle,
+(\P',V' @ i!d -> P'(V')))),
+(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> function__(V'),((f))))
+)
 within function__((false))
 
 channel extensions_over_empty_channels_is_undefined
@@ -112,7 +110,8 @@ SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(r
 assert function__Component(false) :[deadlock free]
 assert function_(true,true) :[deterministic]
 assert STOP [T= function__Component(false) \ diff(Events,{illegal})
-assert I_x(true) [[I.x<-i.x|x<-extensions(I)]] \ {} [FD= function__Component(true) \ diff(Events,{|illegal,i|}) \ {}
-assert I_x(false) :[deadlock free]
+assert I_(true) [[I.x<-i.x|x<-extensions(I)]] \ {} [FD= function__Component(true) \ diff(Events,{|illegal,i|}) \ {}
+assert I_(false) :[deadlock free]
 
-assert I_x(true) :[livelock free]
+assert I_(true) :[livelock free]
+

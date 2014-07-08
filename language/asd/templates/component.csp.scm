@@ -42,6 +42,7 @@ channel #.interface ,#.port : {#(comma-join (append (port-triggers port) (return
 #} ((compose ast:ports ast:component) ast))
 # (map-ports #{
 #.interface _#.behaviour(IG) = let
+# (->string (map (lambda (x) (csp-transform interface (ast-transform interface x))) (ast:functions (ast:behaviour interface))))
 #.interface _#.behaviour _((# (comma-join (map ast:name ((compose ast:variables ast:behaviour ast-norm) .interface))))) =
 # (map-guards #{(# (csp-expression->string (ast:expression guard))) & (
 # ((->join "\n  []\n  ") (map (lambda (on) (csp-transform (ast:ast .interface) (ast-transform (ast:ast .interface) on)))
@@ -51,6 +52,7 @@ within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:exp
 
 #} ((compose ast:ports ast:component) ast))
 #.component _#.behaviour (IIG,IG) = let
+# (->string (map (lambda (x) (csp-transform component (ast-transform component x))) (ast:functions (ast:behaviour component))))
 #.component _#.behaviour _((#(comma-join (map ast:name ((compose ast:variables ast:behaviour ast:component) ast))))) = transition_begin -> (
 # (map-guards #{ (# (csp-expression->string (ast:expression guard))) & (
 # ((->join "\n  []\n  ") (map (lambda (on) (csp-transform component (ast-transform component on)))

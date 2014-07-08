@@ -117,6 +117,7 @@
                    (csp-module ast)
                    port
                    `((port . ,identity)
+                     (interface . ,(ast-norm (ast:type port)))
                      (.optional-chaos . ,optional-chaos)
                      (.interface . ,ast:type) ;; FIXME
                      (.name . ,ast:name)
@@ -337,6 +338,9 @@
 	 (list 'if variables frame last? (list 'expression pred)
                (ast-transform- ast then return locals frame last?)
                (ast-transform- ast else return locals frame last?))))
+      (('function name type statement)
+       (let ((transformed (ast-transform- ast statement return locals frame last?)))
+         (list 'function name type transformed)))
       (_ src))))
 
 (define ((provides-event? model) event)
@@ -381,6 +385,9 @@
                (event-name (ast:event-name event))
                (channel-return (if ((requires-event? model) event) (list " -> " channel ".return"))))
           (list "(\\P',V' @ " channel "!" event-name channel-return " -> P'(V'))")))
+       (('function name type statement)
+        (let ((transformed (csp-transform ast statement inevitable-optional? channel provided-on?)))
+          (list name "(P',V') =\n" transformed "(P',V')\n")))
        (('call function) `(,function))
        (('assign ('variable type var action))
         (list "(\\P',V' @ " (cadr action) "!" (caddr action) " -> " (cadr action) "?" var " -> P'((V'," var ")))"))

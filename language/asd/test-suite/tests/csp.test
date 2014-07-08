@@ -830,6 +830,18 @@ semi(toggle,
 (\\P',V' @ i.return -> P'(V')))(\\V' @ i_B_(V'),((s,b,c)))"))
 
 
+(pass-if "csp-transform-function"
+         (diff-noisy-equal?
+
+          ;; from:
+          (csp-transform i-ast
+                         '(function toggle (type void) ()))
+
+          ;; via:
+          "toggle(P',V') =
+(\\P',V' @ P'(V'))(P',V')\n"))
+
+
 (pass-if "ast-transform-variable"
          (pretty-noisy-equal?
 
