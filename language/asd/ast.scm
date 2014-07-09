@@ -209,6 +209,7 @@
            expression
            field
            find-events
+           function
            functions
            trigger?
            value?
@@ -503,6 +504,13 @@
     (_ (throw 'match-error  (format #f "~a:ports: no match: ~a\n" (current-source-location) ast)))))
 
 (define (imports ast) (body (imports-element ast)))
+
+(define (function ast identifier)
+  (find (lambda (p) (eq? (name p) identifier))
+        (match ast
+          ((? functions?) (body ast))
+          ((or (? component?) (? interface?)) (functions ast))
+          (_ (throw 'match-error  (format #f "~a:function: no match: ~a\n" (current-source-location) ast))))))
 
 (define* (port ast :optional (identifier #f))
   (match identifier

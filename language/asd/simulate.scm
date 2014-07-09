@@ -54,10 +54,10 @@
 
 (define (variable-state variable . value) 
   (cons (ast:name variable)
-        (eval-expression '() '()
-                         (if (pair? value) 
-                             (car value) 
-                             (ast:expression variable)))))
+        (eval-expression- '() '()
+                          (if (pair? value) 
+                              (car value) 
+                              (ast:expression variable)))))
 
 (define (state-vector model)
   (map variable-state (ast:variables model)))
@@ -228,7 +228,8 @@
             (if (not t) (car t))
             (continue state ast action t))))))
 
-(define (eval-expression ast state expression)
+;; without side effects -- for now
+(define (eval-expression- ast state expression)
   (match expression
     (#f #f)
     (#t #t)
@@ -237,7 +238,7 @@
     (('value 'state field)
      (eq? (ast:field (var state 'state)) field)) ;;; FIXME name resolution
     (('value identifier value) expression)
-    (('! expr) (not (eval-expression ast state expr)))
+    (('! expr) (not (eval-expression- ast state expr)))
     ('otherwise 
      (let* ((parent (ast:parent *model* ast))
             (guards ((ast:statements-of-type 'guard) parent))
@@ -246,13 +247,26 @@
          (if (not (equal? otherwise '(otherwise)))
              (throw 'programming-error "parent missing otherwise"))
          ;; otherwise is true if none of the other guards is
-         (not (apply for (map (lambda (x) (eval-expression ast state x)) rest))))))
-    (('call function ('arguments arguments))
-     (receive (new-state new-ast new-action new-trace)
-         (values state ast #f '())
-       #t))
-    ((? symbol?) (eval-expression ast state (var state expression)))
+         (not (apply for (map (lambda (x) (eval-expression- ast state x)) rest))))))
+    ((? symbol?) (eval-expression- ast state (var state expression)))
     (_ (throw 'match-error (format #f "~a:expression no match: ~a\n" (current-source-location) expression)))))
+
+(define (eval-expression ast state event expression)
+  (match expression
+    (('call function ('arguments arguments ...))
+     (receive (new-state new-ast new-action new-trace)
+         (let* ((f (ast:function *model* function)) ;; FIXME
+                (parameters (map ast:name (ast:parameters f)))
+                (statement (ast:statement f))
+                (pairs (zip parameters arguments))
+                (state (let loop ((pairs pairs) (state state))
+                         (if (null? pairs)
+                             state 
+                             (loop (cdr pairs) (acons (caar pairs) (cdar pairs) state))))))
+           (process statement state event '()) ;; trace: FIXME
+           )
+       #t))
+    (_ (eval-expression- ast state expression))))
 
 (define* (process ast state event trace)
 ;;;  (stderr "PROCESS: [~a] ~a\n" event ast)
@@ -268,8 +282,8 @@
               (process statement state event (cons ast trace))
               (values state #f #f trace)))
          (('guard expression statement)
-          (debug "guard: ~a? --> ~a =====> ~a\n" expression (eval-expression ast state expression) statement)
-          (if (eval-expression ast state expression) 
+          (debug "guard: ~a? --> ~a =====> ~a\n" expression (eval-expression ast state event expression) statement)
+          (if (eval-expression ast state event expression) 
               (process statement state event (cons ast trace)) 
               (values state #f #f trace)))
          (('action 'illegal) (values state #f #f (cons ast trace)))
@@ -278,15 +292,15 @@
           (values state #f ast (cons ast trace)))
          (('assign identifier expression)
           (stderr "****assign: ~a := ~a\n" (->string identifier) (->string expression))
-          (values (var! state identifier (eval-expression ast state expression)) #f #f (cons ast trace)))
+          (values (var! state identifier (eval-expression ast state event expression)) #f #f (cons ast trace)))
          (('variable type identifier expression)
-          (values (var! state identifier (eval-expression ast state expression)) #f #f (cons ast trace)))
+          (values (var! state identifier (eval-expression ast state event expression)) #f #f (cons ast trace)))
          (('if expression statement else) 
-          (if (eval-expression ast state expression) 
+          (if (eval-expression ast state event expression) 
               (process statement state event (cons ast trace)) 
               (process else state event (cons ast trace))))
          (('if expression statement)
-          (if (eval-expression ast state expression) 
+          (if (eval-expression ast state event expression) 
               (process statement state event (cons ast trace)) 
               (values state #f #f trace)))
          (('compound h t ... )
@@ -306,10 +320,8 @@
                                              (acons (ast:name statement) #f loop-state) loop-state)))
                               (process statement loop-state event '()))
                         (loop (cdr statements) new-state (append new-trace loop-trace)))))))))
-         (('call function ('arguments arguments))
-          (receive (new-state new-ast new-action new-trace)
-              (XXXprocess statement state event '())
-            (values XXX)))
+         (('return expression) 
+          (values state #f #f trace)) ;; FIXME: add expression as return value to values
          (('compound) (values state '() #f trace))
          (_ (throw 'match-error  (format #f "~a: process: no match: ~a\n"  (current-source-location) ast)))))))
 
