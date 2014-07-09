@@ -130,8 +130,9 @@ csp: compile
 	cd out && ../gaiag -l csp examples/function.asd
 	$(diff) examples/function.csp out || true
 	@$(diff) examples/function.csp out | diffstat || true
-#	cd out && ../gaiag -l csp examples/if.asd
-#	$(diff) examples/if.csp out/C.csp
+	cd out && ../gaiag -l csp examples/arguments.asd
+	$(diff) examples/arguments.csp out || true
+	@$(diff) examples/arguments.csp out | diffstat || true
 
 if: compile
 	./gaiag examples/if.asd

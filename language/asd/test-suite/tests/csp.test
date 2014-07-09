@@ -841,8 +841,16 @@ semi(toggle,
           "toggle(P',V') =
 (\\P',V' @ P'(V'))(P',V')\n"))
 
+(define csp-reply-variable-ast
+  '(on ((trigger i done))
+       (context
+        (((dummy)) (s) (expression (value u what)))
+        (if ((dummy)) (s) #t (expression (== s (literal u Status Ok)))
+            (reply (literal I Status Yes))
+            (reply (literal I Status No))))
+       (the-end (dummy))))
 
-(pass-if "ast-transform-variable"
+(pass-if "ast-transform-reply-variable"
          (pretty-noisy-equal?
 
           ;; from:
@@ -858,16 +866,9 @@ semi(toggle,
                      (compound (reply (literal I Status No)))))))
 
           ;; via:
-          '(on ((trigger i done))
-               (semi
-                (assign
-                 (variable (type U (type Status)) s (value u what)))
-                (if ((dummy)) (s) #t (expression (== s (literal u Status Ok)))
-                    (reply (literal I Status Yes))
-                    (reply (literal I Status No))))
-               (the-end (dummy)))))
+          csp-reply-variable-ast))
 
-(pass-if "csp-transform-variable"
+(pass-if "csp-transform-reply-variable"
          (diff-noisy-equal?
 
           ;; from:
@@ -875,19 +876,74 @@ semi(toggle,
 
            c-reply-ast
 
-           '(on ((trigger i done))
-                 (semi
-                  (assign
-                   (variable (type U (type Status)) s (value u what)))
-                  (if ((dummy)) (s) #t (expression (== s (literal u Status Ok)))
-                      (reply (literal I Status Yes))
-                      (reply (literal I Status No))))
-                 (the-end (dummy))))
+           csp-reply-variable-ast)
 
           ;; via:
           "i?x:{done} ->
-semi((\\P',V' @ u!what -> u?s -> P'((V',s))),
+context((\\P',(dummy) @ u!what -> u?s -> P'(((dummy),s))),
 \\P',((dummy),s) @ ifthenelse(s == Status_Ok,
 (\\P',V' @ i.Status_Yes -> P'(V')),
 (\\P',V' @ i.Status_No -> P'(V'))
 )(P',((dummy))))(\\V' @ transition_end -> C__(V'),((dummy)))"))
+
+
+(define return-variable-ast
+  '(component
+    arguments
+    (ports (provides I i))
+    (behaviour
+     #f
+     (types)
+     (variables (variable (type bool) b false))
+     (functions
+      (function
+       g
+       ((type bool) (parameters ((type bool) c)))
+       (compound (return c))))
+     (compound
+      (on ((trigger i e))
+          (compound
+           (assign b (! b))
+           (variable (type bool) c (call g (arguments b)))
+           (if c (compound (action (trigger i f))))))))))
+
+(define csp-return-variable-ast
+  '(on ((trigger i e))
+       (semi (context (((b)) (c) (expression true)) (if ((b)) (c) #f (expression c) (action (trigger i f)) ()))
+             (return))
+       (the-end (b))))
+
+(pass-if "ast-transform-return-variable"
+         (pretty-noisy-equal?
+
+          ;; from:
+          (ast-transform
+
+           return-variable-ast
+
+
+           '(on ((trigger i e)) (compound
+                                 (variable (type bool) c true)
+                                 (if c (compound (action (trigger i f)))))))
+
+          ;; via:
+          csp-return-variable-ast))
+
+(pass-if "csp-transform-return-variable"
+         (diff-noisy-equal?
+
+          ;; from:
+          (csp-transform
+
+           return-variable-ast
+
+           csp-return-variable-ast
+           )
+
+          ;; via:
+          "i?x:{e} ->
+semi(context(\\(b) @ true,\\P',((b),c) @ ifthenelse(c,
+(\\P',V' @ i!f -> P'(V')),
+(\\P',V' @ P'(V'))
+)(P',((b),c))),
+(\\P',V' @ i.return -> P'(V')))(\\V' @ transition_end -> arguments__(V'),((b)))"))

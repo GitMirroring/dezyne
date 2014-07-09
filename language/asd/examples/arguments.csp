@@ -18,7 +18,7 @@ I_(IG) = let
 g(c) = c
 
 I__((b)) =
-I?x:{e} -> semi(assign(\(b) @ (not b)), context(\(b) @ g(b), \P',(V',c) @ ifthenelse(c, send(i,f), skip)(P',(V',c)))) (\V' @ I__(V'),((b)))
+I?x:{e} -> semi(assign(\(b) @ not b), context(\(b) @ g(b), \P',(V',c) @ ifthenelse(c, send(i,f), skip)(P',(V',c)))) (\V' @ I__(V'),((b)))
 
 within I__((false))
 
@@ -32,7 +32,7 @@ arguments__((b)) = transition_begin -> (
 --i?x:{e} -> context(not b, semi(assign(\(V',E') @ (E',E')), \P',(V',b) @ ifthenelse(b, send(i,f), skip)(P',(V',b))))(the_end(arguments__),((b)))
 --                                                                   ^------------------------------------------^
 
-i?x:{e} -> semi(assign(\(b) @ (not b)), context(\(b) @ g(b), \P',(V',c) @ ifthenelse(c, send(i,f), skip)(P',(V',c)))) (the_end(arguments__),((b)))
+i?x:{e} -> semi(assign(\(b) @ (not b)), context(\(b) @ g(b), \P',((b),c) @ ifthenelse(c, send(i,f), skip)(P',((b),c)))) (the_end(arguments__),((b)))
 )
 
 within arguments__((false))
