@@ -1,0 +1,99 @@
+ifthenelse(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')
+semi(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
+assign(F') = \ P', V' @ P'(F'(V'))
+context(F', S') = \ P', V' @ S'((\(V',E') @ P'(V')), (V',F'(V')))
+send(c',e') = \P',V' @ c'!e' -> P'(V')
+the_end(P') = \V' @ transition_end -> P'(V')
+skip = \P',V' @ P'(V')
+
+datatype event_enumeration_alphabet =
+e | f | return
+
+channel illegal
+
+channel I,i: {e,f,return}
+
+I_(IG) = let
+
+g(c) = c
+
+I__((b)) =
+I?x:{e} -> semi(assign(\(b) @ (not b)), context(\(b) @ g(b), \P',(V',c) @ ifthenelse(c, send(i,f), skip)(P',(V',c)))) (\V' @ I__(V'),((b)))
+
+within I__((false))
+
+
+arguments_(IIG,IG) = let
+
+g(c) = c
+
+arguments__((b)) = transition_begin -> (
+--                                           v------v--v             v---------------v
+--i?x:{e} -> context(not b, semi(assign(\(V',E') @ (E',E')), \P',(V',b) @ ifthenelse(b, send(i,f), skip)(P',(V',b))))(the_end(arguments__),((b)))
+--                                                                   ^------------------------------------------^
+
+i?x:{e} -> semi(assign(\(b) @ (not b)), context(\(b) @ g(b), \P',(V',c) @ ifthenelse(c, send(i,f), skip)(P',(V',c)))) (the_end(arguments__),((b)))
+)
+
+within arguments__((false))
+
+channel extensions_over_empty_channels_is_undefined
+channel IN,OUT : {extensions_over_empty_channels_is_undefined}
+
+SINGLETHREADED = true
+
+channel transition_begin, transition_end
+
+channel reorder_in,reorder_out : {i.return}
+
+SEMANTICS(in',out',client',modeling') = let
+Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
+       []
+       length(s') > 0 & out'!head(s') -> Q'(tail(s'))
+       []
+       length(s') == card({|in'|}) & in'?x' -> illegal -> STOP
+
+R'(A') = ([] x' : A' @ x' -> R'(A'))
+       []
+       reorder_in?x' -> reorder_out!x' -> R'(A')
+
+S'    = let
+
+Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
+
+Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!head(r') -> Idle(0))
+            []
+            c' > 0 & transition_end -> transition_begin -> Busy(c',r')
+            []
+            c' < card({|in'|}) & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            []
+            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            []
+            r' == <> & reorder_in?x' -> Busy(c',<x'>)
+            []
+            r' != <> & reorder_in?x' -> illegal -> STOP
+
+within Idle(0)
+
+within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
+
+arguments__Component(IIG) = let
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+Exclude = {i.return,i.f}
+ClientCalls = {i.e}
+UsedModeling = {}
+within compress((arguments_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,i|},Exclude)|]
+(((STOP) [[x<-IN.x|x<-extensions(IN)]]
+[|union({|IN|},UsedModeling)|]
+SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
+assert arguments__Component(false) :[deadlock free]
+assert arguments_(true,true) :[deterministic]
+assert STOP [T= arguments__Component(false) \ diff(Events,{illegal})
+assert I_(true) [[I.x<-i.x|x<-extensions(I)]] \ {} [FD= arguments__Component(true) \ diff(Events,{|illegal,i|}) \ {}
+assert I_(false) :[deadlock free]
+
+assert I_(true) :[livelock free]

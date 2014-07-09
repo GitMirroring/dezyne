@@ -1,5 +1,6 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
 //
@@ -20,12 +21,49 @@
 //
 // Code:
 
-interface i 
-{ 
+interface I
+{
+  in void e;
+  out void f;
+
   behaviour
+  {
+    bool g () { return true; }
+    bool h (bool a, bool b) { return a && b; }
+
+    on e:
     {
       bool b = true;
-      bool t = f ();
-      bool s = g (a, true);
+      bool t = g ();
+      bool s = h (t, true);
+
+      if(b && t && s)
+      {
+        f;
+      }
     }
-} 
+  }
+}
+
+
+component arguments
+{
+  provides I i;
+
+  behaviour
+  {
+    bool b = false;
+    bool g (bool c) { return c; }
+
+    on i.e:
+    {
+      b = ! b;
+      bool c = g (b);
+
+      if(c)
+      {
+        i.f;
+      }
+    }
+  }
+}
