@@ -1,6 +1,7 @@
 ifthenelse(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')
 semi(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
 assign(F') = \ P', V' @ P'(F'(V'))
+context(F', S') = \ P', V' @ S'((\(V',E') @ P'(V')), (V',F'(V')))
 
 datatype event_enumeration_alphabet =
 I | II | III | IV | S1 | S2 | e | f | g | h | return
@@ -10,6 +11,7 @@ channel illegal
 channel iimperative,i: {e,f,g,h,return}
 
 iimperative_(IG) = let
+
 iimperative__((s,b,c)) =
 (s == S1) & (
 iimperative?x:{e} ->
@@ -53,6 +55,7 @@ within iimperative__((S1,false,true))
 
 
 imperative_(IIG,IG) = let
+
 imperative__((state)) = transition_begin -> (
 (state == I) & (
 i?x:{e} ->

@@ -38,7 +38,7 @@ Reply_(IIG,IG) = let
 Reply__((dummy)) = transition_begin -> (
 (true) & (
 i?x:{done} ->
-u!what -> u?r:{Status_Ok,Status_Nok} -> context(\(dummy) @ r,
+u!what -> u?s -> context(\(dummy) @ s,
 \P',((dummy),s) @ ifthenelse(s == Status_Ok,
 (\P',V' @ i.Status_Yes -> P'(V')),
 (\P',V' @ i.Status_No -> P'(V'))

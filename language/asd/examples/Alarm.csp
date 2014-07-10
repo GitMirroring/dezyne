@@ -1,6 +1,7 @@
 ifthenelse(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')
 semi(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
 assign(F') = \ P', V' @ P'(F'(V'))
+context(F', S') = \ P', V' @ S'((\(V',E') @ P'(V')), (V',F'(V')))
 
 datatype event_enumeration_alphabet =
 Armed | Disabled | Disabling | Disarmed | Disarming | Enabled | Off | On | Triggered | arm | deactivated | detected | disable | disabled | disarm | enable | inevitable | optional | return | triggered | turnoff | turnon
@@ -12,6 +13,7 @@ channel Sensor,sensor: {disable,disabled,enable,inevitable,optional,triggered,re
 channel Siren,siren: {turnoff,turnon,return}
 
 Console_a(IG) = let
+
 Console_a_((state)) =
 (state == Disarmed) & (
 Console?x:{arm} ->
@@ -54,6 +56,7 @@ illegal -> STOP)
 within Console_a_((Disarmed)) [|{Console .optional}|] CHAOS({Console .optional})
 
 Sensor_b(IG) = let
+
 Sensor_b_((state)) =
 (state == Disabled) & (
 Sensor?x:{enable} ->
@@ -96,6 +99,7 @@ semi(assign(\((state)) @ (Disabling)),
 within Sensor_b_((Disabled)) [|{Sensor .optional}|] CHAOS({Sensor .optional})
 
 Siren_c(IG) = let
+
 Siren_c_((state)) =
 (state == Off) & (
 Siren?x:{turnon} ->
@@ -117,6 +121,7 @@ within Siren_c_((Off))
 
 
 Alarm_d(IIG,IG) = let
+
 Alarm_d_((state,sounding)) = transition_begin -> (
 (state == Disarmed) & (
 console?x:{arm} ->

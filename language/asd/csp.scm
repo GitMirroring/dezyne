@@ -306,7 +306,7 @@
 	     '()
              (let* ((statement (car statements))
                     (frame (append frame (if (ast:variable? statement) (list (ast:name statement)) '())))
-                    (last? (and (=1 (length statements)) (not (ast:variable? statement)))) ;; FIXME
+                    (last? #f)
                     (transformed (ast-transform- ast statement #f locals frame last?)))
                (if (>1 (length statements))
                    (if (equal? transformed '(action illegal))
@@ -375,6 +375,7 @@
           (list IG? channel "?x:{" event-names "}" " ->\n" transformed-stat)))
        (('reply expr) (let ((expr (csp-transform ast expr inevitable-optional? channel provided-on?)))
                         (list "(\\P',V' @ " channel "." expr " -> P'(V'))")))
+       (('return expression) (csp-transform ast expression))
        (('return) (let ((channel-return (if (and (not inevitable-optional?) provided-on?) (list "(\\P',V' @ " channel ".return -> P'(V'))") (list "(\\P',V' @ P'(V'))"))))
                     (list channel-return)))
        (('the-end vars) (let* ((transition-end (if component? "transition_end -> "))
