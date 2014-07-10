@@ -96,19 +96,31 @@
 (define (make-parser)
   (lalr-parser
    (driver: lr)
-   ;; (out-table: "asd.out")
+   ;;(out-table: "asd.out")
    (
     lbrace rbrace lparen rparen lbracket rbracket semicolon colon dot comma
-    =
-    Identifier
-    in out interface component system
-    behaviour namespace on
+    on
     illegal inevitable optional
-    provides requires otherwise import
-    if else reply return
-    (left: or and ! * / + -)
+    otherwise
+    if reply return
+
+    (left: in out)
+    (left: behaviour import interface component system)
+    (left: provides requires)
     (left: bool enum void int)
-    (nonassoc: == != <=>)
+    (left: Identifier)
+
+    (nonassoc: = <=>)
+    (left: == !=)
+    (left: < > <= >=)
+    (left: or)
+    (left: and)
+    (left: !)
+    (left: + -)
+    (left: * /)
+
+    (right: else)
+    
     )
 
    (program
