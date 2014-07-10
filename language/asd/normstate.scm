@@ -55,6 +55,7 @@
 ; vind alle ons met matching guards
 ; duw alle ons binnen de eerste guard en discard de rest
   (match ast
+    (('compound ('on events stat) ...) ast)
     (('compound guards ...)
      (ast:make 'compound
                (reverse
