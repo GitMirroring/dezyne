@@ -844,7 +844,7 @@ semi(toggle,
 (define csp-reply-variable-ast
   '(on ((trigger i done))
        (context
-        (((dummy)) (s) (expression (value u what)))
+        (((dummy)) s (valued-action (value u what)))
         (if ((dummy)) (s) #t (expression (== s (literal u Status Ok)))
             (reply (literal I Status Yes))
             (reply (literal I Status No))))
@@ -880,7 +880,7 @@ semi(toggle,
 
           ;; via:
           "i?x:{done} ->
-context((\\P',(dummy) @ u!what -> u?s -> P'(((dummy),s))),
+u!what -> u?s -> context(\\(dummy) @ s,
 \\P',((dummy),s) @ ifthenelse(s == Status_Ok,
 (\\P',V' @ i.Status_Yes -> P'(V')),
 (\\P',V' @ i.Status_No -> P'(V'))
@@ -909,7 +909,7 @@ context((\\P',(dummy) @ u!what -> u?s -> P'(((dummy),s))),
 
 (define csp-return-variable-ast
   '(on ((trigger i e))
-       (semi (context (((b)) (c) (expression true)) (if ((b)) (c) #f (expression c) (action (trigger i f)) ()))
+       (semi (context (((b)) c (expression true)) (if ((b)) (c) #f (expression c) (action (trigger i f)) ()))
              (return))
        (the-end (b))))
 
