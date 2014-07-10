@@ -5,6 +5,12 @@ context(F', S') = \ P', V' @ S'((\(V',E') @ P'(V')), (V',F'(V')))
 send(c',e') = \P',V' @ c'!e' -> P'(V')
 the_end(P') = \V' @ transition_end -> P'(V')
 skip = \P',V' @ P'(V')
+callvoid(B',F') = \P',V' @ B'(F'(V'), P'(V'), V')
+callvalued(B',F',A') = \P',V' @ B'(F'(V'), \(V',r') @ P'(A'(V',r')), V')
+callvalued_context(B',F', S') = \P',V' @ B'(F'(V'), \V' @ S'(\(V',E') @ P'(V'), V'), V')
+return_(F') = \P', V' @ P'((V', F'(V')))
+
+
 
 datatype event_enumeration_alphabet =
 e | f | return
@@ -15,24 +21,44 @@ channel I,i: {e,f,return}
 
 I_(IG) = let
 
-g(c) = c
+g' = \c,P',V' @ semi(send(I,f),return_(\ V' @ c)) (P',V')
 
-I__((b)) =
-I?x:{e} -> semi(assign(\(b) @ not b), context(\(b) @ g(b), \P',(V',c) @ ifthenelse(c, send(i,f), skip)(P',(V',c)))) (\V' @ I__(V'),((b)))
-
+I__(V') =
+         I?x:{e} -> semi(assign(\ (b) @ not b),
+                         callvalued_context(g', --B'
+                                            \ (b) @ b, --F'
+                                            semi(callvalued(g', -- B'                  -- S'
+                                                            \ (V',c) @ c, -- F'
+                                                            \ ((b),c),r' @ ((r'),c) -- A'
+                                                            ),
+                                                 \P',(V',c) @ ifthenelse(c, -- S'
+                                                                         send(I,f),
+                                                                         skip)(P',(V',c))
+                                                 )
+                                            )
+                         ) (\V' @ I__(V'),V')
 within I__((false))
 
 
 arguments_(IIG,IG) = let
 
-g(c) = c
+g' = \c,P',V' @ semi(send(i,f),return_(\ V' @ c)) (P',V')
 
-arguments__((b)) = transition_begin -> (
---                                           v------v--v             v---------------v
---i?x:{e} -> context(not b, semi(assign(\(V',E') @ (E',E')), \P',(V',b) @ ifthenelse(b, send(i,f), skip)(P',(V',b))))(the_end(arguments__),((b)))
---                                                                   ^------------------------------------------^
-
-i?x:{e} -> semi(assign(\(b) @ (not b)), context(\(b) @ g(b), \P',((b),c) @ ifthenelse(c, send(i,f), skip)(P',((b),c)))) (the_end(arguments__),((b)))
+arguments__(V') = transition_begin ->
+(
+ i?x:{e} -> semi(assign(\ (b) @ not b),
+                 callvalued_context(g', --B'
+                                    \ (b) @ b, --F'
+                                    semi(callvalued(g', -- B'                  -- S'
+                                                    \ (V',c) @ c, -- F'
+                                                    \ ((b),c),r' @ ((r'),c) -- A'
+                                                    ),
+                                         \P',(V',c) @ ifthenelse(c, -- S'
+                                                                 send(i,f),
+                                                                 skip)(P',(V',c))
+                                         )
+                                    )
+                 ) (the_end(arguments__),V')
 )
 
 within arguments__((false))

@@ -28,16 +28,17 @@ interface I
 
   behaviour
   {
-    bool g () { return true; }
-    bool h (bool a, bool b) { return a && b; }
+    bool b = false;
+    bool g (bool c) { f; return c; }
 
     on e:
     {
-      bool b = true;
-      bool t = g ();
-      bool s = h (t, true);
+      b = ! b;
+      bool c = g (b);
 
-      if(b && t && s)
+      b = g (c);
+
+      if(c)
       {
         f;
       }
@@ -53,12 +54,14 @@ component arguments
   behaviour
   {
     bool b = false;
-    bool g (bool d) { return d; }
+    bool g (bool c) { i.f; return c; }
 
     on i.e:
     {
       b = ! b;
       bool c = g (b);
+
+      b = g (c);
 
       if(c)
       {
