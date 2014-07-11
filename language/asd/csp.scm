@@ -396,6 +396,7 @@
               (params (map ast:name (ast:parameters signature))))
           (list name " = \\" (comma-join (list (comma-join params) "P',V' @ ")) transformed "(P',V')\n")))
        (('call function) `(,function))
+       (('call function arguments) `(,function))
        (('assign ('variable type var action))
         (list "(\\P',V' @ " (cadr action) "!" (caddr action) " -> " (cadr action) "?" var " -> P'((V'," var ")))"))
        (('assign vars frame (expressions locals ...))

@@ -25,19 +25,21 @@ g = \c,P',V' @ semi_((\P',V' @ I!f -> P'(V')),
 returnvalue_(\V' @ c)) (P',V')
 
 I__((b)) =
-         I?x:{e} -> semi_(assign_(\ (b) @ not b),
-                          callvalued_context_(g, --B'
-                                              \ (b) @ b, --F'
-                                              semi_(callvalued_(g, -- B'                  -- S'
-                                                                \ (V',c) @ c, -- F'
-                                                                \ ((b),c),r' @ ((r'),c) -- A'
-                                                                ),
-                                                    \P',(V',c) @ ifthenelse_(c, -- S'
-                                                                             send_(I,f),
-                                                                             skip_)(P',(V',c))
-                                                    )
-                                              )
-                          ) (\V' @ I__(V'),(b))
+(true) & (
+I?x:{e} ->
+          semi_(assign_(\ (b) @ not b),
+                callvalued_context_(g, --B'
+                                    \ (b) @ b, --F'
+                                    semi_(callvalued_(g, -- B'                  -- S'
+                                                      \ (V',c) @ c, -- F'
+                                                      \ ((b),c),r' @ ((r'),c) -- A'
+                                                      ),
+                                          \P',(V',c) @ ifthenelse_(c, -- S'
+                                                                   send_(I,f),
+                                                                   skip_)(P',(V',c))
+                                          )
+                                    )
+                ) (\V' @ I__(V'),(b)))
 within I__((false))
 
 
@@ -47,21 +49,21 @@ g = \c,P',V' @ semi_((\P',V' @ i!f -> P'(V')),
 returnvalue_(\V' @ c)) (P',V')
 
 arguments__((b)) = transition_begin -> (
- i?x:{e} -> semi_(assign_(\ (b) @ not b),
-                  callvalued_context_(g, --B'
-                                      \ (b) @ b, --F'
-                                      semi_(callvalued_(g, -- B'                  -- S'
-                                                        \ (V',c) @ c, -- F'
-                                                        \ ((b),c),r' @ ((r'),c) -- A'
-                                                        ),
-                                            \P',(V',c) @ ifthenelse_(c, -- S'
-                                                                     send_(i,f),
-                                                                     skip_)(P',(V',c))
-                                            )
-                                      )
-                  ) (the_end_(arguments__),(b))
-)
-
+(true) & (
+i?x:{e} ->
+          semi_(assign_(\ (b) @ not b),
+                callvalued_context_(g, --B'
+                                    \ (b) @ b, --F'
+                                    semi_(callvalued_(g, -- B'                  -- S'
+                                                      \ (V',c) @ c, -- F'
+                                                      \ ((b),c),r' @ ((r'),c) -- A'
+                                                      ),
+                                          \P',(V',c) @ ifthenelse_(c, -- S'
+                                                                   send_(i,f),
+                                                                   skip_)(P',(V',c))
+                                          )
+                                    )
+                ) (the_end_(arguments__),(b))))
 within arguments__((false))
 
 channel extensions_over_empty_channels_is_undefined
