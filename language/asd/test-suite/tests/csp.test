@@ -835,11 +835,10 @@ semi_(toggle,
 
           ;; from:
           (csp-transform i-ast
-                         '(function toggle (type void) ()))
+                         '(function toggle ((type void)) ()))
 
           ;; via:
-          "toggle(P',V') =
-(\\P',V' @ P'(V'))(P',V')\n"))
+          "toggle = \\P',V' @ (\\P',V' @ P'(V'))(P',V')\n"))
 
 (define csp-reply-variable-ast
   '(on ((trigger i done))

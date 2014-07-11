@@ -18,8 +18,7 @@ channel illegal
 channel I,i: {a,b,c,d,return}
 
 I_(IG) = let
-toggle(P',V') =
-semi_(\P',((f)) @ ifthenelse_(f,
+toggle = \P',V' @ semi_(\P',((f)) @ ifthenelse_(f,
 (\P',V' @ I!c -> P'(V')),
 (\P',V' @ P'(V'))
 )(P',((f))),
@@ -41,8 +40,7 @@ within I__((false))
 
 
 function_(IIG,IG) = let
-toggle(P',V') =
-semi_(\P',((f)) @ ifthenelse_(f,
+toggle = \P',V' @ semi_(\P',((f)) @ ifthenelse_(f,
 (\P',V' @ i!c -> P'(V')),
 (\P',V' @ P'(V'))
 )(P',((f))),

@@ -21,13 +21,14 @@ channel I,i: {e,f,return}
 
 I_(IG) = let
 
-g' = \c,P',V' @ semi_(send_(I,f),returnvalue_(\ V' @ c)) (P',V')
+g = \c,P',V' @ semi_((\P',V' @ I!f -> P'(V')),
+returnvalue_(\V' @ c)) (P',V')
 
-I__(V') =
+I__((b)) =
          I?x:{e} -> semi_(assign_(\ (b) @ not b),
-                          callvalued_context_(g', --B'
+                          callvalued_context_(g, --B'
                                               \ (b) @ b, --F'
-                                              semi_(callvalued_(g', -- B'                  -- S'
+                                              semi_(callvalued_(g, -- B'                  -- S'
                                                                 \ (V',c) @ c, -- F'
                                                                 \ ((b),c),r' @ ((r'),c) -- A'
                                                                 ),
@@ -36,20 +37,20 @@ I__(V') =
                                                                              skip_)(P',(V',c))
                                                     )
                                               )
-                          ) (\V' @ I__(V'),V')
+                          ) (\V' @ I__(V'),(b))
 within I__((false))
 
 
 arguments_(IIG,IG) = let
 
-g' = \c,P',V' @ semi_(send_(i,f),returnvalue_(\ V' @ c)) (P',V')
+g = \c,P',V' @ semi_((\P',V' @ i!f -> P'(V')),
+returnvalue_(\V' @ c)) (P',V')
 
-arguments__(V') = transition_begin ->
-(
+arguments__((b)) = transition_begin -> (
  i?x:{e} -> semi_(assign_(\ (b) @ not b),
-                  callvalued_context_(g', --B'
+                  callvalued_context_(g, --B'
                                       \ (b) @ b, --F'
-                                      semi_(callvalued_(g', -- B'                  -- S'
+                                      semi_(callvalued_(g, -- B'                  -- S'
                                                         \ (V',c) @ c, -- F'
                                                         \ ((b),c),r' @ ((r'),c) -- A'
                                                         ),
@@ -58,7 +59,7 @@ arguments__(V') = transition_begin ->
                                                                      skip_)(P',(V',c))
                                             )
                                       )
-                  ) (the_end_(arguments__),V')
+                  ) (the_end_(arguments__),(b))
 )
 
 within arguments__((false))
