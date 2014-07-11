@@ -294,11 +294,22 @@
 (define ((assignment var exp) x)
   (if (eq? x var ) exp x))
 
+(define ((valued-action? port?) variable)
+  (match variable
+    (('variable type var ('value (? port?) action)) #t)
+    (_ #f)))
+
+(define (call? variable)
+  (match variable
+    (('variable type var ('call name arguments)) #t)
+    (_ #f)))
+
 (define* (ast-transform- ast src :optional (return #t) (locals '()) (frame '()))
   (let* ((model (or (ast:interface ast) (ast:component ast)))
 	 (members (var-names model))
          (variables (cons members locals))
-         (port? (lambda (port) (member port (map ast:name (ast:ports model))))))
+         (port? (lambda (port) (member port (map ast:name (ast:ports model)))))
+         (valued-action? (valued-action? port?)))
     (match src
       (('compound tail ...)
        (let loop ((statements tail) (frame '()))
@@ -310,23 +321,36 @@
                (if (>1 (length statements))
                    (if (equal? transformed '(action illegal))
                        transformed
-                       (list (if (ast:variable? statement) 'context 'semi) transformed (loop (cdr statements) frame)))
+                       (list (if (ast:variable? statement)
+                                 (if (or (valued-action? statement) (call? statement))
+                                     'callvalued-context
+                                     'context)
+                                 'semi)
+                             transformed (loop (cdr statements) frame)))
                    transformed)))))
       (('on events stat the-end)
        (let ((result (ast-transform- ast stat)))
 	 (if (prefix-illegal? stat)
 	     (list 'on events 'IG result)
 	     (list 'on events result the-end))))
-      (('variable type var (and ('value (? port?) action) (get! value)))
-       (list variables var (list 'valued-action (value))))
+
+      (('variable type var ('value (and (? port?) (get! port)) action))
+       (list variables var (list 'valued-action (port) action)))
+      (('variable type var ('call function arguments))
+       (list variables var (list 'call function arguments)))
       (('variable type var expr)
        (list variables var (list 'expression expr)))
+
+      (('assign var ('call function arguments))
+       (list 'callvalued-context (list variables frame (list 'call function arguments))))
       (('assign var ('value type field))
        (list 'assign variables frame (cons (map (assignment var field) members)
-                                                 (map (assignment var field) locals))))
+                                           (map (assignment var field) locals))))
       (('assign var exp)
        (list 'assign variables frame (cons (map (assignment var exp) members)
                                            (map (assignment var exp) locals))))
+
+
       (('if pred then)
        (list 'if variables frame (list 'expression (if (prefix-illegal? then)
                                                        (list 'and 'IG pred)
@@ -427,6 +451,17 @@
                                       (list lhs " " op " " rhs )))
        (('value type field) (list type "_" field))
        (('literal scope type value) (list type "_" value))
+
+       (('callvalued-context (vars var ('valued-action port event)) stat)
+        (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
+          (list "callvalued_context_(sendrecv_(" port "," event "),\n" stat ")")))
+       (('callvalued-context (vars var ('call function)) stat)
+        (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
+          (list "callvalued_context_(" function ",\n" stat ")")))
+       (('callvalued-context (vars var ('call function arguments)) stat)
+        (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
+          (list "callvalued_context_(" function ",\\(" (comma-join vars) ") @ " (comma-join (ast:body arguments)) ",\n" stat ")")))
+
        (('context (vars var ('valued-action ('value port event))) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list port "!" event "  -> " port "?" var " -> context_(\\(" (comma-join vars) ") @ " var ",\n" stat ")" )))
