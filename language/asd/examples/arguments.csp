@@ -3,11 +3,15 @@ semi_(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
 assign_(F') = \ P', V' @ P'(F'(V'))
 context_(F', S') = \ P', V' @ S'((\(V',E') @ P'(V')), (V',F'(V')))
 send_(c',e') = \P',V' @ c'!e' -> P'(V')
+sendrecv_(c',e') = \P',V' @ c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P',V')
 the_end_(P') = \V' @ transition_end -> P'(V')
 skip_ = \P',V' @ P'(V')
-callvoid_(B',F') = \P',V' @ B'(F'(V'), P'(V'), V')
-callvalued_(B',F',A') = \P',V' @ B'(F'(V'), \(V',r') @ P'(A'(V',r')), V')
-callvalued_context_(B',F', S') = \P',V' @ B'(F'(V'), \V' @ S'(\(V',E') @ P'(V'), V'), V')
+callvoid_(B') = \P',V' @ B'(P'(V'), V')
+callvoid_args_(B',F') = \P',V' @ B'(F'(V'), P'(V'), V')
+callvalued_(B',A') = \P',V' @ B'(\(V',r') @ P'(A'(V',r')), V')
+callvalued_args_(B',F',A') = \P',V' @ B'(F'(V'), \(V',r') @ P'(A'(V',r')), V')
+callvalued_context_(B',S') = \P',V' @ B'(\V' @ S'(\(V',E') @ P'(V'), V'), V')
+callvalued_args_context_(B',F', S') = \P',V' @ B'(F'(V'), \V' @ S'(\(V',E') @ P'(V'), V'), V')
 returnvalue_(F') = \P', V' @ P'((V', F'(V')))
 
 
@@ -35,10 +39,9 @@ I?x:{e} ->
                                                       \ ((b),c),r' @ ((r'),c) -- A'
                                                       ),
                                           \P',(V',c) @ ifthenelse_(c, -- S'
-                                                                   send_(I,f),
-                                                                   skip_)(P',(V',c))
-                                          )
-                                    )
+                                                                   (\P',V' @ I!f -> P'(V')),
+                                                                   (\P',V' @ P'(V'))
+                                                                   )(P',((b),c))))
                 ) (\V' @ I__(V'),(b)))
 within I__((false))
 
@@ -59,10 +62,9 @@ i?x:{e} ->
                                                       \ ((b),c),r' @ ((r'),c) -- A'
                                                       ),
                                           \P',(V',c) @ ifthenelse_(c, -- S'
-                                                                   send_(i,f),
-                                                                   skip_)(P',(V',c))
-                                          )
-                                    )
+                                                                   (\P',V' @ i!f -> P'(V')),
+                                                                   (\P',V' @ P'(V'))
+                                                                   )(P',((b),c))))
                 ) (the_end_(arguments__),(b))))
 within arguments__((false))
 
