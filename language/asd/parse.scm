@@ -107,10 +107,10 @@
     (left: in out)
     (left: behaviour import interface component system)
     (left: provides requires)
-    (left: bool enum void int)
-    (left: Identifier)
+    (left: bool enum void int typedef)
+    (left: Identifier NumericLiteral)
 
-    (nonassoc: = <=>)
+    (nonassoc: = <=> ..)
     (left: == !=)
     (left: < > <= >=)
     (left: or)
@@ -193,23 +193,21 @@
     (type-list type-spec) : (append $1 (list $2)))
 
    (type-spec
-    (enum-spec) : $1)
+    (enum-spec) : $1
+    (typedef-spec): $1)
 
    (type
     (bool) : '(type bool)
     (int) : '(type int)
-    (enum-identifier) : `(type ,$1)
+    (Identifier) : `(type ,$1)
     (void) : '(type void))
 
    (compound-type
     (type) : $1
     (Identifier dot type) : `(type ,$1 ,$3))
 
-   (enum-identifier
-    (Identifier) : $1)
-
    (enum-spec
-    (enum enum-identifier lbrace enum-value-list rbrace semicolon) : `(,$1 ,$2 ,$4))
+    (enum Identifier lbrace enum-value-list rbrace semicolon) : `(,$1 ,$2 ,$4))
 
    (enum-value-list
     (enum-value) : `(,$1)
@@ -217,6 +215,9 @@
 
    (enum-value
     (Identifier) : $1)
+
+   (typedef-spec
+    (typedef int lbracket NumericLiteral .. NumericLiteral rbracket Identifier semicolon) : `(int ,$8 (range ,$4 ,$6)))
 
    (expression
     (lparen expression rparen) : $1

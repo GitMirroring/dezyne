@@ -52,6 +52,7 @@
          requires
          return
          system
+         typedef
          void
          )))
 
@@ -64,6 +65,7 @@
     ("[" . lbracket)
     ("]" . rbracket)
     ("." . dot)
+    (".." . ..)
     ("," . comma)
     (";" . semicolon)
     ("<" . <)
@@ -143,6 +145,20 @@
                (lp (peek-char port) (cons c chars))))))
 
 (module-define! (resolve-module '(language ecmascript tokenize)) 'read-identifier read-identifier)
+
+(define (digit->number c)
+  (- (char->integer c) (char->integer #\0)))
+
+(define (read-numeric port loc)
+  (let loop ((c (peek-char port)) (num 0))
+    (if (or (eof-object? c)
+            (not (char-numeric? c)))
+        num
+        (begin
+          (read-char port)
+          (loop (peek-char port) (+ (* 10 num) (digit->number c)))))))
+
+(module-define! (resolve-module '(language ecmascript tokenize)) 'read-numeric read-numeric)
 
 (define (port-source-location port)
   ((@@ (language ecmascript tokenize) port-source-location) port))
