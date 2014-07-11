@@ -31,6 +31,7 @@ interface I
     bool b = false;
     bool g (bool c) { f; return c; }
 
+    [true]
     on e:
     {
       b = ! b;
@@ -56,6 +57,7 @@ component arguments
     bool b = false;
     bool g (bool c) { i.f; return c; }
 
+    [true]
     on i.e:
     {
       b = ! b;
