@@ -22,10 +22,17 @@
 ;;; 
 ;;; Code:
 
-ifthenelse(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')
-semi(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
-assign(F') = \ P', V' @ P'(F'(V'))
-context(F', S') = \ P', V' @ S'((\(V',E') @ P'(V')), (V',F'(V')))
+ifthenelse_(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')
+semi_(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
+assign_(F') = \ P', V' @ P'(F'(V'))
+context_(F', S') = \ P', V' @ S'((\(V',E') @ P'(V')), (V',F'(V')))
+send_(c',e') = \P',V' @ c'!e' -> P'(V')
+the_end_(P') = \V' @ transition_end -> P'(V')
+skip_ = \P',V' @ P'(V')
+callvoid_(B',F') = \P',V' @ B'(F'(V'), P'(V'), V')
+callvalued_(B',F',A') = \P',V' @ B'(F'(V'), \(V',r') @ P'(A'(V',r')), V')
+callvalued_context_(B',F', S') = \P',V' @ B'(F'(V'), \V' @ S'(\(V',E') @ P'(V'), V'), V')
+returnvalue_(F') = \P', V' @ P'((V', F'(V')))
 
 datatype event_enumeration_alphabet =
 #(pipe-join (append

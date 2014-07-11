@@ -103,7 +103,7 @@
                (the-end (s b c))))
 
           ;; via:
-          "i?x:{e} ->\nsemi((\\P',V' @ i.Status_Yes -> P'(V')),
+          "i?x:{e} ->\nsemi_((\\P',V' @ i.Status_Yes -> P'(V')),
 (\\P',V' @ i.return -> P'(V')))(\\V' @ i_B_(V'),((s,b,c)))"))
 
 
@@ -159,7 +159,7 @@
 
           ;; via:
           "i?x:{e} ->
-semi((\\P',V' @ i.Status_Yes -> P'(V')),
+semi_((\\P',V' @ i.Status_Yes -> P'(V')),
 (\\P',V' @ i.return -> P'(V')))(\\V' @ i_B_(V'),((s,b,c)))"))
 
 
@@ -191,7 +191,7 @@ semi((\\P',V' @ i.Status_Yes -> P'(V')),
 
           ;; via:
           "i?x:{e} ->
-semi((\\P',V' @ i!h -> P'(V')),
+semi_((\\P',V' @ i!h -> P'(V')),
 (\\P',V' @ i.return -> P'(V')))(\\V' @ i_B_(V'),((s,b,c)))"))
 
 (pass-if "ast-transform-illegal-action"
@@ -250,7 +250,7 @@ illegal -> STOP"))
            '(assign ((s b c)) () ((s b true))))
 
           ;; via:
-          "assign(\\((s,b,c)) @ (s,b,true))"))
+          "assign_(\\((s,b,c)) @ (s,b,true))"))
 
 
 (pass-if "ast-transform-assign-enum"
@@ -277,7 +277,7 @@ illegal -> STOP"))
            '(assign ((s b c)) () ((S2 b c))))
 
           ;; via:
-          "assign(\\((s,b,c)) @ (S2,b,c))"))
+          "assign_(\\((s,b,c)) @ (S2,b,c))"))
 
 
 (pass-if "ast-transform-ifthen"
@@ -344,7 +344,7 @@ illegal -> STOP"))
                ()))
 
           ;; via:
-          "\\P',((s,b,c)) @ ifthenelse(b,
+          "\\P',((s,b,c)) @ ifthenelse_(b,
 (\\P',V' @ P'(V')),
 (\\P',V' @ P'(V'))
 )(P',((s,b,c)))"))
@@ -421,11 +421,11 @@ illegal -> STOP"))
                  (assign ((s b c)) () ((s true c)))))
 
           ;; via:
-          "semi(\\P',((s,b,c)) @ ifthenelse(b,
+          "semi_(\\P',((s,b,c)) @ ifthenelse_(b,
 (\\P',V' @ P'(V')),
 (\\P',V' @ P'(V'))
 )(P',((s,b,c))),
-assign(\\((s,b,c)) @ (s,true,c)))"))
+assign_(\\((s,b,c)) @ (s,true,c)))"))
 
 
 (pass-if "ast-transform"
@@ -502,26 +502,26 @@ assign(\\((s,b,c)) @ (s,true,c)))"))
 
           ;; via:
           "i?x:{e} ->
-semi(semi(\\P',((s,b,c)) @ ifthenelse((c or b),
-                             semi((\\P',V' @ i!f -> P'(V')),
+semi_(semi_(\\P',((s,b,c)) @ ifthenelse_((c or b),
+                             semi_((\\P',V' @ i!f -> P'(V')),
                                   (\\P',V' @ i!g -> P'(V'))),
                              (\\P',V' @ P'(V'))
                              )(P',((s,b,c))),
-     semi(\\P',((s,b,c)) @ ifthenelse(b,
-                                  semi(\\P',((s,b,c)) @ ifthenelse(c,
+     semi_(\\P',((s,b,c)) @ ifthenelse_(b,
+                                  semi_(\\P',((s,b,c)) @ ifthenelse_(c,
                                                                (\\P',V' @ i!g -> P'(V')),
                                                                (\\P',V' @ P'(V'))
                                                                )(P',((s,b,c))),
-                                       semi(assign(\\((s,b,c)) @ (s,b,false)),
+                                       semi_(assign_(\\((s,b,c)) @ (s,b,false)),
                                             (\\P',V' @ i!f -> P'(V')))),
-                                  \\P',((s,b,c)) @ ifthenelse(c,
-                                                          semi(assign(\\((s,b,c)) @ (s,false,c)),
+                                  \\P',((s,b,c)) @ ifthenelse_(c,
+                                                          semi_(assign_(\\((s,b,c)) @ (s,false,c)),
                                                                (\\P',V' @ i!h -> P'(V'))),
-                                                          semi(assign(\\((s,b,c)) @ (s,true,c)),
+                                                          semi_(assign_(\\((s,b,c)) @ (s,true,c)),
                                                                (\\P',V' @ i!g -> P'(V')))
                                                           )(P',((s,b,c)))
                                   )(P',((s,b,c))),
-          assign(\\((s,b,c)) @ (S2,b,c)))),
+          assign_(\\((s,b,c)) @ (S2,b,c)))),
 (\\P',V' @ i.return -> P'(V')))(\\V' @ i_B_(V'),((s,b,c)))"))
 
 
@@ -632,7 +632,7 @@ illegal -> STOP"))
 
           ;; via:
           "j?x:{e} ->
-semi((\\P',V' @ j!h -> P'(V')),
+semi_((\\P',V' @ j!h -> P'(V')),
 (\\P',V' @ j.return -> P'(V')))(\\V' @ transition_end -> c_B_(V'),((s,b,c)))"))
 
 (pass-if "c-csp-transform-required-on"
@@ -713,10 +713,10 @@ semi((\\P',V' @ j!h -> P'(V')),
           ;; via:
 
 "sensor?x:{triggered} ->
-semi(semi((\\P',V' @ console!detected -> P'(V')),
-semi((\\P',V' @ siren!turnon -> siren.return -> P'(V')),
-semi(assign(\\((state,sounding)) @ (state,true)),
-assign(\\((state,sounding)) @ (Triggered,sounding))))),
+semi_(semi_((\\P',V' @ console!detected -> P'(V')),
+semi_((\\P',V' @ siren!turnon -> siren.return -> P'(V')),
+semi_(assign_(\\((state,sounding)) @ (state,true)),
+assign_(\\((state,sounding)) @ (Triggered,sounding))))),
 (\\P',V' @ P'(V')))(\\V' @ transition_end -> Alarm_d_(V'),((state,sounding)))"
 ))
 
@@ -826,7 +826,7 @@ assign(\\((state,sounding)) @ (Triggered,sounding))))),
 
           ;; via:
           "i?x:{e} ->
-semi(toggle,
+semi_(toggle,
 (\\P',V' @ i.return -> P'(V')))(\\V' @ i_B_(V'),((s,b,c)))"))
 
 
@@ -880,8 +880,8 @@ semi(toggle,
 
           ;; via:
           "i?x:{done} ->
-u!what -> u?s -> context(\\(dummy) @ s,
-\\P',((dummy),s) @ ifthenelse(s == Status_Ok,
+u!what -> u?s -> context_(\\(dummy) @ s,
+\\P',((dummy),s) @ ifthenelse_(s == Status_Ok,
 (\\P',V' @ i.Status_Yes -> P'(V')),
 (\\P',V' @ i.Status_No -> P'(V'))
 )(P',((dummy),s)))(\\V' @ transition_end -> C__(V'),((dummy)))")) ;; TESTME
@@ -942,7 +942,7 @@ u!what -> u?s -> context(\\(dummy) @ s,
 
           ;; via:
           "i?x:{e} ->
-semi(context(\\(b) @ true,\\P',((b),c) @ ifthenelse(c,
+semi_(context_(\\(b) @ true,\\P',((b),c) @ ifthenelse_(c,
 (\\P',V' @ i!f -> P'(V')),
 (\\P',V' @ P'(V'))
 )(P',((b),c))),

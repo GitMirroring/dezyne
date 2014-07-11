@@ -1,7 +1,14 @@
-ifthenelse(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')
-semi(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
-assign(F') = \ P', V' @ P'(F'(V'))
-context(F', S') = \ P', V' @ S'((\(V',E') @ P'(V')), (V',F'(V')))
+ifthenelse_(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')
+semi_(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
+assign_(F') = \ P', V' @ P'(F'(V'))
+context_(F', S') = \ P', V' @ S'((\(V',E') @ P'(V')), (V',F'(V')))
+send_(c',e') = \P',V' @ c'!e' -> P'(V')
+the_end_(P') = \V' @ transition_end -> P'(V')
+skip_ = \P',V' @ P'(V')
+callvoid_(B',F') = \P',V' @ B'(F'(V'), P'(V'), V')
+callvalued_(B',F',A') = \P',V' @ B'(F'(V'), \(V',r') @ P'(A'(V',r')), V')
+callvalued_context_(B',F', S') = \P',V' @ B'(F'(V'), \V' @ S'(\(V',E') @ P'(V'), V'), V')
+returnvalue_(F') = \P', V' @ P'((V', F'(V')))
 
 datatype event_enumeration_alphabet =
 a | b | c | d | return
@@ -12,21 +19,21 @@ channel I,i: {a,b,c,d,return}
 
 I_(IG) = let
 toggle(P',V') =
-semi(\P',((f)) @ ifthenelse(f,
+semi_(\P',((f)) @ ifthenelse_(f,
 (\P',V' @ I!c -> P'(V')),
 (\P',V' @ P'(V'))
 )(P',((f))),
-assign(\((f)) @ (not (f))))(P',V')
+assign_(\((f)) @ (not (f))))(P',V')
 
 I__((f)) =
 (true) & (
 I?x:{a} ->
-semi(toggle,
+semi_(toggle,
 (\P',V' @ I.return -> P'(V')))(\V' @ I__(V'),((f)))
   []
   I?x:{b} ->
-semi(semi(toggle,
-semi(toggle,
+semi_(semi_(toggle,
+semi_(toggle,
 (\P',V' @ I!d -> P'(V')))),
 (\P',V' @ I.return -> P'(V')))(\V' @ I__(V'),((f))))
 
@@ -35,21 +42,21 @@ within I__((false))
 
 function_(IIG,IG) = let
 toggle(P',V') =
-semi(\P',((f)) @ ifthenelse(f,
+semi_(\P',((f)) @ ifthenelse_(f,
 (\P',V' @ i!c -> P'(V')),
 (\P',V' @ P'(V'))
 )(P',((f))),
-assign(\((f)) @ (not (f))))(P',V')
+assign_(\((f)) @ (not (f))))(P',V')
 
 function__((f)) = transition_begin -> (
 (true) & (
 i?x:{a} ->
-semi(toggle,
+semi_(toggle,
 (\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> function__(V'),((f)))
   []
   i?x:{b} ->
-semi(semi(toggle,
-semi(toggle,
+semi_(semi_(toggle,
+semi_(toggle,
 (\P',V' @ i!d -> P'(V')))),
 (\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> function__(V'),((f))))
 )
