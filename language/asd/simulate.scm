@@ -266,7 +266,9 @@
                 (state (let loop ((pairs pairs) (state state))
                          (if (null? pairs)
                              state 
-                             (loop (cdr pairs) (acons (caar pairs) (cadar pairs) state))))))
+                             (loop (cdr pairs) (acons (caar pairs) 
+                                                      (eval-expression ast state (cadar pairs)) state))))))
+           ;; (stderr "func [~a] \n" (comma-space-join (map ->string state)))
            (process statement state event (cons f '())))
        (values new-state new-ast new-action return new-trace)))
     (_ (values state ast #f (eval-expression ast state expression) trace))))
@@ -324,8 +326,8 @@
                               (loop (cdr statements) new-state new-return (append new-trace trace))
                               (loop (cdr statements) loop-state new-return loop-trace)))
                         (receive (new-state new-ast new-action new-return new-trace)
-                            (let ((state (if (ast:variable? statement)
-                                             (acons (ast:name statement) #f loop-state) loop-state)))
+                            (let ((loop-state (if (ast:variable? statement)
+                                                  (acons (ast:name statement) #f loop-state) loop-state))) ;; FIXME: pop frame
                               (process statement loop-state event '()))
                         (loop (cdr statements) new-state new-return (append new-trace loop-trace)))))))))
          (('return expression)

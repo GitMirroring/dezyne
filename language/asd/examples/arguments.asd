@@ -53,7 +53,7 @@ component arguments
   behaviour
   {
     bool b = false;
-    bool g (bool c) { return c; }
+    bool g (bool d) { return d; }
 
     on i.e:
     {
