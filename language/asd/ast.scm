@@ -437,7 +437,7 @@
 (define (parameters ast)
   (match ast
     ((? function?) (parameters (signature ast)))
-    ((? signature?) (if (>2 (length ast)) (caddr ast) '()))
+    ((? signature?) (body (if (>1 (length ast)) (cadr ast) '())))
     (_ (throw 'match-error  (format #f "~a:parameters: no match: ~a\n" (current-source-location) ast)))))
 
 (define (scope ast)
