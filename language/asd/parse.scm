@@ -34,6 +34,11 @@
 
 (define (debug m x) (display (format #f "~a: ~a\n" m x) (current-error-port)))
 
+(define (statement? o)
+  (and (pair? o)
+       (member (car o)
+               '(action assign bind call compound guard if instance on reply variable return))))
+
 (define (ast:make . t)
   (let ((ast t);; (ast (if (pair? t) t (car t)))
         )
@@ -44,9 +49,11 @@
       (('interface name ('types t ...) ('events e ...) ('behaviour n ...) ...) ast)
       (('behaviour) ast)
       (('behaviour name ('types t ...) ('variables v ...) ('compound s ...)) ast)
-      (('compound lst) (cons 'compound lst))
-      (('compound s ...) ast)
+      (('compound) ast)
+      (('compound (? statement?) ..1) ast)
+      (('compound lst) (cons (car ast) lst))
       (('types t ...) ast)
+      (('function name ...) ast)
       (('events e ...) ast)
       (('in type name) ast)
       (('out type name) ast)
@@ -62,6 +69,7 @@
       (('action 'illegal) ast)
       (('action ('field type name)) ast)
       (('assign name expression) ast)
+      (('return expression ...) ast)
 ;;      ((? (lambda (ast) (and (symbol? (car ast)) (pair? (cdr ast)) (= (length ast) 2)))) (apply ast:make (cons (car ast) (cdr ast))))
       ((x) (apply ast:make x))
       (_ (throw 'match-error  (format #f "~a:ast:make: no match: ~a\n" (current-source-location) ast))))))
@@ -83,7 +91,10 @@
   ast)
 
 (define (source-location lst)
-  (source-property lst 'loc))
+  (let ((loc (source-property lst 'loc)))
+    (if (or (not loc) (source-location? loc))
+        loc
+        (source-location loc))))
 
 (define (source-location->source-properties loc)
   `((filename . ,(source-location-input loc))
@@ -243,8 +254,9 @@
     (behaviour Identifier lbrace type-list variable-list function-list statement-list rbrace) : `(,$1 ,$2 ,$4 ,$5 ,$6 ,$7))
 
    (function
-    (type Identifier lparen rparen compound-statement) : `(function ,$2 (,$1) ,$5)
-    (type Identifier lparen parameter-list rparen compound-statement) : `(function ,$2 (,$1 ,$4) ,$6))
+    (type Identifier lparen rparen compound-statement) : (make `(function ,$2 (,$1) ,$5) @1)
+
+    (type Identifier lparen parameter-list rparen compound-statement) : (make `(function ,$2 (,$1 ,$4) ,$6) @1))
 
    (parameter-list
     (parameter) : `(parameters ,$1)
@@ -282,7 +294,7 @@
     (otherwise) : $1)
 
    (compound-statement
-    (lbrace statement-list rbrace) : $2)
+    (lbrace statement-list rbrace) : (make $2 @1))
 
    (compound-identifier
     (Identifier) : $1
@@ -326,8 +338,8 @@
     (reply lparen expression rparen semicolon) : `(,$1 ,$3))
 
    (return-statement
-    (return semicolon) : `(return)
-    (return expression semicolon) : `(return ,$2))
+    (return semicolon) : (make `(return) @1)
+    (return expression semicolon) : (make `(return ,$2) @1))
 
    (variable-statement
     (compound-type Identifier = expression semicolon) : `(variable ,$1 ,$2 ,$4))

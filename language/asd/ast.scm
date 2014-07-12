@@ -337,7 +337,7 @@
 (define (variables? ast) (type-helper? 'variables ast))
 
 (define (statement? ast)
-  (member (class ast) '(action assign bind compound guard if instance on reply variable)))
+  (member (class ast) '(action assign bind call compound guard if instance on reply variable return)))
 
 (define (body ast)
   (match ast
@@ -598,9 +598,9 @@
 
 (define (statement ast)
   (match ast
-    ((? system?) (or (assoc 'compound (body ast)) (make 'compound '())))
+    ((? system?) (or (assoc 'compound (body ast)) (make '(compound))))
     ((? model?) (statement (behaviour ast)))
-    ((? behaviour?) (or (assoc 'compound (body ast)) (make 'compound '())))
+    ((? behaviour?) (or (assoc 'compound (body ast)) (make '(compound))))
     ((or (? guard?) (? on?)) (caddr ast))
     ((? function?) (cadddr ast))
     (_ (throw 'match-error  (format #f "~a:statement: no match: ~a\n" (current-source-location) ast)))))
