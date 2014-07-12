@@ -253,7 +253,7 @@
 
 (define (eval-expression ast state event expression)
   (match expression
-    (('call function ('arguments arguments ...))
+    (('call function ('arguments arguments ...) ...)
      (receive (new-state new-ast new-action return new-trace)
          (let* ((f (ast:function *model* function)) ;; FIXME
                 (parameters (map ast:name (ast:parameters f)))
