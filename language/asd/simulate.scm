@@ -239,6 +239,10 @@
      (eq? (ast:field (var state 'state)) field)) ;;; FIXME name resolution
     (('value identifier value) expression)
     (('! expr) (not (eval-expression- ast state expr)))
+    (('and x y) (and (eval-expression- ast state x) 
+                     (eval-expression- ast state y)))
+    (('or x y) (or (eval-expression- ast state x) 
+                   (eval-expression- ast state y)))
     ('otherwise 
      (let* ((parent (ast:parent *model* ast))
             (guards ((ast:statements-of-type 'guard) parent))
