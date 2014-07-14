@@ -982,7 +982,7 @@ semi_(context_(\\(b) @ true,\\P',((b),c) @ ifthenelse_(c,
        (semi (semi (assign ((b)) () (((! b))))
               (callvalued-context
                (((b)) c (call g (arguments b)))
-               (semi (callvalued-context (((b)) (c) (call g (arguments c))))
+               (semi (callvalued (((b)) (c) (call g (arguments c))))
                      (if ((b))
                          (c)
                          (expression c)
@@ -1006,6 +1006,13 @@ semi_(context_(\\(b) @ true,\\P',((b),c) @ ifthenelse_(c,
 
           ;; from:
           (csp-transform callvalued-ast csp-callvalued-on)
-
           ;; via:
-          ";-)"))
+         "i?x:{e} ->
+semi_(semi_(assign_(\\((b)) @ (not (b))),
+callvalued_args_context_(g,\\(b) @ b,
+semi_(callvalued_args_(g,\\((b),c) @ c),
+\\P',((b),c) @ ifthenelse_(c,
+(\\P',V' @ i!f -> P'(V')),
+(\\P',V' @ P'(V'))
+)(P',((b),c))))),
+(\\P',V' @ i.return -> P'(V')))(\\V' @ transition_end -> arguments__(V'),((b)))"))
