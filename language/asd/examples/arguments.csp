@@ -14,8 +14,6 @@ callvalued_context_(B',S') = \P',V' @ B'(\V' @ S'(\(V',E') @ P'(V'), V'), V')
 callvalued_args_context_(B',F', S') = \P',V' @ B'(F'(V'), \V' @ S'(\(V',E') @ P'(V'), V'), V')
 returnvalue_(F') = \P', V' @ P'((V', F'(V')))
 
-
-
 datatype event_enumeration_alphabet =
 e | f | return
 
@@ -24,48 +22,40 @@ channel illegal
 channel I,i: {e,f,return}
 
 I_(IG) = let
-
 g = \c,P',V' @ semi_((\P',V' @ I!f -> P'(V')),
-returnvalue_(\V' @ c)) (P',V')
+returnvalue_(\V' @ c))(P',V')
 
 I__((b)) =
 (true) & (
 I?x:{e} ->
-          semi_(assign_(\ (b) @ not b),
-                callvalued_context_(g, --B'
-                                    \ (b) @ b, --F'
-                                    semi_(callvalued_(g, -- B'                  -- S'
-                                                      \ (V',c) @ c, -- F'
-                                                      \ ((b),c),r' @ ((r'),c) -- A'
-                                                      ),
-                                          \P',(V',c) @ ifthenelse_(c, -- S'
-                                                                   (\P',V' @ I!f -> P'(V')),
-                                                                   (\P',V' @ P'(V'))
-                                                                   )(P',((b),c))))
-                ) (\V' @ I__(V'),(b)))
-within I__((false))
+semi_(semi_(assign_(\((b)) @ (not (b))),
+callvalued_args_context_(g,\(b) @ b,
+semi_(callvalued_args_(g,\((b),c) @ c,\((b),c),r @ ((r),c)),
+\P',((b),c) @ ifthenelse_(c,
+(\P',V' @ I!f -> P'(V')),
+(\P',V' @ P'(V'))
+)(P',((b),c))))),
+(\P',V' @ I.return -> P'(V')))(\V' @ I__(V'),((b))))
+
+within I__((false)) 
 
 
 arguments_(IIG,IG) = let
-
 g = \c,P',V' @ semi_((\P',V' @ i!f -> P'(V')),
-returnvalue_(\V' @ c)) (P',V')
+returnvalue_(\V' @ c))(P',V')
 
 arguments__((b)) = transition_begin -> (
 (true) & (
 i?x:{e} ->
-          semi_(assign_(\ (b) @ not b),
-                callvalued_context_(g, --B'
-                                    \ (b) @ b, --F'
-                                    semi_(callvalued_(g, -- B'                  -- S'
-                                                      \ (V',c) @ c, -- F'
-                                                      \ ((b),c),r' @ ((r'),c) -- A'
-                                                      ),
-                                          \P',(V',c) @ ifthenelse_(c, -- S'
-                                                                   (\P',V' @ i!f -> P'(V')),
-                                                                   (\P',V' @ P'(V'))
-                                                                   )(P',((b),c))))
-                ) (the_end_(arguments__),(b))))
+semi_(semi_(assign_(\((b)) @ (not (b))),
+callvalued_args_context_(g,\(b) @ b,
+semi_(callvalued_args_(g,\((b),c) @ c,\((b),c),r @ ((r),c)),
+\P',((b),c) @ ifthenelse_(c,
+(\P',V' @ i!f -> P'(V')),
+(\P',V' @ P'(V'))
+)(P',((b),c))))),
+(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> arguments__(V'),((b))))
+)
 within arguments__((false))
 
 channel extensions_over_empty_channels_is_undefined
@@ -128,3 +118,4 @@ assert I_(true) [[I.x<-i.x|x<-extensions(I)]] \ {} [FD= arguments__Component(tru
 assert I_(false) :[deadlock free]
 
 assert I_(true) :[livelock free]
+
