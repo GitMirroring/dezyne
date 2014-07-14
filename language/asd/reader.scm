@@ -27,7 +27,7 @@
   :use-module (language asd misc)
   :use-module (language asd parse)
   :use-module (language asd tokenize)
-  :export (asd->ast parse-asd read-asd))
+  :export (asd->ast parse-asd read-asd read-ast))
 
 (define (asd->ast x)
   (or (and-let* ((file-name (->string x))
@@ -47,6 +47,17 @@
 
 (define (read-asd file-name)
   (asd-reader (open-file file-name "r") (current-module)))
+
+(define (read-ast file-name)
+  "Read contents of FILE-NAME and return the AST.
+
+If FILE-NAME ends with `.scm', assume plain AST scheme content and
+only perform a read, otherwise assume ASD content and also invoke
+the parser."
+  (let ((s (->string file-name)))
+    (if (string-suffix? ".scm" s)
+        (read (open-input-file s))
+        (read-asd s))))
 
 (define (parse-asd string)
   (read-hash-extend #\{ hash-read-string)

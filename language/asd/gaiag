@@ -78,6 +78,7 @@ Languages: asd c++ normstate scheme simulate wfc
 Examples:
   ./gaiag examples/Alarm.asd
   ./gaiag -l asd examples/if.asd
+  ./gaiag -l asd examples/Alarm.scm
   ./gaiag -l csp examples/Alarm.asd
   ./gaiag -l wfc examples/double-on.asd
   ./gaiag -l simulate -t '(a a a a)' examples/if.asd
@@ -87,7 +88,7 @@ Examples:
      options)))
 
 (define (file->lang file-name language)
-  (display ((module-ref (resolve-module `(language asd ,language)) 'ast->) (read-asd file-name))))
+  (display ((module-ref (resolve-module `(language asd ,language)) 'ast->) (read-ast file-name))))
 
 (define (main args)
   (let* ((options (parse-opts args))
