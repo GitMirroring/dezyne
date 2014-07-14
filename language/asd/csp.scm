@@ -340,12 +340,21 @@
        (list variables var (list 'call function arguments)))
       (('variable type var expr)
        (list variables var (list 'expression expr)))
-
+ 
       (('assign var ('call function arguments))
-       (list 'callvalued (list variables frame (list 'call function arguments))))
+       (stderr "AST: assign: members ~a\n" locals)
+       (stderr "AST: assign: locals ~a\n" locals)
+       (stderr "AST: assign: var ~a\n" var)
+       (stderr "AST: assign: frame ~a\n" frame)
+       (list 'callvalued (list variables frame 'r 
+                               (list 'call function arguments))
+             (cons (map (assignment var 'r) members)
+                   (map (assignment var 'r) frame))))
+
       (('assign var ('value type field))
        (list 'assign variables frame (cons (map (assignment var field) members)
                                            (map (assignment var field) locals))))
+
       (('assign var exp)
        (list 'assign variables frame (cons (map (assignment var exp) members)
                                            (map (assignment var exp) locals))))
@@ -423,6 +432,8 @@
        (('call function arguments) `(,function))
        (('assign ('variable type var action))
         (list "(\\P',V' @ " (cadr action) "!" (caddr action) " -> " (cadr action) "?" var " -> P'((V'," var ")))"))
+
+
        (('assign vars frame (expressions locals ...))
         (let* ((var-members (comma-join (map (lambda (x) (csp-transform ast x)) (car vars))))
                (var-locals (comma-join (map (lambda (x) (csp-transform ast x)) (append (cdr vars) frame))))
@@ -431,6 +442,8 @@
                              (append (map (lambda (x) (csp-transform ast x)) expressions)
                                      (map (lambda (x) (csp-transform ast x)) locals)))))
           (list "assign_(\\((" var-members ")" comma var-locals ") @ (" expressions "))")))
+
+
        (('if vars frame expression then else)
         (let* ((var-members (comma-join (map (lambda (x) (csp-transform ast x)) (car vars))))
                (var-locals (comma-join (map (lambda (x) (csp-transform ast x)) (append (cdr vars) frame))))
@@ -461,8 +474,15 @@
        (('callvalued-context (vars var ('call function arguments)) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list "callvalued_args_context_(" function ",\\(" (comma-join vars) ") @ " (comma-join (ast:body arguments)) ",\n" stat ")")))
-       (('callvalued (vars var ('call function arguments))) 
-        (list "callvalued_args_(" function ",\\((" (comma-join vars) ")," var ") @ " (comma-join (ast:body arguments)) ")"))
+
+       (('callvalued  (vars frame var ('call function arguments)) (expressions locals ...))
+        (let ((var-expression (comma-join (map (lambda (x) (csp-transform ast x)) expressions)))
+              (frame-expressions (comma-join (map (lambda (x) (csp-transform ast x)) locals))))
+          (stderr "callvalued: src:~a\n" src)
+          (stderr "callvalued: expressions:~a\n" expressions)
+          (stderr "callvalued: locals:~a\n" locals)
+          (list "callvalued_args_(" function ",\\((" (comma-join vars) ")," (comma-join frame) ") @ " (comma-join (ast:body arguments)) ",\\((" (comma-join vars) ")," (comma-join frame) ")," var " @ ((" var-expression ")," frame-expressions "))")))
+
        (('context (vars var ('valued-action ('value port event))) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list port "!" event "  -> " port "?" var " -> context_(\\(" (comma-join vars) ") @ " var ",\n" stat ")" )))

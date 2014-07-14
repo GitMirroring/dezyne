@@ -982,7 +982,7 @@ semi_(context_(\\(b) @ true,\\P',((b),c) @ ifthenelse_(c,
        (semi (semi (assign ((b)) () (((! b))))
               (callvalued-context
                (((b)) c (call g (arguments b)))
-               (semi (callvalued (((b)) (c) (call g (arguments c))))
+               (semi (callvalued (((b)) (c) r (call g (arguments c))) ((r) c))
                      (if ((b))
                          (c)
                          (expression c)
@@ -1010,7 +1010,7 @@ semi_(context_(\\(b) @ true,\\P',((b),c) @ ifthenelse_(c,
          "i?x:{e} ->
 semi_(semi_(assign_(\\((b)) @ (not (b))),
 callvalued_args_context_(g,\\(b) @ b,
-semi_(callvalued_args_(g,\\((b),c) @ c),
+semi_(callvalued_args_(g,\\((b),c) @ c,\\((b),c),r @ ((r),c)),
 \\P',((b),c) @ ifthenelse_(c,
 (\\P',V' @ i!f -> P'(V')),
 (\\P',V' @ P'(V'))
