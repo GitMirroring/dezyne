@@ -462,6 +462,8 @@
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list "callvalued_context_(" function ",\\(" (comma-join vars) ") @ " (comma-join (ast:body arguments)) ",\n" stat ")")))
 
+       (('callvalued-context (vars var ('call function arguments)))
+        (list "callvalued_context_(" function ",\\(" (comma-join vars) ") @ " (comma-join (ast:body arguments)) ",\n" "FOO_statement" ")"))
        (('context (vars var ('valued-action ('value port event))) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list port "!" event "  -> " port "?" var " -> context_(\\(" (comma-join vars) ") @ " var ",\n" stat ")" )))
