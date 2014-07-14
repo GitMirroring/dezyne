@@ -599,7 +599,7 @@
 (define (statement ast)
   (match ast
     ((? system?) (or (assoc 'compound (body ast)) (make '(compound))))
-    ((? model?) (statement (behaviour ast)))
+    ((? model?) (or (null-is-#f (statement (behaviour ast))) (make '(compound))))
     ((? behaviour?) (or (assoc 'compound (body ast)) (make '(compound))))
     ((or (? guard?) (? on?)) (caddr ast))
     ((? function?) (cadddr ast))

@@ -40,6 +40,7 @@
          (type States)
          state
          (value States Disarmed)))
+     (functions)
      (compound
        (guard (value state Disarmed)
               (compound
@@ -84,6 +85,7 @@
          state
          (value States Disarmed))
        (variable (type bool) sounding false))
+     (functions)
      (compound
        (guard (value state Disarmed)
               (compound
