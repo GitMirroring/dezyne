@@ -38,8 +38,15 @@
 ;;   (ast:types (ast:interface AST))
 ;;      ==>
 ;;   SUB-AST
-;;      := ((enum     States (Disarmed Armed Triggered Disarming))
+;;      := ((enum     States (Disarmed Armed Triggered Disarming)))
 ;;           ^type    ^name  ^elements
+;;           |implicit: class=type
+;;
+;;   (ast:types (ast:interface (read-asd "examples/Typedef.asd")))
+;;      ==>
+;;      := (enum ....)
+;;          (int     Typedef (range   0     3)
+;;           ^type   ^name    ^range  ^from ^to
 ;;           |implicit: class=type
 ;;
 ;;
@@ -209,9 +216,9 @@
            expression
            field
            find-events
+           from
            function
            functions
-           trigger?
            value?
            guard?
            guard-equals?
@@ -220,6 +227,7 @@
            instance?
            instances
            instances?
+           int?
            interface
            interfaces
            interface?
@@ -240,6 +248,8 @@
 	   port-name
            ports
            provides?
+           range
+           range?
            register
            requires?
 	   return-type
@@ -252,6 +262,8 @@
            statements-of-type
            system
            system?
+           to
+           trigger?
            triggers
            type
            type-name-component
@@ -312,6 +324,7 @@
 (define (component? ast) (type-helper? 'component ast))
 (define (compound? ast) (type-helper? 'compound ast))
 (define (enum? ast) (type-helper? 'enum ast))
+(define (int? ast) (type-helper? 'int ast))
 (define (event? ast) (type-helper? 'event ast))
 (define (events? ast) (type-helper? 'events ast))
 (define (function? ast) (type-helper? 'function ast))
@@ -327,6 +340,7 @@
 (define (parameters? ast) (type-helper? 'parameters ast))
 (define (port? ast) (type-helper? 'port ast))
 (define (ports? ast) (type-helper? 'ports ast))
+(define (range? ast) (type-helper? 'range ast))
 (define (signature? ast) (type-helper? 'signature ast))
 (define (system? ast) (type-helper? 'system ast))
 (define (trigger? ast) (type-helper? 'trigger ast))
@@ -551,6 +565,23 @@
 (define (direction ast)
   (match ast
     ((or (? event?) (? port?)) (car ast))
+    (_ (throw 'match-error  (format #f "~a:range: no match: ~a\n" (current-source-location) ast)))))
+
+(define (from ast)
+  (match ast
+    ((? int?) (from (range ast)))
+    ((? range?) (cadr ast))
+    (_ (throw 'match-error  (format #f "~a:from: no match: ~a\n" (current-source-location) ast)))))
+
+(define (to ast)
+  (match ast
+    ((? int?) (to (range ast)))
+    ((? range?) (caddr ast))
+    (_ (throw 'match-error  (format #f "~a:to: no match: ~a\n" (current-source-location) ast)))))
+
+(define (range ast)
+  (match ast
+    ((? int?) (caddr ast))
     (_ (throw 'match-error  (format #f "~a:direction: no match: ~a\n" (current-source-location) ast)))))
 
 (define (elements ast)
@@ -576,7 +607,7 @@
 
 (define (name ast)
   (match ast
-    ((or (? behaviour?) (? enum?) (? function?) (? model?) (? parameter?)) (or (and (>1 (length ast)) (cadr ast)) ""))
+    ((or (? behaviour?) (? enum?) (? function?) (? int?) (? model?) (? parameter?)) (or (and (>1 (length ast)) (cadr ast)) ""))
     ((or (? event?) (? instance?) (? port?) (? variable?)) (caddr ast))
     ((? symbol?) ast)
     (_ (throw 'match-error  (format #f "~a:name: no match: ~a\n" (current-source-location) ast)))))
@@ -585,6 +616,7 @@
   (match ast
     ((? enum?) 'type)
     ((? event?) 'event)
+    ((? int?) 'type)
     ((? port?) 'port)
     ((? trigger?) 'trigger)
     ((? value?) 'value)
@@ -608,7 +640,7 @@
 (define (type ast)
   (match ast
     ((? event?) (return-type ast)) ;; FIXME junk relaxed accessor
-    ((? parameter?) (car ast))
+    ((or (? enum?) (? int?) (? parameter?)) (car ast))
     ((? literal?) (caddr ast))
     ((or (? instance?) (? port?) (? type?) (? value?) (? variable?)) (cadr ast))
     (_ (throw 'match-error  (format #f "~a:type: no match: ~a\n" (current-source-location) ast)))))
