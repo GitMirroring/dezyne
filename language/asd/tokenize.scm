@@ -29,6 +29,8 @@
          (and=> loc source-location->source-properties)
          form #f args))
 
+(module-define! (resolve-module '(language ecmascript tokenize)) 'syntax-error syntax-error)
+
 (define (string-symbol x) (cons (symbol->string x) x))
 (define *keywords*
   (map string-symbol 

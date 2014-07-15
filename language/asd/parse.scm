@@ -30,9 +30,20 @@
             object?
             object-id
             source-location
-            source-location->source-properties))
+            source-location->source-properties
+            syntax-error))
 
 (define (debug m x) (display (format #f "~a: ~a\n" m x) (current-error-port)))
+
+(define* (syntax-error message #:optional token)
+  (if (lexical-token? token)
+      (throw 'syntax-error #f message
+             (and=> (lexical-token-source token)
+                    source-location->source-properties)
+             (or (lexical-token-value token)
+                 (lexical-token-category token))
+             #f)
+      (throw 'syntax-error #f message #f token #f)))
 
 (define (statement? o)
   (and (pair? o)
