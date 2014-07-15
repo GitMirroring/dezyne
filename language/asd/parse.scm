@@ -286,6 +286,7 @@
     (statement-list statement) : (append $1 (list $2)))
 
    (statement
+    (function-call-statement) : $1
     (guarded-statement) : $1
     (compound-statement) : $1
     (on-event-statement) : $1
@@ -296,6 +297,9 @@
     (reply-statement) : $1
     (return-statement) : $1
     (variable-statement) : $1)
+
+   (function-call-statement
+    (function-call semicolon) : `(call ,$1))
 
    (guarded-statement
     (lbracket guard rbracket statement) : (make `(guard ,$2 ,$4) @1))
