@@ -237,7 +237,7 @@ illegal -> STOP"))
            '(assign c true))
 
           ;; via:
-          '(assign ((s b c)) () ((s b true)))))
+          '(assign ((s b c)) ((s b true)))))
 
 (pass-if "csp-transform-assign-bool"
          (noisy-equal?
@@ -247,7 +247,7 @@ illegal -> STOP"))
 
            i-ast
 
-           '(assign ((s b c)) () ((s b true))))
+           '(assign ((s b c)) ((s b true))))
 
           ;; via:
           "assign_(\\((s,b,c)) @ (s,b,true))"))
@@ -264,7 +264,7 @@ illegal -> STOP"))
            '(assign s (value S S2)))
 
           ;; via:
-          '(assign ((s b c)) () ((S2 b c)))))
+          '(assign ((s b c)) ((S2 b c)))))
 
 (pass-if "csp-transform-assign-enum"
          (noisy-equal?
@@ -274,7 +274,7 @@ illegal -> STOP"))
 
            i-ast
 
-           '(assign ((s b c)) () ((S2 b c))))
+           '(assign ((s b c)) ((S2 b c))))
 
           ;; via:
           "assign_(\\((s,b,c)) @ (S2,b,c))"))
@@ -292,7 +292,7 @@ illegal -> STOP"))
                 (compound)))
 
           ;; via:
-          '(if ((s b c)) ()
+          '(if ((s b c))
                (expression b)
                ()
                ())))
@@ -325,7 +325,7 @@ illegal -> STOP"))
                 (compound)))
 
           ;; via:
-          '(if ((s b c)) ()
+          '(if ((s b c))
                (expression b)
                ()
                ())))
@@ -338,7 +338,7 @@ illegal -> STOP"))
 
            i-ast
 
-           '(if ((s b c)) ()
+           '(if ((s b c))
                (expression b)
                ()
                ()))
@@ -363,7 +363,7 @@ illegal -> STOP"))
                 ()))
 
           ;; via:
-          '(if ((s b c)) ()
+          '(if ((s b c))
                (expression (and IG b))
                (action illegal)
                ())))
@@ -381,7 +381,7 @@ illegal -> STOP"))
                 (action illegal)))
 
           ;; via:
-          '(if ((s b c)) ()
+          '(if ((s b c))
                (expression (and (! IG) b))
                ()
                (action illegal))))
@@ -400,11 +400,11 @@ illegal -> STOP"))
              (assign b true)))
 
           ;; via:
-          '(semi (if ((s b c)) ()
+          '(semi (if ((s b c))
                      (expression b)
                      ()
                      ())
-                 (assign ((s b c)) () ((s true c))))))
+                 (assign ((s b c)) ((s true c))))))
 
 (pass-if "csp-transform-semi"
          (diff-noisy-equal?
@@ -414,11 +414,11 @@ illegal -> STOP"))
 
            i-ast
 
-           '(semi (if ((s b c)) ()
+           '(semi (if ((s b c))
                      (expression b)
                      ()
                      ())
-                 (assign ((s b c)) () ((s true c)))))
+                 (assign ((s b c)) ((s true c)))))
 
           ;; via:
           "semi_(\\P',((s,b,c)) @ ifthenelse_(b,
@@ -455,21 +455,21 @@ assign_(\\((s,b,c)) @ (s,true,c)))"))
           ;; via:
           '(on (e)
                (semi
-                (semi (if ((s b c)) () (expression (or c b))
+                (semi (if ((s b c)) (expression (or c b))
                           (semi (action f) (action g))
                           ())
-                      (semi (if ((s b c)) () (expression b)
-                                (semi (if ((s b c)) () (expression c)
+                      (semi (if ((s b c)) (expression b)
+                                (semi (if ((s b c)) (expression c)
                                           (action g)
                                           ())
-                                      (semi (assign ((s b c)) () ((s b false)))
+                                      (semi (assign ((s b c)) ((s b false)))
                                             (action f)))
-                                (if ((s b c)) () (expression c)
-                                    (semi (assign ((s b c)) () ((s false c)))
+                                (if ((s b c)) (expression c)
+                                    (semi (assign ((s b c)) ((s false c)))
                                           (action h))
-                                    (semi (assign ((s b c)) () ((s true c)))
+                                    (semi (assign ((s b c)) ((s true c)))
                                           (action g))))
-                            (assign ((s b c)) () ((S2 b c)))))
+                            (assign ((s b c)) ((S2 b c)))))
                             (return))
                (the-end (s b c)))))
 
@@ -482,21 +482,21 @@ assign_(\\((s,b,c)) @ (s,true,c)))"))
            i-ast
 
            '(on (e)
-                (semi (semi (if ((s b c)) () (expression (or c b))
+                (semi (semi (if ((s b c)) (expression (or c b))
                            (semi (action f) (action g))
                            ())
-                       (semi (if ((s b c)) () (expression b)
-                                 (semi (if ((s b c)) () (expression c)
+                       (semi (if ((s b c)) (expression b)
+                                 (semi (if ((s b c)) (expression c)
                                            (action g)
                                            ())
-                                       (semi (assign ((s b c)) () ((s b false)))
+                                       (semi (assign ((s b c)) ((s b false)))
                                              (action f)))
-                                 (if ((s b c)) () (expression c)
-                                     (semi (assign ((s b c)) () ((s false c)))
+                                 (if ((s b c)) (expression c)
+                                     (semi (assign ((s b c)) ((s false c)))
                                            (action h))
-                                     (semi (assign ((s b c)) () ((s true c)))
+                                     (semi (assign ((s b c)) ((s true c)))
                                            (action g))))
-                             (assign ((s b c)) () ((S2 b c)))))
+                             (assign ((s b c)) ((S2 b c)))))
                       (return))
                 (the-end (s b c))))
 
@@ -689,8 +689,8 @@ semi_((\\P',V' @ j!h -> P'(V')),
           '(on ((trigger sensor triggered))
                (semi (semi (action (trigger console detected))
                            (semi (action (trigger siren turnon))
-                                 (semi (assign ((state sounding)) () ((state true)))
-                                       (assign ((state sounding)) () ((Triggered sounding))))))
+                                 (semi (assign ((state sounding)) ((state true)))
+                                       (assign ((state sounding)) ((Triggered sounding))))))
                      (return))
                (the-end (state sounding)))))
 
@@ -706,8 +706,8 @@ semi_((\\P',V' @ j!h -> P'(V')),
             '(on ((trigger sensor triggered))
                  (semi (semi (action (trigger console detected))
                              (semi (action (trigger siren turnon))
-                                   (semi (assign ((state sounding)) () ((state true)))
-                                         (assign ((state sounding)) () ((Triggered sounding))))))
+                                   (semi (assign ((state sounding)) ((state true)))
+                                         (assign ((state sounding)) ((Triggered sounding))))))
                        (return))
                  (the-end (state sounding)))))
           ;; via:
@@ -844,7 +844,7 @@ semi_(toggle,
   '(on ((trigger i done))
        (callvalued-context
         (((dummy) s) s (valued-action u what))
-        (if ((dummy) s) () (expression (== s (literal u Status Ok)))
+        (if ((dummy) s) (expression (== s (literal u Status Ok)))
             (reply (literal I Status Yes))
             (reply (literal I Status No))))
        (the-end (dummy))))
@@ -910,7 +910,7 @@ callvalued_context_(sendrecv_(u,what),
   '(on ((trigger i e))
        (semi (context (((b) c) c (expression true))
                       (if ((b) c) 
-                          () 
+                          
                           (expression c) 
                           (action (trigger i f)) ()))
              (return))
@@ -985,14 +985,13 @@ semi_(context_(\\(b) @ true,\\P',((b),c) @ ifthenelse_(c,
 
 (define csp-callvalued-on
   '(on ((trigger i e))
-       (semi (semi (assign ((b)) () (((! b))))
+       (semi (semi (assign ((b)) (((! b))))
               (callvalued-context
                (((b) c) c (call g (arguments b)))
                (semi (callvalued 
-                      (((b) c) () r (call g (arguments c))) 
-                      ((r)))
+                      (((b) c) r (call g (arguments c))) 
+                      ((r) c))
                      (if ((b) c)
-                         ()
                          (expression c)
                          (action (trigger i f))
                          ()))))
@@ -1060,7 +1059,7 @@ semi_(callvalued_args_(g,\\((b),c) @ c,\\((b),c),r @ ((r),c)),
 
 (define csp-callvalued-on-deep
   '(on ((trigger i e))
-    (semi (semi (assign ((b)) () (((! b))))
+    (semi (semi (assign ((b)) (((! b))))
                 (callvalued-context
                   (((b) c) c (call g (arguments b)))
                   (callvalued-context
@@ -1070,7 +1069,6 @@ semi_(callvalued_args_(g,\\((b),c) @ c,\\((b),c),r @ ((r),c)),
                       (callvalued-context
                         (((b) c d cc dd) dd (call g (arguments d)))
                         (if ((b) c d cc dd)
-                          ()
                           (expression dd)
                           (action (trigger i f))
                           ()))))))
