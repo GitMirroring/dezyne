@@ -1,8 +1,8 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
+//
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -28,49 +28,27 @@ interface I
 
   behaviour
   {
-    bool ma = false;
-    bool mb = false;
-
-    bool g (bool pa) 
-    {
-      bool gb = pa;
-      f; 
-      return gb; 
-    }
-
-    bool gg (bool pa, bool pb) 
-    {
-      bool ggb = pa && pb;
-      f; 
-      return ggb; 
-    }
+    bool b = false;
+    bool g (bool c) { f; return c; }
 
     [true]
     on e:
     {
-      ma = ! ma;
+      b = ! b;
+      bool c = g (b);
+
+      b = g (c);
+
+      if(c)
       {
-        bool lc = g (ma, mb);
-        bool ld = false;
-        
-        ma = g (lc);
-        mb = g (ma, ld);
-        
-        {
-          if (lc)
-            {
-              f;
-            }
-        }
-        
-        mb = !ld;
+        f;
       }
     }
   }
 }
 
 
-component arguments
+component argument
 {
   provides I i;
 
