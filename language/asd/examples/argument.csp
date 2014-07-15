@@ -1,18 +1,20 @@
+drop_one_local_((M', (L', L0'))) = (M', L')
+
 ifthenelse_(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')
 semi_(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
 assign_(F') = \ P', V' @ P'(F'(V'))
-context_(F', S') = \ P', V' @ S'((\(V',E') @ P'(V')), (V',F'(V')))
+context_(F', S') = \ P', (M', L') @ S'((\V2' @ P'(drop_one_local_(V2'))), (M', (L', F'((M', L')))))
 send_(c',e') = \P',V' @ c'!e' -> P'(V')
 sendrecv_(c',e') = \P',V' @ c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P',V')
 the_end_(P') = \V' @ transition_end -> P'(V')
 skip_ = \P',V' @ P'(V')
-callvoid_(B') = \P',V' @ B'(P'(V'), V')
-callvoid_args_(B',F') = \P',V' @ B'(P'(V'), V', F')
-callvalued_(B',A') = \P',V' @ B'(\(V',r') @ P'(A'(V',r')), V')
-callvalued_args_(B',F',A') = \P',V' @ B'(\(V',r') @ P'(A'(V',r')), V', F')
-callvalued_context_(B',S') = \P',V' @ B'(\V' @ S'(\(V',E') @ P'(V'), V'), V')
-callvalued_args_context_(B',F', S') = \P',V' @ B'(\V' @ S'(\(V',E') @ P'(V'), V'), V', F')
-returnvalue_(F') = \P', V' @ P'((V', F'(V')))
+callvoid_(B') = \P',V' @ B'(P', V')
+callvoid_args_(B',F') = \P',V' @ B'(P', V', F')
+callvalued_(B',A')         = \P',V' @ B'(\(M',(L', r')) @ P'(A'((M',L'),r')), V')
+callvalued_args_(B',F',A') = \P',V' @ B'(\(M',(L', r')) @ P'(A'((M',L'),r')), V', F')
+callvalued_context_(B',S')          = \P',V' @ B'(\V1' @ S'(\V2' @ P'(drop_one_local_(V2')), V1'), V')
+callvalued_args_context_(B',F', S') = \P',V' @ B'(\V1' @ S'(\V2' @ P'(drop_one_local_(V2')), V1'), V', F')
+returnvalue_(F') = \P',(M',L') @ P'((M', (L', F'((M', L')))))
 
 datatype event_enumeration_alphabet =
 e | f | return
@@ -22,43 +24,43 @@ channel illegal
 channel I,i: {e,f,return}
 
 I_(IG) = let
-g = \P',V',(F_c') @ context_(F_c',
+g = \P',V',(F_gc') @ context_(F_gc',
 semi_((\P',V' @ I!f -> P'(V')),
-returnvalue_(\((b),c) @ c)))(P',V')
+returnvalue_(\((b),(stack',gc)) @ (gc or b))))(P',V')
 
-I__((b)) =
+I__(((b),stack')) =
 (true) & (
 I?x:{e} ->
-semi_(semi_(assign_(\((b)) @ (not (b))),
-callvalued_args_context_(g,\(b) @ b,
-semi_(callvalued_args_(g,\((b),c) @ c,\((b),c),r @ ((r),c)),
-\P',((b),c) @ ifthenelse_(c,
+semi_(semi_(assign_(\((b),stack') @ (not (b),stack')),
+callvalued_args_context_(g,\((b),stack') @ b,
+semi_(callvalued_args_(g,\((b),(stack',c)) @ c,\((b),(stack',c)),r @ ((r),(stack',c))),
+\P',((b),(stack',c)) @ ifthenelse_(c,
 (\P',V' @ I!f -> P'(V')),
 (\P',V' @ P'(V'))
-)(P',((b),c))))),
-(\P',V' @ I.return -> P'(V')))(\V' @ I__(V'),((b))))
+)(P',((b),(stack',c)))))),
+(\P',V' @ I.return -> P'(V')))(\V' @ I__(V'),((b),stack')))
 
-within I__((false)) 
+within I__(((false),<>)) 
 
 
 argument_(IIG,IG) = let
-g = \P',V',(F_c') @ context_(F_c',
+g = \P',V',(F_gc') @ context_(F_gc',
 semi_((\P',V' @ i!f -> P'(V')),
-returnvalue_(\((b),c) @ c)))(P',V')
+returnvalue_(\((b),(stack',gc)) @ (gc or b))))(P',V')
 
-argument__((b)) = transition_begin -> (
+argument__(((b),stack')) = transition_begin -> (
 (true) & (
 i?x:{e} ->
-semi_(semi_(assign_(\((b)) @ (not (b))),
-callvalued_args_context_(g,\(b) @ b,
-semi_(callvalued_args_(g,\((b),c) @ c,\((b),c),r @ ((r),c)),
-\P',((b),c) @ ifthenelse_(c,
+semi_(semi_(assign_(\((b),stack') @ (not (b),stack')),
+callvalued_args_context_(g,\((b),stack') @ b,
+semi_(callvalued_args_(g,\((b),(stack',c)) @ c,\((b),(stack',c)),r @ ((r),(stack',c))),
+\P',((b),(stack',c)) @ ifthenelse_(c,
 (\P',V' @ i!f -> P'(V')),
 (\P',V' @ P'(V'))
-)(P',((b),c))))),
-(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> argument__(V'),((b))))
+)(P',((b),(stack',c)))))),
+(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> argument__(V'),((b),stack')))
 )
-within argument__((false))
+within argument__(((false),<>))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}

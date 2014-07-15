@@ -3,6 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
@@ -22,21 +23,23 @@
 ;;; 
 ;;; Code:
 
+drop_one_local_((M', (L', L0'))) = (M', L')
+
 ifthenelse_(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')
 semi_(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
 assign_(F') = \ P', V' @ P'(F'(V'))
-context_(F', S') = \ P', V' @ S'((\(V',E') @ P'(V')), (V',F'(V')))
+context_(F', S') = \ P', (M', L') @ S'((\V2' @ P'(drop_one_local_(V2'))), (M', (L', F'((M', L')))))
 send_(c',e') = \P',V' @ c'!e' -> P'(V')
 sendrecv_(c',e') = \P',V' @ c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P',V')
 the_end_(P') = \V' @ transition_end -> P'(V')
 skip_ = \P',V' @ P'(V')
-callvoid_(B') = \P',V' @ B'(P'(V'), V')
-callvoid_args_(B',F') = \P',V' @ B'(P'(V'), V', F')
-callvalued_(B',A') = \P',V' @ B'(\(V',r') @ P'(A'(V',r')), V')
-callvalued_args_(B',F',A') = \P',V' @ B'(\(V',r') @ P'(A'(V',r')), V', F')
-callvalued_context_(B',S') = \P',V' @ B'(\V' @ S'(\(V',E') @ P'(V'), V'), V')
-callvalued_args_context_(B',F', S') = \P',V' @ B'(\V' @ S'(\(V',E') @ P'(V'), V'), V', F')
-returnvalue_(F') = \P', V' @ P'((V', F'(V')))
+callvoid_(B') = \P',V' @ B'(P', V')
+callvoid_args_(B',F') = \P',V' @ B'(P', V', F')
+callvalued_(B',A')         = \P',V' @ B'(\(M',(L', r')) @ P'(A'((M',L'),r')), V')
+callvalued_args_(B',F',A') = \P',V' @ B'(\(M',(L', r')) @ P'(A'((M',L'),r')), V', F')
+callvalued_context_(B',S')          = \P',V' @ B'(\V1' @ S'(\V2' @ P'(drop_one_local_(V2')), V1'), V')
+callvalued_args_context_(B',F', S') = \P',V' @ B'(\V1' @ S'(\V2' @ P'(drop_one_local_(V2')), V1'), V', F')
+returnvalue_(F') = \P',(M',L') @ P'((M', (L', F'((M', L')))))
 
 datatype event_enumeration_alphabet =
 #(pipe-join (append
@@ -55,24 +58,24 @@ channel #.interface ,#.port : {#(comma-join (append (port-triggers port) (return
 # (map-ports #{
 #.interface _#.behaviour(IG) = let
 # (->string (map (lambda (x) (csp-transform interface (ast-transform interface x))) (ast:functions (ast:behaviour interface))))
-#.interface _#.behaviour _((# (comma-join (map ast:name ((compose ast:variables ast:behaviour ast-norm) .interface))))) =
+#.interface _#.behaviour _(((# (comma-join (map ast:name ((compose ast:variables ast:behaviour ast-norm) .interface)))),stack')) =
 # (map-guards #{(# (csp-expression->string (ast:expression guard))) & (
 # ((->join "\n  []\n  ") (map (lambda (on) (csp-transform (ast:ast .interface) (ast-transform (ast:ast .interface) on)))
    ((ast:statements-of-type 'on) (ast:statement guard)))))
 #} (reverse ((ast:statements-of-type 'guard) (ast:statement (ast:behaviour (ast-norm .interface))))))
-within #.interface _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:expression x))) ((compose ast:variables ast:behaviour ast-norm) .interface))))) #.optional-chaos
+within #.interface _#.behaviour _(((#(comma-join (map (lambda (x) (value (ast:expression x))) ((compose ast:variables ast:behaviour ast-norm) .interface)))),<>)) #.optional-chaos
 
 #} ((compose ast:ports ast:component) ast))
 #.component _#.behaviour (IIG,IG) = let
 # (->string (map (lambda (x) (csp-transform component (ast-transform component x))) (ast:functions (ast:behaviour component))))
-#.component _#.behaviour _((#(comma-join (map ast:name ((compose ast:variables ast:behaviour ast:component) ast))))) = transition_begin -> (
+#.component _#.behaviour _(((#(comma-join (map ast:name ((compose ast:variables ast:behaviour ast:component) ast)))),stack')) = transition_begin -> (
 # (map-guards #{ (# (csp-expression->string (ast:expression guard))) & (
 # ((->join "\n  []\n  ") (map (lambda (on) (csp-transform component (ast-transform component on)))
     (append
       (filter identity (map (statement-on-p/r (provides? component)) ((ast:statements-of-type 'on) (ast:statement guard))))
       (filter identity (map (statement-on-p/r (requires? component)) ((ast:statements-of-type 'on) (ast:statement guard))))))))
 #} (reverse ((ast:statements-of-type 'guard) ((compose ast:statement ast:behaviour ast:component) ast)))))
-within #.component _#.behaviour _((#(comma-join (map (lambda (x) (value (ast:expression x))) ((compose ast:variables ast:behaviour ast:component) ast)))))
+within #.component _#.behaviour _(((#(comma-join (map (lambda (x) (value (ast:expression x))) ((compose ast:variables ast:behaviour ast:component) ast)))),<>))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {#

@@ -3,6 +3,7 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -29,7 +30,7 @@ interface I
   behaviour
   {
     bool b = false;
-    bool g (bool c) { f; return c; }
+    bool g (bool gc) { f; return gc || b; }
 
     [true]
     on e:
@@ -55,7 +56,7 @@ component argument
   behaviour
   {
     bool b = false;
-    bool g (bool c) { i.f; return c; }
+    bool g (bool gc) { i.f; return gc || b; }
 
     [true]
     on i.e:

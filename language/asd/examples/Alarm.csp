@@ -1,18 +1,20 @@
+drop_one_local_((M', (L', L0'))) = (M', L')
+
 ifthenelse_(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')
 semi_(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
 assign_(F') = \ P', V' @ P'(F'(V'))
-context_(F', S') = \ P', V' @ S'((\(V',E') @ P'(V')), (V',F'(V')))
+context_(F', S') = \ P', (M', L') @ S'((\V2' @ P'(drop_one_local_(V2'))), (M', (L', F'((M', L')))))
 send_(c',e') = \P',V' @ c'!e' -> P'(V')
 sendrecv_(c',e') = \P',V' @ c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P',V')
 the_end_(P') = \V' @ transition_end -> P'(V')
 skip_ = \P',V' @ P'(V')
-callvoid_(B') = \P',V' @ B'(P'(V'), V')
-callvoid_args_(B',F') = \P',V' @ B'(P'(V'), V', F')
-callvalued_(B',A') = \P',V' @ B'(\(V',r') @ P'(A'(V',r')), V')
-callvalued_args_(B',F',A') = \P',V' @ B'(\(V',r') @ P'(A'(V',r')), V', F')
-callvalued_context_(B',S') = \P',V' @ B'(\V' @ S'(\(V',E') @ P'(V'), V'), V')
-callvalued_args_context_(B',F', S') = \P',V' @ B'(\V' @ S'(\(V',E') @ P'(V'), V'), V', F')
-returnvalue_(F') = \P', V' @ P'((V', F'(V')))
+callvoid_(B') = \P',V' @ B'(P', V')
+callvoid_args_(B',F') = \P',V' @ B'(P', V', F')
+callvalued_(B',A')         = \P',V' @ B'(\(M',(L', r')) @ P'(A'((M',L'),r')), V')
+callvalued_args_(B',F',A') = \P',V' @ B'(\(M',(L', r')) @ P'(A'((M',L'),r')), V', F')
+callvalued_context_(B',S')          = \P',V' @ B'(\V1' @ S'(\V2' @ P'(drop_one_local_(V2')), V1'), V')
+callvalued_args_context_(B',F', S') = \P',V' @ B'(\V1' @ S'(\V2' @ P'(drop_one_local_(V2')), V1'), V', F')
+returnvalue_(F') = \P',(M',L') @ P'((M', (L', F'((M', L')))))
 
 datatype event_enumeration_alphabet =
 Armed | Disabled | Disabling | Disarmed | Disarming | Enabled | Off | On | Triggered | arm | deactivated | detected | disable | disabled | disarm | enable | inevitable | optional | return | triggered | turnoff | turnon
@@ -25,32 +27,32 @@ channel Siren,siren: {turnoff,turnon,return}
 
 Console_a(IG) = let
 
-Console_a_((state)) =
+Console_a_(((state),stack')) =
 (state == Disarmed) & (
 Console?x:{arm} ->
-semi_(assign_(\((state)) @ (Armed)),
-(\P',V' @ Console.return -> P'(V')))(\V' @ Console_a_(V'),((state)))
+semi_(assign_(\((state),stack') @ ((Armed),stack')),
+(\P',V' @ Console.return -> P'(V')))(\V' @ Console_a_(V'),((state),stack'))
   []
   IG & Console?x:{disarm} ->
 illegal -> STOP)
 []
 (state == Armed) & (
 Console?x:{disarm} ->
-semi_(assign_(\((state)) @ (Disarming)),
-(\P',V' @ Console.return -> P'(V')))(\V' @ Console_a_(V'),((state)))
+semi_(assign_(\((state),stack') @ ((Disarming),stack')),
+(\P',V' @ Console.return -> P'(V')))(\V' @ Console_a_(V'),((state),stack'))
   []
   Console?x:{optional} ->
 semi_(semi_((\P',V' @ Console!detected -> P'(V')),
-assign_(\((state)) @ (Triggered))),
-(\P',V' @ P'(V')))(\V' @ Console_a_(V'),((state)))
+assign_(\((state),stack') @ ((Triggered),stack'))),
+(\P',V' @ P'(V')))(\V' @ Console_a_(V'),((state),stack'))
   []
   IG & Console?x:{arm} ->
 illegal -> STOP)
 []
 (state == Triggered) & (
 Console?x:{disarm} ->
-semi_(assign_(\((state)) @ (Disarming)),
-(\P',V' @ Console.return -> P'(V')))(\V' @ Console_a_(V'),((state)))
+semi_(assign_(\((state),stack') @ ((Disarming),stack')),
+(\P',V' @ Console.return -> P'(V')))(\V' @ Console_a_(V'),((state),stack'))
   []
   IG & Console?x:{arm} ->
 illegal -> STOP)
@@ -58,21 +60,21 @@ illegal -> STOP)
 (state == Disarming) & (
 Console?x:{inevitable} ->
 semi_(semi_((\P',V' @ Console!deactivated -> P'(V')),
-assign_(\((state)) @ (Disarmed))),
-(\P',V' @ P'(V')))(\V' @ Console_a_(V'),((state)))
+assign_(\((state),stack') @ ((Disarmed),stack'))),
+(\P',V' @ P'(V')))(\V' @ Console_a_(V'),((state),stack'))
   []
   IG & Console?x:{arm,disarm} ->
 illegal -> STOP)
 
-within Console_a_((Disarmed)) [|{Console .optional}|] CHAOS({Console .optional})
+within Console_a_(((Disarmed),<>)) [|{Console .optional}|] CHAOS({Console .optional})
 
 Sensor_b(IG) = let
 
-Sensor_b_((state)) =
+Sensor_b_(((state),stack')) =
 (state == Disabled) & (
 Sensor?x:{enable} ->
-semi_(assign_(\((state)) @ (Enabled)),
-(\P',V' @ Sensor.return -> P'(V')))(\V' @ Sensor_b_(V'),((state)))
+semi_(assign_(\((state),stack') @ ((Enabled),stack')),
+(\P',V' @ Sensor.return -> P'(V')))(\V' @ Sensor_b_(V'),((state),stack'))
   []
   IG & Sensor?x:{disable} ->
 illegal -> STOP)
@@ -82,13 +84,13 @@ IG & Sensor?x:{enable} ->
 illegal -> STOP
   []
   Sensor?x:{disable} ->
-semi_(assign_(\((state)) @ (Disabling)),
-(\P',V' @ Sensor.return -> P'(V')))(\V' @ Sensor_b_(V'),((state)))
+semi_(assign_(\((state),stack') @ ((Disabling),stack')),
+(\P',V' @ Sensor.return -> P'(V')))(\V' @ Sensor_b_(V'),((state),stack'))
   []
   Sensor?x:{optional} ->
 semi_(semi_((\P',V' @ Sensor!triggered -> P'(V')),
-assign_(\((state)) @ (Triggered))),
-(\P',V' @ P'(V')))(\V' @ Sensor_b_(V'),((state))))
+assign_(\((state),stack') @ ((Triggered),stack'))),
+(\P',V' @ P'(V')))(\V' @ Sensor_b_(V'),((state),stack')))
 []
 (state == Disabling) & (
 IG & Sensor?x:{enable,disable} ->
@@ -96,49 +98,49 @@ illegal -> STOP
   []
   Sensor?x:{inevitable} ->
 semi_(semi_((\P',V' @ Sensor!disabled -> P'(V')),
-assign_(\((state)) @ (Disabled))),
-(\P',V' @ P'(V')))(\V' @ Sensor_b_(V'),((state))))
+assign_(\((state),stack') @ ((Disabled),stack'))),
+(\P',V' @ P'(V')))(\V' @ Sensor_b_(V'),((state),stack')))
 []
 (state == Triggered) & (
 IG & Sensor?x:{enable} ->
 illegal -> STOP
   []
   Sensor?x:{disable} ->
-semi_(assign_(\((state)) @ (Disabling)),
-(\P',V' @ Sensor.return -> P'(V')))(\V' @ Sensor_b_(V'),((state))))
+semi_(assign_(\((state),stack') @ ((Disabling),stack')),
+(\P',V' @ Sensor.return -> P'(V')))(\V' @ Sensor_b_(V'),((state),stack')))
 
-within Sensor_b_((Disabled)) [|{Sensor .optional}|] CHAOS({Sensor .optional})
+within Sensor_b_(((Disabled),<>)) [|{Sensor .optional}|] CHAOS({Sensor .optional})
 
 Siren_c(IG) = let
 
-Siren_c_((state)) =
+Siren_c_(((state),stack')) =
 (state == Off) & (
 Siren?x:{turnon} ->
-semi_(assign_(\((state)) @ (On)),
-(\P',V' @ Siren.return -> P'(V')))(\V' @ Siren_c_(V'),((state)))
+semi_(assign_(\((state),stack') @ ((On),stack')),
+(\P',V' @ Siren.return -> P'(V')))(\V' @ Siren_c_(V'),((state),stack'))
   []
   IG & Siren?x:{turnoff} ->
 illegal -> STOP)
 []
 (state == On) & (
 Siren?x:{turnoff} ->
-semi_(assign_(\((state)) @ (Off)),
-(\P',V' @ Siren.return -> P'(V')))(\V' @ Siren_c_(V'),((state)))
+semi_(assign_(\((state),stack') @ ((Off),stack')),
+(\P',V' @ Siren.return -> P'(V')))(\V' @ Siren_c_(V'),((state),stack'))
   []
   IG & Siren?x:{turnon} ->
 illegal -> STOP)
 
-within Siren_c_((Off)) 
+within Siren_c_(((Off),<>)) 
 
 
 Alarm_d(IIG,IG) = let
 
-Alarm_d_((state,sounding)) = transition_begin -> (
+Alarm_d_(((state,sounding),stack')) = transition_begin -> (
 (state == Disarmed) & (
 console?x:{arm} ->
 semi_(semi_((\P',V' @ sensor!enable -> sensor.return -> P'(V')),
-assign_(\((state,sounding)) @ (Armed,sounding))),
-(\P',V' @ console.return -> P'(V')))(\V' @ transition_end -> Alarm_d_(V'),((state,sounding)))
+assign_(\((state,sounding),stack') @ ((Armed,sounding),stack'))),
+(\P',V' @ console.return -> P'(V')))(\V' @ transition_end -> Alarm_d_(V'),((state,sounding),stack'))
   []
   IIG & console?x:{disarm} ->
 illegal -> STOP
@@ -152,15 +154,15 @@ illegal -> STOP
   []
   console?x:{disarm} ->
 semi_(semi_((\P',V' @ sensor!disable -> sensor.return -> P'(V')),
-assign_(\((state,sounding)) @ (Disarming,sounding))),
-(\P',V' @ console.return -> P'(V')))(\V' @ transition_end -> Alarm_d_(V'),((state,sounding)))
+assign_(\((state,sounding),stack') @ ((Disarming,sounding),stack'))),
+(\P',V' @ console.return -> P'(V')))(\V' @ transition_end -> Alarm_d_(V'),((state,sounding),stack'))
   []
   sensor?x:{triggered} ->
 semi_(semi_((\P',V' @ console!detected -> P'(V')),
 semi_((\P',V' @ siren!turnon -> siren.return -> P'(V')),
-semi_(assign_(\((state,sounding)) @ (state,true)),
-assign_(\((state,sounding)) @ (Triggered,sounding))))),
-(\P',V' @ P'(V')))(\V' @ transition_end -> Alarm_d_(V'),((state,sounding)))
+semi_(assign_(\((state,sounding),stack') @ ((state,true),stack')),
+assign_(\((state,sounding),stack') @ ((Triggered,sounding),stack'))))),
+(\P',V' @ P'(V')))(\V' @ transition_end -> Alarm_d_(V'),((state,sounding),stack'))
   []
   IG & sensor?x:{disabled} ->
 illegal -> STOP)
@@ -173,15 +175,15 @@ illegal -> STOP)
 sensor?x:{disabled} ->
 semi_(semi_((\P',V' @ console!deactivated -> P'(V')),
 semi_((\P',V' @ siren!turnoff -> siren.return -> P'(V')),
-semi_(assign_(\((state,sounding)) @ (Disarmed,sounding)),
-assign_(\((state,sounding)) @ (state,false))))),
-(\P',V' @ P'(V')))(\V' @ transition_end -> Alarm_d_(V'),((state,sounding))))
+semi_(assign_(\((state,sounding),stack') @ ((Disarmed,sounding),stack')),
+assign_(\((state,sounding),stack') @ ((state,false),stack'))))),
+(\P',V' @ P'(V')))(\V' @ transition_end -> Alarm_d_(V'),((state,sounding),stack')))
 []
 (state == Disarming and not sounding) & (
 sensor?x:{disabled} ->
 semi_(semi_((\P',V' @ console!deactivated -> P'(V')),
-assign_(\((state,sounding)) @ (Disarmed,sounding))),
-(\P',V' @ P'(V')))(\V' @ transition_end -> Alarm_d_(V'),((state,sounding))))
+assign_(\((state,sounding),stack') @ ((Disarmed,sounding),stack'))),
+(\P',V' @ P'(V')))(\V' @ transition_end -> Alarm_d_(V'),((state,sounding),stack')))
 []
 (state == Triggered) & (
 IIG & console?x:{arm} ->
@@ -190,14 +192,14 @@ illegal -> STOP
   console?x:{disarm} ->
 semi_(semi_((\P',V' @ sensor!disable -> sensor.return -> P'(V')),
 semi_((\P',V' @ siren!turnoff -> siren.return -> P'(V')),
-semi_(assign_(\((state,sounding)) @ (state,false)),
-assign_(\((state,sounding)) @ (Disarming,sounding))))),
-(\P',V' @ console.return -> P'(V')))(\V' @ transition_end -> Alarm_d_(V'),((state,sounding)))
+semi_(assign_(\((state,sounding),stack') @ ((state,false),stack')),
+assign_(\((state,sounding),stack') @ ((Disarming,sounding),stack'))))),
+(\P',V' @ console.return -> P'(V')))(\V' @ transition_end -> Alarm_d_(V'),((state,sounding),stack'))
   []
   IG & sensor?x:{triggered,disabled} ->
 illegal -> STOP)
 )
-within Alarm_d_((Disarmed,false))
+within Alarm_d_(((Disarmed,false),<>))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {sensor.triggered,sensor.disabled,extensions_over_empty_channels_is_undefined}

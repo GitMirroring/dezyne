@@ -1,5 +1,6 @@
 # Gaiag --- Guile in Asd In Asd in Guile.
 # Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 # Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Gaiag.
@@ -133,9 +134,9 @@ csp: compile
 	cd out && ../gaiag -l csp examples/argument.asd
 	$(diff) examples/argument.csp out || true
 	@$(diff) examples/argument.csp out | diffstat || true
-	cd out && ../gaiag -l csp examples/argument2.asd
-	$(diff) examples/argument2.csp out || true
-	@$(diff) examples/argument2.csp out | diffstat || true
+#	cd out && ../gaiag -l csp examples/argument2.asd
+#	$(diff) examples/argument2.csp out || true
+#	@$(diff) examples/argument2.csp out | diffstat || true
 #	cd out && ../gaiag -l csp examples/arguments.asd
 #	$(diff) examples/arguments.csp out || true
 #	@$(diff) examples/arguments.csp out | diffstat || true

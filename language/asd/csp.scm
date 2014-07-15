@@ -1,8 +1,10 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014  Rutger van Beusekom
+;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -413,7 +415,7 @@
        (('return context expression) 
         (let ((members (comma-join (car context)))
               (locals (comma-join (cdr context))))
-          (list "returnvalue_(\\((" members ")," locals ") @ " (csp-transform ast expression) ")")))
+          (list "returnvalue_(\\((" members "),(stack'," locals ")) @ " (csp-transform ast expression) ")")))
 
        (('return) (let ((channel-return (if (and (not inevitable-optional?) provided-on?) 
                                             (list "(\\P',V' @ " channel ".return -> P'(V'))")
@@ -423,7 +425,7 @@
                                (vars (comma-join vars))
                                (end (if (not inevitable-optional?) (list transition-end))))
 
-			  (list "(\\V' @ " end model-name "_" behaviour "_" "(V'),((" vars ")))")))
+			  (list "(\\V' @ " end model-name "_" behaviour "_" "(V'),((" vars "),stack'))")))
 
        (('action 'illegal) "illegal -> STOP")
 
@@ -463,9 +465,11 @@
                (var-locals (comma-join (map (lambda (x) (csp-transform ast x)) (cdr context))))
                (comma (if (string-null? var-locals) "" ","))
                (expressions (comma-join
-                             (append (map (lambda (x) (csp-transform ast x)) expressions)
-                                     (map (lambda (x) (csp-transform ast x)) locals)))))
-          (list "assign_(\\((" var-members ")" comma var-locals ") @ (" expressions "))")))
+                             (append 
+                              (list (->string (list "(" (comma-join (map (lambda (x) (csp-transform ast x)) expressions)) ")")))
+                              (list "stack'")
+                              (map (lambda (x) (csp-transform ast x)) locals)))))
+          (list "assign_(\\((" var-members "),stack'" comma var-locals ") @ (" expressions "))")))
 
        (('if context expression then else)
         (let* ((var-members (comma-join (map (lambda (x) (csp-transform ast x)) (car context))))
@@ -474,7 +478,7 @@
                (expression (csp-transform ast expression))
                (then (csp-transform ast then inevitable-optional? channel provided-on?))
                (else (csp-transform ast else inevitable-optional? channel provided-on?)))
-          (list "\\P',((" var-members ")" comma var-locals ") @ ifthenelse_(" expression ",\n" then ",\n" else "\n)(P',((" var-members ")" comma var-locals "))")))
+          (list "\\P',((" var-members ")," "(stack'" comma var-locals ")) @ ifthenelse_(" expression ",\n" then ",\n" else "\n)(P',((" var-members ")," "(stack'" comma var-locals ")))")))
 
        (('expression e) (csp-transform ast e))
        (('! e) (let ((e (csp-transform ast e)))
@@ -497,12 +501,12 @@
           (list "callvalued_args_context_(" function ",\n" stat ")")))
        (('callvalued-context (context var ('call function arguments)) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
-          (list "callvalued_args_context_(" function ",\\(" (comma-join (car context)) ") @ " (comma-join (ast:body arguments)) ",\n" stat ")")))
+          (list "callvalued_args_context_(" function ",\\((" (comma-join (car context)) "),stack') @ " (comma-join (ast:body arguments)) ",\n" stat ")")))
 
        (('callvalued  (context var ('call function arguments)) (expressions locals ...))
         (let ((var-expression (comma-join (map (lambda (x) (csp-transform ast x)) expressions)))
-              (locals-expressions (comma-join (map (lambda (x) (csp-transform ast x)) (cdr context)))))
-          (list "callvalued_args_(" function ",\\((" (comma-join (car  context)) ")," (comma-join (cdr context)) ") @ " (comma-join (ast:body arguments)) ",\\((" (comma-join (car context)) ")," (comma-join (cdr context)) ")," var " @ ((" var-expression ")," locals-expressions "))")))
+              (locals-expressions (comma-join (cons "stack'" (map (lambda (x) (csp-transform ast x)) (cdr context))))))
+          (list "callvalued_args_(" function ",\\((" (comma-join (car  context)) "),(stack'," (comma-join (cdr context)) ")) @ " (comma-join (ast:body arguments)) ",\\((" (comma-join (car context)) "),(stack'," (comma-join (cdr context)) "))," var " @ ((" var-expression "),(" locals-expressions ")))")))
        (('context (context var ('valued-action ('value port event))) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list port "!" event "  -> " port "?" var " -> context_(\\(" (comma-join context) ") @ " var ",\n" stat ")" )))
