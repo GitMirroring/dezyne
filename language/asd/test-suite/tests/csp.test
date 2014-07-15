@@ -843,8 +843,8 @@ semi_(toggle,
 (define csp-reply-variable-ast
   '(on ((trigger i done))
        (callvalued-context
-        (((dummy)) s (valued-action u what))
-        (if ((dummy)) (s) (expression (== s (literal u Status Ok)))
+        (((dummy) s) s (valued-action u what))
+        (if ((dummy) s) () (expression (== s (literal u Status Ok)))
             (reply (literal I Status Yes))
             (reply (literal I Status No))))
        (the-end (dummy))))
@@ -908,7 +908,11 @@ callvalued_context_(sendrecv_(u,what),
 
 (define csp-return-variable-ast
   '(on ((trigger i e))
-       (semi (context (((b)) c (expression true)) (if ((b)) (c) (expression c) (action (trigger i f)) ()))
+       (semi (context (((b) c) c (expression true))
+                      (if ((b) c) 
+                          () 
+                          (expression c) 
+                          (action (trigger i f)) ()))
              (return))
        (the-end (b))))
 
@@ -981,10 +985,12 @@ semi_(context_(\\(b) @ true,\\P',((b),c) @ ifthenelse_(c,
   '(on ((trigger i e))
        (semi (semi (assign ((b)) () (((! b))))
               (callvalued-context
-               (((b)) c (call g (arguments b)))
-               (semi (callvalued (((b)) (c) r (call g (arguments c))) ((r) c))
-                     (if ((b))
-                         (c)
+               (((b) c) c (call g (arguments b)))
+               (semi (callvalued 
+                      (((b) c) () r (call g (arguments c))) 
+                      ((r)))
+                     (if ((b) c)
+                         ()
                          (expression c)
                          (action (trigger i f))
                          ()))))
