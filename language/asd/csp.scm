@@ -441,11 +441,15 @@
         (let* ((transformed (csp-transform ast statement inevitable-optional? channel provided-on?))
                (params (map ast:name (ast:parameters signature)))
                (param-functions (map (lambda (x) (symbol-append 'F_ x (string->symbol "'"))) params))
-               (param-functions-string (comma-join param-functions)))
-          (list name " = \\" 
-                list "P',V',(" param-functions-string ") @ " 
-                "context_(" (car param-functions) ",\n"
-                transformed ")(P',V')\n")))
+               (param-functions-string (comma-join param-functions))
+               (transformed-in-context
+                (let loop ((param-functions param-functions))
+                  (if (null? param-functions)
+                      transformed
+                      (list "context_(" (car param-functions) ",\n"
+                            (loop (cdr param-functions))
+                            ")")))))
+          (list name " = \\" list "P',V',(" param-functions-string ") @ " transformed-in-context "(P',V')\n")))
 
        (('call function) `(,function))
 

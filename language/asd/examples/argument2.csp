@@ -1,0 +1,125 @@
+ifthenelse_(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')
+semi_(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
+assign_(F') = \ P', V' @ P'(F'(V'))
+context_(F', S') = \ P', V' @ S'((\(V',E') @ P'(V')), (V',F'(V')))
+send_(c',e') = \P',V' @ c'!e' -> P'(V')
+sendrecv_(c',e') = \P',V' @ c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P',V')
+the_end_(P') = \V' @ transition_end -> P'(V')
+skip_ = \P',V' @ P'(V')
+callvoid_(B') = \P',V' @ B'(P'(V'), V')
+callvoid_args_(B',F') = \P',V' @ B'(P'(V'), V', F')
+callvalued_(B',A') = \P',V' @ B'(\(V',r') @ P'(A'(V',r')), V')
+callvalued_args_(B',F',A') = \P',V' @ B'(\(V',r') @ P'(A'(V',r')), V', F')
+callvalued_context_(B',S') = \P',V' @ B'(\V' @ S'(\(V',E') @ P'(V'), V'), V')
+callvalued_args_context_(B',F', S') = \P',V' @ B'(\V' @ S'(\(V',E') @ P'(V'), V'), V', F')
+returnvalue_(F') = \P', V' @ P'((V', F'(V')))
+
+datatype event_enumeration_alphabet =
+e | f | return
+
+channel illegal
+
+channel I,i: {e,f,return}
+
+I_(IG) = let
+g = \P',V',(F_ga', F_gb') @ context_(F_ga',
+context_(F_gb',
+semi_((\P',V' @ I!f -> P'(V')),
+returnvalue_(\((b),ga,gb) @ (ga or gb))))(P',V')
+
+I__((b)) =
+(true) & (
+I?x:{e} ->
+semi_(semi_(assign_(\((b)) @ (not (b))),
+callvalued_args_context_(g,\(b) @ b,
+semi_(callvalued_args_(g,\((b),c) @ c,\((b),c),r @ ((r),c)),
+\P',((b),c) @ ifthenelse_(c,
+(\P',V' @ I!f -> P'(V')),
+(\P',V' @ P'(V'))
+)(P',((b),c))))),
+(\P',V' @ I.return -> P'(V')))(\V' @ I__(V'),((b))))
+
+within I__((false)) 
+
+
+argument2_(IIG,IG) = let
+g = \P',V',(F_ga', F_gb') @ context_(F_ga',
+context_(F_gb',
+semi_((\P',V' @ I!f -> P'(V')),
+returnvalue_(\((b),ga,gb) @ (ga or gb))))(P',V')
+
+argument2__((b)) = transition_begin -> (
+(true) & (
+i?x:{e} ->
+semi_(semi_(assign_(\((b)) @ (not (b))),
+callvalued_args_context_(g,\(b) @ b,
+semi_(callvalued_args_(g,\((b),c) @ c,\((b),c),r @ ((r),c)),
+\P',((b),c) @ ifthenelse_(c,
+(\P',V' @ i!f -> P'(V')),
+(\P',V' @ P'(V'))
+)(P',((b),c))))),
+(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> argument2__(V'),((b))))
+)
+within argument2__((false))
+
+channel extensions_over_empty_channels_is_undefined
+channel IN,OUT : {extensions_over_empty_channels_is_undefined}
+
+SINGLETHREADED = true
+
+channel transition_begin, transition_end
+
+channel reorder_in,reorder_out : {i.return}
+
+SEMANTICS(in',out',client',modeling') = let
+Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
+       []
+       length(s') > 0 & out'!head(s') -> Q'(tail(s'))
+       []
+       length(s') == card({|in'|}) & in'?x' -> illegal -> STOP
+
+R'(A') = ([] x' : A' @ x' -> R'(A'))
+       []
+       reorder_in?x' -> reorder_out!x' -> R'(A')
+
+S'    = let
+
+Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
+
+Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!head(r') -> Idle(0))
+            []
+            c' > 0 & transition_end -> transition_begin -> Busy(c',r')
+            []
+            c' < card({|in'|}) & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            []
+            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            []
+            r' == <> & reorder_in?x' -> Busy(c',<x'>)
+            []
+            r' != <> & reorder_in?x' -> illegal -> STOP
+
+within Idle(0)
+
+within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
+
+argument2__Component(IIG) = let
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+Exclude = {i.return,i.f}
+ClientCalls = {i.e}
+UsedModeling = {}
+within compress((argument2_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,i|},Exclude)|]
+(((STOP) [[x<-IN.x|x<-extensions(IN)]]
+[|union({|IN|},UsedModeling)|]
+SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
+assert argument2__Component(false) :[deadlock free]
+assert argument2_(true,true) :[deterministic]
+assert STOP [T= argument2__Component(false) \ diff(Events,{illegal})
+assert I_(true) [[I.x<-i.x|x<-extensions(I)]] \ {} [FD= argument2__Component(true) \ diff(Events,{|illegal,i|}) \ {}
+assert I_(false) :[deadlock free]
+
+assert I_(true) :[livelock free]
+

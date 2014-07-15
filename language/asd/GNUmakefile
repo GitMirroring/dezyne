@@ -133,6 +133,9 @@ csp: compile
 	cd out && ../gaiag -l csp examples/argument.asd
 	$(diff) examples/argument.csp out || true
 	@$(diff) examples/argument.csp out | diffstat || true
+	cd out && ../gaiag -l csp examples/argument2.asd
+	$(diff) examples/argument2.csp out || true
+	@$(diff) examples/argument2.csp out | diffstat || true
 #	cd out && ../gaiag -l csp examples/arguments.asd
 #	$(diff) examples/arguments.csp out || true
 #	@$(diff) examples/arguments.csp out | diffstat || true
