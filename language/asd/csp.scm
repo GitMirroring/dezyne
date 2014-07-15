@@ -369,9 +369,13 @@
 	 (list 'if context (list 'expression pred)
                (ast-transform- ast then return locals)
                (ast-transform- ast else return locals))))
-      (('function name type statement)
-       (let ((transformed (ast-transform- ast statement return locals)))
-         (list 'function name type transformed)))
+      (('function name signature statement)
+       (let* ((parameters (map ast:name (ast:parameters signature)))
+              (locals (append locals parameters))
+              (transformed (ast-transform- ast statement return locals)))
+         (list 'function name signature transformed)))
+      (('return expression)
+       (list 'return context expression))
       (_ src))))
 
 (define ((provides-event? model) event)
@@ -405,7 +409,12 @@
           (list IG? channel "?x:{" event-names "}" " ->\n" transformed-stat)))
        (('reply expr) (let ((expr (csp-transform ast expr inevitable-optional? channel provided-on?)))
                         (list "(\\P',V' @ " channel "." expr " -> P'(V'))")))
-       (('return expression) (list "returnvalue_(\\V' @ " (csp-transform ast expression) ")"))
+
+       (('return context expression) 
+        (let ((members (comma-join (car context)))
+              (locals (comma-join (cdr context))))
+          (list "returnvalue_(\\((" members ")," locals ") @ " (csp-transform ast expression) ")")))
+
        (('return) (let ((channel-return (if (and (not inevitable-optional?) provided-on?) 
                                             (list "(\\P',V' @ " channel ".return -> P'(V'))")
                                             (list "(\\P',V' @ P'(V'))"))))
@@ -429,9 +438,14 @@
           (list name " = \\P',V' @ " transformed "(P',V')\n")))
 
        (('function name signature statement)
-        (let ((transformed (csp-transform ast statement inevitable-optional? channel provided-on?))
-              (params (map ast:name (ast:parameters signature))))
-          (list name " = \\" (comma-join (list (comma-join params) "P',V' @ ")) transformed "(P',V')\n")))
+        (let* ((transformed (csp-transform ast statement inevitable-optional? channel provided-on?))
+               (params (map ast:name (ast:parameters signature)))
+               (param-functions (map (lambda (x) (symbol-append 'F_ x (string->symbol "'"))) params))
+               (param-functions-string (comma-join param-functions)))
+          (list name " = \\" 
+                list "P',V',(" param-functions-string ") @ " 
+                "context_(" (car param-functions) ",\n"
+                transformed ")(P',V')\n")))
 
        (('call function) `(,function))
 

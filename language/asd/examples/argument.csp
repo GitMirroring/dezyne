@@ -22,8 +22,8 @@ channel illegal
 channel I,i: {e,f,return}
 
 I_(IG) = let
-
-g = \P',V',F_c' @ context_(F_c', semi_((\P',((b),c) @ I!f -> P'(((b),c))),
+g = \P',V',(F_c') @ context_(F_c',
+semi_((\P',V' @ I!f -> P'(V')),
 returnvalue_(\((b),c) @ c)))(P',V')
 
 I__((b)) =
@@ -42,7 +42,8 @@ within I__((false))
 
 
 argument_(IIG,IG) = let
-g = \P',V',F_c' @ context_(F_c', semi_((\P',((b),c) @ I!f -> P'(((b),c))),
+g = \P',V',(F_c') @ context_(F_c',
+semi_((\P',V' @ i!f -> P'(V')),
 returnvalue_(\((b),c) @ c)))(P',V')
 
 argument__((b)) = transition_begin -> (

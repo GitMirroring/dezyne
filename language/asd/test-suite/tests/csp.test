@@ -840,6 +840,23 @@ semi_(toggle,
           ;; via:
           "toggle = \\P',V' @ (\\P',V' @ P'(V'))(P',V')\n"))
 
+(pass-if "csp-transform-function-arguments"
+         (diff-noisy-equal?
+
+          ;; from:
+          (csp-transform i-ast
+                         '(function
+                           g
+                           ((type bool) (parameters ((type bool) c)))
+                           (semi (action f) (return ((b) c) c))))
+
+          ;; via:
+          "g = \\P',V',(F_c') @ context_(F_c',
+semi_((\\P',V' @ i!f -> P'(V')),
+returnvalue_(\\((b),c) @ c)))(P',V')
+"))
+
+
 (define csp-reply-variable-ast
   '(on ((trigger i done))
        (callvalued-context
