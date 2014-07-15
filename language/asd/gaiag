@@ -88,7 +88,14 @@ Examples:
      options)))
 
 (define (file->lang file-name language)
-  (display ((module-ref (resolve-module `(language asd ,language)) 'ast->) (read-ast file-name))))
+  (catch 'syntax-error
+    (lambda ()
+      (display ((module-ref (resolve-module `(language asd ,language)) 'ast->) (read-ast file-name))))
+    (lambda (key x message location token d . r)
+      (let ((file-name (or (assoc-ref location 'filename) file-name))
+            (line (or (assoc-ref location 'line) ""))
+            (column (or (assoc-ref location 'column) "")))
+        (stderr "~a:~a:~a:~a~a\n" file-name line column message token)))))
 
 (define (main args)
   (let* ((options (parse-opts args))
