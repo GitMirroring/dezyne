@@ -312,12 +312,12 @@
          (valued-action? (valued-action? port?)))
     (match src
       (('compound tail ...)
-       (let loop ((statements tail) (frame '()))
+       (let loop ((statements tail) (frame locals))
 	 (if (null? statements)
 	     '()
              (let* ((statement (car statements))
                     (frame (append frame (if (ast:variable? statement) (list (ast:name statement)) '())))
-                    (transformed (ast-transform- ast statement #f locals frame)))
+                    (transformed (ast-transform- ast statement #f frame '())))
                (if (>1 (length statements))
                    (if (equal? transformed '(action illegal))
                        transformed
