@@ -24,18 +24,15 @@ import CommImpl;
 import Comm1Impl;
 import Comm2Impl;
 
-component CommSystem
+system CommSystem
 {
   provides Comm0 prv;
   
-  CommSystem()
-  {
-    CommImpl cccc = CommImpl();
-    Comm1Impl cmm1 = Comm1Impl();
-    Comm2Impl cmm2 = Comm2Impl();
-    prv <=> cccc.api;
-    cccc.inst1 <=> cmm1.prv;
-    cccc.inst2 <=> cmm2.prv; 
-  }
+  CommImpl cccc;
+  Comm1Impl cmm1;
+  Comm2Impl cmm2;
+  prv <=> cccc.api;
+  cccc.inst1 <=> cmm1.prv;
+  cccc.inst2 <=> cmm2.prv; 
 }
 
