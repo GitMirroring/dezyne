@@ -7,11 +7,11 @@ sendrecv_(c',e') = \P',V' @ c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P',V')
 the_end_(P') = \V' @ transition_end -> P'(V')
 skip_ = \P',V' @ P'(V')
 callvoid_(B') = \P',V' @ B'(P'(V'), V')
-callvoid_args_(B',F') = \P',V' @ B'(F'(V'), P'(V'), V')
+callvoid_args_(B',F') = \P',V' @ B'(P'(V'), V', F')
 callvalued_(B',A') = \P',V' @ B'(\(V',r') @ P'(A'(V',r')), V')
-callvalued_args_(B',F',A') = \P',V' @ B'(F'(V'), \(V',r') @ P'(A'(V',r')), V')
+callvalued_args_(B',F',A') = \P',V' @ B'(\(V',r') @ P'(A'(V',r')), V', F')
 callvalued_context_(B',S') = \P',V' @ B'(\V' @ S'(\(V',E') @ P'(V'), V'), V')
-callvalued_args_context_(B',F', S') = \P',V' @ B'(F'(V'), \V' @ S'(\(V',E') @ P'(V'), V'), V')
+callvalued_args_context_(B',F', S') = \P',V' @ B'(\V' @ S'(\(V',E') @ P'(V'), V'), V', F')
 returnvalue_(F') = \P', V' @ P'((V', F'(V')))
 
 datatype event_enumeration_alphabet =
@@ -22,8 +22,9 @@ channel illegal
 channel I,i: {e,f,return}
 
 I_(IG) = let
-g = \c,P',V' @ semi_((\P',V' @ I!f -> P'(V')),
-returnvalue_(\V' @ c))(P',V')
+
+g = \P',V',F_c' @ context_(F_c', semi_((\P',((b),c) @ I!f -> P'(((b),c))),
+returnvalue_(\((b),c) @ c)))(P',V')
 
 I__((b)) =
 (true) & (
@@ -41,8 +42,8 @@ within I__((false))
 
 
 arguments_(IIG,IG) = let
-g = \c,P',V' @ semi_((\P',V' @ i!f -> P'(V')),
-returnvalue_(\V' @ c))(P',V')
+g = \P',V',F_c' @ context_(F_c', semi_((\P',((b),c) @ I!f -> P'(((b),c))),
+returnvalue_(\((b),c) @ c)))(P',V')
 
 arguments__((b)) = transition_begin -> (
 (true) & (
