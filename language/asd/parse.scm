@@ -274,7 +274,7 @@
     (parameter-list comma parameter) : (append $1 (list $3)))
 
    (parameter
-    (type Identifier): `(,$1 ,$2))
+    (compound-type Identifier): `(,$1 ,$2))
 
    (function-list
     () : '(functions)
