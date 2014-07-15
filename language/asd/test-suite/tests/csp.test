@@ -924,10 +924,12 @@ callvalued_context_(sendrecv_(u,what),
 
            return-variable-ast
 
-
-           '(on ((trigger i e)) (compound
-                                 (variable (type bool) c true)
-                                 (if c (compound (action (trigger i f)))))))
+           '(on ((trigger i e))
+                (compound
+                 (variable (type bool) c true)
+                 (if c 
+                     (compound 
+                      (action (trigger i f)))))))
 
           ;; via:
           csp-return-variable-ast))
@@ -1058,18 +1060,22 @@ semi_(callvalued_args_(g,\\((b),c) @ c,\\((b),c),r @ ((r),c)),
 
 (define csp-callvalued-on-deep
   '(on ((trigger i e))
-       (semi (semi (assign ((b)) () (((! b))))
-              (callvalued-context
-               (((b)) c (call g (arguments b)))
-               (semi (callvalued (((b)) (c) r (call g (arguments c))) ((r) c))
-                     (if ((b))
-                         (c)
-                         (expression c)
-                         (action (trigger i f))
-                         ()))))
-             (return))
-      (the-end (b))))
-
+    (semi (semi (assign ((b)) () (((! b))))
+                (callvalued-context
+                  (((b) c) c (call g (arguments b)))
+                  (callvalued-context
+                    (((b) c d) d (call g (arguments c)))
+                    (callvalued-context
+                      (((b) c d cc) cc (call g (arguments c)))
+                      (callvalued-context
+                        (((b) c d cc dd) dd (call g (arguments d)))
+                        (if ((b) c d cc dd)
+                          ()
+                          (expression dd)
+                          (action (trigger i f))
+                          ()))))))
+          (return))
+    (the-end (b))))
 
 (pass-if "ast-transform-callvalued-deep"
          (pretty-noisy-equal?
