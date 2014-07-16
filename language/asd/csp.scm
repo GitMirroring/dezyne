@@ -4,7 +4,6 @@
 ;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
-;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -175,7 +174,7 @@
           result
           (loop (cdr ports) (append result (return-values-port (car ports)))))))
 
-(define (var-names model)
+(define (member-names model)
   (map ast:name (ast:variables (ast:behaviour model))))
 
 (define ((statement-on-p/r predicate) statement-on)
@@ -273,7 +272,7 @@
 
 (define* (ast-transform-return ast src :optional (top? #t))
   (let* ((model (or (ast:interface ast) (ast:component ast)))
-	 (variables (var-names model)))
+	 (members (member-names model)))
     (match src
       (('compound t ...)
        (let ((result
@@ -289,8 +288,8 @@
 	 (if (>1 (length result))
 	     (list 'on events (if (prefix-reply? result)
                                   (list 'compound result)
-                                  (list 'compound result (list 'return))) `(the-end ,variables))
-	     (list 'on events (list 'compound (list 'return)) `(the-end ,variables)))))
+                                  (list 'compound result (list 'return))) (list 'the-end members))
+	     (list 'on events (list 'compound (list 'return)) (list 'the-end members)))))
       (_ src))))
 
 (define ((assignment var exp) x)
@@ -306,9 +305,26 @@
     (('variable type var ('call name arguments)) #t)
     (_ #f)))
 
+(define (context->ast context)
+  ;;;(list 'context context) ;; FIXME: no annotating for now
+  context
+  )
+
+(define (context->csp context)
+  (match context
+    (('context context) (context->csp context))
+    ((members locals ...)
+     (let ((members (comma-join members))
+           (locals (reduce (lambda (x y) (string-append "(" (->string y) "," (->string x) ")")) #f (cons "stack'" locals))))
+       (list "(" members "),(" locals ")")))
+    (_ (throw 'match-error (format #f "~a:context->csp: no match: ~a\n" (current-source-location) context)))))
+
+(define (expressions->csp context)
+  (context->csp (list context)))
+
 (define* (ast-transform- ast src :optional (return #t) (locals '()))
   (let* ((model (or (ast:interface ast) (ast:component ast)))
-	 (members (var-names model))
+	 (members (member-names model))
          (context (cons members locals))
          (port? (lambda (port) (member port (map ast:name (ast:ports model)))))
          (valued-action? (valued-action? port?)))
@@ -354,9 +370,11 @@
                                    (map (assignment var field) locals))))
 
       (('assign var exp)
-       (list 'assign context (cons (map (assignment var exp) members)
-                                   (map (assignment var exp) locals))))
-
+       ;; (list 'assign context (cons (map (assignment var exp) members)
+       ;;                             (map (assignment var exp) locals)))
+       (list 'assign (context->ast context) 
+             (cons (map (assignment var exp) members)
+                   (map (assignment var exp) locals))))
 
       (('if pred then)
        (list 'if context (list 'expression (if (prefix-illegal? then)
@@ -411,34 +429,27 @@
           (list IG? channel "?x:{" event-names "}" " ->\n" transformed-stat)))
        (('reply expr) (let ((expr (csp-transform ast expr inevitable-optional? channel provided-on?)))
                         (list "(\\P',V' @ " channel "." expr " -> P'(V'))")))
-
-       (('return context expression) 
-        (let ((members (comma-join (car context)))
-              (locals (comma-join (cdr context))))
-          (list "returnvalue_(\\((" members "),(stack'," locals ")) @ " (csp-transform ast expression) ")")))
-
+       (('return context expression)
+        (let ((expression (csp-transform ast expression)))
+          (list "returnvalue_(\\(" (context->csp context) ") @ " expression ")")))
        (('return) (let ((channel-return (if (and (not inevitable-optional?) provided-on?) 
                                             (list "(\\P',V' @ " channel ".return -> P'(V'))")
                                             (list "(\\P',V' @ P'(V'))"))))
                     (list channel-return)))
-       (('the-end vars) (let* ((transition-end (if component? "transition_end -> "))
-                               (vars (comma-join vars))
-                               (end (if (not inevitable-optional?) (list transition-end))))
-
-			  (list "(\\V' @ " end model-name "_" behaviour "_" "(V'),((" vars "),stack'))")))
-
+       (('the-end members) 
+        (let* ((transition-end (if component? "transition_end -> "))
+               (context (cons members '()))
+               (end (if (not inevitable-optional?) (list transition-end))))
+          (list "(\\V' @ " end model-name "_" behaviour "_" "(V'),(" (context->csp context) "))")))
        (('action 'illegal) "illegal -> STOP")
-
        (('action event)
         (let* ((channel (if (ast:interface? model) model-name (ast:port-name event)))
                (event-name (ast:event-name event))
                (channel-return (if ((requires-event? model) event) (list " -> " channel ".return"))))
           (list "(\\P',V' @ " channel "!" event-name channel-return " -> P'(V'))")))
-
        (('function name (type) statement)
         (let ((transformed (csp-transform ast statement inevitable-optional? channel provided-on?)))
           (list name " = \\P',V' @ " transformed "(P',V')\n")))
-
        (('function name signature statement)
         (let* ((transformed (csp-transform ast statement inevitable-optional? channel provided-on?))
                (params (map ast:name (ast:parameters signature)))
@@ -452,34 +463,20 @@
                             (loop (cdr param-functions))
                             ")")))))
           (list name " = \\" list "P',V',(" param-functions-string ") @ " transformed-in-context "(P',V')\n")))
-
        (('call function) `(,function))
-
        (('call function arguments) `(,function))
-
        (('assign ('variable type var action))
         (list "(\\P',V' @ " (cadr action) "!" (caddr action) " -> " (cadr action) "?" var " -> P'((V'," var ")))"))
-
-       (('assign context (expressions locals ...))
-        (let* ((var-members (comma-join (map (lambda (x) (csp-transform ast x)) (car context))))
-               (var-locals (comma-join (map (lambda (x) (csp-transform ast x)) (cdr context))))
-               (comma (if (string-null? var-locals) "" ","))
-               (expressions (comma-join
-                             (append 
-                              (list (->string (list "(" (comma-join (map (lambda (x) (csp-transform ast x)) expressions)) ")")))
-                              (list "stack'")
-                              (map (lambda (x) (csp-transform ast x)) locals)))))
-          (list "assign_(\\((" var-members "),stack'" comma var-locals ") @ (" expressions "))")))
-
+       (('assign context expressions)
+        (let ((expressions (cons
+                            (map (lambda (x) (csp-transform ast x)) (car expressions))
+                            (map (lambda (x) (csp-transform ast x)) (cdr expressions)))))
+         (list "assign_(\\(" (context->csp context) ") @ (" (context->csp expressions) "))")))
        (('if context expression then else)
-        (let* ((var-members (comma-join (map (lambda (x) (csp-transform ast x)) (car context))))
-               (var-locals (comma-join (map (lambda (x) (csp-transform ast x)) (cdr context))))
-               (comma (if (string-null? var-locals) "" ","))
-               (expression (csp-transform ast expression))
-               (then (csp-transform ast then inevitable-optional? channel provided-on?))
-               (else (csp-transform ast else inevitable-optional? channel provided-on?)))
-          (list "\\P',((" var-members ")," "(stack'" comma var-locals ")) @ ifthenelse_(" expression ",\n" then ",\n" else "\n)(P',((" var-members ")," "(stack'" comma var-locals ")))")))
-
+        (let ((expression (csp-transform ast expression))
+              (then (csp-transform ast then inevitable-optional? channel provided-on?))
+              (else (csp-transform ast else inevitable-optional? channel provided-on?)))
+          (list "\\P',(" (context->csp context) ") @ ifthenelse_(" expression ",\n" then ",\n" else "\n)(P',(" (context->csp context) "))")))
        (('expression e) (csp-transform ast e))
        (('! e) (let ((e (csp-transform ast e)))
                  (list "not (" e ")")))
@@ -492,7 +489,6 @@
                                       (list lhs " " op " " rhs )))
        (('value type field) (list type "_" field))
        (('literal scope type value) (list type "_" value))
-
        (('callvalued-context (context var ('valued-action port event)) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list "callvalued_context_(sendrecv_(" port "," event "),\n" stat ")")))
@@ -501,23 +497,24 @@
           (list "callvalued_args_context_(" function ",\n" stat ")")))
        (('callvalued-context (context var ('call function arguments)) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
-          (list "callvalued_args_context_(" function ",\\((" (comma-join (car context)) "),stack') @ " (comma-join (ast:body arguments)) ",\n" stat ")")))
-
-       (('callvalued  (context var ('call function arguments)) (expressions locals ...))
-        (let ((var-expression (comma-join (map (lambda (x) (csp-transform ast x)) expressions)))
-              (locals-expressions (comma-join (cons "stack'" (map (lambda (x) (csp-transform ast x)) (cdr context))))))
-          (list "callvalued_args_(" function ",\\((" (comma-join (car  context)) "),(stack'," (comma-join (cdr context)) ")) @ " (comma-join (ast:body arguments)) ",\\((" (comma-join (car context)) "),(stack'," (comma-join (cdr context)) "))," var " @ ((" var-expression "),(" locals-expressions ")))")))
+          (list "callvalued_args_context_(" function ",\\((" (context->csp context) ") @ " (comma-join (ast:body arguments)) ",\n" stat ")")))
+       (('callvalued (context var ('call function arguments)) expressions)
+        (let ((expressions (cons
+                            (map (lambda (x) (csp-transform ast x)) (car expressions))
+                            (map (lambda (x) (csp-transform ast x)) (cdr expressions)))))
+          (list "callvalued_args_(" function ",\\((" (context->csp context) ")) @ " (comma-join (ast:body arguments)) ",\\((" (context->csp context) "))," var " @ (" (context->csp expressions) "))")))
        (('context (context var ('valued-action ('value port event))) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list port "!" event "  -> " port "?" var " -> context_(\\(" (comma-join context) ") @ " var ",\n" stat ")" )))
        (('context (context var expression) stat)
         (let ((expression (csp-transform ast expression))
               (stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
-          (list "context_(\\(" (comma-join (car context)) ") @ " expression "," stat ")" )))
+          (list "context_(\\(" (context->csp context) ") @ " expression ",\n" stat ")" )))
        (('semi stat1 stat2)
         (let ((first (csp-transform ast stat1 inevitable-optional? channel provided-on?))
               (second (csp-transform ast stat2 inevitable-optional? channel provided-on?)))
           (list "semi_(" first ",\n" second ")")))
        ('() "(\\P',V' @ P'(V'))")
        ((? symbol?) src)
+       ;;((h t ...) src)
        (_ (throw 'match-error (format #f "~a:csp-transform: no match: ~a\n" (current-source-location) src)))))))
