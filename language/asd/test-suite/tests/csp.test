@@ -256,12 +256,10 @@ illegal -> STOP"))
 
 (define ast-transform-assign-2 
   '(context
-    (((s b c) la) la (expression true))
-    (context
-     (((s b c) la lb) lb (expression false))
-     (assign
-      ((s b c) la lb)
-      ((s b c) true lb)))))
+  (((s b c)) la (expression true))
+  (context
+    (((s b c) la) lb (expression false))
+    (assign ((s b c) la lb) ((s b c) true lb)))))
 
 (pass-if "ast-transform-assign-2-bool"
          (pretty-noisy-equal?
@@ -290,8 +288,8 @@ illegal -> STOP"))
           ast-transform-assign-2)
 
           ;; via:
-          "context_(\\((s,b,c),((stack',la))) @ true,
-context_(\\((s,b,c),(((stack',la),lb))) @ false,
+          "context_(\\((s,b,c),(stack')) @ true,
+context_(\\((s,b,c),((stack',la))) @ false,
 assign_(\\((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
 
 
@@ -919,12 +917,13 @@ returnvalue_(\\((s,b,c),((stack',c))) @ c)))(P',V')
 
 (define csp-reply-variable-ast
   '(on ((trigger i done))
-       (callvalued-context
-        (((dummy) s) s (valued-action u what))
-        (if ((dummy) s) (expression (== s (literal u Status Ok)))
-            (reply (literal I Status Yes))
-            (reply (literal I Status No))))
-       (the-end (dummy))))
+    (callvalued-context
+      (((dummy)) s (valued-action u what))
+      (if ((dummy) s)
+        (expression (== s (literal u Status Ok)))
+        (reply (literal I Status Yes))
+        (reply (literal I Status No))))
+    (the-end (dummy))))
 
 (pass-if "ast-transform-reply-variable"
          (pretty-noisy-equal?
@@ -985,13 +984,14 @@ callvalued_context_(sendrecv_(u,what),
 
 (define csp-return-variable-ast
   '(on ((trigger i e))
-       (semi (context (((b) c) c (expression true))
-                      (if ((b) c) 
-                          
-                          (expression c) 
-                          (action (trigger i f)) ()))
-             (return))
-       (the-end (b))))
+    (semi (context
+            (((b)) c (expression true))
+            (if ((b) c)
+              (expression c)
+              (action (trigger i f))
+              ()))
+          (return))
+    (the-end (b))))
 
 (pass-if "ast-transform-return-variable"
          (pretty-noisy-equal?
@@ -1024,7 +1024,7 @@ callvalued_context_(sendrecv_(u,what),
 
           ;; via:
           "i?x:{e} ->
-semi_(context_(\\((b),((stack',c))) @ true,
+semi_(context_(\\((b),(stack')) @ true,
 \\P',((b),((stack',c))) @ ifthenelse_(c,
 (\\P',V' @ i!f -> P'(V')),
 (\\P',V' @ P'(V'))
@@ -1063,18 +1063,18 @@ semi_(context_(\\((b),((stack',c))) @ true,
 
 (define csp-callvalued-on
   '(on ((trigger i e))
-       (semi (semi (assign ((b)) (((! b))))
-              (callvalued-context
-               (((b) c) c (call g (arguments b)))
-               (semi (callvalued 
-                      (((b) c) r (call g (arguments c))) 
-                      ((r) c))
-                     (if ((b) c)
-                         (expression c)
-                         (action (trigger i f))
-                         ()))))
-             (return))
-      (the-end (b))))
+    (semi (semi (assign ((b)) (((! b))))
+                (callvalued-context
+                  (((b)) c (call g (arguments b)))
+                  (semi (callvalued
+                          (((b) c) r (call g (arguments c)))
+                          ((r) c))
+                        (if ((b) c)
+                          (expression c)
+                          (action (trigger i f))
+                          ()))))
+          (return))
+    (the-end (b))))
 
 (pass-if "ast-transform-callvalued"
          (pretty-noisy-equal?
@@ -1094,7 +1094,7 @@ semi_(context_(\\((b),((stack',c))) @ true,
           ;; via:
          "i?x:{e} ->
 semi_(semi_(assign_(\\((b),(stack')) @ ((not (b)),(stack'))),
-callvalued_args_context_(g,\\(((b),((stack',c))) @ b,
+callvalued_args_context_(g,\\((b),(stack')) @ b,
 semi_(callvalued_args_(g,\\(((b),((stack',c)))) @ c,\\(((b),((stack',c)))),r @ ((r),((stack',c)))),
 \\P',((b),((stack',c))) @ ifthenelse_(c,
 (\\P',V' @ i!f -> P'(V')),
@@ -1139,13 +1139,13 @@ semi_(callvalued_args_(g,\\(((b),((stack',c)))) @ c,\\(((b),((stack',c)))),r @ (
   '(on ((trigger i e))
     (semi (semi (assign ((b)) (((! b))))
                 (callvalued-context
-                  (((b) c) c (call g (arguments b)))
+                  (((b)) c (call g (arguments b)))
                   (callvalued-context
-                    (((b) c d) d (call g (arguments c)))
+                    (((b) c) d (call g (arguments c)))
                     (callvalued-context
-                      (((b) c d cc) cc (call g (arguments c)))
+                      (((b) c d) cc (call g (arguments c)))
                       (callvalued-context
-                        (((b) c d cc dd) dd (call g (arguments d)))
+                        (((b) c d cc) dd (call g (arguments d)))
                         (if ((b) c d cc dd)
                           (expression dd)
                           (action (trigger i f))
