@@ -38,31 +38,31 @@ semi_(\P',((s,b,c),(stack')) @ ifthenelse_(c,
 (\P',V' @ iimperative!g -> P'(V')),
 (\P',V' @ P'(V'))
 )(P',((s,b,c),(stack'))),
-semi_(assign_(\((s,b,c),stack') @ ((s,b,false),stack')),
+semi_(assign_(\((s,b,c),(stack')) @ ((s,b,false),(stack'))),
 (\P',V' @ iimperative!f -> P'(V')))),
 \P',((s,b,c),(stack')) @ ifthenelse_(c,
-semi_(assign_(\((s,b,c),stack') @ ((s,false,c),stack')),
+semi_(assign_(\((s,b,c),(stack')) @ ((s,false,c),(stack'))),
 (\P',V' @ iimperative!h -> P'(V'))),
-semi_(assign_(\((s,b,c),stack') @ ((s,true,c),stack')),
+semi_(assign_(\((s,b,c),(stack')) @ ((s,true,c),(stack'))),
 (\P',V' @ iimperative!g -> P'(V')))
 )(P',((s,b,c),(stack')))
 )(P',((s,b,c),(stack'))),
-assign_(\((s,b,c),stack') @ ((S2,b,c),stack')))),
-(\P',V' @ iimperative.return -> P'(V')))(\V' @ iimperative__(V'),((s,b,c),stack')))
+assign_(\((s,b,c),(stack')) @ ((S2,b,c),(stack'))))),
+(\P',V' @ iimperative.return -> P'(V')))(\V' @ iimperative__(V'),((s,b,c),(stack'))))
 []
 (s == S2) & (
 iimperative?x:{e} ->
 semi_(semi_(\P',((s,b,c),(stack')) @ ifthenelse_(b,
 semi_(\P',((s,b,c),(stack')) @ ifthenelse_(not (c),
-assign_(\((s,b,c),stack') @ ((s,b,true),stack')),
-assign_(\((s,b,c),stack') @ ((s,b,false),stack'))
+assign_(\((s,b,c),(stack')) @ ((s,b,true),(stack'))),
+assign_(\((s,b,c),(stack')) @ ((s,b,false),(stack')))
 )(P',((s,b,c),(stack'))),
 (\P',V' @ iimperative!h -> P'(V'))),
 (\P',V' @ P'(V'))
 )(P',((s,b,c),(stack'))),
-semi_(assign_(\((s,b,c),stack') @ ((s,not (b),c),stack')),
-assign_(\((s,b,c),stack') @ ((S1,b,c),stack')))),
-(\P',V' @ iimperative.return -> P'(V')))(\V' @ iimperative__(V'),((s,b,c),stack')))
+semi_(assign_(\((s,b,c),(stack')) @ ((s,not (b),c),(stack'))),
+assign_(\((s,b,c),(stack')) @ ((S1,b,c),(stack'))))),
+(\P',V' @ iimperative.return -> P'(V')))(\V' @ iimperative__(V'),((s,b,c),(stack'))))
 
 within iimperative__(((S1,false,true),<>)) 
 
@@ -75,13 +75,13 @@ i?x:{e} ->
 semi_(semi_((\P',V' @ i!f -> P'(V')),
 semi_((\P',V' @ i!g -> P'(V')),
 semi_((\P',V' @ i!h -> P'(V')),
-assign_(\((state),stack') @ ((II),stack'))))),
-(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> imperative__(V'),((state),stack')))
+assign_(\((state),(stack')) @ ((II),(stack')))))),
+(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> imperative__(V'),((state),(stack'))))
 []
 (state == II) & (
 i?x:{e} ->
-semi_(assign_(\((state),stack') @ ((III),stack')),
-(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> imperative__(V'),((state),stack')))
+semi_(assign_(\((state),(stack')) @ ((III),(stack'))),
+(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> imperative__(V'),((state),(stack'))))
 []
 (state == III) & (
 i?x:{e} ->
@@ -89,14 +89,14 @@ semi_(semi_((\P',V' @ i!f -> P'(V')),
 semi_((\P',V' @ i!g -> P'(V')),
 semi_((\P',V' @ i!g -> P'(V')),
 semi_((\P',V' @ i!f -> P'(V')),
-assign_(\((state),stack') @ ((IV),stack')))))),
-(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> imperative__(V'),((state),stack')))
+assign_(\((state),(stack')) @ ((IV),(stack'))))))),
+(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> imperative__(V'),((state),(stack'))))
 []
 (state == IV) & (
 i?x:{e} ->
 semi_(semi_((\P',V' @ i!h -> P'(V')),
-assign_(\((state),stack') @ ((I),stack'))),
-(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> imperative__(V'),((state),stack')))
+assign_(\((state),(stack')) @ ((I),(stack')))),
+(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> imperative__(V'),((state),(stack'))))
 )
 within imperative__(((I),<>))
 

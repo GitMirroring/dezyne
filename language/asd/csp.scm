@@ -334,8 +334,8 @@
 	 (if (null? statements)
 	     '()
              (let* ((statement (car statements))
-                    (locals (append locals (if (ast:variable? statement) (list (ast:name statement)) '())))
-                    (transformed (ast-transform- ast statement #f locals)))
+                    (transformed (ast-transform- ast statement #f locals))
+                    (locals (append locals (if (ast:variable? statement) (list (ast:name statement)) '()))))
                (if (>1 (length statements))
                    (if (equal? transformed '(action illegal))
                        transformed
@@ -497,7 +497,7 @@
           (list "callvalued_args_context_(" function ",\n" stat ")")))
        (('callvalued-context (context var ('call function arguments)) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
-          (list "callvalued_args_context_(" function ",\\((" (context->csp context) ") @ " (comma-join (ast:body arguments)) ",\n" stat ")")))
+          (list "callvalued_args_context_(" function ",\\(" (context->csp context) ") @ " (comma-join (ast:body arguments)) ",\n" stat ")")))
        (('callvalued (context var ('call function arguments)) expressions)
         (let ((expressions (cons
                             (map (lambda (x) (csp-transform ast x)) (car expressions))

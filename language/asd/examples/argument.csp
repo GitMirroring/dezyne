@@ -26,19 +26,19 @@ channel I,i: {e,f,return}
 I_(IG) = let
 g = \P',V',(F_gc') @ context_(F_gc',
 semi_((\P',V' @ I!f -> P'(V')),
-returnvalue_(\((b),(stack',gc)) @ (gc or b))))(P',V')
+returnvalue_(\((b),((stack',gc))) @ (gc or b))))(P',V')
 
 I__(((b),stack')) =
 (true) & (
 I?x:{e} ->
-semi_(semi_(assign_(\((b),stack') @ (not (b),stack')),
-callvalued_args_context_(g,\((b),stack') @ b,
-semi_(callvalued_args_(g,\((b),(stack',c)) @ c,\((b),(stack',c)),r @ ((r),(stack',c))),
-\P',((b),(stack',c)) @ ifthenelse_(c,
+semi_(semi_(assign_(\((b),(stack')) @ ((not (b)),(stack'))),
+callvalued_args_context_(g,\((b),(stack')) @ b,
+semi_(callvalued_args_(g,\(((b),((stack',c)))) @ c,\(((b),((stack',c)))),r @ ((r),((stack',c)))),
+\P',((b),((stack',c))) @ ifthenelse_(c,
 (\P',V' @ I!f -> P'(V')),
 (\P',V' @ P'(V'))
-)(P',((b),(stack',c)))))),
-(\P',V' @ I.return -> P'(V')))(\V' @ I__(V'),((b),stack')))
+)(P',((b),((stack',c))))))),
+(\P',V' @ I.return -> P'(V')))(\V' @ I__(V'),((b),(stack'))))
 
 within I__(((false),<>)) 
 
@@ -46,19 +46,19 @@ within I__(((false),<>))
 argument_(IIG,IG) = let
 g = \P',V',(F_gc') @ context_(F_gc',
 semi_((\P',V' @ i!f -> P'(V')),
-returnvalue_(\((b),(stack',gc)) @ (gc or b))))(P',V')
+returnvalue_(\((b),((stack',gc))) @ (gc or b))))(P',V')
 
 argument__(((b),stack')) = transition_begin -> (
 (true) & (
 i?x:{e} ->
-semi_(semi_(assign_(\((b),stack') @ (not (b),stack')),
-callvalued_args_context_(g,\((b),stack') @ b,
-semi_(callvalued_args_(g,\((b),(stack',c)) @ c,\((b),(stack',c)),r @ ((r),(stack',c))),
-\P',((b),(stack',c)) @ ifthenelse_(c,
+semi_(semi_(assign_(\((b),(stack')) @ ((not (b)),(stack'))),
+callvalued_args_context_(g,\((b),(stack')) @ b,
+semi_(callvalued_args_(g,\(((b),((stack',c)))) @ c,\(((b),((stack',c)))),r @ ((r),((stack',c)))),
+\P',((b),((stack',c))) @ ifthenelse_(c,
 (\P',V' @ i!f -> P'(V')),
 (\P',V' @ P'(V'))
-)(P',((b),(stack',c)))))),
-(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> argument__(V'),((b),stack')))
+)(P',((b),((stack',c))))))),
+(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> argument__(V'),((b),(stack'))))
 )
 within argument__(((false),<>))
 

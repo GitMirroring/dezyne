@@ -1,18 +1,20 @@
+drop_one_local_((M', (L', L0'))) = (M', L')
+
 ifthenelse_(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')
 semi_(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
 assign_(F') = \ P', V' @ P'(F'(V'))
-context_(F', S') = \ P', V' @ S'((\(V',E') @ P'(V')), (V',F'(V')))
+context_(F', S') = \ P', (M', L') @ S'((\V2' @ P'(drop_one_local_(V2'))), (M', (L', F'((M', L')))))
 send_(c',e') = \P',V' @ c'!e' -> P'(V')
 sendrecv_(c',e') = \P',V' @ c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P',V')
 the_end_(P') = \V' @ transition_end -> P'(V')
 skip_ = \P',V' @ P'(V')
-callvoid_(B') = \P',V' @ B'(P'(V'), V')
-callvoid_args_(B',F') = \P',V' @ B'(P'(V'), V', F')
-callvalued_(B',A') = \P',V' @ B'(\(V',r') @ P'(A'(V',r')), V')
-callvalued_args_(B',F',A') = \P',V' @ B'(\(V',r') @ P'(A'(V',r')), V', F')
-callvalued_context_(B',S') = \P',V' @ B'(\V' @ S'(\(V',E') @ P'(V'), V'), V')
-callvalued_args_context_(B',F', S') = \P',V' @ B'(\V' @ S'(\(V',E') @ P'(V'), V'), V', F')
-returnvalue_(F') = \P', V' @ P'((V', F'(V')))
+callvoid_(B') = \P',V' @ B'(P', V')
+callvoid_args_(B',F') = \P',V' @ B'(P', V', F')
+callvalued_(B',A')         = \P',V' @ B'(\(M',(L', r')) @ P'(A'((M',L'),r')), V')
+callvalued_args_(B',F',A') = \P',V' @ B'(\(M',(L', r')) @ P'(A'((M',L'),r')), V', F')
+callvalued_context_(B',S')          = \P',V' @ B'(\V1' @ S'(\V2' @ P'(drop_one_local_(V2')), V1'), V')
+callvalued_args_context_(B',F', S') = \P',V' @ B'(\V1' @ S'(\V2' @ P'(drop_one_local_(V2')), V1'), V', F')
+returnvalue_(F') = \P',(M',L') @ P'((M', (L', F'((M', L')))))
 
 datatype event_enumeration_alphabet =
 a | b | c | d | return
@@ -22,47 +24,47 @@ channel illegal
 channel I,i: {a,b,c,d,return}
 
 I_(IG) = let
-toggle = \P',V' @ semi_(\P',((f)) @ ifthenelse_(f,
+toggle = \P',V' @ semi_(\P',((f),(stack')) @ ifthenelse_(f,
 (\P',V' @ I!c -> P'(V')),
 (\P',V' @ P'(V'))
-)(P',((f))),
-assign_(\((f)) @ (not (f))))(P',V')
+)(P',((f),(stack'))),
+assign_(\((f),(stack')) @ ((not (f)),(stack'))))(P',V')
 
-I__((f)) =
+I__(((f),stack')) =
 (true) & (
 I?x:{a} ->
 semi_(toggle,
-(\P',V' @ I.return -> P'(V')))(\V' @ I__(V'),((f)))
+(\P',V' @ I.return -> P'(V')))(\V' @ I__(V'),((f),(stack')))
   []
   I?x:{b} ->
 semi_(semi_(toggle,
 semi_(toggle,
 (\P',V' @ I!d -> P'(V')))),
-(\P',V' @ I.return -> P'(V')))(\V' @ I__(V'),((f))))
+(\P',V' @ I.return -> P'(V')))(\V' @ I__(V'),((f),(stack'))))
 
-within I__((false)) 
+within I__(((false),<>)) 
 
 
 function_(IIG,IG) = let
-toggle = \P',V' @ semi_(\P',((f)) @ ifthenelse_(f,
+toggle = \P',V' @ semi_(\P',((f),(stack')) @ ifthenelse_(f,
 (\P',V' @ i!c -> P'(V')),
 (\P',V' @ P'(V'))
-)(P',((f))),
-assign_(\((f)) @ (not (f))))(P',V')
+)(P',((f),(stack'))),
+assign_(\((f),(stack')) @ ((not (f)),(stack'))))(P',V')
 
-function__((f)) = transition_begin -> (
+function__(((f),stack')) = transition_begin -> (
 (true) & (
 i?x:{a} ->
 semi_(toggle,
-(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> function__(V'),((f)))
+(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> function__(V'),((f),(stack')))
   []
   i?x:{b} ->
 semi_(semi_(toggle,
 semi_(toggle,
 (\P',V' @ i!d -> P'(V')))),
-(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> function__(V'),((f))))
+(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> function__(V'),((f),(stack'))))
 )
-within function__((false))
+within function__(((false),<>))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
