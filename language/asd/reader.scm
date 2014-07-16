@@ -43,10 +43,19 @@
      (else exp))))
 
 (define (asd-reader port env)
-  ((@(language asd ast) register) ((make-parser) (make-tokenizer port) syntax-error)))
+  ((make-parser) (make-tokenizer port) syntax-error))
+
+(define (read-asd- file-name)
+  (asd-reader (open-file file-name "r") (current-module)))
 
 (define (read-asd file-name)
-  (asd-reader (open-file file-name "r") (current-module)))
+  ((@(language asd ast) register) (read-asd- file-name)))
+
+(define (read-ast- file-name)
+  (let ((s (->string file-name)))
+    (if (string-suffix? ".scm" s)
+        (read (open-input-file s))
+        (read-asd- s))))
 
 (define (read-ast file-name)
   "Read contents of FILE-NAME and return the AST.
@@ -54,10 +63,7 @@
 If FILE-NAME ends with `.scm', assume plain AST scheme content and
 only perform a read, otherwise assume ASD content and also invoke
 the parser."
-  (let ((s (->string file-name)))
-    (if (string-suffix? ".scm" s)
-        (read (open-input-file s))
-        (read-asd s))))
+  ((@(language asd ast) register) (read-ast- file-name)))
 
 (define (parse-asd string)
   (read-hash-extend #\{ hash-read-string)
