@@ -139,23 +139,43 @@
                  guard
                  `((guard . ,identity))))))) guards))))
 
-(define (csp-expression->string expression)
-  (match expression
-    (('value type field) (list type " == " field))
-    ((? symbol?) expression)
-    (('and lhs rhs) (->string (list (csp-expression->string lhs) " and " (csp-expression->string rhs))))
-    (('! expression) (->string (list "not " (csp-expression->string expression))))
-    (_ (format #f "~a:NO MATCH: ~a" (current-source-location) expression))))
+(define (variable-prefix ast identfier)
+  (and-let* ((variable (ast:variable ast identfier))
+             (ast:variable? variable))
+            (ast:type (ast:type (car variable)))))
+
+(define (csp-expression->string ast src)
+  (match src
+    (('expression expression) (csp-expression->string ast expression))
+    (('value type field) 
+     (let ((prefix (variable-prefix ast type)))
+       (if variable-prefix
+           (list type " == " prefix "_" field)
+           (list type "_" field))))
+    (('literal scope type value) (list type "_" value))
+    ((? symbol?) src)
+    (('! expression) (->string (list "not " (csp-expression->string ast expression))))
+    (('or lhs rhs) (let ((lhs (csp-expression->string ast lhs))
+                         (rhs (csp-expression->string ast rhs)))
+                     (list "(" lhs  " or " rhs ")")))
+    (((or 'and '== '!=) lhs rhs) (let ((lhs (csp-expression->string ast lhs))
+                                       (rhs (csp-expression->string ast rhs))
+                                       (op (car src)))
+                                   (list lhs " " op " " rhs )))
+    (_ (format #f "~a:NO MATCH: ~a" (current-source-location) src))))
 
 (define (port-triggers port)
   (sort ((ast:find-events) (ast-norm (ast:type port))) symbol<))
 
+(define (typed-elements enum)
+   (map (lambda (x) (symbol-append (ast:name enum) '_ x)) (ast:elements enum)))
+
 (define (enum-values comp)
-  (let ((comp-values (apply append (map ast:elements (ast:types (ast:behaviour comp))))))
+  (let ((comp-values (apply append (map typed-elements (ast:types (ast:behaviour comp))))))
     (let loop ((ports (ast:ports comp)) (values comp-values))
       (if (null? ports)
           values
-          (loop (cdr ports) (append values (apply append (map ast:elements (ast:types (ast:behaviour (ast-norm (ast:type (car ports)))))))))))))
+          (loop (cdr ports) (append values (apply append (map typed-elements (ast:types (ast:behaviour (ast-norm (ast:type (car ports)))))))))))))
 
 (define (return-value enum)
   (map (lambda (value) (symbol-append (ast:name enum) '_ value)) (ast:elements enum)))
@@ -230,7 +250,7 @@
 (define (value ast)
   (match ast
     ((? ast:trigger?) (ast:event-name ast))
-    ((? ast:value?) (ast:field ast))
+    ((? ast:value?) (symbol-append (ast:type ast) '_ (ast:field ast)))
     (_ ast)))
 
 (define (optional-chaos port)
@@ -377,15 +397,15 @@
                    (map (assignment var 'r) locals))))
       
       (('assign var ('value type field))
-       (list 'assign context (cons (map (assignment var field) members)
-                                   (map (assignment var field) locals))))
+       ;;(stderr "0assign: ~a = ~a.~a\n" var type field)
+       (let ((expression (symbol-append type '_ field)))
+       (list 'assign context (cons (map (assignment var expression) members)
+                                   (map (assignment var expression) locals)))))
 
-      (('assign var exp)
-       ;; (list 'assign context (cons (map (assignment var exp) members)
-       ;;                             (map (assignment var exp) locals)))
-       (list 'assign (context->ast context) 
-             (cons (map (assignment var exp) members)
-                   (map (assignment var exp) locals))))
+      (('assign var expression)
+         (list 'assign (context->ast context) 
+               (cons (map (assignment var expression) members)
+                     (map (assignment var expression) locals))))
 
       (('if pred then)
        (list 'if context (list 'expression (if (prefix-illegal? then)
@@ -489,7 +509,7 @@
                             (map (lambda (x) (csp-transform ast x)) (cdr expressions)))))
          (list "assign_(\\(" (context->csp context) ") @ (" (context->csp expressions) "))")))
        (('if context expression then else)
-        (let ((expression (csp-transform ast expression))
+        (let ((expression (csp-expression->string ast expression))
               (then (csp-transform ast then inevitable-optional? channel provided-on?))
               (else (csp-transform ast else inevitable-optional? channel provided-on?)))
           (list "\\P',(" (context->csp context) ") @ ifthenelse_(" expression ",\n" then ",\n" else "\n)(P',(" (context->csp context) "))")))

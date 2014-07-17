@@ -29,8 +29,8 @@ interface I
     {
       enum Enum { False, True };
       Enum e = Enum.False;
-      //[e.False] on e: if (e.False) a;
-      [e.False] on e: if (e == False) a;
+      [e.False] on e: if (e.False) a;
+      //[e.False] on e: if (e == Enum.False) a;
     }
 }
 
@@ -41,7 +41,7 @@ component sugar
     {
       enum Enum { False, True };
       Enum e = Enum.False;
+      [e.False] on i.e: if (e.False) i.a;
       //[e.False] on i.e: if (e.False) i.a;
-      [e.False] on i.e: if (e == False) i.a;
     }
 }

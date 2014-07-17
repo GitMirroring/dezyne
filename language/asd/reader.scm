@@ -65,7 +65,10 @@ only perform a read, otherwise assume ASD content and also invoke
 the parser."
   ((@(language asd ast) register) (read-ast- file-name)))
 
-(define (parse-asd string)
+(define (parse-asd- string)
   (read-hash-extend #\{ hash-read-string)
   (with-input-from-string string
     (lambda () (asd-reader (current-input-port) (current-module)))))
+
+(define (parse-asd string)
+  ((@(language asd ast) register) (parse-asd- string)))

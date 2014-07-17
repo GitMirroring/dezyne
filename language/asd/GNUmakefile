@@ -120,23 +120,43 @@ wfc: compile
 
 csp: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
+
 	cd out && ../gaiag -l csp examples/Alarm.asd
 	$(diff) examples/Alarm.csp out
 	@$(diff) examples/Alarm.csp out | diffstat || true
+	$(FDR3_PREFIX)/bin/cspmchecker out/Alarm.csp
+
 	cd out && ../gaiag -l csp examples/imperative.asd
 	$(diff) examples/imperative.csp out || true
 	@$(diff) examples/imperative.csp out | diffstat || true
+	$(FDR3_PREFIX)/bin/cspmchecker out/imperative.csp
+
 	cd out && ../gaiag -l csp examples/Reply.asd
 	$(diff) examples/Reply.csp out || true
 	@$(diff) examples/Reply.csp out | diffstat || true
+	$(FDR3_PREFIX)/bin/cspmchecker out/Reply.csp
+
 	cd out && ../gaiag -l csp examples/function.asd
 	$(diff) examples/function.csp out || true
 	@$(diff) examples/function.csp out | diffstat || true
+	$(FDR3_PREFIX)/bin/cspmchecker out/function.csp
+
 	cd out && ../gaiag -l csp examples/argument.asd
 	$(diff) examples/argument.csp out || true
 	@$(diff) examples/argument.csp out | diffstat || true
-	cd out && ../gaiag -l csp examples/sugar.asd
-	-$(FDR3_PREFIX)/bin/cspmchecker out/sugar.csp
+	$(FDR3_PREFIX)/bin/cspmchecker out/argument.csp
+
+	# cd out && ../gaiag -l csp examples/Reply2.asd
+	# $(diff) examples/Reply2.csp out || true
+	# @$(diff) examples/Reply2.csp out | diffstat || true
+	# $(FDR3_PREFIX)/bin/cspmchecker out/Reply2.csp
+
+	# cd out && ../gaiag -l csp examples/sugar.asd
+	# -$(FDR3_PREFIX)/bin/cspmchecker out/sugar.csp
+
+	# cd out && ../gaiag -l csp examples/pauls.asd
+	# -$(FDR3_PREFIX)/bin/cspmchecker out/Comp.csp
+
 #	cd out && ../gaiag -l csp examples/argument2.asd
 #	$(diff) examples/argument2.csp out || true
 #	@$(diff) examples/argument2.csp out | diffstat || true
@@ -144,16 +164,9 @@ csp: compile
 #	$(diff) examples/arguments.csp out || true
 #	@$(diff) examples/arguments.csp out | diffstat || true
 
-paul:
-	rm -rf out && mkdir out && ln -s ../examples ../templates out
-	cd out && ../gaiag -l csp examples/sugar.asd
-	-$(FDR3_PREFIX)/bin/cspmchecker out/sugar.csp
-	cd out && ../gaiag -l csp examples/pauls.asd
-	-$(FDR3_PREFIX)/bin/cspmchecker out/Comp.csp
-#	$(diff) examples/Alarm.csp out
-#	@$(diff) examples/Alarm.csp out | diffstat || true
 
 demo:
+	false
 	rm -rf out && mkdir out && ln -s ../examples ../templates ../../../webdemo/asd out
 	cd out && $(asdgen) -l scm examples/Reply.asd
 	#sed -i -e 's/(type \([^.]+\)[.]\([^.()]+\))/(type \1 (type \2))/' out/Reply.scm

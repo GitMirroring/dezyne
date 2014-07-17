@@ -65,7 +65,7 @@
           ;; from:
           (csp-transform i-ast csp-return-ast)
 
-          ;; via:
+          ;; to:
           "i?x:{e} ->
 (\\P',V' @ i.return -> P'(V'))(\\V' @ i_B_(V'),((s,b,c),(stack')))"))
 
@@ -75,9 +75,7 @@
 
           ;; from:
           (ast-transform-return
-
            i-ast
-
            '(compound
              (on (e)
                  (reply (value Status Yes)))))
@@ -306,7 +304,7 @@ assign_(\\((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
            '(assign s (value S S2)))
 
           ;; via:
-          '(assign ((s b c)) ((S2 b c)))))
+          '(assign ((s b c)) ((S_S2 b c)))))
 
 (pass-if "csp-transform-assign-enum"
          (noisy-equal?
@@ -316,10 +314,10 @@ assign_(\\((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
 
            i-ast
 
-           '(assign ((s b c)) ((S2 b c))))
+           '(assign ((s b c)) ((S_S2 b c))))
 
           ;; via:
-          "assign_(\\((s,b,c),(stack')) @ ((S2,b,c),(stack')))"))
+          "assign_(\\((s,b,c),(stack')) @ ((S_S2,b,c),(stack')))"))
 
 
 (pass-if "ast-transform-ifthen"
@@ -511,7 +509,7 @@ assign_(\\((s,b,c),(stack')) @ ((s,true,c),(stack'))))"))
                                           (action h))
                                     (semi (assign ((s b c)) ((s true c)))
                                           (action g))))
-                            (assign ((s b c)) ((S2 b c)))))
+                            (assign ((s b c)) ((S_S2 b c)))))
                             (return))
                (the-end (s b c)))))
 
@@ -538,7 +536,7 @@ assign_(\\((s,b,c),(stack')) @ ((s,true,c),(stack'))))"))
                                            (action h))
                                      (semi (assign ((s b c)) ((s true c)))
                                            (action g))))
-                             (assign ((s b c)) ((S2 b c)))))
+                             (assign ((s b c)) ((S_S2 b c)))))
                       (return))
                 (the-end (s b c))))
 
@@ -563,7 +561,7 @@ semi_(semi_(\\P',((s,b,c),(stack')) @ ifthenelse_((c or b),
                                                                (\\P',V' @ i!g -> P'(V')))
                                                           )(P',((s,b,c),(stack')))
                                   )(P',((s,b,c),(stack'))),
-          assign_(\\((s,b,c),(stack')) @ ((S2,b,c),(stack'))))),
+          assign_(\\((s,b,c),(stack')) @ ((S_S2,b,c),(stack'))))),
 (\\P',V' @ i.return -> P'(V')))(\\V' @ i_B_(V'),((s,b,c),(stack')))"))
 
 
@@ -712,53 +710,43 @@ semi_((\\P',V' @ j!h -> P'(V')),
        (variable (type bool) sounding false))
       (compound))))
 
+
+(define ast-transform-alarm-snippet
+  '(on ((trigger sensor triggered))
+       (semi (semi (action (trigger console detected))
+                   (semi (action (trigger siren turnon))
+                         (semi (assign ((state sounding)) ((state true)))
+                               (assign ((state sounding)) ((States_Triggered sounding))))))
+             (return))
+       (the-end (state sounding))))
+
 (pass-if "c-ast-transform-alarm-snippet"
          (pretty-noisy-equal?
-
-          ;; from:
-          (ast-transform
-
-           alarm-ast
-
+          (ast-transform 
+           alarm-ast 
+           
+           ;;from
            '(on ((trigger sensor triggered))
                 (compound
                  (action (trigger console detected))
                  (action (trigger siren turnon))
                  (assign sounding true)
                  (assign state (value States Triggered)))))
-
-          ;; via:
-          '(on ((trigger sensor triggered))
-               (semi (semi (action (trigger console detected))
-                           (semi (action (trigger siren turnon))
-                                 (semi (assign ((state sounding)) ((state true)))
-                                       (assign ((state sounding)) ((Triggered sounding))))))
-                     (return))
-               (the-end (state sounding)))))
+          ;;via                    
+           ast-transform-alarm-snippet))
 
 (pass-if "c-csp-transform-alarm-snippet"
          (diff-noisy-equal?
 
           ;; from:
-          (csp-transform alarm-ast
-           (ast-transform
-
-            alarm-ast
-
-            '(on ((trigger sensor triggered))
-                 (semi (semi (action (trigger console detected))
-                             (semi (action (trigger siren turnon))
-                                   (semi (assign ((state sounding)) ((state true)))
-                                         (assign ((state sounding)) ((Triggered sounding))))))
-                       (return))
-                 (the-end (state sounding)))))
-          ;; via:
-
+          (csp-transform alarm-ast 
+                         (ast-transform alarm-ast ast-transform-alarm-snippet))
+          ;; to:
 "sensor?x:{triggered} ->
 semi_(semi_((\\P',V' @ console!detected -> P'(V')),
 semi_((\\P',V' @ siren!turnon -> siren.return -> P'(V')),
 semi_(assign_(\\((state,sounding),(stack')) @ ((state,true),(stack'))),
-assign_(\\((state,sounding),(stack')) @ ((Triggered,sounding),(stack')))))),
+assign_(\\((state,sounding),(stack')) @ ((States_Triggered,sounding),(stack')))))),
 (\\P',V' @ P'(V')))(\\V' @ transition_end -> Alarm_d_(V'),((state,sounding),(stack')))"
 ))
 

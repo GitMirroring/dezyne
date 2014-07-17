@@ -465,10 +465,17 @@
     ((? function?) (caddr ast))
     (_ (throw 'match-error  (format #f "~a:signature: no match: ~a\n" (current-source-location) ast)))))
 
-(define (variable ast)
-  (match ast
-    ((? assign?) (cadr ast))
-    (_ (throw 'match-error  (format #f "~a:variable: no match: ~a\n" (current-source-location) ast)))))
+(define* (variable ast #:optional (identifier #f))
+  (if identifier
+      (match ast
+        ((? component?) (variable (apply append (map variables (cons ast (ports ast)))) identifier))
+        ((? interface?) (variable (variables ast) identifier))
+        ((? variable?) (if (eq? (name ast) identifier) ast #f))
+        ((h ...) (null-is-#f (filter identity (map (lambda (x) (variable x identifier)) ast))))
+        (_ (throw 'match-error  (format #f "~a:variable: no match: ~a\n" (current-source-location) ast))))
+      (match ast
+        ((? assign?) (cadr ast))
+        (_ (throw 'match-error  (format #f "~a:variable: no match: ~a\n" (current-source-location) ast))))))
 
 
 (define (return-type ast)

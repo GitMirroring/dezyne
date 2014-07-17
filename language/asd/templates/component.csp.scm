@@ -59,7 +59,7 @@ channel #.interface ,#.port : {#(comma-join (append (port-triggers port) (return
 #.interface _#.behaviour(IG) = let
 # (->string (map (lambda (x) (csp-transform interface (ast-transform interface x))) (ast:functions (ast:behaviour interface))))
 #.interface _#.behaviour _(((# (comma-join (map ast:name ((compose ast:variables ast:behaviour ast-norm) .interface)))),stack')) =
-# (map-guards #{(# (csp-expression->string (ast:expression guard))) & (
+# (map-guards #{(# (csp-expression->string (ast:ast .interface) (ast:expression guard))) & (
 # ((->join "\n  []\n  ") (map (lambda (on) (csp-transform (ast:ast .interface) (ast-transform (ast:ast .interface) on)))
    ((ast:statements-of-type 'on) (ast:statement guard)))))
 #} (reverse ((ast:statements-of-type 'guard) (ast:statement (ast:behaviour (ast-norm .interface))))))
@@ -69,7 +69,7 @@ within #.interface _#.behaviour _(((#(comma-join (map (lambda (x) (value (ast:ex
 #.component _#.behaviour (IIG,IG) = let
 # (->string (map (lambda (x) (csp-transform component (ast-transform component x))) (ast:functions (ast:behaviour component))))
 #.component _#.behaviour _(((#(comma-join (map ast:name ((compose ast:variables ast:behaviour ast:component) ast)))),stack')) = transition_begin -> (
-# (map-guards #{ (# (csp-expression->string (ast:expression guard))) & (
+# (map-guards #{ (# (csp-expression->string component (ast:expression guard))) & (
 # ((->join "\n  []\n  ") (map (lambda (on) (csp-transform component (ast-transform component on)))
     (append
       (filter identity (map (statement-on-p/r (provides? component)) ((ast:statements-of-type 'on) (ast:statement guard))))
