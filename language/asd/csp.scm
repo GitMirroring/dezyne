@@ -299,7 +299,7 @@
   (match src
     (('variable type var ('action trigger)) #t)
     (('variable type var ('value (? port?) action)) #t)
-;;    (('assign var ('action trigger)) #t)
+    (('assign var ('action trigger)) #t)
     (_ #f)))
 
 (define (call? variable)
@@ -345,7 +345,9 @@
                                  (if (or (valued-action? statement) (call? statement))
                                      'callvalued-context
                                      'context)
-                                 'semi)
+                                 (if (and #f (valued-action? statement) (call? statement))
+                                     'callvalued
+                                     'semi))
                              transformed (loop (cdr statements) locals)))
                    transformed)))))
       (('on events stat the-end)
@@ -361,7 +363,12 @@
       (('variable type var expr)
        (list context var (list 'expression expr)))
  
-      (('assign var ('action trigger)) src)
+      ;;;(('assign var ('action trigger)) src)
+      (('assign var ('action trigger))
+       (list 'callvalued (list context 'r 
+                               (list 'action trigger))
+             (cons (map (assignment var 'r) members)
+                   (map (assignment var 'r) locals))))
 
       (('assign var ('call function arguments))
        (list 'callvalued (list context 'r 
@@ -473,7 +480,8 @@
         (list "(\\P',V' @ " (cadr action) "!" (caddr action) " -> " (cadr action) "?" var " -> P'((V'," var ")))"))
        
        (('assign var ('action ('trigger port event)))
-        (list "assign_(sendrecv_(" port "," event "))"))
+        (list "BOOassign_(sendrecv_(" port "," event "))"))
+
 
        (('assign context expressions)
         (let ((expressions (cons
@@ -514,6 +522,12 @@
        (('callvalued-context (context var ('call function arguments)) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list "callvalued_args_context_(" function ",\\(" (context->csp context) ") @ " (comma-join (ast:body arguments)) ",\n" stat ")")))
+
+       ;;(('callvalued (assign s (action (trigger u what))) stat))
+       (('callvalued (context var ('action ('trigger port event))) context-2)
+        (let ((action (list "sendrecv_(" port "," event ")\n")))
+          (list "callvalued_(" action ",\\((" (context->csp context) "))," var " @ (" (context->csp context-2) "))" )))
+
        (('callvalued (context var ('call function arguments)) expressions)
         (let ((expressions (cons
                             (map (lambda (x) (csp-transform ast x)) (car expressions))
