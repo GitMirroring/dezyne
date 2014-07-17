@@ -297,6 +297,7 @@
 
 (define ((valued-action? port?) variable)
   (match variable
+    (('variable type var ('action trigger)) #t)
     (('variable type var ('value (? port?) action)) #t)
     (_ #f)))
 
@@ -492,6 +493,14 @@
        (('callvalued-context (context var ('valued-action port event)) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list "callvalued_context_(sendrecv_(" port "," event "),\n" stat ")")))
+
+       ;;(callvalued-context (((dummy)) s (expression (action (trigger u what)))) (return))
+       ;;((callvalued-context (context s (expression (action (trigger u what)))) STAT))
+
+       (('callvalued-context (context var ('expression ('action ('trigger port event)))) stat)
+        (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
+          (list "callvalued_context_(sendrecv_(" port "," event "),\n" stat ")")))
+
        (('callvalued-context (context var ('call function)) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list "callvalued_args_context_(" function ",\n" stat ")")))

@@ -153,6 +153,13 @@ paul:
 #	$(diff) examples/Alarm.csp out
 #	@$(diff) examples/Alarm.csp out | diffstat || true
 
+demo:
+	rm -rf out && mkdir out && ln -s ../examples ../templates out
+	cd out && $(asdgen) -l scm examples/Reply.asd
+	sed -i -e 's/(type \([^.]+\)[.]\([^.()]+\))/(type \1 (type \2))/' out/Reply.scm
+	cd out && ../gaiag -l csp Reply.scm
+	-$(FDR3_PREFIX)/bin/cspmchecker out/Reply.csp
+
 if: compile
 	./gaiag examples/if.asd
 	./gaiag -l pretty examples/if.asd | indent
