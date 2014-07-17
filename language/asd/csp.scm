@@ -149,7 +149,7 @@
     (('expression expression) (csp-expression->string ast expression))
     (('value type field) 
      (let ((prefix (variable-prefix ast type)))
-       (if variable-prefix
+       (if prefix
            (list type " == " prefix "_" field)
            (list type "_" field))))
     (('literal scope type value) (list type "_" value))

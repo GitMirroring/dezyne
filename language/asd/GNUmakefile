@@ -168,7 +168,6 @@ csp: compile
 #	-$(FDR3_PREFIX)/bin/cspmchecker out/arguments.csp
 
 demo:
-	false
 	rm -rf out && mkdir out && ln -s ../examples ../templates ../../../webdemo/asd out
 	cd out && $(asdgen) -l scm examples/Reply.asd
 	#sed -i -e 's/(type \([^.]+\)[.]\([^.()]+\))/(type \1 (type \2))/' out/Reply.scm
