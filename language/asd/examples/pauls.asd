@@ -22,15 +22,15 @@
 // Code:
 
 interface IDevice {
+    in result_t initialize();
+    in result_t calibrate();
+    in result_t perform_action1();
+    in result_t perform_action2();
+    
     enum result_t {
         OK,
         NOK
     };
-    
-    in result_t initialize;
-    in result_t calibrate;
-    in result_t perform_action1;
-    in result_t perform_action2;
     
     behaviour {
         enum State {
@@ -41,7 +41,7 @@ interface IDevice {
         State s = State.Uninitialized;
         
         [s.Uninitialized] {
-            on initialize: {  
+            on initialize(): {  
                 [true] {
                     reply(result_t.OK);
                     s = State.Initialized;
@@ -57,7 +57,7 @@ interface IDevice {
                     illegal;
         }
         [s.Initialized] {
-            on calibrate: {
+            on calibrate(): {
                 [true] {
                     reply(result_t.OK);
                     s = State.Calibrated;
@@ -74,8 +74,8 @@ interface IDevice {
                     illegal;
         }
         [s.Calibrated] {
-            on perform_action1,
-               perform_action2: {
+            on perform_action1(),
+               perform_action2(): {
                 [true] {
                     reply(result_t.OK);
                     s = State.Calibrated;
@@ -85,7 +85,7 @@ interface IDevice {
                     s = State.Initialized;
                 }
             }
-            on calibrate:
+            on calibrate():
                     reply(result_t.OK);
             on initialize:
                     illegal;
@@ -95,14 +95,14 @@ interface IDevice {
 }
 
 interface IComp {
+    in result_t initialize();
+    in result_t recover();
+    in result_t perform_actions();
+
     enum result_t {
         OK,
         NOK
     };
-
-    in result_t initialize;
-    in result_t recover;
-    in result_t perform_actions;
 
     behaviour {
         enum State { 
@@ -113,7 +113,7 @@ interface IComp {
         State s = State.Uninitialized;
 
         [s.Uninitialized] {
-            on initialize: {
+            on initialize(): {
                 [true] {
                     reply(result_t.OK);
                     s = State.Initialized;
@@ -128,7 +128,7 @@ interface IComp {
                  illegal; 
         }   
         [s.Initialized] {
-            on perform_actions: {
+            on perform_actions(): {
                 [true] {
                     reply(result_t.OK);
                 }
@@ -142,7 +142,7 @@ interface IComp {
                  illegal; 
         }   
         [s.Error] {
-            on recover: {
+            on recover(): {
                 [true] {
                     reply(result_t.OK);
                     s = State.Initialized;
@@ -162,6 +162,7 @@ interface IComp {
 component Comp {
     provides IComp client;
     requires IDevice device_A;
+    requires IDevice device_B;
     
     behaviour {
         enum State {
@@ -172,10 +173,16 @@ component Comp {
         State s = State.Uninitialized;
         
         [s.Uninitialized] {
-            on client.initialize: {
-                IDevice.result_t res = device_A.initialize;
+            on client.initialize(): {
+                IDevice.result_t res = device_A.initialize();
                 if (res.OK) {
-                    res = device_A.calibrate;
+                    res = device_A.calibrate();
+                }
+                if (res.OK) {
+                    res = device_B.initialize();
+                }
+                if (res.OK) {
+                    res = device_B.calibrate();
                 }
                 
                 if (res.OK) {
@@ -191,10 +198,16 @@ component Comp {
                  illegal; 
         }   
         [s.Initialized] {
-            on client.perform_actions: {
-                IDevice.result_t res = device_A.perform_action1;
+            on client.perform_actions(): {
+                IDevice.result_t res = device_A.perform_action1();
                 if (res.OK) {
-                    res = device_A.perform_action2;
+                    res = device_B.perform_action1();
+                }
+                if (res.OK) {
+                    res = device_A.perform_action2();
+                }
+                if (res.OK) {
+                    res = device_B.perform_action2();
                 }
                 
                 if (res.OK) {
@@ -210,8 +223,12 @@ component Comp {
                     illegal; 
         }   
         [s.Error] {
-            on client.recover: {
-                IDevice.result_t res = device_A.calibrate;
+            on client.recover(): {
+                IDevice.result_t res = device_A.calibrate();
+                if (res.OK) {
+                    res = device_B.calibrate();
+                }
+                
                 if (res.OK) {
                     s = State.Initialized;
                     reply(IDevice.result_t.OK);

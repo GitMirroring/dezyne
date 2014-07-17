@@ -28,6 +28,7 @@ diff = diff -uw -I '^ *$$' -I '^ *//'
 sed = sed -e 's/^-gen/gen/' -re 's/((cppbase.cpp|.hh.scm|.cc.scm):[0-9]*):/\1:warning:/'
 BUILD = build
 asdgen = ASD_PREFIX=$(DEPTH)/.. $(DEPTH)/../$(BUILD)/asdgenerator
+FDR3_PREFIX=$(HOME)/fdr3
 
 default: all
 
@@ -134,12 +135,23 @@ csp: compile
 	cd out && ../gaiag -l csp examples/argument.asd
 	$(diff) examples/argument.csp out || true
 	@$(diff) examples/argument.csp out | diffstat || true
+	cd out && ../gaiag -l csp examples/sugar.asd
+	-$(FDR3_PREFIX)/bin/cspmchecker out/sugar.csp
 #	cd out && ../gaiag -l csp examples/argument2.asd
 #	$(diff) examples/argument2.csp out || true
 #	@$(diff) examples/argument2.csp out | diffstat || true
 #	cd out && ../gaiag -l csp examples/arguments.asd
 #	$(diff) examples/arguments.csp out || true
 #	@$(diff) examples/arguments.csp out | diffstat || true
+
+paul:
+	rm -rf out && mkdir out && ln -s ../examples ../templates out
+	cd out && ../gaiag -l csp examples/sugar.asd
+	-$(FDR3_PREFIX)/bin/cspmchecker out/sugar.csp
+	cd out && ../gaiag -l csp examples/pauls.asd
+	-$(FDR3_PREFIX)/bin/cspmchecker out/Comp.csp
+#	$(diff) examples/Alarm.csp out
+#	@$(diff) examples/Alarm.csp out | diffstat || true
 
 if: compile
 	./gaiag examples/if.asd
