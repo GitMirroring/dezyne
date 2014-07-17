@@ -156,21 +156,21 @@ paul:
 demo:
 	rm -rf out && mkdir out && ln -s ../examples ../templates ../../../webdemo/asd out
 	cd out && $(asdgen) -l scm examples/Reply.asd
-	sed -i -e 's/(type \([^.]+\)[.]\([^.()]+\))/(type \1 (type \2))/' out/Reply.scm
+	#sed -i -e 's/(type \([^.]+\)[.]\([^.()]+\))/(type \1 (type \2))/' out/Reply.scm
 	cd out && ../gaiag -l csp Reply.scm
 	$(diff) examples/Reply.csp out || true
 	@$(diff) examples/Reply.csp out | diffstat || true
 	-$(FDR3_PREFIX)/bin/cspmchecker out/Reply.csp
 
 	cd out && $(asdgen) -l scm examples/Reply2.asd
-	sed -i -e 's/(type \([^.]+\)[.]\([^.()]+\))/(type \1 (type \2))/' out/Reply2.scm
+	#sed -i -e 's/(type \([^.]+\)[.]\([^.()]+\))/(type \1 (type \2))/' out/Reply2.scm
 	cd out && ../gaiag -l csp Reply2.scm
 	$(diff) examples/Reply2.csp out || true
 	@$(diff) examples/Reply2.csp out | diffstat || true
 	-$(FDR3_PREFIX)/bin/cspmchecker out/Reply2.csp
 
 	cd out && $(asdgen) -l scm asd/pauls.asd
-	sed -i -e 's/(type \([^.]+\)[.]\([^.()]+\))/(type \1 (type \2))/' out/pauls.scm
+	# sed -i -e 's/(type \([^.]+\)[.]\([^.()]+\))/(type \1 (type \2))/' out/pauls.scm
 	cd out && ../gaiag -l csp pauls.scm
 	-$(FDR3_PREFIX)/bin/cspmchecker out/Comp.csp
 
