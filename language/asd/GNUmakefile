@@ -146,10 +146,10 @@ csp: compile
 	@$(diff) examples/argument.csp out | diffstat || true
 	$(FDR3_PREFIX)/bin/cspmchecker out/argument.csp
 
-	# cd out && ../gaiag -l csp examples/Reply2.asd
-	# $(diff) examples/Reply2.csp out || true
-	# @$(diff) examples/Reply2.csp out | diffstat || true
-	# $(FDR3_PREFIX)/bin/cspmchecker out/Reply2.csp
+	cd out && ../gaiag -l csp examples/Reply2.asd
+	$(diff) examples/Reply2.csp out || true
+	@$(diff) examples/Reply2.csp out | diffstat || true
+	$(FDR3_PREFIX)/bin/cspmchecker out/Reply2.csp
 
 	# cd out && ../gaiag -l csp examples/sugar.asd
 	# -$(FDR3_PREFIX)/bin/cspmchecker out/sugar.csp
@@ -163,6 +163,13 @@ csp: compile
 #	cd out && ../gaiag -l csp examples/arguments.asd
 #	$(diff) examples/arguments.csp out || true
 #	@$(diff) examples/arguments.csp out | diffstat || true
+
+reply:
+	rm -rf out && mkdir out && ln -s ../examples ../templates out
+	cd out && ../gaiag -l csp examples/Reply2.asd
+	$(diff) examples/Reply2.csp out || true
+	@$(diff) examples/Reply2.csp out | diffstat || true
+	$(FDR3_PREFIX)/bin/cspmchecker out/Reply2.csp
 
 
 demo:

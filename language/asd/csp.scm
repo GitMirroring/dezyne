@@ -382,31 +382,29 @@
        (list context var (list 'call function arguments)))
       (('variable type var expr)
        (list context var (list 'expression expr)))
- 
-      ;;;(('assign var ('action trigger)) src)
       (('assign var ('action trigger))
        (list 'callvalued (list context 'r 
                                (list 'action trigger))
              (cons (map (assignment var 'r) members)
                    (map (assignment var 'r) locals))))
-
       (('assign var ('call function arguments))
        (list 'callvalued (list context 'r 
                                (list 'call function arguments))
              (cons (map (assignment var 'r) members)
                    (map (assignment var 'r) locals))))
-      
+      (('assign var ('value (and (? port?) (get! port)) event))
+       (list 'callvalued (list context 'r 
+                               (list 'action (list 'trigger (port) event)))
+             (cons (map (assignment var 'r) members)
+                   (map (assignment var 'r) locals))))
       (('assign var ('value type field))
-       ;;(stderr "0assign: ~a = ~a.~a\n" var type field)
        (let ((expression (symbol-append type '_ field)))
        (list 'assign context (cons (map (assignment var expression) members)
                                    (map (assignment var expression) locals)))))
-
       (('assign var expression)
          (list 'assign (context->ast context) 
                (cons (map (assignment var expression) members)
                      (map (assignment var expression) locals))))
-
       (('if pred then)
        (list 'if context (list 'expression (if (prefix-illegal? then)
                                                (list 'and 'IG pred)
@@ -529,13 +527,9 @@
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list "callvalued_context_(sendrecv_(" port "," event "),\n" stat ")")))
 
-       ;;(callvalued-context (((dummy)) s (expression (action (trigger u what)))) (return))
-       ;;((callvalued-context (context s (expression (action (trigger u what)))) STAT))
-
        (('callvalued-context (context var ('expression ('action ('trigger port event)))) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list "callvalued_context_(sendrecv_(" port "," event "),\n" stat ")")))
-
        (('callvalued-context (context var ('call function)) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list "callvalued_args_context_(" function ",\n" stat ")")))
@@ -543,7 +537,6 @@
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list "callvalued_args_context_(" function ",\\(" (context->csp context) ") @ " (comma-join (ast:body arguments)) ",\n" stat ")")))
 
-       ;;(('callvalued (assign s (action (trigger u what))) stat))
        (('callvalued (context var ('action ('trigger port event))) context-2)
         (let ((action (list "sendrecv_(" port "," event ")\n")))
           (list "callvalued_(" action ",\\((" (context->csp context) "))," var " @ (" (context->csp context-2) "))" )))
@@ -566,5 +559,4 @@
           (list "semi_(" first ",\n" second ")")))
        ('() "(\\P',V' @ P'(V'))")
        ((? symbol?) src)
-       ;;((h t ...) src)
        (_ (throw 'match-error (format #f "~a:csp-transform: no match: ~a\n" (current-source-location) src)))))))
