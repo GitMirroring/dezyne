@@ -295,10 +295,11 @@
 (define ((assignment var exp) x)
   (if (eq? x var ) exp x))
 
-(define ((valued-action? port?) variable)
-  (match variable
+(define ((valued-action? port?) src)
+  (match src
     (('variable type var ('action trigger)) #t)
     (('variable type var ('value (? port?) action)) #t)
+;;    (('assign var ('action trigger)) #t)
     (_ #f)))
 
 (define (call? variable)
@@ -360,6 +361,8 @@
       (('variable type var expr)
        (list context var (list 'expression expr)))
  
+      (('assign var ('action trigger)) src)
+
       (('assign var ('call function arguments))
        (list 'callvalued (list context 'r 
                                (list 'call function arguments))
@@ -468,6 +471,10 @@
        (('call function arguments) `(,function))
        (('assign ('variable type var action))
         (list "(\\P',V' @ " (cadr action) "!" (caddr action) " -> " (cadr action) "?" var " -> P'((V'," var ")))"))
+       
+       (('assign var ('action ('trigger port event)))
+        (list "assign_(sendrecv_(" port "," event "))"))
+
        (('assign context expressions)
         (let ((expressions (cons
                             (map (lambda (x) (csp-transform ast x)) (car expressions))
