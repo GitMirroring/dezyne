@@ -165,6 +165,9 @@
   (let ((done (seen state ast)))
     (filter (negate (lambda (x) (member x done equal?))) events)))
 
+(define (next-value action) #t)
+
+;; FIXME: TODO: implement next-value for state explorer
 (define (next-todo-space-explorer model state ast)
   (let ((events ((ast:find-events ast:in?) model)))
     (if (or (null? *state-space*)
@@ -187,6 +190,15 @@
 
 (define (next-todo-trail-walker model trail)
   (let ((trail trail))
+    (set! next-value 
+          (lambda (action) 
+            (if (null? trail) 
+                #f
+                (let* ((trigger (car trail))
+                       (value (cons* 'value (cdr trigger))))
+                  (stderr "****value := ~a\n" (->string value))
+                  (set! trail (cdr trail))
+                  value))))
     (lambda (model state ast-dont-care)
       (if (null? trail)
           (cons #f '())
@@ -243,10 +255,6 @@
     (('value 's field) (eq? (ast:field (var state 's)) field))
     (('value 'res field) (eq? (ast:field (var state 'res)) field))
 
-    ;; FIXME: INPUT from valued returns? --> must be in trace?
-    (('value 'device_A action) ;; FIMXE: matching?! ah...
-     '(literal IDevice result_t OK))
-
     (('value type field) expression)
     (('literal scope type value) (eval-expression ast state (list 'value type value)))
     (('! expr) (not (eval-expression ast state expr)))
@@ -271,23 +279,44 @@
     ((? symbol?) (eval-expression ast state (var state expression)))
     (_ (throw 'match-error (format #f "~a:expression no match: ~a\n" (current-source-location) expression)))))
 
+;; FIMXE: c&p from csp.csm
+(define (member-names model)
+  (map ast:name (ast:variables (ast:behaviour model))))
+
+;; FIMXE: c&p from csp.csm
+(define ((valued-action? port?) src)
+  (match src
+    (('variable type var ('action trigger)) #t)
+    (('variable type var ('value (? port?) action)) #t)
+    (('assign var ('action trigger)) #t)
+    (_ #f)))
+
 (define (eval-function-expression ast state event trace expression)
-  (match expression
-    (('call function ('arguments arguments ...) ...)
-     (receive (new-state new-ast new-action return new-trace)
-         (let* ((f (ast:function *model* function)) ;; FIXME
-                (parameters (map ast:name (ast:parameters f)))
-                (statement (ast:statement f))
-                (arguments (if (pair? arguments) (car arguments) arguments))
-                (pairs (zip parameters arguments))
-                (state (let loop ((pairs pairs) (state state))
-                         (if (null? pairs)
-                             state 
-                             (loop (cdr pairs) (acons (caar pairs) 
-                                                      (eval-expression ast state (cadar pairs)) state))))))
-           (process statement state event (cons f '())))
-       (values (drop new-state (length arguments)) new-ast new-action return new-trace)))
-    (_ (values state ast #f (eval-expression ast state expression) trace))))
+  ;; FIMXE: c&p from csp.csm:ast-transform
+  (let* ((model *model*)
+	 (members (member-names model))
+         (port? (lambda (port) (member port (map ast:name (ast:ports model)))))
+         (valued-action? (valued-action? port?)))
+    (match expression
+      (('call function ('arguments arguments ...) ...)
+       (receive (new-state new-ast new-action return new-trace)
+           (let* ((f (ast:function *model* function)) ;; FIXME
+                  (parameters (map ast:name (ast:parameters f)))
+                  (statement (ast:statement f))
+                  (arguments (if (pair? arguments) (car arguments) arguments))
+                  (pairs (zip parameters arguments))
+                  (state (let loop ((pairs pairs) (state state))
+                           (if (null? pairs)
+                               state 
+                               (loop (cdr pairs) (acons (caar pairs) 
+                                                        (eval-expression ast state (cadar pairs)) state))))))
+             (process statement state event (cons f '())))
+         (values (drop new-state (length arguments)) new-ast new-action return new-trace)))
+      ;; FIXME transform AST so that this reads 'action or 'valued-action
+      ;; SEE csp.scm
+      (('value (and (? port?) (get! port)) action)
+       (values state ast #f (eval-expression ast state (next-value action)) trace))
+      (_ (values state ast #f (eval-expression ast state expression) trace)))))
 
 (define* (process ast state event trace)
   ;;(stderr "PROCESS: [~a] ~a\n" event ast)
@@ -319,7 +348,7 @@
          (('variable type identifier expression)
           (receive (new-state new-ast new-action return new-trace)
               (eval-function-expression ast state event (cons ast trace) expression)
-            (stderr "****init: ~a := ~a ==> ~a\n" (->string identifier) (->string expression) return)
+            (stderr "****init: ~a := ~a ==> ~a\n" (->string identifier) (->string expression) (->string return))
             (values (var! new-state identifier return) #f #f return new-trace)))
          (('if expression statement else) 
           (if (eval-expression ast state expression) 
