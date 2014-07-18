@@ -234,14 +234,31 @@
     (#t #t)
     ('false #f)
     ('true #t)
+
+    ;; FIXME: Alarm name resolution (see csp.scm)
     (('value 'state field)
-     (eq? (ast:field (var state 'state)) field)) ;;; FIXME name resolution
-    (('value identifier value) expression)
+     (eq? (ast:field (var state 'state)) field))
+
+    ;; FIXME: pauls name resolution (see csp.scm)
+    (('value 's field) (eq? (ast:field (var state 's)) field))
+    (('value 'res field) (eq? (ast:field (var state 'res)) field))
+
+    ;; FIXME: INPUT from valued returns? --> must be in trace?
+    (('value 'device_A action) ;; FIMXE: matching?! ah...
+     '(literal IDevice result_t OK))
+
+    (('value type field) expression)
+    (('literal scope type value) (eval-expression ast state (list 'value type value)))
     (('! expr) (not (eval-expression ast state expr)))
     (('and x y) (and (eval-expression ast state x) 
                      (eval-expression ast state y)))
     (('or x y) (or (eval-expression ast state x) 
                    (eval-expression ast state y)))
+    ((== x y)
+     (let* ((lhs (eval-expression ast state x))
+            (rhs (eval-expression ast state y))
+            (r (equal? lhs rhs)))
+     r))
     ('otherwise 
      (let* ((parent (ast:parent *model* ast))
             (guards ((ast:statements-of-type 'guard) parent))
@@ -273,7 +290,7 @@
     (_ (values state ast #f (eval-expression ast state expression) trace))))
 
 (define* (process ast state event trace)
-;;;  (stderr "PROCESS: [~a] ~a\n" event ast)
+  ;;(stderr "PROCESS: [~a] ~a\n" event ast)
   (set! i (1+ i))
   (if (> i 2000) 
       (throw 'break (format #f "too many iterations: ~a, state space: ~a\n" i
@@ -335,6 +352,10 @@
          (('return expression)
           (let ((return (eval-expression ast state expression)))
             (values state #f #f return (cons ast trace))))
+         (('reply expression)
+          (stderr "****reply: ~a\n" (->string expression))
+          (let ((reply (eval-expression ast state expression)))
+            (values state ast #f #f (cons ast trace))))
          (('compound) (values state '() #f #f trace))
          (_ (throw 'match-error  (format #f "~a: process: no match: ~a\n"  (current-source-location) ast)))))))
 
@@ -344,6 +365,8 @@
     (#t "true")
     (('value type field) (->string (list (->string type) "." field)))
     ((identifier 'value type field) (->string (list (->string identifier) " = " (->string type) "." field)))
+    ((identifier 'literal scope type field) (->string (list (->string identifier) " = " (->string type) "." (->string field))))
+    (('literal scope type field) (->string (list (->string type) "." (->string field))))
     (('trigger port event) (->string (list port "." event)))
     ((identifier 'field x y) (string-join (list (->string identifier)  "=" (->string (cdr src)))))
     (('call function ('arguments arguments ...) ...) (->string (list function "("  (comma-join arguments) ")" )))
@@ -359,6 +382,8 @@
     (('value type field) (->symbol (list (->string type) "." field)))
     (('trigger port event) (->symbol (list port "." event)))
     ((identifier 'value type field) (->symbol (list (->symbol identifier) " = "(->symbol type) "." field)))
+    ((identifier 'literal scope type field) (->string (list (->symbol identifier) " = " (->symbol type) "." (->symbol field))))
+    (('literal scope type field) (->symbol (list (->symbol type) "." (->symbol field))))
     ((h ... t) (apply symbol-append (map ->symbol src)))
     ((h . t) (list (->symbol h) '= (->symbol t)))
     (((h ... t)) (->symbol (car src)))
