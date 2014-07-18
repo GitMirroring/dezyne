@@ -240,21 +240,18 @@
             (if (not t) (car t))
             (continue state ast action t))))))
 
+;; AST: curry me
+(define ((variable? model) identifier) (ast:variable model identifier))
+
 (define (eval-expression ast state expression)
   (match expression
     (#f #f)
     (#t #t)
     ('false #f)
     ('true #t)
-
-    ;; FIXME: Alarm name resolution (see csp.scm)
-    (('value 'state field)
-     (eq? (ast:field (var state 'state)) field))
-
-    ;; FIXME: pauls name resolution (see csp.scm)
-    (('value 's field) (eq? (ast:field (var state 's)) field))
-    (('value 'res field) (eq? (ast:field (var state 'res)) field))
-
+    ;; FIXME: move name resolution to ast-tranform
+    (('value (and (? (variable? *model*)) (get! identifier)) field)
+     (eq? (ast:field (var state (identifier))) field))
     (('value type field) expression)
     (('literal scope type value) (eval-expression ast state (list 'value type value)))
     (('! expr) (not (eval-expression ast state expr)))
