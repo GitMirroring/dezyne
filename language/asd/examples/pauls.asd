@@ -3,6 +3,7 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -20,6 +21,70 @@
 // Commentary:
 //
 // Code:
+
+interface IComp {
+    enum result_t {
+        OK,
+        NOK
+    };
+
+    in result_t initialize;
+    in result_t recover;
+    in result_t perform_actions;
+
+    behaviour {
+        enum State { 
+            Uninitialized,
+            Initialized,
+            Error
+        };
+        State s = State.Uninitialized;
+
+        [s.Uninitialized] {
+            on initialize: {
+                [true] {
+                    reply(result_t.OK);
+                    s = State.Initialized;
+                }
+                [true] {
+                    reply(result_t.NOK);
+                    s = State.Uninitialized;
+                }
+            }
+            on recover,
+               perform_actions:
+                 illegal; 
+        }   
+        [s.Initialized] {
+            on perform_actions: {
+                [true] {
+                    reply(result_t.OK);
+                }
+                [true] {
+                    reply(result_t.NOK);
+                    s = State.Error;
+                }
+            }
+            on initialize,
+               recover:
+                 illegal; 
+        }   
+        [s.Error] {
+            on recover: {
+                [true] {
+                    reply(result_t.OK);
+                    s = State.Initialized;
+                }
+                [true] {
+                    reply(result_t.NOK);
+                }
+            }
+            on initialize,
+               perform_actions:
+                 illegal; 
+        }   
+    }
+}
 
 interface IDevice {
     enum result_t {
@@ -93,71 +158,6 @@ interface IDevice {
         
     }
 }
-
-interface IComp {
-    enum result_t {
-        OK,
-        NOK
-    };
-
-    in result_t initialize;
-    in result_t recover;
-    in result_t perform_actions;
-
-    behaviour {
-        enum State { 
-            Uninitialized,
-            Initialized,
-            Error
-        };
-        State s = State.Uninitialized;
-
-        [s.Uninitialized] {
-            on initialize: {
-                [true] {
-                    reply(result_t.OK);
-                    s = State.Initialized;
-                }
-                [true] {
-                    reply(result_t.NOK);
-                    s = State.Uninitialized;
-                }
-            }
-            on recover,
-               perform_actions:
-                 illegal; 
-        }   
-        [s.Initialized] {
-            on perform_actions: {
-                [true] {
-                    reply(result_t.OK);
-                }
-                [true] {
-                    reply(result_t.NOK);
-                    s = State.Error;
-                }
-            }
-            on initialize,
-               recover:
-                 illegal; 
-        }   
-        [s.Error] {
-            on recover: {
-                [true] {
-                    reply(result_t.OK);
-                    s = State.Initialized;
-                }
-                [true] {
-                    reply(result_t.NOK);
-                }
-            }
-            on initialize,
-               perform_actions:
-                 illegal; 
-        }   
-    }
-}
-
 
 component Comp {
     provides IComp client;

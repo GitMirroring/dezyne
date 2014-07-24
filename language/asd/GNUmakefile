@@ -28,7 +28,7 @@ diff = diff -uw -I '^ *$$' -I '^ *//'
 sed = sed -e 's/^-gen/gen/' -re 's/((cppbase.cpp|.hh.scm|.cc.scm):[0-9]*):/\1:warning:/'
 BUILD = build
 asdgen = ASD_PREFIX=$(DEPTH)/.. $(DEPTH)/../$(BUILD)/asdgenerator
-FDR3_PREFIX=$(HOME)/fdr3
+FDR3_PREFIX=/usr/local/
 
 default: all
 

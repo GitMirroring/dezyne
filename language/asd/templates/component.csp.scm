@@ -23,24 +23,37 @@
 ;;; 
 ;;; Code:
 
+-- drop_one_local: V => V 
 drop_one_local_((M', (L', L0'))) = (M', L')
 
-ifthenelse_(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')
-semi_(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
-assign_(F') = \ P', V' @ P'(F'(V'))
-context_(F', S') = \ P', (M', L') @ S'((\V2' @ P'(drop_one_local_(V2'))), (M', (L', F'((M', L')))))
+-- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e') = \P',V' @ c'!e' -> P'(V')
-sendrecv_(c',e') = \P',V' @ c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P',V')
-the_end_(P') = \V' @ transition_end -> P'(V')
+-- skip_: () => (P,V)->Proc
 skip_ = \P',V' @ P'(V')
+-- sendrecv_: (c: channel, e:event) => (P,V)->Proc
+sendrecv_(c',e') = \P',V' @ c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P',V')
+-- callvoid_: (B': (P,V)->Proc) => (P,V)->Proc
 callvoid_(B') = \P',V' @ B'(P', V')
+-- callvoid_args_: (B': (P,V)->Proc, F': V'->V') => (P,V)->Proc
 callvoid_args_(B',F') = \P',V' @ B'(P', V', F')
-callvalued_(B',A')         = \P',V' @ B'(\(M',(L', r')) @ P'(A'((M',L'),r')), V')
-callvalued_args_(B',F',A') = \P',V' @ B'(\(M',(L', r')) @ P'(A'((M',L'),r')), V', F')
-callvalued_context_(B',S')          = \P',V' @ B'(\V1' @ S'(\V2' @ P'(drop_one_local_(V2')), V1'), V')
-callvalued_args_context_(B',F', S') = \P',V' @ B'(\V1' @ S'(\V2' @ P'(drop_one_local_(V2')), V1'), V', F')
-returnvalue_(F') = \P',(M',L') @ P'((M', (L', F'((M', L')))))
+-- assign_: (F': V -> V) => (P,V) -> Proc
+assign_(F') = \ P', V' @ P'(F'(V'))
+-- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
+assign_active_(C', A') = \P',V' @ C'(\((M', r'),L') @ P'(A'((M',L'),r')), V') 
+-- returnvalue_: (F: V->val) => (P,V)->Proc
+returnvalue_(F') = \P',(M',L') @ P'(((M',  F'((M', L'))), L'))
+-- the_end_: P => V->Proc
+the_end_(P') = \V' @ transition_end -> P'(V')
 
+-- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
+semi_(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
+-- ifthenelse: (E': val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
+ifthenelse_(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')   
+-- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
+context_(F', S') = \ P', (M', L') @ S'((\V2' @ P'(drop_one_local_(V2'))), (M', (L', F'((M', L')))))
+-- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
+context_active_(C', S') = \P',V' @ C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
+                                                     
 datatype event_enumeration_alphabet =
 #(pipe-join (append
              (delete-duplicates
@@ -81,7 +94,7 @@ channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {#
  (comma-join (list (map-ports #{#
 (comma-join (map (lambda (x) (list .port "." (ast:name x))) (filter ast:out? (ast:events port))))#}
-  (filter ast:requires? ((compose ast:ports ast:component) ast))) 'extensions_over_empty_channels_is_undefined))}
+  (filter ast:requires? ((compose ast:ports ast:component) ast)) ",") 'extensions_over_empty_channels_is_undefined))}
 
 SINGLETHREADED = true
 
@@ -139,7 +152,7 @@ ClientCalls = {#
 UsedModeling = {#
  (map-ports
 #{#(comma-join (map (lambda (x) (list .port "." x)) (filter (lambda (x) (member x '(inevitable optional))) (port-triggers port)))) #}
-   (filter ast:requires? ((compose ast:ports ast:component) ast)))}
+   (filter ast:requires? ((compose ast:ports ast:component) ast)) ",")}
 within compress((#.component _#.behaviour (IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,#(comma-join (map ast:name ((compose ast:ports ast:component) ast)))|},Exclude)|]
 (((# (let ((required_processes (map-ports #{

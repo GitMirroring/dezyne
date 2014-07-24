@@ -1,18 +1,46 @@
-ifthenelse_(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')
-semi_(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
-assign_(F') = \ P', V' @ P'(F'(V'))
-context_(F', S') = \ P', V' @ S'((\(V',E') @ P'(V')), (V',F'(V')))
+-- drop_one_local: V => V 
+drop_one_local_((M', (L', L0'))) = (M', L')
+
+-- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e') = \P',V' @ c'!e' -> P'(V')
-sendrecv_(c',e') = \P',V' @ c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P',V')
-the_end_(P') = \V' @ transition_end -> P'(V')
+-- skip_: () => (P,V)->Proc
 skip_ = \P',V' @ P'(V')
-callvoid_(B') = \P',V' @ B'(P'(V'), V')
-callvoid_args_(B',F') = \P',V' @ B'(P'(V'), V', F')
-callvalued_(B',A') = \P',V' @ B'(\(V',r') @ P'(A'(V',r')), V')
-callvalued_args_(B',F',A') = \P',V' @ B'(\(V',r') @ P'(A'(V',r')), V', F')
-callvalued_context_(B',S') = \P',V' @ B'(\V' @ S'(\(V',E') @ P'(V'), V'), V')
-callvalued_args_context_(B',F', S') = \P',V' @ B'(\V' @ S'(\(V',E') @ P'(V'), V'), V', F')
-returnvalue_(F') = \P', V' @ P'((V', F'(V')))
+-- sendrecv_: (c: channel, e:event) => (P,V)->Proc
+sendrecv_(c',e') = \P',V' @ c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P',V')
+-- callvoid_: (B': (P,V)->Proc) => (P,V)->Proc
+callvoid_(B') = \P',V' @ B'(P', V')
+-- callvoid_args_: (B': (P,V)->Proc, F': V'->V') => (P,V)->Proc
+callvoid_args_(B',F') = \P',V' @ B'(P', V', F')
+-- assign_: (F': V -> V) => (P,V) -> Proc
+assign_(F') = \ P', V' @ P'(F'(V'))
+-- assign_active_: (B':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc (==callvalued)
+assign_active_(C', A') = \P',V' @ C'(\(M',(L', r')) @ P'(A'((M',L'),r')), V') 
+-- returnvalue_: (F: V->val) => (P,V)->Proc
+returnvalue_(F') = \P',(M',L') @ P'((M', (L', F'((M', L')))))
+-- the_end_: P => V->Proc
+the_end_(P') = \V' @ transition_end -> P'(V')
+
+-- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
+semi_(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
+-- ifthenelse: (E': val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
+ifthenelse_(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')   
+-- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
+context_(F', S') = \ P', (M', L') @ S'((\V2' @ P'(drop_one_local_(V2'))), (M', (L', F'((M', L')))))
+-- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc (==callvalued_context)
+context_active_(C', S') = \P',V' @ C'(\V1' @ S'(\V2' @ P'(drop_one_local_(V2')), V1'), V')
+-- callvalued: (B':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
+-- callvalued_(B',A')         = \P',V' @ B'(\(M',(L', r')) @ P'(A'((M',L'),r')), V')
+-- callvalued_args: (B':(P,V,F)->Proc, F: V'->val, A: (V,val)->V) => (P,V)->Proc
+-- callvalued_args_(B',F',A') = \P',V' @ B'(\(M',(L', r')) @ P'(A'((M',L'),r')), V', F')
+-- callvalued_context: (B':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
+-- callvalued_context_(B',S')          = \P',V' @ B'(\V1' @ S'(\V2' @ P'(drop_one_local_(V2')), V1'), V')
+-- callvalued_args_context: (B':(P,V)->Proc, F': V'->val, S: (P,V)->Proc) => (P,V)->Proc
+-- callvalued_args_context_(B',F', S') = \P',V' @ B'(\V1' @ S'(\V2' @ P'(drop_one_local_(V2')), V1'), V', F')
+
+callvalued_(B',A') = assign_active_(B', A')
+callvalued_args_(B', F', A') = assign_active_(\P',V' @ B'(P',V',F'), A')
+callvalued_context_(B',S') = context_active_(B', S')
+callvalued_args_context_(B',F', S') = context_active_(\P',V' @ B'(P',V',F'), S')
 
 datatype event_enumeration_alphabet =
 e | f | return

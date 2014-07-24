@@ -183,7 +183,7 @@
 (define (add-return-if-empty returns)
   (if (null? returns)
       '(return)
-      (apply append returns)))
+      (append (apply append returns) (list 'return)))) ;; FIXME: add only return when needed
 
 (define (return-values-port port)
   (add-return-if-empty (map return-value (ast:types (ast-norm (ast:type port))))))
@@ -308,8 +308,8 @@
 	 (if (>1 (length result))
 	     (list 'on events (if (prefix-reply? result)
                                   (list 'compound result)
-                                  (list 'compound result (list 'return))) (list 'the-end members))
-	     (list 'on events (list 'compound (list 'return)) (list 'the-end members)))))
+                                  (list 'compound result (list 'eventreturn))) (list 'the-end members))
+	     (list 'on events (list 'compound (list 'eventreturn)) (list 'the-end members)))))
       (_ src))))
 
 ;; FIXME naive: shadowing, assign only once
@@ -364,11 +364,9 @@
                        transformed
                        (list (if (ast:variable? statement)
                                  (if (or (valued-action? statement) (call? statement))
-                                     'callvalued-context
+                                     'context-active
                                      'context)
-                                 (if (and #f (valued-action? statement) (call? statement))
-                                     'callvalued
-                                     'semi))
+                                 'semi)
                              transformed (loop (cdr statements) locals)))
                    transformed)))))
       (('on events stat the-end)
@@ -384,17 +382,17 @@
       (('variable type var expr)
        (list context var (list 'expression expr)))
       (('assign var ('action trigger))
-       (list 'callvalued (list context 'r' 
+       (list 'assign-active (list context 'r' 
                                (list 'action trigger))
              (cons (map (assignment var 'r') members)
                    (map (assignment var 'r') locals))))
       (('assign var ('call function arguments))
-       (list 'callvalued (list context 'r'
+       (list 'assign-active (list context 'r'
                                (list 'call function arguments))
              (cons (map (assignment var 'r') members)
                    (map (assignment var 'r') locals))))
       (('assign var ('value (and (? port?) (get! port)) event))
-       (list 'callvalued (list context 'r'
+       (list 'assign-active (list context 'r'
                                (list 'action (list 'trigger (port) event)))
              (cons (map (assignment var 'r') members)
                    (map (assignment var 'r') locals))))
@@ -426,6 +424,10 @@
          (list 'function name signature transformed)))
       (('return expression)
        (list 'return context expression))
+      (('call function)
+       (list 'call context function))
+      (('call function arguments)
+       (list 'call context function arguments))
       (_ src))))
 
 (define ((provides-event? model) event)
@@ -462,7 +464,8 @@
        (('return context expression)
         (let ((expression (csp-transform ast expression)))
           (list "returnvalue_(\\ (" (context->csp context) ") @ " expression ")")))
-       (('return) (let ((channel-return (if (and (not inevitable-optional?) provided-on?) 
+       (('return) "skip_") ;; FIXME
+       (('eventreturn) (let ((channel-return (if (and (not inevitable-optional?) provided-on?) 
                                             (list "(\\P',V' @ " channel ".return -> P'(V'))")
                                             (list "(\\P',V' @ P'(V'))"))))
                     (list channel-return)))
@@ -493,8 +496,10 @@
                             (loop (cdr param-functions))
                             ")")))))
           (list name " = \\" list "P',V',(" param-functions-string ") @ " transformed-in-context "(P',V')\n")))
-       (('call function) `(,function))
-       (('call function arguments) `(,function))
+       (('call context function)
+        (list "callvoid_(" function ")"))
+       (('call context function arguments)
+        (list "callvoid_(\\ P',V' @ " function " (P',V',\\ (" (context->csp context) ") @ " (comma-join (map (lambda (x) (csp-transform ast x)) (ast:body arguments))) "))"))
        (('assign ('variable type var action))
         (list "(\\P',V' @ " (cadr action) "!" (caddr action) " -> " (cadr action) "?" var " -> P'((V'," var ")))"))
        (('assign context expressions)
@@ -522,29 +527,27 @@
 
        (('value type field) (list type "_" field))
        (('literal scope type value) (list type "_" value))
-       (('callvalued-context (context var ('valued-action port event)) stat)
+       (('context-active (context var ('valued-action port event)) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
-          (list "callvalued_context_(sendrecv_(" port "," event "),\n" stat ")")))
-
-       (('callvalued-context (context var ('expression ('action ('trigger port event)))) stat)
+          (list "context_active_(sendrecv_(" port "," event "),\n" stat ")")))
+       (('context-active (context var ('expression ('action ('trigger port event)))) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
-          (list "callvalued_context_(sendrecv_(" port "," event "),\n" stat ")")))
-       (('callvalued-context (context var ('call function)) stat)
+          (list "context_active_(sendrecv_(" port "," event "),\n" stat ")")))
+       (('context-active (context var ('call function)) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
-          (list "callvalued_args_context_(" function ",\n" stat ")")))
-       (('callvalued-context (context var ('call function arguments)) stat)
+          (list "context_active_(" function ",\n" stat ")")))
+       (('context-active (context var ('call function arguments)) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
-          (list "callvalued_args_context_(" function ",\\ (" (context->csp context) ") @ " (comma-join (ast:body arguments)) ",\n" stat ")")))
-
-       (('callvalued (context var ('action ('trigger port event))) context-2)
+          (list "context_active_(\\ P',V' @ " function " (P',V',\\ (" (context->csp context) ") @ " (comma-join (map (lambda (x) (csp-transform ast x)) (ast:body arguments))) "),\n" stat ")")))
+       (('assign-active (context var ('action ('trigger port event))) context-2)
         (let ((action (list "sendrecv_(" port "," event ")")))
-          (list "callvalued_(" action ",\n\\ ((" (context->csp context) "))," var " @ (" (context->csp context-2) "))" )))
+          (list "assign_active_(" action ",\n\\ ((" (context->csp context) "))," var " @ (" (context->csp context-2) "))" )))
 
-       (('callvalued (context var ('call function arguments)) expressions)
+       (('assign-active (context var ('call function arguments)) expressions)
         (let ((expressions (cons
                             (map (lambda (x) (csp-transform ast x)) (car expressions))
                             (map (lambda (x) (csp-transform ast x)) (cdr expressions)))))
-          (list "callvalued_args_(" function ",\\ ((" (context->csp context) ")) @ " (comma-join (ast:body arguments)) ",\\ ((" (context->csp context) "))," var " @ (" (context->csp expressions) "))")))
+          (list "assign_active_(\\ P',V' @ " function " (P',V',\\ (" (context->csp context) ") @ " (comma-join (map (lambda (x) (csp-transform ast x)) (ast:body arguments))) "),\\ ((" (context->csp context) "))," var " @ (" (context->csp expressions) "))")))
        (('context (context var ('valued-action ('value port event))) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list port "!" event "  -> " port "?" var " -> context_(\\ (" (comma-join context) ") @ " var ",\n" stat ")" )))
@@ -556,6 +559,7 @@
         (let ((first (csp-transform ast stat1 inevitable-optional? channel provided-on?))
               (second (csp-transform ast stat2 inevitable-optional? channel provided-on?)))
           (list "semi_(" first ",\n" second ")")))
+       (('skip) "skip_")
        ('() "(\\P',V' @ P'(V'))")
        ((? symbol?) src)
        (_ (throw 'match-error (format #f "~a:csp-transform: no match: ~a\n" (current-source-location) src)))))))

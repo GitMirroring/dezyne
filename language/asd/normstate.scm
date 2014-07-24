@@ -42,9 +42,26 @@
   :export (ast-> normstate))
 
 (define (normstate ast)
-  (aggregate-on-stats (flatten-compound (combine-guards (passdown-on ((remove-otherwise '()) ast))))))
-
+  (aggregate-on-stats (flatten-compound (combine-guards (passdown-on ((remove-otherwise '()) (add-skip (expand-on ast))))))))
 (define ast-> normstate)
+
+
+(define (expand-on ast)
+  (match ast
+    (('compound s ...) (ast:make 'compound (apply append (map expand-on-stat (cdr ast)))))
+    ((h ...) (map expand-on ast))
+    (_ ast)))
+
+(define (expand-on-stat ast)
+  (match ast
+    (('on triggers statement) (map (lambda (trigger) (ast:make 'on (list trigger) statement)) triggers))
+    (_ (list (expand-on ast)))))
+
+(define (add-skip ast)
+  (match ast 
+    (('compound) (list 'skip))
+    ((h ...) (map add-skip ast))
+    (_ ast)))
 
 (define (wrap-compound-as-needed x)
   (if (or (null? x) (>1 (length x)))

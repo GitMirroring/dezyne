@@ -861,7 +861,7 @@ returnvalue_(\\ ((s,b,c),((stack',c))) @ c)))(P',V')
 
 (define csp-reply-variable-ast
   '(on ((trigger i done))
-    (callvalued-context
+    (context-active
       (((dummy)) s (valued-action u what))
       (if ((dummy) s)
         (expression (== s (literal u Status Ok)))
@@ -899,7 +899,7 @@ returnvalue_(\\ ((s,b,c),((stack',c))) @ c)))(P',V')
 
           ;; via:
           "i?x:{done} ->
-callvalued_context_(sendrecv_(u,what),
+context_active_(sendrecv_(u,what),
 \\P',((dummy),((stack',s))) @ ifthenelse_(s == Status_Ok,
 (\\P',V' @ i.Status_Yes -> P'(V')),
 (\\P',V' @ i.Status_No -> P'(V'))
@@ -1007,7 +1007,7 @@ semi_(context_(\\ ((b),(stack')) @ true,
 (define csp-callvalued-on
   '(on ((trigger i e))
     (semi (semi (assign ((b)) (((! b))))
-                (callvalued-context
+                (context-active
                   (((b)) c (call g (arguments b)))
                   (semi (callvalued
                           (((b) c) r' (call g (arguments c)))
@@ -1081,13 +1081,13 @@ semi_(callvalued_args_(g,\\ (((b),((stack',c)))) @ c,\\ (((b),((stack',c)))),r' 
 (define csp-callvalued-on-deep
   '(on ((trigger i e))
     (semi (semi (assign ((b)) (((! b))))
-                (callvalued-context
+                (context-active
                   (((b)) c (call g (arguments b)))
-                  (callvalued-context
+                  (context-active
                     (((b) c) d (call g (arguments c)))
-                    (callvalued-context
+                    (context-active
                       (((b) c d) cc (call g (arguments c)))
-                      (callvalued-context
+                      (context-active
                         (((b) c d cc) dd (call g (arguments d)))
                         (if ((b) c d cc dd)
                           (expression dd)
@@ -1108,7 +1108,7 @@ semi_(callvalued_args_(g,\\ (((b),((stack',c)))) @ c,\\ (((b),((stack',c)))),r' 
 ;; BISON parser test
 (define ast-transform-BISON-variable-action-via
   '(on ((trigger i done))
-    (callvalued-context
+    (context-active
       (((s b c))
        s
        (expression (action (trigger u what))))
@@ -1137,13 +1137,13 @@ semi_(callvalued_args_(g,\\ (((b),((stack',c)))) @ c,\\ (((b),((stack',c)))),r' 
 
           ;; to:
           "i?x:{done} ->
-callvalued_context_(sendrecv_(u,what),
+context_active_(sendrecv_(u,what),
 (\\P',V' @ i.return -> P'(V')))(\\V' @ i_B_(V'),((s,b,c),(stack')))"))
 
 ;; BISON parser test
 (define ast-transform-BISON-variable-action-via
   '(on ((trigger i done))
-    (callvalued-context
+    (context-active
       (((s b c))
        s
        (expression (action (trigger u what))))
@@ -1172,7 +1172,7 @@ callvalued_context_(sendrecv_(u,what),
 
           ;; to:
           "i?x:{done} ->
-callvalued_context_(sendrecv_(u,what),
+context_active_(sendrecv_(u,what),
 (\\P',V' @ i.return -> P'(V')))(\\V' @ i_B_(V'),((s,b,c),(stack')))"))
 
 ;; BISON parser test
