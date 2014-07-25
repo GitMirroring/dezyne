@@ -52,14 +52,13 @@
     (ast:register norm #t)
     (module-define! (resolve-module '(language asd csp)) 'ast norm)  ;; FIXME
     (and-let* ((comp (ast:component norm))
-	       (name (ast:name comp))
-	       (module (csp-module norm))
-               (output (option-ref (parse-opts (command-line)) 'output #f))
-               (fn (if output output (list '.csp))))
-	      (dump-output fn
+               (name (ast:name comp))
+               (module (csp-module norm))
+               (fn (option-ref (parse-opts (command-line)) 'output (list name '.csp))))
+              (dump-output fn
                            (lambda ()
                              (csp-component module)
-			     (csp-asserts module)))))
+                             (csp-asserts module)))))
   "")
 
 (define (csp-component module)
@@ -67,15 +66,15 @@
 
 (define (csp-asserts module)
   (let* ((asserts-string (option-ref (parse-opts (command-line)) 'assert #f))
-	 (asserts (if asserts-string (with-input-from-string asserts-string read)
-		      (assert-list (module-ref module 'ast)))))
+         (asserts (if asserts-string (with-input-from-string asserts-string read)
+                      (assert-list (module-ref module 'ast)))))
     (for-each (csp-assert module) asserts)))
 
 (define ((csp-assert module) assert)
   (let* ((class (car assert))
-	 (model (cadr assert))
-	 (check (caddr assert))
-	 (template (assoc-ref asserts-alist (list class check))))
+         (model (cadr assert))
+         (check (caddr assert))
+         (template (assoc-ref asserts-alist (list class check))))
     (module-define! module '.model model)
     (animate-string template module)))
 
@@ -103,7 +102,7 @@
               (module-define! module 'component comp)
               (module-define! module '.interface (ast:name (ast:type (car (filter ast:provides? (ast:ports comp))))))
 	      (module-define! module '.behaviour (ast:name (ast:behaviour comp)))
-              (module-define! module '.interface-behaviour (ast:name (ast:behaviour (ast:interface ast))))
+          (module-define! module '.interface-behaviour (ast:name (ast:behaviour (ast:interface ast))))
 	      (module-define! module '.port (ast:name (ast:port comp))))
     module))
 
@@ -337,23 +336,19 @@
   context
   )
 
-(define (element->string x)
-  (stderr "~y" x) 
+(define (element->csp ast x)
   (match x
-    (('vector expressions ...) (string-append "(" (comma-join expressions) ")"))
+    (('vector expressions ...) (string-append "(" (comma-join (map (lambda (x) (csp-transform ast x)) expressions)) ")"))
     (_ (->string x))))
-
-(define (context->csp context)
+  
+(define (context->csp ast context)
   (match context
-    (('context context) (context->csp context))
+    (('context context) (context->csp ast context))
     ((members locals ...)
-     (let ((members (comma-join members))
-           (locals (reduce (lambda (x y) (string-append "(" (element->string y) "," (element->string x) ")")) #f (cons "stack'" locals))))
+     (let ((members (comma-join (map (lambda (x) (csp-transform ast x)) members)))
+           (locals (reduce (lambda (x y) (string-append "(" (element->csp ast y) "," (element->csp ast x) ")")) #f (cons "stack'" locals))))
        (list "(" members "),(" locals ")")))
     (_ (throw 'match-error (format #f "~a:context->csp: no match: ~a\n" (current-source-location) context)))))
-
-(define (expressions->csp context)
-  (context->csp (list context)))
 
 (define* (ast-transform- ast src :optional (return #t) (locals '()))
   (let* ((model (or (ast:interface ast) (ast:component ast)))
@@ -475,7 +470,7 @@
                         (list "(\\P',V' @ " channel "." expr " -> P'(V'))")))
        (('return context expression)
         (let ((expression (csp-transform ast expression)))
-          (list "returnvalue_(\\ (" (context->csp context) ") @ " expression ")")))
+          (list "returnvalue_(\\ (" (context->csp ast context) ") @ " expression ")")))
        (('return) "skip_") ;; FIXME
        (('eventreturn) (let ((channel-return (if (and (not inevitable-optional?) provided-on?) 
                                             (list "(\\P',V' @ " channel ".return -> P'(V'))")
@@ -485,7 +480,7 @@
         (let* ((transition-end (if component? "transition_end -> "))
                (context (cons members '()))
                (end (if (not inevitable-optional?) (list transition-end))))
-          (list "(\\V' @ " end model-name "_" behaviour "_" "(V'),(" (context->csp context) "))")))
+          (list "(\\V' @ " end model-name "_" behaviour "_" "(V'),(" (context->csp ast context) "))")))
        (('action 'illegal) "illegal -> STOP")
        (('action event)
         (let* ((channel (if (ast:interface? model) model-name (ast:port-name event)))
@@ -501,19 +496,17 @@
        (('call context function)
         (list "callvoid_(" function ")"))
        (('call context function arguments)
-        (list "callvoid_(\\ P',V' @ " function " (P',V',\\ (" (context->csp context) ") @ (" (comma-join (map (lambda (x) (csp-transform ast x)) (ast:body arguments))) ")))"))
+        (list "callvoid_(\\ P',V' @ " function " (P',V',\\ (" (context->csp ast context) ") @ (" 
+              (comma-join (map (lambda (x) (csp-transform ast x)) (ast:body arguments))) ")))"))
        (('assign ('variable type var action))
         (list "(\\P',V' @ " (cadr action) "!" (caddr action) " -> " (cadr action) "?" var " -> P'((V'," var ")))"))
        (('assign context expressions)
-        (let ((expressions (cons
-                            (map (lambda (x) (csp-transform ast x)) (car expressions))
-                            (map (lambda (x) (csp-transform ast x)) (cdr expressions)))))
-         (list "assign_(\\ (" (context->csp context) ") @ (" (context->csp expressions) "))")))
+         (list "assign_(\\ (" (context->csp ast context) ") @ (" (context->csp ast expressions) "))"))
        (('if context expression then else)
         (let ((expression (csp-expression->string ast expression))
               (then (csp-transform ast then inevitable-optional? channel provided-on?))
               (else (csp-transform ast else inevitable-optional? channel provided-on?)))
-          (list "\\P',(" (context->csp context) ") @ ifthenelse_(" expression ",\n" then ",\n" else "\n)(P',(" (context->csp context) "))")))
+          (list "\\P',(" (context->csp ast context) ") @ ifthenelse_(" expression ",\n" then ",\n" else "\n)(P',(" (context->csp ast context) "))")))
 
        ;; FIXME: use csp-expression->string
        (('expression e) (csp-transform ast e))
@@ -529,7 +522,7 @@
 
        (('value type field) (list type "_" field))
        (('literal scope type value) (list type "_" value))
-       (('vector expressions ...) ('vector (map (lambda (exp) (csp-transform ast exp)) expressions )))
+;;       (('vector expressions ...) (cons 'vector (map (lambda (exp) (csp-transform ast exp)) expressions )))
        (('context-active (context var ('valued-action port event)) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list "context_active_(sendrecv_(" port "," event "),\n" stat ")")))
@@ -541,23 +534,23 @@
           (list "context_active_(" function ",\n" stat ")")))
        (('context-active (context var ('call function arguments)) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
-          (list "context_active_(\\ P',V' @ " function " (P',V',\\ (" (context->csp context) ") @ (" (comma-join (map (lambda (x) (csp-transform ast x)) (ast:body arguments))) ")),\n" stat ")")))
+          (list "context_active_(\\ P',V' @ " function " (P',V',\\ (" (context->csp ast context) ") @ (" 
+                (comma-join (map (lambda (x) (csp-transform ast x)) (ast:body arguments))) ")),\n" stat ")")))
        (('assign-active (context var ('action ('trigger port event))) context-2)
         (let ((action (list "sendrecv_(" port "," event ")")))
-          (list "assign_active_(" action ",\n\\ ((" (context->csp context) "))," var " @ (" (context->csp context-2) "))" )))
-
+          (list "assign_active_(" action ",\n\\ ((" (context->csp ast context) "))," var " @ (" (context->csp ast context-2) "))" )))
        (('assign-active (context var ('call function arguments)) expressions)
-        (let ((expressions (cons
-                            (map (lambda (x) (csp-transform ast x)) (car expressions))
-                            (map (lambda (x) (csp-transform ast x)) (cdr expressions)))))
-          (list "assign_active_(\\ P',V' @ " function " (P',V',\\ (" (context->csp context) ") @ (" (comma-join (map (lambda (x) (csp-transform ast x)) (ast:body arguments))) ")),\\ ((" (context->csp context) "))," var " @ (" (context->csp expressions) "))")))
+          (list "assign_active_(\\ P',V' @ " function " (P',V',\\ (" (context->csp ast context) ") @ (" 
+                (comma-join (map (lambda (x) (csp-transform ast x)) (ast:body arguments))) ")),\\ ((" 
+                (context->csp ast context) "))," var " @ (" 
+                (context->csp ast expressions) "))"))
        (('context (context var ('valued-action ('value port event))) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list port "!" event "  -> " port "?" var " -> context_(\\ (" (comma-join context) ") @ " var ",\n" stat ")" )))
        (('context (context var expression) stat)
         (let ((expression (csp-transform ast expression))
               (stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
-          (list "context_(\\ (" (context->csp context) ") @ " expression ",\n" stat ")" )))
+          (list "context_(\\ (" (context->csp ast context) ") @ " expression ",\n" stat ")" )))
        (('semi stat1 stat2)
         (let ((first (csp-transform ast stat1 inevitable-optional? channel provided-on?))
               (second (csp-transform ast stat2 inevitable-optional? channel provided-on?)))
@@ -565,4 +558,6 @@
        (('skip) "skip_")
        ('() "(\\P',V' @ P'(V'))")
        ((? symbol?) src)
-       (_ (throw 'match-error (format #f "~a:csp-transform: no match: ~a\n" (current-source-location) src)))))))
+       ((? string?) src)
+       (_ (throw 'match-error (format #f "~a:csp-transform: no match: ~a\n" (current-source-location) src)))
+       ))))
