@@ -51,6 +51,7 @@ exec guile -L $(dirname $0)/../.. -L $(dirname $0) -e main -s $0 "$@"
             (json (single-char #\j))
             (language (single-char #\l) (value #t))
             (trail (single-char #\t) (value #t))
+            (output (single-char #\o) (value #t))
 	    (version (single-char #\v))))
 	 (options (getopt-long (command-line) option-spec
 		   :stop-at-first-non-option #t))
@@ -71,6 +72,7 @@ Usage: gaiag [OPTION]... FILE
   -j, --json           use json-friendly format; strings and hash tables
   -l, --language=LANG  generate output for language=LANG [scheme]
   -t, --trail=TRAIL    specify trail TRAIL for trail-walker 
+  -o, --output FILE    generate FILE containing the output
   -v, --version        display version
 
 Languages: asd c++ normstate scheme simulate wfc
@@ -80,6 +82,7 @@ Examples:
   ./gaiag -l asd examples/if.asd
   ./gaiag -l asd examples/Alarm.scm
   ./gaiag -l csp examples/Alarm.asd
+  ./gaiag -l csp -o alarm.csp examples/Alarm.asd
   ./gaiag -l wfc examples/double-on.asd
   ./gaiag -l simulate -t '(a a a a)' examples/if.asd
   ./gaiag -l simulate -t '(a a a a)' -j examples/if.asd | ./scm2json
