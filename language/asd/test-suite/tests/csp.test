@@ -225,7 +225,7 @@ skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
           "IG & i?x:{e} ->
 illegal -> STOP"))
 
-(define ast-transform-assign '(assign ((s b c)) ((s b true))))
+(define ast-transform-assign '(assign (ctx ((s b c))) ((s b true))))
 
 (pass-if "ast-transform-assign-bool"
          (pretty-noisy-equal?
@@ -249,10 +249,10 @@ illegal -> STOP"))
 
 (define ast-transform-assign-2 
   '(context
-  (((s b c)) la (expression true))
+  ((ctx ((s b c))) la (expression true))
   (context
-    (((s b c) la) lb (expression false))
-    (assign ((s b c) la lb) ((s b c) true lb)))))
+    ((ctx ((s b c) la)) lb (expression false))
+    (assign (ctx ((s b c) la lb)) ((s b c) true lb)))))
 
 (pass-if "ast-transform-assign-2-bool"
          (pretty-noisy-equal?
@@ -284,7 +284,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
 ;; \\) \\) \\)
 
 (define ast-transform-assign-enum
-  '(assign ((s b c)) ((S_S2 b c))))
+  '(assign (ctx ((s b c))) ((S_S2 b c))))
 
 (pass-if "ast-transform-assign-enum"
          (pretty-noisy-equal?
@@ -318,7 +318,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
                 (compound)))
 
           ;; via:
-          '(if ((s b c))
+          '(if (ctx ((s b c)))
                (expression b)
                ()
                ())))
@@ -339,7 +339,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
 
 
 (define ast-transform-ifthenelse-via
-  '(if ((s b c))
+  '(if (ctx ((s b c)))
        (expression b)
        ()
        ()))
@@ -384,7 +384,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
                 ()))
 
           ;; via:
-          '(if ((s b c))
+          '(if (ctx ((s b c)))
                (expression (and IG b))
                (action illegal)
                ())))
@@ -402,17 +402,17 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
                 (action illegal)))
 
           ;; via:
-          '(if ((s b c))
+          '(if (ctx ((s b c)))
                (expression (and (! IG) b))
                ()
                (action illegal))))
 
 (define ast-transform-semi
-  '(semi (if ((s b c))
+  '(semi (if (ctx ((s b c)))
              (expression b)
              ()
              ())
-         (assign ((s b c)) ((s true c)))))
+         (assign (ctx ((s b c))) ((s true c)))))
 
 (pass-if "ast-transform-semi"
          (pretty-noisy-equal?
@@ -448,21 +448,21 @@ assign_(\\ ((s,b,c),(stack')) @ ((s,true,c),(stack'))))"))
 (define ast-transform-via
   '(on (e)
        (semi
-        (semi (if ((s b c)) (expression (or c b))
+        (semi (if (ctx ((s b c))) (expression (or c b))
                   (semi (action f) (action g))
                   ())
-              (semi (if ((s b c)) (expression b)
-                        (semi (if ((s b c)) (expression c)
+              (semi (if (ctx ((s b c))) (expression b)
+                        (semi (if (ctx ((s b c))) (expression c)
                                   (action g)
                                   ())
-                              (semi (assign ((s b c)) ((s b false)))
+                              (semi (assign (ctx ((s b c))) ((s b false)))
                                     (action f)))
-                        (if ((s b c)) (expression c)
-                            (semi (assign ((s b c)) ((s false c)))
+                        (if (ctx ((s b c))) (expression c)
+                            (semi (assign (ctx ((s b c))) ((s false c)))
                                   (action h))
-                            (semi (assign ((s b c)) ((s true c)))
+                            (semi (assign (ctx ((s b c))) ((s true c)))
                                   (action g))))
-                    (assign ((s b c)) ((S_S2 b c)))))
+                    (assign (ctx ((s b c))) ((S_S2 b c)))))
         (eventreturn))
        (the-end (s b c))))
 
@@ -671,8 +671,8 @@ skip_(\\ V' @ transition_end -> c_B_(V'),((s,b,c),(stack')))"))
   '(on ((trigger sensor triggered))
        (semi (semi (action (trigger console detected))
                    (semi (action (trigger siren turnon))
-                         (semi (assign ((state sounding)) ((state true)))
-                               (assign ((state sounding)) ((States_Triggered sounding))))))
+                         (semi (assign (ctx ((state sounding))) ((state true)))
+                               (assign (ctx ((state sounding))) ((States_Triggered sounding))))))
              (eventreturn))
        (the-end (state sounding))))
 
@@ -784,7 +784,7 @@ assign_(\\ ((state,sounding),(stack')) @ ((States_Triggered,sounding),(stack')))
 (define csp-function-call-ast
   '(on (e)
        (semi
-        (call ((s b c)) toggle)
+        (call (ctx ((s b c))) toggle)
         (eventreturn))
        (the-end (s b c))))
 
@@ -831,7 +831,7 @@ semi_(callvoid_(toggle),
   '(function
     g
     ((type bool) (parameters ((type bool) c)))
-    (semi (action f) (return ((s b c) c) c))))
+    (semi (action f) (return (ctx ((s b c) c)) c))))
 
 (pass-if "ast-transform-function-arguments"
          (pretty-noisy-equal?
@@ -863,8 +863,8 @@ returnvalue_(\\ ((s,b,c),((stack',c))) @ c)))(P',V')
 (define csp-reply-variable-ast
   '(on ((trigger i done))
     (context-active
-      (((dummy)) s (valued-action u what))
-      (if ((dummy) s)
+      ((ctx ((dummy))) s (valued-action u what))
+      (if (ctx ((dummy) s))
         (expression (== s (literal u Status Ok)))
         (reply (literal I Status Yes))
         (reply (literal I Status No))))
@@ -906,6 +906,8 @@ context_active_(sendrecv_(u,what),
 (\\ P',V' @ i.Status_No -> P'(V'))
 )(P',((dummy),((stack',s)))))(\\ V' @ transition_end -> C__(V'),((dummy),(stack')))"))
 
+;; "
+
 (define return-variable-ast
   '(component
     arguments
@@ -929,8 +931,8 @@ context_active_(sendrecv_(u,what),
 (define csp-return-variable-ast
   '(on ((trigger i e))
     (semi (context
-            (((b)) c (expression true))
-            (if ((b) c)
+            ((ctx ((b))) c (expression true))
+            (if (ctx ((b) c))
               (expression c)
               (action (trigger i f))
               ()))
@@ -1007,13 +1009,13 @@ semi_(context_(\\ ((b),(stack')) @ true,
 
 (define csp-callvalued-on
   '(on ((trigger i e))
-    (semi (semi (assign ((b)) (((! b))))
+    (semi (semi (assign (ctx ((b))) (((! b))))
                 (context-active
-                  (((b)) c (call g (arguments b)))
+                  ((ctx ((b))) c (call g (arguments b)))
                   (semi (assign-active
-                          (((b) c) r' (call g (arguments c)))
+                          ((ctx ((b) c)) r' (call g (arguments c)))
                           ((r') c))
-                        (if ((b) c)
+                        (if (ctx ((b) c))
                           (expression c)
                           (action (trigger i f))
                           ()))))
@@ -1082,16 +1084,16 @@ semi_(assign_active_(\\ P',V' @ g (P',V',\\ ((b),((stack',c))) @ (c)),
 
 (define csp-callvalued-on-deep
   '(on ((trigger i e))
-    (semi (semi (assign ((b)) (((! b))))
+    (semi (semi (assign (ctx ((b))) (((! b))))
                 (context-active
-                  (((b)) c (call g (arguments b)))
+                  ((ctx ((b))) c (call g (arguments b)))
                   (context-active
-                    (((b) c) d (call g (arguments c)))
+                    ((ctx ((b) c)) d (call g (arguments c)))
                     (context-active
-                      (((b) c d) cc (call g (arguments c)))
+                      ((ctx ((b) c d)) cc (call g (arguments c)))
                       (context-active
-                        (((b) c d cc) dd (call g (arguments d)))
-                        (if ((b) c d cc dd)
+                        ((ctx ((b) c d cc)) dd (call g (arguments d)))
+                        (if (ctx ((b) c d cc dd))
                           (expression dd)
                           (action (trigger i f))
                           ()))))))
@@ -1111,7 +1113,7 @@ semi_(assign_active_(\\ P',V' @ g (P',V',\\ ((b),((stack',c))) @ (c)),
 (define ast-transform-OM-PARSER-variable-action-via
   '(on ((trigger i done))
     (context-active
-      (((s b c))
+      ((ctx ((s b c)))
        s
        (expression (action (trigger u what))))
       (eventreturn))
@@ -1146,7 +1148,7 @@ context_active_(sendrecv_(u,what),
 (define ast-transform-OM-PARSER-variable-action-via
   '(on ((trigger i done))
     (context-active
-      (((s b c))
+      ((ctx ((s b c)))
        s
        (expression (action (trigger u what))))
       (eventreturn))
@@ -1181,7 +1183,7 @@ context_active_(sendrecv_(u,what),
 (define ast-transform-OM-PARSER-assign-action-via
   '(on ((trigger i done))
     (semi (assign-active
-            (((s b c)) r' (action (trigger j h)))
+            ((ctx ((s b c))) r' (action (trigger j h)))
             ((s b c)))
           (eventreturn))
     (the-end (s b c))))

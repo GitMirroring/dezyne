@@ -331,10 +331,8 @@
     (('variable type var ('call name arguments)) #t)
     (_ #f)))
 
-(define (context->ast context)
-  ;;;(list 'context context) ;; FIXME: no annotating for now
-  context
-  )
+(define (make-context members locals)
+  (list 'ctx (cons members locals)))
 
 (define (element->csp ast x)
   (match x
@@ -343,7 +341,7 @@
   
 (define (context->csp ast context)
   (match context
-    (('context context) (context->csp ast context))
+    (('ctx context) (context->csp ast context))
     ((members locals ...)
      (let ((members (comma-join (map (lambda (x) (csp-transform ast x)) members)))
            (locals (reduce (lambda (x y) (string-append "(" (element->csp ast y) "," (element->csp ast x) ")")) #f (cons "stack'" locals))))
@@ -353,7 +351,7 @@
 (define* (ast-transform- ast src :optional (return #t) (locals '()))
   (let* ((model (or (ast:interface ast) (ast:component ast)))
 	 (members (member-names model))
-         (context (cons members locals))
+         (context (make-context members locals))
          (port? (lambda (port) (member port (map ast:name (ast:ports model)))))
          (valued-action? (valued-action? port?)))
     (match src
@@ -406,7 +404,7 @@
          (list 'assign context (cons (map (assignment var expression) members)
                                      (map (assignment var expression) locals)))))
       (('assign var expression)
-         (list 'assign (context->ast context) 
+         (list 'assign context
                (cons (map (assignment var expression) members)
                      (map (assignment var expression) locals))))
       (('if pred then)
