@@ -328,13 +328,13 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
          (noisy-equal?
 
           ;; from:
-          (csp-transform
+          (csp-expression->string
 
            i-ast
 
            '(expression (! (and (or (!= c  b) true) (== c b)))))
 
-          ;; via:
+          ;; to:
           "not ((c != b or true) and c == b)"))
 
 
