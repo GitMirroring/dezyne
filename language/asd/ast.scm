@@ -537,6 +537,7 @@
   (match identifier
     (#f (match ast
           ((or (? component?) (? system?)) (assoc 'provides (ports ast)))
+          ((? action?) (caddr ast))
           (_ (throw 'match-error  (format #f "~a:port: no match: ~a\n" (current-source-location) ast)))))
     ((? symbol?)
      (find (lambda (p) (eq? (name p) identifier))
