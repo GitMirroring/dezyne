@@ -29,6 +29,7 @@ sed = sed -e 's/^-gen/gen/' -re 's/((cppbase.cpp|.hh.scm|.cc.scm):[0-9]*):/\1:wa
 BUILD = build
 asdgen = ASD_PREFIX=$(DEPTH)/.. $(DEPTH)/../$(BUILD)/asdgenerator
 FDR3_PREFIX=/usr/local/
+-include .local.make
 
 default: all
 
