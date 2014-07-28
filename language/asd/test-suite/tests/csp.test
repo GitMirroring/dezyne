@@ -225,7 +225,7 @@ skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
           "IG & i?x:{e} ->
 illegal -> STOP"))
 
-(define ast-transform-assign '(assign (ctx ((s b c))) ((s b true))))
+(define ast-transform-assign '(assign (ctx ((s b c))) (ctx ((s b true)))))
 
 (pass-if "ast-transform-assign-bool"
          (pretty-noisy-equal?
@@ -252,7 +252,7 @@ illegal -> STOP"))
   ((ctx ((s b c))) la (expression true))
   (context
     ((ctx ((s b c) la)) lb (expression false))
-    (assign (ctx ((s b c) la lb)) ((s b c) true lb)))))
+    (assign (ctx ((s b c) la lb)) (ctx ((s b c) true lb))))))
 
 (pass-if "ast-transform-assign-2-bool"
          (pretty-noisy-equal?
@@ -284,7 +284,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
 ;; \\) \\) \\)
 
 (define ast-transform-assign-enum
-  '(assign (ctx ((s b c))) ((S_S2 b c))))
+  '(assign (ctx ((s b c))) (ctx ((S_S2 b c)))))
 
 (pass-if "ast-transform-assign-enum"
          (pretty-noisy-equal?
@@ -412,7 +412,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
              (expression b)
              ()
              ())
-         (assign (ctx ((s b c))) ((s true c)))))
+         (assign (ctx ((s b c))) (ctx ((s true c))))))
 
 (pass-if "ast-transform-semi"
          (pretty-noisy-equal?
@@ -455,14 +455,14 @@ assign_(\\ ((s,b,c),(stack')) @ ((s,true,c),(stack'))))"))
                         (semi (if (ctx ((s b c))) (expression c)
                                   (action g)
                                   ())
-                              (semi (assign (ctx ((s b c))) ((s b false)))
+                              (semi (assign (ctx ((s b c))) (ctx ((s b false))))
                                     (action f)))
                         (if (ctx ((s b c))) (expression c)
-                            (semi (assign (ctx ((s b c))) ((s false c)))
+                            (semi (assign (ctx ((s b c))) (ctx ((s false c))))
                                   (action h))
-                            (semi (assign (ctx ((s b c))) ((s true c)))
+                            (semi (assign (ctx ((s b c))) (ctx ((s true c))))
                                   (action g))))
-                    (assign (ctx ((s b c))) ((S_S2 b c)))))
+                    (assign (ctx ((s b c))) (ctx ((S_S2 b c))))))
         (eventreturn))
        (the-end (s b c))))
 
@@ -671,8 +671,8 @@ skip_(\\ V' @ transition_end -> c_B_(V'),((s,b,c),(stack')))"))
   '(on ((trigger sensor triggered))
        (semi (semi (action (trigger console detected))
                    (semi (action (trigger siren turnon))
-                         (semi (assign (ctx ((state sounding))) ((state true)))
-                               (assign (ctx ((state sounding))) ((States_Triggered sounding))))))
+                         (semi (assign (ctx ((state sounding))) (ctx ((state true))))
+                               (assign (ctx ((state sounding))) (ctx ((States_Triggered sounding)))))))
              (eventreturn))
        (the-end (state sounding))))
 
@@ -1009,12 +1009,12 @@ semi_(context_(\\ ((b),(stack')) @ true,
 
 (define csp-callvalued-on
   '(on ((trigger i e))
-    (semi (semi (assign (ctx ((b))) (((! b))))
+    (semi (semi (assign (ctx ((b))) (ctx (((! b)))))
                 (context-active
                   ((ctx ((b))) c (call g (arguments b)))
                   (semi (assign-active
                           ((ctx ((b) c)) r' (call g (arguments c)))
-                          ((r') c))
+                          (ctx ((r') c)))
                         (if (ctx ((b) c))
                           (expression c)
                           (action (trigger i f))
@@ -1039,7 +1039,7 @@ semi_(context_(\\ ((b),(stack')) @ true,
           (csp-transform callvalued-ast csp-callvalued-on)
           ;; via:
          "i?x:{e} ->
-semi_(semi_(assign_(\\ ((b),(stack')) @ ((not (b)),(stack'))),
+semi_(semi_(assign_(\\ ((b),(stack')) @ ((not b),(stack'))),
 context_active_(\\ P',V' @ g (P',V',\\ ((b),(stack')) @ (b)),
 semi_(assign_active_(\\ P',V' @ g (P',V',\\ ((b),((stack',c))) @ (c)),
 \\ (((b),((stack',c)))),r' @ ((r'),((stack',c)))),
@@ -1084,7 +1084,7 @@ semi_(assign_active_(\\ P',V' @ g (P',V',\\ ((b),((stack',c))) @ (c)),
 
 (define csp-callvalued-on-deep
   '(on ((trigger i e))
-    (semi (semi (assign (ctx ((b))) (((! b))))
+    (semi (semi (assign (ctx ((b))) (ctx (((! b)))))
                 (context-active
                   ((ctx ((b))) c (call g (arguments b)))
                   (context-active
@@ -1184,7 +1184,7 @@ context_active_(sendrecv_(u,what),
   '(on ((trigger i done))
     (semi (assign-active
             ((ctx ((s b c))) r' (action (trigger j h)))
-            ((s b c)))
+            (ctx ((s b c))))
           (eventreturn))
     (the-end (s b c))))
 

@@ -37,45 +37,45 @@ channel illegal
 channel I,i: {a,b,c,d,return}
 
 I_(IG) = let
-toggle = \P',V' @ semi_(\P',((f),(stack')) @ ifthenelse_(f,
-(\P',V' @ I!c -> P'(V')),
-(\P',V' @ P'(V'))
+toggle = \ P',V' @ semi_(\ P',((f),(stack')) @ ifthenelse_(f,
+(\ P',V' @ I!c -> P'(V')),
+(\ P',V' @ P'(V'))
 )(P',((f),(stack'))),
-assign_(\ ((f),(stack')) @ ((not (f)),(stack'))))(P',V')
+assign_(\ ((f),(stack')) @ ((not f),(stack'))))(P',V')
 
 I__(((f),stack')) =
 (true) & (
 I?x:{a} ->
 semi_(callvoid_(toggle),
-(\P',V' @ I.return -> P'(V')))(\V' @ I__(V'),((f),(stack')))
+(\ P',V' @ I.return -> P'(V')))(\ V' @ I__(V'),((f),(stack')))
   []
   I?x:{b} ->
 semi_(semi_(callvoid_(toggle),
 semi_(callvoid_(toggle),
-(\P',V' @ I!d -> P'(V')))),
-(\P',V' @ I.return -> P'(V')))(\V' @ I__(V'),((f),(stack'))))
+(\ P',V' @ I!d -> P'(V')))),
+(\ P',V' @ I.return -> P'(V')))(\ V' @ I__(V'),((f),(stack'))))
 
 within I__(((false),<>)) 
 
 
 function_(IIG,IG) = let
-toggle = \P',V' @ semi_(\P',((f),(stack')) @ ifthenelse_(f,
-(\P',V' @ i!c -> P'(V')),
-(\P',V' @ P'(V'))
+toggle = \ P',V' @ semi_(\ P',((f),(stack')) @ ifthenelse_(f,
+(\ P',V' @ i!c -> P'(V')),
+(\ P',V' @ P'(V'))
 )(P',((f),(stack'))),
-assign_(\ ((f),(stack')) @ ((not (f)),(stack'))))(P',V')
+assign_(\ ((f),(stack')) @ ((not f),(stack'))))(P',V')
 
 function__(((f),stack')) = transition_begin -> (
 (true) & (
 i?x:{a} ->
 semi_(callvoid_(toggle),
-(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> function__(V'),((f),(stack')))
+(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> function__(V'),((f),(stack')))
   []
   i?x:{b} ->
 semi_(semi_(callvoid_(toggle),
 semi_(callvoid_(toggle),
-(\P',V' @ i!d -> P'(V')))),
-(\P',V' @ i.return -> P'(V')))(\V' @ transition_end -> function__(V'),((f),(stack'))))
+(\ P',V' @ i!d -> P'(V')))),
+(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> function__(V'),((f),(stack'))))
 )
 within function__(((false),<>))
 

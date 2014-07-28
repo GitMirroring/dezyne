@@ -42,10 +42,10 @@ I_(IG) = let
 I__(((dummy),stack')) =
 (true) & (
 I?x:{done} ->
-(\P',V' @ I.Status_Yes -> P'(V'))(\V' @ I__(V'),((dummy),(stack')))
+(\ P',V' @ I.Status_Yes -> P'(V'))(\ V' @ I__(V'),((dummy),(stack')))
   []
   I?x:{done} ->
-(\P',V' @ I.Status_No -> P'(V'))(\V' @ I__(V'),((dummy),(stack'))))
+(\ P',V' @ I.Status_No -> P'(V'))(\ V' @ I__(V'),((dummy),(stack'))))
 
 within I__(((false),<>)) 
 
@@ -54,10 +54,10 @@ U_(IG) = let
 U__(((dummy),stack')) =
 (true) & (
 U?x:{what} ->
-(\P',V' @ U.Status_Ok -> P'(V'))(\V' @ U__(V'),((dummy),(stack')))
+(\ P',V' @ U.Status_Ok -> P'(V'))(\ V' @ U__(V'),((dummy),(stack')))
   []
   U?x:{what} ->
-(\P',V' @ U.Status_Nok -> P'(V'))(\V' @ U__(V'),((dummy),(stack'))))
+(\ P',V' @ U.Status_Nok -> P'(V'))(\ V' @ U__(V'),((dummy),(stack'))))
 
 within U__(((false),<>)) 
 
@@ -70,10 +70,10 @@ i?x:{done} ->
 context_active_(sendrecv_(u,what),
 semi_(assign_active_(sendrecv_(u,what),
 \ (((dummy),((stack',s)))),r' @ ((dummy),((stack',r')))),
-\P',((dummy),((stack',s))) @ ifthenelse_(s == Status_Ok,
-(\P',V' @ i.Status_Yes -> P'(V')),
-(\P',V' @ i.Status_No -> P'(V'))
-)(P',((dummy),((stack',s))))))(\V' @ transition_end -> Reply2__(V'),((dummy),(stack'))))
+\ P',((dummy),((stack',s))) @ ifthenelse_(s == Status_Ok,
+(\ P',V' @ i.Status_Yes -> P'(V')),
+(\ P',V' @ i.Status_No -> P'(V'))
+)(P',((dummy),((stack',s))))))(\ V' @ transition_end -> Reply2__(V'),((dummy),(stack'))))
 )
 within Reply2__(((false),<>))
 
