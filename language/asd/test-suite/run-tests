@@ -246,7 +246,7 @@
             (if (opt 'coverage #f)
                 (let-values (((coverage-data _)
                               (with-code-coverage (the-vm) run-tests)))
-                  (let ((out (open-output-file "giaig.info")))
+                  (let ((out (open-output-file "gaiag.info")))
                     (coverage-data->lcov coverage-data out)
                     (close out)))
                 (run-tests)))
