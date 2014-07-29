@@ -29,7 +29,7 @@
 (pass-if "normstate-first-dummy-test"
 	 #t)
 
-(pass-if "normstate-101" ;; FIXME: on a missing
+(pass-if "normstate-101"
   (pretty-noisy-equal?
    (normstate
     (ast:interface (asd->ast
@@ -38,7 +38,7 @@
    '(interface i (types) (events)
                (behaviour #f (types) (variables) (functions)
                           (compound
-                           (guard true (on (a) (compound))))))))
+                           (guard true (on (a) (skip))))))))
 
 (pass-if "normstate-102"
   (pretty-noisy-equal?
@@ -54,7 +54,7 @@
                                   (on (a)
                                       (action b))))))))
 
-(pass-if "normstate-aggregate-passive"
+(pass-if "normstate-aggregate-guard-passive"
   (pretty-noisy-equal?
    (normstate
     (ast:interface (asd->ast
@@ -68,14 +68,14 @@
                                   (on (a b c)
                                       (action d))))))))
 
-(pass-if "normstate-aggregate-active"
+(pass-if "normstate-aggregate-guard-active"
   (pretty-noisy-equal?
    (normstate
     (ast:interface (asd->ast
       #{
         interface i { behaviour { on a: [true] d;
-                                     on b: [true] d;
-                                     on c: [true] d;
+                                     on b: [true] e;
+                                     on c: [true] f;
                                      } } #})))
    '(interface i (types) (events)
                (behaviour #f (types) (variables) (functions)
@@ -83,8 +83,8 @@
                            (guard true
                                   (compound
                                    (on (a) (action d))
-                                   (on (b) (action d))
-                                   (on (c) (action d)))))))))
+                                   (on (b) (action e))
+                                   (on (c) (action f)))))))))
 
 (pass-if "normstate-function-call"
   (pretty-noisy-equal?
@@ -99,8 +99,117 @@
                           (variables) 
                           (functions
                            (function foo ((type void))
-                                     (compound (if true (compound)))))
+                                     (compound (if true (skip)))))
                           (compound
                            (guard true
                                   (on (a b c)
                                       (action d))))))))
+
+
+(pass-if "normstate-split-on-passive"
+  (pretty-noisy-equal?
+   (normstate
+    (ast:interface (asd->ast
+      #{
+        interface i { behaviour { on a,b,c: [true] d;
+                                     } } #})))
+   '(interface i (types) (events)
+               (behaviour #f (types) (variables) (functions)
+                          (compound
+                           (guard true
+                                  (on (a b c)
+                                      (action d))))))))
+
+(pass-if "normstate-split-on-active"
+  (pretty-noisy-equal?
+   (normstate
+    (ast:component (asd->ast
+      #{
+        component c { behaviour { on i.a,i.b,j.a: [true] d;
+                                     on j.b: [true] e;
+                                     } } #})))
+   '(component c (ports)
+               (behaviour #f (types) (variables) (functions)
+                          (compound
+                           (guard true
+                                  (compound
+                                   (on ((trigger i a) (trigger i b))
+                                       (action d))
+                                   (on ((trigger j a))
+                                       (action d))
+                                   (on ((trigger j b))
+                                       (action e)))))))))
+
+(pass-if "normstate-aggregate-on-interface-passive"
+  (pretty-noisy-equal?
+   (normstate
+    (ast:interface (asd->ast
+      #{
+        interface i { behaviour { on a,b,c: [true] d;
+                                     } } #})))
+   '(interface i (types) (events)
+               (behaviour #f (types) (variables) (functions)
+                          (compound
+                           (guard true
+                                  (on (a b c) (action d))))))))
+
+(pass-if "normstate-aggregate-on-interface-active"
+  (pretty-noisy-equal?
+   (normstate
+    (ast:interface (asd->ast
+      #{
+        interface i { behaviour { on a: [true] d;
+                                  on b: [true] d;
+                                  on c: [true] d;
+                                     } } #})))
+   '(interface i (types) (events)
+               (behaviour #f (types) (variables) (functions)
+                          (compound
+                           (guard true
+                                  (compound
+                                   (on (a b c) (action d)))))))))
+
+;; not modifying the input where it is already fine,
+;; helps retaining more location information in AST.
+(pass-if "normstate-aggregate-on-component-passive"
+  (pretty-noisy-equal?
+   (normstate
+    (ast:component (asd->ast
+      #{
+        component c { behaviour { on i.a,i.b: [true] d;
+                                  on j.a:     [true] d;
+                                  on j.b:     [true] e;
+                                     } } #})))
+   '(component c (ports)
+               (behaviour #f (types) (variables) (functions)
+                          (compound
+                           (guard true
+                                  (compound
+                                   (on ((trigger i a) (trigger i b))
+                                       (action d))
+                                   (on ((trigger j a))
+                                       (action d))
+                                   (on ((trigger j b))
+                                       (action e)))))))))
+
+(pass-if "normstate-aggregate-on-component-active"
+  (pretty-noisy-equal?
+   (normstate
+    (ast:component (asd->ast
+      #{
+        component c { behaviour { on i.a: [true] d;
+                                  on i.b: [true] d;
+                                  on j.a: [true] d;
+                                  on j.b: [true] e;
+                                     } } #})))
+   '(component c (ports)
+               (behaviour #f (types) (variables) (functions)
+                          (compound
+                           (guard true
+                                  (compound
+                                   (on ((trigger i a) (trigger i b))
+                                       (action d))
+                                   (on ((trigger j a))
+                                       (action d))
+                                   (on ((trigger j b))
+                                       (action e)))))))))

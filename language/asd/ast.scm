@@ -116,7 +116,7 @@
 ;;      ==>
 ;;   SUB-AST
 ;;      (trigger  console      arm)
-;;       ^class  ^port-name   ^event-name
+;;       ^class  ^port-name   ^event-name  ;; FIXME: port / event?
 ;;
 ;;
 ;;   (ast:types (ast:interface ast))
@@ -221,7 +221,7 @@
            functions
            value?
            guard?
-           guard-equals?
+           guard-equal?
            in?
            instance
            instance?
@@ -445,7 +445,7 @@
 
 (define (event ast)
   (match ast
-    ((? action?) (cadr ast))
+    ((? action?) (cadr ast)) ;; FIXME: event-name?
     (_ (throw 'match-error  (format #f "~a:event: no match: ~a\n" (current-source-location) ast)))))
 
 (define (parameters ast)
@@ -537,7 +537,7 @@
   (match identifier
     (#f (match ast
           ((or (? component?) (? system?)) (assoc 'provides (ports ast)))
-          ((? action?) (caddr ast))
+          ((? action?) (caddr ast)) ;; FIXME: port-name
           (_ (throw 'match-error  (format #f "~a:port: no match: ~a\n" (current-source-location) ast)))))
     ((? symbol?)
      (find (lambda (p) (eq? (name p) identifier))
@@ -700,7 +700,7 @@
 (define (provides? ast) (eq? (direction ast) 'provides))
 (define (requires? ast) (eq? (direction ast) 'requires))
 
-(define (guard-equals? lhs rhs) (equal? (expression lhs) (expression rhs)))
+(define (guard-equal? lhs rhs) (equal? (expression lhs) (expression rhs)))
 
 (define (typed? ast)
   (match ast
