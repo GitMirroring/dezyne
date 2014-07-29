@@ -1,0 +1,252 @@
+-- drop_one_local: V => V 
+drop_one_local_((M', (L', L0'))) = (M', L')
+
+-- send_: (c: channel, e:event) => (P,V)->Proc
+send_(c',e') = \P',V' @ c'!e' -> P'(V')
+-- skip_: () => (P,V)->Proc
+skip_ = \P',V' @ P'(V')
+-- sendrecv_: (c: channel, e:event) => (P,V)->Proc
+sendrecv_(c',e') = \P',V' @ c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P',V')
+-- callvoid_: (B': (P,V)->Proc) => (P,V)->Proc
+callvoid_(B') = \P',V' @ B'(P', V')
+-- callvoid_args_: (B': (P,V)->Proc, F': V'->V') => (P,V)->Proc
+callvoid_args_(B',F') = \P',V' @ B'(P', V', F')
+-- assign_: (F': V -> V) => (P,V) -> Proc
+assign_(F') = \ P', V' @ P'(F'(V'))
+-- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
+assign_active_(C', A') = \P',V' @ C'(\((M', r'),L') @ P'(A'((M',L'),r')), V') 
+-- returnvalue_: (F: V->val) => (P,V)->Proc
+returnvalue_(F') = \P',(M',L') @ P'(((M',  F'((M', L'))), L'))
+-- the_end_: P => V->Proc
+the_end_(P') = \V' @ transition_end -> P'(V')
+
+-- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
+semi_(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
+-- ifthenelse: (E': val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
+ifthenelse_(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')   
+-- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
+context_(F', S') = \ P', (M', L') @ S'((\V2' @ P'(drop_one_local_(V2'))), (M', (L', F'((M', L')))))
+-- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
+context_active_(C', S') = \P',V' @ C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
+                                                     
+datatype event_enumeration_alphabet =
+State_Calibrated | State_Error | State_Initialized | State_Uninitialized | calibrate | initialize | perform_action1 | perform_action2 | perform_actions | recover | result_t_NOK | result_t_OK | return
+
+channel illegal
+
+channel IComp,client: {initialize,initialize,perform_actions,perform_actions,recover,recover,result_t_OK,result_t_NOK,return}
+channel IDevice,device_A: {calibrate,calibrate,initialize,initialize,perform_action1,perform_action1,perform_action2,perform_action2,result_t_OK,result_t_NOK,return}
+
+IComp_(IG) = let
+
+IComp__(((s),stack')) =
+(s == State_Uninitialized and true) & (
+IComp?x:{initialize} ->
+semi_((\ P',V' @ IComp.result_t_OK -> P'(V')),
+assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IComp__(V'),((s),(stack')))
+  []
+  IComp?x:{initialize} ->
+semi_((\ P',V' @ IComp.result_t_NOK -> P'(V')),
+assign_(\ ((s),(stack')) @ ((State_Uninitialized),(stack'))))(\ V' @ IComp__(V'),((s),(stack'))))
+[]
+(s == State_Uninitialized) & (
+IG & IComp?x:{recover,perform_actions} ->
+illegal -> STOP)
+[]
+(s == State_Initialized and true) & (
+IComp?x:{perform_actions} ->
+(\ P',V' @ IComp.result_t_OK -> P'(V'))(\ V' @ IComp__(V'),((s),(stack')))
+  []
+  IComp?x:{perform_actions} ->
+semi_((\ P',V' @ IComp.result_t_NOK -> P'(V')),
+assign_(\ ((s),(stack')) @ ((State_Error),(stack'))))(\ V' @ IComp__(V'),((s),(stack'))))
+[]
+(s == State_Initialized) & (
+IG & IComp?x:{initialize,recover} ->
+illegal -> STOP)
+[]
+(s == State_Error and true) & (
+IComp?x:{recover} ->
+semi_((\ P',V' @ IComp.result_t_OK -> P'(V')),
+assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IComp__(V'),((s),(stack')))
+  []
+  IComp?x:{recover} ->
+(\ P',V' @ IComp.result_t_NOK -> P'(V'))(\ V' @ IComp__(V'),((s),(stack'))))
+[]
+(s == State_Error) & (
+IG & IComp?x:{initialize,perform_actions} ->
+illegal -> STOP)
+
+within IComp__(((State_Uninitialized),<>)) 
+
+IDevice_(IG) = let
+
+IDevice__(((s),stack')) =
+(s == State_Uninitialized and true) & (
+IDevice?x:{initialize} ->
+semi_((\ P',V' @ IDevice.result_t_OK -> P'(V')),
+assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IDevice__(V'),((s),(stack')))
+  []
+  IDevice?x:{initialize} ->
+semi_((\ P',V' @ IDevice.result_t_NOK -> P'(V')),
+assign_(\ ((s),(stack')) @ ((State_Uninitialized),(stack'))))(\ V' @ IDevice__(V'),((s),(stack'))))
+[]
+(s == State_Uninitialized) & (
+IG & IDevice?x:{calibrate,perform_action1,perform_action2} ->
+illegal -> STOP)
+[]
+(s == State_Initialized and true) & (
+IDevice?x:{calibrate} ->
+semi_((\ P',V' @ IDevice.result_t_OK -> P'(V')),
+assign_(\ ((s),(stack')) @ ((State_Calibrated),(stack'))))(\ V' @ IDevice__(V'),((s),(stack')))
+  []
+  IDevice?x:{calibrate} ->
+semi_((\ P',V' @ IDevice.result_t_NOK -> P'(V')),
+assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IDevice__(V'),((s),(stack'))))
+[]
+(s == State_Initialized) & (
+IDevice?x:{initialize} ->
+(\ P',V' @ IDevice.result_t_OK -> P'(V'))(\ V' @ IDevice__(V'),((s),(stack')))
+  []
+  IG & IDevice?x:{perform_action1,perform_action2} ->
+illegal -> STOP)
+[]
+(s == State_Calibrated and true) & (
+IDevice?x:{perform_action1,perform_action2} ->
+semi_((\ P',V' @ IDevice.result_t_OK -> P'(V')),
+assign_(\ ((s),(stack')) @ ((State_Calibrated),(stack'))))(\ V' @ IDevice__(V'),((s),(stack')))
+  []
+  IDevice?x:{perform_action1,perform_action2} ->
+semi_((\ P',V' @ IDevice.result_t_NOK -> P'(V')),
+assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IDevice__(V'),((s),(stack'))))
+[]
+(s == State_Calibrated) & (
+IDevice?x:{calibrate} ->
+(\ P',V' @ IDevice.result_t_OK -> P'(V'))(\ V' @ IDevice__(V'),((s),(stack')))
+  []
+  IG & IDevice?x:{initialize} ->
+illegal -> STOP)
+
+within IDevice__(((State_Uninitialized),<>)) 
+
+
+Comp_(IIG,IG) = let
+
+Comp__(((s),stack')) = transition_begin -> (
+(s == State_Uninitialized) & (
+client?x:{initialize} ->
+context_active_(sendrecv_(device_A,initialize),
+semi_(\ P',((s),((stack',res))) @ ifthenelse_(res == result_t_OK,
+assign_active_(sendrecv_(device_A,calibrate),
+\ (((s),((stack',res)))),r' @ ((s),((stack',r')))),
+(\ P',V' @ P'(V'))
+)(P',((s),((stack',res)))),
+\ P',((s),((stack',res))) @ ifthenelse_(res == result_t_OK,
+semi_(assign_(\ ((s),((stack',res))) @ ((State_Initialized),((stack',res)))),
+(\ P',V' @ client.result_t_OK -> P'(V'))),
+semi_(assign_(\ ((s),((stack',res))) @ ((State_Uninitialized),((stack',res)))),
+(\ P',V' @ client.result_t_NOK -> P'(V')))
+)(P',((s),((stack',res))))))(\ V' @ transition_end -> Comp__(V'),((s),(stack')))
+  []
+  IIG & client?x:{recover,perform_actions} ->
+illegal -> STOP)
+[]
+(s == State_Initialized) & (
+client?x:{perform_actions} ->
+context_active_(sendrecv_(device_A,perform_action1),
+semi_(\ P',((s),((stack',res))) @ ifthenelse_(res == result_t_OK,
+assign_active_(sendrecv_(device_A,perform_action2),
+\ (((s),((stack',res)))),r' @ ((s),((stack',r')))),
+(\ P',V' @ P'(V'))
+)(P',((s),((stack',res)))),
+\ P',((s),((stack',res))) @ ifthenelse_(res == result_t_OK,
+semi_(assign_(\ ((s),((stack',res))) @ ((State_Initialized),((stack',res)))),
+(\ P',V' @ client.result_t_OK -> P'(V'))),
+semi_(assign_(\ ((s),((stack',res))) @ ((State_Error),((stack',res)))),
+(\ P',V' @ client.result_t_NOK -> P'(V')))
+)(P',((s),((stack',res))))))(\ V' @ transition_end -> Comp__(V'),((s),(stack')))
+  []
+  IIG & client?x:{initialize,recover} ->
+illegal -> STOP)
+[]
+(s == State_Error) & (
+client?x:{recover} ->
+context_active_(sendrecv_(device_A,calibrate),
+\ P',((s),((stack',res))) @ ifthenelse_(res == result_t_OK,
+semi_(assign_(\ ((s),((stack',res))) @ ((State_Initialized),((stack',res)))),
+(\ P',V' @ client.result_t_OK -> P'(V'))),
+semi_(assign_(\ ((s),((stack',res))) @ ((State_Error),((stack',res)))),
+(\ P',V' @ client.result_t_NOK -> P'(V')))
+)(P',((s),((stack',res)))))(\ V' @ transition_end -> Comp__(V'),((s),(stack')))
+  []
+  IIG & client?x:{initialize,perform_actions} ->
+illegal -> STOP)
+)
+within Comp__(((State_Uninitialized),<>))
+
+channel extensions_over_empty_channels_is_undefined
+channel IN,OUT : {extensions_over_empty_channels_is_undefined}
+
+SINGLETHREADED = true
+
+channel transition_begin, transition_end
+
+channel reorder_in,reorder_out : {client.result_t_OK,client.result_t_NOK,client.return}
+
+SEMANTICS(in',out',client',modeling') = let
+Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
+       []
+       length(s') > 0 & out'!head(s') -> Q'(tail(s'))
+       []
+       length(s') == card({|in'|}) & in'?x' -> illegal -> STOP
+
+R'(A') = ([] x' : A' @ x' -> R'(A'))
+       []
+       reorder_in?x' -> reorder_out!x' -> R'(A')
+
+S'    = let
+
+Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
+
+Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!head(r') -> Idle(0))
+            []
+            c' > 0 & transition_end -> transition_begin -> Busy(c',r')
+            []
+            c' < card({|in'|}) & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            []
+            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            []
+            r' == <> & reorder_in?x' -> Busy(c',<x'>)
+            []
+            r' != <> & reorder_in?x' -> illegal -> STOP
+
+within Idle(0)
+
+within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
+
+Comp__Component(IIG) = let
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+Exclude = {client.result_t_OK,client.result_t_NOK,client.return}
+ClientCalls = {client.initialize,client.recover,client.perform_actions}
+UsedModeling = {}
+within compress((Comp_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,client,device_A|},Exclude)|]
+(((IDevice_(true) [[IDevice.x<-device_A.x|x<-extensions(IDevice)]]
+) [[x<-IN.x|x<-extensions(IN)]]
+[|union({|IN|},UsedModeling)|]
+SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
+assert Comp__Component(false) :[deadlock free]
+assert Comp_(true,true) :[deterministic]
+assert STOP [T= Comp__Component(false) \ diff(Events,{illegal})
+assert IComp_(true) [[IComp.x<-client.x|x<-extensions(IComp)]] \ {} [FD= Comp__Component(true) \ diff(Events,{|illegal,client|}) \ {}
+assert IComp_(false) :[deadlock free]
+
+assert IComp_(true) :[livelock free]
+
+assert IDevice_(false) :[deadlock free]
+
+assert IDevice_(true) :[livelock free]
+
