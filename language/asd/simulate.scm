@@ -36,6 +36,7 @@
 
   :export (ast->a
            explore-space
+           mangle-trace
            walk-trail
            ->symbol
            var))

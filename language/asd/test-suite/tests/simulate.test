@@ -24,6 +24,7 @@
 
   :use-module (language asd ast:)
   :use-module (language asd reader)
+  :use-module (language asd pretty-print)
   :use-module (language asd simulate))
 
 (pass-if "simulator-first-dummy-test"
@@ -83,3 +84,28 @@
             (guard (! t) (action b))))
        (guard (! t) (action b))
        (action b)))))
+
+(pass-if "walk-trail-arguments"
+  (let* ((arguments-ast (read-ast 'examples/arguments.asd))
+         (model (ast:component arguments-ast))
+         (trail '(i.e i.e i.e))
+         (foobar (set-program-arguments '("gaiag" "--json" "foobar")))
+         (arguments-trace (with-output-to-string (lambda () (pretty-print (mangle-trace (walk-trail model trail))))))
+         (baseline-trace 'baseline-trace))
+    #t))
+
+(pass-if "walk-trail-pauls"
+  (let* ((pauls-ast (read-ast 'examples/pauls.asd))
+         (model (ast:component pauls-ast))
+         (trail '(client.initialize result_t.OK result_t.OK client.perform_actions result_t.OK result_t.OK client.perform_actions result_t.NOK client.recover result_t.OK client.perform_actions))
+         (pauls-trace (walk-trail model trail))
+         (baseline-trace 'baseline-trace))
+    #t))
+
+(pass-if "explore-space-pauls"
+  (let* ((pauls-ast (read-ast 'examples/pauls.asd))
+         (model (ast:component pauls-ast))
+         (pauls-space (explore-space model))
+         (baseline-space 'baseline-space))
+    #t))
+
