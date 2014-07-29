@@ -54,6 +54,13 @@
     ((? ast:signature?) (->string (car src)))
     (_ (format #f "~a:->string:no match:~a\n" (current-source-location) src))))
 
+(define (expression->string src)
+  (let ((unparen (lambda (s) (if (and (string-prefix? "(" s)
+                                      (string-postfix? ")" s))
+                                 (string-drop (string-drop-right s 1) 1)
+                                 s))))
+    (unparen (->string src))))
+
 (define (asd-template? x) (parameterize ((templates asd-templates)) (template? x)))
 
 (define (asd-template->string . x)
@@ -96,7 +103,7 @@
               (field . ,identity)))
     (on . ((trigger . ,comma-space-join)
            (statement . ,->string)))
-    (guard . ((expression . ,->string)
+    (guard . ((expression . ,expression->string)
               (statement . ,->string)))
     (assign . ((identifier . ,identity)
                (expression . ,->string)))

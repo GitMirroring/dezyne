@@ -62,7 +62,8 @@
            pretty-string
            stderr
            stdout
-           string-sub
+           string-postfix?
+           string-sub ;; FIXME: look at guile-lib string-substitute sugar
            symbol<
            symbol-null?
            symbol-capitalize
@@ -210,6 +211,11 @@
 
 (define (string-sub re sub string)
   (regexp-substitute/global #f re string 'pre sub 'post))
+
+(define (string-postfix? postfix string)
+  (and (<= (string-length postfix) (string-length string))
+       (and (equal? postfix (string-take-right string (string-length postfix)))
+            postfix)))
 
 (define* (diff a b :optional (options "-u") (virtual-name-a "a") (virtual-name-b "b"))
   (let ((file-name-a (fifo a))
