@@ -24,11 +24,16 @@
 
 SHELL := /bin/bash
 DEPTH = ../..
+TOPDIR = $(shell cd $(DEPTH) && pwd)
 diff = diff -uw -I '^ *$$' -I '^ *//'
 sed = sed -e 's/^-gen/gen/' -re 's/((cppbase.cpp|.hh.scm|.cc.scm):[0-9]*):/\1:warning:/'
 BUILD = build
 asdgen = ASD_PREFIX=$(DEPTH)/.. $(DEPTH)/../$(BUILD)/asdgenerator
 FDR3_PREFIX=/usr/local/
+GUILE = guile
+SCRIPTS = coverage gaiag json2scm scm2json 
+SCM_SOURCES = $(shell git ls-files *.scm | grep -v 'templates')
+
 -include .local.make
 
 default: all
@@ -39,7 +44,12 @@ tags:
 	etags $(shell git ls-files)
 
 compile:
-	guile -L ../.. spec.scm
+	$(GUILE) -L $(TOPDIR) spec.scm
+
+compile-all: clean
+	$(GUILE) -L $(TOPDIR) spec.scm
+	for i in $(SCRIPTS); do $(GUILE) -L $(PWD) -L $(TOPDIR) $$i; done
+	for i in $(SCM_SOURCES); do $(GUILE) -L $(PWD) -L $(TOPDIR) $$i; done
 
 clean:
 	rm -rf ~/.cache/guile out baseline
@@ -54,15 +64,15 @@ coverage: clean
 	$(MAKE) GUILE='guile --debug' compile-all
 	GUILE='guile --debug --no-auto-compile' ./test.sh --coverage </dev/null
 	lcov -r gaiag.info /usr/share\* $(TOPDIR)/system/base\* -o gaiag.lcov/gaiag-test.info
-#	./coverage gaiag -l csp examples/Alarm.asd
-#	sed -i s@:[.]/@$(PWD)/@ gaiag.info
-#	lcov -r gaiag.info /usr/share\* $(TOPDIR)/system/base\* -o gaiag.lcov/gaiag-csp.info
-#	./coverage gaiag -l c++ examples/Alarm.asd
-#	sed -i s@:[.]/@$(PWD)/@ gaiag.info
-#	lcov -r gaiag.info /usr/share\* $(TOPDIR)/system/base\* -o gaiag.lcov/gaiag-c++.info
+	./coverage gaiag -l csp examples/Alarm.asd
+	sed -i s@:[.]/@$(PWD)/@ gaiag.info
+	lcov -r gaiag.info /usr/share\* $(TOPDIR)/system/base\* -o gaiag.lcov/gaiag-csp.info
+	./coverage gaiag -l c++ examples/Alarm.asd
+	sed -i s@:[.]/@$(PWD)/@ gaiag.info
+	lcov -r gaiag.info /usr/share\* $(TOPDIR)/system/base\* -o gaiag.lcov/gaiag-c++.info
 	genhtml --output-dir=gaiag.lcov --prefix=$(shell cd ../.. && pwd) gaiag.lcov/*info
 	rm -f scm
-	make clean # junk debug cache
+#	make clean # junk debug cache
 
 dummy:
 
@@ -81,10 +91,6 @@ baseline: dummy
 	cd baseline && $(asdgen) -l cpp $(DEPTH)/../examples/alarmsystem.asd
 	cd baseline && $(asdgen) -l cpp webdemo.asd
 	cd baseline && $(asdgen) -l csp Alarm.asd
-
-test: check
-check: compile
-	./test.sh </dev/null
 
 ast: compile
 	./gaiag examples/interface-enums.asd

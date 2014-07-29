@@ -1,6 +1,7 @@
 #! /bin/sh
 # -*- scheme -*-
-exec guile -L $(dirname $0)/../.. -L $(dirname $0) -e main -s $0 "$@"
+guile --debug -L $(dirname $0) -L $(cd $(dirname $0)/../.. && pwd) $(dirname $0)/spec.scm
+exec guile --debug -L $(dirname $0) -L $(cd $(dirname $0)/../.. && pwd) -e main -s $0 "$@"
 !#
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
@@ -22,28 +23,25 @@ exec guile -L $(dirname $0)/../.. -L $(dirname $0) -e main -s $0 "$@"
 (read-set! keywords 'prefix)
 
 (define (main . args)
-  (eval '(main (command-line)) (resolve-module '(language asd scm2json))))
+  (eval '(main (command-line)) (resolve-module '(language asd coverage))))
 
-(define-module (language asd scm2json)
-  :use-module (system repl error-handling)
+(define-module (language asd coverage)
   :use-module (ice-9 getopt-long)
 
-  :use-module (srfi srfi-10)
+  :use-module (system vm coverage)
+  :use-module (system vm vm)
 
-  :use-module (json)
-  :use-module (language asd hash)
   :use-module (language asd misc))
 
 (define (parse-opts args)
   (let* ((option-spec
-	  '((debug (single-char #\d))
-            (help (single-char #\h))
+	  '((help (single-char #\h))
 	    (version (single-char #\v))))
-	 (options (getopt-long (command-line) option-spec
-                               :stop-at-first-non-option #t))
+	 (options (getopt-long args option-spec
+		   :stop-at-first-non-option #t))
 	 (help? (option-ref options 'help #f))
 	 (files (option-ref options '() '()))
-	 (usage? (and (not help?) (>1 (length files))))
+	 (usage? (and (not help?) (null? files)))
 	 (version? (option-ref options 'version #f)))
     (or
      (and version?
@@ -51,29 +49,30 @@ exec guile -L $(dirname $0)/../.. -L $(dirname $0) -e main -s $0 "$@"
 	  (exit 0))
       (and (or help? usage?)
 	   ((or (and usage? stderr) stdout) "\
-Usage: scm2json [OPTION]... FILE
-Convert scheme-AST in FILE or standard input, to JSON on standard output
-  -d, --debug          run with debugging
+Usage: coverage [OPTION]... COMMAND
   -h, --help           display this help
   -v, --version        display version
 
 Examples:
-  echo \"(console.arm console.disarm sensor.disabled)\" | ./scm2json
-  ./gaiag -l simulate -t \"$(cat examples/Alarm-trail.scm)\" examples/Alarm.asd | ./scm2json
+  ./coverage gaiag examples/Alarm.asd
+  ./coverage gaiag -l c++ examples/Alarm.asd
+  ./coverage gaiag -l csp examples/Alarm.asd
 ")
 	   (exit (or (and usage? 2) 0)))
      options)))
 
-(define (->json files)
-  (display (scm->json-string
-            (read
-             (if (null? files) 
-                 (current-input-port)
-                 (open-input-file (car files))))))
-  (newline))
+(define (cover thunk file-name)
+  (call-with-values (lambda () (with-code-coverage (the-vm) thunk))
+    (lambda (data result)
+      (let ((port (open-output-file (->string file-name))))
+        (coverage-data->lcov data port)
+        (close port)))))
 
 (define (main args)
   (let* ((options (parse-opts args))
-         (debug? (option-ref options 'debug #f))
-	 (files (option-ref options '() '())))
-    (call-with-error-handling (lambda () (->json files)) :on-error (if debug? 'debug 'backtrace))))
+	 (command (option-ref options '() '()))
+         (script (string->symbol (car command)))
+         (module (resolve-module (list 'language 'asd script)))
+         (procedure (module-ref module 'main))
+         (args command))
+    (cover (lambda () (procedure args)) (list script '.info))))

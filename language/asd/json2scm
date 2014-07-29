@@ -1,6 +1,6 @@
 #! /bin/sh
 # -*- scheme -*-
-exec guile -L ../.. -L . -e main -s $0 "$@"
+exec guile -L $(dirname $0)/../.. -L $(dirname $0) -e main -s $0 "$@"
 !#
 
 (read-set! keywords 'prefix)
