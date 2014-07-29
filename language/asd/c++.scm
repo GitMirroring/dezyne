@@ -30,6 +30,7 @@
   :use-module (language asd misc)
   :use-module (language asd reader)
   :export (ast->
+           animate-template
            c++-module
            november
            traditional-interface
@@ -41,7 +42,6 @@
 
 (define (ast-> ast)
   (set! *ast* ast)
-  (module-define! (resolve-module '(language asd c++)) 'ast ast)
   (and=> (ast:interface ast) dump-interface)
   (and=> (ast:component ast) dump-component)
   (and=> (ast:system ast) dump-component)
@@ -53,19 +53,19 @@
   (let ((file-name (list (ast:name model) 'Interface.h)))
     (dump-output file-name 
                  (lambda ()
-                   ((animate-template 'interface.hh.scm) (c++-module ast))))))
+                   ((animate-template 'interface.hh.scm) (c++-module *ast*))))))
 
 (define (dump-component model)
   (let ((name (ast:name model)))
     (dump-output (list name 'Component.h)
                  (lambda ()
-                   ((animate-template 'component.hh.scm) (c++-module ast))))
+                   ((animate-template 'component.hh.scm) (c++-module *ast*))))
     (dump-output (list name 'Component.cpp)
                  (lambda ()
-                   ((animate-template 'component.cc.scm) (c++-module ast))))
+                   ((animate-template 'component.cc.scm) (c++-module *ast*))))
     (dump-output (list name '-c2.cc)
                  (lambda ()
-                   ((animate-template 'c2.cc.scm) (c++-module ast))))))
+                   ((animate-template 'c2.cc.scm) (c++-module *ast*))))))
 
 (use-modules (ice-9 pretty-print))
 (define (dump-instance instance)
@@ -78,7 +78,7 @@
              (model-ast (ast:make 'component type
                                   (list 'ports (ast:make 'provides type name))
                                   '(behaviour #f (compound)))))
-            (set! ast (list model-ast))
+            (set! *ast* (list model-ast))
             (stderr "new ast: for ~a\n" type)
             (pretty-print model-ast)
             (dump-component model-ast)))
@@ -130,7 +130,7 @@
 (define .ap (ap '(provides)))
 (define .cb (cb '(provides)))
 (define .parameters "/*parameters*/")
-(define .no-dpc "/*noDpc*/")
+(define .no-dpc "/*NoDpc*/")
 
 
 
@@ -191,14 +191,14 @@
   (let* ((trigger (car lst))
          (port-name (ast:port-name trigger))
          (event-name (ast:event-name trigger))
-         (interface (ast:port (ast:component ast) port-name))
+         (interface (ast:port (ast:component *ast*) port-name))
          (name (ast:type interface)))
     (statements->string (list "      context.Get" port-name name (callback interface) "()." event-name "();\n"))))
        
 (define (statement-illegal)
   (let ((port (statements.port))
         (event (statements.event)))
-    (statements->string (list  "    ASD_ILLEGAL(\"" (ast:name (ast:component ast)) "\", \"State\", \"" (ast:type port) (callback port) "\", \"" (ast:name event) "\");\n"))))
+    (statements->string (list  "    ASD_ILLEGAL(\"" (ast:name (ast:component *ast*)) "\", \"State\", \"" (ast:type port) (callback port) "\", \"" (ast:name event) "\");\n"))))
 
 (define (statement-last->string)
   (let ((port (statements.port))
@@ -217,13 +217,13 @@
   (let* ((if-clause (list "    if (predicate." expr ")"))
          (else-if-clause (list "    else if (predicate." expr ")"))
          (else-clause "    else")
-         (guards ((compose ast:body ast:statement ast:behaviour ast:component) ast))
+         (guards ((compose ast:body ast:statement ast:behaviour ast:component) *ast*))
          (first? (equal? (statements.src) (car guards)))
          (top? (member (statements.src) guards)))
     (statements->string (if (eq? expr 'otherwise) else-clause (if (or first? (not top?)) if-clause else-if-clause)))))
 
 (define (lhs->string lhs)
-  (let* ((state-variables ((compose ast:variables ast:behaviour ast:component) ast))
+  (let* ((state-variables ((compose ast:variables ast:behaviour ast:component) *ast*))
          (state? (find
                   (lambda (v) (eq? lhs (ast:name v)))
                   state-variables))
@@ -317,7 +317,7 @@
 
 (define (map-ports string ports)
   (map (lambda (port)
-         (let* ((module (c++-module ast)) 
+         (let* ((module (c++-module *ast*)) 
                 (model (module-ref module 'model))
                 (other (bind-other model port))
                 (.FIXME-other (ast:name (or other port)))
@@ -359,7 +359,7 @@
             (animate-string 
              string 
              (animate-module-populate
-              (c++-module ast) 
+              (c++-module *ast*) 
               instance
               `((instance . ,identity)
                 (.instance . ,ast:name)
@@ -369,7 +369,7 @@
 
 (define (map-binds string binds)
   (map (lambda (bind)
-         (let* ((module (c++-module ast)) 
+         (let* ((module (c++-module *ast*)) 
                 (model (module-ref module 'model))
                 (left (ast:left bind))
                 (left-instance (ast:instance model left))
@@ -441,12 +441,12 @@
                   (.name . ,ast:name)
                   (.event . ,ast:name)
                   (.statement . 
-                              ,(if (ast:component ast) 
+                              ,(if (ast:component *ast*) 
                                    (lambda (event)
                                      (parameterize ((statements.port port) 
                                                     (statements.event event))
                                        (statements->string
-                                        ((compose ast:body ast:statement ast:behaviour ast:component) ast))))
+                                        ((compose ast:body ast:statement ast:behaviour ast:component) *ast*))))
                                    ""))
                   (.return-interface-type . ,(lambda (event) (return-interface-type (ast:type port) event)))
                   (.return-context-get . ,(lambda (event) (return-context-get (ast:type port) event))))))))))
@@ -463,7 +463,7 @@
                 variable
                 `((.variable . ,ast:name)
                   (.state-type . ,ast:state-type)
-                  (.value . ,(lambda (variable) (variable-value->string (ast:name (ast:component ast)) variable)))))))))
+                  (.value . ,(lambda (variable) (variable-value->string (ast:name (ast:component *ast*)) variable)))))))))
        variables))
 
 (define (action port event) "enable")

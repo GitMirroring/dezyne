@@ -30,8 +30,6 @@ namespace #.component ImplScope
 #}  port (filter (ast:dir-matches? port) (ast:events port)))
 
   private:
-/*
-templates/component.cc.scm:29: here */
     #.port #.interface #.api Proxy& operator = (const #.port #.interface #.api Proxy& other);
     #.port #.interface #.api Proxy(const #.port #.interface #.api Proxy& other);
   };
@@ -53,7 +51,7 @@ templates/component.cc.scm:29: here */
 #(map-ports
 #{
 ##if 0
-    void Process#.type(Context& context, #.interface #.callback ::#.type stimulus);
+    void Process#.type(Context& context, #.interface #.callback ::#.type  stimulus);
 ##endif
 
 #(map-port-events 
@@ -74,7 +72,7 @@ templates/component.cc.scm:65: TODO function-definitions */
   };
   class State;
 #})
-  class Context: public asd_0::SingleThreadedContext#.no-dpc 
+  class Context: public asd_0::SingleThreadedContext#.no-dpc
   {
   public:
 #(map-ports
@@ -256,11 +254,11 @@ templates/component.cc.scm:65: TODO function-definitions */
 #{
   void Context::Set#.port (const boost::shared_ptr<#.interface #.callback >& cb)
   {
-    if (m_#.port #.interface #.callback && cb)
+    if (m_#.port #.interface #.callback  && cb)
     {
       ASD_ILLEGAL("#.component ", "", "#.interface #.callback ", "");
     }
-    m_#.port #.interface #.callback = cb;
+    m_#.port #.interface #.callback  = cb;
   }
   
   #.interface #.callback & Context::Get#.port #.interface #.callback () const
@@ -314,7 +312,7 @@ templates/component.cc.scm:65: TODO function-definitions */
   {
 #(string-if (ast:component? model)
 #{
-    *#.ap = m_#.port #.interface #.api Proxy;
+    *#.ap  = m_#.port #.interface #.api Proxy;
 #}
 #{
   #(string-if other #{
@@ -351,7 +349,7 @@ templates/component.cc.scm:65: TODO function-definitions */
   {
 #(string-if (ast:component? model)
 #{
-    *#.ap = m_#.port #.interface #.api Proxy;
+    *#.ap  = m_#.port #.interface #.api Proxy;
 #}
 #{
   #(string-if other #{

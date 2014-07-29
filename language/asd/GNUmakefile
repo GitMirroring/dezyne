@@ -64,15 +64,15 @@ coverage: clean
 	$(MAKE) GUILE='guile --debug' compile-all
 	GUILE='guile --debug --no-auto-compile' ./test.sh --coverage </dev/null
 	lcov -r gaiag.info /usr/share\* $(TOPDIR)/system/base\* -o gaiag.lcov/gaiag-test.info
-	./coverage gaiag -l csp examples/Alarm.asd
-	sed -i s@:[.]/@$(PWD)/@ gaiag.info
-	lcov -r gaiag.info /usr/share\* $(TOPDIR)/system/base\* -o gaiag.lcov/gaiag-csp.info
-	./coverage gaiag -l c++ examples/Alarm.asd
-	sed -i s@:[.]/@$(PWD)/@ gaiag.info
-	lcov -r gaiag.info /usr/share\* $(TOPDIR)/system/base\* -o gaiag.lcov/gaiag-c++.info
+#	./coverage gaiag -l csp examples/Alarm.asd
+#	sed -i s@:[.]/@$(PWD)/@ gaiag.info
+#	lcov -r gaiag.info /usr/share\* $(TOPDIR)/system/base\* -o gaiag.lcov/gaiag-csp.info
+#	./coverage gaiag -l c++ examples/Alarm.asd
+#	sed -i s@:[.]/@$(PWD)/@ gaiag.info
+#	lcov -r gaiag.info /usr/share\* $(TOPDIR)/system/base\* -o gaiag.lcov/gaiag-c++.info
 	genhtml --output-dir=gaiag.lcov --prefix=$(shell cd ../.. && pwd) gaiag.lcov/*info
 	rm -f scm
-#	make clean # junk debug cache
+	make clean # junk debug cache
 
 dummy:
 

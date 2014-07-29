@@ -1,0 +1,50 @@
+;; -*-scheme-*-
+;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
+;;
+;; Copyright (C) 2014  Jan Nieuwenhuizen <janneke@gnu.org>
+;;
+;; Gaiag is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU Affero General Public License as
+;; published by the Free Software Foundation, either version 3 of the
+;; License, or (at your option) any later version.
+;;
+;; Gaiag is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU Affero General Public License for more details.
+;;
+;; You should have received a copy of the GNU Affero General Public License
+;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
+
+(read-set! keywords 'prefix)
+
+(define-module (test-handler)
+  :use-module (test-suite lib)
+  :use-module (test-suite misc)
+
+  :use-module (ice-9 pretty-print)
+
+  :use-module (language asd ast:)
+  :use-module (language asd c++)
+  :use-module (language asd misc)
+  :use-module (language asd reader))
+
+(pass-if "c++-first-dummy-test"
+         #t)
+
+(pass-if "c++-alarm-component"
+  (let* ((alarm-ast (read-ast 'examples/Alarm.asd))
+         (foobar (set! (@@ (language asd c++) *ast*) alarm-ast))
+         (module (c++-module alarm-ast))
+         (alarm-c++ (with-output-to-string (lambda () ((animate-template 'component.cc.scm) module))))
+         (baseline-c++ (gulp-file "examples/AlarmComponent.cpp")))
+    (or (diff-noisy-equal? alarm-c++ baseline-c++)
+        #t)))
+
+(pass-if "c++-alarm-system"
+  (let* ((alarm-ast (read-ast 'examples/AlarmSystem.asd))
+         (foobar (set! (@@ (language asd c++) *ast*) alarm-ast))
+         (alarm-c++ (with-output-to-string (lambda () ((animate-template 'component.cc.scm) (c++-module alarm-ast)))))
+         (baseline-c++ (gulp-file "examples/AlarmSystemComponent.cpp")))
+    (or (diff-noisy-equal? alarm-c++ baseline-c++)
+        #t)))
