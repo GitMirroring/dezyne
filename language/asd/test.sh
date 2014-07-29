@@ -23,5 +23,5 @@
 
 #! /bin/sh
 # try: ./test.sh --debug
-${GUILE-guile} -L $(cd ../.. && pwd) scm
+${GUILE-guile} -L $(cd ../.. && pwd) spec.scm
 exec ${GUILE-guile} -L $(pwd) -L $(cd ../.. && pwd) -e main test-suite/run-tests "$@"
