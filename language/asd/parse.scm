@@ -374,5 +374,3 @@
   (match src
     (() (exit))
     (tree `(const ,tree))))
-
-(define ast-> (@ (language asd pretty) ast->))

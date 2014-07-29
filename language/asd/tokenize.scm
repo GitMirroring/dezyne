@@ -21,7 +21,6 @@
   #:use-module (language ecmascript tokenize)
   #:use-module (system base lalr)
 
-  #:use-module (language asd misc)
   #:export (make-tokenizer make-tokenizer/1))
 
 (define (syntax-error what loc form . args)
