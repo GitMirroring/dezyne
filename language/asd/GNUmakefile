@@ -60,16 +60,21 @@ check: compile
 
 coverage: clean
 	rm -rf gaiag.lcov && mkdir -p gaiag.lcov
+	cd gaiag.lcov && ln -s ../examples ../templates .
 	$(MAKE) GUILE='guile --debug' compile-all
 	GUILE='guile --debug --no-auto-compile' ./test.sh --coverage </dev/null
 	lcov -r gaiag.info /usr/share\* $(TOPDIR)/system/base\* -o gaiag.lcov/gaiag-test.info
-#	./coverage gaiag -l csp examples/Alarm.asd
-#	sed -i s@:[.]/@$(PWD)/@ gaiag.info
-#	lcov -r gaiag.info /usr/share\* $(TOPDIR)/system/base\* -o gaiag.lcov/gaiag-csp.info
-#	./coverage gaiag -l c++ examples/Alarm.asd
-#	sed -i s@:[.]/@$(PWD)/@ gaiag.info
-#	lcov -r gaiag.info /usr/share\* $(TOPDIR)/system/base\* -o gaiag.lcov/gaiag-c++.info
-	genhtml --output-dir=gaiag.lcov --prefix=$(shell cd ../.. && pwd) gaiag.lcov/*info
+
+	cd gaiag.lcov && ../coverage gaiag -l csp examples/Alarm.asd
+	sed -i s@:[.][.]/@$(PWD)/@ gaiag.lcov/gaiag.info
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* -o gaiag.lcov/gaiag-csp.info
+
+	cd gaiag.lcov && ../coverage gaiag -l c++ examples/Alarm.asd
+	sed -i s@:[.][.]/@$(PWD)/@ gaiag.lcov/gaiag.info
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* -o gaiag.lcov/gaiag-c++.info
+
+	for i in gaiag.lcov/gaiag-*.info; do lcov -a $$i -o gaiag.lcov/gaiag.info; done
+	genhtml --output-dir=gaiag.lcov --prefix=$(shell cd ../.. && pwd) gaiag.lcov/gaiag.info
 	make clean # junk debug cache
 
 dummy:

@@ -23,7 +23,7 @@ exec guile -L $(dirname $0) -L $(cd $(dirname $0)/../.. && pwd) -e main -s $0 "$
 (read-set! keywords 'prefix)
 
 (define (main . args)
-  (eval '(main (command-line)) (resolve-module '(language asd gaiag))))
+  (eval '(main-with-error-handling (command-line)) (resolve-module '(language asd gaiag))))
 
 (define-module (language asd gaiag)
   :use-module (ice-9 getopt-long)
@@ -101,7 +101,12 @@ Examples:
 
 (define (main args)
   (let* ((options (parse-opts args))
-         (debug? (option-ref options 'debug #f))
 	 (file-name (car (option-ref options '() '())))
          (language (string->symbol (option-ref options 'language "scheme"))))
-    (call-with-error-handling (lambda () (file->lang file-name language)) :on-error (if debug? 'debug 'backtrace))))
+    (file->lang file-name language)))
+
+(define (main-with-error-handling args)
+  (let* ((options (parse-opts args))
+         (debug? (option-ref options 'debug #f)))
+    (call-with-error-handling (lambda () (main args)) 
+                              :on-error (if debug? 'debug 'backtrace))))
