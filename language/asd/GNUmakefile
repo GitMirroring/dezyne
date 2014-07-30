@@ -57,6 +57,7 @@ clean:
 test: check
 check: compile
 	./test.sh </dev/null
+	$(MAKE) csp
 
 coverage: clean
 	rm -rf gaiag.lcov && mkdir -p gaiag.lcov
@@ -152,54 +153,64 @@ csp: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
 
 	cd out && ../gaiag -l csp examples/Alarm.asd
-	$(diff) examples/Alarm.csp out
+	$(diff) examples/Alarm.csp out || true
 	@$(diff) examples/Alarm.csp out | diffstat || true
+	@$(diff) examples/Alarm.csp out >/dev/null
 	$(FDR3_PREFIX)/bin/cspmchecker out/Alarm.csp
 
 	cd out && ../gaiag -l csp examples/imperative.asd
 	$(diff) examples/imperative.csp out || true
 	@$(diff) examples/imperative.csp out | diffstat || true
+	@$(diff) examples/imperative.csp out >/dev/null
 	$(FDR3_PREFIX)/bin/cspmchecker out/imperative.csp
 
 	cd out && ../gaiag -l csp examples/Reply.asd
 	$(diff) examples/Reply.csp out || true
 	@$(diff) examples/Reply.csp out | diffstat || true
+	@$(diff) examples/Reply.csp out >/dev/null
 	$(FDR3_PREFIX)/bin/cspmchecker out/Reply.csp
 
 	cd out && ../gaiag -l csp examples/function.asd
 	$(diff) examples/function.csp out || true
 	@$(diff) examples/function.csp out | diffstat || true
+	@$(diff) examples/function.csp out >/dev/null
 	$(FDR3_PREFIX)/bin/cspmchecker out/function.csp
 
 	cd out && ../gaiag -l csp examples/argument.asd
 	$(diff) examples/argument.csp out || true
 	@$(diff) examples/argument.csp out | diffstat || true
+	@$(diff) examples/argument.csp out >/dev/null
 	$(FDR3_PREFIX)/bin/cspmchecker out/argument.csp
 
 	cd out && ../gaiag -l csp examples/Reply2.asd
 	$(diff) examples/Reply2.csp out || true
 	@$(diff) examples/Reply2.csp out | diffstat || true
+	@$(diff) examples/Reply2.csp out >/dev/null
 	$(FDR3_PREFIX)/bin/cspmchecker out/Reply2.csp
 
 	cd out && ../gaiag -l csp examples/sugar.asd
-	$(diff) examples/sugar.csp out
+	$(diff) examples/sugar.csp out || true
 	@$(diff) examples/sugar.csp out | diffstat || true
+	@$(diff) examples/sugar.csp out >/dev/null
 	$(FDR3_PREFIX)/bin/cspmchecker out/sugar.csp
 
 	cd out && ../gaiag -l csp examples/pauls.asd
 	$(diff) examples/Comp.csp out
 	@$(diff) examples/Comp.csp out | diffstat || true
+	@$(diff) examples/Comp.csp out >/dev/null
 	$(FDR3_PREFIX)/bin/cspmchecker out/Comp.csp
 
-	# cd out && ../gaiag -l csp examples/argument2.asd
-	# $(diff) examples/argument2.csp out || true
-	# @$(diff) examples/argument2.csp out | diffstat || true
-	# -$(FDR3_PREFIX)/bin/cspmchecker out/argument2.csp
+	cd out && ../gaiag -l csp examples/argument2.asd
+	$(diff) examples/argument2.csp out || true
+	@$(diff) examples/argument2.csp out | diffstat
+	@$(diff) examples/argument2.csp out >/dev/null
+	$(FDR3_PREFIX)/bin/cspmchecker out/argument2.csp
 
 	# cd out && ../gaiag -l csp examples/arguments.asd
 	# $(diff) examples/arguments.csp out || true
 	# @$(diff) examples/arguments.csp out | diffstat || true
-	# -$(FDR3_PREFIX)/bin/cspmchecker out/arguments.csp
+	# @$(diff) examples/arguments.csp out >/dev/null
+	# $(FDR3_PREFIX)/bin/cspmchecker out/arguments.csp
 
 demo:
 	rm -rf out && mkdir out && ln -s ../examples ../templates ../../../webdemo/asd out
@@ -226,6 +237,14 @@ if: compile
 	./gaiag examples/if.asd
 	./gaiag -l pretty examples/if.asd | indent
 	cd out && ../gaiag -l c++ examples/if.asd
+
+context: compile
+	rm -rf out && mkdir out && ln -s ../examples ../templates out
+	cd out && ../gaiag -l csp examples/argument2.asd
+	$(diff) examples/argument2.csp out || true
+	@$(diff) examples/argument2.csp out | diffstat
+	@$(diff) examples/argument2.csp out >/dev/null
+	$(FDR3_PREFIX)/bin/cspmchecker out/argument2.csp
 
 simulate: compile
 #	./gaiag -l simulate examples/if.asd
