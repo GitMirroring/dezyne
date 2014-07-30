@@ -482,7 +482,7 @@
   (match src
     (('ctx context) (context->csp ast context))
     (('expression expression) (csp-expression->string ast expression))
-    (('arguments arguments) (comma-join (map (lambda (x) (=>string ast x)) (ast:body src))))
+    (('arguments arguments ..1) (comma-join (map (lambda (x) (=>string ast x)) (ast:body src))))
     ((h t ...) (->string (map (lambda (x) (=>string ast x)) src)))
     (_ (->string src))))
 
@@ -560,7 +560,7 @@
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list "context_active_(" function ",\n" stat ")")))
        (('context-active (context var ('call function arguments)) stat)
-        (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
+          (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list "context_active_(\\ P',V' @ " function " (P',V',\\ (" context ") @ (" arguments ")),\n" stat ")")))
        (('assign-active (context var ('action ('trigger port event))) expressions)
         (let ((action (list "sendrecv_(" port "," event ")")))

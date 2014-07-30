@@ -6,8 +6,6 @@
   :use-module (test-suite lib)
   :use-module (test-suite misc)
 
-  :use-module (ice-9 pretty-print)
-
   :use-module (language asd ast:)
   :use-module (language asd csp))
 
@@ -249,10 +247,10 @@ illegal -> STOP"))
 
 (define ast-transform-assign-2 
   '(context
-  ((ctx ((s b c))) la (expression true))
-  (context
-    ((ctx ((s b c) la)) lb (expression false))
-    (assign (ctx ((s b c) la lb)) (ctx ((s b c) true lb))))))
+    ((ctx ((s b c))) la (expression true))
+    (context
+     ((ctx ((s b c) la)) lb (expression false))
+     (assign (ctx ((s b c) la lb)) (ctx ((s b c) true lb))))))
 
 (pass-if "ast-transform-assign-2-bool"
          (pretty-noisy-equal?
@@ -780,7 +778,6 @@ assign_(\\ ((state,sounding),(stack')) @ ((States_Triggered,sounding),(stack')))
                (compound
                 (call toggle)))))
 
-
 (define csp-function-call-ast
   '(on (e)
        (semi
@@ -815,7 +812,7 @@ assign_(\\ ((state,sounding),(stack')) @ ((States_Triggered,sounding),(stack')))
 semi_(callvoid_(toggle),
 (\\ P',V' @ i.return -> P'(V')))(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
 
-;; 
+;; '
 
 (pass-if "csp-transform-function"
          (diff-noisy-equal?
@@ -850,14 +847,46 @@ semi_(callvoid_(toggle),
 (pass-if "csp-transform-function-arguments"
          (diff-noisy-equal?
 
-          ;; from:
+          ;; via:
           (csp-transform i-ast csp-transform-function-arguments)
 
-          ;; via:
+          ;; to:
           "g = \\ P',V',F' @ context_(F',
 semi_((\\ P',V' @ i!f -> P'(V')),
 returnvalue_(\\ ((s,b,c),((stack',c))) @ c)))(P',V')
 "))
+
+
+(define csp-function-call-arguments-via
+  '(on (e)
+    (context-active
+      ((ctx ((s b c))) c (call g (arguments b b)))
+      (eventreturn))
+    (the-end (s b c))))
+
+(pass-if "ast-transform-function-call-arguments"
+  (pretty-noisy-equal?
+   
+   ;; from:
+   (ast-transform 
+    i-ast     
+    '(on (e)
+         (compound
+          (variable (type bool) c (call g (arguments b b))))))
+   
+   ;; via:
+   csp-function-call-arguments-via))
+
+(pass-if "csp-transform-function-call-arguments"
+         (diff-noisy-equal?
+
+          ;; from:
+          (csp-transform i-ast csp-function-call-arguments-via)
+
+          ;; via:
+          "i?x:{e} ->
+context_active_(\\ P',V' @ g (P',V',\\ ((s,b,c),(stack')) @ (b,b)),
+(\\ P',V' @ i.return -> P'(V')))(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
 
 
 (define csp-reply-variable-ast
@@ -1070,6 +1099,8 @@ semi_(assign_active_(\\ P',V' @ g (P',V',\\ ((b),((stack',c))) @ (c)),
    }
 
 ")
+
+;; '
 
 (define callvalued-on-deep
   '(on ((trigger i e))
