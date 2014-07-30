@@ -342,9 +342,17 @@
     (if (null? frame)
         '()
         (let ((i (car frame)))
-          (cons
-           (if (member i extension) (string->symbol (format #f "~a~a'" prefix index)) i)
-           (loop (cdr frame) (1+ index)))))))
+          (match i
+            ((? symbol?) 
+             (cons
+              (if (member i extension) 
+                  (string->symbol (format #f "~a~a'" prefix index)) 
+                  i)
+              (loop (cdr frame) (1+ index))))
+            (('vector identifiers ..1)
+             (cons (cons 'vector (loop identifiers index))
+                   (loop (cdr frame) (+ index (length identifiers)))))
+            (_ (throw 'match-error (format #f "~a:frame-hide: no match: ~a\n" (current-source-location) i))))))))
 
 (define (context-extend context extension)
   (match context
@@ -354,8 +362,9 @@
         (make-context (frame-hide members 'hide_member identifiers)
                       (append (frame-hide locals 'hide_local identifiers)
                               (list extension))))
-       ((? symbol?) (make-context (frame-hide members 'hide_member (list extension))
-                                  (append (frame-hide locals 'hide_local (list extension))
+       ((? symbol?) 
+        (make-context (frame-hide members 'hide_member (list extension))
+                      (append (frame-hide locals 'hide_local (list extension))
                                           (list extension))))
        (_ (throw 'match-error (format #f "~a:context-extend: no match: ~a\n" (current-source-location) extension)))))
     (_ (throw 'match-error (format #f "~a:context-extend: no match: ~a\n" (current-source-location) context)))))

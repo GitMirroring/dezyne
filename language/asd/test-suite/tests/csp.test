@@ -1115,17 +1115,29 @@ semi_(assign_active_(\\ P',V' @ g (P',V',\\ ((b),((stack',c))) @ (c)),
      (context-extend context 'b)
      '(ctx ((s hide_member1' c) d b)))))
 
-(pass-if "context-extend-vector"
+(pass-if "context-extend-symbol-vector"
   (let ((context (make-context (ast:member-names i-ast) '(d))))
     (pretty-noisy-equal?
      (context-extend context '(vector s d))
      '(ctx ((hide_member0' b c) hide_local0' (vector s d))))))
 
+(pass-if "context-extend-vector-symbol"
+  (let ((context (make-context (ast:member-names i-ast) '((vector b e f)))))
+    (pretty-noisy-equal?
+     (context-extend context 'b)
+     '(ctx ((s hide_member1' c) (vector hide_local0' e f) b)))))
+
 (pass-if "context-extend-vector-vector"
-  (let ((context (make-context (ast:member-names i-ast) '(vector d e f))))
+  (let ((context (make-context (ast:member-names i-ast) '((vector d e f)))))
     (pretty-noisy-equal?
      (context-extend context '(vector s d))
-     '(ctx ((hide_member' b c) (vector hide_local0' e f) (vector s d))))))
+     '(ctx ((hide_member0' b c) (vector hide_local0' e f) (vector s d))))))
+
+(pass-if "context-extend-vector-symbol-vector"
+  (let ((context (make-context (ast:member-names i-ast) '((vector d e f) s))))
+    (pretty-noisy-equal?
+     (context-extend context '(vector s d))
+     '(ctx ((hide_member0' b c) (vector hide_local0' e f) hide_local3' (vector s d))))))
 
 ;; OM-PARSER parser test
 (define ast-transform-OM-PARSER-variable-action-via
