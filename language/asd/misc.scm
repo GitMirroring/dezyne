@@ -58,6 +58,7 @@
            join
            list<
            null-is-#f
+           number->symbol
            one-is-#f
            pretty-string
            stderr
@@ -93,6 +94,7 @@
 
 (define null-symbol (string->symbol ""))
 (define (symbol-null? x) (eq? x null-symbol))
+(define (number->symbol x) (string->symbol (number->string x)))
 
 (define (symbol-capitalize symbol)
   ((compose string->symbol string-capitalize symbol->string) symbol))

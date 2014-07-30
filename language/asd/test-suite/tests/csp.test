@@ -1109,6 +1109,24 @@ semi_(assign_active_(\\ P',V' @ g (P',V',\\ ((b),((stack',c))) @ (c)),
           ;; via:
           csp-callvalued-on-deep))
 
+(pass-if "context-extend"
+  (let ((context (make-context (ast:member-names i-ast) '(d))))
+    (pretty-noisy-equal?
+     (context-extend context 'b)
+     '(ctx ((s hide_member1' c) d b)))))
+
+(pass-if "context-extend-vector"
+  (let ((context (make-context (ast:member-names i-ast) '(d))))
+    (pretty-noisy-equal?
+     (context-extend context '(vector s d))
+     '(ctx ((hide_member0' b c) hide_local0' (vector s d))))))
+
+(pass-if "context-extend-vector-vector"
+  (let ((context (make-context (ast:member-names i-ast) '(vector d e f))))
+    (pretty-noisy-equal?
+     (context-extend context '(vector s d))
+     '(ctx ((hide_member' b c) (vector hide_local0' e f) (vector s d))))))
+
 ;; OM-PARSER parser test
 (define ast-transform-OM-PARSER-variable-action-via
   '(on ((trigger i done))

@@ -234,6 +234,7 @@
            left
 	   literal?
            make
+           member-names
            model?
            name
            on?
@@ -714,6 +715,9 @@
              (eq? (direction event) 'in))
         (and (eq? (direction port) 'requires)
              (eq? (direction event) 'out)))))
+
+(define (member-names model)
+  (map name (variables (behaviour model))))
 
 (define (bottom? ast)
   (and-let* ((ports (ports ast))

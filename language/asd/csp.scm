@@ -46,6 +46,9 @@
 	   ast-transform-return
 	   csp-expression->string
 	   csp-transform
+
+           make-context
+           context-extend
            ))
 
 (define (ast-> ast)
@@ -198,9 +201,6 @@
           result
           (loop (cdr ports) (append result (return-values-port (car ports)))))))
 
-(define (member-names model)
-  (map ast:name (ast:variables (ast:behaviour model))))
-
 (define ((statement-on-p/r predicate) statement-on)
   (let* ((events (ast:triggers statement-on))
          (events-predicate (filter predicate events))
@@ -296,7 +296,7 @@
 
 (define* (ast-transform-return ast src :optional (top? #t))
   (let* ((model (or (ast:interface ast) (ast:component ast)))
-	 (members (member-names model)))
+	 (members (ast:member-names model)))
     (match src
       (('compound t ...)
        (let ((result
@@ -337,6 +337,26 @@
 (define (make-context members locals)
   (list 'ctx (cons members locals)))
 
+(define (frame-hide frame prefix identifier)
+  (let loop ((frame frame) (index 0))
+    (if (null? frame)
+        '()
+        (let ((i (car frame)))
+          (cons
+           (if (eq? i identifier) (string->symbol (format #f "~a~a'" prefix index)) i)
+           (loop (cdr frame) (1+ index)))))))
+
+(define (context-extend context extension)
+  (match context
+    (('ctx (members locals ...))
+     (match extension
+       (('vector identifiers ..1) context)
+       ((? symbol?) (make-context (frame-hide members 'hide_member extension) 
+                                  (append (frame-hide locals 'hide_local extension)
+                                          (list extension))))
+       (_ (throw 'match-error (format #f "~a:context-extend: no match: ~a\n" (current-source-location) extension)))))
+    (_ (throw 'match-error (format #f "~a:context-extend: no match: ~a\n" (current-source-location) context)))))
+
 (define (element->csp ast x)
   (match x
     (('vector expressions ...) (string-append "(" (comma-join (map (lambda (x) (csp-expression->string ast x)) expressions)) ")"))
@@ -353,7 +373,7 @@
 
 (define* (ast-transform- ast src :optional (return #t) (locals '()))
   (let* ((model (or (ast:interface ast) (ast:component ast)))
-	 (members (member-names model))
+	 (members (ast:member-names model))
          (context (make-context members locals))
          (port? (lambda (port) (member port (map ast:name (ast:ports model)))))
          (valued-action? (valued-action? port?)))
