@@ -206,6 +206,12 @@ csp: compile
 	@$(diff) examples/argument2.csp out >/dev/null
 	$(FDR3_PREFIX)/bin/cspmchecker out/argument2.csp
 
+	cd out && ../gaiag -l csp examples/hide.asd
+	$(diff) examples/hide.csp out || true
+	@$(diff) examples/hide.csp out | diffstat
+	@$(diff) examples/hide.csp out >/dev/null
+	-$(FDR3_PREFIX)/bin/cspmchecker out/hide.csp
+
 	# cd out && ../gaiag -l csp examples/arguments.asd
 	# $(diff) examples/arguments.csp out || true
 	# @$(diff) examples/arguments.csp out | diffstat || true
@@ -245,6 +251,12 @@ context: compile
 	@$(diff) examples/argument2.csp out | diffstat
 	@$(diff) examples/argument2.csp out >/dev/null
 	$(FDR3_PREFIX)/bin/cspmchecker out/argument2.csp
+
+	cd out && ../gaiag -l csp examples/hide.asd
+	$(diff) examples/hide.csp out || true
+	@$(diff) examples/hide.csp out | diffstat
+	@$(diff) examples/hide.csp out >/dev/null
+	-$(FDR3_PREFIX)/bin/cspmchecker out/hide.csp
 
 simulate: compile
 #	./gaiag -l simulate examples/if.asd

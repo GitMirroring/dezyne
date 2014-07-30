@@ -828,7 +828,7 @@ semi_(callvoid_(toggle),
   '(function
     g
     ((type bool) (parameters ((type bool) c)))
-    (semi (action f) (return (ctx ((s b c) c)) c))))
+    (semi (action f) (return (ctx ((s b hide_member2') c)) c))))
 
 (pass-if "ast-transform-function-arguments"
          (pretty-noisy-equal?
@@ -853,7 +853,7 @@ semi_(callvoid_(toggle),
           ;; to:
           "g = \\ P',V',F' @ context_(F',
 semi_((\\ P',V' @ i!f -> P'(V')),
-returnvalue_(\\ ((s,b,c),((stack',c))) @ c)))(P',V')
+returnvalue_(\\ ((s,b,hide_member2'),((stack',c))) @ c)))(P',V')
 "))
 
 
