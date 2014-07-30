@@ -30,8 +30,7 @@ interface I
   {
     bool b = false;
     bool c = true;
-    //bool g (bool gb, bool gc) { i.f; return b || c; }
-    bool g (bool gb, bool gc) { i.f; return b || c; }
+    bool g (bool b, bool c) { i.f; return b || c; }
 
     [true] on e:
       {
@@ -55,8 +54,7 @@ component hide
   {
     bool b = false;
     bool c = true;
-    //bool g (bool gb, bool gc) { i.f; return b || c; }
-    bool g (bool gb, bool gc) { i.f; return b || c; }
+    bool g (bool b, bool c) { i.f; return b || c; }
 
     [true] on i.e:
       {

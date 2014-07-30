@@ -39,7 +39,7 @@ channel I,i: {e,f,return}
 I_(IG) = let
 g = \ P',V',F' @ context_(F',
 semi_((\ P',V' @ I!f -> P'(V')),
-returnvalue_(\ ((b,c),((stack',(gb,gc)))) @ (b or c))))(P',V')
+returnvalue_(\ ((hide_member0',hide_member1'),((stack',(b,c)))) @ (b or c))))(P',V')
 
 I__(((b,c),stack')) =
 (true) & (
@@ -58,7 +58,7 @@ within I__(((false,true),<>))
 hide_(IIG,IG) = let
 g = \ P',V',F' @ context_(F',
 semi_((\ P',V' @ i!f -> P'(V')),
-returnvalue_(\ ((b,c),((stack',(gb,gc)))) @ (b or c))))(P',V')
+returnvalue_(\ ((hide_member0',hide_member1'),((stack',(b,c)))) @ (b or c))))(P',V')
 
 hide__(((b,c),stack')) = transition_begin -> (
 (true) & (
