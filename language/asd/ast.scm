@@ -45,9 +45,9 @@
 ;;   (ast:types (ast:interface (read-asd "examples/Typedef.asd")))
 ;;      ==>
 ;;      := (enum ....)
-;;          (int     Typedef (range   0     3)
-;;           ^type   ^name    ^range  ^from ^to
-;;           |implicit: class=type
+;;         (int     Typedef (range   0     3)
+;;          ^type   ^name    ^range  ^from ^to
+;;          |implicit: class=type
 ;;
 ;;
 ;;   (ast:events (ast:interface AST))
@@ -118,30 +118,17 @@
 ;;      (trigger  console      arm)
 ;;       ^class  ^port-name   ^event-name  ;; FIXME: port / event?
 ;;
-;;
-;;   (ast:types (ast:interface ast))
-;;      ==>
 ;;   SUB-AST
 ;;      (value  type    field)
 ;;       ^class ^type   ^field
 ;;
-;;   FIXME (ast:types (ast:interface ast))
-;;      ==>
 ;;   SUB-AST
 ;;      (literal  Interface    type    field)
 ;;       ^class   ^scope       ^type   ^field
 ;;
-;;
-;;   FIXME (ast:types (ast:interface ast))
-;;      ==>
-;;   SUB-AST
-;;      (type   type    field)
-;;       ^class ^type   ^field;;
-;;
 ;;   SUB-AST
 ;;      (action (trigger console arm))
 ;;       ^class ^event
-;;
 ;;
 ;;  (read-asd "examples/AlarmSystem.asd")
 ;;     ==>
@@ -291,13 +278,13 @@
   (apply (@@ (language asd parse) ast:make) t))
 
 (define (element ast name)
-  (or (assoc name (body ast)) '()))
+  (or (and (>2 (length ast)) (assoc name (body ast))) '()))
 
 (define (arguments-element ast) (element ast 'arguments))
 (define (events-element ast) (element ast 'events))
 (define (imports-element ast) (element ast 'imports))
 (define (functions-element ast) (element ast 'functions))
-(define (parameters-element ast) (element ast 'parameters))
+(define (parameters-element ast) (or (assoc 'parameters ast) '()))
 (define (ports-element ast) (element ast 'ports))
 (define (types-element ast) (element ast 'types))
 (define (variables-element ast) (element ast 'variables))
@@ -616,7 +603,7 @@
 
 (define (name ast)
   (match ast
-    ((or (? behaviour?) (? enum?) (? function?) (? int?) (? model?) (? parameter?)) (or (and (>1 (length ast)) (cadr ast)) ""))
+    ((or (? behaviour?) (? enum?) (? function?) (? int?) (? model?) (? parameter?) (? type?)) (or (and (>1 (length ast)) (cadr ast)) ""))
     ((or (? event?) (? instance?) (? port?) (? variable?)) (caddr ast))
     ((? symbol?) ast)
     (_ (throw 'match-error  (format #f "~a:name: no match: ~a\n" (current-source-location) ast)))))

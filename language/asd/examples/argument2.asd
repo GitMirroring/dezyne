@@ -28,21 +28,24 @@ interface I
   behaviour
   {
     bool b = false;
-    bool g (bool ga, bool gb) { f; return ga || gb; }
-
-    [true]
-    on e:
+    bool g (bool ga, bool gb) 
     {
-      b = ! b;
-      bool c = g (b, b);
-
-      b = g (c, c);
-
-      if(c)
-      {
-        f;
-      }
+      f;
+      return ga || gb;
     }
+
+    [true] on e:
+      {
+        b = ! b;
+        bool c = g (b, b);
+        
+        b = g (c, c);
+        
+        if(c)
+        {
+          f;
+        }
+      }
   }
 }
 
@@ -54,20 +57,23 @@ component argument2
   behaviour
   {
     bool b = false;
-    bool g (bool ga, bool gb) { i.f; return ga || gb; }
-
-    [true]
-    on i.e:
-    {
-      b = ! b;
-      bool c = g (b, b);
-
-      b = g (c, c);
-
-      if(c)
-      {
-        i.f;
-      }
+    bool g (bool ga, bool gb) 
+    { 
+      i.f; 
+      return ga || gb; 
     }
+
+    [true] on i.e:
+      {
+        b = ! b;
+        bool c = g (b, b);
+        
+        b = g (c, c);
+        
+        if(c)
+        {
+          i.f;
+        }
+      }
   }
 }

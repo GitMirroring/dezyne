@@ -57,7 +57,7 @@ clean:
 test: check
 check: compile
 	./test.sh </dev/null
-	$(MAKE) csp
+	$(MAKE) pretty csp
 
 coverage: clean
 	rm -rf gaiag.lcov && mkdir -p gaiag.lcov
@@ -106,9 +106,14 @@ ast: compile
 
 pretty: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
-	guile -L ../.. --language=asd -s examples/interface-enums.asd | indent
-	./gaiag -l asd examples/interface-enums.asd | indent
-	-./gaiag -l asd examples/alarm-component-pretty.asd | indent | tee out/pretty.asd && $(diff) examples/alarm-component-pretty.asd out/pretty.asd
+	./gaiag -l asd examples/interface-enums.asd > out/interface-enums.asd
+	$(diff) examples/interface-enums.asd out
+	./gaiag -l asd examples/alarm-component-pretty.asd | indent > out/alarm-component-pretty.asd 
+	$(diff) examples/alarm-component-pretty.asd out
+	./gaiag -l asd examples/function.asd | indent > out/function.asd
+	$(diff) examples/function.asd out
+	./gaiag -l asd examples/argument2.asd | indent > out/argument2.asd
+	$(diff) examples/argument2.asd out
 
 c++: compile baseline
 	rm -rf out && mkdir out && ln -s ../examples ../templates out

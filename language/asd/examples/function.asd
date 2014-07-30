@@ -3,6 +3,7 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -33,15 +34,26 @@ interface I
   {
     bool f = false;
 
-    void toggle()
+    void toggle ()
     {
-      if(f){c;}
+      if (f)
+      {
+        c;
+      }
       f = !f;
     }
     [true]
     {
-      on a: {toggle;}
-      on b: {toggle; toggle; d;}
+      on a:
+      {
+	toggle;
+      }
+      on b:
+      {
+	toggle;
+	toggle;
+	d;
+      }
     }
   }
 }
@@ -54,15 +66,26 @@ component function
   {
     bool f = false;
 
-    void toggle()
+    void toggle ()
     {
-      if(f){i.c;}
+      if (f)
+      {
+        i.c;
+      }
       f = !f;
     }
     [true]
     {
-      on i.a: {toggle;}
-      on i.b: {toggle; toggle; i.d;}
+      on i.a:
+      {
+	toggle;
+      }
+      on i.b:
+      {
+	toggle;
+	toggle;
+	i.d;
+      }
     }
   }
 }

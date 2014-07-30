@@ -2,5 +2,6 @@ behaviour #name
 {
   #types 
   #variables 
+  #functions
   #compound
 }
