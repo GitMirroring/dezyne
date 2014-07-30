@@ -316,12 +316,6 @@
 	     (list 'on events (list 'compound (list 'eventreturn)) (list 'the-end members)))))
       (_ src))))
 
-;; FIXME naive: shadowing, assign only once
-(define ((assignment var exp) x)
-  (match x
-    (('vector expressions ...) (cons 'vector (map (assignment var exp) expressions)))
-    (_ (if (eq? x var ) exp x))))
-
 (define ((valued-action? port?) src)
   (match src
     (('variable type var ('action trigger)) #t)
@@ -371,6 +365,19 @@
        (_ (throw 'match-error (format #f "~a:context-extend: no match: ~a\n" (current-source-location) extension)))))
     (_ (throw 'match-error (format #f "~a:context-extend: no match: ~a\n" (current-source-location) context)))))
 
+(define ((assign identifier expression) x)
+  (match x
+    (('vector expressions ...) 
+     (cons 'vector (map (assign identifier expression) expressions)))
+    (_ (if (eq? x identifier) expression x))))
+
+(define (context-assign context identifier expression)
+  (match context
+    (('ctx (members locals ...))           
+     (make-context (map (assign identifier expression) members)
+                   (map (assign identifier expression) locals)))
+    (_ (throw 'match-error (format #f "~a:context-assign: no match: ~a\n" (current-source-location) context)))))
+
 (define (element->csp ast x)
   (match x
     (('vector expressions ...) (string-append "(" (comma-join (map (lambda (x) (csp-expression->string ast x)) expressions)) ")"))
@@ -389,11 +396,7 @@
   (let* ((model (or (ast:interface ast) (ast:component ast)))
          (context (or context (make-context (ast:member-names model) '())))
          (port? (lambda (port) (member port (map ast:name (ast:ports model)))))
-         (valued-action? (valued-action? port?))
-
-         (members (caadr context)) ;; REMOVE after context-assign
-         (locals (cdadr context)) ;; REMOVE after context-assign
-         )
+         (valued-action? (valued-action? port?)))
     (match src
       (('compound tail ...)
        (let loop ((statements tail) (context context))
@@ -419,7 +422,6 @@
 	 (if (prefix-illegal? stat)
 	     (list 'on events 'IG result)
 	     (list 'on events result the-end))))
-
       (('variable type var ('value (and (? port?) (get! port)) action))
        (list context var (list 'valued-action (port) action)))
       (('variable type var ('call function arguments))
@@ -427,28 +429,20 @@
       (('variable type var expr)
        (list context var (list 'expression expr)))
       (('assign var ('action trigger))
-       (list 'assign-active (list context 'r' 
-                               (list 'action trigger))
-             (make-context (map (assignment var 'r') members)
-                           (map (assignment var 'r') locals))))
+       (list 'assign-active (list context 'r' (list 'action trigger))
+             (context-assign context var 'r')))
       (('assign var ('call function arguments))
-       (list 'assign-active (list context 'r'
-                               (list 'call function arguments))
-             (make-context (map (assignment var 'r') members)
-                           (map (assignment var 'r') locals))))
+       (list 'assign-active (list context 'r' (list 'call function arguments))
+             (context-assign context var 'r')))
       (('assign var ('value (and (? port?) (get! port)) event))
-       (list 'assign-active (list context 'r'
-                               (list 'action (list 'trigger (port) event)))
-             (make-context (map (assignment var 'r') members)
-                           (map (assignment var 'r') locals))))
+       (list 'assign-active (list context 'r' 
+                                  (list 'action (list 'trigger (port) event)))
+             (context-assign context var 'r')))
       (('assign var ('value type field))
        (let ((expression (symbol-append type '_ field)))
-         (list 'assign context (make-context (map (assignment var expression) members)
-                                             (map (assignment var expression) locals)))))
+         (list 'assign context (context-assign context var expression))))
       (('assign var expression)
-         (list 'assign context
-               (make-context (map (assignment var expression) members)
-                             (map (assignment var expression) locals))))
+         (list 'assign context (context-assign context var expression)))
       (('if pred then)
        (list 'if context (list 'expression (if (prefix-illegal? then)
                                                (list 'and 'IG pred)
