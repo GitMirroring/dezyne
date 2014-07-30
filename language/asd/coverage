@@ -31,7 +31,8 @@ exec guile --debug -L $(dirname $0) -L $(cd $(dirname $0)/../.. && pwd) -e main 
   :use-module (system vm coverage)
   :use-module (system vm vm)
 
-  :use-module (language asd misc))
+  :use-module (language asd misc)
+  :export (cover))
 
 (define (parse-opts args)
   (let* ((option-spec
@@ -75,4 +76,4 @@ Examples:
          (module (resolve-module (list 'language 'asd script)))
          (procedure (module-ref module 'main))
          (args command))
-    (cover (lambda () (procedure args)) (list script '.info))))
+    (cover (lambda () (procedure args)) (->string (list script '.info)))))

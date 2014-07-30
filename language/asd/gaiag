@@ -35,6 +35,7 @@ exec guile -L $(dirname $0) -L $(cd $(dirname $0)/../.. && pwd) -e main -s $0 "$
 
   :use-module (language asd asserts)
   :use-module (language asd c++)
+  :use-module (language asd coverage)
   :use-module (language asd csp)
   :use-module (language asd pretty)
   :use-module (language asd scheme)
@@ -45,6 +46,7 @@ exec guile -L $(dirname $0) -L $(cd $(dirname $0)/../.. && pwd) -e main -s $0 "$
 (define (parse-opts args)
   (let* ((option-spec
 	  '((assert (single-char #\a) (value #t))
+	    (coverage (single-char #\c))
 	    (debug (single-char #\d))
             (help (single-char #\h))
             (json (single-char #\j))
@@ -66,6 +68,7 @@ exec guile -L $(dirname $0) -L $(cd $(dirname $0)/../.. && pwd) -e main -s $0 "$
 	   ((or (and usage? stderr) stdout) "\
 Usage: gaiag [OPTION]... FILE
   -a, --assert=ASSERT  select assert ASSERT to generate
+  -c, --coverage       write lcov coverage data to gaiag.info
   -d, --debug          run with debugging
   -h, --help           display this help
   -j, --json           use json-friendly format; strings and hash tables
@@ -107,6 +110,9 @@ Examples:
 
 (define (main-with-error-handling args)
   (let* ((options (parse-opts args))
-         (debug? (option-ref options 'debug #f)))
-    (call-with-error-handling (lambda () (main args)) 
-                              :on-error (if debug? 'debug 'backtrace))))
+         (debug? (option-ref options 'debug #f))
+         (coverage? (option-ref options 'coverage #f)))
+    (if coverage?
+        (cover (lambda () (main args)) (list 'gaiag '.info))
+        (call-with-error-handling (lambda () (main args))
+                                  :on-error (if debug? 'debug 'backtrace)))))

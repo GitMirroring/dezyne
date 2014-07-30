@@ -64,18 +64,50 @@ coverage: clean
 	cd gaiag.lcov && ln -s ../examples ../templates .
 	$(MAKE) GUILE='guile --debug' compile-all
 	GUILE='guile --debug --no-auto-compile' ./test.sh --coverage </dev/null
-	lcov -r gaiag.info /usr/share\* $(TOPDIR)/system/base\* -o gaiag.lcov/gaiag-test.info
+	lcov -r gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-test.info | grep -v Removing
+
+	cd gaiag.lcov && ../coverage gaiag -l asd examples/Alarm.asd >/dev/null
+	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-asd.info | grep -v Removing
+
+	cd gaiag.lcov && ../coverage gaiag -l asd examples/function.asd >/dev/null
+	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-asd-function.info | grep -v Removing
+
+	cd gaiag.lcov && ../coverage gaiag -l asd examples/imperative.asd >/dev/null
+	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-asd-imperative.info | grep -v Removing
+
+	cd gaiag.lcov && ../coverage gaiag -l asd examples/argument2.asd >/dev/null
+	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-asd-argument2.info | grep -v Removing
 
 	cd gaiag.lcov && ../coverage gaiag -l csp examples/Alarm.asd
-	sed -i s@:[.][.]/@$(PWD)/@ gaiag.lcov/gaiag.info
-	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* -o gaiag.lcov/gaiag-csp.info
+	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-csp.info | grep -v Removing
+
+	cd gaiag.lcov && ../coverage gaiag -l csp examples/if.asd
+	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-if.info | grep -v Removing
+
+	cd gaiag.lcov && ../coverage gaiag -l csp examples/function.asd
+	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-function.info | grep -v Removing
+
+	cd gaiag.lcov && ../coverage gaiag -l csp examples/pauls.asd
+	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-pauls.info | grep -v Removing
 
 	cd gaiag.lcov && ../coverage gaiag -l c++ examples/Alarm.asd
-	sed -i s@:[.][.]/@$(PWD)/@ gaiag.lcov/gaiag.info
-	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* -o gaiag.lcov/gaiag-c++.info
+	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-c++.info | grep -v Removing
 
-	for i in gaiag.lcov/gaiag-*.info; do lcov -a $$i -o gaiag.lcov/gaiag.info; done
-	genhtml --output-dir=gaiag.lcov --prefix=$(shell cd ../.. && pwd) gaiag.lcov/gaiag.info
+	cd gaiag.lcov && ../coverage gaiag -l c++ examples/Aap.asd
+	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-c++-Aap.info | grep -v Removing
+
+	rm gaiag.lcov/gaiag.info
+	genhtml --output-dir=gaiag.lcov --prefix=$(shell cd ../.. && pwd) gaiag.lcov/gaiag*.info
 	make clean # junk debug cache
 
 dummy:
