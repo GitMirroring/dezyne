@@ -256,6 +256,13 @@ csp: compile
 	$(FDR3_PREFIX)/bin/cspmchecker out/hide.csp
 	@$(diff) examples/hide.csp out >/dev/null
 
+	cd out && ../gaiag -l csp examples/expressions.asd
+	$(diff) examples/expressions.csp out || true
+	@$(diff) examples/expressions.csp out | diffstat
+	$(FDR3_PREFIX)/bin/cspmchecker out/expressions.csp
+	! $(FDR3_PREFIX)/bin/refines --brief --quiet --format=plain out/expressions.csp | grep ': Failed'
+	@$(diff) examples/expressions.csp out >/dev/null
+
 
 	# cd out && ../gaiag -l csp examples/arguments.asd
 	# $(diff) examples/arguments.csp out || true
