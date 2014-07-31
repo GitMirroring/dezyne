@@ -34,6 +34,8 @@ GUILE = guile
 SCRIPTS = coverage gaiag json2scm scm2json 
 SCM_SOURCES = $(shell git ls-files *.scm | grep -v 'templates')
 INDENT = ( cat > .$$$$; astyle -s2 -L < .$$$$; rm -f .$$$$)
+CSPMCHECKER = $(FDR3_PREFIX)/bin/cspmchecker
+REFINES =  $(FDR3_PREFIX)/bin/refines --brief --quiet --format=plain
 
 -include .local.make
 
@@ -199,68 +201,78 @@ csp: compile
 	cd out && ../gaiag -l csp examples/Alarm.asd
 	$(diff) examples/Alarm.csp out || true
 	@$(diff) examples/Alarm.csp out | diffstat || true
-	$(FDR3_PREFIX)/bin/cspmchecker out/Alarm.csp
+	$(CSPMCHECKER) out/Alarm.csp
+	! $(REFINES) out/Alarm.csp | grep -q ': Failed' 
 	@$(diff) examples/Alarm.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/imperative.asd
 	$(diff) examples/imperative.csp out || true
 	@$(diff) examples/imperative.csp out | diffstat || true
-	$(FDR3_PREFIX)/bin/cspmchecker out/imperative.csp
+	$(CSPMCHECKER) out/imperative.csp
+	! $(REFINES) out/imperative.csp | grep -q ': Failed'
 	@$(diff) examples/imperative.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/Reply.asd
 	$(diff) examples/Reply.csp out || true
 	@$(diff) examples/Reply.csp out | diffstat || true
-	$(FDR3_PREFIX)/bin/cspmchecker out/Reply.csp
+	$(CSPMCHECKER) out/Reply.csp
+	! $(REFINES) out/Reply.csp | grep -q ': Failed'
 	@$(diff) examples/Reply.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/function.asd
 	$(diff) examples/function.csp out || true
 	@$(diff) examples/function.csp out | diffstat || true
-	$(FDR3_PREFIX)/bin/cspmchecker out/function.csp
+	$(CSPMCHECKER) out/function.csp
+	! $(REFINES) out/function.csp | grep -q ': Failed'
 	@$(diff) examples/function.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/argument.asd
 	$(diff) examples/argument.csp out || true
 	@$(diff) examples/argument.csp out | diffstat || true
-	$(FDR3_PREFIX)/bin/cspmchecker out/argument.csp
+	$(CSPMCHECKER) out/argument.csp
+	! $(REFINES) out/argument.csp | grep -q ': Failed'
 	@$(diff) examples/argument.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/Reply2.asd
 	$(diff) examples/Reply2.csp out || true
 	@$(diff) examples/Reply2.csp out | diffstat || true
-	$(FDR3_PREFIX)/bin/cspmchecker out/Reply2.csp
+	$(CSPMCHECKER) out/Reply2.csp
+	! $(REFINES) out/Reply2.csp | grep -q ': Failed'
 	@$(diff) examples/Reply2.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/sugar.asd
 	$(diff) examples/sugar.csp out || true
 	@$(diff) examples/sugar.csp out | diffstat || true
-	$(FDR3_PREFIX)/bin/cspmchecker out/sugar.csp
+	$(CSPMCHECKER) out/sugar.csp
+	! $(REFINES) out/sugar.csp | grep -q ': Failed'
 	@$(diff) examples/sugar.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/pauls.asd
 	$(diff) examples/Comp.csp out
 	@$(diff) examples/Comp.csp out | diffstat || true
-	$(FDR3_PREFIX)/bin/cspmchecker out/Comp.csp
+	$(CSPMCHECKER) out/Comp.csp
+	! $(REFINES) out/pauls.csp | grep -q ': Failed'
 	@$(diff) examples/Comp.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/argument2.asd
 	$(diff) examples/argument2.csp out || true
 	@$(diff) examples/argument2.csp out | diffstat
-	$(FDR3_PREFIX)/bin/cspmchecker out/argument2.csp
+	$(CSPMCHECKER) out/argument2.csp
+	! $(REFINES) out/expressions.csp | grep -q ': Failed'
 	@$(diff) examples/argument2.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/hide.asd
 	$(diff) examples/hide.csp out || true
 	@$(diff) examples/hide.csp out | diffstat
-	$(FDR3_PREFIX)/bin/cspmchecker out/hide.csp
+	$(CSPMCHECKER) out/hide.csp
+	! $(REFINES) out/expressions.csp | grep -q ': Failed'
 	@$(diff) examples/hide.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/expressions.asd
 	$(diff) examples/expressions.csp out || true
 	@$(diff) examples/expressions.csp out | diffstat
-	$(FDR3_PREFIX)/bin/cspmchecker out/expressions.csp
-	! $(FDR3_PREFIX)/bin/refines --brief --quiet --format=plain out/expressions.csp | grep ': Failed'
+	$(CSPMCHECKER) out/expressions.csp
+	! $(REFINES) out/expressions.csp | grep -q ': Failed'
 	@$(diff) examples/expressions.csp out >/dev/null
 
 
@@ -268,7 +280,7 @@ csp: compile
 	# $(diff) examples/arguments.csp out || true
 	# @$(diff) examples/arguments.csp out | diffstat || true
 	# @$(diff) examples/arguments.csp out >/dev/null
-	# $(FDR3_PREFIX)/bin/cspmchecker out/arguments.csp
+	# $(CSPMCHECKER) out/arguments.csp
 
 demo:
 	rm -rf out && mkdir out && ln -s ../examples ../templates ../../../webdemo/asd out
@@ -277,26 +289,26 @@ demo:
 	cd out && ../gaiag -l csp Reply.scm
 	$(diff) examples/Reply.csp out || true
 	@$(diff) examples/Reply.csp out | diffstat || true
-	-$(FDR3_PREFIX)/bin/cspmchecker out/Reply.csp
+	-$(CSPMCHECKER) out/Reply.csp
 
 	cd out && $(asdgen) -l scm examples/Reply2.asd
 	#sed -i -e 's/(type \([^.]+\)[.]\([^.()]+\))/(type \1 (type \2))/' out/Reply2.scm
 	cd out && ../gaiag -l csp Reply2.scm
 	$(diff) examples/Reply2.csp out || true
 	@$(diff) examples/Reply2.csp out | diffstat || true
-	-$(FDR3_PREFIX)/bin/cspmchecker out/Reply2.csp
+	-$(CSPMCHECKER) out/Reply2.csp
 
 	cd out && $(asdgen) -l scm asd/pauls.asd
 	# sed -i -e 's/(type \([^.]+\)[.]\([^.()]+\))/(type \1 (type \2))/' out/pauls.scm
 	cd out && ../gaiag -l csp pauls.scm
-	-$(FDR3_PREFIX)/bin/cspmchecker out/Comp.csp
+	-$(CSPMCHECKER) out/Comp.csp
 
 expression: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
 	cd out && ../gaiag -l csp examples/expressions.asd
 	$(diff) examples/expressions.csp out || true
 	@$(diff) examples/expressions.csp out | diffstat
-	$(FDR3_PREFIX)/bin/cspmchecker out/expressions.csp
+	$(CSPMCHECKER) out/expressions.csp
 	@$(diff) examples/expressions.csp out >/dev/null
 
 simulate: compile
