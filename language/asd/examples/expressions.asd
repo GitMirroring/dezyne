@@ -21,16 +21,19 @@
 //
 // Code:
 
-interface expressions
+interface I
 {
   typedef int[0..3] State;
 
   in void e;
   out void a;
+  out void hi;
+  out void lo;
   
   behaviour
   {
     State state = 3;
+    State i = 0;
 
     on e:
       {
@@ -42,6 +45,56 @@ interface expressions
         else 
         {
           state = state - 1;
+          if (i < state)
+          {
+            i = i + 1;
+          }
+          else if (i <= state)
+          {
+            lo;
+          }
+          else if (i > state)
+          {
+            hi;
+          }
+        }
+      }
+  }
+}
+
+component expressions
+{
+  provides I i;
+
+  behaviour
+  {
+    typedef int[0..3] State;
+
+    State state = 3;
+    State i = 0;
+
+    on i.e:
+      {
+        if (!state)
+        {
+          state = 3;
+          i.a;
+        }
+        else 
+        {
+          state = state - 1;
+          if (i < state)
+          {
+            i = i + 1;
+          }
+          else if (i <= state)
+          {
+            i.lo;
+          }
+          else if (i > state)
+          {
+            i.hi;
+          }
         }
       }
   }

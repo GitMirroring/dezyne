@@ -283,24 +283,13 @@ demo:
 	cd out && ../gaiag -l csp pauls.scm
 	-$(FDR3_PREFIX)/bin/cspmchecker out/Comp.csp
 
-if: compile
-	./gaiag examples/if.asd
-	./gaiag -l pretty examples/if.asd | $(INDENT)
-	cd out && ../gaiag -l c++ examples/if.asd
-
-context: compile
+expression: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
-	cd out && ../gaiag -l csp examples/argument2.asd
-	$(diff) examples/argument2.csp out || true
-	@$(diff) examples/argument2.csp out | diffstat
-	@$(diff) examples/argument2.csp out >/dev/null
-	$(FDR3_PREFIX)/bin/cspmchecker out/argument2.csp
-
-	cd out && ../gaiag -l csp examples/hide.asd
-	$(diff) examples/hide.csp out || true
-	@$(diff) examples/hide.csp out | diffstat
-	@$(diff) examples/hide.csp out >/dev/null
-	-$(FDR3_PREFIX)/bin/cspmchecker out/hide.csp
+	cd out && ../gaiag -l csp examples/expressions.asd
+	$(diff) examples/expressions.csp out || true
+	@$(diff) examples/expressions.csp out | diffstat
+	@$(diff) examples/expressions.csp out >/dev/null
+	$(FDR3_PREFIX)/bin/cspmchecker out/expressions.csp
 
 simulate: compile
 #	./gaiag -l simulate examples/if.asd
