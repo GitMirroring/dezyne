@@ -302,7 +302,7 @@
 
 (define (find-bind model port)
   (find (lambda (bind) 
-          (stderr "find: ~a in ~a?\n" port bind)
+          ;; (stderr "find: ~a in ~a?\n" port bind) ;; FIXME
           (or (equal? port (ast:port model (ast:left bind)))
               (equal? port (ast:port model (ast:right bind)))))
         (ast:binds model)))
@@ -312,7 +312,7 @@
              (other (if (equal? port (ast:port model (ast:left bind)))
                         (ast:right bind)
                         (ast:left bind))))
-            (stderr "other: ~a --> ~a ===>>> ~a?\n" other other (ast:port model other))
+            ;; (stderr "other: ~a --> ~a ===>>> ~a?\n" other other (ast:port model other)) ;; FIXME
             (ast:port model other)))
 
 (define (map-ports string ports)

@@ -68,7 +68,7 @@ namespace #.component ImplScope
     State& operator = (const State& other);
     State(const State& other);
 /*
-templates/component.cc.scm:65: TODO function-definitions */
+templates / component.cc.scm : 65 : TODO function-declarations */
   };
   class State;
 #})
@@ -407,7 +407,7 @@ templates/component.cc.scm:65: TODO function-definitions */
 #})
 
 /*
-templates/component.cc.scm:351: TODO function-definitions */
+templates / component.cc.scm : 351 : TODO function-definitions */
 
 }
 
