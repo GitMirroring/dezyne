@@ -1,6 +1,7 @@
+;; -*-scheme-*-
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright (C) 2014  Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -17,11 +18,27 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (language asd ast:)
-  :use-module ((language asd ast) :renamer (symbol-prefix-proc 'ast:))
-  :use-module ((language asd mangle) :renamer (symbol-prefix-proc 'ast:)))
+(define-module (test-handler)
+  :use-module (test-suite lib)
+  :use-module (test-suite misc)
 
-(eval `(re-export ,@(module-map (lambda (key x) key)
-                                (resolve-interface '(language asd ast) 
-                                                   :renamer (symbol-prefix-proc 'ast:)))) (current-module))
-(re-export ast:mangle)
+  :use-module (language asd reader)
+  :use-module (language asd mangle))
+
+(pass-if "mangle-first-dummy-test"
+	 #t)
+
+(pass-if "mangle-interface"
+  (pretty-noisy-equal?
+   (mangle '(interface I))
+   '(interface if_I)))
+
+(pass-if "mangle-component"
+  (pretty-noisy-equal?
+   (mangle '(component C))
+   '(component co_C)))
+
+(pass-if "mangle-port"
+  (pretty-noisy-equal?
+   (mangle '(component C (ports (provides I e))))
+   '(component co_C (ports (provides if_I ev_e)))))
