@@ -150,9 +150,10 @@
             (ast:type (ast:type (car variable)))))
 
 (define (csp-expression->string ast src)
-  (define (parens expression . rest)
-    (if (and (null? rest) (or (number? expression) (symbol? expression)))
-        expression (list "(" (cons expression rest) ")")))
+  (define (paren expression)
+    (if (or (number? expression) (symbol? expression))
+        expression 
+        (list "(" (csp-expression->string ast expression) ")")))
 
   (match src
     (('expression expression) (csp-expression->string ast expression))
@@ -164,12 +165,12 @@
            (list type "_" field))))
     (('literal scope type value) (list type "_" value))
 
-    (('group expression) (parens (csp-expression->string ast expression)))
+    (('group expression) (list "(" (csp-expression->string ast expression) ")"))
     (('! expression) 
-     (->string (list "not " (parens (csp-expression->string ast expression)))))  ;; FIXME: do we need to add gratituous parens?
+     (->string (list "not " (paren expression)))) ;; FIXME: do we need to add gratituous parens?
     (('or lhs rhs) (let ((lhs (csp-expression->string ast lhs))
                          (rhs (csp-expression->string ast rhs)))
-                     (parens lhs " " 'or " " rhs))) ;; FIXME: do we need to add gratituous parens?
+                     (list "(" lhs " " 'or " " rhs ")"))) ;; FIXME: do we need to add gratituous parens?
     (((or 'and '== '!= '< '<= '> '>= '+ '-) lhs rhs)
      (let ((lhs (csp-expression->string ast lhs))
            (rhs (csp-expression->string ast rhs))

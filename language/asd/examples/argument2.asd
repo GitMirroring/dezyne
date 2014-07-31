@@ -34,7 +34,8 @@ interface I
       return ga || gb;
     }
 
-    [true] on e:
+    [true] 
+      on e:
       {
         b = ! b;
         bool c = g (b, b);
@@ -63,7 +64,8 @@ component argument2
       return ga || gb; 
     }
 
-    [true] on i.e:
+    [true] 
+      on i.e:
       {
         b = ! b;
         bool c = g (b, b);

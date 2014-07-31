@@ -155,6 +155,8 @@ pretty: compile
 	$(diff) examples/argument2.asd out
 	./gaiag -l asd examples/Typedef.asd | $(INDENT) > out/Typedef.asd
 	$(diff) examples/Typedef.asd out
+	./gaiag -l asd examples/expressions.asd | $(INDENT) > out/expressions.asd
+	$(diff) examples/expressions.asd out
 
 c++: compile baseline
 	rm -rf out && mkdir out && ln -s ../examples ../templates out

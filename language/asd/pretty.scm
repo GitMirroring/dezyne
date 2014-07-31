@@ -52,16 +52,29 @@
     ((? string?) src)
     ((? integer?) (number->string src))
     ((? ast:parameters?) (comma-join (map parameter->string (ast:body src))))
-    (('! expression)
-     (let ((paren (lambda (e) (if (symbol? e) 
-                                  (->string e) 
-                                  (string-append "(" (->string e) ")")))))
-       (string-append "!" (paren expression))))
     ((? ast:enum?) ((->join ".") (cdr src)))
     ((? ast:signature?) (->string (ast:name (ast:return-type src))))
     ((? ast:type?) (->string (ast:name ast)))
+
+    ;; FIXME: c&p from csp.scm (and...TODO: c++.scm) grmbl
+    (('group expression) (list "(" (->string expression) ")"))
+    (('! expression) (->string (list "!" (paren expression))))
+    (('or lhs rhs) (let ((lhs (->string lhs))
+                         (rhs (->string rhs)))
+                     (list "(" lhs " " 'or " " rhs ")"))) ;; FIXME: do we need to add gratituous parens?
+    (((or 'and '== '!= '< '<= '> '>= '+ '-) lhs rhs)
+     (let ((lhs (->string lhs))
+           (rhs (->string rhs))
+           (op (car src)))
+       (list lhs " " op " " rhs )))
+
     ((h ...) (string-join (map ->string h)))
     (_ (format #f "~a:->string:no match:~a\n" (current-source-location) src))))
+
+(define (paren expression)
+  (if (or (number? expression) (symbol? expression))
+      (->string expression)
+      (->string (list "(") (->string expression) ")")))
 
 (define (parameter->string x)
   (->string (list (ast:name (ast:type x)) " " (ast:name x))))
