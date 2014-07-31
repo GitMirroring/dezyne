@@ -35,7 +35,8 @@ interface I
     State state = 3;
     State i = 0;
 
-    on e:
+    [true]
+      on e:
       {
         if (!state)
         {
@@ -73,7 +74,8 @@ component expressions
     State state = 3;
     State i = 0;
 
-    on i.e:
+    [true] 
+      on i.e:
       {
         if (!state)
         {
