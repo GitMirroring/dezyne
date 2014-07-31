@@ -33,6 +33,7 @@ FDR3_PREFIX=/usr/local/
 GUILE = guile
 SCRIPTS = coverage gaiag json2scm scm2json 
 SCM_SOURCES = $(shell git ls-files *.scm | grep -v 'templates')
+INDENT = ( cat > .$$$$; astyle -s2 -L < .$$$$; rm -f .$$$$)
 
 -include .local.make
 
@@ -81,6 +82,10 @@ coverage: clean
 	cd gaiag.lcov && ../coverage gaiag -l asd examples/argument2.asd >/dev/null
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-asd-argument2.info | grep -v Removing
+
+	cd gaiag.lcov && ../coverage gaiag -l asd examples/Typedef.asd >/dev/null
+	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-asd-Typedef.info | grep -v Removing
 
 	cd gaiag.lcov && ../coverage gaiag -l csp examples/Alarm.asd
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
@@ -146,6 +151,8 @@ pretty: compile
 	$(diff) examples/function.asd out
 	./gaiag -l asd examples/argument2.asd | indent > out/argument2.asd
 	$(diff) examples/argument2.asd out
+	./gaiag -l asd examples/Typedef.asd | $(INDENT) > out/Typedef.asd
+	$(diff) examples/Typedef.asd out
 
 c++: compile baseline
 	rm -rf out && mkdir out && ln -s ../examples ../templates out

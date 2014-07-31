@@ -1,1 +1,1 @@
-typedef #name  int[#range ];
+typedef int[#range ] #name ;

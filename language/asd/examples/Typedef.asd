@@ -26,8 +26,6 @@ interface Typedef
   enum Enum { one, two };
   typedef int[0..3] Typedef;
 
-
   in Enum e;
   out Typedef o;
-
 }
