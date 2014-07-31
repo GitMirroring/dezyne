@@ -1,1 +1,2 @@
-on #trigger : #statement
+on #trigger : 
+#statement

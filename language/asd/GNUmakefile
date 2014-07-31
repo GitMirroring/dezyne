@@ -33,7 +33,6 @@ FDR3_PREFIX=/usr/local/
 GUILE = guile
 SCRIPTS = coverage gaiag json2scm scm2json 
 SCM_SOURCES = $(shell git ls-files *.scm | grep -v 'templates')
-INDENT = ( cat > .$$$$; astyle -s2 -L < .$$$$; rm -f .$$$$)
 CSPMCHECKER = $(FDR3_PREFIX)/bin/cspmchecker
 REFINES =  $(FDR3_PREFIX)/bin/refines --brief --quiet --format=plain
 
@@ -147,15 +146,15 @@ pretty: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
 	./gaiag -l asd examples/interface-enums.asd > out/interface-enums.asd
 	$(diff) examples/interface-enums.asd out
-	./gaiag -l asd examples/alarm-component.asd | $(INDENT) > out/alarm-component.asd 
+	./gaiag -l asd examples/alarm-component.asd > out/alarm-component.asd 
 	$(diff) examples/alarm-component.asd out
-	./gaiag -l asd examples/function.asd | $(INDENT) > out/function.asd
+	./gaiag -l asd examples/function.asd > out/function.asd
 	$(diff) examples/function.asd out
-	./gaiag -l asd examples/argument2.asd | $(INDENT) > out/argument2.asd
+	./gaiag -l asd examples/argument2.asd > out/argument2.asd
 	$(diff) examples/argument2.asd out
-	./gaiag -l asd examples/Typedef.asd | $(INDENT) > out/Typedef.asd
+	./gaiag -l asd examples/Typedef.asd > out/Typedef.asd
 	$(diff) examples/Typedef.asd out
-	./gaiag -l asd examples/expressions.asd | $(INDENT) > out/expressions.asd
+	./gaiag -l asd examples/expressions.asd > out/expressions.asd
 	$(diff) examples/expressions.asd out
 
 c++: compile baseline

@@ -25,13 +25,14 @@
 
   :use-module (language asd animate)
   :use-module (language asd ast:)
+  :use-module (language asd indent)
   :use-module (language asd misc)
   :use-module (language asd reader)
 
   :export (ast-> ast->asd ast->pretty ast->string))
 
 (define (ast->string ast) 
-  (apply string-append (map ->string ast)))
+  (indent-string (apply string-append (map ->string ast))))
 
 (define ast-> ast->string)
 (define ast->asd ast->string)
@@ -43,7 +44,7 @@
     (#t "true")
     ('() "")
     (('behaviour) "")
-    (('compound s ...) (string-join (append '("\n{\n") (map ->string (cdr src)) '("}\n") ) ""))
+    (('compound s ...) (string-join (append '("{\n") (map ->string (cdr src)) '("}\n") ) ""))
     (('if expr statement else) (->string (cons 'if-then-else (cdr src))))
     (('if expr statement) (->string (cons 'if-then (cdr src))))
     ((? asd-template?) (apply asd-template->string src))

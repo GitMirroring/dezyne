@@ -50,14 +50,16 @@ interface I
           {
             c = c + 1;
           }
-          else if (c <= (state + 1))
-          {
-            lo;
-          }
-          else if (c > state)
-          {
-            hi;
-          }
+          else 
+            if (c <= (state + 1))
+            {
+              lo;
+            }
+            else 
+              if (c > state)
+              {
+                hi;
+              }
         }
       }
   }
@@ -89,14 +91,16 @@ component expressions
           {
             c = c + 1;
           }
-          else if (c <= (state + 1))
-          {
-            i.lo;
-          }
-          else if (c > state)
-          {
-            i.hi;
-          }
+          else 
+            if (c <= (state + 1))
+            {
+              i.lo;
+            }
+            else
+              if (c > state)
+              {
+                i.hi;
+              }
         }
       }
   }
