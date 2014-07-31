@@ -245,11 +245,21 @@
    (expression
     (NumericLiteral) : $1
     (lparen expression rparen) : $1
+
     (! expression) : `(! ,$2)
     (expression and expression) : `(and ,$1 ,$3)
     (expression or expression) : `(or ,$1 ,$3)
+
     (expression == expression) : `(== ,$1 ,$3)
     (expression != expression) : `(!= ,$1 ,$3)
+    (expression < expression) : `(< ,$1 ,$3)
+    (expression <= expression) : `(<= ,$1 ,$3)
+    (expression > expression) : `(> ,$1 ,$3)
+    (expression >= expression) : `(>= ,$1 ,$3)
+
+    (expression + expression) : `(+ ,$1 ,$3)
+    (expression - expression) : `(- ,$1 ,$3)
+
     (compound-identifier) : $1
     (function-call) : $1)
 

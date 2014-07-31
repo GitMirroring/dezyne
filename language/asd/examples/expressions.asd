@@ -41,8 +41,7 @@ interface expressions
         }
         else 
         {
-          // state = state - 1;
-          state = 0;
+          state = state - 1;
         }
       }
   }
