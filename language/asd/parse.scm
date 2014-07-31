@@ -243,6 +243,7 @@
     (typedef int lbracket NumericLiteral .. NumericLiteral rbracket Identifier semicolon) : `(int ,$8 (range ,$4 ,$6)))
 
    (expression
+    (NumericLiteral) : $1
     (lparen expression rparen) : $1
     (! expression) : `(! ,$2)
     (expression and expression) : `(and ,$1 ,$3)
