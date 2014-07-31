@@ -28,9 +28,9 @@ interface I
   behaviour
     {
       enum Enum { False, True };
-      Enum e = Enum.False;
-      [e.False] on e: if (e.False) a;
-      //[e.False] on e: if (e == Enum.False) a;
+      Enum s = Enum.False;
+      [s.False] on e: if (s.False) a;
+      //[s.False] on e: if (s == Enum.False) a;
     }
 }
 
@@ -40,8 +40,8 @@ component sugar
   behaviour 
     {
       enum Enum { False, True };
-      Enum e = Enum.False;
-      [e.False] on i.e: if (e.False) i.a;
-      //[e.False] on i.e: if (e.False) i.a;
+      Enum s = Enum.False;
+      [s.False] on i.e: if (s.False) i.a;
+      //[s.False] on i.e: if (s == False) i.a;
     }
 }

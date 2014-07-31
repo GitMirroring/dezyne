@@ -38,28 +38,28 @@ channel I,i: {a,e,e,return}
 
 I_(IG) = let
 
-I__(((e),stack')) =
-(e == Enum_False) & (
+I__(((s),stack')) =
+(s == Enum_False) & (
 I?x:{e} ->
-semi_(\ P',((e),(stack')) @ ifthenelse_(e == Enum_False,
+semi_(\ P',((s),(stack')) @ ifthenelse_(s == Enum_False,
 (\ P',V' @ I!a -> P'(V')),
 (\ P',V' @ P'(V'))
-)(P',((e),(stack'))),
-(\ P',V' @ I.return -> P'(V')))(\ V' @ I__(V'),((e),(stack'))))
+)(P',((s),(stack'))),
+(\ P',V' @ I.return -> P'(V')))(\ V' @ I__(V'),((s),(stack'))))
 
 within I__(((Enum_False),<>)) 
 
 
 sugar_(IIG,IG) = let
 
-sugar__(((e),stack')) = transition_begin -> (
-(e == Enum_False) & (
+sugar__(((s),stack')) = transition_begin -> (
+(s == Enum_False) & (
 i?x:{e} ->
-semi_(\ P',((e),(stack')) @ ifthenelse_(e == Enum_False,
+semi_(\ P',((s),(stack')) @ ifthenelse_(s == Enum_False,
 (\ P',V' @ i!a -> P'(V')),
 (\ P',V' @ P'(V'))
-)(P',((e),(stack'))),
-(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> sugar__(V'),((e),(stack'))))
+)(P',((s),(stack'))),
+(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> sugar__(V'),((s),(stack'))))
 )
 within sugar__(((Enum_False),<>))
 
