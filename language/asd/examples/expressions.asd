@@ -23,8 +23,6 @@
 
 interface I
 {
-  typedef int[0..3] State;
-
   in void e;
   out void a;
   out void hi;
@@ -32,6 +30,8 @@ interface I
   
   behaviour
   {
+    typedef int[0..3] State;
+
     State state = 3;
     State c = 0;
 
@@ -50,7 +50,7 @@ interface I
           {
             c = c + 1;
           }
-          else if (c <= (state + 1))
+          else if (c <= state)
           {
             lo;
           }
@@ -89,7 +89,7 @@ component expressions
           {
             c = c + 1;
           }
-          else if (c <= state)
+          else if (c <= (state + 1))
           {
             i.lo;
           }

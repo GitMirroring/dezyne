@@ -154,7 +154,6 @@
     (if (and (null? rest) (or (number? expression) (symbol? expression)))
         expression (list "(" (cons expression rest) ")")))
 
-  (stderr "expression: ~a\n" src)
   (match src
     (('expression expression) (csp-expression->string ast expression))
     ((or (? number?) (? symbol?)) src)
@@ -170,13 +169,12 @@
      (->string (list "not " (parens (csp-expression->string ast expression)))))  ;; FIXME: do we need to add gratituous parens?
     (('or lhs rhs) (let ((lhs (csp-expression->string ast lhs))
                          (rhs (csp-expression->string ast rhs)))
-                     (parens lhs 'or rhs))) ;; FIXME: do we need to add gratituous parens?
+                     (parens lhs " " 'or " " rhs))) ;; FIXME: do we need to add gratituous parens?
     (((or 'and '== '!= '< '<= '> '>= '+ '-) lhs rhs)
      (let ((lhs (csp-expression->string ast lhs))
            (rhs (csp-expression->string ast rhs))
            (op (car src)))
-       (stderr "   --> ~a\n" (list lhs op rhs ))
-       (list lhs op rhs )))
+       (list lhs " " op " " rhs )))
 
     (_ (format #f "~a:NO MATCH: ~a" (current-source-location) src))))
 
