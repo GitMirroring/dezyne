@@ -35,6 +35,7 @@
 (define* (eat-space :optional (port (current-input-port)))
   (while (and-let* ((c (peek-char port)) ((eq? c #\space))) (read-char port))))
 
+(define no-indent "#")
 (define* (indent :optional (indent 2) (port (current-input-port)))
   (let loop ((level 0))
     (define* (space :optional (c level)) (display (make-string c #\space)))
@@ -54,6 +55,7 @@
                ((eq? c #\}) (let ((i (- level indent)))
                               (space i) (display c) (loop i)))
                ((eq? c #\newline) (unread-char c port))
+               ((string-index no-indent c) (display c))
                (else (space) (display c)))))
            ((eq? c #\{) (display c) (set! level (+ level indent)))
            ((eq? c #\}) (display c) (set! level (- level indent)))

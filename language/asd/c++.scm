@@ -27,6 +27,7 @@
 
   :use-module (language asd ast:)
   :use-module (language asd animate)
+  :use-module (language asd indent)
   :use-module (language asd misc)
   :use-module (language asd reader)
   :export (ast->
@@ -35,8 +36,7 @@
            november
            traditional-interface
            traditional-component-header
-           traditional-component
-           ))
+           traditional-component))
 
 (define *ast* '())
 
@@ -48,24 +48,29 @@
   (and=> (ast:system ast) dump-instances)
   "")
 
+(define (pipe producer consumer)
+  (with-input-from-string (with-output-to-string producer) consumer))
+
+(define (dump-indented file-name thunk)
+  (dump-output file-name (lambda () (pipe thunk (lambda () (indent))))))
 
 (define (dump-interface model)
   (let ((file-name (list (ast:name model) 'Interface.h)))
-    (dump-output file-name 
-                 (lambda ()
-                   ((animate-template 'interface.hh.scm) (c++-module *ast*))))))
+    (dump-indented file-name 
+                   (lambda ()
+                     ((animate-template 'interface.hh.scm) (c++-module *ast*))))))
 
 (define (dump-component model)
   (let ((name (ast:name model)))
-    (dump-output (list name 'Component.h)
-                 (lambda ()
-                   ((animate-template 'component.hh.scm) (c++-module *ast*))))
-    (dump-output (list name 'Component.cpp)
-                 (lambda ()
-                   ((animate-template 'component.cc.scm) (c++-module *ast*))))
-    (dump-output (list name '-c2.cc)
-                 (lambda ()
-                   ((animate-template 'c2.cc.scm) (c++-module *ast*))))))
+    (dump-indented (list name 'Component.h)
+                   (lambda ()
+                     ((animate-template 'component.hh.scm) (c++-module *ast*))))
+    (dump-indented (list name 'Component.cpp)
+                   (lambda ()
+                     ((animate-template 'component.cc.scm) (c++-module *ast*))))
+    (dump-indented (list name '-c2.cc)
+                   (lambda ()
+                     ((animate-template 'c2.cc.scm) (c++-module *ast*))))))
 
 (use-modules (ice-9 pretty-print))
 (define (dump-instance instance)
