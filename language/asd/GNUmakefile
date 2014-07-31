@@ -121,7 +121,7 @@ baseline: dummy
 	rm -rf baseline && mkdir -p baseline
 	cp examples/*asd baseline
 	sed -rie 's/^(import .*);/\1.asd;/' baseline/*.asd
-	cd baseline && $(asdgen) -l cpp alarm-component-pretty.asd
+	cd baseline && $(asdgen) -l cpp alarm-component.asd
 	cd baseline && $(asdgen) -l cpp CommImpl.asd
 	cd baseline && $(asdgen) -l cpp Aap.asd
 	cd baseline && $(asdgen) -l cpp Alarm.asd
@@ -145,11 +145,11 @@ pretty: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
 	./gaiag -l asd examples/interface-enums.asd > out/interface-enums.asd
 	$(diff) examples/interface-enums.asd out
-	./gaiag -l asd examples/alarm-component-pretty.asd | indent > out/alarm-component-pretty.asd 
-	$(diff) examples/alarm-component-pretty.asd out
-	./gaiag -l asd examples/function.asd | indent > out/function.asd
+	./gaiag -l asd examples/alarm-component.asd | $(INDENT) > out/alarm-component.asd 
+	$(diff) examples/alarm-component.asd out
+	./gaiag -l asd examples/function.asd | $(INDENT) > out/function.asd
 	$(diff) examples/function.asd out
-	./gaiag -l asd examples/argument2.asd | indent > out/argument2.asd
+	./gaiag -l asd examples/argument2.asd | $(INDENT) > out/argument2.asd
 	$(diff) examples/argument2.asd out
 	./gaiag -l asd examples/Typedef.asd | $(INDENT) > out/Typedef.asd
 	$(diff) examples/Typedef.asd out
@@ -285,7 +285,7 @@ demo:
 
 if: compile
 	./gaiag examples/if.asd
-	./gaiag -l pretty examples/if.asd | indent
+	./gaiag -l pretty examples/if.asd | $(INDENT)
 	cd out && ../gaiag -l c++ examples/if.asd
 
 context: compile

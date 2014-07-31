@@ -43,7 +43,7 @@
     (#t "true")
     ('() "")
     (('behaviour) "")
-    (('compound s ...) (string-join (append '("{ ") (map ->string (cdr src)) '("}\n") ) ""))
+    (('compound s ...) (string-join (append '("\n{\n") (map ->string (cdr src)) '("}\n") ) ""))
     (('if expr statement else) (->string (cons 'if-then-else (cdr src))))
     (('if expr statement) (->string (cons 'if-then (cdr src))))
     ((? asd-template?) (apply asd-template->string src))
