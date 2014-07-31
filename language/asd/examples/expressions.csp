@@ -39,15 +39,51 @@ channel I,i: {a,e,hi,lo,return}
 I_(IG) = let
 
 I__(((state,i),stack')) =
+(true) & (
+I?x:{e} ->
+semi_(\ P',((state,i),(stack')) @ ifthenelse_(not state,
+semi_(assign_(\ ((state,i),(stack')) @ ((3,i),(stack'))),
+(\ P',V' @ I!a -> P'(V'))),
+semi_(assign_(\ ((state,i),(stack')) @ ((state-1,i),(stack'))),
+\ P',((state,i),(stack')) @ ifthenelse_(i<state,
+assign_(\ ((state,i),(stack')) @ ((state,i+1),(stack'))),
+\ P',((state,i),(stack')) @ ifthenelse_(i<=(state+1),
+(\ P',V' @ I!lo -> P'(V')),
+\ P',((state,i),(stack')) @ ifthenelse_(i>state,
+(\ P',V' @ I!hi -> P'(V')),
+(\ P',V' @ P'(V'))
+)(P',((state,i),(stack')))
+)(P',((state,i),(stack')))
+)(P',((state,i),(stack'))))
+)(P',((state,i),(stack'))),
+(\ P',V' @ I.return -> P'(V')))(\ V' @ I__(V'),((state,i),(stack'))))
 
-within I__(((),<>)) 
+within I__(((3,0),<>)) 
 
 
 expressions_(IIG,IG) = let
 
 expressions__(((state,i),stack')) = transition_begin -> (
+(true) & (
+i?x:{e} ->
+semi_(\ P',((state,i),(stack')) @ ifthenelse_(not state,
+semi_(assign_(\ ((state,i),(stack')) @ ((3,i),(stack'))),
+(\ P',V' @ i!a -> P'(V'))),
+semi_(assign_(\ ((state,i),(stack')) @ ((state-1,i),(stack'))),
+\ P',((state,i),(stack')) @ ifthenelse_(i<state,
+assign_(\ ((state,i),(stack')) @ ((state,i+1),(stack'))),
+\ P',((state,i),(stack')) @ ifthenelse_(i<=state,
+(\ P',V' @ i!lo -> P'(V')),
+\ P',((state,i),(stack')) @ ifthenelse_(i>state,
+(\ P',V' @ i!hi -> P'(V')),
+(\ P',V' @ P'(V'))
+)(P',((state,i),(stack')))
+)(P',((state,i),(stack')))
+)(P',((state,i),(stack'))))
+)(P',((state,i),(stack'))),
+(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> expressions__(V'),((state,i),(stack'))))
 )
-within expressions__(((),<>))
+within expressions__(((3,0),<>))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}

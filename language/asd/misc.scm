@@ -155,6 +155,7 @@
       ((? char?) (make-string 1 src))
       ((? string?) src)
       ((? symbol?) (symbol->string src))
+      ((? number?) (number->string src))
       ((h ... t) (apply string-append (map ->string src)))
       (_ ""))))
 

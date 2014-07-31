@@ -150,25 +150,34 @@
             (ast:type (ast:type (car variable)))))
 
 (define (csp-expression->string ast src)
+  (define (parens expression . rest)
+    (if (and (null? rest) (or (number? expression) (symbol? expression)))
+        expression (list "(" (cons expression rest) ")")))
+
+  (stderr "expression: ~a\n" src)
   (match src
     (('expression expression) (csp-expression->string ast expression))
+    ((or (? number?) (? symbol?)) src)
     (('value type field) 
      (let ((prefix (variable-prefix ast type)))
        (if prefix
            (list type " == " prefix "_" field)
            (list type "_" field))))
     (('literal scope type value) (list type "_" value))
-    ((? symbol?) src)
+
+    (('group expression) (parens (csp-expression->string ast expression)))
     (('! expression) 
-     (let ((parens (if (symbol? expression) identity (lambda (x) (list "(" x ")")))))
-       (->string (list "not " (parens (csp-expression->string ast expression))))))
+     (->string (list "not " (parens (csp-expression->string ast expression)))))  ;; FIXME: do we need to add gratituous parens?
     (('or lhs rhs) (let ((lhs (csp-expression->string ast lhs))
                          (rhs (csp-expression->string ast rhs)))
-                     (list "(" lhs  " or " rhs ")")))
-    (((or 'and '== '!=) lhs rhs) (let ((lhs (csp-expression->string ast lhs))
-                                       (rhs (csp-expression->string ast rhs))
-                                       (op (car src)))
-                                   (list lhs " " op " " rhs )))
+                     (parens lhs 'or rhs))) ;; FIXME: do we need to add gratituous parens?
+    (((or 'and '== '!= '< '<= '> '>= '+ '-) lhs rhs)
+     (let ((lhs (csp-expression->string ast lhs))
+           (rhs (csp-expression->string ast rhs))
+           (op (car src)))
+       (stderr "   --> ~a\n" (list lhs op rhs ))
+       (list lhs op rhs )))
+
     (_ (format #f "~a:NO MATCH: ~a" (current-source-location) src))))
 
 (define (port-triggers port)
@@ -178,11 +187,11 @@
    (map (lambda (x) (symbol-append (ast:name enum) '_ x)) (ast:elements enum)))
 
 (define (enum-values comp)
-  (let ((comp-values (apply append (map typed-elements (ast:types (ast:behaviour comp))))))
+  (let ((comp-values (apply append (map typed-elements (ast:enums (ast:behaviour comp))))))
     (let loop ((ports (ast:ports comp)) (values comp-values))
       (if (null? ports)
           values
-          (loop (cdr ports) (append values (apply append (map typed-elements (ast:types (ast:behaviour (ast-norm (ast:type (car ports)))))))))))))
+          (loop (cdr ports) (append values (apply append (map typed-elements (ast:enums (ast:behaviour (ast-norm (ast:type (car ports)))))))))))))
 
 (define (return-value enum)
   (map (lambda (value) (symbol-append (ast:name enum) '_ value)) (ast:elements enum)))
@@ -193,7 +202,7 @@
       (append (apply append returns) (list 'return)))) ;; FIXME: add only return when needed
 
 (define (return-values-port port)
-  (add-return-if-empty (map return-value (ast:types (ast-norm (ast:type port))))))
+  (add-return-if-empty (map return-value (ast:enums (ast-norm (ast:type port))))))
 
 (define (return-values comp)
     (let loop ((ports (ast:ports comp)) (result '()))

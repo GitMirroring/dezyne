@@ -195,6 +195,7 @@
            direction
            elements
            enum?
+           enums
            event
            event?
 	   event-name
@@ -215,6 +216,7 @@
            instances
            instances?
            int?
+           integers
            interface
            interfaces
            interface?
@@ -664,6 +666,12 @@
     ((? system?) '())
     ('() ast)
     (_ (throw 'match-error  (format #f "~a:types: no match: ~a\n" (current-source-location) ast)))))
+
+(define (enums ast)
+  (filter enum? (types ast)))
+
+(define (integers ast)
+  (filter int? (types ast)))
 
 (define (variables ast)
   (match ast

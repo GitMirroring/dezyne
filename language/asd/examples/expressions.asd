@@ -50,7 +50,7 @@ interface I
           {
             i = i + 1;
           }
-          else if (i <= state)
+          else if (i <= (state + 1))
           {
             lo;
           }
