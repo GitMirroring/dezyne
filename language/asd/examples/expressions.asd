@@ -33,12 +33,12 @@ interface I
   behaviour
   {
     State state = 3;
-    State i = 0;
+    State c = 0;
 
     [true]
       on e:
       {
-        if (!state)
+        if (state == 0)
         {
           state = 3;
           a;
@@ -46,15 +46,15 @@ interface I
         else 
         {
           state = state - 1;
-          if (i < state)
+          if (c < state)
           {
-            i = i + 1;
+            c = c + 1;
           }
-          else if (i <= (state + 1))
+          else if (c <= (state + 1))
           {
             lo;
           }
-          else if (i > state)
+          else if (c > state)
           {
             hi;
           }
@@ -72,12 +72,12 @@ component expressions
     typedef int[0..3] State;
 
     State state = 3;
-    State i = 0;
+    State c = 0;
 
     [true] 
       on i.e:
       {
-        if (!state)
+        if (state == 0)
         {
           state = 3;
           i.a;
@@ -85,15 +85,15 @@ component expressions
         else 
         {
           state = state - 1;
-          if (i < state)
+          if (c < state)
           {
-            i = i + 1;
+            c = c + 1;
           }
-          else if (i <= state)
+          else if (c <= state)
           {
             i.lo;
           }
-          else if (i > state)
+          else if (c > state)
           {
             i.hi;
           }
