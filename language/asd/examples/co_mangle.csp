@@ -44,7 +44,7 @@ returnvalue_(\ ((b),((stack',m))) @ (m or b))))(P',V')
 if_mangle_mangle_(((b),stack')) =
 (true) & (
 if_mangle?x:{ev_mangle} ->
-semi_(semi_(assign_(\ ((b),(stack')) @ ((not b),(stack'))),
+semi_(semi_(assign_(\ ((b),(stack')) @ (((not b)),(stack'))),
 \ P',((b),(stack')) @ ifthenelse_(b,
 (\ P',V' @ if_mangle!ev_mingle -> P'(V')),
 (\ P',V' @ P'(V'))
@@ -62,7 +62,7 @@ returnvalue_(\ ((b),((stack',m))) @ (m or b))))(P',V')
 co_mangle_mangle_(((b),stack')) = transition_begin -> (
 (true) & (
 po_mangle?x:{ev_mangle} ->
-semi_(semi_(assign_(\ ((b),(stack')) @ ((not b),(stack'))),
+semi_(semi_(assign_(\ ((b),(stack')) @ (((not b)),(stack'))),
 \ P',((b),(stack')) @ ifthenelse_(b,
 (\ P',V' @ po_mangle!ev_mingle -> P'(V')),
 (\ P',V' @ P'(V'))
