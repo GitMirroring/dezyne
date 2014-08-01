@@ -68,7 +68,7 @@ namespace #.component ImplScope
     State& operator = (const State& other);
     State(const State& other);
 #(map-functions
-#{  #.return-type  #.function (Context& __context__#.comma #.parameters );
+#{  #.return-type  #.function (Context& context#.comma #.parameters );
 #}
 (ast:functions model))
   };
@@ -415,8 +415,15 @@ namespace #.component ImplScope
 #} (ast:ports model))
 
 #(string-if (ast:functions model)
-#{/*
-templates/component.cc.scm:65: TODO function-declarations */
+#{
+#(map-functions
+#{  #.return-type  State::#.function (Context& context#.comma #.parameters )
+  {
+    Context::Predicates predicate = context.predicates();
+    #.statements
+  }
+#}
+(ast:functions model))
 #})
 #})
 }

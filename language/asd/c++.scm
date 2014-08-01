@@ -155,7 +155,7 @@
       (() "")
 
       ;; Comment-out to use pattern matching and in-line C++ code,
-      ;; enable to use list of c++-templates.
+      ;; enable to use list of c++-template snippets.
       ;;((? c++-template?) (parameterize ((statements.src src)) (apply c++-template->string src)))
 
       (('guard expr statement)
@@ -171,8 +171,6 @@
        (if (member (list 'trigger (ast:name port) (ast:name event)) triggers)
            (statements->string statement)
            ""))
-      (('value 'state field) (->string (list 'state " == " field))) ;; FIXME name resolution
-      (('value struct name) (->string (list struct "." name)))
       (('compound lst ...)
        (statements->string (list "{\n" lst (statement-last lst) "\n}\n")))
       (('last 'arguments)
@@ -180,8 +178,9 @@
       (('action 'illegal)
        (statements->string (list 'action-illegal)))
       (('action-illegal) (statements->string (statement-illegal)))
-      (('action lst ...) (action-statement->string lst)
-       )
+      (('action lst ...) (action-statement->string lst))
+      (('return) (->string (list 'return ";\n")))
+      (('return expression) (->string (list 'return " " (expression->string expression) ";\n")))
       (('variable type identifier expression)
        (statements->string (list (ast:name type) " " identifier " = " (expression->string expression) ";\n")))
       ((? char?) (make-string 1 src))
@@ -212,20 +211,17 @@
     (statements->string (list  "    ASD_ILLEGAL(\"" (ast:name (ast:component *ast*)) "\", \"State\", \"" (ast:type port) (callback port) "\", \"" (ast:name event) "\");\n"))))
 
 (define (statement-last->string)
-  (let ((port (statements.port))
-        (event (statements.event))
-        (arguments (arguments->string)))
-    (statements->string (list 'context.Set (ast:name port) (ast:type port) (api port) (ast:type (ast:return-type event)) "(" arguments ");\n"))))
-
-(define (arguments->string)
-  (let ((port (statements.port)))
-    (if (ast:typed? port)
-        (statements->string 
-         (list (ast:type port) "::" (return-type-text port)))
-        "")))
+  (or (and-let* ((port (statements.port))
+                 (event (statements.event))
+                 (arguments (if (ast:typed? port)
+                                (statements->string 
+                                 (list (ast:type port) "::" (return-type-text port)))
+                                "")))
+                (statements->string (list 'context.Set (ast:name port) (ast:type port) (api port) (ast:type (ast:return-type event)) "(" arguments ");\n")))
+      ""))
 
 (define (expr->clause expression)
-  (let* ((c-expression (expression->string expression))
+  (let* ((c-expression (bool-expression->string expression))
          (if-clause (list "    if (" c-expression ")"))
          (else-if-clause (list "    else if (" c-expression ")"))
          (else-clause "    else")
@@ -245,28 +241,51 @@
 (define (rhs->string rhs)
   (expression->string rhs))
 
+(define (is-member? identifier)
+  (member identifier (ast:member-names (ast:component *ast*))))
+
+(define (bool-expression->string ast)
+  (match ast
+    (('value (and (? is-member?) (get! identifier)) field)
+     (->string (bool-expression->string (identifier))  " == " field))
+    (('value struct field) (->string (list struct "." field)))
+    (_ (expression->string ast))))
+
 ;; FIXME: c&p from csp.scm
 (define (expression->string ast)
+
   (define (paren expression)
-    (if #f ;;(or (number? expression) (symbol? expression))
-        expression 
-        (list "(" (expression->string expression) ")")))
+    (list "(" (expression->string expression) ")"))
 
   (match ast
+    (('action function) (->string (list function "()")))
+    (('call function ('arguments arguments ...)) 
+     (let ((arguments ((->join ", ") (map expression->string (cons 'context arguments)))))
+       (->string (list function  "(" arguments ")"))))
+
     (('value type field)
      ((->join "::") (list (ast:name (ast:component *ast*)) type field)))
     ((? number?) (number->string ast))
     ((? string?) ast)
     ((? symbol?)
-     (let ((prefix (if (member ast (ast:member-names (ast:component *ast*)))
+     (let ((prefix (if (is-member? ast)
                        "predicate." "")))
        (->string (list prefix ast))))
     (('! expression) 
      (->string (list "! " (paren expression))))
-    (('action function) (->string (list function "()")))
-    (('call function ('arguments arguments ...)) 
-     (let ((arguments ((->join ", ") (map expression->string (cons 'context arguments)))))
-       (->string (list function  "(" arguments ")"))))
+
+    (('group expression) (paren expression))
+
+    (('or lhs rhs) (let ((lhs (expression->string lhs))
+                         (rhs (expression->string rhs)))
+                     (list "(" lhs " " 'or " " rhs ")")))
+
+    (((or 'and '== '!= '< '<= '> '>= '+ '-) lhs rhs)
+     (let ((lhs (expression->string lhs))
+           (rhs (expression->string rhs))
+           (op (car src)))
+       (list lhs " " op " " rhs )))
+
     (_ (format #f "~a:no match: ~a" (current-source-location) ast))))
 
 (define (parameter->string parameter)
@@ -501,7 +520,8 @@
                 `((.function . ,ast:name)
                   (.return-type . ,(compose ast:name ast:return-type))
                   (.comma . ,(lambda (x) (if (null-is-#f (ast:parameters x)) ", " "")))
-                  (.parameters . ,(lambda (x) ((->join ", ") (map parameter->string (ast:parameters x)))))))))))
+                  (.parameters . ,(lambda (x) ((->join ", ") (map parameter->string (ast:parameters x)))))
+                  (.statements . ,(lambda (x) (statements->string (ast:body (ast:statement x)))))))))))
        functions))
 
 (define (map-variables string variables)
