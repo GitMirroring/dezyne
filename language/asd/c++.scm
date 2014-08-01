@@ -130,6 +130,9 @@
 (define (declare-enum enum)
   (->string (list "enum "  (ast:name enum) "\n  {\n  " (comma-nl-join (ast:elements enum)) ",\n  };\n")))
 
+(define (declare-integer integer)
+  (->string (list "typedef int " (ast:name integer) ";\n")))
+
 ;;;; COMPONENT
 
 (define .api (api '(provides)))
@@ -163,8 +166,8 @@
                             (parameterize ((statements.src src))
                               (expr->clause expr))
                             "\n" (statements->string statement))))
-      (('if expression statement) (->string (list "if (" (expression->string expression) ")\n{\n" (statements->string statement) "}\n")))
-      (('if expression statement else) (->string (list "if (" (expression->string expression) ")\n{\n" (statements->string statement) "else\n{\n"  (statements->string else) "}\n")))
+      (('if expression statement) (->string (list "if (" (expression->string expression) ")\n" (statements->string statement))))
+      (('if expression statement else) (->string (list "if (" (expression->string expression) ")\n" (statements->string statement) "else\n"  (statements->string else))))
       (('assign lhs rhs ...)
        (->string (list (lhs->string lhs) " = " (expression->string (car rhs)) ";\n")))
       (('on triggers statement)
@@ -283,7 +286,7 @@
     (((or 'and '== '!= '< '<= '> '>= '+ '-) lhs rhs)
      (let ((lhs (expression->string lhs))
            (rhs (expression->string rhs))
-           (op (car src)))
+           (op (car ast)))
        (list lhs " " op " " rhs )))
 
     (_ (format #f "~a:no match: ~a" (current-source-location) ast))))
@@ -329,13 +332,17 @@
       (c++-template->string 'return-context-get)
       ""))
 
-(define (variable-value->string model v)
-  (case (ast:type (ast:type v))
-    ((bool) (->string (ast:expression v)))
-    (;;(enum)
-     else
-     (double-colon-join (append (list model) 
-                                (cdr (ast:expression v)))))))
+(define (variable-value->string model v) ;; FIXME: expression
+  (let* ((enums (map ast:name (ast:enums model)))
+         (booleans (map ast:name (ast:booleans model)))
+         (integers (map ast:name (ast:integers model)))
+         (type (ast:type (ast:type v))))
+  (cond 
+    ((member type enums)
+     (double-colon-join (append (list (ast:name model))
+                                (cdr (ast:expression v)))))
+    (else
+     (->string (ast:expression v))))))
 
 (define (ast:state-type v)
   (case (ast:type (ast:type v))
@@ -535,7 +542,7 @@
                 variable
                 `((.variable . ,ast:name)
                   (.state-type . ,ast:state-type)
-                  (.value . ,(lambda (variable) (variable-value->string (ast:name (ast:component *ast*)) variable)))))))))
+                  (.value . ,(lambda (variable) (variable-value->string (ast:component *ast*) variable)))))))))
        variables))
 
 (define (action port event) "enable")

@@ -39,7 +39,8 @@ namespace #.component ImplScope
 #{
   struct #.component 
   {
-    #(->string (map declare-enum (ast:types (ast:behaviour model))))
+    #(->string (map declare-enum (ast:enums (ast:behaviour model))))
+    #(->string (map declare-integer (ast:integers (ast:behaviour model))))
   };
 
   class State : public #.component 

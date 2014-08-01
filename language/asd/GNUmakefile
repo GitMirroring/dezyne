@@ -132,6 +132,7 @@ baseline: dummy
 	cd baseline && $(asdgen) -l cpp Sensor.asd
 	cd baseline && $(asdgen) -l cpp Siren.asd
 	-cd baseline && $(asdgen) -l cpp argument2.asd
+	-cd baseline && $(asdgen) -l cpp expressions.asd
 	cd baseline && $(asdgen) -l csp Alarm.asd
 
 ast: compile
@@ -197,6 +198,11 @@ c++: compile baseline
 	#$(diff) baseline/argument2Component.cpp out | $(sed)
 	$(diff) examples/argument2Component.h out
 	-$(diff) examples/argument2Component.cpp out | $(sed)
+
+	cd out && ../gaiag -l c++ examples/expressions.asd
+	$(diff) baseline/expressionsComponent.h out
+	-$(diff) baseline/expressionsComponent.cpp out | $(sed)
+	cd out && g++ -I ../../../examples/codegen/asd_cpp_runtime --std=c++11 -c expressionsComponent.cpp
 
 wfc: compile
 	-./gaiag -l wfc examples/double-on.asd
@@ -326,17 +332,24 @@ mangle: compile
 	$(CSPMCHECKER) out/co_mangle.csp
 	@$(diff) examples/co_mangle.csp out >/dev/null
 
-argument:
+expressions:
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
 	cd out && ../gaiag -l c++ examples/Alarm.asd
 	cd out && ../gaiag -l c++ examples/Aap.asd
-	cd out && ../gaiag -l c++ examples/argument2.asd
 
+	cd out && ../gaiag -l c++ examples/argument2.asd
 	#$(diff) baseline/argument2Component.h out
 	#$(diff) baseline/argument2Component.cpp out | $(sed)
 	$(diff) examples/argument2Component.h out
 	-$(diff) examples/argument2Component.cpp out | $(sed)
 	cd out && g++ -I ../../../examples/codegen/asd_cpp_runtime --std=c++11 -c argument2Component.cpp
+
+	cd out && ../gaiag -l c++ examples/expressions.asd
+	$(diff) baseline/expressionsComponent.h out
+	-$(diff) baseline/expressionsComponent.cpp out | $(sed)
+	#$(diff) examples/expressionsComponent.h out
+	#-$(diff) examples/expressionsComponent.cpp out | $(sed)
+	cd out && g++ -I ../../../examples/codegen/asd_cpp_runtime --std=c++11 -c expressionsComponent.cpp
 
 
 simulate: compile

@@ -183,13 +183,15 @@
            bind?
            binds
            body
+           bool?
+           booleans
            bottom?
            call?
            class
            component
            components
            component?
-           compound
+           compound?
            declarative?
            dir-matches?
            direction
@@ -310,6 +312,7 @@
 (define (assign? ast) (type-helper? 'assign ast))
 (define (behaviour? ast) (type-helper? 'behaviour ast))
 (define (bind? ast) (type-helper? 'bind ast))
+(define (bool? ast) (type-helper? 'bool ast))
 (define (call? ast) (type-helper? 'call ast))
 (define (component? ast) (type-helper? 'component ast))
 (define (compound? ast) (type-helper? 'compound ast))
@@ -666,6 +669,9 @@
     ((? system?) '())
     ('() ast)
     (_ (throw 'match-error  (format #f "~a:types: no match: ~a\n" (current-source-location) ast)))))
+
+(define (booleans ast)
+  (filter bool? (types ast)))
 
 (define (enums ast)
   (filter enum? (types ast)))
