@@ -197,7 +197,7 @@
            (op (car src)))
        (list "(" lhs " " op " " rhs ")")))
 
-    (_ (format #f "~a:NO MATCH: ~a" (current-source-location) src))))
+    (_ (format #f "~a:no match: ~a" (current-source-location) src))))
 
 (define (port-triggers port)
   (sort ((ast:find-events) (ast-norm (ast:type port))) symbol<))

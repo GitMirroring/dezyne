@@ -148,7 +148,7 @@
 (define statements.event (make-parameter #f))
 
 (define (statements->string src)
-  ;;(stderr "statements->string matching: ~a\n" src)
+;;  (stderr "statements->string: ~a\n" src)
   (let ((port (statements.port))
         (event (statements.event)))
     (match src
@@ -156,20 +156,20 @@
 
       ;; Comment-out to use pattern matching and in-line C++ code,
       ;; enable to use list of c++-templates.
-      ((? c++-template?) (parameterize ((statements.src src)) (apply c++-template->string src)))
+      ;;((? c++-template?) (parameterize ((statements.src src)) (apply c++-template->string src)))
 
-      (('guard expr statements ...)
+      (('guard expr statement)
        (statements->string (list 
                             (parameterize ((statements.src src))
                               (expr->clause expr))
-                            "\n" (statements->string statements))))
-      (('if expression statement) (->string (list "if (" (statements->string expression) ")\n{\n" (statements->string statement) "}\n")))
-      (('if expression statement else) (->string (list "if (" (statements->string expression) ")\n{\n" (statements->string statement) "else\n{\n"  (statements->string else) "}\n")))
+                            "\n" (statements->string statement))))
+      (('if expression statement) (->string (list "if (" (expression->string expression) ")\n{\n" (statements->string statement) "}\n")))
+      (('if expression statement else) (->string (list "if (" (expression->string expression) ")\n{\n" (statements->string statement) "else\n{\n"  (statements->string else) "}\n")))
       (('assign lhs rhs ...)
-       (->string (list (lhs->string lhs) " = " (rhs->string (car rhs)) ";\n")))
-      (('on triggers statements ...)
+       (->string (list (lhs->string lhs) " = " (expression->string (car rhs)) ";\n")))
+      (('on triggers statement)
        (if (member (list 'trigger (ast:name port) (ast:name event)) triggers)
-           (statements->string statements)
+           (statements->string statement)
            ""))
       (('value 'state field) (->string (list 'state " == " field))) ;; FIXME name resolution
       (('value struct name) (->string (list struct "." name)))
@@ -180,11 +180,15 @@
       (('action 'illegal)
        (statements->string (list 'action-illegal)))
       (('action-illegal) (statements->string (statement-illegal)))
-      (('action lst ...) (action-statement->string lst))
+      (('action lst ...) (action-statement->string lst)
+       )
+      (('variable type identifier expression)
+       (statements->string (list (ast:name type) " " identifier " = " (expression->string expression) ";\n")))
       ((? char?) (make-string 1 src))
       ((? string?) src)
       ((? symbol?) (symbol->string src))
-      ((h ... t) (apply string-append (map (lambda (x) (statements->string x)) src)))
+      ((h ... t)
+       (apply string-append (map (lambda (x) (statements->string x)) src)))
       (_ (stderr "~a: NO MATCH: ~a\n" (current-source-location) src) ""))))
 
 (define (statement-last lst)
@@ -220,14 +224,15 @@
          (list (ast:type port) "::" (return-type-text port)))
         "")))
 
-(define (expr->clause expr)
-  (let* ((if-clause (list "    if (predicate." expr ")"))
-         (else-if-clause (list "    else if (predicate." expr ")"))
+(define (expr->clause expression)
+  (let* ((c-expression (expression->string expression))
+         (if-clause (list "    if (" c-expression ")"))
+         (else-if-clause (list "    else if (" c-expression ")"))
          (else-clause "    else")
          (guards ((compose ast:body ast:statement ast:behaviour ast:component) *ast*))
          (first? (equal? (statements.src) (car guards)))
          (top? (member (statements.src) guards)))
-    (statements->string (if (eq? expr 'otherwise) else-clause (if (or first? (not top?)) if-clause else-if-clause)))))
+    (statements->string (if (eq? expression 'otherwise) else-clause (if (or first? (not top?)) if-clause else-if-clause)))))
 
 (define (lhs->string lhs)
   (let* ((state-variables ((compose ast:variables ast:behaviour ast:component) *ast*))
@@ -238,10 +243,34 @@
     (->string (list prefix (statements->string lhs)))))
 
 (define (rhs->string rhs)
-  (let* ((enum? (not (or (eq? rhs 'true) (eq? rhs 'false)))))
-    (if enum?
-        (value->string rhs)
-        (statements->string rhs))))
+  (expression->string rhs))
+
+;; FIXME: c&p from csp.scm
+(define (expression->string ast)
+  (define (paren expression)
+    (if #f ;;(or (number? expression) (symbol? expression))
+        expression 
+        (list "(" (expression->string expression) ")")))
+
+  (match ast
+    (('value type field)
+     ((->join "::") (list (ast:name (ast:component *ast*)) type field)))
+    ((? number?) (number->string ast))
+    ((? string?) ast)
+    ((? symbol?)
+     (let ((prefix (if (member ast (ast:member-names (ast:component *ast*)))
+                       "predicate." "")))
+       (->string (list prefix ast))))
+    (('! expression) 
+     (->string (list "! " (paren expression))))
+    (('action function) (->string (list function "()")))
+    (('call function ('arguments arguments ...)) 
+     (let ((arguments ((->join ", ") (map expression->string (cons 'context arguments)))))
+       (->string (list function  "(" arguments ")"))))
+    (_ (format #f "~a:no match: ~a" (current-source-location) ast))))
+
+(define (parameter->string parameter)
+  (->string (list (ast:name (ast:type parameter)) " " (ast:name parameter))))
 
 (define (c++-template? x) (parameterize ((templates c++-templates)) (template? x)))
 
@@ -459,6 +488,21 @@
                   (.return-interface-type . ,(lambda (event) (return-interface-type (ast:type port) event)))
                   (.return-context-get . ,(lambda (event) (return-context-get (ast:type port) event))))))))))
        events))
+
+(define (map-functions string functions)
+  (map (lambda (function)
+         (save-module-excursion
+          (lambda ()
+              (animate-string
+               string
+               (animate-module-populate
+                (current-module)
+                function
+                `((.function . ,ast:name)
+                  (.return-type . ,(compose ast:name ast:return-type))
+                  (.comma . ,(lambda (x) (if (null-is-#f (ast:parameters x)) ", " "")))
+                  (.parameters . ,(lambda (x) ((->join ", ") (map parameter->string (ast:parameters x)))))))))))
+       functions))
 
 (define (map-variables string variables)
   (map (lambda (variable)

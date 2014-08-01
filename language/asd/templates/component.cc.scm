@@ -67,10 +67,10 @@ namespace #.component ImplScope
   private:
     State& operator = (const State& other);
     State(const State& other);
-#(string-if (ast:functions model)
-#{/*
-templates/component.cc.scm:65: TODO function-declarations */
-#})
+#(map-functions
+#{  #.return-type  #.function (Context& __context__#.comma #.parameters );
+#}
+(ast:functions model))
   };
   class State;
 #})
