@@ -186,12 +186,8 @@
     (('literal scope type value) (list type "_" value))
 
     (('group expression) (list "(" (csp-expression->string ast expression) ")"))
-    (('! expression) 
-     (->string (list "(" "not " (paren expression) ")"))) ;; FIXME: do we need to add gratituous parens?
-    (('or lhs rhs) (let ((lhs (csp-expression->string ast lhs))
-                         (rhs (csp-expression->string ast rhs)))
-                     (list "(" lhs " " 'or " " rhs ")"))) ;; FIXME: do we need to add gratituous parens?
-    (((or 'and '== '!= '< '<= '> '>= '+ '-) lhs rhs)
+    (('! expression) (->string (list "(" "not " (paren expression) ")")))
+    (((or 'and 'or '== '!= '< '<= '> '>= '+ '-) lhs rhs)
      (let ((lhs (csp-expression->string ast lhs))
            (rhs (csp-expression->string ast rhs))
            (op (car src)))
