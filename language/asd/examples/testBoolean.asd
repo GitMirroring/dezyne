@@ -75,7 +75,7 @@ interface TestBool
   }
 }
 
-component testBool
+component testBoolean
 {
   provides TestBool i; 
   

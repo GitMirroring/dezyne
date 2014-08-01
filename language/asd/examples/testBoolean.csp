@@ -1,0 +1,143 @@
+-- drop_one_local: V => V 
+drop_one_local_((M', (L', L0'))) = (M', L')
+
+-- send_: (c: channel, e:event) => (P,V)->Proc
+send_(c',e') = \P',V' @ c'!e' -> P'(V')
+-- skip_: () => (P,V)->Proc
+skip_ = \P',V' @ P'(V')
+-- sendrecv_: (c: channel, e:event) => (P,V)->Proc
+sendrecv_(c',e') = \P',V' @ c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P',V')
+-- callvoid_: (B': (P,V)->Proc) => (P,V)->Proc
+callvoid_(B') = \P',V' @ B'(P', V')
+-- callvoid_args_: (B': (P,V)->Proc, F': V'->V') => (P,V)->Proc
+callvoid_args_(B',F') = \P',V' @ B'(P', V', F')
+-- assign_: (F': V -> V) => (P,V) -> Proc
+assign_(F') = \ P', V' @ P'(F'(V'))
+-- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
+assign_active_(C', A') = \P',V' @ C'(\((M', r'),L') @ P'(A'((M',L'),r')), V') 
+-- returnvalue_: (F: V->val) => (P,V)->Proc
+returnvalue_(F') = \P',(M',L') @ P'(((M',  F'((M', L'))), L'))
+-- the_end_: P => V->Proc
+the_end_(P') = \V' @ transition_end -> P'(V')
+
+-- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
+semi_(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
+-- ifthenelse: (E': val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
+ifthenelse_(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')   
+-- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
+context_(F', S') = \ P', (M', L') @ S'((\V2' @ P'(drop_one_local_(V2'))), (M', (L', F'((M', L')))))
+-- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
+context_active_(C', S') = \P',V' @ C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
+                                                     
+datatype event_enumeration_alphabet =
+States_State1 | States_State2 | evt | return
+
+channel illegal
+
+channel TestBool,i: {evt,return}
+
+TestBool_(IG) = let
+
+TestBool__(((b1,b2,b3,state1,state2),stack')) =
+((state1 == States_State1)) & (
+TestBool?x:{evt} ->
+semi_(semi_(assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ (((b1 or b2),b2,b3,state1,state2),(stack'))),
+semi_(assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ ((b1,(b1 and b2),b3,state1,state2),(stack'))),
+semi_(assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ ((b1,b2,(not b1),state1,state2),(stack'))),
+semi_(assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ ((true,b2,b3,state1,state2),(stack'))),
+semi_(assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ ((b1,false,b3,state1,state2),(stack'))),
+semi_(assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ ((b1,b2,(state1 == States_State2),state1,state2),(stack'))),
+semi_(assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ (((state2 != States_State2),b2,b3,state1,state2),(stack'))),
+semi_(assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ ((b1,((b1 and b2)),b3,state1,state2),(stack'))),
+semi_(assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ ((b1,b2,(state1 == States_State2),state1,state2),(stack'))),
+semi_(assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ ((b1,((b1 or b2) or b3),b3,state1,state2),(stack'))),
+semi_(assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ ((b1,b2,((b1 and b2) and b3),state1,state2),(stack'))),
+semi_(assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ (((not ((not b2))),b2,b3,state1,state2),(stack'))),
+semi_(assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ ((((not b2) and b3),b2,b3,state1,state2),(stack'))),
+semi_(assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ ((b1,((not b2) or b3),b3,state1,state2),(stack'))),
+semi_(assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ ((b1,b2,(not (((state1 == States_State2)))),state1,state2),(stack'))),
+semi_(assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ ((((b2 and b3) or b1),b2,b3,state1,state2),(stack'))),
+semi_(assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ ((b1,(b1 or (b2 and b3)),b3,state1,state2),(stack'))),
+\ P',((b1,b2,b3,state1,state2),(stack')) @ ifthenelse_((state1 == States_State2),
+assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ (((not b1),b2,b3,state1,state2),(stack'))),
+(\ P',V' @ P'(V'))
+)(P',((b1,b2,b3,state1,state2),(stack')))))))))))))))))))),
+(\ P',V' @ TestBool.return -> P'(V')))(\ V' @ TestBool__(V'),((b1,b2,b3,state1,state2),(stack'))))
+[]
+(((state2 == States_State1) and b1)) & (
+TestBool?x:{evt} ->
+(\ P',V' @ TestBool.return -> P'(V'))(\ V' @ TestBool__(V'),((b1,b2,b3,state1,state2),(stack'))))
+
+within TestBool__(((true,true,true,States_State1,States_State2),<>)) 
+
+
+testBoolean_(IIG,IG) = let
+
+testBoolean__(((b),stack')) = transition_begin -> (
+(true) & (
+i?x:{evt} ->
+(\ P',V' @ i.return -> P'(V'))(\ V' @ transition_end -> testBoolean__(V'),((b),(stack'))))
+)
+within testBoolean__(((false),<>))
+
+channel extensions_over_empty_channels_is_undefined
+channel IN,OUT : {extensions_over_empty_channels_is_undefined}
+
+SINGLETHREADED = true
+
+channel transition_begin, transition_end
+
+channel reorder_in,reorder_out : {i.return}
+
+SEMANTICS(in',out',client',modeling') = let
+Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
+       []
+       length(s') > 0 & out'!head(s') -> Q'(tail(s'))
+       []
+       length(s') == card({|in'|}) & in'?x' -> illegal -> STOP
+
+R'(A') = ([] x' : A' @ x' -> R'(A'))
+       []
+       reorder_in?x' -> reorder_out!x' -> R'(A')
+
+S'    = let
+
+Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
+
+Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!head(r') -> Idle(0))
+            []
+            c' > 0 & transition_end -> transition_begin -> Busy(c',r')
+            []
+            c' < card({|in'|}) & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            []
+            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            []
+            r' == <> & reorder_in?x' -> Busy(c',<x'>)
+            []
+            r' != <> & reorder_in?x' -> illegal -> STOP
+
+within Idle(0)
+
+within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
+
+testBoolean__Component(IIG) = let
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+Exclude = {i.return}
+ClientCalls = {i.evt}
+UsedModeling = {}
+within compress((testBoolean_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,i|},Exclude)|]
+(((STOP) [[x<-IN.x|x<-extensions(IN)]]
+[|union({|IN|},UsedModeling)|]
+SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
+assert testBoolean__Component(false) :[deadlock free]
+assert testBoolean_(true,true) :[deterministic]
+assert STOP [T= testBoolean__Component(false) \ diff(Events,{illegal})
+assert TestBool_(true) [[TestBool.x<-i.x|x<-extensions(TestBool)]] \ {} [FD= testBoolean__Component(true) \ diff(Events,{|illegal,i|}) \ {}
+assert TestBool_(false) :[deadlock free]
+
+assert TestBool_(true) :[livelock free]
+
