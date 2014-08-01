@@ -44,7 +44,7 @@ returnvalue_(\ ((b),((stack',(ga,gb)))) @ (ga or gb))))(P',V')
 I__(((b),stack')) =
 (true) & (
 I?x:{e} ->
-semi_(semi_(assign_(\ ((b),(stack')) @ ((not b),(stack'))),
+semi_(semi_(assign_(\ ((b),(stack')) @ (((not b)),(stack'))),
 context_active_(\ P',V' @ g (P',V',\ ((b),(stack')) @ (b,b)),
 semi_(assign_active_(\ P',V' @ g (P',V',\ ((b),((stack',c))) @ (c,c)),
 \ (((b),((stack',c)))),r' @ ((r'),((stack',c)))),
@@ -65,7 +65,7 @@ returnvalue_(\ ((b),((stack',(ga,gb)))) @ (ga or gb))))(P',V')
 argument2__(((b),stack')) = transition_begin -> (
 (true) & (
 i?x:{e} ->
-semi_(semi_(assign_(\ ((b),(stack')) @ ((not b),(stack'))),
+semi_(semi_(assign_(\ ((b),(stack')) @ (((not b)),(stack'))),
 context_active_(\ P',V' @ g (P',V',\ ((b),(stack')) @ (b,b)),
 semi_(assign_active_(\ P',V' @ g (P',V',\ ((b),((stack',c))) @ (c,c)),
 \ (((b),((stack',c)))),r' @ ((r'),((stack',c)))),

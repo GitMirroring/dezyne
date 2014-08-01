@@ -41,7 +41,7 @@ toggle = \ P',V' @ semi_(\ P',((f),(stack')) @ ifthenelse_(f,
 (\ P',V' @ I!c -> P'(V')),
 (\ P',V' @ P'(V'))
 )(P',((f),(stack'))),
-assign_(\ ((f),(stack')) @ ((not f),(stack'))))(P',V')
+assign_(\ ((f),(stack')) @ (((not f)),(stack'))))(P',V')
 
 I__(((f),stack')) =
 (true) & (
@@ -63,7 +63,7 @@ toggle = \ P',V' @ semi_(\ P',((f),(stack')) @ ifthenelse_(f,
 (\ P',V' @ i!c -> P'(V')),
 (\ P',V' @ P'(V'))
 )(P',((f),(stack'))),
-assign_(\ ((f),(stack')) @ ((not f),(stack'))))(P',V')
+assign_(\ ((f),(stack')) @ (((not f)),(stack'))))(P',V')
 
 function__(((f),stack')) = transition_begin -> (
 (true) & (

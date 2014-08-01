@@ -41,15 +41,15 @@ I_(IG) = let
 I__(((state,c),stack')) =
 (true) & (
 I?x:{e} ->
-semi_(\ P',((state,c),(stack')) @ ifthenelse_(state == 0,
+semi_(\ P',((state,c),(stack')) @ ifthenelse_((state == 0),
 semi_(assign_(\ ((state,c),(stack')) @ ((3,c),(stack'))),
 (\ P',V' @ I!a -> P'(V'))),
-semi_(assign_(\ ((state,c),(stack')) @ ((state - 1,c),(stack'))),
-\ P',((state,c),(stack')) @ ifthenelse_(c < state,
-assign_(\ ((state,c),(stack')) @ ((state,c + 1),(stack'))),
-\ P',((state,c),(stack')) @ ifthenelse_(c <= (state + 1),
+semi_(assign_(\ ((state,c),(stack')) @ (((state - 1),c),(stack'))),
+\ P',((state,c),(stack')) @ ifthenelse_((c < state),
+assign_(\ ((state,c),(stack')) @ ((state,(c + 1)),(stack'))),
+\ P',((state,c),(stack')) @ ifthenelse_((c <= ((state + 1))),
 (\ P',V' @ I!lo -> P'(V')),
-\ P',((state,c),(stack')) @ ifthenelse_(c > state,
+\ P',((state,c),(stack')) @ ifthenelse_((c > state),
 (\ P',V' @ I!hi -> P'(V')),
 (\ P',V' @ P'(V'))
 )(P',((state,c),(stack')))
@@ -66,15 +66,15 @@ expressions_(IIG,IG) = let
 expressions__(((state,c),stack')) = transition_begin -> (
 (true) & (
 i?x:{e} ->
-semi_(\ P',((state,c),(stack')) @ ifthenelse_(state == 0,
+semi_(\ P',((state,c),(stack')) @ ifthenelse_((state == 0),
 semi_(assign_(\ ((state,c),(stack')) @ ((3,c),(stack'))),
 (\ P',V' @ i!a -> P'(V'))),
-semi_(assign_(\ ((state,c),(stack')) @ ((state - 1,c),(stack'))),
-\ P',((state,c),(stack')) @ ifthenelse_(c < state,
-assign_(\ ((state,c),(stack')) @ ((state,c + 1),(stack'))),
-\ P',((state,c),(stack')) @ ifthenelse_(c <= (state + 1),
+semi_(assign_(\ ((state,c),(stack')) @ (((state - 1),c),(stack'))),
+\ P',((state,c),(stack')) @ ifthenelse_((c < state),
+assign_(\ ((state,c),(stack')) @ ((state,(c + 1)),(stack'))),
+\ P',((state,c),(stack')) @ ifthenelse_((c <= ((state + 1))),
 (\ P',V' @ i!lo -> P'(V')),
-\ P',((state,c),(stack')) @ ifthenelse_(c > state,
+\ P',((state,c),(stack')) @ ifthenelse_((c > state),
 (\ P',V' @ i!hi -> P'(V')),
 (\ P',V' @ P'(V'))
 )(P',((state,c),(stack')))

@@ -68,7 +68,7 @@ Reply__(((dummy),stack')) = transition_begin -> (
 (true) & (
 i?x:{done} ->
 context_active_(sendrecv_(u,what),
-\ P',((dummy),((stack',s))) @ ifthenelse_(s == Status_Ok,
+\ P',((dummy),((stack',s))) @ ifthenelse_((s == Status_Ok),
 (\ P',V' @ i.Status_Yes -> P'(V')),
 (\ P',V' @ i.Status_No -> P'(V'))
 )(P',((dummy),((stack',s)))))(\ V' @ transition_end -> Reply__(V'),((dummy),(stack'))))

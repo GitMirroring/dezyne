@@ -39,9 +39,9 @@ channel I,i: {a,e,e,return}
 I_(IG) = let
 
 I__(((s),stack')) =
-(s == Enum_False) & (
+((s == Enum_False)) & (
 I?x:{e} ->
-semi_(\ P',((s),(stack')) @ ifthenelse_(s == Enum_False,
+semi_(\ P',((s),(stack')) @ ifthenelse_((s == Enum_False),
 (\ P',V' @ I!a -> P'(V')),
 (\ P',V' @ P'(V'))
 )(P',((s),(stack'))),
@@ -53,9 +53,9 @@ within I__(((Enum_False),<>))
 sugar_(IIG,IG) = let
 
 sugar__(((s),stack')) = transition_begin -> (
-(s == Enum_False) & (
+((s == Enum_False)) & (
 i?x:{e} ->
-semi_(\ P',((s),(stack')) @ ifthenelse_(s == Enum_False,
+semi_(\ P',((s),(stack')) @ ifthenelse_((s == Enum_False),
 (\ P',V' @ i!a -> P'(V')),
 (\ P',V' @ P'(V'))
 )(P',((s),(stack'))),

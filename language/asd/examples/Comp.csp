@@ -40,7 +40,7 @@ channel IDevice,device_A: {calibrate,calibrate,initialize,initialize,perform_act
 IComp_(IG) = let
 
 IComp__(((s),stack')) =
-(s == State_Uninitialized and true) & (
+(((s == State_Uninitialized) and true)) & (
 IComp?x:{initialize} ->
 semi_((\ P',V' @ IComp.result_t_OK -> P'(V')),
 assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IComp__(V'),((s),(stack')))
@@ -49,11 +49,11 @@ assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IComp__(V'),(
 semi_((\ P',V' @ IComp.result_t_NOK -> P'(V')),
 assign_(\ ((s),(stack')) @ ((State_Uninitialized),(stack'))))(\ V' @ IComp__(V'),((s),(stack'))))
 []
-(s == State_Uninitialized) & (
+((s == State_Uninitialized)) & (
 IG & IComp?x:{recover,perform_actions} ->
 illegal -> STOP)
 []
-(s == State_Initialized and true) & (
+(((s == State_Initialized) and true)) & (
 IComp?x:{perform_actions} ->
 (\ P',V' @ IComp.result_t_OK -> P'(V'))(\ V' @ IComp__(V'),((s),(stack')))
   []
@@ -61,11 +61,11 @@ IComp?x:{perform_actions} ->
 semi_((\ P',V' @ IComp.result_t_NOK -> P'(V')),
 assign_(\ ((s),(stack')) @ ((State_Error),(stack'))))(\ V' @ IComp__(V'),((s),(stack'))))
 []
-(s == State_Initialized) & (
+((s == State_Initialized)) & (
 IG & IComp?x:{initialize,recover} ->
 illegal -> STOP)
 []
-(s == State_Error and true) & (
+(((s == State_Error) and true)) & (
 IComp?x:{recover} ->
 semi_((\ P',V' @ IComp.result_t_OK -> P'(V')),
 assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IComp__(V'),((s),(stack')))
@@ -73,7 +73,7 @@ assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IComp__(V'),(
   IComp?x:{recover} ->
 (\ P',V' @ IComp.result_t_NOK -> P'(V'))(\ V' @ IComp__(V'),((s),(stack'))))
 []
-(s == State_Error) & (
+((s == State_Error)) & (
 IG & IComp?x:{initialize,perform_actions} ->
 illegal -> STOP)
 
@@ -82,7 +82,7 @@ within IComp__(((State_Uninitialized),<>))
 IDevice_(IG) = let
 
 IDevice__(((s),stack')) =
-(s == State_Uninitialized and true) & (
+(((s == State_Uninitialized) and true)) & (
 IDevice?x:{initialize} ->
 semi_((\ P',V' @ IDevice.result_t_OK -> P'(V')),
 assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IDevice__(V'),((s),(stack')))
@@ -91,11 +91,11 @@ assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IDevice__(V')
 semi_((\ P',V' @ IDevice.result_t_NOK -> P'(V')),
 assign_(\ ((s),(stack')) @ ((State_Uninitialized),(stack'))))(\ V' @ IDevice__(V'),((s),(stack'))))
 []
-(s == State_Uninitialized) & (
+((s == State_Uninitialized)) & (
 IG & IDevice?x:{calibrate,perform_action1,perform_action2} ->
 illegal -> STOP)
 []
-(s == State_Initialized and true) & (
+(((s == State_Initialized) and true)) & (
 IDevice?x:{calibrate} ->
 semi_((\ P',V' @ IDevice.result_t_OK -> P'(V')),
 assign_(\ ((s),(stack')) @ ((State_Calibrated),(stack'))))(\ V' @ IDevice__(V'),((s),(stack')))
@@ -104,14 +104,14 @@ assign_(\ ((s),(stack')) @ ((State_Calibrated),(stack'))))(\ V' @ IDevice__(V'),
 semi_((\ P',V' @ IDevice.result_t_NOK -> P'(V')),
 assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IDevice__(V'),((s),(stack'))))
 []
-(s == State_Initialized) & (
+((s == State_Initialized)) & (
 IDevice?x:{initialize} ->
 (\ P',V' @ IDevice.result_t_OK -> P'(V'))(\ V' @ IDevice__(V'),((s),(stack')))
   []
   IG & IDevice?x:{perform_action1,perform_action2} ->
 illegal -> STOP)
 []
-(s == State_Calibrated and true) & (
+(((s == State_Calibrated) and true)) & (
 IDevice?x:{perform_action1,perform_action2} ->
 semi_((\ P',V' @ IDevice.result_t_OK -> P'(V')),
 assign_(\ ((s),(stack')) @ ((State_Calibrated),(stack'))))(\ V' @ IDevice__(V'),((s),(stack')))
@@ -120,7 +120,7 @@ assign_(\ ((s),(stack')) @ ((State_Calibrated),(stack'))))(\ V' @ IDevice__(V'),
 semi_((\ P',V' @ IDevice.result_t_NOK -> P'(V')),
 assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IDevice__(V'),((s),(stack'))))
 []
-(s == State_Calibrated) & (
+((s == State_Calibrated)) & (
 IDevice?x:{calibrate} ->
 (\ P',V' @ IDevice.result_t_OK -> P'(V'))(\ V' @ IDevice__(V'),((s),(stack')))
   []
@@ -133,15 +133,15 @@ within IDevice__(((State_Uninitialized),<>))
 Comp_(IIG,IG) = let
 
 Comp__(((s),stack')) = transition_begin -> (
-(s == State_Uninitialized) & (
+((s == State_Uninitialized)) & (
 client?x:{initialize} ->
 context_active_(sendrecv_(device_A,initialize),
-semi_(\ P',((s),((stack',res))) @ ifthenelse_(res == result_t_OK,
+semi_(\ P',((s),((stack',res))) @ ifthenelse_((res == result_t_OK),
 assign_active_(sendrecv_(device_A,calibrate),
 \ (((s),((stack',res)))),r' @ ((s),((stack',r')))),
 (\ P',V' @ P'(V'))
 )(P',((s),((stack',res)))),
-\ P',((s),((stack',res))) @ ifthenelse_(res == result_t_OK,
+\ P',((s),((stack',res))) @ ifthenelse_((res == result_t_OK),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Initialized),((stack',res)))),
 (\ P',V' @ client.result_t_OK -> P'(V'))),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Uninitialized),((stack',res)))),
@@ -151,15 +151,15 @@ semi_(assign_(\ ((s),((stack',res))) @ ((State_Uninitialized),((stack',res)))),
   IIG & client?x:{recover,perform_actions} ->
 illegal -> STOP)
 []
-(s == State_Initialized) & (
+((s == State_Initialized)) & (
 client?x:{perform_actions} ->
 context_active_(sendrecv_(device_A,perform_action1),
-semi_(\ P',((s),((stack',res))) @ ifthenelse_(res == result_t_OK,
+semi_(\ P',((s),((stack',res))) @ ifthenelse_((res == result_t_OK),
 assign_active_(sendrecv_(device_A,perform_action2),
 \ (((s),((stack',res)))),r' @ ((s),((stack',r')))),
 (\ P',V' @ P'(V'))
 )(P',((s),((stack',res)))),
-\ P',((s),((stack',res))) @ ifthenelse_(res == result_t_OK,
+\ P',((s),((stack',res))) @ ifthenelse_((res == result_t_OK),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Initialized),((stack',res)))),
 (\ P',V' @ client.result_t_OK -> P'(V'))),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Error),((stack',res)))),
@@ -169,10 +169,10 @@ semi_(assign_(\ ((s),((stack',res))) @ ((State_Error),((stack',res)))),
   IIG & client?x:{initialize,recover} ->
 illegal -> STOP)
 []
-(s == State_Error) & (
+((s == State_Error)) & (
 client?x:{recover} ->
 context_active_(sendrecv_(device_A,calibrate),
-\ P',((s),((stack',res))) @ ifthenelse_(res == result_t_OK,
+\ P',((s),((stack',res))) @ ifthenelse_((res == result_t_OK),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Initialized),((stack',res)))),
 (\ P',V' @ client.result_t_OK -> P'(V'))),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Error),((stack',res)))),

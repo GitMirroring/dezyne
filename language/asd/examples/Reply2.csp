@@ -70,7 +70,7 @@ i?x:{done} ->
 context_active_(sendrecv_(u,what),
 semi_(assign_active_(sendrecv_(u,what),
 \ (((dummy),((stack',s)))),r' @ ((dummy),((stack',r')))),
-\ P',((dummy),((stack',s))) @ ifthenelse_(s == Status_Ok,
+\ P',((dummy),((stack',s))) @ ifthenelse_((s == Status_Ok),
 (\ P',V' @ i.Status_Yes -> P'(V')),
 (\ P',V' @ i.Status_No -> P'(V'))
 )(P',((dummy),((stack',s))))))(\ V' @ transition_end -> Reply2__(V'),((dummy),(stack'))))
