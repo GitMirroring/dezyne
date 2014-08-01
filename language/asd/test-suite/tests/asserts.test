@@ -22,10 +22,10 @@
 			       provides I i ;
 			       requires I j ;
 			       } #}))
-   '((component C deterministic)
+   '((interface I deadlock)
+     (interface I livelock)
+     (component C deterministic)
      (component C illegal)
      (component C deadlock)
      (component C compliance)
-     (component C livelock)
-     (interface I deadlock)
-     (interface I livelock))))
+     (component C livelock))))
