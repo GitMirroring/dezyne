@@ -35,29 +35,58 @@ a | e | hi | lo | return
 channel illegal
 
 channel I,i: {a,e,hi,lo,return}
-channel I,j: {a,e,hi,lo,return}
 
 I_(IG) = let
 
-I__(((state,i),stack')) =
+I__(((state,c),stack')) =
+(true) & (
+I?x:{e} ->
+semi_(\ P',((state,c),(stack')) @ ifthenelse_(state == 0,
+semi_(assign_(\ ((state,c),(stack')) @ ((3,c),(stack'))),
+(\ P',V' @ I!a -> P'(V'))),
+semi_(assign_(\ ((state,c),(stack')) @ ((state - 1,c),(stack'))),
+\ P',((state,c),(stack')) @ ifthenelse_(c < state,
+assign_(\ ((state,c),(stack')) @ ((state,c + 1),(stack'))),
+\ P',((state,c),(stack')) @ ifthenelse_(c <= (state + 1),
+(\ P',V' @ I!lo -> P'(V')),
+\ P',((state,c),(stack')) @ ifthenelse_(c > state,
+(\ P',V' @ I!hi -> P'(V')),
+(\ P',V' @ P'(V'))
+)(P',((state,c),(stack')))
+)(P',((state,c),(stack')))
+)(P',((state,c),(stack'))))
+)(P',((state,c),(stack'))),
+(\ P',V' @ I.return -> P'(V')))(\ V' @ I__(V'),((state,c),(stack'))))
 
-within I__(((),<>)) 
-
-I_(IG) = let
-
-I__(((state,i),stack')) =
-
-within I__(((),<>)) 
+within I__(((3,0),<>)) 
 
 
 expressions_(IIG,IG) = let
 
-expressions__(((state,i),stack')) = transition_begin -> (
+expressions__(((state,c),stack')) = transition_begin -> (
+(true) & (
+i?x:{e} ->
+semi_(\ P',((state,c),(stack')) @ ifthenelse_(state == 0,
+semi_(assign_(\ ((state,c),(stack')) @ ((3,c),(stack'))),
+(\ P',V' @ i!a -> P'(V'))),
+semi_(assign_(\ ((state,c),(stack')) @ ((state - 1,c),(stack'))),
+\ P',((state,c),(stack')) @ ifthenelse_(c < state,
+assign_(\ ((state,c),(stack')) @ ((state,c + 1),(stack'))),
+\ P',((state,c),(stack')) @ ifthenelse_(c <= (state + 1),
+(\ P',V' @ i!lo -> P'(V')),
+\ P',((state,c),(stack')) @ ifthenelse_(c > state,
+(\ P',V' @ i!hi -> P'(V')),
+(\ P',V' @ P'(V'))
+)(P',((state,c),(stack')))
+)(P',((state,c),(stack')))
+)(P',((state,c),(stack'))))
+)(P',((state,c),(stack'))),
+(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> expressions__(V'),((state,c),(stack'))))
 )
-within expressions__(((),<>))
+within expressions__(((3,0),<>))
 
 channel extensions_over_empty_channels_is_undefined
-channel IN,OUT : {j.a,j.hi,j.lo,extensions_over_empty_channels_is_undefined}
+channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
@@ -105,9 +134,8 @@ Exclude = {i.return,i.a,i.hi,i.lo}
 ClientCalls = {i.e}
 UsedModeling = {}
 within compress((expressions_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,i,j|},Exclude)|]
-(((I_(true) [[I.x<-j.x|x<-extensions(I)]]
-) [[x<-IN.x|x<-extensions(IN)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,i|},Exclude)|]
+(((STOP) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 assert expressions__Component(false) :[deadlock free]

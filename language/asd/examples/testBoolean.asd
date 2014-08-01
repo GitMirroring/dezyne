@@ -1,5 +1,6 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Gaiag.
 //
@@ -58,15 +59,30 @@ interface TestBool
         // operator precedence:
         b1 = ! b2 && b3;
         b2 = ! b2 || b3;
-        b3 = ! state1 == States.State2;
+        b3 = ! (state1 == States.State2);
         b1 = b2 && b3 || b1;
         b2 = b1 || b2 && b3;
+        if (state1.State2) {
+          b1 = !b1;
+        }
       }
     }
 
     [state2.State1 && b1]
     {
+      on evt: {}
     }
+  }
+}
+
+component testBool
+{
+  provides TestBool i; 
+  
+  behaviour 
+  {
+     bool b = false;
+     [true] on i.evt: {}
   }
 }
 

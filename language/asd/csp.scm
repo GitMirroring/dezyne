@@ -161,13 +161,13 @@
     (('value type field) 
      (let ((prefix (variable-prefix ast type)))
        (if prefix
-           (list type " == " prefix "_" field)
+           (list "(" type " == " prefix "_" field ")")
            (list type "_" field))))
     (('literal scope type value) (list type "_" value))
 
     (('group expression) (list "(" (csp-expression->string ast expression) ")"))
     (('! expression) 
-     (->string (list "not " (paren expression)))) ;; FIXME: do we need to add gratituous parens?
+     (->string (list "(" "not " (paren expression) ")"))) ;; FIXME: do we need to add gratituous parens?
     (('or lhs rhs) (let ((lhs (csp-expression->string ast lhs))
                          (rhs (csp-expression->string ast rhs)))
                      (list "(" lhs " " 'or " " rhs ")"))) ;; FIXME: do we need to add gratituous parens?
@@ -175,7 +175,7 @@
      (let ((lhs (csp-expression->string ast lhs))
            (rhs (csp-expression->string ast rhs))
            (op (car src)))
-       (list lhs " " op " " rhs )))
+       (list "(" lhs " " op " " rhs ")")))
 
     (_ (format #f "~a:NO MATCH: ~a" (current-source-location) src))))
 
@@ -446,9 +446,6 @@
        (list 'assign-active (list context 'r' 
                                   (list 'action (list 'trigger (port) event)))
              (context-assign context var 'r')))
-      (('assign var ('value type field))
-       (let ((expression (symbol-append type '_ field)))
-         (list 'assign context (context-assign context var expression))))
       (('assign var expression)
          (list 'assign context (context-assign context var expression)))
       (('if pred then)
