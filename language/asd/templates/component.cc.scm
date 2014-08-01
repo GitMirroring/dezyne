@@ -67,8 +67,10 @@ namespace #.component ImplScope
   private:
     State& operator = (const State& other);
     State(const State& other);
-/*
-templates / component.cc.scm : 65 : TODO function-declarations */
+#(string-if (ast:functions model)
+#{/*
+templates/component.cc.scm:65: TODO function-declarations */
+#})
   };
   class State;
 #})
@@ -77,9 +79,12 @@ templates / component.cc.scm : 65 : TODO function-declarations */
   public:
 #(map-ports
 #{    boost::shared_ptr<#.interface #.callback > m_#.port #.interface #.callback ;
+#(string-if (ast:behaviour model)
+#{
 #.if-typed 
     #.interface ::#.type  m_#.port #.interface #.api #.type ;
 #.endif-typed 
+#})
     void Set#.port (const boost::shared_ptr<#.interface #.callback >&);
     #.interface #.callback & Get#.port #.interface #.callback () const;
 #.if-typed 
@@ -219,6 +224,10 @@ templates / component.cc.scm : 65 : TODO function-declarations */
     m_#.instance  = #.type Component::GetInstance();
 #}  (ast:instances model))
 
+#(string-if (ast:binds model)
+#{
+//bindings:
+#})
 #(map-binds
 #{
     {
@@ -404,11 +413,12 @@ templates / component.cc.scm : 65 : TODO function-declarations */
 #}
     port (filter (ast:dir-matches? port) (ast:events port)))
 #} (ast:ports model))
+
+#(string-if (ast:functions model)
+#{/*
+templates/component.cc.scm:65: TODO function-declarations */
 #})
-
-/*
-templates / component.cc.scm : 351 : TODO function-definitions */
-
+#})
 }
 
 #(string-if (ast:bottom? model)

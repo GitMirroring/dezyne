@@ -507,6 +507,7 @@ else if (predicate.state == Triggered)
 {
     {
           context.GetsensorSensorAPI().disable();
+        context.GetsirenSirenAPI().turnoff();
     predicate.sounding = false;
         predicate.state = Alarm::States::Disarming;
         context.SetconsoleConsoleAPIvoid();
@@ -599,6 +600,7 @@ else if (predicate.state == Disarming)
   if (predicate.sounding)
 {
             context.GetconsoleConsoleCB().deactivated();
+        context.GetsirenSirenAPI().turnoff();
     predicate.state = Alarm::States::Disarmed;
         predicate.sounding = false;
         context.SetsensorSensorCBvoid();

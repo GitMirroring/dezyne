@@ -108,11 +108,13 @@
     (and-let* ((comp (ast:component ast)))
               (module-define! module 'model comp)
               (module-define! module '.component (ast:name comp))
+              (module-define! module '.no-dpc (no-dpc comp))
               (module-define! module '.interface (ast:type (ast:port comp)))
               (module-define! module '.model (ast:name comp)))
     (and-let* ((comp (ast:system ast)))
               (module-define! module 'model comp)
               (module-define! module '.component (ast:name comp))
+              (module-define! module '.no-dpc (no-dpc comp))
               (module-define! module '.interface (ast:type (ast:port comp)))
               (module-define! module '.model (ast:name comp)))
     module))
@@ -135,9 +137,9 @@
 (define .ap (ap '(provides)))
 (define .cb (cb '(provides)))
 (define .parameters "/*parameters*/")
-(define .no-dpc "/*NoDpc*/")
-
-
+(define (no-dpc component)
+  (if (null-is-#f (filter ast:requires? (ast:ports component)))
+      "" "/*NoDpc*/"))
 
 ;;;; STRINGERS
 
@@ -291,7 +293,8 @@
   (case (ast:type (ast:type v))
     ((bool) (->string (ast:type (ast:type v))))
     (;;(enum)
-     else (double-colon-join (list 'State (ast:type (ast:type v)))))))
+     else (double-colon-join (list (ast:name (ast:component *ast*))
+                                   (ast:type (ast:type v)))))))
 
 (define (format-parameters port)
   (if (ast:typed? port)

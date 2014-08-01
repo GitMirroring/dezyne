@@ -122,6 +122,8 @@ baseline: dummy
 	rm -rf baseline && mkdir -p baseline
 	cp examples/*asd baseline
 	sed -rie 's/^(import .*);/\1.asd;/' baseline/*.asd
+	-cd baseline && $(asdgen) -l cpp AlarmSystem.asd # FIXME?
+	cd baseline && $(asdgen) -l cpp $(DEPTH)/../examples/alarmsystem.asd
 	cd baseline && $(asdgen) -l cpp alarm-component.asd
 	cd baseline && $(asdgen) -l cpp CommImpl.asd
 	cd baseline && $(asdgen) -l cpp Aap.asd
@@ -129,9 +131,6 @@ baseline: dummy
 	cd baseline && $(asdgen) -l cpp Console.asd
 	cd baseline && $(asdgen) -l cpp Sensor.asd
 	cd baseline && $(asdgen) -l cpp Siren.asd
-	-cd baseline && $(asdgen) -l cpp AlarmSystem.asd # FIXME?
-	cd baseline && $(asdgen) -l cpp $(DEPTH)/../examples/alarmsystem.asd
-	cd baseline && $(asdgen) -l cpp webdemo.asd
 	cd baseline && $(asdgen) -l csp Alarm.asd
 
 ast: compile
