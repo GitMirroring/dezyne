@@ -31,6 +31,7 @@
 
 (define ((prefix p) name) (symbol-append p '_ name))
 
+;; TODO: function, variable mangling. Does that have priority?
 (define (mangle ast)
   (match ast
     (('interface name rest ...) (append (list 'interface ((prefix 'if) name)) (map mangle rest)))
@@ -39,9 +40,13 @@
     (('component name rest ...) (append (list 'component ((prefix 'co) name)) (map mangle rest)))
     (('provides name event) (list 'provides ((prefix 'if) name) ((prefix 'po) event)))
     (('requires name event) (list 'requires ((prefix 'if) name) ((prefix 'po) event)))
-    (('variable type name expression) (list 'variable type ((prefix 'va) name) expression))
+    ;; Do we need this for LOPW? (('variable type name expression) (list 'variable type ((prefix 'va) name) expression))
+    ;; FIXME: type interface trigger (on ((trigger #f x)) statemnt)?
     (('on ((? symbol?) ...) statement) (list 'on (map (prefix 'ev) (ast:triggers ast)) (mangle statement)))
     (('trigger port event) (list 'trigger ((prefix 'po) port) ((prefix 'ev) event)))
+    (('action 'illegal) ast)
+    ;; FIXME: type interface trigger (action '(trigger #f x))?
+    (('action (? symbol?)) (list 'action ((prefix 'ev) (cadr ast))))
     ((h ...) (map mangle ast))
     (_ ast)))
 

@@ -276,6 +276,12 @@ csp: compile
 	! $(REFINES) out/expressions.csp | grep -q ': Failed'
 	@$(diff) examples/expressions.csp out >/dev/null
 
+	cd out && ../gaiag -l csp examples/mangle.asd
+	$(diff) examples/co_mangle.csp out || true
+	@$(diff) examples/co_mangle.csp out | diffstat
+	./gaiag -l mangle examples/mangle.asd
+	$(CSPMCHECKER) out/co_mangle.csp
+	@$(diff) examples/co_mangle.csp out >/dev/null
 
 	# cd out && ../gaiag -l csp examples/arguments.asd
 	# $(diff) examples/arguments.csp out || true

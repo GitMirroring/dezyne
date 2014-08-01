@@ -23,8 +23,7 @@
 
 //OM: OM-parser says: not well-formed
 
-// Gaiag: interface mangle
-interface Mangle
+interface mangle
 {
   in void mangle;
   out void mingle;
@@ -56,21 +55,24 @@ interface Mangle
 
 component mangle
 {
-  //Gaiag: provides mangle mangle;
-  provides Mangle mangle;
+  provides mangle mangle;
   
   behaviour mangle
   {
-    bool mangle = false;
-    bool mangle (bool mingle) { mangle.mingle; return mangle; }
+    //bool mangle = false;
+    bool b = false;
+    //OM: bool mangle (bool mingle) { mangle.mingle; return mingle || mangle; }
+    bool mangle (bool m) { mangle.mingle; return m || b; }
 
     [true]
       on mangle.mangle:
       {
-        mangle = ! mangle;
-        bool mangle = mangle (mangle);
+        //mangle = ! mangle;
+        b = ! b;
+        //bool mangle = mangle (mangle);
         
-        if (mangle)
+        //if (mangle)
+        if (b)
         {
           mangle.mingle;
         }

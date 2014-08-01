@@ -51,10 +51,14 @@
 (pass-if "mangle-interface-on"
   (pretty-noisy-equal?
    (mangle '(on (e) (action illegal)))
-   '(on (ev_e) (action illegal))))
+   '(on (ev_e) (action illegal)))) ;; FIXME: type interface trigger '(trigger #f x)?
 
-(pass-if "mangle-component-on"
+(pass-if "mangle-trigger"
   (pretty-noisy-equal?
-   (mangle '(on ((trigger mangle mangle)) (action illegal)))
-   '(on ((trigger po_mangle ev_mangle)) (action illegal))))
+   (mangle '(trigger mangle mangle))
+   '(trigger po_mangle ev_mangle)))
 
+(pass-if "mangle-interface-actionn"
+  (pretty-noisy-equal?
+   (mangle '(action a))
+   '(action ev_a))) ;; FIXME: type interface trigger '(trigger #f x)?
