@@ -47,3 +47,14 @@
   (pretty-noisy-equal?
    (mangle '(component C (ports (provides I p))))
    '(component co_C (ports (provides if_I po_p)))))
+
+(pass-if "mangle-interface-on"
+  (pretty-noisy-equal?
+   (mangle '(on (e) (action illegal)))
+   '(on (ev_e) (action illegal))))
+
+(pass-if "mangle-component-on"
+  (pretty-noisy-equal?
+   (mangle '(on ((trigger mangle mangle)) (action illegal)))
+   '(on ((trigger po_mangle ev_mangle)) (action illegal))))
+

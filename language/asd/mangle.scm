@@ -18,6 +18,7 @@
 (read-set! keywords 'prefix)
 
 (define-module (language asd mangle)
+  :use-module (ice-9 curried-definitions)
   :use-module (ice-9 pretty-print)
   :use-module (ice-9 match)
 
@@ -28,15 +29,19 @@
 
   :export (ast-> mangle))
 
+(define ((prefix p) name) (symbol-append p '_ name))
+
 (define (mangle ast)
   (match ast
-    (('interface name rest ...) (append (list 'interface (symbol-append 'if_ name)) (map mangle rest)))
-    (('in type event) (list 'in type (symbol-append 'ev_ event)))
-    (('out type event) (list 'out type (symbol-append 'ev_ event)))
-    (('component name rest ...) (append (list 'component (symbol-append 'co_ name)) (map mangle rest)))
-    (('provides name event) (list 'provides (symbol-append 'if_ name) (symbol-append 'po_ event)))
-    (('requires name event) (list 'requires (symbol-append 'if_ name) (symbol-append 'po_ event)))
-    (('variable type name expression) (list 'variable type (symbol-append 'va_ name) expression))
+    (('interface name rest ...) (append (list 'interface ((prefix 'if) name)) (map mangle rest)))
+    (('in type event) (list 'in type ((prefix 'ev) event)))
+    (('out type event) (list 'out type ((prefix 'ev) event)))
+    (('component name rest ...) (append (list 'component ((prefix 'co) name)) (map mangle rest)))
+    (('provides name event) (list 'provides ((prefix 'if) name) ((prefix 'po) event)))
+    (('requires name event) (list 'requires ((prefix 'if) name) ((prefix 'po) event)))
+    (('variable type name expression) (list 'variable type ((prefix 'va) name) expression))
+    (('on ((? symbol?) ...) statement) (list 'on (map (prefix 'ev) (ast:triggers ast)) (mangle statement)))
+    (('trigger port event) (list 'trigger ((prefix 'po) port) ((prefix 'ev) event)))
     ((h ...) (map mangle ast))
     (_ ast)))
 
