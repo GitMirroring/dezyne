@@ -38,7 +38,12 @@
    (mangle '(component C))
    '(component co_C)))
 
+(pass-if "mangle-event"
+  (pretty-noisy-equal?
+   (mangle '(interface I (events (in ((type void)) e))))
+   '(interface if_I (events (in ((type void)) ev_e)))))
+
 (pass-if "mangle-port"
   (pretty-noisy-equal?
-   (mangle '(component C (ports (provides I e))))
-   '(component co_C (ports (provides if_I ev_e)))))
+   (mangle '(component C (ports (provides I p))))
+   '(component co_C (ports (provides if_I po_p)))))

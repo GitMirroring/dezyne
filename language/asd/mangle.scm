@@ -31,9 +31,11 @@
 (define (mangle ast)
   (match ast
     (('interface name rest ...) (append (list 'interface (symbol-append 'if_ name)) (map mangle rest)))
+    (('in type event) (list 'in type (symbol-append 'ev_ event)))
+    (('out type event) (list 'out type (symbol-append 'ev_ event)))
     (('component name rest ...) (append (list 'component (symbol-append 'co_ name)) (map mangle rest)))
-    (('provides name event) (list 'provides (symbol-append 'if_ name) (symbol-append 'ev_ event)))
-    (('requires name event) (list 'requires (symbol-append 'if_ name) (symbol-append 'ev_ event)))
+    (('provides name event) (list 'provides (symbol-append 'if_ name) (symbol-append 'po_ event)))
+    (('requires name event) (list 'requires (symbol-append 'if_ name) (symbol-append 'po_ event)))
     (('variable type name expression) (list 'variable type (symbol-append 'va_ name) expression))
     ((h ...) (map mangle ast))
     (_ ast)))

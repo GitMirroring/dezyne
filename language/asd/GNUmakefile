@@ -304,13 +304,14 @@ demo:
 	cd out && ../gaiag -l csp Comp.scm
 	-$(CSPMCHECKER) out/Comp.csp
 
-expression: compile
+mangle: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
-	cd out && ../gaiag -l csp examples/expressions.asd
-	$(diff) examples/expressions.csp out || true
-	@$(diff) examples/expressions.csp out | diffstat
-	$(CSPMCHECKER) out/expressions.csp
-	@$(diff) examples/expressions.csp out >/dev/null
+	cd out && ../gaiag -l csp examples/mangle.asd
+	$(diff) examples/co_mangle.csp out || true
+	@$(diff) examples/co_mangle.csp out | diffstat
+	./gaiag -l mangle examples/mangle.asd
+	$(CSPMCHECKER) out/co_mangle.csp
+	@$(diff) examples/co_mangle.csp out >/dev/null
 
 simulate: compile
 #	./gaiag -l simulate examples/if.asd

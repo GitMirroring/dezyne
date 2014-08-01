@@ -52,7 +52,9 @@
            ))
 
 (define (ast-> ast)
-  (let ((norm (normstate ast)))
+  (let ((norm (normstate (if (eq? (ast:name (ast:component ast)) 'mangle)
+                             (ast:mangle ast)
+                              ast))))
     (ast:register norm #t)
     (module-define! (resolve-module '(language asd csp)) 'ast norm)  ;; FIXME
     (and-let* ((comp (ast:component norm))
@@ -293,10 +295,10 @@
       #f))
 
 (define ((provides? component) event)
-  (((provides-or-requires? 'provides) component)  event))
+  (((provides-or-requires? 'provides) component) event))
 
 (define ((requires? component) event)
-  (((provides-or-requires? 'requires) component)  event))
+  (((provides-or-requires? 'requires) component) event))
 
 (define (value ast)
   (match ast
