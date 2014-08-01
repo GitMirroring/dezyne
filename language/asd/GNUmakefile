@@ -104,6 +104,10 @@ coverage: clean
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-Comp.info | grep -v Removing
 
+	cd gaiag.lcov && ../coverage gaiag -l csp examples/expressions.asd
+	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-expressions.info | grep -v Removing
+
 	cd gaiag.lcov && ../coverage gaiag -l c++ examples/Alarm.asd
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-c++.info | grep -v Removing
@@ -111,6 +115,10 @@ coverage: clean
 	cd gaiag.lcov && ../coverage gaiag -l c++ examples/Aap.asd
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-c++-Aap.info | grep -v Removing
+
+	cd gaiag.lcov && ../coverage gaiag -l c++ examples/expressions.asd
+	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-c++-expressions.info | grep -v Removing
 
 	rm gaiag.lcov/gaiag.info
 	genhtml --output-dir=gaiag.lcov --prefix=$(shell cd ../.. && pwd) gaiag.lcov/gaiag*.info

@@ -40,13 +40,13 @@
 
 (pass-if "mangle-event"
   (pretty-noisy-equal?
-   (mangle '(interface I (events (in ((type void)) e))))
-   '(interface if_I (events (in ((type void)) ev_e)))))
+   (mangle '(interface I (events (in ((type void)) e) (out ((type void)) a))))
+   '(interface if_I (events (in ((type void)) ev_e) (out ((type void)) ev_a)))))
 
 (pass-if "mangle-port"
   (pretty-noisy-equal?
-   (mangle '(component C (ports (provides I p))))
-   '(component co_C (ports (provides if_I po_p)))))
+   (mangle '(component C (ports (provides I p) (requires I q))))
+   '(component co_C (ports (provides if_I po_p) (requires if_I po_q)))))
 
 (pass-if "mangle-interface-on"
   (pretty-noisy-equal?

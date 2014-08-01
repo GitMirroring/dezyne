@@ -21,7 +21,7 @@
   #:use-module (language ecmascript tokenize)
   #:use-module (system base lalr)
 
-  #:export (make-tokenizer make-tokenizer/1))
+  #:export (make-tokenizer))
 
 (define (syntax-error what loc form . args)
   (throw 'syntax-error #f what
@@ -161,14 +161,5 @@
 
 (module-define! (resolve-module '(language ecmascript tokenize)) 'read-numeric read-numeric)
 
-(define (port-source-location port)
-  ((@@ (language ecmascript tokenize) port-source-location) port))
-
-(define (next-token port div?)
-  ((@@ (language ecmascript tokenize) next-token) port div?))
-
 (define (make-tokenizer port)
   ((@@ (language ecmascript tokenize) make-tokenizer) port))
-
-(define (make-tokenizer/1 port)
-  ((@@ (language ecmascript tokenize) make-tokenizer/1) port))

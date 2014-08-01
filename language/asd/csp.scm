@@ -315,17 +315,6 @@
 ;;    (_ (stderr "NO MATCH: ~a\n" src) (format #f "~a" src))
     (_ ((@ (language asd misc) ->string) src))))
 
-(define (action-name action)
-  (if (pair? action)
-      (let ((name (cadr action)))
-        (if (pair? name) (cadr name) name))
-      action))
-
-(define ((action->string ast inevitable-optional?) action)
-  (->string (list (if (ast:interface? ast) (list (ast:name ast) ".") "") (->string action) " -> "
-                  (when (and (not (ast:interface? ast)) ((requires? ast) action) (not inevitable-optional?))
-                    (list (action-name action) ".return -> ")))))
-
 (define* (ast-transform ast src)
   (ast-transform- ast (ast-transform-return ast (ast-transform-function-call ast src))))
 

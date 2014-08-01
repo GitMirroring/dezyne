@@ -27,8 +27,8 @@
   :use-module (ice-9 regex)
 
   :use-module (os process)
+
   :use-module (srfi srfi-1)
-  :use-module (rnrs io ports)
 
   :use-module (language asd fifo)
   :export (
@@ -49,8 +49,6 @@
            eat-one-space
            eat-one-space-or-newline
            f-is-null
-           fand
-           for
            gulp-file
            gulp-port
            hash-read-string
@@ -111,12 +109,6 @@
 		  (list< (car a) (car b))
 		  (symbol< (car a) (car b)))))))
 
-(define (fand . args)
-  (eval `(and ,@args) (current-module)))
-
-(define (for . args)
-  (eval `(or ,@args) (current-module)))
-
 (define (dump-file file-name string)
   (let* ((file (open-output-file (->string file-name))))
     (display string file)
@@ -128,9 +120,6 @@
 
 (define (gulp-file file-name)
   (gulp-port (open-input-file (->string file-name))))
-
-(define (gulp-file-binary file-name)
-  (call-with-input-file (->string file-name) get-bytevector-all))
 
 (define (gulp-port . port) 
   (or (and-let* ((result (read-delimited "" (if (pair? port) (car port) (current-input-port))))
@@ -158,13 +147,6 @@
       ((? number?) (number->string src))
       ((h ... t) (apply string-append (map ->string src)))
       (_ ""))))
-
-(define (flatten x)
-  "unnest list."
-  (let loop ((x x) (tail '()))
-    (cond ((list? x) (fold-right loop tail x))
-          ((not (pair? x)) (cons x tail))
-          (else (loop (car x) (loop (cdr x) tail))))))
 
 (define ((->join infix) lst) (string-join (filter (negate string-null?) (map ->string lst)) infix))
 
