@@ -1,7 +1,9 @@
 # Gaiag --- Guile in Asd In Asd in Guile.
 # Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014 Jan Nieuwenhuizen <jan@avatar.nl>
 # Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 # Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+# Copyright © 2014 Jan Nieuwenhuizen <jan@avatar.nl>
 #
 # This file is part of Gaiag.
 #
@@ -112,6 +114,10 @@ coverage: clean
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-c++.info | grep -v Removing
 
+	cd gaiag.lcov && ../coverage gaiag -l c++ examples/AlarmSystem.asd
+	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-c++-AlarmSystem.info | grep -v Removing
+
 	cd gaiag.lcov && ../coverage gaiag -l c++ examples/Aap.asd
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-c++-Aap.info | grep -v Removing
@@ -119,6 +125,18 @@ coverage: clean
 	cd gaiag.lcov && ../coverage gaiag -l c++ examples/expressions.asd
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-c++-expressions.info | grep -v Removing
+
+	cd gaiag.lcov && ../coverage gaiag -l c++ examples/argument2.asd
+	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-c++-argument2.info | grep -v Removing
+
+	cd gaiag.lcov && ! ../coverage gaiag -l wfc examples/double-on.asd
+	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-wfc-double-on.info | grep -v Removing
+
+	cd gaiag.lcov && ! ../coverage gaiag -l wfc examples/mixing.asd
+	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-wfc-mixing.info | grep -v Removing
 
 	rm gaiag.lcov/gaiag.info
 	genhtml --output-dir=gaiag.lcov --prefix=$(shell cd ../.. && pwd) gaiag.lcov/gaiag*.info
