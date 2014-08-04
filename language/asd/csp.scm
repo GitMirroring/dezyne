@@ -537,8 +537,14 @@
 	       (transformed-stat (map (lambda (x) 
                                         (csp-transform ast x inevitable-optional? channel provided-on?)) stat)))
           (list IG? channel "?x:{" event-names "}" " ->\n" transformed-stat)))
-       (('reply expr) (let ((expr (csp-transform ast expr inevitable-optional? channel provided-on?)))
-                        (list "(\\ P',V' @ " channel "." expr " -> P'(V'))")))
+       (('reply expr)
+        (let* ((expr (csp-transform ast expr inevitable-optional? channel provided-on?))
+               (channelfix (if channel   ;; FIXME
+                               channel
+                               (if (ast:interface? model)
+                                   (ast:name model)
+                                   (ast:name (car (filter ast:provides? (ast:ports model))))))))
+        (list "(\\ P',V' @ " channelfix "." expr " -> P'(V'))")))
        (('return context expression)
         (let ((expression (csp-expression->string ast expression)))
           (list "returnvalue_(\\ (" context ") @ " expression ")")))
