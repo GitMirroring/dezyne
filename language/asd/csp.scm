@@ -131,6 +131,23 @@
                      (.behaviour . ,(compose ast:name ast:behaviour))))))))))
         ports)))
 
+(define* (map-interfaces string interfaces :optional (separator ""))
+  ((->join separator)
+   (map (lambda (interface)
+          (with-output-to-string
+            (lambda ()
+              (save-module-excursion
+               (lambda ()
+                 (animate-string
+                  string
+                  (animate-module-populate
+                   (csp-module ast)
+                   interface
+                   `((interface . ,(ast-norm interface))
+                     (.name . ,ast:name)
+                     (.interface . ,ast:name)))))))))
+        interfaces)))
+
 (define (map-guards string guards)
   (display
    ((->join "[]\n")
@@ -182,6 +199,9 @@
 (define (port-triggers port)
   (sort ((ast:find-events) (ast-norm (ast:type port))) symbol<))
 
+(define (interface-triggers interface)
+  (sort ((ast:find-events) interface) symbol<))
+
 (define (typed-elements enum)
    (map (lambda (x) (symbol-append (ast:name enum) '_ x)) (ast:elements enum)))
 
@@ -202,6 +222,10 @@
 
 (define (return-values-port port)
   (add-return-if-empty (map return-value (ast:enums (ast-norm (ast:type port))))))
+
+(define (return-values-interface interface)
+  (add-return-if-empty (map return-value (ast:enums interface))))
+
 
 (define (return-values comp)
     (let loop ((ports (ast:ports comp)) (result '()))

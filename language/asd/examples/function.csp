@@ -34,9 +34,11 @@ a | b | c | d | return
 
 channel illegal
 
-channel I,i: {a,b,c,d,return}
+channel i: {a,b,c,d,return}
 
-I_(IG) = let
+channel I: {a,b,c,d,return}
+
+  I_(IG) = let
 toggle = \ P',V' @ semi_(\ P',((f),(stack')) @ ifthenelse_(f,
 (\ P',V' @ I!c -> P'(V')),
 (\ P',V' @ P'(V'))

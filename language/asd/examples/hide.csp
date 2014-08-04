@@ -34,9 +34,11 @@ e | f | return
 
 channel illegal
 
-channel I,i: {e,f,return}
+channel i: {e,f,return}
 
-I_(IG) = let
+channel I: {e,f,return}
+
+  I_(IG) = let
 g = \ P',V',F' @ context_(F',
 context_(\ ((hide_member0',c),((stack',(b,d)))) @ d,
 context_(\ ((hide_member0',c),(((stack',(hide_local0',d)),b))) @ c,

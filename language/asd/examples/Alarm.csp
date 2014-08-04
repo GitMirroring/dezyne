@@ -34,11 +34,15 @@ States_Armed | States_Disabled | States_Disabling | States_Disarmed | States_Dis
 
 channel illegal
 
-channel Console,console: {arm,deactivated,detected,disarm,inevitable,optional,return}
-channel Sensor,sensor: {disable,disabled,enable,inevitable,optional,triggered,return}
-channel Siren,siren: {turnoff,turnon,return}
+channel console: {arm,deactivated,detected,disarm,inevitable,optional,return}
+channel sensor: {disable,disabled,enable,inevitable,optional,triggered,return}
+channel siren: {turnoff,turnon,return}
 
-Console_a(IG) = let
+channel Console: {arm,deactivated,detected,disarm,inevitable,optional,return}
+channel Sensor: {disable,disabled,enable,inevitable,optional,triggered,return}
+channel Siren: {turnoff,turnon,return}
+
+  Console_a(IG) = let
 
 Console_a_(((state),stack')) =
 ((state == States_Disarmed)) & (

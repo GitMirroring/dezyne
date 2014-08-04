@@ -34,9 +34,11 @@ e | f | return
 
 channel illegal
 
-channel I,i: {e,f,return}
+channel i: {e,f,return}
 
-I_(IG) = let
+channel I: {e,f,return}
+
+  I_(IG) = let
 g = \ P',V',F' @ context_(F',
 semi_((\ P',V' @ I!f -> P'(V')),
 returnvalue_(\ ((b),((stack',(ga,gb)))) @ (ga or gb))))(P',V')

@@ -34,9 +34,11 @@ a | e | hi | lo | return
 
 channel illegal
 
-channel I,i: {a,e,hi,lo,return}
+channel i: {a,e,hi,lo,return}
 
-I_(IG) = let
+channel I: {a,e,hi,lo,return}
+
+  I_(IG) = let
 
 I__(((state,c),stack')) =
 (true) & (

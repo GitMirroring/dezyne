@@ -34,10 +34,13 @@ State_Calibrated | State_Error | State_Initialized | State_Uninitialized | calib
 
 channel illegal
 
-channel IComp,client: {initialize,initialize,perform_actions,perform_actions,recover,recover,result_t_OK,result_t_NOK,return}
-channel IDevice,device_A: {calibrate,calibrate,initialize,initialize,perform_action1,perform_action1,perform_action2,perform_action2,result_t_OK,result_t_NOK,return}
+channel client: {initialize,initialize,perform_actions,perform_actions,recover,recover,result_t_OK,result_t_NOK,return}
+channel device_A: {calibrate,calibrate,initialize,initialize,perform_action1,perform_action1,perform_action2,perform_action2,result_t_OK,result_t_NOK,return}
 
-IComp_(IG) = let
+channel IComp: {initialize,initialize,perform_actions,perform_actions,recover,recover,result_t_OK,result_t_NOK,return}
+channel IDevice: {calibrate,calibrate,initialize,initialize,perform_action1,perform_action1,perform_action2,perform_action2,result_t_OK,result_t_NOK,return}
+
+  IComp_(IG) = let
 
 IComp__(((s),stack')) =
 (((s == State_Uninitialized) and true)) & (

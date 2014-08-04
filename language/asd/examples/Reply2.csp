@@ -34,10 +34,13 @@ Status_No | Status_Nok | Status_Ok | Status_Yes | done | return | what
 
 channel illegal
 
-channel I,i: {done,done,Status_Yes,Status_No,return}
-channel U,u: {what,what,Status_Ok,Status_Nok,return}
+channel i: {done,done,Status_Yes,Status_No,return}
+channel u: {what,what,Status_Ok,Status_Nok,return}
 
-I_(IG) = let
+channel I: {done,done,Status_Yes,Status_No,return}
+channel U: {what,what,Status_Ok,Status_Nok,return}
+
+  I_(IG) = let
 
 I__(((dummy),stack')) =
 (true) & (

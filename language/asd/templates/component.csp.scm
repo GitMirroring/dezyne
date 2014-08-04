@@ -66,9 +66,12 @@ datatype event_enumeration_alphabet =
 channel illegal
 
 # (map-ports #{
-channel #.interface ,#.port : {#(comma-join (append (port-triggers port) (return-values-port port)))}
+channel #.port : {#(comma-join (append (port-triggers port) (return-values-port port)))}
 #} ((compose ast:ports ast:component) ast))
-# (map-ports #{
+# (map-interfaces #{
+channel #.interface : {#(comma-join (append (interface-triggers interface) (return-values-interface interface)))}
+#} (delete-duplicates (map ast:type ((compose ast:ports ast:component) ast))))
+  # (map-ports #{
 #.interface _#.behaviour(IG) = let
 # (->string (map (lambda (x) (csp-transform interface (ast-transform interface x))) (ast:functions (ast:behaviour interface))))
 #.interface _#.behaviour _(((# (comma-join (map ast:name ((compose ast:variables ast:behaviour ast-norm) .interface)))),stack')) =

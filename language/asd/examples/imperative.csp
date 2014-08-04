@@ -34,9 +34,11 @@ S_S1 | S_S2 | States_I | States_II | States_III | States_IV | e | f | g | h | re
 
 channel illegal
 
-channel iimperative,i: {e,f,g,h,return}
+channel i: {e,f,g,h,return}
 
-iimperative_(IG) = let
+channel iimperative: {e,f,g,h,return}
+
+  iimperative_(IG) = let
 
 iimperative__(((s,b,c),stack')) =
 ((s == S_S1)) & (
