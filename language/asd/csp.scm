@@ -269,6 +269,20 @@
     (_ #f)
     (_ (throw 'match-error (format #f "~a:prefix-reply?: no match: ~a\n" (current-source-location) statement)))))
 
+
+(define (typed-interface? interface event)
+  (member event (map ast:name (filter ast:typed? ((compose ast:events ast:interface) interface)))))
+
+(define (typed-component? component trigger)
+  (let ((interface (ast-norm (ast:type (find (lambda (port) (equal? (ast:port-name trigger) (ast:name port))) ((compose ast:ports ast:component) component)))))
+        (event (ast:event-name trigger)))
+    (typed-interface? interface event)))
+  
+(define (typed? model event)
+  (if (ast:interface? model)
+      (typed-interface? model event)
+      (typed-component? model event)))
+
 (define (((provides-or-requires? type) component) event)
   (if (ast:component? component)
       (pair?
@@ -328,24 +342,27 @@
 
 (define* (ast-transform-return ast src :optional (top? #t))
   (let* ((model (or (ast:interface ast) (ast:component ast)))
-	 (members (ast:member-names model)))
+         (members (ast:member-names model)))
     (match src
       (('compound t ...)
        (let ((result
-	      (let loop ((statements (map (lambda (x) (ast-transform-return ast x #f)) t)))
-		(if (null? statements)
-		    '()
-		    (cons (car statements) (loop (cdr statements)))))))
-	 (if (=1 (length result))
-	     (car result)
-	     (cons 'compound result))))
+              (let loop ((statements (map (lambda (x) (ast-transform-return ast x #f)) t)))
+                (if (null? statements)
+                    '()
+                    (cons (car statements) (loop (cdr statements)))))))
+         (if (=1 (length result))
+             (car result)
+             (cons 'compound result))))
       (('on events stat)
        (let ((result (ast-transform-return ast stat)))
-	 (if (>1 (length result))
-	     (list 'on events (if (prefix-reply? result)
+         (if (>1 (length result))
+;;              (list 'on events (if (prefix-reply? result)
+;;                                   (list 'compound result)
+;;                                   (list 'compound result (list 'eventreturn))) (list 'the-end members))
+             (list 'on events (if (typed? model (car events))
                                   (list 'compound result)
                                   (list 'compound result (list 'eventreturn))) (list 'the-end members))
-	     (list 'on events (list 'compound (list 'eventreturn)) (list 'the-end members)))))
+             (list 'on events (list 'compound (list 'eventreturn)) (list 'the-end members)))))
       (_ src))))
 
 (define ((valued-action? port?) src)
