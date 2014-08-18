@@ -52,13 +52,14 @@
            ))
 
 (define (ast-> ast)
-  (let ((norm (normstate (if (eq? (ast:name (ast:component ast)) 'mangle)
+  (let* ((norm (normstate (if (member (ast:name (ast:component ast)) 
+                                     '(mangle argument2))
                              (ast:mangle ast)
                               ast))))
     (ast:register norm #t)
     (module-define! (resolve-module '(language asd csp)) 'ast norm)  ;; FIXME
     (and-let* ((comp (ast:component norm))
-               (name (ast:name comp))
+               (name (ast:name (ast:component ast))) ;; unmangled
                (module (csp-module norm))
                (fn (option-ref (parse-opts (command-line)) 'output (list name '.csp))))
               (dump-output fn

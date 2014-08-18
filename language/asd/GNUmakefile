@@ -3,7 +3,6 @@
 # Copyright © 2014 Jan Nieuwenhuizen <jan@avatar.nl>
 # Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 # Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-# Copyright © 2014 Jan Nieuwenhuizen <jan@avatar.nl>
 #
 # This file is part of Gaiag.
 #
@@ -322,11 +321,11 @@ csp: compile
 	@$(diff) examples/testBoolean.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/mangle.asd
-	$(diff) examples/co_mangle.csp out || true
-	@$(diff) examples/co_mangle.csp out | diffstat
+	$(diff) examples/mangle.csp out || true
+	@$(diff) examples/mangle.csp out | diffstat
 	./gaiag -l mangle examples/mangle.asd
-	$(CSPMCHECKER) out/co_mangle.csp
-	@$(diff) examples/co_mangle.csp out >/dev/null
+	$(CSPMCHECKER) out/mangle.csp
+	@$(diff) examples/mangle.csp out >/dev/null
 
 	# cd out && ../gaiag -l csp examples/arguments.asd
 	# $(diff) examples/arguments.csp out || true
@@ -357,32 +356,20 @@ demo:
 
 mangle: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
+
 	cd out && ../gaiag -l csp examples/mangle.asd
-	$(diff) examples/co_mangle.csp out || true
-	@$(diff) examples/co_mangle.csp out | diffstat
+	$(diff) examples/mangle.csp out || true
+	@$(diff) examples/mangle.csp out | diffstat
 	./gaiag -l mangle examples/mangle.asd
-	$(CSPMCHECKER) out/co_mangle.csp
-	@$(diff) examples/co_mangle.csp out >/dev/null
+	$(CSPMCHECKER) out/mangle.csp
+	@$(diff) examples/mangle.csp out >/dev/null
 
-expressions:
-	rm -rf out && mkdir out && ln -s ../examples ../templates out
-	cd out && ../gaiag -l c++ examples/Alarm.asd
-	cd out && ../gaiag -l c++ examples/Aap.asd
-
-	cd out && ../gaiag -l c++ examples/argument2.asd
-	#$(diff) baseline/argument2Component.h out
-	#$(diff) baseline/argument2Component.cpp out | $(sed)
-	$(diff) examples/argument2Component.h out
-	-$(diff) examples/argument2Component.cpp out | $(sed)
-	cd out && g++ -I ../../../examples/codegen/asd_cpp_runtime --std=c++11 -c argument2Component.cpp
-
-	cd out && ../gaiag -l c++ examples/expressions.asd
-	$(diff) baseline/expressionsComponent.h out
-	-$(diff) baseline/expressionsComponent.cpp out | $(sed)
-	#$(diff) examples/expressionsComponent.h out
-	#-$(diff) examples/expressionsComponent.cpp out | $(sed)
-	cd out && g++ -I ../../../examples/codegen/asd_cpp_runtime --std=c++11 -c expressionsComponent.cpp
-
+	cd out && ../gaiag -l csp examples/argument2.asd
+	$(diff) examples/argument2.csp out || true
+	@$(diff) examples/argument2.csp out | diffstat
+	./gaiag -l manglex examples/argument2.asd
+	$(CSPMCHECKER) out/argument2.csp
+	@$(diff) examples/argument2.csp out >/dev/null
 
 simulate: compile
 #	./gaiag -l simulate examples/if.asd
