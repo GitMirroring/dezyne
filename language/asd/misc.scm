@@ -110,16 +110,13 @@
 		  (symbol< (car a) (car b)))))))
 
 (define (dump-file file-name string)
-  (let* ((file (open-output-file (->string file-name))))
-    (display string file)
-    (close file)))
+  (with-output-to-file (->string file-name) (lambda () (display string))))
 
-(define (dump-output file-name thunk)
-  (dump-file (->string file-name)
-             (with-output-to-string thunk)))
+(define (dump-output file-name thunk)  ;; JUNK ME
+  (with-output-to-file (->string file-name) thunk))
 
 (define (gulp-file file-name)
-  (gulp-port (open-input-file (->string file-name))))
+  (with-input-from-file (->string file-name) read-string))
 
 (define (gulp-port . port) 
   (or (and-let* ((result (read-delimited "" (if (pair? port) (car port) (current-input-port))))
