@@ -241,11 +241,6 @@ within compress((Comp_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
-assert Comp_(true,true) :[deterministic]
-assert STOP [T= Comp__Component(false) \ diff(Events,{illegal})
-assert Comp__Component(false) :[deadlock free]
-assert IComp_(true) [[IComp.x<-client.x|x<-extensions(IComp)]] \ {} [FD= Comp__Component(true) \ diff(Events,{|illegal,client|})
-assert Comp__Component(true) \ diff(Events,{|illegal,client|}) :[livelock free]
 assert IComp_(false) :[deadlock free]
 
 assert IComp_(true) :[livelock free]
@@ -254,3 +249,8 @@ assert IDevice_(false) :[deadlock free]
 
 assert IDevice_(true) :[livelock free]
 
+assert Comp_(true,true) :[deterministic]
+assert STOP [T= Comp__Component(false) \ diff(Events,{illegal})
+assert Comp__Component(false) :[deadlock free]
+assert IComp_(true) [[IComp.x<-client.x|x<-extensions(IComp)]] \ {} [FD= Comp__Component(true) \ diff(Events,{|illegal,client|})
+assert Comp__Component(true) \ diff(Events,{|illegal,client|}) :[livelock free]

@@ -34,9 +34,11 @@ States_State1 | States_State2 | evt | return
 
 channel illegal
 
-channel TestBool,i: {evt,return}
+channel i: {evt,return}
 
-TestBool_(IG) = let
+channel TestBool: {evt,return}
+
+  TestBool_(IG) = let
 
 TestBool__(((b1,b2,b3,state1,state2),stack')) =
 ((state1 == States_State1)) & (
@@ -133,11 +135,12 @@ within compress((testBoolean_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reo
 (((STOP) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
-assert testBoolean__Component(false) :[deadlock free]
-assert testBoolean_(true,true) :[deterministic]
-assert STOP [T= testBoolean__Component(false) \ diff(Events,{illegal})
-assert TestBool_(true) [[TestBool.x<-i.x|x<-extensions(TestBool)]] \ {} [FD= testBoolean__Component(true) \ diff(Events,{|illegal,i|}) \ {}
 assert TestBool_(false) :[deadlock free]
 
 assert TestBool_(true) :[livelock free]
 
+assert testBoolean_(true,true) :[deterministic]
+assert STOP [T= testBoolean__Component(false) \ diff(Events,{illegal})
+assert testBoolean__Component(false) :[deadlock free]
+assert TestBool_(true) [[TestBool.x<-i.x|x<-extensions(TestBool)]] \ {} [FD= testBoolean__Component(true) \ diff(Events,{|illegal,i|})
+assert testBoolean__Component(true) \ diff(Events,{|illegal,i|}) :[livelock free]

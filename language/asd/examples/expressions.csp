@@ -140,12 +140,12 @@ within compress((expressions_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reo
 (((STOP) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
+assert I_(false) :[deadlock free]
+
+assert I_(true) :[livelock free]
+
 assert expressions_(true,true) :[deterministic]
 assert STOP [T= expressions__Component(false) \ diff(Events,{illegal})
 assert expressions__Component(false) :[deadlock free]
 assert I_(true) [[I.x<-i.x|x<-extensions(I)]] \ {} [FD= expressions__Component(true) \ diff(Events,{|illegal,i|})
 assert expressions__Component(true) \ diff(Events,{|illegal,i|}) :[livelock free]
-assert I_(false) :[deadlock free]
-
-assert I_(true) :[livelock free]
-

@@ -168,12 +168,12 @@ within compress((imperative_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reor
 (((STOP) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
+assert iimperative_(false) :[deadlock free]
+
+assert iimperative_(true) :[livelock free]
+
 assert imperative_(true,true) :[deterministic]
 assert STOP [T= imperative__Component(false) \ diff(Events,{illegal})
 assert imperative__Component(false) :[deadlock free]
 assert iimperative_(true) [[iimperative.x<-i.x|x<-extensions(iimperative)]] \ {} [FD= imperative__Component(true) \ diff(Events,{|illegal,i|})
 assert imperative__Component(true) \ diff(Events,{|illegal,i|}) :[livelock free]
-assert iimperative_(false) :[deadlock free]
-
-assert iimperative_(true) :[livelock free]
-
