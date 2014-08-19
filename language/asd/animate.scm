@@ -49,10 +49,12 @@
 
   :use-module (language asd misc)
   :export (animate-file
+           animate-input
            animate-module-populate
            animate-string
            animate-template
            file-line-column-location
+           line-column-location
            gulp-template
            template?
            template->string
@@ -104,68 +106,109 @@
     (with-output-to-string
       (lambda () (animate-file (template-file name) module)))))
 
-(define (file-line-column-location file-name tell)
-  (let* ((port (open-file (->string file-name) "r")))
-    (let loop ((line 1))
-      (let ((string (read-delimited "\n" port)))
-        (if (eq? string *eof*)
-            (list 0 0 "")
-            (if (>= (ftell port) tell)
+(define* (line-column-location tell :optional (port (current-input-port)))
+  (seek port 0 SEEK_SET)
+  (let loop ((line 1))
+    (let ((string (read-delimited "\n" port)))
+      (if (eq? string *eof*)
+          (list 0 0 "")
+          (if (>= (ftell port) tell)
               (list line (- tell (- (ftell port) (string-length string) 1)) string)
-              (loop (1+ line))))))))
+              (loop (1+ line)))))))
 
-(define (animate-file- file-name module)
-  (animate-string (gulp-file file-name) module))
+(define (port-size port)
+  (seek port 0 SEEK_END)
+  (ftell port))
+
+(define (file-line-column-location file-name tell)
+  (with-input-from-file file-name (lambda () (line-column-location tell))))
 
 (define (animate-file file-name module)
+  (with-input-from-file (->string file-name) (lambda () (animate-input module file-name))))
+
+(define* (animate-input module :optional (file-name "<input>"))
   (catch 'parse-error
     (lambda ()
-      (animate-file- file-name module))
+      (animate-input- module))
     (lambda (key . args)
-      (let* ((tell (assoc-ref (car args) 'ftell))
-             (line-column (if (pair?  tell)
-                              (file-line-column-location file-name (car tell))
+      (let* ((tell (assoc-ref (car args) 'tell))
+             (size (assoc-ref (car args) 'size))
+             (start (assoc-ref (car args) 'start))
+             (scm (assoc-ref (car args) 'scm))
+             (pos (let loop ((tell (if (>1 (length tell)) (cdr tell) tell)) (start start))
+                    (if (null? tell) 
+                        0
+                        (+ (car tell) (car start)
+                           (loop (cdr tell) (cdr start))))))
+             (line-column (if pos
+                              (line-column-location pos)
                               (list 0 0 "")))
              (line (car line-column))
              (column (cadr line-column))
              (file-string (caddr line-column))
-             (string (car (assoc-ref (car args) 'line)))
+             (string (assoc-ref (car args) 'line))
              (args (car (or (assoc-ref (car args) 'args)
                             (list args))))
+             (error-message (or (car args) (cadr args)))
+             (error-args (if (car args) '() (caddr args)))
+             (error-string (apply format (append (list #f error-message) error-args)))
              (message 
               (if (string? string)
                   (if (string-contains file-string string)
-                      (format #f "~a:~a:~a: parse error:\n~a\n~a~a...\n~a\n" file-name line column (string-take file-string column) (make-string column #\space) string args)
-                      (format #f "~a:~a: parse error: just before: ~a\n~a\n" file-name line string args))
-                  (format #f "~a:~a: parse error: *eof*\n~a\n" file-name line args))))
+                      (format #f "~a:~a:~a: parse error: ~a\n~a\n~a~a...\n" file-name line column error-string (string-take file-string column) (make-string column #\space) 
+                              (string-drop file-string column))
+                      (format #f "~a:~a: parse error: ~a\n    just before: ~a\n" file-name line error-string string))
+                  (format #f "~a:~a: parse error: *eof*: ~a\n" file-name line error-string))))
         (stderr "~a" message)
         (throw 'parse-error message)))))
 
 (define* (animate-string string :optional (module (current-module)))
   (with-input-from-string string
-    (lambda () (animate-input module))))
+    (lambda () (animate-input- module))))
 
 (define escape #\#)
 
-(define (animate-input module)
-  (read-hash-extend #\{ hash-read-string)
-  (while (and-let* ((s (*eof*-is-#f (read-delimited (make-string 1 escape)))))
-                   (display s))
-    (let ((c (read-char)))
-      (cond
-       ((eq? c escape) (display c))
-       ((eq? *eof* c) #f)
-       (else (unread-char c)
-             (catch (if (batch-mode?) #t 'no-funky-exceptions) (lambda ()
-				      (let* ((expr (read (current-input-port)))
-					     (result (eval expr module)))
-					(display (->string result))
-					(eat-one-space)))
-               (lambda (key . args)
-                 (let* ((tell (car (or (assoc-ref (car args) 'xftell)
-                                       (list (ftell (current-input-port))))))
-                        (line (car (or (assoc-ref (car args) 'line)
-                                       (list (read-delimited "\n")))))
-                        (args (car (or (assoc-ref (car args) 'args)
+(define (animate-input- module)
+  (let* ((start '(0))
+         (start-hash-read-string (lambda (chr port)
+                                   (set! start
+                                         (cons (1+ (ftell (current-input-port))) start)
+                                         ;;(1+ (ftell (current-input-port)))
+                                         )
+                                   (hash-read-string chr port))))
+    (read-hash-extend #\{ start-hash-read-string)
+    (while (and-let* ((s (*eof*-is-#f (read-delimited (make-string 1 escape)))))
+                     (display s))
+      (let ((c (read-char)))
+        (cond
+         ((eq? c escape) (display c))
+         ((eq? *eof* c) #f)
+         (else (unread-char c)
+               (let* ((xstart (ftell (current-input-port)))
+                      (expr (read (current-input-port)))
+                      (end (ftell (current-input-port))))
+                 (catch (if (batch-mode?) #t 'no-funky-exceptions)
+                   (lambda ()
+                     (let ((result (eval expr module)))
+                       (display (->string result))
+                       (eat-one-space)))
+                   (lambda (key . args)
+                     (let* ((tell (cons 
+                                   (ftell (current-input-port))
+                                   (f-is-null (assoc-ref (car args) 'tell))))
+                            (line (or (assoc-ref (car args) 'line)
+                                      (read-delimited "\n")))
+                            (size (cons (port-size (current-input-port))
+                                        (f-is-null (assoc-ref (car args) 'size))))
+                            (start (let loop ((start start))
+                                     (if (null? start)
+                                         0
+                                         (if (or (=1 (length size))
+                                                 (< (+ (car start) (cadr size)) (car tell)))
+                                             (car start)
+                                             (loop (cdr start))))))
+                            (start (cons start
+                                         (f-is-null (assoc-ref (car args) 'start))))
+                            (args (car (or (assoc-ref (car args) 'args)
                                        (list args)))))
-                   (throw 'parse-error (append `((ftell ,tell) (line ,line) (args ,args))))))))))))
+                       (throw 'parse-error (append `((tell . ,tell) (start . ,start) (size . ,size) (line . ,line) (args ,args))))))))))))))

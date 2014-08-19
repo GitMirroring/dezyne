@@ -42,6 +42,8 @@
            >0
            >1
            >2
+           2+
+           2-
            alist->hash-table
            diff
            dump-file
@@ -89,6 +91,8 @@
 (define (>1 x) (> x 1))
 (define (=2 x) (= x 2))
 (define (>2 x) (> x 2))
+(define (2+ x) (+ x 2))
+(define (2- x) (- x 2))
 
 (define null-symbol (string->symbol ""))
 (define (symbol-null? x) (eq? x null-symbol))

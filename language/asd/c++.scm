@@ -34,6 +34,7 @@
            animate-template
            c++-module
            november
+           string-if
            traditional-interface
            traditional-component-header
            traditional-component))
@@ -360,8 +361,12 @@
 
 
 ;;;; MAPPERS
-(define (string-if condition then . else)
-  (animate-string (if (null-is-#f condition) then (if (pair? else) (car else)  "")) (current-module)))
+(define-syntax string-if
+  (syntax-rules ()
+    ((_ condition then)
+     (animate-string (if (null-is-#f condition) then "") (current-module)))
+    ((_ condition then else)
+     (animate-string (if (null-is-#f condition) then else) (current-module)))))
 
 (define (find-bind model port)
   (find (lambda (bind) 
