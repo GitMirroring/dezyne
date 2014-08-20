@@ -1,5 +1,7 @@
-##include "#.model -c3.hh"
+##include "component-#.model -c3.hh"
 
+namespace component
+{
 #.model ::#.model ()
 : #(map-ports
 #{#.port ()#} (ast:ports model) "\n, ")
@@ -18,3 +20,4 @@
     std::cout << "#.model ::#.event " << std::endl;
   }
 #} port (filter ast:out? (ast:events port))) #} (filter ast:requires? (ast:ports model)))
+}

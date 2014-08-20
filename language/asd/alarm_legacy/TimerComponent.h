@@ -21,11 +21,16 @@
 //
 // Code:
 
-#include "component-AlarmSystem-c3.hh"
+#ifndef TIMER_COMPONENT_H
+#define TIMER_COMPONENT_H
 
-int main()
+#include "TimerInterface.h"
+
+class TimerComponent: public TimerInterface
 {
-  component::AlarmSystem alarmsystem;
+public:
+  static boost::shared_ptr<TimerInterface> GetInstance();
+  static void ReleaseInstance();
+};
 
-  alarmsystem.console.in.arm();
-}
+#endif

@@ -1,4 +1,4 @@
-##include "#.model -c3.hh"
+##include "component-#.model -c3.hh"
 
 template<typename Port>
 void connect(Port& provided, Port& required)
@@ -7,9 +7,12 @@ void connect(Port& provided, Port& required)
   required.in = provided.in;
 }
 
+namespace component
+{
 #.model ::#.model ()
 : #(map-instances #{#.instance () #} (ast:instances model) "\n, ")
 , #(map-binds #{#.port (#.instance ) #}  (filter bind-port? (ast:binds model)) "\n, ")
 {
 #(map-binds #{connect(#.provided ,#.required );
 #} (filter (negate bind-port?) (ast:binds model))) }
+}

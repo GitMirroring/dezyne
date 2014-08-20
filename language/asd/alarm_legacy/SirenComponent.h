@@ -21,11 +21,16 @@
 //
 // Code:
 
-#include "component-AlarmSystem-c3.hh"
+#ifndef SIREN_COMPONENT_H
+#define SIREN_COMPONENT_H
 
-int main()
+#include "SirenInterface.h"
+
+class SirenComponent: public SirenInterface
 {
-  component::AlarmSystem alarmsystem;
+public:
+  static boost::shared_ptr<SirenInterface> GetInstance();
+  static void ReleaseInstance();
+};
 
-  alarmsystem.console.in.arm();
-}
+#endif

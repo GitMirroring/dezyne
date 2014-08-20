@@ -1,11 +1,14 @@
 #(map-instances
 #{
-##include "#.type -c3.hh"
+##include "component-#.type -c3.hh"
 #} (ast:instances model))
+
 #(map-ports
 #{
-##include "#.interface Interface-c3.hh"
+##include "interface-#.interface -c3.hh"
 #} (ast:ports model))
+namespace component
+{
 struct #.model
 {
 #(map-instances
@@ -14,7 +17,8 @@ struct #.model
 #} (ast:instances model))
 #(map-ports
 #{
-  #.interface Interface& #.port ;
+  interface::#.interface & #.port ;
 #} (ast:ports model))
   #.model ();
 };
+}

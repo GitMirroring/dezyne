@@ -383,10 +383,17 @@ simulate: compile
 	./gaiag -l simulate -t '(client.initialize result_t.OK result_t.OK client.perform_actions result_t.OK result_t.OK client.perform_actions result_t.NOK client.recover result_t.OK client.perform_actions)' examples/Comp.asd
 
 
-alarm:
+alarm-gen:
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
 	cd out && ln -s ../examples/main.cc .
 	cd out && for file in examples/AlarmSystem.asd examples/Alarm.asd \
                               examples/Console.asd examples/Sensor.asd examples/Siren.asd; \
                   do ../gaiag -l c++ $$file; done
+
+alarm: alarm-gen
 	g++ -Wall -Wextra out/*.cc -o out/test && ./out/test
+
+alarm-legacy: alarm-gen
+	rm out/component-Alarm-c3.cc
+	cd out && ln -s ../alarm_legacy/* .
+	g++ -g -Wall -Wextra out/*.c* -o out/test && ./out/test

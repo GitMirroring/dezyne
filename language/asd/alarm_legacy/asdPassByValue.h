@@ -21,11 +21,27 @@
 //
 // Code:
 
-#include "component-AlarmSystem-c3.hh"
+/*
+ * This is confidential material the contents of which are the property of Verum Software Tools BV.  
+ * All reproduction and/or duplication in whole or in part without the written prior consent of 
+ * Verum Software Tools BV is strictly forbidden.  Modification of this code is strictly forbidden 
+ * and may result in software runtime failure.
+ *
+ * Modification or removal of this notice in whole or in part is strictly forbidden.
+ * Copyright 1998 - 2014 Verum Software Tools BV
+ */
+#ifndef __ASD_PASSBYVALUE_H__
+#define __ASD_PASSBYVALUE_H__
 
-int main()
+#include <boost/type_traits.hpp>
+
+namespace asd
 {
-  component::AlarmSystem alarmsystem;
-
-  alarmsystem.console.in.arm();
+  template <typename T>
+  struct value
+  {
+    typedef typename boost::remove_const<typename boost::remove_reference<T>::type>::type type;
+  };
 }
+
+#endif

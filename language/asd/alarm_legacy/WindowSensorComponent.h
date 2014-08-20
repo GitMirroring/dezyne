@@ -21,11 +21,16 @@
 //
 // Code:
 
-#include "component-AlarmSystem-c3.hh"
+#ifndef WINDOW_SENSOR_COMPONENT_H
+#define WINDOW_SENSOR_COMPONENT_H
 
-int main()
+#include "SensorInterface.h"
+
+class WindowSensorComponent: public SensorInterface
 {
-  component::AlarmSystem alarmsystem;
+public:
+  static boost::shared_ptr<SensorInterface> GetInstance();
+  static void ReleaseInstance();
+};
 
-  alarmsystem.console.in.arm();
-}
+#endif

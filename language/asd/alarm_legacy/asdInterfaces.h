@@ -21,11 +21,29 @@
 //
 // Code:
 
-#include "component-AlarmSystem-c3.hh"
+/*
+ * This is confidential material the contents of which are the property of Verum Software Tools BV.  
+ * All reproduction and/or duplication in whole or in part without the written prior consent of 
+ * Verum Software Tools BV is strictly forbidden.  Modification of this code is strictly forbidden 
+ * and may result in software runtime failure.
+ *
+ * Modification or removal of this notice in whole or in part is strictly forbidden.
+ * Copyright 1998 - 2014 Verum Software Tools BV
+ */
+#ifndef __ASD_INTERFACES_H__
+#define __ASD_INTERFACES_H__
 
-int main()
+namespace asd
 {
-  component::AlarmSystem alarmsystem;
-
-  alarmsystem.console.in.arm();
+  namespace channels
+  {
+    class ISingleThreaded
+    {
+    public:
+      virtual ~ISingleThreaded()  {}
+      virtual void processCBs() = 0;
+    };
+  }
 }
+
+#endif
