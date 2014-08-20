@@ -45,8 +45,7 @@
   (set! *ast* ast)
   (and=> (ast:interface ast) dump-interface)
   (and=> (ast:component ast) dump-component)
-  (and=> (ast:system ast) dump-component)
-  (and=> (ast:system ast) dump-instances)
+  (and=> (ast:system ast) dump-system)
   "")
 
 (define (pipe producer consumer)
@@ -56,44 +55,31 @@
   (dump-output file-name (lambda () (pipe thunk (lambda () (indent))))))
 
 (define (dump-interface model)
-  (let ((file-name (list (ast:name model) 'Interface.h)))
-    (dump-indented file-name
+  (let ((name (ast:name model)))
+    (dump-indented (list name 'Interface-c3.hh)
                    (lambda ()
-                     ((animate-template 'interface.hh.scm) (c++-module *ast*))))))
+                     ((animate-template 'interface.c3.hh.scm) (c++-module *ast*))))))
 
 (define (dump-component model)
   (let ((name (ast:name model)))
-    (dump-indented (list name 'Component.h)
+    (dump-indented (list name '-c3.hh)
                    (lambda ()
-                     ((animate-template 'component.hh.scm) (c++-module *ast*))))
-    (dump-indented (list name 'Component.cpp)
-                   (lambda ()
-                     ((animate-template 'component.cc.scm) (c++-module *ast*))))
-    (dump-indented (list name '-c11.cc)
-                   (lambda ()
-                     ((animate-template 'c11.cc.scm) (c++-module *ast*))))
+                     ((animate-template 'component.c3.hh.scm) (c++-module *ast*))))
     (dump-indented (list name '-c3.cc)
                    (lambda ()
-                     ((animate-template 'c3.cc.scm) (c++-module *ast*))))))
+                     ((animate-template 'component.c3.cc.scm) (c++-module *ast*))))))
+
+(define (dump-system model)
+  (let ((name (ast:name model)))
+    (dump-indented (list name '-c3.hh)
+                   (lambda ()
+                     ((animate-template 'system.c3.hh.scm) (c++-module *ast*))))
+    (dump-indented (list name '-c3.cc)
+                   (lambda ()
+                     ((animate-template 'system.c3.cc.scm) (c++-module *ast*))))))
 
 (use-modules (ice-9 pretty-print))
-(define (dump-instance instance)
-  (stderr "\ndump-instance: for ~a\n" (ast:type instance))
-  (and-let* ((type (ast:type instance))
-             (name (ast:name instance))
-             (model (ast:ast type))
-             ((stderr "interface? -->~a\n" (ast:interface? model)))
-             ((ast:interface? model))
-             (model-ast (ast:make 'component type
-                                  (list 'ports (ast:make 'provides type name))
-                                  '(behaviour #f (compound)))))
-            (set! *ast* (list model-ast))
-            (stderr "new ast: for ~a\n" type)
-            (pretty-print model-ast)
-            (dump-component model-ast)))
 
-(define (dump-instances model)
-  (for-each dump-instance (ast:instances model)))
 
 (define ((animate-template file-name) module)
   (animate-file (symbol-append 'templates/ file-name) module))
@@ -108,10 +94,12 @@
     (and-let* ((int (ast:interface ast)))
               (module-define! module 'model int)
               (module-define! module '.interface (ast:name int))
+              (module-define! module '.INTERFACE (string-upcase (symbol->string (ast:name int))))
               (module-define! module '.model (ast:name int)))
     (and-let* ((comp (ast:component ast)))
               (module-define! module 'model comp)
               (module-define! module '.component (ast:name comp))
+              (module-define! module '.COMPONENT (string-upcase (symbol->string (ast:name comp))))
               (module-define! module '.no-dpc (no-dpc comp))
               (module-define! module '.interface (ast:type (ast:port comp)))
               (module-define! module '.model (ast:name comp)))
@@ -448,63 +436,86 @@
         ports)))
 
 
-(define (map-instances string instances)
-  (map (lambda (instance)
-         (save-module-excursion
-          (lambda ()
-            (animate-string
-             string
-             (animate-module-populate
-              (c++-module *ast*)
-              instance
-              `((instance . ,identity)
-                (.instance . ,ast:name)
-                (.Class . ,(compose ast:Class ast:ast ast:type))
-                (.type . ,ast:type)))))))
-       instances))
-
-(define (map-binds string binds)
-  (map (lambda (bind)
-         (let* ((module (c++-module *ast*))
-                (model (module-ref module 'model))
-                (left (ast:left bind))
-                (left-instance (ast:instance model left))
-                (left-name (ast:name left-instance))
-                (left-port (ast:port model left))
-                (left-api (api left-port))
-                (left-callback (callback left-port))
-                (left-interface (ast:type left-port))
-                (left-postfix (if (ast:bottom? (ast:ast left-interface))
-                                  "" (ast:name left-port)))
-
-                (right (ast:right bind))
-                (right-instance (ast:instance model right))
-                (right-name (ast:name right-instance))
-                (right-port (ast:port model right))
-                (right-interface (ast:type right-port))
-                (right-postfix (if (or #t (ast:bottom? (ast:ast right-interface)))
-                                   "" (ast:name right-port)))
-                ;;(right 3)
-                )
-           (save-module-excursion
+(define* (map-instances string instances :optional (separator ""))
+  ((->join separator)
+   (map (lambda (instance)
+          (with-output-to-string
             (lambda ()
-              (animate-string
-               string
-               (animate-module-populate
-                module
-                bind
-                `((left . ,left)
-                  (.left . ,left-name)
-                  (.left-api . ,left-api)
-                  (.left-callback . ,left-callback)
-                  (.left-interface . ,left-interface)
-                  (.left-postfix . ,left-postfix)
+              (save-module-excursion
+               (lambda ()
+                 (animate-string
+                  string
+                  (animate-module-populate
+                   (c++-module *ast*)
+                   instance
+                   `((instance . ,identity)
+                     (.instance . ,ast:name)
+                     (.Class . ,(compose ast:Class ast:ast ast:type))
+                     (.type . ,ast:type)))))))))
+        instances)))
 
-                  (right . ,right)
-                  (.right . ,right-name)
-                  (.right-interface . ,right-interface)
-                  (.right-postfix . ,right-postfix))))))))
-       binds))
+(define (binding-name model bind)
+  (list (ast:name (ast:instance model bind)) '. (ast:name (ast:port model bind))))
+
+(define (bind-port? bind)
+  (or (symbol? (ast:left bind)) (symbol? (ast:right bind))))
+
+(define* (map-binds string binds :optional (separator ""))
+  ((->join separator)
+   (map (lambda (bind)
+          (with-output-to-string
+            (lambda ()
+              (let* ((module (c++-module *ast*))
+                     (model (module-ref module 'model))
+                     (left (ast:left bind))
+                     (left-instance (ast:instance model left))
+                     (left-name (ast:name left-instance))
+                     (left-port (ast:port model left))
+                     (left-api (api left-port))
+                     (left-callback (callback left-port))
+                     (left-interface (ast:type left-port))
+                     (left-postfix (if (ast:bottom? (ast:ast left-interface))
+                                       "" (ast:name left-port)))
+
+                     (right (ast:right bind))
+                     (right-instance (ast:instance model right))
+                     (right-name (ast:name right-instance))
+                     (right-port (ast:port model right))
+                     (right-interface (ast:type right-port))
+                     (right-postfix (if (or #t (ast:bottom? (ast:ast right-interface)))
+                                        "" (ast:name right-port)))
+                     ;;(right 3)
+
+                     (provided-required (if (ast:provides? left-port) (cons left right) (cons right left)))
+                     (provided (binding-name model (car provided-required)))
+                     (required (binding-name model (cdr provided-required)))
+                     )
+                (save-module-excursion
+                 (lambda ()
+                   (animate-string
+                    string
+                    (animate-module-populate
+                     module
+                     bind
+                     `((left . ,left)
+                       (.left . ,left-name)
+                       (.left-port . ,(ast:name left-port))
+                       (.left-api . ,left-api)
+                       (.left-callback . ,left-callback)
+                       (.left-interface . ,left-interface)
+                       (.left-postfix . ,left-postfix)
+
+                       (right . ,right)
+                       (.right . ,right-name)
+                       (.right-port . ,(ast:name right-port))
+                       (.right-interface . ,right-interface)
+                       (.right-postfix . ,right-postfix)
+                       (.provided . ,provided)
+                       (.required . ,required)
+
+                       (.port . ,(and (bind-port? bind) (if (symbol? left) left right)))
+                       (.instance . ,(and (bind-port? bind) (if (symbol? left) (binding-name model right) (binding-name model left)))))))))))))
+        binds)))
 
 (define (map-events string events)
   (map (lambda (event)

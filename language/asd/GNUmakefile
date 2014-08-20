@@ -381,3 +381,12 @@ simulate: compile
 	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" -j examples/alarm-component.asd | ./scm2json | sed -e 's/, /,\n /g'
 	./gaiag -l simulate -t '(i.e i.e i.e)' examples/arguments.asd
 	./gaiag -l simulate -t '(client.initialize result_t.OK result_t.OK client.perform_actions result_t.OK result_t.OK client.perform_actions result_t.NOK client.recover result_t.OK client.perform_actions)' examples/Comp.asd
+
+
+alarm:
+	rm -rf out && mkdir out && ln -s ../examples ../templates out
+	cd out && ln -s ../examples/main.cc .
+	cd out && for file in examples/AlarmSystem.asd examples/Alarm.asd \
+                              examples/Console.asd examples/Sensor.asd examples/Siren.asd; \
+                  do ../gaiag -l c++ $$file; done
+	g++ -Wall -Wextra out/*.cc -o out/test && ./out/test
