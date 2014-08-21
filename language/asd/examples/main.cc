@@ -23,9 +23,25 @@
 
 #include "component-AlarmSystem-c3.hh"
 
+void detected()
+{
+  std::cout << "Console.detected" << std::endl;
+}
+
+void deactivated()
+{
+  std::cout << "Console.deactivated" << std::endl;
+}
+
 int main()
 {
   component::AlarmSystem alarmsystem;
 
+  alarmsystem.console.out.detected = detected;
+  alarmsystem.console.out.deactivated = deactivated;
+
   alarmsystem.console.in.arm();
+  alarmsystem.sensor.sensor.out.triggered();
+  alarmsystem.console.in.disarm();
+  alarmsystem.sensor.sensor.out.disabled();
 }

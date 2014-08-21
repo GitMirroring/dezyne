@@ -52,6 +52,7 @@ class LegacySensor: public WindowSensorComponent
                   , public ISensor
                   , public boost::enable_shared_from_this<LegacySensor>
 {
+  boost::shared_ptr<asd::channels::ISingleThreaded> st;
   boost::shared_ptr<ISensor_NI> cb;
   interface::Sensor* sensor;
 public:
@@ -60,8 +61,18 @@ public:
   void set(interface::Sensor& sensor)
   {
     this->sensor = &sensor;
-    sensor.out.triggered = boost::bind(&ISensor_NI::DetectedMovement, cb);
-    sensor.out.disabled = boost::bind(&ISensor_NI::Deactivated, cb);
+    sensor.out.triggered = boost::bind(&LegacySensor::DetectedMovement, this);
+    sensor.out.disabled = boost::bind(&LegacySensor::Deactivated, this);
+  }
+  void DetectedMovement()
+  {
+    cb->DetectedMovement();
+    st->processCBs();
+  }
+  void Deactivated()
+  {
+    cb->Deactivated();
+    st->processCBs();
   }
   void Activate()
   {
@@ -79,8 +90,9 @@ public:
   {
     this->cb = cb;
   }
-  void RegisterCB(boost::shared_ptr<asd::channels::ISingleThreaded>)
+  void RegisterCB(boost::shared_ptr<asd::channels::ISingleThreaded> st)
   {
+    this->st = st;
   }
 };
 
