@@ -9,6 +9,18 @@ namespace component
 {
 struct #.model
 {
+# (string-if (ast:behaviour model)
+#{
+
+    #(->string (map declare-enum (ast:enums (ast:behaviour model))))
+    #(->string (map declare-integer (ast:integers (ast:behaviour model))))
+
+# (map-variables
+#{      #.state-type  #.variable ;
+#} (ast:variables (ast:behaviour model)))
+#}
+)
+
 #(map-ports
 #{
   interface::#.interface  #.port ;
@@ -17,7 +29,11 @@ struct #.model
 #(map-ports #{#(map-port-events #{void #.event ();
 #} port (filter ast:in? (ast:events port))) #} (filter ast:provides? (ast:ports model)))#
 (map-ports #{#(map-port-events #{void #.event ();
-#} port (filter ast:out? (ast:events port))) #} (filter ast:requires? (ast:ports model)))};
+#} port (filter ast:out? (ast:events port))) #} (filter ast:requires? (ast:ports model)))
+#(map-functions
+#{  #.return-type  #.function (#.parameters );
+#}
+(ast:functions model))};
 }
 
 ##endif

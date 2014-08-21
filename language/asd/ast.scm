@@ -88,30 +88,30 @@
 ;;   SUB-AST
 ;;      := ((function name  ((type void)  (parameters (((type bool) b))) (compound)))
 ;;           ^class   ^name ^^return-type ^parameters ^parameter         ^statement
-;;                          |signature    
+;;                          |signature
 ;;
-;; 
+;;
 ;;   (ast:parameters function)
 ;;      ==>
 ;;   SUB-AST
 ;;     :=  ( ((type bool) a)))
 ;;           ^^type ^name ^name
 ;;           |parameter
-;; 
-;; 
+;;
+;;
 ;;   (call   f      (arguments a b c)
 ;;    ^class ^name  ^arguments
-;; 
-;; 
-;; 
+;;
+;;
+;;
 ;;   (ast:arguments call)
 ;;      ==>
 ;;   SUB-AST
 ;;     :=  ( ((type bool) a)))
 ;;           ^^type ^name ^name
 ;;           |parameter
-;; 
-;; 
+;;
+;;
 ;;   (ast:triggers (ast:component AST))
 ;;      ==>
 ;;   SUB-AST
@@ -436,10 +436,27 @@
     ((? model?) '())
     (_ (throw 'match-error (format #f "~a:instances: no match: ~a\n" (current-source-location) ast)))))
 
-(define (event ast)
+(define (event-name ast)
   (match ast
-    ((? action?) (cadr ast)) ;; FIXME: event-name?
-    (_ (throw 'match-error  (format #f "~a:event: no match: ~a\n" (current-source-location) ast)))))
+    ((? action?) (cadr ast))
+    ((? symbol?) ast)
+    ((? trigger?) (caddr ast))
+    (_ (throw 'match-error  (format #f "~a:event-name: no match: ~a\n" (current-source-location) ast)))))
+
+(define* (event ast :optional (identifier #f))
+  (match identifier
+    (#f (match ast
+          ((? action?)
+           (stderr "deprecated: event; use event-name\n")
+           (event-name ast))
+          (_ (throw 'match-error  (format #f "~a:event: no match: ~a\n" (current-source-location) ast)))))
+    ((? symbol?)
+     (find (lambda (e) (eq? (name e) identifier))
+           (body
+            (match ast
+              ((? events?) ast)
+              ((? interface?) (events-element ast))
+              (_ (throw 'match-error  (format #f "~a:event: no match: ~a\n" (current-source-location) ast)))))))))
 
 (define (parameters ast)
   (match ast
@@ -476,18 +493,6 @@
     ((or (? event?) (? function?)) (return-type (signature ast)))
     ((? signature?) (car ast))
     (_ (throw 'match-error  (format #f "~a:return-type: no match: ~a\n" (current-source-location) ast))))  )
-
-(define (port-name ast)
-  (match ast
-    ((? port?) (name ast))
-    ((? trigger?) (cadr ast))
-    (_ (throw 'match-error  (format #f "~a:port-name: no match: ~a\n" (current-source-location) ast)))))
-
-(define (event-name ast)
-  (match ast
-    ((? symbol?) ast)
-    ((? trigger?) (caddr ast))
-    (_ (throw 'match-error  (format #f "~a:event-name: no match: ~a\n" (current-source-location) ast)))))
 
 (define (events ast)
   (match ast
@@ -526,11 +531,19 @@
           ((or (? component?) (? interface?)) (functions ast))
           (_ (throw 'match-error  (format #f "~a:function: no match: ~a\n" (current-source-location) ast))))))
 
+(define (port-name ast)
+  (match ast
+    ((? action?) (cadr ast))
+    ((? port?) (name ast))
+    ((? trigger?) (cadr ast))
+    (_ (throw 'match-error  (format #f "~a:port-name: no match: ~a\n" (current-source-location) ast)))))
+
 (define* (port ast :optional (identifier #f))
   (match identifier
     (#f (match ast
           ((or (? component?) (? system?)) (assoc 'provides (ports ast)))
-          ((? action?) (caddr ast)) ;; FIXME: port-name
+          ((? action?) (stderr "deprecated: event; use port-name\n")
+           (port-name ast))
           (_ (throw 'match-error  (format #f "~a:port: no match: ~a\n" (current-source-location) ast)))))
     ((? symbol?)
      (find (lambda (p) (eq? (name p) identifier))

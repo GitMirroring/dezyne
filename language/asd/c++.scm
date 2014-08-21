@@ -196,14 +196,15 @@
   (let* ((trigger (car lst))
          (port-name (ast:port-name trigger))
          (event-name (ast:event-name trigger))
-         (interface (ast:port (ast:component *ast*) port-name))
-         (name (ast:type interface)))
-    (statements->string (list "      context.Get" port-name name (callback interface) "()." event-name "();\n"))))
+         (port (ast:port (ast:component *ast*) port-name))
+         (name (ast:type port))
+         (interface (ast:ast name)))
+    (statements->string (list "      " port-name '. (ast:direction (ast:event interface event-name)) '. event-name "();\n"))))
 
 (define (statement-illegal)
   (let ((port (statements.port))
         (event (statements.event)))
-    (statements->string (list  "    ASD_ILLEGAL(\"" (ast:name (ast:component *ast*)) "\", \"State\", \"" (ast:type port) (callback port) "\", \"" (ast:name event) "\");\n"))))
+    (statements->string "//illegal")))
 
 (define (statement-last->string)
   (or (and-let* ((port (statements.port))
@@ -212,7 +213,7 @@
                                 (statements->string
                                  (list (ast:type port) "::" (return-type-text port)))
                                 "")))
-                (statements->string (list 'context.Set (ast:name port) (ast:type port) (api port) (ast:type (ast:return-type event)) "(" arguments ");\n")))
+                (statements->string ""))
       ""))
 
 (define (expr->clause expression)
@@ -230,7 +231,7 @@
          (state? (find
                   (lambda (v) (eq? lhs (ast:name v)))
                   state-variables))
-         (prefix (if state? "predicate." "")))
+         (prefix (if state? "" "")))
     (->string (list prefix (statements->string lhs)))))
 
 (define (rhs->string rhs)
@@ -258,13 +259,12 @@
      (let ((arguments ((->join ", ") (map expression->string (cons 'context arguments)))))
        (->string (list function  "(" arguments ")"))))
 
-    (('value type field)
-     ((->join "::") (list (ast:name (ast:component *ast*)) type field)))
+    (('value type field) field)
     ((? number?) (number->string ast))
     ((? string?) ast)
     ((? symbol?)
      (let ((prefix (if (is-member? ast)
-                       "predicate." "")))
+                       "" "")))
        (->string (list prefix ast))))
     (('! expression)
      (->string (list "! " (paren expression))))
@@ -575,18 +575,21 @@
                 (.statements . ,(lambda (x) (statements->string (ast:body (ast:statement x)))))))))))
        functions))
 
-(define (map-variables string variables)
-  (map (lambda (variable)
-         (save-module-excursion
-          (lambda ()
-            (animate-string
-             string
-             (animate-module-populate
-              (current-module)
-              variable
-              `((.variable . ,ast:name)
-                (.state-type . ,ast:state-type)
-                (.value . ,(lambda (variable) (variable-value->string (ast:component *ast*) variable)))))))))
-       variables))
+(define* (map-variables string variables :optional (separator ""))
+  ((->join separator)
+   (map (lambda (variable)
+          (with-output-to-string
+            (lambda ()
+              (save-module-excursion
+               (lambda ()
+                 (animate-string
+                  string
+                  (animate-module-populate
+                   (current-module)
+                   variable
+                   `((.variable . ,ast:name)
+                     (.state-type . ,ast:state-type)
+                     (.value . ,(expression->string (ast:expression variable)))))))))))
+        variables)))
 
 (define (action port event) "enable")

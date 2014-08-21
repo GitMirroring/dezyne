@@ -15,16 +15,17 @@
 using namespace asd_0;
 
 namespace #.component ImplScope
-{
+
+
   class Context;
 #(map-ports
-#{  class #.port #.interface #.api Proxy: public #.interface #.api 
+#{  class #.port #.interface #.api Proxy: public #.interface #.api
   {
     Context& m_Context;
-    
+
   public:
     #.port #.interface #.api Proxy(Context& context);
-#(map-port-events 
+#(map-port-events
 #{
     virtual #(if (eq? 'void .type) .type (list .interface "::" .type ))  #.event ();
 #}  port (filter (ast:dir-matches? port) (ast:events port)))
@@ -37,13 +38,13 @@ namespace #.component ImplScope
 
 # (string-if (ast:behaviour model)
 #{
-  struct #.component 
+  struct #.component
   {
     #(->string (map declare-enum (ast:enums (ast:behaviour model))))
     #(->string (map declare-integer (ast:integers (ast:behaviour model))))
   };
 
-  class State : public #.component 
+  class State : public #.component
   {
   public:
     State();
@@ -55,7 +56,7 @@ namespace #.component ImplScope
     void Process#.type(Context& context, #.interface #.callback ::#.type  stimulus);
 ##endif
 
-#(map-port-events 
+#(map-port-events
 #{
     void #.port #.interface #.event (Context& context);
 #}
@@ -64,7 +65,7 @@ namespace #.component ImplScope
 
     protected:
     std::string m_TypeName;
-    
+
   private:
     State& operator = (const State& other);
     State(const State& other);
@@ -82,18 +83,18 @@ namespace #.component ImplScope
 #{    boost::shared_ptr<#.interface #.callback > m_#.port #.interface #.callback ;
 #(string-if (ast:behaviour model)
 #{
-#.if-typed 
+#.if-typed
     #.interface ::#.type  m_#.port #.interface #.api #.type ;
-#.endif-typed 
+#.endif-typed
 #})
     void Set#.port (const boost::shared_ptr<#.interface #.callback >&);
     #.interface #.callback & Get#.port #.interface #.callback () const;
-#.if-typed 
+#.if-typed
     #.interface ::#.type  Get#.port #.interface #.api #.type () const;
     void Set#.port #.interface #.api #.type (#.interface ::#.type  #.ap );
-#.else-typed 
+#.else-typed
     void Set#.port #.interface #.api #.type ();
-#.endif-typed 
+#.endif-typed
 #} (ast:ports model))
 
 
@@ -119,7 +120,7 @@ namespace #.component ImplScope
 #} (ast:variables (ast:behaviour model)))
       }
     };
-    
+
   private:
     Predicates m_Predicates;
   public:
@@ -129,11 +130,11 @@ namespace #.component ImplScope
 )
   public:
     Context* Self() { return this; }
-    
+
   private:
     Context(const Context&);
     Context& operator = (const Context&);
-    
+
   public:
     Context();
     virtual ~Context();
@@ -148,11 +149,11 @@ namespace #.component ImplScope
 #} (if (pair? (ast:behaviour model)) (ast:ports model) '()))
     Component(const Component&);
     Component& operator = (const Component&);
-    
+
   public:
     Component();
     ~Component();
-    
+
 #(map-ports
 #{
 #(string-if (ast:bottom? model)
@@ -192,7 +193,7 @@ namespace #.component ImplScope
     m_Context.block();
     m_Context.getState().#.port #.interface #.event (m_Context);
     m_Context.awaitUnblock();
-    #.return-context-get 
+    #.return-context-get
   }
 #}
 #{
@@ -201,12 +202,12 @@ namespace #.component ImplScope
     m_Context.defer(boost::bind(&State::#.port #.interface #.event ,
                     boost::bind(&Context::getState, &m_Context),
                     boost::ref(m_Context)));
-    #.return-context-get 
+    #.return-context-get
   }
 #})
 
 #} port (filter (ast:dir-matches? port) (ast:events port)))
-  
+
 #} (ast:ports model))
 #})
   Context::Context()
@@ -243,14 +244,14 @@ namespace #.component ImplScope
                                (ast:value? (ast:right bind))))
            (ast:binds model)))
   }
-  
+
   Context::~Context()
   {
 # (map-ports
 #{    // #.interface Component::ReleaseInstance();
 #} (ast:ports model))
   }
-  
+
 #(string-if (ast:behaviour model)
 #{
   State& Context::getState()
@@ -259,7 +260,7 @@ namespace #.component ImplScope
     return *m_State;
   }
 #})
-  
+
 #(map-ports
 #{
   void Context::Set#.port (const boost::shared_ptr<#.interface #.callback >& cb)
@@ -270,24 +271,24 @@ namespace #.component ImplScope
     }
     m_#.port #.interface #.callback  = cb;
   }
-  
+
   #.interface #.callback & Context::Get#.port #.interface #.callback () const
   {
     return *m_#.port #.interface #.callback ;
   }
-  
-#.if-typed 
+
+#.if-typed
   #.interface #.api ::#.type  Context::Get#.port #.interface #.api #.type () const
   {
     return m_#.port #.interface #.api #.type ;
   }
-#.endif-typed 
-  
+#.endif-typed
+
   void Context::Set#(list .port .interface .api .type)(#.parameters )
   {
-#.if-typed 
+#.if-typed
     m_#.port #.interface #.api #.type  = value;
-#.endif-typed 
+#.endif-typed
     unblock();
   }
 #} (ast:ports model))
@@ -303,14 +304,14 @@ namespace #.component ImplScope
 #})
   {
     ASD_TRACE_ENTER("#.component ", "", "", "");
-    
+
     ASD_TRACE_EXIT("#.component ", "", "", "");
   }
-  
+
   Component::~Component()
   {
     ASD_TRACE_ENTER("#.component ", "", "", "");
-    
+
     ASD_TRACE_EXIT("#.component ", "", "", "");
   }
 
@@ -330,7 +331,7 @@ namespace #.component ImplScope
 #})
 #})
   }
-  
+
   void Component::Register#.callback (boost::shared_ptr<#.interface #.callback > #.cb )
   {
 #(string-if (ast:component? model)
@@ -343,12 +344,12 @@ namespace #.component ImplScope
 #})
 #})
   }
-  
+
   void Component::Get#.callback (boost::shared_ptr<#.interface #.callback >* /*#.cb */)
   {
     // empty
   }
-  
+
   void Component::Register#.api (boost::shared_ptr<#.interface #.api > /*#.ap */)
   {
     // empty
@@ -367,7 +368,7 @@ namespace #.component ImplScope
 #})
 #})
   }
-  
+
   void Component::Register#.callback #.port (boost::shared_ptr<#.interface #.callback > #.cb )
   {
 #(string-if (ast:component? model)
@@ -403,7 +404,7 @@ namespace #.component ImplScope
   void State::#.port #.interface #.event (Context& context)
   {
     ASD_TRACE_ENTER("#.component ", "State", "#.interface #.callback ", "#.event ");
-    
+
     Context::Predicates predicate = context.predicates();
 
 #.statement
