@@ -35,11 +35,11 @@
    (walk-trail
     (ast:interface (asd->ast
       #{
-        interface i { behaviour { on a: b;
+        interface i { behaviour { on a: b ;
                                      } } #}))
     '(a a a))
    (map
-    (lambda (x) (cons x (cons '() '((on (a) (action b)) (action b)))))
+    (lambda (x) (cons x (cons '() '((on ((trigger #f a)) (action (trigger #f b))) (action (trigger #f b))))))
     '(a a a))))
 
 (pass-if "simulator-guard-trail"
@@ -62,28 +62,28 @@
      '(a a a))
     '((a
        ((t . #t))
-       (on (a)
+       (on ((trigger #f a))
            (compound
             (guard t (assign t (! t)))
-            (guard (! t) (action b))))
+            (guard (! t) (action (trigger #f b)))))
        (guard t (assign t (! t)))
        (assign t (! t)))
       (a
        ((t . #f))
-       (on (a)
+       (on ((trigger #f a))
            (compound
             (guard t (assign t (! t)))
-            (guard (! t) (action b))))
-       (guard (! t) (action b))
-       (action b))
+            (guard (! t) (action (trigger #f b)))))
+       (guard (! t) (action (trigger #f b)))
+       (action (trigger #f b)))
       (a
        ((t . #f))
-       (on (a)
+       (on ((trigger #f a))
            (compound
             (guard t (assign t (! t)))
-            (guard (! t) (action b))))
-       (guard (! t) (action b))
-       (action b)))))
+            (guard (! t) (action (trigger #f b)))))
+       (guard (! t) (action (trigger #f b)))
+       (action (trigger #f b))))))
 
 (pass-if "walk-trail-arguments"
   (let* ((arguments-ast (read-ast 'examples/arguments.asd))

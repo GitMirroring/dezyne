@@ -39,6 +39,7 @@
          else
          enum
          if
+         illegal
          import
          in
          inevitable

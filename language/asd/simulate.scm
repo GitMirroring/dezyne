@@ -74,7 +74,7 @@
 (define *state-space* '(()))
 
 (define (simulate-model model)
-   (stderr "\n\n>>>simulating: ~a ~a --> ~a\n" (ast:class model) (ast:name model) (map ->string ((ast:find-events ast:in?) model)))
+  (stderr "\n\n>>>simulating: ~a ~a --> ~a\n" (ast:class model) (ast:name model) (map ->string (ast:find-triggers model) model))
    (let* ((trail (option-ref (parse-opts (command-line)) 'trail #f))
           (trace (if trail
                      (walk-trail model (with-input-from-string trail read))
@@ -124,8 +124,8 @@
   (or (and-let* ((string (symbol->string symbol))
                  (interface-trigger (string-split string #\.))
                  ((=2 (length interface-trigger))))
-               (cons 'trigger (map string->symbol interface-trigger)))
-      symbol))
+               (ast:make 'trigger (map string->symbol interface-trigger)))
+      (ast:make 'trigger (list #f symbol))))
 
 (define (seen-key state ast)
   (when (not (equal? ast (ast:statement (ast:behaviour *model*))))
@@ -170,7 +170,7 @@
 
 ;; FIXME: TODO: implement next-value for state explorer
 (define (next-todo-space-explorer model state ast)
-  (let ((events ((ast:find-events ast:in?) model)))
+  (let ((events (ast:find-triggers model)))
     (if (or (null? *state-space*)
             (null? (car *state-space*)))
         (cons (state-vector model) events)
@@ -222,7 +222,7 @@
           (let* ((event (car todo)))
             (receive (new-state trace)
                 (process-event ast state event)
-              (cons (cons event (cons state trace)) (loop (next-todo model new-state ast)))))))))
+              (cons (cons (->symbol event) (cons state trace)) (loop (next-todo model new-state ast)))))))))
 
 (define* (process-event ast state event)
   (stderr "[~a] " (comma-space-join (map ->string state)))
@@ -317,7 +317,7 @@
       (_ (values state ast #f (eval-expression ast state expression) trace)))))
 
 (define* (process ast state event trace)
-  ;;(stderr "PROCESS: [~a] ~a\n" event ast)
+  ;; (stderr "PROCESS: [~a] ~a\n" (->string event) ast)
   (set! i (1+ i))
   (if (> i 2000) 
       (throw 'break (format #f "too many iterations: ~a, state space: ~a\n" i
@@ -325,7 +325,6 @@
   (and state
        (match ast
          (('on t statement) 
-          (debug "[~a] on: ~a: ---> ~a\n" event t (member event t equal?))
           (if (member event t equal?)
               (process statement state event (cons ast trace))
               (values state #f #f #f trace)))
@@ -334,7 +333,7 @@
           (if (eval-expression ast state expression) 
               (process statement state event (cons ast trace)) 
               (values state #f #f #f trace)))
-         (('action 'illegal) (values state #f #f #f (cons ast trace)))
+         (('illegal) (values state #f #f #f (cons ast trace)))
          (('action t ...) 
           (stderr "****action: ~a\n" (->string t))
           (values state #f ast #f (cons ast trace)))
@@ -394,6 +393,7 @@
     ((identifier 'value type field) (->string (list (->string identifier) " = " (->string type) "." field)))
     ((identifier 'literal scope type field) (->string (list (->string identifier) " = " (->string type) "." (->string field))))
     (('literal scope type field) (->string (list (->string type) "." (->string field))))
+    (('trigger #f event) (->string event))
     (('trigger port event) (->string (list port "." event)))
     ((identifier 'field x y) (string-join (list (->string identifier)  "=" (->string (cdr src)))))
     (('call function ('arguments arguments ...) ...) (->string (list function "("  (comma-join arguments) ")" )))
@@ -407,6 +407,7 @@
     (#f 'false)
     (#t 'true)
     (('value type field) (->symbol (list (->string type) "." field)))
+    (('trigger #f event) (->symbol event))
     (('trigger port event) (->symbol (list port "." event)))
     ((identifier 'value type field) (->symbol (list (->symbol identifier) " = "(->symbol type) "." field)))
     ((identifier 'literal scope type field) (->string (list (->symbol identifier) " = " (->symbol type) "." (->symbol field))))

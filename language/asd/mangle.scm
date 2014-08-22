@@ -34,19 +34,18 @@
 ;; TODO: function, variable mangling. Does that have priority?
 (define (mangle ast)
   (match ast
-    (('interface name rest ...) (append (list 'interface ((prefix 'if) name)) (map mangle rest)))
-    (('in type event) (list 'in type ((prefix 'ev) event)))
-    (('out type event) (list 'out type ((prefix 'ev) event)))
-    (('component name rest ...) (append (list 'component ((prefix 'co) name)) (map mangle rest)))
-    (('provides name event) (list 'provides ((prefix 'if) name) ((prefix 'po) event)))
-    (('requires name event) (list 'requires ((prefix 'if) name) ((prefix 'po) event)))
+    (('interface name rest ...) (append (ast:make 'interface (cons ((prefix 'if) name) (map mangle rest)))))
+    (('in type event) (ast:make 'in (list type ((prefix 'ev) event))))
+    (('out type event) (ast:make 'out (list type ((prefix 'ev) event))))
+    (('component name rest ...) (append (ast:make 'component (cons ((prefix 'co) name) (map mangle rest)))))
+    (('provides name event) (ast:make 'provides (list ((prefix 'if) name) ((prefix 'po) event))))
+    (('requires name event) (ast:make 'requires (list ((prefix 'if) name) ((prefix 'po) event))))
     ;; Do we need this for LOPW? (('variable type name expression) (list 'variable type ((prefix 'va) name) expression))
     ;; FIXME: type interface trigger (on ((trigger #f x)) statemnt)?
-    (('on ((? symbol?) ...) statement) (list 'on (map (prefix 'ev) (ast:triggers ast)) (mangle statement)))
-    (('trigger port event) (list 'trigger ((prefix 'po) port) ((prefix 'ev) event)))
-    (('action 'illegal) ast)
-    ;; FIXME: type interface trigger (action '(trigger #f x))?
-    (('action (? symbol?)) (list 'action ((prefix 'ev) (cadr ast))))
+    (('on ((? ast:trigger?) ...) statement) (ast:make 'on (list (map mangle (ast:triggers ast)) (mangle statement))))
+    (('trigger port event) (ast:make 'trigger (list (if port ((prefix 'po) port) #f) ((prefix 'ev) event))))
+    (('illegal) ast)
+    (('action (? ast:trigger?)) (ast:make 'action (list (mangle (ast:trigger ast)))))
     ((h ...) (map mangle ast))
     (_ ast)))
 

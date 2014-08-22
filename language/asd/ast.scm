@@ -128,7 +128,7 @@
 ;;
 ;;   SUB-AST
 ;;      (action (trigger console arm))
-;;       ^class ^event
+;;       ^class ^trigger
 ;;
 ;;  (read-asd "examples/AlarmSystem.asd")
 ;;     ==>
@@ -206,6 +206,7 @@
            expression
            field
            find-events
+           find-triggers
            from
            function
            functions
@@ -256,6 +257,7 @@
            system?
            to
            trigger?
+           trigger
            triggers
            type
            type-name-component
@@ -278,8 +280,8 @@
            variables-element
            ))
 
-(define (make . t)
-  (apply (@@ (language asd parse) ast:make) t))
+(define (make type ast)
+  ((@@ (language asd parse) ast:make) type ast))
 
 (define (element ast name)
   (or (and (>2 (length ast)) (assoc name (body ast))) '()))
@@ -443,6 +445,11 @@
     ((? trigger?) (caddr ast))
     (_ (throw 'match-error  (format #f "~a:event-name: no match: ~a\n" (current-source-location) ast)))))
 
+(define (trigger ast)
+  (match ast
+    ((? action?) (cadr ast))
+    (_ (throw 'match-error  (format #f "~a:trigger: no match: ~a\n" (current-source-location) ast)))))
+
 (define* (event ast :optional (identifier #f))
   (match identifier
     (#f (match ast
@@ -535,6 +542,7 @@
   (match ast
     ((? action?) (cadr ast))
     ((? port?) (name ast))
+    ((or 'inevitable 'optional) #f)
     ((? trigger?) (cadr ast))
     (_ (throw 'match-error  (format #f "~a:port-name: no match: ~a\n" (current-source-location) ast)))))
 
@@ -579,7 +587,7 @@
 (define (direction ast)
   (match ast
     ((or (? event?) (? port?)) (car ast))
-    (_ (throw 'match-error  (format #f "~a:range: no match: ~a\n" (current-source-location) ast)))))
+    (_ (throw 'match-error  (format #f "~a:direction: no match: ~a\n" (current-source-location) ast)))))
 
 (define (from ast)
   (match ast
@@ -644,9 +652,9 @@
 
 (define (statement ast)
   (match ast
-    ((? system?) (or (assoc 'compound (body ast)) (make '(compound))))
-    ((? model?) (or (null-is-#f (statement (behaviour ast))) (make '(compound))))
-    ((? behaviour?) (or (assoc 'compound (body ast)) (make '(compound))))
+    ((? system?) (or (assoc 'compound (body ast)) (make 'compound '())))
+    ((? model?) (or (null-is-#f (statement (behaviour ast))) (make 'compound '())))
+    ((? behaviour?) (or (assoc 'compound (body ast)) (make 'compound '())))
     ((or (? guard?) (? on?)) (caddr ast))
     ((? function?) (cadddr ast))
     (_ (throw 'match-error  (format #f "~a:statement: no match: ~a\n" (current-source-location) ast)))))
@@ -771,26 +779,32 @@
                   (loop (car ast) (cons (cdr ast) stack))
                   (loop (cdr ast) stack)))))))
 
-(define* ((find-events :optional (predicate identity)) ast :optional (found '()))
-  (let ((find-events-p (lambda* (ast :optional (found '()))
-                         ((find-events predicate) ast found))))
-    (match ast
-      ((? component?)
-       (delete-duplicates (sort (find-events-p (statement (behaviour ast))) list<)))
-      ((? interface?)
-       (let ((declared (events ast)))
-         (receive (keep discard)
-             (partition predicate declared)
-           (let* ((behaviour (find-events-p (statement (behaviour ast))))
-                  (behaviour-keep (filter (lambda (x) (negate (member x discard equal?))) behaviour)))
-             (map name (delete-duplicates (sort (append keep behaviour-keep) list<) equal?))))))
-      (('compound t ...) (append (apply append (map find-events-p t)) found))
-      (('on t statement) (map find-events-p t))
-      (('trigger port event) ast)
-      (('guard expression statement) (find-events-p statement found))
-      ((? symbol?) (make 'in '((type void)) ast))
-      (('action x) '())
-      (_ (throw 'match-error  (format #f "~a:find-events: no match: ~a\n" (current-source-location) ast))))))
+(define (trigger< lhs rhs)
+  (if (and (symbol? lhs) (symbol? rhs) (symbol< lhs rhs))
+      (if (and (pair? lhs) (pair? rhs)) (list< lhs rhs)
+          (symbol? lhs))))
+
+(define* (find-triggers ast :optional (found '()))
+  "Search for optional and inevitable."
+  (match ast
+    ((or (? interface?) (? component?))
+     (delete-duplicates (sort (find-triggers (statement (behaviour ast))) trigger<)))
+    (('compound t ...) (append (apply append (map find-triggers t)) found))
+    (('on t statement) (map find-triggers t))
+    (('trigger port event) ast)
+    (('guard expression statement) (find-triggers statement found))
+    ('inevitable ast)
+    ('optional ast)
+    (('action x) '())
+    (('illegal) '())
+    (_ (throw 'match-error  (format #f "~a:find-triggers: no match: ~a\n" (current-source-location) ast)))))
+
+(define (find-events ast)
+  (match ast 
+    ((? interface?) (events ast))
+    ((? component?) (apply append (map find-events (ports ast))))
+    ((? port?) (find-events (import-ast (type port))))
+    (_ (throw 'match-error  (format #f "~a:find-events: no match: ~a\n" (current-source-location) ast)))))
 
 ;;;; reading/caching
 (define *ast-alist* '())

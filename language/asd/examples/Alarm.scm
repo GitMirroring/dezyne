@@ -44,32 +44,33 @@
      (compound
        (guard (value state Disarmed)
               (compound
-                (on (arm)
+                (on ((trigger #f arm))
                     (compound (assign state (value States Armed))))
-                (on (disarm) (action illegal))))
+                (on ((trigger #f disarm)) illegal)))
        (guard (value state Armed)
               (compound
-                (on (disarm)
+                (on ((trigger #f disarm))
                     (compound
                       (assign state (value States Disarming))))
                 (on (optional)
                     (compound
-                      (action detected)
+                      (action (trigger #f detected))
                       (assign state (value States Triggered))))
-                (on (arm) (action illegal))))
+                (on ((trigger #f arm)) illegal)))
        (guard (value state Triggered)
               (compound
-                (on (disarm)
+                (on ((trigger #f disarm))
                     (compound
                       (assign state (value States Disarming))))
-                (on (arm) (action illegal))))
+                (on ((trigger #f arm)) illegal)))
        (guard (value state Disarming)
               (compound
                 (on (inevitable)
                     (compound
-                      (action deactivated)
+                      (action (trigger #f deactivated))
                       (assign state (value States Disarmed))))
-                (on (arm disarm) (action illegal)))))))
+                (on ((trigger #f arm) (trigger #f disarm))
+                    illegal))))))
  (component
    Alarm
    (ports (provides Console console)
@@ -96,10 +97,10 @@
                 (on ((trigger console disarm)
                      (trigger sensor triggered)
                      (trigger sensor disabled))
-                    (action illegal))))
+                    illegal)))
        (guard (value state Armed)
               (compound
-                (on ((trigger console arm)) (action illegal))
+                (on ((trigger console arm)) illegal)
                 (on ((trigger console disarm))
                     (compound
                       (action (trigger sensor disable))
@@ -110,11 +111,11 @@
                       (action (trigger siren turnon))
                       (assign sounding true)
                       (assign state (value States Triggered))))
-                (on ((trigger sensor disabled)) (action illegal))))
+                (on ((trigger sensor disabled)) illegal)))
        (guard (value state Disarming)
               (compound
                 (on ((trigger console arm) (trigger console disarm))
-                    (action illegal))
+                    illegal)
                 (on ((trigger sensor triggered)) (compound))
                 (on ((trigger sensor disabled))
                     (compound
@@ -130,7 +131,7 @@
                                (assign state (value States Disarmed))))))))
        (guard (value state Triggered)
               (compound
-                (on ((trigger console arm)) (action illegal))
+                (on ((trigger console arm)) illegal)
                 (on ((trigger console disarm))
                     (compound
                       (action (trigger sensor disable))
@@ -139,4 +140,4 @@
                       (assign state (value States Disarming))))
                 (on ((trigger sensor triggered)
                      (trigger sensor disabled))
-                    (action illegal))))))))
+                    illegal)))))))

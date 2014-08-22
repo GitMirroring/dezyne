@@ -60,7 +60,7 @@
                          (partition (lambda (x) (on-equal? (car ons) x)) ons)
                        (let* ((triggers (apply append (map ast:triggers shared-ons)))
                               (statement (ast:statement (car ons)))
-                              (aggregated-on (ast:make 'on triggers statement)))
+                              (aggregated-on (ast:make 'on (list triggers statement))))
                          (cons aggregated-on (loop remainder))))))))
     (('functions f ...) ast)
     ((h ...) (map aggregate-on ast))
@@ -89,11 +89,14 @@
            (receive (shared-triggers remainder)
                (partition (lambda (x) (port-equal? (car triggers) x)) triggers)
              (let* ((triggers (append shared-triggers))
-                    (shared-on (ast:make 'on triggers statement)))
+                    (shared-on (ast:make 'on (list triggers statement))))
                (cons shared-on (loop remainder)))))))
     (_ ast)))
 
 (define (port-equal? lhs rhs)
+  (port-equal?- lhs rhs))
+
+(define (port-equal?- lhs rhs)
   (or (and (symbol? lhs) (symbol? rhs))
       (and (ast:trigger? lhs) (ast:trigger? lhs)
            (eq? (ast:port-name lhs) (ast:port-name rhs)))))
@@ -124,8 +127,9 @@
                       (receive (shared-guards remainder)
                           (partition (lambda (x) (ast:guard-equal? (car guards) x)) guards)
                         (let* ((expression (ast:expression (car shared-guards)))
-                               (aggregated-guard (ast:make 'guard expression
-                                                           (wrap-compound-as-needed (map ast:statement shared-guards)))))
+                               (aggregated-guard (ast:make 'guard 
+                                                           (list expression
+                                                                 (wrap-compound-as-needed (map ast:statement shared-guards))))))
                           (cons aggregated-guard (loop remainder)))))))))
     (('functions f ...) ast)
     ((h ...) (map aggregate-guard ast))
@@ -150,7 +154,7 @@
 
 (define ((remove-otherwise statements) ast)
   (match ast
-    (('guard 'otherwise s) (ast:make 'guard (guards-not-or statements) ((remove-otherwise '()) s)))
+    (('guard 'otherwise s) (ast:make 'guard (list (guards-not-or statements) ((remove-otherwise '()) s))))
     (('compound s ...) (ast:make 'compound (map (remove-otherwise ast) (cdr ast))))
     ((h ...) (map (remove-otherwise statements) ast))
     (_ ast)))
@@ -165,7 +169,7 @@
   (match statement
     (('compound s ...) (ast:make 'compound (map (passdown-guard guard) (cdr statement))))
     (('guard g s) ((passdown-guard (list 'and guard g)) s))
-    (_ (ast:make 'guard guard statement))))
+    (_ (ast:make 'guard (list guard statement)))))
 
 (define (passdown-on ast)
   (match ast
@@ -176,5 +180,5 @@
 (define ((passdown-triggers triggers) statement)
   (match statement
     (('compound ('guard g s) ...) (ast:make 'compound (map (passdown-triggers triggers) (cdr statement))))
-    (('guard g s) (ast:make 'guard g ((passdown-triggers triggers) s)))
-    (_ (ast:make 'on triggers statement))))
+    (('guard g s) (ast:make 'guard (list g ((passdown-triggers triggers) s))))
+    (_ (ast:make 'on (list triggers statement)))))

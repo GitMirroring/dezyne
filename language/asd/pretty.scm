@@ -47,7 +47,13 @@
     (('compound s ...) (string-join (append '("{\n") (map ->string (cdr src)) '("}\n") ) ""))
     (('if expr statement else) (->string (cons 'if-then-else (cdr src))))
     (('if expr statement) (->string (cons 'if-then (cdr src))))
+    (('assign var ('call function arguments ...)) 
+     (->string (list 'assign var (list 'assign-call function arguments))))
+    (('variable type var ('call function arguments ...)) 
+     (->string (list 'variable type var (list 'assign-call function arguments))))
+    (('trigger #f event) (->string event))
     ((? asd-template?) (apply asd-template->string src))
+
     ((? join?) (apply join-all (cdr src)))
     ((? symbol?) (symbol->string src))
     ((? string?) src)
@@ -86,6 +92,9 @@
                                  (string-drop (string-drop-right s 1) 1)
                                  s))))
     (unparen (->string src))))
+
+(define (arguments->string arguments)
+  (comma-space-join (ast:body (car arguments))))
 
 (define (asd-template? x) (parameterize ((templates asd-templates)) (template? x)))
 
@@ -138,8 +147,11 @@
     (assign . ((identifier . ,identity)
                (expression . ,->string)))
     (action . ((expression . ,->string)))
+    (illegal . '())
     (call . ((identifier . ,identity)
-             (arguments . ,(lambda (x) (comma-space-join (cdr x))))))
+             (arguments . ,arguments->string)))
+    (assign-call . ((identifier . ,identity)
+                    (arguments . ,arguments->string)))
     (if-then . ((expression . ,->string)
                 (statement . ,->string)))
     (if-then-else . ((expression . ,->string)

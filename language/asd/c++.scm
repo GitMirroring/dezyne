@@ -143,7 +143,7 @@
 (define statements.event (make-parameter #f))
 
 (define (statements->string src)
-  ;;  (stderr "statements->string: ~a\n" src)
+  ;; (stderr "statements->string: ~a\n" src)
   (let ((port (statements.port))
         (event (statements.event)))
     (match src
@@ -170,10 +170,8 @@
        (statements->string (list "{\n" lst (statement-last lst) "\n}\n")))
       (('last 'arguments)
        (statement-last->string))
-      (('action 'illegal)
-       (statements->string (list 'action-illegal)))
-      (('action-illegal) (statements->string (statement-illegal)))
-      (('action lst ...) (action-statement->string lst))
+      (('illegal) (statements->string (statement-illegal)))
+      (('action trigger) (action-statement->string trigger))
       (('return) (->string (list 'return ";\n")))
       (('return expression) (->string (list 'return " " (expression->string expression) ";\n")))
       (('variable type identifier expression)
@@ -192,14 +190,14 @@
       (statements->string '(last arguments))
       ""))
 
-(define (action-statement->string lst)
-  (let* ((trigger (car lst))
-         (port-name (ast:port-name trigger))
+(define (action-statement->string trigger)
+  (let* ((port-name (ast:port-name trigger))
          (event-name (ast:event-name trigger))
          (port (ast:port (ast:component *ast*) port-name))
          (name (ast:type port))
-         (interface (ast:ast name)))
-    (statements->string (list "      " port-name '. (ast:direction (ast:event interface event-name)) '. event-name "();\n"))))
+         (interface (ast:ast name))
+         (event (ast:event interface event-name)))
+    (statements->string (list "      " port-name '. (ast:direction event) '. event-name "();\n"))))
 
 (define (statement-illegal)
   (let ((port (statements.port))
@@ -255,6 +253,7 @@
 
   (match ast
     (('action function) (->string (list function "()")))
+    (('call function) (->string (list function "()")))
     (('call function ('arguments arguments ...))
      (let ((arguments ((->join ", ") (map expression->string (cons 'context arguments)))))
        (->string (list function  "(" arguments ")"))))
@@ -296,7 +295,7 @@
 ;; for the pretty printer, small templates work just fine
 ;; for c++, using pattern matching is better?
 (define c++-templates
-  `((action-illegal . (()))
+  `((illegal . (()))
     (assign . ((.lhs . ,lhs->string)
                (.rhs . ,rhs->string)))
     (guard . ((.clause . ,expr->clause)

@@ -51,19 +51,21 @@
        (member (car o)
                '(action assign bind call compound guard if instance on reply variable return))))
 
-(define (ast:make . t)
-  (let ((ast t);; (ast (if (pair? t) t (car t)))
+(define (ast:make type ast)
+  (let ((ast (cons type ast)) ;; (ast (if (pair? t) t (car t)))
         )
     (match ast
       (('imports i ...) ast)
       (('import type) ast)
       (('component name ('ports p ...) ('behaviour n ...) ...) ast)
+      (('component name) ast)
       (('interface name ('types t ...) ('events e ...) ('behaviour n ...) ...) ast)
+      (('interface name ('events e ...)) ast)
+      (('interface name) ast)
       (('behaviour) ast)
       (('behaviour name ('types t ...) ('variables v ...) ('compound s ...)) ast)
       (('compound) ast)
       (('compound (? statement?) ..1) ast)
-      (('compound lst) (cons (car ast) lst))
       (('types t ...) ast)
       (('function name ...) ast)
       (('events e ...) ast)
@@ -76,18 +78,20 @@
       (('variable type name value ...) ast)
       (('requires type name) ast)
       (('trigger port event) ast)
+      (('inevitable) ast)
+      (('optional) ast)
       (('guard expression statement) ast)
       (('on (trigger t ...) statement) ast)
-      (('action 'illegal) ast)
-      (('action ('field type name)) ast)
+      (('on () statement) ast)
+      (('illegal) ast)
+      (('action ('illegal)) (cadr ast))
+      (('action ('trigger port-name event-name)) ast)
       (('assign name expression) ast)
       (('return expression ...) ast)
-;;      ((? (lambda (ast) (and (symbol? (car ast)) (pair? (cdr ast)) (= (length ast) 2)))) (apply ast:make (cons (car ast) (cdr ast))))
-      ((x) (apply ast:make x))
       (_ (throw 'match-error  (format #f "~a:ast:make: no match: ~a\n" (current-source-location) ast))))))
 
-(define (make ast loc)
-  (note-location (ast:make ast) loc))
+(define (make type ast loc)
+  (note-location (ast:make type ast) loc))
 
 (define (object? lst) #t)
 
@@ -123,11 +127,12 @@
    (
     lbrace rbrace lparen rparen lbracket rbracket semicolon colon dot comma
     on
-    illegal inevitable optional
+    inevitable optional
     otherwise
     if reply return
 
     (left: in out)
+    (left: illegal)
     (left: behaviour import interface component system)
     (left: provides requires)
     (left: bool enum void int typedef)
@@ -278,9 +283,9 @@
     (behaviour Identifier lbrace type-list variable-list function-list statement-list rbrace) : `(,$1 ,$2 ,$4 ,$5 ,$6 ,$7))
 
    (function
-    (type Identifier lparen rparen compound-statement) : (make `(function ,$2 (,$1) ,$5) @1)
+    (type Identifier lparen rparen compound-statement) : (make 'function `(,$2 (,$1) ,$5) @1)
 
-    (type Identifier lparen parameter-list rparen compound-statement) : (make `(function ,$2 (,$1 ,$4) ,$6) @1))
+    (type Identifier lparen parameter-list rparen compound-statement) : (make 'function `(,$2 (,$1 ,$4) ,$6) @1))
 
    (parameter-list
     (parameter) : `(parameters ,$1)
@@ -315,14 +320,14 @@
     (function-call semicolon) : $1)
 
    (guarded-statement
-    (lbracket guard rbracket statement) : (make `(guard ,$2 ,$4) @1))
+    (lbracket guard rbracket statement) : (make 'guard `(,$2 ,$4) @1))
 
    (guard
     (expression) : $1
     (otherwise) : $1)
 
    (compound-statement
-    (lbrace statement-list rbrace) : (make $2 @1))
+    (lbrace statement-list rbrace) : (make 'compound (cdr $2) @1))
 
    (compound-identifier
     (Identifier) : $1
@@ -330,24 +335,21 @@
     (Identifier dot Identifier dot Identifier) : `(literal ,$1 ,$3 ,$5))
 
    (on-event-statement
-    (on trigger-spec colon statement) : (make `(,$1 ,$2 ,$4) @1))
+    (on trigger-spec colon statement) : (make $1 `(,$2 ,$4) @1))
 
    (trigger-spec
     (trigger-list) : $1
-    (optional) : `(,$1)
-    (inevitable) : `(,$1))
+    (optional) : (make $1 '() @1)
+    (inevitable) : (make $1 '() @1))
 
    (trigger-list
     (trigger) : `(,$1)
     (trigger-list comma trigger) : (append $1 (list $3)))
 
    (trigger
-    (compound-trigger) : $1)
-
-   (compound-trigger
-    (Identifier) : $1
-
-    (Identifier dot Identifier) : `(trigger ,$1 ,$3))
+    (illegal) : (make $1 '() @1)
+    (Identifier) : (make 'trigger (list #f $1) @1)
+    (Identifier dot Identifier) : (make 'trigger (list $1 $3) @1))
 
    (illegal-statement
     (illegal semicolon) : $1)
@@ -356,7 +358,7 @@
     (Identifier = expression semicolon) : `(assign ,$1 ,$3))
 
    (action-statement
-    (trigger semicolon) : `(action ,$1))
+    (trigger semicolon) : (make 'action `(,$1) @1))
 
    (if-statement
     (if lparen expression rparen statement) : `(if ,$3 ,$5)
@@ -366,8 +368,8 @@
     (reply lparen expression rparen semicolon) : `(,$1 ,$3))
 
    (return-statement
-    (return semicolon) : (make `(return) @1)
-    (return expression semicolon) : (make `(return ,$2) @1))
+    (return semicolon) : (make 'return '() @1)
+    (return expression semicolon) : (make 'return `(,$2) @1))
 
    (variable-statement
     (compound-type Identifier = expression semicolon) : `(variable ,$1 ,$2 ,$4))

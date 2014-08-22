@@ -52,7 +52,7 @@
            ))
 
 (define (ast-> ast)
-  (let* ((norm (normstate (if (member (ast:name (ast:component ast)) 
+  (let* ((norm (normstate (if (member (ast:name (ast:component ast))
                                      '(mangle argument2))
                              (ast:mangle ast)
                               ast))))
@@ -173,13 +173,13 @@
 (define (csp-expression->string ast src)
   (define (paren expression)
     (if (or (number? expression) (symbol? expression))
-        expression 
+        expression
         (list "(" (csp-expression->string ast expression) ")")))
 
   (match src
     (('expression expression) (csp-expression->string ast expression))
     ((or (? number?) (? symbol?)) src)
-    (('value type field) 
+    (('value type field)
      (let ((prefix (variable-prefix ast type)))
        (if prefix
            (list "(" type " == " prefix "_" field ")")
@@ -197,7 +197,11 @@
     (_ (format #f "~a:no match: ~a" (current-source-location) src))))
 
 (define (port-triggers port)
-  (sort ((ast:find-events) (ast-norm (ast:type port))) symbol<))
+  (let* ((interface (ast-norm (ast:type port)))
+         (events (map ast:name (ast:events interface)))
+         (triggers (filter (lambda (x) (member x '(inevitable optional)))
+                           (ast:find-triggers interface))))
+    (sort (append events triggers) symbol<)))
 
 (define (interface-triggers interface)
   (sort ((ast:find-events) interface) symbol<))
@@ -238,11 +242,11 @@
          (events-predicate (filter predicate events))
          (statement (ast:statement statement-on)))
   (if (pair? events-predicate)
-      (ast:make 'on events-predicate statement)
+      (ast:make 'on (list events-predicate statement))
       #f)))
 
 (define (event->string event)
-  (if (pair? event) (caddr event) event))
+  (ast:event-name event))
 
 (define (prefix-illegal? statement)
   (match statement
@@ -250,7 +254,7 @@
                             (if (null? statements)
                                 #f
                                 (or (prefix-illegal? (car statements)) (loop (cdr statements))))))
-    ('(action illegal) #t)
+    (('illegal) #t)
     (_ #f)))
 
 (define (prefix-reply? statement)
@@ -277,7 +281,7 @@
   (let ((interface (ast-norm (ast:type (find (lambda (port) (equal? (ast:port-name trigger) (ast:name port))) ((compose ast:ports ast:component) component)))))
         (event (ast:event-name trigger)))
     (typed-interface? interface event)))
-  
+
 (define (typed? model event)
   (if (ast:interface? model)
       (typed-interface? model event)
@@ -287,7 +291,8 @@
   (if (ast:component? component)
       (pair?
        (filter
-	(lambda (port) (and (equal? type (car port)) (equal? (if (pair? event) (cadr event) event) (caddr port))))
+	(lambda (port)
+          (and (equal? type (car port)) (equal? (ast:port-name event) (ast:name port))))
 	(ast:ports component)))
       #f))
 
@@ -305,7 +310,7 @@
 
 (define (optional-chaos port)
   (let ((interface (ast:type port)))
-    (if (member 'optional ((ast:find-events) (ast-norm (ast:type port))))
+    (if (member 'optional (ast:find-triggers (ast-norm (ast:type port))))
         (list "[|{" interface " .optional}|] " "CHAOS({" interface " .optional})")
         "")))
 
@@ -335,23 +340,24 @@
     (match src
       (('compound t ...)
        (let ((result
-              (let loop ((statements (map (lambda (x) (ast-transform-return ast x #f)) t)))
-                (if (null? statements)
-                    '()
-                    (cons (car statements) (loop (cdr statements)))))))
-         (if (=1 (length result))
+	      (let loop ((statements (map (lambda (x) (ast-transform-return ast x #f)) t)))
+		(if (null? statements)
+		    '()
+		    (cons (car statements) (loop (cdr statements)))))))
+	 (if (=1 (length result))
              (car result)
-             (cons 'compound result))))
+	     (cons 'compound result))))
       (('on events stat)
        (let ((result (ast-transform-return ast stat)))
-         (if (>1 (length result))
-;;              (list 'on events (if (prefix-reply? result)
-;;                                   (list 'compound result)
-;;                                   (list 'compound result (list 'eventreturn))) (list 'the-end members))
-             (list 'on events (if (typed? model (car events))
-                                  (list 'compound result)
-                                  (list 'compound result (list 'eventreturn))) (list 'the-end members))
-             (list 'on events (list 'compound (list 'eventreturn)) (list 'the-end members)))))
+	 (cond
+          ((equal? result '(compound))
+           (list 'on events (list 'compound (list 'eventreturn)) (list 'the-end members)))
+          ((equal? result '(skip))
+           (list 'on events (list 'eventreturn) (list 'the-end members)))
+          ((prefix-reply? result)
+           (list 'on events (list 'compound result) (list 'the-end members)))
+          (else
+           (list 'on events (list 'compound result (list 'eventreturn)) (list 'the-end members))))))
       (_ src))))
 
 (define ((valued-action? port?) src)
@@ -376,10 +382,10 @@
         '()
         (let ((i (car frame)))
           (match i
-            ((? symbol?) 
+            ((? symbol?)
              (cons
-              (if (member i extension) 
-                  (string->symbol (format #f "~a~a'" prefix index)) 
+              (if (member i extension)
+                  (string->symbol (format #f "~a~a'" prefix index))
                   i)
               (loop (cdr frame) (1+ index))))
             (('vector identifiers ..1)
@@ -395,7 +401,7 @@
         (make-context (frame-hide members 'hide_member identifiers)
                       (append (frame-hide locals 'hide_local identifiers)
                               (list extension))))
-       ((? symbol?) 
+       ((? symbol?)
         (make-context (frame-hide members 'hide_member (list extension))
                       (append (frame-hide locals 'hide_local (list extension))
                                           (list extension))))
@@ -406,13 +412,13 @@
 
 (define ((assign identifier expression) x)
   (match x
-    (('vector expressions ...) 
+    (('vector expressions ...)
      (cons 'vector (map (assign identifier expression) expressions)))
     (_ (if (eq? x identifier) expression x))))
 
 (define (context-assign context identifier expression)
   (match context
-    (('ctx (members locals ...))           
+    (('ctx (members locals ...))
      (make-context (map (assign identifier expression) members)
                    (map (assign identifier expression) locals)))
     (_ (throw 'match-error (format #f "~a:context-assign: no match: ~a\n" (current-source-location) context)))))
@@ -421,7 +427,7 @@
   (match x
     (('vector expressions ...) (string-append "(" (comma-join (map (lambda (x) (csp-expression->string ast x)) expressions)) ")"))
     (_ (->string x))))
-  
+
 (define (context->csp ast context)
   (match context
     (('ctx context) (context->csp ast context))
@@ -443,11 +449,11 @@
 	     '()
              (let* ((statement (car statements))
                     (transformed (ast-transform- ast statement #f context))
-                    (context (if (ast:variable? statement) 
+                    (context (if (ast:variable? statement)
                                  (context-extend context (ast:name statement))
                                  context)))
                (if (>1 (length statements))
-                   (if (equal? transformed '(action illegal))
+                   (if (equal? transformed '(illegal))
                        transformed
                        (list (if (ast:variable? statement)
                                  (if (or (valued-action? statement) (call? statement))
@@ -461,8 +467,8 @@
 	 (if (prefix-illegal? stat)
 	     (list 'on events 'IG result)
 	     (list 'on events result the-end))))
-      (('variable type var ('value (and (? port?) (get! port)) action))
-       (list context var (list 'valued-action (port) action)))
+      (('variable type var ('value (and (? port?) (get! port)) event))
+       (list context var (list 'valued-action (list 'trigger (port) event))))
       (('variable type var ('call function))
        (list context var (list 'call function)))
       (('variable type var ('call function arguments))
@@ -479,7 +485,7 @@
        (list 'assign-active (list context 'r' (list 'call function arguments))
              (context-assign context var 'r')))
       (('assign var ('value (and (? port?) (get! port)) event))
-       (list 'assign-active (list context 'r' 
+       (list 'assign-active (list context 'r'
                                   (list 'action (list 'trigger (port) event)))
              (context-assign context var 'r')))
       (('assign var expression)
@@ -499,7 +505,7 @@
                (ast-transform- ast else return context))))
       (('function name signature statement)
        (let* ((parameters (map ast:name (ast:parameters signature)))
-              (context (context-extend context (if (>1 (length parameters)) 
+              (context (context-extend context (if (>1 (length parameters))
                                                    (cons 'vector parameters)
                                                    parameters)))
               (transformed (ast-transform- ast statement return context)))
@@ -541,12 +547,12 @@
                                          (member 'optional (map ast:event-name events))))
                (ig? (and (pair? stat) (eq? (car stat) 'IG)))
                (channel (if (ast:interface? model) model-name (ast:port-name (car events))))
-               (provided-on? (or (and (ast:interface? model) (not inevitable-optional?)) 
+               (provided-on? (or (and (ast:interface? model) (not inevitable-optional?))
                                  (or (ast:interface? model) ((provides-event? model) (car events)))))
                (IG? (if ig? (if ((provides-event? model) (car events)) "IIG & "  "IG & ")))
                (event-names (comma-join (map ast:event-name events)))
 	       (stat (if ig? (cdr stat) stat))
-	       (transformed-stat (map (lambda (x) 
+	       (transformed-stat (map (lambda (x)
                                         (csp-transform ast x inevitable-optional? channel provided-on?)) stat)))
           (list IG? channel "?x:{" event-names "}" " ->\n" transformed-stat)))
        (('reply expr)
@@ -561,16 +567,16 @@
         (let ((expression (csp-expression->string ast expression)))
           (list "returnvalue_(\\ (" context ") @ " expression ")")))
        (('return) "skip_") ;; FIXME
-       (('eventreturn) (let ((channel-return (if (and (not inevitable-optional?) provided-on?) 
+       (('eventreturn) (let ((channel-return (if (and (not inevitable-optional?) provided-on?)
                                             (list "(\\ P',V' @ " channel ".return -> P'(V'))")
                                             (list "(\\ P',V' @ P'(V'))"))))
                     (list channel-return)))
-       (('the-end members) 
+       (('the-end members)
         (let* ((transition-end (if component? "transition_end -> "))
                (context (make-context members '()))
                (end (if (not inevitable-optional?) (list transition-end))))
           (list "(\\ V' @ " end model-name "_" behaviour "_" "(V'),(" context "))")))
-       (('action 'illegal) "illegal -> STOP")
+       (('illegal) "illegal -> STOP")
        (('action event)
         (let* ((channel (if (ast:interface? model) model-name (ast:port-name event)))
                (event-name (ast:event-name event))
@@ -586,8 +592,6 @@
         (list "callvoid_(" function ")"))
        (('call context function arguments)
         (list "callvoid_(\\ P',V' @ " function " (P',V',\\ (" context ") @ (" arguments ")))"))
-       (('assign ('variable type var ('action port event)))
-        (list "(\\ P',V' @ " port "!" event " -> " port "?" var " -> P'((V'," var ")))"))
        (('assign context expressions)
         (list "assign_(\\ (" context ") @ (" expressions "))"))
        (('if context expression then else)
@@ -598,7 +602,7 @@
        (('value type field) (list type "_" field))
        (('literal scope type value) (list type "_" value))
 ;;       (('vector expressions ...) (cons 'vector (map (lambda (exp) (csp-transform ast exp)) expressions )))
-       (('context-active (context var ('valued-action port event)) stat)
+       (('context-active (context var ('valued-action ('trigger port event))) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list "context_active_(sendrecv_(" port "," event "),\n" stat ")")))
        (('context-active (context var ('expression ('action ('trigger port event)))) stat)

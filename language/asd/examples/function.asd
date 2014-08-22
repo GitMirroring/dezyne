@@ -46,12 +46,12 @@ interface I
     {
       on a:
       {
-	toggle;
+	toggle();
       }
       on b:
       {
-	toggle;
-	toggle;
+	toggle();
+	toggle();
 	d;
       }
     }
@@ -78,12 +78,12 @@ component function
     {
       on i.a:
       {
-	toggle;
+	toggle();
       }
       on i.b:
       {
-	toggle;
-	toggle;
+	toggle();
+	toggle();
 	i.d;
       }
     }

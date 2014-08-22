@@ -36,8 +36,8 @@
        interface i { behaviour { [true] on a: [false] on a: b;
                                  } } #}))
    '(("double on" 
-      (on (a) 
-          (action b))))))
+      (on ((trigger #f a)) 
+          (action (trigger #f b)))))))
 
 (pass-if "wfc-mixing"
   (pretty-noisy-equal?
@@ -50,5 +50,5 @@
                                       } } #}))
    '((("mixing guarded"
        (guard true 
-              (on (a) 
-                  (action b))))))))
+              (on ((trigger #f a)) 
+                  (action (trigger #f b)))))))))
