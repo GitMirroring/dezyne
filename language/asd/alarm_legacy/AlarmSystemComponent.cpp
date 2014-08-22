@@ -5,8 +5,8 @@
 // 
 // Model name          : AlarmSystem
 // Model file          : AlarmSystem.dm
-// Model last updated  : 2014-Aug-20 12:06:37
-// Model fingerprint   : A6B50F5A
+// Model last updated  : 2014-Aug-22 07:44:54
+// Model fingerprint   : A5407F72
 // 
 // Version             : 1.0
 // Project             : 
@@ -17,7 +17,7 @@
 // 
 // /////////////////////////////////////////////////////////////////////////////
 // 
-// Verification result  : outdated
+// Verification result  : passed
 // 
 // /////////////////////////////////////////////////////////////////////////////
 // 
@@ -33,7 +33,6 @@
 #include "AlarmSystemComponent.h"
 #include "WindowSensorComponent.h"
 #include "SirenComponent.h"
-#include "TimerComponent.h"
 
 #include "asdSingleThreaded.h"
 #include "asdUsedServiceRef.h"
@@ -111,48 +110,15 @@ namespace AlarmSystemImplScope
     boost::shared_ptr<ISiren> m_ISiren;
   };
 
-  class TimerAdapter
-  {
-  public:
-    TimerAdapter(const boost::shared_ptr<TimerInterface>& service): m_asd_Interface(service)
-    {
-      m_asd_Interface->GetAPI(&m_Timer);
-    }
-
-    const boost::shared_ptr<Timer>& GetTimer() const
-    {
-      return m_Timer;
-    }
-
-    // TimerCB
-    void RegisterCB(boost::shared_ptr<TimerCB> cb)
-    {
-      m_asd_Interface->RegisterCB(cb);
-      m_TimerCB = cb;
-    }
-
-    void RegisterCB(boost::shared_ptr<asd::channels::ISingleThreaded> cb)
-    {
-      m_asd_Interface->RegisterCB(cb);
-    }
-
-  private:
-    boost::shared_ptr<TimerInterface> m_asd_Interface;
-    boost::shared_ptr<Timer> m_Timer;
-    boost::shared_ptr<TimerCB> m_TimerCB;
-  };
-
   struct asd_Resource
   {
     asd_Resource ()
     : WindowSensor(1)
     , Siren(1)
-    , timer(1)
     {}
 
     std::vector<boost::shared_ptr<SensorAdapter> > WindowSensor;
     std::vector<boost::shared_ptr<SirenAdapter> > Siren;
-    std::vector<boost::shared_ptr<TimerAdapter> > timer;
   };
 
   struct asd_UCV
@@ -160,14 +126,11 @@ namespace AlarmSystemImplScope
     asd_UCV (const asd_Resource& asd_resource)
     : WindowSensor(&asd_resource.WindowSensor[0], &asd_resource.WindowSensor[0] + asd_resource.WindowSensor.size())
     , Siren(&asd_resource.Siren[0], &asd_resource.Siren[0] + asd_resource.Siren.size())
-    , timer(&asd_resource.timer[0], &asd_resource.timer[0] + asd_resource.timer.size())
     {}
 
     fixed_ucv<SensorAdapter> WindowSensor;
 
     fixed_ucv<SirenAdapter> Siren;
-
-    fixed_ucv<TimerAdapter> timer;
   };
 
   class State;
@@ -194,7 +157,6 @@ namespace AlarmSystemImplScope
     virtual ~Context();
     const fixed_ucv<SensorAdapter>& GetWindowSensor() const;
     const fixed_ucv<SirenAdapter>& GetSiren() const;
-    const fixed_ucv<TimerAdapter>& Gettimer() const;
     void Set(const boost::shared_ptr<IAlarmSystem_NI>&);
     IAlarmSystem_NI& GetIAlarmSystem_NI() const;
     IAlarmSystem::PseudoStimulus GetIAlarmSystemPseudoStimulus() const;
@@ -213,12 +175,10 @@ namespace AlarmSystemImplScope
     virtual ~State() {}
     void ProcessPseudoStimulus(Context& context, ISensor::PseudoStimulus stimulus, const variable_ucv<SensorAdapter>&);
     void ProcessPseudoStimulus(Context& context, ISiren::PseudoStimulus stimulus, const variable_ucv<SirenAdapter>&);
-    void ProcessPseudoStimulus(Context& context, Timer::PseudoStimulus stimulus, const variable_ucv<TimerAdapter>&);
     virtual void IAlarmSystemSwitchOn(Context& context);
     virtual void IAlarmSystemSwitchOff(Context& context);
     virtual void WindowSensorISensor_NIDetectedMovement(Context& context, const variable_ucv<SensorAdapter>& that);
     virtual void WindowSensorISensor_NIDeactivated(Context& context, const variable_ucv<SensorAdapter>& that);
-    virtual void timerTimerCBtimeout(Context& context, const variable_ucv<TimerAdapter>& that);
 
   protected:
     std::string m_TypeName;
@@ -253,18 +213,6 @@ namespace AlarmSystemImplScope
     Activated_Idle(const Activated_Idle& other);
   };
 
-  class Activated_AlarmMode: public State
-  {
-  public:
-    static State& instance();
-    virtual void IAlarmSystemSwitchOff(Context& context);
-
-  private:
-    Activated_AlarmMode();
-    Activated_AlarmMode& operator = (const Activated_AlarmMode& other);
-    Activated_AlarmMode(const Activated_AlarmMode& other);
-  };
-
   class Deactivating: public State
   {
   public:
@@ -277,17 +225,28 @@ namespace AlarmSystemImplScope
     Deactivating(const Deactivating& other);
   };
 
-  class Activated_Tripped: public State
+  class Tripped: public State
   {
   public:
     static State& instance();
     virtual void IAlarmSystemSwitchOff(Context& context);
-    virtual void timerTimerCBtimeout(Context& context, const variable_ucv<TimerAdapter>& that);
 
   private:
-    Activated_Tripped();
-    Activated_Tripped& operator = (const Activated_Tripped& other);
-    Activated_Tripped(const Activated_Tripped& other);
+    Tripped();
+    Tripped& operator = (const Tripped& other);
+    Tripped(const Tripped& other);
+  };
+
+  class DeactivatingTripped: public State
+  {
+  public:
+    static State& instance();
+    virtual void WindowSensorISensor_NIDeactivated(Context& context, const variable_ucv<SensorAdapter>& that);
+
+  private:
+    DeactivatingTripped();
+    DeactivatingTripped& operator = (const DeactivatingTripped& other);
+    DeactivatingTripped(const DeactivatingTripped& other);
   };
 
   class Component: public AlarmSystemComponent
@@ -357,29 +316,6 @@ namespace AlarmSystemImplScope
     WindowSensorISensor_NIProxy(const WindowSensorISensor_NIProxy& other);
   };
 
-  class timerTimerCBProxy: public TimerCB
-  {
-    Context& m_Context;
-    variable_ucv<TimerAdapter> m_That;
-
-  public:
-    timerTimerCBProxy(Context& context,  const variable_ucv<TimerAdapter>& that)
-    : m_Context(context)
-    , m_That(that)
-    {}
-
-    virtual void timeout()
-    {
-      m_Context.defer(boost::bind(&State::timerTimerCBtimeout,
-                      boost::bind(&Context::CurrentGlobal, &m_Context),
-                      boost::ref(m_Context), boost::cref(m_That)));
-    }
-
-  private:
-    timerTimerCBProxy& operator = (const timerTimerCBProxy& other);
-    timerTimerCBProxy(const timerTimerCBProxy& other);
-  };
-
   Context::Context()
   : asd_52369::SingleThreadedContext()
   , m_Resource()
@@ -391,9 +327,6 @@ namespace AlarmSystemImplScope
     std::vector<boost::shared_ptr<SirenInterface> > Siren;
     Siren.push_back(SirenComponent::GetInstance());
     m_Resource.Siren[0].reset(new SirenAdapter(Siren[0]));
-    std::vector<boost::shared_ptr<TimerInterface> > timer;
-    timer.push_back(TimerComponent::GetInstance());
-    m_Resource.timer[0].reset(new TimerAdapter(timer[0]));
     for (unsigned int asd_i = 1; asd_i <= m_Ucv.WindowSensor.size(); ++asd_i)
     {
       m_Ucv.WindowSensor[asd_i].begin()->RegisterCB(boost::shared_ptr<asd::channels::ISingleThreaded>(new asd_52369::SingleThreadedProxy(*Self())));
@@ -401,14 +334,6 @@ namespace AlarmSystemImplScope
     for (unsigned int asd_i = 1; asd_i <= m_Ucv.WindowSensor.size(); ++asd_i)
     {
       m_Ucv.WindowSensor[asd_i].begin()->RegisterCB(boost::shared_ptr<ISensor_NI>(new WindowSensorISensor_NIProxy(*Self(), m_Ucv.WindowSensor[asd_i])));
-    }
-    for (unsigned int asd_i = 1; asd_i <= m_Ucv.timer.size(); ++asd_i)
-    {
-      m_Ucv.timer[asd_i].begin()->RegisterCB(boost::shared_ptr<asd::channels::ISingleThreaded>(new asd_52369::SingleThreadedProxy(*Self())));
-    }
-    for (unsigned int asd_i = 1; asd_i <= m_Ucv.timer.size(); ++asd_i)
-    {
-      m_Ucv.timer[asd_i].begin()->RegisterCB(boost::shared_ptr<TimerCB>(new timerTimerCBProxy(*Self(), m_Ucv.timer[asd_i])));
     }
   }
 
@@ -423,11 +348,6 @@ namespace AlarmSystemImplScope
     {
       m_Resource.Siren[asd_i].reset();
       SirenComponent::ReleaseInstance();
-    }
-    for (unsigned int asd_i = 0; asd_i < m_Resource.timer.size(); ++asd_i)
-    {
-      m_Resource.timer[asd_i].reset();
-      TimerComponent::ReleaseInstance();
     }
   }
 
@@ -467,11 +387,6 @@ namespace AlarmSystemImplScope
   const fixed_ucv<SirenAdapter>& Context::GetSiren() const
   {
     return m_Ucv.Siren;
-  }
-
-  const fixed_ucv<TimerAdapter>& Context::Gettimer() const
-  {
-    return m_Ucv.timer;
   }
 
   IAlarmSystem_NI& Context::GetIAlarmSystem_NI() const
@@ -541,14 +456,6 @@ namespace AlarmSystemImplScope
     }
   }
 
-  void State::ProcessPseudoStimulus(Context& context, Timer::PseudoStimulus /* stimulus */, const variable_ucv<TimerAdapter>& that)
-  {
-    if (that.in(context.Gettimer()))
-    {
-      ASD_ILLEGAL("AlarmSystem", name, "Timer", "PseudoStimulus");
-    }
-  }
-
   State::State(const char* n)
   : name(n)
   {}
@@ -578,13 +485,6 @@ namespace AlarmSystemImplScope
     ASD_TRACE_ENTER("AlarmSystem", name, "ISensor_NI", "Deactivated");
 
     ASD_ILLEGAL("AlarmSystem", name, "ISensor_NI", "Deactivated");
-  }
-
-  void State::timerTimerCBtimeout(Context&, const variable_ucv<TimerAdapter>&)
-  {
-    ASD_TRACE_ENTER("AlarmSystem", name, "TimerCB", "timeout");
-
-    ASD_ILLEGAL("AlarmSystem", name, "TimerCB", "timeout");
   }
 
   NotActivated::NotActivated()
@@ -623,7 +523,7 @@ namespace AlarmSystemImplScope
   {
     ASD_TRACE_ENTER("AlarmSystem", name, "IAlarmSystem", "SwitchOff");
 
-    // Rulecase line number: 13
+    // Rulecase line number: 12
     // 
     // Deactivate sensor
     context.GetWindowSensor().begin()->GetISensor()->Deactivate();
@@ -637,38 +537,14 @@ namespace AlarmSystemImplScope
   {
     ASD_TRACE_ENTER("AlarmSystem", name, "ISensor_NI", "DetectedMovement");
 
-    // Rulecase line number: 14
+    // Rulecase line number: 13
     // 
     // Sensor dectected movement - start timer
     context.GetIAlarmSystem_NI().Tripped();
-    context.Gettimer().begin()->GetTimer()->create();
-    context.UpdateLocal(Activated_Tripped::instance());
+    context.GetSiren().begin()->GetISiren()->TurnOn();
+    context.UpdateLocal(Tripped::instance());
 
     ASD_TRACE_EXIT("AlarmSystem", name, "ISensor_NI", "DetectedMovement");
-  }
-
-  Activated_AlarmMode::Activated_AlarmMode()
-  : State("Activated_AlarmMode")
-  {}
-  State& Activated_AlarmMode::instance()
-  {
-    static Activated_AlarmMode inst;
-    return inst;
-  }
-
-  void Activated_AlarmMode::IAlarmSystemSwitchOff(Context& context)
-  {
-    ASD_TRACE_ENTER("AlarmSystem", name, "IAlarmSystem", "SwitchOff");
-
-    // Rulecase line number: 37
-    // 
-    // Turn siren off, deactive sensor
-    context.GetSiren().begin()->GetISiren()->TurnOff();
-    context.GetWindowSensor().begin()->GetISensor()->Deactivate();
-    context.SetIAlarmSystemPseudoStimulus(IAlarmSystem::VoidReply);
-    context.UpdateLocal(Deactivating::instance());
-
-    ASD_TRACE_EXIT("AlarmSystem", name, "IAlarmSystem", "SwitchOff");
   }
 
   Deactivating::Deactivating()
@@ -684,7 +560,7 @@ namespace AlarmSystemImplScope
   {
     ASD_TRACE_ENTER("AlarmSystem", name, "ISensor_NI", "Deactivated");
 
-    // Rulecase line number: 23
+    // Rulecase line number: 21
     // 
     // Sensor deactivated - alarm system switched off
     context.GetIAlarmSystem_NI().SwitchedOff();
@@ -693,39 +569,48 @@ namespace AlarmSystemImplScope
     ASD_TRACE_EXIT("AlarmSystem", name, "ISensor_NI", "Deactivated");
   }
 
-  Activated_Tripped::Activated_Tripped()
-  : State("Activated_Tripped")
+  Tripped::Tripped()
+  : State("Tripped")
   {}
-  State& Activated_Tripped::instance()
+  State& Tripped::instance()
   {
-    static Activated_Tripped inst;
+    static Tripped inst;
     return inst;
   }
 
-  void Activated_Tripped::IAlarmSystemSwitchOff(Context& context)
+  void Tripped::IAlarmSystemSwitchOff(Context& context)
   {
     ASD_TRACE_ENTER("AlarmSystem", name, "IAlarmSystem", "SwitchOff");
 
-    // Rulecase line number: 29
+    // Rulecase line number: 26
     // 
     // Cancel timer, deactive sensor
-    context.Gettimer().begin()->GetTimer()->cancel();
     context.GetWindowSensor().begin()->GetISensor()->Deactivate();
     context.SetIAlarmSystemPseudoStimulus(IAlarmSystem::VoidReply);
-    context.UpdateLocal(Deactivating::instance());
+    context.UpdateLocal(DeactivatingTripped::instance());
 
     ASD_TRACE_EXIT("AlarmSystem", name, "IAlarmSystem", "SwitchOff");
   }
 
-  void Activated_Tripped::timerTimerCBtimeout(Context& context, const variable_ucv<TimerAdapter>& /* that */)
+  DeactivatingTripped::DeactivatingTripped()
+  : State("DeactivatingTripped")
+  {}
+  State& DeactivatingTripped::instance()
   {
-    ASD_TRACE_ENTER("AlarmSystem", name, "TimerCB", "timeout");
+    static DeactivatingTripped inst;
+    return inst;
+  }
 
-    // Rulecase line number: 32
-    context.GetSiren().begin()->GetISiren()->TurnOn();
-    context.UpdateLocal(Activated_AlarmMode::instance());
+  void DeactivatingTripped::WindowSensorISensor_NIDeactivated(Context& context, const variable_ucv<SensorAdapter>& /* that */)
+  {
+    ASD_TRACE_ENTER("AlarmSystem", name, "ISensor_NI", "Deactivated");
 
-    ASD_TRACE_EXIT("AlarmSystem", name, "TimerCB", "timeout");
+    // Rulecase line number: 35
+    context.GetIAlarmSystem_NI().SwitchedOff();
+    context.GetSiren().begin()->GetISiren()->TurnOff();
+    context.UpdateLocal(NotActivated::instance());
+
+    ASD_TRACE_EXIT("AlarmSystem", name, "ISensor_NI", "Deactivated");
   }
 }
 
@@ -740,7 +625,7 @@ void AlarmSystemComponent::ReleaseInstance()
 
 // /////////////////////////////////////////////////////////////////////////////
 // 
-// Verum audit trail signature : UoWkSM+CMpvpX0pBo40Yf2saXioMP+XF1k9JpymAF3wc5QuEM6bbP8B7aT8Q1/cSNn6g8M7CycHc80IEN6AkpRgHziQ1qPNDzjMDZioLOPtYmt9CmvSD3JgJ/fqXQczaJG47WjF09IsvjO9JZeWDSONw9DFyc8kOqycRy4/erj6YmVHKMheDcQq5YlaWJxc4DFNdNv6PBTtEoFN7mgzidJFg5fKzzftr2Yz9IjiGUtPph8lr9fFBkea1jvnoi2zALUN9LvRFFCUGA7PVJ7pf1LNsoOnY/ecncggoA41fKma4TrGnSJYOU1oEQq7NO5qupMtOjpPCjWosDmxQ0H0Tpg==
+// Verum audit trail signature : Egl6qqATjcEWlSIST8jXEBCOlncvs0Ul2KlkJ95ukFVqEtPhMnxF1Xu+3FHsdjzWLlG1u9BUa4cIUtfxbxwLP9Tlgsh7ppL9kStZDh8fzvFX9BvF1byCeKTwIaAlgofLk1SXoL/fvnroPxK/48tTJLEqPtT/W20FPRdyrn7TDXL16npYdcEjlxBSrSUdrCZHAkFrgl3gkNiQUsJIdOlZqwvTyg/IIsh5eL+RM9TcsOIAtm2hk4qI8p9al/Gk6vr41pVbfKQKK8ary0Uhgq0CHRYyyWWIWS7F/7xB/RLSVaTF0k5kk44FcJsF1akbM4vpP8Rxwp1kvjSuBMhGhKDVZA==
 // 
 // /////////////////////////////////////////////////////////////////////////////
 // 

@@ -26,10 +26,15 @@
 #include "AlarmSystemComponent.h"
 #include "WindowSensorComponent.h"
 #include "SirenComponent.h"
-#include "TimerComponent.h"
 
 #include <boost/make_shared.hpp>
 #include <boost/enable_shared_from_this.hpp>
+
+class SingleThreaded: public asd::channels::ISingleThreaded
+{
+public:
+  void processCBs() {std::cout << "SingleThreaded::processCBs" << std::endl;}
+};
 
 class LegacyCB: public IAlarmSystem_NI
 {
@@ -38,14 +43,8 @@ public:
   LegacyCB(interface::Console& console)
   : console(console)
   {}
-  void Tripped()
-  {
-    console.out.detected();
-  }
-  void SwitchedOff()
-  {
-    console.out.deactivated();
-  }
+  void Tripped() {console.out.detected();}
+  void SwitchedOff() {console.out.deactivated();}
 };
 
 class LegacySensor: public WindowSensorComponent
@@ -64,36 +63,13 @@ public:
     sensor.out.triggered = boost::bind(&LegacySensor::DetectedMovement, this);
     sensor.out.disabled = boost::bind(&LegacySensor::Deactivated, this);
   }
-  void DetectedMovement()
-  {
-    cb->DetectedMovement();
-    st->processCBs();
-  }
-  void Deactivated()
-  {
-    cb->Deactivated();
-    st->processCBs();
-  }
-  void Activate()
-  {
-    sensor->in.enable();
-  }
-  void Deactivate()
-  {
-    sensor->in.disable();
-  }
-  void GetAPI(boost::shared_ptr<ISensor>* api)
-  {
-    *api = shared_from_this();
-  }
-  void RegisterCB(boost::shared_ptr<ISensor_NI> cb)
-  {
-    this->cb = cb;
-  }
-  void RegisterCB(boost::shared_ptr<asd::channels::ISingleThreaded> st)
-  {
-    this->st = st;
-  }
+  void DetectedMovement() {cb->DetectedMovement(); st->processCBs();}
+  void Deactivated() {cb->Deactivated(); st->processCBs();}
+  void Activate() {sensor->in.enable();}
+  void Deactivate() {sensor->in.disable();}
+  void GetAPI(boost::shared_ptr<ISensor>* api) {*api = shared_from_this();}
+  void RegisterCB(boost::shared_ptr<ISensor_NI> cb) {this->cb = cb;}
+  void RegisterCB(boost::shared_ptr<asd::channels::ISingleThreaded> st) {this->st = st;}
 };
 
 boost::shared_ptr<LegacySensor> LegacySensor::singleton;
@@ -101,34 +77,24 @@ boost::shared_ptr<LegacySensor> LegacySensor::singleton;
 boost::shared_ptr<SensorInterface> WindowSensorComponent::GetInstance()
 {
   if(not LegacySensor::singleton)
-  {
     LegacySensor::singleton = boost::make_shared<LegacySensor>();
-  }
   return LegacySensor::singleton;
 }
-void WindowSensorComponent::ReleaseInstance()
-{
-  LegacySensor::singleton.reset();
-}
+void WindowSensorComponent::ReleaseInstance() {LegacySensor::singleton.reset();}
 
 
 class LegacySiren: public SirenComponent
                  , public ISiren
                  , public boost::enable_shared_from_this<LegacySiren>
 {
+  interface::Siren* siren;
 public:
   static boost::shared_ptr<LegacySiren> singleton;
 
-  void TurnOn()
-  {
-  }
-  void TurnOff()
-  {
-  }
-  void GetAPI(boost::shared_ptr<ISiren>* api)
-  {
-    *api = shared_from_this();
-  }
+  void set(interface::Siren& siren) {this->siren = &siren;}
+  void TurnOn() {siren->in.turnon();}
+  void TurnOff() {siren->in.turnoff();}
+  void GetAPI(boost::shared_ptr<ISiren>* api) {*api = shared_from_this();}
 };
 
 boost::shared_ptr<LegacySiren> LegacySiren::singleton;
@@ -136,58 +102,10 @@ boost::shared_ptr<LegacySiren> LegacySiren::singleton;
 boost::shared_ptr<SirenInterface> SirenComponent::GetInstance()
 {
   if(not LegacySiren::singleton)
-  {
     LegacySiren::singleton = boost::make_shared<LegacySiren>();
-  }
   return LegacySiren::singleton;
 }
-void SirenComponent::ReleaseInstance()
-{
-  LegacySiren::singleton.reset();
-}
-
-
-class LegacyTimer: public TimerComponent
-                 , public Timer
-                 , public boost::enable_shared_from_this<LegacyTimer>
-{
-  boost::shared_ptr<TimerCB> cb;
-public:
-  static boost::shared_ptr<LegacyTimer> singleton;
-  void create()
-  {
-  }
-  void cancel()
-  {
-  }
-  void GetAPI(boost::shared_ptr<Timer>* api)
-  {
-    *api = shared_from_this();
-  }
-  void RegisterCB(boost::shared_ptr<TimerCB> cb)
-  {
-    this->cb = cb;
-  }
-  void RegisterCB(boost::shared_ptr<asd::channels::ISingleThreaded>)
-  {
-  }
-};
-
-boost::shared_ptr<LegacyTimer> LegacyTimer::singleton;
-
-boost::shared_ptr<TimerInterface> TimerComponent::GetInstance()
-{
-  if(not LegacyTimer::singleton)
-  {
-    LegacyTimer::singleton = boost::make_shared<LegacyTimer>();
-  }
-  return LegacyTimer::singleton;
-}
-void TimerComponent::ReleaseInstance()
-{
-  LegacyTimer::singleton.reset();
-}
-
+void SirenComponent::ReleaseInstance() {LegacySiren::singleton.reset();}
 
 namespace component
 {
@@ -204,23 +122,9 @@ namespace component
 
     boost::shared_ptr<IAlarmSystem_NI> cb = boost::make_shared<LegacyCB>(boost::ref(console));
     a->RegisterCB(cb);
+    a->RegisterCB(boost::make_shared<SingleThreaded>());
 
     LegacySensor::singleton->set(sensor);
-  }
-  void Alarm::arm()
-  {
-    std::cout << "Alarm::arm" << std::endl;
-  }
-  void Alarm::disarm()
-  {
-    std::cout << "Alarm::disarm" << std::endl;
-  }
-  void Alarm::triggered()
-  {
-    std::cout << "Alarm::triggered" << std::endl;
-  }
-  void Alarm::disabled()
-  {
-    std::cout << "Alarm::disabled" << std::endl;
+    LegacySiren::singleton->set(siren);
   }
 }
