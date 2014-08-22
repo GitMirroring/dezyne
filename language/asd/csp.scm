@@ -207,7 +207,7 @@
   (sort ((ast:find-events) interface) symbol<))
 
 (define (typed-elements enum)
-   (map (lambda (x) (symbol-append (ast:name enum) '_ x)) (ast:elements enum)))
+   (map (lambda (x) (symbol-append (ast:name enum) '_ x)) (ast:fields enum)))
 
 (define (enum-values comp)
   (let ((comp-values (apply append (map typed-elements (ast:enums (ast:behaviour comp))))))
@@ -217,7 +217,7 @@
           (loop (cdr ports) (append values (apply append (map typed-elements (ast:enums (ast:behaviour (ast-norm (ast:type (car ports)))))))))))))
 
 (define (return-value enum)
-  (map (lambda (value) (symbol-append (ast:name enum) '_ value)) (ast:elements enum)))
+  (map (lambda (value) (symbol-append (ast:name enum) '_ value)) (ast:fields enum)))
 
 (define (add-return-if-empty returns)
   (if (null? returns)

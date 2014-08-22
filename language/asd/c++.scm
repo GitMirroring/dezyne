@@ -120,7 +120,7 @@
 (define (cb port) (or (and (ast:provides? port) 'cb) 'api))
 
 (define (declare-enum enum)
-  (->string (list "enum "  (ast:name enum) "\n  {\n  " (comma-nl-join (ast:elements enum)) ",\n  };\n")))
+  (->string (list "enum "  (ast:name enum) "\n  {\n  " (comma-nl-join (ast:fields enum)) ",\n  };\n")))
 
 (define (declare-integer integer)
   (->string (list "typedef int " (ast:name integer) ";\n")))

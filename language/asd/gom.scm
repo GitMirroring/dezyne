@@ -30,37 +30,87 @@
   :use-module (oop goops)
   :export (ast-> ast->gom))
 
-(define-class <ast> ()
-  (name :accessor .name :init-value #f :init-keyword :name))
+(define-class <ast> ())
+(define-class <statement> (<ast>))
 
 (define-class <named> (<ast>)
   (name :accessor .name :init-value #f :init-keyword :name))
 
-(define-class <model> (<named>)
-  (behaviour :accessor .behaviour :init-value #f :init-keyword :behaviour))
+(define-class <ast-list> (<ast>)
+  (elements :accessor .elements :init-form (list) :init-keyword :elements))
+
+(define-class <dir-ast> (<named>)
+  (direction :accessor .direction :init-value 'in :init-keyword :direction)
+  (type :accessor .type :init-value #f :init-keyword :type))
+
+(define-class <model> (<named>))
 
 (define-class <interface> (<model>)
   (events :accessor .events :init-form (make <events>) :init-keyword :events)
-  (types :accessor .types :init-form (make <types>) :init-keyword :types))
+  (types :accessor .types :init-form (make <types>) :init-keyword :types)
+  (behaviour :accessor .behaviour :init-value #f :init-keyword :behaviour))
 
-(define-class <event> (<named>)
-  (direction :accessor .direction :init-value 'in :init-keyword :direction)
-  (signature :accessor .signature :init-form (make <signature>) :init-keyword :signature))
+(define-class <event> (<dir-ast>))
+(define-class <port> (<dir-ast>))
+
+(define-class <type> (<ast>)
+  (name :accessor .name :init-value 'void :init-keyword :name))
+
+(define-class <expression> (<ast>)
+  (value :accessor .value :init-value #f :init-keyword :value))
+
+(define-class <variable> (<named>)
+  (type :accessor .type :init-value (make <type> :name 'bool) :init-keyword :type)
+  (expression :accessor .expression :init-form (make <expression>) :init-keyword :expression))
 
 (define-class <signature> (<ast>)
-  (return-type :accessor .return-type :init-value 'void :init-keyword :return-type)
+  (type :accessor .type :init-value (make <type>) :init-keyword :type)
   (parameters :accessor .parameters :init-form (make <parameters>) :init-keyword :parameters))
 
-(define-class <component> (<model>))
-(define-class <ast-list> (<ast>)
-  (elements :accessor .elements :init-form (list) :init-keyword :elements))
-(define-class <types> (<ast-list>))
+(define-class <component> (<model>)
+  (ports :accessor .ports :init-form (make <ports>) :init-keyword :ports)
+  (behaviour :accessor .behaviour :init-value #f :init-keyword :behaviour))
+
+(define-class <compound> (<ast-list> <statement>))
 (define-class <events> (<ast-list>))
 (define-class <ports> (<ast-list>))
+(define-class <types> (<ast-list>))
+(define-class <variables> (<ast-list>))
 
 (define-class <enum> (<named>)
-  (elements :accessor .elements :init-form (list) :init-keyword :elements))
+  (fields :accessor .fields :init-form (list) :init-keyword :fields))
+
 (define-class <parameters> (<ast-list>))
+
+(define-class <behaviour> (<named>)
+  (types :accessor .types :init-form (make <types>) :init-keyword :types)
+  (variables :accessor .variables :init-form (make <variables>) :init-keyword :variables)
+  (statement :accessor .statement :init-value #f :init-keyword :statement))
+
+(define-class <action> (<statement>)
+  (trigger :accessor .trigger :init-value #f :init-keyword :trigger))
+
+(define-class <assign> (<statement>)
+  (identifier :accessor .identifier :init-value #f :init-keyword :identifier)
+  (expression :accessor .expression :init-form (make <expression>) :init-keyword :expression))
+
+(define-class <illegal> (<statement>))
+
+(define-class <guard> (<statement>)
+  (expression :accessor .expression :init-form (make <expression>) :init-keyword :expression)
+  (statement :accessor .statement :init-value #f :init-keyword :statement))
+
+(define-class <on> (<statement>)
+  (triggers :accessor .triggers :init-form (list) :init-keyword :triggers)
+  (statement :accessor .statement :init-value #f :init-keyword :statement))
+
+(define-class <trigger> (<ast>)
+  (port :accessor .port :init-value #f :init-keyword :port)
+  (event :accessor .event :init-value #f :init-keyword :event))
+
+(define-class <value> (<ast>)
+  (type :accessor .type :init-value #f :init-keyword :type)
+  (field :accessor .field :init-value #f :init-keyword :field))
 
 (define (ast->gom ast)
   (match ast
@@ -69,47 +119,100 @@
                           :events (ast->gom (ast:event-list ast))
                           :types (ast->gom (ast:type-list ast))
                           :behaviour (ast->gom (ast:behaviour ast))))
-    ((? ast:component?) (make <component> :name (ast:name ast)))
+    ((? ast:component?) (make <component> 
+                          :name (ast:name ast)
+                          :ports (ast->gom (ast:port-list ast))
+                          :behaviour (ast->gom (ast:behaviour ast))))
     ((? ast:event?) (make <event> 
                       :name (ast:name ast)
-                      :signature (ast->gom (ast:signature ast))
+                      :type (ast->gom (ast:signature ast))
+                      :direction (ast:direction ast)))
+    ((? ast:port?) (make <port> 
+                      :name (ast:name ast)
+                      :type (ast:type ast)
                       :direction (ast:direction ast)))
     ((? ast:enum?) (make <enum>
                      :name (ast:name ast)
-                     :elements (ast:elements ast)))
-    ((? ast:event-list?) (make <events> :elements (ast:body ast)))
-    ((? ast:type-list?) (make <types> :elements (ast:body ast)))
+                     :fields (ast:fields ast)))
+    ((? ast:variable?) (make <variable>
+                         :name (ast:name ast)
+                         :type (ast:type ast)
+                         :expression (make <expression> 
+                                       :value (ast->gom (ast:expression ast)))))
+
+    ((? ast:event-list?) (make <events> 
+                           :elements (map ast->gom (ast:body ast))))
+    ((? ast:parameter-list?) (make <parameters> 
+                               :elements (map ast->gom (ast:body ast))))
+    ((? ast:port-list?) (make <ports> 
+                          :elements (map ast->gom (ast:body ast))))
+    ((? ast:type-list?) (make <types> 
+                          :elements (map ast->gom (ast:body ast))))
+    ((? ast:variable-list?) (make <variables> 
+                          :elements (map ast->gom (ast:body ast))))
+    ((? ast:statement-list?) (make <compound> 
+                               :elements (map ast->gom (ast:body ast))))
+
+    ((? ast:signature?) (make <signature> 
+                          :type (ast:type ast)
+                          :parameters (ast->gom (ast:parameter-list ast))))
+    ((? ast:behaviour?) (make <behaviour> 
+                          :name (ast:name ast)
+                          :types (ast->gom (ast:type-list ast))
+                          :variables (ast->gom (ast:variable-list ast))
+                          :statement (ast->gom (ast:statement ast))))
+    ((? ast:trigger?) (make <trigger>
+                       :port (ast:port-name ast)
+                       :event (ast:event-name ast)))
+
+    ((? ast:action?) (make <action> 
+                       :trigger (ast->gom (ast:trigger ast))))
+    ((? ast:assign?) (make <assign> 
+                       :identifier (ast:identifier ast)
+                       :expression (make <expression> 
+                                     :value (ast->gom (ast:expression ast)))))
+    ((? ast:guard?) (make <guard> 
+                       :expression (make <expression> 
+                                     :value (ast->gom (ast:expression ast)))
+                       :statement (ast->gom (ast:statement ast))))
+    ((? ast:illegal?) (make <illegal>))
+    ((? ast:on?) (make <on> 
+                       :triggers (map ast->gom (ast:triggers ast))
+                       :statement (ast->gom (ast:statement ast))))
+
+    ((? ast:value?) (make <value>
+                      :type (ast:type ast)
+                      :field (ast:field ast)))
     ((h t ...) (map ast->gom ast))
     (_ ast)))
 
 
 ;; AST printing
-(define-method (display-slots (o <ast>) port))
+(define (star) (display #\*))
 
-(define-method (display-slots (o <named>) port)
-  (next-method)
+(define-method (display-slots (o <ast>) port)
+  (for-each (lambda (slot)
+              (let* ((name (slot-definition-name slot))
+                     (value (slot-ref o name)))
+                (when (null-is-#f value)
+                  (display #\space port)
+                  (if (eq? name 'elements)
+                      (for-each (lambda (x) (display x port)) value)
+                      (display (slot-ref o name) port)))))
+            (class-slots (class-of o))))
+
+(define-method (write (o <expression>) port)
+  (display (.value o) port))
+
+(define-method (display-slots (o <dir-ast>) port)
+  (display (.direction o) port)
+  (star)
+  (display #\space port)
+  (display (.type o) port)
+  (display #\space port)
   (display (.name o) port))
 
-(define-method (display-slots (o <interface>) port)
-  (next-method)
-  (display #\space port)
-  (display (.types o) port)
-  (display #\space port)
-  (display (.events o) port)
-  (display #\space port)
-  (display (.behaviour o) port))
-
-(define-method (display-slots (o <event>) port)
-;; events are written as (in or (out .. not (event
-;;  (next-method)
-;;  (display #\space port)
-  (display (.direction o) port)
-  (display #\space port)
-  (display (.signature o) port)
-  (display #\space port)
-  (next-method))
-
-(define-method (write (o <event>) port)
+(define-method (write (o <dir-ast>) port)
   (display "(" port)
   (display-slots o port)
   (display #\) port))
@@ -121,9 +224,12 @@
 (define-method (write (o <ast>) port)
   (display "(" port)
   (display (class-name o) port)
+  (star)
   (display #\space port)
   (display-slots o port)
   (display #\) port))
 
 (define (ast-> ast)
-  (pretty-print (ast->gom ast)) "")
+  (pretty-print (with-input-from-string 
+                    (with-output-to-string (lambda () (write (ast->gom ast)))) 
+                  read)) "")

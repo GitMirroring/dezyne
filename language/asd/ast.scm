@@ -39,7 +39,7 @@
 ;;      ==>
 ;;   SUB-AST
 ;;      := ((enum     States (Disarmed Armed Triggered Disarming)))
-;;           ^type    ^name  ^elements
+;;           ^type    ^name  ^fields
 ;;           |implicit: class=type
 ;;
 ;;   (ast:types (ast:interface (read-asd "examples/Typedef.asd")))
@@ -204,7 +204,6 @@
            declarative?
            dir-matches?
            direction
-           elements
            enum?
            enums
            event
@@ -215,6 +214,7 @@
            events?
            expression
            field
+           fields
            find-events
            find-triggers
            from
@@ -226,6 +226,8 @@
            guard?
            import-list
            import-list?
+           identifier
+           illegal?
            in?
            instance
            instance?
@@ -262,6 +264,7 @@
            requires?
            right
            statement
+           statement-list?
            statement?
            statements-of-type
            system
@@ -312,7 +315,7 @@
          (else (eq? head type))))))
 
 (define (action? ast) (type-helper? 'action ast))
-(define (argument-list? ast) (type-helper? ast 'argument-list))
+(define (argument-list? ast) (type-helper? 'arguments ast))
 (define (arguments? ast) (type-helper? 'arguments ast))
 (define (assign? ast) (type-helper? 'assign ast))
 (define (behaviour? ast) (type-helper? 'behaviour ast))
@@ -322,14 +325,15 @@
 (define (component? ast) (type-helper? 'component ast))
 (define (compound? ast) (type-helper? 'compound ast))
 (define (enum? ast) (type-helper? 'enum ast))
-(define (event-list? ast) (type-helper? ast 'event-list))
+(define (event-list? ast) (type-helper? 'events ast))
 (define (event? ast) (type-helper? 'event ast))
 (define (events? ast) (type-helper? 'events ast))
-(define (function-list? ast) (type-helper? ast 'function-list))
+(define (function-list? ast) (type-helper? 'functions ast))
 (define (function? ast) (type-helper? 'function ast))
 (define (functions? ast) (type-helper? 'functions ast))
 (define (guard? ast) (type-helper? 'guard ast))
-(define (import-list? ast) (type-helper? ast 'import-list))
+(define (illegal? ast) (type-helper? 'illegal ast))
+(define (import-list? ast) (type-helper? 'imports ast))
 (define (imports? ast) (type-helper? 'imports ast))
 (define (instance? ast) (type-helper? 'instance ast))
 (define (instances? ast) (type-helper? 'instances ast))
@@ -337,21 +341,22 @@
 (define (interface? ast) (type-helper? 'interface ast))
 (define (literal? ast) (type-helper? 'literal ast))
 (define (on? ast) (type-helper? 'on ast))
-(define (parameter-list? ast) (type-helper? ast 'parameter-list))
+(define (parameter-list? ast) (type-helper? 'parameters ast))
 (define (parameter? ast) (type-helper? 'parameter ast))
 (define (parameters? ast) (type-helper? 'parameters ast))
-(define (port-list? ast) (type-helper? ast 'port-list))
+(define (port-list? ast) (type-helper? 'ports ast))
 (define (port? ast) (type-helper? 'port ast))
 (define (ports? ast) (type-helper? 'ports ast))
 (define (range? ast) (type-helper? 'range ast))
 (define (signature? ast) (type-helper? 'signature ast))
+(define statement-list? compound?)
 (define (system? ast) (type-helper? 'system ast))
 (define (trigger? ast) (type-helper? 'trigger ast))
-(define (type-list? ast) (type-helper? ast 'type-list))
+(define (type-list? ast) (type-helper? 'types ast))
 (define (type? ast) (type-helper? 'type ast))
 (define (types? ast) (type-helper? 'types ast))
 (define (value? ast) (type-helper? 'value ast))
-(define (variable-list? ast) (type-helper? ast 'variable-list))
+(define (variable-list? ast) (type-helper? 'variables ast))
 (define (variable? ast) (type-helper? 'variable ast))
 (define (variables? ast) (type-helper? 'variables ast))
 
@@ -504,12 +509,16 @@
         ((? assign?) (cadr ast))
         (_ (throw 'match-error  (format #f "~a:variable: no match: ~a\n" (current-source-location) ast))))))
 
+(define (identifier ast)
+  (match ast
+    ((? assign?) (cadr ast))
+    (_ (throw 'match-error  (format #f "~a:assign: no match: ~a\n" (current-source-location) ast)))))
 
 (define (return-type ast)
   (match ast
     ((or (? event?) (? function?)) (return-type (signature ast)))
     ((? signature?) (cadr ast))
-    (_ (throw 'match-error  (format #f "~a:return-type: no match: ~a\n" (current-source-location) ast))))  )
+    (_ (throw 'match-error  (format #f "~a:return-type: no match: ~a\n" (current-source-location) ast)))))
 
 (define (events ast)
   (match ast
@@ -616,10 +625,10 @@
     ((? int?) (caddr ast))
     (_ (throw 'match-error  (format #f "~a:direction: no match: ~a\n" (current-source-location) ast)))))
 
-(define (elements ast)
+(define (fields ast)
   (match ast
     ((? enum?) (caddr ast))
-    (_ (throw 'match-error  (format #f "~a:elements: no match: ~a\n" (current-source-location) ast)))))
+    (_ (throw 'match-error  (format #f "~a:fields: no match: ~a\n" (current-source-location) ast)))))
 
 (define (expression ast)
   (match ast
