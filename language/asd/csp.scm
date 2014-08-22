@@ -582,7 +582,7 @@
                (event-name (ast:event-name event))
                (channel-return (if ((requires-event? model) event) (list " -> " channel ".return"))))
           (list "(\\ P',V' @ " channel "!" event-name channel-return " -> P'(V'))")))
-       (('function name (type) statement)
+       (('function name ('signature type) statement)
         (let ((transformed (csp-transform ast statement inevitable-optional? channel provided-on?)))
           (list name " = \\ P',V' @ " transformed "(P',V')\n")))
        (('function name signature statement)

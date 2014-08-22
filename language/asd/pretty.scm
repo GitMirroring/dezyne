@@ -58,9 +58,10 @@
     ((? symbol?) (symbol->string src))
     ((? string?) src)
     ((? integer?) (number->string src))
-    ((? ast:parameters?) (comma-join (map parameter->string (ast:body src))))
+    ((? ast:parameters?) (comma-join (map ->string (ast:body src))))
+    ((? ast:parameter?) (->string (list (ast:name (ast:type src)) " " (ast:name src))))
     ((? ast:enum?) ((->join ".") (cdr src)))
-    ((? ast:signature?) (->string (ast:name (ast:return-type src))))
+    ((? ast:signature?) (->string (ast:name (ast:type src))))
     ((? ast:type?) (->string (ast:name ast)))
 
     ;; FIXME: c&p from csp.scm (and...TODO: c++.scm) grmbl
@@ -82,9 +83,6 @@
   (if (or (number? expression) (symbol? expression))
       (->string expression)
       (->string (list "(") (->string expression) ")")))
-
-(define (parameter->string x)
-  (->string (list (ast:name (ast:type x)) " " (ast:name x))))
 
 (define (expression->string src)
   (let ((unparen (lambda (s) (if (and (string-prefix? "(" s)

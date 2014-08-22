@@ -22,7 +22,7 @@
                    (variable S s (trigger S S1))
                    (variable bool b false)
                    (variable bool c true))
-                  (functions (function toggle (type void) (compound)))
+                  (functions (function toggle (signature (type void)) (compound)))
                   (compound))))
 
 (define ast-return-ast
@@ -887,7 +887,7 @@ semi_(callvoid_(toggle),
 
           ;; from:
           (csp-transform i-ast
-                         '(function toggle ((type void)) ()))
+                         '(function toggle (signature (type void)) ()))
 
           ;; via:
           "toggle = \\ P',V' @ (\\ P',V' @ P'(V'))(P',V')\n"))
@@ -895,7 +895,7 @@ semi_(callvoid_(toggle),
 (define csp-transform-function-arguments
   '(function
     g
-    ((type bool) (parameters ((type bool) c)))
+    (signature (type bool) (parameters (parameter (type bool) c)))
     (semi (action (trigger #f f)) (return (ctx ((s b hide_member2') c)) c))))
 
 (pass-if "ast-transform-function-arguments"
@@ -906,7 +906,7 @@ semi_(callvoid_(toggle),
           (ast-transform i-ast
                           '(function
                             g
-                            ((type bool) (parameters ((type bool) c)))
+                            (signature (type bool) (parameters (parameter (type bool) c)))
                             (compound (action (trigger #f f)) (return c))))
 
           ;; via:

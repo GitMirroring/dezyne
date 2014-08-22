@@ -98,7 +98,7 @@
                           (types)
                           (variables) 
                           (functions
-                           (function foo ((type void))
+                           (function foo (signature (type void))
                                      (compound (if true (skip)))))
                           (compound
                            (guard true

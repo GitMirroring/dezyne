@@ -69,8 +69,10 @@
       (('types t ...) ast)
       (('function name ...) ast)
       (('events e ...) ast)
-      (('in type name) ast)
-      (('out type name) ast)
+      (('in signature name) ast)
+      (('out signature name) ast)
+      (('signature type parameters ...) ast)
+      (('parameter type name) ast)
       (('ports p ...) ast)
       (('provides type name) ast)
       (('value type field) ast)
@@ -199,7 +201,10 @@
     (event-list event) : (append $1 (list $2)))
 
    (event
-    (event-direction type Identifier semicolon) : `(,$1 (,$2) ,$3))
+    (event-direction event-signature Identifier semicolon) : `(,$1 ,$2 ,$3))
+
+   (event-signature
+    (type) : (make 'signature (list $1) @1))
 
    (event-direction
     (in) : 'in
@@ -283,16 +288,16 @@
     (behaviour Identifier lbrace type-list variable-list function-list statement-list rbrace) : `(,$1 ,$2 ,$4 ,$5 ,$6 ,$7))
 
    (function
-    (type Identifier lparen rparen compound-statement) : (make 'function `(,$2 (,$1) ,$5) @1)
+    (type Identifier lparen rparen compound-statement) : (make 'function `(,$2 ,(make 'signature (list $1) @1), $5) @1)
 
-    (type Identifier lparen parameter-list rparen compound-statement) : (make 'function `(,$2 (,$1 ,$4) ,$6) @1))
+    (type Identifier lparen parameter-list rparen compound-statement) : (make 'function `(,$2 ,(make 'signature (list $1 $4) @1) ,$6) @1))
 
    (parameter-list
     (parameter) : `(parameters ,$1)
     (parameter-list comma parameter) : (append $1 (list $3)))
 
    (parameter
-    (compound-type Identifier): `(,$1 ,$2))
+    (compound-type Identifier): (make 'parameter (list $1 $2) @1))
 
    (function-list
     () : '(functions)
