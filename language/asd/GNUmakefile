@@ -183,51 +183,50 @@ pretty: compile
 	./gaiag -l asd examples/expressions.asd > out/expressions.asd
 	$(diff) examples/expressions.asd out
 
-c++: compile baseline
+c++: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
 	cd out && ../gaiag -l c++ examples/Alarm.asd
-	-$(diff) baseline/AlarmComponent.h out
-	-$(diff) baseline/AlarmComponent.cpp out
+	$(diff) examples/component-Alarm-c3.hh out
+	$(diff) examples/component-Alarm-c3.cc out
 	cd out && ../gaiag examples/Aap.asd
 	cd out && ../gaiag -l c++ examples/Aap.asd
-	[ -f baseline/NootComponent.h ] && $(diff) baseline/NootComponent.h out
-	-[ -f baseline/NootComponent.cpp ] && $(diff) baseline/NootComponent.cpp out | $(sed)
+	$(diff) examples/component-Noot-c3.hh out
+	$(diff) examples/component-Noot-c3.cc out
 #	cd out && ../gaiag -l c++ examples/CommImpl.asd
-#	[ -f baseline/CommImplComponent.h ] && $(diff) baseline/CommImplComponent.h out
-#	-[ -f baseline/CommImplComponent.cpp ] && $(diff) baseline/CommImplComponent.cpp out
+#	[ -f examples/component-CommImpl-c3.hh ] && $(diff) examples/component-CommImpl-c3.hh out
+#	-[ -f examples/component-CommImpl-c3.cc ] && $(diff) examples/component-CommImpl-c3.cc out
 
 	cd out && ../gaiag -l c++ examples/Console.asd
-	$(diff) baseline/ConsoleInterface.h out
+	$(diff) examples/interface-Console-c3.hh out
 	cd out && ../gaiag -l c++ examples/Sensor.asd
-	$(diff) baseline/SensorInterface.h out
+	$(diff) examples/interface-Sensor-c3.hh out
 	cd out && ../gaiag -l c++ examples/Siren.asd
-	$(diff) baseline/SirenInterface.h out
+	$(diff) examples/interface-Siren-c3.hh out
 	cd out && ../gaiag -l c++ examples/Alarm.asd
-	$(diff) baseline/AlarmComponent.h out
-	$(diff) baseline/AlarmComponent.cpp out | $(sed)
-	cd out && g++ -I ../../../examples/codegen/asd_cpp_runtime --std=c++11 -c AlarmComponent.cpp
+	$(diff) examples/component-Alarm-c3.hh out
+	$(diff) examples/component-Alarm-c3.cc out
+	cd out && g++ -I ../../../examples/codegen/asd_cpp_runtime -c component-Alarm-c3.cc
 
 	#system
 	cd out && ../gaiag -l c++ examples/AlarmSystem.asd
-	-$(diff) baseline/SensorComponent.h out
-	-$(diff) baseline/SensorComponent.cpp out
-	-$(diff) baseline/SirenComponent.h out
-	-$(diff) baseline/SirenComponent.cpp out
-	$(diff) baseline/AlarmSystemComponent.h out | $(sed)
-	$(diff) baseline/AlarmSystemComponent.cpp out | $(sed)
-	-cd out && g++ -I ../../../examples/codegen/asd_cpp_runtime --std=c++11 -c AlarmSystemComponent.cpp
+	$(diff) examples/component-Sensor-c3.hh out
+	$(diff) examples/component-Sensor-c3.cc out
+	$(diff) examples/component-Siren-c3.hh out
+	$(diff) examples/component-Siren-c3.cc out
+	$(diff) examples/component-AlarmSystem-c3.hh out
+	$(diff) examples/component-AlarmSystem-c3.cc out
+	-cd out && g++ -I ../../../examples/codegen/asd_cpp_runtime -c component-AlarmSystem-c3.cc
 
 	cd out && ../gaiag -l c++ examples/argument2.asd
-	# baseline does not support argument2
-	#$(diff) baseline/argument2Component.h out
-	#$(diff) baseline/argument2Component.cpp out | $(sed)
-	$(diff) examples/argument2Component.h out
-	-$(diff) examples/argument2Component.cpp out | $(sed)
+	$(diff) examples/component-argument2-c3.hh out
+	$(diff) examples/component-argument2-c3.cc out
+	$(diff) examples/component-argument2-c3.hh out
+	-$(diff) examples/component-argument2-c3.cc out
 
 	cd out && ../gaiag -l c++ examples/expressions.asd
-	$(diff) baseline/expressionsComponent.h out
-	-$(diff) baseline/expressionsComponent.cpp out | $(sed)
-	cd out && g++ -I ../../../examples/codegen/asd_cpp_runtime --std=c++11 -c expressionsComponent.cpp
+	$(diff) examples/component-expressions-c3.hh out
+	-$(diff) examples/component-expressions-c3.cc out
+	cd out && g++ -I ../../../examples/codegen/asd_cpp_runtime -c component-expressions-c3.cc
 
 wfc: compile
 	-./gaiag -l wfc examples/double-on.asd

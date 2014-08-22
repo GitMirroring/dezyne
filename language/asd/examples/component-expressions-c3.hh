@@ -21,18 +21,31 @@
 //
 // Code:
 
-#ifndef __argument2_COMPONENT_H__
-#define __argument2_COMPONENT_H__
+#ifndef COMPONENT_EXPRESSIONS_HH
+#define COMPONENT_EXPRESSIONS_HH
 
-#include "IInterface.h"
+#include "interface-I-c3.hh"
 
-#include <boost/shared_ptr.hpp>
-
-class argument2Component: public IInterface
+namespace component
 {
-public:
-  static boost::shared_ptr<IInterface> GetInstance();
-  static void ReleaseInstance();
-};
+  struct expressions
+  {
 
-#endif // __argument2_COMPONENT_H__
+
+    typedef int State;
+
+
+    expressions::State state;
+    expressions::State c;
+
+
+
+    interface::I i;
+
+    expressions();
+    void e();
+
+  };
+}
+
+#endif
