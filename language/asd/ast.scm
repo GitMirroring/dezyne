@@ -172,8 +172,17 @@
   :use-module (language asd reader)
 
   :export (
+	   event-name
+	   literal?
+	   port-name
+	   return-type
+	   scope
+	   signature
+	   signature?
            Class
            action?
+           argument-list
+           argument-list?
            arguments
            arguments?
            assign?
@@ -189,8 +198,8 @@
            call?
            class
            component
-           components
            component?
+           components
            compound?
            declarative?
            dir-matches?
@@ -199,8 +208,9 @@
            enum?
            enums
            event
+           event-list
+           event-list?
            event?
-	   event-name
            events
            events?
            expression
@@ -209,10 +219,13 @@
            find-triggers
            from
            function
+           function-list
+           function-list?
            functions
-           value?
-           guard?
            guard-equal?
+           guard?
+           import-list
+           import-list?
            in?
            instance
            instance?
@@ -221,10 +234,9 @@
            int?
            integers
            interface
-           interfaces
            interface?
+           interfaces
            left
-	   literal?
            make
            member-names
            model?
@@ -232,52 +244,47 @@
            on?
            out?
            parameter
+           parameter-list
+           parameter-list?
            parameter?
            parameters
            parameters?
            parent
            port
+           port-list
+           port-list?
            port?
-	   port-name
            ports
            provides?
            range
            range?
            register
            requires?
-	   return-type
            right
-	   scope
-	   signature
-	   signature?
            statement
            statement?
            statements-of-type
            system
            system?
            to
-           trigger?
            trigger
+           trigger?
            triggers
            type
+           type-list
+           type-list?
            type-name-component
            type?
            typed?
            types
            types?
+           value?
            variable
+           variable-list
+           variable-list?
            variable?
            variables
            variables?
-
-           arguments-element
-           events-element
-           functions-element
-           imports-element
-           parameters-element
-           ports-element
-           types-element
-           variables-element
            ))
 
 (define (make type ast)
@@ -305,6 +312,7 @@
          (else (eq? head type))))))
 
 (define (action? ast) (type-helper? 'action ast))
+(define (argument-list? ast) (type-helper? ast 'argument-list))
 (define (arguments? ast) (type-helper? 'arguments ast))
 (define (assign? ast) (type-helper? 'assign ast))
 (define (behaviour? ast) (type-helper? 'behaviour ast))
@@ -314,29 +322,36 @@
 (define (component? ast) (type-helper? 'component ast))
 (define (compound? ast) (type-helper? 'compound ast))
 (define (enum? ast) (type-helper? 'enum ast))
-(define (int? ast) (type-helper? 'int ast))
+(define (event-list? ast) (type-helper? ast 'event-list))
 (define (event? ast) (type-helper? 'event ast))
 (define (events? ast) (type-helper? 'events ast))
+(define (function-list? ast) (type-helper? ast 'function-list))
 (define (function? ast) (type-helper? 'function ast))
 (define (functions? ast) (type-helper? 'functions ast))
 (define (guard? ast) (type-helper? 'guard ast))
+(define (import-list? ast) (type-helper? ast 'import-list))
+(define (imports? ast) (type-helper? 'imports ast))
 (define (instance? ast) (type-helper? 'instance ast))
 (define (instances? ast) (type-helper? 'instances ast))
+(define (int? ast) (type-helper? 'int ast))
 (define (interface? ast) (type-helper? 'interface ast))
-(define (imports? ast) (type-helper? 'imports ast))
 (define (literal? ast) (type-helper? 'literal ast))
 (define (on? ast) (type-helper? 'on ast))
+(define (parameter-list? ast) (type-helper? ast 'parameter-list))
 (define (parameter? ast) (type-helper? 'parameter ast))
 (define (parameters? ast) (type-helper? 'parameters ast))
+(define (port-list? ast) (type-helper? ast 'port-list))
 (define (port? ast) (type-helper? 'port ast))
 (define (ports? ast) (type-helper? 'ports ast))
 (define (range? ast) (type-helper? 'range ast))
 (define (signature? ast) (type-helper? 'signature ast))
 (define (system? ast) (type-helper? 'system ast))
 (define (trigger? ast) (type-helper? 'trigger ast))
+(define (type-list? ast) (type-helper? ast 'type-list))
 (define (type? ast) (type-helper? 'type ast))
 (define (types? ast) (type-helper? 'types ast))
 (define (value? ast) (type-helper? 'value ast))
+(define (variable-list? ast) (type-helper? ast 'variable-list))
 (define (variable? ast) (type-helper? 'variable ast))
 (define (variables? ast) (type-helper? 'variables ast))
 
@@ -457,7 +472,7 @@
            (body
             (match ast
               ((? events?) ast)
-              ((? interface?) (events-element ast))
+              ((? interface?) (event-list ast))
               (_ (throw 'match-error  (format #f "~a:event: no match: ~a\n" (current-source-location) ast)))))))))
 
 (define (parameters ast)
@@ -498,7 +513,7 @@
 
 (define (events ast)
   (match ast
-    ((? interface?) (body (events-element ast)))
+    ((? interface?) (body (event-list ast)))
     ((? component?) (triggers ast))
     ((? port?) (events (import-ast (type ast))))
     (_ (throw 'match-error  (format #f "~a:events: no match: ~a\n" (current-source-location) ast)))))
@@ -520,11 +535,11 @@
 
 (define (ports ast)
   (match ast
-    ((or (? component?) (? system?)) (body (ports-element ast)))
+    ((or (? component?) (? system?)) (body (port-list ast)))
     ((? interface?) '())
     (_ (throw 'match-error  (format #f "~a:ports: no match: ~a\n" (current-source-location) ast)))))
 
-(define (imports ast) (body (imports-element ast)))
+(define (imports ast) (body (import-list ast)))
 
 (define (function ast identifier)
   (find (lambda (p) (eq? (name p) identifier))
@@ -553,7 +568,7 @@
            (body
             (match ast
               ((? ports?) ast)
-              ((or (? component?) (? system?)) (ports-element ast))
+              ((or (? component?) (? system?)) (port-list ast))
               (_ (throw 'match-error  (format #f "~a:port: no match: ~a\n" (current-source-location) ast)))))))
     ((? value?) (let* ((t (type identifier))
                        (f (field identifier))
@@ -673,8 +688,8 @@
 
 (define (functions ast)
   (match ast
-    ((? behaviour?) (body (functions-element ast)))
-    ((? interface?) (append (body (functions-element ast))
+    ((? behaviour?) (body (function-list ast)))
+    ((? interface?) (append (body (function-list ast))
                             (functions (behaviour ast))))
     ((? component?) (functions (behaviour ast)))
     ((? port?) (functions (import-ast (type ast))))
@@ -682,7 +697,7 @@
 
 (define (types ast)
   (match ast
-    ((or (? interface?) (? behaviour?)) (body (types-element ast)))
+    ((or (? interface?) (? behaviour?)) (body (type-list ast)))
     ((? component?) (types (behaviour ast)))
     ((? port?) (types (import-ast (type ast))))
     ((? system?) '())
@@ -700,8 +715,8 @@
 
 (define (variables ast)
   (match ast
-    ((? behaviour?) (body (variables-element ast)))
-    ((? interface?) (append (body (variables-element ast))
+    ((? behaviour?) (body (variable-list ast)))
+    ((? interface?) (append (body (variable-list ast))
                             (variables (behaviour ast))))
     ((? component?) (variables (behaviour ast)))
     ((? port?) (variables (import-ast (type ast))))

@@ -1,4 +1,4 @@
 #(use-modules (language asd ast:))
 #(define ->string (@@ (language asd pretty) ->string))
-#(->string signature)  #name (#(->string (ast:parameters-element signature)))
+#(->string signature)  #name (#(->string (ast:parameter-list signature)))
 #body
