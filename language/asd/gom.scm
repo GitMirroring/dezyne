@@ -34,14 +34,18 @@
            ast->gom
            ast->gom*
 
-
            <action>
+           <assign>
            <ast>
+           <expression>
            <trigger>
 
            .event
+           .expression
+           .identifier
            .port
            .trigger
+           .value
            ))
 
 (define-class <ast> ())
@@ -204,6 +208,10 @@
   (match ast
     ((? ast:action?) (make <action> 
                        :trigger (ast->gom (ast:trigger ast))))
+    ((? ast:assign?) (make <assign> 
+                       :identifier (ast:identifier ast)
+                       :expression (make <expression>
+                                     :value (ast->gom* (ast:expression ast)))))
     ((? ast:trigger?) (make <trigger>
                        :port (ast:port-name ast)
                        :event (ast:event-name ast)))

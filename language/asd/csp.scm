@@ -489,17 +489,6 @@
        (list context var (list 'call function arguments)))
       (('variable type var expr)
        (list context var (list 'expression expr)))
-      (('assign var (and (? (a-is? <action>)) (get! action)))
-       (list 'assign-active (list context 'r' (action))
-             (context-assign context var 'r')))
-      (('assign var ('call function))
-       (list 'assign-active (list context 'r' (list 'call function))
-             (context-assign context var 'r')))
-      (('assign var ('call function arguments))
-       (list 'assign-active (list context 'r' (list 'call function arguments))
-             (context-assign context var 'r')))
-      (('assign var expression)
-         (list 'assign context (context-assign context var expression)))
       (('if pred then)
        (list 'if context (list 'expression (if (prefix-illegal? then)
                                                (list 'and 'IG pred)
@@ -527,6 +516,31 @@
       (('call function arguments)
        (list 'call context function arguments))
       (_ src))))
+
+(define-generic ast-transform-)
+(define-method (ast-transform- ast (o <assign>))
+  (ast-transform- ast o #t #f))
+
+(define-method (ast-transform- ast (o <assign>) return context)
+  (let* ((model (or (ast:interface ast) (ast:component ast)))
+         (context (or context (make-context (ast:member-names model) '()))))
+    (match (.value (.expression o))
+      ((and (? (a-is? <action>)) (get! action))
+       (list 'assign-active (list context 'r' (action))
+             (context-assign context (.identifier o) 'r')))
+      (('call function)
+       (list 'assign-active (list context 'r' (list 'call function))
+             (context-assign context (.identifier o) 'r')))
+      (('call function arguments)
+       (list 'assign-active (list context 'r' (list 'call function arguments))
+             (context-assign context (.identifier o) 'r')))
+      (expression
+       (make <assign>  ;; <csp-assign>?
+         ;; hmm? :flavour 'assign
+         :identifier context
+           :expression 
+           (make <expression> :value 
+                 (context-assign context (.identifier o) expression)))))))
 
 (define (=>string ast src)
   (match src
@@ -647,3 +661,8 @@
             (event-name (.event trigger))
             (channel-return (if ((requires-event? model) trigger) (list " -> " channel ".return"))))
        (list "(\\ P',V' @ " channel "!" event-name channel-return " -> P'(V'))")))))
+
+(define-method (csp-transform ast (o <assign>) . rest)
+  (=>string 
+   ast
+   (list "assign_(\\ (" (.identifier o) ") @ (" (.value (.expression o)) "))")))
