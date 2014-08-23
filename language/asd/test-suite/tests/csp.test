@@ -865,7 +865,7 @@ assign_(\\ ((state,sounding),(stack')) @ ((States_Triggered,sounding),(stack')))
            '(compound
              (on (e)
                  (compound
-                  (action toggle)))))
+                  (call toggle)))))
 
           ;; via:
           csp-function-call-ast))

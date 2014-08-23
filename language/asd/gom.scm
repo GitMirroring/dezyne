@@ -35,11 +35,14 @@
            ast->gom*
 
 
+           <action>
            <ast>
            <trigger>
-           .port
+
            .event
-))
+           .port
+           .trigger
+           ))
 
 (define-class <ast> ())
 (define-class <statement> (<ast>))
@@ -199,6 +202,8 @@
 
 (define (ast->gom* ast)
   (match ast
+    ((? ast:action?) (make <action> 
+                       :trigger (ast->gom (ast:trigger ast))))
     ((? ast:trigger?) (make <trigger>
                        :port (ast:port-name ast)
                        :event (ast:event-name ast)))
@@ -209,6 +214,7 @@
 (define (star port) (display #\* port))
 
 (define-method (sdisplay (o <ast>) port)
+  (display #\space port)
   (display o port))
 
 (define-method (sdisplay (o <top>) port)
