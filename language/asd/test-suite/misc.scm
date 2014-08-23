@@ -23,6 +23,10 @@
   :use-module (ice-9 regex)
 
   :use-module (language asd misc)
+
+  :use-module (oop goops)
+  :use-module (language asd gom)
+
   :export (fail
            diff-noisy-equal?
 	   noisy-equal?
@@ -33,6 +37,24 @@
 (define (fail string . rest)
   (apply stderr (cons* string rest))
   #f)
+
+;;(define equal? equal?)
+;(define-generic equal?)
+(define-method (xequal? (lhs <ast>) (rhs <ast>))
+  (equal? (with-output-to-string (lambda () (write lhs)))
+          (with-output-to-string (lambda () (write rhs)))))
+
+(define plain-equal? equal?)
+(define (equal? actual expected)
+  (plain-equal?
+       (with-input-from-string 
+              (with-output-to-string (lambda () 
+                                       (write (ast->gom* actual))))
+            read)
+          (with-input-from-string 
+              (with-output-to-string (lambda () 
+                                       (write (ast->gom* expected))))
+            read)))
 
 (define (noisy-equal? actual expected)
   (or (equal? actual expected)

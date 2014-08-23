@@ -37,15 +37,22 @@
   :use-module (language asd misc)
   :use-module (language asd reader)
   :use-module (language asd normstate)
+
+  :use-module (oop goops)
+  :use-module (oop goops describe)
+  :use-module (language asd gom)
+
   :export (
            ast->
            csp-component
            csp-module
 	   ast-transform
+	   ast-transform*
 	   ast-transform-function-call
 	   ast-transform-return
 	   csp-expression->string
 	   csp-transform
+	   csp-transform*
 
            make-context
            context-extend
@@ -265,7 +272,7 @@
                                 (or (prefix-reply? (car statements)) (loop (cdr statements))))))
     (('guard expr stat)
      (prefix-reply? stat))
-    (('on events stat)
+    (('on triggers stat)
      (prefix-reply? stat))
     (('if expression then else)
      (or (prefix-reply? then) (prefix-reply? else)))
@@ -273,19 +280,13 @@
     (_ #f)
     (_ (throw 'match-error (format #f "~a:prefix-reply?: no match: ~a\n" (current-source-location) statement)))))
 
+(define ((a-is? class) object)
+  (is-a? object class))
 
-(define (typed-interface? interface event)
-  (member event (map ast:name (filter ast:typed? ((compose ast:events ast:interface) interface)))))
-
-(define (typed-component? component trigger)
-  (let ((interface (ast-norm (ast:type (find (lambda (port) (equal? (ast:port-name trigger) (ast:name port))) ((compose ast:ports ast:component) component)))))
-        (event (ast:event-name trigger)))
-    (typed-interface? interface event)))
-
-(define (typed? model event)
-  (if (ast:interface? model)
-      (typed-interface? model event)
-      (typed-component? model event)))
+(define-generic ast:event-name)
+(define-method (ast:event-name (o <trigger>)) (.event o))
+(define-generic ast:port-name)
+(define-method (ast:port-name (o <trigger>)) (.port o))
 
 (define (((provides-or-requires? type) component) event)
   (if (ast:component? component)
@@ -301,6 +302,14 @@
 
 (define ((requires? component) event)
   (((provides-or-requires? 'requires) component) event))
+
+(define ((provides-event? model) event)
+  (and (ast:component? model)
+       ((provides? model) event)))
+
+(define ((requires-event? model) event)
+  (and (ast:component? model)
+       ((requires? model) event)))
 
 (define (value ast)
   (match ast
@@ -321,8 +330,13 @@
 ;;    (_ (stderr "NO MATCH: ~a\n" src) (format #f "~a" src))
     (_ ((@ (language asd misc) ->string) src))))
 
-(define* (ast-transform ast src)
+(define (ast-transform ast src)
   (ast-transform- ast (ast-transform-return ast (ast-transform-function-call ast src))))
+
+(define (ast-transform* ast src)
+  (let ((ast* (ast->gom* ast))
+        (src* (ast->gom* src)))
+    (ast-transform- ast* (ast-transform-return ast* (ast-transform-function-call ast* src*)))))
 
 (define (ast-transform-function-call ast src)
   (let ((model (or (ast:interface ast) (ast:component ast))))
@@ -347,17 +361,17 @@
 	 (if (=1 (length result))
              (car result)
 	     (cons 'compound result))))
-      (('on events stat)
+      (('on triggers stat)
        (let ((result (ast-transform-return ast stat)))
 	 (cond
           ((equal? result '(compound))
-           (list 'on events (list 'compound (list 'eventreturn)) (list 'the-end members)))
+           (list 'on triggers (list 'compound (list 'eventreturn)) (list 'the-end members)))
           ((equal? result '(skip))
-           (list 'on events (list 'eventreturn) (list 'the-end members)))
+           (list 'on triggers (list 'eventreturn) (list 'the-end members)))
           ((prefix-reply? result)
-           (list 'on events (list 'compound result) (list 'the-end members)))
+           (list 'on triggers (list 'compound result) (list 'the-end members)))
           (else
-           (list 'on events (list 'compound result (list 'eventreturn)) (list 'the-end members))))))
+           (list 'on triggers (list 'compound result (list 'eventreturn)) (list 'the-end members))))))
       (_ src))))
 
 (define ((valued-action? port?) src)
@@ -462,11 +476,11 @@
                                  'semi)
                              transformed (loop (cdr statements) context)))
                    transformed)))))
-      (('on events stat the-end)
+      (('on triggers stat the-end)
        (let ((result (ast-transform- ast stat)))
 	 (if (prefix-illegal? stat)
-	     (list 'on events 'IG result)
-	     (list 'on events result the-end))))
+	     (list 'on triggers 'IG result)
+	     (list 'on triggers result the-end))))
       (('variable type var ('value (and (? port?) (get! port)) event))
        (list context var (list 'valued-action (list 'trigger (port) event))))
       (('variable type var ('call function))
@@ -518,14 +532,6 @@
        (list 'call context function arguments))
       (_ src))))
 
-(define ((provides-event? model) event)
-  (and (ast:component? model)
-       ((provides? model) event)))
-
-(define ((requires-event? model) event)
-  (and (ast:component? model)
-       ((requires? model) event)))
-
 (define (=>string ast src)
   (match src
     (('ctx context) (context->csp ast context))
@@ -534,6 +540,11 @@
     ((h t ...) (->string (map (lambda (x) (=>string ast x)) src)))
     (_ (->string src))))
 
+(define (csp-transform* ast src)
+  (let ((ast* (ast->gom* ast))
+        (src* (ast->gom* src)))
+    (csp-transform ast* src*)))
+
 (define* (csp-transform ast src :optional (inevitable-optional? #f) (channel #f) (provided-on? #t))
   (let* ((model (or (ast:interface ast) (ast:component ast)))
 	 (model-name (ast:name model))
@@ -541,16 +552,24 @@
          (component? (ast:component? model)))
     (=>string ast
      (match src
-       ;;(('on events stat) (animate-string "#model-name ?x:{#events } -> "))
-       (('on events stat ...)
-        (let* ((inevitable-optional? (or (member 'inevitable (map ast:event-name events))
-                                         (member 'optional (map ast:event-name events))))
+       ;;(('on triggers stat) (animate-string "#model-name ?x:{#triggers } -> "))
+       (('on triggers stat ...)
+        (let* ((inevitable-optional? (or (member 'inevitable (map ast:event-name triggers))
+                                         (member 'optional (map ast:event-name triggers))))
                (ig? (and (pair? stat) (eq? (car stat) 'IG)))
+<<<<<<< HEAD
                (channel (if (ast:interface? model) model-name (ast:port-name (car events))))
                (provided-on? (or (and (ast:interface? model) (not inevitable-optional?))
                                  (or (ast:interface? model) ((provides-event? model) (car events)))))
                (IG? (if ig? (if ((provides-event? model) (car events)) "IIG & "  "IG & ")))
                (event-names (comma-join (map ast:event-name events)))
+=======
+               (channel (if (ast:interface? model) model-name (ast:port-name (car triggers))))
+               (provided-on? (or (and (ast:interface? model) (not inevitable-optional?))
+                                 (or (ast:interface? model) ((provides-event? model) (car triggers)))))
+               (IG? (if ig? (if ((provides-event? model) (car triggers)) "IIG & "  "IG & ")))
+               (event-names (comma-join (map ast:event-name triggers)))
+>>>>>>> Gaiag: csp: goops/gom trigger experiment.
 	       (stat (if ig? (cdr stat) stat))
 	       (transformed-stat (map (lambda (x)
                                         (csp-transform ast x inevitable-optional? channel provided-on?)) stat)))
@@ -577,10 +596,17 @@
                (end (if (not inevitable-optional?) (list transition-end))))
           (list "(\\ V' @ " end model-name "_" behaviour "_" "(V'),(" context "))")))
        (('illegal) "illegal -> STOP")
-       (('action event)
-        (let* ((channel (if (ast:interface? model) model-name (ast:port-name event)))
-               (event-name (ast:event-name event))
-               (channel-return (if ((requires-event? model) event) (list " -> " channel ".return"))))
+       (('action (and (? (a-is? <trigger>)) (get! trigger)))
+        (let* ((channel (if (ast:interface? model) model-name (.port (trigger))))
+               (event-name (.event (trigger)))
+               (channel-return (if ((requires-event? model) (trigger)) (list " -> " channel ".return"))))
+          (list "(\\ P',V' @ " channel "!" event-name channel-return " -> P'(V'))")))
+       (('action trigger)
+        (stderr "deprecated\n")
+        deprecated ;; assert failure
+        (let* ((channel (if (ast:interface? model) model-name (ast:port-name trigger)))
+               (event-name (ast:event-name trigger))
+               (channel-return (if ((requires-event? model) trigger) (list " -> " channel ".return"))))
           (list "(\\ P',V' @ " channel "!" event-name channel-return " -> P'(V'))")))
        (('function name ('signature type) statement)
         (let ((transformed (csp-transform ast statement inevitable-optional? channel provided-on?)))
@@ -602,10 +628,20 @@
        (('value type field) (list type "_" field))
        (('literal scope type value) (list type "_" value))
 ;;       (('vector expressions ...) (cons 'vector (map (lambda (exp) (csp-transform ast exp)) expressions )))
-       (('context-active (context var ('valued-action ('trigger port event))) stat)
+       (('context-active (context var ('valued-action (and (? (a-is? <trigger>)) (get! trigger)))) stat)
+        (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
+          (list "context_active_(sendrecv_(" (.port (trigger)) "," (.event (trigger)) "),\n" stat ")")))
+       (('context-active (context var ('valued-action port event)) stat)
+        (stderr "deprecated\n")
+        deprecated ;; assert failure
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list "context_active_(sendrecv_(" port "," event "),\n" stat ")")))
+       (('context-active (context var ('expression ('action (and (? (a-is? <trigger>)) (get! trigger))))) stat)
+        (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
+          (list "context_active_(sendrecv_(" (.port (trigger)) "," (.event (trigger)) "),\n" stat ")")))
        (('context-active (context var ('expression ('action ('trigger port event)))) stat)
+        (stderr "deprecated\n")
+        deprecated ;; assert failure
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list "context_active_(sendrecv_(" port "," event "),\n" stat ")")))
        (('context-active (context var ('call function)) stat)
@@ -614,7 +650,12 @@
        (('context-active (context var ('call function arguments)) stat)
           (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list "context_active_(\\ P',V' @ " function " (P',V',\\ (" context ") @ (" arguments ")),\n" stat ")")))
+       (('assign-active (context var ('action (and (? (a-is? <trigger>)) (get! trigger)))) expressions)
+        (let ((action (list "sendrecv_(" (.port (trigger)) "," (.event (trigger)) ")")))
+          (list "assign_active_(" action ",\n\\ ((" context "))," var " @ (" expressions "))" )))
        (('assign-active (context var ('action ('trigger port event))) expressions)
+        (stderr "deprecated\n")
+        deprecated ;; assert failure
         (let ((action (list "sendrecv_(" port "," event ")")))
           (list "assign_active_(" action ",\n\\ ((" context "))," var " @ (" expressions "))" )))
        (('assign-active (context var ('call function arguments)) expressions)

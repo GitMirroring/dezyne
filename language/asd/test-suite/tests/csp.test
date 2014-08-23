@@ -7,7 +7,8 @@
   :use-module (test-suite misc)
 
   :use-module (language asd ast:)
-  :use-module (language asd csp))
+  :use-module (language asd csp)
+  :use-module (language asd gom))
 
 (pass-if "csp-first-dummy-test"
          #t)
@@ -51,7 +52,7 @@
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform i-ast ast-return-ast)
+          (ast-transform* i-ast ast-return-ast)
 
           ;; via:
           csp-return-ast))
@@ -61,7 +62,7 @@
          (diff-noisy-equal?
 
           ;; from:
-          (csp-transform i-ast csp-return-ast)
+          (csp-transform* i-ast csp-return-ast)
 
           ;; to:
           "i?x:{e} ->
@@ -89,7 +90,7 @@
          (diff-noisy-equal?
 
           ;; from:
-          (csp-transform
+          (csp-transform*
 
            i-ast
 
@@ -110,7 +111,7 @@ skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform
+          (ast-transform*
 
            i-ast
 
@@ -127,7 +128,7 @@ skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform
+          (ast-transform*
 
            i-ast
 
@@ -145,7 +146,7 @@ skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
          (diff-noisy-equal?
 
           ;; from:
-          (csp-transform
+          (csp-transform*
 
            i-ast
 
@@ -165,20 +166,20 @@ skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform
+          (ast-transform*
 
            i-ast
 
            '(action (trigger #f h)))
 
           ;; via:
-          '(action (trigger #f h))))
+          (ast->gom* '(action (trigger #f h)))))
 
 (pass-if "csp-transform-action"
          (diff-noisy-equal?
 
           ;; from:
-          (csp-transform
+          (csp-transform*
 
            i-ast
 
@@ -199,7 +200,7 @@ skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform
+          (ast-transform*
            i-ast
            '(compound
              (on (e)
@@ -213,7 +214,7 @@ skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
          (noisy-equal?
 
           ;; via:
-          (csp-transform
+          (csp-transform*
 
            i-ast
 
@@ -232,7 +233,7 @@ illegal -> STOP"))
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform
+          (ast-transform*
            i-ast
            '(on ((trigger #f e)) (compound)))
 
@@ -243,7 +244,7 @@ illegal -> STOP"))
          (noisy-equal?
 
           ;; via:
-          (csp-transform
+          (csp-transform*
 
            i-ast
 
@@ -262,7 +263,7 @@ illegal -> STOP"))
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform
+          (ast-transform*
            i-ast
            '(on ((trigger #f e)) (skip)))
 
@@ -273,7 +274,7 @@ illegal -> STOP"))
          (noisy-equal?
 
           ;; via:
-          (csp-transform
+          (csp-transform*
 
            i-ast
 
@@ -289,7 +290,7 @@ illegal -> STOP"))
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform i-ast '(assign c true))
+          (ast-transform* i-ast '(assign c true))
 
           ;; via:
           ast-transform-assign))
@@ -298,7 +299,7 @@ illegal -> STOP"))
          (noisy-equal?
 
           ;; via/from:
-          (csp-transform i-ast ast-transform-assign)
+          (csp-transform* i-ast ast-transform-assign)
 
           ;; to:
           "assign_(\\ ((s,b,c),(stack')) @ ((s,b,true),(stack')))"))
@@ -316,7 +317,7 @@ illegal -> STOP"))
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform
+          (ast-transform*
 
            i-ast
 
@@ -332,7 +333,7 @@ illegal -> STOP"))
          (diff-noisy-equal?
 
           ;; via/from:
-          (csp-transform i-ast ast-transform-assign-2)
+          (csp-transform* i-ast ast-transform-assign-2)
 
           ;; to:
           "context_(\\ ((s,b,c),(stack')) @ true,
@@ -350,7 +351,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform i-ast '(assign s (value S S2)))
+          (ast-transform* i-ast '(assign s (value S S2)))
 
           ;; via:
           ast-transform-assign-enum-via))
@@ -359,7 +360,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
          (noisy-equal?
 
           ;; via/from:
-          (csp-transform i-ast ast-transform-assign-enum-via)
+          (csp-transform* i-ast ast-transform-assign-enum-via)
 
           ;; to:
           "assign_(\\ ((s,b,c),(stack')) @ ((S_S2,b,c),(stack')))"))
@@ -370,7 +371,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform
+          (ast-transform*
 
            i-ast
 
@@ -408,7 +409,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform
+          (ast-transform*
 
            i-ast
 
@@ -423,7 +424,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
          (diff-noisy-equal?
 
           ;; via/from:
-          (csp-transform i-ast ast-transform-ifthenelse-via)
+          (csp-transform* i-ast ast-transform-ifthenelse-via)
 
           ;; to:
           "\\ P',((s,b,c),(stack')) @ ifthenelse_(b,
@@ -435,7 +436,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform
+          (ast-transform*
 
            i-ast
 
@@ -453,7 +454,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform
+          (ast-transform*
 
            i-ast
 
@@ -478,7 +479,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform
+          (ast-transform*
 
            i-ast
 
@@ -494,7 +495,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
          (diff-noisy-equal?
 
           ;; via/from:
-          (csp-transform i-ast ast-transform-semi)
+          (csp-transform* i-ast ast-transform-semi)
 
           ;; to:
           "semi_(\\ P',((s,b,c),(stack')) @ ifthenelse_(b,
@@ -534,7 +535,7 @@ assign_(\\ ((s,b,c),(stack')) @ ((s,true,c),(stack'))))"))
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform
+          (ast-transform*
 
            i-ast
 
@@ -561,7 +562,7 @@ assign_(\\ ((s,b,c),(stack')) @ ((s,true,c),(stack'))))"))
          (diff-noisy-equal?
 
           ;; from/via:
-          (csp-transform i-ast ast-transform-via)
+          (csp-transform* i-ast ast-transform-via)
 
           ;; to:
           "i?x:{e} ->
@@ -613,7 +614,7 @@ semi_(semi_(\\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform
+          (ast-transform*
 
            c-ast
 
@@ -628,7 +629,7 @@ semi_(semi_(\\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
          (noisy-equal?
 
           ;; via/from:
-          (csp-transform c-ast c-ast-transform-return-via)
+          (csp-transform* c-ast c-ast-transform-return-via)
 
           ;; to:
           "j?x:{e} ->
@@ -639,7 +640,7 @@ semi_(semi_(\\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform
+          (ast-transform*
 
            c-ast
 
@@ -653,7 +654,7 @@ semi_(semi_(\\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
          (diff-noisy-equal?
 
           ;; from:
-          (csp-transform
+          (csp-transform*
 
            c-ast
 
@@ -669,7 +670,7 @@ illegal -> STOP"))
          (noisy-equal?
 
           ;; from:
-          (csp-transform
+          (csp-transform*
 
            c-ast
 
@@ -682,7 +683,7 @@ illegal -> STOP"))
          (diff-noisy-equal?
 
           ;; from:
-          (csp-transform
+          (csp-transform*
 
            c-ast
 
@@ -700,7 +701,7 @@ skip_)(\\ V' @ transition_end -> c_B_(V'),((s,b,c),(stack')))"))
          (diff-noisy-equal?
 
           ;; from:
-          (csp-transform
+          (csp-transform*
 
            c-ast
 
@@ -747,7 +748,7 @@ skip_(\\ V' @ transition_end -> c_B_(V'),((s,b,c),(stack')))"))
 
 (pass-if "c-ast-transform-alarm-snippet"
          (pretty-noisy-equal?
-          (ast-transform
+          (ast-transform*
            alarm-ast
 
            ;;from
@@ -764,8 +765,8 @@ skip_(\\ V' @ transition_end -> c_B_(V'),((s,b,c),(stack')))"))
          (diff-noisy-equal?
 
           ;; from:
-          (csp-transform alarm-ast
-                         (ast-transform alarm-ast ast-transform-alarm-snippet))
+          (csp-transform* alarm-ast
+                         (ast-transform* alarm-ast ast-transform-alarm-snippet))
           ;; to:
 "sensor?x:{triggered} ->
 semi_(semi_((\\ P',V' @ console!detected -> P'(V')),
@@ -857,7 +858,7 @@ assign_(\\ ((state,sounding),(stack')) @ ((States_Triggered,sounding),(stack')))
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform
+          (ast-transform*
 
            i-ast
 
@@ -873,7 +874,7 @@ assign_(\\ ((state,sounding),(stack')) @ ((States_Triggered,sounding),(stack')))
          (diff-noisy-equal?
 
           ;; from:
-          (csp-transform i-ast csp-function-call-ast)
+          (csp-transform* i-ast csp-function-call-ast)
 
           ;; via:
           "i?x:{e} ->
@@ -886,7 +887,7 @@ semi_(callvoid_(toggle),
          (diff-noisy-equal?
 
           ;; from:
-          (csp-transform i-ast
+          (csp-transform* i-ast
                          '(function toggle (signature (type void)) ()))
 
           ;; via:
@@ -902,8 +903,7 @@ semi_(callvoid_(toggle),
          (pretty-noisy-equal?
 
           ;; from:
-
-          (ast-transform i-ast
+          (ast-transform* i-ast
                           '(function
                             g
                             (signature (type bool) (parameters (parameter (type bool) c)))
@@ -916,7 +916,7 @@ semi_(callvoid_(toggle),
          (diff-noisy-equal?
 
           ;; via:
-          (csp-transform i-ast csp-transform-function-arguments)
+          (csp-transform* i-ast csp-transform-function-arguments)
 
           ;; to:
           "g = \\ P',V',F' @ context_(F',
@@ -936,7 +936,7 @@ returnvalue_(\\ ((s,b,hide_member2'),((stack',c))) @ c)))(P',V')
   (pretty-noisy-equal?
 
    ;; from:
-   (ast-transform
+   (ast-transform*
     i-ast
     '(on (e)
          (compound
@@ -949,7 +949,7 @@ returnvalue_(\\ ((s,b,hide_member2'),((stack',c))) @ c)))(P',V')
          (diff-noisy-equal?
 
           ;; from:
-          (csp-transform i-ast csp-function-call-arguments-via)
+          (csp-transform* i-ast csp-function-call-arguments-via)
 
           ;; via:
           "i?x:{e} ->
@@ -972,7 +972,7 @@ context_active_(\\ P',V' @ g (P',V',\\ ((s,b,c),(stack')) @ (b,b)),
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform
+          (ast-transform*
 
            c-reply-ast
 
@@ -990,7 +990,7 @@ context_active_(\\ P',V' @ g (P',V',\\ ((s,b,c),(stack')) @ (b,b)),
          (diff-noisy-equal?
 
           ;; from:
-          (csp-transform
+          (csp-transform*
 
            c-reply-ast
 
@@ -1042,7 +1042,7 @@ semi_(context_active_(sendrecv_(u,what),
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform
+          (ast-transform*
 
            return-variable-ast
 
@@ -1060,7 +1060,7 @@ semi_(context_active_(sendrecv_(u,what),
          (diff-noisy-equal?
 
           ;; from:
-          (csp-transform
+          (csp-transform*
 
            return-variable-ast
 
@@ -1125,7 +1125,7 @@ semi_(context_(\\ ((b),(stack')) @ true,
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform callvalued-ast callvalued-on)
+          (ast-transform* callvalued-ast callvalued-on)
 
           ;; via:
           csp-callvalued-on))
@@ -1135,7 +1135,7 @@ semi_(context_(\\ ((b),(stack')) @ true,
          (diff-noisy-equal?
 
           ;; from:
-          (csp-transform callvalued-ast csp-callvalued-on)
+          (csp-transform* callvalued-ast csp-callvalued-on)
           ;; via:
          "i?x:{e} ->
 semi_(semi_(assign_(\\ ((b),(stack')) @ (((not b)),(stack'))),
@@ -1205,7 +1205,7 @@ semi_(assign_active_(\\ P',V' @ g (P',V',\\ ((b),((stack',c))) @ (c)),
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform callvalued-ast callvalued-on-deep)
+          (ast-transform* callvalued-ast callvalued-on-deep)
 
           ;; via:
           csp-callvalued-on-deep))
@@ -1254,7 +1254,7 @@ semi_(assign_active_(\\ P',V' @ g (P',V',\\ ((b),((stack',c))) @ (c)),
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform i-ast '(on ((trigger i done))
+          (ast-transform* i-ast '(on ((trigger i done))
                                     (compound
                                      (variable
                                       (type U (type Status))
@@ -1268,7 +1268,7 @@ semi_(assign_active_(\\ P',V' @ g (P',V',\\ ((b),((stack',c))) @ (c)),
          (diff-noisy-equal?
 
           ;; via/from:
-          (csp-transform i-ast ast-transform-OM-PARSER-variable-action-via)
+          (csp-transform* i-ast ast-transform-OM-PARSER-variable-action-via)
 
           ;; to:
           "i?x:{done} ->
@@ -1289,7 +1289,7 @@ context_active_(sendrecv_(u,what),
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform i-ast '(on ((trigger i done))
+          (ast-transform* i-ast '(on ((trigger i done))
                                     (compound
                                      (variable
                                       (type U (type Status))
@@ -1303,7 +1303,7 @@ context_active_(sendrecv_(u,what),
          (diff-noisy-equal?
 
           ;; via/from:
-          (csp-transform i-ast ast-transform-OM-PARSER-variable-action-via)
+          (csp-transform* i-ast ast-transform-OM-PARSER-variable-action-via)
 
           ;; to:
           "i?x:{done} ->
@@ -1323,7 +1323,7 @@ context_active_(sendrecv_(u,what),
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform c-ast
+          (ast-transform* c-ast
                          '(on
                            ((trigger j done))
                            (compound
@@ -1336,7 +1336,7 @@ context_active_(sendrecv_(u,what),
          (diff-noisy-equal?
 
           ;; via/from:
-          (csp-transform c-ast ast-transform-OM-PARSER-assign-action-via)
+          (csp-transform* i-ast ast-transform-OM-PARSER-assign-action-via)
 
           ;; to:
           "j?x:{done} ->

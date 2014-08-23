@@ -28,7 +28,18 @@
   :use-module (language asd reader)
 
   :use-module (oop goops)
-  :export (ast-> ast->gom))
+  :use-module (oop goops describe)
+  :export (
+           ast->
+           ast->gom
+           ast->gom*
+
+
+           <ast>
+           <trigger>
+           .port
+           .event
+))
 
 (define-class <ast> ())
 (define-class <statement> (<ast>))
@@ -186,19 +197,32 @@
     ((h t ...) (map ast->gom ast))
     (_ ast)))
 
+(define (ast->gom* ast)
+  (match ast
+    ((? ast:trigger?) (make <trigger>
+                       :port (ast:port-name ast)
+                       :event (ast:event-name ast)))
+    ((h t ...) (map ast->gom* ast))
+    (_ ast)))
 
 ;; AST printing
-(define (star) (display #\*))
+(define (star port) (display #\* port))
+
+(define-method (sdisplay (o <ast>) port)
+  (display o port))
+
+(define-method (sdisplay (o <top>) port)
+  (display #\space port)
+  (display o port))
 
 (define-method (display-slots (o <ast>) port)
   (for-each (lambda (slot)
               (let* ((name (slot-definition-name slot))
                      (value (slot-ref o name)))
-                (when (null-is-#f value)
-                  (display #\space port)
+                (when (not (eq? value '()))
                   (if (eq? name 'elements)
-                      (for-each (lambda (x) (display x port)) value)
-                      (display (slot-ref o name) port)))))
+                      (for-each (lambda (x) (sdisplay x port)) value)
+                      (sdisplay (slot-ref o name) port)))))
             (class-slots (class-of o))))
 
 (define-method (write (o <expression>) port)
@@ -206,11 +230,9 @@
 
 (define-method (display-slots (o <dir-ast>) port)
   (display (.direction o) port)
-  (star)
-  (display #\space port)
-  (display (.type o) port)
-  (display #\space port)
-  (display (.name o) port))
+  (star port)
+  (sdisplay (.type o) port)
+  (sdisplay (.name o) port))
 
 (define-method (write (o <dir-ast>) port)
   (display "(" port)
@@ -224,8 +246,7 @@
 (define-method (write (o <ast>) port)
   (display "(" port)
   (display (class-name o) port)
-  (star)
-  (display #\space port)
+  (star port)
   (display-slots o port)
   (display #\) port))
 
