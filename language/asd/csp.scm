@@ -529,10 +529,17 @@
 (define-method (ast-transform- ast (o <assign>) return context)
   (let* ((model (or (ast:interface ast) (ast:component ast)))
          (context (or context (make-context (ast:member-names model) '())))
+         (port? (lambda (port) (member port (map ast:name (ast:ports model)))))
          (expression (.value (.expression o))))
     (match expression
       (($ <action>)
        (list 'assign-active (list context 'r' expression)
+             (context-assign context (.identifier o) 'r')))
+      (('value (and (? port?) (get! port)) event) ;; FIXME: translate to <action>
+       (list 'assign-active (list context 'r' (make <action>
+                                                :trigger (make <trigger>
+                                                           :port (port)
+                                                           :event event)))
              (context-assign context (.identifier o) 'r')))
       (('call function)
        (list 'assign-active (list context 'r' (list 'call function))

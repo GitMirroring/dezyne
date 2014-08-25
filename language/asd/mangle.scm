@@ -43,7 +43,7 @@
     (('requires name event) (ast:make 'requires (list ((prefix 'if) name) ((prefix 'po) event))))
     ;; Do we need this for LOPW? (('variable type name expression) (list 'variable type ((prefix 'va) name) expression))
     ;; FIXME: type interface trigger (on ((trigger #f x)) statemnt)?
-    (('on ('triggers (? ast:trigger?) ...) statement) (ast:make 'on (make 'triggers (map mangle (ast:triggers ast)) (mangle statement))))
+    (('on ('triggers (? ast:trigger?) ...) statement) (ast:make 'on (list (ast:make 'triggers (map mangle (ast:triggers ast))) (mangle statement))))
     (('trigger port event) (ast:make 'trigger (list (if port ((prefix 'po) port) #f) ((prefix 'ev) event))))
     (('illegal) ast)
     (('action (? ast:trigger?)) (ast:make 'action (list (mangle (ast:trigger ast)))))
