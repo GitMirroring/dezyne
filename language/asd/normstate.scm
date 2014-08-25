@@ -120,17 +120,16 @@
     (('compound ('on triggers stat) ...) ast)
     (('compound guards ...)
      (ast:make 'compound
-               (reverse
-                (let loop ((guards guards))
-                  (if ( null? guards)
-                      '()
-                      (receive (shared-guards remainder)
-                          (partition (lambda (x) (ast:guard-equal? (car guards) x)) guards)
-                        (let* ((expression (ast:expression (car shared-guards)))
-                               (aggregated-guard (ast:make 'guard
-                                                           (list expression
-                                                                 (wrap-compound-as-needed (map ast:statement shared-guards))))))
-                          (cons aggregated-guard (loop remainder)))))))))
+               (let loop ((guards guards))
+                 (if ( null? guards)
+                     '()
+                     (receive (shared-guards remainder)
+                         (partition (lambda (x) (ast:guard-equal? (car guards) x)) guards)
+                       (let* ((expression (ast:expression (car shared-guards)))
+                              (aggregated-guard (ast:make 'guard
+                                                          (list expression
+                                                                (wrap-compound-as-needed (map ast:statement shared-guards))))))
+                         (cons aggregated-guard (loop remainder))))))))
     (('functions f ...) ast)
     ((h ...) (map aggregate-guard ast))
     (_ ast)))

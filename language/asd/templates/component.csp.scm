@@ -78,7 +78,7 @@ channel #.interface : {#(comma-join (append (interface-triggers interface) (retu
 # (map-guards #{(# (csp-expression->string (ast:ast .interface) (ast:expression guard))) & (
 # ((->join "\n  []\n  ") (map (lambda (on) (csp-transform (ast:ast .interface) (ast-transform (ast:ast .interface) on)))
    ((gom:statements-of-type 'on) (gom:statement guard)))))
-#} (reverse ((gom:statements-of-type 'guard) (gom:statement (ast:behaviour (ast-norm .interface))))))
+#} ((gom:statements-of-type 'guard) (gom:statement (ast:behaviour (ast-norm .interface)))))
 within #.interface _#.behaviour _(((#(comma-join (map (lambda (x) (value (ast:expression x))) ((compose ast:variables ast:behaviour ast-norm) .interface)))),<>)) #.optional-chaos
 
 #} ((compose ast:ports ast:component) ast))
@@ -90,7 +90,7 @@ within #.interface _#.behaviour _(((#(comma-join (map (lambda (x) (value (ast:ex
     (append
       (filter identity (map (statement-on-p/r (provides? component)) ((gom:statements-of-type 'on) (gom:statement guard))))
       (filter identity (map (statement-on-p/r (requires? component)) ((gom:statements-of-type 'on) (gom:statement guard))))))))
-#} (reverse ((gom:statements-of-type 'guard) ((compose gom:statement ast:behaviour ast:component) ast)))))
+#} ((gom:statements-of-type 'guard) ((compose gom:statement ast:behaviour ast:component) ast))))
 within #.component _#.behaviour _(((#(comma-join (map (lambda (x) (value (ast:expression x))) ((compose ast:variables ast:behaviour ast:component) ast)))),<>))
 
 channel extensions_over_empty_channels_is_undefined
