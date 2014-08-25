@@ -487,7 +487,7 @@
 	     (list 'on triggers 'IG result)
 	     (list 'on triggers result the-end))))
       (('variable type var ('value (and (? port?) (get! port)) event))
-       (list context var (list 'valued-action (list 'trigger (port) event))))
+       (list context var (list 'valued-action (make <trigger> :port (port) :event event))))
       (('variable type var ('call function))
        (list context var (list 'call function)))
       (('variable type var ('call function arguments))
