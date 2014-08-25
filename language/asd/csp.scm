@@ -84,10 +84,11 @@
 
 (define asserts-alist
   `(
-    ((component deterministic) . "assert #.component _#.behaviour(true,true) :[deterministic]\n")
     ((component illegal) . "assert STOP [T= #.component _#.behaviour _Component(false) \\ diff(Events,{illegal})\n")
+    ((component deterministic) . "assert #.component _#.behaviour(true,true) :[deterministic]\n")
     ((component deadlock)  . "assert #.component _#.behaviour _Component(false) :[deadlock free]\n")
     ((component compliance) . ,(gulp-file 'templates/asserts/component-compliance.csp.scm))
+    ((component livelock)  .  "assert #.component _#.behaviour _Component(true) \\ diff(Events,{|illegal,#.port |}) :[livelock free]\n")
     ((interface deadlock) . ,(gulp-file 'templates/asserts/interface-deadlock.csp.scm))
     ((interface livelock) . ,(gulp-file 'templates/asserts/interface-livelock.csp.scm))))
 

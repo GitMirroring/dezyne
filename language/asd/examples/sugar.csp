@@ -34,9 +34,9 @@ Enum_False | Enum_True | a | e | return
 
 channel illegal
 
-channel i: {a,e,e,return}
+channel i: {a,e,return}
 
-channel I: {a,e,e,return}
+channel I: {a,e,return}
 
   I_(IG) = let
 
@@ -118,10 +118,11 @@ within compress((sugar_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_i
 (((STOP) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
-assert sugar__Component(false) :[deadlock free]
 assert sugar_(true,true) :[deterministic]
 assert STOP [T= sugar__Component(false) \ diff(Events,{illegal})
-assert I_(true) [[I.x<-i.x|x<-extensions(I)]] \ {} [FD= sugar__Component(true) \ diff(Events,{|illegal,i|}) \ {}
+assert sugar__Component(false) :[deadlock free]
+assert I_(true) [[I.x<-i.x|x<-extensions(I)]] \ {} [FD= sugar__Component(true) \ diff(Events,{|illegal,i|})
+assert sugar__Component(true) \ diff(Events,{|illegal,i|}) :[livelock free]
 assert I_(false) :[deadlock free]
 
 assert I_(true) :[livelock free]

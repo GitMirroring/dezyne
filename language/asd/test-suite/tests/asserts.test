@@ -16,15 +16,16 @@
 (pass-if "assert"
   (pretty-noisy-equal?
    (assert-list
-    (asd->ast 
+    (asd->ast
      #{ interface I {}
-		  component C { 
+		  component C {
 			       provides I i ;
 			       requires I j ;
 			       } #}))
-   '((component C deadlock)
-     (component C deterministic)
+   '((component C deterministic)
      (component C illegal)
+     (component C deadlock)
      (component C compliance)
+     (component C livelock)
      (interface I deadlock)
      (interface I livelock))))

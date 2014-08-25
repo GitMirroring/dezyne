@@ -43,13 +43,11 @@
   "")
 
 (define (assert-list ast)
-  (let* ((component-checks '(deadlock deterministic illegal compliance))
+  (let* ((component-checks '(deterministic illegal deadlock compliance livelock))
 	 (interface-checks '(deadlock livelock))
 	 (component (ast:component ast))
 	 (interfaces (map (compose ast:ast ast:type) (ast:ports component))))
     (append (map (assert component) component-checks)
-	    (apply append 
-		   (delete-duplicates (map (lambda (interface) 
+	    (apply append
+		   (delete-duplicates (map (lambda (interface)
 					     (map (assert interface) interface-checks)) interfaces))))))
-
-
