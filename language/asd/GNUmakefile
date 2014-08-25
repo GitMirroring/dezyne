@@ -31,7 +31,7 @@ BUILD = build
 asdgen = ASD_PREFIX=$(DEPTH)/.. $(DEPTH)/../$(BUILD)/asdgenerator
 FDR3_PREFIX=/usr/local/
 GUILE = guile
-SCRIPTS = coverage gaiag json2scm scm2json 
+SCRIPTS = coverage gaiag json2scm scm2json
 SCM_SOURCES = $(shell git ls-files *.scm | grep -v 'templates')
 CSPMCHECKER = $(FDR3_PREFIX)/bin/cspmchecker
 REFINES =  $(FDR3_PREFIX)/bin/refines --brief --quiet --format=plain
@@ -100,9 +100,9 @@ coverage: clean
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-function.info | grep -v Removing
 
-	cd gaiag.lcov && ../coverage gaiag -l csp examples/pauls.asd
+	cd gaiag.lcov && ../coverage gaiag -l csp examples/Comp.asd
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
-	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-pauls.info | grep -v Removing
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-Comp.info | grep -v Removing
 
 	cd gaiag.lcov && ../coverage gaiag -l c++ examples/Alarm.asd
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
@@ -146,7 +146,7 @@ pretty: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
 	./gaiag -l asd examples/interface-enums.asd > out/interface-enums.asd
 	$(diff) examples/interface-enums.asd out
-	./gaiag -l asd examples/alarm-component.asd > out/alarm-component.asd 
+	./gaiag -l asd examples/alarm-component.asd > out/alarm-component.asd
 	$(diff) examples/alarm-component.asd out
 	./gaiag -l asd examples/function.asd > out/function.asd
 	$(diff) examples/function.asd out
@@ -203,7 +203,7 @@ csp: compile
 	$(diff) examples/Alarm.csp out || true
 	@$(diff) examples/Alarm.csp out | diffstat || true
 	$(CSPMCHECKER) out/Alarm.csp
-	! $(REFINES) out/Alarm.csp | grep -q ': Failed' 
+	! $(REFINES) out/Alarm.csp | grep -q ': Failed'
 	@$(diff) examples/Alarm.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/imperative.asd
@@ -248,25 +248,25 @@ csp: compile
 	! $(REFINES) out/sugar.csp | grep -q ': Failed'
 	@$(diff) examples/sugar.csp out >/dev/null
 
-	cd out && ../gaiag -l csp examples/pauls.asd
+	cd out && ../gaiag -l csp examples/Comp.asd
 	$(diff) examples/Comp.csp out
 	@$(diff) examples/Comp.csp out | diffstat || true
 	$(CSPMCHECKER) out/Comp.csp
-	! $(REFINES) out/pauls.csp | grep -q ': Failed'
+	! $(REFINES) out/Comp.csp | grep -q ': Failed'
 	@$(diff) examples/Comp.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/argument2.asd
 	$(diff) examples/argument2.csp out || true
 	@$(diff) examples/argument2.csp out | diffstat
 	$(CSPMCHECKER) out/argument2.csp
-	! $(REFINES) out/expressions.csp | grep -q ': Failed'
+	! $(REFINES) out/argument2.csp | grep -q ': Failed'
 	@$(diff) examples/argument2.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/hide.asd
 	$(diff) examples/hide.csp out || true
 	@$(diff) examples/hide.csp out | diffstat
 	$(CSPMCHECKER) out/hide.csp
-	! $(REFINES) out/expressions.csp | grep -q ': Failed'
+	! $(REFINES) out/hide.csp | grep -q ': Failed'
 	@$(diff) examples/hide.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/expressions.asd
@@ -299,9 +299,9 @@ demo:
 	@$(diff) examples/Reply2.csp out | diffstat || true
 	-$(CSPMCHECKER) out/Reply2.csp
 
-	cd out && $(asdgen) -l scm asd/pauls.asd
-	# sed -i -e 's/(type \([^.]+\)[.]\([^.()]+\))/(type \1 (type \2))/' out/pauls.scm
-	cd out && ../gaiag -l csp pauls.scm
+	cd out && $(asdgen) -l scm asd/Comp.asd
+	# sed -i -e 's/(type \([^.]+\)[.]\([^.()]+\))/(type \1 (type \2))/' out/Comp.scm
+	cd out && ../gaiag -l csp Comp.scm
 	-$(CSPMCHECKER) out/Comp.csp
 
 expression: compile
@@ -321,4 +321,4 @@ simulate: compile
 	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" examples/alarm-component.asd
 	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" -j examples/alarm-component.asd | ./scm2json | sed -e 's/, /,\n /g'
 	./gaiag -l simulate -t '(i.e i.e i.e)' examples/arguments.asd
-	./gaiag -l simulate -t '(client.initialize result_t.OK result_t.OK client.perform_actions result_t.OK result_t.OK client.perform_actions result_t.NOK client.recover result_t.OK client.perform_actions)' examples/pauls.asd
+	./gaiag -l simulate -t '(client.initialize result_t.OK result_t.OK client.perform_actions result_t.OK result_t.OK client.perform_actions result_t.NOK client.recover result_t.OK client.perform_actions)' examples/Comp.asd

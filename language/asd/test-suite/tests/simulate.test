@@ -33,34 +33,34 @@
 (pass-if "simulator-simple-trail"
   (pretty-noisy-equal?
    (walk-trail
-    (ast:interface (asd->ast 
-      #{ 
-        interface i { behaviour { on a: b; 
+    (ast:interface (asd->ast
+      #{
+        interface i { behaviour { on a: b;
                                      } } #}))
     '(a a a))
-   (map 
+   (map
     (lambda (x) (cons x (cons '() '((on (a) (action b)) (action b)))))
     '(a a a))))
 
 (pass-if "simulator-guard-trail"
    (pretty-noisy-equal?
     (walk-trail
-     (ast:interface 
-      (asd->ast 
-       #{ interface i 
-                    { 
+     (ast:interface
+      (asd->ast
+       #{ interface i
+                    {
                      behaviour
                      {
                       bool t = true ;
                            on a:
                            {
-                            [t] t = !t ; 
-                            [!t] b     ; 
+                            [t] t = !t ;
+                            [!t] b     ;
                             }
-                           } 
+                           }
                      } #}))
      '(a a a))
-    '((a 
+    '((a
        ((t . #t))
        (on (a)
            (compound
@@ -68,7 +68,7 @@
             (guard (! t) (action b))))
        (guard t (assign t (! t)))
        (assign t (! t)))
-      (a 
+      (a
        ((t . #f))
        (on (a)
            (compound
@@ -95,7 +95,7 @@
     #t))
 
 (pass-if "walk-trail-pauls"
-  (let* ((pauls-ast (read-ast 'examples/pauls.asd))
+  (let* ((pauls-ast (read-ast 'examples/Comp.asd))
          (model (ast:component pauls-ast))
          (trail '(client.initialize result_t.OK result_t.OK client.perform_actions result_t.OK result_t.OK client.perform_actions result_t.NOK client.recover result_t.OK client.perform_actions))
          (pauls-trace (walk-trail model trail))
@@ -103,9 +103,8 @@
     #t))
 
 (pass-if "explore-space-pauls"
-  (let* ((pauls-ast (read-ast 'examples/pauls.asd))
+  (let* ((pauls-ast (read-ast 'examples/Comp.asd))
          (model (ast:component pauls-ast))
          (pauls-space (explore-space model))
          (baseline-space 'baseline-space))
     #t))
-
