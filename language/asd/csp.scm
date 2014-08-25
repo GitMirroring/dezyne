@@ -520,10 +520,11 @@
 
 (define-method (ast-transform- ast (o <assign>) return context)
   (let* ((model (or (ast:interface ast) (ast:component ast)))
-         (context (or context (make-context (ast:member-names model) '()))))
-    (match (.value (.expression o))
-      ((and ($ <action>) (get! action))
-       (list 'assign-active (list context 'r' (action))
+         (context (or context (make-context (ast:member-names model) '())))
+         (expression (.value (.expression o))))
+    (match expression
+      (($ <action>)
+       (list 'assign-active (list context 'r' expression)
              (context-assign context (.identifier o) 'r')))
       (('call function)
        (list 'assign-active (list context 'r' (list 'call function))
