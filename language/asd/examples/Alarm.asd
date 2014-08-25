@@ -165,6 +165,8 @@ component Alarm
       on console.disarm:
       {
         sensor.disable;
+        siren.turnoff;
+        sounding = false;
         state = States.Disarming;
       }
       on sensor.triggered, sensor.disabled:
@@ -172,3 +174,4 @@ component Alarm
     }
   }
 }
+
