@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;; Copyright © 2014  "Mu Lei" known as "NalaGinrut" <NalaGinrut@gmail.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -21,10 +22,10 @@
   #:use-module (language asd parse)
   #:use-module (language asd tokenize)
   #:export (asd))
- 
+
 (define-language asd
   #:title       "asd"
-  #:reader      (lambda (port env) 
+  #:reader      (lambda (port env)
                   ((make-parser) (make-tokenizer port) error))
   #:compilers   `((tree-il . ,compile-tree-il))
   #:printer     write)

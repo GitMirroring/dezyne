@@ -680,7 +680,7 @@
 
 (define (type ast)
   (match ast
-    ((? event?) 
+    ((? event?)
      (stderr "deprecated: return-type event; use type signature\n")
      (return-type ast))
     ((or (? enum?) (? int?)) (car ast))
@@ -822,7 +822,7 @@
     (_ (throw 'match-error  (format #f "~a:find-triggers: no match: ~a\n" (current-source-location) ast)))))
 
 (define (find-events ast)
-  (match ast 
+  (match ast
     ((? interface?) (events ast))
     ((? component?) (apply append (map find-events (ports ast))))
     ((? port?) (find-events (import-ast (type port))))

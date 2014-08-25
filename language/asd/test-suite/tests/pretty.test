@@ -29,8 +29,8 @@
 	 #t)
 
 (pass-if "pretty-interface"
-  (let ((asd #{ 
-interface i 
+  (let ((asd #{
+interface i
 {
 }
 #}))
@@ -78,11 +78,11 @@ component c
   (let ((asd #{
 interface i
 {
-  behaviour 
-  { 
-   [true || false] 
-   { 
-   } 
+  behaviour
+  {
+   [true || false]
+   {
+   }
   }
 }
 #}))

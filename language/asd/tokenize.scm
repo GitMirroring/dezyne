@@ -1,5 +1,6 @@
 ;;; Gaiag --- Guile in Asd In Asd in Guile.
 ;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; This file is part of Gaiag.
@@ -32,7 +33,7 @@
 
 (define (string-symbol x) (cons (symbol->string x) x))
 (define *keywords*
-  (map string-symbol 
+  (map string-symbol
        '(
          behaviour
          component

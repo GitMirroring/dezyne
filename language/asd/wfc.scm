@@ -3,6 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -35,7 +36,7 @@
   :use-module (language asd reader)
 
   :export (
-           ast-wellformed? 
+           ast-wellformed?
            read-asd-wellformed
            verify-on
            verify-mixing
@@ -46,16 +47,16 @@
   "")
 
 (define (ast-wellformed? ast)
-  (and-let* ((errors (apply append 
+  (and-let* ((errors (apply append
                             (filter null-is-#f (verify-on ast))
                             (filter null-is-#f (verify-mixing ast)))))
-            (for-each (lambda (e) 
+            (for-each (lambda (e)
                         (let ((message (car e))
-                              (properties (source-location->source-properties 
+                              (properties (source-location->source-properties
                                            (source-location (cadr e)))))
-                          (stderr "~a:~a:~a: error: not well-formed: ~a\n" 
-                                  (assoc-ref properties 'filename) 
-                                  (assoc-ref properties 'line) 
+                          (stderr "~a:~a:~a: error: not well-formed: ~a\n"
+                                  (assoc-ref properties 'filename)
+                                  (assoc-ref properties 'line)
                                   (assoc-ref properties 'column)
                                   message))) errors)
             ;; (throw 'well-formed "not well-formed")
@@ -103,7 +104,7 @@
          (('on e s1) (mixing-on s))
          (_ (and (mixing-imperative s) (mixing-illegal s))))))
     (('compound s1)
-     (let* ((m1 (mixing s1)) 
+     (let* ((m1 (mixing s1))
             (m2 (match s1
                (('if e s11 ...) (mixing-imperative s1))
             (_ '()))))
@@ -114,7 +115,7 @@
     (_ '())))
 
 (define (first-statement lst)
-  
+
   (let* ((compound? (lambda (x) (eq? x 'compound)))
          (compounds (filter compound? lst))
          (non-compounds (filter (negate compound?) lst)))

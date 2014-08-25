@@ -49,8 +49,8 @@
   (noisy-equal?
    (catch #t
      (lambda ()
-       (with-output-to-string 
-         (lambda () 
+       (with-output-to-string
+         (lambda ()
            (with-input-from-string
                #{1
                  2
@@ -71,20 +71,20 @@
   (noisy-equal?
    (catch #t
      (lambda ()
-       (with-output-to-string 
-         (lambda () 
+       (with-output-to-string
+         (lambda ()
            (with-input-from-string
                #{1
                  2
                  3
-                 #(string-if #t 
+                 #(string-if #t
                              #{
                                6
                                lala #boe rest of line
                                #})
                  9
                  #}
-             (lambda () 
+             (lambda ()
                (animate-input (current-module)))))))
      (lambda (key message)
           message))
@@ -97,13 +97,13 @@
   (noisy-equal?
    (catch #t
      (lambda ()
-       (with-output-to-string 
-         (lambda () 
+       (with-output-to-string
+         (lambda ()
            (with-input-from-string
                #{1
                  2
                  3
-                 #(string-if #t 
+                 #(string-if #t
                              #{
                                6
                                lala #boe rest of line
@@ -112,7 +112,7 @@
                              )
                  9
                  #}
-             (lambda () 
+             (lambda ()
                (animate-input (current-module)))))))
      (lambda (key message)
           message))
@@ -125,8 +125,8 @@
   (noisy-equal?
    (catch #t
      (lambda ()
-       (with-output-to-string 
-         (lambda () 
+       (with-output-to-string
+         (lambda ()
            (with-input-from-string
                #{1
                  2
@@ -140,7 +140,7 @@
                              )
                  9
                  #}
-             (lambda () 
+             (lambda ()
                (animate-input (current-module)))))))
      (lambda (key message)
           message))

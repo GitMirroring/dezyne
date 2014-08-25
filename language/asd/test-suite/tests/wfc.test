@@ -31,24 +31,24 @@
 (pass-if "wfc-double-on"
   (pretty-noisy-equal?
    (verify-on
-    (asd->ast 
-     #{ 
+    (asd->ast
+     #{
        interface i { behaviour { [true] on a: [false] on a: b;
                                  } } #}))
-   '(("double on" 
-      (on ((trigger #f a)) 
+   '(("double on"
+      (on ((trigger #f a))
           (action (trigger #f b)))))))
 
 (pass-if "wfc-mixing"
   (pretty-noisy-equal?
    (verify-mixing
-    (asd->ast 
-     #{ 
+    (asd->ast
+     #{
        interface i { behaviour { bool b = false;
                                       [true] on a: b;
                                       b = true;
                                       } } #}))
    '((("mixing guarded"
-       (guard true 
-              (on ((trigger #f a)) 
+       (guard true
+              (on ((trigger #f a))
                   (action (trigger #f b)))))))))

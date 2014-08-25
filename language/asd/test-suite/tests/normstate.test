@@ -94,9 +94,9 @@
         interface i { behaviour { void foo(){ if(true){}} on a,b,c: [true] d ;
                                                  } } #})))
    '(interface i (types) (events)
-               (behaviour #f 
+               (behaviour #f
                           (types)
-                          (variables) 
+                          (variables)
                           (functions
                            (function foo (signature (type void))
                                      (compound (if true (skip)))))

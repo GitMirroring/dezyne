@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -22,6 +23,6 @@
   :use-module ((language asd mangle) :renamer (symbol-prefix-proc 'ast:)))
 
 (eval `(re-export ,@(module-map (lambda (key x) key)
-                                (resolve-interface '(language asd ast) 
+                                (resolve-interface '(language asd ast)
                                                    :renamer (symbol-prefix-proc 'ast:)))) (current-module))
 (re-export ast:mangle)

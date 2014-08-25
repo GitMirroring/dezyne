@@ -68,7 +68,7 @@
            symbol<
            symbol-null?
            symbol-capitalize
-           
+
            ;; FIXME
 
            comma-join
@@ -122,7 +122,7 @@
 (define (gulp-file file-name)
   (with-input-from-file (->string file-name) read-string))
 
-(define (gulp-port . port) 
+(define (gulp-port . port)
   (or (and-let* ((result (read-delimited "" (if (pair? port) (car port) (current-input-port))))
                  ((string? result)))
                 result)
@@ -132,7 +132,7 @@
   (apply format (cons* port string rest))
   (force-output port)
   #t)
-  
+
 (define (stderr string . rest)
   (apply logf (cons* (current-error-port) string rest)))
 
@@ -140,7 +140,7 @@
   (apply logf (cons* (current-output-port) string rest)))
 
 (define (->string h . t)
-  (let ((src (if (pair? t) (cons h t) h))) 
+  (let ((src (if (pair? t) (cons h t) h)))
     (match src
       ((? char?) (make-string 1 src))
       ((? string?) src)

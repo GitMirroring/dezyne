@@ -31,14 +31,14 @@
 
   :export (ast-> ast->asd ast->pretty ast->string))
 
-(define (ast->string ast) 
+(define (ast->string ast)
   (indent-string (apply string-append (map ->string ast))))
 
 (define ast-> ast->string)
 (define ast->asd ast->string)
 (define ast->pretty ast->string)
 
-(define (->string src) 
+(define (->string src)
   (match src
     (#f "false")
     (#t "true")
@@ -47,9 +47,9 @@
     (('compound s ...) (string-join (append '("{\n") (map ->string (cdr src)) '("}\n") ) ""))
     (('if expr statement else) (->string (cons 'if-then-else (cdr src))))
     (('if expr statement) (->string (cons 'if-then (cdr src))))
-    (('assign var ('call function arguments ...)) 
+    (('assign var ('call function arguments ...))
      (->string (list 'assign var (list 'assign-call function arguments))))
-    (('variable type var ('call function arguments ...)) 
+    (('variable type var ('call function arguments ...))
      (->string (list 'variable type var (list 'assign-call function arguments))))
     (('trigger #f event) (->string event))
     ((? asd-template?) (apply asd-template->string src))

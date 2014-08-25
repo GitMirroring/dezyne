@@ -1,5 +1,6 @@
 ;;; Gaiag --- Guile in Asd In Asd in Guile.
 ;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
@@ -25,21 +26,21 @@
 ;;;; 	Copyright (C) 2014  Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;; 	Copyright (C) 2001, 2004, 2006, 2009, 2010,
 ;;;;      2012, 2013, 2014 Free Software Foundation, Inc.
-;;;; 
+;;;;
 ;;;; This library is free software; you can redistribute it and/or
 ;;;; modify it under the terms of the GNU Lesser General Public
 ;;;; License as published by the Free Software Foundation; either
 ;;;; version 3 of the License, or (at your option) any later version.
-;;;; 
+;;;;
 ;;;; This library is distributed in the hope that it will be useful,
 ;;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 ;;;; Lesser General Public License for more details.
-;;;; 
+;;;;
 ;;;; You should have received a copy of the GNU Lesser General Public
 ;;;; License along with this library; if not, write to the Free Software
 ;;;; Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-;;;; 
+;;;;
 (define-module (language asd pretty-print)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
@@ -85,7 +86,7 @@
       (match obj
         (((or 'quote 'quasiquote 'unquote 'unquote-splicing) body)
          (wr body (out (read-macro-prefix obj) col)))
-        ((? hash-table?) (wr (cons 'hash (hash-map->list list obj)) 
+        ((? hash-table?) (wr (cons 'hash (hash-map->list list obj))
                              (out "#," col)))
         ((head . (rest ...))
          ;; A proper list: do our own list printing so as to catch read
@@ -294,7 +295,7 @@
   (rev-string-append l 0))
 
 (define* (pretty-print obj #:optional port*
-                       #:key 
+                       #:key
                        (port (or port* (current-output-port)))
                        (width 79)
                        (max-expr-width 50)

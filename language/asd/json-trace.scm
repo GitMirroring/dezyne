@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -73,7 +74,7 @@
   (if (ast:on? statement)
       (ast:name *model*)
       (or (and-let* (((ast:action? statement))
-                     (trigger (ast:trigger statement))     
+                     (trigger (ast:trigger statement))
                      ((pair? trigger)))
                     (ast:port-name trigger))
           'out)))
@@ -82,7 +83,7 @@
   (if (ast:on? statement)
       (ast:event-name (ast:trigger statement))
       (or (and-let* (((ast:action? statement))
-                     (trigger (ast:trigger statement))     
+                     (trigger (ast:trigger statement))
                      ((pair? trigger)))
                     (ast:port-name trigger))
           'out)))
@@ -112,20 +113,20 @@
                      `((type . update)
                        (comp . ,model)
                        (,variable . ,(->symbol (var state variable)))))
-                   (let ((kind (assoc-ref '((#f . return) 
+                   (let ((kind (assoc-ref '((#f . return)
                                             (on . call)
                                             (action . call))
                                           (ast:class statement)))
-                         (json-event (cond 
+                         (json-event (cond
                                       ((ast:on? statement) (ast:event-name event))
                                       ((ast:action? statement) (ast:event-name (ast:trigger statement)))
                                       (else 'return))))
                      `((type . transition)
                        (kind . ,kind)
-                       (from . ,(from event statement)) 
+                       (from . ,(from event statement))
                        (to  . ,(to statement))
                        (event . ,json-event)
-                       (location . 
+                       (location .
                                  ,(alist->hash-table
                                    `((begin . ,(json-location statement))
                                      (end . ,(json-location (or (and (pair? statements) (last statements)) statement))))))))))

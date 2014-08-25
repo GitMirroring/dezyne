@@ -102,7 +102,7 @@
            (eq? (ast:port-name lhs) (ast:port-name rhs)))))
 
 (define (add-skip ast)
-  (match ast 
+  (match ast
     (('compound) (list 'skip))
     ((h ...) (map add-skip ast))
     (_ ast)))
@@ -127,7 +127,7 @@
                       (receive (shared-guards remainder)
                           (partition (lambda (x) (ast:guard-equal? (car guards) x)) guards)
                         (let* ((expression (ast:expression (car shared-guards)))
-                               (aggregated-guard (ast:make 'guard 
+                               (aggregated-guard (ast:make 'guard
                                                            (list expression
                                                                  (wrap-compound-as-needed (map ast:statement shared-guards))))))
                           (cons aggregated-guard (loop remainder)))))))))

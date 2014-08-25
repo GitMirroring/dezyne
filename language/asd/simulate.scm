@@ -53,11 +53,11 @@
   (and=> (ast:component ast) simulate-model)
   "")
 
-(define (variable-state variable . value) 
+(define (variable-state variable . value)
   (cons (ast:name variable)
         (eval-expression '() '()
-                          (if (pair? value) 
-                              (car value) 
+                          (if (pair? value)
+                              (car value)
                               (ast:expression variable)))))
 
 (define (state-vector model)
@@ -65,8 +65,8 @@
 
 (define (var state identifier) (assoc-ref state identifier))
 
-(define (var! state identifier value) 
-  (assoc-set! 
+(define (var! state identifier value)
+  (assoc-set!
    (map (lambda (x) (if (eq? identifier (car x)) (cons (car x) (cdr x)) x)) state)
    identifier value))
 
@@ -88,10 +88,10 @@
   (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))
     (if json?
         (append
-         (list 
+         (list
           (json-init *model*)
           (json-state (state-vector *model*)))
-         (apply append (map json-trace trace))) 
+         (apply append (map json-trace trace)))
         (map demo-trace trace))))
 
 (define (explore-space ast)
@@ -104,8 +104,8 @@
   (or (and-let* ((loc (source-location ast))
                  (properties (source-location->source-properties loc)))
                 (format #f "~a:~a:~a"
-                        (assoc-ref properties 'filename) 
-                        (assoc-ref properties 'line) 
+                        (assoc-ref properties 'filename)
+                        (assoc-ref properties 'line)
                         (assoc-ref properties 'column)))
       ast))
 
@@ -141,7 +141,7 @@
 
 (define (seen state ast)
   (set! i (1+ i))
-  (if (> i 1000) 
+  (if (> i 1000)
       (throw 'break (format #f "too many iterations: ~a, state space: ~a\n" i
                             (length *state-space*))))
   (let* ((key (seen-key state ast))
@@ -191,9 +191,9 @@
 
 (define (next-todo-trail-walker model trail)
   (let ((trail trail))
-    (set! next-value 
-          (lambda (action) 
-            (if (null? trail) 
+    (set! next-value
+          (lambda (action)
+            (if (null? trail)
                 #f
                 (let* ((trigger (car trail))
                        (value (cons* 'value (cdr trigger))))
@@ -256,16 +256,16 @@
     (('value type field) expression)
     (('literal scope type value) (eval-expression ast state (list 'value type value)))
     (('! expr) (not (eval-expression ast state expr)))
-    (('and x y) (and (eval-expression ast state x) 
+    (('and x y) (and (eval-expression ast state x)
                      (eval-expression ast state y)))
-    (('or x y) (or (eval-expression ast state x) 
+    (('or x y) (or (eval-expression ast state x)
                    (eval-expression ast state y)))
     ((== x y)
      (let* ((lhs (eval-expression ast state x))
             (rhs (eval-expression ast state y))
             (r (equal? lhs rhs)))
      r))
-    ('otherwise 
+    ('otherwise
      (let* ((parent (ast:parent *model* ast))
             (guards ((ast:statements-of-type 'guard) parent))
             (expressions (map ast:expression guards)))
@@ -305,8 +305,8 @@
                   (pairs (zip parameters arguments))
                   (state (let loop ((pairs pairs) (state state))
                            (if (null? pairs)
-                               state 
-                               (loop (cdr pairs) (acons (caar pairs) 
+                               state
+                               (loop (cdr pairs) (acons (caar pairs)
                                                         (eval-expression ast state (cadar pairs)) state))))))
              (process statement state event (cons f '())))
          (values (drop new-state (length arguments)) new-ast new-action return new-trace)))
@@ -319,26 +319,26 @@
 (define* (process ast state event trace)
   ;; (stderr "PROCESS: [~a] ~a\n" (->string event) ast)
   (set! i (1+ i))
-  (if (> i 2000) 
+  (if (> i 2000)
       (throw 'break (format #f "too many iterations: ~a, state space: ~a\n" i
                             (length *state-space*)))
   (and state
        (match ast
-         (('on t statement) 
+         (('on t statement)
           (if (member event t equal?)
               (process statement state event (cons ast trace))
               (values state #f #f #f trace)))
          (('guard expression statement)
           (debug "guard: ~a? --> ~a =====> ~a\n" expression (eval-expression ast state expression) statement)
-          (if (eval-expression ast state expression) 
-              (process statement state event (cons ast trace)) 
+          (if (eval-expression ast state expression)
+              (process statement state event (cons ast trace))
               (values state #f #f #f trace)))
          (('illegal) (values state #f #f #f (cons ast trace)))
-         (('action t ...) 
+         (('action t ...)
           (stderr "****action: ~a\n" (->string t))
           (values state #f ast #f (cons ast trace)))
          (('assign identifier expression)
-          (stderr "****assign: ~a := ~a\n" (->string identifier) (->string expression))          
+          (stderr "****assign: ~a := ~a\n" (->string identifier) (->string expression))
           (receive (new-state new-ast new-action return new-trace)
               (eval-function-expression ast state event (cons ast trace) expression)
             (values (var! new-state identifier return) #f #f return new-trace)))
@@ -347,12 +347,12 @@
               (eval-function-expression ast state event (cons ast trace) expression)
             (stderr "****init: ~a := ~a ==> ~a\n" (->string identifier) (->string expression) (->string return))
             (values (var! new-state identifier return) #f #f return new-trace)))
-         (('if expression statement else) 
-          (if (eval-expression ast state expression) 
+         (('if expression statement else)
+          (if (eval-expression ast state expression)
               (process statement state event (cons ast trace))
               (process else state event (cons ast trace))))
          (('if expression statement)
-          (if (eval-expression ast state expression) 
+          (if (eval-expression ast state expression)
               (process statement state event (cons ast trace))
               (values state #f #f #f (cons ast trace))))
          (('compound h t ... )
@@ -368,9 +368,9 @@
                               (loop (cdr statements) new-state new-return (append new-trace trace) frame)
                               (loop (cdr statements) loop-state new-return loop-trace frame)))
                         (let ((loop-state (if (ast:variable? statement)
-                                              (acons (ast:name statement) 
+                                              (acons (ast:name statement)
                                                      #f loop-state) loop-state))
-                              (frame (if (ast:variable? statement) 
+                              (frame (if (ast:variable? statement)
                                          (1+ frame) frame)))
                           (receive (new-state new-ast new-action new-return new-trace)
                             (process statement loop-state event '())

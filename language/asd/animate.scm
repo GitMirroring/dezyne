@@ -81,7 +81,7 @@
                (key (car pair))
                (procedure-or-data (cdr pair))
                (value (if (procedure? procedure-or-data)
-                          (procedure-or-data parameter) 
+                          (procedure-or-data parameter)
                           procedure-or-data)))
           (module-define! module key value)
           (loop (cdr pairs))))))
@@ -136,7 +136,7 @@
              (start (assoc-ref (car args) 'start))
              (scm (assoc-ref (car args) 'scm))
              (pos (let loop ((tell (if (>1 (length tell)) (cdr tell) tell)) (start start))
-                    (if (null? tell) 
+                    (if (null? tell)
                         0
                         (+ (car tell) (car start)
                            (loop (cdr tell) (cdr start))))))
@@ -152,10 +152,10 @@
              (error-message (or (car args) (cadr args)))
              (error-args (if (car args) '() (caddr args)))
              (error-string (apply format (append (list #f error-message) error-args)))
-             (message 
+             (message
               (if (string? string)
                   (if (string-contains file-string string)
-                      (format #f "~a:~a:~a: parse error: ~a\n~a\n~a~a...\n" file-name line column error-string (string-take file-string column) (make-string column #\space) 
+                      (format #f "~a:~a:~a: parse error: ~a\n~a\n~a~a...\n" file-name line column error-string (string-take file-string column) (make-string column #\space)
                               (string-drop file-string column))
                       (format #f "~a:~a: parse error: ~a\n    just before: ~a\n" file-name line error-string string))
                   (format #f "~a:~a: parse error: *eof*: ~a\n" file-name line error-string))))
@@ -193,7 +193,7 @@
                        (display (->string result))
                        (eat-one-space)))
                    (lambda (key . args)
-                     (let* ((tell (cons 
+                     (let* ((tell (cons
                                    (ftell (current-input-port))
                                    (f-is-null (assoc-ref (car args) 'tell))))
                             (line (or (assoc-ref (car args) 'line)

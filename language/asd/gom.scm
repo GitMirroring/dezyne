@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -132,20 +133,20 @@
 
 (define (ast->gom ast)
   (match ast
-    ((? ast:interface?) (make <interface> 
+    ((? ast:interface?) (make <interface>
                           :name (ast:name ast)
                           :events (ast->gom (ast:event-list ast))
                           :types (ast->gom (ast:type-list ast))
                           :behaviour (ast->gom (ast:behaviour ast))))
-    ((? ast:component?) (make <component> 
+    ((? ast:component?) (make <component>
                           :name (ast:name ast)
                           :ports (ast->gom (ast:port-list ast))
                           :behaviour (ast->gom (ast:behaviour ast))))
-    ((? ast:event?) (make <event> 
+    ((? ast:event?) (make <event>
                       :name (ast:name ast)
                       :type (ast->gom (ast:signature ast))
                       :direction (ast:direction ast)))
-    ((? ast:port?) (make <port> 
+    ((? ast:port?) (make <port>
                       :name (ast:name ast)
                       :type (ast:type ast)
                       :direction (ast:direction ast)))
@@ -155,26 +156,26 @@
     ((? ast:variable?) (make <variable>
                          :name (ast:name ast)
                          :type (ast:type ast)
-                         :expression (make <expression> 
+                         :expression (make <expression>
                                        :value (ast->gom (ast:expression ast)))))
 
-    ((? ast:event-list?) (make <events> 
+    ((? ast:event-list?) (make <events>
                            :elements (map ast->gom (ast:body ast))))
-    ((? ast:parameter-list?) (make <parameters> 
+    ((? ast:parameter-list?) (make <parameters>
                                :elements (map ast->gom (ast:body ast))))
-    ((? ast:port-list?) (make <ports> 
+    ((? ast:port-list?) (make <ports>
                           :elements (map ast->gom (ast:body ast))))
-    ((? ast:type-list?) (make <types> 
+    ((? ast:type-list?) (make <types>
                           :elements (map ast->gom (ast:body ast))))
-    ((? ast:variable-list?) (make <variables> 
+    ((? ast:variable-list?) (make <variables>
                           :elements (map ast->gom (ast:body ast))))
-    ((? ast:statement-list?) (make <compound> 
+    ((? ast:statement-list?) (make <compound>
                                :elements (map ast->gom (ast:body ast))))
 
-    ((? ast:signature?) (make <signature> 
+    ((? ast:signature?) (make <signature>
                           :type (ast:type ast)
                           :parameters (ast->gom (ast:parameter-list ast))))
-    ((? ast:behaviour?) (make <behaviour> 
+    ((? ast:behaviour?) (make <behaviour>
                           :name (ast:name ast)
                           :types (ast->gom (ast:type-list ast))
                           :variables (ast->gom (ast:variable-list ast))
@@ -183,18 +184,18 @@
                        :port (ast:port-name ast)
                        :event (ast:event-name ast)))
 
-    ((? ast:action?) (make <action> 
+    ((? ast:action?) (make <action>
                        :trigger (ast->gom (ast:trigger ast))))
-    ((? ast:assign?) (make <assign> 
+    ((? ast:assign?) (make <assign>
                        :identifier (ast:identifier ast)
-                       :expression (make <expression> 
+                       :expression (make <expression>
                                      :value (ast->gom (ast:expression ast)))))
-    ((? ast:guard?) (make <guard> 
-                       :expression (make <expression> 
+    ((? ast:guard?) (make <guard>
+                       :expression (make <expression>
                                      :value (ast->gom (ast:expression ast)))
                        :statement (ast->gom (ast:statement ast))))
     ((? ast:illegal?) (make <illegal>))
-    ((? ast:on?) (make <on> 
+    ((? ast:on?) (make <on>
                        :triggers (map ast->gom (ast:triggers ast))
                        :statement (ast->gom (ast:statement ast))))
 
@@ -206,9 +207,9 @@
 
 (define (ast->gom* ast)
   (match ast
-    ((? ast:action?) (make <action> 
+    ((? ast:action?) (make <action>
                        :trigger (ast->gom (ast:trigger ast))))
-    ((? ast:assign?) (make <assign> 
+    ((? ast:assign?) (make <assign>
                        :identifier (ast:identifier ast)
                        :expression (make <expression>
                                      :value (ast->gom* (ast:expression ast)))))
@@ -265,6 +266,6 @@
   (display #\) port))
 
 (define (ast-> ast)
-  (pretty-print (with-input-from-string 
-                    (with-output-to-string (lambda () (write (ast->gom ast)))) 
+  (pretty-print (with-input-from-string
+                    (with-output-to-string (lambda () (write (ast->gom ast))))
                   read)) "")

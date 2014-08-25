@@ -47,12 +47,12 @@
 (define plain-equal? equal?)
 (define (equal? actual expected)
   (plain-equal?
-       (with-input-from-string 
-              (with-output-to-string (lambda () 
+       (with-input-from-string
+              (with-output-to-string (lambda ()
                                        (write (ast->gom* actual))))
             read)
-          (with-input-from-string 
-              (with-output-to-string (lambda () 
+          (with-input-from-string
+              (with-output-to-string (lambda ()
                                        (write (ast->gom* expected))))
             read)))
 

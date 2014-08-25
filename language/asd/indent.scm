@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -45,7 +46,7 @@
         (let ((c (read-char port)))
           (cond
            ((eq? c *eof*) #f)
-           ((eq? c #\newline) 
+           ((eq? c #\newline)
             (display c)
             (eat-space port)
             (let ((c (read-char port)))
@@ -63,5 +64,5 @@
           (loop level)))))
 
 (define* (indent-string string :optional (step 2))
-  (with-output-to-string 
+  (with-output-to-string
     (lambda () (with-input-from-string string (lambda () (indent step))))))

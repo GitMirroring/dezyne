@@ -536,8 +536,8 @@
        (make <assign>  ;; <csp-assign>?
          ;; hmm? :flavour 'assign
          :identifier context
-           :expression 
-           (make <expression> :value 
+           :expression
+           (make <expression> :value
                  (context-assign context (.identifier o) expression)))))))
 
 (define (=>string ast src)
@@ -659,6 +659,6 @@
        (list "(\\ P',V' @ " channel "!" event-name channel-return " -> P'(V'))")))))
 
 (define-method (csp-transform ast (o <assign>) . rest)
-  (=>string 
+  (=>string
    ast
    (list "assign_(\\ (" (.identifier o) ") @ (" (.value (.expression o)) "))")))

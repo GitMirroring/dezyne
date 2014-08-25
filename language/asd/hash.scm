@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -27,7 +28,7 @@
   :use-module (language asd pretty-print)
   :use-module (language asd reader)
   :re-export (hash define-reader-ctor))
- 
+
 (define-reader-ctor 'hash
        (lambda elems
          (let ((table (make-hash-table)))
