@@ -50,6 +50,7 @@
 	   ast-transform*
 	   ast-transform-function-call
 	   ast-transform-return
+	   ast-transform-return*
 	   csp-expression->string
 	   csp-transform
 	   csp-transform*
@@ -257,19 +258,21 @@
 
 (define (prefix-illegal? statement)
   (match statement
-    (('compound tail ...) (let loop ((statements tail))
-                            (if (null? statements)
-                                #f
-                                (or (prefix-illegal? (car statements)) (loop (cdr statements))))))
+    (($ <compound>)
+     (let loop ((statements (.elements statement)))
+       (if (null? statements)
+           #f
+           (or (prefix-illegal? (car statements)) (loop (cdr statements))))))
     (('illegal) #t)
     (_ #f)))
 
 (define (prefix-reply? statement)
   (match statement
-    (('compound stat ...) (let loop ((statements stat))
-                            (if (null? statements)
-                                #f
-                                (or (prefix-reply? (car statements)) (loop (cdr statements))))))
+    (($ <compound>)
+     (let loop ((statements (.elements statement)))
+       (if (null? statements)
+           #f
+           (or (prefix-reply? (car statements)) (loop (cdr statements))))))
     (('guard expr stat)
      (prefix-reply? stat))
     (('on triggers stat)
@@ -345,31 +348,35 @@
       ((h ...) (map (lambda (x) (ast-transform-function-call ast x)) src))
       (_ src))))
 
-(define* (ast-transform-return ast src :optional (top? #t))
+(define (ast-transform-return ast src)
   (let* ((model (or (ast:interface ast) (ast:component ast)))
          (members (ast:member-names model)))
     (match src
-      (('compound t ...)
+      (($ <compound>)
        (let ((result
-	      (let loop ((statements (map (lambda (x) (ast-transform-return ast x #f)) t)))
+	      (let loop ((statements (map (lambda (x) (ast-transform-return ast x)) (.elements src))))
 		(if (null? statements)
 		    '()
 		    (cons (car statements) (loop (cdr statements)))))))
 	 (if (=1 (length result))
              (car result)
-	     (cons 'compound result))))
+	     (make <compound> :elements result))))
       (('on triggers stat)
        (let ((result (ast-transform-return ast stat)))
-	 (cond
-          ((equal? result '(compound))
-           (list 'on triggers (list 'compound (list 'eventreturn)) (list 'the-end members)))
-          ((equal? result '(skip))
+	 (match result
+          (($ <compound> '())
+           (list 'on triggers (make <compound> :elements (list (list 'eventreturn))) (list 'the-end members)))
+          (('skip)
            (list 'on triggers (list 'eventreturn) (list 'the-end members)))
-          ((prefix-reply? result)
-           (list 'on triggers (list 'compound result) (list 'the-end members)))
-          (else
-           (list 'on triggers (list 'compound result (list 'eventreturn)) (list 'the-end members))))))
+          ((? prefix-reply?)
+           (list 'on triggers (make <compound> :elements (list result)) (list 'the-end members)))
+          (_ (list 'on triggers (make <compound> :elements (list result (list 'eventreturn))) (list 'the-end members))))))
       (_ src))))
+
+(define (ast-transform-return* ast src)
+  (let ((ast* (ast->gom* ast))
+        (src* (ast->gom* src)))
+    (ast-transform-return ast* src*)))
 
 (define ((valued-action? port?) src)
   (match src
@@ -454,8 +461,8 @@
          (port? (lambda (port) (member port (map ast:name (ast:ports model)))))
          (valued-action? (valued-action? port?)))
     (match src
-      (('compound tail ...)
-       (let loop ((statements tail) (context context))
+      (($ <compound>)
+       (let loop ((statements (.elements src)) (context context))
 	 (if (null? statements)
 	     '()
              (let* ((statement (car statements))

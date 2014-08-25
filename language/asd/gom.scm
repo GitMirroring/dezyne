@@ -38,9 +38,11 @@
            <action>
            <assign>
            <ast>
+           <compound>
            <expression>
            <trigger>
 
+           .elements
            .event
            .expression
            .identifier
@@ -213,6 +215,8 @@
                        :identifier (ast:identifier ast)
                        :expression (make <expression>
                                      :value (ast->gom* (ast:expression ast)))))
+    ((? ast:statement-list?) (make <compound> 
+                               :elements (map ast->gom* (ast:body ast))))
     ((? ast:trigger?) (make <trigger>
                        :port (ast:port-name ast)
                        :event (ast:event-name ast)))

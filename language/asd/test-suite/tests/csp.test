@@ -40,7 +40,7 @@
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform-return i-ast ast-return-ast)
+          (ast-transform-return* i-ast ast-return-ast)
 
           ;; via:
           '(on (e)
@@ -73,7 +73,7 @@
          (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform-return
+          (ast-transform-return*
            i-ast
            '(compound
              (on (e)
