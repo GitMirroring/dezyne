@@ -22,6 +22,7 @@
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 pretty-print)
   :use-module (ice-9 match)
+  :use-module (srfi srfi-1)
 
   :use-module (language asd ast:)
   :use-module (language asd misc)
@@ -49,6 +50,12 @@
            .port
            .trigger
            .value
+
+
+           ;; utilities
+           gom:find-triggers
+           gom:statements-of-type
+           gom:statement
            ))
 
 (define-class <ast> ())
@@ -295,3 +302,72 @@
   (pretty-print (with-input-from-string
                     (with-output-to-string (lambda () (write (ast->gom ast))))
                   read)) "")
+
+
+;;;; utilities
+
+;;;; temporary hetorogenous AST compatibility
+(define (gom:class ast)
+  (match ast
+    ((? ast:enum?) 'type)
+    ((? ast:event?) 'event)
+    ((? ast:int?) 'type)
+    ((? ast:port?) 'port)
+    ((? ast:trigger?) 'trigger)
+    ((? ast:value?) 'value)
+    ((? ast:variable?) 'variable)
+    ('() #f)
+    (#f #f)
+    (($ <compound>) 'compound)
+    (_ (car ast))))
+
+(define-method (gom:trigger< (lhs <trigger>) (rhs <trigger>))
+  (if (and (not (.port lhs)) (not (.port rhs)))
+      (symbol< (.event lhs) (.event rhs))
+      (if
+       (and (symbol? (.port lhs)) (symbol? (.port rhs))
+            (list< (list (.port lhs) (.event lhs))
+                   (list (.port rhs) (.event rhs))))
+       (not (symbol? (.port lhs))))))
+
+(define* (gom:find-triggers ast :optional (found '()))
+  "Search for optional and inevitable."
+  (match ast
+    ((or (? ast:interface?) (? ast:component?))
+     (delete-duplicates (sort (gom:find-triggers (gom:statement (ast:behaviour ast))) gom:trigger<)))
+    (($ <compound>) (append (apply append (map gom:find-triggers (.elements ast))) found))
+    (('on t statement) (gom:find-triggers t))
+    (('trigger port event) ast)
+    (('triggers triggers ...) triggers)
+    (('guard expression statement) (gom:find-triggers statement found))
+    (('inevitable) ast)
+    (('optional) ast)
+    (('action x) '())
+    (('illegal) '())
+    (_ (throw 'match-error  (format #f "~a:gom:find-triggers: no match: ~a\n" (current-source-location) ast)))))
+
+(define (statement? ast)
+  (member (gom:class ast) '(action assign bind call compound guard if instance on reply variable return)))
+
+(define (gom:statement ast)
+  (match ast
+    ((? ast:system?) (or (find (lambda (x) (is-a? x <compound>)) (ast:body ast))))
+    ((? ast:model?) (or (null-is-#f (gom:statement (ast:behaviour ast))) (make <compound>)))
+    ((? ast:behaviour?) (or (find (lambda (x) (is-a? x <compound>)) (ast:body ast))
+                            (make <compound>)))
+    ((or (? ast:guard?) (? ast:on?)) (caddr ast))
+    ((? ast:function?) (cadddr ast))
+    (_ (throw 'match-error  (format #f "~a:gom:statement: no match: ~a\n" (current-source-location) ast)))))
+
+(define ((gom:statement-of-type type) statement)
+  (eq? (gom:class statement) type))
+
+(define ((gom:statements-of-type type) statement)
+  (match statement
+    ((? (gom:statement-of-type type)) (list statement))
+    (($ <compound>) (filter identity (apply append (map (gom:statements-of-type type) (.elements statement)))))
+    (('guard expr s) (filter identity ((gom:statements-of-type type) s)))
+    ((? statement?) '())
+    ('() '())
+    ((t ...) (filter identity (apply append (map (gom:statements-of-type type) t))))
+    (_ (throw 'match-error  (format #f "~a:gom:statements-of-type, type: ~a: no match: ~a\n" (current-source-location) type statement)))))

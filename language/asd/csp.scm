@@ -60,10 +60,11 @@
            ))
 
 (define (ast-> ast)
-  (let* ((norm (normstate (if (member (ast:name (ast:component ast))
-                                     '(mangle argument2))
-                             (ast:mangle ast)
-                              ast))))
+  (let* ((norm (ast->gom*
+                (normstate (if (member (ast:name (ast:component ast))
+                                       '(mangle argument2))
+                               (ast:mangle ast)
+                               ast)))))
     (ast:register norm #t)
     (module-define! (resolve-module '(language asd csp)) 'ast norm)  ;; FIXME
     (and-let* ((comp (ast:component norm))
@@ -104,7 +105,7 @@
     ((interface livelock) . ,(gulp-file 'templates/asserts/interface-livelock.csp.scm))))
 
 (define (ast-norm model-name)
-  (ast:ast model-name normstate))
+  (ast:ast model-name (compose normstate ast->gom*)))
 
 (define (csp-module ast)
   (let ((module (make-module 31 (list
@@ -208,7 +209,7 @@
   (let* ((interface (ast-norm (ast:type port)))
          (events (map ast:name (ast:events interface)))
          (triggers (filter (lambda (x) (member x '(inevitable optional)))
-                           (ast:find-triggers interface))))
+                                      (map .event (gom:find-triggers interface)))))
     (sort (append events triggers) symbol<)))
 
 (define (interface-triggers interface)
@@ -319,7 +320,7 @@
 
 (define (optional-chaos port)
   (let ((interface (ast:type port)))
-    (if (member 'optional (ast:find-triggers (ast-norm (ast:type port))))
+    (if (member 'optional (map .event (gom:find-triggers (ast-norm (ast:type port)))))
         (list "[|{" interface " .optional}|] " "CHAOS({" interface " .optional})")
         "")))
 

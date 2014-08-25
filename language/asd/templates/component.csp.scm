@@ -23,7 +23,7 @@
 ;;; 
 ;;; Code:
 
--- drop_one_local: V => V 
+-- drop_one_local: V => V
 drop_one_local_((M', (L', L0'))) = (M', L')
 
 -- send_: (c: channel, e:event) => (P,V)->Proc
@@ -39,7 +39,7 @@ callvoid_args_(B',F') = \P',V' @ B'(P', V', F')
 -- assign_: (F': V -> V) => (P,V) -> Proc
 assign_(F') = \ P', V' @ P'(F'(V'))
 -- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
-assign_active_(C', A') = \P',V' @ C'(\((M', r'),L') @ P'(A'((M',L'),r')), V') 
+assign_active_(C', A') = \P',V' @ C'(\((M', r'),L') @ P'(A'((M',L'),r')), V')
 -- returnvalue_: (F: V->val) => (P,V)->Proc
 returnvalue_(F') = \P',(M',L') @ P'(((M',  F'((M', L'))), L'))
 -- the_end_: P => V->Proc
@@ -48,12 +48,12 @@ the_end_(P') = \V' @ transition_end -> P'(V')
 -- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
 semi_(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
 -- ifthenelse: (E': val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
-ifthenelse_(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')   
+ifthenelse_(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')
 -- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
 context_(F', S') = \ P', (M', L') @ S'((\V2' @ P'(drop_one_local_(V2'))), (M', (L', F'((M', L')))))
 -- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
 context_active_(C', S') = \P',V' @ C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
-                                                     
+
 datatype event_enumeration_alphabet =
 #(pipe-join (append
              (delete-duplicates
@@ -77,8 +77,8 @@ channel #.interface : {#(comma-join (append (interface-triggers interface) (retu
 #.interface _#.behaviour _(((# (comma-join (map ast:name ((compose ast:variables ast:behaviour ast-norm) .interface)))),stack')) =
 # (map-guards #{(# (csp-expression->string (ast:ast .interface) (ast:expression guard))) & (
 # ((->join "\n  []\n  ") (map (lambda (on) (csp-transform (ast:ast .interface) (ast-transform (ast:ast .interface) on)))
-   ((ast:statements-of-type 'on) (ast:statement guard)))))
-#} (reverse ((ast:statements-of-type 'guard) (ast:statement (ast:behaviour (ast-norm .interface))))))
+   ((gom:statements-of-type 'on) (gom:statement guard)))))
+#} (reverse ((gom:statements-of-type 'guard) (gom:statement (ast:behaviour (ast-norm .interface))))))
 within #.interface _#.behaviour _(((#(comma-join (map (lambda (x) (value (ast:expression x))) ((compose ast:variables ast:behaviour ast-norm) .interface)))),<>)) #.optional-chaos
 
 #} ((compose ast:ports ast:component) ast))
@@ -88,9 +88,9 @@ within #.interface _#.behaviour _(((#(comma-join (map (lambda (x) (value (ast:ex
 # (map-guards #{ (# (csp-expression->string component (ast:expression guard))) & (
 # ((->join "\n  []\n  ") (map (lambda (on) (csp-transform component (ast-transform component on)))
     (append
-      (filter identity (map (statement-on-p/r (provides? component)) ((ast:statements-of-type 'on) (ast:statement guard))))
-      (filter identity (map (statement-on-p/r (requires? component)) ((ast:statements-of-type 'on) (ast:statement guard))))))))
-#} (reverse ((ast:statements-of-type 'guard) ((compose ast:statement ast:behaviour ast:component) ast)))))
+      (filter identity (map (statement-on-p/r (provides? component)) ((gom:statements-of-type 'on) (gom:statement guard))))
+      (filter identity (map (statement-on-p/r (requires? component)) ((gom:statements-of-type 'on) (gom:statement guard))))))))
+#} (reverse ((gom:statements-of-type 'guard) ((compose gom:statement ast:behaviour ast:component) ast)))))
 within #.component _#.behaviour _(((#(comma-join (map (lambda (x) (value (ast:expression x))) ((compose ast:variables ast:behaviour ast:component) ast)))),<>))
 
 channel extensions_over_empty_channels_is_undefined
