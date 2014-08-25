@@ -61,7 +61,7 @@
 (pass-if "csp-transform-return"
          (diff-noisy-equal?
 
-          ;; from:
+          ;; from/via:
           (csp-transform* i-ast csp-return-ast)
 
           ;; to:

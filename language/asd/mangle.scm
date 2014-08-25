@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -42,7 +43,7 @@
     (('requires name event) (ast:make 'requires (list ((prefix 'if) name) ((prefix 'po) event))))
     ;; Do we need this for LOPW? (('variable type name expression) (list 'variable type ((prefix 'va) name) expression))
     ;; FIXME: type interface trigger (on ((trigger #f x)) statemnt)?
-    (('on ((? ast:trigger?) ...) statement) (ast:make 'on (list (map mangle (ast:triggers ast)) (mangle statement))))
+    (('on ('triggers (? ast:trigger?) ...) statement) (ast:make 'on (make 'triggers (map mangle (ast:triggers ast)) (mangle statement))))
     (('trigger port event) (ast:make 'trigger (list (if port ((prefix 'po) port) #f) ((prefix 'ev) event))))
     (('illegal) ast)
     (('action (? ast:trigger?)) (ast:make 'action (list (mangle (ast:trigger ast)))))

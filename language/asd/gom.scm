@@ -95,6 +95,7 @@
 (define-class <compound> (<ast-list> <statement>))
 (define-class <events> (<ast-list>))
 (define-class <ports> (<ast-list>))
+(define-class <triggers> (<ast-list>))
 (define-class <types> (<ast-list>))
 (define-class <variables> (<ast-list>))
 
@@ -133,7 +134,7 @@
   (type :accessor .type :init-value #f :init-keyword :type)
   (field :accessor .field :init-value #f :init-keyword :field))
 
-(define (ast->gom ast)
+(define (ast->gom- ast)
   (match ast
     ((? ast:interface?) (make <interface>
                           :name (ast:name ast)
@@ -167,12 +168,14 @@
                                :elements (map ast->gom (ast:body ast))))
     ((? ast:port-list?) (make <ports>
                           :elements (map ast->gom (ast:body ast))))
+    ((? ast:statement-list?) (make <compound>
+                               :elements (map ast->gom (ast:body ast))))
+    ((? ast:trigger-list?) (make <triggers>
+                             :elements (map ast->gom (ast:body ast))))
     ((? ast:type-list?) (make <types>
                           :elements (map ast->gom (ast:body ast))))
     ((? ast:variable-list?) (make <variables>
                           :elements (map ast->gom (ast:body ast))))
-    ((? ast:statement-list?) (make <compound>
-                               :elements (map ast->gom (ast:body ast))))
 
     ((? ast:signature?) (make <signature>
                           :type (ast:type ast)
@@ -207,7 +210,23 @@
     ((h t ...) (map ast->gom ast))
     (_ ast)))
 
-(define (ast->gom* ast)
+(define (ast->sugar ast)
+  (match ast
+    (('on ('triggers t ...) statement the-end ...) ast)
+    (('on triggers statement) (ast:make 'on (list (ast:make 'triggers (map ast->trigger-sugar triggers)) statement)))
+    (('on triggers statement the-end) (list 'on (ast:make 'triggers (map ast->trigger-sugar triggers)) statement the-end))
+    (_ ast)))
+
+(define (ast->trigger-sugar ast)
+  (match ast
+    ((port event) (ast:make 'trigger ast))
+    ((? symbol?) (ast:make 'trigger (list #f ast)))
+    (_ ast)))
+
+(define (ast->gom ast)
+  ((compose ast->gom- ast->sugar) ast))
+
+(define (ast->gom*- ast)
   (match ast
     ((? ast:action?) (make <action>
                        :trigger (ast->gom (ast:trigger ast))))
@@ -215,13 +234,16 @@
                        :identifier (ast:identifier ast)
                        :expression (make <expression>
                                      :value (ast->gom* (ast:expression ast)))))
-    ((? ast:statement-list?) (make <compound> 
+    ((? ast:statement-list?) (make <compound>
                                :elements (map ast->gom* (ast:body ast))))
     ((? ast:trigger?) (make <trigger>
                        :port (ast:port-name ast)
                        :event (ast:event-name ast)))
     ((h t ...) (map ast->gom* ast))
     (_ ast)))
+
+(define (ast->gom* ast)
+  ((compose ast->gom*- ast->sugar) ast))
 
 ;; AST printing
 (define (star port) (display #\* port))

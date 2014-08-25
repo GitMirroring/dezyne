@@ -74,18 +74,20 @@
       (('signature type parameters ...) ast)
       (('parameter type name) ast)
       (('ports p ...) ast)
+      (('triggers t ...) ast)
       (('provides type name) ast)
       (('value type field) ast)
       (('variables v ...) ast)
       (('variable type name value ...) ast)
       (('requires type name) ast)
       (('trigger port event) ast)
-      (('inevitable) ast)
-      (('optional) ast)
+      ('(inevitable) (ast:make 'trigger '(#f inevitable)))
+      (('optional) (ast:make 'trigger '(#f optional)))
       (('guard expression statement) ast)
       (('on (trigger t ...) statement) ast)
       (('on () statement) ast)
-      (('illegal) ast)
+      ('illegal '(illegal))
+      (('illegal) '(illegal))
       (('action ('illegal)) (cadr ast))
       (('action ('trigger port-name event-name)) ast)
       (('assign name expression) ast)
@@ -343,9 +345,9 @@
     (on trigger-spec colon statement) : (make $1 `(,$2 ,$4) @1))
 
    (trigger-spec
-    (trigger-list) : $1
-    (optional) : (make $1 '() @1)
-    (inevitable) : (make $1 '() @1))
+    (trigger-list) : (make 'triggers $1 @1)
+    (optional) : (make 'triggers (list (make $1 '() @1)) @1)
+    (inevitable) : (make 'triggers (list (make $1 '() @1)) @1))
 
    (trigger-list
     (trigger) : `(,$1)

@@ -250,7 +250,7 @@
          (events-predicate (filter predicate events))
          (statement (ast:statement statement-on)))
   (if (pair? events-predicate)
-      (ast:make 'on (list events-predicate statement))
+      (ast:make 'on (list (ast:make 'triggers (list events-predicate)) statement))
       #f)))
 
 (define (event->string event)
@@ -567,8 +567,7 @@
          (component? (ast:component? model)))
     (=>string ast
      (match src
-       ;;(('on triggers stat) (animate-string "#model-name ?x:{#triggers } -> "))
-       (('on triggers stat ...)
+       (('on ('triggers triggers ...) stat ...)
         (let* ((inevitable-optional? (or (member 'inevitable (map ast:event-name triggers))
                                          (member 'optional (map ast:event-name triggers))))
                (ig? (and (pair? stat) (eq? (car stat) 'IG)))

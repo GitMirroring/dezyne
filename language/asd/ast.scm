@@ -271,8 +271,11 @@
            system?
            to
            trigger
+           trigger-list
+           trigger-list?
            trigger?
            triggers
+           triggers?
            type
            type-list
            type-list?
@@ -302,6 +305,7 @@
 (define (function-list ast) (element ast 'functions))
 (define (parameter-list ast) (or (assoc 'parameters (body ast)) '()))
 (define (port-list ast) (element ast 'ports))
+(define (trigger-list ast) (element ast 'triggers))
 (define (type-list ast) (element ast 'types))
 (define (variable-list ast) (element ast 'variables))
 
@@ -312,6 +316,8 @@
          (case type
            ((event) (member head '(in out)))
            ((port) (member head '(provides requires)))
+           ((trigger) (or (member head '(inevitable optional))
+                          (eq? head type)))
          (else (eq? head type))))))
 
 (define (action? ast) (type-helper? 'action ast))
@@ -352,6 +358,8 @@
 (define statement-list? compound?)
 (define (system? ast) (type-helper? 'system ast))
 (define (trigger? ast) (type-helper? 'trigger ast))
+(define (trigger-list? ast) (type-helper? 'triggers ast))
+(define (triggers? ast) (type-helper? 'triggers ast))
 (define (type-list? ast) (type-helper? 'types ast))
 (define (type? ast) (type-helper? 'type ast))
 (define (types? ast) (type-helper? 'types ast))
@@ -367,7 +375,7 @@
   (match ast
     ((or (? behaviour?) (? model?))
      (or (and (>2 (length ast)) (cddr ast)) '()))
-    ((or  (? arguments?) (? compound?) (? events?) (? functions?) (? guard?) (? imports?) (? on?) (? parameters?) (? ports?) (? signature?) (? types?) (? variables?))
+    ((or  (? arguments?) (? compound?) (? events?) (? functions?) (? guard?) (? imports?) (? on?) (? parameters?) (? ports?) (? signature?) (? triggers?) (? types?) (? variables?))
      (cdr ast))
     ;; be permissive for events, imports ports, types, variable
     ((('in type name) t ...) ast)
@@ -457,6 +465,7 @@
   (match ast
     ((? action?) (cadr ast))
     ((? symbol?) ast)
+    ((or ('inevitable) ('optional)) (car ast))
     ((? trigger?) (caddr ast))
     (_ (throw 'match-error  (format #f "~a:event-name: no match: ~a\n" (current-source-location) ast)))))
 
@@ -529,10 +538,11 @@
 
 (define (triggers ast)
   (match ast
-    ((? interface?) (events ast))
+    ((? interface?) (stderr "deprecated: use events\n") (events ast))
     ((? component?) (triggers (statement ast)))
-    ((? on?) (cadr ast))
-    ((? port?) (events ast))
+    ((? on?) (triggers (cadr ast)))
+    ((? trigger-list?) (body ast))
+    ((? port?) (stderr "deprecated: use events\n") (events ast))
     ((? compound?) (apply append (map triggers ((statements-of-type 'on) ast))))
     (_ (throw 'match-error  (format #f "~a:triggers: no match: ~a\n" (current-source-location) ast)))))
 
@@ -561,7 +571,7 @@
   (match ast
     ((? action?) (cadr ast))
     ((? port?) (name ast))
-    ((or 'inevitable 'optional) #f)
+    ((or ('inevitable) ('optional)) #f)
     ((? trigger?) (cadr ast))
     (_ (throw 'match-error  (format #f "~a:port-name: no match: ~a\n" (current-source-location) ast)))))
 
@@ -771,7 +781,7 @@
 ;;; walkers
 
 (define ((statement-of-type type) statement)
-  (and (pair? statement) (eq? (car statement) type) statement))
+  (eq? (class statement) type))
 
 (define ((statements-of-type type) statement)
   (match statement
@@ -812,11 +822,12 @@
     ((or (? interface?) (? component?))
      (delete-duplicates (sort (find-triggers (statement (behaviour ast))) trigger<)))
     (('compound t ...) (append (apply append (map find-triggers t)) found))
-    (('on t statement) (map find-triggers t))
+    (('on t statement) (find-triggers t))
     (('trigger port event) ast)
+    (('triggers triggers ...) triggers)
     (('guard expression statement) (find-triggers statement found))
-    ('inevitable ast)
-    ('optional ast)
+    (('inevitable) ast)
+    (('optional) ast)
     (('action x) '())
     (('illegal) '())
     (_ (throw 'match-error  (format #f "~a:find-triggers: no match: ~a\n" (current-source-location) ast)))))

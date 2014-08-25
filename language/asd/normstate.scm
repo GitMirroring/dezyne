@@ -60,7 +60,7 @@
                          (partition (lambda (x) (on-equal? (car ons) x)) ons)
                        (let* ((triggers (apply append (map ast:triggers shared-ons)))
                               (statement (ast:statement (car ons)))
-                              (aggregated-on (ast:make 'on (list triggers statement))))
+                              (aggregated-on (ast:make 'on (list (ast:make 'triggers triggers) statement))))
                          (cons aggregated-on (loop remainder))))))))
     (('functions f ...) ast)
     ((h ...) (map aggregate-on ast))
@@ -82,14 +82,14 @@
 
 (define (port-split-triggers ast)
   (match ast
-    (('on triggers statement)
-     (let loop ((triggers (cadr ast)))
+    (('on ('triggers triggers ...) statement)
+     (let loop ((triggers triggers))
        (if (null? triggers)
            '()
            (receive (shared-triggers remainder)
                (partition (lambda (x) (port-equal? (car triggers) x)) triggers)
              (let* ((triggers (append shared-triggers))
-                    (shared-on (ast:make 'on (list triggers statement))))
+                    (shared-on (ast:make 'on (list (ast:make 'triggers triggers) statement))))
                (cons shared-on (loop remainder)))))))
     (_ ast)))
 
@@ -173,12 +173,12 @@
 
 (define (passdown-on ast)
   (match ast
-    (('on triggers statement) ((passdown-triggers triggers) statement)) ; match on
-    ((h ...) (map passdown-on ast))                                     ; match any list
-    (_, ast)))                                                          ; match anything
+    (('on ('triggers triggers ...) statement) ((passdown-triggers triggers) statement))
+    ((h ...) (map passdown-on ast))
+    (_, ast)))
 
 (define ((passdown-triggers triggers) statement)
   (match statement
     (('compound ('guard g s) ...) (ast:make 'compound (map (passdown-triggers triggers) (cdr statement))))
     (('guard g s) (ast:make 'guard (list g ((passdown-triggers triggers) s))))
-    (_ (ast:make 'on (list triggers statement)))))
+    (_ (ast:make 'on (list (ast:make 'triggers triggers) statement)))))
