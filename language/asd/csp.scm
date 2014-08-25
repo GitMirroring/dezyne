@@ -110,7 +110,7 @@
               (module-define! module 'component comp)
               (module-define! module '.interface (ast:name (ast:type (car (filter ast:provides? (ast:ports comp))))))
 	      (module-define! module '.behaviour (ast:name (ast:behaviour comp)))
-          (module-define! module '.interface-behaviour (ast:name (ast:behaviour (ast:interface ast))))
+              (module-define! module '.interface-behaviour (ast:name (ast:behaviour (ast-norm (ast:type (ast:port (ast:component ast)))))))
 	      (module-define! module '.port (ast:name (ast:port comp))))
     module))
 
