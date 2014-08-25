@@ -250,7 +250,7 @@
          (events-predicate (filter predicate events))
          (statement (ast:statement statement-on)))
   (if (pair? events-predicate)
-      (ast:make 'on (list (ast:make 'triggers (list events-predicate)) statement))
+      (ast:make 'on (list (ast:make 'triggers events-predicate) statement))
       #f)))
 
 (define (event->string event)
