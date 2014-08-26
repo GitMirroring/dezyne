@@ -35,20 +35,25 @@
            ast->
            ast->gom
            ast->gom*
+           ast->sugar
 
            <action>
            <assign>
            <ast>
            <compound>
            <expression>
+           <on>
            <trigger>
+           <triggers>
 
            .elements
            .event
            .expression
            .identifier
            .port
+           .statement
            .trigger
+           .triggers
            .value
 
 
@@ -211,7 +216,7 @@
                        :statement (ast->gom (ast:statement ast))))
     ((? ast:illegal?) (make <illegal>))
     ((? ast:on?) (make <on>
-                       :triggers (map ast->gom (ast:triggers ast))
+                       :triggers (ast->gom (ast:trigger-list ast))
                        :statement (ast->gom (ast:statement ast))))
 
     ((? ast:value?) (make <value>
@@ -239,16 +244,21 @@
 (define (ast->gom*- ast)
   (match ast
     ((? ast:action?) (make <action>
-                       :trigger (ast->gom (ast:trigger ast))))
+                       :trigger (ast->gom* (ast:trigger ast))))
     ((? ast:assign?) (make <assign>
                        :identifier (ast:identifier ast)
                        :expression (make <expression>
                                      :value (ast->gom* (ast:expression ast)))))
+    ((? ast:on?) (make <on>
+                       :triggers (ast->gom* (ast:trigger-list ast))
+                       :statement (ast->gom* (ast:statement ast))))
     ((? ast:statement-list?) (make <compound>
                                :elements (map ast->gom* (ast:body ast))))
     ((? ast:trigger?) (make <trigger>
                        :port (ast:port-name ast)
                        :event (ast:event-name ast)))
+    ((? ast:trigger-list?) (make <triggers>
+                             :elements (map ast->gom (ast:body ast))))
     ((h t ...) (map ast->gom* ast))
     (_ ast)))
 
@@ -322,6 +332,7 @@
     ('() #f)
     (#f #f)
     (($ <compound>) 'compound)
+    (($ <on>) 'on)
     (_ (car ast))))
 
 (define-method (gom:trigger< (lhs <trigger>) (rhs <trigger>))
@@ -339,9 +350,9 @@
     ((or (? ast:interface?) (? ast:component?))
      (delete-duplicates (sort (gom:find-triggers (gom:statement (ast:behaviour ast))) gom:trigger<)))
     (($ <compound>) (append (apply append (map gom:find-triggers (.elements ast))) found))
-    (('on t statement) (gom:find-triggers t))
-    (('trigger port event) ast)
-    (('triggers triggers ...) triggers)
+    (($ <on>) (gom:find-triggers (.triggers ast)))
+;;    (($ <trigger>) (list ast))
+    (($ <triggers>) (.elements ast))
     (('guard expression statement) (gom:find-triggers statement found))
     (('inevitable) ast)
     (('optional) ast)
