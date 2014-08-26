@@ -75,7 +75,7 @@ channel #.interface : {#(comma-join (append (interface-events interface) (return
 #.interface _#.behaviour(IG) = let
 # (->string (map (lambda (x) (csp-transform interface (ast-transform interface x))) (ast:functions (ast:behaviour interface))))
 #.interface _#.behaviour _((#(context->csp ast (make-context ((compose ast:member-names ast-norm) .interface) '())))) =
-# (ibehaviour->csp
+# (behaviour->csp
  (ast-norm .interface)
  (->string (list .interface '_ .behaviour '_ "((" (context->csp ast (make-context ((compose ast:member-names ast-norm) .interface) '())) "))" )))
 
