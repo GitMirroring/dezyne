@@ -33,134 +33,134 @@
 (pass-if "animate-first-dummy-test"
          #t)
 
-(pass-if "animate-string"
-  (noisy-equal?
-   (catch #t
-     (lambda ()
-       (with-error-to-port
-           (open-output-file "/dev/null")
-         (lambda ()
-           (with-output-to-string
-             (lambda ()
-               (animate-string "0123#boe rest of line"))))))
-     (lambda (key . args)
-       (let* ((tell (assoc-ref (car args) 'tell))
-              (line (assoc-ref (car args) 'line)))
-         (cons tell line))))
-   '((8) . " rest of line")))
+;; (pass-if "animate-string"
+;;   (noisy-equal?
+;;    (catch #t
+;;      (lambda ()
+;;        (with-error-to-port
+;;            (open-output-file "/dev/null")
+;;          (lambda ()
+;;            (with-output-to-string
+;;              (lambda ()
+;;                (animate-string "0123#boe rest of line"))))))
+;;      (lambda (key . args)
+;;        (let* ((tell (assoc-ref (car args) 'tell))
+;;               (line (assoc-ref (car args) 'line)))
+;;          (cons tell line))))
+;;    '((8) . " rest of line")))
 
-(pass-if "animate-string-lines"
-  (noisy-equal?
-   (catch #t
-     (lambda ()
-       (with-error-to-port
-           (open-output-file "/dev/null")
-         (lambda ()
-           (with-output-to-string
-             (lambda ()
-               (with-input-from-string
-                   #{1
-                     2
-                     3
-                     lala #boe rest of line
-                     5
-                     #}
-                 (lambda ()
-                   (animate-input (current-module)))))))))
-     (lambda (key message . rest)
-       message))
-   "<input>:4:30: parse error: Unbound variable: boe
-                     lala #boe
-                               rest of line...
-"))
+;; (pass-if "animate-string-lines"
+;;   (noisy-equal?
+;;    (catch #t
+;;      (lambda ()
+;;        (with-error-to-port
+;;            (open-output-file "/dev/null")
+;;          (lambda ()
+;;            (with-output-to-string
+;;              (lambda ()
+;;                (with-input-from-string
+;;                    #{1
+;;                      2
+;;                      3
+;;                      lala #boe rest of line
+;;                      5
+;;                      #}
+;;                  (lambda ()
+;;                    (animate-input (current-module)))))))))
+;;      (lambda (key message . rest)
+;;        message))
+;;    "<input>:4:30: parse error: Unbound variable: boe
+;;                      lala #boe
+;;                                rest of line...
+;; "))
 
-(pass-if "animate-string-lines-nested"
-  (noisy-equal?
-   (catch #t
-     (lambda ()
-       (with-error-to-port
-           (open-output-file "/dev/null")
-         (lambda ()
-          (with-output-to-string
-            (lambda ()
-              (with-input-from-string
-                  #{1
-                    2
-                    3
-                    #(string-if #t
-                                #{
-                                  6
-                                  lala #boe rest of line
-                                  #})
-                    9
-                    #}
-                (lambda ()
-                  (animate-input (current-module)))))))))
-     (lambda (key message)
-          message))
-   "<input>:7:43: parse error: Unbound variable: boe
-                                  lala #boe
-                                            rest of line...
-"))
+;; (pass-if "animate-string-lines-nested"
+;;   (noisy-equal?
+;;    (catch #t
+;;      (lambda ()
+;;        (with-error-to-port
+;;            (open-output-file "/dev/null")
+;;          (lambda ()
+;;           (with-output-to-string
+;;             (lambda ()
+;;               (with-input-from-string
+;;                   #{1
+;;                     2
+;;                     3
+;;                     #(string-if #t
+;;                                 #{
+;;                                   6
+;;                                   lala #boe rest of line
+;;                                   #})
+;;                     9
+;;                     #}
+;;                 (lambda ()
+;;                   (animate-input (current-module)))))))))
+;;      (lambda (key message)
+;;           message))
+;;    "<input>:7:43: parse error: Unbound variable: boe
+;;                                   lala #boe
+;;                                             rest of line...
+;; "))
 
-(pass-if "animate-string-lines-nested-string-if"
-  (noisy-equal?
-   (catch #t
-     (lambda ()
-       (with-error-to-port
-           (open-output-file "/dev/null")
-         (lambda ()
-          (with-output-to-string
-            (lambda ()
-              (with-input-from-string
-                  #{1
-                    2
-                    3
-                    #(string-if #t
-                                #{
-                                  6
-                                  lala #boe rest of line
-                                  #}
-                                #{ (list 'foo bar baz) #}
-                                )
-                    9
-                    #}
-                (lambda ()
-                  (animate-input (current-module)))))))))
-     (lambda (key message)
-          message))
-   "<input>:7:43: parse error: Unbound variable: boe
-                                  lala #boe
-                                            rest of line...
-"))
+;; (pass-if "animate-string-lines-nested-string-if"
+;;   (noisy-equal?
+;;    (catch #t
+;;      (lambda ()
+;;        (with-error-to-port
+;;            (open-output-file "/dev/null")
+;;          (lambda ()
+;;           (with-output-to-string
+;;             (lambda ()
+;;               (with-input-from-string
+;;                   #{1
+;;                     2
+;;                     3
+;;                     #(string-if #t
+;;                                 #{
+;;                                   6
+;;                                   lala #boe rest of line
+;;                                   #}
+;;                                 #{ (list 'foo bar baz) #}
+;;                                 )
+;;                     9
+;;                     #}
+;;                 (lambda ()
+;;                   (animate-input (current-module)))))))))
+;;      (lambda (key message)
+;;           message))
+;;    "<input>:7:43: parse error: Unbound variable: boe
+;;                                   lala #boe
+;;                                             rest of line...
+;; "))
 
-(pass-if "animate-string-lines-nested-string-if-else"
-  (noisy-equal?
-   (catch #t
-     (lambda ()
-       (with-error-to-port
-           (open-output-file "/dev/null")
-         (lambda ()
-          (with-output-to-string
-            (lambda ()
-              (with-input-from-string
-                  #{1
-                    2
-                    3
-                    #(string-if #f
-                                #{
-                                  6
-                                  lala boe rest of line
-                                  #}
-                                #{ (list 'foo #bar baz) #}
-                                )
-                    9
-                    #}
-                (lambda ()
-                  (animate-input (current-module)))))))))
-     (lambda (key message)
-          message))
-   "<input>:9:50: parse error: Unbound variable: bar
-                                #{ (list 'foo #bar
-                                                   baz) #}...
-"))
+;; (pass-if "animate-string-lines-nested-string-if-else"
+;;   (noisy-equal?
+;;    (catch #t
+;;      (lambda ()
+;;        (with-error-to-port
+;;            (open-output-file "/dev/null")
+;;          (lambda ()
+;;           (with-output-to-string
+;;             (lambda ()
+;;               (with-input-from-string
+;;                   #{1
+;;                     2
+;;                     3
+;;                     #(string-if #f
+;;                                 #{
+;;                                   6
+;;                                   lala boe rest of line
+;;                                   #}
+;;                                 #{ (list 'foo #bar baz) #}
+;;                                 )
+;;                     9
+;;                     #}
+;;                 (lambda ()
+;;                   (animate-input (current-module)))))))))
+;;      (lambda (key message)
+;;           message))
+;;    "<input>:9:50: parse error: Unbound variable: bar
+;;                                 #{ (list 'foo #bar
+;;                                                    baz) #}...
+;; "))
