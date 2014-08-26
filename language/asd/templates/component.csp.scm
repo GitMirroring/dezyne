@@ -58,7 +58,7 @@ datatype event_enumeration_alphabet =
 #(pipe-join (append
              (delete-duplicates
               (sort
-               (append (apply append (map port-triggers ((compose ast:ports ast:component) ast)))
+               (append (apply append (map port-events ((compose ast:ports ast:component) ast)))
                        (enum-values (ast:component ast))
                        (return-values (ast:component ast)))
              symbol<))))
@@ -66,10 +66,10 @@ datatype event_enumeration_alphabet =
 channel illegal
 
 # (map-ports #{
-channel #.port : {#(comma-join (append (port-triggers port) (return-values-port port)))}
+channel #.port : {#(comma-join (append (port-events port) (return-values-port port)))}
 #} ((compose ast:ports ast:component) ast))
 # (map-interfaces #{
-channel #.interface : {#(comma-join (append (interface-triggers interface) (return-values-interface interface)))}
+channel #.interface : {#(comma-join (append (interface-events interface) (return-values-interface interface)))}
 #} (delete-duplicates (map ast:type ((compose ast:ports ast:component) ast))))
   # (map-ports #{
 #.interface _#.behaviour(IG) = let
@@ -146,7 +146,7 @@ Exclude = {#
 #{#(comma-join (map (lambda (x) (list .port "." (ast:name x))) (filter ast:out? (ast:events port)))) #}
    (filter ast:provides? ((compose ast:ports ast:component) ast)))
  (map-ports
-#{#(comma-join (map (lambda (x) (list .port "." x)) (filter (lambda (x) (member x '(inevitable optional))) (port-triggers port)))) #}
+#{#(comma-join (map (lambda (x) (list .port "." x)) (filter (lambda (x) (member x '(inevitable optional))) (port-events port)))) #}
    ((compose ast:ports ast:component) ast) ",")))}
 ClientCalls = {#
  (map-ports
@@ -154,7 +154,7 @@ ClientCalls = {#
    (filter ast:provides? ((compose ast:ports ast:component) ast)))}
 UsedModeling = {#
  (map-ports
-#{#(comma-join (map (lambda (x) (list .port "." x)) (filter (lambda (x) (member x '(inevitable optional))) (port-triggers port)))) #}
+#{#(comma-join (map (lambda (x) (list .port "." x)) (filter (lambda (x) (member x '(inevitable optional))) (port-events port)))) #}
    (filter ast:requires? ((compose ast:ports ast:component) ast)) ",")}
 within compress((#.component _#.behaviour (IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,#(comma-join (map ast:name ((compose ast:ports ast:component) ast)))|},Exclude)|]

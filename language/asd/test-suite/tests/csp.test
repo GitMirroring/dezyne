@@ -82,8 +82,7 @@
           ;; via:
           '(on (e)
                (compound
-                (reply (value Status Yes))
-                (eventreturn))
+                (reply (value Status Yes)))
                (the-end (s b c)))))
 
 (pass-if "csp-transform-return-reply"
@@ -121,7 +120,7 @@ skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
 
           ;; via:
           '(on (e)
-                (semi (reply (value Status Yes)) (eventreturn))
+               (reply (value Status Yes))
                (the-end (s b c)))))
 
 (pass-if "ast-transform-compound-reply"
@@ -139,7 +138,7 @@ skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
 
           ;; via:
           '(on (e)
-                (semi (reply (value Status Yes)) (eventreturn))
+               (reply (value Status Yes))
                (the-end (s b c)))))
 
 (pass-if "csp-transform-reply"
@@ -958,14 +957,13 @@ context_active_(\\ P',V' @ g (P',V',\\ ((s,b,c),(stack')) @ (b,b)),
 
 (define csp-reply-variable-ast
   '(on ((trigger i done))
-    (semi (context-active
-           ((ctx ((dummy))) s (valued-action (trigger u what)))
-           (if (ctx ((dummy) s))
-               (expression (== s (literal u Status Ok)))
-               (reply (literal I Status Yes))
-               (reply (literal I Status No))))
-          (eventreturn))
-    (the-end (dummy))))
+       (context-active
+        ((ctx ((dummy))) s (valued-action (trigger u what)))
+        (if (ctx ((dummy) s))
+            (expression (== s (literal u Status Ok)))
+            (reply (literal I Status Yes))
+            (reply (literal I Status No))))
+       (the-end (dummy))))
 
 (pass-if "ast-transform-reply-variable"
          (pretty-noisy-equal?
@@ -997,12 +995,11 @@ context_active_(\\ P',V' @ g (P',V',\\ ((s,b,c),(stack')) @ (b,b)),
 
           ;; via:
           "i?x:{done} ->
-semi_(context_active_(sendrecv_(u,what),
+context_active_(sendrecv_(u,what),
 \\ P',((dummy),((stack',s))) @ ifthenelse_((s == Status_Ok),
 (\\ P',V' @ i.Status_Yes -> P'(V')),
 (\\ P',V' @ i.Status_No -> P'(V'))
-)(P',((dummy),((stack',s))))),
-(\\ P',V' @ i.return -> P'(V')))(\\ V' @ transition_end -> C__(V'),((dummy),(stack')))"))
+)(P',((dummy),((stack',s)))))(\\ V' @ transition_end -> C__(V'),((dummy),(stack')))"))
 
 ;; "
 
@@ -1335,13 +1332,13 @@ context_active_(sendrecv_(u,what),
          (diff-noisy-equal?
 
           ;; via/from:
-          (csp-transform* i-ast ast-transform-OM-PARSER-assign-action-via)
+          (csp-transform* c-ast ast-transform-OM-PARSER-assign-action-via)
 
           ;; to:
           "j?x:{done} ->
 semi_(assign_active_(sendrecv_(k,h),
 \\ (((s,b,c),(stack'))),r' @ ((s,b,c),(stack'))),
-(\\ P',V' @ i.return -> P'(V')))(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
+(\\ P',V' @ j.return -> P'(V')))(\\ V' @ transition_end -> c_B_(V'),((s,b,c),(stack')))"))
 
 ;; '
 

@@ -34,10 +34,13 @@ State_Calibrated | State_Error | State_Initialized | State_Uninitialized | calib
 
 channel illegal
 
-channel IComp,client: {initialize,perform_actions,recover,result_t_OK,result_t_NOK,return}
-channel IDevice,device_A: {calibrate,initialize,perform_action1,perform_action2,result_t_OK,result_t_NOK,return}
+channel client: {initialize,perform_actions,recover,result_t_OK,result_t_NOK,return}
+channel device_A: {calibrate,initialize,perform_action1,perform_action2,result_t_OK,result_t_NOK,return}
 
-IComp_(IG) = let
+channel IComp: {initialize,perform_actions,recover,result_t_OK,result_t_NOK,return}
+channel IDevice: {calibrate,initialize,perform_action1,perform_action2,result_t_OK,result_t_NOK,return}
+
+  IComp_(IG) = let
 
 IComp__(((s),stack')) =
 (((s == State_Uninitialized) and true)) & (
@@ -77,7 +80,7 @@ assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IComp__(V'),(
 IG & IComp?x:{initialize,perform_actions} ->
 illegal -> STOP)
 
-within IComp__(((State_Uninitialized),<>))
+within IComp__(((State_Uninitialized),<>)) 
 
 IDevice_(IG) = let
 
@@ -127,7 +130,7 @@ IDevice?x:{calibrate} ->
   IG & IDevice?x:{initialize} ->
 illegal -> STOP)
 
-within IDevice__(((State_Uninitialized),<>))
+within IDevice__(((State_Uninitialized),<>)) 
 
 
 Comp_(IIG,IG) = let

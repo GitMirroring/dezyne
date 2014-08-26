@@ -27,4 +27,4 @@ assert #.interface _#.interface-behaviour(true) [[#.interface .x<-#.port .x|x<-e
    (comma-join
        (map (lambda (x) (string-join (map ->string (list .port x)) ".")) (filter
          (lambda (x) (or (eq? x 'optional) (eq? x 'inevitable)))
-         (port-triggers port)))) #} (filter ast:provides? ((compose ast:ports ast:component) ast)))} [FD= #.component _#.behaviour _Component(true) \ diff(Events,{|illegal,#.port |})
+         (port-events port)))) #} (filter ast:provides? ((compose ast:ports ast:component) ast)))} [FD= #.component _#.behaviour _Component(true) \ diff(Events,{|illegal,#.port |})

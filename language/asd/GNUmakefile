@@ -240,77 +240,77 @@ csp: compile
 	$(diff) examples/Alarm.csp out || true
 	@$(diff) examples/Alarm.csp out | diffstat || true
 	$(CSPMCHECKER) out/Alarm.csp
-	! $(REFINES) out/Alarm.csp | grep -q ': Failed'
+	! $(REFINES) out/Alarm.csp | grep ': Failed'
 	@$(diff) examples/Alarm.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/imperative.asd
 	$(diff) examples/imperative.csp out || true
 	@$(diff) examples/imperative.csp out | diffstat || true
 	$(CSPMCHECKER) out/imperative.csp
-	! $(REFINES) out/imperative.csp | grep -q ': Failed'
+	! $(REFINES) out/imperative.csp | grep ': Failed'
 	@$(diff) examples/imperative.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/Reply.asd
 	$(diff) examples/Reply.csp out || true
 	@$(diff) examples/Reply.csp out | diffstat || true
 	$(CSPMCHECKER) out/Reply.csp
-	! $(REFINES) out/Reply.csp | grep -q ': Failed'
+	! $(REFINES) out/Reply.csp | grep ': Failed'
 	@$(diff) examples/Reply.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/function.asd
 	$(diff) examples/function.csp out || true
 	@$(diff) examples/function.csp out | diffstat || true
 	$(CSPMCHECKER) out/function.csp
-	! $(REFINES) out/function.csp | grep -q ': Failed'
+	! $(REFINES) out/function.csp | grep ': Failed'
 	@$(diff) examples/function.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/argument.asd
 	$(diff) examples/argument.csp out || true
 	@$(diff) examples/argument.csp out | diffstat || true
 	$(CSPMCHECKER) out/argument.csp
-	! $(REFINES) out/argument.csp | grep -q ': Failed'
+	! $(REFINES) out/argument.csp | grep ': Failed'
 	@$(diff) examples/argument.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/Reply2.asd
 	$(diff) examples/Reply2.csp out || true
 	@$(diff) examples/Reply2.csp out | diffstat || true
 	$(CSPMCHECKER) out/Reply2.csp
-	! $(REFINES) out/Reply2.csp | grep -q ': Failed'
+	! $(REFINES) out/Reply2.csp | grep ': Failed'
 	@$(diff) examples/Reply2.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/sugar.asd
 	$(diff) examples/sugar.csp out || true
 	@$(diff) examples/sugar.csp out | diffstat || true
 	$(CSPMCHECKER) out/sugar.csp
-	! $(REFINES) out/sugar.csp | grep -q ': Failed'
+	! $(REFINES) out/sugar.csp | grep ': Failed'
 	@$(diff) examples/sugar.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/Comp.asd
 	$(diff) examples/Comp.csp out
 	@$(diff) examples/Comp.csp out | diffstat || true
 	$(CSPMCHECKER) out/Comp.csp
-	! $(REFINES) out/Comp.csp | grep -q ': Failed'
+	! $(REFINES) out/Comp.csp | grep ': Failed'
 	@$(diff) examples/Comp.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/argument2.asd
 	$(diff) examples/argument2.csp out || true
 	@$(diff) examples/argument2.csp out | diffstat
 	$(CSPMCHECKER) out/argument2.csp
-	! $(REFINES) out/argument2.csp | grep -q ': Failed'
+	! $(REFINES) out/argument2.csp | grep ': Failed'
 	@$(diff) examples/argument2.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/hide.asd
 	$(diff) examples/hide.csp out || true
 	@$(diff) examples/hide.csp out | diffstat
 	$(CSPMCHECKER) out/hide.csp
-	! $(REFINES) out/hide.csp | grep -q ': Failed'
+	! $(REFINES) out/hide.csp | grep ': Failed'
 	@$(diff) examples/hide.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/expressions.asd
 	$(diff) examples/expressions.csp out || true
 	@$(diff) examples/expressions.csp out | diffstat
 	$(CSPMCHECKER) out/expressions.csp
-	! $(REFINES) out/expressions.csp | grep -q ': Failed'
+	! $(REFINES) out/expressions.csp | grep ': Failed'
 	@$(diff) examples/expressions.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/testBoolean.asd

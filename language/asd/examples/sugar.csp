@@ -34,9 +34,11 @@ Enum_False | Enum_True | a | e | return
 
 channel illegal
 
-channel I,i: {a,e,return}
+channel i: {a,e,return}
 
-I_(IG) = let
+channel I: {a,e,return}
+
+  I_(IG) = let
 
 I__(((s),stack')) =
 ((s == Enum_False)) & (
@@ -47,7 +49,7 @@ semi_(\ P',((s),(stack')) @ ifthenelse_((s == Enum_False),
 )(P',((s),(stack'))),
 (\ P',V' @ I.return -> P'(V')))(\ V' @ I__(V'),((s),(stack'))))
 
-within I__(((Enum_False),<>))
+within I__(((Enum_False),<>)) 
 
 
 sugar_(IIG,IG) = let

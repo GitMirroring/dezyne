@@ -209,15 +209,15 @@
 
     (_ (format #f "~a:no match: ~a" (current-source-location) src))))
 
-(define (port-triggers port)
-  (let* ((interface (ast-norm (ast:type port)))
-         (events (map ast:name (ast:events interface)))
-         (triggers (filter (lambda (x) (member x '(inevitable optional)))
-                                      (map .event (gom:find-triggers interface)))))
-    (sort (append events triggers) symbol<)))
+(define (port-events port)
+  (let ((interface (ast-norm (ast:type port))))
+    (interface-events interface)))
 
-(define (interface-triggers interface)
-  (sort ((ast:find-events) interface) symbol<))
+(define (interface-events interface)
+  (let* ((events (map ast:name (ast:events interface)))
+         (modeling (filter (lambda (x) (member x '(inevitable optional)))
+                           (map .event (gom:find-triggers interface)))))
+    (sort (append events modeling) symbol<)))
 
 (define (typed-elements enum)
    (map (lambda (x) (symbol-append (ast:name enum) '_ x)) (ast:fields enum)))

@@ -1,4 +1,4 @@
--- drop_one_local: V => V 
+-- drop_one_local: V => V
 drop_one_local_((M', (L', L0'))) = (M', L')
 
 -- send_: (c: channel, e:event) => (P,V)->Proc
@@ -14,7 +14,7 @@ callvoid_args_(B',F') = \P',V' @ B'(P', V', F')
 -- assign_: (F': V -> V) => (P,V) -> Proc
 assign_(F') = \ P', V' @ P'(F'(V'))
 -- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
-assign_active_(C', A') = \P',V' @ C'(\((M', r'),L') @ P'(A'((M',L'),r')), V') 
+assign_active_(C', A') = \P',V' @ C'(\((M', r'),L') @ P'(A'((M',L'),r')), V')
 -- returnvalue_: (F: V->val) => (P,V)->Proc
 returnvalue_(F') = \P',(M',L') @ P'(((M',  F'((M', L'))), L'))
 -- the_end_: P => V->Proc
@@ -23,12 +23,12 @@ the_end_(P') = \V' @ transition_end -> P'(V')
 -- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
 semi_(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
 -- ifthenelse: (E': val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
-ifthenelse_(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')   
+ifthenelse_(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')
 -- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
 context_(F', S') = \ P', (M', L') @ S'((\V2' @ P'(drop_one_local_(V2'))), (M', (L', F'((M', L')))))
 -- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
 context_active_(C', S') = \P',V' @ C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
-                                                     
+
 datatype event_enumeration_alphabet =
 States_Armed | States_Disabled | States_Disabling | States_Disarmed | States_Disarming | States_Enabled | States_Off | States_On | States_Triggered | arm | deactivated | detected | disable | disabled | disarm | enable | inevitable | optional | return | triggered | turnoff | turnon
 
