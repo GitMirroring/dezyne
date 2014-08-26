@@ -216,7 +216,7 @@
 (define (interface-events interface)
   (let* ((events (map ast:name (ast:events interface)))
          (modeling (filter (lambda (x) (member x '(inevitable optional)))
-                           (map .event (gom:find-triggers interface)))))
+                           (map .event (gom:find-events interface)))))
     (sort (append events modeling) symbol<)))
 
 (define (typed-elements enum)
@@ -330,7 +330,7 @@
 
 (define (optional-chaos port)
   (let ((interface (ast:type port)))
-    (if (member 'optional (map .event (gom:find-triggers (ast-norm (ast:type port)))))
+    (if (member 'optional (map .event (gom:find-events (ast-norm (ast:type port)))))
         (list "[|{" interface " .optional}|] " "CHAOS({" interface " .optional})")
         "")))
 

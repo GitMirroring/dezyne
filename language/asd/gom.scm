@@ -58,7 +58,7 @@
 
 
            ;; utilities
-           gom:find-triggers
+           gom:find-events
            gom:statements-of-type
            gom:statement
            ))
@@ -344,21 +344,21 @@
                    (list (.port rhs) (.event rhs))))
        (not (symbol? (.port lhs))))))
 
-(define* (gom:find-triggers ast :optional (found '()))
+(define* (gom:find-events ast :optional (found '()))
   "Search for optional and inevitable."
   (match ast
     ((or (? ast:interface?) (? ast:component?))
-     (delete-duplicates (sort (gom:find-triggers (gom:statement (ast:behaviour ast))) gom:trigger<)))
-    (($ <compound>) (append (apply append (map gom:find-triggers (.elements ast))) found))
-    (($ <on>) (gom:find-triggers (.triggers ast)))
+     (delete-duplicates (sort (gom:find-events (gom:statement (ast:behaviour ast))) gom:trigger<)))
+    (($ <compound>) (append (apply append (map gom:find-events (.elements ast))) found))
+    (($ <on>) (gom:find-events (.triggers ast)))
 ;;    (($ <trigger>) (list ast))
     (($ <triggers>) (.elements ast))
-    (('guard expression statement) (gom:find-triggers statement found))
+    (('guard expression statement) (gom:find-events statement found))
     (('inevitable) ast)
     (('optional) ast)
     (('action x) '())
     (('illegal) '())
-    (_ (throw 'match-error  (format #f "~a:gom:find-triggers: no match: ~a\n" (current-source-location) ast)))))
+    (_ (throw 'match-error  (format #f "~a:gom:find-events: no match: ~a\n" (current-source-location) ast)))))
 
 (define (statement? ast)
   (member (gom:class ast) '(action assign bind call compound guard if instance on reply variable return)))
