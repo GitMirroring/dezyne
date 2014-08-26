@@ -217,6 +217,7 @@
   (match src
     (('expression expression) (csp-expression->string ast expression))
     (($ <expression>) (csp-expression->string ast (.value src)))
+    (($ <csp-expression>) (csp-expression->string ast (.value src)))
     ((or (? number?) (? symbol?)) src)
     (('value type field)
      (let ((prefix (variable-prefix ast type)))
@@ -312,8 +313,8 @@
     (('guard expr stat) (prefix-reply? stat)) ;; FIXME: no test
     (($ <on>)
      (prefix-reply? stat))
-    (('if expression then else)
-     (or (prefix-reply? then) (prefix-reply? else)))
+    (($ <if>)
+     (or (prefix-reply? (.then statement)) (prefix-reply? (.else statement))))
     (('reply value) #t)
     (_ #f)
     (_ (throw 'match-error (format #f "~a:prefix-reply?: no match: ~a\n" (current-source-location) statement)))))
@@ -370,8 +371,8 @@
   (ast-transform- ast (ast-transform-return ast (ast-transform-function-call ast src))))
 
 (define (ast-transform* ast src)
-  (let ((ast* ((compose ast->gom* csp->sugar ast->sugar) ast))
-        (src* ((compose ast->gom* csp->sugar ast->sugar) src)))
+  (let ((ast* (csp->gom ast))
+        (src* (csp->gom src)))
     (ast-transform- ast* (ast-transform-return ast* (ast-transform-function-call ast* src*)))))
 
 (define (ast-transform-function-call ast src)
@@ -400,14 +401,40 @@
 (define-class <csp-on> (<on>)
   (the-end :accessor .the-end :init-value #f :init-keyword :the-end))
 
+(define-class <csp-expression> (<expression>))
+
+(define-method (write (o <csp-expression>) port)
+  (display "(expression*" port)
+  (display-slots o port)
+  (display #\) port))
+
+(define-class <csp-if> (<if>)
+  (context :accessor .context :init-form (list) :init-keyword :context))
+
+(define-method (display-slots (o <csp-if>) port)
+  (sdisplay (.context o) port)
+  (next-method))
+
 (define (csp->sugar ast)
   (match ast
     (('on triggers statement the-end)
      (make <csp-on>
-       :triggers (ast->gom* triggers)
-       :statement (ast->gom* statement)
+       :triggers (csp->gom triggers)
+       :statement (csp->gom statement)
        :the-end the-end))
+    (('if ('ctx context) ('expression expression) then else)
+     (stderr "woot")
+     (make <csp-if>
+       :context (cadr ast)
+       :expression (make <csp-expression>
+                     :value (csp->gom expression))
+       :then (csp->gom then)
+       :else (csp->gom else)))
+    ((h t ...) (map csp->sugar ast))
     (_ ast)))
+
+(define (csp->gom ast)
+  ((compose ast->gom* csp->sugar ast->sugar) ast))
 
 (define-method (ast-transform-return ast (o <on>))
   (let* ((model (or (ast:interface ast) (ast:component ast)))
@@ -439,9 +466,7 @@
            :the-end (list 'the-end members)))))))
 
 (define (ast-transform-return* ast src)
-  (let ((ast* ((compose ast->gom* csp->sugar ast->sugar) ast))
-        (src* ((compose ast->gom* csp->sugar ast->sugar) src)))
-    (ast-transform-return ast* src*)))
+  (ast-transform-return (csp->gom ast) (csp->gom src)))
 
 (define ((valued-action? port?) src)
   (match src
@@ -557,19 +582,19 @@
        (list context var (list 'call function arguments)))
       (('variable type var expr)
        (list context var (list 'expression expr)))
-      (('if pred then)
-       (list 'if context (list 'expression (if (prefix-illegal? then)
-                                               (list 'and 'IG pred)
-                                               pred))
-             (ast-transform- ast then return context) '()))
-      (('if expr then else)
-       (let* ((then-illegal? (prefix-illegal? then))
+      (($ <if>)
+       (let* ((expr (.expression src))
+              (then (.then src))
+              (else (.else src))
+              (then-illegal? (prefix-illegal? then))
 	      (else-illegal? (prefix-illegal? else))
 	      (pred-then (if then-illegal? (list 'and 'IG expr) expr))
 	      (pred (if else-illegal? (list 'and '(! IG) pred-then) pred-then)))
-	 (list 'if context (list 'expression pred)
-               (ast-transform- ast then return context)
-               (ast-transform- ast else return context))))
+	 (make <csp-if>
+           :context context
+           :expression (make <csp-expression> :value pred)
+           :then (ast-transform- ast then return context)
+           :else (or (ast-transform- ast else return context) '()))))
       (('function name signature statement)
        (let* ((parameters (map ast:name (ast:parameters signature)))
               (context (context-extend context (if (>1 (length parameters))
@@ -638,9 +663,7 @@
     (_ (->string src))))
 
 (define (csp-transform* ast src)
-  (let ((ast* ((compose ast->gom* csp->sugar ast->sugar) ast))
-        (src* ((compose ast->gom* csp->sugar ast->sugar) src)))
-    (csp-transform ast* src*)))
+  (csp-transform (csp->gom ast) (csp->gom src)))
 
 (define* (csp-transform ast src :optional (inevitable-optional? #f) (channel #f) (provided-on? #t))
   (let* ((model (or (ast:interface ast) (ast:component ast)))
@@ -693,10 +716,11 @@
         (list "callvoid_(\\ P',V' @ " function " (P',V',\\ (" context ") @ (" arguments ")))"))
        (('assign context expressions)
         (list "assign_(\\ (" context ") @ (" expressions "))"))
-       (('if context expression then else)
-        (let ((expression (csp-expression->string ast expression))
-              (then (csp-transform ast then inevitable-optional? channel provided-on?))
-              (else (csp-transform ast else inevitable-optional? channel provided-on?)))
+       (($ <csp-if>)
+        (let ((context (.context src))
+              (expression (csp-expression->string ast (.expression src)))
+              (then (csp-transform ast (.then src) inevitable-optional? channel provided-on?))
+              (else (csp-transform ast (.else src) inevitable-optional? channel provided-on?)))
           (list "\\ P',(" context ") @ ifthenelse_(" expression ",\n" then ",\n" else "\n)(P',(" context "))")))
        (('value type field) (list type "_" field))
        (('literal scope type value) (list type "_" value))

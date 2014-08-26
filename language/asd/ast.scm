@@ -204,6 +204,7 @@
            declarative?
            dir-matches?
            direction
+           else
            enum?
            enums
            event
@@ -228,6 +229,7 @@
            import-list
            import-list?
            identifier
+           if?
            illegal?
            in?
            instance
@@ -271,6 +273,7 @@
            statements-of-type
            system
            system?
+           then
            to
            trigger
            trigger-list
@@ -341,6 +344,7 @@
 (define (functions? ast) (type-helper? 'functions ast))
 (define (guard? ast) (type-helper? 'guard ast))
 (define (illegal? ast) (type-helper? 'illegal ast))
+(define (if? ast) (type-helper? 'if ast))
 (define (import-list? ast) (type-helper? 'imports ast))
 (define (imports? ast) (type-helper? 'imports ast))
 (define (instance? ast) (type-helper? 'instance ast))
@@ -646,6 +650,7 @@
   (match ast
     ((? assign?) (caddr ast))
     ((? guard?) (cadr ast))
+    ((? if?) (cadr ast))
     ((? variable?) (cadddr ast))
     (_ (throw 'match-error  (format #f "~a:expression: no match: ~a\n" (current-source-location) ast)))))
 
@@ -680,6 +685,12 @@
 
 (define (Class ast)
   (symbol-capitalize (class ast)))
+
+(define (then ast)
+  (caddr ast))
+
+(define (else ast)
+  (if (> (length ast) 3) (cadddr ast) #f))
 
 (define (statement ast)
   (match ast

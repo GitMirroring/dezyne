@@ -36,6 +36,9 @@
            ast->gom
            ast->gom*
            ast->sugar
+           display-slots
+           sdisplay
+           star
 
            <action>
            <assign>
@@ -43,16 +46,19 @@
            <compound>
            <expression>
            <guard>
+           <if>
            <on>
            <trigger>
            <triggers>
 
            .elements
+           .else
            .event
            .expression
            .identifier
            .port
            .statement
+           .then
            .trigger
            .triggers
            .value
@@ -129,11 +135,16 @@
   (identifier :accessor .identifier :init-value #f :init-keyword :identifier)
   (expression :accessor .expression :init-form (make <expression>) :init-keyword :expression))
 
-(define-class <illegal> (<statement>))
-
 (define-class <guard> (<statement>)
   (expression :accessor .expression :init-form (make <expression>) :init-keyword :expression)
   (statement :accessor .statement :init-value #f :init-keyword :statement))
+
+(define-class <if> (<statement>)
+  (expression :accessor .expression :init-form (make <expression>) :init-keyword :expression)
+  (then :accessor .then :init-value #f :init-keyword :then)
+  (else :accessor .else :init-value #f :init-keyword :else))
+
+(define-class <illegal> (<statement>))
 
 (define-class <on> (<statement>)
   (triggers :accessor .triggers :init-form (make <triggers>) :init-keyword :triggers)
@@ -215,6 +226,11 @@
                        :expression (make <expression>
                                      :value (ast->gom (ast:expression ast)))
                        :statement (ast->gom (ast:statement ast))))
+    ((? ast:if?) (make <if>
+                       :expression (make <expression>
+                                     :value (ast->gom (ast:expression ast)))
+                       :then (ast->gom (ast:then ast))
+                       :else (ast->gom (ast:else ast))))
     ((? ast:illegal?) (make <illegal>))
     ((? ast:on?) (make <on>
                        :triggers (ast->gom (ast:trigger-list ast))
@@ -254,6 +270,11 @@
                        :expression (make <expression>
                                      :value (ast->gom* (ast:expression ast)))
                        :statement (ast->gom* (ast:statement ast))))
+    ((? ast:if?) (make <if>
+                       :expression (make <expression>
+                                     :value (ast->gom* (ast:expression ast)))
+                       :then (ast->gom* (ast:then ast))
+                       :else (ast->gom* (ast:else ast))))
     ((? ast:on?) (make <on>
                        :triggers (ast->gom* (ast:trigger-list ast))
                        :statement (ast->gom* (ast:statement ast))))
@@ -299,6 +320,11 @@
   (star port)
   (sdisplay (.type o) port)
   (sdisplay (.name o) port))
+
+(define-method (display-slots (o <if>) port)
+  (sdisplay (.expression o) port)
+  (sdisplay (.then o) port)
+  (and=> (.else o) (lambda (x) (sdisplay x port))))
 
 (define-method (write (o <dir-ast>) port)
   (display "(" port)
