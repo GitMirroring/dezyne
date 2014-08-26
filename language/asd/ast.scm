@@ -219,6 +219,7 @@
            find-triggers
            from
            function
+           function?
            function-list
            function-list?
            functions

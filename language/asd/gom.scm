@@ -42,6 +42,7 @@
            <ast>
            <compound>
            <expression>
+           <guard>
            <on>
            <trigger>
            <triggers>
@@ -249,6 +250,10 @@
                        :identifier (ast:identifier ast)
                        :expression (make <expression>
                                      :value (ast->gom* (ast:expression ast)))))
+    ((? ast:guard?) (make <guard>
+                       :expression (make <expression>
+                                     :value (ast->gom* (ast:expression ast)))
+                       :statement (ast->gom* (ast:statement ast))))
     ((? ast:on?) (make <on>
                        :triggers (ast->gom* (ast:trigger-list ast))
                        :statement (ast->gom* (ast:statement ast))))
@@ -258,7 +263,7 @@
                        :port (ast:port-name ast)
                        :event (ast:event-name ast)))
     ((? ast:trigger-list?) (make <triggers>
-                             :elements (map ast->gom (ast:body ast))))
+                             :elements (map ast->gom* (ast:body ast))))
     ((h t ...) (map ast->gom* ast))
     (_ ast)))
 
@@ -332,6 +337,7 @@
     ('() #f)
     (#f #f)
     (($ <compound>) 'compound)
+    (($ <guard>) 'guard)
     (($ <on>) 'on)
     (_ (car ast))))
 
@@ -353,7 +359,7 @@
     (($ <on>) (gom:find-events (.triggers ast)))
 ;;    (($ <trigger>) (list ast))
     (($ <triggers>) (.elements ast))
-    (('guard expression statement) (gom:find-events statement found))
+    (($ <guard>) (gom:find-events (.statement ast) found))
     (('inevitable) ast)
     (('optional) ast)
     (('action x) '())
@@ -369,7 +375,6 @@
     ((? ast:model?) (or (null-is-#f (gom:statement (ast:behaviour ast))) (make <compound>)))
     ((? ast:behaviour?) (or (find (lambda (x) (is-a? x <compound>)) (ast:body ast))
                             (make <compound>)))
-    ((or (? ast:guard?) (? ast:on?)) (caddr ast))
     ((? ast:function?) (cadddr ast))
     (_ (throw 'match-error  (format #f "~a:gom:statement: no match: ~a\n" (current-source-location) ast)))))
 

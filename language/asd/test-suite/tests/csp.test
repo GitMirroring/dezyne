@@ -191,6 +191,7 @@ skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
           "i?x:{e} ->
 semi_((\\ P',V' @ i!h -> P'(V')),
 skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
+
 (define ast-transform-illegal-action-via
   '(on (e) IG
        (illegal)))
@@ -1389,26 +1390,42 @@ semi_(assign_active_(sendrecv_(k,h),
      '(on ((j e)) (compound))))
    '(on ((j e)) (compound))))
 
-(define m-i-ast '(interface i
-                   (types)
-                   (events)
-                   (behaviour
-                    B
-                    (compound))))
+(define member-i-ast
+  '(interface i
+              (types)
+              (events)
+              (behaviour
+               B
+               (compound))))
 
-(define m-c-ast '(component c
-                   (ports)
-                   (behaviour
-                    B
-                    (compound))))
+(define member-c-ast
+  '(component c
+              (ports)
+              (behaviour
+               B
+               (compound))))
 
 (pass-if "no-members"
          (diff-noisy-equal?
-          (csp-transform* m-i-ast '(on (e) (eventreturn) (the-end ())))
+          (csp-transform* member-i-ast '(on (e) (eventreturn) (the-end ())))
           "i?x:{e} ->
 (\\ P',V' @ i.return -> P'(V'))(\\ V' @ i_B_(V'),((stack')))"))
 
 (pass-if "unbehaved"
          (diff-noisy-equal?
-          (behaviour->csp (ast->gom* m-c-ast) "<empty>")
+          (behaviour->csp (ast->gom* member-c-ast) "<empty>")
           "<empty>"))
+
+(define guard-i-ast
+  '(interface i
+              (types)
+              (events)
+              (behaviour
+               B
+               (compound (guard true (compound))))))
+
+(pass-if "behaviour-guard-true"
+  (diff-noisy-equal?
+   (behaviour->csp (ast->gom* guard-i-ast) "boo")
+   "(true) & (
+)"))

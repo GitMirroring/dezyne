@@ -185,8 +185,8 @@
         (append
          (map
           (lambda (guard)
-            (let ((expression (csp-expression->string model (ast:expression guard)))
-                  (ons ((gom:statements-of-type 'on) (gom:statement guard))))
+            (let ((expression (csp-expression->string model (.expression guard)))
+                  (ons ((gom:statements-of-type 'on) (.statement guard))))
               (list
                "(" expression ") & (\n"
                ((->join "\n []\n  ")
@@ -216,6 +216,7 @@
 
   (match src
     (('expression expression) (csp-expression->string ast expression))
+    (($ <expression>) (csp-expression->string ast (.value src)))
     ((or (? number?) (? symbol?)) src)
     (('value type field)
      (let ((prefix (variable-prefix ast type)))
@@ -308,8 +309,7 @@
        (if (null? statements)
            #f
            (or (prefix-reply? (car statements)) (loop (cdr statements))))))
-    (('guard expr stat)
-     (prefix-reply? stat))
+    (('guard expr stat) (prefix-reply? stat)) ;; FIXME: no test
     (($ <on>)
      (prefix-reply? stat))
     (('if expression then else)
