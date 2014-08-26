@@ -130,7 +130,7 @@
   (statement :accessor .statement :init-value #f :init-keyword :statement))
 
 (define-class <on> (<statement>)
-  (triggers :accessor .triggers :init-form (list) :init-keyword :triggers)
+  (triggers :accessor .triggers :init-form (make <triggers>) :init-keyword :triggers)
   (statement :accessor .statement :init-value #f :init-keyword :statement))
 
 (define-class <trigger> (<ast>)
@@ -195,6 +195,9 @@
     ((? ast:trigger?) (make <trigger>
                        :port (ast:port-name ast)
                        :event (ast:event-name ast)))
+
+    ((? ast:trigger-list?) (make <triggers>
+                             :elements (map ast->gom* (ast:body ast))))
 
     ((? ast:action?) (make <action>
                        :trigger (ast->gom (ast:trigger ast))))
