@@ -47,7 +47,7 @@
 	 (interface-checks '(deadlock livelock))
 	 (component (ast:component ast))
 	 (interfaces (map (compose ast:ast ast:type) (ast:ports component))))
-    (append (map (assert component) component-checks)
-	    (apply append
+    (append (apply append
 		   (delete-duplicates (map (lambda (interface)
-					     (map (assert interface) interface-checks)) interfaces))))))
+					     (map (assert interface) interface-checks)) interfaces)))
+            (map (assert component) component-checks))))
