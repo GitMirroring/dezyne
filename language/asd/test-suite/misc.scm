@@ -45,19 +45,16 @@
   (equal? (with-output-to-string (lambda () (write lhs)))
           (with-output-to-string (lambda () (write rhs)))))
 
-(define (csp->gom* ast)
-  ((compose ast->gom* csp->sugar ast->sugar) ast))
-
 (define plain-equal? equal?)
 (define (equal? actual expected)
   (plain-equal?
        (with-input-from-string
               (with-output-to-string (lambda ()
-                                       (write (csp->gom* actual))))
+                                       (write (csp->gom actual))))
             read)
           (with-input-from-string
               (with-output-to-string (lambda ()
-                                       (write (csp->gom* expected))))
+                                       (write (csp->gom expected))))
             read)))
 
 (define (noisy-equal? actual expected)

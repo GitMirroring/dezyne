@@ -46,6 +46,7 @@
            ast->
            behaviour->csp
            csp->sugar
+           csp->gom
            csp-component
            csp-module
 	   ast-transform
@@ -417,13 +418,18 @@
 
 (define (csp->sugar ast)
   (match ast
+    (('on ('triggers triggers) statement the-end)
+     (make <csp-on>
+       :triggers (csp->gom (cdr ast))
+       :statement (csp->gom statement)
+       :the-end the-end))
     (('on triggers statement the-end)
      (make <csp-on>
-       :triggers (csp->gom triggers)
+       :triggers (make <triggers>
+                   :elements (csp->gom (map ast->trigger-sugar triggers)))
        :statement (csp->gom statement)
        :the-end the-end))
     (('if ('ctx context) ('expression expression) then else)
-     (stderr "woot")
      (make <csp-if>
        :context (cadr ast)
        :expression (make <csp-expression>

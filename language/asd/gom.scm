@@ -36,6 +36,7 @@
            ast->gom
            ast->gom*
            ast->sugar
+           ast->trigger-sugar
            display-slots
            sdisplay
            star
@@ -244,9 +245,8 @@
 
 (define (ast->sugar ast)
   (match ast
-    (('on ('triggers t ...) statement the-end ...) ast)
+    (('on ('triggers t ...) statement) ast)
     (('on triggers statement) (ast:make 'on (list (ast:make 'triggers (map ast->trigger-sugar triggers)) statement)))
-    (('on triggers statement the-end) (list 'on (ast:make 'triggers (map ast->trigger-sugar triggers)) statement the-end))
     (_ ast)))
 
 (define (ast->trigger-sugar ast)
