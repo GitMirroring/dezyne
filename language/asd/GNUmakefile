@@ -317,20 +317,23 @@ csp: compile
 	$(diff) examples/testBoolean.csp out || true
 	@$(diff) examples/testBoolean.csp out | diffstat
 	$(CSPMCHECKER) out/testBoolean.csp
+	! $(REFINES) out/testBoolean.csp | grep ': Failed'
 	@$(diff) examples/testBoolean.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/mangle.asd
 	$(diff) examples/mangle.csp out || true
 	@$(diff) examples/mangle.csp out | diffstat
-	./gaiag -l mangle examples/mangle.asd
 	$(CSPMCHECKER) out/mangle.csp
+	! $(REFINES) out/mangle.csp | grep ': Failed'
 	@$(diff) examples/mangle.csp out >/dev/null
 
-	# cd out && ../gaiag -l csp examples/arguments.asd
-	# $(diff) examples/arguments.csp out || true
-	# @$(diff) examples/arguments.csp out | diffstat || true
-	# @$(diff) examples/arguments.csp out >/dev/null
-	# $(CSPMCHECKER) out/arguments.csp
+	cd out && ../gaiag -l csp examples/livelock.asd
+	$(diff) examples/livelock.csp out || true
+	@$(diff) examples/livelock.csp out | diffstat
+	$(CSPMCHECKER) out/livelock.csp
+	$(REFINES) out/livelock.csp |& grep ': Failed'
+	-$(REFINES) out/livelock.csp |& grep 'panic: '
+	-@$(diff) examples/livelock.csp out >/dev/null
 
 livelock:
 	rm -rf out && mkdir out && ln -s ../examples ../templates ../../../webdemo/asd out

@@ -380,8 +380,5 @@
   (match statement
     ((? (gom:statement-of-type type)) (list statement))
     (($ <compound>) (filter identity (apply append (map (gom:statements-of-type type) (.elements statement)))))
-    (('guard expr s) (filter identity ((gom:statements-of-type type) s)))
     ((? statement?) '())
-    ('() '())
-    ((t ...) (filter identity (apply append (map (gom:statements-of-type type) t))))
     (_ (throw 'match-error  (format #f "~a:gom:statements-of-type, type: ~a: no match: ~a\n" (current-source-location) type statement)))))

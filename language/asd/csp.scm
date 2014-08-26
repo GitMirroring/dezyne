@@ -184,38 +184,44 @@
 (define (ibehaviour->csp model default)
   (or (string-null-is-#f
        ((->join "\n[]\n")
-        (map
-         (lambda (guard)
-           (let ((expression (csp-expression->string model (ast:expression guard)))
-                 (ons ((gom:statements-of-type 'on) (gom:statement guard))))
-             (list
-              "(" expression ") & (\n"
-              ((->join "\n []\n  ")
-               (map
-                (lambda (on)
-                  (csp-transform model (ast-transform model on)))
-                ons))
+        (append
+         (map
+          (lambda (guard)
+            (let ((expression (csp-expression->string model (ast:expression guard)))
+                  (ons ((gom:statements-of-type 'on) (gom:statement guard))))
+              (list
+               "(" expression ") & (\n"
+               ((->join "\n []\n  ")
+                (map
+                 (lambda (on)
+                   (csp-transform model (ast-transform model on)))
+                 ons))
                ")")))
-         ((gom:statements-of-type 'guard) (gom:statement (ast:behaviour model))))))
+          ((gom:statements-of-type 'guard) (gom:statement (ast:behaviour model))))
+         (map (lambda (on) (csp-transform model (ast-transform model on)))
+              ((gom:statements-of-type 'on) (gom:statement (ast:behaviour model)))))))
       default))
 
 (define (behaviour->csp model default)
   (or (string-null-is-#f
        ((->join "\n[]\n")
-        (map
-         (lambda (guard)
-           (let ((expression (csp-expression->string model (ast:expression guard)))
-                 (ons ((gom:statements-of-type 'on) (gom:statement guard))))
-             (list
-              "(" expression ") & (\n"
-              ((->join "\n []\n  ")
-               (map (lambda (on)
-                      (csp-transform model (ast-transform model on)))
-                    (append
-                     (filter identity (map (statement-on-p/r (provides? model)) ons))
-                     (filter identity (map (statement-on-p/r (requires? model)) ons)))))
-              ")")))
-         ((gom:statements-of-type 'guard) (gom:statement (ast:behaviour model))))))
+        (append
+         (map
+          (lambda (guard)
+            (let ((expression (csp-expression->string model (ast:expression guard)))
+                  (ons ((gom:statements-of-type 'on) (gom:statement guard))))
+              (list
+               "(" expression ") & (\n"
+               ((->join "\n []\n  ")
+                (map (lambda (on)
+                       (csp-transform model (ast-transform model on)))
+                     (append
+                      (filter identity (map (statement-on-p/r (provides? model)) ons))
+                      (filter identity (map (statement-on-p/r (requires? model)) ons)))))
+               ")")))
+          ((gom:statements-of-type 'guard) (gom:statement (ast:behaviour model))))
+         (map (lambda (on) (csp-transform model (ast-transform model on)))
+              ((gom:statements-of-type 'on) (gom:statement (ast:behaviour model)))))))
       default))
 
 (define (variable-prefix ast identfier)
