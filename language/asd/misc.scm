@@ -63,6 +63,7 @@
            pretty-string
            stderr
            stdout
+           string-null-is-#f
            string-postfix?
            string-sub ;; FIXME: look at guile-lib string-substitute sugar
            symbol<
@@ -81,6 +82,7 @@
 
 (define *eof* (call-with-input-string "" read-char))
 (define (null-is-#f o) (if (null? o) #f o))
+(define (string-null-is-#f o) (if (string-null? o) #f o))
 (define (f-is-null o) (if o o '()))
 (define (*eof*-is-#f o) (if (eq? *eof* o) #f o))
 (define (one-is-#f o) (if (or (null? o) (=1 (length o))) #f o))
@@ -221,4 +223,3 @@
 
 (define (hash-table->alist table)
   (hash-map->list cons table))
-

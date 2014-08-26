@@ -1389,15 +1389,26 @@ semi_(assign_active_(sendrecv_(k,h),
      '(on ((j e)) (compound))))
    '(on ((j e)) (compound))))
 
-(define m-ast '(interface i
-                 (types)
-                 (events)
-                 (behaviour
-                  B
-                  (compound))))
+(define m-i-ast '(interface i
+                   (types)
+                   (events)
+                   (behaviour
+                    B
+                    (compound))))
+
+(define m-c-ast '(component c
+                   (ports)
+                   (behaviour
+                    B
+                    (compound))))
 
 (pass-if "no-members"
          (diff-noisy-equal?
-          (csp-transform* m-ast '(on (e) (eventreturn) (the-end ())))
+          (csp-transform* m-i-ast '(on (e) (eventreturn) (the-end ())))
           "i?x:{e} ->
 (\\ P',V' @ i.return -> P'(V'))(\\ V' @ i_B_(V'),((stack')))"))
+
+(pass-if "unbehaved"
+         (diff-noisy-equal?
+          (behaviour->csp (ast->gom* m-c-ast) "<empty>")
+          "<empty>"))

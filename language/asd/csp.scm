@@ -44,6 +44,8 @@
 
   :export (
            ast->
+           ibehaviour->csp
+           behaviour->csp
            csp->sugar
            csp-component
            csp-module
@@ -177,6 +179,44 @@
                  (current-module)
                  guard
                  `((guard . ,identity))))))) guards))))
+
+
+(define (ibehaviour->csp model default)
+  (or (string-null-is-#f
+       ((->join "\n[]\n")
+        (map
+         (lambda (guard)
+           (let ((expression (csp-expression->string model (ast:expression guard)))
+                 (ons ((gom:statements-of-type 'on) (gom:statement guard))))
+             (list
+              "(" expression ") & (\n"
+              ((->join "\n []\n  ")
+               (map
+                (lambda (on)
+                  (csp-transform model (ast-transform model on)))
+                ons))
+               ")")))
+         ((gom:statements-of-type 'guard) (gom:statement (ast:behaviour model))))))
+      default))
+
+(define (behaviour->csp model default)
+  (or (string-null-is-#f
+       ((->join "\n[]\n")
+        (map
+         (lambda (guard)
+           (let ((expression (csp-expression->string model (ast:expression guard)))
+                 (ons ((gom:statements-of-type 'on) (gom:statement guard))))
+             (list
+              "(" expression ") & (\n"
+              ((->join "\n []\n  ")
+               (map (lambda (on)
+                      (csp-transform model (ast-transform model on)))
+                    (append
+                     (filter identity (map (statement-on-p/r (provides? model)) ons))
+                     (filter identity (map (statement-on-p/r (requires? model)) ons)))))
+              ")")))
+         ((gom:statements-of-type 'guard) (gom:statement (ast:behaviour model))))))
+      default))
 
 (define (variable-prefix ast identfier)
   (and-let* ((variable (ast:variable ast identfier))

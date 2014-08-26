@@ -338,7 +338,7 @@ livelock:
 	$(diff) examples/livelock.csp out || true
 	@$(diff) examples/livelock.csp out | diffstat
 	$(CSPMCHECKER) out/livelock.csp
-	! $(REFINES) out/livelock.csp | grep ': Failed'
+	$(REFINES) out/livelock.csp |& grep 'panic: '
 	@$(diff) examples/livelock.csp out >/dev/null
 
 mangle: compile
