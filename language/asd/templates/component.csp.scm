@@ -74,24 +74,24 @@ channel #.interface : {#(comma-join (append (interface-events interface) (return
   # (map-ports #{
 #.interface _#.behaviour(IG) = let
 # (->string (map (lambda (x) (csp-transform interface (ast-transform interface x))) (ast:functions (ast:behaviour interface))))
-#.interface _#.behaviour _(((# (comma-join (map ast:name ((compose ast:variables ast:behaviour ast-norm) .interface)))),stack')) =
+#.interface _#.behaviour _((#(context->csp ast (make-context ((compose ast:member-names ast-norm) .interface) '())))) =
 # (map-guards #{(# (csp-expression->string (ast:ast .interface) (ast:expression guard))) & (
 # ((->join "\n  []\n  ") (map (lambda (on) (csp-transform (ast:ast .interface) (ast-transform (ast:ast .interface) on)))
    ((gom:statements-of-type 'on) (gom:statement guard)))))
 #} ((gom:statements-of-type 'guard) (gom:statement (ast:behaviour (ast-norm .interface)))))
-within #.interface _#.behaviour _(((#(comma-join (map (lambda (x) (value (ast:expression x))) ((compose ast:variables ast:behaviour ast-norm) .interface)))),<>)) #.optional-chaos
+within #.interface _#.behaviour _((#(context->csp ast (make-context ((compose (ast:member-values value) ast-norm) .interface) '(<>))))) #.optional-chaos
 
 #} ((compose ast:ports ast:component) ast))
 #.component _#.behaviour (IIG,IG) = let
 # (->string (map (lambda (x) (csp-transform component (ast-transform component x))) (ast:functions (ast:behaviour component))))
-#.component _#.behaviour _(((#(comma-join (map ast:name ((compose ast:variables ast:behaviour ast:component) ast)))),stack')) = transition_begin -> (
+#.component _#.behaviour _((#(context->csp ast (make-context ((compose ast:member-names ast:component) ast) '())))) = transition_begin -> (
 # (map-guards #{ (# (csp-expression->string component (ast:expression guard))) & (
 # ((->join "\n  []\n  ") (map (lambda (on) (csp-transform component (ast-transform component on)))
     (append
       (filter identity (map (statement-on-p/r (provides? component)) ((gom:statements-of-type 'on) (gom:statement guard))))
       (filter identity (map (statement-on-p/r (requires? component)) ((gom:statements-of-type 'on) (gom:statement guard))))))))
 #} ((gom:statements-of-type 'guard) ((compose gom:statement ast:behaviour ast:component) ast))))
-within #.component _#.behaviour _(((#(comma-join (map (lambda (x) (value (ast:expression x))) ((compose ast:variables ast:behaviour ast:component) ast)))),<>))
+within #.component _#.behaviour _((#(context->csp ast (make-context ((compose (ast:member-values value) ast:component) ast) '(<>)))))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {#

@@ -40,7 +40,7 @@ channel iimperative: {e,f,g,h,return}
 
   iimperative_(IG) = let
 
-iimperative__(((s,b,c),stack')) =
+iimperative__(((s,b,c),(stack'))) =
 ((s == S_S1)) & (
 iimperative?x:{e} ->
 semi_(semi_(\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
@@ -79,12 +79,12 @@ semi_(assign_(\ ((s,b,c),(stack')) @ ((s,(not b),c),(stack'))),
 assign_(\ ((s,b,c),(stack')) @ ((S_S1,b,c),(stack'))))),
 (\ P',V' @ iimperative.return -> P'(V')))(\ V' @ iimperative__(V'),((s,b,c),(stack'))))
 
-within iimperative__(((S_S1,false,true),<>)) 
+within iimperative__(((S_S1,false,true),(<>))) 
 
 
 imperative_(IIG,IG) = let
 
-imperative__(((state),stack')) = transition_begin -> (
+imperative__(((state),(stack'))) = transition_begin -> (
 ((state == States_I)) & (
 i?x:{e} ->
 semi_(semi_((\ P',V' @ i!f -> P'(V')),
@@ -113,7 +113,7 @@ semi_(semi_((\ P',V' @ i!h -> P'(V')),
 assign_(\ ((state),(stack')) @ ((States_I),(stack')))),
 (\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> imperative__(V'),((state),(stack'))))
 )
-within imperative__(((States_I),<>))
+within imperative__(((States_I),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}

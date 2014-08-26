@@ -332,26 +332,14 @@ csp: compile
 	# @$(diff) examples/arguments.csp out >/dev/null
 	# $(CSPMCHECKER) out/arguments.csp
 
-demo:
+livelock:
 	rm -rf out && mkdir out && ln -s ../examples ../templates ../../../webdemo/asd out
-	cd out && $(asdgen) -l scm examples/Reply.asd
-	#sed -i -e 's/(type \([^.]+\)[.]\([^.()]+\))/(type \1 (type \2))/' out/Reply.scm
-	cd out && ../gaiag -l csp Reply.scm
-	$(diff) examples/Reply.csp out || true
-	@$(diff) examples/Reply.csp out | diffstat || true
-	-$(CSPMCHECKER) out/Reply.csp
-
-	cd out && $(asdgen) -l scm examples/Reply2.asd
-	#sed -i -e 's/(type \([^.]+\)[.]\([^.()]+\))/(type \1 (type \2))/' out/Reply2.scm
-	cd out && ../gaiag -l csp Reply2.scm
-	$(diff) examples/Reply2.csp out || true
-	@$(diff) examples/Reply2.csp out | diffstat || true
-	-$(CSPMCHECKER) out/Reply2.csp
-
-	cd out && $(asdgen) -l scm asd/Comp.asd
-	# sed -i -e 's/(type \([^.]+\)[.]\([^.()]+\))/(type \1 (type \2))/' out/Comp.scm
-	cd out && ../gaiag -l csp Comp.scm
-	-$(CSPMCHECKER) out/Comp.csp
+	cd out && ../gaiag -l csp examples/livelock.asd
+	$(diff) examples/livelock.csp out || true
+	@$(diff) examples/livelock.csp out | diffstat
+	$(CSPMCHECKER) out/livelock.csp
+	! $(REFINES) out/livelock.csp | grep ': Failed'
+	@$(diff) examples/livelock.csp out >/dev/null
 
 mangle: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out

@@ -42,7 +42,7 @@ channel IDevice: {calibrate,initialize,perform_action1,perform_action2,result_t_
 
   IComp_(IG) = let
 
-IComp__(((s),stack')) =
+IComp__(((s),(stack'))) =
 (((s == State_Uninitialized) and true)) & (
 IComp?x:{initialize} ->
 semi_((\ P',V' @ IComp.result_t_OK -> P'(V')),
@@ -80,11 +80,11 @@ assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IComp__(V'),(
 IG & IComp?x:{initialize,perform_actions} ->
 illegal -> STOP)
 
-within IComp__(((State_Uninitialized),<>)) 
+within IComp__(((State_Uninitialized),(<>))) 
 
 IDevice_(IG) = let
 
-IDevice__(((s),stack')) =
+IDevice__(((s),(stack'))) =
 (((s == State_Uninitialized) and true)) & (
 IDevice?x:{initialize} ->
 semi_((\ P',V' @ IDevice.result_t_OK -> P'(V')),
@@ -130,12 +130,12 @@ IDevice?x:{calibrate} ->
   IG & IDevice?x:{initialize} ->
 illegal -> STOP)
 
-within IDevice__(((State_Uninitialized),<>)) 
+within IDevice__(((State_Uninitialized),(<>))) 
 
 
 Comp_(IIG,IG) = let
 
-Comp__(((s),stack')) = transition_begin -> (
+Comp__(((s),(stack'))) = transition_begin -> (
 ((s == State_Uninitialized)) & (
 client?x:{initialize} ->
 context_active_(sendrecv_(device_A,initialize),
@@ -185,7 +185,7 @@ semi_(assign_(\ ((s),((stack',res))) @ ((State_Error),((stack',res)))),
   IIG & client?x:{initialize,perform_actions} ->
 illegal -> STOP)
 )
-within Comp__(((State_Uninitialized),<>))
+within Comp__(((State_Uninitialized),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}

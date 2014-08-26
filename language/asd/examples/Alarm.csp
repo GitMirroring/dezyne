@@ -44,7 +44,7 @@ channel Siren: {turnoff,turnon,return}
 
   Console_a(IG) = let
 
-Console_a_(((state),stack')) =
+Console_a_(((state),(stack'))) =
 ((state == States_Disarmed)) & (
 Console?x:{arm} ->
 semi_(assign_(\ ((state),(stack')) @ ((States_Armed),(stack'))),
@@ -83,11 +83,11 @@ assign_(\ ((state),(stack')) @ ((States_Disarmed),(stack')))),
   IG & Console?x:{arm,disarm} ->
 illegal -> STOP)
 
-within Console_a_(((States_Disarmed),<>)) [|{Console .optional}|] CHAOS({Console .optional})
+within Console_a_(((States_Disarmed),(<>))) [|{Console .optional}|] CHAOS({Console .optional})
 
 Sensor_b(IG) = let
 
-Sensor_b_(((state),stack')) =
+Sensor_b_(((state),(stack'))) =
 ((state == States_Disabled)) & (
 Sensor?x:{enable} ->
 semi_(assign_(\ ((state),(stack')) @ ((States_Enabled),(stack'))),
@@ -126,11 +126,11 @@ illegal -> STOP
 semi_(assign_(\ ((state),(stack')) @ ((States_Disabling),(stack'))),
 (\ P',V' @ Sensor.return -> P'(V')))(\ V' @ Sensor_b_(V'),((state),(stack'))))
 
-within Sensor_b_(((States_Disabled),<>)) [|{Sensor .optional}|] CHAOS({Sensor .optional})
+within Sensor_b_(((States_Disabled),(<>))) [|{Sensor .optional}|] CHAOS({Sensor .optional})
 
 Siren_c(IG) = let
 
-Siren_c_(((state),stack')) =
+Siren_c_(((state),(stack'))) =
 ((state == States_Off)) & (
 Siren?x:{turnon} ->
 semi_(assign_(\ ((state),(stack')) @ ((States_On),(stack'))),
@@ -147,12 +147,12 @@ semi_(assign_(\ ((state),(stack')) @ ((States_Off),(stack'))),
   IG & Siren?x:{turnon} ->
 illegal -> STOP)
 
-within Siren_c_(((States_Off),<>)) 
+within Siren_c_(((States_Off),(<>))) 
 
 
 Alarm_d(IIG,IG) = let
 
-Alarm_d_(((state,sounding),stack')) = transition_begin -> (
+Alarm_d_(((state,sounding),(stack'))) = transition_begin -> (
 ((state == States_Disarmed)) & (
 console?x:{arm} ->
 semi_(semi_((\ P',V' @ sensor!enable -> sensor.return -> P'(V')),
@@ -219,7 +219,7 @@ assign_(\ ((state,sounding),(stack')) @ ((States_Disarming,sounding),(stack'))))
   IG & sensor?x:{triggered,disabled} ->
 illegal -> STOP)
 )
-within Alarm_d_(((States_Disarmed,false),<>))
+within Alarm_d_(((States_Disarmed,false),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {sensor.triggered,sensor.disabled,extensions_over_empty_channels_is_undefined}

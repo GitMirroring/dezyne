@@ -1,4 +1,4 @@
--- drop_one_local: V => V 
+-- drop_one_local: V => V
 drop_one_local_((M', (L', L0'))) = (M', L')
 
 -- send_: (c: channel, e:event) => (P,V)->Proc
@@ -14,7 +14,7 @@ callvoid_args_(B',F') = \P',V' @ B'(P', V', F')
 -- assign_: (F': V -> V) => (P,V) -> Proc
 assign_(F') = \ P', V' @ P'(F'(V'))
 -- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
-assign_active_(C', A') = \P',V' @ C'(\((M', r'),L') @ P'(A'((M',L'),r')), V') 
+assign_active_(C', A') = \P',V' @ C'(\((M', r'),L') @ P'(A'((M',L'),r')), V')
 -- returnvalue_: (F: V->val) => (P,V)->Proc
 returnvalue_(F') = \P',(M',L') @ P'(((M',  F'((M', L'))), L'))
 -- the_end_: P => V->Proc
@@ -23,12 +23,12 @@ the_end_(P') = \V' @ transition_end -> P'(V')
 -- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
 semi_(S1',S2') = \ P', V' @ S1'( \ V'' @ S2'(P', V''), V')
 -- ifthenelse: (E': val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
-ifthenelse_(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')   
+ifthenelse_(E',S1',S2') = \ P', V' @ if E' then S1'(P',V') else S2'(P',V')
 -- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
 context_(F', S') = \ P', (M', L') @ S'((\V2' @ P'(drop_one_local_(V2'))), (M', (L', F'((M', L')))))
 -- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
 context_active_(C', S') = \P',V' @ C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
-                                                     
+
 datatype event_enumeration_alphabet =
 ev_mangle | ev_mingle | return
 
@@ -43,7 +43,7 @@ mangle = \ P',V',F' @ context_(F',
 semi_((\ P',V' @ if_mangle!ev_mingle -> P'(V')),
 returnvalue_(\ ((b),((stack',m))) @ (m or b))))(P',V')
 
-if_mangle_mangle_(((b),stack')) =
+if_mangle_mangle_(((b),(stack'))) =
 (true) & (
 if_mangle?x:{ev_mangle} ->
 semi_(semi_(assign_(\ ((b),(stack')) @ (((not b)),(stack'))),
@@ -53,7 +53,7 @@ semi_(semi_(assign_(\ ((b),(stack')) @ (((not b)),(stack'))),
 )(P',((b),(stack')))),
 (\ P',V' @ if_mangle.return -> P'(V')))(\ V' @ if_mangle_mangle_(V'),((b),(stack'))))
 
-within if_mangle_mangle_(((false),<>)) 
+within if_mangle_mangle_(((false),(<>))) 
 
 
 co_mangle_mangle(IIG,IG) = let
@@ -61,7 +61,7 @@ mangle = \ P',V',F' @ context_(F',
 semi_((\ P',V' @ po_mangle!ev_mingle -> P'(V')),
 returnvalue_(\ ((b),((stack',m))) @ (m or b))))(P',V')
 
-co_mangle_mangle_(((b),stack')) = transition_begin -> (
+co_mangle_mangle_(((b),(stack'))) = transition_begin -> (
 (true) & (
 po_mangle?x:{ev_mangle} ->
 semi_(semi_(assign_(\ ((b),(stack')) @ (((not b)),(stack'))),
@@ -71,7 +71,7 @@ semi_(semi_(assign_(\ ((b),(stack')) @ (((not b)),(stack'))),
 )(P',((b),(stack')))),
 (\ P',V' @ po_mangle.return -> P'(V')))(\ V' @ transition_end -> co_mangle_mangle_(V'),((b),(stack'))))
 )
-within co_mangle_mangle_(((false),<>))
+within co_mangle_mangle_(((false),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}

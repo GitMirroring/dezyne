@@ -42,7 +42,7 @@ channel U: {what,Status_Ok,Status_Nok,return}
 
   I_(IG) = let
 
-I__(((dummy),stack')) =
+I__(((dummy),(stack'))) =
 (true) & (
 I?x:{done} ->
 (\ P',V' @ I.Status_Yes -> P'(V'))(\ V' @ I__(V'),((dummy),(stack')))
@@ -50,11 +50,11 @@ I?x:{done} ->
   I?x:{done} ->
 (\ P',V' @ I.Status_No -> P'(V'))(\ V' @ I__(V'),((dummy),(stack'))))
 
-within I__(((false),<>)) 
+within I__(((false),(<>))) 
 
 U_(IG) = let
 
-U__(((dummy),stack')) =
+U__(((dummy),(stack'))) =
 (true) & (
 U?x:{what} ->
 (\ P',V' @ U.Status_Ok -> P'(V'))(\ V' @ U__(V'),((dummy),(stack')))
@@ -62,12 +62,12 @@ U?x:{what} ->
   U?x:{what} ->
 (\ P',V' @ U.Status_Nok -> P'(V'))(\ V' @ U__(V'),((dummy),(stack'))))
 
-within U__(((false),<>)) 
+within U__(((false),(<>))) 
 
 
 Reply2_(IIG,IG) = let
 
-Reply2__(((dummy),stack')) = transition_begin -> (
+Reply2__(((dummy),(stack'))) = transition_begin -> (
 (true) & (
 i?x:{done} ->
 context_active_(sendrecv_(u,what),
@@ -78,7 +78,7 @@ semi_(assign_active_(sendrecv_(u,what),
 (\ P',V' @ i.Status_No -> P'(V'))
 )(P',((dummy),((stack',s))))))(\ V' @ transition_end -> Reply2__(V'),((dummy),(stack'))))
 )
-within Reply2__(((false),<>))
+within Reply2__(((false),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}

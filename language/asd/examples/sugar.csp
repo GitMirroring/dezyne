@@ -40,7 +40,7 @@ channel I: {a,e,return}
 
   I_(IG) = let
 
-I__(((s),stack')) =
+I__(((s),(stack'))) =
 ((s == Enum_False)) & (
 I?x:{e} ->
 semi_(\ P',((s),(stack')) @ ifthenelse_((s == Enum_False),
@@ -49,12 +49,12 @@ semi_(\ P',((s),(stack')) @ ifthenelse_((s == Enum_False),
 )(P',((s),(stack'))),
 (\ P',V' @ I.return -> P'(V')))(\ V' @ I__(V'),((s),(stack'))))
 
-within I__(((Enum_False),<>)) 
+within I__(((Enum_False),(<>))) 
 
 
 sugar_(IIG,IG) = let
 
-sugar__(((s),stack')) = transition_begin -> (
+sugar__(((s),(stack'))) = transition_begin -> (
 ((s == Enum_False)) & (
 i?x:{e} ->
 semi_(\ P',((s),(stack')) @ ifthenelse_((s == Enum_False),
@@ -63,7 +63,7 @@ semi_(\ P',((s),(stack')) @ ifthenelse_((s == Enum_False),
 )(P',((s),(stack'))),
 (\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> sugar__(V'),((s),(stack'))))
 )
-within sugar__(((Enum_False),<>))
+within sugar__(((Enum_False),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}

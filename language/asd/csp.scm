@@ -491,8 +491,12 @@
     (('ctx context) (context->csp ast context))
     ((members locals ...)
      (let ((members (comma-join (map (lambda (x) (csp-expression->string ast x)) members)))
-           (locals (reduce (lambda (x y) (string-append "(" (element->csp ast y) "," (element->csp ast x) ")")) #f (cons "stack'" locals))))
-       (list "(" members "),(" locals ")")))
+           (locals (if (equal? locals '(<>))
+                       '<>
+                       (reduce (lambda (x y) (string-append "(" (element->csp ast y) "," (element->csp ast x) ")")) #f (cons "stack'" locals)))))
+       (if (string-null? members)
+           (list "(" locals ")")
+           (list "(" members "),(" locals ")"))))
     (_ (throw 'match-error (format #f "~a:context->csp: no match: ~a\n" (current-source-location) context)))))
 
 (define* (ast-transform- ast src :optional (return #t) (context #f))

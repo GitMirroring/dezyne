@@ -241,6 +241,7 @@
            left
            make
            member-names
+           member-values
            model?
            name
            on?
@@ -772,6 +773,9 @@
 
 (define (member-names model)
   (map name (variables (behaviour model))))
+
+(define ((member-values value) model)
+  (map (lambda (x) (value (expression x))) (variables (behaviour model))))
 
 (define (bottom? ast)
   (and-let* ((ports (ports ast))

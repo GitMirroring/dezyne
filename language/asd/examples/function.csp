@@ -45,7 +45,7 @@ toggle = \ P',V' @ semi_(\ P',((f),(stack')) @ ifthenelse_(f,
 )(P',((f),(stack'))),
 assign_(\ ((f),(stack')) @ (((not f)),(stack'))))(P',V')
 
-I__(((f),stack')) =
+I__(((f),(stack'))) =
 (true) & (
 I?x:{a} ->
 semi_(callvoid_(toggle),
@@ -57,7 +57,7 @@ semi_(callvoid_(toggle),
 (\ P',V' @ I!d -> P'(V')))),
 (\ P',V' @ I.return -> P'(V')))(\ V' @ I__(V'),((f),(stack'))))
 
-within I__(((false),<>)) 
+within I__(((false),(<>))) 
 
 
 function_(IIG,IG) = let
@@ -67,7 +67,7 @@ toggle = \ P',V' @ semi_(\ P',((f),(stack')) @ ifthenelse_(f,
 )(P',((f),(stack'))),
 assign_(\ ((f),(stack')) @ (((not f)),(stack'))))(P',V')
 
-function__(((f),stack')) = transition_begin -> (
+function__(((f),(stack'))) = transition_begin -> (
 (true) & (
 i?x:{a} ->
 semi_(callvoid_(toggle),
@@ -79,7 +79,7 @@ semi_(callvoid_(toggle),
 (\ P',V' @ i!d -> P'(V')))),
 (\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> function__(V'),((f),(stack'))))
 )
-within function__(((false),<>))
+within function__(((false),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
