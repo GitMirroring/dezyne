@@ -86,9 +86,9 @@
 ;;   (ast:functions (ast:behaviour (ast:interface AST)))
 ;;      ==>
 ;;   SUB-AST
-;;      := ((function name  ((type void)  (parameters (((type bool) b))) (compound)))
-;;           ^class   ^name ^^return-type ^parameters ^parameter         ^statement
-;;                          |signature
+;;      := ((function name  ((type void)  (parameters (parameter ((type bool) b)))         (compound)))
+;;           ^class   ^name ^type         ^parameters ^parameter              ^identifier   ^statement
+;;                           |signature
 ;;
 ;;
 ;;   (ast:parameters function)
@@ -530,6 +530,7 @@
   (match ast
     ((? assign?) (cadr ast))
     ((? call?) (cadr ast))
+    ((? parameter?) (caddr ast))
     (_ (throw 'match-error  (format #f "~a:identifier: no match: ~a\n" (current-source-location) ast)))))
 
 (define (return-type ast)
@@ -711,6 +712,8 @@
      (stderr "deprecated: return-type event; use type signature\n")
      (return-type ast))
     ((or (? enum?) (? int?)) (car ast))
+    ((? function?) (type (signature ast)))
+    ((? signature?) (cadr ast))
     ((? literal?) (caddr ast))
     ((or (? parameter?) (? signature?)) (cadr ast))
     ((or (? instance?) (? port?) (? type?) (? value?) (? variable?)) (cadr ast))

@@ -47,11 +47,15 @@
            <ast>
            <compound>
            <expression>
+           <function>
            <guard>
            <if>
            <call>
            <on>
+           <parameter>
+           <parameters>
            <return>
+           <signature>
            <trigger>
            <triggers>
 
@@ -76,7 +80,6 @@
            ))
 
 (define-class <ast> ())
-(define-class <statement> (<ast>))
 
 (define-class <named> (<ast>)
   (name :accessor .name :init-value #f :init-keyword :name))
@@ -108,6 +111,10 @@
   (type :accessor .type :init-value (make <type> :name 'bool) :init-keyword :type)
   (expression :accessor .expression :init-form (make <expression>) :init-keyword :expression))
 
+(define-class <parameter> (<ast>)
+  (type :accessor .type :init-value (make <type>) :init-keyword :type)
+  (identifier :accessor .identifier :init-value #f :init-keyword :identifier))
+
 (define-class <signature> (<ast>)
   (type :accessor .type :init-value (make <type>) :init-keyword :type)
   (parameters :accessor .parameters :init-form (make <parameters>) :init-keyword :parameters))
@@ -117,8 +124,8 @@
   (behaviour :accessor .behaviour :init-value #f :init-keyword :behaviour))
 
 (define-class <arguments> (<ast-list>))
-(define-class <compound> (<ast-list> <statement>))
 (define-class <events> (<ast-list>))
+(define-class <parameters> (<ast-list>))
 (define-class <ports> (<ast-list>))
 (define-class <triggers> (<ast-list>))
 (define-class <types> (<ast-list>))
@@ -127,13 +134,17 @@
 (define-class <enum> (<named>)
   (fields :accessor .fields :init-form (list) :init-keyword :fields))
 
-(define-class <parameters> (<ast-list>))
-
 (define-class <behaviour> (<named>)
   (types :accessor .types :init-form (make <types>) :init-keyword :types)
   (variables :accessor .variables :init-form (make <variables>) :init-keyword :variables)
   (statement :accessor .statement :init-value #f :init-keyword :statement))
 
+(define-class <function> (<named>)
+  (signature :accessor .signature :init-form (make <signature>) :init-keyword :signature)
+  (statement :accessor .statement :init-value #f :init-keyword :statement))
+
+;;; statements
+(define-class <statement> (<ast>))
 (define-class <action> (<statement>)
   (trigger :accessor .trigger :init-value #f :init-keyword :trigger))
 
@@ -144,6 +155,8 @@
 (define-class <call> (<ast>)
   (identifier :accessor .identifier :init-value #f :init-keyword :identifier)
   (arguments :accessor .arguments :init-form (make <arguments>) :init-keyword :arguments))
+
+(define-class <compound> (<ast-list> <statement>))
 
 (define-class <guard> (<statement>)
   (expression :accessor .expression :init-form (make <expression>) :init-keyword :expression)
@@ -173,26 +186,33 @@
 
 (define (ast->gom- ast)
   (match ast
+    ((? ast:component?) (make <component>
+                          :name (ast:name ast)
+                          :ports (ast->gom (ast:port-list ast))
+                          :behaviour (ast->gom (ast:behaviour ast))))
     ((? ast:interface?) (make <interface>
                           :name (ast:name ast)
                           :events (ast->gom (ast:event-list ast))
                           :types (ast->gom (ast:type-list ast))
                           :behaviour (ast->gom (ast:behaviour ast))))
-    ((? ast:component?) (make <component>
-                          :name (ast:name ast)
-                          :ports (ast->gom (ast:port-list ast))
-                          :behaviour (ast->gom (ast:behaviour ast))))
+    ((? ast:enum?) (make <enum>
+                     :name (ast:name ast)
+                     :fields (ast:fields ast)))
     ((? ast:event?) (make <event>
                       :name (ast:name ast)
                       :type (ast->gom (ast:signature ast))
                       :direction (ast:direction ast)))
+    ((? ast:function?) (make <function>
+                          :name (ast:name ast)
+                          :signature (ast->gom (ast:signature ast))
+                          :statement (ast->gom (ast:statement ast))))
+    ((? ast:parameter?) (make <parameter>
+                      :type (ast:type ast)
+                      :identifier (ast:identifier ast)))
     ((? ast:port?) (make <port>
                       :name (ast:name ast)
                       :type (ast:type ast)
                       :direction (ast:direction ast)))
-    ((? ast:enum?) (make <enum>
-                     :name (ast:name ast)
-                     :fields (ast:fields ast)))
     ((? ast:variable?) (make <variable>
                          :name (ast:name ast)
                          :type (ast:type ast)
@@ -218,7 +238,9 @@
 
     ((? ast:signature?) (make <signature>
                           :type (ast:type ast)
-                          :parameters (ast->gom (ast:parameter-list ast))))
+                          :parameters (ast->gom (or (null-is-#f
+                                                     (ast:parameter-list ast))
+                                                    '(parameters)))))
     ((? ast:behaviour?) (make <behaviour>
                           :name (ast:name ast)
                           :types (ast->gom (ast:type-list ast))
@@ -264,6 +286,9 @@
     ((? ast:value?) (make <value>
                       :type (ast:type ast)
                       :field (ast:field ast)))
+    ((? ast:parameter?) (make <parameter>
+                      :type (ast:type ast)
+                      :identifier (ast:identifier ast)))
     ((h t ...) (map ast->gom ast))
     (_ ast)))
 
@@ -315,6 +340,20 @@
                                        (make <expression>
                                          :value (ast->gom* (ast:expression ast))))))
 
+    ((? ast:parameter?) (make <parameter>
+                      :type (ast:type ast)
+                      :identifier (ast:identifier ast)))
+    ((? ast:parameter-list?) (make <parameters>
+                               :elements (map ast->gom* (ast:body ast))))
+    ((? ast:function?) (make <function>
+                          :name (ast:name ast)
+                          :signature (ast->gom* (ast:signature ast))
+                          :statement (ast->gom* (ast:statement ast))))
+    ((? ast:signature?) (make <signature>
+                          :type (ast:type ast)
+                          :parameters (ast->gom* (or (null-is-#f
+                                                      (ast:parameter-list ast))
+                                                     '(parameters)))))
     ((? ast:statement-list?) (make <compound>
                                :elements (map ast->gom* (ast:body ast))))
     ((? ast:trigger?) (make <trigger>
@@ -363,6 +402,7 @@
   (if (pair? (.elements (.arguments o)))
       (sdisplay (.arguments o) port)))
 
+
 (define-method (write (o <dir-ast>) port)
   (display "(" port)
   (display-slots o port)
@@ -375,6 +415,11 @@
 
 (define-method (display-slots (o <return>) port)
   (and=> (.expression o) (lambda (x) (sdisplay x port))))
+
+(define-method (display-slots (o <signature>) port)
+  (sdisplay (.type o) port)
+  (if (pair? (.elements (.parameters o)))
+      (sdisplay (.parameters o) port)))
 
 (define-generic class-name)
 (define-method (class-name (o <ast>))
