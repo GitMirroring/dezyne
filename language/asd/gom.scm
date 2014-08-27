@@ -51,6 +51,7 @@
            <functions>
            <guard>
            <if>
+           <illegal>
            <call>
            <on>
            <parameter>
@@ -352,6 +353,7 @@
                                      :value (ast->gom* (ast:expression ast)))
                        :then (ast->gom* (ast:then ast))
                        :else (ast->gom* (ast:else ast))))
+    ((? ast:illegal?) (make <illegal>))
     ((? ast:on?) (make <on>
                        :triggers (ast->gom* (ast:trigger-list ast))
                        :statement (ast->gom* (ast:statement ast))))
@@ -469,7 +471,7 @@
 
 (define (ast-> ast)
   (pretty-print (with-input-from-string
-                    (with-output-to-string (lambda () (write (ast->gom ast))))
+                    (with-output-to-string (lambda () (write (ast->gom* ast))))
                   read)) "")
 
 

@@ -307,7 +307,7 @@
        (if (null? statements)
            #f
            (or (prefix-illegal? (car statements)) (loop (cdr statements))))))
-    (('illegal) #t)
+    (($ <illegal>) #t)
     (_ #f)))
 
 (define (prefix-reply? statement)
@@ -366,13 +366,6 @@
     (if (member 'optional (map .event (gom:find-events (ast-norm (ast:type port)))))
         (list "[|{" interface " .optional}|] " "CHAOS({" interface " .optional})")
         "")))
-
-(define (->string src)
-  (match src
-    (('value type field) (->string (list type "." field)))
-    (('trigger port event) (->string (list port "." event)))
-;;    (_ (stderr "NO MATCH: ~a\n" src) (format #f "~a" src))
-    (_ ((@ (language asd misc) ->string) src))))
 
 (define (ast-transform ast src)
   (ast-transform- ast (ast-transform-return ast (ast-transform-function-call ast src))))
@@ -437,13 +430,13 @@
      (make <csp-on>
        :triggers (csp->gom (cdr ast))
        :statement (csp->gom statement)
-       :the-end the-end))
+       :the-end (csp->gom the-end)))
     (('on triggers statement the-end)
      (make <csp-on>
        :triggers (make <triggers>
                    :elements (csp->gom (map ast->trigger-sugar triggers)))
        :statement (csp->gom statement)
-       :the-end the-end))
+       :the-end (csp->gom the-end)))
     (('if ('ctx context) ('expression expression) then else)
      (make <csp-if>
        :context (cadr ast)
@@ -598,7 +591,7 @@
                                  (context-extend context (.name statement))
                                  context)))
                (if (>1 (length statements))
-                   (if (equal? transformed '(illegal))
+                   (if (is-a? transformed <illegal>)
                        transformed
                        (list (if (is-a? statement <variable>)
                                  (if (or (valued-action? statement) (call? statement))
@@ -611,7 +604,7 @@
        (list context name (list 'valued-action (make <trigger> :port (port) :event event))))
       (($ <variable> name type ($ <expression> (and ($ <call>) (get! call)))) ;; FIXME: no test?
        (list context name (call)))
-      (($ <variable> name type ($ <expression> expression))
+      (($ <variable> name type expression)
        (list context name (list 'expression expression)))
       (($ <function> name (and ($ <signature> type ($ <parameters> parameters))
                                (get! signature)) statement)
@@ -739,7 +732,7 @@
                (context (make-context members '()))
                (end (if (not inevitable-optional?) (list transition-end))))
           (list "(\\ V' @ " end model-name "_" behaviour "_" "(V'),(" context "))")))
-       (('illegal) "illegal -> STOP")
+       (($ <illegal>) "illegal -> STOP")
        (($ <function> name ($ <signature> type ($ <parameters> '())) statement)
         (let ((transformed (csp-transform ast statement inevitable-optional? channel provided-on?)))
           (list name " = \\ P',V' @ " transformed "(P',V')\n")))
