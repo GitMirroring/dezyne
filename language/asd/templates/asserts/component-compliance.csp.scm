@@ -22,9 +22,9 @@
 ;;; 
 ;;; Code:
 
-assert #.interface _#.interface-behaviour(true) [[#.interface .x<-#.port .x|x<-extensions(#.interface)]] \ {#
+assert #.interface.name _#.interface-behaviour(true) [[#.interface.name .x<-#.port.name .x|x<-extensions(#.interface.name)]] \ {#
 (map-ports #{#
    (comma-join
-       (map (lambda (x) (string-join (map ->string (list .port x)) ".")) (filter
+       (map (lambda (x) (string-join (map ->string (list .port.name x)) ".")) (filter
          (lambda (x) (or (eq? x 'optional) (eq? x 'inevitable)))
-         (port-events port)))) #} (filter ast:provides? ((compose ast:ports ast:component) ast)))} [F= #.component _#.behaviour _Component(true) \ diff(Events,{|illegal,#.port |})
+         (port-events port)))) #} (filter gom:provides? ((compose .elements .ports gom:component) ast)))} [F= #.component _#.behaviour.name _Component(true) \ diff(Events,{|illegal,#.port.name |})

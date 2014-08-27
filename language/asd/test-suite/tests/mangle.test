@@ -50,8 +50,8 @@
 
 (pass-if "mangle-interface-on"
   (pretty-noisy-equal?
-   (mangle '(on ((trigger #f e)) (illegal)))
-   '(on ((trigger #f ev_e)) (illegal))))
+   (mangle '(on (triggers (trigger #f e)) (illegal)))
+   '(on (triggers (trigger #f ev_e)) (illegal))))
 
 (pass-if "mangle-trigger"
   (pretty-noisy-equal?

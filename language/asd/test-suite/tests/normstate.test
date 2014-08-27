@@ -38,7 +38,7 @@
    '(interface i (types) (events)
                (behaviour #f (types) (variables) (functions)
                           (compound
-                           (guard true (on ((trigger #f a)) (skip))))))))
+                           (guard true (on (triggers (trigger #f a)) (skip))))))))
 
 (pass-if "normstate-102"
   (pretty-noisy-equal?
@@ -51,7 +51,7 @@
                (behaviour #f (types) (variables) (functions)
                           (compound
                            (guard true
-                                  (on ((trigger #f a))
+                                  (on (triggers (trigger #f a))
                                       (action (trigger #f b)))))))))
 
 (pass-if "normstate-aggregate-guard-passive"
@@ -65,7 +65,7 @@
                (behaviour #f (types) (variables) (functions)
                           (compound
                            (guard true
-                                  (on ((trigger #f a) (trigger #f b) (trigger #f c))
+                                  (on (triggers (trigger #f a) (trigger #f b) (trigger #f c))
                                       (action (trigger #f d)))))))))
 
 (pass-if "normstate-aggregate-guard-active"
@@ -82,9 +82,9 @@
                           (compound
                            (guard true
                                   (compound
-                                   (on ((trigger #f a)) (action (trigger #f d)))
-                                   (on ((trigger #f b)) (action (trigger #f e)))
-                                   (on ((trigger #f c)) (action (trigger #f f))))))))))
+                                   (on (triggers (trigger #f a)) (action (trigger #f d)))
+                                   (on (triggers (trigger #f b)) (action (trigger #f e)))
+                                   (on (triggers (trigger #f c)) (action (trigger #f f))))))))))
 
 (pass-if "normstate-function-call"
   (pretty-noisy-equal?
@@ -102,7 +102,7 @@
                                      (compound (if true (skip)))))
                           (compound
                            (guard true
-                                  (on ((trigger #f a) (trigger #f b) (trigger #f c))
+                                  (on (triggers (trigger #f a) (trigger #f b) (trigger #f c))
                                       (action (trigger #f d)))))))))
 
 
@@ -117,7 +117,7 @@
                (behaviour #f (types) (variables) (functions)
                           (compound
                            (guard true
-                                  (on ((trigger #f a) (trigger #f b) (trigger #f c))
+                                  (on (triggers (trigger #f a) (trigger #f b) (trigger #f c))
                                       (action (trigger #f d)))))))))
 
 (pass-if "normstate-split-on-active"
@@ -133,11 +133,11 @@
                           (compound
                            (guard true
                                   (compound
-                                   (on ((trigger i a) (trigger i b))
+                                   (on (triggers (trigger i a) (trigger i b))
                                        (action (trigger #f d)))
-                                   (on ((trigger j a))
+                                   (on (triggers (trigger j a))
                                        (action (trigger #f d)))
-                                   (on ((trigger j b))
+                                   (on (triggers (trigger j b))
                                        (action (trigger #f e))))))))))
 
 (pass-if "normstate-aggregate-on-interface-passive"
@@ -151,7 +151,7 @@
                (behaviour #f (types) (variables) (functions)
                           (compound
                            (guard true
-                                  (on ((trigger #f a) (trigger #f b) (trigger #f c)) (action (trigger #f d)))))))))
+                                  (on (triggers (trigger #f a) (trigger #f b) (trigger #f c)) (action (trigger #f d)))))))))
 
 (pass-if "normstate-aggregate-on-interface-active"
   (pretty-noisy-equal?
@@ -167,7 +167,7 @@
                           (compound
                            (guard true
                                   (compound
-                                   (on ((trigger #f a) (trigger #f b) (trigger #f c)) (action (trigger #f d))))))))))
+                                   (on (triggers (trigger #f a) (trigger #f b) (trigger #f c)) (action (trigger #f d))))))))))
 
 ;; not modifying the input where it is already fine,
 ;; helps retaining more location information in AST.
@@ -185,11 +185,11 @@
                           (compound
                            (guard true
                                   (compound
-                                   (on ((trigger i a) (trigger i b))
+                                   (on (triggers (trigger i a) (trigger i b))
                                        (action (trigger #f d)))
-                                   (on ((trigger j a))
+                                   (on (triggers (trigger j a))
                                        (action (trigger #f d)))
-                                   (on ((trigger j b))
+                                   (on (triggers (trigger j b))
                                        (action (trigger #f e))))))))))
 
 (pass-if "normstate-aggregate-on-component-active"
@@ -207,9 +207,9 @@
                           (compound
                            (guard true
                                   (compound
-                                   (on ((trigger i a) (trigger i b))
+                                   (on (triggers (trigger i a) (trigger i b))
                                        (action (trigger #f d)))
-                                   (on ((trigger j a))
+                                   (on (triggers (trigger j a))
                                        (action (trigger #f d)))
-                                   (on ((trigger j b))
+                                   (on (triggers (trigger j b))
                                        (action (trigger #f e))))))))))

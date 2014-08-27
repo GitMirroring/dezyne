@@ -10,6 +10,18 @@
   :use-module (language asd csp)
   :use-module (language asd gom))
 
+(define plain-equal? equal?)
+(define (equal? actual expected)
+  (plain-equal?
+       (with-input-from-string
+              (with-output-to-string (lambda ()
+                                       (write (csp->gom actual))))
+            read)
+          (with-input-from-string
+              (with-output-to-string (lambda ()
+                                       (write (csp->gom expected))))
+            read)))
+
 (pass-if "csp-first-dummy-test"
          #t)
 
@@ -20,9 +32,9 @@
                   B
                   (types (enum S (S1 S2)))
                   (variables
-                   (variable S s (trigger S S1))
-                   (variable bool b false)
-                   (variable bool c true))
+                   (variable (type S) s (trigger S S1))
+                   (variable (type bool) b false)
+                   (variable (type bool) c true))
                   (functions (function toggle (signature (type void)) (compound)))
                   (compound))))
 
@@ -37,7 +49,7 @@
        (the-end (s b c))))
 
 (pass-if "ast-transform-return-return"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform-return* i-ast ast-return-ast)
@@ -49,7 +61,7 @@
                (the-end (s b c)))))
 
 (pass-if "ast-transform-return"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform* i-ast ast-return-ast)
@@ -70,7 +82,7 @@
 
 
 (pass-if "ast-transform-return-reply"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform-return*
@@ -107,7 +119,7 @@ skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
 
 
 (pass-if "ast-transform-reply"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform*
@@ -124,7 +136,7 @@ skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
                (the-end (s b c)))))
 
 (pass-if "ast-transform-compound-reply"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform*
@@ -162,7 +174,7 @@ skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
 
 
 (pass-if "ast-transform-action"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform*
@@ -197,7 +209,7 @@ skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
        (illegal)))
 
 (pass-if "ast-transform-illegal-action"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform*
@@ -211,7 +223,7 @@ skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
           ast-transform-illegal-action-via))
 
 (pass-if "csp-transform-illegal-action"
-         (noisy-equal?
+         (gom-noisy-equal?
 
           ;; via:
           (csp-transform*
@@ -230,7 +242,7 @@ illegal -> STOP"))
     (the-end (s b c))))
 
 (pass-if "ast-transform-empty-compound"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform*
@@ -241,7 +253,7 @@ illegal -> STOP"))
           ast-transform-empty-compound-via))
 
 (pass-if "csp-transform-empty-compound"
-         (noisy-equal?
+         (gom-noisy-equal?
 
           ;; via:
           (csp-transform*
@@ -260,7 +272,7 @@ illegal -> STOP"))
     (the-end (s b c))))
 
 (pass-if "ast-transform-skip"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform*
@@ -271,7 +283,7 @@ illegal -> STOP"))
           ast-transform-skip-via))
 
 (pass-if "csp-transform-skip"
-         (noisy-equal?
+         (gom-noisy-equal?
 
           ;; via:
           (csp-transform*
@@ -287,7 +299,7 @@ illegal -> STOP"))
 (define ast-transform-assign '(assign (ctx ((s b c))) (ctx ((s b true)))))
 
 (pass-if "ast-transform-assign-bool"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform* i-ast '(assign c true))
@@ -296,7 +308,7 @@ illegal -> STOP"))
           ast-transform-assign))
 
 (pass-if "csp-transform-assign-bool"
-         (noisy-equal?
+         (gom-noisy-equal?
 
           ;; via/from:
           (csp-transform* i-ast ast-transform-assign)
@@ -314,7 +326,7 @@ illegal -> STOP"))
      (assign (ctx ((s b c) la lb)) (ctx ((s b c) true lb))))))
 
 (pass-if "ast-transform-assign-2-bool"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform*
@@ -348,7 +360,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
     (ctx (((value S S2) b c)))))
 
 (pass-if "ast-transform-assign-enum"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform* i-ast '(assign s (value S S2)))
@@ -357,7 +369,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
           ast-transform-assign-enum-via))
 
 (pass-if "csp-transform-assign-enum"
-         (noisy-equal?
+         (gom-noisy-equal?
 
           ;; via/from:
           (csp-transform* i-ast ast-transform-assign-enum-via)
@@ -368,7 +380,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
 ;; \\)
 
 (pass-if "ast-transform-ifthen"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform*
@@ -386,7 +398,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
 
 
 (pass-if "csp-transform-expression"
-         (noisy-equal?
+         (gom-noisy-equal?
 
           ;; from:
           (csp-expression->string
@@ -406,7 +418,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
        ()))
 
 (pass-if "ast-transform-ifthenelse"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform*
@@ -433,7 +445,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
 )(P',((s,b,c),(stack')))"))
 
 (pass-if "ast-transform-ifthen-illegal"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform*
@@ -451,7 +463,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
                ())))
 
 (pass-if "ast-transform-ifthenelse-illegal"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform*
@@ -476,7 +488,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
          (assign (ctx ((s b c))) (ctx ((s true c))))))
 
 (pass-if "ast-transform-semi"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform*
@@ -532,7 +544,7 @@ assign_(\\ ((s,b,c),(stack')) @ ((s,true,c),(stack'))))"))
     (the-end (s b c))))
 
 (pass-if "ast-transform"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform*
@@ -600,9 +612,9 @@ semi_(semi_(\\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
                      B
                      (types (enum S (S1 S2)))
                      (variables
-                      (variable S s (value S S1))
-                      (variable bool b false)
-                      (variable bool c true))
+                      (variable (type S) s (value S S1))
+                      (variable (type bool) b false)
+                      (variable (type bool) c true))
                      (compound)))))))
 
 (define c-ast-transform-return-via
@@ -611,7 +623,7 @@ semi_(semi_(\\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
        (the-end (s b c))))
 
 (pass-if "c-ast-transform-return"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform*
@@ -626,7 +638,7 @@ semi_(semi_(\\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
           c-ast-transform-return-via))
 
 (pass-if "c-csp-transform-return"
-         (noisy-equal?
+         (gom-noisy-equal?
 
           ;; via/from:
           (csp-transform* c-ast c-ast-transform-return-via)
@@ -637,7 +649,7 @@ semi_(semi_(\\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
 
 
 (pass-if "c-ast-transform-provided-action"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform*
@@ -667,7 +679,7 @@ illegal -> STOP"))
 
 
 (pass-if "c-csp-transform-required-action"
-         (noisy-equal?
+         (gom-noisy-equal?
 
           ;; from:
           (csp-transform*
@@ -747,7 +759,7 @@ skip_(\\ V' @ transition_end -> c_B_(V'),((s,b,c),(stack')))"))
     (the-end (state sounding))))
 
 (pass-if "c-ast-transform-alarm-snippet"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
           (ast-transform*
            alarm-ast
 
@@ -815,7 +827,7 @@ assign_(\\ ((state,sounding),(stack')) @ ((States_Triggered,sounding),(stack')))
                #f
                (types)
                (variables
-                (variable bool dummy false))
+                (variable (type bool) dummy false))
                (compound
                 (guard true
                        (compound
@@ -836,7 +848,7 @@ assign_(\\ ((state,sounding),(stack')) @ ((States_Triggered,sounding),(stack')))
         (action toggle))))
 
 (pass-if "ast-transform-ast-transform-function-call"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform-function-call* i-ast ast-function-call-ast)
@@ -854,7 +866,7 @@ assign_(\\ ((state,sounding),(stack')) @ ((States_Triggered,sounding),(stack')))
        (the-end (s b c))))
 
 (pass-if "ast-transform-function-call"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform*
@@ -899,7 +911,7 @@ semi_(callvoid_(toggle),
     (semi (action (trigger #f f)) (return (ctx ((s b hide_member2') c)) c))))
 
 (pass-if "ast-transform-function-arguments"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform* i-ast
@@ -932,7 +944,7 @@ returnvalue_(\\ ((s,b,hide_member2'),((stack',c))) @ c)))(P',V')
     (the-end (s b c))))
 
 (pass-if "ast-transform-function-call-arguments"
-  (pretty-noisy-equal?
+  (gom-pretty-noisy-equal?
 
    ;; from:
    (ast-transform*
@@ -967,7 +979,7 @@ context_active_(\\ P',V' @ g (P',V',\\ ((s,b,c),(stack')) @ (b,b)),
        (the-end (dummy))))
 
 (pass-if "ast-transform-reply-variable"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform*
@@ -1036,7 +1048,7 @@ context_active_(sendrecv_(u,what),
     (the-end (b))))
 
 (pass-if "ast-transform-return-variable"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform*
@@ -1123,7 +1135,7 @@ semi_(context_(\\ ((b),(stack')) @ true,
     (the-end (b))))
 
 (pass-if "ast-transform-callvalued"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform* callvalued-ast callvalued-on)
@@ -1173,7 +1185,7 @@ semi_(assign_active_(\\ P',V' @ g (P',V',\\ ((b),((stack',c))) @ (c)),
     (the-end (b))))
 
 (pass-if "ast-transform-callvalued-2"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform* callvalued-ast callvalued-on-2)
@@ -1253,7 +1265,7 @@ semi_(assign_active_(\\ P',V' @ h (P',V',\\ ((b),((stack',c))) @ (s,b)),
     (the-end (b))))
 
 (pass-if "ast-transform-callvalued-deep"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform* callvalued-ast callvalued-on-deep)
@@ -1263,31 +1275,31 @@ semi_(assign_active_(\\ P',V' @ h (P',V',\\ ((b),((stack',c))) @ (s,b)),
 
 (pass-if "context-extend"
   (let ((context (make-context (ast:member-names i-ast) '(d))))
-    (pretty-noisy-equal?
+    (gom-pretty-noisy-equal?
      (context-extend context 'b)
      '(ctx ((s hide_member1' c) d b)))))
 
 (pass-if "context-extend-symbol-vector"
   (let ((context (make-context (ast:member-names i-ast) '(d))))
-    (pretty-noisy-equal?
+    (gom-pretty-noisy-equal?
      (context-extend context '(vector s d))
      '(ctx ((hide_member0' b c) hide_local0' (vector s d))))))
 
 (pass-if "context-extend-vector-symbol"
   (let ((context (make-context (ast:member-names i-ast) '((vector b e f)))))
-    (pretty-noisy-equal?
+    (gom-pretty-noisy-equal?
      (context-extend context 'b)
      '(ctx ((s hide_member1' c) (vector hide_local0' e f) b)))))
 
 (pass-if "context-extend-vector-vector"
   (let ((context (make-context (ast:member-names i-ast) '((vector d e f)))))
-    (pretty-noisy-equal?
+    (gom-pretty-noisy-equal?
      (context-extend context '(vector s d))
      '(ctx ((hide_member0' b c) (vector hide_local0' e f) (vector s d))))))
 
 (pass-if "context-extend-vector-symbol-vector"
   (let ((context (make-context (ast:member-names i-ast) '((vector d e f) s))))
-    (pretty-noisy-equal?
+    (gom-pretty-noisy-equal?
      (context-extend context '(vector s d))
      '(ctx ((hide_member0' b c) (vector hide_local0' e f) hide_local3' (vector s d))))))
 
@@ -1302,7 +1314,7 @@ semi_(assign_active_(\\ P',V' @ h (P',V',\\ ((b),((stack',c))) @ (s,b)),
     (the-end (s b c))))
 
 (pass-if "ast-transform-OM-PARSER-variable-action"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform* i-ast '(on ((trigger i done))
@@ -1337,7 +1349,7 @@ context_active_(sendrecv_(u,what),
     (the-end (s b c))))
 
 (pass-if "ast-transform-OM-PARSER-variable-action"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform* i-ast '(on ((trigger i done))
@@ -1371,7 +1383,7 @@ context_active_(sendrecv_(u,what),
     (the-end (s b c))))
 
 (pass-if "ast-transform-OM-PARSER-assign-action"
-         (pretty-noisy-equal?
+         (gom-pretty-noisy-equal?
 
           ;; from:
           (ast-transform* c-ast
@@ -1397,48 +1409,48 @@ semi_(assign_active_(sendrecv_(k,h),
 
 ;; '
 
-(define component (ast:component c-ast))
+(define component (ast->gom* (ast:component c-ast)))
 
 (pass-if "provides?"
-  (pretty-noisy-equal?
+  (gom-pretty-noisy-equal?
    ((provides? component)
     (ast->gom* '(trigger j e)))
    #t))
 
 (pass-if "not provides?"
-  (pretty-noisy-equal?
+  (gom-pretty-noisy-equal?
    ((provides? component)
     (ast->gom* '(trigger k e)))
    #f))
 
 (pass-if "requires?"
-  (pretty-noisy-equal?
+  (gom-pretty-noisy-equal?
    ((requires? component)
     (ast->gom* '(trigger k e)))
    #t))
 
 (pass-if "not requires?"
-  (pretty-noisy-equal?
+  (gom-pretty-noisy-equal?
    ((requires? component)
     (ast->gom* '(trigger j e)))
    #f))
 
 (pass-if "statement-on-p/r"
-  (pretty-noisy-equal?
+  (gom-pretty-noisy-equal?
    ((statement-on-p/r identity)
     (ast->gom*
      '(on (arm) (compound))))
    '(on (arm) (compound))))
 
 (pass-if "statement-on-p/r-filter"
-  (pretty-noisy-equal?
+  (gom-pretty-noisy-equal?
    ((statement-on-p/r (provides? component))
     (ast->gom*
      '(on (arm) (compound))))
    #f))
 
 (pass-if "statement-on-p/r-filter"
-  (pretty-noisy-equal?
+  (gom-pretty-noisy-equal?
    ((statement-on-p/r (provides? component))
     (ast->gom*
      '(on ((j e)) (compound))))
@@ -1483,3 +1495,13 @@ semi_(assign_active_(sendrecv_(k,h),
    (behaviour->csp (ast->gom* guard-i-ast) "boo")
    "(true) & (
 )"))
+
+(pass-if "variable-prefix"
+  (noisy-equal?
+   (variable-prefix (ast->gom* i-ast) 's)
+   'S))
+
+(pass-if "variable-prefix"
+  (noisy-equal?
+   (variable-prefix (ast->gom* i-ast) 'q)
+   #f))

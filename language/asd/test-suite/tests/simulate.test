@@ -39,7 +39,7 @@
                                      } } #}))
     '(a a a))
    (map
-    (lambda (x) (cons x (cons '() '((on ((trigger #f a)) (action (trigger #f b))) (action (trigger #f b))))))
+    (lambda (x) (cons x (cons '() '((on (triggers (trigger #f a)) (action (trigger #f b))) (action (trigger #f b))))))
     '(a a a))))
 
 (pass-if "simulator-guard-trail"
@@ -62,7 +62,7 @@
      '(a a a))
     '((a
        ((t . #t))
-       (on ((trigger #f a))
+       (on (triggers (trigger #f a))
            (compound
             (guard t (assign t (! t)))
             (guard (! t) (action (trigger #f b)))))
@@ -70,7 +70,7 @@
        (assign t (! t)))
       (a
        ((t . #f))
-       (on ((trigger #f a))
+       (on (triggers (trigger #f a))
            (compound
             (guard t (assign t (! t)))
             (guard (! t) (action (trigger #f b)))))
@@ -78,7 +78,7 @@
        (action (trigger #f b)))
       (a
        ((t . #f))
-       (on ((trigger #f a))
+       (on (triggers (trigger #f a))
            (compound
             (guard t (assign t (! t)))
             (guard (! t) (action (trigger #f b)))))

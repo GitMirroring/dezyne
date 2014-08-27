@@ -30,15 +30,19 @@
   :use-module (srfi srfi-1)
 
   :use-module (language asd ast:)
+  :use-module (language asd misc)
   :use-module (language asd reader)
+
+  :use-module (oop goops)
+  :use-module (language asd gom)
   :export (
            ast->
 	   assert-list
            ))
 
 (define ((assert model) check) (if (eq? check 'compliance)
-                                   (list (ast:class model) (ast:name model) check (ast:type (ast:port model)))
-                                   (list (ast:class model) (ast:name model) check)))
+                                   (list (gom:class model) (.name model) check (.type (gom:port model)))
+                                   (list (gom:class model) (.name model) check)))
 
 (define (ast-> ast)
   (pretty-print (assert-list ast))
@@ -47,8 +51,8 @@
 (define (assert-list ast)
   (let* ((component-checks '(deterministic illegal deadlock compliance livelock))
 	 (interface-checks '(deadlock livelock))
-	 (component (ast:component ast))
-	 (interfaces (map (compose ast:ast ast:type) (ast:ports component))))
+	 (component (gom:component ast))
+	 (interfaces (map (compose ast->gom* ast:ast .type) ((compose .elements .ports) component))))
     (append (apply append
 		   (delete-duplicates (map (lambda (interface)
 					     (map (assert interface) interface-checks)) interfaces)))

@@ -13,7 +13,7 @@
          #t)
 
 (pass-if "find-events"
-  (pretty-noisy-equal?
+  (gom-pretty-noisy-equal?
    (gom:find-events
     (ast->gom* '(on (arm) (compound))))
    '((trigger #f arm))))

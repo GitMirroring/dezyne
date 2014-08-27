@@ -24,7 +24,7 @@
 
 #
 (define ((the-one? name) port)
-   (eq? (ast:type port) name))# 
+   (eq? (.type port) name))#
 (map-ports #{
-assert #.interface _#.behaviour(false) :[deadlock free]
-#} (list (car (filter (the-one? .model) ((compose ast:ports ast:component) ast)))))
+assert #.interface.name _#.behaviour.name(false) :[deadlock free]
+#} (list (car (filter (the-one? .model) ((compose .elements .ports gom:component) ast)))))

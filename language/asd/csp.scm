@@ -64,6 +64,7 @@
            statement-on-p/r
            provides?
            requires?
+           variable-prefix
            ))
 
 (define (ast-> ast)
@@ -74,7 +75,7 @@
                                ast)))))
     (ast:register norm #t)
     (module-define! (resolve-module '(language asd csp)) 'ast norm)  ;; FIXME
-    (and-let* ((comp (ast:component norm))
+    (and-let* ((comp (gom:component norm))
                (name (ast:name (ast:component ast))) ;; unmangled
                (module (csp-module norm))
                (fn (option-ref (parse-opts (command-line)) 'output (list name '.csp))))
@@ -103,11 +104,11 @@
 
 (define asserts-alist
   `(
-    ((component illegal) . "assert STOP [T= #.component _#.behaviour _Component(false) \\ diff(Events,{illegal})\n")
-    ((component deterministic) . "assert #.component _#.behaviour(true,true) :[deterministic]\n")
-    ((component deadlock)  . "assert #.component _#.behaviour _Component(false) :[deadlock free]\n")
+    ((component illegal) . "assert STOP [T= #.component _#.behaviour.name _Component(false) \\ diff(Events,{illegal})\n")
+    ((component deterministic) . "assert #.component _#.behaviour.name(true,true) :[deterministic]\n")
+    ((component deadlock)  . "assert #.component _#.behaviour.name _Component(false) :[deadlock free]\n")
     ((component compliance) . ,(gulp-file 'templates/asserts/component-compliance.csp.scm))
-    ((component livelock)  .  "assert #.component _#.behaviour _Component(true) \\ diff(Events,{|illegal,#.port |}) :[livelock free]\n")
+    ((component livelock)  .  "assert #.component _#.behaviour.name _Component(true) \\ diff(Events,{|illegal,#.port.name |}) :[livelock free]\n")
     ((interface deadlock) . ,(gulp-file 'templates/asserts/interface-deadlock.csp.scm))
     ((interface livelock) . ,(gulp-file 'templates/asserts/interface-livelock.csp.scm))))
 
@@ -121,13 +122,13 @@
                                  (resolve-module '(language asd ast:))
                                  (resolve-module '(language asd csp))))))
     (module-define! module 'ast ast)
-    (and-let* ((comp (ast:component ast)))
-              (module-define! module '.component (ast:name comp))
+    (and-let* ((comp (gom:component ast)))
+              (module-define! module '.component (.name comp))
               (module-define! module 'component comp)
-              (module-define! module '.interface (ast:name (ast:type (car (filter ast:provides? (ast:ports comp))))))
-	      (module-define! module '.behaviour (ast:name (ast:behaviour comp)))
-              (module-define! module '.interface-behaviour (ast:name (ast:behaviour (ast-norm (ast:type (ast:port (ast:component ast)))))))
-	      (module-define! module '.port (ast:name (ast:port comp))))
+              (module-define! module '.interface.name (.type (car (filter gom:provides? (.elements (.ports comp))))))
+	      (module-define! module '.behaviour.name (.name (.behaviour comp)))
+              (module-define! module '.interface-behaviour (.name (.behaviour (ast-norm (.type (gom:port (gom:component ast)))))))
+	      (module-define! module '.port.name (.name (gom:port comp))))
     module))
 
 (define* (map-ports string ports :optional (separator ""))
@@ -143,12 +144,12 @@
                    (csp-module ast)
                    port
                    `((port . ,identity)
-                     (interface . ,(ast-norm (ast:type port)))
+                     (interface . ,(ast-norm (.type port)))
                      (.optional-chaos . ,optional-chaos)
-                     (.interface . ,ast:type) ;; FIXME
-                     (.name . ,ast:name)
-                     (.port . ,ast:name)
-                     (.behaviour . ,(compose ast:name ast:behaviour))))))))))
+                     (.interface.name . ,.type)
+                     (.port.name . ,.name)
+                     (.behaviour.name . ,(compose .name .behaviour ast-norm .type))
+                     ))))))))
         ports)))
 
 (define* (map-interfaces string interfaces :optional (separator ""))
@@ -164,8 +165,7 @@
                    (csp-module ast)
                    interface
                    `((interface . ,(ast-norm interface))
-                     (.name . ,ast:name)
-                     (.interface . ,ast:name)))))))))
+                     (.interface.name . ,interface)))))))))
         interfaces)))
 
 (define (map-guards string guards)
@@ -194,21 +194,22 @@
                ((->join "\n []\n  ")
                 (map (lambda (on)
                        (csp-transform model (ast-transform model on)))
-                     (if (ast:interface? model)
+                     (if (is-a? model <interface>)
                          ons
                          (append
                           (filter identity (map (statement-on-p/r (provides? model)) ons))
                           (filter identity (map (statement-on-p/r (requires? model)) ons))))))
                ")")))
-          ((gom:statements-of-type 'guard) (gom:statement (ast:behaviour model))))
+          ((gom:statements-of-type 'guard) (gom:statement (.behaviour model))))
          (map (lambda (on) (csp-transform model (ast-transform model on)))
-              ((gom:statements-of-type 'on) (gom:statement (ast:behaviour model)))))))
+              ((gom:statements-of-type 'on) (gom:statement (.behaviour model)))))))
       default))
 
 (define (variable-prefix ast identifier) ;; FIXME: no test
   (and-let* ((variable (gom:variable ast identifier))
-             ((is-a? variable <variable>)))
-            (ast:type (.type variable))))
+             ((is-a? variable <variable>))
+             (type (.type variable)))
+            (ast:type type)))
 
 (define (csp-expression->string ast src) ;; FIXME: no test
   (define (paren expression)
@@ -238,8 +239,8 @@
 
     (_ (format #f "~a:no match: ~a" (current-source-location) src))))
 
-(define (port-events port)
-  (let ((interface (ast-norm (ast:type port))))
+(define (port-events port) ;; FIXME: no test
+  (let ((interface (ast-norm (.type port))))
     (interface-events interface)))
 
 (define (modeling-event? event)
@@ -249,7 +250,7 @@
   (filter modeling-event? (gom:find-events interface)))
 
 (define (interface-events interface)
-  (let* ((events (map ast:name (ast:events interface)))
+  (let* ((events (map .name (.elements (.events interface))))
          (modeling (map .event (modeling-events interface))))
     (sort (append events modeling) symbol<)))
 
@@ -257,11 +258,11 @@
    (map (lambda (x) (symbol-append (ast:name enum) '_ x)) (ast:fields enum)))
 
 (define (enum-values comp)
-  (let ((comp-values (apply append (map typed-elements (ast:enums (ast:behaviour comp))))))
-    (let loop ((ports (ast:ports comp)) (values comp-values))
+  (let ((comp-values (apply append (map typed-elements (gom:enums (.behaviour comp))))))
+    (let loop ((ports ((compose .elements .ports) comp)) (values comp-values))
       (if (null? ports)
           values
-          (loop (cdr ports) (append values (apply append (map typed-elements (ast:enums (ast:behaviour (ast-norm (ast:type (car ports)))))))))))))
+          (loop (cdr ports) (append values (apply append (map typed-elements (gom:enums (.behaviour (ast-norm (.type (car ports)))))))))))))
 
 (define (return-value enum)
   (map (lambda (value) (symbol-append (ast:name enum) '_ value)) (ast:fields enum)))
@@ -272,14 +273,14 @@
       (append (apply append returns) (list 'return)))) ;; FIXME: add only return when needed
 
 (define (return-values-port port)
-  (add-return-if-empty (map return-value (ast:enums (ast-norm (ast:type port))))))
+  (add-return-if-empty (map return-value (gom:enums (ast-norm (.type port))))))
 
 (define (return-values-interface interface)
-  (add-return-if-empty (map return-value (ast:enums interface))))
+  (add-return-if-empty (map return-value (gom:enums interface))))
 
 
 (define (return-values comp)
-    (let loop ((ports (ast:ports comp)) (result '()))
+    (let loop ((ports ((compose .elements .ports) comp)) (result '()))
       (if (null? ports)
           result
           (loop (cdr ports) (append result (return-values-port (car ports)))))))
@@ -332,13 +333,13 @@
 (define-method (ast:port-name (o <trigger>)) (.port o))
 
 (define (((provides-or-requires? direction) component) event)
-  (if (ast:component? component)
+  (if (is-a? component <component>)
       (pair?
        (filter
 	(lambda (port)
-          (and (equal? (ast:direction port) direction)
-               (equal? (ast:port-name event) (ast:name port))))
-	(ast:ports component)))
+          (and (equal? (.direction port) direction)
+               (equal? (.port event) (.name port))))
+	(.elements (.ports component))))
       #f))
 
 (define ((provides? component) event)
@@ -348,11 +349,11 @@
   (((provides-or-requires? 'requires) component) event))
 
 (define ((provides-event? model) event)
-  (and (ast:component? model)
+  (and (is-a? model <component>)
        ((provides? model) event)))
 
 (define ((requires-event? model) event)
-  (and (ast:component? model)
+  (and (is-a? model <component>)
        ((requires? model) event)))
 
 (define (value ast)
@@ -361,9 +362,9 @@
     ((? ast:value?) (symbol-append (ast:type ast) '_ (ast:field ast)))
     (_ ast)))
 
-(define (optional-chaos port)
-  (let ((interface (ast:type port)))
-    (if (member 'optional (map .event (gom:find-events (ast-norm (ast:type port)))))
+(define (optional-chaos port) ;; FIXME: no test
+  (let ((interface (.type port)))
+    (if (member 'optional (map .event (gom:find-events (ast-norm (.type port)))))
         (list "[|{" interface " .optional}|] " "CHAOS({" interface " .optional})")
         "")))
 
@@ -376,10 +377,10 @@
     (ast-transform- ast* (ast-transform-return ast* (ast-transform-function-call ast* src*)))))
 
 (define (ast-transform-function-call ast src)
-  (let ((model (or (ast:interface ast) (ast:component ast))))
+  (let ((model (or (gom:interface ast) (gom:component ast))))
     (match src
       (('action identifier)
-       (if (member identifier (map .name (gom:functions (ast:behaviour model))))
+       (if (member identifier (map .name (gom:functions (.behaviour model))))
            (list 'call identifier)
            src))
       ((h ...) (map (lambda (x) (ast-transform-function-call ast x)) src))
@@ -464,7 +465,7 @@
   ((compose ast->gom* csp->sugar ast->sugar) ast))
 
 (define-method (ast-transform-return ast (o <on>))
-  (let* ((model (or (ast:interface ast) (ast:component ast)))
+  (let* ((model (or (gom:interface ast) (gom:component ast)))
 	 (members (gom:member-names model))
          (triggers (.triggers o)))
     (let ((result (ast-transform-return ast (.statement o))))
@@ -576,9 +577,11 @@
     (_ (throw 'match-error (format #f "~a:context->csp: no match: ~a\n" (current-source-location) context)))))
 
 (define* (ast-transform- ast src :optional (return #t) (context #f))
-  (let* ((model (or (ast:interface ast) (ast:component ast)))
+  (let* ((model (or (gom:interface ast) (gom:component ast)))
          (context (or context (make-context (gom:member-names model) '())))
-         (port? (lambda (port) (member port (map ast:name (ast:ports model)))))
+         (port? (lambda (port)
+                  (if ((is? <interface>) model) #f
+                      (member port (map .name (.elements (.ports model)))))))
          (valued-action? (valued-action? port?)))
     (match src
       (($ <compound>)
@@ -627,13 +630,15 @@
 
 (define-generic ast-transform-)
 (define-method (ast-transform- ast (o <ast>))
-  (let* ((model (or (ast:interface ast) (ast:component ast)))
+  (let* ((model (or (gom:interface ast) (gom:component ast)))
          (context (make-context (gom:member-names model) '())))
     (ast-transform- ast o #t context)))
 
 (define-method (ast-transform- ast (o <assign>) return context)
-  (let* ((model (or (ast:interface ast) (ast:component ast)))
-         (port? (lambda (port) (member port (map ast:name (ast:ports model)))))
+  (let* ((model (or (gom:interface ast) (gom:component ast)))
+         (port? (lambda (port)
+                  (if ((is? <interface>) model) #f
+                      (member port (map .name (.elements (.ports model)))))))
          (expression (.value (.expression o))))
     (match expression
       (($ <action>)
@@ -693,10 +698,10 @@
   (csp-transform (csp->gom ast) (csp->gom src)))
 
 (define* (csp-transform ast src :optional (inevitable-optional? #f) (channel #f) (provided-on? #t))
-  (let* ((model (or (ast:interface ast) (ast:component ast)))
-	 (model-name (ast:name model))
-	 (behaviour (ast:name (ast:behaviour model)))
-         (component? (ast:component? model)))
+  (let* ((model (or (gom:interface ast) (gom:component ast)))
+	 (model-name (.name model))
+	 (behaviour (.name (.behaviour model)))
+         (component? (is-a? model <component>)))
     (=>string ast
      (match src
        ;;('on ('triggers triggers ...) stat ...)
@@ -707,9 +712,9 @@
                (inevitable-optional? (or (member 'inevitable (map ast:event-name triggers))
                                          (member 'optional (map ast:event-name triggers))))
                (ig? (eq? statement 'IG))
-               (channel (if (ast:interface? model) model-name (ast:port-name (car triggers))))
-               (provided-on? (or (and (ast:interface? model) (not inevitable-optional?))
-                                 (or (ast:interface? model) ((provides-event? model) (car triggers)))))
+               (channel (if (is-a? model <interface>) model-name (ast:port-name (car triggers))))
+               (provided-on? (or (and (is-a? model <interface>) (not inevitable-optional?))
+                                 (or (is-a? model <interface>) ((provides-event? model) (car triggers)))))
                (IG? (if ig? (if ((provides-event? model) (car triggers)) "IIG & "  "IG & ")))
                (event-names (comma-join (map ast:event-name triggers)))
                (transformed (if ig? #f (csp-transform ast statement inevitable-optional? channel provided-on?)))
@@ -784,12 +789,12 @@
 
 (define-generic csp-transform)
 (define-method (csp-transform ast (o <action>) . rest)
-  (let* ((model (or (ast:interface ast) (ast:component ast)))
-	 (model-name (ast:name model)))
+  (let* ((model (or (gom:interface ast) (gom:component ast)))
+	 (model-name (.name model)))
     (=>string
      ast
      (let* ((trigger (.trigger o))
-            (channel (if (ast:interface? model) model-name (.port trigger)))
+            (channel (if (is-a? model <interface>) model-name (.port trigger)))
             (event-name (.event trigger))
             (channel-return (if ((requires-event? model) trigger) (list " -> " channel ".return"))))
        (list "(\\ P',V' @ " channel "!" event-name channel-return " -> P'(V'))")))))
@@ -800,8 +805,8 @@
    (list "assign_(\\ (" (.identifier o) ") @ (" (.value (.expression o)) "))")))
 
 (define (hide-modeling model)
-  (and-let* (((ast:interface? model))
-             (name (ast:name model))
+  (and-let* (((is-a? model <interface>))
+             (name (.name model))
              (modeling (null-is-#f (map .event (modeling-events model)))))
             (string-append " \\ {|"
                            (comma-join

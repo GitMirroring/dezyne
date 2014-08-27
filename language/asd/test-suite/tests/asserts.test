@@ -8,7 +8,8 @@
 
   :use-module (language asd ast:)
   :use-module (language asd reader)
-  :use-module (language asd asserts))
+  :use-module (language asd asserts)
+  :use-module (language asd gom))
 
 (pass-if "asserts-first-dummy-test"
 	 #t)
@@ -16,12 +17,13 @@
 (pass-if "assert"
   (pretty-noisy-equal?
    (assert-list
-    (asd->ast
-     #{ interface I {}
-		  component C {
-			       provides I i ;
-			       requires I j ;
-			       } #}))
+    (ast->gom*
+     (asd->ast
+      #{ interface I {}
+                   component C {
+                                provides I i ;
+                                requires I j ;
+                                } #})))
    '((interface I deadlock)
      (interface I livelock)
      (component C deterministic)

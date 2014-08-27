@@ -30,6 +30,8 @@
 
   :export (fail
            diff-noisy-equal?
+	   gom-noisy-equal?
+           gom-pretty-noisy-equal?
 	   noisy-equal?
            pretty-noisy-equal?
            whitespace-noisy-equal?)
@@ -39,15 +41,8 @@
   (apply stderr (cons* string rest))
   #f)
 
-;;(define equal? equal?)
-;(define-generic equal?)
-(define-method (xequal? (lhs <ast>) (rhs <ast>))
-  (equal? (with-output-to-string (lambda () (write lhs)))
-          (with-output-to-string (lambda () (write rhs)))))
-
-(define plain-equal? equal?)
-(define (equal? actual expected)
-  (plain-equal?
+(define (gom-equal? actual expected)
+  (equal?
        (with-input-from-string
               (with-output-to-string (lambda ()
                                        (write (csp->gom actual))))
@@ -63,6 +58,14 @@
 
 (define (pretty-noisy-equal? actual expected)
   (or (equal? actual expected)
+      (fail "~a!=\n~a" (pretty-string expected) (pretty-string actual))))
+
+(define (gom-noisy-equal? actual expected)
+  (or (gom-equal? actual expected)
+      (fail "~a\n!=\n~a\n" expected actual)))
+
+(define (gom-pretty-noisy-equal? actual expected)
+  (or (gom-equal? actual expected)
       (fail "~a!=\n~a" (pretty-string expected) (pretty-string actual))))
 
 (define (collapse-whitespace string)
