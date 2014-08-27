@@ -36,7 +36,9 @@
 	   assert-list
            ))
 
-(define ((assert model) check) (list (ast:class model) (ast:name model) check))
+(define ((assert model) check) (if (eq? check 'compliance)
+                                   (list (ast:class model) (ast:name model) check (ast:type (ast:port model)))
+                                   (list (ast:class model) (ast:name model) check)))
 
 (define (ast-> ast)
   (pretty-print (assert-list ast))
