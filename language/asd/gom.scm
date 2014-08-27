@@ -51,6 +51,7 @@
            <if>
            <call>
            <on>
+           <return>
            <trigger>
            <triggers>
 
@@ -159,6 +160,9 @@
   (triggers :accessor .triggers :init-form (make <triggers>) :init-keyword :triggers)
   (statement :accessor .statement :init-value #f :init-keyword :statement))
 
+(define-class <return> (<statement>)
+  (expression :accessor .expression :init-value #f :init-keyword :expression))
+
 (define-class <trigger> (<ast>)
   (port :accessor .port :init-value #f :init-keyword :port)
   (event :accessor .event :init-value #f :init-keyword :event))
@@ -251,6 +255,11 @@
     ((? ast:on?) (make <on>
                        :triggers (ast->gom (ast:trigger-list ast))
                        :statement (ast->gom (ast:statement ast))))
+    ((? ast:return?) (make <return>
+                       :expression (if (null? (ast:expression ast))
+                                       #f
+                                       (make <expression>
+                                         :value (ast->gom* (ast:expression ast))))))
 
     ((? ast:value?) (make <value>
                       :type (ast:type ast)
@@ -300,6 +309,12 @@
     ((? ast:on?) (make <on>
                        :triggers (ast->gom* (ast:trigger-list ast))
                        :statement (ast->gom* (ast:statement ast))))
+    ((? ast:return?) (make <return>
+                       :expression (if (null? (ast:expression ast))
+                                       #f
+                                       (make <expression>
+                                         :value (ast->gom* (ast:expression ast))))))
+
     ((? ast:statement-list?) (make <compound>
                                :elements (map ast->gom* (ast:body ast))))
     ((? ast:trigger?) (make <trigger>
@@ -348,15 +363,18 @@
   (if (pair? (.elements (.arguments o)))
       (sdisplay (.arguments o) port)))
 
+(define-method (write (o <dir-ast>) port)
+  (display "(" port)
+  (display-slots o port)
+  (display #\) port))
+
 (define-method (display-slots (o <if>) port)
   (sdisplay (.expression o) port)
   (sdisplay (.then o) port)
   (and=> (.else o) (lambda (x) (sdisplay x port))))
 
-(define-method (write (o <dir-ast>) port)
-  (display "(" port)
-  (display-slots o port)
-  (display #\) port))
+(define-method (display-slots (o <return>) port)
+  (and=> (.expression o) (lambda (x) (sdisplay x port))))
 
 (define-generic class-name)
 (define-method (class-name (o <ast>))

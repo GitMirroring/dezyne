@@ -266,6 +266,7 @@
            range?
            register
            requires?
+           return?
            right
            statement
            statement-list?
@@ -300,6 +301,9 @@
 
 (define (make type ast)
   ((@@ (language asd parse) ast:make) type ast))
+
+(define (statement? ast)
+  ((@@ (language asd parse) ast:statement?) ast))
 
 (define (element ast name)
   (or (and (>2 (length ast)) (assoc name (body ast))) '()))
@@ -360,6 +364,7 @@
 (define (port? ast) (type-helper? 'port ast))
 (define (ports? ast) (type-helper? 'ports ast))
 (define (range? ast) (type-helper? 'range ast))
+(define (return? ast) (type-helper? 'return ast))
 (define (signature? ast) (type-helper? 'signature ast))
 (define statement-list? compound?)
 (define (system? ast) (type-helper? 'system ast))
@@ -373,9 +378,6 @@
 (define (variable-list? ast) (type-helper? 'variables ast))
 (define (variable? ast) (type-helper? 'variable ast))
 (define (variables? ast) (type-helper? 'variables ast))
-
-(define (statement? ast)
-  (member (class ast) '(action assign bind call compound guard if illegal instance on reply variable return)))
 
 (define (body ast)
   (match ast
@@ -652,6 +654,7 @@
     ((? assign?) (caddr ast))
     ((? guard?) (cadr ast))
     ((? if?) (cadr ast))
+    ((? return?) (if (>1 (length ast)) (cadr ast) '()))
     ((? variable?) (cadddr ast))
     (_ (throw 'match-error  (format #f "~a:expression: no match: ~a\n" (current-source-location) ast)))))
 

@@ -424,6 +424,9 @@
 (define-class <csp-on> (<on>)
   (the-end :accessor .the-end :init-value #f :init-keyword :the-end))
 
+(define-class <csp-return> (<return>)
+  (context :accessor .context :init-form (list) :init-keyword :context))
+
 (define (csp->sugar ast)
   (match ast
     (('on ('triggers triggers) statement the-end)
@@ -453,6 +456,10 @@
        :context (cadr ast)
        :identifier name
        :arguments (csp->gom arguments)))
+    (('return ('ctx context) expression)
+     (make <csp-return>
+       :context (cadr ast)
+       :expression (make <expression> :value (csp->gom expression))))
     ((h t ...) (map csp->sugar ast))
     (_ ast)))
 
@@ -611,8 +618,8 @@
                                                    parameters)))
               (transformed (ast-transform- ast statement return context)))
          (list 'function name signature transformed)))
-      (('return expression)
-       (list 'return context expression))
+      (($ <return> ($ <expression>))
+       (make <csp-return> :context context :expression (.expression src)))
       (($ <call>)
        (make <csp-call>
          :context context
@@ -711,10 +718,10 @@
           (list IG? channel "?x:{" event-names "}" " ->\n" transformed transformed-end)))
        (('reply expr) (let ((expr (csp-transform ast expr inevitable-optional? channel provided-on?)))
                         (list "(\\ P',V' @ " channel "." expr " -> P'(V'))")))
-       (('return context expression)
+       (($ <csp-return> ($ <expression> expression) context)
         (let ((expression (csp-expression->string ast expression)))
           (list "returnvalue_(\\ (" context ") @ " expression ")")))
-       (('return) "skip_") ;; FIXME
+       (($ <return>) "skip_") ;; FIXME
        (('eventreturn) (let ((channel-return (if (and (not inevitable-optional?) provided-on?)
                                             (list "(\\ P',V' @ " channel ".return -> P'(V'))")
                                             (list "(\\ P',V' @ P'(V'))"))))

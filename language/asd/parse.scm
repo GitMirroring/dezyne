@@ -30,6 +30,7 @@
             make-parser
             object?
             object-id
+            statement?
             source-location
             source-location->source-properties
             syntax-error))
@@ -46,7 +47,7 @@
              #f)
       (throw 'syntax-error #f message #f token #f)))
 
-(define (statement? o)
+(define (ast:statement? o)
   (and (pair? o)
        (member (car o)
                '(action assign bind call compound guard if illegal instance on reply variable return))))
@@ -65,7 +66,7 @@
       (('behaviour) ast)
       (('behaviour name ('types t ...) ('variables v ...) ('compound s ...)) ast)
       (('compound) ast)
-      (('compound (? statement?) ..1) ast)
+      (('compound (? ast:statement?) ..1) ast)
       (('types t ...) ast)
       (('function name ...) ast)
       (('events e ...) ast)
