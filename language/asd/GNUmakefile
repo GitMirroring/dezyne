@@ -327,22 +327,35 @@ csp: compile
 	! $(REFINES) out/mangle.csp | grep ': Failed'
 	@$(diff) examples/mangle.csp out >/dev/null
 
-	cd out && ../gaiag -l csp examples/livelock.asd
-	$(diff) examples/livelock.csp out || true
-	@$(diff) examples/livelock.csp out | diffstat
-	$(CSPMCHECKER) out/livelock.csp
-	$(REFINES) out/livelock.csp |& grep ': Failed'
-	-$(REFINES) out/livelock.csp |& grep 'panic: '
-	-@$(diff) examples/livelock.csp out >/dev/null
+	cd out && ../gaiag -l csp examples/livelock1.asd
+	$(diff) examples/livelock1.csp out || true
+	@$(diff) examples/livelock1.csp out | diffstat
+	$(CSPMCHECKER) out/livelock1.csp
+	$(REFINES) out/livelock1.csp |& grep ': Failed'
+	@$(diff) examples/livelock1.csp out >/dev/null
+
+	cd out && ../gaiag -l csp examples/livelock2.asd
+	$(diff) examples/livelock2.csp out || true
+	@$(diff) examples/livelock2.csp out | diffstat
+	$(CSPMCHECKER) out/livelock2.csp
+	$(REFINES) out/livelock2.csp |& grep ': Failed'
+	@$(diff) examples/livelock2.csp out >/dev/null
 
 livelock:
 	rm -rf out && mkdir out && ln -s ../examples ../templates ../../../webdemo/asd out
-	cd out && ../gaiag -l csp examples/livelock.asd
-	$(diff) examples/livelock.csp out || true
-	@$(diff) examples/livelock.csp out | diffstat
-	$(CSPMCHECKER) out/livelock.csp
-	$(REFINES) out/livelock.csp |& grep 'panic: '
-	@$(diff) examples/livelock.csp out >/dev/null
+	cd out && ../gaiag -l csp examples/livelock1.asd
+	$(diff) examples/livelock1.csp out || true
+	@$(diff) examples/livelock1.csp out | diffstat
+	$(CSPMCHECKER) out/livelock1.csp
+	$(REFINES) out/livelock1.csp |& grep ': Failed'
+	@$(diff) examples/livelock1.csp out >/dev/null
+
+	cd out && ../gaiag -l csp examples/livelock2.asd
+	$(diff) examples/livelock2.csp out || true
+	@$(diff) examples/livelock2.csp out | diffstat
+	$(CSPMCHECKER) out/livelock2.csp
+	$(REFINES) out/livelock2.csp |& grep ': Failed'
+	@$(diff) examples/livelock2.csp out >/dev/null
 
 mangle: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out

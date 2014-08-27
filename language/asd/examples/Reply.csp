@@ -46,9 +46,10 @@ I__(((dummy),(stack'))) =
 (true) & (
 I?x:{done} ->
 (\ P',V' @ I.Status_Yes -> P'(V'))(\ V' @ I__(V'),((dummy),(stack')))
-  []
+ []
   I?x:{done} ->
 (\ P',V' @ I.Status_No -> P'(V'))(\ V' @ I__(V'),((dummy),(stack'))))
+
 
 within I__(((false),(<>))) 
 
@@ -58,9 +59,10 @@ U__(((dummy),(stack'))) =
 (true) & (
 U?x:{what} ->
 (\ P',V' @ U.Status_Ok -> P'(V'))(\ V' @ U__(V'),((dummy),(stack')))
-  []
+ []
   U?x:{what} ->
 (\ P',V' @ U.Status_Nok -> P'(V'))(\ V' @ U__(V'),((dummy),(stack'))))
+
 
 within U__(((false),(<>))) 
 
@@ -76,6 +78,7 @@ context_active_(sendrecv_(u,what),
 (\ P',V' @ i.Status_No -> P'(V'))
 )(P',((dummy),((stack',s)))))(\ V' @ transition_end -> Reply__(V'),((dummy),(stack'))))
 )
+
 within Reply__(((false),(<>)))
 
 channel extensions_over_empty_channels_is_undefined

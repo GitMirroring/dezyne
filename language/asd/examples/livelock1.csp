@@ -30,67 +30,56 @@ context_(F', S') = \ P', (M', L') @ S'((\V2' @ P'(drop_one_local_(V2'))), (M', (
 context_active_(C', S') = \P',V' @ C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
 
 datatype event_enumeration_alphabet =
-Status_No | Status_Nok | Status_Ok | Status_Yes | done | return | what
+dummy | inevitable | return
 
 channel illegal
 
-channel i: {done,Status_Yes,Status_No,return}
-channel u: {what,Status_Ok,Status_Nok,return}
+channel n: {dummy,return}
+channel l: {dummy,inevitable,return}
 
-channel I: {done,Status_Yes,Status_No,return}
-channel U: {what,Status_Ok,Status_Nok,return}
+channel nolivelock: {dummy,return}
+channel ilivelock: {dummy,inevitable,return}
 
-  I_(IG) = let
+  nolivelock_(IG) = let
 
-I__(((dummy),(stack'))) =
-(true) & (
-I?x:{done} ->
-(\ P',V' @ I.Status_Yes -> P'(V'))(\ V' @ I__(V'),((dummy),(stack')))
- []
-  I?x:{done} ->
-(\ P',V' @ I.Status_No -> P'(V'))(\ V' @ I__(V'),((dummy),(stack'))))
+nolivelock__(((stack'))) =
+IG & nolivelock?x:{dummy} ->
+illegal -> STOP
 
 
-within I__(((false),(<>))) 
+within nolivelock__(((<>))) 
 
-U_(IG) = let
+ilivelock_(IG) = let
 
-U__(((dummy),(stack'))) =
-(true) & (
-U?x:{what} ->
-(\ P',V' @ U.Status_Ok -> P'(V'))(\ V' @ U__(V'),((dummy),(stack')))
- []
-  U?x:{what} ->
-(\ P',V' @ U.Status_Nok -> P'(V'))(\ V' @ U__(V'),((dummy),(stack'))))
+ilivelock__(((stack'))) =
+ilivelock?x:{inevitable} ->
+semi_((\ P',V' @ ilivelock!dummy -> P'(V')),
+(\ P',V' @ P'(V')))(\ V' @ ilivelock__(V'),((stack')))
 
 
-within U__(((false),(<>))) 
+within ilivelock__(((<>))) 
 
 
-Reply2_(IIG,IG) = let
+livelock1_(IIG,IG) = let
 
-Reply2__(((dummy),(stack'))) = transition_begin -> (
-(true) & (
-i?x:{done} ->
-context_active_(sendrecv_(u,what),
-semi_(assign_active_(sendrecv_(u,what),
-\ (((dummy),((stack',s)))),r' @ ((dummy),((stack',r')))),
-\ P',((dummy),((stack',s))) @ ifthenelse_((s == Status_Ok),
-(\ P',V' @ i.Status_Yes -> P'(V')),
-(\ P',V' @ i.Status_No -> P'(V'))
-)(P',((dummy),((stack',s))))))(\ V' @ transition_end -> Reply2__(V'),((dummy),(stack'))))
+livelock1__(((stack'))) = transition_begin -> (
+IIG & n?x:{dummy} ->
+illegal -> STOP
+[]
+l?x:{dummy} ->
+(\ P',V' @ P'(V'))(\ V' @ transition_end -> livelock1__(V'),((stack')))
 )
 
-within Reply2__(((false),(<>)))
+within livelock1__(((<>)))
 
 channel extensions_over_empty_channels_is_undefined
-channel IN,OUT : {extensions_over_empty_channels_is_undefined}
+channel IN,OUT : {l.dummy,extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
 channel transition_begin, transition_end
 
-channel reorder_in,reorder_out : {i.Status_Yes,i.Status_No,i.return}
+channel reorder_in,reorder_out : {n.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -123,30 +112,30 @@ within Idle(0)
 
 within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-Reply2__Component(IIG) = let
+livelock1__Component(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {i.Status_Yes,i.Status_No,i.return}
-ClientCalls = {i.done}
-UsedModeling = {}
-within compress((Reply2_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,i,u|},Exclude)|]
-(((U_(true) [[U.x<-u.x|x<-extensions(U)]]
+Exclude = {n.return,l.inevitable}
+ClientCalls = {n.dummy}
+UsedModeling = {l.inevitable}
+within compress((livelock1_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,n,l|},Exclude)|]
+(((ilivelock_(true) [[ilivelock.x<-l.x|x<-extensions(ilivelock)]]
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
-assert I_(false) :[deadlock free]
+assert nolivelock_(false) :[deadlock free]
 
-assert I_(true) :[livelock free]
+assert nolivelock_(true) :[livelock free]
 
-assert U_(false) :[deadlock free]
+assert ilivelock_(false) :[deadlock free]
 
-assert U_(true) :[livelock free]
+assert ilivelock_(true)  \ {|ilivelock.inevitable|} :[livelock free]
 
-assert Reply2_(true,true) :[deterministic]
-assert STOP [T= Reply2__Component(false) \ diff(Events,{illegal})
-assert Reply2__Component(false) :[deadlock free]
-assert I_(true) [[I.x<-i.x|x<-extensions(I)]] \ {} [FD= Reply2__Component(true) \ diff(Events,{|illegal,i|})
-assert Reply2__Component(true) \ diff(Events,{|illegal,i|}) :[livelock free]
+assert livelock1_(true,true) :[deterministic]
+assert STOP [T= livelock1__Component(false) \ diff(Events,{illegal})
+assert livelock1__Component(false) :[deadlock free]
+assert nolivelock_(true) [[nolivelock.x<-n.x|x<-extensions(nolivelock)]] \ {} [FD= livelock1__Component(true) \ diff(Events,{|illegal,n|})
+assert livelock1__Component(true) \ diff(Events,{|illegal,n|}) :[livelock free]

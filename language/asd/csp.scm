@@ -241,10 +241,15 @@
   (let ((interface (ast-norm (ast:type port))))
     (interface-events interface)))
 
+(define (modeling-event? event)
+  (member (.event event) '(optional inevitable)))
+
+(define (modeling-events interface)
+  (filter modeling-event? (gom:find-events interface)))
+
 (define (interface-events interface)
   (let* ((events (map ast:name (ast:events interface)))
-         (modeling (filter (lambda (x) (member x '(inevitable optional)))
-                           (map .event (gom:find-events interface)))))
+         (modeling (map .event (modeling-events interface))))
     (sort (append events modeling) symbol<)))
 
 (define (typed-elements enum)
@@ -776,3 +781,13 @@
   (=>string
    ast
    (list "assign_(\\ (" (.identifier o) ") @ (" (.value (.expression o)) "))")))
+
+(define (hide-modeling model)
+  (and-let* (((ast:interface? model))
+             (name (ast:name model))
+             (modeling (null-is-#f (map .event (modeling-events model)))))
+            (string-append " \\ {|"
+                           (comma-join
+                            (map (lambda (x) (->string (list name "." x)))
+                                 modeling))
+                           "|} ")))

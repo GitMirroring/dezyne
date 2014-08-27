@@ -49,6 +49,7 @@ semi_(\ P',((s),(stack')) @ ifthenelse_((s == Enum_False),
 )(P',((s),(stack'))),
 (\ P',V' @ I.return -> P'(V')))(\ V' @ I__(V'),((s),(stack'))))
 
+
 within I__(((Enum_False),(<>))) 
 
 
@@ -63,6 +64,7 @@ semi_(\ P',((s),(stack')) @ ifthenelse_((s == Enum_False),
 )(P',((s),(stack'))),
 (\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> sugar__(V'),((s),(stack'))))
 )
+
 within sugar__(((Enum_False),(<>)))
 
 channel extensions_over_empty_channels_is_undefined

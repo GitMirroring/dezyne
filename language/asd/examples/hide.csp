@@ -56,6 +56,7 @@ context_active_(\ P',V' @ g (P',V',\ ((hide_member0',c),((stack',b))) @ (b,c)),
 )(P',((hide_member0',hide_member1'),(((stack',b),c)))))),
 (\ P',V' @ I.return -> P'(V')))(\ V' @ I__(V'),((b,c),(stack'))))
 
+
 within I__(((false,true),(<>))) 
 
 
@@ -77,6 +78,7 @@ context_active_(\ P',V' @ g (P',V',\ ((hide_member0',c),((stack',b))) @ (b,c)),
 )(P',((hide_member0',hide_member1'),(((stack',b),c)))))),
 (\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> hide__(V'),((b,c),(stack'))))
 )
+
 within hide__(((false,true),(<>)))
 
 channel extensions_over_empty_channels_is_undefined

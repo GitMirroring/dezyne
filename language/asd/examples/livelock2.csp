@@ -30,29 +30,53 @@ context_(F', S') = \ P', (M', L') @ S'((\V2' @ P'(drop_one_local_(V2'))), (M', (
 context_active_(C', S') = \P',V' @ C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
 
 datatype event_enumeration_alphabet =
-inevitable | return
+dummy | inevitable | return
 
 channel illegal
 
-channel l: {inevitable,return}
+channel l: {dummy,inevitable,return}
+channel n: {dummy,inevitable,return}
 
-channel livelock: {inevitable,return}
+channel ilivelock: {dummy,inevitable,return}
+channel nolivelock: {dummy,inevitable,return}
 
   ilivelock_(IG) = let
 
-livelock__(((true),stack')) = livelock.inevitable -> livelock__(((true),stack'))
+ilivelock__(((stack'))) =
+IG & ilivelock?x:{dummy} ->
+illegal -> STOP
+[]
+ilivelock?x:{inevitable} ->
+(\ P',V' @ P'(V'))(\ V' @ ilivelock__(V'),((stack')))
 
-within livelock__(((true),<>))
+
+within ilivelock__(((<>))) 
+
+nolivelock_(IG) = let
+
+nolivelock__(((stack'))) =
+nolivelock?x:{inevitable} ->
+semi_((\ P',V' @ nolivelock!dummy -> P'(V')),
+(\ P',V' @ P'(V')))(\ V' @ nolivelock__(V'),((stack')))
 
 
-livelock_(IIG,IG) = let
+within nolivelock__(((<>))) 
 
-livelock__(((true),stack')) = transition_begin -> (livelock__(((true),stack'))
+
+livelock2_(IIG,IG) = let
+
+livelock2__(((stack'))) = transition_begin -> (
+IIG & l?x:{dummy} ->
+illegal -> STOP
+[]
+n?x:{dummy} ->
+(\ P',V' @ P'(V'))(\ V' @ transition_end -> livelock2__(V'),((stack')))
 )
-within livelock__(((true),<>))
+
+within livelock2__(((<>)))
 
 channel extensions_over_empty_channels_is_undefined
-channel IN,OUT : {extensions_over_empty_channels_is_undefined}
+channel IN,OUT : {n.dummy,extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
@@ -91,25 +115,30 @@ within Idle(0)
 
 within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-livelock__Component(IIG) = let
+livelock2__Component(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {l.return,l.inevitable}
-ClientCalls = {}
-UsedModeling = {}
-within compress((livelock_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,l|},Exclude)|]
-(((STOP) [[x<-IN.x|x<-extensions(IN)]]
+Exclude = {l.return,l.inevitable,n.inevitable}
+ClientCalls = {l.dummy}
+UsedModeling = {n.inevitable}
+within compress((livelock2_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,l,n|},Exclude)|]
+(((nolivelock_(true) [[nolivelock.x<-n.x|x<-extensions(nolivelock)]]
+) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 assert ilivelock_(false) :[deadlock free]
 
-assert ilivelock_(true) \ {livelock.inevitable} :[livelock free]
+assert ilivelock_(true)  \ {|ilivelock.inevitable|} :[livelock free]
 
-assert livelock_(true,true) :[deterministic]
-assert STOP [T= livelock__Component(false) \ diff(Events,{illegal})
-assert livelock__Component(false) :[deadlock free]
-assert ilivelock_(true) [[livelock.x<-l.x|x<-extensions(livelock)]] \ {l.inevitable} [FD= livelock__Component(true) \ diff(Events,{|illegal,l|})
-assert livelock__Component(true) \ diff(Events,{|illegal,l|}) :[livelock free]
+assert nolivelock_(false) :[deadlock free]
+
+assert nolivelock_(true)  \ {|nolivelock.inevitable|} :[livelock free]
+
+assert livelock2_(true,true) :[deterministic]
+assert STOP [T= livelock2__Component(false) \ diff(Events,{illegal})
+assert livelock2__Component(false) :[deadlock free]
+assert ilivelock_(true) [[ilivelock.x<-l.x|x<-extensions(ilivelock)]] \ {l.inevitable} [FD= livelock2__Component(true) \ diff(Events,{|illegal,l|})
+assert livelock2__Component(true) \ diff(Events,{|illegal,l|}) :[livelock free]

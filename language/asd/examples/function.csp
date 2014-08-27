@@ -50,12 +50,13 @@ I__(((f),(stack'))) =
 I?x:{a} ->
 semi_(callvoid_(toggle),
 (\ P',V' @ I.return -> P'(V')))(\ V' @ I__(V'),((f),(stack')))
-  []
+ []
   I?x:{b} ->
 semi_(semi_(callvoid_(toggle),
 semi_(callvoid_(toggle),
 (\ P',V' @ I!d -> P'(V')))),
 (\ P',V' @ I.return -> P'(V')))(\ V' @ I__(V'),((f),(stack'))))
+
 
 within I__(((false),(<>))) 
 
@@ -72,13 +73,14 @@ function__(((f),(stack'))) = transition_begin -> (
 i?x:{a} ->
 semi_(callvoid_(toggle),
 (\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> function__(V'),((f),(stack')))
-  []
+ []
   i?x:{b} ->
 semi_(semi_(callvoid_(toggle),
 semi_(callvoid_(toggle),
 (\ P',V' @ i!d -> P'(V')))),
 (\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> function__(V'),((f),(stack'))))
 )
+
 within function__(((false),(<>)))
 
 channel extensions_over_empty_channels_is_undefined

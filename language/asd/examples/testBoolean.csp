@@ -70,6 +70,7 @@ assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ (((not b1),b2,b3,state1,state2),
 TestBool?x:{evt} ->
 (\ P',V' @ TestBool.return -> P'(V'))(\ V' @ TestBool__(V'),((b1,b2,b3,state1,state2),(stack'))))
 
+
 within TestBool__(((true,true,true,States_State1,States_State2),(<>))) 
 
 
@@ -80,6 +81,7 @@ testBoolean__(((b),(stack'))) = transition_begin -> (
 i?x:{evt} ->
 (\ P',V' @ i.return -> P'(V'))(\ V' @ transition_end -> testBoolean__(V'),((b),(stack'))))
 )
+
 within testBoolean__(((false),(<>)))
 
 channel extensions_over_empty_channels_is_undefined

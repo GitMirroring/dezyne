@@ -56,6 +56,7 @@ semi_(assign_active_(\ P',V' @ g (P',V',\ ((b),((stack',c))) @ (c)),
 )(P',((b),((stack',c))))))),
 (\ P',V' @ I.return -> P'(V')))(\ V' @ I__(V'),((b),(stack'))))
 
+
 within I__(((false),(<>))) 
 
 
@@ -77,6 +78,7 @@ semi_(assign_active_(\ P',V' @ g (P',V',\ ((b),((stack',c))) @ (c)),
 )(P',((b),((stack',c))))))),
 (\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> argument__(V'),((b),(stack'))))
 )
+
 within argument__(((false),(<>)))
 
 channel extensions_over_empty_channels_is_undefined

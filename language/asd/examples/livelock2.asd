@@ -2,7 +2,7 @@
 //
 // This file is part of Gaiag.
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -23,17 +23,34 @@
 
 interface ilivelock
 {
+  in void dummy;
+
   behaviour
   {
+    on dummy: illegal;
+
     on inevitable: {}
   }
 }
 
-component livelock
+interface nolivelock
 {
-  provides ilivelock l;
+  out void dummy;
 
   behaviour
   {
+    on inevitable: dummy;
+  }
+}
+
+component livelock2
+{
+  provides ilivelock l;
+  requires nolivelock n;
+
+  behaviour
+  {
+    on l.dummy: illegal;
+    on n.dummy: {}
   }
 }
