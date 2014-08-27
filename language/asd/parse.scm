@@ -49,7 +49,7 @@
 (define (statement? o)
   (and (pair? o)
        (member (car o)
-               '(action assign bind call compound guard if instance on reply variable return))))
+               '(action assign bind call compound guard if illegal instance on reply variable return))))
 
 (define (ast:make type ast)
   (let ((ast (cons type ast)) ;; (ast (if (pair? t) t (car t)))

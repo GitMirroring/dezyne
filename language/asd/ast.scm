@@ -375,7 +375,7 @@
 (define (variables? ast) (type-helper? 'variables ast))
 
 (define (statement? ast)
-  (member (class ast) '(action assign bind call compound guard if instance on reply variable return)))
+  (member (class ast) '(action assign bind call compound guard if illegal instance on reply variable return)))
 
 (define (body ast)
   (match ast
