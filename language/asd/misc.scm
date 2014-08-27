@@ -121,6 +121,12 @@
 (define (dump-output file-name thunk)  ;; JUNK ME
   (with-output-to-file (->string file-name) thunk))
 
+(define (read-string-12.04)
+  (read-delimited ""))
+
+(if (not (defined? 'read-string))
+    (module-define! (current-module) 'read-string read-string-12.04))
+
 (define (gulp-file file-name)
   (with-input-from-file (->string file-name) read-string))
 
