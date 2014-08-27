@@ -588,19 +588,6 @@
        (list context var (list 'call function arguments)))
       (('variable type var expr)
        (list context var (list 'expression expr)))
-      (($ <if>)
-       (let* ((expr (.expression src))
-              (then (.then src))
-              (else (.else src))
-              (then-illegal? (prefix-illegal? then))
-	      (else-illegal? (prefix-illegal? else))
-	      (pred-then (if then-illegal? (list 'and 'IG expr) expr))
-	      (pred (if else-illegal? (list 'and '(! IG) pred-then) pred-then)))
-	 (make <csp-if>
-           :context context
-           :expression (make <csp-expression> :value pred)
-           :then (ast-transform- ast then return context)
-           :else (or (ast-transform- ast else return context) '()))))
       (('function name signature statement)
        (let* ((parameters (map ast:name (ast:parameters signature)))
               (context (context-extend context (if (>1 (length parameters))
@@ -618,11 +605,12 @@
 
 (define-generic ast-transform-)
 (define-method (ast-transform- ast (o <ast>))
-  (ast-transform- ast o #t #f))
+  (let* ((model (or (ast:interface ast) (ast:component ast)))
+         (context (make-context (ast:member-names model) '())))
+    (ast-transform- ast o #t context)))
 
 (define-method (ast-transform- ast (o <assign>) return context)
   (let* ((model (or (ast:interface ast) (ast:component ast)))
-         (context (or context (make-context (ast:member-names model) '())))
          (port? (lambda (port) (member port (map ast:name (ast:ports model)))))
          (expression (.value (.expression o))))
     (match expression
@@ -658,6 +646,20 @@
           (make <csp-on> :triggers triggers :statement 'IG :the-end result)
           ;; (list 'on triggers result the-end)
           (make <csp-on> :triggers triggers :statement result :the-end the-end)))))
+
+(define-method (ast-transform- ast (o <if>) return context)
+  (let* ((expr (.expression o))
+         (then (.then o))
+         (else (.else o))
+         (then-illegal? (prefix-illegal? then))
+         (else-illegal? (prefix-illegal? else))
+         (pred-then (if then-illegal? (list 'and 'IG expr) expr))
+         (pred (if else-illegal? (list 'and '(! IG) pred-then) pred-then)))
+    (make <csp-if>
+      :context context
+      :expression (make <csp-expression> :value pred)
+      :then (ast-transform- ast then return context)
+      :else (or (ast-transform- ast else return context) '()))))
 
 (define (=>string ast src)
   (match src
