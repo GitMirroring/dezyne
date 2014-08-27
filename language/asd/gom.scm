@@ -48,6 +48,7 @@
            <compound>
            <expression>
            <function>
+           <functions>
            <guard>
            <if>
            <call>
@@ -58,6 +59,7 @@
            <signature>
            <trigger>
            <triggers>
+           <variable>
 
            .arguments
            .elements
@@ -65,18 +67,25 @@
            .event
            .expression
            .identifier
+           .name
            .port
            .statement
            .then
            .trigger
            .triggers
+           .type
            .value
 
 
            ;; utilities
            gom:find-events
+           gom:functions
+           gom:member-names
+           gom:member-values
            gom:statements-of-type
            gom:statement
+           gom:variable
+           gom:variables
            ))
 
 (define-class <ast> ())
@@ -125,6 +134,7 @@
 
 (define-class <arguments> (<ast-list>))
 (define-class <events> (<ast-list>))
+(define-class <functions> (<ast-list>))
 (define-class <parameters> (<ast-list>))
 (define-class <ports> (<ast-list>))
 (define-class <triggers> (<ast-list>))
@@ -223,6 +233,8 @@
                            :elements (map ast->gom (ast:body ast))))
     ((? ast:event-list?) (make <events>
                            :elements (map ast->gom (ast:body ast))))
+    ((? ast:function-list?) (make <functions>
+                           :elements (map ast->gom (ast:body ast))))
     ((? ast:parameter-list?) (make <parameters>
                                :elements (map ast->gom (ast:body ast))))
     ((? ast:port-list?) (make <ports>
@@ -251,7 +263,7 @@
                        :event (ast:event-name ast)))
 
     ((? ast:trigger-list?) (make <triggers>
-                             :elements (map ast->gom* (ast:body ast))))
+                             :elements (map ast->gom (ast:body ast))))
 
     ((? ast:action?) (make <action>
                        :trigger (ast->gom (ast:trigger ast))))
@@ -281,7 +293,7 @@
                        :expression (if (null? (ast:expression ast))
                                        #f
                                        (make <expression>
-                                         :value (ast->gom* (ast:expression ast))))))
+                                         :value (ast->gom (ast:expression ast))))))
 
     ((? ast:value?) (make <value>
                       :type (ast:type ast)
@@ -322,6 +334,8 @@
                        :arguments (ast->gom* (or (null-is-#f
                                                   (ast:argument-list ast))
                                                  '(arguments)))))
+    ((? ast:function-list?) (make <functions>
+                           :elements (map ast->gom* (ast:body ast))))
     ((? ast:guard?) (make <guard>
                        :expression (make <expression>
                                      :value (ast->gom* (ast:expression ast)))
@@ -361,6 +375,13 @@
                        :event (ast:event-name ast)))
     ((? ast:trigger-list?) (make <triggers>
                              :elements (map ast->gom* (ast:body ast))))
+    ((? ast:variable?) (make <variable>
+                         :name (ast:name ast)
+                         :type (ast:type ast)
+                         :expression (make <expression>
+                                       :value (ast->gom* (ast:expression ast)))))
+    ((? ast:variable-list?) (make <variables>
+                          :elements (map ast->gom* (ast:body ast))))
     ((h t ...) (map ast->gom* ast))
     (_ ast)))
 
@@ -402,7 +423,6 @@
   (if (pair? (.elements (.arguments o)))
       (sdisplay (.arguments o) port)))
 
-
 (define-method (write (o <dir-ast>) port)
   (display "(" port)
   (display-slots o port)
@@ -420,6 +440,11 @@
   (sdisplay (.type o) port)
   (if (pair? (.elements (.parameters o)))
       (sdisplay (.parameters o) port)))
+
+(define-method (display-slots (o <variable>) port)
+  (sdisplay (.type o) port)
+  (sdisplay (.name o) port)
+  (sdisplay (.expression o) port))
 
 (define-generic class-name)
 (define-method (class-name (o <ast>))
@@ -481,6 +506,49 @@
     (('action x) '())
     (('illegal) '())
     (_ (throw 'match-error  (format #f "~a:gom:find-events: no match: ~a\n" (current-source-location) ast)))))
+
+(define* (gom:variable ast #:optional (identifier #f))
+  (if identifier
+      (match ast
+        ((? ast:component?) (gom:variable (apply append (map gom:variables (cons ast (ast:ports ast)))) identifier))
+        ((? ast:interface?) (gom:variable (gom:variables ast) identifier))
+        (($ <variable>) (if (eq? (.name ast) identifier) ast #f))
+        ((h ...) (and=> (null-is-#f (filter identity (map (lambda (x) (gom:variable x identifier)) ast))) car))
+        (_ #f)
+        (_ (throw 'match-error  (format #f "~a:gom:variable: no match: ~a\n" (current-source-location) ast))))
+      (match ast
+        (($ <assign>) (.identifier ast))
+        (_ (throw 'match-error  (format #f "~a:gom:variable: no match: ~a\n" (current-source-location) ast))))))
+
+(define (gom:functions ast)  ;; to be removed (.functions o)
+  (match ast
+    ((? ast:behaviour?) (.elements (or (find (lambda (x) (is-a? x <functions>)) (ast:body ast))
+                                       (make <functions>))))
+    ((? ast:interface?) (append
+                         (.elements (or (find (lambda (x) (is-a? x <functions>)) (ast:body ast))
+                                        (make <functions>)))
+                         (gom:functions (ast:behaviour ast))))
+    ((? ast:component?) (gom:functions (ast:behaviour ast)))
+    ((? ast:port?) (gom:functions (ast:ast (ast:type ast))))
+    (_ (throw 'match-error  (format #f "~a:gom:functions: no match: ~a\n" (current-source-location) ast)))))
+
+(define (gom:variables ast)  ;; to be removed (.variables o)
+  (match ast
+    ((? ast:behaviour?) (.elements (or (find (lambda (x) (is-a? x <variables>)) (ast:body ast))
+                                       (make <variables>))))
+    ((? ast:interface?) (append
+                         (.elements (or (find (lambda (x) (is-a? x <variables>)) (ast:body ast))
+                                        (make <variables>)))
+                         (gom:variables (ast:behaviour ast))))
+    ((? ast:component?) (gom:variables (ast:behaviour ast)))
+    ((? ast:port?) (gom:variables (ast:ast (ast:type ast))))
+    (_ (throw 'match-error  (format #f "~a:gom:variables: no match: ~a\n" (current-source-location) ast)))))
+
+(define (gom:member-names model)
+  (map .name (gom:variables (ast:behaviour model))))
+
+(define ((gom:member-values value) model)
+  (map (lambda (x) (.value (.expression x))) (gom:variables (ast:behaviour model))))
 
 (define (statement? ast)
   (member (gom:class ast) '(action assign bind call compound guard if instance on reply variable return)))

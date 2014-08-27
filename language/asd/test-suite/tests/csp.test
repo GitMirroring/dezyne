@@ -836,10 +836,10 @@ assign_(\\ ((state,sounding),(stack')) @ ((States_Triggered,sounding),(stack')))
         (action toggle))))
 
 (pass-if "ast-transform-ast-transform-function-call"
-         (equal?
+         (pretty-noisy-equal?
 
           ;; from:
-          (ast-transform-function-call i-ast ast-function-call-ast)
+          (ast-transform-function-call* i-ast ast-function-call-ast)
 
           ;; via:
           '(on (e)

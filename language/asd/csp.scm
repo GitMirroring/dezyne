@@ -52,6 +52,7 @@
 	   ast-transform
 	   ast-transform*
 	   ast-transform-function-call
+	   ast-transform-function-call*
 	   ast-transform-return
 	   ast-transform-return*
 	   csp-expression->string
@@ -204,12 +205,12 @@
               ((gom:statements-of-type 'on) (gom:statement (ast:behaviour model)))))))
       default))
 
-(define (variable-prefix ast identfier)
-  (and-let* ((variable (ast:variable ast identfier))
-             (ast:variable? variable))
-            (ast:type (ast:type (car variable)))))
+(define (variable-prefix ast identifier) ;; FIXME: no test
+  (and-let* ((variable (gom:variable ast identifier))
+             ((is-a? variable <variable>)))
+            (ast:type (.type variable))))
 
-(define (csp-expression->string ast src)
+(define (csp-expression->string ast src) ;; FIXME: no test
   (define (paren expression)
     (if (or (number? expression) (symbol? expression))
         expression
@@ -384,12 +385,15 @@
 (define (ast-transform-function-call ast src)
   (let ((model (or (ast:interface ast) (ast:component ast))))
     (match src
-      (('action name)
-       (if (member name (map ast:name (ast:functions (ast:behaviour model))))
-           (list 'call name)
+      (('action identifier)
+       (if (member identifier (map .name (gom:functions (ast:behaviour model))))
+           (list 'call identifier)
            src))
       ((h ...) (map (lambda (x) (ast-transform-function-call ast x)) src))
       (_ src))))
+
+(define (ast-transform-function-call* ast src)
+  (ast-transform-function-call (csp->gom ast) src))
 
 (define-method (ast-transform-return ast (o <top>)) ;; TODO: <ast>
   o)
@@ -468,7 +472,7 @@
 
 (define-method (ast-transform-return ast (o <on>))
   (let* ((model (or (ast:interface ast) (ast:component ast)))
-	 (members (ast:member-names model))
+	 (members (gom:member-names model))
          (triggers (.triggers o)))
     (let ((result (ast-transform-return ast (.statement o))))
       (match result
@@ -500,16 +504,14 @@
 
 (define ((valued-action? port?) src)
   (match src
-    (('variable type var ($ <action>)) #t)
-    (('variable type var ('value (? port?) action)) #t)
-    (('assign var ($ <action>)) #t)
+    (($ <variable> name type ($ <expression> ($ <action>))) #t)
+    (($ <variable> name type ($ <expression> ('value (? port?) action))) #t)
+    (($ <assign> identifier ($ <expression> ($ <action>))) #t)
     (_ #f)))
 
 (define (call? variable)
   (match variable
-    (('variable type var ($ <call>)) #t)
-    (('variable type var (call name arguments)) #t)
-    (('variable type var ('call name)) #t)
+    (($ <variable> name type ($ <expression> ($ <call>))) #t)
     (_ #f)))
 
 (define (make-context members locals)
@@ -582,7 +584,7 @@
 
 (define* (ast-transform- ast src :optional (return #t) (context #f))
   (let* ((model (or (ast:interface ast) (ast:component ast)))
-         (context (or context (make-context (ast:member-names model) '())))
+         (context (or context (make-context (gom:member-names model) '())))
          (port? (lambda (port) (member port (map ast:name (ast:ports model)))))
          (valued-action? (valued-action? port?)))
     (match src
@@ -592,25 +594,25 @@
 	     '()
              (let* ((statement (car statements))
                     (transformed (ast-transform- ast statement #f context))
-                    (context (if (ast:variable? statement)
-                                 (context-extend context (ast:name statement))
+                    (context (if (is-a? statement <variable>)
+                                 (context-extend context (.name statement))
                                  context)))
                (if (>1 (length statements))
                    (if (equal? transformed '(illegal))
                        transformed
-                       (list (if (ast:variable? statement)
+                       (list (if (is-a? statement <variable>)
                                  (if (or (valued-action? statement) (call? statement))
                                      'context-active
                                      'context)
                                  'semi)
                              transformed (loop (cdr statements) context)))
                    transformed)))))
-      (('variable type var ('value (and (? port?) (get! port)) event))
-       (list context var (list 'valued-action (make <trigger> :port (port) :event event))))
-      (('variable type var (and ($ <call>) (get! call)))
-       (list context var (call)))
-      (('variable type var expr)
-       (list context var (list 'expression expr)))
+      (($ <variable> name type ($ <expression> ('value (and (? port?) (get! port)) event))) ;; FIXME no test?
+       (list context name (list 'valued-action (make <trigger> :port (port) :event event))))
+      (($ <variable> name type ($ <expression> (and ($ <call>) (get! call)))) ;; FIXME: no test?
+       (list context name (call)))
+      (($ <variable> name type ($ <expression> expression))
+       (list context name (list 'expression expression)))
       (($ <function> name (and ($ <signature> type ($ <parameters> parameters))
                                (get! signature)) statement)
        (let* ((parameters (map .identifier parameters))
@@ -633,7 +635,7 @@
 (define-generic ast-transform-)
 (define-method (ast-transform- ast (o <ast>))
   (let* ((model (or (ast:interface ast) (ast:component ast)))
-         (context (make-context (ast:member-names model) '())))
+         (context (make-context (gom:member-names model) '())))
     (ast-transform- ast o #t context)))
 
 (define-method (ast-transform- ast (o <assign>) return context)

@@ -73,24 +73,24 @@ channel #.interface : {#(comma-join (append (interface-events interface) (return
 #} (delete-duplicates (map ast:type ((compose ast:ports ast:component) ast))))
   # (map-ports #{
 #.interface _#.behaviour(IG) = let
-# (->string (map (lambda (x) (csp-transform interface (ast-transform interface x))) (ast:functions (ast:behaviour interface))))
-#.interface _#.behaviour _((#(context->csp ast (make-context ((compose ast:member-names ast-norm) .interface) '())))) =
+# (->string (map (lambda (x) (csp-transform interface (ast-transform interface x))) (gom:functions (ast:behaviour interface))))
+#.interface _#.behaviour _((#(context->csp ast (make-context ((compose gom:member-names ast-norm) .interface) '())))) =
 # (behaviour->csp
  (ast-norm .interface)
- (->string (list .interface '_ .behaviour '_ "((" (context->csp ast (make-context ((compose ast:member-names ast-norm) .interface) '())) "))" )))
+ (->string (list .interface '_ .behaviour '_ "((" (context->csp ast (make-context ((compose gom:member-names ast-norm) .interface) '())) "))" )))
 
 
-within #.interface _#.behaviour _((#(context->csp ast (make-context ((compose (ast:member-values value) ast-norm) .interface) '(<>))))) #.optional-chaos
+within #.interface _#.behaviour _((#(context->csp ast (make-context ((compose (gom:member-values value) ast-norm) .interface) '(<>))))) #.optional-chaos
 
 #} ((compose ast:ports ast:component) ast))
 #.component _#.behaviour (IIG,IG) = let
-# (->string (map (lambda (x) (csp-transform component (ast-transform component x))) (ast:functions (ast:behaviour component))))
-#.component _#.behaviour _((#(context->csp ast (make-context ((compose ast:member-names ast:component) ast) '())))) = transition_begin -> (
+# (->string (map (lambda (x) (csp-transform component (ast-transform component x))) (gom:functions (ast:behaviour component))))
+#.component _#.behaviour _((#(context->csp ast (make-context ((compose gom:member-names ast:component) ast) '())))) = transition_begin -> (
 #(behaviour->csp (ast:component ast)
- (->string (list .component '_ .behaviour '_ "((" (context->csp ast (make-context ((compose ast:member-names ast:component) ast) '())) "))" )))
+ (->string (list .component '_ .behaviour '_ "((" (context->csp ast (make-context ((compose gom:member-names ast:component) ast) '())) "))" )))
 )
 
-within #.component _#.behaviour _((#(context->csp ast (make-context ((compose (ast:member-values value) ast:component) ast) '(<>)))))
+within #.component _#.behaviour _((#(context->csp ast (make-context ((compose (gom:member-values value) ast:component) ast) '(<>)))))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {#
