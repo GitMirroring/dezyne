@@ -55,6 +55,7 @@
            <on>
            <parameter>
            <parameters>
+           <reply>
            <return>
            <signature>
            <trigger>
@@ -183,6 +184,9 @@
   (triggers :accessor .triggers :init-form (make <triggers>) :init-keyword :triggers)
   (statement :accessor .statement :init-value #f :init-keyword :statement))
 
+(define-class <reply> (<statement>)
+  (expression :accessor .expression :init-value #f :init-keyword :expression))
+
 (define-class <return> (<statement>)
   (expression :accessor .expression :init-value #f :init-keyword :expression))
 
@@ -289,6 +293,9 @@
     ((? ast:on?) (make <on>
                        :triggers (ast->gom (ast:trigger-list ast))
                        :statement (ast->gom (ast:statement ast))))
+    ((? ast:reply?) (make <reply>
+                      :expression (make <expression>
+                                    :value (ast->gom (ast:expression ast)))))
     ((? ast:return?) (make <return>
                        :expression (if (null? (ast:expression ast))
                                        #f
@@ -348,6 +355,9 @@
     ((? ast:on?) (make <on>
                        :triggers (ast->gom* (ast:trigger-list ast))
                        :statement (ast->gom* (ast:statement ast))))
+    ((? ast:reply?) (make <reply>
+                      :expression (make <expression>
+                                    :value (ast->gom* (ast:expression ast)))))
     ((? ast:return?) (make <return>
                        :expression (if (null? (ast:expression ast))
                                        #f

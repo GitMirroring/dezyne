@@ -266,6 +266,7 @@
            range?
            register
            requires?
+           reply?
            return?
            right
            statement
@@ -364,6 +365,7 @@
 (define (port? ast) (type-helper? 'port ast))
 (define (ports? ast) (type-helper? 'ports ast))
 (define (range? ast) (type-helper? 'range ast))
+(define (reply? ast) (type-helper? 'reply ast))
 (define (return? ast) (type-helper? 'return ast))
 (define (signature? ast) (type-helper? 'signature ast))
 (define statement-list? compound?)
@@ -655,6 +657,7 @@
     ((? assign?) (caddr ast))
     ((? guard?) (cadr ast))
     ((? if?) (cadr ast))
+    ((? reply?) (cadr ast))
     ((? return?) (if (>1 (length ast)) (cadr ast) '()))
     ((? variable?) (cadddr ast))
     (_ (throw 'match-error  (format #f "~a:expression: no match: ~a\n" (current-source-location) ast)))))
