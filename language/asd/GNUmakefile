@@ -60,7 +60,7 @@ clean:
 test: check
 check: compile
 	./test.sh </dev/null
-	$(MAKE) pretty csp c++
+	$(MAKE) pretty csp c++ demo
 
 coverage: clean
 	rm -rf gaiag.lcov && mkdir -p gaiag.lcov
@@ -400,3 +400,24 @@ alarm-legacy: alarm-gen
 	rm out/component-Alarm-c3.cc
 	cd out && ln -s ../alarm_legacy/* .
 	g++ -g -Wall -Wextra out/*.c* -o out/test && ./out/test
+
+BROKEN =\
+ asdConcepts_Behaviour.asd\
+ asdConcepts_Composition.asd\
+ SystemComposition.asd\
+
+DEMO_SOURCES = $(filter-out $(BROKEN) ,$(shell cd $(DEPTH)/webdemo/asd && ls *.asd))
+
+out/%.refines: $(DEPTH)/webdemo/asd/%.asd
+	rm -rf out && mkdir out && ln -s ../examples ../webdemo ../templates ../../../webdemo/asd out
+	cd out && $(asdgen) -l scm asd/$*.asd
+	cd out && ../gaiag -l csp $*.scm
+	[ -f out/$*.csp ] || mv out/*.csp out/$*.csp
+	$(diff) webdemo/$*.csp out || true
+	@$(diff) webdemo/$*.csp out | diffstat
+	$(CSPMCHECKER) out/$*.csp
+	$(REFINES) out/$*.csp | grep ': Failed' || :
+	@$(diff) webdemo/$*.csp out >/dev/null
+	touch $@
+
+demo: $(DEMO_SOURCES:%.asd=out/%.refines)
