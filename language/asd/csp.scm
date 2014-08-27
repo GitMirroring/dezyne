@@ -642,12 +642,11 @@
        (list 'assign-active (list context 'r' (list 'call function arguments))
              (context-assign context (.identifier o) 'r')))
       (expression
-       (make <assign>  ;; <csp-assign>?
-         ;; hmm? :flavour 'assign
+       (make <assign>
          :identifier context
-           :expression
-           (make <expression> :value
-                 (context-assign context (.identifier o) expression)))))))
+         :expression
+         (make <expression> :value
+               (context-assign context (.identifier o) expression)))))))
 
 (define-method (ast-transform- ast (o <csp-on>) return context)
   (let ((triggers (.triggers o))
@@ -720,8 +719,6 @@
         (list "callvoid_(" function ")"))
        (('call context function arguments)
         (list "callvoid_(\\ P',V' @ " function " (P',V',\\ (" context ") @ (" arguments ")))"))
-       (('assign context expressions)
-        (list "assign_(\\ (" context ") @ (" expressions "))"))
        (($ <csp-if>)
         (let ((context (.context src))
               (expression (csp-expression->string ast (.expression src)))
