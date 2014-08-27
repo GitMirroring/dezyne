@@ -404,8 +404,8 @@
         (car result)
         (make <compound> :elements result))))
 
-(define-class <csp-on> (<on>)
-  (the-end :accessor .the-end :init-value #f :init-keyword :the-end))
+(define-class <csp-call> (<call>)
+  (context :accessor .context :init-form (list) :init-keyword :context))
 
 (define-class <csp-expression> (<expression>))
 
@@ -420,6 +420,9 @@
 (define-method (display-slots (o <csp-if>) port)
   (sdisplay (.context o) port)
   (next-method))
+
+(define-class <csp-on> (<on>)
+  (the-end :accessor .the-end :init-value #f :init-keyword :the-end))
 
 (define (csp->sugar ast)
   (match ast
@@ -441,6 +444,15 @@
                      :value (csp->gom expression))
        :then (csp->gom then)
        :else (csp->gom else)))
+    (('call ('ctx context) name)
+     (make <csp-call>
+       :context (cadr ast)
+       :identifier name))
+    (('call ('ctx context) name arguments)
+     (make <csp-call>
+       :context (cadr ast)
+       :identifier name
+       :arguments (csp->gom arguments)))
     ((h t ...) (map csp->sugar ast))
     (_ ast)))
 
@@ -488,7 +500,8 @@
 
 (define (call? variable)
   (match variable
-    (('variable type var ('call name arguments)) #t)
+    (('variable type var ($ <call>)) #t)
+    (('variable type var (call name arguments)) #t)
     (('variable type var ('call name)) #t)
     (_ #f)))
 
@@ -587,10 +600,8 @@
                    transformed)))))
       (('variable type var ('value (and (? port?) (get! port)) event))
        (list context var (list 'valued-action (make <trigger> :port (port) :event event))))
-      (('variable type var ('call function))
-       (list context var (list 'call function)))
-      (('variable type var ('call function arguments))
-       (list context var (list 'call function arguments)))
+      (('variable type var (and ($ <call>) (get! call)))
+       (list context var (call)))
       (('variable type var expr)
        (list context var (list 'expression expr)))
       (('function name signature statement)
@@ -602,10 +613,11 @@
          (list 'function name signature transformed)))
       (('return expression)
        (list 'return context expression))
-      (('call function)
-       (list 'call context function))
-      (('call function arguments)
-       (list 'call context function arguments))
+      (($ <call>)
+       (make <csp-call>
+         :context context
+         :identifier (.identifier src)
+         :arguments (.arguments src)))
       (_ src))))
 
 (define-generic ast-transform-)
@@ -628,11 +640,8 @@
                                                            :port (port)
                                                            :event event)))
              (context-assign context (.identifier o) 'r')))
-      (('call function)
-       (list 'assign-active (list context 'r' (list 'call function))
-             (context-assign context (.identifier o) 'r')))
-      (('call function arguments)
-       (list 'assign-active (list context 'r' (list 'call function arguments))
+      (($ <call>)
+       (list 'assign-active (list context 'r' expression)
              (context-assign context (.identifier o) 'r')))
       (expression
        (make <assign>
@@ -670,7 +679,7 @@
   (match src
     (('ctx context) (context->csp ast context))
     (('expression expression) (csp-expression->string ast expression))
-    (('arguments arguments ..1) (comma-join (map (lambda (x) (=>string ast x)) (ast:body src))))
+    (($ <arguments> arguments) (comma-join (map (lambda (x) (=>string ast x)) arguments)))
     ((h t ...) (->string (map (lambda (x) (=>string ast x)) src)))
     (_ (->string src))))
 
@@ -722,10 +731,11 @@
        (('function name signature statement)
         (let ((body (csp-transform ast statement inevitable-optional? channel provided-on?)))
           (list name " = \\ P',V',F' @ context_(F',\n" body ")(P',V')\n")))
-       (('call context function)
-        (list "callvoid_(" function ")"))
-       (('call context function arguments)
-        (list "callvoid_(\\ P',V' @ " function " (P',V',\\ (" context ") @ (" arguments ")))"))
+       (($ <csp-call> identifier ($ <arguments> '()) context)
+        (list "callvoid_(" identifier ")"))
+       (($ <csp-call> identifier arguments context)
+        (let ((arguments (.elements arguments)))
+          (list "callvoid_(\\ P',V' @ " identifier " (P',V',\\ (" context ") @ (" arguments ")))")))
        (($ <csp-if>)
         (let ((context (.context src))
               (expression (csp-expression->string ast (.expression src)))
@@ -734,24 +744,23 @@
           (list "\\ P',(" context ") @ ifthenelse_(" expression ",\n" then ",\n" else "\n)(P',(" context "))")))
        (('value type field) (list type "_" field))
        (('literal scope type value) (list type "_" value))
-;;       (('vector expressions ...) (cons 'vector (map (lambda (exp) (csp-transform ast exp)) expressions )))
        (('context-active (context var ('valued-action ($ <trigger> port event))) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list "context_active_(sendrecv_("  port "," event "),\n" stat ")")))
        (('context-active (context var ('expression ($ <action> ($ <trigger> port event)))) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list "context_active_(sendrecv_(" port "," event "),\n" stat ")")))
-       (('context-active (context var ('call function)) stat)
+       (('context-active (context var ($ <call> identifier ($ <arguments> '()))) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
-          (list "context_active_(" function ",\n" stat ")")))
-       (('context-active (context var ('call function arguments)) stat)
+          (list "context_active_(" identifier ",\n" stat ")")))
+       (('context-active (context var ($ <call> identifier (and ($ <arguments>) (get! arguments)))) stat)
           (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
-          (list "context_active_(\\ P',V' @ " function " (P',V',\\ (" context ") @ (" arguments ")),\n" stat ")")))
+          (list "context_active_(\\ P',V' @ " identifier " (P',V',\\ (" context ") @ (" (arguments) ")),\n" stat ")")))
        (('assign-active (context var ($ <action> ($ <trigger> port event))) expressions)
         (let ((action (list "sendrecv_(" port "," event ")")))
           (list "assign_active_(" action ",\n\\ ((" context "))," var " @ (" expressions "))" )))
-       (('assign-active (context var ('call function arguments)) expressions)
-        (list "assign_active_(\\ P',V' @ " function " (P',V',\\ (" context ") @ (" arguments ")),\n\\ ((" context "))," var " @ (" expressions "))"))
+       (('assign-active (context var ($ <call> identifier (and ($ <arguments>) (get! arguments)))) expressions)
+        (list "assign_active_(\\ P',V' @ " identifier " (P',V',\\ (" context ") @ (" (arguments) ")),\n\\ ((" context "))," var " @ (" expressions "))"))
        (('context (context var expression) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list "context_(\\ (" context ") @ " expression ",\n" stat ")" )))

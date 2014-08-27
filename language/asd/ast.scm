@@ -99,8 +99,8 @@
 ;;           |parameter
 ;;
 ;;
-;;   (call   f      (arguments a b c)
-;;    ^class ^name  ^arguments
+;;   (call   f            (arguments a b c)
+;;    ^class ^identifier  ^a..-list  ^arguments
 ;;
 ;;
 ;;
@@ -379,7 +379,7 @@
 
 (define (body ast)
   (match ast
-    ((or (? behaviour?) (? model?))
+    ((or (? behaviour?) (? call?) (? model?))
      (or (and (>2 (length ast)) (cddr ast)) '()))
     ((or  (? arguments?) (? compound?) (? events?) (? functions?) (? guard?) (? imports?) (? on?) (? parameters?) (? ports?) (? signature?) (? triggers?) (? types?) (? variables?))
      (cdr ast))
@@ -527,7 +527,8 @@
 (define (identifier ast)
   (match ast
     ((? assign?) (cadr ast))
-    (_ (throw 'match-error  (format #f "~a:assign: no match: ~a\n" (current-source-location) ast)))))
+    ((? call?) (cadr ast))
+    (_ (throw 'match-error  (format #f "~a:identifier: no match: ~a\n" (current-source-location) ast)))))
 
 (define (return-type ast)
   (match ast

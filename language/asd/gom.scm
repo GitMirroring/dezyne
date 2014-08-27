@@ -42,16 +42,19 @@
            star
 
            <action>
+           <arguments>
            <assign>
            <ast>
            <compound>
            <expression>
            <guard>
            <if>
+           <call>
            <on>
            <trigger>
            <triggers>
 
+           .arguments
            .elements
            .else
            .event
@@ -112,6 +115,7 @@
   (ports :accessor .ports :init-form (make <ports>) :init-keyword :ports)
   (behaviour :accessor .behaviour :init-value #f :init-keyword :behaviour))
 
+(define-class <arguments> (<ast-list>))
 (define-class <compound> (<ast-list> <statement>))
 (define-class <events> (<ast-list>))
 (define-class <ports> (<ast-list>))
@@ -135,6 +139,10 @@
 (define-class <assign> (<statement>)
   (identifier :accessor .identifier :init-value #f :init-keyword :identifier)
   (expression :accessor .expression :init-form (make <expression>) :init-keyword :expression))
+
+(define-class <call> (<ast>)
+  (identifier :accessor .identifier :init-value #f :init-keyword :identifier)
+  (arguments :accessor .arguments :init-form (make <arguments>) :init-keyword :arguments))
 
 (define-class <guard> (<statement>)
   (expression :accessor .expression :init-form (make <expression>) :init-keyword :expression)
@@ -187,6 +195,8 @@
                          :expression (make <expression>
                                        :value (ast->gom (ast:expression ast)))))
 
+    ((? ast:argument-list?) (make <arguments>
+                           :elements (map ast->gom (ast:body ast))))
     ((? ast:event-list?) (make <events>
                            :elements (map ast->gom (ast:body ast))))
     ((? ast:parameter-list?) (make <parameters>
@@ -223,6 +233,11 @@
                        :identifier (ast:identifier ast)
                        :expression (make <expression>
                                      :value (ast->gom (ast:expression ast)))))
+    ((? ast:call?) (make <call>
+                       :identifier (ast:identifier ast)
+                       :arguments (ast->gom (or (null-is-#f
+                                                 (ast:argument-list ast))
+                                                 '(arguments)))))
     ((? ast:guard?) (make <guard>
                        :expression (make <expression>
                                      :value (ast->gom (ast:expression ast)))
@@ -262,10 +277,17 @@
   (match ast
     ((? ast:action?) (make <action>
                        :trigger (ast->gom* (ast:trigger ast))))
+    ((? ast:argument-list?) (make <arguments>
+                           :elements (map ast->gom* (ast:body ast))))
     ((? ast:assign?) (make <assign>
                        :identifier (ast:identifier ast)
                        :expression (make <expression>
                                      :value (ast->gom* (ast:expression ast)))))
+    ((? ast:call?) (make <call>
+                       :identifier (ast:identifier ast)
+                       :arguments (ast->gom* (or (null-is-#f
+                                                  (ast:argument-list ast))
+                                                 '(arguments)))))
     ((? ast:guard?) (make <guard>
                        :expression (make <expression>
                                      :value (ast->gom* (ast:expression ast)))
@@ -320,6 +342,11 @@
   (star port)
   (sdisplay (.type o) port)
   (sdisplay (.name o) port))
+
+(define-method (display-slots (o <call>) port)
+  (sdisplay (.identifier o) port)
+  (if (pair? (.elements (.arguments o)))
+      (sdisplay (.arguments o) port)))
 
 (define-method (display-slots (o <if>) port)
   (sdisplay (.expression o) port)

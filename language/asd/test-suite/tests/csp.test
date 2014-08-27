@@ -836,7 +836,7 @@ assign_(\\ ((state,sounding),(stack')) @ ((States_Triggered,sounding),(stack')))
         (action toggle))))
 
 (pass-if "ast-transform-ast-transform-function-call"
-         (pretty-noisy-equal?
+         (equal?
 
           ;; from:
           (ast-transform-function-call i-ast ast-function-call-ast)
@@ -1084,8 +1084,12 @@ semi_(context_(\\ ((b),(stack')) @ true,
      (functions
       (function
        g
-       ((type bool) (parameters ((type bool) c)))
-       (compound (action (trigger i f)) (return c))))
+       ((type bool) (parameters (parameter (type bool) c)))
+       (compound (action (trigger i f)) (return c)))
+      (function
+       h
+       ((type bool) (parameters (parameter (type bool) c) (parameter (type bool) d)))
+       (compound (action (trigger i f)) (return (and c d)))))
      (compound
       (guard true
              (on ((trigger i e))
@@ -1138,6 +1142,56 @@ semi_(context_(\\ ((b),(stack')) @ true,
 semi_(semi_(assign_(\\ ((b),(stack')) @ (((not b)),(stack'))),
 context_active_(\\ P',V' @ g (P',V',\\ ((b),(stack')) @ (b)),
 semi_(assign_active_(\\ P',V' @ g (P',V',\\ ((b),((stack',c))) @ (c)),
+\\ (((b),((stack',c)))),r' @ ((r'),((stack',c)))),
+\\ P',((b),((stack',c))) @ ifthenelse_(c,
+(\\ P',V' @ i!f -> P'(V')),
+(\\ P',V' @ P'(V'))
+)(P',((b),((stack',c))))))),
+(\\ P',V' @ i.return -> P'(V')))(\\ V' @ transition_end -> arguments__(V'),((b),(stack')))"))
+
+(define callvalued-on-2
+  '(on ((trigger i e))
+       (compound
+        (assign b (! b))
+        (variable (type bool) c (call h (arguments s b)))
+        (assign b (call h (arguments s b)))
+        (if c (compound (action (trigger i f)))))))
+
+(define csp-callvalued-on-2
+  '(on ((trigger i e))
+    (semi (semi (assign (ctx ((b))) (ctx (((! b)))))
+                (context-active
+                  ((ctx ((b))) c (call h (arguments s b)))
+                  (semi (assign-active
+                          ((ctx ((b) c)) r' (call h (arguments s b)))
+                          (ctx ((r') c)))
+                        (if (ctx ((b) c))
+                          (expression c)
+                          (action (trigger i f))
+                          ()))))
+          (eventreturn))
+    (the-end (b))))
+
+(pass-if "ast-transform-callvalued-2"
+         (pretty-noisy-equal?
+
+          ;; from:
+          (ast-transform* callvalued-ast callvalued-on-2)
+
+          ;; via:
+          csp-callvalued-on-2))
+
+
+(pass-if "csp-transform-callvalued-2"
+         (diff-noisy-equal?
+
+          ;; from:
+          (csp-transform* callvalued-ast csp-callvalued-on-2)
+          ;; via:
+         "i?x:{e} ->
+semi_(semi_(assign_(\\ ((b),(stack')) @ (((not b)),(stack'))),
+context_active_(\\ P',V' @ h (P',V',\\ ((b),(stack')) @ (s,b)),
+semi_(assign_active_(\\ P',V' @ h (P',V',\\ ((b),((stack',c))) @ (s,b)),
 \\ (((b),((stack',c)))),r' @ ((r'),((stack',c)))),
 \\ P',((b),((stack',c))) @ ifthenelse_(c,
 (\\ P',V' @ i!f -> P'(V')),
