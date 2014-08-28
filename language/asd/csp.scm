@@ -223,7 +223,6 @@
 
   (match src
     (($ <expression>) (csp-expression->string ast (.value src)))
-    (($ <csp-expression>) (csp-expression->string ast (.value src)))
     ((or (? number?) (? symbol?)) src)
     (('value type field)
      (let ((prefix (variable-prefix ast type)))
@@ -415,13 +414,6 @@
 (define-class <csp-call> (<call>)
   (context :accessor .context :init-form (list) :init-keyword :context))
 
-(define-class <csp-expression> (<expression>))
-
-(define-method (write (o <csp-expression>) port)
-  (display "(expression*" port)
-  (display-slots o port)
-  (display #\) port))
-
 (define-class <csp-if> (<if>)
   (context :accessor .context :init-form (list) :init-keyword :context))
 
@@ -453,7 +445,7 @@
     (('if ('ctx context) ('expression expression) then else)
      (make <csp-if>
        :context (cadr ast)
-       :expression (make <csp-expression>
+       :expression (make <expression>
                      :value (csp->gom expression))
        :then (csp->gom then)
        :else (csp->gom else)))
@@ -693,7 +685,7 @@
          (pred (if else-illegal? (list 'and '(! IG) pred-then) pred-then)))
     (make <csp-if>
       :context context
-      :expression (make <csp-expression> :value pred)
+      :expression (make <expression> :value pred)
       :then (ast-transform- ast then return context)
       :else (or (ast-transform- ast else return context) '()))))
 
@@ -715,7 +707,6 @@
          (component? (is-a? model <component>)))
     (=>string ast
      (match src
-       ;;('on ('triggers triggers ...) stat ...)
        (($ <csp-on>)
         (let* ((triggers (.elements (.triggers src)))
                (statement (.statement src))
@@ -768,17 +759,9 @@
           (list "\\ P',(" context ") @ ifthenelse_(" expression ",\n" then ",\n" else "\n)(P',(" context "))")))
        (('value type field) (list type "_" field))
        (('literal scope type value) (list type "_" value))
-
-       (('context-active (context var ('expression ($ <action> ($ <trigger> port event)))) stat) ;; FIXME tick
-        boo
-        (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
-          (list "context_active_(sendrecv_(" port "," event "),\n" stat ")")))
-
        (('context-active (context var ($ <expression> ($ <action> ($ <trigger> port event)))) stat)
-        ;; FIXME tick
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list "context_active_(sendrecv_(" port "," event "),\n" stat ")")))
-
        (('context-active (context var ('valued-action ($ <trigger> port event))) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list "context_active_(sendrecv_("  port "," event "),\n" stat ")")))
