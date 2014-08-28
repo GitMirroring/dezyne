@@ -80,7 +80,7 @@ channel #.interface.name : {#(comma-join (append (interface-events interface) (r
  (->string (list .interface.name '_ .behaviour.name '_ "((" (context->csp ast (make-context ((compose gom:member-names norm:import) .interface.name) '())) "))" )))
 
 
-within #.interface.name _#.behaviour.name _((#(context->csp ast (make-context ((compose (gom:member-values value) norm:import) .interface.name) '(<>))))) #.optional-chaos
+within #.interface.name _#.behaviour.name _((#(context->csp ast (make-context ((compose gom:member-values norm:import) .interface.name) '(<>))))) #.optional-chaos
 
 #} ((compose .elements .ports gom:component) ast))
 #.component _#.behaviour.name (IIG,IG) = let
@@ -90,7 +90,7 @@ within #.interface.name _#.behaviour.name _((#(context->csp ast (make-context ((
  (->string (list .component '_ .behaviour.name '_ "((" (context->csp ast (make-context ((compose gom:member-names gom:component) ast) '())) "))" )))
 )
 
-within #.component _#.behaviour.name _((#(context->csp ast (make-context ((compose (gom:member-values value) gom:component) ast) '(<>)))))
+within #.component _#.behaviour.name _((#(context->csp ast (make-context ((compose gom:member-values gom:component) ast) '(<>)))))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {#

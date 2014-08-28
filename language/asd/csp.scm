@@ -352,13 +352,6 @@
   (and (is-a? model <component>)
        ((requires? model) event)))
 
-(define (value ast)
-  (stderr "VALUE: ~a\n" ast)
-  (match ast
-    ((? ast:trigger?) (.event ast))
-    ((? ast:value?) (symbol-append (ast:type ast) '_ (ast:field ast)))
-    (_ ast)))
-
 (define (optional-chaos port) ;; FIXME: no test
   (let ((interface (.type port)))
     (if (member 'optional (map .event (gom:find-events (norm:import (.type port)))))

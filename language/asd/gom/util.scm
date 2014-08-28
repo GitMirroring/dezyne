@@ -129,7 +129,7 @@
 (define (gom:member-names model)
   (map .name (gom:variables (.behaviour model))))
 
-(define ((gom:member-values value) model)
+(define (gom:member-values model)
   (map (lambda (x) (.value (.expression x))) (gom:variables (.behaviour model))))
 
 (define (statement? ast)
