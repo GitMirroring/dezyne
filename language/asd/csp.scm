@@ -41,6 +41,8 @@
   :use-module (oop goops)
   :use-module (oop goops describe)
   :use-module (language asd gom)
+  :use-module (language asd gom ast)
+  :use-module (language asd gom util)
 
   :export (
            ast->

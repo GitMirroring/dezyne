@@ -35,14 +35,17 @@
 
   :use-module (oop goops)
   :use-module (language asd gom)
+  :use-module (language asd gom ast)
+  :use-module (language asd gom util)
+
   :export (
            ast->
 	   assert-list
            ))
 
 (define ((assert model) check) (if (eq? check 'compliance)
-                                   (list (gom:class model) (.name model) check (.type (gom:port model)))
-                                   (list (gom:class model) (.name model) check)))
+                                   (list (ast-name model) (.name model) check (.type (gom:port model)))
+                                   (list (ast-name model) (.name model) check)))
 
 (define (ast-> ast)
   (pretty-print (assert-list ast))

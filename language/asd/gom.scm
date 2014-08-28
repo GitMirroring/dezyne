@@ -31,44 +31,10 @@
 
   :use-module (oop goops)
   :use-module (oop goops describe)
+
+  :use-module (language asd gom ast)
+
   :export (
-           is?
-           ast->
-           ast->gom
-           ast->gom*
-           ast->sugar
-           ast->trigger-sugar
-           display-slots
-           sdisplay
-           star
-
-           <action>
-           <arguments>
-           <assign>
-           <ast>
-           <component>
-           <compound>
-           <enum>
-           <expression>
-           <fields>
-           <function>
-           <functions>
-           <guard>
-           <if>
-           <illegal>
-           <interface>
-           <call>
-           <on>
-           <parameter>
-           <parameters>
-           <reply>
-           <return>
-           <signature>
-           <trigger>
-           <triggers>
-           <types>
-           <variable>
-
            .arguments
            .behaviour
            .direction
@@ -88,31 +54,54 @@
            .trigger
            .triggers
            .type
+           .types
            .value
-
-
-           ;; utilities
-           gom:class
-           gom:component
-           gom:enums
-           gom:events
-           gom:find-events
-           gom:functions
-           gom:in?
-           gom:interface
-           gom:member-names
-           gom:member-values
-           gom:out?
-           gom:port
-           gom:provides?
-           gom:requires?
-           gom:statement
-           gom:statements-of-type
-           gom:variable
-           gom:variables
+           .variables
+           <action>
+           <arguments>
+           <assign>
+           <ast>
+           <behaviour>
+           <call>
+           <component>
+           <compound>
+           <enum>
+           <event>
+           <events>
+           <expression>
+           <fields>
+           <function>
+           <functions>
+           <guard>
+           <if>
+           <illegal>
+           <interface>
+           <model>
+           <on>
+           <parameter>
+           <parameters>
+           <port>
+           <ports>
+           <reply>
+           <return>
+           <signature>
+           <statement>
+           <trigger>
+           <triggers>
+           <types>
+           <variable>
+           <variables>
+           ast->
+           ast-name
+           display-slots
+           sdisplay
+           star
            ))
 
 (define-class <ast> ())
+
+(define-method (ast-name (o <ast>))
+  (string->symbol (string-drop (string-drop-right (symbol->string (class-name (class-of o))) 1) 1)))
 
 (define-class <named> (<ast>)
   (name :accessor .name :init-value #f :init-keyword :name))
@@ -223,240 +212,6 @@
   (type :accessor .type :init-value #f :init-keyword :type)
   (field :accessor .field :init-value #f :init-keyword :field))
 
-(define (ast->gom- ast)
-  (match ast
-    ((? ast:component?) (make <component>
-                          :name (ast:name ast)
-                          :ports (ast->gom (ast:port-list ast))
-                          :behaviour (ast->gom (ast:behaviour ast))))
-    ((? ast:interface?) (make <interface>
-                          :name (ast:name ast)
-                          :events (ast->gom (ast:event-list ast))
-                          :types (ast->gom (ast:type-list ast))
-                          :behaviour (ast->gom (ast:behaviour ast))))
-    ((? ast:enum?) (make <enum>
-                     :name (ast:name ast)
-                     :fields (make <fields> :elements (ast:fields ast))))
-    ((? ast:event?) (make <event>
-                      :name (ast:name ast)
-                      :type (ast->gom (ast:signature ast))
-                      :direction (ast:direction ast)))
-    ((? ast:function?) (make <function>
-                          :name (ast:name ast)
-                          :signature (ast->gom (ast:signature ast))
-                          :statement (ast->gom (ast:statement ast))))
-    ((? ast:parameter?) (make <parameter>
-                      :type (ast:type ast)
-                      :identifier (ast:identifier ast)))
-    ((? ast:port?) (make <port>
-                      :name (ast:name ast)
-                      :type (ast:type ast)
-                      :direction (ast:direction ast)))
-    ((? ast:variable?) (make <variable>
-                         :name (ast:name ast)
-                         :type (ast:type ast)
-                         :expression (make <expression>
-                                       :value (ast->gom (ast:expression ast)))))
-
-    ((? ast:argument-list?) (make <arguments>
-                           :elements (map ast->gom (ast:body ast))))
-    ((? ast:event-list?) (make <events>
-                           :elements (map ast->gom (ast:body ast))))
-    ((? ast:function-list?) (make <functions>
-                           :elements (map ast->gom (ast:body ast))))
-    ((? ast:parameter-list?) (make <parameters>
-                               :elements (map ast->gom (ast:body ast))))
-    ((? ast:port-list?) (make <ports>
-                          :elements (map ast->gom (ast:body ast))))
-    ((? ast:statement-list?) (make <compound>
-                               :elements (map ast->gom (ast:body ast))))
-    ((? ast:trigger-list?) (make <triggers>
-                             :elements (map ast->gom (ast:body ast))))
-    ((? ast:type-list?) (make <types>
-                          :elements (map ast->gom (ast:body ast))))
-    ((? ast:variable-list?) (make <variables>
-                          :elements (map ast->gom (ast:body ast))))
-
-    ((? ast:signature?) (make <signature>
-                          :type (ast:type ast)
-                          :parameters (ast->gom (or (null-is-#f
-                                                     (ast:parameter-list ast))
-                                                    '(parameters)))))
-    ((? ast:behaviour?) (make <behaviour>
-                          :name (ast:name ast)
-                          :types (ast->gom (ast:type-list ast))
-                          :variables (ast->gom (ast:variable-list ast))
-                          :functions (ast->gom (ast:function-list ast))
-                          :statement (ast->gom (ast:statement ast))))
-    ((? ast:trigger?) (make <trigger>
-                       :port (ast:port-name ast)
-                       :event (ast:event-name ast)))
-
-    ((? ast:trigger-list?) (make <triggers>
-                             :elements (map ast->gom (ast:body ast))))
-
-    ((? ast:action?) (make <action>
-                       :trigger (ast->gom (ast:trigger ast))))
-    ((? ast:assign?) (make <assign>
-                       :identifier (ast:identifier ast)
-                       :expression (make <expression>
-                                     :value (ast->gom (ast:expression ast)))))
-    ((? ast:call?) (make <call>
-                       :identifier (ast:identifier ast)
-                       :arguments (ast->gom (or (null-is-#f
-                                                 (ast:argument-list ast))
-                                                 '(arguments)))))
-    ((? ast:guard?) (make <guard>
-                       :expression (make <expression>
-                                     :value (ast->gom (ast:expression ast)))
-                       :statement (ast->gom (ast:statement ast))))
-    ((? ast:if?) (make <if>
-                       :expression (make <expression>
-                                     :value (ast->gom (ast:expression ast)))
-                       :then (ast->gom (ast:then ast))
-                       :else (ast->gom (ast:else ast))))
-    ((? ast:illegal?) (make <illegal>))
-    ((? ast:on?) (make <on>
-                       :triggers (ast->gom (ast:trigger-list ast))
-                       :statement (ast->gom (ast:statement ast))))
-    ((? ast:reply?) (make <reply>
-                      :expression (make <expression>
-                                    :value (ast->gom (ast:expression ast)))))
-    ((? ast:return?) (make <return>
-                       :expression (if (null? (ast:expression ast))
-                                       #f
-                                       (make <expression>
-                                         :value (ast->gom (ast:expression ast))))))
-
-    ((? ast:value?) (make <value>
-                      :type (ast:type ast)
-                      :field (ast:field ast)))
-    ((? ast:parameter?) (make <parameter>
-                      :type (ast:type ast)
-                      :identifier (ast:identifier ast)))
-    ((h t ...) (map ast->gom ast))
-    (_ ast)))
-
-(define (ast->sugar ast)
-  (match ast
-    (('on ('triggers t ...) statement) ast)
-    (('on triggers statement) (ast:make 'on (list (ast:make 'triggers (map ast->trigger-sugar triggers)) statement)))
-    (_ ast)))
-
-(define (ast->trigger-sugar ast)
-  (match ast
-    ((port event) (ast:make 'trigger ast))
-    ((? symbol?) (ast:make 'trigger (list #f ast)))
-    (_ ast)))
-
-(define (ast->gom ast)
-  ((compose ast->gom- ast->sugar) ast))
-
-(define (ast->gom*- ast)
-  (match ast
-    ((? ast:action?) (make <action>
-                       :trigger (ast->gom* (ast:trigger ast))))
-    ((? ast:argument-list?) (make <arguments>
-                           :elements (map ast->gom* (ast:body ast))))
-    ((? ast:assign?) (make <assign>
-                       :identifier (ast:identifier ast)
-                       :expression (make <expression>
-                                     :value (ast->gom* (ast:expression ast)))))
-    ((? ast:behaviour?) (make <behaviour>
-                          :name (ast:name ast)
-                          :types (ast->gom* (ast:type-list ast))
-                          :variables (ast->gom* (ast:variable-list ast))
-                          :functions (ast->gom* (ast:function-list ast))
-                          :statement (ast->gom* (ast:statement ast))))
-    ((? ast:call?) (make <call>
-                       :identifier (ast:identifier ast)
-                       :arguments (ast->gom* (or (null-is-#f
-                                                  (ast:argument-list ast))
-                                                 '(arguments)))))
-    ((? ast:component?) (make <component>
-                          :name (ast:name ast)
-                          :ports (ast->gom* (ast:port-list ast))
-                          :behaviour (ast->gom* (ast:behaviour ast))))
-    ((? ast:enum?) (make <enum>
-                     :name (ast:name ast)
-                     :fields (make <fields> :elements (ast:fields ast))))
-    ((? ast:event?) (make <event>
-                      :name (ast:name ast)
-                      :type (ast->gom* (ast:signature ast))
-                      :direction (ast:direction ast)))
-    ((? ast:event-list?) (make <events>
-                           :elements (map ast->gom* (ast:body ast))))
-    ((? ast:function-list?) (make <functions>
-                           :elements (map ast->gom* (ast:body ast))))
-    ((? ast:guard?) (make <guard>
-                       :expression (make <expression>
-                                     :value (ast->gom* (ast:expression ast)))
-                       :statement (ast->gom* (ast:statement ast))))
-    ((? ast:if?) (make <if>
-                       :expression (make <expression>
-                                     :value (ast->gom* (ast:expression ast)))
-                       :then (ast->gom* (ast:then ast))
-                       :else (ast->gom* (ast:else ast))))
-    ((? ast:illegal?) (make <illegal>))
-    ((? ast:interface?) (make <interface>
-                          :name (ast:name ast)
-                          :events (ast->gom* (ast:event-list ast))
-                          :types (ast->gom* (ast:type-list ast))
-                          :behaviour (ast->gom* (ast:behaviour ast))))
-    ((? ast:on?) (make <on>
-                       :triggers (ast->gom* (ast:trigger-list ast))
-                       :statement (ast->gom* (ast:statement ast))))
-    ((? ast:reply?) (make <reply>
-                      :expression (make <expression>
-                                    :value (ast->gom* (ast:expression ast)))))
-    ((? ast:return?) (make <return>
-                       :expression (if (null? (ast:expression ast))
-                                       #f
-                                       (make <expression>
-                                         :value (ast->gom* (ast:expression ast))))))
-
-    ((? ast:parameter?) (make <parameter>
-                      :type (ast:type ast)
-                      :identifier (ast:identifier ast)))
-    ((? ast:parameter-list?) (make <parameters>
-                               :elements (map ast->gom* (ast:body ast))))
-    ((? ast:port?) (make <port>
-                      :name (ast:name ast)
-                      :type (ast:type ast)
-                      :direction (ast:direction ast)))
-    ((? ast:port-list?) (make <ports>
-                          :elements (map ast->gom* (ast:body ast))))
-    ((? ast:function?) (make <function>
-                          :name (ast:name ast)
-                          :signature (ast->gom* (ast:signature ast))
-                          :statement (ast->gom* (ast:statement ast))))
-    ((? ast:signature?) (make <signature>
-                          :type (ast:type ast)
-                          :parameters (ast->gom* (or (null-is-#f
-                                                      (ast:parameter-list ast))
-                                                     '(parameters)))))
-    ((? ast:statement-list?) (make <compound>
-                               :elements (map ast->gom* (ast:body ast))))
-    ((? ast:trigger?) (make <trigger>
-                       :port (ast:port-name ast)
-                       :event (ast:event-name ast)))
-    ((? ast:trigger-list?) (make <triggers>
-                             :elements (map ast->gom* (ast:body ast))))
-    ((? ast:type-list?) (make <types>
-                          :elements (map ast->gom* (ast:body ast))))
-    ((? ast:variable?) (make <variable>
-                         :name (ast:name ast)
-                         :type (ast:type ast)
-                         :expression (make <expression>
-                                       :value (ast->gom* (ast:expression ast)))))
-    ((? ast:variable-list?) (make <variables>
-                          :elements (map ast->gom* (ast:body ast))))
-    ((h t ...) (map ast->gom* ast))
-    (_ ast)))
-
-(define (ast->gom* ast)
-  ((compose ast->gom*- ast->sugar) ast))
-
 ;; AST printing
 (define (star port) (display #\* port))
 
@@ -515,12 +270,9 @@
   (sdisplay (.name o) port)
   (sdisplay (.expression o) port))
 
-(define-method (gom:class (o <ast>))
-  (string->symbol (string-drop (string-drop-right (symbol->string (class-name (class-of o))) 1) 1)))
-
 (define-method (write (o <ast>) port)
   (display "(" port)
-  (display (gom:class o) port)
+  (display (ast-name o) port)
   (star port)
   (display-slots o port)
   (display #\) port))
@@ -529,134 +281,3 @@
   (pretty-print (with-input-from-string
                     (with-output-to-string (lambda () (write (ast->gom* ast))))
                   read)) "")
-
-
-;;;; utilities
-(define-method (gom:trigger< (lhs <trigger>) (rhs <trigger>))
-  (if (and (not (.port lhs)) (not (.port rhs)))
-      (symbol< (.event lhs) (.event rhs))
-      (if
-       (and (symbol? (.port lhs)) (symbol? (.port rhs))
-            (list< (list (.port lhs) (.event lhs))
-                   (list (.port rhs) (.event rhs))))
-       (not (symbol? (.port lhs))))))
-
-(define* (gom:find-events ast :optional (found '()))
-  "Search for optional and inevitable."
-  (match ast
-    ((or ($ <interface>) ($ <component>))
-     (delete-duplicates (sort (gom:find-events (gom:statement (.behaviour ast))) gom:trigger<)))
-    (($ <compound>) (append (apply append (map gom:find-events (.elements ast))) found))
-    (($ <on>) (gom:find-events (.triggers ast)))
-;;    (($ <trigger>) (list ast))
-    (($ <triggers>) (.elements ast))
-    (($ <guard>) (gom:find-events (.statement ast) found))
-    (('inevitable) ast)
-    (('optional) ast)
-    (('action x) '())
-    (('illegal) '())
-    (_ (throw 'match-error  (format #f "~a:gom:find-events: no match: ~a\n" (current-source-location) ast)))))
-
-(define* (gom:variable ast identifier)
-  (match ast
-    (($ <component>) (gom:variable (apply append (map gom:variables (cons ast ((compose .elements .ports) ast)))) identifier))
-    (($ <interface>) (gom:variable (gom:variables ast) identifier))
-    (($ <variable>) (if (eq? (.name ast) identifier) ast #f))
-    ((h ...) (and=> (null-is-#f (filter identity (map (lambda (x) (gom:variable x identifier)) ast))) car))
-    (_ #f)
-    (_ (throw 'match-error  (format #f "~a:gom:variable: no match: ~a\n" (current-source-location) ast)))))
-
-(define (gom:functions ast)
-  (match ast
-    (($ <behaviour>) (.elements (.functions ast)))
-    (($ <interface>) (append
-                      (.elements (.functions ast))
-                      (gom:functions (.behaviour ast))))
-    (($ <component>) (.functions (.behaviour ast)))
-    (($ <port>) (stderr "port: ~a\n" (.type ast))
-     (gom:functions (ast->gom* (ast:ast (.type ast)))))
-    (_ (throw 'match-error  (format #f "~a:gom:functions: no match: ~a\n" (current-source-location) ast)))))
-
-(define (gom:variables ast)  ;; to be removed (.variables o)
-  (match ast
-    (($ <behaviour>) (.elements (or (.variables ast) (make <variables>))))
-    (($ <interface>) (append
-                      (.elements (or (.variables (.behaviour ast))
-                                     (make <variables>)))
-                      (gom:variables (.behaviour ast))))
-    (($ <component>) (gom:variables (.behaviour ast)))
-    (($ <port>) (gom:variables (ast->gom* (ast:ast (.type ast)))))
-    (_ (throw 'match-error  (format #f "~a:gom:variables: no match: ~a\n" (current-source-location) ast)))))
-
-(define (gom:member-names model)
-  (map .name (gom:variables (.behaviour model))))
-
-(define ((gom:member-values value) model)
-  (map (lambda (x) (.value (.expression x))) (gom:variables (.behaviour model))))
-
-(define (statement? ast)
-  (member (gom:class ast) '(action assign bind call compound guard if instance on reply variable return)))
-
-(define (gom:statement ast)
-  (match ast
-    ((? ast:system?) (or (find (lambda (x) (is-a? x <compound>)) (ast:body ast))))
-    (($ <model>) (gom:statement (.behaviour ast)))
-    (($ <behaviour>) (or (.statement ast) (make <compound>)))
-    (($ <function>) (.statement ast))
-    (_ (throw 'match-error  (format #f "~a:gom:statement: no match: ~a\n" (current-source-location) ast)))))
-
-(define ((gom:statement-of-type type) statement)
-  (eq? (gom:class statement) type))
-
-(define ((gom:statements-of-type type) statement)
-  (match statement
-    ((? (gom:statement-of-type type)) (list statement))
-    (($ <compound>) (filter identity (apply append (map (gom:statements-of-type type) (.elements statement)))))
-    ((? (is? <statement>)) '())
-    (_ (throw 'match-error  (format #f "~a:gom:statements-of-type, type: ~a: no match: ~a\n" (current-source-location) type statement)))))
-
-(define-method (gom:component (o <top>))
-  #f)
-
-(define-method (gom:component (o <list>))
-  (find (is? <component>) o))
-
-(define-method (gom:component (o <component>))
-  o)
-
-(define-method (gom:interface (o <top>))
-  #f)
-
-(define-method (gom:interface (o <list>))
-  (find (is? <interface>) o))
-
-(define-method (gom:interface (o <interface>))
-  o)
-
-(define-method (gom:port (o <component>))
-  (car (filter gom:provides? (.elements (.ports o)))))
-
-(define-method (gom:in? (o <event>))
-  (eq? (.direction o) 'in))
-
-(define-method (gom:out? (o <event>))
-  (eq? (.direction o) 'out))
-
-(define-method (gom:provides? (o <port>))
-  (eq? (.direction o) 'provides))
-
-(define-method (gom:requires? (o <port>))
-  (eq? (.direction o) 'requires))
-
-(define (gom:enums ast)
-  (filter (is? <enum>) (.elements (.types ast))))
-
-(define (gom:events ast)
-  (match ast
-    (($ <interface>) (.elements (.events ast)))
-;;    (($ <component>) (gom:find-triggers ast))
-    (($ <port>) (gom:events (ast->gom* (ast:ast (.type ast)))))
-    (_ (throw 'match-error  (format #f "~a:events: no match: ~a\n" (current-source-location) ast)))))
-
-(define ((is? class) o)
-  (if (is-a? o class) o #f))

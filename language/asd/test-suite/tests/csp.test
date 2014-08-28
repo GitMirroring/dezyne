@@ -8,7 +8,9 @@
 
   :use-module (language asd ast:)
   :use-module (language asd csp)
-  :use-module (language asd gom))
+  :use-module (language asd gom)
+  :use-module (language asd gom ast)
+  :use-module (language asd gom util))
 
 (define plain-equal? equal?)
 (define (equal? actual expected)
