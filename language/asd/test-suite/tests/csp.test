@@ -12,18 +12,6 @@
   :use-module (language asd gom ast)
   :use-module (language asd gom util))
 
-(define plain-equal? equal?)
-(define (equal? actual expected)
-  (plain-equal?
-       (with-input-from-string
-              (with-output-to-string (lambda ()
-                                       (write (csp->gom actual))))
-            read)
-          (with-input-from-string
-              (with-output-to-string (lambda ()
-                                       (write (csp->gom expected))))
-            read)))
-
 (pass-if "csp-first-dummy-test"
          #t)
 
@@ -859,6 +847,125 @@ assign_(\\ ((state,sounding),(stack')) @ ((States_Triggered,sounding),(stack')))
           '(on (e)
                (compound
                 (call toggle)))))
+
+(define var-ast
+  '((interface
+        ivar
+      (types (enum E (v)))
+      (events (in (signature (type E)) foo))
+      (behaviour
+       #f
+       (types)
+       (variables)
+       (functions)
+       (compound
+        (on (triggers (trigger #f foo))
+            (reply (value E v))))))
+    (component
+     var
+     (ports (provides ivar i) (requires ivar o))
+     (behaviour
+      #f
+      (types)
+      (variables)
+      (functions)
+      (compound
+       (on (triggers (trigger i foo))
+           (variable (type ivar (type E)) e (value o foo)))
+       (reply e))))))
+
+(define ast-transform-variable-valued-action-via
+  '(on ((trigger o foo)) (compound (variable (type ivar (type E)) e (action (trigger o foo))))))
+
+(pass-if "ast-transform-variable-valued-action"
+         (gom-pretty-noisy-equal?
+
+          ;; from:
+          (ast-transform-variable-valued-action*
+           (cdr var-ast)
+           '(on ((trigger o foo)) (compound (variable (type ivar (type E)) e (value o foo)))))
+
+          ;; via:
+          ast-transform-variable-valued-action-via))
+
+(define ast-transform-ast-transform-variable-valued-action-via
+  '(on (triggers (trigger o foo))
+       (context-active
+        ((ctx (()))
+         e
+         (expression (action (trigger o foo))))
+        (eventreturn))
+       (the-end ())))
+
+(pass-if "ast-transform-ast-transform-variable-valued-action"
+         (gom-pretty-noisy-equal?
+
+          ;; from:
+          (ast-transform*
+           (cdr var-ast)
+           ast-transform-variable-valued-action-via)
+          ast-transform-ast-transform-variable-valued-action-via))
+
+(pass-if "csp-transform-variable-valued-action"
+         (diff-noisy-equal?
+
+          ;; from/via:
+          (csp-transform* (cdr var-ast) ast-transform-ast-transform-variable-valued-action-via)
+
+          ;; to:
+          "o?x:{foo} ->
+context_active_(sendrecv_(o,foo),
+(\\ P',V' @ P'(V')))(\\ V' @ transition_end -> var__(V'),((stack')))"))
+
+(pass-if "ast-csp-transform-variable-valued-action"
+         (diff-noisy-equal?
+
+          ;; from:
+          (csp-transform* (cdr var-ast)
+                          (ast-transform*
+                           (cdr var-ast)
+                           ast-transform-variable-valued-action-via))
+
+          ;; via:
+          "o?x:{foo} ->
+context_active_(sendrecv_(o,foo),
+(\\ P',V' @ P'(V')))(\\ V' @ transition_end -> var__(V'),((stack')))"))
+
+(define csp-function-call-ast
+  '(on (e)
+       (semi
+        (call (ctx ((s b c))) toggle)
+        (eventreturn))
+       (the-end (s b c))))
+
+(pass-if "ast-transform-function-call"
+         (gom-pretty-noisy-equal?
+
+          ;; from:
+          (ast-transform*
+
+           i-ast
+
+           '(compound
+             (on (e)
+                 (compound
+                  (call toggle)))))
+
+          ;; via:
+          csp-function-call-ast))
+
+(pass-if "csp-transform-function-call"
+         (diff-noisy-equal?
+
+          ;; from:
+          (csp-transform* i-ast csp-function-call-ast)
+
+          ;; via:
+          "i?x:{e} ->
+semi_(callvoid_(toggle),
+(\\ P',V' @ i.return -> P'(V')))(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
+
+;; '
 
 (define csp-function-call-ast
   '(on (e)

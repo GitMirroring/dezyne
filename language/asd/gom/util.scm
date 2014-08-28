@@ -38,6 +38,7 @@
 
   :export (
            is?
+           gom->list
            gom:component
            gom:components
            gom:enums
@@ -63,6 +64,11 @@
 
 (define ((is? class) o)
   (if (is-a? o class) o #f))
+
+(define (gom->list gom)
+  (with-input-from-string
+      (with-output-to-string (lambda () (write gom)))
+    read))
 
 (define-method (gom:trigger< (lhs <trigger>) (rhs <trigger>))
   (if (and (not (.port lhs)) (not (.port rhs)))

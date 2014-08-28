@@ -27,8 +27,8 @@
   :use-module (oop goops)
   :use-module (language asd gom)
   :use-module (language asd gom ast)
+  :use-module (language asd gom util)
   :use-module (language asd csp)
-
 
   :export (fail
            diff-noisy-equal?
@@ -43,17 +43,6 @@
   (apply stderr (cons* string rest))
   #f)
 
-(define (gom-equal? actual expected)
-  (equal?
-       (with-input-from-string
-              (with-output-to-string (lambda ()
-                                       (write (csp->gom actual))))
-            read)
-          (with-input-from-string
-              (with-output-to-string (lambda ()
-                                       (write (csp->gom expected))))
-            read)))
-
 (define (noisy-equal? actual expected)
   (or (equal? actual expected)
       (fail "~a\n!=\n~a\n" expected actual)))
@@ -63,12 +52,16 @@
       (fail "~a!=\n~a" (pretty-string expected) (pretty-string actual))))
 
 (define (gom-noisy-equal? actual expected)
-  (or (gom-equal? actual expected)
-      (fail "~a\n!=\n~a\n" expected actual)))
+  (let ((actual* (gom->list (csp->gom actual)))
+        (expected* (gom->list (csp->gom expected))))
+   (or (equal? actual* expected*)
+       (fail "~a\n!=\n~a\n" expected* actual*))))
 
 (define (gom-pretty-noisy-equal? actual expected)
-  (or (gom-equal? actual expected)
-      (fail "~a!=\n~a" (pretty-string expected) (pretty-string actual))))
+  (let ((actual* (gom->list (csp->gom actual)))
+        (expected* (gom->list (csp->gom expected))))
+  (or (equal? actual* expected*)
+      (fail "~a!=\n~a" (pretty-string expected*) (pretty-string actual*)))))
 
 (define (collapse-whitespace string)
   (string-trim

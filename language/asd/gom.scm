@@ -177,7 +177,7 @@
   (identifier :accessor .identifier :init-value #f :init-keyword :identifier)
   (expression :accessor .expression :init-form (make <expression>) :init-keyword :expression))
 
-(define-class <call> (<ast>)
+(define-class <call> (<statement>)
   (identifier :accessor .identifier :init-value #f :init-keyword :identifier)
   (arguments :accessor .arguments :init-form (make <arguments>) :init-keyword :arguments))
 

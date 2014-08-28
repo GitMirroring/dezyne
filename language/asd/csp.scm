@@ -57,6 +57,8 @@
 	   ast-transform-function-call*
 	   ast-transform-return
 	   ast-transform-return*
+           ast-transform-variable-valued-action
+           ast-transform-variable-valued-action*
 	   csp-expression->string
 	   csp-transform
 	   csp-transform*
@@ -267,14 +269,14 @@
           (loop (cdr ports) (append values (apply append (map typed-elements (gom:enums (.behaviour (norm:import (.type (car ports)))))))))))))
 
 (define-method (return-value (o <enum>))
-  (map (lambda (value) (symbol-append (.name o) '_ value)) (compose .elements .fields) o))
+  (map (lambda (value) (symbol-append (.name o) '_ value)) ((compose .elements .fields) o)))
 
 (define (add-return-if-empty returns)
   (if (null? returns)
       '(return)
       (append (apply append returns) (list 'return)))) ;; FIXME: add only return when needed
 
-(define (return-values-port port)
+(define (return-values-port port) ;; FIMXE: no test
   (add-return-if-empty (map return-value (gom:enums (norm:import (.type port))))))
 
 (define (return-values-interface interface)
@@ -384,6 +386,20 @@
 (define (ast-transform-function-call* ast src)
   (ast-transform-function-call (csp->gom ast) src))
 
+(define (ast-transform-variable-valued-action ast src)
+  (let* ((model (or (gom:interface ast) (gom:component ast)))
+         (port? (lambda (port)
+                  (if ((is? <interface>) model) #f
+                      (member port (map .name (.elements (.ports model))))))))
+    (match src
+      (('variable type identifier ('value (and (? port?) (get! port)) event))
+       (list 'variable type identifier (list 'action (list 'trigger (port) event))))
+      ((h ...) (map (lambda (x) (ast-transform-variable-valued-action ast x)) src))
+      (_ src))))
+
+(define (ast-transform-variable-valued-action* ast src)
+  (ast-transform-variable-valued-action (csp->gom ast) src))
+
 (define-method (ast-transform-return ast (o <top>)) ;; TODO: <ast>
   o)
 
@@ -424,7 +440,7 @@
   (match ast
     (('on ('triggers triggers) statement the-end)
      (make <csp-on>
-       :triggers (csp->gom (cdr ast))
+       :triggers (csp->gom (cadr ast))
        :statement (csp->gom statement)
        :the-end (csp->gom the-end)))
     (('on triggers statement the-end)
@@ -602,7 +618,7 @@
        (list context name (list 'valued-action (make <trigger> :port (port) :event event))))
       (($ <variable> name type ($ <expression> (and ($ <call>) (get! call)))) ;; FIXME: no test?
        (list context name (call)))
-      (($ <variable> name type expression)
+      (($ <variable> name type expression) ;; FIXME tick
        (list context name (list 'expression expression)))
       (($ <function> name (and ($ <signature> type ($ <parameters> parameters))
                                (get! signature)) statement)
@@ -752,12 +768,18 @@
           (list "\\ P',(" context ") @ ifthenelse_(" expression ",\n" then ",\n" else "\n)(P',(" context "))")))
        (('value type field) (list type "_" field))
        (('literal scope type value) (list type "_" value))
+
+       (('context-active (context var ('expression ($ <action> ($ <trigger> port event)))) stat) ;; FIXME tick
+        (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
+          (list "context_active_(sendrecv_(" port "," event "),\n" stat ")")))
+       (('context-active (context var ('expression ($ <expression> ($ <action> ($ <trigger> port event))))) stat)
+        ;; FIXME tick
+        (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
+          (list "context_active_(sendrecv_(" port "," event "),\n" stat ")")))
+
        (('context-active (context var ('valued-action ($ <trigger> port event))) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list "context_active_(sendrecv_("  port "," event "),\n" stat ")")))
-       (('context-active (context var ('expression ($ <action> ($ <trigger> port event)))) stat)
-        (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
-          (list "context_active_(sendrecv_(" port "," event "),\n" stat ")")))
        (('context-active (context var ($ <call> identifier ($ <arguments> '()))) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list "context_active_(" identifier ",\n" stat ")")))
