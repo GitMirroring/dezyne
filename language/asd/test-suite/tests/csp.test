@@ -386,7 +386,6 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
                ()
                ())))
 
-
 (pass-if "csp-transform-expression"
          (gom-noisy-equal?
 
@@ -395,7 +394,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
 
            i-ast
 
-           '(expression (! (and (or (!= c  b) true) (== c b)))))
+           (csp->sugar '(expression (! (and (or (!= c  b) true) (== c b))))))
 
           ;; to:
           "(not ((((c != b) or true) and (c == b))))"))

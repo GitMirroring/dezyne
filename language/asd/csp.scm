@@ -222,7 +222,6 @@
         (list "(" (csp-expression->string ast expression) ")")))
 
   (match src
-    (('expression expression) (csp-expression->string ast expression))
     (($ <expression>) (csp-expression->string ast (.value src)))
     (($ <csp-expression>) (csp-expression->string ast (.value src)))
     ((or (? number?) (? symbol?)) src)
@@ -359,7 +358,14 @@
         "")))
 
 (define (ast-transform ast src)
-  (ast-transform- ast (ast-transform-return ast (ast-transform-function-call ast src))))
+  (ast-transform-
+   ast
+   (ast-transform-return
+    ast
+    (ast-transform-variable-valued-action
+     ast
+     (ast-transform-function-call
+      ast src)))))
 
 (define (ast-transform* ast src)
   (let ((ast* (csp->gom ast))
@@ -431,6 +437,8 @@
 
 (define (csp->sugar ast)
   (match ast
+    (('expression expression)
+     (make <expression> :value (csp->gom expression)))
     (('on ('triggers triggers) statement the-end)
      (make <csp-on>
        :triggers (csp->gom (cadr ast))
@@ -611,8 +619,8 @@
        (list context name (list 'valued-action (make <trigger> :port (port) :event event))))
       (($ <variable> name type ($ <expression> (and ($ <call>) (get! call)))) ;; FIXME: no test?
        (list context name (call)))
-      (($ <variable> name type expression) ;; FIXME tick
-       (list context name (list 'expression expression)))
+      (($ <variable> name type (and ($ <expression>) (get! expression)))
+       (list context name (expression)))
       (($ <function> name (and ($ <signature> type ($ <parameters> parameters))
                                (get! signature)) statement)
        (let* ((parameters (map .identifier parameters))
@@ -692,7 +700,6 @@
 (define (=>string ast src)
   (match src
     (('ctx context) (context->csp ast context))
-    (('expression expression) (csp-expression->string ast expression))
     (($ <expression>) (csp-expression->string ast src))
     (($ <arguments> arguments) (comma-join (map (lambda (x) (=>string ast x)) arguments)))
     ((h t ...) (->string (map (lambda (x) (=>string ast x)) src)))
@@ -763,9 +770,11 @@
        (('literal scope type value) (list type "_" value))
 
        (('context-active (context var ('expression ($ <action> ($ <trigger> port event)))) stat) ;; FIXME tick
+        boo
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list "context_active_(sendrecv_(" port "," event "),\n" stat ")")))
-       (('context-active (context var ('expression ($ <expression> ($ <action> ($ <trigger> port event))))) stat)
+
+       (('context-active (context var ($ <expression> ($ <action> ($ <trigger> port event)))) stat)
         ;; FIXME tick
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list "context_active_(sendrecv_(" port "," event "),\n" stat ")")))
