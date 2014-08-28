@@ -75,7 +75,7 @@
                                        '(mangle argument2))
                                (ast:mangle ast)
                                ast)))))
-    (ast:register norm #t)
+    (gom:register norm #t)
     (module-define! (resolve-module '(language asd csp)) 'ast norm)  ;; FIXME
     (and-let* ((comp (gom:component norm))
                (name (ast:name (ast:component ast))) ;; unmangled
@@ -114,8 +114,8 @@
     ((interface deadlock) . ,(gulp-file 'templates/asserts/interface-deadlock.csp.scm))
     ((interface livelock) . ,(gulp-file 'templates/asserts/interface-livelock.csp.scm))))
 
-(define (ast-norm model-name)
-  (ast:ast model-name (compose normstate ast->gom*)))
+(define (norm:import name)
+  (gom:import name (compose normstate ast->gom*)))
 
 (define (csp-module ast)
   (let ((module (make-module 31 (list
@@ -129,7 +129,7 @@
               (module-define! module 'component comp)
               (module-define! module '.interface.name (.type (car (filter gom:provides? (.elements (.ports comp))))))
 	      (module-define! module '.behaviour.name (.name (.behaviour comp)))
-              (module-define! module '.interface-behaviour (.name (.behaviour (ast-norm (.type (gom:port (gom:component ast)))))))
+              (module-define! module '.interface-behaviour (.name (.behaviour (norm:import (.type (gom:port (gom:component ast)))))))
 	      (module-define! module '.port.name (.name (gom:port comp))))
     module))
 
@@ -146,11 +146,11 @@
                    (csp-module ast)
                    port
                    `((port . ,identity)
-                     (interface . ,(ast-norm (.type port)))
+                     (interface . ,(norm:import (.type port)))
                      (.optional-chaos . ,optional-chaos)
                      (.interface.name . ,.type)
                      (.port.name . ,.name)
-                     (.behaviour.name . ,(compose .name .behaviour ast-norm .type))
+                     (.behaviour.name . ,(compose .name .behaviour norm:import .type))
                      ))))))))
         ports)))
 
@@ -166,7 +166,7 @@
                   (animate-module-populate
                    (csp-module ast)
                    interface
-                   `((interface . ,(ast-norm interface))
+                   `((interface . ,(norm:import interface))
                      (.interface.name . ,interface)))))))))
         interfaces)))
 
@@ -242,7 +242,7 @@
     (_ (format #f "~a:no match: ~a" (current-source-location) src))))
 
 (define (port-events port) ;; FIXME: no test
-  (let ((interface (ast-norm (.type port))))
+  (let ((interface (norm:import (.type port))))
     (interface-events interface)))
 
 (define (modeling-event? event)
@@ -264,7 +264,7 @@
     (let loop ((ports ((compose .elements .ports) comp)) (values comp-values))
       (if (null? ports)
           values
-          (loop (cdr ports) (append values (apply append (map typed-elements (gom:enums (.behaviour (ast-norm (.type (car ports)))))))))))))
+          (loop (cdr ports) (append values (apply append (map typed-elements (gom:enums (.behaviour (norm:import (.type (car ports)))))))))))))
 
 (define-method (return-value (o <enum>))
   (map (lambda (value) (symbol-append (.name o) '_ value)) (compose .elements .fields) o))
@@ -275,7 +275,7 @@
       (append (apply append returns) (list 'return)))) ;; FIXME: add only return when needed
 
 (define (return-values-port port)
-  (add-return-if-empty (map return-value (gom:enums (ast-norm (.type port))))))
+  (add-return-if-empty (map return-value (gom:enums (norm:import (.type port))))))
 
 (define (return-values-interface interface)
   (add-return-if-empty (map return-value (gom:enums interface))))
@@ -359,7 +359,7 @@
 
 (define (optional-chaos port) ;; FIXME: no test
   (let ((interface (.type port)))
-    (if (member 'optional (map .event (gom:find-events (ast-norm (.type port)))))
+    (if (member 'optional (map .event (gom:find-events (norm:import (.type port)))))
         (list "[|{" interface " .optional}|] " "CHAOS({" interface " .optional})")
         "")))
 

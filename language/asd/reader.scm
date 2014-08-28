@@ -48,8 +48,8 @@
 (define (read-asd- file-name)
   (asd-reader (open-file file-name "r") (current-module)))
 
-(define (read-asd file-name)
-  ((@(language asd ast) register) (read-asd- file-name)))
+(define* (read-asd file-name :optional (register (@(language asd ast) register)))
+  (register (read-asd- file-name)))
 
 (define (read-ast- file-name)
   (let ((s (->string file-name)))
@@ -57,7 +57,7 @@
         (read (open-input-file s))
         (read-asd- s))))
 
-(define (read-ast file-name)
+(define* (read-ast file-name :optional (register (@(language asd ast) register)))
   "Read contents of FILE-NAME and return the AST.
 
 If FILE-NAME ends with `.scm', assume plain AST scheme content and
@@ -70,5 +70,5 @@ the parser."
   (with-input-from-string string
     (lambda () (asd-reader (current-input-port) (current-module)))))
 
-(define (parse-asd string)
-  ((@(language asd ast) register) (parse-asd- string)))
+(define* (parse-asd string :optional (register (@(language asd ast) register)))
+  (register (parse-asd- string)))

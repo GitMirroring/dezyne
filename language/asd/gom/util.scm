@@ -39,23 +39,30 @@
   :export (
            is?
            gom:component
+           gom:components
            gom:enums
            gom:events
            gom:find-events
            gom:functions
+           gom:import
            gom:in?
            gom:interface
+           gom:interfaces
            gom:member-names
            gom:member-values
            gom:out?
            gom:port
            gom:provides?
            gom:requires?
+           gom:register
            gom:statement
            gom:statements-of-type
            gom:variable
            gom:variables
            ))
+
+(define ((is? class) o)
+  (if (is-a? o class) o #f))
 
 (define-method (gom:trigger< (lhs <trigger>) (rhs <trigger>))
   (if (and (not (.port lhs)) (not (.port rhs)))
@@ -176,6 +183,19 @@
 (define (gom:enums ast)
   (filter (is? <enum>) (.elements (.types ast))))
 
+(define-method (gom:model (o <component>)) o)
+
+(define-method (gom:model (o <interface>)) o)
+
+(define (gom:models ast)
+  (filter (is? <model>) ast))
+
+(define (gom:components ast)
+  (filter (is? <component>) ast))
+
+(define (gom:interfaces ast)
+  (filter (is? <interface>) ast))
+
 (define (gom:events ast)
   (match ast
     (($ <interface>) (.elements (.events ast)))
@@ -183,30 +203,30 @@
     (($ <port>) (gom:events (ast->gom* (ast:ast (.type ast)))))
     (_ (throw 'match-error  (format #f "~a:events: no match: ~a\n" (current-source-location) ast)))))
 
-(define ((is? class) o)
-  (if (is-a? o class) o #f))
-
 ;;;; reading/caching
-(define *ast-alist* '())
-(define (ast-add name ast)
-  (set! *ast-alist* (assoc-set! *ast-alist* name ast))
+(define (cached-model name)
+  (assoc-ref (@@ (language asd ast) *ast-alist*) name))
+
+(define (cache-model name model)
+  ((@@ (language asd ast) ast-add) name model))
+
+(define-method (register-model (o <model>))
+  (if (not (cached-model (.name o)))
+      (cache-model (.name o) o))
+  o)
+
+(define* (gom:register ast :optional (clear? #f))
+  (if clear?
+      (set! (@@ (language asd ast) *ast-alist*) '()))
+  (for-each register-model (gom:models ast))
   ast)
 
-;; procedure: ast:import MODEL-NAME
-;;
-;; Read and parse the ASD source file for MODEL-NAME, return its AST.
-(define (read-ast model-name)
-  (and-let* ((ast (null-is-#f (read-asd (->string (list 'examples '/ model-name '.asd)))))
-             (models (null-is-#f (models ast))))
-            (find (lambda (model) (eq? (name model) model-name)) models)))
+(define* (read-ast name #:optional (transform identity))
+  (and-let* ((ast (transform (null-is-#f (read-asd (->string (list 'examples '/ name '.asd)) gom:register))))
+             (models (null-is-#f (gom:models ast))))
+            (find (lambda (model) (eq? (.name model) name)) models)))
 
-(define* (import-ast name #:optional (transform identity))
-  "
-procedure: ast:import MODEL-NAME
-
-Read and parse the ASD source file for MODEL-NAME, return its AST.
-
-"
-  (or (assoc-ref *ast-alist* name)
-      (and-let* ((ast (transform (read-ast name))))
-                (ast-add name ast))))
+(define* (gom:import name #:optional (transform identity))
+  (or (cached-model name)
+      (and-let* ((ast (read-ast name transform)))
+                (cache-model name ast))))
