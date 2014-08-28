@@ -298,9 +298,6 @@
               :statement statement)
         #f)))
 
-(define (event->string event)
-  (ast:event-name event))
-
 (define (prefix-illegal? statement)
   (match statement
     (($ <compound>)
@@ -326,11 +323,6 @@
     (($ <reply> expression) #t)
     (_ #f)
     (_ (throw 'match-error (format #f "~a:prefix-reply?: no match: ~a\n" (current-source-location) statement)))))
-
-(define-generic ast:event-name)
-(define-method (ast:event-name (o <trigger>)) (.event o))
-(define-generic ast:port-name)
-(define-method (ast:port-name (o <trigger>)) (.port o))
 
 (define (((provides-or-requires? direction) component) event)
   (if (is-a? component <component>)
@@ -358,7 +350,7 @@
 
 (define (value ast)
   (match ast
-    ((? ast:trigger?) (ast:event-name ast))
+    ((? ast:trigger?) (.event ast))
     ((? ast:value?) (symbol-append (ast:type ast) '_ (ast:field ast)))
     (_ ast)))
 
@@ -709,14 +701,14 @@
         (let* ((triggers (.elements (.triggers src)))
                (statement (.statement src))
                (the-end (.the-end src))
-               (inevitable-optional? (or (member 'inevitable (map ast:event-name triggers))
-                                         (member 'optional (map ast:event-name triggers))))
+               (inevitable-optional? (or (member 'inevitable (map .event triggers))
+                                         (member 'optional (map .event triggers))))
                (ig? (eq? statement 'IG))
-               (channel (if (is-a? model <interface>) model-name (ast:port-name (car triggers))))
+               (channel (if (is-a? model <interface>) model-name (.port (car triggers))))
                (provided-on? (or (and (is-a? model <interface>) (not inevitable-optional?))
                                  (or (is-a? model <interface>) ((provides-event? model) (car triggers)))))
                (IG? (if ig? (if ((provides-event? model) (car triggers)) "IIG & "  "IG & ")))
-               (event-names (comma-join (map ast:event-name triggers)))
+               (event-names (comma-join (map .event triggers)))
                (transformed (if ig? #f (csp-transform ast statement inevitable-optional? channel provided-on?)))
                (transformed-end (csp-transform ast the-end inevitable-optional? channel provided-on?)))
           (list IG? channel "?x:{" event-names "}" " ->\n" transformed transformed-end)))
