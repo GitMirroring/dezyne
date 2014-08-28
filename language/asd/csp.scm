@@ -254,8 +254,8 @@
          (modeling (map .event (modeling-events interface))))
     (sort (append events modeling) symbol<)))
 
-(define (typed-elements enum)
-   (map (lambda (x) (symbol-append (ast:name enum) '_ x)) (ast:fields enum)))
+(define-method (typed-elements (o <enum>))
+   (map (lambda (x) (symbol-append (.name o) '_ x)) ((compose .elements .fields) o)))
 
 (define (enum-values comp)
   (let ((comp-values (apply append (map typed-elements (gom:enums (.behaviour comp))))))
@@ -264,8 +264,8 @@
           values
           (loop (cdr ports) (append values (apply append (map typed-elements (gom:enums (.behaviour (ast-norm (.type (car ports)))))))))))))
 
-(define (return-value enum)
-  (map (lambda (value) (symbol-append (ast:name enum) '_ value)) (ast:fields enum)))
+(define-method (return-value (o <enum>))
+  (map (lambda (value) (symbol-append (.name o) '_ value)) (compose .elements .fields) o))
 
 (define (add-return-if-empty returns)
   (if (null? returns)
@@ -349,6 +349,7 @@
        ((requires? model) event)))
 
 (define (value ast)
+  (stderr "VALUE: ~a\n" ast)
   (match ast
     ((? ast:trigger?) (.event ast))
     ((? ast:value?) (symbol-append (ast:type ast) '_ (ast:field ast)))

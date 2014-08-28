@@ -48,7 +48,9 @@
            <ast>
            <component>
            <compound>
+           <enum>
            <expression>
+           <fields>
            <function>
            <functions>
            <guard>
@@ -75,6 +77,7 @@
            .event
            .events
            .expression
+           .fields
            .functions
            .identifier
            .name
@@ -155,6 +158,7 @@
 
 (define-class <arguments> (<ast-list>))
 (define-class <events> (<ast-list>))
+(define-class <fields> (<ast-list>))
 (define-class <functions> (<ast-list>))
 (define-class <parameters> (<ast-list>))
 (define-class <ports> (<ast-list>))
@@ -232,7 +236,7 @@
                           :behaviour (ast->gom (ast:behaviour ast))))
     ((? ast:enum?) (make <enum>
                      :name (ast:name ast)
-                     :fields (ast:fields ast)))
+                     :fields (make <fields> :elements (ast:fields ast))))
     ((? ast:event?) (make <event>
                       :name (ast:name ast)
                       :type (ast->gom (ast:signature ast))
@@ -373,6 +377,9 @@
                           :name (ast:name ast)
                           :ports (ast->gom* (ast:port-list ast))
                           :behaviour (ast->gom* (ast:behaviour ast))))
+    ((? ast:enum?) (make <enum>
+                     :name (ast:name ast)
+                     :fields (make <fields> :elements (ast:fields ast))))
     ((? ast:event?) (make <event>
                       :name (ast:name ast)
                       :type (ast->gom* (ast:signature ast))
@@ -525,24 +532,6 @@
 
 
 ;;;; utilities
-
-;;;; temporary hetorogenous AST compatibility
-(define (deprecated:class ast)
-  (match ast
-    ((? ast:enum?) 'type)
-    ((? ast:event?) 'event)
-    ((? ast:int?) 'type)
-    ((? ast:port?) 'port)
-    ((? ast:trigger?) 'trigger)
-    ((? ast:value?) 'value)
-    ((? ast:variable?) 'variable)
-    ('() #f)
-    (#f #f)
-    (($ <compound>) 'compound)
-    (($ <guard>) 'guard)
-    (($ <on>) 'on)
-    (_ (car ast))))
-
 (define-method (gom:trigger< (lhs <trigger>) (rhs <trigger>))
   (if (and (not (.port lhs)) (not (.port rhs)))
       (symbol< (.event lhs) (.event rhs))
@@ -660,7 +649,7 @@
   (eq? (.direction o) 'requires))
 
 (define (gom:enums ast)
-  (filter ast:enum? (.elements (.types ast))))
+  (filter (is? <enum>) (.elements (.types ast))))
 
 (define (gom:events ast)
   (match ast
