@@ -18,6 +18,9 @@
 
 (read-set! keywords 'prefix)
 
+(define (std-renamer lst)
+  (lambda (x) (case x ((<parameter>) '<std:parameter>) ((<port>) '<std:port>) (else x))))
+
 (define-module (language asd gom)
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 pretty-print)
@@ -30,6 +33,7 @@
   :use-module (language asd reader)
 
   :use-module (oop goops)
+;;  :use-module ((oop goops) :renamer (std-renamer '(port parameter)))
   :use-module (oop goops describe)
 
   :use-module (language asd gom ast)
