@@ -43,8 +43,7 @@
            ))
 
 (define (ast-> ast)
-  (ast-wellformed? ast)
-  "")
+  (ast-wellformed? ast))
 
 (define (ast-wellformed? ast)
   (and-let* ((errors (apply append
@@ -52,6 +51,7 @@
                             (filter null-is-#f (verify-mixing ast)))))
             (for-each (lambda (e)
                         (let ((message (car e))
+                              (foo (stderr "e: ~a\n" e))
                               (properties (source-location->source-properties
                                            (source-location (cadr e)))))
                           (stderr "~a:~a:~a: error: not well-formed: ~a\n"
@@ -61,7 +61,7 @@
                                   message))) errors)
             ;; (throw 'well-formed "not well-formed")
             (exit 1))
-  "")
+  ast)
 
 
 (define (read-asd-wellformed file-name)
@@ -81,6 +81,7 @@
     (('compound s ...) (null-is-#f
                         (filter identity (map (lambda (x) (statement-on x :count count)) s))))
     (('action b ...) '())
+    (('illegal) '())
     (('assign x ...) '())
     (_ (throw 'match-error  (format #f "~a:statement-on: no match: ~a\n" (current-source-location) src)))))
 

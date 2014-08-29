@@ -63,7 +63,7 @@
 If FILE-NAME ends with `.scm', assume plain AST scheme content and
 only perform a read, otherwise assume ASD content and also invoke
 the parser."
-  ((@(language asd ast) register) (read-ast- file-name)))
+  (register (read-ast- file-name)))
 
 (define (parse-asd- string)
   (read-hash-extend #\{ hash-read-string)
