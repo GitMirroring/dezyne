@@ -228,7 +228,7 @@
     (($ <field> identifier field)
      (let ((enum (enum-type ast identifier)))
        (list "(" identifier " == " enum "_" field ")")))
-    (('literal scope type value) (list type "_" value))
+    (($ <literal> scope type field) (list type "_" field))
 
     (('group expression) (list "(" (csp-expression->string ast expression) ")"))
     (('! expression) (->string (list "(" "not " (paren expression) ")")))

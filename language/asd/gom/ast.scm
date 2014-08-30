@@ -111,6 +111,10 @@
                           :events (ast->gom (ast:event-list ast))
                           :types (ast->gom (ast:type-list ast))
                           :behaviour (ast->gom (ast:behaviour ast))))
+    ((? ast:literal?) (make <literal>
+                      :scope (ast:scope ast)
+                      :type (ast:type ast)
+                      :field (ast:field ast)))
     ((? ast:on?) (make <on>
                        :triggers (ast->gom (ast:trigger-list ast))
                        :statement (ast->gom (ast:statement ast))))

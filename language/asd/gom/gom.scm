@@ -40,6 +40,7 @@
            .parameters
            .port
            .ports
+           .scope
            .signature
            .statement
            .then
@@ -71,6 +72,7 @@
            <if>
            <illegal>
            <interface>
+           <literal>
            <model>
            <on>
            <parameter>
@@ -110,6 +112,10 @@
 (define-class <event> (<dir-ast>))
 (define-class <port> (<dir-ast>))
 
+(define-class <trigger> (<ast>)
+  (port :accessor .port :init-value #f :init-keyword :port)
+  (event :accessor .event :init-value #f :init-keyword :event))
+
 (define-class <type> (<named>))
 
 (define-class <expression> (<ast>)
@@ -119,8 +125,16 @@
   (identifier :accessor .identifier :init-value #f :init-keyword :identifier)
   (field :accessor .field :init-value #f :init-keyword :field))
 
+(define-class <literal> (<ast>)
+  (scope :accessor .scope :init-value #f :init-keyword :scope)
+  (type :accessor .type :init-value #f :init-keyword :type)
+  (field :accessor .field :init-value #f :init-keyword :field))
+
+(define-class <value> (<ast>)
+  (type :accessor .type :init-value #f :init-keyword :type)
+  (field :accessor .field :init-value #f :init-keyword :field))
+
 (define-class <variable> (<named>)
-;;;  (type :accessor .type :init-value (make <type> :name 'bool) :init-keyword :type)
   (type :accessor .type :init-value 'bool :init-keyword :type)
   (expression :accessor .expression :init-form (make <expression>) :init-keyword :expression))
 
@@ -194,11 +208,3 @@
 
 (define-class <return> (<statement>)
   (expression :accessor .expression :init-value #f :init-keyword :expression))
-
-(define-class <trigger> (<ast>)
-  (port :accessor .port :init-value #f :init-keyword :port)
-  (event :accessor .event :init-value #f :init-keyword :event))
-
-(define-class <value> (<ast>)
-  (type :accessor .type :init-value #f :init-keyword :type)
-  (field :accessor .field :init-value #f :init-keyword :field))
