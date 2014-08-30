@@ -74,13 +74,13 @@ channel #.interface.name : {#(comma-join (append (interface-events interface) (r
   # (map-ports #{
 #.interface.name _#.behaviour.name(IG) = let
 # (->string (map (lambda (x) (csp-transform interface (ast-transform interface x))) (gom:functions (.behaviour interface))))
-#.interface.name _#.behaviour.name _((#(context->csp ast (make-context ((compose gom:member-names norm:import) .interface.name) '())))) =
+#.interface.name _#.behaviour.name _((#(context->csp ast (make-context ((compose gom:member-names csp:import) .interface.name) '())))) =
 # (behaviour->csp
- (norm:import .interface.name)
- (->string (list .interface.name '_ .behaviour.name '_ "((" (context->csp ast (make-context ((compose gom:member-names norm:import) .interface.name) '())) "))" )))
+ (csp:import .interface.name)
+ (->string (list .interface.name '_ .behaviour.name '_ "((" (context->csp ast (make-context ((compose gom:member-names csp:import) .interface.name) '())) "))" )))
 
 
-within #.interface.name _#.behaviour.name _((#(context->csp ast (make-context ((compose gom:member-values norm:import) .interface.name) '(<>))))) #.optional-chaos
+within #.interface.name _#.behaviour.name _((#(context->csp ast (make-context ((compose gom:member-values csp:import) .interface.name) '(<>))))) #.optional-chaos
 
 #} ((compose .elements .ports gom:component) ast))
 #.component _#.behaviour.name (IIG,IG) = let

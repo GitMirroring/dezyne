@@ -1,0 +1,80 @@
+;; -*-scheme-*-
+
+(read-set! keywords 'prefix)
+
+(define-module (test-handler)
+  :use-module (test-suite lib)
+  :use-module (test-suite misc)
+
+  :use-module (language asd ast:)
+  :use-module (language asd resolve))
+
+(pass-if "resolve-first-dummy-test"
+         #t)
+
+(define resolve-ast
+  '((interface
+        ivar
+      (types (enum E (v)))
+      (events (in (signature (type E)) foo))
+      (behaviour
+       #f
+       (types)
+       (variables)
+       (functions (function toggle (signature (type void)) (compound)))
+       (compound
+        (on (triggers (trigger #f foo))
+            (reply (value E v))))))
+    (component
+     var
+     (ports (provides ivar i) (requires ivar o))
+     (behaviour
+      #f
+      (types)
+      (variables)
+      (functions)
+      (compound
+       (on (triggers (trigger i foo))
+           (compound
+            (variable (type ivar (type E)) e (value o foo))
+            (assign e (value o foo))))
+       (reply e))))))
+
+(pass-if "ast:resolve-function-call"
+         (pretty-noisy-equal?
+          ((ast:resolve-model
+            (car resolve-ast))
+           '(on (triggers ((trigger #f e)))
+                (compound
+                 (action toggle))))
+          '(on (triggers ((trigger #f e)))
+               (compound
+                (call toggle)))))
+
+(pass-if "ast:resolve-variable-valued-action"
+         (pretty-noisy-equal?
+          ((ast:resolve-model
+            (cdr resolve-ast))
+           '(on (triggers (trigger o foo))
+                (compound
+                 (variable (type ivar (type E))
+                           e
+                           (value o foo)))))
+
+          '(on (triggers (trigger o foo))
+               (compound
+                (variable (type ivar (type E))
+                          e
+                          (action (trigger o foo)))))))
+
+(pass-if "ast:resolve-assign-valued-action"
+         (pretty-noisy-equal?
+          ((ast:resolve-model
+            (cdr resolve-ast))
+           '(on (triggers (trigger o foo))
+                (compound
+                 (assign e (value o foo)))))
+
+          '(on (triggers (trigger o foo))
+               (compound
+                (assign e (action (trigger o foo)))))))
