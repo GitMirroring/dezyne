@@ -9,9 +9,7 @@
   :use-module (language asd ast:)
   :use-module (language asd reader)
   :use-module (language asd asserts)
-  :use-module (language asd gom)
-  :use-module (language asd gom ast)
-  :use-module (language asd gom util))
+  :use-module (language asd gom))
 
 (pass-if "asserts-first-dummy-test"
 	 #t)
@@ -19,7 +17,7 @@
 (pass-if "assert"
   (pretty-noisy-equal?
    (assert-list
-    (ast->gom*
+    (ast->gom
      (asd->ast
       #{ interface I {}
                    component C {

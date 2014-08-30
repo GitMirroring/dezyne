@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014  Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -27,14 +27,14 @@
 
   :use-module (language asd ast:)
   :use-module (language asd misc)
-  :use-module (language asd pretty)
   :use-module (language asd reader)
 
   :use-module (oop goops)
   :use-module (oop goops describe)
 
-  :use-module (language asd gom)
   :use-module (language asd gom ast)
+  :use-module (language asd gom gom)
+  :use-module (language asd gom display)
 
   :export (
            is?
@@ -112,7 +112,7 @@
                       (gom:functions (.behaviour ast))))
     (($ <component>) (.functions (.behaviour ast)))
     (($ <port>) (stderr "port: ~a\n" (.type ast))
-     (gom:functions (ast->gom* (ast:ast (.type ast)))))
+     (gom:functions (ast->gom (ast:ast (.type ast)))))
     (_ (throw 'match-error  (format #f "~a:gom:functions: no match: ~a\n" (current-source-location) ast)))))
 
 (define (gom:variables ast)  ;; to be removed (.variables o)
@@ -123,7 +123,7 @@
                                      (make <variables>)))
                       (gom:variables (.behaviour ast))))
     (($ <component>) (gom:variables (.behaviour ast)))
-    (($ <port>) (gom:variables (ast->gom* (ast:ast (.type ast)))))
+    (($ <port>) (gom:variables (ast->gom (ast:ast (.type ast)))))
     (_ (throw 'match-error  (format #f "~a:gom:variables: no match: ~a\n" (current-source-location) ast)))))
 
 (define (gom:member-names model)
@@ -206,7 +206,7 @@
   (match ast
     (($ <interface>) (.elements (.events ast)))
 ;;    (($ <component>) (gom:find-triggers ast))
-    (($ <port>) (gom:events (ast->gom* (ast:ast (.type ast)))))
+    (($ <port>) (gom:events (ast->gom (ast:ast (.type ast)))))
     (_ (throw 'match-error  (format #f "~a:events: no match: ~a\n" (current-source-location) ast)))))
 
 ;;;; reading/caching

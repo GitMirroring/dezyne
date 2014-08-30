@@ -1,0 +1,101 @@
+;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
+;;
+;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;
+;; Gaiag is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU Affero General Public License as
+;; published by the Free Software Foundation, either version 3 of the
+;; License, or (at your option) any later version.
+;;
+;; Gaiag is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU Affero General Public License for more details.
+;;
+;; You should have received a copy of the GNU Affero General Public License
+;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
+
+(read-set! keywords 'prefix)
+
+(define-module (language asd gom display)
+  :use-module (ice-9 pretty-print)
+
+  :use-module (oop goops)
+  :use-module (oop goops describe)
+  :use-module (language asd gom gom)
+  :use-module (language asd gom ast)
+
+  :export (
+           ast-name
+           display-slots
+           sdisplay
+           star
+           ))
+
+(define-method (ast-name (o <ast>))
+  (string->symbol (string-drop (string-drop-right (symbol->string (class-name (class-of o))) 1) 1)))
+
+;; AST printing
+(define (star port) (display #\* port))
+
+(define-method (sdisplay (o <ast>) port)
+  (display #\space port)
+  (display o port))
+
+(define-method (sdisplay (o <top>) port)
+  (display #\space port)
+  (display o port))
+
+(define-method (display-slots (o <ast>) port)
+  (for-each (lambda (slot)
+              (let* ((name (slot-definition-name slot))
+                     (value (slot-ref o name)))
+                (when (not (eq? value '()))
+                  (if (eq? name 'elements)
+                      (for-each (lambda (x) (sdisplay x port)) value)
+                      (sdisplay (slot-ref o name) port)))))
+            (class-slots (class-of o))))
+
+(define-method (write (o <expression>) port)
+  (display (.value o) port))
+
+(define-method (display-slots (o <dir-ast>) port)
+  (display (.direction o) port)
+  (star port)
+  (sdisplay (.type o) port)
+  (sdisplay (.name o) port))
+
+(define-method (display-slots (o <call>) port)
+  (sdisplay (.identifier o) port)
+  (if (pair? (.elements (.arguments o)))
+      (sdisplay (.arguments o) port)))
+
+(define-method (write (o <dir-ast>) port)
+  (display "(" port)
+  (display-slots o port)
+  (display #\) port))
+
+(define-method (display-slots (o <if>) port)
+  (sdisplay (.expression o) port)
+  (sdisplay (.then o) port)
+  (and=> (.else o) (lambda (x) (sdisplay x port))))
+
+(define-method (display-slots (o <return>) port)
+  (and=> (.expression o) (lambda (x) (sdisplay x port))))
+
+(define-method (display-slots (o <signature>) port)
+  (sdisplay (.type o) port)
+  (if (pair? (.elements (.parameters o)))
+      (sdisplay (.parameters o) port)))
+
+(define-method (display-slots (o <variable>) port)
+  (sdisplay (.type o) port)
+  (sdisplay (.name o) port)
+  (sdisplay (.expression o) port))
+
+(define-method (write (o <ast>) port)
+  (display "(" port)
+  (display (ast-name o) port)
+  (star port)
+  (display-slots o port)
+  (display #\) port))

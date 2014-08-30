@@ -42,8 +42,6 @@
   :use-module (oop goops)
   :use-module (oop goops describe)
   :use-module (language asd gom)
-  :use-module (language asd gom ast)
-  :use-module (language asd gom util)
 
   :export (
            ast->
@@ -86,7 +84,7 @@
   (gom:import name csp:norm))
 
 (define (csp:norm ast)
-  ((compose ast->gom* normstate mangle ast:resolve) ast))
+  ((compose ast->gom ast:resolve normstate mangle) ast))
 
 (define (mangle ast)
   "experimental mangling"
@@ -435,7 +433,7 @@
     (_ ast)))
 
 (define (csp->gom ast)
-  ((compose ast->gom* csp->sugar ast->sugar) ast))
+  ((compose ast->gom csp->sugar ast->sugar) ast))
 
 (define-method (ast-transform-return ast (o <on>))
   (let* ((model (or (gom:interface ast) (gom:component ast)))
@@ -619,24 +617,22 @@
     :arguments (.arguments o)))
 
 (define-method (ast-transform- ast (o <assign>) return context)
-  (let* ((model (or (gom:interface ast) (gom:component ast)))
-         (port? (lambda (port)
-                  (if ((is? <interface>) model) #f
-                      (member port (map .name (.elements (.ports model)))))))
-         (expression (.value (.expression o))))
-    (match expression
-      (($ <action>)
-       (list 'assign-active (list context 'r' expression)
-             (context-assign context (.identifier o) 'r')))
-      (($ <call>)
-       (list 'assign-active (list context 'r' expression)
-             (context-assign context (.identifier o) 'r')))
-      (expression
-       (make <assign>
-         :identifier context
-         :expression
-         (make <expression> :value
-               (context-assign context (.identifier o) expression)))))))
+  (ast-transform-assign (.identifier o) (.value (.expression o)) context))
+
+(define-method (ast-transform-assign identifier (o <action>) context)
+  (list 'assign-active (list context 'r' o)
+        (context-assign context identifier 'r')))
+
+(define-method (ast-transform-assign identifier (o <call>) context)
+  (list 'assign-active (list context 'r' o)
+        (context-assign context identifier 'r')))
+
+(define-method (ast-transform-assign identifier (o <top>) context)
+  (make <assign>
+    :identifier context
+    :expression
+    (make <expression> :value
+          (context-assign context identifier o))))
 
 (define-method (ast-transform- ast (o <csp-on>) return context)
   (let ((triggers (.triggers o))

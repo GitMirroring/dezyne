@@ -78,6 +78,7 @@
            double-colon-join
            nl-comma-join
            pipe-join
+           re-export-modules
            ))
 
 (define *eof* (call-with-input-string "" read-char))
@@ -229,3 +230,16 @@
 
 (define (hash-table->alist table)
   (hash-map->list cons table))
+
+(define-macro (re-export-modules . args)
+  "Re-export the public interface of a module or modules. Invoked as
+@code{(re-export-modules (mod1) (mod2)...)}."
+  (if (null? args)
+       '(if #f #f)
+       `(begin
+          ,@(map (lambda (mod)
+                   (or (list? mod)
+                       (error "Invalid module specification" mod))
+                   `(module-use! (module-public-interface (current-module))
+                                 (resolve-interface ',mod)))
+                 args))))

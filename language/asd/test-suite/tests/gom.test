@@ -15,5 +15,5 @@
 (pass-if "find-events"
   (gom-pretty-noisy-equal?
    (gom:find-events
-    (ast->gom* '(on (arm) (compound))))
+    (ast->gom '(on (arm) (compound))))
    '((trigger #f arm))))

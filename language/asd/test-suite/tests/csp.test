@@ -8,9 +8,7 @@
 
   :use-module (language asd ast:)
   :use-module (language asd csp)
-  :use-module (language asd gom)
-  :use-module (language asd gom ast)
-  :use-module (language asd gom util))
+  :use-module (language asd gom))
 
 (pass-if "csp-first-dummy-test"
          #t)
@@ -174,7 +172,7 @@ skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
            '(action (trigger #f h)))
 
           ;; via:
-          (ast->gom* '(action (trigger #f h)))))
+          (ast->gom '(action (trigger #f h)))))
 
 (pass-if "csp-transform-action"
          (diff-noisy-equal?
@@ -1455,50 +1453,50 @@ semi_(assign_active_(sendrecv_(k,h),
 
 ;; '
 
-(define component (ast->gom* (ast:component c-ast)))
+(define component (ast->gom (ast:component c-ast)))
 
 (pass-if "provides?"
   (gom-pretty-noisy-equal?
    ((provides? component)
-    (ast->gom* '(trigger j e)))
+    (ast->gom '(trigger j e)))
    #t))
 
 (pass-if "not provides?"
   (gom-pretty-noisy-equal?
    ((provides? component)
-    (ast->gom* '(trigger k e)))
+    (ast->gom '(trigger k e)))
    #f))
 
 (pass-if "requires?"
   (gom-pretty-noisy-equal?
    ((requires? component)
-    (ast->gom* '(trigger k e)))
+    (ast->gom '(trigger k e)))
    #t))
 
 (pass-if "not requires?"
   (gom-pretty-noisy-equal?
    ((requires? component)
-    (ast->gom* '(trigger j e)))
+    (ast->gom '(trigger j e)))
    #f))
 
 (pass-if "statement-on-p/r"
   (gom-pretty-noisy-equal?
    ((statement-on-p/r identity)
-    (ast->gom*
+    (ast->gom
      '(on (arm) (compound))))
    '(on (arm) (compound))))
 
 (pass-if "statement-on-p/r-filter"
   (gom-pretty-noisy-equal?
    ((statement-on-p/r (provides? component))
-    (ast->gom*
+    (ast->gom
      '(on (arm) (compound))))
    #f))
 
 (pass-if "statement-on-p/r-filter"
   (gom-pretty-noisy-equal?
    ((statement-on-p/r (provides? component))
-    (ast->gom*
+    (ast->gom
      '(on ((j e)) (compound))))
    '(on ((j e)) (compound))))
 
@@ -1525,7 +1523,7 @@ semi_(assign_active_(sendrecv_(k,h),
 
 (pass-if "unbehaved"
          (diff-noisy-equal?
-          (behaviour->csp (ast->gom* member-c-ast) "<empty>")
+          (behaviour->csp (ast->gom member-c-ast) "<empty>")
           "<empty>"))
 
 (define guard-i-ast
@@ -1538,16 +1536,16 @@ semi_(assign_active_(sendrecv_(k,h),
 
 (pass-if "behaviour-guard-true"
   (diff-noisy-equal?
-   (behaviour->csp (ast->gom* guard-i-ast) "boo")
+   (behaviour->csp (ast->gom guard-i-ast) "boo")
    "(true) & (
 )"))
 
 (pass-if "variable-prefix"
   (noisy-equal?
-   (variable-prefix (ast->gom* i-ast) 's)
+   (variable-prefix (ast->gom i-ast) 's)
    'S))
 
 (pass-if "variable-prefix"
   (noisy-equal?
-   (variable-prefix (ast->gom* i-ast) 'q)
+   (variable-prefix (ast->gom i-ast) 'q)
    #f))

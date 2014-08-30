@@ -35,8 +35,6 @@
 
   :use-module (oop goops)
   :use-module (language asd gom)
-  :use-module (language asd gom ast)
-  :use-module (language asd gom util)
 
   :export (
            ast->
@@ -55,7 +53,7 @@
   (let* ((component-checks '(deterministic illegal deadlock compliance livelock))
 	 (interface-checks '(deadlock livelock))
 	 (component (gom:component ast))
-	 (interfaces (map (compose ast->gom* ast:ast .type) ((compose .elements .ports) component))))
+	 (interfaces (map (compose ast->gom ast:ast .type) ((compose .elements .ports) component))))
     (append (apply append
 		   (delete-duplicates (map (lambda (interface)
 					     (map (assert interface) interface-checks)) interfaces)))
