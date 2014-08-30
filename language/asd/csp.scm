@@ -225,8 +225,6 @@
   (match src
     (($ <expression>) (csp-expression->string ast (.value src)))
     ((or (? number?) (? symbol?)) src)
-    (('value type field)
-     (list type "_" field))
     (($ <field> identifier field)
      (let ((enum (enum-type ast identifier)))
        (list "(" identifier " == " enum "_" field ")")))
@@ -727,8 +725,6 @@
               (then (csp-transform ast (.then src) inevitable-optional? channel provided-on?))
               (else (csp-transform ast (.else src) inevitable-optional? channel provided-on?)))
           (list "\\ P',(" context ") @ ifthenelse_(" expression ",\n" then ",\n" else "\n)(P',(" context "))")))
-       (('value type field) (list type "_" field))
-       (('literal scope type value) (list type "_" value))
        (('context-active (context var ($ <expression> ($ <action> ($ <trigger> port event)))) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on?)))
           (list "context_active_(sendrecv_(" port "," event "),\n" stat ")")))

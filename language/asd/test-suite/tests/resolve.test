@@ -90,7 +90,7 @@
            '(variables
              (variable (type State) m (value State one))))
           '(variables
-            (variable (type State) m (value State one)))))
+            (variable (type State) m (literal #f State one)))))
 
 (pass-if "ast:resolve-value-field-interface"
          (pretty-noisy-equal?
