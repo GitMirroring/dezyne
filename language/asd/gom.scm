@@ -51,8 +51,10 @@
            .functions
            .identifier
            .name
+           .parameters
            .port
            .ports
+           .signature
            .statement
            .then
            .trigger

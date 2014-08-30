@@ -580,63 +580,77 @@
            (list "(" members "),(" locals ")"))))
     (_ (throw 'match-error (format #f "~a:context->csp: no match: ~a\n" (current-source-location) context)))))
 
-(define* (ast-transform- ast src :optional (return #t) (context #f))
+(define-method (ast-transform- ast (o <top>))
+  (let* ((model (or (gom:interface ast) (gom:component ast)))
+         (context (make-context (gom:member-names model) '())))
+    (ast-transform- ast o #t context)))
+
+(define-method (ast-transform- ast (o <top>) return context)
+  o)
+
+(define-method (ast-transform- ast (o <compound>) return context)
   (let* ((model (or (gom:interface ast) (gom:component ast)))
          (context (or context (make-context (gom:member-names model) '())))
          (port? (lambda (port)
                   (if ((is? <interface>) model) #f
                       (member port (map .name (.elements (.ports model)))))))
          (valued-action? (valued-action? port?)))
-    (match src
-      (($ <compound>)
-       (let loop ((statements (.elements src)) (context context))
-	 (if (null? statements)
-	     '()
-             (let* ((statement (car statements))
-                    (transformed (ast-transform- ast statement #f context))
-                    (context (if (is-a? statement <variable>)
-                                 (context-extend context (.name statement))
-                                 context)))
-               (if (>1 (length statements))
-                   (if (is-a? transformed <illegal>)
-                       transformed
-                       (list (if (is-a? statement <variable>)
-                                 (if (or (valued-action? statement) (call? statement))
-                                     'context-active
-                                     'context)
-                                 'semi)
-                             transformed (loop (cdr statements) context)))
-                   transformed)))))
-      (($ <variable> name type ($ <expression> ('value (and (? port?) (get! port)) event))) ;; FIXME no test?
-       (list context name (list 'valued-action (make <trigger> :port (port) :event event))))
-      (($ <variable> name type ($ <expression> (and ($ <call>) (get! call)))) ;; FIXME: no test?
-       (list context name (call)))
-      (($ <variable> name type (and ($ <expression>) (get! expression)))
-       (list context name (expression)))
-      (($ <function> name (and ($ <signature> type ($ <parameters> parameters))
-                               (get! signature)) statement)
-       (let* ((parameters (map .identifier parameters))
-              (context (context-extend context (if (>1 (length parameters))
-                                                   (cons 'vector parameters)
-                                                   parameters)))
-              (transformed (ast-transform- ast statement return context)))
-         (make <function> :name name
-               :signature (signature)
-               :statement transformed)))
-      (($ <return> ($ <expression>))
-       (make <csp-return> :context context :expression (.expression src)))
-      (($ <call>)
-       (make <csp-call>
-         :context context
-         :identifier (.identifier src)
-         :arguments (.arguments src)))
-      (_ src))))
+    (let loop ((statements (.elements o)) (context context))
+      (if (null? statements)
+          '()
+          (let* ((statement (car statements))
+                 (transformed (ast-transform- ast statement #f context))
+                 (context (if (is-a? statement <variable>)
+                              (context-extend context (.name statement))
+                              context)))
+            (if (>1 (length statements))
+                (if (is-a? transformed <illegal>)
+                    transformed
+                    (list (if (is-a? statement <variable>)
+                              (if (or (valued-action? statement) (call? statement))
+                                  'context-active
+                                  'context)
+                              'semi)
+                          transformed (loop (cdr statements) context)))
+                transformed))))))
 
-(define-generic ast-transform-)
-(define-method (ast-transform- ast (o <ast>))
+(define-method (ast-transform- ast (o <variable>) return context)
   (let* ((model (or (gom:interface ast) (gom:component ast)))
-         (context (make-context (gom:member-names model) '())))
-    (ast-transform- ast o #t context)))
+         (port? (lambda (port)
+                  (if ((is? <interface>) model)
+                      #f
+                      (member port (map .name (.elements (.ports model)))))))
+         (identifier (.name o)))
+    (match (.expression o)
+      (($ <expression> ('value (and (? port?) (get! port)) event))
+       (list context identifier (list 'valued-action (make <trigger> :port (port) :event event))))
+      (($ <expression> (and ($ <call>) (get! call)))
+       (list context identifier (call)))
+      (($ <expression>)
+       (list context identifier (.expression o))))))
+
+(define-method (ast-transform- ast (o <function>) return context)
+  (let* ((signature (.signature o))
+         (parameters ((compose .elements .parameters) signature))
+         (parameters (map .identifier parameters))
+         (context (context-extend context (if (>1 (length parameters))
+                                              (cons 'vector parameters)
+                                              parameters)))
+         (statement (.statement o))
+         (name (.name o))
+         (transformed (ast-transform- ast statement return context)))
+    (make <function> :name name
+          :signature signature
+          :statement transformed)))
+
+(define-method (ast-transform- ast (o <return>) return context)
+  (make <csp-return> :context context :expression (.expression o)))
+
+(define-method (ast-transform- ast (o <call>) return context)
+  (make <csp-call>
+    :context context
+    :identifier (.identifier o)
+    :arguments (.arguments o)))
 
 (define-method (ast-transform- ast (o <assign>) return context)
   (let* ((model (or (gom:interface ast) (gom:component ast)))
