@@ -68,7 +68,6 @@
 
 (define (ast-> ast)
   (let* ((norm (csp:norm ast)))
-    (pretty-print norm (current-error-port))
     (gom:register norm #t)
     (module-define! (resolve-module '(language asd csp)) 'ast norm)  ;; FIXME
     (and-let* ((comp (gom:component norm))
@@ -228,7 +227,7 @@
     ((or (? number?) (? symbol?)) src)
     (('value type field)
      (list type "_" field))
-    (('field identifier field)
+    (($ <field> identifier field)
      (let ((enum (enum-type ast identifier)))
        (list "(" identifier " == " enum "_" field ")")))
     (('literal scope type value) (list type "_" value))

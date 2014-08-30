@@ -215,6 +215,7 @@
            events?
            expression
            field
+           field?
            fields
            find-events
            find-triggers
@@ -344,6 +345,7 @@
 (define (event-list? ast) (type-helper? 'events ast))
 (define (event? ast) (type-helper? 'event ast))
 (define (events? ast) (type-helper? 'events ast))
+(define (field? ast) (type-helper? 'field ast))
 (define (function-list? ast) (type-helper? 'functions ast))
 (define (function? ast) (type-helper? 'function ast))
 (define (functions? ast) (type-helper? 'functions ast))
@@ -532,6 +534,7 @@
   (match ast
     ((? assign?) (cadr ast))
     ((? call?) (cadr ast))
+    ((? field?) (cadr ast))
     ((? parameter?) (caddr ast))
     (_ (throw 'match-error  (format #f "~a:identifier: no match: ~a\n" (current-source-location) ast)))))
 
@@ -724,6 +727,7 @@
 
 (define (field ast)
   (match ast
+    ((? field?) (caddr ast))
     ((? literal?) (cadddr ast))
     ((? value?) (caddr ast))
     (_ (throw 'match-error  (format #f "~a:field: no match: ~a\n" (current-source-location) ast)))))

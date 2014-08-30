@@ -32,6 +32,7 @@
            .event
            .events
            .expression
+           .field
            .fields
            .functions
            .identifier
@@ -62,6 +63,7 @@
            <event>
            <events>
            <expression>
+           <field>
            <fields>
            <function>
            <functions>
@@ -112,6 +114,10 @@
 
 (define-class <expression> (<ast>)
   (value :accessor .value :init-value #f :init-keyword :value))
+
+(define-class <field> (<ast>)
+  (identifier :accessor .identifier :init-value #f :init-keyword :identifier)
+  (field :accessor .field :init-value #f :init-keyword :field))
 
 (define-class <variable> (<named>)
 ;;;  (type :accessor .type :init-value (make <type> :name 'bool) :init-keyword :type)

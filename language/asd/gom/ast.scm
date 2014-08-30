@@ -87,6 +87,9 @@
                       :direction (ast:direction ast)))
     ((? ast:event-list?) (make <events>
                            :elements (map ast->gom (ast:body ast))))
+    ((? ast:field?) (make <field>
+                      :identifier (ast:identifier ast)
+                      :field (ast:field ast)))
     ((? ast:function?) (make <function>
                           :name (ast:name ast)
                           :signature (ast->gom (ast:signature ast))
