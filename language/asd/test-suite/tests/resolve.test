@@ -19,8 +19,10 @@
       (events (in (signature (type E)) foo))
       (behaviour
        #f
-       (types)
-       (variables)
+       (types
+        (enum State (one two)))
+       (variables
+        (variable (type State) m (value State one)))
        (functions (function toggle (signature (type void)) (compound)))
        (compound
         (on (triggers (trigger #f foo))
@@ -30,8 +32,10 @@
      (ports (provides ivar i) (requires ivar o))
      (behaviour
       #f
-      (types)
-      (variables)
+      (types
+       (enum State (one two)))
+      (variables
+       (variable (type State) m (value State one)))
       (functions)
       (compound
        (on (triggers (trigger i foo))
@@ -78,3 +82,26 @@
           '(on (triggers (trigger o foo))
                (compound
                 (assign e (action (trigger o foo)))))))
+
+(pass-if "ast:resolve-value-enum-value"
+         (pretty-noisy-equal?
+          ((ast:resolve-model
+            (cdr resolve-ast))
+           '(variables
+             (variable (type State) m (value State one))))
+          '(variables
+            (variable (type State) m (value State one)))))
+
+(pass-if "ast:resolve-value-field-interface"
+         (pretty-noisy-equal?
+          ((ast:resolve-model
+            (car resolve-ast))
+           '(guard (value m one) (illegal)))
+          '(guard (field m one) (illegal))))
+
+(pass-if "ast:resolve-value-field-component"
+         (pretty-noisy-equal?
+          ((ast:resolve-model
+            (cdr resolve-ast))
+           '(guard (value m one) (illegal)))
+          '(guard (field m one) (illegal))))

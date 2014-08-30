@@ -1540,12 +1540,12 @@ semi_(assign_active_(sendrecv_(k,h),
    "(true) & (
 )"))
 
-(pass-if "variable-prefix"
+(pass-if "enum-type"
   (noisy-equal?
-   (variable-prefix (ast->gom i-ast) 's)
+   (enum-type (ast->gom i-ast) 's)
    'S))
 
-(pass-if "variable-prefix"
+(pass-if "enum-type"
   (noisy-equal?
-   (variable-prefix (ast->gom i-ast) 'q)
+   (enum-type (ast->gom i-ast) 'q)
    #f))

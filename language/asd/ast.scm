@@ -519,8 +519,8 @@
 (define* (variable ast #:optional (identifier #f))
   (if identifier
       (match ast
-        ((? component?) (variable (apply append (map variables (cons ast (ports ast)))) identifier))
-        ((? interface?) (variable (variables ast) identifier))
+        ((? component?) (and=> (null-is-#f (variable (variables ast) identifier)) car))
+        ((? interface?) (and=> (null-is-#f (variable (variables ast) identifier)) car))
         ((? variable?) (if (eq? (name ast) identifier) ast #f))
         ((h ...) (null-is-#f (filter identity (map (lambda (x) (variable x identifier)) ast))))
         (_ (throw 'match-error  (format #f "~a:variable: no match: ~a\n" (current-source-location) ast))))
@@ -739,8 +739,10 @@
 
 (define (types ast)
   (match ast
-    ((or (? interface?) (? behaviour?)) (body (type-list ast)))
+    ((? behaviour?) (body (type-list ast)))
     ((? component?) (types (behaviour ast)))
+    ((? interface?) (append (body (type-list ast))
+                            (types (behaviour ast))))
     ((? port?) (types (import-ast (type ast))))
     ((? system?) '())
     ('() ast)

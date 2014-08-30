@@ -19,9 +19,11 @@
 (read-set! keywords 'prefix)
 
 (define-module (language asd resolve)
+  :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 match)
   :use-module (ice-9 pretty-print)
+  :use-module (srfi srfi-1)
 
   :use-module (language asd ast:)
   :use-module (language asd misc)
@@ -50,7 +52,16 @@
          (port? (lambda (port)
                   (if (eq? (ast:class model) 'interface)
                       #f
-                      (member port (map ast:name (ast:ports model)))))))
+                      (member port (map ast:name (ast:ports model))))))
+         (member? (lambda (identifier)
+                    (member identifier (ast:member-names model))))
+         (field? (lambda (identifier)
+                   (lambda (field)
+                     (and-let* ((variable (ast:variable model identifier))
+                                (type (ast:name (ast:type variable)))
+                                (enum (find (lambda (x) (eq? (ast:name x) type))
+                                      (ast:enums model))))
+                               (member field (ast:fields enum)))))))
     (match src
       (('action identifier)
        (if (member identifier (map ast:name (ast:functions (ast:behaviour model))))
@@ -60,5 +71,7 @@
        (list 'variable type identifier (list 'action (list 'trigger (port) event))))
       (('assign identifier ('value (and (? port?) (get! port)) event))
        (list 'assign identifier (list 'action (list 'trigger (port) event))))
+      (('value (? member?) (? (field? (cadr src))))
+       (cons 'field (cdr src)) )
       ((h ...) (map (lambda (x) ((ast:resolve-model ast) x)) src))
       (_ src))))

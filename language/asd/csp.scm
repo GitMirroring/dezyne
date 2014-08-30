@@ -63,11 +63,12 @@
            statement-on-p/r
            provides?
            requires?
-           variable-prefix
+           enum-type
            ))
 
 (define (ast-> ast)
   (let* ((norm (csp:norm ast)))
+    (pretty-print norm (current-error-port))
     (gom:register norm #t)
     (module-define! (resolve-module '(language asd csp)) 'ast norm)  ;; FIXME
     (and-let* ((comp (gom:component norm))
@@ -210,7 +211,7 @@
               ((gom:statements-of-type 'on) (gom:statement (.behaviour model)))))))
       default))
 
-(define (variable-prefix ast identifier) ;; FIXME: no test
+(define (enum-type ast identifier)
   (and-let* ((variable (gom:variable ast identifier))
              ((is-a? variable <variable>))
              (type (.type variable)))
@@ -226,10 +227,10 @@
     (($ <expression>) (csp-expression->string ast (.value src)))
     ((or (? number?) (? symbol?)) src)
     (('value type field)
-     (let ((prefix (variable-prefix ast type)))
-       (if prefix
-           (list "(" type " == " prefix "_" field ")")
-           (list type "_" field))))
+     (list type "_" field))
+    (('field identifier field)
+     (let ((enum (enum-type ast identifier)))
+       (list "(" identifier " == " enum "_" field ")")))
     (('literal scope type value) (list type "_" value))
 
     (('group expression) (list "(" (csp-expression->string ast expression) ")"))
