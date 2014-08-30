@@ -30,23 +30,35 @@
   :use-module (language asd indent)
   :use-module (language asd misc)
   :use-module (language asd reader)
+  :use-module (language asd resolve)
+
+  :use-module (oop goops)
+  :use-module (oop goops describe)
+  :use-module (language asd gom)
+
   :export (ast->
            animate-template
            c++-module
-           november
-           string-if
-           traditional-interface
-           traditional-component-header
-           traditional-component))
+           string-if))
 
 (define *ast* '())
 
 (define (ast-> ast)
-  (set! *ast* ast)
-  (and=> (ast:interface ast) dump-interface)
-  (and=> (ast:component ast) dump-component)
-  (and=> (ast:system ast) dump-system)
+  (let ((gom (c++:gom ast)))
+    (gom:register gom #t)
+    (set! *ast* gom)
+    (and=> (gom:interface gom) dump-interface)
+    (and=> (gom:component gom) dump-component)
+    ;;  (and=> (gom:system ast) dump-system)
+)
   "")
+
+(define (c++:import name)
+  (gom:import name c++:gom))
+
+(define (c++:gom ast)
+  ((compose ast->gom ast:resolve) ast))
+
 
 (define (pipe producer consumer)
   (with-input-from-string (with-output-to-string producer) consumer))
@@ -55,13 +67,13 @@
   (dump-output file-name (lambda () (pipe thunk (lambda () (indent))))))
 
 (define (dump-interface model)
-  (let ((name (ast:name model)))
+  (let ((name (.name model)))
     (dump-indented (list 'interface- name '-c3.hh)
                    (lambda ()
                      ((animate-template 'interface.c3.hh.scm) (c++-module *ast*))))))
 
 (define (dump-component model)
-  (let ((name (ast:name model)))
+  (let ((name (.name model)))
     (dump-indented (list 'component- name '-c3.hh)
                    (lambda ()
                      ((animate-template 'component.c3.hh.scm) (c++-module *ast*))))
@@ -70,7 +82,7 @@
                      ((animate-template 'component.c3.cc.scm) (c++-module *ast*))))))
 
 (define (dump-system model)
-  (let ((name (ast:name model)))
+  (let ((name (.name model)))
     (dump-indented (list 'component- name '-c3.hh)
                    (lambda ()
                      ((animate-template 'system.c3.hh.scm) (c++-module *ast*))))
@@ -91,52 +103,29 @@
                                  (resolve-module '(language asd c++))
                                  (resolve-module '(language asd misc))))))
     (module-define! module 'ast ast)
-    (and-let* ((int (ast:interface ast)))
+    (and-let* ((int (gom:interface ast)))
               (module-define! module 'model int)
-              (module-define! module '.interface (ast:name int))
-              (module-define! module '.INTERFACE (string-upcase (symbol->string (ast:name int))))
-              (module-define! module '.model (ast:name int)))
-    (and-let* ((comp (ast:component ast)))
+              (module-define! module '.interface (.name int))
+              (module-define! module '.INTERFACE (string-upcase (symbol->string (.name int))))
+              (module-define! module '.model (.name int)))
+    (and-let* ((comp (gom:component ast)))
               (module-define! module 'model comp)
-              (module-define! module '.component (ast:name comp))
-              (module-define! module '.COMPONENT (string-upcase (symbol->string (ast:name comp))))
-              (module-define! module '.no-dpc (no-dpc comp))
-              (module-define! module '.interface (ast:type (ast:port comp)))
-              (module-define! module '.model (ast:name comp)))
-    (and-let* ((comp (ast:system ast)))
+              (module-define! module '.component (.name comp))
+              (module-define! module '.COMPONENT (string-upcase (symbol->string (.name comp))))
+              (module-define! module '.interface (.type (gom:port comp)))
+              (module-define! module '.model (.name comp)))
+    (and-let* ((comp (gom:system ast)))
               (module-define! module 'model comp)
-              (module-define! module '.component (ast:name comp))
-              (module-define! module '.no-dpc (no-dpc comp))
-              (module-define! module '.interface (ast:type (ast:port comp)))
-              (module-define! module '.model (ast:name comp)))
+              (module-define! module '.component (.name comp))
+              (module-define! module '.interface (.type (.port comp)))
+              (module-define! module '.model (.name comp)))
     module))
 
-;;;; INTERFACE
-
-(define (api port) (or (and (ast:provides? port) 'API) 'CB))
-(define (callback port) (or (and (ast:provides? port) 'CB) 'API))
-
-(define (ap port) (or (and (ast:provides? port) 'api) 'cb))
-(define (cb port) (or (and (ast:provides? port) 'cb) 'api))
-
 (define (declare-enum enum)
-  (->string (list "enum "  (ast:name enum) "\n  {\n  " (comma-nl-join (ast:fields enum)) ",\n  };\n")))
+  (->string (list "enum "  (.name enum) "\n  {\n  " (comma-nl-join (.elements (.fields enum))) ",\n  };\n")))
 
 (define (declare-integer integer)
-  (->string (list "typedef int " (ast:name integer) ";\n")))
-
-;;;; COMPONENT
-
-(define .api (api '(provides)))
-(define .callback (callback '(provides)))
-(define .ap (ap '(provides)))
-(define .cb (cb '(provides)))
-(define .parameters "/*parameters*/")
-(define (no-dpc component)
-  (if (null-is-#f (filter ast:requires? (ast:ports component)))
-      "" "/*NoDpc*/"))
-
-;;;; STRINGERS
+  (->string (list "typedef int " (.name integer) ";\n")))
 
 (define statements.src (make-parameter *ast*))
 (define statements.port (make-parameter #f))
@@ -149,10 +138,6 @@
     (match src
       (() "")
 
-      ;; Comment-out to use pattern matching and in-line C++ code,
-      ;; enable to use list of c++-template snippets.
-      ;;((? c++-template?) (parameterize ((statements.src src)) (apply c++-template->string src)))
-
       (('guard expr statement)
        (statements->string (list
                             (parameterize ((statements.src src))
@@ -163,7 +148,7 @@
       (('assign lhs rhs ...)
        (->string (list (lhs->string lhs) " = " (expression->string (car rhs)) ";\n")))
       (('on triggers statement)
-       (if (member (list 'trigger (ast:name port) (ast:name event)) triggers)
+       (if (member (list 'trigger (.name port) (.name event)) triggers)
            (statements->string statement)
            ""))
       (('compound lst ...)
@@ -175,12 +160,13 @@
       (('return) (->string (list 'return ";\n")))
       (('return expression) (->string (list 'return " " (expression->string expression) ";\n")))
       (('variable type identifier expression)
-       (statements->string (list (ast:name type) " " identifier " = " (expression->string expression) ";\n")))
+       (statements->string (list (.name type) " " identifier " = " (expression->string expression) ";\n")))
       ((? char?) (make-string 1 src))
       ((? string?) src)
       ((? symbol?) (symbol->string src))
       ((h ... t)
        (apply string-append (map (lambda (x) (statements->string x)) src)))
+      (_ "STATEMENTS")
       (_ (stderr "~a: NO MATCH: ~a\n" (current-source-location) src) ""))))
 
 (define (statement-last lst)
@@ -191,13 +177,13 @@
       ""))
 
 (define (action-statement->string trigger)
-  (let* ((port-name (ast:port-name trigger))
-         (event-name (ast:event-name trigger))
-         (port (ast:port (ast:component *ast*) port-name))
-         (name (ast:type port))
-         (interface (ast:ast name))
-         (event (ast:event interface event-name)))
-    (statements->string (list "      " port-name '. (ast:direction event) '. event-name "();\n"))))
+  (let* ((port-name (.port trigger))
+         (event-name (.event trigger))
+         (port (.port (gom:component *ast*) port-name))
+         (name (.type port))
+         (interface (c++:import name))
+         (event (gom:event interface event-name)))
+    (statements->string (list "      " port-name '. (.direction event) '. event-name "();\n"))))
 
 (define (statement-illegal)
   (let ((port (statements.port))
@@ -207,9 +193,9 @@
 (define (statement-last->string)
   (or (and-let* ((port (statements.port))
                  (event (statements.event))
-                 (arguments (if (ast:typed? port)
+                 (arguments (if (gom:typed? port)
                                 (statements->string
-                                 (list (ast:type port) "::" (return-type-text port)))
+                                 (list (.type port) "::" (return-type-text port)))
                                 "")))
                 (statements->string ""))
       ""))
@@ -219,15 +205,15 @@
          (if-clause (list "    if (" c-expression ")"))
          (else-if-clause (list "    else if (" c-expression ")"))
          (else-clause "    else")
-         (guards ((compose ast:body ast:statement ast:behaviour ast:component) *ast*))
+         (guards ((compose .elements .statement .behaviour gom:component) *ast*))
          (first? (equal? (statements.src) (car guards)))
          (top? (member (statements.src) guards)))
     (statements->string (if (eq? expression 'otherwise) else-clause (if (or first? (not top?)) if-clause else-if-clause)))))
 
 (define (lhs->string lhs)
-  (let* ((state-variables ((compose ast:variables ast:behaviour ast:component) *ast*))
+  (let* ((state-variables ((compose .variables .behaviour gom:component) *ast*))
          (state? (find
-                  (lambda (v) (eq? lhs (ast:name v)))
+                  (lambda (v) (eq? lhs (.name v)))
                   state-variables))
          (prefix (if state? "" "")))
     (->string (list prefix (statements->string lhs)))))
@@ -236,7 +222,7 @@
   (expression->string rhs))
 
 (define (is-member? identifier)
-  (member identifier (ast:member-names (ast:component *ast*))))
+  (member identifier (gom:member-names (gom:component *ast*))))
 
 (define (bool-expression->string ast)
   (match ast
@@ -252,6 +238,7 @@
     (list "(" (expression->string expression) ")"))
 
   (match ast
+    (($ <expression>) (expression->string (.value ast)))
     (('action function) (->string (list function "()")))
     (('call function) (->string (list function "()")))
     (('call function ('arguments arguments ...))
@@ -259,6 +246,7 @@
        (->string (list function  "(" arguments ")"))))
 
     (('value type field) field)
+    (($ <literal> scope type field) field)
     ((? number?) (number->string ast))
     ((? string?) ast)
     ((? symbol?)
@@ -283,68 +271,49 @@
     (_ (format #f "~a:no match: ~a" (current-source-location) ast))))
 
 (define (parameter->string parameter)
-  (->string (list (ast:name (ast:type parameter)) " " (ast:name parameter))))
-
-(define (c++-template? x) (parameterize ((templates c++-templates)) (template? x)))
-
-(define (c++-template->string . x)
-  (parameterize ((template-dir c++-template-dir) (templates c++-templates))
-    (apply template->string x)))
-
-(define c++-template-dir '(templates c++))
-;; for the pretty printer, small templates work just fine
-;; for c++, using pattern matching is better?
-(define c++-templates
-  `((illegal . (()))
-    (assign . ((.lhs . ,lhs->string)
-               (.rhs . ,rhs->string)))
-    (guard . ((.clause . ,expr->clause)
-              (.statement . ,(lambda (x) (statements->string (list (cdr x) (statement-last (cdr x))))))))
-    (if . ((.expression . ,->string)
-           (.statement . ,statements->string)
-           (.else . ,statements->string)))))
+  (->string (list (.name (.type parameter)) " " (.name parameter))))
 
 (define (value->string value)
-  (let ((comp-name (ast:name (ast:component *ast*))))
+  (let ((comp-name (.name (gom:component *ast*))))
     (double-colon-join
-     (list comp-name (ast:type value) (ast:field value)))))
+     (list comp-name (.type value) (.field value)))))
 
 (define (return-type-text port)
-  (or (and-let* ((event (null-is-#f (ast:typed? port))))
-                (ast:type (ast:return-type (car event))))
+  (or (and-let* ((event (null-is-#f (gom:typed? port))))
+                (.type (.type (car event))))
       'void))
 
 (define (return-interface-type interface event)
-  (or (and (ast:typed? event) (list interface "::" (ast:type (ast:return-type event))))
+  (or (and (gom:typed? event) (list interface "::" (.type (.type event))))
       'void))
 
-(define (return-context-get interface event)
-  (if (ast:typed? event)
-      (c++-template->string 'return-context-get)
-      ""))
+;; (define (return-context-get interface event)
+;;   (if (gom:typed? event)
+;;       (c++-template->string 'return-context-get)
+;;       ""))
 
 (define (variable-value->string model v) ;; FIXME: expression
-  (let* ((enums (map ast:name (ast:enums model)))
-         (booleans (map ast:name (ast:booleans model)))
-         (integers (map ast:name (ast:integers model)))
-         (type (ast:type (ast:type v))))
+  (let* ((enums (map .name (gom:enums model)))
+         (booleans (map .name (gom:booleans model)))
+         (integers (map .name (gom:integers model)))
+         (type (.type (.type v))))
     (cond
      ((member type enums)
-      (double-colon-join (append (list (ast:name model))
-                                 (cdr (ast:expression v)))))
+      (double-colon-join (append (list (.name model))
+                                 (cdr (.expression v)))))
      (else
-      (->string (ast:expression v))))))
+      (->string (.expression v))))))
 
-(define (ast:state-type v)
-  (case (ast:type (ast:type v))
-    ((bool) (->string (ast:type (ast:type v))))
+(define (gom:state-type v)
+  (case (ast:type (.type v))
+    ((bool) (->string (ast:type (.type v))))
     (;;(enum)
-     else (double-colon-join (list (ast:name (ast:component *ast*))
-                                   (ast:type (ast:type v)))))))
+     else (double-colon-join (list (.name (gom:component *ast*))
+                                   (ast:type (.type v)))))))
 
 (define (format-parameters port)
-  (if (ast:typed? port)
-      (list (ast:type port) "::" (return-type-text port) " " 'value)
+  (if (gom:typed? port)
+      (list (.type port) "::" (return-type-text port) " " 'value)
       ""))
 
 
@@ -361,38 +330,17 @@
 (define (find-bind model port)
   (find (lambda (bind)
           ;; (stderr "find: ~a in ~a?\n" port bind) ;; FIXME
-          (or (equal? port (ast:port model (ast:left bind)))
-              (equal? port (ast:port model (ast:right bind)))))
-        (ast:binds model)))
+          (or (equal? port (.port model (.left bind)))
+              (equal? port (.port model (.right bind)))))
+        (gom:binds model)))
 
 (define (bind-other model port)
   (and-let* ((bind (find-bind model port))
-             (other (if (equal? port (ast:port model (ast:left bind)))
-                        (ast:right bind)
-                        (ast:left bind))))
-            ;; (stderr "other: ~a --> ~a ===>>> ~a?\n" other other (ast:port model other)) ;; FIXME
-            (ast:port model other)))
-
-(define* (map-ports string ports :optional (separator ""))
-  ((->join separator)
-   (map (lambda (port)
-          (with-output-to-string
-            (lambda ()
-              (save-module-excursion
-               (lambda ()
-                 (animate-string
-                  string
-                  (animate-module-populate
-                   (csp-module ast)
-                   port
-                   `((port . ,identity)
-                     (interface . ,(ast-norm (ast:type port)))
-                     (.optional-chaos . ,optional-chaos)
-                     (.interface . ,ast:type) ;; FIXME
-                     (.name . ,ast:name)
-                     (.port . ,ast:name)
-                     (.behaviour . ,(compose ast:name ast:behaviour))))))))))
-        ports)))
+             (other (if (equal? port (.port model (.left bind)))
+                        (.right bind)
+                        (.left bind))))
+            ;; (stderr "other: ~a --> ~a ===>>> ~a?\n" other other (.port model other)) ;; FIXME
+            (.port model other)))
 
 (define* (map-ports string ports :optional (separator ""))
   ((->join separator)
@@ -402,7 +350,7 @@
               (let* ((module (c++-module *ast*))
                      (model (module-ref module 'model))
                      (other (bind-other model port))
-                     (.FIXME-other (ast:name (or other port)))
+                     (.FIXME-other (.name (or other port)))
                      (.other (if (eq? .FIXME-other 'console) 'alarm .FIXME-other)))
                 (save-module-excursion
                  (lambda ()
@@ -412,24 +360,17 @@
                      module
                      port
                      `((port . ,identity)
-                       (.api . ,api)
-                       (.callback . ,callback)
-                       (.ap . ,ap)
-                       (.cb . ,cb)
-                       (.interface . ,ast:type)
-                       (.name . ,ast:name) ;; JUNKME
-                       (.port . ,ast:name)
-                       (.behaviour . ,(compose ast:name ast:behaviour))
+                       (.interface-name . ,.type)
+                       (.port-name . ,.name)
+;;                       (.behaviour . ,(compose .name .behaviour))
                        (.parameters . ,format-parameters)
                        (.type . ,return-type-text)
-                       (.if-typed . ,(lambda (port) (if (ast:typed? port) "" "#if 0")))
-                       (.else-typed . ,(lambda (port) (if (ast:typed? port) "" "#else")))
-                       (.endif-typed . ,(lambda (port) (if (ast:typed? port) "" "#endif")))
+                       (.if-typed . ,(lambda (port) (if (gom:typed? port) "" "#if 0")))
+                       (.else-typed . ,(lambda (port) (if (gom:typed? port) "" "#else")))
+                       (.endif-typed . ,(lambda (port) (if (gom:typed? port) "" "#endif")))
                        (other . ,other)
                        (.other . ,.other)
-                       (.other-api . ,(api (or other port)))
-                       (.other-callback . ,(callback (or other port)))
-                       (.other-postfix . ,(if (and (not (eq? other 'alarm)) (ast:bottom? (ast:ast (ast:type (or other port)))))
+                       (.other-postfix . ,(if (and (not (eq? other 'alarm)) (gom:bottom? (c++:import (.type (or other port)))))
                                               "" .FIXME-other))))))))))) ;; FIXME-other
 
         ports)))
@@ -448,16 +389,16 @@
                    (c++-module *ast*)
                    instance
                    `((instance . ,identity)
-                     (.instance . ,ast:name)
-                     (.Class . ,(compose ast:Class ast:ast ast:type))
-                     (.type . ,ast:type)))))))))
+                     (.instance . ,.name)
+                     (.Class . ,(compose symbol-capitalize ast-name c++:import .type))
+                     (.type . ,.type)))))))))
         instances)))
 
 (define (binding-name model bind)
-  (list (ast:name (ast:instance model bind)) '. (ast:name (ast:port model bind))))
+  (list (.name (.instance model bind)) '. (.name (.port model bind))))
 
 (define (bind-port? bind)
-  (or (symbol? (ast:left bind)) (symbol? (ast:right bind))))
+  (or (symbol? (.left bind)) (symbol? (.right bind))))
 
 (define* (map-binds string binds :optional (separator ""))
   ((->join separator)
@@ -466,26 +407,24 @@
             (lambda ()
               (let* ((module (c++-module *ast*))
                      (model (module-ref module 'model))
-                     (left (ast:left bind))
-                     (left-instance (ast:instance model left))
-                     (left-name (ast:name left-instance))
-                     (left-port (ast:port model left))
-                     (left-api (api left-port))
-                     (left-callback (callback left-port))
-                     (left-interface (ast:type left-port))
-                     (left-postfix (if (ast:bottom? (ast:ast left-interface))
-                                       "" (ast:name left-port)))
+                     (left (.left bind))
+                     (left-instance (.instance model left))
+                     (left-name (.name left-instance))
+                     (left-port (.port model left))
+                     (left-interface (.type left-port))
+                     (left-postfix (if (gom:bottom? (c++:import left-interface))
+                                       "" (.name left-port)))
 
-                     (right (ast:right bind))
-                     (right-instance (ast:instance model right))
-                     (right-name (ast:name right-instance))
-                     (right-port (ast:port model right))
-                     (right-interface (ast:type right-port))
-                     (right-postfix (if (or #t (ast:bottom? (ast:ast right-interface)))
-                                        "" (ast:name right-port)))
+                     (right (.right bind))
+                     (right-instance (.instance model right))
+                     (right-name (.name right-instance))
+                     (right-port (.port model right))
+                     (right-interface (.type right-port))
+                     (right-postfix (if (or #t (gom:bottom? (c++:import right-interface)))
+                                        "" (.name right-port)))
                      ;;(right 3)
 
-                     (provided-required (if (ast:provides? left-port) (cons left right) (cons right left)))
+                     (provided-required (if (gom:provides? left-port) (cons left right) (cons right left)))
                      (provided (binding-name model (car provided-required)))
                      (required (binding-name model (cdr provided-required)))
                      )
@@ -498,15 +437,13 @@
                      bind
                      `((left . ,left)
                        (.left . ,left-name)
-                       (.left-port . ,(ast:name left-port))
-                       (.left-api . ,left-api)
-                       (.left-callback . ,left-callback)
+                       (.left-port . ,(.name left-port))
                        (.left-interface . ,left-interface)
                        (.left-postfix . ,left-postfix)
 
                        (right . ,right)
                        (.right . ,right-name)
-                       (.right-port . ,(ast:name right-port))
+                       (.right-port . ,(.name right-port))
                        (.right-interface . ,right-interface)
                        (.right-postfix . ,right-postfix)
                        (.provided . ,provided)
@@ -525,12 +462,8 @@
              (animate-module-populate
               (current-module)
               event
-              `((.api . ,(api '(provides)))
-                (.callback . ,(callback '(provides)))
-                (.ap . ,(ap '(provides)))
-                (.cb . ,(cb '(provides)))
-                (.type . ,(compose ast:type ast:return-type))
-                (.event . ,ast:name))))))) events))
+              `((.type . ,(compose .type .type))
+                (.event-name . ,.name))))))) events))
 
 (define (map-port-events string port events)
   (map (lambda (event)
@@ -543,19 +476,19 @@
                 (current-module)
                 event
                 `((event . ,identity)
-                  (.type . ,(compose ast:type ast:return-type))
-                  (.name . ,ast:name)
-                  (.event . ,ast:name)
+                  (.type . ,(compose .type .type))
+                  (.event-name . ,.name)
                   (.statement .
-                              ,(if (ast:component *ast*)
+                              ,(if (gom:component *ast*)
                                    (lambda (event)
                                      (parameterize ((statements.port port)
                                                     (statements.event event))
                                        (statements->string
-                                        ((compose ast:body ast:statement ast:behaviour ast:component) *ast*))))
+                                        ((compose .elements .statement .behaviour gom:component) *ast*))))
                                    ""))
-                  (.return-interface-type . ,(lambda (event) (return-interface-type (ast:type port) event)))
-                  (.return-context-get . ,(lambda (event) (return-context-get (ast:type port) event))))))))))
+                  (.return-interface-type . ,(lambda (event) (return-interface-type (.type port) event)))
+;;                  (.return-context-get . ,(lambda (event) (return-context-get (.type port) event)))
+                  )))))))
        events))
 
 (define (map-functions string functions)
@@ -567,11 +500,11 @@
              (animate-module-populate
               (current-module)
               function
-              `((.function . ,ast:name)
-                (.return-type . ,(compose ast:name ast:return-type))
-                (.comma . ,(lambda (x) (if (null-is-#f (ast:parameters x)) ", " "")))
-                (.parameters . ,(lambda (x) ((->join ", ") (map parameter->string (ast:parameters x)))))
-                (.statements . ,(lambda (x) (statements->string (ast:body (ast:statement x)))))))))))
+              `((.function . ,.name)
+                (.return-type . ,(compose .name .type))
+                (.comma . ,(lambda (x) (if (null-is-#f (.elements (.parameters x))) ", " "")))
+                (.parameters . ,(lambda (x) ((->join ", ") (map parameter->string (.elements (.parameters x))))))
+                (.statements . ,(lambda (x) (statements->string (.elements (.statement x)))))))))))
        functions))
 
 (define* (map-variables string variables :optional (separator ""))
@@ -586,9 +519,9 @@
                   (animate-module-populate
                    (current-module)
                    variable
-                   `((.variable . ,ast:name)
-                     (.state-type . ,ast:state-type)
-                     (.value . ,(expression->string (ast:expression variable)))))))))))
+                   `((.variable . ,.name)
+                     (.state-type . ,gom:state-type)
+                     (.value . ,(expression->string (.expression variable)))))))))))
         variables)))
 
 (define (action port event) "enable")

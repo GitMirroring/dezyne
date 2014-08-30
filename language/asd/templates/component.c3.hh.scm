@@ -3,37 +3,37 @@
 
 #(map-ports
 #{
-##include "interface-#.interface -c3.hh"
-#} (ast:ports model))
+##include "interface-#.interface-name -c3.hh"
+#} ((compose .elements .ports) model))
 namespace component
 {
 struct #.model
 {
-# (string-if (ast:behaviour model)
+# (string-if (.behaviour model)
 #{
 
-    #(->string (map declare-enum (ast:enums (ast:behaviour model))))
-    #(->string (map declare-integer (ast:integers (ast:behaviour model))))
+    #(->string (map declare-enum (gom:enums (.behaviour model))))
+    #(->string (map declare-integer (gom:integers (.behaviour model))))
 
 # (map-variables
 #{      #.state-type  #.variable ;
-#} (ast:variables (ast:behaviour model)))
+#} ((compose .elements .variables .behaviour) model))
 #}
 )
 
 #(map-ports
 #{
-  interface::#.interface  #.port ;
-#} (ast:ports model))
+  interface::#.interface-name  #.port-name;
+#} ((compose .elements .ports) model))
   #.model ();
-#(map-ports #{#(map-port-events #{void #.event ();
-#} port (filter ast:in? (ast:events port))) #} (filter ast:provides? (ast:ports model)))#
-(map-ports #{#(map-port-events #{void #.event ();
-#} port (filter ast:out? (ast:events port))) #} (filter ast:requires? (ast:ports model)))
+#(map-ports #{#(map-port-events #{void #.event-name ();
+#} port (filter gom:in? (gom:events port))) #} (filter gom:provides? ((compose .elements .ports) model)))#
+(map-ports #{#(map-port-events #{void #.event-name ();
+#} port (filter gom:out? (gom:events port))) #} (filter gom:requires? ((compose .elements .ports) model)))
 #(map-functions
 #{  #.return-type  #.function (#.parameters );
 #}
-(ast:functions model))};
+((compose .elements .functions .behaviour) model))};
 }
 
 ##endif

@@ -36,10 +36,13 @@
            .fields
            .functions
            .identifier
+           .instance
+           .left
            .name
            .parameters
            .port
            .ports
+           .right
            .scope
            .signature
            .statement
@@ -56,6 +59,7 @@
            <ast>
            <ast-list>
            <behaviour>
+           <bind>
            <call>
            <component>
            <compound>
@@ -208,3 +212,7 @@
 
 (define-class <return> (<statement>)
   (expression :accessor .expression :init-value #f :init-keyword :expression))
+
+(define-class <bind> (<statement>)
+  (left :accessor .left :init-value #f :init-keyword :left)
+  (right :accessor .right :init-value #f :init-keyword :right))

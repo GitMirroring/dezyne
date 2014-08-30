@@ -18,13 +18,13 @@ struct #.interface
   {
     #(map-events
 #{asd::function<void()> #.event;
-#} (filter ast:in? (ast:events (ast:interface ast))))  } in;
+#} (filter gom:in? ((compose .elements .events) (gom:interface ast))))  } in ;
 
   struct
   {
     #(map-events
 #{asd::function<void()> #.event;
-#} (filter ast:out? (ast:events (ast:interface ast))))  } out;
+#} (filter gom:out? ((compose .elements .events) (gom:interface ast)))) } out;
 };
 }
 
