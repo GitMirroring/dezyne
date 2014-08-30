@@ -18,7 +18,7 @@
   (pretty-noisy-equal?
    (assert-list
     (ast->gom
-     (asd->ast
+     (gom:parse-asd
       #{ interface I {}
                    component C {
                                 provides I i ;

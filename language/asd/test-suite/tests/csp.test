@@ -1022,7 +1022,7 @@ context_active_(\\ P',V' @ g (P',V',\\ ((s,b,c),(stack')) @ (b,b)),
             (reply (literal I Status No))))
        (the-end (dummy))))
 
- (pass-if "ast-transform-reply-variable"
+(pass-if "ast-transform-reply-variable"
          (gom-pretty-noisy-equal?
 
           ;; from:

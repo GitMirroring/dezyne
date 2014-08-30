@@ -30,6 +30,7 @@
   :use-module (srfi srfi-1)
 
   :use-module (language asd ast:)
+  :use-module (language asd csp)
   :use-module (language asd misc)
   :use-module (language asd reader)
 
@@ -53,7 +54,7 @@
   (let* ((component-checks '(deterministic illegal deadlock compliance livelock))
 	 (interface-checks '(deadlock livelock))
 	 (component (gom:component ast))
-	 (interfaces (map (compose ast->gom ast:ast .type) ((compose .elements .ports) component))))
+	 (interfaces (map (compose ast->gom csp:import .type) ((compose .elements .ports) component))))
     (append (apply append
 		   (delete-duplicates (map (lambda (interface)
 					     (map (assert interface) interface-checks)) interfaces)))

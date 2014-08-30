@@ -22,6 +22,7 @@
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 pretty-print)
   :use-module (ice-9 match)
+  :use-module (srfi srfi-1)
 
   :use-module (language asd ast:)
   :use-module (language asd misc)
@@ -51,7 +52,12 @@
     (_ ast)))
 
 (define (ast->gom ast)
-  ((compose ast->gom- ast->sugar) ast))
+  (let ((gom ((compose ast->gom- ast->sugar) ast)))
+    (if (and (pair? ast)
+             (or (find ast:interface? ast)
+                 (find ast:component? ast)))
+        (make <root> :elements gom)
+        gom)))
 
 (define (ast->gom- ast)
   (match ast
@@ -183,8 +189,4 @@
     (('imports imports ...) ast)
     (('value type field) ast)
     ((h t ...) (map ast->gom ast))
-;;    ((h t ...) (make <ast-list> :elements (map ast->gom ast)))
     (_ ast)))
-
-(define (ast->gom ast)
-  ((compose ast->gom- ast->sugar) ast))

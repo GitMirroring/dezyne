@@ -46,8 +46,7 @@
 (define *ast* '())
 
 (define (ast-> ast)
-  (let ((gom (c++:gom ast)))
-    (gom:register gom #t)
+  (let ((gom ((gom:register c++:gom) ast #t)))
     (set! *ast* gom)
     (and=> (gom:interface gom) dump-interface)
     (and=> (gom:component gom) dump-component)

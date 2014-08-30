@@ -48,6 +48,7 @@
            gom:enums
            gom:event
            gom:events
+           gom:filter
            gom:find-events
            gom:functions
            gom:import
@@ -60,6 +61,7 @@
            gom:member-names
            gom:member-values
            gom:out?
+           gom:parse-asd
            gom:port
            gom:provides?
            gom:requires?
@@ -79,6 +81,21 @@
   (with-input-from-string
       (with-output-to-string (lambda () (write gom)))
     read))
+
+(define-method (gom:filter (predicate <top>) (o <ast-list>))
+  (filter predicate (.elements o)))
+
+(define-method (gom:filter (predicate <top>) (o <list>))
+  (filter predicate o))
+
+(define-method (gom:filter (predicate <procedure>))
+  (lambda (o) (gom:filter predicate o)))
+
+(define-method (gom:filter (predicate <top>))
+  (lambda (o) (gom:filter predicate o)))
+
+(define-method (gom:filter (class <class>))
+  (lambda (o) (gom:filter (is? class) o)))
 
 (define-method (gom:trigger< (lhs <trigger>) (rhs <trigger>))
   (if (and (not (.port lhs)) (not (.port rhs)))
@@ -187,6 +204,9 @@
 (define-method (gom:component (o <list>))
   (find (is? <component>) o))
 
+(define-method (gom:component (o <ast-list>))
+  (find (is? <component>) (.elements o)))
+
 (define-method (gom:component (o <component>))
   o)
 
@@ -195,6 +215,9 @@
 
 (define-method (gom:interface (o <list>))
   (find (is? <interface>) o))
+
+(define-method (gom:interface (o <ast-list>))
+  (find (is? <interface>) (.elements o)))
 
 (define-method (gom:interface (o <interface>))
   o)
@@ -209,7 +232,7 @@
   o)
 
 (define-method (gom:port (o <component>))
-  (car (filter gom:provides? (.elements (.ports o)))))
+  (car ((gom:filter gom:provides?) (.ports o))))
 
 (define-method (gom:port (o <component>) (name <symbol>))
   (find (lambda (p) (eq? (.name p) name)) (.elements (.ports o))))
@@ -247,8 +270,7 @@
   (eq? (.direction o) 'requires))
 
 (define (gom:booleans o)
-  '() ;;(filter (is? <boolean>) (.elements (.types ast)))
-  )
+  '())
 
 (define (gom:enums o)
   (filter (is? <enum>) (.elements (.types o))))
@@ -266,18 +288,14 @@
 (define (gom:integers ast)
   (filter (is? <int>) (.elements (.types ast))))
 
+(define (gom:enums o)
+  ((gom:filter <enum>) (.types o)))
+
 (define-method (gom:model (o <component>)) o)
-
 (define-method (gom:model (o <interface>)) o)
-
-(define (gom:models ast)
-  (filter (is? <model>) ast))
-
-(define (gom:components ast)
-  (filter (is? <component>) ast))
-
-(define (gom:interfaces ast)
-  (filter (is? <interface>) ast))
+(define (gom:models o) ((gom:filter <model>) o))
+(define (gom:components o) ((gom:filter <component>) o))
+(define (gom:interfaces o) ((gom:filter <interface>) o))
 
 (define* (gom:events ast import)
   (match ast
@@ -295,25 +313,31 @@
 (define-method (gom:bottom? (o <system>)) #t)
 
 ;;;; reading/caching
-(define (cached-model name)
-  (assoc-ref (@@ (language asd ast) *ast-alist*) name))
+(define *ast-alist* '())
 
-(define (cache-model name model)
-  ((@@ (language asd ast) ast-add) name model))
+(define (cached-model name)
+  (assoc-ref *ast-alist* name))
+
+(define-method (cache-model name (o <model>))
+  (set! *ast-alist* (assoc-set! *ast-alist* name o))
+  o)
 
 (define-method (register-model (o <model>))
+  (if (pair? o)
+      boo)
   (if (not (cached-model (.name o)))
       (cache-model (.name o) o))
   o)
 
-(define* (gom:register ast :optional (clear? #f))
+(define* ((gom:register transform) ast :optional (clear? #f))
   (if clear?
-      (set! (@@ (language asd ast) *ast-alist*) '()))
-  (for-each register-model (gom:models ast))
-  ast)
+    (set! *ast-alist* '()))
+  (let ((gom (transform ast)))
+    (for-each register-model (gom:models gom))
+    gom))
 
 (define* (read-ast name #:optional (transform identity))
-  (and-let* ((ast (transform (null-is-#f (read-asd (->string (list 'examples '/ name '.asd)) gom:register))))
+  (and-let* ((ast (null-is-#f (read-asd (->string (list 'examples '/ name '.asd)) (gom:register transform))))
              (models (null-is-#f (gom:models ast))))
             (find (lambda (model) (eq? (.name model) name)) models)))
 
@@ -321,3 +345,6 @@
   (or (cached-model name)
       (and-let* ((ast (read-ast name transform)))
                 (cache-model name ast))))
+
+(define* (gom:parse-asd string :optional (register (gom:register ast->gom)))
+  (parse-asd string register))

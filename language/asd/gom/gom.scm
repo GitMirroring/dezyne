@@ -89,6 +89,7 @@
            <range>
            <reply>
            <return>
+           <root>
            <signature>
            <statement>
            <system>
@@ -169,6 +170,7 @@
 (define-class <functions> (<ast-list>))
 (define-class <parameters> (<ast-list>))
 (define-class <ports> (<ast-list>))
+(define-class <root> (<ast-list>))
 (define-class <triggers> (<ast-list>))
 (define-class <types> (<ast-list>))
 (define-class <variables> (<ast-list>))

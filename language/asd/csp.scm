@@ -68,8 +68,7 @@
            ))
 
 (define (ast-> ast)
-  (let* ((norm (csp:norm ast)))
-    (gom:register norm #t)
+  (let* ((norm ((gom:register csp:norm) ast #t)))
     (module-define! (resolve-module '(language asd csp)) 'ast norm)  ;; FIXME
     (and-let* ((comp (gom:component norm))
                (name (ast:name (ast:component ast))) ;; unmangled

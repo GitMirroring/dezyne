@@ -33,10 +33,9 @@
          #t)
 
 (pass-if "c++-alarm-component"
-  (let* ((alarm-ast (read-ast 'examples/Alarm.asd))
-         (alarm-gom (c++:gom alarm-ast))
-         (foo0 (gom:register alarm-gom #t))
-         (foo1 (set! (@@ (language asd c++) *ast*) alarm-gom))
+  (let* ((alarm-ast (read-asd "examples/Alarm.asd"))
+         (alarm-gom ((gom:register c++:gom) alarm-ast #t))
+         (foo (set! (@@ (language asd c++) *ast*) alarm-gom))
          (module (c++-module alarm-gom))
          (alarm-c++ (with-output-to-string (lambda () ((animate-template 'component.c3.cc.scm) module))))
          (baseline-c++ (gulp-file "examples/component-Alarm-c3.cc")))
@@ -44,10 +43,9 @@
         #t)))
 
 (pass-if "c++-alarm-system"
-  (let* ((alarm-ast (read-ast 'examples/AlarmSystem.asd))
-         (alarm-gom (c++:gom alarm-ast))
-         (foo0 (gom:register alarm-gom #t))
-         (foo1 (set! (@@ (language asd c++) *ast*) alarm-gom))
+  (let* ((alarm-ast (read-asd "examples/AlarmSystem.asd"))
+         (alarm-gom ((gom:register c++:gom) alarm-ast #t))
+         (foo (set! (@@ (language asd c++) *ast*) alarm-gom))
          (module (c++-module alarm-gom))
          (alarm-c++ (with-output-to-string (lambda () ((animate-template 'system.c3.cc.scm) module))))
          (baseline-c++ (gulp-file "examples/component-AlarmSystem-c3.cc")))
