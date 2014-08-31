@@ -10,9 +10,9 @@ void connect(Port& provided, Port& required)
 namespace component
 {
 #.model ::#.model ()
-: #(map-instances #{#.instance () #} (ast:instances model) "\n, ")
-, #(map-binds #{#.port (#.instance ) #}  (filter bind-port? (ast:binds model)) "\n, ")
+: #(map-instances #{#.instance () #} (gom:instances model) "\n, ")
+, #(map-binds #{#.port-name (#.instance ) #}  (filter bind-port? (gom:binds model)) "\n, ")
 {
 #(map-binds #{connect(#.provided ,#.required );
-#} (filter (negate bind-port?) (ast:binds model))) }
+#} (filter (negate bind-port?) (gom:binds model))) }
 }

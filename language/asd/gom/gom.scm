@@ -75,6 +75,7 @@
            <guard>
            <if>
            <illegal>
+           <instance>
            <interface>
            <literal>
            <model>
@@ -87,6 +88,7 @@
            <return>
            <signature>
            <statement>
+           <system>
            <trigger>
            <triggers>
            <types>
@@ -154,6 +156,10 @@
   (ports :accessor .ports :init-form (make <ports>) :init-keyword :ports)
   (behaviour :accessor .behaviour :init-value #f :init-keyword :behaviour))
 
+(define-class <system> (<model>)
+  (ports :accessor .ports :init-form (make <ports>) :init-keyword :ports)
+  (statement :accessor .statement :init-value #f :init-keyword :statement))
+
 (define-class <arguments> (<ast-list>))
 (define-class <events> (<ast-list>))
 (define-class <fields> (<ast-list>))
@@ -216,3 +222,6 @@
 (define-class <bind> (<statement>)
   (left :accessor .left :init-value #f :init-keyword :left)
   (right :accessor .right :init-value #f :init-keyword :right))
+
+(define-class <instance> (<named> <statement>)
+  (type :accessor .type :init-value #f :init-keyword :type))

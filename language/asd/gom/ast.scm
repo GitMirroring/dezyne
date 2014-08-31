@@ -65,10 +65,16 @@
                                      :value (ast->gom (ast:expression ast)))))
     ((? ast:behaviour?) (make <behaviour>
                           :name (ast:name ast)
-                          :types (ast->gom (ast:type-list ast))
-                          :variables (ast->gom (ast:variable-list ast))
-                          :functions (ast->gom (ast:function-list ast))
+                          :types (ast->gom (or (null-is-#f (ast:type-list ast))
+                                               '(types)))
+                          :variables (ast->gom (or (null-is-#f (ast:variable-list ast))
+                                                   '(variables)))
+                          :functions (ast->gom (or (null-is-#f (ast:function-list ast))
+                                                   '(functions)))
                           :statement (ast->gom (ast:statement ast))))
+    ((? ast:bind?) (make <bind>
+                      :left (ast->gom (ast:right ast))
+                      :right (ast->gom (ast:left ast))))
     ((? ast:call?) (make <call>
                        :identifier (ast:identifier ast)
                        :arguments (ast->gom (or (null-is-#f
@@ -106,10 +112,15 @@
                        :then (ast->gom (ast:then ast))
                        :else (ast->gom (ast:else ast))))
     ((? ast:illegal?) (make <illegal>))
+    ((? ast:instance?) (make <instance>
+                         :name (ast:name ast)
+                         :type (ast:type ast)))
     ((? ast:interface?) (make <interface>
                           :name (ast:name ast)
-                          :events (ast->gom (ast:event-list ast))
-                          :types (ast->gom (ast:type-list ast))
+                          :events (ast->gom (or (null-is-#f (ast:event-list ast))
+                                                '(events)))
+                          :types (ast->gom (or (null-is-#f (ast:type-list ast))
+                                               '(types)))
                           :behaviour (ast->gom (ast:behaviour ast))))
     ((? ast:literal?) (make <literal>
                       :scope (ast:scope ast)
@@ -145,6 +156,10 @@
                                                      '(parameters)))))
     ((? ast:statement-list?) (make <compound>
                                :elements (map ast->gom (ast:body ast))))
+    ((? ast:system?) (make <system>
+                          :name (ast:name ast)
+                          :ports (ast->gom (ast:port-list ast))
+                          :statement (ast->gom (ast:statement ast))))
     ((? ast:trigger?) (make <trigger>
                        :port (ast:port-name ast)
                        :event (ast:event-name ast)))

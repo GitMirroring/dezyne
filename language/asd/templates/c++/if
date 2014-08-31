@@ -1,5 +1,0 @@
-if (#.expression)
-{
-  #.statement
-}
-#(if (defined? '.else) (string-append "else\n{" .else "}\n") "")

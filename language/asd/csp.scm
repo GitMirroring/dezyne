@@ -46,6 +46,7 @@
   :export (
            ast->
            behaviour->csp
+           csp:import
            csp->sugar
            csp->gom
            csp-component

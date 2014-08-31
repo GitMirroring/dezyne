@@ -51,7 +51,9 @@
            gom:find-events
            gom:functions
            gom:import
+           gom:instance
            gom:in?
+           gom:instances
            gom:integers
            gom:interface
            gom:interfaces
@@ -120,7 +122,7 @@
                       (gom:functions (.behaviour ast))))
     (($ <component>) (.functions (.behaviour ast)))
     (($ <port>) (stderr "port: ~a\n" (.type ast))
-     (gom:functions (ast->gom (ast:ast (.type ast)))))
+     (gom:functions (gom:import (.type ast) ast->gom)))
     (_ (throw 'match-error  (format #f "~a:gom:functions: no match: ~a\n" (current-source-location) ast)))))
 
 (define (gom:variables ast)  ;; to be removed (.variables o)
@@ -131,7 +133,7 @@
                                      (make <variables>)))
                       (gom:variables (.behaviour ast))))
     (($ <component>) (gom:variables (.behaviour ast)))
-    (($ <port>) (gom:variables (ast->gom (ast:ast (.type ast)))))
+    (($ <port>) (gom:variables (gom:import (.type ast) ast->gom)))
     (_ (throw 'match-error  (format #f "~a:gom:variables: no match: ~a\n" (current-source-location) ast)))))
 
 (define (gom:member-names model)
@@ -161,10 +163,10 @@
     ((? (is? <statement>)) '())
     (_ (throw 'match-error  (format #f "~a:gom:statements-of-type, type: ~a: no match: ~a\n" (current-source-location) type statement)))))
 
-(define (gom:typed? ast)
+(define (gom:typed? ast import)
   (match ast
     (($ <event>) (not (equal? (.type (.type ast)) '(type void))))
-    (($ <port>) (null-is-#f (filter gom:typed? (gom:events ast))))
+    (($ <port>) (null-is-#f (filter (lambda (x) (gom:typed? x import)) (gom:events ast import))))
     (_ (throw 'match-error  (format #f "~a:gom:typed?: no match: ~a\n" (current-source-location) ast)))))
 
 (define-method (gom:dir-matches? (p <port>) (e <event>))
@@ -177,7 +179,7 @@
   (lambda (event) (gom:dir-matches? o event)))
 
 (define-method (gom:event (o <interface>) name)
-  (find (lambda (x) (eq? (.name x))) (.elements (.events o))))
+  (find (lambda (x) (eq? (.name x) name)) (.elements (.events o))))
 
 (define-method (gom:component (o <top>))
   #f)
@@ -199,8 +201,35 @@
 
 (define-method (gom:system (o <top>))
   #f)
+
+(define-method (gom:system (o <list>))
+  (find (is? <system>) o))
+
+(define-method (gom:system (o <system>))
+  o)
+
 (define-method (gom:port (o <component>))
   (car (filter gom:provides? (.elements (.ports o)))))
+
+(define-method (gom:port (o <component>) (name <symbol>))
+  (find (lambda (p) (eq? (.name p) name)) (.elements (.ports o))))
+
+(define-method (gom:port (o <system>))
+  (car (filter gom:provides? (.elements (.ports o)))))
+
+(define-method (gom:port (o <system>) (name <symbol>))
+  (or (find (lambda (p) (eq? (.name p) name)) (.elements (.ports o)))))
+
+(define-method (gom:port (o <system>) (bind <list>))
+  (or (gom:port o (caddr bind))
+      (make <port> :name 'foobar :type 'Foobar :direction 'provides)))
+
+(define-method (gom:instance (o <system>) (name <symbol>))
+  (or (find (lambda (i) (eq? (.name i) name)) (gom:instances o))
+      (make <instance> :name name :type 'Foobar)))
+
+(define-method (gom:instance (o <system>) (bind <list>))
+  (gom:instance o (caddr bind)))
 
 (define-method (gom:in? (o <event>))
   (eq? (.direction o) 'in))
@@ -221,10 +250,15 @@
 (define (gom:enums o)
   (filter (is? <enum>) (.elements (.types o))))
 
-(define (gom:statement o) (make <compound>))
+(define-method (gom:binds (o <top>)) '())
 
-(define (gom:binds o)
-  (filter (is? <bind>) (.elements (gom:statement o))))
+(define-method (gom:binds (o <system>))
+  (filter (is? <bind>) (.elements (.statement o))))
+
+(define-method (gom:instances (o <top>)) '())
+
+(define-method (gom:instances (o <system>))
+  (filter (is? <instance>) (.elements (.statement o))))
 
 (define (gom:integers ast)
   '() ;;(filter (is? <integer>) (.elements (.types ast)))
@@ -243,11 +277,10 @@
 (define (gom:interfaces ast)
   (filter (is? <interface>) ast))
 
-(define (gom:events ast)
+(define* (gom:events ast import)
   (match ast
     (($ <interface>) (.elements (.events ast)))
-;;    (($ <component>) (gom:find-triggers ast))
-    (($ <port>) (gom:events (ast->gom (ast:ast (.type ast)))))
+    (($ <port>) (gom:events (ast->gom (import (.type ast))) import))
     (_ (throw 'match-error  (format #f "~a:events: no match: ~a\n" (current-source-location) ast)))))
 
 (define-method (gom:bottom? (o <component>))
@@ -256,6 +289,8 @@
             (gom:provides? (car ports))))
 
 (define-method (gom:bottom? (o <interface>)) #f)
+
+(define-method (gom:bottom? (o <system>)) #t)
 
 ;;;; reading/caching
 (define (cached-model name)

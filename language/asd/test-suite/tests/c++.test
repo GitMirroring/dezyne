@@ -34,8 +34,10 @@
 
 (pass-if "c++-alarm-component"
   (let* ((alarm-ast (read-ast 'examples/Alarm.asd))
-         (foobar (set! (@@ (language asd c++) *ast*) alarm-ast))
-         (module (c++-module alarm-ast))
+         (alarm-gom (c++:gom alarm-ast))
+         (foo0 (gom:register alarm-gom #t))
+         (foo1 (set! (@@ (language asd c++) *ast*) alarm-gom))
+         (module (c++-module alarm-gom))
          (alarm-c++ (with-output-to-string (lambda () ((animate-template 'component.c3.cc.scm) module))))
          (baseline-c++ (gulp-file "examples/component-Alarm-c3.cc")))
     (or (diff-noisy-equal? alarm-c++ baseline-c++)
@@ -43,8 +45,11 @@
 
 (pass-if "c++-alarm-system"
   (let* ((alarm-ast (read-ast 'examples/AlarmSystem.asd))
-         (foobar (set! (@@ (language asd c++) *ast*) alarm-ast))
-         (alarm-c++ (with-output-to-string (lambda () ((animate-template 'system.c3.cc.scm) (c++-module alarm-ast)))))
+         (alarm-gom (c++:gom alarm-ast))
+         (foo0 (gom:register alarm-gom #t))
+         (foo1 (set! (@@ (language asd c++) *ast*) alarm-gom))
+         (module (c++-module alarm-gom))
+         (alarm-c++ (with-output-to-string (lambda () ((animate-template 'system.c3.cc.scm) module))))
          (baseline-c++ (gulp-file "examples/component-AlarmSystem-c3.cc")))
     (or (diff-noisy-equal? alarm-c++ baseline-c++)
         #t)))

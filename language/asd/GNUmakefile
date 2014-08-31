@@ -186,7 +186,7 @@ pretty: compile
 c++: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
 	cd out && ../gaiag -l c++ examples/Alarm.asd
-	-$(diff) examples/component-Alarm-c3.hh out
+	$(diff) examples/component-Alarm-c3.hh out
 	$(diff) examples/component-Alarm-c3.cc out
 	cd out && ../gaiag examples/Aap.asd
 	cd out && ../gaiag -l c++ examples/Aap.asd
