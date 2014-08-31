@@ -60,6 +60,7 @@
            <ast-list>
            <behaviour>
            <bind>
+           <boolean>
            <call>
            <component>
            <compound>
@@ -76,6 +77,7 @@
            <if>
            <illegal>
            <instance>
+           <int>
            <interface>
            <literal>
            <model>
@@ -84,6 +86,7 @@
            <parameters>
            <port>
            <ports>
+           <range>
            <reply>
            <return>
            <signature>
@@ -172,6 +175,13 @@
 
 (define-class <enum> (<named>)
   (fields :accessor .fields :init-form (list) :init-keyword :fields))
+
+(define-class <int> (<named>)
+  (range :accessor .range :init-form (make <range>) :init-keyword :range))
+
+(define-class <range> (<ast>)
+  (from :accessor .from :init-value 0 :init-keyword :from)
+  (to :accessor .to :init-value 0 :init-keyword :to))
 
 (define-class <behaviour> (<named>)
   (types :accessor .types :init-form (make <types>) :init-keyword :types)

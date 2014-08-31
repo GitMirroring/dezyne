@@ -146,8 +146,10 @@
                             "\n" (statements->string statement))))
       (($ <if> expression statement ($ <statement> '()))
        (->string (list "if (" (expression->string expression) ")\n" (statements->string statement))))
+      (($ <if> expression statement #f) ;; FIXME
+       (->string (list "if (" (expression->string expression) ")\n" (statements->string statement))))
       (($ <if> expression statement else)
-       (->string (list "if (" (expression->string expression) ")\n" (statements->string statement) "else\n"  (statements->string else))))
+       (->string (list "if (" (expression->string expression) ")\n" (statements->string statement) "else\n" (statements->string else))))
       (($ <assign> identifier expression)
        (->string (list (statements->string identifier) " = " (expression->string expression) ";\n")))
       (($ <on> triggers statement)
@@ -175,10 +177,13 @@
       (($ <return> expression)
        (->string (list 'return " " (expression->string expression) ";\n")))
       (($ <variable> name type expression)
-       (->string (list (.name type) " " name " = " (expression->string expression) ";\n")))
+       (->string (list (ast:name type) " " name " = " (expression->string expression) ";\n")))
       ((? char?) (make-string 1 src))
       ((? string?) src)
       ((? symbol?) (symbol->string src))
+      (#t 'true)
+      (#f 'false)
+      (_ boo)
       (_ (stderr "~a: NO MATCH: ~a\n" (current-source-location) src) ""))))
 
 (define (expr->clause expression)
@@ -210,10 +215,9 @@
     (($ <field> identifier field)
      (list identifier " == " field))
 
-    (($ <action> function) (->string (list function "()")))
-    (($ <call> function) (->string (list function "()")))
-    (($ <call> function ('arguments arguments ...))
-     (let ((arguments ((->join ", ") (map expression->string (cons 'context arguments)))))
+    (($ <call> function ($ <arguments> '())) (->string (list function "()")))
+    (($ <call> function ($ <arguments> arguments))
+     (let ((arguments ((->join ", ") (map expression->string arguments))))
        (->string (list function  "(" arguments ")"))))
 
     (($ <literal> scope type field) field)
@@ -238,7 +242,7 @@
     (_ (format #f "~a:no match: ~a" (current-source-location) ast))))
 
 (define (parameter->string parameter)
-  (->string (list (.name (.type parameter)) " " (.name parameter))))
+  (->string (list (ast:name (.type parameter)) " " (.identifier parameter))))
 
 (define (value->string value)
   (let ((comp-name (.name (gom:component *ast*))))
@@ -289,30 +293,13 @@
     ((_ condition then else)
      (animate-string (if (null-is-#f condition) then else) (current-module)))))
 
-(define (find-bind model port)
-  (find (lambda (bind)
-          (or (equal? port (gom:port model (.left bind)))
-              (equal? port (gom:port model (.right bind)))))
-        (gom:binds model)))
-
-(define (bind-other model port)
-  (and-let* ((bind (find-bind model port))
-             (other (if (equal? port (gom:port model (.left bind)))
-                        (.right bind)
-                        (.left bind))))
-            ;; (stderr "other: ~a --> ~a ===>>> ~a?\n" other other (.port model other)) ;; FIXME
-            (gom:port model (if (ast:value? other) other other))))
-
 (define* (map-ports string ports :optional (separator ""))
   ((->join separator)
    (map (lambda (port)
           (with-output-to-string
             (lambda ()
               (let* ((module (c++-module *ast*))
-                     (model (module-ref module 'model))
-                     (other (bind-other model port))
-                     (.FIXME-other (.name (or other port)))
-                     (.other (if (eq? .FIXME-other 'console) 'alarm .FIXME-other)))
+                     (model (module-ref module 'model)))
                 (save-module-excursion
                  (lambda ()
                    (animate-string
@@ -349,8 +336,7 @@
         instances)))
 
 (define (binding-name model bind)
-  ;;(list (.name (gom:instance model bind)) '. (.name (gom:port model bind)))
-  (list (gom:instance model bind) '. (.name (gom:port model bind))))
+  (list (.name (gom:instance model bind)) '. (.name (gom:port model bind))))
 
 (define (bind-port? bind)
   (or (symbol? (.left bind)) (symbol? (.right bind))))
@@ -365,11 +351,6 @@
                      (left (.left bind))
                      (left-port (gom:port model left))
                      (right (.right bind))
-
-                     (foo0 (stderr "left ~a\n" left))
-                     (foo0 (stderr "left-port ~a\n" left-port))
-
-                     (foo0 (stderr "right ~a\n" right))
                      (provided-required (if (gom:provides? left-port) (cons left right) (cons right left)))
                      (provided (binding-name model (car provided-required)))
                      (required (binding-name model (cdr provided-required)))
@@ -384,7 +365,6 @@
                      `(
                        (.provided . ,provided)
                        (.required . ,required)
-
                        (.port-name . ,(and (bind-port? bind) (if (symbol? left) left right)))
                        (.instance . ,(and (bind-port? bind) (if (symbol? left) (binding-name model right) (binding-name model left))))
                        )))))))))
@@ -424,7 +404,6 @@
                                         ((compose .statement .behaviour gom:component) *ast*) #f)))
                                    ""))
                   (.return-interface-type . ,(lambda (event) (return-interface-type (.type port) event)))
-;;                  (.return-context-get . ,(lambda (event) (return-context-get (.type port) event)))
                   )))))))
        events))
 
@@ -438,9 +417,9 @@
               (current-module)
               function
               `((.function . ,.name)
-                (.return-type . ,(compose .name .type))
-                (.comma . ,(lambda (x) (if (null-is-#f (.elements (.parameters x))) ", " "")))
-                (.parameters . ,(lambda (x) ((->join ", ") (map parameter->string (.elements (.parameters x))))))
+                (.return-type . ,(compose ast:name .type .signature))
+                (.comma . ,(lambda (x) (if (null-is-#f ((compose .elements .parameters .signature) x)) ", " "")))
+                (.parameters . ,(lambda (x) ((->join ", ") (map parameter->string ((compose .elements .parameters .signature) x)))))
                 (.statements . ,(lambda (x) (statements->string (.statement x))))))))))
        functions))
 

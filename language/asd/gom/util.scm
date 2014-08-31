@@ -222,14 +222,17 @@
 
 (define-method (gom:port (o <system>) (bind <list>))
   (or (gom:port o (caddr bind))
-      (make <port> :name 'foobar :type 'Foobar :direction 'provides)))
+      (let ((instance (gom:instance o (cadr bind))))
+        (if (eq? (cadr bind) (caddr bind))
+            (gom:port (gom:import 'Alarm) (caddr bind))  ;;FIXME
+            (gom:port (gom:import (.type instance)) (caddr bind))))))
 
 (define-method (gom:instance (o <system>) (name <symbol>))
   (or (find (lambda (i) (eq? (.name i) name)) (gom:instances o))
       (make <instance> :name name :type 'Foobar)))
 
 (define-method (gom:instance (o <system>) (bind <list>))
-  (gom:instance o (caddr bind)))
+  (gom:instance o (cadr bind)))
 
 (define-method (gom:in? (o <event>))
   (eq? (.direction o) 'in))
@@ -261,8 +264,7 @@
   (filter (is? <instance>) (.elements (.statement o))))
 
 (define (gom:integers ast)
-  '() ;;(filter (is? <integer>) (.elements (.types ast)))
-  )
+  (filter (is? <int>) (.elements (.types ast))))
 
 (define-method (gom:model (o <component>)) o)
 

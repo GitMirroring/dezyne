@@ -73,8 +73,8 @@
                                                    '(functions)))
                           :statement (ast->gom (ast:statement ast))))
     ((? ast:bind?) (make <bind>
-                      :left (ast->gom (ast:right ast))
-                      :right (ast->gom (ast:left ast))))
+                      :left (ast->gom (ast:left ast))
+                      :right (ast->gom (ast:right ast))))
     ((? ast:call?) (make <call>
                        :identifier (ast:identifier ast)
                        :arguments (ast->gom (or (null-is-#f
@@ -112,6 +112,9 @@
                        :then (ast->gom (ast:then ast))
                        :else (ast->gom (ast:else ast))))
     ((? ast:illegal?) (make <illegal>))
+    ((? ast:int?) (make <int>
+                    :name (ast:name ast)
+                    :range (ast->gom (ast:range ast))))
     ((? ast:instance?) (make <instance>
                          :name (ast:name ast)
                          :type (ast:type ast)))
@@ -140,6 +143,9 @@
                       :direction (ast:direction ast)))
     ((? ast:port-list?) (make <ports>
                           :elements (map ast->gom (ast:body ast))))
+    ((? ast:range?) (make <range>
+                      :from (ast:from ast)
+                      :to (ast:to ast)))
     ((? ast:reply?) (make <reply>
                       :expression (make <expression>
                                     :value (ast->gom (ast:expression ast)))))

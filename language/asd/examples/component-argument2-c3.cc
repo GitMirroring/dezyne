@@ -38,8 +38,8 @@ namespace component
     if (true)
     {
       b = ! (b);
-      bool c = g(context, b, b);
-      b = g(context, c, c);
+      bool c = g(b, b);
+      b = g(c, c);
       if (c)
       {
         i.out.f();
@@ -54,8 +54,11 @@ namespace component
 
   bool argument2::g(bool ga, bool gb)
   {
-    i.out.f();
-    return (ga or gb);
+    {
+      i.out.f();
+      return (ga or gb);
+
+    }
 
   }
 
