@@ -144,13 +144,13 @@
     (left: Identifier NumericLiteral)
 
     (nonassoc: = <=> ..)
-    (left: == !=)
-    (left: < > <= >=)
     (left: or)
     (left: and)
     (left: !)
     (left: + -)
     (left: * /)
+
+    (left: == != < > <= >=)
 
     (right: else)
 
