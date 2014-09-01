@@ -197,7 +197,8 @@
     (compound-identifier Identifier semicolon) : `(instance ,$1 ,$2))
 
    (import-spec
-    (import Identifier semicolon) : `(,$1 ,$2))
+    (import Identifier semicolon) : `(,$1 ,$2)
+    (import Identifier dot Identifier semicolon) : `(,$1 ,(symbol-append $2 '. $4)))
 
    (event-list
     () : '(events)
