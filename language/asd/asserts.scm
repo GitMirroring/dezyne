@@ -42,20 +42,22 @@
 	   assert-list
            ))
 
-(define ((assert model) check) (if (eq? check 'compliance)
-                                   (list (ast-name model) (.name model) check (.type (gom:port model)))
-                                   (list (ast-name model) (.name model) check)))
+(define ((assert model) check)
+  (if (eq? check 'compliance)
+      (list (ast-name model) (.name model) check (.type (gom:port model)))
+      (list (ast-name model) (.name model) check)))
 
-(define (ast-> ast)
-  (pretty-print (assert-list ast))
-  "")
-
-(define (assert-list ast)
+(define-method (assert-list (o <ast>))
   (let* ((component-checks '(deterministic illegal deadlock compliance livelock))
 	 (interface-checks '(deadlock livelock))
-	 (component (gom:component ast))
+	 (component (gom:component o))
 	 (interfaces (map (compose ast->gom csp:import .type) ((compose .elements .ports) component))))
     (append (apply append
 		   (delete-duplicates (map (lambda (interface)
 					     (map (assert interface) interface-checks)) interfaces)))
             (map (assert component) component-checks))))
+
+(define-method (assert-list (o <top>))
+  (assert-list (ast->gom o)))
+
+(define ast-> assert-list)

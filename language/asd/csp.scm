@@ -88,9 +88,9 @@
 
 (define (mangle ast)
   "experimental mangling"
-  (if (member (ast:name (ast:component ast))
-              '(mangle argument2))
-      (ast:mangle ast)
+  (or (and-let* ((component (ast:component ast))
+                 ((member (ast:name component) '(mangle argument2))))
+                (ast:mangle ast))
       ast))
 
 (define (csp-component module)
