@@ -58,7 +58,7 @@
 (pass-if "ast:resolve-variable-valued-action"
          (pretty-noisy-equal?
           ((ast:resolve-model
-            (cdr resolve-ast))
+            (cadr resolve-ast))
            '(on (triggers (trigger o foo))
                 (compound
                  (variable (type ivar (type E))
@@ -74,7 +74,7 @@
 (pass-if "ast:resolve-assign-valued-action"
          (pretty-noisy-equal?
           ((ast:resolve-model
-            (cdr resolve-ast))
+            (cadr resolve-ast))
            '(on (triggers (trigger o foo))
                 (compound
                  (assign e (value o foo)))))
@@ -86,7 +86,7 @@
 (pass-if "ast:resolve-value-enum-value"
          (pretty-noisy-equal?
           ((ast:resolve-model
-            (cdr resolve-ast))
+            (cadr resolve-ast))
            '(variables
              (variable (type State) m (value State one))))
           '(variables
@@ -99,9 +99,27 @@
            '(guard (value m one) (illegal)))
           '(guard (field m one) (illegal))))
 
-(pass-if "ast:resolve-value-field-component"
+(define resolve-system
+  '(component
+    trap
+    (ports (provides I i) (requires U u))
+    (system
+     #f
+     (compound
+      (instance trip u)
+      (bind i (value u i))
+      (bind (value u u) u)))))
+
+(pass-if "ast:resolve-system"
          (pretty-noisy-equal?
-          ((ast:resolve-model
-            (cdr resolve-ast))
-           '(guard (value m one) (illegal)))
-          '(guard (field m one) (illegal))))
+          ((ast:resolve-system
+            resolve-system)
+           '(component c (ports) (system #f (compound))))
+          '(system c (ports) (compound))))
+
+(pass-if "ast:resolve-binds"
+         (pretty-noisy-equal?
+          ((ast:resolve-system
+            resolve-system)
+           '(bind i (value u i)))
+          '(bind (binding #f i) (binding u i))))

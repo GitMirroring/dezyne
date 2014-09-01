@@ -288,7 +288,9 @@
    (optional-behaviour
     () : '(behaviour)
     (behaviour lbrace type-list variable-list function-list statement-list rbrace) : `(,$1 #f ,$3 ,$4 ,$5 ,$6)
-    (behaviour Identifier lbrace type-list variable-list function-list statement-list rbrace) : `(,$1 ,$2 ,$4 ,$5 ,$6 ,$7))
+    (behaviour Identifier lbrace type-list variable-list function-list statement-list rbrace) : `(,$1 ,$2 ,$4 ,$5 ,$6 ,$7)
+    (system lbrace system-statement-list rbrace) : `(,$1 #f ,$3)
+    (system Identifier lbrace system-statement-list rbrace) : `(,$1 ,$2 ,$4))
 
    (function
     (type Identifier lparen rparen compound-statement) : (make 'function `(,$2 ,(make 'signature (list $1) @1), $5) @1)

@@ -34,6 +34,7 @@
            ast->
            ast:resolve
            ast:resolve-model
+           ast:resolve-system
            ))
 
 (define (ast:resolve ast)
@@ -41,14 +42,15 @@
 
 (define ((ast:resolve- ast) src)
   (match src
-    (('component name ...) (map (ast:resolve-model src) src))
-    (('interface name ...) (map (ast:resolve-model src) src))
+    (('system name ports ('compound s ...)) ((ast:resolve-system src) src))
+    (('component name ports ('system name ...)) ((ast:resolve-system src) src))
+    (('component name ...) ((ast:resolve-model src) src))
+    (('interface name ...) ((ast:resolve-model src) src))
     ((h ...) (map (lambda (x) ((ast:resolve- ast) x)) src))
     (_ src)))
 
-(define ((ast:resolve-model ast) src)
-  (let* ((model (or (ast:interface ast) (ast:component ast)))
-         (port? (lambda (port)
+(define ((ast:resolve-model model) src)
+  (let* ((port? (lambda (port)
                   (if (eq? (ast:class model) 'interface)
                       #f
                       (member port (map ast:name (ast:ports model))))))
@@ -81,7 +83,19 @@
        (cons 'field (cdr src)))
       (('value (? enum?) (? (enum-field? (cadr src))))
        (append '(literal #f) (cdr src)))
-      ((h ...) (map (lambda (x) ((ast:resolve-model ast) x)) src))
+      ((h ...) (map (lambda (x) ((ast:resolve-model model) x)) src))
+      (_ src))))
+
+(define ((ast:resolve-system model) src)
+  (let ((binding (lambda (binding)
+                   (match binding
+                     ((? symbol?) (list 'binding #f binding))
+                     (('value instance port) (list 'binding instance port))))))
+    (match src
+      (('component name ports ('system foo statement))
+       (list 'system name ports ((ast:resolve-system model) statement)))
+      (('bind left right) (list 'bind (binding left) (binding right)))
+      ((h ...) (map (lambda (x) ((ast:resolve-system model) x)) src))
       (_ src))))
 
 (define ast-> ast:resolve)
