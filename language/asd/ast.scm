@@ -190,6 +190,7 @@
            behaviour
            behaviour?
            bind?
+           binding?
            binds
            body
            bool?
@@ -337,6 +338,7 @@
 (define (assign? ast) (type-helper? 'assign ast))
 (define (behaviour? ast) (type-helper? 'behaviour ast))
 (define (bind? ast) (type-helper? 'bind ast))
+(define (binding? ast) (type-helper? 'binding ast))
 (define (bool? ast) (type-helper? 'bool ast))
 (define (call? ast) (type-helper? 'call ast))
 (define (component? ast) (type-helper? 'component ast))
@@ -596,6 +598,7 @@
           ((or (? component?) (? system?)) (assoc 'provides (ports ast)))
           ((? action?) (stderr "deprecated: event; use port-name\n")
            (port-name ast))
+          ((? binding?) (caddr ast))
           (_ (throw 'match-error  (format #f "~a:port: no match: ~a\n" (current-source-location) ast)))))
     ((? symbol?)
      (find (lambda (p) (eq? (name p) identifier))
@@ -609,7 +612,8 @@
                        (i (instance ast t)))
                   (if (eq? t f) ;; FIXME
                       (port (import-ast 'Alarm) f) ;; FIXME
-                      (port (import-ast (type i)) f))))))
+                      (port (import-ast (type i)) f))))
+    (_ (throw 'match-error  (format #f "~a:port: no match: ~a\n" (current-source-location) ast)))))
 
 (define (instance- ast identifier)
   (find (lambda (i) (eq? (name i) identifier))
@@ -618,14 +622,20 @@
           ((h ...) ast)
           (_ (throw 'match-error  (format #f "~a:instance-: no match: ~a\n" (current-source-location) ast))))))
 
-(define (instance ast identifier)
-  (match ast
-    ((? system?) (if (value? identifier)
-                     (instance- ast (type identifier))
-                     (or (instance- ast identifier)
-                         (and-let* ((provides (port ast identifier))
-                                    ((eq? (name provides) identifier)))
-                                   identifier))))
+(define* (instance ast :optional (identifier #f))
+  (match identifier
+    (#f (match ast
+          ((? binding?) (cadr ast))
+          (_ (throw 'match-error  (format #f "~a:instance: no match: ~a\n" (current-source-location) ast)))))
+    ((? symbol?)
+     (match ast
+       ((? system?) (if (value? identifier)
+                        (instance- ast (type identifier))
+                       (or (instance- ast identifier)
+                           (and-let* ((provides (port ast identifier))
+                                      ((eq? (name provides) identifier)))
+                                     identifier))))
+       (_ (throw 'match-error  (format #f "~a:instance: no match: ~a\n" (current-source-location) ast)))))
     (_ (throw 'match-error  (format #f "~a:instance: no match: ~a\n" (current-source-location) ast)))))
 
 (define (direction ast)

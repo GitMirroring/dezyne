@@ -81,6 +81,9 @@
     ((? ast:bind?) (make <bind>
                       :left (ast->gom (ast:left ast))
                       :right (ast->gom (ast:right ast))))
+    ((? ast:binding?) (make <binding>
+                        :instance (ast:instance ast)
+                        :port (ast:port ast)))
     ((? ast:call?) (make <call>
                        :identifier (ast:identifier ast)
                        :arguments (ast->gom (or (null-is-#f

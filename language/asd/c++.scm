@@ -182,7 +182,6 @@
       ((? symbol?) (symbol->string src))
       (#t 'true)
       (#f 'false)
-      (_ boo)
       (_ (stderr "~a: NO MATCH: ~a\n" (current-source-location) src) ""))))
 
 (define (expr->clause expression)
@@ -338,7 +337,7 @@
   (list (.name (gom:instance model bind)) '. (.name (gom:port model bind))))
 
 (define (bind-port? bind)
-  (or (symbol? (.left bind)) (symbol? (.right bind))))
+  (or (not (.instance (.left bind))) (not (.instance (.right bind)))))
 
 (define* (map-binds string binds :optional (separator ""))
   ((->join separator)
@@ -352,8 +351,7 @@
                      (right (.right bind))
                      (provided-required (if (gom:provides? left-port) (cons left right) (cons right left)))
                      (provided (binding-name model (car provided-required)))
-                     (required (binding-name model (cdr provided-required)))
-                     )
+                     (required (binding-name model (cdr provided-required))))
                 (save-module-excursion
                  (lambda ()
                    (animate-string
@@ -364,8 +362,8 @@
                      `(
                        (.provided . ,provided)
                        (.required . ,required)
-                       (.port-name . ,(and (bind-port? bind) (if (symbol? left) left right)))
-                       (.instance . ,(and (bind-port? bind) (if (symbol? left) (binding-name model right) (binding-name model left))))
+                       (.port-name . ,(and (bind-port? bind) (if (not (.instance left)) (.port left) (.port right))))
+                       (.instance . ,(and (bind-port? bind) (if (not (.instance left)) (binding-name model right) (binding-name model left))))
                        )))))))))
         binds)))
 

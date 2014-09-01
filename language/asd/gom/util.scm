@@ -243,19 +243,22 @@
 (define-method (gom:port (o <system>) (name <symbol>))
   (or (find (lambda (p) (eq? (.name p) name)) (.elements (.ports o)))))
 
-(define-method (gom:port (o <system>) (bind <list>))
-  (or (gom:port o (caddr bind))
-      (let ((instance (gom:instance o (cadr bind))))
-        (if (eq? (cadr bind) (caddr bind))
-            (gom:port (gom:import 'Alarm) (caddr bind))  ;;FIXME
-            (gom:port (gom:import (.type instance)) (caddr bind))))))
+(define-method (gom:port (o <system>) (bind <binding>))
+  (or (gom:port o (.port bind))
+      (let ((instance (gom:instance o (.instance bind))))
+        (if (eq? (.instance bind) (.port bind))
+            (make <port> :name (.port bind))
+            (gom:port (gom:import (.type instance)) (.port bind))))))
+
+(define-method (gom:instance (o <system>) (name <boolean>))
+  (make <instance> :name name :type 'Foobar))
 
 (define-method (gom:instance (o <system>) (name <symbol>))
   (or (find (lambda (i) (eq? (.name i) name)) (gom:instances o))
       (make <instance> :name name :type 'Foobar)))
 
-(define-method (gom:instance (o <system>) (bind <list>))
-  (gom:instance o (cadr bind)))
+(define-method (gom:instance (o <system>) (bind <binding>))
+  (gom:instance o (.instance bind)))
 
 (define-method (gom:in? (o <event>))
   (eq? (.direction o) 'in))
@@ -323,9 +326,7 @@
   o)
 
 (define-method (register-model (o <model>))
-  (if (pair? o)
-      boo)
-  (if (not (cached-model (.name o)))
+   (if (not (cached-model (.name o)))
       (cache-model (.name o) o))
   o)
 

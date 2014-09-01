@@ -60,7 +60,7 @@
            <ast-list>
            <behaviour>
            <bind>
-           <boolean>
+           <binding>
            <call>
            <component>
            <compound>
@@ -234,6 +234,10 @@
 (define-class <bind> (<statement>)
   (left :accessor .left :init-value #f :init-keyword :left)
   (right :accessor .right :init-value #f :init-keyword :right))
+
+(define-class <binding> (<statement>)
+  (instance :accessor .instance :init-value #f :init-keyword :instance)
+  (port :accessor .port :init-value #f :init-keyword :port))
 
 (define-class <instance> (<named> <statement>)
   (type :accessor .type :init-value #f :init-keyword :type))
