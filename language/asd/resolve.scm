@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014  Rutger van Beusekom
+;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -37,8 +38,6 @@
 
 (define (ast:resolve ast)
   ((ast:resolve- ast) ast))
-
-(define ast-> ast:resolve)
 
 (define ((ast:resolve- ast) src)
   (match src
@@ -84,3 +83,9 @@
        (append '(literal #f) (cdr src)))
       ((h ...) (map (lambda (x) ((ast:resolve-model ast) x)) src))
       (_ src))))
+
+;; gaiag plumbing
+(define (ast-> ast)
+  (pretty-print (with-input-from-string
+                    (with-output-to-string (lambda () (write (ast:resolve ast))))
+                  read)) "")

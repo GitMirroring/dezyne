@@ -25,6 +25,7 @@
   :use-module (ice-9 pretty-print)
 
   :use-module (language asd misc)
+  :use-module (language asd resolve)
 
   :use-module (oop goops)
 ;;  :use-module ((oop goops) :renamer (std-renamer '(port parameter)))
@@ -45,5 +46,5 @@
 
 (define (ast-> ast)
   (pretty-print (with-input-from-string
-                    (with-output-to-string (lambda () (write (ast->gom ast))))
+                    (with-output-to-string (lambda () (write (ast->gom (ast:resolve ast)))))
                   read)) "")

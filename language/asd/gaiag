@@ -40,6 +40,7 @@ exec guile -L $(dirname $0) -L $(cd $(dirname $0)/../.. && pwd) -e main -s $0 "$
   :use-module (language asd gom)
   :use-module (language asd mangle)
   :use-module (language asd pretty)
+  :use-module (language asd resolve)
   :use-module (language asd scheme)
   :use-module (language asd simulate)
   :use-module (language asd wfc)
@@ -75,7 +76,7 @@ Usage: gaiag [OPTION]... FILE
   -h, --help           display this help
   -j, --json           use json-friendly format; strings and hash tables
   -l, --language=LANG  generate output for language=LANG [scheme]
-  -t, --trail=TRAIL    specify trail TRAIL for trail-walker 
+  -t, --trail=TRAIL    specify trail TRAIL for trail-walker
   -o, --output FILE    generate FILE containing the output
   -v, --version        display version
 

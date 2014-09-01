@@ -422,3 +422,11 @@ out/%.refines: $(DEPTH)/webdemo/asd/%.asd
 	touch $@
 
 demo: $(DEMO_SOURCES:%.asd=out/%.refines)
+
+compare:
+	rm -rf out && mkdir out && ln -s ../examples ../webdemo ../templates ../../../webdemo/asd out
+	make -C ../..
+	./gaiag -l resolve examples/trip.asd > out/gaiag-trip.scm
+	cd out && ../../../build/asdgenerator -l scm examples/trip.asd
+	./gaiag out/trip.scm > out/om-trip-pretty.scm
+	diff -u out/om-trip-pretty.scm out/gaiag-trip.scm
