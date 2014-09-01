@@ -60,7 +60,7 @@ clean:
 test: check
 check: compile
 	./test.sh </dev/null
-	$(MAKE) pretty csp c++ demo
+	$(MAKE) pretty csp asserts c++ demo
 
 coverage: clean
 	rm -rf gaiag.lcov && mkdir -p gaiag.lcov
@@ -422,6 +422,11 @@ out/%.refines: $(DEPTH)/webdemo/asd/%.asd
 	touch $@
 
 demo: $(DEMO_SOURCES:%.asd=out/%.refines)
+
+asserts:
+	rm -rf out && mkdir out && ln -s ../examples ../webdemo ../templates ../../../webdemo/asd out
+	./gaiag -l asserts examples/Alarm.asd > out/alarm-asserts.scm
+	diff -u examples/alarm-asserts.scm out
 
 compare:
 	rm -rf out && mkdir out && ln -s ../examples ../webdemo ../templates ../../../webdemo/asd out
