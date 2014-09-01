@@ -45,6 +45,4 @@
  (language asd gom util))
 
 (define (ast-> ast)
-  (pretty-print (with-input-from-string
-                    (with-output-to-string (lambda () (write (ast->gom (ast:resolve ast)))))
-                  read)) "")
+  (gom->list (ast->gom (ast:resolve ast))))

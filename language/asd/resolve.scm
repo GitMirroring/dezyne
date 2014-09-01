@@ -84,8 +84,4 @@
       ((h ...) (map (lambda (x) ((ast:resolve-model ast) x)) src))
       (_ src))))
 
-;; gaiag plumbing
-(define (ast-> ast)
-  (pretty-print (with-input-from-string
-                    (with-output-to-string (lambda () (write (ast:resolve ast))))
-                  read)) "")
+(define ast-> ast:resolve)

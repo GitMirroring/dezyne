@@ -50,5 +50,4 @@
     ((h ...) (map mangle ast))
     (_ ast)))
 
-(define (ast-> ast)
-  (pretty-print (mangle ast)) "")
+(define ast-> mangle)

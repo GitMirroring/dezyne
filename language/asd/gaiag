@@ -27,6 +27,7 @@ exec guile -L $(dirname $0) -L $(cd $(dirname $0)/../.. && pwd) -e main -s $0 "$
 
 (define-module (language asd gaiag)
   :use-module (ice-9 getopt-long)
+  :use-module (ice-9 match)
 
   :use-module (system repl error-handling)
 
@@ -37,13 +38,16 @@ exec guile -L $(dirname $0) -L $(cd $(dirname $0)/../.. && pwd) -e main -s $0 "$
   :use-module (language asd c++)
   :use-module (language asd coverage)
   :use-module (language asd csp)
-  :use-module (language asd gom)
   :use-module (language asd mangle)
-  :use-module (language asd pretty)
+  :use-module (language asd pretty-print)
   :use-module (language asd resolve)
   :use-module (language asd scheme)
   :use-module (language asd simulate)
   :use-module (language asd wfc)
+
+  :use-module (oop goops)
+  :use-module (language asd gom)
+
   :export (parse-opts))
 
 (define (parse-opts args)
@@ -80,7 +84,7 @@ Usage: gaiag [OPTION]... FILE
   -o, --output FILE    generate FILE containing the output
   -v, --version        display version
 
-Languages: asd c++ normstate scheme simulate wfc
+Languages: asd c++ csp gom normstate resolve scheme simulate wfc
 
 Examples:
   ./gaiag examples/Alarm.asd
@@ -98,7 +102,7 @@ Examples:
 (define (file->lang file-name language)
   (catch 'syntax-error
     (lambda ()
-      (display ((module-ref (resolve-module `(language asd ,language)) 'ast->) (read-ast file-name))))
+      ((module-ref (resolve-module `(language asd ,language)) 'ast->) (read-ast file-name)))
     (lambda (key x message location token d . r)
       (let ((file-name (or (assoc-ref location 'filename) file-name))
             (line (or (assoc-ref location 'line) ""))
@@ -108,8 +112,14 @@ Examples:
 (define (main args)
   (let* ((options (parse-opts args))
 	 (file-name (car (option-ref options '() '())))
-         (language (string->symbol (option-ref options 'language "scheme"))))
-    (file->lang file-name language)))
+         (language (string->symbol (option-ref options 'language "scheme")))
+         (result (file->lang file-name language)))
+    (match result
+      ("" #t)
+      ((? string?) (display result))
+      ((? pair?) (pretty-print result))
+      ((? (is? <ast>)) (pretty-print (gom->list result)))
+      (_ #t))))
 
 (define (main-with-error-handling args)
   (let* ((options (parse-opts args))
