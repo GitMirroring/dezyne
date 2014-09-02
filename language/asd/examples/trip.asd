@@ -63,11 +63,12 @@ interface U
 
   behaviour
   {
+    Status s = Status.Ok;
     bool dummy = false;
 
     on what:
       {
-        [true]
+        [s.Ok]
         {
           reply(Status.Ok);
         }
@@ -118,7 +119,7 @@ component trip
         {
           reply(I.Status.Yes);
         }
-        else
+        if (! s.Ok)
         {
           reply(I.Status.No);
         }
