@@ -66,6 +66,7 @@
 
     ;; FIXME: c&p from csp.scm (and...TODO: c++.scm) grmbl
     (('group expression) (list "(" (->string expression) ")"))
+    (('expression expression) (->string expression))
     (('! expression) (->string (list "!" (paren expression))))
     (('or lhs rhs) (let ((lhs (->string lhs))
                          (rhs (->string rhs)))
