@@ -40,6 +40,7 @@
 (define (ast:resolve ast)
   (let ((resolved ((ast:resolve- ast) ast)))
     (if (and (pair? ast)
+             (not (ast:root? ast))
              (or (find ast:interface? ast)
                  (find ast:component? ast)
                  (find ast:system? ast)))
@@ -135,10 +136,14 @@
       (('assign identifier expression)
        (list 'assign identifier ((ast:resolve-model model) expression locals)))
 
+      (('field identifier field) src)
+
+      (('var identifier) src)
+
+      ;; expressions
       (('expression expression)
        (list 'expression ((ast:resolve-model model) expression locals)))
 
-      ;; expressions
       ((and (? symbol?) (? var?)) (list 'var src))
 
       (('function identifier ('signature type ('parameters parameters ...)) statement)
