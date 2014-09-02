@@ -177,5 +177,5 @@ assert iimperative_(true) :[livelock free]
 assert imperative_(true,true) :[deterministic]
 assert STOP [T= imperative__Component(false) \ diff(Events,{illegal})
 assert imperative__Component(false) :[deadlock free]
-assert iimperative_(true) [[iimperative.x<-i.x|x<-extensions(iimperative)]] \ {} [FD= imperative__Component(true) \ diff(Events,{|illegal,i|})
+assert iimperative_(true) [[iimperative.x<-i.x|x<-extensions(iimperative)]] \ {} [F= imperative__Component(true) \ diff(Events,{|illegal,i|})
 assert imperative__Component(true) \ diff(Events,{|illegal,i|}) :[livelock free]

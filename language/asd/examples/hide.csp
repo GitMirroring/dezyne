@@ -141,5 +141,5 @@ assert I_(true) :[livelock free]
 assert hide_(true,true) :[deterministic]
 assert STOP [T= hide__Component(false) \ diff(Events,{illegal})
 assert hide__Component(false) :[deadlock free]
-assert I_(true) [[I.x<-i.x|x<-extensions(I)]] \ {} [FD= hide__Component(true) \ diff(Events,{|illegal,i|})
+assert I_(true) [[I.x<-i.x|x<-extensions(I)]] \ {} [F= hide__Component(true) \ diff(Events,{|illegal,i|})
 assert hide__Component(true) \ diff(Events,{|illegal,i|}) :[livelock free]

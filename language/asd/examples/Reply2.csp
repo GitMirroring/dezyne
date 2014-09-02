@@ -148,5 +148,5 @@ assert U_(true) :[livelock free]
 assert Reply2_(true,true) :[deterministic]
 assert STOP [T= Reply2__Component(false) \ diff(Events,{illegal})
 assert Reply2__Component(false) :[deadlock free]
-assert I_(true) [[I.x<-i.x|x<-extensions(I)]] \ {} [FD= Reply2__Component(true) \ diff(Events,{|illegal,i|})
+assert I_(true) [[I.x<-i.x|x<-extensions(I)]] \ {} [F= Reply2__Component(true) \ diff(Events,{|illegal,i|})
 assert Reply2__Component(true) \ diff(Events,{|illegal,i|}) :[livelock free]

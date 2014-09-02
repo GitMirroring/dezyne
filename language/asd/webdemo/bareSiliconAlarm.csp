@@ -414,5 +414,5 @@ assert Sensors_(true)  \ {|Sensors.optional|} :[livelock free]
 assert bareSiliconAlarm_(true,true) :[deterministic]
 assert STOP [T= bareSiliconAlarm__Component(false) \ diff(Events,{illegal})
 assert bareSiliconAlarm__Component(false) :[deadlock free]
-assert AlarmSystem_(true) [[AlarmSystem.x<-alarmSystem.x|x<-extensions(AlarmSystem)]] \ {alarmSystem.optional} [FD= bareSiliconAlarm__Component(true) \ diff(Events,{|illegal,alarmSystem|})
+assert AlarmSystem_(true) [[AlarmSystem.x<-alarmSystem.x|x<-extensions(AlarmSystem)]] \ {alarmSystem.optional} [F= bareSiliconAlarm__Component(true) \ diff(Events,{|illegal,alarmSystem|})
 assert bareSiliconAlarm__Component(true) \ diff(Events,{|illegal,alarmSystem|}) :[livelock free]

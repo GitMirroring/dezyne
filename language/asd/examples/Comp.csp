@@ -255,5 +255,5 @@ assert IDevice_(true) :[livelock free]
 assert Comp_(true,true) :[deterministic]
 assert STOP [T= Comp__Component(false) \ diff(Events,{illegal})
 assert Comp__Component(false) :[deadlock free]
-assert IComp_(true) [[IComp.x<-client.x|x<-extensions(IComp)]] \ {} [FD= Comp__Component(true) \ diff(Events,{|illegal,client|})
+assert IComp_(true) [[IComp.x<-client.x|x<-extensions(IComp)]] \ {} [F= Comp__Component(true) \ diff(Events,{|illegal,client|})
 assert Comp__Component(true) \ diff(Events,{|illegal,client|}) :[livelock free]

@@ -141,5 +141,5 @@ assert I_(true) :[livelock free]
 assert argument_(true,true) :[deterministic]
 assert STOP [T= argument__Component(false) \ diff(Events,{illegal})
 assert argument__Component(false) :[deadlock free]
-assert I_(true) [[I.x<-i.x|x<-extensions(I)]] \ {} [FD= argument__Component(true) \ diff(Events,{|illegal,i|})
+assert I_(true) [[I.x<-i.x|x<-extensions(I)]] \ {} [F= argument__Component(true) \ diff(Events,{|illegal,i|})
 assert argument__Component(true) \ diff(Events,{|illegal,i|}) :[livelock free]

@@ -140,5 +140,5 @@ assert nolivelock_(true)  \ {|nolivelock.inevitable|} :[livelock free]
 assert livelock2_(true,true) :[deterministic]
 assert STOP [T= livelock2__Component(false) \ diff(Events,{illegal})
 assert livelock2__Component(false) :[deadlock free]
-assert ilivelock_(true) [[ilivelock.x<-l.x|x<-extensions(ilivelock)]] \ {l.inevitable} [FD= livelock2__Component(true) \ diff(Events,{|illegal,l|})
+assert ilivelock_(true) [[ilivelock.x<-l.x|x<-extensions(ilivelock)]] \ {l.inevitable} [F= livelock2__Component(true) \ diff(Events,{|illegal,l|})
 assert livelock2__Component(true) \ diff(Events,{|illegal,l|}) :[livelock free]

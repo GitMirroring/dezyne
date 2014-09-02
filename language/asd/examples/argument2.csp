@@ -141,5 +141,5 @@ assert if_I_(true) :[livelock free]
 assert co_argument2_(true,true) :[deterministic]
 assert STOP [T= co_argument2__Component(false) \ diff(Events,{illegal})
 assert co_argument2__Component(false) :[deadlock free]
-assert if_I_(true) [[if_I.x<-po_i.x|x<-extensions(if_I)]] \ {} [FD= co_argument2__Component(true) \ diff(Events,{|illegal,po_i|})
+assert if_I_(true) [[if_I.x<-po_i.x|x<-extensions(if_I)]] \ {} [F= co_argument2__Component(true) \ diff(Events,{|illegal,po_i|})
 assert co_argument2__Component(true) \ diff(Events,{|illegal,po_i|}) :[livelock free]

@@ -135,5 +135,5 @@ assert if_mangle_mangle(true) :[livelock free]
 assert co_mangle_mangle(true,true) :[deterministic]
 assert STOP [T= co_mangle_mangle_Component(false) \ diff(Events,{illegal})
 assert co_mangle_mangle_Component(false) :[deadlock free]
-assert if_mangle_mangle(true) [[if_mangle.x<-po_mangle.x|x<-extensions(if_mangle)]] \ {} [FD= co_mangle_mangle_Component(true) \ diff(Events,{|illegal,po_mangle|})
+assert if_mangle_mangle(true) [[if_mangle.x<-po_mangle.x|x<-extensions(if_mangle)]] \ {} [F= co_mangle_mangle_Component(true) \ diff(Events,{|illegal,po_mangle|})
 assert co_mangle_mangle_Component(true) \ diff(Events,{|illegal,po_mangle|}) :[livelock free]

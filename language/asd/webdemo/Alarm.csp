@@ -293,5 +293,5 @@ assert Siren_(true) :[livelock free]
 assert Alarm_(true,true) :[deterministic]
 assert STOP [T= Alarm__Component(false) \ diff(Events,{illegal})
 assert Alarm__Component(false) :[deadlock free]
-assert Console_(true) [[Console.x<-console.x|x<-extensions(Console)]] \ {console.inevitable,console.optional} [FD= Alarm__Component(true) \ diff(Events,{|illegal,console|})
+assert Console_(true) [[Console.x<-console.x|x<-extensions(Console)]] \ {console.inevitable,console.optional} [F= Alarm__Component(true) \ diff(Events,{|illegal,console|})
 assert Alarm__Component(true) \ diff(Events,{|illegal,console|}) :[livelock free]

@@ -144,5 +144,5 @@ assert TestBool_(true) :[livelock free]
 assert testBoolean_(true,true) :[deterministic]
 assert STOP [T= testBoolean__Component(false) \ diff(Events,{illegal})
 assert testBoolean__Component(false) :[deadlock free]
-assert TestBool_(true) [[TestBool.x<-i.x|x<-extensions(TestBool)]] \ {} [FD= testBoolean__Component(true) \ diff(Events,{|illegal,i|})
+assert TestBool_(true) [[TestBool.x<-i.x|x<-extensions(TestBool)]] \ {} [F= testBoolean__Component(true) \ diff(Events,{|illegal,i|})
 assert testBoolean__Component(true) \ diff(Events,{|illegal,i|}) :[livelock free]
