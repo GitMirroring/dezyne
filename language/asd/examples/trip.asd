@@ -3,6 +3,7 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -150,6 +151,7 @@ component trip
               }
         }
       }
+      [false] illegal;
     }
   }
 }
