@@ -283,8 +283,8 @@
     (Identifier lparen argument-list rparen) : `(call ,$1 ,$3))
 
    (argument-list
-    (compound-identifier) : `(arguments ,$1)
-    (argument-list comma compound-identifier) : (append $1 (list $3)))
+    (expression) : `(arguments (expression ,$1))
+    (argument-list comma expression) : (append $1 (list `(expression ,$3))))
 
    (optional-behaviour
     () : '(behaviour)
