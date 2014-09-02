@@ -49,6 +49,6 @@
                                       b = true;
                                       } } #}))
    '((("mixing guarded"
-       (guard true
+       (guard (expression true)
               (on (triggers (trigger #f a))
                   (action (trigger #f b)))))))))

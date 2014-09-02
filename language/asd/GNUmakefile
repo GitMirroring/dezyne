@@ -60,7 +60,7 @@ clean:
 test: check
 check: compile
 	./test.sh </dev/null
-	$(MAKE) pretty csp asserts c++ demo
+	$(MAKE) csp asserts c++ demo pretty
 
 coverage: clean
 	rm -rf gaiag.lcov && mkdir -p gaiag.lcov

@@ -21,8 +21,8 @@
                   (types (enum S (S1 S2)))
                   (variables
                    (variable (type S) s (trigger S S1))
-                   (variable (type bool) b false)
-                   (variable (type bool) c true))
+                   (variable (type bool) b (expression false))
+                   (variable (type bool) c (expression true)))
                   (functions (function toggle (signature (type void)) (compound)))
                   (compound))))
 
@@ -77,12 +77,12 @@
            i-ast
            '(compound
              (on (e)
-                 (reply (literal #f Status Yes)))))
+                 (reply (expression (literal #f Status Yes))))))
 
           ;; via:
           '(on (e)
                (compound
-                (reply (literal #f Status Yes)))
+                (reply (expression (literal #f Status Yes))))
                (the-end (s b c)))))
 
 (pass-if "csp-transform-return-reply"
@@ -95,7 +95,7 @@
 
            '(on (e)
                (semi
-                (reply (literal #f Status Yes))
+                (reply (expression (literal #f Status Yes)))
                 (return))
                (the-end (s b c))))
 
@@ -116,11 +116,11 @@ skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
 
            '(compound
              (on (e)
-                 (reply (literal #f Status Yes)))))
+                 (reply (expression (literal #f Status Yes))))))
 
           ;; via:
           '(on (e)
-               (reply (literal #f Status Yes))
+               (reply (expression (literal #f Status Yes)))
                (the-end (s b c)))))
 
 (pass-if "ast-transform-compound-reply"
@@ -134,11 +134,11 @@ skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
            '(compound
              (on (e)
                  (compound
-                  (reply (literal #f Status Yes))))))
+                  (reply (expression (literal #f Status Yes)))))))
 
           ;; via:
           '(on (e)
-               (reply (literal #f Status Yes))
+               (reply (expression (literal #f Status Yes)))
                (the-end (s b c)))))
 
 (pass-if "csp-transform-reply"
@@ -151,7 +151,7 @@ skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
 
            '(on (e)
                (semi
-                (reply (literal #f Status Yes))
+                (reply (expression (literal #f Status Yes)))
                 (return))
                (the-end (s b c))))
 
@@ -284,13 +284,15 @@ illegal -> STOP"))
           "i?x:{e} ->
 (\\ P',V' @ i.return -> P'(V'))(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
 
-(define ast-transform-assign '(assign (ctx ((s b c))) (ctx ((s b true)))))
+(define ast-transform-assign
+  '(assign (ctx ((s b c)))
+           (expression (ctx ((s b true))))))
 
 (pass-if "ast-transform-assign-bool"
          (gom-pretty-noisy-equal?
 
           ;; from:
-          (ast-transform* i-ast '(assign c true))
+          (ast-transform* i-ast '(assign c (expression true)))
 
           ;; via:
           ast-transform-assign))
@@ -311,7 +313,8 @@ illegal -> STOP"))
     ((ctx ((s b c))) la (expression true))
     (context
      ((ctx ((s b c) la)) lb (expression false))
-     (assign (ctx ((s b c) la lb)) (ctx ((s b c) true lb))))))
+     (assign (ctx ((s b c) la lb))
+             (expression (ctx ((s b c) true lb)))))))
 
 (pass-if "ast-transform-assign-2-bool"
          (gom-pretty-noisy-equal?
@@ -322,9 +325,9 @@ illegal -> STOP"))
            i-ast
 
            '(compound
-             (variable (type bool) la true)
-             (variable (type bool) lb false)
-             (assign la true)))
+             (variable (type bool) la (expression true))
+             (variable (type bool) lb (expression false))
+             (assign la (expression true))))
 
           ;; via:
           ast-transform-assign-2))
@@ -345,13 +348,13 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
 (define ast-transform-assign-enum-via
   '(assign
     (ctx ((s b c)))
-    (ctx (((literal #f S S2) b c)))))
+    (expression (ctx (((literal #f S S2) b c))))))
 
 (pass-if "ast-transform-assign-enum"
          (gom-pretty-noisy-equal?
 
           ;; from:
-          (ast-transform* i-ast '(assign s (literal #f S S2)))
+          (ast-transform* i-ast '(assign s (expression (literal #f S S2))))
 
           ;; via:
           ast-transform-assign-enum-via))
@@ -375,7 +378,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
 
            i-ast
 
-           '(if b
+           '(if (expression b)
                 (compound)))
 
           ;; via:
@@ -412,7 +415,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
 
            i-ast
 
-           '(if b
+           '(if (expression b)
                 (compound)
                 (compound)))
 
@@ -439,7 +442,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
 
            i-ast
 
-           '(if b
+           '(if (expression b)
                 (illegal)
                 ()))
 
@@ -457,7 +460,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
 
            i-ast
 
-           '(if b
+           '(if (expression b)
                 ()
                 (illegal)))
 
@@ -472,7 +475,7 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
              (expression b)
              ()
              ())
-         (assign (ctx ((s b c))) (ctx ((s true c))))))
+         (assign (ctx ((s b c))) (expression (ctx ((s true c)))))))
 
 (pass-if "ast-transform-semi"
          (gom-pretty-noisy-equal?
@@ -483,9 +486,9 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
            i-ast
 
            '(compound
-             (if b
+             (if (expression b)
                  (compound))
-             (assign b true)))
+             (assign b (expression true))))
 
           ;; via:
           ast-transform-semi))
@@ -513,20 +516,25 @@ assign_(\\ ((s,b,c),(stack')) @ ((s,true,c),(stack'))))"))
                   ())
                 (semi (if (ctx ((s b c)))
                         (expression b)
-                        (semi (if (ctx ((s b c))) (expression c) (action (trigger #f g)) ())
+                        (semi (if (ctx ((s b c)))
+                                  (expression c)
+                                  (action (trigger #f g))
+                                  ())
                               (semi (assign
                                       (ctx ((s b c)))
-                                      (ctx ((s b false))))
+                                      (expression (ctx ((s b false)))))
                                     (action (trigger #f f))))
                         (if (ctx ((s b c)))
                           (expression c)
-                          (semi (assign (ctx ((s b c))) (ctx ((s false c))))
+                          (semi (assign (ctx ((s b c)))
+                                        (expression (ctx ((s false c)))))
                                 (action (trigger #f h)))
-                          (semi (assign (ctx ((s b c))) (ctx ((s true c))))
+                          (semi (assign (ctx ((s b c)))
+                                        (expression (ctx ((s true c)))))
                                 (action (trigger #f g)))))
                       (assign
                         (ctx ((s b c)))
-                        (ctx (((literal #f S S2) b c))))))
+                        (expression (ctx (((literal #f S S2) b c)))))))
           (eventreturn))
     (the-end (s b c))))
 
@@ -542,17 +550,24 @@ assign_(\\ ((s,b,c),(stack')) @ ((s,true,c),(stack'))))"))
              (on (e)
                  (compound
 
-                  (if (or c b) (compound (action (trigger #f f)) (action (trigger #f g))))
-                  (if b
+                  (if (expression (or c b))
+                      (compound (action (trigger #f f))
+                                (action (trigger #f g))))
+                  (if (expression b)
                       (compound
-                       (if c (compound (action (trigger #f g))))
-                       (assign c false)
+                       (if (expression c)
+                           (compound (action (trigger #f g))))
+                       (assign c (expression false))
                        (action (trigger #f f)))
                       (compound
-                       (if c
-                           (compound (assign b false) (action (trigger #f h)))
-                           (compound (assign b true) (action (trigger #f g))))))
-                  (assign s (literal #f S S2))))))
+                       (if (expression c)
+                           (compound
+                            (assign b (expression false))
+                            (action (trigger #f h)))
+                           (compound
+                            (assign b (expression true))
+                            (action (trigger #f g))))))
+                  (assign s (expression (literal #f S S2)))))))
 
           ;; via:
           ast-transform-via))
@@ -599,9 +614,9 @@ semi_(semi_(\\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
                      B
                      (types (enum S (S1 S2)))
                      (variables
-                      (variable (type S) s (literal #f S S1))
-                      (variable (type bool) b false)
-                      (variable (type bool) c true))
+                      (variable (type S) s (expression (literal #f S S1)))
+                      (variable (type bool) b (expression false))
+                      (variable (type bool) c (expression true)))
                      (compound)))))))
 
 (define c-ast-transform-return-via
@@ -727,8 +742,8 @@ skip_(\\ V' @ transition_end -> c_B_(V'),((s,b,c),(stack')))"))
        (variable
         (type States)
         state
-        (literal #f States Disarmed))
-       (variable (type bool) sounding false))
+        (expression (literal #f States Disarmed)))
+       (variable (type bool) sounding (expression false)))
       (compound))))
 
 
@@ -738,10 +753,11 @@ skip_(\\ V' @ transition_end -> c_B_(V'),((s,b,c),(stack')))"))
                 (semi (action (trigger siren turnon))
                       (semi (assign
                               (ctx ((state sounding)))
-                              (ctx ((state true))))
+                              (expression (ctx ((state true)))))
                             (assign
                               (ctx ((state sounding)))
-                              (ctx (((literal #f States Triggered) sounding)))))))
+                              (expression
+                               (ctx (((literal #f States Triggered) sounding))))))))
           (eventreturn))
     (the-end (state sounding))))
 
@@ -755,8 +771,8 @@ skip_(\\ V' @ transition_end -> c_B_(V'),((s,b,c),(stack')))"))
                 (compound
                  (action (trigger console detected))
                  (action (trigger siren turnon))
-                 (assign sounding true)
-                 (assign state (literal #f States Triggered)))))
+                 (assign sounding (expression true))
+                 (assign state (expression (literal #f States Triggered))))))
           ;;via
            ast-transform-alarm-snippet-via))
 
@@ -788,9 +804,9 @@ assign_(\\ ((state,sounding),(stack')) @ ((States_Triggered,sounding),(stack')))
       (compound
        (on (done)
            (compound
-            (guard true
-                   (compound (reply (literal #f Status Yes))))
-            (guard true (compound (reply (literal #f Status No))))))))))
+            (guard (expression true)
+                   (compound (reply (expression (literal #f Status Yes)))))
+            (guard (expression true) (compound (reply (expression (literal #f Status No)))))))))))
 
 (define u-reply-ast
   '(interface U
@@ -803,9 +819,9 @@ assign_(\\ ((state,sounding),(stack')) @ ((States_Triggered,sounding),(stack')))
       (compound
        (on (what)
            (compound
-            (guard true (compound (reply (literal #f Status Ok))))
-            (guard true
-                   (compound (reply (literal #f Status Nok))))))))))
+            (guard (expression true) (compound (reply (expression (literal #f Status Ok)))))
+            (guard (expression true)
+                   (compound (reply (expression (literal #f Status Nok)))))))))))
 
 (define c-reply-ast
   '(component C
@@ -814,9 +830,9 @@ assign_(\\ ((state,sounding),(stack')) @ ((States_Triggered,sounding),(stack')))
                #f
                (types)
                (variables
-                (variable (type bool) dummy false))
+                (variable (type bool) dummy (expression false)))
                (compound
-                (guard true
+                (guard (expression true)
                        (compound
                         (on ((trigger i done))
                             (compound
@@ -824,9 +840,9 @@ assign_(\\ ((state,sounding),(stack')) @ ((States_Triggered,sounding),(stack')))
                               (type U (type Status))
                               s
                               (value u what))
-                             (if (== s (literal u Status Ok))
-                                 (compound (reply (literal I Status Yes)))
-                                 (compound (reply (literal I Status No))))))))))))
+                             (if (expression (== s (literal u Status Ok)))
+                                 (compound (reply (expression (literal I Status Yes))))
+                                 (compound (reply (expression (literal I Status No)))))))))))))
 
 
 (define var-ast
@@ -841,7 +857,7 @@ assign_(\\ ((state,sounding),(stack')) @ ((States_Triggered,sounding),(stack')))
        (functions)
        (compound
         (on (triggers (trigger #f foo))
-            (reply (literal #f E v))))))
+            (reply (expression (literal #f E v)))))))
     (component
      var
      (ports (provides ivar i) (requires ivar o))
@@ -852,19 +868,20 @@ assign_(\\ ((state,sounding),(stack')) @ ((States_Triggered,sounding),(stack')))
       (functions)
       (compound
        (on (triggers (trigger i foo))
-           (variable (type ivar (type E)) e (value o foo)))
-       (reply e))))))
+           (variable (type ivar (type E)) e (action o foo)))
+       (reply (expression e)))))))
 
 (define ast-transform-variable-valued-action-via
-  '(on ((trigger o foo)) (compound (variable (type ivar (type E)) e (action (trigger o foo))))))
+  '(on ((trigger o foo))
+       (compound
+        (variable (type ivar (type E)) e (action (trigger o foo))))))
 
 (define ast-transform-ast-transform-variable-valued-action-via
   '(on (triggers (trigger o foo))
        (context-active
         ((ctx (()))
          e
-         (expression
-          (action (trigger o foo))))
+         (action (trigger o foo)))
         (eventreturn))
        (the-end ())))
 
@@ -952,7 +969,8 @@ semi_(callvoid_(toggle),
   '(function
     g
     (signature (type bool) (parameters (parameter (type bool) c)))
-    (semi (action (trigger #f f)) (return (ctx ((s b hide_member2') c)) c))))
+    (semi (action (trigger #f f))
+          (return (ctx ((s b hide_member2') c)) (expression c)))))
 
 (pass-if "ast-transform-function-arguments"
          (gom-pretty-noisy-equal?
@@ -962,7 +980,8 @@ semi_(callvoid_(toggle),
                           '(function
                             g
                             (signature (type bool) (parameters (parameter (type bool) c)))
-                            (compound (action (trigger #f f)) (return c))))
+                            (compound (action (trigger #f f))
+                                      (return (expression c)))))
 
           ;; via:
           csp-transform-function-arguments))
@@ -983,7 +1002,7 @@ returnvalue_(\\ ((s,b,hide_member2'),((stack',c))) @ c)))(P',V')
 (define csp-function-call-arguments-via
   '(on (e)
     (context-active
-      ((ctx ((s b c))) c (call g (arguments b b)))
+      ((ctx ((s b c))) c (call g (arguments (expression b) (expression b))))
       (eventreturn))
     (the-end (s b c))))
 
@@ -995,7 +1014,8 @@ returnvalue_(\\ ((s,b,hide_member2'),((stack',c))) @ c)))(P',V')
     i-ast
     '(on (e)
          (compound
-          (variable (type bool) c (call g (arguments b b))))))
+          (variable (type bool) c
+                    (call g (arguments (expression b) (expression b)))))))
 
    ;; via:
    csp-function-call-arguments-via))
@@ -1018,8 +1038,8 @@ context_active_(\\ P',V' @ g (P',V',\\ ((s,b,c),(stack')) @ (b,b)),
         ((ctx ((dummy))) s (action (trigger u what)))
         (if (ctx ((dummy) s))
             (expression (== s (literal u Status Ok)))
-            (reply (literal I Status Yes))
-            (reply (literal I Status No))))
+            (reply (expression (literal I Status Yes)))
+            (reply (expression (literal I Status No)))))
        (the-end (dummy))))
 
 (pass-if "ast-transform-reply-variable"
@@ -1033,9 +1053,9 @@ context_active_(\\ P',V' @ g (P',V',\\ ((s,b,c),(stack')) @ (b,b)),
            '(on ((trigger i done))
                (compound
                  (variable (type U (type Status)) s (action (trigger u what)))
-                 (if (== s (literal u Status Ok))
-                     (compound (reply (literal I Status Yes)))
-                     (compound (reply (literal I Status No)))))))
+                 (if (expression (== s (literal u Status Ok)))
+                     (compound (reply (expression (literal I Status Yes))))
+                     (compound (reply (expression (literal I Status No))))))))
 
           ;; via:
           csp-reply-variable-ast))
@@ -1067,29 +1087,29 @@ context_active_(sendrecv_(u,what),
     (behaviour
      #f
      (types)
-     (variables (variable (type bool) b false))
+     (variables (variable (type bool) b (expression false)))
      (functions
       (function
        g
        ((type bool) (parameters ((type bool) c)))
-       (compound (return c))))
+       (compound (return (expression c)))))
      (compound
       (on ((trigger i e))
           (compound
-           (assign b (! b))
-           (variable (type bool) c (call g (arguments b)))
+           (assign b (expression (! b)))
+           (variable (type bool) c (call g (arguments (expression b))))
            (if c (compound (action (trigger i f))))))))))
 
 (define csp-return-variable-ast
   '(on ((trigger i e))
-    (semi (context
-            ((ctx ((b))) c (expression true))
-            (if (ctx ((b) c))
-              (expression c)
-              (action (trigger i f))
-              ()))
-          (eventreturn))
-    (the-end (b))))
+       (semi (context
+              ((ctx ((b))) c (expression true))
+              (if (ctx ((b) c))
+                  (expression c)
+                  (action (trigger i f))
+                  ()))
+             (eventreturn))
+       (the-end (b))))
 
 (pass-if "ast-transform-return-variable"
          (gom-pretty-noisy-equal?
@@ -1101,8 +1121,8 @@ context_active_(sendrecv_(u,what),
 
            '(on ((trigger i e))
                 (compound
-                 (variable (type bool) c true)
-                 (if c
+                 (variable (type bool) c (expression true))
+                 (if (expression c)
                      (compound
                       (action (trigger i f)))))))
 
@@ -1136,40 +1156,42 @@ semi_(context_(\\ ((b),(stack')) @ true,
     (behaviour
      #f
      (types)
-     (variables (variable (type bool) b false))
+     (variables (variable (type bool) b (expression false)))
      (functions
       (function
        g
        ((type bool) (parameters (parameter (type bool) c)))
-       (compound (action (trigger i f)) (return c)))
+       (compound (action (trigger i f)) (return (expression c))))
       (function
        h
        ((type bool) (parameters (parameter (type bool) c) (parameter (type bool) d)))
-       (compound (action (trigger i f)) (return (and c d)))))
+       (compound (action (trigger i f)) (return (expression (and c d))))))
      (compound
-      (guard true
+      (guard (expression true)
              (on ((trigger i e))
                  (compound
-                  (assign b (! b))
-                  (variable (type bool) c (call g (arguments b)))
-                  (assign b (call g (arguments c)))
-                  (if c (compound (action (trigger i f)))))))))))
+                  (assign b (expression (! b)))
+                  (variable (type bool) c (call g (arguments (expression b))))
+                  (assign b (call g (arguments (expression c))))
+                  (if (expression c)
+                      (compound (action (trigger i f)))))))))))
 
 (define callvalued-on
   '(on ((trigger i e))
        (compound
-        (assign b (! b))
-        (variable (type bool) c (call g (arguments b)))
-        (assign b (call g (arguments c)))
-        (if c (compound (action (trigger i f)))))))
+        (assign b (expression (! b)))
+        (variable (type bool) c (call g (arguments (expression b))))
+        (assign b (call g (arguments (expression c))))
+        (if (expression c)
+            (compound (action (trigger i f)))))))
 
 (define csp-callvalued-on
   '(on ((trigger i e))
-    (semi (semi (assign (ctx ((b))) (ctx (((! b)))))
+    (semi (semi (assign (ctx ((b))) (expression (ctx (((! b))))))
                 (context-active
-                  ((ctx ((b))) c (call g (arguments b)))
+                  ((ctx ((b))) c (call g (arguments (expression b))))
                   (semi (assign-active
-                          ((ctx ((b) c)) r' (call g (arguments c)))
+                          ((ctx ((b) c)) r' (call g (arguments (expression c))))
                           (ctx ((r') c)))
                         (if (ctx ((b) c))
                           (expression c)
@@ -1208,18 +1230,20 @@ semi_(assign_active_(\\ P',V' @ g (P',V',\\ ((b),((stack',c))) @ (c)),
 (define callvalued-on-2
   '(on ((trigger i e))
        (compound
-        (assign b (! b))
-        (variable (type bool) c (call h (arguments s b)))
-        (assign b (call h (arguments s b)))
-        (if c (compound (action (trigger i f)))))))
+        (assign b (expression (! b)))
+        (variable (type bool) c
+                  (call h (arguments (expression s) (expression b))))
+        (assign b (call h (arguments (expression s) (expression b))))
+        (if (expression c)
+            (compound (action (trigger i f)))))))
 
 (define csp-callvalued-on-2
   '(on ((trigger i e))
-    (semi (semi (assign (ctx ((b))) (ctx (((! b)))))
+    (semi (semi (assign (ctx ((b))) (expression (ctx (((! b))))))
                 (context-active
-                  ((ctx ((b))) c (call h (arguments s b)))
+                  ((ctx ((b))) c (call h (arguments (expression s) (expression b))))
                   (semi (assign-active
-                          ((ctx ((b) c)) r' (call h (arguments s b)))
+                          ((ctx ((b) c)) r' (call h (arguments (expression s) (expression b))))
                           (ctx ((r') c)))
                         (if (ctx ((b) c))
                           (expression c)
@@ -1282,25 +1306,28 @@ semi_(assign_active_(\\ P',V' @ h (P',V',\\ ((b),((stack',c))) @ (s,b)),
 (define callvalued-on-deep
   '(on ((trigger i e))
        (compound
-        (assign b (! b))
-        (variable (type bool) c (call g (arguments b)))
-        (variable (type bool) d (call g (arguments c)))
+        (assign b (expression (! b)))
+        (variable (type bool) c (call g (arguments (expression b))))
+        (variable (type bool) d (call g (arguments (expression c))))
         (compound
-         (variable (type bool) cc (call g (arguments c)))
-         (variable (type bool) dd (call g (arguments d)))
-         (if dd (compound (action (trigger i f))))))))
+         (variable (type bool) cc (call g (arguments (expression c))))
+         (variable (type bool) dd (call g (arguments (expression d))))
+         (if (expression dd)
+             (compound (action (trigger i f))))))))
 
 (define csp-callvalued-on-deep
   '(on ((trigger i e))
-    (semi (semi (assign (ctx ((b))) (ctx (((! b)))))
+    (semi (semi (assign
+                 (ctx ((b)))
+                 (expression (ctx (((! b))))))
                 (context-active
-                  ((ctx ((b))) c (call g (arguments b)))
+                  ((ctx ((b))) c (call g (arguments (expression b))))
                   (context-active
-                    ((ctx ((b) c)) d (call g (arguments c)))
+                    ((ctx ((b) c)) d (call g (arguments (expression c))))
                     (context-active
-                      ((ctx ((b) c d)) cc (call g (arguments c)))
+                      ((ctx ((b) c d)) cc (call g (arguments (expression c))))
                       (context-active
-                        ((ctx ((b) c d cc)) dd (call g (arguments d)))
+                        ((ctx ((b) c d cc)) dd (call g (arguments (expression d))))
                         (if (ctx ((b) c d cc dd))
                           (expression dd)
                           (action (trigger i f))
@@ -1353,7 +1380,7 @@ semi_(assign_active_(\\ P',V' @ h (P',V',\\ ((b),((stack',c))) @ (s,b)),
     (context-active
       ((ctx ((s b c)))
        s
-       (expression (action (trigger u what))))
+       (action (trigger u what)))
       (eventreturn))
     (the-end (s b c))))
 
@@ -1388,7 +1415,7 @@ context_active_(sendrecv_(u,what),
     (context-active
       ((ctx ((s b c)))
        s
-       (expression (action (trigger u what))))
+       (action (trigger u what)))
       (eventreturn))
     (the-end (s b c))))
 
@@ -1532,7 +1559,7 @@ semi_(assign_active_(sendrecv_(k,h),
               (events)
               (behaviour
                B
-               (compound (guard true (compound))))))
+               (compound (guard (expression true) (compound))))))
 
 (pass-if "behaviour-guard-true"
   (diff-noisy-equal?

@@ -64,25 +64,25 @@
        ((t . #t))
        (on (triggers (trigger #f a))
            (compound
-            (guard t (assign t (! t)))
-            (guard (! t) (action (trigger #f b)))))
-       (guard t (assign t (! t)))
-       (assign t (! t)))
+            (guard (expression t) (assign t (expression (! t))))
+            (guard (expression (! t)) (action (trigger #f b)))))
+       (guard (expression t) (assign t (expression (! t))))
+       (assign t (expression (! t))))
       (a
        ((t . #f))
        (on (triggers (trigger #f a))
            (compound
-            (guard t (assign t (! t)))
-            (guard (! t) (action (trigger #f b)))))
-       (guard (! t) (action (trigger #f b)))
+            (guard (expression t) (assign t (expression (! t))))
+            (guard (expression (! t)) (action (trigger #f b)))))
+       (guard (expression (! t)) (action (trigger #f b)))
        (action (trigger #f b)))
       (a
        ((t . #f))
        (on (triggers (trigger #f a))
            (compound
-            (guard t (assign t (! t)))
-            (guard (! t) (action (trigger #f b)))))
-       (guard (! t) (action (trigger #f b)))
+            (guard (expression t) (assign t (expression (! t))))
+            (guard (expression (! t)) (action (trigger #f b)))))
+       (guard (expression (! t)) (action (trigger #f b)))
        (action (trigger #f b))))))
 
 (pass-if "walk-trail-arguments"

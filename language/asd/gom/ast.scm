@@ -52,12 +52,7 @@
     (_ ast)))
 
 (define (ast->gom ast)
-  (let ((gom ((compose ast->gom- ast->sugar) ast)))
-    (if (and (pair? ast)
-             (or (find ast:interface? ast)
-                 (find ast:component? ast)))
-        (make <root> :elements gom)
-        gom)))
+  ((compose ast->gom- ast->sugar) ast))
 
 (define (ast->gom- ast)
   (match ast
@@ -67,8 +62,7 @@
                            :elements (map ast->gom (ast:body ast))))
     ((? ast:assign?) (make <assign>
                        :identifier (ast:identifier ast)
-                       :expression (make <expression>
-                                     :value (ast->gom (ast:expression ast)))))
+                       :expression (ast->gom (ast:expression ast))))
     ((? ast:behaviour?) (make <behaviour>
                           :name (ast:name ast)
                           :types (ast->gom (or (null-is-#f (ast:type-list ast))
@@ -84,6 +78,8 @@
     ((? ast:binding?) (make <binding>
                         :instance (ast:instance ast)
                         :port (ast:port ast)))
+    ((? ast:binding-list?) (make <bindings>
+                             :elements (map ast->gom (ast:body ast))))
     ((? ast:call?) (make <call>
                        :identifier (ast:identifier ast)
                        :arguments (ast->gom (or (null-is-#f
@@ -102,6 +98,9 @@
                       :direction (ast:direction ast)))
     ((? ast:event-list?) (make <events>
                            :elements (map ast->gom (ast:body ast))))
+    ((? ast:expression?)
+     (make <expression>
+       :value (ast->gom (ast:value ast))))
     ((? ast:field?) (make <field>
                       :identifier (ast:identifier ast)
                       :field (ast:field ast)))
@@ -112,12 +111,10 @@
     ((? ast:function-list?) (make <functions>
                            :elements (map ast->gom (ast:body ast))))
     ((? ast:guard?) (make <guard>
-                       :expression (make <expression>
-                                     :value (ast->gom (ast:expression ast)))
+                       :expression (ast->gom (ast:expression ast))
                        :statement (ast->gom (ast:statement ast))))
     ((? ast:if?) (make <if>
-                       :expression (make <expression>
-                                     :value (ast->gom (ast:expression ast)))
+                       :expression (ast->gom (ast:expression ast))
                        :then (ast->gom (ast:then ast))
                        :else (ast->gom (ast:else ast))))
     ((? ast:illegal?) (make <illegal>))
@@ -127,6 +124,8 @@
     ((? ast:instance?) (make <instance>
                          :name (ast:name ast)
                          :type (ast:type ast)))
+    ((? ast:instance-list?) (make <instances>
+                           :elements (map ast->gom (ast:body ast))))
     ((? ast:interface?) (make <interface>
                           :name (ast:name ast)
                           :events (ast->gom (or (null-is-#f (ast:event-list ast))
@@ -156,14 +155,13 @@
                       :from (ast:from ast)
                       :to (ast:to ast)))
     ((? ast:reply?) (make <reply>
-                      :expression (make <expression>
-                                    :value (ast->gom (ast:expression ast)))))
+                      :expression (ast->gom (ast:expression ast))))
     ((? ast:return?) (make <return>
                        :expression (if (null? (ast:expression ast))
                                        #f
-                                       (make <expression>
-                                         :value (ast->gom (ast:expression ast))))))
-
+                                       (ast->gom (ast:expression ast)))))
+    ((? ast:root?) (make <root>
+                     :elements (ast->gom (ast:body ast))))
     ((? ast:signature?) (make <signature>
                           :type (ast:type ast)
                           :parameters (ast->gom (or (null-is-#f
@@ -174,7 +172,8 @@
     ((? ast:system?) (make <system>
                           :name (ast:name ast)
                           :ports (ast->gom (ast:port-list ast))
-                          :statement (ast->gom (ast:statement ast))))
+                          :instances (ast->gom (ast:instance-list ast))
+                          :bindings (ast->gom (ast:binding-list ast))))
     ((? ast:trigger?) (make <trigger>
                        :port (ast:port-name ast)
                        :event (ast:event-name ast)))
@@ -182,11 +181,12 @@
                              :elements (map ast->gom (ast:body ast))))
     ((? ast:type-list?) (make <types>
                           :elements (map ast->gom (ast:body ast))))
+    ((? ast:var?) (make <var>
+                      :identifier (ast:identifier ast)))
     ((? ast:variable?) (make <variable>
                          :name (ast:name ast)
                          :type (ast:type ast)
-                         :expression (make <expression>
-                                       :value (ast->gom (ast:expression ast)))))
+                         :expression (ast->gom (ast:expression ast))))
     ((? ast:variable-list?) (make <variables>
                           :elements (map ast->gom (ast:body ast))))
     (('imports imports ...) ast)

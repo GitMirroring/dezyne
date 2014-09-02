@@ -93,7 +93,7 @@
     (unparen (->string src))))
 
 (define (arguments->string arguments)
-  (comma-space-join (ast:body (car arguments))))
+  (comma-space-join (map ->string (ast:body arguments))))
 
 (define (asd-template? x) (parameterize ((templates asd-templates)) (template? x)))
 

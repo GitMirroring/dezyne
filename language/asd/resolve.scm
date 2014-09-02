@@ -105,13 +105,13 @@
       (('variable type identifier ('expression (and ('call function ...) (get! call))))
        (list 'variable type identifier ((ast:resolve-model model) (call) locals)))
 
-      ;; allow test input to omit expression here
-      (('variable type identifier ('value (and (? port?) (get! port)) event))
-       (list 'variable type identifier (list 'action (list 'trigger (port) event))))
+      ;; ;; allow test input to omit expression here
+      ;; (('variable type identifier ('value (and (? port?) (get! port)) event))
+      ;;  (list 'variable type identifier (list 'action (list 'trigger (port) event))))
 
-      ;; allow test input to omit expression here
-      (('variable type identifier (and ('call function ...) (get! call)))
-       (list 'variable type identifier (call)))
+      ;; ;; allow test input to omit expression here
+      ;; (('variable type identifier (and ('call function ...) (get! call)))
+      ;;  (list 'variable type identifier (call)))
 
       (('assign identifier ('expression (and ('call function ...) (get! call))))
        (list 'assign identifier ((ast:resolve-model model) (call) locals)))
@@ -119,7 +119,10 @@
       (('variable type identifier expression)
        (list 'variable type identifier ((ast:resolve-model model) expression locals)))
 
-      (('assign identifier ('value (and (? port?) (get! port)) event))
+      ;; (('assign identifier ('value (and (? port?) (get! port)) event))
+      ;;  (list 'assign identifier (list 'action (list 'trigger (port) event))))
+
+      (('assign identifier ('expression ('value (and (? port?) (get! port)) event)))
        (list 'assign identifier (list 'action (list 'trigger (port) event))))
 
       (('value (? var?) (? (member-field? (cadr src))))

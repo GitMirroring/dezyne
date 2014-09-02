@@ -218,9 +218,10 @@
 
 (define (csp-expression->string ast src) ;; FIXME: no test
   (define (paren expression)
-    (if (or (number? expression) (symbol? expression))
-        expression
-        (list "(" (csp-expression->string ast expression) ")")))
+    (let ((value (if (is-a? expression <expression>) (.value expression) expression)))
+      (if (or (number? value) (symbol? value) (is-a? value <var>))
+          (csp-expression->string ast expression)
+          (list "(" (csp-expression->string ast expression) ")"))))
 
   (match src
     (($ <expression>) (csp-expression->string ast (.value src)))
@@ -230,6 +231,7 @@
        (list "(" identifier " == " enum "_" field ")")))
     (($ <literal> scope type field) (list type "_" field))
 
+    (($ <var> identifier) identifier)
     (('group expression) (list "(" (csp-expression->string ast expression) ")"))
     (('! expression) (->string (list "(" "not " (paren expression) ")")))
     (((or 'and 'or '== '!= '< '<= '> '>= '+ '-) lhs rhs)
@@ -407,11 +409,10 @@
                    :elements (csp->gom (map ast->trigger-sugar triggers)))
        :statement (csp->gom statement)
        :the-end (csp->gom the-end)))
-    (('if ('ctx context) ('expression expression) then else)
+    (('if ('ctx context) expression then else)
      (make <csp-if>
        :context (cadr ast)
-       :expression (make <expression>
-                     :value (csp->gom expression))
+       :expression (csp->gom expression)
        :then (csp->gom then)
        :else (csp->gom else)))
     (('call ('ctx context) name)
@@ -426,7 +427,7 @@
     (('return ('ctx context) expression)
      (make <csp-return>
        :context (cadr ast)
-       :expression (make <expression> :value (csp->gom expression))))
+       :expression (csp->gom expression)))
     ((h t ...) (map csp->sugar ast))
     (_ ast)))
 
@@ -467,14 +468,18 @@
 
 (define ((valued-action? port?) src)
   (match src
-    (($ <variable> name type ($ <expression> ($ <action>))) #t)
-    (($ <assign> identifier ($ <expression> ($ <action>))) #t)
+    (($ <variable> name type ($ <action>)) #t)
+    (($ <assign> identifier ($ <action>)) #t)
     (_ #f)))
 
-(define (call? variable)
-  (match variable
-    (($ <variable> name type ($ <expression> ($ <call>))) #t)
-    (_ #f)))
+(define-method (call? (o <variable>))
+  (call? (.expression o)))
+
+(define-method (call? (o <top>))
+  #f)
+
+(define-method (call? (o <call>))
+  #t)
 
 (define (make-context members locals)
   (list 'ctx (cons members locals)))
@@ -571,7 +576,8 @@
                 (if (is-a? transformed <illegal>)
                     transformed
                     (list (if (is-a? statement <variable>)
-                              (if (or (valued-action? statement) (call? statement))
+                              (if (or (valued-action? statement)
+                                      (call? statement))
                                   'context-active
                                   'context)
                               'semi)
@@ -579,17 +585,13 @@
                 transformed))))))
 
 (define-method (ast-transform- ast (o <variable>) return context)
-  (let* ((model (or (gom:interface ast) (gom:component ast)))
-         (port? (lambda (port)
-                  (if ((is? <interface>) model)
-                      #f
-                      (member port (map .name (.elements (.ports model)))))))
-         (identifier (.name o)))
-    (match (.expression o)
-      (($ <expression> (and ($ <call>) (get! call)))
-       (list context identifier (call)))
-      (($ <expression> expression)
-       (list context identifier expression)))))
+  (ast-transform-variable (.name o) (.expression o) context))
+
+(define-method (ast-transform-variable name (o <call>) context)
+  (list context name o))
+
+(define-method (ast-transform-variable name (o <top>) context)
+  (list context name o))
 
 (define-method (ast-transform- ast (o <function>) return context)
   (let* ((signature (.signature o))
@@ -615,7 +617,7 @@
     :arguments (.arguments o)))
 
 (define-method (ast-transform- ast (o <assign>) return context)
-  (ast-transform-assign (.identifier o) (.value (.expression o)) context))
+  (ast-transform-assign (.identifier o) (.expression o) context))
 
 (define-method (ast-transform-assign identifier (o <action>) context)
   (list 'assign-active (list context 'r' o)
@@ -625,12 +627,12 @@
   (list 'assign-active (list context 'r' o)
         (context-assign context identifier 'r')))
 
-(define-method (ast-transform-assign identifier (o <top>) context)
+(define-method (ast-transform-assign identifier (o <expression>) context)
   (make <assign>
     :identifier context
     :expression
     (make <expression> :value
-          (context-assign context identifier o))))
+          (context-assign context identifier (.value o)))))
 
 (define-method (ast-transform- ast (o <csp-on>) return context)
   (let ((triggers (.triggers o))
@@ -644,7 +646,7 @@
           (make <csp-on> :triggers triggers :statement result :the-end the-end)))))
 
 (define-method (ast-transform- ast (o <if>) return context)
-  (let* ((expr (.expression o))
+  (let* ((expr (.value (.expression o)))
          (then (.then o))
          (else (.else o))
          (then-illegal? (prefix-illegal? then))

@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -26,6 +27,7 @@
   :export (
            .arguments
            .behaviour
+           .bindings
            .direction
            .elements
            .else
@@ -37,6 +39,7 @@
            .functions
            .identifier
            .instance
+           .instances
            .left
            .name
            .parameters
@@ -61,6 +64,7 @@
            <behaviour>
            <bind>
            <binding>
+           <bindings>
            <call>
            <component>
            <compound>
@@ -77,6 +81,7 @@
            <if>
            <illegal>
            <instance>
+           <instances>
            <int>
            <interface>
            <literal>
@@ -96,6 +101,7 @@
            <trigger>
            <triggers>
            <types>
+           <var>
            <variable>
            <variables>
            ))
@@ -107,6 +113,19 @@
 
 (define-class <ast-list> (<ast>)
   (elements :accessor .elements :init-form (list) :init-keyword :elements))
+
+(define-class <arguments> (<ast-list>))
+(define-class <bindings> (<ast-list>))
+(define-class <events> (<ast-list>))
+(define-class <fields> (<ast-list>))
+(define-class <functions> (<ast-list>))
+(define-class <instances> (<ast-list>))
+(define-class <parameters> (<ast-list>))
+(define-class <ports> (<ast-list>))
+(define-class <root> (<ast-list>))
+(define-class <triggers> (<ast-list>))
+(define-class <types> (<ast-list>))
+(define-class <variables> (<ast-list>))
 
 (define-class <dir-ast> (<named>)
   (direction :accessor .direction :init-value 'in :init-keyword :direction)
@@ -130,6 +149,9 @@
 
 (define-class <expression> (<ast>)
   (value :accessor .value :init-value #f :init-keyword :value))
+
+(define-class <var> (<ast>)
+  (identifier :accessor .identifier :init-value #f :init-keyword :identifier))
 
 (define-class <field> (<ast>)
   (identifier :accessor .identifier :init-value #f :init-keyword :identifier)
@@ -162,18 +184,8 @@
 
 (define-class <system> (<model>)
   (ports :accessor .ports :init-form (make <ports>) :init-keyword :ports)
-  (statement :accessor .statement :init-value #f :init-keyword :statement))
-
-(define-class <arguments> (<ast-list>))
-(define-class <events> (<ast-list>))
-(define-class <fields> (<ast-list>))
-(define-class <functions> (<ast-list>))
-(define-class <parameters> (<ast-list>))
-(define-class <ports> (<ast-list>))
-(define-class <root> (<ast-list>))
-(define-class <triggers> (<ast-list>))
-(define-class <types> (<ast-list>))
-(define-class <variables> (<ast-list>))
+  (instances :accessor .instances :init-value (make <instances>) :init-keyword :instances)
+  (bindings :accessor .bindings :init-value (make <bindings>) :init-keyword :bindings))
 
 (define-class <enum> (<named>)
   (fields :accessor .fields :init-form (list) :init-keyword :fields))

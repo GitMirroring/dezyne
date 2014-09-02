@@ -190,7 +190,10 @@
            behaviour
            behaviour?
            bind?
+           binding-list
+           binding-list?
            binding?
+           bindings
            binds
            body
            bool?
@@ -215,6 +218,7 @@
            events
            events?
            expression
+           expression?
            field
            field?
            fields
@@ -222,19 +226,21 @@
            find-triggers
            from
            function
-           function?
            function-list
            function-list?
+           function?
            functions
            guard-equal?
            guard?
-           import-list
-           import-list?
            identifier
            if?
            illegal?
+           import-list
+           import-list?
            in?
            instance
+           instance-list
+           instance-list?
            instance?
            instances
            instances?
@@ -267,10 +273,11 @@
            range
            range?
            register
-           requires?
            reply?
+           requires?
            return?
            right
+           root?
            statement
            statement-list?
            statement?
@@ -293,7 +300,9 @@
            typed?
            types
            types?
+           value
            value?
+           var?
            variable
            variable-list
            variable-list?
@@ -312,9 +321,11 @@
   (or (and (>2 (length ast)) (assoc name (body ast))) '()))
 
 (define (argument-list ast) (element ast 'arguments))
+(define (binding-list ast) (element ast 'bindings))
 (define (event-list ast) (element ast 'events))
-(define (import-list ast) (element ast 'imports))
 (define (function-list ast) (element ast 'functions))
+(define (import-list ast) (element ast 'imports))
+(define (instance-list ast) (element ast 'instances))
 (define (parameter-list ast) (or (assoc 'parameters (body ast)) '()))
 (define (port-list ast) (element ast 'ports))
 (define (trigger-list ast) (element ast 'triggers))
@@ -339,6 +350,8 @@
 (define (behaviour? ast) (type-helper? 'behaviour ast))
 (define (bind? ast) (type-helper? 'bind ast))
 (define (binding? ast) (type-helper? 'binding ast))
+(define (bindings? ast) (type-helper? 'bindings ast))
+(define (binding-list? ast) (type-helper? 'bindings ast))
 (define (bool? ast) (type-helper? 'bool ast))
 (define (call? ast) (type-helper? 'call ast))
 (define (component? ast) (type-helper? 'component ast))
@@ -347,6 +360,7 @@
 (define (event-list? ast) (type-helper? 'events ast))
 (define (event? ast) (type-helper? 'event ast))
 (define (events? ast) (type-helper? 'events ast))
+(define (expression? ast) (type-helper? 'expression ast))
 (define (field? ast) (type-helper? 'field ast))
 (define (function-list? ast) (type-helper? 'functions ast))
 (define (function? ast) (type-helper? 'function ast))
@@ -357,6 +371,7 @@
 (define (import-list? ast) (type-helper? 'imports ast))
 (define (imports? ast) (type-helper? 'imports ast))
 (define (instance? ast) (type-helper? 'instance ast))
+(define (instance-list? ast) (type-helper? 'instances ast))
 (define (instances? ast) (type-helper? 'instances ast))
 (define (int? ast) (type-helper? 'int ast))
 (define (interface? ast) (type-helper? 'interface ast))
@@ -371,6 +386,7 @@
 (define (range? ast) (type-helper? 'range ast))
 (define (reply? ast) (type-helper? 'reply ast))
 (define (return? ast) (type-helper? 'return ast))
+(define (root? ast) (type-helper? 'root ast))
 (define (signature? ast) (type-helper? 'signature ast))
 (define statement-list? compound?)
 (define (system? ast) (type-helper? 'system ast))
@@ -381,6 +397,7 @@
 (define (type? ast) (type-helper? 'type ast))
 (define (types? ast) (type-helper? 'types ast))
 (define (value? ast) (type-helper? 'value ast))
+(define (var? ast) (type-helper? 'var ast))
 (define (variable-list? ast) (type-helper? 'variables ast))
 (define (variable? ast) (type-helper? 'variable ast))
 (define (variables? ast) (type-helper? 'variables ast))
@@ -389,7 +406,7 @@
   (match ast
     ((or (? behaviour?) (? call?) (? model?))
      (or (and (>2 (length ast)) (cddr ast)) '()))
-    ((or  (? arguments?) (? compound?) (? events?) (? functions?) (? guard?) (? imports?) (? on?) (? parameters?) (? ports?) (? signature?) (? triggers?) (? types?) (? variables?))
+    ((or  (? arguments?) (? bindings?) (? compound?) (? events?) (? functions?) (? guard?) (? imports?) (? instances?) (? on?) (? parameters?) (? ports?) (? root?) (? signature?) (? triggers?) (? types?) (? variables?))
      (cdr ast))
     ;; be permissive for events, imports ports, types, variable
     ((('in type name) t ...) ast)
@@ -450,6 +467,10 @@
     ((? call?) (body (if (>2 (length ast)) (caddr ast) '())))
     (_ (throw 'match-error (format #f "~a:arguments: no match: ~a\n" (current-source-location) ast)))))
 
+(define (value ast)
+  (match ast
+    ((? expression?) (cadr ast))
+    (_ (throw 'match-error (format #f "~a:expression: no match: ~a\n" (current-source-location) ast)))))
 
 (define (left ast)
   (match ast
@@ -471,9 +492,14 @@
 (define (instances ast)
   (match ast
     ((? compound?) ((statements-of-type 'instance) ast))
-    ((? system?) (instances (statement ast)))
+    ((? system?) (body (instance-list ast)))
     ((? model?) '())
     (_ (throw 'match-error (format #f "~a:instances: no match: ~a\n" (current-source-location) ast)))))
+
+(define (bindings ast)
+  (match ast
+    ((? system?) (body (binding-list ast)))
+    (_ (throw 'match-error (format #f "~a:bindings: no match: ~a\n" (current-source-location) ast)))))
 
 (define (event-name ast)
   (match ast
@@ -538,6 +564,7 @@
     ((? call?) (cadr ast))
     ((? field?) (cadr ast))
     ((? parameter?) (caddr ast))
+    ((? var?) (cadr ast))
     (_ (throw 'match-error  (format #f "~a:identifier: no match: ~a\n" (current-source-location) ast)))))
 
 (define (return-type ast)

@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -56,8 +57,7 @@
                       (sdisplay (slot-ref o name) port)))))
             (class-slots (class-of o))))
 
-(define-method (write (o <expression>) port)
-  (display (.value o) port))
+;;(define-method (write (o <expression>) port)  (display (.value o) port))
 
 (define-method (display-slots (o <dir-ast>) port)
   (display (.direction o) port)

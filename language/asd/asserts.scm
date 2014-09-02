@@ -33,6 +33,7 @@
   :use-module (language asd csp)
   :use-module (language asd misc)
   :use-module (language asd reader)
+  :use-module (language asd resolve)
 
   :use-module (oop goops)
   :use-module (language asd gom)
@@ -58,6 +59,6 @@
             (map (assert component) component-checks))))
 
 (define-method (assert-list (o <top>))
-  (assert-list (ast->gom o)))
+  (assert-list ((compose ast->gom ast:resolve) o)))
 
 (define ast-> assert-list)

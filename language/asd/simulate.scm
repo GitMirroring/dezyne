@@ -74,7 +74,7 @@
 (define *state-space* '(()))
 
 (define (simulate-model model)
-  (stderr "\n\n>>>simulating: ~a ~a --> ~a\n" (ast:class model) (ast:name model) (map ->string (ast:find-triggers model) model))
+  (stderr "\n\n>>>simulating: ~a ~a --> ~a\n" (ast:class model) (ast:name model) (map ->string (ast:find-triggers model)))
    (let* ((trail (option-ref (parse-opts (command-line)) 'trail #f))
           (trace (if trail
                      (walk-trail model (with-input-from-string trail read))
@@ -246,6 +246,7 @@
 
 (define (eval-expression ast state expression)
   (match expression
+    (('expression expression)  (eval-expression ast state expression))
     (#f #f)
     (#t #t)
     ('false #f)
@@ -273,7 +274,7 @@
          (if (not (equal? otherwise '(otherwise)))
              (throw 'programming-error "parent missing otherwise"))
          ;; otherwise is true if none of the other guards is
-         (not (apply for (map (lambda (x) (eval-expression ast state x)) rest))))))
+         (not (any identity (map (lambda (x) (eval-expression ast state x)) rest))))))
     ((? symbol?) (eval-expression ast state (var state expression)))
     (_ (throw 'match-error (format #f "~a:expression no match: ~a\n" (current-source-location) expression)))))
 
@@ -284,9 +285,9 @@
 ;; FIMXE: c&p from csp.csm
 (define ((valued-action? port?) src)
   (match src
-    (('variable type var ('action trigger)) #t)
-    (('variable type var ('value (? port?) action)) #t)
-    (('assign var ('action trigger)) #t)
+    (('variable type var ('expression ('action trigger))) #t)
+    (('variable type var ('expression ('value (? port?) action))) #t)
+    (('assign var ('expression ('action trigger))) #t)
     (_ #f)))
 
 (define (eval-function-expression ast state event trace expression)
@@ -295,6 +296,7 @@
 	 (members (member-names model))
          (port? (lambda (port) (member port (map ast:name (ast:ports model)))))
          (valued-action? (valued-action? port?)))
+    (stderr "expression: ~a\n" expression)
     (match expression
       (('call function ('arguments arguments ...) ...)
        (receive (new-state new-ast new-action return new-trace)
@@ -328,7 +330,7 @@
           (if (member event t equal?)
               (process statement state event (cons ast trace))
               (values state #f #f #f trace)))
-         (('guard expression statement)
+         (('guard ('expression expression) statement)
           (debug "guard: ~a? --> ~a =====> ~a\n" expression (eval-expression ast state expression) statement)
           (if (eval-expression ast state expression)
               (process statement state event (cons ast trace))
@@ -337,21 +339,21 @@
          (('action t ...)
           (stderr "****action: ~a\n" (->string t))
           (values state #f ast #f (cons ast trace)))
-         (('assign identifier expression)
+         (('assign identifier ('expression expression))
           (stderr "****assign: ~a := ~a\n" (->string identifier) (->string expression))
           (receive (new-state new-ast new-action return new-trace)
               (eval-function-expression ast state event (cons ast trace) expression)
             (values (var! new-state identifier return) #f #f return new-trace)))
-         (('variable type identifier expression)
+         (('variable type identifier ('expression expression))
           (receive (new-state new-ast new-action return new-trace)
               (eval-function-expression ast state event (cons ast trace) expression)
             (stderr "****init: ~a := ~a ==> ~a\n" (->string identifier) (->string expression) (->string return))
             (values (var! new-state identifier return) #f #f return new-trace)))
-         (('if expression statement else)
+         (('if ('expression expression) statement else)
           (if (eval-expression ast state expression)
               (process statement state event (cons ast trace))
               (process else state event (cons ast trace))))
-         (('if expression statement)
+         (('if ('expression expression) statement)
           (if (eval-expression ast state expression)
               (process statement state event (cons ast trace))
               (values state #f #f #f (cons ast trace))))
@@ -389,6 +391,7 @@
   (match src
     (#f "false")
     (#t "true")
+    (('expression expression) (->string expression))
     (('value type field) (->string (list (->string type) "." field)))
     ((identifier 'value type field) (->string (list (->string identifier) " = " (->string type) "." field)))
     ((identifier 'literal scope type field) (->string (list (->string identifier) " = " (->string type) "." (->string field))))
@@ -406,6 +409,7 @@
   (match src
     (#f 'false)
     (#t 'true)
+    (('expression expression) (->symbol expression))
     (('value type field) (->symbol (list (->string type) "." field)))
     (('trigger #f event) (->symbol event))
     (('trigger port event) (->symbol (list port "." event)))

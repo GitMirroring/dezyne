@@ -1,7 +1,7 @@
 #(map-instances
 #{
 ##include "component-#.type -c3.hh"
-#} (gom:instances model))
+#} ((compose .elements .instances) model))
 
 #(map-ports
 #{
@@ -14,7 +14,7 @@ struct #.model
 #(map-instances
 #{
    #.type  #.instance ;
-#} (gom:instances model))
+#} ((compose .elements .instances) model))
 #(map-ports
 #{
   interface::#.interface & #.port-name ;

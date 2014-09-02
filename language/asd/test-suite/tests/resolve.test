@@ -22,11 +22,11 @@
        (types
         (enum State (one two)))
        (variables
-        (variable (type State) m (value State one)))
+        (variable (type State) m (expression (value State one))))
        (functions (function toggle (signature (type void)) (compound)))
        (compound
         (on (triggers (trigger #f foo))
-            (reply (value E v))))))
+            (reply (expression (value E v)))))))
     (component
      var
      (ports (provides ivar i) (requires ivar o))
@@ -35,15 +35,15 @@
       (types
        (enum State (one two)))
       (variables
-       (variable (type State) m (value State one))
+       (variable (type State) m (expression (value State one)))
        (variable (type bool) b true))
        (functions (function fun (signature (type void) (parameters (parameter (type bool) a)))
                             (compound (assign a true))))
       (compound
        (on (triggers (trigger i foo))
            (compound
-            (variable (type ivar (type E)) e (value o foo))
-            (assign e (value o foo))))
+            (variable (type ivar (type E)) e (expression (value o foo)))
+            (assign e (expression (value o foo)))))
        (reply e))))))
 
 (pass-if "ast:resolve-function-call"
@@ -65,7 +65,7 @@
                 (compound
                  (variable (type ivar (type E))
                            e
-                           (value o foo)))))
+                           (expression (value o foo))))))
 
           '(on (triggers (trigger o foo))
                (compound
@@ -79,7 +79,7 @@
             (cadr resolve-ast))
            '(on (triggers (trigger o foo))
                 (compound
-                 (assign e (value o foo)))))
+                 (assign e (expression (value o foo))))))
 
           '(on (triggers (trigger o foo))
                (compound
@@ -90,16 +90,16 @@
           ((ast:resolve-model
             (cadr resolve-ast))
            '(variables
-             (variable (type State) m (value State one))))
+             (variable (type State) m (expression (value State one)))))
           '(variables
-            (variable (type State) m (literal #f State one)))))
+            (variable (type State) m (expression (literal #f State one))))))
 
 (pass-if "ast:resolve-value-field-interface"
          (pretty-noisy-equal?
           ((ast:resolve-model
             (car resolve-ast))
-           '(guard (value m one) (illegal)))
-          '(guard (field m one) (illegal))))
+           '(guard (expression (value m one)) (illegal)))
+          '(guard (expression (field m one)) (illegal))))
 
 (define resolve-system
   '(component
@@ -138,7 +138,7 @@
           ((ast:resolve-model
             (cadr resolve-ast))
            '(compound
-             (variable (type ivar (type E)) e (value o foo))
+             (variable (type ivar (type E)) e (expression (value o foo)))
              (assign e e)))
           '(compound
              (variable (type ivar (type E)) e (action (trigger o foo)))

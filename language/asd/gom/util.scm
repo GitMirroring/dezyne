@@ -40,7 +40,6 @@
   :export (
            is?
            gom->list
-           gom:binds
            gom:booleans
            gom:bottom?
            gom:component
@@ -55,7 +54,6 @@
            gom:import
            gom:instance
            gom:in?
-           gom:instances
            gom:integers
            gom:interface
            gom:interfaces
@@ -255,7 +253,7 @@
   (make <instance> :name name :type 'Foobar))
 
 (define-method (gom:instance (o <system>) (name <symbol>))
-  (or (find (lambda (i) (eq? (.name i) name)) (gom:instances o))
+  (or (find (lambda (i) (eq? (.name i) name)) (.instances o))
       (make <instance> :name name :type 'Foobar)))
 
 (define-method (gom:instance (o <system>) (bind <binding>))
@@ -278,16 +276,6 @@
 
 (define (gom:enums o)
   (filter (is? <enum>) (.elements (.types o))))
-
-(define-method (gom:binds (o <top>)) '())
-
-(define-method (gom:binds (o <system>))
-  (filter (is? <bind>) (.elements (.statement o))))
-
-(define-method (gom:instances (o <top>)) '())
-
-(define-method (gom:instances (o <system>))
-  (filter (is? <instance>) (.elements (.statement o))))
 
 (define (gom:integers ast)
   (filter (is? <int>) (.elements (.types ast))))
