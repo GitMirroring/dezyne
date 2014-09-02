@@ -523,10 +523,10 @@
 (define* (variable ast #:optional (identifier #f))
   (if identifier
       (match ast
-        ((? component?) (and=> (null-is-#f (variable (variables ast) identifier)) car))
-        ((? interface?) (and=> (null-is-#f (variable (variables ast) identifier)) car))
+        ((? component?) (variable (variables ast) identifier))
+        ((? interface?) (variable (variables ast) identifier))
         ((? variable?) (if (eq? (name ast) identifier) ast #f))
-        ((h ...) (null-is-#f (filter identity (map (lambda (x) (variable x identifier)) ast))))
+        ((h ...) (and=> (null-is-#f (filter identity (map (lambda (x) (variable x identifier)) ast))) car))
         (_ (throw 'match-error  (format #f "~a:variable: no match: ~a\n" (current-source-location) ast))))
       (match ast
         ((? assign?) (cadr ast))

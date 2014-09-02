@@ -49,6 +49,17 @@
     ((h ...) (map (lambda (x) ((ast:resolve- ast) x)) src))
     (_ src)))
 
+(define (enum-type enum)
+  (let ((name (ast:name enum)))
+    (if (pair? name)
+        (list 'type (car name) (cons 'type (cdr name)))
+        (list 'type name))))
+
+(define (interface-enums port)
+  (map (lambda (enum)
+         (list 'enum (list (ast:type port) (ast:name enum)) (ast:fields enum)))
+   ((compose ast:enums ast:ast ast:type) port)))
+
 (define* ((ast:resolve-model model) src :optional (locals '()))
   (let* ((port? (lambda (port)
                   (if (eq? (ast:class model) 'interface)
@@ -65,10 +76,15 @@
                     (member identifier (ast:member-names model))))
          (member-field? (lambda (identifier)
                           (lambda (field)
-                            (and-let* ((variable (ast:variable model identifier))
-                                       (type (ast:name (ast:type variable)))
-                                       (enum (find (lambda (x) (eq? (ast:name x) type))
-                                                   (ast:enums model))))
+                            (and-let* ((variable (or (ast:variable model identifier)
+                                                     (ast:variable (map cdr locals) identifier)))
+                                       (type (ast:type variable))
+                                       (enums (append
+                                               (ast:enums model)
+                                               (apply append
+                                                      (map interface-enums (ast:ports model)))))
+                                       (enum (find (lambda (enum)
+                                                     (equal? (enum-type enum) type)) enums)))
                                       (member field (ast:fields enum))))))
          (local?  (lambda (identifier) (assoc identifier locals)))
          (var? (lambda (identifier) (or (member? identifier) (local? identifier)))))
@@ -82,7 +98,7 @@
        (list 'variable type identifier (list 'action (list 'trigger (port) event))))
 
       (('variable type identifier ('expression (and ('call function ...) (get! call))))
-       (list 'variable type identifier (call)))
+       (list 'variable type identifier ((ast:resolve-model model) (call) locals)))
 
       ;; allow test input to omit expression here
       (('variable type identifier ('value (and (? port?) (get! port)) event))
@@ -93,7 +109,7 @@
        (list 'variable type identifier (call)))
 
       (('assign identifier ('expression (and ('call function ...) (get! call))))
-       (list 'assign identifier (call)))
+       (list 'assign identifier ((ast:resolve-model model) (call) locals)))
 
       (('variable type identifier expression)
        (list 'variable type identifier ((ast:resolve-model model) expression locals)))
@@ -101,7 +117,7 @@
       (('assign identifier ('value (and (? port?) (get! port)) event))
        (list 'assign identifier (list 'action (list 'trigger (port) event))))
 
-      (('value (? member?) (? (member-field? (cadr src))))
+      (('value (? var?) (? (member-field? (cadr src))))
        (cons 'field (cdr src)))
 
       (('value (? enum?) (? (enum-field? (cadr src))))
@@ -121,7 +137,7 @@
                        (if (null? parameters)
                            locals
                            (loop (cdr parameters)
-                                 (acons (ast:name (car parameters)) #t locals))))))
+                                 (acons (ast:name (car parameters)) (car parameters) locals))))))
          (list 'function identifier (ast:signature src)
                ((ast:resolve-model model) statement locals))))
 
