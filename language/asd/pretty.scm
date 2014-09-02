@@ -46,9 +46,9 @@
     (('compound s ...) (string-join (append '("{\n") (map ->string (cdr src)) '("}\n") ) ""))
     (('if expr statement else) (->string (cons 'if-then-else (cdr src))))
     (('if expr statement) (->string (cons 'if-then (cdr src))))
-    (('assign var ('call function arguments ...))
+    (('assign var ('expression ('call function arguments ...)))
      (->string (list 'assign var (list 'assign-call function arguments))))
-    (('variable type var ('call function arguments ...))
+    (('variable type var ('expression ('call function arguments ...)))
      (->string (list 'variable type var (list 'assign-call function arguments))))
     (('trigger #f event) (->string event))
     ((? asd-template?) (apply asd-template->string src))
@@ -93,7 +93,7 @@
     (unparen (->string src))))
 
 (define (arguments->string arguments)
-  (comma-space-join (map ->string (ast:body arguments))))
+  (comma-space-join (map ->string (ast:body (car arguments)))))
 
 (define (asd-template? x) (parameterize ((templates asd-templates)) (template? x)))
 
