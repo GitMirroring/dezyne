@@ -420,21 +420,23 @@
     (_ (throw 'match-error  (format #f "~a:body: no match: ~a\n" (current-source-location) ast)))))
 
 (define (interface- ast)
-  (if (interface? ast)
-      ast
-      (if (component? ast)
-	  #f
-	  (assoc 'interface ast))))
+  (match ast
+    ((? component?) #f)
+    ((? interface?) ast)
+    ((? root?) (interface- (body ast)))
+    ((h t ...) (assoc 'interface ast))))
 
 (define (component- ast)
-  (if (component? ast)
-      ast
-      (assoc 'component ast)))
+  (match ast
+    ((? component?) ast)
+    ((? root?) (component- (body ast)))
+    ((h t ...) (assoc 'component ast))))
 
 (define (system- ast)
-  (if (system? ast)
-      ast
-      (assoc 'system ast)))
+  (match ast
+    ((? system?) ast)
+    ((? root?) (system- (body ast)))
+    ((h t ...) (assoc 'system ast))))
 
 (define ((model model-) ast)
   (and-let* ((model-ast (model- ast))

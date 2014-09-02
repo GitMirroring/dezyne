@@ -197,38 +197,23 @@
 (define-method (gom:event (o <interface>) name)
   (find (lambda (x) (eq? (.name x) name)) (.elements (.events o))))
 
-(define-method (gom:component (o <top>))
-  #f)
-
-(define-method (gom:component (o <list>))
-  (find (is? <component>) o))
-
+(define-method (gom:component (o <top>)) #f)
+(define-method (gom:component (o <component>)) o)
+(define-method (gom:component (o <list>)) (find (is? <component>) o))
 (define-method (gom:component (o <ast-list>))
   (find (is? <component>) (.elements o)))
 
-(define-method (gom:component (o <component>))
-  o)
-
-(define-method (gom:interface (o <top>))
-  #f)
-
-(define-method (gom:interface (o <list>))
-  (find (is? <interface>) o))
-
+(define-method (gom:interface (o <top>)) #f)
+(define-method (gom:interface (o <interface>)) o)
+(define-method (gom:interface (o <list>)) (find (is? <interface>) o))
 (define-method (gom:interface (o <ast-list>))
   (find (is? <interface>) (.elements o)))
 
-(define-method (gom:interface (o <interface>))
-  o)
-
-(define-method (gom:system (o <top>))
-  #f)
-
-(define-method (gom:system (o <list>))
-  (find (is? <system>) o))
-
-(define-method (gom:system (o <system>))
-  o)
+(define-method (gom:system (o <top>)) #f)
+(define-method (gom:system (o <system>)) o)
+(define-method (gom:system (o <list>)) (find (is? <system>) o))
+(define-method (gom:system (o <ast-list>))
+  (find (is? <system>) (.elements o)))
 
 (define-method (gom:port (o <component>))
   (car ((gom:filter gom:provides?) (.ports o))))

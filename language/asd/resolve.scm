@@ -41,7 +41,8 @@
   (let ((resolved ((ast:resolve- ast) ast)))
     (if (and (pair? ast)
              (or (find ast:interface? ast)
-                 (find ast:component? ast)))
+                 (find ast:component? ast)
+                 (find ast:system? ast)))
         (cons 'root resolved)
         resolved)))
 
