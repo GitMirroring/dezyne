@@ -78,8 +78,22 @@
            (list 'call identifier)
            src))
 
+      (('variable type identifier ('expression ('value (and (? port?) (get! port)) event)))
+       (list 'variable type identifier (list 'action (list 'trigger (port) event))))
+
+      (('variable type identifier ('expression (and ('call function ...) (get! call))))
+       (list 'variable type identifier (call)))
+
+      ;; allow test input to omit expression here
       (('variable type identifier ('value (and (? port?) (get! port)) event))
        (list 'variable type identifier (list 'action (list 'trigger (port) event))))
+
+      ;; allow test input to omit expression here
+      (('variable type identifier (and ('call function ...) (get! call)))
+       (list 'variable type identifier (call)))
+
+      (('assign identifier ('expression (and ('call function ...) (get! call))))
+       (list 'assign identifier (call)))
 
       (('variable type identifier expression)
        (list 'variable type identifier ((ast:resolve-model model) expression locals)))
@@ -96,9 +110,20 @@
       (('assign identifier expression)
        (list 'assign identifier ((ast:resolve-model model) expression locals)))
 
+      (('expression expression)
+       (list 'expression ((ast:resolve-model model) expression locals)))
+
       ;; expressions
       ((and (? symbol?) (? var?)) (list 'var src))
 
+      (('function identifier ('signature type ('parameters parameters ...)) statement)
+       (let ((locals (let loop ((parameters parameters) (locals locals))
+                       (if (null? parameters)
+                           locals
+                           (loop (cdr parameters)
+                                 (acons (ast:name (car parameters)) #t locals))))))
+         (list 'function identifier (ast:signature src)
+               ((ast:resolve-model model) statement locals))))
 
       (('compound statements ...)
        (cons 'compound
@@ -108,7 +133,7 @@
                    (let* ((statement (car statements))
                           (locals (match statement
                                     (('variable type identifier expression)
-                                     (assoc-set! locals identifier statement))
+                                     (acons identifier statement locals))
                                     (_ locals))))
                      (let ((resolved ((ast:resolve-model model) (car statements) locals)))
                        (cons resolved (loop (cdr statements) locals))))))))

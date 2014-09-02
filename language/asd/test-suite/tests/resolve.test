@@ -37,7 +37,8 @@
       (variables
        (variable (type State) m (value State one))
        (variable (type bool) b true))
-      (functions)
+       (functions (function fun (signature (type void) (parameters (parameter (type bool) a)))
+                            (compound (assign a true))))
       (compound
        (on (triggers (trigger i foo))
            (compound
@@ -84,7 +85,7 @@
                (compound
                 (assign e (action (trigger o foo)))))))
 
-+(pass-if "ast:resolve-value-enum-value"
+(pass-if "ast:resolve-value-enum-value"
          (pretty-noisy-equal?
           ((ast:resolve-model
             (cadr resolve-ast))
@@ -156,3 +157,12 @@
             (cadr resolve-ast))
            '(assign b true))
           '(assign b true)))
+
+(pass-if "ast:resolve-parameter"
+         (pretty-noisy-equal?
+          ((ast:resolve-model
+            (cadr resolve-ast))
+           '(function fun (signature (type void) (parameters (parameter (type bool) a)))
+                            (compound (assign b a))))
+          '(function fun (signature (type void) (parameters (parameter (type bool) a)))
+                     (compound (assign b (var a))))))
