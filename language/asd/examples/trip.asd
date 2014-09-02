@@ -139,7 +139,7 @@ component trip
             c = c + 1;
           }
           else
-            if (c <= (state + 1))
+            if (c <= state + 1)
             {
               i.lo;
             }
