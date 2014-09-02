@@ -17,13 +17,12 @@
 (pass-if "assert"
   (pretty-noisy-equal?
    (assert-list
-    (ast->gom
-     (gom:parse-asd
-      #{ interface I {}
-                   component C {
-                                provides I i ;
-                                requires I j ;
-                                } #})))
+    (gom:parse-asd
+     #{ interface I {}
+                  component C {
+                               provides I i ;
+                                        requires I j ;
+                                        } #}))
    '((interface I deadlock)
      (interface I livelock)
      (component C deterministic)

@@ -28,6 +28,7 @@
   :use-module (language asd ast:)
   :use-module (language asd misc)
   :use-module (language asd reader)
+  :use-module (language asd resolve)
 
   :use-module (oop goops)
   :use-module (oop goops describe)
@@ -337,15 +338,15 @@
     (for-each register-model (gom:models gom))
     gom))
 
-(define* (read-ast name #:optional (transform identity))
+(define* (read-ast name #:optional (transform (compose ast->gom ast:resolve)))
   (and-let* ((ast (null-is-#f (read-asd (->string (list 'examples '/ name '.asd)) (gom:register transform))))
              (models (null-is-#f (gom:models ast))))
             (find (lambda (model) (eq? (.name model) name)) models)))
 
-(define* (gom:import name #:optional (transform identity))
+(define* (gom:import name #:optional (transform (compose ast->gom ast:resolve)))
   (or (cached-model name)
       (and-let* ((ast (read-ast name transform)))
                 (cache-model name ast))))
 
-(define* (gom:parse-asd string :optional (register (gom:register ast->gom)))
+(define* (gom:parse-asd string :optional (register (gom:register (compose ast->gom ast:resolve))))
   (parse-asd string register))
