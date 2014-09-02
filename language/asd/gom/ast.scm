@@ -75,7 +75,7 @@
     ((? ast:bind?) (make <bind>
                       :left (ast->gom (ast:left ast))
                       :right (ast->gom (ast:right ast))))
-    ((? ast:binding?) (make <binding>
+    ((? ast:plug?) (make <plug>
                         :instance (ast:instance ast)
                         :port (ast:port ast)))
     ((? ast:binding-list?) (make <bindings>

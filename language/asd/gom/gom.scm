@@ -63,7 +63,7 @@
            <ast-list>
            <behaviour>
            <bind>
-           <binding>
+           <plug>
            <bindings>
            <call>
            <component>
@@ -247,7 +247,7 @@
   (left :accessor .left :init-value #f :init-keyword :left)
   (right :accessor .right :init-value #f :init-keyword :right))
 
-(define-class <binding> (<statement>)
+(define-class <plug> (<statement>)
   (instance :accessor .instance :init-value #f :init-keyword :instance)
   (port :accessor .port :init-value #f :init-keyword :port))
 

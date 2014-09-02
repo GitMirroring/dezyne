@@ -242,7 +242,7 @@
 (define-method (gom:port (o <system>) (name <symbol>))
   (or (find (lambda (p) (eq? (.name p) name)) (.elements (.ports o)))))
 
-(define-method (gom:port (o <system>) (bind <binding>))
+(define-method (gom:port (o <system>) (bind <plug>))
   (or (gom:port o (.port bind))
       (let ((instance (gom:instance o (.instance bind))))
         (if (eq? (.instance bind) (.port bind))
@@ -253,10 +253,10 @@
   (make <instance> :name name :type 'Foobar))
 
 (define-method (gom:instance (o <system>) (name <symbol>))
-  (or (find (lambda (i) (eq? (.name i) name)) (.instances o))
+  (or (find (lambda (i) (eq? (.name i) name)) ((compose .elements .instances) o))
       (make <instance> :name name :type 'Foobar)))
 
-(define-method (gom:instance (o <system>) (bind <binding>))
+(define-method (gom:instance (o <system>) (bind <plug>))
   (gom:instance o (.instance bind)))
 
 (define-method (gom:in? (o <event>))
