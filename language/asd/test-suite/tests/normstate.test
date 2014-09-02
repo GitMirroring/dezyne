@@ -38,7 +38,7 @@
    '(interface i (types) (events)
                (behaviour #f (types) (variables) (functions)
                           (compound
-                           (guard true (on (triggers (trigger #f a)) (skip))))))))
+                           (guard (expression true) (on (triggers (trigger #f a)) (skip))))))))
 
 (pass-if "normstate-102"
   (pretty-noisy-equal?
@@ -50,7 +50,7 @@
    '(interface i (types) (events)
                (behaviour #f (types) (variables) (functions)
                           (compound
-                           (guard true
+                           (guard (expression true)
                                   (on (triggers (trigger #f a))
                                       (action (trigger #f b)))))))))
 
@@ -64,7 +64,7 @@
    '(interface i (types) (events)
                (behaviour #f (types) (variables) (functions)
                           (compound
-                           (guard true
+                           (guard (expression true)
                                   (on (triggers (trigger #f a) (trigger #f b) (trigger #f c))
                                       (action (trigger #f d)))))))))
 
@@ -80,7 +80,7 @@
    '(interface i (types) (events)
                (behaviour #f (types) (variables) (functions)
                           (compound
-                           (guard true
+                           (guard (expression true)
                                   (compound
                                    (on (triggers (trigger #f a)) (action (trigger #f d)))
                                    (on (triggers (trigger #f b)) (action (trigger #f e)))
@@ -99,9 +99,9 @@
                           (variables)
                           (functions
                            (function foo (signature (type void))
-                                     (compound (if true (skip)))))
+                                     (compound (if (expression true) (skip)))))
                           (compound
-                           (guard true
+                           (guard (expression true)
                                   (on (triggers (trigger #f a) (trigger #f b) (trigger #f c))
                                       (action (trigger #f d)))))))))
 
@@ -116,7 +116,7 @@
    '(interface i (types) (events)
                (behaviour #f (types) (variables) (functions)
                           (compound
-                           (guard true
+                           (guard (expression true)
                                   (on (triggers (trigger #f a) (trigger #f b) (trigger #f c))
                                       (action (trigger #f d)))))))))
 
@@ -131,7 +131,7 @@
    '(component c (ports)
                (behaviour #f (types) (variables) (functions)
                           (compound
-                           (guard true
+                           (guard (expression true)
                                   (compound
                                    (on (triggers (trigger i a) (trigger i b))
                                        (action (trigger #f d)))
@@ -150,7 +150,7 @@
    '(interface i (types) (events)
                (behaviour #f (types) (variables) (functions)
                           (compound
-                           (guard true
+                           (guard (expression true)
                                   (on (triggers (trigger #f a) (trigger #f b) (trigger #f c)) (action (trigger #f d)))))))))
 
 (pass-if "normstate-aggregate-on-interface-active"
@@ -165,7 +165,7 @@
    '(interface i (types) (events)
                (behaviour #f (types) (variables) (functions)
                           (compound
-                           (guard true
+                           (guard (expression true)
                                   (compound
                                    (on (triggers (trigger #f a) (trigger #f b) (trigger #f c)) (action (trigger #f d))))))))))
 
@@ -183,7 +183,7 @@
    '(component c (ports)
                (behaviour #f (types) (variables) (functions)
                           (compound
-                           (guard true
+                           (guard (expression true)
                                   (compound
                                    (on (triggers (trigger i a) (trigger i b))
                                        (action (trigger #f d)))
@@ -205,7 +205,7 @@
    '(component c (ports)
                (behaviour #f (types) (variables) (functions)
                           (compound
-                           (guard true
+                           (guard (expression true)
                                   (compound
                                    (on (triggers (trigger i a) (trigger i b))
                                        (action (trigger #f d)))
