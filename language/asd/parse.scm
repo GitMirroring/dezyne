@@ -334,7 +334,7 @@
     (lbracket guard rbracket statement) : (make 'guard `(,$2 ,$4) @1))
 
    (guard
-    (expression) : $1
+    (expression) : `(expression ,$1)
     (otherwise) : $1)
 
    (compound-statement
@@ -366,31 +366,31 @@
     (illegal semicolon) : $1)
 
    (assignment-statement
-    (Identifier = expression semicolon) : `(assign ,$1 ,$3))
+    (Identifier = expression semicolon) : `(assign ,$1 (expression ,$3)))
 
    (action-statement
     (trigger semicolon) : (make 'action `(,$1) @1))
 
    (if-statement
-    (if lparen expression rparen statement) : `(if ,$3 ,$5)
-    (if lparen expression rparen statement else statement) : `(if ,$3 ,$5 ,$7))
+    (if lparen expression rparen statement) : `(if (expression ,$3) ,$5)
+    (if lparen expression rparen statement else statement) : `(if (expression ,$3) ,$5 ,$7))
 
    (reply-statement
-    (reply lparen expression rparen semicolon) : `(,$1 ,$3))
+    (reply lparen expression rparen semicolon) : `(,$1 (expression ,$3)))
 
    (return-statement
-    (return semicolon) : (make 'return '() @1)
-    (return expression semicolon) : (make 'return `(,$2) @1))
+    (return semicolon) : '(return)
+    (return expression semicolon) : `(return (expression ,$2)))
 
    (variable-statement
-    (compound-type Identifier = expression semicolon) : `(variable ,$1 ,$2 ,$4))
+    (compound-type Identifier = expression semicolon) : `(variable ,$1 ,$2 (expression ,$4)))
 
    (variable-list
     () : '(variables)
     (variable-list variable) : (append $1 (list $2)))
 
    (variable
-    (type Identifier = expression semicolon) : `(variable ,$1 ,$2 ,$4))))
+    (type Identifier = expression semicolon) : `(variable ,$1 ,$2 (expression ,$4)))))
 
 (define (compile-tree-il exp env opts)
   (values (parse-tree-il (comp exp '())) env env))
