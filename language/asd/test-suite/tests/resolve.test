@@ -117,14 +117,14 @@
           ((ast:resolve-system
             resolve-system)
            '(component c (ports) (system #f (compound))))
-          '(system c (ports) (compound))))
+          '(system c (ports) (instances) (bindings))))
 
 (pass-if "ast:resolve-binds"
          (pretty-noisy-equal?
           ((ast:resolve-system
             resolve-system)
            '(bind i (value u i)))
-          '(bind (binding #f i) (binding u i))))
+          '(bind (port #f i) (port u i))))
 
 (pass-if "ast:resolve-member"
          (pretty-noisy-equal?
