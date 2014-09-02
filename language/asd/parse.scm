@@ -146,11 +146,11 @@
     (nonassoc: = <=> ..)
     (left: or)
     (left: and)
+    (left: == != < > <= >=)
     (left: !)
     (left: + -)
     (left: * /)
 
-    (left: == != < > <= >=)
 
     (right: else)
 
