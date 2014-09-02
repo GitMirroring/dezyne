@@ -38,7 +38,12 @@
            ))
 
 (define (ast:resolve ast)
-  ((ast:resolve- ast) ast))
+  (let ((resolved ((ast:resolve- ast) ast)))
+    (if (and (pair? ast)
+             (or (find ast:interface? ast)
+                 (find ast:component? ast)))
+        (cons 'root resolved)
+        resolved)))
 
 (define ((ast:resolve- ast) src)
   (match src
