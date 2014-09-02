@@ -435,4 +435,6 @@ compare:
 	cd out && ../../../build/asdgenerator -l scm examples/trip.asd
 	./gaiag out/trip.scm > out/om-trip-pretty.scm
 #	guile -c '(use-modules (ice-9 pretty-print)) (pretty-print (read))' < out/trip.scm > out/om-trip-pretty.scm
-	diff -uw out/om-trip-pretty.scm out/gaiag-trip.scm
+	-@diff -uw out/om-trip-pretty.scm out/gaiag-trip.scm
+	@diff -uw out/om-trip-pretty.scm out/gaiag-trip.scm | diffstat
+	@diff -uw out/om-trip-pretty.scm out/gaiag-trip.scm > /dev/null

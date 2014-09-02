@@ -35,7 +35,8 @@
       (types
        (enum State (one two)))
       (variables
-       (variable (type State) m (value State one)))
+       (variable (type State) m (value State one))
+       (variable (type bool) b true))
       (functions)
       (compound
        (on (triggers (trigger i foo))
@@ -83,7 +84,7 @@
                (compound
                 (assign e (action (trigger o foo)))))))
 
-(pass-if "ast:resolve-value-enum-value"
++(pass-if "ast:resolve-value-enum-value"
          (pretty-noisy-equal?
           ((ast:resolve-model
             (cadr resolve-ast))
@@ -123,3 +124,35 @@
             resolve-system)
            '(bind i (value u i)))
           '(bind (binding #f i) (binding u i))))
+
+(pass-if "ast:resolve-member"
+         (pretty-noisy-equal?
+          ((ast:resolve-model
+            (cadr resolve-ast))
+           '(assign m m))
+          '(assign m (var m))))
+
+(pass-if "ast:resolve-local"
+         (pretty-noisy-equal?
+          ((ast:resolve-model
+            (cadr resolve-ast))
+           '(compound
+             (variable (type ivar (type E)) e (value o foo))
+             (assign e e)))
+          '(compound
+             (variable (type ivar (type E)) e (action (trigger o foo)))
+             (assign e (var e)))))
+
+(pass-if "ast:resolve-missing-local"
+         (pretty-noisy-equal?
+          ((ast:resolve-model
+            (cadr resolve-ast))
+           '(assign e e))
+          '(assign e e)))
+
+(pass-if "ast:resolve-true"
+         (pretty-noisy-equal?
+          ((ast:resolve-model
+            (cadr resolve-ast))
+           '(assign b true))
+          '(assign b true)))

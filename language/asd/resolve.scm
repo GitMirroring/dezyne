@@ -49,7 +49,7 @@
     ((h ...) (map (lambda (x) ((ast:resolve- ast) x)) src))
     (_ src)))
 
-(define ((ast:resolve-model model) src)
+(define* ((ast:resolve-model model) src :optional (locals '()))
   (let* ((port? (lambda (port)
                   (if (eq? (ast:class model) 'interface)
                       #f
@@ -69,21 +69,51 @@
                                        (type (ast:name (ast:type variable)))
                                        (enum (find (lambda (x) (eq? (ast:name x) type))
                                                    (ast:enums model))))
-                                      (member field (ast:fields enum)))))))
+                                      (member field (ast:fields enum))))))
+         (local?  (lambda (identifier) (assoc identifier locals)))
+         (var? (lambda (identifier) (or (member? identifier) (local? identifier)))))
     (match src
       (('action identifier)
        (if (member identifier (map ast:name (ast:functions (ast:behaviour model))))
            (list 'call identifier)
            src))
+
       (('variable type identifier ('value (and (? port?) (get! port)) event))
        (list 'variable type identifier (list 'action (list 'trigger (port) event))))
+
+      (('variable type identifier expression)
+       (list 'variable type identifier ((ast:resolve-model model) expression locals)))
+
       (('assign identifier ('value (and (? port?) (get! port)) event))
        (list 'assign identifier (list 'action (list 'trigger (port) event))))
+
       (('value (? member?) (? (member-field? (cadr src))))
        (cons 'field (cdr src)))
+
       (('value (? enum?) (? (enum-field? (cadr src))))
        (append '(literal #f) (cdr src)))
-      ((h ...) (map (lambda (x) ((ast:resolve-model model) x)) src))
+
+      (('assign identifier expression)
+       (list 'assign identifier ((ast:resolve-model model) expression locals)))
+
+      ;; expressions
+      ((and (? symbol?) (? var?)) (list 'var src))
+
+
+      (('compound statements ...)
+       (cons 'compound
+             (let loop ((statements statements) (locals locals))
+               (if (null? statements)
+                   '()
+                   (let* ((statement (car statements))
+                          (locals (match statement
+                                    (('variable type identifier expression)
+                                     (assoc-set! locals identifier statement))
+                                    (_ locals))))
+                     (let ((resolved ((ast:resolve-model model) (car statements) locals)))
+                       (cons resolved (loop (cdr statements) locals))))))))
+      ((h ...) (map (lambda (x) ((ast:resolve-model model) x locals)) src))
+
       (_ src))))
 
 (define ((ast:resolve-system model) src)
