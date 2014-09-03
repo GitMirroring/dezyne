@@ -135,13 +135,22 @@
 
       ((and (? symbol?) (? var?)) (list 'var src))
 
-      (('function identifier ('signature type ('parameters parameters ...)) statement)
+      (('function identifier ('signature type parameters ...) statement)
+       (stderr "function: ~a\n" src)
+       ((ast:resolve-model model)
+        (list 'function identifier (ast:signature src) #f statement) locals))
+
+      (('function identifier ('signature type) recursive? statement)
+         (list 'function identifier (ast:signature src) recursive?
+               ((ast:resolve-model model) statement locals)))
+
+      (('function identifier ('signature type ('parameters parameters ...)) recursive? statement)
        (let ((locals (let loop ((parameters parameters) (locals locals))
                        (if (null? parameters)
                            locals
                            (loop (cdr parameters)
                                  (acons (ast:name (car parameters)) (car parameters) locals))))))
-         (list 'function identifier (ast:signature src)
+         (list 'function identifier (ast:signature src) recursive?
                ((ast:resolve-model model) statement locals))))
 
       (('compound statements ...)

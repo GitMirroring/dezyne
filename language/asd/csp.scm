@@ -605,6 +605,7 @@
          (transformed (ast-transform- ast statement return context)))
     (make <function> :name name
           :signature signature
+          :recursive (.recursive o)
           :statement transformed)))
 
 (define-method (ast-transform- ast (o <return>) return context)
@@ -696,10 +697,11 @@
        (($ <reply> expression)
         (let ((expression (csp-transform ast expression inevitable-optional? channel provided-on?)))
           (list "(\\ P',V' @ " channel "." expression " -> P'(V'))")))
+       (($ <return>) "skip_") ;; FIXME
+       (($ <csp-return> #f context) "skip_")
        (($ <csp-return> ($ <expression> expression) context)
         (let ((expression (csp-expression->string ast expression)))
           (list "returnvalue_(\\ (" context ") @ " expression ")")))
-       (($ <return>) "skip_") ;; FIXME
        (('eventreturn) (let ((channel-return (if (and (not inevitable-optional?) provided-on?)
                                             (list "(\\ P',V' @ " channel ".return -> P'(V'))")
                                             (list "(\\ P',V' @ P'(V'))"))))
@@ -710,10 +712,10 @@
                (end (if (not inevitable-optional?) (list transition-end))))
           (list "(\\ V' @ " end model-name "_" behaviour "_" "(V'),(" context "))")))
        (($ <illegal>) "illegal -> STOP")
-       (($ <function> name ($ <signature> type ($ <parameters> '())) statement)
+       (($ <function> name ($ <signature> type ($ <parameters> '())) recursive? statement)
         (let ((transformed (csp-transform ast statement inevitable-optional? channel provided-on?)))
           (list name " = \\ P',V' @ " transformed "(P',V')\n")))
-       (($ <function> name signature statement)
+       (($ <function> name signature recursive? statement)
         (let ((body (csp-transform ast statement inevitable-optional? channel provided-on?)))
           (list name " = \\ P',V',F' @ context_(F',\n" body ")(P',V')\n")))
        (($ <csp-call> identifier ($ <arguments> '()) context)

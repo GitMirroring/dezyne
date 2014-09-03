@@ -107,6 +107,7 @@
     ((? ast:function?) (make <function>
                           :name (ast:name ast)
                           :signature (ast->gom (ast:signature ast))
+                          :recursive (ast:recursive ast)
                           :statement (ast->gom (ast:statement ast))))
     ((? ast:function-list?) (make <functions>
                            :elements (map ast->gom (ast:body ast))))

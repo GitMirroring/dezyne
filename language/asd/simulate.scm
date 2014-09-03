@@ -302,7 +302,9 @@
        (receive (new-state new-ast new-action return new-trace)
            (let* ((f (ast:function *model* function)) ;; FIXME
                   (parameters (map ast:name (ast:parameters f)))
-                  (statement (ast:statement f))
+                  (statement ;;(ast:statement f)
+                   (ast:recursive f) ;; FIXME
+                   )
                   (arguments (if (pair? arguments) (car arguments) arguments))
                   (pairs (zip parameters arguments))
                   (state (let loop ((pairs pairs) (state state))

@@ -272,6 +272,7 @@
            provides?
            range
            range?
+           recursive
            register
            reply?
            requires?
@@ -464,6 +465,11 @@
                                   ((system) system-))) x)) (models ast))
   ast)
 
+(define (recursive ast)
+  (match ast
+    ((? function?) (cadddr ast))
+    (_ (throw 'match-error (format #f "~a:recursive: no match: ~a\n" (current-source-location) ast)))))
+
 (define (arguments ast)
   (match ast
     ((? call?) (body (if (>2 (length ast)) (caddr ast) '())))
@@ -472,7 +478,7 @@
 (define (value ast)
   (match ast
     ((? expression?) (cadr ast))
-    (_ (throw 'match-error (format #f "~a:expression: no match: ~a\n" (current-source-location) ast)))))
+    (_ (throw 'match-error (format #f "~a:value: no match: ~a\n" (current-source-location) ast)))))
 
 (define (left ast)
   (match ast
@@ -482,7 +488,7 @@
 (define (right ast)
   (match ast
     ((? bind?) (caddr ast))
-    (_ (throw 'match-error (format #f "~a:left: no match: ~a\n" (current-source-location) ast)))))
+    (_ (throw 'match-error (format #f "~a:right: no match: ~a\n" (current-source-location) ast)))))
 
 (define (binds ast)
   (match ast
@@ -748,7 +754,7 @@
     ((? model?) (or (null-is-#f (statement (behaviour ast))) (make 'compound '())))
     ((? behaviour?) (or (assoc 'compound (body ast)) (make 'compound '())))
     ((or (? guard?) (? on?)) (caddr ast))
-    ((? function?) (cadddr ast))
+    ((? function?) (fifth ast))
     (_ (throw 'match-error  (format #f "~a:statement: no match: ~a\n" (current-source-location) ast)))))
 
 (define (type ast)

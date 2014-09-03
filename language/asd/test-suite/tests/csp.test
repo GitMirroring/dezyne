@@ -8,6 +8,7 @@
 
   :use-module (language asd ast:)
   :use-module (language asd csp)
+  :use-module (language asd resolve)
   :use-module (language asd gom))
 
 (pass-if "csp-first-dummy-test"
@@ -20,10 +21,10 @@
                   B
                   (types (enum S (S1 S2)))
                   (variables
-                   (variable (type S) s (trigger S S1))
+                   (variable (type S) s (action (trigger S S1)))
                    (variable (type bool) b (expression false))
                    (variable (type bool) c (expression true)))
-                  (functions (function toggle (signature (type void)) (compound)))
+                  (functions (function toggle (signature (type void)) #f (compound)))
                   (compound))))
 
 (define ast-return-ast
@@ -960,7 +961,7 @@ semi_(callvoid_(toggle),
 
           ;; from:
           (csp-transform* i-ast
-                         '(function toggle (signature (type void)) ()))
+                         '(function toggle (signature (type void)) #f ()))
 
           ;; via:
           "toggle = \\ P',V' @ (\\ P',V' @ P'(V'))(P',V')\n"))
@@ -968,7 +969,7 @@ semi_(callvoid_(toggle),
 (define csp-transform-function-arguments
   '(function
     g
-    (signature (type bool) (parameters (parameter (type bool) c)))
+    (signature (type bool) (parameters (parameter (type bool) c))) #f
     (semi (action (trigger #f f))
           (return (ctx ((s b hide_member2') c)) (expression c)))))
 
@@ -979,7 +980,7 @@ semi_(callvoid_(toggle),
           (ast-transform* i-ast
                           '(function
                             g
-                            (signature (type bool) (parameters (parameter (type bool) c)))
+                            (signature (type bool) (parameters (parameter (type bool) c))) #f
                             (compound (action (trigger #f f))
                                       (return (expression c)))))
 
@@ -1091,7 +1092,7 @@ context_active_(sendrecv_(u,what),
      (functions
       (function
        g
-       ((type bool) (parameters ((type bool) c)))
+       (signature (type bool) (parameters (parameter (type bool) c))) #f
        (compound (return (expression c)))))
      (compound
       (on ((trigger i e))
@@ -1160,11 +1161,11 @@ semi_(context_(\\ ((b),(stack')) @ true,
      (functions
       (function
        g
-       ((type bool) (parameters (parameter (type bool) c)))
+       (signature (type bool) (parameters (parameter (type bool) c))) #f
        (compound (action (trigger i f)) (return (expression c))))
       (function
        h
-       ((type bool) (parameters (parameter (type bool) c) (parameter (type bool) d)))
+       (signature (type bool) (parameters (parameter (type bool) c) (parameter (type bool) d))) #f
        (compound (action (trigger i f)) (return (expression (and c d))))))
      (compound
       (guard (expression true)
@@ -1576,3 +1577,31 @@ semi_(assign_active_(sendrecv_(k,h),
   (noisy-equal?
    (enum-type (ast->gom i-ast) 'q)
    #f))
+
+
+(define (2gom ast)
+  ((compose ast->gom ast:resolve) ast))
+
+(define expression-via
+  '(context ((ctx ((s b c))) t (expression false))
+            (assign (ctx ((s b c) t))
+                    (expression (ctx ((s b c) (== (var s) (literal #f S S1))))))))
+
+(pass-if "expression"
+         (gom-noisy-equal?
+          (ast-transform*
+           i-ast
+           '(compound
+            (variable (type bool) t (expression false))
+            (assign t
+                    (expression
+                     (== (var s) (literal #f S S1))))))
+          expression-via))
+
+(pass-if "expression-csp"
+         (diff-noisy-equal?
+          (csp-transform*
+           i-ast
+           expression-via)
+          "context_(\\ ((s,b,c),(stack')) @ false,
+assign_(\\ ((s,b,c),((stack',t))) @ ((s,b,c),((stack',(s == S_S1))))))"))

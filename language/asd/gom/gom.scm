@@ -45,6 +45,7 @@
            .parameters
            .port
            .ports
+           .recursive
            .right
            .scope
            .signature
@@ -205,6 +206,7 @@
 
 (define-class <function> (<named>)
   (signature :accessor .signature :init-form (make <signature>) :init-keyword :signature)
+  (recursive :accessor .recursive :init-value #f :init-keyword :recursive)
   (statement :accessor .statement :init-value #f :init-keyword :statement))
 
 ;;; statements

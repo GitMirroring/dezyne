@@ -165,4 +165,5 @@
            '(function fun (signature (type void) (parameters (parameter (type bool) a)))
                             (compound (assign b a))))
           '(function fun (signature (type void) (parameters (parameter (type bool) a)))
+                     #f
                      (compound (assign b (var a))))))
