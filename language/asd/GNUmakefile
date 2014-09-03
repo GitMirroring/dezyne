@@ -406,8 +406,15 @@ BROKEN =\
  asdConcepts_Composition.asd\
  SystemComposition.asd\
  exampleLOPW.asd\
+ Aap.asd\
 
 DEMO_SOURCES = $(filter-out $(BROKEN) ,$(shell cd $(DEPTH)/webdemo/asd && ls *.asd))
+#EXAMPLE_SOURCES = $(filter-out $(BROKEN) ,$(shell cd examples && ls *.asd))
+EXAMPLE_SOURCES =\
+ function.asd\
+ argument.asd\
+ argument2.asd\
+
 
 out/%.refines: $(DEPTH)/webdemo/asd/%.asd
 	rm -rf out && mkdir out && ln -s ../examples ../webdemo ../templates ../../../webdemo/asd out
@@ -421,7 +428,19 @@ out/%.refines: $(DEPTH)/webdemo/asd/%.asd
 	@$(diff) webdemo/$*.csp out >/dev/null
 	touch $@
 
-demo: $(DEMO_SOURCES:%.asd=out/%.refines)
+out/%.refines: examples/%.asd
+	rm -rf out && mkdir out && ln -s ../examples ../webdemo ../templates ../../../webdemo/asd out
+	cd out && $(asdgen) -l scm examples/$*.asd
+	cd out && ../gaiag -l csp $*.scm
+	[ -f out/$*.csp ] || mv out/*.csp out/$*.csp
+	$(diff) webdemo/$*.csp out || true
+	@$(diff) webdemo/$*.csp out | diffstat
+	$(CSPMCHECKER) out/$*.csp
+	$(REFINES) out/$*.csp | grep ': Failed' || :
+	@$(diff) webdemo/$*.csp out >/dev/null
+	touch $@
+
+demo: $(EXAMPLE_SOURCES:%.asd=out/%.refines) $(DEMO_SOURCES:%.asd=out/%.refines)
 
 asserts:
 	rm -rf out && mkdir out && ln -s ../examples ../webdemo ../templates ../../../webdemo/asd out
@@ -433,6 +452,7 @@ compare:
 	make -C ../..
 	./gaiag -l resolve examples/trip.asd > out/gaiag-trip.scm
 	cd out && ../../../build/asdgenerator -l scm examples/trip.asd
+	sed -i 's/i[0-9]\+_//g' out/trip.scm
 	./gaiag out/trip.scm > out/om-trip-pretty.scm
 #	guile -c '(use-modules (ice-9 pretty-print)) (pretty-print (read))' < out/trip.scm > out/om-trip-pretty.scm
 	-@diff -uw out/om-trip-pretty.scm out/gaiag-trip.scm
