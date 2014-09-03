@@ -30,318 +30,318 @@ context_(F', S') = \ P', (M', L') @ S'((\V2' @ P'(drop_one_local_(V2'))), (M', (
 context_active_(C', S') = \P',V' @ C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
 
 datatype event_enumeration_alphabet =
-IAlarmSystem_NI_SwitchOffFailed | IAlarmSystem_NI_SwitchedOff | IAlarmSystem_NI_Tripped | IAlarmSystem_SwitchOff | IAlarmSystem_SwitchOn | IAlarmSystem_Values_Failed | IAlarmSystem_Values_OK | ISTTimerCB_Timeout | ISTTimer_CancelTimer | ISTTimer_CreateTimer | ISTTimer_CreateTimerEx | ISTTimer_CreateTimerMSec | ISecretCode_Values_CORRECT | ISecretCode_Values_WRONG | ISecretCode_isCodeCorrect | ISensors_Activate | ISensors_Deactivate | ISensors_NI_DetectedMovement | ISiren_TurnOff | ISiren_TurnOn | States_Activated | States_Activated_AlarmMode | States_Activated_Idle | States_Activated_Tripped | States_Active | States_CheckingDeactivationCode_WrongCode_Retry | States_Deactivated | States_Inactive | States_NotActivated | States_SirenOff | States_SirenOn | States_Triggered | inevitable | optional | return
+i112_ISecretCode_Values_i110_CORRECT | i112_ISecretCode_Values_i111_WRONG | i113_ISecretCode_isCodeCorrect | i161_ISTTimer_CreateTimer | i162_ISTTimer_CreateTimerEx | i163_ISTTimer_CreateTimerMSec | i164_ISTTimer_CancelTimer | i165_ISTTimerCB_Timeout | i168_States_i166_Inactive | i168_States_i167_Active | i327_ISensors_Activate | i328_ISensors_Deactivate | i329_ISensors_NI_DetectedMovement | i333_States_i330_Deactivated | i333_States_i331_Activated | i333_States_i332_Triggered | i3_ISiren_TurnOn | i4_ISiren_TurnOff | i509_IAlarmSystem_Values_i507_OK | i509_IAlarmSystem_Values_i508_Failed | i510_IAlarmSystem_SwitchOn | i512_IAlarmSystem_SwitchOff | i513_IAlarmSystem_NI_Tripped | i514_IAlarmSystem_NI_SwitchedOff | i515_IAlarmSystem_NI_SwitchOffFailed | i519_States_i516_NotActivated | i519_States_i517_Activated_Idle | i519_States_i518_Activated_AlarmMode | i7_States_i5_SirenOff | i7_States_i6_SirenOn | i830_States_i825_NotActivated | i830_States_i826_Activated_Idle | i830_States_i827_Activated_AlarmMode | i830_States_i828_Activated_Tripped | i830_States_i829_CheckingDeactivationCode_WrongCode_Retry | inevitable | optional | return
 
 channel illegal
 
-channel alarmSystem: {IAlarmSystem_NI_SwitchOffFailed,IAlarmSystem_NI_SwitchedOff,IAlarmSystem_NI_Tripped,IAlarmSystem_SwitchOff,IAlarmSystem_SwitchOn,optional,IAlarmSystem_Values_OK,IAlarmSystem_Values_Failed,return}
-channel siren: {ISiren_TurnOff,ISiren_TurnOn,return}
-channel secretCode: {ISecretCode_isCodeCorrect,ISecretCode_Values_CORRECT,ISecretCode_Values_WRONG,return}
-channel preAlarmTimer: {ISTTimerCB_Timeout,ISTTimer_CancelTimer,ISTTimer_CreateTimer,ISTTimer_CreateTimerEx,ISTTimer_CreateTimerMSec,inevitable,return}
-channel sensors: {ISensors_Activate,ISensors_Deactivate,ISensors_NI_DetectedMovement,optional,return}
+channel i810_alarmSystem: {i510_IAlarmSystem_SwitchOn,i512_IAlarmSystem_SwitchOff,i513_IAlarmSystem_NI_Tripped,i514_IAlarmSystem_NI_SwitchedOff,i515_IAlarmSystem_NI_SwitchOffFailed,optional,i509_IAlarmSystem_Values_i507_OK,i509_IAlarmSystem_Values_i508_Failed,return}
+channel i813_siren: {i3_ISiren_TurnOn,i4_ISiren_TurnOff,return}
+channel i816_secretCode: {i113_ISecretCode_isCodeCorrect,i112_ISecretCode_Values_i110_CORRECT,i112_ISecretCode_Values_i111_WRONG,return}
+channel i819_preAlarmTimer: {i161_ISTTimer_CreateTimer,i162_ISTTimer_CreateTimerEx,i163_ISTTimer_CreateTimerMSec,i164_ISTTimer_CancelTimer,i165_ISTTimerCB_Timeout,inevitable,return}
+channel i822_sensors: {i327_ISensors_Activate,i328_ISensors_Deactivate,i329_ISensors_NI_DetectedMovement,optional,return}
 
-channel AlarmSystem: {IAlarmSystem_NI_SwitchOffFailed,IAlarmSystem_NI_SwitchedOff,IAlarmSystem_NI_Tripped,IAlarmSystem_SwitchOff,IAlarmSystem_SwitchOn,optional,IAlarmSystem_Values_OK,IAlarmSystem_Values_Failed,return}
-channel Siren: {ISiren_TurnOff,ISiren_TurnOn,return}
-channel SecretCode: {ISecretCode_isCodeCorrect,ISecretCode_Values_CORRECT,ISecretCode_Values_WRONG,return}
-channel STTimer: {ISTTimerCB_Timeout,ISTTimer_CancelTimer,ISTTimer_CreateTimer,ISTTimer_CreateTimerEx,ISTTimer_CreateTimerMSec,inevitable,return}
-channel Sensors: {ISensors_Activate,ISensors_Deactivate,ISensors_NI_DetectedMovement,optional,return}
+channel i809_AlarmSystem: {i510_IAlarmSystem_SwitchOn,i512_IAlarmSystem_SwitchOff,i513_IAlarmSystem_NI_Tripped,i514_IAlarmSystem_NI_SwitchedOff,i515_IAlarmSystem_NI_SwitchOffFailed,optional,i509_IAlarmSystem_Values_i507_OK,i509_IAlarmSystem_Values_i508_Failed,return}
+channel i109_Siren: {i3_ISiren_TurnOn,i4_ISiren_TurnOff,return}
+channel i160_SecretCode: {i113_ISecretCode_isCodeCorrect,i112_ISecretCode_Values_i110_CORRECT,i112_ISecretCode_Values_i111_WRONG,return}
+channel i326_STTimer: {i161_ISTTimer_CreateTimer,i162_ISTTimer_CreateTimerEx,i163_ISTTimer_CreateTimerMSec,i164_ISTTimer_CancelTimer,i165_ISTTimerCB_Timeout,inevitable,return}
+channel i506_Sensors: {i327_ISensors_Activate,i328_ISensors_Deactivate,i329_ISensors_NI_DetectedMovement,optional,return}
 
-  AlarmSystem_(IG) = let
+  i809_AlarmSystem_(IG) = let
 
-AlarmSystem__(((state),(stack'))) =
-(((state == States_NotActivated) and true)) & (
-AlarmSystem?x:{IAlarmSystem_SwitchOn} ->
-semi_((\ P',V' @ AlarmSystem.IAlarmSystem_Values_OK -> P'(V')),
-assign_(\ ((state),(stack')) @ ((States_Activated_Idle),(stack'))))(\ V' @ AlarmSystem__(V'),((state),(stack')))
+i809_AlarmSystem__(((i527_state),(stack'))) =
+(((i527_state == i519_States_i516_NotActivated) and true)) & (
+i809_AlarmSystem?x:{i510_IAlarmSystem_SwitchOn} ->
+semi_((\ P',V' @ i809_AlarmSystem.i509_IAlarmSystem_Values_i507_OK -> P'(V')),
+assign_(\ ((i527_state),(stack')) @ ((i519_States_i517_Activated_Idle),(stack'))))(\ V' @ i809_AlarmSystem__(V'),((i527_state),(stack')))
  []
-  AlarmSystem?x:{IAlarmSystem_SwitchOn} ->
-(\ P',V' @ AlarmSystem.IAlarmSystem_Values_Failed -> P'(V'))(\ V' @ AlarmSystem__(V'),((state),(stack'))))
+  i809_AlarmSystem?x:{i510_IAlarmSystem_SwitchOn} ->
+(\ P',V' @ i809_AlarmSystem.i509_IAlarmSystem_Values_i508_Failed -> P'(V'))(\ V' @ i809_AlarmSystem__(V'),((i527_state),(stack'))))
 []
-((state == States_NotActivated)) & (
-IG & AlarmSystem?x:{IAlarmSystem_SwitchOff} ->
+((i527_state == i519_States_i516_NotActivated)) & (
+IG & i809_AlarmSystem?x:{i512_IAlarmSystem_SwitchOff} ->
 illegal -> STOP)
 []
-(((state == States_Activated_Idle) and true)) & (
-AlarmSystem?x:{IAlarmSystem_SwitchOff} ->
-semi_(semi_((\ P',V' @ AlarmSystem!IAlarmSystem_NI_SwitchedOff -> P'(V')),
-assign_(\ ((state),(stack')) @ ((States_NotActivated),(stack')))),
-(\ P',V' @ AlarmSystem.return -> P'(V')))(\ V' @ AlarmSystem__(V'),((state),(stack')))
+(((i527_state == i519_States_i517_Activated_Idle) and true)) & (
+i809_AlarmSystem?x:{i512_IAlarmSystem_SwitchOff} ->
+semi_(semi_((\ P',V' @ i809_AlarmSystem!i514_IAlarmSystem_NI_SwitchedOff -> P'(V')),
+assign_(\ ((i527_state),(stack')) @ ((i519_States_i516_NotActivated),(stack')))),
+(\ P',V' @ i809_AlarmSystem.return -> P'(V')))(\ V' @ i809_AlarmSystem__(V'),((i527_state),(stack')))
  []
-  AlarmSystem?x:{IAlarmSystem_SwitchOff} ->
-semi_(semi_((\ P',V' @ AlarmSystem!IAlarmSystem_NI_SwitchOffFailed -> P'(V')),
-assign_(\ ((state),(stack')) @ ((States_Activated_AlarmMode),(stack')))),
-(\ P',V' @ AlarmSystem.return -> P'(V')))(\ V' @ AlarmSystem__(V'),((state),(stack'))))
+  i809_AlarmSystem?x:{i512_IAlarmSystem_SwitchOff} ->
+semi_(semi_((\ P',V' @ i809_AlarmSystem!i515_IAlarmSystem_NI_SwitchOffFailed -> P'(V')),
+assign_(\ ((i527_state),(stack')) @ ((i519_States_i518_Activated_AlarmMode),(stack')))),
+(\ P',V' @ i809_AlarmSystem.return -> P'(V')))(\ V' @ i809_AlarmSystem__(V'),((i527_state),(stack'))))
 []
-((state == States_Activated_Idle)) & (
-AlarmSystem?x:{optional} ->
-semi_(semi_((\ P',V' @ AlarmSystem!IAlarmSystem_NI_Tripped -> P'(V')),
-assign_(\ ((state),(stack')) @ ((States_Activated_AlarmMode),(stack')))),
-(\ P',V' @ P'(V')))(\ V' @ AlarmSystem__(V'),((state),(stack')))
+((i527_state == i519_States_i517_Activated_Idle)) & (
+i809_AlarmSystem?x:{optional} ->
+semi_(semi_((\ P',V' @ i809_AlarmSystem!i513_IAlarmSystem_NI_Tripped -> P'(V')),
+assign_(\ ((i527_state),(stack')) @ ((i519_States_i518_Activated_AlarmMode),(stack')))),
+(\ P',V' @ P'(V')))(\ V' @ i809_AlarmSystem__(V'),((i527_state),(stack')))
  []
-  IG & AlarmSystem?x:{IAlarmSystem_SwitchOn} ->
+  IG & i809_AlarmSystem?x:{i510_IAlarmSystem_SwitchOn} ->
 illegal -> STOP)
 []
-(((state == States_Activated_AlarmMode) and true)) & (
-AlarmSystem?x:{IAlarmSystem_SwitchOff} ->
-semi_(semi_((\ P',V' @ AlarmSystem!IAlarmSystem_NI_SwitchedOff -> P'(V')),
-assign_(\ ((state),(stack')) @ ((States_NotActivated),(stack')))),
-(\ P',V' @ AlarmSystem.return -> P'(V')))(\ V' @ AlarmSystem__(V'),((state),(stack')))
+(((i527_state == i519_States_i518_Activated_AlarmMode) and true)) & (
+i809_AlarmSystem?x:{i512_IAlarmSystem_SwitchOff} ->
+semi_(semi_((\ P',V' @ i809_AlarmSystem!i514_IAlarmSystem_NI_SwitchedOff -> P'(V')),
+assign_(\ ((i527_state),(stack')) @ ((i519_States_i516_NotActivated),(stack')))),
+(\ P',V' @ i809_AlarmSystem.return -> P'(V')))(\ V' @ i809_AlarmSystem__(V'),((i527_state),(stack')))
  []
-  AlarmSystem?x:{IAlarmSystem_SwitchOff} ->
-semi_((\ P',V' @ AlarmSystem!IAlarmSystem_NI_SwitchOffFailed -> P'(V')),
-(\ P',V' @ AlarmSystem.return -> P'(V')))(\ V' @ AlarmSystem__(V'),((state),(stack'))))
+  i809_AlarmSystem?x:{i512_IAlarmSystem_SwitchOff} ->
+semi_((\ P',V' @ i809_AlarmSystem!i515_IAlarmSystem_NI_SwitchOffFailed -> P'(V')),
+(\ P',V' @ i809_AlarmSystem.return -> P'(V')))(\ V' @ i809_AlarmSystem__(V'),((i527_state),(stack'))))
 []
-((state == States_Activated_AlarmMode)) & (
-IG & AlarmSystem?x:{IAlarmSystem_SwitchOn} ->
-illegal -> STOP)
-
-
-within AlarmSystem__(((States_NotActivated),(<>))) [|{AlarmSystem .optional}|] CHAOS({AlarmSystem .optional})
-
-Siren_(IG) = let
-
-Siren__(((state),(stack'))) =
-((state == States_SirenOff)) & (
-Siren?x:{ISiren_TurnOn} ->
-semi_(assign_(\ ((state),(stack')) @ ((States_SirenOn),(stack'))),
-(\ P',V' @ Siren.return -> P'(V')))(\ V' @ Siren__(V'),((state),(stack')))
- []
-  IG & Siren?x:{ISiren_TurnOff} ->
-illegal -> STOP)
-[]
-((state == States_SirenOn)) & (
-Siren?x:{ISiren_TurnOff} ->
-semi_(assign_(\ ((state),(stack')) @ ((States_SirenOff),(stack'))),
-(\ P',V' @ Siren.return -> P'(V')))(\ V' @ Siren__(V'),((state),(stack')))
- []
-  IG & Siren?x:{ISiren_TurnOn} ->
+((i527_state == i519_States_i518_Activated_AlarmMode)) & (
+IG & i809_AlarmSystem?x:{i510_IAlarmSystem_SwitchOn} ->
 illegal -> STOP)
 
 
-within Siren__(((States_SirenOff),(<>))) 
+within i809_AlarmSystem__(((i519_States_i516_NotActivated),(<>))) [|{i809_AlarmSystem .optional}|] CHAOS({i809_AlarmSystem .optional})
 
-SecretCode_(IG) = let
+i109_Siren_(IG) = let
 
-SecretCode__(((dummy),(stack'))) =
+i109_Siren__(((i15_state),(stack'))) =
+((i15_state == i7_States_i5_SirenOff)) & (
+i109_Siren?x:{i3_ISiren_TurnOn} ->
+semi_(assign_(\ ((i15_state),(stack')) @ ((i7_States_i6_SirenOn),(stack'))),
+(\ P',V' @ i109_Siren.return -> P'(V')))(\ V' @ i109_Siren__(V'),((i15_state),(stack')))
+ []
+  IG & i109_Siren?x:{i4_ISiren_TurnOff} ->
+illegal -> STOP)
+[]
+((i15_state == i7_States_i6_SirenOn)) & (
+i109_Siren?x:{i4_ISiren_TurnOff} ->
+semi_(assign_(\ ((i15_state),(stack')) @ ((i7_States_i5_SirenOff),(stack'))),
+(\ P',V' @ i109_Siren.return -> P'(V')))(\ V' @ i109_Siren__(V'),((i15_state),(stack')))
+ []
+  IG & i109_Siren?x:{i3_ISiren_TurnOn} ->
+illegal -> STOP)
+
+
+within i109_Siren__(((i7_States_i5_SirenOff),(<>))) 
+
+i160_SecretCode_(IG) = let
+
+i160_SecretCode__(((i116_dummy),(stack'))) =
 (true) & (
-SecretCode?x:{ISecretCode_isCodeCorrect} ->
-(\ P',V' @ SecretCode.ISecretCode_Values_CORRECT -> P'(V'))(\ V' @ SecretCode__(V'),((dummy),(stack')))
+i160_SecretCode?x:{i113_ISecretCode_isCodeCorrect} ->
+(\ P',V' @ i160_SecretCode.i112_ISecretCode_Values_i110_CORRECT -> P'(V'))(\ V' @ i160_SecretCode__(V'),((i116_dummy),(stack')))
  []
-  SecretCode?x:{ISecretCode_isCodeCorrect} ->
-(\ P',V' @ SecretCode.ISecretCode_Values_WRONG -> P'(V'))(\ V' @ SecretCode__(V'),((dummy),(stack'))))
+  i160_SecretCode?x:{i113_ISecretCode_isCodeCorrect} ->
+(\ P',V' @ i160_SecretCode.i112_ISecretCode_Values_i111_WRONG -> P'(V'))(\ V' @ i160_SecretCode__(V'),((i116_dummy),(stack'))))
 
 
-within SecretCode__(((false),(<>))) 
+within i160_SecretCode__(((false),(<>))) 
 
-STTimer_(IG) = let
+i326_STTimer_(IG) = let
 
-STTimer__(((state),(stack'))) =
-((state == States_Inactive)) & (
-STTimer?x:{ISTTimer_CreateTimer,ISTTimer_CreateTimerEx,ISTTimer_CreateTimerMSec} ->
-semi_(assign_(\ ((state),(stack')) @ ((States_Active),(stack'))),
-(\ P',V' @ STTimer.return -> P'(V')))(\ V' @ STTimer__(V'),((state),(stack')))
+i326_STTimer__(((i176_state),(stack'))) =
+((i176_state == i168_States_i166_Inactive)) & (
+i326_STTimer?x:{i161_ISTTimer_CreateTimer,i162_ISTTimer_CreateTimerEx,i163_ISTTimer_CreateTimerMSec} ->
+semi_(assign_(\ ((i176_state),(stack')) @ ((i168_States_i167_Active),(stack'))),
+(\ P',V' @ i326_STTimer.return -> P'(V')))(\ V' @ i326_STTimer__(V'),((i176_state),(stack')))
  []
-  STTimer?x:{ISTTimer_CancelTimer} ->
-(\ P',V' @ STTimer.return -> P'(V'))(\ V' @ STTimer__(V'),((state),(stack'))))
+  i326_STTimer?x:{i164_ISTTimer_CancelTimer} ->
+(\ P',V' @ i326_STTimer.return -> P'(V'))(\ V' @ i326_STTimer__(V'),((i176_state),(stack'))))
 []
-((state == States_Active)) & (
-STTimer?x:{ISTTimer_CancelTimer} ->
-semi_(assign_(\ ((state),(stack')) @ ((States_Inactive),(stack'))),
-(\ P',V' @ STTimer.return -> P'(V')))(\ V' @ STTimer__(V'),((state),(stack')))
+((i176_state == i168_States_i167_Active)) & (
+i326_STTimer?x:{i164_ISTTimer_CancelTimer} ->
+semi_(assign_(\ ((i176_state),(stack')) @ ((i168_States_i166_Inactive),(stack'))),
+(\ P',V' @ i326_STTimer.return -> P'(V')))(\ V' @ i326_STTimer__(V'),((i176_state),(stack')))
  []
-  STTimer?x:{inevitable} ->
-semi_(semi_((\ P',V' @ STTimer!ISTTimerCB_Timeout -> P'(V')),
-assign_(\ ((state),(stack')) @ ((States_Inactive),(stack')))),
-(\ P',V' @ P'(V')))(\ V' @ STTimer__(V'),((state),(stack')))
+  i326_STTimer?x:{inevitable} ->
+semi_(semi_((\ P',V' @ i326_STTimer!i165_ISTTimerCB_Timeout -> P'(V')),
+assign_(\ ((i176_state),(stack')) @ ((i168_States_i166_Inactive),(stack')))),
+(\ P',V' @ P'(V')))(\ V' @ i326_STTimer__(V'),((i176_state),(stack')))
  []
-  IG & STTimer?x:{ISTTimer_CreateTimer,ISTTimer_CreateTimerEx,ISTTimer_CreateTimerMSec} ->
+  IG & i326_STTimer?x:{i161_ISTTimer_CreateTimer,i162_ISTTimer_CreateTimerEx,i163_ISTTimer_CreateTimerMSec} ->
 illegal -> STOP)
 
 
-within STTimer__(((States_Inactive),(<>))) 
+within i326_STTimer__(((i168_States_i166_Inactive),(<>))) 
 
-Sensors_(IG) = let
+i506_Sensors_(IG) = let
 
-Sensors__(((state),(stack'))) =
-((state == States_Deactivated)) & (
-Sensors?x:{ISensors_Activate} ->
-semi_(assign_(\ ((state),(stack')) @ ((States_Activated),(stack'))),
-(\ P',V' @ Sensors.return -> P'(V')))(\ V' @ Sensors__(V'),((state),(stack')))
+i506_Sensors__(((i341_state),(stack'))) =
+((i341_state == i333_States_i330_Deactivated)) & (
+i506_Sensors?x:{i327_ISensors_Activate} ->
+semi_(assign_(\ ((i341_state),(stack')) @ ((i333_States_i331_Activated),(stack'))),
+(\ P',V' @ i506_Sensors.return -> P'(V')))(\ V' @ i506_Sensors__(V'),((i341_state),(stack')))
  []
-  IG & Sensors?x:{ISensors_Deactivate} ->
-illegal -> STOP)
-[]
-((state == States_Activated)) & (
-Sensors?x:{ISensors_Deactivate} ->
-semi_(assign_(\ ((state),(stack')) @ ((States_Deactivated),(stack'))),
-(\ P',V' @ Sensors.return -> P'(V')))(\ V' @ Sensors__(V'),((state),(stack')))
- []
-  Sensors?x:{optional} ->
-semi_(semi_((\ P',V' @ Sensors!ISensors_NI_DetectedMovement -> P'(V')),
-assign_(\ ((state),(stack')) @ ((States_Triggered),(stack')))),
-(\ P',V' @ P'(V')))(\ V' @ Sensors__(V'),((state),(stack')))
- []
-  IG & Sensors?x:{ISensors_Activate} ->
+  IG & i506_Sensors?x:{i328_ISensors_Deactivate} ->
 illegal -> STOP)
 []
-((state == States_Triggered)) & (
-Sensors?x:{ISensors_Deactivate} ->
-semi_(assign_(\ ((state),(stack')) @ ((States_Deactivated),(stack'))),
-(\ P',V' @ Sensors.return -> P'(V')))(\ V' @ Sensors__(V'),((state),(stack')))
+((i341_state == i333_States_i331_Activated)) & (
+i506_Sensors?x:{i328_ISensors_Deactivate} ->
+semi_(assign_(\ ((i341_state),(stack')) @ ((i333_States_i330_Deactivated),(stack'))),
+(\ P',V' @ i506_Sensors.return -> P'(V')))(\ V' @ i506_Sensors__(V'),((i341_state),(stack')))
  []
-  IG & Sensors?x:{ISensors_Activate} ->
+  i506_Sensors?x:{optional} ->
+semi_(semi_((\ P',V' @ i506_Sensors!i329_ISensors_NI_DetectedMovement -> P'(V')),
+assign_(\ ((i341_state),(stack')) @ ((i333_States_i332_Triggered),(stack')))),
+(\ P',V' @ P'(V')))(\ V' @ i506_Sensors__(V'),((i341_state),(stack')))
+ []
+  IG & i506_Sensors?x:{i327_ISensors_Activate} ->
+illegal -> STOP)
+[]
+((i341_state == i333_States_i332_Triggered)) & (
+i506_Sensors?x:{i328_ISensors_Deactivate} ->
+semi_(assign_(\ ((i341_state),(stack')) @ ((i333_States_i330_Deactivated),(stack'))),
+(\ P',V' @ i506_Sensors.return -> P'(V')))(\ V' @ i506_Sensors__(V'),((i341_state),(stack')))
+ []
+  IG & i506_Sensors?x:{i327_ISensors_Activate} ->
 illegal -> STOP)
 
 
-within Sensors__(((States_Deactivated),(<>))) [|{Sensors .optional}|] CHAOS({Sensors .optional})
+within i506_Sensors__(((i333_States_i330_Deactivated),(<>))) [|{i506_Sensors .optional}|] CHAOS({i506_Sensors .optional})
 
 
-bareSiliconAlarm_(IIG,IG) = let
+i1768_bareSiliconAlarm_(IIG,IG) = let
 
-bareSiliconAlarm__(((state),(stack'))) = transition_begin -> (
-((state == States_NotActivated)) & (
-alarmSystem?x:{IAlarmSystem_SwitchOn} ->
-context_active_(sendrecv_(secretCode,ISecretCode_isCodeCorrect),
-\ P',((state),((stack',value))) @ ifthenelse_((value == ISecretCode_Values_CORRECT),
-semi_((\ P',V' @ sensors!ISensors_Activate -> sensors.return -> P'(V')),
-semi_((\ P',V' @ alarmSystem.IAlarmSystem_Values_OK -> P'(V')),
-assign_(\ ((state),((stack',value))) @ ((States_Activated_Idle),((stack',value)))))),
-\ P',((state),((stack',value))) @ ifthenelse_((value == ISecretCode_Values_WRONG),
-semi_((\ P',V' @ alarmSystem.IAlarmSystem_Values_Failed -> P'(V')),
-assign_(\ ((state),((stack',value))) @ ((States_NotActivated),((stack',value))))),
+i1768_bareSiliconAlarm__(((i838_state),(stack'))) = transition_begin -> (
+((i838_state == i830_States_i825_NotActivated)) & (
+i810_alarmSystem?x:{i510_IAlarmSystem_SwitchOn} ->
+context_active_(sendrecv_(i816_secretCode,i113_ISecretCode_isCodeCorrect),
+\ P',((i838_state),((stack',i861_value))) @ ifthenelse_((i861_value == i112_ISecretCode_Values_i110_CORRECT),
+semi_((\ P',V' @ i822_sensors!i327_ISensors_Activate -> i822_sensors.return -> P'(V')),
+semi_((\ P',V' @ i810_alarmSystem.i509_IAlarmSystem_Values_i507_OK -> P'(V')),
+assign_(\ ((i838_state),((stack',i861_value))) @ ((i830_States_i826_Activated_Idle),((stack',i861_value)))))),
+\ P',((i838_state),((stack',i861_value))) @ ifthenelse_((i861_value == i112_ISecretCode_Values_i111_WRONG),
+semi_((\ P',V' @ i810_alarmSystem.i509_IAlarmSystem_Values_i508_Failed -> P'(V')),
+assign_(\ ((i838_state),((stack',i861_value))) @ ((i830_States_i825_NotActivated),((stack',i861_value))))),
 (\ P',V' @ P'(V'))
-)(P',((state),((stack',value))))
-)(P',((state),((stack',value)))))(\ V' @ transition_end -> bareSiliconAlarm__(V'),((state),(stack')))
+)(P',((i838_state),((stack',i861_value))))
+)(P',((i838_state),((stack',i861_value)))))(\ V' @ transition_end -> i1768_bareSiliconAlarm__(V'),((i838_state),(stack')))
  []
-  IIG & alarmSystem?x:{IAlarmSystem_SwitchOff} ->
+  IIG & i810_alarmSystem?x:{i512_IAlarmSystem_SwitchOff} ->
 illegal -> STOP
  []
-  IG & preAlarmTimer?x:{ISTTimerCB_Timeout} ->
+  IG & i819_preAlarmTimer?x:{i165_ISTTimerCB_Timeout} ->
 illegal -> STOP
  []
-  IG & sensors?x:{ISensors_NI_DetectedMovement} ->
+  IG & i822_sensors?x:{i329_ISensors_NI_DetectedMovement} ->
 illegal -> STOP)
 []
-((state == States_Activated_Idle)) & (
-alarmSystem?x:{IAlarmSystem_SwitchOff} ->
-semi_(context_active_(sendrecv_(secretCode,ISecretCode_isCodeCorrect),
-\ P',((state),((stack',value))) @ ifthenelse_((value == ISecretCode_Values_CORRECT),
-semi_((\ P',V' @ sensors!ISensors_Deactivate -> sensors.return -> P'(V')),
-semi_((\ P',V' @ alarmSystem!IAlarmSystem_NI_SwitchedOff -> P'(V')),
-assign_(\ ((state),((stack',value))) @ ((States_NotActivated),((stack',value)))))),
-\ P',((state),((stack',value))) @ ifthenelse_((value == ISecretCode_Values_WRONG),
-semi_((\ P',V' @ preAlarmTimer!ISTTimer_CreateTimer -> preAlarmTimer.return -> P'(V')),
-semi_((\ P',V' @ alarmSystem!IAlarmSystem_NI_SwitchOffFailed -> P'(V')),
-assign_(\ ((state),((stack',value))) @ ((States_CheckingDeactivationCode_WrongCode_Retry),((stack',value)))))),
+((i838_state == i830_States_i826_Activated_Idle)) & (
+i810_alarmSystem?x:{i512_IAlarmSystem_SwitchOff} ->
+semi_(context_active_(sendrecv_(i816_secretCode,i113_ISecretCode_isCodeCorrect),
+\ P',((i838_state),((stack',i1011_value))) @ ifthenelse_((i1011_value == i112_ISecretCode_Values_i110_CORRECT),
+semi_((\ P',V' @ i822_sensors!i328_ISensors_Deactivate -> i822_sensors.return -> P'(V')),
+semi_((\ P',V' @ i810_alarmSystem!i514_IAlarmSystem_NI_SwitchedOff -> P'(V')),
+assign_(\ ((i838_state),((stack',i1011_value))) @ ((i830_States_i825_NotActivated),((stack',i1011_value)))))),
+\ P',((i838_state),((stack',i1011_value))) @ ifthenelse_((i1011_value == i112_ISecretCode_Values_i111_WRONG),
+semi_((\ P',V' @ i819_preAlarmTimer!i161_ISTTimer_CreateTimer -> i819_preAlarmTimer.return -> P'(V')),
+semi_((\ P',V' @ i810_alarmSystem!i515_IAlarmSystem_NI_SwitchOffFailed -> P'(V')),
+assign_(\ ((i838_state),((stack',i1011_value))) @ ((i830_States_i829_CheckingDeactivationCode_WrongCode_Retry),((stack',i1011_value)))))),
 (\ P',V' @ P'(V'))
-)(P',((state),((stack',value))))
-)(P',((state),((stack',value))))),
-(\ P',V' @ alarmSystem.return -> P'(V')))(\ V' @ transition_end -> bareSiliconAlarm__(V'),((state),(stack')))
+)(P',((i838_state),((stack',i1011_value))))
+)(P',((i838_state),((stack',i1011_value))))),
+(\ P',V' @ i810_alarmSystem.return -> P'(V')))(\ V' @ transition_end -> i1768_bareSiliconAlarm__(V'),((i838_state),(stack')))
  []
-  IIG & alarmSystem?x:{IAlarmSystem_SwitchOn} ->
+  IIG & i810_alarmSystem?x:{i510_IAlarmSystem_SwitchOn} ->
 illegal -> STOP
  []
-  sensors?x:{ISensors_NI_DetectedMovement} ->
-semi_(semi_((\ P',V' @ preAlarmTimer!ISTTimer_CreateTimer -> preAlarmTimer.return -> P'(V')),
-semi_((\ P',V' @ alarmSystem!IAlarmSystem_NI_Tripped -> P'(V')),
-assign_(\ ((state),(stack')) @ ((States_Activated_Tripped),(stack'))))),
-(\ P',V' @ P'(V')))(\ V' @ transition_end -> bareSiliconAlarm__(V'),((state),(stack')))
+  i822_sensors?x:{i329_ISensors_NI_DetectedMovement} ->
+semi_(semi_((\ P',V' @ i819_preAlarmTimer!i161_ISTTimer_CreateTimer -> i819_preAlarmTimer.return -> P'(V')),
+semi_((\ P',V' @ i810_alarmSystem!i513_IAlarmSystem_NI_Tripped -> P'(V')),
+assign_(\ ((i838_state),(stack')) @ ((i830_States_i828_Activated_Tripped),(stack'))))),
+(\ P',V' @ P'(V')))(\ V' @ transition_end -> i1768_bareSiliconAlarm__(V'),((i838_state),(stack')))
  []
-  IG & preAlarmTimer?x:{ISTTimerCB_Timeout} ->
+  IG & i819_preAlarmTimer?x:{i165_ISTTimerCB_Timeout} ->
 illegal -> STOP)
 []
-((state == States_Activated_AlarmMode)) & (
-alarmSystem?x:{IAlarmSystem_SwitchOff} ->
-semi_(context_active_(sendrecv_(secretCode,ISecretCode_isCodeCorrect),
-\ P',((state),((stack',value))) @ ifthenelse_((value == ISecretCode_Values_CORRECT),
-semi_((\ P',V' @ sensors!ISensors_Deactivate -> sensors.return -> P'(V')),
-semi_((\ P',V' @ siren!ISiren_TurnOff -> siren.return -> P'(V')),
-semi_((\ P',V' @ alarmSystem!IAlarmSystem_NI_SwitchedOff -> P'(V')),
-assign_(\ ((state),((stack',value))) @ ((States_NotActivated),((stack',value))))))),
-\ P',((state),((stack',value))) @ ifthenelse_((value == ISecretCode_Values_WRONG),
-semi_((\ P',V' @ alarmSystem!IAlarmSystem_NI_SwitchOffFailed -> P'(V')),
-assign_(\ ((state),((stack',value))) @ ((States_Activated_AlarmMode),((stack',value))))),
+((i838_state == i830_States_i827_Activated_AlarmMode)) & (
+i810_alarmSystem?x:{i512_IAlarmSystem_SwitchOff} ->
+semi_(context_active_(sendrecv_(i816_secretCode,i113_ISecretCode_isCodeCorrect),
+\ P',((i838_state),((stack',i1212_value))) @ ifthenelse_((i1212_value == i112_ISecretCode_Values_i110_CORRECT),
+semi_((\ P',V' @ i822_sensors!i328_ISensors_Deactivate -> i822_sensors.return -> P'(V')),
+semi_((\ P',V' @ i813_siren!i4_ISiren_TurnOff -> i813_siren.return -> P'(V')),
+semi_((\ P',V' @ i810_alarmSystem!i514_IAlarmSystem_NI_SwitchedOff -> P'(V')),
+assign_(\ ((i838_state),((stack',i1212_value))) @ ((i830_States_i825_NotActivated),((stack',i1212_value))))))),
+\ P',((i838_state),((stack',i1212_value))) @ ifthenelse_((i1212_value == i112_ISecretCode_Values_i111_WRONG),
+semi_((\ P',V' @ i810_alarmSystem!i515_IAlarmSystem_NI_SwitchOffFailed -> P'(V')),
+assign_(\ ((i838_state),((stack',i1212_value))) @ ((i830_States_i827_Activated_AlarmMode),((stack',i1212_value))))),
 (\ P',V' @ P'(V'))
-)(P',((state),((stack',value))))
-)(P',((state),((stack',value))))),
-(\ P',V' @ alarmSystem.return -> P'(V')))(\ V' @ transition_end -> bareSiliconAlarm__(V'),((state),(stack')))
+)(P',((i838_state),((stack',i1212_value))))
+)(P',((i838_state),((stack',i1212_value))))),
+(\ P',V' @ i810_alarmSystem.return -> P'(V')))(\ V' @ transition_end -> i1768_bareSiliconAlarm__(V'),((i838_state),(stack')))
  []
-  IIG & alarmSystem?x:{IAlarmSystem_SwitchOn} ->
+  IIG & i810_alarmSystem?x:{i510_IAlarmSystem_SwitchOn} ->
 illegal -> STOP
  []
-  sensors?x:{ISensors_NI_DetectedMovement} ->
-(\ P',V' @ P'(V'))(\ V' @ transition_end -> bareSiliconAlarm__(V'),((state),(stack')))
+  i822_sensors?x:{i329_ISensors_NI_DetectedMovement} ->
+(\ P',V' @ P'(V'))(\ V' @ transition_end -> i1768_bareSiliconAlarm__(V'),((i838_state),(stack')))
  []
-  IG & preAlarmTimer?x:{ISTTimerCB_Timeout} ->
+  IG & i819_preAlarmTimer?x:{i165_ISTTimerCB_Timeout} ->
 illegal -> STOP)
 []
-((state == States_Activated_Tripped)) & (
-alarmSystem?x:{IAlarmSystem_SwitchOff} ->
-semi_(context_active_(sendrecv_(secretCode,ISecretCode_isCodeCorrect),
-\ P',((state),((stack',value))) @ ifthenelse_((value == ISecretCode_Values_CORRECT),
-semi_((\ P',V' @ sensors!ISensors_Deactivate -> sensors.return -> P'(V')),
-semi_((\ P',V' @ preAlarmTimer!ISTTimer_CancelTimer -> preAlarmTimer.return -> P'(V')),
-semi_((\ P',V' @ alarmSystem!IAlarmSystem_NI_SwitchedOff -> P'(V')),
-assign_(\ ((state),((stack',value))) @ ((States_NotActivated),((stack',value))))))),
-\ P',((state),((stack',value))) @ ifthenelse_((value == ISecretCode_Values_WRONG),
-semi_((\ P',V' @ preAlarmTimer!ISTTimer_CancelTimer -> preAlarmTimer.return -> P'(V')),
-semi_((\ P',V' @ preAlarmTimer!ISTTimer_CreateTimer -> preAlarmTimer.return -> P'(V')),
-semi_((\ P',V' @ alarmSystem!IAlarmSystem_NI_SwitchOffFailed -> P'(V')),
-assign_(\ ((state),((stack',value))) @ ((States_CheckingDeactivationCode_WrongCode_Retry),((stack',value))))))),
+((i838_state == i830_States_i828_Activated_Tripped)) & (
+i810_alarmSystem?x:{i512_IAlarmSystem_SwitchOff} ->
+semi_(context_active_(sendrecv_(i816_secretCode,i113_ISecretCode_isCodeCorrect),
+\ P',((i838_state),((stack',i1380_value))) @ ifthenelse_((i1380_value == i112_ISecretCode_Values_i110_CORRECT),
+semi_((\ P',V' @ i822_sensors!i328_ISensors_Deactivate -> i822_sensors.return -> P'(V')),
+semi_((\ P',V' @ i819_preAlarmTimer!i164_ISTTimer_CancelTimer -> i819_preAlarmTimer.return -> P'(V')),
+semi_((\ P',V' @ i810_alarmSystem!i514_IAlarmSystem_NI_SwitchedOff -> P'(V')),
+assign_(\ ((i838_state),((stack',i1380_value))) @ ((i830_States_i825_NotActivated),((stack',i1380_value))))))),
+\ P',((i838_state),((stack',i1380_value))) @ ifthenelse_((i1380_value == i112_ISecretCode_Values_i111_WRONG),
+semi_((\ P',V' @ i819_preAlarmTimer!i164_ISTTimer_CancelTimer -> i819_preAlarmTimer.return -> P'(V')),
+semi_((\ P',V' @ i819_preAlarmTimer!i161_ISTTimer_CreateTimer -> i819_preAlarmTimer.return -> P'(V')),
+semi_((\ P',V' @ i810_alarmSystem!i515_IAlarmSystem_NI_SwitchOffFailed -> P'(V')),
+assign_(\ ((i838_state),((stack',i1380_value))) @ ((i830_States_i829_CheckingDeactivationCode_WrongCode_Retry),((stack',i1380_value))))))),
 (\ P',V' @ P'(V'))
-)(P',((state),((stack',value))))
-)(P',((state),((stack',value))))),
-(\ P',V' @ alarmSystem.return -> P'(V')))(\ V' @ transition_end -> bareSiliconAlarm__(V'),((state),(stack')))
+)(P',((i838_state),((stack',i1380_value))))
+)(P',((i838_state),((stack',i1380_value))))),
+(\ P',V' @ i810_alarmSystem.return -> P'(V')))(\ V' @ transition_end -> i1768_bareSiliconAlarm__(V'),((i838_state),(stack')))
  []
-  IIG & alarmSystem?x:{IAlarmSystem_SwitchOn} ->
+  IIG & i810_alarmSystem?x:{i510_IAlarmSystem_SwitchOn} ->
 illegal -> STOP
  []
-  preAlarmTimer?x:{ISTTimerCB_Timeout} ->
-semi_(semi_((\ P',V' @ siren!ISiren_TurnOn -> siren.return -> P'(V')),
-assign_(\ ((state),(stack')) @ ((States_Activated_AlarmMode),(stack')))),
-(\ P',V' @ P'(V')))(\ V' @ transition_end -> bareSiliconAlarm__(V'),((state),(stack')))
+  i819_preAlarmTimer?x:{i165_ISTTimerCB_Timeout} ->
+semi_(semi_((\ P',V' @ i813_siren!i3_ISiren_TurnOn -> i813_siren.return -> P'(V')),
+assign_(\ ((i838_state),(stack')) @ ((i830_States_i827_Activated_AlarmMode),(stack')))),
+(\ P',V' @ P'(V')))(\ V' @ transition_end -> i1768_bareSiliconAlarm__(V'),((i838_state),(stack')))
  []
-  IG & sensors?x:{ISensors_NI_DetectedMovement} ->
+  IG & i822_sensors?x:{i329_ISensors_NI_DetectedMovement} ->
 illegal -> STOP)
 []
-((state == States_CheckingDeactivationCode_WrongCode_Retry)) & (
-alarmSystem?x:{IAlarmSystem_SwitchOff} ->
-semi_(context_active_(sendrecv_(secretCode,ISecretCode_isCodeCorrect),
-\ P',((state),((stack',value))) @ ifthenelse_((value == ISecretCode_Values_CORRECT),
-semi_((\ P',V' @ sensors!ISensors_Deactivate -> sensors.return -> P'(V')),
-semi_((\ P',V' @ preAlarmTimer!ISTTimer_CancelTimer -> preAlarmTimer.return -> P'(V')),
-semi_((\ P',V' @ alarmSystem!IAlarmSystem_NI_SwitchedOff -> P'(V')),
-assign_(\ ((state),((stack',value))) @ ((States_NotActivated),((stack',value))))))),
-\ P',((state),((stack',value))) @ ifthenelse_((value == ISecretCode_Values_WRONG),
-semi_((\ P',V' @ alarmSystem!IAlarmSystem_NI_SwitchOffFailed -> P'(V')),
-assign_(\ ((state),((stack',value))) @ ((States_CheckingDeactivationCode_WrongCode_Retry),((stack',value))))),
+((i838_state == i830_States_i829_CheckingDeactivationCode_WrongCode_Retry)) & (
+i810_alarmSystem?x:{i512_IAlarmSystem_SwitchOff} ->
+semi_(context_active_(sendrecv_(i816_secretCode,i113_ISecretCode_isCodeCorrect),
+\ P',((i838_state),((stack',i1592_value))) @ ifthenelse_((i1592_value == i112_ISecretCode_Values_i110_CORRECT),
+semi_((\ P',V' @ i822_sensors!i328_ISensors_Deactivate -> i822_sensors.return -> P'(V')),
+semi_((\ P',V' @ i819_preAlarmTimer!i164_ISTTimer_CancelTimer -> i819_preAlarmTimer.return -> P'(V')),
+semi_((\ P',V' @ i810_alarmSystem!i514_IAlarmSystem_NI_SwitchedOff -> P'(V')),
+assign_(\ ((i838_state),((stack',i1592_value))) @ ((i830_States_i825_NotActivated),((stack',i1592_value))))))),
+\ P',((i838_state),((stack',i1592_value))) @ ifthenelse_((i1592_value == i112_ISecretCode_Values_i111_WRONG),
+semi_((\ P',V' @ i810_alarmSystem!i515_IAlarmSystem_NI_SwitchOffFailed -> P'(V')),
+assign_(\ ((i838_state),((stack',i1592_value))) @ ((i830_States_i829_CheckingDeactivationCode_WrongCode_Retry),((stack',i1592_value))))),
 (\ P',V' @ P'(V'))
-)(P',((state),((stack',value))))
-)(P',((state),((stack',value))))),
-(\ P',V' @ alarmSystem.return -> P'(V')))(\ V' @ transition_end -> bareSiliconAlarm__(V'),((state),(stack')))
+)(P',((i838_state),((stack',i1592_value))))
+)(P',((i838_state),((stack',i1592_value))))),
+(\ P',V' @ i810_alarmSystem.return -> P'(V')))(\ V' @ transition_end -> i1768_bareSiliconAlarm__(V'),((i838_state),(stack')))
  []
-  IIG & alarmSystem?x:{IAlarmSystem_SwitchOn} ->
+  IIG & i810_alarmSystem?x:{i510_IAlarmSystem_SwitchOn} ->
 illegal -> STOP
  []
-  preAlarmTimer?x:{ISTTimerCB_Timeout} ->
-semi_(semi_((\ P',V' @ siren!ISiren_TurnOn -> siren.return -> P'(V')),
-assign_(\ ((state),(stack')) @ ((States_Activated_AlarmMode),(stack')))),
-(\ P',V' @ P'(V')))(\ V' @ transition_end -> bareSiliconAlarm__(V'),((state),(stack')))
+  i819_preAlarmTimer?x:{i165_ISTTimerCB_Timeout} ->
+semi_(semi_((\ P',V' @ i813_siren!i3_ISiren_TurnOn -> i813_siren.return -> P'(V')),
+assign_(\ ((i838_state),(stack')) @ ((i830_States_i827_Activated_AlarmMode),(stack')))),
+(\ P',V' @ P'(V')))(\ V' @ transition_end -> i1768_bareSiliconAlarm__(V'),((i838_state),(stack')))
  []
-  sensors?x:{ISensors_NI_DetectedMovement} ->
-(\ P',V' @ P'(V'))(\ V' @ transition_end -> bareSiliconAlarm__(V'),((state),(stack'))))
+  i822_sensors?x:{i329_ISensors_NI_DetectedMovement} ->
+(\ P',V' @ P'(V'))(\ V' @ transition_end -> i1768_bareSiliconAlarm__(V'),((i838_state),(stack'))))
 )
 
-within bareSiliconAlarm__(((States_NotActivated),(<>)))
+within i1768_bareSiliconAlarm__(((i830_States_i825_NotActivated),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
-channel IN,OUT : {preAlarmTimer.ISTTimerCB_Timeout,sensors.ISensors_NI_DetectedMovement,extensions_over_empty_channels_is_undefined}
+channel IN,OUT : {i819_preAlarmTimer.i165_ISTTimerCB_Timeout,i822_sensors.i329_ISensors_NI_DetectedMovement,extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
 channel transition_begin, transition_end
 
-channel reorder_in,reorder_out : {alarmSystem.IAlarmSystem_Values_OK,alarmSystem.IAlarmSystem_Values_Failed,alarmSystem.return}
+channel reorder_in,reorder_out : {i810_alarmSystem.i509_IAlarmSystem_Values_i507_OK,i810_alarmSystem.i509_IAlarmSystem_Values_i508_Failed,i810_alarmSystem.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -374,45 +374,45 @@ within Idle(0)
 
 within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-bareSiliconAlarm__Component(IIG) = let
+i1768_bareSiliconAlarm__Component(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {alarmSystem.IAlarmSystem_Values_OK,alarmSystem.IAlarmSystem_Values_Failed,alarmSystem.return,alarmSystem.IAlarmSystem_NI_Tripped,alarmSystem.IAlarmSystem_NI_SwitchedOff,alarmSystem.IAlarmSystem_NI_SwitchOffFailed,alarmSystem.optional,preAlarmTimer.inevitable,sensors.optional}
-ClientCalls = {alarmSystem.IAlarmSystem_SwitchOn,alarmSystem.IAlarmSystem_SwitchOff}
-UsedModeling = {preAlarmTimer.inevitable,sensors.optional}
-within compress((bareSiliconAlarm_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,alarmSystem,siren,secretCode,preAlarmTimer,sensors|},Exclude)|]
-(((Siren_(true) [[Siren.x<-siren.x|x<-extensions(Siren)]]
- ||| SecretCode_(true) [[SecretCode.x<-secretCode.x|x<-extensions(SecretCode)]]
- ||| STTimer_(true) [[STTimer.x<-preAlarmTimer.x|x<-extensions(STTimer)]]
- ||| Sensors_(true) [[Sensors.x<-sensors.x|x<-extensions(Sensors)]]
+Exclude = {i810_alarmSystem.i509_IAlarmSystem_Values_i507_OK,i810_alarmSystem.i509_IAlarmSystem_Values_i508_Failed,i810_alarmSystem.return,i810_alarmSystem.i513_IAlarmSystem_NI_Tripped,i810_alarmSystem.i514_IAlarmSystem_NI_SwitchedOff,i810_alarmSystem.i515_IAlarmSystem_NI_SwitchOffFailed,i810_alarmSystem.optional,i819_preAlarmTimer.inevitable,i822_sensors.optional}
+ClientCalls = {i810_alarmSystem.i510_IAlarmSystem_SwitchOn,i810_alarmSystem.i512_IAlarmSystem_SwitchOff}
+UsedModeling = {i819_preAlarmTimer.inevitable,i822_sensors.optional}
+within compress((i1768_bareSiliconAlarm_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,i810_alarmSystem,i813_siren,i816_secretCode,i819_preAlarmTimer,i822_sensors|},Exclude)|]
+(((i109_Siren_(true) [[i109_Siren.x<-i813_siren.x|x<-extensions(i109_Siren)]]
+ ||| i160_SecretCode_(true) [[i160_SecretCode.x<-i816_secretCode.x|x<-extensions(i160_SecretCode)]]
+ ||| i326_STTimer_(true) [[i326_STTimer.x<-i819_preAlarmTimer.x|x<-extensions(i326_STTimer)]]
+ ||| i506_Sensors_(true) [[i506_Sensors.x<-i822_sensors.x|x<-extensions(i506_Sensors)]]
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
-assert AlarmSystem_(false) :[deadlock free]
+assert i809_AlarmSystem_(false) :[deadlock free]
 
-assert AlarmSystem_(true)  \ {|AlarmSystem.optional|} :[livelock free]
+assert i809_AlarmSystem_(true)  \ {|i809_AlarmSystem.optional|} :[livelock free]
 
-assert Siren_(false) :[deadlock free]
+assert i109_Siren_(false) :[deadlock free]
 
-assert Siren_(true) :[livelock free]
+assert i109_Siren_(true) :[livelock free]
 
-assert SecretCode_(false) :[deadlock free]
+assert i160_SecretCode_(false) :[deadlock free]
 
-assert SecretCode_(true) :[livelock free]
+assert i160_SecretCode_(true) :[livelock free]
 
-assert STTimer_(false) :[deadlock free]
+assert i326_STTimer_(false) :[deadlock free]
 
-assert STTimer_(true)  \ {|STTimer.inevitable|} :[livelock free]
+assert i326_STTimer_(true)  \ {|i326_STTimer.inevitable|} :[livelock free]
 
-assert Sensors_(false) :[deadlock free]
+assert i506_Sensors_(false) :[deadlock free]
 
-assert Sensors_(true)  \ {|Sensors.optional|} :[livelock free]
+assert i506_Sensors_(true)  \ {|i506_Sensors.optional|} :[livelock free]
 
-assert bareSiliconAlarm_(true,true) :[deterministic]
-assert STOP [T= bareSiliconAlarm__Component(false) \ diff(Events,{illegal})
-assert bareSiliconAlarm__Component(false) :[deadlock free]
-assert AlarmSystem_(true) [[AlarmSystem.x<-alarmSystem.x|x<-extensions(AlarmSystem)]] \ {alarmSystem.optional} [F= bareSiliconAlarm__Component(true) \ diff(Events,{|illegal,alarmSystem|})
-assert bareSiliconAlarm__Component(true) \ diff(Events,{|illegal,alarmSystem|}) :[livelock free]
+assert i1768_bareSiliconAlarm_(true,true) :[deterministic]
+assert STOP [T= i1768_bareSiliconAlarm__Component(false) \ diff(Events,{illegal})
+assert i1768_bareSiliconAlarm__Component(false) :[deadlock free]
+assert i809_AlarmSystem_(true) [[i809_AlarmSystem.x<-i810_alarmSystem.x|x<-extensions(i809_AlarmSystem)]] \ {i810_alarmSystem.optional} [F= i1768_bareSiliconAlarm__Component(true) \ diff(Events,{|illegal,i810_alarmSystem|})
+assert i1768_bareSiliconAlarm__Component(true) \ diff(Events,{|illegal,i810_alarmSystem|}) :[livelock free]
