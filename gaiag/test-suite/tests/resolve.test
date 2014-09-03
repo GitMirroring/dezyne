@@ -1,0 +1,169 @@
+;; -*-scheme-*-
+
+(read-set! keywords 'prefix)
+
+(define-module (test-handler)
+  :use-module (test-suite lib)
+  :use-module (test-suite misc)
+
+  :use-module (gaiag ast:)
+  :use-module (gaiag resolve))
+
+(pass-if "resolve-first-dummy-test"
+         #t)
+
+(define resolve-ast
+  '((interface
+        ivar
+      (types (enum E (v)))
+      (events (in (signature (type E)) foo))
+      (behaviour
+       #f
+       (types
+        (enum State (one two)))
+       (variables
+        (variable (type State) m (expression (value State one))))
+       (functions (function toggle (signature (type void)) (compound)))
+       (compound
+        (on (triggers (trigger #f foo))
+            (reply (expression (value E v)))))))
+    (component
+     var
+     (ports (provides ivar i) (requires ivar o))
+     (behaviour
+      #f
+      (types
+       (enum State (one two)))
+      (variables
+       (variable (type State) m (expression (value State one)))
+       (variable (type bool) b true))
+       (functions (function fun (signature (type void) (parameters (parameter (type bool) a)))
+                            (compound (assign a true))))
+      (compound
+       (on (triggers (trigger i foo))
+           (compound
+            (variable (type ivar (type E)) e (expression (value o foo)))
+            (assign e (expression (value o foo)))))
+       (reply e))))))
+
+(pass-if "ast:resolve-function-call"
+         (pretty-noisy-equal?
+          ((ast:resolve-model
+            (car resolve-ast))
+           '(on (triggers ((trigger #f e)))
+                (compound
+                 (action toggle))))
+          '(on (triggers ((trigger #f e)))
+               (compound
+                (call toggle)))))
+
+(pass-if "ast:resolve-variable-valued-action"
+         (pretty-noisy-equal?
+          ((ast:resolve-model
+            (cadr resolve-ast))
+           '(on (triggers (trigger o foo))
+                (compound
+                 (variable (type ivar (type E))
+                           e
+                           (expression (value o foo))))))
+
+          '(on (triggers (trigger o foo))
+               (compound
+                (variable (type ivar (type E))
+                          e
+                          (action (trigger o foo)))))))
+
+(pass-if "ast:resolve-assign-valued-action"
+         (pretty-noisy-equal?
+          ((ast:resolve-model
+            (cadr resolve-ast))
+           '(on (triggers (trigger o foo))
+                (compound
+                 (assign e (expression (value o foo))))))
+
+          '(on (triggers (trigger o foo))
+               (compound
+                (assign e (action (trigger o foo)))))))
+
+(pass-if "ast:resolve-value-enum-value"
+         (pretty-noisy-equal?
+          ((ast:resolve-model
+            (cadr resolve-ast))
+           '(variables
+             (variable (type State) m (expression (value State one)))))
+          '(variables
+            (variable (type State) m (expression (literal #f State one))))))
+
+(pass-if "ast:resolve-value-field-interface"
+         (pretty-noisy-equal?
+          ((ast:resolve-model
+            (car resolve-ast))
+           '(guard (expression (value m one)) (illegal)))
+          '(guard (expression (field m one)) (illegal))))
+
+(define resolve-system
+  '(component
+    trap
+    (ports (provides I i) (requires U u))
+    (system
+     #f
+     (compound
+      (instance trip u)
+      (bind i (value u i))
+      (bind (value u u) u)))))
+
+(pass-if "ast:resolve-system"
+         (pretty-noisy-equal?
+          ((ast:resolve-system
+            resolve-system)
+           '(component c (ports) (system #f (compound))))
+          '(system c (ports) (instances) (bindings))))
+
+(pass-if "ast:resolve-binds"
+         (pretty-noisy-equal?
+          ((ast:resolve-system
+            resolve-system)
+           '(bind i (value u i)))
+          '(bind (plug #f i) (plug u i))))
+
+(pass-if "ast:resolve-member"
+         (pretty-noisy-equal?
+          ((ast:resolve-model
+            (cadr resolve-ast))
+           '(assign m m))
+          '(assign m (var m))))
+
+(pass-if "ast:resolve-local"
+         (pretty-noisy-equal?
+          ((ast:resolve-model
+            (cadr resolve-ast))
+           '(compound
+             (variable (type ivar (type E)) e (expression (value o foo)))
+             (assign e e)))
+          '(compound
+             (variable (type ivar (type E)) e (action (trigger o foo)))
+             (assign e (var e)))))
+
+(pass-if "ast:resolve-missing-local"
+         (pretty-noisy-equal?
+          ((ast:resolve-model
+            (cadr resolve-ast))
+           '(assign e e))
+          '(assign e e)))
+
+(pass-if "ast:resolve-true"
+         (pretty-noisy-equal?
+          ((ast:resolve-model
+            (cadr resolve-ast))
+           '(assign b true))
+          '(assign b true)))
+
+(pass-if "ast:resolve-parameter"
+         (pretty-noisy-equal?
+          ((ast:resolve-model
+            (cadr resolve-ast))
+           '(function fun (signature (type void) (parameters (parameter (type bool) a)))
+                            (compound (assign b a))))
+          '(function fun (signature (type void) (parameters (parameter (type bool) a)))
+                     #f
+                     (compound (assign b (var a))))))

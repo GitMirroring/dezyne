@@ -1,0 +1,19 @@
+;; -*-scheme-*-
+
+(read-set! keywords 'prefix)
+
+(define-module (test-handler)
+  :use-module (test-suite lib)
+  :use-module (test-suite misc)
+
+  :use-module (gaiag ast:)
+  :use-module (gaiag gom))
+
+(pass-if "gom-first-dummy-test"
+         #t)
+
+(pass-if "find-events"
+  (gom-pretty-noisy-equal?
+   (gom:find-events
+    (ast->gom '(on (arm) (compound))))
+   '((trigger #f arm))))

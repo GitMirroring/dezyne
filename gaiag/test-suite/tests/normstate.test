@@ -1,0 +1,215 @@
+;; -*-scheme-*-
+;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
+;;
+;; Copyright (C) 2014  Jan Nieuwenhuizen <janneke@gnu.org>
+;;
+;; Gaiag is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU Affero General Public License as
+;; published by the Free Software Foundation, either version 3 of the
+;; License, or (at your option) any later version.
+;;
+;; Gaiag is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU Affero General Public License for more details.
+;;
+;; You should have received a copy of the GNU Affero General Public License
+;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
+
+(read-set! keywords 'prefix)
+
+(define-module (test-handler)
+  :use-module (test-suite lib)
+  :use-module (test-suite misc)
+
+  :use-module (gaiag ast:)
+  :use-module (gaiag reader)
+  :use-module (gaiag normstate))
+
+(pass-if "normstate-first-dummy-test"
+	 #t)
+
+(pass-if "normstate-101"
+  (pretty-noisy-equal?
+   (normstate
+    (ast:interface (asd->ast
+      #{
+        interface i { behaviour { on a: [true] { } } } #})))
+   '(interface i (types) (events)
+               (behaviour #f (types) (variables) (functions)
+                          (compound
+                           (guard (expression true) (on (triggers (trigger #f a)) (skip))))))))
+
+(pass-if "normstate-102"
+  (pretty-noisy-equal?
+   (normstate
+    (ast:interface (asd->ast
+      #{
+        interface i { behaviour { on a: [true] b;
+                                     } } #})))
+   '(interface i (types) (events)
+               (behaviour #f (types) (variables) (functions)
+                          (compound
+                           (guard (expression true)
+                                  (on (triggers (trigger #f a))
+                                      (action (trigger #f b)))))))))
+
+(pass-if "normstate-aggregate-guard-passive"
+  (pretty-noisy-equal?
+   (normstate
+    (ast:interface (asd->ast
+      #{
+        interface i { behaviour { on a,b,c: [true] d;
+                                     } } #})))
+   '(interface i (types) (events)
+               (behaviour #f (types) (variables) (functions)
+                          (compound
+                           (guard (expression true)
+                                  (on (triggers (trigger #f a) (trigger #f b) (trigger #f c))
+                                      (action (trigger #f d)))))))))
+
+(pass-if "normstate-aggregate-guard-active"
+  (pretty-noisy-equal?
+   (normstate
+    (ast:interface (asd->ast
+      #{
+        interface i { behaviour { on a: [true] d;
+                                     on b: [true] e;
+                                     on c: [true] f;
+                                     } } #})))
+   '(interface i (types) (events)
+               (behaviour #f (types) (variables) (functions)
+                          (compound
+                           (guard (expression true)
+                                  (compound
+                                   (on (triggers (trigger #f a)) (action (trigger #f d)))
+                                   (on (triggers (trigger #f b)) (action (trigger #f e)))
+                                   (on (triggers (trigger #f c)) (action (trigger #f f))))))))))
+
+(pass-if "normstate-function-call"
+  (pretty-noisy-equal?
+   (normstate
+    (ast:interface (asd->ast
+      #{
+        interface i { behaviour { void foo(){ if(true){}} on a,b,c: [true] d ;
+                                                 } } #})))
+   '(interface i (types) (events)
+               (behaviour #f
+                          (types)
+                          (variables)
+                          (functions
+                           (function foo (signature (type void))
+                                     (compound (if (expression true) (skip)))))
+                          (compound
+                           (guard (expression true)
+                                  (on (triggers (trigger #f a) (trigger #f b) (trigger #f c))
+                                      (action (trigger #f d)))))))))
+
+
+(pass-if "normstate-split-on-passive"
+  (pretty-noisy-equal?
+   (normstate
+    (ast:interface (asd->ast
+      #{
+        interface i { behaviour { on a,b,c: [true] d;
+                                     } } #})))
+   '(interface i (types) (events)
+               (behaviour #f (types) (variables) (functions)
+                          (compound
+                           (guard (expression true)
+                                  (on (triggers (trigger #f a) (trigger #f b) (trigger #f c))
+                                      (action (trigger #f d)))))))))
+
+(pass-if "normstate-split-on-active"
+  (pretty-noisy-equal?
+   (normstate
+    (ast:component (asd->ast
+      #{
+        component c { behaviour { on i.a,i.b,j.a: [true] d;
+                                     on j.b: [true] e;
+                                     } } #})))
+   '(component c (ports)
+               (behaviour #f (types) (variables) (functions)
+                          (compound
+                           (guard (expression true)
+                                  (compound
+                                   (on (triggers (trigger i a) (trigger i b))
+                                       (action (trigger #f d)))
+                                   (on (triggers (trigger j a))
+                                       (action (trigger #f d)))
+                                   (on (triggers (trigger j b))
+                                       (action (trigger #f e))))))))))
+
+(pass-if "normstate-aggregate-on-interface-passive"
+  (pretty-noisy-equal?
+   (normstate
+    (ast:interface (asd->ast
+      #{
+        interface i { behaviour { on a,b,c: [true] d;
+                                     } } #})))
+   '(interface i (types) (events)
+               (behaviour #f (types) (variables) (functions)
+                          (compound
+                           (guard (expression true)
+                                  (on (triggers (trigger #f a) (trigger #f b) (trigger #f c)) (action (trigger #f d)))))))))
+
+(pass-if "normstate-aggregate-on-interface-active"
+  (pretty-noisy-equal?
+   (normstate
+    (ast:interface (asd->ast
+      #{
+        interface i { behaviour { on a: [true] d;
+                                  on b: [true] d;
+                                  on c: [true] d;
+                                     } } #})))
+   '(interface i (types) (events)
+               (behaviour #f (types) (variables) (functions)
+                          (compound
+                           (guard (expression true)
+                                  (compound
+                                   (on (triggers (trigger #f a) (trigger #f b) (trigger #f c)) (action (trigger #f d))))))))))
+
+;; not modifying the input where it is already fine,
+;; helps retaining more location information in AST.
+(pass-if "normstate-aggregate-on-component-passive"
+  (pretty-noisy-equal?
+   (normstate
+    (ast:component (asd->ast
+      #{
+        component c { behaviour { on i.a,i.b: [true] d;
+                                  on j.a:     [true] d;
+                                  on j.b:     [true] e;
+                                     } } #})))
+   '(component c (ports)
+               (behaviour #f (types) (variables) (functions)
+                          (compound
+                           (guard (expression true)
+                                  (compound
+                                   (on (triggers (trigger i a) (trigger i b))
+                                       (action (trigger #f d)))
+                                   (on (triggers (trigger j a))
+                                       (action (trigger #f d)))
+                                   (on (triggers (trigger j b))
+                                       (action (trigger #f e))))))))))
+
+(pass-if "normstate-aggregate-on-component-active"
+  (pretty-noisy-equal?
+   (normstate
+    (ast:component (asd->ast
+      #{
+        component c { behaviour { on i.a: [true] d;
+                                  on i.b: [true] d;
+                                  on j.a: [true] d;
+                                  on j.b: [true] e;
+                                     } } #})))
+   '(component c (ports)
+               (behaviour #f (types) (variables) (functions)
+                          (compound
+                           (guard (expression true)
+                                  (compound
+                                   (on (triggers (trigger i a) (trigger i b))
+                                       (action (trigger #f d)))
+                                   (on (triggers (trigger j a))
+                                       (action (trigger #f d)))
+                                   (on (triggers (trigger j b))
+                                       (action (trigger #f e))))))))))
