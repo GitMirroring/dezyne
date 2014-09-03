@@ -59,6 +59,6 @@
             (map (assert component) component-checks))))
 
 (define-method (assert-list (o <top>))
-  (assert-list ((compose ast->gom ast:resolve) o)))
+  (assert-list ((gom:register (compose ast->gom ast:resolve)) o #t)))
 
 (define ast-> assert-list)
