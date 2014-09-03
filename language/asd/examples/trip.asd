@@ -118,7 +118,10 @@ component trip
           i.a;
         }
 
-        U.Status s = u.what;
+        U.Status s = U.Status.Ok;
+        s = U.Status.Nok;
+        s = u.what;
+        b = s == U.Status.Ok;
 
         if(s == U.Status.Ok)
         {

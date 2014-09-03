@@ -58,6 +58,7 @@
 	   csp-expression->string
 	   csp-transform
 	   csp-transform*
+           csp:norm
 
            make-context
            context-extend
@@ -216,16 +217,16 @@
              (type (.type variable)))
             (ast:type type)))
 
-(define (csp-expression->string ast src) ;; FIXME: no test
+(define (csp-expression->string ast src) ;; FIXME: more tests
   (define (paren expression)
     (let ((value (if (is-a? expression <expression>) (.value expression) expression)))
       (if (or (number? value) (symbol? value) (is-a? value <var>))
           (csp-expression->string ast expression)
           (list "(" (csp-expression->string ast expression) ")"))))
-
   (match src
+    (($ <var> identifier) identifier)
     (($ <expression>) (csp-expression->string ast (.value src)))
-    ((or (? number?) (? symbol?)) src)
+    ((or (? number?) (? string?) (? symbol?)) src)
     (($ <field> identifier field)
      (let ((enum (enum-type ast identifier)))
        (list "(" identifier " == " enum "_" field ")")))
@@ -534,7 +535,7 @@
 (define (element->csp ast x)
   (match x
     (('vector expressions ...) (string-append "(" (comma-join (map (lambda (x) (csp-expression->string ast x)) expressions)) ")"))
-    (_ (->string x))))
+    (_ (->string (csp-expression->string ast x)))))
 
 (define (context->csp ast context)
   (match context
