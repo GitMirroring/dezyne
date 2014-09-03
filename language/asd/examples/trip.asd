@@ -34,6 +34,10 @@ interface I
   behaviour
   {
     bool b = false;
+    void h ()
+    {
+      if (b) return;
+    }
     bool g (bool ga, bool gb)
     {
       a;
@@ -47,7 +51,7 @@ interface I
         bool c = g (b, b);
 
         b = g (c, c);
-
+        h ();
         if(c)
         {
           a;
