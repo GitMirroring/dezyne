@@ -94,7 +94,7 @@
 
 
 (define ((animate-template file-name) module)
-  (animate-file (symbol-append 'templates/ file-name) module))
+  (animate-file (append (prefix-dir) '(templates file-name)) module))
 
 (define (c++-module ast)
   (let ((module (make-module 31 (list

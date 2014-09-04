@@ -45,6 +45,8 @@
            2+
            2-
            alist->hash-table
+           components->file-name
+           file-name->components
            diff
            dump-file
            dump-output
@@ -116,11 +118,34 @@
 		  (list< (car a) (car b))
 		  (symbol< (car a) (car b)))))))
 
+(define (join-components components)
+  (apply
+   string-append
+   (let loop ((components components))
+     (if (null? components)
+         '()
+         (let ((separator (if (and (>1 (length components))
+                                   (not (string-prefix? "." (cadr components))))
+                              "/" "")))
+           (append (list (car components) separator)
+                   (loop (cdr components))))))))
+
+(define (file-name->components file-name)
+  (map string->symbol (string-split file-name #\/)))
+
+(define (components->file-name- components)
+  (join-components (map ->string components)))
+
+(define (components->file-name components)
+  (if (pair? components)
+      (components->file-name- components)
+      (->string components)))
+
 (define (dump-file file-name string)
-  (with-output-to-file (->string file-name) (lambda () (display string))))
+  (with-output-to-file (components->file-name file-name) (lambda () (display string))))
 
 (define (dump-output file-name thunk)  ;; JUNK ME
-  (with-output-to-file (->string file-name) thunk))
+  (with-output-to-file (components->file-name file-name) thunk))
 
 (define (read-string-12.04)
   (read-delimited ""))
@@ -129,7 +154,7 @@
     (module-define! (current-module) 'read-string read-string-12.04))
 
 (define (gulp-file file-name)
-  (with-input-from-file (->string file-name) read-string))
+  (with-input-from-file (components->file-name file-name) read-string))
 
 (define (gulp-port . port)
   (or (and-let* ((result (read-delimited "" (if (pair? port) (car port) (current-input-port))))

@@ -66,15 +66,22 @@
   (map string->symbol (string-split file-name #\/)))
 
 (define (prefix-dir)
-  (append
-   ((compose file-name->components dirname dirname dirname dirname)
-    (or (%search-load-path "gaiag/ast:")
-        (search-path %load-compiled-path "gaiag/ast:")
-        "/home/janneke/vc/verum/development/build/ccache/gaiag/ast:"))
-   '(gaiag)))
+  (let* ((canary "gaiag/ast:")
+         (canary.go (string-append canary ".go"))
+         (canary.scm (string-append canary ".scm")))
+    (append
+     ((compose file-name->components dirname dirname dirname dirname)
+      (or (search-path %load-compiled-path canary.go)
+          (%search-load-path canary.scm)
+          (begin
+            (stderr "gaiag: Installation error\n")
+            (stderr "No such file or directory: ~a [~a]\n" canary.go  %load-compiled-path)
+            (stderr "No such file or directory: ~a [~a]\n" canary.scm %load-path)
+            (exit 2))))
+     '(gaiag))))
 
 (define template-dir (make-parameter (append (prefix-dir) '(templates))))
-(define (template-file name) (string-join (map symbol->string (append (template-dir) (list name))) "/"))
+(define (template-file name) (append (template-dir) (list name)))
 (define (gulp-template name) (gulp-file (template-file name)))
 
 (define templates (make-parameter
@@ -136,7 +143,7 @@
   (with-input-from-file file-name (lambda () (line-column-location tell))))
 
 (define (animate-file file-name module)
-  (with-input-from-file (->string file-name) (lambda () (animate-input module file-name))))
+  (with-input-from-file (components->file-name file-name) (lambda () (animate-input module file-name))))
 
 (define* (animate-input module :optional (file-name "<input>"))
   (catch 'parse-error

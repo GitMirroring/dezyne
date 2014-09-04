@@ -96,7 +96,7 @@
       ast))
 
 (define (csp-component module)
-  (animate-file 'templates/component.csp.scm module))
+  (animate-file (append (prefix-dir) '(templates component.csp.scm)) module))
 
 (define (csp-asserts module)
   (let* ((asserts-string (option-ref (parse-opts (command-line)) 'assert #f))

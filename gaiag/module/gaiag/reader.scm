@@ -48,14 +48,26 @@
 (define (read-asd- file-name)
   (asd-reader (open-file file-name "r") (current-module)))
 
+(define *include-path* '("."))
+(define* (find-file file-name)
+  (let* ((file-name (components->file-name file-name))
+         (resolved (search-path *include-path* file-name))
+         (dir (or (and=> resolved dirname)
+                  (begin
+                    (stderr "No such file or directory: ~a [~a]\n" file-name *include-path*)
+                    (exit 2)))))
+    (when (not (member dir *include-path*))
+      (set! *include-path* (cons dir *include-path*)))
+    resolved))
+
 (define* (read-asd file-name :optional (register (@ (gaiag ast) register)))
-  (register (read-asd- file-name)))
+  (register (read-asd- (find-file file-name))))
 
 (define (read-ast- file-name)
-  (let ((s (->string file-name)))
-    (if (string-suffix? ".scm" s)
-        (read (open-input-file s))
-        (read-asd- s))))
+  (let ((file-name (find-file file-name)))
+    (if (string-suffix? ".scm" file-name)
+        (read (open-input-file file-name))
+        (read-asd- file-name))))
 
 (define* (read-ast file-name :optional (register (@ (gaiag ast) register)))
   "Read contents of FILE-NAME and return the AST.
