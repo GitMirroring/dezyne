@@ -1,7 +1,8 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
+//
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -20,16 +21,62 @@
 //
 // Code:
 
-import Comm1;
-
-component Comm1Impl
+interface I
 {
-  provides Comm1 prv;
-  
-  behaviour 
-  {
-    on prv.send1: prv.receive1;  
-  }
+  in void e;
+  out void f;
 
+  behaviour
+  {
+    bool b = false;
+    bool g (bool ga, bool gb) 
+    {
+      f;
+      return ga || gb;
+    }
+
+    [true] 
+      on e:
+      {
+        b = ! b;
+        bool c = g (b, b);
+        
+        b = g (c, c);
+        
+        if(c)
+        {
+          f;
+        }
+      }
+  }
 }
 
+
+component argument2
+{
+  provides I i;
+
+  behaviour
+  {
+    bool b = false;
+    bool g (bool ga, bool gb) 
+    { 
+      i.f; 
+      return ga || gb; 
+    }
+
+    [true] 
+      on i.e:
+      {
+        b = ! b;
+        bool c = g (b, b);
+        
+        b = g (c, c);
+        
+        if(c)
+        {
+          i.f;
+        }
+      }
+  }
+}

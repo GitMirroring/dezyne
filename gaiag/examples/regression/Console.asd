@@ -1,8 +1,8 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
+//
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -21,70 +21,70 @@
 //
 // Code:
 
-interface Sensor
+interface Console
 {
-  in void enable;
-  in void disable;
+    in void arm;
+    in void disarm;
 
-  out void triggered;
-  out void disabled;
+    out void detected;
+    out void deactivated;
 
-  behaviour b
+  behaviour a
   {
     enum States {
-        Disabled,
-        Enabled,
-        Disabling,
-        Triggered
+        Disarmed,
+        Armed,
+        Triggered,
+        Disarming
     };
-    States state = States.Disabled;
 
-    [state.Disabled]
+    States state = States.Disarmed;
+
+    [state.Disarmed]
     {
-      on enable:
+      on arm:
       {
-        state = States.Enabled;
+        state = States.Armed;
       }
-      on disable:
+      on disarm:
         illegal;
     }
-    [state.Enabled]
+
+    [state.Armed]
     {
-      on enable:
-        illegal;
-      on disable:
+      on disarm:
       {
-        state = States.Disabling;
+        state = States.Disarming;
       }
       on optional:
       {
-        triggered;
+        detected;
         state = States.Triggered;
       }
-    }
-    [state.Disabling]
-    {
-      on enable, disable:
+      on arm:
         illegal;
-      on inevitable:
-      {
-        disabled;
-        state = States.Disabled;
-      }
     }
+
     [state.Triggered]
     {
-      on enable:
-        illegal;
-      on disable:
+      on disarm:
       {
-        state = States.Disabling;
+        state = States.Disarming;
       }
+      on arm:
+        illegal;
+    }
+
+    [state.Disarming]
+    {
+      on inevitable:
+      {
+        deactivated;
+        state = States.Disarmed;
+      }
+      on arm, disarm:
+        illegal;
     }
   }
 }
 
-component Sensor
-{
-  provides Sensor sensor;
-}

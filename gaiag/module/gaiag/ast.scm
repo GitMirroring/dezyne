@@ -926,7 +926,7 @@
 ;;
 ;; Read and parse the ASD source file for MODEL-NAME, return its AST.
 (define (read-ast model-name)
-  (and-let* ((ast (null-is-#f (read-asd (->string (list 'examples '/ model-name '.asd)))))
+  (and-let* ((ast (null-is-#f (read-asd (list model-name '.asd))))
              (models (null-is-#f (models ast))))
             (find (lambda (model) (eq? (name model) model-name)) models)))
 

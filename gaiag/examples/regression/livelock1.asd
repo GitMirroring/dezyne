@@ -1,7 +1,8 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
+//
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -20,14 +21,34 @@
 //
 // Code:
 
-interface Comm1
+interface nolivelock
 {
-  in void send1;
-  out void receive1;
-  
+  in void dummy;
+
   behaviour
   {
-    on send1: receive1;
+    on dummy: illegal;
   }
+}
 
+interface ilivelock
+{
+  out void dummy;
+
+  behaviour
+  {
+    on inevitable: dummy;
+  }
+}
+
+component livelock1
+{
+  provides nolivelock n;
+  requires ilivelock l;
+
+  behaviour
+  {
+    on n.dummy: illegal;
+    on l.dummy: {}
+  }
 }

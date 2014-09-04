@@ -1,7 +1,8 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
+//
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -20,19 +21,27 @@
 //
 // Code:
 
-import CommImpl;
-import Comm1Impl;
-import Comm2Impl;
+#include "component-AlarmSystem-c3.hh"
 
-system CommSystem
+void detected()
 {
-  provides Comm0 prv;
-  
-  CommImpl cccc;
-  Comm1Impl cmm1;
-  Comm2Impl cmm2;
-  prv <=> cccc.api;
-  cccc.inst1 <=> cmm1.prv;
-  cccc.inst2 <=> cmm2.prv; 
+  std::cout << "Console.detected" << std::endl;
 }
 
+void deactivated()
+{
+  std::cout << "Console.deactivated" << std::endl;
+}
+
+int main()
+{
+  component::AlarmSystem alarmsystem;
+
+  alarmsystem.console.out.detected = detected;
+  alarmsystem.console.out.deactivated = deactivated;
+
+  alarmsystem.console.in.arm();
+  alarmsystem.sensor.sensor.out.triggered();
+  alarmsystem.console.in.disarm();
+  alarmsystem.sensor.sensor.out.disabled();
+}

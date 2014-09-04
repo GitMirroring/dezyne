@@ -1,7 +1,8 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
+//
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -20,62 +21,41 @@
 //
 // Code:
 
-interface I
+interface Siren
 {
-  in void e;
-  out void f;
+  in void turnon;
+  in void turnoff;
 
-  behaviour
+  behaviour c
   {
-    bool b = false;
-    bool g (bool ga, bool gb) 
-    {
-      f;
-      return ga || gb;
-    }
+    enum States {
+        Off,
+        On
+    };
+    States state = States.Off;
 
-    [true] 
-      on e:
+    [state.Off]
+    {
+      on turnon:
       {
-        b = ! b;
-        bool c = g (b, b);
-        
-        b = g (c, c);
-        
-        if(c)
-        {
-          f;
-        }
+        state = States.On;
       }
+      on turnoff:
+        illegal;
+    }
+    [state.On]
+    {
+      on turnoff:
+      {
+        state = States.Off;
+      }
+      on turnon:
+        illegal;
+    }
   }
 }
 
-
-component argument2
+component Siren
 {
-  provides I i;
-
-  behaviour
-  {
-    bool b = false;
-    bool g (bool ga, bool gb) 
-    { 
-      i.f; 
-      return ga || gb; 
-    }
-
-    [true] 
-      on i.e:
-      {
-        b = ! b;
-        bool c = g (b, b);
-        
-        b = g (c, c);
-        
-        if(c)
-        {
-          i.f;
-        }
-      }
-  }
+  provides Siren siren;
 }

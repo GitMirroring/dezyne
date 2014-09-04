@@ -2,7 +2,6 @@
 //
 // This file is part of Gaiag.
 //
-// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
@@ -22,36 +21,70 @@
 //
 // Code:
 
-interface ilivelock
+interface I
 {
-  in void dummy;
+  in void a;
+  in void b;
+
+  out void c;
+  out void d;
 
   behaviour
   {
-    on dummy: illegal;
+    bool f = false;
 
-    on inevitable: {}
+    void toggle ()
+    {
+      if (f)
+      {
+        c;
+      }
+      f = !f;
+    }
+    [true]
+    {
+      on a:
+      {
+	toggle();
+      }
+      on b:
+      {
+	toggle();
+	toggle();
+	d;
+      }
+    }
   }
 }
 
-interface nolivelock
+component function
 {
-  out void dummy;
+  provides I i;
 
   behaviour
   {
-    on inevitable: dummy;
-  }
-}
+    bool f = false;
 
-component livelock2
-{
-  provides ilivelock l;
-  requires nolivelock n;
-
-  behaviour
-  {
-    on l.dummy: illegal;
-    on n.dummy: {}
+    void toggle ()
+    {
+      if (f)
+      {
+        i.c;
+      }
+      f = !f;
+    }
+    [true]
+    {
+      on i.a:
+      {
+	toggle();
+      }
+      on i.b:
+      {
+	toggle();
+	toggle();
+	i.d;
+      }
+    }
   }
 }

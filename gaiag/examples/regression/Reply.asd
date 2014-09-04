@@ -2,7 +2,6 @@
 //
 // This file is part of Gaiag.
 //
-// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
@@ -24,67 +23,69 @@
 
 interface I
 {
-  in void a;
-  in void b;
+  enum Status { Yes, No };
 
-  out void c;
-  out void d;
+  in Status done;
 
   behaviour
   {
-    bool f = false;
+    bool dummy = false;
 
-    void toggle ()
+    on done:
     {
-      if (f)
-      {
-        c;
-      }
-      f = !f;
+      [true] { reply(Status.Yes); }
+      [true] { reply(Status.No); }
     }
-    [true]
+  }
+}
+
+interface U
+{
+  enum Status { Ok, Nok };
+
+  in Status what;
+
+  behaviour
+  {
+    bool dummy = false;
+
+    on what:
     {
-      on a:
+      [true]
       {
-	toggle();
+        reply(Status.Ok);
       }
-      on b:
+      [true]
       {
-	toggle();
-	toggle();
-	d;
+        reply(Status.Nok);
       }
     }
   }
 }
 
-component function
+component Reply
 {
   provides I i;
+  requires U u;
 
   behaviour
   {
-    bool f = false;
+    bool dummy = false;
 
-    void toggle ()
-    {
-      if (f)
-      {
-        i.c;
-      }
-      f = !f;
-    }
     [true]
     {
-      on i.a:
+      on i.done:
       {
-	toggle();
-      }
-      on i.b:
-      {
-	toggle();
-	toggle();
-	i.d;
+        U.Status s = u.what;
+
+        if(s == U.Status.Ok)
+        {
+          reply(I.Status.Yes);
+        }
+        else
+        {
+          reply(I.Status.No);
+        }
       }
     }
   }

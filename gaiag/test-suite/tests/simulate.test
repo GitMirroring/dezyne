@@ -95,7 +95,7 @@
     #t))
 
 (pass-if "walk-trail-pauls"
-  (let* ((pauls-ast (read-ast 'examples/Comp.asd))
+  (let* ((pauls-ast (read-ast 'examples/regression/Comp.asd))
          (model (ast:component pauls-ast))
          (trail '(client.initialize result_t.OK result_t.OK client.perform_actions result_t.OK result_t.OK client.perform_actions result_t.NOK client.recover result_t.OK client.perform_actions))
          (pauls-trace (walk-trail model trail))
@@ -103,7 +103,7 @@
     #t))
 
 (pass-if "explore-space-pauls"
-  (let* ((pauls-ast (read-ast 'examples/Comp.asd))
+  (let* ((pauls-ast (read-ast 'examples/regression/Comp.asd))
          (model (ast:component pauls-ast))
          (pauls-space (explore-space model))
          (baseline-space 'baseline-space))

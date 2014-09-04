@@ -62,9 +62,6 @@
            template-dir
            templates))
 
-(define (file-name->components file-name)
-  (map string->symbol (string-split file-name #\/)))
-
 (define (prefix-dir)
   (let* ((canary "gaiag/ast:")
          (canary.go (string-append canary ".go"))

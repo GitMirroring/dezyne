@@ -1,7 +1,8 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
+//
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -19,6 +20,9 @@
 // Commentary:
 //
 // Code:
+
+import Sensor;
+import Siren;
 
 interface Console
 {
@@ -87,103 +91,6 @@ interface Console
   }
 }
 
-interface Sensor
-{
-  in void enable;
-  in void disable;
-
-  out void triggered;
-  out void disabled;
-
-  behaviour b
-  {
-    enum States {
-        Disabled,
-        Enabled,
-        Disabling,
-        Triggered
-    };
-    States state = States.Disabled;
-
-    [state.Disabled]
-    {
-      on enable:
-      {
-        state = States.Enabled;
-      }
-      on disable:
-        illegal;
-    }
-    [state.Enabled]
-    {
-      on enable:
-        illegal;
-      on disable:
-      {
-        state = States.Disabling;
-      }
-      on optional:
-      {
-        triggered;
-        state = States.Triggered;
-      }
-    }
-    [state.Disabling]
-    {
-      on enable, disable:
-        illegal;
-      on inevitable:
-      {
-        disabled;
-        state = States.Disabled;
-      }
-    }
-    [state.Triggered]
-    {
-      on enable:
-        illegal;
-      on disable:
-      {
-        state = States.Disabling;
-      }
-    }
-  }
-}
-
-interface Siren
-{
-  in void turnon;
-  in void turnoff;
-
-  behaviour c
-  {
-    enum States {
-        Off,
-        On
-    };
-    States state = States.Off;
-
-    [state.Off]
-    {
-      on turnon:
-      {
-        state = States.On;
-      }
-      on turnoff:
-        illegal;
-    }
-    [state.On]
-    {
-      on turnoff:
-      {
-        state = States.Off;
-      }
-      on turnon:
-        illegal;
-    }
-  }
-}
-
 component Alarm
 {
     provides Console console;
@@ -209,6 +116,7 @@ component Alarm
     [state.Armed]
     {
       on console.arm:
+
         illegal;
       on console.disarm:
       {
@@ -238,6 +146,7 @@ component Alarm
         [sounding]
         {
           console.deactivated;
+          siren.turnoff;
           state = States.Disarmed;
           sounding = false;
         }
@@ -256,6 +165,7 @@ component Alarm
       on console.disarm:
       {
         sensor.disable;
+        siren.turnoff;
         sounding = false;
         state = States.Disarming;
       }
@@ -264,3 +174,4 @@ component Alarm
     }
   }
 }
+

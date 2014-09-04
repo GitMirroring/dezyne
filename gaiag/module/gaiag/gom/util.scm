@@ -312,7 +312,7 @@
     gom))
 
 (define* (read-ast name #:optional (transform (compose ast->gom ast:resolve)))
-  (and-let* ((ast (null-is-#f (read-asd (->string (list 'examples '/ name '.asd)) (gom:register transform))))
+  (and-let* ((ast (null-is-#f (read-asd (list name '.asd) (gom:register transform))))
              (models (null-is-#f (gom:models ast))))
             (find (lambda (model) (eq? (.name model) name)) models)))
 

@@ -58,7 +58,7 @@ compile-all: clean
 	for i in $(SCM_SOURCES); do $(GUILE) $$i; done
 
 clean:
-	rm -rf ~/.cache/guile out baseline
+	rm -rf ~/.cache/guile out
 
 test: check
 check: compile
@@ -73,51 +73,51 @@ coverage: clean
 	GUILE='guile --debug --no-auto-compile' ./test.sh --coverage </dev/null
 	lcov -r gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-test.info | grep -v Removing
 
-	cd gaiag.lcov && ../coverage gaiag -l asd examples/Alarm.asd >/dev/null
+	cd gaiag.lcov && ../coverage gaiag -l asd examples/regression/Alarm.asd >/dev/null
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-asd.info | grep -v Removing
 
-	cd gaiag.lcov && ../coverage gaiag -l asd examples/function.asd >/dev/null
+	cd gaiag.lcov && ../coverage gaiag -l asd examples/regression/function.asd >/dev/null
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-asd-function.info | grep -v Removing
 
-	cd gaiag.lcov && ../coverage gaiag -l asd examples/imperative.asd >/dev/null
+	cd gaiag.lcov && ../coverage gaiag -l asd examples/regression/imperative.asd >/dev/null
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-asd-imperative.info | grep -v Removing
 
-	cd gaiag.lcov && ../coverage gaiag -l asd examples/argument2.asd >/dev/null
+	cd gaiag.lcov && ../coverage gaiag -l asd examples/regression/argument2.asd >/dev/null
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-asd-argument2.info | grep -v Removing
 
-	cd gaiag.lcov && ../coverage gaiag -l asd examples/Typedef.asd >/dev/null
+	cd gaiag.lcov && ../coverage gaiag -l asd examples/regression/Typedef.asd >/dev/null
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-asd-Typedef.info | grep -v Removing
 
-	cd gaiag.lcov && ../coverage gaiag -l csp examples/Alarm.asd
+	cd gaiag.lcov && ../coverage gaiag -l csp examples/regression/Alarm.asd
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-csp.info | grep -v Removing
 
-	cd gaiag.lcov && ../coverage gaiag -l csp examples/if.asd
+	cd gaiag.lcov && ../coverage gaiag -l csp examples/regression/if.asd
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-if.info | grep -v Removing
 
-	cd gaiag.lcov && ../coverage gaiag -l csp examples/function.asd
+	cd gaiag.lcov && ../coverage gaiag -l csp examples/regression/function.asd
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-function.info | grep -v Removing
 
-	cd gaiag.lcov && ../coverage gaiag -l csp examples/Comp.asd
+	cd gaiag.lcov && ../coverage gaiag -l csp examples/regression/Comp.asd
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-Comp.info | grep -v Removing
 
-	cd gaiag.lcov && ../coverage gaiag -l csp examples/expressions.asd
+	cd gaiag.lcov && ../coverage gaiag -l csp examples/regression/expressions.asd
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-expressions.info | grep -v Removing
 
-	cd gaiag.lcov && ../coverage gaiag -l c++ examples/Alarm.asd
+	cd gaiag.lcov && ../coverage gaiag -l c++ examples/regression/Alarm.asd
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-c++.info | grep -v Removing
 
-	cd gaiag.lcov && ../coverage gaiag -l c++ examples/AlarmSystem.asd
+	cd gaiag.lcov && ../coverage gaiag -l c++ examples/regression/AlarmSystem.asd
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-c++-AlarmSystem.info | grep -v Removing
 
@@ -125,19 +125,19 @@ coverage: clean
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-c++-Aap.info | grep -v Removing
 
-	cd gaiag.lcov && ../coverage gaiag -l c++ examples/expressions.asd
+	cd gaiag.lcov && ../coverage gaiag -l c++ examples/regression/expressions.asd
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-c++-expressions.info | grep -v Removing
 
-	cd gaiag.lcov && ../coverage gaiag -l c++ examples/argument2.asd
+	cd gaiag.lcov && ../coverage gaiag -l c++ examples/regression/argument2.asd
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-c++-argument2.info | grep -v Removing
 
-	cd gaiag.lcov && ! ../coverage gaiag -l wfc examples/double-on.asd
+	cd gaiag.lcov && ! ../coverage gaiag -l wfc examples/regression/double-on.asd
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-wfc-double-on.info | grep -v Removing
 
-	cd gaiag.lcov && ! ../coverage gaiag -l wfc examples/mixing.asd
+	cd gaiag.lcov && ! ../coverage gaiag -l wfc examples/regression/mixing.asd
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-wfc-mixing.info | grep -v Removing
 
@@ -147,254 +147,234 @@ coverage: clean
 
 dummy:
 
-baseline: dummy
-	rm -rf baseline && mkdir -p baseline
-	cp examples/*asd baseline
-	sed -rie 's/^(import .*);/\1.asd;/' baseline/*.asd
-	-cd baseline && $(asdgen) -l cpp AlarmSystem.asd # FIXME?
-	cd baseline && $(asdgen) -l cpp $(DEPTH)/../examples/alarmsystem.asd
-	cd baseline && $(asdgen) -l cpp alarm-component.asd
-	cd baseline && $(asdgen) -l cpp CommImpl.asd
-	cd baseline && $(asdgen) -l cpp Aap.asd
-	cd baseline && $(asdgen) -l cpp Alarm.asd
-	cd baseline && $(asdgen) -l cpp Console.asd
-	cd baseline && $(asdgen) -l cpp Sensor.asd
-	cd baseline && $(asdgen) -l cpp Siren.asd
-	-cd baseline && $(asdgen) -l cpp argument2.asd
-	-cd baseline && $(asdgen) -l cpp expressions.asd
-	cd baseline && $(asdgen) -l csp Alarm.asd
-
 ast: compile
-	./gaiag examples/interface-enums.asd
-	./gaiag examples/interface-events.asd
-	./gaiag examples/interface-reply-events.asd
-	./gaiag examples/interface-behaviour.asd
-	./gaiag examples/interface-imports.asd
-	./gaiag examples/alarm-component.asd
+	./gaiag examples/regression/interface-enums.asd
+	./gaiag examples/regression/interface-events.asd
+	./gaiag examples/regression/interface-reply-events.asd
+	./gaiag examples/regression/interface-behaviour.asd
+	./gaiag examples/regression/interface-imports.asd
+	./gaiag examples/regression/alarm-component.asd
 
 pretty: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
-	./gaiag -l asd examples/interface-enums.asd > out/interface-enums.asd
-	$(diff) examples/interface-enums.asd out
-	./gaiag -l asd examples/alarm-component.asd > out/alarm-component.asd
-	$(diff) examples/alarm-component.asd out
-	./gaiag -l asd examples/function.asd > out/function.asd
-	$(diff) examples/function.asd out
-	./gaiag -l asd examples/argument2.asd > out/argument2.asd
-	$(diff) examples/argument2.asd out
-	./gaiag -l asd examples/Typedef.asd > out/Typedef.asd
-	$(diff) examples/Typedef.asd out
-	./gaiag -l asd examples/expressions.asd > out/expressions.asd
-	$(diff) examples/expressions.asd out
+	./gaiag -l asd examples/regression/interface-enums.asd > out/interface-enums.asd
+	$(diff) baseline/interface-enums.asd out
+	./gaiag -l asd examples/regression/alarm-component.asd > out/alarm-component.asd
+	$(diff) baseline/alarm-component.asd out
+	./gaiag -l asd examples/regression/function.asd > out/function.asd
+	$(diff) baseline/function.asd out
+	./gaiag -l asd examples/regression/argument2.asd > out/argument2.asd
+	$(diff) baseline/argument2.asd out
+	./gaiag -l asd examples/regression/Typedef.asd > out/Typedef.asd
+	$(diff) baseline/Typedef.asd out
+	./gaiag -l asd examples/regression/expressions.asd > out/expressions.asd
+	$(diff) baseline/expressions.asd out
 
 c++: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
-	cd out && ../gaiag -l c++ examples/Alarm.asd
-	$(diff) examples/component-Alarm-c3.hh out
-	$(diff) examples/component-Alarm-c3.cc out
+	cd out && ../gaiag -l c++ examples/regression/Alarm.asd
+	$(diff) baseline/component-Alarm-c3.hh out
+	$(diff) baseline/component-Alarm-c3.cc out
 	cd out && ../gaiag examples/Aap.asd
 	cd out && ../gaiag -l c++ examples/Aap.asd
-	$(diff) examples/component-Noot-c3.hh out
-	$(diff) examples/component-Noot-c3.cc out
-#	cd out && ../gaiag -l c++ examples/CommImpl.asd
-#	[ -f examples/component-CommImpl-c3.hh ] && $(diff) examples/component-CommImpl-c3.hh out
-#	-[ -f examples/component-CommImpl-c3.cc ] && $(diff) examples/component-CommImpl-c3.cc out
+	$(diff) baseline/component-Noot-c3.hh out
+	$(diff) baseline/component-Noot-c3.cc out
 
-	cd out && ../gaiag -l c++ examples/Console.asd
-	$(diff) examples/interface-Console-c3.hh out
-	cd out && ../gaiag -l c++ examples/Sensor.asd
-	$(diff) examples/interface-Sensor-c3.hh out
-	cd out && ../gaiag -l c++ examples/Siren.asd
-	$(diff) examples/interface-Siren-c3.hh out
-	cd out && ../gaiag -l c++ examples/Alarm.asd
-	$(diff) examples/component-Alarm-c3.hh out
-	$(diff) examples/component-Alarm-c3.cc out
-	cd out && g++ -I ../$(DEPTH)/examples/codegen/asd_cpp_runtime -c component-Alarm-c3.cc
+	cd out && ../gaiag -l c++ examples/regression/Console.asd
+	$(diff) baseline/interface-Console-c3.hh out
+	cd out && ../gaiag -l c++ examples/regression/Sensor.asd
+	$(diff) baseline/interface-Sensor-c3.hh out
+	cd out && ../gaiag -l c++ examples/regression/Siren.asd
+	$(diff) baseline/interface-Siren-c3.hh out
+	cd out && ../gaiag -l c++ examples/regression/Alarm.asd
+	$(diff) baseline/component-Alarm-c3.hh out
+	$(diff) baseline/component-Alarm-c3.cc out
+	cd out && g++ -I ../$(DEPTH)/examples/regression/codegen/asd_cpp_runtime -c component-Alarm-c3.cc
 
 	#system
-	cd out && ../gaiag -l c++ examples/AlarmSystem.asd
-	$(diff) examples/component-Sensor-c3.hh out
-	$(diff) examples/component-Sensor-c3.cc out
-	$(diff) examples/component-Siren-c3.hh out
-	$(diff) examples/component-Siren-c3.cc out
-	$(diff) examples/component-AlarmSystem-c3.hh out
-	$(diff) examples/component-AlarmSystem-c3.cc out
-	-cd out && g++ -I ../$(DEPTH)/examples/codegen/asd_cpp_runtime -c component-AlarmSystem-c3.cc
+	cd out && ../gaiag -l c++ examples/regression/AlarmSystem.asd
+	$(diff) baseline/component-Sensor-c3.hh out
+	$(diff) baseline/component-Sensor-c3.cc out
+	$(diff) baseline/component-Siren-c3.hh out
+	$(diff) baseline/component-Siren-c3.cc out
+	$(diff) baseline/component-AlarmSystem-c3.hh out
+	$(diff) baseline/component-AlarmSystem-c3.cc out
+	-cd out && g++ -I ../$(DEPTH)/examples/regression/codegen/asd_cpp_runtime -c component-AlarmSystem-c3.cc
 
-	cd out && ../gaiag -l c++ examples/argument2.asd
-	$(diff) examples/component-argument2-c3.hh out
-	$(diff) examples/component-argument2-c3.cc out
-	$(diff) examples/component-argument2-c3.hh out
-	-$(diff) examples/component-argument2-c3.cc out
+	cd out && ../gaiag -l c++ examples/regression/argument2.asd
+	$(diff) baseline/component-argument2-c3.hh out
+	$(diff) baseline/component-argument2-c3.cc out
+	$(diff) baseline/component-argument2-c3.hh out
+	-$(diff) baseline/component-argument2-c3.cc out
 
-	cd out && ../gaiag -l c++ examples/expressions.asd
-	$(diff) examples/component-expressions-c3.hh out
-	-$(diff) examples/component-expressions-c3.cc out
-	cd out && g++ -I ../$(DEPTH)/examples/codegen/asd_cpp_runtime -c component-expressions-c3.cc
+	cd out && ../gaiag -l c++ examples/regression/expressions.asd
+	$(diff) baseline/component-expressions-c3.hh out
+	-$(diff) baseline/component-expressions-c3.cc out
+	cd out && g++ -I ../$(DEPTH)/examples/regression/codegen/asd_cpp_runtime -c component-expressions-c3.cc
 
 wfc: compile
-	-./gaiag -l wfc examples/double-on.asd
-	#-./gaiag -l wfc examples/double-on-compound.asd #TODO
-	-./gaiag -l wfc examples/mixing.asd
+	-./gaiag -l wfc examples/regression/double-on.asd
+	#-./gaiag -l wfc examples/regression/double-on-compound.asd #TODO
+	-./gaiag -l wfc examples/regression/mixing.asd
 
 csp: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
 
-	cd out && ../gaiag -l csp examples/Alarm.asd
-	$(diff) examples/Alarm.csp out || true
-	@$(diff) examples/Alarm.csp out | diffstat || true
+	cd out && ../gaiag -l csp examples/regression/Alarm.asd
+	$(diff) baseline/Alarm.csp out || true
+	@$(diff) baseline/Alarm.csp out | diffstat || true
 	$(CSPMCHECKER) out/Alarm.csp
 	! $(REFINES) out/Alarm.csp | grep ': Failed'
-	@$(diff) examples/Alarm.csp out >/dev/null
+	@$(diff) baseline/Alarm.csp out >/dev/null
 
-	cd out && ../gaiag -l csp examples/imperative.asd
-	$(diff) examples/imperative.csp out || true
-	@$(diff) examples/imperative.csp out | diffstat || true
+	cd out && ../gaiag -l csp examples/regression/imperative.asd
+	$(diff) baseline/imperative.csp out || true
+	@$(diff) baseline/imperative.csp out | diffstat || true
 	$(CSPMCHECKER) out/imperative.csp
 	! $(REFINES) out/imperative.csp | grep ': Failed'
-	@$(diff) examples/imperative.csp out >/dev/null
+	@$(diff) baseline/imperative.csp out >/dev/null
 
-	cd out && ../gaiag -l csp examples/Reply.asd
-	$(diff) examples/Reply.csp out || true
-	@$(diff) examples/Reply.csp out | diffstat || true
+	cd out && ../gaiag -l csp examples/regression/Reply.asd
+	$(diff) baseline/Reply.csp out || true
+	@$(diff) baseline/Reply.csp out | diffstat || true
 	$(CSPMCHECKER) out/Reply.csp
 	! $(REFINES) out/Reply.csp | grep ': Failed'
-	@$(diff) examples/Reply.csp out >/dev/null
+	@$(diff) baseline/Reply.csp out >/dev/null
 
-	cd out && ../gaiag -l csp examples/function.asd
-	$(diff) examples/function.csp out || true
-	@$(diff) examples/function.csp out | diffstat || true
+	cd out && ../gaiag -l csp examples/regression/function.asd
+	$(diff) baseline/function.csp out || true
+	@$(diff) baseline/function.csp out | diffstat || true
 	$(CSPMCHECKER) out/function.csp
 	! $(REFINES) out/function.csp | grep ': Failed'
-	@$(diff) examples/function.csp out >/dev/null
+	@$(diff) baseline/function.csp out >/dev/null
 
-	cd out && ../gaiag -l csp examples/argument.asd
-	$(diff) examples/argument.csp out || true
-	@$(diff) examples/argument.csp out | diffstat || true
+	cd out && ../gaiag -l csp examples/regression/argument.asd
+	$(diff) baseline/argument.csp out || true
+	@$(diff) baseline/argument.csp out | diffstat || true
 	$(CSPMCHECKER) out/argument.csp
 	! $(REFINES) out/argument.csp | grep ': Failed'
-	@$(diff) examples/argument.csp out >/dev/null
+	@$(diff) baseline/argument.csp out >/dev/null
 
-	cd out && ../gaiag -l csp examples/Reply2.asd
-	$(diff) examples/Reply2.csp out || true
-	@$(diff) examples/Reply2.csp out | diffstat || true
+	cd out && ../gaiag -l csp examples/regression/Reply2.asd
+	$(diff) baseline/Reply2.csp out || true
+	@$(diff) baseline/Reply2.csp out | diffstat || true
 	$(CSPMCHECKER) out/Reply2.csp
 	! $(REFINES) out/Reply2.csp | grep ': Failed'
-	@$(diff) examples/Reply2.csp out >/dev/null
+	@$(diff) baseline/Reply2.csp out >/dev/null
 
-	cd out && ../gaiag -l csp examples/sugar.asd
-	$(diff) examples/sugar.csp out || true
-	@$(diff) examples/sugar.csp out | diffstat || true
+	cd out && ../gaiag -l csp examples/regression/sugar.asd
+	$(diff) baseline/sugar.csp out || true
+	@$(diff) baseline/sugar.csp out | diffstat || true
 	$(CSPMCHECKER) out/sugar.csp
 	! $(REFINES) out/sugar.csp | grep ': Failed'
-	@$(diff) examples/sugar.csp out >/dev/null
+	@$(diff) baseline/sugar.csp out >/dev/null
 
-	cd out && ../gaiag -l csp examples/Comp.asd
-	$(diff) examples/Comp.csp out
-	@$(diff) examples/Comp.csp out | diffstat || true
+	cd out && ../gaiag -l csp examples/regression/Comp.asd
+	$(diff) baseline/Comp.csp out
+	@$(diff) baseline/Comp.csp out | diffstat || true
 	$(CSPMCHECKER) out/Comp.csp
 	! $(REFINES) out/Comp.csp | grep ': Failed'
-	@$(diff) examples/Comp.csp out >/dev/null
+	@$(diff) baseline/Comp.csp out >/dev/null
 
-	cd out && ../gaiag -l csp examples/argument2.asd
-	$(diff) examples/argument2.csp out || true
-	@$(diff) examples/argument2.csp out | diffstat
+	cd out && ../gaiag -l csp examples/regression/argument2.asd
+	$(diff) baseline/argument2.csp out || true
+	@$(diff) baseline/argument2.csp out | diffstat
 	$(CSPMCHECKER) out/argument2.csp
 	! $(REFINES) out/argument2.csp | grep ': Failed'
-	@$(diff) examples/argument2.csp out >/dev/null
+	@$(diff) baseline/argument2.csp out >/dev/null
 
-	cd out && ../gaiag -l csp examples/hide.asd
-	$(diff) examples/hide.csp out || true
-	@$(diff) examples/hide.csp out | diffstat
+	cd out && ../gaiag -l csp examples/regression/hide.asd
+	$(diff) baseline/hide.csp out || true
+	@$(diff) baseline/hide.csp out | diffstat
 	$(CSPMCHECKER) out/hide.csp
 	! $(REFINES) out/hide.csp | grep ': Failed'
-	@$(diff) examples/hide.csp out >/dev/null
+	@$(diff) baseline/hide.csp out >/dev/null
 
-	cd out && ../gaiag -l csp examples/expressions.asd
-	$(diff) examples/expressions.csp out || true
-	@$(diff) examples/expressions.csp out | diffstat
+	cd out && ../gaiag -l csp examples/regression/expressions.asd
+	$(diff) baseline/expressions.csp out || true
+	@$(diff) baseline/expressions.csp out | diffstat
 	$(CSPMCHECKER) out/expressions.csp
 	! $(REFINES) out/expressions.csp | grep ': Failed'
-	@$(diff) examples/expressions.csp out >/dev/null
+	@$(diff) baseline/expressions.csp out >/dev/null
 
-	cd out && ../gaiag -l csp examples/testBoolean.asd
-	$(diff) examples/testBoolean.csp out || true
-	@$(diff) examples/testBoolean.csp out | diffstat
+	cd out && ../gaiag -l csp examples/regression/testBoolean.asd
+	$(diff) baseline/testBoolean.csp out || true
+	@$(diff) baseline/testBoolean.csp out | diffstat
 	$(CSPMCHECKER) out/testBoolean.csp
 	! $(REFINES) out/testBoolean.csp | grep ': Failed'
-	@$(diff) examples/testBoolean.csp out >/dev/null
+	@$(diff) baseline/testBoolean.csp out >/dev/null
 
-	cd out && ../gaiag -l csp examples/mangle.asd
-	$(diff) examples/mangle.csp out || true
-	@$(diff) examples/mangle.csp out | diffstat
+	cd out && ../gaiag -l csp examples/regression/mangle.asd
+	$(diff) baseline/mangle.csp out || true
+	@$(diff) baseline/mangle.csp out | diffstat
 	$(CSPMCHECKER) out/mangle.csp
 	! $(REFINES) out/mangle.csp | grep ': Failed'
-	@$(diff) examples/mangle.csp out >/dev/null
+	@$(diff) baseline/mangle.csp out >/dev/null
 
-	cd out && ../gaiag -l csp examples/livelock1.asd
-	$(diff) examples/livelock1.csp out || true
-	@$(diff) examples/livelock1.csp out | diffstat
+	cd out && ../gaiag -l csp examples/regression/livelock1.asd
+	$(diff) baseline/livelock1.csp out || true
+	@$(diff) baseline/livelock1.csp out | diffstat
 	$(CSPMCHECKER) out/livelock1.csp
 	$(REFINES) out/livelock1.csp |& grep ': Failed'
-	@$(diff) examples/livelock1.csp out >/dev/null
+	@$(diff) baseline/livelock1.csp out >/dev/null
 
-	cd out && ../gaiag -l csp examples/livelock2.asd
-	$(diff) examples/livelock2.csp out || true
-	@$(diff) examples/livelock2.csp out | diffstat
+	cd out && ../gaiag -l csp examples/regression/livelock2.asd
+	$(diff) baseline/livelock2.csp out || true
+	@$(diff) baseline/livelock2.csp out | diffstat
 	$(CSPMCHECKER) out/livelock2.csp
 	$(REFINES) out/livelock2.csp |& grep ': Failed'
-	@$(diff) examples/livelock2.csp out >/dev/null
+	@$(diff) baseline/livelock2.csp out >/dev/null
 
 livelock:
 	rm -rf out && mkdir out && ln -s ../examples ../templates $(DEPTH)/../webdemo/asd out
-	cd out && ../gaiag -l csp examples/livelock1.asd
-	$(diff) examples/livelock1.csp out || true
-	@$(diff) examples/livelock1.csp out | diffstat
+	cd out && ../gaiag -l csp examples/regression/livelock1.asd
+	$(diff) baseline/livelock1.csp out || true
+	@$(diff) baseline/livelock1.csp out | diffstat
 	$(CSPMCHECKER) out/livelock1.csp
 	$(REFINES) out/livelock1.csp |& grep ': Failed'
-	@$(diff) examples/livelock1.csp out >/dev/null
+	@$(diff) baseline/livelock1.csp out >/dev/null
 
-	cd out && ../gaiag -l csp examples/livelock2.asd
-	$(diff) examples/livelock2.csp out || true
-	@$(diff) examples/livelock2.csp out | diffstat
+	cd out && ../gaiag -l csp examples/regression/livelock2.asd
+	$(diff) baseline/livelock2.csp out || true
+	@$(diff) baseline/livelock2.csp out | diffstat
 	$(CSPMCHECKER) out/livelock2.csp
 	$(REFINES) out/livelock2.csp |& grep ': Failed'
-	@$(diff) examples/livelock2.csp out >/dev/null
+	@$(diff) baseline/livelock2.csp out >/dev/null
 
 mangle: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
 
-	cd out && ../gaiag -l csp examples/mangle.asd
-	$(diff) examples/mangle.csp out || true
-	@$(diff) examples/mangle.csp out | diffstat
-	./gaiag -l mangle examples/mangle.asd
+	cd out && ../gaiag -l csp examples/regression/mangle.asd
+	$(diff) baseline/mangle.csp out || true
+	@$(diff) baseline/mangle.csp out | diffstat
+	./gaiag -l mangle examples/regression/mangle.asd
 	$(CSPMCHECKER) out/mangle.csp
-	@$(diff) examples/mangle.csp out >/dev/null
+	@$(diff) baseline/mangle.csp out >/dev/null
 
-	cd out && ../gaiag -l csp examples/argument2.asd
-	$(diff) examples/argument2.csp out || true
-	@$(diff) examples/argument2.csp out | diffstat
-	./gaiag -l manglex examples/argument2.asd
+	cd out && ../gaiag -l csp examples/regression/argument2.asd
+	$(diff) baseline/argument2.csp out || true
+	@$(diff) baseline/argument2.csp out | diffstat
+	./gaiag -l manglex examples/regression/argument2.asd
 	$(CSPMCHECKER) out/argument2.csp
-	@$(diff) examples/argument2.csp out >/dev/null
+	@$(diff) baseline/argument2.csp out >/dev/null
 
 simulate: compile
-#	./gaiag -l simulate examples/if.asd
-	./gaiag -l simulate -t '(a a a)' examples/simulate.asd
-	./gaiag -l simulate -t '(a a a a a)' examples/if.asd
-#	./gaiag -l simulate examples/Alarm.asd |& grep '^\*\*' | wc -l
-#	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" examples/Console.asd | ./scm2json | sed -e "s/, /,\n /g"
-	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" examples/alarm-component.asd
-	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" -j examples/alarm-component.asd | ./scm2json | sed -e 's/, /,\n /g'
-	./gaiag -l simulate -t '(i.e i.e i.e)' examples/arguments.asd
-	./gaiag -l simulate -t '(client.initialize result_t.OK result_t.OK client.perform_actions result_t.OK result_t.OK client.perform_actions result_t.NOK client.recover result_t.OK client.perform_actions)' examples/Comp.asd
+#	./gaiag -l simulate examples/regression/if.asd
+	./gaiag -l simulate -t '(a a a)' examples/regression/simulate.asd
+	./gaiag -l simulate -t '(a a a a a)' examples/regression/if.asd
+#	./gaiag -l simulate examples/regression/Alarm.asd |& grep '^\*\*' | wc -l
+#	./gaiag -l simulate -t "$(shell cat examples/regression/Alarm-trail.scm)" examples/regression/Console.asd | ./scm2json | sed -e "s/, /,\n /g"
+	./gaiag -l simulate -t "$(shell cat examples/regression/Alarm-trail.scm)" examples/regression/alarm-component.asd
+	./gaiag -l simulate -t "$(shell cat examples/regression/Alarm-trail.scm)" -j examples/regression/alarm-component.asd | ./scm2json | sed -e 's/, /,\n /g'
+	./gaiag -l simulate -t '(i.e i.e i.e)' examples/regression/arguments.asd
+	./gaiag -l simulate -t '(client.initialize result_t.OK result_t.OK client.perform_actions result_t.OK result_t.OK client.perform_actions result_t.NOK client.recover result_t.OK client.perform_actions)' examples/regression/Comp.asd
 
 
 alarm-gen:
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
-	cd out && ln -s ../examples/main.cc .
-	cd out && for file in examples/AlarmSystem.asd examples/Alarm.asd \
-                              examples/Console.asd examples/Sensor.asd examples/Siren.asd; \
+	cd out && ln -s ../examples/regression/main.cc .
+	cd out && for file in examples/regression/AlarmSystem.asd examples/regression/Alarm.asd \
+                              examples/regression/Console.asd examples/regression/Sensor.asd examples/regression/Siren.asd; \
                   do ../gaiag -l c++ $$file; done
 
 alarm: alarm-gen
@@ -432,9 +412,9 @@ out/%.refines: $(DEPTH)/webdemo/asd/%.asd
 	@$(diff) webdemo/$*.csp out >/dev/null
 	touch $@
 
-out/%.refines: examples/%.asd
+out/%.refines: examples/regression/%.asd
 	rm -rf out && mkdir out && ln -s ../examples ../webdemo ../templates ../$(DEPTH)/webdemo/asd out
-	cd out && $(asdgen) -l scm examples/$*.asd
+	cd out && $(asdgen) -l scm examples/regression/$*.asd
 	cd out && ../gaiag -l csp $*.scm
 	[ -f out/$*.csp ] || mv out/*.csp out/$*.csp
 	$(diff) webdemo/$*.csp out || true
@@ -448,13 +428,13 @@ demo: $(EXAMPLE_SOURCES:%.asd=out/%.refines) $(DEMO_SOURCES:%.asd=out/%.refines)
 
 asserts:
 	rm -rf out && mkdir out && ln -s ../examples ../webdemo ../templates ../$(DEPTH)/webdemo/asd out
-	./gaiag -l asserts examples/Alarm.asd > out/alarm-asserts.scm
-	diff -u examples/alarm-asserts.scm out
+	./gaiag -l asserts examples/regression/Alarm.asd > out/alarm-asserts.scm
+	$(diff) baseline/alarm-asserts.scm out
 
 compare:
 	rm -rf out && mkdir out && ln -s ../examples ../webdemo ../templates ../$(DEPTH)/webdemo/asd out
 	make -C ../..
-	./gaiag -l resolve examples/trip.asd > out/gaiag-trip.scm
+	./gaiag -l resolve examples/regression/trip.asd > out/gaiag-trip.scm
 	cd out && ../$(DEPTH)/build/asdgenerator -l scm examples/trip.asd
 	sed -i 's/i[0-9]\+_//g' out/trip.scm
 	./gaiag out/trip.scm > out/om-trip-pretty.scm

@@ -1,8 +1,8 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
+//
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -21,41 +21,19 @@
 //
 // Code:
 
-interface Siren
+import Alarm;
+import Sensor;
+import Siren;
+
+system AlarmSystem
 {
-  in void turnon;
-  in void turnoff;
+  provides Console console;
 
-  behaviour c
-  {
-    enum States {
-        Off,
-        On
-    };
-    States state = States.Off;
+  Alarm alarm;
+  Sensor sensor;
+  Siren siren;
 
-    [state.Off]
-    {
-      on turnon:
-      {
-        state = States.On;
-      }
-      on turnoff:
-        illegal;
-    }
-    [state.On]
-    {
-      on turnoff:
-      {
-        state = States.Off;
-      }
-      on turnon:
-        illegal;
-    }
-  }
-}
-
-component Siren
-{
-  provides Siren siren;
+  console <=> alarm.console;
+  alarm.sensor <=> sensor.sensor;
+  alarm.siren <=> siren.siren;
 }
