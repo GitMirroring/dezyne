@@ -43,9 +43,9 @@ include makeutils/guile.mk
 TARG := json2scm
 include makeutils/guile.mk
 
-TEST = $(BUILD)/$(CDIR).check
+TEST = $(CDIR)-check
 
-$(BUILD)/$(CDIR).check:
-	cd $(CDIR) && make check
+$(CDIR)-check:
+	make check -C $(CDIR)
 
 include makeutils/check.mk
