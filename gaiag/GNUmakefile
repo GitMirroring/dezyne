@@ -148,27 +148,28 @@ coverage: clean
 dummy:
 
 ast: compile
-	./gaiag examples/regression/interface-enums.asd
-	./gaiag examples/regression/interface-events.asd
-	./gaiag examples/regression/interface-reply-events.asd
-	./gaiag examples/regression/interface-behaviour.asd
-	./gaiag examples/regression/interface-imports.asd
-	./gaiag examples/regression/alarm-component.asd
+	./gaiag examples/interface-enums.asd
+	./gaiag examples/interface-events.asd
+	./gaiag examples/interface-reply-events.asd
+	./gaiag examples/interface-behaviour.asd
+	./gaiag examples/interface-imports.asd
+	./gaiag examples/alarm-component.asd
 
 pretty: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
-	./gaiag -l asd examples/regression/interface-enums.asd > out/interface-enums.asd
-	$(diff) baseline/interface-enums.asd out
-	./gaiag -l asd examples/regression/alarm-component.asd > out/alarm-component.asd
-	$(diff) baseline/alarm-component.asd out
+	./gaiag -l asd examples/interface-enums.asd > out/interface-enums.asd
+	$(diff) examples/interface-enums.asd out
+	./gaiag -l asd examples/alarm-component.asd > out/alarm-component.asd
+	$(diff) examples/alarm-component.asd out
+	./gaiag -l asd examples/Typedef.asd > out/Typedef.asd
+	$(diff) examples/Typedef.asd out
+
 	./gaiag -l asd examples/regression/function.asd > out/function.asd
-	$(diff) baseline/function.asd out
+	$(diff) examples/regression/function.asd out
 	./gaiag -l asd examples/regression/argument2.asd > out/argument2.asd
-	$(diff) baseline/argument2.asd out
-	./gaiag -l asd examples/regression/Typedef.asd > out/Typedef.asd
-	$(diff) baseline/Typedef.asd out
+	$(diff) examples/regression/argument2.asd out
 	./gaiag -l asd examples/regression/expressions.asd > out/expressions.asd
-	$(diff) baseline/expressions.asd out
+	$(diff) examples/regression/expressions.asd out
 
 c++: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
@@ -405,11 +406,11 @@ out/%.refines: $(DEPTH)/webdemo/asd/%.asd
 	cd out && $(asdgen) -l scm asd/$*.asd
 	cd out && ../gaiag -l csp $*.scm
 	[ -f out/$*.csp ] || mv out/*.csp out/$*.csp
-	$(diff) webdemo/$*.csp out || true
-	@$(diff) webdemo/$*.csp out | diffstat
+	$(diff) baseline/webdemo/$*.csp out || true
+	@$(diff) baseline/webdemo/$*.csp out | diffstat
 	$(CSPMCHECKER) out/$*.csp
 	$(REFINES) out/$*.csp | grep ': Failed' || :
-	@$(diff) webdemo/$*.csp out >/dev/null
+	@$(diff) baseline/webdemo/$*.csp out >/dev/null
 	touch $@
 
 out/%.refines: examples/regression/%.asd
@@ -417,11 +418,11 @@ out/%.refines: examples/regression/%.asd
 	cd out && $(asdgen) -l scm examples/regression/$*.asd
 	cd out && ../gaiag -l csp $*.scm
 	[ -f out/$*.csp ] || mv out/*.csp out/$*.csp
-	$(diff) webdemo/$*.csp out || true
-	@$(diff) webdemo/$*.csp out | diffstat
+	$(diff) baseline/webdemo/$*.csp out || true
+	@$(diff) baseline/webdemo/$*.csp out | diffstat
 	$(CSPMCHECKER) out/$*.csp
 	$(REFINES) out/$*.csp | grep ': Failed' || :
-	@$(diff) webdemo/$*.csp out >/dev/null
+	@$(diff) baseline/webdemo/$*.csp out >/dev/null
 	touch $@
 
 demo: $(EXAMPLE_SOURCES:%.asd=out/%.refines) $(DEMO_SOURCES:%.asd=out/%.refines)

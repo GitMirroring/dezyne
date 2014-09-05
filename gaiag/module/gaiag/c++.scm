@@ -68,25 +68,25 @@
 
 (define (dump-interface model)
   (let ((name (.name model)))
-    (dump-indented (list 'interface- name '-c3.hh)
+    (dump-indented (symbol-append 'interface- name '-c3.hh)
                    (lambda ()
                      ((animate-template 'interface.c3.hh.scm) (c++-module *ast*))))))
 
 (define (dump-component model)
   (let ((name (.name model)))
-    (dump-indented (list 'component- name '-c3.hh)
+    (dump-indented (symbol-append 'component- name '-c3.hh)
                    (lambda ()
                      ((animate-template 'component.c3.hh.scm) (c++-module *ast*))))
-    (dump-indented (list 'component- name '-c3.cc)
+    (dump-indented (symbol-append 'component- name '-c3.cc)
                    (lambda ()
                      ((animate-template 'component.c3.cc.scm) (c++-module *ast*))))))
 
 (define (dump-system model)
   (let ((name (.name model)))
-    (dump-indented (list 'component- name '-c3.hh)
+    (dump-indented (symbol-append 'component- name '-c3.hh)
                    (lambda ()
                      ((animate-template 'system.c3.hh.scm) (c++-module *ast*))))
-    (dump-indented (list 'component- name '-c3.cc)
+    (dump-indented (symbol-append 'component- name '-c3.cc)
                    (lambda ()
                      ((animate-template 'system.c3.cc.scm) (c++-module *ast*))))))
 
@@ -94,7 +94,7 @@
 
 
 (define ((animate-template file-name) module)
-  (animate-file (append (prefix-dir) '(templates file-name)) module))
+  (animate-file (append (prefix-dir) (list 'templates file-name)) module))
 
 (define (c++-module ast)
   (let ((module (make-module 31 (list
