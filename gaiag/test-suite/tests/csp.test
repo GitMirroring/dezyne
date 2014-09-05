@@ -951,7 +951,7 @@ context_active_(sendrecv_(o,foo),
 
           ;; via:
           "i?x:{e} ->
-semi_(callvoid_(toggle),
+semi_(callvoid_(\\ P',V' @ toggle(P',V')),
 (\\ P',V' @ i.return -> P'(V')))(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
 
 ;; '
@@ -964,7 +964,7 @@ semi_(callvoid_(toggle),
                          '(function toggle (signature (type void)) #f ()))
 
           ;; via:
-          "toggle = \\ P',V' @ (\\ P',V' @ P'(V'))(P',V')\n"))
+          "toggle = \\ PF',V' @ context_func_((\\ P',V' @ P'(V')))(PF',V')\n"))
 
 (define csp-transform-function-arguments
   '(function
@@ -994,9 +994,9 @@ semi_(callvoid_(toggle),
           (csp-transform* i-ast csp-transform-function-arguments)
 
           ;; to:
-          "g = \\ P',V',F' @ context_(F',
+          "g = \\ PF',V',F' @ context_func_args_(F',
 semi_((\\ P',V' @ i!f -> P'(V')),
-returnvalue_(\\ ((s,b,hide_member2'),((stack',c))) @ c)))(P',V')
+returnvalue_(\\ ((s,b,hide_member2'),((stack',c))) @ c)))(PF',V')
 "))
 
 
@@ -1029,7 +1029,7 @@ returnvalue_(\\ ((s,b,hide_member2'),((stack',c))) @ c)))(P',V')
 
           ;; via:
           "i?x:{e} ->
-context_active_(\\ P',V' @ g (P',V',\\ ((s,b,c),(stack')) @ (b,b)),
+context_active_(\\ P',V' @ g (P',V',(\\ ((s,b,c),(stack')) @ (b,b))(V')),
 (\\ P',V' @ i.return -> P'(V')))(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
 
 
@@ -1219,8 +1219,8 @@ semi_(context_(\\ ((b),(stack')) @ true,
           ;; via:
          "i?x:{e} ->
 semi_(semi_(assign_(\\ ((b),(stack')) @ (((not b)),(stack'))),
-context_active_(\\ P',V' @ g (P',V',\\ ((b),(stack')) @ (b)),
-semi_(assign_active_(\\ P',V' @ g (P',V',\\ ((b),((stack',c))) @ (c)),
+context_active_(\\ P',V' @ g (P',V',(\\ ((b),(stack')) @ (b))(V')),
+semi_(assign_active_(\\ P',V' @ g (P',V',(\\ ((b),((stack',c))) @ (c))(V')),
 \\ (((b),((stack',c)))),r' @ ((r'),((stack',c)))),
 \\ P',((b),((stack',c))) @ ifthenelse_(c,
 (\\ P',V' @ i!f -> P'(V')),
@@ -1271,8 +1271,8 @@ semi_(assign_active_(\\ P',V' @ g (P',V',\\ ((b),((stack',c))) @ (c)),
           ;; via:
          "i?x:{e} ->
 semi_(semi_(assign_(\\ ((b),(stack')) @ (((not b)),(stack'))),
-context_active_(\\ P',V' @ h (P',V',\\ ((b),(stack')) @ (s,b)),
-semi_(assign_active_(\\ P',V' @ h (P',V',\\ ((b),((stack',c))) @ (s,b)),
+context_active_(\\ P',V' @ h (P',V',(\\ ((b),(stack')) @ (s,b))(V')),
+semi_(assign_active_(\\ P',V' @ h (P',V',(\\ ((b),((stack',c))) @ (s,b))(V')),
 \\ (((b),((stack',c)))),r' @ ((r'),((stack',c)))),
 \\ P',((b),((stack',c))) @ ifthenelse_(c,
 (\\ P',V' @ i!f -> P'(V')),
