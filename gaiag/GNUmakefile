@@ -38,6 +38,7 @@ CSPMCHECKER = $(FDR3_PREFIX)/bin/cspmchecker
 REFINES =  $(FDR3_PREFIX)/bin/refines --brief --quiet --format=plain
 PREFIX = $(abspath $(shell pwd))
 GUILE_LOAD_PATH = $(PREFIX):$(PREFIX)/module
+GUILE_FLAGS := $(patsubst %,-L %, $(subst :, ,$(GUILE_LOAD_PATH)))
 
 -include .local.make
 
@@ -49,13 +50,13 @@ tags:
 	etags $(shell git ls-files)
 
 compile:
-	$(GUILE) $(PREFIX)/module/language/asd/spec.scm
+	$(GUILE) $(GUILE_FLAGS) module/language/asd/spec.scm
 
 compile-all: clean
 #	make -C .. PROJECTS=gaiag GUILE='$(GUILE) --debug' BUILD=build-debug VERBOSE=
-	$(GUILE) $(PREFIX)/module/language/asd/spec.scm
-	for i in $(SCRIPTS); do $(GUILE) $$i; done
-	for i in $(SCM_SOURCES); do $(GUILE) $$i; done
+	$(GUILE) $(GUILE_FLAGS) module/language/asd/spec.scm
+	for i in $(SCRIPTS); do $(GUILE) $(GUILE_FLAGS) $$i; done
+	for i in $(SCM_SOURCES); do $(GUILE) $(GUILE_FLAGS) $$i; done
 
 clean:
 	rm -rf ~/.cache/guile out
