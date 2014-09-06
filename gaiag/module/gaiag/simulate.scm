@@ -332,7 +332,7 @@
           (if (member event t equal?)
               (process statement state event (cons ast trace))
               (values state #f #f #f trace)))
-         (('guard ('expression expression) statement)
+         (('guard expression statement)
           (debug "guard: ~a? --> ~a =====> ~a\n" expression (eval-expression ast state expression) statement)
           (if (eval-expression ast state expression)
               (process statement state event (cons ast trace))

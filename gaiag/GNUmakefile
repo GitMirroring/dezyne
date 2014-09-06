@@ -362,13 +362,13 @@ mangle: compile
 
 simulate: compile
 #	./gaiag -l simulate examples/regression/if.asd
-	./gaiag -l simulate -t '(a a a)' examples/regression/simulate.asd
+	./gaiag -l simulate -t '(a a a)' examples/simulate.asd
 	./gaiag -l simulate -t '(a a a a a)' examples/regression/if.asd
 #	./gaiag -l simulate examples/regression/Alarm.asd |& grep '^\*\*' | wc -l
-#	./gaiag -l simulate -t "$(shell cat examples/regression/Alarm-trail.scm)" examples/regression/Console.asd | ./scm2json | sed -e "s/, /,\n /g"
-	./gaiag -l simulate -t "$(shell cat examples/regression/Alarm-trail.scm)" examples/regression/alarm-component.asd
-	./gaiag -l simulate -t "$(shell cat examples/regression/Alarm-trail.scm)" -j examples/regression/alarm-component.asd | ./scm2json | sed -e 's/, /,\n /g'
-	./gaiag -l simulate -t '(i.e i.e i.e)' examples/regression/arguments.asd
+#	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" examples/regression/Console.asd | ./scm2json | sed -e "s/, /,\n /g"
+	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" examples/alarm-component.asd
+	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" -j examples/alarm-component.asd | ./scm2json | sed -e 's/, /,\n /g'
+	./gaiag -l simulate -t '(i.e i.e i.e)' examples/arguments.asd
 	./gaiag -l simulate -t '(client.initialize result_t.OK result_t.OK client.perform_actions result_t.OK result_t.OK client.perform_actions result_t.NOK client.recover result_t.OK client.perform_actions)' examples/regression/Comp.asd
 
 
