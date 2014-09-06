@@ -30,6 +30,39 @@
 (pass-if "simulator-first-dummy-test"
 	 #t)
 
+(define if-ast
+  '((interface
+     i
+     (types)
+     (events
+      (in (signature (type void)) a)
+      (out (signature (type void)) b)
+      (out (signature (type void)) c))
+     (behaviour
+      #f
+      (types)
+      (variables
+       (variable (type bool) t (expression false)))
+      (functions)
+      (compound
+       (on (triggers (trigger #f a))
+           (compound
+            (if (expression t)
+                (compound (action (trigger #f b)))
+                (compound (action (trigger #f c))))
+            (assign t (expression (! t))))))))
+    (component C (ports (provides i I)) (behaviour))))
+
+(pass-if "simulator-state-vector"
+  (pretty-noisy-equal?
+   ((@@ (gaiag simulate) state-vector) (car if-ast))
+   '((t . #f))))
+
+(pass-if "simulator-var!"
+  (pretty-noisy-equal?
+   ((@@ (gaiag simulate) var!) '((t . #f)) 't #t)
+   '((t . #t))))
+
 (pass-if "simulator-simple-trail"
   (pretty-noisy-equal?
    (walk-trail
