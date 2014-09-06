@@ -112,8 +112,8 @@
     ((? ast:function-list?) (make <functions>
                            :elements (map ast->gom (ast:body ast))))
     ((? ast:guard?) (make <guard>
-                       :expression (ast->gom (ast:expression ast))
-                       :statement (ast->gom (ast:statement ast))))
+                              :expression (ast->gom (ast:expression ast))
+                              :statement (ast->gom (ast:statement ast))))
     ((? ast:if?) (make <if>
                        :expression (ast->gom (ast:expression ast))
                        :then (ast->gom (ast:then ast))

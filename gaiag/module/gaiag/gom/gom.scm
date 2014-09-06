@@ -170,10 +170,6 @@
   (type :accessor .type :init-value #f :init-keyword :type)
   (field :accessor .field :init-value #f :init-keyword :field))
 
-(define-class <variable> (<named>)
-  (type :accessor .type :init-value 'bool :init-keyword :type)
-  (expression :accessor .expression :init-form (make <expression>) :init-keyword :expression))
-
 (define-class <parameter> (<ast>)
   (type :accessor .type :init-value (make <type>) :init-keyword :type)
   (identifier :accessor .identifier :init-value #f :init-keyword :identifier))
@@ -214,6 +210,7 @@
 
 ;;; statements
 (define-class <statement> (<ast>))
+
 (define-class <action> (<statement>)
   (trigger :accessor .trigger :init-value #f :init-keyword :trigger))
 
@@ -247,6 +244,10 @@
 
 (define-class <return> (<statement>)
   (expression :accessor .expression :init-value #f :init-keyword :expression))
+
+(define-class <variable> (<named> <statement>)
+  (type :accessor .type :init-value 'bool :init-keyword :type)
+  (expression :accessor .expression :init-form (make <expression>) :init-keyword :expression))
 
 (define-class <bind> (<statement>)
   (left :accessor .left :init-value #f :init-keyword :left)

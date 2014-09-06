@@ -30,6 +30,10 @@
   :use-module (gaiag reader)
   :use-module (gaiag simulate)
 
+  :use-module (oop goops)
+  :use-module (oop goops describe)
+  :use-module (gaiag gom)
+
   :export (json-init
            json-state
            json-trace))
@@ -42,8 +46,8 @@
 (define *model* #f)
 
 (define (ast->node-alist ast)
-  `((key . ,(ast:name ast))
-    (name . ,(ast:name ast)) ;; duh!
+  `((key . ,(.name ast))
+    (name . ,(.name ast)) ;; duh!
     (state . "") ;; duh!
     ))
 
@@ -52,40 +56,42 @@
   (alist->hash-table
    `((type . init)
      (nodes . ,(map alist->hash-table
-                    (map ast->node-alist (cons *model* (ast:ports *model*))))))))
+                    (map ast->node-alist (if (is-a? *model* <component>)
+                                             (cons *model* (.elements (.ports *model*)))
+                                             (list *model*))))))))
 
 (define (json-state state)
   (stderr "json-state: ~a\n" state)
   (alist->hash-table
    (append
     `((type . update)
-      (comp . ,(ast:name *model*)))
+      (comp . ,(.name *model*)))
     (map (lambda (variable) (cons (car variable) (->symbol (cdr variable))))
          state))))
 
 (define (from event statement)
-  (if (ast:on? statement)
-      (if (pair? event)
-          (ast:port-name event)
+  (if (is-a? statement <on>)
+      (if (.port (event->ast event))
+          (.port (event->ast event))
           'in)
-      (ast:name *model*)))
+      (.name *model*)))
 
 (define (to statement)
-  (if (ast:on? statement)
-      (ast:name *model*)
-      (or (and-let* (((ast:action? statement))
-                     (trigger (ast:trigger statement))
-                     ((pair? trigger)))
-                    (ast:port-name trigger))
+  (if (is-a? statement <on>)
+      (.name *model*)
+      (or (and-let* (((is-a? statement <action>))
+                     (trigger (.trigger statement))
+                     ((.port trigger)))
+                    (.port trigger))
           'out)))
 
 (define (event statement)
-  (if (ast:on? statement)
-      (ast:event-name (ast:trigger statement))
-      (or (and-let* (((ast:action? statement))
-                     (trigger (ast:trigger statement))
-                     ((pair? trigger)))
-                    (ast:port-name trigger))
+  (if (is-a? statement <on>)
+      (.event (.trigger statement))
+      (or (and-let* (((is-a? statement <action>))
+                     (trigger (.trigger statement))
+                     ((.port trigger)))
+                    (.port trigger))
           'out)))
 
 (define (json-location ast)
@@ -101,25 +107,25 @@
   (let* ((event (car tracepoint))
          (state (cadr tracepoint))
          (steps (cddr tracepoint))
-         (model (ast:name *model*)))
+         (model (.name *model*)))
     (let loop ((statements steps))
       (let* ((statement (if (null? statements) #f (car statements)))
-             (class (and=> statement ast:class))
+             (class (and=> statement ast-name))
              (type (if (eq? class 'assign) 'update 'transition))
              (message
               (alist->hash-table
                (if (eq? type 'update)
-                   (let ((variable (ast:variable statement)))
+                   (let ((variable (.identifier statement)))
                      `((type . update)
                        (comp . ,model)
                        (,variable . ,(->symbol (var state variable)))))
                    (let ((kind (assoc-ref '((#f . return)
                                             (on . call)
                                             (action . call))
-                                          (ast:class statement)))
+                                          (and=> statement ast-name)))
                          (json-event (cond
-                                      ((ast:on? statement) (ast:event-name event))
-                                      ((ast:action? statement) (ast:event-name (ast:trigger statement)))
+                                      ((is-a? statement <on>) (->symbol event))
+                                      ((is-a? statement <action>) (->symbol (.trigger statement)))
                                       (else 'return))))
                      `((type . transition)
                        (kind . ,kind)

@@ -26,42 +26,62 @@
   :use-module (ice-9 receive)
   :use-module (srfi srfi-1)
 
+  :use-module (language asd parse)
+
   :use-module (gaiag ast:)
   :use-module (gaiag gaiag)
   :use-module (gaiag json-trace)
   :use-module (gaiag misc)
-  :use-module (language asd parse)
+
   :use-module (gaiag pretty-print)
   :use-module (gaiag reader)
+
+  :use-module (gaiag resolve)
+
+  :use-module (oop goops)
+  :use-module (oop goops describe)
+  :use-module (gaiag gom)
 
   :export (ast->a
            explore-space
            mangle-trace
            walk-trail
+           event->ast
            ->symbol
+           simulate:gom
            var))
 
 (define debug? #f)
+;;(define debug? #t)
 (define (debug . x) #t)
 (if debug?
     (set! debug stderr))
 
+(define *ast* #f)
 (define *model* #f)
 
 (define (ast-> ast)
-  (and=> (ast:interface ast) simulate-model)
-  (and=> (ast:component ast) simulate-model)
-  "")
+  (let ((gom ((gom:register simulate:gom) ast #t)))
+    (set! *ast* gom)
+    (and=> (gom:interface gom) simulate-model)
+    (and=> (gom:component gom) simulate-model)
+    ""))
+
+(define (simulate:import name)
+  (gom:import name simulate:gom))
+
+(define (simulate:gom ast)
+  ((compose ast->gom ast:resolve) ast))
 
 (define (variable-state variable . value)
-  (cons (ast:name variable)
+  (cons (.name variable)
         (eval-expression '() '()
                           (if (pair? value)
                               (car value)
-                              (ast:expression variable)))))
+                              (.expression variable)))))
 
 (define (state-vector model)
-  (map variable-state (ast:variables model)))
+  (map variable-state (gom:variables model)))
 
 (define (var state identifier) (assoc-ref state identifier))
 
@@ -74,7 +94,7 @@
 (define *state-space* '(()))
 
 (define (simulate-model model)
-  (stderr "\n\n>>>simulating: ~a ~a --> ~a\n" (ast:class model) (ast:name model) (map ->string (ast:find-triggers model)))
+  (stderr "\n\n>>>simulating: ~a ~a --> ~a\n" (ast-name model) (.name model) (map ->string (gom:find-events model)))
    (let* ((trail (option-ref (parse-opts (command-line)) 'trail #f))
           (trace (if trail
                      (walk-trail model (with-input-from-string trail read))
@@ -113,22 +133,24 @@
   (let ((event (car tracepoint))
         (state (cadr tracepoint))
         (steps (cddr tracepoint))
-        (model (ast:name *model*)))
+        (model (.name *model*)))
     (cons (->symbol event)
           (list
            (list 'state (map (lambda (x) (list (car x) (cdr x)))  state))
            (list 'trace (map trace-location steps))))))
 
-(define (event->ast symbol)
-  "if SYMBOL is of form INTERFACE.TRIGGER, produce (trigger PORT EVENT)"
-  (or (and-let* ((string (symbol->string symbol))
-                 (interface-trigger (string-split string #\.))
-                 ((=2 (length interface-trigger))))
-               (ast:make 'trigger (map string->symbol interface-trigger)))
-      (ast:make 'trigger (list #f symbol))))
+(define (event->ast event)
+  "if EVENT is of form INTERFACE.TRIGGER, produce (trigger PORT EVENT)"
+  (or (and-let* ((string (symbol->string event))
+                 (port-event (string-split string #\.))
+                 ((=2 (length port-event))))
+               (make <trigger>
+                 :port (string->symbol (car port-event))
+                 :event (string->symbol (cadr port-event))))
+      (make <trigger> :port #f :event event)))
 
 (define (seen-key state ast)
-  (when (not (equal? ast (ast:statement (ast:behaviour *model*))))
+  (when (not (equal? ast (.statement (.behaviour *model*))))
     ;; it's a bug if we store a 'seen' state with a non-top AST:
     ;; only actions return mid-statements and they are continued
     ;; we alway continue until the end
@@ -152,7 +174,7 @@
   (find (lambda (x) (equal? x event)) (seen state ast)))
 
 (define (seen! state ast event)
-  (when (not (equal? ast (ast:statement (ast:behaviour *model*))))
+  (when (not (equal? ast (.statement (.behaviour *model*))))
     (stderr "seen! --> AST:~a\n" ast)
     (throw 'seen!-with-non-top-ast))
 
@@ -170,7 +192,7 @@
 
 ;; FIXME: TODO: implement next-value for state explorer
 (define (next-todo-space-explorer model state ast)
-  (let ((events (ast:find-triggers model)))
+  (let ((events (gom:find-events model)))
     (if (or (null? *state-space*)
             (null? (car *state-space*)))
         (cons (state-vector model) events)
@@ -196,7 +218,9 @@
             (if (null? trail)
                 #f
                 (let* ((trigger (car trail))
-                       (value (cons* 'value (cdr trigger))))
+                       (value (make <literal>
+                                :type (.port trigger)
+                                :field (.event trigger))))
                   (stderr "****value := ~a\n" (->string value))
                   (set! trail (cdr trail))
                   value))))
@@ -210,7 +234,7 @@
 
 (define* (simulate model :optional
                    (next-todo next-todo-space-explorer)
-                   (ast (ast:statement (ast:behaviour model))))
+                   (ast (.statement (.behaviour model))))
   (set! *model* model)
   (set! *state-space* '(()))
   (set! i 0)
@@ -242,20 +266,19 @@
             (continue state ast action t))))))
 
 ;; AST: curry me
-(define ((variable? model) identifier) (ast:variable model identifier))
+(define ((variable? model) identifier) (gom:variable model identifier))
 
 (define (eval-expression ast state expression)
   (match expression
-    (('expression expression)  (eval-expression ast state expression))
+    (($ <expression> expression) (eval-expression ast state expression))
     (#f #f)
     (#t #t)
     ('false #f)
     ('true #t)
-    ;; FIXME: move name resolution to ast-tranform
-    (('value (and (? (variable? *model*)) (get! identifier)) field)
-     (eq? (ast:field (var state (identifier))) field))
-    (('value type field) expression)
-    (('literal scope type value) (eval-expression ast state (list 'value type value)))
+    (($ <var> identifier) (var state identifier))
+    (($ <field> (and (? (variable? *model*)) (get! identifier)) field)
+     (eq? (.field (var state (identifier))) field))
+    (($ <literal> scope type value) expression)
     (('! expr) (not (eval-expression ast state expr)))
     (('and x y) (and (eval-expression ast state x)
                      (eval-expression ast state y)))
@@ -266,14 +289,14 @@
             (rhs (eval-expression ast state y))
             (r (equal? lhs rhs)))
      r))
-    (('otherwise)
-     (let* ((parent (ast:parent *model* ast))
-            (guards ((ast:statements-of-type 'guard) parent))
-            (expressions (map ast:expression guards)))
+    (($ <otherwise>)
+     (let* ((parent (gom:parent *model* ast))
+            (guards ((gom:statements-of-type 'guard) parent))
+            (expressions (map .expression guards)))
        (receive (otherwise rest)
-           (partition (lambda (x) (equal? x '(otherwise))) expressions)
+           (partition (lambda (x) (is-a? x <otherwise>)) expressions)
          (if (not (and (=1 (length otherwise))
-                       (equal? (car otherwise) '(otherwise))))
+                       (eq? (car otherwise) expression)))
              (throw 'programming-error "parent missing otherwise"))
          ;; otherwise is true if none of the other guards is
          (not (any identity (map (lambda (x) (eval-expression ast state x)) rest))))))
@@ -281,33 +304,24 @@
     (_ (throw 'match-error (format #f "~a:expression no match: ~a\n" (current-source-location) expression)))))
 
 ;; FIMXE: c&p from csp.csm
-(define (member-names model)
-  (map ast:name (ast:variables (ast:behaviour model))))
-
-;; FIMXE: c&p from csp.csm
 (define ((valued-action? port?) src)
   (match src
-    (('variable type var ('expression ('action trigger))) #t)
-    (('variable type var ('expression ('value (? port?) action))) #t)
-    (('assign var ('expression ('action trigger))) #t)
+    (($ <variable> name type ($ <action>)) #t)
+    (($ <assign> identifier ($ <action>)) #t)
     (_ #f)))
 
 (define (eval-function-expression ast state event trace expression)
   ;; FIMXE: c&p from csp.csm:ast-transform
   (let* ((model *model*)
-	 (members (member-names model))
-         (port? (lambda (port) (member port (map ast:name (ast:ports model)))))
+	 (members (gom:member-names model))
+         (port? (lambda (port) (member port (map .name ((compose .elements .ports) model)))))
          (valued-action? (valued-action? port?)))
-    (stderr "expression: ~a\n" expression)
     (match expression
-      (('call function ('arguments arguments ...) ...)
+      (($ <call> function ($ <arguments> arguments))
        (receive (new-state new-ast new-action return new-trace)
-           (let* ((f (ast:function *model* function)) ;; FIXME
-                  (parameters (map ast:name (ast:parameters f)))
-                  (statement ;;(ast:statement f)
-                   (ast:recursive f) ;; FIXME
-                   )
-                  (arguments (if (pair? arguments) (car arguments) arguments))
+           (let* ((f (gom:function *model* function)) ;; FIXME
+                  (parameters (map .identifier ((compose .elements .parameters .signature) f)))
+                  (statement (.statement f))
                   (pairs (zip parameters arguments))
                   (state (let loop ((pairs pairs) (state state))
                            (if (null? pairs)
@@ -318,8 +332,8 @@
          (values (drop new-state (length arguments)) new-ast new-action return new-trace)))
       ;; FIXME transform AST so that this reads 'action or 'valued-action
       ;; SEE csp.scm
-      (('value (and (? port?) (get! port)) action)
-       (values state ast #f (eval-expression ast state (next-value action)) trace))
+      (($ <action> ($ <trigger> port event))
+       (values state ast #f (eval-expression ast state (next-value event)) trace))
       (_ (values state ast #f (eval-expression ast state expression) trace)))))
 
 (define* (process ast state event trace)
@@ -330,40 +344,43 @@
                             (length *state-space*)))
   (and state
        (match ast
-         (('on t statement)
-          (if (member event t equal?)
+         (($ <on> ($ <triggers> t) statement)
+          (debug "on: t=~a, event=~a --> ~a\n" t event (member event t trigger-equal?))
+          (if (member event t trigger-equal?)
               (process statement state event (cons ast trace))
               (values state #f #f #f trace)))
-         (('guard expression statement)
+         (($ <guard> expression statement)
           (debug "guard: ~a? --> ~a =====> ~a\n" expression (eval-expression ast state expression) statement)
           (if (eval-expression ast state expression)
               (process statement state event (cons ast trace))
               (values state #f #f #f trace)))
-         (('illegal) (values state #f #f #f (cons ast trace)))
-         (('action t ...)
-          (stderr "****action: ~a\n" (->string t))
+         (($ <illegal>) (values state #f #f #f (cons ast trace)))
+         (($ <action> trigger)
+          (stderr "****action: ~a\n" (->string trigger))
           (values state #f ast #f (cons ast trace)))
-         (('assign identifier ('expression expression))
+         (($ <assign> identifier expression)
           (stderr "****assign: ~a := ~a\n" (->string identifier) (->string expression))
           (receive (new-state new-ast new-action return new-trace)
               (eval-function-expression ast state event (cons ast trace) expression)
             (values (var! new-state identifier return) #f #f return new-trace)))
-         (('variable type identifier ('expression expression))
+         (($ <variable> type identifier expression)
           (receive (new-state new-ast new-action return new-trace)
               (eval-function-expression ast state event (cons ast trace) expression)
             (stderr "****init: ~a := ~a ==> ~a\n" (->string identifier) (->string expression) (->string return))
             (values (var! new-state identifier return) #f #f return new-trace)))
-         (('if ('expression expression) statement else)
+         (($ <if> expression statement else)
           (if (eval-expression ast state expression)
               (process statement state event (cons ast trace))
               (process else state event (cons ast trace))))
-         (('if ('expression expression) statement)
+         (($ <if> expression statement)
           (if (eval-expression ast state expression)
               (process statement state event (cons ast trace))
               (values state #f #f #f (cons ast trace))))
-         (('compound h t ... )
-          (let ((declarative? (ast:declarative? h)))
-            (let loop ((statements (cdr ast)) (loop-state state) (loop-return #f) (loop-trace (cons ast trace)) (frame 0))
+         (($ <compound> '()) (values state '() #f #f trace))
+         (#f (values state '() #f #f trace))
+         (($ <compound> elements)
+          (let ((declarative? (gom:declarative? (car elements))))
+            (let loop ((statements elements) (loop-state state) (loop-return #f) (loop-trace (cons ast trace)) (frame 0))
               (if (null? statements)
                   (values (drop loop-state frame) statements #f loop-return loop-trace)
                   (let ((statement (car statements)))
@@ -373,37 +390,37 @@
                           (if (pair? new-trace)
                               (loop (cdr statements) new-state new-return (append new-trace trace) frame)
                               (loop (cdr statements) loop-state new-return loop-trace frame)))
-                        (let ((loop-state (if (ast:variable? statement)
-                                              (acons (ast:name statement)
+                        (let ((loop-state (if (is-a? statement <variable>)
+                                              (acons (.name statement)
                                                      #f loop-state) loop-state))
-                              (frame (if (ast:variable? statement)
+                              (frame (if (is-a? statement <variable>)
                                          (1+ frame) frame)))
                           (receive (new-state new-ast new-action new-return new-trace)
                             (process statement loop-state event '())
                             (loop (cdr statements) new-state new-return (append new-trace loop-trace) frame)))))))))
-         (('return expression)
+         (($ <return> expression)
           (let ((return (eval-expression ast state expression)))
             (values state #f #f return (cons ast trace))))
-         (('reply expression)
+         (($ <reply> expression)
           (stderr "****reply: ~a\n" (->string expression))
           (let ((reply (eval-expression ast state expression)))
             (values state ast #f #f (cons ast trace))))
-         (('compound) (values state '() #f #f trace))
          (_ (throw 'match-error  (format #f "~a: process: no match: ~a\n"  (current-source-location) ast)))))))
 
 (define (->string src)
   (match src
     (#f "false")
     (#t "true")
-    (('expression expression) (->string expression))
-    (('value type field) (->string (list (->string type) "." field)))
-    ((identifier 'value type field) (->string (list (->string identifier) " = " (->string type) "." field)))
-    ((identifier 'literal scope type field) (->string (list (->string identifier) " = " (->string type) "." (->string field))))
-    (('literal scope type field) (->string (list (->string type) "." (->string field))))
-    (('trigger #f event) (->string event))
-    (('trigger port event) (->string (list port "." event)))
-    ((identifier 'field x y) (string-join (list (->string identifier)  "=" (->string (cdr src)))))
-    (('call function ('arguments arguments ...) ...) (->string (list function "("  (comma-join arguments) ")" )))
+    (($ <expression> expression) (->string expression))
+    (($ <var> identifier) (symbol->string identifier))
+    (($ <field> type field) (->string (list (->string type) "." field)))
+    ((identifier ($ <field> type field)) (->string (list (->string identifier) " = " (->string type) "." field)))
+    ((identifier ($ <literal> scope type field)) (->string (list (->string identifier) " = " (->string type) "." (->string field))))
+    (($ <literal> scope type field) (->string (list (->string type) "." (->string field))))
+    (($ <trigger> #f event) (->string event))
+    (($ <trigger> port event) (->string (list port "." event)))
+    (('type name) (->string name))
+    (($ <call> function ($ <arguments> arguments)) (->string (list function "("  (comma-join arguments) ")" )))
     ((h ... t) (apply string-append (map ->string src)))
     ((h . t) (string-join (list (->string h) "=" (->string t))))
     (((h ... t)) (->string (car src)))
@@ -413,20 +430,25 @@
   (match src
     (#f 'false)
     (#t 'true)
-    (('expression expression) (->symbol expression))
-    (('value type field) (->symbol (list (->string type) "." field)))
-    (('trigger #f event) (->symbol event))
-    (('trigger port event) (->symbol (list port "." event)))
-    ((identifier 'value type field) (->symbol (list (->symbol identifier) " = "(->symbol type) "." field)))
-    ((identifier 'literal scope type field) (->string (list (->symbol identifier) " = " (->symbol type) "." (->symbol field))))
-    (('literal scope type field) (->symbol (list (->symbol type) "." (->symbol field))))
+    (($ <expression> expression) (->symbol expression))
+    (($ <var> identifier) identifier)
+    (($ <field> type field) (->symbol (list (->symbol type) "." field)))
+    ((identifier ($ <field> type field)) (->symbol (list (->symbol identifier) " = " (->symbol type) "." field)))
+    ((identifier ($ <literal> scope type field)) (->symbol (list (->symbol identifier) " = " (->symbol type) "." (->symbol field))))
+    (($ <literal> scope type field) (->symbol (list (->symbol type) "." (->symbol field))))
+    (($ <trigger> #f event) (->symbol event))
+    (($ <trigger> port event) (->symbol (list port "." event)))
+
     ((h ... t) (apply symbol-append (map ->symbol src)))
     ((h . t) (list (->symbol h) '= (->symbol t)))
     (((h ... t)) (->symbol (car src)))
     ((? string?) (string->symbol src))
-    ((? symbol?) src)))
+    ((? symbol?) src)
+    (_ (throw 'match-error  (format #f "~a: ->symbol match: ~a\n"  (current-source-location) src)))))
 
 (define (event< a b)
-  (match a
-    ((? symbol?) (symbol< a b))
-    ((h ... t) (list< a b))))
+  (list< (list (.port a) (.event a)) (list (.port b) (.event b))))
+
+(define (trigger-equal? a b)
+  (and (eq? (.port a) (.port b))
+       (eq? (.event a ) (.event b))))

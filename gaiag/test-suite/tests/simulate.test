@@ -25,7 +25,11 @@
   :use-module (gaiag ast:)
   :use-module (gaiag reader)
   :use-module (gaiag pretty-print)
-  :use-module (gaiag simulate))
+  :use-module (gaiag simulate)
+
+  :use-module (oop goops)
+
+  :use-module (gaiag gom))
 
 (pass-if "simulator-first-dummy-test"
 	 #t)
@@ -47,15 +51,15 @@
       (compound
        (on (triggers (trigger #f a))
            (compound
-            (if (expression t)
+            (if (expression (var t))
                 (compound (action (trigger #f b)))
                 (compound (action (trigger #f c))))
-            (assign t (expression (! t))))))))
+            (assign t (expression (! (var t)))))))))
     (component C (ports (provides i I)) (behaviour))))
 
 (pass-if "simulator-state-vector"
   (pretty-noisy-equal?
-   ((@@ (gaiag simulate) state-vector) (car if-ast))
+   ((@@ (gaiag simulate) state-vector) (simulate:gom (car if-ast)))
    '((t . #f))))
 
 (pass-if "simulator-var!"
@@ -64,63 +68,66 @@
    '((t . #t))))
 
 (pass-if "simulator-simple-trail"
-  (pretty-noisy-equal?
+  (gom-pretty-noisy-equal?
    (walk-trail
-    (ast:interface (asd->ast
-      #{
-        interface i { behaviour { on a: b ;
-                                     } } #}))
+    (gom:interface
+     (simulate:gom
+      (asd->ast
+       #{
+         interface i { behaviour { on a: b ;
+                                      } } #})))
     '(a a a))
    (map
     (lambda (x) (cons x (cons '() '((on (triggers (trigger #f a)) (action (trigger #f b))) (action (trigger #f b))))))
     '(a a a))))
 
 (pass-if "simulator-guard-trail"
-   (pretty-noisy-equal?
+   (gom-pretty-noisy-equal?
     (walk-trail
-     (ast:interface
-      (asd->ast
-       #{ interface i
-                    {
-                     behaviour
+     (simulate:gom
+      (ast:interface
+       (asd->ast
+        #{ interface i
                      {
-                      bool t = true ;
-                           on a:
-                           {
-                            [t] t = !t ;
-                            [!t] b     ;
-                            }
-                           }
-                     } #}))
+                      behaviour
+                      {
+                       bool t = true    ;
+                       on a:
+                       {
+                        [t] t = !t      ;
+                        [!t] b          ;
+                        }
+                       }
+                      } #})))
      '(a a a))
     '((a
        ((t . #t))
        (on (triggers (trigger #f a))
            (compound
-            (guard (expression t) (assign t (expression (! t))))
-            (guard (expression (! t)) (action (trigger #f b)))))
-       (guard (expression t) (assign t (expression (! t))))
-       (assign t (expression (! t))))
+            (guard (expression (var t)) (assign t (expression (! (var t)))))
+            (guard (expression (! (var t))) (action (trigger #f b)))))
+       (guard (expression (var t)) (assign t (expression (! (var t)))))
+       (assign t (expression (! (var t)))))
       (a
        ((t . #f))
        (on (triggers (trigger #f a))
            (compound
-            (guard (expression t) (assign t (expression (! t))))
-            (guard (expression (! t)) (action (trigger #f b)))))
-       (guard (expression (! t)) (action (trigger #f b)))
+            (guard (expression (var t)) (assign t (expression (! (var t)))))
+            (guard (expression (! (var t))) (action (trigger #f b)))))
+       (guard (expression (! (var t))) (action (trigger #f b)))
        (action (trigger #f b)))
       (a
        ((t . #f))
        (on (triggers (trigger #f a))
            (compound
-            (guard (expression t) (assign t (expression (! t))))
-            (guard (expression (! t)) (action (trigger #f b)))))
-       (guard (expression (! t)) (action (trigger #f b)))
+            (guard (expression (var t)) (assign t (expression (! (var t)))))
+            (guard (expression (! (var t))) (action (trigger #f b)))))
+       (guard (expression (! (var t))) (action (trigger #f b)))
        (action (trigger #f b))))))
 
 (pass-if "walk-trail-arguments"
   (let* ((arguments-ast (read-ast 'examples/arguments.asd))
-         (model (ast:component arguments-ast))
+         (model (simulate:gom (ast:component arguments-ast)))
          (trail '(i.e i.e i.e))
          (foobar (set-program-arguments '("gaiag" "--json" "foobar")))
          (arguments-trace (with-output-to-string (lambda () (pretty-print (mangle-trace (walk-trail model trail))))))
@@ -129,15 +136,17 @@
 
 (pass-if "walk-trail-pauls"
   (let* ((pauls-ast (read-ast 'examples/regression/Comp.asd))
-         (model (ast:component pauls-ast))
+         (gom ((gom:register simulate:gom) pauls-ast #t))
+         (model (gom:component gom))
          (trail '(client.initialize result_t.OK result_t.OK client.perform_actions result_t.OK result_t.OK client.perform_actions result_t.NOK client.recover result_t.OK client.perform_actions))
          (pauls-trace (walk-trail model trail))
          (baseline-trace 'baseline-trace))
     #t))
 
-(pass-if "explore-space-pauls"
-  (let* ((pauls-ast (read-ast 'examples/regression/Comp.asd))
-         (model (ast:component pauls-ast))
-         (pauls-space (explore-space model))
-         (baseline-space 'baseline-space))
-    #t))
+;; (pass-if "explore-space-pauls"
+;;   (let* ((pauls-ast (read-ast 'examples/regression/Comp.asd))
+;;          (gom ((gom:register simulate:gom) pauls-ast #t))
+;;          (model (gom:component gom))
+;;          (pauls-space (explore-space model))
+;;          (baseline-space 'baseline-space))
+;;     #t))

@@ -23,6 +23,7 @@
   :use-module (ice-9 pretty-print)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 match)
+  :use-module (system foreign)
   :use-module (srfi srfi-1)
 
   :use-module (gaiag ast:)
@@ -44,12 +45,14 @@
            gom:bottom?
            gom:component
            gom:components
+           gom:declarative?
            gom:dir-matches?
            gom:enums
            gom:event
            gom:events
            gom:filter
            gom:find-events
+           gom:function
            gom:functions
            gom:import
            gom:instance
@@ -60,6 +63,7 @@
            gom:member-names
            gom:member-values
            gom:out?
+           gom:parent
            gom:parse-asd
            gom:port
            gom:provides?
@@ -141,13 +145,18 @@
      (gom:functions (gom:import (.type ast) ast->gom)))
     (_ (throw 'match-error  (format #f "~a:gom:functions: no match: ~a\n" (current-source-location) ast)))))
 
+(define (gom:function ast identifier)
+  (find (lambda (f) (eq? (.name f) identifier))
+        (match ast
+          (($ <functions>) (.elements ast))
+          (($ <component>) (.elements (.functions (.behaviour ast))))
+          (($ <interface>) (.elements (.functions (.behaviour ast))))
+          (_ (throw 'match-error  (format #f "~a:gom:function: no match: ~a\n" (current-source-location) ast))))))
+
 (define (gom:variables ast)  ;; to be removed (.variables o)
   (match ast
     (($ <behaviour>) (.elements (or (.variables ast) (make <variables>))))
-    (($ <interface>) (append
-                      (.elements (or (.variables (.behaviour ast))
-                                     (make <variables>)))
-                      (gom:variables (.behaviour ast))))
+    (($ <interface>) (gom:variables (.behaviour ast)))
     (($ <component>) (gom:variables (.behaviour ast)))
     (($ <port>) (gom:variables (gom:import (.type ast) ast->gom)))
     (_ (throw 'match-error  (format #f "~a:gom:variables: no match: ~a\n" (current-source-location) ast)))))
@@ -323,3 +332,34 @@
 
 (define* (gom:parse-asd string :optional (register (gom:register (compose ast->gom ast:resolve))))
   (parse-asd string register))
+
+(define-method (gom:declarative? (o <statement>)) #f)
+(define-method (gom:declarative? (o <on>)) #t)
+(define-method (gom:declarative? (o <guard>)) #t)
+
+(define-method (gom:id (o <top>)) ((compose pointer-address scm->pointer) o))
+
+(define-method (gom:parent (o <top>) (t <top>)) #f)
+
+(define-method (gom:parent (o <ast>) (t <ast>)) #f)
+
+(define-method (gom:parent (o <ast-list>) (t <ast>))
+  (if (member (gom:id t) (map gom:id (.elements o)))
+      o
+      (let loop ((elements (.elements o)))
+        (if (null? elements)
+            #f
+            (let ((parent (gom:parent (car elements) t)))
+              (if parent parent
+                  (loop (cdr elements))))))))
+
+(define-method (gom:parent (o <model>) (t <ast>))
+  (gom:parent ((compose .statement .behaviour) o) t))
+
+(define-method (gom:parent (o <guard>) (t <ast>))
+  (or (and (eq? (.expression o) t) o)
+      (and (eq? (gom:id (.expression o)) (gom:id t)) o)
+      (gom:parent (.statement o) t)))
+
+(define-method (gom:parent (o <on>) (t <ast>))
+  (gom:parent (.statement o) t))
