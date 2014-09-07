@@ -88,6 +88,7 @@
            <literal>
            <model>
            <on>
+           <otherwise>
            <parameter>
            <parameters>
            <port>
@@ -150,6 +151,8 @@
 
 (define-class <expression> (<ast>)
   (value :accessor .value :init-value #f :init-keyword :value))
+
+(define-class <otherwise> (<expression>))
 
 (define-class <var> (<ast>)
   (identifier :accessor .identifier :init-value #f :init-keyword :identifier))

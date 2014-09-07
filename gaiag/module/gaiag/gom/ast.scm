@@ -141,6 +141,7 @@
     ((? ast:on?) (make <on>
                        :triggers (ast->gom (ast:trigger-list ast))
                        :statement (ast->gom (ast:statement ast))))
+    ('(otherwise) (make <otherwise> :value 'otherwise))
     ((? ast:parameter?) (make <parameter>
                       :type (ast:type ast)
                       :identifier (ast:identifier ast)))
