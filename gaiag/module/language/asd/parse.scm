@@ -377,8 +377,8 @@
     (reply lparen expression rparen semicolon) : `(,$1 (expression ,$3)))
 
    (return-statement
-    (return semicolon) : '(return)
-    (return expression semicolon) : `(return (expression ,$2)))
+    (return semicolon) : (make 'return '() @1)
+    (return expression semicolon) : (make 'return (list `(expression ,$2)) @1))
 
    (variable-statement
     (compound-type Identifier = expression semicolon) : `(variable ,$1 ,$2 (expression ,$4)))
