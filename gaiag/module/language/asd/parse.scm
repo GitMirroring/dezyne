@@ -85,9 +85,7 @@
       (('guard expression statement) ast)
       (('on (trigger t ...) statement) ast)
       (('on () statement) ast)
-      ('illegal '(illegal))
       (('illegal) '(illegal))
-      (('action ('illegal)) (cadr ast))
       (('action ('trigger port-name event-name)) ast)
       (('assign name expression) ast)
       (('return expression ...) ast)
@@ -356,12 +354,11 @@
     (trigger-list comma trigger) : (append $1 (list $3)))
 
    (trigger
-    (illegal) : (make $1 '() @1)
     (Identifier) : (make 'trigger (list #f $1) @1)
     (Identifier dot Identifier) : (make 'trigger (list $1 $3) @1))
 
    (illegal-statement
-    (illegal semicolon) : $1)
+    (illegal semicolon) : (make 'illegal '() @1))
 
    (assignment-statement
     (Identifier = expression semicolon) : `(assign ,$1 (expression ,$3)))
