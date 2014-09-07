@@ -1,4 +1,0 @@
-if (#expression )
-  #statement
-else 
-  #else

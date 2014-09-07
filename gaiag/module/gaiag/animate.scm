@@ -48,6 +48,13 @@
   :use-module (srfi srfi-1)
 
   :use-module (gaiag misc)
+
+  :use-module (oop goops)
+  :use-module (oop goops describe)
+  ;;:use-module (gaiag gom)
+  :use-module (gaiag gom gom)
+
+
   :export (animate-file
            animate-input
            animate-module-populate
@@ -86,8 +93,16 @@
                              (bar . (lambda (x) "boo"))
                              (baz . "blaat"))))))
 
-(define (template? x)
+ (define (xtemplate? x)
   (and (list? x) (pair? (assoc (car x) (templates)))))
+
+(define-method (ast-name (o <ast>))
+  (string->symbol (string-drop (string-drop-right (symbol->string (class-name (class-of o))) 1) 1)))
+
+(define (template? x)
+  (or (and (is-a? x <ast>)
+           (pair? (assoc (ast-name x) (templates))))
+      (and (list? x) (pair? (assoc (car x) (templates))))))
 
 (define (animate-module-populate module parameter key-procedure-pairs)
   (let loop ((pairs key-procedure-pairs))

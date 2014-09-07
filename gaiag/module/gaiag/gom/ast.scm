@@ -28,7 +28,6 @@
   :use-module (system base lalr)
   :use-module (gaiag ast:)
   :use-module (gaiag misc)
-  :use-module (gaiag pretty)
   :use-module (gaiag reader)
 
   :use-module (oop goops)
@@ -136,10 +135,10 @@
                            :elements (map ast->gom (ast:body ast))))
     ((? ast:interface?) (make <interface>
                           :name (ast:name ast)
-                          :events (ast->gom (or (null-is-#f (ast:event-list ast))
-                                                '(events)))
                           :types (ast->gom (or (null-is-#f (ast:type-list ast))
                                                '(types)))
+                          :events (ast->gom (or (null-is-#f (ast:event-list ast))
+                                                '(events)))
                           :behaviour (ast->gom (ast:behaviour ast))))
     ((? ast:literal?) (make <literal>
                       :scope (ast:scope ast)
@@ -149,9 +148,9 @@
                        :triggers (ast->gom (ast:trigger-list ast))
                        :statement (ast->gom (ast:statement ast))))
     ('(otherwise) (make <otherwise> :value 'otherwise))
-    ((? ast:parameter?) (make <parameter>
-                      :type (ast:type ast)
-                      :identifier (ast:identifier ast)))
+    ((? ast:parameter?) (make <gom:parameter>
+                          :type (ast:type ast)
+                          :identifier (ast:identifier ast)))
     ((? ast:parameter-list?) (make <parameters>
                                :elements (map ast->gom (ast:body ast))))
     ((? ast:port?) (make <port>

@@ -19,7 +19,7 @@
 (read-set! keywords 'prefix)
 
 (define (std-renamer lst)
-  (lambda (x) (case x ((<parameter>) '<std:parameter>) ((<port>) '<std:port>) (else x))))
+  (lambda (x) (case x ((<gom:parameter>) '<std:parameter>) ((<port>) '<std:port>) (else x))))
 
 (define-module (gaiag gom gom)
   :use-module (oop goops)
@@ -91,7 +91,7 @@
            <model>
            <on>
            <otherwise>
-           <parameter>
+           <gom:parameter>
            <parameters>
            <port>
            <ports>
@@ -141,8 +141,8 @@
 (define-class <import> (<named>))
 
 (define-class <interface> (<model>)
-  (events :accessor .events :init-form (make <events>) :init-keyword :events)
   (types :accessor .types :init-form (make <types>) :init-keyword :types)
+  (events :accessor .events :init-form (make <events>) :init-keyword :events)
   (behaviour :accessor .behaviour :init-value #f :init-keyword :behaviour))
 
 (define-class <event> (<dir-ast>))
@@ -175,7 +175,7 @@
   (type :accessor .type :init-value #f :init-keyword :type)
   (field :accessor .field :init-value #f :init-keyword :field))
 
-(define-class <parameter> (<ast>)
+(define-class <gom:parameter> (<ast>)
   (type :accessor .type :init-value (make <type>) :init-keyword :type)
   (identifier :accessor .identifier :init-value #f :init-keyword :identifier))
 

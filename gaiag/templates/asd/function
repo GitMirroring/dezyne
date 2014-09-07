@@ -1,4 +1,4 @@
-#(use-modules (gaiag ast:))
+#(use-modules (gaiag gom))
 #(define ->string (@@ (gaiag pretty) ->string))
-#(->string signature)  #name (#(->string (ast:parameter-list signature)))
+#(->string signature)  #name (#(->string (.parameters signature)))
 #body

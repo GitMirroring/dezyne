@@ -35,7 +35,6 @@
 
   :use-module (gaiag ast:)
   :use-module (gaiag misc)
-  :use-module (gaiag pretty)
   :use-module (gaiag reader)
   :use-module (gaiag scheme)
 

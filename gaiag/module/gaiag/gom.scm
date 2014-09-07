@@ -19,7 +19,7 @@
 (read-set! keywords 'prefix)
 
 (define (std-renamer lst)
-  (lambda (x) (case x ((<parameter>) '<std:parameter>) ((<port>) '<std:port>) (else x))))
+  (lambda (x) (case x ((<gom:parameter>) '<std:parameter>) ((<port>) '<std:port>) (else x))))
 
 (define-module (gaiag gom)
   :use-module (ice-9 pretty-print)

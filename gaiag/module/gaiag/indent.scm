@@ -28,7 +28,6 @@
 
   :use-module (gaiag ast:)
   :use-module (gaiag misc)
-  :use-module (gaiag pretty)
   :use-module (gaiag reader)
 
   :export (indent indent-string))

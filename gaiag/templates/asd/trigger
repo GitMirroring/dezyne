@@ -1,1 +1,1 @@
-#port .#event
+#port #(if port ".")#event
