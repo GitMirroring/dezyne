@@ -19,11 +19,13 @@
 (read-set! keywords 'prefix)
 
 (define-module (gaiag gom ast)
+  :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 pretty-print)
   :use-module (ice-9 match)
   :use-module (srfi srfi-1)
 
+  :use-module (system base lalr)
   :use-module (gaiag ast:)
   :use-module (gaiag misc)
   :use-module (gaiag pretty)
@@ -52,7 +54,10 @@
     (_ ast)))
 
 (define (ast->gom ast)
-  ((compose ast->gom- ast->sugar) ast))
+  (let ((gom ((compose ast->gom- ast->sugar) ast)))
+        (and-let* ((loc (source-property ast 'loc)))
+                  (set-source-property! gom 'loc loc))
+    gom))
 
 (define (ast->gom- ast)
   (match ast
