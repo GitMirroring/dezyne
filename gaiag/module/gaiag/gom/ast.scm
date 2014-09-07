@@ -124,6 +124,8 @@
                        :then (ast->gom (ast:then ast))
                        :else (ast->gom (ast:else ast))))
     ((? ast:illegal?) (make <illegal>))
+    (('imports import ...) (make <imports> :elements (map ast->gom import)))
+    (('import name) (make <import> :name name))
     ((? ast:int?) (make <int>
                     :name (ast:name ast)
                     :range (ast->gom (ast:range ast))))

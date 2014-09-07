@@ -81,6 +81,8 @@
            <guard>
            <if>
            <illegal>
+           <import>
+           <imports>
            <instance>
            <instances>
            <int>
@@ -121,6 +123,7 @@
 (define-class <events> (<ast-list>))
 (define-class <fields> (<ast-list>))
 (define-class <functions> (<ast-list>))
+(define-class <imports> (<ast-list>))
 (define-class <instances> (<ast-list>))
 (define-class <parameters> (<ast-list>))
 (define-class <ports> (<ast-list>))
@@ -134,6 +137,8 @@
   (type :accessor .type :init-value #f :init-keyword :type))
 
 (define-class <model> (<named>))
+
+(define-class <import> (<named>))
 
 (define-class <interface> (<model>)
   (events :accessor .events :init-form (make <events>) :init-keyword :events)
