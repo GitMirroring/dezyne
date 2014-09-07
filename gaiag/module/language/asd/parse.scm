@@ -333,7 +333,7 @@
 
    (guard
     (expression) : `(expression ,$1)
-    (otherwise) : $1)
+    (otherwise) : `(,$1))
 
    (compound-statement
     (lbrace statement-list rbrace) : (make 'compound (cdr $2) @1))

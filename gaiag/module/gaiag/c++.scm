@@ -192,7 +192,7 @@
          (guards ((compose .elements .statement .behaviour gom:component) *ast*))
          (first? (eq? (statements.src) (car guards)))
          (top? (find (lambda (guard) (eq? guard (statements.src))) guards)))
-      (->string (list (if (eq? expression 'otherwise) else-clause
+      (->string (list (if (equal? expression '(otherwise)) else-clause
                         (if (or first? (not top?)) if-clause else-if-clause))))))
 
 (define (bool-expression->string ast)

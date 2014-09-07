@@ -266,12 +266,14 @@
             (rhs (eval-expression ast state y))
             (r (equal? lhs rhs)))
      r))
-    ('otherwise
+    (('otherwise)
      (let* ((parent (ast:parent *model* ast))
             (guards ((ast:statements-of-type 'guard) parent))
             (expressions (map ast:expression guards)))
-       (receive (otherwise rest) (partition (lambda (x) (eq? x 'otherwise)) expressions)
-         (if (not (equal? otherwise '(otherwise)))
+       (receive (otherwise rest)
+           (partition (lambda (x) (equal? x '(otherwise))) expressions)
+         (if (not (and (=1 (length otherwise))
+                       (equal? (car otherwise) '(otherwise))))
              (throw 'programming-error "parent missing otherwise"))
          ;; otherwise is true if none of the other guards is
          (not (any identity (map (lambda (x) (eval-expression ast state x)) rest))))))

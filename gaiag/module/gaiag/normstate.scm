@@ -149,11 +149,11 @@
 
 (define (guards-not-or statements)
   (let ((guards (map cadr (cdr statements))))
-    (list '! (reduce (lambda (g0 g1) (list 'or g0 g1)) '() (delete 'otherwise guards)))))
+    (list '! (reduce (lambda (g0 g1) (list 'or g0 g1)) '() (delete '(otherwise) guards)))))
 
 (define ((remove-otherwise statements) ast)
   (match ast
-    (('guard 'otherwise s) (ast:make 'guard (list (guards-not-or statements) ((remove-otherwise '()) s))))
+    (('guard ('otherwise) s) (ast:make 'guard (list (guards-not-or statements) ((remove-otherwise '()) s))))
     (('compound s ...) (ast:make 'compound (map (remove-otherwise ast) (cdr ast))))
     ((h ...) (map (remove-otherwise statements) ast))
     (_ ast)))
