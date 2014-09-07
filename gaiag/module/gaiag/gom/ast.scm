@@ -26,7 +26,6 @@
   :use-module (srfi srfi-1)
 
   :use-module (system base lalr)
-  :use-module (gaiag ast:)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
 
@@ -43,13 +42,13 @@
 (define (ast->sugar ast)
   (match ast
     (('on ('triggers t ...) statement) ast)
-    (('on triggers statement) (ast:make 'on (list (ast:make 'triggers (map ast->trigger-sugar triggers)) statement)))
+    (('on triggers statement) (list 'on (cons 'triggers (map ast->trigger-sugar triggers)) statement))
     (_ ast)))
 
 (define (ast->trigger-sugar ast)
   (match ast
-    ((port event) (ast:make 'trigger ast))
-    ((? symbol?) (ast:make 'trigger (list #f ast)))
+    ((port event) (cons 'trigger ast))
+    ((? symbol?) (cons 'trigger (list #f ast)))
     (_ ast)))
 
 (define (ast->gom ast)
@@ -62,144 +61,178 @@
 
 (define (ast->gom- ast)
   (match ast
-    ((? ast:action?) (make <action>
-                       :trigger (ast->gom (ast:trigger ast))))
-    ((? ast:argument-list?) (make <arguments>
-                           :elements (map ast->gom (ast:body ast))))
-    ((? ast:assign?) (make <assign>
-                       :identifier (ast:identifier ast)
-                       :expression (ast->gom (ast:expression ast))))
-    ((? ast:behaviour?) (make <behaviour>
-                          :name (ast:name ast)
-                          :types (ast->gom (or (null-is-#f (ast:type-list ast))
-                                               '(types)))
-                          :variables (ast->gom (or (null-is-#f (ast:variable-list ast))
-                                                   '(variables)))
-                          :functions (ast->gom (or (null-is-#f (ast:function-list ast))
-                                                   '(functions)))
-                          :statement (ast->gom (ast:statement ast))))
-    ((? ast:bind?) (make <bind>
-                      :left (ast->gom (ast:left ast))
-                      :right (ast->gom (ast:right ast))))
-    ((? ast:plug?) (make <plug>
-                        :instance (ast:instance ast)
-                        :port (ast:port ast)))
-    ((? ast:binding-list?) (make <bindings>
-                             :elements (map ast->gom (ast:body ast))))
-    ((? ast:call?) (make <call>
-                       :identifier (ast:identifier ast)
-                       :arguments (ast->gom (or (null-is-#f
-                                                  (ast:argument-list ast))
-                                                 '(arguments)))))
-    ((? ast:component?) (make <component>
-                          :name (ast:name ast)
-                          :ports (ast->gom (ast:port-list ast))
-                          :behaviour (ast->gom (ast:behaviour ast))))
-    ((? ast:enum?) (make <enum>
-                     :name (ast:name ast)
-                     :fields (make <fields> :elements (ast:fields ast))))
-    ((? ast:event?) (make <event>
-                      :name (ast:name ast)
-                      :type (ast->gom (ast:signature ast))
-                      :direction (ast:direction ast)))
-    ((? ast:event-list?) (make <events>
-                           :elements (map ast->gom (ast:body ast))))
-    ((? ast:expression?)
-     (make <expression>
-       :value (ast->gom (ast:value ast))))
-    ((? ast:field?) (make <field>
-                      :identifier (ast:identifier ast)
-                      :field (ast:field ast)))
-    ((? ast:function?) (make <function>
-                          :name (ast:name ast)
-                          :signature (ast->gom (ast:signature ast))
-                          :recursive (ast:recursive ast)
-                          :statement (ast->gom (ast:statement ast))))
-    ((? ast:function-list?) (make <functions>
-                           :elements (map ast->gom (ast:body ast))))
-    ((? ast:guard?) (make <guard>
-                              :expression (ast->gom (ast:expression ast))
-                              :statement (ast->gom (ast:statement ast))))
-    ((? ast:if?) (make <if>
-                       :expression (ast->gom (ast:expression ast))
-                       :then (ast->gom (ast:then ast))
-                       :else (ast->gom (ast:else ast))))
-    ((? ast:illegal?) (make <illegal>))
+
+    (('action trigger) (make <action> :trigger (ast->gom trigger)))
+
+    (('arguments arguments ...) (make <arguments>
+                                  :elements (map ast->gom arguments)))
+
+    (('assign identifier expression) (make <assign>
+                                       :identifier identifier
+                                       :expression (ast->gom expression)))
+
+    (('behaviour) #f)
+
+    (('behaviour name body ...)
+     (make <behaviour>
+       :name name
+       :types (ast->gom (or (null-is-#f (assoc 'types body)) '(types)))
+       :variables (ast->gom (or (null-is-#f (assoc 'variables body)) '(variables)))
+       :functions (ast->gom (or (null-is-#f (assoc 'functions body)) '(functions)))
+       :statement (ast->gom (or (null-is-#f (assoc 'compound body)) '(compound)))))
+
+    (('bind left right)
+     (make <bind> :left (ast->gom left) :right (ast->gom right)))
+
+    (('plug instance port) (make <plug> :instance instance :port port))
+
+    (('bindings bindings ...)
+     (make <bindings> :elements (map ast->gom bindings)))
+
+    (('call identifier) (make <call> :identifier identifier))
+
+    (('call identifier arguments)
+     (make <call>
+       :identifier identifier
+       :arguments (ast->gom (or (null-is-#f arguments) '(arguments)))))
+
+;;    (('component) (make <component>))
+
+    (('component name body ...)
+     (make <component>
+       :name name
+       :ports (ast->gom (or (null-is-#f (assoc 'ports body)) '(ports)))
+       :behaviour (ast->gom (or (null-is-#f (assoc 'behaviour body)) '(behaviour)))))
+
+    (('compound statements ...)
+     (make <compound> :elements (map ast->gom statements)))
+
+    (('enum name fields)
+     (make <enum>
+       :name name
+       :fields (make <fields> :elements fields)))
+
+    (((and (or 'in 'out) (get! direction)) type name)
+     (make <event>
+       :name name
+       :type (ast->gom type)
+       :direction (direction)))
+
+    (('events events ...) (make <events> :elements (map ast->gom events)))
+
+    (('expression expression) (make <expression> :value (ast->gom expression)))
+
+    (('field identifier field) (make <field> :identifier identifier :field field))
+
+    (('function name signature recursive? statement)
+     (make <function>
+       :name name
+       :signature (ast->gom signature)
+       :recursive recursive?
+       :statement (ast->gom statement)))
+
+    (('functions functions ...)
+     (make <functions> :elements (map ast->gom functions)))
+
+    (('guard expression statement)
+     (make <guard>
+       :expression (ast->gom expression)
+       :statement (ast->gom statement)))
+
+    (('if expression then)
+     (make <if>
+       :expression (ast->gom expression)
+       :then (ast->gom then)))
+
+    (('if expression then else)
+     (make <if>
+       :expression (ast->gom expression)
+       :then (ast->gom then)
+       :else (ast->gom else)))
+
+    (('illegal) (make <illegal>))
+
     (('imports import ...) (make <imports> :elements (map ast->gom import)))
+
     (('import name) (make <import> :name name))
-    ((? ast:int?) (make <int>
-                    :name (ast:name ast)
-                    :range (ast->gom (ast:range ast))))
-    ((? ast:instance?) (make <instance>
-                         :name (ast:name ast)
-                         :type (ast:type ast)))
-    ((? ast:instance-list?) (make <instances>
-                           :elements (map ast->gom (ast:body ast))))
-    ((? ast:interface?) (make <interface>
-                          :name (ast:name ast)
-                          :types (ast->gom (or (null-is-#f (ast:type-list ast))
-                                               '(types)))
-                          :events (ast->gom (or (null-is-#f (ast:event-list ast))
-                                                '(events)))
-                          :behaviour (ast->gom (ast:behaviour ast))))
-    ((? ast:literal?) (make <literal>
-                      :scope (ast:scope ast)
-                      :type (ast:type ast)
-                      :field (ast:field ast)))
-    ((? ast:on?) (make <on>
-                       :triggers (ast->gom (ast:trigger-list ast))
-                       :statement (ast->gom (ast:statement ast))))
-    ('(otherwise) (make <otherwise> :value 'otherwise))
-    ((? ast:parameter?) (make <gom:parameter>
-                          :type (ast:type ast)
-                          :identifier (ast:identifier ast)))
-    ((? ast:parameter-list?) (make <parameters>
-                               :elements (map ast->gom (ast:body ast))))
-    ((? ast:port?) (make <port>
-                      :name (ast:name ast)
-                      :type (ast:type ast)
-                      :direction (ast:direction ast)))
-    ((? ast:port-list?) (make <ports>
-                          :elements (map ast->gom (ast:body ast))))
-    ((? ast:range?) (make <range>
-                      :from (ast:from ast)
-                      :to (ast:to ast)))
-    ((? ast:reply?) (make <reply>
-                      :expression (ast->gom (ast:expression ast))))
-    ((? ast:return?) (make <return>
-                       :expression (if (null? (ast:expression ast))
-                                       #f
-                                       (ast->gom (ast:expression ast)))))
-    ((? ast:root?) (make <root>
-                     :elements (ast->gom (ast:body ast))))
-    ((? ast:signature?) (make <signature>
-                          :type (ast:type ast)
-                          :parameters (ast->gom (or (null-is-#f
-                                                      (ast:parameter-list ast))
-                                                     '(parameters)))))
-    ((? ast:statement-list?) (make <compound>
-                               :elements (map ast->gom (ast:body ast))))
-    ((? ast:system?) (make <system>
-                          :name (ast:name ast)
-                          :ports (ast->gom (ast:port-list ast))
-                          :instances (ast->gom (ast:instance-list ast))
-                          :bindings (ast->gom (ast:binding-list ast))))
-    ((? ast:trigger?) (make <trigger>
-                       :port (ast:port-name ast)
-                       :event (ast:event-name ast)))
-    ((? ast:trigger-list?) (make <triggers>
-                             :elements (map ast->gom (ast:body ast))))
-    ((? ast:type-list?) (make <types>
-                          :elements (map ast->gom (ast:body ast))))
-    ((? ast:var?) (make <var>
-                      :identifier (ast:identifier ast)))
-    ((? ast:variable?) (make <variable>
-                         :name (ast:name ast)
-                         :type (ast:type ast)
-                         :expression (ast->gom (ast:expression ast))))
-    ((? ast:variable-list?) (make <variables>
-                          :elements (map ast->gom (ast:body ast))))
+
     (('imports imports ...) ast)
+
+    (('int name range) (make <int> :name name :range (ast->gom range)))
+
+    (('instance type name) (make <instance> :name name :type type))
+
+    (('instances instances ...)
+     (make <instances> :elements (map ast->gom instances)))
+
+    (('interface name body ...)
+     (make <interface>
+       :name name
+       :types (ast->gom (or (null-is-#f (assoc 'types body)) '(types)))
+       :events (ast->gom (or (null-is-#f (assoc 'events body)) '(events)))
+       :behaviour (ast->gom (or (null-is-#f (assoc 'behaviour body)) '(behaviour)))))
+
+    (('literal scope type field)
+     (make <literal> :scope scope :type type :field field))
+
+    (('on triggers statement)
+     (make <on> :triggers (ast->gom triggers) :statement (ast->gom statement)))
+
+    (('otherwise) (make <otherwise> :value 'otherwise))
+
+    (('parameter type identifier)
+     (make <gom:parameter> :type type :identifier identifier))
+
+    (('parameters parameters ...)
+     (make <parameters> :elements (map ast->gom parameters)))
+
+    (((and (or 'provides 'requires) (get! direction)) type name)
+     (make <port>
+       :name name
+       :type type
+       :direction (direction)))
+
+    (('ports ports ...) (make <ports> :elements (map ast->gom ports)))
+
+    (('range from to) (make <range> :from from :to to))
+
+    (('reply expression) (make <reply> :expression (ast->gom expression)))
+
+    (('return) (make <return>))
+
+    (('return expression) (make <return> :expression (ast->gom expression)))
+
+    (('root elements ...) (make <root> :elements (ast->gom elements)))
+
+    (('signature type) (make <signature> :type type))
+
+    (('signature type parameters)
+     (make <signature> :type type :parameters (ast->gom parameters)))
+
+    (('system name ports instances bindings)
+     (make <system>
+       :name name
+       :ports (ast->gom ports)
+       :instances (ast->gom instances)
+       :bindings (ast->gom bindings)))
+
+    (('trigger port event) (make <trigger> :port port :event event))
+
+    (('triggers triggers ...)
+     (make <triggers> :elements (map ast->gom triggers)))
+
+    (('types types ...) (make <types> :elements (map ast->gom types)))
+
+    (('var identifier) (make <var> :identifier identifier))
+
+    (('variable type name expression)
+     (make <variable> :name name :type type :expression (ast->gom expression)))
+
+    (('variables variables ...)
+     (make <variables> :elements (map ast->gom variables)))
+
     (('value type field) ast)
+
     ((h t ...) (map ast->gom ast))
+
     (_ ast)))

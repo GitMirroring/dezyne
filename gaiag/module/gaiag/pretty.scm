@@ -124,11 +124,11 @@
 (define asd-templates
   `((component . ((name . ,identity)
                   (ports . ,->string)
-                  (behaviour . ,->string)))
+                  (behaviour . ,(lambda (x) (or (and=> x ->string) "")))))
     (interface . ((name . ,identity)
                   (types . ,->string)
                   (ports . ,->string)
-                  (behaviour . ,->string)))
+                  (behaviour . ,(lambda (x) (or (and=> x ->string) "")))))
     (port . ((name . ,identity)
              (direction . ,->string)
              (type . ,->string)))

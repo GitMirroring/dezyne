@@ -206,7 +206,7 @@
   (types :accessor .types :init-form (make <types>) :init-keyword :types)
   (variables :accessor .variables :init-form (make <variables>) :init-keyword :variables)
   (functions :accessor .functions :init-form (make <functions>) :init-keyword :functions)
-  (statement :accessor .statement :init-value #f :init-keyword :statement))
+  (statement :accessor .statement :init-form (make <compound>) :init-keyword :statement))
 
 (define-class <function> (<named>)
   (signature :accessor .signature :init-form (make <signature>) :init-keyword :signature)

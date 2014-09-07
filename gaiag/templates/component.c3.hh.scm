@@ -27,13 +27,16 @@ struct #.model
 #} ((compose .elements .ports) model))
   #.model ();
 #(map-ports #{#(map-port-events #{void #.event-name ();
-#} port (filter gom:in? (gom:events port c++:import))) #} (filter gom:provides? ((compose .elements .ports) model)))#
+#} port (filter gom:in? (gom:events port))) #} (filter gom:provides? ((compose .elements .ports) model)))#
 (map-ports #{#(map-port-events #{void #.event-name ();
-#} port (filter gom:out? (gom:events port c++:import))) #} (filter gom:requires? ((compose .elements .ports) model)))
+#} port (filter gom:out? (gom:events port))) #} (filter gom:requires? ((compose .elements .ports) model)))
+#(string-if (.behaviour model)
+#{
 #(map-functions
 #{  #.return-type  #.function (#.parameters );
 #}
-((compose .elements .functions .behaviour) model))};
+((compose .elements .functions .behaviour) model))
+#})
+};
 }
-
 ##endif

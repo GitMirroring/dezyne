@@ -188,10 +188,10 @@
     ((? (is? <statement>)) '())
     (_ (throw 'match-error  (format #f "~a:gom:statements-of-type, type: ~a: no match: ~a\n" (current-source-location) type statement)))))
 
-(define (gom:typed? ast import)
+(define (gom:typed? ast)
   (match ast
     (($ <event>) (not (equal? (.type (.type ast)) '(type void))))
-    (($ <port>) (null-is-#f (filter (lambda (x) (gom:typed? x import)) (gom:events ast import))))
+    (($ <port>) (null-is-#f (filter (lambda (x) (gom:typed? x)) (gom:events ast))))
     (_ (throw 'match-error  (format #f "~a:gom:typed?: no match: ~a\n" (current-source-location) ast)))))
 
 (define-method (gom:dir-matches? (p <port>) (e <event>))
@@ -283,10 +283,10 @@
 (define (gom:components o) ((gom:filter <component>) o))
 (define (gom:interfaces o) ((gom:filter <interface>) o))
 
-(define* (gom:events ast import)
+(define* (gom:events ast)
   (match ast
     (($ <interface>) (.elements (.events ast)))
-    (($ <port>) (gom:events (ast->gom (import (.type ast))) import))
+    (($ <port>) (gom:events (ast->gom (gom:import (.type ast)))))
     (_ (throw 'match-error  (format #f "~a:events: no match: ~a\n" (current-source-location) ast)))))
 
 (define-method (gom:bottom? (o <component>))

@@ -249,12 +249,12 @@
      (list comp-name (.type value) (.field value)))))
 
 (define (return-type-text port)
-  (or (and-let* ((event (null-is-#f (gom:typed? port c++:import))))
+  (or (and-let* ((event (null-is-#f (gom:typed? port))))
                 (.type (.type (car event))))
       'void))
 
 (define (return-interface-type interface event)
-  (or (and (gom:typed? event c++:import) (list interface "::" (.type (.type event))))
+  (or (and (gom:typed? event) (list interface "::" (.type (.type event))))
       'void))
 
 (define (variable-value->string model v) ;; FIXME: expression
@@ -277,7 +277,7 @@
                                    (ast:type (.type v)))))))
 
 (define (format-parameters port)
-  (if (gom:typed? port c++:import)
+  (if (gom:typed? port)
       (list (.type port) "::" (return-type-text port) " " 'value)
       ""))
 
@@ -394,12 +394,13 @@
                   (.type . ,(compose .type .type))
                   (.event-name . ,.name)
                   (.statement .
-                              ,(if (gom:component *ast*)
-                                   (lambda (event)
-                                     (parameterize ((statements.port port)
-                                                    (statements.event event))
-                                       (statements->string
-                                        ((compose .statement .behaviour gom:component) *ast*) #f)))
+                              ,(or (and-let* ((component (gom:component *ast*))
+                                              (behaviour (.behaviour component))
+                                              (statement (.statement behaviour)))
+                                             (lambda (event)
+                                               (parameterize ((statements.port port)
+                                                              (statements.event event))
+                                                 (statements->string statement #f))))
                                    ""))
                   (.return-interface-type . ,(lambda (event) (return-interface-type (.type port) event)))
                   )))))))

@@ -100,7 +100,7 @@ within #.component _#.behaviour.name _((#(context->csp ast (make-context ((compo
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {#
  (comma-join (list (map-ports #{#
-(comma-join (map (lambda (x) (list .port.name "." (.name x))) (filter gom:out? (gom:events port csp:import))))#}
+(comma-join (map (lambda (x) (list .port.name "." (.name x))) (filter gom:out? (gom:events port))))#}
   (filter gom:requires? ((compose .elements .ports gom:component) ast)) ",") 'extensions_over_empty_channels_is_undefined))}
 
 SINGLETHREADED = true
@@ -147,14 +147,14 @@ transparent diamond
 within sbisim(diamond(x))
 Exclude = {#
   (comma-join (list (map (lambda (x) (comma-join (map (lambda (y) (symbol-append (.name x) '. y)) (return-values-port x)))) (filter gom:provides? ((compose .elements .ports gom:component) ast))) (map-ports
-#{#(comma-join (map (lambda (x) (list .port.name "." (.name x))) (filter gom:out? (gom:events port csp:import)))) #}
+#{#(comma-join (map (lambda (x) (list .port.name "." (.name x))) (filter gom:out? (gom:events port)))) #}
    (filter gom:provides? ((compose .elements .ports gom:component) ast)))
  (map-ports
 #{#(comma-join (map (lambda (x) (list .port.name "." x)) (filter (lambda (x) (member x '(inevitable optional))) (port-events port)))) #}
    ((compose .elements .ports gom:component) ast) ",")))}
 ClientCalls = {#
  (map-ports
-#{#(comma-join (map (lambda (x) (list .port.name "." (.name x))) (filter gom:in? (gom:events port csp:import)))) #}
+#{#(comma-join (map (lambda (x) (list .port.name "." (.name x))) (filter gom:in? (gom:events port)))) #}
    (filter gom:provides? ((compose .elements .ports gom:component) ast)))}
 UsedModeling = {#
  (map-ports

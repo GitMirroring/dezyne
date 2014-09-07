@@ -26,8 +26,7 @@
 namespace component
 {
   Siren::Siren()
-  : 
-  siren()
+  : siren()
   {
     siren.in.turnon = asd::bind(&Siren::turnon, this);
     siren.in.turnoff = asd::bind(&Siren::turnoff, this);
@@ -43,7 +42,6 @@ namespace component
     std::cout << "Siren.turnoff" << std::endl;
 
   }
-
 
 
 

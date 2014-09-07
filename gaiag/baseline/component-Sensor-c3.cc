@@ -26,8 +26,7 @@
 namespace component
 {
   Sensor::Sensor()
-  : 
-  sensor()
+  : sensor()
   {
     sensor.in.enable = asd::bind(&Sensor::enable, this);
     sensor.in.disable = asd::bind(&Sensor::disable, this);
@@ -43,7 +42,6 @@ namespace component
     std::cout << "Sensor.disable" << std::endl;
 
   }
-
 
 
 
