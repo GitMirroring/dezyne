@@ -68,6 +68,12 @@
    ((compose ast:enums ast:ast ast:type) port)))
 
 (define* ((ast:resolve-model model) src :optional (locals '()))
+  (let ((resolved ((ast:resolve-model- model) src locals)))
+    (and-let* ((loc (source-property src 'loc)))
+              (set-source-property! resolved 'loc loc))
+    resolved))
+
+(define* ((ast:resolve-model- model) src :optional (locals '()))
   (let* ((port? (lambda (port)
                   (if (eq? (ast:class model) 'interface)
                       #f
