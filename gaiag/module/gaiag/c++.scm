@@ -25,7 +25,6 @@
   :use-module (ice-9 rdelim)
   :use-module (srfi srfi-1)
 
-  :use-module (gaiag ast:)
   :use-module (gaiag animate)
   :use-module (gaiag indent)
   :use-module (gaiag misc)
@@ -176,7 +175,7 @@
       (($ <return> expression)
        (->string (list 'return " " (expression->string expression) ";\n")))
       (($ <variable> name type expression)
-       (->string (list (ast:name type) " " name " = " (expression->string expression) ";\n")))
+       (->string (list (gom:name type) " " name " = " (expression->string expression) ";\n")))
       ((? char?) (make-string 1 src))
       ((? string?) src)
       ((? symbol?) (symbol->string src))
@@ -241,7 +240,7 @@
     (_ (format #f "~a:no match: ~a" (current-source-location) ast))))
 
 (define (parameter->string parameter)
-  (->string (list (ast:name (.type parameter)) " " (.identifier parameter))))
+  (->string (list (gom:name (.type parameter)) " " (.identifier parameter))))
 
 (define (value->string value)
   (let ((comp-name (.name (gom:component *ast*))))
@@ -270,11 +269,11 @@
       (->string (.expression v))))))
 
 (define (gom:state-type v)
-  (case (ast:type (.type v))
-    ((bool) (->string (ast:type (.type v))))
+  (case (gom:name (.type v))
+    ((bool) (->string (gom:name (.type v))))
     (;;(enum)
      else (double-colon-join (list (.name (gom:component *ast*))
-                                   (ast:type (.type v)))))))
+                                   (gom:name (.type v)))))))
 
 (define (format-parameters port)
   (if (gom:typed? port)
@@ -416,7 +415,7 @@
               (current-module)
               function
               `((.function . ,.name)
-                (.return-type . ,(compose ast:name .type .signature))
+                (.return-type . ,(compose gom:name .type .signature))
                 (.comma . ,(lambda (x) (if (null-is-#f ((compose .elements .parameters .signature) x)) ", " "")))
                 (.parameters . ,(lambda (x) ((->join ", ") (map parameter->string ((compose .elements .parameters .signature) x)))))
                 (.statements . ,(lambda (x) (statements->string (.statement x))))))))))

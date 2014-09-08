@@ -62,6 +62,7 @@
            gom:interfaces
            gom:member-names
            gom:member-values
+           gom:name ;; REMOVEME
            gom:out?
            gom:parent
            gom:parse-asd
@@ -125,7 +126,7 @@
     (('illegal) '())
     (_ (throw 'match-error  (format #f "~a:gom:find-events: no match: ~a\n" (current-source-location) ast)))))
 
-(define* (gom:variable ast identifier)
+(define* (gom:variable ast identifier)   ;; use SYMBOL TABLE
   (match ast
     (($ <component>) (gom:variable (apply append (map gom:variables (cons ast ((compose .elements .ports) ast)))) identifier))
     (($ <interface>) (gom:variable (gom:variables ast) identifier))
@@ -134,7 +135,7 @@
     (_ #f)
     (_ (throw 'match-error  (format #f "~a:gom:variable: no match: ~a\n" (current-source-location) ast)))))
 
-(define (gom:functions ast)
+(define (gom:functions ast)  ;; REMOVEME
   (match ast
     (($ <behaviour>) (.elements (.functions ast)))
     (($ <interface>) (append
@@ -145,7 +146,7 @@
      (gom:functions (gom:import (.type ast) ast->gom)))
     (_ (throw 'match-error  (format #f "~a:gom:functions: no match: ~a\n" (current-source-location) ast)))))
 
-(define (gom:function ast identifier)
+(define (gom:function ast identifier)  ;; use SYMBOL TABLE
   (find (lambda (f) (eq? (.name f) identifier))
         (match ast
           (($ <functions>) (.elements ast))
@@ -153,7 +154,7 @@
           (($ <interface>) (.elements (.functions (.behaviour ast))))
           (_ (throw 'match-error  (format #f "~a:gom:function: no match: ~a\n" (current-source-location) ast))))))
 
-(define (gom:variables ast)  ;; to be removed (.variables o)
+(define (gom:variables ast)  ;; REMOVEME
   (match ast
     (($ <behaviour>) (.elements (or (.variables ast) (make <variables>))))
     (($ <interface>) (gom:variables (.behaviour ast)))
@@ -161,16 +162,16 @@
     (($ <port>) (gom:variables (gom:import (.type ast) ast->gom)))
     (_ (throw 'match-error  (format #f "~a:gom:variables: no match: ~a\n" (current-source-location) ast)))))
 
-(define (gom:member-names model)
+(define (gom:member-names model)  ;; SYMBOL TABLE
   (map .name (gom:variables (.behaviour model))))
 
-(define (gom:member-values model)
+(define (gom:member-values model)  ;; SYMBOL TABLE
   (map (lambda (x) (.value (.expression x))) (gom:variables (.behaviour model))))
 
-(define (statement? ast)
+(define (statement? ast)  ;; REMOVEME
   (member (ast-name ast) '(action assign bind call compound guard if instance on reply variable return)))
 
-(define (gom:statement ast)
+(define (gom:statement ast) ;; REMOVEME
   (match ast
     ((? ast:system?) (or (find (lambda (x) (is-a? x <compound>)) (ast:body ast))))
     (($ <model>) (gom:statement (.behaviour ast)))
@@ -363,3 +364,5 @@
 
 (define-method (gom:parent (o <on>) (t <ast>))
   (gom:parent (.statement o) t))
+
+(define (gom:name type) (cadr type)) ;; REMOVEME

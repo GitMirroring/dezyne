@@ -24,7 +24,6 @@
   :use-module (srfi srfi-1)
 
   :use-module (gaiag animate)
-  :use-module (gaiag ast:)
   :use-module (gaiag indent)
   :use-module (gaiag misc)
   :use-module (gaiag reader)

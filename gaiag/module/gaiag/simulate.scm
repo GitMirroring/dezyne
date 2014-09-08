@@ -28,7 +28,6 @@
 
   :use-module (language asd parse)
 
-  :use-module (gaiag ast:)
   :use-module (gaiag gaiag)
   :use-module (gaiag json-trace)
   :use-module (gaiag misc)

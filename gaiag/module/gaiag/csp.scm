@@ -216,7 +216,7 @@
   (and-let* ((variable (gom:variable ast identifier))
              ((is-a? variable <variable>))
              (type (.type variable)))
-            (ast:type type)))
+            (gom:name type)))
 
 (define (csp-expression->string ast src) ;; FIXME: more tests
   (define (paren expression)

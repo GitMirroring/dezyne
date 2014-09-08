@@ -26,7 +26,6 @@
   :use-module (srfi srfi-1)
   :use-module (ice-9 rdelim)
 
-  :use-module (gaiag ast:)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
 
