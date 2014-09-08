@@ -42,6 +42,7 @@
  (gaiag gom ast)
  (gaiag gom gom)
  (gaiag gom display)
+ (gaiag gom map)
  (gaiag gom util))
 
 (define (ast-> ast)

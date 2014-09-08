@@ -86,7 +86,7 @@
   (gom:import name csp:norm))
 
 (define (csp:norm ast)
-  ((compose ast->gom ast:resolve normstate mangle) ast))
+  ((compose normstate mangle) ast))
 
 (define (mangle ast)
   "experimental mangling"
