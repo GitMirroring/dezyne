@@ -34,59 +34,52 @@ context_func_(S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', <>))
 context_func_args_(v', S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', (<>, v')))
 
 datatype event_enumeration_alphabet =
-dummy | inevitable | return
+i3_e | i4_h | return
 
 channel illegal
 
-channel l: {dummy,inevitable,return}
-channel n: {dummy,inevitable,return}
+channel i24_i: {i3_e,i4_h,return}
 
-channel ilivelock: {dummy,inevitable,return}
-channel nolivelock: {dummy,inevitable,return}
+channel i23_I: {i3_e,i4_h,return}
 
-  ilivelock_(IG) = let
+  i23_I_(IG) = let
 
-ilivelock__(((stack'))) =
-IG & ilivelock?x:{dummy} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>)
-[]
-ilivelock?x:{inevitable} ->
-skip_(\ V' @ ilivelock__(V'),((stack')))
+i23_I__(((stack'))) =
+i23_I?x:{i3_e} ->
+semi_((\ P',V' @ i23_I!i4_h -> P'(V')),
+(\ P',V' @ i23_I.return -> P'(V')))(\ V' @ i23_I__(V'),((stack')))
 
 
-within ilivelock__(((<>))) 
-
-nolivelock_(IG) = let
-
-nolivelock__(((stack'))) =
-nolivelock?x:{inevitable} ->
-semi_((\ P',V' @ nolivelock!dummy -> P'(V')),
-skip_)(\ V' @ nolivelock__(V'),((stack')))
+within i23_I__(((<>))) 
 
 
-within nolivelock__(((<>))) 
+i103_nonrecursion_(IIG,IG) = let
+i52_f = \ P',V' @ context_func_(semi_(callvoid_(\ P',V' @ i60_g(P',V')),
+semi_((\ P',V' @ i24_i!i4_h -> P'(V')),
+skip_)))(P',V')
+i60_g = \ P',V' @ context_func_(semi_(assign_(\ ((i28_b),(stack')) @ ((false),(stack'))),
+skip_))(P',V')
 
-
-livelock2_(IIG,IG) = let
-
-livelock2__(((stack'))) = transition_begin -> (
-IIG & l?x:{dummy} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>)
-[]
-n?x:{dummy} ->
-skip_(\ V' @ transition_end -> livelock2__(V'),((stack')))
+i103_nonrecursion__(((i28_b),(stack'))) = transition_begin -> (
+i24_i?x:{i3_e} ->
+semi_(semi_(callvoid_(\ P',V' @ i52_f(P',V')),
+\ P',((i28_b),(stack')) @ ifthenelse_((IG and i28_b),
+(\ P', V' @ illegal -> STOP),
+(\ P',V' @ P'(V'))
+)(P',((i28_b),(stack')))),
+(\ P',V' @ i24_i.return -> P'(V')))(\ V' @ transition_end -> i103_nonrecursion__(V'),((i28_b),(stack')))
 )
 
-within livelock2__(((<>)))
+within i103_nonrecursion__(((true),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
-channel IN,OUT : {n.dummy,extensions_over_empty_channels_is_undefined}
+channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
 channel transition_begin, transition_end
 
-channel reorder_in,reorder_out : {l.return}
+channel reorder_in,reorder_out : {i24_i.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -119,30 +112,25 @@ within Idle(0)
 
 within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-livelock2__Component(IIG) = let
+i103_nonrecursion__Component(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {l.return,l.inevitable,n.inevitable}
-ClientCalls = {l.dummy}
-UsedModeling = {n.inevitable}
-within compress((livelock2_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,l,n|},Exclude)|]
-(((nolivelock_(true) [[nolivelock.x<-n.x|x<-extensions(nolivelock)]]
-) [[x<-IN.x|x<-extensions(IN)]]
+Exclude = {i24_i.return,i24_i.i4_h}
+ClientCalls = {i24_i.i3_e}
+UsedModeling = {}
+within compress((i103_nonrecursion_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,i24_i|},Exclude)|]
+(((STOP) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
-assert ilivelock_(false) :[deadlock free]
+assert i23_I_(false) :[deadlock free]
 
-assert ilivelock_(true)  \ {|ilivelock.inevitable|} :[livelock free]
+assert i23_I_(true) :[livelock free]
 
-assert nolivelock_(false) :[deadlock free]
-
-assert nolivelock_(true)  \ {|nolivelock.inevitable|} :[livelock free]
-
-assert livelock2_(true,true) :[deterministic]
-assert STOP [T= livelock2__Component(false) \ diff(Events,{illegal})
-assert livelock2__Component(false) :[deadlock free]
-assert ilivelock_(true) [[ilivelock.x<-l.x|x<-extensions(ilivelock)]] \ {l.inevitable} [F= livelock2__Component(true) \ diff(Events,{|illegal,l|})
-assert livelock2__Component(true) \ diff(Events,{|illegal,l|}) :[livelock free]
+assert i103_nonrecursion_(true,true) :[deterministic]
+assert STOP [T= i103_nonrecursion__Component(false) \ diff(Events,{illegal})
+assert i103_nonrecursion__Component(false) :[deadlock free]
+assert i23_I_(true) [[i23_I.x<-i24_i.x|x<-extensions(i23_I)]] \ {} [F= i103_nonrecursion__Component(true) \ diff(Events,{|illegal,i24_i|})
+assert i103_nonrecursion__Component(true) \ diff(Events,{|illegal,i24_i|}) :[livelock free]

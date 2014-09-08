@@ -58,7 +58,7 @@ assign_(\ ((i322_s),(stack')) @ ((i314_State_i312_Initialized),(stack'))))(\ V' 
 []
 ((i322_s == i314_State_i311_Uninitialized)) & (
 IG & i568_IComp?x:{i304_recover,i306_perform_actions} ->
-illegal -> STOP)
+(\ P', V' @ illegal -> STOP)(STOP,<>))
 []
 (((i322_s == i314_State_i312_Initialized) and true)) & (
 i568_IComp?x:{i306_perform_actions} ->
@@ -70,7 +70,7 @@ assign_(\ ((i322_s),(stack')) @ ((i314_State_i313_Error),(stack'))))(\ V' @ i568
 []
 ((i322_s == i314_State_i312_Initialized)) & (
 IG & i568_IComp?x:{i302_initialize,i304_recover} ->
-illegal -> STOP)
+(\ P', V' @ illegal -> STOP)(STOP,<>))
 []
 (((i322_s == i314_State_i313_Error) and true)) & (
 i568_IComp?x:{i304_recover} ->
@@ -82,7 +82,7 @@ assign_(\ ((i322_s),(stack')) @ ((i314_State_i312_Initialized),(stack'))))(\ V' 
 []
 ((i322_s == i314_State_i313_Error)) & (
 IG & i568_IComp?x:{i302_initialize,i306_perform_actions} ->
-illegal -> STOP)
+(\ P', V' @ illegal -> STOP)(STOP,<>))
 
 
 within i568_IComp__(((i314_State_i311_Uninitialized),(<>))) 
@@ -100,7 +100,7 @@ assign_(\ ((i25_s),(stack')) @ ((i17_State_i15_Initialized),(stack'))))(\ V' @ i
 []
 ((i25_s == i17_State_i14_Uninitialized)) & (
 IG & i301_IDevice?x:{i5_calibrate,i7_perform_action1,i9_perform_action2} ->
-illegal -> STOP)
+(\ P', V' @ illegal -> STOP)(STOP,<>))
 []
 (((i25_s == i17_State_i15_Initialized) and true)) & (
 i301_IDevice?x:{i5_calibrate} ->
@@ -115,7 +115,7 @@ i301_IDevice?x:{i3_initialize} ->
 (\ P',V' @ i301_IDevice.i13_result_t_i11_OK -> P'(V'))(\ V' @ i301_IDevice__(V'),((i25_s),(stack')))
  []
   IG & i301_IDevice?x:{i7_perform_action1,i9_perform_action2} ->
-illegal -> STOP)
+(\ P', V' @ illegal -> STOP)(STOP,<>))
 []
 (((i25_s == i17_State_i16_Calibrated) and true)) & (
 i301_IDevice?x:{i7_perform_action1,i9_perform_action2} ->
@@ -145,7 +145,7 @@ assign_(\ ((i25_s),(stack')) @ ((i17_State_i15_Initialized),(stack'))))(\ V' @ i
 []
 ((i25_s == i17_State_i14_Uninitialized)) & (
 IG & i301_IDevice?x:{i5_calibrate,i7_perform_action1,i9_perform_action2} ->
-illegal -> STOP)
+(\ P', V' @ illegal -> STOP)(STOP,<>))
 []
 (((i25_s == i17_State_i15_Initialized) and true)) & (
 i301_IDevice?x:{i5_calibrate} ->
@@ -160,7 +160,7 @@ i301_IDevice?x:{i3_initialize} ->
 (\ P',V' @ i301_IDevice.i13_result_t_i11_OK -> P'(V'))(\ V' @ i301_IDevice__(V'),((i25_s),(stack')))
  []
   IG & i301_IDevice?x:{i7_perform_action1,i9_perform_action2} ->
-illegal -> STOP)
+(\ P', V' @ illegal -> STOP)(STOP,<>))
 []
 (((i25_s == i17_State_i16_Calibrated) and true)) & (
 i301_IDevice?x:{i7_perform_action1,i9_perform_action2} ->
@@ -206,7 +206,7 @@ assign_(\ ((i589_s),((stack',i612_res))) @ ((i581_State_i579_Initialized),((stac
 )(P',((i589_s),((stack',i612_res))))))))(\ V' @ transition_end -> i1121_Comp__(V'),((i589_s),(stack')))
  []
   IIG & i569_client?x:{i304_recover,i306_perform_actions} ->
-illegal -> STOP)
+(\ P', V' @ illegal -> STOP)(STOP,<>))
 []
 ((i589_s == i581_State_i579_Initialized)) & (
 i569_client?x:{i306_perform_actions} ->
@@ -233,7 +233,7 @@ assign_(\ ((i589_s),((stack',i808_res))) @ ((i581_State_i580_Error),((stack',i80
 )(P',((i589_s),((stack',i808_res))))))))(\ V' @ transition_end -> i1121_Comp__(V'),((i589_s),(stack')))
  []
   IIG & i569_client?x:{i302_initialize,i304_recover} ->
-illegal -> STOP)
+(\ P', V' @ illegal -> STOP)(STOP,<>))
 []
 ((i589_s == i581_State_i580_Error)) & (
 i569_client?x:{i304_recover} ->
@@ -250,7 +250,7 @@ assign_(\ ((i589_s),((stack',i1004_res))) @ ((i581_State_i579_Initialized),((sta
 )(P',((i589_s),((stack',i1004_res))))))(\ V' @ transition_end -> i1121_Comp__(V'),((i589_s),(stack')))
  []
   IIG & i569_client?x:{i302_initialize,i306_perform_actions} ->
-illegal -> STOP)
+(\ P', V' @ illegal -> STOP)(STOP,<>))
 )
 
 within i1121_Comp__(((i581_State_i578_Uninitialized),(<>)))

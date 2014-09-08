@@ -43,11 +43,11 @@ channel i: {a,b,c,d,return}
 channel I: {a,b,c,d,return}
 
   I_(IG) = let
-toggle = \ PF',V' @ context_func_(semi_(\ P',((f),(stack')) @ ifthenelse_(f,
+toggle = \ P',V' @ context_func_(semi_(\ P',((f),(stack')) @ ifthenelse_(f,
 (\ P',V' @ I!c -> P'(V')),
 (\ P',V' @ P'(V'))
 )(P',((f),(stack'))),
-assign_(\ ((f),(stack')) @ (((not f)),(stack')))))(PF',V')
+assign_(\ ((f),(stack')) @ (((not f)),(stack')))))(P',V')
 
 I__(((f),(stack'))) =
 (true) & (
@@ -66,11 +66,11 @@ within I__(((false),(<>)))
 
 
 function_(IIG,IG) = let
-toggle = \ PF',V' @ context_func_(semi_(\ P',((f),(stack')) @ ifthenelse_(f,
+toggle = \ P',V' @ context_func_(semi_(\ P',((f),(stack')) @ ifthenelse_(f,
 (\ P',V' @ i!c -> P'(V')),
 (\ P',V' @ P'(V'))
 )(P',((f),(stack'))),
-assign_(\ ((f),(stack')) @ (((not f)),(stack')))))(PF',V')
+assign_(\ ((f),(stack')) @ (((not f)),(stack')))))(P',V')
 
 function__(((f),(stack'))) = transition_begin -> (
 (true) & (

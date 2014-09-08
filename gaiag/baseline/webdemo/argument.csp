@@ -43,9 +43,9 @@ channel i124_i: {i3_e,i4_f,return}
 channel i123_I: {i3_e,i4_f,return}
 
   i123_I_(IG) = let
-i38_g = \ PF',V',F' @ context_func_args_(F',
+i38_g = \ P',V',F' @ context_func_args_(F',
 semi_((\ P',V' @ i123_I!i4_f -> P'(V')),
-returnvalue_(\ ((i6_b),((stack',i9_gc))) @ (i9_gc or i6_b))))(PF',V')
+returnvalue_(\ ((i6_b),((stack',i9_gc))) @ (i9_gc or i6_b))))(P',V')
 
 i123_I__(((i6_b),(stack'))) =
 (true) & (
@@ -65,9 +65,9 @@ within i123_I__(((false),(<>)))
 
 
 i248_argument_(IIG,IG) = let
-i161_g = \ PF',V',F' @ context_func_args_(F',
+i161_g = \ P',V',F' @ context_func_args_(F',
 semi_((\ P',V' @ i124_i!i4_f -> P'(V')),
-returnvalue_(\ ((i128_b),((stack',i131_gc))) @ (i131_gc or i128_b))))(PF',V')
+returnvalue_(\ ((i128_b),((stack',i131_gc))) @ (i131_gc or i128_b))))(P',V')
 
 i248_argument__(((i128_b),(stack'))) = transition_begin -> (
 (true) & (

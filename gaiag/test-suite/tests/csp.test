@@ -223,7 +223,7 @@ skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
 
           ;; to:
           "IG & i?x:{e} ->
-illegal -> STOP"))
+(\\ P', V' @ illegal -> STOP)(STOP,<>)"))
 
 (define ast-transform-empty-compound-via
   '(on ((trigger #f e))
@@ -678,7 +678,7 @@ semi_(semi_(\\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
 
           ;; via:
           "IIG & j?x:{e} ->
-illegal -> STOP"))
+(\\ P', V' @ illegal -> STOP)(STOP,<>)"))
 
 
 (pass-if "c-csp-transform-required-action"
@@ -788,7 +788,7 @@ semi_(semi_((\\ P',V' @ console!detected -> P'(V')),
 semi_((\\ P',V' @ siren!turnon -> siren.return -> P'(V')),
 semi_(assign_(\\ ((state,sounding),(stack')) @ ((state,true),(stack'))),
 assign_(\\ ((state,sounding),(stack')) @ ((States_Triggered,sounding),(stack')))))),
-(\\ P',V' @ P'(V')))(\\ V' @ transition_end -> Alarm_d_(V'),((state,sounding),(stack')))"
+skip_)(\\ V' @ transition_end -> Alarm_d_(V'),((state,sounding),(stack')))"
 ))
 
 
@@ -904,7 +904,7 @@ assign_(\\ ((state,sounding),(stack')) @ ((States_Triggered,sounding),(stack')))
           ;; to:
           "o?x:{foo} ->
 context_active_(sendrecv_(o,foo),
-(\\ P',V' @ P'(V')))(\\ V' @ transition_end -> var__(V'),((stack')))"))
+skip_)(\\ V' @ transition_end -> var__(V'),((stack')))"))
 
 (pass-if "ast-csp-transform-variable-valued-action"
          (diff-noisy-equal?
@@ -918,7 +918,7 @@ context_active_(sendrecv_(o,foo),
           ;; via:
           "o?x:{foo} ->
 context_active_(sendrecv_(o,foo),
-(\\ P',V' @ P'(V')))(\\ V' @ transition_end -> var__(V'),((stack')))"))
+skip_)(\\ V' @ transition_end -> var__(V'),((stack')))"))
 
 (define csp-function-call-ast
   '(on (e)
@@ -964,7 +964,7 @@ semi_(callvoid_(\\ P',V' @ toggle(P',V')),
                          '(function toggle (signature (type void)) #f ()))
 
           ;; via:
-          "toggle = \\ PF',V' @ context_func_((\\ P',V' @ P'(V')))(PF',V')\n"))
+          "toggle = \\ P',V' @ context_func_((\\ P',V' @ P'(V')))(P',V')\n"))
 
 (define csp-transform-function-arguments
   '(function
@@ -994,9 +994,9 @@ semi_(callvoid_(\\ P',V' @ toggle(P',V')),
           (csp-transform* i-ast csp-transform-function-arguments)
 
           ;; to:
-          "g = \\ PF',V',F' @ context_func_args_(F',
+          "g = \\ P',V',F' @ context_func_args_(F',
 semi_((\\ P',V' @ i!f -> P'(V')),
-returnvalue_(\\ ((s,b,hide_member2'),((stack',c))) @ c)))(PF',V')
+returnvalue_(\\ ((s,b,hide_member2'),((stack',c))) @ c)))(P',V')
 "))
 
 

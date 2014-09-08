@@ -58,7 +58,7 @@ ilivelock_(IG) = let
 ilivelock__(((stack'))) =
 ilivelock?x:{inevitable} ->
 semi_((\ P',V' @ ilivelock!dummy -> P'(V')),
-(\ P',V' @ P'(V')))(\ V' @ ilivelock__(V'),((stack')))
+skip_)(\ V' @ ilivelock__(V'),((stack')))
 
 
 within ilivelock__(((<>))) 
@@ -71,7 +71,7 @@ n?x:{dummy} ->
 (\ P',V' @ n.return -> P'(V'))(\ V' @ transition_end -> livelock1__(V'),((stack')))
 []
 l?x:{dummy} ->
-(\ P',V' @ P'(V'))(\ V' @ transition_end -> livelock1__(V'),((stack')))
+skip_(\ V' @ transition_end -> livelock1__(V'),((stack')))
 )
 
 within livelock1__(((<>)))

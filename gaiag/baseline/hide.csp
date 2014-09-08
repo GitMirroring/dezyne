@@ -43,11 +43,11 @@ channel i: {e,f,return}
 channel I: {e,f,return}
 
   I_(IG) = let
-g = \ PF',V',F' @ context_func_args_(F',
+g = \ P',V',F' @ context_func_args_(F',
 context_(\ ((hide_member0',c),((stack',(b,d)))) @ d,
 context_(\ ((hide_member0',c),(((stack',(hide_local0',d)),b))) @ c,
 semi_((\ P',V' @ I!f -> P'(V')),
-returnvalue_(\ ((hide_member0',c),((((stack',(hide_local0',hide_local1')),b),d))) @ (b or d))))))(PF',V')
+returnvalue_(\ ((hide_member0',c),((((stack',(hide_local0',hide_local1')),b),d))) @ (b or d))))))(P',V')
 
 I__(((b,c),(stack'))) =
 (true) & (
@@ -65,11 +65,11 @@ within I__(((false,true),(<>)))
 
 
 hide_(IIG,IG) = let
-g = \ PF',V',F' @ context_func_args_(F',
+g = \ P',V',F' @ context_func_args_(F',
 context_(\ ((hide_member0',c),((stack',(b,d)))) @ d,
 context_(\ ((hide_member0',c),(((stack',(hide_local0',d)),b))) @ c,
 semi_((\ P',V' @ i!f -> P'(V')),
-returnvalue_(\ ((hide_member0',c),((((stack',(hide_local0',hide_local1')),b),d))) @ (b or d))))))(PF',V')
+returnvalue_(\ ((hide_member0',c),((((stack',(hide_local0',hide_local1')),b),d))) @ (b or d))))))(P',V')
 
 hide__(((b,c),(stack'))) = transition_begin -> (
 (true) & (

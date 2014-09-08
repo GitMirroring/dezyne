@@ -43,9 +43,9 @@ channel po_mangle: {ev_mangle,ev_mingle,return}
 channel if_mangle: {ev_mangle,ev_mingle,return}
 
   if_mangle_mangle(IG) = let
-mangle = \ PF',V',F' @ context_func_args_(F',
+mangle = \ P',V',F' @ context_func_args_(F',
 semi_((\ P',V' @ if_mangle!ev_mingle -> P'(V')),
-returnvalue_(\ ((b),((stack',m))) @ (m or b))))(PF',V')
+returnvalue_(\ ((b),((stack',m))) @ (m or b))))(P',V')
 
 if_mangle_mangle_(((b),(stack'))) =
 (true) & (
@@ -62,9 +62,9 @@ within if_mangle_mangle_(((false),(<>)))
 
 
 co_mangle_mangle(IIG,IG) = let
-mangle = \ PF',V',F' @ context_func_args_(F',
+mangle = \ P',V',F' @ context_func_args_(F',
 semi_((\ P',V' @ po_mangle!ev_mingle -> P'(V')),
-returnvalue_(\ ((b),((stack',m))) @ (m or b))))(PF',V')
+returnvalue_(\ ((b),((stack',m))) @ (m or b))))(P',V')
 
 co_mangle_mangle_(((b),(stack'))) = transition_begin -> (
 (true) & (

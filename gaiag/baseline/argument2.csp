@@ -43,9 +43,9 @@ channel po_i: {ev_e,ev_f,return}
 channel if_I: {ev_e,ev_f,return}
 
   if_I_(IG) = let
-g = \ PF',V',F' @ context_func_args_(F',
+g = \ P',V',F' @ context_func_args_(F',
 semi_((\ P',V' @ if_I!ev_f -> P'(V')),
-returnvalue_(\ ((b),((stack',(ga,gb)))) @ (ga or gb))))(PF',V')
+returnvalue_(\ ((b),((stack',(ga,gb)))) @ (ga or gb))))(P',V')
 
 if_I__(((b),(stack'))) =
 (true) & (
@@ -65,9 +65,9 @@ within if_I__(((false),(<>)))
 
 
 co_argument2_(IIG,IG) = let
-g = \ PF',V',F' @ context_func_args_(F',
+g = \ P',V',F' @ context_func_args_(F',
 semi_((\ P',V' @ po_i!ev_f -> P'(V')),
-returnvalue_(\ ((b),((stack',(ga,gb)))) @ (ga or gb))))(PF',V')
+returnvalue_(\ ((b),((stack',(ga,gb)))) @ (ga or gb))))(P',V')
 
 co_argument2__(((b),(stack'))) = transition_begin -> (
 (true) & (

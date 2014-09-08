@@ -43,12 +43,12 @@ channel i109_i: {i3_a,i4_b,i5_c,i6_d,return}
 channel i108_I: {i3_a,i4_b,i5_c,i6_d,return}
 
   i108_I_(IG) = let
-i43_toggle = \ PF',V' @ context_func_(semi_(\ P',((i8_f),(stack')) @ ifthenelse_(i8_f,
+i43_toggle = \ P',V' @ context_func_(semi_(\ P',((i8_f),(stack')) @ ifthenelse_(i8_f,
 (\ P',V' @ i108_I!i5_c -> P'(V')),
 (\ P',V' @ P'(V'))
 )(P',((i8_f),(stack'))),
 semi_(assign_(\ ((i8_f),(stack')) @ (((not i8_f)),(stack'))),
-skip_)))(PF',V')
+skip_)))(P',V')
 
 i108_I__(((i8_f),(stack'))) =
 (true) & (
@@ -67,12 +67,12 @@ within i108_I__(((false),(<>)))
 
 
 i217_function_(IIG,IG) = let
-i149_toggle = \ PF',V' @ context_func_(semi_(\ P',((i113_f),(stack')) @ ifthenelse_(i113_f,
+i149_toggle = \ P',V' @ context_func_(semi_(\ P',((i113_f),(stack')) @ ifthenelse_(i113_f,
 (\ P',V' @ i109_i!i5_c -> P'(V')),
 (\ P',V' @ P'(V'))
 )(P',((i113_f),(stack'))),
 semi_(assign_(\ ((i113_f),(stack')) @ (((not i113_f)),(stack'))),
-skip_)))(PF',V')
+skip_)))(P',V')
 
 i217_function__(((i113_f),(stack'))) = transition_begin -> (
 (true) & (

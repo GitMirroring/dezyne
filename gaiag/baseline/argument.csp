@@ -43,9 +43,9 @@ channel i: {e,f,return}
 channel I: {e,f,return}
 
   I_(IG) = let
-g = \ PF',V',F' @ context_func_args_(F',
+g = \ P',V',F' @ context_func_args_(F',
 semi_((\ P',V' @ I!f -> P'(V')),
-returnvalue_(\ ((b),((stack',gc))) @ (gc or b))))(PF',V')
+returnvalue_(\ ((b),((stack',gc))) @ (gc or b))))(P',V')
 
 I__(((b),(stack'))) =
 (true) & (
@@ -65,9 +65,9 @@ within I__(((false),(<>)))
 
 
 argument_(IIG,IG) = let
-g = \ PF',V',F' @ context_func_args_(F',
+g = \ P',V',F' @ context_func_args_(F',
 semi_((\ P',V' @ i!f -> P'(V')),
-returnvalue_(\ ((b),((stack',gc))) @ (gc or b))))(PF',V')
+returnvalue_(\ ((b),((stack',gc))) @ (gc or b))))(P',V')
 
 argument__(((b),(stack'))) = transition_begin -> (
 (true) & (
