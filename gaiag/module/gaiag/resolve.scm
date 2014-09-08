@@ -69,7 +69,9 @@
 
 (define* ((ast:resolve-model model) src :optional (locals '()))
   (let ((resolved ((ast:resolve-model- model) src locals)))
-    (and-let* ((loc (source-property src 'loc)))
+    (and-let* (((supports-source-properties? src))
+               (loc (source-property src 'loc))
+               ((supports-source-properties? resolved)))
               (set-source-property! resolved 'loc loc))
     resolved))
 

@@ -31,6 +31,10 @@
   :use-module (srfi srfi-1)
 
   :use-module (gaiag fifo)
+
+  :use-module (oop goops)
+  :use-module (oop goops describe)
+
   :export (
            *eof*
            *eof*-is-#f
@@ -153,6 +157,11 @@
 
 (if (not (defined? 'read-string))
     (module-define! (current-module) 'read-string read-string-12.04))
+
+(when (not (defined? 'supports-source-properties?)) ;; guile-2.0.5/Ubuntu 12.04
+  (module-define! (current-module) 'supports-source-properties?
+                  (lambda (x) (or (pair? x) (instance? x))))
+  (export supports-source-properties?))
 
 (define (gulp-file file-name)
   (with-input-from-file (components->file-name file-name) read-string))

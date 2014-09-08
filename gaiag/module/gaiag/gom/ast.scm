@@ -54,9 +54,11 @@
 
 (define (ast->gom ast)
   (let ((gom ((compose ast->gom- ast->sugar) ast)))
-        (and-let* ((loc (source-property ast 'loc)))
+        (and-let* (((supports-source-properties? ast))
+                   (loc (source-property ast 'loc))
+                   ((supports-source-properties? gom)))
                   (set-source-property! gom 'loc loc))
-    gom))
+        gom))
 
 (define (ast->gom- ast)
   (match ast
