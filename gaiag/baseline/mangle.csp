@@ -59,7 +59,7 @@ skip_
 (\ P',V' @ if_mangle.return -> P'(V')))(\ V' @ if_mangle_mangle_(V'),((b),(stack'))))
 
 
-within if_mangle_mangle_(((false),(<>))) 
+within if_mangle_mangle_(((false),(<>)))
 
 
 co_mangle_mangle(IIG,IG) = let

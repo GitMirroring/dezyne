@@ -47,38 +47,38 @@ channel nolivelock: {dummy,inevitable,return}
 
   ilivelock_(IG) = let
 
-ilivelock__(((stack'))) =
+ilivelock__(((<>),(stack'))) =
 IG & ilivelock?x:{dummy} ->
 illegal_(STOP,<>)
 []
 ilivelock?x:{inevitable} ->
-skip_(\ V' @ ilivelock__(V'),((stack')))
+skip_(\ V' @ ilivelock__(V'),((<>),(stack')))
 
 
-within ilivelock__(((<>))) 
+within ilivelock__(((<>),(<>))) 
 
 nolivelock_(IG) = let
 
-nolivelock__(((stack'))) =
+nolivelock__(((<>),(stack'))) =
 nolivelock?x:{inevitable} ->
 semi_((\ P',V' @ nolivelock!dummy -> P'(V')),
-skip_)(\ V' @ nolivelock__(V'),((stack')))
+skip_)(\ V' @ nolivelock__(V'),((<>),(stack')))
 
 
-within nolivelock__(((<>))) 
+within nolivelock__(((<>),(<>))) 
 
 
 livelock2_(IIG,IG) = let
 
-livelock2__(((stack'))) = transition_begin -> (
+livelock2__(((<>),(stack'))) = transition_begin -> (
 IIG & l?x:{dummy} ->
 illegal_(STOP,<>)
 []
 n?x:{dummy} ->
-skip_(\ V' @ transition_end -> livelock2__(V'),((stack')))
+skip_(\ V' @ transition_end -> livelock2__(V'),((<>),(stack')))
 )
 
-within livelock2__(((<>)))
+within livelock2__(((<>),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {n.dummy,extensions_over_empty_channels_is_undefined}

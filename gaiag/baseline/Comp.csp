@@ -86,7 +86,7 @@ IG & IComp?x:{initialize,perform_actions} ->
 illegal_(STOP,<>))
 
 
-within IComp__(((State_Uninitialized),(<>))) 
+within IComp__(((State_Uninitialized),(<>)))
 
 IDevice_(IG) = let
 
@@ -137,7 +137,7 @@ IDevice?x:{calibrate} ->
 illegal_(STOP,<>))
 
 
-within IDevice__(((State_Uninitialized),(<>))) 
+within IDevice__(((State_Uninitialized),(<>)))
 
 
 Comp_(IIG,IG) = let

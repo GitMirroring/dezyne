@@ -45,48 +45,25 @@ channel i13_I: {i3_e,return}
 
   i13_I_(IG) = let
 
-i13_I__(((stack'))) =
+i13_I__(((<>),(stack'))) =
 i13_I?x:{i3_e} ->
-(\ P',V' @ i13_I.return -> P'(V'))(\ V' @ i13_I__(V'),((stack')))
+(\ P',V' @ i13_I.return -> P'(V'))(\ V' @ i13_I__(V'),((<>),(stack')))
 
 
-within i13_I__(((<>))) 
+within i13_I__(((<>),(<>))) 
 
 
-i204_recursion_(IIG,IG) = let
-i93_f = \ PF',V' @ context_func_(semi_(assign_(\ ((i18_toggle,i22_f_,i26_g_),(stack')) @ ((true,i22_f_,i26_g_),(stack'))),
-semi_(\ P',((i18_toggle,i22_f_,i26_g_),(stack')) @ ifthenelse_((IG and (i26_g_ and i22_f_)),
-illegal_,
-\ P',((i18_toggle,i22_f_,i26_g_),(stack')) @ ifthenelse_(i26_g_,
-semi_(assign_(\ ((i18_toggle,i22_f_,i26_g_),(stack')) @ ((i18_toggle,i22_f_,false),(stack'))),
-semi_(assign_(\ ((i18_toggle,i22_f_,i26_g_),(stack')) @ ((i18_toggle,true,i26_g_),(stack'))),
-callvoid_(\ P',V' @ i160_g(PF',V')))),
-skip_
-)(P',((i18_toggle,i22_f_,i26_g_),(stack')))
-)(P',((i18_toggle,i22_f_,i26_g_),(stack'))),
-skip_)))(PF',V')
-i160_g = \ PF',V' @ context_func_(semi_(assign_(\ ((i18_toggle,i22_f_,i26_g_),(stack')) @ ((false,i22_f_,i26_g_),(stack'))),
-semi_(\ P',((i18_toggle,i22_f_,i26_g_),(stack')) @ ifthenelse_((IG and (i22_f_ and i26_g_)),
-illegal_,
-\ P',((i18_toggle,i22_f_,i26_g_),(stack')) @ ifthenelse_(i22_f_,
-semi_(assign_(\ ((i18_toggle,i22_f_,i26_g_),(stack')) @ ((i18_toggle,i22_f_,true),(stack'))),
-semi_(assign_(\ ((i18_toggle,i22_f_,i26_g_),(stack')) @ ((i18_toggle,false,i26_g_),(stack'))),
-callvoid_(\ P',V' @ i93_f(PF',V')))),
-skip_
-)(P',((i18_toggle,i22_f_,i26_g_),(stack')))
-)(P',((i18_toggle,i22_f_,i26_g_),(stack'))),
-skip_)))(PF',V')
+i50_recursion_(IIG,IG) = let
+i27_f = \ PF',V' @ context_func_(semi_(callvoid_(\ P',V' @ i27_f(PF',V')),
+skip_))(PF',V')
 
-i204_recursion__(((i18_toggle,i22_f_,i26_g_),(stack'))) = transition_begin -> (
+i50_recursion__(((<>),(stack'))) = transition_begin -> (
 i14_i?x:{i3_e} ->
-semi_(\ P',((i18_toggle,i22_f_,i26_g_),(stack')) @ ifthenelse_(i18_toggle,
-callvoid_(\ P',V' @ i93_f(P',V')),
-callvoid_(\ P',V' @ i160_g(P',V'))
-)(P',((i18_toggle,i22_f_,i26_g_),(stack'))),
-(\ P',V' @ i14_i.return -> P'(V')))(\ V' @ transition_end -> i204_recursion__(V'),((i18_toggle,i22_f_,i26_g_),(stack')))
+semi_(callvoid_(\ P',V' @ i27_f(P',V')),
+(\ P',V' @ i14_i.return -> P'(V')))(\ V' @ transition_end -> i50_recursion__(V'),((<>),(stack')))
 )
 
-within i204_recursion__(((false,true,false),(<>)))
+within i50_recursion__(((<>),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
@@ -128,7 +105,7 @@ within Idle(0)
 
 within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-i204_recursion__Component(IIG) = let
+i50_recursion__Component(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
@@ -136,7 +113,7 @@ within sbisim(diamond(x))
 Exclude = {i14_i.return}
 ClientCalls = {i14_i.i3_e}
 UsedModeling = {}
-within compress((i204_recursion_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+within compress((i50_recursion_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,i14_i|},Exclude)|]
 (((STOP) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
@@ -145,8 +122,8 @@ assert i13_I_(false) :[deadlock free]
 
 assert i13_I_(true) :[livelock free]
 
-assert i204_recursion_(true,true) :[deterministic]
-assert STOP [T= i204_recursion__Component(false) \ diff(Events,{illegal})
-assert i204_recursion__Component(false) :[deadlock free]
-assert i13_I_(true) [[i13_I.x<-i14_i.x|x<-extensions(i13_I)]] \ {} [F= i204_recursion__Component(true) \ diff(Events,{|illegal,i14_i|})
-assert i204_recursion__Component(true) \ diff(Events,{|illegal,i14_i|}) :[livelock free]
+assert i50_recursion_(true,true) :[deterministic]
+assert STOP [T= i50_recursion__Component(false) \ diff(Events,{illegal})
+assert i50_recursion__Component(false) :[deadlock free]
+assert i13_I_(true) [[i13_I.x<-i14_i.x|x<-extensions(i13_I)]] \ {} [F= i50_recursion__Component(true) \ diff(Events,{|illegal,i14_i|})
+assert i50_recursion__Component(true) \ diff(Events,{|illegal,i14_i|}) :[livelock free]

@@ -73,12 +73,12 @@ within i138_BlindLoop__(((i7_States_i4_InitialState),(<>))) [|{i138_BlindLoop .o
 
 i152_TestComponent_(IIG,IG) = let
 
-i152_TestComponent__(((stack'))) = transition_begin -> (
+i152_TestComponent__(((<>),(stack'))) = transition_begin -> (
 i139_LoopingInterface?x:{i3_start} ->
-(\ P',V' @ i139_LoopingInterface.return -> P'(V'))(\ V' @ transition_end -> i152_TestComponent__(V'),((stack')))
+(\ P',V' @ i139_LoopingInterface.return -> P'(V'))(\ V' @ transition_end -> i152_TestComponent__(V'),((<>),(stack')))
 )
 
-within i152_TestComponent__(((<>)))
+within i152_TestComponent__(((<>),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}

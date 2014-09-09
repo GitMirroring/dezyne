@@ -76,7 +76,7 @@ TestBool?x:{evt} ->
 (\ P',V' @ TestBool.return -> P'(V'))(\ V' @ TestBool__(V'),((b1,b2,b3,state1,state2),(stack'))))
 
 
-within TestBool__(((true,true,true,States_State1,States_State2),(<>))) 
+within TestBool__(((true,true,true,States_State1,States_State2),(<>)))
 
 
 testBoolean_(IIG,IG) = let

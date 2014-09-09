@@ -85,7 +85,7 @@ channel #.interface.name : {#(comma-join (append (interface-events interface) (r
  (->string (list .interface.name '_ .behaviour.name '_ "((" (context->csp ast (make-context ((compose gom:member-names csp:import) .interface.name) '())) "))" )))
 
 
-within #.interface.name _#.behaviour.name _((#(context->csp ast (make-context ((compose gom:member-values csp:import) .interface.name) '(<>))))) #.optional-chaos
+within #.interface.name _#.behaviour.name _((#(context->csp ast (make-context ((compose gom:member-values csp:import) .interface.name) '(<>)))))#.optional-chaos
 
 #} ((compose .elements .ports gom:component) ast))
 #.component _#.behaviour.name (IIG,IG) = let

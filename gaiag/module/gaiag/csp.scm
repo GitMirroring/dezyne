@@ -356,7 +356,7 @@
 (define (optional-chaos port) ;; FIXME: no test
   (let ((interface (.type port)))
     (if (member 'optional (map .event (gom:find-events (csp:import (.type port)))))
-        (list "[|{" interface " .optional}|] " "CHAOS({" interface " .optional})")
+        (list " [|{" interface " .optional}|] " "CHAOS({" interface " .optional})")
         "")))
 
 (define (ast-transform ast src)
@@ -542,13 +542,12 @@
   (match context
     (('ctx context) (context->csp ast context))
     ((members locals ...)
-     (let ((members (comma-join (map (lambda (x) (csp-expression->string ast x)) members)))
-           (locals (if (equal? locals '(<>))
-                       '<>
-                       (reduce (lambda (x y) (string-append "(" (element->csp ast y) "," (element->csp ast x) ")")) #f (cons "stack'" locals)))))
-       (if (string-null? members)
-           (list "(" locals ")")
-           (list "(" members "),(" locals ")"))))
+     (let* ((members (comma-join (map (lambda (x) (csp-expression->string ast x)) members)))
+            (members (if (string-null? members) '<> members))
+            (locals (if (equal? locals '(<>))
+                        '<>
+                        (reduce (lambda (x y) (string-append "(" (element->csp ast y) "," (element->csp ast x) ")")) #f (cons "stack'" locals)))))
+       (list "(" members "),(" locals ")")))
     (_ (throw 'match-error (format #f "~a:context->csp: no match: ~a\n" (current-source-location) context)))))
 
 (define-method (ast-transform- ast (o <top>))

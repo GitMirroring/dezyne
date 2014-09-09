@@ -45,13 +45,13 @@ channel i23_I: {i3_e,i4_h,return}
 
   i23_I_(IG) = let
 
-i23_I__(((stack'))) =
+i23_I__(((<>),(stack'))) =
 i23_I?x:{i3_e} ->
 semi_((\ P',V' @ i23_I!i4_h -> P'(V')),
-(\ P',V' @ i23_I.return -> P'(V')))(\ V' @ i23_I__(V'),((stack')))
+(\ P',V' @ i23_I.return -> P'(V')))(\ V' @ i23_I__(V'),((<>),(stack')))
 
 
-within i23_I__(((<>))) 
+within i23_I__(((<>),(<>))) 
 
 
 i103_nonrecursion_(IIG,IG) = let

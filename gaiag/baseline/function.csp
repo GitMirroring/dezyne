@@ -63,7 +63,7 @@ semi_(callvoid_(\ P',V' @ toggle(P',V')),
 (\ P',V' @ I.return -> P'(V')))(\ V' @ I__(V'),((f),(stack'))))
 
 
-within I__(((false),(<>))) 
+within I__(((false),(<>)))
 
 
 function_(IIG,IG) = let

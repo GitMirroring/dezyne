@@ -155,7 +155,7 @@ semi_(assign_(\ ((state),(stack')) @ ((States_Off),(stack'))),
 illegal_(STOP,<>))
 
 
-within Siren_c_(((States_Off),(<>))) 
+within Siren_c_(((States_Off),(<>)))
 
 
 Alarm_d(IIG,IG) = let

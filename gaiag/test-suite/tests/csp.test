@@ -904,7 +904,7 @@ skip_)(\\ V' @ transition_end -> Alarm_d_(V'),((state,sounding),(stack')))"
           ;; to:
           "o?x:{foo} ->
 context_active_(sendrecv_(o,foo),
-skip_)(\\ V' @ transition_end -> var__(V'),((stack')))"))
+skip_)(\\ V' @ transition_end -> var__(V'),((<>),(stack')))"))
 
 (pass-if "ast-csp-transform-variable-valued-action"
          (diff-noisy-equal?
@@ -918,7 +918,7 @@ skip_)(\\ V' @ transition_end -> var__(V'),((stack')))"))
           ;; via:
           "o?x:{foo} ->
 context_active_(sendrecv_(o,foo),
-skip_)(\\ V' @ transition_end -> var__(V'),((stack')))"))
+skip_)(\\ V' @ transition_end -> var__(V'),((<>),(stack')))"))
 
 (define csp-function-call-ast
   '(on (e)
@@ -1547,7 +1547,7 @@ semi_(assign_active_(sendrecv_(k,h),
          (diff-noisy-equal?
           (csp-transform* member-i-ast '(on (e) (eventreturn) (the-end ())))
           "i?x:{e} ->
-(\\ P',V' @ i.return -> P'(V'))(\\ V' @ i_B_(V'),((stack')))"))
+(\\ P',V' @ i.return -> P'(V'))(\\ V' @ i_B_(V'),((<>),(stack')))"))
 
 (pass-if "unbehaved"
          (diff-noisy-equal?
