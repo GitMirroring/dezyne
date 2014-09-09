@@ -1,6 +1,7 @@
 -- drop_one_local: V => V
 drop_one_local_((M', (L', L0'))) = (M', L')
 
+illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- skip_: () => (P,V)->Proc
@@ -50,12 +51,12 @@ iimperative?x:{e} ->
 semi_(semi_(\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
 semi_((\ P',V' @ iimperative!f -> P'(V')),
 (\ P',V' @ iimperative!g -> P'(V'))),
-(\ P',V' @ P'(V'))
+skip_
 )(P',((s,b,c),(stack'))),
 semi_(\ P',((s,b,c),(stack')) @ ifthenelse_(b,
 semi_(\ P',((s,b,c),(stack')) @ ifthenelse_(c,
 (\ P',V' @ iimperative!g -> P'(V')),
-(\ P',V' @ P'(V'))
+skip_
 )(P',((s,b,c),(stack'))),
 semi_(assign_(\ ((s,b,c),(stack')) @ ((s,b,false),(stack'))),
 (\ P',V' @ iimperative!f -> P'(V')))),
@@ -77,7 +78,7 @@ assign_(\ ((s,b,c),(stack')) @ ((s,b,true),(stack'))),
 assign_(\ ((s,b,c),(stack')) @ ((s,b,false),(stack')))
 )(P',((s,b,c),(stack'))),
 (\ P',V' @ iimperative!h -> P'(V'))),
-(\ P',V' @ P'(V'))
+skip_
 )(P',((s,b,c),(stack'))),
 semi_(assign_(\ ((s,b,c),(stack')) @ ((s,(not b),c),(stack'))),
 assign_(\ ((s,b,c),(stack')) @ ((S_S1,b,c),(stack'))))),

@@ -26,6 +26,7 @@
 -- drop_one_local: V => V
 drop_one_local_((M', (L', L0'))) = (M', L')
 
+illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- skip_: () => (P,V)->Proc

@@ -1,6 +1,7 @@
 -- drop_one_local: V => V
 drop_one_local_((M', (L', L0'))) = (M', L')
 
+illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- skip_: () => (P,V)->Proc
@@ -55,7 +56,7 @@ semi_(assign_(\ ((state),(stack')) @ ((States_Armed),(stack'))),
 (\ P',V' @ Console.return -> P'(V')))(\ V' @ Console_a_(V'),((state),(stack')))
  []
   IG & Console?x:{disarm} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>))
+illegal_(STOP,<>))
 []
 ((state == States_Armed)) & (
 Console?x:{disarm} ->
@@ -68,7 +69,7 @@ assign_(\ ((state),(stack')) @ ((States_Triggered),(stack')))),
 skip_)(\ V' @ Console_a_(V'),((state),(stack')))
  []
   IG & Console?x:{arm} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>))
+illegal_(STOP,<>))
 []
 ((state == States_Triggered)) & (
 Console?x:{disarm} ->
@@ -76,7 +77,7 @@ semi_(assign_(\ ((state),(stack')) @ ((States_Disarming),(stack'))),
 (\ P',V' @ Console.return -> P'(V')))(\ V' @ Console_a_(V'),((state),(stack')))
  []
   IG & Console?x:{arm} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>))
+illegal_(STOP,<>))
 []
 ((state == States_Disarming)) & (
 Console?x:{inevitable} ->
@@ -85,7 +86,7 @@ assign_(\ ((state),(stack')) @ ((States_Disarmed),(stack')))),
 skip_)(\ V' @ Console_a_(V'),((state),(stack')))
  []
   IG & Console?x:{arm,disarm} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>))
+illegal_(STOP,<>))
 
 
 within Console_a_(((States_Disarmed),(<>))) [|{Console .optional}|] CHAOS({Console .optional})
@@ -99,11 +100,11 @@ semi_(assign_(\ ((state),(stack')) @ ((States_Enabled),(stack'))),
 (\ P',V' @ Sensor.return -> P'(V')))(\ V' @ Sensor_b_(V'),((state),(stack')))
  []
   IG & Sensor?x:{disable} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>))
+illegal_(STOP,<>))
 []
 ((state == States_Enabled)) & (
 IG & Sensor?x:{enable} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>)
+illegal_(STOP,<>)
  []
   Sensor?x:{disable} ->
 semi_(assign_(\ ((state),(stack')) @ ((States_Disabling),(stack'))),
@@ -116,7 +117,7 @@ skip_)(\ V' @ Sensor_b_(V'),((state),(stack'))))
 []
 ((state == States_Disabling)) & (
 IG & Sensor?x:{enable,disable} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>)
+illegal_(STOP,<>)
  []
   Sensor?x:{inevitable} ->
 semi_(semi_((\ P',V' @ Sensor!disabled -> P'(V')),
@@ -125,7 +126,7 @@ skip_)(\ V' @ Sensor_b_(V'),((state),(stack'))))
 []
 ((state == States_Triggered)) & (
 IG & Sensor?x:{enable} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>)
+illegal_(STOP,<>)
  []
   Sensor?x:{disable} ->
 semi_(assign_(\ ((state),(stack')) @ ((States_Disabling),(stack'))),
@@ -143,7 +144,7 @@ semi_(assign_(\ ((state),(stack')) @ ((States_On),(stack'))),
 (\ P',V' @ Siren.return -> P'(V')))(\ V' @ Siren_c_(V'),((state),(stack')))
  []
   IG & Siren?x:{turnoff} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>))
+illegal_(STOP,<>))
 []
 ((state == States_On)) & (
 Siren?x:{turnoff} ->
@@ -151,7 +152,7 @@ semi_(assign_(\ ((state),(stack')) @ ((States_Off),(stack'))),
 (\ P',V' @ Siren.return -> P'(V')))(\ V' @ Siren_c_(V'),((state),(stack')))
  []
   IG & Siren?x:{turnon} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>))
+illegal_(STOP,<>))
 
 
 within Siren_c_(((States_Off),(<>))) 
@@ -167,14 +168,14 @@ assign_(\ ((state,sounding),(stack')) @ ((States_Armed,sounding),(stack')))),
 (\ P',V' @ console.return -> P'(V')))(\ V' @ transition_end -> Alarm_d_(V'),((state,sounding),(stack')))
  []
   IIG & console?x:{disarm} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>)
+illegal_(STOP,<>)
  []
   IG & sensor?x:{triggered,disabled} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>))
+illegal_(STOP,<>))
 []
 ((state == States_Armed)) & (
 IIG & console?x:{arm} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>)
+illegal_(STOP,<>)
  []
   console?x:{disarm} ->
 semi_(semi_((\ P',V' @ sensor!disable -> sensor.return -> P'(V')),
@@ -189,11 +190,11 @@ assign_(\ ((state,sounding),(stack')) @ ((States_Triggered,sounding),(stack'))))
 skip_)(\ V' @ transition_end -> Alarm_d_(V'),((state,sounding),(stack')))
  []
   IG & sensor?x:{disabled} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>))
+illegal_(STOP,<>))
 []
 ((state == States_Disarming)) & (
 IIG & console?x:{arm,disarm} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>)
+illegal_(STOP,<>)
  []
   sensor?x:{triggered} ->
 skip_(\ V' @ transition_end -> Alarm_d_(V'),((state,sounding),(stack'))))
@@ -214,7 +215,7 @@ skip_)(\ V' @ transition_end -> Alarm_d_(V'),((state,sounding),(stack'))))
 []
 ((state == States_Triggered)) & (
 IIG & console?x:{arm} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>)
+illegal_(STOP,<>)
  []
   console?x:{disarm} ->
 semi_(semi_((\ P',V' @ sensor!disable -> sensor.return -> P'(V')),
@@ -224,7 +225,7 @@ assign_(\ ((state,sounding),(stack')) @ ((States_Disarming,sounding),(stack'))))
 (\ P',V' @ console.return -> P'(V')))(\ V' @ transition_end -> Alarm_d_(V'),((state,sounding),(stack')))
  []
   IG & sensor?x:{triggered,disabled} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>))
+illegal_(STOP,<>))
 )
 
 within Alarm_d_(((States_Disarmed,false),(<>)))

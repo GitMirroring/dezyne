@@ -1,6 +1,7 @@
 -- drop_one_local: V => V
 drop_one_local_((M', (L', L0'))) = (M', L')
 
+illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- skip_: () => (P,V)->Proc
@@ -55,7 +56,7 @@ semi_(assign_(\ ((i19_state),(stack')) @ ((i11_States_i8_Armed),(stack'))),
 (\ P',V' @ i242_Console.return -> P'(V')))(\ V' @ i242_Console__(V'),((i19_state),(stack')))
  []
   IG & i242_Console?x:{i4_disarm} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>))
+illegal_(STOP,<>))
 []
 ((i19_state == i11_States_i8_Armed)) & (
 i242_Console?x:{i4_disarm} ->
@@ -68,7 +69,7 @@ assign_(\ ((i19_state),(stack')) @ ((i11_States_i9_Triggered),(stack')))),
 skip_)(\ V' @ i242_Console__(V'),((i19_state),(stack')))
  []
   IG & i242_Console?x:{i3_arm} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>))
+illegal_(STOP,<>))
 []
 ((i19_state == i11_States_i9_Triggered)) & (
 i242_Console?x:{i4_disarm} ->
@@ -76,7 +77,7 @@ semi_(assign_(\ ((i19_state),(stack')) @ ((i11_States_i10_Disarming),(stack'))),
 (\ P',V' @ i242_Console.return -> P'(V')))(\ V' @ i242_Console__(V'),((i19_state),(stack')))
  []
   IG & i242_Console?x:{i3_arm} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>))
+illegal_(STOP,<>))
 []
 ((i19_state == i11_States_i10_Disarming)) & (
 i242_Console?x:{inevitable} ->
@@ -85,7 +86,7 @@ assign_(\ ((i19_state),(stack')) @ ((i11_States_i7_Disarmed),(stack')))),
 skip_)(\ V' @ i242_Console__(V'),((i19_state),(stack')))
  []
   IG & i242_Console?x:{i3_arm,i4_disarm} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>))
+illegal_(STOP,<>))
 
 
 within i242_Console__(((i11_States_i7_Disarmed),(<>))) [|{i242_Console .optional}|] CHAOS({i242_Console .optional})
@@ -99,11 +100,11 @@ semi_(assign_(\ ((i259_state),(stack')) @ ((i251_States_i248_Enabled),(stack')))
 (\ P',V' @ i482_Sensor.return -> P'(V')))(\ V' @ i482_Sensor__(V'),((i259_state),(stack')))
  []
   IG & i482_Sensor?x:{i244_disable} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>))
+illegal_(STOP,<>))
 []
 ((i259_state == i251_States_i248_Enabled)) & (
 IG & i482_Sensor?x:{i243_enable} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>)
+illegal_(STOP,<>)
  []
   i482_Sensor?x:{i244_disable} ->
 semi_(assign_(\ ((i259_state),(stack')) @ ((i251_States_i249_Disabling),(stack'))),
@@ -116,7 +117,7 @@ skip_)(\ V' @ i482_Sensor__(V'),((i259_state),(stack'))))
 []
 ((i259_state == i251_States_i249_Disabling)) & (
 IG & i482_Sensor?x:{i243_enable,i244_disable} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>)
+illegal_(STOP,<>)
  []
   i482_Sensor?x:{inevitable} ->
 semi_(semi_((\ P',V' @ i482_Sensor!i246_disabled -> P'(V')),
@@ -125,7 +126,7 @@ skip_)(\ V' @ i482_Sensor__(V'),((i259_state),(stack'))))
 []
 ((i259_state == i251_States_i250_Triggered)) & (
 IG & i482_Sensor?x:{i243_enable} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>)
+illegal_(STOP,<>)
  []
   i482_Sensor?x:{i244_disable} ->
 semi_(assign_(\ ((i259_state),(stack')) @ ((i251_States_i249_Disabling),(stack'))),
@@ -143,7 +144,7 @@ semi_(assign_(\ ((i495_state),(stack')) @ ((i487_States_i486_On),(stack'))),
 (\ P',V' @ i589_Siren.return -> P'(V')))(\ V' @ i589_Siren__(V'),((i495_state),(stack')))
  []
   IG & i589_Siren?x:{i484_turnoff} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>))
+illegal_(STOP,<>))
 []
 ((i495_state == i487_States_i486_On)) & (
 i589_Siren?x:{i484_turnoff} ->
@@ -151,7 +152,7 @@ semi_(assign_(\ ((i495_state),(stack')) @ ((i487_States_i485_Off),(stack'))),
 (\ P',V' @ i589_Siren.return -> P'(V')))(\ V' @ i589_Siren__(V'),((i495_state),(stack')))
  []
   IG & i589_Siren?x:{i483_turnon} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>))
+illegal_(STOP,<>))
 
 
 within i589_Siren__(((i487_States_i485_Off),(<>))) 
@@ -167,14 +168,14 @@ assign_(\ ((i611_state,i615_sounding),(stack')) @ ((i603_States_i600_Armed,i615_
 (\ P',V' @ i590_console.return -> P'(V')))(\ V' @ transition_end -> i1011_Alarm__(V'),((i611_state,i615_sounding),(stack')))
  []
   IIG & i590_console?x:{i4_disarm} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>)
+illegal_(STOP,<>)
  []
   IG & i593_sensor?x:{i245_triggered,i246_disabled} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>))
+illegal_(STOP,<>))
 []
 ((i611_state == i603_States_i600_Armed)) & (
 IIG & i590_console?x:{i3_arm} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>)
+illegal_(STOP,<>)
  []
   i590_console?x:{i4_disarm} ->
 semi_(semi_((\ P',V' @ i593_sensor!i244_disable -> i593_sensor.return -> P'(V')),
@@ -189,14 +190,14 @@ assign_(\ ((i611_state,i615_sounding),(stack')) @ ((i603_States_i601_Triggered,i
 skip_)(\ V' @ transition_end -> i1011_Alarm__(V'),((i611_state,i615_sounding),(stack')))
  []
   IG & i593_sensor?x:{i246_disabled} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>))
+illegal_(STOP,<>))
 []
 ((i611_state == i603_States_i602_Disarming)) & (
 IIG & i590_console?x:{i3_arm,i4_disarm} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>)
+illegal_(STOP,<>)
  []
   IG & i593_sensor?x:{i245_triggered} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>))
+illegal_(STOP,<>))
 []
 (((i611_state == i603_States_i602_Disarming) and i615_sounding)) & (
 i593_sensor?x:{i246_disabled} ->
@@ -213,7 +214,7 @@ skip_)(\ V' @ transition_end -> i1011_Alarm__(V'),((i611_state,i615_sounding),(s
 []
 ((i611_state == i603_States_i601_Triggered)) & (
 IIG & i590_console?x:{i3_arm} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>)
+illegal_(STOP,<>)
  []
   i590_console?x:{i4_disarm} ->
 semi_(semi_((\ P',V' @ i593_sensor!i244_disable -> i593_sensor.return -> P'(V')),
@@ -222,7 +223,7 @@ assign_(\ ((i611_state,i615_sounding),(stack')) @ ((i603_States_i602_Disarming,i
 (\ P',V' @ i590_console.return -> P'(V')))(\ V' @ transition_end -> i1011_Alarm__(V'),((i611_state,i615_sounding),(stack')))
  []
   IG & i593_sensor?x:{i245_triggered,i246_disabled} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>))
+illegal_(STOP,<>))
 )
 
 within i1011_Alarm__(((i603_States_i599_Disarmed,false),(<>)))

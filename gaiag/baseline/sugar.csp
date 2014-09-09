@@ -1,6 +1,7 @@
 -- drop_one_local: V => V
 drop_one_local_((M', (L', L0'))) = (M', L')
 
+illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- skip_: () => (P,V)->Proc
@@ -49,7 +50,7 @@ I__(((s),(stack'))) =
 I?x:{e} ->
 semi_(\ P',((s),(stack')) @ ifthenelse_((s == Enum_False),
 (\ P',V' @ I!a -> P'(V')),
-(\ P',V' @ P'(V'))
+skip_
 )(P',((s),(stack'))),
 (\ P',V' @ I.return -> P'(V')))(\ V' @ I__(V'),((s),(stack'))))
 
@@ -64,7 +65,7 @@ sugar__(((s),(stack'))) = transition_begin -> (
 i?x:{e} ->
 semi_(\ P',((s),(stack')) @ ifthenelse_((s == Enum_False),
 (\ P',V' @ i!a -> P'(V')),
-(\ P',V' @ P'(V'))
+skip_
 )(P',((s),(stack'))),
 (\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> sugar__(V'),((s),(stack'))))
 )

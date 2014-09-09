@@ -1,6 +1,7 @@
 -- drop_one_local: V => V
 drop_one_local_((M', (L', L0'))) = (M', L')
 
+illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- skip_: () => (P,V)->Proc
@@ -56,7 +57,7 @@ semi_(assign_(\ ((i15_state),(stack')) @ ((i7_States_i6_InBusiness),(stack'))),
 skip_)(\ V' @ i138_BlindLoop__(V'),((i15_state),(stack')))
  []
   IG & i138_BlindLoop?x:{i3_start} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>))
+illegal_(STOP,<>))
 []
 ((i15_state == i7_States_i6_InBusiness)) & (
 i138_BlindLoop?x:{optional} ->
@@ -64,7 +65,7 @@ semi_(assign_(\ ((i15_state),(stack')) @ ((i7_States_i5_Started),(stack'))),
 skip_)(\ V' @ i138_BlindLoop__(V'),((i15_state),(stack')))
  []
   IG & i138_BlindLoop?x:{i3_start} ->
-(\ P', V' @ illegal -> STOP)(STOP,<>))
+illegal_(STOP,<>))
 
 
 within i138_BlindLoop__(((i7_States_i4_InitialState),(<>))) [|{i138_BlindLoop .optional}|] CHAOS({i138_BlindLoop .optional})

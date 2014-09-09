@@ -1,6 +1,7 @@
 -- drop_one_local: V => V
 drop_one_local_((M', (L', L0'))) = (M', L')
 
+illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- skip_: () => (P,V)->Proc
@@ -45,7 +46,7 @@ channel I: {a,b,c,d,return}
   I_(IG) = let
 toggle = \ P',V' @ context_func_(semi_(\ P',((f),(stack')) @ ifthenelse_(f,
 (\ P',V' @ I!c -> P'(V')),
-(\ P',V' @ P'(V'))
+skip_
 )(P',((f),(stack'))),
 assign_(\ ((f),(stack')) @ (((not f)),(stack')))))(P',V')
 
@@ -68,7 +69,7 @@ within I__(((false),(<>)))
 function_(IIG,IG) = let
 toggle = \ P',V' @ context_func_(semi_(\ P',((f),(stack')) @ ifthenelse_(f,
 (\ P',V' @ i!c -> P'(V')),
-(\ P',V' @ P'(V'))
+skip_
 )(P',((f),(stack'))),
 assign_(\ ((f),(stack')) @ (((not f)),(stack')))))(P',V')
 

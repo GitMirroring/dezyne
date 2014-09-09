@@ -1,6 +1,7 @@
 -- drop_one_local: V => V
 drop_one_local_((M', (L', L0'))) = (M', L')
 
+illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- skip_: () => (P,V)->Proc
@@ -53,7 +54,7 @@ if_mangle?x:{ev_mangle} ->
 semi_(semi_(assign_(\ ((b),(stack')) @ (((not b)),(stack'))),
 \ P',((b),(stack')) @ ifthenelse_(b,
 (\ P',V' @ if_mangle!ev_mingle -> P'(V')),
-(\ P',V' @ P'(V'))
+skip_
 )(P',((b),(stack')))),
 (\ P',V' @ if_mangle.return -> P'(V')))(\ V' @ if_mangle_mangle_(V'),((b),(stack'))))
 
@@ -72,7 +73,7 @@ po_mangle?x:{ev_mangle} ->
 semi_(semi_(assign_(\ ((b),(stack')) @ (((not b)),(stack'))),
 \ P',((b),(stack')) @ ifthenelse_(b,
 (\ P',V' @ po_mangle!ev_mingle -> P'(V')),
-(\ P',V' @ P'(V'))
+skip_
 )(P',((b),(stack')))),
 (\ P',V' @ po_mangle.return -> P'(V')))(\ V' @ transition_end -> co_mangle_mangle_(V'),((b),(stack'))))
 )

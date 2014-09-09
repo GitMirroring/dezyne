@@ -1,6 +1,7 @@
 -- drop_one_local: V => V
 drop_one_local_((M', (L', L0'))) = (M', L')
 
+illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- skip_: () => (P,V)->Proc
@@ -56,7 +57,7 @@ semi_(assign_active_(\ P',V' @ i41_g (P',V',(\ ((i6_b),((stack',i81_c))) @ (i81_
 \ (((i6_b),((stack',i81_c)))),r' @ ((r'),((stack',i81_c)))),
 \ P',((i6_b),((stack',i81_c))) @ ifthenelse_(i81_c,
 (\ P',V' @ i138_I!i4_f -> P'(V')),
-(\ P',V' @ P'(V'))
+skip_
 )(P',((i6_b),((stack',i81_c))))))),
 (\ P',V' @ i138_I.return -> P'(V')))(\ V' @ i138_I__(V'),((i6_b),(stack'))))
 
@@ -78,7 +79,7 @@ semi_(assign_active_(\ P',V' @ i179_g (P',V',(\ ((i143_b),((stack',i220_c))) @ (
 \ (((i143_b),((stack',i220_c)))),r' @ ((r'),((stack',i220_c)))),
 \ P',((i143_b),((stack',i220_c))) @ ifthenelse_(i220_c,
 (\ P',V' @ i139_i!i4_f -> P'(V')),
-(\ P',V' @ P'(V'))
+skip_
 )(P',((i143_b),((stack',i220_c))))))),
 (\ P',V' @ i139_i.return -> P'(V')))(\ V' @ transition_end -> i278_argument2__(V'),((i143_b),(stack'))))
 )
