@@ -21,6 +21,7 @@
   #:use-module (system foreign)
 
   #:use-module (ice-9 match)
+  #:use-module (ice-9 and-let-star)
 
   #:export (ast->
             compile-tree-il
@@ -107,11 +108,12 @@
       (set-source-property! ast 'loc loc))
   ast)
 
-(define (source-location lst)
-  (let ((loc (source-property lst 'loc)))
-    (if (or (not loc) (source-location? loc))
-        loc
-        (source-location loc))))
+(define (source-location src)
+  (and-let* (((supports-source-properties? src))
+	     (loc (source-property src 'loc)))
+	    (if (source-location? loc)
+		loc
+		(source-location loc))))
 
 (define (source-location->source-properties loc)
   `((filename . ,(source-location-input loc))
