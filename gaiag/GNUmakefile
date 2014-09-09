@@ -280,49 +280,49 @@ csp: compile
 
 	cd out && ../gaiag -l csp examples/regression/argument2.asd
 	$(diff) baseline/argument2.csp out || true
-	@$(diff) baseline/argument2.csp out | diffstat
+	@$(diff) baseline/argument2.csp out | diffstat || true
 	$(CSPMCHECKER) out/argument2.csp
 	! $(REFINES) out/argument2.csp | grep ': Failed'
 	@$(diff) baseline/argument2.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/regression/hide.asd
 	$(diff) baseline/hide.csp out || true
-	@$(diff) baseline/hide.csp out | diffstat
+	@$(diff) baseline/hide.csp out | diffstat || true
 	$(CSPMCHECKER) out/hide.csp
 	! $(REFINES) out/hide.csp | grep ': Failed'
 	@$(diff) baseline/hide.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/regression/expressions.asd
 	$(diff) baseline/expressions.csp out || true
-	@$(diff) baseline/expressions.csp out | diffstat
+	@$(diff) baseline/expressions.csp out | diffstat || true
 	$(CSPMCHECKER) out/expressions.csp
 	! $(REFINES) out/expressions.csp | grep ': Failed'
 	@$(diff) baseline/expressions.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/regression/testBoolean.asd
 	$(diff) baseline/testBoolean.csp out || true
-	@$(diff) baseline/testBoolean.csp out | diffstat
+	@$(diff) baseline/testBoolean.csp out | diffstat || true
 	$(CSPMCHECKER) out/testBoolean.csp
 	! $(REFINES) out/testBoolean.csp | grep ': Failed'
 	@$(diff) baseline/testBoolean.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/regression/mangle.asd
 	$(diff) baseline/mangle.csp out || true
-	@$(diff) baseline/mangle.csp out | diffstat
+	@$(diff) baseline/mangle.csp out | diffstat || true
 	$(CSPMCHECKER) out/mangle.csp
 	! $(REFINES) out/mangle.csp | grep ': Failed'
 	@$(diff) baseline/mangle.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/regression/livelock1.asd
 	$(diff) baseline/livelock1.csp out || true
-	@$(diff) baseline/livelock1.csp out | diffstat
+	@$(diff) baseline/livelock1.csp out | diffstat || true
 	$(CSPMCHECKER) out/livelock1.csp
 	$(REFINES) out/livelock1.csp |& grep ': Failed'
 	@$(diff) baseline/livelock1.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/regression/livelock2.asd
 	$(diff) baseline/livelock2.csp out || true
-	@$(diff) baseline/livelock2.csp out | diffstat
+	@$(diff) baseline/livelock2.csp out | diffstat || true
 	$(CSPMCHECKER) out/livelock2.csp
 	$(REFINES) out/livelock2.csp |& grep ': Failed'
 	@$(diff) baseline/livelock2.csp out >/dev/null
@@ -331,14 +331,14 @@ livelock:
 	rm -rf out && mkdir out && ln -s ../examples ../templates $(DEPTH)/../webdemo/asd out
 	cd out && ../gaiag -l csp examples/regression/livelock1.asd
 	$(diff) baseline/livelock1.csp out || true
-	@$(diff) baseline/livelock1.csp out | diffstat
+	@$(diff) baseline/livelock1.csp out | diffstat || true
 	$(CSPMCHECKER) out/livelock1.csp
 	$(REFINES) out/livelock1.csp |& grep ': Failed'
 	@$(diff) baseline/livelock1.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/regression/livelock2.asd
 	$(diff) baseline/livelock2.csp out || true
-	@$(diff) baseline/livelock2.csp out | diffstat
+	@$(diff) baseline/livelock2.csp out | diffstat || true
 	$(CSPMCHECKER) out/livelock2.csp
 	$(REFINES) out/livelock2.csp |& grep ': Failed'
 	@$(diff) baseline/livelock2.csp out >/dev/null
@@ -348,14 +348,14 @@ mangle: compile
 
 	cd out && ../gaiag -l csp examples/regression/mangle.asd
 	$(diff) baseline/mangle.csp out || true
-	@$(diff) baseline/mangle.csp out | diffstat
+	@$(diff) baseline/mangle.csp out | diffstat || true
 	./gaiag -l mangle examples/regression/mangle.asd
 	$(CSPMCHECKER) out/mangle.csp
 	@$(diff) baseline/mangle.csp out >/dev/null
 
 	cd out && ../gaiag -l csp examples/regression/argument2.asd
 	$(diff) baseline/argument2.csp out || true
-	@$(diff) baseline/argument2.csp out | diffstat
+	@$(diff) baseline/argument2.csp out | diffstat || true
 	./gaiag -l manglex examples/regression/argument2.asd
 	$(CSPMCHECKER) out/argument2.csp
 	@$(diff) baseline/argument2.csp out >/dev/null
@@ -408,7 +408,7 @@ out/%.refines: $(DEPTH)/webdemo/asd/%.asd
 	cd out && ../gaiag -l csp $*.scm
 	[ -f out/$*.csp ] || mv out/*.csp out/$*.csp
 	$(diff) baseline/webdemo/$*.csp out || true
-	@$(diff) baseline/webdemo/$*.csp out | diffstat
+	@$(diff) baseline/webdemo/$*.csp out | diffstat || true
 	$(CSPMCHECKER) out/$*.csp
 	$(REFINES) out/$*.csp | grep ': Failed' || :
 	@$(diff) baseline/webdemo/$*.csp out >/dev/null
@@ -420,7 +420,7 @@ out/%.refines: examples/regression/%.asd
 	cd out && ../gaiag -l csp $*.scm
 	[ -f out/$*.csp ] || mv out/*.csp out/$*.csp
 	$(diff) baseline/webdemo/$*.csp out || true
-	@$(diff) baseline/webdemo/$*.csp out | diffstat
+	@$(diff) baseline/webdemo/$*.csp out | diffstat || true
 	$(CSPMCHECKER) out/$*.csp
 	$(REFINES) out/$*.csp | grep ': Failed' || :
 	@$(diff) baseline/webdemo/$*.csp out >/dev/null
@@ -442,5 +442,5 @@ compare:
 	./gaiag out/trip.scm > out/om-trip-pretty.scm
 #	guile -c '(use-modules (ice-9 pretty-print)) (pretty-print (read))' < out/trip.scm > out/om-trip-pretty.scm
 	-@diff -uw out/om-trip-pretty.scm out/gaiag-trip.scm
-	@diff -uw out/om-trip-pretty.scm out/gaiag-trip.scm | diffstat
+	@diff -uw out/om-trip-pretty.scm out/gaiag-trip.scm | diffstat || true
 	@diff -uw out/om-trip-pretty.scm out/gaiag-trip.scm > /dev/null
