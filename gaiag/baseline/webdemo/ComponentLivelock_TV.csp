@@ -34,82 +34,82 @@ context_func_(S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', <>))
 context_func_args_(v', S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', (<>, v')))
 
 datatype event_enumeration_alphabet =
-i183_States_i181_SwitchedOff | i183_States_i182_SwitchedOn | i3_ViewerActions_PushStartButton | i6_States_i4_Released | i6_States_i5_Pushed | i70_OperateDisplay_Activate | i71_MessagesFromDisplay_Activated | i74_States_i72_Idle | i74_States_i73_Activated | inevitable | return
+i178_States_i176_SwitchedOff | i178_States_i177_SwitchedOn | i3_pushStartButton | i67_activate | i68_activated | i6_States_i4_Released | i6_States_i5_Pushed | i71_States_i69_Idle | i71_States_i70_Activated | inevitable | return
 
 channel illegal
 
-channel i175_TVViewer: {i3_ViewerActions_PushStartButton,return}
-channel i178_TVDisplay: {i70_OperateDisplay_Activate,i71_MessagesFromDisplay_Activated,inevitable,return}
+channel i170_TVViewer: {i3_pushStartButton,return}
+channel i173_TVDisplay: {i67_activate,i68_activated,inevitable,return}
 
-channel i69_Viewer: {i3_ViewerActions_PushStartButton,return}
-channel i174_Display: {i70_OperateDisplay_Activate,i71_MessagesFromDisplay_Activated,inevitable,return}
+channel i66_Viewer: {i3_pushStartButton,return}
+channel i169_Display: {i67_activate,i68_activated,inevitable,return}
 
-  i69_Viewer_(IG) = let
+  i66_Viewer_(IG) = let
 
-i69_Viewer__(((i14_state_),(stack'))) =
-((i14_state_ == i6_States_i4_Released)) & (
-i69_Viewer?x:{i3_ViewerActions_PushStartButton} ->
-semi_(assign_(\ ((i14_state_),(stack')) @ ((i6_States_i5_Pushed),(stack'))),
-(\ P',V' @ i69_Viewer.return -> P'(V')))(\ V' @ i69_Viewer__(V'),((i14_state_),(stack'))))
+i66_Viewer__(((i14_state),(stack'))) =
+((i14_state == i6_States_i4_Released)) & (
+i66_Viewer?x:{i3_pushStartButton} ->
+semi_(assign_(\ ((i14_state),(stack')) @ ((i6_States_i5_Pushed),(stack'))),
+(\ P',V' @ i66_Viewer.return -> P'(V')))(\ V' @ i66_Viewer__(V'),((i14_state),(stack'))))
 []
-((i14_state_ == i6_States_i5_Pushed)) & (
-i69_Viewer?x:{i3_ViewerActions_PushStartButton} ->
-(\ P',V' @ i69_Viewer.return -> P'(V'))(\ V' @ i69_Viewer__(V'),((i14_state_),(stack'))))
+((i14_state == i6_States_i5_Pushed)) & (
+i66_Viewer?x:{i3_pushStartButton} ->
+(\ P',V' @ i66_Viewer.return -> P'(V'))(\ V' @ i66_Viewer__(V'),((i14_state),(stack'))))
 
 
-within i69_Viewer__(((i6_States_i4_Released),(<>))) 
+within i66_Viewer__(((i6_States_i4_Released),(<>))) 
 
-i174_Display_(IG) = let
+i169_Display_(IG) = let
 
-i174_Display__(((i82_state_),(stack'))) =
-((i82_state_ == i74_States_i72_Idle)) & (
-i174_Display?x:{i70_OperateDisplay_Activate} ->
-semi_(assign_(\ ((i82_state_),(stack')) @ ((i74_States_i73_Activated),(stack'))),
-(\ P',V' @ i174_Display.return -> P'(V')))(\ V' @ i174_Display__(V'),((i82_state_),(stack'))))
+i169_Display__(((i79_state),(stack'))) =
+((i79_state == i71_States_i69_Idle)) & (
+i169_Display?x:{i67_activate} ->
+semi_(assign_(\ ((i79_state),(stack')) @ ((i71_States_i70_Activated),(stack'))),
+(\ P',V' @ i169_Display.return -> P'(V')))(\ V' @ i169_Display__(V'),((i79_state),(stack'))))
 []
-((i82_state_ == i74_States_i73_Activated)) & (
-i174_Display?x:{inevitable} ->
-semi_(semi_((\ P',V' @ i174_Display!i71_MessagesFromDisplay_Activated -> P'(V')),
-assign_(\ ((i82_state_),(stack')) @ ((i74_States_i73_Activated),(stack')))),
-skip_)(\ V' @ i174_Display__(V'),((i82_state_),(stack')))
+((i79_state == i71_States_i70_Activated)) & (
+i169_Display?x:{inevitable} ->
+semi_(semi_((\ P',V' @ i169_Display!i68_activated -> P'(V')),
+assign_(\ ((i79_state),(stack')) @ ((i71_States_i70_Activated),(stack')))),
+skip_)(\ V' @ i169_Display__(V'),((i79_state),(stack')))
  []
-  IG & i174_Display?x:{i70_OperateDisplay_Activate} ->
+  IG & i169_Display?x:{i67_activate} ->
 (\ P', V' @ illegal -> STOP)(STOP,<>))
 
 
-within i174_Display__(((i74_States_i72_Idle),(<>))) 
+within i169_Display__(((i71_States_i69_Idle),(<>))) 
 
 
-i283_TVSet_(IIG,IG) = let
+i277_TVSet_(IIG,IG) = let
 
-i283_TVSet__(((i191_state_),(stack'))) = transition_begin -> (
-((i191_state_ == i183_States_i181_SwitchedOff)) & (
-i175_TVViewer?x:{i3_ViewerActions_PushStartButton} ->
-semi_(semi_((\ P',V' @ i178_TVDisplay!i70_OperateDisplay_Activate -> i178_TVDisplay.return -> P'(V')),
-assign_(\ ((i191_state_),(stack')) @ ((i183_States_i182_SwitchedOn),(stack')))),
-(\ P',V' @ i175_TVViewer.return -> P'(V')))(\ V' @ transition_end -> i283_TVSet__(V'),((i191_state_),(stack')))
+i277_TVSet__(((i186_state),(stack'))) = transition_begin -> (
+((i186_state == i178_States_i176_SwitchedOff)) & (
+i170_TVViewer?x:{i3_pushStartButton} ->
+semi_(semi_((\ P',V' @ i173_TVDisplay!i67_activate -> i173_TVDisplay.return -> P'(V')),
+assign_(\ ((i186_state),(stack')) @ ((i178_States_i177_SwitchedOn),(stack')))),
+(\ P',V' @ i170_TVViewer.return -> P'(V')))(\ V' @ transition_end -> i277_TVSet__(V'),((i186_state),(stack')))
  []
-  IG & i178_TVDisplay?x:{i71_MessagesFromDisplay_Activated} ->
+  IG & i173_TVDisplay?x:{i68_activated} ->
 (\ P', V' @ illegal -> STOP)(STOP,<>))
 []
-((i191_state_ == i183_States_i182_SwitchedOn)) & (
-i175_TVViewer?x:{i3_ViewerActions_PushStartButton} ->
-(\ P',V' @ i175_TVViewer.return -> P'(V'))(\ V' @ transition_end -> i283_TVSet__(V'),((i191_state_),(stack')))
+((i186_state == i178_States_i177_SwitchedOn)) & (
+i170_TVViewer?x:{i3_pushStartButton} ->
+(\ P',V' @ i170_TVViewer.return -> P'(V'))(\ V' @ transition_end -> i277_TVSet__(V'),((i186_state),(stack')))
  []
-  i178_TVDisplay?x:{i71_MessagesFromDisplay_Activated} ->
-skip_(\ V' @ transition_end -> i283_TVSet__(V'),((i191_state_),(stack'))))
+  i173_TVDisplay?x:{i68_activated} ->
+skip_(\ V' @ transition_end -> i277_TVSet__(V'),((i186_state),(stack'))))
 )
 
-within i283_TVSet__(((i183_States_i181_SwitchedOff),(<>)))
+within i277_TVSet__(((i178_States_i176_SwitchedOff),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
-channel IN,OUT : {i178_TVDisplay.i71_MessagesFromDisplay_Activated,extensions_over_empty_channels_is_undefined}
+channel IN,OUT : {i173_TVDisplay.i68_activated,extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
 channel transition_begin, transition_end
 
-channel reorder_in,reorder_out : {i175_TVViewer.return}
+channel reorder_in,reorder_out : {i170_TVViewer.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -142,30 +142,30 @@ within Idle(0)
 
 within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-i283_TVSet__Component(IIG) = let
+i277_TVSet__Component(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {i175_TVViewer.return,i178_TVDisplay.inevitable}
-ClientCalls = {i175_TVViewer.i3_ViewerActions_PushStartButton}
-UsedModeling = {i178_TVDisplay.inevitable}
-within compress((i283_TVSet_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,i175_TVViewer,i178_TVDisplay|},Exclude)|]
-(((i174_Display_(true) [[i174_Display.x<-i178_TVDisplay.x|x<-extensions(i174_Display)]]
+Exclude = {i170_TVViewer.return,i173_TVDisplay.inevitable}
+ClientCalls = {i170_TVViewer.i3_pushStartButton}
+UsedModeling = {i173_TVDisplay.inevitable}
+within compress((i277_TVSet_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,i170_TVViewer,i173_TVDisplay|},Exclude)|]
+(((i169_Display_(true) [[i169_Display.x<-i173_TVDisplay.x|x<-extensions(i169_Display)]]
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
-assert i69_Viewer_(false) :[deadlock free]
+assert i66_Viewer_(false) :[deadlock free]
 
-assert i69_Viewer_(true) :[livelock free]
+assert i66_Viewer_(true) :[livelock free]
 
-assert i174_Display_(false) :[deadlock free]
+assert i169_Display_(false) :[deadlock free]
 
-assert i174_Display_(true)  \ {|i174_Display.inevitable|} :[livelock free]
+assert i169_Display_(true)  \ {|i169_Display.inevitable|} :[livelock free]
 
-assert i283_TVSet_(true,true) :[deterministic]
-assert STOP [T= i283_TVSet__Component(false) \ diff(Events,{illegal})
-assert i283_TVSet__Component(false) :[deadlock free]
-assert i69_Viewer_(true) [[i69_Viewer.x<-i175_TVViewer.x|x<-extensions(i69_Viewer)]] \ {} [F= i283_TVSet__Component(true) \ diff(Events,{|illegal,i175_TVViewer|})
-assert i283_TVSet__Component(true) \ diff(Events,{|illegal,i175_TVViewer|}) :[livelock free]
+assert i277_TVSet_(true,true) :[deterministic]
+assert STOP [T= i277_TVSet__Component(false) \ diff(Events,{illegal})
+assert i277_TVSet__Component(false) :[deadlock free]
+assert i66_Viewer_(true) [[i66_Viewer.x<-i170_TVViewer.x|x<-extensions(i66_Viewer)]] \ {} [F= i277_TVSet__Component(true) \ diff(Events,{|illegal,i170_TVViewer|})
+assert i277_TVSet__Component(true) \ diff(Events,{|illegal,i170_TVViewer|}) :[livelock free]

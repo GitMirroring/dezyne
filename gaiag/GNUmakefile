@@ -393,6 +393,7 @@ BROKEN =\
  SystemComposition.asd\
  exampleLOPW.asd\
  Aap.asd\
+ LOPW.asd\
 
 DEMO_SOURCES = $(filter-out $(BROKEN) ,$(shell cd $(DEPTH)/webdemo/asd && ls *.asd))
 #EXAMPLE_SOURCES = $(filter-out $(BROKEN) ,$(shell cd examples && ls *.asd))

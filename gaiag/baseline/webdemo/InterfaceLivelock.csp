@@ -34,51 +34,50 @@ context_func_(S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', <>))
 context_func_args_(v', S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', (<>, v')))
 
 datatype event_enumeration_alphabet =
-i148_States_i147_FirstState | i3_TestInterface_Start | i7_States_i4_InitialState | i7_States_i5_Started | i7_States_i6_InBusiness | optional | return
+i3_start | i7_States_i4_InitialState | i7_States_i5_Started | i7_States_i6_InBusiness | optional | return
 
 channel illegal
 
-channel i144_LoopingInterface: {i3_TestInterface_Start,optional,optional,return}
+channel i139_LoopingInterface: {i3_start,optional,optional,return}
 
-channel i143_BlindLoop: {i3_TestInterface_Start,optional,optional,return}
+channel i138_BlindLoop: {i3_start,optional,optional,return}
 
-  i143_BlindLoop_(IG) = let
+  i138_BlindLoop_(IG) = let
 
-i143_BlindLoop__(((i15_state_),(stack'))) =
-((i15_state_ == i7_States_i4_InitialState)) & (
-i143_BlindLoop?x:{i3_TestInterface_Start} ->
-semi_(assign_(\ ((i15_state_),(stack')) @ ((i7_States_i5_Started),(stack'))),
-(\ P',V' @ i143_BlindLoop.return -> P'(V')))(\ V' @ i143_BlindLoop__(V'),((i15_state_),(stack'))))
+i138_BlindLoop__(((i15_state),(stack'))) =
+((i15_state == i7_States_i4_InitialState)) & (
+i138_BlindLoop?x:{i3_start} ->
+semi_(assign_(\ ((i15_state),(stack')) @ ((i7_States_i5_Started),(stack'))),
+(\ P',V' @ i138_BlindLoop.return -> P'(V')))(\ V' @ i138_BlindLoop__(V'),((i15_state),(stack'))))
 []
-((i15_state_ == i7_States_i5_Started)) & (
-i143_BlindLoop?x:{optional} ->
-semi_(assign_(\ ((i15_state_),(stack')) @ ((i7_States_i6_InBusiness),(stack'))),
-skip_)(\ V' @ i143_BlindLoop__(V'),((i15_state_),(stack')))
+((i15_state == i7_States_i5_Started)) & (
+i138_BlindLoop?x:{optional} ->
+semi_(assign_(\ ((i15_state),(stack')) @ ((i7_States_i6_InBusiness),(stack'))),
+skip_)(\ V' @ i138_BlindLoop__(V'),((i15_state),(stack')))
  []
-  IG & i143_BlindLoop?x:{i3_TestInterface_Start} ->
+  IG & i138_BlindLoop?x:{i3_start} ->
 (\ P', V' @ illegal -> STOP)(STOP,<>))
 []
-((i15_state_ == i7_States_i6_InBusiness)) & (
-i143_BlindLoop?x:{optional} ->
-semi_(assign_(\ ((i15_state_),(stack')) @ ((i7_States_i5_Started),(stack'))),
-skip_)(\ V' @ i143_BlindLoop__(V'),((i15_state_),(stack')))
+((i15_state == i7_States_i6_InBusiness)) & (
+i138_BlindLoop?x:{optional} ->
+semi_(assign_(\ ((i15_state),(stack')) @ ((i7_States_i5_Started),(stack'))),
+skip_)(\ V' @ i138_BlindLoop__(V'),((i15_state),(stack')))
  []
-  IG & i143_BlindLoop?x:{i3_TestInterface_Start} ->
+  IG & i138_BlindLoop?x:{i3_start} ->
 (\ P', V' @ illegal -> STOP)(STOP,<>))
 
 
-within i143_BlindLoop__(((i7_States_i4_InitialState),(<>))) [|{i143_BlindLoop .optional}|] CHAOS({i143_BlindLoop .optional})
+within i138_BlindLoop__(((i7_States_i4_InitialState),(<>))) [|{i138_BlindLoop .optional}|] CHAOS({i138_BlindLoop .optional})
 
 
-i182_TestComponent_(IIG,IG) = let
+i152_TestComponent_(IIG,IG) = let
 
-i182_TestComponent__(((i156_state_),(stack'))) = transition_begin -> (
-((i156_state_ == i148_States_i147_FirstState)) & (
-i144_LoopingInterface?x:{i3_TestInterface_Start} ->
-(\ P',V' @ i144_LoopingInterface.return -> P'(V'))(\ V' @ transition_end -> i182_TestComponent__(V'),((i156_state_),(stack'))))
+i152_TestComponent__(((stack'))) = transition_begin -> (
+i139_LoopingInterface?x:{i3_start} ->
+(\ P',V' @ i139_LoopingInterface.return -> P'(V'))(\ V' @ transition_end -> i152_TestComponent__(V'),((stack')))
 )
 
-within i182_TestComponent__(((i148_States_i147_FirstState),(<>)))
+within i152_TestComponent__(((<>)))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
@@ -87,7 +86,7 @@ SINGLETHREADED = true
 
 channel transition_begin, transition_end
 
-channel reorder_in,reorder_out : {i144_LoopingInterface.return}
+channel reorder_in,reorder_out : {i139_LoopingInterface.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -120,25 +119,25 @@ within Idle(0)
 
 within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-i182_TestComponent__Component(IIG) = let
+i152_TestComponent__Component(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {i144_LoopingInterface.return,i144_LoopingInterface.optional,i144_LoopingInterface.optional}
-ClientCalls = {i144_LoopingInterface.i3_TestInterface_Start}
+Exclude = {i139_LoopingInterface.return,i139_LoopingInterface.optional,i139_LoopingInterface.optional}
+ClientCalls = {i139_LoopingInterface.i3_start}
 UsedModeling = {}
-within compress((i182_TestComponent_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,i144_LoopingInterface|},Exclude)|]
+within compress((i152_TestComponent_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,i139_LoopingInterface|},Exclude)|]
 (((STOP) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
-assert i143_BlindLoop_(false) :[deadlock free]
+assert i138_BlindLoop_(false) :[deadlock free]
 
-assert i143_BlindLoop_(true)  \ {|i143_BlindLoop.optional,i143_BlindLoop.optional|} :[livelock free]
+assert i138_BlindLoop_(true)  \ {|i138_BlindLoop.optional,i138_BlindLoop.optional|} :[livelock free]
 
-assert i182_TestComponent_(true,true) :[deterministic]
-assert STOP [T= i182_TestComponent__Component(false) \ diff(Events,{illegal})
-assert i182_TestComponent__Component(false) :[deadlock free]
-assert i143_BlindLoop_(true) [[i143_BlindLoop.x<-i144_LoopingInterface.x|x<-extensions(i143_BlindLoop)]] \ {i144_LoopingInterface.optional,i144_LoopingInterface.optional} [F= i182_TestComponent__Component(true) \ diff(Events,{|illegal,i144_LoopingInterface|})
-assert i182_TestComponent__Component(true) \ diff(Events,{|illegal,i144_LoopingInterface|}) :[livelock free]
+assert i152_TestComponent_(true,true) :[deterministic]
+assert STOP [T= i152_TestComponent__Component(false) \ diff(Events,{illegal})
+assert i152_TestComponent__Component(false) :[deadlock free]
+assert i138_BlindLoop_(true) [[i138_BlindLoop.x<-i139_LoopingInterface.x|x<-extensions(i138_BlindLoop)]] \ {i139_LoopingInterface.optional,i139_LoopingInterface.optional} [F= i152_TestComponent__Component(true) \ diff(Events,{|illegal,i139_LoopingInterface|})
+assert i152_TestComponent__Component(true) \ diff(Events,{|illegal,i139_LoopingInterface|}) :[livelock free]
