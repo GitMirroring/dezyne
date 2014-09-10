@@ -22,7 +22,8 @@
        (types
         (enum State (one two)))
        (variables
-        (variable (type State) m (expression (value State one))))
+        (variable (type State) m (expression (value State one)))
+        (variable (type bool) b (expression true)))
        (functions (function toggle (signature (type void)) (compound)))
        (compound
         (on (triggers (trigger #f foo))
@@ -37,8 +38,31 @@
       (variables
        (variable (type State) m (expression (value State one)))
        (variable (type bool) b true))
-       (functions (function fun (signature (type void) (parameters (parameter (type bool) a)))
-                            (compound (assign a true))))
+       (functions
+        (function fun (signature (type void) (parameters (parameter (type bool) a)))
+                  (compound (assign a true)))
+        (function rfun (signature (type void) (parameters))
+                  (compound (call rgun)))
+        (function rgun (signature (type void) (parameters (parameter (type bool) a)))
+                  (compound (call rgun)))
+        (function fa (signature (type void) (parameters (parameter (type bool) a)))
+                  (compound (call fb)))
+        (function fb (signature (type void) (parameters (parameter (type bool) a)))
+                  (compound (call fc)))
+        (function fc (signature (type void) (parameters (parameter (type bool) a)))
+                  (compound (assign b true)))
+        (function rfa (signature (type void) (parameters (parameter (type bool) a)))
+                  (compound (call rfb)))
+        (function rfb (signature (type void) (parameters (parameter (type bool) a)))
+                  (compound (call rfc)))
+        (function rfc (signature (type void) (parameters (parameter (type bool) a)))
+                  (compound (call rfa)))
+        (function rbfa (signature (type void) (parameters (parameter (type bool) a)))
+                  (assign b (call rbfb)))
+        (function rbfb (signature (type void) (parameters (parameter (type bool) a)))
+                  (compound (assign b (call rbfc))))
+        (function rbfc (signature (type void) (parameters (parameter (type bool) a)))
+                  (compound (call f) (call g) (compound (call d) (assign b (call rbfa))))))
       (compound
        (on (triggers (trigger i foo))
            (compound
@@ -167,3 +191,53 @@
           '(function fun (signature (type void) (parameters (parameter (type bool) a)))
                      #f
                      (compound (assign b (var a))))))
+
+(pass-if "ast:resolve-recursive"
+         (pretty-noisy-equal?
+          ((ast:resolve-model
+            (cadr resolve-ast))
+           '(function rgun (signature (type void) (parameters))
+                      (compound (call rgun))))
+          '(function rgun (signature (type void) (parameters))
+                     recursive
+                      (compound (call rgun)))))
+
+(pass-if "ast:resolve-recursive-indirect"
+         (pretty-noisy-equal?
+          ((ast:resolve-model
+            (cadr resolve-ast))
+           '(function rfun (signature (type void) (parameters))
+                      (compound (call rgun))))
+          '(function rfun (signature (type void) (parameters))
+                     recursive
+                     (compound (call rgun)))))
+
+(pass-if "ast:resolve-non-recursive-deep"
+         (pretty-noisy-equal?
+          ((ast:resolve-model
+            (cadr resolve-ast))
+           '(function fa (signature (type void) (parameters))
+                      (compound (call fb))))
+          '(function fa (signature (type void) (parameters))
+                     #f
+                     (compound (call fb)))))
+
+(pass-if "ast:resolve-recursive-3"
+         (pretty-noisy-equal?
+          ((ast:resolve-model
+            (cadr resolve-ast))
+           '(function rfa (signature (type void) (parameters))
+                      (compound (call rfb))))
+          '(function rfa (signature (type void) (parameters))
+                     recursive
+                     (compound (call rfb)))))
+
+(pass-if "ast:resolve-recursive-3-assign"
+         (pretty-noisy-equal?
+          ((ast:resolve-model
+            (cadr resolve-ast))
+           '(function rbfa (signature (type void) (parameters))
+                      (assign b (compound (call rbfb)))))
+          '(function rbfa (signature (type void) (parameters))
+                     recursive
+                      (assign b (compound (call rbfb))))))

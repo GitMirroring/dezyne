@@ -75,6 +75,35 @@
               (set-source-property! resolved 'loc loc))
     resolved))
 
+(define* ((ast:function identifier) ast)
+  (match ast
+    (('function (? (lambda (x) (eq? x identifier))) body ...) ast)
+    ((h t ...) (any identity (map (ast:function identifier) ast)))
+    (_ #f)))
+
+(define ((ast:filter-statements predicate) ast)
+  (match ast
+    (('compound t ...) (filter null-is-#f (apply append (map (ast:filter-statements predicate) t))))
+    (('guard expr s) (filter null-is-#f ((ast:filter-statements predicate) s)))
+    (('on triggers s) (filter null-is-#f ((ast:filter-statements predicate) s)))
+    ((? predicate) (list (predicate ast)))
+    (_ '())))
+
+(define* ((recurses? model :optional (seen '())) identifier)
+  (define (return-call ast)
+    (match ast
+      (('call body ...) ast)
+      (('assign identifier (and ('call body ...) (get! call))) (call))
+      (('variable type identifier (and ('call body ...) (get! call))) (call))
+      (_ #f)))
+  (and-let* ((function ((ast:function identifier) model))
+             (compound (last function))
+             (calls (null-is-#f ((ast:filter-statements return-call) compound)))
+             (names (delete-duplicates (sort (map cadr calls) symbol<))))
+            (or (member identifier seen)
+                (any identity
+                     (map (recurses? model (cons identifier seen)) names)))))
+
 (define* ((ast:resolve-model- model) src :optional (locals '()))
   (let* ((port? (lambda (port)
                   (if (eq? (ast:class model) 'interface)
@@ -144,8 +173,9 @@
       ((and (? symbol?) (? var?)) (list 'var src))
 
       (('function identifier ('signature type parameters ...) statement)
-       ((ast:resolve-model model)
-        (list 'function identifier (ast:signature src) #f statement) locals))
+       (let ((recursive? (and ((recurses? model) identifier) 'recursive)))
+         ((ast:resolve-model model)
+          (list 'function identifier (ast:signature src) recursive? statement) locals)))
 
       (('function identifier ('signature type) recursive? statement)
          (list 'function identifier (ast:signature src) recursive?
