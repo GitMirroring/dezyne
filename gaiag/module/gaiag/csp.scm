@@ -73,6 +73,7 @@
   (let* ((norm ((gom:register csp:norm) ast #t)))
     (module-define! (resolve-module '(gaiag csp)) 'ast norm)  ;; FIXME
     (and-let* ((comp (gom:component norm))
+               ((or (.behaviour comp) (throw 'csp "component without behaviour")))
                (name (ast:name (ast:component ast))) ;; unmangled
                (module (csp-module norm))
                (fn (option-ref (parse-opts (command-line)) 'output (list name '.csp))))
@@ -132,7 +133,7 @@
     (and-let* ((comp (gom:component ast)))
               (module-define! module '.component (.name comp))
               (module-define! module 'component comp)
-              (module-define! module '.interface.name (.type (car (filter gom:provides? (.elements (.ports comp))))))
+              (module-define! module '.interface.name (.type (gom:port comp)))
 	      (module-define! module '.behaviour.name (.name (.behaviour comp)))
               (module-define! module '.interface-behaviour (.name (.behaviour (csp:import (.type (gom:port (gom:component ast)))))))
 	      (module-define! module '.port.name (.name (gom:port comp))))
