@@ -110,6 +110,7 @@ Examples:
       ("" #t)
       ((? string?) (display result))
       ((? pair?) (pretty-print result))
+      ((? null?) (display result))
       ((? (is? <ast>)) (pretty-print (gom->list result)))
       (_ #t))))
 

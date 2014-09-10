@@ -22,6 +22,7 @@
                   component C {
                                provides I i ;
                                         requires I j ;
+                                        behaviour { }
                                         } #}))
    '((interface I deadlock)
      (interface I livelock)
@@ -30,3 +31,10 @@
      (component C deadlock)
      (component C compliance I)
      (component C livelock))))
+
+(pass-if "assert"
+  (pretty-noisy-equal?
+   (assert-list
+    (gom:parse-asd
+     #{ component C {} #}))
+   '()))

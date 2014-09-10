@@ -25,6 +25,7 @@
 (read-set! keywords 'prefix)
 
 (define-module (gaiag asserts)
+  :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 pretty-print)
   :use-module (srfi srfi-1)
@@ -48,14 +49,16 @@
       (list (ast-name model) (.name model) check)))
 
 (define-method (assert-list (o <ast>))
-  (let* ((component-checks '(deterministic illegal deadlock compliance livelock))
-	 (interface-checks '(deadlock livelock))
-	 (component (gom:component o))
-	 (interfaces (map (compose ast->gom csp:import .type) ((compose .elements .ports) component))))
-    (append (apply append
-		   (delete-duplicates (map (lambda (interface)
-					     (map (assert interface) interface-checks)) interfaces)))
-            (map (assert component) component-checks))))
+  (or (and-let* ((component-checks '(deterministic illegal deadlock compliance livelock))
+                 (interface-checks '(deadlock livelock))
+                 (component (gom:component o))
+                 ((.behaviour component))
+                 (interfaces (map (compose ast->gom csp:import .type) ((compose .elements .ports) component))))
+                (append (apply append
+                               (delete-duplicates (map (lambda (interface)
+                                                         (map (assert interface) interface-checks)) interfaces)))
+             (map (assert component) component-checks)))
+      '()))
 
 (define-method (assert-list (o <top>))
   (assert-list ((gom:register (compose ast->gom ast:resolve)) o #t)))
