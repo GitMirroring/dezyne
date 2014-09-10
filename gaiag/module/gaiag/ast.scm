@@ -192,7 +192,7 @@
            bind?
            binding-list
            binding-list?
-           plug?
+           binding?
            bindings
            binds
            body
@@ -350,7 +350,7 @@
 (define (assign? ast) (type-helper? 'assign ast))
 (define (behaviour? ast) (type-helper? 'behaviour ast))
 (define (bind? ast) (type-helper? 'bind ast))
-(define (plug? ast) (type-helper? 'plug ast))
+(define (binding? ast) (type-helper? 'binding ast))
 (define (bindings? ast) (type-helper? 'bindings ast))
 (define (binding-list? ast) (type-helper? 'bindings ast))
 (define (bool? ast) (type-helper? 'bool ast))
@@ -633,7 +633,7 @@
           ((or (? component?) (? system?)) (assoc 'provides (ports ast)))
           ((? action?) (stderr "deprecated: event; use port-name\n")
            (port-name ast))
-          ((? plug?) (caddr ast))
+          ((? binding?) (caddr ast))
           (_ (throw 'match-error  (format #f "~a:port: no match: ~a\n" (current-source-location) ast)))))
     ((? symbol?)
      (find (lambda (p) (eq? (name p) identifier))
@@ -660,7 +660,7 @@
 (define* (instance ast :optional (identifier #f))
   (match identifier
     (#f (match ast
-          ((? plug?) (cadr ast))
+          ((? binding?) (cadr ast))
           (_ (throw 'match-error  (format #f "~a:instance: no match: ~a\n" (current-source-location) ast)))))
     ((? symbol?)
      (match ast

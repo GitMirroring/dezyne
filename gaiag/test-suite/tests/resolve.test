@@ -124,7 +124,7 @@
           ((ast:resolve-system
             resolve-system)
            '(bind i (value u i)))
-          '(bind (plug #f i) (plug u i))))
+          '(bind (binding #f i) (binding u i))))
 
 (pass-if "ast:resolve-member"
          (pretty-noisy-equal?

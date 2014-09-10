@@ -84,7 +84,7 @@
     (('bind left right)
      (make <bind> :left (ast->gom left) :right (ast->gom right)))
 
-    (('plug instance port) (make <plug> :instance instance :port port))
+    (('binding instance port) (make <binding> :instance instance :port port))
 
     (('bindings bindings ...)
      (make <bindings> :elements (map ast->gom bindings)))

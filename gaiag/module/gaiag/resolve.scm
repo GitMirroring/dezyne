@@ -177,22 +177,22 @@
       (_ src))))
 
 (define ((ast:resolve-system model) src)
-  (let ((plug (lambda (plug)
-                   (match plug
-                     ((? symbol?) (list 'plug #f plug))
-                     (('value instance plug) (list 'plug instance plug))))))
+  (let ((binding (lambda (binding)
+                   (match binding
+                     ((? symbol?) (list 'binding #f binding))
+                     (('value instance binding) (list 'binding instance binding))))))
     (match src
-      (('component name plugs ('system foo statement))
+      (('component name ports ('system foo statement))
        (let* ((resolved ((ast:resolve-system model) statement))
               (instances (cons 'instances (filter ast:instance? resolved)))
               (bindings (cons 'bindings (filter ast:bind? resolved))))
-         (list 'system name plugs instances bindings)))
-      (('system name plugs (and ('compound statements ...) (get! statement)))
+         (list 'system name ports instances bindings)))
+      (('system name ports (and ('compound statements ...) (get! statement)))
        (let* ((resolved ((ast:resolve-system model) (statement)))
               (instances (cons 'instances (filter ast:instance? resolved)))
               (bindings (cons 'bindings (filter ast:bind? resolved))))
-         (list 'system name plugs instances bindings)))
-      (('bind left right) (list 'bind (plug left) (plug right)))
+         (list 'system name ports instances bindings)))
+      (('bind left right) (list 'bind (binding left) (binding right)))
       ((h ...) (map (lambda (x) ((ast:resolve-system model) x)) src))
       (_ src))))
 
