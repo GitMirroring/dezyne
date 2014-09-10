@@ -1,0 +1,6 @@
+system #name
+{
+  #ports
+  #instances
+  #bindings
+}
