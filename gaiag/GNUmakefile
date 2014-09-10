@@ -212,9 +212,9 @@ c++: compile
 	cd out && g++ -I ../$(DEPTH)/examples/regression/codegen/asd_cpp_runtime -c component-expressions-c3.cc
 
 wfc: compile
-	-./gaiag -l wfc examples/regression/double-on.asd
-	#-./gaiag -l wfc examples/regression/double-on-compound.asd #TODO
-	-./gaiag -l wfc examples/regression/mixing.asd
+	-./gaiag -l wfc examples/double-on.asd
+	#-./gaiag -l wfc examples/double-on-compound.asd #TODO
+	-./gaiag -l wfc examples/mixing.asd
 
 csp: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out

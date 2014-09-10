@@ -73,8 +73,11 @@
   (let* ((norm ((gom:register csp:norm) ast #t)))
     (module-define! (resolve-module '(gaiag csp)) 'ast norm)  ;; FIXME
     (and-let* ((comp (gom:component norm))
-               ((or (.behaviour comp) (throw 'csp "component without behaviour")))
                (name (ast:name (ast:component ast))) ;; unmangled
+               ((or (.behaviour comp)
+                    (let ((message (format #f "gaiag: component without behaviour: ~a\n" name)))
+                      (stderr message)
+                      (throw 'csp message))))
                (module (csp-module norm))
                (fn (option-ref (parse-opts (command-line)) 'output (list name '.csp))))
               (dump-output fn

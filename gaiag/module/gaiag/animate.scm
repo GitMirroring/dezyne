@@ -77,11 +77,13 @@
      ((compose file-name->components dirname dirname dirname dirname)
       (or (search-path %load-compiled-path canary.go)
           (%search-load-path canary.scm)
-          (begin
-            (stderr "gaiag: Installation error\n")
-            (stderr "No such file or directory: ~a [~a]\n" canary.go  %load-compiled-path)
-            (stderr "No such file or directory: ~a [~a]\n" canary.scm %load-path)
-            (exit 2))))
+          (let ((message
+                 (string-join
+                  (list "gaiag: Installation error: templates not found"
+                        (format #f "gaiag: No such file or directory: ~a [~a]" canary.go %load-compiled-path)
+                        (format #f "gaiag: No such file or directory: ~a [~a]" canary.scm %load-path)) "\n")))
+            (stderr message)
+            (throw 'installation-error message))))
      '(gaiag))))
 
 (define template-dir (make-parameter (append (prefix-dir) '(templates))))

@@ -50,16 +50,17 @@
                             (filter null-is-#f (verify-on ast))
                             (filter null-is-#f (verify-mixing ast)))))
             (for-each (lambda (e)
-                        (let ((message (car e))
-                              (foo (stderr "e: ~a\n" e))
-                              (properties (source-location->source-properties
-                                           (source-location (cadr e)))))
-                          (stderr "~a:~a:~a: error: not well-formed: ~a\n"
-                                  (assoc-ref properties 'filename)
-                                  (assoc-ref properties 'line)
-                                  (assoc-ref properties 'column)
-                                  message))) errors)
-            ;; (throw 'well-formed "not well-formed")
+                        (let* ((message (car e))
+                               (foo (stderr "e: ~a\n" e))
+                               (properties (source-location->source-properties
+                                            (source-location (cadr e))))
+                               (message (format #f "~a:~a:~a: error: not well-formed: ~a\n"
+                                                (assoc-ref properties 'filename)
+                                                (assoc-ref properties 'line)
+                                                (assoc-ref properties 'column)
+                                                message)))
+                          (stderr message))) errors)
+            ;;(throw 'well-formed message)
             (exit 1))
   ast)
 
