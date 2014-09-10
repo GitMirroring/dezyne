@@ -61,6 +61,9 @@
     (($ <variable> name type ($ <call> function arguments))
      (->string (list 'variable name type (list 'assign-call function arguments))))
     (('type name) name)
+    ;; comment this out to get ol style system as system
+    (($ <system> name ($ <ports> ports) ($ <instances> instances) ($ <bindings> bindings))
+     (->string (list 'system-as-component name ports instances bindings)))
     ((and (? pair?) (? asd-template?)) (apply asd-template->string src))
     ((? asd-template?) (apply asd-template->string
                               (cons (ast-name src) (children src))))
