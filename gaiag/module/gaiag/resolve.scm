@@ -86,6 +86,10 @@
     (('compound t ...) (filter null-is-#f (apply append (map (ast:filter-statements predicate) t))))
     (('guard expr s) (filter null-is-#f ((ast:filter-statements predicate) s)))
     (('on triggers s) (filter null-is-#f ((ast:filter-statements predicate) s)))
+    (('if expression then) (filter null-is-#f ((ast:filter-statements predicate) then)))
+    (('if expression then else) (filter null-is-#f
+                                        (append (filter null-is-#f ((ast:filter-statements predicate) then))
+                                                (filter null-is-#f ((ast:filter-statements predicate) else)))))
     ((? predicate) (list (predicate ast)))
     (_ '())))
 
