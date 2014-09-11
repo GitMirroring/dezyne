@@ -53,7 +53,7 @@
   (let* ((file-name (components->file-name file-name))
          (resolved (search-path *include-path* file-name))
          (dir (or (and=> resolved dirname)
-                  (let ((message (format "gaiag: No such file or directory: ~a [~a]\n" file-name *include-path*)))
+                  (let ((message (format #f "gaiag: No such file or directory: ~a [~a]\n" file-name *include-path*)))
                     (stderr message)
                     (throw 'file-not-found message)))))
     (when (not (member dir *include-path*))
