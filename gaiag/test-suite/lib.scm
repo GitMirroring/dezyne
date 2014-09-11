@@ -369,7 +369,9 @@
                    (report 'unresolved test-name location)
                    (quit))
                   (else
-                   (report 'error test-name location (cons key args))))))
+                   (begin
+                     (report 'error test-name location (cons key args))
+                     (backtrace))))))
             (set! test-running #f)))))
 
 ;;; A short form for tests that are expected to pass, taken from Greg.
