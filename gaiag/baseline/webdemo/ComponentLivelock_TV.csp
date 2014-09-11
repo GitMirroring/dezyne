@@ -16,6 +16,7 @@ callvoid_args_(B',F')(P', V') = B'(P', V', F')
 assign_(F')(P', V') = P'(F'(V'))
 -- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
 assign_active_(C', A')(P', V') = C'(\((M', r'),L') @ P'(A'((M',L'),r')), V')
+reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
 -- returnvalue_: (F: V->val) => (P,V)->Proc
 returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
 -- the_end_: P => V->Proc
@@ -58,7 +59,7 @@ i66_Viewer?x:{i3_pushStartButton} ->
 (\ P',V' @ i66_Viewer.return -> P'(V'))(\ V' @ i66_Viewer__(V'),((i14_state),(stack'))))
 
 
-within i66_Viewer__(((i6_States_i4_Released),(<>))) 
+within i66_Viewer__(((i6_States_i4_Released),(<>)))
 
 i169_Display_(IG) = let
 
@@ -78,7 +79,7 @@ skip_)(\ V' @ i169_Display__(V'),((i79_state),(stack')))
 illegal_(STOP,<>))
 
 
-within i169_Display__(((i71_States_i69_Idle),(<>))) 
+within i169_Display__(((i71_States_i69_Idle),(<>)))
 
 
 i277_TVSet_(IIG,IG) = let

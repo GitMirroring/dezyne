@@ -16,6 +16,7 @@ callvoid_args_(B',F')(P', V') = B'(P', V', F')
 assign_(F')(P', V') = P'(F'(V'))
 -- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
 assign_active_(C', A')(P', V') = C'(\((M', r'),L') @ P'(A'((M',L'),r')), V')
+reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
 -- returnvalue_: (F: V->val) => (P,V)->Proc
 returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
 -- the_end_: P => V->Proc
@@ -51,11 +52,11 @@ channel i301_IDevice: {i3_initialize,i5_calibrate,i7_perform_action1,i9_perform_
 i568_IComp__(((i322_s),(stack'))) =
 (((i322_s == i314_State_i311_Uninitialized) and true)) & (
 i568_IComp?x:{i302_initialize} ->
-semi_((\ P',V' @ i568_IComp.i310_result_t_i308_OK -> P'(V')),
+semi_(reply_(i568_IComp, (\ ((i322_s),(stack')) @ i310_result_t_i308_OK)),
 assign_(\ ((i322_s),(stack')) @ ((i314_State_i312_Initialized),(stack'))))(\ V' @ i568_IComp__(V'),((i322_s),(stack')))
  []
   i568_IComp?x:{i302_initialize} ->
-(\ P',V' @ i568_IComp.i310_result_t_i309_NOK -> P'(V'))(\ V' @ i568_IComp__(V'),((i322_s),(stack'))))
+reply_(i568_IComp, (\ ((i322_s),(stack')) @ i310_result_t_i309_NOK))(\ V' @ i568_IComp__(V'),((i322_s),(stack'))))
 []
 ((i322_s == i314_State_i311_Uninitialized)) & (
 IG & i568_IComp?x:{i304_recover,i306_perform_actions} ->
@@ -63,10 +64,10 @@ illegal_(STOP,<>))
 []
 (((i322_s == i314_State_i312_Initialized) and true)) & (
 i568_IComp?x:{i306_perform_actions} ->
-(\ P',V' @ i568_IComp.i310_result_t_i308_OK -> P'(V'))(\ V' @ i568_IComp__(V'),((i322_s),(stack')))
+reply_(i568_IComp, (\ ((i322_s),(stack')) @ i310_result_t_i308_OK))(\ V' @ i568_IComp__(V'),((i322_s),(stack')))
  []
   i568_IComp?x:{i306_perform_actions} ->
-semi_((\ P',V' @ i568_IComp.i310_result_t_i309_NOK -> P'(V')),
+semi_(reply_(i568_IComp, (\ ((i322_s),(stack')) @ i310_result_t_i309_NOK)),
 assign_(\ ((i322_s),(stack')) @ ((i314_State_i313_Error),(stack'))))(\ V' @ i568_IComp__(V'),((i322_s),(stack'))))
 []
 ((i322_s == i314_State_i312_Initialized)) & (
@@ -75,29 +76,29 @@ illegal_(STOP,<>))
 []
 (((i322_s == i314_State_i313_Error) and true)) & (
 i568_IComp?x:{i304_recover} ->
-semi_((\ P',V' @ i568_IComp.i310_result_t_i308_OK -> P'(V')),
+semi_(reply_(i568_IComp, (\ ((i322_s),(stack')) @ i310_result_t_i308_OK)),
 assign_(\ ((i322_s),(stack')) @ ((i314_State_i312_Initialized),(stack'))))(\ V' @ i568_IComp__(V'),((i322_s),(stack')))
  []
   i568_IComp?x:{i304_recover} ->
-(\ P',V' @ i568_IComp.i310_result_t_i309_NOK -> P'(V'))(\ V' @ i568_IComp__(V'),((i322_s),(stack'))))
+reply_(i568_IComp, (\ ((i322_s),(stack')) @ i310_result_t_i309_NOK))(\ V' @ i568_IComp__(V'),((i322_s),(stack'))))
 []
 ((i322_s == i314_State_i313_Error)) & (
 IG & i568_IComp?x:{i302_initialize,i306_perform_actions} ->
 illegal_(STOP,<>))
 
 
-within i568_IComp__(((i314_State_i311_Uninitialized),(<>))) 
+within i568_IComp__(((i314_State_i311_Uninitialized),(<>)))
 
 i301_IDevice_(IG) = let
 
 i301_IDevice__(((i25_s),(stack'))) =
 (((i25_s == i17_State_i14_Uninitialized) and true)) & (
 i301_IDevice?x:{i3_initialize} ->
-semi_((\ P',V' @ i301_IDevice.i13_result_t_i11_OK -> P'(V')),
+semi_(reply_(i301_IDevice, (\ ((i25_s),(stack')) @ i13_result_t_i11_OK)),
 assign_(\ ((i25_s),(stack')) @ ((i17_State_i15_Initialized),(stack'))))(\ V' @ i301_IDevice__(V'),((i25_s),(stack')))
  []
   i301_IDevice?x:{i3_initialize} ->
-(\ P',V' @ i301_IDevice.i13_result_t_i12_NOK -> P'(V'))(\ V' @ i301_IDevice__(V'),((i25_s),(stack'))))
+reply_(i301_IDevice, (\ ((i25_s),(stack')) @ i13_result_t_i12_NOK))(\ V' @ i301_IDevice__(V'),((i25_s),(stack'))))
 []
 ((i25_s == i17_State_i14_Uninitialized)) & (
 IG & i301_IDevice?x:{i5_calibrate,i7_perform_action1,i9_perform_action2} ->
@@ -105,44 +106,44 @@ illegal_(STOP,<>))
 []
 (((i25_s == i17_State_i15_Initialized) and true)) & (
 i301_IDevice?x:{i5_calibrate} ->
-semi_((\ P',V' @ i301_IDevice.i13_result_t_i11_OK -> P'(V')),
+semi_(reply_(i301_IDevice, (\ ((i25_s),(stack')) @ i13_result_t_i11_OK)),
 assign_(\ ((i25_s),(stack')) @ ((i17_State_i16_Calibrated),(stack'))))(\ V' @ i301_IDevice__(V'),((i25_s),(stack')))
  []
   i301_IDevice?x:{i5_calibrate} ->
-(\ P',V' @ i301_IDevice.i13_result_t_i12_NOK -> P'(V'))(\ V' @ i301_IDevice__(V'),((i25_s),(stack'))))
+reply_(i301_IDevice, (\ ((i25_s),(stack')) @ i13_result_t_i12_NOK))(\ V' @ i301_IDevice__(V'),((i25_s),(stack'))))
 []
 ((i25_s == i17_State_i15_Initialized)) & (
 i301_IDevice?x:{i3_initialize} ->
-(\ P',V' @ i301_IDevice.i13_result_t_i11_OK -> P'(V'))(\ V' @ i301_IDevice__(V'),((i25_s),(stack')))
+reply_(i301_IDevice, (\ ((i25_s),(stack')) @ i13_result_t_i11_OK))(\ V' @ i301_IDevice__(V'),((i25_s),(stack')))
  []
   IG & i301_IDevice?x:{i7_perform_action1,i9_perform_action2} ->
 illegal_(STOP,<>))
 []
 (((i25_s == i17_State_i16_Calibrated) and true)) & (
 i301_IDevice?x:{i7_perform_action1,i9_perform_action2} ->
-(\ P',V' @ i301_IDevice.i13_result_t_i11_OK -> P'(V'))(\ V' @ i301_IDevice__(V'),((i25_s),(stack')))
+reply_(i301_IDevice, (\ ((i25_s),(stack')) @ i13_result_t_i11_OK))(\ V' @ i301_IDevice__(V'),((i25_s),(stack')))
  []
   i301_IDevice?x:{i7_perform_action1,i9_perform_action2} ->
-semi_((\ P',V' @ i301_IDevice.i13_result_t_i12_NOK -> P'(V')),
+semi_(reply_(i301_IDevice, (\ ((i25_s),(stack')) @ i13_result_t_i12_NOK)),
 assign_(\ ((i25_s),(stack')) @ ((i17_State_i15_Initialized),(stack'))))(\ V' @ i301_IDevice__(V'),((i25_s),(stack'))))
 []
 ((i25_s == i17_State_i16_Calibrated)) & (
 i301_IDevice?x:{i5_calibrate,i3_initialize} ->
-(\ P',V' @ i301_IDevice.i13_result_t_i11_OK -> P'(V'))(\ V' @ i301_IDevice__(V'),((i25_s),(stack'))))
+reply_(i301_IDevice, (\ ((i25_s),(stack')) @ i13_result_t_i11_OK))(\ V' @ i301_IDevice__(V'),((i25_s),(stack'))))
 
 
-within i301_IDevice__(((i17_State_i14_Uninitialized),(<>))) 
+within i301_IDevice__(((i17_State_i14_Uninitialized),(<>)))
 
 i301_IDevice_(IG) = let
 
 i301_IDevice__(((i25_s),(stack'))) =
 (((i25_s == i17_State_i14_Uninitialized) and true)) & (
 i301_IDevice?x:{i3_initialize} ->
-semi_((\ P',V' @ i301_IDevice.i13_result_t_i11_OK -> P'(V')),
+semi_(reply_(i301_IDevice, (\ ((i25_s),(stack')) @ i13_result_t_i11_OK)),
 assign_(\ ((i25_s),(stack')) @ ((i17_State_i15_Initialized),(stack'))))(\ V' @ i301_IDevice__(V'),((i25_s),(stack')))
  []
   i301_IDevice?x:{i3_initialize} ->
-(\ P',V' @ i301_IDevice.i13_result_t_i12_NOK -> P'(V'))(\ V' @ i301_IDevice__(V'),((i25_s),(stack'))))
+reply_(i301_IDevice, (\ ((i25_s),(stack')) @ i13_result_t_i12_NOK))(\ V' @ i301_IDevice__(V'),((i25_s),(stack'))))
 []
 ((i25_s == i17_State_i14_Uninitialized)) & (
 IG & i301_IDevice?x:{i5_calibrate,i7_perform_action1,i9_perform_action2} ->
@@ -150,33 +151,33 @@ illegal_(STOP,<>))
 []
 (((i25_s == i17_State_i15_Initialized) and true)) & (
 i301_IDevice?x:{i5_calibrate} ->
-semi_((\ P',V' @ i301_IDevice.i13_result_t_i11_OK -> P'(V')),
+semi_(reply_(i301_IDevice, (\ ((i25_s),(stack')) @ i13_result_t_i11_OK)),
 assign_(\ ((i25_s),(stack')) @ ((i17_State_i16_Calibrated),(stack'))))(\ V' @ i301_IDevice__(V'),((i25_s),(stack')))
  []
   i301_IDevice?x:{i5_calibrate} ->
-(\ P',V' @ i301_IDevice.i13_result_t_i12_NOK -> P'(V'))(\ V' @ i301_IDevice__(V'),((i25_s),(stack'))))
+reply_(i301_IDevice, (\ ((i25_s),(stack')) @ i13_result_t_i12_NOK))(\ V' @ i301_IDevice__(V'),((i25_s),(stack'))))
 []
 ((i25_s == i17_State_i15_Initialized)) & (
 i301_IDevice?x:{i3_initialize} ->
-(\ P',V' @ i301_IDevice.i13_result_t_i11_OK -> P'(V'))(\ V' @ i301_IDevice__(V'),((i25_s),(stack')))
+reply_(i301_IDevice, (\ ((i25_s),(stack')) @ i13_result_t_i11_OK))(\ V' @ i301_IDevice__(V'),((i25_s),(stack')))
  []
   IG & i301_IDevice?x:{i7_perform_action1,i9_perform_action2} ->
 illegal_(STOP,<>))
 []
 (((i25_s == i17_State_i16_Calibrated) and true)) & (
 i301_IDevice?x:{i7_perform_action1,i9_perform_action2} ->
-(\ P',V' @ i301_IDevice.i13_result_t_i11_OK -> P'(V'))(\ V' @ i301_IDevice__(V'),((i25_s),(stack')))
+reply_(i301_IDevice, (\ ((i25_s),(stack')) @ i13_result_t_i11_OK))(\ V' @ i301_IDevice__(V'),((i25_s),(stack')))
  []
   i301_IDevice?x:{i7_perform_action1,i9_perform_action2} ->
-semi_((\ P',V' @ i301_IDevice.i13_result_t_i12_NOK -> P'(V')),
+semi_(reply_(i301_IDevice, (\ ((i25_s),(stack')) @ i13_result_t_i12_NOK)),
 assign_(\ ((i25_s),(stack')) @ ((i17_State_i15_Initialized),(stack'))))(\ V' @ i301_IDevice__(V'),((i25_s),(stack'))))
 []
 ((i25_s == i17_State_i16_Calibrated)) & (
 i301_IDevice?x:{i5_calibrate,i3_initialize} ->
-(\ P',V' @ i301_IDevice.i13_result_t_i11_OK -> P'(V'))(\ V' @ i301_IDevice__(V'),((i25_s),(stack'))))
+reply_(i301_IDevice, (\ ((i25_s),(stack')) @ i13_result_t_i11_OK))(\ V' @ i301_IDevice__(V'),((i25_s),(stack'))))
 
 
-within i301_IDevice__(((i17_State_i14_Uninitialized),(<>))) 
+within i301_IDevice__(((i17_State_i14_Uninitialized),(<>)))
 
 
 i1121_Comp_(IIG,IG) = let
@@ -201,9 +202,9 @@ assign_active_(sendrecv_(i575_device_B,i5_calibrate),
 skip_
 )(P',((i589_s),((stack',i612_res)))),
 \ P',((i589_s),((stack',i612_res))) @ ifthenelse_((i612_res == i13_result_t_i11_OK),
-semi_((\ P',V' @ i569_client.i310_result_t_i308_OK -> P'(V')),
+semi_(reply_(i569_client, (\ ((i589_s),((stack',i612_res))) @ i310_result_t_i308_OK)),
 assign_(\ ((i589_s),((stack',i612_res))) @ ((i581_State_i579_Initialized),((stack',i612_res))))),
-(\ P',V' @ i569_client.i310_result_t_i309_NOK -> P'(V'))
+reply_(i569_client, (\ ((i589_s),((stack',i612_res))) @ i310_result_t_i309_NOK))
 )(P',((i589_s),((stack',i612_res))))))))(\ V' @ transition_end -> i1121_Comp__(V'),((i589_s),(stack')))
  []
   IIG & i569_client?x:{i304_recover,i306_perform_actions} ->
@@ -228,8 +229,8 @@ assign_active_(sendrecv_(i575_device_B,i9_perform_action2),
 skip_
 )(P',((i589_s),((stack',i808_res)))),
 \ P',((i589_s),((stack',i808_res))) @ ifthenelse_((i808_res == i13_result_t_i11_OK),
-(\ P',V' @ i569_client.i310_result_t_i308_OK -> P'(V')),
-semi_((\ P',V' @ i569_client.i310_result_t_i309_NOK -> P'(V')),
+reply_(i569_client, (\ ((i589_s),((stack',i808_res))) @ i310_result_t_i308_OK)),
+semi_(reply_(i569_client, (\ ((i589_s),((stack',i808_res))) @ i310_result_t_i309_NOK)),
 assign_(\ ((i589_s),((stack',i808_res))) @ ((i581_State_i580_Error),((stack',i808_res)))))
 )(P',((i589_s),((stack',i808_res))))))))(\ V' @ transition_end -> i1121_Comp__(V'),((i589_s),(stack')))
  []
@@ -245,9 +246,9 @@ assign_active_(sendrecv_(i575_device_B,i5_calibrate),
 skip_
 )(P',((i589_s),((stack',i1004_res)))),
 \ P',((i589_s),((stack',i1004_res))) @ ifthenelse_((i1004_res == i13_result_t_i11_OK),
-semi_((\ P',V' @ i569_client.i310_result_t_i308_OK -> P'(V')),
+semi_(reply_(i569_client, (\ ((i589_s),((stack',i1004_res))) @ i310_result_t_i308_OK)),
 assign_(\ ((i589_s),((stack',i1004_res))) @ ((i581_State_i579_Initialized),((stack',i1004_res))))),
-(\ P',V' @ i569_client.i310_result_t_i309_NOK -> P'(V'))
+reply_(i569_client, (\ ((i589_s),((stack',i1004_res))) @ i310_result_t_i309_NOK))
 )(P',((i589_s),((stack',i1004_res))))))(\ V' @ transition_end -> i1121_Comp__(V'),((i589_s),(stack')))
  []
   IIG & i569_client?x:{i302_initialize,i306_perform_actions} ->

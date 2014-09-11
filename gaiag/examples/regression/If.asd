@@ -21,70 +21,47 @@
 //
 // Code:
 
-interface Console
+interface I
 {
-    in void arm;
-    in void disarm;
+  in void a;
+  out void b;
+  out void c;
 
-    out void detected;
-    out void deactivated;
-
-  behaviour a
+  behaviour
   {
-    enum States {
-        Disarmed,
-        Armed,
-        Triggered,
-        Disarming
-    };
-
-    States state = States.Disarmed;
-
-    [state.Disarmed]
-    {
-      on arm:
+    bool t = false;
+    on a:
       {
-        state = States.Armed;
+        if (t)
+        {
+          b;
+        }
+        else
+        {
+          c;
+        }
+        t = !t;
       }
-      on disarm:
-        illegal;
-    }
-
-    [state.Armed]
-    {
-      on disarm:
-      {
-        state = States.Disarming;
-      }
-      on optional:
-      {
-        detected;
-        state = States.Triggered;
-      }
-      on arm:
-        illegal;
-    }
-
-    [state.Triggered]
-    {
-      on disarm:
-      {
-        state = States.Disarming;
-      }
-      on arm:
-        illegal;
-    }
-
-    [state.Disarming]
-    {
-      on inevitable:
-      {
-        deactivated;
-        state = States.Disarmed;
-      }
-      on arm, disarm:
-        illegal;
-    }
   }
 }
 
+component If
+{
+  provides I i;
+  behaviour
+  {
+    bool t = false;
+    on i.a:
+      {
+        if (t)
+        {
+          i.b;
+        }
+        else
+        {
+          i.c;
+        }
+        t = !t;
+      }
+  }
+}

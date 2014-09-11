@@ -16,6 +16,7 @@ callvoid_args_(B',F')(P', V') = B'(P', V', F')
 assign_(F')(P', V') = P'(F'(V'))
 -- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
 assign_active_(C', A')(P', V') = C'(\((M', r'),L') @ P'(A'((M',L'),r')), V')
+reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
 -- returnvalue_: (F: V->val) => (P,V)->Proc
 returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
 -- the_end_: P => V->Proc
@@ -55,7 +56,7 @@ ilivelock?x:{inevitable} ->
 skip_(\ V' @ ilivelock__(V'),((<>),(stack')))
 
 
-within ilivelock__(((<>),(<>))) 
+within ilivelock__(((<>),(<>)))
 
 nolivelock_(IG) = let
 
@@ -65,7 +66,7 @@ semi_((\ P',V' @ nolivelock!dummy -> P'(V')),
 skip_)(\ V' @ nolivelock__(V'),((<>),(stack')))
 
 
-within nolivelock__(((<>),(<>))) 
+within nolivelock__(((<>),(<>)))
 
 
 livelock2_(IIG,IG) = let

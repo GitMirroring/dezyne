@@ -16,6 +16,7 @@ callvoid_args_(B',F')(P', V') = B'(P', V', F')
 assign_(F')(P', V') = P'(F'(V'))
 -- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
 assign_active_(C', A')(P', V') = C'(\((M', r'),L') @ P'(A'((M',L'),r')), V')
+reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
 -- returnvalue_: (F: V->val) => (P,V)->Proc
 returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
 -- the_end_: P => V->Proc
@@ -50,26 +51,26 @@ channel U: {what,Status_Ok,Status_Nok,return}
 I__(((dummy),(stack'))) =
 (true) & (
 I?x:{done} ->
-(\ P',V' @ I.Status_Yes -> P'(V'))(\ V' @ I__(V'),((dummy),(stack')))
+reply_(I, (\ ((dummy),(stack')) @ Status_Yes))(\ V' @ I__(V'),((dummy),(stack')))
  []
   I?x:{done} ->
-(\ P',V' @ I.Status_No -> P'(V'))(\ V' @ I__(V'),((dummy),(stack'))))
+reply_(I, (\ ((dummy),(stack')) @ Status_No))(\ V' @ I__(V'),((dummy),(stack'))))
 
 
-within I__(((false),(<>))) 
+within I__(((false),(<>)))
 
 U_(IG) = let
 
 U__(((dummy),(stack'))) =
 (true) & (
 U?x:{what} ->
-(\ P',V' @ U.Status_Ok -> P'(V'))(\ V' @ U__(V'),((dummy),(stack')))
+reply_(U, (\ ((dummy),(stack')) @ Status_Ok))(\ V' @ U__(V'),((dummy),(stack')))
  []
   U?x:{what} ->
-(\ P',V' @ U.Status_Nok -> P'(V'))(\ V' @ U__(V'),((dummy),(stack'))))
+reply_(U, (\ ((dummy),(stack')) @ Status_Nok))(\ V' @ U__(V'),((dummy),(stack'))))
 
 
-within U__(((false),(<>))) 
+within U__(((false),(<>)))
 
 
 Reply2_(IIG,IG) = let
@@ -81,8 +82,8 @@ context_active_(sendrecv_(u,what),
 semi_(assign_active_(sendrecv_(u,what),
 \ (((dummy),((stack',s)))),r' @ ((dummy),((stack',r')))),
 \ P',((dummy),((stack',s))) @ ifthenelse_((s == Status_Ok),
-(\ P',V' @ i.Status_Yes -> P'(V')),
-(\ P',V' @ i.Status_No -> P'(V'))
+reply_(i, (\ ((dummy),((stack',s))) @ Status_Yes)),
+reply_(i, (\ ((dummy),((stack',s))) @ Status_No))
 )(P',((dummy),((stack',s))))))(\ V' @ transition_end -> Reply2__(V'),((dummy),(stack'))))
 )
 

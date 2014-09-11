@@ -16,6 +16,7 @@ callvoid_args_(B',F')(P', V') = B'(P', V', F')
 assign_(F')(P', V') = P'(F'(V'))
 -- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
 assign_active_(C', A')(P', V') = C'(\((M', r'),L') @ P'(A'((M',L'),r')), V')
+reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
 -- returnvalue_: (F: V->val) => (P,V)->Proc
 returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
 -- the_end_: P => V->Proc
@@ -85,7 +86,7 @@ assign_(\ ((s,b,c),(stack')) @ ((S_S1,b,c),(stack'))))),
 (\ P',V' @ iimperative.return -> P'(V')))(\ V' @ iimperative__(V'),((s,b,c),(stack'))))
 
 
-within iimperative__(((S_S1,false,true),(<>))) 
+within iimperative__(((S_S1,false,true),(<>)))
 
 
 imperative_(IIG,IG) = let

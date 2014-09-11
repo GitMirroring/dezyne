@@ -16,6 +16,7 @@ callvoid_args_(B',F')(P', V') = B'(P', V', F')
 assign_(F')(P', V') = P'(F'(V'))
 -- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
 assign_active_(C', A')(P', V') = C'(\((M', r'),L') @ P'(A'((M',L'),r')), V')
+reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
 -- returnvalue_: (F: V->val) => (P,V)->Proc
 returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
 -- the_end_: P => V->Proc
@@ -50,11 +51,11 @@ channel IDevice: {calibrate,initialize,perform_action1,perform_action2,result_t_
 IComp__(((s),(stack'))) =
 (((s == State_Uninitialized) and true)) & (
 IComp?x:{initialize} ->
-semi_((\ P',V' @ IComp.result_t_OK -> P'(V')),
+semi_(reply_(IComp, (\ ((s),(stack')) @ result_t_OK)),
 assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IComp__(V'),((s),(stack')))
  []
   IComp?x:{initialize} ->
-semi_((\ P',V' @ IComp.result_t_NOK -> P'(V')),
+semi_(reply_(IComp, (\ ((s),(stack')) @ result_t_NOK)),
 assign_(\ ((s),(stack')) @ ((State_Uninitialized),(stack'))))(\ V' @ IComp__(V'),((s),(stack'))))
 []
 ((s == State_Uninitialized)) & (
@@ -63,10 +64,10 @@ illegal_(STOP,<>))
 []
 (((s == State_Initialized) and true)) & (
 IComp?x:{perform_actions} ->
-(\ P',V' @ IComp.result_t_OK -> P'(V'))(\ V' @ IComp__(V'),((s),(stack')))
+reply_(IComp, (\ ((s),(stack')) @ result_t_OK))(\ V' @ IComp__(V'),((s),(stack')))
  []
   IComp?x:{perform_actions} ->
-semi_((\ P',V' @ IComp.result_t_NOK -> P'(V')),
+semi_(reply_(IComp, (\ ((s),(stack')) @ result_t_NOK)),
 assign_(\ ((s),(stack')) @ ((State_Error),(stack'))))(\ V' @ IComp__(V'),((s),(stack'))))
 []
 ((s == State_Initialized)) & (
@@ -75,11 +76,11 @@ illegal_(STOP,<>))
 []
 (((s == State_Error) and true)) & (
 IComp?x:{recover} ->
-semi_((\ P',V' @ IComp.result_t_OK -> P'(V')),
+semi_(reply_(IComp, (\ ((s),(stack')) @ result_t_OK)),
 assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IComp__(V'),((s),(stack')))
  []
   IComp?x:{recover} ->
-(\ P',V' @ IComp.result_t_NOK -> P'(V'))(\ V' @ IComp__(V'),((s),(stack'))))
+reply_(IComp, (\ ((s),(stack')) @ result_t_NOK))(\ V' @ IComp__(V'),((s),(stack'))))
 []
 ((s == State_Error)) & (
 IG & IComp?x:{initialize,perform_actions} ->
@@ -93,11 +94,11 @@ IDevice_(IG) = let
 IDevice__(((s),(stack'))) =
 (((s == State_Uninitialized) and true)) & (
 IDevice?x:{initialize} ->
-semi_((\ P',V' @ IDevice.result_t_OK -> P'(V')),
+semi_(reply_(IDevice, (\ ((s),(stack')) @ result_t_OK)),
 assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IDevice__(V'),((s),(stack')))
  []
   IDevice?x:{initialize} ->
-semi_((\ P',V' @ IDevice.result_t_NOK -> P'(V')),
+semi_(reply_(IDevice, (\ ((s),(stack')) @ result_t_NOK)),
 assign_(\ ((s),(stack')) @ ((State_Uninitialized),(stack'))))(\ V' @ IDevice__(V'),((s),(stack'))))
 []
 ((s == State_Uninitialized)) & (
@@ -106,32 +107,32 @@ illegal_(STOP,<>))
 []
 (((s == State_Initialized) and true)) & (
 IDevice?x:{calibrate} ->
-semi_((\ P',V' @ IDevice.result_t_OK -> P'(V')),
+semi_(reply_(IDevice, (\ ((s),(stack')) @ result_t_OK)),
 assign_(\ ((s),(stack')) @ ((State_Calibrated),(stack'))))(\ V' @ IDevice__(V'),((s),(stack')))
  []
   IDevice?x:{calibrate} ->
-semi_((\ P',V' @ IDevice.result_t_NOK -> P'(V')),
+semi_(reply_(IDevice, (\ ((s),(stack')) @ result_t_NOK)),
 assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IDevice__(V'),((s),(stack'))))
 []
 ((s == State_Initialized)) & (
 IDevice?x:{initialize} ->
-(\ P',V' @ IDevice.result_t_OK -> P'(V'))(\ V' @ IDevice__(V'),((s),(stack')))
+reply_(IDevice, (\ ((s),(stack')) @ result_t_OK))(\ V' @ IDevice__(V'),((s),(stack')))
  []
   IG & IDevice?x:{perform_action1,perform_action2} ->
 illegal_(STOP,<>))
 []
 (((s == State_Calibrated) and true)) & (
 IDevice?x:{perform_action1,perform_action2} ->
-semi_((\ P',V' @ IDevice.result_t_OK -> P'(V')),
+semi_(reply_(IDevice, (\ ((s),(stack')) @ result_t_OK)),
 assign_(\ ((s),(stack')) @ ((State_Calibrated),(stack'))))(\ V' @ IDevice__(V'),((s),(stack')))
  []
   IDevice?x:{perform_action1,perform_action2} ->
-semi_((\ P',V' @ IDevice.result_t_NOK -> P'(V')),
+semi_(reply_(IDevice, (\ ((s),(stack')) @ result_t_NOK)),
 assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IDevice__(V'),((s),(stack'))))
 []
 ((s == State_Calibrated)) & (
 IDevice?x:{calibrate} ->
-(\ P',V' @ IDevice.result_t_OK -> P'(V'))(\ V' @ IDevice__(V'),((s),(stack')))
+reply_(IDevice, (\ ((s),(stack')) @ result_t_OK))(\ V' @ IDevice__(V'),((s),(stack')))
  []
   IG & IDevice?x:{initialize} ->
 illegal_(STOP,<>))
@@ -153,9 +154,9 @@ skip_
 )(P',((s),((stack',res)))),
 \ P',((s),((stack',res))) @ ifthenelse_((res == result_t_OK),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Initialized),((stack',res)))),
-(\ P',V' @ client.result_t_OK -> P'(V'))),
+reply_(client, (\ ((s),((stack',res))) @ result_t_OK))),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Uninitialized),((stack',res)))),
-(\ P',V' @ client.result_t_NOK -> P'(V')))
+reply_(client, (\ ((s),((stack',res))) @ result_t_NOK)))
 )(P',((s),((stack',res))))))(\ V' @ transition_end -> Comp__(V'),((s),(stack')))
  []
   IIG & client?x:{recover,perform_actions} ->
@@ -171,9 +172,9 @@ skip_
 )(P',((s),((stack',res)))),
 \ P',((s),((stack',res))) @ ifthenelse_((res == result_t_OK),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Initialized),((stack',res)))),
-(\ P',V' @ client.result_t_OK -> P'(V'))),
+reply_(client, (\ ((s),((stack',res))) @ result_t_OK))),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Error),((stack',res)))),
-(\ P',V' @ client.result_t_NOK -> P'(V')))
+reply_(client, (\ ((s),((stack',res))) @ result_t_NOK)))
 )(P',((s),((stack',res))))))(\ V' @ transition_end -> Comp__(V'),((s),(stack')))
  []
   IIG & client?x:{initialize,recover} ->
@@ -184,9 +185,9 @@ client?x:{recover} ->
 context_active_(sendrecv_(device_A,calibrate),
 \ P',((s),((stack',res))) @ ifthenelse_((res == result_t_OK),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Initialized),((stack',res)))),
-(\ P',V' @ client.result_t_OK -> P'(V'))),
+reply_(client, (\ ((s),((stack',res))) @ result_t_OK))),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Error),((stack',res)))),
-(\ P',V' @ client.result_t_NOK -> P'(V')))
+reply_(client, (\ ((s),((stack',res))) @ result_t_NOK)))
 )(P',((s),((stack',res)))))(\ V' @ transition_end -> Comp__(V'),((s),(stack')))
  []
   IIG & client?x:{initialize,perform_actions} ->

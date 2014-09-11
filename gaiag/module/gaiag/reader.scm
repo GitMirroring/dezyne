@@ -48,7 +48,7 @@
 (define (read-asd- file-name)
   (asd-reader (open-file file-name "r") (current-module)))
 
-(define *include-path* '("."))
+(define *include-path* '("." "examples"))
 (define* (find-file file-name)
   (let* ((file-name (components->file-name file-name))
          (resolved (search-path *include-path* file-name))

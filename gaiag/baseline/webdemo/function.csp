@@ -16,6 +16,7 @@ callvoid_args_(B',F')(P', V') = B'(P', V', F')
 assign_(F')(P', V') = P'(F'(V'))
 -- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
 assign_active_(C', A')(P', V') = C'(\((M', r'),L') @ P'(A'((M',L'),r')), V')
+reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
 -- returnvalue_: (F: V->val) => (P,V)->Proc
 returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
 -- the_end_: P => V->Proc
@@ -64,7 +65,7 @@ semi_(callvoid_(\ P',V' @ i43_toggle(P',V')),
 (\ P',V' @ i108_I.return -> P'(V')))(\ V' @ i108_I__(V'),((i8_f),(stack'))))
 
 
-within i108_I__(((false),(<>))) 
+within i108_I__(((false),(<>)))
 
 
 i217_function_(IIG,IG) = let

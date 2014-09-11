@@ -36,42 +36,72 @@ context_func_(S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', <>))
 context_func_args_(v', S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', (<>, v')))
 
 datatype event_enumeration_alphabet =
-Enum_False | Enum_True | a | e | return
+Status_No | Status_Nok | Status_Ok | Status_Yes | done | return | what
 
 channel illegal
 
-channel i: {a,e,return}
+channel i: {done,Status_Yes,Status_No,return}
+channel u: {what,Status_Ok,Status_Nok,return}
 
-channel I: {a,e,return}
+channel I: {done,Status_Yes,Status_No,return}
+channel U: {what,Status_Ok,Status_Nok,return}
 
   I_(IG) = let
+reply_fun = \ P',V' @ context_func_(reply_(I, (\ ((dummy),(stack')) @ Status_Yes)))(P',V')
+reply_fun_arg = \ P',V',F' @ context_func_args_(F',
+reply_(I, (\ ((dummy),((stack',s))) @ s)))(P',V')
 
-I__(((s),(stack'))) =
-((s == Enum_False)) & (
-I?x:{e} ->
-semi_(\ P',((s),(stack')) @ ifthenelse_((s == Enum_False),
-(\ P',V' @ I!a -> P'(V')),
-skip_
-)(P',((s),(stack'))),
-(\ P',V' @ I.return -> P'(V')))(\ V' @ I__(V'),((s),(stack'))))
+I__(((dummy),(stack'))) =
+(true) & (
+I?x:{done} ->
+semi_(callvoid_(\ P',V' @ reply_fun(P',V')),
+(\ P',V' @ I.return -> P'(V')))(\ V' @ I__(V'),((dummy),(stack')))
+ []
+  I?x:{done} ->
+semi_(callvoid_(\ P',V' @ reply_fun_arg(P',V',(\ ((dummy),(stack')) @ (Status_No))(V'))),
+(\ P',V' @ I.return -> P'(V')))(\ V' @ I__(V'),((dummy),(stack'))))
 
 
-within I__(((Enum_False),(<>)))
+within I__(((false),(<>)))
+
+U_(IG) = let
+reply_fun = \ P',V' @ context_func_(reply_(U, (\ ((dummy),(stack')) @ Status_Ok)))(P',V')
+reply_fun_arg = \ P',V',F' @ context_func_args_(F',
+reply_(U, (\ ((dummy),((stack',s))) @ s)))(P',V')
+
+U__(((dummy),(stack'))) =
+(true) & (
+U?x:{what} ->
+semi_(callvoid_(\ P',V' @ reply_fun(P',V')),
+(\ P',V' @ U.return -> P'(V')))(\ V' @ U__(V'),((dummy),(stack')))
+ []
+  U?x:{what} ->
+semi_(callvoid_(\ P',V' @ reply_fun_arg(P',V',(\ ((dummy),(stack')) @ (Status_Nok))(V'))),
+(\ P',V' @ U.return -> P'(V')))(\ V' @ U__(V'),((dummy),(stack'))))
 
 
-sugar_(IIG,IG) = let
+within U__(((false),(<>)))
 
-sugar__(((s),(stack'))) = transition_begin -> (
-((s == Enum_False)) & (
-i?x:{e} ->
-semi_(\ P',((s),(stack')) @ ifthenelse_((s == Enum_False),
-(\ P',V' @ i!a -> P'(V')),
-skip_
-)(P',((s),(stack'))),
-(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> sugar__(V'),((s),(stack'))))
+
+Reply3_(IIG,IG) = let
+reply_fun = \ P',V' @ context_func_(reply_(I, (\ ((dummy),(stack')) @ Status_Yes)))(P',V')
+reply_fun_arg = \ P',V',F' @ context_func_args_(F',
+reply_(I, (\ ((dummy),((stack',s))) @ s)))(P',V')
+
+Reply3__(((dummy),(stack'))) = transition_begin -> (
+(true) & (
+i?x:{done} ->
+semi_(context_active_(sendrecv_(u,what),
+semi_(assign_active_(sendrecv_(u,what),
+\ (((dummy),((stack',s)))),r' @ ((dummy),((stack',r')))),
+\ P',((dummy),((stack',s))) @ ifthenelse_((s == Status_Ok),
+callvoid_(\ P',V' @ reply_fun(P',V')),
+callvoid_(\ P',V' @ reply_fun_arg(P',V',(\ ((dummy),((stack',s))) @ (Status_No))(V')))
+)(P',((dummy),((stack',s)))))),
+(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> Reply3__(V'),((dummy),(stack'))))
 )
 
-within sugar__(((Enum_False),(<>)))
+within Reply3__(((false),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
@@ -80,7 +110,7 @@ SINGLETHREADED = true
 
 channel transition_begin, transition_end
 
-channel reorder_in,reorder_out : {i.return}
+channel reorder_in,reorder_out : {i.Status_Yes,i.Status_No,i.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -113,25 +143,30 @@ within Idle(0)
 
 within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-sugar__Component(IIG) = let
+Reply3__Component(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {i.return,i.a}
-ClientCalls = {i.e}
+Exclude = {i.Status_Yes,i.Status_No,i.return}
+ClientCalls = {i.done}
 UsedModeling = {}
-within compress((sugar_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,i|},Exclude)|]
-(((STOP) [[x<-IN.x|x<-extensions(IN)]]
+within compress((Reply3_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,i,u|},Exclude)|]
+(((U_(true) [[U.x<-u.x|x<-extensions(U)]]
+) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 assert I_(false) :[deadlock free]
 
 assert I_(true) :[livelock free]
 
-assert sugar_(true,true) :[deterministic]
-assert STOP [T= sugar__Component(false) \ diff(Events,{illegal})
-assert sugar__Component(false) :[deadlock free]
-assert I_(true) [[I.x<-i.x|x<-extensions(I)]] \ {} [F= sugar__Component(true) \ diff(Events,{|illegal,i|})
-assert sugar__Component(true) \ diff(Events,{|illegal,i|}) :[livelock free]
+assert U_(false) :[deadlock free]
+
+assert U_(true) :[livelock free]
+
+assert Reply3_(true,true) :[deterministic]
+assert STOP [T= Reply3__Component(false) \ diff(Events,{illegal})
+assert Reply3__Component(false) :[deadlock free]
+assert I_(true) [[I.x<-i.x|x<-extensions(I)]] \ {} [F= Reply3__Component(true) \ diff(Events,{|illegal,i|})
+assert Reply3__Component(true) \ diff(Events,{|illegal,i|}) :[livelock free]

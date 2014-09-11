@@ -36,42 +36,42 @@ context_func_(S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', <>))
 context_func_args_(v', S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', (<>, v')))
 
 datatype event_enumeration_alphabet =
-Enum_False | Enum_True | a | e | return
+a | b | c | return
 
 channel illegal
 
-channel i: {a,e,return}
+channel i: {a,b,c,return}
 
-channel I: {a,e,return}
+channel I: {a,b,c,return}
 
   I_(IG) = let
 
-I__(((s),(stack'))) =
-((s == Enum_False)) & (
-I?x:{e} ->
-semi_(\ P',((s),(stack')) @ ifthenelse_((s == Enum_False),
-(\ P',V' @ I!a -> P'(V')),
-skip_
-)(P',((s),(stack'))),
-(\ P',V' @ I.return -> P'(V')))(\ V' @ I__(V'),((s),(stack'))))
+I__(((t),(stack'))) =
+I?x:{a} ->
+semi_(semi_(\ P',((t),(stack')) @ ifthenelse_(t,
+(\ P',V' @ I!b -> P'(V')),
+(\ P',V' @ I!c -> P'(V'))
+)(P',((t),(stack'))),
+assign_(\ ((t),(stack')) @ (((not t)),(stack')))),
+(\ P',V' @ I.return -> P'(V')))(\ V' @ I__(V'),((t),(stack')))
 
 
-within I__(((Enum_False),(<>)))
+within I__(((false),(<>)))
 
 
-sugar_(IIG,IG) = let
+If_(IIG,IG) = let
 
-sugar__(((s),(stack'))) = transition_begin -> (
-((s == Enum_False)) & (
-i?x:{e} ->
-semi_(\ P',((s),(stack')) @ ifthenelse_((s == Enum_False),
-(\ P',V' @ i!a -> P'(V')),
-skip_
-)(P',((s),(stack'))),
-(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> sugar__(V'),((s),(stack'))))
+If__(((t),(stack'))) = transition_begin -> (
+i?x:{a} ->
+semi_(semi_(\ P',((t),(stack')) @ ifthenelse_(t,
+(\ P',V' @ i!b -> P'(V')),
+(\ P',V' @ i!c -> P'(V'))
+)(P',((t),(stack'))),
+assign_(\ ((t),(stack')) @ (((not t)),(stack')))),
+(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> If__(V'),((t),(stack')))
 )
 
-within sugar__(((Enum_False),(<>)))
+within If__(((false),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
@@ -113,15 +113,15 @@ within Idle(0)
 
 within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-sugar__Component(IIG) = let
+If__Component(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {i.return,i.a}
-ClientCalls = {i.e}
+Exclude = {i.return,i.b,i.c}
+ClientCalls = {i.a}
 UsedModeling = {}
-within compress((sugar_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+within compress((If_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,i|},Exclude)|]
 (((STOP) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
@@ -130,8 +130,8 @@ assert I_(false) :[deadlock free]
 
 assert I_(true) :[livelock free]
 
-assert sugar_(true,true) :[deterministic]
-assert STOP [T= sugar__Component(false) \ diff(Events,{illegal})
-assert sugar__Component(false) :[deadlock free]
-assert I_(true) [[I.x<-i.x|x<-extensions(I)]] \ {} [F= sugar__Component(true) \ diff(Events,{|illegal,i|})
-assert sugar__Component(true) \ diff(Events,{|illegal,i|}) :[livelock free]
+assert If_(true,true) :[deterministic]
+assert STOP [T= If__Component(false) \ diff(Events,{illegal})
+assert If__Component(false) :[deadlock free]
+assert I_(true) [[I.x<-i.x|x<-extensions(I)]] \ {} [F= If__Component(true) \ diff(Events,{|illegal,i|})
+assert If__Component(true) \ diff(Events,{|illegal,i|}) :[livelock free]

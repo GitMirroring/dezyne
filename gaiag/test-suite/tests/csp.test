@@ -96,13 +96,13 @@
 
            '(on (e)
                (semi
-                (reply (expression (literal #f Status Yes)))
+                (reply (ctx ((s b c))) (expression (literal #f Status Yes)))
                 (return))
                (the-end (s b c))))
 
           ;; via:
           "i?x:{e} ->
-semi_((\\ P',V' @ i.Status_Yes -> P'(V')),
+semi_(reply_(i, (\\ ((s,b,c),(stack')) @ Status_Yes)),
 skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
 
 
@@ -121,7 +121,7 @@ skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
 
           ;; via:
           '(on (e)
-               (reply (expression (literal #f Status Yes)))
+               (reply (ctx ((s b c))) (expression (literal #f Status Yes)))
                (the-end (s b c)))))
 
 (pass-if "ast-transform-compound-reply"
@@ -139,8 +139,9 @@ skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
 
           ;; via:
           '(on (e)
-               (reply (expression (literal #f Status Yes)))
+               (reply (ctx ((s b c))) (expression (literal #f Status Yes)))
                (the-end (s b c)))))
+
 
 (pass-if "csp-transform-reply"
          (diff-noisy-equal?
@@ -152,13 +153,13 @@ skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
 
            '(on (e)
                (semi
-                (reply (expression (literal #f Status Yes)))
+                (reply (ctx ((s b c))) (expression (literal #f Status Yes)))
                 (return))
                (the-end (s b c))))
 
           ;; via:
           "i?x:{e} ->
-semi_((\\ P',V' @ i.Status_Yes -> P'(V')),
+semi_(reply_(i, (\\ ((s,b,c),(stack')) @ Status_Yes)),
 skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
 
 
@@ -1039,8 +1040,8 @@ context_active_(\\ P',V' @ g (P',V',(\\ ((s,b,c),(stack')) @ (b,b))(V')),
         ((ctx ((dummy))) s (action (trigger u what)))
         (if (ctx ((dummy) s))
             (expression (== s (literal u Status Ok)))
-            (reply (expression (literal I Status Yes)))
-            (reply (expression (literal I Status No)))))
+            (reply (ctx ((dummy) s)) (expression (literal I Status Yes)))
+            (reply (ctx ((dummy) s)) (expression (literal I Status No)))))
        (the-end (dummy))))
 
 (pass-if "ast-transform-reply-variable"
@@ -1075,8 +1076,8 @@ context_active_(\\ P',V' @ g (P',V',(\\ ((s,b,c),(stack')) @ (b,b))(V')),
           "i?x:{done} ->
 context_active_(sendrecv_(u,what),
 \\ P',((dummy),((stack',s))) @ ifthenelse_((s == Status_Ok),
-(\\ P',V' @ i.Status_Yes -> P'(V')),
-(\\ P',V' @ i.Status_No -> P'(V'))
+reply_(i, (\\ ((dummy),((stack',s))) @ Status_Yes)),
+reply_(i, (\\ ((dummy),((stack',s))) @ Status_No))
 )(P',((dummy),((stack',s)))))(\\ V' @ transition_end -> C__(V'),((dummy),(stack')))"))
 
 ;; "

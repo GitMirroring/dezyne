@@ -29,7 +29,7 @@ TOPDIR = $(shell cd $(DEPTH) && pwd)
 diff = diff -uw -I '^ *$$' -I '^ *//'
 sed = sed -e 's/^-gen/gen/' -re 's/((cppbase.cpp|.hh.scm|.cc.scm):[0-9]*):/\1:warning:/'
 BUILD = build
-asdgen = ASD_PREFIX=$(DEPTH)/.. $(DEPTH)/../$(BUILD)/asdgenerator
+#asdgen = ASD_PREFIX=$(DEPTH)/.. $(DEPTH)/../$(BUILD)/asdgenerator
 GUILE = guile
 SCRIPTS = coverage gaiag json2scm scm2json
 SCM_SOURCES = $(shell git ls-files module test-suite/*.scm)
@@ -171,27 +171,27 @@ pretty: compile
 
 c++: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
-	cd out && ../gaiag -l c++ examples/regression/Alarm.asd
+	cd out && $(PWD)/gaiag -l c++ examples/regression/Alarm.asd
 	$(diff) baseline/component-Alarm-c3.hh out
 	$(diff) baseline/component-Alarm-c3.cc out
-	cd out && ../gaiag examples/Aap.asd
-	cd out && ../gaiag -l c++ examples/Aap.asd
+	cd out && $(PWD)/gaiag examples/Aap.asd
+	cd out && $(PWD)/gaiag -l c++ examples/Aap.asd
 	$(diff) baseline/component-Noot-c3.hh out
 	$(diff) baseline/component-Noot-c3.cc out
 
-	cd out && ../gaiag -l c++ examples/regression/Console.asd
+	cd out && $(PWD)/gaiag -l c++ examples/Console.asd
 	$(diff) baseline/interface-Console-c3.hh out
-	cd out && ../gaiag -l c++ examples/regression/Sensor.asd
+	cd out && $(PWD)/gaiag -l c++ examples/Sensor.asd
 	$(diff) baseline/interface-Sensor-c3.hh out
-	cd out && ../gaiag -l c++ examples/regression/Siren.asd
+	cd out && $(PWD)/gaiag -l c++ examples/Siren.asd
 	$(diff) baseline/interface-Siren-c3.hh out
-	cd out && ../gaiag -l c++ examples/regression/Alarm.asd
+	cd out && $(PWD)/gaiag -l c++ examples/regression/Alarm.asd
 	$(diff) baseline/component-Alarm-c3.hh out
 	$(diff) baseline/component-Alarm-c3.cc out
 	cd out && g++ -I ../$(DEPTH)/examples/regression/codegen/asd_cpp_runtime -c component-Alarm-c3.cc
 
 	#system
-	cd out && ../gaiag -l c++ examples/regression/AlarmSystem.asd
+	cd out && $(PWD)/gaiag -l c++ examples/AlarmSystem.asd
 	$(diff) baseline/component-Sensor-c3.hh out
 	$(diff) baseline/component-Sensor-c3.cc out
 	$(diff) baseline/component-Siren-c3.hh out
@@ -200,13 +200,13 @@ c++: compile
 	$(diff) baseline/component-AlarmSystem-c3.cc out
 	-cd out && g++ -I ../$(DEPTH)/examples/regression/codegen/asd_cpp_runtime -c component-AlarmSystem-c3.cc
 
-	cd out && ../gaiag -l c++ examples/regression/argument2.asd
+	cd out && $(PWD)/gaiag -l c++ examples/regression/argument2.asd
 	$(diff) baseline/component-argument2-c3.hh out
 	$(diff) baseline/component-argument2-c3.cc out
 	$(diff) baseline/component-argument2-c3.hh out
 	-$(diff) baseline/component-argument2-c3.cc out
 
-	cd out && ../gaiag -l c++ examples/regression/expressions.asd
+	cd out && $(PWD)/gaiag -l c++ examples/regression/expressions.asd
 	$(diff) baseline/component-expressions-c3.hh out
 	-$(diff) baseline/component-expressions-c3.cc out
 	cd out && g++ -I ../$(DEPTH)/examples/regression/codegen/asd_cpp_runtime -c component-expressions-c3.cc
@@ -216,124 +216,32 @@ wfc: compile
 	#-./gaiag -l wfc examples/double-on-compound.asd #TODO
 	-./gaiag -l wfc examples/mixing.asd
 
-csp: compile
-	rm -rf out && mkdir out && ln -s ../examples ../templates out
+REGRESSION_SOURCES = $(shell cd examples/regression && grep -l ^component *.asd)
 
-	cd out && ../gaiag -l csp examples/regression/Alarm.asd
-	$(diff) baseline/Alarm.csp out || true
-	@$(diff) baseline/Alarm.csp out | diffstat || true
-	$(CSPMCHECKER) out/Alarm.csp
-	! $(REFINES) out/Alarm.csp 2>/dev/null | grep -E '^x?false'
-	@$(diff) baseline/Alarm.csp out >/dev/null
+out/%.refines: examples/regression/%.asd
+	rm -rf out && mkdir -p out && ln -s ../examples ../webdemo ../templates ../$(DEPTH)/webdemo/asd out
+	cd out && $(PWD)/gaiag -l csp $^
+	$(diff) baseline/$*.csp out || true
+	@$(diff) baseline/$*.csp out | diffstat || true
+	$(CSPMCHECKER) out/$*.csp
+	$(REFINES) out/$*.csp 2>/dev/null | grep -E '^x?false' || :
+	@$(diff) baseline/$*.csp out >/dev/null
+	touch $@
 
-	cd out && ../gaiag -l csp examples/regression/imperative.asd
-	$(diff) baseline/imperative.csp out || true
-	@$(diff) baseline/imperative.csp out | diffstat || true
-	$(CSPMCHECKER) out/imperative.csp
-	! $(REFINES) out/imperative.csp 2>/dev/null | grep -E '^x?false'
-	@$(diff) baseline/imperative.csp out >/dev/null
+reply3: compile out/Reply3.refines
 
-	cd out && ../gaiag -l csp examples/regression/Reply.asd
-	$(diff) baseline/Reply.csp out || true
-	@$(diff) baseline/Reply.csp out | diffstat || true
-	$(CSPMCHECKER) out/Reply.csp
-	! $(REFINES) out/Reply.csp 2>/dev/null | grep -E '^x?false'
-	@$(diff) baseline/Reply.csp out >/dev/null
-
-	cd out && ../gaiag -l csp examples/regression/function.asd
-	$(diff) baseline/function.csp out || true
-	@$(diff) baseline/function.csp out | diffstat || true
-	$(CSPMCHECKER) out/function.csp
-	! $(REFINES) out/function.csp 2>/dev/null | grep -E '^x?false'
-	@$(diff) baseline/function.csp out >/dev/null
-
-	cd out && ../gaiag -l csp examples/regression/argument.asd
-	$(diff) baseline/argument.csp out || true
-	@$(diff) baseline/argument.csp out | diffstat || true
-	$(CSPMCHECKER) out/argument.csp
-	! $(REFINES) out/argument.csp 2>/dev/null | grep -E '^x?false'
-	@$(diff) baseline/argument.csp out >/dev/null
-
-	cd out && ../gaiag -l csp examples/regression/Reply2.asd
-	$(diff) baseline/Reply2.csp out || true
-	@$(diff) baseline/Reply2.csp out | diffstat || true
-	$(CSPMCHECKER) out/Reply2.csp
-	! $(REFINES) out/Reply2.csp 2>/dev/null | grep -E '^x?false'
-	@$(diff) baseline/Reply2.csp out >/dev/null
-
-	cd out && ../gaiag -l csp examples/regression/sugar.asd
-	$(diff) baseline/sugar.csp out || true
-	@$(diff) baseline/sugar.csp out | diffstat || true
-	$(CSPMCHECKER) out/sugar.csp
-	! $(REFINES) out/sugar.csp 2>/dev/null | grep -E '^x?false'
-	@$(diff) baseline/sugar.csp out >/dev/null
-
-	cd out && ../gaiag -l csp examples/regression/Comp.asd
-	$(diff) baseline/Comp.csp out
-	@$(diff) baseline/Comp.csp out | diffstat || true
-	$(CSPMCHECKER) out/Comp.csp
-	! $(REFINES) out/Comp.csp 2>/dev/null | grep -E '^x?false'
-	@$(diff) baseline/Comp.csp out >/dev/null
-
-	cd out && ../gaiag -l csp examples/regression/argument2.asd
-	$(diff) baseline/argument2.csp out || true
-	@$(diff) baseline/argument2.csp out | diffstat || true
-	$(CSPMCHECKER) out/argument2.csp
-	! $(REFINES) out/argument2.csp 2>/dev/null | grep -E '^x?false'
-	@$(diff) baseline/argument2.csp out >/dev/null
-
-	cd out && ../gaiag -l csp examples/regression/hide.asd
-	$(diff) baseline/hide.csp out || true
-	@$(diff) baseline/hide.csp out | diffstat || true
-	$(CSPMCHECKER) out/hide.csp
-	! $(REFINES) out/hide.csp 2>/dev/null | grep -E '^x?false'
-	@$(diff) baseline/hide.csp out >/dev/null
-
-	cd out && ../gaiag -l csp examples/regression/expressions.asd
-	$(diff) baseline/expressions.csp out || true
-	@$(diff) baseline/expressions.csp out | diffstat || true
-	$(CSPMCHECKER) out/expressions.csp
-	! $(REFINES) out/expressions.csp 2>/dev/null | grep -E '^x?false'
-	@$(diff) baseline/expressions.csp out >/dev/null
-
-	cd out && ../gaiag -l csp examples/regression/testBoolean.asd
-	$(diff) baseline/testBoolean.csp out || true
-	@$(diff) baseline/testBoolean.csp out | diffstat || true
-	$(CSPMCHECKER) out/testBoolean.csp
-	! $(REFINES) out/testBoolean.csp 2>/dev/null | grep -E '^x?false'
-	@$(diff) baseline/testBoolean.csp out >/dev/null
-
-	cd out && ../gaiag -l csp examples/regression/mangle.asd
-	$(diff) baseline/mangle.csp out || true
-	@$(diff) baseline/mangle.csp out | diffstat || true
-	$(CSPMCHECKER) out/mangle.csp
-	! $(REFINES) out/mangle.csp 2>/dev/null | grep -E '^x?false'
-	@$(diff) baseline/mangle.csp out >/dev/null
-
-	cd out && ../gaiag -l csp examples/regression/livelock1.asd
-	$(diff) baseline/livelock1.csp out || true
-	@$(diff) baseline/livelock1.csp out | diffstat || true
-	$(CSPMCHECKER) out/livelock1.csp
-	$(REFINES) out/livelock1.csp |& grep -E '^x?false'
-	@$(diff) baseline/livelock1.csp out >/dev/null
-
-	cd out && ../gaiag -l csp examples/regression/livelock2.asd
-	$(diff) baseline/livelock2.csp out || true
-	@$(diff) baseline/livelock2.csp out | diffstat || true
-	$(CSPMCHECKER) out/livelock2.csp
-	$(REFINES) out/livelock2.csp |& grep -E '^x?false'
-	@$(diff) baseline/livelock2.csp out >/dev/null
+csp: compile $(REGRESSION_SOURCES:%.asd=out/%.refines)
 
 livelock:
 	rm -rf out && mkdir out && ln -s ../examples ../templates $(DEPTH)/../webdemo/asd out
-	cd out && ../gaiag -l csp examples/regression/livelock1.asd
+	cd out && $(PWD)/gaiag -l csp examples/regression/livelock1.asd
 	$(diff) baseline/livelock1.csp out || true
 	@$(diff) baseline/livelock1.csp out | diffstat || true
 	$(CSPMCHECKER) out/livelock1.csp
 	$(REFINES) out/livelock1.csp |& grep -E '^x?false'
 	@$(diff) baseline/livelock1.csp out >/dev/null
 
-	cd out && ../gaiag -l csp examples/regression/livelock2.asd
+	cd out && $(PWD)/gaiag -l csp examples/regression/livelock2.asd
 	$(diff) baseline/livelock2.csp out || true
 	@$(diff) baseline/livelock2.csp out | diffstat || true
 	$(CSPMCHECKER) out/livelock2.csp
@@ -343,14 +251,14 @@ livelock:
 mangle: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
 
-	cd out && ../gaiag -l csp examples/regression/mangle.asd
+	cd out && $(PWD)/gaiag -l csp examples/regression/mangle.asd
 	$(diff) baseline/mangle.csp out || true
 	@$(diff) baseline/mangle.csp out | diffstat || true
 	./gaiag -l mangle examples/regression/mangle.asd
 	$(CSPMCHECKER) out/mangle.csp
 	@$(diff) baseline/mangle.csp out >/dev/null
 
-	cd out && ../gaiag -l csp examples/regression/argument2.asd
+	cd out && $(PWD)/gaiag -l csp examples/regression/argument2.asd
 	$(diff) baseline/argument2.csp out || true
 	@$(diff) baseline/argument2.csp out | diffstat || true
 	./gaiag -l manglex examples/regression/argument2.asd
@@ -374,7 +282,7 @@ alarm-gen:
 	cd out && ln -s ../examples/regression/main.cc .
 	cd out && for file in examples/regression/AlarmSystem.asd examples/regression/Alarm.asd \
                               examples/regression/Console.asd examples/regression/Sensor.asd examples/regression/Siren.asd; \
-                  do ../gaiag -l c++ $$file; done
+                  do $(PWD)/gaiag -l c++ $$file; done
 
 alarm: alarm-gen
 	g++ -Wall -Wextra out/*.cc -o out/test && ./out/test
@@ -400,31 +308,31 @@ EXAMPLE_SOURCES =\
  argument2.asd\
 
 
-out/%.refines: $(DEPTH)/webdemo/asd/%.asd
-	rm -rf out && mkdir out && ln -s ../examples ../webdemo ../templates ../$(DEPTH)/webdemo/asd out
-	cd out && $(asdgen) -l scm asd/$*.asd
-	cd out && ../gaiag -l csp $*.scm
-	[ -f out/$*.csp ] || mv out/*.csp out/$*.csp
-	$(diff) baseline/webdemo/$*.csp out || true
-	@$(diff) baseline/webdemo/$*.csp out | diffstat || true
-	$(CSPMCHECKER) out/$*.csp
-	$(REFINES) out/$*.csp 2>/dev/null | grep -E '^x?false' || :
-	@$(diff) baseline/webdemo/$*.csp out >/dev/null
+out/webdemo/%.refines: $(DEPTH)/webdemo/asd/%.asd
+	rm -rf out && mkdir -p out/webdemo && ln -s ../../examples ../../webdemo ../../templates ../../$(DEPTH)/webdemo/asd out/webdemo
+	cd out/webdemo && $(TOPDIR)/$(BUILD)/asdgenerator -l scm asd/$*.asd
+	cd out/webdemo && $(PWD)/gaiag -l csp $*.scm
+	[ -f out/webdemo/$*.csp ] || mv out/webdemo/*.csp out/webdemo/$*.csp
+	$(diff) baseline/webdemo/$*.csp out/webdemo || true
+	@$(diff) baseline/webdemo/$*.csp out/webdemo | diffstat || true
+	$(CSPMCHECKER) out/webdemo/$*.csp
+	$(REFINES) out/webdemo/$*.csp 2>/dev/null | grep -E '^x?false' || :
+	@$(diff) baseline/webdemo/$*.csp out/webdemo >/dev/null
 	touch $@
 
-out/%.refines: examples/regression/%.asd
-	rm -rf out && mkdir out && ln -s ../examples ../webdemo ../templates ../$(DEPTH)/webdemo/asd out
-	cd out && $(asdgen) -l scm examples/regression/$*.asd
-	cd out && ../gaiag -l csp $*.scm
-	[ -f out/$*.csp ] || mv out/*.csp out/$*.csp
-	$(diff) baseline/webdemo/$*.csp out || true
-	@$(diff) baseline/webdemo/$*.csp out | diffstat || true
-	$(CSPMCHECKER) out/$*.csp
-	$(REFINES) out/$*.csp 2>/dev/null | grep -E '^x?false' || :
-	@$(diff) baseline/webdemo/$*.csp out >/dev/null
+out/webdemo/%.refines: examples/regression/%.asd
+	rm -rf out && mkdir -p out/webdemo && ln -s ../../examples ../../webdemo ../../templates ../../$(DEPTH)/webdemo/asd out/webdemo
+	cd out/webdemo && $(TOPDIR)/$(BUILD)/asdgenerator -l scm examples/regression/$*.asd
+	cd out/webdemo && $(PWD)/gaiag -l csp $*.scm
+	[ -f out/webdemo/$*.csp ] || mv out/webdemo/*.csp out/webdemo/$*.csp
+	$(diff) baseline/webdemo/$*.csp out/webdemo || true
+	@$(diff) baseline/webdemo/$*.csp out/webdemo | diffstat || true
+	$(CSPMCHECKER) out/webdemo/$*.csp
+	$(REFINES) out/webdemo/$*.csp 2>/dev/null | grep -E '^x?false' || :
+	@$(diff) baseline/webdemo/$*.csp out/webdemo >/dev/null
 	touch $@
 
-demo: $(EXAMPLE_SOURCES:%.asd=out/%.refines) $(DEMO_SOURCES:%.asd=out/%.refines)
+demo: $(EXAMPLE_SOURCES:%.asd=out/webdemo/%.refines) $(DEMO_SOURCES:%.asd=out/webdemo/%.refines)
 
 asserts:
 	rm -rf out && mkdir out && ln -s ../examples ../webdemo ../templates ../$(DEPTH)/webdemo/asd out

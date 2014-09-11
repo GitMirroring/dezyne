@@ -397,6 +397,13 @@
 (define-class <csp-on> (<on>)
   (the-end :accessor .the-end :init-value #f :init-keyword :the-end))
 
+(define-class <csp-reply> (<reply>)
+  (context :accessor .context :init-form (list) :init-keyword :context))
+
+(define-method (display-slots (o <csp-reply>) port)
+  (sdisplay (.context o) port)
+  (next-method))
+
 (define-class <csp-return> (<return>)
   (context :accessor .context :init-form (list) :init-keyword :context))
 
@@ -430,6 +437,10 @@
        :context (cadr ast)
        :identifier name
        :arguments (csp->gom arguments)))
+    (('reply ('ctx context) expression)
+     (make <csp-reply>
+       :context (cadr ast)
+       :expression (csp->gom expression)))
     (('return ('ctx context) expression)
      (make <csp-return>
        :context (cadr ast)
@@ -613,6 +624,9 @@
           :recursive (.recursive o)
           :statement transformed)))
 
+(define-method (ast-transform- ast (o <reply>) return context)
+  (make <csp-reply> :context context :expression (.expression o)))
+
 (define-method (ast-transform- ast (o <return>) return context)
   (make <csp-return> :context context :expression (.expression o)))
 
@@ -700,10 +714,9 @@
                (transformed-end (csp-transform ast the-end inevitable-optional? channel provided-on? tail-recursive?)))
           (list IG? channel "?x:{" event-names "}" " ->\n" transformed transformed-end (if ig? "(STOP,<>)" ""))))
        (($ <expression>) src)
-       (($ <reply> expression)
-        (let* ((channel (or channel (if (is-a? model <interface>) model-name (.type (gom:port model)))))
-               (expression (csp-transform ast expression inevitable-optional? channel provided-on? tail-recursive?)))
-          (list "(\\ P',V' @ " channel "." expression " -> P'(V'))")))
+       (($ <csp-reply> expression context)
+        (let* ((channel (or channel (if (is-a? model <interface>) model-name (.type (gom:port model))))))
+        (list "reply_(" channel ", " "(\\ (" context ") @ " expression "))")))
        (($ <return>) "skip_")
        (($ <csp-return> #f context) "skip_")
        (($ <csp-return> ($ <expression> expression) context)
