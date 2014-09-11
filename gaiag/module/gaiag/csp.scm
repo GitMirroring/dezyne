@@ -731,8 +731,7 @@
         (list "callvoid_(\\ P',V' @ " identifier "(" contPV "))"))
 
        (($ <csp-call> identifier arguments context)
-        (let ((arguments (.elements arguments)))
-          (list "callvoid_(\\ P',V' @ " identifier "(" contPV ",(\\ (" context ") @ (" arguments "))(V')))")))
+        (list "callvoid_(\\ P',V' @ " identifier "(" contPV ",(\\ (" context ") @ (" arguments "))(V')))"))
 
        (($ <csp-if>)
         (let ((context (.context src))
