@@ -52,11 +52,7 @@
 
 (define-method (gom:map f (o <ast>))
   (define ((make-initializer o) name)
-    (let ((element (slot-ref o name)))
-      (list (symbol->keyword name)
-            (if (list? element)
-                (map (gom:map f) element)
-                (gom:map f element)))))
+    (list (symbol->keyword name) (gom:map f (slot-ref o name))))
   (f (let* ((class (class-of o))
             (slots (class-slots class))
             (names (map slot-definition-name slots))
