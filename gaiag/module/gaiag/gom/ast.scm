@@ -96,9 +96,15 @@
        :identifier identifier
        :arguments (ast->gom (or (null-is-#f arguments) '(arguments)))))
 
-;;    (('component) (make <component>))
+    (('component name ('ports ports ...) ('system sname ('compound body ...)))
+     (pretty-print body (current-error-port))
+     (make <system>
+       :name name
+       :ports (ast->gom- (or (null-is-#f (assoc 'ports body)) '(ports)))
+       :instances (make <instances> :elements (ast->gom- body))))
 
     (('component name body ...)
+     (pretty-print ast (current-error-port))
      (make <component>
        :name name
        :ports (ast->gom (or (null-is-#f (assoc 'ports body)) '(ports)))
