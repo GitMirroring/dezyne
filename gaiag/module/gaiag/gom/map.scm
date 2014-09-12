@@ -30,7 +30,30 @@
   :use-module (gaiag gom display)
   :use-module (gaiag gom ast)
 
-  :export (gom:for-each gom:map))
+  :export (
+           gom:clone
+           gom:for-each
+           gom:identity-initializer
+           gom:map
+           gom:map-initializer
+           ))
+
+(define (((gom:map-initializer f) o) name)
+  (list (symbol->keyword name) (gom:map f (slot-ref o name))))
+
+(define ((gom:identity-initializer o) name)
+  (gom:map-initializer identity))
+
+(define-method (gom:clone (o <ast>))
+  (gom:clone o gom:identity-initializer))
+
+(define-method (gom:clone (o <ast>) make-initializer)
+ (let* ((class (class-of o))
+        (slots (class-slots class))
+        (names (map slot-definition-name slots))
+        (initializers (map (make-initializer o) names))
+        (arguments (cons class (apply append initializers))))
+   (apply make arguments)))
 
 (define ((ref-slot o) name) (slot-ref o name))
 
@@ -51,14 +74,10 @@
 (define-method (gom:map f (o <list>)) (map (gom:map f) o))
 
 (define-method (gom:map f (o <ast>))
-  (define ((make-initializer o) name)
-    (list (symbol->keyword name) (gom:map f (slot-ref o name))))
-  (f (let* ((class (class-of o))
-            (slots (class-slots class))
-            (names (map slot-definition-name slots))
-            (initializers (map (make-initializer o) names))
-            (arguments (cons class (apply append initializers))))
-       (apply make arguments))))
+  (f (gom:clone o (gom:map-initializer f))))
+
+(define-method (gom:map f (o <ast>) make-initializer)
+  (f (gom:clone o make-initializer)))
 
 (define ((gom:collect class) ast)
   (let* ((collect '())
@@ -70,4 +89,4 @@
   ((gom:collect <variable>) ast))
 
 (define (gom:collect:functions ast)
-  ((gom:fcollect <variable>) ast))
+  ((gom:collect <variable>) ast))
