@@ -61,7 +61,7 @@ clean:
 test: check
 check: compile
 	./test.sh </dev/null
-	$(MAKE) csp asserts c++ demo pretty
+	$(MAKE) csp asserts c++ demo mangle pretty
 
 coverage: clean
 	@echo GUILE_LOAD_PATH=$(GUILE_LOAD_PATH)
@@ -261,7 +261,7 @@ mangle: compile
 	cd out && $(PWD)/gaiag -l csp examples/regression/argument2.asd
 	$(diff) baseline/argument2.csp out || true
 	@$(diff) baseline/argument2.csp out | diffstat || true
-	./gaiag -l manglex examples/regression/argument2.asd
+	./gaiag -l mangle examples/regression/argument2.asd
 	$(CSPMCHECKER) out/argument2.csp
 	@$(diff) baseline/argument2.csp out >/dev/null
 
