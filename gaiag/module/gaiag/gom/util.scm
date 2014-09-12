@@ -367,15 +367,3 @@
   (gom:parent (.statement o) t))
 
 (define (gom:name type) (cadr type)) ;; REMOVEME
-
-(define ((gom:collect class) ast)
-  (let* ((collect '())
-         (add (lambda (item) (set! collect (cons item collect)) collect)))
-    (gom:map (lambda (x) (if (is-a? x class) (add x)) x) ast)
-    collect))
-
-(define (gom:collect:variables ast) ;;this also gets locals
-  ((gom:collect <variable>) ast))
-
-(define (gom:collect:functions ast)
-  ((gom:collect <variable>) ast))
