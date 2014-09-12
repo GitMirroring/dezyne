@@ -295,7 +295,6 @@ alarm-legacy: alarm-gen
 BROKEN =\
  asdConcepts_Behaviour.asd\
  asdConcepts_Composition.asd\
- SystemComposition.asd\
  exampleLOPW.asd\
  Aap.asd\
  LOPW.asd\
