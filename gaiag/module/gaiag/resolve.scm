@@ -40,15 +40,6 @@
            gom:resolve
            ))
 
-;; TODO
-;; (define* ((ast:resolve-model model) src :optional (locals '()))
-;;   (let ((resolved ((ast:resolve-model- model) src locals)))
-;;     (and-let* (((supports-source-properties? src))
-;;                (loc (source-property src 'loc))
-;;                ((supports-source-properties? resolved)))
-;;               (set-source-property! resolved 'loc loc))
-;;     resolved))
-
 (define-method (ast:resolve (o <list>))
   ((compose gom:resolve ast->gom) o))
 
@@ -90,6 +81,14 @@
   (gom:resolve model o '()))
 
 (define-method (gom:resolve (model <model>) o locals)
+  (let ((resolved (gom:resolve- model o locals)))
+    (and-let* (((supports-source-properties? o))
+               (loc (source-property o 'loc))
+               ((supports-source-properties? resolved)))
+              (set-source-property! resolved 'loc loc))
+    resolved))
+
+(define-method (gom:resolve- (model <model>) o locals)
 
   (define (enum-type enum)
     (let ((name (.name enum)))
