@@ -54,15 +54,18 @@
            gom:filter
            gom:find-events
            gom:function
+           gom:function-names
            gom:functions
            gom:import
            gom:instance
            gom:in?
            gom:integers
            gom:interface
+           gom:interface-enums
            gom:interfaces
            gom:member-names
            gom:member-values
+           gom:models
            gom:name ;; REMOVEME
            gom:out?
            gom:parent
@@ -71,6 +74,7 @@
            gom:provides?
            gom:requires?
            gom:register
+           gom:register-model
            gom:statement
            gom:statements-of-type
            gom:system
@@ -147,6 +151,9 @@
      (gom:functions (gom:import (.type ast) ast->gom)))
     (_ (throw 'match-error  (format #f "~a:gom:functions: no match: ~a\n" (current-source-location) ast)))))
 
+(define (gom:function-names model)  ;; SYMBOL TABLE
+  (map .name (gom:functions (.behaviour model))))
+
 (define (gom:function ast identifier)  ;; use SYMBOL TABLE
   (find (lambda (f) (eq? (.name f) identifier))
         (match ast
@@ -161,6 +168,7 @@
     (($ <interface>) (gom:variables (.behaviour ast)))
     (($ <component>) (gom:variables (.behaviour ast)))
     (($ <gom:port>) (gom:variables (gom:import (.type ast) ast->gom)))
+    (#f '())
     (_ (throw 'match-error  (format #f "~a:gom:variables: no match: ~a\n" (current-source-location) ast)))))
 
 (define (gom:member-names model)  ;; SYMBOL TABLE
@@ -270,13 +278,22 @@
 (define (gom:booleans o)
   '())
 
-(define (gom:enums o)
-  (filter (is? <enum>) (.elements (.types o))))
-
 (define (gom:integers ast)
   (filter (is? <int>) (.elements (.types ast))))
 
-(define (gom:enums o)
+;;(define-method (gom:enums o) (filter (is? <enum>) (.elements (.types o))))
+
+(define-method (gom:interface-enums (o <interface>))
+  ((gom:filter <enum>) (.types o)))
+
+(define-method (gom:enums (o <interface>))
+  (append ((gom:filter <enum>) (.types o))
+          ((gom:filter <enum>) (.types (.behaviour o)))))
+
+(define-method (gom:enums (o <component>))
+  ((gom:filter <enum>) (.types (.behaviour o))))
+
+(define-method (gom:enums (o <behaviour>))
   ((gom:filter <enum>) (.types o)))
 
 (define-method (gom:model (o <component>)) o)
@@ -310,16 +327,16 @@
   (set! *ast-alist* (assoc-set! *ast-alist* name o))
   o)
 
-(define-method (register-model (o <model>))
+(define-method (gom:register-model (o <model>))
    (if (not (cached-model (.name o)))
       (cache-model (.name o) o))
   o)
 
 (define* ((gom:register transform) ast :optional (clear? #f))
-  (if clear?
-    (set! *ast-alist* '()))
   (let ((gom (transform ast)))
-    (for-each register-model (gom:models gom))
+    (if clear?
+        (set! *ast-alist* '()))
+    (for-each gom:register-model (gom:models gom))
     gom))
 
 (define* (read-ast name #:optional (transform (compose ast->gom ast:resolve)))
