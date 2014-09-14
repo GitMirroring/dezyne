@@ -51,9 +51,9 @@
 
 (define-method (normstate (o <ast>))
   ((compose
-    (gom:map aggregate-on)
-    (gom:map expand-on)
-    (gom:map* aggregate-guard)
+    aggregate-on
+    expand-on
+    aggregate-guard
     (gom:map* flatten-compound)
     (gom:map* combine-guards)
     (gom:map* passdown-on)
@@ -131,30 +131,29 @@
 (define-method (port-equal? (lhs <trigger>) (rhs <trigger>))
   (eq? (.port lhs) (.port rhs)))
 
-;; aggregate guard
-(define-method (aggregate-guard (o <top>)) o)
-
-(define-method (aggregate-guard (o <compound>))
+(define (aggregate-guard o)
   "Aggregate on-statements with matching guard into one guard."
 ;; find all ons with matching guards
 ;; push all ons into first guard, discard the rest
-  (let ((statements (.elements o)))
-      (match statements
-        ((($ <guard>) ...)
-         (make <compound>
-           :elements
-           (let loop ((guards statements))
-             (if ( null? guards)
-                 '()
-                 (receive (shared-guards remainder)
-                     (partition (lambda (x) (guard-equal? (car guards) x)) guards)
-                   (let* ((expression (.expression (car shared-guards)))
-                          (aggregated-guard
-                           (make <guard>
-                             :expression (.expression (car guards))
-                             :statement (wrap-compound-as-needed (map .statement shared-guards)))))
-                     (cons aggregated-guard (loop remainder))))))))
-        (_ o ))))
+  (match o
+    (($ <compound> (($ <guard>) ...))
+     (make <compound>
+       :elements
+       (let loop ((guards (.elements o)))
+         (if ( null? guards)
+             '()
+             (receive (shared-guards remainder)
+                 (partition (lambda (x) (guard-equal? (car guards) x)) guards)
+               (let* ((expression (.expression (car shared-guards)))
+                      (aggregated-guard
+                       (make <guard>
+                         :expression (.expression (car guards))
+                         :statement (wrap-compound-as-needed (map .statement shared-guards)))))
+                 (cons aggregated-guard (loop remainder))))))))
+     (($ <functions>) o)
+     ((? (is? <ast>)) (gom:map aggregate-guard o))
+     ((h t ...) (map aggregate-guard o))
+     (_ o)))
 
 (define-method (guard-equal? (lhs <guard>) (rhs <guard>))
   (equal? (gom->list (.expression lhs)) (gom->list (.expression rhs))))
