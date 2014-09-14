@@ -208,7 +208,7 @@
            declarative?
            dir-matches?
            direction
-           else
+           else-
            enum?
            enums
            event
@@ -342,7 +342,7 @@
            ((port) (member head '(provides requires)))
            ((trigger) (or (member head '(inevitable optional))
                           (eq? head type)))
-         (else (eq? head type))))))
+           (else (eq? head type))))))
 
 (define (action? ast) (type-helper? 'action ast))
 (define (argument-list? ast) (type-helper? 'arguments ast))
@@ -742,7 +742,7 @@
 (define (then ast)
   (caddr ast))
 
-(define (else ast)
+(define (else- ast)
   (if (> (length ast) 3) (cadddr ast) #f))
 
 (define (statement ast)
