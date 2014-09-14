@@ -51,7 +51,7 @@
 
 (define-method (normstate (o <ast>))
   ((compose
-    (gom:map* aggregate-on)
+    (gom:map aggregate-on)
     (gom:map* expand-on)
     (gom:map* aggregate-guard)
     (gom:map* flatten-compound)
@@ -64,32 +64,31 @@
 (define (normstate:gom ast)
   (ast:resolve ast))
 
-;; aggregate on
-(define-method (aggregate-on (o <top>)) o)
-
-(define-method (aggregate-on (o <compound>))
+(define (aggregate-on o)
   "Aggregate triggers with matching port and statement into one on-statement."
-;; find all ons with matching port and statement
-;; push all ons into first on, discard the rest
-  (let ((statements (.elements o)))
-      (match statements
-        ((($ <on>) ...)
-         (make <compound>
-           :elements
-         (let loop ((ons statements))
-           (if (null? ons)
-               '()
-               (receive (shared-ons remainder)
-                   (partition (lambda (x) (on-equal? (car ons) x)) ons)
-                 (let* ((triggers
-                         (apply append
-                                (map (compose .elements .triggers) shared-ons)))
-                        (statement (.statement (car ons)))
-                        (aggregated-on (make <on>
-                                         :triggers (make <triggers> :elements triggers)
-                                         :statement statement)))
-                   (cons aggregated-on (loop remainder))))))))
-        (_ o))))
+  ;; find all ons with matching port and statement
+  ;; push all ons into first on, discard the rest
+  (match o
+    (($ <compound> (($ <on>) ...))
+     (make <compound>
+       :elements
+       (let loop ((ons (.elements o)))
+         (if (null? ons)
+             '()
+             (receive (shared-ons remainder)
+                 (partition (lambda (x) (on-equal? (car ons) x)) ons)
+               (let* ((triggers
+                       (apply append
+                              (map (compose .elements .triggers) shared-ons)))
+                      (statement (.statement (car ons)))
+                      (aggregated-on (make <on>
+                                       :triggers (make <triggers> :elements triggers)
+                                       :statement statement)))
+                 (cons aggregated-on (loop remainder))))))))
+     (($ <functions>) o)
+     ((? (is? <ast>)) (gom:map aggregate-on o))
+     ((h t ...) (map aggregate-on o))
+     (_ o)))
 
 (define-method (on-equal? (lhs <on>) (rhs <on>))
   "On-statements LHS and RHS share the same statement and port."
