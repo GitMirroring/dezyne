@@ -47,8 +47,9 @@
   :export (ast-> normstate))
 
 (define (normstate ast)
-  (let ((gom (normstate:gom ast) ;;((gom:register normstate:gom) ast #t)
-         ))
+  (let ((gom (normstate:gom ast))
+        ;;(gom ((gom:register normstate:gom) ast #t))
+        )
     ((compose
       (gom:map aggregate-on)
       (gom:map expand-on)
@@ -66,17 +67,17 @@
   ((compose ast->gom ast:resolve) ast))
 
 ;; aggregate on
-(define-method (aggregate-on (o <top>)) #f)
+(define-method (aggregate-on (o <top>)) o)
 
 (define-method (aggregate-on (o <compound>))
   "Aggregate triggers with matching port and statement into one on-statement."
 ;; find all ons with matching port and statement
 ;; push all ons into first on, discard the rest
   (let ((statements (.elements o)))
-    (make <compound>
-      :elements
       (match statements
         ((($ <on>) ...)
+         (make <compound>
+           :elements
          (let loop ((ons statements))
            (if (null? ons)
                '()
@@ -89,8 +90,8 @@
                         (aggregated-on (make <on>
                                          :triggers (make <triggers> :elements triggers)
                                          :statement statement)))
-                   (cons aggregated-on (loop remainder)))))))
-        (_ (map (gom:map aggregate-on) statements))))))
+                   (cons aggregated-on (loop remainder))))))))
+        (_ o))))
 
 (define-method (on-equal? (lhs <on>) (rhs <on>))
   "On-statements LHS and RHS share the same statement and port."
@@ -108,15 +109,15 @@
   (equal? lhs rhs))
 
 ;; expand on
-(define-method (expand-on (o <top>)) #f)
+(define-method (expand-on (o <top>)) o)
 
 (define-method (expand-on (o <compound>))
   (let ((statements (.elements o)))
-    (make <compound>
-      :elements
-      (match statements
-        ((($ <on>) ...) (apply append (map port-split-triggers statements)))
-        (_ (map (gom:map expand-on) statements))))))
+    (match statements
+      ((($ <on>) ...)
+       (make <compound>
+         :elements (apply append (map port-split-triggers statements))))
+       (_ o))))
 
 (define-method (port-split-triggers (o <top>)) o)
 
@@ -136,30 +137,29 @@
   (eq? (.port lhs) (.port rhs)))
 
 ;; aggregate guard
-(define-method (aggregate-guard (o <top>)) #f)
+(define-method (aggregate-guard (o <top>)) o)
 
 (define-method (aggregate-guard (o <compound>))
   "Aggregate on-statements with matching guard into one guard."
 ;; find all ons with matching guards
 ;; push all ons into first guard, discard the rest
   (let ((statements (.elements o)))
-  (match statements
-    ((($ <on>) ...) o)
-    ((($ <guard>) ...)
-     (make <compound>
-       :elements
-       (let loop ((guards statements))
-         (if ( null? guards)
-             '()
-             (receive (shared-guards remainder)
-                 (partition (lambda (x) (guard-equal? (car guards) x)) guards)
-               (let* ((expression (.expression (car shared-guards)))
-                      (aggregated-guard
-                       (make <guard>
-                         :expression (.expression (car guards))
-                         :statement (wrap-compound-as-needed (map .statement shared-guards)))))
-                 (cons aggregated-guard (loop remainder))))))))
-    (_ o))))
+      (match statements
+        ((($ <guard>) ...)
+         (make <compound>
+           :elements
+           (let loop ((guards statements))
+             (if ( null? guards)
+                 '()
+                 (receive (shared-guards remainder)
+                     (partition (lambda (x) (guard-equal? (car guards) x)) guards)
+                   (let* ((expression (.expression (car shared-guards)))
+                          (aggregated-guard
+                           (make <guard>
+                             :expression (.expression (car guards))
+                             :statement (wrap-compound-as-needed (map .statement shared-guards)))))
+                     (cons aggregated-guard (loop remainder))))))))
+        (_ o ))))
 
 (define-method (guard-equal? (lhs <guard>) (rhs <guard>))
   (equal? (gom->list (.expression lhs)) (gom->list (.expression rhs))))
@@ -170,20 +170,20 @@
       (car statements)))
 
 ;; flatten-compound
-(define-method (flatten-compound (o <top>)) #f)
+(define-method (flatten-compound (o <top>)) o)
 
 (define-method (flatten-compound (o <compound>))
   (make <compound>
     :elements (apply append (map flatten-compound-compound (.elements o)))))
 
 (define-method (flatten-compound-compound (o <top>))
-  (let ((result (gom:map o flatten-compound)))
+  (let ((result (gom:map flatten-compound o)))
     (match result
       (($ <compound> statements) statements)
       (_ (list result)))))
 
 ;; combine guards
-(define-method (combine-guards (o <top>)) #f)
+(define-method (combine-guards (o <top>)) o)
 
 (define-method (combine-guards (o <guard>))
   ((passdown-guard (.expression o)) (.statement o)))
@@ -205,8 +205,7 @@
   (make <compound> :elements (map (passdown-guard expression) (.elements o))))
 
 ;;; passdown-on
-(define-method (passdown-on (o <top>))
-  #f)
+(define-method (passdown-on (o <top>)) o)
 
 (define-method (passdown-on (o <on>))
   ((passdown-triggers (.triggers o)) (.statement o)))
@@ -233,20 +232,18 @@
 (define-method (remove-otherwise (statements <list>))
   (lambda (o) (remove-otherwise o statements)))
 
-(define-method (remove-otherwise (o <top>) (statements <list>)) #f)
+(define-method (remove-otherwise (o <top>) (statements <list>)) o)
 
 (define-method (remove-otherwise (o <guard>) (statements <list>))
   (let ((expression (.expression o)))
     (match expression
-      (($ <otherwise>)
-       (make <guard>
-         :expression (guards-not-or statements)
-         :statement (gom:map (.statement o) (remove-otherwise '()))))
-      (_
-       (make <guard>
-         :expression (.expression o)
-         :statement
-         (gom:map (.statement o) (remove-otherwise statements)))))))
+      (($ <otherwise>) (=> failure)
+       (if (null? statements)
+           (failure)
+           (make <guard>
+             :expression (guards-not-or statements)
+             :statement (gom:map (remove-otherwise '()) (.statement o)))))
+      (_ o))))
 
 (define-method (remove-otherwise (o <compound>) (statements <list>))
   (make <compound>
@@ -259,8 +256,7 @@
     (make <expression>
       :value (list '! (reduce (lambda (g0 g1) (list 'or g0 g1)) '() values)))))
 
-
-(define-method (add-skip (o <ast>)) #f)
+(define-method (add-skip (o <top>)) o)
 
 (define-method (add-skip (o <compound>))
   (if (null? (.elements o))

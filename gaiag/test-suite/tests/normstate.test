@@ -30,218 +30,278 @@
   :use-module (gaiag gom))
 
 (pass-if "normstate-first-dummy-test"
-	 #t)
+         #t)
 
 (pass-if "normstate-101"
-  (gom-pretty-noisy-equal?
-   (normstate
-    (ast:interface (asd->ast
-      #{
-        interface i { behaviour { on a: [true] { } } } #})))
-   '(interface i (types) (events)
-               (behaviour #f (types) (variables) (functions)
-                          (compound
-                           (guard (expression true) (on (triggers (trigger #f a)) (skip))))))))
+         (gom-pretty-noisy-equal?
+          (normstate
+           (ast:interface (asd->ast
+                           #{
+                             interface i { behaviour { on a: [true] { } } } #})))
+          '(interface i (types) (events)
+                      (behaviour #f (types) (variables) (functions)
+                                 (compound
+                                  (guard (expression true) (on (triggers (trigger #f a)) (skip))))))))
 
 (pass-if "normstate-102"
-  (gom-pretty-noisy-equal?
-   (normstate
-    (ast:interface (asd->ast
-      #{
-        interface i { behaviour { on a: [true] b;
-                                     } } #})))
-   '(interface i (types) (events)
-               (behaviour #f (types) (variables) (functions)
-                          (compound
-                           (guard (expression true)
-                                  (on (triggers (trigger #f a))
-                                      (action (trigger #f b)))))))))
+         (gom-pretty-noisy-equal?
+          (normstate
+           (ast:interface (asd->ast
+                           #{
+                             interface i { behaviour { on a: [true] b;
+                                                          } } #})))
+          '(interface i (types) (events)
+                      (behaviour #f (types) (variables) (functions)
+                                 (compound
+                                  (guard (expression true)
+                                         (on (triggers (trigger #f a))
+                                             (action (trigger #f b)))))))))
 
 (pass-if "normstate-aggregate-guard-passive"
-  (gom-pretty-noisy-equal?
-   (normstate
-    (ast:interface (asd->ast
-      #{
-        interface i { behaviour { on a,b,c: [true] d;
-                                     } } #})))
-   '(interface i (types) (events)
-               (behaviour #f (types) (variables) (functions)
-                          (compound
-                           (guard (expression true)
-                                  (on (triggers (trigger #f a) (trigger #f b) (trigger #f c))
-                                      (action (trigger #f d)))))))))
+         (gom-pretty-noisy-equal?
+          (normstate
+           (ast:interface (asd->ast
+                           #{
+                             interface i { behaviour { on a,b,c: [true] d;
+                                                          } } #})))
+          '(interface i (types) (events)
+                      (behaviour #f (types) (variables) (functions)
+                                 (compound
+                                  (guard (expression true)
+                                         (on (triggers (trigger #f a) (trigger #f b) (trigger #f c))
+                                             (action (trigger #f d)))))))))
 
 (pass-if "normstate-aggregate-guard-active"
-  (gom-pretty-noisy-equal?
-   (normstate
-    (ast:interface (asd->ast
-      #{
-        interface i { behaviour { on a: [true] d;
-                                     on b: [true] e;
-                                     on c: [true] f;
-                                     } } #})))
-   '(interface i (types) (events)
-               (behaviour #f (types) (variables) (functions)
-                          (compound
-                           (guard (expression true)
-                                  (compound
-                                   (on (triggers (trigger #f a)) (action (trigger #f d)))
-                                   (on (triggers (trigger #f b)) (action (trigger #f e)))
-                                   (on (triggers (trigger #f c)) (action (trigger #f f))))))))))
+         (gom-pretty-noisy-equal?
+          (normstate
+           (ast:interface (asd->ast
+                           #{
+                             interface i { behaviour { on a: [true] d;
+                                                          on b: [true] e;
+                                                          on c: [true] f;
+                                                          } } #})))
+          '(interface i (types) (events)
+                      (behaviour #f (types) (variables) (functions)
+                                 (compound
+                                  (guard (expression true)
+                                         (compound
+                                          (on (triggers (trigger #f a)) (action (trigger #f d)))
+                                          (on (triggers (trigger #f b)) (action (trigger #f e)))
+                                          (on (triggers (trigger #f c)) (action (trigger #f f))))))))))
+
+(pass-if "normstate-aggregate-guard-recurse"
+         (gom-pretty-noisy-equal?
+          (normstate
+           '((guard
+              (expression (field state Disarming))
+              (compound
+               (on (triggers
+                    (trigger console arm)
+                    (trigger console disarm))
+                   (illegal))
+               (on (triggers (trigger sensor triggered))
+                   (compound))
+               (on (triggers (trigger sensor disabled))
+                   (compound
+                    (guard
+                     (expression (var sounding))
+                     (compound
+                      (action (trigger console deactivated))
+                      (action (trigger siren turnoff))
+                      (assign
+                       state
+                       (expression (literal #f States Disarmed)))
+                      (assign sounding (expression false))))
+                    (guard
+                     (otherwise otherwise)
+                     (compound
+                      (action (trigger console deactivated))
+                      (assign
+                       state
+                       (expression
+                        (literal #f States Disarmed)))))))))))
+          '((guard
+             (expression (field state Disarming))
+             (compound
+              (on (triggers
+                   (trigger console arm)
+                   (trigger console disarm))
+                  (illegal))
+              (on (triggers (trigger sensor triggered))
+                  (compound))
+              (on (triggers (trigger sensor disabled))
+                  (compound
+                   (guard
+                    (expression (var sounding))
+                    (compound
+                     (action (trigger console deactivated))
+                     (action (trigger siren turnoff))
+                     (assign
+                      state
+                      (expression (literal #f States Disarmed)))
+                     (assign sounding (expression false))))
+                   (guard
+                    (otherwise otherwise)
+                    (compound
+                     (action (trigger console deactivated))
+                     (assign
+                      state
+                      (expression (literal #f States Disarmed))))))))))))
+
 
 (pass-if "normstate-function-call"
-  (gom-pretty-noisy-equal?
-   (normstate
-    (ast:interface (asd->ast
-      #{
-        interface i { behaviour { void foo(){ if(true){}} on a,b,c: [true] d ;
-                                                 } } #})))
-   '(interface i (types) (events)
-               (behaviour #f
-                          (types)
-                          (variables)
-                          (functions
-                           (function foo (signature (type void)) #f
-                                     (compound (if (expression true) (skip)))))
-                          (compound
-                           (guard (expression true)
-                                  (on (triggers (trigger #f a) (trigger #f b) (trigger #f c))
-                                      (action (trigger #f d)))))))))
+         (gom-pretty-noisy-equal?
+          (normstate
+           (ast:interface (asd->ast
+                           #{
+                             interface i { behaviour { void foo(){ if(true){}} on a,b,c: [true] d ;
+                                                            } } #})))
+          '(interface i (types) (events)
+                      (behaviour #f
+                                 (types)
+                                 (variables)
+                                 (functions
+                                  (function foo (signature (type void)) #f
+                                            (compound (if (expression true) (skip)))))
+                                 (compound
+                                  (guard (expression true)
+                                         (on (triggers (trigger #f a) (trigger #f b) (trigger #f c))
+                                             (action (trigger #f d)))))))))
 
 (pass-if "normstate-split-on-passive"
-  (gom-pretty-noisy-equal?
-   (normstate
-    (ast:interface (asd->ast
-      #{
-        interface i { behaviour { on a,b,c: [true] d;
-                                     } } #})))
-   '(interface i (types) (events)
-               (behaviour #f (types) (variables) (functions)
-                          (compound
-                           (guard (expression true)
-                                  (on (triggers (trigger #f a) (trigger #f b) (trigger #f c))
-                                      (action (trigger #f d)))))))))
+         (gom-pretty-noisy-equal?
+          (normstate
+           (ast:interface (asd->ast
+                           #{
+                             interface i { behaviour { on a,b,c: [true] d;
+                                                          } } #})))
+          '(interface i (types) (events)
+                      (behaviour #f (types) (variables) (functions)
+                                 (compound
+                                  (guard (expression true)
+                                         (on (triggers (trigger #f a) (trigger #f b) (trigger #f c))
+                                             (action (trigger #f d)))))))))
 
 (pass-if "normstate-split-on-active"
-  (gom-pretty-noisy-equal?
-   (normstate
-    (ast:component (asd->ast
-      #{
-        component c { behaviour { on i.a,i.b,j.a: [true] d;
-                                     on j.b: [true] e;
-                                     } } #})))
-   '(component c (ports)
-               (behaviour #f (types) (variables) (functions)
-                          (compound
-                           (guard (expression true)
-                                  (compound
-                                   (on (triggers (trigger i a) (trigger i b))
-                                       (action (trigger #f d)))
-                                   (on (triggers (trigger j a))
-                                       (action (trigger #f d)))
-                                   (on (triggers (trigger j b))
-                                       (action (trigger #f e))))))))))
+         (gom-pretty-noisy-equal?
+          (normstate
+           (ast:component (asd->ast
+                           #{
+                             component c { behaviour { on i.a,i.b,j.a: [true] d;
+                                                          on j.b: [true] e;
+                                                          } } #})))
+          '(component c (ports)
+                      (behaviour #f (types) (variables) (functions)
+                                 (compound
+                                  (guard (expression true)
+                                         (compound
+                                          (on (triggers (trigger i a) (trigger i b))
+                                              (action (trigger #f d)))
+                                          (on (triggers (trigger j a))
+                                              (action (trigger #f d)))
+                                          (on (triggers (trigger j b))
+                                              (action (trigger #f e))))))))))
 
 (pass-if "normstate-aggregate-on-interface-passive"
-  (gom-pretty-noisy-equal?
-   (normstate
-    (ast:interface (asd->ast
-      #{
-        interface i { behaviour { on a,b,c: [true] d;
-                                     } } #})))
-   '(interface i (types) (events)
-               (behaviour #f (types) (variables) (functions)
-                          (compound
-                           (guard (expression true)
-                                  (on (triggers (trigger #f a) (trigger #f b) (trigger #f c)) (action (trigger #f d)))))))))
+         (gom-pretty-noisy-equal?
+          (normstate
+           (ast:interface (asd->ast
+                           #{
+                             interface i { behaviour { on a,b,c: [true] d;
+                                                          } } #})))
+          '(interface i (types) (events)
+                      (behaviour #f (types) (variables) (functions)
+                                 (compound
+                                  (guard (expression true)
+                                         (on (triggers (trigger #f a) (trigger #f b) (trigger #f c)) (action (trigger #f d)))))))))
 
 (pass-if "normstate-aggregate-on-interface-active"
-  (gom-pretty-noisy-equal?
-   (normstate
-    (ast:interface (asd->ast
-      #{
-        interface i { behaviour { on a: [true] d;
-                                  on b: [true] d;
-                                  on c: [true] d;
-                                     } } #})))
-   '(interface i (types) (events)
-               (behaviour #f (types) (variables) (functions)
-                          (compound
-                           (guard (expression true)
-                                  (compound
-                                   (on (triggers (trigger #f a) (trigger #f b) (trigger #f c)) (action (trigger #f d))))))))))
+         (gom-pretty-noisy-equal?
+          (normstate
+           (ast:interface (asd->ast
+                           #{
+                             interface i { behaviour { on a: [true] d;
+                                                          on b: [true] d;
+                                                          on c: [true] d;
+                                                          } } #})))
+          '(interface i (types) (events)
+                      (behaviour #f (types) (variables) (functions)
+                                 (compound
+                                  (guard (expression true)
+                                         (compound
+                                          (on (triggers (trigger #f a) (trigger #f b) (trigger #f c)) (action (trigger #f d))))))))))
 
 ;; not modifying the input where it is already fine,
 ;; helps retaining more location information in AST.
 (pass-if "normstate-aggregate-on-component-passive"
-  (gom-pretty-noisy-equal?
-   (normstate
-    (ast:component (asd->ast
-      #{
-        component c { behaviour { on i.a,i.b: [true] d;
-                                  on j.a:     [true] d;
-                                  on j.b:     [true] e;
-                                     } } #})))
-   '(component c (ports)
-               (behaviour #f (types) (variables) (functions)
-                          (compound
-                           (guard (expression true)
-                                  (compound
-                                   (on (triggers (trigger i a) (trigger i b))
-                                       (action (trigger #f d)))
-                                   (on (triggers (trigger j a))
-                                       (action (trigger #f d)))
-                                   (on (triggers (trigger j b))
-                                       (action (trigger #f e))))))))))
+         (gom-pretty-noisy-equal?
+          (normstate
+           (ast:component (asd->ast
+                           #{
+                             component c { behaviour { on i.a,i.b: [true] d;
+                                                          on j.a:     [true] d;
+                                                          on j.b:     [true] e;
+                                                          } } #})))
+          '(component c (ports)
+                      (behaviour #f (types) (variables) (functions)
+                                 (compound
+                                  (guard (expression true)
+                                         (compound
+                                          (on (triggers (trigger i a) (trigger i b))
+                                              (action (trigger #f d)))
+                                          (on (triggers (trigger j a))
+                                              (action (trigger #f d)))
+                                          (on (triggers (trigger j b))
+                                              (action (trigger #f e))))))))))
 
 (pass-if "normstate-aggregate-on-component-active"
-  (gom-pretty-noisy-equal?
-   (normstate
-    (ast:component (asd->ast
-      #{
-        component c { behaviour { on i.a: [true] d;
-                                  on i.b: [true] d;
-                                  on j.a: [true] d;
-                                  on j.b: [true] e;
-                                     } } #})))
-   '(component c (ports)
-               (behaviour #f (types) (variables) (functions)
-                          (compound
-                           (guard (expression true)
-                                  (compound
-                                   (on (triggers (trigger i a) (trigger i b))
-                                       (action (trigger #f d)))
-                                   (on (triggers (trigger j a))
-                                       (action (trigger #f d)))
-                                   (on (triggers (trigger j b))
-                                       (action (trigger #f e))))))))))
+         (gom-pretty-noisy-equal?
+          (normstate
+           (ast:component (asd->ast
+                           #{
+                             component c { behaviour { on i.a: [true] d;
+                                                          on i.b: [true] d;
+                                                          on j.a: [true] d;
+                                                          on j.b: [true] e;
+                                                          } } #})))
+          '(component c (ports)
+                      (behaviour #f (types) (variables) (functions)
+                                 (compound
+                                  (guard (expression true)
+                                         (compound
+                                          (on (triggers (trigger i a) (trigger i b))
+                                              (action (trigger #f d)))
+                                          (on (triggers (trigger j a))
+                                              (action (trigger #f d)))
+                                          (on (triggers (trigger j b))
+                                              (action (trigger #f e))))))))))
 
 (pass-if "normstate-flatten-compound"
          (gom-pretty-noisy-equal?
           ((compose (@@ (gaiag normstate) flatten-compound)
                     (@@ (gaiag normstate) normstate:gom))
-            '(compound
-              (compound
-               (guard (expression (value state Disarmed))
-                      (on (triggers (trigger console arm))
-                          (compound
-                           (action (trigger sensor enable))
-                           (assign state (expression (value States Armed))))))
-               (guard (expression (value state Disarmed))
-                      (on (triggers
-                           (trigger console disarm)
-                           (trigger sensor triggered)
-                           (trigger sensor disabled))
-                          (illegal))))
-              (compound
-               (guard (expression (value state Armed))
-                      (on (triggers (trigger console arm)) (illegal))))))
+           '(compound
+             (compound
+              (guard (expression (value state Disarmed))
+                     (on (triggers (trigger console arm))
+                         (compound
+                          (action (trigger sensor enable))
+                          (assign state (expression (value States Armed))))))
+              (guard (expression (value state Disarmed))
+                     (on (triggers
+                          (trigger console disarm)
+                          (trigger sensor triggered)
+                          (trigger sensor disabled))
+                         (illegal))))
+             (compound
+              (guard (expression (value state Armed))
+                     (on (triggers (trigger console arm)) (illegal))))))
           '(compound
             (guard (expression (value state Disarmed))
                    (on (triggers (trigger console arm))
                        (compound
-                          (action (trigger sensor enable))
-                          (assign state (expression (value States Armed))))))
+                        (action (trigger sensor enable))
+                        (assign state (expression (value States Armed))))))
             (guard (expression (value state Disarmed))
                    (on (triggers
                         (trigger console disarm)
@@ -252,72 +312,72 @@
                    (on (triggers (trigger console arm)) (illegal))))))
 
 (pass-if "normstate-aggregate-on-component-active"
-  (gom-pretty-noisy-equal?
-   (normstate
-    '(compound
-      (compound
-       (guard (expression (value state Disarmed))
+         (gom-pretty-noisy-equal?
+          (normstate
+           '(compound
+             (compound
+              (guard (expression (value state Disarmed))
+                     (on (triggers (trigger console arm))
+                         (compound
+                          (action (trigger sensor enable))
+                          (assign state (expression (value States Armed))))))
+              (guard (expression (value state Disarmed))
+                     (on (triggers
+                          (trigger console disarm)
+                          (trigger sensor triggered)
+                          (trigger sensor disabled))
+                         (illegal))))
+             (compound
+              (guard (expression (value state Armed))
+                     (on (triggers (trigger console arm)) (illegal))))))
+          '(compound
+            (guard
+             (expression (value state Disarmed))
+             (compound
               (on (triggers (trigger console arm))
                   (compound
                    (action (trigger sensor enable))
-                   (assign state (expression (value States Armed))))))
-       (guard (expression (value state Disarmed))
+                   (assign
+                    state
+                    (expression (value States Armed)))))
+              (on (triggers (trigger console disarm))
+                  (illegal))
               (on (triggers
-                   (trigger console disarm)
                    (trigger sensor triggered)
                    (trigger sensor disabled))
                   (illegal))))
-      (compound
-         (guard (expression (value state Armed))
-                (on (triggers (trigger console arm)) (illegal))))))
-   '(compound
-     (guard
-      (expression (value state Disarmed))
-      (compound
-       (on (triggers (trigger console arm))
-           (compound
-            (action (trigger sensor enable))
-            (assign
-             state
-             (expression (value States Armed)))))
-       (on (triggers (trigger console disarm))
-           (illegal))
-       (on (triggers
-            (trigger sensor triggered)
-            (trigger sensor disabled))
-           (illegal))))
-     (guard
-      (expression (value state Armed))
-      (on (triggers (trigger console arm))
-          (illegal))))))
+            (guard
+             (expression (value state Armed))
+             (on (triggers (trigger console arm))
+                 (illegal))))))
 
 (pass-if "normstate-passdown-on"
          (gom-pretty-noisy-equal?
-          ((compose (map-statements (@@ (gaiag normstate) passdown-on))
+          ((compose (gom:map (@@ (gaiag normstate) passdown-on))
                     (@@ (gaiag normstate) normstate:gom))
            '(guard (expression (value state Disarming))
-              (compound
-                (on (triggers
-                      (trigger console arm)
-                      (trigger console disarm))
-                    (illegal))
-                (on (triggers (trigger sensor triggered)) (skip))
-                (on (triggers (trigger sensor disabled))
-                    (compound
-                      (guard (expression sounding)
-                             (compound
-                               (action (trigger console deactivated))
-                               (action (trigger siren turnoff))
-                               (assign
-                                 state
-                                 (expression (value States Disarmed)))
-                               (assign sounding (expression false))))
-                      (guard (expression (! sounding))
-                             (compound
-                               (action (trigger console deactivated))
-                               (assign
-                                 state
-                                 (expression (value States Disarmed))))))))))
+                   (compound
+                    (on (triggers
+                         (trigger console arm)
+                         (trigger console disarm))
+                        (illegal))
+                    (on (triggers (trigger sensor triggered)) (skip))
+                    (on (triggers (trigger sensor disabled))
+                        (compound
+                         (guard (expression sounding)
+                                (compound
+                                 (action (trigger console deactivated))
+                                 (action (trigger siren turnoff))
+                                 (assign
+                                  state
+                                  (expression (value States Disarmed)))
+                                 (assign sounding (expression false))))
+                         (guard (expression (! sounding))
+                                (compound
+                                 (action (trigger console deactivated))
+                                 (assign
+                                  state
+                                  (expression (value States Disarmed))))))))))
 
           '(guard (expression (value state Disarming))
                   (compound
@@ -345,99 +405,36 @@
                                  (expression (value States Disarmed)))))))))))
 
 (pass-if "normstate-remove-otherwise"
-  (gom-pretty-noisy-equal?
-   ((compose ((@@ (gaiag normstate) remove-otherwise) '())
-             (@@ (gaiag normstate) normstate:gom))
-    '(compound
-      (guard (expression sounding)
-             (compound
-              (action (trigger console deactivated))
-              (action (trigger siren turnoff))
-              (assign
-               state
-               (expression (value States Disarmed)))
-              (assign sounding (expression false))))
-      (guard (otherwise)
-             (compound
-              (action (trigger console deactivated))
-              (assign
-               state
-               (expression (value States Disarmed)))))))
-   '(compound
-     (guard (expression sounding)
-            (compound
-             (action (trigger console deactivated))
-             (action (trigger siren turnoff))
-             (assign
-              state
-              (expression (value States Disarmed)))
-             (assign sounding (expression false))))
-     (guard (expression (! sounding))
-            (compound
-             (action (trigger console deactivated))
-             (assign
-              state
-              (expression (value States Disarmed))))))))
-
-(pass-if "normstate-aggregate-guard-recurse"
-  (gom-pretty-noisy-equal?
-   (normstate
-    '(guard
-      (expression (field state Disarming))
-      (compound
-       (on (triggers
-            (trigger console arm)
-            (trigger console disarm))
-           (illegal))
-       (on (triggers (trigger sensor triggered))
-           (compound))
-       (on (triggers (trigger sensor disabled))
-           (compound
-            (guard
-             (expression (var sounding))
-             (compound
-              (action (trigger console deactivated))
-              (action (trigger siren turnoff))
-              (assign
-               state
-               (expression (literal #f States Disarmed)))
-              (assign sounding (expression false))))
-            (guard
-             (otherwise)
-             (compound
-              (action (trigger console deactivated))
-              (assign
-               state
-               (expression
-                (literal #f States Disarmed))))))))))
-   '(compound
-     (guard
-      (expression (field state Disarming))
-      (compound
-       (on (triggers
-            (trigger console arm)
-            (trigger console disarm))
-           (illegal))
-       (on (triggers (trigger sensor triggered))
-           (skip))))
-     (guard
-      (expression
-       (and (field state Disarming) (var sounding)))
-      (on (triggers (trigger sensor disabled))
-          (compound
-           (action (trigger console deactivated))
-           (action (trigger siren turnoff))
-           (assign
-            state
-            (expression (literal #f States Disarmed)))
-           (assign sounding (expression false)))))
-     (guard
-      (expression
-       (and (field state Disarming)
-            (! (var sounding))))
-      (on (triggers (trigger sensor disabled))
-          (compound
-           (action (trigger console deactivated))
-           (assign
-            state
-            (expression (literal #f States Disarmed)))))))))
+         (gom-pretty-noisy-equal?
+          ((compose ((@@ (gaiag normstate) remove-otherwise) '())
+                    (@@ (gaiag normstate) normstate:gom))
+           '(compound
+             (guard (expression sounding)
+                    (compound
+                     (action (trigger console deactivated))
+                     (action (trigger siren turnoff))
+                     (assign
+                      state
+                      (expression (value States Disarmed)))
+                     (assign sounding (expression false))))
+             (guard (otherwise)
+                    (compound
+                     (action (trigger console deactivated))
+                     (assign
+                      state
+                      (expression (value States Disarmed)))))))
+          '(compound
+            (guard (expression sounding)
+                   (compound
+                    (action (trigger console deactivated))
+                    (action (trigger siren turnoff))
+                    (assign
+                     state
+                     (expression (value States Disarmed)))
+                    (assign sounding (expression false))))
+            (guard (expression (! sounding))
+                   (compound
+                    (action (trigger console deactivated))
+                    (assign
+                     state
+                     (expression (value States Disarmed))))))))
