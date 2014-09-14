@@ -102,6 +102,7 @@
            <trigger>
            <triggers>
            <types>
+           <value>
            <var>
            <variable>
            <variables>
@@ -163,6 +164,10 @@
   (identifier :accessor .identifier :init-value #f :init-keyword :identifier)
   (field :accessor .field :init-value #f :init-keyword :field))
 
+(define-class <value> (<ast>)
+  (type :accessor .type :init-value #f :init-keyword :type)
+  (field :accessor .field :init-value #f :init-keyword :field))
+
 (define-class <literal> (<ast>)
   (scope :accessor .scope :init-value #f :init-keyword :scope)
   (type :accessor .type :init-value #f :init-keyword :type)
@@ -186,8 +191,8 @@
 
 (define-class <system> (<model>)
   (ports :accessor .ports :init-form (make <ports>) :init-keyword :ports)
-  (instances :accessor .instances :init-value (make <instances>) :init-keyword :instances)
-  (bindings :accessor .bindings :init-value (make <bindings>) :init-keyword :bindings))
+  (instances :accessor .instances :init-form (make <instances>) :init-keyword :instances)
+  (bindings :accessor .bindings :init-form (make <bindings>) :init-keyword :bindings))
 
 (define-class <enum> (<named>)
   (fields :accessor .fields :init-form (list) :init-keyword :fields))
