@@ -113,41 +113,44 @@
                        (expression (literal #f States Disarmed)))
                       (assign sounding (expression false))))
                     (guard
-                     (otherwise otherwise)
+                     (otherwise)
                      (compound
                       (action (trigger console deactivated))
                       (assign
                        state
                        (expression
                         (literal #f States Disarmed)))))))))))
-          '((guard
-             (expression (field state Disarming))
-             (compound
-              (on (triggers
-                   (trigger console arm)
-                   (trigger console disarm))
-                  (illegal))
-              (on (triggers (trigger sensor triggered))
-                  (compound))
+          '((compound
+             (guard
+              (expression (field state Disarming))
+              (compound
+               (on (triggers
+                    (trigger console arm)
+                    (trigger console disarm))
+                   (illegal))
+               (on (triggers (trigger sensor triggered))
+                   (skip))))
+             (guard
+              (expression
+               (and (field state Disarming) (var sounding)))
               (on (triggers (trigger sensor disabled))
                   (compound
-                   (guard
-                    (expression (var sounding))
-                    (compound
-                     (action (trigger console deactivated))
-                     (action (trigger siren turnoff))
-                     (assign
-                      state
-                      (expression (literal #f States Disarmed)))
-                     (assign sounding (expression false))))
-                   (guard
-                    (otherwise otherwise)
-                    (compound
-                     (action (trigger console deactivated))
-                     (assign
-                      state
-                      (expression (literal #f States Disarmed))))))))))))
-
+                   (action (trigger console deactivated))
+                   (action (trigger siren turnoff))
+                   (assign
+                    state
+                    (expression (literal #f States Disarmed)))
+                   (assign sounding (expression false)))))
+             (guard
+              (expression
+               (and (field state Disarming)
+                    (! (var sounding))))
+              (on (triggers (trigger sensor disabled))
+                  (compound
+                   (action (trigger console deactivated))
+                   (assign
+                    state
+                    (expression (literal #f States Disarmed))))))))))
 
 (pass-if "normstate-function-call"
          (gom-pretty-noisy-equal?
