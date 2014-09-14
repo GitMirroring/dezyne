@@ -18,12 +18,8 @@
 
 (read-set! keywords 'prefix)
 
-(define (std-renamer lst)
-  (lambda (x) (case x ((<gom:parameter>) '<std:parameter>) ((<port>) '<std:port>) (else x))))
-
 (define-module (gaiag gom gom)
   :use-module (oop goops)
-;;  :use-module ((oop goops) :renamer (std-renamer '(port parameter)))
   :export (
            .arguments
            .behaviour
@@ -89,11 +85,12 @@
            <interface>
            <literal>
            <model>
+           <named>
            <on>
            <otherwise>
            <gom:parameter>
            <parameters>
-           <port>
+           <gom:port>
            <ports>
            <range>
            <reply>
@@ -146,7 +143,7 @@
   (behaviour :accessor .behaviour :init-value #f :init-keyword :behaviour))
 
 (define-class <event> (<dir-ast>))
-(define-class <port> (<dir-ast>))
+(define-class <gom:port> (<dir-ast>))
 
 (define-class <trigger> (<ast>)
   (port :accessor .port :init-value #f :init-keyword :port)

@@ -143,7 +143,7 @@
                       (.elements (.functions ast))
                       (gom:functions (.behaviour ast))))
     (($ <component>) (.functions (.behaviour ast)))
-    (($ <port>) (stderr "port: ~a\n" (.type ast))
+    (($ <gom:port>) (stderr "port: ~a\n" (.type ast))
      (gom:functions (gom:import (.type ast) ast->gom)))
     (_ (throw 'match-error  (format #f "~a:gom:functions: no match: ~a\n" (current-source-location) ast)))))
 
@@ -160,7 +160,7 @@
     (($ <behaviour>) (.elements (or (.variables ast) (make <variables>))))
     (($ <interface>) (gom:variables (.behaviour ast)))
     (($ <component>) (gom:variables (.behaviour ast)))
-    (($ <port>) (gom:variables (gom:import (.type ast) ast->gom)))
+    (($ <gom:port>) (gom:variables (gom:import (.type ast) ast->gom)))
     (_ (throw 'match-error  (format #f "~a:gom:variables: no match: ~a\n" (current-source-location) ast)))))
 
 (define (gom:member-names model)  ;; SYMBOL TABLE
@@ -193,16 +193,16 @@
 (define (gom:typed? ast)
   (match ast
     (($ <event>) (not (equal? (.type (.type ast)) '(type void))))
-    (($ <port>) (null-is-#f (filter (lambda (x) (gom:typed? x)) (gom:events ast))))
+    (($ <gom:port>) (null-is-#f (filter (lambda (x) (gom:typed? x)) (gom:events ast))))
     (_ (throw 'match-error  (format #f "~a:gom:typed?: no match: ~a\n" (current-source-location) ast)))))
 
-(define-method (gom:dir-matches? (p <port>) (e <event>))
+(define-method (gom:dir-matches? (p <gom:port>) (e <event>))
   (or (and (eq? (.direction p) 'provides)
            (eq? (.direction e) 'in))
       (and (eq? (.direction p) 'requires)
            (eq? (.direction e) 'out))))
 
-(define-method (gom:dir-matches? (o <port>))
+(define-method (gom:dir-matches? (o <gom:port>))
   (lambda (event) (gom:dir-matches? o event)))
 
 (define-method (gom:event (o <interface>) name)
@@ -242,7 +242,7 @@
   (or (gom:port o (.port bind))
       (let ((instance (gom:instance o (.instance bind))))
         (if (eq? (.instance bind) (.port bind))
-            (make <port> :name (.port bind))
+            (make <gom:port> :name (.port bind))
             (gom:port (gom:import (.type instance)) (.port bind))))))
 
 (define-method (gom:instance (o <system>) (name <boolean>))
@@ -261,10 +261,10 @@
 (define-method (gom:out? (o <event>))
   (eq? (.direction o) 'out))
 
-(define-method (gom:provides? (o <port>))
+(define-method (gom:provides? (o <gom:port>))
   (eq? (.direction o) 'provides))
 
-(define-method (gom:requires? (o <port>))
+(define-method (gom:requires? (o <gom:port>))
   (eq? (.direction o) 'requires))
 
 (define (gom:booleans o)
@@ -288,7 +288,7 @@
 (define* (gom:events ast)
   (match ast
     (($ <interface>) (.elements (.events ast)))
-    (($ <port>) (gom:events (ast->gom (gom:import (.type ast)))))
+    (($ <gom:port>) (gom:events (ast->gom (gom:import (.type ast)))))
     (_ (throw 'match-error  (format #f "~a:events: no match: ~a\n" (current-source-location) ast)))))
 
 (define-method (gom:bottom? (o <component>))

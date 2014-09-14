@@ -34,7 +34,9 @@
            ))
 
 (define-method (ast-name (o <ast>))
-  (string->symbol (string-drop (string-drop-right (symbol->string (class-name (class-of o))) 1) 1)))
+  (let ((name (string-drop (string-drop-right (symbol->string (class-name (class-of o))) 1) 1)))
+    (string->symbol
+     (if (string-prefix? "gom:" name) (string-drop name 4) name))))
 
 ;; AST printing
 (define (star port) (display #\* port))

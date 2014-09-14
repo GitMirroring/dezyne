@@ -187,7 +187,7 @@
      (make <parameters> :elements (map ast->gom parameters)))
 
     (((and (or 'provides 'requires) (get! direction)) type name)
-     (make <port>
+     (make <gom:port>
        :name name
        :type type
        :direction (direction)))

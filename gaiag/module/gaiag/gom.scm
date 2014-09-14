@@ -18,9 +18,6 @@
 
 (read-set! keywords 'prefix)
 
-(define (std-renamer lst)
-  (lambda (x) (case x ((<gom:parameter>) '<std:parameter>) ((<port>) '<std:port>) (else x))))
-
 (define-module (gaiag gom)
   :use-module (ice-9 pretty-print)
 
@@ -28,7 +25,6 @@
   :use-module (gaiag resolve)
 
   :use-module (oop goops)
-;;  :use-module ((oop goops) :renamer (std-renamer '(port parameter)))
   :use-module (oop goops describe)
 
   :use-module (gaiag gom ast)
