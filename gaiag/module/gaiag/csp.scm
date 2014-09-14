@@ -282,10 +282,10 @@
       (append (apply append returns) (list 'return)))) ;; FIXME: add only return when needed
 
 (define (return-values-port port) ;; FIMXE: no test
-  (add-return-if-empty (map return-value (gom:enums (csp:import (.type port))))))
+  (add-return-if-empty (map return-value (gom:interface-enums (csp:import (.type port))))))
 
-(define (return-values-interface interface)
-  (add-return-if-empty (map return-value (gom:enums interface))))
+(define (return-values-interface interface) ;; FIXME: no test
+  (add-return-if-empty (map return-value (gom:interface-enums interface))))
 
 
 (define (return-values comp)
