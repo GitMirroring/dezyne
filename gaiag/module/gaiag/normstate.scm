@@ -55,7 +55,7 @@
     expand-on
     aggregate-guard
     flatten-compound
-    (gom:map* combine-guards)
+    combine-guards
     (gom:map* passdown-on)
     (gom:map* (remove-otherwise '()))
     (gom:map* add-skip))
@@ -179,11 +179,13 @@
       (($ <compound> statements) statements)
       (_ (list result)))))
 
-;; combine guards
-(define-method (combine-guards (o <top>)) o)
-
-(define-method (combine-guards (o <guard>))
-  ((passdown-guard (.expression o)) (.statement o)))
+(define (combine-guards o)
+  (match o
+    (($ <guard>)
+     ((passdown-guard (.expression o)) (.statement o)))
+    ((? (is? <ast>)) (gom:map combine-guards o))
+    ((h t ...) (map combine-guards o))
+    (_ o)))
 
 (define-method (passdown-guard (expression <expression>))
   (lambda (o) (passdown-guard o expression)))
