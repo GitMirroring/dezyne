@@ -249,7 +249,8 @@
                    (match o
                      ((? symbol?) (make <binding> :instance #f :port o))
                      (($ <value> instance port) (make <binding> :instance instance :port port))
-                     (($ <binding>) o)))))
+                     (($ <binding>) o)
+                     (_ o)))))
 
     (match o
 
