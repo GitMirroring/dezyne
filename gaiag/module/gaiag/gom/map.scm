@@ -29,17 +29,24 @@
   :use-module (gaiag gom gom)
   :use-module (gaiag gom display)
   :use-module (gaiag gom ast)
+  :use-module (gaiag gom util)
 
   :export (
            gom:clone
+           gom:collect
            gom:for-each
            gom:identity-initializer
            gom:map
+           gom:map*
            gom:map-initializer
+           gom:map*-initializer
            ))
 
 (define (((gom:map-initializer f) o) name)
-  (list (symbol->keyword name) (gom:map f (slot-ref o name))))
+  (list (symbol->keyword name) (f (slot-ref o name))))
+
+(define (((gom:map*-initializer f) o) name)
+  (list (symbol->keyword name) (gom:map* f (slot-ref o name))))
 
 (define ((gom:identity-initializer o) name)
   (gom:map-initializer identity))
@@ -73,20 +80,39 @@
 (define-method (gom:map f (o <top>)) (f o))
 (define-method (gom:map f (o <list>)) (map (gom:map f) o))
 
+;; (define-method (gom:map f (o <ast>))
+;;   (f (gom:clone o (gom:map-initializer f))))
+
 (define-method (gom:map f (o <ast>))
-  (f (gom:clone o (gom:map-initializer f))))
+  (gom:clone o (gom:map-initializer f)))
+
+(define-method (gom:map f (o <list>))
+  (map (gom:map f) o))
 
 (define-method (gom:map f (o <ast>) make-initializer)
   (f (gom:clone o make-initializer)))
 
-(define ((gom:collect class) ast)
+(define-method (gom:map* f) (lambda (o) (gom:map* f o)))
+(define-method (gom:map* f (o <top>)) (f o))
+(define-method (gom:map* f (o <list>)) (map (gom:map* f) o))
+
+(define-method (gom:map* f (o <ast>))
+  (f (gom:clone o (gom:map*-initializer f))))
+
+(define-method (gom:map* f (o <ast>) make-initializer)
+  (f (gom:clone o make-initializer)))
+
+(define-method (gom:collect (predicate <procedure>) (o <ast>))
   (let* ((collect '())
          (add (lambda (item) (set! collect (cons item collect)) collect)))
-    (gom:for-each (lambda (x) (if (is-a? x class) (add x)) x) ast)
-    collect))
+    (gom:for-each (lambda (x) (if (predicate x) (add x)) x) o)
+    (reverse collect)))
 
-(define (gom:collect:variables ast) ;;this also gets locals
-  ((gom:collect <variable>) ast))
+(define-method (gom:collect (class <class>) (o <ast>))
+  (gom:collect (is? class) o))
 
-(define (gom:collect:functions ast)
-  ((gom:collect <variable>) ast))
+(define-method (gom:collect:variables (o <ast>)) ;;this also gets locals
+  (gom:collect <variable> o))
+
+(define-method (gom:collect:functions (o <ast>))
+  (gom:collect <variable> o))
