@@ -67,6 +67,6 @@
 
 (define ((prefix p) name) (symbol-append p '_ name))
 
-(define (gom:mangle ast) (gom:map mangle ast))
+(define (gom:mangle ast) (gom:map* mangle ast))
 (define (ast-> ast)
-  ((compose gom->list gom:mangle ast->gom ast:resolve) ast))
+  ((compose gom->list gom:mangle ast:resolve ast->gom) ast))

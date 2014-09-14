@@ -29,7 +29,7 @@
   :use-module (gaiag ast:)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
-  :use-module (gaiag resolve)
+;;  :use-module (gaiag resolve)
 
   :use-module (oop goops)
   :use-module (oop goops describe)
@@ -339,17 +339,17 @@
     (for-each gom:register-model (gom:models gom))
     gom))
 
-(define* (read-ast name #:optional (transform (compose ast->gom ast:resolve)))
+(define* (read-ast name #:optional (transform ast->gom))
   (and-let* ((ast (null-is-#f (read-asd (list name '.asd) (gom:register transform))))
              (models (null-is-#f (gom:models ast))))
             (find (lambda (model) (eq? (.name model) name)) models)))
 
-(define* (gom:import name #:optional (transform (compose ast->gom ast:resolve)))
+(define* (gom:import name #:optional (transform ast->gom))
   (or (cached-model name)
       (and-let* ((ast (read-ast name transform)))
                 (cache-model name ast))))
 
-(define* (gom:parse-asd string :optional (register (gom:register (compose ast->gom ast:resolve))))
+(define* (gom:parse-asd string :optional (register (gom:register ast->gom)))
   (parse-asd string register))
 
 (define-method (gom:declarative? (o <statement>)) #f)

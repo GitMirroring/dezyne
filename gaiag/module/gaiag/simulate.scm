@@ -70,7 +70,7 @@
   (gom:import name simulate:gom))
 
 (define (simulate:gom ast)
-  ((compose ast->gom ast:resolve) ast))
+  ((compose ast:resolve ast->gom) ast))
 
 (define (variable-state variable . value)
   (cons (.name variable)

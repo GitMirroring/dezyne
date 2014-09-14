@@ -56,7 +56,7 @@
   (gom:import name c++:gom))
 
 (define (c++:gom ast)
-  ((compose ast->gom ast:resolve) ast))
+  ((compose ast:resolve ast->gom) ast))
 
 
 (define (pipe producer consumer)

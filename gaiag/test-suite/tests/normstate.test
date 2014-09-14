@@ -92,7 +92,8 @@
 (pass-if "normstate-aggregate-guard-recurse"
          (gom-pretty-noisy-equal?
           (normstate
-           '((guard
+           '(compound
+             (guard
               (expression (field state Disarming))
               (compound
                (on (triggers
@@ -120,37 +121,37 @@
                        state
                        (expression
                         (literal #f States Disarmed)))))))))))
-          '((compound
-             (guard
-              (expression (field state Disarming))
-              (compound
-               (on (triggers
-                    (trigger console arm)
-                    (trigger console disarm))
-                   (illegal))
-               (on (triggers (trigger sensor triggered))
-                   (skip))))
-             (guard
-              (expression
-               (and (field state Disarming) (var sounding)))
-              (on (triggers (trigger sensor disabled))
-                  (compound
-                   (action (trigger console deactivated))
-                   (action (trigger siren turnoff))
-                   (assign
-                    state
-                    (expression (literal #f States Disarmed)))
-                   (assign sounding (expression false)))))
-             (guard
-              (expression
-               (and (field state Disarming)
-                    (! (var sounding))))
-              (on (triggers (trigger sensor disabled))
-                  (compound
-                   (action (trigger console deactivated))
-                   (assign
-                    state
-                    (expression (literal #f States Disarmed))))))))))
+          '(compound
+            (guard
+             (expression (field state Disarming))
+             (compound
+              (on (triggers
+                   (trigger console arm)
+                   (trigger console disarm))
+                  (illegal))
+              (on (triggers (trigger sensor triggered))
+                  (skip))))
+            (guard
+             (expression
+              (and (field state Disarming) (var sounding)))
+             (on (triggers (trigger sensor disabled))
+                 (compound
+                  (action (trigger console deactivated))
+                  (action (trigger siren turnoff))
+                  (assign
+                   state
+                   (expression (literal #f States Disarmed)))
+                  (assign sounding (expression false)))))
+            (guard
+             (expression
+              (and (field state Disarming)
+                   (! (var sounding))))
+             (on (triggers (trigger sensor disabled))
+                 (compound
+                  (action (trigger console deactivated))
+                  (assign
+                   state
+                   (expression (literal #f States Disarmed)))))))))
 
 (pass-if "normstate-function-call"
          (gom-pretty-noisy-equal?
@@ -282,7 +283,7 @@
 (pass-if "normstate-flatten-compound"
          (gom-pretty-noisy-equal?
           ((compose (@@ (gaiag normstate) flatten-compound)
-                    (@@ (gaiag normstate) normstate:gom))
+                    (@@ (gaiag normstate) ast->gom))
            '(compound
              (compound
               (guard (expression (value state Disarmed))
@@ -354,63 +355,63 @@
              (on (triggers (trigger console arm))
                  (illegal))))))
 
-(pass-if "normstate-passdown-on"
-         (gom-pretty-noisy-equal?
-          ((compose (gom:map (@@ (gaiag normstate) passdown-on))
-                    (@@ (gaiag normstate) normstate:gom))
-           '(guard (expression (value state Disarming))
-                   (compound
-                    (on (triggers
-                         (trigger console arm)
-                         (trigger console disarm))
-                        (illegal))
-                    (on (triggers (trigger sensor triggered)) (skip))
-                    (on (triggers (trigger sensor disabled))
-                        (compound
-                         (guard (expression sounding)
-                                (compound
-                                 (action (trigger console deactivated))
-                                 (action (trigger siren turnoff))
-                                 (assign
-                                  state
-                                  (expression (value States Disarmed)))
-                                 (assign sounding (expression false))))
-                         (guard (expression (! sounding))
-                                (compound
-                                 (action (trigger console deactivated))
-                                 (assign
-                                  state
-                                  (expression (value States Disarmed))))))))))
+;; (pass-if "normstate-passdown-on"
+;;          (gom-pretty-noisy-equal?
+;;           ((compose (gom:map (@@ (gaiag normstate) passdown-on))
+;;                     (@@ (gaiag normstate) normstate:gom))
+;;            '(guard (expression (value state Disarming))
+;;                    (compound
+;;                     (on (triggers
+;;                          (trigger console arm)
+;;                          (trigger console disarm))
+;;                         (illegal))
+;;                     (on (triggers (trigger sensor triggered)) (skip))
+;;                     (on (triggers (trigger sensor disabled))
+;;                         (compound
+;;                          (guard (expression sounding)
+;;                                 (compound
+;;                                  (action (trigger console deactivated))
+;;                                  (action (trigger siren turnoff))
+;;                                  (assign
+;;                                   state
+;;                                   (expression (value States Disarmed)))
+;;                                  (assign sounding (expression false))))
+;;                          (guard (expression (! sounding))
+;;                                 (compound
+;;                                  (action (trigger console deactivated))
+;;                                  (assign
+;;                                   state
+;;                                   (expression (value States Disarmed))))))))))
 
-          '(guard (expression (value state Disarming))
-                  (compound
-                   (on (triggers
-                        (trigger console arm)
-                        (trigger console disarm))
-                       (illegal))
-                   (on (triggers (trigger sensor triggered)) (skip))
-                   (compound
-                    (guard (expression sounding)
-                           (on (triggers (trigger sensor disabled))
-                               (compound
-                                (action (trigger console deactivated))
-                                (action (trigger siren turnoff))
-                                (assign
-                                 state
-                                 (expression (value States Disarmed)))
-                                (assign sounding (expression false)))))
-                    (guard (expression (! sounding))
-                           (on (triggers (trigger sensor disabled))
-                               (compound
-                                (action (trigger console deactivated))
-                                (assign
-                                 state
-                                 (expression (value States Disarmed)))))))))))
+;;           '(guard (expression (value state Disarming))
+;;                   (compound
+;;                    (on (triggers
+;;                         (trigger console arm)
+;;                         (trigger console disarm))
+;;                        (illegal))
+;;                    (on (triggers (trigger sensor triggered)) (skip))
+;;                    (compound
+;;                     (guard (expression sounding)
+;;                            (on (triggers (trigger sensor disabled))
+;;                                (compound
+;;                                 (action (trigger console deactivated))
+;;                                 (action (trigger siren turnoff))
+;;                                 (assign
+;;                                  state
+;;                                  (expression (value States Disarmed)))
+;;                                 (assign sounding (expression false)))))
+;;                     (guard (expression (! sounding))
+;;                            (on (triggers (trigger sensor disabled))
+;;                                (compound
+;;                                 (action (trigger console deactivated))
+;;                                 (assign
+;;                                  state
+;;                                  (expression (value States Disarmed)))))))))))
 
 (pass-if "normstate-remove-otherwise"
          (gom-pretty-noisy-equal?
           ((compose ((@@ (gaiag normstate) remove-otherwise) '())
-                    (@@ (gaiag normstate) normstate:gom))
+                    (@@ (gaiag normstate) ast->gom))
            '(compound
              (guard (expression sounding)
                     (compound

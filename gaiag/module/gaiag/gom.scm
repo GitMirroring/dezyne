@@ -22,7 +22,6 @@
   :use-module (ice-9 pretty-print)
 
   :use-module (gaiag misc)
-  :use-module (gaiag resolve)
 
   :use-module (oop goops)
   :use-module (oop goops describe)
@@ -42,4 +41,4 @@
  (gaiag gom util))
 
 (define (ast-> ast)
-  (gom->list (ast->gom (ast:resolve ast))))
+  ((compose gom->list ast->gom) ast))

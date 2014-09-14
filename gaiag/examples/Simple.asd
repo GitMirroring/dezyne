@@ -20,13 +20,19 @@
 //
 // Code:
 
-interface Console
+interface I
 {
-    in void arm;
-    in void disarm;
+  in void e;
+  out void a;
 
-    out void detected;
-    out void deactivated;
+  behaviour { on a: e; }
 
+}
 
+component Simple
+{
+  provides I i;
+  requires I j;
+
+  behaviour { on i.a: i.e; }
 }

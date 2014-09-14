@@ -44,7 +44,7 @@
 (define ast->pretty ast->asd)
 
 (define (pretty:gom ast)
-  ((compose ast->gom ast:resolve) ast))
+  ((compose ast:resolve ast->gom) ast))
 
 (define-method (children (o <ast>))
   (map (lambda (slot) (slot-ref o (slot-definition-name slot))) ((compose class-slots class-of) o)))

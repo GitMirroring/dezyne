@@ -30,204 +30,250 @@
   :use-module (gaiag misc)
   :use-module (gaiag reader)
 
+  :use-module (oop goops)
+  :use-module (gaiag gom)
+
   :export (
            ast->
            ast:resolve
            ast:resolve-model
-           ast:resolve-system
+           gom:resolve
            ))
 
-(define (ast:resolve ast)
-  (let ((resolved ((ast:resolve- ast) ast)))
-    (if (and (pair? ast)
-             (not (ast:root? ast))
-             (or (find ast:interface? ast)
-                 (find ast:component? ast)
-                 (find ast:system? ast)))
-        (cons 'root resolved)
-        resolved)))
+;; TODO
+;; (define* ((ast:resolve-model model) src :optional (locals '()))
+;;   (let ((resolved ((ast:resolve-model- model) src locals)))
+;;     (and-let* (((supports-source-properties? src))
+;;                (loc (source-property src 'loc))
+;;                ((supports-source-properties? resolved)))
+;;               (set-source-property! resolved 'loc loc))
+;;     resolved))
 
-(define ((ast:resolve- ast) src)
-  (match src
-    (('system name ports ('compound s ...)) ((ast:resolve-system src) src))
-    (('component name ports ('system name ...)) ((ast:resolve-system src) src))
-    (('component name ...) ((ast:resolve-model src) src))
-    (('interface name ...) ((ast:resolve-model src) src))
-    ((h ...) (map (lambda (x) ((ast:resolve- ast) x)) src))
-    (_ src)))
+(define-method (ast:resolve (o <list>))
+  ((compose gom:resolve ast->gom) o))
 
-(define (enum-type enum)
-  (let ((name (ast:name enum)))
-    (if (pair? name)
-        (list 'type (car name) (cons 'type (cdr name)))
-        (list 'type name))))
+(define-method (ast:resolve (o <root>))
+  (gom:resolve o))
 
-(define (interface-enums port)
-  (map (lambda (enum)
-         (list 'enum (list (ast:type port) (ast:name enum)) (ast:fields enum)))
-   ((compose ast:enums ast:ast ast:type) port)))
+(define-method (ast:resolve (o <model>))
+  ((gom:resolve o) o))
 
-(define* ((ast:resolve-model model) src :optional (locals '()))
-  (let ((resolved ((ast:resolve-model- model) src locals)))
-    (and-let* (((supports-source-properties? src))
-               (loc (source-property src 'loc))
-               ((supports-source-properties? resolved)))
-              (set-source-property! resolved 'loc loc))
-    resolved))
+(define-method (ast:resolve (o <ast>))
+  o)
 
-(define* ((ast:function identifier) ast)
-  (match ast
-    (('function (? (lambda (x) (eq? x identifier))) body ...) ast)
-    ((h t ...) (any identity (map (ast:function identifier) ast)))
-    (_ #f)))
+(define-method (ast:resolve-model model)
+  (gom:resolve (ast->gom model) (ast->gom model)))
 
-(define ((ast:filter-statements predicate) ast)
-  (match ast
-    (('compound t ...) (filter null-is-#f (apply append (map (ast:filter-statements predicate) t))))
-    (('guard expr s) (filter null-is-#f ((ast:filter-statements predicate) s)))
-    (('on triggers s) (filter null-is-#f ((ast:filter-statements predicate) s)))
-    (('if expression then) (filter null-is-#f ((ast:filter-statements predicate) then)))
-    (('if expression then else) (filter null-is-#f
-                                        (append (filter null-is-#f ((ast:filter-statements predicate) then))
-                                                (filter null-is-#f ((ast:filter-statements predicate) else)))))
-    ((? predicate) (list (predicate ast)))
-    (_ '())))
+(define-method (ast:resolve-model ast model)
+  (gom:resolve (ast->gom ast) (ast->gom model)))
 
-(define* ((recurses? model :optional (seen '())) identifier)
-  (define (return-call ast)
-    (match ast
-      (('call body ...) ast)
-      (('assign identifier (and ('call body ...) (get! call))) (call))
-      (('variable type identifier (and ('call body ...) (get! call))) (call))
-      (_ #f)))
-  (and-let* ((function ((ast:function identifier) model))
-             (compound (last function))
-             (calls (null-is-#f ((ast:filter-statements return-call) compound)))
-             (names (delete-duplicates (sort (map cadr calls) symbol<))))
-            (or (member identifier seen)
-                (any identity
-                     (map (recurses? model (cons identifier seen)) names)))))
+(define-method (gom:resolve (o <root>))
+  (make <root>
+    :elements
+    (map (lambda (x) (gom:resolve-curry x x)) (.elements o))))
 
-(define* ((ast:resolve-model- model) src :optional (locals '()))
+(define-method (gom:resolve (model <imports>) (o <imports>)) o)
+
+(define-method (gom:resolve (model <model>))
+  (lambda (o) (gom:resolve-curry model o)))
+
+(define-method (gom:resolve-curry (model <imports>) (o <imports>))
+  o)
+
+(define-method (gom:resolve-curry (model <model>) (o <model>))
+  (gom:register-model (gom:resolve model o)))
+
+(define-method (gom:resolve-curry (model <model>) (o <top>))
+  (gom:resolve model o))
+
+(define-method (gom:resolve (model <model>) o)
+  (gom:resolve model o '()))
+
+(define-method (gom:resolve (model <model>) o locals)
+
+  (define (enum-type enum)
+    (let ((name (.name enum)))
+      (if (pair? name)
+          (list 'type (car name) (cons 'type (cdr name)))
+          (list 'type name))))
+
+  (define (interface-enums port)
+    (map (lambda (enum)
+           (make <enum>
+             :name (list (.type port) (.name enum))
+             :fields (.fields enum)))
+         ((compose gom:enums (lambda (name) (gom:import name)) .type) port)))
+
   (let* ((port? (lambda (port)
-                  (if (eq? (ast:class model) 'interface)
+                  (if (is-a? model <interface>)
                       #f
-                      (member port (map ast:name (ast:ports model))))))
+                      (member port (map .name (.elements (.ports model)))))))
          (enum? (lambda (identifier)
-                  (member identifier (map ast:name (ast:enums model)))))
+                  (member identifier (map .name (gom:enums model)))))
          (enum-field? (lambda (identifier)
                           (lambda (field)
-                            (and-let* ((enum (find (lambda (x) (eq? (ast:name x) identifier))
-                                                   (ast:enums model))))
-                                      (member field (ast:fields enum))))))
+                            (and-let* ((enum (find (lambda (x) (eq? (.name x) identifier))
+                                                   (gom:enums model))))
+                                      (member field (.elements (.fields enum)))))))
          (member? (lambda (identifier)
-                    (member identifier (ast:member-names model))))
+                    (member identifier (gom:member-names model))))
          (member-field? (lambda (identifier)
                           (lambda (field)
-                            (and-let* ((variable (or (ast:variable model identifier)
-                                                     (ast:variable (map cdr locals) identifier)))
-                                       (type (ast:type variable))
+                            (and-let* ((variable (or (gom:variable model identifier)
+                                                     (gom:variable (map cdr locals) identifier)))
+                                       (type (.type variable))
                                        (enums (append
-                                               (ast:enums model)
+                                               (gom:enums model)
                                                (apply append
-                                                      (map interface-enums (ast:ports model)))))
+                                                      (if (is-a? model <component>) (map interface-enums (.elements (.ports model))) '()))))
                                        (enum (find (lambda (enum)
                                                      (equal? (enum-type enum) type)) enums)))
-                                      (member field (ast:fields enum))))))
-         (local?  (lambda (identifier) (assoc identifier locals)))
+                                      (member field (.elements (.fields enum)))))))
+         (local? (lambda (identifier) (assoc identifier locals)))
          (var? (lambda (identifier) (or (member? identifier) (local? identifier)))))
-    (match src
-      (('action identifier)
-       (if (member identifier (map ast:name (ast:functions (ast:behaviour model))))
-           (list 'call identifier)
-           src))
+  (match o
 
-      (('variable type identifier ('expression ('value (and (? port?) (get! port)) event)))
-       (list 'variable type identifier (list 'action (list 'trigger (port) event))))
+    (($ <action> (and (? (lambda (i) (member i (gom:function-names model))))
+                      (get! identifier)))
+     (make <call> :identifier (identifier)))
 
-      (('variable type identifier ('expression (and ('call function ...) (get! call))))
-       (list 'variable type identifier ((ast:resolve-model model) (call) locals)))
+    (($ <assign> identifier ($ <expression> (and ($ <call>) (get! call))))
+     (make <assign> :identifier identifier
+           :expression (gom:resolve model (call))))
 
-      (('assign identifier ('expression (and ('call function ...) (get! call))))
-       (list 'assign identifier ((ast:resolve-model model) (call) locals)))
+    (($ <assign> identifier
+        ($ <expression> ($ <value> (and (? port?) (get! port)) event)))
+     (make <assign>
+       :identifier identifier
+       :expression (make <action>
+                     :trigger (make <trigger> :port (port) :event event))))
 
-      (('variable type identifier expression)
-       (list 'variable type identifier ((ast:resolve-model model) expression locals)))
+    (($ <assign> identifier (and ($ <expression>) (get! expression)))
+     (make <assign>
+       :identifier identifier
+       :expression (gom:resolve model (expression) locals)))
 
-      (('assign identifier ('expression ('value (and (? port?) (get! port)) event)))
-       (list 'assign identifier (list 'action (list 'trigger (port) event))))
+    (($ <assign> identifier expression)
+     (make <assign>
+       :identifier identifier
+       :expression (gom:resolve model expression locals)))
 
-      (('value (? var?) (? (member-field? (cadr src))))
-       (cons 'field (cdr src)))
+    (($ <variable> name type ($ <expression> (and ($ <call>) (get! call))))
+     (make <variable>
+       :type type
+       :name name
+       :expression (gom:resolve model (call))))
 
-      (('value (? enum?) (? (enum-field? (cadr src))))
-       (append '(literal #f) (cdr src)))
+    (($ <variable> name type
+        ($ <expression> ($ <value> (and (? port?) (get! port)) event)))
+     (make <variable>
+       :type type
+       :name name
+       :expression (make <action> :trigger
+                         (make <trigger> :port (port) :event event))))
 
-      (('assign identifier expression)
-       (list 'assign identifier ((ast:resolve-model model) expression locals)))
+    (($ <variable> name type expression)
+     (make <variable>
+       :type type
+       :name name
+       :expression (gom:resolve model expression locals)))
 
-      (('field identifier field) src)
+    (($ <value> (and (? enum?) (get! enum))
+        (and (? (enum-field? (enum))) (get! field)))
+     (make <literal> :scope #f' :type (enum) :field (field)))
 
-      (('var identifier) src)
+    (($ <value> (and (? var?) (get! type)) (? (member-field? (type))))
+     (make <field> :identifier (type) :field (.field o)))
 
-      ;; expressions
-      (('expression expression)
-       (list 'expression ((ast:resolve-model model) expression locals)))
+    (($ <expression> value)
+     (make <expression> :value (gom:resolve model value locals)))
 
-      ((and (? symbol?) (? var?)) (list 'var src))
+    ((and (? symbol?) (? var?)) (make <var> :identifier o))
 
-      (('function identifier ('signature type parameters ...) statement)
-       (let ((recursive? (and ((recurses? model) identifier) 'recursive)))
-         ((ast:resolve-model model)
-          (list 'function identifier (ast:signature src) recursive? statement) locals)))
+    (($ <function> name ($ <signature> type ($ <parameters> '())) recursive? statement)
+     (make <function>
+       :name name
+       :signature (.signature o)
+       :recursive (and ((recurses? model) name) 'recursive)
+       :statement (gom:resolve model statement)))
 
-      (('function identifier ('signature type) recursive? statement)
-         (list 'function identifier (ast:signature src) recursive?
-               ((ast:resolve-model model) statement locals)))
+    (($ <function> name ($ <signature> type ($ <parameters> parameters)) recursive? statement)
+     (let ((locals (let loop ((parameters parameters) (locals locals))
+                     (if (null? parameters)
+                         locals
+                         (loop (cdr parameters)
+                               (acons (.identifier (car parameters)) (car parameters) locals))))))
+       (make <function>
+         :name name
+         :signature (.signature o)
+         :recursive (and ((recurses? model) name) 'recursive)
+         :statement (gom:resolve model statement locals))))
 
-      (('function identifier ('signature type ('parameters parameters ...)) recursive? statement)
-       (let ((locals (let loop ((parameters parameters) (locals locals))
-                       (if (null? parameters)
-                           locals
-                           (loop (cdr parameters)
-                                 (acons (ast:name (car parameters)) (car parameters) locals))))))
-         (list 'function identifier (ast:signature src) recursive?
-               ((ast:resolve-model model) statement locals))))
+    (($ <compound> statements)
+     (make <compound>
+       :elements
+       (let loop ((statements statements) (locals locals))
+         (if (null? statements)
+             '()
+             (let* ((statement (car statements))
+                    (locals (match statement
+                              (($ <variable> name type expression)
+                               (acons name statement locals))
+                              (_ locals))))
+               (let ((resolved (gom:resolve model (car statements) locals)))
+                 (cons resolved (loop (cdr statements) locals))))))))
 
-      (('compound statements ...)
-       (cons 'compound
-             (let loop ((statements statements) (locals locals))
-               (if (null? statements)
-                   '()
-                   (let* ((statement (car statements))
-                          (locals (match statement
-                                    (('variable type identifier expression)
-                                     (acons identifier statement locals))
-                                    (_ locals))))
-                     (let ((resolved ((ast:resolve-model model) (car statements) locals)))
-                       (cons resolved (loop (cdr statements) locals))))))))
-      ((h ...) (map (lambda (x) ((ast:resolve-model model) x locals)) src))
+    (($ <field>) o)
+    (($ <var>) o)
+    ((? (is? <ast>)) (gom:map (gom:resolve model) o))
+    ((h t ...) (map (gom:resolve model) o))
+    (_ o))))
 
-      (_ src))))
+(define* ((recurses? model :optional (seen '())) name)
+  (define (return-call ast)
+    (match ast
+      (($ <call>) ast)
+      (($ <assign> name (and ($ <call>) (get! call))) (call))
+      (($ <variable> name type (and ($ <call> body) (get! call))) (call))
+      (_ #f)))
+  (and-let* ((function (gom:function model name))
+             (compound (.statement function))
+             (calls (null-is-#f (gom:collect return-call compound)))
+             (names (delete-duplicates (sort (map .identifier calls) symbol<))))
+            (or (member name seen)
+                (any identity
+                     (map (recurses? model (cons name seen)) names)))))
 
-(define ((ast:resolve-system model) src)
-  (let ((binding (lambda (binding)
-                   (match binding
-                     ((? symbol?) (list 'binding #f binding))
-                     (('value instance binding) (list 'binding instance binding))))))
-    (match src
-      (('component name ports ('system foo statement))
-       (let* ((resolved ((ast:resolve-system model) statement))
-              (instances (cons 'instances (filter ast:instance? resolved)))
-              (bindings (cons 'bindings (filter ast:bind? resolved))))
-         (list 'system name ports instances bindings)))
-      (('system name ports (and ('compound statements ...) (get! statement)))
-       (let* ((resolved ((ast:resolve-system model) (statement)))
-              (instances (cons 'instances (filter ast:instance? resolved)))
-              (bindings (cons 'bindings (filter ast:bind? resolved))))
-         (list 'system name ports instances bindings)))
-      (('bind left right) (list 'bind (binding left) (binding right)))
-      ((h ...) (map (lambda (x) ((ast:resolve-system model) x)) src))
-      (_ src))))
+(define-method (gom:resolve (model <system>) o)
 
-(define ast-> ast:resolve)
+  (let ((binding (lambda (o)
+                   (match o
+                     ((? symbol?) (make <binding> :instance #f :port o))
+                     (($ <value> instance port) (make <binding> :instance instance :port port))
+                     (($ <binding>) o)))))
+
+    (match o
+
+      (($ <system> name ports instances bindings)
+       (let* ((instances (gom:map (gom:resolve model) instances))
+              (bindings (gom:map (gom:resolve model) bindings))
+              (rinstances (append (gom:collect <instance> instances)
+                                  (gom:collect <instance> bindings)))
+              (rbindings  (append (gom:collect <bind> instances)
+                                  (gom:collect <bind> bindings))))
+         (make <system>
+           :name name
+           :ports ports
+           :instances (make <instances> :elements rinstances)
+           :bindings (make <bindings> :elements rbindings))))
+
+      (($ <bind> left right)
+       (make <bind> :left (binding left) :right (binding right)))
+
+      ((? (is? <ast>)) (gom:map (gom:resolve model) o))
+      ((h t ...) (map (gom:resolve model) o))
+
+      (_ o))))
+
+(define (ast-> ast)
+  ((compose gom->list ast:resolve ast->gom) ast))

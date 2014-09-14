@@ -46,23 +46,23 @@
 
   :export (ast-> normstate))
 
-(define (normstate ast)
-  (let ((gom (normstate:gom ast))
-        ;;(gom ((gom:register normstate:gom) ast #t))
-        )
-    ((compose
-      (gom:map* aggregate-on)
-      (gom:map* expand-on)
-      (gom:map* aggregate-guard)
-      (gom:map* flatten-compound)
-      (gom:map* combine-guards)
-      (gom:map* passdown-on)
-      (gom:map* (remove-otherwise '()))
-      (gom:map* add-skip))
-     o)))
+(define-method (normstate (o <list>))
+  ((compose normstate ast:resolve ast->gom) o))
+
+(define-method (normstate (o <ast>))
+  ((compose
+    (gom:map* aggregate-on)
+    (gom:map* expand-on)
+    (gom:map* aggregate-guard)
+    (gom:map* flatten-compound)
+    (gom:map* combine-guards)
+    (gom:map* passdown-on)
+    (gom:map* (remove-otherwise '()))
+    (gom:map* add-skip))
+   o))
 
 (define (normstate:gom ast)
-  ((compose ast->gom ast:resolve) ast))
+  (ast:resolve ast))
 
 ;; aggregate on
 (define-method (aggregate-on (o <top>)) o)

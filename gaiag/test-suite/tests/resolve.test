@@ -7,7 +7,10 @@
   :use-module (test-suite misc)
 
   :use-module (gaiag ast:)
-  :use-module (gaiag resolve))
+  :use-module (gaiag resolve)
+
+  :use-module (oop goops)
+  :use-module (gaiag gom))
 
 (pass-if "resolve-first-dummy-test"
          #t)
@@ -15,32 +18,32 @@
 (define resolve-ast
   '((interface
         ivar
-      (types (enum E (v)))
-      (events (in (signature (type E)) foo))
+      (types (enum e (v)))
+      (events (in (signature (type e)) foo))
       (behaviour
        #f
        (types
-        (enum State (one two)))
+        (enum state (one two)))
        (variables
-        (variable (type State) m (expression (value State one)))
+        (variable (type state) m (expression (value state one)))
         (variable (type bool) b (expression true)))
        (functions (function toggle (signature (type void)) (compound)))
        (compound
         (on (triggers (trigger #f foo))
-            (reply (expression (value E v)))))))
+            (reply (expression (value e v)))))))
     (component
      var
      (ports (provides ivar i) (requires ivar o))
      (behaviour
       #f
       (types
-       (enum State (one two)))
+       (enum state (one two)))
       (variables
-       (variable (type State) m (expression (value State one)))
+       (variable (type state) m (expression (value state one)))
        (variable (type bool) b true))
        (functions
         (function fun (signature (type void) (parameters (parameter (type bool) a)))
-                  (compound (assign a true)))
+                  (compound (assign a (expression true))))
         (function rfun (signature (type void) (parameters))
                   (compound (call rgun)))
         (function rgun (signature (type void) (parameters (parameter (type bool) a)))
@@ -50,7 +53,7 @@
         (function fb (signature (type void) (parameters (parameter (type bool) a)))
                   (compound (call fc)))
         (function fc (signature (type void) (parameters (parameter (type bool) a)))
-                  (compound (assign b true)))
+                  (compound (assign b (expression true))))
         (function rfa (signature (type void) (parameters (parameter (type bool) a)))
                   (compound (call rfb)))
         (function rfb (signature (type void) (parameters (parameter (type bool) a)))
@@ -66,14 +69,14 @@
       (compound
        (on (triggers (trigger i foo))
            (compound
-            (variable (type ivar (type E)) e (expression (value o foo)))
+            (variable (type ivar (type e)) e (expression (value o foo)))
             (assign e (expression (value o foo)))))
        (reply e))))))
 
 (pass-if "ast:resolve-function-call"
-         (pretty-noisy-equal?
-          ((ast:resolve-model
-            (car resolve-ast))
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (car resolve-ast)
            '(on (triggers ((trigger #f e)))
                 (compound
                  (action toggle))))
@@ -82,25 +85,25 @@
                 (call toggle)))))
 
 (pass-if "ast:resolve-variable-valued-action"
-         (pretty-noisy-equal?
-          ((ast:resolve-model
-            (cadr resolve-ast))
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (cadr resolve-ast)
            '(on (triggers (trigger o foo))
                 (compound
-                 (variable (type ivar (type E))
+                 (variable (type ivar (type e))
                            e
                            (expression (value o foo))))))
 
           '(on (triggers (trigger o foo))
                (compound
-                (variable (type ivar (type E))
+                (variable (type ivar (type e))
                           e
                           (action (trigger o foo)))))))
 
 (pass-if "ast:resolve-assign-valued-action"
-         (pretty-noisy-equal?
-          ((ast:resolve-model
-            (cadr resolve-ast))
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (cadr resolve-ast)
            '(on (triggers (trigger o foo))
                 (compound
                  (assign e (expression (value o foo))))))
@@ -110,18 +113,18 @@
                 (assign e (action (trigger o foo)))))))
 
 (pass-if "ast:resolve-value-enum-value"
-         (pretty-noisy-equal?
-          ((ast:resolve-model
-            (cadr resolve-ast))
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (cadr resolve-ast)
            '(variables
-             (variable (type State) m (expression (value State one)))))
+             (variable (type state) m (expression (value state one)))))
           '(variables
-            (variable (type State) m (expression (literal #f State one))))))
+            (variable (type state) m (expression (literal #f state one))))))
 
 (pass-if "ast:resolve-value-field-interface"
-         (pretty-noisy-equal?
-          ((ast:resolve-model
-            (car resolve-ast))
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (car resolve-ast)
            '(guard (expression (value m one)) (illegal)))
           '(guard (expression (field m one)) (illegal))))
 
@@ -137,65 +140,65 @@
       (bind (value u u) u)))))
 
 (pass-if "ast:resolve-system"
-         (pretty-noisy-equal?
-          ((ast:resolve-system
-            resolve-system)
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           resolve-system
            '(component c (ports) (system #f (compound))))
           '(system c (ports) (instances) (bindings))))
 
 (pass-if "ast:resolve-binds"
-         (pretty-noisy-equal?
-          ((ast:resolve-system
-            resolve-system)
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           resolve-system
            '(bind i (value u i)))
           '(bind (binding #f i) (binding u i))))
 
 (pass-if "ast:resolve-member"
-         (pretty-noisy-equal?
-          ((ast:resolve-model
-            (cadr resolve-ast))
-           '(assign m m))
-          '(assign m (var m))))
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (cadr resolve-ast)
+           '(assign m (expression m)))
+          '(assign m (expression (var m)))))
 
 (pass-if "ast:resolve-local"
-         (pretty-noisy-equal?
-          ((ast:resolve-model
-            (cadr resolve-ast))
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (cadr resolve-ast)
            '(compound
              (variable (type ivar (type E)) e (expression (value o foo)))
-             (assign e e)))
+             (assign e (expression e))))
           '(compound
              (variable (type ivar (type E)) e (action (trigger o foo)))
-             (assign e (var e)))))
+             (assign e (expression (var e))))))
 
 (pass-if "ast:resolve-missing-local"
-         (pretty-noisy-equal?
-          ((ast:resolve-model
-            (cadr resolve-ast))
-           '(assign e e))
-          '(assign e e)))
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (cadr resolve-ast)
+           '(assign e (expression e)))
+          '(assign e (expression e))))
 
 (pass-if "ast:resolve-true"
-         (pretty-noisy-equal?
-          ((ast:resolve-model
-            (cadr resolve-ast))
-           '(assign b true))
-          '(assign b true)))
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (cadr resolve-ast)
+           '(assign b (expression true)))
+          '(assign b (expression true))))
 
 (pass-if "ast:resolve-parameter"
-         (pretty-noisy-equal?
-          ((ast:resolve-model
-            (cadr resolve-ast))
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (cadr resolve-ast)
            '(function fun (signature (type void) (parameters (parameter (type bool) a)))
-                            (compound (assign b a))))
+                            (compound (assign b (expression a)))))
           '(function fun (signature (type void) (parameters (parameter (type bool) a)))
                      #f
-                     (compound (assign b (var a))))))
+                     (compound (assign b (expression (var a)))))))
 
 (pass-if "ast:resolve-recursive"
-         (pretty-noisy-equal?
-          ((ast:resolve-model
-            (cadr resolve-ast))
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (cadr resolve-ast)
            '(function rgun (signature (type void) (parameters))
                       (compound (call rgun))))
           '(function rgun (signature (type void) (parameters))
@@ -203,9 +206,9 @@
                       (compound (call rgun)))))
 
 (pass-if "ast:resolve-recursive-indirect"
-         (pretty-noisy-equal?
-          ((ast:resolve-model
-            (cadr resolve-ast))
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (cadr resolve-ast)
            '(function rfun (signature (type void) (parameters))
                       (compound (call rgun))))
           '(function rfun (signature (type void) (parameters))
@@ -213,9 +216,9 @@
                      (compound (call rgun)))))
 
 (pass-if "ast:resolve-non-recursive-deep"
-         (pretty-noisy-equal?
-          ((ast:resolve-model
-            (cadr resolve-ast))
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (cadr resolve-ast)
            '(function fa (signature (type void) (parameters))
                       (compound (call fb))))
           '(function fa (signature (type void) (parameters))
@@ -223,9 +226,9 @@
                      (compound (call fb)))))
 
 (pass-if "ast:resolve-recursive-3"
-         (pretty-noisy-equal?
-          ((ast:resolve-model
-            (cadr resolve-ast))
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (cadr resolve-ast)
            '(function rfa (signature (type void) (parameters))
                       (compound (call rfb))))
           '(function rfa (signature (type void) (parameters))
@@ -233,11 +236,63 @@
                      (compound (call rfb)))))
 
 (pass-if "ast:resolve-recursive-3-assign"
-         (pretty-noisy-equal?
-          ((ast:resolve-model
-            (cadr resolve-ast))
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (cadr resolve-ast)
            '(function rbfa (signature (type void) (parameters))
                       (assign b (compound (call rbfb)))))
           '(function rbfa (signature (type void) (parameters))
                      recursive
                       (assign b (compound (call rbfb))))))
+
+(pass-if "ast:resolve-system"
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           '(system
+             AlarmSystem
+             (ports (provides Console console))
+             (compound
+              (instance alarm Alarm)
+              (instance sensor Sensor)
+              (instance siren Siren)
+              (bind console (value alarm console))
+              (bind (value alarm sensor) (value sensor sensor))
+              (bind (value alarm siren) (value siren siren)))))
+          '(system
+            AlarmSystem
+            (ports (provides Console console))
+            (instances
+             (instance alarm Alarm)
+             (instance sensor Sensor)
+             (instance siren Siren))
+            (bindings
+             (bind (binding #f console) (binding alarm console))
+             (bind (binding alarm sensor) (binding sensor sensor))
+             (bind (binding alarm siren) (binding siren siren))))))
+
+(pass-if "ast:resolve-component-system"
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           '(system
+             AlarmComponentSystem
+            (ports (provides Console console))
+             (instances
+              (instance alarm Alarm)
+              (instance sensor Sensor)
+              (instance siren Siren)
+              (bind console (binding alarm console))
+              (bind (binding alarm sensor)
+                    (binding sensor sensor))
+              (bind (binding alarm siren) (binding siren siren)))
+             (bindings)))
+          '(system
+            AlarmComponentSystem
+            (ports (provides Console console))
+            (instances
+             (instance alarm Alarm)
+             (instance sensor Sensor)
+             (instance siren Siren))
+            (bindings
+             (bind (binding #f console) (binding alarm console))
+             (bind (binding alarm sensor) (binding sensor sensor))
+             (bind (binding alarm siren) (binding siren siren))))))
