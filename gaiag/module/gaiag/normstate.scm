@@ -252,12 +252,12 @@
     (make <expression>
       :value (list '! (reduce (lambda (g0 g1) (list 'or g0 g1)) '() values)))))
 
-(define-method (add-skip (o <top>)) o)
-
-(define-method (add-skip (o <compound>))
-  (if (null? (.elements o))
-      '(skip) ;; FIXME: not an <AST>
-      (make <compound> :elements (map (gom:map* add-skip) (.elements o)))))
+(define (add-skip o)
+  (match o
+    (($ <compound> '()) (list 'skip)) ;; FIXME: not an <AST>
+    ((? (is? <ast>)) (gom:map add-skip o))
+    ((h t ...) (map add-skip o))
+    (_ o)))
 
 (define (ast-> ast)
   ((compose gom->list normstate ast:resolve) ast))
