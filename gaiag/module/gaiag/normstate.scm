@@ -54,7 +54,7 @@
     aggregate-on
     expand-on
     aggregate-guard
-    (gom:map* flatten-compound)
+    flatten-compound
     (gom:map* combine-guards)
     (gom:map* passdown-on)
     (gom:map* (remove-otherwise '()))
@@ -163,15 +163,18 @@
       (make <compound> :elements statements)
       (car statements)))
 
-;; flatten-compound
-(define-method (flatten-compound (o <top>)) o)
+(define (flatten-compound o)
+  (match o
+    (($ <compound>)
+     (make <compound>
+       :elements (apply append (map flatten-compound-compound (.elements o)))))
+    (($ <on>) o)
+    ((? (is? <ast>)) (gom:map flatten-compound o))
+    ((h t ...) (map flatten-compound o))
+    (_ o)))
 
-(define-method (flatten-compound (o <compound>))
-  (make <compound>
-    :elements (apply append (map flatten-compound-compound (.elements o)))))
-
-(define-method (flatten-compound-compound (o <top>))
-  (let ((result (gom:map* flatten-compound o)))
+(define (flatten-compound-compound o)
+  (let ((result (flatten-compound o)))
     (match result
       (($ <compound> statements) statements)
       (_ (list result)))))
