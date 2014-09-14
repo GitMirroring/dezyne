@@ -56,7 +56,7 @@
     aggregate-guard
     flatten-compound
     combine-guards
-    (gom:map* passdown-on)
+    passdown-on
     (gom:map* (remove-otherwise '()))
     (gom:map* add-skip))
    o))
@@ -203,11 +203,13 @@
 (define-method (passdown-guard (o <compound>) (expression <expression>))
   (make <compound> :elements (map (passdown-guard expression) (.elements o))))
 
-;;; passdown-on
-(define-method (passdown-on (o <top>)) o)
-
-(define-method (passdown-on (o <on>))
-  ((passdown-triggers (.triggers o)) (.statement o)))
+(define (passdown-on o)
+  (match o
+    (($ <on>)
+     ((passdown-triggers (.triggers o)) (.statement o)))
+    ((? (is? <ast>)) (gom:map passdown-on o))
+    ((h t ...) (map passdown-on o))
+    (_ o)))
 
 (define-method (passdown-triggers (triggers <triggers>))
   (lambda (o) (passdown-triggers o triggers)))
