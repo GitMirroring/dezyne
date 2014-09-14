@@ -51,17 +51,15 @@
         ;;(gom ((gom:register normstate:gom) ast #t))
         )
     ((compose
-      (gom:map aggregate-on)
-      (gom:map expand-on)
-      (gom:map aggregate-guard)
-      (gom:map flatten-compound)
-      (gom:map combine-guards)
-      (gom:map passdown-on)
-      (gom:map (remove-otherwise '()))
-      (gom:map add-skip))
-     gom)))
-
-(define ast-> normstate)
+      (gom:map* aggregate-on)
+      (gom:map* expand-on)
+      (gom:map* aggregate-guard)
+      (gom:map* flatten-compound)
+      (gom:map* combine-guards)
+      (gom:map* passdown-on)
+      (gom:map* (remove-otherwise '()))
+      (gom:map* add-skip))
+     o)))
 
 (define (normstate:gom ast)
   ((compose ast->gom ast:resolve) ast))
@@ -177,7 +175,7 @@
     :elements (apply append (map flatten-compound-compound (.elements o)))))
 
 (define-method (flatten-compound-compound (o <top>))
-  (let ((result (gom:map flatten-compound o)))
+  (let ((result (gom:map* flatten-compound o)))
     (match result
       (($ <compound> statements) statements)
       (_ (list result)))))
@@ -242,12 +240,12 @@
            (failure)
            (make <guard>
              :expression (guards-not-or statements)
-             :statement (gom:map (remove-otherwise '()) (.statement o)))))
+             :statement (gom:map* (remove-otherwise '()) (.statement o)))))
       (_ o))))
 
 (define-method (remove-otherwise (o <compound>) (statements <list>))
   (make <compound>
-    :elements (map (gom:map (remove-otherwise (.elements o))) (.elements o))))
+    :elements (map (gom:map* (remove-otherwise (.elements o))) (.elements o))))
 
 (define-method (guards-not-or (o <list>))
   (let* ((expressions (map .expression o))
@@ -261,4 +259,7 @@
 (define-method (add-skip (o <compound>))
   (if (null? (.elements o))
       '(skip) ;; FIXME: not an <AST>
-      (make <compound> :elements (map (gom:map add-skip) (.elements o)))))
+      (make <compound> :elements (map (gom:map* add-skip) (.elements o)))))
+
+(define (ast-> ast)
+  ((compose gom->list normstate ast:resolve) ast))
