@@ -51,8 +51,8 @@
 
   :use-module (oop goops)
   :use-module (oop goops describe)
-  ;;:use-module (gaiag gom)
-  :use-module (gaiag gom gom)
+  :use-module (gaiag gom)
+  ;;:use-module (gaiag gom gom)
 
 
   :export (animate-file
@@ -94,12 +94,6 @@
                   `((test . ((foo . ,identity)
                              (bar . (lambda (x) "boo"))
                              (baz . "blaat"))))))
-
- (define (xtemplate? x)
-  (and (list? x) (pair? (assoc (car x) (templates)))))
-
-(define-method (ast-name (o <ast>))
-  (string->symbol (string-drop (string-drop-right (symbol->string (class-name (class-of o))) 1) 1)))
 
 (define (template? x)
   (or (and (is-a? x <ast>)
