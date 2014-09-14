@@ -26,28 +26,52 @@
   :use-module (gaiag ast:)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
+  :use-module (gaiag resolve)
 
-  :export (ast-> ast:mangle))
+  :use-module (oop goops)
+  :use-module (oop goops describe)
+  :use-module (gaiag gom)
+
+  :export (ast-> gom:mangle))
+
+(define-method (mangle (o <top>)) o)
+(define-method (mangle (o <named>))
+  (define ((make-initializer o) name)
+    (let* ((element (slot-ref o name))
+           (p (gom:prefix o)))
+      (list (symbol->keyword name)
+            (if (and (eq? name 'name) p)
+                ((prefix p) element)
+                element))))
+  (let* ((class (class-of o))
+         (slots (class-slots class))
+         (names (map slot-definition-name slots))
+         (initializers (map (make-initializer o) names))
+         (arguments (cons class (apply append initializers))))
+    (apply make arguments)))
+
+(define-method (mangle (o <gom:port>))
+  (make <gom:port>
+    :name ((prefix (gom:prefix o)) (.name o))
+    :direction (.direction o)
+    :type ((prefix (gom:prefix 'interface)) (.type o))))
+
+(define-method (mangle (o <trigger>))
+  (make <trigger>
+    :port (and=> (.port o) (prefix (gom:prefix 'port)))
+    :event ((prefix (gom:prefix 'event)) (.event o))))
+
+(define-method (gom:prefix (o <top>)) #f)
+(define-method (gom:prefix (o <symbol>))
+  (let ((prefix-alist '((interface . if)
+                        (component . co)
+                        (event . ev)
+                        (port . po))))
+    (assoc-ref prefix-alist o)))
+(define-method (gom:prefix (o <ast>)) (gom:prefix (ast-name o)))
 
 (define ((prefix p) name) (symbol-append p '_ name))
 
-;; TODO: function, variable mangling. Does that have priority?
-(define (mangle ast)
-  (match ast
-    (('interface name rest ...) (append (ast:make 'interface (cons ((prefix 'if) name) (map mangle rest)))))
-    (('in type event) (ast:make 'in (list type ((prefix 'ev) event))))
-    (('out type event) (ast:make 'out (list type ((prefix 'ev) event))))
-    (('component name rest ...) (append (ast:make 'component (cons ((prefix 'co) name) (map mangle rest)))))
-    (('provides name event) (ast:make 'provides (list ((prefix 'if) name) ((prefix 'po) event))))
-    (('requires name event) (ast:make 'requires (list ((prefix 'if) name) ((prefix 'po) event))))
-    ;; Do we need this for LOPW? (('variable type name expression) (list 'variable type ((prefix 'va) name) expression))
-    ;; FIXME: type interface trigger (on ((trigger #f x)) statemnt)?
-    (('on ('triggers (? ast:trigger?) ...) statement) (ast:make 'on (list (ast:make 'triggers (map mangle (ast:triggers ast))) (mangle statement))))
-    (('trigger port event) (ast:make 'trigger (list (if port ((prefix 'po) port) #f) ((prefix 'ev) event))))
-    (('illegal) ast)
-    (('action (? ast:trigger?)) (ast:make 'action (list (mangle (ast:trigger ast)))))
-    ((h ...) (map mangle ast))
-    (_ ast)))
-
-(define ast:mangle mangle)
-(define ast-> mangle)
+(define (gom:mangle ast) (gom:map mangle ast))
+(define (ast-> ast)
+  ((compose gom->list gom:mangle ast->gom ast:resolve) ast))

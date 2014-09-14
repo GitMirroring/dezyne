@@ -23,42 +23,47 @@
   :use-module (test-suite misc)
 
   :use-module (gaiag reader)
-  :use-module (gaiag mangle))
+  :use-module (gaiag mangle)
+
+  :use-module (oop goops)
+  :use-module (gaiag gom))
 
 (pass-if "mangle-first-dummy-test"
 	 #t)
 
+(define (ast:mangle* ast) ((compose gom:mangle ast->gom) ast))
+
 (pass-if "mangle-interface"
-  (pretty-noisy-equal?
-   (ast:mangle '(interface I))
+  (gom-pretty-noisy-equal?
+   (ast:mangle* '(interface I))
    '(interface if_I)))
 
 (pass-if "mangle-component"
-  (pretty-noisy-equal?
-   (ast:mangle '(component C))
+  (gom-pretty-noisy-equal?
+   (ast:mangle* '(component C))
    '(component co_C)))
 
 (pass-if "mangle-event"
-  (pretty-noisy-equal?
-   (ast:mangle '(interface I (events (in ((type void)) e) (out ((type void)) a))))
+  (gom-pretty-noisy-equal?
+   (ast:mangle* '(interface I (events (in ((type void)) e) (out ((type void)) a))))
    '(interface if_I (events (in ((type void)) ev_e) (out ((type void)) ev_a)))))
 
 (pass-if "mangle-port"
-  (pretty-noisy-equal?
-   (ast:mangle '(component C (ports (provides I p) (requires I q))))
+  (gom-pretty-noisy-equal?
+   (ast:mangle* '(component C (ports (provides I p) (requires I q))))
    '(component co_C (ports (provides if_I po_p) (requires if_I po_q)))))
 
 (pass-if "mangle-interface-on"
-  (pretty-noisy-equal?
-   (ast:mangle '(on (triggers (trigger #f e)) (illegal)))
+  (gom-pretty-noisy-equal?
+   (ast:mangle* '(on (triggers (trigger #f e)) (illegal)))
    '(on (triggers (trigger #f ev_e)) (illegal))))
 
 (pass-if "mangle-trigger"
-  (pretty-noisy-equal?
-   (ast:mangle '(trigger mangle mangle))
+  (gom-pretty-noisy-equal?
+   (ast:mangle* '(trigger mangle mangle))
    '(trigger po_mangle ev_mangle)))
 
 (pass-if "mangle-interface-actionn"
-  (pretty-noisy-equal?
-   (ast:mangle '(action (trigger #f a)))
+  (gom-pretty-noisy-equal?
+   (ast:mangle* '(action (trigger #f a)))
    '(action (trigger #f ev_a))))

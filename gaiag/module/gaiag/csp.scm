@@ -90,13 +90,13 @@
   (gom:import name csp:norm))
 
 (define (csp:norm ast)
-  ((compose normstate mangle) ast))
+  ((compose normstate mangle ast->gom ast:resolve) ast))
 
 (define (mangle ast)
   "experimental mangling"
-  (or (and-let* ((component (ast:component ast))
-                 ((member (ast:name component) '(mangle argument2))))
-                (ast:mangle ast))
+  (or (and-let* ((component (gom:component ast))
+                 ((member (.name component) '(mangle argument2))))
+                (gom:mangle ast))
       ast))
 
 (define (csp-component module)
