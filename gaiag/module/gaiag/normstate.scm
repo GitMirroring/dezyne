@@ -57,7 +57,7 @@
     flatten-compound
     combine-guards
     passdown-on
-    (gom:map* (remove-otherwise '()))
+    (remove-otherwise '())
     (gom:map* add-skip))
    o))
 
@@ -230,25 +230,20 @@
          :elements (map (passdown-triggers triggers) statements)))
       (_ (make <on> :triggers triggers :statement o)))))
 
-(define-method (remove-otherwise (statements <list>))
-  (lambda (o) (remove-otherwise o statements)))
-
-(define-method (remove-otherwise (o <top>) (statements <list>)) o)
-
-(define-method (remove-otherwise (o <guard>) (statements <list>))
-  (let ((expression (.expression o)))
-    (match expression
-      (($ <otherwise>) (=> failure)
-       (if (null? statements)
-           (failure)
-           (make <guard>
-             :expression (guards-not-or statements)
-             :statement (gom:map* (remove-otherwise '()) (.statement o)))))
-      (_ o))))
-
-(define-method (remove-otherwise (o <compound>) (statements <list>))
-  (make <compound>
-    :elements (map (gom:map* (remove-otherwise (.elements o))) (.elements o))))
+(define ((remove-otherwise statements) o)
+  (match o
+    (($ <guard> ($ <otherwise>)) (=> failure)
+     (if (null? statements)
+         (failure)
+         (make <guard>
+           :expression (guards-not-or statements)
+           :statement (gom:map (remove-otherwise '()) (.statement o)))))
+    (($ <compound> statements)
+     (make <compound>
+       :elements (map (remove-otherwise statements) statements)))
+    ((? (is? <ast>)) (gom:map (remove-otherwise statements) o))
+    ((h t ...) (map (remove-otherwise statements) o))
+    (_ o)))
 
 (define-method (guards-not-or (o <list>))
   (let* ((expressions (map .expression o))
