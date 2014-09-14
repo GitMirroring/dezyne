@@ -36,19 +36,14 @@
 
 (define-method (mangle (o <top>)) o)
 (define-method (mangle (o <named>))
-  (define ((make-initializer o) name)
+  (define ((mangle-name-initializer o) name)
     (let* ((element (slot-ref o name))
            (p (gom:prefix o)))
       (list (symbol->keyword name)
             (if (and (eq? name 'name) p)
                 ((prefix p) element)
                 element))))
-  (let* ((class (class-of o))
-         (slots (class-slots class))
-         (names (map slot-definition-name slots))
-         (initializers (map (make-initializer o) names))
-         (arguments (cons class (apply append initializers))))
-    (apply make arguments)))
+  (gom:clone o mangle-name-initializer))
 
 (define-method (mangle (o <gom:port>))
   (make <gom:port>
