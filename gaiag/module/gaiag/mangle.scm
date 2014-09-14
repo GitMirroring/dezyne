@@ -23,7 +23,6 @@
   :use-module (ice-9 pretty-print)
   :use-module (ice-9 match)
 
-  :use-module (gaiag ast:)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)

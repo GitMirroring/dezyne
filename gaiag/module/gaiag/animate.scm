@@ -70,7 +70,7 @@
            templates))
 
 (define (prefix-dir)
-  (let* ((canary "gaiag/ast:")
+  (let* ((canary "gaiag/gaiag")
          (canary.go (string-append canary ".go"))
          (canary.scm (string-append canary ".scm")))
     (append

@@ -22,7 +22,6 @@
   :use-module (test-suite lib)
   :use-module (test-suite misc)
 
-  :use-module (gaiag ast:)
   :use-module (gaiag reader)
   :use-module (gaiag pretty-print)
   :use-module (gaiag simulate)
@@ -85,7 +84,7 @@
    (gom-pretty-noisy-equal?
     (walk-trail
      (simulate:gom
-      (ast:interface
+      (car
        (asd->ast
         #{ interface i
                      {
@@ -127,7 +126,8 @@
 
 (pass-if "walk-trail-arguments"
   (let* ((arguments-ast (read-ast 'examples/arguments.asd))
-         (model (simulate:gom (ast:component arguments-ast)))
+         (gom ((gom:register simulate:gom) arguments-ast #t))
+         (model (gom:component gom))
          (trail '(i.e i.e i.e))
          (foobar (set-program-arguments '("gaiag" "--json" "foobar")))
          (arguments-trace (with-output-to-string (lambda () (pretty-print (mangle-trace (walk-trail model trail))))))

@@ -32,7 +32,7 @@
 
   :use-module (gaiag animate)
   :use-module (gaiag asserts)
-  :use-module (gaiag ast:)
+
   :use-module (gaiag gaiag)
   :use-module (gaiag mangle)
   :use-module (gaiag misc)
@@ -70,10 +70,11 @@
            ))
 
 (define (ast-> ast)
-  (let* ((norm ((gom:register csp:norm) ast #t)))
+  (let* ((gom (ast->gom ast))
+         (norm ((gom:register csp:norm) gom #t)))
     (module-define! (resolve-module '(gaiag csp)) 'ast norm)  ;; FIXME
     (and-let* ((comp (gom:component norm))
-               (name (ast:name (ast:component ast))) ;; unmangled
+               (name (.name (gom:component gom))) ;; unmangled
                ((or (.behaviour comp)
                     (let ((message (format #f "gaiag: component without behaviour: ~a\n" name)))
                       (stderr message)
@@ -130,7 +131,6 @@
   (let ((module (make-module 31 (list
                                  (resolve-module '(ice-9 match))
                                  (resolve-module '(ice-9 curried-definitions))
-                                 (resolve-module '(gaiag ast:))
                                  (resolve-module '(gaiag csp))))))
     (module-define! module 'ast ast)
     (and-let* ((comp (gom:component ast)))

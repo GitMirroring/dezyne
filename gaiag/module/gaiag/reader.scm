@@ -60,7 +60,7 @@
       (set! *include-path* (cons dir *include-path*)))
     resolved))
 
-(define* (read-asd file-name :optional (register (@ (gaiag ast) register)))
+(define* (read-asd file-name :optional (register identity))
   (register (read-asd- (find-file file-name))))
 
 (define (read-ast- file-name)
@@ -69,7 +69,7 @@
         (read (open-input-file file-name))
         (read-asd- file-name))))
 
-(define* (read-ast file-name :optional (register (@ (gaiag ast) register)))
+(define* (read-ast file-name :optional (register identity))
   "Read contents of FILE-NAME and return the AST.
 
 If FILE-NAME ends with `.scm', assume plain AST scheme content and
@@ -82,5 +82,5 @@ the parser."
   (with-input-from-string string
     (lambda () (asd-reader (current-input-port) (current-module)))))
 
-(define* (parse-asd string :optional (register (@ (gaiag ast) register)))
+(define* (parse-asd string :optional (register identity))
   (register (parse-asd- string)))

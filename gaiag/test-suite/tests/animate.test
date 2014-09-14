@@ -24,7 +24,6 @@
 
   :use-module (ice-9 pretty-print)
 
-  :use-module (gaiag ast:)
   :use-module (gaiag animate)
   :use-module (gaiag c++)
   :use-module (gaiag misc)

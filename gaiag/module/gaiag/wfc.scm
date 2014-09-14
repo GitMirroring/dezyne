@@ -30,7 +30,8 @@
   :use-module (ice-9 optargs)
   :use-module (ice-9 pretty-print)
 
-  :use-module (gaiag ast:)
+  :use-module (srfi srfi-1)
+
   :use-module (gaiag misc)
   :use-module (language asd parse)
   :use-module (gaiag reader)
@@ -70,8 +71,17 @@
 
 (define (error message ast) (list message ast))
 
+(define (ast:interface? ast) (and (pair? ast) (eq? (car ast) 'interface)))
+(define (ast:interface ast) (find ast:interface? ast))
+
+(define (ast:behaviour ast)
+  (or (and (pair? ast) (>2 (length ast)) (assoc 'behaviour (cddr ast))) (list 'behaviour)))
+
+(define (ast:statement ast)
+  (or (and (pair? ast) (>2 (length ast)) (assoc 'compound (cddr ast))) (list 'compound)))
+
 (define (verify-on ast)
-  (and-let* ((statements ((compose ast:body ast:statement ast:interface) ast))
+  (and-let* ((statements ((compose cdr ast:statement ast:behaviour ast:interface) ast))
              (error-locations (null-is-#f (filter identity (map statement-on statements)))))
             error-locations))
 
@@ -87,7 +97,7 @@
     (_ (throw 'match-error  (format #f "~a:statement-on: no match: ~a\n" (current-source-location) src)))))
 
 (define (verify-mixing ast)
-  (let ((statement ((compose ast:statement ast:interface) ast)))
+  (let ((statement ((compose ast:statement ast:behaviour ast:interface) ast)))
         (list (mixing statement))))
 
 (define* (mixing s :key (guarded 0) (illegal 0) (imperative 0))

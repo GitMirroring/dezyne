@@ -22,7 +22,6 @@
   :use-module (test-suite lib)
   :use-module (test-suite misc)
 
-  :use-module (gaiag ast:)
   :use-module (gaiag reader)
   :use-module (gaiag normstate)
 
@@ -35,7 +34,7 @@
 (pass-if "normstate-101"
          (gom-pretty-noisy-equal?
           (normstate
-           (ast:interface (asd->ast
+           (car (asd->ast
                            #{
                              interface i { behaviour { on a: [true] { } } } #})))
           '(interface i (types) (events)
@@ -46,7 +45,7 @@
 (pass-if "normstate-102"
          (gom-pretty-noisy-equal?
           (normstate
-           (ast:interface (asd->ast
+           (car (asd->ast
                            #{
                              interface i { behaviour { on a: [true] b;
                                                           } } #})))
@@ -60,7 +59,7 @@
 (pass-if "normstate-aggregate-guard-passive"
          (gom-pretty-noisy-equal?
           (normstate
-           (ast:interface (asd->ast
+           (car (asd->ast
                            #{
                              interface i { behaviour { on a,b,c: [true] d;
                                                           } } #})))
@@ -74,7 +73,7 @@
 (pass-if "normstate-aggregate-guard-active"
          (gom-pretty-noisy-equal?
           (normstate
-           (ast:interface (asd->ast
+           (car (asd->ast
                            #{
                              interface i { behaviour { on a: [true] d;
                                                           on b: [true] e;
@@ -156,7 +155,7 @@
 (pass-if "normstate-function-call"
          (gom-pretty-noisy-equal?
           (normstate
-           (ast:interface (asd->ast
+           (car (asd->ast
                            #{
                              interface i { behaviour { void foo(){ if(true){}} on a,b,c: [true] d ;
                                                             } } #})))
@@ -175,7 +174,7 @@
 (pass-if "normstate-split-on-passive"
          (gom-pretty-noisy-equal?
           (normstate
-           (ast:interface (asd->ast
+           (car (asd->ast
                            #{
                              interface i { behaviour { on a,b,c: [true] d;
                                                           } } #})))
@@ -189,7 +188,7 @@
 (pass-if "normstate-split-on-active"
          (gom-pretty-noisy-equal?
           (normstate
-           (ast:component (asd->ast
+           (car (asd->ast
                            #{
                              component c { behaviour { on i.a,i.b,j.a: [true] d;
                                                           on j.b: [true] e;
@@ -209,7 +208,7 @@
 (pass-if "normstate-aggregate-on-interface-passive"
          (gom-pretty-noisy-equal?
           (normstate
-           (ast:interface (asd->ast
+           (car (asd->ast
                            #{
                              interface i { behaviour { on a,b,c: [true] d;
                                                           } } #})))
@@ -222,7 +221,7 @@
 (pass-if "normstate-aggregate-on-interface-active"
          (gom-pretty-noisy-equal?
           (normstate
-           (ast:interface (asd->ast
+           (car (asd->ast
                            #{
                              interface i { behaviour { on a: [true] d;
                                                           on b: [true] d;
@@ -240,7 +239,7 @@
 (pass-if "normstate-aggregate-on-component-passive"
          (gom-pretty-noisy-equal?
           (normstate
-           (ast:component (asd->ast
+           (car (asd->ast
                            #{
                              component c { behaviour { on i.a,i.b: [true] d;
                                                           on j.a:     [true] d;
@@ -261,7 +260,7 @@
 (pass-if "normstate-aggregate-on-component-active"
          (gom-pretty-noisy-equal?
           (normstate
-           (ast:component (asd->ast
+           (car (asd->ast
                            #{
                              component c { behaviour { on i.a: [true] d;
                                                           on i.b: [true] d;

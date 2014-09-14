@@ -6,7 +6,6 @@
   :use-module (test-suite lib)
   :use-module (test-suite misc)
 
-  :use-module (gaiag ast:)
   :use-module (gaiag csp)
   :use-module (gaiag resolve)
   :use-module (gaiag gom))
@@ -605,21 +604,18 @@ semi_(semi_(\\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
 (\\ P',V' @ i.return -> P'(V')))(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
 
 
-(define c-ast `(,(ast:make
-               'component
-               `(c
-                 (ports (provides i j)
-                        (requires i k))
-                 ,(ast:make
-                   'behaviour
-                   '(
-                     B
-                     (types (enum S (S1 S2)))
-                     (variables
-                      (variable (type S) s (expression (literal #f S S1)))
-                      (variable (type bool) b (expression false))
-                      (variable (type bool) c (expression true)))
-                     (compound)))))))
+(define c-ast '(component
+                c
+                (ports (provides i j)
+                       (requires i k))
+                (behaviour
+                 B
+                 (types (enum S (S1 S2)))
+                 (variables
+                  (variable (type S) s (expression (literal #f S S1)))
+                  (variable (type bool) b (expression false))
+                  (variable (type bool) c (expression true)))
+                 (compound))))
 
 (define c-csp-transform-return-via
   '(on ((trigger j e))
@@ -1480,31 +1476,31 @@ skip_
           csp-callvalued-on-deep))
 
 (pass-if "context-extend"
-  (let ((context (make-context (ast:member-names i-ast) '(d))))
+  (let ((context (make-context '(s b c) '(d))))
     (gom-pretty-noisy-equal?
      (context-extend context 'b)
      '(ctx ((s hide_member1' c) d b)))))
 
 (pass-if "context-extend-symbol-vector"
-  (let ((context (make-context (ast:member-names i-ast) '(d))))
+  (let ((context (make-context '(s b c) '(d))))
     (gom-pretty-noisy-equal?
      (context-extend context '(vector s d))
      '(ctx ((hide_member0' b c) hide_local0' (vector s d))))))
 
 (pass-if "context-extend-vector-symbol"
-  (let ((context (make-context (ast:member-names i-ast) '((vector b e f)))))
+  (let ((context (make-context '(s b c) '((vector b e f)))))
     (gom-pretty-noisy-equal?
      (context-extend context 'b)
      '(ctx ((s hide_member1' c) (vector hide_local0' e f) b)))))
 
 (pass-if "context-extend-vector-vector"
-  (let ((context (make-context (ast:member-names i-ast) '((vector d e f)))))
+  (let ((context (make-context '(s b c) '((vector d e f)))))
     (gom-pretty-noisy-equal?
      (context-extend context '(vector s d))
      '(ctx ((hide_member0' b c) (vector hide_local0' e f) (vector s d))))))
 
 (pass-if "context-extend-vector-symbol-vector"
-  (let ((context (make-context (ast:member-names i-ast) '((vector d e f) s))))
+  (let ((context (make-context '(s b c) '((vector d e f) s))))
     (gom-pretty-noisy-equal?
      (context-extend context '(vector s d))
      '(ctx ((hide_member0' b c) (vector hide_local0' e f) hide_local3' (vector s d))))))
@@ -1615,7 +1611,7 @@ semi_(assign_active_(sendrecv_(k,h),
 
 ;; '
 
-(define component (ast->gom (ast:component c-ast)))
+(define component (ast->gom c-ast))
 
 (pass-if "provides?"
   (gom-pretty-noisy-equal?

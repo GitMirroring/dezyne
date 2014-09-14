@@ -98,7 +98,6 @@
 (define (c++-module ast)
   (let ((module (make-module 31 (list
                                  (resolve-module '(ice-9 match))
-                                 (resolve-module '(gaiag ast:))
                                  (resolve-module '(gaiag c++))
                                  (resolve-module '(gaiag misc))))))
     (module-define! module 'ast ast)

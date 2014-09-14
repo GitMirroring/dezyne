@@ -26,7 +26,6 @@
   :use-module (system foreign)
   :use-module (srfi srfi-1)
 
-  :use-module (gaiag ast:)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
 ;;  :use-module (gaiag resolve)
@@ -180,9 +179,10 @@
 (define (statement? ast)  ;; REMOVEME
   (member (ast-name ast) '(action assign bind call compound guard if instance on reply variable return)))
 
+(define (ast:system? x) (and (pair? x) (eq? (car x) 'system)))
 (define (gom:statement ast) ;; REMOVEME
   (match ast
-    ((? ast:system?) (or (find (lambda (x) (is-a? x <compound>)) (ast:body ast))))
+    ((? ast:system?) (or (find (lambda (x) (is-a? x <compound>)) (cddr ast))))
     (($ <model>) (gom:statement (.behaviour ast)))
     (($ <behaviour>) (or (.statement ast) (make <compound>)))
     (($ <function>) (.statement ast))
