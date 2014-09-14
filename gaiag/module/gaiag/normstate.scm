@@ -52,7 +52,7 @@
 (define-method (normstate (o <ast>))
   ((compose
     (gom:map aggregate-on)
-    (gom:map* expand-on)
+    (gom:map expand-on)
     (gom:map* aggregate-guard)
     (gom:map* flatten-compound)
     (gom:map* combine-guards)
@@ -105,16 +105,14 @@
 (define-method (statement-equal? (lhs <top>) (rhs <top>))
   (equal? lhs rhs))
 
-;; expand on
-(define-method (expand-on (o <top>)) o)
-
-(define-method (expand-on (o <compound>))
-  (let ((statements (.elements o)))
-    (match statements
-      ((($ <on>) ...)
-       (make <compound>
-         :elements (apply append (map port-split-triggers statements))))
-       (_ o))))
+(define (expand-on o)
+  (match o
+    (($ <compound> (($ <on>) ...))
+     (make <compound>
+       :elements (apply append (map port-split-triggers (.elements o)))))
+     ((? (is? <ast>)) (gom:map expand-on o))
+     ((h t ...) (map expand-on o))
+     (_ o)))
 
 (define-method (port-split-triggers (o <top>)) o)
 
