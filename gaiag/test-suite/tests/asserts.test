@@ -37,3 +37,15 @@
     (gom:parse-asd
      #{ component C {} #}))
    '()))
+
+(pass-if "assert-interface"
+  (pretty-noisy-equal?
+   (assert-list
+    (gom:parse-asd
+     #{ interface I {behaviour { }}
+                  component C {
+                               provides I i ;
+                                        requires I j ;
+                                        } #}))
+   '((interface I deadlock)
+     (interface I livelock))))

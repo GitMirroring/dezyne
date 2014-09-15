@@ -61,6 +61,7 @@
 	   csp-transform*
            csp:norm
 
+           model-with-behaviour
            make-context
            context-extend
            statement-on-p/r
@@ -70,22 +71,30 @@
            ))
 
 (define (ast-> ast)
-  (let* ((gom (ast->gom ast))
-         (norm ((gom:register csp:norm) gom #t)))
-    (module-define! (resolve-module '(gaiag csp)) 'ast norm)  ;; FIXME
-    (and-let* ((comp (gom:component norm))
-               (name (.name (gom:component gom))) ;; unmangled
-               ((or (.behaviour comp)
-                    (let ((message (format #f "gaiag: component without behaviour: ~a\n" name)))
-                      (stderr message)
-                      (throw 'csp message))))
-               (module (csp-module norm))
-               (fn (option-ref (parse-opts (command-line)) 'output (list name '.csp))))
-              (dump-output fn
-                           (lambda ()
-                             (csp-component module)
-                             (csp-asserts module)))))
+  (or (and-let* ((gom ((gom:register ast->gom) ast #t))
+                 (model (model-with-behaviour gom)))
+                (generate-csp model))
+      (let ((message (format #f "gaiag: no component with behaviour: ~a\n" name)))
+        (stderr message)
+        (throw 'csp message)))
   "")
+
+(define-method (generate-csp (o <component>))
+  (and-let* ((name (.name o))
+             (interfaces (map gom:import (map .type ((compose .elements .ports) o))))
+             (root (make <root> :elements (append interfaces (list o))))
+             (norm ((gom:register csp:norm) root #t))
+             (module (csp-module norm))
+             (file-name (option-ref (parse-opts (command-line)) 'output (list name '.csp))))
+            (module-define! (resolve-module '(gaiag csp)) 'ast norm)  ;; FIXME
+            (dump-output file-name (lambda () (csp-component module) (csp-asserts module)))))
+
+(define (models-with-behaviour gom)
+  (filter .behaviour (append ((gom:filter <component>) gom) ((gom:filter <interface>) gom))))
+
+(define (model-with-behaviour gom)
+  (and-let* ((models (null-is-#f (models-with-behaviour gom))))
+            (car models)))
 
 (define (csp:import name)
   (gom:import name csp:norm))

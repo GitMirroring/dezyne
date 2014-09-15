@@ -1735,3 +1735,22 @@ semi_(assign_active_(sendrecv_(k,h),
            expression-via)
           "context_(\\ ((s,b,c),(stack')) @ false,
 assign_(\\ ((s,b,c),((stack',t))) @ ((s,b,c),((stack',(s == S_S1))))))"))
+
+
+(define behaviourless-component-ast
+  '((interface I
+      (events (in (signature (type void)) e))
+      (behaviour
+       #f
+       (compound (on ((e)) (compound)))))
+    (component
+     C
+     (ports (provides I i)))))
+
+(pass-if "behaviourless-component-ast"
+         (gom-noisy-equal? (model-with-behaviour (ast->gom behaviourless-component-ast))
+                           '(interface I
+                              (events (in (signature (type void)) e))
+                              (behaviour
+                               #f
+                               (compound (on ((e)) (compound)))))))
