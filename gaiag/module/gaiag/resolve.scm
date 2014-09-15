@@ -24,6 +24,7 @@
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 match)
   :use-module (ice-9 pretty-print)
+  :use-module (ice-9 receive)
   :use-module (srfi srfi-1)
 
   :use-module (gaiag misc)
@@ -223,6 +224,16 @@
 
     (($ <field>) o)
     (($ <var>) o)
+
+    (($ <interface> name ($ <types> types) ($ <events> types-events) behaviour)
+     (receive (types- events) (partition (lambda (x)
+                                           (or (is-a? x <enum>) (is-a? x <int>))) types-events)
+       (make <interface>
+         :name name
+         :types (make <types> :elements (append types types-))
+         :events (make <events> :elements events)
+         :behaviour (gom:map (gom:resolve model) behaviour))))
+
     ((? (is? <ast>)) (gom:map (gom:resolve model) o))
     ((h t ...) (map (gom:resolve model) o))
     (_ o))))
