@@ -129,8 +129,8 @@
    (driver: lr)
    ;;(out-table: "asd.out")
    (
-    lbrace rbrace lparen rparen lbracket rbracket semicolon colon dot comma
-    on
+    lbrace rbrace lparen rparen rbracket semicolon colon dot comma
+    (left: on lbracket)
     inevitable optional
     otherwise
     if reply return
@@ -288,8 +288,8 @@
 
    (optional-behaviour
     () : '(behaviour)
-    (behaviour lbrace type-list variable-list function-list statement-list rbrace) : `(,$1 #f ,$3 ,$4 ,$5 ,$6)
-    (behaviour Identifier lbrace type-list variable-list function-list statement-list rbrace) : `(,$1 ,$2 ,$4 ,$5 ,$6 ,$7)
+    (behaviour lbrace type-list variable-list function-list function-statement-list rbrace) : `(,$1 #f ,$3 ,$4 ,$5 ,$6)
+    (behaviour Identifier lbrace type-list variable-list function-list function-statement-list rbrace) : `(,$1 ,$2 ,$4 ,$5 ,$6 ,$7)
     (system lbrace system-statement-list rbrace) : `(,$1 #f ,$3)
     (system Identifier lbrace system-statement-list rbrace) : `(,$1 ,$2 ,$4))
 
@@ -313,6 +313,14 @@
    (statement-list
     () : '(compound)
     (statement-list statement) : (append $1 (list $2)))
+
+   (function-statement-list
+    () : '(compound)
+    (function-statement-list function-statement) : (append $1 (list $2)))
+
+   (function-statement
+    (function) : $1
+    (statement) : $1)
 
    (statement
     (function-call-statement) : $1

@@ -234,6 +234,16 @@
          :events (make <events> :elements events)
          :behaviour (gom:map (gom:resolve model) behaviour))))
 
+
+    (($ <behaviour> name types variables ($ <functions> functions) ($ <compound> mixed))
+     (receive (functions- statements) (partition (is? <function>) mixed)
+       (make <behaviour>
+         :name name
+         :types types
+         :variables (gom:map (gom:resolve model) variables)
+         :functions (gom:map (gom:resolve model) (make <functions> :elements (append functions functions-)))
+         :statement (gom:map (gom:resolve model) (make <compound> :elements statements)))))
+
     ((? (is? <ast>)) (gom:map (gom:resolve model) o))
     ((h t ...) (map (gom:resolve model) o))
     (_ o))))
