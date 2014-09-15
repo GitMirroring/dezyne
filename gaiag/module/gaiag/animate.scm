@@ -151,7 +151,8 @@
   (with-input-from-file file-name (lambda () (line-column-location tell))))
 
 (define (animate-file file-name module)
-  (with-input-from-file (components->file-name file-name) (lambda () (animate-input module file-name))))
+  (let ((file-name (components->file-name file-name)))
+      (with-input-from-file file-name (lambda () (animate-input module file-name)))))
 
 (define* (animate-input module :optional (file-name "<input>"))
   (catch 'parse-error
@@ -214,7 +215,7 @@
                (let* ((xstart (ftell (current-input-port)))
                       (expr (read (current-input-port)))
                       (end (ftell (current-input-port))))
-                 (catch 'boo ;;(if (batch-mode?) #t 'no-funky-exceptions)
+                 (catch (if (batch-mode?) #t 'no-funky-exceptions)
                    (lambda ()
                      (let ((result (eval expr module)))
                        (display (->string result))

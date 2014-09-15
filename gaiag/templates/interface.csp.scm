@@ -3,7 +3,6 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -22,4 +21,14 @@
 ;;; 
 ;;; Code:
 
-assert #(.name model) _#((compose .name .behaviour) model) (false) :[deadlock free]
+
+channel #(.name model): {#(comma-join (append (interface-events model) (return-values model)))}
+
+#(.name model) _#((compose .name .behaviour) model)(IG) = let
+# (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (gom:functions (.behaviour model))))
+#(.name model) _#((compose .name .behaviour) model) _((#(context->csp model (make-context ((compose gom:member-names csp:import) (.name model)) '())))) =
+# (behaviour->csp
+ (csp:import (.name model))
+ (->string (list (.name model) '_ ((compose .name .behaviour) model) '_ "((" (context->csp model (make-context ((compose gom:member-names csp:import) (.name model)) '())) "))" )))
+
+within #(.name model) _#((compose .name .behaviour) model) _((#(context->csp model (make-context ((compose gom:member-values csp:import) (.name model)) '(<>)))))#(optional-chaos model)

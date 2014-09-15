@@ -35,16 +35,14 @@ context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_loca
 context_func_(S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', <>))
 context_func_args_(v', S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', (<>, v')))
 
-datatype event_enumeration_alphabet =
-e | f | return
-
 channel illegal
+channel transition_begin, transition_end
 
-channel i: {e,f,return}
+datatype event_enumeration_alphabet = e | f | return
 
 channel I: {e,f,return}
 
-  I_(IG) = let
+I_(IG) = let
 g = \ P',V',F' @ context_func_args_(F',
 context_(\ ((hide_member0',c),((stack',(b,d)))) @ d,
 context_(\ ((hide_member0',c),(((stack',(hide_local0',d)),b))) @ c,
@@ -62,8 +60,8 @@ skip_
 )(P',((hide_member0',hide_member1'),(((stack',b),c)))))),
 (\ P',V' @ I.return -> P'(V')))(\ V' @ I__(V'),((b,c),(stack'))))
 
-
 within I__(((false,true),(<>)))
+channel i:{e,f,return}
 
 
 hide_(IIG,IG) = let
@@ -91,8 +89,6 @@ channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
-
-channel transition_begin, transition_end
 
 channel reorder_in,reorder_out : {i.return}
 
@@ -137,13 +133,12 @@ ClientCalls = {i.e}
 UsedModeling = {}
 within compress((hide_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,i|},Exclude)|]
-(((STOP) [[x<-IN.x|x<-extensions(IN)]]
+(((STOP
+) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 assert I_(false) :[deadlock free]
-
 assert I_(true) :[livelock free]
-
 assert hide_(true,true) :[deterministic]
 assert STOP [T= hide__Component(false) \ diff(Events,{illegal})
 assert hide__Component(false) :[deadlock free]

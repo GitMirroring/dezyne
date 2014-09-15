@@ -71,23 +71,34 @@
            ))
 
 (define (ast-> ast)
-  (or (and-let* ((gom ((gom:register ast->gom) ast #t))
-                 (model (model-with-behaviour gom)))
-                (generate-csp model))
-      (let ((message (format #f "gaiag: no component with behaviour: ~a\n" name)))
-        (stderr message)
-        (throw 'csp message)))
+  (let ((gom ((gom:register ast->gom) ast #t)))
+    (or (and-let* ((model (model-with-behaviour gom)))
+                  (generate-csp model))
+        (let* ((models ((gom:filter <model>) gom))
+               (message (format #f "gaiag: no component with behaviour: ~a\n"
+                                (comma-join (map .name models)))))
+          (stderr message)
+          (throw 'csp message))))
   "")
 
+(define-method (generate-csp (o <interface>))
+  (and-let* ((root (make <root> :elements (list o))))
+            (generate-csp o root)))
+
 (define-method (generate-csp (o <component>))
-  (and-let* ((name (.name o))
-             (interfaces (map gom:import (map .type ((compose .elements .ports) o))))
-             (root (make <root> :elements (append interfaces (list o))))
-             (norm ((gom:register csp:norm) root #t))
-             (module (csp-module norm))
+  (and-let* ((interfaces (map gom:import (map .type ((compose .elements .ports) o))))
+             (root (make <root> :elements (append interfaces (list o)))))
+            (generate-csp o root)))
+
+(define-method (generate-csp (o <model>) (root <root>))
+  (and-let* ((norm ((gom:register csp:norm) root #t))
+             (name (.name o))
+             (model (model-with-behaviour norm))
              (file-name (option-ref (parse-opts (command-line)) 'output (list name '.csp))))
-            (module-define! (resolve-module '(gaiag csp)) 'ast norm)  ;; FIXME
-            (dump-output file-name (lambda () (csp-component module) (csp-asserts module)))))
+            (dump-output file-name (lambda ()
+                                     (animate-file (append (prefix-dir) '(templates combinators.csp.scm)) (csp-module model))
+                                     (csp-model model)
+                                     (csp-asserts model)))))
 
 (define (models-with-behaviour gom)
   (filter .behaviour (append ((gom:filter <component>) gom) ((gom:filter <interface>) gom))))
@@ -109,97 +120,50 @@
                 (gom:mangle ast))
       ast))
 
-(define (csp-component module)
-  (animate-file (append (prefix-dir) '(templates component.csp.scm)) module))
+(define-method (interfaces (o <component>))
+  (map gom:import (delete-duplicates (sort (map .type ((compose .elements .ports) o)) symbol<))))
 
-(define (csp-asserts module)
+(define-method (csp-model (o <component>))
+  (for-each csp-model (interfaces o))
+  (animate-file (append (prefix-dir) '(templates component.csp.scm)) (csp-module o)))
+
+(define-method (csp-model (o <interface>))
+  (animate-file (append (prefix-dir) '(templates interface.csp.scm)) (csp-module o)))
+
+(define-method (csp-asserts (o <component>))
+  (for-each csp-asserts (interfaces o))
+  (next-method))
+
+(define-method (csp-asserts (o <model>))
   (let* ((asserts-string (option-ref (parse-opts (command-line)) 'assert #f))
          (asserts (if asserts-string (with-input-from-string asserts-string read)
-                      (assert-list (module-ref module 'ast)))))
-    (for-each (csp-assert module) asserts)))
+                      (assert-list o))))
+    (for-each (csp-assert o) asserts)))
 
-(define ((csp-assert module) assert)
-  (let* ((class (car assert))
-         (model (cadr assert))
-         (check (caddr assert))
-         (template (assoc-ref asserts-alist (list class check))))
-    (module-define! module '.model model)
-    (animate-string template module)))
+(define-method (csp-assert (o <model>))
+  (lambda (assert)
+    (let* ((class (car assert))
+           (model (cadr assert))
+           (check (caddr assert))
+           (template (assoc-ref asserts-alist (list class check))))
+      (animate-string template (csp-module o)))))
 
 (define asserts-alist
   `(
-    ((component illegal) . "assert STOP [T= #.component _#.behaviour.name _Component(false) \\ diff(Events,{illegal})\n")
-    ((component deterministic) . "assert #.component _#.behaviour.name(true,true) :[deterministic]\n")
-    ((component deadlock)  . "assert #.component _#.behaviour.name _Component(false) :[deadlock free]\n")
+    ((component illegal) . "assert STOP [T= #(.name model) _#((compose .name .behaviour) model) _Component(false) \\ diff(Events,{illegal})\n")
+    ((component deterministic) . "assert #(.name model) _#((compose .name .behaviour) model)(true,true) :[deterministic]\n")
+    ((component deadlock)  . "assert #(.name model) _#((compose .name .behaviour) model) _Component(false) :[deadlock free]\n")
     ((component compliance) . ,(gulp-template 'asserts/component-compliance.csp.scm))
-    ((component livelock)  .  "assert #.component _#.behaviour.name _Component(true) \\ diff(Events,{|illegal,#.port.name |}) :[livelock free]\n")
+    ((component livelock)  .  "assert #(.name model) _#((compose .name .behaviour) model) _Component(true) \\ diff(Events,{|illegal,#((compose .name gom:port) model) |}) :[livelock free]\n")
     ((interface deadlock) . ,(gulp-template 'asserts/interface-deadlock.csp.scm))
     ((interface livelock) . ,(gulp-template 'asserts/interface-livelock.csp.scm))))
 
-(define (csp-module ast)
+(define-method (csp-module (o <model>))
   (let ((module (make-module 31 (list
-                                 (resolve-module '(ice-9 match))
-                                 (resolve-module '(ice-9 curried-definitions))
-                                 (resolve-module '(gaiag csp))))))
-    (module-define! module 'ast ast)
-    (and-let* ((comp (gom:component ast)))
-              (module-define! module '.component (.name comp))
-              (module-define! module 'component comp)
-              (module-define! module '.interface.name (.type (gom:port comp)))
-	      (module-define! module '.behaviour.name (.name (.behaviour comp)))
-              (module-define! module '.interface-behaviour (.name (.behaviour (csp:import (.type (gom:port (gom:component ast)))))))
-	      (module-define! module '.port.name (.name (gom:port comp))))
+                                 (resolve-module '(gaiag csp))
+                                 ))))
+    (module-define! module 'model o)
     module))
-
-(define* (map-ports string ports :optional (separator ""))
-  ((->join separator)
-   (map (lambda (port)
-          (with-output-to-string
-            (lambda ()
-              (save-module-excursion
-               (lambda ()
-                 (animate-string
-                  string
-                  (animate-module-populate
-                   (csp-module ast)
-                   port
-                   `((port . ,identity)
-                     (interface . ,(csp:import (.type port)))
-                     (.optional-chaos . ,optional-chaos)
-                     (.interface.name . ,.type)
-                     (.port.name . ,.name)
-                     (.behaviour.name . ,(compose .name .behaviour csp:import .type))
-                     ))))))))
-        ports)))
-
-(define* (map-interfaces string interfaces :optional (separator ""))
-  ((->join separator)
-   (map (lambda (interface)
-          (with-output-to-string
-            (lambda ()
-              (save-module-excursion
-               (lambda ()
-                 (animate-string
-                  string
-                  (animate-module-populate
-                   (csp-module ast)
-                   interface
-                   `((interface . ,(csp:import interface))
-                     (.interface.name . ,interface)))))))))
-        interfaces)))
-
-(define (map-guards string guards)
-  (display
-   ((->join "[]\n")
-    (map (lambda (guard)
-           (with-output-to-string
-             (lambda ()
-               (animate-string
-                string
-                (animate-module-populate
-                 (current-module)
-                 guard
-                 `((guard . ,identity))))))) guards))))
 
 (define (behaviour->csp model default)
   (or (string-null-is-#f
@@ -261,26 +225,30 @@
   (let ((interface (csp:import (.type port))))
     (interface-events interface)))
 
+(define-method (interface-events (o <component>)) ;; FIXME: no test
+  (apply append (map (compose interface-events gom:import .type) ((compose .elements .ports) o))))
+
+(define-method (interface-events (o <interface>))
+  (let* ((events (map .name (.elements (.events o))))
+         (modeling (map .event (modeling-events o))))
+    (sort (append events modeling) symbol<)))
+
 (define (modeling-event? event)
   (member (.event event) '(optional inevitable)))
 
 (define (modeling-events interface)
   (filter modeling-event? (gom:find-events interface)))
 
-(define (interface-events interface)
-  (let* ((events (map .name (.elements (.events interface))))
-         (modeling (map .event (modeling-events interface))))
-    (sort (append events modeling) symbol<)))
-
 (define-method (typed-elements (o <enum>))
    (map (lambda (x) (symbol-append (.name o) '_ x)) ((compose .elements .fields) o)))
 
-(define (enum-values comp)
-  (let ((comp-values (apply append (map typed-elements (gom:enums (.behaviour comp))))))
-    (let loop ((ports ((compose .elements .ports) comp)) (values comp-values))
-      (if (null? ports)
-          values
-          (loop (cdr ports) (append values (apply append (map typed-elements (gom:enums (.behaviour (csp:import (.type (car ports)))))))))))))
+(define-method (enum-values (o <component>))
+  (append
+   (apply append (map (compose enum-values gom:import .type) ((compose .elements .ports) o)))
+   (next-method)))
+
+(define-method (enum-values (o <model>))
+  (apply append (map typed-elements (gom:enums (.behaviour o)))))
 
 (define-method (return-value (o <enum>))
   (map (lambda (value) (symbol-append (.name o) '_ value)) ((compose .elements .fields) o)))
@@ -291,17 +259,14 @@
       (append (apply append returns) (list 'return)))) ;; FIXME: add only return when needed
 
 (define (return-values-port port) ;; FIMXE: no test
-  (add-return-if-empty (map return-value (gom:interface-enums (csp:import (.type port))))))
+  (let ((interface (csp:import (.type port))))
+    (return-values interface)))
 
-(define (return-values-interface interface) ;; FIXME: no test
-  (add-return-if-empty (map return-value (gom:interface-enums interface))))
+(define-method (return-values (o <interface>)) ;; FIMXE: no test
+  (add-return-if-empty (map return-value (gom:interface-enums o))))
 
-
-(define (return-values comp)
-    (let loop ((ports ((compose .elements .ports) comp)) (result '()))
-      (if (null? ports)
-          result
-          (loop (cdr ports) (append result (return-values-port (car ports)))))))
+(define-method (return-values (o <component>))
+  (apply append (map (compose return-values gom:import .type) ((compose .elements .ports) o))))
 
 (define ((statement-on-p/r predicate) on)
   (statement-on-p/r predicate on))
@@ -366,10 +331,10 @@
   (and (is-a? model <component>)
        ((requires? model) event)))
 
-(define (optional-chaos port) ;; FIXME: no test
-  (let ((interface (.type port)))
-    (if (member 'optional (map .event (gom:find-events (csp:import (.type port)))))
-        (list " [|{" interface " .optional}|] " "CHAOS({" interface " .optional})")
+(define-method (optional-chaos (o <interface>)) ;; FIXME: no test
+  (let ((name (.name o)))
+    (if (member 'optional (map .event (gom:find-events o)))
+        (list " [|{" name " .optional}|] " "CHAOS({" name " .optional})")
         "")))
 
 (define (ast-transform ast src)

@@ -128,6 +128,7 @@
     (('optional) ast)
     (('action x) '())
     (('illegal) '())
+    (('skip) '())
     (_ (throw 'match-error  (format #f "~a:gom:find-events: no match: ~a\n" (current-source-location) ast)))))
 
 (define* (gom:variable ast identifier)   ;; use SYMBOL TABLE

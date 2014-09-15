@@ -35,18 +35,14 @@ context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_loca
 context_func_(S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', <>))
 context_func_args_(v', S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', (<>, v')))
 
-datatype event_enumeration_alphabet =
-dummy | inevitable | return
-
 channel illegal
+channel transition_begin, transition_end
 
-channel l: {dummy,inevitable,return}
-channel n: {dummy,inevitable,return}
+datatype event_enumeration_alphabet = dummy | inevitable | return
 
 channel ilivelock: {dummy,inevitable,return}
-channel nolivelock: {dummy,inevitable,return}
 
-  ilivelock_(IG) = let
+ilivelock_(IG) = let
 
 ilivelock__(((<>),(stack'))) =
 IG & ilivelock?x:{dummy} ->
@@ -55,8 +51,9 @@ illegal_(STOP,<>)
 ilivelock?x:{inevitable} ->
 skip_(\ V' @ ilivelock__(V'),((<>),(stack')))
 
-
 within ilivelock__(((<>),(<>)))
+
+channel nolivelock: {dummy,inevitable,return}
 
 nolivelock_(IG) = let
 
@@ -65,8 +62,9 @@ nolivelock?x:{inevitable} ->
 semi_((\ P',V' @ nolivelock!dummy -> P'(V')),
 skip_)(\ V' @ nolivelock__(V'),((<>),(stack')))
 
-
 within nolivelock__(((<>),(<>)))
+channel l:{dummy,inevitable,return}
+channel n:{dummy,inevitable,return}
 
 
 livelock2_(IIG,IG) = let
@@ -85,8 +83,6 @@ channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {n.dummy,extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
-
-channel transition_begin, transition_end
 
 channel reorder_in,reorder_out : {l.return}
 
@@ -136,13 +132,9 @@ within compress((livelock2_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reord
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 assert ilivelock_(false) :[deadlock free]
-
 assert ilivelock_(true)  \ {|ilivelock.inevitable|} :[livelock free]
-
 assert nolivelock_(false) :[deadlock free]
-
 assert nolivelock_(true)  \ {|nolivelock.inevitable|} :[livelock free]
-
 assert livelock2_(true,true) :[deterministic]
 assert STOP [T= livelock2__Component(false) \ diff(Events,{illegal})
 assert livelock2__Component(false) :[deadlock free]

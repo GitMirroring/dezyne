@@ -35,16 +35,14 @@ context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_loca
 context_func_(S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', <>))
 context_func_args_(v', S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', (<>, v')))
 
-datatype event_enumeration_alphabet =
-i3_a | i4_b | i5_c | i6_d | return
-
 channel illegal
+channel transition_begin, transition_end
 
-channel i109_i: {i3_a,i4_b,i5_c,i6_d,return}
+datatype event_enumeration_alphabet = i3_a | i4_b | i5_c | i6_d | return
 
 channel i108_I: {i3_a,i4_b,i5_c,i6_d,return}
 
-  i108_I_(IG) = let
+i108_I_(IG) = let
 i43_toggle = \ P',V' @ context_func_(semi_(\ P',((i8_f),(stack')) @ ifthenelse_(i8_f,
 (\ P',V' @ i108_I!i5_c -> P'(V')),
 skip_
@@ -64,8 +62,8 @@ semi_(callvoid_(\ P',V' @ i43_toggle(P',V')),
 (\ P',V' @ i108_I!i6_d -> P'(V')))),
 (\ P',V' @ i108_I.return -> P'(V')))(\ V' @ i108_I__(V'),((i8_f),(stack'))))
 
-
 within i108_I__(((false),(<>)))
+channel i109_i:{i3_a,i4_b,i5_c,i6_d,return}
 
 
 i217_function_(IIG,IG) = let
@@ -95,8 +93,6 @@ channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
-
-channel transition_begin, transition_end
 
 channel reorder_in,reorder_out : {i109_i.return}
 
@@ -141,13 +137,12 @@ ClientCalls = {i109_i.i3_a,i109_i.i4_b}
 UsedModeling = {}
 within compress((i217_function_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,i109_i|},Exclude)|]
-(((STOP) [[x<-IN.x|x<-extensions(IN)]]
+(((STOP
+) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 assert i108_I_(false) :[deadlock free]
-
 assert i108_I_(true) :[livelock free]
-
 assert i217_function_(true,true) :[deterministic]
 assert STOP [T= i217_function__Component(false) \ diff(Events,{illegal})
 assert i217_function__Component(false) :[deadlock free]

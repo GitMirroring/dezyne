@@ -35,23 +35,21 @@ context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_loca
 context_func_(S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', <>))
 context_func_args_(v', S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', (<>, v')))
 
-datatype event_enumeration_alphabet =
-i3_e | return
-
 channel illegal
+channel transition_begin, transition_end
 
-channel i14_i: {i3_e,return}
+datatype event_enumeration_alphabet = i3_e | return
 
 channel i13_I: {i3_e,return}
 
-  i13_I_(IG) = let
+i13_I_(IG) = let
 
 i13_I__(((<>),(stack'))) =
 i13_I?x:{i3_e} ->
 (\ P',V' @ i13_I.return -> P'(V'))(\ V' @ i13_I__(V'),((<>),(stack')))
 
-
 within i13_I__(((<>),(<>)))
+channel i14_i:{i3_e,return}
 
 
 i50_recursion_(IIG,IG) = let
@@ -70,8 +68,6 @@ channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
-
-channel transition_begin, transition_end
 
 channel reorder_in,reorder_out : {i14_i.return}
 
@@ -116,13 +112,12 @@ ClientCalls = {i14_i.i3_e}
 UsedModeling = {}
 within compress((i50_recursion_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,i14_i|},Exclude)|]
-(((STOP) [[x<-IN.x|x<-extensions(IN)]]
+(((STOP
+) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 assert i13_I_(false) :[deadlock free]
-
 assert i13_I_(true) :[livelock free]
-
 assert i50_recursion_(true,true) :[deterministic]
 assert STOP [T= i50_recursion__Component(false) \ diff(Events,{illegal})
 assert i50_recursion__Component(false) :[deadlock free]

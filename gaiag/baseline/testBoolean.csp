@@ -35,16 +35,14 @@ context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_loca
 context_func_(S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', <>))
 context_func_args_(v', S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', (<>, v')))
 
-datatype event_enumeration_alphabet =
-States_State1 | States_State2 | evt | return
-
 channel illegal
+channel transition_begin, transition_end
 
-channel i: {evt,return}
+datatype event_enumeration_alphabet = States_State1 | States_State2 | evt | return
 
 channel TestBool: {evt,return}
 
-  TestBool_(IG) = let
+TestBool_(IG) = let
 
 TestBool__(((b1,b2,b3,state1,state2),(stack'))) =
 ((state1 == States_State1)) & (
@@ -76,8 +74,8 @@ skip_
 TestBool?x:{evt} ->
 (\ P',V' @ TestBool.return -> P'(V'))(\ V' @ TestBool__(V'),((b1,b2,b3,state1,state2),(stack'))))
 
-
 within TestBool__(((true,true,true,States_State1,States_State2),(<>)))
+channel i:{evt,return}
 
 
 testBoolean_(IIG,IG) = let
@@ -94,8 +92,6 @@ channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
-
-channel transition_begin, transition_end
 
 channel reorder_in,reorder_out : {i.return}
 
@@ -140,13 +136,12 @@ ClientCalls = {i.evt}
 UsedModeling = {}
 within compress((testBoolean_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,i|},Exclude)|]
-(((STOP) [[x<-IN.x|x<-extensions(IN)]]
+(((STOP
+) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 assert TestBool_(false) :[deadlock free]
-
 assert TestBool_(true) :[livelock free]
-
 assert testBoolean_(true,true) :[deterministic]
 assert STOP [T= testBoolean__Component(false) \ diff(Events,{illegal})
 assert testBoolean__Component(false) :[deadlock free]

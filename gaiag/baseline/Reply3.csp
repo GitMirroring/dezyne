@@ -35,18 +35,14 @@ context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_loca
 context_func_(S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', <>))
 context_func_args_(v', S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', (<>, v')))
 
-datatype event_enumeration_alphabet =
-Status_No | Status_Nok | Status_Ok | Status_Yes | done | return | what
-
 channel illegal
+channel transition_begin, transition_end
 
-channel i: {done,Status_Yes,Status_No,return}
-channel u: {what,Status_Ok,Status_Nok,return}
+datatype event_enumeration_alphabet = Status_No | Status_Nok | Status_Ok | Status_Yes | done | return | what
 
 channel I: {done,Status_Yes,Status_No,return}
-channel U: {what,Status_Ok,Status_Nok,return}
 
-  I_(IG) = let
+I_(IG) = let
 reply_fun = \ P',V' @ context_func_(reply_(I, (\ ((dummy),(stack')) @ Status_Yes)))(P',V')
 reply_fun_arg = \ P',V',F' @ context_func_args_(F',
 reply_(I, (\ ((dummy),((stack',s))) @ s)))(P',V')
@@ -61,8 +57,9 @@ semi_(callvoid_(\ P',V' @ reply_fun(P',V')),
 semi_(callvoid_(\ P',V' @ reply_fun_arg(P',V',(\ ((dummy),(stack')) @ (Status_No))(V'))),
 (\ P',V' @ I.return -> P'(V')))(\ V' @ I__(V'),((dummy),(stack'))))
 
-
 within I__(((false),(<>)))
+
+channel U: {what,Status_Ok,Status_Nok,return}
 
 U_(IG) = let
 reply_fun = \ P',V' @ context_func_(reply_(U, (\ ((dummy),(stack')) @ Status_Ok)))(P',V')
@@ -79,8 +76,9 @@ semi_(callvoid_(\ P',V' @ reply_fun(P',V')),
 semi_(callvoid_(\ P',V' @ reply_fun_arg(P',V',(\ ((dummy),(stack')) @ (Status_Nok))(V'))),
 (\ P',V' @ U.return -> P'(V')))(\ V' @ U__(V'),((dummy),(stack'))))
 
-
 within U__(((false),(<>)))
+channel i:{done,Status_Yes,Status_No,return}
+channel u:{what,Status_Ok,Status_Nok,return}
 
 
 Reply3_(IIG,IG) = let
@@ -107,8 +105,6 @@ channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
-
-channel transition_begin, transition_end
 
 channel reorder_in,reorder_out : {i.Status_Yes,i.Status_No,i.return}
 
@@ -158,13 +154,9 @@ within compress((Reply3_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 assert I_(false) :[deadlock free]
-
 assert I_(true) :[livelock free]
-
 assert U_(false) :[deadlock free]
-
 assert U_(true) :[livelock free]
-
 assert Reply3_(true,true) :[deterministic]
 assert STOP [T= Reply3__Component(false) \ diff(Events,{illegal})
 assert Reply3__Component(false) :[deadlock free]

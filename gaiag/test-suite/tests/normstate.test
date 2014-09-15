@@ -40,7 +40,7 @@
           '(interface i (types) (events)
                       (behaviour #f (types) (variables) (functions)
                                  (compound
-                                  (guard (expression true) (on (triggers (trigger #f a)) (skip))))))))
+                                  (guard (expression true) (on (triggers (trigger #f a)) (compound))))))))
 
 (pass-if "normstate-102"
          (gom-pretty-noisy-equal?
@@ -129,7 +129,7 @@
                    (trigger console disarm))
                   (illegal))
               (on (triggers (trigger sensor triggered))
-                  (skip))))
+                  (compound))))
             (guard
              (expression
               (and (field state Disarming) (var sounding)))
@@ -165,7 +165,7 @@
                                  (variables)
                                  (functions
                                   (function foo (signature (type void)) #f
-                                            (compound (if (expression true) (skip)))))
+                                            (compound (if (expression true) (compound)))))
                                  (compound
                                   (guard (expression true)
                                          (on (triggers (trigger #f a) (trigger #f b) (trigger #f c))
@@ -364,7 +364,7 @@
 ;;                          (trigger console arm)
 ;;                          (trigger console disarm))
 ;;                         (illegal))
-;;                     (on (triggers (trigger sensor triggered)) (skip))
+;;                     (on (triggers (trigger sensor triggered)) (compound))
 ;;                     (on (triggers (trigger sensor disabled))
 ;;                         (compound
 ;;                          (guard (expression sounding)
@@ -388,7 +388,7 @@
 ;;                         (trigger console arm)
 ;;                         (trigger console disarm))
 ;;                        (illegal))
-;;                    (on (triggers (trigger sensor triggered)) (skip))
+;;                    (on (triggers (trigger sensor triggered)) (compound))
 ;;                    (compound
 ;;                     (guard (expression sounding)
 ;;                            (on (triggers (trigger sensor disabled))

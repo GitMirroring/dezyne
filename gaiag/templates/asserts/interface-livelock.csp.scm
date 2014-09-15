@@ -22,9 +22,4 @@
 ;;; 
 ;;; Code:
 
-#
-(define ((the-one? name) port)
-   (eq? (.type port) name))#
-(map-ports #{
-assert #.interface.name _#.behaviour.name(true) #(hide-modeling interface) :[livelock free]
-#} (list (car (filter (the-one? .model) ((compose .elements .ports gom:component) ast)))))
+assert #(.name model) _#((compose .name .behaviour) model) (true) #(hide-modeling model) :[livelock free]

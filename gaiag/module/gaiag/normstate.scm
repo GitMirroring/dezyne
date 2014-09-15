@@ -50,6 +50,7 @@
 
 (define-method (normstate (o <ast>))
   ((compose
+    remove-skip
     aggregate-on
     expand-on
     aggregate-guard
@@ -57,11 +58,18 @@
     combine-guards
     passdown-on
     (remove-otherwise '())
-    (gom:map* add-skip))
+    add-skip)
    o))
 
 (define (normstate:gom ast)
   (ast:resolve ast))
+
+(define (remove-skip o)
+  (match o
+    (('skip) (make <compound>))
+    ((? (is? <ast>)) (gom:map remove-skip o))
+    ((h t ...) (map remove-skip o))
+    (_ o)))
 
 (define (aggregate-on o)
   "Aggregate triggers with matching port and statement into one on-statement."

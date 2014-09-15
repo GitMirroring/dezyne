@@ -35,16 +35,14 @@ context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_loca
 context_func_(S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', <>))
 context_func_args_(v', S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', (<>, v')))
 
-datatype event_enumeration_alphabet =
-i3_e | i4_f | return
-
 channel illegal
+channel transition_begin, transition_end
 
-channel i139_i: {i3_e,i4_f,return}
+datatype event_enumeration_alphabet = i3_e | i4_f | return
 
 channel i138_I: {i3_e,i4_f,return}
 
-  i138_I_(IG) = let
+i138_I_(IG) = let
 i41_g = \ P',V',F' @ context_func_args_(F',
 semi_((\ P',V' @ i138_I!i4_f -> P'(V')),
 returnvalue_(\ ((i6_b),((stack',(i9_ga,i12_gb)))) @ (i9_ga or i12_gb))))(P',V')
@@ -62,8 +60,8 @@ skip_
 )(P',((i6_b),((stack',i81_c))))))),
 (\ P',V' @ i138_I.return -> P'(V')))(\ V' @ i138_I__(V'),((i6_b),(stack'))))
 
-
 within i138_I__(((false),(<>)))
+channel i139_i:{i3_e,i4_f,return}
 
 
 i278_argument2_(IIG,IG) = let
@@ -91,8 +89,6 @@ channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
-
-channel transition_begin, transition_end
 
 channel reorder_in,reorder_out : {i139_i.return}
 
@@ -137,13 +133,12 @@ ClientCalls = {i139_i.i3_e}
 UsedModeling = {}
 within compress((i278_argument2_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,i139_i|},Exclude)|]
-(((STOP) [[x<-IN.x|x<-extensions(IN)]]
+(((STOP
+) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 assert i138_I_(false) :[deadlock free]
-
 assert i138_I_(true) :[livelock free]
-
 assert i278_argument2_(true,true) :[deterministic]
 assert STOP [T= i278_argument2__Component(false) \ diff(Events,{illegal})
 assert i278_argument2__Component(false) :[deadlock free]

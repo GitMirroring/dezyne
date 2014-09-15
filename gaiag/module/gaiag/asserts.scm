@@ -48,24 +48,31 @@
       (list (ast-name model) (.name model) check (.type (gom:port model)))
       (list (ast-name model) (.name model) check)))
 
-(define-method (assert-list (o <ast>))
-  (or (and-let* ((model (model-with-behaviour o)))
-                (assert-list model))
-      '()))
-
 (define-method (assert-list (o <component>))
-  (or (and-let* ((component-checks '(deterministic illegal deadlock compliance livelock))
-                 (interfaces (map (compose ast->gom csp:import .type) ((compose .elements .ports) o))))
-                (append (apply append (delete-duplicates (map assert-list interfaces)))
-                        (map (assert o) component-checks)))
-      '()))
+   (or (and-let* ((component-checks '(deterministic illegal deadlock compliance livelock)))
+                 (map (assert o) component-checks))
+       '()))
 
 (define-method (assert-list (o <interface>))
   (or (and-let* ((interface-checks '(deadlock livelock)))
                 (map (assert o) interface-checks))
       '()))
 
+(define-method (assert-list-all (o <component>))
+  (append
+   (let ((interfaces (map gom:import (delete-duplicates (sort (map .type ((compose .elements .ports) o)) symbol<)))))
+     (apply append (map assert-list interfaces)))
+   (assert-list o)))
+
+(define-method (assert-list-all (o <interface>))
+  (assert-list o))
+
 (define-method (assert-list (o <top>))
   (assert-list ((gom:register (compose ast->gom ast:resolve)) o #t)))
+
+(define-method (assert-list (o <ast>))
+  (or (and-let* ((model (model-with-behaviour o)))
+                (assert-list-all model))
+      '()))
 
 (define ast-> assert-list)

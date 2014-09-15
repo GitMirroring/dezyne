@@ -349,3 +349,11 @@ compare:
 	-@diff -uw out/om-trip-pretty.scm out/gaiag-trip.scm
 	@diff -uw out/om-trip-pretty.scm out/gaiag-trip.scm | diffstat || true
 	@diff -uw out/om-trip-pretty.scm out/gaiag-trip.scm > /dev/null
+
+csp-update: csp-regression-update csp-demo-update
+
+csp-regression-update: dummy
+	while ! $(MAKE) csp; do cp out/*.csp baseline; done
+
+csp-demo-update: dummy
+	while ! $(MAKE) demo; do cp out/webdemo/*.csp baseline/webdemo; done

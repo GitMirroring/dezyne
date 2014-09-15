@@ -35,20 +35,14 @@ context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_loca
 context_func_(S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', <>))
 context_func_args_(v', S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', (<>, v')))
 
-datatype event_enumeration_alphabet =
-States_Armed | States_Disabled | States_Disabling | States_Disarmed | States_Disarming | States_Enabled | States_Off | States_On | States_Triggered | arm | deactivated | detected | disable | disabled | disarm | enable | inevitable | optional | return | triggered | turnoff | turnon
-
 channel illegal
+channel transition_begin, transition_end
 
-channel console: {arm,deactivated,detected,disarm,inevitable,optional,return}
-channel sensor: {disable,disabled,enable,inevitable,optional,triggered,return}
-channel siren: {turnoff,turnon,return}
+datatype event_enumeration_alphabet = States_Armed | States_Disabled | States_Disabling | States_Disarmed | States_Disarming | States_Enabled | States_Off | States_On | States_Triggered | arm | deactivated | detected | disable | disabled | disarm | enable | inevitable | optional | return | triggered | turnoff | turnon
 
 channel Console: {arm,deactivated,detected,disarm,inevitable,optional,return}
-channel Sensor: {disable,disabled,enable,inevitable,optional,triggered,return}
-channel Siren: {turnoff,turnon,return}
 
-  Console_a(IG) = let
+Console_a(IG) = let
 
 Console_a_(((state),(stack'))) =
 ((state == States_Disarmed)) & (
@@ -89,8 +83,9 @@ skip_)(\ V' @ Console_a_(V'),((state),(stack')))
   IG & Console?x:{arm,disarm} ->
 illegal_(STOP,<>))
 
-
 within Console_a_(((States_Disarmed),(<>))) [|{Console .optional}|] CHAOS({Console .optional})
+
+channel Sensor: {disable,disabled,enable,inevitable,optional,triggered,return}
 
 Sensor_b(IG) = let
 
@@ -133,8 +128,9 @@ illegal_(STOP,<>)
 semi_(assign_(\ ((state),(stack')) @ ((States_Disabling),(stack'))),
 (\ P',V' @ Sensor.return -> P'(V')))(\ V' @ Sensor_b_(V'),((state),(stack'))))
 
-
 within Sensor_b_(((States_Disabled),(<>))) [|{Sensor .optional}|] CHAOS({Sensor .optional})
+
+channel Siren: {turnoff,turnon,return}
 
 Siren_c(IG) = let
 
@@ -155,8 +151,10 @@ semi_(assign_(\ ((state),(stack')) @ ((States_Off),(stack'))),
   IG & Siren?x:{turnon} ->
 illegal_(STOP,<>))
 
-
 within Siren_c_(((States_Off),(<>)))
+channel console:{arm,deactivated,detected,disarm,inevitable,optional,return}
+channel sensor:{disable,disabled,enable,inevitable,optional,triggered,return}
+channel siren:{turnoff,turnon,return}
 
 
 Alarm_d(IIG,IG) = let
@@ -236,8 +234,6 @@ channel IN,OUT : {sensor.triggered,sensor.disabled,extensions_over_empty_channel
 
 SINGLETHREADED = true
 
-channel transition_begin, transition_end
-
 channel reorder_in,reorder_out : {console.return}
 
 SEMANTICS(in',out',client',modeling') = let
@@ -287,17 +283,11 @@ within compress((Alarm_d(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 assert Console_a(false) :[deadlock free]
-
 assert Console_a(true)  \ {|Console.inevitable,Console.optional|} :[livelock free]
-
 assert Sensor_b(false) :[deadlock free]
-
 assert Sensor_b(true)  \ {|Sensor.inevitable,Sensor.optional|} :[livelock free]
-
 assert Siren_c(false) :[deadlock free]
-
 assert Siren_c(true) :[livelock free]
-
 assert Alarm_d(true,true) :[deterministic]
 assert STOP [T= Alarm_d_Component(false) \ diff(Events,{illegal})
 assert Alarm_d_Component(false) :[deadlock free]

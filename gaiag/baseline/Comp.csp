@@ -35,18 +35,14 @@ context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_loca
 context_func_(S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', <>))
 context_func_args_(v', S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', (<>, v')))
 
-datatype event_enumeration_alphabet =
-State_Calibrated | State_Error | State_Initialized | State_Uninitialized | calibrate | initialize | perform_action1 | perform_action2 | perform_actions | recover | result_t_NOK | result_t_OK | return
-
 channel illegal
+channel transition_begin, transition_end
 
-channel client: {initialize,perform_actions,recover,result_t_OK,result_t_NOK,return}
-channel device_A: {calibrate,initialize,perform_action1,perform_action2,result_t_OK,result_t_NOK,return}
+datatype event_enumeration_alphabet = State_Calibrated | State_Error | State_Initialized | State_Uninitialized | calibrate | initialize | perform_action1 | perform_action2 | perform_actions | recover | result_t_NOK | result_t_OK | return
 
 channel IComp: {initialize,perform_actions,recover,result_t_OK,result_t_NOK,return}
-channel IDevice: {calibrate,initialize,perform_action1,perform_action2,result_t_OK,result_t_NOK,return}
 
-  IComp_(IG) = let
+IComp_(IG) = let
 
 IComp__(((s),(stack'))) =
 (((s == State_Uninitialized) and true)) & (
@@ -86,8 +82,9 @@ reply_(IComp, (\ ((s),(stack')) @ result_t_NOK))(\ V' @ IComp__(V'),((s),(stack'
 IG & IComp?x:{initialize,perform_actions} ->
 illegal_(STOP,<>))
 
-
 within IComp__(((State_Uninitialized),(<>)))
+
+channel IDevice: {calibrate,initialize,perform_action1,perform_action2,result_t_OK,result_t_NOK,return}
 
 IDevice_(IG) = let
 
@@ -137,8 +134,9 @@ reply_(IDevice, (\ ((s),(stack')) @ result_t_OK))(\ V' @ IDevice__(V'),((s),(sta
   IG & IDevice?x:{initialize} ->
 illegal_(STOP,<>))
 
-
 within IDevice__(((State_Uninitialized),(<>)))
+channel client:{initialize,perform_actions,recover,result_t_OK,result_t_NOK,return}
+channel device_A:{calibrate,initialize,perform_action1,perform_action2,result_t_OK,result_t_NOK,return}
 
 
 Comp_(IIG,IG) = let
@@ -201,8 +199,6 @@ channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel transition_begin, transition_end
-
 channel reorder_in,reorder_out : {client.result_t_OK,client.result_t_NOK,client.return}
 
 SEMANTICS(in',out',client',modeling') = let
@@ -251,13 +247,9 @@ within compress((Comp_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 assert IComp_(false) :[deadlock free]
-
 assert IComp_(true) :[livelock free]
-
 assert IDevice_(false) :[deadlock free]
-
 assert IDevice_(true) :[livelock free]
-
 assert Comp_(true,true) :[deterministic]
 assert STOP [T= Comp__Component(false) \ diff(Events,{illegal})
 assert Comp__Component(false) :[deadlock free]

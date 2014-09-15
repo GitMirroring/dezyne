@@ -35,31 +35,12 @@ context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_loca
 context_func_(S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', <>))
 context_func_args_(v', S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', (<>, v')))
 
-datatype event_enumeration_alphabet =
-i178_States_i176_SwitchedOff | i178_States_i177_SwitchedOn | i3_pushStartButton | i67_activate | i68_activated | i6_States_i4_Released | i6_States_i5_Pushed | i71_States_i69_Idle | i71_States_i70_Activated | inevitable | return
-
 channel illegal
+channel transition_begin, transition_end
 
-channel i170_TVViewer: {i3_pushStartButton,return}
-channel i173_TVDisplay: {i67_activate,i68_activated,inevitable,return}
+datatype event_enumeration_alphabet = i178_States_i176_SwitchedOff | i178_States_i177_SwitchedOn | i3_pushStartButton | i67_activate | i68_activated | i6_States_i4_Released | i6_States_i5_Pushed | i71_States_i69_Idle | i71_States_i70_Activated | inevitable | return
 
-channel i66_Viewer: {i3_pushStartButton,return}
 channel i169_Display: {i67_activate,i68_activated,inevitable,return}
-
-  i66_Viewer_(IG) = let
-
-i66_Viewer__(((i14_state),(stack'))) =
-((i14_state == i6_States_i4_Released)) & (
-i66_Viewer?x:{i3_pushStartButton} ->
-semi_(assign_(\ ((i14_state),(stack')) @ ((i6_States_i5_Pushed),(stack'))),
-(\ P',V' @ i66_Viewer.return -> P'(V')))(\ V' @ i66_Viewer__(V'),((i14_state),(stack'))))
-[]
-((i14_state == i6_States_i5_Pushed)) & (
-i66_Viewer?x:{i3_pushStartButton} ->
-(\ P',V' @ i66_Viewer.return -> P'(V'))(\ V' @ i66_Viewer__(V'),((i14_state),(stack'))))
-
-
-within i66_Viewer__(((i6_States_i4_Released),(<>)))
 
 i169_Display_(IG) = let
 
@@ -78,8 +59,25 @@ skip_)(\ V' @ i169_Display__(V'),((i79_state),(stack')))
   IG & i169_Display?x:{i67_activate} ->
 illegal_(STOP,<>))
 
-
 within i169_Display__(((i71_States_i69_Idle),(<>)))
+
+channel i66_Viewer: {i3_pushStartButton,return}
+
+i66_Viewer_(IG) = let
+
+i66_Viewer__(((i14_state),(stack'))) =
+((i14_state == i6_States_i4_Released)) & (
+i66_Viewer?x:{i3_pushStartButton} ->
+semi_(assign_(\ ((i14_state),(stack')) @ ((i6_States_i5_Pushed),(stack'))),
+(\ P',V' @ i66_Viewer.return -> P'(V')))(\ V' @ i66_Viewer__(V'),((i14_state),(stack'))))
+[]
+((i14_state == i6_States_i5_Pushed)) & (
+i66_Viewer?x:{i3_pushStartButton} ->
+(\ P',V' @ i66_Viewer.return -> P'(V'))(\ V' @ i66_Viewer__(V'),((i14_state),(stack'))))
+
+within i66_Viewer__(((i6_States_i4_Released),(<>)))
+channel i170_TVViewer:{i3_pushStartButton,return}
+channel i173_TVDisplay:{i67_activate,i68_activated,inevitable,return}
 
 
 i277_TVSet_(IIG,IG) = let
@@ -108,8 +106,6 @@ channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {i173_TVDisplay.i68_activated,extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
-
-channel transition_begin, transition_end
 
 channel reorder_in,reorder_out : {i170_TVViewer.return}
 
@@ -158,14 +154,10 @@ within compress((i277_TVSet_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reor
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
-assert i66_Viewer_(false) :[deadlock free]
-
-assert i66_Viewer_(true) :[livelock free]
-
 assert i169_Display_(false) :[deadlock free]
-
 assert i169_Display_(true)  \ {|i169_Display.inevitable|} :[livelock free]
-
+assert i66_Viewer_(false) :[deadlock free]
+assert i66_Viewer_(true) :[livelock free]
 assert i277_TVSet_(true,true) :[deterministic]
 assert STOP [T= i277_TVSet__Component(false) \ diff(Events,{illegal})
 assert i277_TVSet__Component(false) :[deadlock free]

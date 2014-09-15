@@ -35,24 +35,22 @@ context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_loca
 context_func_(S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', <>))
 context_func_args_(v', S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', (<>, v')))
 
-datatype event_enumeration_alphabet =
-i3_e | i4_h | return
-
 channel illegal
+channel transition_begin, transition_end
 
-channel i24_i: {i3_e,i4_h,return}
+datatype event_enumeration_alphabet = i3_e | i4_h | return
 
 channel i23_I: {i3_e,i4_h,return}
 
-  i23_I_(IG) = let
+i23_I_(IG) = let
 
 i23_I__(((<>),(stack'))) =
 i23_I?x:{i3_e} ->
 semi_((\ P',V' @ i23_I!i4_h -> P'(V')),
 (\ P',V' @ i23_I.return -> P'(V')))(\ V' @ i23_I__(V'),((<>),(stack')))
 
-
 within i23_I__(((<>),(<>)))
+channel i24_i:{i3_e,i4_h,return}
 
 
 i103_nonrecursion_(IIG,IG) = let
@@ -78,8 +76,6 @@ channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
-
-channel transition_begin, transition_end
 
 channel reorder_in,reorder_out : {i24_i.return}
 
@@ -124,13 +120,12 @@ ClientCalls = {i24_i.i3_e}
 UsedModeling = {}
 within compress((i103_nonrecursion_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,i24_i|},Exclude)|]
-(((STOP) [[x<-IN.x|x<-extensions(IN)]]
+(((STOP
+) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 assert i23_I_(false) :[deadlock free]
-
 assert i23_I_(true) :[livelock free]
-
 assert i103_nonrecursion_(true,true) :[deterministic]
 assert STOP [T= i103_nonrecursion__Component(false) \ diff(Events,{illegal})
 assert i103_nonrecursion__Component(false) :[deadlock free]

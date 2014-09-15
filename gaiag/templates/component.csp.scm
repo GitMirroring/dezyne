@@ -23,92 +23,29 @@
 ;;; 
 ;;; Code:
 
--- drop_one_local: V => V
-drop_one_local_((M', (L', L0'))) = (M', L')
+# (map (lambda (port)
+         (->string 'channel " " (.name port) ":{" (comma-join (append (port-events port) (return-values-port port))) "}\n" ))
+       ((compose .elements .ports) model))
 
-illegal_(P',V') = illegal -> STOP
--- send_: (c: channel, e:event) => (P,V)->Proc
-send_(c',e')(P', V') = c'!e' -> P'(V')
--- skip_: () => (P,V)->Proc
-skip_(P', V') = P'(V')
--- sendrecv_: (c: channel, e:event) => (P,V)->Proc
-sendrecv_(c',e')(P', V') =  c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P', V')
--- callvoid_: (B': (P,V)->Proc) => (P,V)->Proc
-callvoid_(B')(P', V') = B'(P', V')
--- callvoid_args_: (B': (P,V)->Proc, F': V'->V') => (P,V)->Proc
-callvoid_args_(B',F')(P', V') = B'(P', V', F')
--- assign_: (F': V -> V) => (P,V) -> Proc
-assign_(F')(P', V') = P'(F'(V'))
--- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
-assign_active_(C', A')(P', V') = C'(\((M', r'),L') @ P'(A'((M',L'),r')), V')
-reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
--- returnvalue_: (F: V->val) => (P,V)->Proc
-returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
--- the_end_: P => V->Proc
-the_end_(P', V') = transition_end -> P'(V')
-
--- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
-semi_(S1',S2')(P', V') = S1'(\V'' @ S2'(P', V''),V')
--- ifthenelse: (E': val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
-ifthenelse_(E',S1',S2')(P', V') =  if E' then S1'(P', V') else S2'(P', V')
--- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
--- context_(F', S')(P')((M', L')) = S'((\V2' @ P'(drop_one_local_(V2'))), (M', (L', F'((M', L')))))
--- context_(v', S')(P', (M', L')) = S'((\(M',L2') @ P'((M',L'))), (M', (L', v')))
-context_(F', S')(P', (M', L')) = S'((\ (M',L2') @ P'((M',L'))), (M', (L', F'((M', L')))))
--- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
-context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
-context_func_(S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', <>))
-context_func_args_(v', S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', (<>, v')))
-
-datatype event_enumeration_alphabet =
-#(pipe-join (append
-             (delete-duplicates
-              (sort
-               (append (apply append (map port-events ((compose .elements .ports gom:component) ast)))
-                       (enum-values (gom:component ast))
-                       (return-values (gom:component ast)))
-             symbol<))))
-
-channel illegal
-
-# (map-ports #{
-channel #.port.name : {#(comma-join (append (port-events port) (return-values-port port)))}
-#} ((compose .elements .ports gom:component) ast))
-# (map-interfaces #{
-channel #.interface.name : {#(comma-join (append (interface-events interface) (return-values-interface interface)))}
-#} (delete-duplicates (map .type ((compose .elements .ports gom:component) ast))))
-  # (map-ports #{
-#.interface.name _#.behaviour.name(IG) = let
-# (->string (map (lambda (x) (csp-transform interface (ast-transform interface x))) (gom:functions (.behaviour interface))))
-#.interface.name _#.behaviour.name _((#(context->csp ast (make-context ((compose gom:member-names csp:import) .interface.name) '())))) =
-# (behaviour->csp
- (csp:import .interface.name)
- (->string (list .interface.name '_ .behaviour.name '_ "((" (context->csp ast (make-context ((compose gom:member-names csp:import) .interface.name) '())) "))" )))
-
-
-within #.interface.name _#.behaviour.name _((#(context->csp ast (make-context ((compose gom:member-values csp:import) .interface.name) '(<>)))))#.optional-chaos
-
-#} ((compose .elements .ports gom:component) ast))
-#.component _#.behaviour.name (IIG,IG) = let
-# (->string (map (lambda (x) (csp-transform component (ast-transform component x))) (gom:functions (.behaviour component))))
-#.component _#.behaviour.name _((#(context->csp ast (make-context ((compose gom:member-names gom:component) ast) '())))) = transition_begin -> (
-#(behaviour->csp (gom:component ast)
- (->string (list .component '_ .behaviour.name '_ "((" (context->csp ast (make-context ((compose gom:member-names gom:component) ast) '())) "))" )))
+#(.name model) _#((compose .name .behaviour) model) (IIG,IG) = let
+# (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (gom:functions (.behaviour model))))
+#(.name model) _#((compose .name .behaviour) model) _((#(context->csp model (make-context ((compose gom:member-names) model) '())))) = transition_begin -> (
+#(behaviour->csp model
+ (->string (list (.name model) '_ ((compose .name .behaviour) model) '_ "((" (context->csp model (make-context ((compose gom:member-names) model) '())) "))" )))
 )
 
-within #.component _#.behaviour.name _((#(context->csp ast (make-context ((compose gom:member-values gom:component) ast) '(<>)))))
+within #(.name model) _#((compose .name .behaviour) model) _((#(context->csp model (make-context ((compose gom:member-values) model) '(<>)))))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {#
- (comma-join (list (map-ports #{#
-(comma-join (map (lambda (x) (list .port.name "." (.name x))) (filter gom:out? (gom:events port))))#}
-  (filter gom:requires? ((compose .elements .ports gom:component) ast)) ",") 'extensions_over_empty_channels_is_undefined))}
+ (comma-join (list (comma-join
+                    (map (lambda (port)
+                           (comma-join (map (lambda (event) (list (.name port) "." (.name event))) (filter gom:out? ((compose .elements .events gom:import .type) port)))))
+                           (filter gom:requires? ((compose .elements .ports) model)))) 'extensions_over_empty_channels_is_undefined))}
 
 SINGLETHREADED = true
 
-channel transition_begin, transition_end
-
-channel reorder_in,reorder_out : {# (map (lambda (x) (comma-join (map (lambda (y) (symbol-append (.name x) '. y)) (return-values-port x)))) (filter gom:provides? ((compose .elements .ports gom:component) ast)))}
+channel reorder_in,reorder_out : {# (comma-join (map (lambda (x) (symbol-append (.name (gom:port model)) '. x)) (return-values-port (gom:port model))))}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -141,30 +78,31 @@ within Idle(0)
 
 within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-#.component _#.behaviour.name _Component(IIG) = let
+#(.name model) _#((compose .name .behaviour) model) _Component(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
 Exclude = {#
-  (comma-join (list (map (lambda (x) (comma-join (map (lambda (y) (symbol-append (.name x) '. y)) (return-values-port x)))) (filter gom:provides? ((compose .elements .ports gom:component) ast))) (map-ports
-#{#(comma-join (map (lambda (x) (list .port.name "." (.name x))) (filter gom:out? (gom:events port)))) #}
-   (filter gom:provides? ((compose .elements .ports gom:component) ast)))
- (map-ports
-#{#(comma-join (map (lambda (x) (list .port.name "." x)) (filter (lambda (x) (member x '(inevitable optional))) (port-events port)))) #}
-   ((compose .elements .ports gom:component) ast) ",")))}
+  (comma-join
+   (list (comma-join (map (lambda (x) (symbol-append (.name (gom:port model)) '. x)) (return-values-port (gom:port model))))
+         (comma-join (map (lambda (event) (list (.name (gom:port model)) "." (.name event))) (filter gom:out? (gom:events (gom:port model)))))
+         (comma-join
+          (map (lambda (port)
+                 (->string (comma-join (map (lambda (event) (list (.name port) "." event)) (filter (lambda (x) (member x '(inevitable optional))) (port-events port))))))
+               ((compose .elements .ports) model)))))}
 ClientCalls = {#
- (map-ports
-#{#(comma-join (map (lambda (x) (list .port.name "." (.name x))) (filter gom:in? (gom:events port)))) #}
-   (filter gom:provides? ((compose .elements .ports gom:component) ast)))}
+ (comma-join (map (lambda (event) (list (.name (gom:port model)) "." (.name event))) (filter gom:in? (gom:events (gom:port model)))))}
 UsedModeling = {#
- (map-ports
-#{#(comma-join (map (lambda (x) (list .port.name "." x)) (filter (lambda (x) (member x '(inevitable optional))) (port-events port)))) #}
-   (filter gom:requires? ((compose .elements .ports gom:component) ast)) ",")}
-within compress((#.component _#.behaviour.name (IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,#(comma-join (map .name ((compose .elements .ports gom:component) ast)))|},Exclude)|]
-(((# (let ((required_processes (map-ports #{
-#.interface.name _#.behaviour.name(true) [[#.interface.name .x<-#.port.name .x|x<-extensions(#.interface.name)]]
-#} (filter gom:requires? ((compose .elements .ports gom:component) ast)) " ||| "))) (if (string-null? required_processes) 'STOP required_processes))) [[x<-IN.x|x<-extensions(IN)]]
+                (comma-join
+                 (map (lambda (port)
+                        (comma-join (map (lambda (event) (list (.name port) "." event)) (filter (lambda (event) (member event '(inevitable optional))) (port-events port)))))
+                        (filter gom:requires? ((compose .elements .ports) model))))}
+within compress((#(.name model) _#((compose .name .behaviour) model) (IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,#(comma-join (map .name ((compose .elements .ports) model)))|},Exclude)|]
+(((# (let ((required_processes ((->join "\n ||| ") (map (lambda (port)
+(->string (list (.type port) '_ ((compose .name .behaviour gom:import .type) port) "(true) [["(.type port) ".x<-" (.name port) ".x|x<-extensions("(.type port)")]]")))
+ (filter gom:requires? ((compose .elements .ports) model)))))) (if (string-null? required_processes) 'STOP required_processes))
+) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})

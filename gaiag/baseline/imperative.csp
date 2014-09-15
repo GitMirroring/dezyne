@@ -35,16 +35,14 @@ context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_loca
 context_func_(S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', <>))
 context_func_args_(v', S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', (<>, v')))
 
-datatype event_enumeration_alphabet =
-S_S1 | S_S2 | States_I | States_II | States_III | States_IV | e | f | g | h | return
-
 channel illegal
+channel transition_begin, transition_end
 
-channel i: {e,f,g,h,return}
+datatype event_enumeration_alphabet = S_S1 | S_S2 | States_I | States_II | States_III | States_IV | e | f | g | h | return
 
 channel iimperative: {e,f,g,h,return}
 
-  iimperative_(IG) = let
+iimperative_(IG) = let
 
 iimperative__(((s,b,c),(stack'))) =
 ((s == S_S1)) & (
@@ -85,8 +83,8 @@ semi_(assign_(\ ((s,b,c),(stack')) @ ((s,(not b),c),(stack'))),
 assign_(\ ((s,b,c),(stack')) @ ((S_S1,b,c),(stack'))))),
 (\ P',V' @ iimperative.return -> P'(V')))(\ V' @ iimperative__(V'),((s,b,c),(stack'))))
 
-
 within iimperative__(((S_S1,false,true),(<>)))
+channel i:{e,f,g,h,return}
 
 
 imperative_(IIG,IG) = let
@@ -127,8 +125,6 @@ channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
-
-channel transition_begin, transition_end
 
 channel reorder_in,reorder_out : {i.return}
 
@@ -173,13 +169,12 @@ ClientCalls = {i.e}
 UsedModeling = {}
 within compress((imperative_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,i|},Exclude)|]
-(((STOP) [[x<-IN.x|x<-extensions(IN)]]
+(((STOP
+) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 assert iimperative_(false) :[deadlock free]
-
 assert iimperative_(true) :[livelock free]
-
 assert imperative_(true,true) :[deterministic]
 assert STOP [T= imperative__Component(false) \ diff(Events,{illegal})
 assert imperative__Component(false) :[deadlock free]

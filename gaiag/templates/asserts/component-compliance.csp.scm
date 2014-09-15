@@ -22,9 +22,8 @@
 ;;; 
 ;;; Code:
 
-assert #.interface.name _#.interface-behaviour(true) [[#.interface.name .x<-#.port.name .x|x<-extensions(#.interface.name)]] \ {#
-(map-ports #{#
+assert #((compose .type gom:port) model) _#((compose .name .behaviour gom:import .type gom:port) model)(true) [[#((compose .type gom:port) model) .x<-#((compose .name gom:port) model) .x|x<-extensions(#((compose .type gom:port) model))]] \ {#
    (comma-join
-       (map (lambda (x) (string-join (map ->string (list .port.name x)) ".")) (filter
+       (map (lambda (x) (string-join (map ->string (list ((compose .name gom:port) model) x)) ".")) (filter
          (lambda (x) (or (eq? x 'optional) (eq? x 'inevitable)))
-         (port-events port)))) #} (filter gom:provides? ((compose .elements .ports gom:component) ast)))} [F= #.component _#.behaviour.name _Component(true) \ diff(Events,{|illegal,#.port.name |})
+         (port-events (gom:port model)))))} [F= #(.name model) _#((compose .name .behaviour) model) _Component(true) \ diff(Events,{|illegal,#((compose .name gom:port)model) |})

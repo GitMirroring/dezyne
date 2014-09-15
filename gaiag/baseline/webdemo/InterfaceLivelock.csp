@@ -35,16 +35,14 @@ context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_loca
 context_func_(S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', <>))
 context_func_args_(v', S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', (<>, v')))
 
-datatype event_enumeration_alphabet =
-i3_start | i7_States_i4_InitialState | i7_States_i5_Started | i7_States_i6_InBusiness | inevitable | return
-
 channel illegal
+channel transition_begin, transition_end
 
-channel i139_LoopingInterface: {i3_start,inevitable,inevitable,return}
+datatype event_enumeration_alphabet = i3_start | i7_States_i4_InitialState | i7_States_i5_Started | i7_States_i6_InBusiness | inevitable | return
 
 channel i138_BlindLoop: {i3_start,inevitable,inevitable,return}
 
-  i138_BlindLoop_(IG) = let
+i138_BlindLoop_(IG) = let
 
 i138_BlindLoop__(((i15_state),(stack'))) =
 ((i15_state == i7_States_i4_InitialState)) & (
@@ -68,8 +66,8 @@ skip_)(\ V' @ i138_BlindLoop__(V'),((i15_state),(stack')))
   IG & i138_BlindLoop?x:{i3_start} ->
 illegal_(STOP,<>))
 
-
 within i138_BlindLoop__(((i7_States_i4_InitialState),(<>)))
+channel i139_LoopingInterface:{i3_start,inevitable,inevitable,return}
 
 
 i152_TestComponent_(IIG,IG) = let
@@ -85,8 +83,6 @@ channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
-
-channel transition_begin, transition_end
 
 channel reorder_in,reorder_out : {i139_LoopingInterface.return}
 
@@ -131,13 +127,12 @@ ClientCalls = {i139_LoopingInterface.i3_start}
 UsedModeling = {}
 within compress((i152_TestComponent_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,i139_LoopingInterface|},Exclude)|]
-(((STOP) [[x<-IN.x|x<-extensions(IN)]]
+(((STOP
+) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 assert i138_BlindLoop_(false) :[deadlock free]
-
 assert i138_BlindLoop_(true)  \ {|i138_BlindLoop.inevitable,i138_BlindLoop.inevitable|} :[livelock free]
-
 assert i152_TestComponent_(true,true) :[deterministic]
 assert STOP [T= i152_TestComponent__Component(false) \ diff(Events,{illegal})
 assert i152_TestComponent__Component(false) :[deadlock free]

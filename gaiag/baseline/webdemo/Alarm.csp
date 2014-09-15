@@ -35,20 +35,14 @@ context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_loca
 context_func_(S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', <>))
 context_func_args_(v', S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', (<>, v')))
 
-datatype event_enumeration_alphabet =
-i11_States_i10_Disarming | i11_States_i7_Disarmed | i11_States_i8_Armed | i11_States_i9_Triggered | i243_enable | i244_disable | i245_triggered | i246_disabled | i251_States_i247_Disabled | i251_States_i248_Enabled | i251_States_i249_Disabling | i251_States_i250_Triggered | i3_arm | i483_turnon | i484_turnoff | i487_States_i485_Off | i487_States_i486_On | i4_disarm | i5_detected | i603_States_i599_Disarmed | i603_States_i600_Armed | i603_States_i601_Triggered | i603_States_i602_Disarming | i6_deactivated | inevitable | optional | return
-
 channel illegal
+channel transition_begin, transition_end
 
-channel i590_console: {i3_arm,i4_disarm,i5_detected,i6_deactivated,inevitable,optional,return}
-channel i593_sensor: {i243_enable,i244_disable,i245_triggered,i246_disabled,inevitable,optional,return}
-channel i596_siren: {i483_turnon,i484_turnoff,return}
+datatype event_enumeration_alphabet = i11_States_i10_Disarming | i11_States_i7_Disarmed | i11_States_i8_Armed | i11_States_i9_Triggered | i243_enable | i244_disable | i245_triggered | i246_disabled | i251_States_i247_Disabled | i251_States_i248_Enabled | i251_States_i249_Disabling | i251_States_i250_Triggered | i3_arm | i483_turnon | i484_turnoff | i487_States_i485_Off | i487_States_i486_On | i4_disarm | i5_detected | i603_States_i599_Disarmed | i603_States_i600_Armed | i603_States_i601_Triggered | i603_States_i602_Disarming | i6_deactivated | inevitable | optional | return
 
 channel i242_Console: {i3_arm,i4_disarm,i5_detected,i6_deactivated,inevitable,optional,return}
-channel i482_Sensor: {i243_enable,i244_disable,i245_triggered,i246_disabled,inevitable,optional,return}
-channel i589_Siren: {i483_turnon,i484_turnoff,return}
 
-  i242_Console_(IG) = let
+i242_Console_(IG) = let
 
 i242_Console__(((i19_state),(stack'))) =
 ((i19_state == i11_States_i7_Disarmed)) & (
@@ -89,8 +83,9 @@ skip_)(\ V' @ i242_Console__(V'),((i19_state),(stack')))
   IG & i242_Console?x:{i3_arm,i4_disarm} ->
 illegal_(STOP,<>))
 
-
 within i242_Console__(((i11_States_i7_Disarmed),(<>))) [|{i242_Console .optional}|] CHAOS({i242_Console .optional})
+
+channel i482_Sensor: {i243_enable,i244_disable,i245_triggered,i246_disabled,inevitable,optional,return}
 
 i482_Sensor_(IG) = let
 
@@ -133,8 +128,9 @@ illegal_(STOP,<>)
 semi_(assign_(\ ((i259_state),(stack')) @ ((i251_States_i249_Disabling),(stack'))),
 (\ P',V' @ i482_Sensor.return -> P'(V')))(\ V' @ i482_Sensor__(V'),((i259_state),(stack'))))
 
-
 within i482_Sensor__(((i251_States_i247_Disabled),(<>))) [|{i482_Sensor .optional}|] CHAOS({i482_Sensor .optional})
+
+channel i589_Siren: {i483_turnon,i484_turnoff,return}
 
 i589_Siren_(IG) = let
 
@@ -155,8 +151,10 @@ semi_(assign_(\ ((i495_state),(stack')) @ ((i487_States_i485_Off),(stack'))),
   IG & i589_Siren?x:{i483_turnon} ->
 illegal_(STOP,<>))
 
-
 within i589_Siren__(((i487_States_i485_Off),(<>)))
+channel i590_console:{i3_arm,i4_disarm,i5_detected,i6_deactivated,inevitable,optional,return}
+channel i593_sensor:{i243_enable,i244_disable,i245_triggered,i246_disabled,inevitable,optional,return}
+channel i596_siren:{i483_turnon,i484_turnoff,return}
 
 
 i1011_Alarm_(IIG,IG) = let
@@ -234,8 +232,6 @@ channel IN,OUT : {i593_sensor.i245_triggered,i593_sensor.i246_disabled,extension
 
 SINGLETHREADED = true
 
-channel transition_begin, transition_end
-
 channel reorder_in,reorder_out : {i590_console.return}
 
 SEMANTICS(in',out',client',modeling') = let
@@ -285,17 +281,11 @@ within compress((i1011_Alarm_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reo
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 assert i242_Console_(false) :[deadlock free]
-
 assert i242_Console_(true)  \ {|i242_Console.inevitable,i242_Console.optional|} :[livelock free]
-
 assert i482_Sensor_(false) :[deadlock free]
-
 assert i482_Sensor_(true)  \ {|i482_Sensor.inevitable,i482_Sensor.optional|} :[livelock free]
-
 assert i589_Siren_(false) :[deadlock free]
-
 assert i589_Siren_(true) :[livelock free]
-
 assert i1011_Alarm_(true,true) :[deterministic]
 assert STOP [T= i1011_Alarm__Component(false) \ diff(Events,{illegal})
 assert i1011_Alarm__Component(false) :[deadlock free]
