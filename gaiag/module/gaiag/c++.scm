@@ -47,9 +47,9 @@
 (define (ast-> ast)
   (let ((gom ((gom:register c++:gom) ast #t)))
     (set! *ast* gom)
-    (and=> (gom:interface gom) dump-interface)
-    (and=> (gom:component gom) dump-component)
-    (and=> (gom:system gom) dump-system))
+    (and=> (gom:interface gom) dump)
+    (and=> (gom:component gom) dump)
+    (and=> (gom:system gom) dump))
   "")
 
 (define (c++:import name)
@@ -65,29 +65,32 @@
 (define (dump-indented file-name thunk)
   (dump-output file-name (lambda () (pipe thunk (lambda () (indent))))))
 
-(define (dump-interface model)
-  (let ((name (.name model)))
+(define-method (dump (o <interface>))
+  (let ((name (.name o)))
     (dump-indented (symbol-append 'interface- name '-c3.hh)
                    (lambda ()
-                     ((animate-template 'interface.c3.hh.scm) (c++-module *ast*))))))
+                     ((animate-template 'interface.c3.hh.scm) (c++-module o))))))
 
-(define (dump-component model)
-  (let ((name (.name model)))
+(define-method (dump (o <component>))
+  (stderr "dump-component: ~a ~a\n" (.name o) (class-of o))
+  (pretty-print (gom->list o) (current-error-port))
+  (let ((name (.name o)))
     (dump-indented (symbol-append 'component- name '-c3.hh)
                    (lambda ()
-                     ((animate-template 'component.c3.hh.scm) (c++-module *ast*))))
+                     ((animate-template 'component.c3.hh.scm) (c++-module o))))
     (dump-indented (symbol-append 'component- name '-c3.cc)
                    (lambda ()
-                     ((animate-template 'component.c3.cc.scm) (c++-module *ast*))))))
+                     ((animate-template 'component.c3.cc.scm) (c++-module o))))))
 
-(define (dump-system model)
-  (let ((name (.name model)))
+(define-method (dump (o <system>))
+  (stderr "dump-system: ~a ~a\n"  (.name o) (class-of o))
+  (let ((name (.name o)))
     (dump-indented (symbol-append 'component- name '-c3.hh)
                    (lambda ()
-                     ((animate-template 'system.c3.hh.scm) (c++-module *ast*))))
+                     ((animate-template 'system.c3.hh.scm) (c++-module o))))
     (dump-indented (symbol-append 'component- name '-c3.cc)
                    (lambda ()
-                     ((animate-template 'system.c3.cc.scm) (c++-module *ast*))))))
+                     ((animate-template 'system.c3.cc.scm) (c++-module o))))))
 
 (use-modules (ice-9 pretty-print))
 
@@ -95,28 +98,27 @@
 (define ((animate-template file-name) module)
   (animate-file (append (prefix-dir) (list 'templates file-name)) module))
 
-(define (c++-module ast)
-  (let ((module (make-module 31 (list
-                                 (resolve-module '(ice-9 match))
-                                 (resolve-module '(gaiag c++))
-                                 (resolve-module '(gaiag misc))))))
-    (module-define! module 'ast ast)
-    (and-let* ((int (gom:interface ast)))
-              (module-define! module 'model int)
-              (module-define! module '.interface (.name int))
-              (module-define! module '.INTERFACE (string-upcase (symbol->string (.name int))))
-              (module-define! module '.model (.name int)))
-    (and-let* ((comp (gom:component ast)))
-              (module-define! module 'model comp)
-              (module-define! module '.component (.name comp))
-              (module-define! module '.COMPONENT (string-upcase (symbol->string (.name comp))))
-              (module-define! module '.interface (.type (gom:port comp)))
-              (module-define! module '.model (.name comp)))
-    (and-let* ((comp (gom:system ast)))
-              (module-define! module 'model comp)
-              (module-define! module '.component (.name comp))
-              (module-define! module '.interface (.type (gom:port comp)))
-              (module-define! module '.model (.name comp)))
+(define-method (c++-module)
+  (make-module 31 (list
+                   (resolve-module '(ice-9 match))
+                   (resolve-module '(gaiag c++))
+                   (resolve-module '(gaiag misc)))))
+
+(define-method (c++-module (o <interface>))
+  (let* ((module (c++-module)))
+    (module-define! module 'model o)
+    (module-define! module '.interface (.name o))
+    (module-define! module '.INTERFACE (string-upcase (symbol->string (.name o))))
+    (module-define! module '.model (.name o))
+    module))
+
+(define-method (c++-module (o <model>))
+  (let ((module (c++-module)))
+    (module-define! module 'model o)
+    (module-define! module '.component (.name o))
+    (module-define! module '.COMPONENT (string-upcase (symbol->string (.name o))))
+    (module-define! module '.interface (.type (gom:port o)))
+    (module-define! module '.model (.name o))
     module))
 
 (define (declare-enum enum)
@@ -295,8 +297,8 @@
    (map (lambda (port)
           (with-output-to-string
             (lambda ()
-              (let* ((module (c++-module *ast*))
-                     (model (module-ref module 'model)))
+              (let* ((model (module-ref (current-module) 'model))
+                     (module (c++-module model)))
                 (save-module-excursion
                  (lambda ()
                    (animate-string
@@ -319,18 +321,20 @@
    (map (lambda (instance)
           (with-output-to-string
             (lambda ()
-              (save-module-excursion
-               (lambda ()
-                 (animate-string
-                  string
-                  (animate-module-populate
-                   (c++-module *ast*)
-                   instance
-                   `((instance . ,identity)
-                     (.instance . ,.name)
-                     (.Class . ,(compose symbol-capitalize ast-name c++:import .type))
-                     (.type . ,.type)))))))))
-        instances)))
+              (let* ((model (module-ref (current-module) 'model))
+                     (module (c++-module model)))
+                (save-module-excursion
+                 (lambda ()
+                   (animate-string
+                    string
+                    (animate-module-populate
+                     module
+                     instance
+                     `((instance . ,identity)
+                       (.instance . ,.name)
+                       (.Class . ,(compose symbol-capitalize ast-name c++:import .type))
+                       (.type . ,.type))))))))))
+          instances)))
 
 (define (binding-name model bind)
   (list (.name (gom:instance model bind)) '. (.name (gom:port model bind))))
@@ -343,8 +347,8 @@
    (map (lambda (bind)
           (with-output-to-string
             (lambda ()
-              (let* ((module (c++-module *ast*))
-                     (model (module-ref module 'model))
+              (let* ((model (module-ref (current-module) 'model))
+                     (module (c++-module model))
                      (left (.left bind))
                      (left-port (gom:port model left))
                      (right (.right bind))
