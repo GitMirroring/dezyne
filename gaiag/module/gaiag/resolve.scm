@@ -47,48 +47,71 @@
   (gom:resolve o))
 
 (define-method (ast:resolve (o <model>))
-  ((gom:resolve o) o))
+  (resolve-model o o))
 
 (define-method (ast:resolve (o <ast>))
   o)
 
-(define-method (ast:resolve-model model)
-  (gom:resolve (ast->gom model) (ast->gom model)))
-
-(define-method (ast:resolve-model ast model)
-  (gom:resolve (ast->gom ast) (ast->gom model)))
-
 (define-method (gom:resolve (o <root>))
-  (make <root>
-    :elements
-    (map (lambda (x) (gom:resolve-curry x x)) (.elements o))))
+  (make <root> :elements (map resolve-top-model (.elements o))))
 
-(define-method (gom:resolve (model <imports>) (o <imports>)) o)
+(define-method (resolve-top-model (o <model>))
+  ((compose gom:register-model (lambda (m) (resolve-model m m)) resolve-mixed) o))
 
-(define-method (gom:resolve (model <model>))
-  (lambda (o) (gom:resolve-curry model o)))
+(define-method (resolve-top-model (o <ast>))
+  (resolve-model o o))
 
-(define-method (gom:resolve-curry (model <imports>) (o <imports>))
+(define (resolve-mixed o)
+  (match o
+    (($ <interface> name ($ <types> types) ($ <events> types-events) behaviour)
+     (receive (types- events) (partition (lambda (x)
+                                           (or (is-a? x <enum>) (is-a? x <int>))) types-events)
+       (make <interface>
+         :name name
+         :types (make <types> :elements (append types types-))
+         :events (make <events> :elements events)
+         :behaviour (gom:map resolve-mixed behaviour))))
+
+    (($ <behaviour> name types variables ($ <functions> functions) ($ <compound> mixed))
+     (receive (functions- statements) (partition (is? <function>) mixed)
+       (make <behaviour>
+         :name name
+         :types types
+         :variables variables
+         :functions (make <functions> :elements (append functions functions-))
+         :statement (make <compound> :elements statements))))
+    (_ o)))
+
+(define-method (resolve-model (model <model>))
+  (lambda (o) (resolve-model model o)))
+
+;; (define-method (gom:resolve (model <model>))
+;;   (lambda (o) (gom:resolve-curry model o)))
+
+;; (define-method (gom:resolve-curry (model <imports>) (o <imports>))
+;;   o)
+
+;; (define-method (gom:resolve-curry (model <model>) (o <model>))
+;;   (gom:register-model (gom:resolve model o)))
+
+;; (define-method (gom:resolve-curry (model <model>) (o <top>))
+;;   (gom:resolve model o))
+
+(define-method (resolve-model (model <imports>) (o <imports>))
   o)
 
-(define-method (gom:resolve-curry (model <model>) (o <model>))
-  (gom:register-model (gom:resolve model o)))
+(define-method (resolve-model (model <model>) o)
+  (resolve-model model o '()))
 
-(define-method (gom:resolve-curry (model <model>) (o <top>))
-  (gom:resolve model o))
-
-(define-method (gom:resolve (model <model>) o)
-  (gom:resolve model o '()))
-
-(define-method (gom:resolve (model <model>) o locals)
-  (let ((resolved (gom:resolve- model o locals)))
+(define-method (resolve-model (model <model>) o locals)
+  (let ((resolved (resolve-model- model o locals)))
     (and-let* (((supports-source-properties? o))
                (loc (source-property o 'loc))
                ((supports-source-properties? resolved)))
               (set-source-property! resolved 'loc loc))
     resolved))
 
-(define-method (gom:resolve- (model <model>) o locals)
+(define-method (resolve-model- (model <model>) o locals)
 
   (define (enum-type enum)
     (let ((name (.name enum)))
@@ -138,7 +161,7 @@
 
     (($ <assign> identifier ($ <expression> (and ($ <call>) (get! call))))
      (make <assign> :identifier identifier
-           :expression (gom:resolve model (call))))
+           :expression (resolve-model model (call))))
 
     (($ <assign> identifier
         ($ <expression> ($ <value> (and (? port?) (get! port)) event)))
@@ -150,18 +173,18 @@
     (($ <assign> identifier (and ($ <expression>) (get! expression)))
      (make <assign>
        :identifier identifier
-       :expression (gom:resolve model (expression) locals)))
+       :expression (resolve-model model (expression) locals)))
 
     (($ <assign> identifier expression)
      (make <assign>
        :identifier identifier
-       :expression (gom:resolve model expression locals)))
+       :expression (resolve-model model expression locals)))
 
     (($ <variable> name type ($ <expression> (and ($ <call>) (get! call))))
      (make <variable>
        :type type
        :name name
-       :expression (gom:resolve model (call))))
+       :expression (resolve-model model (call))))
 
     (($ <variable> name type
         ($ <expression> ($ <value> (and (? port?) (get! port)) event)))
@@ -175,7 +198,7 @@
      (make <variable>
        :type type
        :name name
-       :expression (gom:resolve model expression locals)))
+       :expression (resolve-model model expression locals)))
 
     (($ <value> (and (? enum?) (get! enum))
         (and (? (enum-field? (enum))) (get! field)))
@@ -185,7 +208,7 @@
      (make <field> :identifier (type) :field (.field o)))
 
     (($ <expression> value)
-     (make <expression> :value (gom:resolve model value locals)))
+     (make <expression> :value (resolve-model model value locals)))
 
     ((and (? symbol?) (? var?)) (make <var> :identifier o))
 
@@ -194,7 +217,7 @@
        :name name
        :signature (.signature o)
        :recursive (and ((recurses? model) name) 'recursive)
-       :statement (gom:resolve model statement)))
+       :statement (resolve-model model statement)))
 
     (($ <function> name ($ <signature> type ($ <parameters> parameters)) recursive? statement)
      (let ((locals (let loop ((parameters parameters) (locals locals))
@@ -206,7 +229,7 @@
          :name name
          :signature (.signature o)
          :recursive (and ((recurses? model) name) 'recursive)
-         :statement (gom:resolve model statement locals))))
+         :statement (resolve-model model statement locals))))
 
     (($ <compound> statements)
      (make <compound>
@@ -219,7 +242,7 @@
                               (($ <variable> name type expression)
                                (acons name statement locals))
                               (_ locals))))
-               (let ((resolved (gom:resolve model (car statements) locals)))
+               (let ((resolved (resolve-model model (car statements) locals)))
                  (cons resolved (loop (cdr statements) locals))))))))
 
     (($ <field>) o)
@@ -232,7 +255,7 @@
          :name name
          :types (make <types> :elements (append types types-))
          :events (make <events> :elements events)
-         :behaviour (gom:map (gom:resolve model) behaviour))))
+         :behaviour (gom:map (resolve-model model) behaviour))))
 
 
     (($ <behaviour> name types variables ($ <functions> functions) ($ <compound> mixed))
@@ -240,12 +263,12 @@
        (make <behaviour>
          :name name
          :types types
-         :variables (gom:map (gom:resolve model) variables)
-         :functions (gom:map (gom:resolve model) (make <functions> :elements (append functions functions-)))
-         :statement (gom:map (gom:resolve model) (make <compound> :elements statements)))))
+         :variables (gom:map (resolve-model model) variables)
+         :functions (gom:map (resolve-model model) (make <functions> :elements (append functions functions-)))
+         :statement (gom:map (resolve-model model) (make <compound> :elements statements)))))
 
-    ((? (is? <ast>)) (gom:map (gom:resolve model) o))
-    ((h t ...) (map (gom:resolve model) o))
+    ((? (is? <ast>)) (gom:map (resolve-model model) o))
+    ((h t ...) (map (resolve-model model) o))
     (_ o))))
 
 (define* ((recurses? model :optional (seen '())) name)
@@ -263,7 +286,7 @@
                 (any identity
                      (map (recurses? model (cons name seen)) names)))))
 
-(define-method (gom:resolve (model <system>) o)
+(define-method (resolve-model (model <system>) o)
 
   (let ((binding (lambda (o)
                    (match o
@@ -275,8 +298,8 @@
     (match o
 
       (($ <system> name ports instances bindings)
-       (let* ((instances (gom:map (gom:resolve model) instances))
-              (bindings (gom:map (gom:resolve model) bindings))
+       (let* ((instances (gom:map (resolve-model model) instances))
+              (bindings (gom:map (resolve-model model) bindings))
               (rinstances (append (gom:collect <instance> instances)
                                   (gom:collect <instance> bindings)))
               (rbindings  (append (gom:collect <bind> instances)
@@ -290,8 +313,8 @@
       (($ <bind> left right)
        (make <bind> :left (binding left) :right (binding right)))
 
-      ((? (is? <ast>)) (gom:map (gom:resolve model) o))
-      ((h t ...) (map (gom:resolve model) o))
+      ((? (is? <ast>)) (gom:map (resolve-model model) o))
+      ((h t ...) (map (resolve-model model) o))
 
       (_ o))))
 
