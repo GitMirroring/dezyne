@@ -22,7 +22,7 @@
 ;;; 
 ;;; Code:
 
-assert #((compose .type gom:port) model) _#((compose .name .behaviour gom:import .type gom:port) model)(true) [[#((compose .type gom:port) model) .x<-#((compose .name gom:port) model) .x|x<-extensions(#((compose .type gom:port) model))]] \ {#
+assert #((compose .type gom:port) model) _#((compose .name .behaviour gom:import .type gom:port) model)(true) [[channel_#((compose .type gom:port) model) .x<-#((compose .name gom:port) model) .x|x<-extensions(#((compose .name gom:port) model))]] \ {#
    (comma-join
        (map (lambda (x) (string-join (map ->string (list ((compose .name gom:port) model) x)) ".")) (filter
          (lambda (x) (or (eq? x 'optional) (eq? x 'inevitable)))

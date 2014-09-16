@@ -23,15 +23,17 @@
 ;;; 
 ;;; Code:
 
+-- component.csp.scm
+
 # (map (lambda (port)
-         (->string 'channel " " (.name port) ":{" (comma-join (append (port-events port) (return-values-port port))) "}\n" ))
+         (->string "channel " (.name port) ":{" (comma-join (append (port-events port) (return-values-port port))) "}\n" ))
        ((compose .elements .ports) model))
 
 #(.name model) _#((compose .name .behaviour) model) (IIG,IG) = let
 # (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (gom:functions (.behaviour model))))
 #(.name model) _#((compose .name .behaviour) model) _((#(context->csp model (make-context ((compose gom:member-names) model) '())))) = transition_begin -> (
 #(behaviour->csp model
- (->string (list (.name model) '_ ((compose .name .behaviour) model) '_ "((" (context->csp model (make-context ((compose gom:member-names) model) '())) "))" )))
+ (->string (list (.name model) "_" ((compose .name .behaviour) model) "_((" (context->csp model (make-context ((compose gom:member-names) model) '())) "))" )))
 )
 
 within #(.name model) _#((compose .name .behaviour) model) _((#(context->csp model (make-context ((compose gom:member-values) model) '(<>)))))
@@ -101,8 +103,10 @@ UsedModeling = {#
 within compress((#(.name model) _#((compose .name .behaviour) model) (IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,#(comma-join (map .name ((compose .elements .ports) model)))|},Exclude)|]
 (((# (let ((required_processes ((->join "\n ||| ") (map (lambda (port)
-(->string (list (.type port) '_ ((compose .name .behaviour gom:import .type) port) "(true) [["(.type port) ".x<-" (.name port) ".x|x<-extensions("(.type port)")]]")))
+(->string (list (.type port) '_ ((compose .name .behaviour gom:import .type) port) "(true) [[channel_"(.type port) ".x<-" (.name port) ".x|x<-extensions("(.name port)")]]")))
  (filter gom:requires? ((compose .elements .ports) model)))))) (if (string-null? required_processes) 'STOP required_processes))
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
+
+-- end of component.csp.scm

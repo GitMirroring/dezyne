@@ -39,32 +39,37 @@ channel illegal
 channel transition_begin, transition_end
 
 datatype event_enumeration_alphabet = a | e | hi | lo | return
+-- interface.csp.scm
 
-channel I: {a,e,hi,lo,return}
+channel channel_I: {a,e,hi,lo,return}
 
 I_(IG) = let
 
 I__(((state,c),(stack'))) =
 (true) & (
-I?x:{e} ->
+channel_I?x:{e} ->
 semi_(\ P',((state,c),(stack')) @ ifthenelse_((state == 0),
 semi_(assign_(\ ((state,c),(stack')) @ ((3,c),(stack'))),
-(\ P',V' @ I!a -> P'(V'))),
+(\ P',V' @ channel_I!a -> P'(V'))),
 semi_(assign_(\ ((state,c),(stack')) @ (((state - 1),c),(stack'))),
 \ P',((state,c),(stack')) @ ifthenelse_((c < state),
 assign_(\ ((state,c),(stack')) @ ((state,(c + 1)),(stack'))),
 \ P',((state,c),(stack')) @ ifthenelse_((c <= ((state + 1))),
-(\ P',V' @ I!lo -> P'(V')),
+(\ P',V' @ channel_I!lo -> P'(V')),
 \ P',((state,c),(stack')) @ ifthenelse_((c > state),
-(\ P',V' @ I!hi -> P'(V')),
+(\ P',V' @ channel_I!hi -> P'(V')),
 skip_
 )(P',((state,c),(stack')))
 )(P',((state,c),(stack')))
 )(P',((state,c),(stack'))))
 )(P',((state,c),(stack'))),
-(\ P',V' @ I.return -> P'(V')))(\ V' @ I__(V'),((state,c),(stack'))))
+(\ P',V' @ channel_I.return -> P'(V')))(\ V' @ I__(V'),((state,c),(stack'))))
 
 within I__(((3,0),(<>)))
+
+-- end of interface.csp.scm
+-- component.csp.scm
+
 channel i:{a,e,hi,lo,return}
 
 
@@ -145,10 +150,12 @@ within compress((expressions_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reo
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
+
+-- end of component.csp.scm
 assert I_(false) :[deadlock free]
 assert I_(true) :[livelock free]
 assert expressions_(true,true) :[deterministic]
 assert STOP [T= expressions__Component(false) \ diff(Events,{illegal})
 assert expressions__Component(false) :[deadlock free]
-assert I_(true) [[I.x<-i.x|x<-extensions(I)]] \ {} [F= expressions__Component(true) \ diff(Events,{|illegal,i|})
+assert I_(true) [[channel_I.x<-i.x|x<-extensions(i)]] \ {} [F= expressions__Component(true) \ diff(Events,{|illegal,i|})
 assert expressions__Component(true) \ diff(Events,{|illegal,i|}) :[livelock free]

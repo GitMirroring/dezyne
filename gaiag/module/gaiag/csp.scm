@@ -334,7 +334,7 @@
 (define-method (optional-chaos (o <interface>)) ;; FIXME: no test
   (let ((name (.name o)))
     (if (member 'optional (map .event (gom:find-events o)))
-        (list " [|{" name " .optional}|] " "CHAOS({" name " .optional})")
+        (list " [|{channel_" name ".optional}|] " "CHAOS({channel_" name ".optional})")
         "")))
 
 (define (ast-transform ast src)
@@ -679,7 +679,7 @@
                (inevitable-optional? (or (member 'inevitable (map .event triggers))
                                          (member 'optional (map .event triggers))))
                (ig? (eq? statement 'IG))
-               (channel (if (is-a? model <interface>) model-name (.port (car triggers))))
+               (channel (if (is-a? model <interface>) (list "channel_" model-name) (.port (car triggers))))
                (provided-on? (or (and (is-a? model <interface>) (not inevitable-optional?))
                                  (or (is-a? model <interface>) ((provides-event? model) (car triggers)))))
                (IG? (if ig? (if ((provides-event? model) (car triggers)) "IIG & "  "IG & ")))
@@ -689,8 +689,8 @@
           (list IG? channel "?x:{" event-names "}" " ->\n" transformed transformed-end (if ig? "(STOP,<>)" ""))))
        (($ <expression>) src)
        (($ <csp-reply> expression context)
-        (let* ((channel (or channel (if (is-a? model <interface>) model-name (.type (gom:port model))))))
-        (list "reply_(" channel ", " "(\\ (" context ") @ " expression "))")))
+        (let* ((channel (or channel (if (is-a? model <interface>) (list "channel_" model-name) (list "channel_" (.type (gom:port model)))))))
+          (list "reply_(" channel ", " "(\\ (" context ") @ " expression "))")))
        (($ <return>) "skip_")
        (($ <csp-return> #f context) "skip_")
        (($ <csp-return> ($ <expression> expression) context)
@@ -766,7 +766,7 @@
     (=>string
      ast
      (let* ((trigger (.trigger o))
-            (channel (if (is-a? model <interface>) model-name (.port trigger)))
+            (channel (if (is-a? model <interface>) (list "channel_" model-name) (.port trigger)))
             (event-name (.event trigger))
             (channel-return (if ((requires-event? model) trigger) (list " -> " channel ".return"))))
        (list "(\\ P',V' @ " channel "!" event-name channel-return " -> P'(V'))")))))
@@ -782,6 +782,6 @@
              (modeling (null-is-#f (map .event (modeling-events model)))))
             (string-append " \\ {|"
                            (comma-join
-                            (map (lambda (x) (->string (list name "." x)))
+                            (map (lambda (x) (->string (list "channel_" name "." x)))
                                  modeling))
                            "|} ")))

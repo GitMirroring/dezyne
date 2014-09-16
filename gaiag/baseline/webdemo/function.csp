@@ -39,12 +39,13 @@ channel illegal
 channel transition_begin, transition_end
 
 datatype event_enumeration_alphabet = i3_a | i4_b | i5_c | i6_d | return
+-- interface.csp.scm
 
-channel i108_I: {i3_a,i4_b,i5_c,i6_d,return}
+channel channel_i108_I: {i3_a,i4_b,i5_c,i6_d,return}
 
 i108_I_(IG) = let
 i43_toggle = \ P',V' @ context_func_(semi_(\ P',((i8_f),(stack')) @ ifthenelse_(i8_f,
-(\ P',V' @ i108_I!i5_c -> P'(V')),
+(\ P',V' @ channel_i108_I!i5_c -> P'(V')),
 skip_
 )(P',((i8_f),(stack'))),
 semi_(assign_(\ ((i8_f),(stack')) @ (((not i8_f)),(stack'))),
@@ -52,17 +53,21 @@ skip_)))(P',V')
 
 i108_I__(((i8_f),(stack'))) =
 (true) & (
-i108_I?x:{i3_a} ->
+channel_i108_I?x:{i3_a} ->
 semi_(callvoid_(\ P',V' @ i43_toggle(P',V')),
-(\ P',V' @ i108_I.return -> P'(V')))(\ V' @ i108_I__(V'),((i8_f),(stack')))
+(\ P',V' @ channel_i108_I.return -> P'(V')))(\ V' @ i108_I__(V'),((i8_f),(stack')))
  []
-  i108_I?x:{i4_b} ->
+  channel_i108_I?x:{i4_b} ->
 semi_(semi_(callvoid_(\ P',V' @ i43_toggle(P',V')),
 semi_(callvoid_(\ P',V' @ i43_toggle(P',V')),
-(\ P',V' @ i108_I!i6_d -> P'(V')))),
-(\ P',V' @ i108_I.return -> P'(V')))(\ V' @ i108_I__(V'),((i8_f),(stack'))))
+(\ P',V' @ channel_i108_I!i6_d -> P'(V')))),
+(\ P',V' @ channel_i108_I.return -> P'(V')))(\ V' @ i108_I__(V'),((i8_f),(stack'))))
 
 within i108_I__(((false),(<>)))
+
+-- end of interface.csp.scm
+-- component.csp.scm
+
 channel i109_i:{i3_a,i4_b,i5_c,i6_d,return}
 
 
@@ -141,10 +146,12 @@ within compress((i217_function_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-r
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
+
+-- end of component.csp.scm
 assert i108_I_(false) :[deadlock free]
 assert i108_I_(true) :[livelock free]
 assert i217_function_(true,true) :[deterministic]
 assert STOP [T= i217_function__Component(false) \ diff(Events,{illegal})
 assert i217_function__Component(false) :[deadlock free]
-assert i108_I_(true) [[i108_I.x<-i109_i.x|x<-extensions(i108_I)]] \ {} [F= i217_function__Component(true) \ diff(Events,{|illegal,i109_i|})
+assert i108_I_(true) [[channel_i108_I.x<-i109_i.x|x<-extensions(i109_i)]] \ {} [F= i217_function__Component(true) \ diff(Events,{|illegal,i109_i|})
 assert i217_function__Component(true) \ diff(Events,{|illegal,i109_i|}) :[livelock free]

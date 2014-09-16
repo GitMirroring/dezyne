@@ -39,21 +39,26 @@ channel illegal
 channel transition_begin, transition_end
 
 datatype event_enumeration_alphabet = Enum_False | Enum_True | a | e | return
+-- interface.csp.scm
 
-channel I: {a,e,return}
+channel channel_I: {a,e,return}
 
 I_(IG) = let
 
 I__(((s),(stack'))) =
 ((s == Enum_False)) & (
-I?x:{e} ->
+channel_I?x:{e} ->
 semi_(\ P',((s),(stack')) @ ifthenelse_((s == Enum_False),
-(\ P',V' @ I!a -> P'(V')),
+(\ P',V' @ channel_I!a -> P'(V')),
 skip_
 )(P',((s),(stack'))),
-(\ P',V' @ I.return -> P'(V')))(\ V' @ I__(V'),((s),(stack'))))
+(\ P',V' @ channel_I.return -> P'(V')))(\ V' @ I__(V'),((s),(stack'))))
 
 within I__(((Enum_False),(<>)))
+
+-- end of interface.csp.scm
+-- component.csp.scm
+
 channel i:{a,e,return}
 
 
@@ -123,10 +128,12 @@ within compress((sugar_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_i
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
+
+-- end of component.csp.scm
 assert I_(false) :[deadlock free]
 assert I_(true) :[livelock free]
 assert sugar_(true,true) :[deterministic]
 assert STOP [T= sugar__Component(false) \ diff(Events,{illegal})
 assert sugar__Component(false) :[deadlock free]
-assert I_(true) [[I.x<-i.x|x<-extensions(I)]] \ {} [F= sugar__Component(true) \ diff(Events,{|illegal,i|})
+assert I_(true) [[channel_I.x<-i.x|x<-extensions(i)]] \ {} [F= sugar__Component(true) \ diff(Events,{|illegal,i|})
 assert sugar__Component(true) \ diff(Events,{|illegal,i|}) :[livelock free]

@@ -39,17 +39,22 @@ channel illegal
 channel transition_begin, transition_end
 
 datatype event_enumeration_alphabet = i3_e | i4_h | return
+-- interface.csp.scm
 
-channel i23_I: {i3_e,i4_h,return}
+channel channel_i23_I: {i3_e,i4_h,return}
 
 i23_I_(IG) = let
 
 i23_I__(((<>),(stack'))) =
-i23_I?x:{i3_e} ->
-semi_((\ P',V' @ i23_I!i4_h -> P'(V')),
-(\ P',V' @ i23_I.return -> P'(V')))(\ V' @ i23_I__(V'),((<>),(stack')))
+channel_i23_I?x:{i3_e} ->
+semi_((\ P',V' @ channel_i23_I!i4_h -> P'(V')),
+(\ P',V' @ channel_i23_I.return -> P'(V')))(\ V' @ i23_I__(V'),((<>),(stack')))
 
 within i23_I__(((<>),(<>)))
+
+-- end of interface.csp.scm
+-- component.csp.scm
+
 channel i24_i:{i3_e,i4_h,return}
 
 
@@ -124,10 +129,12 @@ within compress((i103_nonrecursion_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
+
+-- end of component.csp.scm
 assert i23_I_(false) :[deadlock free]
 assert i23_I_(true) :[livelock free]
 assert i103_nonrecursion_(true,true) :[deterministic]
 assert STOP [T= i103_nonrecursion__Component(false) \ diff(Events,{illegal})
 assert i103_nonrecursion__Component(false) :[deadlock free]
-assert i23_I_(true) [[i23_I.x<-i24_i.x|x<-extensions(i23_I)]] \ {} [F= i103_nonrecursion__Component(true) \ diff(Events,{|illegal,i24_i|})
+assert i23_I_(true) [[channel_i23_I.x<-i24_i.x|x<-extensions(i24_i)]] \ {} [F= i103_nonrecursion__Component(true) \ diff(Events,{|illegal,i24_i|})
 assert i103_nonrecursion__Component(true) \ diff(Events,{|illegal,i24_i|}) :[livelock free]

@@ -39,28 +39,33 @@ channel illegal
 channel transition_begin, transition_end
 
 datatype event_enumeration_alphabet = ev_e | ev_f | return
+-- interface.csp.scm
 
-channel if_I: {ev_e,ev_f,return}
+channel channel_if_I: {ev_e,ev_f,return}
 
 if_I_(IG) = let
 g = \ P',V',F' @ context_func_args_(F',
-semi_((\ P',V' @ if_I!ev_f -> P'(V')),
+semi_((\ P',V' @ channel_if_I!ev_f -> P'(V')),
 returnvalue_(\ ((b),((stack',(ga,gb)))) @ (ga or gb))))(P',V')
 
 if_I__(((b),(stack'))) =
 (true) & (
-if_I?x:{ev_e} ->
+channel_if_I?x:{ev_e} ->
 semi_(semi_(assign_(\ ((b),(stack')) @ (((not b)),(stack'))),
 context_active_(\ P',V' @ g (P',V',(\ ((b),(stack')) @ (b,b))(V')),
 semi_(assign_active_(\ P',V' @ g (P',V',(\ ((b),((stack',c))) @ (c,c))(V')),
 \ (((b),((stack',c)))),r' @ ((r'),((stack',c)))),
 \ P',((b),((stack',c))) @ ifthenelse_(c,
-(\ P',V' @ if_I!ev_f -> P'(V')),
+(\ P',V' @ channel_if_I!ev_f -> P'(V')),
 skip_
 )(P',((b),((stack',c))))))),
-(\ P',V' @ if_I.return -> P'(V')))(\ V' @ if_I__(V'),((b),(stack'))))
+(\ P',V' @ channel_if_I.return -> P'(V')))(\ V' @ if_I__(V'),((b),(stack'))))
 
 within if_I__(((false),(<>)))
+
+-- end of interface.csp.scm
+-- component.csp.scm
+
 channel po_i:{ev_e,ev_f,return}
 
 
@@ -137,10 +142,12 @@ within compress((co_argument2_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-re
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
+
+-- end of component.csp.scm
 assert if_I_(false) :[deadlock free]
 assert if_I_(true) :[livelock free]
 assert co_argument2_(true,true) :[deterministic]
 assert STOP [T= co_argument2__Component(false) \ diff(Events,{illegal})
 assert co_argument2__Component(false) :[deadlock free]
-assert if_I_(true) [[if_I.x<-po_i.x|x<-extensions(if_I)]] \ {} [F= co_argument2__Component(true) \ diff(Events,{|illegal,po_i|})
+assert if_I_(true) [[channel_if_I.x<-po_i.x|x<-extensions(po_i)]] \ {} [F= co_argument2__Component(true) \ diff(Events,{|illegal,po_i|})
 assert co_argument2__Component(true) \ diff(Events,{|illegal,po_i|}) :[livelock free]

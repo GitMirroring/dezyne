@@ -39,27 +39,35 @@ channel illegal
 channel transition_begin, transition_end
 
 datatype event_enumeration_alphabet = dummy | inevitable | return
+-- interface.csp.scm
 
-channel ilivelock: {dummy,inevitable,return}
+channel channel_ilivelock: {dummy,inevitable,return}
 
 ilivelock_(IG) = let
 
 ilivelock__(((<>),(stack'))) =
-ilivelock?x:{inevitable} ->
-semi_((\ P',V' @ ilivelock!dummy -> P'(V')),
+channel_ilivelock?x:{inevitable} ->
+semi_((\ P',V' @ channel_ilivelock!dummy -> P'(V')),
 skip_)(\ V' @ ilivelock__(V'),((<>),(stack')))
 
 within ilivelock__(((<>),(<>)))
 
-channel nolivelock: {dummy,return}
+-- end of interface.csp.scm
+-- interface.csp.scm
+
+channel channel_nolivelock: {dummy,return}
 
 nolivelock_(IG) = let
 
 nolivelock__(((<>),(stack'))) =
-nolivelock?x:{dummy} ->
-(\ P',V' @ nolivelock.return -> P'(V'))(\ V' @ nolivelock__(V'),((<>),(stack')))
+channel_nolivelock?x:{dummy} ->
+(\ P',V' @ channel_nolivelock.return -> P'(V'))(\ V' @ nolivelock__(V'),((<>),(stack')))
 
 within nolivelock__(((<>),(<>)))
+
+-- end of interface.csp.scm
+-- component.csp.scm
+
 channel n:{dummy,return}
 channel l:{dummy,inevitable,return}
 
@@ -124,16 +132,18 @@ ClientCalls = {n.dummy}
 UsedModeling = {l.inevitable}
 within compress((livelock1_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,n,l|},Exclude)|]
-(((ilivelock_(true) [[ilivelock.x<-l.x|x<-extensions(ilivelock)]]
+(((ilivelock_(true) [[channel_ilivelock.x<-l.x|x<-extensions(l)]]
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
+
+-- end of component.csp.scm
 assert ilivelock_(false) :[deadlock free]
-assert ilivelock_(true)  \ {|ilivelock.inevitable|} :[livelock free]
+assert ilivelock_(true)  \ {|channel_ilivelock.inevitable|} :[livelock free]
 assert nolivelock_(false) :[deadlock free]
 assert nolivelock_(true) :[livelock free]
 assert livelock1_(true,true) :[deterministic]
 assert STOP [T= livelock1__Component(false) \ diff(Events,{illegal})
 assert livelock1__Component(false) :[deadlock free]
-assert nolivelock_(true) [[nolivelock.x<-n.x|x<-extensions(nolivelock)]] \ {} [F= livelock1__Component(true) \ diff(Events,{|illegal,n|})
+assert nolivelock_(true) [[channel_nolivelock.x<-n.x|x<-extensions(n)]] \ {} [F= livelock1__Component(true) \ diff(Events,{|illegal,n|})
 assert livelock1__Component(true) \ diff(Events,{|illegal,n|}) :[livelock free]

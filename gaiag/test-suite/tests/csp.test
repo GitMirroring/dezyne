@@ -65,8 +65,8 @@
           (csp-transform* i-ast csp-return-ast)
 
           ;; to:
-          "i?x:{e} ->
-(\\ P',V' @ i.return -> P'(V'))(\\ V' @ i_B_(V'),((s,b,c),(stack')))")) ;; FIXME: NO skip_?
+          "channel_i?x:{e} ->
+(\\ P',V' @ channel_i.return -> P'(V'))(\\ V' @ i_B_(V'),((s,b,c),(stack')))")) ;; FIXME: NO skip_?
 
 
 (pass-if "ast-transform-return-reply"
@@ -100,8 +100,8 @@
                (the-end (s b c))))
 
           ;; via:
-          "i?x:{e} ->
-semi_(reply_(i, (\\ ((s,b,c),(stack')) @ Status_Yes)),
+          "channel_i?x:{e} ->
+semi_(reply_(channel_i, (\\ ((s,b,c),(stack')) @ Status_Yes)),
 skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
 
 
@@ -157,8 +157,8 @@ skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
                (the-end (s b c))))
 
           ;; via:
-          "i?x:{e} ->
-semi_(reply_(i, (\\ ((s,b,c),(stack')) @ Status_Yes)),
+          "channel_i?x:{e} ->
+semi_(reply_(channel_i, (\\ ((s,b,c),(stack')) @ Status_Yes)),
 skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
 
 
@@ -189,8 +189,8 @@ skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
                 (the-end (s b c))))
 
           ;; via:
-          "i?x:{e} ->
-semi_((\\ P',V' @ i!h -> P'(V')),
+          "channel_i?x:{e} ->
+semi_((\\ P',V' @ channel_i!h -> P'(V')),
 skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
 
 (define csp-transform-illegal-action-via
@@ -222,7 +222,7 @@ skip_)(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
            csp-transform-illegal-action-via)
 
           ;; to:
-          "IG & i?x:{e} ->
+          "IG & channel_i?x:{e} ->
 illegal_(STOP,<>)"))
 
 (define csp-transform-empty-compound-via
@@ -252,8 +252,8 @@ illegal_(STOP,<>)"))
            csp-transform-empty-compound-via)
 
           ;; to:
-          "i?x:{e} ->
-(\\ P',V' @ i.return -> P'(V'))(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
+          "channel_i?x:{e} ->
+(\\ P',V' @ channel_i.return -> P'(V'))(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
 
 (define csp-transform-skip-via
   '(on ((trigger #f e))
@@ -282,8 +282,8 @@ illegal_(STOP,<>)"))
            csp-transform-skip-via)
 
           ;; to:
-          "i?x:{e} ->
-(\\ P',V' @ i.return -> P'(V'))(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
+          "channel_i?x:{e} ->
+(\\ P',V' @ channel_i.return -> P'(V'))(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
 
 (define ast-transform-assign
   '(assign (ctx ((s b c)))
@@ -580,28 +580,28 @@ assign_(\\ ((s,b,c),(stack')) @ ((s,true,c),(stack'))))"))
           (csp-transform* i-ast csp-transform-via)
 
           ;; to:
-          "i?x:{e} ->
+          "channel_i?x:{e} ->
 semi_(semi_(\\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
-                             semi_((\\ P',V' @ i!f -> P'(V')),
-                                  (\\ P',V' @ i!g -> P'(V'))),
+                             semi_((\\ P',V' @ channel_i!f -> P'(V')),
+                                  (\\ P',V' @ channel_i!g -> P'(V'))),
                              skip_
                              )(P',((s,b,c),(stack'))),
      semi_(\\ P',((s,b,c),(stack')) @ ifthenelse_(b,
                                   semi_(\\ P',((s,b,c),(stack')) @ ifthenelse_(c,
-                                                               (\\ P',V' @ i!g -> P'(V')),
+                                                               (\\ P',V' @ channel_i!g -> P'(V')),
                                                                skip_
                                                                )(P',((s,b,c),(stack'))),
                                        semi_(assign_(\\ ((s,b,c),(stack')) @ ((s,b,false),(stack'))),
-                                            (\\ P',V' @ i!f -> P'(V')))),
+                                            (\\ P',V' @ channel_i!f -> P'(V')))),
                                   \\ P',((s,b,c),(stack')) @ ifthenelse_(c,
                                                           semi_(assign_(\\ ((s,b,c),(stack')) @ ((s,false,c),(stack'))),
-                                                               (\\ P',V' @ i!h -> P'(V'))),
+                                                               (\\ P',V' @ channel_i!h -> P'(V'))),
                                                           semi_(assign_(\\ ((s,b,c),(stack')) @ ((s,true,c),(stack'))),
-                                                               (\\ P',V' @ i!g -> P'(V')))
+                                                               (\\ P',V' @ channel_i!g -> P'(V')))
                                                           )(P',((s,b,c),(stack')))
                                   )(P',((s,b,c),(stack'))),
           assign_(\\ ((s,b,c),(stack')) @ ((S_S2,b,c),(stack'))))),
-(\\ P',V' @ i.return -> P'(V')))(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
+(\\ P',V' @ channel_i.return -> P'(V')))(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
 
 
 (define c-ast '(component
@@ -1007,9 +1007,9 @@ skip_)(\\ V' @ transition_end -> var__(V'),((<>),(stack')))"))
           (csp-transform* i-ast csp-function-call-ast)
 
           ;; via:
-          "i?x:{e} ->
+          "channel_i?x:{e} ->
 semi_(callvoid_(\\ P',V' @ toggle(P',V')),
-(\\ P',V' @ i.return -> P'(V')))(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
+(\\ P',V' @ channel_i.return -> P'(V')))(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
 
 ;; '
 
@@ -1052,7 +1052,7 @@ semi_(callvoid_(\\ P',V' @ toggle(P',V')),
 
           ;; to:
           "g = \\ P',V',F' @ context_func_args_(F',
-semi_((\\ P',V' @ i!f -> P'(V')),
+semi_((\\ P',V' @ channel_i!f -> P'(V')),
 returnvalue_(\\ ((s,b,hide_member2'),((stack',c))) @ c)))(P',V')
 "))
 
@@ -1085,9 +1085,9 @@ returnvalue_(\\ ((s,b,hide_member2'),((stack',c))) @ c)))(P',V')
           (csp-transform* i-ast csp-function-call-arguments-via)
 
           ;; via:
-          "i?x:{e} ->
+          "channel_i?x:{e} ->
 context_active_(\\ P',V' @ g (P',V',(\\ ((s,b,c),(stack')) @ (b,b))(V')),
-(\\ P',V' @ i.return -> P'(V')))(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
+(\\ P',V' @ channel_i.return -> P'(V')))(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
 
 
 (define csp-reply-variable-ast-via
@@ -1166,7 +1166,7 @@ reply_(i, (\\ ((dummy),((stack',s))) @ Status_No))
           (csp-transform* c-reply-ast csp-reply-function-ast-via)
 
           ;; to:
-          "reply_fun = \\ P',V' @ context_func_(reply_(I, (\\ ((dummy),(stack')) @ Status_Yes)))(P',V')
+          "reply_fun = \\ P',V' @ context_func_(reply_(channel_I, (\\ ((dummy),(stack')) @ Status_Yes)))(P',V')
 "))
 
 (define csp-reply-function-parameter-ast-via
@@ -1208,10 +1208,10 @@ reply_(i, (\\ ((dummy),((stack',s))) @ Status_No))
 
           ;; to:
           "reply_fun_arg = \\ P',V',F' @ context_func_args_(F',
-reply_(I, (\\ ((dummy),((stack',s))) @ s)))(P',V')
+reply_(channel_I, (\\ ((dummy),((stack',s))) @ s)))(P',V')
 "))
 
-(define return-variable-ast
+(define return-variable-c-ast
   '(component
     arguments
     (ports (provides I i))
@@ -1231,7 +1231,7 @@ reply_(I, (\\ ((dummy),((stack',s))) @ s)))(P',V')
            (variable (type bool) c (call g (arguments (expression b))))
            (if c (compound (action (trigger i f))))))))))
 
-(define csp-return-variable-ast
+(define csp-return-variable-c-ast
   '(on ((trigger i e))
        (semi (context
               ((ctx ((b))) c (expression true))
@@ -1248,7 +1248,7 @@ reply_(I, (\\ ((dummy),((stack',s))) @ s)))(P',V')
           ;; from:
           (ast-transform*
 
-           return-variable-ast
+           return-variable-c-ast
 
            '(on ((trigger i e))
                 (compound
@@ -1258,7 +1258,7 @@ reply_(I, (\\ ((dummy),((stack',s))) @ s)))(P',V')
                       (action (trigger i f)))))))
 
           ;; via:
-          csp-return-variable-ast))
+          csp-return-variable-c-ast))
 
 (pass-if "csp-transform-return-variable"
          (diff-noisy-equal?
@@ -1266,9 +1266,9 @@ reply_(I, (\\ ((dummy),((stack',s))) @ s)))(P',V')
           ;; from:
           (csp-transform*
 
-           return-variable-ast
+           return-variable-c-ast
 
-           csp-return-variable-ast
+           csp-return-variable-c-ast
            )
 
           ;; via:
@@ -1280,7 +1280,7 @@ skip_
 )(P',((b),((stack',c))))),
 (\\ P',V' @ i.return -> P'(V')))(\\ V' @ transition_end -> arguments__(V'),((b),(stack')))"))
 
-(define callvalued-ast
+(define callvalued-c-ast
   '(component
     arguments
     (ports (provides I i))
@@ -1335,7 +1335,7 @@ skip_
          (gom-pretty-noisy-equal?
 
           ;; from:
-          (ast-transform* callvalued-ast callvalued-on)
+          (ast-transform* callvalued-c-ast callvalued-on)
 
           ;; via:
           csp-callvalued-on))
@@ -1345,7 +1345,7 @@ skip_
          (diff-noisy-equal?
 
           ;; from:
-          (csp-transform* callvalued-ast csp-callvalued-on)
+          (csp-transform* callvalued-c-ast csp-callvalued-on)
           ;; via:
          "i?x:{e} ->
 semi_(semi_(assign_(\\ ((b),(stack')) @ (((not b)),(stack'))),
@@ -1387,7 +1387,7 @@ skip_
          (gom-pretty-noisy-equal?
 
           ;; from:
-          (ast-transform* callvalued-ast callvalued-on-2)
+          (ast-transform* callvalued-c-ast callvalued-on-2)
 
           ;; via:
           csp-callvalued-on-2))
@@ -1397,7 +1397,7 @@ skip_
          (diff-noisy-equal?
 
           ;; from:
-          (csp-transform* callvalued-ast csp-callvalued-on-2)
+          (csp-transform* callvalued-c-ast csp-callvalued-on-2)
           ;; via:
          "i?x:{e} ->
 semi_(semi_(assign_(\\ ((b),(stack')) @ (((not b)),(stack'))),
@@ -1470,7 +1470,7 @@ skip_
          (gom-pretty-noisy-equal?
 
           ;; from:
-          (ast-transform* callvalued-ast callvalued-on-deep)
+          (ast-transform* callvalued-c-ast callvalued-on-deep)
 
           ;; via:
           csp-callvalued-on-deep))
@@ -1536,9 +1536,9 @@ skip_
           (csp-transform* i-ast csp-transform-OM-PARSER-variable-action-via)
 
           ;; to:
-          "i?x:{done} ->
+          "channel_i?x:{done} ->
 context_active_(sendrecv_(u,what),
-(\\ P',V' @ i.return -> P'(V')))(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
+(\\ P',V' @ channel_i.return -> P'(V')))(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
 
 ;; OM-PARSER parser test
 (define csp-transform-OM-PARSER-variable-action-via
@@ -1571,9 +1571,9 @@ context_active_(sendrecv_(u,what),
           (csp-transform* i-ast csp-transform-OM-PARSER-variable-action-via)
 
           ;; to:
-          "i?x:{done} ->
+          "channel_i?x:{done} ->
 context_active_(sendrecv_(u,what),
-(\\ P',V' @ i.return -> P'(V')))(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
+(\\ P',V' @ channel_i.return -> P'(V')))(\\ V' @ i_B_(V'),((s,b,c),(stack')))"))
 
 ;; OM-PARSER parser test
 (define csp-transform-OM-PARSER-assign-action-via
@@ -1676,8 +1676,8 @@ semi_(assign_active_(sendrecv_(k,h),
 (pass-if "no-members"
          (diff-noisy-equal?
           (csp-transform* member-i-ast '(on (e) (eventreturn) (the-end ())))
-          "i?x:{e} ->
-(\\ P',V' @ i.return -> P'(V'))(\\ V' @ i_B_(V'),((<>),(stack')))"))
+          "channel_i?x:{e} ->
+(\\ P',V' @ channel_i.return -> P'(V'))(\\ V' @ i_B_(V'),((<>),(stack')))"))
 
 (pass-if "unbehaved"
          (diff-noisy-equal?

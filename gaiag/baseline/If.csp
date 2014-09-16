@@ -39,21 +39,26 @@ channel illegal
 channel transition_begin, transition_end
 
 datatype event_enumeration_alphabet = a | b | c | return
+-- interface.csp.scm
 
-channel I: {a,b,c,return}
+channel channel_I: {a,b,c,return}
 
 I_(IG) = let
 
 I__(((t),(stack'))) =
-I?x:{a} ->
+channel_I?x:{a} ->
 semi_(semi_(\ P',((t),(stack')) @ ifthenelse_(t,
-(\ P',V' @ I!b -> P'(V')),
-(\ P',V' @ I!c -> P'(V'))
+(\ P',V' @ channel_I!b -> P'(V')),
+(\ P',V' @ channel_I!c -> P'(V'))
 )(P',((t),(stack'))),
 assign_(\ ((t),(stack')) @ (((not t)),(stack')))),
-(\ P',V' @ I.return -> P'(V')))(\ V' @ I__(V'),((t),(stack')))
+(\ P',V' @ channel_I.return -> P'(V')))(\ V' @ I__(V'),((t),(stack')))
 
 within I__(((false),(<>)))
+
+-- end of interface.csp.scm
+-- component.csp.scm
+
 channel i:{a,b,c,return}
 
 
@@ -123,10 +128,12 @@ within compress((If_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
+
+-- end of component.csp.scm
 assert I_(false) :[deadlock free]
 assert I_(true) :[livelock free]
 assert If_(true,true) :[deterministic]
 assert STOP [T= If__Component(false) \ diff(Events,{illegal})
 assert If__Component(false) :[deadlock free]
-assert I_(true) [[I.x<-i.x|x<-extensions(I)]] \ {} [F= If__Component(true) \ diff(Events,{|illegal,i|})
+assert I_(true) [[channel_I.x<-i.x|x<-extensions(i)]] \ {} [F= If__Component(true) \ diff(Events,{|illegal,i|})
 assert If__Component(true) \ diff(Events,{|illegal,i|}) :[livelock free]
