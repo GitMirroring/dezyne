@@ -45,7 +45,7 @@
 (define *ast* '())
 
 (define (ast-> ast)
-  (let ((gom ((gom:register c++:gom) ast #t)))
+  (let* ((gom ((gom:register c++:gom) ast #t)))
     (set! *ast* gom)
     (and=> (gom:interface gom) dump)
     (and=> (gom:component gom) dump)
@@ -72,9 +72,8 @@
                      ((animate-template 'interface.c3.hh.scm) (c++-module o))))))
 
 (define-method (dump (o <component>))
-  (stderr "dump-component: ~a ~a\n" (.name o) (class-of o))
-  (pretty-print (gom->list o) (current-error-port))
-  (let ((name (.name o)))
+  (let ((name (.name o))
+        (interfaces (map c++:import (map .type ((compose .elements .ports) o)))))
     (dump-indented (symbol-append 'component- name '-c3.hh)
                    (lambda ()
                      ((animate-template 'component.c3.hh.scm) (c++-module o))))
@@ -83,17 +82,14 @@
                      ((animate-template 'component.c3.cc.scm) (c++-module o))))))
 
 (define-method (dump (o <system>))
-  (stderr "dump-system: ~a ~a\n"  (.name o) (class-of o))
-  (let ((name (.name o)))
+  (let ((name (.name o))
+        (interfaces (map c++:import (map .type ((compose .elements .ports) o)))))
     (dump-indented (symbol-append 'component- name '-c3.hh)
                    (lambda ()
                      ((animate-template 'system.c3.hh.scm) (c++-module o))))
     (dump-indented (symbol-append 'component- name '-c3.cc)
                    (lambda ()
                      ((animate-template 'system.c3.cc.scm) (c++-module o))))))
-
-(use-modules (ice-9 pretty-print))
-
 
 (define ((animate-template file-name) module)
   (animate-file (append (prefix-dir) (list 'templates file-name)) module))
@@ -157,6 +153,11 @@
                  (.elements triggers))
            (statements->string statement)
            ""))
+      (($ <call> function ($ <arguments> '())) (->string (list function "();\n")))
+      (($ <call> function ($ <arguments> arguments))
+       (let ((arguments ((->join ", ") (map expression->string arguments))))
+         (->string (list function  "(" arguments ");\n"))))
+
       (($ <compound> elements)
        (let ((statements (map statements->string elements)))
         (if compound?
@@ -171,6 +172,8 @@
               (interface (c++:import name))
               (event (gom:event interface event-name)))
          (->string (list port-name '. (.direction event) '. event-name "();\n"))))
+      (($ <reply> expression)
+       (->string (list "reply = " (expression->string expression) ";\n")))
       (($ <return> #f)
        "return;\n")
       (($ <return> expression)
@@ -276,13 +279,6 @@
      else (double-colon-join (list (.name (gom:component *ast*))
                                    (gom:name (.type v)))))))
 
-(define (format-parameters port)
-  (if (gom:typed? port)
-      (list (.type port) "::" (return-type-text port) " " 'value)
-      ""))
-
-
-
 
 ;;;; MAPPERS
 (define-syntax string-if
@@ -309,7 +305,6 @@
                      `((port . ,identity)
                        (.interface-name . ,.type)
                        (.port-name . ,.name)
-                       (.parameters . ,format-parameters)
                        (.type . ,return-type-text)
                        ))))))))) ;; FIXME-other
 

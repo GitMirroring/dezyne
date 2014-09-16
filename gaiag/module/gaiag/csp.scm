@@ -86,7 +86,7 @@
             (generate-csp o root)))
 
 (define-method (generate-csp (o <component>))
-  (and-let* ((interfaces (map gom:import (map .type ((compose .elements .ports) o))))
+  (and-let* ((interfaces (map csp:import (map .type ((compose .elements .ports) o))))
              (root (make <root> :elements (append interfaces (list o)))))
             (generate-csp o root)))
 
