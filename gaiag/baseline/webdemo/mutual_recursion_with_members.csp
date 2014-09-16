@@ -16,6 +16,7 @@ callvoid_args_(B',F')(P', V') = B'(P', V', F')
 assign_(F')(P', V') = P'(F'(V'))
 -- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
 assign_active_(C', A')(P', V') = C'(\((M', r'),L') @ P'(A'((M',L'),r')), V')
+reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
 -- returnvalue_: (F: V->val) => (P,V)->Proc
 returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
 -- the_end_: P => V->Proc
@@ -34,45 +35,50 @@ context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_loca
 context_func_(S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', <>))
 context_func_args_(v', S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', (<>, v')))
 
-datatype event_enumeration_alphabet =
-i3_e | i4_zzz | i5_yawn | i6_stretch | return
+members_((M',L')) = (M',<>)
 
 channel illegal
+channel transition_begin, transition_end
 
-channel i100_i: {i3_e,i4_zzz,i5_yawn,i6_stretch,return}
+datatype event_enumeration_alphabet = i3_sleep | i4_zzz | i5_yawn | i6_stretch | return
+-- interface.csp.scm
 
-channel i99_I: {i3_e,i4_zzz,i5_yawn,i6_stretch,return}
+channel CH_i99_sleeping: {i3_sleep,i4_zzz,i5_yawn,i6_stretch,return}
 
-  i99_I_(IG) = let
-i77_f = \ PF',VF' @ context_func_(semi_((\ P',V' @ i99_I!i5_yawn -> P'(V')),
-semi_((\ P',V' @ i99_I!i4_zzz -> P'(V')),
-semi_((\ P',V' @ i99_I!i5_yawn -> P'(V')),
-semi_((\ P',V' @ i99_I!i6_stretch -> P'(V')),
-semi_((\ P',V' @ i99_I!i4_zzz -> P'(V')),
-semi_((\ P',V' @ i99_I!i6_stretch -> P'(V')),
-semi_(callvoid_(\ P',V' @ i77_f(PF',VF')),
+IF_i99_sleeping_(IG) = let
+i77_f = \ PF',VF' @ context_func_(semi_((\ P',V' @ CH_i99_sleeping!i5_yawn -> P'(V')),
+semi_((\ P',V' @ CH_i99_sleeping!i4_zzz -> P'(V')),
+semi_((\ P',V' @ CH_i99_sleeping!i5_yawn -> P'(V')),
+semi_((\ P',V' @ CH_i99_sleeping!i6_stretch -> P'(V')),
+semi_((\ P',V' @ CH_i99_sleeping!i4_zzz -> P'(V')),
+semi_((\ P',V' @ CH_i99_sleeping!i6_stretch -> P'(V')),
+semi_(callvoid_(\ P',V' @ i77_f(PF',members_(V'))),
 skip_))))))))(PF',VF')
 
-i99_I__(((<>),(stack'))) =
-i99_I?x:{i3_e} ->
+i99_sleeping_(((<>),(stack'))) =
+CH_i99_sleeping?x:{i3_sleep} ->
 semi_(callvoid_(\ P',V' @ i77_f(P',V')),
-(\ P',V' @ i99_I.return -> P'(V')))(\ V' @ i99_I__(V'),((<>),(stack')))
+(\ P',V' @ CH_i99_sleeping.return -> P'(V')))(\ V' @ i99_sleeping_(V'),((<>),(stack')))
+
+within i99_sleeping_(((<>),(<>)))
+
+-- end of interface.csp.scm
+-- component.csp.scm
+
+channel i100_beauty:{i3_sleep,i4_zzz,i5_yawn,i6_stretch,return}
 
 
-within i99_I__(((<>),(<>)))
-
-
-i308_mutual_recursion_with_members_(IIG,IG) = let
+CO_i308_mutual_recursion_with_members_(IIG,IG) = let
 i212_f = \ PF',VF',F' @ context_func_args_(F',
 semi_(\ P',((i105_down),((stack',i108_c))) @ ifthenelse_(i105_down,
-semi_((\ P',V' @ i100_i!i5_yawn -> P'(V')),
+semi_((\ P',V' @ i100_beauty!i5_yawn -> P'(V')),
 \ P',((i105_down),((stack',i108_c))) @ ifthenelse_((0 < i108_c),
-callvoid_(\ P',V' @ i284_g(PF',(\ ((down),((stack',c))) @ ((down),(stack')))(V'),(\ ((i105_down),((stack',i108_c))) @ ((i108_c - 1)))(V'))),
+callvoid_(\ P',V' @ i284_g(PF',members_(V'),(\ ((i105_down),((stack',i108_c))) @ ((i108_c - 1)))(V'))),
 skip_
 )(P',((i105_down),((stack',i108_c))))),
-semi_((\ P',V' @ i100_i!i6_stretch -> P'(V')),
+semi_((\ P',V' @ i100_beauty!i6_stretch -> P'(V')),
 \ P',((i105_down),((stack',i108_c))) @ ifthenelse_((i108_c < 2),
-callvoid_(\ P',V' @ i284_g(PF',(\ ((down),((stack',c))) @ ((down),(stack')))(V'),(\ ((i105_down),((stack',i108_c))) @ ((i108_c + 1)))(V'))),
+callvoid_(\ P',V' @ i284_g(PF',members_(V'),(\ ((i105_down),((stack',i108_c))) @ ((i108_c + 1)))(V'))),
 skip_
 )(P',((i105_down),((stack',i108_c)))))
 )(P',((i105_down),((stack',i108_c)))),
@@ -82,28 +88,26 @@ semi_(\ P',((i105_down),((stack',i215_c))) @ ifthenelse_((i215_c == 2),
 assign_(\ ((i105_down),((stack',i215_c))) @ ((true),((stack',i215_c)))),
 \ P',((i105_down),((stack',i215_c))) @ ifthenelse_((i215_c == 0),
 assign_(\ ((i105_down),((stack',i215_c))) @ ((false),((stack',i215_c)))),
-(\ P',V' @ i100_i!i4_zzz -> P'(V'))
+(\ P',V' @ i100_beauty!i4_zzz -> P'(V'))
 )(P',((i105_down),((stack',i215_c))))
 )(P',((i105_down),((stack',i215_c)))),
-semi_(callvoid_(\ P',V' @ i212_f(PF',(\ ((down),((stack',c))) @ ((down),(stack')))(V'),(\ ((i105_down),((stack',i215_c))) @ (i215_c))(V'))),
+semi_(callvoid_(\ P',V' @ i212_f(PF',members_(V'),(\ ((i105_down),((stack',i215_c))) @ (i215_c))(V'))),
 skip_)))(PF',VF')
 
-i308_mutual_recursion_with_members__(((i105_down),(stack'))) = transition_begin -> (
-i100_i?x:{i3_e} ->
+i308_mutual_recursion_with_members_(((i105_down),(stack'))) = transition_begin -> (
+i100_beauty?x:{i3_sleep} ->
 semi_(callvoid_(\ P',V' @ i284_g(P',V',(\ ((i105_down),(stack')) @ (2))(V'))),
-(\ P',V' @ i100_i.return -> P'(V')))(\ V' @ transition_end -> i308_mutual_recursion_with_members__(V'),((i105_down),(stack')))
+(\ P',V' @ i100_beauty.return -> P'(V')))(\ V' @ transition_end -> i308_mutual_recursion_with_members_(V'),((i105_down),(stack')))
 )
 
-within i308_mutual_recursion_with_members__(((false),(<>)))
+within i308_mutual_recursion_with_members_(((false),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel transition_begin, transition_end
-
-channel reorder_in,reorder_out : {i100_i.return}
+channel reorder_in,reorder_out : {i100_beauty.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -136,25 +140,26 @@ within Idle(0)
 
 within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-i308_mutual_recursion_with_members__Component(IIG) = let
+AS_i308_mutual_recursion_with_members_(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {i100_i.return,i100_i.i4_zzz,i100_i.i5_yawn,i100_i.i6_stretch}
-ClientCalls = {i100_i.i3_e}
+Exclude = {i100_beauty.return,i100_beauty.i4_zzz,i100_beauty.i5_yawn,i100_beauty.i6_stretch}
+ClientCalls = {i100_beauty.i3_sleep}
 UsedModeling = {}
-within compress((i308_mutual_recursion_with_members_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,i100_i|},Exclude)|]
-(((STOP) [[x<-IN.x|x<-extensions(IN)]]
+within compress((CO_i308_mutual_recursion_with_members_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,i100_beauty|},Exclude)|]
+(((STOP
+) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
-assert i99_I_(false) :[deadlock free]
 
-assert i99_I_(true) :[livelock free]
-
-assert i308_mutual_recursion_with_members_(true,true) :[deterministic]
-assert STOP [T= i308_mutual_recursion_with_members__Component(false) \ diff(Events,{illegal})
-assert i308_mutual_recursion_with_members__Component(false) :[deadlock free]
-assert i99_I_(true) [[i99_I.x<-i100_i.x|x<-extensions(i99_I)]] \ {} [F= i308_mutual_recursion_with_members__Component(true) \ diff(Events,{|illegal,i100_i|})
-assert i308_mutual_recursion_with_members__Component(true) \ diff(Events,{|illegal,i100_i|}) :[livelock free]
+-- end of component.csp.scm
+assert IF_i99_sleeping_(false) :[deadlock free]
+assert IF_i99_sleeping_(true) :[livelock free]
+assert CO_i308_mutual_recursion_with_members_(true,true) :[deterministic]
+assert STOP [T= AS_i308_mutual_recursion_with_members_(false) \ diff(Events,{illegal})
+assert AS_i308_mutual_recursion_with_members_(false) :[deadlock free]
+assert IF_i99_sleeping_(true) [[CH_i99_sleeping.x<-i100_beauty.x|x<-extensions(i100_beauty)]] \ {} [F= AS_i308_mutual_recursion_with_members_(true) \ diff(Events,{|illegal,i100_beauty|})
+assert AS_i308_mutual_recursion_with_members_(true) \ diff(Events,{|illegal,i100_beauty|}) :[livelock free]
