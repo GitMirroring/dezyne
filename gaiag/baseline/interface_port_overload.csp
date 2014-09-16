@@ -38,40 +38,40 @@ context_func_args_(v', S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M
 channel illegal
 channel transition_begin, transition_end
 
-datatype event_enumeration_alphabet = e | return
+datatype event_enumeration_alphabet = R_V | e | return
 -- interface.csp.scm
 
-channel channel_I: {e,return}
+channel CH_I: {e,R_V,return}
 
-I_(IG) = let
+IF_I_(IG) = let
 
-I__(((<>),(stack'))) =
-channel_I?x:{e} ->
-(\ P',V' @ channel_I.return -> P'(V'))(\ V' @ I__(V'),((<>),(stack')))
+I_(((<>),(stack'))) =
+CH_I?x:{e} ->
+reply_(CH_I, (\ ((<>),(stack')) @ R_V))(\ V' @ I_(V'),((<>),(stack')))
 
-within I__(((<>),(<>)))
+within I_(((<>),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel I:{e,return}
+channel I:{e,R_V,return}
 
 
-interface_port_overload_(IIG,IG) = let
+CO_interface_port_overload_(IIG,IG) = let
 
-interface_port_overload__(((<>),(stack'))) = transition_begin -> (
+interface_port_overload_(((<>),(stack'))) = transition_begin -> (
 I?x:{e} ->
-(\ P',V' @ I.return -> P'(V'))(\ V' @ transition_end -> interface_port_overload__(V'),((<>),(stack')))
+reply_(I, (\ ((<>),(stack')) @ R_V))(\ V' @ transition_end -> interface_port_overload_(V'),((<>),(stack')))
 )
 
-within interface_port_overload__(((<>),(<>)))
+within interface_port_overload_(((<>),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in,reorder_out : {I.return}
+channel reorder_in,reorder_out : {I.R_V,I.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -104,15 +104,15 @@ within Idle(0)
 
 within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-interface_port_overload__Component(IIG) = let
+AS_interface_port_overload_(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {I.return}
+Exclude = {I.R_V,I.return}
 ClientCalls = {I.e}
 UsedModeling = {}
-within compress((interface_port_overload_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+within compress((CO_interface_port_overload_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,I|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
@@ -120,10 +120,10 @@ within compress((interface_port_overload_(IIG,true) [[x<-OUT.x|x<-extensions(OUT
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 
 -- end of component.csp.scm
-assert I_(false) :[deadlock free]
-assert I_(true) :[livelock free]
-assert interface_port_overload_(true,true) :[deterministic]
-assert STOP [T= interface_port_overload__Component(false) \ diff(Events,{illegal})
-assert interface_port_overload__Component(false) :[deadlock free]
-assert I_(true) [[channel_I.x<-I.x|x<-extensions(I)]] \ {} [F= interface_port_overload__Component(true) \ diff(Events,{|illegal,I|})
-assert interface_port_overload__Component(true) \ diff(Events,{|illegal,I|}) :[livelock free]
+assert IF_I_(false) :[deadlock free]
+assert IF_I_(true) :[livelock free]
+assert CO_interface_port_overload_(true,true) :[deterministic]
+assert STOP [T= AS_interface_port_overload_(false) \ diff(Events,{illegal})
+assert AS_interface_port_overload_(false) :[deadlock free]
+assert IF_I_(true) [[CH_I.x<-I.x|x<-extensions(I)]] \ {} [F= AS_interface_port_overload_(true) \ diff(Events,{|illegal,I|})
+assert AS_interface_port_overload_(true) \ diff(Events,{|illegal,I|}) :[livelock free]

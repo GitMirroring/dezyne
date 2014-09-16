@@ -41,13 +41,13 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = States_State1 | States_State2 | evt | return
 -- interface.csp.scm
 
-channel channel_TestBool: {evt,return}
+channel CH_TestBool: {evt,return}
 
-TestBool_(IG) = let
+IF_TestBool_(IG) = let
 
-TestBool__(((b1,b2,b3,state1,state2),(stack'))) =
+TestBool_(((b1,b2,b3,state1,state2),(stack'))) =
 ((state1 == States_State1)) & (
-channel_TestBool?x:{evt} ->
+CH_TestBool?x:{evt} ->
 semi_(semi_(assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ (((b1 or b2),b2,b3,state1,state2),(stack'))),
 semi_(assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ ((b1,(b1 and b2),b3,state1,state2),(stack'))),
 semi_(assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ ((b1,b2,(not b1),state1,state2),(stack'))),
@@ -69,13 +69,13 @@ semi_(assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ ((b1,(b1 or (b2 and b3)),b
 assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ (((not b1),b2,b3,state1,state2),(stack'))),
 skip_
 )(P',((b1,b2,b3,state1,state2),(stack')))))))))))))))))))),
-(\ P',V' @ channel_TestBool.return -> P'(V')))(\ V' @ TestBool__(V'),((b1,b2,b3,state1,state2),(stack'))))
+(\ P',V' @ CH_TestBool.return -> P'(V')))(\ V' @ TestBool_(V'),((b1,b2,b3,state1,state2),(stack'))))
 []
 (((state2 == States_State1) and b1)) & (
-channel_TestBool?x:{evt} ->
-(\ P',V' @ channel_TestBool.return -> P'(V'))(\ V' @ TestBool__(V'),((b1,b2,b3,state1,state2),(stack'))))
+CH_TestBool?x:{evt} ->
+(\ P',V' @ CH_TestBool.return -> P'(V'))(\ V' @ TestBool_(V'),((b1,b2,b3,state1,state2),(stack'))))
 
-within TestBool__(((true,true,true,States_State1,States_State2),(<>)))
+within TestBool_(((true,true,true,States_State1,States_State2),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -83,15 +83,15 @@ within TestBool__(((true,true,true,States_State1,States_State2),(<>)))
 channel i:{evt,return}
 
 
-testBoolean_(IIG,IG) = let
+CO_testBoolean_(IIG,IG) = let
 
-testBoolean__(((b),(stack'))) = transition_begin -> (
+testBoolean_(((b),(stack'))) = transition_begin -> (
 (true) & (
 i?x:{evt} ->
-(\ P',V' @ i.return -> P'(V'))(\ V' @ transition_end -> testBoolean__(V'),((b),(stack'))))
+(\ P',V' @ i.return -> P'(V'))(\ V' @ transition_end -> testBoolean_(V'),((b),(stack'))))
 )
 
-within testBoolean__(((false),(<>)))
+within testBoolean_(((false),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
@@ -131,7 +131,7 @@ within Idle(0)
 
 within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-testBoolean__Component(IIG) = let
+AS_testBoolean_(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
@@ -139,7 +139,7 @@ within sbisim(diamond(x))
 Exclude = {i.return}
 ClientCalls = {i.evt}
 UsedModeling = {}
-within compress((testBoolean_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+within compress((CO_testBoolean_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,i|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
@@ -147,10 +147,10 @@ within compress((testBoolean_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reo
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 
 -- end of component.csp.scm
-assert TestBool_(false) :[deadlock free]
-assert TestBool_(true) :[livelock free]
-assert testBoolean_(true,true) :[deterministic]
-assert STOP [T= testBoolean__Component(false) \ diff(Events,{illegal})
-assert testBoolean__Component(false) :[deadlock free]
-assert TestBool_(true) [[channel_TestBool.x<-i.x|x<-extensions(i)]] \ {} [F= testBoolean__Component(true) \ diff(Events,{|illegal,i|})
-assert testBoolean__Component(true) \ diff(Events,{|illegal,i|}) :[livelock free]
+assert IF_TestBool_(false) :[deadlock free]
+assert IF_TestBool_(true) :[livelock free]
+assert CO_testBoolean_(true,true) :[deterministic]
+assert STOP [T= AS_testBoolean_(false) \ diff(Events,{illegal})
+assert AS_testBoolean_(false) :[deadlock free]
+assert IF_TestBool_(true) [[CH_TestBool.x<-i.x|x<-extensions(i)]] \ {} [F= AS_testBoolean_(true) \ diff(Events,{|illegal,i|})
+assert AS_testBoolean_(true) \ diff(Events,{|illegal,i|}) :[livelock free]

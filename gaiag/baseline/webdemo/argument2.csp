@@ -41,27 +41,27 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = i3_e | i4_f | return
 -- interface.csp.scm
 
-channel channel_i138_I: {i3_e,i4_f,return}
+channel CH_i138_I: {i3_e,i4_f,return}
 
-i138_I_(IG) = let
+IF_i138_I_(IG) = let
 i41_g = \ P',V',F' @ context_func_args_(F',
-semi_((\ P',V' @ channel_i138_I!i4_f -> P'(V')),
+semi_((\ P',V' @ CH_i138_I!i4_f -> P'(V')),
 returnvalue_(\ ((i6_b),((stack',(i9_ga,i12_gb)))) @ (i9_ga or i12_gb))))(P',V')
 
-i138_I__(((i6_b),(stack'))) =
+i138_I_(((i6_b),(stack'))) =
 (true) & (
-channel_i138_I?x:{i3_e} ->
+CH_i138_I?x:{i3_e} ->
 semi_(semi_(assign_(\ ((i6_b),(stack')) @ (((not i6_b)),(stack'))),
 context_active_(\ P',V' @ i41_g (P',V',(\ ((i6_b),(stack')) @ (i6_b,i6_b))(V')),
 semi_(assign_active_(\ P',V' @ i41_g (P',V',(\ ((i6_b),((stack',i81_c))) @ (i81_c,i81_c))(V')),
 \ (((i6_b),((stack',i81_c)))),r' @ ((r'),((stack',i81_c)))),
 \ P',((i6_b),((stack',i81_c))) @ ifthenelse_(i81_c,
-(\ P',V' @ channel_i138_I!i4_f -> P'(V')),
+(\ P',V' @ CH_i138_I!i4_f -> P'(V')),
 skip_
 )(P',((i6_b),((stack',i81_c))))))),
-(\ P',V' @ channel_i138_I.return -> P'(V')))(\ V' @ i138_I__(V'),((i6_b),(stack'))))
+(\ P',V' @ CH_i138_I.return -> P'(V')))(\ V' @ i138_I_(V'),((i6_b),(stack'))))
 
-within i138_I__(((false),(<>)))
+within i138_I_(((false),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -69,12 +69,12 @@ within i138_I__(((false),(<>)))
 channel i139_i:{i3_e,i4_f,return}
 
 
-i278_argument2_(IIG,IG) = let
+CO_i278_argument2_(IIG,IG) = let
 i179_g = \ P',V',F' @ context_func_args_(F',
 semi_((\ P',V' @ i139_i!i4_f -> P'(V')),
 returnvalue_(\ ((i143_b),((stack',(i146_ga,i149_gb)))) @ (i146_ga or i149_gb))))(P',V')
 
-i278_argument2__(((i143_b),(stack'))) = transition_begin -> (
+i278_argument2_(((i143_b),(stack'))) = transition_begin -> (
 (true) & (
 i139_i?x:{i3_e} ->
 semi_(semi_(assign_(\ ((i143_b),(stack')) @ (((not i143_b)),(stack'))),
@@ -85,10 +85,10 @@ semi_(assign_active_(\ P',V' @ i179_g (P',V',(\ ((i143_b),((stack',i220_c))) @ (
 (\ P',V' @ i139_i!i4_f -> P'(V')),
 skip_
 )(P',((i143_b),((stack',i220_c))))))),
-(\ P',V' @ i139_i.return -> P'(V')))(\ V' @ transition_end -> i278_argument2__(V'),((i143_b),(stack'))))
+(\ P',V' @ i139_i.return -> P'(V')))(\ V' @ transition_end -> i278_argument2_(V'),((i143_b),(stack'))))
 )
 
-within i278_argument2__(((false),(<>)))
+within i278_argument2_(((false),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
@@ -128,7 +128,7 @@ within Idle(0)
 
 within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-i278_argument2__Component(IIG) = let
+AS_i278_argument2_(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
@@ -136,7 +136,7 @@ within sbisim(diamond(x))
 Exclude = {i139_i.return,i139_i.i4_f}
 ClientCalls = {i139_i.i3_e}
 UsedModeling = {}
-within compress((i278_argument2_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+within compress((CO_i278_argument2_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,i139_i|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
@@ -144,10 +144,10 @@ within compress((i278_argument2_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 
 -- end of component.csp.scm
-assert i138_I_(false) :[deadlock free]
-assert i138_I_(true) :[livelock free]
-assert i278_argument2_(true,true) :[deterministic]
-assert STOP [T= i278_argument2__Component(false) \ diff(Events,{illegal})
-assert i278_argument2__Component(false) :[deadlock free]
-assert i138_I_(true) [[channel_i138_I.x<-i139_i.x|x<-extensions(i139_i)]] \ {} [F= i278_argument2__Component(true) \ diff(Events,{|illegal,i139_i|})
-assert i278_argument2__Component(true) \ diff(Events,{|illegal,i139_i|}) :[livelock free]
+assert IF_i138_I_(false) :[deadlock free]
+assert IF_i138_I_(true) :[livelock free]
+assert CO_i278_argument2_(true,true) :[deterministic]
+assert STOP [T= AS_i278_argument2_(false) \ diff(Events,{illegal})
+assert AS_i278_argument2_(false) :[deadlock free]
+assert IF_i138_I_(true) [[CH_i138_I.x<-i139_i.x|x<-extensions(i139_i)]] \ {} [F= AS_i278_argument2_(true) \ diff(Events,{|illegal,i139_i|})
+assert AS_i278_argument2_(true) \ diff(Events,{|illegal,i139_i|}) :[livelock free]

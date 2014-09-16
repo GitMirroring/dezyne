@@ -41,15 +41,15 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = i18_State_i17_ALL | i3_evt | return
 -- interface.csp.scm
 
-channel channel_i13_I: {i3_evt,return}
+channel CH_i13_I: {i3_evt,return}
 
-i13_I_(IG) = let
+IF_i13_I_(IG) = let
 
-i13_I__(((<>),(stack'))) =
-channel_i13_I?x:{i3_evt} ->
-(\ P',V' @ channel_i13_I.return -> P'(V'))(\ V' @ i13_I__(V'),((<>),(stack')))
+i13_I_(((<>),(stack'))) =
+CH_i13_I?x:{i3_evt} ->
+(\ P',V' @ CH_i13_I.return -> P'(V'))(\ V' @ i13_I_(V'),((<>),(stack')))
 
-within i13_I__(((<>),(<>)))
+within i13_I_(((<>),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -57,15 +57,15 @@ within i13_I__(((<>),(<>)))
 channel i14_p:{i3_evt,return}
 
 
-i51_Bot_(IIG,IG) = let
+CO_i51_Bot_(IIG,IG) = let
 
-i51_Bot__(((i26_s),(stack'))) = transition_begin -> (
+i51_Bot_(((i26_s),(stack'))) = transition_begin -> (
 ((i26_s == i18_State_i17_ALL)) & (
 i14_p?x:{i3_evt} ->
-(\ P',V' @ i14_p.return -> P'(V'))(\ V' @ transition_end -> i51_Bot__(V'),((i26_s),(stack'))))
+(\ P',V' @ i14_p.return -> P'(V'))(\ V' @ transition_end -> i51_Bot_(V'),((i26_s),(stack'))))
 )
 
-within i51_Bot__(((i18_State_i17_ALL),(<>)))
+within i51_Bot_(((i18_State_i17_ALL),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
@@ -105,7 +105,7 @@ within Idle(0)
 
 within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-i51_Bot__Component(IIG) = let
+AS_i51_Bot_(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
@@ -113,7 +113,7 @@ within sbisim(diamond(x))
 Exclude = {i14_p.return}
 ClientCalls = {i14_p.i3_evt}
 UsedModeling = {}
-within compress((i51_Bot_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+within compress((CO_i51_Bot_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,i14_p|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
@@ -121,10 +121,10 @@ within compress((i51_Bot_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 
 -- end of component.csp.scm
-assert i13_I_(false) :[deadlock free]
-assert i13_I_(true) :[livelock free]
-assert i51_Bot_(true,true) :[deterministic]
-assert STOP [T= i51_Bot__Component(false) \ diff(Events,{illegal})
-assert i51_Bot__Component(false) :[deadlock free]
-assert i13_I_(true) [[channel_i13_I.x<-i14_p.x|x<-extensions(i14_p)]] \ {} [F= i51_Bot__Component(true) \ diff(Events,{|illegal,i14_p|})
-assert i51_Bot__Component(true) \ diff(Events,{|illegal,i14_p|}) :[livelock free]
+assert IF_i13_I_(false) :[deadlock free]
+assert IF_i13_I_(true) :[livelock free]
+assert CO_i51_Bot_(true,true) :[deterministic]
+assert STOP [T= AS_i51_Bot_(false) \ diff(Events,{illegal})
+assert AS_i51_Bot_(false) :[deadlock free]
+assert IF_i13_I_(true) [[CH_i13_I.x<-i14_p.x|x<-extensions(i14_p)]] \ {} [F= AS_i51_Bot_(true) \ diff(Events,{|illegal,i14_p|})
+assert AS_i51_Bot_(true) \ diff(Events,{|illegal,i14_p|}) :[livelock free]

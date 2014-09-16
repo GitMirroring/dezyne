@@ -41,27 +41,27 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = i3_e | i4_f | return
 -- interface.csp.scm
 
-channel channel_i123_I: {i3_e,i4_f,return}
+channel CH_i123_I: {i3_e,i4_f,return}
 
-i123_I_(IG) = let
+IF_i123_I_(IG) = let
 i38_g = \ P',V',F' @ context_func_args_(F',
-semi_((\ P',V' @ channel_i123_I!i4_f -> P'(V')),
+semi_((\ P',V' @ CH_i123_I!i4_f -> P'(V')),
 returnvalue_(\ ((i6_b),((stack',i9_gc))) @ (i9_gc or i6_b))))(P',V')
 
-i123_I__(((i6_b),(stack'))) =
+i123_I_(((i6_b),(stack'))) =
 (true) & (
-channel_i123_I?x:{i3_e} ->
+CH_i123_I?x:{i3_e} ->
 semi_(semi_(assign_(\ ((i6_b),(stack')) @ (((not i6_b)),(stack'))),
 context_active_(\ P',V' @ i38_g (P',V',(\ ((i6_b),(stack')) @ (i6_b))(V')),
 semi_(assign_active_(\ P',V' @ i38_g (P',V',(\ ((i6_b),((stack',i72_c))) @ (i72_c))(V')),
 \ (((i6_b),((stack',i72_c)))),r' @ ((r'),((stack',i72_c)))),
 \ P',((i6_b),((stack',i72_c))) @ ifthenelse_(i72_c,
-(\ P',V' @ channel_i123_I!i4_f -> P'(V')),
+(\ P',V' @ CH_i123_I!i4_f -> P'(V')),
 skip_
 )(P',((i6_b),((stack',i72_c))))))),
-(\ P',V' @ channel_i123_I.return -> P'(V')))(\ V' @ i123_I__(V'),((i6_b),(stack'))))
+(\ P',V' @ CH_i123_I.return -> P'(V')))(\ V' @ i123_I_(V'),((i6_b),(stack'))))
 
-within i123_I__(((false),(<>)))
+within i123_I_(((false),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -69,12 +69,12 @@ within i123_I__(((false),(<>)))
 channel i124_i:{i3_e,i4_f,return}
 
 
-i248_argument_(IIG,IG) = let
+CO_i248_argument_(IIG,IG) = let
 i161_g = \ P',V',F' @ context_func_args_(F',
 semi_((\ P',V' @ i124_i!i4_f -> P'(V')),
 returnvalue_(\ ((i128_b),((stack',i131_gc))) @ (i131_gc or i128_b))))(P',V')
 
-i248_argument__(((i128_b),(stack'))) = transition_begin -> (
+i248_argument_(((i128_b),(stack'))) = transition_begin -> (
 (true) & (
 i124_i?x:{i3_e} ->
 semi_(semi_(assign_(\ ((i128_b),(stack')) @ (((not i128_b)),(stack'))),
@@ -85,10 +85,10 @@ semi_(assign_active_(\ P',V' @ i161_g (P',V',(\ ((i128_b),((stack',i196_c))) @ (
 (\ P',V' @ i124_i!i4_f -> P'(V')),
 skip_
 )(P',((i128_b),((stack',i196_c))))))),
-(\ P',V' @ i124_i.return -> P'(V')))(\ V' @ transition_end -> i248_argument__(V'),((i128_b),(stack'))))
+(\ P',V' @ i124_i.return -> P'(V')))(\ V' @ transition_end -> i248_argument_(V'),((i128_b),(stack'))))
 )
 
-within i248_argument__(((false),(<>)))
+within i248_argument_(((false),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
@@ -128,7 +128,7 @@ within Idle(0)
 
 within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-i248_argument__Component(IIG) = let
+AS_i248_argument_(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
@@ -136,7 +136,7 @@ within sbisim(diamond(x))
 Exclude = {i124_i.return,i124_i.i4_f}
 ClientCalls = {i124_i.i3_e}
 UsedModeling = {}
-within compress((i248_argument_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+within compress((CO_i248_argument_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,i124_i|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
@@ -144,10 +144,10 @@ within compress((i248_argument_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-r
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 
 -- end of component.csp.scm
-assert i123_I_(false) :[deadlock free]
-assert i123_I_(true) :[livelock free]
-assert i248_argument_(true,true) :[deterministic]
-assert STOP [T= i248_argument__Component(false) \ diff(Events,{illegal})
-assert i248_argument__Component(false) :[deadlock free]
-assert i123_I_(true) [[channel_i123_I.x<-i124_i.x|x<-extensions(i124_i)]] \ {} [F= i248_argument__Component(true) \ diff(Events,{|illegal,i124_i|})
-assert i248_argument__Component(true) \ diff(Events,{|illegal,i124_i|}) :[livelock free]
+assert IF_i123_I_(false) :[deadlock free]
+assert IF_i123_I_(true) :[livelock free]
+assert CO_i248_argument_(true,true) :[deterministic]
+assert STOP [T= AS_i248_argument_(false) \ diff(Events,{illegal})
+assert AS_i248_argument_(false) :[deadlock free]
+assert IF_i123_I_(true) [[CH_i123_I.x<-i124_i.x|x<-extensions(i124_i)]] \ {} [F= AS_i248_argument_(true) \ diff(Events,{|illegal,i124_i|})
+assert AS_i248_argument_(true) \ diff(Events,{|illegal,i124_i|}) :[livelock free]

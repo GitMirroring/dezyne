@@ -41,15 +41,15 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = i3_e | return
 -- interface.csp.scm
 
-channel channel_i13_I: {i3_e,return}
+channel CH_i13_I: {i3_e,return}
 
-i13_I_(IG) = let
+IF_i13_I_(IG) = let
 
-i13_I__(((<>),(stack'))) =
-channel_i13_I?x:{i3_e} ->
-(\ P',V' @ channel_i13_I.return -> P'(V'))(\ V' @ i13_I__(V'),((<>),(stack')))
+i13_I_(((<>),(stack'))) =
+CH_i13_I?x:{i3_e} ->
+(\ P',V' @ CH_i13_I.return -> P'(V'))(\ V' @ i13_I_(V'),((<>),(stack')))
 
-within i13_I__(((<>),(<>)))
+within i13_I_(((<>),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -57,17 +57,17 @@ within i13_I__(((<>),(<>)))
 channel i14_i:{i3_e,return}
 
 
-i50_recursion_(IIG,IG) = let
+CO_i50_recursion_(IIG,IG) = let
 i27_f = \ PF',VF' @ context_func_(semi_(callvoid_(\ P',V' @ i27_f(PF',VF')),
 skip_))(PF',VF')
 
-i50_recursion__(((<>),(stack'))) = transition_begin -> (
+i50_recursion_(((<>),(stack'))) = transition_begin -> (
 i14_i?x:{i3_e} ->
 semi_(callvoid_(\ P',V' @ i27_f(P',V')),
-(\ P',V' @ i14_i.return -> P'(V')))(\ V' @ transition_end -> i50_recursion__(V'),((<>),(stack')))
+(\ P',V' @ i14_i.return -> P'(V')))(\ V' @ transition_end -> i50_recursion_(V'),((<>),(stack')))
 )
 
-within i50_recursion__(((<>),(<>)))
+within i50_recursion_(((<>),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
@@ -107,7 +107,7 @@ within Idle(0)
 
 within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-i50_recursion__Component(IIG) = let
+AS_i50_recursion_(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
@@ -115,7 +115,7 @@ within sbisim(diamond(x))
 Exclude = {i14_i.return}
 ClientCalls = {i14_i.i3_e}
 UsedModeling = {}
-within compress((i50_recursion_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+within compress((CO_i50_recursion_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,i14_i|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
@@ -123,10 +123,10 @@ within compress((i50_recursion_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-r
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 
 -- end of component.csp.scm
-assert i13_I_(false) :[deadlock free]
-assert i13_I_(true) :[livelock free]
-assert i50_recursion_(true,true) :[deterministic]
-assert STOP [T= i50_recursion__Component(false) \ diff(Events,{illegal})
-assert i50_recursion__Component(false) :[deadlock free]
-assert i13_I_(true) [[channel_i13_I.x<-i14_i.x|x<-extensions(i14_i)]] \ {} [F= i50_recursion__Component(true) \ diff(Events,{|illegal,i14_i|})
-assert i50_recursion__Component(true) \ diff(Events,{|illegal,i14_i|}) :[livelock free]
+assert IF_i13_I_(false) :[deadlock free]
+assert IF_i13_I_(true) :[livelock free]
+assert CO_i50_recursion_(true,true) :[deterministic]
+assert STOP [T= AS_i50_recursion_(false) \ diff(Events,{illegal})
+assert AS_i50_recursion_(false) :[deadlock free]
+assert IF_i13_I_(true) [[CH_i13_I.x<-i14_i.x|x<-extensions(i14_i)]] \ {} [F= AS_i50_recursion_(true) \ diff(Events,{|illegal,i14_i|})
+assert AS_i50_recursion_(true) \ diff(Events,{|illegal,i14_i|}) :[livelock free]

@@ -41,104 +41,104 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = State_Calibrated | State_Error | State_Initialized | State_Uninitialized | calibrate | initialize | perform_action1 | perform_action2 | perform_actions | recover | result_t_NOK | result_t_OK | return
 -- interface.csp.scm
 
-channel channel_IComp: {initialize,perform_actions,recover,result_t_OK,result_t_NOK,return}
+channel CH_IComp: {initialize,perform_actions,recover,result_t_OK,result_t_NOK,return}
 
-IComp_(IG) = let
+IF_IComp_(IG) = let
 
-IComp__(((s),(stack'))) =
+IComp_(((s),(stack'))) =
 (((s == State_Uninitialized) and true)) & (
-channel_IComp?x:{initialize} ->
-semi_(reply_(channel_IComp, (\ ((s),(stack')) @ result_t_OK)),
-assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IComp__(V'),((s),(stack')))
+CH_IComp?x:{initialize} ->
+semi_(reply_(CH_IComp, (\ ((s),(stack')) @ result_t_OK)),
+assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IComp_(V'),((s),(stack')))
  []
-  channel_IComp?x:{initialize} ->
-semi_(reply_(channel_IComp, (\ ((s),(stack')) @ result_t_NOK)),
-assign_(\ ((s),(stack')) @ ((State_Uninitialized),(stack'))))(\ V' @ IComp__(V'),((s),(stack'))))
+  CH_IComp?x:{initialize} ->
+semi_(reply_(CH_IComp, (\ ((s),(stack')) @ result_t_NOK)),
+assign_(\ ((s),(stack')) @ ((State_Uninitialized),(stack'))))(\ V' @ IComp_(V'),((s),(stack'))))
 []
 ((s == State_Uninitialized)) & (
-IG & channel_IComp?x:{recover,perform_actions} ->
+IG & CH_IComp?x:{recover,perform_actions} ->
 illegal_(STOP,<>))
 []
 (((s == State_Initialized) and true)) & (
-channel_IComp?x:{perform_actions} ->
-reply_(channel_IComp, (\ ((s),(stack')) @ result_t_OK))(\ V' @ IComp__(V'),((s),(stack')))
+CH_IComp?x:{perform_actions} ->
+reply_(CH_IComp, (\ ((s),(stack')) @ result_t_OK))(\ V' @ IComp_(V'),((s),(stack')))
  []
-  channel_IComp?x:{perform_actions} ->
-semi_(reply_(channel_IComp, (\ ((s),(stack')) @ result_t_NOK)),
-assign_(\ ((s),(stack')) @ ((State_Error),(stack'))))(\ V' @ IComp__(V'),((s),(stack'))))
+  CH_IComp?x:{perform_actions} ->
+semi_(reply_(CH_IComp, (\ ((s),(stack')) @ result_t_NOK)),
+assign_(\ ((s),(stack')) @ ((State_Error),(stack'))))(\ V' @ IComp_(V'),((s),(stack'))))
 []
 ((s == State_Initialized)) & (
-IG & channel_IComp?x:{initialize,recover} ->
+IG & CH_IComp?x:{initialize,recover} ->
 illegal_(STOP,<>))
 []
 (((s == State_Error) and true)) & (
-channel_IComp?x:{recover} ->
-semi_(reply_(channel_IComp, (\ ((s),(stack')) @ result_t_OK)),
-assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IComp__(V'),((s),(stack')))
+CH_IComp?x:{recover} ->
+semi_(reply_(CH_IComp, (\ ((s),(stack')) @ result_t_OK)),
+assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IComp_(V'),((s),(stack')))
  []
-  channel_IComp?x:{recover} ->
-reply_(channel_IComp, (\ ((s),(stack')) @ result_t_NOK))(\ V' @ IComp__(V'),((s),(stack'))))
+  CH_IComp?x:{recover} ->
+reply_(CH_IComp, (\ ((s),(stack')) @ result_t_NOK))(\ V' @ IComp_(V'),((s),(stack'))))
 []
 ((s == State_Error)) & (
-IG & channel_IComp?x:{initialize,perform_actions} ->
+IG & CH_IComp?x:{initialize,perform_actions} ->
 illegal_(STOP,<>))
 
-within IComp__(((State_Uninitialized),(<>)))
+within IComp_(((State_Uninitialized),(<>)))
 
 -- end of interface.csp.scm
 -- interface.csp.scm
 
-channel channel_IDevice: {calibrate,initialize,perform_action1,perform_action2,result_t_OK,result_t_NOK,return}
+channel CH_IDevice: {calibrate,initialize,perform_action1,perform_action2,result_t_OK,result_t_NOK,return}
 
-IDevice_(IG) = let
+IF_IDevice_(IG) = let
 
-IDevice__(((s),(stack'))) =
+IDevice_(((s),(stack'))) =
 (((s == State_Uninitialized) and true)) & (
-channel_IDevice?x:{initialize} ->
-semi_(reply_(channel_IDevice, (\ ((s),(stack')) @ result_t_OK)),
-assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IDevice__(V'),((s),(stack')))
+CH_IDevice?x:{initialize} ->
+semi_(reply_(CH_IDevice, (\ ((s),(stack')) @ result_t_OK)),
+assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IDevice_(V'),((s),(stack')))
  []
-  channel_IDevice?x:{initialize} ->
-semi_(reply_(channel_IDevice, (\ ((s),(stack')) @ result_t_NOK)),
-assign_(\ ((s),(stack')) @ ((State_Uninitialized),(stack'))))(\ V' @ IDevice__(V'),((s),(stack'))))
+  CH_IDevice?x:{initialize} ->
+semi_(reply_(CH_IDevice, (\ ((s),(stack')) @ result_t_NOK)),
+assign_(\ ((s),(stack')) @ ((State_Uninitialized),(stack'))))(\ V' @ IDevice_(V'),((s),(stack'))))
 []
 ((s == State_Uninitialized)) & (
-IG & channel_IDevice?x:{calibrate,perform_action1,perform_action2} ->
+IG & CH_IDevice?x:{calibrate,perform_action1,perform_action2} ->
 illegal_(STOP,<>))
 []
 (((s == State_Initialized) and true)) & (
-channel_IDevice?x:{calibrate} ->
-semi_(reply_(channel_IDevice, (\ ((s),(stack')) @ result_t_OK)),
-assign_(\ ((s),(stack')) @ ((State_Calibrated),(stack'))))(\ V' @ IDevice__(V'),((s),(stack')))
+CH_IDevice?x:{calibrate} ->
+semi_(reply_(CH_IDevice, (\ ((s),(stack')) @ result_t_OK)),
+assign_(\ ((s),(stack')) @ ((State_Calibrated),(stack'))))(\ V' @ IDevice_(V'),((s),(stack')))
  []
-  channel_IDevice?x:{calibrate} ->
-semi_(reply_(channel_IDevice, (\ ((s),(stack')) @ result_t_NOK)),
-assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IDevice__(V'),((s),(stack'))))
+  CH_IDevice?x:{calibrate} ->
+semi_(reply_(CH_IDevice, (\ ((s),(stack')) @ result_t_NOK)),
+assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IDevice_(V'),((s),(stack'))))
 []
 ((s == State_Initialized)) & (
-channel_IDevice?x:{initialize} ->
-reply_(channel_IDevice, (\ ((s),(stack')) @ result_t_OK))(\ V' @ IDevice__(V'),((s),(stack')))
+CH_IDevice?x:{initialize} ->
+reply_(CH_IDevice, (\ ((s),(stack')) @ result_t_OK))(\ V' @ IDevice_(V'),((s),(stack')))
  []
-  IG & channel_IDevice?x:{perform_action1,perform_action2} ->
+  IG & CH_IDevice?x:{perform_action1,perform_action2} ->
 illegal_(STOP,<>))
 []
 (((s == State_Calibrated) and true)) & (
-channel_IDevice?x:{perform_action1,perform_action2} ->
-semi_(reply_(channel_IDevice, (\ ((s),(stack')) @ result_t_OK)),
-assign_(\ ((s),(stack')) @ ((State_Calibrated),(stack'))))(\ V' @ IDevice__(V'),((s),(stack')))
+CH_IDevice?x:{perform_action1,perform_action2} ->
+semi_(reply_(CH_IDevice, (\ ((s),(stack')) @ result_t_OK)),
+assign_(\ ((s),(stack')) @ ((State_Calibrated),(stack'))))(\ V' @ IDevice_(V'),((s),(stack')))
  []
-  channel_IDevice?x:{perform_action1,perform_action2} ->
-semi_(reply_(channel_IDevice, (\ ((s),(stack')) @ result_t_NOK)),
-assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IDevice__(V'),((s),(stack'))))
+  CH_IDevice?x:{perform_action1,perform_action2} ->
+semi_(reply_(CH_IDevice, (\ ((s),(stack')) @ result_t_NOK)),
+assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IDevice_(V'),((s),(stack'))))
 []
 ((s == State_Calibrated)) & (
-channel_IDevice?x:{calibrate} ->
-reply_(channel_IDevice, (\ ((s),(stack')) @ result_t_OK))(\ V' @ IDevice__(V'),((s),(stack')))
+CH_IDevice?x:{calibrate} ->
+reply_(CH_IDevice, (\ ((s),(stack')) @ result_t_OK))(\ V' @ IDevice_(V'),((s),(stack')))
  []
-  IG & channel_IDevice?x:{initialize} ->
+  IG & CH_IDevice?x:{initialize} ->
 illegal_(STOP,<>))
 
-within IDevice__(((State_Uninitialized),(<>)))
+within IDevice_(((State_Uninitialized),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -147,9 +147,9 @@ channel client:{initialize,perform_actions,recover,result_t_OK,result_t_NOK,retu
 channel device_A:{calibrate,initialize,perform_action1,perform_action2,result_t_OK,result_t_NOK,return}
 
 
-Comp_(IIG,IG) = let
+CO_Comp_(IIG,IG) = let
 
-Comp__(((s),(stack'))) = transition_begin -> (
+Comp_(((s),(stack'))) = transition_begin -> (
 ((s == State_Uninitialized)) & (
 client?x:{initialize} ->
 context_active_(sendrecv_(device_A,initialize),
@@ -163,7 +163,7 @@ semi_(assign_(\ ((s),((stack',res))) @ ((State_Initialized),((stack',res)))),
 reply_(client, (\ ((s),((stack',res))) @ result_t_OK))),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Uninitialized),((stack',res)))),
 reply_(client, (\ ((s),((stack',res))) @ result_t_NOK)))
-)(P',((s),((stack',res))))))(\ V' @ transition_end -> Comp__(V'),((s),(stack')))
+)(P',((s),((stack',res))))))(\ V' @ transition_end -> Comp_(V'),((s),(stack')))
  []
   IIG & client?x:{recover,perform_actions} ->
 illegal_(STOP,<>))
@@ -181,7 +181,7 @@ semi_(assign_(\ ((s),((stack',res))) @ ((State_Initialized),((stack',res)))),
 reply_(client, (\ ((s),((stack',res))) @ result_t_OK))),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Error),((stack',res)))),
 reply_(client, (\ ((s),((stack',res))) @ result_t_NOK)))
-)(P',((s),((stack',res))))))(\ V' @ transition_end -> Comp__(V'),((s),(stack')))
+)(P',((s),((stack',res))))))(\ V' @ transition_end -> Comp_(V'),((s),(stack')))
  []
   IIG & client?x:{initialize,recover} ->
 illegal_(STOP,<>))
@@ -194,13 +194,13 @@ semi_(assign_(\ ((s),((stack',res))) @ ((State_Initialized),((stack',res)))),
 reply_(client, (\ ((s),((stack',res))) @ result_t_OK))),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Error),((stack',res)))),
 reply_(client, (\ ((s),((stack',res))) @ result_t_NOK)))
-)(P',((s),((stack',res)))))(\ V' @ transition_end -> Comp__(V'),((s),(stack')))
+)(P',((s),((stack',res)))))(\ V' @ transition_end -> Comp_(V'),((s),(stack')))
  []
   IIG & client?x:{initialize,perform_actions} ->
 illegal_(STOP,<>))
 )
 
-within Comp__(((State_Uninitialized),(<>)))
+within Comp_(((State_Uninitialized),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
@@ -240,7 +240,7 @@ within Idle(0)
 
 within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-Comp__Component(IIG) = let
+AS_Comp_(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
@@ -248,20 +248,20 @@ within sbisim(diamond(x))
 Exclude = {client.result_t_OK,client.result_t_NOK,client.return}
 ClientCalls = {client.initialize,client.recover,client.perform_actions}
 UsedModeling = {}
-within compress((Comp_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+within compress((CO_Comp_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,client,device_A|},Exclude)|]
-(((IDevice_(true) [[channel_IDevice.x<-device_A.x|x<-extensions(device_A)]]
+(((IF_IDevice_(true) [[CH_IDevice.x<-device_A.x|x<-extensions(device_A)]]
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 
 -- end of component.csp.scm
-assert IComp_(false) :[deadlock free]
-assert IComp_(true) :[livelock free]
-assert IDevice_(false) :[deadlock free]
-assert IDevice_(true) :[livelock free]
-assert Comp_(true,true) :[deterministic]
-assert STOP [T= Comp__Component(false) \ diff(Events,{illegal})
-assert Comp__Component(false) :[deadlock free]
-assert IComp_(true) [[channel_IComp.x<-client.x|x<-extensions(client)]] \ {} [F= Comp__Component(true) \ diff(Events,{|illegal,client|})
-assert Comp__Component(true) \ diff(Events,{|illegal,client|}) :[livelock free]
+assert IF_IComp_(false) :[deadlock free]
+assert IF_IComp_(true) :[livelock free]
+assert IF_IDevice_(false) :[deadlock free]
+assert IF_IDevice_(true) :[livelock free]
+assert CO_Comp_(true,true) :[deterministic]
+assert STOP [T= AS_Comp_(false) \ diff(Events,{illegal})
+assert AS_Comp_(false) :[deadlock free]
+assert IF_IComp_(true) [[CH_IComp.x<-client.x|x<-extensions(client)]] \ {} [F= AS_Comp_(true) \ diff(Events,{|illegal,client|})
+assert AS_Comp_(true) \ diff(Events,{|illegal,client|}) :[livelock free]

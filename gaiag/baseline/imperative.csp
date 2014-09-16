@@ -41,50 +41,50 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = S_S1 | S_S2 | States_I | States_II | States_III | States_IV | e | f | g | h | return
 -- interface.csp.scm
 
-channel channel_iimperative: {e,f,g,h,return}
+channel CH_iimperative: {e,f,g,h,return}
 
-iimperative_(IG) = let
+IF_iimperative_(IG) = let
 
-iimperative__(((s,b,c),(stack'))) =
+iimperative_(((s,b,c),(stack'))) =
 ((s == S_S1)) & (
-channel_iimperative?x:{e} ->
+CH_iimperative?x:{e} ->
 semi_(semi_(\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
-semi_((\ P',V' @ channel_iimperative!f -> P'(V')),
-(\ P',V' @ channel_iimperative!g -> P'(V'))),
+semi_((\ P',V' @ CH_iimperative!f -> P'(V')),
+(\ P',V' @ CH_iimperative!g -> P'(V'))),
 skip_
 )(P',((s,b,c),(stack'))),
 semi_(\ P',((s,b,c),(stack')) @ ifthenelse_(b,
 semi_(\ P',((s,b,c),(stack')) @ ifthenelse_(c,
-(\ P',V' @ channel_iimperative!g -> P'(V')),
+(\ P',V' @ CH_iimperative!g -> P'(V')),
 skip_
 )(P',((s,b,c),(stack'))),
 semi_(assign_(\ ((s,b,c),(stack')) @ ((s,b,false),(stack'))),
-(\ P',V' @ channel_iimperative!f -> P'(V')))),
+(\ P',V' @ CH_iimperative!f -> P'(V')))),
 \ P',((s,b,c),(stack')) @ ifthenelse_(c,
 semi_(assign_(\ ((s,b,c),(stack')) @ ((s,false,c),(stack'))),
-(\ P',V' @ channel_iimperative!h -> P'(V'))),
+(\ P',V' @ CH_iimperative!h -> P'(V'))),
 semi_(assign_(\ ((s,b,c),(stack')) @ ((s,true,c),(stack'))),
-(\ P',V' @ channel_iimperative!g -> P'(V')))
+(\ P',V' @ CH_iimperative!g -> P'(V')))
 )(P',((s,b,c),(stack')))
 )(P',((s,b,c),(stack'))),
 assign_(\ ((s,b,c),(stack')) @ ((S_S2,b,c),(stack'))))),
-(\ P',V' @ channel_iimperative.return -> P'(V')))(\ V' @ iimperative__(V'),((s,b,c),(stack'))))
+(\ P',V' @ CH_iimperative.return -> P'(V')))(\ V' @ iimperative_(V'),((s,b,c),(stack'))))
 []
 ((s == S_S2)) & (
-channel_iimperative?x:{e} ->
+CH_iimperative?x:{e} ->
 semi_(semi_(\ P',((s,b,c),(stack')) @ ifthenelse_(b,
 semi_(\ P',((s,b,c),(stack')) @ ifthenelse_((not c),
 assign_(\ ((s,b,c),(stack')) @ ((s,b,true),(stack'))),
 assign_(\ ((s,b,c),(stack')) @ ((s,b,false),(stack')))
 )(P',((s,b,c),(stack'))),
-(\ P',V' @ channel_iimperative!h -> P'(V'))),
+(\ P',V' @ CH_iimperative!h -> P'(V'))),
 skip_
 )(P',((s,b,c),(stack'))),
 semi_(assign_(\ ((s,b,c),(stack')) @ ((s,(not b),c),(stack'))),
 assign_(\ ((s,b,c),(stack')) @ ((S_S1,b,c),(stack'))))),
-(\ P',V' @ channel_iimperative.return -> P'(V')))(\ V' @ iimperative__(V'),((s,b,c),(stack'))))
+(\ P',V' @ CH_iimperative.return -> P'(V')))(\ V' @ iimperative_(V'),((s,b,c),(stack'))))
 
-within iimperative__(((S_S1,false,true),(<>)))
+within iimperative_(((S_S1,false,true),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -92,21 +92,21 @@ within iimperative__(((S_S1,false,true),(<>)))
 channel i:{e,f,g,h,return}
 
 
-imperative_(IIG,IG) = let
+CO_imperative_(IIG,IG) = let
 
-imperative__(((state),(stack'))) = transition_begin -> (
+imperative_(((state),(stack'))) = transition_begin -> (
 ((state == States_I)) & (
 i?x:{e} ->
 semi_(semi_((\ P',V' @ i!f -> P'(V')),
 semi_((\ P',V' @ i!g -> P'(V')),
 semi_((\ P',V' @ i!h -> P'(V')),
 assign_(\ ((state),(stack')) @ ((States_II),(stack')))))),
-(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> imperative__(V'),((state),(stack'))))
+(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> imperative_(V'),((state),(stack'))))
 []
 ((state == States_II)) & (
 i?x:{e} ->
 semi_(assign_(\ ((state),(stack')) @ ((States_III),(stack'))),
-(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> imperative__(V'),((state),(stack'))))
+(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> imperative_(V'),((state),(stack'))))
 []
 ((state == States_III)) & (
 i?x:{e} ->
@@ -115,16 +115,16 @@ semi_((\ P',V' @ i!g -> P'(V')),
 semi_((\ P',V' @ i!g -> P'(V')),
 semi_((\ P',V' @ i!f -> P'(V')),
 assign_(\ ((state),(stack')) @ ((States_IV),(stack'))))))),
-(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> imperative__(V'),((state),(stack'))))
+(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> imperative_(V'),((state),(stack'))))
 []
 ((state == States_IV)) & (
 i?x:{e} ->
 semi_(semi_((\ P',V' @ i!h -> P'(V')),
 assign_(\ ((state),(stack')) @ ((States_I),(stack')))),
-(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> imperative__(V'),((state),(stack'))))
+(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> imperative_(V'),((state),(stack'))))
 )
 
-within imperative__(((States_I),(<>)))
+within imperative_(((States_I),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
@@ -164,7 +164,7 @@ within Idle(0)
 
 within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-imperative__Component(IIG) = let
+AS_imperative_(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
@@ -172,7 +172,7 @@ within sbisim(diamond(x))
 Exclude = {i.return,i.f,i.g,i.h}
 ClientCalls = {i.e}
 UsedModeling = {}
-within compress((imperative_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+within compress((CO_imperative_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,i|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
@@ -180,10 +180,10 @@ within compress((imperative_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reor
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 
 -- end of component.csp.scm
-assert iimperative_(false) :[deadlock free]
-assert iimperative_(true) :[livelock free]
-assert imperative_(true,true) :[deterministic]
-assert STOP [T= imperative__Component(false) \ diff(Events,{illegal})
-assert imperative__Component(false) :[deadlock free]
-assert iimperative_(true) [[channel_iimperative.x<-i.x|x<-extensions(i)]] \ {} [F= imperative__Component(true) \ diff(Events,{|illegal,i|})
-assert imperative__Component(true) \ diff(Events,{|illegal,i|}) :[livelock free]
+assert IF_iimperative_(false) :[deadlock free]
+assert IF_iimperative_(true) :[livelock free]
+assert CO_imperative_(true,true) :[deterministic]
+assert STOP [T= AS_imperative_(false) \ diff(Events,{illegal})
+assert AS_imperative_(false) :[deadlock free]
+assert IF_iimperative_(true) [[CH_iimperative.x<-i.x|x<-extensions(i)]] \ {} [F= AS_imperative_(true) \ diff(Events,{|illegal,i|})
+assert AS_imperative_(true) \ diff(Events,{|illegal,i|}) :[livelock free]

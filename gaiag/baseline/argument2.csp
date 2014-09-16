@@ -41,27 +41,27 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = ev_e | ev_f | return
 -- interface.csp.scm
 
-channel channel_if_I: {ev_e,ev_f,return}
+channel CH_if_I: {ev_e,ev_f,return}
 
-if_I_(IG) = let
+IF_if_I_(IG) = let
 g = \ P',V',F' @ context_func_args_(F',
-semi_((\ P',V' @ channel_if_I!ev_f -> P'(V')),
+semi_((\ P',V' @ CH_if_I!ev_f -> P'(V')),
 returnvalue_(\ ((b),((stack',(ga,gb)))) @ (ga or gb))))(P',V')
 
-if_I__(((b),(stack'))) =
+if_I_(((b),(stack'))) =
 (true) & (
-channel_if_I?x:{ev_e} ->
+CH_if_I?x:{ev_e} ->
 semi_(semi_(assign_(\ ((b),(stack')) @ (((not b)),(stack'))),
 context_active_(\ P',V' @ g (P',V',(\ ((b),(stack')) @ (b,b))(V')),
 semi_(assign_active_(\ P',V' @ g (P',V',(\ ((b),((stack',c))) @ (c,c))(V')),
 \ (((b),((stack',c)))),r' @ ((r'),((stack',c)))),
 \ P',((b),((stack',c))) @ ifthenelse_(c,
-(\ P',V' @ channel_if_I!ev_f -> P'(V')),
+(\ P',V' @ CH_if_I!ev_f -> P'(V')),
 skip_
 )(P',((b),((stack',c))))))),
-(\ P',V' @ channel_if_I.return -> P'(V')))(\ V' @ if_I__(V'),((b),(stack'))))
+(\ P',V' @ CH_if_I.return -> P'(V')))(\ V' @ if_I_(V'),((b),(stack'))))
 
-within if_I__(((false),(<>)))
+within if_I_(((false),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -69,12 +69,12 @@ within if_I__(((false),(<>)))
 channel po_i:{ev_e,ev_f,return}
 
 
-co_argument2_(IIG,IG) = let
+CO_co_argument2_(IIG,IG) = let
 g = \ P',V',F' @ context_func_args_(F',
 semi_((\ P',V' @ po_i!ev_f -> P'(V')),
 returnvalue_(\ ((b),((stack',(ga,gb)))) @ (ga or gb))))(P',V')
 
-co_argument2__(((b),(stack'))) = transition_begin -> (
+co_argument2_(((b),(stack'))) = transition_begin -> (
 (true) & (
 po_i?x:{ev_e} ->
 semi_(semi_(assign_(\ ((b),(stack')) @ (((not b)),(stack'))),
@@ -85,10 +85,10 @@ semi_(assign_active_(\ P',V' @ g (P',V',(\ ((b),((stack',c))) @ (c,c))(V')),
 (\ P',V' @ po_i!ev_f -> P'(V')),
 skip_
 )(P',((b),((stack',c))))))),
-(\ P',V' @ po_i.return -> P'(V')))(\ V' @ transition_end -> co_argument2__(V'),((b),(stack'))))
+(\ P',V' @ po_i.return -> P'(V')))(\ V' @ transition_end -> co_argument2_(V'),((b),(stack'))))
 )
 
-within co_argument2__(((false),(<>)))
+within co_argument2_(((false),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
@@ -128,7 +128,7 @@ within Idle(0)
 
 within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-co_argument2__Component(IIG) = let
+AS_co_argument2_(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
@@ -136,7 +136,7 @@ within sbisim(diamond(x))
 Exclude = {po_i.return,po_i.ev_f}
 ClientCalls = {po_i.ev_e}
 UsedModeling = {}
-within compress((co_argument2_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+within compress((CO_co_argument2_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,po_i|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
@@ -144,10 +144,10 @@ within compress((co_argument2_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-re
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 
 -- end of component.csp.scm
-assert if_I_(false) :[deadlock free]
-assert if_I_(true) :[livelock free]
-assert co_argument2_(true,true) :[deterministic]
-assert STOP [T= co_argument2__Component(false) \ diff(Events,{illegal})
-assert co_argument2__Component(false) :[deadlock free]
-assert if_I_(true) [[channel_if_I.x<-po_i.x|x<-extensions(po_i)]] \ {} [F= co_argument2__Component(true) \ diff(Events,{|illegal,po_i|})
-assert co_argument2__Component(true) \ diff(Events,{|illegal,po_i|}) :[livelock free]
+assert IF_if_I_(false) :[deadlock free]
+assert IF_if_I_(true) :[livelock free]
+assert CO_co_argument2_(true,true) :[deterministic]
+assert STOP [T= AS_co_argument2_(false) \ diff(Events,{illegal})
+assert AS_co_argument2_(false) :[deadlock free]
+assert IF_if_I_(true) [[CH_if_I.x<-po_i.x|x<-extensions(po_i)]] \ {} [F= AS_co_argument2_(true) \ diff(Events,{|illegal,po_i|})
+assert AS_co_argument2_(true) \ diff(Events,{|illegal,po_i|}) :[livelock free]

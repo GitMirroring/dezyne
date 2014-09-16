@@ -41,46 +41,46 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = Status_No | Status_Nok | Status_Ok | Status_Yes | done | return | what
 -- interface.csp.scm
 
-channel channel_I: {done,Status_Yes,Status_No,return}
+channel CH_I: {done,Status_Yes,Status_No,return}
 
-I_(IG) = let
-reply_fun = \ P',V' @ context_func_(reply_(channel_I, (\ ((dummy),(stack')) @ Status_Yes)))(P',V')
+IF_I_(IG) = let
+reply_fun = \ P',V' @ context_func_(reply_(CH_I, (\ ((dummy),(stack')) @ Status_Yes)))(P',V')
 reply_fun_arg = \ P',V',F' @ context_func_args_(F',
-reply_(channel_I, (\ ((dummy),((stack',s))) @ s)))(P',V')
+reply_(CH_I, (\ ((dummy),((stack',s))) @ s)))(P',V')
 
-I__(((dummy),(stack'))) =
+I_(((dummy),(stack'))) =
 (true) & (
-channel_I?x:{done} ->
+CH_I?x:{done} ->
 semi_(callvoid_(\ P',V' @ reply_fun(P',V')),
-(\ P',V' @ channel_I.return -> P'(V')))(\ V' @ I__(V'),((dummy),(stack')))
+(\ P',V' @ CH_I.return -> P'(V')))(\ V' @ I_(V'),((dummy),(stack')))
  []
-  channel_I?x:{done} ->
+  CH_I?x:{done} ->
 semi_(callvoid_(\ P',V' @ reply_fun_arg(P',V',(\ ((dummy),(stack')) @ (Status_No))(V'))),
-(\ P',V' @ channel_I.return -> P'(V')))(\ V' @ I__(V'),((dummy),(stack'))))
+(\ P',V' @ CH_I.return -> P'(V')))(\ V' @ I_(V'),((dummy),(stack'))))
 
-within I__(((false),(<>)))
+within I_(((false),(<>)))
 
 -- end of interface.csp.scm
 -- interface.csp.scm
 
-channel channel_U: {what,Status_Ok,Status_Nok,return}
+channel CH_U: {what,Status_Ok,Status_Nok,return}
 
-U_(IG) = let
-reply_fun = \ P',V' @ context_func_(reply_(channel_U, (\ ((dummy),(stack')) @ Status_Ok)))(P',V')
+IF_U_(IG) = let
+reply_fun = \ P',V' @ context_func_(reply_(CH_U, (\ ((dummy),(stack')) @ Status_Ok)))(P',V')
 reply_fun_arg = \ P',V',F' @ context_func_args_(F',
-reply_(channel_U, (\ ((dummy),((stack',s))) @ s)))(P',V')
+reply_(CH_U, (\ ((dummy),((stack',s))) @ s)))(P',V')
 
-U__(((dummy),(stack'))) =
+U_(((dummy),(stack'))) =
 (true) & (
-channel_U?x:{what} ->
+CH_U?x:{what} ->
 semi_(callvoid_(\ P',V' @ reply_fun(P',V')),
-(\ P',V' @ channel_U.return -> P'(V')))(\ V' @ U__(V'),((dummy),(stack')))
+(\ P',V' @ CH_U.return -> P'(V')))(\ V' @ U_(V'),((dummy),(stack')))
  []
-  channel_U?x:{what} ->
+  CH_U?x:{what} ->
 semi_(callvoid_(\ P',V' @ reply_fun_arg(P',V',(\ ((dummy),(stack')) @ (Status_Nok))(V'))),
-(\ P',V' @ channel_U.return -> P'(V')))(\ V' @ U__(V'),((dummy),(stack'))))
+(\ P',V' @ CH_U.return -> P'(V')))(\ V' @ U_(V'),((dummy),(stack'))))
 
-within U__(((false),(<>)))
+within U_(((false),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -89,12 +89,12 @@ channel i:{done,Status_Yes,Status_No,return}
 channel u:{what,Status_Ok,Status_Nok,return}
 
 
-Reply3_(IIG,IG) = let
-reply_fun = \ P',V' @ context_func_(reply_(channel_I, (\ ((dummy),(stack')) @ Status_Yes)))(P',V')
+CO_Reply3_(IIG,IG) = let
+reply_fun = \ P',V' @ context_func_(reply_(CH_I, (\ ((dummy),(stack')) @ Status_Yes)))(P',V')
 reply_fun_arg = \ P',V',F' @ context_func_args_(F',
-reply_(channel_I, (\ ((dummy),((stack',s))) @ s)))(P',V')
+reply_(CH_I, (\ ((dummy),((stack',s))) @ s)))(P',V')
 
-Reply3__(((dummy),(stack'))) = transition_begin -> (
+Reply3_(((dummy),(stack'))) = transition_begin -> (
 (true) & (
 i?x:{done} ->
 semi_(context_active_(sendrecv_(u,what),
@@ -104,10 +104,10 @@ semi_(assign_active_(sendrecv_(u,what),
 callvoid_(\ P',V' @ reply_fun(P',V')),
 callvoid_(\ P',V' @ reply_fun_arg(P',V',(\ ((dummy),((stack',s))) @ (Status_No))(V')))
 )(P',((dummy),((stack',s)))))),
-(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> Reply3__(V'),((dummy),(stack'))))
+(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> Reply3_(V'),((dummy),(stack'))))
 )
 
-within Reply3__(((false),(<>)))
+within Reply3_(((false),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
@@ -147,7 +147,7 @@ within Idle(0)
 
 within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-Reply3__Component(IIG) = let
+AS_Reply3_(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
@@ -155,20 +155,20 @@ within sbisim(diamond(x))
 Exclude = {i.Status_Yes,i.Status_No,i.return}
 ClientCalls = {i.done}
 UsedModeling = {}
-within compress((Reply3_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+within compress((CO_Reply3_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,i,u|},Exclude)|]
-(((U_(true) [[channel_U.x<-u.x|x<-extensions(u)]]
+(((IF_U_(true) [[CH_U.x<-u.x|x<-extensions(u)]]
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 
 -- end of component.csp.scm
-assert I_(false) :[deadlock free]
-assert I_(true) :[livelock free]
-assert U_(false) :[deadlock free]
-assert U_(true) :[livelock free]
-assert Reply3_(true,true) :[deterministic]
-assert STOP [T= Reply3__Component(false) \ diff(Events,{illegal})
-assert Reply3__Component(false) :[deadlock free]
-assert I_(true) [[channel_I.x<-i.x|x<-extensions(i)]] \ {} [F= Reply3__Component(true) \ diff(Events,{|illegal,i|})
-assert Reply3__Component(true) \ diff(Events,{|illegal,i|}) :[livelock free]
+assert IF_I_(false) :[deadlock free]
+assert IF_I_(true) :[livelock free]
+assert IF_U_(false) :[deadlock free]
+assert IF_U_(true) :[livelock free]
+assert CO_Reply3_(true,true) :[deterministic]
+assert STOP [T= AS_Reply3_(false) \ diff(Events,{illegal})
+assert AS_Reply3_(false) :[deadlock free]
+assert IF_I_(true) [[CH_I.x<-i.x|x<-extensions(i)]] \ {} [F= AS_Reply3_(true) \ diff(Events,{|illegal,i|})
+assert AS_Reply3_(true) \ diff(Events,{|illegal,i|}) :[livelock free]

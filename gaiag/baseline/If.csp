@@ -41,20 +41,20 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = a | b | c | return
 -- interface.csp.scm
 
-channel channel_I: {a,b,c,return}
+channel CH_I: {a,b,c,return}
 
-I_(IG) = let
+IF_I_(IG) = let
 
-I__(((t),(stack'))) =
-channel_I?x:{a} ->
+I_(((t),(stack'))) =
+CH_I?x:{a} ->
 semi_(semi_(\ P',((t),(stack')) @ ifthenelse_(t,
-(\ P',V' @ channel_I!b -> P'(V')),
-(\ P',V' @ channel_I!c -> P'(V'))
+(\ P',V' @ CH_I!b -> P'(V')),
+(\ P',V' @ CH_I!c -> P'(V'))
 )(P',((t),(stack'))),
 assign_(\ ((t),(stack')) @ (((not t)),(stack')))),
-(\ P',V' @ channel_I.return -> P'(V')))(\ V' @ I__(V'),((t),(stack')))
+(\ P',V' @ CH_I.return -> P'(V')))(\ V' @ I_(V'),((t),(stack')))
 
-within I__(((false),(<>)))
+within I_(((false),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -62,19 +62,19 @@ within I__(((false),(<>)))
 channel i:{a,b,c,return}
 
 
-If_(IIG,IG) = let
+CO_If_(IIG,IG) = let
 
-If__(((t),(stack'))) = transition_begin -> (
+If_(((t),(stack'))) = transition_begin -> (
 i?x:{a} ->
 semi_(semi_(\ P',((t),(stack')) @ ifthenelse_(t,
 (\ P',V' @ i!b -> P'(V')),
 (\ P',V' @ i!c -> P'(V'))
 )(P',((t),(stack'))),
 assign_(\ ((t),(stack')) @ (((not t)),(stack')))),
-(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> If__(V'),((t),(stack')))
+(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> If_(V'),((t),(stack')))
 )
 
-within If__(((false),(<>)))
+within If_(((false),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {extensions_over_empty_channels_is_undefined}
@@ -114,7 +114,7 @@ within Idle(0)
 
 within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-If__Component(IIG) = let
+AS_If_(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
@@ -122,7 +122,7 @@ within sbisim(diamond(x))
 Exclude = {i.return,i.b,i.c}
 ClientCalls = {i.a}
 UsedModeling = {}
-within compress((If_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+within compress((CO_If_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,i|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
@@ -130,10 +130,10 @@ within compress((If_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 
 -- end of component.csp.scm
-assert I_(false) :[deadlock free]
-assert I_(true) :[livelock free]
-assert If_(true,true) :[deterministic]
-assert STOP [T= If__Component(false) \ diff(Events,{illegal})
-assert If__Component(false) :[deadlock free]
-assert I_(true) [[channel_I.x<-i.x|x<-extensions(i)]] \ {} [F= If__Component(true) \ diff(Events,{|illegal,i|})
-assert If__Component(true) \ diff(Events,{|illegal,i|}) :[livelock free]
+assert IF_I_(false) :[deadlock free]
+assert IF_I_(true) :[livelock free]
+assert CO_If_(true,true) :[deterministic]
+assert STOP [T= AS_If_(false) \ diff(Events,{illegal})
+assert AS_If_(false) :[deadlock free]
+assert IF_I_(true) [[CH_I.x<-i.x|x<-extensions(i)]] \ {} [F= AS_If_(true) \ diff(Events,{|illegal,i|})
+assert AS_If_(true) \ diff(Events,{|illegal,i|}) :[livelock free]

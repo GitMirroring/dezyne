@@ -21,15 +21,15 @@
 //
 // Code:
 
-interface I
+interface interface_component_overload
 {
   enum R { V };
   in R e;
   behaviour{ on e: { reply(R.V);}}
 }
 
-component interface_port_overload
+component interface_component_overload
 {
-  provides I I;
-  behaviour { on I.e: { reply(I.R.V);}}
+  provides interface_component_overload interface_component_overload;
+  behaviour { on interface_component_overload.e: { reply(interface_component_overload.R.V);}}
 }

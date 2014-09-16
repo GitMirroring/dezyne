@@ -150,11 +150,11 @@
 
 (define asserts-alist
   `(
-    ((component illegal) . "assert STOP [T= #(.name model) _#((compose .name .behaviour) model) _Component(false) \\ diff(Events,{illegal})\n")
-    ((component deterministic) . "assert #(.name model) _#((compose .name .behaviour) model)(true,true) :[deterministic]\n")
-    ((component deadlock)  . "assert #(.name model) _#((compose .name .behaviour) model) _Component(false) :[deadlock free]\n")
+    ((component illegal) . "assert STOP [T= AS_#(.name model) _#((compose .name .behaviour) model) (false) \\ diff(Events,{illegal})\n")
+    ((component deterministic) . "assert CO_#(.name model) _#((compose .name .behaviour) model)(true,true) :[deterministic]\n")
+    ((component deadlock)  . "assert AS_#(.name model) _#((compose .name .behaviour) model) (false) :[deadlock free]\n")
     ((component compliance) . ,(gulp-template 'asserts/component-compliance.csp.scm))
-    ((component livelock)  .  "assert #(.name model) _#((compose .name .behaviour) model) _Component(true) \\ diff(Events,{|illegal,#((compose .name gom:port) model) |}) :[livelock free]\n")
+    ((component livelock)  .  "assert AS_#(.name model) _#((compose .name .behaviour) model) (true) \\ diff(Events,{|illegal,#((compose .name gom:port) model) |}) :[livelock free]\n")
     ((interface deadlock) . ,(gulp-template 'asserts/interface-deadlock.csp.scm))
     ((interface livelock) . ,(gulp-template 'asserts/interface-livelock.csp.scm))))
 
@@ -334,7 +334,7 @@
 (define-method (optional-chaos (o <interface>)) ;; FIXME: no test
   (let ((name (.name o)))
     (if (member 'optional (map .event (gom:find-events o)))
-        (list " [|{channel_" name ".optional}|] " "CHAOS({channel_" name ".optional})")
+        (list " [|{CH_" name ".optional}|] " "CHAOS({CH_" name ".optional})")
         "")))
 
 (define (ast-transform ast src)
@@ -679,7 +679,7 @@
                (inevitable-optional? (or (member 'inevitable (map .event triggers))
                                          (member 'optional (map .event triggers))))
                (ig? (eq? statement 'IG))
-               (channel (if (is-a? model <interface>) (list "channel_" model-name) (.port (car triggers))))
+               (channel (if (is-a? model <interface>) (list "CH_" model-name) (.port (car triggers))))
                (provided-on? (or (and (is-a? model <interface>) (not inevitable-optional?))
                                  (or (is-a? model <interface>) ((provides-event? model) (car triggers)))))
                (IG? (if ig? (if ((provides-event? model) (car triggers)) "IIG & "  "IG & ")))
@@ -689,7 +689,7 @@
           (list IG? channel "?x:{" event-names "}" " ->\n" transformed transformed-end (if ig? "(STOP,<>)" ""))))
        (($ <expression>) src)
        (($ <csp-reply> expression context)
-        (let* ((channel (or channel (if (is-a? model <interface>) (list "channel_" model-name) (list "channel_" (.type (gom:port model)))))))
+        (let* ((channel (or channel (if (is-a? model <interface>) (list "CH_" model-name) (list "CH_" (.type (gom:port model)))))))
           (list "reply_(" channel ", " "(\\ (" context ") @ " expression "))")))
        (($ <return>) "skip_")
        (($ <csp-return> #f context) "skip_")
@@ -704,7 +704,7 @@
         (let* ((transition-end (if component? "transition_end -> "))
                (context (make-context members '()))
                (end (if (not inevitable-optional?) (list transition-end))))
-          (list "(\\ V' @ " end model-name "_" behaviour "_" "(V'),(" context "))")))
+          (list "(\\ V' @ " end model-name "_" behaviour "(V'),(" context "))")))
        (($ <illegal>) "illegal_")
        (($ <function> name ($ <signature> type ($ <parameters> '())) recursive? statement)
         (let ((transformed (csp-transform ast statement inevitable-optional? channel provided-on? recursive?))
@@ -766,7 +766,7 @@
     (=>string
      ast
      (let* ((trigger (.trigger o))
-            (channel (if (is-a? model <interface>) (list "channel_" model-name) (.port trigger)))
+            (channel (if (is-a? model <interface>) (list "CH_" model-name) (.port trigger)))
             (event-name (.event trigger))
             (channel-return (if ((requires-event? model) trigger) (list " -> " channel ".return"))))
        (list "(\\ P',V' @ " channel "!" event-name channel-return " -> P'(V'))")))))
@@ -782,6 +782,6 @@
              (modeling (null-is-#f (map .event (modeling-events model)))))
             (string-append " \\ {|"
                            (comma-join
-                            (map (lambda (x) (->string (list "channel_" name "." x)))
+                            (map (lambda (x) (->string (list "CH_" name "." x)))
                                  modeling))
                            "|} ")))
