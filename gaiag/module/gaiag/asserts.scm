@@ -71,7 +71,7 @@
   (assert-list ((gom:register (compose ast->gom ast:resolve)) o #t)))
 
 (define-method (assert-list (o <ast>))
-  (or (and-let* ((model (model-with-behaviour o)))
+  (or (and-let* ((model (gom:model-with-behaviour o)))
                 (assert-list-all model))
       '()))
 

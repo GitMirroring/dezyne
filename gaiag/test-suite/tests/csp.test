@@ -1748,7 +1748,8 @@ assign_(\\ ((s,b,c),((stack',t))) @ ((s,b,c),((stack',(s == S_S1))))))"))
      (ports (provides I i)))))
 
 (pass-if "behaviourless-component-ast"
-         (gom-noisy-equal? (model-with-behaviour (ast->gom behaviourless-component-ast))
+         (gom-noisy-equal? (gom:model-with-behaviour
+                            (ast->gom behaviourless-component-ast))
                            '(interface I
                               (events (in (signature (type void)) e))
                               (behaviour

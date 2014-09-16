@@ -61,7 +61,6 @@
 	   csp-transform*
            csp:norm
 
-           model-with-behaviour
            make-context
            context-extend
            statement-on-p/r
@@ -72,7 +71,7 @@
 
 (define (ast-> ast)
   (let ((gom ((gom:register ast->gom) ast #t)))
-    (or (and-let* ((model (model-with-behaviour gom)))
+    (or (and-let* ((model (gom:model-with-behaviour gom)))
                   (generate-csp model))
         (let* ((models ((gom:filter <model>) gom))
                (message (format #f "gaiag: no component with behaviour: ~a\n"
@@ -93,19 +92,12 @@
 (define-method (generate-csp (o <model>) (root <root>))
   (and-let* ((norm ((gom:register csp:norm) root #t))
              (name (.name o))
-             (model (model-with-behaviour norm))
+             (model (gom:model-with-behaviour norm))
              (file-name (option-ref (parse-opts (command-line)) 'output (list name '.csp))))
             (dump-output file-name (lambda ()
                                      (animate-file (append (prefix-dir) '(templates combinators.csp.scm)) (csp-module model))
                                      (csp-model model)
                                      (csp-asserts model)))))
-
-(define (models-with-behaviour gom)
-  (filter .behaviour (append ((gom:filter <component>) gom) ((gom:filter <interface>) gom))))
-
-(define (model-with-behaviour gom)
-  (and-let* ((models (null-is-#f (models-with-behaviour gom))))
-            (car models)))
 
 (define (csp:import name)
   (gom:import name csp:norm))

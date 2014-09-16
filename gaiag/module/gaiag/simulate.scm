@@ -62,8 +62,8 @@
 (define (ast-> ast)
   (let ((gom ((gom:register simulate:gom) ast #t)))
     (set! *ast* gom)
-    (and=> (gom:interface gom) simulate-model)
-    (and=> (gom:component gom) simulate-model)
+    (pretty-print (gom->list *ast*) (current-error-port))
+    (and=> (gom:model-with-behaviour gom) simulate-model)
     ""))
 
 (define (simulate:import name)
@@ -94,13 +94,16 @@
 
 (define (simulate-model model)
   (stderr "\n\n>>>simulating: ~a ~a --> ~a\n" (ast-name model) (.name model) (map ->string (gom:find-events model)))
-   (let* ((trail (option-ref (parse-opts (command-line)) 'trail #f))
-          (trace (if trail
-                     (walk-trail model (with-input-from-string trail read))
-                     (explore-space model))))
-     (pretty-print (mangle-trace trace)))
-   (newline)
-   (stderr "state space: ~a\n" (length *state-space*))
+  (and-let* ((((is? <component>) model))
+             (interfaces (map simulate:import
+                              (map .type ((compose .elements .ports) model))))))
+  (let* ((trail (option-ref (parse-opts (command-line)) 'trail #f))
+         (trace (if trail
+                    (walk-trail model (with-input-from-string trail read))
+                    (explore-space model))))
+    (pretty-print (mangle-trace trace)))
+  (newline)
+  (stderr "state space: ~a\n" (length *state-space*))
   "")
 
 (define (mangle-trace trace)
@@ -133,6 +136,7 @@
         (state (cadr tracepoint))
         (steps (cddr tracepoint))
         (model (.name *model*)))
+    ;; (stderr "\ndemo-trace: ~a, ~a\n" event (class-of (car steps)))
     (cons (->symbol event)
           (list
            (list 'state (map (lambda (x) (list (car x) (cdr x)))  state))
@@ -148,8 +152,9 @@
                  :event (string->symbol (cadr port-event))))
       (make <trigger> :port #f :event event)))
 
+(define *if-exp* #f) ;; component's interfaces simulate experiment
 (define (seen-key state ast)
-  (when (not (equal? ast (.statement (.behaviour *model*))))
+  (when (and *if-exp* (not (equal? ast (.statement (.behaviour *model*)))))
     ;; it's a bug if we store a 'seen' state with a non-top AST:
     ;; only actions return mid-statements and they are continued
     ;; we alway continue until the end
@@ -173,7 +178,7 @@
   (find (lambda (x) (equal? x event)) (seen state ast)))
 
 (define (seen! state ast event)
-  (when (not (equal? ast (.statement (.behaviour *model*))))
+  (when (and *if-exp* (not (equal? ast (.statement (.behaviour *model*)))))
     (stderr "seen! --> AST:~a\n" ast)
     (throw 'seen!-with-non-top-ast))
 
@@ -356,7 +361,18 @@
          (($ <illegal>) (values state #f #f #f (cons ast trace)))
          (($ <action> trigger)
           (stderr "****action: ~a\n" (->string trigger))
-          (values state #f ast #f (cons ast trace)))
+          (let* ((trace (cons ast trace))
+                 (port (.port trigger)))
+            (if port
+                (let* ((interface (simulate:import (.type (gom:port *model* port))))
+                       (i-ast (.statement (.behaviour interface)))
+                       (event (.event trigger))
+                       (i-trigger (make <trigger> :port #f :event event))
+                       (i-state (state-vector interface))) ;; FIXME: store!
+                  (receive (i-state i-trace)
+                      (process-event i-ast i-state i-trigger)
+                   (values state #f ast #f (append i-trace trace))))
+                (values state #f ast #f trace))))
          (($ <assign> identifier expression)
           (stderr "****assign: ~a := ~a\n" (->string identifier) (->string expression))
           (receive (new-state new-ast new-action return new-trace)

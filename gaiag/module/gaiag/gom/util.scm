@@ -62,6 +62,8 @@
            gom:interface
            gom:interface-enums
            gom:interfaces
+           gom:model-with-behaviour
+           gom:models-with-behaviour
            gom:member-names
            gom:member-values
            gom:models
@@ -302,6 +304,13 @@
 (define (gom:models o) ((gom:filter <model>) o))
 (define (gom:components o) ((gom:filter <component>) o))
 (define (gom:interfaces o) ((gom:filter <interface>) o))
+
+(define (gom:models-with-behaviour gom)
+  (filter .behaviour (append ((gom:filter <component>) gom) ((gom:filter <interface>) gom))))
+
+(define (gom:model-with-behaviour gom)
+  (and-let* ((models (null-is-#f (gom:models-with-behaviour gom))))
+            (car models)))
 
 (define* (gom:events ast)
   (match ast

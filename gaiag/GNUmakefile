@@ -268,7 +268,7 @@ mangle: compile
 simulate: compile
 #	./gaiag -l simulate examples/regression/if.asd
 	./gaiag -l simulate -t '(a a a)' examples/simulate.asd
-	./gaiag -l simulate -t '(a a a a a)' examples/regression/if.asd
+	./gaiag -l simulate -t '(a a a a a)' examples/regression/If.asd
 #	./gaiag -l simulate examples/regression/Alarm.asd |& grep '^\*\*' | wc -l
 #	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" examples/regression/Console.asd | ./scm2json | sed -e "s/, /,\n /g"
 	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" examples/alarm-component.asd
