@@ -14,10 +14,11 @@ namespace interface
 {
 struct #.interface
 {
+ #(->string (map declare-enum (gom:enums model)))
   struct
   {
     #(map-events
-#{asd::function<void()> #.event-name;
+#{asd::function<#(cadr .type) ()> #.event-name                      ;
 #} (filter gom:in? ((compose .elements .events) model)))  } in ;
 
   struct

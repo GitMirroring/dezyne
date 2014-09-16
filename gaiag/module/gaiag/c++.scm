@@ -128,6 +128,14 @@
 (define statements.event (make-parameter #f))
 
 (define* (statements->string src :optional (compound? #t))
+  (define (enum-type o)
+    (match o
+      (($ <expression> ($ <literal> scope type field)) (->string (list (scope-type o) "::" type)))))
+
+  (define (scope-type o)
+    (match o
+      (($ <expression> ($ <literal> scope type field)) (->string (list "interface::" scope)))))
+
   ;; (stderr "statements->string: ~a\n" src)
   (let ((port (statements.port))
         (event (statements.event)))
@@ -173,7 +181,10 @@
               (event (gom:event interface event-name)))
          (->string (list port-name '. (.direction event) '. event-name "();\n"))))
       (($ <reply> expression)
-       (->string (list "reply = " (expression->string expression) ";\n")))
+       (let
+           ((type (enum-type expression))
+            (scope (scope-type expression)))
+         (->string (list type " reply = " scope "::" (expression->string expression) ";\n"))))
       (($ <return> #f)
        "return;\n")
       (($ <return> expression)
