@@ -161,7 +161,7 @@
 
     (($ <assign> identifier ($ <expression> (and ($ <call>) (get! call))))
      (make <assign> :identifier identifier
-           :expression (resolve-model model (call))))
+           :expression (resolve-model model (call) locals)))
 
     (($ <assign> identifier
         ($ <expression> ($ <value> (and (? port?) (get! port)) event)))
@@ -184,7 +184,7 @@
      (make <variable>
        :type type
        :name name
-       :expression (resolve-model model (call))))
+       :expression (resolve-model model (call) locals)))
 
     (($ <variable> name type
         ($ <expression> ($ <value> (and (? port?) (get! port)) event)))
@@ -210,7 +210,7 @@
     (($ <expression> value)
      (make <expression> :value (resolve-model model value locals)))
 
-    ((and (? symbol?) (? var?)) (make <var> :identifier o))
+    ((and (? symbol?) (? var?)) (make <var> :name o))
 
     (($ <function> name ($ <signature> type ($ <parameters> '())) recursive? statement)
      (make <function>
@@ -224,7 +224,7 @@
                      (if (null? parameters)
                          locals
                          (loop (cdr parameters)
-                               (acons (.identifier (car parameters)) (car parameters) locals))))))
+                               (acons (.name (car parameters)) (car parameters) locals))))))
        (make <function>
          :name name
          :signature (.signature o)
@@ -267,8 +267,8 @@
          :functions (gom:map (resolve-model model) (make <functions> :elements (append functions functions-)))
          :statement (gom:map (resolve-model model) (make <compound> :elements statements)))))
 
-    ((? (is? <ast>)) (gom:map (resolve-model model) o))
-    ((h t ...) (map (resolve-model model) o))
+    ((? (is? <ast>)) (gom:map (lambda (o) (resolve-model model o locals)) o))
+    ((h t ...) (map (lambda (o) (resolve-model model o locals)) o))
     (_ o))))
 
 (define* ((recurses? model :optional (seen '())) name)
