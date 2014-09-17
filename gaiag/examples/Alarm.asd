@@ -21,8 +21,8 @@
 //
 // Code:
 
-import Sensor;
-import Siren;
+import Sensor.asd;
+import Siren.asd;
 
 interface Console
 {
@@ -174,4 +174,3 @@ component Alarm
     }
   }
 }
-

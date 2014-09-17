@@ -1,5 +1,6 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
 //
@@ -20,9 +21,9 @@
 //
 // Code:
 
-import Alarm;
-import Sensor;
-import Siren;
+import Alarm.asd;
+import Sensor.asd;
+import Siren.asd;
 
 component AlarmComponentSystem
 {
