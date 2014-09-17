@@ -3,6 +3,7 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -26,20 +27,22 @@
 namespace component
 {
   Siren::Siren()
-  : siren()
+  : po_siren()
   {
-    siren.in.turnon = asd::bind(&Siren::turnon, this);
-    siren.in.turnoff = asd::bind(&Siren::turnoff, this);
+    po_siren.in.turnon = asd::bind(&Siren::turnon, this);
+    po_siren.in.turnoff = asd::bind(&Siren::turnoff, this);
   }
 
   void Siren::turnon()
   {
     std::cout << "Siren.turnon" << std::endl;
 
+
   }
   void Siren::turnoff()
   {
     std::cout << "Siren.turnoff" << std::endl;
+
 
   }
 

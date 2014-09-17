@@ -3,6 +3,7 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -42,13 +43,17 @@ namespace component
     Noot::State S;
 
 
+    interface::Aap::AapValues reply_AapValues;
 
-    interface::Aap aap;
+
+
+    interface::Aap po_aap;
 
     Noot();
-    void is_aap();
+    interface::Aap::AapValues is_aap() ;
+
+
 
   };
 }
-
 #endif

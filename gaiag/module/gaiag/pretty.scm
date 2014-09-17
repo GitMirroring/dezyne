@@ -78,7 +78,7 @@
     ((? string?) src)
     ((? integer?) (number->string src))
     (($ <parameters> parameters) (comma-join (map ->string parameters)))
-    (($ <gom:parameter>) (->string (list (->string (.type src)) " " (.identifier src))))
+    (($ <gom:parameter>) (->string (list (->string (.type src)) " " (.name src))))
     (($ <signature> type) (->string (->string type)))
     (($ <otherwise> otherwise) (->string otherwise))
     (($ <triggers> triggers) (comma-space-join (map ->string triggers)))

@@ -247,24 +247,24 @@
   (car (filter gom:provides? (.elements (.ports o)))))
 
 (define-method (gom:port (o <system>) (name <symbol>))
-  (or (find (lambda (p) (eq? (.name p) name)) (.elements (.ports o)))))
+  (find (lambda (p) (eq? (.name p) name)) (.elements (.ports o))))
 
 (define-method (gom:port (o <system>) (bind <binding>))
-  (or (gom:port o (.port bind))
-      (let ((instance (gom:instance o (.instance bind))))
-        (if (eq? (.instance bind) (.port bind))
-            (make <gom:port> :name (.port bind))
-            (gom:port (gom:import (.type instance)) (.port bind))))))
+  (let ((port (.port bind)))
+   (or (gom:port o port)
+       (let* ((instance (gom:instance o port))
+              (component (and=> instance .component)))
+         (make <gom:port> :direction 'requires :type instance :name port)))))
 
 (define-method (gom:instance (o <system>) (name <boolean>))
-  (make <instance> :name name :type 'Foobar))
+  #f)
 
 (define-method (gom:instance (o <system>) (name <symbol>))
-  (or (find (lambda (i) (eq? (.name i) name)) ((compose .elements .instances) o))
-      (make <instance> :name name :type 'Foobar)))
+ (find (lambda (i) (eq? (.name i) name)) ((compose .elements .instances) o)))
 
 (define-method (gom:instance (o <system>) (bind <binding>))
-  (gom:instance o (.instance bind)))
+  (or (gom:instance o (.instance bind))
+      (gom:import (.type (gom:port o (.port bind))))))
 
 (define-method (gom:in? (o <event>))
   (eq? (.direction o) 'in))
@@ -291,7 +291,7 @@
 
 (define-method (gom:enums (o <interface>))
   (append ((gom:filter <enum>) (.types o))
-          ((gom:filter <enum>) (.types (.behaviour o)))))
+          ((gom:filter <enum>) (or (and=> (.behaviour o) .types) '()))))
 
 (define-method (gom:enums (o <component>))
   ((gom:filter <enum>) (.types (.behaviour o))))

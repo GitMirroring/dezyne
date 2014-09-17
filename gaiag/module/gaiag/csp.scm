@@ -578,7 +578,7 @@
 (define-method (ast-transform- ast (o <function>) return context)
   (let* ((signature (.signature o))
          (parameters ((compose .elements .parameters) signature))
-         (parameters (map .identifier parameters))
+         (parameters (map .name parameters))
          (context (context-extend context (if (>1 (length parameters))
                                               (cons 'vector parameters)
                                               parameters)))

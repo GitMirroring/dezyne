@@ -3,6 +3,7 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -48,17 +49,20 @@ namespace component
 
 
 
-    interface::Console console;
-    interface::Sensor sensor;
-    interface::Siren siren;
+
+
+    interface::Console po_console;
+    interface::Sensor po_sensor;
+    interface::Siren po_siren;
 
     Alarm();
-    void arm();
-    void disarm();
-    void triggered();
-    void disabled();
+    void arm() ;
+    void disarm() ;
+    void triggered() ;
+    void disabled() ;
+
+
 
   };
 }
-
 #endif

@@ -17,10 +17,11 @@ namespace component
 #{
 #(map-port-events
 #{
-    void #.model ::#.event-name ()
+    #.return-interface-type  #.model ::#.event-name ()
     {
       std::cout << "#.component .#.event-name" << std::endl;
       #.statement
+      #(if (not (equal? .type '(type void))) (->string (list "return reply_" (cadr .type) ";\n")))
     }
 #}
     port (filter (gom:dir-matches? port) (gom:events port)))

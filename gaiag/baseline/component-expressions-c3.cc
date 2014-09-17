@@ -3,6 +3,7 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -28,9 +29,9 @@ namespace component
   expressions::expressions()
   : state(3)
   , c(0)
-  , i()
+  , po_i()
   {
-    i.in.e = asd::bind(&expressions::e, this);
+    po_i.in.e = asd::bind(&expressions::e, this);
   }
 
   void expressions::e()
@@ -41,7 +42,7 @@ namespace component
       if (state == 0)
       {
         state = 3;
-        i.out.a();
+        po_i.out.a();
 
       }
       else
@@ -55,19 +56,20 @@ namespace component
         else
         if (c <= (state + 1))
         {
-          i.out.lo();
+          po_i.out.lo();
 
         }
         else
         if (c > state)
         {
-          i.out.hi();
+          po_i.out.hi();
 
         }
 
       }
 
     }
+
 
   }
 

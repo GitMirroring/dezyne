@@ -3,6 +3,7 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -37,9 +38,15 @@ namespace interface
 {
   struct Aap
   {
+    enum AapValues
+    {
+      yes,
+      no,
+    };
+
     struct
     {
-      asd::function<void()> is_aap;
+      asd::function<AapValues()> is_aap;
     } in;
 
     struct

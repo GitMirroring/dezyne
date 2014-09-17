@@ -24,6 +24,7 @@
            .arguments
            .behaviour
            .bindings
+           .component
            .direction
            .elements
            .else
@@ -157,8 +158,8 @@
 
 (define-class <otherwise> (<expression>))
 
-(define-class <var> (<ast>)
-  (identifier :accessor .identifier :init-value #f :init-keyword :identifier))
+(define-class <var> (<named>)
+  (name :accessor .name :init-value #f :init-keyword :name))
 
 (define-class <field> (<ast>)
   (identifier :accessor .identifier :init-value #f :init-keyword :identifier)
@@ -177,9 +178,8 @@
   (type :accessor .type :init-value #f :init-keyword :type)
   (field :accessor .field :init-value #f :init-keyword :field))
 
-(define-class <gom:parameter> (<ast>)
-  (type :accessor .type :init-value (make <type>) :init-keyword :type)
-  (identifier :accessor .identifier :init-value #f :init-keyword :identifier))
+(define-class <gom:parameter> (<named>)
+  (type :accessor .type :init-value (make <type>) :init-keyword :type))
 
 (define-class <signature> (<ast>)
   (type :accessor .type :init-value (make <type>) :init-keyword :type)
@@ -265,4 +265,4 @@
   (port :accessor .port :init-value #f :init-keyword :port))
 
 (define-class <instance> (<named> <statement>)
-  (type :accessor .type :init-value #f :init-keyword :type))
+  (component :accessor .component :init-value #f :init-keyword :component))

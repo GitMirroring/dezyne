@@ -3,6 +3,7 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -28,14 +29,14 @@ namespace component
   Alarm::Alarm()
   : state(Disarmed)
   , sounding(false)
-  , console()
-  , sensor()
-  , siren()
+  , po_console()
+  , po_sensor()
+  , po_siren()
   {
-    console.in.arm = asd::bind(&Alarm::arm, this);
-    console.in.disarm = asd::bind(&Alarm::disarm, this);
-    sensor.out.triggered = asd::bind(&Alarm::triggered, this);
-    sensor.out.disabled = asd::bind(&Alarm::disabled, this);
+    po_console.in.arm = asd::bind(&Alarm::arm, this);
+    po_console.in.disarm = asd::bind(&Alarm::disarm, this);
+    po_sensor.out.triggered = asd::bind(&Alarm::triggered, this);
+    po_sensor.out.disabled = asd::bind(&Alarm::disabled, this);
   }
 
   void Alarm::arm()
@@ -44,7 +45,7 @@ namespace component
     if (state == Disarmed)
     {
       {
-        sensor.in.enable();
+        po_sensor.in.enable();
         state = Armed;
 
       }
@@ -63,6 +64,7 @@ namespace component
       //illegal
     }
 
+
   }
   void Alarm::disarm()
   {
@@ -74,7 +76,7 @@ namespace component
     else if (state == Armed)
     {
       {
-        sensor.in.disable();
+        po_sensor.in.disable();
         state = Disarming;
 
       }
@@ -87,14 +89,15 @@ namespace component
     else if (state == Triggered)
     {
       {
-        sensor.in.disable();
-        siren.in.turnoff();
+        po_sensor.in.disable();
+        po_siren.in.turnoff();
         sounding = false;
         state = Disarming;
 
       }
 
     }
+
 
   }
 
@@ -108,8 +111,8 @@ namespace component
     else if (state == Armed)
     {
       {
-        console.out.detected();
-        siren.in.turnon();
+        po_console.out.detected();
+        po_siren.in.turnon();
         sounding = true;
         state = Triggered;
 
@@ -128,6 +131,7 @@ namespace component
       //illegal
     }
 
+
   }
   void Alarm::disabled()
   {
@@ -145,15 +149,15 @@ namespace component
       {
         if (sounding)
         {
-          console.out.deactivated();
-          siren.in.turnoff();
+          po_console.out.deactivated();
+          po_siren.in.turnoff();
           state = Disarmed;
           sounding = false;
 
         }
         else
         {
-          console.out.deactivated();
+          po_console.out.deactivated();
           state = Disarmed;
 
         }
@@ -165,6 +169,7 @@ namespace component
     {
       //illegal
     }
+
 
   }
 

@@ -178,6 +178,7 @@ c++: compile
 	cd out && $(PWD)/gaiag -l c++ examples/Aap.asd
 	$(diff) baseline/component-Noot-c3.hh out
 	$(diff) baseline/component-Noot-c3.cc out
+	cd out && g++ -c component-Noot-c3.cc
 
 	cd out && $(PWD)/gaiag -l c++ examples/Console.asd
 	$(diff) baseline/interface-Console-c3.hh out
@@ -189,6 +190,7 @@ c++: compile
 	$(diff) baseline/component-Alarm-c3.hh out
 	$(diff) baseline/component-Alarm-c3.cc out
 	cd out && g++ -I ../$(DEPTH)/examples/regression/codegen/asd_cpp_runtime -c component-Alarm-c3.cc
+	cd out && g++ -c component-Alarm-c3.cc
 
 	#system
 	cd out && $(PWD)/gaiag -l c++ examples/AlarmSystem.asd
@@ -357,3 +359,6 @@ csp-regression-update: dummy
 
 csp-demo-update: dummy
 	while ! $(MAKE) demo; do cp out/webdemo/*.csp baseline/webdemo; done
+
+c++-update: dummy
+	while ! $(MAKE) c++; do cp out/*.hh out/*.cc baseline; done

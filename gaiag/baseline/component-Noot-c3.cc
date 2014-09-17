@@ -3,6 +3,7 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -27,18 +28,20 @@ namespace component
 {
   Noot::Noot()
   : S(S1)
-  , aap()
+  , po_aap()
   {
-    aap.in.is_aap = asd::bind(&Noot::is_aap, this);
+    po_aap.in.is_aap = asd::bind(&Noot::is_aap, this);
   }
 
-  void Noot::is_aap()
+  interface::Aap::AapValues Noot::is_aap()
   {
     std::cout << "Noot.is_aap" << std::endl;
     {
       S = S2;
 
     }
+
+    return reply_AapValues;
 
   }
 

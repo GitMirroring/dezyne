@@ -3,6 +3,7 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -36,9 +37,9 @@ namespace component
   : alarm() 
   , sensor() 
   , siren() 
-  , console(alarm.console) 
+  , po_console(alarm.po_console) 
   {
-    connect(sensor.sensor,alarm.sensor);
-    connect(siren.siren,alarm.siren);
+    connect(sensor.po_sensor,alarm.po_sensor);
+    connect(siren.po_siren,alarm.po_siren);
   }
 }

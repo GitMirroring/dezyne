@@ -27,6 +27,7 @@
 
   :use-module (gaiag animate)
   :use-module (gaiag indent)
+  :use-module (gaiag mangle)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
@@ -37,6 +38,7 @@
 
   :export (ast->
            animate-template
+           enum-type
            c++-module
            c++:gom
            c++:import
@@ -56,8 +58,12 @@
   (gom:import name c++:gom))
 
 (define (c++:gom ast)
-  ((compose ast:resolve ast->gom) ast))
+  ((compose mangle ast:resolve ast->gom) ast))
 
+(define (mangle o)
+  (if #f
+      o
+      (parameterize ((mangle-prefix-alist '((port . po)))) (gom:mangle o))))
 
 (define (pipe producer consumer)
   (with-input-from-string (with-output-to-string producer) consumer))
@@ -117,8 +123,22 @@
     (module-define! module '.model (.name o))
     module))
 
+(define-method (declare-replies (o <interface>))
+  (map (lambda (x) (->string (list "interface::"  (.name o) "::" (.name x) " reply_" (.name x) ";\n"))) (gom:interface-enums o)))
+
+(define (scope-type o)
+  (match o
+    (($ <expression> ($ <literal> scope type field)) (->string (list "interface::" scope)))))
+
+(define (enum-type o)
+  (match o
+    (($ <expression> ($ <literal> scope type field)) (->string (list (scope-type o) "::" type)))))
+
 (define (declare-enum enum)
   (->string (list "enum "  (.name enum) "\n  {\n  " (comma-nl-join (.elements (.fields enum))) ",\n  };\n")))
+
+(define (declare-reply enum)
+  (->string (list (enum-type enum) " reply_" (.name enum))))
 
 (define (declare-integer integer)
   (->string (list "typedef int " (.name integer) ";\n")))
@@ -128,9 +148,10 @@
 (define statements.event (make-parameter #f))
 
 (define* (statements->string src :optional (compound? #t))
+
   (define (enum-type o)
     (match o
-      (($ <expression> ($ <literal> scope type field)) (->string (list (scope-type o) "::" type)))))
+      (($ <expression> ($ <literal> scope type field)) (->string type))))
 
   (define (scope-type o)
     (match o
@@ -181,10 +202,9 @@
               (event (gom:event interface event-name)))
          (->string (list port-name '. (.direction event) '. event-name "();\n"))))
       (($ <reply> expression)
-       (let
-           ((type (enum-type expression))
-            (scope (scope-type expression)))
-         (->string (list type " reply = " scope "::" (expression->string expression) ";\n"))))
+       (let ((type (enum-type expression))
+             (scope (scope-type expression)))
+         (->string (list "reply_" type " = "  scope "::" (expression->string expression) ";\n"))))
       (($ <return> #f)
        "return;\n")
       (($ <return> expression)
@@ -255,7 +275,7 @@
     (_ (format #f "~a:no match: ~a" (current-source-location) ast))))
 
 (define (parameter->string parameter)
-  (->string (list (gom:name (.type parameter)) " " (.identifier parameter))))
+  (->string (list (gom:name (.type parameter)) " " (.name parameter))))
 
 (define (value->string value)
   (let ((comp-name (.name (gom:component *ast*))))
@@ -268,7 +288,7 @@
       'void))
 
 (define (return-interface-type interface event)
-  (or (and (gom:typed? event) (list interface "::" (.type (.type event))))
+  (or (and (gom:typed? event) (list "interface::" interface "::" (cadr (.type (.type event)))))
       'void))
 
 (define (variable-value->string model v) ;; FIXME: expression
@@ -337,13 +357,22 @@
                      module
                      instance
                      `((instance . ,identity)
-                       (.instance . ,.name)
-                       (.Class . ,(compose symbol-capitalize ast-name c++:import .type))
-                       (.type . ,.type))))))))))
+                       (.component . ,.component)
+                       (.name . ,.name))))))))))
           instances)))
 
 (define (binding-name model bind)
-  (list (.name (gom:instance model bind)) '. (.name (gom:port model bind))))
+  (let ((instance (gom:instance model bind))
+        (port (gom:port model bind)))
+    (list
+     (match instance
+       (($ <instance>) (.name instance))
+       (($ <interface>) (.name instance))
+       )
+     "."
+     (match port
+       (($ <gom:port>) (.name port))
+       (($ <interface>) (list "x" (.name port)))))))
 
 (define (bind-port? bind)
   (or (not (.instance (.left bind))) (not (.instance (.right bind)))))

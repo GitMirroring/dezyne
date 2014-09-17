@@ -183,7 +183,7 @@
 
     (('int name range) (make <int> :name name :range (ast->gom- range)))
 
-    (('instance type name) (make <instance> :name name :type type))
+    (('instance component name) (make <instance> :name name :component component))
 
     (('instances instances ...)
      (make <instances> :elements (map ast->gom- instances)))
@@ -203,8 +203,8 @@
 
     (('otherwise) (make <otherwise> :value 'otherwise))
 
-    (('parameter type identifier)
-     (make <gom:parameter> :type type :identifier identifier))
+    (('parameter type name)
+     (make <gom:parameter> :name name :type type))
 
     (('parameters parameters ...)
      (make <parameters> :elements (map ast->gom- parameters)))
@@ -252,7 +252,7 @@
 
     (('types types ...) (make <types> :elements (map ast->gom- types)))
 
-    (('var identifier) (make <var> :identifier identifier))
+    (('var name) (make <var> :name name))
 
     (('variable type name expression)
      (make <variable> :name name :type type :expression (ast->gom- expression)))

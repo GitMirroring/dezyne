@@ -324,7 +324,7 @@
       (($ <call> function ($ <arguments> arguments))
        (receive (new-state new-ast new-action return new-trace)
            (let* ((f (gom:function *model* function)) ;; FIXME
-                  (parameters (map .identifier ((compose .elements .parameters .signature) f)))
+                  (parameters (map .name ((compose .elements .parameters .signature) f)))
                   (statement (.statement f))
                   (pairs (zip parameters arguments))
                   (state (let loop ((pairs pairs) (state state))

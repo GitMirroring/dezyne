@@ -1,6 +1,6 @@
 #(map-instances
 #{
-##include "component-#.type -c3.hh"
+##include "component-#.component -c3.hh"
 #} ((compose .elements .instances) model))
 
 #(map-ports
@@ -13,7 +13,7 @@ struct #.model
 {
 #(map-instances
 #{
-   #.type  #.instance ;
+   #.component  #.name ;
 #} ((compose .elements .instances) model))
 #(map-ports
 #{

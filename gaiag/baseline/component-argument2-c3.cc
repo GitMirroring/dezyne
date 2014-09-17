@@ -3,6 +3,7 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -27,9 +28,9 @@ namespace component
 {
   argument2::argument2()
   : b(false)
-  , i()
+  , po_i()
   {
-    i.in.e = asd::bind(&argument2::e, this);
+    po_i.in.e = asd::bind(&argument2::e, this);
   }
 
   void argument2::e()
@@ -42,11 +43,12 @@ namespace component
       b = g(c, c);
       if (c)
       {
-        i.out.f();
+        po_i.out.f();
 
       }
 
     }
+
 
   }
 
@@ -55,13 +57,12 @@ namespace component
   bool argument2::g(bool ga, bool gb)
   {
     {
-      i.out.f();
+      po_i.out.f();
       return (ga or gb);
 
     }
 
   }
-
 
 
 

@@ -3,6 +3,7 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -26,20 +27,22 @@
 namespace component
 {
   Sensor::Sensor()
-  : sensor()
+  : po_sensor()
   {
-    sensor.in.enable = asd::bind(&Sensor::enable, this);
-    sensor.in.disable = asd::bind(&Sensor::disable, this);
+    po_sensor.in.enable = asd::bind(&Sensor::enable, this);
+    po_sensor.in.disable = asd::bind(&Sensor::disable, this);
   }
 
   void Sensor::enable()
   {
     std::cout << "Sensor.enable" << std::endl;
 
+
   }
   void Sensor::disable()
   {
     std::cout << "Sensor.disable" << std::endl;
+
 
   }
 
