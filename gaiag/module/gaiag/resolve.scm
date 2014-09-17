@@ -36,7 +36,6 @@
   :export (
            ast->
            ast:resolve
-           ast:resolve-model
            gom:resolve
            ))
 
@@ -63,6 +62,7 @@
 
 (define (resolve-mixed o)
   (match o
+    (($ <component>) (let ((interfaces (map resolve:import (map .type ((compose .elements .ports) o))))) o))
     (($ <interface> name ($ <types> types) ($ <events> types-events) behaviour)
      (receive (types- events) (partition (lambda (x)
                                            (or (is-a? x <enum>) (is-a? x <int>))) types-events)
@@ -85,18 +85,6 @@
 (define-method (resolve-model (model <model>))
   (lambda (o) (resolve-model model o)))
 
-;; (define-method (gom:resolve (model <model>))
-;;   (lambda (o) (gom:resolve-curry model o)))
-
-;; (define-method (gom:resolve-curry (model <imports>) (o <imports>))
-;;   o)
-
-;; (define-method (gom:resolve-curry (model <model>) (o <model>))
-;;   (gom:register-model (gom:resolve model o)))
-
-;; (define-method (gom:resolve-curry (model <model>) (o <top>))
-;;   (gom:resolve model o))
-
 (define-method (resolve-model (model <imports>) (o <imports>))
   o)
 
@@ -111,6 +99,12 @@
               (set-source-property! resolved 'loc loc))
     resolved))
 
+(define (resolve:import name)
+  (gom:import name resolve:gom))
+
+(define (resolve:gom ast)
+  ((compose ast:resolve ast->gom) ast))
+
 (define-method (resolve-model- (model <model>) o locals)
 
   (define (enum-type enum)
@@ -124,7 +118,7 @@
            (make <enum>
              :name (list (.type port) (.name enum))
              :fields (.fields enum)))
-         ((compose gom:enums (lambda (name) (gom:import name)) .type) port)))
+         ((compose gom:enums resolve:import .type) port)))
 
   (let* ((port? (lambda (port)
                   (if (is-a? model <interface>)

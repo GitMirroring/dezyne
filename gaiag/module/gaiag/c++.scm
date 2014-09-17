@@ -22,6 +22,7 @@
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 match)
   :use-module (ice-9 and-let-star)
+  :use-module (ice-9 pretty-print)
   :use-module (ice-9 rdelim)
   :use-module (srfi srfi-1)
 

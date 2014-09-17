@@ -19,7 +19,7 @@ struct #.model
 #{      #.state-type  #.variable ;
 #} ((compose .elements .variables .behaviour) model))
 
-  #(->string (map (compose declare-replies gom:import .type) ((compose .elements .ports) model)))
+  #(->string (map (compose declare-replies c++:import .type) ((compose .elements .ports) model)))
 #}
 )
 

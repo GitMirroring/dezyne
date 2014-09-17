@@ -64,6 +64,9 @@ interface i
 
 (pass-if "pretty-provides"
   (let ((asd #{
+interface Interface
+{
+}
 component c
 {
   provides Interface identifier;

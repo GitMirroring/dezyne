@@ -42,7 +42,7 @@ channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {#
  (comma-join (list (comma-join
                     (map (lambda (port)
-                           (comma-join (map (lambda (event) (list (.name port) "." (.name event))) (filter gom:out? ((compose .elements .events gom:import .type) port)))))
+                           (comma-join (map (lambda (event) (list (.name port) "." (.name event))) (filter gom:out? ((compose .elements .events csp:import .type) port)))))
                            (filter gom:requires? ((compose .elements .ports) model)))) 'extensions_over_empty_channels_is_undefined))}
 
 SINGLETHREADED = true
@@ -103,7 +103,7 @@ UsedModeling = {#
 within compress((CO_#(.name model) _#((compose .name .behaviour) model) (IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,#(comma-join (map .name ((compose .elements .ports) model)))|},Exclude)|]
 (((# (let ((required_processes ((->join "\n ||| ") (map (lambda (port)
-(->string (list "IF_" (.type port) '_ ((compose .name .behaviour gom:import .type) port) "(true) [[CH_"(.type port) ".x<-" (.name port) ".x|x<-extensions("(.name port)")]]")))
+(->string (list "IF_" (.type port) '_ ((compose .name .behaviour csp:import .type) port) "(true) [[CH_"(.type port) ".x<-" (.name port) ".x|x<-extensions("(.name port)")]]")))
  (filter gom:requires? ((compose .elements .ports) model)))))) (if (string-null? required_processes) 'STOP required_processes))
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]

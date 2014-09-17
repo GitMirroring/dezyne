@@ -11,14 +11,22 @@
   :use-module (oop goops)
   :use-module (gaiag gom))
 
-(define-method (ast:resolve-model model)
-  (let* ((gom (ast->gom model))
-         (m ((@@ (gaiag resolve) resolve-mixed) gom)))
-    ((@@ (gaiag resolve) resolve-model) m m)))
+(define resolve-model (@@ (gaiag resolve) resolve-model))
+(define resolve-mixed (@@ (gaiag resolve) resolve-mixed))
 
-(define-method (ast:resolve-model ast model)
-  (let ((ont-mixed ((@@ (gaiag resolve) resolve-mixed) (ast->gom ast))))
-    ((@@ (gaiag resolve) resolve-model) ont-mixed (ast->gom model))) )
+(define-method (ast:resolve-model o)
+  (let* ((gom (ast->gom o))
+         (m (resolve-mixed gom)))
+    (resolve-model m m)))
+
+(define-method (ast:resolve-model (model <list>) o)
+  (let ((model (resolve-mixed (ast->gom model))))
+    (resolve-model model (ast->gom o))))
+
+(define-method (ast:resolve-root-model (root <list>) (model <list>) o)
+  (let* ((root (ast:resolve root))
+         (model (resolve-mixed (ast->gom model))))
+    (resolve-model model (ast->gom o))))
 
 (pass-if "resolve-first-dummy-test"
          #t)
@@ -40,8 +48,8 @@
        (functions (function toggle (signature (type void)) (compound))
                   (function g
                             (signature (type bool)
-                                       (parameters (parameter* (type bool) ga)
-                                                   (parameter* (type bool) gb)))
+                                       (parameters (parameter (type bool) ga)
+                                                   (parameter (type bool) gb)))
                             (compound)))
        (compound
         (on (triggers (trigger #f foo))
@@ -101,7 +109,8 @@
 
 (pass-if "ast:resolve-variable-valued-action"
          (gom-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-root-model
+           resolve-ast
            (cadr resolve-ast)
            '(on (triggers (trigger o foo))
                 (compound

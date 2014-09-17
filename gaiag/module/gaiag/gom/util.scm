@@ -315,7 +315,7 @@
 (define* (gom:events ast)
   (match ast
     (($ <interface>) (.elements (.events ast)))
-    (($ <gom:port>) (gom:events (ast->gom (gom:import (.type ast)))))
+    (($ <gom:port>) (gom:events (gom:import (.type ast))))
     (_ (throw 'match-error  (format #f "~a:events: no match: ~a\n" (current-source-location) ast)))))
 
 (define-method (gom:bottom? (o <component>))
@@ -337,8 +337,17 @@
   (set! *ast-alist* (assoc-set! *ast-alist* name o))
   o)
 
+(define (gom:unresolved? o)
+  (if (not (cached-model (.name o)))
+      (let ((resolved (if (is-a? o <interface>)
+                          (or (and (null-is-#f ((gom:filter <enum>) (.events o))) 'unresolved)
+                              'resolved)
+                          'component)))
+        (if (eq? resolved 'unresolved)
+            (stderr "caching [~a]: ~a\n" resolved (.name o))))))
+
 (define-method (gom:register-model (o <model>))
-   (if (not (cached-model (.name o)))
+  (if (not (cached-model (.name o)))
       (cache-model (.name o) o))
   o)
 

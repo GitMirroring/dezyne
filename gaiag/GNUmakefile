@@ -213,6 +213,8 @@ c++: compile
 	-$(diff) baseline/component-expressions-c3.cc out
 	cd out && g++ -I ../$(DEPTH)/examples/regression/codegen/asd_cpp_runtime -c component-expressions-c3.cc
 
+	cd out && $(PWD)/gaiag -l c++ examples/resolve.asd
+
 wfc: compile
 	-./gaiag -l wfc examples/double-on.asd
 	#-./gaiag -l wfc examples/double-on-compound.asd #TODO
