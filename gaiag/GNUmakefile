@@ -63,7 +63,14 @@ check: compile
 	./test.sh </dev/null
 	$(MAKE) csp asserts c++ demo pretty
 
-coverage: clean
+REGRESSION_SOURCES = $(shell cd examples/regression && grep -l ^component *.asd)
+
+coverage: clean cover-test cover-regression cover-wfc
+	rm gaiag.lcov/gaiag.info
+	genhtml --output-dir=gaiag.lcov --prefix=$(shell pwd) gaiag.lcov/gaiag*.info
+	make clean # junk debug cache
+
+cover-test:
 	@echo GUILE_LOAD_PATH=$(GUILE_LOAD_PATH)
 	rm -rf gaiag.lcov && mkdir -p gaiag.lcov
 	cd gaiag.lcov && ln -s ../examples ../templates .
@@ -71,77 +78,31 @@ coverage: clean
 	GUILE='guile --debug --no-auto-compile' ./test.sh --coverage </dev/null
 	lcov -r gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-test.info | grep -v Removing
 
-	cd gaiag.lcov && ../coverage gaiag -l asd examples/regression/Alarm.asd >/dev/null
+gaiag.lcov/%-asd.info: examples/regression/%.asd
+	cd gaiag.lcov && ../coverage gaiag -l asd $< >/dev/null
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
-	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-asd.info | grep -v Removing
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o $@ | grep -v Removing
 
-	cd gaiag.lcov && ../coverage gaiag -l asd examples/regression/function.asd >/dev/null
+gaiag.lcov/%-csp.info: examples/regression/%.asd
+	cd gaiag.lcov && ../coverage gaiag -l csp $<
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
-	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-asd-function.info | grep -v Removing
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o $@ | grep -v Removing
 
-	cd gaiag.lcov && ../coverage gaiag -l asd examples/regression/imperative.asd >/dev/null
+gaiag.lcov/%-c++.info: examples/regression/%.asd
+	cd gaiag.lcov && ../coverage gaiag -l c++ $<
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
-	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-asd-imperative.info | grep -v Removing
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o $@ | grep -v Removing
 
-	cd gaiag.lcov && ../coverage gaiag -l asd examples/regression/argument2.asd >/dev/null
-	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
-	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-asd-argument2.info | grep -v Removing
+cover-regression: $(REGRESSION_SOURCES:%.asd=gaiag.lcov/%-asd.info) $(REGRESSION_SOURCES:%.asd=gaiag.lcov/%-csp.info) $(REGRESSION_SOURCES:%.asd=gaiag.lcov/%-c++.info)
 
-	cd gaiag.lcov && ../coverage gaiag -l asd examples/regression/Typedef.asd >/dev/null
-	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
-	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-asd-Typedef.info | grep -v Removing
-
-	cd gaiag.lcov && ../coverage gaiag -l csp examples/regression/Alarm.asd
-	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
-	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-csp.info | grep -v Removing
-
-	cd gaiag.lcov && ../coverage gaiag -l csp examples/regression/if.asd
-	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
-	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-if.info | grep -v Removing
-
-	cd gaiag.lcov && ../coverage gaiag -l csp examples/regression/function.asd
-	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
-	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-function.info | grep -v Removing
-
-	cd gaiag.lcov && ../coverage gaiag -l csp examples/regression/Comp.asd
-	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
-	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-Comp.info | grep -v Removing
-
-	cd gaiag.lcov && ../coverage gaiag -l csp examples/regression/expressions.asd
-	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
-	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-expressions.info | grep -v Removing
-
-	cd gaiag.lcov && ../coverage gaiag -l c++ examples/regression/Alarm.asd
-	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
-	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-c++.info | grep -v Removing
-
-	cd gaiag.lcov && ../coverage gaiag -l c++ examples/regression/AlarmSystem.asd
-	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
-	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-c++-AlarmSystem.info | grep -v Removing
-
-	cd gaiag.lcov && ../coverage gaiag -l c++ examples/Aap.asd
-	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
-	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-c++-Aap.info | grep -v Removing
-
-	cd gaiag.lcov && ../coverage gaiag -l c++ examples/regression/expressions.asd
-	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
-	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-c++-expressions.info | grep -v Removing
-
-	cd gaiag.lcov && ../coverage gaiag -l c++ examples/regression/argument2.asd
-	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
-	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-c++-argument2.info | grep -v Removing
-
-	cd gaiag.lcov && ! ../coverage gaiag -l wfc examples/regression/double-on.asd
+cover-wfc:
+	cd gaiag.lcov && ! ../coverage gaiag -l wfc examples/double-on.asd
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-wfc-double-on.info | grep -v Removing
 
-	cd gaiag.lcov && ! ../coverage gaiag -l wfc examples/regression/mixing.asd
+	cd gaiag.lcov && ! ../coverage gaiag -l wfc examples/mixing.asd
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-wfc-mixing.info | grep -v Removing
-
-	rm gaiag.lcov/gaiag.info
-	genhtml --output-dir=gaiag.lcov --prefix=$(shell pwd) gaiag.lcov/gaiag*.info
-	make clean # junk debug cache
 
 dummy:
 
@@ -183,7 +144,6 @@ out/%.compiles: examples/%.asd
 	$(diff) baseline/component-$*-c3.cc out
 	g++ -o out/component-$*-c3.o -c out/component-$*-c3.cc
 
-REGRESSION_SOURCES = $(shell cd examples/regression && grep -l ^component *.asd)
 CC_BROKEN =\
  Alarm.asd\
  Noot.asd\
@@ -226,42 +186,7 @@ out/%.refines: examples/regression/%.asd
 	@$(diff) baseline/$*.csp out >/dev/null
 	touch $@
 
-reply3: compile out/Reply3.refines
-
 csp: compile $(REGRESSION_SOURCES:%.asd=out/%.refines)
-
-livelock:
-	rm -rf out && mkdir out && ln -s ../examples ../templates $(DEPTH)/../webdemo/asd out
-	cd out && $(PWD)/gaiag -l csp examples/regression/livelock1.asd
-	$(diff) baseline/livelock1.csp out || true
-	@$(diff) baseline/livelock1.csp out | diffstat || true
-	$(CSPMCHECKER) out/livelock1.csp
-	$(REFINES) out/livelock1.csp |& grep -E '^x?false'
-	@$(diff) baseline/livelock1.csp out >/dev/null
-
-	cd out && $(PWD)/gaiag -l csp examples/regression/livelock2.asd
-	$(diff) baseline/livelock2.csp out || true
-	@$(diff) baseline/livelock2.csp out | diffstat || true
-	$(CSPMCHECKER) out/livelock2.csp
-	$(REFINES) out/livelock2.csp |& grep -E '^x?false'
-	@$(diff) baseline/livelock2.csp out >/dev/null
-
-mangle: compile
-	rm -rf out && mkdir out && ln -s ../examples ../templates out
-
-	cd out && $(PWD)/gaiag -l csp examples/regression/mangle.asd
-	$(diff) baseline/mangle.csp out || true
-	@$(diff) baseline/mangle.csp out | diffstat || true
-	./gaiag -l mangle examples/regression/mangle.asd
-	$(CSPMCHECKER) out/mangle.csp
-	@$(diff) baseline/mangle.csp out >/dev/null
-
-	cd out && $(PWD)/gaiag -l csp examples/regression/argument2.asd
-	$(diff) baseline/argument2.csp out || true
-	@$(diff) baseline/argument2.csp out | diffstat || true
-	./gaiag -l mangle examples/regression/argument2.asd
-	$(CSPMCHECKER) out/argument2.csp
-	@$(diff) baseline/argument2.csp out >/dev/null
 
 simulate: compile
 #	./gaiag -l simulate examples/regression/if.asd

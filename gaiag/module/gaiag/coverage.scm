@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -67,7 +68,7 @@ Examples:
   (let* ((options (parse-opts args))
 	 (command (option-ref options '() '()))
          (script (string->symbol (car command)))
-         (module (resolve-module (list 'language 'asd script)))
+         (module (resolve-module (list 'gaiag script)))
          (procedure (module-ref module 'main))
          (args command))
     (cover (lambda () (procedure args)) (->string (list script '.info)))))
