@@ -120,7 +120,7 @@
   "Search for optional and inevitable."
   (match ast
     ((or ($ <interface>) ($ <component>))
-     (delete-duplicates (sort (gom:find-events (gom:statement (.behaviour ast))) gom:trigger<)))
+     (delete-duplicates (sort (gom:find-events (or (and=> (.behaviour ast) gom:statement) '())) gom:trigger<)))
     (($ <compound>) (append (apply append (map gom:find-events (.elements ast))) found))
     (($ <on>) (gom:find-events (.triggers ast)))
 ;;    (($ <trigger>) (list ast))
@@ -131,6 +131,7 @@
     (('action x) '())
     (('illegal) '())
     (('skip) '())
+    ('() ast)
     (_ (throw 'match-error  (format #f "~a:gom:find-events: no match: ~a\n" (current-source-location) ast)))))
 
 (define* (gom:variable ast identifier)   ;; use SYMBOL TABLE
@@ -186,7 +187,7 @@
 (define (gom:statement ast) ;; REMOVEME
   (match ast
     ((? ast:system?) (or (find (lambda (x) (is-a? x <compound>)) (cddr ast))))
-    (($ <model>) (gom:statement (.behaviour ast)))
+    (($ <model>) (or (and=> (.behaviour ast) gom:statement) (make <compound>)))
     (($ <behaviour>) (or (.statement ast) (make <compound>)))
     (($ <function>) (.statement ast))
     (_ (throw 'match-error  (format #f "~a:gom:statement: no match: ~a\n" (current-source-location) ast)))))

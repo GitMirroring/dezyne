@@ -64,8 +64,6 @@
      (->string (list 'variable name (->string type) (list 'assign-call function arguments))))
     (($ <variable> name type ($ <action> trigger))
      (->string (list 'variable name (->string type) (list 'assign-action trigger))))
-    (('type scope ('type type)) (->string (list scope '. type)))
-    (('type name) name)
     ;; comment this out to get ol style system as system
     (($ <system> name ($ <ports> ports) ($ <instances> instances) ($ <bindings> bindings))
      (->string (list 'system-as-component name ports instances bindings)))
@@ -80,6 +78,8 @@
     (($ <parameters> parameters) (comma-join (map ->string parameters)))
     (($ <gom:parameter>) (->string (list (->string (.type src)) " " (.name src))))
     (($ <signature> type) (->string (->string type)))
+    (($ <type> name scope) (->string (list scope '. name)))
+    (($ <type> name #f) (->string name))
     (($ <otherwise> otherwise) (->string otherwise))
     (($ <triggers> triggers) (comma-space-join (map ->string triggers)))
 

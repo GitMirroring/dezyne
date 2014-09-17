@@ -40,10 +40,10 @@ namespace component
 
 
 
-    Noot::State S;
+    State S;
 
 
-    interface::Aap::AapValues reply_AapValues;
+    interface::Aap::AapValues reply_Aap_AapValues;
 
 
 

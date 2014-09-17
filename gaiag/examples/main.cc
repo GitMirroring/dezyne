@@ -1,7 +1,9 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
+//
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -20,55 +22,27 @@
 //
 // Code:
 
-interface Aap
-{
-  enum AapValues {yes, no};
+#include "component-AlarmSystem-c3.hh"
 
-  in AapValues is_aap;
+void detected()
+{
+  std::cout << "Console.detected" << std::endl;
 }
 
-component Noot
+void deactivated()
 {
-  provides Aap aap;
-  
-  behaviour
-  {
-    enum State {S1, S2};
-    State S = State.S1;
-    
-    /*
-    void f(aap.AapValues a)
-    {
-      S = State.S2;
-    }
-  
-    State g(bool b)
-    {
-      reply(State.S1);
-    }
-    */
-    on aap.is_aap:
-    {
-      S = State.S2;
-      /*
-      if (true)
-        S = State.S1;
-      */
-      /*
-      if (true)
-      {
-        if (true)
-        {
-          reply(aap.AapValues.yes);
-        }
-      }
-      else
-      {
-        f(aap.AapValues.no);
-        g(true);
-        //reply(aap.AapValues.no);
-      }
-      */
-    }
-  }
+  std::cout << "Console.deactivated" << std::endl;
+}
+
+int main()
+{
+  component::AlarmSystem alarmsystem;
+
+  alarmsystem.console.out.detected = detected;
+  alarmsystem.console.out.deactivated = deactivated;
+
+  alarmsystem.console.in.arm();
+  alarmsystem.sensor.sensor.out.triggered();
+  alarmsystem.console.in.disarm();
+  alarmsystem.sensor.sensor.out.disabled();
 }

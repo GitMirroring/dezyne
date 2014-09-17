@@ -185,7 +185,7 @@
   (and-let* ((variable (gom:variable ast identifier))
              ((is-a? variable <variable>))
              (type (.type variable)))
-            (gom:name type)))
+            (.name type)))
 
 (define (csp-expression->string ast src) ;; FIXME: more tests
   (define (paren expression)
@@ -240,7 +240,7 @@
    (next-method)))
 
 (define-method (enum-values (o <model>))
-  (apply append (map typed-elements (gom:enums (.behaviour o)))))
+  (apply append (map typed-elements (or (and=> (.behaviour o) gom:enums) '()))))
 
 (define-method (return-value (o <enum>))
   (map (lambda (value) (symbol-append (.name o) '_ value)) ((compose .elements .fields) o)))

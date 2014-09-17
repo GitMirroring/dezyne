@@ -204,7 +204,7 @@
     (('otherwise) (make <otherwise> :value 'otherwise))
 
     (('parameter type name)
-     (make <gom:parameter> :name name :type type))
+     (make <gom:parameter> :name name :type (ast->gom- type)))
 
     (('parameters parameters ...)
      (make <parameters> :elements (map ast->gom- parameters)))
@@ -227,10 +227,10 @@
 
     (('root elements ...) (make <root> :elements (map ast->gom- elements)))
 
-    (('signature type) (make <signature> :type type))
+    (('signature type) (make <signature> :type (ast->gom- type)))
 
     (('signature type parameters)
-     (make <signature> :type type :parameters (ast->gom- parameters)))
+     (make <signature> :type (ast->gom- type) :parameters (ast->gom- parameters)))
 
     (('system name ports ('compound body ...))
      (make <system>
@@ -250,12 +250,16 @@
     (('triggers triggers ...)
      (make <triggers> :elements (map ast->gom- triggers)))
 
+    (('type scope ('type name)) (make <type> :name name :scope scope))
+
+    (('type name) (make <type> :name name))
+
     (('types types ...) (make <types> :elements (map ast->gom- types)))
 
     (('var name) (make <var> :name name))
 
     (('variable type name expression)
-     (make <variable> :name name :type type :expression (ast->gom- expression)))
+     (make <variable> :name name :type (ast->gom- type) :expression (ast->gom- expression)))
 
     (('variables variables ...)
      (make <variables> :elements (map ast->gom- variables)))

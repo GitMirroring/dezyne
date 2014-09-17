@@ -105,50 +105,61 @@
 (define (resolve:gom ast)
   ((compose ast:resolve ast->gom) ast))
 
-(define-method (resolve-model- (model <model>) o locals)
+(define-method (type-equal? (a <type>) (b <type>))
+  (and (eq? (.scope a) (.scope b))
+       (eq? (.name a) (.name b))))
 
-  (define (enum-type enum)
-    (let ((name (.name enum)))
-      (if (pair? name)
-          (list 'type (car name) (cons 'type (cdr name)))
-          (list 'type name))))
+(define-method (type-equal? (a <symbol>) (b <type>))
+  (and (not (.scope b))
+       (eq? a (.name b))))
+
+(define-method (type-equal? (a <symbol>) (b <symbol>))
+  (eq? a b))
+
+(define-method (resolve-model- (model <model>) o locals)
 
   (define (interface-enums port)
     (map (lambda (enum)
            (make <enum>
-             :name (list (.type port) (.name enum))
+             :name (make <type> :name (.name enum) :scope (.type port))
              :fields (.fields enum)))
          ((compose gom:enums resolve:import .type) port)))
 
-  (let* ((port? (lambda (port)
-                  (if (is-a? model <interface>)
-                      #f
-                      (member port (map .name (.elements (.ports model)))))))
-         (enum? (lambda (identifier)
-                  (member identifier (map .name (gom:enums model)))))
-         (enum-field? (lambda (identifier)
-                          (lambda (field)
-                            (and-let* ((enum (find (lambda (x) (eq? (.name x) identifier))
-                                                   (gom:enums model))))
-                                      (member field (.elements (.fields enum)))))))
-         (member? (lambda (identifier)
-                    (member identifier (gom:member-names model))))
-         (member-field? (lambda (identifier)
-                          (lambda (field)
-                            (and-let* ((variable (or (gom:variable model identifier)
-                                                     (gom:variable (map cdr locals) identifier)))
-                                       (type (.type variable))
-                                       (enums (append
-                                               (gom:enums model)
-                                               (apply append
-                                                      (if (is-a? model <component>) (map interface-enums (.elements (.ports model))) '()))))
-                                       (enum (find (lambda (enum)
-                                                     (equal? (enum-type enum) type)) enums)))
-                                      (member field (.elements (.fields enum)))))))
-         (local? (lambda (identifier) (assoc identifier locals)))
-         (var? (lambda (identifier) (or (member? identifier) (local? identifier)))))
-  (match o
+  (define (port? port)
+    (if (is-a? model <interface>)
+        #f
+        (member port (map .name (.elements (.ports model))))))
 
+  (define (enum? identifier)
+    (member identifier (map .name (gom:enums model))))
+
+  (define (enum-field? identifier)
+    (lambda (field)
+      (and-let* ((enum (find (lambda (x) (eq? (.name x) identifier))
+                             (gom:enums model))))
+                (member field (.elements (.fields enum))))))
+
+  (define (member-field? identifier)
+    (lambda (field)
+      (and-let* ((variable (or (gom:variable model identifier)
+                               (gom:variable (map cdr locals) identifier)))
+                 (type (.type variable))
+                 (enums (append
+                         (gom:enums model)
+                         (apply append
+                                (if (is-a? model <component>) (map interface-enums (.elements (.ports model))) '()))))
+                 (enum (find (lambda (enum)
+                               (type-equal? (.name enum) type)) enums)))
+                (member field (.elements (.fields enum))))))
+
+  (define (member? identifier)
+    (find (lambda (m) (eq? (.name m) identifier)) (gom:variables model)))
+
+  (define (local? identifier) (assoc-ref locals identifier))
+
+  (define (var? identifier) (or (member? identifier) (local? identifier)))
+
+  (match o
     (($ <action> (and (? (lambda (i) (member i (gom:function-names model))))
                       (get! identifier)))
      (make <call> :identifier (identifier)))
@@ -263,7 +274,7 @@
 
     ((? (is? <ast>)) (gom:map (lambda (o) (resolve-model model o locals)) o))
     ((h t ...) (map (lambda (o) (resolve-model model o locals)) o))
-    (_ o))))
+    (_ o)))
 
 (define* ((recurses? model :optional (seen '())) name)
   (define (return-call ast)

@@ -16,7 +16,7 @@ struct #.model
     #(->string (map declare-integer (gom:integers (.behaviour model))))
 
 # (map-variables
-#{      #.state-type  #.variable ;
+#{  #.type-  #.variable ;
 #} ((compose .elements .variables .behaviour) model))
 
   #(->string (map (compose declare-replies c++:import .type) ((compose .elements .ports) model)))
@@ -35,7 +35,7 @@ struct #.model
 #(string-if (.behaviour model)
 #{
 #(map-functions
-#{  #.return-type  #.function (#.parameters );
+#{  #.return-type  #.function (#.parameters- );
 #}
 ((compose .elements .functions .behaviour) model))
 #})

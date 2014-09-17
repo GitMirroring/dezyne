@@ -18,7 +18,7 @@ struct #.interface
   struct
   {
     #(map-events
-#{asd::function<#(cadr .type) ()> #.event-name ;
+#{asd::function<#(.name .type) ()> #.event-name ;
 #} (filter gom:in? ((compose .elements .events) model)))  } in;
 
   struct

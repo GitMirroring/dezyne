@@ -36,8 +36,8 @@ namespace component
     typedef int State;
 
 
-    expressions::State state;
-    expressions::State c;
+    State state;
+    State c;
 
 
 

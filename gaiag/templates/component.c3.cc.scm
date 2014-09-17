@@ -20,8 +20,8 @@ namespace component
     #.return-interface-type  #.model ::#.event-name ()
     {
       std::cout << "#.component .#.event-name" << std::endl;
-      #.statement
-      #(if (not (equal? .type '(type void))) (->string (list "return reply_" (cadr .type) ";\n")))
+      #.statement-
+      #(if (not (eq? (.name .type-) 'void)) (->string (list "return reply_" .reply-type ";\n")))
     }
 #}
     port (filter (gom:dir-matches? port) (gom:events port)))
@@ -30,7 +30,7 @@ namespace component
 #(string-if (.behaviour model)
 #{
 #(map-functions
-  #{  #.return-type  #.model ::#.function (#.parameters )
+  #{  #.return-type  #.model ::#.function (#.parameters- )
   {
     #.statements
   }

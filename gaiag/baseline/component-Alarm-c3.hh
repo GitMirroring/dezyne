@@ -44,7 +44,7 @@ namespace component
 
 
 
-    Alarm::States state;
+    States state;
     bool sounding;
 
 

@@ -102,6 +102,7 @@
            <system>
            <trigger>
            <triggers>
+           <type>
            <types>
            <value>
            <var>
@@ -131,10 +132,6 @@
 (define-class <types> (<ast-list>))
 (define-class <variables> (<ast-list>))
 
-(define-class <dir-ast> (<named>)
-  (direction :accessor .direction :init-value 'in :init-keyword :direction)
-  (type :accessor .type :init-value #f :init-keyword :type))
-
 (define-class <model> (<named>))
 
 (define-class <import> (<named>))
@@ -144,6 +141,9 @@
   (events :accessor .events :init-form (make <events>) :init-keyword :events)
   (behaviour :accessor .behaviour :init-value #f :init-keyword :behaviour))
 
+(define-class <dir-ast> (<named>)
+  (direction :accessor .direction :init-value 'in :init-keyword :direction)
+  (type :accessor .type :init-value #f :init-keyword :type))
 (define-class <event> (<dir-ast>))
 (define-class <gom:port> (<dir-ast>))
 
@@ -151,7 +151,8 @@
   (port :accessor .port :init-value #f :init-keyword :port)
   (event :accessor .event :init-value #f :init-keyword :event))
 
-(define-class <type> (<named>))
+(define-class <type> (<named>)
+  (scope :accessor .scope :init-value #f :init-keyword :scope))
 
 (define-class <expression> (<ast>)
   (value :accessor .value :init-value #f :init-keyword :value))

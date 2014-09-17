@@ -1,4 +1,3 @@
-#(use-modules (gaiag gom))
-#(define ->string (@@ (gaiag pretty) ->string))
-#(->string signature)  #name (#(->string (.parameters signature)))
+#(use-modules (gaiag gom))#(define ->string (@@ (gaiag pretty) ->string))#(define function name)
+#(->string signature) #function (#(->string (.parameters signature)))
 #body

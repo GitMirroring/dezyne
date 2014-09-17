@@ -2,7 +2,6 @@
 //
 // This file is part of Gaiag.
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
@@ -22,33 +21,50 @@
 //
 // Code:
 
-#ifndef INTERFACE_I_C3_HH
-#define INTERFACE_I_C3_HH
-
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
-
-namespace asd
+interface Aap
 {
-  using boost::function;
-  using boost::bind;
+  enum AapValues {yes, no};
+
+  in AapValues is_aap;
 }
 
-namespace interface
+component Noot
 {
-  struct I
+  provides Aap aap;
+
+  behaviour
   {
+    enum State {S1, S2};
+    State S = State.S1;
 
-    struct
+    void f (Aap.AapValues a)
     {
-      asd::function<void()> e;
-    } in;
+      S = State.S2;
+    }
 
-    struct
+    State g (bool b)
     {
-      asd::function<void()> f;
-    } out;
-  };
+      reply (State.S1);
+      return State.S2;
+    }
+    on aap.is_aap:
+    {
+      S = State.S2;
+      if (true)
+        S = State.S1;
+      if (true)
+      {
+        if (true)
+        {
+          reply (Aap.AapValues.yes);
+        }
+      }
+      else
+      {
+        f (Aap.AapValues.no);
+        S = g (true);
+        reply(Aap.AapValues.no);
+      }
+    }
+  }
 }
-
-#endif
