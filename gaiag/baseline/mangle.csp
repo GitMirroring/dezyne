@@ -48,17 +48,17 @@ channel CH_if_mangle: {ev_mangle,ev_mingle,return}
 IF_if_mangle_mangle(IG) = let
 mangle = \ P',V',F' @ context_func_args_(F',
 semi_((\ P',V' @ CH_if_mangle!ev_mingle -> P'(V')),
-returnvalue_(\ ((b),((stack',m))) @ (m or b))))(P',V')
+returnvalue_(\ ((va_b),((stack',va_m))) @ (va_m or va_b))))(P',V')
 
-if_mangle_mangle(((b),(stack'))) =
+if_mangle_mangle(((va_b),(stack'))) =
 (true) & (
 CH_if_mangle?x:{ev_mangle} ->
-semi_(semi_(assign_(\ ((b),(stack')) @ (((not b)),(stack'))),
-\ P',((b),(stack')) @ ifthenelse_(b,
+semi_(semi_(assign_(\ ((va_b),(stack')) @ ((va_b),(stack'))),
+\ P',((va_b),(stack')) @ ifthenelse_(va_b,
 (\ P',V' @ CH_if_mangle!ev_mingle -> P'(V')),
 skip_
-)(P',((b),(stack')))),
-(\ P',V' @ CH_if_mangle.return -> P'(V')))(\ V' @ if_mangle_mangle(V'),((b),(stack'))))
+)(P',((va_b),(stack')))),
+(\ P',V' @ CH_if_mangle.return -> P'(V')))(\ V' @ if_mangle_mangle(V'),((va_b),(stack'))))
 
 within if_mangle_mangle(((false),(<>)))
 
@@ -71,17 +71,17 @@ channel po_mangle:{ev_mangle,ev_mingle,return}
 CO_co_mangle_mangle(IIG,IG) = let
 mangle = \ P',V',F' @ context_func_args_(F',
 semi_((\ P',V' @ po_mangle!ev_mingle -> P'(V')),
-returnvalue_(\ ((b),((stack',m))) @ (m or b))))(P',V')
+returnvalue_(\ ((va_b),((stack',va_m))) @ (va_m or va_b))))(P',V')
 
-co_mangle_mangle(((b),(stack'))) = transition_begin -> (
+co_mangle_mangle(((va_b),(stack'))) = transition_begin -> (
 (true) & (
 po_mangle?x:{ev_mangle} ->
-semi_(semi_(assign_(\ ((b),(stack')) @ (((not b)),(stack'))),
-\ P',((b),(stack')) @ ifthenelse_(b,
+semi_(semi_(assign_(\ ((va_b),(stack')) @ ((va_b),(stack'))),
+\ P',((va_b),(stack')) @ ifthenelse_(va_b,
 (\ P',V' @ po_mangle!ev_mingle -> P'(V')),
 skip_
-)(P',((b),(stack')))),
-(\ P',V' @ po_mangle.return -> P'(V')))(\ V' @ transition_end -> co_mangle_mangle(V'),((b),(stack'))))
+)(P',((va_b),(stack')))),
+(\ P',V' @ po_mangle.return -> P'(V')))(\ V' @ transition_end -> co_mangle_mangle(V'),((va_b),(stack'))))
 )
 
 within co_mangle_mangle(((false),(<>)))

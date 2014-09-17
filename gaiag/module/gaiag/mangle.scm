@@ -31,7 +31,7 @@
   :use-module (oop goops describe)
   :use-module (gaiag gom)
 
-  :export (ast-> gom:mangle))
+  :export (ast-> gom:mangle mangle-prefix-alist))
 
 (define-method (mangle (o <top>)) o)
 (define-method (mangle (o <named>))
@@ -39,7 +39,8 @@
     (let* ((element (slot-ref o name))
            (p (gom:prefix o)))
       (list (symbol->keyword name)
-            (if (and (eq? name 'name) p)
+            (if (and (eq? name 'name)
+                     p)
                 ((prefix p) element)
                 element))))
   (gom:clone o mangle-name-initializer))
@@ -55,16 +56,37 @@
     :port (and=> (.port o) (prefix (gom:prefix 'port)))
     :event ((prefix (gom:prefix 'event)) (.event o))))
 
+(define-method (mangle (o <binding>))
+  (make <binding>
+    :instance (and=> (.instance o) (prefix (gom:prefix 'instance)))
+    :port (and=> (.port o) (prefix (gom:prefix 'port)))))
+
+(define-method (mangle (o <instance>))
+  (make <instance>
+    :name (and=> (.name o) (prefix (gom:prefix 'instance)))
+    :component (and=> (.component o) (prefix (gom:prefix 'component)))))
+
+(define-method (mangle (o <variable>))
+  (make <variable>
+    :name ((prefix (gom:prefix 'var)) (.name o))
+    :type (.type o)
+    :expression (.expression o)))
+
+(define mangle-prefix-alist
+  (make-parameter '((event . ev)
+                    (instance . is)
+                    (interface . if)
+                    (component . co)
+                    (parameter . va)
+                    (port . po)
+                    (var . va))))
+
 (define-method (gom:prefix (o <top>)) #f)
 (define-method (gom:prefix (o <symbol>))
-  (let ((prefix-alist '((interface . if)
-                        (component . co)
-                        (event . ev)
-                        (port . po))))
-    (assoc-ref prefix-alist o)))
+  (assoc-ref (mangle-prefix-alist) o))
 (define-method (gom:prefix (o <ast>)) (gom:prefix (ast-name o)))
 
-(define ((prefix p) name) (symbol-append p '_ name))
+(define ((prefix p) name) (if p (symbol-append p '_ name) name))
 
 (define (gom:mangle ast) (gom:map* mangle ast))
 (define (ast-> ast)

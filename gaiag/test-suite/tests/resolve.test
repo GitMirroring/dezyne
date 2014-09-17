@@ -37,7 +37,12 @@
        (variables
         (variable (type state) m (expression (value state one)))
         (variable (type bool) b (expression true)))
-       (functions (function toggle (signature (type void)) (compound)))
+       (functions (function toggle (signature (type void)) (compound))
+                  (function g
+                            (signature (type bool)
+                                       (parameters (parameter* (type bool) ga)
+                                                   (parameter* (type bool) gb)))
+                            (compound)))
        (compound
         (on (triggers (trigger #f foo))
             (reply (expression (value e v)))))))
@@ -225,6 +230,21 @@
           '(compound
              (variable (type ivar (type E)) e (action (trigger o foo)))
              (assign e (expression (var e))))))
+
+(pass-if "ast:resolve-local-if"
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (cadr resolve-ast)
+           '(compound
+             (variable (type bool) c (expression true))
+             (assign b (call g (arguments (expression c) (expression c))))
+             (if (expression c)
+                  (compound))))
+          '(compound
+             (variable (type bool) c (expression true))
+             (assign b (call g (arguments (expression (var c)) (expression (var c)))))
+             (if (expression (var c))
+                  (compound)))))
 
 (pass-if "ast:resolve-missing-local"
          (gom-pretty-noisy-equal?
