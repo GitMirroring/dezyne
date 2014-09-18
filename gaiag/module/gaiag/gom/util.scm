@@ -146,15 +146,13 @@
 (define (gom:functions ast)  ;; REMOVEME
   (match ast
     (($ <behaviour>) (.elements (.functions ast)))
-    (($ <interface>) (append
-                      (.elements (.functions ast))
-                      (gom:functions (.behaviour ast))))
-    (($ <component>) (.functions (.behaviour ast)))
+    (($ <model>) (or (and=> (.behaviour ast) (compose .elements .functions)) '()))
     (($ <gom:port>) (stderr "port: ~a\n" (.type ast))
      (gom:functions (gom:import (.type ast) ast->gom)))
+    (#f '())
     (_ (throw 'match-error  (format #f "~a:gom:functions: no match: ~a\n" (current-source-location) ast)))))
 
-(define (gom:function-names model)  ;; SYMBOL TABLE
+(define (gom:function-names model)
   (map .name (gom:functions (.behaviour model))))
 
 (define (gom:function ast identifier)  ;; use SYMBOL TABLE
@@ -402,5 +400,3 @@
 
 (define-method (gom:parent (o <on>) (t <ast>))
   (gom:parent (.statement o) t))
-
-(define (gom:name type) (cadr type)) ;; REMOVEME

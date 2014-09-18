@@ -254,6 +254,8 @@
 
     (('type name) (make <type> :name name))
 
+    (('type name scope) (make <type> :name name :scope scope))
+
     (('types types ...) (make <types> :elements (map ast->gom- types)))
 
     (('var name) (make <var> :name name))

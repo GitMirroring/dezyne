@@ -50,7 +50,9 @@
                             (signature (type bool)
                                        (parameters (parameter (type bool) ga)
                                                    (parameter (type bool) gb)))
-                            (compound)))
+                            (compound))
+                  (function efun
+                            (signature (type state)) (compound (return m))))
        (compound
         (on (triggers (trigger #f foo))
             (reply (expression (value e v)))))))
@@ -106,6 +108,22 @@
           '(on (triggers ((trigger #f e)))
                (compound
                 (call toggle)))))
+
+(pass-if "ast:resolve-variable-valued-function-call"
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (car resolve-ast)
+           '(variable (type ivar (type e))
+                      e
+                      (expression efun)))
+          '(variable (type e ivar) e (call efun))))
+
+(pass-if "ast:resolve-assign-valued-function-call"
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (car resolve-ast)
+           '(assign m (expression efun)))
+          '(assign m (call efun))))
 
 (pass-if "ast:resolve-variable-valued-action"
          (gom-pretty-noisy-equal?

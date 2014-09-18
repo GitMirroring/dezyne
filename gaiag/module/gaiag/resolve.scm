@@ -133,6 +133,9 @@
   (define (enum? identifier)
     (member identifier (map .name (gom:enums model))))
 
+  (define (function? identifier)
+    (member identifier (gom:function-names model)))
+
   (define (enum-field? identifier)
     (lambda (field)
       (and-let* ((enum (find (lambda (x) (eq? (.name x) identifier))
@@ -175,6 +178,12 @@
        :expression (make <action>
                      :trigger (make <trigger> :port (port) :event event))))
 
+    (($ <assign> identifier
+        ($ <expression> (and (? function?) (get! function))))
+     (make <assign>
+       :identifier identifier
+       :expression (make <call> :identifier (function))))
+
     (($ <assign> identifier (and ($ <expression>) (get! expression)))
      (make <assign>
        :identifier identifier
@@ -198,6 +207,12 @@
        :name name
        :expression (make <action> :trigger
                          (make <trigger> :port (port) :event event))))
+
+    (($ <variable> name type ($ <expression> (and (? function?) (get! function))))
+     (make <variable>
+       :type type
+       :name name
+       :expression (make <call> :identifier (function))))
 
     (($ <variable> name type expression)
      (make <variable>
