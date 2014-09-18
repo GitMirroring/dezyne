@@ -45,11 +45,8 @@
            c++:import
            string-if))
 
-(define *ast* '())
-
 (define (ast-> ast)
   (let* ((gom ((gom:register c++:gom) ast #t)))
-    (set! *ast* gom)
     (map dump ((gom:filter <model>) gom)))
   "")
 
@@ -139,7 +136,7 @@
 (define (declare-integer integer)
   (->string (list "typedef int " (.name integer) ";\n")))
 
-(define statements.src (make-parameter *ast*))
+(define statements.src (make-parameter #f))
 (define statements.port (make-parameter #f))
 (define statements.event (make-parameter #f))
 
@@ -170,7 +167,7 @@
 
        (($ <guard> expression statement)
         (list (parameterize ((statements.src src))
-                (expr->clause expression))
+                (expr->clause model expression))
               "\n" (statements->string model statement locals)))
        (($ <if> expression then ($ <statement> '()))
         (list "if (" (expression->string expression) ")\n" (statements->string model then locals)))
@@ -193,6 +190,7 @@
         (let ((arguments ((->join ", ") (map expression->string arguments))))
           (list function  "(" arguments ");\n")))
 
+       ;; c&p resolve/CSP/
        (($ <compound> statements)
         (list (if compound? "{\n")
               (let loop ((statements statements) (locals locals))
@@ -210,7 +208,7 @@
        (($ <action> trigger)
         (let* ((port-name (.port trigger))
                (event-name (.event trigger))
-               (port (gom:port (gom:component *ast*) port-name))
+               (port (gom:port model port-name))
                (name (.type port))
                (interface (c++:import name))
                (event (gom:event interface event-name)))
@@ -244,12 +242,12 @@
        ((h t ...) (map (lambda (x) (statements->string model x locals)) src))
        (_ (throw 'match-error (format #f "~a:c++:statements->string: no match: ~a\n" (current-source-location) src)))))))
 
-(define (expr->clause expression)
+(define (expr->clause model expression)
     (let* ((c-expression (bool-expression->string expression))
          (if-clause (list "    if (" c-expression ")"))
          (else-if-clause (list "    else if (" c-expression ")"))
          (else-clause "    else")
-         (guards ((compose .elements .statement .behaviour gom:component) *ast*))
+         (guards ((compose .elements .statement .behaviour) model))
          (first? (eq? (statements.src) (car guards)))
          (top? (find (lambda (guard) (eq? guard (statements.src))) guards)))
       (->string (list (if (is-a? expression <otherwise>) else-clause
@@ -302,27 +300,10 @@
 
     (_ (format #f "~a:no match: ~a" (current-source-location) ast))))
 
-(define (value->string value)
-  (let ((comp-name (.name (gom:component *ast*))))
-    (double-colon-join
-     (list comp-name (.type value) (.field value)))))
-
 (define (return-type-text port)
   (or (and-let* ((event (null-is-#f (gom:typed? port))))
                 (.type (.type (car event))))
       'void))
-
-(define (variable-value->string model v) ;; FIXME: expression
-  (let* ((enums (map .name (gom:enums model)))
-         (booleans (map .name (gom:booleans model)))
-         (integers (map .name (gom:integers model)))
-         (type (.type (.type v))))
-    (cond
-     ((member type enums)
-      (double-colon-join (append (list (.name model))
-                                 (cdr (.expression v)))))
-     (else
-      (->string (.expression v))))))
 
 ;;;; MAPPERS
 (define-syntax string-if
@@ -452,7 +433,8 @@
                   (.reply-type . ,reply-type)
                   (.event-name . ,.name)
                   (.statement- .
-                              ,(or (and-let* ((component (gom:component *ast*))
+                              ,(or (and-let* (((is-a? model <component>))
+                                              (component model)
                                               (behaviour (.behaviour component))
                                               (statement (.statement behaviour)))
                                              (lambda (event)
