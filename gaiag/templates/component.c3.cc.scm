@@ -4,7 +4,7 @@ namespace component
 {
 #.model ::#.model ()
 : # (string-if (.behaviour model) #{ # (map-variables
-#{ #.variable (#.value )#} ((compose .elements .variables .behaviour) model) "\n, ")
+#{ #.variable (#.scope- #.value )#} ((compose .elements .variables .behaviour) model) "\n, ")
   #(if (null-is-#f (.elements (.variables (.behaviour model)))) ", " "") #}) #(map-ports
           #{#.port-name ()#} ((compose .elements .ports) model) "\n, ")
   {

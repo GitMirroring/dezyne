@@ -1,0 +1,137 @@
+-- drop_one_local: V => V
+drop_one_local_((M', (L', L0'))) = (M', L')
+
+illegal_(P',V') = illegal -> STOP
+-- send_: (c: channel, e:event) => (P,V)->Proc
+send_(c',e')(P', V') = c'!e' -> P'(V')
+-- skip_: () => (P,V)->Proc
+skip_(P', V') = P'(V')
+-- sendrecv_: (c: channel, e:event) => (P,V)->Proc
+sendrecv_(c',e')(P', V') =  c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P', V')
+-- callvoid_: (B': (P,V)->Proc) => (P,V)->Proc
+callvoid_(B')(P', V') = B'(P', V')
+-- callvoid_args_: (B': (P,V)->Proc, F': V'->V') => (P,V)->Proc
+callvoid_args_(B',F')(P', V') = B'(P', V', F')
+-- assign_: (F': V -> V) => (P,V) -> Proc
+assign_(F')(P', V') = P'(F'(V'))
+-- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
+assign_active_(C', A')(P', V') = C'(\((M', r'),L') @ P'(A'((M',L'),r')), V')
+reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
+-- returnvalue_: (F: V->val) => (P,V)->Proc
+returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
+-- the_end_: P => V->Proc
+the_end_(P', V') = transition_end -> P'(V')
+
+-- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
+semi_(S1',S2')(P', V') = S1'(\V'' @ S2'(P', V''),V')
+-- ifthenelse: (E': val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
+ifthenelse_(E',S1',S2')(P', V') =  if E' then S1'(P', V') else S2'(P', V')
+-- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
+-- context_(F', S')(P')((M', L')) = S'((\V2' @ P'(drop_one_local_(V2'))), (M', (L', F'((M', L')))))
+-- context_(v', S')(P', (M', L')) = S'((\(M',L2') @ P'((M',L'))), (M', (L', v')))
+context_(F', S')(P', (M', L')) = S'((\ (M',L2') @ P'((M',L'))), (M', (L', F'((M', L')))))
+-- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
+context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
+context_func_(S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', <>))
+context_func_args_(v', S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', (<>, v')))
+
+members_((M',L')) = (M',<>)
+
+channel illegal
+channel transition_begin, transition_end
+
+datatype event_enumeration_alphabet = Retval1_NOK | Retval1_OK | Retval2_NOK | Retval2_OK | bar | foo | return
+-- interface.csp.scm
+
+channel CH_ienum_collision: {bar,foo,Retval1_OK,Retval1_NOK,Retval2_OK,Retval2_NOK,return}
+
+IF_ienum_collision_(IG) = let
+
+ienum_collision_(((<>),(stack'))) =
+CH_ienum_collision?x:{foo} ->
+reply_(CH_ienum_collision, (\ ((<>),(stack')) @ Retval1_OK))(\ V' @ ienum_collision_(V'),((<>),(stack')))
+[]
+CH_ienum_collision?x:{bar} ->
+reply_(CH_ienum_collision, (\ ((<>),(stack')) @ Retval2_NOK))(\ V' @ ienum_collision_(V'),((<>),(stack')))
+
+within ienum_collision_(((<>),(<>)))
+
+-- end of interface.csp.scm
+-- component.csp.scm
+
+channel i:{bar,foo,Retval1_OK,Retval1_NOK,Retval2_OK,Retval2_NOK,return}
+
+
+CO_enum_collision_(IIG,IG) = let
+
+enum_collision_(((<>),(stack'))) = transition_begin -> (
+i?x:{foo} ->
+reply_(i, (\ ((<>),(stack')) @ Retval1_OK))(\ V' @ transition_end -> enum_collision_(V'),((<>),(stack')))
+[]
+i?x:{bar} ->
+reply_(i, (\ ((<>),(stack')) @ Retval2_NOK))(\ V' @ transition_end -> enum_collision_(V'),((<>),(stack')))
+)
+
+within enum_collision_(((<>),(<>)))
+
+channel extensions_over_empty_channels_is_undefined
+channel IN,OUT : {extensions_over_empty_channels_is_undefined}
+
+SINGLETHREADED = true
+
+channel reorder_in,reorder_out : {i.Retval1_OK,i.Retval1_NOK,i.Retval2_OK,i.Retval2_NOK,i.return}
+
+SEMANTICS(in',out',client',modeling') = let
+Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
+       []
+       length(s') > 0 & out'!head(s') -> Q'(tail(s'))
+       []
+       length(s') == card({|in'|}) & in'?x' -> illegal -> STOP
+
+R'(A') = ([] x' : A' @ x' -> R'(A'))
+       []
+       reorder_in?x' -> reorder_out!x' -> R'(A')
+
+S'    = let
+
+Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
+
+Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!head(r') -> Idle(0))
+            []
+            c' > 0 & transition_end -> transition_begin -> Busy(c',r')
+            []
+            c' < card({|in'|}) & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            []
+            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            []
+            r' == <> & reorder_in?x' -> Busy(c',<x'>)
+            []
+            r' != <> & reorder_in?x' -> illegal -> STOP
+
+within Idle(0)
+
+within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
+
+AS_enum_collision_(IIG) = let
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+Exclude = {i.Retval1_OK,i.Retval1_NOK,i.Retval2_OK,i.Retval2_NOK,i.return}
+ClientCalls = {i.foo,i.bar}
+UsedModeling = {}
+within compress((CO_enum_collision_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,i|},Exclude)|]
+(((STOP
+) [[x<-IN.x|x<-extensions(IN)]]
+[|union({|IN|},UsedModeling)|]
+SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
+
+-- end of component.csp.scm
+assert IF_ienum_collision_(false) :[deadlock free]
+assert IF_ienum_collision_(true) :[livelock free]
+assert CO_enum_collision_(true,true) :[deterministic]
+assert STOP [T= AS_enum_collision_(false) \ diff(Events,{illegal})
+assert AS_enum_collision_(false) :[deadlock free]
+assert IF_ienum_collision_(true) [[CH_ienum_collision.x<-i.x|x<-extensions(i)]] \ {} [F= AS_enum_collision_(true) \ diff(Events,{|illegal,i|})
+assert AS_enum_collision_(true) \ diff(Events,{|illegal,i|}) :[livelock free]

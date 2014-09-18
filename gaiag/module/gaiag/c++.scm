@@ -120,7 +120,7 @@
     module))
 
 (define-method (declare-replies (o <interface>))
-  (map (lambda (x) (->string (list "interface::"  (.name o) "::" (.name x) " reply_" (.name o) "_" (.name x) ";\n"))) (gom:interface-enums o)))
+  (map (lambda (x) (->string (list "interface::"  (.name o) "::" (.name x) "::type reply_" (.name o) "_" (.name x) ";\n"))) (gom:interface-enums o)))
 
 (define (scope-type o)
   (match o
@@ -131,7 +131,7 @@
     (($ <expression> ($ <literal> scope type field)) (->string (list (scope-type o) "::" type)))))
 
 (define (declare-enum enum)
-  (->string (list "enum " (.name enum) "\n  {\n  " (comma-nl-join (.elements (.fields enum))) ",\n  };\n")))
+  (->string (list "struct " (.name enum) "\n{\nenum type\n{\n" (comma-nl-join (.elements (.fields enum))) ",\n};\n};\n")))
 
 (define (declare-integer integer)
   (->string (list "typedef int " (.name integer) ";\n")))
@@ -170,15 +170,15 @@
                 (expr->clause model expression))
               "\n" (statements->string model statement locals)))
        (($ <if> expression then ($ <statement> '()))
-        (list "if (" (expression->string expression) ")\n" (statements->string model then locals)))
+        (list "if (" (expression->string model expression locals) ")\n" (statements->string model then locals)))
        (($ <if> expression then #f) ;; FIXME
-        (list "if (" (expression->string expression) ")\n" (statements->string model then locals)))
+        (list "if (" (expression->string model expression locals) ")\n" (statements->string model then locals)))
        (($ <if> expression then else)
-        (list "if (" (expression->string expression) ")\n" (statements->string model then locals) "else\n" (statements->string model else locals)))
+        (list "if (" (expression->string model expression locals) ")\n" (statements->string model then locals) "else\n" (statements->string model else locals)))
        (($ <assign> name (and ($ <action>) (get! action)))
         (list name " = " (statements->string model (action) locals)))
        (($ <assign> identifier expression)
-        (list (statements->string model identifier locals) " = " (expression->string expression) ";\n"))
+        (list (statements->string model identifier locals) " = " (expression->string model expression locals) ";\n"))
        (($ <on> triggers statement)
         (if (find (lambda (t) (and (eq? (.port t) (.name port))
                                    (eq? (.event t) (.name event))))
@@ -187,7 +187,7 @@
             ""))
        (($ <call> function ($ <arguments> '())) (list function "();\n"))
        (($ <call> function ($ <arguments> arguments))
-        (let ((arguments ((->join ", ") (map expression->string arguments))))
+        (let ((arguments ((->join ", ") (map (lambda (o) (expression->string model o locals)) arguments))))
           (list function  "(" arguments ");\n")))
 
        ;; c&p resolve/CSP/
@@ -217,19 +217,19 @@
         (let* ((type (enum-type expression)))
           (statements->string
            model
-           (list "reply_" type " = " (expression->string expression) ";\n")
+           (list "reply_" type " = " (expression->string model expression locals) ";\n")
            locals)))
        (($ <return> #f)
         "return;\n")
        (($ <return> expression)
-        (list 'return " " (expression->string expression) ";\n"))
+        (list 'return " " (expression->string model expression locals) ";\n"))
        (($ <signature> type) (statements->string model type locals))
        (($ <type> name #f) name)
-       (($ <type> name scope) (list "interface::" scope "::" name))
+       (($ <type> name scope) (list "interface::" scope "::" name "::type"))
        (($ <variable> name type (and ($ <action>) (get! action)))
         (statements->string model (list type " " name " = " (statements->string model (action))) locals))
        (($ <variable> name type expression)
-        (statements->string model (list type " " name " = " (expression->string expression) ";\n") locals))
+        (statements->string model (list type " " name " = " (expression->string model expression locals) ";\n") locals))
        (($ <parameters> parameters)
         ((->join ", ") (map (lambda (x) (statements->string model x)) parameters)))
        (($ <gom:parameter> name type)
@@ -243,7 +243,7 @@
        (_ (throw 'match-error (format #f "~a:c++:statements->string: no match: ~a\n" (current-source-location) src)))))))
 
 (define (expr->clause model expression)
-    (let* ((c-expression (bool-expression->string expression))
+    (let* ((c-expression (bool-expression->string model expression))
          (if-clause (list "    if (" c-expression ")"))
          (else-if-clause (list "    else if (" c-expression ")"))
          (else-clause "    else")
@@ -253,52 +253,67 @@
       (->string (list (if (is-a? expression <otherwise>) else-clause
                         (if (or first? (not top?)) if-clause else-if-clause))))))
 
-(define (bool-expression->string ast)
-  (match ast
+(define (bool-expression->string model o)
+  (match o
     (($ <field> identifier field)
      (list "(" identifier " == " field ")"))
     (($ <literal> scope type field) (->string (list type "." field)))
-    (_ (expression->string ast))))
+    (_ (expression->string model o))))
 
 ;; FIXME: c&p from csp.scm
-(define (expression->string ast)
+(define* (expression->string model o :optional (locals '()))
 
   (define (paren expression)
-    (list "(" (expression->string expression) ")"))
+    (list "(" (expression->string model expression locals) ")"))
 
-  (match ast
-    (($ <expression>) (expression->string (.value ast)))
+  ;; FIXME: c&p (resolve-model-)
+  (define (member? identifier)
+    (find (lambda (m) (eq? (.name m) identifier)) (gom:variables model)))
+
+  (define (local? identifier) (assoc-ref locals identifier))
+
+  (define (var? identifier) (or (member? identifier) (local? identifier)))
+
+  (define (enum-type o)
+    (or (and-let* ((decl (var? o))
+                   (type (.type decl))
+                   (scope (if (.scope type) (list (.scope type) "::"))))
+                  (list scope (.name type) "::"))
+        ""))
+
+  (match o
+    (($ <expression>) (expression->string model (.value o) locals))
     (($ <var> identifier) identifier)
     (($ <field> identifier field)
-     (list identifier " == " field))
+     (list identifier " == " (enum-type identifier) field))
 
     (($ <call> function ($ <arguments> '())) (->string (list function "()")))
     (($ <call> function ($ <arguments> arguments))
-     (let ((arguments ((->join ", ") (map expression->string arguments))))
+     (let ((arguments ((->join ", ") (map (lambda (o) (expression->string model o locals)) arguments))))
        (->string (list function  "(" arguments ")"))))
 
-    (($ <literal> #f type field) field)
+    (($ <literal> #f type field) (list type "::" field))
     (($ <literal> scope type field)
-     (->string (list "interface::" scope "::" field)))
-    ((? number?) (number->string ast))
-    ((? string?) ast)
-    ((? symbol?) ast)
+     (->string (list "interface::" scope "::" type "::" field)))
+    ((? number?) (number->string o))
+    ((? string?) o)
+    ((? symbol?) o)
     (('! expression)
      (->string (list "! " (paren expression))))
 
     (('group expression) (paren expression))
 
-    (('or lhs rhs) (let ((lhs (expression->string lhs))
-                         (rhs (expression->string rhs)))
+    (('or lhs rhs) (let ((lhs (expression->string model lhs locals))
+                         (rhs (expression->string model rhs locals)))
                      (list "(" lhs " " 'or " " rhs ")")))
 
     (((or 'and '== '!= '< '<= '> '>= '+ '-) lhs rhs)
-     (let ((lhs (expression->string lhs))
-           (rhs (expression->string rhs))
-           (op (car ast)))
+     (let ((lhs (expression->string model lhs locals))
+           (rhs (expression->string model rhs locals))
+           (op (car o)))
        (list lhs " " op " " rhs )))
 
-    (_ (format #f "~a:no match: ~a" (current-source-location) ast))))
+    (_ (format #f "~a:no match: ~a" (current-source-location) o))))
 
 (define (return-type-text port)
   (or (and-let* ((event (null-is-#f (gom:typed? port))))
@@ -421,7 +436,7 @@
                                   (->string (list (.type port) "_" (statements->string model ((compose (lambda (x) (statements->string model x)) .type) event))))))
                    (return-interface-type (lambda (event)
                                             (->string (if (not (eq? 'void ((compose .name .type .type) event)))
-                                                          (list "interface::" (.type port) "::" (statements->string model ((compose (lambda (x) (statements->string model x)) .type) event)))
+                                                          (list "interface::" (.type port) "::" (statements->string model ((compose (lambda (x) (statements->string model x)) .type) event)) "::type")
                                                           'void)))))
               (animate-string
                string
@@ -466,20 +481,30 @@
        functions))
 
 (define* (map-variables string variables :optional (separator ""))
+
+  (define (enum? identifier)
+    (let ((model (module-ref (current-module) 'model)))
+      (member identifier (map .name (gom:enums model)))))
+
   ((->join separator)
    (map (lambda (variable)
           (with-output-to-string
             (lambda ()
               (save-module-excursion
                (lambda ()
-                 (animate-string
-                  string
-                  (animate-module-populate
-                   (current-module)
-                   variable
-                   `((.variable . ,.name)
-                     (.type- . ,(compose .name .type))
-                     (.value . ,(expression->string (.expression variable)))))))))))
+                 (let ((model (module-ref (current-module) 'model))
+                       (type (.type variable)))
+                  (animate-string
+                   string
+                   (animate-module-populate
+                    (current-module)
+                    variable
+                    `((.variable . ,.name)
+                      (.type- . ,(if (enum? (.name type))
+                                     (->string (list (.name type) "::type"))
+                                     (.name type)))
+                      (.scope- . ,(if (enum? (.name type)) (->string (list (.name type) "::"))))
+                      (.value . ,(expression->string model (.expression variable))))))))))))
         variables)))
 
 (define (action port event) "enable")
