@@ -56,13 +56,8 @@
 (if debug?
     (set! debug stderr))
 
-(define *ast* #f)
-(define *model* #f)
-
 (define (ast-> ast)
   (let ((gom ((gom:register simulate:gom) ast #t)))
-    (set! *ast* gom)
-    (pretty-print (gom->list *ast*) (current-error-port))
     (and=> (gom:model-with-behaviour gom) simulate-model)
     ""))
 
@@ -72,15 +67,24 @@
 (define (simulate:gom ast)
   ((compose ast:resolve ast->gom) ast))
 
-(define (variable-state variable . value)
+(define ((variable-state model) variable . value)
   (cons (.name variable)
-        (eval-expression '() '()
-                          (if (pair? value)
-                              (car value)
-                              (.expression variable)))))
+        (eval-expression model
+                         '() '()
+                         (if (pair? value)
+                             (car value)
+                             (.expression variable)))))
+
+(define *state-alist* '())
+(define-method (get-state (o <model>))
+  (or (assoc-ref *state-alist* (.name o))
+      (state-vector o)))
+
+(define-method (set-state! (o <model>) state)
+  (set! *state-alist* (assoc-set! *state-alist* (.name o) state)))
 
 (define (state-vector model)
-  (map variable-state (gom:variables model)))
+  (map (variable-state model) (gom:variables model)))
 
 (define (var state identifier) (assoc-ref state identifier))
 
@@ -101,26 +105,26 @@
          (trace (if trail
                     (walk-trail model (with-input-from-string trail read))
                     (explore-space model))))
-    (pretty-print (mangle-trace trace)))
+    (pretty-print (mangle-trace model trace)))
   (newline)
   (stderr "state space: ~a\n" (length *state-space*))
   "")
 
-(define (mangle-trace trace)
+(define (mangle-trace model trace)
   (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))
     (if json?
         (append
          (list
-          (json-init *model*)
-          (json-state (state-vector *model*)))
-         (apply append (map json-trace trace)))
-        (map demo-trace trace))))
+          (json-init model)
+          (json-state model (state-vector model)))
+         (apply append (map (json-trace model) trace)))
+        (map (demo-trace model) trace))))
 
 (define (explore-space ast)
   (simulate ast))
 
-(define (walk-trail ast trail)
-  (simulate ast (next-todo-trail-walker ast (map event->ast trail))))
+(define (walk-trail model trail)
+  (simulate model (next-todo-trail-walker model (map event->ast trail))))
 
 (define (trace-location ast)
   (or (and-let* ((loc (source-location ast))
@@ -131,11 +135,11 @@
                         (assoc-ref properties 'column)))
       ast))
 
-(define (demo-trace tracepoint)
+(define ((demo-trace model) tracepoint)
   (let ((event (car tracepoint))
         (state (cadr tracepoint))
         (steps (cddr tracepoint))
-        (model (.name *model*)))
+        (model (.name model)))
     ;; (stderr "\ndemo-trace: ~a, ~a\n" event (class-of (car steps)))
     (cons (->symbol event)
           (list
@@ -152,11 +156,10 @@
                  :event (string->symbol (cadr port-event))))
       (make <trigger> :port #f :event event)))
 
-(define *if-exp* #f) ;; component's interfaces simulate experiment
-(define (seen-key state ast)
-  (when (and *if-exp* (not (equal? ast (.statement (.behaviour *model*)))))
-    ;; it's a bug if we store a 'seen' state with a non-top AST:
-    ;; only actions return mid-statements and they are continued
+(define-method (seen-key (model <model>) state ast)
+  (when (not (equal? (gom->list ast) (gom->list (.statement (.behaviour model)))))
+    ;; it's a bug -for now- if we store a 'seen' state with a non-top
+    ;; AST: only actions return mid-statements and they are continued
     ;; we alway continue until the end
     (stderr "AST:~a\n" ast)
     (throw 'barf-seen-about-non-top-ast))
@@ -165,31 +168,31 @@
 (define (seen-key-state key) (caar key))
 (define (seen-key-ast key) (cadar key))
 
-(define (seen state ast)
+(define-method (seen (model <model>) state ast)
   (set! i (1+ i))
   (if (> i 1000)
       (throw 'break (format #f "too many iterations: ~a, state space: ~a\n" i
                             (length *state-space*))))
-  (let* ((key (seen-key state ast))
+  (let* ((key (seen-key model state ast))
          (events (f-is-null (assoc-ref *state-space* key))))
     events))
 
-(define (seen? state ast event)
-  (find (lambda (x) (equal? x event)) (seen state ast)))
+(define-method (seen? (model <model> ) state ast event)
+  (find (lambda (x) (equal? x event)) (seen model state ast)))
 
-(define (seen! state ast event)
-  (when (and *if-exp* (not (equal? ast (.statement (.behaviour *model*)))))
+(define-method (seen! (model <model>) state ast event)
+  (when (not (equal? (gom->list ast) (gom->list (.statement (.behaviour model)))))
     (stderr "seen! --> AST:~a\n" ast)
     (throw 'seen!-with-non-top-ast))
 
-  (let* ((key (seen-key state ast))
-         (events (seen state ast)))
-    (if (not (seen? state ast event))
+  (let* ((key (seen-key model state ast))
+         (events (seen model state ast)))
+    (if (not (seen? model state ast event))
         (let ((value (delete-duplicates (sort (cons event events) event<))))
           (set! *state-space* (assoc-set! *state-space* key value))))))
 
-(define (state-ast-todo state ast events)
-  (let ((done (seen state ast)))
+(define (state-ast-todo model state ast events)
+  (let ((done (seen model state ast)))
     (filter (negate (lambda (x) (member x done equal?))) events)))
 
 (define (next-value action) #t)
@@ -200,7 +203,7 @@
     (if (or (null? *state-space*)
             (null? (car *state-space*)))
         (cons (state-vector model) events)
-        (let ((todo (state-ast-todo state ast events)))
+        (let ((todo (state-ast-todo model state ast events)))
           (if (pair? todo)
               (cons state todo)
               (let loop ((entries *state-space*))
@@ -210,7 +213,7 @@
                     (let* ((key-events (car entries))
                            (state (seen-key-state key-events))
                            (ast (seen-key-ast key-events))
-                           (todo (state-ast-todo state ast events)))
+                           (todo (state-ast-todo model state ast events)))
                       (if (pair? todo)
                           (cons state todo)
                           (loop (cdr entries)))))))))))
@@ -236,10 +239,13 @@
             (cons (if (eq? state 'initial) (state-vector model) state)
                   (list event)))))))
 
-(define* (simulate model :optional
-                   (next-todo next-todo-space-explorer)
-                   (ast (.statement (.behaviour model))))
-  (set! *model* model)
+(define-method (simulate (model <model>))
+  (simulate model next-todo-space-explorer))
+
+(define-method (simulate (model <model>) (next-todo <procedure>))
+  (simulate model next-todo (.statement (.behaviour model))))
+
+(define-method (simulate (model <model>) (next-todo <procedure>) (ast <ast>))
   (set! *state-space* '(()))
   (set! i 0)
   (let loop ((state-todo (next-todo model 'initial ast)))
@@ -249,13 +255,13 @@
           '()
           (let* ((event (car todo)))
             (receive (new-state trace)
-                (process-event ast state event)
+                (process-event model ast state event)
               (cons (cons (->symbol event) (cons state trace)) (loop (next-todo model new-state ast)))))))))
 
-(define* (process-event ast state event)
+(define-method (process-event (model <model>) ast state event)
   (stderr "[~a] " (comma-space-join (map ->string state)))
   (stderr "event: ~a\n" (->string event))
-  (seen! state ast event)
+  (seen! model state ast event)
   (let continue ((state state) (ast ast) (action 'first) (trace '()))
     (if (not action)
         (begin
@@ -265,36 +271,36 @@
           (if (not (eq? action 'first))
               (stderr "  continued...\n"))
           (receive (state ast action return t)
-              (process ast state event trace)
+              (process model ast state event trace)
             (if (not t) (car t))
             (continue state ast action t))))))
 
 ;; AST: curry me
 (define ((variable? model) identifier) (gom:variable model identifier))
 
-(define (eval-expression ast state expression)
+(define-method (eval-expression (model <model>) ast state expression)
   (match expression
-    (($ <expression> expression) (eval-expression ast state expression))
+    (($ <expression> expression) (eval-expression model ast state expression))
     (#f #f)
     (#t #t)
     ('false #f)
     ('true #t)
     (($ <var> identifier) (var state identifier))
-    (($ <field> (and (? (variable? *model*)) (get! identifier)) field)
+    (($ <field> (and (? (variable? model)) (get! identifier)) field)
      (eq? (.field (var state (identifier))) field))
     (($ <literal> scope type value) expression)
-    (('! expr) (not (eval-expression ast state expr)))
-    (('and x y) (and (eval-expression ast state x)
-                     (eval-expression ast state y)))
-    (('or x y) (or (eval-expression ast state x)
-                   (eval-expression ast state y)))
+    (('! expr) (not (eval-expression model ast state expr)))
+    (('and x y) (and (eval-expression model ast state x)
+                     (eval-expression model ast state y)))
+    (('or x y) (or (eval-expression model ast state x)
+                   (eval-expression model ast state y)))
     ((== x y)
-     (let* ((lhs (eval-expression ast state x))
-            (rhs (eval-expression ast state y))
+     (let* ((lhs (eval-expression model ast state x))
+            (rhs (eval-expression model ast state y))
             (r (equal? lhs rhs)))
      r))
     (($ <otherwise>)
-     (let* ((parent (gom:parent *model* ast))
+     (let* ((parent (gom:parent model ast))
             (guards ((gom:statements-of-type 'guard) parent))
             (expressions (map .expression guards)))
        (receive (otherwise rest)
@@ -303,8 +309,8 @@
                        (eq? (car otherwise) expression)))
              (throw 'programming-error "parent missing otherwise"))
          ;; otherwise is true if none of the other guards is
-         (not (any identity (map (lambda (x) (eval-expression ast state x)) rest))))))
-    ((? symbol?) (eval-expression ast state (var state expression)))
+         (not (any identity (map (lambda (x) (eval-expression model ast state x)) rest))))))
+    ((? symbol?) (eval-expression model ast state (var state expression)))
     (_ (throw 'match-error (format #f "~a:expression no match: ~a\n" (current-source-location) expression)))))
 
 ;; FIMXE: c&p from csp.csm
@@ -314,16 +320,15 @@
     (($ <assign> identifier ($ <action>)) #t)
     (_ #f)))
 
-(define (eval-function-expression ast state event trace expression)
+(define-method (eval-function-expression (model <model>) ast state event trace expression)
   ;; FIMXE: c&p from csp.csm:ast-transform
-  (let* ((model *model*)
-	 (members (gom:member-names model))
+  (let* ((members (gom:member-names model))
          (port? (lambda (port) (member port (map .name ((compose .elements .ports) model)))))
          (valued-action? (valued-action? port?)))
     (match expression
       (($ <call> function ($ <arguments> arguments))
        (receive (new-state new-ast new-action return new-trace)
-           (let* ((f (gom:function *model* function)) ;; FIXME
+           (let* ((f (gom:function model function))
                   (parameters (map .name ((compose .elements .parameters .signature) f)))
                   (statement (.statement f))
                   (pairs (zip parameters arguments))
@@ -331,16 +336,14 @@
                            (if (null? pairs)
                                state
                                (loop (cdr pairs) (acons (caar pairs)
-                                                        (eval-expression ast state (cadar pairs)) state))))))
-             (process statement state event (cons f '())))
+                                                        (eval-expression model ast state (cadar pairs)) state))))))
+             (process model statement state event (cons f '())))
          (values (drop new-state (length arguments)) new-ast new-action return new-trace)))
-      ;; FIXME transform AST so that this reads 'action or 'valued-action
-      ;; SEE csp.scm
       (($ <action> ($ <trigger> port event))
-       (values state ast #f (eval-expression ast state (next-value event)) trace))
-      (_ (values state ast #f (eval-expression ast state expression) trace)))))
+       (values state ast #f (eval-expression model ast state (next-value event)) trace))
+      (_ (values state ast #f (eval-expression model ast state expression) trace)))))
 
-(define* (process ast state event trace)
+(define-method (process (model <model>) ast state event trace)
   ;; (stderr "PROCESS: [~a] ~a\n" (->string event) ast)
   (set! i (1+ i))
   (if (> i 2000)
@@ -351,12 +354,12 @@
          (($ <on> ($ <triggers> t) statement)
           (debug "on: t=~a, event=~a --> ~a\n" t event (member event t trigger-equal?))
           (if (member event t trigger-equal?)
-              (process statement state event (cons ast trace))
+              (process model statement state event (cons ast trace))
               (values state #f #f #f trace)))
          (($ <guard> expression statement)
-          (debug "guard: ~a? --> ~a =====> ~a\n" expression (eval-expression ast state expression) statement)
-          (if (eval-expression ast state expression)
-              (process statement state event (cons ast trace))
+          (debug "guard: ~a? --> ~a =====> ~a\n" expression (eval-expression model ast state expression) statement)
+          (if (eval-expression model ast state expression)
+              (process model statement state event (cons ast trace))
               (values state #f #f #f trace)))
          (($ <illegal>) (values state #f #f #f (cons ast trace)))
          (($ <action> trigger)
@@ -364,32 +367,33 @@
           (let* ((trace (cons ast trace))
                  (port (.port trigger)))
             (if port
-                (let* ((interface (simulate:import (.type (gom:port *model* port))))
+                (let* ((interface (simulate:import (.type (gom:port model port))))
                        (i-ast (.statement (.behaviour interface)))
                        (event (.event trigger))
                        (i-trigger (make <trigger> :port #f :event event))
-                       (i-state (state-vector interface))) ;; FIXME: store!
+                       (i-state (get-state interface)))
                   (receive (i-state i-trace)
-                      (process-event i-ast i-state i-trigger)
+                      (process-event interface i-ast i-state i-trigger)
+                    (set-state! interface i-state) ;; TODO: keep with trace
                    (values state #f ast #f (append i-trace trace))))
                 (values state #f ast #f trace))))
          (($ <assign> identifier expression)
           (stderr "****assign: ~a := ~a\n" (->string identifier) (->string expression))
           (receive (new-state new-ast new-action return new-trace)
-              (eval-function-expression ast state event (cons ast trace) expression)
+              (eval-function-expression model ast state event (cons ast trace) expression)
             (values (var! new-state identifier return) #f #f return new-trace)))
          (($ <variable> type identifier expression)
           (receive (new-state new-ast new-action return new-trace)
-              (eval-function-expression ast state event (cons ast trace) expression)
+              (eval-function-expression model ast state event (cons ast trace) expression)
             (stderr "****init: ~a := ~a ==> ~a\n" (->string identifier) (->string expression) (->string return))
             (values (var! new-state identifier return) #f #f return new-trace)))
          (($ <if> expression statement else)
-          (if (eval-expression ast state expression)
-              (process statement state event (cons ast trace))
-              (process else state event (cons ast trace))))
+          (if (eval-expression model ast state expression)
+              (process model statement state event (cons ast trace))
+              (process model else state event (cons ast trace))))
          (($ <if> expression statement)
-          (if (eval-expression ast state expression)
-              (process statement state event (cons ast trace))
+          (if (eval-expression model ast state expression)
+              (process model statement state event (cons ast trace))
               (values state #f #f #f (cons ast trace))))
          (($ <compound> '()) (values state '() #f #f trace))
          (#f (values state '() #f #f trace))
@@ -401,7 +405,7 @@
                   (let ((statement (car statements)))
                     (if declarative?
                         (receive (new-state new-ast new-action new-return new-trace)
-                            (process statement state event '())
+                            (process model statement state event '())
                           (if (pair? new-trace)
                               (loop (cdr statements) new-state new-return (append new-trace trace) frame)
                               (loop (cdr statements) loop-state new-return loop-trace frame)))
@@ -411,14 +415,14 @@
                               (frame (if (is-a? statement <variable>)
                                          (1+ frame) frame)))
                           (receive (new-state new-ast new-action new-return new-trace)
-                            (process statement loop-state event '())
+                            (process model statement loop-state event '())
                             (loop (cdr statements) new-state new-return (append new-trace loop-trace) frame)))))))))
          (($ <return> expression)
-          (let ((return (eval-expression ast state expression)))
+          (let ((return (eval-expression model ast state expression)))
             (values state #f #f return (cons ast trace))))
          (($ <reply> expression)
           (stderr "****reply: ~a\n" (->string expression))
-          (let ((reply (eval-expression ast state expression)))
+          (let ((reply (eval-expression model ast state expression)))
             (values state ast #f #f (cons ast trace))))
          (_ (throw 'match-error  (format #f "~a: process: no match: ~a\n"  (current-source-location) ast)))))))
 

@@ -130,7 +130,7 @@
          (model (gom:component gom))
          (trail '(i.e i.e i.e))
          (foobar (set-program-arguments '("gaiag" "--json" "foobar")))
-         (arguments-trace (with-output-to-string (lambda () (pretty-print (mangle-trace (walk-trail model trail))))))
+         (arguments-trace (with-output-to-string (lambda () (pretty-print (mangle-trace model (walk-trail model trail))))))
          (baseline-trace 'baseline-trace))
     #t))
 

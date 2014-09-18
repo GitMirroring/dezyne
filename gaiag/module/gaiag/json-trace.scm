@@ -20,6 +20,7 @@
 
 (define-module (gaiag json-trace)
   :use-module (ice-9 and-let-star)
+  :use-module (ice-9 curried-definitions)
 
   :use-module (srfi srfi-1)
 
@@ -42,42 +43,39 @@
 ;; FIXME: mangling the trace output into the current json format takes
 ;; about as much effort as producing it?
 
-(define *model* #f)
-
 (define (ast->node-alist ast)
   `((key . ,(.name ast))
     (name . ,(.name ast)) ;; duh!
     (state . "") ;; duh!
     ))
 
-(define (json-init model)
-  (set! *model* model)
+(define-method (json-init (model <model>))
   (alist->hash-table
    `((type . init)
      (nodes . ,(map alist->hash-table
-                    (map ast->node-alist (if (is-a? *model* <component>)
-                                             (cons *model* (.elements (.ports *model*)))
-                                             (list *model*))))))))
+                    (map ast->node-alist (if (is-a? model <component>)
+                                             (cons model (.elements (.ports model)))
+                                             (list model))))))))
 
-(define (json-state state)
+(define-method (json-state (model <model>) state)
   (stderr "json-state: ~a\n" state)
   (alist->hash-table
    (append
     `((type . update)
-      (comp . ,(.name *model*)))
+      (comp . ,(.name model)))
     (map (lambda (variable) (cons (car variable) (->symbol (cdr variable))))
          state))))
 
-(define (from event statement)
+(define-method (from (model <model>) event statement)
   (if (is-a? statement <on>)
       (if (.port (event->ast event))
           (.port (event->ast event))
           'in)
-      (.name *model*)))
+      (.name model)))
 
-(define (to statement)
+(define-method (to (model <model>) statement)
   (if (is-a? statement <on>)
-      (.name *model*)
+      (.name model)
       (or (and-let* (((is-a? statement <action>))
                      (trigger (.trigger statement))
                      ((.port trigger)))
@@ -102,11 +100,11 @@
                    (colum . ,(assoc-ref properties 'column))))
       '())))
 
-(define (json-trace tracepoint)
+(define ((json-trace model) tracepoint)
   (let* ((event (car tracepoint))
          (state (cadr tracepoint))
          (steps (cddr tracepoint))
-         (model (.name *model*)))
+         (name (.name model)))
     ;;(stderr "\njson-trace: ~a, ~a\n" event (class-of (car steps)))
     (let loop ((statements steps))
       (let* ((statement (if (null? statements) #f (car statements)))
@@ -117,7 +115,7 @@
                (if (eq? type 'update)
                    (let ((variable (.identifier statement)))
                      `((type . update)
-                       (comp . ,model)
+                       (comp . ,name)
                        (,variable . ,(->symbol (var state variable)))))
                    (let ((kind (assoc-ref '((#f . return)
                                             (on . call)
@@ -129,8 +127,8 @@
                                       (else 'return))))
                      `((type . transition)
                        (kind . ,kind)
-                       (from . ,(from event statement))
-                       (to  . ,(to statement))
+                       (from . ,(from model event statement))
+                       (to  . ,(to model statement))
                        (event . ,json-event)
                        (location .
                                  ,(alist->hash-table
