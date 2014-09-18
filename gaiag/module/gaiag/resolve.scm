@@ -62,7 +62,12 @@
 
 (define (resolve-mixed o)
   (match o
-    (($ <component>) (let ((interfaces (map resolve:import (map .type ((compose .elements .ports) o))))) o))
+    (($ <component> name ports behaviour)
+     (let ((cache-interfaces (map resolve:import (map .type ((compose .elements .ports) o)))))
+       (make <component>
+         :name name
+         :ports ports
+         :behaviour (resolve-mixed behaviour))))
     (($ <interface> name ($ <types> types) ($ <events> types-events) behaviour)
      (receive (types- events) (partition (lambda (x)
                                            (or (is-a? x <enum>) (is-a? x <int>))) types-events)
@@ -70,7 +75,7 @@
          :name name
          :types (make <types> :elements (append types types-))
          :events (make <events> :elements events)
-         :behaviour (gom:map resolve-mixed behaviour))))
+         :behaviour (resolve-mixed behaviour))))
 
     (($ <behaviour> name types variables ($ <functions> functions) ($ <compound> mixed))
      (receive (functions- statements) (partition (is? <function>) mixed)

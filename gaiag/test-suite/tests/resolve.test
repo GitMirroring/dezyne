@@ -96,7 +96,9 @@
            (compound
             (variable (type ivar (type e)) e (expression (value o foo)))
             (assign e (expression (value o foo)))))
-       (reply e))))))
+       (reply e)
+       (function efun
+                 (signature (type state)) (compound (return m))))))))
 
 (pass-if "ast:resolve-function-call"
          (gom-pretty-noisy-equal?
@@ -113,15 +115,33 @@
          (gom-pretty-noisy-equal?
           (ast:resolve-model
            (car resolve-ast)
-           '(variable (type ivar (type e))
+           '(variable (type e)
                       e
                       (expression efun)))
-          '(variable (type e ivar) e (call efun))))
+          '(variable (type e) e (call efun))))
 
 (pass-if "ast:resolve-assign-valued-function-call"
          (gom-pretty-noisy-equal?
           (ast:resolve-model
            (car resolve-ast)
+           '(assign m (expression efun)))
+          '(assign m (call efun))))
+
+(pass-if "ast:resolve-variable-valued-mixed-function-call-component"
+         (gom-pretty-noisy-equal?
+          (ast:resolve-root-model
+           resolve-ast
+           (cadr resolve-ast)
+           '(variable (type ivar (type e))
+                      e
+                      (expression efun)))
+          '(variable (type e ivar) e (call efun))))
+
+(pass-if "ast:resolve-assign-valued-mixed-function-call-component"
+         (gom-pretty-noisy-equal?
+          (ast:resolve-root-model
+           resolve-ast
+           (cadr resolve-ast)
            '(assign m (expression efun)))
           '(assign m (call efun))))
 
