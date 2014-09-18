@@ -79,9 +79,10 @@
     (dump-indented (symbol-append 'component- name '-c3.hh)
                    (lambda ()
                      ((animate-template 'component.c3.hh.scm) (c++-module o))))
-    (dump-indented (symbol-append 'component- name '-c3.cc)
-                   (lambda ()
-                     ((animate-template 'component.c3.cc.scm) (c++-module o))))))
+    (and (.behaviour o)
+     (dump-indented (symbol-append 'component- name '-c3.cc)
+                    (lambda ()
+                      ((animate-template 'component.c3.cc.scm) (c++-module o)))))))
 
 (define-method (dump (o <system>))
   (let ((name (.name o))
