@@ -3,7 +3,6 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -22,27 +21,34 @@
 //
 // Code:
 
-#include "component-AlarmSystem-c3.hh"
-
-void detected()
+interface iinstance_collision
 {
-  std::cout << "Console.detected" << std::endl;
+  in void foo;
+
+  behaviour
+  {
+    on foo: illegal;
+  }
 }
 
-void deactivated()
+component colliding_component
 {
-  std::cout << "Console.deactivated" << std::endl;
+  provides iinstance_collision i;
+
+  behaviour
+  {
+    on i.foo: illegal;
+  }
 }
 
-int main()
+component instance_collision
 {
-  component::AlarmSystem alarmsystem;
+  provides iinstance_collision i;
 
-  alarmsystem.po_console.out.detected = detected;
-  alarmsystem.po_console.out.deactivated = deactivated;
+  system
+  {
+    colliding_component colliding_component;
 
-  alarmsystem.po_console.in.arm();
-  alarmsystem.is_sensor.po_sensor.out.triggered();
-  alarmsystem.po_console.in.disarm();
-  alarmsystem.is_sensor.po_sensor.out.disabled();
+    i <=> colliding_component.i;
+  }
 }

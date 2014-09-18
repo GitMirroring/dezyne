@@ -59,7 +59,7 @@
 (define (mangle o)
   (if #f
       o
-      (parameterize ((mangle-prefix-alist '((port . po)))) (gom:mangle o))))
+      (parameterize ((mangle-prefix-alist '((port . po) (instance . is)))) (gom:mangle o))))
 
 (define (pipe producer consumer)
   (with-input-from-string (with-output-to-string producer) consumer))
