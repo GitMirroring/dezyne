@@ -76,10 +76,10 @@
     ((? string?) src)
     ((? integer?) (number->string src))
     (($ <parameters> parameters) (comma-join (map ->string parameters)))
-    (($ <gom:parameter>) (->string (list (->string (.type src)) " " (.name src))))
+    (($ <gom:parameter> name type) (->string (list type " " name)))
     (($ <signature> type) (->string (->string type)))
-    (($ <type> name scope) (->string (list scope '. name)))
     (($ <type> name #f) (->string name))
+    (($ <type> name scope) (->string (list scope '. name)))
     (($ <otherwise> otherwise) (->string otherwise))
     (($ <triggers> triggers) (comma-space-join (map ->string triggers)))
 
@@ -203,7 +203,6 @@
     (event . ((name . ,->string)
               (direction . ,->string)
               (type . ,->string)))
-    (type . ((name . ,identity)))
     (import . ((file . ,->string)))))
 
 (define (join-all . rest) (string-join (map ->string rest) ""))
