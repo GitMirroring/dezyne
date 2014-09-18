@@ -34,7 +34,6 @@
   :use-module (gaiag gom)
 
   :export (
-           ast->
            ast:resolve
            gom:resolve
            ))

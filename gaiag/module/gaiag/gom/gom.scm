@@ -66,6 +66,7 @@
            <call>
            <component>
            <compound>
+           <declarative>
            <dir-ast>
            <enum>
            <event>
@@ -78,6 +79,7 @@
            <guard>
            <if>
            <illegal>
+           <imperative>
            <import>
            <imports>
            <instance>
@@ -218,42 +220,44 @@
 
 ;;; statements
 (define-class <statement> (<ast>))
+(define-class <declarative> (<statement>))
+(define-class <imperative> (<statement>))
 
-(define-class <action> (<statement>)
+(define-class <action> (<imperative>)
   (trigger :accessor .trigger :init-value #f :init-keyword :trigger))
 
-(define-class <assign> (<statement>)
+(define-class <assign> (<imperative>)
   (identifier :accessor .identifier :init-value #f :init-keyword :identifier)
   (expression :accessor .expression :init-form (make <expression>) :init-keyword :expression))
 
-(define-class <call> (<statement>)
+(define-class <call> (<imperative>)
   (identifier :accessor .identifier :init-value #f :init-keyword :identifier)
   (arguments :accessor .arguments :init-form (make <arguments>) :init-keyword :arguments))
 
 (define-class <compound> (<ast-list> <statement>))
 
-(define-class <guard> (<statement>)
+(define-class <guard> (<declarative>)
   (expression :accessor .expression :init-form (make <expression>) :init-keyword :expression)
   (statement :accessor .statement :init-value #f :init-keyword :statement))
 
-(define-class <if> (<statement>)
+(define-class <if> (<imperative>)
   (expression :accessor .expression :init-form (make <expression>) :init-keyword :expression)
   (then :accessor .then :init-value #f :init-keyword :then)
   (else :accessor .else :init-value #f :init-keyword :else))
 
 (define-class <illegal> (<statement>))
 
-(define-class <on> (<statement>)
+(define-class <on> (<declarative>)
   (triggers :accessor .triggers :init-form (make <triggers>) :init-keyword :triggers)
   (statement :accessor .statement :init-value #f :init-keyword :statement))
 
-(define-class <reply> (<statement>)
+(define-class <reply> (<imperative>)
   (expression :accessor .expression :init-value #f :init-keyword :expression))
 
-(define-class <return> (<statement>)
+(define-class <return> (<imperative>)
   (expression :accessor .expression :init-value #f :init-keyword :expression))
 
-(define-class <variable> (<named> <statement>)
+(define-class <variable> (<named> <imperative>)
   (type :accessor .type :init-value 'bool :init-keyword :type)
   (expression :accessor .expression :init-form (make <expression>) :init-keyword :expression))
 

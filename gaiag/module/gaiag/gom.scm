@@ -29,9 +29,7 @@
   :use-module (gaiag gom ast)
   :use-module (gaiag gom gom)
   :use-module (gaiag gom display)
-  :use-module (gaiag gom util)
-
-  :export (ast->))
+  :use-module (gaiag gom util))
 
 (re-export-modules
  (gaiag gom ast)

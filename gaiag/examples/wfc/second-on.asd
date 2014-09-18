@@ -1,8 +1,7 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
-//
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -21,11 +20,11 @@
 //
 // Code:
 
-interface Double
+interface second
 {
-  in void aap;
-  behaviour b
+  in void e;
+  behaviour
     {
-      [true] on aap: [false] on aap: { }
+      [true] on e: [false] on e: { }
     }
 }

@@ -23,32 +23,35 @@
   :use-module (test-suite misc)
 
   :use-module (gaiag reader)
-  :use-module (gaiag wfc))
+  :use-module (gaiag wfc)
+  :use-module (gaiag gom)
+  :use-module (oop goops))
+
+(define (asd->gom o)
+  ((compose gom:resolve ast->gom asd->ast) o))
 
 (pass-if "wfc-first-dummy-test"
 	 #t)
 
-(pass-if "wfc-double-on"
-  (pretty-noisy-equal?
-   (verify-on
-    (asd->ast
+(pass-if "wfc-second-on"
+  (gom-pretty-noisy-equal?
+   (second-on
+    (asd->gom
      #{
        interface i { behaviour { [true] on a: [false] on a: b;
                                  } } #}))
-   '(("double on"
+   '(("second on"
       (on (triggers (trigger #f a))
           (action (trigger #f b)))))))
 
-(pass-if "wfc-mixing"
-  (pretty-noisy-equal?
-   (verify-mixing
-    (asd->ast
+(pass-if "wfc-mixing-declarative-imperative"
+  (gom-pretty-noisy-equal?
+   (mixing-declarative-imperative
+    (asd->gom
      #{
        interface i { behaviour { bool b = false;
                                       [true] on a: b;
                                       b = true;
                                       } } #}))
-   '((("mixing guarded"
-       (guard (expression true)
-              (on (triggers (trigger #f a))
-                  (action (trigger #f b)))))))))
+   '(("mixing imperative"
+      (assign* b (expression* true))))))

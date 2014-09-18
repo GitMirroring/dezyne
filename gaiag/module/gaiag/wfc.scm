@@ -25,8 +25,9 @@
 (read-set! keywords 'prefix)
 
 (define-module (gaiag wfc)
-  :use-module (ice-9 match)
   :use-module (ice-9 and-let-star)
+  :use-module (ice-9 curried-definitions)
+  :use-module (ice-9 match)
   :use-module (ice-9 optargs)
   :use-module (ice-9 pretty-print)
 
@@ -36,23 +37,22 @@
   :use-module (language asd parse)
   :use-module (gaiag reader)
 
+  :use-module (oop goops)
+  :use-module (gaiag gom)
+  :use-module (gaiag resolve)
+
   :export (
-           ast-wellformed?
-           read-asd-wellformed
-           verify-on
-           verify-mixing
+           ast:wellformed?
+           second-on
+           mixing-declarative-imperative
            ))
 
-(define (ast-> ast)
-  (ast-wellformed? ast))
-
-(define (ast-wellformed? ast)
-  (and-let* ((errors (apply append
-                            (filter null-is-#f (verify-on ast))
-                            (filter null-is-#f (verify-mixing ast)))))
+(define-method (ast:wellformed? (o <ast>))
+  (and-let* ((errors (append
+                      (second-on o)
+                      (mixing-declarative-imperative o))))
             (for-each (lambda (e)
                         (let* ((message (car e))
-                               (foo (stderr "e: ~a\n" e))
                                (properties (source-location->source-properties
                                             (source-location (cadr e))))
                                (message (format #f "~a:~a:~a: error: not well-formed: ~a\n"
@@ -63,79 +63,62 @@
                           (stderr message))) errors)
             ;;(throw 'well-formed message)
             (exit 1))
-  ast)
-
-
-(define (read-asd-wellformed file-name)
-  (ast-wellformed? (read-asd file-name)))
+  o)
 
 (define (error message ast) (list message ast))
 
-(define (ast:interface? ast) (and (pair? ast) (eq? (car ast) 'interface)))
-(define (ast:interface ast) (find ast:interface? ast))
+(define-method (second-on (o <ast>))
+  ((second-on- 0) o))
 
-(define (ast:behaviour ast)
-  (or (and (pair? ast) (>2 (length ast)) (assoc 'behaviour (cddr ast))) (list 'behaviour)))
+(define-method (second-on- (count <integer>))
+  (lambda (o)
+    (match o
+      (($ <root> elements) (apply append (map second-on elements)))
+      (($ <system>) '())
+      (($ <interface>) (second-on (.behaviour o)))
+      (($ <component>) (second-on (.behaviour o)))
+      (($ <behaviour>) (second-on (.statement o)))
+      (($ <compound> statements)
+       (filter null-is-#f (map (second-on- count) statements)))
+      (($ <on> triggers statement)
+       (if (>0 count) (error "second on" o) ((second-on- (1+ count)) statement)))
+      (($ <guard> expression statement) ((second-on- count) statement))
+      (_ '()))))
 
-(define (ast:statement ast)
-  (or (and (pair? ast) (>2 (length ast)) (assoc 'compound (cddr ast))) (list 'compound)))
-
-(define (verify-on ast)
-  (and-let* ((statements ((compose cdr ast:statement ast:behaviour ast:interface) ast))
-             (error-locations (null-is-#f (filter identity (map statement-on statements)))))
-            error-locations))
-
-(define* (statement-on src :key (count 0))
-  (match src
-    (('on e s) (if (>0 count) (error "double on" src) (statement-on s :count (1+ count))))
-    (('guard expr s) (statement-on s :count count))
-    (('compound s ...) (null-is-#f
-                        (filter identity (map (lambda (x) (statement-on x :count count)) s))))
-    (('action b ...) '())
-    (('illegal) '())
-    (('assign x ...) '())
-    (_ (throw 'match-error  (format #f "~a:statement-on: no match: ~a\n" (current-source-location) src)))))
-
-(define (verify-mixing ast)
-  (let ((statement ((compose ast:statement ast:behaviour ast:interface) ast)))
-        (list (mixing statement))))
-
-(define* (mixing s :key (guarded 0) (illegal 0) (imperative 0))
-  (stderr "MIXING ~a\n" s)
-  (match s
-    (('compound) (stderr "MIXING 1\n") '())
-    (('compound s1 s2 s3 ...)
-     (stderr "TODO: recursive mixing on all s: ~a -->  ~a\n" s (cdr s))
-     (let ((first (first-statement (cdr s))))
+(define-method (mixing-declarative-imperative (o <ast>))
+  (match o
+    (($ <root> elements) (apply append (map mixing-declarative-imperative elements)))
+    (($ <system>) '())
+    (($ <interface>) (mixing-declarative-imperative (.behaviour o)))
+    (($ <component>) (mixing-declarative-imperative (.behaviour o)))
+    (($ <behaviour>) (mixing-declarative-imperative (.statement o)))
+    (($ <compound> statements)
+     (let ((first (first-statement statements)))
+       (pretty-print (gom->list statements) (current-error-port))
        (match first
-         (('guard e s1) (if (>0 (+ illegal imperative))
-                            (list (error "mixing guarded" first))
-                            (mixing s :guarded (1+ guarded)
-                                    :illegal (1+ illegal)
-                                    :imperative (1+ imperative))))
-         (('on e s1) (mixing-on s))
-         (_ (and (mixing-imperative s) (mixing-illegal s))))))
-    (('compound s1)
-     (let* ((m1 (mixing s1))
-            (m2 (match s1
-               (('if e s11 ...) (mixing-imperative s1))
-            (_ '()))))
-            (and m1 m2)))
-    (('on e s) (mixing s))
-    (('guard e s) (mixing s))
-    (('if e s1 s2) (and (mixing s1) (mixing s2)))
+        ((? (is? <imperative>))
+         (or (and-let* ((declarative
+                         (null-is-#f ((gom:filter <declarative>) statements))))
+                       (list (error "mixing declarative" (car declarative))))
+               '()))
+        ((? (is? <declarative>))
+         (or (and-let* ((imperative
+                         (null-is-#f ((gom:filter <imperative>) statements))))
+                       (list (error "mixing imperative" (car imperative))))
+             '())))))
+    (($ <on> triggers statement) (mixing-declarative-imperative statement))
+    (($ <guard> epression statement) (mixing-declarative-imperative statement))
+    (($ <if> expression then else) (append (mixing-declarative-imperative then)
+                                           (mixing-declarative-imperative else)))
     (_ '())))
 
-(define (first-statement lst)
+(define-method (first-statement (o <null>))
+  '())
 
-  (let* ((compound? (lambda (x) (eq? x 'compound)))
-         (compounds (filter compound? lst))
-         (non-compounds (filter (negate compound?) lst)))
-    (if (null? non-compounds)
-       (car compounds)
-       (car non-compounds))))
+(define-method (first-statement (o <list>))
+  (let ((first (car o)))
+    (or (and=> ((is? <compound>) first) first-statement)
+        first)))
 
-(define (mixing-guarded lst) '())
-(define (mixing-imperative lst) '())
-(define (mixing-illegal lst) '())
-(define (mixing-on lst) '())
+(define (ast-> ast)
+  ((compose gom->list ast:wellformed? ast:resolve ast->gom) ast))

@@ -61,9 +61,10 @@ clean:
 test: check
 check: compile
 	./test.sh </dev/null
-	$(MAKE) csp asserts c++ demo pretty
+	$(MAKE) csp asserts c++ demo pretty simulate wfc
 
 REGRESSION_SOURCES = $(shell cd examples/regression && grep -l ^component *.asd)
+WFC_SOURCES = $(shell cd examples/wfc && ls -1 *.asd)
 
 coverage: clean cover-test cover-regression cover-wfc
 	rm gaiag.lcov/gaiag.info
@@ -93,16 +94,16 @@ gaiag.lcov/%-c++.info: examples/regression/%.asd
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o $@ | grep -v Removing
 
-cover-regression: $(REGRESSION_SOURCES:%.asd=gaiag.lcov/%-asd.info) $(REGRESSION_SOURCES:%.asd=gaiag.lcov/%-csp.info) $(REGRESSION_SOURCES:%.asd=gaiag.lcov/%-c++.info)
-
-cover-wfc:
-	cd gaiag.lcov && ! ../coverage gaiag -l wfc examples/double-on.asd
+gaiag.lcov/%-c++.info: examples/regression/%.asd
+	cd gaiag.lcov && ! ../coverage gaiag -l wfc $<
 	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
-	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-wfc-double-on.info | grep -v Removing
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o $@ | grep -v Removing
 
-	cd gaiag.lcov && ! ../coverage gaiag -l wfc examples/mixing.asd
-	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
-	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/system/base\* \*pretty-print.scm -o gaiag.lcov/gaiag-wfc-mixing.info | grep -v Removing
+cover-regression:\
+ $(REGRESSION_SOURCES:%.asd=gaiag.lcov/%-asd.info)\
+ $(REGRESSION_SOURCES:%.asd=gaiag.lcov/%-csp.info)\
+ $(REGRESSION_SOURCES:%.asd=gaiag.lcov/%-c++.info)\
+ $(WFC_SOURCES:%.asd=gaiag.lcov/%-wfc.info)\
 
 dummy:
 
@@ -171,10 +172,10 @@ c++-alarm:
 	g++ -o out/boo -c out/component-Alarm-c3.cc
 	g++ -o out/boo -I $(DEPTH)/examples/regression/codegen/asd_cpp_runtime -c out/component-AlarmSystem-c3.cc
 
-wfc: compile
-	-./gaiag -l wfc examples/double-on.asd
-	#-./gaiag -l wfc examples/double-on-compound.asd #TODO
-	-./gaiag -l wfc examples/mixing.asd
+out/%.wfc: examples/wfc/%.asd
+	! ./gaiag -l wfc $<
+
+wfc: compile $(WFC_SOURCES:%.asd=out/%.wfc)
 
 out/%.refines: examples/regression/%.asd
 	rm -rf out && mkdir -p out && ln -s ../examples ../webdemo ../templates ../$(DEPTH)/webdemo/asd out
