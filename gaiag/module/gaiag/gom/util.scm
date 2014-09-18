@@ -293,7 +293,7 @@
           ((gom:filter <enum>) (or (and=> (.behaviour o) .types) '()))))
 
 (define-method (gom:enums (o <component>))
-  ((gom:filter <enum>) (.types (.behaviour o))))
+  ((gom:filter <enum>) (or (and=> (.behaviour o) .types) '())))
 
 (define-method (gom:enums (o <behaviour>))
   ((gom:filter <enum>) (.types o)))

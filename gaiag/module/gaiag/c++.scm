@@ -160,6 +160,9 @@
                      (list (.scope type) "_" (.name type)))
            ""))))
 
+  (define (enum? identifier)
+    (member identifier (map .name (gom:enums model))))
+
   (let ((port (statements.port))
         (event (statements.event)))
     (->string
@@ -224,8 +227,11 @@
         "return;\n")
        (($ <return> expression)
         (list 'return " " (expression->string model expression locals) ";\n"))
-       (($ <signature> type) (statements->string model type locals))
-       (($ <type> name #f) name)
+       (($ <signature> type)
+        (list (if (and (not (.scope type)) (enum? (.name type)))
+                  (list (.name model) "::"))
+              (statements->string model type locals)))
+       (($ <type> name #f) (if (enum? name) (->string (list name "::type")) name))
        (($ <type> name scope) (list "interface::" scope "::" name "::type"))
        (($ <variable> name type (and ($ <action>) (get! action)))
         (statements->string model (list type " " name " = " (statements->string model (action))) locals))
@@ -433,11 +439,11 @@
           (lambda ()
             (let* ((model (module-ref (current-module) 'model))
                    (port (module-ref (current-module) 'port))
-                   (reply-type (lambda (event)
-                                  (->string (list (.type port) "_" (statements->string model ((compose (lambda (x) (statements->string model x)) .type) event))))))
+                   (type ((compose .type .type) event))
+                   (reply-type (lambda (event) (->string (list (.type port) "_" (.name type)))))
                    (return-interface-type (lambda (event)
-                                            (->string (if (not (eq? 'void ((compose .name .type .type) event)))
-                                                          (list "interface::" (.type port) "::" (statements->string model ((compose (lambda (x) (statements->string model x)) .type) event)) "::type")
+                                            (->string (if (not (eq? 'void (.name type)))
+                                                          (list "interface" "::" (.type port) "::" (.name type) "::type")
                                                           'void)))))
               (animate-string
                string

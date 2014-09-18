@@ -1,0 +1,183 @@
+-- drop_one_local: V => V
+drop_one_local_((M', (L', L0'))) = (M', L')
+
+illegal_(P',V') = illegal -> STOP
+-- send_: (c: channel, e:event) => (P,V)->Proc
+send_(c',e')(P', V') = c'!e' -> P'(V')
+-- skip_: () => (P,V)->Proc
+skip_(P', V') = P'(V')
+-- sendrecv_: (c: channel, e:event) => (P,V)->Proc
+sendrecv_(c',e')(P', V') =  c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P', V')
+-- callvoid_: (B': (P,V)->Proc) => (P,V)->Proc
+callvoid_(B')(P', V') = B'(P', V')
+-- callvoid_args_: (B': (P,V)->Proc, F': V'->V') => (P,V)->Proc
+callvoid_args_(B',F')(P', V') = B'(P', V', F')
+-- assign_: (F': V -> V) => (P,V) -> Proc
+assign_(F')(P', V') = P'(F'(V'))
+-- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
+assign_active_(C', A')(P', V') = C'(\((M', r'),L') @ P'(A'((M',L'),r')), V')
+reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
+-- returnvalue_: (F: V->val) => (P,V)->Proc
+returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
+-- the_end_: P => V->Proc
+the_end_(P', V') = transition_end -> P'(V')
+
+-- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
+semi_(S1',S2')(P', V') = S1'(\V'' @ S2'(P', V''),V')
+-- ifthenelse: (E': val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
+ifthenelse_(E',S1',S2')(P', V') =  if E' then S1'(P', V') else S2'(P', V')
+-- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
+-- context_(F', S')(P')((M', L')) = S'((\V2' @ P'(drop_one_local_(V2'))), (M', (L', F'((M', L')))))
+-- context_(v', S')(P', (M', L')) = S'((\(M',L2') @ P'((M',L'))), (M', (L', v')))
+context_(F', S')(P', (M', L')) = S'((\ (M',L2') @ P'((M',L'))), (M', (L', F'((M', L')))))
+-- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
+context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
+context_func_(S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', <>))
+context_func_args_(v', S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', (<>, v')))
+
+members_((M',L')) = (M',<>)
+
+channel illegal
+channel transition_begin, transition_end
+
+datatype event_enumeration_alphabet = Status_No | Status_Nok | Status_Ok | Status_Yes | done | return | what
+-- interface.csp.scm
+
+channel CH_I: {done,Status_Yes,Status_No,return}
+
+IF_I_(IG) = let
+fun = \ P',V' @ context_func_(returnvalue_(\ ((dummy),(stack')) @ Status_Yes))(P',V')
+fun_arg = \ P',V',F' @ context_func_args_(F',
+returnvalue_(\ ((dummy),((stack',s))) @ s))(P',V')
+
+I_(((dummy),(stack'))) =
+(true) & (
+CH_I?x:{done} ->
+context_active_(\ P',V' @ fun (P',V'),
+reply_(CH_I, (\ ((dummy),((stack',v))) @ v)))(\ V' @ I_(V'),((dummy),(stack')))
+ []
+  CH_I?x:{done} ->
+context_active_(\ P',V' @ fun_arg (P',V',(\ ((dummy),(stack')) @ (Status_No))(V')),
+reply_(CH_I, (\ ((dummy),((stack',v))) @ v)))(\ V' @ I_(V'),((dummy),(stack'))))
+
+within I_(((false),(<>)))
+
+-- end of interface.csp.scm
+-- interface.csp.scm
+
+channel CH_U: {what,Status_Ok,Status_Nok,return}
+
+IF_U_(IG) = let
+fun = \ P',V' @ context_func_(returnvalue_(\ ((dummy),(stack')) @ Status_Ok))(P',V')
+fun_arg = \ P',V',F' @ context_func_args_(F',
+returnvalue_(\ ((dummy),((stack',s))) @ s))(P',V')
+
+U_(((dummy),(stack'))) =
+(true) & (
+CH_U?x:{what} ->
+context_active_(\ P',V' @ fun (P',V'),
+reply_(CH_U, (\ ((dummy),((stack',v))) @ v)))(\ V' @ U_(V'),((dummy),(stack')))
+ []
+  CH_U?x:{what} ->
+context_active_(\ P',V' @ fun_arg (P',V',(\ ((dummy),(stack')) @ (Status_Ok))(V')),
+reply_(CH_U, (\ ((dummy),((stack',v))) @ v)))(\ V' @ U_(V'),((dummy),(stack'))))
+
+within U_(((false),(<>)))
+
+-- end of interface.csp.scm
+-- component.csp.scm
+
+channel i:{done,Status_Yes,Status_No,return}
+channel u:{what,Status_Ok,Status_Nok,return}
+
+
+CO_Reply4_(IIG,IG) = let
+fun = \ P',V' @ context_func_(returnvalue_(\ ((dummy),(stack')) @ Status_Yes))(P',V')
+fun_arg = \ P',V',F' @ context_func_args_(F',
+returnvalue_(\ ((dummy),((stack',s))) @ s))(P',V')
+
+Reply4_(((dummy),(stack'))) = transition_begin -> (
+(true) & (
+i?x:{done} ->
+context_active_(sendrecv_(u,what),
+semi_(assign_active_(sendrecv_(u,what),
+\ (((dummy),((stack',s)))),r' @ ((dummy),((stack',r')))),
+\ P',((dummy),((stack',s))) @ ifthenelse_((s == Status_Ok),
+context_active_(\ P',V' @ fun (P',V'),
+\ P',((dummy),(((stack',s),v))) @ ifthenelse_((v == Status_Yes),
+reply_(i, (\ ((dummy),(((stack',s),v))) @ Status_Yes)),
+reply_(i, (\ ((dummy),(((stack',s),v))) @ Status_No))
+)(P',((dummy),(((stack',s),v))))),
+context_active_(\ P',V' @ fun_arg (P',V',(\ ((dummy),((stack',s))) @ (Status_No))(V')),
+\ P',((dummy),(((stack',s),v))) @ ifthenelse_((v == Status_Yes),
+reply_(i, (\ ((dummy),(((stack',s),v))) @ Status_Yes)),
+reply_(i, (\ ((dummy),(((stack',s),v))) @ Status_No))
+)(P',((dummy),(((stack',s),v)))))
+)(P',((dummy),((stack',s))))))(\ V' @ transition_end -> Reply4_(V'),((dummy),(stack'))))
+)
+
+within Reply4_(((false),(<>)))
+
+channel extensions_over_empty_channels_is_undefined
+channel IN,OUT : {extensions_over_empty_channels_is_undefined}
+
+SINGLETHREADED = true
+
+channel reorder_in,reorder_out : {i.Status_Yes,i.Status_No,i.return}
+
+SEMANTICS(in',out',client',modeling') = let
+Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
+       []
+       length(s') > 0 & out'!head(s') -> Q'(tail(s'))
+       []
+       length(s') == card({|in'|}) & in'?x' -> illegal -> STOP
+
+R'(A') = ([] x' : A' @ x' -> R'(A'))
+       []
+       reorder_in?x' -> reorder_out!x' -> R'(A')
+
+S'    = let
+
+Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
+
+Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!head(r') -> Idle(0))
+            []
+            c' > 0 & transition_end -> transition_begin -> Busy(c',r')
+            []
+            c' < card({|in'|}) & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            []
+            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            []
+            r' == <> & reorder_in?x' -> Busy(c',<x'>)
+            []
+            r' != <> & reorder_in?x' -> illegal -> STOP
+
+within Idle(0)
+
+within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
+
+AS_Reply4_(IIG) = let
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+Exclude = {i.Status_Yes,i.Status_No,i.return}
+ClientCalls = {i.done}
+UsedModeling = {}
+within compress((CO_Reply4_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,i,u|},Exclude)|]
+(((IF_U_(true) [[CH_U.x<-u.x|x<-extensions(u)]]
+) [[x<-IN.x|x<-extensions(IN)]]
+[|union({|IN|},UsedModeling)|]
+SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
+
+-- end of component.csp.scm
+assert IF_I_(false) :[deadlock free]
+assert IF_I_(true) :[livelock free]
+assert IF_U_(false) :[deadlock free]
+assert IF_U_(true) :[livelock free]
+assert CO_Reply4_(true,true) :[deterministic]
+assert STOP [T= AS_Reply4_(false) \ diff(Events,{illegal})
+assert AS_Reply4_(false) :[deadlock free]
+assert IF_I_(true) [[CH_I.x<-i.x|x<-extensions(i)]] \ {} [F= AS_Reply4_(true) \ diff(Events,{|illegal,i|})
+assert AS_Reply4_(true) \ diff(Events,{|illegal,i|}) :[livelock free]
