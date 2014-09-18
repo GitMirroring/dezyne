@@ -84,7 +84,7 @@
     (($ <triggers> triggers) (comma-space-join (map ->string triggers)))
 
     ;; FIXME: c&p from csp.scm (and...TODO: c++.scm) grmbl
-    (('group expression) (list "(" (->string expression) ")"))
+    (('group expression) (->string (list "(" (->string expression) ")")))
     (($ <expression> expression) (->string expression))
     (($ <var> identifier) (->string identifier))
     (($ <literal> #f type field) (->string (list type "." field)))
@@ -98,7 +98,7 @@
      (let ((lhs (->string lhs))
            (rhs (->string rhs))
            (op (car src)))
-       (list lhs " " op " " rhs )))
+       (->string (list lhs " " op " " rhs ))))
 
     ((h ...) (apply string-append (map ->string h)))
     (_ (format #f "~a" src))
@@ -110,8 +110,8 @@
       (->string (list "(" (->string expression) ")"))))
 
 (define (expression->string src)
-  (let ((unparen (lambda (s) (if (and (string-prefix? "(" (->string s))
-                                      (string-postfix? ")" (->string s)))
+  (let ((unparen (lambda (s) (if (and (string-prefix? "(" s)
+                                      (string-postfix? ")" s))
                                  (string-drop (string-drop-right s 1) 1)
                                  s))))
     (unparen (->string src))))
