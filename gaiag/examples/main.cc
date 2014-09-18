@@ -38,11 +38,11 @@ int main()
 {
   component::AlarmSystem alarmsystem;
 
-  alarmsystem.console.out.detected = detected;
-  alarmsystem.console.out.deactivated = deactivated;
+  alarmsystem.po_console.out.detected = detected;
+  alarmsystem.po_console.out.deactivated = deactivated;
 
-  alarmsystem.console.in.arm();
-  alarmsystem.sensor.sensor.out.triggered();
-  alarmsystem.console.in.disarm();
-  alarmsystem.sensor.sensor.out.disabled();
+  alarmsystem.po_console.in.arm();
+  alarmsystem.sensor.po_sensor.out.triggered();
+  alarmsystem.po_console.in.disarm();
+  alarmsystem.sensor.po_sensor.out.disabled();
 }
