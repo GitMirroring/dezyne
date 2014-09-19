@@ -48,6 +48,7 @@
 
 (define-method (ast:wellformed? (o <ast>))
   (and-let* ((errors (append
+                      (component o)
                       (second-on o)
                       (mixing-declarative-imperative o))))
             (report-errors errors))
@@ -55,6 +56,18 @@
 
 (define-method (wfc-error (o <ast>) (message <string>))
   (make <error> :ast o :message (string-append "not well-formed: " message)))
+
+(define-method (component (o <ast>))
+  (match o
+    (($ <root> elements) '(()) (apply append (map component elements)))
+    (($ <component> name ($ <ports> ports) ($ <behaviour>))
+     ((gom:filter <error>)
+      (list
+       (if (!= (length (filter gom:provides? ports)) 1)
+           (wfc-error o "component with behaviour must have one provides port"))
+       (if (null? (gom:find-events o))
+           (wfc-error o "component with behaviour must accept a trigger event")))))
+    (_ '())))
 
 (define-method (second-on (o <ast>))
   ((second-on- 0) o))

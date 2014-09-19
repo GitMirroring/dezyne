@@ -120,10 +120,11 @@
   "Search for optional and inevitable."
   (match ast
     ((or ($ <interface>) ($ <component>))
-     (delete-duplicates (sort (gom:find-events (or (and=> (.behaviour ast) gom:statement) '())) gom:trigger<)))
-    (($ <compound>) (append (apply append (map gom:find-events (.elements ast))) found))
+     (gom:find-events (or (and=> (.behaviour ast) gom:find-events) '())))
+    (($ <behaviour>) (or (and=> (.statement ast) gom:find-events) '()))
+    (($ <compound> statements)
+     (delete-duplicates (sort (gom:find-events statements) gom:trigger<)))
     (($ <on>) (gom:find-events (.triggers ast)))
-;;    (($ <trigger>) (list ast))
     (($ <triggers>) (.elements ast))
     (($ <guard>) (gom:find-events (.statement ast) found))
     (('inevitable) ast)

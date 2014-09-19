@@ -95,6 +95,13 @@
   ;;(throw 'well-formed errors)
   (exit 1))
 
+(define (retain-source-location o t)
+  (and-let* (((supports-source-properties? o))
+             (loc (source-property o 'loc))
+             ((supports-source-properties? t)))
+            (set-source-property! t 'loc loc))
+  t)
+
 (define-method (resolve-top-model (o <model>))
   ((compose gom:register-model (lambda (m) (resolve-model m m)) resolve-mixed) o))
 
@@ -102,6 +109,9 @@
   (resolve-model o o))
 
 (define (resolve-mixed o)
+  (retain-source-location o (resolve-mixed- o)))
+
+(define (resolve-mixed- o)
   (match o
     (($ <component> name ports behaviour)
      (let ((cache-interfaces (map resolve:import (map .type ((compose .elements .ports) o)))))
@@ -138,12 +148,7 @@
   (resolve-model model o '()))
 
 (define-method (resolve-model (model <model>) o locals)
-  (let ((resolved (resolve-model- model o locals)))
-    (and-let* (((supports-source-properties? o))
-               (loc (source-property o 'loc))
-               ((supports-source-properties? resolved)))
-              (set-source-property! resolved 'loc loc))
-    resolved))
+  (retain-source-location o (resolve-model- model o locals)))
 
 (define (resolve:import name)
   (gom:import name resolve:gom))

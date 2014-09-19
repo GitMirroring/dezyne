@@ -40,6 +40,7 @@
            *eof*-is-#f
            ->join
            ->string
+           !=
            =0
            =1
            =2
@@ -94,6 +95,7 @@
 (define (*eof*-is-#f o) (if (eq? *eof* o) #f o))
 (define (one-is-#f o) (if (or (null? o) (=1 (length o))) #f o))
 
+(define (!= a b) (not (= a b)))
 (define (=0 x) (= x 0))
 (define (>0 x) (> x 0))
 (define (=1 x) (= x 1))
