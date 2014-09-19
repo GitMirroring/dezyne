@@ -168,11 +168,11 @@
            (cadr resolve-ast)
            '(on (triggers (trigger o foo))
                 (compound
-                 (assign e (expression (value o foo))))))
+                 (assign m (expression (value o foo))))))
 
           '(on (triggers (trigger o foo))
                (compound
-                (assign e (action (trigger o foo)))))))
+                (assign m (action (trigger o foo)))))))
 
 (pass-if "ast:resolve-reply-value-interface"
          (gom-pretty-noisy-equal?
@@ -293,13 +293,6 @@
              (if (expression (var c))
                   (compound)))))
 
-(pass-if "ast:resolve-missing-local"
-         (gom-pretty-noisy-equal?
-          (ast:resolve-model
-           (cadr resolve-ast)
-           '(assign e (expression e)))
-          '(assign e (expression e))))
-
 (pass-if "ast:resolve-true"
          (gom-pretty-noisy-equal?
           (ast:resolve-model
@@ -418,3 +411,13 @@
              (bind (binding #f console) (binding alarm console))
              (bind (binding alarm sensor) (binding sensor sensor))
              (bind (binding alarm siren) (binding siren siren))))))
+
+(define-method (undefined-error (o <list>) (identifier <symbol>))
+  ((@@ (gaiag resolve) undefined-error) (ast->gom o) identifier))
+
+(pass-if "ast:resolve-undefined-identifier"
+  (gom-pretty-noisy-equal?
+   (ast:resolve-model
+    (car resolve-ast)
+    '(assign q true))
+   (undefined-error '(assign q true) 'q)))

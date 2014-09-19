@@ -29,6 +29,7 @@
 
   :use-module (gaiag misc)
   :use-module (gaiag reader)
+  :use-module (language asd parse)
 
   :use-module (oop goops)
   :use-module (gaiag gom)
@@ -36,6 +37,10 @@
   :export (
            ast:resolve
            gom:resolve
+           report-errors
+           <error>
+           .ast
+           .message
            ))
 
 (define-method (ast:resolve (o <list>))
@@ -50,8 +55,34 @@
 (define-method (ast:resolve (o <ast>))
   o)
 
+(define-class <error> (<ast>)
+  (ast :accessor .ast :init-value #f :init-keyword :ast)
+  (message :accessor .message :init-value "" :init-keyword :message))
+
+(define-method (undefined-error (o <ast>) (identifier <symbol>))
+  (make <error> :ast o :message (format #f "undefined identifier: ~a" identifier)))
+
 (define-method (gom:resolve (o <root>))
-  (make <root> :elements (map resolve-top-model (.elements o))))
+  (let* ((resolved (make <root> :elements (map resolve-top-model (.elements o))))
+         (errors (null-is-#f (gom:collect <error> resolved))))
+    (and=> errors report-errors)
+    resolved))
+
+(define-method (report-error (o <error>))
+  (let* ((message (.message o))
+         (properties (source-location->source-properties
+                      (source-location (.ast o))))
+         (message (format #f "~a:~a:~a: error: ~a\n"
+                          (assoc-ref properties 'filename)
+                          (assoc-ref properties 'line)
+                          (assoc-ref properties 'column)
+                          message)))
+    (stderr message)))
+
+(define (report-errors errors)
+  (for-each report-error errors)
+  ;;(throw 'well-formed message)
+  (exit 1))
 
 (define-method (resolve-top-model (o <model>))
   ((compose gom:register-model (lambda (m) (resolve-model m m)) resolve-mixed) o))
@@ -167,6 +198,10 @@
   (define (var? identifier) (or (member? identifier) (local? identifier)))
 
   (match o
+
+    (($ <assign> (and (? (negate var?)) (get! identifier)))
+     (undefined-error o (identifier)))
+
     (($ <action> (and (? (lambda (i) (member i (gom:function-names model))))
                       (get! identifier)))
      (make <call> :identifier (identifier)))

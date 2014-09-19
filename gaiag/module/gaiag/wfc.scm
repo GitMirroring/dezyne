@@ -34,7 +34,6 @@
   :use-module (srfi srfi-1)
 
   :use-module (gaiag misc)
-  :use-module (language asd parse)
   :use-module (gaiag reader)
 
   :use-module (oop goops)
@@ -51,22 +50,11 @@
   (and-let* ((errors (append
                       (second-on o)
                       (mixing-declarative-imperative o))))
-            (for-each (lambda (e)
-                        (stderr "e: ~a\n" e)
-                        (let* ((message (car e))
-                               (properties (source-location->source-properties
-                                            (source-location (cadr e))))
-                               (message (format #f "~a:~a:~a: error: not well-formed: ~a\n"
-                                                (assoc-ref properties 'filename)
-                                                (assoc-ref properties 'line)
-                                                (assoc-ref properties 'column)
-                                                message)))
-                          (stderr message))) errors)
-            ;;(throw 'well-formed message)
-            (exit 1))
+            (report-errors errors))
   o)
 
-(define (error message ast) (list message ast))
+(define-method (wfc-error (o <ast>) (message <string>))
+  (make <error> :ast o :message (string-append "not well-formed: " message)))
 
 (define-method (second-on (o <ast>))
   ((second-on- 0) o))
@@ -82,7 +70,8 @@
       (($ <compound> statements)
        (filter null-is-#f (map (second-on- count) statements)))
       (($ <on> triggers statement)
-       (if (>0 count) (error "second on" o) ((second-on- (1+ count)) statement)))
+       (if (>0 count) (wfc-error o "second on")
+           ((second-on- (1+ count)) statement)))
       (($ <guard> expression statement) ((second-on- count) statement))
       (_ '()))))
 
@@ -100,15 +89,17 @@
         (match first
           ((? (is? <imperative>))
            (or (and-let* ((declarative
-                           (null-is-#f ((gom:filter <declarative>) statements))))
-                         (list (error "mixing declarative" (car declarative))))
+                           (null-is-#f ((gom:filter <declarative>) statements)))
+                          (ast (car declarative)))
+                         (list (wfc-error ast "mixing declarative")))
                '()))
           ((? (is? <declarative>))
            (or (and-let* ((imperative
-                           (null-is-#f ((gom:filter <imperative>) statements))))
-                         (list (error "mixing imperative" (car imperative))))
+                           (null-is-#f ((gom:filter <imperative>) statements)))
+                          (ast (car imperative)))
+                         (list (wfc-error ast "mixing imperative")))
                '()))
-          (_ (stderr "first: ~a\n" first)'())))
+          (_ '())))
       (map mixing-declarative-imperative statements)))
     (($ <on> triggers statement) (mixing-declarative-imperative statement))
     (($ <guard> epression statement) (mixing-declarative-imperative statement))
