@@ -65,6 +65,9 @@
 (define-method (undefined-error (o <ast>) (identifier <symbol>))
   (undefined-error o identifier "undefined identifier: ~a"))
 
+(define-method (undefined-error (identifier <symbol>))
+  (undefined-error (make <var> :name identifier) identifier))
+
 (define-method (gom:resolve (o <root>))
   (let* ((resolved (make <root> :elements (map resolve-top-model (.elements o))))
          (errors (null-is-#f (gom:collect <error> resolved))))
@@ -210,6 +213,8 @@
     (or (function? identifier) (event? identifier)))
 
   (match o
+    (($ <var> (and (? (negate var?)) (get! identifier)))
+     (undefined-error o (identifier)))
 
     (($ <assign> (and (? (negate var?)) (get! identifier)))
      (undefined-error o (identifier)))
@@ -220,6 +225,27 @@
 
     (($ <call> (and (? symbol?) (? (negate event-or-function?)) (get! identifier)))
      (undefined-error o (identifier) "no such function or event: ~a"))
+
+    ((or 'false 'true) o)
+    ((or 'and 'or) o)
+    ((or '! '+ '- ) o)
+    ((or '== '!= '< '<= '> '>= 'group) o)
+
+    (($ <call> identifier (and ($ <arguments>) (get! arguments)))
+     (make <call>
+       :identifier identifier
+       :arguments (resolve-model model (arguments) locals)))
+    (($ <call>) o)
+    (($ <event>) o)
+    (($ <field>) o)
+    (($ <literal>) o)
+    (($ <otherwise>) o)
+    (($ <port>) o)
+    (($ <trigger>) o)
+    (($ <type>) o)
+    (($ <var>) o)
+
+    ((? symbol?) (undefined-error o))
 
     (($ <action> ($ <trigger> #f
                     (and (? (lambda (i) (member i (gom:function-names model))))
@@ -290,8 +316,6 @@
     (($ <expression> value)
      (make <expression> :value (resolve-model model value locals)))
 
-    ((and (? symbol?) (? var?)) (make <var> :name o))
-
     (($ <function> name ($ <signature> type ($ <parameters> '())) recursive? statement)
      (make <function>
        :name name
@@ -325,9 +349,6 @@
                (let ((resolved (resolve-model model (car statements) locals)))
                  (cons resolved (loop (cdr statements) locals))))))))
 
-    (($ <field>) o)
-    (($ <var>) o)
-
     (($ <interface> name ($ <types> types) ($ <events> types-events) behaviour)
      (receive (types- events) (partition (lambda (x)
                                            (or (is-a? x <enum>) (is-a? x <int>))) types-events)
@@ -335,8 +356,13 @@
          :name name
          :types (make <types> :elements (append types types-))
          :events (make <events> :elements events)
-         :behaviour (gom:map (resolve-model model) behaviour))))
+         :behaviour ((resolve-model model) behaviour))))
 
+    (($ <component> name ports behaviour)
+       (make <component>
+         :name name
+         :ports ports
+         :behaviour ((resolve-model model) behaviour)))
 
     (($ <behaviour> name types variables ($ <functions> functions) ($ <compound> mixed))
      (receive (functions- statements) (partition (is? <function>) mixed)
