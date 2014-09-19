@@ -52,6 +52,7 @@
                       (second-on o)
                       (mixing-declarative-imperative o))))
             (for-each (lambda (e)
+                        (stderr "e: ~a\n" e)
                         (let* ((message (car e))
                                (properties (source-location->source-properties
                                             (source-location (cadr e))))
@@ -93,19 +94,22 @@
     (($ <component>) (mixing-declarative-imperative (.behaviour o)))
     (($ <behaviour>) (mixing-declarative-imperative (.statement o)))
     (($ <compound> statements)
-     (let ((first (first-statement statements)))
-       (pretty-print (gom->list statements) (current-error-port))
-       (match first
-        ((? (is? <imperative>))
-         (or (and-let* ((declarative
-                         (null-is-#f ((gom:filter <declarative>) statements))))
-                       (list (error "mixing declarative" (car declarative))))
+     (apply
+      append
+      (let ((first (first-statement statements)))
+        (match first
+          ((? (is? <imperative>))
+           (or (and-let* ((declarative
+                           (null-is-#f ((gom:filter <declarative>) statements))))
+                         (list (error "mixing declarative" (car declarative))))
                '()))
-        ((? (is? <declarative>))
-         (or (and-let* ((imperative
-                         (null-is-#f ((gom:filter <imperative>) statements))))
-                       (list (error "mixing imperative" (car imperative))))
-             '())))))
+          ((? (is? <declarative>))
+           (or (and-let* ((imperative
+                           (null-is-#f ((gom:filter <imperative>) statements))))
+                         (list (error "mixing imperative" (car imperative))))
+               '()))
+          (_ (stderr "first: ~a\n" first)'())))
+      (map mixing-declarative-imperative statements)))
     (($ <on> triggers statement) (mixing-declarative-imperative statement))
     (($ <guard> epression statement) (mixing-declarative-imperative statement))
     (($ <if> expression then else) (append (mixing-declarative-imperative then)
