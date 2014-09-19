@@ -90,7 +90,7 @@
         (function rbfb (signature (type void) (parameters (parameter (type bool) a)))
                   (compound (assign b (call rbfc))))
         (function rbfc (signature (type void) (parameters (parameter (type bool) a)))
-                  (compound (call f) (call g) (compound (call d) (assign b (call rbfa))))))
+                  (compound (call fa) (call fb) (compound (call fc) (assign b (call rbfa))))))
       (compound
        (on (triggers (trigger i foo))
            (compound
@@ -106,7 +106,7 @@
            (car resolve-ast)
            '(on (triggers ((trigger #f e)))
                 (compound
-                 (action toggle))))
+                 (action (trigger #f toggle)))))
           '(on (triggers ((trigger #f e)))
                (compound
                 (call toggle)))))
@@ -281,7 +281,7 @@
 (pass-if "ast:resolve-local-if"
          (gom-pretty-noisy-equal?
           (ast:resolve-model
-           (cadr resolve-ast)
+           (car resolve-ast)
            '(compound
              (variable (type bool) c (expression true))
              (assign b (call g (arguments (expression c) (expression c))))
@@ -415,9 +415,26 @@
 (define-method (undefined-error (o <list>) (identifier <symbol>))
   ((@@ (gaiag resolve) undefined-error) (ast->gom o) identifier))
 
+(define-method (undefined-error (o <list>) (identifier <symbol>) (message <string>))
+  ((@@ (gaiag resolve) undefined-error) (ast->gom o) identifier message))
+
 (pass-if "ast:resolve-undefined-identifier"
   (gom-pretty-noisy-equal?
    (ast:resolve-model
     (car resolve-ast)
     '(assign q true))
    (undefined-error '(assign q true) 'q)))
+
+(pass-if "ast:resolve-undefined-action"
+  (gom-pretty-noisy-equal?
+   (ast:resolve-model
+    (car resolve-ast)
+    '(action (trigger #f q)))
+   (undefined-error '(action (trigger #f q)) 'q "no such function or event: ~a")))
+
+(pass-if "ast:resolve-undefined-call"
+  (gom-pretty-noisy-equal?
+   (ast:resolve-model
+    (car resolve-ast)
+    '(call q))
+   (undefined-error '(call q) 'q "no such function or event: ~a")))

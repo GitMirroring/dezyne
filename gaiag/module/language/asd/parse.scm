@@ -65,6 +65,8 @@
       (('interface name) ast)
       (('behaviour) ast)
       (('behaviour name ('types t ...) ('variables v ...) ('compound s ...)) ast)
+      (('call identifier) ast)
+      (('call identifier arguments) ast)
       (('compound) ast)
       (('compound (? ast:statement?) ..1) ast)
       (('types t ...) ast)
@@ -279,8 +281,8 @@
     (function-call) : $1)
 
    (function-call
-    (Identifier lparen rparen) : `(call ,$1)
-    (Identifier lparen argument-list rparen) : `(call ,$1 ,$3))
+    (Identifier lparen rparen) : (make 'call (list $1) @1)
+    (Identifier lparen argument-list rparen) : (make 'call (list $1 $3) @1))
 
    (argument-list
     (expression) : `(arguments (expression ,$1))

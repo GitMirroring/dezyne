@@ -41,8 +41,11 @@
 
 (define (ast->sugar ast)
   (match ast
+    (('in 'void name) `(in (signature (type void)) ,name))
+    (('out 'void name) `(out (signature (type void)) ,name))
     (('on ('triggers t ...) statement) ast)
     (('on triggers statement) (list 'on (cons 'triggers (map ast->trigger-sugar triggers)) statement))
+    (('events events ...) (cons 'events (map ast->sugar events)))
     (_ ast)))
 
 (define (ast->trigger-sugar ast)

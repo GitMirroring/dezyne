@@ -41,8 +41,10 @@
    (second-on
     (asd->gom
      #{
-       interface i { behaviour { [true] on a: [false] on a: b;
-                                 } } #}))
+       interface i { in void a; out void b;
+                        behaviour
+                        { [true] on a: [false] on a: b ;
+                          } } #}))
    (list (wfc-error '(on (triggers (trigger #f a))
                          (action (trigger #f b)))
                     "second on"))))
@@ -52,8 +54,10 @@
    (mixing-declarative-imperative
     (asd->gom
      #{
-       interface i { behaviour { bool b = false;
-                                      [true] on a: b;
-                                      b = true;
-                                      } } #}))
+       interface i { in void a; out void b;
+                        behaviour
+                        { bool b = false             ;
+                               [true] on a: b        ;
+                               b = true              ;
+                               } } #}))
    (list (wfc-error '(assign b (expression true)) "mixing imperative"))))

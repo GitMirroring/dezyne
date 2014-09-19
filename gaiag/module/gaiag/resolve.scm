@@ -59,8 +59,11 @@
   (ast :accessor .ast :init-value #f :init-keyword :ast)
   (message :accessor .message :init-value "" :init-keyword :message))
 
+(define-method (undefined-error (o <ast>) (identifier <symbol>) (message <string>))
+  (make <error> :ast o :message (format #f message identifier)))
+
 (define-method (undefined-error (o <ast>) (identifier <symbol>))
-  (make <error> :ast o :message (format #f "undefined identifier: ~a" identifier)))
+  (undefined-error o identifier "undefined identifier: ~a"))
 
 (define-method (gom:resolve (o <root>))
   (let* ((resolved (make <root> :elements (map resolve-top-model (.elements o))))
@@ -69,19 +72,24 @@
     resolved))
 
 (define-method (report-error (o <error>))
-  (let* ((message (.message o))
-         (properties (source-location->source-properties
-                      (source-location (.ast o))))
-         (message (format #f "~a:~a:~a: error: ~a\n"
-                          (assoc-ref properties 'filename)
-                          (assoc-ref properties 'line)
-                          (assoc-ref properties 'column)
-                          message)))
+  (let* ((ast (.ast o))
+         (message (.message o))
+         (message
+          (or (and-let* (((supports-source-properties? ast))
+                         (loc (source-property ast 'loc))
+                         (loc (if (list? loc) (source-property loc 'loc) loc))
+                         (properties (source-location->source-properties loc)))
+                        (format #f "~a:~a:~a: error: ~a\n"
+                                (or (assoc-ref properties 'filename) "<unknown file>")
+                                (assoc-ref properties 'line)
+                                (assoc-ref properties 'column)
+                                message))
+              (format #f "<unknown location>: error: ~a: ~a\n" ast message))))
     (stderr message)))
 
 (define (report-errors errors)
   (for-each report-error errors)
-  ;;(throw 'well-formed message)
+  ;;(throw 'well-formed errors)
   (exit 1))
 
 (define-method (resolve-top-model (o <model>))
@@ -197,13 +205,25 @@
 
   (define (var? identifier) (or (member? identifier) (local? identifier)))
 
+  (define (event? identifier) (gom:event model identifier))
+  (define (event-or-function? identifier)
+    (or (function? identifier) (event? identifier)))
+
   (match o
 
     (($ <assign> (and (? (negate var?)) (get! identifier)))
      (undefined-error o (identifier)))
 
-    (($ <action> (and (? (lambda (i) (member i (gom:function-names model))))
-                      (get! identifier)))
+    (($ <action> ($ <trigger> #f
+                    (and (? (negate event-or-function?)) (get! identifier))))
+     (undefined-error o (identifier) "no such function or event: ~a"))
+
+    (($ <call> (and (? symbol?) (? (negate event-or-function?)) (get! identifier)))
+     (undefined-error o (identifier) "no such function or event: ~a"))
+
+    (($ <action> ($ <trigger> #f
+                    (and (? (lambda (i) (member i (gom:function-names model))))
+                         (get! identifier))))
      (make <call> :identifier (identifier)))
 
     (($ <assign> identifier ($ <expression> (and ($ <call>) (get! call))))

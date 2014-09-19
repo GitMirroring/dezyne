@@ -218,6 +218,8 @@
 (define-method (gom:event (o <interface>) name)
   (find (lambda (x) (eq? (.name x) name)) (.elements (.events o))))
 
+(define-method (gom:event (o <model>) name) #f)
+
 (define-method (gom:component (o <top>)) #f)
 (define-method (gom:component (o <component>)) o)
 (define-method (gom:component (o <list>)) (find (is? <component>) o))
