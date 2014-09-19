@@ -1,3 +1,6 @@
+##ifndef COMPONENT_#.COMPONENT _HH
+##define COMPONENT_#.COMPONENT _HH
+
 #(map-instances
 #{
 ##include "component-#.component -c3.hh"
@@ -22,3 +25,4 @@ struct #.model
   #.model ();
 };
 }
+##endif
