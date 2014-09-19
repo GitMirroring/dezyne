@@ -97,7 +97,7 @@
 (define *state-space* '(()))
 
 (define (simulate-model model)
-  (stderr "\n\n>>>simulating: ~a ~a --> ~a\n" (ast-name model) (.name model) (map ->string (gom:find-events model)))
+  (stderr "\n\n>>>simulating: ~a ~a --> ~a\n" (ast-name model) (.name model) (map ->string (gom:find-triggers model)))
   (and-let* ((((is? <component>) model))
              (interfaces (map simulate:import
                               (map .type ((compose .elements .ports) model))))))
@@ -199,7 +199,7 @@
 
 ;; FIXME: TODO: implement next-value for state explorer
 (define (next-todo-space-explorer model state ast)
-  (let ((events (gom:find-events model)))
+  (let ((events (gom:find-triggers model)))
     (if (or (null? *state-space*)
             (null? (car *state-space*)))
         (cons (state-vector model) events)

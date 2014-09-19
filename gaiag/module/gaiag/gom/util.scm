@@ -51,7 +51,7 @@
            gom:event
            gom:events
            gom:filter
-           gom:find-events
+           gom:find-triggers
            gom:function
            gom:function-names
            gom:functions
@@ -116,24 +116,24 @@
                    (list (.port rhs) (.event rhs))))
        (not (symbol? (.port lhs))))))
 
-(define* (gom:find-events ast :optional (found '()))
+(define* (gom:find-triggers ast :optional (found '()))
   "Search for optional and inevitable."
   (match ast
     ((or ($ <interface>) ($ <component>))
-     (gom:find-events (or (and=> (.behaviour ast) gom:find-events) '())))
-    (($ <behaviour>) (or (and=> (.statement ast) gom:find-events) '()))
+     (or (and=> (.behaviour ast) gom:find-triggers) '()))
+    (($ <behaviour>) (or (and=> (.statement ast) gom:find-triggers) '()))
     (($ <compound> statements)
-     (delete-duplicates (sort (gom:find-events statements) gom:trigger<)))
-    (($ <on>) (gom:find-events (.triggers ast)))
+     (delete-duplicates (sort (append (apply append (map gom:find-triggers statements))) gom:trigger<)))
+    (($ <on>) (gom:find-triggers (.triggers ast)))
     (($ <triggers>) (.elements ast))
-    (($ <guard>) (gom:find-events (.statement ast) found))
+    (($ <guard>) (gom:find-triggers (.statement ast) found))
     (('inevitable) ast)
     (('optional) ast)
     (('action x) '())
     (('illegal) '())
     (('skip) '())
     ('() ast)
-    (_ (throw 'match-error  (format #f "~a:gom:find-events: no match: ~a\n" (current-source-location) ast)))))
+    (_ (throw 'match-error  (format #f "~a:gom:find-triggers: no match: ~a\n" (current-source-location) ast)))))
 
 (define* (gom:variable ast identifier)   ;; use SYMBOL TABLE
   (match ast

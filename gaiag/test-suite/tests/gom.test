@@ -11,8 +11,8 @@
 (pass-if "gom-first-dummy-test"
          #t)
 
-(pass-if "find-events"
+(pass-if "find-triggers"
   (gom-pretty-noisy-equal?
-   (gom:find-events
+   (gom:find-triggers
     (ast->gom '(on (arm) (compound))))
    '((trigger #f arm))))

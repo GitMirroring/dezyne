@@ -229,7 +229,7 @@
   (member (.event event) '(optional inevitable)))
 
 (define (modeling-events interface)
-  (filter modeling-event? (gom:find-events interface)))
+  (filter modeling-event? (gom:find-triggers interface)))
 
 (define-method (typed-elements (o <enum>))
    (map (lambda (x) (symbol-append (.name o) '_ x)) ((compose .elements .fields) o)))
@@ -325,7 +325,7 @@
 
 (define-method (optional-chaos (o <interface>)) ;; FIXME: no test
   (let ((name (.name o)))
-    (if (member 'optional (map .event (gom:find-events o)))
+    (if (member 'optional (map .event (gom:find-triggers o)))
         (list " [|{CH_" name ".optional}|] " "CHAOS({CH_" name ".optional})")
         "")))
 
