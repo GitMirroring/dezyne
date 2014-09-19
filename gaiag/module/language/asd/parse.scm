@@ -136,6 +136,7 @@
     inevitable optional
     otherwise
     if reply return
+    true false
 
     (left: in out)
     (left: illegal)
@@ -191,11 +192,15 @@
     (bind) : $1
     (instance) : $1)
 
+   (binding
+    (Identifier) : `(binding #f ,$1)
+    (Identifier dot Identifier) : `(binding ,$1 ,$3))
+
    (bind
-    (compound-identifier <=> compound-identifier semicolon) : `(bind ,$1 ,$3))
+    (binding <=> binding semicolon) : `(bind ,$1 ,$3))
 
    (instance
-    (compound-identifier Identifier semicolon) : `(instance ,$1 ,$2))
+    (Identifier Identifier semicolon) : `(instance ,$1 ,$2))
 
    (import-spec
     (import Identifier semicolon) : `(,$1 ,$2)
@@ -259,6 +264,8 @@
     (typedef int lbracket NumericLiteral .. NumericLiteral rbracket Identifier semicolon) : `(int ,$8 (range ,$4 ,$6)))
 
    (expression
+    (false) : $1
+    (true) : $1
     (NumericLiteral) : $1
     (compound-identifier) : $1
 
@@ -351,7 +358,7 @@
     (lbrace statement-list rbrace) : (make 'compound (cdr $2) @1))
 
    (compound-identifier
-    (Identifier) : $1
+    (Identifier) : `(var ,$1)
     (Identifier dot Identifier) : `(value ,$1 ,$3)
     (Identifier dot Identifier dot Identifier) : `(literal ,$1 ,$3 ,$5))
 

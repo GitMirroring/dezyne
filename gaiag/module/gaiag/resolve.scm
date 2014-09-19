@@ -238,7 +238,7 @@
                      :trigger (make <trigger> :port (port) :event event))))
 
     (($ <assign> identifier
-        ($ <expression> (and (? function?) (get! function))))
+        ($ <expression> ($ <var> (and (? function?) (get! function)))))
      (make <assign>
        :identifier identifier
        :expression (make <call> :identifier (function))))
@@ -267,7 +267,8 @@
        :expression (make <action> :trigger
                          (make <trigger> :port (port) :event event))))
 
-    (($ <variable> name type ($ <expression> (and (? function?) (get! function))))
+    (($ <variable> name type
+        ($ <expression> ($ <var> (and (? function?) (get! function)))))
      (make <variable>
        :type type
        :name name
@@ -367,35 +368,24 @@
 
 (define-method (resolve-model (model <system>) o)
 
-  (let ((binding (lambda (o)
-                   (match o
-                     ((? symbol?) (make <binding> :instance #f :port o))
-                     (($ <value> instance port) (make <binding> :instance instance :port port))
-                     (($ <binding>) o)
-                     (_ o)))))
+  (match o
+    (($ <system> name ports instances bindings)
+     (let* ((instances (gom:map (resolve-model model) instances))
+            (bindings (gom:map (resolve-model model) bindings))
+            (rinstances (append (gom:collect <instance> instances)
+                                (gom:collect <instance> bindings)))
+            (rbindings  (append (gom:collect <bind> instances)
+                                (gom:collect <bind> bindings))))
+       (make <system>
+         :name name
+         :ports ports
+         :instances (make <instances> :elements rinstances)
+         :bindings (make <bindings> :elements rbindings))))
 
-    (match o
+    ((? (is? <ast>)) (gom:map (resolve-model model) o))
+    ((h t ...) (map (resolve-model model) o))
 
-      (($ <system> name ports instances bindings)
-       (let* ((instances (gom:map (resolve-model model) instances))
-              (bindings (gom:map (resolve-model model) bindings))
-              (rinstances (append (gom:collect <instance> instances)
-                                  (gom:collect <instance> bindings)))
-              (rbindings  (append (gom:collect <bind> instances)
-                                  (gom:collect <bind> bindings))))
-         (make <system>
-           :name name
-           :ports ports
-           :instances (make <instances> :elements rinstances)
-           :bindings (make <bindings> :elements rbindings))))
-
-      (($ <bind> left right)
-       (make <bind> :left (binding left) :right (binding right)))
-
-      ((? (is? <ast>)) (gom:map (resolve-model model) o))
-      ((h t ...) (map (resolve-model model) o))
-
-      (_ o))))
+    (_ o)))
 
 (define (ast-> ast)
   ((compose gom->list ast:resolve ast->gom) ast))

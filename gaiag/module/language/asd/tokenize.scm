@@ -37,6 +37,7 @@
          component
          else
          enum
+         false
          if
          illegal
          import
@@ -53,6 +54,7 @@
          requires
          return
          system
+         true
          typedef
          void
          )))

@@ -28,9 +28,6 @@
          (model (resolve-mixed (ast->gom model))))
     (resolve-model model (ast->gom o))))
 
-(pass-if "resolve-first-dummy-test"
-         #t)
-
 (define resolve-ast
   '((interface
         ivar
@@ -52,7 +49,7 @@
                                                    (parameter (type bool) gb)))
                             (compound))
                   (function efun
-                            (signature (type state)) (compound (return m))))
+                            (signature (type state)) (compound (return (var m)))))
        (compound
         (on (triggers (trigger #f foo))
             (reply (expression (value e v)))))))
@@ -94,11 +91,14 @@
       (compound
        (on (triggers (trigger i foo))
            (compound
-            (variable (type ivar (type e)) e (expression (value o foo)))
-            (assign e (expression (value o foo)))))
-       (reply e)
+            (variable (type e ivar) e (expression (value o foo)))
+            (assign e (expression (value o foo)))
+            (reply (expression (var e)))))
        (function efun
-                 (signature (type state)) (compound (return m))))))))
+                 (signature (type state)) (compound (return (var m)))))))))
+
+(pass-if "resolve-first-dummy-test"
+         #t)
 
 (pass-if "ast:resolve-function-call"
          (gom-pretty-noisy-equal?
@@ -117,14 +117,14 @@
            (car resolve-ast)
            '(variable (type e)
                       e
-                      (expression efun)))
+                      (expression (var efun))))
           '(variable (type e) e (call efun))))
 
 (pass-if "ast:resolve-assign-valued-function-call"
          (gom-pretty-noisy-equal?
           (ast:resolve-model
            (car resolve-ast)
-           '(assign m (expression efun)))
+           '(assign m (expression (var efun))))
           '(assign m (call efun))))
 
 (pass-if "ast:resolve-variable-valued-mixed-function-call-component"
@@ -132,9 +132,9 @@
           (ast:resolve-root-model
            resolve-ast
            (cadr resolve-ast)
-           '(variable (type ivar (type e))
+           '(variable (type e ivar)
                       e
-                      (expression efun)))
+                      (expression (var efun))))
           '(variable (type e ivar) e (call efun))))
 
 (pass-if "ast:resolve-assign-valued-mixed-function-call-component"
@@ -142,7 +142,7 @@
           (ast:resolve-root-model
            resolve-ast
            (cadr resolve-ast)
-           '(assign m (expression efun)))
+           '(assign m (expression (var efun))))
           '(assign m (call efun))))
 
 (pass-if "ast:resolve-variable-valued-action"
@@ -253,18 +253,11 @@
            '(component c (ports) (system #f (compound))))
           '(system c (ports) (instances) (bindings))))
 
-(pass-if "ast:resolve-binds"
-         (gom-pretty-noisy-equal?
-          (ast:resolve-model
-           resolve-system
-           '(bind i (value u i)))
-          '(bind (binding #f i) (binding u i))))
-
 (pass-if "ast:resolve-member"
          (gom-pretty-noisy-equal?
           (ast:resolve-model
            (cadr resolve-ast)
-           '(assign m (expression m)))
+           '(assign m (expression (var m))))
           '(assign m (expression (var m)))))
 
 (pass-if "ast:resolve-local"
@@ -273,7 +266,7 @@
            (cadr resolve-ast)
            '(compound
              (variable (type ivar (type E)) e (expression (value o foo)))
-             (assign e (expression e))))
+             (assign e (expression (var e)))))
           '(compound
              (variable (type ivar (type E)) e (action (trigger o foo)))
              (assign e (expression (var e))))))
@@ -284,8 +277,8 @@
            (car resolve-ast)
            '(compound
              (variable (type bool) c (expression true))
-             (assign b (call g (arguments (expression c) (expression c))))
-             (if (expression c)
+             (assign b (call g (arguments (expression (var c)) (expression (var c)))))
+             (if (expression (var c))
                   (compound))))
           '(compound
              (variable (type bool) c (expression true))
@@ -305,7 +298,7 @@
           (ast:resolve-model
            (cadr resolve-ast)
            '(function fun (signature (type void) (parameters (parameter (type bool) a)))
-                            (compound (assign b (expression a)))))
+                            (compound (assign b (expression (var a))))))
           '(function fun (signature (type void) (parameters (parameter (type bool) a)))
                      #f
                      (compound (assign b (expression (var a)))))))
@@ -370,9 +363,9 @@
               (instance alarm Alarm)
               (instance sensor Sensor)
               (instance siren Siren)
-              (bind console (value alarm console))
-              (bind (value alarm sensor) (value sensor sensor))
-              (bind (value alarm siren) (value siren siren)))))
+              (bind (binding #f console) (binding alarm console))
+              (bind (binding alarm sensor) (binding sensor sensor))
+              (bind (binding alarm siren) (binding siren siren)))))
           '(system
             AlarmSystem
             (ports (provides Console console))
@@ -395,9 +388,8 @@
               (instance alarm Alarm)
               (instance sensor Sensor)
               (instance siren Siren)
-              (bind console (binding alarm console))
-              (bind (binding alarm sensor)
-                    (binding sensor sensor))
+              (bind (binding #f console) (binding alarm console))
+              (bind (binding alarm sensor) (binding sensor sensor))
               (bind (binding alarm siren) (binding siren siren)))
              (bindings)))
           '(system

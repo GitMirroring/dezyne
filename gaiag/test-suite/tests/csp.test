@@ -1301,7 +1301,7 @@ skip_
       (guard (expression true)
              (on ((trigger i e))
                  (compound
-                  (assign b (expression (! b)))
+                  (assign b (expression (! (var b))))
                   (variable (type bool) c (call g (arguments (expression b))))
                   (assign b (call g (arguments (expression c))))
                   (if (expression c)
@@ -1361,20 +1361,20 @@ skip_
 (define callvalued-on-2
   '(on ((trigger i e))
        (compound
-        (assign b (expression (! b)))
+        (assign b (expression (! (var b))))
         (variable (type bool) c
-                  (call h (arguments (expression s) (expression b))))
-        (assign b (call h (arguments (expression s) (expression b))))
+                  (call h (arguments (expression (var s)) (expression (var b)))))
+        (assign b (call h (arguments (expression (var s)) (expression (var b)))))
         (if (expression c)
             (compound (action (trigger i f)))))))
 
 (define csp-callvalued-on-2
   '(on ((trigger i e))
-    (semi (semi (assign (ctx ((b))) (expression (ctx (((! b))))))
+    (semi (semi (assign (ctx ((b))) (expression (ctx (((! (var b)))))))
                 (context-active
-                  ((ctx ((b))) c (call h (arguments (expression s) (expression b))))
+                  ((ctx ((b))) c (call h (arguments (expression (var s)) (expression (var b)))))
                   (semi (assign-active
-                          ((ctx ((b) c)) r' (call h (arguments (expression s) (expression b))))
+                          ((ctx ((b) c)) r' (call h (arguments (expression (var s)) (expression (var b)))))
                           (ctx ((r') c)))
                         (if (ctx ((b) c))
                           (expression c)
@@ -1437,12 +1437,12 @@ skip_
 (define callvalued-on-deep
   '(on ((trigger i e))
        (compound
-        (assign b (expression (! b)))
-        (variable (type bool) c (call g (arguments (expression b))))
-        (variable (type bool) d (call g (arguments (expression c))))
+        (assign b (expression (! (var b))))
+        (variable (type bool) c (call g (arguments (expression (var b)))))
+        (variable (type bool) d (call g (arguments (expression (var c)))))
         (compound
-         (variable (type bool) cc (call g (arguments (expression c))))
-         (variable (type bool) dd (call g (arguments (expression d))))
+         (variable (type bool) cc (call g (arguments (expression (var c)))))
+         (variable (type bool) dd (call g (arguments (expression (var d)))))
          (if (expression dd)
              (compound (action (trigger i f))))))))
 
@@ -1450,15 +1450,15 @@ skip_
   '(on ((trigger i e))
     (semi (semi (assign
                  (ctx ((b)))
-                 (expression (ctx (((! b))))))
+                 (expression (ctx (((! (var b)))))))
                 (context-active
-                  ((ctx ((b))) c (call g (arguments (expression b))))
+                  ((ctx ((b))) c (call g (arguments (expression (var b)))))
                   (context-active
-                    ((ctx ((b) c)) d (call g (arguments (expression c))))
+                    ((ctx ((b) c)) d (call g (arguments (expression (var c)))))
                     (context-active
-                      ((ctx ((b) c d)) cc (call g (arguments (expression c))))
+                      ((ctx ((b) c d)) cc (call g (arguments (expression (var c)))))
                       (context-active
-                        ((ctx ((b) c d cc)) dd (call g (arguments (expression d))))
+                        ((ctx ((b) c d cc)) dd (call g (arguments (expression (var d)))))
                         (if (ctx ((b) c d cc dd))
                           (expression dd)
                           (action (trigger i f))
