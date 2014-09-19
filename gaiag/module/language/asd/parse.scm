@@ -373,7 +373,7 @@
     (illegal semicolon) : (make 'illegal '() @1))
 
    (assignment-statement
-    (Identifier = expression semicolon) : `(assign ,$1 (expression ,$3)))
+    (Identifier = expression semicolon) : (make 'assign (list $1 `(expression ,$3)) @1))
 
    (action-statement
     (trigger semicolon) : (make 'action `(,$1) @1))
