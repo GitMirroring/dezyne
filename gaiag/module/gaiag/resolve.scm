@@ -271,6 +271,13 @@
     (($ <literal> (and (? port?) (get! port)) type field)
      (make <literal> :scope (.type (port? (port))) :type type :field field))
 
+    ;; resolve PORT.enum to INTERFACE.enum
+    (($ <type> name (and (? port?) (get! port)))
+     (make <type> :name name :scope (.type (port? (port)))))
+
+    (($ <gom:parameter> name type)
+     (make <gom:parameter> :name name :type (resolve-model model type locals)))
+
     (($ <call>) o)
     (($ <event>) o)
     (($ <field>) o)
@@ -315,14 +322,14 @@
 
     (($ <variable> name type ($ <expression> (and ($ <call>) (get! call))))
      (make <variable>
-       :type type
+       :type (resolve-model model type locals)
        :name name
        :expression (resolve-model model (call) locals)))
 
     (($ <variable> name type
         ($ <expression> ($ <value> (and (? port?) (get! port)) event)))
      (make <variable>
-       :type type
+       :type (resolve-model model type locals)
        :name name
        :expression (make <action> :trigger
                          (make <trigger> :port (port) :event event))))
@@ -330,13 +337,13 @@
     (($ <variable> name type
         ($ <expression> ($ <var> (and (? function?) (get! function)))))
      (make <variable>
-       :type type
+       :type (resolve-model model type locals)
        :name name
        :expression (make <call> :identifier (function))))
 
     (($ <variable> name type expression)
      (make <variable>
-       :type type
+       :type (resolve-model model type locals)
        :name name
        :expression (resolve-model model expression locals)))
 
@@ -359,7 +366,7 @@
     (($ <function> name ($ <signature> type ($ <parameters> '())) recursive? statement)
      (make <function>
        :name name
-       :signature (.signature o)
+       :signature (resolve-model model (.signature o) locals)
        :recursive (and ((recurses? model) name) 'recursive)
        :statement (resolve-model model statement)))
 
@@ -371,7 +378,7 @@
                                (acons (.name (car parameters)) (car parameters) locals))))))
        (make <function>
          :name name
-         :signature (.signature o)
+         :signature (resolve-model model (.signature o) locals)
          :recursive (and ((recurses? model) name) 'recursive)
          :statement (resolve-model model statement locals))))
 
