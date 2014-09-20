@@ -116,7 +116,6 @@
     (module-define! module 'model o)
     (module-define! module '.component (.name o))
     (module-define! module '.COMPONENT (string-upcase (symbol->string (.name o))))
-    (module-define! module '.interface (.type (gom:port o)))
     (module-define! module '.model (.name o))
     module))
 

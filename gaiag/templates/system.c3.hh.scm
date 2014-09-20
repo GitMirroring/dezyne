@@ -8,7 +8,7 @@
 
 #(map-ports
 #{
-##include "interface-#.interface -c3.hh"
+##include "interface-#.interface-name -c3.hh"
 #} ((compose .elements .ports) model))
 namespace component
 {
@@ -20,7 +20,7 @@ struct #.model
 #} ((compose .elements .instances) model))
 #(map-ports
 #{
-  interface::#.interface & #.port-name ;
+  interface::#.interface-name & #.port-name ;
 #} ((compose .elements .ports) model))
   #.model ();
 };
