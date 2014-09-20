@@ -33,13 +33,13 @@ interface irequires_twice
 component requires_twice
 {
   provides irequires_twice p;
-  requires irequires_twice r_once;
-  requires irequires_twice r_twice;
+  requires irequires_twice once;
+  requires irequires_twice twice;
   behaviour
     { on p.e:
       {
-        r_once.a;
-        r_twice.a;
+        once.a;
+        twice.a;
       }
     }
 }
