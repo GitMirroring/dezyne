@@ -19,7 +19,7 @@ struct #.model
 #{  #.type-  #.variable ;
 #} ((compose .elements .variables .behaviour) model))
 
-  #(->string (map (compose declare-replies c++:import .type) ((compose .elements .ports) model)))
+  #(delete-duplicates (map (compose declare-replies c++:import .type) ((compose .elements .ports) model)))
 #}
 )
 
