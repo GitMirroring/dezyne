@@ -1,9 +1,7 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
-//
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -22,22 +20,45 @@
 //
 // Code:
 
-#ifndef COMPONENT_SIREN_HH
-#define COMPONENT_SIREN_HH
+#ifndef COMPONENT_COMP_HH
+#define COMPONENT_COMP_HH
 
-#include "interface-Siren-c3.hh"
+#include "interface-IComp-c3.hh"
+#include "interface-IDevice-c3.hh"
 
 namespace component
 {
-  struct Siren
+  struct Comp
   {
 
+    struct State
+    {
+      enum type
+      {
+        Uninitialized,
+        Initialized,
+        Error,
+      };
+    };
 
-    interface::Siren po_siren;
 
-    Siren();
-    void po_siren_turnon();
-    void po_siren_turnoff();
+
+    State::type s;
+
+
+    interface::IComp::result_t::type reply_IComp_result_t;
+    interface::IDevice::result_t::type reply_IDevice_result_t;
+
+
+
+    interface::IComp po_client;
+    interface::IDevice po_device_A;
+
+    Comp();
+    interface::IComp::result_t::type po_client_initialize();
+    interface::IComp::result_t::type po_client_recover();
+    interface::IComp::result_t::type po_client_perform_actions();
+
 
 
   };

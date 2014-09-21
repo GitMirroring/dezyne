@@ -1,9 +1,7 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
-//
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -22,24 +20,65 @@
 //
 // Code:
 
-#ifndef COMPONENT_SIREN_HH
-#define COMPONENT_SIREN_HH
-
-#include "interface-Siren-c3.hh"
+#include "component-function-c3.hh"
 
 namespace component
 {
-  struct Siren
+  function::function()
+  : f(false)
+  , po_i()
   {
+    po_i.in.a = asd::bind(&function::po_i_a, this);
+    po_i.in.b = asd::bind(&function::po_i_b, this);
+  }
+
+  void function::po_i_a()
+  {
+    std::cout << "function.po_i_a" << std::endl;
+    if (true)
+    {
+      {
+        toggle();
+
+      }
+
+    }
 
 
-    interface::Siren po_siren;
+  }
+  void function::po_i_b()
+  {
+    std::cout << "function.po_i_b" << std::endl;
+    if (true)
+    {
+      {
+        toggle();
+        toggle();
+        po_i.out.d();
 
-    Siren();
-    void po_siren_turnon();
-    void po_siren_turnoff();
+      }
+
+    }
 
 
-  };
+  }
+
+
+
+  void function::toggle()
+  {
+    {
+      if (f)
+      {
+        po_i.out.c();
+
+      }
+      f = ! (f);
+
+    }
+
+  }
+
+
+
 }
-#endif

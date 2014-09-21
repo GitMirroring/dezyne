@@ -34,17 +34,20 @@ namespace component
   struct Alarm
   {
 
-    enum States
+    struct States
     {
-      Disarmed,
-      Armed,
-      Triggered,
-      Disarming,
+      enum type
+      {
+        Disarmed,
+        Armed,
+        Triggered,
+        Disarming,
+      };
     };
 
 
 
-    States state;
+    States::type state;
     bool sounding;
 
 
@@ -56,10 +59,10 @@ namespace component
     interface::Siren po_siren;
 
     Alarm();
-    void arm() ;
-    void disarm() ;
-    void triggered() ;
-    void disabled() ;
+    void po_console_arm();
+    void po_console_disarm();
+    void po_sensor_triggered();
+    void po_sensor_disabled();
 
 
 

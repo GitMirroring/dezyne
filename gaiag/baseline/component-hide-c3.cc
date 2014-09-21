@@ -1,9 +1,7 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
-//
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -22,24 +20,50 @@
 //
 // Code:
 
-#ifndef COMPONENT_SIREN_HH
-#define COMPONENT_SIREN_HH
-
-#include "interface-Siren-c3.hh"
+#include "component-hide-c3.hh"
 
 namespace component
 {
-  struct Siren
+  hide::hide()
+  : b(false)
+  , c(true)
+  , po_i()
   {
+    po_i.in.e = asd::bind(&hide::po_i_e, this);
+  }
+
+  void hide::po_i_e()
+  {
+    std::cout << "hide.po_i_e" << std::endl;
+    if (true)
+    {
+      bool b = b;
+      bool c = g(b, c);
+      if (c)
+      {
+        po_i.out.f();
+
+      }
+
+    }
 
 
-    interface::Siren po_siren;
-
-    Siren();
-    void po_siren_turnon();
-    void po_siren_turnoff();
+  }
 
 
-  };
+
+  bool hide::g(bool b, bool d)
+  {
+    {
+      bool b = d;
+      bool d = c;
+      po_i.out.f();
+      return (b or d);
+
+    }
+
+  }
+
+
+
 }
-#endif

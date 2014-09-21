@@ -30,12 +30,12 @@ namespace component
   : b(false)
   , po_i()
   {
-    po_i.in.e = asd::bind(&argument2::e, this);
+    po_i.in.e = asd::bind(&argument2::po_i_e, this);
   }
 
-  void argument2::e()
+  void argument2::po_i_e()
   {
-    std::cout << "argument2.e" << std::endl;
+    std::cout << "argument2.po_i_e" << std::endl;
     if (true)
     {
       b = ! (b);

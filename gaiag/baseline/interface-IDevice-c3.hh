@@ -1,9 +1,7 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
-//
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -22,24 +20,43 @@
 //
 // Code:
 
-#ifndef COMPONENT_SIREN_HH
-#define COMPONENT_SIREN_HH
+#ifndef INTERFACE_IDEVICE_C3_HH
+#define INTERFACE_IDEVICE_C3_HH
 
-#include "interface-Siren-c3.hh"
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
 
-namespace component
+namespace asd
 {
-  struct Siren
+  using boost::function;
+  using boost::bind;
+}
+
+namespace interface
+{
+  struct IDevice
   {
+    struct result_t
+    {
+      enum type
+      {
+        OK,
+        NOK,
+      };
+    };
 
+    struct
+    {
+      asd::function<result_t::type()> initialize;
+      asd::function<result_t::type()> calibrate;
+      asd::function<result_t::type()> perform_action1;
+      asd::function<result_t::type()> perform_action2;
+    } in;
 
-    interface::Siren po_siren;
-
-    Siren();
-    void po_siren_turnon();
-    void po_siren_turnoff();
-
-
+    struct
+    {
+    } out;
   };
 }
+
 #endif

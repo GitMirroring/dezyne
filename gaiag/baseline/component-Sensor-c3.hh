@@ -36,8 +36,8 @@ namespace component
     interface::Sensor po_sensor;
 
     Sensor();
-    void enable() ;
-    void disable() ;
+    void po_sensor_enable();
+    void po_sensor_disable();
 
 
   };

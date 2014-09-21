@@ -134,16 +134,16 @@ pretty: compile
 out/%.compiles: examples/regression/%.asd
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
 	cd out && $(PWD)/gaiag -l c++ examples/regression/$*.asd
-	-$(diff) baseline/component-$*-c3.hh out
-	-$(diff) baseline/component-$*-c3.cc out
-	g++ -o out/component-$*-c3.o -c out/component-$*-c3.cc
+	$(diff) baseline/component-$*-c3.hh out
+	$(diff) baseline/component-$*-c3.cc out
+	ccache g++ -o out/component-$*-c3.o -c out/component-$*-c3.cc
 
 out/%.compiles: examples/%.asd
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
 	cd out && $(PWD)/gaiag -l c++ examples/$*.asd
-	-$(diff) baseline/component-$*-c3.hh out
-	-$(diff) baseline/component-$*-c3.cc out
-	g++ -o out/component-$*-c3.o -c out/component-$*-c3.cc
+	$(diff) baseline/component-$*-c3.hh out
+	$(diff) baseline/component-$*-c3.cc out
+	ccache g++ -o out/component-$*-c3.o -c out/component-$*-c3.cc
 
 CC_BROKEN =\
  Alarm.asd\
@@ -161,16 +161,15 @@ c++-alarm:
 	cd out && $(PWD)/gaiag -l c++ examples/Sensor.asd
 	cd out && $(PWD)/gaiag -l c++ examples/Siren.asd
 	cd out && $(PWD)/gaiag -l c++ examples/AlarmSystem.asd
-	-$(diff) baseline/component-Sensor-c3.hh out
-	-$(diff) baseline/component-Sensor-c3.cc out
-	-$(diff) baseline/component-Siren-c3.hh out
-	-$(diff) baseline/component-Siren-c3.cc out
-	-$(diff) baseline/component-Alarm-c3.hh out
-	-$(diff) baseline/component-Alarm-c3.cc out
-	-$(diff) baseline/component-AlarmSystem-c3.hh out
-	-$(diff) baseline/component-AlarmSystem-c3.cc out
-	g++ -o out/boo -c out/component-Alarm-c3.cc
-	g++ -o out/boo -I $(DEPTH)/examples/regression/codegen/asd_cpp_runtime -c out/component-AlarmSystem-c3.cc
+	$(diff) baseline/interface-Console-c3.hh out
+	$(diff) baseline/interface-Sensor-c3.hh out
+	$(diff) baseline/interface-Siren-c3.hh out
+	$(diff) baseline/component-Alarm-c3.hh out
+	$(diff) baseline/component-Alarm-c3.cc out
+	$(diff) baseline/component-AlarmSystem-c3.hh out
+	$(diff) baseline/component-AlarmSystem-c3.cc out
+	ccache g++ -o out/boo -c out/component-Alarm-c3.cc
+	ccache g++ -o out/boo -I $(DEPTH)/examples/regression/codegen/asd_cpp_runtime -c out/component-AlarmSystem-c3.cc
 
 out/%.wfc: examples/wfc/%.asd
 	! ./gaiag -l wfc $<
@@ -217,12 +216,12 @@ alarm-gen:
 	do $(PWD)/gaiag -l c++ $$file; done
 
 alarm: alarm-gen
-	-g++ -Wall -Wextra out/*.cc -o out/test && ./out/test
+	-ccache g++ -Wall -Wextra out/*.cc -o out/test && ./out/test
 
 alarm-legacy: alarm-gen
 	rm out/component-Alarm-c3.cc
 	cd out && ln -s ../alarm_legacy/* .
-	-g++ -g -Wall -Wextra out/*.c* -o out/test && ./out/test
+	-ccache g++ -g -Wall -Wextra out/*.c* -o out/test && ./out/test
 
 BROKEN =\
  asdConcepts_Behaviour.asd\

@@ -1,9 +1,7 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
-//
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -22,34 +20,38 @@
 //
 // Code:
 
-#ifndef COMPONENT_EXPRESSIONS_HH
-#define COMPONENT_EXPRESSIONS_HH
-
-#include "interface-I-c3.hh"
+#include "component-enum_collision-c3.hh"
 
 namespace component
 {
-  struct expressions
+  enum_collision::enum_collision()
+  : 
+  po_i()
   {
+    po_i.in.foo = asd::bind(&enum_collision::po_i_foo, this);
+    po_i.in.bar = asd::bind(&enum_collision::po_i_bar, this);
+  }
+
+  interface::ienum_collision::Retval1::type enum_collision::po_i_foo()
+  {
+    std::cout << "enum_collision.po_i_foo" << std::endl;
+    reply_ienum_collision_Retval1 = interface::ienum_collision::Retval1::OK;
+
+    return reply_ienum_collision_Retval1;
+
+  }
+  interface::ienum_collision::Retval2::type enum_collision::po_i_bar()
+  {
+    std::cout << "enum_collision.po_i_bar" << std::endl;
+    reply_ienum_collision_Retval2 = interface::ienum_collision::Retval2::NOK;
+
+    return reply_ienum_collision_Retval2;
+
+  }
 
 
-    typedef int State;
-
-
-    State state;
-    State c;
 
 
 
 
-
-    interface::I po_i;
-
-    expressions();
-    void po_i_e();
-
-
-
-  };
 }
-#endif

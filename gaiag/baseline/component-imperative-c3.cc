@@ -1,9 +1,7 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
-//
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -22,49 +20,56 @@
 //
 // Code:
 
-#include "component-expressions-c3.hh"
+#include "component-imperative-c3.hh"
 
 namespace component
 {
-  expressions::expressions()
-  : state(3)
-  , c(0)
+  imperative::imperative()
+  : state(States::States::I)
   , po_i()
   {
-    po_i.in.e = asd::bind(&expressions::po_i_e, this);
+    po_i.in.e = asd::bind(&imperative::po_i_e, this);
   }
 
-  void expressions::po_i_e()
+  void imperative::po_i_e()
   {
-    std::cout << "expressions.po_i_e" << std::endl;
-    if (true)
+    std::cout << "imperative.po_i_e" << std::endl;
+    if (state == States::I)
     {
-      if (state == 0)
       {
-        state = 3;
-        po_i.out.a();
+        po_i.out.f();
+        po_i.out.g();
+        po_i.out.h();
+        state = States::II;
 
       }
-      else
+
+    }
+    else if (state == States::II)
+    {
       {
-        state = state - 1;
-        if (c < state)
-        {
-          c = c + 1;
+        state = States::III;
 
-        }
-        else
-        if (c <= (state + 1))
-        {
-          po_i.out.lo();
+      }
 
-        }
-        else
-        if (c > state)
-        {
-          po_i.out.hi();
+    }
+    else if (state == States::III)
+    {
+      {
+        po_i.out.f();
+        po_i.out.g();
+        po_i.out.g();
+        po_i.out.f();
+        state = States::IV;
 
-        }
+      }
+
+    }
+    else if (state == States::IV)
+    {
+      {
+        po_i.out.h();
+        state = States::I;
 
       }
 

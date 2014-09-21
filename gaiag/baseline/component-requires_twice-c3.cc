@@ -1,9 +1,7 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
-//
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -22,24 +20,50 @@
 //
 // Code:
 
-#ifndef COMPONENT_SIREN_HH
-#define COMPONENT_SIREN_HH
-
-#include "interface-Siren-c3.hh"
+#include "component-requires_twice-c3.hh"
 
 namespace component
 {
-  struct Siren
+  requires_twice::requires_twice()
+  : 
+  po_p()
+  , po_once()
+  , po_twice()
   {
+    po_p.in.e = asd::bind(&requires_twice::po_p_e, this);
+    po_once.out.a = asd::bind(&requires_twice::po_once_a, this);
+    po_twice.out.a = asd::bind(&requires_twice::po_twice_a, this);
+  }
+
+  void requires_twice::po_p_e()
+  {
+    std::cout << "requires_twice.po_p_e" << std::endl;
+    {
+      po_once.out.a();
+      po_twice.out.a();
+
+    }
 
 
-    interface::Siren po_siren;
+  }
 
-    Siren();
-    void po_siren_turnon();
-    void po_siren_turnoff();
+  void requires_twice::po_once_a()
+  {
+    std::cout << "requires_twice.po_once_a" << std::endl;
 
 
-  };
+  }
+
+  void requires_twice::po_twice_a()
+  {
+    std::cout << "requires_twice.po_twice_a" << std::endl;
+
+
+  }
+
+
+
+
+
+
 }
-#endif

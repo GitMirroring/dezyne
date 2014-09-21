@@ -27,72 +27,72 @@
 namespace component
 {
   Alarm::Alarm()
-  : state(Disarmed)
+  : state(States::States::Disarmed)
   , sounding(false)
   , po_console()
   , po_sensor()
   , po_siren()
   {
-    po_console.in.arm = asd::bind(&Alarm::arm, this);
-    po_console.in.disarm = asd::bind(&Alarm::disarm, this);
-    po_sensor.out.triggered = asd::bind(&Alarm::triggered, this);
-    po_sensor.out.disabled = asd::bind(&Alarm::disabled, this);
+    po_console.in.arm = asd::bind(&Alarm::po_console_arm, this);
+    po_console.in.disarm = asd::bind(&Alarm::po_console_disarm, this);
+    po_sensor.out.triggered = asd::bind(&Alarm::po_sensor_triggered, this);
+    po_sensor.out.disabled = asd::bind(&Alarm::po_sensor_disabled, this);
   }
 
-  void Alarm::arm()
+  void Alarm::po_console_arm()
   {
-    std::cout << "Alarm.arm" << std::endl;
-    if (state == Disarmed)
+    std::cout << "Alarm.po_console_arm" << std::endl;
+    if (state == States::Disarmed)
     {
       {
         po_sensor.in.enable();
-        state = Armed;
+        state = States::Armed;
 
       }
 
     }
-    else if (state == Armed)
+    else if (state == States::Armed)
     {
       //illegal
     }
-    else if (state == Disarming)
+    else if (state == States::Disarming)
     {
       //illegal
     }
-    else if (state == Triggered)
+    else if (state == States::Triggered)
     {
       //illegal
     }
 
 
   }
-  void Alarm::disarm()
+  void Alarm::po_console_disarm()
   {
-    std::cout << "Alarm.disarm" << std::endl;
-    if (state == Disarmed)
+    std::cout << "Alarm.po_console_disarm" << std::endl;
+    if (state == States::Disarmed)
     {
       //illegal
     }
-    else if (state == Armed)
+    else if (state == States::Armed)
     {
       {
         po_sensor.in.disable();
-        state = Disarming;
+        state = States::Disarming;
 
       }
 
     }
-    else if (state == Disarming)
+    else if (state == States::Disarming)
     {
       //illegal
     }
-    else if (state == Triggered)
+    else if (state == States::Triggered)
     {
       {
         po_sensor.in.disable();
         po_siren.in.turnoff();
         sounding = false;
-        state = Disarming;
+        state = States::Disarming;
 
       }
 
@@ -101,71 +101,71 @@ namespace component
 
   }
 
-  void Alarm::triggered()
+  void Alarm::po_sensor_triggered()
   {
-    std::cout << "Alarm.triggered" << std::endl;
-    if (state == Disarmed)
+    std::cout << "Alarm.po_sensor_triggered" << std::endl;
+    if (state == States::Disarmed)
     {
       //illegal
     }
-    else if (state == Armed)
+    else if (state == States::Armed)
     {
       {
         po_console.out.detected();
         po_siren.in.turnon();
         sounding = true;
-        state = Triggered;
+        state = States::Triggered;
 
       }
 
     }
-    else if (state == Disarming)
+    else if (state == States::Disarming)
     {
       {
 
       }
 
     }
-    else if (state == Triggered)
+    else if (state == States::Triggered)
     {
       //illegal
     }
 
 
   }
-  void Alarm::disabled()
+  void Alarm::po_sensor_disabled()
   {
-    std::cout << "Alarm.disabled" << std::endl;
-    if (state == Disarmed)
+    std::cout << "Alarm.po_sensor_disabled" << std::endl;
+    if (state == States::Disarmed)
     {
       //illegal
     }
-    else if (state == Armed)
+    else if (state == States::Armed)
     {
       //illegal
     }
-    else if (state == Disarming)
+    else if (state == States::Disarming)
     {
       {
         if (sounding)
         {
           po_console.out.deactivated();
           po_siren.in.turnoff();
-          state = Disarmed;
+          state = States::Disarmed;
           sounding = false;
 
         }
         else
         {
           po_console.out.deactivated();
-          state = Disarmed;
+          state = States::Disarmed;
 
         }
 
       }
 
     }
-    else if (state == Triggered)
+    else if (state == States::Triggered)
     {
       //illegal
     }

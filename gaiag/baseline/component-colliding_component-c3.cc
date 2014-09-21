@@ -1,9 +1,7 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
-//
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -22,24 +20,27 @@
 //
 // Code:
 
-#ifndef COMPONENT_SIREN_HH
-#define COMPONENT_SIREN_HH
-
-#include "interface-Siren-c3.hh"
+#include "component-colliding_component-c3.hh"
 
 namespace component
 {
-  struct Siren
+  colliding_component::colliding_component()
+  : 
+  po_i()
   {
+    po_i.in.foo = asd::bind(&colliding_component::po_i_foo, this);
+  }
+
+  void colliding_component::po_i_foo()
+  {
+    std::cout << "colliding_component.po_i_foo" << std::endl;
+    //illegal
+
+  }
 
 
-    interface::Siren po_siren;
-
-    Siren();
-    void po_siren_turnon();
-    void po_siren_turnoff();
 
 
-  };
+
+
 }
-#endif

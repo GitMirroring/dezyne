@@ -22,6 +22,9 @@
 //
 // Code:
 
+#ifndef COMPONENT_ALARMSYSTEM_HH
+#define COMPONENT_ALARMSYSTEM_HH
+
 #include "component-Alarm-c3.hh"
 #include "component-Sensor-c3.hh"
 #include "component-Siren-c3.hh"
@@ -33,12 +36,13 @@ namespace component
 {
   struct AlarmSystem
   {
-    Alarm alarm;
-    Sensor sensor;
-    Siren siren;
+    Alarm is_alarm;
+    Sensor is_sensor;
+    Siren is_siren;
 
     interface::Console& po_console;
 
     AlarmSystem();
   };
 }
+#endif

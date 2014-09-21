@@ -44,7 +44,7 @@ namespace component
     interface::I po_i;
 
     argument2();
-    void e() ;
+    void po_i_e();
 
     bool g(bool ga, bool gb);
 

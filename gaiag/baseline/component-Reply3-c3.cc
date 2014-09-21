@@ -1,9 +1,7 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
-//
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -22,47 +20,34 @@
 //
 // Code:
 
-#include "component-expressions-c3.hh"
+#include "component-Reply3-c3.hh"
 
 namespace component
 {
-  expressions::expressions()
-  : state(3)
-  , c(0)
+  Reply3::Reply3()
+  : dummy(false)
   , po_i()
+  , po_u()
   {
-    po_i.in.e = asd::bind(&expressions::po_i_e, this);
+    po_i.in.done = asd::bind(&Reply3::po_i_done, this);
   }
 
-  void expressions::po_i_e()
+  interface::I::Status::type Reply3::po_i_done()
   {
-    std::cout << "expressions.po_i_e" << std::endl;
+    std::cout << "Reply3.po_i_done" << std::endl;
     if (true)
     {
-      if (state == 0)
       {
-        state = 3;
-        po_i.out.a();
-
-      }
-      else
-      {
-        state = state - 1;
-        if (c < state)
+        interface::U::Status::type s = po_u.in.what();
+        s = po_u.in.what();
+        if (s == interface::U::Status::Ok)
         {
-          c = c + 1;
+          reply_fun();
 
         }
         else
-        if (c <= (state + 1))
         {
-          po_i.out.lo();
-
-        }
-        else
-        if (c > state)
-        {
-          po_i.out.hi();
+          reply_fun_arg(interface::I::Status::No);
 
         }
 
@@ -70,11 +55,29 @@ namespace component
 
     }
 
+    return reply_I_Status;
 
   }
 
 
 
+
+  void Reply3::reply_fun()
+  {
+    {
+      reply_I_Status = interface::I::Status::Yes;
+
+    }
+
+  }
+  void Reply3::reply_fun_arg(interface::I::Status::type s)
+  {
+    {
+      reply_I_Status = s;
+
+    }
+
+  }
 
 
 
