@@ -31,15 +31,6 @@ namespace component
 {
   struct requires_twice
   {
-
-
-
-
-
-
-
-
-
     interface::irequires_twice po_p;
     interface::irequires_twice po_once;
     interface::irequires_twice po_twice;
@@ -48,9 +39,6 @@ namespace component
     void po_p_e();
     void po_once_a();
     void po_twice_a();
-
-
-
   };
 }
 #endif

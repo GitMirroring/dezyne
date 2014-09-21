@@ -29,23 +29,11 @@ namespace component
 {
   struct interface_port_overload
   {
-
-
-
-
-
-
     interface::I::R::type reply_I_R;
-
-
-
     interface::I po_I;
 
     interface_port_overload();
     interface::I::R::type po_I_e();
-
-
-
   };
 }
 #endif

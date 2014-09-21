@@ -25,8 +25,7 @@
 namespace component
 {
   interface_component_overload::interface_component_overload()
-  : 
-  po_interface_component_overload()
+  : po_interface_component_overload()
   {
     po_interface_component_overload.in.e = asd::bind(&interface_component_overload::po_interface_component_overload_e, this);
   }
@@ -38,13 +37,9 @@ namespace component
       reply_interface_component_overload_R = interface::interface_component_overload::R::V;
 
     }
-
     return reply_interface_component_overload_R;
 
   }
-
-
-
 
 
 

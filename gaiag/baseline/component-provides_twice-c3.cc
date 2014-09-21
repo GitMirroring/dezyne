@@ -32,9 +32,9 @@ void connect(Port& provided, Port& required)
 namespace component
 {
   provides_twice::provides_twice()
-  : is_one() 
-  , po_i(is_one.po_i) 
-  , po_ii(is_one.po_ii) 
+  : is_one()
+  , po_i(is_one.po_i)
+  , po_ii(is_one.po_ii)
   {
   }
 }

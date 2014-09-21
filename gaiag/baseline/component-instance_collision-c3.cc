@@ -32,8 +32,8 @@ void connect(Port& provided, Port& required)
 namespace component
 {
   instance_collision::instance_collision()
-  : is_colliding_component() 
-  , po_i(is_colliding_component.po_i) 
+  : is_colliding_component()
+  , po_i(is_colliding_component.po_i)
   {
   }
 }

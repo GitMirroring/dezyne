@@ -29,24 +29,12 @@ namespace component
 {
   struct argument
   {
-
-
-
-
     bool b;
-
-
-
-
-
     interface::I po_i;
 
     argument();
     void po_i_e();
-
     bool g(bool gc);
-
-
   };
 }
 #endif

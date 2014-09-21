@@ -25,8 +25,7 @@
 namespace component
 {
   enum_collision::enum_collision()
-  : 
-  po_i()
+  : po_i()
   {
     po_i.in.foo = asd::bind(&enum_collision::po_i_foo, this);
     po_i.in.bar = asd::bind(&enum_collision::po_i_bar, this);
@@ -36,7 +35,6 @@ namespace component
   {
     std::cout << "enum_collision.po_i_foo" << std::endl;
     reply_ienum_collision_Retval1 = interface::ienum_collision::Retval1::OK;
-
     return reply_ienum_collision_Retval1;
 
   }
@@ -44,13 +42,9 @@ namespace component
   {
     std::cout << "enum_collision.po_i_bar" << std::endl;
     reply_ienum_collision_Retval2 = interface::ienum_collision::Retval2::NOK;
-
     return reply_ienum_collision_Retval2;
 
   }
-
-
-
 
 
 

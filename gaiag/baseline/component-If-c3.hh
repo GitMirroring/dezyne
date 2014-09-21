@@ -29,23 +29,11 @@ namespace component
 {
   struct If
   {
-
-
-
-
     bool t;
-
-
-
-
-
     interface::I po_i;
 
     If();
     void po_i_a();
-
-
-
   };
 }
 #endif

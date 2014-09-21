@@ -29,25 +29,13 @@ namespace component
 {
   struct enum_collision
   {
-
-
-
-
-
-
     interface::ienum_collision::Retval1::type reply_ienum_collision_Retval1;
     interface::ienum_collision::Retval2::type reply_ienum_collision_Retval2;
-
-
-
     interface::ienum_collision po_i;
 
     enum_collision();
     interface::ienum_collision::Retval1::type po_i_foo();
     interface::ienum_collision::Retval2::type po_i_bar();
-
-
-
   };
 }
 #endif

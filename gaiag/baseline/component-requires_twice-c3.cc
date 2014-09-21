@@ -25,8 +25,7 @@
 namespace component
 {
   requires_twice::requires_twice()
-  : 
-  po_p()
+  : po_p()
   , po_once()
   , po_twice()
   {
@@ -44,25 +43,17 @@ namespace component
 
     }
 
-
   }
-
   void requires_twice::po_once_a()
   {
     std::cout << "requires_twice.po_once_a" << std::endl;
 
-
   }
-
   void requires_twice::po_twice_a()
   {
     std::cout << "requires_twice.po_twice_a" << std::endl;
 
-
   }
-
-
-
 
 
 

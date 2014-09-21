@@ -54,12 +54,9 @@ namespace component
       }
 
     }
-
     return reply_I_Status;
 
   }
-
-
 
 
   void Reply3::reply_fun()
@@ -78,7 +75,4 @@ namespace component
     }
 
   }
-
-
-
 }

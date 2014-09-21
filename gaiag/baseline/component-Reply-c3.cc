@@ -53,14 +53,9 @@ namespace component
       }
 
     }
-
     return reply_I_Status;
 
   }
-
-
-
-
 
 
 

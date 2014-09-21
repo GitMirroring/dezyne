@@ -27,15 +27,14 @@
 namespace component
 {
   Alarm::Alarm()
-  :state(States::States::Disarmed)
-  ,sounding(false)
-
+  : state(States::States::Disarmed)
+  , sounding(false)
   , po_console()
   , po_sensor()
   , po_siren()
   {
-    po_console.in.arm =  asd::bind(&Alarm::po_console_arm, this) ;
-    po_console.in.disarm =  asd::bind(&Alarm::po_console_disarm, this) ;
+    po_console.in.arm = asd::bind(&Alarm::po_console_arm, this);
+    po_console.in.disarm = asd::bind(&Alarm::po_console_disarm, this);
     po_sensor.out.triggered = asd::bind(&Alarm::po_sensor_triggered, this);
     po_sensor.out.disabled = asd::bind(&Alarm::po_sensor_disabled, this);
   }
@@ -64,7 +63,6 @@ namespace component
     {
       //illegal
     }
-
 
   }
   void Alarm::po_console_disarm()
@@ -99,9 +97,7 @@ namespace component
 
     }
 
-
   }
-
   void Alarm::po_sensor_triggered()
   {
     std::cout << "Alarm.po_sensor_triggered" << std::endl;
@@ -131,7 +127,6 @@ namespace component
     {
       //illegal
     }
-
 
   }
   void Alarm::po_sensor_disabled()
@@ -171,12 +166,7 @@ namespace component
       //illegal
     }
 
-
   }
-
-
-
-
 
 
 

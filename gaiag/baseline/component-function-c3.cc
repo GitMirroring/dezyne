@@ -44,7 +44,6 @@ namespace component
 
     }
 
-
   }
   void function::po_i_b()
   {
@@ -60,9 +59,7 @@ namespace component
 
     }
 
-
   }
-
 
 
   void function::toggle()
@@ -78,7 +75,4 @@ namespace component
     }
 
   }
-
-
-
 }

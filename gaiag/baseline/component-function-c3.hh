@@ -29,25 +29,13 @@ namespace component
 {
   struct function
   {
-
-
-
-
     bool f;
-
-
-
-
-
     interface::I po_i;
 
     function();
     void po_i_a();
     void po_i_b();
-
     void toggle();
-
-
   };
 }
 #endif

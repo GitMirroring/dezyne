@@ -30,7 +30,6 @@ namespace component
 {
   struct Comp
   {
-
     struct State
     {
       enum type
@@ -40,17 +39,9 @@ namespace component
         Error,
       };
     };
-
-
-
     State::type s;
-
-
     interface::IComp::result_t::type reply_IComp_result_t;
     interface::IDevice::result_t::type reply_IDevice_result_t;
-
-
-
     interface::IComp po_client;
     interface::IDevice po_device_A;
 
@@ -58,9 +49,6 @@ namespace component
     interface::IComp::result_t::type po_client_initialize();
     interface::IComp::result_t::type po_client_recover();
     interface::IComp::result_t::type po_client_perform_actions();
-
-
-
   };
 }
 #endif

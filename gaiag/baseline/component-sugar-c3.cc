@@ -38,11 +38,7 @@ namespace component
     if (s == Enum::False)
     po_i.out.a();
 
-
   }
-
-
-
 
 
 

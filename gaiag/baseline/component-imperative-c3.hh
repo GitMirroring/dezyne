@@ -29,7 +29,6 @@ namespace component
 {
   struct imperative
   {
-
     struct States
     {
       enum type
@@ -40,22 +39,11 @@ namespace component
         IV,
       };
     };
-
-
-
     States::type state;
-
-
-
-
-
     interface::iimperative po_i;
 
     imperative();
     void po_i_e();
-
-
-
   };
 }
 #endif

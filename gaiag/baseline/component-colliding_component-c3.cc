@@ -25,8 +25,7 @@
 namespace component
 {
   colliding_component::colliding_component()
-  : 
-  po_i()
+  : po_i()
   {
     po_i.in.foo = asd::bind(&colliding_component::po_i_foo, this);
   }
@@ -35,11 +34,7 @@ namespace component
   {
     std::cout << "colliding_component.po_i_foo" << std::endl;
     //illegal
-
   }
-
-
-
 
 
 

@@ -47,9 +47,7 @@ namespace component
 
     }
 
-
   }
-
 
 
   bool argument::g(bool gc)
@@ -61,7 +59,4 @@ namespace component
     }
 
   }
-
-
-
 }

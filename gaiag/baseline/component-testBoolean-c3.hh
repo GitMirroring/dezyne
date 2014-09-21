@@ -29,23 +29,11 @@ namespace component
 {
   struct testBoolean
   {
-
-
-
-
     bool b;
-
-
-
-
-
     interface::TestBool po_i;
 
     testBoolean();
-    void po_i_evt() ;
-
-
-
+    void po_i_evt();
   };
 }
 #endif

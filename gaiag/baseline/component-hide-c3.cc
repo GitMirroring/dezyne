@@ -47,9 +47,7 @@ namespace component
 
     }
 
-
   }
-
 
 
   bool hide::g(bool b, bool d)
@@ -63,7 +61,4 @@ namespace component
     }
 
   }
-
-
-
 }

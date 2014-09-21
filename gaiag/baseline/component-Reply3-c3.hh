@@ -30,28 +30,16 @@ namespace component
 {
   struct Reply3
   {
-
-
-
-
     bool dummy;
-
-
     interface::I::Status::type reply_I_Status;
     interface::U::Status::type reply_U_Status;
-
-
-
     interface::I po_i;
     interface::U po_u;
 
     Reply3();
     interface::I::Status::type po_i_done();
-
     void reply_fun();
     void reply_fun_arg(interface::I::Status::type s);
-
-
   };
 }
 #endif

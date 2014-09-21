@@ -62,12 +62,9 @@ namespace component
       }
 
     }
-
     return reply_I_Status;
 
   }
-
-
 
 
   Reply4::Status::type Reply4::fun()
@@ -86,7 +83,4 @@ namespace component
     }
 
   }
-
-
-
 }

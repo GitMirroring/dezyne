@@ -49,9 +49,7 @@ namespace component
 
     }
 
-
   }
-
 
 
   bool argument2::g(bool ga, bool gb)
@@ -63,7 +61,4 @@ namespace component
     }
 
   }
-
-
-
 }

@@ -31,25 +31,13 @@ namespace component
 {
   struct expressions
   {
-
-
     typedef int State;
-
-
     State state;
     State c;
-
-
-
-
-
     interface::I po_i;
 
     expressions();
     void po_i_e();
-
-
-
   };
 }
 #endif

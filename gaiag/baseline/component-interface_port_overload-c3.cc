@@ -25,8 +25,7 @@
 namespace component
 {
   interface_port_overload::interface_port_overload()
-  : 
-  po_I()
+  : po_I()
   {
     po_I.in.e = asd::bind(&interface_port_overload::po_I_e, this);
   }
@@ -38,13 +37,9 @@ namespace component
       reply_I_R = interface::I::R::V;
 
     }
-
     return reply_I_R;
 
   }
-
-
-
 
 
 

@@ -29,25 +29,13 @@ namespace component
 {
   struct hide
   {
-
-
-
-
     bool b;
     bool c;
-
-
-
-
-
     interface::I po_i;
 
     hide();
     void po_i_e();
-
     bool g(bool b, bool d);
-
-
   };
 }
 #endif

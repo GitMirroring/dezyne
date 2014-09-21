@@ -70,7 +70,6 @@ namespace component
     {
       //illegal
     }
-
     return reply_IComp_result_t;
 
   }
@@ -105,7 +104,6 @@ namespace component
       }
 
     }
-
     return reply_IComp_result_t;
 
   }
@@ -145,14 +143,9 @@ namespace component
     {
       //illegal
     }
-
     return reply_IComp_result_t;
 
   }
-
-
-
-
 
 
 

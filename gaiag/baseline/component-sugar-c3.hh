@@ -29,7 +29,6 @@ namespace component
 {
   struct sugar
   {
-
     struct Enum
     {
       enum type
@@ -38,22 +37,11 @@ namespace component
         True,
       };
     };
-
-
-
     Enum::type s;
-
-
-
-
-
     interface::I po_i;
 
     sugar();
     void po_i_e();
-
-
-
   };
 }
 #endif

@@ -29,22 +29,10 @@ namespace component
 {
   struct colliding_component
   {
-
-
-
-
-
-
-
-
-
     interface::iinstance_collision po_i;
 
     colliding_component();
     void po_i_foo();
-
-
-
   };
 }
 #endif

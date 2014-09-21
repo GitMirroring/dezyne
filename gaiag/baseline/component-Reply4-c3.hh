@@ -30,7 +30,6 @@ namespace component
 {
   struct Reply4
   {
-
     struct Status
     {
       enum type
@@ -39,27 +38,16 @@ namespace component
         No,
       };
     };
-
-
-
     bool dummy;
-
-
     interface::I::Status::type reply_I_Status;
     interface::U::Status::type reply_U_Status;
-
-
-
     interface::I po_i;
     interface::U po_u;
 
     Reply4();
     interface::I::Status::type po_i_done();
-
     Reply4::Status::type fun();
     Reply4::Status::type fun_arg(Status::type s);
-
-
   };
 }
 #endif
