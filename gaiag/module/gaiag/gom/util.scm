@@ -255,8 +255,13 @@
 (define (gom:booleans o)
   '())
 
-(define (gom:integers ast)
-  (filter (is? <int>) (.elements (.types ast))))
+(define-method (gom:integers (o <interface>))
+  ((gom:filter <int>) (.types o)))
+
+(define-method (gom:integers (o <boolean>)) '())
+
+(define-method (gom:integers (o <behaviour>))
+  ((gom:filter <int>) (.types o)))
 
 (define ((make-interface-enum port) o)
   (make <enum> :name (.name o) :scope port :fields (.fields o)))
@@ -279,6 +284,8 @@
 
 (define-method (gom:enums (o <behaviour>))
   ((gom:filter <enum>) (.types o)))
+
+(define-method (gom:enums (o <boolean>)) '())
 
 (define-method (gom:enums (port <gom:port>))
   (gom:interface-enums (gom:import (.type port))))

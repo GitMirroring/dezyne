@@ -481,32 +481,3 @@
                   (.parameters- . ,(statements->string model parameters))
                   (.statements . ,(statements->string model statement locals)))))))))
        functions))
-
-(define* (map-variables string variables :optional (separator ""))
-
-  (define (enum? identifier)
-    (let ((model (module-ref (current-module) 'model)))
-      (member identifier (map .name (gom:enums model)))))
-
-  ((->join separator)
-   (map (lambda (variable)
-          (with-output-to-string
-            (lambda ()
-              (save-module-excursion
-               (lambda ()
-                 (let ((model (module-ref (current-module) 'model))
-                       (type (.type variable)))
-                  (animate-string
-                   string
-                   (animate-module-populate
-                    (current-module)
-                    variable
-                    `((.variable . ,.name)
-                      (.type- . ,(if (enum? (.name type))
-                                     (->string (list (.name type) "::type"))
-                                     (.name type)))
-                      (.scope- . ,(if (enum? (.name type)) (->string (list (.name type) "::"))))
-                      (.value . ,(expression->string model (.expression variable))))))))))))
-        variables)))
-
-(define (action port event) "enable")
