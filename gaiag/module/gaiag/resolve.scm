@@ -169,53 +169,29 @@
 
 (define-method (resolve-model- (model <model>) o locals)
 
-  (define (interface-enums port)
-    (map (lambda (enum)
-           (make <enum>
-             :name (make <type> :name (.name enum) :scope (.type port))
-             :fields (.fields enum)))
-         ((compose gom:enums resolve:import .type) port)))
+  (define (enum? identifier) (gom:enum model identifier))
+  (define (event? identifier) (gom:event model identifier))
+  (define (function? identifier) (gom:function model identifier))
+  (define (member? identifier) (gom:variable model identifier))
+  (define (port? name) (gom:port model name))
 
-  (define (port? port)
-    (if (is-a? model <interface>)
-        #f
-        (member port (map .name (.elements (.ports model))))))
+  (define (local? identifier) (assoc-ref locals identifier))
+  (define (var? identifier) (or (member? identifier) (local? identifier)))
 
-  (define (enum? identifier)
-    (member identifier (map .name (gom:enums model))))
-
-  (define (function? identifier)
-    (member identifier (gom:function-names model)))
+  (define (event-or-function? identifier)
+    (or (function? identifier) (event? identifier)))
 
   (define (enum-field? identifier)
     (lambda (field)
-      (and-let* ((enum (find (lambda (x) (eq? (.name x) identifier))
-                             (gom:enums model))))
+      (and-let* ((enum (enum? identifier)))
                 (member field (.elements (.fields enum))))))
 
   (define (member-field? identifier)
     (lambda (field)
-      (and-let* ((variable (or (gom:variable model identifier)
-                               (gom:variable (map cdr locals) identifier)))
+      (and-let* ((variable (var? identifier))
                  (type (.type variable))
-                 (enums (append
-                         (gom:enums model)
-                         (apply append
-                                (if (is-a? model <component>) (map interface-enums (.elements (.ports model))) '()))))
-                 (enum (find (lambda (enum)
-                               (type-equal? (.name enum) type)) enums)))
+                 (enum (gom:enum model type)))
                 (member field (.elements (.fields enum))))))
-
-  (define (member? identifier)
-    (find (lambda (m) (eq? (.name m) identifier)) (gom:variables model)))
-
-  (define (local? identifier) (assoc-ref locals identifier))
-
-  (define (var? identifier) (or (member? identifier) (local? identifier)))
-
-  (define (event? identifier) (gom:event model identifier))
-  (define (event-or-function? identifier)
-    (or (function? identifier) (event? identifier)))
 
   (match o
     (($ <var> (and (? (negate var?)) (get! identifier)))
@@ -252,9 +228,7 @@
 
     ((? symbol?) (undefined-error o))
 
-    (($ <action> ($ <trigger> #f
-                    (and (? (lambda (i) (member i (gom:function-names model))))
-                         (get! identifier))))
+    (($ <action> ($ <trigger> #f (and (? function?) (get! identifier))))
      (make <call> :identifier (identifier)))
 
     (($ <assign> identifier ($ <expression> (and ($ <call>) (get! call))))

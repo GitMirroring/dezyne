@@ -42,11 +42,11 @@
            is?
            gom->list
            gom:booleans
-           gom:bottom?
            gom:component
            gom:components
            gom:declarative?
            gom:dir-matches?
+           gom:enum
            gom:enums
            gom:event
            gom:events
@@ -135,36 +135,19 @@
     ('() ast)
     (_ (throw 'match-error  (format #f "~a:gom:find-triggers: no match: ~a\n" (current-source-location) ast)))))
 
-(define* (gom:variable ast identifier)   ;; use SYMBOL TABLE
-  (match ast
-    (($ <component>) (gom:variable (apply append (map gom:variables (cons ast ((compose .elements .ports) ast)))) identifier))
-    (($ <interface>) (gom:variable (gom:variables ast) identifier))
-    (($ <variable>) (if (eq? (.name ast) identifier) ast #f))
-    ((h ...) (and=> (null-is-#f (filter identity (map (lambda (x) (gom:variable x identifier)) ast))) car))
-    (_ #f)
-    (_ (throw 'match-error  (format #f "~a:gom:variable: no match: ~a\n" (current-source-location) ast)))))
-
-(define (gom:functions ast)  ;; REMOVEME
+(define (gom:functions ast)
   (match ast
     (($ <behaviour>) (.elements (.functions ast)))
-    (($ <model>) (or (and=> (.behaviour ast) (compose .elements .functions)) '()))
+    ((? (is? <model>)) (or (and=> (.behaviour ast) (compose .elements .functions)) '()))
     (($ <gom:port>) (stderr "port: ~a\n" (.type ast))
      (gom:functions (gom:import (.type ast) ast->gom)))
     (#f '())
     (_ (throw 'match-error  (format #f "~a:gom:functions: no match: ~a\n" (current-source-location) ast)))))
 
-(define (gom:function-names model)
-  (map .name (gom:functions (.behaviour model))))
+(define-method (gom:ports (o <interface>)) '())
+(define-method (gom:ports (o <model>)) ((compose .elements .ports) o))
 
-(define (gom:function ast identifier)  ;; use SYMBOL TABLE
-  (find (lambda (f) (eq? (.name f) identifier))
-        (match ast
-          (($ <functions>) (.elements ast))
-          (($ <component>) (.elements (.functions (.behaviour ast))))
-          (($ <interface>) (.elements (.functions (.behaviour ast))))
-          (_ (throw 'match-error  (format #f "~a:gom:function: no match: ~a\n" (current-source-location) ast))))))
-
-(define (gom:variables ast)  ;; REMOVEME
+(define (gom:variables ast)
   (match ast
     (($ <behaviour>) (.elements (or (.variables ast) (make <variables>))))
     (($ <interface>) (gom:variables (.behaviour ast)))
@@ -173,19 +156,14 @@
     (#f '())
     (_ (throw 'match-error  (format #f "~a:gom:variables: no match: ~a\n" (current-source-location) ast)))))
 
-(define (gom:member-names model)  ;; SYMBOL TABLE
-  (map .name (gom:variables (.behaviour model))))
+(define (gom:member-names model)
+  (map .name (gom:variables model)))
 
-(define (gom:member-values model)  ;; SYMBOL TABLE
-  (map (lambda (x) (.value (.expression x))) (gom:variables (.behaviour model))))
+(define (gom:member-values model)
+  (map (compose .value .expression) (gom:variables model)))
 
-(define (statement? ast)  ;; REMOVEME
-  (member (ast-name ast) '(action assign bind call compound guard if instance on reply variable return)))
-
-(define (ast:system? x) (and (pair? x) (eq? (car x) 'system)))
-(define (gom:statement ast) ;; REMOVEME
+(define (gom:statement ast)
   (match ast
-    ((? ast:system?) (or (find (lambda (x) (is-a? x <compound>)) (cddr ast))))
     (($ <model>) (or (and=> (.behaviour ast) gom:statement) (make <compound>)))
     (($ <behaviour>) (or (.statement ast) (make <compound>)))
     (($ <function>) (.statement ast))
@@ -239,17 +217,11 @@
 (define-method (gom:system (o <ast-list>))
   (find (is? <system>) (.elements o)))
 
-(define-method (gom:port (o <component>))
+(define-method (gom:port (o <interface>))
+  #f)
+
+(define-method (gom:port (o <model>))
   (car ((gom:filter gom:provides?) (.ports o))))
-
-(define-method (gom:port (o <component>) (name <symbol>))
-  (find (lambda (p) (eq? (.name p) name)) (.elements (.ports o))))
-
-(define-method (gom:port (o <system>))
-  (car (filter gom:provides? (.elements (.ports o)))))
-
-(define-method (gom:port (o <system>) (name <symbol>))
-  (find (lambda (p) (eq? (.name p) name)) (.elements (.ports o))))
 
 (define-method (gom:port (o <system>) (bind <binding>))
   (let ((port (.port bind)))
@@ -262,7 +234,7 @@
   #f)
 
 (define-method (gom:instance (o <system>) (name <symbol>))
- (find (lambda (i) (eq? (.name i) name)) ((compose .elements .instances) o)))
+ (find (lambda (x) (eq? (.name x) name)) ((compose .elements .instances) o)))
 
 (define-method (gom:instance (o <system>) (bind <binding>))
   (or (gom:instance o (.instance bind))
@@ -286,10 +258,17 @@
 (define (gom:integers ast)
   (filter (is? <int>) (.elements (.types ast))))
 
-;;(define-method (gom:enums o) (filter (is? <enum>) (.elements (.types o))))
+(define ((make-interface-enum port) o)
+  (make <enum> :name (.name o) :scope port :fields (.fields o)))
 
 (define-method (gom:interface-enums (o <interface>))
   ((gom:filter <enum>) (.types o)))
+
+(define-method (gom:interface-enums (port <gom:port>))
+  (map (make-interface-enum (.type port)) (gom:enums port)))
+
+(define-method (gom:interface-enums (o <component>))
+  (append (map gom:enums ((compose .elements .ports o)))))
 
 (define-method (gom:enums (o <interface>))
   (append ((gom:filter <enum>) (.types o))
@@ -300,6 +279,29 @@
 
 (define-method (gom:enums (o <behaviour>))
   ((gom:filter <enum>) (.types o)))
+
+(define-method (gom:enums (port <gom:port>))
+  (gom:interface-enums (gom:import (.type port))))
+
+(define-method (gom:enum (o <model>) name)
+  (find (lambda (o) (eq? (.name o) name)) (gom:enums o)))
+
+(define-method (gom:enum (o <model>) (type <type>))
+  (find (lambda (o) (and (eq? (.name o) (.name type))
+                         (eq? (.scope o) (.scope type))))
+        (gom:enums o)))
+
+(define-method (gom:variable (o <model>) name)
+  (find (lambda (o) (eq? (.name o) name)) (gom:variables o)))
+
+(define-method (gom:function (o <model>) name)
+  (find (lambda (o) (eq? (.name o) name)) (gom:functions o)))
+
+(define-method (gom:port (o <interface>) name)
+  #f)
+
+(define-method (gom:port (o <model>) name)
+  (find (lambda (o) (eq? (.name o) name)) (gom:ports o)))
 
 (define-method (gom:model (o <component>)) o)
 (define-method (gom:model (o <interface>)) o)
@@ -319,15 +321,6 @@
     (($ <interface>) (.elements (.events ast)))
     (($ <gom:port>) (gom:events (gom:import (.type ast))))
     (_ (throw 'match-error  (format #f "~a:events: no match: ~a\n" (current-source-location) ast)))))
-
-(define-method (gom:bottom? (o <component>))
-  (and-let* ((ports ((compose .elements .ports) o))
-             ((=1 (length ports))))
-            (gom:provides? (car ports))))
-
-(define-method (gom:bottom? (o <interface>)) #f)
-
-(define-method (gom:bottom? (o <system>)) #t)
 
 ;;;; reading/caching
 (define *ast-alist* '())

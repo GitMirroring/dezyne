@@ -198,6 +198,7 @@
   (bindings :accessor .bindings :init-form (make <bindings>) :init-keyword :bindings))
 
 (define-class <enum> (<named>)
+  (scope :accessor .scope :init-value #f :init-keyword :scope)
   (fields :accessor .fields :init-form (list) :init-keyword :fields))
 
 (define-class <int> (<named>)

@@ -162,6 +162,7 @@
                                  (apply string-append
                                         (map ->string (.elements x)))))))
     (enum . ((name . ,identity)
+             (scope . ,identity)
              (elements . ,(compose comma-space-join .elements))))
     (int . ((name . ,identity)
             (range . ,->string)))
