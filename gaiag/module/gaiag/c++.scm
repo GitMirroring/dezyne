@@ -42,8 +42,7 @@
            enum-type
            c++-module
            c++:gom
-           c++:import
-           string-if))
+           c++:import))
 
 (define (ast-> ast)
   (let* ((gom ((gom:register c++:gom) ast #t)))
@@ -321,14 +320,6 @@
                 (.type (.type (car event))))
       'void))
 
-;;;; MAPPERS
-(define-syntax string-if
-  (syntax-rules ()
-    ((_ condition then)
-     (animate-string (if (null-is-#f condition) then "") (current-module)))
-    ((_ condition then else)
-     (animate-string (if (null-is-#f condition) then else) (current-module)))))
-
 (define (binding-name model bind)
   (let ((instance (gom:instance model bind))
         (port (gom:port model bind)))
@@ -344,34 +335,6 @@
 
 (define (bind-port? bind)
   (or (not (.instance (.left bind))) (not (.instance (.right bind)))))
-
-(define* (map-binds string binds :optional (separator ""))
-  ((->join separator)
-   (map (lambda (bind)
-          (with-output-to-string
-            (lambda ()
-              (let* ((model (module-ref (current-module) 'model))
-                     (module (c++-module model))
-                     (left (.left bind))
-                     (left-port (gom:port model left))
-                     (right (.right bind))
-                     (provided-required (if (gom:provides? left-port) (cons left right) (cons right left)))
-                     (provided (binding-name model (car provided-required)))
-                     (required (binding-name model (cdr provided-required))))
-                (save-module-excursion
-                 (lambda ()
-                   (animate-string
-                    string
-                    (animate-module-populate
-                     module
-                     bind
-                     `(
-                       (.provided . ,provided)
-                       (.required . ,required)
-                       (.port-name . ,(and (bind-port? bind) (if (not (.instance left)) (.port left) (.port right))))
-                       (.instance . ,(and (bind-port? bind) (if (not (.instance left)) (binding-name model right) (binding-name model left))))
-                       )))))))))
-        binds)))
 
 (define (return-type port event)
   (let ((type ((compose .type .type) event)))
