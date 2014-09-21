@@ -3,17 +3,18 @@
 namespace component
 {
 #.model ::#.model ()
-:# (comma-join
-    (map
-     (lambda (variable)
-       (let* ((name (.name variable))
-              (type (.type variable))
-              (enum? (gom:enum model (.name type)))
-              (scope (if enum? (->string (list (.name type) "::"))))
-              (value (expression->string model (.expression variable))))
-         (->string (list name "(" scope value ")\n"))))
-    (gom:variables model)))
-# (if (null? (gom:variables model)) "" ", ") #
+: #
+((->join  "\n, ")
+ (map
+  (lambda (variable)
+    (let* ((name (.name variable))
+           (type (.type variable))
+           (enum? (gom:enum model (.name type)))
+           (scope (if enum? (->string (list (.name type) "::"))))
+           (value (expression->string model (.expression variable))))
+      (->string (list name "(" scope value ")"))))
+  (gom:variables model)))#
+(if (null? (gom:variables model)) "" "\n, ") #
   ((->join  "\n, ")
    (map (lambda (port) (->string (list (.name port) "()"))) (gom:ports model)))
   {
@@ -22,14 +23,14 @@ namespace component
     (lambda (port)
       (map
        (lambda (event)
-         (->string (list (.name port) ".in." (.name event) " = " " asd::bind(&" (.name model) "::" (.name port) "_" (.name event) ", this) ;\n")))
+         (->string (list (.name port) ".in." (.name event) " = asd::bind(&" (.name model) "::" (.name port) "_" (.name event) ", this);\n")))
        (filter gom:in? (gom:events port))))
     (filter gom:provides? (gom:ports model)))#
    (map
     (lambda (port)
       (map
        (lambda (event)
-         (->string (list (.name port) ".out." (.name event) " =  asd::bind(&" (.name model) "::" (.name port) "_" (.name event) ", this);\n")))
+         (->string (list (.name port) ".out." (.name event) " = asd::bind(&" (.name model) "::" (.name port) "_" (.name event) ", this);\n")))
        (filter gom:out? (gom:events port))))
     (filter gom:requires? (gom:ports model))) }
 
@@ -61,21 +62,22 @@ namespace component
            "\n}\n")))) (filter (gom:dir-matches? port) (gom:events port))))
   (gom:ports model))
 
-#(map
-  (lambda (function)
-    (let* ((signature (.signature function))
-           (return-type (statements->string model signature))
-           (name (.name function))
-           (parameters (.parameters signature))
-           (statement (.statement function))
-           (locals (map (lambda (x) (cons (.name x) x)) (.elements parameters)))
-           (parameters (statements->string model parameters))
-           (statements (statements->string model statement locals))
-           (model (.name model)))
-      (->string (list return-type " " model "::" name "(" parameters ")\n"
-                      "{\n"
-                      statements
-                      "\n}\n"
-                      ))))
-  (gom:functions model))
+#((->join "\n")
+  (map
+   (lambda (function)
+     (let* ((signature (.signature function))
+            (return-type (statements->string model signature))
+            (name (.name function))
+            (parameters (.parameters signature))
+            (statement (.statement function))
+            (locals (map (lambda (x) (cons (.name x) x)) (.elements parameters)))
+            (parameters (statements->string model parameters))
+            (statements (statements->string model statement locals))
+            (model (.name model)))
+       (->string (list return-type " " model "::" name "(" parameters ")\n"
+                       "{\n"
+                       statements
+                       "\n}"
+                       ))))
+   (gom:functions model)))
 }

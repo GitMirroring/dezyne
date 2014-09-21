@@ -98,7 +98,6 @@
 
 (define-method (c++-module)
   (make-module 31 (list
-                   (resolve-module '(ice-9 match))
                    (resolve-module '(gaiag c++))
                    (resolve-module '(gaiag misc)))))
 
