@@ -3,9 +3,17 @@
 namespace component
 {
 #.model ::#.model ()
-: # (string-if (.behaviour model) #{ # (map-variables
-#{ #.variable (#.scope- #.value )#} ((compose .elements .variables .behaviour) model) "\n, ")
-  #(if (null-is-#f (.elements (.variables (.behaviour model)))) ", " "") #}) #(map-ports
+:# (comma-join
+    (map
+     (lambda (variable)
+       (let* ((name (.name variable))
+              (type (.type variable))
+              (enum? (gom:enum model (.name type)))
+              (scope (if enum? (->string (list (.name type) "::"))))
+              (value (expression->string model (.expression variable))))
+         (->string (list name "(" scope value ")\n"))))
+    (gom:variables model)))
+# (if (null? (gom:variables model)) "" ", ") #(map-ports
           #{#.port-name ()#} ((compose .elements .ports) model) "\n, ")
   {
 #(map-ports #{#(map-port-events #{#.port-name .in.#.event-name  = asd::bind(&#.model ::#.port-name _#.event-name , this);
