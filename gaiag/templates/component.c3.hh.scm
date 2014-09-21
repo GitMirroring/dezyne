@@ -25,12 +25,12 @@ struct #.model
 
 #(map-ports
 #{
-  interface::#.interface-name  #.port-name;
+  interface::#.interface-name  #.port-name ;
 #} ((compose .elements .ports) model))
   #.model ();
-#(map-ports #{#(map-port-events #{#.return-interface-type  #.port-name _#.event-name () ;
+#(map-ports #{#(map-port-events #{#.return-interface-type  #.port-name _#.event-name ();
 #} port (filter gom:in? (gom:events port))) #} (filter gom:provides? ((compose .elements .ports) model)))#
-(map-ports #{#(map-port-events #{void #.port-name _#.event-name () ;
+(map-ports #{#(map-port-events #{void #.port-name _#.event-name ();
 #} port (filter gom:out? (gom:events port))) #} (filter gom:requires? ((compose .elements .ports) model)))
 #(string-if (.behaviour model)
 #{

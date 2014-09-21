@@ -140,27 +140,25 @@
 (define statements.port (make-parameter #f))
 (define statements.event (make-parameter #f))
 
-(define* (statements->string model src :optional (locals '()) (compound? #t))
-
+(define-method (enum->identifier (model <model>) (o <expression>) locals)
   ;; FIXME: c&p (resolve-model-)
-  (define (member? identifier)
-    (find (lambda (m) (eq? (.name m) identifier)) (gom:variables model)))
-
+  (define (enum? identifier) (gom:enum model identifier))
+  (define (member? identifier) (gom:variable model identifier))
   (define (local? identifier) (assoc-ref locals identifier))
-
   (define (var? identifier) (or (member? identifier) (local? identifier)))
+  (match o
+    (($ <expression> ($ <literal> scope type field))
+     (->string (list scope "_" type)))
+    (($ <expression> ($ <var> name))
+     (or (and-let* ((decl (var? name))
+                    (type (.type decl)))
+                   (->string (list (.scope type) "_" (.name type))))
+         ""))))
 
-  (define (enum-type o)
-    (match o
-      (($ <expression> ($ <literal> scope type field)) (->string (list scope "_" type)))
-      (($ <expression> ($ <var> name))
-       (or (and-let* ((decl (var? name))
-                      (type (.type decl)))
-                     (list (.scope type) "_" (.name type)))
-           ""))))
+(define (enum->type) "todo")
 
-  (define (enum? identifier)
-    (member identifier (map .name (gom:enums model))))
+(define* (statements->string model src :optional (locals '()) (compound? #t))
+  (define (enum? identifier) (gom:enum model identifier))
 
   (let ((port (statements.port))
         (event (statements.event)))
@@ -217,10 +215,10 @@
                (event (gom:event interface event-name)))
           (list port-name '. (.direction event) '. event-name "();\n")))
        (($ <reply> expression)
-        (let* ((type (enum-type expression)))
+        (let* ((name (enum->identifier model expression locals)))
           (statements->string
            model
-           (list "reply_" type " = " (expression->string model expression locals) ";\n")
+           (list "reply_" name " = " (expression->string model expression locals) ";\n")
            locals)))
        (($ <return> #f)
         "return;\n")
@@ -273,11 +271,9 @@
     (list "(" (expression->string model expression locals) ")"))
 
   ;; FIXME: c&p (resolve-model-)
-  (define (member? identifier)
-    (find (lambda (m) (eq? (.name m) identifier)) (gom:variables model)))
-
+  (define (enum? identifier) (gom:enum model identifier))
+  (define (member? identifier) (gom:variable model identifier))
   (define (local? identifier) (assoc-ref locals identifier))
-
   (define (var? identifier) (or (member? identifier) (local? identifier)))
 
   (define (enum-type o)
