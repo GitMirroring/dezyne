@@ -347,7 +347,7 @@
                      `((port . ,identity)
                        (.interface-name . ,.type)
                        (.port-name . ,.name)
-                       (.type . ,return-type-text)
+                       (.type- . ,return-type-text)
                        ))))))))) ;; FIXME-other
 
         ports)))
@@ -425,42 +425,14 @@
              (animate-module-populate
               (current-module)
               event
-              `((.type . ,(compose .type .type))
+              `((.type- . ,(compose .type .type))
                 (.event-name . ,.name))))))) events))
 
-(define (map-port-events string port events)
-  (map (lambda (event)
-         (save-module-excursion
-          (lambda ()
-            (let* ((model (module-ref (current-module) 'model))
-                   (port (module-ref (current-module) 'port))
-                   (type ((compose .type .type) event))
-                   (reply-type (lambda (event) (->string (list (.type port) "_" (.name type)))))
-                   (return-interface-type (lambda (event)
-                                            (->string (if (not (eq? 'void (.name type)))
-                                                          (list "interface" "::" (.type port) "::" (.name type) "::type")
-                                                          'void)))))
-              (animate-string
-               string
-               (animate-module-populate
-                (current-module)
-                event
-                `((event . ,identity)
-                  (.type- . ,(compose .type .type))
-                  (.reply-type . ,reply-type)
-                  (.event-name . ,.name)
-                  (.statement- .
-                              ,(or (and-let* (((is-a? model <component>))
-                                              (component model)
-                                              (behaviour (.behaviour component))
-                                              (statement (.statement behaviour)))
-                                             (lambda (event)
-                                               (parameterize ((statements.port port)
-                                                              (statements.event event))
-                                                 (statements->string model statement '() #f))))
-                                   ""))
-                  (.return-interface-type . ,return-interface-type))))))))
-         events))
+(define (return-type port event)
+  (let ((type ((compose .type .type) event)))
+    (->string (if (not (eq? 'void (.name type)))
+                  (list "interface" "::" (.type port) "::" (.name type) "::type")
+                  'void))))
 
 (define (map-functions string functions)
   (map (lambda (function)

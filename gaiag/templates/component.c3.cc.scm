@@ -16,23 +16,43 @@ namespace component
 # (if (null? (gom:variables model)) "" ", ") #(map-ports
           #{#.port-name ()#} ((compose .elements .ports) model) "\n, ")
   {
-#(map-ports #{#(map-port-events #{#.port-name .in.#.event-name  = asd::bind(&#.model ::#.port-name _#.event-name , this);
-#} port (filter gom:in? (gom:events port))) #} (filter gom:provides? ((compose .elements .ports) model)))#
-(map-ports #{#(map-port-events #{#.port-name .out.#.event-name  = asd::bind(&#.model ::#.port-name _#.event-name , this);
-#} port (filter gom:out? (gom:events port))) #} (filter gom:requires? ((compose .elements .ports) model))) }
+#(map-ports #{#
+              (map
+               (lambda (event)
+                 (->string (list (.name port) ".in." (.name event) " = " " asd::bind(&" (.name model) "::" (.name port) "_" (.name event) ", this) ;\n")))
+               (filter gom:in? (gom:events port))) #} (filter gom:provides? ((compose .elements .ports) model)))#
+(map-ports #{#
+             (map
+              (lambda (event)
+                (->string (list (.name port) ".out." (.name event) " =  asd::bind(&" (.name model) "::" (.name port) "_" (.name event) ", this);\n")))
+              (filter gom:out? (gom:events port))) #} (filter gom:requires? ((compose .elements .ports) model))) }
 
 #(map-ports
 #{
-#(map-port-events
-#{
-    #.return-interface-type  #.model ::#.port-name _#.event-name ()
-    {
-      std::cout << "#.component .#.port-name _#.event-name" << std::endl;
-      #.statement-
-      #(if (not (eq? (.name .type-) 'void)) (->string (list "return reply_" .reply-type ";\n")))
-    }
-#}
-    port (filter (gom:dir-matches? port) (gom:events port)))
+#(map
+  (lambda (event)
+    (let* ((type ((compose .type .type) event))
+           (return-type (return-type port event))
+           (reply-type (->string (list (.type port) "_" (.name type))))
+           (statement
+            (or (and-let*
+                 (((is-a? model <component>))
+                  (component model)
+                  (behaviour (.behaviour component))
+                  (statement (.statement behaviour)))
+                 (parameterize ((statements.port port)
+                                (statements.event event))
+                   (statements->string model statement '() #f)))
+                "")))
+      (->string
+       (list
+        return-type " " (.name model) "::" (.name port) "_" (.name event) "()"
+        "\n{\n"
+        "std::cout << \"" (.name model) "." (.name port) "_" (.name event) "\" << std::endl;\n"
+        statement
+        (if (not (eq? (.name type) 'void))
+            (->string (list "return reply_" reply-type ";\n")))
+        "\n}\n")))) (filter (gom:dir-matches? port) (gom:events port)))
 #} ((compose .elements .ports) model))
 
 #(string-if (.behaviour model)

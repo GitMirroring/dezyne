@@ -31,10 +31,16 @@ struct #.model
   interface::#.interface-name  #.port-name ;
 #} ((compose .elements .ports) model))
   #.model ();
-#(map-ports #{#(map-port-events #{#.return-interface-type  #.port-name _#.event-name ();
-#} port (filter gom:in? (gom:events port))) #} (filter gom:provides? ((compose .elements .ports) model)))#
-(map-ports #{#(map-port-events #{void #.port-name _#.event-name ();
-#} port (filter gom:out? (gom:events port))) #} (filter gom:requires? ((compose .elements .ports) model)))
+#(map-ports #{#
+              (map (lambda (event)
+                     (let ((return-type (return-type port event)))
+                       (->string (list return-type " " (.name port) "_" (.name event) "();\n"))))
+                   (filter gom:in? (gom:events port))) #} (filter gom:provides? ((compose .elements .ports) model)))#
+(map-ports #{#
+             (map (lambda (event)
+                    (let ((return-type (return-type port event)))
+                      (->string (list return-type " " (.name port) "_" (.name event) "();\n"))))
+                  (filter gom:out? (gom:events port))) #} (filter gom:requires? ((compose .elements .ports) model)))
 #(string-if (.behaviour model)
 #{
 #(map-functions
