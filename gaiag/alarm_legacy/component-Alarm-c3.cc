@@ -33,13 +33,13 @@ namespace component
   , po_sensor()
   , po_siren()
   {
-    po_console.in.arm = asd::bind(&Alarm::arm, this);
-    po_console.in.disarm = asd::bind(&Alarm::disarm, this);
-    po_sensor.out.triggered = asd::bind(&Alarm::triggered, this);
-    po_sensor.out.disabled = asd::bind(&Alarm::disabled, this);
+    po_console.in.arm = asd::bind(&Alarm::po_console_arm, this);
+    po_console.in.disarm = asd::bind(&Alarm::po_console_disarm, this);
+    po_sensor.out.triggered = asd::bind(&Alarm::po_sensor_triggered, this);
+    po_sensor.out.disabled = asd::bind(&Alarm::po_sensor_disabled, this);
   }
 
-  void Alarm::arm()
+  void Alarm::po_console_arm()
   {
     std::cout << "Alarm.arm" << std::endl;
     if (state == States::Disarmed)
@@ -66,7 +66,7 @@ namespace component
 
 
   }
-  void Alarm::disarm()
+  void Alarm::po_console_disarm()
   {
     std::cout << "Alarm.disarm" << std::endl;
     if (state == States::Disarmed)
@@ -101,7 +101,7 @@ namespace component
 
   }
 
-  void Alarm::triggered()
+  void Alarm::po_sensor_triggered()
   {
     std::cout << "Alarm.triggered" << std::endl;
     if (state == States::Disarmed)
@@ -133,7 +133,7 @@ namespace component
 
 
   }
-  void Alarm::disabled()
+  void Alarm::po_sensor_disabled()
   {
     std::cout << "Alarm.disabled" << std::endl;
     if (state == States::Disarmed)
