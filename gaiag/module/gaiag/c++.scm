@@ -393,18 +393,6 @@
                        )))))))))
         binds)))
 
-(define (map-events string events)
-  (map (lambda (event)
-         (save-module-excursion
-          (lambda ()
-            (animate-string
-             string
-             (animate-module-populate
-              (current-module)
-              event
-              `((.type- . ,(compose .type .type))
-                (.event-name . ,.name))))))) events))
-
 (define (return-type port event)
   (let ((type ((compose .type .type) event)))
     (->string (if (not (eq? 'void (.name type)))
