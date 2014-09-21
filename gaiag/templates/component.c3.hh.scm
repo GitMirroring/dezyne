@@ -1,10 +1,10 @@
 ##ifndef COMPONENT_#.COMPONENT _HH
 ##define COMPONENT_#.COMPONENT _HH
 
-#(map-ports
-#{
-##include "interface-#.interface-name -c3.hh"
-#} ((compose .elements .ports) model))
+#(map (lambda (port)
+        (let ((interface (.type port)))
+          (->string (list "#include \"interface-" interface "-c3.hh\"\n"))))
+      (gom:ports model))
 namespace component
 {
 struct #.model
@@ -26,21 +26,29 @@ struct #.model
   #(delete-duplicates (map (compose declare-replies c++:import .type) ((compose .elements .ports) model)))
 
 
-#(map-ports
-#{
-  interface::#.interface-name  #.port-name ;
-#} ((compose .elements .ports) model))
+#(map
+  (lambda (port)
+    (let ((name (.name port))
+          (interface (.type port)))
+      (->string (list "interface::" interface " " name ";\n") )))
+  ((compose .elements .ports) model))
   #.model ();
-#(map-ports #{#
-              (map (lambda (event)
-                     (let ((return-type (return-type port event)))
-                       (->string (list return-type " " (.name port) "_" (.name event) "();\n"))))
-                   (filter gom:in? (gom:events port))) #} (filter gom:provides? ((compose .elements .ports) model)))#
-(map-ports #{#
-             (map (lambda (event)
-                    (let ((return-type (return-type port event)))
-                      (->string (list return-type " " (.name port) "_" (.name event) "();\n"))))
-                  (filter gom:out? (gom:events port))) #} (filter gom:requires? ((compose .elements .ports) model)))
+#(map
+  (lambda (port)
+    (map
+     (lambda (event)
+       (let ((return-type (return-type port event))
+             (function (list (.name port) "_" (.name event))))
+         (->string (list return-type " " function "();\n"))))
+     (filter gom:in? (gom:events port))))
+  (filter gom:provides? (gom:ports model)))#
+(map
+ (lambda (port)
+   (map (lambda (event)
+          (let ((return-type (return-type port event)))
+            (->string (list return-type " " (.name port) "_" (.name event) "();\n"))))
+        (filter gom:out? (gom:events port))))
+ (filter gom:requires? ((compose .elements .ports) model)))
 #(string-if (.behaviour model)
 #{
 #(map-functions

@@ -13,50 +13,54 @@ namespace component
               (value (expression->string model (.expression variable))))
          (->string (list name "(" scope value ")\n"))))
     (gom:variables model)))
-# (if (null? (gom:variables model)) "" ", ") #(map-ports
-          #{#.port-name ()#} ((compose .elements .ports) model) "\n, ")
+# (if (null? (gom:variables model)) "" ", ") #
+  ((->join  "\n, ")
+   (map (lambda (port) (->string (list (.name port) "()"))) (gom:ports model)))
   {
-#(map-ports #{#
-              (map
-               (lambda (event)
-                 (->string (list (.name port) ".in." (.name event) " = " " asd::bind(&" (.name model) "::" (.name port) "_" (.name event) ", this) ;\n")))
-               (filter gom:in? (gom:events port))) #} (filter gom:provides? ((compose .elements .ports) model)))#
-(map-ports #{#
-             (map
-              (lambda (event)
-                (->string (list (.name port) ".out." (.name event) " =  asd::bind(&" (.name model) "::" (.name port) "_" (.name event) ", this);\n")))
-              (filter gom:out? (gom:events port))) #} (filter gom:requires? ((compose .elements .ports) model))) }
+#
+   (map
+    (lambda (port)
+      (map
+       (lambda (event)
+         (->string (list (.name port) ".in." (.name event) " = " " asd::bind(&" (.name model) "::" (.name port) "_" (.name event) ", this) ;\n")))
+       (filter gom:in? (gom:events port))))
+    (filter gom:provides? (gom:ports model)))#
+   (map
+    (lambda (port)
+      (map
+       (lambda (event)
+         (->string (list (.name port) ".out." (.name event) " =  asd::bind(&" (.name model) "::" (.name port) "_" (.name event) ", this);\n")))
+       (filter gom:out? (gom:events port))))
+    (filter gom:requires? (gom:ports model))) }
 
-#(map-ports
-#{
 #(map
-  (lambda (event)
-    (let* ((type ((compose .type .type) event))
-           (return-type (return-type port event))
-           (reply-type (->string (list (.type port) "_" (.name type))))
-           (statement
-            (or (and-let*
-                 (((is-a? model <component>))
-                  (component model)
-                  (behaviour (.behaviour component))
-                  (statement (.statement behaviour)))
-                 (parameterize ((statements.port port)
-                                (statements.event event))
-                   (statements->string model statement '() #f)))
-                "")))
-      (->string
-       (list
-        return-type " " (.name model) "::" (.name port) "_" (.name event) "()"
-        "\n{\n"
-        "std::cout << \"" (.name model) "." (.name port) "_" (.name event) "\" << std::endl;\n"
-        statement
-        (if (not (eq? (.name type) 'void))
-            (->string (list "return reply_" reply-type ";\n")))
-        "\n}\n")))) (filter (gom:dir-matches? port) (gom:events port)))
-#} ((compose .elements .ports) model))
+  (lambda (port)
+    (map
+     (lambda (event)
+       (let* ((type ((compose .type .type) event))
+              (return-type (return-type port event))
+              (reply-type (->string (list (.type port) "_" (.name type))))
+              (statement
+               (or (and-let*
+                    (((is-a? model <component>))
+                     (component model)
+                     (behaviour (.behaviour component))
+                     (statement (.statement behaviour)))
+                    (parameterize ((statements.port port)
+                                   (statements.event event))
+                      (statements->string model statement '() #f)))
+                   "")))
+         (->string
+          (list
+           return-type " " (.name model) "::" (.name port) "_" (.name event) "()"
+           "\n{\n"
+           "std::cout << \"" (.name model) "." (.name port) "_" (.name event) "\" << std::endl;\n"
+           statement
+           (if (not (eq? (.name type) 'void))
+               (->string (list "return reply_" reply-type ";\n")))
+           "\n}\n")))) (filter (gom:dir-matches? port) (gom:events port))))
+  (gom:ports model))
 
-#(string-if (.behaviour model)
-#{
 #(map-functions
   #{  #.return-type  #.model ::#.function (#.parameters- )
   {
@@ -64,6 +68,5 @@ namespace component
   }
 #}
 ((compose .elements .functions .behaviour) model))
-#})
 
 }

@@ -72,6 +72,7 @@
            gom:parent
            gom:parse-asd
            gom:port
+           gom:ports
            gom:provides?
            gom:requires?
            gom:register

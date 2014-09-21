@@ -6,10 +6,10 @@
 ##include "component-#.component -c3.hh"
 #} ((compose .elements .instances) model))
 
-#(map-ports
-#{
-##include "interface-#.interface-name -c3.hh"
-#} ((compose .elements .ports) model))
+#(map (lambda (port)
+        (let ((interface (.type port)))
+          (->string (list "#include \"interface-" interface "-c3.hh\"\n"))))
+      (gom:ports model))
 namespace component
 {
 struct #.model
@@ -18,10 +18,12 @@ struct #.model
 #{
    #.component  #.name ;
 #} ((compose .elements .instances) model))
-#(map-ports
-#{
-  interface::#.interface-name & #.port-name ;
-#} ((compose .elements .ports) model))
+#(map
+  (lambda (port)
+    (let ((name (.name port))
+          (interface (.type port)))
+      (->string (list "interface::" interface "& " name ";\n"))))
+  ((compose .elements .ports) model))
   #.model ();
 };
 }

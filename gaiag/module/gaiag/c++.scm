@@ -330,29 +330,6 @@
     ((_ condition then else)
      (animate-string (if (null-is-#f condition) then else) (current-module)))))
 
-(define* (map-ports string ports :optional (separator ""))
-  ((->join separator)
-   (map (lambda (port)
-          (with-output-to-string
-            (lambda ()
-              (let* ((model (module-ref (current-module) 'model))
-                     (module (c++-module model)))
-                (save-module-excursion
-                 (lambda ()
-                   (animate-string
-                    string
-                    (animate-module-populate
-                     module
-                     port
-                     `((port . ,identity)
-                       (.interface-name . ,.type)
-                       (.port-name . ,.name)
-                       (.type- . ,return-type-text)
-                       ))))))))) ;; FIXME-other
-
-        ports)))
-
-
 (define* (map-instances string instances :optional (separator ""))
   ((->join separator)
    (map (lambda (instance)
