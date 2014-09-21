@@ -1,10 +1,10 @@
 ##ifndef COMPONENT_#.COMPONENT _HH
 ##define COMPONENT_#.COMPONENT _HH
 
-#(map-instances
-#{
-##include "component-#.component -c3.hh"
-#} ((compose .elements .instances) model))
+#(map (lambda (instance)
+        (let ((component (.component instance)))
+          (->string (list "#include \"component-" component "-c3.hh\"\n"))))
+      ((compose .elements .instances) model))
 
 #(map (lambda (port)
         (let ((interface (.type port)))
@@ -14,10 +14,12 @@ namespace component
 {
 struct #.model
 {
-#(map-instances
-#{
-   #.component  #.name ;
-#} ((compose .elements .instances) model))
+#(map
+  (lambda (instance)
+    (let ((component (.component instance))
+          (name (.name instance)))
+     (->string (list component " " name ";\n"))))
+  ((compose .elements .instances) model))
 #(map
   (lambda (port)
     (let ((name (.name port))

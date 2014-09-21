@@ -10,7 +10,12 @@ void connect(Port& provided, Port& required)
 namespace component
 {
 #.model ::#.model ()
-: #(map-instances #{#.name () #} ((compose .elements .instances) model) "\n, ")
+: #((->join  "\n, ")
+    (map
+     (lambda (instance)
+      (let ((name (.name instance)))
+        (->string (list name "()"))))
+     ((compose .elements .instances) model)))
 , #(map-binds #{#.port-name (#.instance ) #}  (filter bind-port? ((compose .elements .bindings) model)) "\n, ")
 {
 #(map-binds #{connect(#.provided ,#.required );

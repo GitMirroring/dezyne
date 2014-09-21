@@ -114,7 +114,6 @@
 (define-method (c++-module (o <model>))
   (let ((module (c++-module)))
     (module-define! module 'model o)
-    (module-define! module '.component (.name o))
     (module-define! module '.COMPONENT (string-upcase (symbol->string (.name o))))
     (module-define! module '.model (.name o))
     module))
@@ -329,25 +328,6 @@
      (animate-string (if (null-is-#f condition) then "") (current-module)))
     ((_ condition then else)
      (animate-string (if (null-is-#f condition) then else) (current-module)))))
-
-(define* (map-instances string instances :optional (separator ""))
-  ((->join separator)
-   (map (lambda (instance)
-          (with-output-to-string
-            (lambda ()
-              (let* ((model (module-ref (current-module) 'model))
-                     (module (c++-module model)))
-                (save-module-excursion
-                 (lambda ()
-                   (animate-string
-                    string
-                    (animate-module-populate
-                     module
-                     instance
-                     `((instance . ,identity)
-                       (.component . ,.component)
-                       (.name . ,.name))))))))))
-          instances)))
 
 (define (binding-name model bind)
   (let ((instance (gom:instance model bind))
