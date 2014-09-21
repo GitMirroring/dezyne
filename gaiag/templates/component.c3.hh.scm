@@ -49,13 +49,15 @@ struct #.model
             (->string (list return-type " " (.name port) "_" (.name event) "();\n"))))
         (filter gom:out? (gom:events port))))
  (filter gom:requires? ((compose .elements .ports) model)))
-#(string-if (.behaviour model)
-#{
-#(map-functions
-#{  #.return-type  #.function (#.parameters- );
-#}
-((compose .elements .functions .behaviour) model))
-#})
+#(map
+  (lambda (function)
+    (let* ((signature (.signature function))
+           (return-type (statements->string model signature))
+           (name (.name function))
+           (parameters (.parameters signature))
+           (parameters (statements->string model parameters)))
+      (->string (list return-type " " name "(" parameters ");\n"))))
+  (gom:functions model))
 };
 }
 ##endif

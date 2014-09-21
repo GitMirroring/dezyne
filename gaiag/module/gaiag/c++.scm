@@ -398,23 +398,3 @@
     (->string (if (not (eq? 'void (.name type)))
                   (list "interface" "::" (.type port) "::" (.name type) "::type")
                   'void))))
-
-(define (map-functions string functions)
-  (map (lambda (function)
-         (save-module-excursion
-          (lambda ()
-            (let* ((model (module-ref (current-module) 'model))
-                   (signature (.signature function))
-                   (parameters (.parameters signature))
-                   (statement (.statement function))
-                   (locals (map (lambda (x) (cons (.name x) x)) (.elements parameters))))
-              (animate-string
-               string
-               (animate-module-populate
-                (current-module)
-                function
-                `((.function . ,.name)
-                  (.return-type . ,(statements->string model signature))
-                  (.parameters- . ,(statements->string model parameters))
-                  (.statements . ,(statements->string model statement locals)))))))))
-       functions))

@@ -61,12 +61,21 @@ namespace component
            "\n}\n")))) (filter (gom:dir-matches? port) (gom:events port))))
   (gom:ports model))
 
-#(map-functions
-  #{  #.return-type  #.model ::#.function (#.parameters- )
-  {
-    #.statements
-  }
-#}
-((compose .elements .functions .behaviour) model))
-
+#(map
+  (lambda (function)
+    (let* ((signature (.signature function))
+           (return-type (statements->string model signature))
+           (name (.name function))
+           (parameters (.parameters signature))
+           (statement (.statement function))
+           (locals (map (lambda (x) (cons (.name x) x)) (.elements parameters)))
+           (parameters (statements->string model parameters))
+           (statements (statements->string model statement locals))
+           (model (.name model)))
+      (->string (list return-type " " model "::" name "(" parameters ")\n"
+                      "{\n"
+                      statements
+                      "\n}\n"
+                      ))))
+  (gom:functions model))
 }
