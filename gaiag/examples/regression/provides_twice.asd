@@ -1,5 +1,6 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
 //
@@ -23,6 +24,7 @@
 interface iprovides_once
 {
   in void foo;
+  out void bar;
 
   behaviour
   {
@@ -33,6 +35,7 @@ interface iprovides_once
 interface iprovides_twice
 {
   in void foo;
+  out void bar;
 
   behaviour
   {
@@ -44,9 +47,9 @@ component component_provides_twice
 {
   provides iprovides_once i;
   behaviour
-    {
-      on i.foo: illegal;
-    }
+  {
+    on i.foo: illegal;
+  }
 }
 
 component external_provides_twice
