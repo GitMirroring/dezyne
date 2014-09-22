@@ -399,14 +399,15 @@
     (return expression semicolon) : (make 'return (list `(expression ,$2)) @1))
 
    (variable-statement
-    (compound-type Identifier = expression semicolon) : `(variable ,$1 ,$2 (expression ,$4)))
+    (variable): $1)
 
    (variable-list
     () : '(variables)
     (variable-list variable) : (append $1 (list $2)))
 
    (variable
-    (type Identifier = expression semicolon) : `(variable ,$1 ,$2 (expression ,$4)))))
+    (type Identifier = expression semicolon) : `(variable ,$1 ,$2 (expression ,$4))
+    (compound-type Identifier = expression semicolon) : `(variable ,$1 ,$2 (expression ,$4)))))
 
 (define (compile-tree-il exp env opts)
   (values (parse-tree-il (comp exp '())) env env))
