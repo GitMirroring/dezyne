@@ -220,7 +220,7 @@ alarm: alarm-gen
 
 alarm-legacy: alarm-gen
 	rm out/component-Alarm-c3.cc
-	cd out && ln -s ../alarm_legacy/* .
+	cd out && cp ../alarm_legacy/* .
 	-ccache g++ -g -Wall -Wextra out/*.c* -o out/test && ./out/test
 
 BROKEN =\

@@ -24,150 +24,108 @@
 
 #include "component-Alarm-c3.hh"
 
+#include "AlarmSystemComponent.h"
+#include "WindowSensorComponent.h"
+#include "SirenComponent.h"
+
+#include <boost/make_shared.hpp>
+#include <boost/enable_shared_from_this.hpp>
+
+class SingleThreaded: public asd::channels::ISingleThreaded
+{
+public:
+  void processCBs() {std::cout << "SingleThreaded::processCBs" << std::endl;}
+};
+
+class LegacyCB: public IAlarmSystem_NI
+{
+  interface::Console& console;
+public:
+  LegacyCB(interface::Console& console)
+  : console(console)
+  {}
+  void Tripped() {console.out.detected();}
+  void SwitchedOff() {console.out.deactivated();}
+};
+
+class LegacySensor: public WindowSensorComponent
+                  , public ISensor
+                  , public boost::enable_shared_from_this<LegacySensor>
+{
+  boost::shared_ptr<asd::channels::ISingleThreaded> st;
+  boost::shared_ptr<ISensor_NI> cb;
+  interface::Sensor* sensor;
+public:
+  static boost::shared_ptr<LegacySensor> singleton;
+
+  void set(interface::Sensor& sensor)
+  {
+    this->sensor = &sensor;
+    sensor.out.triggered = boost::bind(&LegacySensor::DetectedMovement, this);
+    sensor.out.disabled = boost::bind(&LegacySensor::Deactivated, this);
+  }
+  void DetectedMovement() {cb->DetectedMovement(); st->processCBs();}
+  void Deactivated() {cb->Deactivated(); st->processCBs();}
+  void Activate() {sensor->in.enable();}
+  void Deactivate() {sensor->in.disable();}
+  void GetAPI(boost::shared_ptr<ISensor>* api) {*api = shared_from_this();}
+  void RegisterCB(boost::shared_ptr<ISensor_NI> cb) {this->cb = cb;}
+  void RegisterCB(boost::shared_ptr<asd::channels::ISingleThreaded> st) {this->st = st;}
+};
+
+boost::shared_ptr<LegacySensor> LegacySensor::singleton;
+
+boost::shared_ptr<SensorInterface> WindowSensorComponent::GetInstance()
+{
+  if(not LegacySensor::singleton)
+    LegacySensor::singleton = boost::make_shared<LegacySensor>();
+  return LegacySensor::singleton;
+}
+void WindowSensorComponent::ReleaseInstance() {LegacySensor::singleton.reset();}
+
+
+class LegacySiren: public SirenComponent
+                 , public ISiren
+                 , public boost::enable_shared_from_this<LegacySiren>
+{
+  interface::Siren* siren;
+public:
+  static boost::shared_ptr<LegacySiren> singleton;
+
+  void set(interface::Siren& siren) {this->siren = &siren;}
+  void TurnOn() {siren->in.turnon();}
+  void TurnOff() {siren->in.turnoff();}
+  void GetAPI(boost::shared_ptr<ISiren>* api) {*api = shared_from_this();}
+};
+
+boost::shared_ptr<LegacySiren> LegacySiren::singleton;
+
+boost::shared_ptr<SirenInterface> SirenComponent::GetInstance()
+{
+  if(not LegacySiren::singleton)
+    LegacySiren::singleton = boost::make_shared<LegacySiren>();
+  return LegacySiren::singleton;
+}
+void SirenComponent::ReleaseInstance() {LegacySiren::singleton.reset();}
+
 namespace component
 {
   Alarm::Alarm()
-  : state(States::States::Disarmed)
-  , sounding(false)
-  , po_console()
+  : po_console()
   , po_sensor()
   , po_siren()
   {
-    po_console.in.arm = asd::bind(&Alarm::po_console_arm, this);
-    po_console.in.disarm = asd::bind(&Alarm::po_console_disarm, this);
-    po_sensor.out.triggered = asd::bind(&Alarm::po_sensor_triggered, this);
-    po_sensor.out.disabled = asd::bind(&Alarm::po_sensor_disabled, this);
+    static boost::shared_ptr<AlarmSystemInterface> a = AlarmSystemComponent::GetInstance();
+    boost::shared_ptr<IAlarmSystem> api;
+    a->GetAPI(&api);
+    po_console.in.arm = asd::bind(&IAlarmSystem::SwitchOn, api);
+    po_console.in.disarm = asd::bind(&IAlarmSystem::SwitchOff, api);
+
+    boost::shared_ptr<IAlarmSystem_NI> cb = boost::make_shared<LegacyCB>(boost::ref(po_console));
+    a->RegisterCB(cb);
+    a->RegisterCB(boost::make_shared<SingleThreaded>());
+
+    LegacySensor::singleton->set(po_sensor);
+    LegacySiren::singleton->set(po_siren);
   }
-
-  void Alarm::po_console_arm()
-  {
-    std::cout << "Alarm.po_console_arm" << std::endl;
-    if (state == States::Disarmed)
-    {
-      {
-        po_sensor.in.enable();
-        state = States::Armed;
-
-      }
-
-    }
-    else if (state == States::Armed)
-    {
-      //illegal
-    }
-    else if (state == States::Disarming)
-    {
-      //illegal
-    }
-    else if (state == States::Triggered)
-    {
-      //illegal
-    }
-
-  }
-  void Alarm::po_console_disarm()
-  {
-    std::cout << "Alarm.po_console_disarm" << std::endl;
-    if (state == States::Disarmed)
-    {
-      //illegal
-    }
-    else if (state == States::Armed)
-    {
-      {
-        po_sensor.in.disable();
-        state = States::Disarming;
-
-      }
-
-    }
-    else if (state == States::Disarming)
-    {
-      //illegal
-    }
-    else if (state == States::Triggered)
-    {
-      {
-        po_sensor.in.disable();
-        po_siren.in.turnoff();
-        sounding = false;
-        state = States::Disarming;
-
-      }
-
-    }
-
-  }
-  void Alarm::po_sensor_triggered()
-  {
-    std::cout << "Alarm.po_sensor_triggered" << std::endl;
-    if (state == States::Disarmed)
-    {
-      //illegal
-    }
-    else if (state == States::Armed)
-    {
-      {
-        po_console.out.detected();
-        po_siren.in.turnon();
-        sounding = true;
-        state = States::Triggered;
-
-      }
-
-    }
-    else if (state == States::Disarming)
-    {
-      {
-
-      }
-
-    }
-    else if (state == States::Triggered)
-    {
-      //illegal
-    }
-
-  }
-  void Alarm::po_sensor_disabled()
-  {
-    std::cout << "Alarm.po_sensor_disabled" << std::endl;
-    if (state == States::Disarmed)
-    {
-      //illegal
-    }
-    else if (state == States::Armed)
-    {
-      //illegal
-    }
-    else if (state == States::Disarming)
-    {
-      {
-        if (sounding)
-        {
-          po_console.out.deactivated();
-          po_siren.in.turnoff();
-          state = States::Disarmed;
-          sounding = false;
-
-        }
-        else
-        {
-          po_console.out.deactivated();
-          state = States::Disarmed;
-
-        }
-
-      }
-
-    }
-    else if (state == States::Triggered)
-    {
-      //illegal
-    }
-
-  }
-
-
-
 }

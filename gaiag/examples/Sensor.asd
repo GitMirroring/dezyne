@@ -87,4 +87,10 @@ interface Sensor
 component Sensor
 {
   provides Sensor sensor;
+
+  behaviour
+  {
+    on enable:{}
+    on disable:{}
+  }
 }
