@@ -305,7 +305,10 @@
    (function
     (type Identifier lparen rparen compound-statement) : (make 'function `(,$2 ,(make 'signature (list $1) @1), $5) @1)
 
-    (type Identifier lparen parameter-list rparen compound-statement) : (make 'function `(,$2 ,(make 'signature (list $1 $4) @1) ,$6) @1))
+    (type Identifier lparen parameter-list rparen compound-statement) : (make 'function `(,$2 ,(make 'signature (list $1 $4) @1) ,$6) @1)
+    (compound-type Identifier lparen rparen compound-statement) : (make 'function `(,$2 ,(make 'signature (list $1) @1), $5) @1)
+
+    (compound-type Identifier lparen parameter-list rparen compound-statement) : (make 'function `(,$2 ,(make 'signature (list $1 $4) @1) ,$6) @1))
 
    (parameter-list
     (parameter) : `(parameters ,$1)
