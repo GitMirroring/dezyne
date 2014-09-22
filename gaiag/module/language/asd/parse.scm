@@ -80,6 +80,7 @@
       (('triggers t ...) ast)
       (('provides type name) ast)
       (('value type field) ast)
+      (('var name) ast)
       (('variables v ...) ast)
       (('variable type name value ...) ast)
       (('requires type name) ast)
@@ -361,7 +362,7 @@
     (lbrace statement-list rbrace) : (make 'compound (cdr $2) @1))
 
    (compound-identifier
-    (Identifier) : `(var ,$1)
+    (Identifier) : (make 'var (list $1) @1)
     (Identifier dot Identifier) : `(value ,$1 ,$3)
     (Identifier dot Identifier dot Identifier) : `(literal ,$1 ,$3 ,$5))
 
