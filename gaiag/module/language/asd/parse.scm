@@ -85,6 +85,7 @@
       (('variable type name value ...) ast)
       (('requires type name) ast)
       (('trigger port event) ast)
+      (('type name scope) ast)
       ('(inevitable) (ast:make 'trigger '(#f inevitable)))
       (('optional) (ast:make 'trigger '(#f optional)))
       (('guard expression statement) ast)
@@ -249,7 +250,7 @@
 
    (compound-type
     (type) : $1
-    (Identifier dot type) : `(type ,$1 ,$3))
+    (Identifier dot type) : (make 'type (list $1 $3) @1))
 
    (enum-spec
     (enum Identifier lbrace enum-value-list rbrace semicolon) : `(,$1 ,$2 ,$4))
