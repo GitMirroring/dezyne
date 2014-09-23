@@ -37,6 +37,7 @@
            ast->gom
            ast->sugar
            ast->trigger-sugar
+           retain-source-location
            ))
 
 (define (ast->sugar ast)
@@ -66,13 +67,15 @@
                  ast)))
     (ast->gom- ast)))
 
+(define (retain-source-location o t)
+  (and-let* (((supports-source-properties? o))
+             (loc (source-property o 'loc))
+             ((supports-source-properties? t)))
+            (set-source-property! t 'loc loc))
+  t)
+
 (define (ast->gom- ast)
-  (let* ((gom ((compose ast->gom-- ast->sugar) ast)))
-    (and-let* (((supports-source-properties? ast))
-               (loc (source-property ast 'loc))
-               ((supports-source-properties? gom)))
-              (set-source-property! gom 'loc loc))
-    gom))
+  (retain-source-location ast ((compose ast->gom-- ast->sugar) ast)))
 
 (define (ast->gom-- ast)
   (match ast

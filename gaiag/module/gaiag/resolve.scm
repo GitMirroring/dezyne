@@ -95,13 +95,6 @@
   ;;(throw 'well-formed errors)
   (exit 1))
 
-(define (retain-source-location o t)
-  (and-let* (((supports-source-properties? o))
-             (loc (source-property o 'loc))
-             ((supports-source-properties? t)))
-            (set-source-property! t 'loc loc))
-  t)
-
 (define-method (resolve-top-model (o <model>))
   ((compose gom:register-model (lambda (m) (resolve-model m m)) resolve-mixed) o))
 
