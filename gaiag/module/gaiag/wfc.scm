@@ -47,10 +47,12 @@
            ))
 
 (define-method (ast:wellformed? (o <ast>))
-  (and-let* ((errors (append
-                      (component o)
-                      (second-on o)
-                      (mixing-declarative-imperative o))))
+  (and-let* ((errors (null-is-#f
+                      ((gom:collect <error>)
+                       (append
+                        (component o)
+                        (second-on o)
+                        (mixing-declarative-imperative o))))))
             (report-errors errors))
   o)
 
@@ -62,11 +64,12 @@
     (($ <root> elements) '(()) (apply append (map component elements)))
     (($ <component> name ($ <ports> ports) ($ <behaviour>))
      ((gom:filter <error>)
-      (list
+      (append
        (if (!= (length (filter gom:provides? ports)) 1)
-           (wfc-error o "component with behaviour must have one provides port"))
+           (list (wfc-error o "component with behaviour must have one provides port")))
        (if (null? (gom:find-triggers o))
-           (wfc-error o "component with behaviour must accept a trigger event")))))
+           (list (wfc-error o "component with behaviour must accept a trigger event")))
+       '())))
     (_ '())))
 
 (define-method (second-on (o <ast>))
@@ -81,11 +84,11 @@
       (($ <component>) (second-on (.behaviour o)))
       (($ <behaviour>) (second-on (.statement o)))
       (($ <compound> statements)
-       (filter null-is-#f (map (second-on- count) statements)))
+       (map (second-on- count) statements))
       (($ <on> triggers statement)
        (if (>0 count) (wfc-error o "second on")
            ((second-on- (1+ count)) statement)))
-      (($ <guard> expression statement) ((second-on- count) statement))
+      (($ <guard> expression statement) (list ((second-on- count) statement)))
       (_ '()))))
 
 (define-method (mixing-declarative-imperative (o <ast>))
@@ -96,8 +99,7 @@
     (($ <component>) (mixing-declarative-imperative (.behaviour o)))
     (($ <behaviour>) (mixing-declarative-imperative (.statement o)))
     (($ <compound> statements)
-     (apply
-      append
+     (append
       (let ((first (first-statement statements)))
         (match first
           ((? (is? <imperative>))

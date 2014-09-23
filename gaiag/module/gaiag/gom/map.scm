@@ -108,8 +108,14 @@
     (gom:for-each (lambda (x) (if (predicate x) (add x)) x) o)
     (reverse collect)))
 
-(define-method (gom:collect (class <class>) (o <ast>))
-  (gom:collect (is? class) o))
+(define-method (gom:collect (predicate <procedure>) (o <list>))
+  (apply append (map (lambda (o) (gom:collect predicate o)) o)))
+
+(define-method (gom:collect (predicate <procedure>))
+  (lambda (o) (gom:collect predicate o)))
+
+(define-method (gom:collect (class <class>))
+  (gom:collect (is? class)))
 
 (define-method (gom:collect:variables (o <ast>)) ;;this also gets locals
   (gom:collect <variable> o))

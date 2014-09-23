@@ -21,11 +21,11 @@
 //
 // Code:
 
-interface Double
+interface second_compound
 {
-  in void aap;
-  behaviour b
+  in void e;
+  behaviour
     {
-      [true] on aap: [false] { on aap: { } }
+      [true] on e: [false] { on e: { } }
     }
 }

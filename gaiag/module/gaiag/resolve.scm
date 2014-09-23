@@ -70,7 +70,7 @@
 
 (define-method (gom:resolve (o <root>))
   (let* ((resolved (make <root> :elements (map resolve-top-model (.elements o))))
-         (errors (null-is-#f (gom:collect <error> resolved))))
+         (errors (null-is-#f ((gom:collect <error>) resolved))))
     (and=> errors report-errors)
     resolved))
 
@@ -378,7 +378,7 @@
       (_ #f)))
   (and-let* ((function (gom:function model name))
              (compound (.statement function))
-             (calls (null-is-#f (gom:collect return-call compound)))
+             (calls (null-is-#f ((gom:collect return-call) compound)))
              (names (delete-duplicates (sort (map .identifier calls) symbol<))))
             (or (member name seen)
                 (any identity
@@ -390,10 +390,10 @@
     (($ <system> name ports instances bindings)
      (let* ((instances (gom:map (resolve-model model) instances))
             (bindings (gom:map (resolve-model model) bindings))
-            (rinstances (append (gom:collect <instance> instances)
-                                (gom:collect <instance> bindings)))
-            (rbindings  (append (gom:collect <bind> instances)
-                                (gom:collect <bind> bindings))))
+            (rinstances (append ((gom:collect <instance>) instances)
+                                ((gom:collect <instance>) bindings)))
+            (rbindings  (append ((gom:collect <bind>) instances)
+                                ((gom:collect <bind>) bindings))))
        (make <system>
          :name name
          :ports ports
