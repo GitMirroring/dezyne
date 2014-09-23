@@ -14,6 +14,15 @@
 (define resolve-model (@@ (gaiag resolve) resolve-model))
 (define resolve-mixed (@@ (gaiag resolve) resolve-mixed))
 
+(define-method (undefined-error (o <list>) (identifier <symbol>))
+  ((@@ (gaiag resolve) undefined-error) (ast->gom o) identifier))
+
+(define-method (undefined-error (o <list>) (identifier <symbol>) (message <string>))
+  ((@@ (gaiag resolve) undefined-error) (ast->gom o) identifier message))
+
+(define-method (type-mismatch (o <list>) (expected <symbol>) (actual <symbol>))
+  ((@@ (gaiag resolve) type-mismatch) (ast->gom o) expected actual))
+
 (define-method (ast:resolve-model o)
   (let* ((gom (ast->gom o))
          (m (resolve-mixed gom)))
@@ -406,12 +415,6 @@
              (bind (binding alarm sensor) (binding sensor sensor))
              (bind (binding alarm siren) (binding siren siren))))))
 
-(define-method (undefined-error (o <list>) (identifier <symbol>))
-  ((@@ (gaiag resolve) undefined-error) (ast->gom o) identifier))
-
-(define-method (undefined-error (o <list>) (identifier <symbol>) (message <string>))
-  ((@@ (gaiag resolve) undefined-error) (ast->gom o) identifier message))
-
 (pass-if "ast:resolve-undefined-identifier"
   (gom-pretty-noisy-equal?
    (ast:resolve-model
@@ -481,3 +484,17 @@
     (cadr resolve-ast)
     '(variable (type mode Q) c (expression 0)))
    (undefined-error '(type mode Q) 'Q "undefined type: ~a")))
+
+(pass-if "ast:resolve-init-type-int"
+  (gom-pretty-noisy-equal?
+   (ast:resolve-model
+    (car resolve-ast)
+    '(variable (type mode) c (expression 0)))
+    '(variable (type mode) c (expression 0))))
+
+(pass-if "ast:resolve-init-type-mismatch"
+  (gom-pretty-noisy-equal?
+   (ast:resolve-model
+    (car resolve-ast)
+    '(variable (type bool) b (expression 0)))
+   (type-mismatch '(expression 0) 'bool 'int)))

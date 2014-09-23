@@ -68,6 +68,9 @@
 (define-method (undefined-error (identifier <symbol>))
   (undefined-error (make <var> :name identifier) identifier))
 
+(define-method (type-mismatch (o <ast>) (expected <symbol>) (actual <symbol>))
+  (make <error> :ast o :message (format #f "type mismatch: ~a expected, found: ~a" expected actual)))
+
 (define-method (gom:resolve (o <root>))
   (let* ((resolved (make <root> :elements (map resolve-top-model (.elements o))))
          (errors (null-is-#f ((gom:collect <error>) resolved))))
@@ -160,6 +163,19 @@
 (define-method (type-equal? (a <symbol>) (b <symbol>))
   (eq? a b))
 
+(define (->string o)
+  (match o
+    (($ <type> name #f) name)
+    (($ <type> name scope) (list scope '. name))
+    (_ o)))
+
+(define (gom:type o)
+  (match o
+    (($ <expression> 'false) (make <type> :name 'bool))
+    (($ <expression> 'true) (make <type> :name 'bool))
+    (($ <expression> (? number?)) (make <type> :name 'int))
+    (_ #f)))
+
 (define-method (resolve-model- (model <model>) o locals)
 
   (define (enum? identifier) (gom:enum model identifier))
@@ -213,6 +229,14 @@
                           scope)
                 (.name (type)))))
       (undefined-error (type) name "undefined type: ~a")))
+
+    (($ <variable> name type expression) (=> failure)
+     (or (and-let* ((e-type (gom:type expression))
+                    ((not (type-equal? e-type type)))
+                    ((if (eq? (.name e-type) 'int)
+                         (not (gom:integer model type)))))
+                   (type-mismatch expression (->string type) (->string e-type)))
+         (failure)))
 
     ((or 'false 'true) o)
     ((or 'and 'or) o)
