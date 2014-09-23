@@ -292,6 +292,12 @@
     (($ <value> (and (? var?) (get! type)) (? (member-field? (type))))
      (make <field> :identifier (type) :field (.field o)))
 
+    (($ <value> (? enum?) field)
+     (undefined-error o field "undefined enum field: ~a"))
+
+    (($ <value> (? var?) field)
+     (undefined-error o field "undefined enum field: ~a"))
+
     (($ <expression> value)
      (make <expression> :value (resolve-model model value locals)))
 
