@@ -41,12 +41,12 @@
   :use-module (gaiag resolve)
 
   :export (
-           ast:wellformed?
+           ast:wfc
            second-on
            mixing-declarative-imperative
            ))
 
-(define-method (ast:wellformed? (o <ast>))
+(define-method (ast:wfc (o <ast>))
   (and-let* ((errors (null-is-#f
                       ((gom:collect <error>)
                        (append
@@ -65,10 +65,12 @@
     (($ <component> name ($ <ports> ports) ($ <behaviour>))
      ((gom:filter <error>)
       (append
-       (if (!= (length (filter gom:provides? ports)) 1)
-           (list (wfc-error o "component with behaviour must have one provides port")))
-       (if (null? (gom:find-triggers o))
-           (list (wfc-error o "component with behaviour must accept a trigger event")))
+       (list
+        (if (!= (length (filter gom:provides? ports)) 1)
+            (wfc-error o "component with behaviour must have one provides port")))
+       (list
+        (if (null? (gom:find-triggers o))
+            (wfc-error o "component with behaviour must accept a trigger event")))
        '())))
     (_ '())))
 
@@ -80,26 +82,26 @@
     (match o
       (($ <root> elements) (apply append (map second-on elements)))
       (($ <system>) '())
-      (($ <interface>) (second-on (.behaviour o)))
-      (($ <component>) (second-on (.behaviour o)))
-      (($ <behaviour>) (second-on (.statement o)))
+      (($ <interface>) (or (and=> (.behaviour o) second-on) '()))
+      (($ <component>) (or (and=> (.behaviour o) second-on) '()))
+      (($ <behaviour>) (or (and=> (.statement o) second-on) '()))
       (($ <compound> statements)
-       (map (second-on- count) statements))
+       (append (map (second-on- count) statements)))
       (($ <on> triggers statement)
        (if (>0 count) (wfc-error o "second on")
-           ((second-on- (1+ count)) statement)))
-      (($ <guard> expression statement) (list ((second-on- count) statement)))
+           (append ((second-on- (1+ count)) statement))))
+      (($ <guard> expression statement) (append ((second-on- count) statement)))
       (_ '()))))
 
 (define-method (mixing-declarative-imperative (o <ast>))
   (match o
     (($ <root> elements) (apply append (map mixing-declarative-imperative elements)))
     (($ <system>) '())
-    (($ <interface>) (mixing-declarative-imperative (.behaviour o)))
-    (($ <component>) (mixing-declarative-imperative (.behaviour o)))
-    (($ <behaviour>) (mixing-declarative-imperative (.statement o)))
+    (($ <interface>) (or (and=> (.behaviour o) mixing-declarative-imperative) '()))
+    (($ <component>) (or (and=> (.behaviour o) mixing-declarative-imperative) '()))
+    (($ <behaviour>) (or (and=> (.statement o) mixing-declarative-imperative) '()))
     (($ <compound> statements)
-     (append
+     (apply append
       (let ((first (first-statement statements)))
         (match first
           ((? (is? <imperative>))
@@ -118,6 +120,7 @@
       (map mixing-declarative-imperative statements)))
     (($ <on> triggers statement) (mixing-declarative-imperative statement))
     (($ <guard> epression statement) (mixing-declarative-imperative statement))
+    (($ <if> expression then #f) (mixing-declarative-imperative then))
     (($ <if> expression then else) (append (mixing-declarative-imperative then)
                                            (mixing-declarative-imperative else)))
     (_ '())))
@@ -131,4 +134,4 @@
         first)))
 
 (define (ast-> ast)
-  ((compose gom->list ast:wellformed? ast:resolve ast->gom) ast))
+  ((compose gom->list ast:wfc ast:resolve ast->gom) ast))

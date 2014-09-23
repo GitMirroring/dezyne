@@ -39,6 +39,7 @@
   :use-module (gaiag normstate)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
+  :use-module (gaiag wfc)
 
   :use-module (oop goops)
   :use-module (oop goops describe)
@@ -103,7 +104,7 @@
   (gom:import name csp:norm))
 
 (define (csp:norm ast)
-  ((compose normstate mangle ast:resolve ast->gom) ast))
+  ((compose normstate mangle ast:wfc ast:resolve ast->gom) ast))
 
 (define (mangle ast)
   "experimental mangling"

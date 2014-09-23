@@ -32,6 +32,7 @@
   :use-module (gaiag misc)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
+  :use-module (gaiag wfc)
 
   :use-module (oop goops)
   :use-module (oop goops describe)
@@ -53,7 +54,7 @@
   (gom:import name c++:gom))
 
 (define (c++:gom ast)
-  ((compose mangle ast:resolve ast->gom) ast))
+  ((compose mangle ast:wfc ast:resolve ast->gom) ast))
 
 (define (mangle o)
   (if #f

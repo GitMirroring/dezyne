@@ -36,6 +36,7 @@
   :use-module (gaiag reader)
 
   :use-module (gaiag resolve)
+  :use-module (gaiag wfc)
 
   :use-module (oop goops)
   :use-module (oop goops describe)
@@ -65,7 +66,7 @@
   (gom:import name simulate:gom))
 
 (define (simulate:gom ast)
-  ((compose ast:resolve ast->gom) ast))
+  ((compose ast:wfc ast:resolve ast->gom) ast))
 
 (define ((variable-state model) variable . value)
   (cons (.name variable)

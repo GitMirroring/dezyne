@@ -27,6 +27,7 @@
   :use-module (gaiag indent)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
+  :use-module (gaiag wfc)
 
   :use-module (gaiag resolve)
 
@@ -44,7 +45,7 @@
 (define ast->pretty ast->asd)
 
 (define (pretty:gom ast)
-  ((compose ast:resolve ast->gom) ast))
+  ((compose ast:wfc ast:resolve ast->gom) ast))
 
 (define-method (children (o <ast>))
   (map (lambda (slot) (slot-ref o (slot-definition-name slot))) ((compose class-slots class-of) o)))
