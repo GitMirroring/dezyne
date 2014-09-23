@@ -422,11 +422,25 @@
    (ast:resolve-model
     (car resolve-ast)
     '(action (trigger #f q)))
-   (undefined-error '(action (trigger #f q)) 'q "no such function or event: ~a")))
+   (undefined-error '(action (trigger #f q)) 'q "undefined function or event: ~a")))
 
 (pass-if "ast:resolve-undefined-call"
   (gom-pretty-noisy-equal?
    (ast:resolve-model
     (car resolve-ast)
     '(call q))
-   (undefined-error '(call q) 'q "no such function or event: ~a")))
+   (undefined-error '(call q) 'q "undefined function or event: ~a")))
+
+(pass-if "ast:resolve-undefined-enum-field"
+  (gom-pretty-noisy-equal?
+   (ast:resolve-model
+    (car resolve-ast)
+    '(value state three))
+   (undefined-error '(value state three) 'three "undefined enum field: ~a")))
+
+(pass-if "ast:resolve-undefined-enum-var-field"
+  (gom-pretty-noisy-equal?
+   (ast:resolve-model
+    (car resolve-ast)
+    '(value m three))
+   (undefined-error '(value m three) 'three "undefined enum field: ~a")))

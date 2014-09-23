@@ -202,10 +202,10 @@
 
     (($ <action> ($ <trigger> #f
                     (and (? (negate event-or-function?)) (get! identifier))))
-     (undefined-error o (identifier) "no such function or event: ~a"))
+     (undefined-error o (identifier) "undefined function or event: ~a"))
 
     (($ <call> (and (? symbol?) (? (negate event-or-function?)) (get! identifier)))
-     (undefined-error o (identifier) "no such function or event: ~a"))
+     (undefined-error o (identifier) "undefined function or event: ~a"))
 
     ((or 'false 'true) o)
     ((or 'and 'or) o)

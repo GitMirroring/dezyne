@@ -590,11 +590,21 @@
           :recursive (.recursive o)
           :statement transformed)))
 
+(define-method (ast-transform- ast (o <expression>) return context)
+  (let ((value (.value o)))
+    (match (.value o)
+      (($ <call>) (make <expression> :value (ast-transform- ast value return context)))
+      (_ o))))
+
 (define-method (ast-transform- ast (o <reply>) return context)
-  (make <csp-reply> :context context :expression (.expression o)))
+  (make <csp-reply>
+    :context context
+    :expression (ast-transform- ast (.expression o) return context)))
 
 (define-method (ast-transform- ast (o <return>) return context)
-  (make <csp-return> :context context :expression (.expression o)))
+  (make <csp-return>
+    :context context
+    :expression (ast-transform- ast (.expression o) return context)))
 
 (define-method (ast-transform- ast (o <call>) return context)
   (make <csp-call>
@@ -648,6 +658,7 @@
 (define (=>string ast src)
   (match src
     (('ctx context) (context->csp ast context))
+    (($ <expression> (and ($ <csp-call>) (get! call))) (csp-transform ast (call)))
     (($ <expression>) (csp-expression->string ast src))
     (($ <arguments> arguments) (comma-join (map (lambda (x) (=>string ast x)) arguments)))
     ((h t ...) (->string (map (lambda (x) (=>string ast x)) src)))
