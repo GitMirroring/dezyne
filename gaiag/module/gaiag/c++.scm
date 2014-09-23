@@ -82,9 +82,13 @@
         (dump-indented (symbol-append 'component- name '-c3.cc)
                        (lambda ()
                          ((animate-template 'component.c3.cc.scm) (c++-module o))))
-        (dump-indented (symbol-append 'glue-component- name '-c3.cc)
-                       (lambda ()
-                         ((animate-template 'glue-bottom-component.c3.cc.scm) (c++-module o)))))))
+        (if #t
+            (dump-indented (symbol-append 'glue-component- name '-c3.cc)
+                        (lambda ()
+                          ((animate-template 'glue-top-component.c3.cc.scm) (c++-module o))))
+            (dump-indented (symbol-append 'glue-component- name '-c3.cc)
+                           (lambda ()
+                             ((animate-template 'glue-bottom-component.c3.cc.scm) (c++-module o))))))))
 
 (define-method (dump (o <system>))
   (let ((name (.name o))
