@@ -85,6 +85,7 @@
       (('variable type name value ...) ast)
       (('requires type name) ast)
       (('trigger port event) ast)
+      (('type name) ast)
       (('type name scope) ast)
       ('(inevitable) (ast:make 'trigger '(#f inevitable)))
       (('optional) (ast:make 'trigger '(#f optional)))
@@ -245,7 +246,7 @@
    (type
     (bool) : '(type bool)
     (int) : '(type int)
-    (Identifier) : `(type ,$1)
+    (Identifier) : (make 'type (list $1) @1)
     (void) : '(type void))
 
    (compound-type
