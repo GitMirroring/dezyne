@@ -165,6 +165,7 @@
              (scope . ,identity)
              (elements . ,(compose comma-space-join .elements))))
     (int . ((name . ,identity)
+            (scope . ,identity)
             (range . ,->string)))
     (range . ((from . ,->string)
               (to . ,->string)))

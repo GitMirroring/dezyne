@@ -30,7 +30,7 @@
 
 (define resolve-ast
   '((interface
-        ivar
+     ivar
       (types (enum e (v)))
       (events (in (signature (type e)) foo)
               (enum mixed (v))
@@ -38,7 +38,8 @@
       (behaviour
        #f
        (types
-        (enum state (one two)))
+        (enum state (one two))
+        (int mode (range 0 3)))
        (variables
         (variable (type state) m (expression (value state one)))
         (variable (type bool) b (expression true)))
@@ -59,7 +60,8 @@
      (behaviour
       #f
       (types
-       (enum state (one two)))
+       (enum state (one two))
+       (int mode (range 0 3)))
       (variables
        (variable (type state) m (expression (value state one)))
        (variable (type bool) b true))
@@ -265,10 +267,10 @@
           (ast:resolve-model
            (cadr resolve-ast)
            '(compound
-             (variable (type ivar (type E)) e (expression (value o foo)))
+             (variable (type ivar (type e)) e (expression (value o foo)))
              (assign e (expression (var e)))))
           '(compound
-             (variable (type ivar (type E)) e (action (trigger o foo)))
+             (variable (type ivar (type e)) e (action (trigger o foo)))
              (assign e (expression (var e))))))
 
 (pass-if "ast:resolve-local-if"
@@ -444,3 +446,38 @@
     (car resolve-ast)
     '(value m three))
    (undefined-error '(value m three) 'three "undefined enum field: ~a")))
+
+(pass-if "ast:resolve-undefined-type"
+  (gom-pretty-noisy-equal?
+   (ast:resolve-model
+    (car resolve-ast)
+    '(variable (type boolean) c (expression true)))
+   (undefined-error '(type boolean #f) 'boolean "undefined type: ~a")))
+
+(pass-if "ast:resolve-undefined-enum-type"
+  (gom-pretty-noisy-equal?
+   (ast:resolve-model
+    (car resolve-ast)
+    '(variable (type status) c (expression true)))
+   (undefined-error '(type status #f) 'status "undefined type: ~a")))
+
+(pass-if "ast:resolve-undefined-enum-interface"
+  (gom-pretty-noisy-equal?
+   (ast:resolve-model
+    (cadr resolve-ast)
+    '(variable (type status Q) c (expression true)))
+   (undefined-error '(type status Q) 'Q "undefined type: ~a")))
+
+(pass-if "ast:resolve-undefined-int-type"
+  (gom-pretty-noisy-equal?
+   (ast:resolve-model
+    (car resolve-ast)
+    '(variable (type made) c (expression 0)))
+   (undefined-error '(type made #f) 'made "undefined type: ~a")))
+
+(pass-if "ast:resolve-undefined-int-interface"
+  (gom-pretty-noisy-equal?
+   (ast:resolve-model
+    (cadr resolve-ast)
+    '(variable (type mode Q) c (expression 0)))
+   (undefined-error '(type mode Q) 'Q "undefined type: ~a")))

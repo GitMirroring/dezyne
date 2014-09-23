@@ -172,6 +172,7 @@
   (define (enum? identifier) (gom:enum model identifier))
   (define (event? identifier) (gom:event model identifier))
   (define (function? identifier) (gom:function model identifier))
+  (define (int? identifier) (gom:integer model identifier))
   (define (member? identifier) (gom:variable model identifier))
   (define (port? name) (gom:port model name))
 
@@ -193,6 +194,11 @@
                  (enum (gom:enum model type)))
                 (member field (.elements (.fields enum))))))
 
+  (define (type? type) (or (and (not (.scope type))
+                                (member (.name type) '(bool void)))
+                           (gom:enum model type)
+                           (gom:integer model type)))
+
   (match o
     (($ <var> (and (? (negate var?)) (get! identifier)))
      (undefined-error o (identifier)))
@@ -206,6 +212,14 @@
 
     (($ <call> (and (? symbol?) (? (negate event-or-function?)) (get! identifier)))
      (undefined-error o (identifier) "undefined function or event: ~a"))
+
+    (($ <variable> name (and (? (negate type?)) (get! type)) expression)
+     (let ((name
+            (or (and-let* ((scope (.scope (type)))
+                           ((not (gom:port model scope))))
+                          scope)
+                (.name (type)))))
+      (undefined-error (type) name "undefined type: ~a")))
 
     ((or 'false 'true) o)
     ((or 'and 'or) o)
