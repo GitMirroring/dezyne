@@ -42,6 +42,7 @@
            .parameters
            .port
            .ports
+           .range
            .recursive
            .right
            .scope
@@ -202,6 +203,7 @@
   (fields :accessor .fields :init-form (list) :init-keyword :fields))
 
 (define-class <int> (<named>)
+  (scope :accessor .scope :init-value #f :init-keyword :scope)
   (range :accessor .range :init-form (make <range>) :init-keyword :range))
 
 (define-class <range> (<ast>)

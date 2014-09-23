@@ -58,9 +58,11 @@
            gom:import
            gom:instance
            gom:in?
+           gom:integer
            gom:integers
            gom:interface
            gom:interface-enums
+           gom:interface-integers
            gom:interfaces
            gom:model-with-behaviour
            gom:models-with-behaviour
@@ -256,14 +258,6 @@
 (define (gom:booleans o)
   '())
 
-(define-method (gom:integers (o <interface>))
-  ((gom:filter <int>) (.types o)))
-
-(define-method (gom:integers (o <boolean>)) '())
-
-(define-method (gom:integers (o <behaviour>))
-  ((gom:filter <int>) (.types o)))
-
 (define ((make-interface-enum port) o)
   (make <enum> :name (.name o) :scope port :fields (.fields o)))
 
@@ -274,7 +268,7 @@
   (map (make-interface-enum (.type port)) (gom:enums port)))
 
 (define-method (gom:interface-enums (o <component>))
-  (append (map gom:enums ((compose .elements .ports o)))))
+  (apply append (map gom:interface-enums ((compose .elements .ports) o))))
 
 (define-method (gom:enums (o <interface>))
   (append ((gom:filter <enum>) (.types o))
@@ -298,6 +292,54 @@
   (find (lambda (o) (and (eq? (.name o) (.name type))
                          (eq? (.scope o) (.scope type))))
         (gom:enums o)))
+
+(define-method (gom:enum (o <component>) (type <type>))
+  (or (next-method)
+      (find (lambda (o) (and (eq? (.name o) (.name type))
+                             (eq? (.scope o) (.scope type))))
+            (gom:interface-enums o))))
+
+
+(define ((make-interface-integer port) o)
+  (make <int> :name (.name o) :scope port :range (.range o)))
+
+(define-method (gom:interface-integers (o <interface>))
+  ((gom:filter <int>) (.types o)))
+
+(define-method (gom:interface-integers (port <gom:port>))
+  (map (make-interface-integer (.type port)) (gom:integers port)))
+
+(define-method (gom:interface-integers (o <component>))
+  (apply append (map gom:interface-integers ((compose .elements .ports) o))))
+
+(define-method (gom:integers (o <interface>))
+  (append ((gom:filter <int>) (.types o))
+          ((gom:filter <int>) (or (and=> (.behaviour o) .types) '()))))
+
+(define-method (gom:integers (o <component>))
+  ((gom:filter <int>) (or (and=> (.behaviour o) .types) '())))
+
+(define-method (gom:integers (o <behaviour>))
+  ((gom:filter <int>) (.types o)))
+
+(define-method (gom:integers (o <boolean>)) '())
+
+(define-method (gom:integers (port <gom:port>))
+  (gom:interface-integers (gom:import (.type port))))
+
+(define-method (gom:integer (o <model>) (type <type>))
+  (find (lambda (o) (and (eq? (.name o) (.name type))
+                         (eq? (.scope o) (.scope type))))
+        (gom:integers o)))
+
+(define-method (gom:integer (o <component>) (type <type>))
+  (or (next-method)
+      (find (lambda (o) (and (eq? (.name o) (.name type))
+                             (eq? (.scope o) (.scope type))))
+            (gom:interface-integers o))))
+
+(define-method (gom:integer (o <model>) name)
+  (find (lambda (o) (eq? (.name o) name)) (gom:integers o)))
 
 (define-method (gom:variable (o <model>) name)
   (find (lambda (o) (eq? (.name o) name)) (gom:variables o)))
