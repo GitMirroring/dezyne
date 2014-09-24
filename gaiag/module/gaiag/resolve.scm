@@ -156,6 +156,10 @@
   (and (eq? (.scope a) (.scope b))
        (eq? (.name a) (.name b))))
 
+(define-method (type-equal? (a <enum>) (b <type>))
+  (and (eq? (.scope a) (.scope b))
+       (eq? (.name a) (.name b))))
+
 (define-method (type-equal? (a <symbol>) (b <type>))
   (and (not (.scope b))
        (eq? a (.name b))))
@@ -163,18 +167,14 @@
 (define-method (type-equal? (a <symbol>) (b <symbol>))
   (eq? a b))
 
-(define (->string o)
+(define (->symbol o)
   (match o
     (($ <type> name #f) name)
-    (($ <type> name scope) (list scope '. name))
+    (($ <type> name scope) (symbol-append scope '. name))
+    (($ <value> type field)  (symbol-append type '. field))
+    (($ <enum> name #f field) name)
+    (($ <enum> name scope field)  (symbol-append scope '. name))
     (_ o)))
-
-(define (gom:type o)
-  (match o
-    (($ <expression> 'false) (make <type> :name 'bool))
-    (($ <expression> 'true) (make <type> :name 'bool))
-    (($ <expression> (? number?)) (make <type> :name 'int))
-    (_ #f)))
 
 (define-method (resolve-model- (model <model>) o locals)
 
@@ -208,6 +208,25 @@
                            (gom:enum model type)
                            (gom:integer model type)))
 
+  (define (gom:type model o)
+    (match o
+      (($ <expression> expression) (gom:type model expression))
+      ('false (make <type> :name 'bool))
+      ('true (make <type> :name 'bool))
+      ((? number?) (make <type> :name 'int))
+      (($ <literal> scope name field)
+       (and-let* ((enum (gom:enum model (make <type>
+                                          :scope scope
+                                          :name name)))
+                  ((member field ((compose .elements .fields) enum))))
+                 enum))
+      (($ <value> type field)
+       (and-let* ((enum (gom:enum model (make <type>
+                                          :name type)))
+                  ((member field ((compose .elements .fields) enum))))
+                 enum))
+      (_ #f)))
+
   (match o
     (($ <var> (and (? (negate var?)) (get! identifier)))
      (undefined-error o (identifier)))
@@ -231,11 +250,11 @@
       (undefined-error (type) name "undefined type: ~a")))
 
     (($ <variable> name type expression) (=> failure)
-     (or (and-let* ((e-type (gom:type expression))
+     (or (and-let* ((e-type (gom:type model expression))
                     ((not (type-equal? e-type type)))
                     ((if (eq? (.name e-type) 'int)
                          (not (gom:integer model type)))))
-                   (type-mismatch expression (->string type) (->string e-type)))
+                   (type-mismatch expression (->symbol type) (->symbol e-type)))
          (failure)))
 
     ((or 'false 'true) o)

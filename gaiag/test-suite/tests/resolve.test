@@ -498,3 +498,17 @@
     (car resolve-ast)
     '(variable (type bool) b (expression 0)))
    (type-mismatch '(expression 0) 'bool 'int)))
+
+(pass-if "ast:resolve-init-enum-mismatch"
+  (gom-pretty-noisy-equal?
+   (ast:resolve-model
+    (car resolve-ast)
+    '(variable (type bool) b (value state one)))
+   (type-mismatch '(value state one) 'bool 'state)))
+
+(pass-if "ast:resolve-init-enum-mismatch"
+  (gom-pretty-noisy-equal?
+   (ast:resolve-model
+    (cadr resolve-ast)
+    '(variable (type bool) b (literal ivar e v)))
+   (type-mismatch '(literal ivar e v) 'bool 'ivar.e)))
