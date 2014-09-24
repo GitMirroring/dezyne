@@ -34,7 +34,8 @@
   (def-macro (lalr-error msg obj) `(error ,msg ,obj))
 
   (define pprint pretty-print)
-  (define lalr-keyword? keyword?))
+  (define lalr-keyword? keyword?)
+  (define (note-source-location lvalue tok) lvalue))
 
  ;; --
  (bigloo
@@ -45,7 +46,8 @@
   (define lalr-keyword? keyword?)
   (def-macro (BITS-PER-WORD) 29)
   (def-macro (logical-or x . y) `(bit-or ,x ,@y))
-  (def-macro (lalr-error msg obj) `(error "lalr-parser" ,msg ,obj)))
+  (def-macro (lalr-error msg obj) `(error "lalr-parser" ,msg ,obj))
+  (define (note-source-location lvalue tok) lvalue))
 
  ;; -- Chicken
  (chicken
@@ -57,7 +59,8 @@
   (define lalr-keyword? symbol?)
   (def-macro (BITS-PER-WORD) 30)
   (def-macro (logical-or x . y) `(bitwise-ior ,x ,@y))
-  (def-macro (lalr-error msg obj) `(error ,msg ,obj)))
+  (def-macro (lalr-error msg obj) `(error ,msg ,obj))
+  (define (note-source-location lvalue tok) lvalue))
 
  ;; -- STKlos
  (stklos
@@ -68,7 +71,8 @@
   (define lalr-keyword? keyword?)
   (define-macro (BITS-PER-WORD) 30)
   (define-macro (logical-or x . y) `(bit-or ,x ,@y))
-  (define-macro (lalr-error msg obj) `(error 'lalr-parser ,msg ,obj)))
+  (define-macro (lalr-error msg obj) `(error 'lalr-parser ,msg ,obj))
+  (define (note-source-location lvalue tok) lvalue))
 
  ;; -- Guile
  (guile
@@ -79,10 +83,14 @@
   (define lalr-keyword? symbol?)
   (define-macro (BITS-PER-WORD) 30)
   (define-macro (logical-or x . y) `(logior ,x ,@y))
-  (define-macro (lalr-error msg obj) `(error ,msg ,obj)))
+  (define-macro (lalr-error msg obj) `(error ,msg ,obj))
+  (define (note-source-location lvalue tok)
+    (if (and (supports-source-properties? lvalue)
+             (not (source-property lvalue 'loc))
+             (lexical-token? tok))
+        (set-source-property! lvalue 'loc (lexical-token-source tok)))
+    lvalue))
 
- (if (not (defined? 'supports-source-properties?)) ;; guile-2.0.5/Ubuntu 12.04
-     (module-define! (current-module) 'supports-source-properties? pair?))
 
  ;; -- Kawa
  (kawa
@@ -91,7 +99,8 @@
   (define logical-or logior)
   (define (lalr-keyword? obj) (keyword? obj))
   (define (pprint obj) (pretty-print obj))
-  (define (lalr-error msg obj) (error msg obj)))
+  (define (lalr-error msg obj) (error msg obj))
+  (define (note-source-location lvalue tok) lvalue))
 
  ;; -- SISC
  (sisc
@@ -102,8 +111,8 @@
   (define lalr-keyword? symbol?)
   (define-macro BITS-PER-WORD (lambda () 32))
   (define-macro logical-or (lambda (x . y) `(logor ,x ,@y)))
-  (define-macro (lalr-error msg obj) `(error "~a ~S:" ,msg ,obj)))
-
+  (define-macro (lalr-error msg obj) `(error "~a ~S:" ,msg ,obj))
+  (define (note-source-location lvalue tok) lvalue))
 
  (else
   (error "Unsupported Scheme system")))
@@ -238,6 +247,11 @@
   (define token-set-size  #f)
 
   (define driver-name     'lr-driver)
+
+  (define (glr-driver?)
+    (eq? driver-name 'glr-driver))
+  (define (lr-driver?)
+    (eq? driver-name 'lr-driver))
 
   (define (gen-tables! tokens gram )
     (initialize-all)
@@ -1101,14 +1115,14 @@
 			  (add-conflict-message
 			   "%% Reduce/Reduce conflict (reduce " (- new-action) ", reduce " (- current-action)
 			   ") on '" (get-symbol (+ symbol nvars)) "' in state " state)
-			  (if (eq? driver-name 'glr-driver)
+			  (if (glr-driver?)
 			      (set-cdr! (cdr actions) (cons new-action (cddr actions)))
 			      (set-car! (cdr actions) (max current-action new-action))))
 			;; --- shift/reduce conflict
 			;; can we resolve the conflict using precedences?
 			(case (resolve-conflict symbol (- current-action))
 			  ;; -- shift
-			  ((shift)   (if (eq? driver-name 'glr-driver)
+			  ((shift)   (if (glr-driver?)
 					 (set-cdr! (cdr actions) (cons new-action (cddr actions)))
 					 (set-car! (cdr actions) new-action)))
 			  ;; -- reduce
@@ -1117,11 +1131,12 @@
 			  (else      (add-conflict-message
 				      "%% Shift/Reduce conflict (shift " new-action ", reduce " (- current-action)
 				      ") on '" (get-symbol (+ symbol nvars)) "' in state " state)
-				     (if (eq? driver-name 'glr-driver)
+				     (if (glr-driver?)
 					 (set-cdr! (cdr actions) (cons new-action (cddr actions)))
 					 (set-car! (cdr actions) new-action))))))))
 
-	    (vector-set! action-table state (cons (list symbol new-action) state-actions)))))
+	    (vector-set! action-table state (cons (list symbol new-action) state-actions)))
+	))
 
     (define (add-action-for-all-terminals state action)
       (do ((i 1 (+ i 1)))
@@ -1135,7 +1150,9 @@
       (let ((red (vector-ref reduction-table i)))
 	(if (and red (>= (red-nreds red) 1))
 	    (if (and (= (red-nreds red) 1) (vector-ref consistent i))
-		(add-action-for-all-terminals i (- (car (red-rules red))))
+		(if (glr-driver?)
+		    (add-action-for-all-terminals i (- (car (red-rules red))))
+		    (add-action i 'default (- (car (red-rules red)))))
 		(let ((k (vector-ref lookaheads (+ i 1))))
 		  (let loop ((j (vector-ref lookaheads i)))
 		    (if (< j k)
@@ -1614,8 +1631,8 @@
 			     '$1
 			     `(___push ,n ,nt ,(cdr p) ,@(if (eq? driver-name 'lr-driver) '() '(___sp))
                                        ,(if (eq? driver-name 'lr-driver)
-                                                       `(vector-ref ___stack (1+ ___sp))
-                                                       `(list-ref ___sp (1+ ___sp))))))))))
+                                            `(vector-ref ___stack (- ___sp ,(length rhs)))
+                                            `(list-ref ___sp ,(length rhs))))))))))
 
 	   gram/actions))))
 
@@ -1832,17 +1849,13 @@
         (___growstack)))
 
   (define (___push delta new-category lvalue tok)
-    (if (and (supports-source-properties? lvalue)
-             (not (source-property lvalue 'loc))
-             (lexical-token? tok))
-        (set-source-property! lvalue 'loc (lexical-token-source tok)))
     (set! ___sp (- ___sp (* delta 2)))
     (let* ((state     (vector-ref ___stack ___sp))
            (new-state (cdr (assoc new-category (vector-ref ___gtable state)))))
       (set! ___sp (+ ___sp 2))
       (___checkstack)
       (vector-set! ___stack ___sp new-state)
-      (vector-set! ___stack (- ___sp 1) lvalue)))
+      (vector-set! ___stack (- ___sp 1) (note-source-location lvalue tok))))
 
   (define (___reduce st)
     ((vector-ref ___rtable st) ___stack ___sp ___gtable ___push ___pushback))
@@ -2014,7 +2027,7 @@
     (let* ((stack     (drop stack (* delta 2)))
            (state     (car stack))
            (new-state (cdr (assv new-category (vector-ref ___gtable state)))))
-        (cons new-state (cons lvalue stack))))
+        (cons new-state (cons (note-source-location lvalue tok) stack))))
 
   (define (reduce state stack)
     ((vector-ref ___rtable state) stack ___gtable push))
