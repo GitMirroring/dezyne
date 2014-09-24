@@ -1,5 +1,6 @@
 # Gaiag --- Guile in Asd In Asd in Guile.
 # Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014 Henk Katerberg <henk.katerberg@yahoo.com>
 #
 # This file is part of Gaiag.
 #
@@ -43,7 +44,7 @@ include makeutils/guile.mk
 TARG := json2scm
 include makeutils/guile.mk
 
-TEST = $(CDIR)-check
+TEST := $(TEST) $(CDIR)-check
 
 $(CDIR)-check:
 	make check -C $(CDIR)
