@@ -179,10 +179,12 @@
     (import-list import-spec) : (append $1 (list $2)))
 
    (interface-spec
-    (interface Identifier lbrace type-list event-list optional-behaviour rbrace) : `(,$1 ,$2 ,$4 ,$5 ,$6))
+    (interface Identifier lbrace type-list event-list optional-behaviour rbrace) :
+    (note-location `(,$1 ,$2 ,$4 ,$5 ,$6) @1))
 
    (component-spec
-    (component Identifier lbrace port-list optional-behaviour rbrace) : `(,$1 ,$2 ,$4 ,$5))
+    (component Identifier lbrace port-list optional-behaviour rbrace) :
+    (note-location `(,$1 ,$2 ,$4 ,$5) @1))
 
    (system-spec
     (system Identifier lbrace port-list system-statement-list rbrace) : `(,$1 ,$2 ,$4 ,$5))
