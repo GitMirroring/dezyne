@@ -104,7 +104,7 @@
   (gom:import name csp:norm))
 
 (define (csp:norm ast)
-  ((compose normstate mangle ast:wfc ast:resolve ast->gom) ast))
+  ((compose normstate mangle ast:wfc ast:resolve ast->gom ast:interface) ast))
 
 (define (mangle ast)
   "experimental mangling"

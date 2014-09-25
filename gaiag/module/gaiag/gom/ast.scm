@@ -281,11 +281,23 @@
     (_ ast)))
 
 (define (ast:public ast)
+;;  (stderr "public: ~a\n" ast)
   (match ast
+    (($ <root>) ast)
     (('interface name types events behaviour) `(interface ,name ,types ,events))
+    (('imports imports ...) '(imports))
+    (('component name body ...) '(imports))
+    (('system name body ...) '(imports))
+    ((h t ...) (map ast:public ast))
     (_ '(imports))))
 
 (define (ast:interface ast)
+;;  (stderr "interface: ~a\n" ast)
   (match ast
+    (($ <root>) ast)
     (('interface name body ...) ast)
+    (('imports imports ...) '(imports))
+    (('component name body ...) '(imports))
+    (('system name body ...) '(imports))
+    ((h t ...) (map ast:interface ast))
     (_ '(imports))))
