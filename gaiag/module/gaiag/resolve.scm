@@ -150,7 +150,7 @@
   (gom:import name resolve:gom))
 
 (define (resolve:gom ast)
-  ((compose ast:resolve ast->gom) ast))
+  ((compose ast:resolve ast->gom ast:public) ast))
 
 (define-method (type-equal? (a <type>) (b <type>))
   (and (eq? (.scope a) (.scope b))

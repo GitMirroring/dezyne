@@ -37,6 +37,8 @@
            ast->gom
            ast->sugar
            ast->trigger-sugar
+           ast:public
+           ast:interface
            retain-source-location
            ))
 
@@ -277,3 +279,13 @@
     ((h t ...) (map ast->gom- ast))
 
     (_ ast)))
+
+(define (ast:public ast)
+  (match ast
+    (('interface name types events behaviour) `(interface ,name ,types ,events))
+    (_ '(imports))))
+
+(define (ast:interface ast)
+  (match ast
+    (('interface name body ...) ast)
+    (_ '(imports))))
