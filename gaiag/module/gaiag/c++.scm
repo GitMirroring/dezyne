@@ -46,7 +46,8 @@
            c++:import))
 
 (define (ast-> ast)
-  (let* ((gom ((gom:register c++:gom) ast #t)))
+  (let* ((gom ((gom:register ast->gom) ast #t))
+         (gom ((gom:register c++:gom) ast #t)))
     (map dump ((gom:filter <model>) gom)))
   "")
 

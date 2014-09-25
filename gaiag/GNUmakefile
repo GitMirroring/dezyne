@@ -160,6 +160,7 @@ c++-alarm:
 	cd out && $(PWD)/gaiag -l c++ examples/regression/Alarm.asd
 	cd out && $(PWD)/gaiag -l c++ examples/Sensor.asd
 	cd out && $(PWD)/gaiag -l c++ examples/Siren.asd
+	cd out && $(PWD)/gaiag -l c++ examples/Alarm.asd
 	cd out && $(PWD)/gaiag -l c++ examples/AlarmSystem.asd
 	$(diff) baseline/interface-Console-c3.hh out
 	$(diff) baseline/interface-Sensor-c3.hh out
