@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -44,7 +45,7 @@
 
 (define (parse-opts args)
   (let* ((option-spec
-	  '((assert (single-char #\a) (value #t))
+	  '((assert (single-char #\a))
 	    (coverage (single-char #\c))
 	    (debug (single-char #\d))
             (help (single-char #\h))
@@ -66,7 +67,7 @@
       (and (or help? usage?)
 	   ((or (and usage? stderr) stdout) "\
 Usage: gaiag [OPTION]... FILE
-  -a, --assert=ASSERT  select assert ASSERT to generate
+  -a, --assert         generate all asserts inline, not in asserts.csp
   -c, --coverage       write lcov coverage data to gaiag.info
   -d, --debug          run with debugging
   -h, --help           display this help
