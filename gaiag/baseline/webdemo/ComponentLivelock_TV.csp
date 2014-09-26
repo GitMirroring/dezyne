@@ -36,7 +36,7 @@ context_func_(S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', <>))
 context_func_args_(v', S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', (<>, v')))
 
 datatype event_enumeration_alphabet =
-i178_States_i176_SwitchedOff | i178_States_i177_SwitchedOn | i3_pushStartButton | i67_activate | i68_activated | i6_States_i4_Released | i6_States_i5_Pushed | i71_States_i69_Idle | i71_States_i70_Activated | inevitable | return
+i178_States_SwitchedOff | i178_States_SwitchedOn | i3_pushStartButton | i67_activate | i68_activated | i6_States_Pushed | i6_States_Released | i71_States_Activated | i71_States_Idle | inevitable | return
 
 channel illegal
 
@@ -49,52 +49,52 @@ channel i169_Display: {i67_activate,i68_activated,inevitable,return}
   i66_Viewer_(IG) = let
 
 i66_Viewer__(((i14_state),(stack'))) =
-((i14_state == i6_States_i4_Released)) & (
+((i14_state == i6_States_Released)) & (
 i66_Viewer?x:{i3_pushStartButton} ->
-semi_(assign_(\ ((i14_state),(stack')) @ ((i6_States_i5_Pushed),(stack'))),
+semi_(assign_(\ ((i14_state),(stack')) @ ((i6_States_Pushed),(stack'))),
 (\ P',V' @ i66_Viewer.return -> P'(V')))(\ V' @ i66_Viewer__(V'),((i14_state),(stack'))))
 []
-((i14_state == i6_States_i5_Pushed)) & (
+((i14_state == i6_States_Pushed)) & (
 i66_Viewer?x:{i3_pushStartButton} ->
 (\ P',V' @ i66_Viewer.return -> P'(V'))(\ V' @ i66_Viewer__(V'),((i14_state),(stack'))))
 
 
-within i66_Viewer__(((i6_States_i4_Released),(<>)))
+within i66_Viewer__(((i6_States_Released),(<>)))
 
 i169_Display_(IG) = let
 
 i169_Display__(((i79_state),(stack'))) =
-((i79_state == i71_States_i69_Idle)) & (
+((i79_state == i71_States_Idle)) & (
 i169_Display?x:{i67_activate} ->
-semi_(assign_(\ ((i79_state),(stack')) @ ((i71_States_i70_Activated),(stack'))),
+semi_(assign_(\ ((i79_state),(stack')) @ ((i71_States_Activated),(stack'))),
 (\ P',V' @ i169_Display.return -> P'(V')))(\ V' @ i169_Display__(V'),((i79_state),(stack'))))
 []
-((i79_state == i71_States_i70_Activated)) & (
+((i79_state == i71_States_Activated)) & (
 i169_Display?x:{inevitable} ->
 semi_(semi_((\ P',V' @ i169_Display!i68_activated -> P'(V')),
-assign_(\ ((i79_state),(stack')) @ ((i71_States_i70_Activated),(stack')))),
+assign_(\ ((i79_state),(stack')) @ ((i71_States_Activated),(stack')))),
 skip_)(\ V' @ i169_Display__(V'),((i79_state),(stack')))
  []
   IG & i169_Display?x:{i67_activate} ->
 illegal_(STOP,<>))
 
 
-within i169_Display__(((i71_States_i69_Idle),(<>)))
+within i169_Display__(((i71_States_Idle),(<>)))
 
 
 i277_TVSet_(IIG,IG) = let
 
 i277_TVSet__(((i186_state),(stack'))) = transition_begin -> (
-((i186_state == i178_States_i176_SwitchedOff)) & (
+((i186_state == i178_States_SwitchedOff)) & (
 i170_TVViewer?x:{i3_pushStartButton} ->
 semi_(semi_((\ P',V' @ i173_TVDisplay!i67_activate -> i173_TVDisplay.return -> P'(V')),
-assign_(\ ((i186_state),(stack')) @ ((i178_States_i177_SwitchedOn),(stack')))),
+assign_(\ ((i186_state),(stack')) @ ((i178_States_SwitchedOn),(stack')))),
 (\ P',V' @ i170_TVViewer.return -> P'(V')))(\ V' @ transition_end -> i277_TVSet__(V'),((i186_state),(stack')))
  []
   IG & i173_TVDisplay?x:{i68_activated} ->
 illegal_(STOP,<>))
 []
-((i186_state == i178_States_i177_SwitchedOn)) & (
+((i186_state == i178_States_SwitchedOn)) & (
 i170_TVViewer?x:{i3_pushStartButton} ->
 (\ P',V' @ i170_TVViewer.return -> P'(V'))(\ V' @ transition_end -> i277_TVSet__(V'),((i186_state),(stack')))
  []
@@ -102,7 +102,7 @@ i170_TVViewer?x:{i3_pushStartButton} ->
 skip_(\ V' @ transition_end -> i277_TVSet__(V'),((i186_state),(stack'))))
 )
 
-within i277_TVSet__(((i178_States_i176_SwitchedOff),(<>)))
+within i277_TVSet__(((i178_States_SwitchedOff),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {i173_TVDisplay.i68_activated,extensions_over_empty_channels_is_undefined}
