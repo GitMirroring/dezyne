@@ -70,7 +70,7 @@ skip_))(P',V')
 i103_nonrecursion_(((i28_b),(stack'))) = transition_begin -> (
 i24_i?x:{i3_e} ->
 semi_(semi_(callvoid_(\ P',V' @ i52_f(P',V')),
-\ P',((i28_b),(stack')) @ ifthenelse_((IG and i28_b),
+\ P',((i28_b),(stack')) @ ifthenelse_(i28_b,
 illegal_,
 skip_
 )(P',((i28_b),(stack')))),
