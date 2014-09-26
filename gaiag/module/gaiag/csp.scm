@@ -87,18 +87,23 @@
 
 (define-method (generate-csp (o <component>))
   (and-let* ((interfaces (map csp:import (map .type ((compose .elements .ports) o))))
+
              (root (make <root> :elements (append interfaces (list o)))))
             (generate-csp o root)))
 
 (define-method (generate-csp (o <model>) (root <root>))
-  (and-let* ((norm ((gom:register csp:norm) root #t))
-             (name (.name o))
-             (model (gom:model-with-behaviour norm))
-             (file-name (option-ref (parse-opts (command-line)) 'output (list name '.csp))))
-            (dump-output file-name (lambda ()
-                                     (animate-file (append (prefix-dir) '(templates combinators.csp.scm)) (csp-module model))
-                                     (csp-model model)
-                                     (csp-asserts model)))))
+  (let ((separate-asserts? (option-ref (parse-opts (command-line)) 'assert #f)))
+    (and-let* ((norm ((gom:register csp:norm) root #t))
+               (name (.name o))
+               (model (gom:model-with-behaviour norm))
+               (file-name (option-ref (parse-opts (command-line)) 'output (list name '.csp))))
+              (dump-output file-name (lambda ()
+                                       (animate-file (append (prefix-dir) '(templates combinators.csp.scm)) (csp-module model))
+                                       (csp-model model)
+                                       (if separate-asserts?
+                                           (animate-string "\ninclude \"asserts.csp\"\n")
+                                           (csp-asserts model))))
+              (if separate-asserts? (dump-output "asserts.csp" (lambda () (csp-asserts model)))))))
 
 (define (csp:import name)
   (gom:import name csp:norm))
@@ -128,10 +133,7 @@
   (next-method))
 
 (define-method (csp-asserts (o <model>))
-  (let* ((asserts-string (option-ref (parse-opts (command-line)) 'assert #f))
-         (asserts (if asserts-string (with-input-from-string asserts-string read)
-                      (assert-list o))))
-    (for-each (csp-assert o) asserts)))
+  (for-each (csp-assert o) (assert-list o)))
 
 (define-method (csp-assert (o <model>))
   (lambda (assert)
