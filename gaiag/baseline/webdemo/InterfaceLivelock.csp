@@ -40,7 +40,7 @@ members_((M',L')) = (M',<>)
 channel illegal
 channel transition_begin, transition_end
 
-datatype event_enumeration_alphabet = i3_start | i7_States_i4_InitialState | i7_States_i5_Started | i7_States_i6_InBusiness | inevitable | return
+datatype event_enumeration_alphabet = i3_start | i7_States_InBusiness | i7_States_InitialState | i7_States_Started | inevitable | return
 -- interface.csp.scm
 
 channel CH_i138_BlindLoop: {i3_start,inevitable,inevitable,return}
@@ -48,28 +48,28 @@ channel CH_i138_BlindLoop: {i3_start,inevitable,inevitable,return}
 IF_i138_BlindLoop_(IG) = let
 
 i138_BlindLoop_(((i15_state),(stack'))) =
-((i15_state == i7_States_i4_InitialState)) & (
+((i15_state == i7_States_InitialState)) & (
 CH_i138_BlindLoop?x:{i3_start} ->
-semi_(assign_(\ ((i15_state),(stack')) @ ((i7_States_i5_Started),(stack'))),
+semi_(assign_(\ ((i15_state),(stack')) @ ((i7_States_Started),(stack'))),
 (\ P',V' @ CH_i138_BlindLoop.return -> P'(V')))(\ V' @ i138_BlindLoop_(V'),((i15_state),(stack'))))
 []
-((i15_state == i7_States_i5_Started)) & (
+((i15_state == i7_States_Started)) & (
 CH_i138_BlindLoop?x:{inevitable} ->
-semi_(assign_(\ ((i15_state),(stack')) @ ((i7_States_i6_InBusiness),(stack'))),
+semi_(assign_(\ ((i15_state),(stack')) @ ((i7_States_InBusiness),(stack'))),
 skip_)(\ V' @ i138_BlindLoop_(V'),((i15_state),(stack')))
  []
   IG & CH_i138_BlindLoop?x:{i3_start} ->
 illegal_(STOP,<>))
 []
-((i15_state == i7_States_i6_InBusiness)) & (
+((i15_state == i7_States_InBusiness)) & (
 CH_i138_BlindLoop?x:{inevitable} ->
-semi_(assign_(\ ((i15_state),(stack')) @ ((i7_States_i5_Started),(stack'))),
+semi_(assign_(\ ((i15_state),(stack')) @ ((i7_States_Started),(stack'))),
 skip_)(\ V' @ i138_BlindLoop_(V'),((i15_state),(stack')))
  []
   IG & CH_i138_BlindLoop?x:{i3_start} ->
 illegal_(STOP,<>))
 
-within i138_BlindLoop_(((i7_States_i4_InitialState),(<>)))
+within i138_BlindLoop_(((i7_States_InitialState),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
