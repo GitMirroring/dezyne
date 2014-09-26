@@ -717,7 +717,7 @@
           (list IG? channel "?x:{" event-names "}" " ->\n" transformed transformed-end (if ig? "(STOP,<>)" ""))))
        (($ <expression>) src)
        (($ <csp-reply> expression context)
-        (let* ((channel (or channel (if (is-a? model <interface>) model-name (.type (gom:port model))))))
+        (let* ((channel (or channel (if (is-a? model <interface>) model-name (.name (gom:port model))))))
         (list "reply_(" channel ", " "(\\ (" context ") @ " expression "))")))
        (($ <return>) "skip_")
        (($ <csp-return> #f context) "skip_")
