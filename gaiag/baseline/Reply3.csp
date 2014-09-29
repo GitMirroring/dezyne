@@ -84,9 +84,9 @@ within U__(((false),(<>)))
 
 
 Reply3_(IIG,IG) = let
-reply_fun = \ P',V' @ context_func_(reply_(i, (\ ((dummy),(stack')) @ Status_Yes)))(P',V')
+reply_fun = \ P',V' @ context_func_(reply_(I, (\ ((dummy),(stack')) @ Status_Yes)))(P',V')
 reply_fun_arg = \ P',V',F' @ context_func_args_(F',
-reply_(i, (\ ((dummy),((stack',s))) @ s)))(P',V')
+reply_(I, (\ ((dummy),((stack',s))) @ s)))(P',V')
 
 Reply3__(((dummy),(stack'))) = transition_begin -> (
 (true) & (
