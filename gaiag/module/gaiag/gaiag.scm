@@ -45,7 +45,7 @@
 
 (define (parse-opts args)
   (let* ((option-spec
-	  '((assert (single-char #\a))
+	  '((assert (single-char #\a) (value #t))
 	    (coverage (single-char #\c))
 	    (debug (single-char #\d))
             (help (single-char #\h))
@@ -67,7 +67,7 @@
       (and (or help? usage?)
 	   ((or (and usage? stderr) stdout) "\
 Usage: gaiag [OPTION]... FILE
-  -a, --assert         generate all asserts inline, not in asserts.csp
+  -a, --assert=ASSERT  select assert ASSERT to generate
   -c, --coverage       write lcov coverage data to gaiag.info
   -d, --debug          run with debugging
   -h, --help           display this help

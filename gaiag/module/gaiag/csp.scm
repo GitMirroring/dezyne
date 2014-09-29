@@ -80,14 +80,10 @@
                       (throw 'csp message))))
                (module (csp-module norm))
                (fn (option-ref (parse-opts (command-line)) 'output (list name '.csp))))
-              (let ((separate-asserts? (option-ref (parse-opts (command-line)) 'assert #f)))
-                (dump-output fn
-                             (lambda ()
-                               (csp-component module)
-                               (if separate-asserts?
-                                   (animate-string "\ninclude \"asserts.csp\"\n")
-                                   (csp-asserts module))))
-                (if separate-asserts? (dump-output "asserts.csp" (lambda () (csp-asserts module)))))))
+              (dump-output fn
+                           (lambda ()
+                             (csp-component module)
+                             (csp-asserts module)))))
   "")
 
 (define (csp:import name)
@@ -107,7 +103,9 @@
   (animate-file (append (prefix-dir) '(templates component.csp.scm)) module))
 
 (define (csp-asserts module)
-  (let* ((asserts (assert-list (module-ref module 'ast))))
+  (let* ((asserts-string (option-ref (parse-opts (command-line)) 'assert #f))
+         (asserts (if asserts-string (with-input-from-string asserts-string read)
+                      (assert-list (module-ref module 'ast)))))
     (for-each (csp-assert module) asserts)))
 
 (define ((csp-assert module) assert)
