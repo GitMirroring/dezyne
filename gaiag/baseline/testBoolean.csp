@@ -82,15 +82,15 @@ within TestBool_(((true,true,true,States_State1,States_State2),(<>)))
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i:{evt,return}
+channel CH_i:{evt,return}
 
 
 CO_testBoolean_(IIG,IG) = let
 
 testBoolean_(((b),(stack'))) = transition_begin -> (
 (true) & (
-i?x:{evt} ->
-(\ P',V' @ i.return -> P'(V'))(\ V' @ transition_end -> testBoolean_(V'),((b),(stack'))))
+CH_i?x:{evt} ->
+(\ P',V' @ CH_i.return -> P'(V'))(\ V' @ transition_end -> testBoolean_(V'),((b),(stack'))))
 )
 
 within testBoolean_(((false),(<>)))
@@ -100,7 +100,7 @@ channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in,reorder_out : {i.return}
+channel reorder_in,reorder_out : {CH_i.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -138,11 +138,11 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {i.return}
-ClientCalls = {i.evt}
+Exclude = {CH_i.return}
+ClientCalls = {CH_i.evt}
 UsedModeling = {}
 within compress((CO_testBoolean_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,i|},Exclude)|]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,CH_i|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
@@ -154,5 +154,5 @@ assert IF_TestBool_(true) :[livelock free]
 assert CO_testBoolean_(true,true) :[deterministic]
 assert STOP [T= AS_testBoolean_(false) \ diff(Events,{illegal})
 assert AS_testBoolean_(false) :[deadlock free]
-assert IF_TestBool_(true) [[CH_TestBool.x<-i.x|x<-extensions(i)]] \ {} [F= AS_testBoolean_(true) \ diff(Events,{|illegal,i|})
-assert AS_testBoolean_(true) \ diff(Events,{|illegal,i|}) :[livelock free]
+assert IF_TestBool_(true) [[CH_TestBool.x<-CH_i.x|x<-extensions(CH_i)]] \ {} [F= AS_testBoolean_(true) \ diff(Events,{|illegal,CH_i|})
+assert AS_testBoolean_(true) \ diff(Events,{|illegal,CH_i|}) :[livelock free]

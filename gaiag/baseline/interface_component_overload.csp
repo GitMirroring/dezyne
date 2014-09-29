@@ -56,14 +56,13 @@ within interface_component_overload_(((<>),(<>)))
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel interface_component_overload:{e,R_V,return}
 
 
 CO_interface_component_overload_(IIG,IG) = let
 
 interface_component_overload_(((<>),(stack'))) = transition_begin -> (
-interface_component_overload?x:{e} ->
-reply_(interface_component_overload, (\ ((<>),(stack')) @ R_V))(\ V' @ transition_end -> interface_component_overload_(V'),((<>),(stack')))
+CH_interface_component_overload?x:{e} ->
+reply_(CH_interface_component_overload, (\ ((<>),(stack')) @ R_V))(\ V' @ transition_end -> interface_component_overload_(V'),((<>),(stack')))
 )
 
 within interface_component_overload_(((<>),(<>)))
@@ -73,7 +72,7 @@ channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in,reorder_out : {interface_component_overload.R_V,interface_component_overload.return}
+channel reorder_in,reorder_out : {CH_interface_component_overload.R_V,CH_interface_component_overload.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -111,11 +110,11 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {interface_component_overload.R_V,interface_component_overload.return}
-ClientCalls = {interface_component_overload.e}
+Exclude = {CH_interface_component_overload.R_V,CH_interface_component_overload.return}
+ClientCalls = {CH_interface_component_overload.e}
 UsedModeling = {}
 within compress((CO_interface_component_overload_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,interface_component_overload|},Exclude)|]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,CH_interface_component_overload|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
@@ -127,5 +126,5 @@ assert IF_interface_component_overload_(true) :[livelock free]
 assert CO_interface_component_overload_(true,true) :[deterministic]
 assert STOP [T= AS_interface_component_overload_(false) \ diff(Events,{illegal})
 assert AS_interface_component_overload_(false) :[deadlock free]
-assert IF_interface_component_overload_(true) [[CH_interface_component_overload.x<-interface_component_overload.x|x<-extensions(interface_component_overload)]] \ {} [F= AS_interface_component_overload_(true) \ diff(Events,{|illegal,interface_component_overload|})
-assert AS_interface_component_overload_(true) \ diff(Events,{|illegal,interface_component_overload|}) :[livelock free]
+assert IF_interface_component_overload_(true) [[CH_interface_component_overload.x<-CH_interface_component_overload.x|x<-extensions(CH_interface_component_overload)]] \ {} [F= AS_interface_component_overload_(true) \ diff(Events,{|illegal,CH_interface_component_overload|})
+assert AS_interface_component_overload_(true) \ diff(Events,{|illegal,CH_interface_component_overload|}) :[livelock free]

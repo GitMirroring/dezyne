@@ -95,8 +95,9 @@
 
 (define (report-errors errors)
   (for-each report-error errors)
-  ;;(throw 'well-formed errors)
-  (exit 1))
+  (throw 'well-formed errors)
+  ;;(exit 1)
+  )
 
 (define-method (resolve-top-model (o <model>))
   ((compose gom:register-model (lambda (m) (resolve-model m m)) resolve-mixed) o))

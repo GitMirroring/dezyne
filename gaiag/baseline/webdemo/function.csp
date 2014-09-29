@@ -70,12 +70,12 @@ within i108_I_(((false),(<>)))
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i109_i:{i3_a,i4_b,i5_c,i6_d,return}
+channel CH_i109_i:{i3_a,i4_b,i5_c,i6_d,return}
 
 
 CO_i217_function_(IIG,IG) = let
 i149_toggle = \ P',V' @ context_func_(semi_(\ P',((i113_f),(stack')) @ ifthenelse_(i113_f,
-(\ P',V' @ i109_i!i5_c -> P'(V')),
+(\ P',V' @ CH_i109_i!i5_c -> P'(V')),
 skip_
 )(P',((i113_f),(stack'))),
 semi_(assign_(\ ((i113_f),(stack')) @ (((not i113_f)),(stack'))),
@@ -83,15 +83,15 @@ skip_)))(P',V')
 
 i217_function_(((i113_f),(stack'))) = transition_begin -> (
 (true) & (
-i109_i?x:{i3_a} ->
+CH_i109_i?x:{i3_a} ->
 semi_(callvoid_(\ P',V' @ i149_toggle(P',V')),
-(\ P',V' @ i109_i.return -> P'(V')))(\ V' @ transition_end -> i217_function_(V'),((i113_f),(stack')))
+(\ P',V' @ CH_i109_i.return -> P'(V')))(\ V' @ transition_end -> i217_function_(V'),((i113_f),(stack')))
  []
-  i109_i?x:{i4_b} ->
+  CH_i109_i?x:{i4_b} ->
 semi_(semi_(callvoid_(\ P',V' @ i149_toggle(P',V')),
 semi_(callvoid_(\ P',V' @ i149_toggle(P',V')),
-(\ P',V' @ i109_i!i6_d -> P'(V')))),
-(\ P',V' @ i109_i.return -> P'(V')))(\ V' @ transition_end -> i217_function_(V'),((i113_f),(stack'))))
+(\ P',V' @ CH_i109_i!i6_d -> P'(V')))),
+(\ P',V' @ CH_i109_i.return -> P'(V')))(\ V' @ transition_end -> i217_function_(V'),((i113_f),(stack'))))
 )
 
 within i217_function_(((false),(<>)))
@@ -101,7 +101,7 @@ channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in,reorder_out : {i109_i.return}
+channel reorder_in,reorder_out : {CH_i109_i.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -139,11 +139,11 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {i109_i.return,i109_i.i5_c,i109_i.i6_d}
-ClientCalls = {i109_i.i3_a,i109_i.i4_b}
+Exclude = {CH_i109_i.return,CH_i109_i.i5_c,CH_i109_i.i6_d}
+ClientCalls = {CH_i109_i.i3_a,CH_i109_i.i4_b}
 UsedModeling = {}
 within compress((CO_i217_function_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,i109_i|},Exclude)|]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,CH_i109_i|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
@@ -155,5 +155,5 @@ assert IF_i108_I_(true) :[livelock free]
 assert CO_i217_function_(true,true) :[deterministic]
 assert STOP [T= AS_i217_function_(false) \ diff(Events,{illegal})
 assert AS_i217_function_(false) :[deadlock free]
-assert IF_i108_I_(true) [[CH_i108_I.x<-i109_i.x|x<-extensions(i109_i)]] \ {} [F= AS_i217_function_(true) \ diff(Events,{|illegal,i109_i|})
-assert AS_i217_function_(true) \ diff(Events,{|illegal,i109_i|}) :[livelock free]
+assert IF_i108_I_(true) [[CH_i108_I.x<-CH_i109_i.x|x<-extensions(CH_i109_i)]] \ {} [F= AS_i217_function_(true) \ diff(Events,{|illegal,CH_i109_i|})
+assert AS_i217_function_(true) \ diff(Events,{|illegal,CH_i109_i|}) :[livelock free]

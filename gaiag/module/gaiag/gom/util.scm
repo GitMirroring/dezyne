@@ -182,11 +182,19 @@
     ((? (is? <statement>)) '())
     (_ (throw 'match-error  (format #f "~a:gom:statements-of-type, type: ~a: no match: ~a\n" (current-source-location) type statement)))))
 
-(define (gom:typed? ast)
-  (match ast
-    (($ <event>) (not (equal? (.type (.type ast)) '(type void))))
-    (($ <gom:port>) (null-is-#f (filter (lambda (x) (gom:typed? x)) (gom:events ast))))
-    (_ (throw 'match-error  (format #f "~a:gom:typed?: no match: ~a\n" (current-source-location) ast)))))
+(define-method (gom:typed? (o <ast>))
+  (match o
+    (($ <event>) (not (eq? (.name (.type (.type o))) 'void)))
+    (($ <gom:port>) (null-is-#f (filter (lambda (x) (gom:typed? x)) (gom:events o))))
+    (_ (throw 'match-error  (format #f "~a:gom:typed?: no match: ~a\n" (current-source-location) o)))))
+
+(define-method (gom:typed? (o <boolean>)) #f)
+
+(define-method (gom:typed? (m <interface>) (o <trigger>))
+  (gom:typed? (gom:event m o)))
+
+(define-method (gom:typed? (m <component>) (o <trigger>))
+  (gom:typed? (gom:event m o)))
 
 (define-method (gom:dir-matches? (p <gom:port>) (e <event>))
   (or (and (eq? (.direction p) 'provides)
@@ -197,10 +205,16 @@
 (define-method (gom:dir-matches? (o <gom:port>))
   (lambda (event) (gom:dir-matches? o event)))
 
-(define-method (gom:event (o <interface>) name)
+(define-method (gom:event (o <interface>) (name <symbol>))
   (find (lambda (x) (eq? (.name x) name)) (.elements (.events o))))
 
 (define-method (gom:event (o <model>) name) #f)
+
+(define-method (gom:event (o <interface>) (trigger <trigger>))
+  (gom:event o (.event trigger)))
+
+(define-method (gom:event (o <component>) (trigger <trigger>))
+  (gom:event (gom:interface (gom:port o (.port trigger))) (.event trigger)))
 
 (define-method (gom:component (o <top>)) #f)
 (define-method (gom:component (o <component>)) o)
@@ -213,6 +227,9 @@
 (define-method (gom:interface (o <list>)) (find (is? <interface>) o))
 (define-method (gom:interface (o <ast-list>))
   (find (is? <interface>) (.elements o)))
+
+(define-method (gom:interface (o <gom:port>))
+  (gom:import (.type o)))
 
 (define-method (gom:system (o <top>)) #f)
 (define-method (gom:system (o <system>)) o)

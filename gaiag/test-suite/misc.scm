@@ -50,14 +50,14 @@
       (fail "~a!=\n~a" (pretty-string expected) (pretty-string actual))))
 
 (define (gom-noisy-equal? actual expected)
-  (let ((actual* (gom->list (csp->gom actual)))
-        (expected* (gom->list (csp->gom expected))))
+  (let ((actual* (gom->list (ast->gom actual)))
+        (expected* (gom->list (ast->gom expected))))
    (or (equal? actual* expected*)
        (fail "~a\n!=\n~a\n" expected* actual*))))
 
 (define (gom-pretty-noisy-equal? actual expected)
-  (let ((actual* (gom->list (csp->gom actual)))
-        (expected* (gom->list (csp->gom expected))))
+  (let ((actual* (gom->list (ast->gom actual)))
+        (expected* (gom->list (ast->gom expected))))
   (or (equal? actual* expected*)
       (fail "~a!=\n~a" (pretty-string expected*) (pretty-string actual*)))))
 

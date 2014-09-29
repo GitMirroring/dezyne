@@ -49,17 +49,12 @@
            ast->
            behaviour->csp
            csp:import
-           csp->sugar
            csp->gom
            csp-component
            csp-module
 	   ast-transform
-	   ast-transform*
-	   ast-transform-return
-	   ast-transform-return*
 	   csp-expression->string
 	   csp-transform
-	   csp-transform*
            csp:norm
 
            make-context
@@ -68,6 +63,12 @@
            provides?
            requires?
            enum-type
+
+           <csp-call>
+           <csp-if>
+           <csp-on>
+           <csp-reply>
+           <csp-return>
            ))
 
 (define (ast-> ast)
@@ -87,7 +88,6 @@
 
 (define-method (generate-csp (o <component>))
   (and-let* ((interfaces (map csp:import (map .type ((compose .elements .ports) o))))
-
              (root (make <root> :elements (append interfaces (list o)))))
             (generate-csp o root)))
 
@@ -149,7 +149,7 @@
     ((component deterministic) . "assert CO_#(.name model) _#((compose .name .behaviour) model)(true,true) :[deterministic]\n")
     ((component deadlock)  . "assert AS_#(.name model) _#((compose .name .behaviour) model) (false) :[deadlock free]\n")
     ((component compliance) . ,(gulp-template 'asserts/component-compliance.csp.scm))
-    ((component livelock)  .  "assert AS_#(.name model) _#((compose .name .behaviour) model) (true) \\ diff(Events,{|illegal,#((compose .name gom:port) model) |}) :[livelock free]\n")
+    ((component livelock)  .  "assert AS_#(.name model) _#((compose .name .behaviour) model) (true) \\ diff(Events,{|illegal,CH_#((compose .name gom:port) model) |}) :[livelock free]\n")
     ((interface deadlock) . ,(gulp-template 'asserts/interface-deadlock.csp.scm))
     ((interface livelock) . ,(gulp-template 'asserts/interface-livelock.csp.scm))))
 
@@ -286,22 +286,6 @@
     (($ <illegal>) #t)
     (_ #f)))
 
-(define (prefix-reply? statement)
-  (match statement
-    (($ <compound>)
-     (let loop ((statements (.elements statement)))
-       (if (null? statements)
-           #f
-           (or (prefix-reply? (car statements)) (loop (cdr statements))))))
-    (('guard expr stat) (prefix-reply? stat)) ;; FIXME: no test
-    (($ <on>)
-     (prefix-reply? stat))
-    (($ <if>)
-     (or (prefix-reply? (.then statement)) (prefix-reply? (.else statement))))
-    (($ <reply> expression) #t)
-    (_ #f)
-    (_ (throw 'match-error (format #f "~a:prefix-reply?: no match: ~a\n" (current-source-location) statement)))))
-
 (define (((provides-or-requires? direction) component) event)
   (if (is-a? component <component>)
       (pair?
@@ -334,11 +318,6 @@
 
 (define (ast-transform ast src)
   (ast-transform- ast (ast-transform-return ast src)))
-
-(define (ast-transform* ast src)
-  (let ((ast* (csp->gom ast))
-        (src* (csp->gom src)))
-    (ast-transform- ast* (ast-transform-return ast* src*))))
 
 (define-method (ast-transform-return ast (o <top>)) ;; TODO: <ast>
   o)
@@ -376,54 +355,11 @@
 (define-class <csp-return> (<return>)
   (context :accessor .context :init-form (list) :init-keyword :context))
 
-(define (csp->sugar ast)
-  (match ast
-    (('expression expression)
-     (make <expression> :value (csp->gom expression)))
-    (('on ('triggers triggers) statement the-end)
-     (make <csp-on>
-       :triggers (csp->gom (cadr ast))
-       :statement (csp->gom statement)
-       :the-end (csp->gom the-end)))
-    (('on triggers statement the-end)
-     (make <csp-on>
-       :triggers (make <triggers>
-                   :elements (csp->gom (map ast->trigger-sugar triggers)))
-       :statement (csp->gom statement)
-       :the-end (csp->gom the-end)))
-    (('if ('ctx context) expression then else)
-     (make <csp-if>
-       :context (cadr ast)
-       :expression (csp->gom expression)
-       :then (csp->gom then)
-       :else (csp->gom else)))
-    (('call ('ctx context) name)
-     (make <csp-call>
-       :context (cadr ast)
-       :identifier name))
-    (('call ('ctx context) name arguments)
-     (make <csp-call>
-       :context (cadr ast)
-       :identifier name
-       :arguments (csp->gom arguments)))
-    (('reply ('ctx context) expression)
-     (make <csp-reply>
-       :context (cadr ast)
-       :expression (csp->gom expression)))
-    (('return ('ctx context) expression)
-     (make <csp-return>
-       :context (cadr ast)
-       :expression (csp->gom expression)))
-    ((h t ...) (map csp->sugar ast))
-    (_ ast)))
-
-(define (csp->gom ast)
-  ((compose ast->gom csp->sugar ast->sugar) ast))
-
 (define-method (ast-transform-return ast (o <on>))
-  (let* ((model (or (gom:interface ast) (gom:component ast)))
+  (let* ((model (or (gom:component ast) (gom:interface ast)))
 	 (members (gom:member-names model))
-         (triggers (.triggers o)))
+         (triggers (.triggers o))
+         (valued-triggers? (lambda (x) (gom:typed? model (car ((compose .elements .triggers) o))))))
     (let ((result (ast-transform-return ast (.statement o))))
       (match result
         (($ <compound> '())
@@ -432,12 +368,7 @@
            :statement (make <compound>
                         :elements (list (list 'eventreturn)))
            :the-end (list 'the-end members)))
-        (('skip)
-         (make <csp-on>
-           :triggers triggers
-           :statement (list 'eventreturn)
-           :the-end (list 'the-end members)))
-        ((? prefix-reply?)
+        ((? valued-triggers?)
          (make <csp-on>
            :triggers triggers
            :statement (make <compound> :elements (list result))
@@ -445,12 +376,8 @@
         (_
          (make <csp-on>
            :triggers triggers
-           :statement (make <compound>
-                        :elements (list result (list 'eventreturn)))
+           :statement (make <compound> :elements (list result (list 'eventreturn)))
            :the-end (list 'the-end members)))))))
-
-(define (ast-transform-return* ast src)
-  (ast-transform-return (csp->gom ast) (csp->gom src)))
 
 (define ((valued-action? port?) src)
   (match src
@@ -535,7 +462,7 @@
     (_ (throw 'match-error (format #f "~a:context->csp: no match: ~a\n" (current-source-location) context)))))
 
 (define-method (ast-transform- ast (o <top>))
-  (let* ((model (or (gom:interface ast) (gom:component ast)))
+  (let* ((model (or (gom:component ast) (gom:interface ast)))
          (context (make-context (gom:member-names model) '())))
     (ast-transform- ast o #t context)))
 
@@ -543,7 +470,7 @@
   o)
 
 (define-method (ast-transform- ast (o <compound>) return context)
-  (let* ((model (or (gom:interface ast) (gom:component ast)))
+  (let* ((model (or (gom:component ast) (gom:interface ast)))
          (context (or context (make-context (gom:member-names model) '())))
          (port? (lambda (port)
                   (if ((is? <interface>) model) #f
@@ -667,11 +594,8 @@
     ((h t ...) (->string (map (lambda (x) (=>string ast x)) src)))
     (_ (->string src))))
 
-(define (csp-transform* ast src)
-  (csp-transform (csp->gom ast) (csp->gom src)))
-
 (define* (csp-transform ast src :optional (inevitable-optional? #f) (channel #f) (provided-on? #t) (tail-recursive? #f))
-  (let* ((model (or (gom:interface ast) (gom:component ast)))
+  (let* ((model (or (gom:component ast) (gom:interface ast)))
 	 (model-name (.name model))
 	 (behaviour (.name (.behaviour model)))
          (component? (is-a? model <component>))
@@ -686,7 +610,7 @@
                (inevitable-optional? (or (member 'inevitable (map .event triggers))
                                          (member 'optional (map .event triggers))))
                (ig? (eq? statement 'IG))
-               (channel (if (is-a? model <interface>) (list "CH_" model-name) (.port (car triggers))))
+               (channel (list "CH_" (if (is-a? model <interface>) model-name (.port (car triggers)))))
                (provided-on? (or (and (is-a? model <interface>) (not inevitable-optional?))
                                  (or (is-a? model <interface>) ((provides-event? model) (car triggers)))))
                (IG? (if ig? (if ((provides-event? model) (car triggers)) "IIG & "  "IG & ")))
@@ -696,7 +620,7 @@
           (list IG? channel "?x:{" event-names "}" " ->\n" transformed transformed-end (if ig? "(STOP,<>)" ""))))
        (($ <expression>) src)
        (($ <csp-reply> expression context)
-        (let* ((channel (or channel (if (is-a? model <interface>) (list "CH_" model-name) (list "CH_" (.type (gom:port model)))))))
+        (let* ((channel (or channel (list "CH_" (if (is-a? model <interface>) model-name (.type (gom:port model)))))))
           (list "reply_(" channel ", " "(\\ (" context ") @ " expression "))")))
        (($ <return>) "skip_")
        (($ <csp-return> #f context) "skip_")
@@ -735,10 +659,10 @@
           (list "\\ P',(" context ") @ ifthenelse_(" expression ",\n" then ",\n" else "\n)(P',(" context "))")))
        (('context-active (context var ($ <action> ($ <trigger> port event))) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on? tail-recursive?)))
-          (list "context_active_(sendrecv_("  port "," event "),\n" stat ")")))
+          (list "context_active_(sendrecv_(CH_"  port "," event "),\n" stat ")")))
        (('context-active (context var ($ <expression> ($ <action> ($ <trigger> port event)))) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on? tail-recursive?)))
-          (list "context_active_(sendrecv_(" port "," event "),\n" stat ")")))
+          (list "context_active_(sendrecv_(CH_" port "," event "),\n" stat ")")))
 
        (('context-active (context var ($ <call> identifier ($ <arguments> '()))) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on? tail-recursive?)))
@@ -749,7 +673,7 @@
           (list "context_active_(\\ P',V' @ " identifier " (" continuation-pv ",(\\ (" context ") @ (" (arguments) "))(V')),\n" stat ")")))
 
        (('assign-active (context var ($ <action> ($ <trigger> port event))) expressions)
-        (let ((action (list "sendrecv_(" port "," event ")")))
+        (let ((action (list "sendrecv_(CH_" port "," event ")")))
           (list "assign_active_(" action ",\n\\ ((" context "))," var " @ (" expressions "))" )))
        (('assign-active (context var ($ <call> identifier (and ($ <arguments>) (get! arguments)))) expressions)
         (list "assign_active_(\\ P',V' @ " identifier " (" continuation-pv ",(\\ (" context ") @ (" (arguments) "))(V')),\n\\ ((" context "))," var " @ (" expressions "))"))
@@ -760,7 +684,6 @@
         (let ((first (csp-transform ast stat1 inevitable-optional? channel provided-on? tail-recursive?))
               (second (csp-transform ast stat2 inevitable-optional? channel provided-on? tail-recursive?)))
           (list "semi_(" first ",\n" second ")")))
-       (('skip) "skip_")
        ('() "skip_")
        ((? symbol?) src)
        ((? string?) src)
@@ -768,12 +691,12 @@
 
 (define-generic csp-transform)
 (define-method (csp-transform ast (o <action>) . rest)
-  (let* ((model (or (gom:interface ast) (gom:component ast)))
+  (let* ((model (or (gom:component ast) (gom:interface ast)))
 	 (model-name (.name model)))
     (=>string
      ast
      (let* ((trigger (.trigger o))
-            (channel (if (is-a? model <interface>) (list "CH_" model-name) (.port trigger)))
+            (channel (list "CH_" (if (is-a? model <interface>) model-name (.port trigger))))
             (event-name (.event trigger))
             (channel-return (if ((requires-event? model) trigger) (list " -> " channel ".return"))))
        (list "(\\ P',V' @ " channel "!" event-name channel-return " -> P'(V'))")))))

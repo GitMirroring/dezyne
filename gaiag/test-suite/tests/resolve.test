@@ -314,6 +314,20 @@
                      #f
                      (compound (assign b (expression (var a)))))))
 
+(pass-if "ast:resolve-return-parameter"
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (cadr resolve-ast)
+           '(function fun (signature (type bool) (parameters (parameter (type bool) a)))
+                      (compound (return (expression (var a))))))
+          '(function
+            fun
+            (signature
+             (type bool #f)
+             (parameters (parameter (type bool #f) a)))
+            #f
+            (compound (return (expression (var a)))))))
+
 (pass-if "ast:resolve-recursive"
          (gom-pretty-noisy-equal?
           (ast:resolve-model

@@ -57,28 +57,28 @@ within irequires_twice_(((<>),(<>)))
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel p:{a,e,return}
-channel once:{a,e,return}
-channel twice:{a,e,return}
+channel CH_p:{a,e,return}
+channel CH_once:{a,e,return}
+channel CH_twice:{a,e,return}
 
 
 CO_requires_twice_(IIG,IG) = let
 
 requires_twice_(((<>),(stack'))) = transition_begin -> (
-p?x:{e} ->
-semi_(semi_((\ P',V' @ once!a -> once.return -> P'(V')),
-(\ P',V' @ twice!a -> twice.return -> P'(V'))),
-(\ P',V' @ p.return -> P'(V')))(\ V' @ transition_end -> requires_twice_(V'),((<>),(stack')))
+CH_p?x:{e} ->
+semi_(semi_((\ P',V' @ CH_once!a -> CH_once.return -> P'(V')),
+(\ P',V' @ CH_twice!a -> CH_twice.return -> P'(V'))),
+(\ P',V' @ CH_p.return -> P'(V')))(\ V' @ transition_end -> requires_twice_(V'),((<>),(stack')))
 )
 
 within requires_twice_(((<>),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
-channel IN,OUT : {once.a,twice.a,extensions_over_empty_channels_is_undefined}
+channel IN,OUT : {CH_once.a,CH_twice.a,extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in,reorder_out : {p.return}
+channel reorder_in,reorder_out : {CH_p.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -116,13 +116,13 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {p.return,p.a}
-ClientCalls = {p.e}
+Exclude = {CH_p.return,CH_p.a}
+ClientCalls = {CH_p.e}
 UsedModeling = {}
 within compress((CO_requires_twice_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,p,once,twice|},Exclude)|]
-(((IF_irequires_twice_(true) [[CH_irequires_twice.x<-once.x|x<-extensions(once)]]
- ||| IF_irequires_twice_(true) [[CH_irequires_twice.x<-twice.x|x<-extensions(twice)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,CH_p,CH_once,CH_twice|},Exclude)|]
+(((IF_irequires_twice_(true) [[CH_irequires_twice.x<-CH_once.x|x<-extensions(CH_once)]]
+ ||| IF_irequires_twice_(true) [[CH_irequires_twice.x<-CH_twice.x|x<-extensions(CH_twice)]]
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
@@ -133,5 +133,5 @@ assert IF_irequires_twice_(true) :[livelock free]
 assert CO_requires_twice_(true,true) :[deterministic]
 assert STOP [T= AS_requires_twice_(false) \ diff(Events,{illegal})
 assert AS_requires_twice_(false) :[deadlock free]
-assert IF_irequires_twice_(true) [[CH_irequires_twice.x<-p.x|x<-extensions(p)]] \ {} [F= AS_requires_twice_(true) \ diff(Events,{|illegal,p|})
-assert AS_requires_twice_(true) \ diff(Events,{|illegal,p|}) :[livelock free]
+assert IF_irequires_twice_(true) [[CH_irequires_twice.x<-CH_p.x|x<-extensions(CH_p)]] \ {} [F= AS_requires_twice_(true) \ diff(Events,{|illegal,CH_p|})
+assert AS_requires_twice_(true) \ diff(Events,{|illegal,CH_p|}) :[livelock free]

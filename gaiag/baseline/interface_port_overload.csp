@@ -56,14 +56,13 @@ within I_(((<>),(<>)))
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel I:{e,R_V,return}
 
 
 CO_interface_port_overload_(IIG,IG) = let
 
 interface_port_overload_(((<>),(stack'))) = transition_begin -> (
-I?x:{e} ->
-reply_(I, (\ ((<>),(stack')) @ R_V))(\ V' @ transition_end -> interface_port_overload_(V'),((<>),(stack')))
+CH_I?x:{e} ->
+reply_(CH_I, (\ ((<>),(stack')) @ R_V))(\ V' @ transition_end -> interface_port_overload_(V'),((<>),(stack')))
 )
 
 within interface_port_overload_(((<>),(<>)))
@@ -73,7 +72,7 @@ channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in,reorder_out : {I.R_V,I.return}
+channel reorder_in,reorder_out : {CH_I.R_V,CH_I.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -111,11 +110,11 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {I.R_V,I.return}
-ClientCalls = {I.e}
+Exclude = {CH_I.R_V,CH_I.return}
+ClientCalls = {CH_I.e}
 UsedModeling = {}
 within compress((CO_interface_port_overload_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,I|},Exclude)|]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,CH_I|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
@@ -127,5 +126,5 @@ assert IF_I_(true) :[livelock free]
 assert CO_interface_port_overload_(true,true) :[deterministic]
 assert STOP [T= AS_interface_port_overload_(false) \ diff(Events,{illegal})
 assert AS_interface_port_overload_(false) :[deadlock free]
-assert IF_I_(true) [[CH_I.x<-I.x|x<-extensions(I)]] \ {} [F= AS_interface_port_overload_(true) \ diff(Events,{|illegal,I|})
-assert AS_interface_port_overload_(true) \ diff(Events,{|illegal,I|}) :[livelock free]
+assert IF_I_(true) [[CH_I.x<-CH_I.x|x<-extensions(CH_I)]] \ {} [F= AS_interface_port_overload_(true) \ diff(Events,{|illegal,CH_I|})
+assert AS_interface_port_overload_(true) \ diff(Events,{|illegal,CH_I|}) :[livelock free]

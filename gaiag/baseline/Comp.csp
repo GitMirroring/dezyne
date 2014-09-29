@@ -145,60 +145,60 @@ within IDevice_(((State_Uninitialized),(<>)))
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel client:{initialize,perform_actions,recover,result_t_OK,result_t_NOK,return}
-channel device_A:{calibrate,initialize,perform_action1,perform_action2,result_t_OK,result_t_NOK,return}
+channel CH_client:{initialize,perform_actions,recover,result_t_OK,result_t_NOK,return}
+channel CH_device_A:{calibrate,initialize,perform_action1,perform_action2,result_t_OK,result_t_NOK,return}
 
 
 CO_Comp_(IIG,IG) = let
 
 Comp_(((s),(stack'))) = transition_begin -> (
 ((s == State_Uninitialized)) & (
-client?x:{initialize} ->
-context_active_(sendrecv_(device_A,initialize),
+CH_client?x:{initialize} ->
+context_active_(sendrecv_(CH_device_A,initialize),
 semi_(\ P',((s),((stack',res))) @ ifthenelse_((res == result_t_OK),
-assign_active_(sendrecv_(device_A,calibrate),
+assign_active_(sendrecv_(CH_device_A,calibrate),
 \ (((s),((stack',res)))),r' @ ((s),((stack',r')))),
 skip_
 )(P',((s),((stack',res)))),
 \ P',((s),((stack',res))) @ ifthenelse_((res == result_t_OK),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Initialized),((stack',res)))),
-reply_(client, (\ ((s),((stack',res))) @ result_t_OK))),
+reply_(CH_client, (\ ((s),((stack',res))) @ result_t_OK))),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Uninitialized),((stack',res)))),
-reply_(client, (\ ((s),((stack',res))) @ result_t_NOK)))
+reply_(CH_client, (\ ((s),((stack',res))) @ result_t_NOK)))
 )(P',((s),((stack',res))))))(\ V' @ transition_end -> Comp_(V'),((s),(stack')))
  []
-  IIG & client?x:{recover,perform_actions} ->
+  IIG & CH_client?x:{recover,perform_actions} ->
 illegal_(STOP,<>))
 []
 ((s == State_Initialized)) & (
-client?x:{perform_actions} ->
-context_active_(sendrecv_(device_A,perform_action1),
+CH_client?x:{perform_actions} ->
+context_active_(sendrecv_(CH_device_A,perform_action1),
 semi_(\ P',((s),((stack',res))) @ ifthenelse_((res == result_t_OK),
-assign_active_(sendrecv_(device_A,perform_action2),
+assign_active_(sendrecv_(CH_device_A,perform_action2),
 \ (((s),((stack',res)))),r' @ ((s),((stack',r')))),
 skip_
 )(P',((s),((stack',res)))),
 \ P',((s),((stack',res))) @ ifthenelse_((res == result_t_OK),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Initialized),((stack',res)))),
-reply_(client, (\ ((s),((stack',res))) @ result_t_OK))),
+reply_(CH_client, (\ ((s),((stack',res))) @ result_t_OK))),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Error),((stack',res)))),
-reply_(client, (\ ((s),((stack',res))) @ result_t_NOK)))
+reply_(CH_client, (\ ((s),((stack',res))) @ result_t_NOK)))
 )(P',((s),((stack',res))))))(\ V' @ transition_end -> Comp_(V'),((s),(stack')))
  []
-  IIG & client?x:{initialize,recover} ->
+  IIG & CH_client?x:{initialize,recover} ->
 illegal_(STOP,<>))
 []
 ((s == State_Error)) & (
-client?x:{recover} ->
-context_active_(sendrecv_(device_A,calibrate),
+CH_client?x:{recover} ->
+context_active_(sendrecv_(CH_device_A,calibrate),
 \ P',((s),((stack',res))) @ ifthenelse_((res == result_t_OK),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Initialized),((stack',res)))),
-reply_(client, (\ ((s),((stack',res))) @ result_t_OK))),
+reply_(CH_client, (\ ((s),((stack',res))) @ result_t_OK))),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Error),((stack',res)))),
-reply_(client, (\ ((s),((stack',res))) @ result_t_NOK)))
+reply_(CH_client, (\ ((s),((stack',res))) @ result_t_NOK)))
 )(P',((s),((stack',res)))))(\ V' @ transition_end -> Comp_(V'),((s),(stack')))
  []
-  IIG & client?x:{initialize,perform_actions} ->
+  IIG & CH_client?x:{initialize,perform_actions} ->
 illegal_(STOP,<>))
 )
 
@@ -209,7 +209,7 @@ channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in,reorder_out : {client.result_t_OK,client.result_t_NOK,client.return}
+channel reorder_in,reorder_out : {CH_client.result_t_OK,CH_client.result_t_NOK,CH_client.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -247,12 +247,12 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {client.result_t_OK,client.result_t_NOK,client.return}
-ClientCalls = {client.initialize,client.recover,client.perform_actions}
+Exclude = {CH_client.result_t_OK,CH_client.result_t_NOK,CH_client.return}
+ClientCalls = {CH_client.initialize,CH_client.recover,CH_client.perform_actions}
 UsedModeling = {}
 within compress((CO_Comp_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,client,device_A|},Exclude)|]
-(((IF_IDevice_(true) [[CH_IDevice.x<-device_A.x|x<-extensions(device_A)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,CH_client,CH_device_A|},Exclude)|]
+(((IF_IDevice_(true) [[CH_IDevice.x<-CH_device_A.x|x<-extensions(CH_device_A)]]
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
@@ -265,5 +265,5 @@ assert IF_IDevice_(true) :[livelock free]
 assert CO_Comp_(true,true) :[deterministic]
 assert STOP [T= AS_Comp_(false) \ diff(Events,{illegal})
 assert AS_Comp_(false) :[deadlock free]
-assert IF_IComp_(true) [[CH_IComp.x<-client.x|x<-extensions(client)]] \ {} [F= AS_Comp_(true) \ diff(Events,{|illegal,client|})
-assert AS_Comp_(true) \ diff(Events,{|illegal,client|}) :[livelock free]
+assert IF_IComp_(true) [[CH_IComp.x<-CH_client.x|x<-extensions(CH_client)]] \ {} [F= AS_Comp_(true) \ diff(Events,{|illegal,CH_client|})
+assert AS_Comp_(true) \ diff(Events,{|illegal,CH_client|}) :[livelock free]

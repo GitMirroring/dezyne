@@ -68,26 +68,26 @@ within i123_I_(((false),(<>)))
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i124_i:{i3_e,i4_f,return}
+channel CH_i124_i:{i3_e,i4_f,return}
 
 
 CO_i248_argument_(IIG,IG) = let
 i161_g = \ P',V',F' @ context_func_args_(F',
-semi_((\ P',V' @ i124_i!i4_f -> P'(V')),
+semi_((\ P',V' @ CH_i124_i!i4_f -> P'(V')),
 returnvalue_(\ ((i128_b),((stack',i131_gc))) @ (i131_gc or i128_b))))(P',V')
 
 i248_argument_(((i128_b),(stack'))) = transition_begin -> (
 (true) & (
-i124_i?x:{i3_e} ->
+CH_i124_i?x:{i3_e} ->
 semi_(semi_(assign_(\ ((i128_b),(stack')) @ (((not i128_b)),(stack'))),
 context_active_(\ P',V' @ i161_g (P',V',(\ ((i128_b),(stack')) @ (i128_b))(V')),
 semi_(assign_active_(\ P',V' @ i161_g (P',V',(\ ((i128_b),((stack',i196_c))) @ (i196_c))(V')),
 \ (((i128_b),((stack',i196_c)))),r' @ ((r'),((stack',i196_c)))),
 \ P',((i128_b),((stack',i196_c))) @ ifthenelse_(i196_c,
-(\ P',V' @ i124_i!i4_f -> P'(V')),
+(\ P',V' @ CH_i124_i!i4_f -> P'(V')),
 skip_
 )(P',((i128_b),((stack',i196_c))))))),
-(\ P',V' @ i124_i.return -> P'(V')))(\ V' @ transition_end -> i248_argument_(V'),((i128_b),(stack'))))
+(\ P',V' @ CH_i124_i.return -> P'(V')))(\ V' @ transition_end -> i248_argument_(V'),((i128_b),(stack'))))
 )
 
 within i248_argument_(((false),(<>)))
@@ -97,7 +97,7 @@ channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in,reorder_out : {i124_i.return}
+channel reorder_in,reorder_out : {CH_i124_i.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -135,11 +135,11 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {i124_i.return,i124_i.i4_f}
-ClientCalls = {i124_i.i3_e}
+Exclude = {CH_i124_i.return,CH_i124_i.i4_f}
+ClientCalls = {CH_i124_i.i3_e}
 UsedModeling = {}
 within compress((CO_i248_argument_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,i124_i|},Exclude)|]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,CH_i124_i|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
@@ -151,5 +151,5 @@ assert IF_i123_I_(true) :[livelock free]
 assert CO_i248_argument_(true,true) :[deterministic]
 assert STOP [T= AS_i248_argument_(false) \ diff(Events,{illegal})
 assert AS_i248_argument_(false) :[deadlock free]
-assert IF_i123_I_(true) [[CH_i123_I.x<-i124_i.x|x<-extensions(i124_i)]] \ {} [F= AS_i248_argument_(true) \ diff(Events,{|illegal,i124_i|})
-assert AS_i248_argument_(true) \ diff(Events,{|illegal,i124_i|}) :[livelock free]
+assert IF_i123_I_(true) [[CH_i123_I.x<-CH_i124_i.x|x<-extensions(CH_i124_i)]] \ {} [F= AS_i248_argument_(true) \ diff(Events,{|illegal,CH_i124_i|})
+assert AS_i248_argument_(true) \ diff(Events,{|illegal,CH_i124_i|}) :[livelock free]

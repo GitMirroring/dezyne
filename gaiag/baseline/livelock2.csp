@@ -73,28 +73,28 @@ within nolivelock_(((<>),(<>)))
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel l:{dummy,inevitable,return}
-channel n:{dummy,inevitable,return}
+channel CH_l:{dummy,inevitable,return}
+channel CH_n:{dummy,inevitable,return}
 
 
 CO_livelock2_(IIG,IG) = let
 
 livelock2_(((<>),(stack'))) = transition_begin -> (
-IIG & l?x:{dummy} ->
+IIG & CH_l?x:{dummy} ->
 illegal_(STOP,<>)
 []
-n?x:{dummy} ->
+CH_n?x:{dummy} ->
 skip_(\ V' @ transition_end -> livelock2_(V'),((<>),(stack')))
 )
 
 within livelock2_(((<>),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
-channel IN,OUT : {n.dummy,extensions_over_empty_channels_is_undefined}
+channel IN,OUT : {CH_n.dummy,extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in,reorder_out : {l.return}
+channel reorder_in,reorder_out : {CH_l.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -132,12 +132,12 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {l.return,l.inevitable,n.inevitable}
-ClientCalls = {l.dummy}
-UsedModeling = {n.inevitable}
+Exclude = {CH_l.return,CH_l.inevitable,CH_n.inevitable}
+ClientCalls = {CH_l.dummy}
+UsedModeling = {CH_n.inevitable}
 within compress((CO_livelock2_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,l,n|},Exclude)|]
-(((IF_nolivelock_(true) [[CH_nolivelock.x<-n.x|x<-extensions(n)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,CH_l,CH_n|},Exclude)|]
+(((IF_nolivelock_(true) [[CH_nolivelock.x<-CH_n.x|x<-extensions(CH_n)]]
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
@@ -150,5 +150,5 @@ assert IF_nolivelock_(true)  \ {|CH_nolivelock.inevitable|} :[livelock free]
 assert CO_livelock2_(true,true) :[deterministic]
 assert STOP [T= AS_livelock2_(false) \ diff(Events,{illegal})
 assert AS_livelock2_(false) :[deadlock free]
-assert IF_ilivelock_(true) [[CH_ilivelock.x<-l.x|x<-extensions(l)]] \ {l.inevitable} [F= AS_livelock2_(true) \ diff(Events,{|illegal,l|})
-assert AS_livelock2_(true) \ diff(Events,{|illegal,l|}) :[livelock free]
+assert IF_ilivelock_(true) [[CH_ilivelock.x<-CH_l.x|x<-extensions(CH_l)]] \ {CH_l.inevitable} [F= AS_livelock2_(true) \ diff(Events,{|illegal,CH_l|})
+assert AS_livelock2_(true) \ diff(Events,{|illegal,CH_l|}) :[livelock free]

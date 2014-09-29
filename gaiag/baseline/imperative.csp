@@ -91,39 +91,39 @@ within iimperative_(((S_S1,false,true),(<>)))
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i:{e,f,g,h,return}
+channel CH_i:{e,f,g,h,return}
 
 
 CO_imperative_(IIG,IG) = let
 
 imperative_(((state),(stack'))) = transition_begin -> (
 ((state == States_I)) & (
-i?x:{e} ->
-semi_(semi_((\ P',V' @ i!f -> P'(V')),
-semi_((\ P',V' @ i!g -> P'(V')),
-semi_((\ P',V' @ i!h -> P'(V')),
+CH_i?x:{e} ->
+semi_(semi_((\ P',V' @ CH_i!f -> P'(V')),
+semi_((\ P',V' @ CH_i!g -> P'(V')),
+semi_((\ P',V' @ CH_i!h -> P'(V')),
 assign_(\ ((state),(stack')) @ ((States_II),(stack')))))),
-(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> imperative_(V'),((state),(stack'))))
+(\ P',V' @ CH_i.return -> P'(V')))(\ V' @ transition_end -> imperative_(V'),((state),(stack'))))
 []
 ((state == States_II)) & (
-i?x:{e} ->
+CH_i?x:{e} ->
 semi_(assign_(\ ((state),(stack')) @ ((States_III),(stack'))),
-(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> imperative_(V'),((state),(stack'))))
+(\ P',V' @ CH_i.return -> P'(V')))(\ V' @ transition_end -> imperative_(V'),((state),(stack'))))
 []
 ((state == States_III)) & (
-i?x:{e} ->
-semi_(semi_((\ P',V' @ i!f -> P'(V')),
-semi_((\ P',V' @ i!g -> P'(V')),
-semi_((\ P',V' @ i!g -> P'(V')),
-semi_((\ P',V' @ i!f -> P'(V')),
+CH_i?x:{e} ->
+semi_(semi_((\ P',V' @ CH_i!f -> P'(V')),
+semi_((\ P',V' @ CH_i!g -> P'(V')),
+semi_((\ P',V' @ CH_i!g -> P'(V')),
+semi_((\ P',V' @ CH_i!f -> P'(V')),
 assign_(\ ((state),(stack')) @ ((States_IV),(stack'))))))),
-(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> imperative_(V'),((state),(stack'))))
+(\ P',V' @ CH_i.return -> P'(V')))(\ V' @ transition_end -> imperative_(V'),((state),(stack'))))
 []
 ((state == States_IV)) & (
-i?x:{e} ->
-semi_(semi_((\ P',V' @ i!h -> P'(V')),
+CH_i?x:{e} ->
+semi_(semi_((\ P',V' @ CH_i!h -> P'(V')),
 assign_(\ ((state),(stack')) @ ((States_I),(stack')))),
-(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> imperative_(V'),((state),(stack'))))
+(\ P',V' @ CH_i.return -> P'(V')))(\ V' @ transition_end -> imperative_(V'),((state),(stack'))))
 )
 
 within imperative_(((States_I),(<>)))
@@ -133,7 +133,7 @@ channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in,reorder_out : {i.return}
+channel reorder_in,reorder_out : {CH_i.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -171,11 +171,11 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {i.return,i.f,i.g,i.h}
-ClientCalls = {i.e}
+Exclude = {CH_i.return,CH_i.f,CH_i.g,CH_i.h}
+ClientCalls = {CH_i.e}
 UsedModeling = {}
 within compress((CO_imperative_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,i|},Exclude)|]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,CH_i|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
@@ -187,5 +187,5 @@ assert IF_iimperative_(true) :[livelock free]
 assert CO_imperative_(true,true) :[deterministic]
 assert STOP [T= AS_imperative_(false) \ diff(Events,{illegal})
 assert AS_imperative_(false) :[deadlock free]
-assert IF_iimperative_(true) [[CH_iimperative.x<-i.x|x<-extensions(i)]] \ {} [F= AS_imperative_(true) \ diff(Events,{|illegal,i|})
-assert AS_imperative_(true) \ diff(Events,{|illegal,i|}) :[livelock free]
+assert IF_iimperative_(true) [[CH_iimperative.x<-CH_i.x|x<-extensions(CH_i)]] \ {} [F= AS_imperative_(true) \ diff(Events,{|illegal,CH_i|})
+assert AS_imperative_(true) \ diff(Events,{|illegal,CH_i|}) :[livelock free]

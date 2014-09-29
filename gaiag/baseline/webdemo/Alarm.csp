@@ -165,87 +165,87 @@ within i589_Siren_(((i487_States_Off),(<>)))
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i590_console:{i3_arm,i4_disarm,i5_detected,i6_deactivated,inevitable,optional,return}
-channel i593_sensor:{i243_enable,i244_disable,i245_triggered,i246_disabled,inevitable,optional,return}
-channel i596_siren:{i483_turnon,i484_turnoff,return}
+channel CH_i590_console:{i3_arm,i4_disarm,i5_detected,i6_deactivated,inevitable,optional,return}
+channel CH_i593_sensor:{i243_enable,i244_disable,i245_triggered,i246_disabled,inevitable,optional,return}
+channel CH_i596_siren:{i483_turnon,i484_turnoff,return}
 
 
 CO_i1011_Alarm_(IIG,IG) = let
 
 i1011_Alarm_(((i611_state,i615_sounding),(stack'))) = transition_begin -> (
 ((i611_state == i603_States_Disarmed)) & (
-i590_console?x:{i3_arm} ->
-semi_(semi_((\ P',V' @ i593_sensor!i243_enable -> i593_sensor.return -> P'(V')),
+CH_i590_console?x:{i3_arm} ->
+semi_(semi_((\ P',V' @ CH_i593_sensor!i243_enable -> CH_i593_sensor.return -> P'(V')),
 assign_(\ ((i611_state,i615_sounding),(stack')) @ ((i603_States_Armed,i615_sounding),(stack')))),
-(\ P',V' @ i590_console.return -> P'(V')))(\ V' @ transition_end -> i1011_Alarm_(V'),((i611_state,i615_sounding),(stack')))
+(\ P',V' @ CH_i590_console.return -> P'(V')))(\ V' @ transition_end -> i1011_Alarm_(V'),((i611_state,i615_sounding),(stack')))
  []
-  IIG & i590_console?x:{i4_disarm} ->
+  IIG & CH_i590_console?x:{i4_disarm} ->
 illegal_(STOP,<>)
  []
-  IG & i593_sensor?x:{i245_triggered,i246_disabled} ->
+  IG & CH_i593_sensor?x:{i245_triggered,i246_disabled} ->
 illegal_(STOP,<>))
 []
 ((i611_state == i603_States_Armed)) & (
-IIG & i590_console?x:{i3_arm} ->
+IIG & CH_i590_console?x:{i3_arm} ->
 illegal_(STOP,<>)
  []
-  i590_console?x:{i4_disarm} ->
-semi_(semi_((\ P',V' @ i593_sensor!i244_disable -> i593_sensor.return -> P'(V')),
+  CH_i590_console?x:{i4_disarm} ->
+semi_(semi_((\ P',V' @ CH_i593_sensor!i244_disable -> CH_i593_sensor.return -> P'(V')),
 assign_(\ ((i611_state,i615_sounding),(stack')) @ ((i603_States_Disarming,i615_sounding),(stack')))),
-(\ P',V' @ i590_console.return -> P'(V')))(\ V' @ transition_end -> i1011_Alarm_(V'),((i611_state,i615_sounding),(stack')))
+(\ P',V' @ CH_i590_console.return -> P'(V')))(\ V' @ transition_end -> i1011_Alarm_(V'),((i611_state,i615_sounding),(stack')))
  []
-  i593_sensor?x:{i245_triggered} ->
-semi_(semi_((\ P',V' @ i590_console!i5_detected -> P'(V')),
-semi_((\ P',V' @ i596_siren!i483_turnon -> i596_siren.return -> P'(V')),
+  CH_i593_sensor?x:{i245_triggered} ->
+semi_(semi_((\ P',V' @ CH_i590_console!i5_detected -> P'(V')),
+semi_((\ P',V' @ CH_i596_siren!i483_turnon -> CH_i596_siren.return -> P'(V')),
 semi_(assign_(\ ((i611_state,i615_sounding),(stack')) @ ((i611_state,true),(stack'))),
 assign_(\ ((i611_state,i615_sounding),(stack')) @ ((i603_States_Triggered,i615_sounding),(stack')))))),
 skip_)(\ V' @ transition_end -> i1011_Alarm_(V'),((i611_state,i615_sounding),(stack')))
  []
-  IG & i593_sensor?x:{i246_disabled} ->
+  IG & CH_i593_sensor?x:{i246_disabled} ->
 illegal_(STOP,<>))
 []
 ((i611_state == i603_States_Disarming)) & (
-IIG & i590_console?x:{i3_arm,i4_disarm} ->
+IIG & CH_i590_console?x:{i3_arm,i4_disarm} ->
 illegal_(STOP,<>)
  []
-  IG & i593_sensor?x:{i245_triggered} ->
+  IG & CH_i593_sensor?x:{i245_triggered} ->
 illegal_(STOP,<>))
 []
 (((i611_state == i603_States_Disarming) and i615_sounding)) & (
-i593_sensor?x:{i246_disabled} ->
-semi_(semi_((\ P',V' @ i590_console!i6_deactivated -> P'(V')),
+CH_i593_sensor?x:{i246_disabled} ->
+semi_(semi_((\ P',V' @ CH_i590_console!i6_deactivated -> P'(V')),
 semi_(assign_(\ ((i611_state,i615_sounding),(stack')) @ ((i611_state,false),(stack'))),
 assign_(\ ((i611_state,i615_sounding),(stack')) @ ((i603_States_Disarmed,i615_sounding),(stack'))))),
 skip_)(\ V' @ transition_end -> i1011_Alarm_(V'),((i611_state,i615_sounding),(stack'))))
 []
 (((i611_state == i603_States_Disarming) and (not i615_sounding))) & (
-i593_sensor?x:{i246_disabled} ->
-semi_(semi_((\ P',V' @ i590_console!i6_deactivated -> P'(V')),
+CH_i593_sensor?x:{i246_disabled} ->
+semi_(semi_((\ P',V' @ CH_i590_console!i6_deactivated -> P'(V')),
 assign_(\ ((i611_state,i615_sounding),(stack')) @ ((i603_States_Disarmed,i615_sounding),(stack')))),
 skip_)(\ V' @ transition_end -> i1011_Alarm_(V'),((i611_state,i615_sounding),(stack'))))
 []
 ((i611_state == i603_States_Triggered)) & (
-IIG & i590_console?x:{i3_arm} ->
+IIG & CH_i590_console?x:{i3_arm} ->
 illegal_(STOP,<>)
  []
-  i590_console?x:{i4_disarm} ->
-semi_(semi_((\ P',V' @ i593_sensor!i244_disable -> i593_sensor.return -> P'(V')),
+  CH_i590_console?x:{i4_disarm} ->
+semi_(semi_((\ P',V' @ CH_i593_sensor!i244_disable -> CH_i593_sensor.return -> P'(V')),
 semi_(assign_(\ ((i611_state,i615_sounding),(stack')) @ ((i611_state,false),(stack'))),
 assign_(\ ((i611_state,i615_sounding),(stack')) @ ((i603_States_Disarming,i615_sounding),(stack'))))),
-(\ P',V' @ i590_console.return -> P'(V')))(\ V' @ transition_end -> i1011_Alarm_(V'),((i611_state,i615_sounding),(stack')))
+(\ P',V' @ CH_i590_console.return -> P'(V')))(\ V' @ transition_end -> i1011_Alarm_(V'),((i611_state,i615_sounding),(stack')))
  []
-  IG & i593_sensor?x:{i245_triggered,i246_disabled} ->
+  IG & CH_i593_sensor?x:{i245_triggered,i246_disabled} ->
 illegal_(STOP,<>))
 )
 
 within i1011_Alarm_(((i603_States_Disarmed,false),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
-channel IN,OUT : {i593_sensor.i245_triggered,i593_sensor.i246_disabled,extensions_over_empty_channels_is_undefined}
+channel IN,OUT : {CH_i593_sensor.i245_triggered,CH_i593_sensor.i246_disabled,extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in,reorder_out : {i590_console.return}
+channel reorder_in,reorder_out : {CH_i590_console.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -283,13 +283,13 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {i590_console.return,i590_console.i5_detected,i590_console.i6_deactivated,i590_console.inevitable,i590_console.optional,i593_sensor.inevitable,i593_sensor.optional}
-ClientCalls = {i590_console.i3_arm,i590_console.i4_disarm}
-UsedModeling = {i593_sensor.inevitable,i593_sensor.optional}
+Exclude = {CH_i590_console.return,CH_i590_console.i5_detected,CH_i590_console.i6_deactivated,CH_i590_console.inevitable,CH_i590_console.optional,CH_i593_sensor.inevitable,CH_i593_sensor.optional}
+ClientCalls = {CH_i590_console.i3_arm,CH_i590_console.i4_disarm}
+UsedModeling = {CH_i593_sensor.inevitable,CH_i593_sensor.optional}
 within compress((CO_i1011_Alarm_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,i590_console,i593_sensor,i596_siren|},Exclude)|]
-(((IF_i482_Sensor_(true) [[CH_i482_Sensor.x<-i593_sensor.x|x<-extensions(i593_sensor)]]
- ||| IF_i589_Siren_(true) [[CH_i589_Siren.x<-i596_siren.x|x<-extensions(i596_siren)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,CH_i590_console,CH_i593_sensor,CH_i596_siren|},Exclude)|]
+(((IF_i482_Sensor_(true) [[CH_i482_Sensor.x<-CH_i593_sensor.x|x<-extensions(CH_i593_sensor)]]
+ ||| IF_i589_Siren_(true) [[CH_i589_Siren.x<-CH_i596_siren.x|x<-extensions(CH_i596_siren)]]
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
@@ -304,5 +304,5 @@ assert IF_i589_Siren_(true) :[livelock free]
 assert CO_i1011_Alarm_(true,true) :[deterministic]
 assert STOP [T= AS_i1011_Alarm_(false) \ diff(Events,{illegal})
 assert AS_i1011_Alarm_(false) :[deadlock free]
-assert IF_i242_Console_(true) [[CH_i242_Console.x<-i590_console.x|x<-extensions(i590_console)]] \ {i590_console.inevitable,i590_console.optional} [F= AS_i1011_Alarm_(true) \ diff(Events,{|illegal,i590_console|})
-assert AS_i1011_Alarm_(true) \ diff(Events,{|illegal,i590_console|}) :[livelock free]
+assert IF_i242_Console_(true) [[CH_i242_Console.x<-CH_i590_console.x|x<-extensions(CH_i590_console)]] \ {CH_i590_console.inevitable,CH_i590_console.optional} [F= AS_i1011_Alarm_(true) \ diff(Events,{|illegal,CH_i590_console|})
+assert AS_i1011_Alarm_(true) \ diff(Events,{|illegal,CH_i590_console|}) :[livelock free]

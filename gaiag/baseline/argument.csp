@@ -68,26 +68,26 @@ within I_(((false),(<>)))
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i:{e,f,return}
+channel CH_i:{e,f,return}
 
 
 CO_argument_(IIG,IG) = let
 g = \ P',V',F' @ context_func_args_(F',
-semi_((\ P',V' @ i!f -> P'(V')),
+semi_((\ P',V' @ CH_i!f -> P'(V')),
 returnvalue_(\ ((b),((stack',gc))) @ (gc or b))))(P',V')
 
 argument_(((b),(stack'))) = transition_begin -> (
 (true) & (
-i?x:{e} ->
+CH_i?x:{e} ->
 semi_(semi_(assign_(\ ((b),(stack')) @ (((not b)),(stack'))),
 context_active_(\ P',V' @ g (P',V',(\ ((b),(stack')) @ (b))(V')),
 semi_(assign_active_(\ P',V' @ g (P',V',(\ ((b),((stack',c))) @ (c))(V')),
 \ (((b),((stack',c)))),r' @ ((r'),((stack',c)))),
 \ P',((b),((stack',c))) @ ifthenelse_(c,
-(\ P',V' @ i!f -> P'(V')),
+(\ P',V' @ CH_i!f -> P'(V')),
 skip_
 )(P',((b),((stack',c))))))),
-(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> argument_(V'),((b),(stack'))))
+(\ P',V' @ CH_i.return -> P'(V')))(\ V' @ transition_end -> argument_(V'),((b),(stack'))))
 )
 
 within argument_(((false),(<>)))
@@ -97,7 +97,7 @@ channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in,reorder_out : {i.return}
+channel reorder_in,reorder_out : {CH_i.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -135,11 +135,11 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {i.return,i.f}
-ClientCalls = {i.e}
+Exclude = {CH_i.return,CH_i.f}
+ClientCalls = {CH_i.e}
 UsedModeling = {}
 within compress((CO_argument_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,i|},Exclude)|]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,CH_i|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
@@ -151,5 +151,5 @@ assert IF_I_(true) :[livelock free]
 assert CO_argument_(true,true) :[deterministic]
 assert STOP [T= AS_argument_(false) \ diff(Events,{illegal})
 assert AS_argument_(false) :[deadlock free]
-assert IF_I_(true) [[CH_I.x<-i.x|x<-extensions(i)]] \ {} [F= AS_argument_(true) \ diff(Events,{|illegal,i|})
-assert AS_argument_(true) \ diff(Events,{|illegal,i|}) :[livelock free]
+assert IF_I_(true) [[CH_I.x<-CH_i.x|x<-extensions(CH_i)]] \ {} [F= AS_argument_(true) \ diff(Events,{|illegal,CH_i|})
+assert AS_argument_(true) \ diff(Events,{|illegal,CH_i|}) :[livelock free]

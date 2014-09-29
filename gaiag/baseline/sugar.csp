@@ -61,19 +61,19 @@ within I_(((Enum_False),(<>)))
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i:{a,e,return}
+channel CH_i:{a,e,return}
 
 
 CO_sugar_(IIG,IG) = let
 
 sugar_(((s),(stack'))) = transition_begin -> (
 ((s == Enum_False)) & (
-i?x:{e} ->
+CH_i?x:{e} ->
 semi_(\ P',((s),(stack')) @ ifthenelse_((s == Enum_False),
-(\ P',V' @ i!a -> P'(V')),
+(\ P',V' @ CH_i!a -> P'(V')),
 skip_
 )(P',((s),(stack'))),
-(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> sugar_(V'),((s),(stack'))))
+(\ P',V' @ CH_i.return -> P'(V')))(\ V' @ transition_end -> sugar_(V'),((s),(stack'))))
 )
 
 within sugar_(((Enum_False),(<>)))
@@ -83,7 +83,7 @@ channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in,reorder_out : {i.return}
+channel reorder_in,reorder_out : {CH_i.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -121,11 +121,11 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {i.return,i.a}
-ClientCalls = {i.e}
+Exclude = {CH_i.return,CH_i.a}
+ClientCalls = {CH_i.e}
 UsedModeling = {}
 within compress((CO_sugar_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,i|},Exclude)|]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,CH_i|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
@@ -137,5 +137,5 @@ assert IF_I_(true) :[livelock free]
 assert CO_sugar_(true,true) :[deterministic]
 assert STOP [T= AS_sugar_(false) \ diff(Events,{illegal})
 assert AS_sugar_(false) :[deadlock free]
-assert IF_I_(true) [[CH_I.x<-i.x|x<-extensions(i)]] \ {} [F= AS_sugar_(true) \ diff(Events,{|illegal,i|})
-assert AS_sugar_(true) \ diff(Events,{|illegal,i|}) :[livelock free]
+assert IF_I_(true) [[CH_I.x<-CH_i.x|x<-extensions(CH_i)]] \ {} [F= AS_sugar_(true) \ diff(Events,{|illegal,CH_i|})
+assert AS_sugar_(true) \ diff(Events,{|illegal,CH_i|}) :[livelock free]
