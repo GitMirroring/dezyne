@@ -450,7 +450,7 @@ skip_
 
           ;; via:
           '(if (ctx ((s b c)))
-               (expression b)
+               (expression (and IG b))
                (illegal)
                ())))
 
@@ -468,7 +468,7 @@ skip_
 
           ;; via:
           '(if (ctx ((s b c)))
-               (expression b)
+               (expression (and (! IG) b))
                ()
                (illegal))))
 
