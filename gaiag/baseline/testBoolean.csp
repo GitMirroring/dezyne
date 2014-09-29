@@ -43,13 +43,13 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = States_State1 | States_State2 | evt | return
 -- interface.csp.scm
 
-channel CH_TestBool: {evt,return}
+channel TestBool: {evt,return}
 
 IF_TestBool_(IG) = let
 
 TestBool_(((b1,b2,b3,state1,state2),(stack'))) =
 ((state1 == States_State1)) & (
-CH_TestBool?x:{evt} ->
+TestBool?x:{evt} ->
 semi_(semi_(assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ (((b1 or b2),b2,b3,state1,state2),(stack'))),
 semi_(assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ ((b1,(b1 and b2),b3,state1,state2),(stack'))),
 semi_(assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ ((b1,b2,(not b1),state1,state2),(stack'))),
@@ -71,26 +71,26 @@ semi_(assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ ((b1,(b1 or (b2 and b3)),b
 assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ (((not b1),b2,b3,state1,state2),(stack'))),
 skip_
 )(P',((b1,b2,b3,state1,state2),(stack')))))))))))))))))))),
-(\ P',V' @ CH_TestBool.return -> P'(V')))(\ V' @ TestBool_(V'),((b1,b2,b3,state1,state2),(stack'))))
+(\ P',V' @ TestBool.return -> P'(V')))(\ V' @ TestBool_(V'),((b1,b2,b3,state1,state2),(stack'))))
 []
 (((state2 == States_State1) and b1)) & (
-CH_TestBool?x:{evt} ->
-(\ P',V' @ CH_TestBool.return -> P'(V'))(\ V' @ TestBool_(V'),((b1,b2,b3,state1,state2),(stack'))))
+TestBool?x:{evt} ->
+(\ P',V' @ TestBool.return -> P'(V'))(\ V' @ TestBool_(V'),((b1,b2,b3,state1,state2),(stack'))))
 
 within TestBool_(((true,true,true,States_State1,States_State2),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel CH_i:{evt,return}
+channel i:{evt,return}
 
 
 CO_testBoolean_(IIG,IG) = let
 
 testBoolean_(((b),(stack'))) = transition_begin -> (
 (true) & (
-CH_i?x:{evt} ->
-(\ P',V' @ CH_i.return -> P'(V'))(\ V' @ transition_end -> testBoolean_(V'),((b),(stack'))))
+i?x:{evt} ->
+(\ P',V' @ i.return -> P'(V'))(\ V' @ transition_end -> testBoolean_(V'),((b),(stack'))))
 )
 
 within testBoolean_(((false),(<>)))
@@ -100,7 +100,7 @@ channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in,reorder_out : {CH_i.return}
+channel reorder_in,reorder_out : {i.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -138,11 +138,11 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {CH_i.return}
-ClientCalls = {CH_i.evt}
+Exclude = {i.return}
+ClientCalls = {i.evt}
 UsedModeling = {}
 within compress((CO_testBoolean_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,CH_i|},Exclude)|]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,i|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
@@ -154,5 +154,5 @@ assert IF_TestBool_(true) :[livelock free]
 assert CO_testBoolean_(true,true) :[deterministic]
 assert STOP [T= AS_testBoolean_(false) \ diff(Events,{illegal})
 assert AS_testBoolean_(false) :[deadlock free]
-assert IF_TestBool_(true) [[CH_TestBool.x<-CH_i.x|x<-extensions(CH_i)]] \ {} [F= AS_testBoolean_(true) \ diff(Events,{|illegal,CH_i|})
-assert AS_testBoolean_(true) \ diff(Events,{|illegal,CH_i|}) :[livelock free]
+assert IF_TestBool_(true) [[TestBool.x<-i.x|x<-extensions(i)]] \ {} [F= AS_testBoolean_(true) \ diff(Events,{|illegal,i|})
+assert AS_testBoolean_(true) \ diff(Events,{|illegal,i|}) :[livelock free]

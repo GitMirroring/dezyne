@@ -43,13 +43,13 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = i3_e | return
 -- interface.csp.scm
 
-channel CH_i13_I: {i3_e,return}
+channel i13_I: {i3_e,return}
 
 IF_i13_I_(IG) = let
 
 i13_I_(((<>),(stack'))) =
-CH_i13_I?x:{i3_e} ->
-(\ P',V' @ CH_i13_I.return -> P'(V'))(\ V' @ i13_I_(V'),((<>),(stack')))
+i13_I?x:{i3_e} ->
+(\ P',V' @ i13_I.return -> P'(V'))(\ V' @ i13_I_(V'),((<>),(stack')))
 
 within i13_I_(((<>),(<>)))
 
@@ -136,5 +136,5 @@ assert IF_i13_I_(true) :[livelock free]
 assert CO_i84_function2_(true,true) :[deterministic]
 assert STOP [T= AS_i84_function2_(false) \ diff(Events,{illegal})
 assert AS_i84_function2_(false) :[deadlock free]
-assert IF_i13_I_(true) [[CH_i13_I.x<-i14_i.x|x<-extensions(i14_i)]] \ {} [F= AS_i84_function2_(true) \ diff(Events,{|illegal,i14_i|})
+assert IF_i13_I_(true) [[i13_I.x<-i14_i.x|x<-extensions(i14_i)]] \ {} [F= AS_i84_function2_(true) \ diff(Events,{|illegal,i14_i|})
 assert AS_i84_function2_(true) \ diff(Events,{|illegal,i14_i|}) :[livelock free]

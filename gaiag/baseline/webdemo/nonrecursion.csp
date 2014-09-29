@@ -43,14 +43,14 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = i3_e | i4_h | return
 -- interface.csp.scm
 
-channel CH_i23_I: {i3_e,i4_h,return}
+channel i23_I: {i3_e,i4_h,return}
 
 IF_i23_I_(IG) = let
 
 i23_I_(((<>),(stack'))) =
-CH_i23_I?x:{i3_e} ->
-semi_((\ P',V' @ CH_i23_I!i4_h -> P'(V')),
-(\ P',V' @ CH_i23_I.return -> P'(V')))(\ V' @ i23_I_(V'),((<>),(stack')))
+i23_I?x:{i3_e} ->
+semi_((\ P',V' @ i23_I!i4_h -> P'(V')),
+(\ P',V' @ i23_I.return -> P'(V')))(\ V' @ i23_I_(V'),((<>),(stack')))
 
 within i23_I_(((<>),(<>)))
 
@@ -138,5 +138,5 @@ assert IF_i23_I_(true) :[livelock free]
 assert CO_i103_nonrecursion_(true,true) :[deterministic]
 assert STOP [T= AS_i103_nonrecursion_(false) \ diff(Events,{illegal})
 assert AS_i103_nonrecursion_(false) :[deadlock free]
-assert IF_i23_I_(true) [[CH_i23_I.x<-i24_i.x|x<-extensions(i24_i)]] \ {} [F= AS_i103_nonrecursion_(true) \ diff(Events,{|illegal,i24_i|})
+assert IF_i23_I_(true) [[i23_I.x<-i24_i.x|x<-extensions(i24_i)]] \ {} [F= AS_i103_nonrecursion_(true) \ diff(Events,{|illegal,i24_i|})
 assert AS_i103_nonrecursion_(true) \ diff(Events,{|illegal,i24_i|}) :[livelock free]

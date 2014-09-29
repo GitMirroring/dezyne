@@ -43,59 +43,59 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = a | e | hi | lo | return
 -- interface.csp.scm
 
-channel CH_I: {a,e,hi,lo,return}
+channel I: {a,e,hi,lo,return}
 
 IF_I_(IG) = let
 
 I_(((state,c),(stack'))) =
 (true) & (
-CH_I?x:{e} ->
+I?x:{e} ->
 semi_(\ P',((state,c),(stack')) @ ifthenelse_((state == 0),
 semi_(assign_(\ ((state,c),(stack')) @ ((3,c),(stack'))),
-(\ P',V' @ CH_I!a -> P'(V'))),
+(\ P',V' @ I!a -> P'(V'))),
 semi_(assign_(\ ((state,c),(stack')) @ (((state - 1),c),(stack'))),
 \ P',((state,c),(stack')) @ ifthenelse_((c < state),
 assign_(\ ((state,c),(stack')) @ ((state,(c + 1)),(stack'))),
 \ P',((state,c),(stack')) @ ifthenelse_((c <= ((state + 1))),
-(\ P',V' @ CH_I!lo -> P'(V')),
+(\ P',V' @ I!lo -> P'(V')),
 \ P',((state,c),(stack')) @ ifthenelse_((c > state),
-(\ P',V' @ CH_I!hi -> P'(V')),
+(\ P',V' @ I!hi -> P'(V')),
 skip_
 )(P',((state,c),(stack')))
 )(P',((state,c),(stack')))
 )(P',((state,c),(stack'))))
 )(P',((state,c),(stack'))),
-(\ P',V' @ CH_I.return -> P'(V')))(\ V' @ I_(V'),((state,c),(stack'))))
+(\ P',V' @ I.return -> P'(V')))(\ V' @ I_(V'),((state,c),(stack'))))
 
 within I_(((3,0),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel CH_i:{a,e,hi,lo,return}
+channel i:{a,e,hi,lo,return}
 
 
 CO_expressions_(IIG,IG) = let
 
 expressions_(((state,c),(stack'))) = transition_begin -> (
 (true) & (
-CH_i?x:{e} ->
+i?x:{e} ->
 semi_(\ P',((state,c),(stack')) @ ifthenelse_((state == 0),
 semi_(assign_(\ ((state,c),(stack')) @ ((3,c),(stack'))),
-(\ P',V' @ CH_i!a -> P'(V'))),
+(\ P',V' @ i!a -> P'(V'))),
 semi_(assign_(\ ((state,c),(stack')) @ (((state - 1),c),(stack'))),
 \ P',((state,c),(stack')) @ ifthenelse_((c < state),
 assign_(\ ((state,c),(stack')) @ ((state,(c + 1)),(stack'))),
 \ P',((state,c),(stack')) @ ifthenelse_((c <= ((state + 1))),
-(\ P',V' @ CH_i!lo -> P'(V')),
+(\ P',V' @ i!lo -> P'(V')),
 \ P',((state,c),(stack')) @ ifthenelse_((c > state),
-(\ P',V' @ CH_i!hi -> P'(V')),
+(\ P',V' @ i!hi -> P'(V')),
 skip_
 )(P',((state,c),(stack')))
 )(P',((state,c),(stack')))
 )(P',((state,c),(stack'))))
 )(P',((state,c),(stack'))),
-(\ P',V' @ CH_i.return -> P'(V')))(\ V' @ transition_end -> expressions_(V'),((state,c),(stack'))))
+(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> expressions_(V'),((state,c),(stack'))))
 )
 
 within expressions_(((3,0),(<>)))
@@ -105,7 +105,7 @@ channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in,reorder_out : {CH_i.return}
+channel reorder_in,reorder_out : {i.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -143,11 +143,11 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {CH_i.return,CH_i.a,CH_i.hi,CH_i.lo}
-ClientCalls = {CH_i.e}
+Exclude = {i.return,i.a,i.hi,i.lo}
+ClientCalls = {i.e}
 UsedModeling = {}
 within compress((CO_expressions_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,CH_i|},Exclude)|]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,i|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
@@ -159,5 +159,5 @@ assert IF_I_(true) :[livelock free]
 assert CO_expressions_(true,true) :[deterministic]
 assert STOP [T= AS_expressions_(false) \ diff(Events,{illegal})
 assert AS_expressions_(false) :[deadlock free]
-assert IF_I_(true) [[CH_I.x<-CH_i.x|x<-extensions(CH_i)]] \ {} [F= AS_expressions_(true) \ diff(Events,{|illegal,CH_i|})
-assert AS_expressions_(true) \ diff(Events,{|illegal,CH_i|}) :[livelock free]
+assert IF_I_(true) [[I.x<-i.x|x<-extensions(i)]] \ {} [F= AS_expressions_(true) \ diff(Events,{|illegal,i|})
+assert AS_expressions_(true) \ diff(Events,{|illegal,i|}) :[livelock free]

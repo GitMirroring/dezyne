@@ -43,45 +43,45 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = ev_mangle | ev_mingle | return
 -- interface.csp.scm
 
-channel CH_if_mangle: {ev_mangle,ev_mingle,return}
+channel if_mangle: {ev_mangle,ev_mingle,return}
 
 IF_if_mangle_mangle(IG) = let
 mangle = \ P',V',F' @ context_func_args_(F',
-semi_((\ P',V' @ CH_if_mangle!ev_mingle -> P'(V')),
+semi_((\ P',V' @ if_mangle!ev_mingle -> P'(V')),
 returnvalue_(\ ((va_b),((stack',va_m))) @ (va_m or va_b))))(P',V')
 
 if_mangle_mangle(((va_b),(stack'))) =
 (true) & (
-CH_if_mangle?x:{ev_mangle} ->
+if_mangle?x:{ev_mangle} ->
 semi_(semi_(assign_(\ ((va_b),(stack')) @ ((va_b),(stack'))),
 \ P',((va_b),(stack')) @ ifthenelse_(va_b,
-(\ P',V' @ CH_if_mangle!ev_mingle -> P'(V')),
+(\ P',V' @ if_mangle!ev_mingle -> P'(V')),
 skip_
 )(P',((va_b),(stack')))),
-(\ P',V' @ CH_if_mangle.return -> P'(V')))(\ V' @ if_mangle_mangle(V'),((va_b),(stack'))))
+(\ P',V' @ if_mangle.return -> P'(V')))(\ V' @ if_mangle_mangle(V'),((va_b),(stack'))))
 
 within if_mangle_mangle(((false),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel CH_po_mangle:{ev_mangle,ev_mingle,return}
+channel po_mangle:{ev_mangle,ev_mingle,return}
 
 
 CO_co_mangle_mangle(IIG,IG) = let
 mangle = \ P',V',F' @ context_func_args_(F',
-semi_((\ P',V' @ CH_po_mangle!ev_mingle -> P'(V')),
+semi_((\ P',V' @ po_mangle!ev_mingle -> P'(V')),
 returnvalue_(\ ((va_b),((stack',va_m))) @ (va_m or va_b))))(P',V')
 
 co_mangle_mangle(((va_b),(stack'))) = transition_begin -> (
 (true) & (
-CH_po_mangle?x:{ev_mangle} ->
+po_mangle?x:{ev_mangle} ->
 semi_(semi_(assign_(\ ((va_b),(stack')) @ ((va_b),(stack'))),
 \ P',((va_b),(stack')) @ ifthenelse_(va_b,
-(\ P',V' @ CH_po_mangle!ev_mingle -> P'(V')),
+(\ P',V' @ po_mangle!ev_mingle -> P'(V')),
 skip_
 )(P',((va_b),(stack')))),
-(\ P',V' @ CH_po_mangle.return -> P'(V')))(\ V' @ transition_end -> co_mangle_mangle(V'),((va_b),(stack'))))
+(\ P',V' @ po_mangle.return -> P'(V')))(\ V' @ transition_end -> co_mangle_mangle(V'),((va_b),(stack'))))
 )
 
 within co_mangle_mangle(((false),(<>)))
@@ -91,7 +91,7 @@ channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in,reorder_out : {CH_po_mangle.return}
+channel reorder_in,reorder_out : {po_mangle.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -129,11 +129,11 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {CH_po_mangle.return,CH_po_mangle.ev_mingle}
-ClientCalls = {CH_po_mangle.ev_mangle}
+Exclude = {po_mangle.return,po_mangle.ev_mingle}
+ClientCalls = {po_mangle.ev_mangle}
 UsedModeling = {}
 within compress((CO_co_mangle_mangle(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,CH_po_mangle|},Exclude)|]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,po_mangle|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
@@ -145,5 +145,5 @@ assert IF_if_mangle_mangle(true) :[livelock free]
 assert CO_co_mangle_mangle(true,true) :[deterministic]
 assert STOP [T= AS_co_mangle_mangle(false) \ diff(Events,{illegal})
 assert AS_co_mangle_mangle(false) :[deadlock free]
-assert IF_if_mangle_mangle(true) [[CH_if_mangle.x<-CH_po_mangle.x|x<-extensions(CH_po_mangle)]] \ {} [F= AS_co_mangle_mangle(true) \ diff(Events,{|illegal,CH_po_mangle|})
-assert AS_co_mangle_mangle(true) \ diff(Events,{|illegal,CH_po_mangle|}) :[livelock free]
+assert IF_if_mangle_mangle(true) [[if_mangle.x<-po_mangle.x|x<-extensions(po_mangle)]] \ {} [F= AS_co_mangle_mangle(true) \ diff(Events,{|illegal,po_mangle|})
+assert AS_co_mangle_mangle(true) \ diff(Events,{|illegal,po_mangle|}) :[livelock free]

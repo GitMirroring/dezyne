@@ -43,19 +43,19 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = Status_No | Status_Nok | Status_Ok | Status_Yes | done | return | what
 -- interface.csp.scm
 
-channel CH_I: {done,Status_Yes,Status_No,return}
+channel I: {done,Status_Yes,Status_No,return}
 
 IF_I_(IG) = let
-reply_fun = \ P',V' @ context_func_(reply_(CH_I, (\ ((dummy),(stack')) @ Status_Yes)))(P',V')
+reply_fun = \ P',V' @ context_func_(reply_(I, (\ ((dummy),(stack')) @ Status_Yes)))(P',V')
 reply_fun_arg = \ P',V',F' @ context_func_args_(F',
-reply_(CH_I, (\ ((dummy),((stack',s))) @ s)))(P',V')
+reply_(I, (\ ((dummy),((stack',s))) @ s)))(P',V')
 
 I_(((dummy),(stack'))) =
 (true) & (
-CH_I?x:{done} ->
+I?x:{done} ->
 callvoid_(\ P',V' @ reply_fun(P',V'))(\ V' @ I_(V'),((dummy),(stack')))
  []
-  CH_I?x:{done} ->
+  I?x:{done} ->
 callvoid_(\ P',V' @ reply_fun_arg(P',V',(\ ((dummy),(stack')) @ (Status_No))(V')))(\ V' @ I_(V'),((dummy),(stack'))))
 
 within I_(((false),(<>)))
@@ -63,19 +63,19 @@ within I_(((false),(<>)))
 -- end of interface.csp.scm
 -- interface.csp.scm
 
-channel CH_U: {what,Status_Ok,Status_Nok,return}
+channel U: {what,Status_Ok,Status_Nok,return}
 
 IF_U_(IG) = let
-reply_fun = \ P',V' @ context_func_(reply_(CH_U, (\ ((dummy),(stack')) @ Status_Ok)))(P',V')
+reply_fun = \ P',V' @ context_func_(reply_(U, (\ ((dummy),(stack')) @ Status_Ok)))(P',V')
 reply_fun_arg = \ P',V',F' @ context_func_args_(F',
-reply_(CH_U, (\ ((dummy),((stack',s))) @ s)))(P',V')
+reply_(U, (\ ((dummy),((stack',s))) @ s)))(P',V')
 
 U_(((dummy),(stack'))) =
 (true) & (
-CH_U?x:{what} ->
+U?x:{what} ->
 callvoid_(\ P',V' @ reply_fun(P',V'))(\ V' @ U_(V'),((dummy),(stack')))
  []
-  CH_U?x:{what} ->
+  U?x:{what} ->
 callvoid_(\ P',V' @ reply_fun_arg(P',V',(\ ((dummy),(stack')) @ (Status_Nok))(V')))(\ V' @ U_(V'),((dummy),(stack'))))
 
 within U_(((false),(<>)))
@@ -83,20 +83,20 @@ within U_(((false),(<>)))
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel CH_i:{done,Status_Yes,Status_No,return}
-channel CH_u:{what,Status_Ok,Status_Nok,return}
+channel i:{done,Status_Yes,Status_No,return}
+channel u:{what,Status_Ok,Status_Nok,return}
 
 
 CO_Reply3_(IIG,IG) = let
-reply_fun = \ P',V' @ context_func_(reply_(CH_I, (\ ((dummy),(stack')) @ Status_Yes)))(P',V')
+reply_fun = \ P',V' @ context_func_(reply_(I, (\ ((dummy),(stack')) @ Status_Yes)))(P',V')
 reply_fun_arg = \ P',V',F' @ context_func_args_(F',
-reply_(CH_I, (\ ((dummy),((stack',s))) @ s)))(P',V')
+reply_(I, (\ ((dummy),((stack',s))) @ s)))(P',V')
 
 Reply3_(((dummy),(stack'))) = transition_begin -> (
 (true) & (
-CH_i?x:{done} ->
-context_active_(sendrecv_(CH_u,what),
-semi_(assign_active_(sendrecv_(CH_u,what),
+i?x:{done} ->
+context_active_(sendrecv_(u,what),
+semi_(assign_active_(sendrecv_(u,what),
 \ (((dummy),((stack',s)))),r' @ ((dummy),((stack',r')))),
 \ P',((dummy),((stack',s))) @ ifthenelse_((s == Status_Ok),
 callvoid_(\ P',V' @ reply_fun(P',V')),
@@ -111,7 +111,7 @@ channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in,reorder_out : {CH_i.Status_Yes,CH_i.Status_No,CH_i.return}
+channel reorder_in,reorder_out : {i.Status_Yes,i.Status_No,i.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -149,12 +149,12 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {CH_i.Status_Yes,CH_i.Status_No,CH_i.return}
-ClientCalls = {CH_i.done}
+Exclude = {i.Status_Yes,i.Status_No,i.return}
+ClientCalls = {i.done}
 UsedModeling = {}
 within compress((CO_Reply3_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,CH_i,CH_u|},Exclude)|]
-(((IF_U_(true) [[CH_U.x<-CH_u.x|x<-extensions(CH_u)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,i,u|},Exclude)|]
+(((IF_U_(true) [[U.x<-u.x|x<-extensions(u)]]
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
@@ -167,5 +167,5 @@ assert IF_U_(true) :[livelock free]
 assert CO_Reply3_(true,true) :[deterministic]
 assert STOP [T= AS_Reply3_(false) \ diff(Events,{illegal})
 assert AS_Reply3_(false) :[deadlock free]
-assert IF_I_(true) [[CH_I.x<-CH_i.x|x<-extensions(CH_i)]] \ {} [F= AS_Reply3_(true) \ diff(Events,{|illegal,CH_i|})
-assert AS_Reply3_(true) \ diff(Events,{|illegal,CH_i|}) :[livelock free]
+assert IF_I_(true) [[I.x<-i.x|x<-extensions(i)]] \ {} [F= AS_Reply3_(true) \ diff(Events,{|illegal,i|})
+assert AS_Reply3_(true) \ diff(Events,{|illegal,i|}) :[livelock free]

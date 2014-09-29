@@ -149,7 +149,7 @@
     ((component deterministic) . "assert CO_#(.name model) _#((compose .name .behaviour) model)(true,true) :[deterministic]\n")
     ((component deadlock)  . "assert AS_#(.name model) _#((compose .name .behaviour) model) (false) :[deadlock free]\n")
     ((component compliance) . ,(gulp-template 'asserts/component-compliance.csp.scm))
-    ((component livelock)  .  "assert AS_#(.name model) _#((compose .name .behaviour) model) (true) \\ diff(Events,{|illegal,CH_#((compose .name gom:port) model) |}) :[livelock free]\n")
+    ((component livelock)  .  "assert AS_#(.name model) _#((compose .name .behaviour) model) (true) \\ diff(Events,{|illegal,#((compose .name gom:port) model) |}) :[livelock free]\n")
     ((interface deadlock) . ,(gulp-template 'asserts/interface-deadlock.csp.scm))
     ((interface livelock) . ,(gulp-template 'asserts/interface-livelock.csp.scm))))
 
@@ -313,7 +313,7 @@
 (define-method (optional-chaos (o <interface>)) ;; FIXME: no test
   (let ((name (.name o)))
     (if (member 'optional (map .event (gom:find-triggers o)))
-        (list " [|{CH_" name ".optional}|] " "CHAOS({CH_" name ".optional})")
+        (list " [|{" name ".optional}|] " "CHAOS({" name ".optional})")
         "")))
 
 (define (ast-transform ast src)
@@ -610,7 +610,7 @@
                (inevitable-optional? (or (member 'inevitable (map .event triggers))
                                          (member 'optional (map .event triggers))))
                (ig? (eq? statement 'IG))
-               (channel (list "CH_" (if (is-a? model <interface>) model-name (.port (car triggers)))))
+               (channel (if (is-a? model <interface>) model-name (.port (car triggers))))
                (provided-on? (or (and (is-a? model <interface>) (not inevitable-optional?))
                                  (or (is-a? model <interface>) ((provides-event? model) (car triggers)))))
                (IG? (if ig? (if ((provides-event? model) (car triggers)) "IIG & "  "IG & ")))
@@ -620,7 +620,7 @@
           (list IG? channel "?x:{" event-names "}" " ->\n" transformed transformed-end (if ig? "(STOP,<>)" ""))))
        (($ <expression>) src)
        (($ <csp-reply> expression context)
-        (let* ((channel (or channel (list "CH_" (if (is-a? model <interface>) model-name (.type (gom:port model)))))))
+        (let* ((channel (or channel (if (is-a? model <interface>) model-name (.type (gom:port model))))))
           (list "reply_(" channel ", " "(\\ (" context ") @ " expression "))")))
        (($ <return>) "skip_")
        (($ <csp-return> #f context) "skip_")
@@ -659,10 +659,10 @@
           (list "\\ P',(" context ") @ ifthenelse_(" expression ",\n" then ",\n" else "\n)(P',(" context "))")))
        (('context-active (context var ($ <action> ($ <trigger> port event))) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on? tail-recursive?)))
-          (list "context_active_(sendrecv_(CH_"  port "," event "),\n" stat ")")))
+          (list "context_active_(sendrecv_("  port "," event "),\n" stat ")")))
        (('context-active (context var ($ <expression> ($ <action> ($ <trigger> port event)))) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on? tail-recursive?)))
-          (list "context_active_(sendrecv_(CH_" port "," event "),\n" stat ")")))
+          (list "context_active_(sendrecv_(" port "," event "),\n" stat ")")))
 
        (('context-active (context var ($ <call> identifier ($ <arguments> '()))) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on? tail-recursive?)))
@@ -673,7 +673,7 @@
           (list "context_active_(\\ P',V' @ " identifier " (" continuation-pv ",(\\ (" context ") @ (" (arguments) "))(V')),\n" stat ")")))
 
        (('assign-active (context var ($ <action> ($ <trigger> port event))) expressions)
-        (let ((action (list "sendrecv_(CH_" port "," event ")")))
+        (let ((action (list "sendrecv_(" port "," event ")")))
           (list "assign_active_(" action ",\n\\ ((" context "))," var " @ (" expressions "))" )))
        (('assign-active (context var ($ <call> identifier (and ($ <arguments>) (get! arguments)))) expressions)
         (list "assign_active_(\\ P',V' @ " identifier " (" continuation-pv ",(\\ (" context ") @ (" (arguments) "))(V')),\n\\ ((" context "))," var " @ (" expressions "))"))
@@ -696,7 +696,7 @@
     (=>string
      ast
      (let* ((trigger (.trigger o))
-            (channel (list "CH_" (if (is-a? model <interface>) model-name (.port trigger))))
+            (channel (list "" (if (is-a? model <interface>) model-name (.port trigger))))
             (event-name (.event trigger))
             (channel-return (if ((requires-event? model) trigger) (list " -> " channel ".return"))))
        (list "(\\ P',V' @ " channel "!" event-name channel-return " -> P'(V'))")))))
@@ -712,6 +712,6 @@
              (modeling (null-is-#f (map .event (modeling-events model)))))
             (string-append " \\ {|"
                            (comma-join
-                            (map (lambda (x) (->string (list "CH_" name "." x)))
+                            (map (lambda (x) (->string (list "" name "." x)))
                                  modeling))
                            "|} ")))

@@ -43,22 +43,22 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = i3_sleep | i4_zzz | i5_yawn | i6_stretch | return
 -- interface.csp.scm
 
-channel CH_i99_sleeping: {i3_sleep,i4_zzz,i5_yawn,i6_stretch,return}
+channel i99_sleeping: {i3_sleep,i4_zzz,i5_yawn,i6_stretch,return}
 
 IF_i99_sleeping_(IG) = let
-i77_f = \ PF',VF' @ context_func_(semi_((\ P',V' @ CH_i99_sleeping!i5_yawn -> P'(V')),
-semi_((\ P',V' @ CH_i99_sleeping!i4_zzz -> P'(V')),
-semi_((\ P',V' @ CH_i99_sleeping!i5_yawn -> P'(V')),
-semi_((\ P',V' @ CH_i99_sleeping!i6_stretch -> P'(V')),
-semi_((\ P',V' @ CH_i99_sleeping!i4_zzz -> P'(V')),
-semi_((\ P',V' @ CH_i99_sleeping!i6_stretch -> P'(V')),
+i77_f = \ PF',VF' @ context_func_(semi_((\ P',V' @ i99_sleeping!i5_yawn -> P'(V')),
+semi_((\ P',V' @ i99_sleeping!i4_zzz -> P'(V')),
+semi_((\ P',V' @ i99_sleeping!i5_yawn -> P'(V')),
+semi_((\ P',V' @ i99_sleeping!i6_stretch -> P'(V')),
+semi_((\ P',V' @ i99_sleeping!i4_zzz -> P'(V')),
+semi_((\ P',V' @ i99_sleeping!i6_stretch -> P'(V')),
 semi_(callvoid_(\ P',V' @ i77_f(PF',members_(V'))),
 skip_))))))))(PF',VF')
 
 i99_sleeping_(((<>),(stack'))) =
-CH_i99_sleeping?x:{i3_sleep} ->
+i99_sleeping?x:{i3_sleep} ->
 semi_(callvoid_(\ P',V' @ i77_f(P',V')),
-(\ P',V' @ CH_i99_sleeping.return -> P'(V')))(\ V' @ i99_sleeping_(V'),((<>),(stack')))
+(\ P',V' @ i99_sleeping.return -> P'(V')))(\ V' @ i99_sleeping_(V'),((<>),(stack')))
 
 within i99_sleeping_(((<>),(<>)))
 
@@ -161,5 +161,5 @@ assert IF_i99_sleeping_(true) :[livelock free]
 assert CO_i308_mutual_recursion_with_members_(true,true) :[deterministic]
 assert STOP [T= AS_i308_mutual_recursion_with_members_(false) \ diff(Events,{illegal})
 assert AS_i308_mutual_recursion_with_members_(false) :[deadlock free]
-assert IF_i99_sleeping_(true) [[CH_i99_sleeping.x<-i100_beauty.x|x<-extensions(i100_beauty)]] \ {} [F= AS_i308_mutual_recursion_with_members_(true) \ diff(Events,{|illegal,i100_beauty|})
+assert IF_i99_sleeping_(true) [[i99_sleeping.x<-i100_beauty.x|x<-extensions(i100_beauty)]] \ {} [F= AS_i308_mutual_recursion_with_members_(true) \ diff(Events,{|illegal,i100_beauty|})
 assert AS_i308_mutual_recursion_with_members_(true) \ diff(Events,{|illegal,i100_beauty|}) :[livelock free]

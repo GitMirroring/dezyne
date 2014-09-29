@@ -43,12 +43,12 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = foo | return
 -- interface.csp.scm
 
-channel CH_iinstance_collision: {foo,return}
+channel iinstance_collision: {foo,return}
 
 IF_iinstance_collision_(IG) = let
 
 iinstance_collision_(((<>),(stack'))) =
-IG & CH_iinstance_collision?x:{foo} ->
+IG & iinstance_collision?x:{foo} ->
 illegal_(STOP,<>)
 
 within iinstance_collision_(((<>),(<>)))
@@ -56,13 +56,13 @@ within iinstance_collision_(((<>),(<>)))
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel CH_i:{foo,return}
+channel i:{foo,return}
 
 
 CO_colliding_component_(IIG,IG) = let
 
 colliding_component_(((<>),(stack'))) = transition_begin -> (
-IIG & CH_i?x:{foo} ->
+IIG & i?x:{foo} ->
 illegal_(STOP,<>)
 )
 
@@ -73,7 +73,7 @@ channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in,reorder_out : {CH_i.return}
+channel reorder_in,reorder_out : {i.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -111,11 +111,11 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {CH_i.return}
-ClientCalls = {CH_i.foo}
+Exclude = {i.return}
+ClientCalls = {i.foo}
 UsedModeling = {}
 within compress((CO_colliding_component_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,CH_i|},Exclude)|]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,i|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
@@ -127,5 +127,5 @@ assert IF_iinstance_collision_(true) :[livelock free]
 assert CO_colliding_component_(true,true) :[deterministic]
 assert STOP [T= AS_colliding_component_(false) \ diff(Events,{illegal})
 assert AS_colliding_component_(false) :[deadlock free]
-assert IF_iinstance_collision_(true) [[CH_iinstance_collision.x<-CH_i.x|x<-extensions(CH_i)]] \ {} [F= AS_colliding_component_(true) \ diff(Events,{|illegal,CH_i|})
-assert AS_colliding_component_(true) \ diff(Events,{|illegal,CH_i|}) :[livelock free]
+assert IF_iinstance_collision_(true) [[iinstance_collision.x<-i.x|x<-extensions(i)]] \ {} [F= AS_colliding_component_(true) \ diff(Events,{|illegal,i|})
+assert AS_colliding_component_(true) \ diff(Events,{|illegal,i|}) :[livelock free]

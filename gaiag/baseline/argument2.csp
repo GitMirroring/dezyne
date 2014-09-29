@@ -43,51 +43,51 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = ev_e | ev_f | return
 -- interface.csp.scm
 
-channel CH_if_I: {ev_e,ev_f,return}
+channel if_I: {ev_e,ev_f,return}
 
 IF_if_I_(IG) = let
 g = \ P',V',F' @ context_func_args_(F',
-semi_((\ P',V' @ CH_if_I!ev_f -> P'(V')),
+semi_((\ P',V' @ if_I!ev_f -> P'(V')),
 returnvalue_(\ ((va_b),((stack',(va_ga,va_gb)))) @ (va_ga or va_gb))))(P',V')
 
 if_I_(((va_b),(stack'))) =
 (true) & (
-CH_if_I?x:{ev_e} ->
+if_I?x:{ev_e} ->
 semi_(semi_(assign_(\ ((va_b),(stack')) @ ((va_b),(stack'))),
 context_active_(\ P',V' @ g (P',V',(\ ((va_b),(stack')) @ (va_b,va_b))(V')),
 semi_(assign_active_(\ P',V' @ g (P',V',(\ ((va_b),((stack',va_c))) @ (va_c,va_c))(V')),
 \ (((va_b),((stack',va_c)))),r' @ ((va_b),((stack',va_c)))),
 \ P',((va_b),((stack',va_c))) @ ifthenelse_(va_c,
-(\ P',V' @ CH_if_I!ev_f -> P'(V')),
+(\ P',V' @ if_I!ev_f -> P'(V')),
 skip_
 )(P',((va_b),((stack',va_c))))))),
-(\ P',V' @ CH_if_I.return -> P'(V')))(\ V' @ if_I_(V'),((va_b),(stack'))))
+(\ P',V' @ if_I.return -> P'(V')))(\ V' @ if_I_(V'),((va_b),(stack'))))
 
 within if_I_(((false),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel CH_po_i:{ev_e,ev_f,return}
+channel po_i:{ev_e,ev_f,return}
 
 
 CO_co_argument2_(IIG,IG) = let
 g = \ P',V',F' @ context_func_args_(F',
-semi_((\ P',V' @ CH_po_i!ev_f -> P'(V')),
+semi_((\ P',V' @ po_i!ev_f -> P'(V')),
 returnvalue_(\ ((va_b),((stack',(va_ga,va_gb)))) @ (va_ga or va_gb))))(P',V')
 
 co_argument2_(((va_b),(stack'))) = transition_begin -> (
 (true) & (
-CH_po_i?x:{ev_e} ->
+po_i?x:{ev_e} ->
 semi_(semi_(assign_(\ ((va_b),(stack')) @ ((va_b),(stack'))),
 context_active_(\ P',V' @ g (P',V',(\ ((va_b),(stack')) @ (va_b,va_b))(V')),
 semi_(assign_active_(\ P',V' @ g (P',V',(\ ((va_b),((stack',va_c))) @ (va_c,va_c))(V')),
 \ (((va_b),((stack',va_c)))),r' @ ((va_b),((stack',va_c)))),
 \ P',((va_b),((stack',va_c))) @ ifthenelse_(va_c,
-(\ P',V' @ CH_po_i!ev_f -> P'(V')),
+(\ P',V' @ po_i!ev_f -> P'(V')),
 skip_
 )(P',((va_b),((stack',va_c))))))),
-(\ P',V' @ CH_po_i.return -> P'(V')))(\ V' @ transition_end -> co_argument2_(V'),((va_b),(stack'))))
+(\ P',V' @ po_i.return -> P'(V')))(\ V' @ transition_end -> co_argument2_(V'),((va_b),(stack'))))
 )
 
 within co_argument2_(((false),(<>)))
@@ -97,7 +97,7 @@ channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in,reorder_out : {CH_po_i.return}
+channel reorder_in,reorder_out : {po_i.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -135,11 +135,11 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {CH_po_i.return,CH_po_i.ev_f}
-ClientCalls = {CH_po_i.ev_e}
+Exclude = {po_i.return,po_i.ev_f}
+ClientCalls = {po_i.ev_e}
 UsedModeling = {}
 within compress((CO_co_argument2_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,CH_po_i|},Exclude)|]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,po_i|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
@@ -151,5 +151,5 @@ assert IF_if_I_(true) :[livelock free]
 assert CO_co_argument2_(true,true) :[deterministic]
 assert STOP [T= AS_co_argument2_(false) \ diff(Events,{illegal})
 assert AS_co_argument2_(false) :[deadlock free]
-assert IF_if_I_(true) [[CH_if_I.x<-CH_po_i.x|x<-extensions(CH_po_i)]] \ {} [F= AS_co_argument2_(true) \ diff(Events,{|illegal,CH_po_i|})
-assert AS_co_argument2_(true) \ diff(Events,{|illegal,CH_po_i|}) :[livelock free]
+assert IF_if_I_(true) [[if_I.x<-po_i.x|x<-extensions(po_i)]] \ {} [F= AS_co_argument2_(true) \ diff(Events,{|illegal,po_i|})
+assert AS_co_argument2_(true) \ diff(Events,{|illegal,po_i|}) :[livelock free]

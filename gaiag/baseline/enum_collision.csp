@@ -43,33 +43,33 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = Retval1_NOK | Retval1_OK | Retval2_NOK | Retval2_OK | bar | foo | return
 -- interface.csp.scm
 
-channel CH_ienum_collision: {bar,foo,Retval1_OK,Retval1_NOK,Retval2_OK,Retval2_NOK,return}
+channel ienum_collision: {bar,foo,Retval1_OK,Retval1_NOK,Retval2_OK,Retval2_NOK,return}
 
 IF_ienum_collision_(IG) = let
 
 ienum_collision_(((<>),(stack'))) =
-CH_ienum_collision?x:{foo} ->
-reply_(CH_ienum_collision, (\ ((<>),(stack')) @ Retval1_OK))(\ V' @ ienum_collision_(V'),((<>),(stack')))
+ienum_collision?x:{foo} ->
+reply_(ienum_collision, (\ ((<>),(stack')) @ Retval1_OK))(\ V' @ ienum_collision_(V'),((<>),(stack')))
 []
-CH_ienum_collision?x:{bar} ->
-reply_(CH_ienum_collision, (\ ((<>),(stack')) @ Retval2_NOK))(\ V' @ ienum_collision_(V'),((<>),(stack')))
+ienum_collision?x:{bar} ->
+reply_(ienum_collision, (\ ((<>),(stack')) @ Retval2_NOK))(\ V' @ ienum_collision_(V'),((<>),(stack')))
 
 within ienum_collision_(((<>),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel CH_i:{bar,foo,Retval1_OK,Retval1_NOK,Retval2_OK,Retval2_NOK,return}
+channel i:{bar,foo,Retval1_OK,Retval1_NOK,Retval2_OK,Retval2_NOK,return}
 
 
 CO_enum_collision_(IIG,IG) = let
 
 enum_collision_(((<>),(stack'))) = transition_begin -> (
-CH_i?x:{foo} ->
-reply_(CH_i, (\ ((<>),(stack')) @ Retval1_OK))(\ V' @ transition_end -> enum_collision_(V'),((<>),(stack')))
+i?x:{foo} ->
+reply_(i, (\ ((<>),(stack')) @ Retval1_OK))(\ V' @ transition_end -> enum_collision_(V'),((<>),(stack')))
 []
-CH_i?x:{bar} ->
-reply_(CH_i, (\ ((<>),(stack')) @ Retval2_NOK))(\ V' @ transition_end -> enum_collision_(V'),((<>),(stack')))
+i?x:{bar} ->
+reply_(i, (\ ((<>),(stack')) @ Retval2_NOK))(\ V' @ transition_end -> enum_collision_(V'),((<>),(stack')))
 )
 
 within enum_collision_(((<>),(<>)))
@@ -79,7 +79,7 @@ channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in,reorder_out : {CH_i.Retval1_OK,CH_i.Retval1_NOK,CH_i.Retval2_OK,CH_i.Retval2_NOK,CH_i.return}
+channel reorder_in,reorder_out : {i.Retval1_OK,i.Retval1_NOK,i.Retval2_OK,i.Retval2_NOK,i.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -117,11 +117,11 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {CH_i.Retval1_OK,CH_i.Retval1_NOK,CH_i.Retval2_OK,CH_i.Retval2_NOK,CH_i.return}
-ClientCalls = {CH_i.foo,CH_i.bar}
+Exclude = {i.Retval1_OK,i.Retval1_NOK,i.Retval2_OK,i.Retval2_NOK,i.return}
+ClientCalls = {i.foo,i.bar}
 UsedModeling = {}
 within compress((CO_enum_collision_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,CH_i|},Exclude)|]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,i|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
@@ -133,5 +133,5 @@ assert IF_ienum_collision_(true) :[livelock free]
 assert CO_enum_collision_(true,true) :[deterministic]
 assert STOP [T= AS_enum_collision_(false) \ diff(Events,{illegal})
 assert AS_enum_collision_(false) :[deadlock free]
-assert IF_ienum_collision_(true) [[CH_ienum_collision.x<-CH_i.x|x<-extensions(CH_i)]] \ {} [F= AS_enum_collision_(true) \ diff(Events,{|illegal,CH_i|})
-assert AS_enum_collision_(true) \ diff(Events,{|illegal,CH_i|}) :[livelock free]
+assert IF_ienum_collision_(true) [[ienum_collision.x<-i.x|x<-extensions(i)]] \ {} [F= AS_enum_collision_(true) \ diff(Events,{|illegal,i|})
+assert AS_enum_collision_(true) \ diff(Events,{|illegal,i|}) :[livelock free]

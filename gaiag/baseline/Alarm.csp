@@ -43,121 +43,121 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = States_Armed | States_Disabled | States_Disabling | States_Disarmed | States_Disarming | States_Enabled | States_Off | States_On | States_Triggered | arm | deactivated | detected | disable | disabled | disarm | enable | inevitable | optional | return | triggered | turnoff | turnon
 -- interface.csp.scm
 
-channel CH_Console: {arm,deactivated,detected,disarm,inevitable,optional,return}
+channel Console: {arm,deactivated,detected,disarm,inevitable,optional,return}
 
 IF_Console_a(IG) = let
 
 Console_a(((state),(stack'))) =
 ((state == States_Disarmed)) & (
-CH_Console?x:{arm} ->
+Console?x:{arm} ->
 semi_(assign_(\ ((state),(stack')) @ ((States_Armed),(stack'))),
-(\ P',V' @ CH_Console.return -> P'(V')))(\ V' @ Console_a(V'),((state),(stack')))
+(\ P',V' @ Console.return -> P'(V')))(\ V' @ Console_a(V'),((state),(stack')))
  []
-  IG & CH_Console?x:{disarm} ->
+  IG & Console?x:{disarm} ->
 illegal_(STOP,<>))
 []
 ((state == States_Armed)) & (
-CH_Console?x:{disarm} ->
+Console?x:{disarm} ->
 semi_(assign_(\ ((state),(stack')) @ ((States_Disarming),(stack'))),
-(\ P',V' @ CH_Console.return -> P'(V')))(\ V' @ Console_a(V'),((state),(stack')))
+(\ P',V' @ Console.return -> P'(V')))(\ V' @ Console_a(V'),((state),(stack')))
  []
-  CH_Console?x:{optional} ->
-semi_(semi_((\ P',V' @ CH_Console!detected -> P'(V')),
+  Console?x:{optional} ->
+semi_(semi_((\ P',V' @ Console!detected -> P'(V')),
 assign_(\ ((state),(stack')) @ ((States_Triggered),(stack')))),
 skip_)(\ V' @ Console_a(V'),((state),(stack')))
  []
-  IG & CH_Console?x:{arm} ->
+  IG & Console?x:{arm} ->
 illegal_(STOP,<>))
 []
 ((state == States_Triggered)) & (
-CH_Console?x:{disarm} ->
+Console?x:{disarm} ->
 semi_(assign_(\ ((state),(stack')) @ ((States_Disarming),(stack'))),
-(\ P',V' @ CH_Console.return -> P'(V')))(\ V' @ Console_a(V'),((state),(stack')))
+(\ P',V' @ Console.return -> P'(V')))(\ V' @ Console_a(V'),((state),(stack')))
  []
-  IG & CH_Console?x:{arm} ->
+  IG & Console?x:{arm} ->
 illegal_(STOP,<>))
 []
 ((state == States_Disarming)) & (
-CH_Console?x:{inevitable} ->
-semi_(semi_((\ P',V' @ CH_Console!deactivated -> P'(V')),
+Console?x:{inevitable} ->
+semi_(semi_((\ P',V' @ Console!deactivated -> P'(V')),
 assign_(\ ((state),(stack')) @ ((States_Disarmed),(stack')))),
 skip_)(\ V' @ Console_a(V'),((state),(stack')))
  []
-  IG & CH_Console?x:{arm,disarm} ->
+  IG & Console?x:{arm,disarm} ->
 illegal_(STOP,<>))
 
-within Console_a(((States_Disarmed),(<>))) [|{CH_Console.optional}|] CHAOS({CH_Console.optional})
+within Console_a(((States_Disarmed),(<>))) [|{Console.optional}|] CHAOS({Console.optional})
 
 -- end of interface.csp.scm
 -- interface.csp.scm
 
-channel CH_Sensor: {disable,disabled,enable,inevitable,optional,triggered,return}
+channel Sensor: {disable,disabled,enable,inevitable,optional,triggered,return}
 
 IF_Sensor_b(IG) = let
 
 Sensor_b(((state),(stack'))) =
 ((state == States_Disabled)) & (
-CH_Sensor?x:{enable} ->
+Sensor?x:{enable} ->
 semi_(assign_(\ ((state),(stack')) @ ((States_Enabled),(stack'))),
-(\ P',V' @ CH_Sensor.return -> P'(V')))(\ V' @ Sensor_b(V'),((state),(stack')))
+(\ P',V' @ Sensor.return -> P'(V')))(\ V' @ Sensor_b(V'),((state),(stack')))
  []
-  IG & CH_Sensor?x:{disable} ->
+  IG & Sensor?x:{disable} ->
 illegal_(STOP,<>))
 []
 ((state == States_Enabled)) & (
-IG & CH_Sensor?x:{enable} ->
+IG & Sensor?x:{enable} ->
 illegal_(STOP,<>)
  []
-  CH_Sensor?x:{disable} ->
+  Sensor?x:{disable} ->
 semi_(assign_(\ ((state),(stack')) @ ((States_Disabling),(stack'))),
-(\ P',V' @ CH_Sensor.return -> P'(V')))(\ V' @ Sensor_b(V'),((state),(stack')))
+(\ P',V' @ Sensor.return -> P'(V')))(\ V' @ Sensor_b(V'),((state),(stack')))
  []
-  CH_Sensor?x:{optional} ->
-semi_(semi_((\ P',V' @ CH_Sensor!triggered -> P'(V')),
+  Sensor?x:{optional} ->
+semi_(semi_((\ P',V' @ Sensor!triggered -> P'(V')),
 assign_(\ ((state),(stack')) @ ((States_Triggered),(stack')))),
 skip_)(\ V' @ Sensor_b(V'),((state),(stack'))))
 []
 ((state == States_Disabling)) & (
-IG & CH_Sensor?x:{enable,disable} ->
+IG & Sensor?x:{enable,disable} ->
 illegal_(STOP,<>)
  []
-  CH_Sensor?x:{inevitable} ->
-semi_(semi_((\ P',V' @ CH_Sensor!disabled -> P'(V')),
+  Sensor?x:{inevitable} ->
+semi_(semi_((\ P',V' @ Sensor!disabled -> P'(V')),
 assign_(\ ((state),(stack')) @ ((States_Disabled),(stack')))),
 skip_)(\ V' @ Sensor_b(V'),((state),(stack'))))
 []
 ((state == States_Triggered)) & (
-IG & CH_Sensor?x:{enable} ->
+IG & Sensor?x:{enable} ->
 illegal_(STOP,<>)
  []
-  CH_Sensor?x:{disable} ->
+  Sensor?x:{disable} ->
 semi_(assign_(\ ((state),(stack')) @ ((States_Disabling),(stack'))),
-(\ P',V' @ CH_Sensor.return -> P'(V')))(\ V' @ Sensor_b(V'),((state),(stack'))))
+(\ P',V' @ Sensor.return -> P'(V')))(\ V' @ Sensor_b(V'),((state),(stack'))))
 
-within Sensor_b(((States_Disabled),(<>))) [|{CH_Sensor.optional}|] CHAOS({CH_Sensor.optional})
+within Sensor_b(((States_Disabled),(<>))) [|{Sensor.optional}|] CHAOS({Sensor.optional})
 
 -- end of interface.csp.scm
 -- interface.csp.scm
 
-channel CH_Siren: {turnoff,turnon,return}
+channel Siren: {turnoff,turnon,return}
 
 IF_Siren_c(IG) = let
 
 Siren_c(((state),(stack'))) =
 ((state == States_Off)) & (
-CH_Siren?x:{turnon} ->
+Siren?x:{turnon} ->
 semi_(assign_(\ ((state),(stack')) @ ((States_On),(stack'))),
-(\ P',V' @ CH_Siren.return -> P'(V')))(\ V' @ Siren_c(V'),((state),(stack')))
+(\ P',V' @ Siren.return -> P'(V')))(\ V' @ Siren_c(V'),((state),(stack')))
  []
-  IG & CH_Siren?x:{turnoff} ->
+  IG & Siren?x:{turnoff} ->
 illegal_(STOP,<>))
 []
 ((state == States_On)) & (
-CH_Siren?x:{turnoff} ->
+Siren?x:{turnoff} ->
 semi_(assign_(\ ((state),(stack')) @ ((States_Off),(stack'))),
-(\ P',V' @ CH_Siren.return -> P'(V')))(\ V' @ Siren_c(V'),((state),(stack')))
+(\ P',V' @ Siren.return -> P'(V')))(\ V' @ Siren_c(V'),((state),(stack')))
  []
-  IG & CH_Siren?x:{turnon} ->
+  IG & Siren?x:{turnon} ->
 illegal_(STOP,<>))
 
 within Siren_c(((States_Off),(<>)))
@@ -165,89 +165,89 @@ within Siren_c(((States_Off),(<>)))
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel CH_console:{arm,deactivated,detected,disarm,inevitable,optional,return}
-channel CH_sensor:{disable,disabled,enable,inevitable,optional,triggered,return}
-channel CH_siren:{turnoff,turnon,return}
+channel console:{arm,deactivated,detected,disarm,inevitable,optional,return}
+channel sensor:{disable,disabled,enable,inevitable,optional,triggered,return}
+channel siren:{turnoff,turnon,return}
 
 
 CO_Alarm_d(IIG,IG) = let
 
 Alarm_d(((state,sounding),(stack'))) = transition_begin -> (
 ((state == States_Disarmed)) & (
-CH_console?x:{arm} ->
-semi_(semi_((\ P',V' @ CH_sensor!enable -> CH_sensor.return -> P'(V')),
+console?x:{arm} ->
+semi_(semi_((\ P',V' @ sensor!enable -> sensor.return -> P'(V')),
 assign_(\ ((state,sounding),(stack')) @ ((States_Armed,sounding),(stack')))),
-(\ P',V' @ CH_console.return -> P'(V')))(\ V' @ transition_end -> Alarm_d(V'),((state,sounding),(stack')))
+(\ P',V' @ console.return -> P'(V')))(\ V' @ transition_end -> Alarm_d(V'),((state,sounding),(stack')))
  []
-  IIG & CH_console?x:{disarm} ->
+  IIG & console?x:{disarm} ->
 illegal_(STOP,<>)
  []
-  IG & CH_sensor?x:{triggered,disabled} ->
+  IG & sensor?x:{triggered,disabled} ->
 illegal_(STOP,<>))
 []
 ((state == States_Armed)) & (
-IIG & CH_console?x:{arm} ->
+IIG & console?x:{arm} ->
 illegal_(STOP,<>)
  []
-  CH_console?x:{disarm} ->
-semi_(semi_((\ P',V' @ CH_sensor!disable -> CH_sensor.return -> P'(V')),
+  console?x:{disarm} ->
+semi_(semi_((\ P',V' @ sensor!disable -> sensor.return -> P'(V')),
 assign_(\ ((state,sounding),(stack')) @ ((States_Disarming,sounding),(stack')))),
-(\ P',V' @ CH_console.return -> P'(V')))(\ V' @ transition_end -> Alarm_d(V'),((state,sounding),(stack')))
+(\ P',V' @ console.return -> P'(V')))(\ V' @ transition_end -> Alarm_d(V'),((state,sounding),(stack')))
  []
-  CH_sensor?x:{triggered} ->
-semi_(semi_((\ P',V' @ CH_console!detected -> P'(V')),
-semi_((\ P',V' @ CH_siren!turnon -> CH_siren.return -> P'(V')),
+  sensor?x:{triggered} ->
+semi_(semi_((\ P',V' @ console!detected -> P'(V')),
+semi_((\ P',V' @ siren!turnon -> siren.return -> P'(V')),
 semi_(assign_(\ ((state,sounding),(stack')) @ ((state,true),(stack'))),
 assign_(\ ((state,sounding),(stack')) @ ((States_Triggered,sounding),(stack')))))),
 skip_)(\ V' @ transition_end -> Alarm_d(V'),((state,sounding),(stack')))
  []
-  IG & CH_sensor?x:{disabled} ->
+  IG & sensor?x:{disabled} ->
 illegal_(STOP,<>))
 []
 ((state == States_Disarming)) & (
-IIG & CH_console?x:{arm,disarm} ->
+IIG & console?x:{arm,disarm} ->
 illegal_(STOP,<>)
  []
-  CH_sensor?x:{triggered} ->
+  sensor?x:{triggered} ->
 skip_(\ V' @ transition_end -> Alarm_d(V'),((state,sounding),(stack'))))
 []
 (((state == States_Disarming) and sounding)) & (
-CH_sensor?x:{disabled} ->
-semi_(semi_((\ P',V' @ CH_console!deactivated -> P'(V')),
-semi_((\ P',V' @ CH_siren!turnoff -> CH_siren.return -> P'(V')),
+sensor?x:{disabled} ->
+semi_(semi_((\ P',V' @ console!deactivated -> P'(V')),
+semi_((\ P',V' @ siren!turnoff -> siren.return -> P'(V')),
 semi_(assign_(\ ((state,sounding),(stack')) @ ((States_Disarmed,sounding),(stack'))),
 assign_(\ ((state,sounding),(stack')) @ ((state,false),(stack')))))),
 skip_)(\ V' @ transition_end -> Alarm_d(V'),((state,sounding),(stack'))))
 []
 (((state == States_Disarming) and (not sounding))) & (
-CH_sensor?x:{disabled} ->
-semi_(semi_((\ P',V' @ CH_console!deactivated -> P'(V')),
+sensor?x:{disabled} ->
+semi_(semi_((\ P',V' @ console!deactivated -> P'(V')),
 assign_(\ ((state,sounding),(stack')) @ ((States_Disarmed,sounding),(stack')))),
 skip_)(\ V' @ transition_end -> Alarm_d(V'),((state,sounding),(stack'))))
 []
 ((state == States_Triggered)) & (
-IIG & CH_console?x:{arm} ->
+IIG & console?x:{arm} ->
 illegal_(STOP,<>)
  []
-  CH_console?x:{disarm} ->
-semi_(semi_((\ P',V' @ CH_sensor!disable -> CH_sensor.return -> P'(V')),
-semi_((\ P',V' @ CH_siren!turnoff -> CH_siren.return -> P'(V')),
+  console?x:{disarm} ->
+semi_(semi_((\ P',V' @ sensor!disable -> sensor.return -> P'(V')),
+semi_((\ P',V' @ siren!turnoff -> siren.return -> P'(V')),
 semi_(assign_(\ ((state,sounding),(stack')) @ ((state,false),(stack'))),
 assign_(\ ((state,sounding),(stack')) @ ((States_Disarming,sounding),(stack')))))),
-(\ P',V' @ CH_console.return -> P'(V')))(\ V' @ transition_end -> Alarm_d(V'),((state,sounding),(stack')))
+(\ P',V' @ console.return -> P'(V')))(\ V' @ transition_end -> Alarm_d(V'),((state,sounding),(stack')))
  []
-  IG & CH_sensor?x:{triggered,disabled} ->
+  IG & sensor?x:{triggered,disabled} ->
 illegal_(STOP,<>))
 )
 
 within Alarm_d(((States_Disarmed,false),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
-channel IN,OUT : {CH_sensor.triggered,CH_sensor.disabled,extensions_over_empty_channels_is_undefined}
+channel IN,OUT : {sensor.triggered,sensor.disabled,extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in,reorder_out : {CH_console.return}
+channel reorder_in,reorder_out : {console.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -285,26 +285,26 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {CH_console.return,CH_console.detected,CH_console.deactivated,CH_console.inevitable,CH_console.optional,CH_sensor.inevitable,CH_sensor.optional}
-ClientCalls = {CH_console.arm,CH_console.disarm}
-UsedModeling = {CH_sensor.inevitable,CH_sensor.optional}
+Exclude = {console.return,console.detected,console.deactivated,console.inevitable,console.optional,sensor.inevitable,sensor.optional}
+ClientCalls = {console.arm,console.disarm}
+UsedModeling = {sensor.inevitable,sensor.optional}
 within compress((CO_Alarm_d(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,CH_console,CH_sensor,CH_siren|},Exclude)|]
-(((IF_Sensor_b(true) [[CH_Sensor.x<-CH_sensor.x|x<-extensions(CH_sensor)]]
- ||| IF_Siren_c(true) [[CH_Siren.x<-CH_siren.x|x<-extensions(CH_siren)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,console,sensor,siren|},Exclude)|]
+(((IF_Sensor_b(true) [[Sensor.x<-sensor.x|x<-extensions(sensor)]]
+ ||| IF_Siren_c(true) [[Siren.x<-siren.x|x<-extensions(siren)]]
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
 
 -- end of component.csp.scm
 assert IF_Console_a(false) :[deadlock free]
-assert IF_Console_a(true)  \ {|CH_Console.inevitable,CH_Console.optional|} :[livelock free]
+assert IF_Console_a(true)  \ {|Console.inevitable,Console.optional|} :[livelock free]
 assert IF_Sensor_b(false) :[deadlock free]
-assert IF_Sensor_b(true)  \ {|CH_Sensor.inevitable,CH_Sensor.optional|} :[livelock free]
+assert IF_Sensor_b(true)  \ {|Sensor.inevitable,Sensor.optional|} :[livelock free]
 assert IF_Siren_c(false) :[deadlock free]
 assert IF_Siren_c(true) :[livelock free]
 assert CO_Alarm_d(true,true) :[deterministic]
 assert STOP [T= AS_Alarm_d(false) \ diff(Events,{illegal})
 assert AS_Alarm_d(false) :[deadlock free]
-assert IF_Console_a(true) [[CH_Console.x<-CH_console.x|x<-extensions(CH_console)]] \ {CH_console.inevitable,CH_console.optional} [F= AS_Alarm_d(true) \ diff(Events,{|illegal,CH_console|})
-assert AS_Alarm_d(true) \ diff(Events,{|illegal,CH_console|}) :[livelock free]
+assert IF_Console_a(true) [[Console.x<-console.x|x<-extensions(console)]] \ {console.inevitable,console.optional} [F= AS_Alarm_d(true) \ diff(Events,{|illegal,console|})
+assert AS_Alarm_d(true) \ diff(Events,{|illegal,console|}) :[livelock free]

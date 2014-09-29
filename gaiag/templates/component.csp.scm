@@ -26,7 +26,7 @@
 -- component.csp.scm
 
 # (map (lambda (port)
-         (->string "channel CH_" (.name port) ":{" (comma-join (append (port-events port) (return-values-port port))) "}\n" ))
+         (->string "channel " (.name port) ":{" (comma-join (append (port-events port) (return-values-port port))) "}\n" ))
        (filter (lambda (port) (not (eq? (.type port) (.name port)))) ((compose .elements .ports) model)))
 
 CO_#(.name model) _#((compose .name .behaviour) model) (IIG,IG) = let
@@ -42,12 +42,12 @@ channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {#
  (comma-join (list (comma-join
                     (map (lambda (port)
-                           (comma-join (map (lambda (event) (list "CH_" (.name port) "." (.name event))) (filter gom:out? ((compose .elements .events gom:import .type) port)))))
+                           (comma-join (map (lambda (event) (list (.name port) "." (.name event))) (filter gom:out? ((compose .elements .events gom:import .type) port)))))
                            (filter gom:requires? ((compose .elements .ports) model)))) 'extensions_over_empty_channels_is_undefined))}
 
 SINGLETHREADED = true
 
-channel reorder_in,reorder_out : {# (comma-join (map (lambda (x) (symbol-append 'CH_ (.name (gom:port model)) '. x)) (return-values-port (gom:port model))))}
+channel reorder_in,reorder_out : {# (comma-join (map (lambda (x) (symbol-append (.name (gom:port model)) '. x)) (return-values-port (gom:port model))))}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -87,23 +87,23 @@ transparent diamond
 within sbisim(diamond(x))
 Exclude = {#
   (comma-join
-   (list (comma-join (map (lambda (x) (symbol-append 'CH_ (.name (gom:port model)) '. x)) (return-values-port (gom:port model))))
-         (comma-join (map (lambda (event) (list "CH_" (.name (gom:port model)) "." (.name event))) (filter gom:out? (gom:events (gom:port model)))))
+   (list (comma-join (map (lambda (x) (symbol-append (.name (gom:port model)) '. x)) (return-values-port (gom:port model))))
+         (comma-join (map (lambda (event) (list (.name (gom:port model)) "." (.name event))) (filter gom:out? (gom:events (gom:port model)))))
          (comma-join
           (map (lambda (port)
-                 (->string (comma-join (map (lambda (event) (list "CH_" (.name port) "." event)) (filter (lambda (x) (member x '(inevitable optional))) (port-events port))))))
+                 (->string (comma-join (map (lambda (event) (list (.name port) "." event)) (filter (lambda (x) (member x '(inevitable optional))) (port-events port))))))
                ((compose .elements .ports) model)))))}
 ClientCalls = {#
- (comma-join (map (lambda (event) (list "CH_" (.name (gom:port model)) "." (.name event))) (filter gom:in? (gom:events (gom:port model)))))}
+ (comma-join (map (lambda (event) (list (.name (gom:port model)) "." (.name event))) (filter gom:in? (gom:events (gom:port model)))))}
 UsedModeling = {#
                 (comma-join
                  (map (lambda (port)
-                        (comma-join (map (lambda (event) (list "CH_" (.name port) "." event)) (filter (lambda (event) (member event '(inevitable optional))) (port-events port)))))
+                        (comma-join (map (lambda (event) (list (.name port) "." event)) (filter (lambda (event) (member event '(inevitable optional))) (port-events port)))))
                         (filter gom:requires? ((compose .elements .ports) model))))}
 within compress((CO_#(.name model) _#((compose .name .behaviour) model) (IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,#(comma-join (map (lambda (o) (list "CH_" (.name o))) ((compose .elements .ports) model)))|},Exclude)|]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,#(comma-join (map (lambda (o) (.name o)) ((compose .elements .ports) model)))|},Exclude)|]
 (((# (let ((required_processes ((->join "\n ||| ") (map (lambda (port)
-(->string (list "IF_" (.type port) '_ ((compose .name .behaviour gom:import .type) port) "(true) [[CH_"(.type port) ".x<-CH_" (.name port) ".x|x<-extensions(CH_"(.name port)")]]")))
+(->string (list "IF_" (.type port) '_ ((compose .name .behaviour gom:import .type) port) "(true) [["(.type port) ".x<-" (.name port) ".x|x<-extensions("(.name port)")]]")))
  (filter gom:requires? ((compose .elements .ports) model)))))) (if (string-null? required_processes) 'STOP required_processes))
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]

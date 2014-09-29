@@ -22,8 +22,8 @@
 ;;; 
 ;;; Code:
 
-assert IF_#((compose .type gom:port) model) _#((compose .name .behaviour gom:import .type gom:port) model)(true) [[CH_#((compose .type gom:port) model) .x<-CH_#((compose .name gom:port) model) .x|x<-extensions(CH_#((compose .name gom:port) model))]] \ {#
+assert IF_#((compose .type gom:port) model) _#((compose .name .behaviour gom:import .type gom:port) model)(true) [[#((compose .type gom:port) model) .x<-#((compose .name gom:port) model) .x|x<-extensions(#((compose .name gom:port) model))]] \ {#
    (comma-join
-       (map (lambda (x) (map ->string (list "CH_" ((compose .name gom:port) model) "." x))) (filter
+       (map (lambda (x) (map ->string (list ((compose .name gom:port) model) "." x))) (filter
          (lambda (x) (or (eq? x 'optional) (eq? x 'inevitable)))
-         (port-events (gom:port model)))))} [F= AS_#(.name model) _#((compose .name .behaviour) model) (true) \ diff(Events,{|illegal,CH_#((compose .name gom:port)model) |})
+         (port-events (gom:port model)))))} [F= AS_#(.name model) _#((compose .name .behaviour) model) (true) \ diff(Events,{|illegal,#((compose .name gom:port)model) |})
