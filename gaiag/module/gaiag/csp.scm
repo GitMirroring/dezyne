@@ -675,7 +675,7 @@
          (pred (if else-illegal? (list 'and '(! IG) pred-then) pred-then)))
     (make <csp-if>
       :context context
-      :expression (make <expression> :value expr)
+      :expression (make <expression> :value pred)
       :then (ast-transform- ast then return context)
       :else (or (ast-transform- ast else return context) '()))))
 
