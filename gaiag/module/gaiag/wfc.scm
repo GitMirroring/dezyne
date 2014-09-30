@@ -130,7 +130,7 @@
 
 (define-method (first-statement (o <list>))
   (let ((first (car o)))
-    (or (and=> ((is? <compound>) first) first-statement)
+    (or (and=> ((is? <compound>) first) (compose first-statement .elements))
         first)))
 
 (define (ast-> ast)
