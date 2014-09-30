@@ -338,7 +338,7 @@ illegal_(STOP,<>)"))
           "i?x:{e} ->
 (\\ P',V' @ i.return -> P'(V'))(\\ V' @ i_B(V'),((s,b,c),(stack')))"))
 
-(define ast-transform-assign
+(define csp-transform-assign-via
   '(assign (ctx ((s b c)))
            (expression (ctx ((s b true))))))
 
@@ -349,20 +349,20 @@ illegal_(STOP,<>)"))
           (ast-transform* i-ast '(assign c (expression true)))
 
           ;; via:
-          ast-transform-assign))
+          csp-transform-assign-via))
 
 (pass-if "csp-transform-assign-bool"
          (csp-noisy-equal?
 
           ;; via/from:
-          (csp-transform* i-ast ast-transform-assign)
+          (csp-transform* i-ast csp-transform-assign-via)
 
           ;; to:
           "assign_(\\ ((s,b,c),(stack')) @ ((s,b,true),(stack')))"))
 
 ;; \\)
 
-(define ast-transform-assign-2
+(define csp-transform-assign-2-via
   '(context
     ((ctx ((s b c))) la (expression true))
     (context
@@ -384,13 +384,13 @@ illegal_(STOP,<>)"))
              (assign la (expression true))))
 
           ;; via:
-          ast-transform-assign-2))
+          csp-transform-assign-2-via))
 
 (pass-if "csp-transform-assign-2-bool"
          (diff-noisy-equal?
 
           ;; via/from:
-          (csp-transform* i-ast ast-transform-assign-2)
+          (csp-transform* i-ast csp-transform-assign-2-via)
 
           ;; to:
           "context_(\\ ((s,b,c),(stack')) @ true,
@@ -943,11 +943,6 @@ skip_)(\\ V' @ transition_end -> Alarm_d(V'),((state,sounding),(stack')))"
            (compound)))))))
 
 (define csp-transform-variable-valued-action-via
-  '(on ((trigger o bar))
-       (compound
-        (variable (type ivar (type E)) e (action (trigger i bar))))))
-
-(define csp-transform-ast-transform-variable-valued-action-via
   '(on (triggers (trigger o bar))
        (context-active
         ((ctx (()))
@@ -962,18 +957,61 @@ skip_)(\\ V' @ transition_end -> Alarm_d(V'),((state,sounding),(stack')))"
           ;; from:
           (ast-transform*
            var-ast
-           csp-transform-variable-valued-action-via)
-          csp-transform-ast-transform-variable-valued-action-via))
+           '(on ((trigger o bar))
+                (compound
+                 (variable (type ivar (type E)) e (action (trigger i bar))))))
+          csp-transform-variable-valued-action-via))
 
 (pass-if "csp-transform-variable-valued-action"
          (diff-noisy-equal?
 
           ;; from/via:
-          (csp-transform* (cdr var-ast) csp-transform-ast-transform-variable-valued-action-via)
+          (csp-transform* (cdr var-ast) csp-transform-variable-valued-action-via)
 
           ;; to:
           "o?x:{bar} ->
 context_active_(sendrecv_(i,bar),
+skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
+
+(define csp-transform-if-variable-valued-action-via
+  '(on
+    (triggers (trigger o bar))
+    (semi (if
+           (ctx (()))
+           (expression true)
+           (context-active
+            ((ctx (() e)) e (action (trigger i bar)))
+            skip)
+           ())
+          (eventreturn))
+    (the-end ())))
+
+(pass-if "ast-transform-ast-transform-if-variable-valued-action"
+         (csp-pretty-noisy-equal?
+
+          ;; from:
+          (ast-transform*
+           var-ast
+           '(on ((trigger o bar))
+                (if (expression true)
+                    (variable (type ivar (type E))
+                              e
+                              (action (trigger i bar))))))
+          csp-transform-if-variable-valued-action-via))
+
+(pass-if "csp-transform-if-variable-valued-action"
+         (diff-noisy-equal?
+
+          ;; from/via:
+          (csp-transform* (cdr var-ast) csp-transform-if-variable-valued-action-via)
+
+          ;; to:
+          "o?x:{bar} ->
+semi_(\\ P',((<>),(stack')) @ ifthenelse_(true,
+context_active_(sendrecv_(i,bar),
+skip_),
+skip_
+)(P',((<>),(stack'))),
 skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
 
 (pass-if "ast-csp-transform-variable-valued-action"
@@ -987,7 +1025,65 @@ skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
 
           ;; via:
           "o?x:{bar} ->
+semi_(context_active_(sendrecv_(i,bar),
+skip_),
+skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
+
+(define csp-transform-if-compound-variable-valued-action-via
+  '(on
+    (triggers (trigger o bar))
+    (semi (if
+           (ctx (()))
+           (expression true)
+           (context-active
+            ((ctx (())) e (action (trigger i bar)))
+            skip)
+           ())
+          (eventreturn))
+    (the-end ())))
+
+(pass-if "ast-transform-ast-transform-if-compound-variable-valued-action"
+         (csp-pretty-noisy-equal?
+
+          ;; from:
+          (ast-transform*
+           var-ast
+           '(on ((trigger o bar))
+                (if (expression true)
+                    (compound
+                     (variable (type ivar (type E))
+                               e
+                               (action (trigger i bar)))))))
+          csp-transform-if-compound-variable-valued-action-via))
+
+(pass-if "csp-transform-if-compound-variable-valued-action"
+         (diff-noisy-equal?
+
+          ;; from/via:
+          (csp-transform* (cdr var-ast) csp-transform-if-compound-variable-valued-action-via)
+
+          ;; to:
+          "o?x:{bar} ->
+semi_(\\ P',((<>),(stack')) @ ifthenelse_(true,
 context_active_(sendrecv_(i,bar),
+skip_),
+skip_
+)(P',((<>),(stack'))),
+skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
+
+(pass-if "ast-csp-transform-variable-valued-action"
+         (diff-noisy-equal?
+
+          ;; from:
+          (csp-transform* var-ast
+                          (ast-transform*
+                           var-ast
+                           csp-transform-variable-valued-action-via))
+
+          ;; via:
+          "o?x:{bar} ->
+semi_(context_active_(sendrecv_(i,bar),
+skip_),
 skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
 
 (define csp-function-call-ast

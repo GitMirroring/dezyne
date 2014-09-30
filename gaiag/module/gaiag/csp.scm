@@ -521,16 +521,27 @@
                                   'context)
                               'semi)
                           transformed (loop (cdr statements) context)))
-                transformed))))))
+                (if (is-a? statement <variable>)
+                    (list
+                     (if (or (valued-action? statement)
+                             (call? statement))
+                         'context-active
+                         'context)
+                     transformed 'skip)
+                    transformed)))))))
 
 (define-method (ast-transform- ast (o <variable>) return context)
   (ast-transform-variable (.name o) (.expression o) context))
 
 (define-method (ast-transform-variable name (o <call>) context)
-  (list context name o))
+  (list context name o)
+  ;;(list 'context-active (list context 'r' o) (context-assign context name 'r'))
+  )
 
 (define-method (ast-transform-variable name (o <top>) context)
-  (list context name o))
+  (list context name o)
+  ;;(list 'context-active (list context 'r' o) (context-assign context name 'r'))
+  )
 
 (define-method (ast-transform- ast (o <function>) return context)
   (let* ((signature (.signature o))
@@ -605,12 +616,34 @@
          (then-illegal? (prefix-illegal? then))
          (else-illegal? (prefix-illegal? else))
          (pred-then (if then-illegal? (list 'and 'IG expr) expr))
-         (pred (if else-illegal? (list 'and '(! IG) pred-then) pred-then)))
+         (pred (if else-illegal? (list 'and '(! IG) pred-then) pred-then))
+         (then-context (if (is-a? then <variable>)
+                           (context-extend context (.name then))
+                           context))
+         (else-context (if (is-a? else <variable>)
+                           (context-extend context (.name else))
+                           context))
+         (then-transformed (ast-transform- ast then return then-context))
+         (else-transformed (ast-transform- ast else return else-context))
+         (then (if (is-a? then <variable>)
+                   (list (if (or (valued-action? then)
+                                 (call? then))
+                             'context-active
+                             'context)
+                         then-transformed 'skip)
+                   then-transformed))
+         (else (if (is-a? else <variable>)
+                   (list (if (or (valued-action? else)
+                                 (call? else))
+                             'context-active
+                             'context)
+                         else-transformed 'skip)
+                   else-transformed)))
     (make <csp-if>
       :context context
       :expression (make <expression> :value expr)
-      :then (ast-transform- ast then return context)
-      :else (or (ast-transform- ast else return context) '()))))
+      :then then
+      :else (or else '()))))
 
 (define (=>string ast src)
   (match src
@@ -645,6 +678,7 @@
                (transformed (if ig? #f (csp-transform ast statement inevitable-optional? channel provided-on? tail-recursive?)))
                (transformed-end (csp-transform ast the-end inevitable-optional? channel provided-on? tail-recursive?)))
           (list IG? channel "?x:{" event-names "}" " ->\n" transformed transformed-end (if ig? "(STOP,<>)" ""))))
+       (('ctx context) src)
        (($ <expression>) src)
        (($ <csp-reply> expression context)
         (let* ((channel (or channel (if (is-a? model <interface>) model-name (.type (gom:port model))))))
@@ -686,11 +720,7 @@
           (list "\\ P',(" context ") @ ifthenelse_(" expression ",\n" then ",\n" else "\n)(P',(" context "))")))
        (('context-active (context var ($ <action> ($ <trigger> port event))) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on? tail-recursive?)))
-          (list "context_active_(sendrecv_("  port "," event "),\n" stat ")")))
-       (('context-active (context var ($ <expression> ($ <action> ($ <trigger> port event)))) stat)
-        (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on? tail-recursive?)))
-          (list "context_active_(sendrecv_(" port "," event "),\n" stat ")")))
-
+          (list "context_active_(sendrecv_("  (or port channel) "," event "),\n" stat ")")))
        (('context-active (context var ($ <call> identifier ($ <arguments> '()))) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on? tail-recursive?)))
           (list "context_active_(\\ P',V' @ " identifier " (" continuation-pv "),\n" stat ")")))
@@ -700,7 +730,7 @@
           (list "context_active_(\\ P',V' @ " identifier " (" continuation-pv ",(\\ (" context ") @ (" (arguments) "))(V')),\n" stat ")")))
 
        (('assign-active (context var ($ <action> ($ <trigger> port event))) expressions)
-        (let ((action (list "sendrecv_(" port "," event ")")))
+        (let ((action (list "sendrecv_(" (or port channel) "," event ")")))
           (list "assign_active_(" action ",\n\\ ((" context "))," var " @ (" expressions "))" )))
        (('assign-active (context var ($ <call> identifier (and ($ <arguments>) (get! arguments)))) expressions)
         (list "assign_active_(\\ P',V' @ " identifier " (" continuation-pv ",(\\ (" context ") @ (" (arguments) "))(V')),\n\\ ((" context "))," var " @ (" expressions "))"))
@@ -711,6 +741,7 @@
         (let ((first (csp-transform ast stat1 inevitable-optional? channel provided-on? tail-recursive?))
               (second (csp-transform ast stat2 inevitable-optional? channel provided-on? tail-recursive?)))
           (list "semi_(" first ",\n" second ")")))
+       ('skip "skip_")
        ('() "skip_")
        ((? symbol?) src)
        ((? string?) src)
