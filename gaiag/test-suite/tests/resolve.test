@@ -43,7 +43,7 @@
       (types (enum e (v)))
       (events (in (signature (type e)) foo)
               (enum mixed (v))
-              (in (signature (type mixed)) bar))
+              (out (signature (type mixed)) bar))
       (behaviour
        #f
        (types
@@ -51,7 +51,8 @@
         (int mode (range 0 3)))
        (variables
         (variable (type state) m (expression (value state one)))
-        (variable (type bool) b (expression true)))
+        (variable (type bool) b (expression true))
+        (variable (type mixed) x (expression (value mixed v))))
        (functions (function toggle (signature (type void)) (compound))
                   (function g
                             (signature (type bool)
@@ -185,15 +186,67 @@
                (compound
                 (assign m (action (trigger o foo)))))))
 
+(pass-if "ast:resolve-variable-valued-action-interface"
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (car resolve-ast)
+           '(on (triggers (trigger #f foo))
+                (compound
+                 (variable (type e)
+                           e
+                           (expression (var bar))))))
+          '(on* (triggers* (trigger* #f foo))
+                (compound*
+                 (variable*
+                  (type* e #f)
+                  e
+                  (action* (trigger* #f bar)))))))
+
+(pass-if "ast:resolve-assign-valued-action-interface"
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (car resolve-ast)
+           '(on (triggers (trigger #f foo))
+                (compound
+                 (assign x (expression (var bar))))))
+          '(on* (triggers* (trigger* #f foo))
+                (compound*
+                 (assign* x (action* (trigger* #f bar)))))))
+
+(pass-if "ast:resolve-variable-valued-action-call-interface"
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (car resolve-ast)
+           '(on (triggers (trigger #f foo))
+                (compound
+                 (variable (type e)
+                           e
+                           (expression (call bar))))))
+          '(on (triggers (trigger #f foo))
+               (compound
+                (variable (type e)
+                          e
+                          (action* (trigger* #f bar)))))))
+
+(pass-if "ast:resolve-assign-valued-action-call-interface"
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (car resolve-ast)
+           '(on (triggers (trigger #f foo))
+                (compound
+                 (assign x (expression (call bar))))))
+          '(on* (triggers* (trigger* #f foo))
+                (compound*
+                 (assign* x (action* (trigger* #f bar)))))))
+
 (pass-if "ast:resolve-reply-value-interface"
          (gom-pretty-noisy-equal?
           (ast:resolve-model
            (car resolve-ast)
-           '(on (triggers (trigger #f bar))
+           '(on (triggers (trigger #f foo))
                 (compound
                  (reply (expression (value mixed v))))))
-
-          '(on (triggers (trigger #f bar))
+          '(on (triggers (trigger #f foo))
                 (compound
                  (reply (expression (literal #f mixed v)))))))
 
@@ -202,7 +255,7 @@
           (ast:resolve-model
            (car resolve-ast)
            '(guard (expression false)
-                   (on (triggers (trigger #f bar))
+                   (on (triggers (trigger #f foo))
                        (compound
                         (guard
                          (expression true)
@@ -211,7 +264,7 @@
 
           '(guard
             (expression false)
-            (on (triggers (trigger #f bar))
+            (on (triggers (trigger #f foo))
                  (compound
                   (guard
                    (expression true)
@@ -222,11 +275,11 @@
          (gom-pretty-noisy-equal?
           (ast:resolve-model
            (cadr resolve-ast)
-           '(on (triggers (trigger o bar))
+           '(on (triggers (trigger o foo))
                 (compound
                  (reply (expression (literal ivar mixed v))))))
 
-          '(on (triggers (trigger o bar))
+          '(on (triggers (trigger o foo))
                 (compound
                  (reply (expression (literal ivar mixed v)))))))
 

@@ -294,9 +294,27 @@
     (($ <action> ($ <trigger> #f (and (? function?) (get! identifier))))
      (make <call> :identifier (identifier)))
 
+    (($ <assign> identifier
+        ($ <expression> ($ <call> (and (? event?) (get! event)))))
+     (make <assign>
+       :identifier identifier
+       :expression (make <action> :trigger (make <trigger> :event (event)))))
+
     (($ <assign> identifier ($ <expression> (and ($ <call>) (get! call))))
      (make <assign> :identifier identifier
            :expression (resolve-model model (call) locals)))
+
+    (($ <assign> identifier
+        ($ <expression> ($ <var> (and (? event?) (get! event)))))
+     (make <assign>
+       :identifier identifier
+       :expression (make <action> :trigger (make <trigger> :event (event)))))
+
+    (($ <assign> identifier
+        ($ <expression> ($ <var> (and (? function?) (get! function)))))
+     (make <assign>
+       :identifier identifier
+       :expression (make <call> :identifier (function))))
 
     (($ <assign> identifier
         ($ <expression> ($ <value> (and (? port?) (get! port)) event)))
@@ -321,11 +339,27 @@
        :identifier identifier
        :expression (resolve-model model expression locals)))
 
+    (($ <variable> name type
+        ($ <expression> ($ <call> (and (? event?) (get! event)))))
+     (make <variable>
+       :type (resolve-model model type locals)
+       :name name
+       :expression (make <action> :trigger
+                         (make <trigger> :event (event)))))
+
     (($ <variable> name type ($ <expression> (and ($ <call>) (get! call))))
      (make <variable>
        :type (resolve-model model type locals)
        :name name
        :expression (resolve-model model (call) locals)))
+
+    (($ <variable> name type
+        ($ <expression> ($ <var> (and (? event?) (get! event)))))
+     (make <variable>
+       :type (resolve-model model type locals)
+       :name name
+       :expression (make <action> :trigger
+                         (make <trigger> :event (event)))))
 
     (($ <variable> name type
         ($ <expression> ($ <value> (and (? port?) (get! port)) event)))
