@@ -47,7 +47,8 @@ channel IN,OUT : {#
 
 SINGLETHREADED = true
 
-channel reorder_in,reorder_out : {# (comma-join (map (lambda (x) (symbol-append (.name (gom:port model)) '. x)) (return-values-port (gom:port model))))}
+channel reorder_in  : {# (comma-join (map (lambda (x) (symbol-append (.type (gom:port model)) '. x)) (return-values-port (gom:port model))))}
+channel reorder_out : {# (comma-join (map (lambda (x) (symbol-append (.name (gom:port model)) '. x)) (return-values-port (gom:port model))))}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -58,13 +59,13 @@ Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
        []
-       reorder_in?x' -> reorder_out!x' -> R'(A')
+       reorder_in?#(.type (gom:port model)).x' -> reorder_out!#(.name (gom:port model)).x' -> R'(A')
 
 S'    = let
 
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
 
-Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!head(r') -> Idle(0))
+Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!#(.name (gom:port model)).head(r') -> Idle(0))
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
@@ -72,9 +73,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
             []
-            r' == <> & reorder_in?x' -> Busy(c',<x'>)
+            r' == <> & reorder_in?#(.type (gom:port model)).x' -> Busy(c',<x'>)
             []
-            r' != <> & reorder_in?x' -> illegal -> STOP
+            r' != <> & reorder_in?#(.type (gom:port model)).x' -> illegal -> STOP
 
 within Idle(0)
 
