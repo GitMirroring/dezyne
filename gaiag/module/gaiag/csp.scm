@@ -160,7 +160,32 @@
     (module-define! module 'model o)
     module))
 
+(define-method (valued? (model <model>) (o <on>))
+  (gom:typed? model (car ((compose .elements .triggers) o))))
+
+
 (define (behaviour->csp model default)
+
+  (define (valued? o)
+    (gom:typed? model o))
+
+  (define (split-valued-void o)
+    (receive (valued void) (partition valued? ((compose .elements .triggers) o))
+      (let* ((statement (.statement o))
+             (valued-on (if (pair? valued)
+                            (list
+                             (make <on>
+                               :triggers (make <triggers> :elements valued)
+                               :statement statement))
+                            '()))
+             (void-on (if (pair? void)
+                          (list
+                           (make <on>
+                             :triggers (make <triggers> :elements void)
+                             :statement statement))
+                          '())))
+        (append void-on valued-on))))
+
   (or (string-null-is-#f
        ((->join "\n[]\n")
         (append
@@ -173,11 +198,13 @@
                ((->join "\n []\n  ")
                 (map (lambda (on)
                        (csp-transform model (ast-transform model on)))
-                     (if (is-a? model <interface>)
-                         ons
-                         (append
-                          (filter identity (map (statement-on-p/r (provides? model)) ons))
-                          (filter identity (map (statement-on-p/r (requires? model)) ons))))))
+                     (let ((ons
+                            (if (is-a? model <interface>)
+                                ons
+                                (append
+                                 (filter identity (map (statement-on-p/r (provides? model)) ons))
+                                 (filter identity (map (statement-on-p/r (requires? model)) ons))))))
+                       (apply append (map split-valued-void ons)))))
                ")")))
           ((gom:statements-of-type 'guard) (gom:statement (.behaviour model))))
          (map (lambda (on) (csp-transform model (ast-transform model on)))
@@ -316,22 +343,6 @@
         (list " [|{" name ".optional}|] " "CHAOS({" name ".optional})")
         "")))
 
-(define (ast-transform ast src)
-  (ast-transform- ast (ast-transform-return ast src)))
-
-(define-method (ast-transform-return ast (o <top>)) ;; TODO: <ast>
-  o)
-
-(define-method (ast-transform-return ast (o <compound>))
-  (let ((result
-         (let loop ((statements (map (lambda (x) (ast-transform-return ast x)) (.elements o))))
-           (if (null? statements)
-               '()
-               (cons (car statements) (loop (cdr statements)))))))
-    (if (=1 (length result))
-        (car result)
-        (make <compound> :elements result))))
-
 (define-class <csp-call> (<call>)
   (context :accessor .context :init-form (list) :init-keyword :context))
 
@@ -354,6 +365,22 @@
 
 (define-class <csp-return> (<return>)
   (context :accessor .context :init-form (list) :init-keyword :context))
+
+(define (ast-transform ast src)
+  (ast-transform- ast (ast-transform-return ast src)))
+
+(define-method (ast-transform-return ast (o <top>)) ;; TODO: <ast>
+  o)
+
+(define-method (ast-transform-return ast (o <compound>))
+  (let ((result
+         (let loop ((statements (map (lambda (x) (ast-transform-return ast x)) (.elements o))))
+           (if (null? statements)
+               '()
+               (cons (car statements) (loop (cdr statements)))))))
+    (if (=1 (length result))
+        (car result)
+        (make <compound> :elements result))))
 
 (define-method (ast-transform-return ast (o <on>))
   (let* ((model (or (gom:component ast) (gom:interface ast)))
