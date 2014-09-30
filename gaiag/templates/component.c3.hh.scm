@@ -15,9 +15,11 @@ struct #.model
      (lambda (variable)
        (let* ((name (.name variable))
               (type (.type variable))
-              (enum? (gom:enum model (.name type)))
+              (enum? (gom:enum model type))
               (c++-type (if enum?
-                            (->string (list (.name type) "::type"))
+                           (if (.scope enum?)
+                               (->string (list "interface::" (.scope type) "::" (.name type) "::type"))
+                               (->string (list (.name type) "::type")))
                             (.name type))))
          (->string (list c++-type " " name ";\n"))))
      (gom:variables model))#
