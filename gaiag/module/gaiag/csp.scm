@@ -351,28 +351,23 @@
         (list " [|{" name ".optional}|] " "CHAOS({" name ".optional})")
         "")))
 
-(define-class <csp-call> (<call>)
-  (context :accessor .context :init-form (list) :init-keyword :context))
+(define-class <context> (<ast>)
+  (members :accessor .members :init-form (list) :init-keyword :members)
+  (locals :accessor .locals :init-form (list) :init-keyword :locals))
 
-(define-class <csp-if> (<if>)
-  (context :accessor .context :init-form (list) :init-keyword :context))
+(define-class <csp> (<ast>)
+  (context :accessor .context :init-value #f :init-keyword :context))
 
-(define-method (display-slots (o <csp-if>) port)
-  (sdisplay (.context o) port)
-  (next-method))
+(define-class <csp-call> (<csp> <call>))
+
+(define-class <csp-if> (<csp> <if>))
 
 (define-class <csp-on> (<on>)
   (the-end :accessor .the-end :init-value #f :init-keyword :the-end))
 
-(define-class <csp-reply> (<reply>)
-  (context :accessor .context :init-form (list) :init-keyword :context))
+(define-class <csp-reply> (<csp> <reply>))
 
-(define-method (display-slots (o <csp-reply>) port)
-  (sdisplay (.context o) port)
-  (next-method))
-
-(define-class <csp-return> (<return>)
-  (context :accessor .context :init-form (list) :init-keyword :context))
+(define-class <csp-return> (<csp> <return>))
 
 (define (ast-transform ast src)
   (ast-transform- ast (ast-transform-return ast src)))
@@ -428,12 +423,6 @@
 
 (define-method (call? (o <call>))
   #t)
-
-(define-class <csp> (<ast>))
-
-(define-class <context> (<csp>)
-  (members :accessor .members :init-form (list) :init-keyword :members)
-  (locals :accessor .locals :init-form (list) :init-keyword :locals))
 
 (define (frame-hide frame prefix extension)
   (let loop ((frame frame) (index 0))
