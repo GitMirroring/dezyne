@@ -372,42 +372,40 @@
 (define (ast-transform ast src)
   (ast-transform- ast (ast-transform-return ast src)))
 
-(define-method (ast-transform-return ast (o <top>)) ;; TODO: <ast>
-  o)
-
-(define-method (ast-transform-return ast (o <compound>))
-  (let ((result
-         (let loop ((statements (map (lambda (x) (ast-transform-return ast x)) (.elements o))))
-           (if (null? statements)
-               '()
-               (cons (car statements) (loop (cdr statements)))))))
-    (if (=1 (length result))
-        (car result)
-        (make <compound> :elements result))))
-
-(define-method (ast-transform-return ast (o <on>))
-  (let* ((model (or (gom:component ast) (gom:interface ast)))
-	 (members (gom:member-names model))
-         (triggers (.triggers o))
-         (valued-triggers? (lambda (x) (gom:typed? model (car ((compose .elements .triggers) o))))))
-    (let ((result (ast-transform-return ast (.statement o))))
-      (match result
-        (($ <compound> '())
-         (make <csp-on>
-           :triggers triggers
-           :statement (make <compound>
-                        :elements (list (list 'eventreturn)))
-           :the-end (list 'the-end members)))
-        ((? valued-triggers?)
-         (make <csp-on>
-           :triggers triggers
-           :statement (make <compound> :elements (list result))
-           :the-end (list 'the-end members)))
-        (_
-         (make <csp-on>
-           :triggers triggers
-           :statement (make <compound> :elements (list result (list 'eventreturn)))
-           :the-end (list 'the-end members)))))))
+(define-method (ast-transform-return ast o)
+  (match o
+    (($ <compound> statements)
+     (let ((result
+            (let loop ((statements (map (lambda (x) (ast-transform-return ast x)) statements)))
+              (if (null? statements)
+                  '()
+                  (cons (car statements) (loop (cdr statements)))))))
+       (if (=1 (length result))
+           (car result)
+           (make <compound> :elements result))))
+    (($ <on> triggers statement)
+     (let* ((model (or (gom:component ast) (gom:interface ast)))
+            (members (gom:member-names model))
+            (valued-triggers? (lambda (x) (gom:typed? model ((compose car .elements) triggers)))))
+       (let ((result (ast-transform-return ast statement)))
+         (match result
+           (($ <compound> '())
+            (make <csp-on>
+              :triggers triggers
+              :statement (make <compound>
+                           :elements (list (list 'eventreturn)))
+              :the-end (list 'the-end members)))
+           ((? valued-triggers?)
+            (make <csp-on>
+              :triggers triggers
+              :statement (make <compound> :elements (list result))
+              :the-end (list 'the-end members)))
+           (_
+            (make <csp-on>
+              :triggers triggers
+              :statement (make <compound> :elements (list result (list 'eventreturn)))
+              :the-end (list 'the-end members)))))))
+    (_ o)))
 
 (define ((valued-action? port?) src)
   (match src

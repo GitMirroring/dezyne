@@ -978,6 +978,20 @@ skip_)(\\ V' @ transition_end -> Alarm_d(V'),((state,sounding),(stack')))"
 context_active_(sendrecv_(i,bar),
 skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
 
+(pass-if "ast-csp-transform-variable-valued-action"
+         (diff-noisy-equal?
+
+          ;; from:
+          (csp-transform* var-ast
+                          (ast-transform*
+                           var-ast
+                           csp-transform-variable-valued-action-via))
+
+          ;; via:
+          "o?x:{bar} ->
+context_active_(sendrecv_(i,bar),
+skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
+
 (define csp-transform-if-variable-valued-action-via
   '(on
     (triggers (trigger o bar))
@@ -1017,21 +1031,6 @@ context_active_(sendrecv_(i,bar),
 skip_),
 skip_
 )(P',((<>),(stack'))),
-skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
-
-(pass-if "ast-csp-transform-variable-valued-action"
-         (diff-noisy-equal?
-
-          ;; from:
-          (csp-transform* var-ast
-                          (ast-transform*
-                           var-ast
-                           csp-transform-variable-valued-action-via))
-
-          ;; via:
-          "o?x:{bar} ->
-semi_(context_active_(sendrecv_(i,bar),
-skip_),
 skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
 
 (define csp-transform-if-compound-variable-valued-action-via
@@ -1087,8 +1086,7 @@ skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
 
           ;; via:
           "o?x:{bar} ->
-semi_(context_active_(sendrecv_(i,bar),
-skip_),
+context_active_(sendrecv_(i,bar),
 skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
 
 (define csp-function-call-ast
