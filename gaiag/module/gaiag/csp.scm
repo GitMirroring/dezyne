@@ -488,22 +488,16 @@
        (list "(" members "),(" locals ")")))
     (_ (throw 'match-error (format #f "~a:context->csp: no match: ~a\n" (current-source-location) context)))))
 
-(define-method (ast-transform- ast (o <top>))
-  (let* ((model (or (gom:component ast) (gom:interface ast)))
-         (context (make-context (gom:member-names model) '())))
-    (ast-transform- ast o #t context)))
-
-(define-method (ast-transform- ast (o <top>) return context)
-  o)
-
-(define-method (ast-transform- ast (o <compound>) return context)
+(define* (ast-transform- ast o :optional (return #t) (context #f))
   (let* ((model (or (gom:component ast) (gom:interface ast)))
          (context (or context (make-context (gom:member-names model) '())))
          (port? (lambda (port)
                   (if ((is? <interface>) model) #f
                       (member port (map .name (.elements (.ports model)))))))
          (valued-action? (valued-action? port?)))
+
     (match o
+
       (($ <compound> statements)
        (let loop ((statements statements) (context context))
          (if (null? statements)
@@ -530,122 +524,93 @@
                             'context-active
                             'context)
                         transformed 'skip)
-                       transformed)))))))))
+                       transformed))))))
 
-(define-method (ast-transform- ast (o <variable>) return context)
-  (ast-transform-variable (.name o) (.expression o) context))
+      (($ <assign> identifier ($ <expression> value))
+       (make <assign>
+         :identifier context
+         :expression (make <expression>
+                       :value (context-assign context identifier value))))
 
-(define-method (ast-transform-variable name (o <call>) context)
-  (list context name o)
-  ;;(list 'context-active (list context 'r' o) (context-assign context name 'r'))
-  )
+      (($ <assign> identifier expression)
+       (list 'assign-active (list context 'r' expression)
+             (context-assign context identifier 'r')))
 
-(define-method (ast-transform-variable name (o <top>) context)
-  (list context name o)
-  ;;(list 'context-active (list context 'r' o) (context-assign context name 'r'))
-  )
+      (($ <call> identifier arguments)
+       (make <csp-call>
+         :context context
+         :identifier identifier
+         :arguments arguments))
 
-(define-method (ast-transform- ast (o <function>) return context)
-  (let* ((signature (.signature o))
-         (parameters ((compose .elements .parameters) signature))
-         (parameters (map .name parameters))
-         (context (context-extend context (if (>1 (length parameters))
-                                              (cons 'vector parameters)
-                                              parameters)))
-         (statement (.statement o))
-         (name (.name o))
-         (transformed (ast-transform- ast statement return context)))
-    (make <function> :name name
-          :signature signature
-          :recursive (.recursive o)
-          :statement transformed)))
+      (($ <function> name signature recursive statement)
+       (let* ((parameters ((compose .elements .parameters) signature))
+              (parameters (map .name parameters))
+              (context (context-extend context (if (>1 (length parameters))
+                                                   (cons 'vector parameters)
+                                                   parameters))))
+         (make <function> :name name
+               :signature signature
+               :recursive recursive
+               :statement (ast-transform- ast statement return context))))
 
-(define-method (ast-transform- ast (o <expression>) return context)
-  (let ((value (.value o)))
-    (match (.value o)
-      (($ <call>) (make <expression> :value (ast-transform- ast value return context)))
+      (($ <if> ($ <expression> expr) then else)
+       (let* ((then-illegal? (prefix-illegal? then))
+              (else-illegal? (prefix-illegal? else))
+              (pred-then (if then-illegal? (list 'and 'IG expr) expr))
+              (pred (if else-illegal? (list 'and '(! IG) pred-then) pred-then))
+              (then-context (if (is-a? then <variable>)
+                                (context-extend context (.name then))
+                                context))
+              (else-context (if (is-a? else <variable>)
+                                (context-extend context (.name else))
+                                context))
+              (then-transformed (ast-transform- ast then return then-context))
+              (else-transformed (ast-transform- ast else return else-context))
+              (then (if (is-a? then <variable>)
+                        (list (if (or (valued-action? then)
+                                      (call? then))
+                                  'context-active
+                                  'context)
+                              then-transformed 'skip)
+                        then-transformed))
+              (else (if (is-a? else <variable>)
+                        (list (if (or (valued-action? else)
+                                      (call? else))
+                                  'context-active
+                                  'context)
+                              else-transformed 'skip)
+                        else-transformed)))
+         (make <csp-if>
+           :context context
+           :expression (make <expression> :value expr)
+           :then then
+           :else (or else '()))))
+
+      (($ <csp-on> triggers statement the-end)
+       (let ((result (ast-transform- ast statement)))
+         (if (prefix-illegal? statement)
+             (make <csp-on> :triggers triggers :statement 'IG :the-end result)
+             (make <csp-on> :triggers triggers :statement result :the-end the-end))))
+
+      (($ <reply> expression)
+       (make <csp-reply>
+         :context context
+         :expression (ast-transform- ast expression return context)))
+
+      (($ <return> expression)
+       (make <csp-return>
+         :context context
+         :expression (ast-transform- ast expression return context)))
+
+      (($ <variable> name type expression)
+       ;;(list 'context-active (list context 'r' expression) (context-assign context name 'r'))
+       (list context name expression))
+
+      (($ <expression> (and ($ <call>) (get! call)))
+       (make <expression> :value (ast-transform- ast (call) return context)))
+
       (_ o))))
 
-(define-method (ast-transform- ast (o <reply>) return context)
-  (make <csp-reply>
-    :context context
-    :expression (ast-transform- ast (.expression o) return context)))
-
-(define-method (ast-transform- ast (o <return>) return context)
-  (make <csp-return>
-    :context context
-    :expression (ast-transform- ast (.expression o) return context)))
-
-(define-method (ast-transform- ast (o <call>) return context)
-  (make <csp-call>
-    :context context
-    :identifier (.identifier o)
-    :arguments (.arguments o)))
-
-(define-method (ast-transform- ast (o <assign>) return context)
-  (ast-transform-assign (.identifier o) (.expression o) context))
-
-(define-method (ast-transform-assign identifier (o <action>) context)
-  (list 'assign-active (list context 'r' o)
-        (context-assign context identifier 'r')))
-
-(define-method (ast-transform-assign identifier (o <call>) context)
-  (list 'assign-active (list context 'r' o)
-        (context-assign context identifier 'r')))
-
-(define-method (ast-transform-assign identifier (o <expression>) context)
-  (make <assign>
-    :identifier context
-    :expression
-    (make <expression> :value
-          (context-assign context identifier (.value o)))))
-
-(define-method (ast-transform- ast (o <csp-on>) return context)
-  (let ((triggers (.triggers o))
-        (statement (.statement o))
-        (the-end (.the-end o)))
-    (let ((result (ast-transform- ast statement)))
-      (if (prefix-illegal? statement)
-          ;; (list 'on triggers 'IG result)
-          (make <csp-on> :triggers triggers :statement 'IG :the-end result)
-          ;; (list 'on triggers result the-end)
-          (make <csp-on> :triggers triggers :statement result :the-end the-end)))))
-
-(define-method (ast-transform- ast (o <if>) return context)
-  (let* ((expr (.value (.expression o)))
-         (then (.then o))
-         (else (.else o))
-         (then-illegal? (prefix-illegal? then))
-         (else-illegal? (prefix-illegal? else))
-         (pred-then (if then-illegal? (list 'and 'IG expr) expr))
-         (pred (if else-illegal? (list 'and '(! IG) pred-then) pred-then))
-         (then-context (if (is-a? then <variable>)
-                           (context-extend context (.name then))
-                           context))
-         (else-context (if (is-a? else <variable>)
-                           (context-extend context (.name else))
-                           context))
-         (then-transformed (ast-transform- ast then return then-context))
-         (else-transformed (ast-transform- ast else return else-context))
-         (then (if (is-a? then <variable>)
-                   (list (if (or (valued-action? then)
-                                 (call? then))
-                             'context-active
-                             'context)
-                         then-transformed 'skip)
-                   then-transformed))
-         (else (if (is-a? else <variable>)
-                   (list (if (or (valued-action? else)
-                                 (call? else))
-                             'context-active
-                             'context)
-                         else-transformed 'skip)
-                   else-transformed)))
-    (make <csp-if>
-      :context context
-      :expression (make <expression> :value expr)
-      :then then
-      :else (or else '()))))
 
 (define (=>string ast src)
   (match src
