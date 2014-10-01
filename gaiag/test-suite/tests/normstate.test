@@ -199,25 +199,32 @@
                                          (on (triggers (trigger #f a) (trigger #f b) (trigger #f c))
                                              (action (trigger #f d)))))))))
 
-(pass-if "normstate-split-on-active"
+(pass-if "normstate-split-on-active-single-on"
          (gom-pretty-noisy-equal?
           (normstate
            (car (asd->ast
                            #{
-                             component c { behaviour { on i.a,i.b,j.a: [true] j.d;
-                                                          on j.b: [true] j.e;
+                             component c { behaviour { [true] on i.a: illegal;
+                                                       [false] on i.b,i.c,j.a: illegal;
                                                           } } #})))
-          '(component c (ports)
-                      (behaviour #f (types) (variables) (functions)
-                                 (compound
-                                  (guard (expression true)
-                                         (compound
-                                          (on (triggers (trigger i a) (trigger i b))
-                                              (action (trigger j d)))
-                                          (on (triggers (trigger j a))
-                                              (action (trigger j d)))
-                                          (on (triggers (trigger j b))
-                                              (action (trigger j e))))))))))
+          '(component
+            c
+            (ports)
+            (behaviour
+             #f
+             (types)
+             (variables)
+             (functions)
+             (compound
+              (guard
+               (expression true)
+               (on (triggers (trigger i a)) (illegal)))
+              (guard
+               (expression false)
+               (compound
+                (on (triggers (trigger i b) (trigger i c))
+                     (illegal))
+                (on (triggers (trigger j a)) (illegal)))))))))
 
 (pass-if "normstate-aggregate-on-interface-passive"
          (gom-pretty-noisy-equal?

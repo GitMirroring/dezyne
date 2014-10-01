@@ -117,9 +117,14 @@
     (($ <compound> (($ <on>) ...))
      (make <compound>
        :elements (apply append (map port-split-triggers (.elements o)))))
-     ((? (is? <ast>)) (gom:map expand-on o))
-     ((h t ...) (map expand-on o))
-     (_ o)))
+    (($ <on> triggers statement)
+     (let ((ons (port-split-triggers o)))
+       (if (=1 (length ons))
+           o
+           (make <compound> :elements ons))))
+    ((? (is? <ast>)) (gom:map expand-on o))
+    ((h t ...) (map expand-on o))
+    (_ o)))
 
 (define-method (port-split-triggers (o <top>)) o)
 
