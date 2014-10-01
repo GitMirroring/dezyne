@@ -71,6 +71,7 @@
            <csp-on>
            <csp-reply>
            <csp-return>
+           <context-vector>
            <voidreply>
            ))
 
@@ -356,6 +357,8 @@
   (members :accessor .members :init-form (list) :init-keyword :members)
   (locals :accessor .locals :init-form (list) :init-keyword :locals))
 
+(define-class <context-vector> (<ast-list>))
+
 (define-class <csp> (<ast>)
   (context :accessor .context :init-value #f :init-keyword :context))
 
@@ -437,8 +440,8 @@
                   (string->symbol (format #f "~a~a'" prefix index))
                   i)
               (loop (cdr frame) (1+ index))))
-            (('vector identifiers ..1)
-             (cons (cons 'vector (loop identifiers index))
+            (($ <context-vector> identifiers)
+             (cons (make <context-vector> :elements (loop identifiers index))
                    (loop (cdr frame) (+ index (length identifiers)))))
             (_ (throw 'match-error (format #f "~a:frame-hide: no match: ~a\n" (current-source-location) i))))))))
 
@@ -446,7 +449,12 @@
   (let ((members (.members o))
         (locals (.locals o)))
     (match extension
-      (('vector identifiers ..1)
+      ('() o)
+      ((h) (extend o h))
+      (($ <parameters> parameters) (extend o (map .name parameters)))
+      ((identifiers ...)
+       (extend o (make <context-vector> :elements extension)))
+      (($ <context-vector> identifiers)
        (make <context>
          :members (frame-hide members 'hide_member identifiers)
          :locals (append (frame-hide locals 'hide_local identifiers)
@@ -455,14 +463,13 @@
        (make <context>
          :members (frame-hide members 'hide_member (list extension))
          :locals (append (frame-hide locals 'hide_local (list extension))
-                         (list extension))))
-      ((h) (extend o h))
-      ('() o))))
+                         (list extension)))))))
 
 (define ((assign identifier expression) x)
   (match x
-    (('vector expressions ...)
-     (cons 'vector (map (assign identifier expression) expressions)))
+    (($ <context-vector> expressions)
+     (make <context-vector>
+       :elements (map (assign identifier expression) expressions)))
     (_ (if (eq? x identifier) expression x))))
 
 (define-generic assign)
@@ -473,7 +480,10 @@
 
 (define (element->csp ast x)
   (match x
-    (('vector expressions ...) (string-append "(" (comma-join (map (lambda (x) (csp-expression->string ast x)) expressions)) ")"))
+    (($ <context-vector> expressions)
+     (let ((expressions
+            (map (lambda (x) (csp-expression->string ast x)) expressions)))
+       (string-append "(" (comma-join expressions) ")")))
     (_ (->string (csp-expression->string ast x)))))
 
 (define-method (->csp ast (o <context>))
@@ -544,11 +554,7 @@
          :arguments arguments))
 
       (($ <function> name signature recursive statement)
-       (let* ((parameters ((compose .elements .parameters) signature))
-              (parameters (map .name parameters))
-              (context (extend context (if (>1 (length parameters))
-                                                   (cons 'vector parameters)
-                                                   parameters))))
+       (let* ((context (extend context (.parameters signature))))
          (make <function> :name name
                :signature signature
                :recursive recursive

@@ -77,6 +77,7 @@
     (('context members locals) (make <context> :members (csp->gom members) :locals (csp->gom locals)))
     (('literal scope type field) (make <literal> :scope scope :type type :field field))
     (('voidreply) (make <voidreply>))
+    (('vector identifiers ...) (make <context-vector> :elements identifiers))
     ((h t ...) (map csp->sugar ast))
     (_ ast)))
 
@@ -1597,25 +1598,31 @@ skip_
 (pass-if "context-extend-symbol-vector"
   (let ((context (make <context> :members '(s b c) :locals '(d))))
     (csp-pretty-noisy-equal?
-     (extend context '(vector s d))
+     (extend context (make <context-vector> :elements '(s d)))
      '(context (hide_member0' b c) (hide_local0' (vector s d))))))
 
 (pass-if "context-extend-vector-symbol"
-  (let ((context (make <context> :members '(s b c) :locals '((vector b e f)))))
+  (let ((context (make <context>
+                   :members '(s b c)
+                   :locals (list (make <context-vector> :elements '(b e f))))))
     (csp-pretty-noisy-equal?
      (extend context 'b)
      '(context (s hide_member1' c) ((vector hide_local0' e f) b)))))
 
 (pass-if "context-extend-vector-vector"
-  (let ((context (make <context> :members '(s b c) :locals '((vector d e f)))))
+  (let ((context (make <context>
+                   :members '(s b c)
+                   :locals (list (make <context-vector> :elements '(d e f))))))
     (csp-pretty-noisy-equal?
-     (extend context '(vector s d))
+     (extend context (make <context-vector> :elements '(s d)))
      '(context (hide_member0' b c) ((vector hide_local0' e f) (vector s d))))))
 
 (pass-if "context-extend-vector-symbol-vector"
-  (let ((context (make <context> :members '(s b c) :locals '((vector d e f) s))))
+  (let ((context (make <context>
+                   :members '(s b c)
+                   :locals (list (make <context-vector> :elements '( d e f)) 's))))
     (csp-pretty-noisy-equal?
-     (extend context '(vector s d))
+     (extend context (make <context-vector> :elements '(s d)))
      '(context (hide_member0' b c) ((vector hide_local0' e f) hide_local3' (vector s d))))))
 
 ;; OM-PARSER parser test
