@@ -267,11 +267,6 @@
      (make <call>
        :identifier identifier
        :arguments (resolve-model model (arguments) locals)))
-
-    ;; resolve PORT.enum.field to INTERFACE.enum.field
-    (($ <literal> (and (? port?) (get! port)) type field)
-     (make <literal> :scope (.type (port? (port))) :type type :field field))
-
     (($ <call>) o)
     (($ <event>) o)
     (($ <field>) o)
