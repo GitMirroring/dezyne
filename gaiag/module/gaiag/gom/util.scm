@@ -421,7 +421,7 @@
     gom))
 
 (define* (read-ast name #:optional (transform ast->gom))
-  (and-let* ((ast (null-is-#f (read-asd (list name '.asd) (gom:register transform))))
+  (and-let* ((ast (null-is-#f (read-asd name (gom:register transform))))
              (models (null-is-#f (gom:models ast))))
             (find (lambda (model) (eq? (.name model) name)) models)))
 

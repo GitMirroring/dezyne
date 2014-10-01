@@ -49,9 +49,20 @@
   (asd-reader (open-file file-name "r") (current-module)))
 
 (define *include-path* '("." "examples"))
-(define* (find-file file-name)
-  (let* ((file-name (components->file-name file-name))
-         (resolved (search-path *include-path* file-name))
+(define (path-find-file path file-name)
+  (search-path path (components->file-name file-name)))
+
+(define* (find-file file-name :optional (extensions '(.asdi .asd)))
+  (let* ((file-name (if (pair? file-name) file-name (list file-name)))
+         (resolved
+          (or (path-find-file *include-path* file-name)
+              (let loop ((extensions extensions))
+                (if (null? extensions)
+                    #f
+                    (or (path-find-file *include-path*
+                                        (append file-name (take extensions 1)))
+                        (loop (cdr extensions)))))))
+         (file-name (components->file-name file-name))
          (dir (or (and=> resolved dirname)
                   (let ((message (format #f "gaiag: No such file or directory: ~a [~a]\n" file-name *include-path*)))
                     (stderr message)
