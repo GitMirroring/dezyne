@@ -96,8 +96,7 @@
 (define (report-errors errors)
   (for-each report-error errors)
   ;;(throw 'well-formed errors)
-  (exit 1)
-  )
+  (exit 1))
 
 (define-method (resolve-top-model (o <model>))
   ((compose gom:register-model (lambda (m) (resolve-model m m)) resolve-mixed) o))
@@ -263,6 +262,9 @@
     ((or '! '+ '- ) o)
     ((or '== '!= '< '<= '> '>= 'group) o)
 
+    (($ <gom:parameter> name type)
+     (make <gom:parameter> :name name :type (resolve-model model type locals)))
+
     (($ <call> identifier (and ($ <arguments>) (get! arguments)))
      (make <call>
        :identifier identifier
@@ -337,7 +339,7 @@
 
     (($ <variable> name type ($ <expression> (and ($ <call>) (get! call))))
      (make <variable>
-       :type type
+       :type (resolve-model model type locals)
        :name name
        :expression (resolve-model model (call) locals)))
 
@@ -352,7 +354,7 @@
     (($ <variable> name type
         ($ <expression> ($ <value> (and (? port?) (get! port)) event)))
      (make <variable>
-       :type type
+       :type (resolve-model model type locals)
        :name name
        :expression (make <action> :trigger
                          (make <trigger> :port (port) :event event))))
@@ -360,13 +362,13 @@
     (($ <variable> name type
         ($ <expression> ($ <var> (and (? function?) (get! function)))))
      (make <variable>
-       :type type
+       :type (resolve-model model type locals)
        :name name
        :expression (make <call> :identifier (function))))
 
     (($ <variable> name type expression)
      (make <variable>
-       :type type
+       :type (resolve-model model type locals)
        :name name
        :expression (resolve-model model expression locals)))
 
@@ -389,7 +391,7 @@
     (($ <function> name ($ <signature> type ($ <parameters> '())) recursive? statement)
      (make <function>
        :name name
-       :signature (.signature o)
+       :signature (resolve-model model (.signature o) locals)
        :recursive (and ((recurses? model) name) 'recursive)
        :statement (resolve-model model statement)))
 
@@ -401,7 +403,7 @@
                                (acons (.name (car parameters)) (car parameters) locals))))))
        (make <function>
          :name name
-         :signature (.signature o)
+         :signature (resolve-model model (.signature o) locals)
          :recursive (and ((recurses? model) name) 'recursive)
          :statement (resolve-model model statement locals))))
 
