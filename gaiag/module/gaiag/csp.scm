@@ -503,32 +503,34 @@
                   (if ((is? <interface>) model) #f
                       (member port (map .name (.elements (.ports model)))))))
          (valued-action? (valued-action? port?)))
-    (let loop ((statements (.elements o)) (context context))
-      (if (null? statements)
-          '()
-          (let* ((statement (car statements))
-                 (transformed (ast-transform- ast statement #f context))
-                 (context (if (is-a? statement <variable>)
-                              (context-extend context (.name statement))
-                              context)))
-            (if (>1 (length statements))
-                (if (is-a? transformed <illegal>)
-                    transformed
-                    (list (if (is-a? statement <variable>)
-                              (if (or (valued-action? statement)
-                                      (call? statement))
-                                  'context-active
-                                  'context)
-                              'semi)
-                          transformed (loop (cdr statements) context)))
-                (if (is-a? statement <variable>)
-                    (list
-                     (if (or (valued-action? statement)
-                             (call? statement))
-                         'context-active
-                         'context)
-                     transformed 'skip)
-                    transformed)))))))
+    (match o
+      (($ <compound> statements)
+       (let loop ((statements statements) (context context))
+         (if (null? statements)
+             '()
+             (let* ((statement (car statements))
+                    (transformed (ast-transform- ast statement #f context))
+                    (context (if (is-a? statement <variable>)
+                                 (context-extend context (.name statement))
+                                 context)))
+               (if (>1 (length statements))
+                   (if (is-a? transformed <illegal>)
+                       transformed
+                       (list (if (is-a? statement <variable>)
+                                 (if (or (valued-action? statement)
+                                         (call? statement))
+                                     'context-active
+                                     'context)
+                                 'semi)
+                             transformed (loop (cdr statements) context)))
+                   (if (is-a? statement <variable>)
+                       (list
+                        (if (or (valued-action? statement)
+                                (call? statement))
+                            'context-active
+                            'context)
+                        transformed 'skip)
+                       transformed)))))))))
 
 (define-method (ast-transform- ast (o <variable>) return context)
   (ast-transform-variable (.name o) (.expression o) context))
