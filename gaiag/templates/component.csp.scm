@@ -31,12 +31,12 @@
 
 CO_#(.name model) _#((compose .name .behaviour) model) (IIG,IG) = let
 # (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (gom:functions (.behaviour model))))
-#(.name model) _#((compose .name .behaviour) model) ((#(context->csp model (make-context ((compose gom:member-names) model) '())))) = transition_begin -> (
+#(.name model) _#((compose .name .behaviour) model) ((#(->csp model (make <context> :members ((compose gom:member-names) model))))) = transition_begin -> (
 #(behaviour->csp model
- (->string (list (.name model) "_" ((compose .name .behaviour) model) "((" (context->csp model (make-context ((compose gom:member-names) model) '())) "))" )))
+ (->string (list (.name model) "_" ((compose .name .behaviour) model) "((" (->csp model (make <context> :members ((compose gom:member-names) model))) "))" )))
 )
 
-within #(.name model) _#((compose .name .behaviour) model) ((#(context->csp model (make-context ((compose gom:member-values) model) '(<>)))))
+within #(.name model) _#((compose .name .behaviour) model) ((#(->csp model (make <context> :members ((compose gom:member-values) model) :locals '(<>)))))
 
 channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {#

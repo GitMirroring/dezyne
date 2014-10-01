@@ -57,13 +57,15 @@
 	   csp-transform
            csp:norm
 
-           make-context
-           context-extend
+           assign
+           extend
            statement-on-p/r
            provides?
            requires?
            enum-type
 
+           <csp>
+           <context>
            <csp-call>
            <csp-if>
            <csp-on>
@@ -427,8 +429,11 @@
 (define-method (call? (o <call>))
   #t)
 
-(define (make-context members locals)
-  (list 'ctx (cons members locals)))
+(define-class <csp> (<ast>))
+
+(define-class <context> (<csp>)
+  (members :accessor .members :init-form (list) :init-keyword :members)
+  (locals :accessor .locals :init-form (list) :init-keyword :locals))
 
 (define (frame-hide frame prefix extension)
   (let loop ((frame frame) (index 0))
@@ -447,22 +452,22 @@
                    (loop (cdr frame) (+ index (length identifiers)))))
             (_ (throw 'match-error (format #f "~a:frame-hide: no match: ~a\n" (current-source-location) i))))))))
 
-(define (context-extend context extension)
-  (match context
-    (('ctx (members locals ...))
-     (match extension
-       (('vector identifiers ..1)
-        (make-context (frame-hide members 'hide_member identifiers)
-                      (append (frame-hide locals 'hide_local identifiers)
-                              (list extension))))
-       ((? symbol?)
-        (make-context (frame-hide members 'hide_member (list extension))
-                      (append (frame-hide locals 'hide_local (list extension))
-                                          (list extension))))
-       ((h) (context-extend context h))
-       ('() context)
-       (_ (throw 'match-error (format #f "~a:context-extend: no match: ~a\n" (current-source-location) extension)))))
-    (_ (throw 'match-error (format #f "~a:context-extend: no match: ~a\n" (current-source-location) context)))))
+(define-method (extend (o <context>) extension)
+  (let ((members (.members o))
+        (locals (.locals o)))
+    (match extension
+      (('vector identifiers ..1)
+       (make <context>
+         :members (frame-hide members 'hide_member identifiers)
+         :locals (append (frame-hide locals 'hide_local identifiers)
+                         (list extension))))
+      ((? symbol?)
+       (make <context>
+         :members (frame-hide members 'hide_member (list extension))
+         :locals (append (frame-hide locals 'hide_local (list extension))
+                         (list extension))))
+      ((h) (extend o h))
+      ('() o))))
 
 (define ((assign identifier expression) x)
   (match x
@@ -470,33 +475,33 @@
      (cons 'vector (map (assign identifier expression) expressions)))
     (_ (if (eq? x identifier) expression x))))
 
-(define (context-assign context identifier expression)
-  (match context
-    (('ctx (members locals ...))
-     (make-context (map (assign identifier expression) members)
-                   (map (assign identifier expression) locals)))
-    (_ (throw 'match-error (format #f "~a:context-assign: no match: ~a\n" (current-source-location) context)))))
+(define-generic assign)
+(define-method (assign (o <context>) identifier expression)
+  (make <context>
+    :members (map (assign identifier expression) (.members o))
+    :locals (map (assign identifier expression) (.locals o))))
 
 (define (element->csp ast x)
   (match x
     (('vector expressions ...) (string-append "(" (comma-join (map (lambda (x) (csp-expression->string ast x)) expressions)) ")"))
     (_ (->string (csp-expression->string ast x)))))
 
-(define (context->csp ast context)
-  (match context
-    (('ctx context) (context->csp ast context))
-    ((members locals ...)
-     (let* ((members (comma-join (map (lambda (x) (csp-expression->string ast x)) members)))
-            (members (if (string-null? members) '<> members))
-            (locals (if (equal? locals '(<>))
-                        '<>
-                        (reduce (lambda (x y) (string-append "(" (element->csp ast y) "," (element->csp ast x) ")")) #f (cons "stack'" locals)))))
-       (list "(" members "),(" locals ")")))
-    (_ (throw 'match-error (format #f "~a:context->csp: no match: ~a\n" (current-source-location) context)))))
+(define-method (->csp ast (o <context>))
+  (let* ((members (.members o))
+         (locals (.locals o))
+         (members (comma-join (map (lambda (x) (csp-expression->string ast x)) members)))
+         (members (if (string-null? members) '<> members))
+         (locals (if (equal? locals '(<>))
+                     '<>
+                     (reduce (lambda (x y)
+                               (string-append "(" (element->csp ast y) ","
+                                              (element->csp ast x) ")"))
+                             #f (cons "stack'" locals)))))
+    (list "(" members "),(" locals ")")))
 
 (define* (ast-transform- ast o :optional (return #t) (context #f))
   (let* ((model (or (gom:component ast) (gom:interface ast)))
-         (context (or context (make-context (gom:member-names model) '())))
+         (context (or context (make <context> :members (gom:member-names model))))
          (port? (lambda (port)
                   (if ((is? <interface>) model) #f
                       (member port (map .name (.elements (.ports model)))))))
@@ -511,7 +516,7 @@
              (let* ((statement (car statements))
                     (transformed (ast-transform- ast statement #f context))
                     (context (if (is-a? statement <variable>)
-                                 (context-extend context (.name statement))
+                                 (extend context (.name statement))
                                  context)))
                (if (>1 (length statements))
                    (if (is-a? transformed <illegal>)
@@ -520,7 +525,7 @@
                                  (if (or (valued-action? statement)
                                          (call? statement))
                                      'context-active
-                                     'context)
+                                     'context-open)
                                  'semi)
                              transformed (loop (cdr statements) context)))
                    (if (is-a? statement <variable>)
@@ -528,7 +533,7 @@
                         (if (or (valued-action? statement)
                                 (call? statement))
                             'context-active
-                            'context)
+                            'context-open)
                         transformed 'skip)
                        transformed))))))
 
@@ -536,11 +541,11 @@
        (make <assign>
          :identifier context
          :expression (make <expression>
-                       :value (context-assign context identifier value))))
+                       :value (assign context identifier value))))
 
       (($ <assign> identifier expression)
        (list 'assign-active (list context 'r' expression)
-             (context-assign context identifier 'r')))
+             (assign context identifier 'r')))
 
       (($ <call> identifier arguments)
        (make <csp-call>
@@ -551,7 +556,7 @@
       (($ <function> name signature recursive statement)
        (let* ((parameters ((compose .elements .parameters) signature))
               (parameters (map .name parameters))
-              (context (context-extend context (if (>1 (length parameters))
+              (context (extend context (if (>1 (length parameters))
                                                    (cons 'vector parameters)
                                                    parameters))))
          (make <function> :name name
@@ -565,10 +570,10 @@
               (pred-then (if then-illegal? (list 'and 'IG expr) expr))
               (pred (if else-illegal? (list 'and '(! IG) pred-then) pred-then))
               (then-context (if (is-a? then <variable>)
-                                (context-extend context (.name then))
+                                (extend context (.name then))
                                 context))
               (else-context (if (is-a? else <variable>)
-                                (context-extend context (.name else))
+                                (extend context (.name else))
                                 context))
               (then-transformed (ast-transform- ast then return then-context))
               (else-transformed (ast-transform- ast else return else-context))
@@ -576,14 +581,14 @@
                         (list (if (or (valued-action? then)
                                       (call? then))
                                   'context-active
-                                  'context)
+                                  'context-open)
                               then-transformed 'skip)
                         then-transformed))
               (else (if (is-a? else <variable>)
                         (list (if (or (valued-action? else)
                                       (call? else))
                                   'context-active
-                                  'context)
+                                  'context-open)
                               else-transformed 'skip)
                         else-transformed)))
          (make <csp-if>
@@ -620,7 +625,7 @@
 
 (define (=>string ast src)
   (match src
-    (('ctx context) (context->csp ast context))
+    (($ <context>) (->csp ast src))
     (($ <expression> (and ($ <csp-call>) (get! call))) (csp-transform ast (call)))
     (($ <expression>) (csp-expression->string ast src))
     (($ <arguments> arguments) (comma-join (map (lambda (x) (=>string ast x)) arguments)))
@@ -662,7 +667,7 @@
        (($ <assign> identifier ($ <expression> value))
         (list "assign_(\\ (" identifier ") @ (" value "))"))
 
-       (('ctx context) src)
+       (($ <context>) src)
 
        (($ <expression>) src)
 
@@ -680,7 +685,7 @@
                     (list channel-return)))
        (('the-end members)
         (let* ((transition-end (if component? "transition_end -> "))
-               (context (make-context members '()))
+               (context (make <context> :members members))
                (end (if (not inevitable-optional?) (list transition-end))))
           (list "(\\ V' @ " end model-name "_" behaviour "(V'),(" context "))")))
        (($ <illegal>) "illegal_")
@@ -720,7 +725,7 @@
           (list "assign_active_(" action ",\n\\ ((" context "))," var " @ (" expressions "))" )))
        (('assign-active (context var ($ <call> identifier (and ($ <arguments>) (get! arguments)))) expressions)
         (list "assign_active_(\\ P',V' @ " identifier " (" continuation-pv ",(\\ (" context ") @ (" (arguments) "))(V')),\n\\ ((" context "))," var " @ (" expressions "))"))
-       (('context (context var expression) stat)
+       (('context-open (context var expression) stat)
         (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on? tail-recursive?)))
           (list "context_(\\ (" context ") @ " expression ",\n" stat ")" )))
        (('semi stat1 stat2)
