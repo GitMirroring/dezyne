@@ -630,6 +630,7 @@
          (continuation-pv (string-append continuation-p (if tail-recursive? ",VF'" ",V'"))))
     (=>string ast
      (match src
+
        (($ <csp-on>)
         (let* ((triggers (.elements (.triggers src)))
                (statement (.statement src))
@@ -645,8 +646,20 @@
                (transformed (if ig? #f (csp-transform ast statement inevitable-optional? channel provided-on? tail-recursive?)))
                (transformed-end (csp-transform ast the-end inevitable-optional? channel provided-on? tail-recursive?)))
           (list IG? channel "?x:{" event-names "}" " ->\n" transformed transformed-end (if ig? "(STOP,<>)" ""))))
+
+       (($ <action> trigger)
+        (let* ((channel (list "" (if (is-a? model <interface>) model-name (.port trigger))))
+               (event-name (.event trigger))
+               (channel-return (if ((requires-event? model) trigger) (list " -> " channel ".return"))))
+          (list "(\\ P',V' @ " channel "!" event-name channel-return " -> P'(V'))")))
+
+       (($ <assign> identifier ($ <expression> value))
+        (list "assign_(\\ (" identifier ") @ (" value "))"))
+
        (('ctx context) src)
+
        (($ <expression>) src)
+
        (($ <csp-reply> expression context)
         (let* ((channel (or channel (if (is-a? model <interface>) model-name (.type (gom:port model))))))
           (list "reply_(" channel ", " "(\\ (" context ") @ " expression "))")))
@@ -713,23 +726,6 @@
        ((? symbol?) src)
        ((? string?) src)
        (_ (throw 'match-error (format #f "~a:csp-transform: no match: ~a\n" (current-source-location) src)))))))
-
-(define-generic csp-transform)
-(define-method (csp-transform ast (o <action>) . rest)
-  (let* ((model (or (gom:component ast) (gom:interface ast)))
-	 (model-name (.name model)))
-    (=>string
-     ast
-     (let* ((trigger (.trigger o))
-            (channel (list "" (if (is-a? model <interface>) model-name (.port trigger))))
-            (event-name (.event trigger))
-            (channel-return (if ((requires-event? model) trigger) (list " -> " channel ".return"))))
-       (list "(\\ P',V' @ " channel "!" event-name channel-return " -> P'(V'))")))))
-
-(define-method (csp-transform ast (o <assign>) . rest)
-  (=>string
-   ast
-   (list "assign_(\\ (" (.identifier o) ") @ (" (.value (.expression o)) "))")))
 
 (define (hide-modeling model)
   (and-let* (((is-a? model <interface>))
