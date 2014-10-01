@@ -469,7 +469,9 @@
   (and-let* ((function (gom:function model name))
              (compound (.statement function))
              (calls (null-is-#f ((gom:collect return-call) compound)))
-             (names (delete-duplicates (sort (map .identifier calls) symbol<))))
+             (names (delete-duplicates (sort (map
+                                              (compose .identifier return-call)
+                                              calls) symbol<))))
             (or (member name seen)
                 (any identity
                      (map (recurses? model (cons name seen)) names)))))
