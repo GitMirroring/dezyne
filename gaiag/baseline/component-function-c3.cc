@@ -1,5 +1,6 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
 //
@@ -22,14 +23,28 @@
 
 #include "component-function-c3.hh"
 
+void handle_event(void*, const asd::function<void()>&);
+
+template <typename R>
+inline asd::function<R()> connect(void*, const asd::function<R()>& event)
+{
+  return event;
+}
+
+template <>
+inline asd::function<void()> connect<void>(void* scope, const asd::function<void()>& event)
+{
+  return asd::bind(handle_event, scope, event);
+}
+
 namespace component
 {
   function::function()
   : f(false)
   , po_i()
   {
-    po_i.in.a = asd::bind(&function::po_i_a, this);
-    po_i.in.b = asd::bind(&function::po_i_b, this);
+    po_i.in.a = connect<void>(this, asd::bind<void>(&function::po_i_a, this));
+    po_i.in.b = connect<void>(this, asd::bind<void>(&function::po_i_b, this));
   }
 
   void function::po_i_a()

@@ -24,29 +24,39 @@
 
 #include "component-Sensor-c3.hh"
 
+void handle_event(void*, const asd::function<void()>&);
+
+template <typename R>
+inline asd::function<R()> connect(void*, const asd::function<R()>& event)
+{
+  return event;
+}
+
+template <>
+inline asd::function<void()> connect<void>(void* scope, const asd::function<void()>& event)
+{
+  return asd::bind(handle_event, scope, event);
+}
+
 namespace component
 {
   Sensor::Sensor()
   : po_sensor()
   {
-    po_sensor.in.enable = asd::bind(&Sensor::enable, this);
-    po_sensor.in.disable = asd::bind(&Sensor::disable, this);
+    po_sensor.in.enable = connect<void>(this, asd::bind<void>(&Sensor::po_sensor_enable, this));
+    po_sensor.in.disable = connect<void>(this, asd::bind<void>(&Sensor::po_sensor_disable, this));
   }
 
-  void Sensor::enable()
+  void Sensor::po_sensor_enable()
   {
-    std::cout << "Sensor.enable" << std::endl;
-
+    std::cout << "Sensor.po_sensor_enable" << std::endl;
 
   }
-  void Sensor::disable()
+  void Sensor::po_sensor_disable()
   {
-    std::cout << "Sensor.disable" << std::endl;
-
+    std::cout << "Sensor.po_sensor_disable" << std::endl;
 
   }
-
-
 
 
 

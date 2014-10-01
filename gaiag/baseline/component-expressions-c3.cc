@@ -24,6 +24,20 @@
 
 #include "component-expressions-c3.hh"
 
+void handle_event(void*, const asd::function<void()>&);
+
+template <typename R>
+inline asd::function<R()> connect(void*, const asd::function<R()>& event)
+{
+  return event;
+}
+
+template <>
+inline asd::function<void()> connect<void>(void* scope, const asd::function<void()>& event)
+{
+  return asd::bind(handle_event, scope, event);
+}
+
 namespace component
 {
   expressions::expressions()
@@ -31,7 +45,7 @@ namespace component
   , c(0)
   , po_i()
   {
-    po_i.in.e = asd::bind(&expressions::po_i_e, this);
+    po_i.in.e = connect<void>(this, asd::bind<void>(&expressions::po_i_e, this));
   }
 
   void expressions::po_i_e()

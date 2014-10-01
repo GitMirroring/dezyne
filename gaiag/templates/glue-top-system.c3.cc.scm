@@ -9,7 +9,7 @@
 
 inline void push(boost::shared_ptr<asd::channels::ISingleThreaded> st, boost::function<void()> cb)
 {
-  cb(); st->processCBs();
+  cb(); if(st) st->processCBs();
 }
 
 struct #.model Glue: public #.model Component
@@ -59,7 +59,7 @@ struct #.model Glue: public #.model Component
            (lambda (event)
              (->string
               (list "component." (.name port) ".out." (.name event)
-                    " = boost::bind(push, st, boost::function<void()>(boost::bind(&" (.type port) "_CB::" (.name event) ", cb_" (.name port) ")));\n")))
+                    " = boost::bind(push, st, boost::function<void()>(boost::bind(&" (.type port) "_CB::" (.name event) ", boost::ref(cb_" (.name port) "))));\n")))
            (filter gom:out? (gom:events port))))))
       (filter gom:provides? ((compose .elements .ports) model)))}
 

@@ -1,5 +1,6 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
 //
@@ -22,18 +23,32 @@
 
 #include "component-colliding_component-c3.hh"
 
+void handle_event(void*, const asd::function<void()>&);
+
+template <typename R>
+inline asd::function<R()> connect(void*, const asd::function<R()>& event)
+{
+  return event;
+}
+
+template <>
+inline asd::function<void()> connect<void>(void* scope, const asd::function<void()>& event)
+{
+  return asd::bind(handle_event, scope, event);
+}
+
 namespace component
 {
   colliding_component::colliding_component()
   : po_i()
   {
-    po_i.in.foo = asd::bind(&colliding_component::po_i_foo, this);
+    po_i.in.foo = connect<void>(this, asd::bind<void>(&colliding_component::po_i_foo, this));
   }
 
   void colliding_component::po_i_foo()
   {
     std::cout << "colliding_component.po_i_foo" << std::endl;
-    //illegal
+    assert(false);
   }
 
 

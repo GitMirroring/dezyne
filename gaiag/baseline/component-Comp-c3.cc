@@ -1,5 +1,6 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
 //
@@ -22,6 +23,20 @@
 
 #include "component-Comp-c3.hh"
 
+void handle_event(void*, const asd::function<void()>&);
+
+template <typename R>
+inline asd::function<R()> connect(void*, const asd::function<R()>& event)
+{
+  return event;
+}
+
+template <>
+inline asd::function<void()> connect<void>(void* scope, const asd::function<void()>& event)
+{
+  return asd::bind(handle_event, scope, event);
+}
+
 namespace component
 {
   Comp::Comp()
@@ -29,9 +44,9 @@ namespace component
   , po_client()
   , po_device_A()
   {
-    po_client.in.initialize = asd::bind(&Comp::po_client_initialize, this);
-    po_client.in.recover = asd::bind(&Comp::po_client_recover, this);
-    po_client.in.perform_actions = asd::bind(&Comp::po_client_perform_actions, this);
+    po_client.in.initialize = connect<interface::IComp::result_t::type>(this, asd::bind<interface::IComp::result_t::type>(&Comp::po_client_initialize, this));
+    po_client.in.recover = connect<interface::IComp::result_t::type>(this, asd::bind<interface::IComp::result_t::type>(&Comp::po_client_recover, this));
+    po_client.in.perform_actions = connect<interface::IComp::result_t::type>(this, asd::bind<interface::IComp::result_t::type>(&Comp::po_client_perform_actions, this));
   }
 
   interface::IComp::result_t::type Comp::po_client_initialize()
@@ -64,11 +79,11 @@ namespace component
     }
     else if (s == State::Initialized)
     {
-      //illegal
+      assert(false);
     }
     else if (s == State::Error)
     {
-      //illegal
+      assert(false);
     }
     return reply_IComp_result_t;
 
@@ -78,11 +93,11 @@ namespace component
     std::cout << "Comp.po_client_recover" << std::endl;
     if (s == State::Uninitialized)
     {
-      //illegal
+      assert(false);
     }
     else if (s == State::Initialized)
     {
-      //illegal
+      assert(false);
     }
     else if (s == State::Error)
     {
@@ -112,7 +127,7 @@ namespace component
     std::cout << "Comp.po_client_perform_actions" << std::endl;
     if (s == State::Uninitialized)
     {
-      //illegal
+      assert(false);
     }
     else if (s == State::Initialized)
     {
@@ -141,7 +156,7 @@ namespace component
     }
     else if (s == State::Error)
     {
-      //illegal
+      assert(false);
     }
     return reply_IComp_result_t;
 

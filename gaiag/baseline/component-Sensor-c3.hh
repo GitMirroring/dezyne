@@ -31,15 +31,11 @@ namespace component
 {
   struct Sensor
   {
-
-
     interface::Sensor po_sensor;
 
     Sensor();
     void po_sensor_enable();
     void po_sensor_disable();
-
-
   };
 }
 #endif

@@ -1,5 +1,4 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
@@ -21,57 +20,40 @@
 //
 // Code:
 
-#include "component-argument-c3.hh"
+#ifndef INTERFACE_IIF2_C3_HH
+#define INTERFACE_IIF2_C3_HH
 
-void handle_event(void*, const asd::function<void()>&);
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
 
-template <typename R>
-inline asd::function<R()> connect(void*, const asd::function<R()>& event)
+namespace asd
 {
-  return event;
+  using boost::function;
+  using boost::bind;
 }
 
-template <>
-inline asd::function<void()> connect<void>(void* scope, const asd::function<void()>& event)
+namespace interface
 {
-  return asd::bind(handle_event, scope, event);
-}
-
-namespace component
-{
-  argument::argument()
-  : b(false)
-  , po_i()
+  struct IIf2
   {
-    po_i.in.e = connect<void>(this, asd::bind<void>(&argument::po_i_e, this));
-  }
-
-  void argument::po_i_e()
-  {
-    std::cout << "argument.po_i_e" << std::endl;
-    if (true)
+    struct result
     {
-      b = ! (b);
-      bool c = g(b);
-      b = g(c);
-      if (c)
+      enum type
       {
-        po_i.out.f();
+        value,
+      };
+    };
 
-      }
-
-    }
-
-  }
-
-
-  bool argument::g(bool gc)
-  {
+    struct
     {
-      po_i.out.f();
-      return (gc or b);
+      asd::function<void()> e;
+    } in;
 
-    }
-
-  }
+    struct
+    {
+      asd::function<result::type()> a;
+    } out;
+  };
 }
+
+#endif

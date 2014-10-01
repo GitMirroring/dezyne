@@ -297,11 +297,12 @@ glue:
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
 	cd out && ln -s ../examples/main.cpp .
 	cd out && for file in\
-		examples/AlarmSystem.asd\
-		examples/regression/Alarm.asd\
-		examples/Console.asd\
-		examples/Sensor.asd\
-		examples/Siren.asd;\
-	do $(PWD)/gaiag -l c++ $$file; done
+	 	examples/AlarmSystem.asd\
+	 	examples/regression/Alarm.asd\
+	 	examples/Console.asd\
+	 	examples/Sensor.asd\
+	 	examples/Siren.asd;\
+	 	do $(PWD)/gaiag -l c++ $$file; done
+	cd out && cp ../examples/component-Sensor-c3.cc .
 	-cd out && ccache g++ -Wall -Wextra -I ../$(DEPTH)/examples/codegen/asd_cpp_runtime -c *.c*
 	-cd out && g++ -o test *.o && ./test

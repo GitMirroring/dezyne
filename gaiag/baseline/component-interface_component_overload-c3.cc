@@ -1,5 +1,6 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
 //
@@ -22,12 +23,26 @@
 
 #include "component-interface_component_overload-c3.hh"
 
+void handle_event(void*, const asd::function<void()>&);
+
+template <typename R>
+inline asd::function<R()> connect(void*, const asd::function<R()>& event)
+{
+  return event;
+}
+
+template <>
+inline asd::function<void()> connect<void>(void* scope, const asd::function<void()>& event)
+{
+  return asd::bind(handle_event, scope, event);
+}
+
 namespace component
 {
   interface_component_overload::interface_component_overload()
   : po_interface_component_overload()
   {
-    po_interface_component_overload.in.e = asd::bind(&interface_component_overload::po_interface_component_overload_e, this);
+    po_interface_component_overload.in.e = connect<interface::interface_component_overload::R::type>(this, asd::bind<interface::interface_component_overload::R::type>(&interface_component_overload::po_interface_component_overload_e, this));
   }
 
   interface::interface_component_overload::R::type interface_component_overload::po_interface_component_overload_e()

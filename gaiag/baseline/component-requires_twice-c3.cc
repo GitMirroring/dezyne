@@ -1,5 +1,6 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
 //
@@ -22,6 +23,20 @@
 
 #include "component-requires_twice-c3.hh"
 
+void handle_event(void*, const asd::function<void()>&);
+
+template <typename R>
+inline asd::function<R()> connect(void*, const asd::function<R()>& event)
+{
+  return event;
+}
+
+template <>
+inline asd::function<void()> connect<void>(void* scope, const asd::function<void()>& event)
+{
+  return asd::bind(handle_event, scope, event);
+}
+
 namespace component
 {
   requires_twice::requires_twice()
@@ -29,9 +44,9 @@ namespace component
   , po_once()
   , po_twice()
   {
-    po_p.in.e = asd::bind(&requires_twice::po_p_e, this);
-    po_once.out.a = asd::bind(&requires_twice::po_once_a, this);
-    po_twice.out.a = asd::bind(&requires_twice::po_twice_a, this);
+    po_p.in.e = connect<void>(this, asd::bind<void>(&requires_twice::po_p_e, this));
+    po_once.out.a = connect<void>(this, asd::bind<void>(&requires_twice::po_once_a, this));
+    po_twice.out.a = connect<void>(this, asd::bind<void>(&requires_twice::po_twice_a, this));
   }
 
   void requires_twice::po_p_e()

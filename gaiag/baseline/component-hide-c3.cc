@@ -1,5 +1,6 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
 //
@@ -22,6 +23,20 @@
 
 #include "component-hide-c3.hh"
 
+void handle_event(void*, const asd::function<void()>&);
+
+template <typename R>
+inline asd::function<R()> connect(void*, const asd::function<R()>& event)
+{
+  return event;
+}
+
+template <>
+inline asd::function<void()> connect<void>(void* scope, const asd::function<void()>& event)
+{
+  return asd::bind(handle_event, scope, event);
+}
+
 namespace component
 {
   hide::hide()
@@ -29,7 +44,7 @@ namespace component
   , c(true)
   , po_i()
   {
-    po_i.in.e = asd::bind(&hide::po_i_e, this);
+    po_i.in.e = connect<void>(this, asd::bind<void>(&hide::po_i_e, this));
   }
 
   void hide::po_i_e()

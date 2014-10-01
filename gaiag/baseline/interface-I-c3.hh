@@ -1,8 +1,9 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
+//
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -21,41 +22,33 @@
 //
 // Code:
 
-#include "component-testBoolean-c3.hh"
+#ifndef INTERFACE_I_C3_HH
+#define INTERFACE_I_C3_HH
 
-void handle_event(void*, const asd::function<void()>&);
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
 
-template <typename R>
-inline asd::function<R()> connect(void*, const asd::function<R()>& event)
+namespace asd
 {
-  return event;
+  using boost::function;
+  using boost::bind;
 }
 
-template <>
-inline asd::function<void()> connect<void>(void* scope, const asd::function<void()>& event)
+namespace interface
 {
-  return asd::bind(handle_event, scope, event);
-}
-
-namespace component
-{
-  testBoolean::testBoolean()
-  : b(false)
-  , po_i()
+  struct I
   {
-    po_i.in.evt = connect<void>(this, asd::bind<void>(&testBoolean::po_i_evt, this));
-  }
 
-  void testBoolean::po_i_evt()
-  {
-    std::cout << "testBoolean.po_i_evt" << std::endl;
-    if (true)
+    struct
     {
+      asd::function<void()> e;
+    } in;
 
-    }
-
-  }
-
-
-
+    struct
+    {
+      asd::function<void()> a;
+    } out;
+  };
 }
+
+#endif

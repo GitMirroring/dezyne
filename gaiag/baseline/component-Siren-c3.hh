@@ -31,15 +31,11 @@ namespace component
 {
   struct Siren
   {
-
-
     interface::Siren po_siren;
 
     Siren();
     void po_siren_turnon();
     void po_siren_turnoff();
-
-
   };
 }
 #endif

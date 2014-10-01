@@ -216,7 +216,7 @@
                       (let ((str (statements->string model (car statements) locals compound?)))
                         (cons str (loop (cdr statements) locals))))))
               (if compound? "\n}\n")))
-       (($ <illegal>) "//illegal")
+       (($ <illegal>) "assert(false);")
        (($ <action> trigger)
         (let* ((port-name (.port trigger))
                (event-name (.event trigger))

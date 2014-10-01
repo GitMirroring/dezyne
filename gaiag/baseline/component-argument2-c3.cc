@@ -24,13 +24,27 @@
 
 #include "component-argument2-c3.hh"
 
+void handle_event(void*, const asd::function<void()>&);
+
+template <typename R>
+inline asd::function<R()> connect(void*, const asd::function<R()>& event)
+{
+  return event;
+}
+
+template <>
+inline asd::function<void()> connect<void>(void* scope, const asd::function<void()>& event)
+{
+  return asd::bind(handle_event, scope, event);
+}
+
 namespace component
 {
   argument2::argument2()
   : b(false)
   , po_i()
   {
-    po_i.in.e = asd::bind(&argument2::po_i_e, this);
+    po_i.in.e = connect<void>(this, asd::bind<void>(&argument2::po_i_e, this));
   }
 
   void argument2::po_i_e()

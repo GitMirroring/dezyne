@@ -1,8 +1,9 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
+//
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -21,39 +22,26 @@
 //
 // Code:
 
-#include "component-testBoolean-c3.hh"
-
-void handle_event(void*, const asd::function<void()>&);
-
-template <typename R>
-inline asd::function<R()> connect(void*, const asd::function<R()>& event)
-{
-  return event;
-}
-
-template <>
-inline asd::function<void()> connect<void>(void* scope, const asd::function<void()>& event)
-{
-  return asd::bind(handle_event, scope, event);
-}
+#include "component-Sensor-c3.hh"
 
 namespace component
 {
-  testBoolean::testBoolean()
-  : b(false)
-  , po_i()
+  Sensor::Sensor()
+  : po_sensor()
   {
-    po_i.in.evt = connect<void>(this, asd::bind<void>(&testBoolean::po_i_evt, this));
+    po_sensor.in.enable = asd::bind(&Sensor::po_sensor_enable, this);
+    po_sensor.in.disable = asd::bind(&Sensor::po_sensor_disable, this);
   }
 
-  void testBoolean::po_i_evt()
+  void Sensor::po_sensor_enable()
   {
-    std::cout << "testBoolean.po_i_evt" << std::endl;
-    if (true)
-    {
-
-    }
-
+    std::cout << "Sensor.po_sensor_enable" << std::endl;
+    po_sensor.out.triggered();
+  }
+  void Sensor::po_sensor_disable()
+  {
+    std::cout << "Sensor.po_sensor_disable" << std::endl;
+    po_sensor.out.disabled();
   }
 
 

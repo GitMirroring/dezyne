@@ -24,29 +24,39 @@
 
 #include "component-Siren-c3.hh"
 
+void handle_event(void*, const asd::function<void()>&);
+
+template <typename R>
+inline asd::function<R()> connect(void*, const asd::function<R()>& event)
+{
+  return event;
+}
+
+template <>
+inline asd::function<void()> connect<void>(void* scope, const asd::function<void()>& event)
+{
+  return asd::bind(handle_event, scope, event);
+}
+
 namespace component
 {
   Siren::Siren()
   : po_siren()
   {
-    po_siren.in.turnon = asd::bind(&Siren::turnon, this);
-    po_siren.in.turnoff = asd::bind(&Siren::turnoff, this);
+    po_siren.in.turnon = connect<void>(this, asd::bind<void>(&Siren::po_siren_turnon, this));
+    po_siren.in.turnoff = connect<void>(this, asd::bind<void>(&Siren::po_siren_turnoff, this));
   }
 
-  void Siren::turnon()
+  void Siren::po_siren_turnon()
   {
-    std::cout << "Siren.turnon" << std::endl;
-
+    std::cout << "Siren.po_siren_turnon" << std::endl;
 
   }
-  void Siren::turnoff()
+  void Siren::po_siren_turnoff()
   {
-    std::cout << "Siren.turnoff" << std::endl;
-
+    std::cout << "Siren.po_siren_turnoff" << std::endl;
 
   }
-
-
 
 
 

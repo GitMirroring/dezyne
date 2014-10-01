@@ -24,6 +24,20 @@
 
 #include "component-Alarm-c3.hh"
 
+void handle_event(void*, const asd::function<void()>&);
+
+template <typename R>
+inline asd::function<R()> connect(void*, const asd::function<R()>& event)
+{
+  return event;
+}
+
+template <>
+inline asd::function<void()> connect<void>(void* scope, const asd::function<void()>& event)
+{
+  return asd::bind(handle_event, scope, event);
+}
+
 namespace component
 {
   Alarm::Alarm()
@@ -33,10 +47,10 @@ namespace component
   , po_sensor()
   , po_siren()
   {
-    po_console.in.arm = asd::bind(&Alarm::po_console_arm, this);
-    po_console.in.disarm = asd::bind(&Alarm::po_console_disarm, this);
-    po_sensor.out.triggered = asd::bind(&Alarm::po_sensor_triggered, this);
-    po_sensor.out.disabled = asd::bind(&Alarm::po_sensor_disabled, this);
+    po_console.in.arm = connect<void>(this, asd::bind<void>(&Alarm::po_console_arm, this));
+    po_console.in.disarm = connect<void>(this, asd::bind<void>(&Alarm::po_console_disarm, this));
+    po_sensor.out.triggered = connect<void>(this, asd::bind<void>(&Alarm::po_sensor_triggered, this));
+    po_sensor.out.disabled = connect<void>(this, asd::bind<void>(&Alarm::po_sensor_disabled, this));
   }
 
   void Alarm::po_console_arm()
@@ -53,17 +67,16 @@ namespace component
     }
     else if (state == States::Armed)
     {
-      //illegal
+      assert(false);
     }
     else if (state == States::Disarming)
     {
-      //illegal
+      assert(false);
     }
     else if (state == States::Triggered)
     {
-      //illegal
+      assert(false);
     }
-
 
   }
   void Alarm::po_console_disarm()
@@ -71,7 +84,7 @@ namespace component
     std::cout << "Alarm.po_console_disarm" << std::endl;
     if (state == States::Disarmed)
     {
-      //illegal
+      assert(false);
     }
     else if (state == States::Armed)
     {
@@ -84,7 +97,7 @@ namespace component
     }
     else if (state == States::Disarming)
     {
-      //illegal
+      assert(false);
     }
     else if (state == States::Triggered)
     {
@@ -98,15 +111,13 @@ namespace component
 
     }
 
-
   }
-
   void Alarm::po_sensor_triggered()
   {
     std::cout << "Alarm.po_sensor_triggered" << std::endl;
     if (state == States::Disarmed)
     {
-      //illegal
+      assert(false);
     }
     else if (state == States::Armed)
     {
@@ -128,9 +139,8 @@ namespace component
     }
     else if (state == States::Triggered)
     {
-      //illegal
+      assert(false);
     }
-
 
   }
   void Alarm::po_sensor_disabled()
@@ -138,11 +148,11 @@ namespace component
     std::cout << "Alarm.po_sensor_disabled" << std::endl;
     if (state == States::Disarmed)
     {
-      //illegal
+      assert(false);
     }
     else if (state == States::Armed)
     {
-      //illegal
+      assert(false);
     }
     else if (state == States::Disarming)
     {
@@ -167,15 +177,10 @@ namespace component
     }
     else if (state == States::Triggered)
     {
-      //illegal
+      assert(false);
     }
 
-
   }
-
-
-
-
 
 
 

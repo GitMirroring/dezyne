@@ -23,13 +23,27 @@
 
 #include "component-Reply7-c3.hh"
 
+void handle_event(void*, const asd::function<void()>&);
+
+template <typename R>
+inline asd::function<R()> connect(void*, const asd::function<R()>& event)
+{
+  return event;
+}
+
+template <>
+inline asd::function<void()> connect<void>(void* scope, const asd::function<void()>& event)
+{
+  return asd::bind(handle_event, scope, event);
+}
+
 namespace component
 {
   Reply7::Reply7()
   : po_p()
   , po_r()
   {
-    po_p.in.foo = asd::bind(&Reply7::po_p_foo, this);
+    po_p.in.foo = connect<interface::IReply7::E::type>(this, asd::bind<interface::IReply7::E::type>(&Reply7::po_p_foo, this));
   }
 
   interface::IReply7::E::type Reply7::po_p_foo()

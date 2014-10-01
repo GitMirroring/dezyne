@@ -1,5 +1,6 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
 //
@@ -22,13 +23,27 @@
 
 #include "component-enum_collision-c3.hh"
 
+void handle_event(void*, const asd::function<void()>&);
+
+template <typename R>
+inline asd::function<R()> connect(void*, const asd::function<R()>& event)
+{
+  return event;
+}
+
+template <>
+inline asd::function<void()> connect<void>(void* scope, const asd::function<void()>& event)
+{
+  return asd::bind(handle_event, scope, event);
+}
+
 namespace component
 {
   enum_collision::enum_collision()
   : po_i()
   {
-    po_i.in.foo = asd::bind(&enum_collision::po_i_foo, this);
-    po_i.in.bar = asd::bind(&enum_collision::po_i_bar, this);
+    po_i.in.foo = connect<interface::ienum_collision::Retval1::type>(this, asd::bind<interface::ienum_collision::Retval1::type>(&enum_collision::po_i_foo, this));
+    po_i.in.bar = connect<interface::ienum_collision::Retval2::type>(this, asd::bind<interface::ienum_collision::Retval2::type>(&enum_collision::po_i_bar, this));
   }
 
   interface::ienum_collision::Retval1::type enum_collision::po_i_foo()

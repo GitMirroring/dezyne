@@ -24,6 +24,70 @@
 
 #include "component-AlarmSystem-c3.hh"
 
+#include <map>
+#include <queue>
+
+std::map<void*, std::pair<bool, std::queue<asd::function<void()> > > >& queues()
+{
+  static std::map<void*, std::pair<bool, std::queue<asd::function<void()> > > > instance;
+  return instance;
+}
+
+bool& handling(void* scope)
+{
+  return queues()[scope].first;
+}
+
+void flush(void* scope)
+{
+  std::map<void*, std::pair<bool, std::queue<asd::function<void()> > > >& qs = queues();
+  std::map<void*, std::pair<bool, std::queue<asd::function<void()> > > >::iterator it = qs.find(scope);
+  if(it != qs.end())
+  {
+    std::queue<asd::function<void()> >& q = it->second.second;
+    while(not q.empty())
+    {
+      q.front()();
+      q.pop();
+    }
+  }
+}
+
+void defer(void* scope, const asd::function<void()>& event)
+{
+  queues()[scope].second.push(event);
+}
+
+template <typename T>
+struct scoped_value
+{
+  T& current;
+  T initial;
+  scoped_value(T& current, T value)
+  : current(current)
+  , initial(current)
+  { current = value; }
+  ~scoped_value()
+  {
+    current = initial;
+  }
+};
+
+void handle_event(void* scope, const asd::function<void()>& event)
+{
+  bool& handle = handling(scope);
+  if(not handle)
+  {
+    scoped_value<bool> sv(handle, true);
+    event();
+    flush(scope);
+  }
+  else
+  {
+    defer(scope, event);
+  }
+}
+
 void detected()
 {
   std::cout << "Console.detected" << std::endl;
