@@ -72,11 +72,11 @@
      (make <csp-return>
        :context (csp->gom (cadr ast))
        :expression (csp->gom expression)))
-;;    (('expression value) (make <expression> :value (csp->gom value)))
     (('context) (make <context>))
     (('context members) (make <context> :members (csp->gom members)))
     (('context members locals) (make <context> :members (csp->gom members) :locals (csp->gom locals)))
     (('literal scope type field) (make <literal> :scope scope :type type :field field))
+    (('voidreply) (make <voidreply>))
     ((h t ...) (map csp->sugar ast))
     (_ ast)))
 
@@ -121,7 +121,7 @@
 
 (define csp-return-ast
   '(on (e)
-       (eventreturn)
+       (voidreply)
        (the-end (s b c))))
 
 (pass-if "ast-transform-return-return"
@@ -133,7 +133,7 @@
           ;; via:
           '(on (e)
                (compound
-                (eventreturn))
+                (voidreply))
                (the-end (s b c)))))
 
 (pass-if "ast-transform-return"
@@ -315,7 +315,7 @@ illegal_(STOP,<>)"))
 
 (define csp-transform-empty-compound-via
   '(on ((trigger #f e))
-    (eventreturn)
+    (voidreply)
     (the-end (s b c))))
 
 (pass-if "ast-transform-empty-compound"
@@ -594,7 +594,7 @@ assign_(\\ ((s,b,c),(stack')) @ ((s,true,c),(stack'))))"))
                       (assign
                         (context (s b c))
                         (expression (context ((literal #f S S2) b c))))))
-          (eventreturn))
+          (voidreply))
     (the-end (s b c))))
 
 (pass-if "ast-transform"
@@ -681,7 +681,7 @@ semi_(semi_(\\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
 
 (define c-csp-transform-return-via
   '(on ((trigger j e))
-       (eventreturn)
+       (voidreply)
        (the-end (s b c))))
 
 (pass-if "c-ast-transform-return"
@@ -824,7 +824,7 @@ skip_(\\ V' @ transition_end -> c_B(V'),((s,b,c),(stack')))"))
                              (context (state sounding))
                               (expression
                                (context ((literal #f States Triggered) sounding)))))))
-          (eventreturn))
+          (voidreply))
     (the-end (state sounding))))
 
 (pass-if "c-ast-transform-alarm-snippet"
@@ -953,7 +953,7 @@ skip_)(\\ V' @ transition_end -> Alarm_d(V'),((state,sounding),(stack')))"
         ((context)
          e
          (action (trigger i bar)))
-        (eventreturn))
+        (voidreply))
        (the-end ())))
 
 (pass-if "ast-transform-ast-transform-variable-valued-action"
@@ -1002,7 +1002,7 @@ skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
             ((context () (e)) e (action (trigger i bar)))
             skip)
            ())
-          (eventreturn))
+          (voidreply))
     (the-end ())))
 
 (pass-if "ast-transform-ast-transform-if-variable-valued-action"
@@ -1043,7 +1043,7 @@ skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
             ((context) e (action (trigger i bar)))
             skip)
            ())
-          (eventreturn))
+          (voidreply))
     (the-end ())))
 
 (pass-if "ast-transform-ast-transform-if-compound-variable-valued-action"
@@ -1093,7 +1093,7 @@ skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
   '(on (e)
        (semi
         (call (context (s b c)) toggle)
-        (eventreturn))
+        (voidreply))
        (the-end (s b c))))
 
 (pass-if "ast-transform-function-call"
@@ -1173,7 +1173,7 @@ returnvalue_(\\ ((s,b,hide_member2'),((stack',c))) @ c)))(P',V')
   '(on (e)
     (context-active
       ((context (s b c)) c (call g (arguments (expression b) (expression b))))
-      (eventreturn))
+      (voidreply))
     (the-end (s b c))))
 
 (pass-if "ast-transform-function-call-arguments"
@@ -1353,7 +1353,7 @@ reply_(I, (\\ ((dummy),((stack',s))) @ s)))(P',V')
                   (expression (var c))
                   (action (trigger i f))
                   ()))
-             (eventreturn))
+             (voidreply))
        (the-end (b))))
 
 (pass-if "ast-transform-return-variable"
@@ -1441,7 +1441,7 @@ skip_
                           (expression (var c))
                           (action (trigger i f))
                           ()))))
-          (eventreturn))
+          (voidreply))
     (the-end (b))))
 
 (pass-if "ast-transform-callvalued"
@@ -1493,7 +1493,7 @@ skip_
                           (expression (var c))
                           (action (trigger i f))
                           ()))))
-          (eventreturn))
+          (voidreply))
     (the-end (b))))
 
 (pass-if "ast-transform-callvalued-2"
@@ -1576,7 +1576,7 @@ skip_
                           (expression (var dd))
                           (action (trigger i f))
                           ()))))))
-          (eventreturn))
+          (voidreply))
     (the-end (b))))
 
 (pass-if "ast-transform-callvalued-deep"
@@ -1625,7 +1625,7 @@ skip_
       ((context (dummy))
        s
        (action (trigger u what)))
-      (eventreturn))
+      (voidreply))
     (the-end (dummy))))
 
 (pass-if "ast-transform-OM-PARSER-variable-action"
@@ -1660,7 +1660,7 @@ context_active_(sendrecv_(u,what),
       ((context (dummy))
        s
        (action (trigger u what)))
-      (eventreturn))
+      (voidreply))
     (the-end (dummy))))
 
 (pass-if "ast-transform-OM-PARSER-variable-action"
@@ -1694,7 +1694,7 @@ context_active_(sendrecv_(u,what),
     (semi (assign-active
             ((context (dummy)) r' (action (trigger u what)))
             (context (dummy)))
-          (eventreturn))
+          (voidreply))
     (the-end (dummy))))
 
 (pass-if "ast-transform-OM-PARSER-assign-action"
@@ -1790,7 +1790,7 @@ semi_(assign_active_(sendrecv_(u,what),
 
 (pass-if "no-members"
          (diff-noisy-equal?
-          (csp-transform* member-i-ast '(on (e) (eventreturn) (the-end ())))
+          (csp-transform* member-i-ast '(on (e) (voidreply) (the-end ())))
           "i?x:{e} ->
 (\\ P',V' @ i.return -> P'(V'))(\\ V' @ i_B(V'),((<>),(stack')))"))
 

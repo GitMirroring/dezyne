@@ -71,6 +71,7 @@
            <csp-on>
            <csp-reply>
            <csp-return>
+           <voidreply>
            ))
 
 (define (ast-> ast)
@@ -369,6 +370,8 @@
 
 (define-class <csp-return> (<csp> <return>))
 
+(define-class <voidreply> (<ast>))
+
 (define (ast-transform ast src)
   (ast-transform- ast (ast-transform-return ast src)))
 
@@ -393,7 +396,7 @@
             (make <csp-on>
               :triggers triggers
               :statement (make <compound>
-                           :elements (list (list 'eventreturn)))
+                           :elements (list (make <voidreply>)))
               :the-end (list 'the-end members)))
            ((? valued-triggers?)
             (make <csp-on>
@@ -403,7 +406,7 @@
            (_
             (make <csp-on>
               :triggers triggers
-              :statement (make <compound> :elements (list result (list 'eventreturn)))
+              :statement (make <compound> :elements (list result (make <voidreply>)))
               :the-end (list 'the-end members)))))))
     (_ o)))
 
@@ -666,10 +669,14 @@
        (($ <csp-return> ($ <expression> expression) context)
         (let ((expression (csp-expression->string ast expression)))
           (list "returnvalue_(\\ (" context ") @ " expression ")")))
-       (('eventreturn) (let ((channel-return (if (and (not inevitable-optional?) provided-on?)
-                                            (list "(\\ P',V' @ " channel ".return -> P'(V'))")
-                                            (list "skip_"))))
-                    (list channel-return)))
+
+       (($ <voidreply>)
+        (let ((channel-return
+               (if (and (not inevitable-optional?) provided-on?)
+                   (list "(\\ P',V' @ " channel ".return -> P'(V'))")
+                   (list "skip_"))))
+          (list channel-return)))
+
        (('the-end members)
         (let* ((transition-end (if component? "transition_end -> "))
                (context (make <context> :members members))
