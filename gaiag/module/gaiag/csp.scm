@@ -88,7 +88,13 @@
 
 (define-method (generate-csp (o <component>))
   (and-let* ((interfaces (map csp:import (map .type ((compose .elements .ports) o))))
+
              (root (make <root> :elements (append interfaces (list o)))))
+            (and-let* ((no-behaviour (null-is-#f (filter (negate .behaviour) interfaces)))
+                       (message (format #f "gaiag: interface without behaviour: ~a\n"
+                                        (comma-join (map .name no-behaviour)))))
+                      (stderr message)
+                      (throw 'csp message))
             (generate-csp o root)))
 
 (define-method (generate-csp (o <model>) (root <root>))
