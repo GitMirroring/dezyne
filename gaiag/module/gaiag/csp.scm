@@ -644,6 +644,8 @@
          :context context
          :expression (ast-transform- ast expression return context)))
 
+      (($ <return> #f) o)
+
       (($ <return> expression)
        (make <csp-return>
          :context context
@@ -751,8 +753,6 @@
           (list "reply_(" channel ", " "(\\ (" context ") @ " expression "))")))
 
        (($ <return>) "skip_")
-
-       (($ <csp-return> context #f) "skip_")
 
        (($ <csp-return> context ($ <expression> expression))
         (let ((expression (csp-expression->string ast expression)))
