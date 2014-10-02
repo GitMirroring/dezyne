@@ -13,7 +13,7 @@ namespace component
 
 #(map (lambda (port)
         (->string
-         (list "struct " (.type port) "_fixme_from_spec" ": public interface::" (.type port) "_fixme_from_spec\n"
+         (list "struct " (.type port) "_fixme_from_spec\n: public interface::" (.type port) "_fixme_from_spec\n"
                "{\n"
                "interface::iprovides_once& cb;\n"
                (.type port) "(interface::" (.type port) "& cb)\n"

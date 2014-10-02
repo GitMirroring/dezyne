@@ -12,14 +12,15 @@ inline void push(boost::shared_ptr<asd::channels::ISingleThreaded> st, boost::fu
   cb(); if(st) st->processCBs();
 }
 
-struct #.model Glue: public #.model Component
-                   , public boost::enable_shared_from_this<#.model Glue>
+struct #.model Glue
+: public #.model Component
+, public boost::enable_shared_from_this<#.model Glue>
 {
   component::#.model  component;
 
 #(map (lambda (port)
         (->string
-         (list "struct " (.type port) "_API: public ::" (.type port) "_API\n"
+         (list "struct " (.type port) "_API\n: public ::" (.type port) "_API\n"
                "{\n"
                "interface::" (.type port) "& api;\n"
                (.type port) "_API(interface::" (.type port) "& api)\n"

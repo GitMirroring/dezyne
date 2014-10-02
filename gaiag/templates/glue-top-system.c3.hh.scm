@@ -3,7 +3,8 @@
 
 ##include "#.model Interface.h"
 
-struct #.model Component: public #.model Interface
+struct #.model Component
+: public #.model Interface
 {
   static boost::shared_ptr<#.model Interface> GetInstance();
   static void ReleaseInstance();
