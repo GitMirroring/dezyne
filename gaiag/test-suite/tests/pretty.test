@@ -32,6 +32,9 @@
   (let ((asd #{
 interface i
 {
+  behaviour
+  {
+  }
 }
 #}))
     (diff-noisy-equal?
@@ -55,6 +58,9 @@ component c
 interface i
 {
   in void identifier;
+  behaviour
+  {
+  }
 }
 #}))
 (diff-noisy-equal?
@@ -66,10 +72,18 @@ interface i
   (let ((asd #{
 interface Interface
 {
+  behaviour
+  {
+  }
 }
 component c
 {
   provides Interface identifier;
+  behaviour
+  {
+    on i.a:
+       illegal;
+  }
 }
 #}))
 (diff-noisy-equal?

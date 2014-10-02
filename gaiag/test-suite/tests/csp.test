@@ -1325,8 +1325,10 @@ reply_(I, (\\ ((dummy),((stack',s))) @ s)))(P',V')
 
 (define return-variable-c-ast
   '((interface I
+      (types)
       (events (in void e)
-              (out void f)))
+              (out void f))
+      (behaviour))
     (component
      arguments
      (ports (provides I i))
@@ -1395,7 +1397,8 @@ skip_
 (define callvalued-c-ast
   '((interface I
       (events (in void e)
-              (out void f)))
+              (out void f))
+      (behaviour))
     (component
      arguments
      (ports (provides I i))

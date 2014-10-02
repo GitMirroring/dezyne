@@ -24,4 +24,8 @@ interface Enums
 {
   enum Response { inactive, active };
   enum Return { foo, bar };
+
+  behaviour
+    {
+    }
 }

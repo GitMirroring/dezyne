@@ -48,6 +48,7 @@
   (and-let* ((errors (null-is-#f
                       ((gom:collect <error>)
                        (append
+                        (interface o)
                         (component o)
                         (second-on o)
                         (mixing-declarative-imperative o))))))
@@ -56,6 +57,14 @@
 
 (define-method (wfc-error (o <ast>) (message <string>))
   (make <error> :ast o :message (string-append "not well-formed: " message)))
+
+(define-method (interface (o <ast>))
+  (match o
+    (($ <root> elements) '(()) (apply append (map interface elements)))
+    (($ <interface> name ($ <types> types) ($ <events> events) #f)
+     (stderr "interface: ~a\n" o)
+     (list (wfc-error o "interface must have a behaviour")))
+    (_ '())))
 
 (define-method (component (o <ast>))
   (match o

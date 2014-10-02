@@ -21,15 +21,6 @@
 //
 // Code:
 
-interface Typedef
+interface no_behaviour
 {
-  enum Enum { one, two };
-  typedef int[0..3] Typedef;
-
-  in Enum e;
-  out Typedef o;
-
-  behaviour
-  {
-  }
 }
