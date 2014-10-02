@@ -51,6 +51,7 @@
             (help (single-char #\h))
             (json (single-char #\j))
             (language (single-char #\l) (value #t))
+            (model (single-char #\m) (value #t))
             (trail (single-char #\t) (value #t))
             (output (single-char #\o) (value #t))
 	    (version (single-char #\v))))
@@ -72,6 +73,7 @@ Usage: gaiag [OPTION]... FILE
   -d, --debug          run with debugging
   -h, --help           display this help
   -j, --json           use json-friendly format; strings and hash tables
+  -m, --model=MODEL    use model named MODEL
   -l, --language=LANG  generate output for language=LANG [scheme]
   -t, --trail=TRAIL    specify trail TRAIL for trail-walker
   -o, --output FILE    generate FILE containing the output

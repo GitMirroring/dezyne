@@ -76,12 +76,18 @@
            ))
 
 (define (ast-> ast)
-  (let ((gom ((gom:register ast->gom) ast #t)))
-    (or (and-let* ((model (gom:model-with-behaviour gom)))
+  (let ((gom ((gom:register ast->gom) ast #t))
+        (name (and=> (option-ref (parse-opts (command-line)) 'model #f)
+                     string->symbol)))
+    (or (and-let* ((models (null-is-#f (gom:models-with-behaviour gom)))
+                   (model (if name (find (gom:named name) models) (car models))))
                   (generate-csp model))
         (let* ((models ((gom:filter <model>) gom))
-               (message (format #f "gaiag: no component with behaviour: ~a\n"
-                                (comma-join (map .name models)))))
+               (models (comma-join (map .name models)))
+               (message (if name
+                            "gaiag: no model [name=~a] with behaviour: ~a\n"
+                            "gaiag: no model with behaviour: ~a\n"))
+               (message (format #f message name models)))
           (stderr message)
           (throw 'csp message))))
   "")

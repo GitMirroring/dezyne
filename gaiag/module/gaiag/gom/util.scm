@@ -69,7 +69,7 @@
            gom:member-names
            gom:member-values
            gom:models
-           gom:name ;; REMOVEME
+           gom:named
            gom:out?
            gom:parent
            gom:parse-asd
@@ -463,3 +463,6 @@
 
 (define-method (gom:parent (o <on>) (t <ast>))
   (gom:parent (.statement o) t))
+
+(define ((gom:named name) model)
+  (eq? (.name model) name))
