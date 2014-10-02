@@ -62,7 +62,6 @@
   (match o
     (($ <root> elements) '(()) (apply append (map interface elements)))
     (($ <interface> name ($ <types> types) ($ <events> events) #f)
-     (stderr "interface: ~a\n" o)
      (list (wfc-error o "interface must have a behaviour")))
     (_ '())))
 
