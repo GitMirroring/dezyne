@@ -38,17 +38,17 @@
   (match ast
     (('expression expression)
      (make <expression> :value (csp->gom expression)))
-    (('on ('triggers triggers) statement the-end)
+    (('on ('triggers triggers) statement context)
      (make <csp-on>
        :triggers (csp->gom (cadr ast))
        :statement (csp->gom statement)
-       :the-end (csp->gom the-end)))
-    (('on triggers statement the-end)
+       :context (csp->gom context)))
+    (('on triggers statement context)
      (make <csp-on>
        :triggers (make <triggers>
                    :elements (csp->gom (map ast->trigger-sugar triggers)))
        :statement (csp->gom statement)
-       :the-end (csp->gom the-end)))
+       :context (csp->gom context)))
     (('if ('context context ...) expression then else)
      (make <csp-if>
        :context (csp->gom (cadr ast))
@@ -123,7 +123,7 @@
 (define csp-return-ast
   '(on (e)
        (voidreply)
-       (the-end (s b c))))
+       (context (s b c))))
 
 (pass-if "ast-transform-return-return"
          (csp-pretty-noisy-equal?
@@ -135,7 +135,7 @@
           '(on (e)
                (compound
                 (voidreply))
-               (the-end (s b c)))))
+               (context (s b c)))))
 
 (pass-if "ast-transform-return"
          (csp-pretty-noisy-equal?
@@ -172,7 +172,7 @@
           '(on (f)
                (compound
                 (reply (expression (literal #f Status Yes))))
-               (the-end (s b c)))))
+               (context (s b c)))))
 
 (pass-if "csp-transform-return-reply"
          (diff-noisy-equal?
@@ -186,7 +186,7 @@
                (semi
                 (reply (context (s b c)) (expression (literal #f Status Yes)))
                 (return))
-               (the-end (s b c))))
+               (context (s b c))))
 
           ;; via:
           "i?x:{e} ->
@@ -210,7 +210,7 @@ skip_)(\\ V' @ i_B(V'),((s,b,c),(stack')))"))
           ;; via:
           '(on (f)
                (reply (context (s b c)) (expression (literal #f Status Yes)))
-               (the-end (s b c)))))
+               (context (s b c)))))
 
 (pass-if "ast-transform-compound-reply"
          (csp-pretty-noisy-equal?
@@ -228,7 +228,7 @@ skip_)(\\ V' @ i_B(V'),((s,b,c),(stack')))"))
           ;; via:
           '(on (f)
                (reply (context (s b c)) (expression (literal #f Status Yes)))
-               (the-end (s b c)))))
+               (context (s b c)))))
 
 
 (pass-if "csp-transform-reply"
@@ -243,7 +243,7 @@ skip_)(\\ V' @ i_B(V'),((s,b,c),(stack')))"))
                (semi
                 (reply (context (s b c)) (expression (literal #f Status Yes)))
                 (return))
-               (the-end (s b c))))
+               (context (s b c))))
 
           ;; via:
           "i?x:{e} ->
@@ -275,7 +275,7 @@ skip_)(\\ V' @ i_B(V'),((s,b,c),(stack')))"))
            '(on (e)
                 (semi (action (trigger #f h))
                       (return))
-                (the-end (s b c))))
+                (context (s b c))))
 
           ;; via:
           "i?x:{e} ->
@@ -317,7 +317,7 @@ illegal_(STOP,<>)"))
 (define csp-transform-empty-compound-via
   '(on ((trigger #f e))
     (voidreply)
-    (the-end (s b c))))
+    (context (s b c))))
 
 (pass-if "ast-transform-empty-compound"
          (csp-pretty-noisy-equal?
@@ -596,7 +596,7 @@ assign_(\\ ((s,b,c),(stack')) @ ((s,true,c),(stack'))))"))
                         (context (s b c))
                         (expression (context ((literal #f S S2) b c))))))
           (voidreply))
-    (the-end (s b c))))
+    (context (s b c))))
 
 (pass-if "ast-transform"
          (csp-pretty-noisy-equal?
@@ -683,7 +683,7 @@ semi_(semi_(\\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
 (define c-csp-transform-return-via
   '(on ((trigger j e))
        (voidreply)
-       (the-end (s b c))))
+       (context (s b c))))
 
 (pass-if "c-ast-transform-return"
          (csp-pretty-noisy-equal?
@@ -765,7 +765,7 @@ illegal_(STOP,<>)"))
            '(on ((trigger j e))
                 (semi (action (trigger j h))
                       (return))
-                (the-end (s b c))))
+                (context (s b c))))
 
           ;; via:
           "j?x:{e} ->
@@ -782,7 +782,7 @@ skip_)(\\ V' @ transition_end -> c_B(V'),((s,b,c),(stack')))"))
 
            '(on ((trigger k e))
                       (return)
-                      (the-end (s b c))))
+                      (context (s b c))))
 
           ;; via:
           "k?x:{e} ->
@@ -826,7 +826,7 @@ skip_(\\ V' @ transition_end -> c_B(V'),((s,b,c),(stack')))"))
                               (expression
                                (context ((literal #f States Triggered) sounding)))))))
           (voidreply))
-    (the-end (state sounding))))
+    (context (state sounding))))
 
 (pass-if "c-ast-transform-alarm-snippet"
          (csp-pretty-noisy-equal?
@@ -955,7 +955,7 @@ skip_)(\\ V' @ transition_end -> Alarm_d(V'),((state,sounding),(stack')))"
          e
          (action (trigger i bar)))
         (voidreply))
-       (the-end ())))
+       (context ())))
 
 (pass-if "ast-transform-ast-transform-variable-valued-action"
          (csp-pretty-noisy-equal?
@@ -1004,7 +1004,7 @@ skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
             skip)
            ())
           (voidreply))
-    (the-end ())))
+    (context ())))
 
 (pass-if "ast-transform-ast-transform-if-variable-valued-action"
          (csp-pretty-noisy-equal?
@@ -1045,7 +1045,7 @@ skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
             skip)
            ())
           (voidreply))
-    (the-end ())))
+    (context ())))
 
 (pass-if "ast-transform-ast-transform-if-compound-variable-valued-action"
          (csp-pretty-noisy-equal?
@@ -1095,7 +1095,7 @@ skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
        (semi
         (call (context (s b c)) toggle)
         (voidreply))
-       (the-end (s b c))))
+       (context (s b c))))
 
 (pass-if "ast-transform-function-call"
          (csp-pretty-noisy-equal?
@@ -1175,7 +1175,7 @@ returnvalue_(\\ ((s,b,hide_member2'),((stack',c))) @ c)))(P',V')
     (context-active
       ((context (s b c)) c (call g (arguments (expression b) (expression b))))
       (voidreply))
-    (the-end (s b c))))
+    (context (s b c))))
 
 (pass-if "ast-transform-function-call-arguments"
   (csp-pretty-noisy-equal?
@@ -1211,7 +1211,7 @@ context_active_(\\ P',V' @ g (P',V',(\\ ((s,b,c),(stack')) @ (b,b))(V')),
             (expression (== s (literal u Status Ok)))
             (reply (context (dummy) (s)) (expression (literal I Status Yes)))
             (reply (context (dummy) (s)) (expression (literal I Status No)))))
-       (the-end (dummy))))
+       (context (dummy))))
 
 (pass-if "ast-transform-reply-variable"
          (csp-pretty-noisy-equal?
@@ -1355,7 +1355,7 @@ reply_(I, (\\ ((dummy),((stack',s))) @ s)))(P',V')
                   (action (trigger i f))
                   ()))
              (voidreply))
-       (the-end (b))))
+       (context (b))))
 
 (pass-if "ast-transform-return-variable"
          (csp-pretty-noisy-equal?
@@ -1443,7 +1443,7 @@ skip_
                           (action (trigger i f))
                           ()))))
           (voidreply))
-    (the-end (b))))
+    (context (b))))
 
 (pass-if "ast-transform-callvalued"
          (csp-pretty-noisy-equal?
@@ -1495,7 +1495,7 @@ skip_
                           (action (trigger i f))
                           ()))))
           (voidreply))
-    (the-end (b))))
+    (context (b))))
 
 (pass-if "ast-transform-callvalued-2"
          (csp-pretty-noisy-equal?
@@ -1578,7 +1578,7 @@ skip_
                           (action (trigger i f))
                           ()))))))
           (voidreply))
-    (the-end (b))))
+    (context (b))))
 
 (pass-if "ast-transform-callvalued-deep"
          (csp-pretty-noisy-equal?
@@ -1633,7 +1633,7 @@ skip_
        s
        (action (trigger u what)))
       (voidreply))
-    (the-end (dummy))))
+    (context (dummy))))
 
 (pass-if "ast-transform-OM-PARSER-variable-action"
          (csp-pretty-noisy-equal?
@@ -1668,7 +1668,7 @@ context_active_(sendrecv_(u,what),
        s
        (action (trigger u what)))
       (voidreply))
-    (the-end (dummy))))
+    (context (dummy))))
 
 (pass-if "ast-transform-OM-PARSER-variable-action"
          (csp-pretty-noisy-equal?
@@ -1702,7 +1702,7 @@ context_active_(sendrecv_(u,what),
             ((context (dummy)) r' (action (trigger u what)))
             (context (dummy)))
           (voidreply))
-    (the-end (dummy))))
+    (context (dummy))))
 
 (pass-if "ast-transform-OM-PARSER-assign-action"
          (csp-pretty-noisy-equal?
@@ -1797,7 +1797,7 @@ semi_(assign_active_(sendrecv_(u,what),
 
 (pass-if "no-members"
          (diff-noisy-equal?
-          (csp-transform* member-i-ast '(on (e) (voidreply) (the-end ())))
+          (csp-transform* member-i-ast '(on (e) (voidreply) (context)))
           "i?x:{e} ->
 (\\ P',V' @ i.return -> P'(V'))(\\ V' @ i_B(V'),((<>),(stack')))"))
 

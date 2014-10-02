@@ -366,12 +366,13 @@
 
 (define-class <csp-if> (<csp> <if>))
 
-(define-class <csp-on> (<on>)
-  (the-end :accessor .the-end :init-value #f :init-keyword :the-end))
+(define-class <csp-on> (<csp> <on>))
 
 (define-class <csp-reply> (<csp> <reply>))
 
 (define-class <csp-return> (<csp> <return>))
+
+(define-class <the-end> (<csp>))
 
 (define-class <voidreply> (<ast>))
 
@@ -400,17 +401,17 @@
               :triggers triggers
               :statement (make <compound>
                            :elements (list (make <voidreply>)))
-              :the-end (list 'the-end members)))
+              :context (make <context> :members members)))
            ((? valued-triggers?)
             (make <csp-on>
               :triggers triggers
               :statement (make <compound> :elements (list result))
-              :the-end (list 'the-end members)))
+              :context (make <context> :members members)))
            (_
             (make <csp-on>
               :triggers triggers
               :statement (make <compound> :elements (list result (make <voidreply>)))
-              :the-end (list 'the-end members)))))))
+              :context (make <context> :members members)))))))
     (_ o)))
 
 (define ((valued-action? port?) src)
@@ -593,11 +594,11 @@
            :then then
            :else (or else '()))))
 
-      (($ <csp-on> triggers statement the-end)
+      (($ <csp-on> triggers statement context)
        (let ((result (ast-transform- ast statement)))
          (if (prefix-illegal? statement)
-             (make <csp-on> :triggers triggers :statement 'IG :the-end result)
-             (make <csp-on> :triggers triggers :statement result :the-end the-end))))
+             (make <csp-on> :triggers triggers :statement 'IG :context result)
+             (make <csp-on> :triggers triggers :statement result :context context))))
 
       (($ <reply> expression)
        (make <csp-reply>
@@ -638,10 +639,10 @@
     (=>string ast
      (match src
 
-       (($ <csp-on>)
-        (let* ((triggers (.elements (.triggers src)))
-               (statement (.statement src))
-               (the-end (.the-end src))
+       (($ <csp-on> ($ <triggers> triggers) statement context)
+        (let* ((context (if (is-a? context <context>)
+                            (make <the-end> :context context)
+                            context))
                (inevitable-optional? (or (member 'inevitable (map .event triggers))
                                          (member 'optional (map .event triggers))))
                (ig? (eq? statement 'IG))
@@ -651,7 +652,7 @@
                (IG? (if ig? (if ((provides-event? model) (car triggers)) "IIG & "  "IG & ")))
                (event-names (comma-join (map .event triggers)))
                (transformed (if ig? #f (csp-transform ast statement inevitable-optional? channel provided-on? tail-recursive?)))
-               (transformed-end (csp-transform ast the-end inevitable-optional? channel provided-on? tail-recursive?)))
+               (transformed-end (csp-transform ast context inevitable-optional? channel provided-on? tail-recursive?)))
           (list IG? channel "?x:{" event-names "}" " ->\n" transformed transformed-end (if ig? "(STOP,<>)" ""))))
 
        (($ <action> trigger)
@@ -683,9 +684,8 @@
                    (list "skip_"))))
           (list channel-return)))
 
-       (('the-end members)
+       (($ <the-end> context)
         (let* ((transition-end (if component? "transition_end -> "))
-               (context (make <context> :members members))
                (end (if (not inevitable-optional?) (list transition-end))))
           (list "(\\ V' @ " end model-name "_" behaviour "(V'),(" context "))")))
        (($ <illegal>) "illegal_")
