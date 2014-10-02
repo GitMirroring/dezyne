@@ -10,8 +10,6 @@ skip_(P', V') = P'(V')
 sendrecv_(c',e')(P', V') =  c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- callvoid_: (B': (P,V)->Proc) => (P,V)->Proc
 callvoid_(B')(P', V') = B'(P', V')
--- callvoid_args_: (B': (P,V)->Proc, F': V'->V') => (P,V)->Proc
-callvoid_args_(B',F')(P', V') = B'(P', V', F')
 -- assign_: (F': V -> V) => (P,V) -> Proc
 assign_(F')(P', V') = P'(F'(V'))
 -- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
@@ -76,7 +74,7 @@ channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in : {IReply7.E_A,IReply7.return}
+channel reorder_in  : {IReply7.E_A,IReply7.return}
 channel reorder_out : {p.E_A,p.return}
 
 SEMANTICS(in',out',client',modeling') = let
