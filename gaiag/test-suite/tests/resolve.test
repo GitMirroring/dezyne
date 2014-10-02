@@ -195,12 +195,12 @@
                  (variable (type e)
                            e
                            (expression (var bar))))))
-          '(on* (triggers* (trigger* #f foo))
-                (compound*
-                 (variable*
-                  (type* e #f)
+          '(on (triggers (trigger #f foo))
+                (compound
+                 (variable
+                  (type e #f)
                   e
-                  (action* (trigger* #f bar)))))))
+                  (action (trigger #f bar)))))))
 
 (pass-if "ast:resolve-assign-valued-action-interface"
          (gom-pretty-noisy-equal?
@@ -209,9 +209,9 @@
            '(on (triggers (trigger #f foo))
                 (compound
                  (assign x (expression (var bar))))))
-          '(on* (triggers* (trigger* #f foo))
-                (compound*
-                 (assign* x (action* (trigger* #f bar)))))))
+          '(on (triggers (trigger #f foo))
+                (compound
+                 (assign x (action (trigger #f bar)))))))
 
 (pass-if "ast:resolve-variable-valued-action-call-interface"
          (gom-pretty-noisy-equal?
@@ -226,7 +226,7 @@
                (compound
                 (variable (type e)
                           e
-                          (action* (trigger* #f bar)))))))
+                          (action (trigger #f bar)))))))
 
 (pass-if "ast:resolve-assign-valued-action-call-interface"
          (gom-pretty-noisy-equal?
@@ -235,9 +235,9 @@
            '(on (triggers (trigger #f foo))
                 (compound
                  (assign x (expression (call bar))))))
-          '(on* (triggers* (trigger* #f foo))
-                (compound*
-                 (assign* x (action* (trigger* #f bar)))))))
+          '(on (triggers (trigger #f foo))
+                (compound
+                 (assign x (action (trigger #f bar)))))))
 
 (pass-if "ast:resolve-reply-value-interface"
          (gom-pretty-noisy-equal?

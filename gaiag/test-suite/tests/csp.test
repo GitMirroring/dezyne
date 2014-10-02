@@ -38,17 +38,17 @@
   (match ast
     (('expression expression)
      (make <expression> :value (csp->gom expression)))
-    (('on ('triggers triggers) statement context)
+    (('on context ('triggers triggers) statement)
      (make <csp-on>
-       :triggers (csp->gom (cadr ast))
-       :statement (csp->gom statement)
-       :context (csp->gom context)))
-    (('on triggers statement context)
+       :context (csp->gom context)
+       :triggers (csp->gom (caddr ast))
+       :statement (csp->gom statement)))
+    (('on context triggers statement)
      (make <csp-on>
+       :context (csp->gom context)
        :triggers (make <triggers>
                    :elements (csp->gom (map ast->trigger-sugar triggers)))
-       :statement (csp->gom statement)
-       :context (csp->gom context)))
+       :statement (csp->gom statement)))
     (('if ('context context ...) expression then else)
      (make <csp-if>
        :context (csp->gom (cadr ast))
@@ -76,8 +76,27 @@
     (('context members) (make <context> :members (csp->gom members)))
     (('context members locals) (make <context> :members (csp->gom members) :locals (csp->gom locals)))
     (('literal scope type field) (make <literal> :scope scope :type type :field field))
+    (('context-active ('context context ...) statement cont)
+     (make <context-active>
+       :context (csp->gom (cadr ast))
+       :statement (csp->gom statement)
+       :cont (csp->gom cont)))
+    (('context-open context statement cont)
+     (make <context-open>
+       :context (csp->gom (cadr ast))
+       :statement (csp->gom statement)
+       :cont (csp->gom cont)))
+    (('variable context type name expression)
+     (make <csp-variable>
+       :context (csp->gom context)
+       :name name
+       :type (csp->gom type)
+       :expression (csp->gom expression)))
+    (('cont statement cont)
+     (make <cont> :statement (csp->gom statement) :cont (csp->gom cont)))
     (('voidreply) (make <voidreply>))
     (('vector identifiers ...) (make <context-vector> :elements identifiers))
+    (('skip) (make <skip>))
     ((h t ...) (map csp->sugar ast))
     (_ ast)))
 
@@ -121,9 +140,8 @@
         (compound))))
 
 (define csp-return-ast
-  '(on (e)
-       (voidreply)
-       (context (s b c))))
+  '(on (context (s b c)) (e)
+       (voidreply)))
 
 (pass-if "ast-transform-return-return"
          (csp-pretty-noisy-equal?
@@ -132,10 +150,8 @@
           (ast-transform-return* i-ast ast-return-ast)
 
           ;; via:
-          '(on (e)
-               (compound
-                (voidreply))
-               (context (s b c)))))
+          '(on (context (s b c)) (e)
+               (compound (voidreply)))))
 
 (pass-if "ast-transform-return"
          (csp-pretty-noisy-equal?
@@ -169,10 +185,9 @@
                  (reply (expression (literal #f Status Yes))))))
 
           ;; via:
-          '(on (f)
+          '(on (context (s b c)) (f)
                (compound
-                (reply (expression (literal #f Status Yes))))
-               (context (s b c)))))
+                (reply (expression (literal #f Status Yes)))))))
 
 (pass-if "csp-transform-return-reply"
          (diff-noisy-equal?
@@ -182,35 +197,41 @@
 
            i-ast
 
-           '(on (e)
-               (semi
-                (reply (context (s b c)) (expression (literal #f Status Yes)))
-                (return))
-               (context (s b c))))
+           '(on (context (s b c)) (e)
+                (cont
+                 (reply (context (s b c)) (expression (literal #f Status Yes)))
+                 (return))))
 
           ;; via:
           "i?x:{e} ->
 semi_(reply_(i, (\\ ((s,b,c),(stack')) @ Status_Yes)),
 skip_)(\\ V' @ i_B(V'),((s,b,c),(stack')))"))
 
-
+(define csp-transform-reply-via
+ '(on (context (s b c)) (f)
+      (reply (context (s b c)) (expression (literal #f Status Yes)))))
 
 (pass-if "ast-transform-reply"
          (csp-pretty-noisy-equal?
 
           ;; from:
           (ast-transform*
-
            i-ast
-
            '(compound
              (on (f)
                  (reply (expression (literal #f Status Yes))))))
 
           ;; via:
-          '(on (f)
-               (reply (context (s b c)) (expression (literal #f Status Yes)))
-               (context (s b c)))))
+          csp-transform-reply-via))
+
+(define csp-transform-compound-reply-via
+  '(on
+    (context (s b c))
+    (triggers (trigger #f e))
+    (cont (reply
+            (context (s b c))
+            (expression (literal #f Status Yes)))
+           (voidreply))))
 
 (pass-if "ast-transform-compound-reply"
          (csp-pretty-noisy-equal?
@@ -221,35 +242,25 @@ skip_)(\\ V' @ i_B(V'),((s,b,c),(stack')))"))
            i-ast
 
            '(compound
-             (on (f)
+             (on (e)
                  (compound
                   (reply (expression (literal #f Status Yes)))))))
 
           ;; via:
-          '(on (f)
-               (reply (context (s b c)) (expression (literal #f Status Yes)))
-               (context (s b c)))))
+          csp-transform-compound-reply-via))
 
-
-(pass-if "csp-transform-reply"
+(pass-if "csp-transform-compound-reply"
          (diff-noisy-equal?
 
-          ;; from:
+          ;; from/via:
           (csp-transform*
-
            i-ast
+           csp-transform-compound-reply-via)
 
-           '(on (e)
-               (semi
-                (reply (context (s b c)) (expression (literal #f Status Yes)))
-                (return))
-               (context (s b c))))
-
-          ;; via:
+          ;; to:
           "i?x:{e} ->
 semi_(reply_(i, (\\ ((s,b,c),(stack')) @ Status_Yes)),
-skip_)(\\ V' @ i_B(V'),((s,b,c),(stack')))"))
-
+(\\ P',V' @ i.return -> P'(V')))(\\ V' @ i_B(V'),((s,b,c),(stack')))"))
 
 (pass-if "ast-transform-action"
          (csp-pretty-noisy-equal?
@@ -272,10 +283,9 @@ skip_)(\\ V' @ i_B(V'),((s,b,c),(stack')))"))
 
            i-ast
 
-           '(on (e)
-                (semi (action (trigger #f h))
-                      (return))
-                (context (s b c))))
+           '(on (context (s b c)) (e)
+                (cont (action (trigger #f h))
+                      (return))))
 
           ;; via:
           "i?x:{e} ->
@@ -283,7 +293,7 @@ semi_((\\ P',V' @ i!h -> P'(V')),
 skip_)(\\ V' @ i_B(V'),((s,b,c),(stack')))"))
 
 (define csp-transform-illegal-action-via
-  '(on (e) (illegal) IG))
+  '(on IG (e) (illegal)))
 
 (pass-if "ast-transform-illegal-action"
          (csp-pretty-noisy-equal?
@@ -314,9 +324,8 @@ skip_)(\\ V' @ i_B(V'),((s,b,c),(stack')))"))
 illegal_(STOP,<>)"))
 
 (define csp-transform-empty-compound-via
-  '(on ((trigger #f e))
-    (voidreply)
-    (context (s b c))))
+  '(on (context (s b c)) ((trigger #f e))
+    (voidreply)))
 
 (pass-if "ast-transform-empty-compound"
          (csp-pretty-noisy-equal?
@@ -334,9 +343,7 @@ illegal_(STOP,<>)"))
 
           ;; via:
           (csp-transform*
-
            i-ast
-
            csp-transform-empty-compound-via)
 
           ;; to:
@@ -369,9 +376,11 @@ illegal_(STOP,<>)"))
 
 (define csp-transform-assign-2-via
   '(context-open
-    ((context (s b c)) la (expression true))
+    (context (s b c) (la))
+    (variable (context (s b c)) (type bool) la (expression true))
     (context-open
-     ((context (s b c) (la)) lb (expression false))
+     (context (s b c) (la lb))
+     (variable (context (s b c) (la)) (type bool) lb (expression false))
      (assign (context (s b c) (la lb))
              (expression (context (s b c) (true lb)))))))
 
@@ -380,9 +389,7 @@ illegal_(STOP,<>)"))
 
           ;; from:
           (ast-transform*
-
            i-ast
-
            '(compound
              (variable (type bool) la (expression true))
              (variable (type bool) lb (expression false))
@@ -530,7 +537,7 @@ skip_
                (illegal))))
 
 (define ast-transform-semi
-  '(semi (if (context (s b c))
+  '(cont (if (context (s b c))
              (expression b)
              ()
              ())
@@ -568,34 +575,33 @@ assign_(\\ ((s,b,c),(stack')) @ ((s,true,c),(stack'))))"))
 ;; \\)
 
 (define csp-transform-via
-  '(on (e)
-    (semi (semi (if (context (s b c))
+  '(on (context (s b c)) (e)
+    (cont (cont (if (context (s b c))
                   (expression (or c b))
-                  (semi (action (trigger #f f)) (action (trigger #f g)))
+                  (cont (action (trigger #f f)) (action (trigger #f g)))
                   ())
-                (semi (if (context (s b c))
+                (cont (if (context (s b c))
                         (expression b)
-                        (semi (if (context (s b c))
+                        (cont (if (context (s b c))
                                   (expression c)
                                   (action (trigger #f g))
                                   ())
-                              (semi (assign
+                              (cont (assign
                                       (context (s b c))
                                       (expression (context (s b false))))
                                     (action (trigger #f f))))
                         (if (context (s b c))
                           (expression c)
-                          (semi (assign (context (s b c))
+                          (cont (assign (context (s b c))
                                         (expression (context (s false c))))
                                 (action (trigger #f h)))
-                          (semi (assign (context (s b c))
+                          (cont (assign (context (s b c))
                                         (expression (context (s true c))))
                                 (action (trigger #f g)))))
                       (assign
                         (context (s b c))
                         (expression (context ((literal #f S S2) b c))))))
-          (voidreply))
-    (context (s b c))))
+          (voidreply))))
 
 (pass-if "ast-transform"
          (csp-pretty-noisy-equal?
@@ -680,9 +686,8 @@ semi_(semi_(\\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
                         (compound))))))))
 
 (define c-csp-transform-return-via
-  '(on ((trigger j e))
-       (voidreply)
-       (context (s b c))))
+  '(on (context (s b c)) ((trigger j e))
+       (voidreply)))
 
 (pass-if "c-ast-transform-return"
          (csp-pretty-noisy-equal?
@@ -715,9 +720,7 @@ semi_(semi_(\\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
 
           ;; from:
           (ast-transform*
-
            c-ast
-
            '(action (trigger j h)))
 
           ;; via:
@@ -732,8 +735,8 @@ semi_(semi_(\\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
 
            c-ast
 
-           '(on ((trigger j e))
-                (illegal) IG))
+           '(on IG ((trigger j e))
+                (illegal)))
 
           ;; via:
           "IIG & j?x:{e} ->
@@ -761,10 +764,9 @@ illegal_(STOP,<>)"))
 
            c-ast
 
-           '(on ((trigger j e))
-                (semi (action (trigger j h))
-                      (return))
-                (context (s b c))))
+           '(on (context (s b c)) ((trigger j e))
+                (cont (action (trigger j h))
+                      (return))))
 
           ;; via:
           "j?x:{e} ->
@@ -779,9 +781,8 @@ skip_)(\\ V' @ transition_end -> c_B(V'),((s,b,c),(stack')))"))
 
            c-ast
 
-           '(on ((trigger k e))
-                      (return)
-                      (context (s b c))))
+           '(on (context (s b c)) ((trigger k e))
+                (return)))
 
           ;; via:
           "k?x:{e} ->
@@ -814,18 +815,17 @@ skip_(\\ V' @ transition_end -> c_B(V'),((s,b,c),(stack')))"))
 
 
 (define csp-transform-alarm-snippet-via
-  '(on ((trigger sensor triggered))
-    (semi (semi (action (trigger console detected))
-                (semi (action (trigger siren turnon))
-                      (semi (assign
+  '(on (context (state sounding)) ((trigger sensor triggered))
+    (cont (cont (action (trigger console detected))
+                (cont (action (trigger siren turnon))
+                      (cont (assign
                              (context (state sounding))
                              (expression (context (state true))))
                             (assign
                              (context (state sounding))
                               (expression
                                (context ((literal #f States Triggered) sounding)))))))
-          (voidreply))
-    (context (state sounding))))
+          (voidreply))))
 
 (pass-if "c-ast-transform-alarm-snippet"
          (csp-pretty-noisy-equal?
@@ -948,13 +948,14 @@ skip_)(\\ V' @ transition_end -> Alarm_d(V'),((state,sounding),(stack')))"
            (compound)))))))
 
 (define csp-transform-variable-valued-action-via
-  '(on (triggers (trigger o bar))
+  '(on (context ()) (triggers (trigger o bar))
        (context-active
-        ((context)
-         e
+        (context () (e))
+        (variable (context)
+                  (type E ivar)
+                  e
          (action (trigger i bar)))
-        (voidreply))
-       (context ())))
+        (voidreply))))
 
 (pass-if "ast-transform-ast-transform-variable-valued-action"
          (csp-pretty-noisy-equal?
@@ -993,17 +994,17 @@ context_active_(sendrecv_(i,bar),
 skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
 
 (define csp-transform-if-variable-valued-action-via
-  '(on
+  '(on (context ())
     (triggers (trigger o bar))
-    (semi (if
+    (cont (if
            (context)
            (expression true)
            (context-active
-            ((context () (e)) e (action (trigger i bar)))
-            skip)
+            (context () (e))
+            (variable (context () (e)) (type E ivar) e (action (trigger i bar)))
+            (skip))
            ())
-          (voidreply))
-    (context ())))
+          (voidreply))))
 
 (pass-if "ast-transform-ast-transform-if-variable-valued-action"
          (csp-pretty-noisy-equal?
@@ -1034,17 +1035,17 @@ skip_
 skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
 
 (define csp-transform-if-compound-variable-valued-action-via
-  '(on
+  '(on (context ())
     (triggers (trigger o bar))
-    (semi (if
+    (cont (if
            (context)
            (expression true)
            (context-active
-            ((context) e (action (trigger i bar)))
-            skip)
+            (context () (e))
+            (variable (context) (type E ivar) e (action (trigger i bar)))
+            (skip))
            ())
-          (voidreply))
-    (context ())))
+          (voidreply))))
 
 (pass-if "ast-transform-ast-transform-if-compound-variable-valued-action"
          (csp-pretty-noisy-equal?
@@ -1090,11 +1091,10 @@ context_active_(sendrecv_(i,bar),
 skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
 
 (define csp-function-call-ast
-  '(on (e)
-       (semi
+  '(on (context (s b c)) (e)
+       (cont
         (call (context (s b c)) toggle)
-        (voidreply))
-       (context (s b c))))
+        (voidreply))))
 
 (pass-if "ast-transform-function-call"
          (csp-pretty-noisy-equal?
@@ -1139,7 +1139,7 @@ semi_(callvoid_(\\ P',V' @ toggle(P',V')),
   '(function
     g
     (signature (type bool) (parameters (parameter (type bool) c))) #f
-    (semi (action (trigger #f f))
+    (cont (action (trigger #f f))
           (return (context (s b hide_member2') (c)) (expression c)))))
 
 (pass-if "ast-transform-function-arguments"
@@ -1170,11 +1170,12 @@ returnvalue_(\\ ((s,b,hide_member2'),((stack',c))) @ c)))(P',V')
 
 
 (define csp-function-call-arguments-via
-  '(on (e)
+  '(on (context (s b c)) (e)
     (context-active
-      ((context (s b c)) c (call g (arguments (expression b) (expression b))))
-      (voidreply))
-    (context (s b c))))
+     (context (s b hide_member2') (c))
+     (variable (context (s b c)) (type bool) c
+               (call g (arguments (expression b) (expression b))))
+     (voidreply))))
 
 (pass-if "ast-transform-function-call-arguments"
   (csp-pretty-noisy-equal?
@@ -1203,14 +1204,14 @@ context_active_(\\ P',V' @ g (P',V',(\\ ((s,b,c),(stack')) @ (b,b))(V')),
 
 
 (define csp-reply-variable-ast-via
-  '(on ((trigger i done))
+  '(on (context (dummy)) ((trigger i done))
        (context-active
-        ((context (dummy)) s (action (trigger u what)))
+        (context (dummy) (s))
+        (variable (context (dummy)) (type Status U) s (action (trigger u what)))
         (if (context (dummy) (s))
             (expression (== s (literal u Status Ok)))
             (reply (context (dummy) (s)) (expression (literal I Status Yes)))
-            (reply (context (dummy) (s)) (expression (literal I Status No)))))
-       (context (dummy))))
+            (reply (context (dummy) (s)) (expression (literal I Status No)))))))
 
 (pass-if "ast-transform-reply-variable"
          (csp-pretty-noisy-equal?
@@ -1346,15 +1347,15 @@ reply_(I, (\\ ((dummy),((stack',s))) @ s)))(P',V')
            (compound)))))))
 
 (define csp-return-variable-c-ast
-  '(on ((trigger i e))
-       (semi (context-open
-              ((context (b)) c (expression true))
+  '(on (context (b)) ((trigger i e))
+       (cont (context-open
+              (context (b) (c))
+              (variable (context (b)) (type bool) c (expression true))
               (if (context (b) (c))
                   (expression (var c))
                   (action (trigger i f))
                   ()))
-             (voidreply))
-       (context (b))))
+             (voidreply))))
 
 (pass-if "ast-transform-return-variable"
          (csp-pretty-noisy-equal?
@@ -1430,19 +1431,20 @@ skip_
             (compound (action (trigger i f)))))))
 
 (define csp-callvalued-on
-  '(on ((trigger i e))
-       (semi (semi (assign (context (b)) (expression (context ((! (var b))))))
+  '(on (context (b)) ((trigger i e))
+       (cont (cont (assign (context (b)) (expression (context ((! (var b))))))
                 (context-active
-                 ((context (b)) c (call g (arguments (expression (var b)))))
-                  (semi (assign-active
+                 (context (b) (c))
+                 (variable (context (b)) (type bool) c
+                           (call g (arguments (expression (var b)))))
+                  (cont (assign-active
                          ((context (b) (c)) r' (call g (arguments (expression (var c)))))
                          (context (r') (c)))
                         (if (context (b) (c))
                           (expression (var c))
                           (action (trigger i f))
                           ()))))
-          (voidreply))
-    (context (b))))
+          (voidreply))))
 
 (pass-if "ast-transform-callvalued"
          (csp-pretty-noisy-equal?
@@ -1482,19 +1484,20 @@ skip_
             (compound (action (trigger i f)))))))
 
 (define csp-callvalued-on-2
-  '(on ((trigger i e))
-       (semi (semi (assign (context (b)) (expression (context ((! (var b))))))
+  '(on (context (b)) ((trigger i e))
+       (cont (cont (assign (context (b)) (expression (context ((! (var b))))))
                 (context-active
-                 ((context (b)) c (call h (arguments (expression (var s)) (expression (var b)))))
-                  (semi (assign-active
+                 (context (b) (c))
+                 (variable (context (b)) (type bool) c
+                           (call h (arguments (expression (var s)) (expression (var b)))))
+                  (cont (assign-active
                          ((context (b) (c)) r' (call h (arguments (expression (var s)) (expression (var b)))))
                          (context (r') (c)))
                         (if (context (b) (c))
                           (expression (var c))
                           (action (trigger i f))
                           ()))))
-          (voidreply))
-    (context (b))))
+          (voidreply))))
 
 (pass-if "ast-transform-callvalued-2"
          (csp-pretty-noisy-equal?
@@ -1560,24 +1563,45 @@ skip_
              (compound (action (trigger i f))))))))
 
 (define csp-callvalued-on-deep
-  '(on ((trigger i e))
-    (semi (semi (assign
-                 (context (b))
-                 (expression (context ((! (var b))))))
-                (context-active
-                 ((context (b)) c (call g (arguments (expression (var b)))))
+  '(on
+    (context (b))
+    (triggers (trigger i e))
+    (cont (cont (assign
+                   (context (b))
+                   (expression (context ((! (var b))))))
                   (context-active
-                   ((context (b) (c)) d (call g (arguments (expression (var c)))))
+                   (context (b) (c))
+                   (variable
+                    (context (b))
+                    (type bool #f)
+                    c
+                    (call g (arguments (expression (var b)))))
+                   (context-active
+                    (context (b) (c d))
+                    (variable
+                     (context (b) (c))
+                     (type bool #f)
+                     d
+                     (call g (arguments (expression (var c)))))
                     (context-active
-                     ((context (b) (c d)) cc (call g (arguments (expression (var c)))))
-                      (context-active
-                       ((context (b) (c d cc)) dd (call g (arguments (expression (var d)))))
-                       (if (context (b) (c d cc dd))
-                          (expression (var dd))
-                          (action (trigger i f))
-                          ()))))))
-          (voidreply))
-    (context (b))))
+                     (context (b) (c d cc))
+                     (variable
+                      (context (b) (c d))
+                      (type bool #f)
+                      cc
+                      (call g (arguments (expression (var c)))))
+                     (context-active
+                      (context (b) (c d cc dd))
+                      (variable
+                       (context (b) (c d cc))
+                       (type bool #f)
+                       dd
+                       (call g (arguments (expression (var d)))))
+                      (if (context)
+                       (expression (var dd))
+                       (action (trigger i f))
+                       ()))))))
+           (voidreply))))
 
 (pass-if "ast-transform-callvalued-deep"
          (csp-pretty-noisy-equal?
@@ -1626,13 +1650,12 @@ skip_
 
 ;; OM-PARSER parser test
 (define csp-transform-OM-PARSER-variable-action-via
-  '(on ((trigger i e))
-    (context-active
-      ((context (dummy))
-       s
-       (action (trigger u what)))
-      (voidreply))
-    (context (dummy))))
+  '(on (context (dummy)) ((trigger i e))
+       (context-active
+        (context (dummy) (s))
+        (variable (context (dummy)) (type Status U) s
+         (action (trigger u what)))
+        (voidreply))))
 
 (pass-if "ast-transform-OM-PARSER-variable-action"
          (csp-pretty-noisy-equal?
@@ -1661,13 +1684,11 @@ context_active_(sendrecv_(u,what),
 
 ;; OM-PARSER parser test
 (define csp-transform-OM-PARSER-variable-action-via
-  '(on ((trigger i e))
+  '(on (context (dummy)) ((trigger i e))
     (context-active
-      ((context (dummy))
-       s
-       (action (trigger u what)))
-      (voidreply))
-    (context (dummy))))
+     (context (dummy) (s))
+     (variable (context (dummy)) (type Status U) s (action (trigger u what)))
+     (voidreply))))
 
 (pass-if "ast-transform-OM-PARSER-variable-action"
          (csp-pretty-noisy-equal?
@@ -1696,12 +1717,11 @@ context_active_(sendrecv_(u,what),
 
 ;; OM-PARSER parser test
 (define csp-transform-OM-PARSER-assign-action-via
-  '(on ((trigger i e))
-    (semi (assign-active
+  '(on (context (dummy)) ((trigger i e))
+    (cont (assign-active
             ((context (dummy)) r' (action (trigger u what)))
             (context (dummy)))
-          (voidreply))
-    (context (dummy))))
+          (voidreply))))
 
 (pass-if "ast-transform-OM-PARSER-assign-action"
          (csp-pretty-noisy-equal?
@@ -1796,7 +1816,7 @@ semi_(assign_active_(sendrecv_(u,what),
 
 (pass-if "no-members"
          (diff-noisy-equal?
-          (csp-transform* member-i-ast '(on (e) (voidreply) (context)))
+          (csp-transform* member-i-ast '(on (context) (e) (voidreply)))
           "i?x:{e} ->
 (\\ P',V' @ i.return -> P'(V'))(\\ V' @ i_B(V'),((<>),(stack')))"))
 
@@ -1835,12 +1855,13 @@ semi_(assign_active_(sendrecv_(u,what),
 
 (define expression-via
   '(context-open
-    ((context (s b c)) t (expression false))
+    (context (s b c) (t))
+    (variable (context (s b c)) (type bool) t (expression false))
     (assign (context (s b c) (t))
             (expression (context (s b c) ((== (var s) (literal #f S S1))))))))
 
 (pass-if "expression"
-         (csp-noisy-equal?
+         (csp-pretty-noisy-equal?
           (ast-transform*
            i-ast
            '(compound

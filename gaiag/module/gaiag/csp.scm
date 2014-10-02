@@ -64,15 +64,20 @@
            requires?
            enum-type
 
-           <csp>
+           <cont>
+           <context-active>
+           <context-open>
+           <context-vector>
            <context>
            <csp-call>
            <csp-if>
            <csp-on>
            <csp-reply>
            <csp-return>
-           <context-vector>
+           <csp-variable>
+           <csp>
            <voidreply>
+           <skip>
            ))
 
 (define (ast-> ast)
@@ -365,20 +370,29 @@
 
 (define-class <context-vector> (<ast-list>))
 
-(define-class <csp> (<ast>)
+(define-class <contexted> (<ast>)
   (context :accessor .context :init-value #f :init-keyword :context))
 
-(define-class <csp-call> (<csp> <call>))
+(define-class <csp-call> (<call> <contexted>))
+(define-class <csp-variable> (<variable> <contexted>))
 
-(define-class <csp-if> (<csp> <if>))
+(define-class <cont> (<ast>)
+  (statement :accessor .statement :init-value #f :init-keyword :statement)
+  (cont :accessor .cont :init-value #f :init-keyword :cont))
 
-(define-class <csp-on> (<csp> <on>))
+(define-class <context-active> (<cont> <contexted>))
+(define-class <context-open> (<cont> <contexted>))
+(define-class <skip> (<ast>))
 
-(define-class <csp-reply> (<csp> <reply>))
+(define-class <csp-if> (<if> <contexted>))
 
-(define-class <csp-return> (<csp> <return>))
+(define-class <csp-on> (<on> <contexted>))
 
-(define-class <the-end> (<csp>))
+(define-class <csp-reply> (<reply> <contexted>))
+
+(define-class <csp-return> (<return> <contexted>))
+
+(define-class <the-end> (<contexted>))
 
 (define-class <voidreply> (<ast>))
 
@@ -524,24 +538,25 @@
                     (transformed (ast-transform- ast statement #f context))
                     (context (if (is-a? statement <variable>)
                                  (extend context (.name statement))
-                                 context)))
+                                 context))
+                    (class (match statement
+                             ((and ($ <variable>)
+                                   (or (? valued-action?) (? call?)))
+                              <context-active>)
+                             (($ <variable>) <context-open>)
+                             (_ <cont>))))
                (if (>1 (length statements))
                    (if (is-a? transformed <illegal>)
                        transformed
-                       (list (if (is-a? statement <variable>)
-                                 (if (or (valued-action? statement)
-                                         (call? statement))
-                                     'context-active
-                                     'context-open)
-                                 'semi)
-                             transformed (loop (cdr statements) context)))
+                       (make class
+                         :context context
+                         :statement transformed
+                         :cont (loop (cdr statements) context)))
                    (if (is-a? statement <variable>)
-                       (list
-                        (if (or (valued-action? statement)
-                                (call? statement))
-                            'context-active
-                            'context-open)
-                        transformed 'skip)
+                       (make class
+                         :context context
+                         :statement transformed
+                         :cont (make <skip>))
                        transformed))))))
 
       (($ <assign> identifier ($ <expression> value))
@@ -580,19 +595,29 @@
                                 context))
               (then-transformed (ast-transform- ast then return then-context))
               (else-transformed (ast-transform- ast else return else-context))
+              (then-class (match then
+                            ((and ($ <variable>)
+                                  (or (? valued-action?) (? call?)))
+                             <context-active>)
+                            (($ <variable>) <context-open>)
+                            (_ <cont>)))
+              (else-class (match else
+                            ((and ($ <variable>)
+                                  (or (? valued-action?) (? call?)))
+                             <context-active>)
+                            (($ <variable>) <context-open>)
+                            (_ <cont>)))
               (then (if (is-a? then <variable>)
-                        (list (if (or (valued-action? then)
-                                      (call? then))
-                                  'context-active
-                                  'context-open)
-                              then-transformed 'skip)
+                        (make then-class
+                         :context then-context
+                         :statement then-transformed
+                         :cont (make <skip>))
                         then-transformed))
               (else (if (is-a? else <variable>)
-                        (list (if (or (valued-action? else)
-                                      (call? else))
-                                  'context-active
-                                  'context-open)
-                              else-transformed 'skip)
+                        (make else-class
+                          :context else-context
+                         :statement else-transformed
+                         :cont (make <skip>))
                         else-transformed)))
          (make <csp-if>
            :context context
@@ -600,11 +625,11 @@
            :then then
            :else (or else '()))))
 
-      (($ <csp-on> triggers statement context)
+      (($ <csp-on> context triggers statement)
        (let ((result (ast-transform- ast statement)))
          (if (prefix-illegal? statement)
-             (make <csp-on> :triggers triggers :statement result :context 'IG)
-             (make <csp-on> :triggers triggers :statement result :context context))))
+             (make <csp-on> :context 'IG :triggers triggers :statement result)
+             (make <csp-on> :context context :triggers triggers :statement result))))
 
       (($ <reply> expression)
        (make <csp-reply>
@@ -617,8 +642,11 @@
          :expression (ast-transform- ast expression return context)))
 
       (($ <variable> name type expression)
-       ;;(list 'context-active (list context 'r' expression) (context-assign context name 'r'))
-       (list context name expression))
+       (make <csp-variable>
+         :context context
+         :name name
+         :type type
+         :expression expression))
 
       (($ <expression> (and ($ <call>) (get! call)))
        (make <expression> :value (ast-transform- ast (call) return context)))
@@ -640,19 +668,19 @@
 	 (model-name (.name model))
 	 (behaviour (.name (.behaviour model)))
          (component? (is-a? model <component>))
-         (continuation-p (if tail-recursive? "PF'" "P'"))
-         (continuation-pv (string-append continuation-p (if tail-recursive? ",VF'" ",V'"))))
+         (cont-p (if tail-recursive? "PF'" "P'"))
+         (cont-pv (string-append cont-p (if tail-recursive? ",VF'" ",V'"))))
     (=>string ast
      (match src
 
-       (($ <csp-on> ($ <triggers> triggers) statement 'IG)
+       (($ <csp-on> 'IG ($ <triggers> triggers) statement)
         (let* ((channel (if (is-a? model <interface>) model-name (.port (car triggers))))
                (IG (if ((provides-event? model) (car triggers)) "IIG & "  "IG & "))
                (event-names (comma-join (map .event triggers)))
                (transformed (csp-transform ast statement inevitable-optional? channel provided-on? tail-recursive?)))
           (list IG channel "?x:{" event-names "}" " ->\n" transformed "(STOP,<>)" "")))
 
-       (($ <csp-on> ($ <triggers> triggers) statement context)
+       (($ <csp-on> context ($ <triggers> triggers) statement)
         (let* ((the-end (make <the-end> :context context))
                (inevitable-optional? (or (member 'inevitable (map .event triggers))
                                          (member 'optional (map .event triggers))))
@@ -677,12 +705,12 @@
 
        (($ <expression>) src)
 
-       (($ <csp-reply> expression context)
+       (($ <csp-reply> context expression)
         (let* ((channel (or channel (if (is-a? model <interface>) model-name (.type (gom:port model))))))
           (list "reply_(" channel ", " "(\\ (" context ") @ " expression "))")))
        (($ <return>) "skip_")
-       (($ <csp-return> #f context) "skip_")
-       (($ <csp-return> ($ <expression> expression) context)
+       (($ <csp-return> context #f) "skip_")
+       (($ <csp-return> context ($ <expression> expression))
         (let ((expression (csp-expression->string ast expression)))
           (list "returnvalue_(\\ (" context ") @ " expression ")")))
 
@@ -700,48 +728,55 @@
        (($ <illegal>) "illegal_")
        (($ <function> name ($ <signature> type ($ <parameters> '())) recursive? statement)
         (let ((transformed (csp-transform ast statement inevitable-optional? channel provided-on? recursive?))
-              (continuation-pv (if recursive? "PF',VF'" "P',V'")))
-          (list name " = \\ " continuation-pv " @ context_func_(" transformed ")(" continuation-pv ")\n")))
+              (cont-pv (if recursive? "PF',VF'" "P',V'")))
+          (list name " = \\ " cont-pv " @ context_func_(" transformed ")(" cont-pv ")\n")))
        (($ <function> name signature recursive? statement)
         (let ((body (csp-transform ast statement inevitable-optional? channel provided-on? recursive?))
-              (continuation-pv (if recursive? "PF',VF'" "P',V'")))
-          (list name " = \\ " continuation-pv ",F' @ context_func_args_(F',\n" body ")(" continuation-pv ")\n")))
-       (($ <csp-call> identifier ($ <arguments> '()) context)
-        (let ((continuation-pv (string-append continuation-p (if tail-recursive?  ",members_(V')" ",V'"))))
-          (list "callvoid_(\\ P',V' @ " identifier "(" continuation-pv "))")))
-       (($ <csp-call> identifier arguments context)
-        (let ((continuation-pv (string-append continuation-p (if tail-recursive?  ",members_(V')" ",V'"))))
-          (list "callvoid_(\\ P',V' @ " identifier "(" continuation-pv ",(\\ (" context ") @ (" arguments "))(V')))")))
+              (cont-pv (if recursive? "PF',VF'" "P',V'")))
+          (list name " = \\ " cont-pv ",F' @ context_func_args_(F',\n" body ")(" cont-pv ")\n")))
+       (($ <csp-call> context identifier ($ <arguments> '()))
+        (let ((cont-pv (string-append cont-p (if tail-recursive?  ",members_(V')" ",V'"))))
+          (list "callvoid_(\\ P',V' @ " identifier "(" cont-pv "))")))
+       (($ <csp-call> context identifier arguments)
+        (let ((cont-pv (string-append cont-p (if tail-recursive?  ",members_(V')" ",V'"))))
+          (list "callvoid_(\\ P',V' @ " identifier "(" cont-pv ",(\\ (" context ") @ (" arguments "))(V')))")))
        (($ <csp-if>)
         (let ((context (.context src))
               (expression (csp-expression->string ast (.expression src)))
               (then (csp-transform ast (.then src) inevitable-optional? channel provided-on? tail-recursive?))
               (else (csp-transform ast (.else src) inevitable-optional? channel provided-on? tail-recursive?)))
           (list "\\ P',(" context ") @ ifthenelse_(" expression ",\n" then ",\n" else "\n)(P',(" context "))")))
-       (('context-active (context var ($ <action> ($ <trigger> port event))) stat)
-        (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on? tail-recursive?)))
-          (list "context_active_(sendrecv_("  (or port channel) "," event "),\n" stat ")")))
-       (('context-active (context var ($ <call> identifier ($ <arguments> '()))) stat)
-        (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on? tail-recursive?)))
-          (list "context_active_(\\ P',V' @ " identifier " (" continuation-pv "),\n" stat ")")))
 
-       (('context-active (context var ($ <call> identifier (and ($ <arguments>) (get! arguments)))) stat)
-          (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on? tail-recursive?)))
-          (list "context_active_(\\ P',V' @ " identifier " (" continuation-pv ",(\\ (" context ") @ (" (arguments) "))(V')),\n" stat ")")))
+       (($ <context-active> - ($ <csp-variable> context name type ($ <action> ($ <trigger> port event))) cont)
+        (let ((cont (csp-transform ast cont inevitable-optional? channel provided-on? tail-recursive?)))
+          (list "context_active_(sendrecv_(" (or port channel) "," event "),\n" cont ")")))
+
+       (($ <context-active> - ($ <csp-variable> context name type ($ <call> identifier ($ <arguments> '()))) cont)
+        (let ((cont (csp-transform ast cont inevitable-optional? channel provided-on? tail-recursive?)))
+          (list "context_active_(\\ P',V' @ " identifier " (" cont-pv "),\n" cont ")")))
+
+       (($ <context-active> - ($ <csp-variable> context name type ($ <call> identifier (and ($ <arguments>) (get! arguments)))) cont)
+          (let ((cont (csp-transform ast cont inevitable-optional? channel provided-on? tail-recursive?)))
+          (list "context_active_(\\ P',V' @ " identifier " (" cont-pv ",(\\ (" context ") @ (" (arguments) "))(V')),\n" cont ")")))
+
+       (($ <context-open> - ($ <csp-variable> context name type expression) cont)
+        (let ((cont (csp-transform ast cont inevitable-optional? channel provided-on? tail-recursive?)))
+          (list "context_(\\ (" context ") @ " expression ",\n" cont ")" )))
 
        (('assign-active (context var ($ <action> ($ <trigger> port event))) expressions)
         (let ((action (list "sendrecv_(" (or port channel) "," event ")")))
           (list "assign_active_(" action ",\n\\ ((" context "))," var " @ (" expressions "))" )))
+
        (('assign-active (context var ($ <call> identifier (and ($ <arguments>) (get! arguments)))) expressions)
-        (list "assign_active_(\\ P',V' @ " identifier " (" continuation-pv ",(\\ (" context ") @ (" (arguments) "))(V')),\n\\ ((" context "))," var " @ (" expressions "))"))
-       (('context-open (context var expression) stat)
-        (let ((stat (csp-transform ast stat inevitable-optional? channel provided-on? tail-recursive?)))
-          (list "context_(\\ (" context ") @ " expression ",\n" stat ")" )))
-       (('semi stat1 stat2)
-        (let ((first (csp-transform ast stat1 inevitable-optional? channel provided-on? tail-recursive?))
-              (second (csp-transform ast stat2 inevitable-optional? channel provided-on? tail-recursive?)))
-          (list "semi_(" first ",\n" second ")")))
-       ('skip "skip_")
+        (list "assign_active_(\\ P',V' @ " identifier " (" cont-pv ",(\\ (" context ") @ (" (arguments) "))(V')),\n\\ ((" context "))," var " @ (" expressions "))"))
+
+       (($ <cont> statement cont)
+        (let ((statement (csp-transform ast statement inevitable-optional? channel provided-on? tail-recursive?))
+              (cont (csp-transform ast cont inevitable-optional? channel provided-on? tail-recursive?)))
+          (list "semi_(" statement ",\n" cont ")")))
+
+       (($ <skip>) "skip_")
+
        ('() "skip_")
        ((? symbol?) src)
        ((? string?) src)

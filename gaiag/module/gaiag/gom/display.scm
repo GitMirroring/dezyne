@@ -90,11 +90,6 @@
   (if (pair? (.elements (.parameters o)))
       (sdisplay (.parameters o) port)))
 
-(define-method (display-slots (o <variable>) port)
-  (sdisplay (.type o) port)
-  (sdisplay (.name o) port)
-  (sdisplay (.expression o) port))
-
 (define-method (write (o <ast>) port)
   (display "(" port)
   (display (ast-name o) port)
