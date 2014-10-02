@@ -301,7 +301,7 @@
     (argument-list comma expression) : (append $1 (list `(expression ,$3))))
 
    (optional-behaviour
-    () : '(behaviour)
+    () : '(no-behaviour)
     (behaviour lbrace type-list variable-list function-list function-statement-list rbrace) : `(,$1 #f ,$3 ,$4 ,$5 ,$6)
     (behaviour Identifier lbrace type-list variable-list function-list function-statement-list rbrace) : `(,$1 ,$2 ,$4 ,$5 ,$6 ,$7)
     (system lbrace system-statement-list rbrace) : `(,$1 #f ,$3)

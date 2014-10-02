@@ -91,7 +91,7 @@
                                        :identifier identifier
                                        :expression (ast->gom- expression)))
 
-    (('behaviour) #f)
+    (('behaviour) (make <behaviour>))
 
     (('behaviour name body ...)
      (make <behaviour>
@@ -126,7 +126,7 @@
      (make <component>
        :name name
        :ports (ast->gom- (or (null-is-#f (assoc 'ports body)) '(ports)))
-       :behaviour (ast->gom- (or (null-is-#f (assoc 'behaviour body)) '(behaviour)))))
+       :behaviour (and=> (null-is-#f (assoc 'behaviour body)) ast->gom-)))
 
     (('compound statements ...)
      (make <compound> :elements (map ast->gom- statements)))
@@ -201,7 +201,7 @@
        :name name
        :types (ast->gom- (or (null-is-#f (assoc 'types body)) '(types)))
        :events (ast->gom- (or (null-is-#f (assoc 'events body)) '(events)))
-       :behaviour (ast->gom- (or (null-is-#f (assoc 'behaviour body)) '(behaviour)))))
+       :behaviour (and=> (null-is-#f (assoc 'behaviour body)) ast->gom-)))
 
     (('literal scope type field)
      (make <literal> :scope scope :type type :field field))

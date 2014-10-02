@@ -32,11 +32,11 @@
    (asd->ast
     #{ interface i { } #}
     )
-   '((interface i (types) (events) (behaviour)))))
+   '((interface i (types) (events) (no-behaviour)))))
 
 (pass-if "asd-parse-component"
   (pretty-noisy-equal?
    (asd->ast
     #{ component c { } #}
     )
-   '((component c (ports) (behaviour)))))
+   '((component c (ports) (no-behaviour)))))
