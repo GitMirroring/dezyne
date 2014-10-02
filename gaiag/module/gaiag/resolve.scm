@@ -95,8 +95,13 @@
 
 (define (report-errors errors)
   (for-each report-error errors)
-  ;;(throw 'well-formed errors)
-  (exit 1))
+  (cond ((or (member "--debug" (command-line))
+             (member "test-suite/run-tests" (command-line)))
+         (throw 'well-formed errors))
+        ((or (member "--coverage" (command-line))
+             (member "../coverage" (command-line)))
+         '())
+        (else (exit 1))))
 
 (define-method (resolve-top-model (o <model>))
   ((compose gom:register-model (lambda (m) (resolve-model m m)) resolve-mixed) o))
