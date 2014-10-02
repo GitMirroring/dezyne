@@ -92,6 +92,12 @@
        :name name
        :type (csp->gom type)
        :expression (csp->gom expression)))
+    (('assign context identifier expression expressions)
+     (make <csp-assign>
+       :context (csp->gom context)
+       :identifier identifier
+       :expression (csp->gom expression)
+       :expressions (csp->gom expressions)))
     (('cont statement cont)
      (make <cont> :statement (csp->gom statement) :cont (csp->gom cont)))
     (('voidreply) (make <voidreply>))
@@ -1437,8 +1443,10 @@ skip_
                  (context (b) (c))
                  (variable (context (b)) (type bool) c
                            (call g (arguments (expression (var b)))))
-                  (cont (assign-active
-                         ((context (b) (c)) r' (call g (arguments (expression (var c)))))
+                  (cont (assign
+                         (context (b) (c))
+                         r'
+                         (call g (arguments (expression (var c))))
                          (context (r') (c)))
                         (if (context (b) (c))
                           (expression (var c))
@@ -1490,8 +1498,11 @@ skip_
                  (context (b) (c))
                  (variable (context (b)) (type bool) c
                            (call h (arguments (expression (var s)) (expression (var b)))))
-                  (cont (assign-active
-                         ((context (b) (c)) r' (call h (arguments (expression (var s)) (expression (var b)))))
+                  (cont (assign
+                         (context (b) (c))
+                         r'
+                         (call h (arguments (expression (var s))
+                                            (expression (var b))))
                          (context (r') (c)))
                         (if (context (b) (c))
                           (expression (var c))
@@ -1718,9 +1729,9 @@ context_active_(sendrecv_(u,what),
 ;; OM-PARSER parser test
 (define csp-transform-OM-PARSER-assign-action-via
   '(on (context (dummy)) ((trigger i e))
-    (cont (assign-active
-            ((context (dummy)) r' (action (trigger u what)))
-            (context (dummy)))
+    (cont (assign
+           (context (dummy)) r' (action (trigger u what))
+           (context (dummy)))
           (voidreply))))
 
 (pass-if "ast-transform-OM-PARSER-assign-action"

@@ -69,6 +69,7 @@
            <context-open>
            <context-vector>
            <context>
+           <csp-assign>
            <csp-call>
            <csp-if>
            <csp-on>
@@ -380,6 +381,9 @@
   (statement :accessor .statement :init-value #f :init-keyword :statement)
   (cont :accessor .cont :init-value #f :init-keyword :cont))
 
+(define-class <csp-assign> (<assign> <contexted>)
+  (expressions :accessor .expressions :init-value #f :init-keyword :expressions))
+
 (define-class <context-active> (<cont> <contexted>))
 (define-class <context-open> (<cont> <contexted>))
 (define-class <skip> (<ast>))
@@ -566,8 +570,11 @@
                        :value (assign context identifier value))))
 
       (($ <assign> identifier expression)
-       (list 'assign-active (list context 'r' expression)
-             (assign context identifier 'r')))
+       (make <csp-assign>
+         :context context
+         :identifier 'r'
+         :expression expression
+         :expressions (assign context identifier 'r')))
 
       (($ <call> identifier arguments)
        (make <csp-call>
@@ -763,12 +770,12 @@
         (let ((cont (csp-transform ast cont inevitable-optional? channel provided-on? tail-recursive?)))
           (list "context_(\\ (" context ") @ " expression ",\n" cont ")" )))
 
-       (('assign-active (context var ($ <action> ($ <trigger> port event))) expressions)
+       (($ <csp-assign> context identifier ($ <action> ($ <trigger> port event)) expressions)
         (let ((action (list "sendrecv_(" (or port channel) "," event ")")))
-          (list "assign_active_(" action ",\n\\ ((" context "))," var " @ (" expressions "))" )))
+          (list "assign_active_(" action ",\n\\ ((" context "))," identifier " @ (" expressions "))" )))
 
-       (('assign-active (context var ($ <call> identifier (and ($ <arguments>) (get! arguments)))) expressions)
-        (list "assign_active_(\\ P',V' @ " identifier " (" cont-pv ",(\\ (" context ") @ (" (arguments) "))(V')),\n\\ ((" context "))," var " @ (" expressions "))"))
+       (($ <csp-assign> context identifier ($ <call> function (and ($ <arguments>) (get! arguments))) expressions)
+        (list "assign_active_(\\ P',V' @ " function " (" cont-pv ",(\\ (" context ") @ (" (arguments) "))(V')),\n\\ ((" context "))," identifier " @ (" expressions "))"))
 
        (($ <cont> statement cont)
         (let ((statement (csp-transform ast statement inevitable-optional? channel provided-on? tail-recursive?))
