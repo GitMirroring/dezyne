@@ -320,7 +320,7 @@
     (parameter-list comma parameter) : (append $1 (list $3)))
 
    (parameter
-    (compound-type Identifier): (make 'parameter (list $1 $2) @1))
+    (compound-type Identifier): (make 'parameter (list $2 $1) @1))
 
    (function-list
     () : '(functions)
@@ -414,8 +414,8 @@
     (variable-list variable) : (append $1 (list $2)))
 
    (variable
-    (type Identifier = expression semicolon) : `(variable ,$1 ,$2 ,(note-location `(expression ,$4) @3))
-    (compound-type Identifier = expression semicolon) : `(variable ,$1 ,$2 ,(note-location `(expression ,$4) @3)))))
+    (type Identifier = expression semicolon) : `(variable ,$2 ,$1 ,(note-location `(expression ,$4) @3))
+    (compound-type Identifier = expression semicolon) : `(variable ,$2 ,$1 ,(note-location `(expression ,$4) @3)))))
 
 (define (compile-tree-il exp env opts)
   (values (parse-tree-il (comp exp '())) env env))

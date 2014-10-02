@@ -50,14 +50,14 @@
         (enum state (one two))
         (int mode (range 0 3)))
        (variables
-        (variable (type state) m (expression (value state one)))
-        (variable (type bool) b (expression true))
-        (variable (type mixed) x (expression (value mixed v))))
+        (variable m (type state) (expression (value state one)))
+        (variable b (type bool) (expression true))
+        (variable x (type mixed) (expression (value mixed v))))
        (functions (function toggle (signature (type void)) (compound))
                   (function g
                             (signature (type bool)
-                                       (parameters (parameter (type bool) ga)
-                                                   (parameter (type bool) gb)))
+                                       (parameters (parameter ga (type bool))
+                                                   (parameter gb (type bool))))
                             (compound))
                   (function efun
                             (signature (type state)) (compound (return (var m)))))
@@ -73,37 +73,37 @@
        (enum state (one two))
        (int mode (range 0 3)))
       (variables
-       (variable (type state) m (expression (value state one)))
-       (variable (type bool) b true))
+       (variable m (type state) (expression (value state one)))
+       (variable b (type bool) true))
        (functions
-        (function fun (signature (type void) (parameters (parameter (type bool) a)))
+        (function fun (signature (type void) (parameters (parameter a (type bool))))
                   (compound (assign a (expression true))))
         (function rfun (signature (type void) (parameters))
                   (compound (call rgun)))
-        (function rgun (signature (type void) (parameters (parameter (type bool) a)))
+        (function rgun (signature (type void) (parameters (parameter a (type bool))))
                   (compound (call rgun)))
-        (function fa (signature (type void) (parameters (parameter (type bool) a)))
+        (function fa (signature (type void) (parameters (parameter a (type bool))))
                   (compound (call fb)))
-        (function fb (signature (type void) (parameters (parameter (type bool) a)))
+        (function fb (signature (type void) (parameters (parameter a (type bool))))
                   (compound (call fc)))
-        (function fc (signature (type void) (parameters (parameter (type bool) a)))
+        (function fc (signature (type void) (parameters (parameter a (type bool))))
                   (compound (assign b (expression true))))
-        (function rfa (signature (type void) (parameters (parameter (type bool) a)))
+        (function rfa (signature (type void) (parameters (parameter a (type bool))))
                   (compound (call rfb)))
-        (function rfb (signature (type void) (parameters (parameter (type bool) a)))
+        (function rfb (signature (type void) (parameters (parameter a (type bool))))
                   (compound (call rfc)))
-        (function rfc (signature (type void) (parameters (parameter (type bool) a)))
+        (function rfc (signature (type void) (parameters (parameter a (type bool))))
                   (compound (call rfa)))
-        (function rbfa (signature (type void) (parameters (parameter (type bool) a)))
+        (function rbfa (signature (type void) (parameters (parameter a (type bool))))
                   (assign b (call rbfb)))
-        (function rbfb (signature (type void) (parameters (parameter (type bool) a)))
+        (function rbfb (signature (type void) (parameters (parameter a (type bool))))
                   (compound (assign b (call rbfc))))
-        (function rbfc (signature (type void) (parameters (parameter (type bool) a)))
+        (function rbfc (signature (type void) (parameters (parameter a (type bool))))
                   (compound (call fa) (call fb) (compound (call fc) (assign b (call rbfa))))))
       (compound
        (on (triggers (trigger i foo))
            (compound
-            (variable (type e ivar) e (expression (value o foo)))
+            (variable e (type e ivar) (expression (value o foo)))
             (assign e (expression (value o foo)))
             (reply (expression (var e)))))
        (function efun
@@ -127,10 +127,8 @@
          (gom-pretty-noisy-equal?
           (ast:resolve-model
            (car resolve-ast)
-           '(variable (type e)
-                      e
-                      (expression (var efun))))
-          '(variable (type e) e (call efun))))
+           '(variable e (type e) (expression (var efun))))
+          '(variable e (type e) (call efun))))
 
 (pass-if "ast:resolve-assign-valued-function-call"
          (gom-pretty-noisy-equal?
@@ -144,10 +142,8 @@
           (ast:resolve-root-model
            resolve-ast
            (cadr resolve-ast)
-           '(variable (type e ivar)
-                      e
-                      (expression (var efun))))
-          '(variable (type e ivar) e (call efun))))
+           '(variable e (type e ivar) (expression (var efun))))
+          '(variable e (type e ivar) (call efun))))
 
 (pass-if "ast:resolve-assign-valued-mixed-function-call-component"
          (gom-pretty-noisy-equal?
@@ -164,15 +160,10 @@
            (cadr resolve-ast)
            '(on (triggers (trigger o foo))
                 (compound
-                 (variable (type ivar (type e))
-                           e
-                           (expression (value o foo))))))
-
+                 (variable e (type ivar (type e)) (expression (value o foo))))))
           '(on (triggers (trigger o foo))
                (compound
-                (variable (type ivar (type e))
-                          e
-                          (action (trigger o foo)))))))
+                (variable e (type ivar (type e)) (action (trigger o foo)))))))
 
 (pass-if "ast:resolve-assign-valued-action"
          (gom-pretty-noisy-equal?
@@ -181,7 +172,6 @@
            '(on (triggers (trigger o foo))
                 (compound
                  (assign m (expression (value o foo))))))
-
           '(on (triggers (trigger o foo))
                (compound
                 (assign m (action (trigger o foo)))))))
@@ -192,15 +182,10 @@
            (car resolve-ast)
            '(on (triggers (trigger #f foo))
                 (compound
-                 (variable (type e)
-                           e
-                           (expression (var bar))))))
+                 (variable e (type e) (expression (var bar))))))
           '(on (triggers (trigger #f foo))
                 (compound
-                 (variable
-                  (type e #f)
-                  e
-                  (action (trigger #f bar)))))))
+                 (variable e (type e #f) (action (trigger #f bar)))))))
 
 (pass-if "ast:resolve-assign-valued-action-interface"
          (gom-pretty-noisy-equal?
@@ -219,14 +204,10 @@
            (car resolve-ast)
            '(on (triggers (trigger #f foo))
                 (compound
-                 (variable (type e)
-                           e
-                           (expression (call bar))))))
+                 (variable e (type e) (expression (call bar))))))
           '(on (triggers (trigger #f foo))
                (compound
-                (variable (type e)
-                          e
-                          (action (trigger #f bar)))))))
+                (variable e (type e) (action (trigger #f bar)))))))
 
 (pass-if "ast:resolve-assign-valued-action-call-interface"
          (gom-pretty-noisy-equal?
@@ -288,9 +269,9 @@
           (ast:resolve-model
            (cadr resolve-ast)
            '(variables
-             (variable (type state) m (expression (value state one)))))
+             (variable m (type state) (expression (value state one)))))
           '(variables
-            (variable (type state) m (expression (literal #f state one))))))
+            (variable m (type state) (expression (literal #f state one))))))
 
 (pass-if "ast:resolve-value-field-interface"
          (gom-pretty-noisy-equal?
@@ -329,10 +310,10 @@
           (ast:resolve-model
            (cadr resolve-ast)
            '(compound
-             (variable (type ivar (type e)) e (expression (value o foo)))
+             (variable e (type ivar (type e)) (expression (value o foo)))
              (assign e (expression (var e)))))
           '(compound
-             (variable (type ivar (type e)) e (action (trigger o foo)))
+             (variable e (type ivar (type e)) (action (trigger o foo)))
              (assign e (expression (var e))))))
 
 (pass-if "ast:resolve-local-if"
@@ -340,12 +321,12 @@
           (ast:resolve-model
            (car resolve-ast)
            '(compound
-             (variable (type bool) c (expression true))
+             (variable c (type bool) (expression true))
              (assign b (call g (arguments (expression (var c)) (expression (var c)))))
              (if (expression (var c))
                   (compound))))
           '(compound
-             (variable (type bool) c (expression true))
+             (variable c (type bool) (expression true))
              (assign b (call g (arguments (expression (var c)) (expression (var c)))))
              (if (expression (var c))
                   (compound)))))
@@ -361,9 +342,9 @@
          (gom-pretty-noisy-equal?
           (ast:resolve-model
            (cadr resolve-ast)
-           '(function fun (signature (type void) (parameters (parameter (type bool) a)))
+           '(function fun (signature (type void) (parameters (parameter a (type bool))))
                             (compound (assign b (expression (var a))))))
-          '(function fun (signature (type void) (parameters (parameter (type bool) a)))
+          '(function fun (signature (type void) (parameters (parameter a (type bool))))
                      #f
                      (compound (assign b (expression (var a)))))))
 
@@ -371,13 +352,13 @@
          (gom-pretty-noisy-equal?
           (ast:resolve-model
            (cadr resolve-ast)
-           '(function fun (signature (type bool) (parameters (parameter (type bool) a)))
+           '(function fun (signature (type bool) (parameters (parameter a (type bool))))
                       (compound (return (expression (var a))))))
           '(function
             fun
             (signature
              (type bool #f)
-             (parameters (parameter (type bool #f) a)))
+             (parameters (parameter a (type bool #f))))
             #f
             (compound (return (expression (var a)))))))
 
@@ -521,61 +502,61 @@
   (gom-pretty-noisy-equal?
    (ast:resolve-model
     (car resolve-ast)
-    '(variable (type boolean) c (expression true)))
+    '(variable c (type boolean) (expression true)))
    (undefined-error '(type boolean #f) 'boolean "undefined type: ~a")))
 
 (pass-if "ast:resolve-undefined-enum-type"
   (gom-pretty-noisy-equal?
    (ast:resolve-model
     (car resolve-ast)
-    '(variable (type status) c (expression true)))
+    '(variable c (type status) (expression true)))
    (undefined-error '(type status #f) 'status "undefined type: ~a")))
 
 (pass-if "ast:resolve-undefined-enum-interface"
   (gom-pretty-noisy-equal?
    (ast:resolve-model
     (cadr resolve-ast)
-    '(variable (type status Q) c (expression true)))
+    '(variable c (type status Q) (expression true)))
    (undefined-error '(type status Q) 'Q "undefined type: ~a")))
 
 (pass-if "ast:resolve-undefined-int-type"
   (gom-pretty-noisy-equal?
    (ast:resolve-model
     (car resolve-ast)
-    '(variable (type made) c (expression 0)))
+    '(variable c (type made) (expression 0)))
    (undefined-error '(type made #f) 'made "undefined type: ~a")))
 
 (pass-if "ast:resolve-undefined-int-interface"
   (gom-pretty-noisy-equal?
    (ast:resolve-model
     (cadr resolve-ast)
-    '(variable (type mode Q) c (expression 0)))
+    '(variable c (type mode Q) (expression 0)))
    (undefined-error '(type mode Q) 'Q "undefined type: ~a")))
 
 (pass-if "ast:resolve-init-type-int"
   (gom-pretty-noisy-equal?
    (ast:resolve-model
     (car resolve-ast)
-    '(variable (type mode) c (expression 0)))
-    '(variable (type mode) c (expression 0))))
+    '(variable c (type mode) (expression 0)))
+    '(variable c (type mode) (expression 0))))
 
 (pass-if "ast:resolve-init-type-mismatch"
   (gom-pretty-noisy-equal?
    (ast:resolve-model
     (car resolve-ast)
-    '(variable (type bool) b (expression 0)))
+    '(variable b (type bool) (expression 0)))
    (type-mismatch '(expression 0) 'bool 'int)))
 
 (pass-if "ast:resolve-init-enum-mismatch"
   (gom-pretty-noisy-equal?
    (ast:resolve-model
     (car resolve-ast)
-    '(variable (type bool) b (value state one)))
+    '(variable b (type bool) (value state one)))
    (type-mismatch '(value state one) 'bool 'state)))
 
 (pass-if "ast:resolve-init-enum-mismatch"
   (gom-pretty-noisy-equal?
    (ast:resolve-model
     (cadr resolve-ast)
-    '(variable (type bool) b (literal ivar e v)))
+    '(variable b (type bool) (literal ivar e v)))
    (type-mismatch '(literal ivar e v) 'bool 'ivar.e)))

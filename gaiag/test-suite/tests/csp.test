@@ -125,9 +125,9 @@
                    B
                    (types (enum S (S1 S2)))
                    (variables
-                    (variable (type S) s (action (trigger S S1)))
-                    (variable (type bool) b (expression false))
-                    (variable (type bool) c (expression true)))
+                    (variable s (type S) (action (trigger S S1)))
+                    (variable b (type bool) (expression false))
+                    (variable c (type bool) (expression true)))
                    (functions (function toggle (signature (type void)) #f (compound)))
                    (compound)))))
 
@@ -385,8 +385,8 @@ illegal_(STOP,<>)"))
           (ast-transform*
            i-ast
            '(compound
-             (variable (type bool) la (expression true))
-             (variable (type bool) lb (expression false))
+             (variable la (type bool) (expression true))
+             (variable lb (type bool) (expression false))
              (assign la (expression true))))
 
           ;; via:
@@ -672,9 +672,9 @@ semi_(semi_(\\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
                    B
                    (types (enum S (S1 S2)))
                    (variables
-                    (variable (type S) s (expression (literal #f S S1)))
-                    (variable (type bool) b (expression false))
-                    (variable (type bool) c (expression true)))
+                    (variable s (type S) (expression (literal #f S S1)))
+                    (variable b (type bool) (expression false))
+                    (variable c (type bool) (expression true)))
                    (compound
                     (on ((trigger j e))
                         (compound))))))))
@@ -794,11 +794,8 @@ skip_(\\ V' @ transition_end -> c_B(V'),((s,b,c),(stack')))"))
       (types (enum States
                    (Disarmed Armed Triggered Disarming)))
       (variables
-       (variable
-        (type States)
-        state
-        (expression (literal #f States Disarmed)))
-       (variable (type bool) sounding (expression false)))
+       (variable state (type States) (expression (literal #f States Disarmed)))
+       (variable sounding (type bool) (expression false)))
       (compound
        (on ((trigger sensor triggered))
            (compound
@@ -863,7 +860,7 @@ skip_)(\\ V' @ transition_end -> Alarm_d(V'),((state,sounding),(stack')))"
     #f
     (types)
     (variables
-     (variable (type bool) dummy (expression false)))
+     (variable dummy (type bool) (expression false)))
     (functions)
      (compound
       (on (triggers (trigger #f done))
@@ -881,7 +878,7 @@ skip_)(\\ V' @ transition_end -> Alarm_d(V'),((state,sounding),(stack')))"
        #f
        (types)
        (variables
-        (variable (type bool) dummy (expression false)))
+        (variable dummy (type bool) (expression false)))
        (functions)
        (compound
         (on (triggers (trigger #f what))
@@ -898,17 +895,14 @@ skip_)(\\ V' @ transition_end -> Alarm_d(V'),((state,sounding),(stack')))"
       #f
       (types)
       (variables
-       (variable (type bool) dummy (expression false)))
+       (variable dummy (type bool) (expression false)))
       (functions)
       (compound
        (guard (expression true)
               (compound
                (on (triggers (trigger i done))
                    (compound
-                    (variable
-                     (type U (type Status))
-                     s
-                     (expression (value u what)))
+                    (variable s (type U (type Status)) (expression (value u what)))
                     (if (expression (== (var s) (literal U Status Ok)))
                         (compound
                          (reply (expression (literal I Status Yes))))
@@ -957,7 +951,7 @@ skip_)(\\ V' @ transition_end -> Alarm_d(V'),((state,sounding),(stack')))"
            var-ast
            '(on ((trigger o bar))
                 (compound
-                 (variable (type ivar (type E)) e (action (trigger i bar))))))
+                 (variable e (type ivar (type E)) (action (trigger i bar))))))
           csp-transform-variable-valued-action-via))
 
 (pass-if "csp-transform-variable-valued-action"
@@ -1005,9 +999,7 @@ skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
            var-ast
            '(on ((trigger o bar))
                 (if (expression true)
-                    (variable (type ivar (type E))
-                              e
-                              (action (trigger i bar))))))
+                    (variable e (type ivar (type E)) (action (trigger i bar))))))
           csp-transform-if-variable-valued-action-via))
 
 (pass-if "csp-transform-if-variable-valued-action"
@@ -1044,9 +1036,7 @@ skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
            '(on ((trigger o bar))
                 (if (expression true)
                     (compound
-                     (variable (type ivar (type E))
-                               e
-                               (action (trigger i bar)))))))
+                     (variable e (type ivar (type E)) (action (trigger i bar)))))))
           csp-transform-if-compound-variable-valued-action-via))
 
 (pass-if "csp-transform-if-compound-variable-valued-action"
@@ -1126,7 +1116,7 @@ semi_(callvoid_(\\ P',V' @ toggle(P',V')),
 (define csp-transform-function-arguments
   '(function
     g
-    (signature (type bool) (parameters (parameter (type bool) c))) #f
+    (signature (type bool) (parameters (parameter c (type bool)))) #f
     (semi (action (trigger #f f))
           (csp-return (context (s b hide_member2') (c)) (expression c)))))
 
@@ -1137,7 +1127,7 @@ semi_(callvoid_(\\ P',V' @ toggle(P',V')),
           (ast-transform* i-ast
                           '(function
                             g
-                            (signature (type bool) (parameters (parameter (type bool) c))) #f
+                            (signature (type bool) (parameters (parameter c (type bool)))) #f
                             (compound (action (trigger #f f))
                                       (return (expression c)))))
 
@@ -1171,7 +1161,7 @@ returnvalue_(\\ ((s,b,hide_member2'),((stack',c))) @ c)))(P',V')
     i-ast
     '(on (e)
          (compound
-          (variable (type bool) c
+          (variable c (type bool)
                     (call g (arguments (expression b) (expression b)))))))
 
    ;; via:
@@ -1208,7 +1198,7 @@ context_active_(\\ P',V' @ g (P',V',(\\ ((s,b,c),(stack')) @ (b,b))(V')),
 
            '(on ((trigger i done))
                (compound
-                 (variable (type U (type Status)) s (action (trigger u what)))
+                 (variable s (type U (type Status)) (action (trigger u what)))
                  (if (expression (== s (literal u Status Ok)))
                      (compound (reply (expression (literal I Status Yes))))
                      (compound (reply (expression (literal I Status No))))))))
@@ -1273,7 +1263,7 @@ reply_(i, (\\ ((dummy),((stack',s))) @ Status_No))
     (signature
      (type void)
      (parameters
-      (parameter (type I (type Status)) s)))
+      (parameter s (type I (type Status)))))
     #f
     (csp-reply (context (dummy) (s))
                (expression (var s)))))
@@ -1288,7 +1278,7 @@ reply_(i, (\\ ((dummy),((stack',s))) @ Status_No))
               reply_fun_arg
               (signature
                 (type void)
-                (parameters (parameter (type I (type Status)) s)))
+                (parameters (parameter s (type I (type Status)))))
               #f
               (compound (reply (expression (var s))))))
 
@@ -1318,11 +1308,11 @@ reply_(I, (\\ ((dummy),((stack',s))) @ s)))(P',V')
      (behaviour
       #f
       (types)
-      (variables (variable (type bool) b (expression false)))
+      (variables (variable b (type bool) (expression false)))
       (functions
        (function
         g
-        (signature (type bool) (parameters (parameter (type bool) c))) #f
+        (signature (type bool) (parameters (parameter c (type bool)))) #f
         (compound (return (expression (var c))))))
       (compound
        (on ((trigger i e))
@@ -1347,7 +1337,7 @@ reply_(I, (\\ ((dummy),((stack',s))) @ s)))(P',V')
 
            '(on ((trigger i e))
                 (compound
-                 (variable (type bool) c (expression true))
+                 (variable c (type bool) (expression true))
                  (if (expression (var c))
                      (compound
                       (action (trigger i f)))))))
@@ -1386,15 +1376,15 @@ skip_
      (behaviour
       #f
       (types)
-      (variables (variable (type bool) b (expression false)))
+      (variables (variable b (type bool) (expression false)))
       (functions
        (function
         g
-        (signature (type bool) (parameters (parameter (type bool) c))) #f
+        (signature (type bool) (parameters (parameter c (type bool)))) #f
         (compound (action (trigger i f)) (return (expression (var c)))))
        (function
         h
-        (signature (type bool) (parameters (parameter (type bool) c) (parameter (type bool) d))) #f
+        (signature (type bool) (parameters (parameter c (type bool)) (parameter d (type bool)))) #f
         (compound (action (trigger i f)) (return (expression (and (var c) (var d)))))))
       (compound
        (guard (expression true)
@@ -1405,7 +1395,7 @@ skip_
   '(on ((trigger i e))
        (compound
         (assign b (expression (! (var b))))
-        (variable (type bool) c (call g (arguments (expression (var b)))))
+        (variable c (type bool) (call g (arguments (expression (var b)))))
         (assign b (call g (arguments (expression (var c)))))
         (if (expression (var c))
             (compound (action (trigger i f)))))))
@@ -1456,7 +1446,7 @@ skip_
   '(on ((trigger i e))
        (compound
         (assign b (expression (! (var b))))
-        (variable (type bool) c
+        (variable c (type bool)
                   (call h (arguments (expression (var s)) (expression (var b)))))
         (assign b (call h (arguments (expression (var s)) (expression (var b)))))
         (if (expression (var c))
@@ -1533,11 +1523,11 @@ skip_
   '(on ((trigger i e))
        (compound
         (assign b (expression (! (var b))))
-        (variable (type bool) c (call g (arguments (expression (var b)))))
-        (variable (type bool) d (call g (arguments (expression (var c)))))
+        (variable c (type bool) (call g (arguments (expression (var b)))))
+        (variable d (type bool) (call g (arguments (expression (var c)))))
         (compound
-         (variable (type bool) cc (call g (arguments (expression (var c)))))
-         (variable (type bool) dd (call g (arguments (expression (var d)))))
+         (variable cc (type bool) (call g (arguments (expression (var c)))))
+         (variable dd (type bool) (call g (arguments (expression (var d)))))
          (if (expression (var dd))
              (compound (action (trigger i f))))))))
 
@@ -1630,12 +1620,11 @@ skip_
          (csp-pretty-noisy-equal?
 
           ;; from:
-          (ast-transform* reply-ast '(on ((trigger i e))
-                                    (compound
-                                     (variable
-                                      (type U (type Status))
-                                      s
-                                      (action (trigger u what))))))
+          (ast-transform*
+           reply-ast
+           '(on ((trigger i e))
+                (compound
+                 (variable s (type U (type Status)) (action (trigger u what))))))
 
           ;; via:
           csp-transform-OM-PARSER-variable-action-via))
@@ -1662,12 +1651,11 @@ context_active_(sendrecv_(u,what),
          (csp-pretty-noisy-equal?
 
           ;; from:
-          (ast-transform* reply-ast '(on ((trigger i e))
-                                    (compound
-                                     (variable
-                                      (type U (type Status))
-                                      s
-                                      (action (trigger u what))))))
+          (ast-transform*
+           reply-ast
+           '(on ((trigger i e))
+                (compound
+                 (variable s (type U (type Status)) (action (trigger u what))))))
 
           ;; via:
           csp-transform-OM-PARSER-variable-action-via))
@@ -1831,7 +1819,7 @@ semi_(assign_active_(sendrecv_(u,what),
           (ast-transform*
            i-ast
            '(compound
-            (variable (type bool) t (expression false))
+            (variable t (type bool) (expression false))
             (assign t
                     (expression
                      (== (var s) (literal #f S S1))))))

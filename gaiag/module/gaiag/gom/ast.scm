@@ -211,7 +211,7 @@
 
     (('otherwise) (make <otherwise> :value 'otherwise))
 
-    (('parameter type name)
+    (('parameter name type)
      (make <gom:parameter> :name name :type (ast->gom- type)))
 
     (('parameters parameters ...)
@@ -268,7 +268,7 @@
 
     (('var name) (make <var> :name name))
 
-    (('variable type name expression)
+    (('variable name type expression)
      (make <variable> :name name :type (ast->gom- type) :expression (ast->gom- expression)))
 
     (('variables variables ...)
