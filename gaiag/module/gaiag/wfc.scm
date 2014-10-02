@@ -42,8 +42,6 @@
 
   :export (
            ast:wfc
-           second-on
-           mixing-declarative-imperative
            ))
 
 (define-method (ast:wfc (o <ast>))
@@ -70,7 +68,7 @@
             (wfc-error o "component with behaviour must have one provides port")))
        (list
         (if (null? (gom:find-triggers o))
-            (wfc-error o "component with behaviour must accept a trigger event")))
+            (wfc-error o "component with behaviour must accept an event")))
        '())))
     (_ '())))
 
