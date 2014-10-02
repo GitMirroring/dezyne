@@ -283,8 +283,7 @@ semi_((\\ P',V' @ i!h -> P'(V')),
 skip_)(\\ V' @ i_B(V'),((s,b,c),(stack')))"))
 
 (define csp-transform-illegal-action-via
-  '(on (e) IG
-       (illegal)))
+  '(on (e) (illegal) IG))
 
 (pass-if "ast-transform-illegal-action"
          (csp-pretty-noisy-equal?
@@ -733,8 +732,8 @@ semi_(semi_(\\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
 
            c-ast
 
-           '(on ((trigger j e)) IG
-                (illegal)))
+           '(on ((trigger j e))
+                (illegal) IG))
 
           ;; via:
           "IIG & j?x:{e} ->

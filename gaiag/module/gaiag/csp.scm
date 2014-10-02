@@ -597,7 +597,7 @@
       (($ <csp-on> triggers statement context)
        (let ((result (ast-transform- ast statement)))
          (if (prefix-illegal? statement)
-             (make <csp-on> :triggers triggers :statement 'IG :context result)
+             (make <csp-on> :triggers triggers :statement result :context 'IG)
              (make <csp-on> :triggers triggers :statement result :context context))))
 
       (($ <reply> expression)
@@ -639,21 +639,24 @@
     (=>string ast
      (match src
 
+       (($ <csp-on> ($ <triggers> triggers) statement 'IG)
+        (let* ((channel (if (is-a? model <interface>) model-name (.port (car triggers))))
+               (IG (if ((provides-event? model) (car triggers)) "IIG & "  "IG & "))
+               (event-names (comma-join (map .event triggers)))
+               (transformed (csp-transform ast statement inevitable-optional? channel provided-on? tail-recursive?)))
+          (list IG channel "?x:{" event-names "}" " ->\n" transformed "(STOP,<>)" "")))
+
        (($ <csp-on> ($ <triggers> triggers) statement context)
-        (let* ((context (if (is-a? context <context>)
-                            (make <the-end> :context context)
-                            context))
+        (let* ((the-end (make <the-end> :context context))
                (inevitable-optional? (or (member 'inevitable (map .event triggers))
                                          (member 'optional (map .event triggers))))
-               (ig? (eq? statement 'IG))
                (channel (if (is-a? model <interface>) model-name (.port (car triggers))))
                (provided-on? (or (and (is-a? model <interface>) (not inevitable-optional?))
                                  (or (is-a? model <interface>) ((provides-event? model) (car triggers)))))
-               (IG? (if ig? (if ((provides-event? model) (car triggers)) "IIG & "  "IG & ")))
                (event-names (comma-join (map .event triggers)))
-               (transformed (if ig? #f (csp-transform ast statement inevitable-optional? channel provided-on? tail-recursive?)))
-               (transformed-end (csp-transform ast context inevitable-optional? channel provided-on? tail-recursive?)))
-          (list IG? channel "?x:{" event-names "}" " ->\n" transformed transformed-end (if ig? "(STOP,<>)" ""))))
+               (transformed (csp-transform ast statement inevitable-optional? channel provided-on? tail-recursive?))
+               (transformed-end (csp-transform ast the-end inevitable-optional? channel provided-on? tail-recursive?)))
+          (list channel "?x:{" event-names "}" " ->\n" transformed transformed-end)))
 
        (($ <action> trigger)
         (let* ((channel (list "" (if (is-a? model <interface>) model-name (.port trigger))))
