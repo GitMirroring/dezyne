@@ -20,25 +20,24 @@
 # 
 # Code:
 
+import inspect
 import sys
+try:
+    from enum import Enum
+except:
+    class Enum (): pass
 #
-import component.AlarmSystem
+import interface.Sensor
 
-def detected ():
-   sys.stderr.write ('Console.detected\n')
+class Sensor ():
+    def __init__ (self):
+        self.sensor = interface.Sensor ()
 
-def deactivated ():
-   sys.stderr.write ('Console.deactivated\n')
+        self.sensor.ins.enable = self.sensor_enable
+        self.sensor.ins.disable = self.sensor_disable
 
-def main ():
-    alarm_system = component.AlarmSystem ()
-    alarm_system.console.outs.detected = detected
-    alarm_system.console.outs.deactivated = deactivated
+    def sensor_enable (self):
+        sys.stderr.write ('Sensor.sensor_enable\n')
 
-    alarm_system.console.ins.arm ()
-    alarm_system.sensor.sensor.outs.triggered ()
-    alarm_system.console.ins.disarm ()
-    alarm_system.sensor.sensor.outs.disabled ()
-
-if __name__ == '__main__':
-    main ()
+    def sensor_disable (self):
+        sys.stderr.write ('Sensor.sensor_disable\n')

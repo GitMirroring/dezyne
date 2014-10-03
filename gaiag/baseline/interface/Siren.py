@@ -20,25 +20,10 @@
 # 
 # Code:
 
-import sys
-#
-import component.AlarmSystem
-
-def detected ():
-   sys.stderr.write ('Console.detected\n')
-
-def deactivated ():
-   sys.stderr.write ('Console.deactivated\n')
-
-def main ():
-    alarm_system = component.AlarmSystem ()
-    alarm_system.console.outs.detected = detected
-    alarm_system.console.outs.deactivated = deactivated
-
-    alarm_system.console.ins.arm ()
-    alarm_system.sensor.sensor.outs.triggered ()
-    alarm_system.console.ins.disarm ()
-    alarm_system.sensor.sensor.outs.disabled ()
-
-if __name__ == '__main__':
-    main ()
+class Siren ():
+    def __init__ (self):
+        class Ins ():
+            turnoff = None
+            turnon = None
+        self.ins = Ins ()
+        self.outs = None

@@ -20,25 +20,18 @@
 # 
 # Code:
 
+import glob
+import inspect
+import os
 import sys
-#
-import component.AlarmSystem
 
-def detected ():
-   sys.stderr.write ('Console.detected\n')
+files = glob.glob (os.path.dirname (__file__) + '/*.py')
+def base (file_name):
+    return os.path.basename (file_name)[:-3]
+#__all__ = map (base, files)
 
-def deactivated ():
-   sys.stderr.write ('Console.deactivated\n')
-
-def main ():
-    alarm_system = component.AlarmSystem ()
-    alarm_system.console.outs.detected = detected
-    alarm_system.console.outs.deactivated = deactivated
-
-    alarm_system.console.ins.arm ()
-    alarm_system.sensor.sensor.outs.triggered ()
-    alarm_system.console.ins.disarm ()
-    alarm_system.sensor.sensor.outs.disabled ()
-
-if __name__ == '__main__':
-    main ()
+for name in map (base, files):
+    module = __import__ (name, globals (), locals (), [], 1)
+    classes = inspect.getmembers (module, inspect.isclass)
+    for c in classes:
+        sys.modules[__name__].__dict__[c[0]] = c[1]

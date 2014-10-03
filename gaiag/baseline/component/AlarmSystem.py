@@ -20,25 +20,35 @@
 # 
 # Code:
 
+import inspect
 import sys
 #
-import component.AlarmSystem
+import component
 
-def detected ():
-   sys.stderr.write ('Console.detected\n')
+def __info__ (depth=1):
+    return inspect.stack ()[depth]
 
-def deactivated ():
-   sys.stderr.write ('Console.deactivated\n')
+def __file_name__ (depth=1):
+    return __info__ (depth + 1)[1]
 
-def main ():
-    alarm_system = component.AlarmSystem ()
-    alarm_system.console.outs.detected = detected
-    alarm_system.console.outs.deactivated = deactivated
+def __line__ (depth=1):
+    return __info__ (depth + 1)[2]
 
-    alarm_system.console.ins.arm ()
-    alarm_system.sensor.sensor.outs.triggered ()
-    alarm_system.console.ins.disarm ()
-    alarm_system.sensor.sensor.outs.disabled ()
+def __function__ (depth=1):
+    return __info__ (depth + 1)[3]
 
-if __name__ == '__main__':
-    main ()
+def object_bind (object, function):
+    return lambda *args: function (object, *args)
+
+def connect (provided, required):
+    provided.outs = required.outs
+    required.ins = provided.ins
+
+class AlarmSystem ():
+    def __init__ (self):
+        self.alarm = component.Alarm ()
+        self.sensor = component.Sensor ()
+        self.siren = component.Siren ()
+        self.console = self.alarm.console
+        connect (self.sensor.sensor, self.alarm.sensor)
+        connect (self.siren.siren, self.alarm.siren)

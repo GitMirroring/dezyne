@@ -6,3 +6,5 @@
 /out
 /.local.make
 *-
+*.pyc
+__pycache__

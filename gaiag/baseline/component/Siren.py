@@ -20,25 +20,24 @@
 # 
 # Code:
 
+import inspect
 import sys
+try:
+    from enum import Enum
+except:
+    class Enum (): pass
 #
-import component.AlarmSystem
+import interface.Siren
 
-def detected ():
-   sys.stderr.write ('Console.detected\n')
+class Siren ():
+    def __init__ (self):
+        self.siren = interface.Siren ()
 
-def deactivated ():
-   sys.stderr.write ('Console.deactivated\n')
+        self.siren.ins.turnon = self.siren_turnon
+        self.siren.ins.turnoff = self.siren_turnoff
 
-def main ():
-    alarm_system = component.AlarmSystem ()
-    alarm_system.console.outs.detected = detected
-    alarm_system.console.outs.deactivated = deactivated
+    def siren_turnon (self):
+        sys.stderr.write ('Siren.siren_turnon\n')
 
-    alarm_system.console.ins.arm ()
-    alarm_system.sensor.sensor.outs.triggered ()
-    alarm_system.console.ins.disarm ()
-    alarm_system.sensor.sensor.outs.disabled ()
-
-if __name__ == '__main__':
-    main ()
+    def siren_turnoff (self):
+        sys.stderr.write ('Siren.siren_turnoff\n')
