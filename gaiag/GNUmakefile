@@ -27,6 +27,7 @@ SHELL := /bin/bash
 DEPTH = ..
 TOPDIR = $(shell cd $(DEPTH) && pwd)
 diff = diff -uw -I '^ *$$' -I '^ *//'
+pydiff = diff -u -I '^ *$$' -I '^ *\#'
 sed = sed -e 's/^-gen/gen/' -re 's/((cppbase.cpp|.hh.scm|.cc.scm):[0-9]*):/\1:warning:/'
 BUILD = build
 #asdgen = ASD_PREFIX=$(DEPTH)/.. $(DEPTH)/../$(BUILD)/asdgenerator
@@ -320,11 +321,25 @@ glue:
 	-cd out && ccache g++ -Wall -Wextra -I ../$(DEPTH)/examples/codegen/asd_cpp_runtime -c *.c*
 	-cd out && g++ -o test *.o && ./test
 
-out/%.py: examples/%.asd
+out/%.py: examples/regression/%.asd
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
-	cd out && $(PWD)/gaiag -l python examples/$*.asd
-	-$(diff) baseline/interface/$*.py out/interface
-#	-$(diff) baseline/component/$*.py out/component
-	@$(diff) baseline/interface/$*.py out/interface | diffstat || true
+	cd out && $(PWD)/gaiag -l python examples/regression/$*.asd
+	-$(pydiff) baseline/component/$*.py out/component
+	@$(pydiff) baseline/component/$*.py out/component | diff -ustat || true
 
-python: compile out/Console.py
+python: compile
+	rm -rf out && mkdir out && ln -s ../examples ../templates out
+	cd out && $(PWD)/gaiag -l python examples/regression/Alarm.asd
+	cd out && $(PWD)/gaiag -l python examples/Sensor.asd
+	cd out && $(PWD)/gaiag -l python examples/Siren.asd
+	cd out && $(PWD)/gaiag -l python examples/Alarm.asd
+	cd out && $(PWD)/gaiag -l python examples/AlarmSystem.asd
+	$(pydiff) baseline/interface/Console.py out/interface
+	$(pydiff) baseline/interface/Sensor.py out/interface
+	$(pydiff) baseline/interface/Siren.py out/interface
+	$(pydiff) baseline/component/Alarm.py out/component
+	$(pydiff) baseline/component/AlarmSystem.py out/component
+	ln -s ../examples/alarm.py out
+	ln -s ../examples/__init__.py out/interface
+	ln -s ../examples/__init__.py out/component
+	cd out && python alarm.py

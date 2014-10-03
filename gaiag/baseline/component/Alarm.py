@@ -31,9 +31,11 @@ import interface.Console
 import interface.Sensor
 import interface.Siren
 
+
 class Alarm ():
     class States (Enum):
-        States, Disarmed, Armed, Triggered, Disarming = range (5)
+        Disarmed, Armed, Triggered, Disarming = range (4)
+
     def __init__ (self):
         self.state = self.States.Disarmed
         self.sounding = False
@@ -105,3 +107,5 @@ class Alarm ():
                 self.state = self.States.Disarmed
         elif (self.state == self.States.Triggered):
             assert (False)
+
+

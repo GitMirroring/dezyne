@@ -23,7 +23,9 @@
 class Siren ():
     def __init__ (self):
         class Ins ():
-            turnoff = None
             turnon = None
+            turnoff = None
         self.ins = Ins ()
-        self.outs = None
+        class Outs ():
+            pass
+        self.outs = Outs ()

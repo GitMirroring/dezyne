@@ -25,21 +25,6 @@ import sys
 #
 import component
 
-def __info__ (depth=1):
-    return inspect.stack ()[depth]
-
-def __file_name__ (depth=1):
-    return __info__ (depth + 1)[1]
-
-def __line__ (depth=1):
-    return __info__ (depth + 1)[2]
-
-def __function__ (depth=1):
-    return __info__ (depth + 1)[3]
-
-def object_bind (object, function):
-    return lambda *args: function (object, *args)
-
 def connect (provided, required):
     provided.outs = required.outs
     required.ins = provided.ins
@@ -50,5 +35,6 @@ class AlarmSystem ():
         self.sensor = component.Sensor ()
         self.siren = component.Siren ()
         self.console = self.alarm.console
+
         connect (self.sensor.sensor, self.alarm.sensor)
         connect (self.siren.siren, self.alarm.siren)
