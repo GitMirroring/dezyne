@@ -319,3 +319,12 @@ glue:
 	cd out && cp ../examples/component-Sensor-c3.cc .
 	-cd out && ccache g++ -Wall -Wextra -I ../$(DEPTH)/examples/codegen/asd_cpp_runtime -c *.c*
 	-cd out && g++ -o test *.o && ./test
+
+out/%.py: examples/%.asd
+	rm -rf out && mkdir out && ln -s ../examples ../templates out
+	cd out && $(PWD)/gaiag -l python examples/$*.asd
+	-$(diff) baseline/interface/$*.py out/interface
+#	-$(diff) baseline/component/$*.py out/component
+	@$(diff) baseline/interface/$*.py out/interface | diffstat || true
+
+python: compile out/Console.py

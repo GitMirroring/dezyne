@@ -64,6 +64,7 @@
            hash-table->alist
            join
            list<
+           mkdir-p
            null-is-#f
            number->symbol
            one-is-#f
@@ -147,6 +148,20 @@
   (if (pair? components)
       (components->file-name- components)
       (->string components)))
+
+(define (mkdir-p dir . mode)
+  (define (mkdir-p-helper dir . rest)
+    (if (not (string-null? dir))
+	(catch 'system-error
+	       (lambda ()
+		 (apply mkdir (cons dir mode)))
+	       (lambda args
+		 (if (!= EEXIST (system-error-errno args))
+		     (apply throw args)))))
+    (or (null? rest)
+	(apply mkdir-p-helper
+	       (cons (string-append dir "/" (car rest)) (cdr rest)))))
+  (apply mkdir-p-helper (string-split dir #\/)))
 
 (define (dump-file file-name string)
   (with-output-to-file (components->file-name file-name) (lambda () (display string))))
