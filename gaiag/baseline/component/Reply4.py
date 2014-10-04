@@ -48,17 +48,17 @@ class Reply4 ():
     def i_done (self):
         sys.stderr.write ('Reply4.i_done\n')
         if (True):
-            s =     self.u.ins.what ()
-            self.s =             self.u.ins.what ()
-            if (self.s == interface.U.Status.Ok):
+            s = self.u.ins.what ()
+            self.s = self.u.ins.what ()
+            if (s == interface.U.Status.Ok):
                 v = self.fun ()
-                if (self.v == self.Status.Yes):
+                if (v == self.Status.Yes):
                     reply_I_Status = interface.I.Status.Yes
                 else:
                     reply_I_Status = interface.I.Status.No
             else:
                 v = self.fun_arg (self.Status.No)
-                if (self.v == self.Status.Yes):
+                if (v == self.Status.Yes):
                     reply_I_Status = interface.I.Status.Yes
                 else:
                     reply_I_Status = interface.I.Status.No
@@ -67,5 +67,5 @@ class Reply4 ():
     def fun (self):
         return self.Status.Yes
     def fun_arg (self, s):
-        return self.s
+        return s
 

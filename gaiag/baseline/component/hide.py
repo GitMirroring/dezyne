@@ -49,8 +49,8 @@ class hide ():
                 self.i.outs.f ()
 
     def g (self, b, d):
-        b = self.d
+        b = d
         d = self.c
         self.i.outs.f ()
-        return (self.b or self.d)
+        return (self.b or d)
 

@@ -20,7 +20,14 @@
 # 
 # Code:
 
+try:
+    from enum import Enum
+except:
+    class Enum (): pass
+#
+
 class Console ():
+
     def __init__ (self):
         class Ins ():
             arm = None

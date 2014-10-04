@@ -46,9 +46,9 @@ class Reply3 ():
     def i_done (self):
         sys.stderr.write ('Reply3.i_done\n')
         if (True):
-            s =     self.u.ins.what ()
-            self.s =             self.u.ins.what ()
-            if (self.s == interface.U.Status.Ok):
+            s = self.u.ins.what ()
+            self.s = self.u.ins.what ()
+            if (s == interface.U.Status.Ok):
                 self.reply_fun ()
             else:
                 self.reply_fun_arg (interface.I.Status.No)
@@ -57,5 +57,5 @@ class Reply3 ():
     def reply_fun (self):
         reply_I_Status = interface.I.Status.Yes
     def reply_fun_arg (self, s):
-        reply_I_Status = self.s
+        reply_I_Status = s
 

@@ -46,8 +46,8 @@ class Reply ():
     def i_done (self):
         sys.stderr.write ('Reply.i_done\n')
         if (True):
-            s =     self.u.ins.what ()
-            if (self.s == interface.U.Status.Ok):
+            s = self.u.ins.what ()
+            if (s == interface.U.Status.Ok):
                 reply_I_Status = interface.I.Status.Yes
             else:
                 reply_I_Status = interface.I.Status.No

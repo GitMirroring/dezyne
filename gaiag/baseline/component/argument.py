@@ -44,11 +44,11 @@ class argument ():
         if (True):
             self.b = not (self.b)
             c = self.g (self.b)
-            self.b = self.g (self.c)
-            if (self.c):
+            self.b = self.g (c)
+            if (c):
                 self.i.outs.f ()
 
     def g (self, gc):
         self.i.outs.f ()
-        return (self.gc or self.b)
+        return (gc or self.b)
 

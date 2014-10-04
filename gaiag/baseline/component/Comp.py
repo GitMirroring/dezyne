@@ -50,10 +50,10 @@ class Comp ():
     def client_initialize (self):
         sys.stderr.write ('Comp.client_initialize\n')
         if (self.s == self.State.Uninitialized):
-            res =     self.device_A.ins.initialize ()
-            if (self.res == interface.IDevice.result_t.OK):
-                self.res =                 self.device_A.ins.calibrate ()
-            if (self.res == interface.IDevice.result_t.OK):
+            res = self.device_A.ins.initialize ()
+            if (res == interface.IDevice.result_t.OK):
+                self.res = self.device_A.ins.calibrate ()
+            if (res == interface.IDevice.result_t.OK):
                 self.s = self.State.Initialized
                 reply_IDevice_result_t = interface.IDevice.result_t.OK
             else:
@@ -72,8 +72,8 @@ class Comp ():
         elif (self.s == self.State.Initialized):
             assert (False)
         elif (self.s == self.State.Error):
-            res =     self.device_A.ins.calibrate ()
-            if (self.res == interface.IDevice.result_t.OK):
+            res = self.device_A.ins.calibrate ()
+            if (res == interface.IDevice.result_t.OK):
                 self.s = self.State.Initialized
                 reply_IDevice_result_t = interface.IDevice.result_t.OK
             else:
@@ -86,10 +86,10 @@ class Comp ():
         if (self.s == self.State.Uninitialized):
             assert (False)
         elif (self.s == self.State.Initialized):
-            res =     self.device_A.ins.perform_action1 ()
-            if (self.res == interface.IDevice.result_t.OK):
-                self.res =                 self.device_A.ins.perform_action2 ()
-            if (self.res == interface.IDevice.result_t.OK):
+            res = self.device_A.ins.perform_action1 ()
+            if (res == interface.IDevice.result_t.OK):
+                self.res = self.device_A.ins.perform_action2 ()
+            if (res == interface.IDevice.result_t.OK):
                 self.s = self.State.Initialized
                 reply_IDevice_result_t = interface.IDevice.result_t.OK
             else:

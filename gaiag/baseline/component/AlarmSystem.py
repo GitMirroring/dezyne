@@ -38,3 +38,4 @@ class AlarmSystem ():
 
         connect (self.sensor.sensor, self.alarm.sensor)
         connect (self.siren.siren, self.alarm.siren)
+

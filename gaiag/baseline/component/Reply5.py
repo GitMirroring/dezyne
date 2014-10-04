@@ -46,18 +46,18 @@ class Reply5 ():
     def i_done (self):
         sys.stderr.write ('Reply5.i_done\n')
         if (True):
-            s =     self.u.ins.what ()
-            self.s =             self.u.ins.what ()
-            if (self.s == interface.U.Status.Ok):
+            s = self.u.ins.what ()
+            self.s = self.u.ins.what ()
+            if (s == interface.U.Status.Ok):
                 s = self.fun ()
-                reply_I_Status = self.s
+                reply_I_Status = s
             else:
                 s = self.fun_arg (interface.I.Status.No)
-                reply_I_Status = self.s
+                reply_I_Status = s
         return reply_I_Status
 
     def fun (self):
         return interface.I.Status.Yes
     def fun_arg (self, s):
-        return self.s
+        return s
 

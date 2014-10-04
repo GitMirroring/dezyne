@@ -357,7 +357,7 @@ PY_BROKEN =\
 
 PY_SOURCES = $(filter-out $(PY_BROKEN),$(REGRESSION_SOURCES))
 
-python: compile python-regression
+python: compile python-alarm python-regression
 
 python-regression: $(PY_SOURCES:%.asd=out/%.py)
 

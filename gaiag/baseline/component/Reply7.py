@@ -47,6 +47,6 @@ class Reply7 ():
         return reply_IReply7_E
 
     def f (self):
-        v =     self.r.ins.foo ()
-        reply_IReply7_E = self.v
+        v = self.r.ins.foo ()
+        reply_IReply7_E = v
 

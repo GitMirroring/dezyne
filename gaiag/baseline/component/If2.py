@@ -44,9 +44,9 @@ class If2 ():
     def i_e (self):
         sys.stderr.write ('If2.i_e\n')
         if (self.b):
-            v =     self.i.outs.a ()
+            v = self.i.outs.a ()
         else:
-            v =     self.i.outs.a ()
+            v = self.i.outs.a ()
         self.b = not (self.b)
 
 
