@@ -20,19 +20,14 @@
 # 
 # Code:
 
-import inspect
 import sys
-try:
-    from enum import Enum
-except:
-    class Enum (): pass
 #
 import interface.I
 import interface.U
 
 
 class Reply4 ():
-    class Status (Enum):
+    class Status ():
         Yes, No = range (2)
 
     def __init__ (self):
@@ -53,16 +48,16 @@ class Reply4 ():
             if (s == interface.U.Status.Ok):
                 v = self.fun ()
                 if (v == self.Status.Yes):
-                    reply_I_Status = interface.I.Status.Yes
+                    self.reply_I_Status = interface.I.Status.Yes
                 else:
-                    reply_I_Status = interface.I.Status.No
+                    self.reply_I_Status = interface.I.Status.No
             else:
                 v = self.fun_arg (self.Status.No)
                 if (v == self.Status.Yes):
-                    reply_I_Status = interface.I.Status.Yes
+                    self.reply_I_Status = interface.I.Status.Yes
                 else:
-                    reply_I_Status = interface.I.Status.No
-        return reply_I_Status
+                    self.reply_I_Status = interface.I.Status.No
+        return self.reply_I_Status
 
     def fun (self):
         return self.Status.Yes

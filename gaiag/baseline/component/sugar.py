@@ -20,18 +20,13 @@
 # 
 # Code:
 
-import inspect
 import sys
-try:
-    from enum import Enum
-except:
-    class Enum (): pass
 #
 import interface.I
 
 
 class sugar ():
-    class Enum (Enum):
+    class Enum ():
         False, True = range (2)
 
     def __init__ (self):

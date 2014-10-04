@@ -20,12 +20,7 @@
 # 
 # Code:
 
-import inspect
 import sys
-try:
-    from enum import Enum
-except:
-    class Enum (): pass
 #
 import interface.I
 import interface.U
@@ -52,10 +47,10 @@ class Reply3 ():
                 self.reply_fun ()
             else:
                 self.reply_fun_arg (interface.I.Status.No)
-        return reply_I_Status
+        return self.reply_I_Status
 
     def reply_fun (self):
-        reply_I_Status = interface.I.Status.Yes
+        self.reply_I_Status = interface.I.Status.Yes
     def reply_fun_arg (self, s):
-        reply_I_Status = s
+        self.reply_I_Status = s
 

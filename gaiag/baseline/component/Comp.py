@@ -20,19 +20,14 @@
 # 
 # Code:
 
-import inspect
 import sys
-try:
-    from enum import Enum
-except:
-    class Enum (): pass
 #
 import interface.IComp
 import interface.IDevice
 
 
 class Comp ():
-    class State (Enum):
+    class State ():
         Uninitialized, Initialized, Error = range (3)
 
     def __init__ (self):
@@ -55,15 +50,15 @@ class Comp ():
                 self.res = self.device_A.ins.calibrate ()
             if (res == interface.IDevice.result_t.OK):
                 self.s = self.State.Initialized
-                reply_IDevice_result_t = interface.IDevice.result_t.OK
+                self.reply_IDevice_result_t = interface.IDevice.result_t.OK
             else:
                 self.s = self.State.Uninitialized
-                reply_IDevice_result_t = interface.IDevice.result_t.NOK
+                self.reply_IDevice_result_t = interface.IDevice.result_t.NOK
         elif (self.s == self.State.Initialized):
             assert (False)
         elif (self.s == self.State.Error):
             assert (False)
-        return reply_IComp_result_t
+        return self.reply_IComp_result_t
 
     def client_recover (self):
         sys.stderr.write ('Comp.client_recover\n')
@@ -75,11 +70,11 @@ class Comp ():
             res = self.device_A.ins.calibrate ()
             if (res == interface.IDevice.result_t.OK):
                 self.s = self.State.Initialized
-                reply_IDevice_result_t = interface.IDevice.result_t.OK
+                self.reply_IDevice_result_t = interface.IDevice.result_t.OK
             else:
                 self.s = self.State.Error
-                reply_IDevice_result_t = interface.IDevice.result_t.NOK
-        return reply_IComp_result_t
+                self.reply_IDevice_result_t = interface.IDevice.result_t.NOK
+        return self.reply_IComp_result_t
 
     def client_perform_actions (self):
         sys.stderr.write ('Comp.client_perform_actions\n')
@@ -91,12 +86,12 @@ class Comp ():
                 self.res = self.device_A.ins.perform_action2 ()
             if (res == interface.IDevice.result_t.OK):
                 self.s = self.State.Initialized
-                reply_IDevice_result_t = interface.IDevice.result_t.OK
+                self.reply_IDevice_result_t = interface.IDevice.result_t.OK
             else:
                 self.s = self.State.Error
-                reply_IDevice_result_t = interface.IDevice.result_t.NOK
+                self.reply_IDevice_result_t = interface.IDevice.result_t.NOK
         elif (self.s == self.State.Error):
             assert (False)
-        return reply_IComp_result_t
+        return self.reply_IComp_result_t
 
 

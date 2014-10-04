@@ -20,14 +20,8 @@
 # 
 # Code:
 
-try:
-    from enum import Enum
-except:
-    class Enum (): pass
-#
-
 class IIf2 ():
-    class result (Enum):
+    class result ():
         value = range (1)
 
     def __init__ (self):

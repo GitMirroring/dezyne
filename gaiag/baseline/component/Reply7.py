@@ -20,12 +20,7 @@
 # 
 # Code:
 
-import inspect
 import sys
-try:
-    from enum import Enum
-except:
-    class Enum (): pass
 #
 import interface.IReply7
 import interface.IReply7
@@ -44,9 +39,9 @@ class Reply7 ():
     def p_foo (self):
         sys.stderr.write ('Reply7.p_foo\n')
         self.f ()
-        return reply_IReply7_E
+        return self.reply_IReply7_E
 
     def f (self):
         v = self.r.ins.foo ()
-        reply_IReply7_E = v
+        self.reply_IReply7_E = v
 

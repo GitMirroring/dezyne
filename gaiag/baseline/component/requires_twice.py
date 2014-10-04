@@ -20,12 +20,7 @@
 # 
 # Code:
 
-import inspect
 import sys
-try:
-    from enum import Enum
-except:
-    class Enum (): pass
 #
 import interface.irequires_twice
 import interface.irequires_twice

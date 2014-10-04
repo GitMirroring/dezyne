@@ -20,14 +20,8 @@
 # 
 # Code:
 
-try:
-    from enum import Enum
-except:
-    class Enum (): pass
-#
-
 class interface_component_overload ():
-    class R (Enum):
+    class R ():
         V = range (1)
 
     def __init__ (self):

@@ -20,14 +20,8 @@
 # 
 # Code:
 
-try:
-    from enum import Enum
-except:
-    class Enum (): pass
-#
-
 class U ():
-    class Status (Enum):
+    class Status ():
         Ok, Nok = range (2)
 
     def __init__ (self):

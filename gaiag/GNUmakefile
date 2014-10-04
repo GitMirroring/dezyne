@@ -338,11 +338,11 @@ python-alarm: compile
 	cd out && $(PWD)/gaiag -l python examples/Siren.asd
 	cd out && $(PWD)/gaiag -l python examples/Alarm.asd
 	cd out && $(PWD)/gaiag -l python examples/AlarmSystem.asd
-	$(pydiff) baseline/interface/Console.py out/interface
-	$(pydiff) baseline/interface/Sensor.py out/interface
-	$(pydiff) baseline/interface/Siren.py out/interface
-	$(pydiff) baseline/component/Alarm.py out/component
-	$(pydiff) baseline/component/AlarmSystem.py out/component
+	-$(pydiff) baseline/interface/Console.py out/interface
+	-$(pydiff) baseline/interface/Sensor.py out/interface
+	-$(pydiff) baseline/interface/Siren.py out/interface
+	-$(pydiff) baseline/component/Alarm.py out/component
+	-$(pydiff) baseline/component/AlarmSystem.py out/component
 	ln -s ../examples/alarm.py out
 	ln -s ../examples/__init__.py out/interface
 	ln -s ../examples/__init__.py out/component
@@ -362,7 +362,11 @@ python: compile python-alarm python-regression
 python-regression: $(PY_SOURCES:%.asd=out/%.py)
 
 python-update: dummy
-	while ! $(MAKE) python; do\
+	while ! $(MAKE) python-alarm; do\
+		cp -pv out/interface/*py baseline/interface;\
+		cp -pv out/component/*py baseline/component;\
+	done
+	while ! $(MAKE) python-regression; do\
 		cp -pv out/interface/*py baseline/interface;\
 		cp -pv out/component/*py baseline/component;\
 	done

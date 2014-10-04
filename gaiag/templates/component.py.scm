@@ -1,9 +1,4 @@
-import inspect
 import sys
-try:
-    from enum import Enum
-except:
-    class Enum (): pass
 ##
 #(map (lambda (port)
         (let ((interface (.type port)))
@@ -68,7 +63,7 @@ class #.model  ():
             "        sys.stderr.write ('" (.name model) "." (.name port) "_" (.name event) "\\n')\n"
             statement
             (if (not (eq? (.name type) 'void))
-                (->string (list "        return reply_" reply-type "\n")))
+                (->string (list "        return self.reply_" reply-type "\n")))
             "\n"))))
       (filter (gom:dir-matches? port) (gom:events port))))
    (gom:ports model))# (map

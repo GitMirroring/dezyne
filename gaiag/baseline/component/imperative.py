@@ -20,18 +20,13 @@
 # 
 # Code:
 
-import inspect
 import sys
-try:
-    from enum import Enum
-except:
-    class Enum (): pass
 #
 import interface.iimperative
 
 
 class imperative ():
-    class States (Enum):
+    class States ():
         I, II, III, IV = range (4)
 
     def __init__ (self):

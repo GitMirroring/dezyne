@@ -129,7 +129,7 @@
   (let ((fields (.elements (.fields enum))))
     (->string
      (list
-      "    class " (.name enum) " (Enum):\n"
+      "    class " (.name enum) " ():\n"
       "        " (comma-space-join fields) " = range (" (length fields) ")\n"))))
 
 (define (declare-integer integer)
@@ -222,7 +222,7 @@
         (let* ((name (enum->identifier model expression locals)))
           (statements->string
            model
-           (list space "reply_" name " = " (expression->string model expression locals) "\n")
+           (list space "self.reply_" name " = " (expression->string model expression locals) "\n")
            locals)))
        (($ <return> #f)
         (list space "return\n"))

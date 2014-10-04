@@ -20,14 +20,8 @@
 # 
 # Code:
 
-try:
-    from enum import Enum
-except:
-    class Enum (): pass
-#
-
 class IReply7 ():
-    class E (Enum):
+    class E ():
         A = range (1)
 
     def __init__ (self):

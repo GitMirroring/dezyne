@@ -21,6 +21,7 @@
 # Code:
 
 class iinstance_collision ():
+
     def __init__ (self):
         class Ins ():
             foo = None

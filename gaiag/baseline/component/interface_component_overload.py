@@ -20,12 +20,7 @@
 # 
 # Code:
 
-import inspect
 import sys
-try:
-    from enum import Enum
-except:
-    class Enum (): pass
 #
 import interface.interface_component_overload
 
@@ -41,7 +36,7 @@ class interface_component_overload ():
 
     def interface_component_overload_e (self):
         sys.stderr.write ('interface_component_overload.interface_component_overload_e\n')
-        reply_interface_component_overload_R = interface.interface_component_overload.R.V
-        return reply_interface_component_overload_R
+        self.reply_interface_component_overload_R = interface.interface_component_overload.R.V
+        return self.reply_interface_component_overload_R
 
 

@@ -20,12 +20,7 @@
 # 
 # Code:
 
-import inspect
 import sys
-try:
-    from enum import Enum
-except:
-    class Enum (): pass
 #
 import interface.ienum_collision
 
@@ -43,12 +38,12 @@ class enum_collision ():
 
     def i_foo (self):
         sys.stderr.write ('enum_collision.i_foo\n')
-        reply_ienum_collision_Retval1 = interface.ienum_collision.Retval1.OK
-        return reply_ienum_collision_Retval1
+        self.reply_ienum_collision_Retval1 = interface.ienum_collision.Retval1.OK
+        return self.reply_ienum_collision_Retval1
 
     def i_bar (self):
         sys.stderr.write ('enum_collision.i_bar\n')
-        reply_ienum_collision_Retval2 = interface.ienum_collision.Retval2.NOK
-        return reply_ienum_collision_Retval2
+        self.reply_ienum_collision_Retval2 = interface.ienum_collision.Retval2.NOK
+        return self.reply_ienum_collision_Retval2
 
 

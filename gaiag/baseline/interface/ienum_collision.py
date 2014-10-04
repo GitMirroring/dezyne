@@ -20,16 +20,10 @@
 # 
 # Code:
 
-try:
-    from enum import Enum
-except:
-    class Enum (): pass
-#
-
 class ienum_collision ():
-    class Retval1 (Enum):
+    class Retval1 ():
         OK, NOK = range (2)
-    class Retval2 (Enum):
+    class Retval2 ():
         OK, NOK = range (2)
 
     def __init__ (self):

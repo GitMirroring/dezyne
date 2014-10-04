@@ -20,14 +20,8 @@
 # 
 # Code:
 
-try:
-    from enum import Enum
-except:
-    class Enum (): pass
-#
-
 class IDevice ():
-    class result_t (Enum):
+    class result_t ():
         OK, NOK = range (2)
 
     def __init__ (self):

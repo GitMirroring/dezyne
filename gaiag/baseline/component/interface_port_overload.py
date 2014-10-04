@@ -20,12 +20,7 @@
 # 
 # Code:
 
-import inspect
 import sys
-try:
-    from enum import Enum
-except:
-    class Enum (): pass
 #
 import interface.I
 
@@ -41,7 +36,7 @@ class interface_port_overload ():
 
     def I_e (self):
         sys.stderr.write ('interface_port_overload.I_e\n')
-        reply_I_R = interface.I.R.V
-        return reply_I_R
+        self.reply_I_R = interface.I.R.V
+        return self.reply_I_R
 
 

@@ -1,9 +1,3 @@
-try:
-    from enum import Enum
-except:
-    class Enum (): pass
-##
-
 class #.interface  ():
 #(->string (map declare-enum (gom:interface-enums model)))
     def __init__ (self):

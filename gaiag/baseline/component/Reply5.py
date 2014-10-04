@@ -20,12 +20,7 @@
 # 
 # Code:
 
-import inspect
 import sys
-try:
-    from enum import Enum
-except:
-    class Enum (): pass
 #
 import interface.I
 import interface.U
@@ -50,11 +45,11 @@ class Reply5 ():
             self.s = self.u.ins.what ()
             if (s == interface.U.Status.Ok):
                 s = self.fun ()
-                reply_I_Status = s
+                self.reply_I_Status = s
             else:
                 s = self.fun_arg (interface.I.Status.No)
-                reply_I_Status = s
-        return reply_I_Status
+                self.reply_I_Status = s
+        return self.reply_I_Status
 
     def fun (self):
         return interface.I.Status.Yes
