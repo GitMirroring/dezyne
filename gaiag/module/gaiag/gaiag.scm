@@ -79,7 +79,7 @@ Usage: gaiag [OPTION]... FILE
   -o, --output FILE    generate FILE containing the output
   -v, --version        display version
 
-Languages: asd c++ csp gom normstate resolve scheme simulate wfc
+Languages: asd c++ csp gom normstate python resolve scheme simulate wfc
 
 Examples:
   ./gaiag examples/Alarm.asd
