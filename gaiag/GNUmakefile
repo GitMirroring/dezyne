@@ -255,7 +255,7 @@ EXAMPLE_SOURCES =\
 
 out/webdemo/%.refines: $(DEPTH)/webdemo/asd/%.asd
 	rm -rf out && mkdir -p out/webdemo && ln -s ../../examples ../../webdemo ../../templates ../../$(DEPTH)/webdemo/asd out/webdemo
-	cd out/webdemo && $(TOPDIR)/$(BUILD)/asdgenerator -l scm asd/$*.asd
+	cd out/webdemo && $(TOPDIR)/$(BUILD)/asdgenerator -M -l scm asd/$*.asd
 	cd out/webdemo && $(PWD)/gaiag -l csp $*.scm
 	[ -f out/webdemo/$*.csp ] || mv out/webdemo/*.csp out/webdemo/$*.csp
 	$(diff) baseline/webdemo/$*.csp out/webdemo || true
@@ -267,7 +267,7 @@ out/webdemo/%.refines: $(DEPTH)/webdemo/asd/%.asd
 
 out/webdemo/%.refines: examples/regression/%.asd
 	rm -rf out && mkdir -p out/webdemo && ln -s ../../examples ../../webdemo ../../templates ../../$(DEPTH)/webdemo/asd out/webdemo
-	cd out/webdemo && $(TOPDIR)/$(BUILD)/asdgenerator -l scm examples/regression/$*.asd
+	cd out/webdemo && $(TOPDIR)/$(BUILD)/asdgenerator -M -l scm examples/regression/$*.asd
 	cd out/webdemo && $(PWD)/gaiag -l csp $*.scm
 	[ -f out/webdemo/$*.csp ] || mv out/webdemo/*.csp out/webdemo/$*.csp
 	$(diff) baseline/webdemo/$*.csp out/webdemo || true
