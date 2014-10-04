@@ -27,22 +27,30 @@ try:
 except:
     class Enum (): pass
 #
-import interface.Sensor
+import interface.I
+import interface.U
 
 
-class Sensor ():
+class Reply ():
 
     def __init__ (self):
+        self.dummy = False
+        self.reply_I_Status = None
+        self.reply_U_Status = None
 
-        self.sensor = interface.Sensor ()
+        self.i = interface.I ()
+        self.u = interface.U ()
 
-        self.sensor.ins.enable = self.sensor_enable
-        self.sensor.ins.disable = self.sensor_disable
+        self.i.ins.done = self.i_done
 
-    def sensor_enable (self):
-        sys.stderr.write ('Sensor.sensor_enable\n')
-
-    def sensor_disable (self):
-        sys.stderr.write ('Sensor.sensor_disable\n')
+    def i_done (self):
+        sys.stderr.write ('Reply.i_done\n')
+        if (True):
+            s =     self.u.ins.what ()
+            if (self.s == interface.U.Status.Ok):
+                reply_I_Status = interface.I.Status.Yes
+            else:
+                reply_I_Status = interface.I.Status.No
+        return reply_I_Status
 
 

@@ -27,22 +27,32 @@ try:
 except:
     class Enum (): pass
 #
-import interface.Sensor
+import interface.irequires_twice
+import interface.irequires_twice
+import interface.irequires_twice
 
 
-class Sensor ():
+class requires_twice ():
 
     def __init__ (self):
 
-        self.sensor = interface.Sensor ()
+        self.p = interface.irequires_twice ()
+        self.once = interface.irequires_twice ()
+        self.twice = interface.irequires_twice ()
 
-        self.sensor.ins.enable = self.sensor_enable
-        self.sensor.ins.disable = self.sensor_disable
+        self.p.ins.e = self.p_e
+        self.once.outs.a = self.once_a
+        self.twice.outs.a = self.twice_a
 
-    def sensor_enable (self):
-        sys.stderr.write ('Sensor.sensor_enable\n')
+    def p_e (self):
+        sys.stderr.write ('requires_twice.p_e\n')
+        self.once.outs.a ()
+        self.twice.outs.a ()
 
-    def sensor_disable (self):
-        sys.stderr.write ('Sensor.sensor_disable\n')
+    def once_a (self):
+        sys.stderr.write ('requires_twice.once_a\n')
+
+    def twice_a (self):
+        sys.stderr.write ('requires_twice.twice_a\n')
 
 

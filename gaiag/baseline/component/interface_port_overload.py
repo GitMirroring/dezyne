@@ -27,22 +27,21 @@ try:
 except:
     class Enum (): pass
 #
-import interface.Sensor
+import interface.I
 
 
-class Sensor ():
+class interface_port_overload ():
 
     def __init__ (self):
+        self.reply_I_R = None
 
-        self.sensor = interface.Sensor ()
+        self.I = interface.I ()
 
-        self.sensor.ins.enable = self.sensor_enable
-        self.sensor.ins.disable = self.sensor_disable
+        self.I.ins.e = self.I_e
 
-    def sensor_enable (self):
-        sys.stderr.write ('Sensor.sensor_enable\n')
-
-    def sensor_disable (self):
-        sys.stderr.write ('Sensor.sensor_disable\n')
+    def I_e (self):
+        sys.stderr.write ('interface_port_overload.I_e\n')
+        reply_I_R = interface.I.R.V
+        return reply_I_R
 
 

@@ -22,27 +22,17 @@
 
 import inspect
 import sys
-try:
-    from enum import Enum
-except:
-    class Enum (): pass
 #
-import interface.Sensor
+import component
 
+def connect (provided, required):
+    provided.outs = required.outs
+    required.ins = provided.ins
 
-class Sensor ():
-
+class provides_twice ():
     def __init__ (self):
-
-        self.sensor = interface.Sensor ()
-
-        self.sensor.ins.enable = self.sensor_enable
-        self.sensor.ins.disable = self.sensor_disable
-
-    def sensor_enable (self):
-        sys.stderr.write ('Sensor.sensor_enable\n')
-
-    def sensor_disable (self):
-        sys.stderr.write ('Sensor.sensor_disable\n')
+        self.one = component.external_provides_twice ()
+        self.i = self.one.i
+        self.ii = self.one.ii
 
 

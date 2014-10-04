@@ -20,29 +20,20 @@
 # 
 # Code:
 
-import inspect
-import sys
 try:
     from enum import Enum
 except:
     class Enum (): pass
 #
-import interface.Sensor
 
-
-class Sensor ():
+class IIf2 ():
+    class result (Enum):
+        value = range (1)
 
     def __init__ (self):
-
-        self.sensor = interface.Sensor ()
-
-        self.sensor.ins.enable = self.sensor_enable
-        self.sensor.ins.disable = self.sensor_disable
-
-    def sensor_enable (self):
-        sys.stderr.write ('Sensor.sensor_enable\n')
-
-    def sensor_disable (self):
-        sys.stderr.write ('Sensor.sensor_disable\n')
-
-
+        class Ins ():
+            e = None
+        self.ins = Ins ()
+        class Outs ():
+            a = None
+        self.outs = Outs ()

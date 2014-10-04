@@ -27,22 +27,19 @@ try:
 except:
     class Enum (): pass
 #
-import interface.Sensor
+import interface.iprovides_once
 
 
-class Sensor ():
+class component_provides_twice ():
 
     def __init__ (self):
 
-        self.sensor = interface.Sensor ()
+        self.i = interface.iprovides_once ()
 
-        self.sensor.ins.enable = self.sensor_enable
-        self.sensor.ins.disable = self.sensor_disable
+        self.i.ins.foo = self.i_foo
 
-    def sensor_enable (self):
-        sys.stderr.write ('Sensor.sensor_enable\n')
-
-    def sensor_disable (self):
-        sys.stderr.write ('Sensor.sensor_disable\n')
+    def i_foo (self):
+        sys.stderr.write ('component_provides_twice.i_foo\n')
+        assert (False)
 
 

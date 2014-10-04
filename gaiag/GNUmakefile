@@ -325,9 +325,13 @@ out/%.py: examples/regression/%.asd
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
 	cd out && $(PWD)/gaiag -l python examples/regression/$*.asd
 	-$(pydiff) baseline/component/$*.py out/component
-	@$(pydiff) baseline/component/$*.py out/component | diff -ustat || true
+	ln -s ../examples/__init__.py out/interface
+	ln -s ../examples/__init__.py out/component
+	cd out && python component/$*.py
+	$(pydiff) baseline/component/$*.py out/component | diffstat || true
+	$(pydiff) baseline/component/$*.py out/component > /dev/null
 
-python: compile
+python-alarm: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
 	cd out && $(PWD)/gaiag -l python examples/regression/Alarm.asd
 	cd out && $(PWD)/gaiag -l python examples/Sensor.asd
@@ -343,3 +347,22 @@ python: compile
 	ln -s ../examples/__init__.py out/interface
 	ln -s ../examples/__init__.py out/component
 	cd out && python alarm.py
+
+PY_BROKEN =\
+ Alarm.asd\
+ Noot.asd\
+ livelock1.asd\
+ livelock2.asd\
+ mangle.asd\
+
+PY_SOURCES = $(filter-out $(PY_BROKEN),$(REGRESSION_SOURCES))
+
+python: compile python-regression
+
+python-regression: $(PY_SOURCES:%.asd=out/%.py)
+
+python-update: dummy
+	while ! $(MAKE) python; do\
+		cp -pv out/interface/*py baseline/interface;\
+		cp -pv out/component/*py baseline/component;\
+	done

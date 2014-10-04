@@ -29,8 +29,11 @@ except:
 #
 import interface.Siren
 
+
 class Siren ():
+
     def __init__ (self):
+
         self.siren = interface.Siren ()
 
         self.siren.ins.turnon = self.siren_turnon
@@ -41,3 +44,5 @@ class Siren ():
 
     def siren_turnoff (self):
         sys.stderr.write ('Siren.siren_turnoff\n')
+
+

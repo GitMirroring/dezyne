@@ -11,8 +11,7 @@ except:
       (gom:ports model))
 
 class #.model  ():
-#(->string (map declare-enum (gom:enums (.behaviour model))))#
-(->string (map declare-integer (gom:integers (.behaviour model))))
+#(->string (map declare-enum (gom:enums (.behaviour model))))
     def __init__ (self):
 #
     (map
@@ -72,4 +71,18 @@ class #.model  ():
                 (->string (list "        return reply_" reply-type "\n")))
             "\n"))))
       (filter (gom:dir-matches? port) (gom:events port))))
-   (gom:ports model))
+   (gom:ports model))# (map
+ (lambda (function)
+   (let* ((signature (.signature function))
+          (return-type (statements->string model signature))
+          (name (.name function))
+          (parameters (.parameters signature))
+          (comma (if (null? (.elements parameters)) "" ", "))
+          (statement (.statement function))
+          (locals (map (lambda (x) (cons (.name x) x)) (.elements parameters)))
+          (parameters (statements->string model parameters))
+          (statements (statements->string model statement locals 2))
+          (model (.name model)))
+     (->string (list "    " "def " name " (self" comma parameters "):\n"
+                     statements))))
+ (gom:functions model))

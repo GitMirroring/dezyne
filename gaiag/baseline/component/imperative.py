@@ -27,22 +27,37 @@ try:
 except:
     class Enum (): pass
 #
-import interface.Sensor
+import interface.iimperative
 
 
-class Sensor ():
+class imperative ():
+    class States (Enum):
+        I, II, III, IV = range (4)
 
     def __init__ (self):
+        self.state = self.States.I
 
-        self.sensor = interface.Sensor ()
+        self.i = interface.iimperative ()
 
-        self.sensor.ins.enable = self.sensor_enable
-        self.sensor.ins.disable = self.sensor_disable
+        self.i.ins.e = self.i_e
 
-    def sensor_enable (self):
-        sys.stderr.write ('Sensor.sensor_enable\n')
-
-    def sensor_disable (self):
-        sys.stderr.write ('Sensor.sensor_disable\n')
+    def i_e (self):
+        sys.stderr.write ('imperative.i_e\n')
+        if (self.state == self.States.I):
+            self.i.outs.f ()
+            self.i.outs.g ()
+            self.i.outs.h ()
+            self.state = self.States.II
+        elif (self.state == self.States.II):
+            self.state = self.States.III
+        elif (self.state == self.States.III):
+            self.i.outs.f ()
+            self.i.outs.g ()
+            self.i.outs.g ()
+            self.i.outs.f ()
+            self.state = self.States.IV
+        elif (self.state == self.States.IV):
+            self.i.outs.h ()
+            self.state = self.States.I
 
 
