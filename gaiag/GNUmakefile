@@ -43,7 +43,7 @@ GUILE_FLAGS := $(patsubst %,-L %, $(subst :, ,$(GUILE_LOAD_PATH)))
 
 default: all
 
-all: compile wfc ast pretty c++ csp simulate check
+all: compile
 
 tags:
 	etags $(shell git ls-files)
@@ -91,25 +91,25 @@ cover-test:
 gaiag.lcov/%-asd.info: examples/regression/%.asd
 	rm -f gaiag.lcov/gaiag.info
 	cd gaiag.lcov && ../gaiag --coverage -l asd $< >/dev/null
-	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
+	sed -i s@:[.][.]/@:$(shell pwd)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/module/language/\* $(TOPDIR)/gaiag/test-suite\*  \*pretty-print.scm \*gaiag/coverage -o $@ | grep -v Removing
 
 gaiag.lcov/%-csp.info: examples/regression/%.asd
 	rm -f gaiag.lcov/gaiag.info
 	cd gaiag.lcov && ../gaiag --coverage -l csp $<
-	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
+	sed -i s@:[.][.]/@:$(shell pwd)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/module/language/\* $(TOPDIR)/gaiag/test-suite\*  \*pretty-print.scm \*gaiag/coverage -o $@ | grep -v Removing
 
 gaiag.lcov/%-c++.info: examples/regression/%.asd
 	rm -f gaiag.lcov/gaiag.info
 	cd gaiag.lcov && ../gaiag --coverage -l c++ $<
-	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
+	sed -i s@:[.][.]/@:$(shell pwd)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/module/language/\* $(TOPDIR)/gaiag/test-suite\*  \*pretty-print.scm \*gaiag/coverage -o $@ | grep -v Removing
 
 gaiag.lcov/%-wfc.info: examples/wfc/%.asd
 	rm -f gaiag.lcov/gaiag.info
 	cd gaiag.lcov && ! ../gaiag --coverage -l wfc $<
-	sed -i s@:[.][.]/@:$(PWD)/@ gaiag.lcov/gaiag.info
+	sed -i s@:[.][.]/@:$(shell pwd)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/module/language/\* $(TOPDIR)/gaiag/test-suite\*  \*pretty-print.scm \*gaiag/coverage -o $@ | grep -v Removing
 
 cover-regression:\
@@ -147,14 +147,14 @@ pretty: compile
 
 out/%.compiles: examples/regression/%.asd
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
-	cd out && $(PWD)/gaiag -l c++ examples/regression/$*.asd
+	cd out && $(shell pwd)/gaiag -l c++ examples/regression/$*.asd
 	$(diff) baseline/component-$*-c3.hh out
 	$(diff) baseline/component-$*-c3.cc out
 	ccache g++ -o out/component-$*-c3.o -c out/component-$*-c3.cc
 
 out/%.compiles: examples/%.asd
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
-	cd out && $(PWD)/gaiag -l c++ examples/$*.asd
+	cd out && $(shell pwd)/gaiag -l c++ examples/$*.asd
 	$(diff) baseline/component-$*-c3.hh out
 	$(diff) baseline/component-$*-c3.cc out
 	ccache g++ -o out/component-$*-c3.o -c out/component-$*-c3.cc
@@ -171,11 +171,11 @@ CC_SOURCES = $(filter-out $(CC_BROKEN),$(REGRESSION_SOURCES))
 c++: compile c++-alarm alarm-gen alarm-legacy $(CC_SOURCES:%.asd=out/%.compiles)
 
 c++-alarm:
-	cd out && $(PWD)/gaiag -l c++ examples/regression/Alarm.asd
-	cd out && $(PWD)/gaiag -l c++ examples/Sensor.asd
-	cd out && $(PWD)/gaiag -l c++ examples/Siren.asd
-	cd out && $(PWD)/gaiag -l c++ examples/Alarm.asd
-	cd out && $(PWD)/gaiag -l c++ examples/AlarmSystem.asd
+	cd out && $(shell pwd)/gaiag -l c++ examples/regression/Alarm.asd
+	cd out && $(shell pwd)/gaiag -l c++ examples/Sensor.asd
+	cd out && $(shell pwd)/gaiag -l c++ examples/Siren.asd
+	cd out && $(shell pwd)/gaiag -l c++ examples/Alarm.asd
+	cd out && $(shell pwd)/gaiag -l c++ examples/AlarmSystem.asd
 	$(diff) baseline/interface-Console-c3.hh out
 	$(diff) baseline/interface-Sensor-c3.hh out
 	$(diff) baseline/interface-Siren-c3.hh out
@@ -193,7 +193,7 @@ wfc: compile $(WFC_SOURCES:%.asd=out/%.wfc)
 
 out/%.refines: examples/regression/%.asd
 	rm -rf out && mkdir -p out && ln -s ../examples ../webdemo ../templates ../$(DEPTH)/webdemo/asd out
-	cd out && $(PWD)/gaiag -l csp $^
+	cd out && $(shell pwd)/gaiag -l csp $^
 	$(diff) baseline/$*.csp out || true
 	@$(diff) baseline/$*.csp out | diffstat || true
 	$(CSPMCHECKER) out/$*.csp
@@ -228,7 +228,7 @@ alarm-gen:
 		examples/Console.asd\
 		examples/Sensor.asd\
 		examples/Siren.asd;\
-	do $(PWD)/gaiag -l c++ $$file; done
+	do $(shell pwd)/gaiag -l c++ $$file; done
 
 alarm: alarm-gen
 	-ccache g++ -Wall -Wextra out/*.cc -o out/test && ./out/test
@@ -256,7 +256,7 @@ EXAMPLE_SOURCES =\
 out/webdemo/%.refines: $(DEPTH)/webdemo/asd/%.asd
 	rm -rf out && mkdir -p out/webdemo && ln -s ../../examples ../../webdemo ../../templates ../../$(DEPTH)/webdemo/asd out/webdemo
 	cd out/webdemo && $(TOPDIR)/$(BUILD)/asdgenerator -M -l scm asd/$*.asd
-	cd out/webdemo && $(PWD)/gaiag -l csp $*.scm
+	cd out/webdemo && $(shell pwd)/gaiag -l csp $*.scm
 	[ -f out/webdemo/$*.csp ] || mv out/webdemo/*.csp out/webdemo/$*.csp
 	$(diff) baseline/webdemo/$*.csp out/webdemo || true
 	@$(diff) baseline/webdemo/$*.csp out/webdemo | diffstat || true
@@ -268,7 +268,7 @@ out/webdemo/%.refines: $(DEPTH)/webdemo/asd/%.asd
 out/webdemo/%.refines: examples/regression/%.asd
 	rm -rf out && mkdir -p out/webdemo && ln -s ../../examples ../../webdemo ../../templates ../../$(DEPTH)/webdemo/asd out/webdemo
 	cd out/webdemo && $(TOPDIR)/$(BUILD)/asdgenerator -M -l scm examples/regression/$*.asd
-	cd out/webdemo && $(PWD)/gaiag -l csp $*.scm
+	cd out/webdemo && $(shell pwd)/gaiag -l csp $*.scm
 	[ -f out/webdemo/$*.csp ] || mv out/webdemo/*.csp out/webdemo/$*.csp
 	$(diff) baseline/webdemo/$*.csp out/webdemo || true
 	@$(diff) baseline/webdemo/$*.csp out/webdemo | diffstat || true
@@ -316,14 +316,14 @@ glue:
 	 	examples/Console.asd\
 	 	examples/Sensor.asd\
 	 	examples/Siren.asd;\
-	 	do $(PWD)/gaiag -l c++ $$file; done
+	 	do $(shell pwd)/gaiag -l c++ $$file; done
 	cd out && cp ../examples/component-Sensor-c3.cc .
 	-cd out && ccache g++ -Wall -Wextra -I ../$(DEPTH)/examples/codegen/asd_cpp_runtime -c *.c*
 	-cd out && g++ -o test *.o && ./test
 
 out/%.py: examples/regression/%.asd
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
-	cd out && $(PWD)/gaiag -l python examples/regression/$*.asd
+	cd out && $(shell pwd)/gaiag -l python examples/regression/$*.asd
 	-$(pydiff) baseline/component/$*.py out/component
 	ln -s ../examples/__init__.py out/interface
 	ln -s ../examples/__init__.py out/component
@@ -333,11 +333,11 @@ out/%.py: examples/regression/%.asd
 
 python-alarm: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
-	cd out && $(PWD)/gaiag -l python examples/regression/Alarm.asd
-	cd out && $(PWD)/gaiag -l python examples/Sensor.asd
-	cd out && $(PWD)/gaiag -l python examples/Siren.asd
-	cd out && $(PWD)/gaiag -l python examples/Alarm.asd
-	cd out && $(PWD)/gaiag -l python examples/AlarmSystem.asd
+	cd out && $(shell pwd)/gaiag -l python examples/regression/Alarm.asd
+	cd out && $(shell pwd)/gaiag -l python examples/Sensor.asd
+	cd out && $(shell pwd)/gaiag -l python examples/Siren.asd
+	cd out && $(shell pwd)/gaiag -l python examples/Alarm.asd
+	cd out && $(shell pwd)/gaiag -l python examples/AlarmSystem.asd
 	-$(pydiff) baseline/interface/Console.py out/interface
 	-$(pydiff) baseline/interface/Sensor.py out/interface
 	-$(pydiff) baseline/interface/Siren.py out/interface
