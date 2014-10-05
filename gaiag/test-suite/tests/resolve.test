@@ -264,6 +264,13 @@
                 (compound
                  (reply (expression (literal ivar mixed v)))))))
 
+(pass-if "ast:resolve-mixed-type-component"
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (cadr resolve-ast)
+           '(variable v (type mixed ivar) (literal ivar mixed v)))
+          '(variable v (type mixed ivar) (literal ivar mixed v))))
+
 (pass-if "ast:resolve-value-enum-value"
          (gom-pretty-noisy-equal?
           (ast:resolve-model

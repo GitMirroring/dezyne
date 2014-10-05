@@ -45,8 +45,7 @@
            python:import))
 
 (define (ast-> ast)
-  (let* ((gom ((gom:register ast->gom) ast #t))
-         (gom ((gom:register python:gom) ast #t)))
+  (let ((gom ((gom:register python:gom) ast #t)))
     (map dump ((gom:filter <model>) gom)))
   "")
 
