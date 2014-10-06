@@ -47,7 +47,7 @@ namespace component
     Reply4();
     interface::I::Status::type po_i_done();
     Reply4::Status::type fun();
-    Reply4::Status::type fun_arg(Status::type s);
+    Reply4::Status::type fun_arg(Reply4::Status::type s);
   };
 }
 #endif

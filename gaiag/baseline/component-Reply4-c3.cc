@@ -57,7 +57,7 @@ namespace component
         s = po_u.in.what();
         if (s == interface::U::Status::Ok)
         {
-          Status::type v = fun();
+          Reply4::Status::type v = fun();
           if (v == Status::Yes)
           reply_I_Status = interface::I::Status::Yes;
           else
@@ -66,7 +66,7 @@ namespace component
         }
         else
         {
-          Status::type v = fun_arg(Status::No);
+          Reply4::Status::type v = fun_arg(Status::No);
           if (v == Status::Yes)
           reply_I_Status = interface::I::Status::Yes;
           else
@@ -90,7 +90,7 @@ namespace component
     }
 
   }
-  Reply4::Status::type Reply4::fun_arg(Status::type s)
+  Reply4::Status::type Reply4::fun_arg(Reply4::Status::type s)
   {
     {
       return s;
