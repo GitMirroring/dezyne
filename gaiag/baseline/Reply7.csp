@@ -6,6 +6,9 @@ illegal_(P',V') = illegal -> STOP
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
+
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
+
 -- sendrecv_: (c: channel, e:event) => (P,V)->Proc
 sendrecv_(c',e')(P', V') =  c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- callvoid_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -41,26 +44,31 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = E_A | foo | return
 -- interface.csp.scm
 
-channel IReply7: {foo,E_A,return}
+channel IReply7: {foo}
+channel IReply7_': {E_A,return}
 
 IF_IReply7_(IG) = let
 
 IReply7_(((<>),(stack'))) =
 IReply7?x:{foo} ->
-reply_(IReply7, (\ ((<>),(stack')) @ E_A))(\ V' @ IReply7_(V'),((<>),(stack')))
+reply_(IReply7_', (\ ((<>),(stack')) @ E_A))(\ V' @ IReply7_(V'),((<>),(stack')))
 
 within IReply7_(((<>),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel p:{foo,E_A,return}
-channel r:{foo,E_A,return}
+channel p:{foo}
+channel r:{foo}
+
+
+channel p_':{E_A,return}
+channel r_':{E_A,return}
 
 
 CO_Reply7_(IIG,IG) = let
-f = \ P',V' @ context_func_(context_active_(sendrecv_(r,foo),
-reply_(IReply7, (\ ((<>),((stack',v))) @ v))))(P',V')
+f = \ P',V' @ context_func_(context_active_(semi_(send_(r,foo),recv_(r_',foo)),
+reply_(IReply7_', (\ ((<>),((stack',v))) @ v))))(P',V')
 
 Reply7_(((<>),(stack'))) = transition_begin -> (
 p?x:{foo} ->
@@ -74,8 +82,8 @@ channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {IReply7.E_A,IReply7.return}
-channel reorder_out : {p.E_A,p.return}
+channel reorder_in  : {IReply7_'.E_A,IReply7_'.return}
+channel reorder_out : {p_'.E_A,p_'.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -86,13 +94,13 @@ Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
        []
-       reorder_in?IReply7.x' -> reorder_out!p.x' -> R'(A')
+       reorder_in?IReply7_'.x' -> reorder_out!p_'.x' -> R'(A')
 
 S'    = let
 
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
 
-Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!p.head(r') -> Idle(0))
+Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!p_'.head(r') -> Idle(0))
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
@@ -100,9 +108,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
             []
-            r' == <> & reorder_in?IReply7.x' -> Busy(c',<x'>)
+            r' == <> & reorder_in?IReply7_'.x' -> Busy(c',<x'>)
             []
-            r' != <> & reorder_in?IReply7.x' -> illegal -> STOP
+            r' != <> & reorder_in?IReply7_'.x' -> illegal -> STOP
 
 within Idle(0)
 
@@ -113,12 +121,12 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {p.E_A,p.return}
+Exclude = {p_'.E_A,p_'.return}
 ClientCalls = {p.foo}
 UsedModeling = {}
 within compress((CO_Reply7_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,p,r|},Exclude)|]
-(((IF_IReply7_(true) [[IReply7.x<-r.x|x<-extensions(r)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,p,p_',r,r_'|},Exclude)|]
+(((IF_IReply7_(true) [[IReply7.x<-r.x|x<-extensions(r)]][[IReply7_'.x<-r_'.x|x<-extensions(r_')]]
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
@@ -129,5 +137,5 @@ assert IF_IReply7_(true) :[livelock free]
 assert CO_Reply7_(true,true) :[deterministic]
 assert STOP [T= AS_Reply7_(false) \ diff(Events,{illegal})
 assert AS_Reply7_(false) :[deadlock free]
-assert IF_IReply7_(true) [[IReply7.x<-p.x|x<-extensions(p)]] \ {} [F= AS_Reply7_(true) \ diff(Events,{|illegal,p|})
-assert AS_Reply7_(true) \ diff(Events,{|illegal,p|}) :[livelock free]
+assert IF_IReply7_(true) [[IReply7.x<-p.x|x<-extensions(p)]][[IReply7_'.x<-p_'.x|x<-extensions(p_')]] \ {} [F= AS_Reply7_(true) \ diff(Events,{|illegal,p,p_'|})
+assert AS_Reply7_(true) \ diff(Events,{|illegal,p,p_'|}) :[livelock free]

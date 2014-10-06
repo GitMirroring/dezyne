@@ -6,6 +6,9 @@ illegal_(P',V') = illegal -> STOP
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
+
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
+
 -- sendrecv_: (c: channel, e:event) => (P,V)->Proc
 sendrecv_(c',e')(P', V') =  c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- callvoid_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -41,21 +44,25 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = i3_e | i4_h | return
 -- interface.csp.scm
 
-channel i23_I: {i3_e,i4_h,return}
+channel i23_I: {i3_e,i4_h}
+channel i23_I_': {return}
 
 IF_i23_I_(IG) = let
 
 i23_I_(((<>),(stack'))) =
 i23_I?x:{i3_e} ->
 semi_((\ P',V' @ i23_I!i4_h -> P'(V')),
-(\ P',V' @ i23_I.return -> P'(V')))(\ V' @ i23_I_(V'),((<>),(stack')))
+(\ P',V' @ i23_I_'.return -> P'(V')))(\ V' @ i23_I_(V'),((<>),(stack')))
 
 within i23_I_(((<>),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i24_i:{i3_e,i4_h,return}
+channel i24_i:{i3_e,i4_h}
+
+
+channel i24_i_':{return}
 
 
 CO_i103_nonrecursion_(IIG,IG) = let
@@ -72,7 +79,7 @@ semi_(semi_(callvoid_(\ P',V' @ i52_f(P',V')),
 illegal_,
 skip_
 )(P',((i28_b),(stack')))),
-(\ P',V' @ i24_i.return -> P'(V')))(\ V' @ transition_end -> i103_nonrecursion_(V'),((i28_b),(stack')))
+(\ P',V' @ i24_i_'.return -> P'(V')))(\ V' @ transition_end -> i103_nonrecursion_(V'),((i28_b),(stack')))
 )
 
 within i103_nonrecursion_(((true),(<>)))
@@ -82,8 +89,8 @@ channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {i23_I.return}
-channel reorder_out : {i24_i.return}
+channel reorder_in  : {i23_I_'.return}
+channel reorder_out : {i24_i_'.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -94,13 +101,13 @@ Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
        []
-       reorder_in?i23_I.x' -> reorder_out!i24_i.x' -> R'(A')
+       reorder_in?i23_I_'.x' -> reorder_out!i24_i_'.x' -> R'(A')
 
 S'    = let
 
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
 
-Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i24_i.head(r') -> Idle(0))
+Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i24_i_'.head(r') -> Idle(0))
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
@@ -108,9 +115,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
             []
-            r' == <> & reorder_in?i23_I.x' -> Busy(c',<x'>)
+            r' == <> & reorder_in?i23_I_'.x' -> Busy(c',<x'>)
             []
-            r' != <> & reorder_in?i23_I.x' -> illegal -> STOP
+            r' != <> & reorder_in?i23_I_'.x' -> illegal -> STOP
 
 within Idle(0)
 
@@ -121,11 +128,11 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {i24_i.return,i24_i.i4_h}
+Exclude = {i24_i_'.return,i24_i.i4_h}
 ClientCalls = {i24_i.i3_e}
 UsedModeling = {}
 within compress((CO_i103_nonrecursion_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,i24_i|},Exclude)|]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,i24_i,i24_i_'|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
@@ -137,5 +144,5 @@ assert IF_i23_I_(true) :[livelock free]
 assert CO_i103_nonrecursion_(true,true) :[deterministic]
 assert STOP [T= AS_i103_nonrecursion_(false) \ diff(Events,{illegal})
 assert AS_i103_nonrecursion_(false) :[deadlock free]
-assert IF_i23_I_(true) [[i23_I.x<-i24_i.x|x<-extensions(i24_i)]] \ {} [F= AS_i103_nonrecursion_(true) \ diff(Events,{|illegal,i24_i|})
-assert AS_i103_nonrecursion_(true) \ diff(Events,{|illegal,i24_i|}) :[livelock free]
+assert IF_i23_I_(true) [[i23_I.x<-i24_i.x|x<-extensions(i24_i)]][[i23_I_'.x<-i24_i_'.x|x<-extensions(i24_i_')]] \ {} [F= AS_i103_nonrecursion_(true) \ diff(Events,{|illegal,i24_i,i24_i_'|})
+assert AS_i103_nonrecursion_(true) \ diff(Events,{|illegal,i24_i,i24_i_'|}) :[livelock free]

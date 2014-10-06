@@ -6,6 +6,9 @@ illegal_(P',V') = illegal -> STOP
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
+
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
+
 -- sendrecv_: (c: channel, e:event) => (P,V)->Proc
 sendrecv_(c',e')(P', V') =  c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- callvoid_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -41,7 +44,8 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = dummy | inevitable | return
 -- interface.csp.scm
 
-channel ilivelock: {dummy,inevitable,return}
+channel ilivelock: {dummy,inevitable}
+channel ilivelock_': {return}
 
 IF_ilivelock_(IG) = let
 
@@ -55,28 +59,33 @@ within ilivelock_(((<>),(<>)))
 -- end of interface.csp.scm
 -- interface.csp.scm
 
-channel nolivelock: {dummy,return}
+channel nolivelock: {dummy}
+channel nolivelock_': {return}
 
 IF_nolivelock_(IG) = let
 
 nolivelock_(((<>),(stack'))) =
 nolivelock?x:{dummy} ->
-(\ P',V' @ nolivelock.return -> P'(V'))(\ V' @ nolivelock_(V'),((<>),(stack')))
+(\ P',V' @ nolivelock_'.return -> P'(V'))(\ V' @ nolivelock_(V'),((<>),(stack')))
 
 within nolivelock_(((<>),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel n:{dummy,return}
-channel l:{dummy,inevitable,return}
+channel n:{dummy}
+channel l:{dummy,inevitable}
+
+
+channel n_':{return}
+channel l_':{return}
 
 
 CO_livelock1_(IIG,IG) = let
 
 livelock1_(((<>),(stack'))) = transition_begin -> (
 n?x:{dummy} ->
-(\ P',V' @ n.return -> P'(V'))(\ V' @ transition_end -> livelock1_(V'),((<>),(stack')))
+(\ P',V' @ n_'.return -> P'(V'))(\ V' @ transition_end -> livelock1_(V'),((<>),(stack')))
 []
 l?x:{dummy} ->
 skip_(\ V' @ transition_end -> livelock1_(V'),((<>),(stack')))
@@ -89,8 +98,8 @@ channel IN,OUT : {l.dummy,extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {nolivelock.return}
-channel reorder_out : {n.return}
+channel reorder_in  : {nolivelock_'.return}
+channel reorder_out : {n_'.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -101,13 +110,13 @@ Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
        []
-       reorder_in?nolivelock.x' -> reorder_out!n.x' -> R'(A')
+       reorder_in?nolivelock_'.x' -> reorder_out!n_'.x' -> R'(A')
 
 S'    = let
 
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
 
-Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!n.head(r') -> Idle(0))
+Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!n_'.head(r') -> Idle(0))
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
@@ -115,9 +124,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
             []
-            r' == <> & reorder_in?nolivelock.x' -> Busy(c',<x'>)
+            r' == <> & reorder_in?nolivelock_'.x' -> Busy(c',<x'>)
             []
-            r' != <> & reorder_in?nolivelock.x' -> illegal -> STOP
+            r' != <> & reorder_in?nolivelock_'.x' -> illegal -> STOP
 
 within Idle(0)
 
@@ -128,12 +137,12 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {n.return,l.inevitable}
+Exclude = {n_'.return,l.inevitable}
 ClientCalls = {n.dummy}
 UsedModeling = {l.inevitable}
 within compress((CO_livelock1_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,n,l|},Exclude)|]
-(((IF_ilivelock_(true) [[ilivelock.x<-l.x|x<-extensions(l)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,n,n_',l,l_'|},Exclude)|]
+(((IF_ilivelock_(true) [[ilivelock.x<-l.x|x<-extensions(l)]][[ilivelock_'.x<-l_'.x|x<-extensions(l_')]]
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
@@ -146,5 +155,5 @@ assert IF_nolivelock_(true) :[livelock free]
 assert CO_livelock1_(true,true) :[deterministic]
 assert STOP [T= AS_livelock1_(false) \ diff(Events,{illegal})
 assert AS_livelock1_(false) :[deadlock free]
-assert IF_nolivelock_(true) [[nolivelock.x<-n.x|x<-extensions(n)]] \ {} [F= AS_livelock1_(true) \ diff(Events,{|illegal,n|})
-assert AS_livelock1_(true) \ diff(Events,{|illegal,n|}) :[livelock free]
+assert IF_nolivelock_(true) [[nolivelock.x<-n.x|x<-extensions(n)]][[nolivelock_'.x<-n_'.x|x<-extensions(n_')]] \ {} [F= AS_livelock1_(true) \ diff(Events,{|illegal,n,n_'|})
+assert AS_livelock1_(true) \ diff(Events,{|illegal,n,n_'|}) :[livelock free]

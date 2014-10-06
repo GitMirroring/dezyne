@@ -3,6 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -23,7 +24,8 @@
 
 -- interface.csp.scm
 
-channel #(.name model): {#(comma-join (append (interface-events model) (return-values model)))}
+channel #(.name model): {#(comma-join (append (interface-events model)))}
+channel #(.name model)_': {#(comma-join (return-values model))}
 
 IF_#(.name model) _#((compose .name .behaviour) model)(IG) = let
 # (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (gom:functions (.behaviour model))))

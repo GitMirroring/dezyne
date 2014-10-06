@@ -6,6 +6,9 @@ illegal_(P',V') = illegal -> STOP
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
+
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
+
 -- sendrecv_: (c: channel, e:event) => (P,V)->Proc
 sendrecv_(c',e')(P', V') =  c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- callvoid_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -41,7 +44,8 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = ev_e | ev_f | return
 -- interface.csp.scm
 
-channel if_I: {ev_e,ev_f,return}
+channel if_I: {ev_e,ev_f}
+channel if_I_': {return}
 
 IF_if_I_(IG) = let
 g = \ P',V',F' @ context_func_args_(F',
@@ -59,14 +63,17 @@ semi_(assign_active_(\ P',V' @ g (P',V',(\ ((va_b),((stack',va_c))) @ (va_c,va_c
 (\ P',V' @ if_I!ev_f -> P'(V')),
 skip_
 )(P',((va_b),((stack',va_c))))))),
-(\ P',V' @ if_I.return -> P'(V')))(\ V' @ if_I_(V'),((va_b),(stack'))))
+(\ P',V' @ if_I_'.return -> P'(V')))(\ V' @ if_I_(V'),((va_b),(stack'))))
 
 within if_I_(((false),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel po_i:{ev_e,ev_f,return}
+channel po_i:{ev_e,ev_f}
+
+
+channel po_i_':{return}
 
 
 CO_co_argument2_(IIG,IG) = let
@@ -85,7 +92,7 @@ semi_(assign_active_(\ P',V' @ g (P',V',(\ ((va_b),((stack',va_c))) @ (va_c,va_c
 (\ P',V' @ po_i!ev_f -> P'(V')),
 skip_
 )(P',((va_b),((stack',va_c))))))),
-(\ P',V' @ po_i.return -> P'(V')))(\ V' @ transition_end -> co_argument2_(V'),((va_b),(stack'))))
+(\ P',V' @ po_i_'.return -> P'(V')))(\ V' @ transition_end -> co_argument2_(V'),((va_b),(stack'))))
 )
 
 within co_argument2_(((false),(<>)))
@@ -95,8 +102,8 @@ channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {if_I.return}
-channel reorder_out : {po_i.return}
+channel reorder_in  : {if_I_'.return}
+channel reorder_out : {po_i_'.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -107,13 +114,13 @@ Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
        []
-       reorder_in?if_I.x' -> reorder_out!po_i.x' -> R'(A')
+       reorder_in?if_I_'.x' -> reorder_out!po_i_'.x' -> R'(A')
 
 S'    = let
 
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
 
-Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!po_i.head(r') -> Idle(0))
+Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!po_i_'.head(r') -> Idle(0))
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
@@ -121,9 +128,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
             []
-            r' == <> & reorder_in?if_I.x' -> Busy(c',<x'>)
+            r' == <> & reorder_in?if_I_'.x' -> Busy(c',<x'>)
             []
-            r' != <> & reorder_in?if_I.x' -> illegal -> STOP
+            r' != <> & reorder_in?if_I_'.x' -> illegal -> STOP
 
 within Idle(0)
 
@@ -134,11 +141,11 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {po_i.return,po_i.ev_f}
+Exclude = {po_i_'.return,po_i.ev_f}
 ClientCalls = {po_i.ev_e}
 UsedModeling = {}
 within compress((CO_co_argument2_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,po_i|},Exclude)|]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,po_i,po_i_'|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
@@ -150,5 +157,5 @@ assert IF_if_I_(true) :[livelock free]
 assert CO_co_argument2_(true,true) :[deterministic]
 assert STOP [T= AS_co_argument2_(false) \ diff(Events,{illegal})
 assert AS_co_argument2_(false) :[deadlock free]
-assert IF_if_I_(true) [[if_I.x<-po_i.x|x<-extensions(po_i)]] \ {} [F= AS_co_argument2_(true) \ diff(Events,{|illegal,po_i|})
-assert AS_co_argument2_(true) \ diff(Events,{|illegal,po_i|}) :[livelock free]
+assert IF_if_I_(true) [[if_I.x<-po_i.x|x<-extensions(po_i)]][[if_I_'.x<-po_i_'.x|x<-extensions(po_i_')]] \ {} [F= AS_co_argument2_(true) \ diff(Events,{|illegal,po_i,po_i_'|})
+assert AS_co_argument2_(true) \ diff(Events,{|illegal,po_i,po_i_'|}) :[livelock free]

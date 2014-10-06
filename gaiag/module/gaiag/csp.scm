@@ -169,7 +169,7 @@
     ((component deterministic) . "assert CO_#(.name model) _#((compose .name .behaviour) model)(true,true) :[deterministic]\n")
     ((component deadlock)  . "assert AS_#(.name model) _#((compose .name .behaviour) model) (false) :[deadlock free]\n")
     ((component compliance) . ,(gulp-template 'asserts/component-compliance.csp.scm))
-    ((component livelock)  .  "assert AS_#(.name model) _#((compose .name .behaviour) model) (true) \\ diff(Events,{|illegal,#((compose .name gom:port) model) |}) :[livelock free]\n")
+    ((component livelock)  .  "assert AS_#(.name model) _#((compose .name .behaviour) model) (true) \\ diff(Events,{|illegal,#((compose .name gom:port) model),#((compose .name gom:port) model)_'|}) :[livelock free]\n")
     ((interface deadlock) . ,(gulp-template 'asserts/interface-deadlock.csp.scm))
     ((interface livelock) . ,(gulp-template 'asserts/interface-livelock.csp.scm))))
 
@@ -693,14 +693,14 @@
        (($ <action> trigger)
         (let* ((channel (list "" (if (is-a? model <interface>) model-name (.port trigger))))
                (event-name (.event trigger))
-               (channel-return (if ((requires-event? model) trigger) (list " -> " channel ".return"))))
+               (channel-return (if ((requires-event? model) trigger) (list " -> " channel "_'.return"))))
           (list "(\\ P',V' @ " channel "!" event-name channel-return " -> P'(V'))")))
 
        (($ <assign> identifier ($ <expression> value))
         (list "assign_(\\ (" identifier ") @ (" value "))"))
 
        (($ <csp-assign> context identifier ($ <action> ($ <trigger> port event)) expressions)
-        (let ((action (list "sendrecv_(" (or port channel) "," event ")")))
+        (let ((action (list "semi_(send_(" (or port channel) "," event "),recv_(" (or port channel) "_'," event "))")))
           (list "assign_active_(" action ",\n\\ ((" context "))," identifier " @ (" expressions "))" )))
 
        (($ <csp-assign> context identifier ($ <call> function (and ($ <arguments>) (get! arguments))) expressions)
@@ -754,7 +754,7 @@
 
        (($ <csp-reply> context expression)
         (let* ((channel (or channel (if (is-a? model <interface>) model-name (.type (gom:port model))))))
-          (list "reply_(" channel ", " "(\\ (" context ") @ " expression "))")))
+          (list "reply_(" channel "_', " "(\\ (" context ") @ " expression "))")))
 
        (($ <return>) "skip_")
 
@@ -771,7 +771,7 @@
 
        (($ <csp-variable> context name type ($ <action> ($ <trigger> port event)) continuation)
         (let ((continuation (csp-transform ast continuation inevitable-optional? channel provided-on? tail-recursive?)))
-          (list "context_active_(sendrecv_(" (or port channel) "," event "),\n" continuation ")")))
+          (list "context_active_(semi_(send_(" (or port channel) "," event "),recv_(" (or port channel) "_'," event ")),\n" continuation ")")))
 
        (($ <csp-variable> context name type ($ <call> identifier ($ <arguments> '())) continuation)
         (let ((continuation (csp-transform ast continuation inevitable-optional? channel provided-on? tail-recursive?)))
@@ -788,7 +788,7 @@
        (($ <voidreply>)
         (let ((channel-return
                (if (and (not inevitable-optional?) provided-on?)
-                   (list "(\\ P',V' @ " channel ".return -> P'(V'))")
+                   (list "(\\ P',V' @ " channel "_'.return -> P'(V'))")
                    (list "skip_"))))
           (list channel-return)))
 

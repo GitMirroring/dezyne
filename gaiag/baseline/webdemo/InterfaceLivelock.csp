@@ -6,6 +6,9 @@ illegal_(P',V') = illegal -> STOP
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
+
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
+
 -- sendrecv_: (c: channel, e:event) => (P,V)->Proc
 sendrecv_(c',e')(P', V') =  c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- callvoid_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -41,7 +44,8 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = i3_start | i7_States_InBusiness | i7_States_InitialState | i7_States_Started | inevitable | return
 -- interface.csp.scm
 
-channel i138_BlindLoop: {i3_start,inevitable,inevitable,return}
+channel i138_BlindLoop: {i3_start,inevitable,inevitable}
+channel i138_BlindLoop_': {return}
 
 IF_i138_BlindLoop_(IG) = let
 
@@ -49,7 +53,7 @@ i138_BlindLoop_(((i15_state),(stack'))) =
 ((i15_state == i7_States_InitialState)) & (
 i138_BlindLoop?x:{i3_start} ->
 semi_(assign_(\ ((i15_state),(stack')) @ ((i7_States_Started),(stack'))),
-(\ P',V' @ i138_BlindLoop.return -> P'(V')))(\ V' @ i138_BlindLoop_(V'),((i15_state),(stack'))))
+(\ P',V' @ i138_BlindLoop_'.return -> P'(V')))(\ V' @ i138_BlindLoop_(V'),((i15_state),(stack'))))
 []
 ((i15_state == i7_States_Started)) & (
 i138_BlindLoop?x:{inevitable} ->
@@ -72,14 +76,17 @@ within i138_BlindLoop_(((i7_States_InitialState),(<>)))
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i139_LoopingInterface:{i3_start,inevitable,inevitable,return}
+channel i139_LoopingInterface:{i3_start,inevitable,inevitable}
+
+
+channel i139_LoopingInterface_':{return}
 
 
 CO_i152_TestComponent_(IIG,IG) = let
 
 i152_TestComponent_(((<>),(stack'))) = transition_begin -> (
 i139_LoopingInterface?x:{i3_start} ->
-(\ P',V' @ i139_LoopingInterface.return -> P'(V'))(\ V' @ transition_end -> i152_TestComponent_(V'),((<>),(stack')))
+(\ P',V' @ i139_LoopingInterface_'.return -> P'(V'))(\ V' @ transition_end -> i152_TestComponent_(V'),((<>),(stack')))
 )
 
 within i152_TestComponent_(((<>),(<>)))
@@ -89,8 +96,8 @@ channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {i138_BlindLoop.return}
-channel reorder_out : {i139_LoopingInterface.return}
+channel reorder_in  : {i138_BlindLoop_'.return}
+channel reorder_out : {i139_LoopingInterface_'.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -101,13 +108,13 @@ Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
        []
-       reorder_in?i138_BlindLoop.x' -> reorder_out!i139_LoopingInterface.x' -> R'(A')
+       reorder_in?i138_BlindLoop_'.x' -> reorder_out!i139_LoopingInterface_'.x' -> R'(A')
 
 S'    = let
 
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
 
-Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i139_LoopingInterface.head(r') -> Idle(0))
+Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i139_LoopingInterface_'.head(r') -> Idle(0))
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
@@ -115,9 +122,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
             []
-            r' == <> & reorder_in?i138_BlindLoop.x' -> Busy(c',<x'>)
+            r' == <> & reorder_in?i138_BlindLoop_'.x' -> Busy(c',<x'>)
             []
-            r' != <> & reorder_in?i138_BlindLoop.x' -> illegal -> STOP
+            r' != <> & reorder_in?i138_BlindLoop_'.x' -> illegal -> STOP
 
 within Idle(0)
 
@@ -128,11 +135,11 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {i139_LoopingInterface.return,i139_LoopingInterface.inevitable,i139_LoopingInterface.inevitable}
+Exclude = {i139_LoopingInterface_'.return,i139_LoopingInterface.inevitable,i139_LoopingInterface.inevitable}
 ClientCalls = {i139_LoopingInterface.i3_start}
 UsedModeling = {}
 within compress((CO_i152_TestComponent_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,i139_LoopingInterface|},Exclude)|]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,i139_LoopingInterface,i139_LoopingInterface_'|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
@@ -144,5 +151,5 @@ assert IF_i138_BlindLoop_(true)  \ {|i138_BlindLoop.inevitable,i138_BlindLoop.in
 assert CO_i152_TestComponent_(true,true) :[deterministic]
 assert STOP [T= AS_i152_TestComponent_(false) \ diff(Events,{illegal})
 assert AS_i152_TestComponent_(false) :[deadlock free]
-assert IF_i138_BlindLoop_(true) [[i138_BlindLoop.x<-i139_LoopingInterface.x|x<-extensions(i139_LoopingInterface)]] \ {i139_LoopingInterface.inevitable,i139_LoopingInterface.inevitable} [F= AS_i152_TestComponent_(true) \ diff(Events,{|illegal,i139_LoopingInterface|})
-assert AS_i152_TestComponent_(true) \ diff(Events,{|illegal,i139_LoopingInterface|}) :[livelock free]
+assert IF_i138_BlindLoop_(true) [[i138_BlindLoop.x<-i139_LoopingInterface.x|x<-extensions(i139_LoopingInterface)]][[i138_BlindLoop_'.x<-i139_LoopingInterface_'.x|x<-extensions(i139_LoopingInterface_')]] \ {i139_LoopingInterface.inevitable,i139_LoopingInterface.inevitable} [F= AS_i152_TestComponent_(true) \ diff(Events,{|illegal,i139_LoopingInterface,i139_LoopingInterface_'|})
+assert AS_i152_TestComponent_(true) \ diff(Events,{|illegal,i139_LoopingInterface,i139_LoopingInterface_'|}) :[livelock free]

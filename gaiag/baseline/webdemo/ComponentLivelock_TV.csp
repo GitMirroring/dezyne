@@ -6,6 +6,9 @@ illegal_(P',V') = illegal -> STOP
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
+
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
+
 -- sendrecv_: (c: channel, e:event) => (P,V)->Proc
 sendrecv_(c',e')(P', V') =  c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- callvoid_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -41,7 +44,8 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = i178_States_SwitchedOff | i178_States_SwitchedOn | i3_pushStartButton | i67_activate | i68_activated | i6_States_Pushed | i6_States_Released | i71_States_Activated | i71_States_Idle | inevitable | return
 -- interface.csp.scm
 
-channel i169_Display: {i67_activate,i68_activated,inevitable,return}
+channel i169_Display: {i67_activate,i68_activated,inevitable}
+channel i169_Display_': {return}
 
 IF_i169_Display_(IG) = let
 
@@ -49,7 +53,7 @@ i169_Display_(((i79_state),(stack'))) =
 ((i79_state == i71_States_Idle)) & (
 i169_Display?x:{i67_activate} ->
 semi_(assign_(\ ((i79_state),(stack')) @ ((i71_States_Activated),(stack'))),
-(\ P',V' @ i169_Display.return -> P'(V')))(\ V' @ i169_Display_(V'),((i79_state),(stack'))))
+(\ P',V' @ i169_Display_'.return -> P'(V')))(\ V' @ i169_Display_(V'),((i79_state),(stack'))))
 []
 ((i79_state == i71_States_Activated)) & (
 i169_Display?x:{inevitable} ->
@@ -65,7 +69,8 @@ within i169_Display_(((i71_States_Idle),(<>)))
 -- end of interface.csp.scm
 -- interface.csp.scm
 
-channel i66_Viewer: {i3_pushStartButton,return}
+channel i66_Viewer: {i3_pushStartButton}
+channel i66_Viewer_': {return}
 
 IF_i66_Viewer_(IG) = let
 
@@ -73,19 +78,23 @@ i66_Viewer_(((i14_state),(stack'))) =
 ((i14_state == i6_States_Released)) & (
 i66_Viewer?x:{i3_pushStartButton} ->
 semi_(assign_(\ ((i14_state),(stack')) @ ((i6_States_Pushed),(stack'))),
-(\ P',V' @ i66_Viewer.return -> P'(V')))(\ V' @ i66_Viewer_(V'),((i14_state),(stack'))))
+(\ P',V' @ i66_Viewer_'.return -> P'(V')))(\ V' @ i66_Viewer_(V'),((i14_state),(stack'))))
 []
 ((i14_state == i6_States_Pushed)) & (
 i66_Viewer?x:{i3_pushStartButton} ->
-(\ P',V' @ i66_Viewer.return -> P'(V'))(\ V' @ i66_Viewer_(V'),((i14_state),(stack'))))
+(\ P',V' @ i66_Viewer_'.return -> P'(V'))(\ V' @ i66_Viewer_(V'),((i14_state),(stack'))))
 
 within i66_Viewer_(((i6_States_Released),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i170_TVViewer:{i3_pushStartButton,return}
-channel i173_TVDisplay:{i67_activate,i68_activated,inevitable,return}
+channel i170_TVViewer:{i3_pushStartButton}
+channel i173_TVDisplay:{i67_activate,i68_activated,inevitable}
+
+
+channel i170_TVViewer_':{return}
+channel i173_TVDisplay_':{return}
 
 
 CO_i277_TVSet_(IIG,IG) = let
@@ -93,16 +102,16 @@ CO_i277_TVSet_(IIG,IG) = let
 i277_TVSet_(((i186_state),(stack'))) = transition_begin -> (
 ((i186_state == i178_States_SwitchedOff)) & (
 i170_TVViewer?x:{i3_pushStartButton} ->
-semi_(semi_((\ P',V' @ i173_TVDisplay!i67_activate -> i173_TVDisplay.return -> P'(V')),
+semi_(semi_((\ P',V' @ i173_TVDisplay!i67_activate -> i173_TVDisplay_'.return -> P'(V')),
 assign_(\ ((i186_state),(stack')) @ ((i178_States_SwitchedOn),(stack')))),
-(\ P',V' @ i170_TVViewer.return -> P'(V')))(\ V' @ transition_end -> i277_TVSet_(V'),((i186_state),(stack')))
+(\ P',V' @ i170_TVViewer_'.return -> P'(V')))(\ V' @ transition_end -> i277_TVSet_(V'),((i186_state),(stack')))
  []
   IG & i173_TVDisplay?x:{i68_activated} ->
 illegal_(STOP,<>))
 []
 ((i186_state == i178_States_SwitchedOn)) & (
 i170_TVViewer?x:{i3_pushStartButton} ->
-(\ P',V' @ i170_TVViewer.return -> P'(V'))(\ V' @ transition_end -> i277_TVSet_(V'),((i186_state),(stack')))
+(\ P',V' @ i170_TVViewer_'.return -> P'(V'))(\ V' @ transition_end -> i277_TVSet_(V'),((i186_state),(stack')))
  []
   i173_TVDisplay?x:{i68_activated} ->
 skip_(\ V' @ transition_end -> i277_TVSet_(V'),((i186_state),(stack'))))
@@ -115,8 +124,8 @@ channel IN,OUT : {i173_TVDisplay.i68_activated,extensions_over_empty_channels_is
 
 SINGLETHREADED = true
 
-channel reorder_in  : {i66_Viewer.return}
-channel reorder_out : {i170_TVViewer.return}
+channel reorder_in  : {i66_Viewer_'.return}
+channel reorder_out : {i170_TVViewer_'.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -127,13 +136,13 @@ Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
        []
-       reorder_in?i66_Viewer.x' -> reorder_out!i170_TVViewer.x' -> R'(A')
+       reorder_in?i66_Viewer_'.x' -> reorder_out!i170_TVViewer_'.x' -> R'(A')
 
 S'    = let
 
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
 
-Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i170_TVViewer.head(r') -> Idle(0))
+Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i170_TVViewer_'.head(r') -> Idle(0))
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
@@ -141,9 +150,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
             []
-            r' == <> & reorder_in?i66_Viewer.x' -> Busy(c',<x'>)
+            r' == <> & reorder_in?i66_Viewer_'.x' -> Busy(c',<x'>)
             []
-            r' != <> & reorder_in?i66_Viewer.x' -> illegal -> STOP
+            r' != <> & reorder_in?i66_Viewer_'.x' -> illegal -> STOP
 
 within Idle(0)
 
@@ -154,12 +163,12 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {i170_TVViewer.return,i173_TVDisplay.inevitable}
+Exclude = {i170_TVViewer_'.return,i173_TVDisplay.inevitable}
 ClientCalls = {i170_TVViewer.i3_pushStartButton}
 UsedModeling = {i173_TVDisplay.inevitable}
 within compress((CO_i277_TVSet_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,i170_TVViewer,i173_TVDisplay|},Exclude)|]
-(((IF_i169_Display_(true) [[i169_Display.x<-i173_TVDisplay.x|x<-extensions(i173_TVDisplay)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,i170_TVViewer,i170_TVViewer_',i173_TVDisplay,i173_TVDisplay_'|},Exclude)|]
+(((IF_i169_Display_(true) [[i169_Display.x<-i173_TVDisplay.x|x<-extensions(i173_TVDisplay)]][[i169_Display_'.x<-i173_TVDisplay_'.x|x<-extensions(i173_TVDisplay_')]]
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
@@ -172,5 +181,5 @@ assert IF_i66_Viewer_(true) :[livelock free]
 assert CO_i277_TVSet_(true,true) :[deterministic]
 assert STOP [T= AS_i277_TVSet_(false) \ diff(Events,{illegal})
 assert AS_i277_TVSet_(false) :[deadlock free]
-assert IF_i66_Viewer_(true) [[i66_Viewer.x<-i170_TVViewer.x|x<-extensions(i170_TVViewer)]] \ {} [F= AS_i277_TVSet_(true) \ diff(Events,{|illegal,i170_TVViewer|})
-assert AS_i277_TVSet_(true) \ diff(Events,{|illegal,i170_TVViewer|}) :[livelock free]
+assert IF_i66_Viewer_(true) [[i66_Viewer.x<-i170_TVViewer.x|x<-extensions(i170_TVViewer)]][[i66_Viewer_'.x<-i170_TVViewer_'.x|x<-extensions(i170_TVViewer_')]] \ {} [F= AS_i277_TVSet_(true) \ diff(Events,{|illegal,i170_TVViewer,i170_TVViewer_'|})
+assert AS_i277_TVSet_(true) \ diff(Events,{|illegal,i170_TVViewer,i170_TVViewer_'|}) :[livelock free]

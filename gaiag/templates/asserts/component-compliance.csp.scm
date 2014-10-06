@@ -3,6 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
@@ -22,8 +23,8 @@
 ;;; 
 ;;; Code:
 
-assert IF_#((compose .type gom:port) model) _#((compose .name .behaviour gom:import .type gom:port) model)(true) [[#((compose .type gom:port) model) .x<-#((compose .name gom:port) model) .x|x<-extensions(#((compose .name gom:port) model))]] \ {#
+assert IF_#((compose .type gom:port) model) _#((compose .name .behaviour gom:import .type gom:port) model)(true) [[#((compose .type gom:port) model) .x<-#((compose .name gom:port) model) .x|x<-extensions(#((compose .name gom:port) model))]][[#((compose .type gom:port) model)_'.x<-#((compose .name gom:port) model)_'.x|x<-extensions(#((compose .name gom:port) model)_')]] \ {#
    (comma-join
        (map (lambda (x) (map ->string (list ((compose .name gom:port) model) "." x))) (filter
          (lambda (x) (or (eq? x 'optional) (eq? x 'inevitable)))
-         (port-events (gom:port model)))))} [F= AS_#(.name model) _#((compose .name .behaviour) model) (true) \ diff(Events,{|illegal,#((compose .name gom:port)model) |})
+         (port-events (gom:port model)))))} [F= AS_#(.name model) _#((compose .name .behaviour) model) (true) \ diff(Events,{|illegal,#((compose .name gom:port)model),#((compose .name gom:port)model)_'|})

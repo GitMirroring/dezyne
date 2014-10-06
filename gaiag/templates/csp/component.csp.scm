@@ -3,6 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -24,7 +25,11 @@
 -- component.csp.scm
 
 # (map (lambda (port)
-         (->string "channel " (.name port) ":{" (comma-join (append (port-events port) (return-values-port port))) "}\n" ))
+         (->string "channel " (.name port) ":{" (comma-join (port-events port)) "}\n" ))
+       (filter (lambda (port) (not (eq? (.type port) (.name port)))) ((compose .elements .ports) model)))
+
+# (map (lambda (port)
+         (->string "channel " (.name port) "_':{" (comma-join (return-values-port port)) "}\n" ))
        (filter (lambda (port) (not (eq? (.type port) (.name port)))) ((compose .elements .ports) model)))
 
 CO_#(.name model) _#((compose .name .behaviour) model) (IIG,IG) = let
@@ -45,8 +50,8 @@ channel IN,OUT : {#
 
 SINGLETHREADED = true
 
-channel reorder_in  : {# (comma-join (map (lambda (x) (symbol-append (.type (gom:port model)) '. x)) (return-values-port (gom:port model))))}
-channel reorder_out : {# (comma-join (map (lambda (x) (symbol-append (.name (gom:port model)) '. x)) (return-values-port (gom:port model))))}
+channel reorder_in  : {# (comma-join (map (lambda (x) (symbol-append (.type (gom:port model)) (string->symbol "_'.") x)) (return-values-port (gom:port model))))}
+channel reorder_out : {# (comma-join (map (lambda (x) (symbol-append (.name (gom:port model)) (string->symbol "_'.") x)) (return-values-port (gom:port model))))}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -57,13 +62,13 @@ Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
        []
-       reorder_in?#(.type (gom:port model)).x' -> reorder_out!#(.name (gom:port model)).x' -> R'(A')
+       reorder_in?#(.type (gom:port model))_'.x' -> reorder_out!#(.name (gom:port model))_'.x' -> R'(A')
 
 S'    = let
 
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
 
-Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!#(.name (gom:port model)).head(r') -> Idle(0))
+Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!#(.name (gom:port model))_'.head(r') -> Idle(0))
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
@@ -71,9 +76,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
             []
-            r' == <> & reorder_in?#(.type (gom:port model)).x' -> Busy(c',<x'>)
+            r' == <> & reorder_in?#(.type (gom:port model))_'.x' -> Busy(c',<x'>)
             []
-            r' != <> & reorder_in?#(.type (gom:port model)).x' -> illegal -> STOP
+            r' != <> & reorder_in?#(.type (gom:port model))_'.x' -> illegal -> STOP
 
 within Idle(0)
 
@@ -86,7 +91,7 @@ transparent diamond
 within sbisim(diamond(x))
 Exclude = {#
   (comma-join
-   (list (comma-join (map (lambda (x) (symbol-append (.name (gom:port model)) '. x)) (return-values-port (gom:port model))))
+   (list (comma-join (map (lambda (x) (symbol-append (.name (gom:port model)) (string->symbol "_'.") x)) (return-values-port (gom:port model))))
          (comma-join (map (lambda (event) (list (.name (gom:port model)) "." (.name event))) (filter gom:out? (gom:events (gom:port model)))))
          (comma-join
           (map (lambda (port)
@@ -100,9 +105,9 @@ UsedModeling = {#
                         (comma-join (map (lambda (event) (list (.name port) "." event)) (filter (lambda (event) (member event '(inevitable optional))) (port-events port)))))
                         (filter gom:requires? ((compose .elements .ports) model))))}
 within compress((CO_#(.name model) _#((compose .name .behaviour) model) (IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,#(comma-join (map (lambda (o) (.name o)) ((compose .elements .ports) model)))|},Exclude)|]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,#(comma-join (apply append (map (lambda (o) (list (.name o) (string-append (symbol->string (.name o)) "_'"))) ((compose .elements .ports) model))))|},Exclude)|]
 (((# (let ((required_processes ((->join "\n ||| ") (map (lambda (port)
-(->string (list "IF_" (.type port) '_ ((compose .name .behaviour gom:import .type) port) "(true) [["(.type port) ".x<-" (.name port) ".x|x<-extensions("(.name port)")]]")))
+(->string (list "IF_" (.type port) '_ ((compose .name .behaviour gom:import .type) port) "(true) [["(.type port) ".x<-" (.name port) ".x|x<-extensions("(.name port)")]][["(.type port) "_'.x<-" (.name port) "_'.x|x<-extensions("(.name port)"_')]]")))
  (filter gom:requires? ((compose .elements .ports) model)))))) (if (string-null? required_processes) 'STOP required_processes))
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]

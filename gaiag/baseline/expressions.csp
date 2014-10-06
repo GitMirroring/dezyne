@@ -6,6 +6,9 @@ illegal_(P',V') = illegal -> STOP
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
+
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
+
 -- sendrecv_: (c: channel, e:event) => (P,V)->Proc
 sendrecv_(c',e')(P', V') =  c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- callvoid_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -41,7 +44,8 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = a | e | hi | lo | return
 -- interface.csp.scm
 
-channel I: {a,e,hi,lo,return}
+channel I: {a,e,hi,lo}
+channel I_': {return}
 
 IF_I_(IG) = let
 
@@ -63,14 +67,17 @@ skip_
 )(P',((state,c),(stack')))
 )(P',((state,c),(stack'))))
 )(P',((state,c),(stack'))),
-(\ P',V' @ I.return -> P'(V')))(\ V' @ I_(V'),((state,c),(stack'))))
+(\ P',V' @ I_'.return -> P'(V')))(\ V' @ I_(V'),((state,c),(stack'))))
 
 within I_(((3,0),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i:{a,e,hi,lo,return}
+channel i:{a,e,hi,lo}
+
+
+channel i_':{return}
 
 
 CO_expressions_(IIG,IG) = let
@@ -93,7 +100,7 @@ skip_
 )(P',((state,c),(stack')))
 )(P',((state,c),(stack'))))
 )(P',((state,c),(stack'))),
-(\ P',V' @ i.return -> P'(V')))(\ V' @ transition_end -> expressions_(V'),((state,c),(stack'))))
+(\ P',V' @ i_'.return -> P'(V')))(\ V' @ transition_end -> expressions_(V'),((state,c),(stack'))))
 )
 
 within expressions_(((3,0),(<>)))
@@ -103,8 +110,8 @@ channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {I.return}
-channel reorder_out : {i.return}
+channel reorder_in  : {I_'.return}
+channel reorder_out : {i_'.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -115,13 +122,13 @@ Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
        []
-       reorder_in?I.x' -> reorder_out!i.x' -> R'(A')
+       reorder_in?I_'.x' -> reorder_out!i_'.x' -> R'(A')
 
 S'    = let
 
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
 
-Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i.head(r') -> Idle(0))
+Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i_'.head(r') -> Idle(0))
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
@@ -129,9 +136,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
             []
-            r' == <> & reorder_in?I.x' -> Busy(c',<x'>)
+            r' == <> & reorder_in?I_'.x' -> Busy(c',<x'>)
             []
-            r' != <> & reorder_in?I.x' -> illegal -> STOP
+            r' != <> & reorder_in?I_'.x' -> illegal -> STOP
 
 within Idle(0)
 
@@ -142,11 +149,11 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {i.return,i.a,i.hi,i.lo}
+Exclude = {i_'.return,i.a,i.hi,i.lo}
 ClientCalls = {i.e}
 UsedModeling = {}
 within compress((CO_expressions_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,i|},Exclude)|]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,i,i_'|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
@@ -158,5 +165,5 @@ assert IF_I_(true) :[livelock free]
 assert CO_expressions_(true,true) :[deterministic]
 assert STOP [T= AS_expressions_(false) \ diff(Events,{illegal})
 assert AS_expressions_(false) :[deadlock free]
-assert IF_I_(true) [[I.x<-i.x|x<-extensions(i)]] \ {} [F= AS_expressions_(true) \ diff(Events,{|illegal,i|})
-assert AS_expressions_(true) \ diff(Events,{|illegal,i|}) :[livelock free]
+assert IF_I_(true) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]] \ {} [F= AS_expressions_(true) \ diff(Events,{|illegal,i,i_'|})
+assert AS_expressions_(true) \ diff(Events,{|illegal,i,i_'|}) :[livelock free]

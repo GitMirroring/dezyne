@@ -6,6 +6,9 @@ illegal_(P',V') = illegal -> STOP
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
+
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
+
 -- sendrecv_: (c: channel, e:event) => (P,V)->Proc
 sendrecv_(c',e')(P', V') =  c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- callvoid_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -41,33 +44,37 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = Retval1_NOK | Retval1_OK | Retval2_NOK | Retval2_OK | bar | foo | return
 -- interface.csp.scm
 
-channel ienum_collision: {bar,foo,Retval1_OK,Retval1_NOK,Retval2_OK,Retval2_NOK,return}
+channel ienum_collision: {bar,foo}
+channel ienum_collision_': {Retval1_OK,Retval1_NOK,Retval2_OK,Retval2_NOK,return}
 
 IF_ienum_collision_(IG) = let
 
 ienum_collision_(((<>),(stack'))) =
 ienum_collision?x:{foo} ->
-reply_(ienum_collision, (\ ((<>),(stack')) @ Retval1_OK))(\ V' @ ienum_collision_(V'),((<>),(stack')))
+reply_(ienum_collision_', (\ ((<>),(stack')) @ Retval1_OK))(\ V' @ ienum_collision_(V'),((<>),(stack')))
 []
 ienum_collision?x:{bar} ->
-reply_(ienum_collision, (\ ((<>),(stack')) @ Retval2_NOK))(\ V' @ ienum_collision_(V'),((<>),(stack')))
+reply_(ienum_collision_', (\ ((<>),(stack')) @ Retval2_NOK))(\ V' @ ienum_collision_(V'),((<>),(stack')))
 
 within ienum_collision_(((<>),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i:{bar,foo,Retval1_OK,Retval1_NOK,Retval2_OK,Retval2_NOK,return}
+channel i:{bar,foo}
+
+
+channel i_':{Retval1_OK,Retval1_NOK,Retval2_OK,Retval2_NOK,return}
 
 
 CO_enum_collision_(IIG,IG) = let
 
 enum_collision_(((<>),(stack'))) = transition_begin -> (
 i?x:{foo} ->
-reply_(i, (\ ((<>),(stack')) @ Retval1_OK))(\ V' @ transition_end -> enum_collision_(V'),((<>),(stack')))
+reply_(i_', (\ ((<>),(stack')) @ Retval1_OK))(\ V' @ transition_end -> enum_collision_(V'),((<>),(stack')))
 []
 i?x:{bar} ->
-reply_(i, (\ ((<>),(stack')) @ Retval2_NOK))(\ V' @ transition_end -> enum_collision_(V'),((<>),(stack')))
+reply_(i_', (\ ((<>),(stack')) @ Retval2_NOK))(\ V' @ transition_end -> enum_collision_(V'),((<>),(stack')))
 )
 
 within enum_collision_(((<>),(<>)))
@@ -77,8 +84,8 @@ channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {ienum_collision.Retval1_OK,ienum_collision.Retval1_NOK,ienum_collision.Retval2_OK,ienum_collision.Retval2_NOK,ienum_collision.return}
-channel reorder_out : {i.Retval1_OK,i.Retval1_NOK,i.Retval2_OK,i.Retval2_NOK,i.return}
+channel reorder_in  : {ienum_collision_'.Retval1_OK,ienum_collision_'.Retval1_NOK,ienum_collision_'.Retval2_OK,ienum_collision_'.Retval2_NOK,ienum_collision_'.return}
+channel reorder_out : {i_'.Retval1_OK,i_'.Retval1_NOK,i_'.Retval2_OK,i_'.Retval2_NOK,i_'.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -89,13 +96,13 @@ Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
        []
-       reorder_in?ienum_collision.x' -> reorder_out!i.x' -> R'(A')
+       reorder_in?ienum_collision_'.x' -> reorder_out!i_'.x' -> R'(A')
 
 S'    = let
 
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
 
-Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i.head(r') -> Idle(0))
+Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i_'.head(r') -> Idle(0))
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
@@ -103,9 +110,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
             []
-            r' == <> & reorder_in?ienum_collision.x' -> Busy(c',<x'>)
+            r' == <> & reorder_in?ienum_collision_'.x' -> Busy(c',<x'>)
             []
-            r' != <> & reorder_in?ienum_collision.x' -> illegal -> STOP
+            r' != <> & reorder_in?ienum_collision_'.x' -> illegal -> STOP
 
 within Idle(0)
 
@@ -116,11 +123,11 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {i.Retval1_OK,i.Retval1_NOK,i.Retval2_OK,i.Retval2_NOK,i.return}
+Exclude = {i_'.Retval1_OK,i_'.Retval1_NOK,i_'.Retval2_OK,i_'.Retval2_NOK,i_'.return}
 ClientCalls = {i.foo,i.bar}
 UsedModeling = {}
 within compress((CO_enum_collision_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,i|},Exclude)|]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,i,i_'|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
@@ -132,5 +139,5 @@ assert IF_ienum_collision_(true) :[livelock free]
 assert CO_enum_collision_(true,true) :[deterministic]
 assert STOP [T= AS_enum_collision_(false) \ diff(Events,{illegal})
 assert AS_enum_collision_(false) :[deadlock free]
-assert IF_ienum_collision_(true) [[ienum_collision.x<-i.x|x<-extensions(i)]] \ {} [F= AS_enum_collision_(true) \ diff(Events,{|illegal,i|})
-assert AS_enum_collision_(true) \ diff(Events,{|illegal,i|}) :[livelock free]
+assert IF_ienum_collision_(true) [[ienum_collision.x<-i.x|x<-extensions(i)]][[ienum_collision_'.x<-i_'.x|x<-extensions(i_')]] \ {} [F= AS_enum_collision_(true) \ diff(Events,{|illegal,i,i_'|})
+assert AS_enum_collision_(true) \ diff(Events,{|illegal,i,i_'|}) :[livelock free]

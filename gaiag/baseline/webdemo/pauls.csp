@@ -6,6 +6,9 @@ illegal_(P',V') = illegal -> STOP
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
+
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
+
 -- sendrecv_: (c: channel, e:event) => (P,V)->Proc
 sendrecv_(c',e')(P', V') =  c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- callvoid_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -41,18 +44,19 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = i13_result_t_NOK | i13_result_t_OK | i17_State_Calibrated | i17_State_Initialized | i17_State_Uninitialized | i302_initialize | i304_recover | i306_perform_actions | i310_result_t_NOK | i310_result_t_OK | i314_State_Error | i314_State_Initialized | i314_State_Uninitialized | i3_initialize | i581_State_Error | i581_State_Initialized | i581_State_Uninitialized | i5_calibrate | i7_perform_action1 | i9_perform_action2 | return
 -- interface.csp.scm
 
-channel i301_IDevice: {i3_initialize,i5_calibrate,i7_perform_action1,i9_perform_action2,i13_result_t_OK,i13_result_t_NOK,return}
+channel i301_IDevice: {i3_initialize,i5_calibrate,i7_perform_action1,i9_perform_action2}
+channel i301_IDevice_': {i13_result_t_OK,i13_result_t_NOK,return}
 
 IF_i301_IDevice_(IG) = let
 
 i301_IDevice_(((i25_s),(stack'))) =
 (((i25_s == i17_State_Uninitialized) and true)) & (
 i301_IDevice?x:{i3_initialize} ->
-semi_(reply_(i301_IDevice, (\ ((i25_s),(stack')) @ i13_result_t_OK)),
+semi_(reply_(i301_IDevice_', (\ ((i25_s),(stack')) @ i13_result_t_OK)),
 assign_(\ ((i25_s),(stack')) @ ((i17_State_Initialized),(stack'))))(\ V' @ i301_IDevice_(V'),((i25_s),(stack')))
  []
   i301_IDevice?x:{i3_initialize} ->
-reply_(i301_IDevice, (\ ((i25_s),(stack')) @ i13_result_t_NOK))(\ V' @ i301_IDevice_(V'),((i25_s),(stack'))))
+reply_(i301_IDevice_', (\ ((i25_s),(stack')) @ i13_result_t_NOK))(\ V' @ i301_IDevice_(V'),((i25_s),(stack'))))
 []
 ((i25_s == i17_State_Uninitialized)) & (
 IG & i301_IDevice?x:{i5_calibrate,i7_perform_action1,i9_perform_action2} ->
@@ -60,48 +64,49 @@ illegal_(STOP,<>))
 []
 (((i25_s == i17_State_Initialized) and true)) & (
 i301_IDevice?x:{i5_calibrate} ->
-semi_(reply_(i301_IDevice, (\ ((i25_s),(stack')) @ i13_result_t_OK)),
+semi_(reply_(i301_IDevice_', (\ ((i25_s),(stack')) @ i13_result_t_OK)),
 assign_(\ ((i25_s),(stack')) @ ((i17_State_Calibrated),(stack'))))(\ V' @ i301_IDevice_(V'),((i25_s),(stack')))
  []
   i301_IDevice?x:{i5_calibrate} ->
-reply_(i301_IDevice, (\ ((i25_s),(stack')) @ i13_result_t_NOK))(\ V' @ i301_IDevice_(V'),((i25_s),(stack'))))
+reply_(i301_IDevice_', (\ ((i25_s),(stack')) @ i13_result_t_NOK))(\ V' @ i301_IDevice_(V'),((i25_s),(stack'))))
 []
 ((i25_s == i17_State_Initialized)) & (
 i301_IDevice?x:{i3_initialize} ->
-reply_(i301_IDevice, (\ ((i25_s),(stack')) @ i13_result_t_OK))(\ V' @ i301_IDevice_(V'),((i25_s),(stack')))
+reply_(i301_IDevice_', (\ ((i25_s),(stack')) @ i13_result_t_OK))(\ V' @ i301_IDevice_(V'),((i25_s),(stack')))
  []
   IG & i301_IDevice?x:{i7_perform_action1,i9_perform_action2} ->
 illegal_(STOP,<>))
 []
 (((i25_s == i17_State_Calibrated) and true)) & (
 i301_IDevice?x:{i7_perform_action1,i9_perform_action2} ->
-reply_(i301_IDevice, (\ ((i25_s),(stack')) @ i13_result_t_OK))(\ V' @ i301_IDevice_(V'),((i25_s),(stack')))
+reply_(i301_IDevice_', (\ ((i25_s),(stack')) @ i13_result_t_OK))(\ V' @ i301_IDevice_(V'),((i25_s),(stack')))
  []
   i301_IDevice?x:{i7_perform_action1,i9_perform_action2} ->
-semi_(reply_(i301_IDevice, (\ ((i25_s),(stack')) @ i13_result_t_NOK)),
+semi_(reply_(i301_IDevice_', (\ ((i25_s),(stack')) @ i13_result_t_NOK)),
 assign_(\ ((i25_s),(stack')) @ ((i17_State_Initialized),(stack'))))(\ V' @ i301_IDevice_(V'),((i25_s),(stack'))))
 []
 ((i25_s == i17_State_Calibrated)) & (
 i301_IDevice?x:{i5_calibrate,i3_initialize} ->
-reply_(i301_IDevice, (\ ((i25_s),(stack')) @ i13_result_t_OK))(\ V' @ i301_IDevice_(V'),((i25_s),(stack'))))
+reply_(i301_IDevice_', (\ ((i25_s),(stack')) @ i13_result_t_OK))(\ V' @ i301_IDevice_(V'),((i25_s),(stack'))))
 
 within i301_IDevice_(((i17_State_Uninitialized),(<>)))
 
 -- end of interface.csp.scm
 -- interface.csp.scm
 
-channel i568_IComp: {i302_initialize,i304_recover,i306_perform_actions,i310_result_t_OK,i310_result_t_NOK,return}
+channel i568_IComp: {i302_initialize,i304_recover,i306_perform_actions}
+channel i568_IComp_': {i310_result_t_OK,i310_result_t_NOK,return}
 
 IF_i568_IComp_(IG) = let
 
 i568_IComp_(((i322_s),(stack'))) =
 (((i322_s == i314_State_Uninitialized) and true)) & (
 i568_IComp?x:{i302_initialize} ->
-semi_(reply_(i568_IComp, (\ ((i322_s),(stack')) @ i310_result_t_OK)),
+semi_(reply_(i568_IComp_', (\ ((i322_s),(stack')) @ i310_result_t_OK)),
 assign_(\ ((i322_s),(stack')) @ ((i314_State_Initialized),(stack'))))(\ V' @ i568_IComp_(V'),((i322_s),(stack')))
  []
   i568_IComp?x:{i302_initialize} ->
-reply_(i568_IComp, (\ ((i322_s),(stack')) @ i310_result_t_NOK))(\ V' @ i568_IComp_(V'),((i322_s),(stack'))))
+reply_(i568_IComp_', (\ ((i322_s),(stack')) @ i310_result_t_NOK))(\ V' @ i568_IComp_(V'),((i322_s),(stack'))))
 []
 ((i322_s == i314_State_Uninitialized)) & (
 IG & i568_IComp?x:{i304_recover,i306_perform_actions} ->
@@ -109,10 +114,10 @@ illegal_(STOP,<>))
 []
 (((i322_s == i314_State_Initialized) and true)) & (
 i568_IComp?x:{i306_perform_actions} ->
-reply_(i568_IComp, (\ ((i322_s),(stack')) @ i310_result_t_OK))(\ V' @ i568_IComp_(V'),((i322_s),(stack')))
+reply_(i568_IComp_', (\ ((i322_s),(stack')) @ i310_result_t_OK))(\ V' @ i568_IComp_(V'),((i322_s),(stack')))
  []
   i568_IComp?x:{i306_perform_actions} ->
-semi_(reply_(i568_IComp, (\ ((i322_s),(stack')) @ i310_result_t_NOK)),
+semi_(reply_(i568_IComp_', (\ ((i322_s),(stack')) @ i310_result_t_NOK)),
 assign_(\ ((i322_s),(stack')) @ ((i314_State_Error),(stack'))))(\ V' @ i568_IComp_(V'),((i322_s),(stack'))))
 []
 ((i322_s == i314_State_Initialized)) & (
@@ -121,11 +126,11 @@ illegal_(STOP,<>))
 []
 (((i322_s == i314_State_Error) and true)) & (
 i568_IComp?x:{i304_recover} ->
-semi_(reply_(i568_IComp, (\ ((i322_s),(stack')) @ i310_result_t_OK)),
+semi_(reply_(i568_IComp_', (\ ((i322_s),(stack')) @ i310_result_t_OK)),
 assign_(\ ((i322_s),(stack')) @ ((i314_State_Initialized),(stack'))))(\ V' @ i568_IComp_(V'),((i322_s),(stack')))
  []
   i568_IComp?x:{i304_recover} ->
-reply_(i568_IComp, (\ ((i322_s),(stack')) @ i310_result_t_NOK))(\ V' @ i568_IComp_(V'),((i322_s),(stack'))))
+reply_(i568_IComp_', (\ ((i322_s),(stack')) @ i310_result_t_NOK))(\ V' @ i568_IComp_(V'),((i322_s),(stack'))))
 []
 ((i322_s == i314_State_Error)) & (
 IG & i568_IComp?x:{i302_initialize,i306_perform_actions} ->
@@ -136,9 +141,14 @@ within i568_IComp_(((i314_State_Uninitialized),(<>)))
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i569_client:{i302_initialize,i304_recover,i306_perform_actions,i310_result_t_OK,i310_result_t_NOK,return}
-channel i572_device_A:{i3_initialize,i5_calibrate,i7_perform_action1,i9_perform_action2,i13_result_t_OK,i13_result_t_NOK,return}
-channel i575_device_B:{i3_initialize,i5_calibrate,i7_perform_action1,i9_perform_action2,i13_result_t_OK,i13_result_t_NOK,return}
+channel i569_client:{i302_initialize,i304_recover,i306_perform_actions}
+channel i572_device_A:{i3_initialize,i5_calibrate,i7_perform_action1,i9_perform_action2}
+channel i575_device_B:{i3_initialize,i5_calibrate,i7_perform_action1,i9_perform_action2}
+
+
+channel i569_client_':{i310_result_t_OK,i310_result_t_NOK,return}
+channel i572_device_A_':{i13_result_t_OK,i13_result_t_NOK,return}
+channel i575_device_B_':{i13_result_t_OK,i13_result_t_NOK,return}
 
 
 CO_i1121_Comp_(IIG,IG) = let
@@ -146,26 +156,26 @@ CO_i1121_Comp_(IIG,IG) = let
 i1121_Comp_(((i589_s),(stack'))) = transition_begin -> (
 ((i589_s == i581_State_Uninitialized)) & (
 i569_client?x:{i302_initialize} ->
-context_active_(sendrecv_(i572_device_A,i3_initialize),
+context_active_(semi_(send_(i572_device_A,i3_initialize),recv_(i572_device_A_',i3_initialize)),
 semi_(\ P',((i589_s),((stack',i612_res))) @ ifthenelse_((i612_res == i13_result_t_OK),
-assign_active_(sendrecv_(i575_device_B,i3_initialize),
+assign_active_(semi_(send_(i575_device_B,i3_initialize),recv_(i575_device_B_',i3_initialize)),
 \ (((i589_s),((stack',i612_res)))),r' @ ((i589_s),((stack',r')))),
 skip_
 )(P',((i589_s),((stack',i612_res)))),
 semi_(\ P',((i589_s),((stack',i612_res))) @ ifthenelse_((i612_res == i13_result_t_OK),
-assign_active_(sendrecv_(i572_device_A,i5_calibrate),
+assign_active_(semi_(send_(i572_device_A,i5_calibrate),recv_(i572_device_A_',i5_calibrate)),
 \ (((i589_s),((stack',i612_res)))),r' @ ((i589_s),((stack',r')))),
 skip_
 )(P',((i589_s),((stack',i612_res)))),
 semi_(\ P',((i589_s),((stack',i612_res))) @ ifthenelse_((i612_res == i13_result_t_OK),
-assign_active_(sendrecv_(i575_device_B,i5_calibrate),
+assign_active_(semi_(send_(i575_device_B,i5_calibrate),recv_(i575_device_B_',i5_calibrate)),
 \ (((i589_s),((stack',i612_res)))),r' @ ((i589_s),((stack',r')))),
 skip_
 )(P',((i589_s),((stack',i612_res)))),
 \ P',((i589_s),((stack',i612_res))) @ ifthenelse_((i612_res == i13_result_t_OK),
-semi_(reply_(i569_client, (\ ((i589_s),((stack',i612_res))) @ i310_result_t_OK)),
+semi_(reply_(i569_client_', (\ ((i589_s),((stack',i612_res))) @ i310_result_t_OK)),
 assign_(\ ((i589_s),((stack',i612_res))) @ ((i581_State_Initialized),((stack',i612_res))))),
-reply_(i569_client, (\ ((i589_s),((stack',i612_res))) @ i310_result_t_NOK))
+reply_(i569_client_', (\ ((i589_s),((stack',i612_res))) @ i310_result_t_NOK))
 )(P',((i589_s),((stack',i612_res))))))))(\ V' @ transition_end -> i1121_Comp_(V'),((i589_s),(stack')))
  []
   IIG & i569_client?x:{i304_recover,i306_perform_actions} ->
@@ -173,25 +183,25 @@ illegal_(STOP,<>))
 []
 ((i589_s == i581_State_Initialized)) & (
 i569_client?x:{i306_perform_actions} ->
-context_active_(sendrecv_(i572_device_A,i7_perform_action1),
+context_active_(semi_(send_(i572_device_A,i7_perform_action1),recv_(i572_device_A_',i7_perform_action1)),
 semi_(\ P',((i589_s),((stack',i808_res))) @ ifthenelse_((i808_res == i13_result_t_OK),
-assign_active_(sendrecv_(i575_device_B,i7_perform_action1),
+assign_active_(semi_(send_(i575_device_B,i7_perform_action1),recv_(i575_device_B_',i7_perform_action1)),
 \ (((i589_s),((stack',i808_res)))),r' @ ((i589_s),((stack',r')))),
 skip_
 )(P',((i589_s),((stack',i808_res)))),
 semi_(\ P',((i589_s),((stack',i808_res))) @ ifthenelse_((i808_res == i13_result_t_OK),
-assign_active_(sendrecv_(i572_device_A,i9_perform_action2),
+assign_active_(semi_(send_(i572_device_A,i9_perform_action2),recv_(i572_device_A_',i9_perform_action2)),
 \ (((i589_s),((stack',i808_res)))),r' @ ((i589_s),((stack',r')))),
 skip_
 )(P',((i589_s),((stack',i808_res)))),
 semi_(\ P',((i589_s),((stack',i808_res))) @ ifthenelse_((i808_res == i13_result_t_OK),
-assign_active_(sendrecv_(i575_device_B,i9_perform_action2),
+assign_active_(semi_(send_(i575_device_B,i9_perform_action2),recv_(i575_device_B_',i9_perform_action2)),
 \ (((i589_s),((stack',i808_res)))),r' @ ((i589_s),((stack',r')))),
 skip_
 )(P',((i589_s),((stack',i808_res)))),
 \ P',((i589_s),((stack',i808_res))) @ ifthenelse_((i808_res == i13_result_t_OK),
-reply_(i569_client, (\ ((i589_s),((stack',i808_res))) @ i310_result_t_OK)),
-semi_(reply_(i569_client, (\ ((i589_s),((stack',i808_res))) @ i310_result_t_NOK)),
+reply_(i569_client_', (\ ((i589_s),((stack',i808_res))) @ i310_result_t_OK)),
+semi_(reply_(i569_client_', (\ ((i589_s),((stack',i808_res))) @ i310_result_t_NOK)),
 assign_(\ ((i589_s),((stack',i808_res))) @ ((i581_State_Error),((stack',i808_res)))))
 )(P',((i589_s),((stack',i808_res))))))))(\ V' @ transition_end -> i1121_Comp_(V'),((i589_s),(stack')))
  []
@@ -200,16 +210,16 @@ illegal_(STOP,<>))
 []
 ((i589_s == i581_State_Error)) & (
 i569_client?x:{i304_recover} ->
-context_active_(sendrecv_(i572_device_A,i5_calibrate),
+context_active_(semi_(send_(i572_device_A,i5_calibrate),recv_(i572_device_A_',i5_calibrate)),
 semi_(\ P',((i589_s),((stack',i1004_res))) @ ifthenelse_((i1004_res == i13_result_t_OK),
-assign_active_(sendrecv_(i575_device_B,i5_calibrate),
+assign_active_(semi_(send_(i575_device_B,i5_calibrate),recv_(i575_device_B_',i5_calibrate)),
 \ (((i589_s),((stack',i1004_res)))),r' @ ((i589_s),((stack',r')))),
 skip_
 )(P',((i589_s),((stack',i1004_res)))),
 \ P',((i589_s),((stack',i1004_res))) @ ifthenelse_((i1004_res == i13_result_t_OK),
-semi_(reply_(i569_client, (\ ((i589_s),((stack',i1004_res))) @ i310_result_t_OK)),
+semi_(reply_(i569_client_', (\ ((i589_s),((stack',i1004_res))) @ i310_result_t_OK)),
 assign_(\ ((i589_s),((stack',i1004_res))) @ ((i581_State_Initialized),((stack',i1004_res))))),
-reply_(i569_client, (\ ((i589_s),((stack',i1004_res))) @ i310_result_t_NOK))
+reply_(i569_client_', (\ ((i589_s),((stack',i1004_res))) @ i310_result_t_NOK))
 )(P',((i589_s),((stack',i1004_res))))))(\ V' @ transition_end -> i1121_Comp_(V'),((i589_s),(stack')))
  []
   IIG & i569_client?x:{i302_initialize,i306_perform_actions} ->
@@ -223,8 +233,8 @@ channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {i568_IComp.i310_result_t_OK,i568_IComp.i310_result_t_NOK,i568_IComp.return}
-channel reorder_out : {i569_client.i310_result_t_OK,i569_client.i310_result_t_NOK,i569_client.return}
+channel reorder_in  : {i568_IComp_'.i310_result_t_OK,i568_IComp_'.i310_result_t_NOK,i568_IComp_'.return}
+channel reorder_out : {i569_client_'.i310_result_t_OK,i569_client_'.i310_result_t_NOK,i569_client_'.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -235,13 +245,13 @@ Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
        []
-       reorder_in?i568_IComp.x' -> reorder_out!i569_client.x' -> R'(A')
+       reorder_in?i568_IComp_'.x' -> reorder_out!i569_client_'.x' -> R'(A')
 
 S'    = let
 
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
 
-Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i569_client.head(r') -> Idle(0))
+Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i569_client_'.head(r') -> Idle(0))
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
@@ -249,9 +259,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
             []
-            r' == <> & reorder_in?i568_IComp.x' -> Busy(c',<x'>)
+            r' == <> & reorder_in?i568_IComp_'.x' -> Busy(c',<x'>)
             []
-            r' != <> & reorder_in?i568_IComp.x' -> illegal -> STOP
+            r' != <> & reorder_in?i568_IComp_'.x' -> illegal -> STOP
 
 within Idle(0)
 
@@ -262,13 +272,13 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {i569_client.i310_result_t_OK,i569_client.i310_result_t_NOK,i569_client.return}
+Exclude = {i569_client_'.i310_result_t_OK,i569_client_'.i310_result_t_NOK,i569_client_'.return}
 ClientCalls = {i569_client.i302_initialize,i569_client.i304_recover,i569_client.i306_perform_actions}
 UsedModeling = {}
 within compress((CO_i1121_Comp_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,i569_client,i572_device_A,i575_device_B|},Exclude)|]
-(((IF_i301_IDevice_(true) [[i301_IDevice.x<-i572_device_A.x|x<-extensions(i572_device_A)]]
- ||| IF_i301_IDevice_(true) [[i301_IDevice.x<-i575_device_B.x|x<-extensions(i575_device_B)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,i569_client,i569_client_',i572_device_A,i572_device_A_',i575_device_B,i575_device_B_'|},Exclude)|]
+(((IF_i301_IDevice_(true) [[i301_IDevice.x<-i572_device_A.x|x<-extensions(i572_device_A)]][[i301_IDevice_'.x<-i572_device_A_'.x|x<-extensions(i572_device_A_')]]
+ ||| IF_i301_IDevice_(true) [[i301_IDevice.x<-i575_device_B.x|x<-extensions(i575_device_B)]][[i301_IDevice_'.x<-i575_device_B_'.x|x<-extensions(i575_device_B_')]]
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
@@ -281,5 +291,5 @@ assert IF_i568_IComp_(true) :[livelock free]
 assert CO_i1121_Comp_(true,true) :[deterministic]
 assert STOP [T= AS_i1121_Comp_(false) \ diff(Events,{illegal})
 assert AS_i1121_Comp_(false) :[deadlock free]
-assert IF_i568_IComp_(true) [[i568_IComp.x<-i569_client.x|x<-extensions(i569_client)]] \ {} [F= AS_i1121_Comp_(true) \ diff(Events,{|illegal,i569_client|})
-assert AS_i1121_Comp_(true) \ diff(Events,{|illegal,i569_client|}) :[livelock free]
+assert IF_i568_IComp_(true) [[i568_IComp.x<-i569_client.x|x<-extensions(i569_client)]][[i568_IComp_'.x<-i569_client_'.x|x<-extensions(i569_client_')]] \ {} [F= AS_i1121_Comp_(true) \ diff(Events,{|illegal,i569_client,i569_client_'|})
+assert AS_i1121_Comp_(true) \ diff(Events,{|illegal,i569_client,i569_client_'|}) :[livelock free]

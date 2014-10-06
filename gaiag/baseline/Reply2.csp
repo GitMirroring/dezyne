@@ -6,6 +6,9 @@ illegal_(P',V') = illegal -> STOP
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
+
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
+
 -- sendrecv_: (c: channel, e:event) => (P,V)->Proc
 sendrecv_(c',e')(P', V') =  c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- callvoid_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -41,42 +44,48 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = Status_No | Status_Nok | Status_Ok | Status_Yes | done | return | what
 -- interface.csp.scm
 
-channel I: {done,Status_Yes,Status_No,return}
+channel I: {done}
+channel I_': {Status_Yes,Status_No,return}
 
 IF_I_(IG) = let
 
 I_(((dummy),(stack'))) =
 (true) & (
 I?x:{done} ->
-reply_(I, (\ ((dummy),(stack')) @ Status_Yes))(\ V' @ I_(V'),((dummy),(stack')))
+reply_(I_', (\ ((dummy),(stack')) @ Status_Yes))(\ V' @ I_(V'),((dummy),(stack')))
  []
   I?x:{done} ->
-reply_(I, (\ ((dummy),(stack')) @ Status_No))(\ V' @ I_(V'),((dummy),(stack'))))
+reply_(I_', (\ ((dummy),(stack')) @ Status_No))(\ V' @ I_(V'),((dummy),(stack'))))
 
 within I_(((false),(<>)))
 
 -- end of interface.csp.scm
 -- interface.csp.scm
 
-channel U: {what,Status_Ok,Status_Nok,return}
+channel U: {what}
+channel U_': {Status_Ok,Status_Nok,return}
 
 IF_U_(IG) = let
 
 U_(((dummy),(stack'))) =
 (true) & (
 U?x:{what} ->
-reply_(U, (\ ((dummy),(stack')) @ Status_Ok))(\ V' @ U_(V'),((dummy),(stack')))
+reply_(U_', (\ ((dummy),(stack')) @ Status_Ok))(\ V' @ U_(V'),((dummy),(stack')))
  []
   U?x:{what} ->
-reply_(U, (\ ((dummy),(stack')) @ Status_Nok))(\ V' @ U_(V'),((dummy),(stack'))))
+reply_(U_', (\ ((dummy),(stack')) @ Status_Nok))(\ V' @ U_(V'),((dummy),(stack'))))
 
 within U_(((false),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i:{done,Status_Yes,Status_No,return}
-channel u:{what,Status_Ok,Status_Nok,return}
+channel i:{done}
+channel u:{what}
+
+
+channel i_':{Status_Yes,Status_No,return}
+channel u_':{Status_Ok,Status_Nok,return}
 
 
 CO_Reply2_(IIG,IG) = let
@@ -84,12 +93,12 @@ CO_Reply2_(IIG,IG) = let
 Reply2_(((dummy),(stack'))) = transition_begin -> (
 (true) & (
 i?x:{done} ->
-context_active_(sendrecv_(u,what),
-semi_(assign_active_(sendrecv_(u,what),
+context_active_(semi_(send_(u,what),recv_(u_',what)),
+semi_(assign_active_(semi_(send_(u,what),recv_(u_',what)),
 \ (((dummy),((stack',s)))),r' @ ((dummy),((stack',r')))),
 \ P',((dummy),((stack',s))) @ ifthenelse_((s == Status_Ok),
-reply_(i, (\ ((dummy),((stack',s))) @ Status_Yes)),
-reply_(i, (\ ((dummy),((stack',s))) @ Status_No))
+reply_(i_', (\ ((dummy),((stack',s))) @ Status_Yes)),
+reply_(i_', (\ ((dummy),((stack',s))) @ Status_No))
 )(P',((dummy),((stack',s))))))(\ V' @ transition_end -> Reply2_(V'),((dummy),(stack'))))
 )
 
@@ -100,8 +109,8 @@ channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {I.Status_Yes,I.Status_No,I.return}
-channel reorder_out : {i.Status_Yes,i.Status_No,i.return}
+channel reorder_in  : {I_'.Status_Yes,I_'.Status_No,I_'.return}
+channel reorder_out : {i_'.Status_Yes,i_'.Status_No,i_'.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -112,13 +121,13 @@ Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
        []
-       reorder_in?I.x' -> reorder_out!i.x' -> R'(A')
+       reorder_in?I_'.x' -> reorder_out!i_'.x' -> R'(A')
 
 S'    = let
 
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
 
-Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i.head(r') -> Idle(0))
+Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i_'.head(r') -> Idle(0))
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
@@ -126,9 +135,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
             []
-            r' == <> & reorder_in?I.x' -> Busy(c',<x'>)
+            r' == <> & reorder_in?I_'.x' -> Busy(c',<x'>)
             []
-            r' != <> & reorder_in?I.x' -> illegal -> STOP
+            r' != <> & reorder_in?I_'.x' -> illegal -> STOP
 
 within Idle(0)
 
@@ -139,12 +148,12 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {i.Status_Yes,i.Status_No,i.return}
+Exclude = {i_'.Status_Yes,i_'.Status_No,i_'.return}
 ClientCalls = {i.done}
 UsedModeling = {}
 within compress((CO_Reply2_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,i,u|},Exclude)|]
-(((IF_U_(true) [[U.x<-u.x|x<-extensions(u)]]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,i,i_',u,u_'|},Exclude)|]
+(((IF_U_(true) [[U.x<-u.x|x<-extensions(u)]][[U_'.x<-u_'.x|x<-extensions(u_')]]
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
@@ -157,5 +166,5 @@ assert IF_U_(true) :[livelock free]
 assert CO_Reply2_(true,true) :[deterministic]
 assert STOP [T= AS_Reply2_(false) \ diff(Events,{illegal})
 assert AS_Reply2_(false) :[deadlock free]
-assert IF_I_(true) [[I.x<-i.x|x<-extensions(i)]] \ {} [F= AS_Reply2_(true) \ diff(Events,{|illegal,i|})
-assert AS_Reply2_(true) \ diff(Events,{|illegal,i|}) :[livelock free]
+assert IF_I_(true) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]] \ {} [F= AS_Reply2_(true) \ diff(Events,{|illegal,i,i_'|})
+assert AS_Reply2_(true) \ diff(Events,{|illegal,i,i_'|}) :[livelock free]

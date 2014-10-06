@@ -6,6 +6,9 @@ illegal_(P',V') = illegal -> STOP
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
+
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
+
 -- sendrecv_: (c: channel, e:event) => (P,V)->Proc
 sendrecv_(c',e')(P', V') =  c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- callvoid_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -41,20 +44,24 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = i18_State_ALL | i3_evt | return
 -- interface.csp.scm
 
-channel i13_I: {i3_evt,return}
+channel i13_I: {i3_evt}
+channel i13_I_': {return}
 
 IF_i13_I_(IG) = let
 
 i13_I_(((<>),(stack'))) =
 i13_I?x:{i3_evt} ->
-(\ P',V' @ i13_I.return -> P'(V'))(\ V' @ i13_I_(V'),((<>),(stack')))
+(\ P',V' @ i13_I_'.return -> P'(V'))(\ V' @ i13_I_(V'),((<>),(stack')))
 
 within i13_I_(((<>),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i14_p:{i3_evt,return}
+channel i14_p:{i3_evt}
+
+
+channel i14_p_':{return}
 
 
 CO_i51_Bot_(IIG,IG) = let
@@ -62,7 +69,7 @@ CO_i51_Bot_(IIG,IG) = let
 i51_Bot_(((i26_s),(stack'))) = transition_begin -> (
 ((i26_s == i18_State_ALL)) & (
 i14_p?x:{i3_evt} ->
-(\ P',V' @ i14_p.return -> P'(V'))(\ V' @ transition_end -> i51_Bot_(V'),((i26_s),(stack'))))
+(\ P',V' @ i14_p_'.return -> P'(V'))(\ V' @ transition_end -> i51_Bot_(V'),((i26_s),(stack'))))
 )
 
 within i51_Bot_(((i18_State_ALL),(<>)))
@@ -72,8 +79,8 @@ channel IN,OUT : {extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {i13_I.return}
-channel reorder_out : {i14_p.return}
+channel reorder_in  : {i13_I_'.return}
+channel reorder_out : {i14_p_'.return}
 
 SEMANTICS(in',out',client',modeling') = let
 Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
@@ -84,13 +91,13 @@ Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
        []
-       reorder_in?i13_I.x' -> reorder_out!i14_p.x' -> R'(A')
+       reorder_in?i13_I_'.x' -> reorder_out!i14_p_'.x' -> R'(A')
 
 S'    = let
 
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
 
-Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i14_p.head(r') -> Idle(0))
+Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i14_p_'.head(r') -> Idle(0))
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
@@ -98,9 +105,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
             []
-            r' == <> & reorder_in?i13_I.x' -> Busy(c',<x'>)
+            r' == <> & reorder_in?i13_I_'.x' -> Busy(c',<x'>)
             []
-            r' != <> & reorder_in?i13_I.x' -> illegal -> STOP
+            r' != <> & reorder_in?i13_I_'.x' -> illegal -> STOP
 
 within Idle(0)
 
@@ -111,11 +118,11 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {i14_p.return}
+Exclude = {i14_p_'.return}
 ClientCalls = {i14_p.i3_evt}
 UsedModeling = {}
 within compress((CO_i51_Bot_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,i14_p|},Exclude)|]
+[|diff({|OUT,transition_begin,transition_end,reorder_in,i14_p,i14_p_'|},Exclude)|]
 (((STOP
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
@@ -127,5 +134,5 @@ assert IF_i13_I_(true) :[livelock free]
 assert CO_i51_Bot_(true,true) :[deterministic]
 assert STOP [T= AS_i51_Bot_(false) \ diff(Events,{illegal})
 assert AS_i51_Bot_(false) :[deadlock free]
-assert IF_i13_I_(true) [[i13_I.x<-i14_p.x|x<-extensions(i14_p)]] \ {} [F= AS_i51_Bot_(true) \ diff(Events,{|illegal,i14_p|})
-assert AS_i51_Bot_(true) \ diff(Events,{|illegal,i14_p|}) :[livelock free]
+assert IF_i13_I_(true) [[i13_I.x<-i14_p.x|x<-extensions(i14_p)]][[i13_I_'.x<-i14_p_'.x|x<-extensions(i14_p_')]] \ {} [F= AS_i51_Bot_(true) \ diff(Events,{|illegal,i14_p,i14_p_'|})
+assert AS_i51_Bot_(true) \ diff(Events,{|illegal,i14_p,i14_p_'|}) :[livelock free]
