@@ -46,46 +46,8 @@
            statements.event
            statements.port))
 
-(define-method (declare-replies (o <interface>))
-  (map (lambda (x) (->string (list "        " "self.reply_" (.name o) "_" (.name x) " = None\n"))) (gom:interface-enums o)))
-
-(define (scope-type o)
-  (match o
-    (($ <expression> ($ <literal> scope type field)) (->string (list "interface." scope)))))
-
-(define (enum-type o)
-  (match o
-    (($ <expression> ($ <literal> scope type field)) (->string (list (scope-type o) "." type)))))
-
-(define (declare-enum enum)
-  (let ((fields (.elements (.fields enum))))
-    (->string
-     (list
-      "    class " (.name enum) " ():\n"
-      "        " (comma-space-join fields) " = range (" (length fields) ")\n"))))
-
-(define (declare-integer integer)
-  (->string (list "typedef int " (.name integer) ";\n")))
-
 (define statements.port (make-parameter #f))
 (define statements.event (make-parameter #f))
-
-(define-method (enum->identifier (model <model>) (o <expression>) locals)
-  ;; FIXME: c&p (resolve-model-)
-  (define (enum? identifier) (gom:enum model identifier))
-  (define (member? identifier) (gom:variable model identifier))
-  (define (local? identifier) (assoc-ref locals identifier))
-  (define (var? identifier) (or (member? identifier) (local? identifier)))
-  (match o
-    (($ <expression> ($ <literal> scope type field))
-     (->string (list scope "_" type)))
-    (($ <expression> ($ <var> name))
-     (or (and-let* ((decl (var? name))
-                    (type (.type decl)))
-                   (->string (list (.scope type) "_" (.name type))))
-         ""))))
-
-(define (enum->type) "todo")
 
 (define (snippet name pairs)
   (parameterize ((template-dir (append (template-dir) '(snippets))))
@@ -234,9 +196,11 @@
 (define (bool-expression->string model o)
   (match o
     (($ <field> identifier field)
-     (list "(self." identifier " == " field ")"))
-    (($ <literal> #f type field) (->string (list "self." type "." field)))
-    (($ <literal> scope type field) (->string (list type "." field)))
+     (snippet 'field `((identifier ,identifier) (field ,field))))
+    (($ <literal> #f type field)
+     (snippet 'literal-local `((type ,type) (field ,field))))
+    (($ <literal> scope type field)
+     (snippet 'literal `((scope ,scope) (type ,type) (field ,field))))
     (_ (expression->string model o))))
 
 ;; FIXME: c&p from csp.scm
@@ -294,6 +258,42 @@
        (list lhs " " op " " rhs )))
 
     (_ (format #f "~a:no match: ~a" (current-source-location) o))))
+
+(define-method (declare-replies (o <interface>))
+  (map (lambda (x) (->string (list "        " "self.reply_" (.name o) "_" (.name x) " = None\n"))) (gom:interface-enums o)))
+
+(define (scope-type o)
+  (match o
+    (($ <expression> ($ <literal> scope type field)) (->string (list "interface." scope)))))
+
+(define (enum-type o)
+  (match o
+    (($ <expression> ($ <literal> scope type field)) (->string (list (scope-type o) "." type)))))
+
+(define (declare-enum enum)
+  (let ((fields (.elements (.fields enum))))
+    (->string
+     (list
+      "    class " (.name enum) " ():\n"
+      "        " (comma-space-join fields) " = range (" (length fields) ")\n"))))
+
+(define (declare-integer integer)
+  (->string (list "typedef int " (.name integer) ";\n")))
+
+(define-method (enum->identifier (model <model>) (o <expression>) locals)
+  ;; FIXME: c&p (resolve-model-)
+  (define (enum? identifier) (gom:enum model identifier))
+  (define (member? identifier) (gom:variable model identifier))
+  (define (local? identifier) (assoc-ref locals identifier))
+  (define (var? identifier) (or (member? identifier) (local? identifier)))
+  (match o
+    (($ <expression> ($ <literal> scope type field))
+     (->string (list scope "_" type)))
+    (($ <expression> ($ <var> name))
+     (or (and-let* ((decl (var? name))
+                    (type (.type decl)))
+                   (->string (list (.scope type) "_" (.name type))))
+         ""))))
 
 (define (binding-name model bind)
   (let ((instance (gom:instance model bind))
