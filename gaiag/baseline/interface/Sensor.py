@@ -20,12 +20,6 @@
 # 
 # Code:
 
-try:
-    from enum import Enum
-except:
-    class Enum (): pass
-#
-
 class Sensor ():
 
     def __init__ (self):

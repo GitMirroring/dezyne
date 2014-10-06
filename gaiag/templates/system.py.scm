@@ -1,6 +1,3 @@
-import inspect
-import sys
-##
 import component
 
 def connect (provided, required):

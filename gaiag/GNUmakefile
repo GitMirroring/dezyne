@@ -338,11 +338,11 @@ python-alarm: compile
 	cd out && $(shell pwd)/gaiag -l python examples/Siren.asd
 	cd out && $(shell pwd)/gaiag -l python examples/Alarm.asd
 	cd out && $(shell pwd)/gaiag -l python examples/AlarmSystem.asd
-	-$(pydiff) baseline/interface/Console.py out/interface
-	-$(pydiff) baseline/interface/Sensor.py out/interface
-	-$(pydiff) baseline/interface/Siren.py out/interface
-	-$(pydiff) baseline/component/Alarm.py out/component
-	-$(pydiff) baseline/component/AlarmSystem.py out/component
+	$(pydiff) baseline/interface/Console.py out/interface
+	$(pydiff) baseline/interface/Sensor.py out/interface
+	$(pydiff) baseline/interface/Siren.py out/interface
+	$(pydiff) baseline/component/Alarm.py out/component
+	$(pydiff) baseline/component/AlarmSystem.py out/component
 	ln -s ../examples/alarm.py out
 	ln -s ../examples/__init__.py out/interface
 	ln -s ../examples/__init__.py out/component

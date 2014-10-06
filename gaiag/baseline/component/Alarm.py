@@ -20,12 +20,7 @@
 # 
 # Code:
 
-import inspect
 import sys
-try:
-    from enum import Enum
-except:
-    class Enum (): pass
 #
 import interface.Console
 import interface.Sensor
@@ -33,7 +28,7 @@ import interface.Siren
 
 
 class Alarm ():
-    class States (Enum):
+    class States ():
         Disarmed, Armed, Triggered, Disarming = range (4)
 
     def __init__ (self):
