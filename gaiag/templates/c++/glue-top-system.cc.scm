@@ -18,12 +18,15 @@ struct #.model Glue
 {
   component::#.model  component;
 
+#(define (api port) (->string (list (.type port) "_API")))
+#(define (cb port) (->string (list (.type port) "_CB")))
+
 #(map (lambda (port)
         (->string
-         (list "struct " (.type port) "_API\n: public ::" (.type port) "_API\n"
+         (list "struct " (api port) "\n: public ::" (api port) "\n"
                "{\n"
                "interface::" (.type port) "& api;\n"
-               (.type port) "_API(interface::" (.type port) "& api)\n"
+               (api port) "(interface::" (.type port) "& api)\n"
                ": api(api)\n"
                "{}\n"
                (map
@@ -40,18 +43,18 @@ struct #.model Glue
 
 #(map (lambda (port)
         (->string
-         (list "boost::shared_ptr<" (.type port) "_API> api_" (.name port) ";\n")))
+         (list "boost::shared_ptr<" (api port) "> api_" (.name port) ";\n")))
       (filter gom:provides? ((compose .elements .ports) model)))
 #(map (lambda (port)
         (->string
-         (list "boost::shared_ptr<" (.type port) "_CB> cb_" (.name port) ";\n")))
+         (list "boost::shared_ptr<" (cb port) "> cb_" (.name port) ";\n")))
       (filter gom:provides? ((compose .elements .ports) model)))
 #.model Glue ()
 : component()
 #(map (lambda (port)
         (->string
          (list ", api_" (.name port)
-               "(boost::make_shared<" (.type port) "_API>(boost::ref(component." (.name port) ")))\n")))
+               "(boost::make_shared<" (api port) ">(boost::ref(component." (.name port) ")))\n")))
       (filter gom:provides? ((compose .elements .ports) model))){
 #(map (lambda (port)
         (->string
@@ -60,20 +63,20 @@ struct #.model Glue
            (lambda (event)
              (->string
               (list "component." (.name port) ".out." (.name event)
-                    " = boost::bind(push, st, boost::function<void()>(boost::bind(&" (.type port) "_CB::" (.name event) ", boost::ref(cb_" (.name port) "))));\n")))
+                    " = boost::bind(push, st, boost::function<void()>(boost::bind(&" (cb port) "::" (.name event) ", boost::ref(cb_" (.name port) "))));\n")))
            (filter gom:out? (gom:events port))))))
       (filter gom:provides? ((compose .elements .ports) model)))}
 
 #(map (lambda (port)
         (->string
-         (list "void GetAPI(boost::shared_ptr< ::" (.type port) "_API>* api)\n"
+         (list "void GetAPI(boost::shared_ptr< ::" (api port) ">* api)\n"
                "{\n"
                "*api = api_" (.name port) ";\n"
                "}\n")))
       (filter gom:provides? ((compose .elements .ports) model)))
 #(map (lambda (port)
         (->string
-         (list "void RegisterCB(boost::shared_ptr< ::" (.type port) "_CB> cb)\n"
+         (list "void RegisterCB(boost::shared_ptr< ::" (cb port) "> cb)\n"
                "{\n"
                "cb_" (.name port) " = cb;\n"
                "}\n")))

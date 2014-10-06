@@ -39,10 +39,14 @@
 
   :export (ast->
            c++:gom
-           c++:import))
+           c++:import
+           *glue-alist*))
 
+(define *glue-alist* '())
 (define (ast-> ast)
   (let ((gom ((gom:register c++:gom) ast #t)))
+    (and-let* ((file "AlarmSystem.text"))
+              (set! *glue-alist* (glue-mapping->alist (gulp-file file))))
     (map dump ((gom:filter <model>) gom)))
   "")
 
@@ -99,3 +103,13 @@
 (define (c++-file file-name module)
   (parameterize ((template-dir (append (prefix-dir) '(templates c++))))
     (animate-file file-name module)))
+
+(define (glue-mapping->alist string)
+  (fold (lambda (e r)
+          (if (pair? e)
+              (or (and-let* ((v (assoc-ref r (car e))))
+                            (assoc-set! r (car e) (append v (list (cdr e)))))
+                  (acons (car e) (list (cdr e)) r)) r))
+        '()
+        (map (lambda (o) (map string->symbol (string-tokenize o char-set:graphic)))
+             (string-split string #\newline))))
