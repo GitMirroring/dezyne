@@ -62,7 +62,6 @@
     (->string
      (match src
        (() "")
-
        (($ <guard> expression statement)
         (snippet 'guard
                  `((space ,space)
@@ -101,18 +100,16 @@
             (->code model statement locals indent)
             ""))
        (($ <call> function ($ <arguments> '()))
-        (snippet 'call
+        (snippet 'call `((space ,space) (function ,function))))
+       (($ <call> function arguments)
+        (snippet 'call-arguments
                  `((space ,space)
-                   (function ,function))))
-       (($ <call> function ($ <arguments> arguments))
-        (let ((arguments ((->join ", ") (map (lambda (o) (expression->string model o locals)) arguments))))
-          (snippet 'call-arguments
-                   `((space ,space)
-                     (function ,function)
-                     (arguments ,(->code model arguments locals indent))))))
-       (($ <compound> '())
-        (snippet 'compound-empty
-                 `((space ,space))))
+                   (function ,function)
+                   (arguments ,(->code model arguments locals indent)))))
+       (($ <arguments> arguments)
+        ((->join ", ")
+         (map (lambda (o) (expression->string model o locals)) arguments)))
+       (($ <compound> '()) (snippet 'compound-empty `((space ,space))))
        (($ <compound> statements)
         (snippet
          (if compound? 'compound 'statements)
@@ -183,15 +180,15 @@
        (_ (throw 'match-error (format #f "~a:code:->code: no match: ~a\n" (current-source-location) src)))))))
 
 (define (expr->clause model src expression)
-  (let* ((c-expression (bool-expression->string model expression))
-         (if-clause (snippet 'clause-if `((expression ,c-expression))))
-         (else-if-clause (snippet 'clause-else-if `((expression ,c-expression))))
-         (else-clause (snippet 'clause-else '()))
-         (guards ((compose .elements .statement .behaviour) model))
-         (first? (eq? src (car guards)))
-         (top? (find (lambda (guard) (eq? guard src)) guards)))
-    (->string (list (if (is-a? expression <otherwise>) else-clause
-                        (if (or first? (not top?)) if-clause else-if-clause))))))
+  (if (is-a? expression <otherwise>)
+      (snippet 'clause-else '())
+      (let* ((c-expression (bool-expression->string model expression))
+             (if-clause (snippet 'clause-if `((expression ,c-expression))))
+             (else-if-clause (snippet 'clause-else-if `((expression ,c-expression))))
+             (guards ((compose .elements .statement .behaviour) model))
+             (first? (eq? src (car guards)))
+             (top? (find (lambda (guard) (eq? guard src)) guards)))
+        (->string (list (if (or first? (not top?)) if-clause else-if-clause))))))
 
 (define (bool-expression->string model o)
   (match o
@@ -215,49 +212,41 @@
   (define (local? identifier) (assoc-ref locals identifier))
   (define (var? identifier) (or (member? identifier) (local? identifier)))
 
-  (define (enum-type o)
+  (define (enum-type o field)
     (or (and-let* ((decl (var? o))
-                   (type (.type decl))
-                   (scope (if (.scope type) (list (.scope type) ".") "self.")))
-                  (list scope (.name type) "."))
+                   (type (.type decl)))
+                  (if (.scope type)
+                      (snippet 'literal
+                               `((scope ,(.scope type))
+                                 (type ,(.name type))
+                                         (field ,field)))
+                      (snippet 'literal-local
+                               `((type ,(.name type))
+                                 (field ,field)))))
         ""))
 
   (match o
     (($ <expression>) (expression->string model (.value o) locals))
-    (($ <var> (and (? member?) (get! identifier))) (list "self." (identifier)))
+    (($ <var> (and (? member?) (get! identifier)))
+     (snippet 'member `((identifier ,(identifier)))))
     (($ <var> identifier) identifier)
     (($ <field> identifier field)
-     (list "self." identifier " == " (enum-type identifier) field))
-
-    (($ <call> function ($ <arguments> '())) (->string (list "self." function " ()")))
-    (($ <call> function ($ <arguments> arguments))
-     (let ((arguments ((->join ", ") (map (lambda (o) (expression->string model o locals)) arguments))))
-       (->string (list "self." function  " (" arguments ")"))))
-
-    (($ <literal> #f type field) (list "self." type "." field))
-    (($ <literal> scope type field)
-     (->string (list "interface." scope "." type "." field)))
+     (snippet 'field-expression `((identifier ,identifier)
+                                  (expression ,(enum-type identifier field)))))
+    (($ <call>) (->code model o locals 0))
+    (($ <literal>) (bool-expression->string model o))
     ((? number?) (number->string o))
-    ((? string?) o)
-    ('true 'True)
-    ('false 'False)
-    ((? symbol?) o)
-    (('! expression)
-     (->string (list "not " (paren expression))))
-
+    (('! expression) (->string (list "not " (paren expression))))
     (('group expression) (paren expression))
-
     (('or lhs rhs) (let ((lhs (expression->string model lhs locals))
                          (rhs (expression->string model rhs locals)))
                      (list "(" lhs " " 'or " " rhs ")")))
-
     (((or 'and '== '!= '< '<= '> '>= '+ '-) lhs rhs)
      (let ((lhs (expression->string model lhs locals))
            (rhs (expression->string model rhs locals))
            (op (car o)))
        (list lhs " " op " " rhs )))
-
-    (_ (format #f "~a:no match: ~a" (current-source-location) o))))
+    (_ (->code model o locals 0))))
 
 (define-method (declare-replies (o <interface>))
   (map (lambda (x) (->string (list "        " "self.reply_" (.name o) "_" (.name x) " = None\n"))) (gom:interface-enums o)))
