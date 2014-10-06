@@ -38,7 +38,10 @@
   :use-module (gaiag gom)
 
   :export (enum-type
-           ->code))
+           ->code
+           statements.src
+           statements.event
+           statements.port))
 
 (define-method (declare-replies (o <interface>))
   (map (lambda (x) (->string (list "        " "self.reply_" (.name o) "_" (.name x) " = None\n"))) (gom:interface-enums o)))
@@ -82,9 +85,11 @@
 
 (define (enum->type) "todo")
 
-(define (snippet name pairs) "boo")
+(define (snippet name pairs)
+  (parameterize ((template-dir (append (template-dir) '(snippets))))
+    (animate-template name pairs)))
 
-(define* (statements->string model src :optional (locals '()) (indent 1) (compound? #t))
+(define* (->code model src :optional (locals '()) (indent 1) (compound? #t))
   (define (enum? identifier) (gom:enum model identifier))
 
   (let ((port (statements.port))
@@ -97,29 +102,29 @@
        (($ <guard> expression statement)
         (list space (parameterize ((statements.src src))
                       (expr->clause model expression))
-              "\n" (statements->string model statement locals (1+ indent))))
-       (($ <if> expression then ($ <statement> '()))
-        (list space "if (" (expression->string model expression locals) "):\n" (statements->string model then locals (1+ indent))))
-       (($ <if> expression then ($ <statement> '()))
-        (snippet 'if
-                 `((expression (expression->string model expression locals))
-                   (then (statements->string model then locals))))
-        (list "if ("  ")\n" ))
-       (($ <if> expression then #f) ;; FIXME
-        (list space "if (" (expression->string model expression locals) "):\n" (statements->string model then locals (1+ indent))))
+              "\n" (->code model statement locals (1+ indent))))
+       (($ <if> expression then #f)
+        (snippet 'if-then
+                 `((space ,space)
+                   (expression ,(expression->string model expression locals))
+                   (then ,(->code model then locals (1+ indent))))))
        (($ <if> expression then else)
-        (list space "if (" (expression->string model expression locals) "):\n" (statements->string model then locals (1+ indent)) space "else:\n" (statements->string model else locals (1+ indent))))
+        (snippet 'if-then-else
+                 `((space ,space)
+                   (expression ,(expression->string model expression locals))
+                   (then ,(->code model then locals (1+ indent)))
+                   (else ,(->code model else locals (1+ indent))))))
        (($ <assign> name (and ($ <action>) (get! action)))
-        (list space "self." name " = " (statements->string model (action) locals 0)))
+        (list space "self." name " = " (->code model (action) locals 0)))
        (($ <assign> name (and ($ <call>) (get! call)))
-        (list space "self." name " = " (statements->string model (call) locals 0)))
+        (list space "self." name " = " (->code model (call) locals 0)))
        (($ <assign> identifier expression)
-        (list space "self." (statements->string model identifier locals 0) " = " (expression->string model expression locals) "\n"))
+        (list space "self." (->code model identifier locals 0) " = " (expression->string model expression locals) "\n"))
        (($ <on> triggers statement)
         (if (find (lambda (t) (and (eq? (.port t) (.name port))
                                    (eq? (.event t) (.name event))))
                   (.elements triggers))
-            (statements->string model statement locals indent)
+            (->code model statement locals indent)
             ""))
        (($ <call> function ($ <arguments> '())) (list space "self." function " ()\n"))
        (($ <call> function ($ <arguments> arguments))
@@ -138,7 +143,7 @@
                                      (($ <variable> name type expression)
                                       (acons name statement locals))
                                      (_ locals))))
-                      (let ((str (statements->string model (car statements) locals indent compound?)))
+                      (let ((str (->code model (car statements) locals indent compound?)))
                         (cons str (loop (cdr statements) locals))))))
               ;;(if compound? "\n")
               ))
@@ -148,12 +153,12 @@
                (event-name (.event trigger))
                (port (gom:port model port-name))
                (name (.type port))
-               (interface (python:import name))
+               (interface (gom:import name))
                (event (gom:event interface event-name)))
           (list space "self." port-name '. (.direction event) 's. event-name " ()\n")))
        (($ <reply> expression)
         (let* ((name (enum->identifier model expression locals)))
-          (statements->string
+          (->code
            model
            (list space "self.reply_" name " = " (expression->string model expression locals) "\n")
            locals)))
@@ -164,15 +169,15 @@
        (($ <signature> type)
         (list (if (and (not (.scope type)) (enum? (.name type)))
                   (list (.name model) "."))
-              (statements->string model type locals)))
+              (->code model type locals)))
        (($ <type> name #f) (if (enum? name) (->string (list name "")) name))
        (($ <type> name scope) (list "interface." scope "." name ""))
        (($ <variable> name type (and ($ <action>) (get! action)))
-        (statements->string model (list space name " = " (statements->string model (action) locals 0)) locals indent))
+        (->code model (list space name " = " (->code model (action) locals 0)) locals indent))
        (($ <variable> name type expression)
-        (statements->string model (list space name " = " (expression->string model expression locals) "\n") locals indent))
+        (->code model (list space name " = " (expression->string model expression locals) "\n") locals indent))
        (($ <parameters> parameters)
-        ((->join ", ") (map (lambda (x) (statements->string model x)) parameters)))
+        ((->join ", ") (map (lambda (x) (->code model x)) parameters)))
        (($ <gom:parameter> name) name)
        ((? char?) (make-string 1 src))
        ((? string?) src)
@@ -181,8 +186,8 @@
        ((? symbol?) src)
        (#t 'True)
        (#f 'False)
-       ((h t ...) (map (lambda (x) (statements->string model x locals indent)) src))
-       (_ (throw 'match-error (format #f "~a:python:statements->string: no match: ~a\n" (current-source-location) src)))))))
+       ((h t ...) (map (lambda (x) (->code model x locals indent)) src))
+       (_ (throw 'match-error (format #f "~a:code:->code: no match: ~a\n" (current-source-location) src)))))))
 
 (define (expr->clause model expression)
   (let* ((c-expression (bool-expression->string model expression))

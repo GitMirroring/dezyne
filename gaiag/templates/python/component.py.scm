@@ -55,7 +55,7 @@ class #.model  ():
                       (statement (.statement behaviour)))
                      (parameterize ((statements.port port)
                                     (statements.event event))
-                       (statements->string model statement '() 2 #f)))
+                       (python:->code model statement '() 2 #f)))
                     "")))
           (->string
            (list

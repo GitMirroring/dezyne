@@ -215,7 +215,7 @@
                (let* ((xstart (ftell (current-input-port)))
                       (expr (read (current-input-port)))
                       (end (ftell (current-input-port))))
-                 (catch  (if (batch-mode?) #t 'no-funky-exceptions)
+                 (catch 'boo ;;(if (batch-mode?) #t 'no-funky-exceptions)
                    (lambda ()
                      (let ((result (eval expr module)))
                        (display (->string result))
