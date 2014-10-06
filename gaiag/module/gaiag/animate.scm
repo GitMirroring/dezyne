@@ -131,7 +131,7 @@
         (module-define! module (caar pairs) (cdar pairs))
         (loop (cdr pairs))))
     (with-output-to-string
-      (lambda () (animate-file (template-file name) module)))))
+      (lambda () (animate-file name module)))))
 
 (define* (line-column-location tell :optional (port (current-input-port)))
   (seek port 0 SEEK_SET)
@@ -151,7 +151,7 @@
   (with-input-from-file file-name (lambda () (line-column-location tell))))
 
 (define (animate-file file-name module)
-  (let ((file-name (components->file-name file-name)))
+  (let ((file-name (components->file-name (template-file file-name))))
       (with-input-from-file file-name (lambda () (animate-input module file-name)))))
 
 (define* (animate-input module :optional (file-name "<input>"))

@@ -118,7 +118,7 @@
                (model (gom:model-with-behaviour norm))
                (file-name (option-ref (parse-opts (command-line)) 'output (list name '.csp))))
               (dump-output file-name (lambda ()
-                                       (animate-file (append (prefix-dir) '(templates combinators.csp.scm)) (csp-module model))
+                                       (csp-file 'combinators.csp.scm (csp-module model))
                                        (csp-model model)
                                        (if separate-asserts?
                                            (animate-string "\ninclude \"asserts.csp\"\n")
@@ -143,10 +143,10 @@
 
 (define-method (csp-model (o <component>))
   (for-each csp-model (interfaces o))
-  (animate-file (append (prefix-dir) '(templates component.csp.scm)) (csp-module o)))
+  (csp-file 'component.csp.scm (csp-module o)))
 
 (define-method (csp-model (o <interface>))
-  (animate-file (append (prefix-dir) '(templates interface.csp.scm)) (csp-module o)))
+  (csp-file 'interface.csp.scm (csp-module o)))
 
 (define-method (csp-asserts (o <component>))
   (for-each csp-asserts (interfaces o))
@@ -179,6 +179,10 @@
                                  ))))
     (module-define! module 'model o)
     module))
+
+(define (csp-file file-name module)
+  (parameterize ((template-dir (append (prefix-dir) '(templates csp))))
+    (animate-file file-name module)))
 
 (define-method (valued? (model <model>) (o <on>))
   (gom:typed? model (car ((compose .elements .triggers) o))))

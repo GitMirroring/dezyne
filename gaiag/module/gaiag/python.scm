@@ -38,7 +38,6 @@
   :use-module (gaiag gom)
 
   :export (ast->
-           animate-template
            enum-type
            python-module
            python:gom
@@ -71,7 +70,7 @@
   (let ((name (.name o)))
     (dump-output (list 'interface name '.py)
                    (lambda ()
-                     ((animate-template 'interface.py.scm) (python-module o))))))
+                     (python-file 'interface.py.scm (python-module o))))))
 
 (define-method (dump (o <component>))
   (mkdir-p "component")
@@ -81,17 +80,18 @@
       (map dump interfaces)
       (dump-output (list 'component name '.py)
                    (lambda ()
-                     ((animate-template 'component.py.scm) (python-module o)))))))
+                     (python-file 'component.py.scm (python-module o)))))))
 
 (define-method (dump (o <system>))
   (let ((name (.name o))
         (interfaces (map python:import (map .type ((compose .elements .ports) o)))))
     (dump-output (list 'component name '.py)
                    (lambda ()
-                     ((animate-template 'system.py.scm) (python-module o))))))
+                     (python-file 'system.py.scm (python-module o))))))
 
-(define ((animate-template file-name) module)
-  (animate-file (append (prefix-dir) (list 'templates file-name)) module))
+(define (python-file file-name module)
+  (parameterize ((template-dir '(templates python)))
+    (animate-file file-name module)))
 
 (define-method (python-module)
   (make-module 31 (list

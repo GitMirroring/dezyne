@@ -69,6 +69,7 @@
            number->symbol
            one-is-#f
            pretty-string
+           regex-split
            stderr
            stdout
            string-null-is-#f
@@ -162,6 +163,21 @@
 	(apply mkdir-p-helper
 	       (cons (string-append dir "/" (car rest)) (cdr rest)))))
   (apply mkdir-p-helper (string-split dir #\/)))
+
+(define* (regexp-split regex str #:optional (flags 0))
+  (let ((ret (fold-matches
+              regex str (list '() 0 str)
+              (lambda (m prev)
+                (let* ((ll (car prev))
+                       (start (cadr prev))
+                       (tail (match:suffix m))
+                       (end (match:start m))
+                       (s (substring/shared str start end))
+                       (groups (map (lambda (n) (match:substring m n))
+                                    (iota (1- (match:count m)) 1))))
+                  (list `(,@ll ,s ,@groups) (match:end m) tail)))
+              flags)))
+    `(,@(car ret) ,(caddr ret))))
 
 (define (dump-file file-name string)
   (with-output-to-file (components->file-name file-name) (lambda () (display string))))

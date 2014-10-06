@@ -39,7 +39,6 @@
   :use-module (gaiag gom)
 
   :export (ast->
-           animate-template
            enum-type
            c++-module
            c++:gom
@@ -71,43 +70,44 @@
   (let ((name (.name o)))
     (dump-indented (symbol-append 'interface- name '-c3.hh)
                    (lambda ()
-                     ((animate-template 'interface.c3.hh.scm) (c++-module o))))))
+                     (c++-file 'interface.hh.scm (c++-module o))))))
 
 (define-method (dump (o <component>))
   (let ((name (.name o))
         (interfaces (map c++:import (map .type ((compose .elements .ports) o)))))
     (dump-indented (symbol-append 'component- name '-c3.hh)
                    (lambda ()
-                     ((animate-template 'component.c3.hh.scm) (c++-module o))))
+                     (c++-file 'component.hh.scm (c++-module o))))
     (if (.behaviour o)
         (dump-indented (symbol-append 'component- name '-c3.cc)
                        (lambda ()
-                         ((animate-template 'component.c3.cc.scm) (c++-module o))))
+                         (c++-file 'component.cc.scm (c++-module o))))
         (dump-indented (symbol-append 'glue-component- name '-c3.cc)
                        (lambda ()
-                         ((animate-template 'glue-bottom-component.c3.cc.scm) (c++-module o)))))))
+                         (c++-file 'glue-bottom-component.cc.scm (c++-module o)))))))
 
 (define-method (dump (o <system>))
   (let ((name (.name o))
         (interfaces (map c++:import (map .type ((compose .elements .ports) o)))))
     (dump-indented (symbol-append 'component- name '-c3.hh)
                    (lambda ()
-                     ((animate-template 'system.c3.hh.scm) (c++-module o))))
+                     (c++-file 'system.hh.scm (c++-module o))))
     (dump-indented (symbol-append 'component- name '-c3.cc)
                    (lambda ()
-                     ((animate-template 'system.c3.cc.scm) (c++-module o))))
+                     (c++-file 'system.cc.scm (c++-module o))))
     (dump-indented (symbol-append name 'Interface.h)
                    (lambda ()
-                     ((animate-template 'glue-top-system-interface.c3.hh.scm) (c++-module o))))
+                     (c++-file 'glue-top-system-interface.hh.scm (c++-module o))))
     (dump-indented (symbol-append name 'Component.h)
                    (lambda ()
-                     ((animate-template 'glue-top-system.c3.hh.scm) (c++-module o))))
+                     (c++-file 'glue-top-system.hh.scm (c++-module o))))
     (dump-indented (symbol-append name 'Component.cpp)
                    (lambda ()
-                     ((animate-template 'glue-top-system.c3.cc.scm) (c++-module o))))))
+                     (c++-file 'glue-top-system.cc.scm (c++-module o))))))
 
-(define ((animate-template file-name) module)
-  (animate-file (append (prefix-dir) (list 'templates file-name)) module))
+(define (c++-file file-name module)
+  (parameterize ((template-dir '(templates c++-03)))
+    (animate-file file-name module)))
 
 (define-method (c++-module)
   (make-module 31 (list
