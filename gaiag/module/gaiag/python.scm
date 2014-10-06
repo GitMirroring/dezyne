@@ -150,17 +150,6 @@
   (parameterize ((template-dir '(templates python)))
     (->code model src locals indent compound?)))
 
-(define (expr->clause model expression)
-  (let* ((c-expression (bool-expression->string model expression))
-         (if-clause (list "if (" c-expression "):"))
-         (else-if-clause (list "elif (" c-expression "):"))
-         (else-clause "else:")
-         (guards ((compose .elements .statement .behaviour) model))
-         (first? (eq? (statements.src) (car guards)))
-         (top? (find (lambda (guard) (eq? guard (statements.src))) guards)))
-    (->string (list (if (is-a? expression <otherwise>) else-clause
-                        (if (or first? (not top?)) if-clause else-if-clause))))))
-
 (define (bool-expression->string model o)
   (match o
     (($ <field> identifier field)
