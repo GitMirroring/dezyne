@@ -130,17 +130,6 @@
     (module-define! module '.model (.name o))
     module))
 
-(define-method (declare-replies (o <interface>))
-  (map (lambda (x) (->string (list "interface::"  (.name o) "::" (.name x) "::type reply_" (.name o) "_" (.name x) ";\n"))) (gom:interface-enums o)))
-
-(define (scope-type o)
-  (match o
-    (($ <expression> ($ <literal> scope type field)) (->string (list "interface::" scope)))))
-
-(define (enum-type o)
-  (match o
-    (($ <expression> ($ <literal> scope type field)) (->string (list (scope-type o) "::" type)))))
-
 (define (declare-enum enum)
   (->string (list "struct " (.name enum) "\n{\nenum type\n{\n" (comma-nl-join (.elements (.fields enum))) ",\n};\n};\n")))
 
@@ -309,11 +298,6 @@
        (list lhs " " op " " rhs )))
 
     (_ (format #f "~a:no match: ~a" (current-source-location) o))))
-
-(define (return-type-text port)
-  (or (and-let* ((event (null-is-#f (gom:typed? port))))
-                (.type (.type (car event))))
-      'void))
 
 (define (return-type port event)
   (let ((type ((compose .type .type) event)))

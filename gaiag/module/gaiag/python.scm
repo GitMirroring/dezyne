@@ -22,13 +22,10 @@
   :use-module (ice-9 match)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 pretty-print)
-  :use-module (ice-9 rdelim)
   :use-module (srfi srfi-1)
 
   :use-module (gaiag animate)
   :use-module (gaiag code)
-  :use-module (gaiag indent)
-  :use-module (gaiag mangle)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
@@ -53,12 +50,7 @@
   (gom:import name python:gom))
 
 (define (python:gom ast)
-  ((compose mangle ast:wfc ast:resolve ast->gom) ast))
-
-(define (mangle o)
-  (if #t
-      o
-      (parameterize ((mangle-prefix-alist '((port . po) (instance . is)))) (gom:mangle o))))
+  ((compose ast:wfc ast:resolve ast->gom) ast))
 
 (define-method (dump (o <interface>))
   (mkdir-p "interface")
@@ -111,26 +103,3 @@
 (define* (python:->code model src :optional (locals '()) (indent 1) (compound? #t))
   (parameterize ((template-dir '(templates python)))
     (->code model src locals indent compound?)))
-
-(define-method (declare-replies (o <interface>))
-  (map (lambda (x) (->string (list "        " "self.reply_" (.name o) "_" (.name x) " = None\n"))) (gom:interface-enums o)))
-
-(define (scope-type o)
-  (match o
-    (($ <expression> ($ <literal> scope type field)) (->string (list "interface." scope)))))
-
-(define (enum-type o)
-  (match o
-    (($ <expression> ($ <literal> scope type field)) (->string (list (scope-type o) "." type)))))
-
-(define (declare-enum enum)
-  (let ((fields (.elements (.fields enum))))
-    (->string
-     (list
-      "    class " (.name enum) " ():\n"
-      "        " (comma-space-join fields) " = range (" (length fields) ")\n"))))
-
-(define (declare-integer integer) #f)
-
-(define (return-type-text port) #f)
-(define (return-type port event) #f)

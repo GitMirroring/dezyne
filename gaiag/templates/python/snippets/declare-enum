@@ -1,0 +1,2 @@
+    class #name  ():
+        #fields  = range (#length)

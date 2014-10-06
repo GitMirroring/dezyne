@@ -18,20 +18,14 @@
 (read-set! keywords 'prefix)
 
 (define-module (gaiag code)
-  :use-module (ice-9 curried-definitions)
   :use-module (ice-9 match)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 pretty-print)
-  :use-module (ice-9 rdelim)
   :use-module (srfi srfi-1)
 
   :use-module (gaiag animate)
-  :use-module (gaiag indent)
-  :use-module (gaiag mangle)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
-  :use-module (gaiag resolve)
-  :use-module (gaiag wfc)
 
   :use-module (oop goops)
   :use-module (oop goops describe)
@@ -41,8 +35,11 @@
            ->code
            bind-port?
            binding-name
+           declare-replies
+           declare-enum
            enum->identifier
            expression->string
+           return-type
            statements.event
            statements.port))
 
@@ -200,13 +197,11 @@
      (snippet 'literal `((scope ,scope) (type ,type) (field ,field))))
     (_ (expression->string model o))))
 
-;; FIXME: c&p from csp.scm
 (define* (expression->string model o :optional (locals '()))
 
   (define (paren expression)
     (list "(" (expression->string model expression locals) ")"))
 
-  ;; FIXME: c&p (resolve-model-)
   (define (enum? identifier) (gom:enum model identifier))
   (define (member? identifier) (gom:variable model identifier))
   (define (local? identifier) (assoc-ref locals identifier))
@@ -249,29 +244,21 @@
     (_ (->code model o locals 0))))
 
 (define-method (declare-replies (o <interface>))
-  (map (lambda (x) (->string (list "        " "self.reply_" (.name o) "_" (.name x) " = None\n"))) (gom:interface-enums o)))
-
-(define (scope-type o)
-  (match o
-    (($ <expression> ($ <literal> scope type field)) (->string (list "interface." scope)))))
-
-(define (enum-type o)
-  (match o
-    (($ <expression> ($ <literal> scope type field)) (->string (list (scope-type o) "." type)))))
+  (map
+   (lambda (x) (snippet 'declare-reply `((type ,(.name o)) (name ,(.name x)))))
+   (gom:interface-enums o)))
 
 (define (declare-enum enum)
-  (let ((fields (.elements (.fields enum))))
-    (->string
-     (list
-      "    class " (.name enum) " ():\n"
-      "        " (comma-space-join fields) " = range (" (length fields) ")\n"))))
+  (let* ((fields ((compose .elements .fields) enum))
+         (length (length fields))
+         (fields ((->join ", ") fields)))
+   (snippet 'declare-enum
+            `((name ,(.name enum)) (fields ,fields) (length ,length)))))
 
 (define (declare-integer integer)
-  (->string (list "typedef int " (.name integer) ";\n")))
+  (snippet 'declare-integer `((name ,(.name integer)))))
 
 (define-method (enum->identifier (model <model>) (o <expression>) locals)
-  ;; FIXME: c&p (resolve-model-)
-  (define (enum? identifier) (gom:enum model identifier))
   (define (member? identifier) (gom:variable model identifier))
   (define (local? identifier) (assoc-ref locals identifier))
   (define (var? identifier) (or (member? identifier) (local? identifier)))
@@ -283,6 +270,12 @@
                     (type (.type decl)))
                    (->string (list (.scope type) "_" (.name type))))
          ""))))
+
+(define (return-type port event)
+  (let ((type ((compose .type .type) event)))
+    (if (not (eq? 'void (.name type)))
+        (snippet 'type `((space "") (scope (.type port)) (name  (.name type))))
+        'void)))
 
 (define (binding-name model bind)
   (let ((instance (gom:instance model bind))
