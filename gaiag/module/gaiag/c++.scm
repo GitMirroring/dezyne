@@ -27,6 +27,7 @@
   :use-module (srfi srfi-1)
 
   :use-module (gaiag animate)
+  :use-module (gaiag code)
   :use-module (gaiag indent)
   :use-module (gaiag mangle)
   :use-module (gaiag misc)
@@ -149,21 +150,6 @@
 (define statements.src (make-parameter #f))
 (define statements.port (make-parameter #f))
 (define statements.event (make-parameter #f))
-
-(define-method (enum->identifier (model <model>) (o <expression>) locals)
-  ;; FIXME: c&p (resolve-model-)
-  (define (enum? identifier) (gom:enum model identifier))
-  (define (member? identifier) (gom:variable model identifier))
-  (define (local? identifier) (assoc-ref locals identifier))
-  (define (var? identifier) (or (member? identifier) (local? identifier)))
-  (match o
-    (($ <expression> ($ <literal> scope type field))
-     (->string (list scope "_" type)))
-    (($ <expression> ($ <var> name))
-     (or (and-let* ((decl (var? name))
-                    (type (.type decl)))
-                   (->string (list (.scope type) "_" (.name type))))
-         ""))))
 
 (define (enum->type) "todo")
 

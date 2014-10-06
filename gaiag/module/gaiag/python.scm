@@ -108,6 +108,10 @@
     (module-define! module '.model (.name o))
     module))
 
+(define* (python:->code model src :optional (locals '()) (indent 1) (compound? #t))
+  (parameterize ((template-dir '(templates python)))
+    (->code model src locals indent compound?)))
+
 (define-method (declare-replies (o <interface>))
   (map (lambda (x) (->string (list "        " "self.reply_" (.name o) "_" (.name x) " = None\n"))) (gom:interface-enums o)))
 
@@ -126,93 +130,7 @@
       "    class " (.name enum) " ():\n"
       "        " (comma-space-join fields) " = range (" (length fields) ")\n"))))
 
-(define (declare-integer integer)
-  (->string (list "typedef int " (.name integer) ";\n")))
-
-(define-method (enum->identifier (model <model>) (o <expression>) locals)
-  ;; FIXME: c&p (resolve-model-)
-  (define (enum? identifier) (gom:enum model identifier))
-  (define (member? identifier) (gom:variable model identifier))
-  (define (local? identifier) (assoc-ref locals identifier))
-  (define (var? identifier) (or (member? identifier) (local? identifier)))
-  (match o
-    (($ <expression> ($ <literal> scope type field))
-     (->string (list scope "_" type)))
-    (($ <expression> ($ <var> name))
-     (or (and-let* ((decl (var? name))
-                    (type (.type decl)))
-                   (->string (list (.scope type) "_" (.name type))))
-         ""))))
-
-(define (enum->type) "todo")
-
-(define* (python:->code model src :optional (locals '()) (indent 1) (compound? #t))
-  (parameterize ((template-dir '(templates python)))
-    (->code model src locals indent compound?)))
-
-(define (bool-expression->string model o)
-  (match o
-    (($ <field> identifier field)
-     (list "(self." identifier " == " field ")"))
-    (($ <literal> #f type field) (->string (list "self." type "." field)))
-    (($ <literal> scope type field) (->string (list type "." field)))
-    (_ (expression->string model o))))
-
-;; FIXME: c&p from csp.scm
-(define* (expression->string model o :optional (locals '()))
-
-  (define (paren expression)
-    (list "(" (expression->string model expression locals) ")"))
-
-  ;; FIXME: c&p (resolve-model-)
-  (define (enum? identifier) (gom:enum model identifier))
-  (define (member? identifier) (gom:variable model identifier))
-  (define (local? identifier) (assoc-ref locals identifier))
-  (define (var? identifier) (or (member? identifier) (local? identifier)))
-
-  (define (enum-type o)
-    (or (and-let* ((decl (var? o))
-                   (type (.type decl))
-                   (scope (if (.scope type) (list (.scope type) ".") "self.")))
-                  (list scope (.name type) "."))
-        ""))
-
-  (match o
-    (($ <expression>) (expression->string model (.value o) locals))
-    (($ <var> (and (? member?) (get! identifier))) (list "self." (identifier)))
-    (($ <var> identifier) identifier)
-    (($ <field> identifier field)
-     (list "self." identifier " == " (enum-type identifier) field))
-
-    (($ <call> function ($ <arguments> '())) (->string (list "self." function " ()")))
-    (($ <call> function ($ <arguments> arguments))
-     (let ((arguments ((->join ", ") (map (lambda (o) (expression->string model o locals)) arguments))))
-       (->string (list "self." function  " (" arguments ")"))))
-
-    (($ <literal> #f type field) (list "self." type "." field))
-    (($ <literal> scope type field)
-     (->string (list "interface." scope "." type "." field)))
-    ((? number?) (number->string o))
-    ((? string?) o)
-    ('true 'True)
-    ('false 'False)
-    ((? symbol?) o)
-    (('! expression)
-     (->string (list "not " (paren expression))))
-
-    (('group expression) (paren expression))
-
-    (('or lhs rhs) (let ((lhs (expression->string model lhs locals))
-                         (rhs (expression->string model rhs locals)))
-                     (list "(" lhs " " 'or " " rhs ")")))
-
-    (((or 'and '== '!= '< '<= '> '>= '+ '-) lhs rhs)
-     (let ((lhs (expression->string model lhs locals))
-           (rhs (expression->string model rhs locals))
-           (op (car o)))
-       (list lhs " " op " " rhs )))
-
-    (_ (format #f "~a:no match: ~a" (current-source-location) o))))
+(define (declare-integer integer) #f)
 
 (define (return-type-text port) #f)
 (define (return-type port event) #f)

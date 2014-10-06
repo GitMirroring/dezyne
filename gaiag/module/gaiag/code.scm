@@ -41,6 +41,8 @@
            ->code
            bind-port?
            binding-name
+           enum->identifier
+           expression->string
            statements.event
            statements.port))
 
@@ -204,7 +206,7 @@
         (snippet 'variable
                  `((space ,space)
                    (name ,name)
-                   (expression ,(expression->string model expression locals) "\n"))))
+                   (expression ,(expression->string model expression locals)))))
        (($ <parameters> parameters)
         ((->join ", ") (map (lambda (x) (->code model x)) parameters)))
        (($ <gom:parameter> name) name)
@@ -220,9 +222,9 @@
 
 (define (expr->clause model src expression)
   (let* ((c-expression (bool-expression->string model expression))
-         (if-clause (list "if (" c-expression "):"))
-         (else-if-clause (list "elif (" c-expression "):"))
-         (else-clause "else:")
+         (if-clause (snippet 'clause-if `((expression ,c-expression))))
+         (else-if-clause (snippet 'clause-else-if `((expression ,c-expression))))
+         (else-clause (snippet 'clause-else '()))
          (guards ((compose .elements .statement .behaviour) model))
          (first? (eq? src (car guards)))
          (top? (find (lambda (guard) (eq? guard src)) guards)))
