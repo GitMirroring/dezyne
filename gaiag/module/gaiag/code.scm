@@ -39,6 +39,8 @@
 
   :export (enum-type
            ->code
+           bind-port?
+           binding-name
            statements.event
            statements.port))
 
@@ -291,11 +293,6 @@
 
     (_ (format #f "~a:no match: ~a" (current-source-location) o))))
 
-(define (return-type-text port)
-  (or (and-let* ((event (null-is-#f (gom:typed? port))))
-                (.type (.type (car event))))
-      'void))
-
 (define (binding-name model bind)
   (let ((instance (gom:instance model bind))
         (port (gom:port model bind)))
@@ -311,9 +308,3 @@
 
 (define (bind-port? bind)
   (or (not (.instance (.left bind))) (not (.instance (.right bind)))))
-
-(define (return-type port event)
-  (let ((type ((compose .type .type) event)))
-    (->string (if (not (eq? 'void (.name type)))
-                  (list "interface" "." (.type port) "." (.name type) "")
-                  'void))))

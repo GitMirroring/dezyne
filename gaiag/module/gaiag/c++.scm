@@ -329,22 +329,6 @@
                 (.type (.type (car event))))
       'void))
 
-(define (binding-name model bind)
-  (let ((instance (gom:instance model bind))
-        (port (gom:port model bind)))
-    (list
-     (match instance
-       (($ <instance>) (.name instance))
-       (($ <interface>) (.name instance))
-       )
-     "."
-     (match port
-       (($ <gom:port>) (.name port))
-       (($ <interface>) (list "x" (.name port)))))))
-
-(define (bind-port? bind)
-  (or (not (.instance (.left bind))) (not (.instance (.right bind)))))
-
 (define (return-type port event)
   (let ((type ((compose .type .type) event)))
     (->string (if (not (eq? 'void (.name type)))
