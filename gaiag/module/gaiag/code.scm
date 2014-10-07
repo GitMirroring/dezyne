@@ -52,6 +52,7 @@
            declare-replies
            include-interface
            init-member
+           init-port
            dump-indented
            enum->identifier
            expression->string
@@ -403,6 +404,11 @@
          (enum? (gom:enum model type))
          (expression (expression->string model (.expression variable))))
     (animate snippet `((name ,name) (expression ,expression)))))
+
+(define ((init-port snippet) port)
+  (let* ((name (.name port))
+         (interface (.type port)))
+    (animate snippet `((name ,name) (interface ,interface)))))
 
 (define-method (declare-replies (o <interface>))
   (map

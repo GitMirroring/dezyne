@@ -6,12 +6,9 @@ component.#.model  = function() {
 #}) (gom:variables model))#
     (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))
 #
-    (map
-     (lambda (port)
-       (let ((name (.name port))
-             (interface (.type port)))
-         (->string (list "        self." name " = interface." interface " ()\n"))))
-     ((compose .elements .ports) model))
+    (map (init-port #{
+        this.#name  = new interface.#interface ();
+#}) ((compose .elements .ports) model))
 #
    (map
     (lambda (port)
@@ -68,3 +65,4 @@ component.#.model  = function() {
      (->string (list "    " "def " name " (self" comma parameters "):\n"
                      statements))))
  (gom:functions model))
+}
