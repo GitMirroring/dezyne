@@ -42,30 +42,16 @@ namespace component
 
 #(map
   (lambda (port)
-    (map
-     (lambda (event)
-       (let* ((type ((compose .type .type) event))
-              (return-type (return-type port event))
-              (reply-type (->string (list (.type port) "_" (.name type))))
-              (statement
-               (or (and-let*
-                    (((is-a? model <component>))
-                     (component model)
-                     (behaviour (.behaviour component))
-                     (statement (.statement behaviour)))
-                    (parameterize ((statements.port port)
-                                   (statements.event event))
-                      (c++:->code model statement '() 2 #f)))
-                   "")))
-         (->string
-          (list
-           return-type " " (.name model) "::" (.name port) "_" (.name event) "()"
-           "\n{\n"
-           "std::cout << \"" (.name model) "." (.name port) "_" (.name event) "\" << std::endl;\n"
-           statement
-           (if (not (eq? (.name type) 'void))
-               (->string (list "return reply_" reply-type ";\n")))
-           "\n}\n")))) (filter (gom:dir-matches? port) (gom:events port))))
+    (map (define-on model port #{
+  #return-type  #model ::#port _#event ()
+  {
+    std::cout << "#model .#port _#event" << std::endl;
+    #statement #
+    (if (not (eq? type 'void))
+(list "    return reply_" reply-type ";\n"
+      ))
+  }
+#}) (filter (gom:dir-matches? port) (gom:events port))))
   (gom:ports model))
 
 #((->join "\n")

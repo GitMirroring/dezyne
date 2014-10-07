@@ -21,20 +21,16 @@ interface::#interface  #name;
     #.model ();
 #(map
   (lambda (port)
-    (map
-     (lambda (event)
-       (let ((return-type (return-type port event))
-             (function (list (.name port) "_" (.name event))))
-         (->string (list return-type " " function "();\n"))))
-     (filter gom:in? (gom:events port))))
+    (map (define-on model port #{
+#return-type  #port _#event ();
+#}) (filter gom:in? (gom:events port))))
   (filter gom:provides? (gom:ports model)))#
 (map
- (lambda (port)
-   (map (lambda (event)
-          (let ((return-type (return-type port event)))
-            (->string (list return-type " " (.name port) "_" (.name event) "();\n"))))
-        (filter gom:out? (gom:events port))))
- (filter gom:requires? ((compose .elements .ports) model)))#
+  (lambda (port)
+    (map (define-on model port #{
+#return-type  #port _#event ();
+#}) (filter gom:out? (gom:events port))))
+  (filter gom:requires? (gom:ports model)))#
 (map
  (lambda (function)
    (let* ((signature (.signature function))
