@@ -1,0 +1,22 @@
+Checking out/webdemo/nonrecursion.csp
+
+Checking IF_i23_I_(false) :[deadlock free]
+true
+
+Checking IF_i23_I_(true) :[livelock free]
+true
+
+Checking CO_i103_nonrecursion_(true,true) :[deterministic]
+true
+
+Checking STOP [T= AS_i103_nonrecursion_(false)\diff(Events,{illegal})
+true
+
+Checking AS_i103_nonrecursion_(false) :[deadlock free]
+true
+
+Checking IF_i23_I_(true)[[i23_I.x<-i24_i.x|x<-extensions(i24_i)]]\{} [F= AS_i103_nonrecursion_(true)\diff(Events,{|illegal,i24_i|})
+true
+
+Checking AS_i103_nonrecursion_(true)\diff(Events,{|illegal,i24_i|}) :[livelock free]
+true

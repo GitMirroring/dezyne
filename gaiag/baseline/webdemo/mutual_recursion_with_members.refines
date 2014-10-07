@@ -1,0 +1,22 @@
+Checking out/webdemo/mutual_recursion_with_members.csp
+
+Checking IF_i99_sleeping_(false) :[deadlock free]
+true
+
+Checking IF_i99_sleeping_(true) :[livelock free]
+true
+
+Checking CO_i308_mutual_recursion_with_members_(true,true) :[deterministic]
+true
+
+Checking STOP [T= AS_i308_mutual_recursion_with_members_(false)\diff(Events,{illegal})
+true
+
+Checking AS_i308_mutual_recursion_with_members_(false) :[deadlock free]
+true
+
+Checking IF_i99_sleeping_(true)[[i99_sleeping.x<-i100_beauty.x|x<-extensions(i100_beauty)]]\{} [F= AS_i308_mutual_recursion_with_members_(true)\diff(Events,{|illegal,i100_beauty|})
+true
+
+Checking AS_i308_mutual_recursion_with_members_(true)\diff(Events,{|illegal,i100_beauty|}) :[livelock free]
+true

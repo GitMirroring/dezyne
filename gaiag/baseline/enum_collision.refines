@@ -1,0 +1,22 @@
+Checking out/enum_collision.csp
+
+Checking IF_ienum_collision_(false) :[deadlock free]
+true
+
+Checking IF_ienum_collision_(true) :[livelock free]
+true
+
+Checking CO_enum_collision_(true,true) :[deterministic]
+true
+
+Checking STOP [T= AS_enum_collision_(false)\diff(Events,{illegal})
+true
+
+Checking AS_enum_collision_(false) :[deadlock free]
+true
+
+Checking IF_ienum_collision_(true)[[ienum_collision.x<-i.x|x<-extensions(i)]]\{} [F= AS_enum_collision_(true)\diff(Events,{|illegal,i|})
+true
+
+Checking AS_enum_collision_(true)\diff(Events,{|illegal,i|}) :[livelock free]
+true

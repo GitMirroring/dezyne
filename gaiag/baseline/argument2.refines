@@ -1,0 +1,22 @@
+Checking out/argument2.csp
+
+Checking IF_if_I_(false) :[deadlock free]
+true
+
+Checking IF_if_I_(true) :[livelock free]
+true
+
+Checking CO_co_argument2_(true,true) :[deterministic]
+true
+
+Checking STOP [T= AS_co_argument2_(false)\diff(Events,{illegal})
+true
+
+Checking AS_co_argument2_(false) :[deadlock free]
+true
+
+Checking IF_if_I_(true)[[if_I.x<-po_i.x|x<-extensions(po_i)]]\{} [F= AS_co_argument2_(true)\diff(Events,{|illegal,po_i|})
+true
+
+Checking AS_co_argument2_(true)\diff(Events,{|illegal,po_i|}) :[livelock free]
+true

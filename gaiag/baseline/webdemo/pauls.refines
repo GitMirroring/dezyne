@@ -1,0 +1,28 @@
+Checking out/webdemo/pauls.csp
+
+Checking IF_i301_IDevice_(false) :[deadlock free]
+true
+
+Checking IF_i301_IDevice_(true) :[livelock free]
+true
+
+Checking IF_i568_IComp_(false) :[deadlock free]
+true
+
+Checking IF_i568_IComp_(true) :[livelock free]
+true
+
+Checking CO_i1121_Comp_(true,true) :[deterministic]
+true
+
+Checking STOP [T= AS_i1121_Comp_(false)\diff(Events,{illegal})
+true
+
+Checking AS_i1121_Comp_(false) :[deadlock free]
+true
+
+Checking IF_i568_IComp_(true)[[i568_IComp.x<-i569_client.x|x<-extensions(i569_client)]]\{} [F= AS_i1121_Comp_(true)\diff(Events,{|illegal,i569_client|})
+true
+
+Checking AS_i1121_Comp_(true)\diff(Events,{|illegal,i569_client|}) :[livelock free]
+true

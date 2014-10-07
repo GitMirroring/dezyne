@@ -1,0 +1,22 @@
+Checking out/Reply7.csp
+
+Checking IF_IReply7_(false) :[deadlock free]
+true
+
+Checking IF_IReply7_(true) :[livelock free]
+true
+
+Checking CO_Reply7_(true,true) :[deterministic]
+true
+
+Checking STOP [T= AS_Reply7_(false)\diff(Events,{illegal})
+true
+
+Checking AS_Reply7_(false) :[deadlock free]
+true
+
+Checking IF_IReply7_(true)[[IReply7.x<-p.x|x<-extensions(p)]]\{} [F= AS_Reply7_(true)\diff(Events,{|illegal,p|})
+true
+
+Checking AS_Reply7_(true)\diff(Events,{|illegal,p|}) :[livelock free]
+true

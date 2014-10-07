@@ -1,0 +1,22 @@
+Checking out/webdemo/SystemComposition.csp
+
+Checking IF_i13_I_(false) :[deadlock free]
+true
+
+Checking IF_i13_I_(true) :[livelock free]
+true
+
+Checking CO_i51_Bot_(true,true) :[deterministic]
+true
+
+Checking STOP [T= AS_i51_Bot_(false)\diff(Events,{illegal})
+true
+
+Checking AS_i51_Bot_(false) :[deadlock free]
+true
+
+Checking IF_i13_I_(true)[[i13_I.x<-i14_p.x|x<-extensions(i14_p)]]\{} [F= AS_i51_Bot_(true)\diff(Events,{|illegal,i14_p|})
+true
+
+Checking AS_i51_Bot_(true)\diff(Events,{|illegal,i14_p|}) :[livelock free]
+true

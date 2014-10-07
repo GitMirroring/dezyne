@@ -1,0 +1,22 @@
+Checking out/interface_component_overload.csp
+
+Checking IF_interface_component_overload_(false) :[deadlock free]
+true
+
+Checking IF_interface_component_overload_(true) :[livelock free]
+true
+
+Checking CO_interface_component_overload_(true,true) :[deterministic]
+true
+
+Checking STOP [T= AS_interface_component_overload_(false)\diff(Events,{illegal})
+true
+
+Checking AS_interface_component_overload_(false) :[deadlock free]
+true
+
+Checking IF_interface_component_overload_(true)[[interface_component_overload.x<-interface_component_overload.x|x<-extensions(interface_component_overload)]]\{} [F= AS_interface_component_overload_(true)\diff(Events,{|illegal,interface_component_overload|})
+true
+
+Checking AS_interface_component_overload_(true)\diff(Events,{|illegal,interface_component_overload|}) :[livelock free]
+true

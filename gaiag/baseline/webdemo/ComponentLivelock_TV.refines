@@ -1,0 +1,28 @@
+Checking out/webdemo/ComponentLivelock_TV.csp
+
+Checking IF_i169_Display_(false) :[deadlock free]
+true
+
+Checking IF_i169_Display_(true)\{|i169_Display.inevitable|} :[livelock free]
+true
+
+Checking IF_i66_Viewer_(false) :[deadlock free]
+true
+
+Checking IF_i66_Viewer_(true) :[livelock free]
+true
+
+Checking CO_i277_TVSet_(true,true) :[deterministic]
+true
+
+Checking STOP [T= AS_i277_TVSet_(false)\diff(Events,{illegal})
+true
+
+Checking AS_i277_TVSet_(false) :[deadlock free]
+true
+
+Checking IF_i66_Viewer_(true)[[i66_Viewer.x<-i170_TVViewer.x|x<-extensions(i170_TVViewer)]]\{} [F= AS_i277_TVSet_(true)\diff(Events,{|illegal,i170_TVViewer|})
+true
+
+Checking AS_i277_TVSet_(true)\diff(Events,{|illegal,i170_TVViewer|}) :[livelock free]
+xfalse

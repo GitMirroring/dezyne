@@ -1,0 +1,22 @@
+Checking out/requires_twice.csp
+
+Checking IF_irequires_twice_(false) :[deadlock free]
+true
+
+Checking IF_irequires_twice_(true) :[livelock free]
+true
+
+Checking CO_requires_twice_(true,true) :[deterministic]
+true
+
+Checking STOP [T= AS_requires_twice_(false)\diff(Events,{illegal})
+true
+
+Checking AS_requires_twice_(false) :[deadlock free]
+xfalse
+
+Checking IF_irequires_twice_(true)[[irequires_twice.x<-p.x|x<-extensions(p)]]\{} [F= AS_requires_twice_(true)\diff(Events,{|illegal,p|})
+xfalse
+
+Checking AS_requires_twice_(true)\diff(Events,{|illegal,p|}) :[livelock free]
+true

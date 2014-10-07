@@ -1,0 +1,22 @@
+Checking out/testBoolean.csp
+
+Checking IF_TestBool_(false) :[deadlock free]
+true
+
+Checking IF_TestBool_(true) :[livelock free]
+true
+
+Checking CO_testBoolean_(true,true) :[deterministic]
+true
+
+Checking STOP [T= AS_testBoolean_(false)\diff(Events,{illegal})
+true
+
+Checking AS_testBoolean_(false) :[deadlock free]
+true
+
+Checking IF_TestBool_(true)[[TestBool.x<-i.x|x<-extensions(i)]]\{} [F= AS_testBoolean_(true)\diff(Events,{|illegal,i|})
+true
+
+Checking AS_testBoolean_(true)\diff(Events,{|illegal,i|}) :[livelock free]
+true

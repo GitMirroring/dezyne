@@ -191,21 +191,72 @@ out/%.wfc: examples/wfc/%.asd
 
 wfc: compile $(WFC_SOURCES:%.asd=out/%.wfc)
 
+define .REGRESSION_REFINES
+rm -rf out && mkdir -p out && ln -s ../examples ../webdemo ../templates ../$(DEPTH)/webdemo/asd out
+cd out && $(shell pwd)/gaiag -l csp $^
+$(diff) baseline/$*.csp out || true
+@$(diff) baseline/$*.csp out | diffstat || true
+$(CSPMCHECKER) out/$*.csp
+$(REFINES) out/$*.csp 2>/dev/null > $@ 2>/dev/null ||:
+$(diff) -I '^Checking' baseline/$*.refines $@ $(UPDATE)
+@$(diff) baseline/$*.csp out >/dev/null
+endef
+
+#out/%.update: UPDATE=||:; cp out/$*.update baseline/$*.refines
+out/%.update: UPDATE=&& cp out/$*.csp baseline/
+out/%.update: examples/regression/%.asd
+	$(.REGRESSION_REFINES)
+
 out/%.refines: examples/regression/%.asd
-	rm -rf out && mkdir -p out && ln -s ../examples ../webdemo ../templates ../$(DEPTH)/webdemo/asd out
-	cd out && $(shell pwd)/gaiag -l csp $^
-	$(diff) baseline/$*.csp out || true
-	@$(diff) baseline/$*.csp out | diffstat || true
-	$(CSPMCHECKER) out/$*.csp
-	$(REFINES) out/$*.csp 2>/dev/null | grep -E '^x?false' || :
-	@$(diff) baseline/$*.csp out >/dev/null
-	touch $@
+	$(.REGRESSION_REFINES)
+
+define .WEBDEMO_REFINES
+rm -rf out && mkdir -p out/webdemo && ln -s ../../examples ../../webdemo ../../templates ../../$(DEPTH)/webdemo/asd out/webdemo
+cd out/webdemo && $(TOPDIR)/$(BUILD)/asdgenerator -M -l scm $<
+cd out/webdemo && $(shell pwd)/gaiag -l csp $*.scm
+[ -f out/webdemo/$*.csp ] || mv out/webdemo/*.csp out/webdemo/$*.csp
+$(diff) baseline/webdemo/$*.csp out/webdemo || true
+@$(diff) baseline/webdemo/$*.csp out/webdemo | diffstat || true
+$(CSPMCHECKER) out/webdemo/$*.csp
+$(REFINES) out/webdemo/$*.csp > $@ 2>/dev/null ||:
+$(diff) -I '^Checking' baseline/webdemo/$*.refines $@ $(UPDATE)
+@$(diff) baseline/webdemo/$*.csp out/webdemo >/dev/null
+endef
+
+#out/webdemo/%.update: UPDATE=||:; cp out/webdemo/$*.update baseline/webdemo/$*.refines
+out/webdemo/%.update: UPDATE=&& cp out/webdemo/$*.csp baseline/webdemo/
+out/webdemo/%.update: $(DEPTH)/webdemo/asd/%.asd
+	$(.WEBDEMO_REFINES)
+
+out/webdemo/%.refines: $(DEPTH)/webdemo/asd/%.asd
+	$(.WEBDEMO_REFINES)
+out/webdemo/%.refines: examples/regression/%.asd
+	$(.WEBDEMO_REFINES)
 
 CSP_BROKEN=\
  provides_twice.asd\
 
 CSP_SOURCES = $(filter-out $(CSP_BROKEN),$(REGRESSION_SOURCES))
+
 csp: compile $(CSP_SOURCES:%.asd=out/%.refines)
+
+csp-regression-update: $(CSP_SOURCES:%.asd=out/%.update)
+
+BROKEN =\
+ asdConcepts_Behaviour.asd\
+ asdConcepts_Composition.asd\
+ exampleLOPW.asd\
+ Aap.asd\
+ LOPW.asd\
+
+DEMO_SOURCES = $(filter-out $(BROKEN) ,$(shell cd $(DEPTH)/webdemo/asd && ls *.asd))
+
+demo: $(DEMO_SOURCES:%.asd=out/webdemo/%.refines)
+
+csp-demo-update: $(DEMO_SOURCES:%.asd=out/webdemo/%.update)
+
+csp-update: csp-demo-update csp-regression-update
+
 
 simulate: compile
 #	./gaiag -l simulate examples/regression/if.asd
@@ -238,47 +289,6 @@ alarm-legacy: alarm-gen
 	cd out && cp ../alarm_legacy/* .
 	-ccache g++ -g -Wall -Wextra out/*.c* -o out/test && ./out/test
 
-BROKEN =\
- asdConcepts_Behaviour.asd\
- asdConcepts_Composition.asd\
- exampleLOPW.asd\
- Aap.asd\
- LOPW.asd\
-
-DEMO_SOURCES = $(filter-out $(BROKEN) ,$(shell cd $(DEPTH)/webdemo/asd && ls *.asd))
-#EXAMPLE_SOURCES = $(filter-out $(BROKEN) ,$(shell cd examples && ls *.asd))
-EXAMPLE_SOURCES =\
- function.asd\
- argument.asd\
- argument2.asd\
-
-
-out/webdemo/%.refines: $(DEPTH)/webdemo/asd/%.asd
-	rm -rf out && mkdir -p out/webdemo && ln -s ../../examples ../../webdemo ../../templates ../../$(DEPTH)/webdemo/asd out/webdemo
-	cd out/webdemo && $(TOPDIR)/$(BUILD)/asdgenerator -M -l scm asd/$*.asd
-	cd out/webdemo && $(shell pwd)/gaiag -l csp $*.scm
-	[ -f out/webdemo/$*.csp ] || mv out/webdemo/*.csp out/webdemo/$*.csp
-	$(diff) baseline/webdemo/$*.csp out/webdemo || true
-	@$(diff) baseline/webdemo/$*.csp out/webdemo | diffstat || true
-	$(CSPMCHECKER) out/webdemo/$*.csp
-	$(REFINES) out/webdemo/$*.csp 2>/dev/null | grep -E '^x?false' || :
-	@$(diff) baseline/webdemo/$*.csp out/webdemo >/dev/null
-	touch $@
-
-out/webdemo/%.refines: examples/regression/%.asd
-	rm -rf out && mkdir -p out/webdemo && ln -s ../../examples ../../webdemo ../../templates ../../$(DEPTH)/webdemo/asd out/webdemo
-	cd out/webdemo && $(TOPDIR)/$(BUILD)/asdgenerator -M -l scm examples/regression/$*.asd
-	cd out/webdemo && $(shell pwd)/gaiag -l csp $*.scm
-	[ -f out/webdemo/$*.csp ] || mv out/webdemo/*.csp out/webdemo/$*.csp
-	$(diff) baseline/webdemo/$*.csp out/webdemo || true
-	@$(diff) baseline/webdemo/$*.csp out/webdemo | diffstat || true
-	$(CSPMCHECKER) out/webdemo/$*.csp
-	$(REFINES) out/webdemo/$*.csp 2>/dev/null | grep -E '^x?false' || :
-	@$(diff) baseline/webdemo/$*.csp out/webdemo >/dev/null
-	touch $@
-
-demo: $(EXAMPLE_SOURCES:%.asd=out/webdemo/%.refines) $(DEMO_SOURCES:%.asd=out/webdemo/%.refines)
-
 asserts:
 	rm -rf out && mkdir out && ln -s ../examples ../webdemo ../templates ../$(DEPTH)/webdemo/asd out
 	./gaiag -l asserts examples/regression/Alarm.asd > out/alarm-asserts.scm
@@ -295,14 +305,6 @@ compare:
 	-@diff -uw out/om-trip-pretty.scm out/gaiag-trip.scm
 	@diff -uw out/om-trip-pretty.scm out/gaiag-trip.scm | diffstat || true
 	@diff -uw out/om-trip-pretty.scm out/gaiag-trip.scm > /dev/null
-
-csp-update: csp-regression-update csp-demo-update
-
-csp-regression-update: dummy
-	while ! $(MAKE) csp; do cp out/*.csp baseline; done
-
-csp-demo-update: dummy
-	while ! $(MAKE) demo; do cp out/webdemo/*.csp baseline/webdemo; done
 
 c++-update: dummy
 	while ! $(MAKE) c++; do cp -pv out/*.hh out/*.cc baseline; done

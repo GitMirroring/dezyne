@@ -1,0 +1,28 @@
+Checking out/livelock1.csp
+
+Checking IF_ilivelock_(false) :[deadlock free]
+true
+
+Checking IF_ilivelock_(true)\{|ilivelock.inevitable|} :[livelock free]
+true
+
+Checking IF_nolivelock_(false) :[deadlock free]
+true
+
+Checking IF_nolivelock_(true) :[livelock free]
+true
+
+Checking CO_livelock1_(true,true) :[deterministic]
+true
+
+Checking STOP [T= AS_livelock1_(false)\diff(Events,{illegal})
+true
+
+Checking AS_livelock1_(false) :[deadlock free]
+true
+
+Checking IF_nolivelock_(true)[[nolivelock.x<-n.x|x<-extensions(n)]]\{} [F= AS_livelock1_(true)\diff(Events,{|illegal,n|})
+true
+
+Checking AS_livelock1_(true)\diff(Events,{|illegal,n|}) :[livelock free]
+xfalse

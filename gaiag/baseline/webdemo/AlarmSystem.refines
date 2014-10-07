@@ -1,0 +1,34 @@
+Checking out/webdemo/AlarmSystem.csp
+
+Checking IF_i242_Console_(false) :[deadlock free]
+true
+
+Checking IF_i242_Console_(true)\{|i242_Console.inevitable,i242_Console.optional|} :[livelock free]
+true
+
+Checking IF_i482_Sensor_(false) :[deadlock free]
+true
+
+Checking IF_i482_Sensor_(true)\{|i482_Sensor.inevitable,i482_Sensor.optional|} :[livelock free]
+true
+
+Checking IF_i593_Siren_(false) :[deadlock free]
+true
+
+Checking IF_i593_Siren_(true) :[livelock free]
+true
+
+Checking CO_i1019_Alarm_(true,true) :[deterministic]
+true
+
+Checking STOP [T= AS_i1019_Alarm_(false)\diff(Events,{illegal})
+xfalse
+
+Checking AS_i1019_Alarm_(false) :[deadlock free]
+xfalse
+
+Checking IF_i242_Console_(true)[[i242_Console.x<-i598_console.x|x<-extensions(i598_console)]]\{i598_console.inevitable,i598_console.optional} [F= AS_i1019_Alarm_(true)\diff(Events,{|illegal,i598_console|})
+xfalse
+
+Checking AS_i1019_Alarm_(true)\diff(Events,{|illegal,i598_console|}) :[livelock free]
+true

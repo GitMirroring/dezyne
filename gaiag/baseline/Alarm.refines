@@ -1,0 +1,34 @@
+Checking out/Alarm.csp
+
+Checking IF_Console_a(false) :[deadlock free]
+true
+
+Checking IF_Console_a(true)\{|Console.inevitable,Console.optional|} :[livelock free]
+true
+
+Checking IF_Sensor_b(false) :[deadlock free]
+true
+
+Checking IF_Sensor_b(true)\{|Sensor.inevitable,Sensor.optional|} :[livelock free]
+true
+
+Checking IF_Siren_c(false) :[deadlock free]
+true
+
+Checking IF_Siren_c(true) :[livelock free]
+true
+
+Checking CO_Alarm_d(true,true) :[deterministic]
+true
+
+Checking STOP [T= AS_Alarm_d(false)\diff(Events,{illegal})
+true
+
+Checking AS_Alarm_d(false) :[deadlock free]
+true
+
+Checking IF_Console_a(true)[[Console.x<-console.x|x<-extensions(console)]]\{console.inevitable,console.optional} [F= AS_Alarm_d(true)\diff(Events,{|illegal,console|})
+true
+
+Checking AS_Alarm_d(true)\diff(Events,{|illegal,console|}) :[livelock free]
+true

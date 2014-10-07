@@ -1,0 +1,28 @@
+Checking out/Comp.csp
+
+Checking IF_IComp_(false) :[deadlock free]
+true
+
+Checking IF_IComp_(true) :[livelock free]
+true
+
+Checking IF_IDevice_(false) :[deadlock free]
+true
+
+Checking IF_IDevice_(true) :[livelock free]
+true
+
+Checking CO_Comp_(true,true) :[deterministic]
+true
+
+Checking STOP [T= AS_Comp_(false)\diff(Events,{illegal})
+true
+
+Checking AS_Comp_(false) :[deadlock free]
+true
+
+Checking IF_IComp_(true)[[IComp.x<-client.x|x<-extensions(client)]]\{} [F= AS_Comp_(true)\diff(Events,{|illegal,client|})
+true
+
+Checking AS_Comp_(true)\diff(Events,{|illegal,client|}) :[livelock free]
+true

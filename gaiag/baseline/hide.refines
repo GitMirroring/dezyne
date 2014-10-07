@@ -1,0 +1,22 @@
+Checking out/hide.csp
+
+Checking IF_I_(false) :[deadlock free]
+true
+
+Checking IF_I_(true) :[livelock free]
+true
+
+Checking CO_hide_(true,true) :[deterministic]
+true
+
+Checking STOP [T= AS_hide_(false)\diff(Events,{illegal})
+true
+
+Checking AS_hide_(false) :[deadlock free]
+true
+
+Checking IF_I_(true)[[I.x<-i.x|x<-extensions(i)]]\{} [F= AS_hide_(true)\diff(Events,{|illegal,i|})
+true
+
+Checking AS_hide_(true)\diff(Events,{|illegal,i|}) :[livelock free]
+true
