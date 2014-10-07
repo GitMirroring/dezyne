@@ -98,9 +98,9 @@
                      (c++-file 'glue-top-system.cc.scm (code:module o))))))
 
 (define (c++-file file-name module)
-  (parameterize ((template-dir (append (prefix-dir) '(templates c++-03))))
+  (parameterize ((template-dir (append (prefix-dir) '(templates c++))))
     (animate-file file-name module)))
 
 (define* (c++:->code model src :optional (locals '()) (indent 1) (compound? #t))
-  (parameterize ((template-dir (append (prefix-dir) '(templates c++-03))))
+  (parameterize ((template-dir (append (prefix-dir) '(templates c++))))
     (->code model src locals indent compound?)))
