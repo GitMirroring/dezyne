@@ -1,5 +1,6 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
 // Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
 //
@@ -40,8 +41,7 @@ namespace interface
     {
       enum type
       {
-        Ok,
-        Nok,
+        Ok, Nok
       };
     };
 

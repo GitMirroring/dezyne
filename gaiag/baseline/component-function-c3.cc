@@ -85,7 +85,7 @@ namespace component
         po_i.out.c();
 
       }
-      f = ! (f);
+      f = not (f);
 
     }
 

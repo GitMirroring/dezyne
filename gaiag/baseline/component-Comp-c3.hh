@@ -34,9 +34,7 @@ namespace component
     {
       enum type
       {
-        Uninitialized,
-        Initialized,
-        Error,
+        Uninitialized, Initialized, Error
       };
     };
     State::type s;

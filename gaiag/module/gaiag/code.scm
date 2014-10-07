@@ -35,8 +35,9 @@
            ->code
            bind-port?
            binding-name
-           declare-replies
            declare-enum
+           declare-integer
+           declare-replies
            enum->identifier
            expression->string
            return-type
@@ -79,12 +80,12 @@
         (snippet 'assign
                  `((space ,space)
                    (identifier ,name)
-                   (expression ,(->code model (action) locals 0)))))
+                   (expression ,(expression->string model (action) locals)))))
        (($ <assign> name (and ($ <call>) (get! call)))
         (snippet 'assign
                  `((space ,space)
                    (identifier ,name)
-                   (expression ,(->code model (call) locals 0)))))
+                   (expression ,(expression->string model (call) locals)))))
        (($ <assign> identifier expression)
         (snippet 'assign
                  `((space ,space)
@@ -147,25 +148,36 @@
                  `((space ,space)
                    (expression ,(expression->string model expression locals)))))
        (($ <signature> type) (->code model type locals indent))
+       (($ <type> 'bool #f) 'bool)
+       (($ <type> 'void #f) 'void)
+       (($ <type> (and (? enum?) (get! name)) #f)
+        (snippet 'type-local-enum `((space ,space) (scope ,(.name model)) (name ,(name)))))
        (($ <type> name #f)
-        (snippet 'type-local `((space ,space) (name ,name))))
-       (($ <type> (and (enum?) (get! name)) #f)
-        (snippet 'type-local-enum `((space ,space) (name ,(name)))))
+        (snippet 'type-local `((space ,space) (scope ,(.name model)) (name ,name))))
        (($ <type> name scope)
         (snippet 'type `((space ,space) (scope ,scope) (name ,name))))
        (($ <variable> name type (and ($ <action>) (get! action)))
         (snippet 'variable
                  `((space ,space)
                    (name ,name)
-                   (expression ,(->code model (action) locals 0)))))
+                   (type ,(->code model type))
+                   (expression ,(expression->string model (action) locals)))))
+       (($ <variable> name type (and ($ <call>) (get! call)))
+        (snippet 'variable
+                 `((space ,space)
+                   (name ,name)
+                   (type ,(->code model type))
+                   (expression ,(expression->string model (call) locals)))))
        (($ <variable> name type expression)
         (snippet 'variable
                  `((space ,space)
                    (name ,name)
+                   (type ,(->code model type))
                    (expression ,(expression->string model expression locals)))))
        (($ <parameters> parameters)
         ((->join ", ") (map (lambda (x) (->code model x)) parameters)))
-       (($ <gom:parameter> name) name)
+       (($ <gom:parameter> name type)
+        (snippet 'parameter `((name ,name) (type ,(->code model type)))))
        ((? char?) (make-string 1 src))
        ((? string?) src)
        ('true (snippet 'true '()))
@@ -222,13 +234,29 @@
 
   (match o
     (($ <expression>) (expression->string model (.value o) locals))
+    (($ <action> trigger)
+     (let* ((port-name (.port trigger))
+            (event-name (.event trigger))
+            (port (gom:port model port-name))
+            (name (.type port))
+            (interface (gom:import name))
+            (event (gom:event interface event-name)))
+       (snippet 'action-expression
+                `((port ,port-name)
+                  (direction ,(.direction event))
+                  (event ,event-name)))))
     (($ <var> (and (? member?) (get! identifier)))
      (snippet 'member `((identifier ,(identifier)))))
     (($ <var> identifier) identifier)
     (($ <field> identifier field)
      (snippet 'field-expression `((identifier ,identifier)
                                   (expression ,(enum-type identifier field)))))
-    (($ <call>) (->code model o locals 0))
+    (($ <call> function ($ <arguments> '()))
+        (snippet 'call-expression `((function ,function))))
+    (($ <call> function arguments)
+        (snippet 'call-arguments-expression
+                 `((function ,function)
+                   (arguments ,(->code model arguments locals 0)))))
     (($ <literal>) (bool-expression->string model o))
     ((? number?) (number->string o))
     (('! expression) (->string (list "not " (paren expression))))
@@ -273,9 +301,13 @@
 
 (define (return-type port event)
   (let ((type ((compose .type .type) event)))
-    (if (not (eq? 'void (.name type)))
-        (snippet 'type `((space "") (scope (.type port)) (name  (.name type))))
-        'void)))
+    (cond
+      ((eq? (.name type) 'bool) 'bool)
+      ((eq? (.name type) 'void) 'void)
+      ((.type port)
+       (snippet 'type `((space "") (scope ,(.type port)) (name ,(.name type)))))
+      (else
+       (snippet 'type-local-enum `((space "") (scope ,(.type port)) (name ,(.name type))))))))
 
 (define (binding-name model bind)
   (let ((instance (gom:instance model bind))

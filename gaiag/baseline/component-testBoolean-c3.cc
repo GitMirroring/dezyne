@@ -50,9 +50,11 @@ namespace component
   {
     std::cout << "testBoolean.po_i_evt" << std::endl;
     if (true)
-    {
 
+    {
     }
+
+
 
   }
 

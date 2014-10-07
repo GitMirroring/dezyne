@@ -33,8 +33,7 @@ namespace component
     {
       enum type
       {
-        False,
-        True,
+        False, True
       };
     };
     Enum::type s;

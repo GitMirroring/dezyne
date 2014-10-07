@@ -33,10 +33,7 @@ namespace component
     {
       enum type
       {
-        I,
-        II,
-        III,
-        IV,
+        I, II, III, IV
       };
     };
     States::type state;

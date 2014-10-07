@@ -60,7 +60,7 @@ namespace component
         po_i.out.c();
 
       }
-      t = ! (t);
+      t = not (t);
 
     }
 

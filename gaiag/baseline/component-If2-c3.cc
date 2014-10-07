@@ -58,7 +58,7 @@ namespace component
       }
       else
       interface::IIf2::result::type v = po_i.out.a();
-      b = ! (b);
+      b = not (b);
 
     }
 

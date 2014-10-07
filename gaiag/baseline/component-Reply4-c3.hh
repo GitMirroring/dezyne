@@ -34,8 +34,7 @@ namespace component
     {
       enum type
       {
-        Yes,
-        No,
+        Yes, No
       };
     };
     bool dummy;

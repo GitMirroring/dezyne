@@ -50,10 +50,10 @@ struct #.model
 (map
  (lambda (function)
    (let* ((signature (.signature function))
-          (return-type (statements->string model signature))
+          (return-type (c++:->code model signature))
           (name (.name function))
           (parameters (.parameters signature))
-          (parameters (statements->string model parameters)))
+          (parameters (c++:->code model parameters)))
      (->string (list return-type " " name "(" parameters ");\n"))))
  (gom:functions model))};
 }

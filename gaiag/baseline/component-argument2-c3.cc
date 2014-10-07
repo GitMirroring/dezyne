@@ -52,7 +52,7 @@ namespace component
     std::cout << "argument2.po_i_e" << std::endl;
     if (true)
     {
-      b = ! (b);
+      b = not (b);
       bool c = g(b, b);
       b = g(c, c);
       if (c)

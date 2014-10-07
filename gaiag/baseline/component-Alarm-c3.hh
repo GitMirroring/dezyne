@@ -37,10 +37,7 @@ namespace component
     {
       enum type
       {
-        Disarmed,
-        Armed,
-        Triggered,
-        Disarming,
+        Disarmed, Armed, Triggered, Disarming
       };
     };
     States::type state;

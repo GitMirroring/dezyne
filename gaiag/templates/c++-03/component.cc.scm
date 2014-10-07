@@ -63,7 +63,7 @@ namespace component
                      (statement (.statement behaviour)))
                     (parameterize ((statements.port port)
                                    (statements.event event))
-                      (statements->string model statement '() #f)))
+                      (c++:->code model statement '() 2 #f)))
                    "")))
          (->string
           (list
@@ -80,13 +80,13 @@ namespace component
   (map
    (lambda (function)
      (let* ((signature (.signature function))
-            (return-type (statements->string model signature))
+            (return-type (c++:->code model signature))
             (name (.name function))
             (parameters (.parameters signature))
             (statement (.statement function))
             (locals (map (lambda (x) (cons (.name x) x)) (.elements parameters)))
-            (parameters (statements->string model parameters))
-            (statements (statements->string model statement locals))
+            (parameters (c++:->code model parameters))
+            (statements (c++:->code model statement locals 2))
             (model (.name model)))
        (->string (list return-type " " model "::" name "(" parameters ")\n"
                        "{\n"
