@@ -372,9 +372,9 @@ out/%.js: examples/regression/%.asd
 	-$(pydiff) baseline/component/$*.js out/component
 	ln -s ../examples/__init__.js out/interface
 	ln -s ../examples/__init__.js out/component
-	cd out && javascript component/$*.js
-	$(pydiff) baseline/component/$*.js out/component | diffstat || true
-	$(pydiff) baseline/component/$*.js out/component > /dev/null
+	-cd out && nodejs component/$*.js
+	$(diff) baseline/component/$*.js out/component | diffstat || true
+	$(diff) baseline/component/$*.js out/component > /dev/null
 
 javascript-alarm: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out

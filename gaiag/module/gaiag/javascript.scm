@@ -37,4 +37,3 @@
   :export (ast->))
 
 (define ast-> ast:code)
-(define javascript:->code code:->code)

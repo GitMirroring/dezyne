@@ -15,22 +15,12 @@ component.#.model  = function() {
      this.#port .#direction s.#event  = function() {
      console.log ('#model .#port _#event ');
      #statement #(if (not (eq? type 'void))
-(list "    return self.reply_" reply-type)) }.bind(this) ;
+(list "    return self.reply_" reply-type)) }.bind(this);
 
 #}) (filter (gom:dir-matches? port) (gom:events port))))
-   (gom:ports model))# (map
- (lambda (function)
-   (let* ((signature (.signature function))
-          (return-type (javascript:->code model signature))
-          (name (.name function))
-          (parameters (.parameters signature))
-          (comma (if (null? (.elements parameters)) "" ", "))
-          (statement (.statement function))
-          (locals (map (lambda (x) (cons (.name x) x)) (.elements parameters)))
-          (parameters (javascript:->code model parameters))
-          (statements (javascript:->code model statement locals 2))
-          (model (.name model)))
-     (->string (list "    " "def " name " (this" comma parameters "):\n"
-                     statements))))
- (gom:functions model))
+   (gom:ports model))#
+(map (define-function model #{
+     this.#name  = function (#parameters) {
+#statements }.bind(this);
+#}) (gom:functions model))
 }

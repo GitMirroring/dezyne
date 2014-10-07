@@ -32,5 +32,3 @@
 
 (define (ast-> ast)
   (parameterize ((indenter #f)) (ast:code ast)))
-
-(define python:->code code:->code)

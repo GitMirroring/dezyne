@@ -40,18 +40,8 @@ class #.model  ():
 (list "        return self.reply_" reply-type))
 
 #}) (filter (gom:dir-matches? port) (gom:events port))))
-   (gom:ports model))# (map
- (lambda (function)
-   (let* ((signature (.signature function))
-          (return-type (python:->code model signature))
-          (name (.name function))
-          (parameters (.parameters signature))
-          (comma (if (null? (.elements parameters)) "" ", "))
-          (statement (.statement function))
-          (locals (map (lambda (x) (cons (.name x) x)) (.elements parameters)))
-          (parameters (python:->code model parameters))
-          (statements (python:->code model statement locals 2))
-          (model (.name model)))
-     (->string (list "    " "def " name " (self" comma parameters "):\n"
-                     statements))))
- (gom:functions model))
+   (gom:ports model))#
+(map (define-function model #{
+    def #name  (self#comma #parameters):
+#statements
+#}) (gom:functions model))

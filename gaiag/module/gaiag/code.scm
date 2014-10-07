@@ -50,6 +50,7 @@
            declare-io
            declare-integer
            declare-replies
+           define-function
            define-on
            connect-ports
            include-interface
@@ -408,6 +409,20 @@
          (type (.name (.type (.type event))))
          (return-type (return-type #f event)))
     (animate snippet `((name ,name) (return-type ,return-type)))))
+
+(define ((define-function model snippet) function)
+  (let* ((signature (.signature function))
+         (return-type (code:->code model signature))
+         (name (.name function))
+         (parameters (.parameters signature))
+         (comma (if (null? (.elements parameters)) "" ", "))
+         (statement (.statement function))
+         (locals (map (lambda (x) (cons (.name x) x)) (.elements parameters)))
+         (parameters (code:->code model parameters))
+         (statements (code:->code model statement locals 2 #f))
+         (model (.name model)))
+    (animate snippet `((name ,name) (comma ,comma) (parameters ,parameters)
+                       (statements ,statements)))))
 
 (define ((define-on model port snippet) event)
   (let* ((type ((compose .type .type) event))
