@@ -41,8 +41,8 @@ namespace component
 {
   Reply4::Reply4()
   : dummy(false)
-  , po_i()
-  , po_u()
+  , po_i() 
+  , po_u() 
   {
     po_i.in.done = connect<interface::I::Status::type>(this, asd::bind<interface::I::Status::type>(&Reply4::po_i_done, this));
   }
@@ -51,32 +51,41 @@ namespace component
   {
     std::cout << "Reply4.po_i_done" << std::endl;
     if (true)
+
     {
       {
-        interface::U::Status::type s = po_u.in.what();
-        s = po_u.in.what();
+        interface::U::Status::type s = po_u.in.what ();
+        s = po_u.in.what ();
         if (s == interface::U::Status::Ok)
         {
-          Reply4::Status::type v = fun();
+          Reply4::Status::type v = fun ();
           if (v == Status::Yes)
           reply_I_Status = interface::I::Status::Yes;
+
           else
           reply_I_Status = interface::I::Status::No;
 
+
         }
+
         else
         {
-          Reply4::Status::type v = fun_arg(Status::No);
+          Reply4::Status::type v = fun_arg (Status::No);
           if (v == Status::Yes)
           reply_I_Status = interface::I::Status::Yes;
+
           else
           reply_I_Status = interface::I::Status::No;
 
+
         }
+
 
       }
 
     }
+
+
     return reply_I_Status;
 
   }
@@ -84,18 +93,16 @@ namespace component
 
   Reply4::Status::type Reply4::fun()
   {
-    {
-      return Status::Yes;
+    return Status::Yes;
 
-    }
 
   }
+
   Reply4::Status::type Reply4::fun_arg(Reply4::Status::type s)
   {
-    {
-      return s;
+    return s;
 
-    }
 
   }
+
 }

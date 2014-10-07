@@ -55,21 +55,10 @@ namespace component
   (gom:ports model))
 
 #((->join "\n")
-  (map
-   (lambda (function)
-     (let* ((signature (.signature function))
-            (return-type (c++:->code model signature))
-            (name (.name function))
-            (parameters (.parameters signature))
-            (statement (.statement function))
-            (locals (map (lambda (x) (cons (.name x) x)) (.elements parameters)))
-            (parameters (c++:->code model parameters))
-            (statements (c++:->code model statement locals 2))
-            (model (.name model)))
-       (->string (list return-type " " model "::" name "(" parameters ")\n"
-                       "{\n"
-                       statements
-                       "\n}"
-                       ))))
-   (gom:functions model)))
+  (map (define-function model #{
+  #return-type  #model ::#name (#parameters)
+  {
+    #statements
+  }
+#}) (gom:functions model)))
 }

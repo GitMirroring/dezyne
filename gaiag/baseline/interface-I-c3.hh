@@ -38,16 +38,22 @@ namespace interface
 {
   struct I
   {
+    struct Status
+    {
+      enum type
+      {
+        Yes, No
+      };
+    };
 
     struct
     {
-      asd::function<void ()> e;
+      asd::function<Status::type ()> done;
 
     } in;
 
     struct
     {
-      asd::function<void ()> a;
 
     } out;
   };

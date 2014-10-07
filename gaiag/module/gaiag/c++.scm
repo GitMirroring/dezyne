@@ -38,7 +38,6 @@
   :use-module (gaiag gom)
 
   :export (ast->
-           enum-type
            c++:gom
            c++:import))
 
@@ -100,7 +99,3 @@
 (define (c++-file file-name module)
   (parameterize ((template-dir (append (prefix-dir) '(templates c++))))
     (animate-file file-name module)))
-
-(define* (c++:->code model src :optional (locals '()) (indent 1) (compound? #t))
-  (parameterize ((template-dir (append (prefix-dir) '(templates c++))))
-    (->code model src locals indent compound?)))

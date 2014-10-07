@@ -423,7 +423,8 @@
          (parameters (code:->code model parameters))
          (statements (code:->code model statement locals 2 #f))
          (model (.name model)))
-    (animate snippet `((name ,name) (comma ,comma) (parameters ,parameters)
+    (animate snippet `((name ,name) (model ,model) (return-type ,return-type)
+                       (comma ,comma) (parameters ,parameters)
                        (statements ,statements)))))
 
 (define ((define-on model port snippet) event)

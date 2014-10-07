@@ -41,7 +41,7 @@ namespace component
 {
   argument::argument()
   : b(false)
-  , po_i()
+  , po_i() 
   {
     po_i.in.e = connect<void>(this, asd::bind<void>(&argument::po_i_e, this));
   }
@@ -50,28 +50,31 @@ namespace component
   {
     std::cout << "argument.po_i_e" << std::endl;
     if (true)
+
     {
       b = not (b);
-      bool c = g(b);
-      b = g(c);
+      bool c = g (b);
+      b = g (c);
       if (c)
       {
-        po_i.out.f();
+        po_i.out.f ();
 
       }
 
+
     }
+
+
 
   }
 
 
   bool argument::g(bool gc)
   {
-    {
-      po_i.out.f();
-      return (gc or b);
+    po_i.out.f ();
+    return (gc or b);
 
-    }
 
   }
+
 }

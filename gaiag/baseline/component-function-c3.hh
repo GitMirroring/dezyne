@@ -25,6 +25,7 @@
 
 #include "interface-I-c3.hh"
 
+
 namespace component
 {
   struct function

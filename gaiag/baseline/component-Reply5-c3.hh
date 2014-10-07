@@ -27,6 +27,7 @@
 #include "interface-I-c3.hh"
 #include "interface-U-c3.hh"
 
+
 namespace component
 {
   struct Reply5

@@ -162,6 +162,7 @@ out/%.compiles: examples/%.asd
 CC_BROKEN =\
  Alarm.asd\
  Noot.asd\
+ hide.asd\
  livelock1.asd\
  livelock2.asd\
  mangle.asd\

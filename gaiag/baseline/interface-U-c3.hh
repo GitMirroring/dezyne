@@ -47,11 +47,13 @@ namespace interface
 
     struct
     {
-      asd::function<Status::type()> what;
+      asd::function<Status::type ()> what;
+
     } in;
 
     struct
     {
+
     } out;
   };
 }

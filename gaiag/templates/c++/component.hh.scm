@@ -31,14 +31,8 @@ interface::#interface  #name;
 #return-type  #port _#event ();
 #}) (filter gom:out? (gom:events port))))
   (filter gom:requires? (gom:ports model)))#
-(map
- (lambda (function)
-   (let* ((signature (.signature function))
-          (return-type (c++:->code model signature))
-          (name (.name function))
-          (parameters (.parameters signature))
-          (parameters (c++:->code model parameters)))
-     (->string (list return-type " " name "(" parameters ");\n"))))
- (gom:functions model))};
+(map (define-function model #{
+  #return-type  #name (#parameters);
+#}) (gom:functions model))};
 }
 ##endif

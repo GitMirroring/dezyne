@@ -3,6 +3,7 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -40,8 +41,8 @@ inline asd::function<void()> connect<void>(void* scope, const asd::function<void
 namespace component
 {
   Reply7::Reply7()
-  : po_p()
-  , po_r()
+  : po_p() 
+  , po_r() 
   {
     po_p.in.foo = connect<interface::IReply7::E::type>(this, asd::bind<interface::IReply7::E::type>(&Reply7::po_p_foo, this));
   }
@@ -49,7 +50,8 @@ namespace component
   interface::IReply7::E::type Reply7::po_p_foo()
   {
     std::cout << "Reply7.po_p_foo" << std::endl;
-    f();
+    f ();
+
     return reply_IReply7_E;
 
   }
@@ -57,11 +59,10 @@ namespace component
 
   interface::IReply7::E::type Reply7::f()
   {
-    {
-      interface::IReply7::E::type v = po_r.in.foo();
-      reply_IReply7_E = v;
+    interface::IReply7::E::type v = po_r.in.foo ();
+    reply_IReply7_E = v;
 
-    }
 
   }
+
 }
