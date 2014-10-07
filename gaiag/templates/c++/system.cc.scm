@@ -14,19 +14,8 @@ namespace component
     (map (init-instance #{ #name ()#})
          ((compose .elements .instances) model)))
 , #((->join  "\n, ")
-    (map
-     (lambda (bind)
-       (let* ((left (.left bind))
-              (left-port (gom:port model left))
-              (right (.right bind))
-              (port (and (bind-port? bind)
-                         (if (not (.instance left)) (.port left) (.port right))))
-              (instance (and (bind-port? bind)
-                             (if (not (.instance left))
-                                 (binding-name model right)
-                                 (binding-name model left)))))
-         (->string (list port "("instance ")"))))
-     (filter bind-port? ((compose .elements .bindings) model))))
+    (map (init-bind model #{ #port(#instance)#})
+         (filter bind-port? ((compose .elements .bindings) model))))
 {
  # (map
     (lambda (bind)
