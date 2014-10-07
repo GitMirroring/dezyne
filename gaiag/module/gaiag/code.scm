@@ -53,6 +53,7 @@
            define-function
            define-on
            connect-ports
+           include-component
            include-interface
            init-bind
            init-instance
@@ -466,6 +467,10 @@
   (let ((component (.component instance))
         (name (.name instance)))
     (animate snippet `((component ,component) (name ,name)))))
+
+(define ((include-component snippet) instance)
+  (let ((component (.component instance)))
+    (animate snippet `((component ,component)))))
 
 (define ((include-interface snippet) port)
   (let ((interface (.type port)))
