@@ -77,7 +77,7 @@
                      (python-file 'system.py.scm (python-module o))))))
 
 (define (python-file file-name module)
-  (parameterize ((template-dir '(templates python)))
+  (parameterize ((template-dir (append (prefix-dir) '(templates python))))
     (animate-file file-name module)))
 
 (define-method (python-module)
@@ -101,5 +101,5 @@
     module))
 
 (define* (python:->code model src :optional (locals '()) (indent 1) (compound? #t))
-  (parameterize ((template-dir '(templates python)))
+  (parameterize ((template-dir (append (prefix-dir) '(templates python))))
     (->code model src locals indent compound?)))

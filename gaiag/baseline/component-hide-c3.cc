@@ -21,7 +21,7 @@
 //
 // Code:
 
-#include "component-hide-c3.hh"
+#include "component-If2-c3.hh"
 
 void handle_event(void*, const asd::function<void()>&);
 
@@ -39,41 +39,31 @@ inline asd::function<void()> connect<void>(void* scope, const asd::function<void
 
 namespace component
 {
-  hide::hide()
+  If2::If2()
   : b(false)
-  , c(true)
+  , r(interface::IIf2::result::value)
   , po_i()
   {
-    po_i.in.e = connect<void>(this, asd::bind<void>(&hide::po_i_e, this));
+    po_i.in.e = connect<void>(this, asd::bind<void>(&If2::po_i_e, this));
   }
 
-  void hide::po_i_e()
+  void If2::po_i_e()
   {
-    std::cout << "hide.po_i_e" << std::endl;
-    if (true)
+    std::cout << "If2.po_i_e" << std::endl;
     {
-      bool b = b;
-      bool c = g(b, c);
-      if (c)
+      if (b)
       {
-        po_i.out.f();
+        interface::IIf2::result::type v = po_i.out.a();
 
       }
+      else
+      interface::IIf2::result::type v = po_i.out.a();
+      b = not (b);
 
     }
 
   }
 
 
-  bool hide::g(bool b, bool d)
-  {
-    {
-      bool b = d;
-      bool d = c;
-      po_i.out.f();
-      return (b or d);
 
-    }
-
-  }
 }
