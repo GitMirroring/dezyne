@@ -52,6 +52,7 @@
            declare-replies
            define-on
            include-interface
+           init-bind
            init-instance
            init-member
            init-port
@@ -418,6 +419,18 @@
                        (reply-type ,reply-type)
                        (return-type ,return-type)
                        (statement ,statement)))))
+
+(define ((init-bind model snippet) bind)
+  (let* ((left (.left bind))
+         (left-port (gom:port model left))
+         (right (.right bind))
+         (port (and (bind-port? bind)
+                    (if (not (.instance left)) (.port left) (.port right))))
+         (instance (and (bind-port? bind)
+                        (if (not (.instance left))
+                            (binding-name model right)
+                            (binding-name model left)))))
+    (animate snippet `((port ,port) (instance ,instance)))))
 
 (define ((init-instance snippet) instance)
   (let ((component (.component instance))

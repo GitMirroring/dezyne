@@ -7,19 +7,9 @@ component.#.model  = function() {
 #(map (init-instance #{
     this.#name  = new component.#component ();
 #}) ((compose .elements .instances) model))#
-(map
- (lambda (bind)
-   (let* ((left (.left bind))
-          (left-port (gom:port model left))
-          (right (.right bind))
-          (port (and (bind-port? bind)
-                     (if (not (.instance left)) (.port left) (.port right))))
-          (instance (and (bind-port? bind)
-                         (if (not (.instance left))
-                             (binding-name model right)
-                             (binding-name model left)))))
-     (->string (list "        self." port " = " "self." instance "\n"))))
- (filter bind-port? ((compose .elements .bindings) model)))
+(map (init-bind model #{
+    this.#port  = this.#instance;
+#}) (filter bind-port? ((compose .elements .bindings) model)))
 # (map
     (lambda (bind)
       (let* ((left (.left bind))
