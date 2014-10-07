@@ -16,12 +16,9 @@ struct #.model
 #(map (init-instance #{
   #component  #name;
 #}) ((compose .elements .instances) model))
-#(map
-  (lambda (port)
-    (let ((name (.name port))
-          (interface (.type port)))
-      (->string (list "interface::" interface "& " name ";\n"))))
-  ((compose .elements .ports) model))
+#(map (init-port #{
+  interface::#interface & #name;
+#}) ((compose .elements .ports) model))
   #.model ();
 };
 }
