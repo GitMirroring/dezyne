@@ -1,0 +1,115 @@
+;;; Gaiag --- Guile in Asd In Asd in Guile.
+;;;
+;;; This file is part of Gaiag.
+;;;
+;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;;
+;;; Gaiag is free software: you can redistribute it and/or modify it
+;;; under the terms of the GNU Affero General Public License as
+;;; published by the Free Software Foundation, either version 3 of the
+;;; License, or (at your option) any later version.
+;;;
+;;; Gaiag is distributed in the hope that it will be useful, but
+;;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;;; Affero General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU Affero General Public
+;;; License along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
+;;; 
+;;; Commentary:
+;;; 
+;;; Code:
+
+(read-set! keywords 'prefix)
+
+(define-module (gaiag javascript)
+  :use-module (ice-9 pretty-print)
+  :use-module (srfi srfi-1)
+
+  :use-module (gaiag animate)
+  :use-module (gaiag code)
+  :use-module (gaiag indent)
+  :use-module (gaiag misc)
+  :use-module (gaiag reader)
+  :use-module (gaiag resolve)
+  :use-module (gaiag wfc)
+
+  :use-module (oop goops)
+  :use-module (oop goops describe)
+  :use-module (gaiag gom)
+
+  :export (ast->
+           enum-type
+           javascript-module
+           javascript:gom
+           javascript:import))
+
+(define (ast-> ast)
+  (let ((gom ((gom:register javascript:gom) ast #t)))
+    (map dump ((gom:filter <model>) gom)))
+  "")
+
+(define (javascript:import name)
+  (gom:import name javascript:gom))
+
+(define (javascript:gom ast)
+  ((compose ast:wfc ast:resolve ast->gom) ast))
+
+(define (pipe producer consumer)
+  (with-input-from-string (with-output-to-string producer) consumer))
+
+(define (dump-indented file-name thunk)
+  (dump-output file-name (lambda () (pipe thunk (lambda () (indent))))))
+
+(define-method (dump (o <interface>))
+  (mkdir-p "interface")
+  (let ((name (.name o)))
+    (dump-indented (list 'interface name '.js)
+                   (lambda ()
+                     (javascript-file 'interface.js.scm (javascript-module o))))))
+
+(define-method (dump (o <component>))
+  (mkdir-p "component")
+  (let ((name (.name o))
+        (interfaces (map javascript:import (map .type ((compose .elements .ports) o)))))
+    (when (.behaviour o)
+      (map dump interfaces)
+      (dump-indented (list 'component name '.js)
+                   (lambda ()
+                     (javascript-file 'component.js.scm (javascript-module o)))))))
+
+(define-method (dump (o <system>))
+  (let ((name (.name o))
+        (interfaces (map javascript:import (map .type ((compose .elements .ports) o)))))
+    (dump-indented (list 'component name '.js)
+                   (lambda ()
+                     (javascript-file 'system.js.scm (javascript-module o))))))
+
+(define (javascript-file file-name module)
+  (parameterize ((template-dir (append (prefix-dir) '(templates javascript))))
+    (animate-file file-name module)))
+
+(define-method (javascript-module)
+  (make-module 31 (list
+                   (resolve-module '(gaiag javascript))
+                   (resolve-module '(gaiag misc)))))
+
+(define-method (javascript-module (o <interface>))
+  (let* ((module (javascript-module)))
+    (module-define! module 'model o)
+    (module-define! module '.interface (.name o))
+    (module-define! module '.INTERFACE (string-upcase (symbol->string (.name o))))
+    (module-define! module '.model (.name o))
+    module))
+
+(define-method (javascript-module (o <model>))
+  (let ((module (javascript-module)))
+    (module-define! module 'model o)
+    (module-define! module '.COMPONENT (string-upcase (symbol->string (.name o))))
+    (module-define! module '.model (.name o))
+    module))
+
+(define* (javascript:->code model src :optional (locals '()) (indent 1) (compound? #t))
+  (parameterize ((template-dir (append (prefix-dir) '(templates javascript))))
+    (->code model src locals indent compound?)))

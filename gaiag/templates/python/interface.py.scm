@@ -1,6 +1,6 @@
 class #.interface  ():
 #(->string (map declare-enum (gom:interface-enums model)))#'(
-)    def __init__ (self):
+)     def __init__ (self):
         class Ins ():
 #(map (declare-io #{
             #name  = None
@@ -13,5 +13,5 @@ class #.interface  ():
             #name  = None
 #}) (filter gom:out? ((compose .elements .events) model)))#
 (if (null? (filter gom:out? ((compose .elements .events) model)))
-    "            pass")#'(
+    "            pass\n")#'(
 )         self.outs = Outs ()

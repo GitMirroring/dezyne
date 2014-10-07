@@ -79,17 +79,18 @@ Usage: gaiag [OPTION]... FILE
   -o, --output FILE    generate FILE containing the output
   -v, --version        display version
 
-Languages: asd c++ csp gom normstate python resolve scheme simulate wfc
+Languages: asd c++ csp javascript python scheme
+           gom normstate scheme simulate wfc
 
 Examples:
   ./gaiag examples/Alarm.asd
-  ./gaiag -l asd examples/if.asd
   ./gaiag -l asd examples/Alarm.scm
   ./gaiag -l csp examples/Alarm.asd
   ./gaiag -l csp -o alarm.csp examples/Alarm.asd
-  ./gaiag -l wfc examples/double-on.asd
-  ./gaiag -l simulate -t '(a a a a)' examples/if.asd
-  ./gaiag -l simulate -t '(a a a a)' -j examples/if.asd | ./scm2json
+  ./gaiag -l c++ examples/Alarm.asd
+  ./gaiag -l wfc examples/wfc/wfc-double-on.asd
+  ./gaiag -l simulate -t '(a a a a)' examples/regression/If.asd
+  ./gaiag -l simulate -t '(a a a a)' -j examples/regression/If.asd | ./scm2json
 ")
 	   (exit (or (and usage? 2) 0)))
      options)))
