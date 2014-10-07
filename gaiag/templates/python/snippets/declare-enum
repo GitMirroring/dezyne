@@ -1,2 +1,2 @@
     class #name  ():
-        #fields  = range (#length)
+        #((->join ", ") fields)  = range (#length)

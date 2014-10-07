@@ -379,8 +379,7 @@
 
 (define (declare-enum enum)
   (let* ((fields ((compose .elements .fields) enum))
-         (length (length fields))
-         (fields ((->join ", ") fields)))
+         (length (length fields)))
    (snippet 'declare-enum
             `((name ,(.name enum)) (fields ,fields) (length ,length)))))
 

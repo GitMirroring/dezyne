@@ -391,4 +391,8 @@ javascript-alarm: compile
 	cat examples/header.js out/interface/*js out/component/*js examples/alarm.js > out/alarm.js
 	cd out && nodejs alarm.js
 
+javascript: compile javascript-alarm javascript-regression
+
+javascript-regression: $(PY_SOURCES:%.asd=out/%.js)
+
 code: c++-alarm python-alarm javascript-alarm out/Reply7.compiles out/Reply7.py out/Reply7.js
