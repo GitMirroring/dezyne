@@ -366,4 +366,29 @@ python-update: dummy
 		cp -pv out/component/*py baseline/component;\
 	done
 
-code: c++-alarm python-alarm out/Reply7.compiles out/Reply7.py
+out/%.js: examples/regression/%.asd
+	rm -rf out && mkdir out && ln -s ../examples ../templates out
+	cd out && $(shell pwd)/gaiag -l javascript examples/regression/$*.asd
+	-$(pydiff) baseline/component/$*.js out/component
+	ln -s ../examples/__init__.js out/interface
+	ln -s ../examples/__init__.js out/component
+	cd out && javascript component/$*.js
+	$(pydiff) baseline/component/$*.js out/component | diffstat || true
+	$(pydiff) baseline/component/$*.js out/component > /dev/null
+
+javascript-alarm: compile
+	rm -rf out && mkdir out && ln -s ../examples ../templates out
+	cd out && $(shell pwd)/gaiag -l javascript examples/regression/Alarm.asd
+	cd out && $(shell pwd)/gaiag -l javascript examples/Sensor.asd
+	cd out && $(shell pwd)/gaiag -l javascript examples/Siren.asd
+	cd out && $(shell pwd)/gaiag -l javascript examples/Alarm.asd
+	cd out && $(shell pwd)/gaiag -l javascript examples/AlarmSystem.asd
+	$(diff) baseline/interface/Console.js out/interface
+	$(diff) baseline/interface/Sensor.js out/interface
+	$(diff) baseline/interface/Siren.js out/interface
+	$(diff) baseline/component/Alarm.js out/component
+	$(diff) baseline/component/AlarmSystem.js out/component
+	cat examples/header.js out/interface/*js out/component/*js examples/alarm.js > out/alarm.js
+	cd out && nodejs alarm.js
+
+code: c++-alarm python-alarm javascript-alarm out/Reply7.compiles out/Reply7.py out/Reply7.js
