@@ -4,12 +4,9 @@ function connect(provided, required) {
 }
 
 component.#.model  = function() {
-#(map
-  (lambda (instance)
-    (let ((component (.component instance))
-          (name (.name instance)))
-     (->string (list "        self." name " = component." component " ()\n"))))
-  ((compose .elements .instances) model))#
+#(map (init-instance #{
+    this.#name  = new component.#component ();
+#}) ((compose .elements .instances) model))#
 (map
  (lambda (bind)
    (let* ((left (.left bind))
@@ -35,3 +32,4 @@ component.#.model  = function() {
              (required (binding-name model (cdr provided-required))))
         (->string (list "        connect (self."provided ", self." required ")\n"))))
     (filter (negate bind-port?) ((compose .elements .bindings) model)))
+}

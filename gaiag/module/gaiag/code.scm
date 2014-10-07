@@ -52,6 +52,7 @@
            declare-replies
            define-on
            include-interface
+           init-instance
            init-member
            init-port
            dump-indented
@@ -417,6 +418,11 @@
                        (reply-type ,reply-type)
                        (return-type ,return-type)
                        (statement ,statement)))))
+
+(define ((init-instance snippet) instance)
+  (let ((component (.component instance))
+        (name (.name instance)))
+    (animate snippet `((component ,component) (name ,name)))))
 
 (define ((include-interface snippet) port)
   (let ((interface (.type port)))

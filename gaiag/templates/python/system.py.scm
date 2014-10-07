@@ -6,12 +6,10 @@ def connect (provided, required):
 
 class #.model  ():
     def __init__ (self):
-#(map
-  (lambda (instance)
-    (let ((component (.component instance))
-          (name (.name instance)))
-     (->string (list "        self." name " = component." component " ()\n"))))
-  ((compose .elements .instances) model))#
+#(map (init-instance #{
+        self.#name  = component.#component  ()
+#}) ((compose .elements .instances) model))
+#
 (map
  (lambda (bind)
    (let* ((left (.left bind))
