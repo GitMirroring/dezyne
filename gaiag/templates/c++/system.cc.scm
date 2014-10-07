@@ -11,11 +11,8 @@ namespace component
 {
 #.model ::#.model ()
 : #((->join  "\n, ")
-    (map
-     (lambda (instance)
-      (let ((name (.name instance)))
-        (->string (list name "()"))))
-     ((compose .elements .instances) model)))
+    (map (init-instance #{ #name ()#})
+         ((compose .elements .instances) model)))
 , #((->join  "\n, ")
     (map
      (lambda (bind)

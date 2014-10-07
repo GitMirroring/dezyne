@@ -13,12 +13,9 @@ namespace component
 {
 struct #.model
 {
-#(map
-  (lambda (instance)
-    (let ((component (.component instance))
-          (name (.name instance)))
-     (->string (list component " " name ";\n"))))
-  ((compose .elements .instances) model))
+#(map (init-instance #{
+  #component  #name;
+#}) ((compose .elements .instances) model))
 #(map
   (lambda (port)
     (let ((name (.name port))
