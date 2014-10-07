@@ -27,17 +27,15 @@ namespace component
 #
    (map
     (lambda (port)
-      (map
-       (lambda (event)
-         (->string (list (.name port) ".in." (.name event) " = connect<" (return-type port event) ">(this, asd::bind<" (return-type port event) ">(&" (.name model) "::" (.name port) "_" (.name event) ", this));\n")))
-       (filter gom:in? (gom:events port))))
+      (map (define-on model port #{
+    #port .#direction .#event  = connect<#return-type >(this, asd::bind<#return-type >(&#model ::#port _#event , this));
+#}) (filter gom:in? (gom:events port))))
     (filter gom:provides? (gom:ports model)))#
    (map
     (lambda (port)
-      (map
-       (lambda (event)
-         (->string (list (.name port) ".out." (.name event) " = connect<" (return-type port event) ">(this, asd::bind<" (return-type port event) ">(&" (.name model) "::" (.name port) "_" (.name event) ", this));\n")))
-       (filter gom:out? (gom:events port))))
+      (map (define-on model port #{
+    #port .#direction .#event  = connect<#return-type >(this, asd::bind<#return-type >(&#model ::#port _#event , this));
+#}) (filter gom:out? (gom:events port))))
     (filter gom:requires? (gom:ports model))) }
 
 #(map

@@ -19,17 +19,15 @@ class #.model  ():
 #
    (map
     (lambda (port)
-      (map
-       (lambda (event)
-         (->string (list "        self." (.name port) ".ins." (.name event) " = "  "self." (.name port) "_" (.name event) "\n")))
-       (filter gom:in? (gom:events port))))
+      (map (define-on model port #{
+        self.#port .#direction s.#event  = self.#port _#event
+#}) (filter gom:in? (gom:events port))))
     (filter gom:provides? (gom:ports model)))#
    (map
     (lambda (port)
-      (map
-       (lambda (event)
-         (->string (list "        self." (.name port) ".outs." (.name event) " = "  "self." (.name port) "_" (.name event) "\n")))
-       (filter gom:out? (gom:events port))))
+      (map (define-on model port #{
+        self.#port .#direction s.#event  = self.#port _#event
+#}) (filter gom:out? (gom:events port))))
     (filter gom:requires? (gom:ports model)))
 #(map
    (lambda (port)
