@@ -1,15 +1,9 @@
 component.#.model  = function() {
 #(->string (map declare-enum (gom:enums (.behaviour model))))
-    def __init__ (self):
 #
-    (map
-     (lambda (variable)
-       (let* ((name (.name variable))
-              (type (.type variable))
-              (enum? (gom:enum model type))
-              (value (expression->string model (.expression variable))))
-         (->string (list "        self." name " = " value "\n"))))
-     (gom:variables model))#
+    (map (init-member model #{
+        this.#name  = #expression;
+#}) (gom:variables model))#
     (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))
 #
     (map
