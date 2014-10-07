@@ -51,6 +51,7 @@
            declare-integer
            declare-replies
            define-on
+           connect-ports
            include-interface
            init-bind
            init-instance
@@ -381,6 +382,17 @@
            (op (car o)))
        (list lhs " " op " " rhs )))
     (_ (->code model o locals 0))))
+
+(define ((connect-ports model snippet) bind)
+  (let* ((left (.left bind))
+         (left-port (gom:port model left))
+         (right (.right bind))
+         (provided-required (if (gom:provides? left-port)
+                                (cons left right)
+                                (cons right left)))
+         (provided (binding-name model (car provided-required)))
+         (required (binding-name model (cdr provided-required))))
+    (animate snippet `((provided ,provided) (required ,required)))))
 
 (define (declare-enum enum)
   (let* ((fields ((compose .elements .fields) enum))
