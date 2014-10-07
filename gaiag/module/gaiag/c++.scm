@@ -39,7 +39,6 @@
 
   :export (ast->
            enum-type
-           c++-module
            c++:gom
            c++:import))
 
@@ -69,64 +68,44 @@
   (let ((name (.name o)))
     (dump-indented (symbol-append 'interface- name '-c3.hh)
                    (lambda ()
-                     (c++-file 'interface.hh.scm (c++-module o))))))
+                     (c++-file 'interface.hh.scm (code:module o))))))
 
 (define-method (dump (o <component>))
   (let ((name (.name o))
         (interfaces (map c++:import (map .type ((compose .elements .ports) o)))))
     (dump-indented (symbol-append 'component- name '-c3.hh)
                    (lambda ()
-                     (c++-file 'component.hh.scm (c++-module o))))
+                     (c++-file 'component.hh.scm (code:module o))))
     (if (.behaviour o)
         (dump-indented (symbol-append 'component- name '-c3.cc)
                        (lambda ()
-                         (c++-file 'component.cc.scm (c++-module o))))
+                         (c++-file 'component.cc.scm (code:module o))))
         (dump-indented (symbol-append 'glue-component- name '-c3.cc)
                        (lambda ()
-                         (c++-file 'glue-bottom-component.cc.scm (c++-module o)))))))
+                         (c++-file 'glue-bottom-component.cc.scm (code:module o)))))))
 
 (define-method (dump (o <system>))
   (let ((name (.name o))
         (interfaces (map c++:import (map .type ((compose .elements .ports) o)))))
     (dump-indented (symbol-append 'component- name '-c3.hh)
                    (lambda ()
-                     (c++-file 'system.hh.scm (c++-module o))))
+                     (c++-file 'system.hh.scm (code:module o))))
     (dump-indented (symbol-append 'component- name '-c3.cc)
                    (lambda ()
-                     (c++-file 'system.cc.scm (c++-module o))))
+                     (c++-file 'system.cc.scm (code:module o))))
     (dump-indented (symbol-append name 'Interface.h)
                    (lambda ()
-                     (c++-file 'glue-top-system-interface.hh.scm (c++-module o))))
+                     (c++-file 'glue-top-system-interface.hh.scm (code:module o))))
     (dump-indented (symbol-append name 'Component.h)
                    (lambda ()
-                     (c++-file 'glue-top-system.hh.scm (c++-module o))))
+                     (c++-file 'glue-top-system.hh.scm (code:module o))))
     (dump-indented (symbol-append name 'Component.cpp)
                    (lambda ()
-                     (c++-file 'glue-top-system.cc.scm (c++-module o))))))
+                     (c++-file 'glue-top-system.cc.scm (code:module o))))))
 
 (define (c++-file file-name module)
   (parameterize ((template-dir (append (prefix-dir) '(templates c++-03))))
     (animate-file file-name module)))
-
-(define-method (c++-module)
-  (make-module 31 (list
-                   (resolve-module '(gaiag c++))
-                   (resolve-module '(gaiag misc)))))
-
-(define-method (c++-module (o <interface>))
-  (let* ((module (c++-module)))
-    (module-define! module 'model o)
-    (module-define! module '.interface (.name o))
-    (module-define! module '.INTERFACE (string-upcase (symbol->string (.name o))))
-    (module-define! module '.model (.name o))
-    module))
-
-(define-method (c++-module (o <model>))
-  (let ((module (c++-module)))
-    (module-define! module 'model o)
-    (module-define! module '.COMPONENT (string-upcase (symbol->string (.name o))))
-    (module-define! module '.model (.name o))
-    module))
 
 (define* (c++:->code model src :optional (locals '()) (indent 1) (compound? #t))
   (parameterize ((template-dir (append (prefix-dir) '(templates c++-03))))

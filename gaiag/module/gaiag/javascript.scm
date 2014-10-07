@@ -41,7 +41,6 @@
 
   :export (ast->
            enum-type
-           javascript-module
            javascript:gom
            javascript:import))
 
@@ -67,7 +66,7 @@
   (let ((name (.name o)))
     (dump-indented (list 'interface name '.js)
                    (lambda ()
-                     (javascript-file 'interface.js.scm (javascript-module o))))))
+                     (javascript-file 'interface.js.scm (code:module o))))))
 
 (define-method (dump (o <component>))
   (mkdir-p "component")
@@ -77,38 +76,18 @@
       (map dump interfaces)
       (dump-indented (list 'component name '.js)
                    (lambda ()
-                     (javascript-file 'component.js.scm (javascript-module o)))))))
+                     (javascript-file 'component.js.scm (code:module o)))))))
 
 (define-method (dump (o <system>))
   (let ((name (.name o))
         (interfaces (map javascript:import (map .type ((compose .elements .ports) o)))))
     (dump-indented (list 'component name '.js)
                    (lambda ()
-                     (javascript-file 'system.js.scm (javascript-module o))))))
+                     (javascript-file 'system.js.scm (code:module o))))))
 
 (define (javascript-file file-name module)
   (parameterize ((template-dir (append (prefix-dir) '(templates javascript))))
     (animate-file file-name module)))
-
-(define-method (javascript-module)
-  (make-module 31 (list
-                   (resolve-module '(gaiag javascript))
-                   (resolve-module '(gaiag misc)))))
-
-(define-method (javascript-module (o <interface>))
-  (let* ((module (javascript-module)))
-    (module-define! module 'model o)
-    (module-define! module '.interface (.name o))
-    (module-define! module '.INTERFACE (string-upcase (symbol->string (.name o))))
-    (module-define! module '.model (.name o))
-    module))
-
-(define-method (javascript-module (o <model>))
-  (let ((module (javascript-module)))
-    (module-define! module 'model o)
-    (module-define! module '.COMPONENT (string-upcase (symbol->string (.name o))))
-    (module-define! module '.model (.name o))
-    module))
 
 (define* (javascript:->code model src :optional (locals '()) (indent 1) (compound? #t))
   (parameterize ((template-dir (append (prefix-dir) '(templates javascript))))

@@ -19,12 +19,14 @@
 
 (define-module (gaiag code)
   :use-module (ice-9 curried-definitions)
+  :use-module (ice-9 getopt-long)
   :use-module (ice-9 match)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 pretty-print)
   :use-module (srfi srfi-1)
 
   :use-module (gaiag animate)
+  :use-module (gaiag gaiag)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
 
@@ -36,6 +38,7 @@
            ->code
            bind-port?
            binding-name
+           code:module
            declare-enum
            declare-io
            declare-integer
@@ -52,6 +55,29 @@
 (define (snippet name pairs)
   (parameterize ((template-dir (append (template-dir) '(snippets))))
     (animate-template name pairs)))
+
+(define (language)
+  (string->symbol (option-ref (parse-opts (command-line)) 'language 'c++)))
+
+(define-method (code:module)
+  (make-module 31 (list
+                   (resolve-module (list 'gaiag (language)))
+                   (resolve-module '(gaiag misc)))))
+
+(define-method (code:module (o <interface>))
+  (let* ((module (code:module)))
+    (module-define! module 'model o)
+    (module-define! module '.interface (.name o))
+    (module-define! module '.INTERFACE (string-upcase (symbol->string (.name o))))
+    (module-define! module '.model (.name o))
+    module))
+
+(define-method (code:module (o <model>))
+  (let ((module (code:module)))
+    (module-define! module 'model o)
+    (module-define! module '.COMPONENT (string-upcase (symbol->string (.name o))))
+    (module-define! module '.model (.name o))
+    module))
 
 (define* (->code model src :optional (locals '()) (indent 1) (compound? #t))
   (define (enum? identifier) (gom:enum model identifier))

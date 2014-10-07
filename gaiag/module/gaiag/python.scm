@@ -37,7 +37,6 @@
 
   :export (ast->
            enum-type
-           python-module
            python:gom
            python:import))
 
@@ -57,7 +56,7 @@
   (let ((name (.name o)))
     (dump-output (list 'interface name '.py)
                    (lambda ()
-                     (python-file 'interface.py.scm (python-module o))))))
+                     (python-file 'interface.py.scm (code:module o))))))
 
 (define-method (dump (o <component>))
   (mkdir-p "component")
@@ -67,38 +66,18 @@
       (map dump interfaces)
       (dump-output (list 'component name '.py)
                    (lambda ()
-                     (python-file 'component.py.scm (python-module o)))))))
+                     (python-file 'component.py.scm (code:module o)))))))
 
 (define-method (dump (o <system>))
   (let ((name (.name o))
         (interfaces (map python:import (map .type ((compose .elements .ports) o)))))
     (dump-output (list 'component name '.py)
                    (lambda ()
-                     (python-file 'system.py.scm (python-module o))))))
+                     (python-file 'system.py.scm (code:module o))))))
 
 (define (python-file file-name module)
   (parameterize ((template-dir (append (prefix-dir) '(templates python))))
     (animate-file file-name module)))
-
-(define-method (python-module)
-  (make-module 31 (list
-                   (resolve-module '(gaiag python))
-                   (resolve-module '(gaiag misc)))))
-
-(define-method (python-module (o <interface>))
-  (let* ((module (python-module)))
-    (module-define! module 'model o)
-    (module-define! module '.interface (.name o))
-    (module-define! module '.INTERFACE (string-upcase (symbol->string (.name o))))
-    (module-define! module '.model (.name o))
-    module))
-
-(define-method (python-module (o <model>))
-  (let ((module (python-module)))
-    (module-define! module 'model o)
-    (module-define! module '.COMPONENT (string-upcase (symbol->string (.name o))))
-    (module-define! module '.model (.name o))
-    module))
 
 (define* (python:->code model src :optional (locals '()) (indent 1) (compound? #t))
   (parameterize ((template-dir (append (prefix-dir) '(templates python))))
