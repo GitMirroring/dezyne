@@ -40,21 +40,22 @@ namespace interface
     {
       enum type
       {
-        OK,
-        NOK,
+        OK, NOK
       };
     };
 
     struct
     {
-      asd::function<result_t::type()> initialize;
-      asd::function<result_t::type()> calibrate;
-      asd::function<result_t::type()> perform_action1;
-      asd::function<result_t::type()> perform_action2;
+      asd::function<result_t::type ()> initialize;
+      asd::function<result_t::type ()> calibrate;
+      asd::function<result_t::type ()> perform_action1;
+      asd::function<result_t::type ()> perform_action2;
+
     } in;
 
     struct
     {
+
     } out;
   };
 }

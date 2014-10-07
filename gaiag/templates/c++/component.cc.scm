@@ -19,15 +19,8 @@ namespace component
 #.model ::#.model ()
 : #
 ((->join  "\n, ")
- (map
-  (lambda (variable)
-    (let* ((name (.name variable))
-           (type (.type variable))
-           (enum? (gom:enum model (.name type)))
-           (scope (if enum? (->string (list (.name type) "::"))))
-           (value (expression->string model (.expression variable))))
-      (->string (list name "(" scope value ")"))))
-  (gom:variables model)))#
+ (map (init-member model #{
+#name(#expression)#}) (gom:variables model)))#
 (if (null? (gom:variables model)) "" "\n, ") #
   ((->join  "\n, ")
    (map (lambda (port) (->string (list (.name port) "()"))) (gom:ports model)))

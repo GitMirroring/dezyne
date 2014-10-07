@@ -27,6 +27,7 @@
 
 #include "interface-Siren-c3.hh"
 
+
 namespace component
 {
   struct Siren

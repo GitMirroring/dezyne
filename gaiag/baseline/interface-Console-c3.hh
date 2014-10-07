@@ -41,14 +41,16 @@ namespace interface
 
     struct
     {
-      asd::function<void()> arm;
-      asd::function<void()> disarm;
+      asd::function<void ()> arm;
+      asd::function<void ()> disarm;
+
     } in;
 
     struct
     {
-      asd::function<void()> detected;
-      asd::function<void()> deactivated;
+      asd::function<void ()> detected;
+      asd::function<void ()> deactivated;
+
     } out;
   };
 }

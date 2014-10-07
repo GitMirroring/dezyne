@@ -41,14 +41,16 @@ namespace interface
 
     struct
     {
-      asd::function<void()> enable;
-      asd::function<void()> disable;
+      asd::function<void ()> enable;
+      asd::function<void ()> disable;
+
     } in;
 
     struct
     {
-      asd::function<void()> triggered;
-      asd::function<void()> disabled;
+      asd::function<void ()> triggered;
+      asd::function<void ()> disabled;
+
     } out;
   };
 }

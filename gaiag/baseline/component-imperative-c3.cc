@@ -40,7 +40,7 @@ inline asd::function<void()> connect<void>(void* scope, const asd::function<void
 namespace component
 {
   imperative::imperative()
-  : state(States::States::I)
+  : state(States::I)
   , po_i()
   {
     po_i.in.e = connect<void>(this, asd::bind<void>(&imperative::po_i_e, this));
@@ -50,17 +50,20 @@ namespace component
   {
     std::cout << "imperative.po_i_e" << std::endl;
     if (state == States::I)
+
     {
       {
-        po_i.out.f();
-        po_i.out.g();
-        po_i.out.h();
+        po_i.out.f ();
+        po_i.out.g ();
+        po_i.out.h ();
         state = States::II;
 
       }
 
     }
+
     else if (state == States::II)
+
     {
       {
         state = States::III;
@@ -68,27 +71,33 @@ namespace component
       }
 
     }
+
     else if (state == States::III)
+
     {
       {
-        po_i.out.f();
-        po_i.out.g();
-        po_i.out.g();
-        po_i.out.f();
+        po_i.out.f ();
+        po_i.out.g ();
+        po_i.out.g ();
+        po_i.out.f ();
         state = States::IV;
 
       }
 
     }
+
     else if (state == States::IV)
+
     {
       {
-        po_i.out.h();
+        po_i.out.h ();
         state = States::I;
 
       }
 
     }
+
+
 
   }
 

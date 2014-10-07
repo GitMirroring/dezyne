@@ -41,7 +41,7 @@ inline asd::function<void()> connect<void>(void* scope, const asd::function<void
 namespace component
 {
   Alarm::Alarm()
-  : state(States::States::Disarmed)
+  : state(States::Disarmed)
   , sounding(false)
   , po_console()
   , po_sensor()
@@ -57,53 +57,74 @@ namespace component
   {
     std::cout << "Alarm.po_console_arm" << std::endl;
     if (state == States::Disarmed)
+
     {
       {
-        po_sensor.in.enable();
+        po_sensor.in.enable ();
         state = States::Armed;
 
       }
 
     }
+
     else if (state == States::Armed)
+
     {
-      assert(false);
+      assert (false);
+
     }
+
     else if (state == States::Disarming)
+
     {
-      assert(false);
+      assert (false);
+
     }
+
     else if (state == States::Triggered)
+
     {
-      assert(false);
+      assert (false);
+
     }
+
+
 
   }
   void Alarm::po_console_disarm()
   {
     std::cout << "Alarm.po_console_disarm" << std::endl;
     if (state == States::Disarmed)
+
     {
-      assert(false);
+      assert (false);
+
     }
+
     else if (state == States::Armed)
+
     {
       {
-        po_sensor.in.disable();
+        po_sensor.in.disable ();
         state = States::Disarming;
 
       }
 
     }
+
     else if (state == States::Disarming)
+
     {
-      assert(false);
+      assert (false);
+
     }
+
     else if (state == States::Triggered)
+
     {
       {
-        po_sensor.in.disable();
-        po_siren.in.turnoff();
+        po_sensor.in.disable ();
+        po_siren.in.turnoff ();
         sounding = false;
         state = States::Disarming;
 
@@ -111,74 +132,102 @@ namespace component
 
     }
 
+
+
   }
   void Alarm::po_sensor_triggered()
   {
     std::cout << "Alarm.po_sensor_triggered" << std::endl;
     if (state == States::Disarmed)
+
     {
-      assert(false);
+      assert (false);
+
     }
+
     else if (state == States::Armed)
+
     {
       {
-        po_console.out.detected();
-        po_siren.in.turnon();
+        po_console.out.detected ();
+        po_siren.in.turnon ();
         sounding = true;
         state = States::Triggered;
 
       }
 
     }
+
     else if (state == States::Disarming)
+
     {
       {
-
       }
 
     }
+
     else if (state == States::Triggered)
+
     {
-      assert(false);
+      assert (false);
+
     }
+
+
 
   }
   void Alarm::po_sensor_disabled()
   {
     std::cout << "Alarm.po_sensor_disabled" << std::endl;
     if (state == States::Disarmed)
+
     {
-      assert(false);
+      assert (false);
+
     }
+
     else if (state == States::Armed)
+
     {
-      assert(false);
+      assert (false);
+
     }
+
     else if (state == States::Disarming)
+
     {
       {
         if (sounding)
+
         {
-          po_console.out.deactivated();
-          po_siren.in.turnoff();
+          po_console.out.deactivated ();
+          po_siren.in.turnoff ();
           state = States::Disarmed;
           sounding = false;
 
         }
+
         else
+
         {
-          po_console.out.deactivated();
+          po_console.out.deactivated ();
           state = States::Disarmed;
 
         }
 
+
       }
 
     }
+
     else if (state == States::Triggered)
+
     {
-      assert(false);
+      assert (false);
+
     }
+
+
 
   }
 

@@ -40,7 +40,7 @@ inline asd::function<void()> connect<void>(void* scope, const asd::function<void
 namespace component
 {
   Comp::Comp()
-  : s(State::State::Uninitialized)
+  : s(State::Uninitialized) 
   , po_client()
   , po_device_A()
   {
@@ -53,20 +53,23 @@ namespace component
   {
     std::cout << "Comp.po_client_initialize" << std::endl;
     if (s == State::Uninitialized)
+
     {
       {
-        interface::IDevice::result_t::type res = po_device_A.in.initialize();
+        interface::IDevice::result_t::type res = po_device_A.in.initialize ();
         if (res == interface::IDevice::result_t::OK)
         {
-          res = po_device_A.in.calibrate();
+          res = po_device_A.in.calibrate ();
 
         }
+
         if (res == interface::IDevice::result_t::OK)
         {
           s = State::Initialized;
           reply_IDevice_result_t = interface::IDevice::result_t::OK;
 
         }
+
         else
         {
           s = State::Uninitialized;
@@ -74,17 +77,26 @@ namespace component
 
         }
 
+
       }
 
     }
+
     else if (s == State::Initialized)
+
     {
-      assert(false);
+      assert (false);
+
     }
+
     else if (s == State::Error)
+
     {
-      assert(false);
+      assert (false);
+
     }
+
+
     return reply_IComp_result_t;
 
   }
@@ -92,23 +104,31 @@ namespace component
   {
     std::cout << "Comp.po_client_recover" << std::endl;
     if (s == State::Uninitialized)
+
     {
-      assert(false);
+      assert (false);
+
     }
+
     else if (s == State::Initialized)
+
     {
-      assert(false);
+      assert (false);
+
     }
+
     else if (s == State::Error)
+
     {
       {
-        interface::IDevice::result_t::type res = po_device_A.in.calibrate();
+        interface::IDevice::result_t::type res = po_device_A.in.calibrate ();
         if (res == interface::IDevice::result_t::OK)
         {
           s = State::Initialized;
           reply_IDevice_result_t = interface::IDevice::result_t::OK;
 
         }
+
         else
         {
           s = State::Error;
@@ -116,9 +136,12 @@ namespace component
 
         }
 
+
       }
 
     }
+
+
     return reply_IComp_result_t;
 
   }
@@ -126,24 +149,30 @@ namespace component
   {
     std::cout << "Comp.po_client_perform_actions" << std::endl;
     if (s == State::Uninitialized)
+
     {
-      assert(false);
+      assert (false);
+
     }
+
     else if (s == State::Initialized)
+
     {
       {
-        interface::IDevice::result_t::type res = po_device_A.in.perform_action1();
+        interface::IDevice::result_t::type res = po_device_A.in.perform_action1 ();
         if (res == interface::IDevice::result_t::OK)
         {
-          res = po_device_A.in.perform_action2();
+          res = po_device_A.in.perform_action2 ();
 
         }
+
         if (res == interface::IDevice::result_t::OK)
         {
           s = State::Initialized;
           reply_IDevice_result_t = interface::IDevice::result_t::OK;
 
         }
+
         else
         {
           s = State::Error;
@@ -151,13 +180,19 @@ namespace component
 
         }
 
+
       }
 
     }
+
     else if (s == State::Error)
+
     {
-      assert(false);
+      assert (false);
+
     }
+
+
     return reply_IComp_result_t;
 
   }

@@ -51,10 +51,12 @@ namespace component
   {
     std::cout << "Sensor.po_sensor_enable" << std::endl;
 
+
   }
   void Sensor::po_sensor_disable()
   {
     std::cout << "Sensor.po_sensor_disable" << std::endl;
+
 
   }
 

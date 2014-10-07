@@ -25,6 +25,7 @@
 
 #include "interface-I-c3.hh"
 
+
 namespace component
 {
   struct sugar
@@ -36,7 +37,7 @@ namespace component
         False, True
       };
     };
-    Enum::type s;
+    sugar::Enum::type s;
     interface::I po_i;
 
     sugar();

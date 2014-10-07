@@ -41,12 +41,14 @@ namespace interface
 
     struct
     {
-      asd::function<void()> turnon;
-      asd::function<void()> turnoff;
+      asd::function<void ()> turnon;
+      asd::function<void ()> turnoff;
+
     } in;
 
     struct
     {
+
     } out;
   };
 }

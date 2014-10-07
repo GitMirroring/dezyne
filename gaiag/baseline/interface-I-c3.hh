@@ -41,12 +41,14 @@ namespace interface
 
     struct
     {
-      asd::function<void()> e;
+      asd::function<void ()> e;
+
     } in;
 
     struct
     {
-      asd::function<void()> a;
+      asd::function<void ()> a;
+
     } out;
   };
 }

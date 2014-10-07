@@ -27,6 +27,7 @@
 
 #include "interface-Sensor-c3.hh"
 
+
 namespace component
 {
   struct Sensor

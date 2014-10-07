@@ -27,13 +27,14 @@
 
 #include "interface-I-c3.hh"
 
+
 namespace component
 {
   struct expressions
   {
     typedef int State;
-    State state;
-    State c;
+    expressions::State state;
+    expressions::State c;
     interface::I po_i;
 
     expressions();

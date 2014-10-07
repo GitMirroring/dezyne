@@ -52,13 +52,15 @@ namespace component
   {
     std::cout << "expressions.po_i_e" << std::endl;
     if (true)
+
     {
       if (state == 0)
       {
         state = 3;
-        po_i.out.a();
+        po_i.out.a ();
 
       }
+
       else
       {
         state = state - 1;
@@ -67,22 +69,30 @@ namespace component
           c = c + 1;
 
         }
+
         else
         if (c <= (state + 1))
         {
-          po_i.out.lo();
+          po_i.out.lo ();
 
         }
+
         else
         if (c > state)
         {
-          po_i.out.hi();
+          po_i.out.hi ();
 
         }
 
+
+
+
       }
 
+
     }
+
+
 
   }
 

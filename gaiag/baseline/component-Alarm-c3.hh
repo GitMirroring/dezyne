@@ -29,6 +29,7 @@
 #include "interface-Sensor-c3.hh"
 #include "interface-Siren-c3.hh"
 
+
 namespace component
 {
   struct Alarm
@@ -40,7 +41,7 @@ namespace component
         Disarmed, Armed, Triggered, Disarming
       };
     };
-    States::type state;
+    Alarm::States::type state;
     bool sounding;
     interface::Console po_console;
     interface::Sensor po_sensor;

@@ -40,7 +40,7 @@ inline asd::function<void()> connect<void>(void* scope, const asd::function<void
 namespace component
 {
   sugar::sugar()
-  : s(Enum::Enum::False)
+  : s(Enum::False)
   , po_i()
   {
     po_i.in.e = connect<void>(this, asd::bind<void>(&sugar::po_i_e, this));
@@ -50,8 +50,12 @@ namespace component
   {
     std::cout << "sugar.po_i_e" << std::endl;
     if (s == Enum::False)
+
     if (s == Enum::False)
-    po_i.out.a();
+    po_i.out.a ();
+
+
+
 
   }
 

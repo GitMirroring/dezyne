@@ -51,17 +51,21 @@ namespace component
   {
     std::cout << "argument2.po_i_e" << std::endl;
     if (true)
+
     {
       b = not (b);
-      bool c = g(b, b);
-      b = g(c, c);
+      bool c = g (b, b);
+      b = g (c, c);
       if (c)
       {
-        po_i.out.f();
+        po_i.out.f ();
 
       }
 
+
     }
+
+
 
   }
 
@@ -69,7 +73,7 @@ namespace component
   bool argument2::g(bool ga, bool gb)
   {
     {
-      po_i.out.f();
+      po_i.out.f ();
       return (ga or gb);
 
     }

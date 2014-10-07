@@ -25,6 +25,7 @@
 
 #include "interface-iimperative-c3.hh"
 
+
 namespace component
 {
   struct imperative
@@ -36,7 +37,7 @@ namespace component
         I, II, III, IV
       };
     };
-    States::type state;
+    imperative::States::type state;
     interface::iimperative po_i;
 
     imperative();

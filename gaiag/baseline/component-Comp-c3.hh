@@ -26,6 +26,7 @@
 #include "interface-IComp-c3.hh"
 #include "interface-IDevice-c3.hh"
 
+
 namespace component
 {
   struct Comp
@@ -37,7 +38,7 @@ namespace component
         Uninitialized, Initialized, Error
       };
     };
-    State::type s;
+    Comp::State::type s;
     interface::IComp::result_t::type reply_IComp_result_t;
     interface::IDevice::result_t::type reply_IDevice_result_t;
     interface::IComp po_client;

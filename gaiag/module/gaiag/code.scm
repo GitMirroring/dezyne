@@ -474,8 +474,9 @@
   (let* ((name (.name variable))
          (type (.type variable))
          (enum? (gom:enum model type))
-         (expression (expression->string model (.expression variable))))
-    (animate snippet `((name ,name) (expression ,expression)))))
+         (expression (expression->string model (.expression variable)))
+         (type (code:->code model type)))
+    (animate snippet `((name ,name) (type ,type) (expression ,expression)))))
 
 (define ((init-port snippet) port)
   (let* ((name (.name port))

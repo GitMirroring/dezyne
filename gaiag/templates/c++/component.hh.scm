@@ -11,18 +11,9 @@ struct #.model
 {
     #(->string (map declare-enum (gom:enums (.behaviour model))))#
     (->string (map declare-integer (gom:integers (.behaviour model))))#
-    (map
-     (lambda (variable)
-       (let* ((name (.name variable))
-              (type (.type variable))
-              (enum? (gom:enum model type))
-              (c++-type (if enum?
-                           (if (.scope enum?)
-                               (->string (list "interface::" (.scope type) "::" (.name type) "::type"))
-                               (->string (list (.name type) "::type")))
-                            (.name type))))
-         (->string (list c++-type " " name ";\n"))))
-     (gom:variables model))#
+    (map (init-member model #{
+#type  #name;
+#}) (gom:variables model))#
     (delete-duplicates (map (compose declare-replies c++:import .type) ((compose .elements .ports) model)))#
     (map
      (lambda (port)
