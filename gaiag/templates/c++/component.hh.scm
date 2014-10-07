@@ -15,12 +15,9 @@ struct #.model
 #type  #name;
 #}) (gom:variables model))#
     (delete-duplicates (map (compose declare-replies c++:import .type) ((compose .elements .ports) model)))#
-    (map
-     (lambda (port)
-       (let ((name (.name port))
-             (interface (.type port)))
-         (->string (list "interface::" interface " " name ";\n") )))
-     ((compose .elements .ports) model))
+    (map (init-port #{
+interface::#interface  #name;
+#}) ((compose .elements .ports) model))
     #.model ();
 #(map
   (lambda (port)
