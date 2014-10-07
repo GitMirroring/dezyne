@@ -33,30 +33,13 @@ class #.model  ():
     (filter gom:requires? (gom:ports model)))
 #(map
    (lambda (port)
-     (map
-      (lambda (event)
-        (let* ((type ((compose .type .type) event))
-               (return-type (return-type port event))
-               (reply-type (->string (list (.type port) "_" (.name type))))
-               (statement
-                (or (and-let*
-                     (((is-a? model <component>))
-                      (component model)
-                      (behaviour (.behaviour component))
-                      (statement (.statement behaviour)))
-                     (parameterize ((statements.port port)
-                                    (statements.event event))
-                       (python:->code model statement '() 2 #f)))
-                    "")))
-          (->string
-           (list
-            "    def " (.name port) "_" (.name event) " (self):\n"
-            "        sys.stderr.write ('" (.name model) "." (.name port) "_" (.name event) "\\n')\n"
-            statement
-            (if (not (eq? (.name type) 'void))
-                (->string (list "        return self.reply_" reply-type "\n")))
-            "\n"))))
-      (filter (gom:dir-matches? port) (gom:events port))))
+     (map (define-on model port #{
+    def #port _#event  (self):
+        sys.stderr.write ('#model .#port _#event \n')
+#statement #(if (not (eq? type 'void))
+(list "        return self.reply_" reply-type))
+
+#}) (filter (gom:dir-matches? port) (gom:events port))))
    (gom:ports model))# (map
  (lambda (function)
    (let* ((signature (.signature function))

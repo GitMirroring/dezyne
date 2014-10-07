@@ -50,6 +50,7 @@
            declare-io
            declare-integer
            declare-replies
+           define-on
            include-interface
            init-member
            init-port
@@ -393,6 +394,29 @@
          (type (.name (.type (.type event))))
          (return-type (return-type #f event)))
     (animate snippet `((name ,name) (return-type ,return-type)))))
+
+(define ((define-on model port snippet) event)
+  (let* ((type ((compose .type .type) event))
+         (return-type (return-type port event))
+         (reply-type (->string (list (.type port) "_" (.name type))))
+         (statement
+          (or (and-let*
+               (((is-a? model <component>))
+                (component model)
+                (behaviour (.behaviour component))
+                (statement (.statement behaviour)))
+               (parameterize ((statements.port port)
+                              (statements.event event))
+                 (code:->code model statement '() 2 #f)))
+              "")))
+    (animate snippet `((port ,(.name port))
+                       (event ,(.name event))
+                       (direction ,(.direction event))
+                       (model ,(.name model))
+                       (type ,(.name type))
+                       (reply-type ,reply-type)
+                       (return-type ,return-type)
+                       (statement ,statement)))))
 
 (define ((include-interface snippet) port)
   (let ((interface (.type port)))

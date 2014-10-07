@@ -126,7 +126,7 @@
                              (zip template key-procedure-pairs)))))
 
 (define (pairs->module pairs)
-  (let ((module (current-module)))
+  (let ((module (make-module 31 (list (current-module)))))
     (let loop ((pairs pairs))
       (if (pair? pairs)
           (let* ((pair (car pairs))

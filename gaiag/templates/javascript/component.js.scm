@@ -9,47 +9,15 @@ component.#.model  = function() {
     (map (init-port #{
         this.#name  = new interface.#interface ();
 #}) ((compose .elements .ports) model))
-#
-   (map
-    (lambda (port)
-      (map
-       (lambda (event)
-         (->string (list "        self." (.name port) ".ins." (.name event) " = "  "self." (.name port) "_" (.name event) "\n")))
-       (filter gom:in? (gom:events port))))
-    (filter gom:provides? (gom:ports model)))#
-   (map
-    (lambda (port)
-      (map
-       (lambda (event)
-         (->string (list "        self." (.name port) ".outs." (.name event) " = "  "self." (.name port) "_" (.name event) "\n")))
-       (filter gom:out? (gom:events port))))
-    (filter gom:requires? (gom:ports model)))
 #(map
    (lambda (port)
-     (map
-      (lambda (event)
-        (let* ((type ((compose .type .type) event))
-               (return-type (return-type port event))
-               (reply-type (->string (list (.type port) "_" (.name type))))
-               (statement
-                (or (and-let*
-                     (((is-a? model <component>))
-                      (component model)
-                      (behaviour (.behaviour component))
-                      (statement (.statement behaviour)))
-                     (parameterize ((statements.port port)
-                                    (statements.event event))
-                       (javascript:->code model statement '() 2 #f)))
-                    "")))
-          (->string
-           (list
-            "    def " (.name port) "_" (.name event) " (self):\n"
-            "        sys.stderr.write ('" (.name model) "." (.name port) "_" (.name event) "\\n')\n"
-            statement
-            (if (not (eq? (.name type) 'void))
-                (->string (list "        return self.reply_" reply-type "\n")))
-            "\n"))))
-      (filter (gom:dir-matches? port) (gom:events port))))
+     (map (define-on model port #{
+     this.#port .#direction s.#event  = function() {
+     console.log ('#model .#port _#event ');
+     #statement #(if (not (eq? type 'void))
+(list "    return self.reply_" reply-type)) }.bind(this) ;
+
+#}) (filter (gom:dir-matches? port) (gom:events port))))
    (gom:ports model))# (map
  (lambda (function)
    (let* ((signature (.signature function))
@@ -62,7 +30,7 @@ component.#.model  = function() {
           (parameters (javascript:->code model parameters))
           (statements (javascript:->code model statement locals 2))
           (model (.name model)))
-     (->string (list "    " "def " name " (self" comma parameters "):\n"
+     (->string (list "    " "def " name " (this" comma parameters "):\n"
                      statements))))
  (gom:functions model))
 }
