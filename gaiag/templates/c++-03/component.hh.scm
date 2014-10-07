@@ -1,10 +1,10 @@
 ##ifndef COMPONENT_#.COMPONENT _HH
 ##define COMPONENT_#.COMPONENT _HH
 
-#(map (lambda (port)
-        (let ((interface (.type port)))
-          (->string (list "#include \"interface-" interface "-c3.hh\"\n"))))
-      (gom:ports model))
+#(map (include-interface #{
+##include "interface-#interface -c3.hh"
+#}) (gom:ports model))
+
 namespace component
 {
 struct #.model

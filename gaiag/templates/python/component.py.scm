@@ -1,9 +1,8 @@
 import sys
 ##
-#(map (lambda (port)
-        (let ((interface (.type port)))
-          (->string (list "import interface." interface "\n"))))
-      (gom:ports model))
+#(map (include-interface #{
+import interface.#interface
+#}) (gom:ports model))
 
 class #.model  ():
 #(->string (map declare-enum (gom:enums (.behaviour model))))

@@ -50,6 +50,7 @@
            declare-io
            declare-integer
            declare-replies
+           include-interface
            dump-indented
            enum->identifier
            expression->string
@@ -387,10 +388,14 @@
   (snippet 'declare-integer `((name ,(.name integer)))))
 
 (define ((declare-io snippet) event)
-  (let* ((name (.name event))
+  (let ((name (.name event))
          (type (.name (.type (.type event))))
          (return-type (return-type #f event)))
     (animate snippet `((name ,name) (return-type ,return-type)))))
+
+(define ((include-interface snippet) port)
+  (let ((interface (.type port)))
+    (animate snippet `((interface ,interface)))))
 
 (define-method (declare-replies (o <interface>))
   (map
