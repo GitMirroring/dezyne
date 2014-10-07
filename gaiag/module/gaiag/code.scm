@@ -29,12 +29,17 @@
   :use-module (gaiag gaiag)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
+  :use-module (gaiag resolve)
+  :use-module (gaiag wfc)
 
   :use-module (oop goops)
   :use-module (oop goops describe)
   :use-module (gaiag gom)
 
-  :export (enum-type
+  :export (ast:code
+           code:gom
+           code:import
+           enum-type
            ->code
            bind-port?
            binding-name
@@ -48,6 +53,17 @@
            return-type
            statements.event
            statements.port))
+
+(define (ast:code ast dump)
+  (let ((gom ((gom:register code:gom) ast #t)))
+    (map dump ((gom:filter <model>) gom)))
+  "")
+
+(define (code:import name)
+  (gom:import name code:gom))
+
+(define (code:gom ast)
+  ((compose ast:wfc ast:resolve ast->gom) ast))
 
 (define statements.port (make-parameter #f))
 (define statements.event (make-parameter #f))

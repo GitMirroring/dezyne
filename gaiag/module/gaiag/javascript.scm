@@ -32,28 +32,15 @@
   :use-module (gaiag indent)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
-  :use-module (gaiag resolve)
-  :use-module (gaiag wfc)
 
   :use-module (oop goops)
   :use-module (oop goops describe)
   :use-module (gaiag gom)
 
-  :export (ast->
-           enum-type
-           javascript:gom
-           javascript:import))
+  :export (ast->))
 
 (define (ast-> ast)
-  (let ((gom ((gom:register javascript:gom) ast #t)))
-    (map dump ((gom:filter <model>) gom)))
-  "")
-
-(define (javascript:import name)
-  (gom:import name javascript:gom))
-
-(define (javascript:gom ast)
-  ((compose ast:wfc ast:resolve ast->gom) ast))
+  (ast:code ast dump))
 
 (define (pipe producer consumer)
   (with-input-from-string (with-output-to-string producer) consumer))
@@ -71,7 +58,7 @@
 (define-method (dump (o <component>))
   (mkdir-p "component")
   (let ((name (.name o))
-        (interfaces (map javascript:import (map .type ((compose .elements .ports) o)))))
+        (interfaces (map code:import (map .type ((compose .elements .ports) o)))))
     (when (.behaviour o)
       (map dump interfaces)
       (dump-indented (list 'component name '.js)
@@ -80,7 +67,7 @@
 
 (define-method (dump (o <system>))
   (let ((name (.name o))
-        (interfaces (map javascript:import (map .type ((compose .elements .ports) o)))))
+        (interfaces (map code:import (map .type ((compose .elements .ports) o)))))
     (dump-indented (list 'component name '.js)
                    (lambda ()
                      (javascript-file 'system.js.scm (code:module o))))))
@@ -89,6 +76,6 @@
   (parameterize ((template-dir (append (prefix-dir) '(templates javascript))))
     (animate-file file-name module)))
 
-(define* (javascript:->code model src :optional (locals '()) (indent 1) (compound? #t))
+(define* (code:->code model src :optional (locals '()) (indent 1) (compound? #t))
   (parameterize ((template-dir (append (prefix-dir) '(templates javascript))))
     (->code model src locals indent compound?)))

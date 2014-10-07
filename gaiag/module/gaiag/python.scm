@@ -35,21 +35,10 @@
   :use-module (oop goops describe)
   :use-module (gaiag gom)
 
-  :export (ast->
-           enum-type
-           python:gom
-           python:import))
+  :export (ast->))
 
 (define (ast-> ast)
-  (let ((gom ((gom:register python:gom) ast #t)))
-    (map dump ((gom:filter <model>) gom)))
-  "")
-
-(define (python:import name)
-  (gom:import name python:gom))
-
-(define (python:gom ast)
-  ((compose ast:wfc ast:resolve ast->gom) ast))
+  (ast:code ast dump))
 
 (define-method (dump (o <interface>))
   (mkdir-p "interface")
@@ -61,7 +50,7 @@
 (define-method (dump (o <component>))
   (mkdir-p "component")
   (let ((name (.name o))
-        (interfaces (map python:import (map .type ((compose .elements .ports) o)))))
+        (interfaces (map code:import (map .type ((compose .elements .ports) o)))))
     (when (.behaviour o)
       (map dump interfaces)
       (dump-output (list 'component name '.py)
@@ -70,7 +59,7 @@
 
 (define-method (dump (o <system>))
   (let ((name (.name o))
-        (interfaces (map python:import (map .type ((compose .elements .ports) o)))))
+        (interfaces (map code:import (map .type ((compose .elements .ports) o)))))
     (dump-output (list 'component name '.py)
                    (lambda ()
                      (python-file 'system.py.scm (code:module o))))))

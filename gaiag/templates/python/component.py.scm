@@ -17,7 +17,7 @@ class #.model  ():
               (value (expression->string model (.expression variable))))
          (->string (list "        self." name " = " value "\n"))))
      (gom:variables model))#
-    (delete-duplicates (map (compose declare-replies python:import .type) ((compose .elements .ports) model)))
+    (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))
 #
     (map
      (lambda (port)
