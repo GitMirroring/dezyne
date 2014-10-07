@@ -58,12 +58,6 @@
       o
       (parameterize ((mangle-prefix-alist '((port . po) (instance . is)))) (gom:mangle o))))
 
-(define (pipe producer consumer)
-  (with-input-from-string (with-output-to-string producer) consumer))
-
-(define (dump-indented file-name thunk)
-  (dump-output file-name (lambda () (pipe thunk (lambda () (indent))))))
-
 (define-method (dump (o <interface>))
   (let ((name (.name o)))
     (dump-indented (symbol-append 'interface- name '-c3.hh)

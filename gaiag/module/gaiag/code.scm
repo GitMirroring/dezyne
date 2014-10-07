@@ -27,6 +27,7 @@
 
   :use-module (gaiag animate)
   :use-module (gaiag gaiag)
+  :use-module (gaiag indent)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
@@ -39,6 +40,7 @@
   :export (ast:code
            code:gom
            code:import
+           code:->code
            enum-type
            ->code
            bind-port?
@@ -48,13 +50,16 @@
            declare-io
            declare-integer
            declare-replies
+           dump-indented
            enum->identifier
            expression->string
+           indenter
+           pipe
            return-type
            statements.event
            statements.port))
 
-(define (ast:code ast dump)
+(define (ast:code ast)
   (let ((gom ((gom:register code:gom) ast #t)))
     (map dump ((gom:filter <model>) gom)))
   "")
@@ -65,6 +70,50 @@
 (define (code:gom ast)
   ((compose ast:wfc ast:resolve ast->gom) ast))
 
+(define (pipe producer consumer)
+  (with-input-from-string (with-output-to-string producer) consumer))
+
+(define indenter (make-parameter indent))
+
+(define (dump-indented file-name thunk)
+  (dump-output file-name
+               (if (indenter)
+                   (lambda () (pipe thunk (lambda () ((indenter)))))
+                   thunk)))
+
+(define-method (dump (o <interface>))
+  (mkdir-p "interface")
+  (let ((name (.name o)))
+    (dump-indented (list 'interface name (extension o))
+                   (lambda ()
+                     (code-file 'interface (code:module o))))))
+
+(define-method (dump (o <component>))
+  (mkdir-p "component")
+  (let ((name (.name o))
+        (interfaces (map code:import (map .type ((compose .elements .ports) o)))))
+    (when (.behaviour o)
+      (map dump interfaces)
+      (dump-indented (list 'component name (extension o))
+                   (lambda ()
+                     (code-file 'component (code:module o)))))))
+
+(define-method (dump (o <system>))
+  (let ((name (.name o))
+        (interfaces (map code:import (map .type ((compose .elements .ports) o)))))
+    (dump-indented (list 'component name (extension o))
+                   (lambda ()
+                     (code-file 'system (code:module o))))))
+
+(define (code-file file-name module)
+  (let ((model (module-ref module 'model)))
+   (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
+     (animate-file (symbol-append file-name (extension model) '.scm) module))))
+
+(define* (code:->code model src :optional (locals '()) (indent 1) (compound? #t))
+  (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
+    (->code model src locals indent compound?)))
+
 (define statements.port (make-parameter #f))
 (define statements.event (make-parameter #f))
 
@@ -74,6 +123,18 @@
 
 (define (language)
   (string->symbol (option-ref (parse-opts (command-line)) 'language 'c++)))
+
+(define-method (extension (o <interface>))
+  (assoc-ref '((c++ . .hh)
+               (javascript . .js)
+               (python . .py))
+             (language)))
+
+(define-method (extension (o <model>))
+  (assoc-ref '((c++ . .cc)
+               (javascript . .js)
+               (python . .py))
+             (language)))
 
 (define-method (code:module)
   (make-module 31 (list

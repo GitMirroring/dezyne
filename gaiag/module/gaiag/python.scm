@@ -18,18 +18,11 @@
 (read-set! keywords 'prefix)
 
 (define-module (gaiag python)
-  :use-module (ice-9 curried-definitions)
-  :use-module (ice-9 match)
-  :use-module (ice-9 and-let-star)
   :use-module (ice-9 pretty-print)
-  :use-module (srfi srfi-1)
 
-  :use-module (gaiag animate)
   :use-module (gaiag code)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
-  :use-module (gaiag resolve)
-  :use-module (gaiag wfc)
 
   :use-module (oop goops)
   :use-module (oop goops describe)
@@ -38,36 +31,6 @@
   :export (ast->))
 
 (define (ast-> ast)
-  (ast:code ast dump))
+  (parameterize ((indenter #f)) (ast:code ast)))
 
-(define-method (dump (o <interface>))
-  (mkdir-p "interface")
-  (let ((name (.name o)))
-    (dump-output (list 'interface name '.py)
-                   (lambda ()
-                     (python-file 'interface.py.scm (code:module o))))))
-
-(define-method (dump (o <component>))
-  (mkdir-p "component")
-  (let ((name (.name o))
-        (interfaces (map code:import (map .type ((compose .elements .ports) o)))))
-    (when (.behaviour o)
-      (map dump interfaces)
-      (dump-output (list 'component name '.py)
-                   (lambda ()
-                     (python-file 'component.py.scm (code:module o)))))))
-
-(define-method (dump (o <system>))
-  (let ((name (.name o))
-        (interfaces (map code:import (map .type ((compose .elements .ports) o)))))
-    (dump-output (list 'component name '.py)
-                   (lambda ()
-                     (python-file 'system.py.scm (code:module o))))))
-
-(define (python-file file-name module)
-  (parameterize ((template-dir (append (prefix-dir) '(templates python))))
-    (animate-file file-name module)))
-
-(define* (python:->code model src :optional (locals '()) (indent 1) (compound? #t))
-  (parameterize ((template-dir (append (prefix-dir) '(templates python))))
-    (->code model src locals indent compound?)))
+(define python:->code code:->code)
