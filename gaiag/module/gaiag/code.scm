@@ -18,6 +18,7 @@
 (read-set! keywords 'prefix)
 
 (define-module (gaiag code)
+  :use-module (ice-9 curried-definitions)
   :use-module (ice-9 match)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 pretty-print)
@@ -36,6 +37,7 @@
            bind-port?
            binding-name
            declare-enum
+           declare-io
            declare-integer
            declare-replies
            enum->identifier
@@ -271,11 +273,6 @@
        (list lhs " " op " " rhs )))
     (_ (->code model o locals 0))))
 
-(define-method (declare-replies (o <interface>))
-  (map
-   (lambda (x) (snippet 'declare-reply `((type ,(.name o)) (name ,(.name x)))))
-   (gom:interface-enums o)))
-
 (define (declare-enum enum)
   (let* ((fields ((compose .elements .fields) enum))
          (length (length fields))
@@ -285,6 +282,17 @@
 
 (define (declare-integer integer)
   (snippet 'declare-integer `((name ,(.name integer)))))
+
+(define ((declare-io snippet) event)
+  (let* ((name (.name event))
+         (type (.name (.type (.type event))))
+         (return-type (return-type #f event)))
+    (animate snippet `((name ,name) (return-type ,return-type)))))
+
+(define-method (declare-replies (o <interface>))
+  (map
+   (lambda (x) (snippet 'declare-reply `((type ,(.name o)) (name ,(.name x)))))
+   (gom:interface-enums o)))
 
 (define-method (enum->identifier (model <model>) (o <expression>) locals)
   (define (member? identifier) (gom:variable model identifier))
@@ -300,14 +308,15 @@
          ""))))
 
 (define (return-type port event)
-  (let ((type ((compose .type .type) event)))
+  (let ((type ((compose .type .type) event))
+        (scope (and=> port .type)))
     (cond
       ((eq? (.name type) 'bool) 'bool)
       ((eq? (.name type) 'void) 'void)
-      ((.type port)
-       (snippet 'type `((space "") (scope ,(.type port)) (name ,(.name type)))))
+      (scope
+       (snippet 'type `((space "") (scope ,scope) (name ,(.name type)))))
       (else
-       (snippet 'type-local-enum `((space "") (scope ,(.type port)) (name ,(.name type))))))))
+       (snippet 'type-local-enum `((space "") (scope ,scope) (name ,(.name type))))))))
 
 (define (binding-name model bind)
   (let ((instance (gom:instance model bind))

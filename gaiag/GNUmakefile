@@ -168,14 +168,9 @@ CC_BROKEN =\
 
 CC_SOURCES = $(filter-out $(CC_BROKEN),$(REGRESSION_SOURCES))
 
-c++: compile c++-alarm alarm-gen alarm-legacy $(CC_SOURCES:%.asd=out/%.compiles)
+c++: compile c++-alarm alarm-legacy $(CC_SOURCES:%.asd=out/%.compiles)
 
-c++-alarm:
-	cd out && $(shell pwd)/gaiag -l c++ examples/regression/Alarm.asd
-	cd out && $(shell pwd)/gaiag -l c++ examples/Sensor.asd
-	cd out && $(shell pwd)/gaiag -l c++ examples/Siren.asd
-	cd out && $(shell pwd)/gaiag -l c++ examples/Alarm.asd
-	cd out && $(shell pwd)/gaiag -l c++ examples/AlarmSystem.asd
+c++-alarm: alarm-gen alarm
 	$(diff) baseline/interface-Console-c3.hh out
 	$(diff) baseline/interface-Sensor-c3.hh out
 	$(diff) baseline/interface-Siren-c3.hh out
@@ -183,8 +178,6 @@ c++-alarm:
 	$(diff) baseline/component-Alarm-c3.cc out
 	$(diff) baseline/component-AlarmSystem-c3.hh out
 	$(diff) baseline/component-AlarmSystem-c3.cc out
-	ccache g++ -o out/boo -c out/component-Alarm-c3.cc
-	ccache g++ -o out/boo -I $(DEPTH)/examples/regression/codegen/asd_cpp_runtime -c out/component-AlarmSystem-c3.cc
 
 out/%.wfc: examples/wfc/%.asd
 	! ./gaiag -l wfc $<
@@ -372,3 +365,5 @@ python-update: dummy
 		cp -pv out/interface/*py baseline/interface;\
 		cp -pv out/component/*py baseline/component;\
 	done
+
+code: c++-alarm python-alarm out/Reply7.compiles out/Reply7.py

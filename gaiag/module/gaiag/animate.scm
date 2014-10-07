@@ -55,7 +55,8 @@
   ;;:use-module (gaiag gom gom)
 
 
-  :export (animate-file
+  :export (animate
+           animate-file
            animate-input
            animate-module-populate
            animate-string
@@ -124,14 +125,29 @@
                                  (cons key value)))
                              (zip template key-procedure-pairs)))))
 
-(define (animate-template name key-value-pairs)
+(define (pairs->module pairs)
   (let ((module (current-module)))
-    (let loop ((pairs key-value-pairs))
-      (when (pair? pairs)
-        (module-define! module (caar pairs) (cdar pairs))
-        (loop (cdr pairs))))
-    (with-output-to-string
-      (lambda () (animate-file name module)))))
+    (let loop ((pairs pairs))
+      (if (pair? pairs)
+          (let* ((pair (car pairs))
+                 (key (car pair))
+                 (value (cdr pair))
+                 (value (if (pair? value) (car value) value)))
+            (module-define! module key value)
+            (loop (cdr pairs)))))
+    module))
+
+(define (animate-template name key-value-pairs)
+  (with-output-to-string
+    (lambda () (animate-file name (pairs->module key-value-pairs)))))
+
+(define-method (animate (o <string>) (pairs <list>))
+  (animate o (pairs->module pairs)))
+
+(define-method (animate (o <string>) (module <module>))
+  (with-output-to-string
+    (lambda ()
+      (with-input-from-string o (lambda () (animate-input- module))))))
 
 (define* (line-column-location tell :optional (port (current-input-port)))
   (seek port 0 SEEK_SET)

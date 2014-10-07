@@ -1,1 +1,1 @@
-#scope ::#name ::type
+#scope #(if scope "::")#name ::type

@@ -17,23 +17,17 @@ struct #.interface
  #(->string (map declare-enum (gom:interface-enums model)))
   struct
   {
-   #(map
-     (lambda (event)
-       (let* ((name (.name event))
-              (type (.name (.type (.type event))))
-              (return-type (list type (if (not (eq? type 'void)) "::type"))))
-         (->string (list "asd::function<" return-type "()> " name ";\n"))))
-     (filter gom:in? ((compose .elements .events) model))) } in;
+   #(map (declare-io
+          #{asd::function<#return-type  ()> #name;
+#}) (filter gom:in? ((compose .elements .events) model)))
+   } in;
 
   struct
   {
-   #(map
-     (lambda (event)
-       (let* ((name (.name event))
-              (type (.name (.type (.type event))))
-              (return-type (list type (if (not (eq? type 'void)) "::type"))))
-         (->string (list "asd::function<" return-type "()> " name ";\n"))))
-     (filter gom:out? ((compose .elements .events) model))) } out;
+   #(map (declare-io
+          #{asd::function<#return-type  ()> #name;
+#}) (filter gom:out? ((compose .elements .events) model)))
+ } out;
   };
 }
 
