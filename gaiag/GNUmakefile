@@ -322,16 +322,6 @@ glue:
 	-cd out && ccache g++ -Wall -Wextra -I ../$(DEPTH)/examples/codegen/asd_cpp_runtime -c *.c*
 	-cd out && g++ -o test *.o && ./test
 
-out/%.py: examples/regression/%.asd
-	rm -rf out && mkdir out && ln -s ../examples ../templates out
-	cd out && $(shell pwd)/gaiag -l python examples/regression/$*.asd
-	-$(pydiff) baseline/component/$*.py out/component
-	ln -s ../examples/__init__.py out/interface
-	ln -s ../examples/__init__.py out/component
-	cd out && python component/$*.py
-	$(pydiff) baseline/component/$*.py out/component | diffstat || true
-	$(pydiff) baseline/component/$*.py out/component > /dev/null
-
 python-alarm: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
 	cd out && $(shell pwd)/gaiag -l python examples/regression/Alarm.asd
@@ -358,19 +348,29 @@ PY_BROKEN =\
 
 PY_SOURCES = $(filter-out $(PY_BROKEN),$(REGRESSION_SOURCES))
 
-python: compile python-alarm python-regression
+define .PY_REGRESSION
+rm -rf out && mkdir out && ln -s ../examples ../templates out
+cd out && $(shell pwd)/gaiag -l python examples/regression/$*.asd
+-$(pydiff) baseline/component/$*.py out/component
+ln -s ../examples/__init__.py out/interface
+ln -s ../examples/__init__.py out/component
+(cd out && python component/$*.py) $(UPDATE)
+$(pydiff) baseline/component/$*.py out/component | diffstat || true
+$(pydiff) baseline/component/$*.py out/component > /dev/null
+endef
+
+#out/%.py.up: UPDATE=||:; cp out/component/$*.py baseline/component && cp out/interface/*.py baseline/interface
+out/%.py.up: UPDATE=&& cp out/component/$*.py baseline/component && cp out/interface/*.py baseline/interface
+out/%.py.up: examples/regression/%.asd
+	$(.PY_REGRESSION)
+
+out/%.py: examples/regression/%.asd
+	$(.PY_REGRESSION)
 
 python-regression: $(PY_SOURCES:%.asd=out/%.py)
+python-update: $(PY_SOURCES:%.asd=out/%.py.up)
 
-python-update: dummy
-	while ! $(MAKE) python-alarm; do\
-		cp -pv out/interface/*py baseline/interface;\
-		cp -pv out/component/*py baseline/component;\
-	done
-	while ! $(MAKE) python-regression; do\
-		cp -pv out/interface/*py baseline/interface;\
-		cp -pv out/component/*py baseline/component;\
-	done
+python: compile python-alarm python-regression
 
 define .JAVASCRIPT_REGRESSION
 rm -rf out && mkdir out && ln -s ../examples ../templates out
@@ -386,8 +386,8 @@ $(diff) baseline/component/$*.js out/component | diffstat || true
 @$(diff) baseline/component/$*.js out/component > /dev/null
 endef
 
-#out/%.js.up: UPDATE=||:; cp out/component/$*.js baseline/component
-out/%.js.up: UPDATE=&& cp out/component/$*.js baseline/component
+#out/%.js.up: UPDATE=||:; cp out/component/$*.js baseline/component && cp out/interface/*.js baseline/interface
+out/%.js.up: UPDATE=&& cp out/component/$*.js baseline/component && cp out/interface/*.js baseline/interface
 out/%.js.up: examples/regression/%.asd
 	$(.JAVASCRIPT_REGRESSION)
 
