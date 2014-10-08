@@ -1,0 +1,28 @@
+Checking out/reply_reorder.csp
+
+Checking IF_Provides_(false) :[deadlock free]
+true
+
+Checking IF_Provides_(true) :[livelock free]
+true
+
+Checking IF_Requires_(false) :[deadlock free]
+true
+
+Checking IF_Requires_(true) :[livelock free]
+true
+
+Checking CO_reply_reorder_(true,true) :[deterministic]
+true
+
+Checking STOP [T= AS_reply_reorder_(false)\diff(Events,{illegal})
+true
+
+Checking AS_reply_reorder_(false) :[deadlock free]
+true
+
+Checking IF_Provides_(true)[[Provides.x<-p.x|x<-extensions(p)]][[Provides_'.x<-p_'.x|x<-extensions(p_')]]\{} [F= AS_reply_reorder_(true)\diff(Events,{|illegal,p,p_'|})
+true
+
+Checking AS_reply_reorder_(true)\diff(Events,{|illegal,p,p_'|}) :[livelock free]
+true
