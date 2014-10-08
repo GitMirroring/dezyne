@@ -369,28 +369,36 @@ python-update: dummy
 
 out/%.js: examples/regression/%.asd
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
-	cd out && $(shell pwd)/gaiag -l javascript examples/regression/$*.asd
-	-$(pydiff) baseline/component/$*.js out/component
-	ln -s ../examples/__init__.js out/interface
-	ln -s ../examples/__init__.js out/component
-	-cd out && nodejs component/$*.js
+	cd out && $(shell pwd)/gaiag -l javascript $<
+	-$(diff) baseline/component/$*.js out/component
+	cat examples/header.js\
+		 $$(find out/interface out/component -name '*.js')\
+		examples/alarm.js > $@
+	cat examples/header.js $$(find out/interface out/component -name '*.js') > $@
+	nodejs $@
+	if [ -f node_modules/jshint/bin/jshint ]; then nodejs node_modules/jshint/bin/jshint $@; fi
 	$(diff) baseline/component/$*.js out/component | diffstat || true
-	$(diff) baseline/component/$*.js out/component > /dev/null
+	@$(diff) baseline/component/$*.js out/component > /dev/null
 
 javascript-alarm: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
-	cd out && $(shell pwd)/gaiag -l javascript examples/regression/Alarm.asd
-	cd out && $(shell pwd)/gaiag -l javascript examples/Sensor.asd
-	cd out && $(shell pwd)/gaiag -l javascript examples/Siren.asd
-	cd out && $(shell pwd)/gaiag -l javascript examples/Alarm.asd
-	cd out && $(shell pwd)/gaiag -l javascript examples/AlarmSystem.asd
+	cd out && for file in\
+	 	examples/AlarmSystem.asd\
+	 	examples/regression/Alarm.asd\
+	 	examples/Console.asd\
+	 	examples/Sensor.asd\
+	 	examples/Siren.asd;\
+	 	do $(shell pwd)/gaiag -l javascript $$file; done
+	cat examples/header.js\
+		 $$(find out/interface out/component -name '*.js')\
+		examples/alarm.js > out/alarm.js
+	nodejs out/alarm.js
 	$(diff) baseline/interface/Console.js out/interface
 	$(diff) baseline/interface/Sensor.js out/interface
 	$(diff) baseline/interface/Siren.js out/interface
 	$(diff) baseline/component/Alarm.js out/component
 	$(diff) baseline/component/AlarmSystem.js out/component
-	cat examples/header.js out/interface/*js out/component/*js examples/alarm.js > out/alarm.js
-	cd out && nodejs alarm.js
+
 
 javascript: compile javascript-alarm javascript-regression
 

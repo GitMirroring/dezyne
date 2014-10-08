@@ -108,6 +108,7 @@
                      (code-file 'component (code:module o)))))))
 
 (define-method (dump (o <system>))
+  (mkdir-p "component")
   (let ((name (.name o))
         (interfaces (map code:import (map .type ((compose .elements .ports) o)))))
     (dump-indented (list 'component name (extension o))
