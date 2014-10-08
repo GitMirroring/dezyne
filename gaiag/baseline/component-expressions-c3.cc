@@ -58,41 +58,26 @@ namespace component
       {
         state = 3;
         po_i.out.a ();
-
       }
-
       else
       {
         state = state - 1;
         if (c < state)
         {
           c = c + 1;
-
         }
-
         else
         if (c <= (state + 1))
         {
           po_i.out.lo ();
-
         }
-
         else
         if (c > state)
         {
           po_i.out.hi ();
-
         }
-
-
-
-
       }
-
-
     }
-
-
 
   }
 

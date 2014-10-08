@@ -27,6 +27,7 @@
 #include "interface-irequires_twice-c3.hh"
 #include "interface-irequires_twice-c3.hh"
 
+
 namespace component
 {
   struct requires_twice

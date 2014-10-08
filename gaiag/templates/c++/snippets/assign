@@ -1,1 +1,1 @@
-#space #identifier  = #expression;
+#identifier  = #expression;

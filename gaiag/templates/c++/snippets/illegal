@@ -1,1 +1,1 @@
-#space assert (false);
+assert(false);

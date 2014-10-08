@@ -25,6 +25,7 @@
 
 #include "interface-ienum_collision-c3.hh"
 
+
 namespace component
 {
   struct enum_collision

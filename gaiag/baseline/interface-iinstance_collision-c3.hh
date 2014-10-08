@@ -39,11 +39,13 @@ namespace interface
 
     struct
     {
-      asd::function<void()> foo;
+      asd::function<void ()> foo;
+
     } in;
 
     struct
     {
+
     } out;
   };
 }

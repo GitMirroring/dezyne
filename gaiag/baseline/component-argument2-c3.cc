@@ -42,7 +42,7 @@ namespace component
 {
   argument2::argument2()
   : b(false)
-  , po_i() 
+  , po_i()
   {
     po_i.in.e = connect<void>(this, asd::bind<void>(&argument2::po_i_e, this));
   }
@@ -59,13 +59,8 @@ namespace component
       if (c)
       {
         po_i.out.f ();
-
       }
-
-
     }
-
-
 
   }
 
@@ -74,7 +69,6 @@ namespace component
   {
     po_i.out.f ();
     return (ga or gb);
-
 
   }
 

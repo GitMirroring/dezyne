@@ -50,7 +50,6 @@ namespace component
     std::cout << "interface_component_overload.po_interface_component_overload_e" << std::endl;
     {
       reply_interface_component_overload_R = interface::interface_component_overload::R::V;
-
     }
     return reply_interface_component_overload_R;
 

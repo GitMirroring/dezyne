@@ -41,7 +41,7 @@ namespace component
 {
   function::function()
   : f(false)
-  , po_i() 
+  , po_i()
   {
     po_i.in.a = connect<void>(this, asd::bind<void>(&function::po_i_a, this));
     po_i.in.b = connect<void>(this, asd::bind<void>(&function::po_i_b, this));
@@ -55,12 +55,8 @@ namespace component
     {
       {
         toggle ();
-
       }
-
     }
-
-
 
   }
   void function::po_i_b()
@@ -73,12 +69,8 @@ namespace component
         toggle ();
         toggle ();
         po_i.out.d ();
-
       }
-
     }
-
-
 
   }
 
@@ -88,11 +80,8 @@ namespace component
     if (f)
     {
       po_i.out.c ();
-
     }
-
     f = not (f);
-
 
   }
 

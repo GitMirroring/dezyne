@@ -25,26 +25,15 @@
 
 #include "interface-iprovides_once-c3.hh"
 
+
 namespace component
 {
   struct component_provides_twice
   {
-
-
-
-
-
-
-
-
-
     interface::iprovides_once po_i;
 
     component_provides_twice();
     void po_i_foo();
-
-
-
   };
 }
 #endif

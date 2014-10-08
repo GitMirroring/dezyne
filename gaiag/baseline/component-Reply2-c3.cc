@@ -51,23 +51,20 @@ namespace component
   {
     std::cout << "Reply2.po_i_done" << std::endl;
     if (true)
+
     {
       {
-        interface::U::Status::type s = po_u.in.what();
-        s = po_u.in.what();
+        interface::U::Status::type s = po_u.in.what ();
+        s = po_u.in.what ();
         if (s == interface::U::Status::Ok)
         {
           reply_I_Status = interface::I::Status::Yes;
-
         }
         else
         {
           reply_I_Status = interface::I::Status::No;
-
         }
-
       }
-
     }
     return reply_I_Status;
 

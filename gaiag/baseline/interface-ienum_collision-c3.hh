@@ -40,27 +40,27 @@ namespace interface
     {
       enum type
       {
-        OK,
-        NOK,
+        OK, NOK
       };
     };
     struct Retval2
     {
       enum type
       {
-        OK,
-        NOK,
+        OK, NOK
       };
     };
 
     struct
     {
-      asd::function<Retval1::type()> foo;
-      asd::function<Retval2::type()> bar;
+      asd::function<Retval1::type ()> foo;
+      asd::function<Retval2::type ()> bar;
+
     } in;
 
     struct
     {
+
     } out;
   };
 }

@@ -40,7 +40,7 @@ inline asd::function<void()> connect<void>(void* scope, const asd::function<void
 namespace component
 {
   Comp::Comp()
-  : s(State::Uninitialized) 
+  : s(State::Uninitialized)
   , po_client()
   , po_device_A()
   {
@@ -60,43 +60,29 @@ namespace component
         if (res == interface::IDevice::result_t::OK)
         {
           res = po_device_A.in.calibrate ();
-
         }
-
         if (res == interface::IDevice::result_t::OK)
         {
           s = State::Initialized;
           reply_IDevice_result_t = interface::IDevice::result_t::OK;
-
         }
-
         else
         {
           s = State::Uninitialized;
           reply_IDevice_result_t = interface::IDevice::result_t::NOK;
-
         }
-
-
       }
-
     }
-
     else if (s == State::Initialized)
 
     {
-      assert (false);
-
+      assert(false);
     }
-
     else if (s == State::Error)
 
     {
-      assert (false);
-
+      assert(false);
     }
-
-
     return reply_IComp_result_t;
 
   }
@@ -106,17 +92,13 @@ namespace component
     if (s == State::Uninitialized)
 
     {
-      assert (false);
-
+      assert(false);
     }
-
     else if (s == State::Initialized)
 
     {
-      assert (false);
-
+      assert(false);
     }
-
     else if (s == State::Error)
 
     {
@@ -126,22 +108,14 @@ namespace component
         {
           s = State::Initialized;
           reply_IDevice_result_t = interface::IDevice::result_t::OK;
-
         }
-
         else
         {
           s = State::Error;
           reply_IDevice_result_t = interface::IDevice::result_t::NOK;
-
         }
-
-
       }
-
     }
-
-
     return reply_IComp_result_t;
 
   }
@@ -151,10 +125,8 @@ namespace component
     if (s == State::Uninitialized)
 
     {
-      assert (false);
-
+      assert(false);
     }
-
     else if (s == State::Initialized)
 
     {
@@ -163,36 +135,24 @@ namespace component
         if (res == interface::IDevice::result_t::OK)
         {
           res = po_device_A.in.perform_action2 ();
-
         }
-
         if (res == interface::IDevice::result_t::OK)
         {
           s = State::Initialized;
           reply_IDevice_result_t = interface::IDevice::result_t::OK;
-
         }
-
         else
         {
           s = State::Error;
           reply_IDevice_result_t = interface::IDevice::result_t::NOK;
-
         }
-
-
       }
-
     }
-
     else if (s == State::Error)
 
     {
-      assert (false);
-
+      assert(false);
     }
-
-
     return reply_IComp_result_t;
 
   }

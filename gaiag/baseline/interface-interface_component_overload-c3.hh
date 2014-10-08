@@ -40,17 +40,19 @@ namespace interface
     {
       enum type
       {
-        V,
+        V
       };
     };
 
     struct
     {
-      asd::function<R::type()> e;
+      asd::function<R::type ()> e;
+
     } in;
 
     struct
     {
+
     } out;
   };
 }

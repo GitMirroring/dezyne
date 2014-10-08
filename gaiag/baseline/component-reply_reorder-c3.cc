@@ -3,6 +3,7 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -53,9 +54,7 @@ namespace component
     std::cout << "reply_reorder.po_p_start" << std::endl;
     {
       po_r.in.ping ();
-
     }
-
 
   }
   void reply_reorder::po_r_pong()
@@ -67,20 +66,14 @@ namespace component
       {
         po_p.out.busy ();
         first = not (first);
-
       }
-
       if (not (first))
 
       {
         po_p.out.finish ();
         first = not (first);
-
       }
-
-
     }
-
 
   }
 

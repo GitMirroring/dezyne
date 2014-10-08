@@ -52,16 +52,13 @@ namespace component
     {
       if (t)
       {
-        po_i.out.b();
-
+        po_i.out.b ();
       }
       else
       {
-        po_i.out.c();
-
+        po_i.out.c ();
       }
       t = not (t);
-
     }
 
   }

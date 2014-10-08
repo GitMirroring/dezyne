@@ -1,4 +1,3 @@
-#space if (#expression)
-#then
-#space else
+if (#expression)
+#then else
 #else

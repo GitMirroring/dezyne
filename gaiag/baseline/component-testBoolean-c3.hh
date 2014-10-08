@@ -25,6 +25,7 @@
 
 #include "interface-TestBool-c3.hh"
 
+
 namespace component
 {
   struct testBoolean

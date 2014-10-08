@@ -53,9 +53,8 @@ namespace component
   {
     std::cout << "requires_twice.po_p_e" << std::endl;
     {
-      po_once.out.a();
-      po_twice.out.a();
-
+      po_once.out.a ();
+      po_twice.out.a ();
     }
 
   }

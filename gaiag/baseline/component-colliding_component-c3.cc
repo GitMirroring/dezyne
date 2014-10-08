@@ -49,6 +49,7 @@ namespace component
   {
     std::cout << "colliding_component.po_i_foo" << std::endl;
     assert(false);
+
   }
 
 

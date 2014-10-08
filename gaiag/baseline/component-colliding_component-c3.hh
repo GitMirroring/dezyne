@@ -25,6 +25,7 @@
 
 #include "interface-iinstance_collision-c3.hh"
 
+
 namespace component
 {
   struct colliding_component

@@ -50,7 +50,6 @@ namespace component
     std::cout << "interface_port_overload.po_I_e" << std::endl;
     {
       reply_I_R = interface::I::R::V;
-
     }
     return reply_I_R;
 

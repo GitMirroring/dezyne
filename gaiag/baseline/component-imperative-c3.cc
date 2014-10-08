@@ -57,21 +57,15 @@ namespace component
         po_i.out.g ();
         po_i.out.h ();
         state = States::II;
-
       }
-
     }
-
     else if (state == States::II)
 
     {
       {
         state = States::III;
-
       }
-
     }
-
     else if (state == States::III)
 
     {
@@ -81,23 +75,16 @@ namespace component
         po_i.out.g ();
         po_i.out.f ();
         state = States::IV;
-
       }
-
     }
-
     else if (state == States::IV)
 
     {
       {
         po_i.out.h ();
         state = States::I;
-
       }
-
     }
-
-
 
   }
 

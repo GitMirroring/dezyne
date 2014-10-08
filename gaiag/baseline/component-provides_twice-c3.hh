@@ -29,6 +29,7 @@
 #include "interface-iprovides_once-c3.hh"
 #include "interface-iprovides_twice-c3.hh"
 
+
 namespace component
 {
   struct provides_twice

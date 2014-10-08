@@ -22,7 +22,7 @@ namespace component
  (map (init-member model #{
 #name(#expression)#}) (gom:variables model)))#
 (if (null? (gom:variables model)) "" "\n, ") #
-  ((->join  "\n, ") (map (init-port #{ #name() #}) (gom:ports model)))
+  ((->join  "\n, ") (map (init-port #{ #name()#}) (gom:ports model)))
   {
 #
    (map

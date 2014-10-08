@@ -42,8 +42,8 @@ namespace component
 {
   Reply5::Reply5()
   : dummy(false)
-  , po_i() 
-  , po_u() 
+  , po_i()
+  , po_u()
   {
     po_i.in.done = connect<interface::I::Status::type>(this, asd::bind<interface::I::Status::type>(&Reply5::po_i_done, this));
   }
@@ -61,22 +61,14 @@ namespace component
         {
           interface::I::Status::type s = fun ();
           reply_I_Status = s;
-
         }
-
         else
         {
           interface::I::Status::type s = fun_arg (interface::I::Status::No);
           reply_I_Status = s;
-
         }
-
-
       }
-
     }
-
-
     return reply_I_Status;
 
   }
@@ -86,13 +78,11 @@ namespace component
   {
     return interface::I::Status::Yes;
 
-
   }
 
   interface::I::Status::type Reply5::fun_arg(interface::I::Status::type s)
   {
     return s;
-
 
   }
 
