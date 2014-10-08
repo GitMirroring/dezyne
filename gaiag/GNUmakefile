@@ -86,36 +86,50 @@ cover-compile:
 
 cover-test:
 	GUILE='guile --debug --no-auto-compile' ./test.sh --coverage </dev/null
-	lcov -r gaiag.info /usr/share\* $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/module/language/\* $(TOPDIR)/gaiag/test-suite\*  \*pretty-print.scm \*gaiag/coverage -o gaiag.lcov/gaiag-test.info | grep -v Removing
+	lcov -r gaiag.info /usr/share\* $(TOPDIR)/gaiag $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/test-suite\* \*pretty-print.scm \*gaiag/coverage -o gaiag.lcov/gaiag-test.info | grep -v Removing
 
 gaiag.lcov/%-asd.info: examples/regression/%.asd
 	rm -f gaiag.lcov/gaiag.info
 	cd gaiag.lcov && ../gaiag --coverage -l asd $< >/dev/null
 	sed -i s@:[.][.]/@:$(shell pwd)/@ gaiag.lcov/gaiag.info
-	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/module/language/\* $(TOPDIR)/gaiag/test-suite\*  \*pretty-print.scm \*gaiag/coverage -o $@ | grep -v Removing
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/gaiag $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/test-suite\* \*pretty-print.scm \*gaiag/coverage -o $@ | grep -v Removing
 
 gaiag.lcov/%-csp.info: examples/regression/%.asd
 	rm -f gaiag.lcov/gaiag.info
 	cd gaiag.lcov && ../gaiag --coverage -l csp $<
 	sed -i s@:[.][.]/@:$(shell pwd)/@ gaiag.lcov/gaiag.info
-	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/module/language/\* $(TOPDIR)/gaiag/test-suite\*  \*pretty-print.scm \*gaiag/coverage -o $@ | grep -v Removing
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/gaiag $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/test-suite\* \*pretty-print.scm \*gaiag/coverage -o $@ | grep -v Removing
 
 gaiag.lcov/%-c++.info: examples/regression/%.asd
 	rm -f gaiag.lcov/gaiag.info
 	cd gaiag.lcov && ../gaiag --coverage -l c++ $<
 	sed -i s@:[.][.]/@:$(shell pwd)/@ gaiag.lcov/gaiag.info
-	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/module/language/\* $(TOPDIR)/gaiag/test-suite\*  \*pretty-print.scm \*gaiag/coverage -o $@ | grep -v Removing
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/gaiag $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/test-suite\* \*pretty-print.scm \*gaiag/coverage -o $@ | grep -v Removing
+
+gaiag.lcov/%-python.info: examples/regression/%.asd
+	rm -f gaiag.lcov/gaiag.info
+	cd gaiag.lcov && ../gaiag --coverage -l python $<
+	sed -i s@:[.][.]/@:$(shell pwd)/@ gaiag.lcov/gaiag.info
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/gaiag $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/test-suite\* \*pretty-print.scm \*gaiag/coverage -o $@ | grep -v Removing
+
+gaiag.lcov/%-javascript.info: examples/regression/%.asd
+	rm -f gaiag.lcov/gaiag.info
+	cd gaiag.lcov && ../gaiag --coverage -l javascript $<
+	sed -i s@:[.][.]/@:$(shell pwd)/@ gaiag.lcov/gaiag.info
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/gaiag $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/test-suite\* \*pretty-print.scm \*gaiag/coverage -o $@ | grep -v Removing
 
 gaiag.lcov/%-wfc.info: examples/wfc/%.asd
 	rm -f gaiag.lcov/gaiag.info
 	cd gaiag.lcov && ! ../gaiag --coverage -l wfc $<
 	sed -i s@:[.][.]/@:$(shell pwd)/@ gaiag.lcov/gaiag.info
-	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/module/language/\* $(TOPDIR)/gaiag/test-suite\*  \*pretty-print.scm \*gaiag/coverage -o $@ | grep -v Removing
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/gaiag $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/test-suite\* \*pretty-print.scm \*gaiag/coverage -o $@ | grep -v Removing
 
 cover-regression:\
  $(REGRESSION_SOURCES:%.asd=gaiag.lcov/%-asd.info)\
  $(REGRESSION_SOURCES:%.asd=gaiag.lcov/%-csp.info)\
  $(REGRESSION_SOURCES:%.asd=gaiag.lcov/%-c++.info)\
+ gaiag.lcov/Alarm-javascript.info\
+ gaiag.lcov/Alarm-python.info\
 
 # $(WFC_SOURCES:%.asd=gaiag.lcov/%-wfc.info)\
 
