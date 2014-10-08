@@ -272,7 +272,7 @@
     (interface-events interface)))
 
 (define-method (interface-events (o <component>)) ;; FIXME: no test
-  (apply append (map (compose interface-events gom:import .type) ((compose .elements .ports) o))))
+  (delete-duplicates (apply append (map (compose interface-events gom:import .type) ((compose .elements .ports) o)))))
 
 (define-method (interface-events (o <interface>))
   (let* ((events (map .name (.elements (.events o))))
@@ -680,6 +680,7 @@
 (define* (csp-transform ast src :optional (inevitable-optional? #f) (channel #f) (provided-on? #t) (tail-recursive? #f))
   (let* ((model (or (gom:component ast) (gom:interface ast)))
 	 (model-name (.name model))
+         (channel (if (is-a? model <interface>) model-name (.type (gom:port model))))
 	 (behaviour (.name (.behaviour model)))
          (component? (is-a? model <component>))
          (continuation-p (if tail-recursive? "PF'" "P'"))
@@ -753,8 +754,7 @@
           (list channel "?x:{" event-names "}" " ->\n" transformed transformed-end)))
 
        (($ <csp-reply> context expression)
-        (let* ((channel (or channel (if (is-a? model <interface>) model-name (.type (gom:port model))))))
-          (list "reply_(" channel "_', " "(\\ (" context ") @ " expression "))")))
+        (list "reply_(" channel "_', " "(\\ (" context ") @ " expression "))"))
 
        (($ <return>) "skip_")
 

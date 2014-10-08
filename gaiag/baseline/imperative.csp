@@ -108,12 +108,12 @@ semi_(semi_((\ P',V' @ i!f -> P'(V')),
 semi_((\ P',V' @ i!g -> P'(V')),
 semi_((\ P',V' @ i!h -> P'(V')),
 assign_(\ ((state),(stack')) @ ((States_II),(stack')))))),
-(\ P',V' @ i_'.return -> P'(V')))(\ V' @ transition_end -> imperative_(V'),((state),(stack'))))
+(\ P',V' @ iimperative_'.return -> P'(V')))(\ V' @ transition_end -> imperative_(V'),((state),(stack'))))
 []
 ((state == States_II)) & (
 i?x:{e} ->
 semi_(assign_(\ ((state),(stack')) @ ((States_III),(stack'))),
-(\ P',V' @ i_'.return -> P'(V')))(\ V' @ transition_end -> imperative_(V'),((state),(stack'))))
+(\ P',V' @ iimperative_'.return -> P'(V')))(\ V' @ transition_end -> imperative_(V'),((state),(stack'))))
 []
 ((state == States_III)) & (
 i?x:{e} ->
@@ -122,13 +122,13 @@ semi_((\ P',V' @ i!g -> P'(V')),
 semi_((\ P',V' @ i!g -> P'(V')),
 semi_((\ P',V' @ i!f -> P'(V')),
 assign_(\ ((state),(stack')) @ ((States_IV),(stack'))))))),
-(\ P',V' @ i_'.return -> P'(V')))(\ V' @ transition_end -> imperative_(V'),((state),(stack'))))
+(\ P',V' @ iimperative_'.return -> P'(V')))(\ V' @ transition_end -> imperative_(V'),((state),(stack'))))
 []
 ((state == States_IV)) & (
 i?x:{e} ->
 semi_(semi_((\ P',V' @ i!h -> P'(V')),
 assign_(\ ((state),(stack')) @ ((States_I),(stack')))),
-(\ P',V' @ i_'.return -> P'(V')))(\ V' @ transition_end -> imperative_(V'),((state),(stack'))))
+(\ P',V' @ iimperative_'.return -> P'(V')))(\ V' @ transition_end -> imperative_(V'),((state),(stack'))))
 )
 
 within imperative_(((States_I),(<>)))

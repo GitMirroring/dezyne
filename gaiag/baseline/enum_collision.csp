@@ -71,10 +71,10 @@ CO_enum_collision_(IIG,IG) = let
 
 enum_collision_(((<>),(stack'))) = transition_begin -> (
 i?x:{foo} ->
-reply_(i_', (\ ((<>),(stack')) @ Retval1_OK))(\ V' @ transition_end -> enum_collision_(V'),((<>),(stack')))
+reply_(ienum_collision_', (\ ((<>),(stack')) @ Retval1_OK))(\ V' @ transition_end -> enum_collision_(V'),((<>),(stack')))
 []
 i?x:{bar} ->
-reply_(i_', (\ ((<>),(stack')) @ Retval2_NOK))(\ V' @ transition_end -> enum_collision_(V'),((<>),(stack')))
+reply_(ienum_collision_', (\ ((<>),(stack')) @ Retval2_NOK))(\ V' @ transition_end -> enum_collision_(V'),((<>),(stack')))
 )
 
 within enum_collision_(((<>),(<>)))

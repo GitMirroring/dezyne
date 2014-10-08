@@ -173,9 +173,9 @@ assign_active_(semi_(send_(i575_device_B,i5_calibrate),recv_(i575_device_B_',i5_
 skip_
 )(P',((i589_s),((stack',i612_res)))),
 \ P',((i589_s),((stack',i612_res))) @ ifthenelse_((i612_res == i13_result_t_OK),
-semi_(reply_(i569_client_', (\ ((i589_s),((stack',i612_res))) @ i310_result_t_OK)),
+semi_(reply_(i568_IComp_', (\ ((i589_s),((stack',i612_res))) @ i310_result_t_OK)),
 assign_(\ ((i589_s),((stack',i612_res))) @ ((i581_State_Initialized),((stack',i612_res))))),
-reply_(i569_client_', (\ ((i589_s),((stack',i612_res))) @ i310_result_t_NOK))
+reply_(i568_IComp_', (\ ((i589_s),((stack',i612_res))) @ i310_result_t_NOK))
 )(P',((i589_s),((stack',i612_res))))))))(\ V' @ transition_end -> i1121_Comp_(V'),((i589_s),(stack')))
  []
   IIG & i569_client?x:{i304_recover,i306_perform_actions} ->
@@ -200,8 +200,8 @@ assign_active_(semi_(send_(i575_device_B,i9_perform_action2),recv_(i575_device_B
 skip_
 )(P',((i589_s),((stack',i808_res)))),
 \ P',((i589_s),((stack',i808_res))) @ ifthenelse_((i808_res == i13_result_t_OK),
-reply_(i569_client_', (\ ((i589_s),((stack',i808_res))) @ i310_result_t_OK)),
-semi_(reply_(i569_client_', (\ ((i589_s),((stack',i808_res))) @ i310_result_t_NOK)),
+reply_(i568_IComp_', (\ ((i589_s),((stack',i808_res))) @ i310_result_t_OK)),
+semi_(reply_(i568_IComp_', (\ ((i589_s),((stack',i808_res))) @ i310_result_t_NOK)),
 assign_(\ ((i589_s),((stack',i808_res))) @ ((i581_State_Error),((stack',i808_res)))))
 )(P',((i589_s),((stack',i808_res))))))))(\ V' @ transition_end -> i1121_Comp_(V'),((i589_s),(stack')))
  []
@@ -217,9 +217,9 @@ assign_active_(semi_(send_(i575_device_B,i5_calibrate),recv_(i575_device_B_',i5_
 skip_
 )(P',((i589_s),((stack',i1004_res)))),
 \ P',((i589_s),((stack',i1004_res))) @ ifthenelse_((i1004_res == i13_result_t_OK),
-semi_(reply_(i569_client_', (\ ((i589_s),((stack',i1004_res))) @ i310_result_t_OK)),
+semi_(reply_(i568_IComp_', (\ ((i589_s),((stack',i1004_res))) @ i310_result_t_OK)),
 assign_(\ ((i589_s),((stack',i1004_res))) @ ((i581_State_Initialized),((stack',i1004_res))))),
-reply_(i569_client_', (\ ((i589_s),((stack',i1004_res))) @ i310_result_t_NOK))
+reply_(i568_IComp_', (\ ((i589_s),((stack',i1004_res))) @ i310_result_t_NOK))
 )(P',((i589_s),((stack',i1004_res))))))(\ V' @ transition_end -> i1121_Comp_(V'),((i589_s),(stack')))
  []
   IIG & i569_client?x:{i302_initialize,i306_perform_actions} ->

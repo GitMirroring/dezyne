@@ -112,13 +112,13 @@ semi_(assign_active_(semi_(send_(u,what),recv_(u_',what)),
 \ P',((dummy),((stack',s))) @ ifthenelse_((s == Status_Ok),
 context_active_(\ P',V' @ fun (P',V'),
 \ P',((dummy),(((stack',s),v))) @ ifthenelse_((v == Status_Yes),
-reply_(i_', (\ ((dummy),(((stack',s),v))) @ Status_Yes)),
-reply_(i_', (\ ((dummy),(((stack',s),v))) @ Status_No))
+reply_(I_', (\ ((dummy),(((stack',s),v))) @ Status_Yes)),
+reply_(I_', (\ ((dummy),(((stack',s),v))) @ Status_No))
 )(P',((dummy),(((stack',s),v))))),
 context_active_(\ P',V' @ fun_arg (P',V',(\ ((dummy),((stack',s))) @ (Status_No))(V')),
 \ P',((dummy),(((stack',s),v))) @ ifthenelse_((v == Status_Yes),
-reply_(i_', (\ ((dummy),(((stack',s),v))) @ Status_Yes)),
-reply_(i_', (\ ((dummy),(((stack',s),v))) @ Status_No))
+reply_(I_', (\ ((dummy),(((stack',s),v))) @ Status_Yes)),
+reply_(I_', (\ ((dummy),(((stack',s),v))) @ Status_No))
 )(P',((dummy),(((stack',s),v)))))
 )(P',((dummy),((stack',s))))))(\ V' @ transition_end -> Reply4_(V'),((dummy),(stack'))))
 )

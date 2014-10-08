@@ -86,7 +86,7 @@ semi_(semi_(assign_(\ ((va_b),(stack')) @ ((va_b),(stack'))),
 (\ P',V' @ po_mangle!ev_mingle -> P'(V')),
 skip_
 )(P',((va_b),(stack')))),
-(\ P',V' @ po_mangle_'.return -> P'(V')))(\ V' @ transition_end -> co_mangle_mangle(V'),((va_b),(stack'))))
+(\ P',V' @ if_mangle_'.return -> P'(V')))(\ V' @ transition_end -> co_mangle_mangle(V'),((va_b),(stack'))))
 )
 
 within co_mangle_mangle(((false),(<>)))

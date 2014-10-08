@@ -169,9 +169,9 @@ skip_
 )(P',((s),((stack',res)))),
 \ P',((s),((stack',res))) @ ifthenelse_((res == result_t_OK),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Initialized),((stack',res)))),
-reply_(client_', (\ ((s),((stack',res))) @ result_t_OK))),
+reply_(IComp_', (\ ((s),((stack',res))) @ result_t_OK))),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Uninitialized),((stack',res)))),
-reply_(client_', (\ ((s),((stack',res))) @ result_t_NOK)))
+reply_(IComp_', (\ ((s),((stack',res))) @ result_t_NOK)))
 )(P',((s),((stack',res))))))(\ V' @ transition_end -> Comp_(V'),((s),(stack')))
  []
   IIG & client?x:{recover,perform_actions} ->
@@ -187,9 +187,9 @@ skip_
 )(P',((s),((stack',res)))),
 \ P',((s),((stack',res))) @ ifthenelse_((res == result_t_OK),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Initialized),((stack',res)))),
-reply_(client_', (\ ((s),((stack',res))) @ result_t_OK))),
+reply_(IComp_', (\ ((s),((stack',res))) @ result_t_OK))),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Error),((stack',res)))),
-reply_(client_', (\ ((s),((stack',res))) @ result_t_NOK)))
+reply_(IComp_', (\ ((s),((stack',res))) @ result_t_NOK)))
 )(P',((s),((stack',res))))))(\ V' @ transition_end -> Comp_(V'),((s),(stack')))
  []
   IIG & client?x:{initialize,recover} ->
@@ -200,9 +200,9 @@ client?x:{recover} ->
 context_active_(semi_(send_(device_A,calibrate),recv_(device_A_',calibrate)),
 \ P',((s),((stack',res))) @ ifthenelse_((res == result_t_OK),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Initialized),((stack',res)))),
-reply_(client_', (\ ((s),((stack',res))) @ result_t_OK))),
+reply_(IComp_', (\ ((s),((stack',res))) @ result_t_OK))),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Error),((stack',res)))),
-reply_(client_', (\ ((s),((stack',res))) @ result_t_NOK)))
+reply_(IComp_', (\ ((s),((stack',res))) @ result_t_NOK)))
 )(P',((s),((stack',res)))))(\ V' @ transition_end -> Comp_(V'),((s),(stack')))
  []
   IIG & client?x:{initialize,perform_actions} ->

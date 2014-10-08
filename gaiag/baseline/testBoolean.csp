@@ -95,7 +95,7 @@ CO_testBoolean_(IIG,IG) = let
 testBoolean_(((b),(stack'))) = transition_begin -> (
 (true) & (
 i?x:{evt} ->
-(\ P',V' @ i_'.return -> P'(V'))(\ V' @ transition_end -> testBoolean_(V'),((b),(stack'))))
+(\ P',V' @ TestBool_'.return -> P'(V'))(\ V' @ transition_end -> testBoolean_(V'),((b),(stack'))))
 )
 
 within testBoolean_(((false),(<>)))

@@ -240,10 +240,10 @@ i810_alarmSystem?x:{i510_SwitchOn} ->
 context_active_(semi_(send_(i816_secretCode,i113_isCodeCorrect),recv_(i816_secretCode_',i113_isCodeCorrect)),
 \ P',((i838_state),((stack',i861_value))) @ ifthenelse_((i861_value == i112_ISecretCode_Values_CORRECT),
 semi_((\ P',V' @ i822_sensors!i327_Activate -> i822_sensors_'.return -> P'(V')),
-semi_(reply_(i810_alarmSystem_', (\ ((i838_state),((stack',i861_value))) @ i509_IAlarmSystem_Values_OK)),
+semi_(reply_(i809_AlarmSystem_', (\ ((i838_state),((stack',i861_value))) @ i509_IAlarmSystem_Values_OK)),
 assign_(\ ((i838_state),((stack',i861_value))) @ ((i830_States_Activated_Idle),((stack',i861_value)))))),
 \ P',((i838_state),((stack',i861_value))) @ ifthenelse_((i861_value == i112_ISecretCode_Values_WRONG),
-semi_(reply_(i810_alarmSystem_', (\ ((i838_state),((stack',i861_value))) @ i509_IAlarmSystem_Values_Failed)),
+semi_(reply_(i809_AlarmSystem_', (\ ((i838_state),((stack',i861_value))) @ i509_IAlarmSystem_Values_Failed)),
 assign_(\ ((i838_state),((stack',i861_value))) @ ((i830_States_NotActivated),((stack',i861_value))))),
 skip_
 )(P',((i838_state),((stack',i861_value))))
@@ -272,7 +272,7 @@ assign_(\ ((i838_state),((stack',i1011_value))) @ ((i830_States_CheckingDeactiva
 skip_
 )(P',((i838_state),((stack',i1011_value))))
 )(P',((i838_state),((stack',i1011_value))))),
-(\ P',V' @ i810_alarmSystem_'.return -> P'(V')))(\ V' @ transition_end -> i1768_bareSiliconAlarm_(V'),((i838_state),(stack')))
+(\ P',V' @ i809_AlarmSystem_'.return -> P'(V')))(\ V' @ transition_end -> i1768_bareSiliconAlarm_(V'),((i838_state),(stack')))
  []
   IIG & i810_alarmSystem?x:{i510_SwitchOn} ->
 illegal_(STOP,<>)
@@ -300,7 +300,7 @@ assign_(\ ((i838_state),((stack',i1212_value))) @ ((i830_States_Activated_AlarmM
 skip_
 )(P',((i838_state),((stack',i1212_value))))
 )(P',((i838_state),((stack',i1212_value))))),
-(\ P',V' @ i810_alarmSystem_'.return -> P'(V')))(\ V' @ transition_end -> i1768_bareSiliconAlarm_(V'),((i838_state),(stack')))
+(\ P',V' @ i809_AlarmSystem_'.return -> P'(V')))(\ V' @ transition_end -> i1768_bareSiliconAlarm_(V'),((i838_state),(stack')))
  []
   IIG & i810_alarmSystem?x:{i510_SwitchOn} ->
 illegal_(STOP,<>)
@@ -327,7 +327,7 @@ assign_(\ ((i838_state),((stack',i1380_value))) @ ((i830_States_CheckingDeactiva
 skip_
 )(P',((i838_state),((stack',i1380_value))))
 )(P',((i838_state),((stack',i1380_value))))),
-(\ P',V' @ i810_alarmSystem_'.return -> P'(V')))(\ V' @ transition_end -> i1768_bareSiliconAlarm_(V'),((i838_state),(stack')))
+(\ P',V' @ i809_AlarmSystem_'.return -> P'(V')))(\ V' @ transition_end -> i1768_bareSiliconAlarm_(V'),((i838_state),(stack')))
  []
   IIG & i810_alarmSystem?x:{i510_SwitchOn} ->
 illegal_(STOP,<>)
@@ -354,7 +354,7 @@ assign_(\ ((i838_state),((stack',i1592_value))) @ ((i830_States_CheckingDeactiva
 skip_
 )(P',((i838_state),((stack',i1592_value))))
 )(P',((i838_state),((stack',i1592_value))))),
-(\ P',V' @ i810_alarmSystem_'.return -> P'(V')))(\ V' @ transition_end -> i1768_bareSiliconAlarm_(V'),((i838_state),(stack')))
+(\ P',V' @ i809_AlarmSystem_'.return -> P'(V')))(\ V' @ transition_end -> i1768_bareSiliconAlarm_(V'),((i838_state),(stack')))
  []
   IIG & i810_alarmSystem?x:{i510_SwitchOn} ->
 illegal_(STOP,<>)

@@ -706,7 +706,7 @@ semi_(semi_(\\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
 
           ;; to:
           "j?x:{e} ->
-(\\ P',V' @ j_'.return -> P'(V'))(\\ V' @ transition_end -> c_B(V'),((s,b,c),(stack')))"))
+(\\ P',V' @ i_'.return -> P'(V'))(\\ V' @ transition_end -> c_B(V'),((s,b,c),(stack')))"))
 
 
 (pass-if "c-ast-transform-provided-action"
@@ -1216,8 +1216,8 @@ context_active_(\\ P',V' @ g (P',V',(\\ ((s,b,c),(stack')) @ (b,b))(V')),
           "i?x:{done} ->
 context_active_(semi_(send_(u,what),recv_(u_',what)),
 \\ P',((dummy),((stack',s))) @ ifthenelse_((s == Status_Ok),
-reply_(i_', (\\ ((dummy),((stack',s))) @ Status_Yes)),
-reply_(i_', (\\ ((dummy),((stack',s))) @ Status_No))
+reply_(I_', (\\ ((dummy),((stack',s))) @ Status_Yes)),
+reply_(I_', (\\ ((dummy),((stack',s))) @ Status_No))
 )(P',((dummy),((stack',s)))))(\\ V' @ transition_end -> Reply_(V'),((dummy),(stack')))"))
 
 ;; "
@@ -1363,7 +1363,7 @@ semi_(context_(\\ ((b),(stack')) @ true,
 (\\ P',V' @ i!f -> P'(V')),
 skip_
 )(P',((b),((stack',c))))),
-(\\ P',V' @ i_'.return -> P'(V')))(\\ V' @ transition_end -> arguments_(V'),((b),(stack')))"))
+(\\ P',V' @ I_'.return -> P'(V')))(\\ V' @ transition_end -> arguments_(V'),((b),(stack')))"))
 
 (define callvalued-c-ast
   '((interface I
@@ -1440,7 +1440,7 @@ semi_(assign_active_(\\ P',V' @ g (P',V',(\\ ((b),((stack',c))) @ (c))(V')),
 (\\ P',V' @ i!f -> P'(V')),
 skip_
 )(P',((b),((stack',c))))))),
-(\\ P',V' @ i_'.return -> P'(V')))(\\ V' @ transition_end -> arguments_(V'),((b),(stack')))"))
+(\\ P',V' @ I_'.return -> P'(V')))(\\ V' @ transition_end -> arguments_(V'),((b),(stack')))"))
 
 (define callvalued-on-2
   '(on ((trigger i e))
@@ -1493,7 +1493,7 @@ semi_(assign_active_(\\ P',V' @ h (P',V',(\\ ((b),((stack',c))) @ (s,b))(V')),
 (\\ P',V' @ i!f -> P'(V')),
 skip_
 )(P',((b),((stack',c))))))),
-(\\ P',V' @ i_'.return -> P'(V')))(\\ V' @ transition_end -> arguments_(V'),((b),(stack')))"))
+(\\ P',V' @ I_'.return -> P'(V')))(\\ V' @ transition_end -> arguments_(V'),((b),(stack')))"))
 
 
 (define doc
@@ -1638,7 +1638,7 @@ skip_
           ;; to:
           "i?x:{e} ->
 context_active_(semi_(send_(u,what),recv_(u_',what)),
-(\\ P',V' @ i_'.return -> P'(V')))(\\ V' @ transition_end -> Reply_(V'),((dummy),(stack')))"))
+(\\ P',V' @ I_'.return -> P'(V')))(\\ V' @ transition_end -> Reply_(V'),((dummy),(stack')))"))
 
 ;; OM-PARSER parser test
 (define csp-transform-OM-PARSER-variable-action-via
@@ -1669,7 +1669,7 @@ context_active_(semi_(send_(u,what),recv_(u_',what)),
           ;; to:
           "i?x:{e} ->
 context_active_(semi_(send_(u,what),recv_(u_',what)),
-(\\ P',V' @ i_'.return -> P'(V')))(\\ V' @ transition_end -> Reply_(V'),((dummy),(stack')))"))
+(\\ P',V' @ I_'.return -> P'(V')))(\\ V' @ transition_end -> Reply_(V'),((dummy),(stack')))"))
 
 ;; OM-PARSER parser test
 (define csp-transform-OM-PARSER-assign-action-via
@@ -1702,7 +1702,7 @@ context_active_(semi_(send_(u,what),recv_(u_',what)),
           "i?x:{e} ->
 semi_(assign_active_(semi_(send_(u,what),recv_(u_',what)),
 \\ (((dummy),(stack'))),r' @ ((dummy),(stack'))),
-(\\ P',V' @ i_'.return -> P'(V')))(\\ V' @ transition_end -> Reply_(V'),((dummy),(stack')))"))
+(\\ P',V' @ I_'.return -> P'(V')))(\\ V' @ transition_end -> Reply_(V'),((dummy),(stack')))"))
 
 ;; '
 

@@ -102,7 +102,7 @@ skip_)))(PF',VF')
 i308_mutual_recursion_with_members_(((i105_down),(stack'))) = transition_begin -> (
 i100_beauty?x:{i3_sleep} ->
 semi_(callvoid_(\ P',V' @ i284_g(P',V',(\ ((i105_down),(stack')) @ (2))(V'))),
-(\ P',V' @ i100_beauty_'.return -> P'(V')))(\ V' @ transition_end -> i308_mutual_recursion_with_members_(V'),((i105_down),(stack')))
+(\ P',V' @ i99_sleeping_'.return -> P'(V')))(\ V' @ transition_end -> i308_mutual_recursion_with_members_(V'),((i105_down),(stack')))
 )
 
 within i308_mutual_recursion_with_members_(((false),(<>)))

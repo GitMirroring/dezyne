@@ -92,7 +92,7 @@ semi_(assign_active_(\ P',V' @ g (P',V',(\ ((b),((stack',c))) @ (c))(V')),
 (\ P',V' @ i!f -> P'(V')),
 skip_
 )(P',((b),((stack',c))))))),
-(\ P',V' @ i_'.return -> P'(V')))(\ V' @ transition_end -> argument_(V'),((b),(stack'))))
+(\ P',V' @ I_'.return -> P'(V')))(\ V' @ transition_end -> argument_(V'),((b),(stack'))))
 )
 
 within argument_(((false),(<>)))

@@ -186,7 +186,7 @@ i1019_Alarm_(((i619_state,i623_sounding),(stack'))) = transition_begin -> (
 i598_console?x:{i3_arm} ->
 semi_(semi_((\ P',V' @ i601_sensor!i243_enable -> i601_sensor_'.return -> P'(V')),
 assign_(\ ((i619_state,i623_sounding),(stack')) @ ((i611_States_Armed,i623_sounding),(stack')))),
-(\ P',V' @ i598_console_'.return -> P'(V')))(\ V' @ transition_end -> i1019_Alarm_(V'),((i619_state,i623_sounding),(stack')))
+(\ P',V' @ i242_Console_'.return -> P'(V')))(\ V' @ transition_end -> i1019_Alarm_(V'),((i619_state,i623_sounding),(stack')))
  []
   IIG & i598_console?x:{i4_disarm} ->
 illegal_(STOP,<>)
@@ -201,7 +201,7 @@ illegal_(STOP,<>)
   i598_console?x:{i4_disarm} ->
 semi_(semi_((\ P',V' @ i601_sensor!i244_disable -> i601_sensor_'.return -> P'(V')),
 assign_(\ ((i619_state,i623_sounding),(stack')) @ ((i611_States_Disarming,i623_sounding),(stack')))),
-(\ P',V' @ i598_console_'.return -> P'(V')))(\ V' @ transition_end -> i1019_Alarm_(V'),((i619_state,i623_sounding),(stack')))
+(\ P',V' @ i242_Console_'.return -> P'(V')))(\ V' @ transition_end -> i1019_Alarm_(V'),((i619_state,i623_sounding),(stack')))
  []
   i601_sensor?x:{i245_triggered} ->
 semi_(semi_((\ P',V' @ i598_console!i5_detected -> P'(V')),
@@ -241,7 +241,7 @@ illegal_(STOP,<>)
 semi_(semi_((\ P',V' @ i601_sensor!i244_disable -> i601_sensor_'.return -> P'(V')),
 semi_(assign_(\ ((i619_state,i623_sounding),(stack')) @ ((i619_state,false),(stack'))),
 assign_(\ ((i619_state,i623_sounding),(stack')) @ ((i611_States_Disarming,i623_sounding),(stack'))))),
-(\ P',V' @ i598_console_'.return -> P'(V')))(\ V' @ transition_end -> i1019_Alarm_(V'),((i619_state,i623_sounding),(stack')))
+(\ P',V' @ i242_Console_'.return -> P'(V')))(\ V' @ transition_end -> i1019_Alarm_(V'),((i619_state,i623_sounding),(stack')))
  []
   IG & i601_sensor?x:{i245_triggered,i246_disabled} ->
 illegal_(STOP,<>))

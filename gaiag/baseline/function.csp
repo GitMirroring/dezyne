@@ -88,13 +88,13 @@ function_(((f),(stack'))) = transition_begin -> (
 (true) & (
 i?x:{a} ->
 semi_(callvoid_(\ P',V' @ toggle(P',V')),
-(\ P',V' @ i_'.return -> P'(V')))(\ V' @ transition_end -> function_(V'),((f),(stack')))
+(\ P',V' @ I_'.return -> P'(V')))(\ V' @ transition_end -> function_(V'),((f),(stack')))
  []
   i?x:{b} ->
 semi_(semi_(callvoid_(\ P',V' @ toggle(P',V')),
 semi_(callvoid_(\ P',V' @ toggle(P',V')),
 (\ P',V' @ i!d -> P'(V')))),
-(\ P',V' @ i_'.return -> P'(V')))(\ V' @ transition_end -> function_(V'),((f),(stack'))))
+(\ P',V' @ I_'.return -> P'(V')))(\ V' @ transition_end -> function_(V'),((f),(stack'))))
 )
 
 within function_(((false),(<>)))

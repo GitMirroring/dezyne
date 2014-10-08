@@ -79,7 +79,7 @@ semi_(semi_(callvoid_(\ P',V' @ i52_f(P',V')),
 illegal_,
 skip_
 )(P',((i28_b),(stack')))),
-(\ P',V' @ i24_i_'.return -> P'(V')))(\ V' @ transition_end -> i103_nonrecursion_(V'),((i28_b),(stack')))
+(\ P',V' @ i23_I_'.return -> P'(V')))(\ V' @ transition_end -> i103_nonrecursion_(V'),((i28_b),(stack')))
 )
 
 within i103_nonrecursion_(((true),(<>)))

@@ -69,7 +69,7 @@ CO_i51_Bot_(IIG,IG) = let
 i51_Bot_(((i26_s),(stack'))) = transition_begin -> (
 ((i26_s == i18_State_ALL)) & (
 i14_p?x:{i3_evt} ->
-(\ P',V' @ i14_p_'.return -> P'(V'))(\ V' @ transition_end -> i51_Bot_(V'),((i26_s),(stack'))))
+(\ P',V' @ i13_I_'.return -> P'(V'))(\ V' @ transition_end -> i51_Bot_(V'),((i26_s),(stack'))))
 )
 
 within i51_Bot_(((i18_State_ALL),(<>)))

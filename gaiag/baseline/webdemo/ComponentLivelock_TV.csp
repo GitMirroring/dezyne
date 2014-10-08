@@ -104,14 +104,14 @@ i277_TVSet_(((i186_state),(stack'))) = transition_begin -> (
 i170_TVViewer?x:{i3_pushStartButton} ->
 semi_(semi_((\ P',V' @ i173_TVDisplay!i67_activate -> i173_TVDisplay_'.return -> P'(V')),
 assign_(\ ((i186_state),(stack')) @ ((i178_States_SwitchedOn),(stack')))),
-(\ P',V' @ i170_TVViewer_'.return -> P'(V')))(\ V' @ transition_end -> i277_TVSet_(V'),((i186_state),(stack')))
+(\ P',V' @ i66_Viewer_'.return -> P'(V')))(\ V' @ transition_end -> i277_TVSet_(V'),((i186_state),(stack')))
  []
   IG & i173_TVDisplay?x:{i68_activated} ->
 illegal_(STOP,<>))
 []
 ((i186_state == i178_States_SwitchedOn)) & (
 i170_TVViewer?x:{i3_pushStartButton} ->
-(\ P',V' @ i170_TVViewer_'.return -> P'(V'))(\ V' @ transition_end -> i277_TVSet_(V'),((i186_state),(stack')))
+(\ P',V' @ i66_Viewer_'.return -> P'(V'))(\ V' @ transition_end -> i277_TVSet_(V'),((i186_state),(stack')))
  []
   i173_TVDisplay?x:{i68_activated} ->
 skip_(\ V' @ transition_end -> i277_TVSet_(V'),((i186_state),(stack'))))

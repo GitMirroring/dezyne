@@ -78,7 +78,7 @@ semi_(\ P',((s),(stack')) @ ifthenelse_((s == Enum_False),
 (\ P',V' @ i!a -> P'(V')),
 skip_
 )(P',((s),(stack'))),
-(\ P',V' @ i_'.return -> P'(V')))(\ V' @ transition_end -> sugar_(V'),((s),(stack'))))
+(\ P',V' @ I_'.return -> P'(V')))(\ V' @ transition_end -> sugar_(V'),((s),(stack'))))
 )
 
 within sugar_(((Enum_False),(<>)))

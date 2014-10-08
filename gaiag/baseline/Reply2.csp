@@ -97,8 +97,8 @@ context_active_(semi_(send_(u,what),recv_(u_',what)),
 semi_(assign_active_(semi_(send_(u,what),recv_(u_',what)),
 \ (((dummy),((stack',s)))),r' @ ((dummy),((stack',r')))),
 \ P',((dummy),((stack',s))) @ ifthenelse_((s == Status_Ok),
-reply_(i_', (\ ((dummy),((stack',s))) @ Status_Yes)),
-reply_(i_', (\ ((dummy),((stack',s))) @ Status_No))
+reply_(I_', (\ ((dummy),((stack',s))) @ Status_Yes)),
+reply_(I_', (\ ((dummy),((stack',s))) @ Status_No))
 )(P',((dummy),((stack',s))))))(\ V' @ transition_end -> Reply2_(V'),((dummy),(stack'))))
 )
 
