@@ -21,18 +21,15 @@
 //
 // Code:
 
-function connect(provided, required) {
-  provided.outs = required.outs;
-  required.ins = provided.ins;
-}
+interface.interface_component_overload= function() {
+  this.R= {
+    V: 0
+  };
 
-component.AlarmSystem = function() {
-  this.alarm = new component.Alarm();
-  this.sensor = new component.Sensor();
-  this.siren = new component.Siren();
-  this.console = this.alarm.console;
+  this.ins = {
+    e : null
+  };
+  this.outs = {
 
-  connect(this.sensor.sensor, this.alarm.sensor);
-  connect(this.siren.siren, this.alarm.siren);
-
+  };
 };

@@ -21,18 +21,15 @@
 //
 // Code:
 
-function connect(provided, required) {
-  provided.outs = required.outs;
-  required.ins = provided.ins;
-}
+component.colliding_component = function() {
 
-component.AlarmSystem = function() {
-  this.alarm = new component.Alarm();
-  this.sensor = new component.Sensor();
-  this.siren = new component.Siren();
-  this.console = this.alarm.console;
 
-  connect(this.sensor.sensor, this.alarm.sensor);
-  connect(this.siren.siren, this.alarm.siren);
+  this.i = new interface.iinstance_collision();
+
+  this.i.ins.foo = function() {
+    console.log('colliding_component.i_foo');
+    assert (false);
+  }.bind(this);
+
 
 };

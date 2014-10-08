@@ -21,18 +21,22 @@
 //
 // Code:
 
-function connect(provided, required) {
-  provided.outs = required.outs;
-  required.ins = provided.ins;
-}
+component.enum_collision = function() {
 
-component.AlarmSystem = function() {
-  this.alarm = new component.Alarm();
-  this.sensor = new component.Sensor();
-  this.siren = new component.Siren();
-  this.console = this.alarm.console;
+  this.reply_ienum_collision_Retval1 = nul;
+  this.reply_ienum_collision_Retval2 = nul;
 
-  connect(this.sensor.sensor, this.alarm.sensor);
-  connect(this.siren.siren, this.alarm.siren);
+  this.i = new interface.ienum_collision();
+
+  this.i.ins.foo = function() {
+    console.log('enum_collision.i_foo');
+    this.reply_ienum_collision_Retval1 = interface.ienum_collision.Retval1.OK;
+    return self.reply_ienum_collision_Retval1;}.bind(this);
+
+  this.i.ins.bar = function() {
+    console.log('enum_collision.i_bar');
+    this.reply_ienum_collision_Retval2 = interface.ienum_collision.Retval2.NOK;
+    return self.reply_ienum_collision_Retval2;}.bind(this);
+
 
 };

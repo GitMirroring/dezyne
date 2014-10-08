@@ -21,18 +21,12 @@
 //
 // Code:
 
-function connect(provided, required) {
-  provided.outs = required.outs;
-  required.ins = provided.ins;
-}
+interface.Requires= function() {
 
-component.AlarmSystem = function() {
-  this.alarm = new component.Alarm();
-  this.sensor = new component.Sensor();
-  this.siren = new component.Siren();
-  this.console = this.alarm.console;
-
-  connect(this.sensor.sensor, this.alarm.sensor);
-  connect(this.siren.siren, this.alarm.siren);
-
+  this.ins = {
+    ping : null
+  };
+  this.outs = {
+    pong : null
+  };
 };

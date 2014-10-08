@@ -21,18 +21,28 @@
 //
 // Code:
 
-function connect(provided, required) {
-  provided.outs = required.outs;
-  required.ins = provided.ins;
-}
+component.requires_twice = function() {
 
-component.AlarmSystem = function() {
-  this.alarm = new component.Alarm();
-  this.sensor = new component.Sensor();
-  this.siren = new component.Siren();
-  this.console = this.alarm.console;
 
-  connect(this.sensor.sensor, this.alarm.sensor);
-  connect(this.siren.siren, this.alarm.siren);
+  this.p = new interface.irequires_twice();
+  this.once = new interface.irequires_twice();
+  this.twice = new interface.irequires_twice();
+
+  this.p.ins.e = function() {
+    console.log('requires_twice.p_e');
+    {
+      this.once.outs.a();
+      this.twice.outs.a();
+    }
+  }.bind(this);
+
+  this.once.outs.a = function() {
+    console.log('requires_twice.once_a');
+  }.bind(this);
+
+  this.twice.outs.a = function() {
+    console.log('requires_twice.twice_a');
+  }.bind(this);
+
 
 };

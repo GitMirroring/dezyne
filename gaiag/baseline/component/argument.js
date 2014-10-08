@@ -21,18 +21,27 @@
 //
 // Code:
 
-function connect(provided, required) {
-  provided.outs = required.outs;
-  required.ins = provided.ins;
-}
+component.argument = function() {
 
-component.AlarmSystem = function() {
-  this.alarm = new component.Alarm();
-  this.sensor = new component.Sensor();
-  this.siren = new component.Siren();
-  this.console = this.alarm.console;
+  this.b = false;
 
-  connect(this.sensor.sensor, this.alarm.sensor);
-  connect(this.siren.siren, this.alarm.siren);
+  this.i = new interface.I();
+
+  this.i.ins.e = function() {
+    console.log('argument.i_e');
+    if(true) {
+      this.b = ! (this.b);
+      c = this.g(this.b);
+      this.b = this.g(c);
+      if (c) {
+        this.i.outs.f();
+      }
+    }
+  }.bind(this);
+
+  this.g = function (gc) {
+    this.i.outs.f();
+    return (gc || this.b);
+  }.bind(this);
 
 };

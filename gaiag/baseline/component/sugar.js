@@ -21,18 +21,19 @@
 //
 // Code:
 
-function connect(provided, required) {
-  provided.outs = required.outs;
-  required.ins = provided.ins;
-}
+component.sugar = function() {
+  this.Enum= {
+    False: 0, True: 1
+  };
 
-component.AlarmSystem = function() {
-  this.alarm = new component.Alarm();
-  this.sensor = new component.Sensor();
-  this.siren = new component.Siren();
-  this.console = this.alarm.console;
+  this.s = this.Enum.False;
 
-  connect(this.sensor.sensor, this.alarm.sensor);
-  connect(this.siren.siren, this.alarm.siren);
+  this.i = new interface.I();
+
+  this.i.ins.e = function() {
+    console.log('sugar.i_e');
+    if(this.s == this.Enum.False) if (this.s == this.Enum.False) this.i.outs.a();
+  }.bind(this);
+
 
 };

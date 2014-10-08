@@ -21,18 +21,30 @@
 //
 // Code:
 
-function connect(provided, required) {
-  provided.outs = required.outs;
-  required.ins = provided.ins;
-}
+component.Reply2 = function() {
 
-component.AlarmSystem = function() {
-  this.alarm = new component.Alarm();
-  this.sensor = new component.Sensor();
-  this.siren = new component.Siren();
-  this.console = this.alarm.console;
+  this.dummy = false;
+  this.reply_I_Status = nul;
+  this.reply_U_Status = nul;
 
-  connect(this.sensor.sensor, this.alarm.sensor);
-  connect(this.siren.siren, this.alarm.siren);
+  this.i = new interface.I();
+  this.u = new interface.U();
+
+  this.i.ins.done = function() {
+    console.log('Reply2.i_done');
+    if(true) {
+      {
+        s = this.u.ins.what();
+        this.s = this.u.ins.what();
+        if (s === interface.U.Status.Ok) {
+          this.reply_I_Status = interface.I.Status.Yes;
+        }
+        else {
+          this.reply_I_Status = interface.I.Status.No;
+        }
+      }
+    }
+    return self.reply_I_Status;}.bind(this);
+
 
 };

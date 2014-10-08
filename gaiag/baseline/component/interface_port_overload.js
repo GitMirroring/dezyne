@@ -21,18 +21,18 @@
 //
 // Code:
 
-function connect(provided, required) {
-  provided.outs = required.outs;
-  required.ins = provided.ins;
-}
+component.interface_port_overload = function() {
 
-component.AlarmSystem = function() {
-  this.alarm = new component.Alarm();
-  this.sensor = new component.Sensor();
-  this.siren = new component.Siren();
-  this.console = this.alarm.console;
+  this.reply_I_R = nul;
 
-  connect(this.sensor.sensor, this.alarm.sensor);
-  connect(this.siren.siren, this.alarm.siren);
+  this.I = new interface.I();
+
+  this.I.ins.e = function() {
+    console.log('interface_port_overload.I_e');
+    {
+      this.reply_I_R = interface.I.R.V;
+    }
+    return self.reply_I_R;}.bind(this);
+
 
 };

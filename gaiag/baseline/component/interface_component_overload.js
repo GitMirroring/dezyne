@@ -21,18 +21,18 @@
 //
 // Code:
 
-function connect(provided, required) {
-  provided.outs = required.outs;
-  required.ins = provided.ins;
-}
+component.interface_component_overload = function() {
 
-component.AlarmSystem = function() {
-  this.alarm = new component.Alarm();
-  this.sensor = new component.Sensor();
-  this.siren = new component.Siren();
-  this.console = this.alarm.console;
+  this.reply_interface_component_overload_R = nul;
 
-  connect(this.sensor.sensor, this.alarm.sensor);
-  connect(this.siren.siren, this.alarm.siren);
+  this.interface_component_overload = new interface.interface_component_overload();
+
+  this.interface_component_overload.ins.e = function() {
+    console.log('interface_component_overload.interface_component_overload_e');
+    {
+      this.reply_interface_component_overload_R = interface.interface_component_overload.R.V;
+    }
+    return self.reply_interface_component_overload_R;}.bind(this);
+
 
 };

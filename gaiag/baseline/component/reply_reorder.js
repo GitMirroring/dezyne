@@ -21,18 +21,33 @@
 //
 // Code:
 
-function connect(provided, required) {
-  provided.outs = required.outs;
-  required.ins = provided.ins;
-}
+component.reply_reorder = function() {
 
-component.AlarmSystem = function() {
-  this.alarm = new component.Alarm();
-  this.sensor = new component.Sensor();
-  this.siren = new component.Siren();
-  this.console = this.alarm.console;
+  this.first = true;
 
-  connect(this.sensor.sensor, this.alarm.sensor);
-  connect(this.siren.siren, this.alarm.siren);
+  this.p = new interface.Provides();
+  this.r = new interface.Requires();
+
+  this.p.ins.start = function() {
+    console.log('reply_reorder.p_start');
+    {
+      this.r.ins.ping();
+    }
+  }.bind(this);
+
+  this.r.outs.pong = function() {
+    console.log('reply_reorder.r_pong');
+    {
+      if(this.first) {
+        this.p.outs.busy();
+        this.first = ! (this.first);
+      }
+      if(! (this.first)) {
+        this.p.outs.finish();
+        this.first = ! (this.first);
+      }
+    }
+  }.bind(this);
+
 
 };

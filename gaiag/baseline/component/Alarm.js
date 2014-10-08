@@ -34,46 +34,46 @@ component.Alarm = function() {
   this.siren = new interface.Siren();
 
   this.console.ins.arm = function() {
-    console.log ('Alarm.console_arm');
-    if(this.state == this.States.Disarmed){
+    console.log('Alarm.console_arm');
+    if(this.state == this.States.Disarmed) {
       {
         this.sensor.ins.enable();
         this.state = this.States.Armed;
       }
     }
 
-    else if (this.state == this.States.Armed){
+    else if (this.state == this.States.Armed) {
       assert (false);
     }
 
-    else if (this.state == this.States.Disarming){
+    else if (this.state == this.States.Disarming) {
       assert (false);
     }
 
-    else if (this.state == this.States.Triggered){
+    else if (this.state == this.States.Triggered) {
       assert (false);
     }
-
 
   }.bind(this);
+
   this.console.ins.disarm = function() {
-    console.log ('Alarm.console_disarm');
-    if(this.state == this.States.Disarmed){
+    console.log('Alarm.console_disarm');
+    if(this.state == this.States.Disarmed) {
       assert (false);
     }
 
-    else if (this.state == this.States.Armed){
+    else if (this.state == this.States.Armed) {
       {
         this.sensor.ins.disable();
         this.state = this.States.Disarming;
       }
     }
 
-    else if (this.state == this.States.Disarming){
+    else if (this.state == this.States.Disarming) {
       assert (false);
     }
 
-    else if (this.state == this.States.Triggered){
+    else if (this.state == this.States.Triggered) {
       {
         this.sensor.ins.disable();
         this.siren.ins.turnoff();
@@ -82,15 +82,15 @@ component.Alarm = function() {
       }
     }
 
-
   }.bind(this);
+
   this.sensor.outs.triggered = function() {
-    console.log ('Alarm.sensor_triggered');
-    if(this.state == this.States.Disarmed){
+    console.log('Alarm.sensor_triggered');
+    if(this.state == this.States.Disarmed) {
       assert (false);
     }
 
-    else if (this.state == this.States.Armed){
+    else if (this.state == this.States.Armed) {
       {
         this.console.outs.detected();
         this.siren.ins.turnon();
@@ -99,36 +99,36 @@ component.Alarm = function() {
       }
     }
 
-    else if (this.state == this.States.Disarming){
+    else if (this.state == this.States.Disarming) {
       { }
     }
 
-    else if (this.state == this.States.Triggered){
+    else if (this.state == this.States.Triggered) {
       assert (false);
     }
-
 
   }.bind(this);
+
   this.sensor.outs.disabled = function() {
-    console.log ('Alarm.sensor_disabled');
-    if(this.state == this.States.Disarmed){
+    console.log('Alarm.sensor_disabled');
+    if(this.state == this.States.Disarmed) {
       assert (false);
     }
 
-    else if (this.state == this.States.Armed){
+    else if (this.state == this.States.Armed) {
       assert (false);
     }
 
-    else if (this.state == this.States.Disarming){
+    else if (this.state == this.States.Disarming) {
       {
-        if(this.sounding){
+        if(this.sounding) {
           this.console.outs.deactivated();
           this.siren.ins.turnoff();
           this.state = this.States.Disarmed;
           this.sounding = false;
         }
 
-        else{
+        else {
           this.console.outs.deactivated();
           this.state = this.States.Disarmed;
         }
@@ -136,11 +136,11 @@ component.Alarm = function() {
       }
     }
 
-    else if (this.state == this.States.Triggered){
+    else if (this.state == this.States.Triggered) {
       assert (false);
     }
 
-
   }.bind(this);
 
-}
+
+};

@@ -26,13 +26,10 @@ function connect(provided, required) {
   required.ins = provided.ins;
 }
 
-component.AlarmSystem = function() {
-  this.alarm = new component.Alarm();
-  this.sensor = new component.Sensor();
-  this.siren = new component.Siren();
-  this.console = this.alarm.console;
+component.provides_twice = function() {
+  this.one = new component.external_provides_twice();
+  this.i = this.one.i;
+  this.ii = this.one.ii;
 
-  connect(this.sensor.sensor, this.alarm.sensor);
-  connect(this.siren.siren, this.alarm.siren);
 
 };

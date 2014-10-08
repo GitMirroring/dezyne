@@ -21,18 +21,19 @@
 //
 // Code:
 
-function connect(provided, required) {
-  provided.outs = required.outs;
-  required.ins = provided.ins;
-}
+interface.ienum_collision= function() {
+  this.Retval1= {
+    OK: 0, NOK: 1
+  };
+  this.Retval2= {
+    OK: 0, NOK: 1
+  };
 
-component.AlarmSystem = function() {
-  this.alarm = new component.Alarm();
-  this.sensor = new component.Sensor();
-  this.siren = new component.Siren();
-  this.console = this.alarm.console;
+  this.ins = {
+    foo : null,
+    bar : null
+  };
+  this.outs = {
 
-  connect(this.sensor.sensor, this.alarm.sensor);
-  connect(this.siren.siren, this.alarm.siren);
-
+  };
 };

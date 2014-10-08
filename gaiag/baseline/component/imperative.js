@@ -1,0 +1,66 @@
+// Gaiag --- Guile in Asd In Asd in Guile.
+//
+// This file is part of Gaiag.
+//
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// Gaiag is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Gaiag is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+component.imperative = function() {
+  this.States= {
+    I: 0, II: 1, III: 2, IV: 3
+  };
+
+  this.state = this.States.I;
+
+  this.i = new interface.iimperative();
+
+  this.i.ins.e = function() {
+    console.log('imperative.i_e');
+    if(this.state == this.States.I) {
+      {
+        this.i.outs.f();
+        this.i.outs.g();
+        this.i.outs.h();
+        this.state = this.States.II;
+      }
+    }
+    else if (this.state == this.States.II) {
+      {
+        this.state = this.States.III;
+      }
+    }
+    else if (this.state == this.States.III) {
+      {
+        this.i.outs.f();
+        this.i.outs.g();
+        this.i.outs.g();
+        this.i.outs.f();
+        this.state = this.States.IV;
+      }
+    }
+    else if (this.state == this.States.IV) {
+      {
+        this.i.outs.h();
+        this.state = this.States.I;
+      }
+    }
+  }.bind(this);
+
+
+};

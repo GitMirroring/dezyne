@@ -21,18 +21,18 @@
 //
 // Code:
 
-function connect(provided, required) {
-  provided.outs = required.outs;
-  required.ins = provided.ins;
-}
+interface.IDevice= function() {
+  this.result_t= {
+    OK: 0, NOK: 1
+  };
 
-component.AlarmSystem = function() {
-  this.alarm = new component.Alarm();
-  this.sensor = new component.Sensor();
-  this.siren = new component.Siren();
-  this.console = this.alarm.console;
+  this.ins = {
+    initialize : null,
+    calibrate : null,
+    perform_action1 : null,
+    perform_action2 : null
+  };
+  this.outs = {
 
-  connect(this.sensor.sensor, this.alarm.sensor);
-  connect(this.siren.siren, this.alarm.siren);
-
+  };
 };
