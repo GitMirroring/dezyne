@@ -21,13 +21,10 @@
 # Code:
 
 class I ():
-    class Status ():
-        Yes, No = range (2)
-
     def __init__ (self):
         class Ins ():
-            done = None
+            e = None
         self.ins = Ins ()
         class Outs ():
-            pass
+            a = None
         self.outs = Outs ()

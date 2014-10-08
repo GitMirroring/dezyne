@@ -21,7 +21,6 @@
 # Code:
 
 class iprovides_once ():
-
     def __init__ (self):
         class Ins ():
             foo = None

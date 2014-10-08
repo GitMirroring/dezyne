@@ -21,7 +21,6 @@
 # Code:
 
 class TestBool ():
-
     def __init__ (self):
         class Ins ():
             evt = None

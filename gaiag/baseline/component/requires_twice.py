@@ -44,10 +44,13 @@ class requires_twice ():
         self.once.outs.a ()
         self.twice.outs.a ()
 
+
     def once_a (self):
         sys.stderr.write ('requires_twice.once_a\n')
 
+
     def twice_a (self):
         sys.stderr.write ('requires_twice.twice_a\n')
+
 
 

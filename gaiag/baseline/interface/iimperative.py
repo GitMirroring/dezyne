@@ -21,7 +21,6 @@
 # Code:
 
 class iimperative ():
-
     def __init__ (self):
         class Ins ():
             e = None

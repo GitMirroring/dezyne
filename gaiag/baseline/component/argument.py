@@ -43,7 +43,9 @@ class argument ():
             if (c):
                 self.i.outs.f ()
 
+
     def g (self, gc):
         self.i.outs.f ()
         return (gc or self.b)
+
 

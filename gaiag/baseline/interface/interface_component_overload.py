@@ -23,7 +23,6 @@
 class interface_component_overload ():
     class R ():
         V = range (1)
-
     def __init__ (self):
         class Ins ():
             e = None

@@ -53,6 +53,8 @@ class Reply5 ():
 
     def fun (self):
         return interface.I.Status.Yes
+
     def fun_arg (self, s):
         return s
+
 

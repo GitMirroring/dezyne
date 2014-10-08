@@ -45,3 +45,4 @@ class Reply7 ():
         v = self.r.ins.foo ()
         self.reply_IReply7_E = v
 
+

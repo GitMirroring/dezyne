@@ -40,6 +40,7 @@ class function ():
         if (True):
             self.toggle ()
 
+
     def i_b (self):
         sys.stderr.write ('function.i_b\n')
         if (True):
@@ -47,8 +48,10 @@ class function ():
             self.toggle ()
             self.i.outs.d ()
 
+
     def toggle (self):
         if (self.f):
             self.i.outs.c ()
         self.f = not (self.f)
+
 

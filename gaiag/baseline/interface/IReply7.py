@@ -23,7 +23,6 @@
 class IReply7 ():
     class E ():
         A = range (1)
-
     def __init__ (self):
         class Ins ():
             foo = None

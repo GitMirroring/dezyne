@@ -25,7 +25,6 @@ class ienum_collision ():
         OK, NOK = range (2)
     class Retval2 ():
         OK, NOK = range (2)
-
     def __init__ (self):
         class Ins ():
             foo = None

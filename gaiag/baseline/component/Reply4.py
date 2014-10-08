@@ -61,6 +61,8 @@ class Reply4 ():
 
     def fun (self):
         return self.Status.Yes
+
     def fun_arg (self, s):
         return s
+
 

@@ -43,9 +43,11 @@ class hide ():
             if (self.c):
                 self.i.outs.f ()
 
+
     def g (self, b, d):
         b = d
         d = self.c
         self.i.outs.f ()
         return (self.b or d)
+
 

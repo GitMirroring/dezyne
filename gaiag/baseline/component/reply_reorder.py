@@ -1,7 +1,8 @@
 # Gaiag --- Guile in Asd In Asd in Guile.
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Gaiag.
+#
+# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # Gaiag is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as
@@ -20,11 +21,36 @@
 # 
 # Code:
 
-class irequires_twice ():
+import sys
+#
+import interface.Provides
+import interface.Requires
+
+
+class reply_reorder ():
+
     def __init__ (self):
-        class Ins ():
-            e = None
-        self.ins = Ins ()
-        class Outs ():
-            a = None
-        self.outs = Outs ()
+        self.first = True
+
+        self.p = interface.Provides ()
+        self.r = interface.Requires ()
+
+        self.p.ins.start = self.p_start
+        self.r.outs.pong = self.r_pong
+
+    def p_start (self):
+        sys.stderr.write ('reply_reorder.p_start\n')
+        self.r.ins.ping ()
+
+
+    def r_pong (self):
+        sys.stderr.write ('reply_reorder.r_pong\n')
+        if (self.first):
+            self.p.outs.busy ()
+            self.first = not (self.first)
+        if (not (self.first)):
+            self.p.outs.finish ()
+            self.first = not (self.first)
+
+
+

@@ -23,7 +23,6 @@
 class U ():
     class Status ():
         Ok, Nok = range (2)
-
     def __init__ (self):
         class Ins ():
             what = None

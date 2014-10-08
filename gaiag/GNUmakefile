@@ -64,7 +64,7 @@ clean:
 test: check
 check: compile
 	./test.sh </dev/null
-	$(MAKE) csp demo asserts c++ javascript pretty simulate wfc
+	$(MAKE) csp demo asserts c++ javascript python pretty simulate wfc
 
 REGRESSION_SOURCES = $(shell cd examples/regression && grep -l ^component *.asd)
 WFC_SOURCES = $(shell cd examples/wfc && ls -1 *.asd)

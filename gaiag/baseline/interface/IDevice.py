@@ -23,7 +23,6 @@
 class IDevice ():
     class result_t ():
         OK, NOK = range (2)
-
     def __init__ (self):
         class Ins ():
             initialize = None

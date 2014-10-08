@@ -51,6 +51,8 @@ class Reply3 ():
 
     def reply_fun (self):
         self.reply_I_Status = interface.I.Status.Yes
+
     def reply_fun_arg (self, s):
         self.reply_I_Status = s
+
 
