@@ -326,9 +326,6 @@
 
 (define* (expression->string model o :optional (locals '()))
 
-  (define (paren expression)
-    (list "(" (expression->string model expression locals) ")"))
-
   (define (enum? identifier) (gom:enum model identifier))
   (define (member? identifier) (gom:variable model identifier))
   (define (local? identifier) (assoc-ref locals identifier))
@@ -374,8 +371,11 @@
                    (arguments ,(->code model arguments locals 0)))))
     (($ <literal>) (bool-expression->string model o))
     ((? number?) (number->string o))
-    (('! expression) (->string (list "not " (paren expression))))
-    (('group expression) (paren expression))
+    (('! expression)
+     (let ((expression (expression->string model expression locals)))
+       (snippet 'not `((expression ,expression)))))
+    (('group expression)
+     (list "(" (expression->string model expression locals) ")"))
     (((or 'and 'or '==) lhs rhs)
      (let ((lhs (expression->string model lhs locals))
            (rhs (expression->string model rhs locals))
