@@ -145,19 +145,16 @@ pretty: compile
 	./gaiag -l asd examples/regression/expressions.asd > out/expressions.asd
 	$(diff) examples/regression/expressions.asd out
 
-out/%.compiles: examples/regression/%.asd
-	rm -rf out && mkdir out && ln -s ../examples ../templates out
-	cd out && $(shell pwd)/gaiag -l c++ examples/regression/$*.asd
-	$(diff) baseline/component-$*-c3.hh out
-	$(diff) baseline/component-$*-c3.cc out
-	ccache g++ -o out/component-$*-c3.o -c out/component-$*-c3.cc
-
-out/%.compiles: examples/%.asd
-	rm -rf out && mkdir out && ln -s ../examples ../templates out
-	cd out && $(shell pwd)/gaiag -l c++ examples/$*.asd
-	$(diff) baseline/component-$*-c3.hh out
-	$(diff) baseline/component-$*-c3.cc out
-	ccache g++ -o out/component-$*-c3.o -c out/component-$*-c3.cc
+out/%.o: examples/regression/%.asd
+define .CC_REGRESSION
+rm -rf out && mkdir out && ln -s ../examples ../templates out
+cd out && $(shell pwd)/gaiag -l c++ examples/regression/$*.asd
+-$(diff) baseline/component-$*-c3.hh out
+-$(diff) baseline/component-$*-c3.cc out
+ccache g++ -o out/component-$*-c3.o -c out/component-$*-c3.cc $(UPDATE)
+@$(diff) baseline/component-$*-c3.hh out >/dev/null
+@$(diff) baseline/component-$*-c3.cc out >/dev/null
+endef
 
 CC_BROKEN =\
  Alarm.asd\
@@ -169,7 +166,18 @@ CC_BROKEN =\
 
 CC_SOURCES = $(filter-out $(CC_BROKEN),$(REGRESSION_SOURCES))
 
-c++: compile c++-alarm alarm-legacy $(CC_SOURCES:%.asd=out/%.compiles)
+#out/%.o.up: UPDATE=||:; cp out/component-$*-c3.cc out/*.hh baseline
+out/%.o.up: UPDATE=&& cp out/component-$*-c3.cc out/*.hh baseline
+out/%.o.up: examples/regression/%.asd
+	$(.CC_REGRESSION)
+
+out/%.o: examples/regression/%.asd
+	$(.CC_REGRESSION)
+
+c++-regression: $(CC_SOURCES:%.asd=out/%.o)
+c++-update: $(CC_SOURCES:%.asd=out/%.o.up)
+
+c++: compile c++-alarm alarm-legacy c++-regression
 
 c++-alarm: alarm-gen alarm
 	$(diff) baseline/interface-Console-c3.hh out
@@ -300,9 +308,6 @@ compare:
 	@diff -uw out/om-trip-pretty.scm out/gaiag-trip.scm | diffstat || true
 	@diff -uw out/om-trip-pretty.scm out/gaiag-trip.scm > /dev/null
 
-c++-update: dummy
-	while ! $(MAKE) c++; do cp -pv out/*.hh out/*.cc baseline; done
-
 glue:
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
 	cd out && ln -s ../examples/main.cpp .
@@ -367,7 +372,6 @@ python-update: dummy
 		cp -pv out/component/*py baseline/component;\
 	done
 
-out/%.js: examples/regression/%.asd
 define .JAVASCRIPT_REGRESSION
 rm -rf out && mkdir out && ln -s ../examples ../templates out
 cd out && $(shell pwd)/gaiag -l javascript $<
@@ -390,6 +394,9 @@ out/%.js.up: examples/regression/%.asd
 out/%.js: examples/regression/%.asd
 	$(.JAVASCRIPT_REGRESSION)
 
+javascript-regression: $(PY_SOURCES:%.asd=out/%.js)
+javascript-update: $(PY_SOURCES:%.asd=out/%.js.up)
+
 javascript-alarm: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
 	cd out && for file in\
@@ -410,9 +417,5 @@ javascript-alarm: compile
 	$(diff) baseline/component/AlarmSystem.js out/component
 
 javascript: compile javascript-alarm javascript-regression
-
-javascript-regression: $(PY_SOURCES:%.asd=out/%.js)
-javascript-update: $(PY_SOURCES:%.asd=out/%.js.up)
-
 
 code: c++-alarm python-alarm javascript-alarm out/Reply7.compiles out/Reply7.py out/Reply7.js
