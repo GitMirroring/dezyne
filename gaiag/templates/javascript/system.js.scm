@@ -13,4 +13,4 @@ component.#.model  = function() {
 # (map (connect-ports model #{
     connect(this.#provided , this.#required);
 #}) (filter (negate bind-port?) ((compose .elements .bindings) model)))
-}
+};

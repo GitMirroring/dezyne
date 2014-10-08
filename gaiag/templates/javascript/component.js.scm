@@ -23,4 +23,4 @@ component.#.model  = function() {
      this.#name  = function (#parameters) {
 #statements }.bind(this);
 #}) (gom:functions model))
-}
+};
