@@ -368,17 +368,27 @@ python-update: dummy
 	done
 
 out/%.js: examples/regression/%.asd
-	rm -rf out && mkdir out && ln -s ../examples ../templates out
-	cd out && $(shell pwd)/gaiag -l javascript $<
-	-$(diff) baseline/component/$*.js out/component
-	cat examples/header.js\
-		 $$(find out/interface out/component -name '*.js')\
-		examples/alarm.js > $@
-	cat examples/header.js $$(find out/interface out/component -name '*.js') > $@
-	nodejs $@
-	if [ -f node_modules/jshint/bin/jshint ]; then nodejs node_modules/jshint/bin/jshint $@; fi
-	$(diff) baseline/component/$*.js out/component | diffstat || true
-	@$(diff) baseline/component/$*.js out/component > /dev/null
+define .JAVASCRIPT_REGRESSION
+rm -rf out && mkdir out && ln -s ../examples ../templates out
+cd out && $(shell pwd)/gaiag -l javascript $<
+-$(diff) baseline/component/$*.js out/component
+cat examples/header.js\
+	 $$(find out/interface out/component -name '*.js')\
+	examples/alarm.js > $@
+cat examples/header.js $$(find out/interface out/component -name '*.js') > $@
+nodejs $@
+if [ -f node_modules/jshint/bin/jshint ]; then nodejs node_modules/jshint/bin/jshint $@ $(UPDATE); fi
+$(diff) baseline/component/$*.js out/component | diffstat || true
+@$(diff) baseline/component/$*.js out/component > /dev/null
+endef
+
+#out/%.js.up: UPDATE=||:; cp out/component/$*.js baseline/component
+out/%.js.up: UPDATE=&& cp out/component/$*.js baseline/component
+out/%.js.up: examples/regression/%.asd
+	$(.JAVASCRIPT_REGRESSION)
+
+out/%.js: examples/regression/%.asd
+	$(.JAVASCRIPT_REGRESSION)
 
 javascript-alarm: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
@@ -399,9 +409,10 @@ javascript-alarm: compile
 	$(diff) baseline/component/Alarm.js out/component
 	$(diff) baseline/component/AlarmSystem.js out/component
 
-
 javascript: compile javascript-alarm javascript-regression
 
 javascript-regression: $(PY_SOURCES:%.asd=out/%.js)
+javascript-update: $(PY_SOURCES:%.asd=out/%.js.up)
+
 
 code: c++-alarm python-alarm javascript-alarm out/Reply7.compiles out/Reply7.py out/Reply7.js
