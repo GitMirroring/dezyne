@@ -272,12 +272,12 @@
     (interface-events interface)))
 
 (define-method (interface-events (o <component>)) ;; FIXME: no test
-  (delete-duplicates (apply append (map (compose interface-events gom:import .type) ((compose .elements .ports) o)))))
+  (apply append (map (compose interface-events gom:import .type) ((compose .elements .ports) o))))
 
 (define-method (interface-events (o <interface>))
   (let* ((events (map .name (.elements (.events o))))
          (modeling (map .event (modeling-events o))))
-    (sort (append events modeling) symbol<)))
+    (delete-duplicates (sort (append events modeling) symbol<))))
 
 (define (modeling-event? event)
   (member (.event event) '(optional inevitable)))
