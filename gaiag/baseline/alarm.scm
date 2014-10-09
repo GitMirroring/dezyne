@@ -32,6 +32,9 @@
   :use-module (oop goops)
   :export (main))
 
+(define (stderr . args)
+  (apply format (cons* (current-error-port) args)))
+
 (define-class <interface> ()
   (in :accessor .in :init-value #f :init-keyword :in)
   (out :accessor .out :init-value #f :init-keyword :out))
@@ -45,92 +48,100 @@
 (define-class <Alarm> ()
   (state :accessor .state :init-value '(Alarm States Disarmed))
   (sounding :accessor .sounding :init-value #f)
-  (console :accessor .console
-           :init-form (make <interface:Console>
-                        :in `((arm . ,console-arm)
-                              (disarm . ,console-disarm))))
-  (sensor :accessor .sensor
-          :init-form (make <interface:Siren>
-                       :out `((triggered . ,sensor-triggered)
-                              (disabled . ,sensor-disabled))))
-  (siren :accessor .siren :init-form (make <interface:Sensor>)))
+  (console :accessor .console :init-value #f)
+  (sensor :accessor .sensor :init-value #f)
+  (siren :accessor .siren :init-form (make <interface:Siren>)))
+
+(define-method (initialize (o <Alarm>) args)
+  (next-method)
+  (set! (.console o)
+        (make <interface:Console>
+          :in `((arm . ,(lambda () (console-arm o)))
+                (disarm . ,(lambda () (console-disarm o))))))
+  (set! (.sensor o)
+        (make <interface:Sensor>
+          :out `((triggered . ,(lambda () (sensor-triggered o)))
+                 (disabled . ,(lambda () (sensor-disabled o)))))))
 
 (define-method (console-arm (o <Alarm>))
-  (format (current-error-port) "Alarm.console-arm")
+  (stderr "Alarm.console-arm\n")
   (cond
    ((equal? (.state o) '(Alarm States Disarmed))
     ((assoc-ref ((compose .in .sensor) o) 'enable))
     (set! (.state o) '(Alarm States Armed)))
-   ((equal? (.state o) '(Alarm States Armed)) (throw 'assert))
-   ((equal? (.state o) '(Alarm States Armed)) (throw 'assert))
-   ((equal? (.state o) '(Alarm States Disarming)) (throw 'assert))
-   ((equal? (.state o) '(Alarm States Triggered)) (throw 'assert))))
+   ((equal? (.state o) '(Alarm States Armed))
+    (throw 'assert 'illegal))
+   ((equal? (.state o) '(Alarm States Armed))
+    (throw 'assert 'illegal))
+   ((equal? (.state o) '(Alarm States Disarming))
+    (throw 'assert 'illegal))
+   ((equal? (.state o) '(Alarm States Triggered))
+    (throw 'assert 'illegal))))
 
 (define-method (console-disarm (o <Alarm>))
-  (format (current-error-port) "Alarm.console-disarm")
+  (stderr "Alarm.console-disarm\n")
   (cond
    ((equal? (.state o) '(Alarm States Disarmed))
-    ((assoc-ref ((compose .in .sensor) o) 'enable))
-    (set! (.state o) '(Alarm States Armed)))
-   ((equal? (.state o) '(Alarm States Armed)) (throw 'assert))
-   ((equal? (.state o) '(Alarm States Armed)) (throw 'assert))
-   ((equal? (.state o) '(Alarm States Disarming)) (throw 'assert))
-   ((equal? (.state o) '(Alarm States Triggered)) (throw 'assert))))
+    (throw 'assert 'illegal))
+   ((equal? (.state o) '(Alarm States Armed))
+    ((assoc-ref ((compose .in .sensor) o) 'disable))
+    (set! (.state o) '(Alarm States Disarming)))
+   ((equal? (.state o) '(Alarm States Armed))
+    (throw 'assert 'illegal))
+   ((equal? (.state o) '(Alarm States Disarming))
+    (throw 'assert 'illegal))
+   ((equal? (.state o) '(Alarm States Triggered))
+    ((assoc-ref ((compose .in .sensor) o) 'disable))
+    ((assoc-ref ((compose .in .siren) o) 'turnoff))
+    (set! (.sounding o) #f)
+    (set! (.state o) '(Alarm States Disarming)))))
 
 (define-method (sensor-triggered (o <Alarm>))
-  (format (current-error-port) "Alarm.sensor-triggered")
+  (stderr "Alarm.sensor-triggered\n")
   (cond
    ((equal? (.state o) '(Alarm States Disarmed))
-    ((assoc-ref ((compose .in .sensor) o) 'enable))
-    (set! (.state o) '(Alarm States Armed)))
-   ((equal? (.state o) '(Alarm States Armed)) (throw 'assert))
-   ((equal? (.state o) '(Alarm States Armed)) (throw 'assert))
-   ((equal? (.state o) '(Alarm States Disarming)) (throw 'assert))
-   ((equal? (.state o) '(Alarm States Triggered)) (throw 'assert))))
+    (throw 'assert 'illegal))
+   ((equal? (.state o) '(Alarm States Armed))
+    ((assoc-ref ((compose .out .console) o) 'detected))
+    ((assoc-ref ((compose .in .siren) o) 'turnon))
+    (set! (.sounding o) #t)
+    (set! (.state o) '(Alarm States Triggered)))
+   ((equal? (.state o) '(Alarm States Armed))
+    (throw 'assert 'illegal))
+   ((equal? (.state o) '(Alarm States Disarming))
+    #t)
+   ((equal? (.state o) '(Alarm States Triggered))
+    (throw 'assert 'illegal))))
 
 (define-method (sensor-disabled (o <Alarm>))
-  (format (current-error-port) "Alarm.sensor-disabled")
+  (stderr "Alarm.sensor-disabled\n")
   (cond
    ((equal? (.state o) '(Alarm States Disarmed))
-    ((assoc-ref ((compose .in .sensor) o) 'enable))
-    (set! (.state o) '(Alarm States Armed)))
-   ((equal? (.state o) '(Alarm States Armed)) (throw 'assert))
-   ((equal? (.state o) '(Alarm States Armed)) (throw 'assert))
-   ((equal? (.state o) '(Alarm States Disarming)) (throw 'assert))
-   ((equal? (.state o) '(Alarm States Triggered)) (throw 'assert))))
-
-(define-class <Sensor> ()
-  (sensor :accessor .sensor
-           :init-form (make <interface:Sensor>
-                        :in `((enable . ,sensor-enable)
-                              (disable . ,sensor-disable)))))
-
-(define-method (sensor-enable (o <Sensor>))
-  (format (current-error-port) "Sensor.sensor-enable"))
-
-(define-method (sensor-disable (o <Sensor>))
-  (format (current-error-port) "Sensor.sensor-disable"))
-
-(define-class <Siren> ()
-  (siren :accessor .siren
-           :init-form (make <interface:Siren>
-                        :in `((turnon . ,siren-turnon)
-                              (turnoff . ,siren-turnoff)))))
-
-(define-method (siren-turnon (o <Siren>))
-  (format (current-error-port) "Siren.siren-turnon"))
-
-(define-method (siren-turnoff (o <Siren>))
-  (format (current-error-port) "Siren.siren-turnoff"))
+    (throw 'assert 'illegal))
+   ((equal? (.state o) '(Alarm States Armed))
+    (throw 'assert 'illegal))
+   ((equal? (.state o) '(Alarm States Armed))
+    (throw 'assert 'illegal))
+   ((equal? (.state o) '(Alarm States Disarming))
+    (cond
+     ((.sounding o)
+      ((assoc-ref ((compose .out .console) o) 'deactivated))
+      ((assoc-ref ((compose .in .siren) o) 'turnoff))
+      (set! (.state o) '(Alarm States Disarmed))
+      (set! (.sounding o) #f))
+     (else
+      ((assoc-ref ((compose .out .console) o) 'deactivated))
+      (set! (.state o) '(Alarm States Disarmed)))))
+   ((equal? (.state o) '(Alarm States Triggered))
+    (throw 'assert 'illegal))))
 
 (define-class <AlarmSystem> ()
   (alarm :accessor .alarm :init-form (make <Alarm>))
-  (sensor :accessor .sensor :init-form (make <Sensor>))
-  (siren :accessor .siren :init-form (make <Siren>))
+  (sensor :accessor .sensor :init-form (make <SensorExt>))
+  (siren :accessor .siren :init-form (make <SirenExt>))
   (console :accessor .console :init-value #f :init-keyword :console))
 
-(define-generic connect)
-(define-method (connect (provided <interface>) (required <interface>))
+(define-method (connect-ports (provided <interface>) (required <interface>))
   (set! (.out provided) (.out required))
   (set! (.in required) (.in provided)))
 
@@ -140,18 +151,48 @@
    (next-method)
    (set! (.console o) ((compose .console .alarm) o))
    (set! (.out (.console o)) out)
-   (connect ((compose .sensor .sensor) o)
-            ((compose .sensor .alarm) o))
-   (connect ((compose .siren .siren) o)
-            ((compose .siren .alarm) o))))
+   (connect-ports (.sensor (.sensor o)) (.sensor (.alarm o)))
+   (connect-ports (.siren (.siren o)) (.siren (.alarm o)))))
+
+
+;; Handwritten
+(define-class <SensorExt> ()
+  (sensor :accessor .sensor :init-value #f))
+
+(define-method (initialize (o <SensorExt>) args)
+  (next-method)
+  (set! (.sensor o)
+        (make <interface:Sensor>
+          :in `((enable . ,(lambda () (enable o)))
+                (disable . ,(lambda () (disable o)))))))
+
+(define-method (enable (o <SensorExt>))
+  (stderr "SensorExt.enable\n"))
+
+(define-method (disable (o <SensorExt>))
+  (stderr "SensorExt.disable\n"))
+
+(define-class <SirenExt> ()
+  (siren :accessor .siren :init-value #f))
+
+(define-method (initialize (o <SirenExt>) args)
+  (next-method)
+  (set! (.siren o) (make <interface:Siren>
+                     :in `((turnon . ,(lambda () (turnon o)))
+                           (turnoff . ,(lambda () (turnoff o)))))))
+
+(define-method (turnon (o <SirenExt>))
+  (stderr "SirenExt.turnon\n"))
+
+(define-method (turnoff (o <SirenExt>))
+  (stderr "SirenExt.turnoff\n"))
 
 (define ((port name) o) (assoc-ref o name))
 
 (define (main args)
   (let ((system (make <AlarmSystem>
-                  :out `((detected . ,(lambda () (format (current-error-port) "Console.detected")))
-                         (deactivated . ,(lambda () (format (current-error-port) "Console.deactivated")))))))
-    (format (current-error-port) "Hello\n")
+                  :out `((detected . ,(lambda () (stderr "Console.detected\n")))
+                         (deactivated . ,(lambda () (stderr "Console.deactivated\n")))))))
     (((compose (port 'arm) .in .console) system))
     (((compose (port 'triggered) .out .sensor .sensor) system))
     (((compose (port 'disarm) .in .console) system))
