@@ -55,7 +55,11 @@
 (define (mangle o)
   (if #f
       o
-      (parameterize ((mangle-prefix-alist '((port . po) (instance . is)))) (gom:mangle o))))
+      (parameterize
+          ((mangle-prefix-alist
+            '((port . po) ;; examples/regression/interface_component_overload.asd
+              (instance . is))))
+        (gom:mangle o))))
 
 (define-method (dump (o <interface>))
   (let ((name (.name o)))
