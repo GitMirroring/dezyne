@@ -1,5 +1,3 @@
-##include <boost/tuple/tuple.hpp>
-
 ##include "component-#.model -c3.hh"
 
 ##include "#.model Component.h"
@@ -12,34 +10,10 @@ namespace component
 (comma-join (map (lambda (type) (->string (list "boost::shared_ptr<" type ">")))
                  (map .type (filter gom:provides? ((compose .elements .ports) model)))))  > > g_handwritten;
 
-#(define (api port event)
-   (list
-    (or
-     (and-let* ((port-alist (assoc-ref *glue-alist* (.type port)))
-                ((stderr "port-alist: ~a\n" port-alist))
-                ((stderr "event: ~a\n" event))
-                (port (assoc-ref port-alist (.name event))))
-               port)
-     (.name event))
-    "_API"))
-#(define (cb port event)
-   (list
-    (or
-     (and-let* ((port-alist (assoc-ref *glue-alist* (.type port)))
-                ((stderr "port-alist: ~a\n" port-alist))
-                ((stderr "event: ~a\n" event))
-                (port (assoc-ref port-alist (.name event))))
-               port)
-     "_fixme_from_spec" (.name event))))
-
-#(define (ap- port) (->string (list (.type port) "_API")))
-#(define (cb- port) (->string (list (.type port) "_fixme_from_spec")))
-
-#(define (cbx port) (list (.type port) "_fixme_from_spec"))
 
 #(map (lambda (port)
         (->string
-         (list "struct " (cbx port) "\n: public interface::" (.type port) "\n"
+         (list "struct " (.type port) "_fixme_from_spec\n: public interface::" (.type port) "_fixme_from_spec\n"
                "{\n"
                "interface::iprovides_once& cb;\n"
                (.type port) "(interface::" (.type port) "& cb)\n"
@@ -51,7 +25,7 @@ namespace component
                          (return-type (return-type port event))
                          (reply-type (->string (list (.type port) "_" (.name type)))))
                     (->string
-                     (list "void " (cb port event) "(){ cb.out." (.name event) "(); }\n"))))
+                     (list "void " (.name event) "(){ cb.out." (.name event) "(); }\n"))))
                 (filter gom:out? (gom:events port)))
                "};\n")))
       (filter gom:provides? ((compose .elements .ports) model)))

@@ -208,7 +208,7 @@ out/%.wfc: examples/wfc/%.asd
 wfc: compile $(WFC_SOURCES:%.asd=out/%.wfc)
 
 define .REGRESSION_REFINES
-rm -rf out && mkdir -p out && ln -s ../examples ../../webdemo ../templates ../$(DEPTH)/webdemo/asd out
+rm -rf out && mkdir -p out && ln -s ../examples ../webdemo ../templates ../$(DEPTH)/webdemo/asd out
 cd out && $(shell pwd)/gaiag -l csp $^
 $(diff) baseline/$*.csp out || true
 @$(diff) baseline/$*.csp out | diffstat || true
@@ -306,12 +306,12 @@ alarm-legacy: alarm-gen
 	-ccache g++ -g -Wall -Wextra out/*.c* -o out/test && ./out/test
 
 asserts:
-	rm -rf out && mkdir out && ln -s ../examples ../../webdemo ../templates ../$(DEPTH)/webdemo/asd out
+	rm -rf out && mkdir out && ln -s ../examples ../webdemo ../templates ../$(DEPTH)/webdemo/asd out
 	./gaiag -l asserts examples/regression/Alarm.asd > out/alarm-asserts.scm
 	$(diff) baseline/alarm-asserts.scm out
 
 compare:
-	rm -rf out && mkdir out && ln -s ../examples ../../webdemo ../templates ../$(DEPTH)/webdemo/asd out
+	rm -rf out && mkdir out && ln -s ../examples ../webdemo ../templates ../$(DEPTH)/webdemo/asd out
 	make -C ../..
 	./gaiag -l resolve examples/regression/trip.asd > out/gaiag-trip.scm
 	cd out && ../$(DEPTH)/build/asdgenerator -l scm examples/trip.asd
@@ -321,6 +321,20 @@ compare:
 	-@diff -uw out/om-trip-pretty.scm out/gaiag-trip.scm
 	@diff -uw out/om-trip-pretty.scm out/gaiag-trip.scm | diffstat || true
 	@diff -uw out/om-trip-pretty.scm out/gaiag-trip.scm > /dev/null
+
+glue:
+	rm -rf out && mkdir out && ln -s ../examples ../templates out
+	cd out && ln -s ../examples/main.cpp .
+	cd out && for file in\
+	 	examples/AlarmSystem.asd\
+	 	examples/regression/Alarm.asd\
+	 	examples/Console.asd\
+	 	examples/Sensor.asd\
+	 	examples/Siren.asd;\
+	 	do $(shell pwd)/gaiag -l c++ $$file; done
+	cd out && cp ../examples/component-Sensor-c3.cc .
+	-cd out && ccache g++ -Wall -Wextra -I ../$(DEPTH)/examples/codegen/asd_cpp_runtime -c *.c*
+	-cd out && g++ -o test *.o && ./test
 
 python-alarm: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
@@ -419,37 +433,3 @@ javascript-alarm: compile
 javascript: compile javascript-alarm javascript-regression
 
 code: c++-alarm python-alarm javascript-alarm out/Reply7.compiles out/Reply7.py out/Reply7.js
-
-glue:
-	rm -rf out && mkdir out && ln -s ../examples ../templates out
-	cd out && ln -s ../examples/main.cpp .
-	cd out && for file in\
-	 	examples/AlarmSystem.asd\
-	 	examples/regression/Alarm.asd\
-	 	examples/Console.asd\
-	 	examples/Sensor.asd\
-	 	examples/Siren.asd;\
-	 	do $(shell pwd)/gaiag -l c++ $$file; done
-	cd out && cp ../examples/component-Sensor-c3.cc .
-	-cd out && ccache g++ -Wall -Wextra -I ../$(DEPTH)/examples/codegen/asd_cpp_runtime -c *.c*
-	-cd out && g++ -o test *.o && ./test
-
-webglue:
-	rm -rf out && mkdir -p out && ln -s ../examples ../../webdemo ../templates ../$(DEPTH)/webdemo/asd out
-	cd out && ln -s ../examples/main.cpp .
-	cp examples/AlarmSystem.text out
-	cd out && for model in\
-	 	AlarmSystem\
-	 	Alarm\
-	 	Console\
-	 	Sensor\
-	 	Siren;\
-	 	do $(shell pwd)/gaiag -m $$model -l c++ webdemo/asd/AlarmSystem.asd; done
-	cp examples/SensorInterface.h out
-	cp examples/SensorComponent.h out
-	cp examples/SensorComponent.cpp out
-	cp examples/SirenInterface.h out
-	cp examples/SirenComponent.h out
-	cp examples/SirenComponent.cpp out
-	-for i in out/*.c*; do ccache g++ -Wall -Wextra -I out -I $(DEPTH)/examples/codegen/asd_cpp_runtime -c $$i -o out/$$(basename $$(basename $i .cpp) .cc).o; done
-	-cd out && g++ -o test *.o && ./test
