@@ -28,8 +28,8 @@ function connect(provided, required) {
 
 component.AlarmSystem = function() {
   this.alarm = new component.Alarm();
-  this.sensor = new component.Sensor();
-  this.siren = new component.Siren();
+  this.sensor = new component.SensorExt();
+  this.siren = new component.SirenExt();
   this.console = this.alarm.console;
 
   connect(this.sensor.sensor, this.alarm.sensor);

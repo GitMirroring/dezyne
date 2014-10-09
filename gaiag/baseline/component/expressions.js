@@ -31,24 +31,23 @@ component.expressions = function() {
   this.i.ins.e = function() {
     console.log('expressions.i_e');
     if(true) {
-      if (this.state === 0) {
+      if(this.state === 0) {
         this.state = 3;
         this.i.outs.a();
       }
       else {
         this.state = this.state - 1;
-        if (this.c < this.state) {
+        if(this.c < this.state) {
           this.c = this.c + 1;
         }
-        else if (this.c <= (this.state + 1)) {
+        else if(this.c <= (this.state + 1)) {
           this.i.outs.lo();
         }
-        else if (this.c > this.state) {
+        else if(this.c > this.state) {
           this.i.outs.hi();
         }
       }
     }
   }.bind(this);
-
 
 };

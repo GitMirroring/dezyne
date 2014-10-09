@@ -33,12 +33,11 @@ component.argument2 = function() {
       this.b = ! (this.b);
       c = this.g(this.b, this.b);
       this.b = this.g(c, c);
-      if (c) {
+      if(c) {
         this.i.outs.f();
       }
     }
   }.bind(this);
-
   this.g = function (ga, gb) {
     this.i.outs.f();
     return (ga || gb);

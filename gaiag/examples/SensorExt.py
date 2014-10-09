@@ -20,19 +20,19 @@
 # 
 # Code:
 
-import component
+import sys
+#
+import interface
 
-def connect (provided, required):
-    provided.outs = required.outs
-    required.ins = provided.ins
-
-class AlarmSystem ():
+class SensorExt:
     def __init__ (self):
-        self.alarm = component.Alarm ()
-        self.sensor = component.SensorExt ()
-        self.siren = component.SirenExt ()
-        self.console = self.alarm.console
+        self.sensor = interface.Sensor ()
+        self.sensor.ins.enable = self.sensor_enable
+        self.sensor.ins.disable = self.sensor_enable
 
-        connect (self.sensor.sensor, self.alarm.sensor)
-        connect (self.siren.siren, self.alarm.siren)
+    def sensor_enable (self):
+        sys.stderr.write ('SensorExt.enable\n')
+
+    def sensor_disable (self):
+        sys.stderr.write ('SensorExt.disable\n')
 

@@ -105,7 +105,6 @@
          (state (cadr tracepoint))
          (steps (cddr tracepoint))
          (name (.name model)))
-    ;;(stderr "\njson-trace: ~a, ~a\n" event (class-of (car steps)))
     (let loop ((statements steps))
       (let* ((statement (if (null? statements) #f (car statements)))
              (class (and=> statement ast-name))

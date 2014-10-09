@@ -18,68 +18,87 @@ struct #.model Glue
 {
   component::#.model  component;
 
-#(map (lambda (port)
-        (->string
-         (list "struct " (.type port) "_API\n: public ::" (.type port) "_API\n"
-               "{\n"
-               "interface::" (.type port) "& api;\n"
-               (.type port) "_API(interface::" (.type port) "& api)\n"
-               ": api(api)\n"
-               "{}\n"
-               (map
-                (lambda (event)
-                  (let* ((return-type (return-type port event)))
-                    (->string
-                     (list return-type " " (.name event) "()\n"
+#(define (api port) (->string (list (.type port) "_API")))
+#(define (cb port) (->string (list (.type port) "_CB")))
+
+#(map (lambda (alist)
+        (let* ((entry (car alist))
+               (interface (second entry))
+               (port-type (.type (gom:port model))))
+          (list "struct " interface "\n: public ::" interface "\n"
+                "{\n"
+                "interface::" port-type "& api;\n"
+                interface "(interface::" port-type "& api)\n"
+                ": api(api)\n"
+                "{}\n"
+                (map
+                 (lambda (entry)
+                   (let* ((event (gom:event (gom:interface model) (first entry)))
+                          (port (gom:port model))
+                          (return-type (return-type port event)))
+                     (list return-type " " (third entry) "()\n"
                            "{\n"
                            "return api.in." (.name event) "();\n"
-                           "}\n"))))
-                (filter gom:in? (gom:events port)))
-               "};\n")))
-      (filter gom:provides? ((compose .elements .ports) model)))
+                           "}\n")))
+                 alist)
+                "};\n")))
+      ((gen1-interfaces gom:in?) (gom:interface model)))
 
-#(map (lambda (port)
-        (->string
-         (list "boost::shared_ptr<" (.type port) "_API> api_" (.name port) ";\n")))
-      (filter gom:provides? ((compose .elements .ports) model)))
-#(map (lambda (port)
-        (->string
-         (list "boost::shared_ptr<" (.type port) "_CB> cb_" (.name port) ";\n")))
-      (filter gom:provides? ((compose .elements .ports) model)))
+#(map (lambda (alist)
+        (let* ((entry (car alist))
+               (interface (second entry)))
+          (list "boost::shared_ptr<" interface "> api_" interface ";\n")))
+      ((gen1-interfaces gom:in?) (gom:interface model)))
+#(map (lambda (alist)
+        (let* ((entry (car alist))
+               (interface (second entry)))
+          (list "boost::shared_ptr<" interface "> cb_" interface ";\n")))
+      ((gen1-interfaces gom:out?) (gom:interface model)))
+boost::shared_ptr<asd::channels::ISingleThreaded> st;
+
 #.model Glue ()
 : component()
-#(map (lambda (port)
-        (->string
-         (list ", api_" (.name port)
-               "(boost::make_shared<" (.type port) "_API>(boost::ref(component." (.name port) ")))\n")))
-      (filter gom:provides? ((compose .elements .ports) model))){
-#(map (lambda (port)
-        (->string
-         (list
+#(map (lambda (alist)
+        (let* ((entry (car alist))
+               (interface (second entry))
+               (port-name (.name (gom:port model))))
+          (list ", api_" interface
+                "(boost::make_shared<" interface ">(boost::ref(component." port-name ")))\n")))
+      ((gen1-interfaces gom:in?) (gom:interface model)))
+{
+#(map (lambda (alist)
+        (let* ((entry (car alist))
+               (interface (second entry))
+               (port (gom:port model))
+               (port-name (.name port)))
           (map
-           (lambda (event)
-             (->string
-              (list "component." (.name port) ".out." (.name event)
-                    " = boost::bind(push, st, boost::function<void()>(boost::bind(&" (.type port) "_CB::" (.name event) ", boost::ref(cb_" (.name port) "))));\n")))
-           (filter gom:out? (gom:events port))))))
-      (filter gom:provides? ((compose .elements .ports) model)))}
+           (lambda (entry)
+             (list "component." port-name ".out." (first entry)
+                   " = boost::bind(push, boost::ref(st), boost::function<void()>(boost::bind(&" interface "::" (third entry) ", boost::ref(cb_" interface "))));\n"))
+           alist)))
+      ((gen1-interfaces gom:out?) (gom:interface model)))
+}
 
-#(map (lambda (port)
-        (->string
-         (list "void GetAPI(boost::shared_ptr< ::" (.type port) "_API>* api)\n"
+#(map (lambda (alist)
+        (let* ((entry (car alist))
+               (interface (second entry))
+               (port-type (.type (gom:port model))))
+          (list "void GetAPI(boost::shared_ptr< ::" interface ">* api)\n"
                "{\n"
-               "*api = api_" (.name port) ";\n"
+               "*api = api_" interface ";\n"
                "}\n")))
-      (filter gom:provides? ((compose .elements .ports) model)))
-#(map (lambda (port)
-        (->string
-         (list "void RegisterCB(boost::shared_ptr< ::" (.type port) "_CB> cb)\n"
-               "{\n"
-               "cb_" (.name port) " = cb;\n"
-               "}\n")))
-      (filter gom:provides? ((compose .elements .ports) model)))
+      ((gen1-interfaces gom:in?) (gom:interface model)))
 
-boost::shared_ptr<asd::channels::ISingleThreaded> st;
+
+#(map (lambda (alist)
+        (let* ((entry (car alist))
+               (interface (second entry))
+               (port-type (.type (gom:port model))))
+          (list "void RegisterCB(boost::shared_ptr< ::" interface "> cb)\n"
+               "{\n"
+               "cb_" interface " = cb;\n"
+               "}\n")))
+      ((gen1-interfaces gom:out?) (gom:interface model)))
 
 void RegisterCB (boost::shared_ptr<asd::channels::ISingleThreaded> st)
 {
@@ -87,7 +106,7 @@ void RegisterCB (boost::shared_ptr<asd::channels::ISingleThreaded> st)
 }
 };
 
-boost::shared_ptr<#.model Interface> #.model Component::GetInstance ()
+boost::shared_ptr<#(.type (gom:port model)) Interface> #.model Component::GetInstance ()
 {
   return boost::make_shared<#.model Glue> ();
 }

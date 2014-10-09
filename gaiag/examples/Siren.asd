@@ -54,14 +54,3 @@ interface Siren
     }
   }
 }
-
-component Siren
-{
-  provides Siren siren;
-
-  behaviour
-  {
-    on turnon: {}
-    on turnoff: {}
-  }
-}

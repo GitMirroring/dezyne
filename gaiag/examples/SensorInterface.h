@@ -2,6 +2,7 @@
 //
 // This file is part of Gaiag.
 //
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
@@ -21,18 +22,33 @@
 //
 // Code:
 
-component.sugar = function() {
-  this.Enum= {
-    False: 0, True: 1
-  };
+#ifndef SENSOR_INTERFACE_H
+#define SENSOR_INTERFACE_H
 
-  this.s = this.Enum.False;
+#include "asdInterfaces.h"
 
-  this.i = new interface.I();
+#include <boost/shared_ptr.hpp>
 
-  this.i.ins.e = function() {
-    console.log('sugar.i_e');
-    if(this.s === this.Enum.False) if(this.s === this.Enum.False) this.i.outs.a();
-  }.bind(this);
-
+class Sensor
+{
+public:
+  virtual void Enable() = 0;
+  virtual void Disable() = 0;
 };
+
+class SensorCB
+{
+public:
+  virtual void Triggered() = 0;
+  virtual void Disabled() = 0;
+};
+
+class SensorInterface
+{
+public:
+  virtual void GetAPI(boost::shared_ptr<Sensor>*) = 0;
+  virtual void RegisterCB(boost::shared_ptr<SensorCB>) = 0;
+  virtual void RegisterCB(boost::shared_ptr<asd::channels::ISingleThreaded>) = 0;
+};
+
+#endif

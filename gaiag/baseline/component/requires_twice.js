@@ -35,14 +35,11 @@ component.requires_twice = function() {
       this.twice.outs.a();
     }
   }.bind(this);
-
   this.once.outs.a = function() {
     console.log('requires_twice.once_a');
   }.bind(this);
-
   this.twice.outs.a = function() {
     console.log('requires_twice.twice_a');
   }.bind(this);
-
 
 };

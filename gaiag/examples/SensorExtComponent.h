@@ -1,8 +1,7 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
-//
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -21,18 +20,11 @@
 //
 // Code:
 
-component.sugar = function() {
-  this.Enum= {
-    False: 0, True: 1
-  };
+#include "SensorInterface.h"
 
-  this.s = this.Enum.False;
-
-  this.i = new interface.I();
-
-  this.i.ins.e = function() {
-    console.log('sugar.i_e');
-    if(this.s === this.Enum.False) if(this.s === this.Enum.False) this.i.outs.a();
-  }.bind(this);
-
+class SensorExtComponent: public SensorInterface
+{
+public:
+  static boost::shared_ptr<SensorInterface> GetInstance();
+  static void ReleaseInstance();
 };

@@ -35,7 +35,7 @@ component.Reply = function() {
     if(true) {
       {
         s = this.u.ins.what();
-        if (s === interface.U.Status.Ok) {
+        if(s === interface.U.Status.Ok) {
           this.reply_I_Status = interface.I.Status.Yes;
         }
         else {
@@ -43,7 +43,7 @@ component.Reply = function() {
         }
       }
     }
-    return self.reply_I_Status;}.bind(this);
-
+    return self.reply_I_Status;
+  }.bind(this);
 
 };

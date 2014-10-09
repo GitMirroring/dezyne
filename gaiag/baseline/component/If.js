@@ -30,7 +30,7 @@ component.If = function() {
   this.i.ins.a = function() {
     console.log('If.i_a');
     {
-      if (this.t) {
+      if(this.t) {
         this.i.outs.b();
       }
       else {
@@ -39,6 +39,5 @@ component.If = function() {
       this.t = ! (this.t);
     }
   }.bind(this);
-
 
 };

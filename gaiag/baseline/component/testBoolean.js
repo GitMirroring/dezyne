@@ -32,5 +32,4 @@ component.testBoolean = function() {
     if(true) { }
   }.bind(this);
 
-
 };

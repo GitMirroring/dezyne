@@ -32,7 +32,7 @@ component.interface_port_overload = function() {
     {
       this.reply_I_R = interface.I.R.V;
     }
-    return self.reply_I_R;}.bind(this);
-
+    return self.reply_I_R;
+  }.bind(this);
 
 };

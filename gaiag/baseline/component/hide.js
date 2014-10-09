@@ -33,12 +33,11 @@ component.hide = function() {
     if(true) {
       b = this.b;
       c = this.g(this.b, this.c);
-      if (this.c) {
+      if(this.c) {
         this.i.outs.f();
       }
     }
   }.bind(this);
-
   this.g = function (b, d) {
     b = d;
     d = this.c;

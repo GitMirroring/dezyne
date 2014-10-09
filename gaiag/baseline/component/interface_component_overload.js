@@ -32,7 +32,7 @@ component.interface_component_overload = function() {
     {
       this.reply_interface_component_overload_R = interface.interface_component_overload.R.V;
     }
-    return self.reply_interface_component_overload_R;}.bind(this);
-
+    return self.reply_interface_component_overload_R;
+  }.bind(this);
 
 };

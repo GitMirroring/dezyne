@@ -75,29 +75,29 @@ void handle_event(void* scope, const asd::function<void()>& event)
   }
 }
 
-struct CB: public Console_CB
+struct CB: public ConsoleCB
 {
-  boost::shared_ptr<Console_API> api;
-  CB(  boost::shared_ptr<Console_API> api)
+  boost::shared_ptr<Console> api;
+  CB(  boost::shared_ptr<Console> api)
   : api(api)
   {}
-  void detected()
+  void Tripped()
   {
-    std::cout << "Console_CB.detected" << std::endl;
-    api->disarm();
+    std::cout << "ConsoleCB.Tripped" << std::endl;
   }
-  void deactivated()
+  void Deactivated()
   {
-    std::cout << "Console_CB.deactivated" << std::endl;
+    std::cout << "ConsoleCB.Deactivated" << std::endl;
   }
 };
 
 int main()
 {
-  boost::shared_ptr<AlarmSystemInterface> alarm_system = AlarmSystemComponent::GetInstance();
-  boost::shared_ptr<Console_API> api;
+  boost::shared_ptr<ConsoleInterface> alarm_system = AlarmSystemComponent::GetInstance();
+  boost::shared_ptr<Console> api;
   alarm_system->GetAPI(&api);
   alarm_system->RegisterCB(boost::make_shared<CB>(api));
 
-  api->arm();
+  api->SwitchOn();
+  api->SwitchOff();
 }

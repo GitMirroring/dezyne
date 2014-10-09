@@ -27,7 +27,7 @@
   :use-module (gaiag misc)
   :use-module (language asd parse)
   :use-module (language asd tokenize)
-  :export (asd->ast parse-asd read-asd read-ast))
+  :export (asd->ast find-file try-find-file parse-asd read-asd read-ast))
 
 (define (asd->ast x)
   (or (and-let* ((file-name (->string x))
@@ -52,7 +52,7 @@
 (define (path-find-file path file-name)
   (search-path path (components->file-name file-name)))
 
-(define* (find-file file-name :optional (extensions '(.asdi .asd)))
+(define* (find-file file-name :optional (extensions '(.asdi .asd .asdc)))
   (let* ((file-name (if (pair? file-name) file-name (list file-name)))
          (resolved
           (or (path-find-file *include-path* file-name)
@@ -70,6 +70,14 @@
     (when (not (member dir *include-path*))
       (set! *include-path* (cons dir *include-path*)))
     resolved))
+
+(define* (try-find-file file-name :optional (extensions '(.asdi .asd .asdc)))
+  (catch #t
+    (lambda () (with-error-to-port
+                   (open-output-file "/dev/null")
+                 (lambda ()
+                   (find-file file-name extensions))))
+    (lambda (key . args) #f)))
 
 (define* (read-asd file-name :optional (register identity))
   (register (read-asd- (find-file file-name))))

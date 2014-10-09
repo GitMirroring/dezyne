@@ -1,0 +1,5 @@
+gen1-interface  gen1-event    gen2-event
+Console         SwitchOn      arm
+Console         SwitchOff     disarm
+ConsoleCB       Tripped       detected
+ConsoleCB       Deactivated   deactivated

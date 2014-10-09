@@ -32,7 +32,7 @@ component.imperative = function() {
 
   this.i.ins.e = function() {
     console.log('imperative.i_e');
-    if(this.state == this.States.I) {
+    if(this.state === this.States.I) {
       {
         this.i.outs.f();
         this.i.outs.g();
@@ -40,12 +40,12 @@ component.imperative = function() {
         this.state = this.States.II;
       }
     }
-    else if (this.state == this.States.II) {
+    else if(this.state === this.States.II) {
       {
         this.state = this.States.III;
       }
     }
-    else if (this.state == this.States.III) {
+    else if(this.state === this.States.III) {
       {
         this.i.outs.f();
         this.i.outs.g();
@@ -54,13 +54,12 @@ component.imperative = function() {
         this.state = this.States.IV;
       }
     }
-    else if (this.state == this.States.IV) {
+    else if(this.state === this.States.IV) {
       {
         this.i.outs.h();
         this.state = this.States.I;
       }
     }
   }.bind(this);
-
 
 };

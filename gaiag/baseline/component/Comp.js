@@ -35,13 +35,13 @@ component.Comp = function() {
 
   this.client.ins.initialize = function() {
     console.log('Comp.client_initialize');
-    if(this.s == this.State.Uninitialized) {
+    if(this.s === this.State.Uninitialized) {
       {
         res = this.device_A.ins.initialize();
-        if (res === interface.IDevice.result_t.OK) {
+        if(res === interface.IDevice.result_t.OK) {
           this.res = this.device_A.ins.calibrate();
         }
-        if (res === interface.IDevice.result_t.OK) {
+        if(res === interface.IDevice.result_t.OK) {
           this.s = this.State.Initialized;
           this.reply_IDevice_result_t = interface.IDevice.result_t.OK;
         }
@@ -51,26 +51,26 @@ component.Comp = function() {
         }
       }
     }
-    else if (this.s == this.State.Initialized) {
+    else if(this.s === this.State.Initialized) {
       assert (false);
     }
-    else if (this.s == this.State.Error) {
+    else if(this.s === this.State.Error) {
       assert (false);
     }
-    return self.reply_IComp_result_t;}.bind(this);
-
+    return self.reply_IComp_result_t;
+  }.bind(this);
   this.client.ins.recover = function() {
     console.log('Comp.client_recover');
-    if(this.s == this.State.Uninitialized) {
+    if(this.s === this.State.Uninitialized) {
       assert (false);
     }
-    else if (this.s == this.State.Initialized) {
+    else if(this.s === this.State.Initialized) {
       assert (false);
     }
-    else if (this.s == this.State.Error) {
+    else if(this.s === this.State.Error) {
       {
         res = this.device_A.ins.calibrate();
-        if (res === interface.IDevice.result_t.OK) {
+        if(res === interface.IDevice.result_t.OK) {
           this.s = this.State.Initialized;
           this.reply_IDevice_result_t = interface.IDevice.result_t.OK;
         }
@@ -80,20 +80,20 @@ component.Comp = function() {
         }
       }
     }
-    return self.reply_IComp_result_t;}.bind(this);
-
+    return self.reply_IComp_result_t;
+  }.bind(this);
   this.client.ins.perform_actions = function() {
     console.log('Comp.client_perform_actions');
-    if(this.s == this.State.Uninitialized) {
+    if(this.s === this.State.Uninitialized) {
       assert (false);
     }
-    else if (this.s == this.State.Initialized) {
+    else if(this.s === this.State.Initialized) {
       {
         res = this.device_A.ins.perform_action1();
-        if (res === interface.IDevice.result_t.OK) {
+        if(res === interface.IDevice.result_t.OK) {
           this.res = this.device_A.ins.perform_action2();
         }
-        if (res === interface.IDevice.result_t.OK) {
+        if(res === interface.IDevice.result_t.OK) {
           this.s = this.State.Initialized;
           this.reply_IDevice_result_t = interface.IDevice.result_t.OK;
         }
@@ -103,10 +103,10 @@ component.Comp = function() {
         }
       }
     }
-    else if (this.s == this.State.Error) {
+    else if(this.s === this.State.Error) {
       assert (false);
     }
-    return self.reply_IComp_result_t;}.bind(this);
-
+    return self.reply_IComp_result_t;
+  }.bind(this);
 
 };

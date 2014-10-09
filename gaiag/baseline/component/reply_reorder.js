@@ -34,7 +34,6 @@ component.reply_reorder = function() {
       this.r.ins.ping();
     }
   }.bind(this);
-
   this.r.outs.pong = function() {
     console.log('reply_reorder.r_pong');
     {
@@ -48,6 +47,5 @@ component.reply_reorder = function() {
       }
     }
   }.bind(this);
-
 
 };

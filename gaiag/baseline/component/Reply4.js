@@ -39,20 +39,20 @@ component.Reply4 = function() {
       {
         s = this.u.ins.what();
         this.s = this.u.ins.what();
-        if (s === interface.U.Status.Ok) {
+        if(s === interface.U.Status.Ok) {
           v = this.fun();
-          if (v === this.Status.Yes) this.reply_I_Status = interface.I.Status.Yes;
+          if(v === this.Status.Yes) this.reply_I_Status = interface.I.Status.Yes;
           else this.reply_I_Status = interface.I.Status.No;
         }
         else {
           v = this.fun_arg(this.Status.No);
-          if (v === this.Status.Yes) this.reply_I_Status = interface.I.Status.Yes;
+          if(v === this.Status.Yes) this.reply_I_Status = interface.I.Status.Yes;
           else this.reply_I_Status = interface.I.Status.No;
         }
       }
     }
-    return self.reply_I_Status;}.bind(this);
-
+    return self.reply_I_Status;
+  }.bind(this);
   this.fun = function () {
     return this.Status.Yes;
   }.bind(this);

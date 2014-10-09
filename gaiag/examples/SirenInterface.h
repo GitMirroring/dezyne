@@ -2,6 +2,7 @@
 //
 // This file is part of Gaiag.
 //
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
@@ -21,18 +22,22 @@
 //
 // Code:
 
-component.sugar = function() {
-  this.Enum= {
-    False: 0, True: 1
-  };
+#ifndef SIREN_INTERFACE_H
+#define SIREN_INTERFACE_H
 
-  this.s = this.Enum.False;
+#include <boost/shared_ptr.hpp>
 
-  this.i = new interface.I();
-
-  this.i.ins.e = function() {
-    console.log('sugar.i_e');
-    if(this.s === this.Enum.False) if(this.s === this.Enum.False) this.i.outs.a();
-  }.bind(this);
-
+class Siren
+{
+public:
+  virtual void Turnon() = 0;
+  virtual void Turnoff() = 0;
 };
+
+class SirenInterface
+{
+public:
+  virtual void GetAPI(boost::shared_ptr<Siren>*) = 0;
+};
+
+#endif

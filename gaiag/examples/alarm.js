@@ -28,15 +28,15 @@ component.Console = function() {
   this.console.outs.detected = function() { console.log('Alarm detected'); }
   this.console.outs.deactivated = function() { console.log('Alarm deactivated'); }
 };
-component.Sensor = function() {
+component.SensorExt = function() {
   this.sensor = new interface.Sensor();
-  this.sensor.ins.enable = function() { console.log('Sensor enabled')};
-  this.sensor.ins.disable = function() { console.log('Sensor disabled');};
+  this.sensor.ins.enable = function() { console.log('SensorExt enable')};
+  this.sensor.ins.disable = function() { console.log('SensorExt disable');};
 }
-component.Siren = function() {
+component.SirenExt = function() {
   this.siren = new interface.Siren();
-  this.siren.ins.turnon = function() { console.log('Siren on'); };
-  this.siren.ins.turnoff = function() { console.log('Siren off'); };
+  this.siren.ins.turnon = function() { console.log('SirenExt turnon'); };
+  this.siren.ins.turnoff = function() { console.log('SirenExt turnoff'); };
 }
 
 var alarm = new component.AlarmSystem();

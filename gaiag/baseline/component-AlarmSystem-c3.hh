@@ -26,8 +26,8 @@
 #define COMPONENT_ALARMSYSTEM_HH
 
 #include "component-Alarm-c3.hh"
-#include "component-Sensor-c3.hh"
-#include "component-Siren-c3.hh"
+#include "component-SensorExt-c3.hh"
+#include "component-SirenExt-c3.hh"
 
 
 #include "interface-Console-c3.hh"
@@ -37,8 +37,8 @@ namespace component
   struct AlarmSystem
   {
     Alarm is_alarm;
-    Sensor is_sensor;
-    Siren is_siren;
+    SensorExt is_sensor;
+    SirenExt is_siren;
 
     interface::Console& po_console;
 

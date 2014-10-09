@@ -231,11 +231,20 @@
 (define-method (gom:interface (o <gom:port>))
   (gom:import (.type o)))
 
+(define-method (gom:interface (o <model>))
+  (gom:interface (gom:port o)))
+
 (define-method (gom:system (o <top>)) #f)
 (define-method (gom:system (o <system>)) o)
 (define-method (gom:system (o <list>)) (find (is? <system>) o))
 (define-method (gom:system (o <ast-list>))
   (find (is? <system>) (.elements o)))
+
+(define-method (gom:port (o <interface>) name)
+  #f)
+
+(define-method (gom:port (o <model>) name)
+  (find (lambda (o) (eq? (.name o) name)) (gom:ports o)))
 
 (define-method (gom:port (o <interface>))
   #f)
@@ -244,11 +253,14 @@
   (car ((gom:filter gom:provides?) (.ports o))))
 
 (define-method (gom:port (o <system>) (bind <binding>))
-  (let ((port (.port bind)))
-   (or (gom:port o port)
-       (let* ((instance (gom:instance o port))
-              (component (and=> instance .component)))
-         (make <gom:port> :direction 'requires :type instance :name port)))))
+  (let* ((port (.port bind)))
+    (or
+     (and-let* ((name (.instance bind))
+                (instance (gom:instance o name))
+                (type (and=> instance .component))
+                (component (gom:import type)))
+               (gom:port component port))
+     (gom:port o port))))
 
 (define-method (gom:instance (o <system>) (name <boolean>))
   #f)
@@ -363,12 +375,6 @@
 
 (define-method (gom:function (o <model>) name)
   (find (lambda (o) (eq? (.name o) name)) (gom:functions o)))
-
-(define-method (gom:port (o <interface>) name)
-  #f)
-
-(define-method (gom:port (o <model>) name)
-  (find (lambda (o) (eq? (.name o) name)) (gom:ports o)))
 
 (define-method (gom:model (o <component>)) o)
 (define-method (gom:model (o <interface>)) o)

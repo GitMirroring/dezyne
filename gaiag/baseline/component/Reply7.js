@@ -31,8 +31,8 @@ component.Reply7 = function() {
   this.p.ins.foo = function() {
     console.log('Reply7.p_foo');
     this.f();
-    return self.reply_IReply7_E;}.bind(this);
-
+    return self.reply_IReply7_E;
+  }.bind(this);
   this.f = function () {
     v = this.r.ins.foo();
     this.reply_IReply7_E = v;

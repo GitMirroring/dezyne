@@ -392,6 +392,7 @@
   (let* ((left (.left bind))
          (left-port (gom:port model left))
          (right (.right bind))
+         (right-port (gom:port model right))
          (provided-required (if (gom:provides? left-port)
                                 (cons left right)
                                 (cons right left)))
@@ -508,7 +509,7 @@
                    (->string (list (.scope type) "_" (.name type))))
          ""))))
 
-(define (return-type port event)
+(define-method (return-type port (event <event>))
   (let ((type ((compose .type .type) event))
         (scope (and=> port .type)))
     (cond

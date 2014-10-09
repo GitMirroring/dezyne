@@ -35,7 +35,6 @@ component.function = function() {
       }
     }
   }.bind(this);
-
   this.i.ins.b = function() {
     console.log('function.i_b');
     if(true) {
@@ -46,9 +45,8 @@ component.function = function() {
       }
     }
   }.bind(this);
-
   this.toggle = function () {
-    if (this.f) {
+    if(this.f) {
       this.i.outs.c();
     }
     this.f = ! (this.f);

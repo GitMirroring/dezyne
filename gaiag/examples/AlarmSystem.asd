@@ -20,17 +20,17 @@
 //
 // Code:
 
-import Alarm;
-import Sensor;
-import Siren;
+import Alarm.asd;
+import SensorExt.asd;
+import SirenExt.asd;
 
 system AlarmSystem
 {
   provides Console console;
 
   Alarm alarm;
-  Sensor sensor;
-  Siren siren;
+  SensorExt sensor;
+  SirenExt siren;
 
   console <=> alarm.console;
   alarm.sensor <=> sensor.sensor;

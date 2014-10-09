@@ -1,85 +1,74 @@
 ##include "component-#.model -c3.hh"
+##include "asdInterfaces.h"
 
 ##include "#.model Component.h"
+
+##include <boost/make_shared.hpp>
 
 ##include <map>
 
 namespace component
 {
-  static std::map<#.model *,boost::tuple< boost::shared_ptr<#.model Interface>, #
-(comma-join (map (lambda (type) (->string (list "boost::shared_ptr<" type ">")))
-                 (map .type (filter gom:provides? ((compose .elements .ports) model)))))  > > g_handwritten;
+  struct SingleThreaded
+  : public asd::channels::ISingleThreaded
+  {
+    void processCBs(){}
+  };
 
+  static std::map<#.model *, boost::shared_ptr<#(.type (gom:port model)) Interface> > g_handwritten ;
 
-#(map (lambda (port)
-        (->string
-         (list "struct " (.type port) "_fixme_from_spec\n: public interface::" (.type port) "_fixme_from_spec\n"
+#(define (ap port) (->string (list (.type port) "_API")))
+#(define (cb port)
+   ;;(event2->interface1-event1-alist (.))
+
+   (->string (list (.type port) "_fixme_from_spec")))
+
+#(define ((gen1-interfaces dir?) model)
+   (let* ((port (gom:port model))
+          (provided
+           (filter dir? ((compose .elements .events gom:interface) port)))
+          (alist (event2->interface1-event1-alist (.type port)))
+          (gen1-provided (filter identity (map (lambda (x) (assoc (.name x) alist)) provided))))
+     (if (pair? gen1-provided) (list gen1-provided) '())))
+
+#(map (lambda (alist)
+        (let* ((entry (car alist))
+               (interface (second entry))
+               (port-type (.type (gom:port model))))
+         (list "struct " interface "\n: public ::" interface "\n"
                "{\n"
-               "interface::iprovides_once& cb;\n"
-               (.type port) "(interface::" (.type port) "& cb)\n"
-               ": cb(cb)\n"
+               "interface::" port-type "& port;\n"
+               interface "(interface::" port-type "& port)\n"
+               ": port(port)\n"
                "{}\n"
                (map
-                (lambda (event)
-                  (let* ((type ((compose .type .type) event))
-                         (return-type (return-type port event))
-                         (reply-type (->string (list (.type port) "_" (.name type)))))
-                    (->string
-                     (list "void " (.name event) "(){ cb.out." (.name event) "(); }\n"))))
-                (filter gom:out? (gom:events port)))
+                (lambda (entry)
+                  (list "void " (third entry) "(){ port.out." (first entry) "(); }\n"))
+                alist)
                "};\n")))
-      (filter gom:provides? ((compose .elements .ports) model)))
+      ((gen1-interfaces gom:out?) model))
+
 #.model ::#.model ()
 {
-  boost::shared_ptr<#.model Interface> component = boost::shared_ptr<#.model Interface::GetInstance();
-#(map (lambda (port) (->string (list "boost::shared_ptr<interface::" (.type port) "> api_" (.name port) ";\n"
+  boost::shared_ptr<#(.type (gom:port model)) Interface> component = #.model Component::GetInstance() ;
+#(map (lambda (port) (->string (list "boost::shared_ptr< ::" (.type port) "> api_" (.name port) ";\n"
                                        "component->GetAPI(&api_" (.name port) ");\n")))
         (filter gom:provides? ((compose .elements .ports) model)))
-g_handwritten.insert (std::make_pair (this,boost::make_tuple (component,#(comma-join (map (lambda (port) (->string (list "api_" (.name port))))
-                                                                                          (filter gom:provides? ((compose .elements .ports) model)))))));
-
-#(map
-  (lambda (port)
-    (map
-     (lambda (event)
-       (let* ((type ((compose .type .type) event))
-              (return-type (return-type port event))
-              (reply-type (->string (list (.type port) "_" (.name type)))))
-         (->string
-          (list
-           "component->RegisterCB(boost::make_shared<" (.type port) "_todo_get_from_spec>(boost::ref(api_" (.name port) ")));\n"))))
-     (filter gom:out? (gom:events port))))
-  (filter gom:provides? (gom:ports model)))
-    component->RegisterCB(boost::make_shared<SingleThreaded>()); //fixme
-
-#(map
-  (lambda (port)
-    (map
-     (lambda (event)
-       (let* ((type ((compose .type .type) event))
-              (return-type (return-type port event))
-              (reply-type (->string (list (.type port) "_" (.name type)))))
-         (->string
-          (list
-           (.name port) "." (.name event) " = asd:bind(&" (.type port) ",api_" (.name port) ");\n"))))
-     (filter (gom:dir-matches? port) (gom:events port))))
-  (filter gom:provides? (gom:ports model)))}
+g_handwritten.insert (std::make_pair (this,component));
+#(map (lambda (alist)
+        (let* ((entry (car alist))
+               (interface (second entry)))
+          (list "component->RegisterCB(boost::make_shared<" interface ">(boost::ref(" (.name (gom:port model)) ")));\n")))
+      ((gen1-interfaces gom:out?) model))
+#(if (pair? ((gen1-interfaces gom:out?) model)) "component->RegisterCB(boost::make_shared<SingleThreaded>()); //fixme")
+#(map (lambda (alist)
+        (let* ((entry (car alist))
+               (interface (second entry)))
+          (map
+           (lambda (entry)
+             (let ((port (gom:port model)))
+              (list (.name port) ".in." (first entry) " = asd::bind(&::" (.type port) "::" (third entry) ",api_" (.name port) ");\n")))
+           alist)))
+      ((gen1-interfaces gom:in?) model))
 }
-#(map
-  (lambda (port-index)
-    (let ((port (car port-index))
-          (index (1+ (cadr port-index))))
-     (map
-      (lambda (event)
-        (let* ((type ((compose .type .type) event))
-               (return-type (return-type port event))
-               (reply-type (->string (list (.type port) "_" (.name type)))))
-          (->string
-           (list
-            return-type " " (.name model) "::" (.name port) "_" (.name event) "()"
-            "\n{\n"
-            "g_handwritten[this].get<" index ">()->" (.name event) "();"
-            "\n}\n")))) (filter (gom:dir-matches? port) (gom:events port)))))
-(let* ((ports (filter gom:provides? (gom:ports model)))
-       (indices (iota (length ports))))
-  (zip ports indices)))
+}

@@ -31,5 +31,4 @@ component.colliding_component = function() {
     assert (false);
   }.bind(this);
 
-
 };

@@ -1,46 +1,52 @@
-##ifndef #.COMPONENT _INTERFACE_H
-##define #.COMPONENT _INTERFACE_H
+##ifndef #.INTERFACE _INTERFACE_H
+##define #.INTERFACE _INTERFACE_H
 
 ##include "asdInterfaces.h"
 
 ##include <boost/shared_ptr.hpp>
 
-#(map (lambda (port)
-        (->string
-         (list "struct " (.type port) "_API\n"
-               "{\n"
-               (map
-                (lambda (event)
-                  (let* ((return-type (return-type port event)))
-                    (->string
-                     (list "virtual " return-type " " (.name event) "() = 0;\n"))))
-                (filter gom:in? (gom:events port)))
-               "};\n")))
-      (filter gom:provides? ((compose .elements .ports) model)))
+#(map (lambda (alist)
+        (let* ((entry (car alist))
+               (interface (second entry)))
+          (list "struct " interface "\n"
+                "{\n"
+                "virtual ~" interface "(){}\n"
+                (map
+                 (lambda (entry)
+                   (let* ((event (gom:event model (first entry)))
+                          (return-type (return-type #f event)))
+                     (list "virtual " return-type " " (third entry) "() = 0;\n")))
+                 alist)
+                "};\n")))
+      ((gen1-interfaces gom:in?) model))
 
-#(map (lambda (port)
-        (->string
-         (list "struct " (.type port) "_CB\n"
-               "{\n"
-               (map
-                (lambda (event)
-                  (let* ((return-type (return-type port event)))
-                    (->string
-                     (list "virtual " return-type " " (.name event) "() = 0;\n"))))
-                (filter gom:out? (gom:events port)))
-               "};\n")))
-      (filter gom:provides? ((compose .elements .ports) model)))
+#(map (lambda (alist)
+        (let* ((entry (car alist))
+               (interface (second entry)))
+          (list "struct " interface "\n"
+                "{\n"
+                "virtual ~" interface "(){}\n"
+                (map
+                 (lambda (entry)
+                   (let* ((event (gom:event model (first entry)))
+                          (return-type (return-type #f event)))
+                     (list "virtual " return-type " " (third entry) "() = 0;\n")))
+                 alist)
+                "};\n")))
+      ((gen1-interfaces gom:out?) model))
 
 struct #.model Interface
 {
-#(map (lambda (port)
-        (->string
-         (list "virtual void GetAPI(boost::shared_ptr<" (.type port) "_API>*) = 0;\n")))
-      (filter gom:provides? ((compose .elements .ports) model)))
-#(map (lambda (port)
-        (->string
-         (list "virtual void RegisterCB(boost::shared_ptr<" (.type port) "_CB>) = 0;\n")))
-      (filter gom:provides? ((compose .elements .ports) model)))
+#(map (lambda (alist)
+        (let* ((entry (car alist))
+               (interface (second entry)))
+          (list "virtual void GetAPI(boost::shared_ptr<" interface ">*) = 0 ;\n")))
+      ((gen1-interfaces gom:in?) model))#
+(map (lambda (alist)
+        (let* ((entry (car alist))
+               (interface (second entry)))
+          (list "virtual void RegisterCB(boost::shared_ptr<" interface ">) = 0;\n")))
+      ((gen1-interfaces gom:out?) model))
 virtual void RegisterCB (boost::shared_ptr<asd::channels::ISingleThreaded>) = 0;
 };
 
