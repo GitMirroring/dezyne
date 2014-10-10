@@ -64,7 +64,7 @@ clean:
 test: check
 check: compile
 	./test.sh </dev/null
-	$(MAKE) csp demo asserts c++ javascript python pretty simulate wfc
+	$(MAKE) csp demo asserts c++ goops javascript python pretty simulate wfc
 
 REGRESSION_SOURCES = $(shell cd examples/regression && grep -l ^component *.asd)
 WFC_SOURCES = $(shell cd examples/wfc && ls -1 *.asd)
@@ -423,6 +423,52 @@ javascript-alarm: compile
 javascript: compile javascript-alarm javascript-regression
 
 code: c++-alarm python-alarm javascript-alarm out/Reply7.compiles out/Reply7.py out/Reply7.js
+
+
+define .GOOPS_REGRESSION
+rm -rf out && mkdir out && ln -s ../examples ../templates out
+cd out && $(shell pwd)/gaiag -l goops $<
+-$(diff) baseline/component/$*.scm out/component
+cat examples/header.scm\
+	 $$(find out/interface out/component -name '*.scm')\
+	examples/alarm.scm > $@
+cat examples/header.scm $$(find out/interface out/component -name '*.scm') > $@
+guile $@ $(UPDATE)
+$(diff) baseline/component/$*.scm out/component | diffstat || true
+@$(diff) baseline/component/$*.scm out/component > /dev/null
+endef
+
+#out/%.scm.up: UPDATE=||:; cp out/component/$*.scm baseline/component && cp out/interface/*.scm baseline/interface
+out/%.scm.up: UPDATE=&& cp out/component/$*.scm baseline/component && cp out/interface/*.scm baseline/interface
+out/%.scm.up: examples/regression/%.asd
+	$(.GOOPS_REGRESSION)
+
+out/%.scm: examples/regression/%.asd
+	$(.GOOPS_REGRESSION)
+
+goops-regression: $(PY_SOURCES:%.asd=out/%.scm)
+goops-update: $(PY_SOURCES:%.asd=out/%.scm.up)
+
+goops-alarm: compile
+	rm -rf out && mkdir out && ln -s ../examples ../templates out
+	cd out && for file in\
+	 	examples/AlarmSystem.asd\
+	 	examples/regression/Alarm.asd\
+	 	examples/Console.asd\
+	 	examples/Sensor.asd\
+	 	examples/Siren.asd;\
+	 	do $(shell pwd)/gaiag -l goops $$file; done
+	cat examples/header.scm\
+		 $$(find out/interface out/component -name '*.scm')\
+		examples/alarm.scm > out/alarm.scm
+	cd out && bash ./alarm.scm
+	$(diff) baseline/interface/Console.scm out/interface
+	$(diff) baseline/interface/Sensor.scm out/interface
+	$(diff) baseline/interface/Siren.scm out/interface
+	$(diff) baseline/component/Alarm.scm out/component
+	$(diff) baseline/component/AlarmSystem.scm out/component
+
+goops: compile goops-alarm goops-regression
 
 glue:
 	rm -rf out && mkdir -p out && ln -s ../examples ../../webdemo ../templates ../$(DEPTH)/webdemo/asd out

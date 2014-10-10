@@ -35,7 +35,7 @@ class #.model  ():
     def #port _#event  (self):
         sys.stderr.write ('#model .#port _#event \n')
 #statement #(if (not (eq? type 'void))
-(list "        return self.reply_" reply-type))
+(list "        return self.reply_" reply-type "_" reply-name))
 
 #}) (filter (gom:dir-matches? port) (gom:events port))))
    (gom:ports model))#

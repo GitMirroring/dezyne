@@ -59,8 +59,8 @@
            init-instance
            init-member
            init-port
+           join
            dump-indented
-           enum->identifier
            expression->string
            indenter
            pipe
@@ -82,6 +82,7 @@
 (define (pipe producer consumer)
   (with-input-from-string (with-output-to-string producer) consumer))
 
+(define join (make-parameter (->join ", ")))
 (define indenter (make-parameter indent))
 
 (define (dump-indented file-name thunk)
@@ -128,6 +129,7 @@
 (define statements.event (make-parameter #f))
 
 (define (snippet name pairs)
+  ;;(stderr "snippet: ~a\n" name)
   (parameterize ((template-dir (append (template-dir) '(snippets))))
     (animate-template name pairs)))
 
@@ -135,13 +137,15 @@
   (string->symbol (option-ref (parse-opts (command-line)) 'language 'c++)))
 
 (define-method (extension (o <interface>))
-  (assoc-ref '((c++ . .hh)
+  (assoc-ref `((c++ . .hh)
+               (goops . .scm)
                (javascript . .js)
                (python . .py))
              (language)))
 
 (define-method (extension (o <model>))
   (assoc-ref '((c++ . .cc)
+               (goops . .scm)
                (javascript . .js)
                (python . .py))
              (language)))
@@ -168,10 +172,13 @@
 
 (define* (->code model src :optional (locals '()) (indent 1) (compound? #t))
   (define (enum? identifier) (gom:enum model identifier))
+  (define (member? identifier) (gom:variable model identifier))
+  (define (local? identifier) (assoc-ref locals identifier))
+  (define (var? identifier) (or (member? identifier) (local? identifier)))
 
   (let ((port (statements.port))
         (event (statements.event))
-        (space (make-string (* indent 4) #\space)))
+        (space (make-string (* indent (if (eq? (language) 'python) 4 2)) #\space)))
     (->string
      (match src
        (() "")
@@ -191,20 +198,24 @@
                    (expression ,(expression->string model expression locals))
                    (then ,(->code model then locals (1+ indent)))
                    (else ,(->code model else locals (1+ indent))))))
-       (($ <assign> name (and ($ <action>) (get! action)))
+       (($ <assign> identifier (and ($ <action>) (get! action)))
         (snippet 'assign
                  `((space ,space)
-                   (identifier ,name)
+                   (identifier ,identifier)
+                   (member? ,(member? identifier))
                    (expression ,(expression->string model (action) locals)))))
-       (($ <assign> name (and ($ <call>) (get! call)))
+       (($ <assign> identifier (and ($ <call>) (get! call)))
         (snippet 'assign
                  `((space ,space)
-                   (identifier ,name)
+                   (identifier ,identifier)
+                   (member? ,(member? identifier))
                    (expression ,(expression->string model (call) locals)))))
        (($ <assign> identifier expression)
         (snippet 'assign
                  `((space ,space)
-                   (identifier ,(->code model identifier locals 0))
+                   ;; FIXME?(identifier ,(->code model identifier locals 0))
+                   (identifier ,identifier)
+                   (member? ,(member? identifier))
                    (expression ,(expression->string model expression locals)))))
        (($ <on> triggers statement)
         (if (find (lambda (t) (and (eq? (.port t) (.name port))
@@ -220,25 +231,30 @@
                    (function ,function)
                    (arguments ,(->code model arguments locals indent)))))
        (($ <arguments> arguments)
-        ((->join ", ")
+        ((join)
          (map (lambda (o) (expression->string model o locals)) arguments)))
        (($ <compound> '()) (snippet 'compound-empty `((space ,space))))
        (($ <compound> statements)
         (snippet
-         (if compound? 'compound 'statements)
+         (symbol-append
+          (if compound? 'compound 'statements)
+          (if (is-a? (car statements) <guard>) '-guarded (string->symbol "")))
          `((space ,space)
            (statements
             ,(let loop ((statements statements) (locals locals))
                (if (null? statements)
                    '()
                    (let* ((statement (car statements))
-                          (locals (match statement
-                                    (($ <variable> name type expression)
-                                     (acons name statement locals))
-                                    (_ locals))))
-                     (let ((str (->code model (car statements) locals indent compound?)))
-                       (cons str (loop (cdr statements) locals))))))
-))))
+                          (variable? (is-a? statement <variable>))
+                          (locals (if variable? (acons (.name statement) statement locals)
+                                      locals)))
+                     (let ((statement (->code model (car statements) locals indent compound?))
+                           (continuation (loop (cdr statements) locals)))
+                       (if variable?
+                           (list (snippet 'context `((space ,space)
+                                                     (statement ,statement)
+                                                     (continuation ,continuation))))
+                           (cons statement continuation))))))))))
        (($ <illegal>) (snippet 'illegal `((space ,space))))
        (($ <action> trigger)
         (let* ((port-name (.port trigger))
@@ -252,11 +268,20 @@
                      (port ,port-name)
                      (direction ,(.direction event))
                      (event ,event-name)))))
-       (($ <reply> expression)
+       (($ <reply> (and ($ <expression> ($ <literal> scope type field)) (get! expression)))
           (snippet 'reply
                    `((space ,space)
-                     (name ,(enum->identifier model expression locals))
-                     (expression ,(expression->string model expression locals)))))
+                     (type ,scope)
+                     (name ,type)
+                     (expression ,(expression->string model (expression) locals)))))
+       (($ <reply> (and ($ <expression> ($ <var> name)) (get! expression)))
+        (let* ((decl (var? name))
+               (type (.type decl)))
+          (snippet 'reply
+                   `((space ,space)
+                     (type ,(.scope type))
+                     (name ,(.name type))
+                     (expression ,(expression->string model (expression) locals))))))
        (($ <return> #f) (snippet 'return-void `((space ,space))))
        (($ <return> expression)
         (snippet 'return
@@ -290,7 +315,7 @@
                    (type ,(->code model type))
                    (expression ,(expression->string model expression locals)))))
        (($ <parameters> parameters)
-        ((->join ", ") (map (lambda (x) (->code model x)) parameters)))
+        ((join) (map (lambda (x) (->code model x)) parameters)))
        (($ <gom:parameter> name type)
         (snippet 'parameter `((name ,name) (type ,(->code model type)))))
        ((? char?) (make-string 1 src))
@@ -383,9 +408,8 @@
        (snippet op `((op ,op) (lhs ,lhs) (rhs ,rhs)))))
     (((or '!= '< '<= '> '>= '+ '-) lhs rhs)
      (let ((lhs (expression->string model lhs locals))
-           (rhs (expression->string model rhs locals))
-           (op (car o)))
-       (list lhs " " op " " rhs )))
+           (rhs (expression->string model rhs locals)))
+       (snippet 'op `((op ,(car o)) (lhs ,lhs) (rhs ,rhs)))))
     (_ (->code model o locals 0))))
 
 (define ((connect-ports model snippet) bind)
@@ -433,7 +457,8 @@
 (define ((define-on model port snippet) event)
   (let* ((type ((compose .type .type) event))
          (return-type (return-type port event))
-         (reply-type (->string (list (.type port) "_" (.name type))))
+         (reply-name (.name type))
+         (reply-type (.type port))
          (statement
           (or (and-let*
                (((is-a? model <component>))
@@ -449,6 +474,7 @@
                        (direction ,(.direction event))
                        (model ,(.name model))
                        (type ,(.name type))
+                       (reply-name ,reply-name)
                        (reply-type ,reply-type)
                        (return-type ,return-type)
                        (statement ,statement)))))
@@ -496,19 +522,6 @@
    (lambda (x) (snippet 'declare-reply `((type ,(.name o)) (name ,(.name x)))))
    (gom:interface-enums o)))
 
-(define-method (enum->identifier (model <model>) (o <expression>) locals)
-  (define (member? identifier) (gom:variable model identifier))
-  (define (local? identifier) (assoc-ref locals identifier))
-  (define (var? identifier) (or (member? identifier) (local? identifier)))
-  (match o
-    (($ <expression> ($ <literal> scope type field))
-     (->string (list scope "_" type)))
-    (($ <expression> ($ <var> name))
-     (or (and-let* ((decl (var? name))
-                    (type (.type decl)))
-                   (->string (list (.scope type) "_" (.name type))))
-         ""))))
-
 (define-method (return-type port (event <event>))
   (let ((type ((compose .type .type) event))
         (scope (and=> port .type)))
@@ -523,15 +536,13 @@
 (define (binding-name model bind)
   (let ((instance (gom:instance model bind))
         (port (gom:port model bind)))
-    (list
-     (match instance
-       (($ <instance>) (.name instance))
-       (($ <interface>) (.name instance))
-       )
-     "."
-     (match port
-       (($ <gom:port>) (.name port))
-       (($ <interface>) (list "x" (.name port)))))))
+    (snippet 'binding
+             `((instance . ,(match instance
+                              (($ <instance>) (.name instance))
+                              (($ <interface>) (.name instance))))
+               (port . ,(match port
+                          (($ <gom:port>) (.name port))
+                          (($ <interface>) (list "x" (.name port)))))))))
 
 (define (bind-port? bind)
   (or (not (.instance (.left bind))) (not (.instance (.right bind)))))

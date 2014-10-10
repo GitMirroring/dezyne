@@ -1,0 +1,2 @@
+
+#space (set! #(if member? (list "(." identifier " o)") identifier)  #expression)

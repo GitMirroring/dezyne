@@ -46,7 +46,7 @@ namespace component
     std::cout << "#model .#port _#event" << std::endl;
     #statement #
     (if (not (eq? type 'void))
-(list "    return reply_" reply-type ";\n"
+(list "    return reply_" reply-type "_" reply-name ";\n"
       ))
   }
 #}) (filter (gom:dir-matches? port) (gom:events port))))

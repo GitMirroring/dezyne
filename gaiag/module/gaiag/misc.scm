@@ -62,7 +62,6 @@
            gulp-port
            hash-read-string
            hash-table->alist
-           join
            list<
            mkdir-p
            null-is-#f
@@ -188,8 +187,9 @@
 (define (read-string-12.04)
   (read-delimited ""))
 
-(if (not (defined? 'read-string))
-    (module-define! (current-module) 'read-string read-string-12.04))
+(when (not (defined? 'read-string))
+    (module-define! (current-module) 'read-string read-string-12.04)
+    (export read-string))
 
 (when (not (defined? 'supports-source-properties?)) ;; guile-2.0.5/Ubuntu 12.04
   (module-define! (current-module) 'supports-source-properties?

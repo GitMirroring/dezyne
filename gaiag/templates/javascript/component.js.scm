@@ -15,7 +15,7 @@ component.#.model  = function() {
   this.#port .#direction s.#event  = function() {
   console.log('#model .#port _#event ');
   #statement #(if (not (eq? type 'void))
-(list "return self.reply_" reply-type ";\n")) }.bind(this);
+(list "return self.reply_" reply-type "_" reply-name ";\n")) }.bind(this);
 #}) (filter (gom:dir-matches? port) (gom:events port))))
    (gom:ports model))#
 (map (define-function model #{

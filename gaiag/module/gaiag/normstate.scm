@@ -37,7 +37,6 @@
   :use-module (gaiag misc)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
-  :use-module (gaiag scheme)
 
   :use-module (oop goops)
   :use-module (oop goops describe)

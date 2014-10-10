@@ -24,19 +24,10 @@
 
   :use-module (system repl error-handling)
 
-  :use-module (gaiag misc)
-  :use-module (gaiag reader)
-
-  :use-module (gaiag asserts)
-  :use-module (gaiag c++)
   :use-module (gaiag coverage)
-  :use-module (gaiag csp)
-  :use-module (gaiag mangle)
+  :use-module (gaiag misc)
   :use-module (gaiag pretty-print)
-  :use-module (gaiag resolve)
-  :use-module (gaiag scheme)
-  :use-module (gaiag simulate)
-  :use-module (gaiag wfc)
+  :use-module (gaiag reader)
 
   :use-module (oop goops)
   :use-module (gaiag gom)
@@ -74,13 +65,13 @@ Usage: gaiag [OPTION]... FILE
   -h, --help           display this help
   -j, --json           use json-friendly format; strings and hash tables
   -m, --model=MODEL    use model named MODEL
-  -l, --language=LANG  generate output for language=LANG [scheme]
+  -l, --language=LANG  generate output for language=LANG [ast]
   -t, --trail=TRAIL    specify trail TRAIL for trail-walker
   -o, --output FILE    generate FILE containing the output
   -v, --version        display version
 
-Languages: asd c++ csp javascript python scheme
-           gom normstate scheme simulate wfc
+Languages: asd c++ csp goops javascript python
+           ast gom normstate simulate wfc
 
 Examples:
   ./gaiag examples/Alarm.asd
@@ -108,7 +99,7 @@ Examples:
 (define (main- args)
   (let* ((options (parse-opts args))
 	 (file-name (car (option-ref options '() '())))
-         (language (string->symbol (option-ref options 'language "scheme")))
+         (language (string->symbol (option-ref options 'language "ast")))
          (result (file->lang file-name language)))
     (match result
       ("" #t)
