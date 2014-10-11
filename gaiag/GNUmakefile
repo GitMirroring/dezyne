@@ -380,10 +380,10 @@ define .JAVASCRIPT_REGRESSION
 rm -rf out && mkdir out && ln -s ../examples ../templates out
 cd out && $(shell pwd)/gaiag -l javascript $<
 -$(diff) baseline/component/$*.js out/component
-cat examples/header.js\
+cat templates/javascript/header.js\
 	 $$(find out/interface out/component -name '*.js')\
 	examples/alarm.js > $@
-cat examples/header.js $$(find out/interface out/component -name '*.js') > $@
+cat templates/javascript/header.js $$(find out/interface out/component -name '*.js') > $@
 if [ -f node_modules/jshint/bin/jshint ]; then nodejs node_modules/jshint/bin/jshint $@; fi
 nodejs $@ $(UPDATE)
 $(diff) baseline/component/$*.js out/component | diffstat || true
@@ -410,7 +410,7 @@ javascript-alarm: compile
 	 	examples/Sensor.asd\
 	 	examples/Siren.asd;\
 	 	do $(shell pwd)/gaiag -l javascript $$file; done
-	cat examples/header.js\
+	cat templates/javascript/header.js\
 		 $$(find out/interface out/component -name '*.js')\
 		examples/alarm.js > out/alarm.js
 	nodejs out/alarm.js
@@ -429,10 +429,10 @@ define .GOOPS_REGRESSION
 rm -rf out && mkdir out && ln -s ../examples ../templates out
 cd out && $(shell pwd)/gaiag -l goops $<
 -$(diff) baseline/component/$*.scm out/component
-cat examples/header.scm\
+cat templates/goops/header.scm\
 	 $$(find out/interface out/component -name '*.scm')\
 	examples/alarm.scm > $@
-cat examples/header.scm $$(find out/interface out/component -name '*.scm') > $@
+cat templates/goops/header.scm $$(find out/interface out/component -name '*.scm') > $@
 guile $@ $(UPDATE)
 $(diff) baseline/component/$*.scm out/component | diffstat || true
 @$(diff) baseline/component/$*.scm out/component > /dev/null
@@ -458,7 +458,7 @@ goops-alarm: compile
 	 	examples/Sensor.asd\
 	 	examples/Siren.asd;\
 	 	do $(shell pwd)/gaiag -l goops $$file; done
-	cat examples/header.scm\
+	cat templates/goops/header.scm\
 		 $$(find out/interface out/component -name '*.scm')\
 		examples/alarm.scm > out/alarm.scm
 	cd out && bash ./alarm.scm

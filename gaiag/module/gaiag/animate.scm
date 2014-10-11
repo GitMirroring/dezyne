@@ -66,6 +66,7 @@
            gulp-template
            prefix-dir
            template?
+           template-file
            template->string
            template-dir
            templates))
@@ -88,7 +89,7 @@
      '(gaiag))))
 
 (define template-dir (make-parameter (append (prefix-dir) '(templates))))
-(define (template-file name) (append (template-dir) (list name)))
+(define (template-file name) (append (template-dir) (if (pair? name) name (list name))))
 (define (gulp-template name) (gulp-file (template-file name)))
 
 (define templates (make-parameter

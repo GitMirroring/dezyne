@@ -70,7 +70,9 @@
 
 (define (ast:code ast)
   (let ((gom ((gom:register code:gom) ast #t)))
-    (map dump ((gom:filter <model>) gom)))
+    (map dump ((gom:filter <model>) gom))
+    (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
+      (dump-header)))
   "")
 
 (define (code:import name)
@@ -90,6 +92,12 @@
                (if (indenter)
                    (lambda () (pipe thunk (lambda () ((indenter)))))
                    thunk)))
+
+(define (dump-header)
+  (and-let* ((header (template-file `(header ,(extension (make <component>)))))
+             (header (components->file-name header))
+             ((file-exists? header)))
+            (dump-file (basename header) (gulp-file header))))
 
 (define-method (dump (o <interface>))
   (mkdir-p "interface")
