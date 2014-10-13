@@ -1,7 +1,8 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
+//
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -20,11 +21,11 @@
 //
 // Code:
 
-#include "SirenInterface.h"
-
-class SirenExtComponent: public SirenInterface
-{
-public:
-  static boost::shared_ptr<SirenInterface> GetInstance();
-  static void ReleaseInstance();
+interface.ISiren = function() {
+  this.ins = {
+    turnon: null,
+    turnoff: null
+  };
+  this.outs = {
+  };
 };

@@ -3,6 +3,7 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -28,8 +29,8 @@ function connect(provided, required) {
 
 component.AlarmSystem = function() {
   this.alarm = new component.Alarm();
-  this.sensor = new component.SensorExt();
-  this.siren = new component.SirenExt();
+  this.sensor = new component.Sensor();
+  this.siren = new component.Siren();
   this.console = this.alarm.console;
 
   connect(this.sensor.sensor, this.alarm.sensor);

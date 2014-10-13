@@ -21,36 +21,15 @@
 //
 // Code:
 
-interface Siren
+import ISiren.asd;
+
+component Siren
 {
-  in void turnon;
-  in void turnoff;
+  provides ISiren siren;
 
-  behaviour c
+  behaviour
   {
-    enum States {
-        Off,
-        On
-    };
-    States state = States.Off;
-
-    [state.Off]
-    {
-      on turnon:
-      {
-        state = States.On;
-      }
-      on turnoff:
-        illegal;
-    }
-    [state.On]
-    {
-      on turnoff:
-      {
-        state = States.Off;
-      }
-      on turnon:
-        illegal;
-    }
+    on turnon: {}
+    on turnoff: {}
   }
 }

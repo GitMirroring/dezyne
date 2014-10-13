@@ -41,22 +41,20 @@ inline asd::function<void()> connect<void>(void* scope, const asd::function<void
 namespace component
 {
   Siren::Siren()
-  : po_siren()
+  : siren()
   {
-    po_siren.in.turnon = connect<void>(this, asd::bind<void>(&Siren::po_siren_turnon, this));
-    po_siren.in.turnoff = connect<void>(this, asd::bind<void>(&Siren::po_siren_turnoff, this));
+    siren.in.turnon = connect<void>(this, asd::bind<void>(&Siren::siren_turnon, this));
+    siren.in.turnoff = connect<void>(this, asd::bind<void>(&Siren::siren_turnoff, this));
   }
 
-  void Siren::po_siren_turnon()
+  void Siren::siren_turnon()
   {
-    std::cout << "Siren.po_siren_turnon" << std::endl;
-
+    std::cout << "Siren.siren_turnon" << std::endl;
 
   }
-  void Siren::po_siren_turnoff()
+  void Siren::siren_turnoff()
   {
-    std::cout << "Siren.po_siren_turnoff" << std::endl;
-
+    std::cout << "Siren.siren_turnoff" << std::endl;
 
   }
 

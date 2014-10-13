@@ -41,22 +41,22 @@ namespace component
 {
   If::If()
   : t(false)
-  , po_i()
+  , i()
   {
-    po_i.in.a = connect<void>(this, asd::bind<void>(&If::po_i_a, this));
+    i.in.a = connect<void>(this, asd::bind<void>(&If::i_a, this));
   }
 
-  void If::po_i_a()
+  void If::i_a()
   {
-    std::cout << "If.po_i_a" << std::endl;
+    std::cout << "If.i_a" << std::endl;
     {
       if (t)
       {
-        po_i.out.b ();
+        i.out.b ();
       }
       else
       {
-        po_i.out.c ();
+        i.out.c ();
       }
       t = not (t);
     }

@@ -34,12 +34,12 @@ namespace component
   struct reply_reorder
   {
     bool first;
-    interface::Provides po_p;
-    interface::Requires po_r;
+    interface::Provides p;
+    interface::Requires r;
 
     reply_reorder();
-    void po_p_start();
-    void po_r_pong();
+    void p_start();
+    void r_pong();
   };
 }
 #endif

@@ -42,35 +42,35 @@ namespace component
 {
   reply_reorder::reply_reorder()
   : first(true)
-  , po_p()
-  , po_r()
+  , p()
+  , r()
   {
-    po_p.in.start = connect<void>(this, asd::bind<void>(&reply_reorder::po_p_start, this));
-    po_r.out.pong = connect<void>(this, asd::bind<void>(&reply_reorder::po_r_pong, this));
+    p.in.start = connect<void>(this, asd::bind<void>(&reply_reorder::p_start, this));
+    r.out.pong = connect<void>(this, asd::bind<void>(&reply_reorder::r_pong, this));
   }
 
-  void reply_reorder::po_p_start()
+  void reply_reorder::p_start()
   {
-    std::cout << "reply_reorder.po_p_start" << std::endl;
+    std::cout << "reply_reorder.p_start" << std::endl;
     {
-      po_r.in.ping ();
+      r.in.ping ();
     }
 
   }
-  void reply_reorder::po_r_pong()
+  void reply_reorder::r_pong()
   {
-    std::cout << "reply_reorder.po_r_pong" << std::endl;
+    std::cout << "reply_reorder.r_pong" << std::endl;
     {
       if (first)
 
       {
-        po_p.out.busy ();
+        p.out.busy ();
         first = not (first);
       }
       if (not (first))
 
       {
-        po_p.out.finish ();
+        p.out.finish ();
         first = not (first);
       }
     }

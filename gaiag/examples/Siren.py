@@ -1,7 +1,8 @@
 # Gaiag --- Guile in Asd In Asd in Guile.
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Gaiag.
+#
+# Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # Gaiag is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as
@@ -20,13 +21,18 @@
 # 
 # Code:
 
-class Siren ():
+import sys
+#
+import interface
 
+class Siren:
     def __init__ (self):
-        class Ins ():
-            turnon = None
-            turnoff = None
-        self.ins = Ins ()
-        class Outs ():
-            pass
-        self.outs = Outs ()
+        self.siren = interface.ISiren ()
+        self.siren.ins.turnon = self.siren_turnon
+        self.siren.ins.turnoff = self.siren_turnoff
+
+    def siren_turnon (self):
+        sys.stderr.write ('Siren.turnon\n')
+
+    def siren_turnoff (self):
+        sys.stderr.write ('Siren.turnoff\n')

@@ -21,10 +21,10 @@
 //
 // Code:
 
-import Sensor.asd;
-import Siren.asd;
+import ISensor.asd;
+import ISiren.asd;
 
-interface Console
+interface IConsole
 {
     in void arm;
     in void disarm;
@@ -93,9 +93,9 @@ interface Console
 
 component Alarm
 {
-    provides Console console;
-    requires Sensor sensor;
-    requires Siren siren;
+    provides IConsole console;
+    requires ISensor sensor;
+    requires ISiren siren;
 
   behaviour d
   {

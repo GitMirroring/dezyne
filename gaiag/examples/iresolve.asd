@@ -30,20 +30,3 @@ interface iresolve
     on e: { illegal; }
   }
 }
-
-component iresolve
-{
-  provides iresolve i;
-  requires rresolve r;
-
-  behaviour
-  {
-    enum State {Idle};
-    State state = State.Idle;
-
-    [state.Idle]
-    {
-      on i.e: illegal;
-    }
-  }
-}

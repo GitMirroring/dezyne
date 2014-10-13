@@ -25,18 +25,18 @@
 #ifndef COMPONENT_SENSOR_HH
 #define COMPONENT_SENSOR_HH
 
-#include "interface-Sensor-c3.hh"
+#include "interface-ISensor-c3.hh"
 
 
 namespace component
 {
   struct Sensor
   {
-    interface::Sensor po_sensor;
+    interface::ISensor sensor;
 
     Sensor();
-    void po_sensor_enable();
-    void po_sensor_disable();
+    void sensor_enable();
+    void sensor_disable();
   };
 }
 #endif

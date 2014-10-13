@@ -41,21 +41,21 @@ namespace component
 {
   Reply4::Reply4()
   : dummy(false)
-  , po_i()
-  , po_u()
+  , i()
+  , u()
   {
-    po_i.in.done = connect<interface::I::Status::type>(this, asd::bind<interface::I::Status::type>(&Reply4::po_i_done, this));
+    i.in.done = connect<interface::I::Status::type>(this, asd::bind<interface::I::Status::type>(&Reply4::i_done, this));
   }
 
-  interface::I::Status::type Reply4::po_i_done()
+  interface::I::Status::type Reply4::i_done()
   {
-    std::cout << "Reply4.po_i_done" << std::endl;
+    std::cout << "Reply4.i_done" << std::endl;
     if (true)
 
     {
       {
-        interface::U::Status::type s = po_u.in.what ();
-        s = po_u.in.what ();
+        interface::U::Status::type s = u.in.what ();
+        s = u.in.what ();
         if (s == interface::U::Status::Ok)
         {
           Reply4::Status::type v = fun ();

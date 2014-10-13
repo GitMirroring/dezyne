@@ -3,6 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -21,14 +22,14 @@
 ;;; 
 ;;; Code:
 
-((interface Console deadlock)
- (interface Console livelock)
- (interface Sensor deadlock)
- (interface Sensor livelock)
- (interface Siren deadlock)
- (interface Siren livelock)
+((interface IConsole deadlock)
+ (interface IConsole livelock)
+ (interface ISensor deadlock)
+ (interface ISensor livelock)
+ (interface ISiren deadlock)
+ (interface ISiren livelock)
  (component Alarm deterministic)
  (component Alarm illegal)
  (component Alarm deadlock)
- (component Alarm compliance Console)
+ (component Alarm compliance IConsole)
  (component Alarm livelock))

@@ -40,22 +40,22 @@ inline asd::function<void()> connect<void>(void* scope, const asd::function<void
 namespace component
 {
   enum_collision::enum_collision()
-  : po_i()
+  : i()
   {
-    po_i.in.foo = connect<interface::ienum_collision::Retval1::type>(this, asd::bind<interface::ienum_collision::Retval1::type>(&enum_collision::po_i_foo, this));
-    po_i.in.bar = connect<interface::ienum_collision::Retval2::type>(this, asd::bind<interface::ienum_collision::Retval2::type>(&enum_collision::po_i_bar, this));
+    i.in.foo = connect<interface::ienum_collision::Retval1::type>(this, asd::bind<interface::ienum_collision::Retval1::type>(&enum_collision::i_foo, this));
+    i.in.bar = connect<interface::ienum_collision::Retval2::type>(this, asd::bind<interface::ienum_collision::Retval2::type>(&enum_collision::i_bar, this));
   }
 
-  interface::ienum_collision::Retval1::type enum_collision::po_i_foo()
+  interface::ienum_collision::Retval1::type enum_collision::i_foo()
   {
-    std::cout << "enum_collision.po_i_foo" << std::endl;
+    std::cout << "enum_collision.i_foo" << std::endl;
     reply_ienum_collision_Retval1 = interface::ienum_collision::Retval1::OK;
     return reply_ienum_collision_Retval1;
 
   }
-  interface::ienum_collision::Retval2::type enum_collision::po_i_bar()
+  interface::ienum_collision::Retval2::type enum_collision::i_bar()
   {
-    std::cout << "enum_collision.po_i_bar" << std::endl;
+    std::cout << "enum_collision.i_bar" << std::endl;
     reply_ienum_collision_Retval2 = interface::ienum_collision::Retval2::NOK;
     return reply_ienum_collision_Retval2;
 

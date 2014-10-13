@@ -41,18 +41,18 @@ namespace component
 {
   sugar::sugar()
   : s(Enum::False)
-  , po_i()
+  , i()
   {
-    po_i.in.e = connect<void>(this, asd::bind<void>(&sugar::po_i_e, this));
+    i.in.e = connect<void>(this, asd::bind<void>(&sugar::i_e, this));
   }
 
-  void sugar::po_i_e()
+  void sugar::i_e()
   {
-    std::cout << "sugar.po_i_e" << std::endl;
+    std::cout << "sugar.i_e" << std::endl;
     if (s == Enum::False)
 
     if (s == Enum::False)
-    po_i.out.a ();
+    i.out.a ();
 
   }
 

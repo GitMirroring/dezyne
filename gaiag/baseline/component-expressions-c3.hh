@@ -35,10 +35,10 @@ namespace component
     typedef int State;
     expressions::State state;
     expressions::State c;
-    interface::I po_i;
+    interface::I i;
 
     expressions();
-    void po_i_e();
+    void i_e();
   };
 }
 #endif

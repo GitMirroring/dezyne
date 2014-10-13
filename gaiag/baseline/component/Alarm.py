@@ -1,5 +1,6 @@
 # Gaiag --- Guile in Asd In Asd in Guile.
 # Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Gaiag.
 #
@@ -22,9 +23,9 @@
 
 import sys
 #
-import interface.Console
-import interface.Sensor
-import interface.Siren
+import interface.IConsole
+import interface.ISensor
+import interface.ISiren
 
 
 class Alarm ():
@@ -35,9 +36,9 @@ class Alarm ():
         self.state = self.States.Disarmed
         self.sounding = False
 
-        self.console = interface.Console ()
-        self.sensor = interface.Sensor ()
-        self.siren = interface.Siren ()
+        self.console = interface.IConsole ()
+        self.sensor = interface.ISensor ()
+        self.siren = interface.ISiren ()
 
         self.console.ins.arm = self.console_arm
         self.console.ins.disarm = self.console_disarm
@@ -56,6 +57,7 @@ class Alarm ():
         elif (self.state == self.States.Triggered):
             assert (False)
 
+
     def console_disarm (self):
         sys.stderr.write ('Alarm.console_disarm\n')
         if (self.state == self.States.Disarmed):
@@ -71,6 +73,7 @@ class Alarm ():
             self.sounding = False
             self.state = self.States.Disarming
 
+
     def sensor_triggered (self):
         sys.stderr.write ('Alarm.sensor_triggered\n')
         if (self.state == self.States.Disarmed):
@@ -84,6 +87,7 @@ class Alarm ():
             pass
         elif (self.state == self.States.Triggered):
             assert (False)
+
 
     def sensor_disabled (self):
         sys.stderr.write ('Alarm.sensor_disabled\n')
@@ -102,5 +106,3 @@ class Alarm ():
                 self.state = self.States.Disarmed
         elif (self.state == self.States.Triggered):
             assert (False)
-
-

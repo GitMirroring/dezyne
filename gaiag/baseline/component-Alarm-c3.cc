@@ -43,156 +43,121 @@ namespace component
   Alarm::Alarm()
   : state(States::Disarmed)
   , sounding(false)
-  , po_console()
-  , po_sensor()
-  , po_siren()
+  , console()
+  , sensor()
+  , siren()
   {
-    po_console.in.arm = connect<void>(this, asd::bind<void>(&Alarm::po_console_arm, this));
-    po_console.in.disarm = connect<void>(this, asd::bind<void>(&Alarm::po_console_disarm, this));
-    po_sensor.out.triggered = connect<void>(this, asd::bind<void>(&Alarm::po_sensor_triggered, this));
-    po_sensor.out.disabled = connect<void>(this, asd::bind<void>(&Alarm::po_sensor_disabled, this));
+    console.in.arm = connect<void>(this, asd::bind<void>(&Alarm::console_arm, this));
+    console.in.disarm = connect<void>(this, asd::bind<void>(&Alarm::console_disarm, this));
+    sensor.out.triggered = connect<void>(this, asd::bind<void>(&Alarm::sensor_triggered, this));
+    sensor.out.disabled = connect<void>(this, asd::bind<void>(&Alarm::sensor_disabled, this));
   }
 
-  void Alarm::po_console_arm()
+  void Alarm::console_arm()
   {
-    std::cout << "Alarm.po_console_arm" << std::endl;
+    std::cout << "Alarm.console_arm" << std::endl;
     if (state == States::Disarmed)
 
     {
       {
-        po_sensor.in.enable ();
+        sensor.in.enable ();
         state = States::Armed;
-
       }
-
     }
-
     else if (state == States::Armed)
 
     {
-      assert (false);
-
+      assert(false);
     }
-
     else if (state == States::Disarming)
 
     {
-      assert (false);
-
+      assert(false);
     }
-
     else if (state == States::Triggered)
 
     {
-      assert (false);
-
+      assert(false);
     }
 
-
-
   }
-  void Alarm::po_console_disarm()
+  void Alarm::console_disarm()
   {
-    std::cout << "Alarm.po_console_disarm" << std::endl;
+    std::cout << "Alarm.console_disarm" << std::endl;
     if (state == States::Disarmed)
 
     {
-      assert (false);
-
+      assert(false);
     }
-
     else if (state == States::Armed)
 
     {
       {
-        po_sensor.in.disable ();
+        sensor.in.disable ();
         state = States::Disarming;
-
       }
-
     }
-
     else if (state == States::Disarming)
 
     {
-      assert (false);
-
+      assert(false);
     }
-
     else if (state == States::Triggered)
 
     {
       {
-        po_sensor.in.disable ();
-        po_siren.in.turnoff ();
+        sensor.in.disable ();
+        siren.in.turnoff ();
         sounding = false;
         state = States::Disarming;
-
       }
-
     }
 
-
-
   }
-  void Alarm::po_sensor_triggered()
+  void Alarm::sensor_triggered()
   {
-    std::cout << "Alarm.po_sensor_triggered" << std::endl;
+    std::cout << "Alarm.sensor_triggered" << std::endl;
     if (state == States::Disarmed)
 
     {
-      assert (false);
-
+      assert(false);
     }
-
     else if (state == States::Armed)
 
     {
       {
-        po_console.out.detected ();
-        po_siren.in.turnon ();
+        console.out.detected ();
+        siren.in.turnon ();
         sounding = true;
         state = States::Triggered;
-
       }
-
     }
-
     else if (state == States::Disarming)
 
     {
       {
       }
-
     }
-
     else if (state == States::Triggered)
 
     {
-      assert (false);
-
+      assert(false);
     }
 
-
-
   }
-  void Alarm::po_sensor_disabled()
+  void Alarm::sensor_disabled()
   {
-    std::cout << "Alarm.po_sensor_disabled" << std::endl;
+    std::cout << "Alarm.sensor_disabled" << std::endl;
     if (state == States::Disarmed)
 
     {
-      assert (false);
-
+      assert(false);
     }
-
     else if (state == States::Armed)
 
     {
-      assert (false);
-
+      assert(false);
     }
-
     else if (state == States::Disarming)
 
     {
@@ -200,34 +165,24 @@ namespace component
         if (sounding)
 
         {
-          po_console.out.deactivated ();
-          po_siren.in.turnoff ();
+          console.out.deactivated ();
+          siren.in.turnoff ();
           state = States::Disarmed;
           sounding = false;
-
         }
-
         else
 
         {
-          po_console.out.deactivated ();
+          console.out.deactivated ();
           state = States::Disarmed;
-
         }
-
-
       }
-
     }
-
     else if (state == States::Triggered)
 
     {
-      assert (false);
-
+      assert(false);
     }
-
-
 
   }
 

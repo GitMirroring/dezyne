@@ -3,6 +3,7 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -21,7 +22,7 @@
 //
 // Code:
 
-interface function_or_action
+interface ifunction_or_action
 {
   behaviour
     {
@@ -32,7 +33,7 @@ interface function_or_action
 
 component function_or_action
 {
-  provides function_or_action i;
+  provides ifunction_or_action i;
   behaviour
     {
       [true] a;

@@ -14,7 +14,7 @@ struct #.model
     (map (init-member model #{
 #type  #name;
 #}) (gom:variables model))#
-    (delete-duplicates (map (compose declare-replies c++:import .type) ((compose .elements .ports) model)))#
+    (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))#
     (map (init-port #{
 interface::#interface  #name;
 #}) ((compose .elements .ports) model))

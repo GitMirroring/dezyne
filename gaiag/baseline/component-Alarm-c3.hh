@@ -25,9 +25,9 @@
 #ifndef COMPONENT_ALARM_HH
 #define COMPONENT_ALARM_HH
 
-#include "interface-Console-c3.hh"
-#include "interface-Sensor-c3.hh"
-#include "interface-Siren-c3.hh"
+#include "interface-IConsole-c3.hh"
+#include "interface-ISensor-c3.hh"
+#include "interface-ISiren-c3.hh"
 
 
 namespace component
@@ -43,15 +43,15 @@ namespace component
     };
     Alarm::States::type state;
     bool sounding;
-    interface::Console po_console;
-    interface::Sensor po_sensor;
-    interface::Siren po_siren;
+    interface::IConsole console;
+    interface::ISensor sensor;
+    interface::ISiren siren;
 
     Alarm();
-    void po_console_arm();
-    void po_console_disarm();
-    void po_sensor_triggered();
-    void po_sensor_disabled();
+    void console_arm();
+    void console_disarm();
+    void sensor_triggered();
+    void sensor_disabled();
   };
 }
 #endif

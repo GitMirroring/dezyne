@@ -1,5 +1,6 @@
 ;;; Gaiag --- Guile in Asd In Asd in Guile.
 ;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
@@ -21,36 +22,36 @@
 ;;; Code:
 
 ;; Handwritten
-(define-class <SensorExt> ()
+(define-class <Sensor> ()
   (sensor :accessor .sensor :init-value #f))
 
-(define-method (initialize (o <SensorExt>) args)
+(define-method (initialize (o <Sensor>) args)
   (next-method)
   (set! (.sensor o)
-        (make <interface:Sensor>
+        (make <interface:ISensor>
           :in `((enable . ,(lambda () (enable o)))
                 (disable . ,(lambda () (disable o)))))))
 
-(define-method (enable (o <SensorExt>))
-  (stderr "SensorExt.enable\n"))
+(define-method (enable (o <Sensor>))
+  (stderr "Sensor.enable\n"))
 
-(define-method (disable (o <SensorExt>))
-  (stderr "SensorExt.disable\n"))
+(define-method (disable (o <Sensor>))
+  (stderr "Sensor.disable\n"))
 
-(define-class <SirenExt> ()
+(define-class <Siren> ()
   (siren :accessor .siren :init-value #f))
 
-(define-method (initialize (o <SirenExt>) args)
+(define-method (initialize (o <Siren>) args)
   (next-method)
-  (set! (.siren o) (make <interface:Siren>
+  (set! (.siren o) (make <interface:ISiren>
                      :in `((turnon . ,(lambda () (turnon o)))
                            (turnoff . ,(lambda () (turnoff o)))))))
 
-(define-method (turnon (o <SirenExt>))
-  (stderr "SirenExt.turnon\n"))
+(define-method (turnon (o <Siren>))
+  (stderr "Siren.turnon\n"))
 
-(define-method (turnoff (o <SirenExt>))
-  (stderr "SirenExt.turnoff\n"))
+(define-method (turnoff (o <Siren>))
+  (stderr "Siren.turnoff\n"))
 
 (define ((port name) o) (assoc-ref o name))
 

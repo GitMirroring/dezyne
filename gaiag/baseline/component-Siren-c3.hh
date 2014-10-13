@@ -25,18 +25,18 @@
 #ifndef COMPONENT_SIREN_HH
 #define COMPONENT_SIREN_HH
 
-#include "interface-Siren-c3.hh"
+#include "interface-ISiren-c3.hh"
 
 
 namespace component
 {
   struct Siren
   {
-    interface::Siren po_siren;
+    interface::ISiren siren;
 
     Siren();
-    void po_siren_turnon();
-    void po_siren_turnoff();
+    void siren_turnon();
+    void siren_turnoff();
   };
 }
 #endif

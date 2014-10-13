@@ -43,21 +43,21 @@ namespace component
   expressions::expressions()
   : state(3)
   , c(0)
-  , po_i()
+  , i()
   {
-    po_i.in.e = connect<void>(this, asd::bind<void>(&expressions::po_i_e, this));
+    i.in.e = connect<void>(this, asd::bind<void>(&expressions::i_e, this));
   }
 
-  void expressions::po_i_e()
+  void expressions::i_e()
   {
-    std::cout << "expressions.po_i_e" << std::endl;
+    std::cout << "expressions.i_e" << std::endl;
     if (true)
 
     {
       if (state == 0)
       {
         state = 3;
-        po_i.out.a ();
+        i.out.a ();
       }
       else
       {
@@ -69,12 +69,12 @@ namespace component
         else
         if (c <= (state + 1))
         {
-          po_i.out.lo ();
+          i.out.lo ();
         }
         else
         if (c > state)
         {
-          po_i.out.hi ();
+          i.out.hi ();
         }
       }
     }

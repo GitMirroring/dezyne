@@ -41,21 +41,21 @@ namespace component
 {
   imperative::imperative()
   : state(States::I)
-  , po_i()
+  , i()
   {
-    po_i.in.e = connect<void>(this, asd::bind<void>(&imperative::po_i_e, this));
+    i.in.e = connect<void>(this, asd::bind<void>(&imperative::i_e, this));
   }
 
-  void imperative::po_i_e()
+  void imperative::i_e()
   {
-    std::cout << "imperative.po_i_e" << std::endl;
+    std::cout << "imperative.i_e" << std::endl;
     if (state == States::I)
 
     {
       {
-        po_i.out.f ();
-        po_i.out.g ();
-        po_i.out.h ();
+        i.out.f ();
+        i.out.g ();
+        i.out.h ();
         state = States::II;
       }
     }
@@ -70,10 +70,10 @@ namespace component
 
     {
       {
-        po_i.out.f ();
-        po_i.out.g ();
-        po_i.out.g ();
-        po_i.out.f ();
+        i.out.f ();
+        i.out.g ();
+        i.out.g ();
+        i.out.f ();
         state = States::IV;
       }
     }
@@ -81,7 +81,7 @@ namespace component
 
     {
       {
-        po_i.out.h ();
+        i.out.h ();
         state = States::I;
       }
     }

@@ -21,7 +21,7 @@
 //
 // Code:
 
-interface rresolve
+interface jresolve
 {
   enum first { value };
   in void foo;

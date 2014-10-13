@@ -1,7 +1,8 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
+//
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -20,70 +21,65 @@
 //
 // Code:
 
-interface Console
+interface ISensor
 {
-    in void arm;
-    in void disarm;
+  in void enable;
+  in void disable;
 
-    out void detected;
-    out void deactivated;
+  out void triggered;
+  out void disabled;
 
-  behaviour a
+  behaviour b
   {
     enum States {
-        Disarmed,
-        Armed,
-        Triggered,
-        Disarming
+        Disabled,
+        Enabled,
+        Disabling,
+        Triggered
     };
+    States state = States.Disabled;
 
-    States state = States.Disarmed;
-
-    [state.Disarmed]
+    [state.Disabled]
     {
-      on arm:
+      on enable:
       {
-        state = States.Armed;
+        state = States.Enabled;
       }
-      on disarm:
+      on disable:
         illegal;
     }
-
-    [state.Armed]
+    [state.Enabled]
     {
-      on disarm:
+      on enable:
+        illegal;
+      on disable:
       {
-        state = States.Disarming;
+        state = States.Disabling;
       }
       on optional:
       {
-        detected;
+        triggered;
         state = States.Triggered;
       }
-      on arm:
-        illegal;
     }
-
-    [state.Triggered]
+    [state.Disabling]
     {
-      on disarm:
-      {
-        state = States.Disarming;
-      }
-      on arm:
+      on enable, disable:
         illegal;
-    }
-
-    [state.Disarming]
-    {
       on inevitable:
       {
-        deactivated;
-        state = States.Disarmed;
+        disabled;
+        state = States.Disabled;
       }
-      on arm, disarm:
+    }
+    [state.Triggered]
+    {
+      on enable:
         illegal;
+      on disable:
+      {
+        state = States.Disabling;
+      }
     }
   }
 }
-

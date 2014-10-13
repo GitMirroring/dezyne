@@ -1,5 +1,6 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
 //
@@ -31,10 +32,10 @@ namespace component
   struct argument
   {
     bool b;
-    interface::I po_i;
+    interface::I i;
 
     argument();
-    void po_i_e();
+    void i_e();
     bool g(bool gc);
   };
 }

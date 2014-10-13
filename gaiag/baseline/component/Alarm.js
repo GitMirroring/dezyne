@@ -3,6 +3,7 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -29,9 +30,9 @@ component.Alarm = function() {
   this.state = this.States.Disarmed;
   this.sounding = false;
 
-  this.console = new interface.Console();
-  this.sensor = new interface.Sensor();
-  this.siren = new interface.Siren();
+  this.console = new interface.IConsole();
+  this.sensor = new interface.ISensor();
+  this.siren = new interface.ISiren();
 
   this.console.ins.arm = function() {
     console.log('Alarm.console_arm');

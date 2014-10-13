@@ -1,5 +1,6 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
 //
@@ -31,12 +32,12 @@ namespace component
 {
   struct external_provides_twice
   {
-    interface::iprovides_once po_i;
-    interface::iprovides_twice po_ii;
+    interface::iprovides_once i;
+    interface::iprovides_twice ii;
 
     external_provides_twice();
-    void po_i_foo();
-    void po_ii_foo();
+    void i_foo();
+    void ii_foo();
   };
 }
 #endif

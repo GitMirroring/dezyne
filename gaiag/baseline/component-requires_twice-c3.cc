@@ -40,32 +40,32 @@ inline asd::function<void()> connect<void>(void* scope, const asd::function<void
 namespace component
 {
   requires_twice::requires_twice()
-  : po_p()
-  , po_once()
-  , po_twice()
+  : p()
+  , once()
+  , twice()
   {
-    po_p.in.e = connect<void>(this, asd::bind<void>(&requires_twice::po_p_e, this));
-    po_once.out.a = connect<void>(this, asd::bind<void>(&requires_twice::po_once_a, this));
-    po_twice.out.a = connect<void>(this, asd::bind<void>(&requires_twice::po_twice_a, this));
+    p.in.e = connect<void>(this, asd::bind<void>(&requires_twice::p_e, this));
+    once.out.a = connect<void>(this, asd::bind<void>(&requires_twice::once_a, this));
+    twice.out.a = connect<void>(this, asd::bind<void>(&requires_twice::twice_a, this));
   }
 
-  void requires_twice::po_p_e()
+  void requires_twice::p_e()
   {
-    std::cout << "requires_twice.po_p_e" << std::endl;
+    std::cout << "requires_twice.p_e" << std::endl;
     {
-      po_once.out.a ();
-      po_twice.out.a ();
+      once.out.a ();
+      twice.out.a ();
     }
 
   }
-  void requires_twice::po_once_a()
+  void requires_twice::once_a()
   {
-    std::cout << "requires_twice.po_once_a" << std::endl;
+    std::cout << "requires_twice.once_a" << std::endl;
 
   }
-  void requires_twice::po_twice_a()
+  void requires_twice::twice_a()
   {
-    std::cout << "requires_twice.po_twice_a" << std::endl;
+    std::cout << "requires_twice.twice_a" << std::endl;
 
   }
 

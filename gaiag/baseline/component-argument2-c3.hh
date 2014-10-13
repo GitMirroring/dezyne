@@ -33,10 +33,10 @@ namespace component
   struct argument2
   {
     bool b;
-    interface::I po_i;
+    interface::I i;
 
     argument2();
-    void po_i_e();
+    void i_e();
     bool g(bool ga, bool gb);
   };
 }

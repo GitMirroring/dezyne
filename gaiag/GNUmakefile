@@ -195,9 +195,9 @@ c++-update: $(CC_SOURCES:%.asd=out/%.o.up)
 c++: compile c++-alarm alarm-legacy c++-regression
 
 c++-alarm: alarm-gen alarm
-	$(diff) baseline/interface-Console-c3.hh out
-	$(diff) baseline/interface-Sensor-c3.hh out
-	$(diff) baseline/interface-Siren-c3.hh out
+	$(diff) baseline/interface-IConsole-c3.hh out
+	$(diff) baseline/interface-ISensor-c3.hh out
+	$(diff) baseline/interface-ISiren-c3.hh out
 	$(diff) baseline/component-Alarm-c3.hh out
 	$(diff) baseline/component-Alarm-c3.cc out
 	$(diff) baseline/component-AlarmSystem-c3.hh out
@@ -276,11 +276,8 @@ csp-update: csp-demo-update csp-regression-update
 
 
 simulate: compile
-#	./gaiag -l simulate examples/regression/if.asd
 	./gaiag -l simulate -t '(a a a)' examples/simulate.asd
 	./gaiag -l simulate -t '(a a a a a)' examples/regression/If.asd
-#	./gaiag -l simulate examples/regression/Alarm.asd |& grep '^\*\*' | wc -l
-#	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" examples/regression/Console.asd | ./scm2json | sed -e "s/, /,\n /g"
 	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" examples/alarm-component.asd
 	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" -j examples/alarm-component.asd | ./scm2json | sed -e 's/, /,\n /g'
 	./gaiag -l simulate -t '(i.e i.e i.e)' examples/arguments.asd
@@ -293,11 +290,11 @@ alarm-gen:
 	cd out && for file in\
 		examples/AlarmSystem.asd\
 		examples/regression/Alarm.asd\
-		examples/Console.asd\
+		examples/IConsole.asd\
+		examples/ISensor.asd\
 		examples/Sensor.asd\
-		examples/SensorExt.asd\
-		examples/Siren.asd\
-		examples/SirenExt.asd;\
+		examples/ISiren.asd\
+		examples/Siren.asd;\
 	do $(shell pwd)/gaiag -l c++ $$file; done
 
 alarm: alarm-gen
@@ -328,17 +325,17 @@ compare:
 python-alarm: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
 	cd out && $(shell pwd)/gaiag -l python examples/regression/Alarm.asd
-	cd out && $(shell pwd)/gaiag -l python examples/Sensor.asd
-	cd out && $(shell pwd)/gaiag -l python examples/Siren.asd
+	cd out && $(shell pwd)/gaiag -l python examples/ISensor.asd
+	cd out && $(shell pwd)/gaiag -l python examples/ISiren.asd
 	cd out && $(shell pwd)/gaiag -l python examples/Alarm.asd
 	cd out && $(shell pwd)/gaiag -l python examples/AlarmSystem.asd
-	$(pydiff) baseline/interface/Console.py out/interface
-	$(pydiff) baseline/interface/Sensor.py out/interface
-	$(pydiff) baseline/interface/Siren.py out/interface
+	$(pydiff) baseline/interface/IConsole.py out/interface
+	$(pydiff) baseline/interface/ISensor.py out/interface
+	$(pydiff) baseline/interface/ISiren.py out/interface
 	$(pydiff) baseline/component/Alarm.py out/component
 	$(pydiff) baseline/component/AlarmSystem.py out/component
-	ln -s ../examples/SensorExt.py out/component
-	ln -s ../examples/SirenExt.py out/component
+	ln -s ../examples/Sensor.py out/component
+	ln -s ../examples/Siren.py out/component
 	ln -s ../examples/alarm.py out
 	ln -s ../examples/__init__.py out/interface
 	ln -s ../examples/__init__.py out/component
@@ -407,17 +404,17 @@ javascript-alarm: compile
 	cd out && for file in\
 	 	examples/AlarmSystem.asd\
 	 	examples/regression/Alarm.asd\
-	 	examples/Console.asd\
-	 	examples/Sensor.asd\
-	 	examples/Siren.asd;\
+	 	examples/IConsole.asd\
+	 	examples/ISensor.asd\
+	 	examples/ISiren.asd;\
 	 	do $(shell pwd)/gaiag -l javascript $$file; done
 	cat templates/javascript/header.js\
 		 $$(find out/interface out/component -name '*.js')\
 		examples/alarm.js > out/alarm.js
 	nodejs out/alarm.js
-	$(diff) baseline/interface/Console.js out/interface
-	$(diff) baseline/interface/Sensor.js out/interface
-	$(diff) baseline/interface/Siren.js out/interface
+	$(diff) baseline/interface/IConsole.js out/interface
+	$(diff) baseline/interface/ISensor.js out/interface
+	$(diff) baseline/interface/ISiren.js out/interface
 	$(diff) baseline/component/Alarm.js out/component
 	$(diff) baseline/component/AlarmSystem.js out/component
 
@@ -455,17 +452,17 @@ goops-alarm: compile
 	cd out && for file in\
 	 	examples/AlarmSystem.asd\
 	 	examples/regression/Alarm.asd\
-	 	examples/Console.asd\
-	 	examples/Sensor.asd\
-	 	examples/Siren.asd;\
+	 	examples/IConsole.asd\
+	 	examples/ISensor.asd\
+	 	examples/ISiren.asd;\
 	 	do $(shell pwd)/gaiag -l goops $$file; done
 	cat templates/goops/header.scm\
 		 $$(find out/interface out/component -name '*.scm')\
 		examples/alarm.scm > out/alarm.scm
 	cd out && bash ./alarm.scm
-	$(diff) baseline/interface/Console.scm out/interface
-	$(diff) baseline/interface/Sensor.scm out/interface
-	$(diff) baseline/interface/Siren.scm out/interface
+	$(diff) baseline/interface/IConsole.scm out/interface
+	$(diff) baseline/interface/ISensor.scm out/interface
+	$(diff) baseline/interface/ISiren.scm out/interface
 	$(diff) baseline/component/Alarm.scm out/component
 	$(diff) baseline/component/AlarmSystem.scm out/component
 
@@ -482,10 +479,12 @@ glue:
 	 	do $(shell pwd)/gaiag -m $$model -l c++ webdemo/asd/AlarmSystem.asd; done
 	cp examples/main.cpp out
 	cp examples/SensorInterface.h out
-	cp examples/SensorExtComponent.h out
-	cp examples/SensorExtComponent.cpp out
+	cp examples/SensorComponent.h out
+	cp examples/SensorComponent.cpp out
 	cp examples/SirenInterface.h out
-	cp examples/SirenExtComponent.h out
-	cp examples/SirenExtComponent.cpp out
+	cp examples/SirenComponent.h out
+	cp examples/SirenComponent.cpp out
 	-for i in out/*.c*; do ccache g++ -g -Wall -Wextra -I out -I $(DEPTH)/examples/codegen/asd_cpp_runtime -c $$i -o out/$$(basename $$(basename $$i .cpp) .cc).o; done
 	-cd out && g++ -o test *.o && ./test
+
+update: csp-update c++-update python-update javascript-update goops-update

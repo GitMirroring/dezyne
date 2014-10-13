@@ -3,6 +3,7 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -24,19 +25,19 @@
 /* main */
 ///// Test stubs
 component.Console = function() {
-  this.console = new interface.Console();
+  this.console = new interface.IConsole();
   this.console.outs.detected = function() { console.log('Alarm detected'); }
   this.console.outs.deactivated = function() { console.log('Alarm deactivated'); }
 };
-component.SensorExt = function() {
-  this.sensor = new interface.Sensor();
-  this.sensor.ins.enable = function() { console.log('SensorExt enable')};
-  this.sensor.ins.disable = function() { console.log('SensorExt disable');};
+component.Sensor = function() {
+  this.sensor = new interface.ISensor();
+  this.sensor.ins.enable = function() { console.log('Sensor enable')};
+  this.sensor.ins.disable = function() { console.log('Sensor disable');};
 }
-component.SirenExt = function() {
-  this.siren = new interface.Siren();
-  this.siren.ins.turnon = function() { console.log('SirenExt turnon'); };
-  this.siren.ins.turnoff = function() { console.log('SirenExt turnoff'); };
+component.Siren = function() {
+  this.siren = new interface.ISiren();
+  this.siren.ins.turnon = function() { console.log('Siren turnon'); };
+  this.siren.ins.turnoff = function() { console.log('Siren turnoff'); };
 }
 
 var alarm = new component.AlarmSystem();

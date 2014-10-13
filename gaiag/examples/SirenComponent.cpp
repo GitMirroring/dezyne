@@ -1,11 +1,11 @@
-#include "SirenExtComponent.h"
+#include "SirenComponent.h"
 
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/make_shared.hpp>
 
 #include <iostream>
 
-struct SirenForeign: public SirenExtComponent
+struct SirenForeign: public SirenComponent
                    , public Siren
                    , public boost::enable_shared_from_this<SirenForeign>
 {
@@ -23,10 +23,10 @@ struct SirenForeign: public SirenExtComponent
   }
 };
 
-boost::shared_ptr<SirenInterface> SirenExtComponent::GetInstance()
+boost::shared_ptr<SirenInterface> SirenComponent::GetInstance()
 {
   return boost::make_shared<SirenForeign>();
 }
-void SirenExtComponent::ReleaseInstance()
+void SirenComponent::ReleaseInstance()
 {
 }

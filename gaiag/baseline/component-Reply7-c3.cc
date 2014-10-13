@@ -41,15 +41,15 @@ inline asd::function<void()> connect<void>(void* scope, const asd::function<void
 namespace component
 {
   Reply7::Reply7()
-  : po_p()
-  , po_r()
+  : p()
+  , r()
   {
-    po_p.in.foo = connect<interface::IReply7::E::type>(this, asd::bind<interface::IReply7::E::type>(&Reply7::po_p_foo, this));
+    p.in.foo = connect<interface::IReply7::E::type>(this, asd::bind<interface::IReply7::E::type>(&Reply7::p_foo, this));
   }
 
-  interface::IReply7::E::type Reply7::po_p_foo()
+  interface::IReply7::E::type Reply7::p_foo()
   {
-    std::cout << "Reply7.po_p_foo" << std::endl;
+    std::cout << "Reply7.p_foo" << std::endl;
     f ();
     return reply_IReply7_E;
 
@@ -58,7 +58,7 @@ namespace component
 
   interface::IReply7::E::type Reply7::f()
   {
-    interface::IReply7::E::type v = po_r.in.foo ();
+    interface::IReply7::E::type v = r.in.foo ();
     reply_IReply7_E = v;
 
   }

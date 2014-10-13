@@ -42,14 +42,14 @@ namespace component
 {
   argument2::argument2()
   : b(false)
-  , po_i()
+  , i()
   {
-    po_i.in.e = connect<void>(this, asd::bind<void>(&argument2::po_i_e, this));
+    i.in.e = connect<void>(this, asd::bind<void>(&argument2::i_e, this));
   }
 
-  void argument2::po_i_e()
+  void argument2::i_e()
   {
-    std::cout << "argument2.po_i_e" << std::endl;
+    std::cout << "argument2.i_e" << std::endl;
     if (true)
 
     {
@@ -58,7 +58,7 @@ namespace component
       b = g (c, c);
       if (c)
       {
-        po_i.out.f ();
+        i.out.f ();
       }
     }
 
@@ -67,7 +67,7 @@ namespace component
 
   bool argument2::g(bool ga, bool gb)
   {
-    po_i.out.f ();
+    i.out.f ();
     return (ga or gb);
 
   }

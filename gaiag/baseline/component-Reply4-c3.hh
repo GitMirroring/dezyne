@@ -1,5 +1,6 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
 //
@@ -41,11 +42,11 @@ namespace component
     bool dummy;
     interface::I::Status::type reply_I_Status;
     interface::U::Status::type reply_U_Status;
-    interface::I po_i;
-    interface::U po_u;
+    interface::I i;
+    interface::U u;
 
     Reply4();
-    interface::I::Status::type po_i_done();
+    interface::I::Status::type i_done();
     Reply4::Status::type fun();
     Reply4::Status::type fun_arg(Reply4::Status::type s);
   };

@@ -39,13 +39,13 @@ public:
 
 class LegacyCB: public IAlarmSystem_NI
 {
-  interface::Console& console;
+  interface::IConsole& iconsole;
 public:
-  LegacyCB(interface::Console& console)
-  : console(console)
+  LegacyCB(interface::IConsole& iconsole)
+  : iconsole(iconsole)
   {}
-  void Tripped() {console.out.detected();}
-  void SwitchedOff() {console.out.deactivated();}
+  void Tripped() {iconsole.out.detected();}
+  void SwitchedOff() {iconsole.out.deactivated();}
 };
 
 class LegacySensor: public WindowSensorComponent
@@ -54,11 +54,11 @@ class LegacySensor: public WindowSensorComponent
 {
   boost::shared_ptr<asd::channels::ISingleThreaded> st;
   boost::shared_ptr<ISensor_NI> cb;
-  interface::Sensor* sensor;
+  interface::ISensor* sensor;
 public:
   static boost::shared_ptr<LegacySensor> singleton;
 
-  void set(interface::Sensor& sensor)
+  void set(interface::ISensor& sensor)
   {
     this->sensor = &sensor;
     sensor.out.triggered = boost::bind(&LegacySensor::DetectedMovement, this);
@@ -88,11 +88,11 @@ class LegacySiren: public SirenComponent
                  , public ISiren
                  , public boost::enable_shared_from_this<LegacySiren>
 {
-  interface::Siren* siren;
+  interface::ISiren* siren;
 public:
   static boost::shared_ptr<LegacySiren> singleton;
 
-  void set(interface::Siren& siren) {this->siren = &siren;}
+  void set(interface::ISiren& siren) {this->siren = &siren;}
   void TurnOn() {siren->in.turnon();}
   void TurnOff() {siren->in.turnoff();}
   void GetAPI(boost::shared_ptr<ISiren>* api) {*api = shared_from_this();}
@@ -111,21 +111,21 @@ void SirenComponent::ReleaseInstance() {LegacySiren::singleton.reset();}
 namespace component
 {
   Alarm::Alarm()
-  : po_console()
-  , po_sensor()
-  , po_siren()
+  : console()
+  , sensor()
+  , siren()
   {
     static boost::shared_ptr<AlarmSystemInterface> a = AlarmSystemComponent::GetInstance();
     boost::shared_ptr<IAlarmSystem> api;
     a->GetAPI(&api);
-    po_console.in.arm = asd::bind(&IAlarmSystem::SwitchOn, api);
-    po_console.in.disarm = asd::bind(&IAlarmSystem::SwitchOff, api);
+    console.in.arm = asd::bind(&IAlarmSystem::SwitchOn, api);
+    console.in.disarm = asd::bind(&IAlarmSystem::SwitchOff, api);
 
-    boost::shared_ptr<IAlarmSystem_NI> cb = boost::make_shared<LegacyCB>(boost::ref(po_console));
+    boost::shared_ptr<IAlarmSystem_NI> cb = boost::make_shared<LegacyCB>(boost::ref(console));
     a->RegisterCB(cb);
     a->RegisterCB(boost::make_shared<SingleThreaded>());
 
-    LegacySensor::singleton->set(po_sensor);
-    LegacySiren::singleton->set(po_siren);
+    LegacySensor::singleton->set(sensor);
+    LegacySiren::singleton->set(siren);
   }
 }

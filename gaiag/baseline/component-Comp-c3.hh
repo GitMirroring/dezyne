@@ -1,5 +1,6 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
 //
@@ -41,13 +42,13 @@ namespace component
     Comp::State::type s;
     interface::IComp::result_t::type reply_IComp_result_t;
     interface::IDevice::result_t::type reply_IDevice_result_t;
-    interface::IComp po_client;
-    interface::IDevice po_device_A;
+    interface::IComp client;
+    interface::IDevice device_A;
 
     Comp();
-    interface::IComp::result_t::type po_client_initialize();
-    interface::IComp::result_t::type po_client_recover();
-    interface::IComp::result_t::type po_client_perform_actions();
+    interface::IComp::result_t::type client_initialize();
+    interface::IComp::result_t::type client_recover();
+    interface::IComp::result_t::type client_perform_actions();
   };
 }
 #endif

@@ -1,11 +1,11 @@
-#include "SensorExtComponent.h"
+#include "SensorComponent.h"
 
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/make_shared.hpp>
 
 #include <iostream>
 
-struct SensorForeign: public SensorExtComponent
+struct SensorForeign: public SensorComponent
                     , public Sensor
                     , public boost::enable_shared_from_this<SensorForeign>
 {
@@ -41,10 +41,10 @@ struct SensorForeign: public SensorExtComponent
   }
 };
 
-boost::shared_ptr<SensorInterface> SensorExtComponent::GetInstance()
+boost::shared_ptr<SensorInterface> SensorComponent::GetInstance()
 {
   return boost::make_shared<SensorForeign>();
 }
-void SensorExtComponent::ReleaseInstance()
+void SensorComponent::ReleaseInstance()
 {
 }

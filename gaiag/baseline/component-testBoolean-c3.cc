@@ -41,14 +41,14 @@ namespace component
 {
   testBoolean::testBoolean()
   : b(false)
-  , po_i()
+  , i()
   {
-    po_i.in.evt = connect<void>(this, asd::bind<void>(&testBoolean::po_i_evt, this));
+    i.in.evt = connect<void>(this, asd::bind<void>(&testBoolean::i_evt, this));
   }
 
-  void testBoolean::po_i_evt()
+  void testBoolean::i_evt()
   {
-    std::cout << "testBoolean.po_i_evt" << std::endl;
+    std::cout << "testBoolean.i_evt" << std::endl;
     if (true)
 
     {

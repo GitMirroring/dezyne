@@ -34,12 +34,12 @@ void connect(Port& provided, Port& required)
 namespace component
 {
   AlarmSystem::AlarmSystem()
-  : is_alarm()
-  , is_sensor()
-  , is_siren()
-  , po_console(is_alarm.po_console)
+  : alarm()
+  , sensor()
+  , siren()
+  , console(alarm.console)
   {
-    connect(is_sensor.po_sensor,is_alarm.po_sensor);
-    connect(is_siren.po_siren,is_alarm.po_siren);
+    connect(sensor.sensor, alarm.sensor);
+    connect(siren.siren, alarm.siren);
   }
 }

@@ -30,8 +30,3 @@ interface rresolve
     on e: { reply (mixed.value); }
   }
 }
-
-component rresolve
-{
-  provides rresolve rresolve;
-}

@@ -34,11 +34,11 @@ namespace component
   struct Reply7
   {
     interface::IReply7::E::type reply_IReply7_E;
-    interface::IReply7 po_p;
-    interface::IReply7 po_r;
+    interface::IReply7 p;
+    interface::IReply7 r;
 
     Reply7();
-    interface::IReply7::E::type po_p_foo();
+    interface::IReply7::E::type p_foo();
     interface::IReply7::E::type f();
   };
 }

@@ -1,5 +1,6 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
 //
@@ -32,14 +33,14 @@ namespace component
 {
   struct requires_twice
   {
-    interface::irequires_twice po_p;
-    interface::irequires_twice po_once;
-    interface::irequires_twice po_twice;
+    interface::irequires_twice p;
+    interface::irequires_twice once;
+    interface::irequires_twice twice;
 
     requires_twice();
-    void po_p_e();
-    void po_once_a();
-    void po_twice_a();
+    void p_e();
+    void once_a();
+    void twice_a();
   };
 }
 #endif

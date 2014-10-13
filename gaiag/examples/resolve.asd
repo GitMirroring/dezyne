@@ -29,5 +29,6 @@ component resolve
 
   behaviour
   {
+    on p.e: illegal;
   }
 }

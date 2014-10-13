@@ -3,6 +3,7 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -35,11 +36,11 @@ namespace component
     bool dummy;
     interface::I::Status::type reply_I_Status;
     interface::U::Status::type reply_U_Status;
-    interface::I po_i;
-    interface::U po_u;
+    interface::I i;
+    interface::U u;
 
     Reply5();
-    interface::I::Status::type po_i_done();
+    interface::I::Status::type i_done();
     interface::I::Status::type fun();
     interface::I::Status::type fun_arg(interface::I::Status::type s);
   };

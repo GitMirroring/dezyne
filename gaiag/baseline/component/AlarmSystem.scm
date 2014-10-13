@@ -1,5 +1,6 @@
 ;;; Gaiag --- Guile in Asd In Asd in Guile.
 ;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
@@ -22,8 +23,8 @@
 
 (define-class <AlarmSystem> (<system>)
   (alarm :accessor .alarm :init-form (make <Alarm>))
-  (sensor :accessor .sensor :init-form (make <SensorExt>))
-  (siren :accessor .siren :init-form (make <SirenExt>))
+  (sensor :accessor .sensor :init-form (make <Sensor>))
+  (siren :accessor .siren :init-form (make <Siren>))
   (console :accessor .console :init-value #f :init-keyword :console))
 
 (define-method (initialize (o <AlarmSystem>) args)

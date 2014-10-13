@@ -1,7 +1,8 @@
 # Gaiag --- Guile in Asd In Asd in Guile.
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Gaiag.
+#
+# Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # Gaiag is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as
@@ -20,14 +21,18 @@
 # 
 # Code:
 
-class Console ():
+import sys
+#
+import interface
 
+class Sensor:
     def __init__ (self):
-        class Ins ():
-            arm = None
-            disarm = None
-        self.ins = Ins ()
-        class Outs ():
-            detected = None
-            deactivated = None
-        self.outs = Outs ()
+        self.sensor = interface.ISensor ()
+        self.sensor.ins.enable = self.sensor_enable
+        self.sensor.ins.disable = self.sensor_enable
+
+    def sensor_enable (self):
+        sys.stderr.write ('Sensor.enable\n')
+
+    def sensor_disable (self):
+        sys.stderr.write ('Sensor.disable\n')

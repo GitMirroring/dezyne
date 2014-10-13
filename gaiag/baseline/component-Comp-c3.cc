@@ -41,25 +41,25 @@ namespace component
 {
   Comp::Comp()
   : s(State::Uninitialized)
-  , po_client()
-  , po_device_A()
+  , client()
+  , device_A()
   {
-    po_client.in.initialize = connect<interface::IComp::result_t::type>(this, asd::bind<interface::IComp::result_t::type>(&Comp::po_client_initialize, this));
-    po_client.in.recover = connect<interface::IComp::result_t::type>(this, asd::bind<interface::IComp::result_t::type>(&Comp::po_client_recover, this));
-    po_client.in.perform_actions = connect<interface::IComp::result_t::type>(this, asd::bind<interface::IComp::result_t::type>(&Comp::po_client_perform_actions, this));
+    client.in.initialize = connect<interface::IComp::result_t::type>(this, asd::bind<interface::IComp::result_t::type>(&Comp::client_initialize, this));
+    client.in.recover = connect<interface::IComp::result_t::type>(this, asd::bind<interface::IComp::result_t::type>(&Comp::client_recover, this));
+    client.in.perform_actions = connect<interface::IComp::result_t::type>(this, asd::bind<interface::IComp::result_t::type>(&Comp::client_perform_actions, this));
   }
 
-  interface::IComp::result_t::type Comp::po_client_initialize()
+  interface::IComp::result_t::type Comp::client_initialize()
   {
-    std::cout << "Comp.po_client_initialize" << std::endl;
+    std::cout << "Comp.client_initialize" << std::endl;
     if (s == State::Uninitialized)
 
     {
       {
-        interface::IDevice::result_t::type res = po_device_A.in.initialize ();
+        interface::IDevice::result_t::type res = device_A.in.initialize ();
         if (res == interface::IDevice::result_t::OK)
         {
-          res = po_device_A.in.calibrate ();
+          res = device_A.in.calibrate ();
         }
         if (res == interface::IDevice::result_t::OK)
         {
@@ -86,9 +86,9 @@ namespace component
     return reply_IComp_result_t;
 
   }
-  interface::IComp::result_t::type Comp::po_client_recover()
+  interface::IComp::result_t::type Comp::client_recover()
   {
-    std::cout << "Comp.po_client_recover" << std::endl;
+    std::cout << "Comp.client_recover" << std::endl;
     if (s == State::Uninitialized)
 
     {
@@ -103,7 +103,7 @@ namespace component
 
     {
       {
-        interface::IDevice::result_t::type res = po_device_A.in.calibrate ();
+        interface::IDevice::result_t::type res = device_A.in.calibrate ();
         if (res == interface::IDevice::result_t::OK)
         {
           s = State::Initialized;
@@ -119,9 +119,9 @@ namespace component
     return reply_IComp_result_t;
 
   }
-  interface::IComp::result_t::type Comp::po_client_perform_actions()
+  interface::IComp::result_t::type Comp::client_perform_actions()
   {
-    std::cout << "Comp.po_client_perform_actions" << std::endl;
+    std::cout << "Comp.client_perform_actions" << std::endl;
     if (s == State::Uninitialized)
 
     {
@@ -131,10 +131,10 @@ namespace component
 
     {
       {
-        interface::IDevice::result_t::type res = po_device_A.in.perform_action1 ();
+        interface::IDevice::result_t::type res = device_A.in.perform_action1 ();
         if (res == interface::IDevice::result_t::OK)
         {
-          res = po_device_A.in.perform_action2 ();
+          res = device_A.in.perform_action2 ();
         }
         if (res == interface::IDevice::result_t::OK)
         {

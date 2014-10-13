@@ -28,7 +28,6 @@
   :use-module (gaiag animate)
   :use-module (gaiag code)
   :use-module (gaiag indent)
-  :use-module (gaiag mangle)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
@@ -39,29 +38,12 @@
   :use-module (gaiag gom)
 
   :export (ast->
-           c++:gom
-           c++:import
            gen1-interfaces))
 
 (define (ast-> ast)
-  (let ((gom ((gom:register c++:gom) ast #t)))
+  (let ((gom ((gom:register code:gom) ast #t)))
     (map dump ((gom:filter <model>) gom)))
   "")
-
-(define (c++:import name)
-  (gom:import name c++:gom))
-
-(define (c++:gom ast)
-  ((compose mangle ast:wfc ast:resolve ast->gom) ast))
-
-(define (mangle o)
-  (if #f
-      o
-      (parameterize
-          ((mangle-prefix-alist
-            '((port . po) ;; examples/regression/interface_component_overload.asd
-              (instance . is))))
-        (gom:mangle o))))
 
 (define-method (dump (o <interface>))
   (let ((name (.name o)))
@@ -71,7 +53,7 @@
 
 (define-method (dump (o <component>))
   (let ((name (.name o))
-        (interfaces (map c++:import (map .type ((compose .elements .ports) o)))))
+        (interfaces (map code:import (map .type ((compose .elements .ports) o)))))
     (dump-indented (symbol-append 'component- name '-c3.hh)
                    (lambda ()
                      (c++-file 'component.hh.scm (code:module o))))
@@ -88,8 +70,8 @@
 
 (define-method (dump (o <system>))
   (let ((name (.name o))
-        (interfaces (map c++:import (map .type ((compose .elements .ports) o))))
-        (components (map c++:import (map .component ((compose .elements .instances) o)))))
+        (interfaces (map code:import (map .type ((compose .elements .ports) o))))
+        (components (map code:import (map .component ((compose .elements .instances) o)))))
     (dump-indented (symbol-append 'component- name '-c3.hh)
                    (lambda ()
                      (c++-file 'system.hh.scm (code:module o))))

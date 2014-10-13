@@ -27,7 +27,7 @@ import Siren.asd;
 
 component AlarmComponentSystem
 {
-  provides Console console;
+  provides IConsole console;
 
   system
     {

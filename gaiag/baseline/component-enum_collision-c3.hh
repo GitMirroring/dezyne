@@ -1,5 +1,6 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
 //
@@ -32,11 +33,11 @@ namespace component
   {
     interface::ienum_collision::Retval1::type reply_ienum_collision_Retval1;
     interface::ienum_collision::Retval2::type reply_ienum_collision_Retval2;
-    interface::ienum_collision po_i;
+    interface::ienum_collision i;
 
     enum_collision();
-    interface::ienum_collision::Retval1::type po_i_foo();
-    interface::ienum_collision::Retval2::type po_i_bar();
+    interface::ienum_collision::Retval1::type i_foo();
+    interface::ienum_collision::Retval2::type i_bar();
   };
 }
 #endif

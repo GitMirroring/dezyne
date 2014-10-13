@@ -41,22 +41,20 @@ inline asd::function<void()> connect<void>(void* scope, const asd::function<void
 namespace component
 {
   Sensor::Sensor()
-  : po_sensor()
+  : sensor()
   {
-    po_sensor.in.enable = connect<void>(this, asd::bind<void>(&Sensor::po_sensor_enable, this));
-    po_sensor.in.disable = connect<void>(this, asd::bind<void>(&Sensor::po_sensor_disable, this));
+    sensor.in.enable = connect<void>(this, asd::bind<void>(&Sensor::sensor_enable, this));
+    sensor.in.disable = connect<void>(this, asd::bind<void>(&Sensor::sensor_disable, this));
   }
 
-  void Sensor::po_sensor_enable()
+  void Sensor::sensor_enable()
   {
-    std::cout << "Sensor.po_sensor_enable" << std::endl;
-
+    std::cout << "Sensor.sensor_enable" << std::endl;
 
   }
-  void Sensor::po_sensor_disable()
+  void Sensor::sensor_disable()
   {
-    std::cout << "Sensor.po_sensor_disable" << std::endl;
-
+    std::cout << "Sensor.sensor_disable" << std::endl;
 
   }
 

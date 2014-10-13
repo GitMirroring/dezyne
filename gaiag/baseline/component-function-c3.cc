@@ -41,15 +41,15 @@ namespace component
 {
   function::function()
   : f(false)
-  , po_i()
+  , i()
   {
-    po_i.in.a = connect<void>(this, asd::bind<void>(&function::po_i_a, this));
-    po_i.in.b = connect<void>(this, asd::bind<void>(&function::po_i_b, this));
+    i.in.a = connect<void>(this, asd::bind<void>(&function::i_a, this));
+    i.in.b = connect<void>(this, asd::bind<void>(&function::i_b, this));
   }
 
-  void function::po_i_a()
+  void function::i_a()
   {
-    std::cout << "function.po_i_a" << std::endl;
+    std::cout << "function.i_a" << std::endl;
     if (true)
 
     {
@@ -59,16 +59,16 @@ namespace component
     }
 
   }
-  void function::po_i_b()
+  void function::i_b()
   {
-    std::cout << "function.po_i_b" << std::endl;
+    std::cout << "function.i_b" << std::endl;
     if (true)
 
     {
       {
         toggle ();
         toggle ();
-        po_i.out.d ();
+        i.out.d ();
       }
     }
 
@@ -79,7 +79,7 @@ namespace component
   {
     if (f)
     {
-      po_i.out.c ();
+      i.out.c ();
     }
     f = not (f);
 

@@ -1,7 +1,8 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
+//
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -20,15 +21,37 @@
 //
 // Code:
 
-import Sensor.asd;
+#ifndef INTERFACE_ICONSOLE_C3_HH
+#define INTERFACE_ICONSOLE_C3_HH
 
-component SensorExt
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
+
+namespace asd
 {
-  provides Sensor sensor;
-
-  behaviour
-  {
-    on enable:{}
-    on disable:{}
-  }
+  using boost::function;
+  using boost::bind;
 }
+
+namespace interface
+{
+  struct IConsole
+  {
+
+    struct
+    {
+      asd::function<void ()> arm;
+      asd::function<void ()> disarm;
+
+    } in;
+
+    struct
+    {
+      asd::function<void ()> detected;
+      asd::function<void ()> deactivated;
+
+    } out;
+  };
+}
+
+#endif

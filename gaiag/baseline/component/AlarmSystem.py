@@ -1,5 +1,6 @@
 # Gaiag --- Guile in Asd In Asd in Guile.
 # Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Gaiag.
 #
@@ -29,10 +30,9 @@ def connect (provided, required):
 class AlarmSystem ():
     def __init__ (self):
         self.alarm = component.Alarm ()
-        self.sensor = component.SensorExt ()
-        self.siren = component.SirenExt ()
+        self.sensor = component.Sensor ()
+        self.siren = component.Siren ()
         self.console = self.alarm.console
 
         connect (self.sensor.sensor, self.alarm.sensor)
         connect (self.siren.siren, self.alarm.siren)
-

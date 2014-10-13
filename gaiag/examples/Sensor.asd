@@ -21,65 +21,15 @@
 //
 // Code:
 
-interface Sensor
+import ISensor.asd;
+
+component Sensor
 {
-  in void enable;
-  in void disable;
+  provides ISensor sensor;
 
-  out void triggered;
-  out void disabled;
-
-  behaviour b
+  behaviour
   {
-    enum States {
-        Disabled,
-        Enabled,
-        Disabling,
-        Triggered
-    };
-    States state = States.Disabled;
-
-    [state.Disabled]
-    {
-      on enable:
-      {
-        state = States.Enabled;
-      }
-      on disable:
-        illegal;
-    }
-    [state.Enabled]
-    {
-      on enable:
-        illegal;
-      on disable:
-      {
-        state = States.Disabling;
-      }
-      on optional:
-      {
-        triggered;
-        state = States.Triggered;
-      }
-    }
-    [state.Disabling]
-    {
-      on enable, disable:
-        illegal;
-      on inevitable:
-      {
-        disabled;
-        state = States.Disabled;
-      }
-    }
-    [state.Triggered]
-    {
-      on enable:
-        illegal;
-      on disable:
-      {
-        state = States.Disabling;
-      }
-    }
+    on enable:{}
+    on disable:{}
   }
 }

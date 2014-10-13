@@ -2,7 +2,6 @@
 //
 // This file is part of Gaiag.
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
@@ -21,9 +20,6 @@
 // Commentary:
 //
 // Code:
-
-import ISensor;
-import ISiren;
 
 interface IConsole
 {
@@ -87,90 +83,6 @@ interface IConsole
         state = States.Disarmed;
       }
       on arm, disarm:
-        illegal;
-    }
-  }
-}
-
-component Alarm
-{
-    provides IConsole console;
-    requires ISensor sensor;
-    requires ISiren siren;
-
-  behaviour d
-  {
-    enum States { Disarmed, Armed, Triggered, Disarming };
-    States state = States.Disarmed;
-    bool sounding = false;
-
-    [state.Disarmed]
-    {
-      on console.arm:
-      {
-        sensor.enable;
-        state = States.Armed;
-      }
-      on console.disarm, sensor.triggered, sensor.disabled:
-        illegal;
-    }
-    [state.Armed]
-    {
-      on console.arm:
-
-        illegal;
-      on console.disarm:
-      {
-        sensor.disable;
-        state = States.Disarming;
-      }
-      on sensor.triggered:
-      {
-        console.detected;
-        siren.turnon;
-        sounding = true;
-        state = States.Triggered;
-      }
-      on sensor.disabled:
-        illegal;
-    }
-    [state.Disarming]
-    {
-      on console.arm, console.disarm:
-        illegal;
-      on sensor.triggered:
-      {
-        //illegal;
-      }
-      on sensor.disabled:
-      {
-        [sounding]
-        {
-          console.deactivated;
-          siren.turnoff;
-          state = States.Disarmed;
-          sounding = false;
-        }
-        [otherwise]
-        {
-          console.deactivated;
-          state = States.Disarmed;
-        }
-      }
-    }
-    [state.Triggered]
-    {
-      on console.arm:
-        illegal;
-
-      on console.disarm:
-      {
-        sensor.disable;
-        siren.turnoff;
-        sounding = false;
-        state = States.Disarming;
-      }
-      on sensor.triggered, sensor.disabled:
         illegal;
     }
   }

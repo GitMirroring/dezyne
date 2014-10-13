@@ -1,7 +1,8 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
+//
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -20,21 +21,13 @@
 //
 // Code:
 
-#ifndef COMPONENT_INTERFACE_COMPONENT_OVERLOAD_HH
-#define COMPONENT_INTERFACE_COMPONENT_OVERLOAD_HH
-
-#include "interface-interface_component_overload-c3.hh"
-
-
-namespace component
-{
-  struct interface_component_overload
-  {
-    interface::interface_component_overload::R::type reply_interface_component_overload_R;
-    interface::interface_component_overload po_interface_component_overload;
-
-    interface_component_overload();
-    interface::interface_component_overload::R::type po_interface_component_overload_e();
+interface.ISensor = function() {
+  this.ins = {
+    enable: null,
+    disable: null
   };
-}
-#endif
+  this.outs = {
+    triggered: null,
+    disabled: null
+  };
+};

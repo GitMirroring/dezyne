@@ -1,7 +1,8 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
+//
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -20,21 +21,36 @@
 //
 // Code:
 
-#ifndef COMPONENT_INTERFACE_PORT_OVERLOAD_HH
-#define COMPONENT_INTERFACE_PORT_OVERLOAD_HH
-
-#include "interface-I-c3.hh"
-
-
-namespace component
+interface ISiren
 {
-  struct interface_port_overload
-  {
-    interface::I::R::type reply_I_R;
-    interface::I po_I;
+  in void turnon;
+  in void turnoff;
 
-    interface_port_overload();
-    interface::I::R::type po_I_e();
-  };
+  behaviour c
+  {
+    enum States {
+        Off,
+        On
+    };
+    States state = States.Off;
+
+    [state.Off]
+    {
+      on turnon:
+      {
+        state = States.On;
+      }
+      on turnoff:
+        illegal;
+    }
+    [state.On]
+    {
+      on turnoff:
+      {
+        state = States.Off;
+      }
+      on turnon:
+        illegal;
+    }
+  }
 }
-#endif
