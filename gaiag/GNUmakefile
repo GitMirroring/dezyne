@@ -40,6 +40,7 @@ REFINES =  fdr2 batch
 PREFIX = $(abspath $(shell pwd))
 GUILE_LOAD_PATH = $(PREFIX):$(PREFIX)/module
 GUILE_FLAGS := $(patsubst %,-L %, $(subst :, ,$(GUILE_LOAD_PATH)))
+PYTHON = PYTHONPATH= python
 
 default: all
 
@@ -341,7 +342,7 @@ python-alarm: compile
 	ln -s ../examples/alarm.py out
 	ln -s ../examples/__init__.py out/interface
 	ln -s ../examples/__init__.py out/component
-	cd out && python alarm.py
+	cd out && $(PYTHON) alarm.py
 
 PY_BROKEN =\
  Alarm.asd\
@@ -358,7 +359,7 @@ cd out && $(shell pwd)/gaiag -l python examples/regression/$*.asd
 -$(pydiff) baseline/component/$*.py out/component
 ln -s ../examples/__init__.py out/interface
 ln -s ../examples/__init__.py out/component
-(cd out && python component/$*.py) $(UPDATE)
+(cd out && $(PYTHON) component/$*.py) $(UPDATE)
 $(pydiff) baseline/component/$*.py out/component | diffstat || true
 $(pydiff) baseline/component/$*.py out/component > /dev/null
 endef
