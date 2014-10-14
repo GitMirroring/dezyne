@@ -1,0 +1,180 @@
+-- drop_one_local: V => V
+drop_one_local_((M', (L', L0'))) = (M', L')
+
+illegal_(P',V') = illegal -> STOP
+-- send_: (c: channel, e:event) => (P,V)->Proc
+send_(c',e')(P', V') = c'!e' -> P'(V')
+-- skip_: () => (P,V)->Proc
+skip_(P', V') = P'(V')
+
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
+
+-- sendrecv_: (c: channel, e:event) => (P,V)->Proc
+sendrecv_(c',e')(P', V') =  c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P', V')
+-- callvoid_: (B': (P,V)->Proc) => (P,V)->Proc
+callvoid_(B')(P', V') = B'(P', V')
+-- assign_: (F': V -> V) => (P,V) -> Proc
+assign_(F')(P', V') = P'(F'(V'))
+-- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
+assign_active_(C', A')(P', V') = C'(\((M', r'),L') @ P'(A'((M',L'),r')), V')
+reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
+-- returnvalue_: (F: V->val) => (P,V)->Proc
+returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
+-- the_end_: P => V->Proc
+the_end_(P', V') = transition_end -> P'(V')
+
+-- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
+semi_(S1',S2')(P', V') = S1'(\V'' @ S2'(P', V''),V')
+-- ifthenelse: (E': val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
+ifthenelse_(E',S1',S2')(P', V') =  if E' then S1'(P', V') else S2'(P', V')
+-- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
+-- context_(F', S')(P')((M', L')) = S'((\V2' @ P'(drop_one_local_(V2'))), (M', (L', F'((M', L')))))
+-- context_(v', S')(P', (M', L')) = S'((\(M',L2') @ P'((M',L'))), (M', (L', v')))
+context_(F', S')(P', (M', L')) = S'((\ (M',L2') @ P'((M',L'))), (M', (L', F'((M', L')))))
+-- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
+context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
+context_func_(S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', <>))
+context_func_args_(v', S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', (<>, v')))
+
+members_((M',L')) = (M',<>)
+
+channel illegal
+channel transition_begin, transition_end
+
+datatype event_enumeration_alphabet = i21_e | i3_e | inevitable | return
+-- interface.csp.scm
+
+channel i20_I: {i3_e}
+
+channel i20_I_': {return}
+
+IF_i20_I_(IG) = let
+
+i20_I_(((<>),(stack'))) =
+(true) & (
+i20_I?x:{i3_e} ->
+(\ P',V' @ i20_I_'.return -> P'(V'))(\ V' @ i20_I_(V'),((<>),(stack'))))
+
+within i20_I_(((<>),(<>)))
+
+-- end of interface.csp.scm
+-- interface.csp.scm
+
+channel i47_II: {inevitable}
+channel i47_II_'': {i21_e}
+channel i47_II_': {return}
+
+IF_i47_II_(IG) = let
+
+i47_II_(((<>),(stack'))) =
+(true) & (
+i47_II?x:{inevitable} ->
+semi_((\ P',V' @ i47_II_''!i21_e -> P'(V')),
+skip_)(\ V' @ i47_II_(V'),((<>),(stack'))))
+
+within i47_II_(((<>),(<>)))
+
+-- end of interface.csp.scm
+-- component.csp.scm
+
+channel i48_i:{i3_e}
+channel i51_ii:{inevitable}
+
+channel i51_ii_'':{i21_e}
+
+channel i48_i_':{return}
+channel i51_ii_':{return}
+
+
+CO_i78_C_(IIG,IG) = let
+
+i78_C_(((<>),(stack'))) = transition_begin -> (
+(true) & (
+i48_i?x:{i3_e} ->
+(\ P',V' @ i20_I_'.return -> P'(V'))(\ V' @ transition_end -> i78_C_(V'),((<>),(stack')))
+ []
+  i51_ii_''?x:{i21_e} ->
+skip_(\ V' @ transition_end -> i78_C_(V'),((<>),(stack'))))
+)
+
+within i78_C_(((<>),(<>)))
+
+channel extensions_over_empty_channels_is_undefined
+channel IN',OUT' : {i51_ii_''.i21_e,extensions_over_empty_channels_is_undefined}
+
+channel LINK' : {|IN',OUT'|}
+
+SINGLETHREADED = true
+
+channel reorder_in  : {i20_I_'.return}
+channel reorder_out : {i48_i_'.return}
+
+SEMANTICS(in',out',link',client',modeling') = let
+
+Q' = let
+
+N = card({|in'|})
+
+external chase
+
+Cell = link'.in'?x -> link'.out'!x -> Cell
+
+Back = in'?x -> (link'.out'!x -> Back [] in'?x -> illegal -> STOP)
+
+Front = Cell[[link'.out' <- out']]
+
+within
+       if (N==1) then (Back[[link'.out' <- out']])
+       else if(N==2) then chase(Back [link'.out' <-> link'.in'] Front  \ {|link'|})
+       else chase((Back [link'.out' <-> link'.in'] ([link'.out'<->link'.in'] x : <1..N-2> @ Cell)) [link'.out' <-> link'.in'] Front \ {|link'|})
+
+R'(A') = ([] x' : A' @ x' -> R'(A'))
+       []
+       reorder_in?i20_I_'.x' -> reorder_out!i48_i_'.x' -> R'(A')
+
+S'    = let
+
+Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
+
+Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i48_i_'.head(r') -> Idle(0))
+            []
+            c' > 0 & transition_end -> transition_begin -> Busy(c',r')
+            []
+            c' < card({|in'|}) & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            []
+            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            []
+            r' == <> & reorder_in?i20_I_'.x' -> Busy(c',<x'>)
+            []
+            r' != <> & reorder_in?i20_I_'.x' -> illegal -> STOP
+
+within Idle(0)
+
+within Q' [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
+
+AS_i78_C_(IIG) = let
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+ClientCalls = {i48_i.i3_e}
+UsedModeling = {i51_ii.inevitable}
+within compress((CO_i78_C_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+                 [|{|OUT',transition_begin,transition_end,reorder_in,i48_i,i48_i_'|}|]
+                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
+                [|{|IN',i51_ii,i51_ii_'|}|]
+                (IF_i47_II_(true) [[i47_II.x<-i51_ii.x|x<-extensions(i51_ii)]][[i47_II_'.x<-i51_ii_'.x|x<-extensions(i51_ii_')]][[i47_II_''.x<-i51_ii_''.x|x<-extensions(i51_ii_'')]]
+)[[x<-IN'.x|x<-extensions(IN')]])
+
+-- end of component.csp.scm
+assert IF_i20_I_(false) :[deadlock free]
+assert IF_i20_I_(true) :[livelock free]
+assert IF_i47_II_(false) :[deadlock free]
+assert IF_i47_II_(true)  \ {|i47_II.inevitable|} :[livelock free]
+assert CO_i78_C_(true,true) :[deterministic]
+assert STOP [T= AS_i78_C_(false) \ diff(Events,{illegal})
+assert AS_i78_C_(false) :[deadlock free]
+assert IF_i20_I_(true) [[i20_I.x<-i48_i.x|x<-extensions(i48_i)]][[i20_I_'.x<-i48_i_'.x|x<-extensions(i48_i_')]]\ {} [F= AS_i78_C_(true) \ diff(Events,{|illegal,i48_i,i48_i_'|})
+assert AS_i78_C_(true) \ diff(Events,{|illegal,i48_i,i48_i_'|}) :[livelock free]

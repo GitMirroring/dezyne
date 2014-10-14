@@ -1,0 +1,28 @@
+Checking out/assert/interface_deadlock_fail0.csp
+
+Checking IF_i29_I_(false) :[deadlock free]
+xfalse
+
+Checking IF_i29_I_(true) :[livelock free]
+true
+
+Checking IF_i46_DummyI_(false) :[deadlock free]
+true
+
+Checking IF_i46_DummyI_(true) :[livelock free]
+true
+
+Checking CO_i69_DummyC_(true,true) :[deterministic]
+true
+
+Checking STOP [T= AS_i69_DummyC_(false)\diff(Events,{illegal})
+true
+
+Checking AS_i69_DummyC_(false) :[deadlock free]
+true
+
+Checking IF_i46_DummyI_(true)[[i46_DummyI.x<-i47_i.x|x<-extensions(i47_i)]][[i46_DummyI_'.x<-i47_i_'.x|x<-extensions(i47_i_')]]\{} [F= AS_i69_DummyC_(true)\diff(Events,{|illegal,i47_i,i47_i_'|})
+true
+
+Checking AS_i69_DummyC_(true)\diff(Events,{|illegal,i47_i,i47_i_'|}) :[livelock free]
+true

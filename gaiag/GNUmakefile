@@ -65,7 +65,7 @@ clean:
 test: check
 check: compile
 	./test.sh </dev/null
-	$(MAKE) csp demo asserts c++ goops javascript python pretty simulate wfc
+	$(MAKE) csp asserts c++ goops javascript python pretty simulate wfc
 
 REGRESSION_SOURCES = $(shell cd examples/regression && grep -l ^component *.asd)
 WFC_SOURCES = $(shell cd examples/wfc && ls -1 *.asd)
@@ -250,12 +250,34 @@ out/webdemo/%.refines: $(DEPTH)/webdemo/asd/%.asd
 out/webdemo/%.refines: examples/regression/%.asd
 	$(.WEBDEMO_REFINES)
 
+define .ASSERT_REFINES
+rm -rf out && mkdir -p out/assert && ln -s ../../examples ../../webdemo ../templates ../../$(DEPTH)/examples/assert out/assert
+ln -s assert out/examples
+cd out/assert && $(TOPDIR)/$(BUILD)/asdgenerator -M -l scm $<
+cd out/assert && $(shell pwd)/gaiag -l csp $*.scm
+[ -f out/assert/$*.csp ] || mv out/assert/*.csp out/assert/$*.csp
+$(diff) baseline/assert/$*.csp out/assert || true
+@$(diff) baseline/assert/$*.csp out/assert | diffstat || true
+$(CSPMCHECKER) out/assert/$*.csp
+$(REFINES) out/assert/$*.csp > $@ 2>/dev/null ||:
+$(diff) -I '^Checking' baseline/assert/$*.refines $@ $(UPDATE)
+@$(diff) baseline/assert/$*.csp out/assert >/dev/null
+endef
+
+#out/assert/%.update: UPDATE=||:; cp out/assert/$*.update baseline/assert/$*.refines
+out/assert/%.update: UPDATE=&& cp out/assert/$*.csp baseline/assert/
+out/assert/%.update: $(DEPTH)/examples/assert/%.asd
+	$(.ASSERT_REFINES)
+
+out/assert/%.refines: $(DEPTH)/examples/assert/%.asd
+	$(.ASSERT_REFINES)
+
 CSP_BROKEN=\
  provides_twice.asd\
 
 CSP_SOURCES = $(filter-out $(CSP_BROKEN),$(REGRESSION_SOURCES))
 
-csp: compile $(CSP_SOURCES:%.asd=out/%.refines)
+csp-regression: compile $(CSP_SOURCES:%.asd=out/%.refines)
 
 csp-regression-update: $(CSP_SOURCES:%.asd=out/%.update)
 
@@ -267,13 +289,15 @@ BROKEN =\
  LOPW.asd\
 
 DEMO_SOURCES = $(filter-out $(BROKEN) ,$(shell cd $(DEPTH)/webdemo/asd && ls *.asd))
-
-demo: $(DEMO_SOURCES:%.asd=out/webdemo/%.refines)
-
+csp-demo: $(DEMO_SOURCES:%.asd=out/webdemo/%.refines)
 csp-demo-update: $(DEMO_SOURCES:%.asd=out/webdemo/%.update)
 
-csp-update: csp-demo-update csp-regression-update
+ASSERT_SOURCES = $(shell cd $(DEPTH)/examples/assert && ls *.asd)
+csp-assert: $(ASSERT_SOURCES:%.asd=out/assert/%.refines)
+csp-assert-update: $(ASSERT_SOURCES:%.asd=out/assert/%.update)
 
+csp: csp-regression-update csp-demo-update csp-assert-update
+csp-update: csp-regression-update csp-assert-update csp-demo-update csp-assert-update
 
 simulate: compile
 	./gaiag -l simulate -t '(a a a)' examples/simulate.asd
