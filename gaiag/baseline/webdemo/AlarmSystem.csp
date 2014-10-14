@@ -255,19 +255,33 @@ illegal_(STOP,<>))
 within i1019_Alarm_(((i611_States_Disarmed,false),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
-channel IN,OUT : {i601_sensor_''.i245_triggered,i601_sensor_''.i246_disabled,extensions_over_empty_channels_is_undefined}
+channel IN',OUT' : {i601_sensor_''.i245_triggered,i601_sensor_''.i246_disabled,extensions_over_empty_channels_is_undefined}
+
+channel LINK' : {|IN',OUT'|}
 
 SINGLETHREADED = true
 
 channel reorder_in  : {i242_IConsole_'.return}
 channel reorder_out : {i598_console_'.return}
 
-SEMANTICS(in',out',client',modeling') = let
-Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
-       []
-       length(s') > 0 & out'!head(s') -> Q'(tail(s'))
-       []
-       length(s') == card({|in'|}) & in'?x' -> illegal -> STOP
+SEMANTICS(in',out',link',client',modeling') = let
+
+Q' = let
+
+N = card({|in'|})
+
+external chase
+
+Cell = link'.in'?x -> link'.out'!x -> Cell
+
+Back = in'?x -> (link'.out'!x -> Back [] in'?x -> illegal -> STOP)
+
+Front = Cell[[link'.out' <- out']]
+
+within
+       if (N==1) then (Back[[link'.out' <- out']])
+       else if(N==2) then chase(Back [link'.out' <-> link'.in'] Front  \ {|link'|})
+       else chase((Back [link'.out' <-> link'.in'] ([link'.out'<->link'.in'] x : <1..N-2> @ Cell)) [link'.out' <-> link'.in'] Front \ {|link'|})
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
        []
@@ -291,23 +305,24 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
 
 within Idle(0)
 
-within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
+within Q' [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
 AS_i1019_Alarm_(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {i598_console_'.return,i598_console.i5_detected,i598_console.i6_deactivated,i598_console.inevitable,i598_console.optional,i601_sensor.inevitable,i601_sensor.optional}
+
 ClientCalls = {i598_console.i3_arm,i598_console.i4_disarm}
 UsedModeling = {i601_sensor.inevitable,i601_sensor.optional}
-within compress((CO_i1019_Alarm_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,i598_console,i598_console_',i601_sensor,i601_sensor_',i604_siren,i604_siren_'|},Exclude)|]
-(((IF_i482_ISensor_(true) [[i482_ISensor.x<-i601_sensor.x|x<-extensions(i601_sensor)]][[i482_ISensor_'.x<-i601_sensor_'.x|x<-extensions(i601_sensor_')]][[i482_ISensor_''.x<-i601_sensor_''.x|x<-extensions(i601_sensor_'')]]
- ||| IF_i593_ISiren_(true) [[i593_ISiren.x<-i604_siren.x|x<-extensions(i604_siren)]][[i593_ISiren_'.x<-i604_siren_'.x|x<-extensions(i604_siren_')]]
-) [[x<-IN.x|x<-extensions(IN)]]
-[|union({|IN|},UsedModeling)|]
-SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
+within compress((CO_i1019_Alarm_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+                 [|{|OUT',transition_begin,transition_end,reorder_in,i598_console,i598_console_'|}|]
+                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
+                [|{|IN',i601_sensor,i601_sensor_',i604_siren,i604_siren_'|}|]
+                (IF_i482_ISensor_(true) [[i482_ISensor.x<-i601_sensor.x|x<-extensions(i601_sensor)]][[i482_ISensor_'.x<-i601_sensor_'.x|x<-extensions(i601_sensor_')]][[i482_ISensor_''.x<-i601_sensor_''.x|x<-extensions(i601_sensor_'')]]
+                 ||| IF_i593_ISiren_(true) [[i593_ISiren.x<-i604_siren.x|x<-extensions(i604_siren)]][[i593_ISiren_'.x<-i604_siren_'.x|x<-extensions(i604_siren_')]]
+)[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
 assert IF_i242_IConsole_(false) :[deadlock free]

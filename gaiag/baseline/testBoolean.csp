@@ -102,19 +102,33 @@ i?x:{evt} ->
 within testBoolean_(((false),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
-channel IN,OUT : {extensions_over_empty_channels_is_undefined}
+channel IN',OUT' : {extensions_over_empty_channels_is_undefined}
+
+channel LINK' : {|IN',OUT'|}
 
 SINGLETHREADED = true
 
 channel reorder_in  : {TestBool_'.return}
 channel reorder_out : {i_'.return}
 
-SEMANTICS(in',out',client',modeling') = let
-Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
-       []
-       length(s') > 0 & out'!head(s') -> Q'(tail(s'))
-       []
-       length(s') == card({|in'|}) & in'?x' -> illegal -> STOP
+SEMANTICS(in',out',link',client',modeling') = let
+
+Q' = let
+
+N = card({|in'|})
+
+external chase
+
+Cell = link'.in'?x -> link'.out'!x -> Cell
+
+Back = in'?x -> (link'.out'!x -> Back [] in'?x -> illegal -> STOP)
+
+Front = Cell[[link'.out' <- out']]
+
+within
+       if (N==1) then (Back[[link'.out' <- out']])
+       else if(N==2) then chase(Back [link'.out' <-> link'.in'] Front  \ {|link'|})
+       else chase((Back [link'.out' <-> link'.in'] ([link'.out'<->link'.in'] x : <1..N-2> @ Cell)) [link'.out' <-> link'.in'] Front \ {|link'|})
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
        []
@@ -138,22 +152,23 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
 
 within Idle(0)
 
-within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
+within Q' [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
 AS_testBoolean_(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {i_'.return}
+
 ClientCalls = {i.evt}
 UsedModeling = {}
-within compress((CO_testBoolean_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,i,i_'|},Exclude)|]
-(((STOP
-) [[x<-IN.x|x<-extensions(IN)]]
-[|union({|IN|},UsedModeling)|]
-SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
+within compress((CO_testBoolean_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+                 [|{|OUT',transition_begin,transition_end,reorder_in,i,i_'|}|]
+                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
+                [|{|IN'|}|]
+                (STOP
+)[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
 assert IF_TestBool_(false) :[deadlock free]

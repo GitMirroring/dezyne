@@ -46,23 +46,37 @@ CO_#(.name model) _#((compose .name .behaviour) model) (IIG,IG) = let
 within #(.name model) _#((compose .name .behaviour) model) ((#(->csp model (make <context> :members ((compose gom:member-values) model) :locals '(<>)))))
 
 channel extensions_over_empty_channels_is_undefined
-channel IN,OUT : {#
+channel IN',OUT' : {#
  (comma-join (list (comma-join
                     (map (lambda (port)
                            (comma-join (map (lambda (event) (list (.name port) "_''." (.name event))) (filter gom:out? ((compose .elements .events gom:import .type) port)))))
                            (filter gom:requires? ((compose .elements .ports) model)))) 'extensions_over_empty_channels_is_undefined))}
+
+channel LINK' : {|IN',OUT'|}
 
 SINGLETHREADED = true
 
 channel reorder_in  : {# (comma-join (map (lambda (x) (symbol-append (.type (gom:port model)) (string->symbol "_'.") x)) (return-values-port (gom:port model))))}
 channel reorder_out : {# (comma-join (map (lambda (x) (symbol-append (.name (gom:port model)) (string->symbol "_'.") x)) (return-values-port (gom:port model))))}
 
-SEMANTICS(in',out',client',modeling') = let
-Q'(s') = length(s') < card({|in'|}) & in'?x' -> Q'(s'^<x'>)
-       []
-       length(s') > 0 & out'!head(s') -> Q'(tail(s'))
-       []
-       length(s') == card({|in'|}) & in'?x' -> illegal -> STOP
+SEMANTICS(in',out',link',client',modeling') = let
+
+Q' = let
+
+N = card({|in'|})
+
+external chase
+
+Cell = link'.in'?x -> link'.out'!x -> Cell
+
+Back = in'?x -> (link'.out'!x -> Back [] in'?x -> illegal -> STOP)
+
+Front = Cell[[link'.out' <- out']]
+
+within
+       if (N==1) then (Back[[link'.out' <- out']])
+       else if(N==2) then chase(Back [link'.out' <-> link'.in'] Front  \ {|link'|})
+       else chase((Back [link'.out' <-> link'.in'] ([link'.out'<->link'.in'] x : <1..N-2> @ Cell)) [link'.out' <-> link'.in'] Front \ {|link'|})
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
        []
@@ -86,21 +100,14 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
 
 within Idle(0)
 
-within Q'(<>) [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
+within Q' [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
 AS_#(.name model) _#((compose .name .behaviour) model) (IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {#
-  (comma-join
-   (list (comma-join (map (lambda (x) (symbol-append (.name (gom:port model)) (string->symbol "_'.") x)) (return-values-port (gom:port model))))
-         (comma-join (map (lambda (event) (list (.name (gom:port model)) "." (.name event))) (filter gom:out? (gom:events (gom:port model)))))
-         (comma-join
-          (map (lambda (port)
-                 (->string (comma-join (map (lambda (event) (list (.name port) "." event)) (filter (lambda (x) (member x '(inevitable optional))) (port-events port))))))
-               ((compose .elements .ports) model)))))}
+
 ClientCalls = {#
  (comma-join (map (lambda (event) (list (.name (gom:port model)) "." (.name event))) (filter gom:in? (gom:events (gom:port model)))))}
 UsedModeling = {#
@@ -108,13 +115,14 @@ UsedModeling = {#
                  (map (lambda (port)
                         (comma-join (map (lambda (event) (list (.name port) "." event)) (filter (lambda (event) (member event '(inevitable optional))) (port-events port)))))
                         (filter gom:requires? ((compose .elements .ports) model))))}
-within compress((CO_#(.name model) _#((compose .name .behaviour) model) (IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-[|diff({|OUT,transition_begin,transition_end,reorder_in,#(comma-join (apply append (map (lambda (o) (list (.name o) (string-append (symbol->string (.name o)) "_'"))) ((compose .elements .ports) model))))|},Exclude)|]
-(((# (let ((required_processes ((->join "\n ||| ") (map (lambda (port)
+within compress((CO_#(.name model) _#((compose .name .behaviour) model) (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+                 [|{|#(comma-join (append (list "OUT',transition_begin,transition_end,reorder_in") (let ((port (gom:port model))) (list (.name port) (string-append (symbol->string (.name port)) "_'")))))|}|]
+                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
+                [|{|#(comma-join (apply append (list "IN'") (map (lambda (o) (list (.name o) (string-append (symbol->string (.name o)) "_'"))) (filter gom:requires? ((compose .elements .ports) model)))))|}|]
+                (# (let ((required_processes ((->join "\n                 ||| ") (map (lambda (port)
 (->string (list "IF_" (.type port) '_ ((compose .name .behaviour gom:import .type) port) "(true) [["(.type port) ".x<-" (.name port) ".x|x<-extensions("(.name port)")]][["(.type port) "_'.x<-" (.name port) "_'.x|x<-extensions("(.name port)"_')]]" (if (not (null? (filter gom:out? (gom:events port)))) (list "[["(.type port) "_''.x<-" (.name port) "_''.x|x<-extensions("(.name port)"_'')]]")))))
  (filter gom:requires? ((compose .elements .ports) model)))))) (if (string-null? required_processes) 'STOP required_processes))
-) [[x<-IN.x|x<-extensions(IN)]]
-[|union({|IN|},UsedModeling)|]
-SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
+)[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
