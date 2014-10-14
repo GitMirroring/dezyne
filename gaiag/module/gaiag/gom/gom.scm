@@ -35,6 +35,7 @@
            .fields
            .functions
            .identifier
+           .injected
            .instance
            .instances
            .left
@@ -148,7 +149,8 @@
   (direction :accessor .direction :init-value 'in :init-keyword :direction)
   (type :accessor .type :init-value #f :init-keyword :type))
 (define-class <event> (<dir-ast>))
-(define-class <gom:port> (<dir-ast>))
+(define-class <gom:port> (<dir-ast>)
+  (injected :accessor .injected :init-value #f :init-keyword :injected))
 
 (define-class <trigger> (<ast>)
   (port :accessor .port :init-value #f :init-keyword :port)

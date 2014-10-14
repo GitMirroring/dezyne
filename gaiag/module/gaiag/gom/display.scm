@@ -67,6 +67,10 @@
   (sdisplay (.type o) port)
   (sdisplay (.name o) port))
 
+(define-method (display-slots (o <gom:port>) port)
+  (next-method)
+  (sdisplay (.injected o) port))
+
 (define-method (display-slots (o <call>) port)
   (sdisplay (.identifier o) port)
   (if (pair? (.elements (.arguments o)))

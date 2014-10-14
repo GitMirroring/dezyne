@@ -217,11 +217,12 @@
     (('parameters parameters ...)
      (make <parameters> :elements (map ast->gom- parameters)))
 
-    (((and (or 'provides 'requires) (get! direction)) type name)
+    (((and (or 'provides 'requires) (get! direction)) type name injected ...)
      (make <gom:port>
        :name name
        :type type
-       :direction (direction)))
+       :direction (direction)
+       :injected (and=> (null-is-#f injected) car)))
 
     (('ports ports ...) (make <ports> :elements (map ast->gom- ports)))
 

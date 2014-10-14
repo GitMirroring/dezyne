@@ -144,7 +144,7 @@
     (left: in out)
     (left: illegal)
     (left: behaviour import interface component system)
-    (left: provides requires)
+    (left: provides requires injected)
     (left: bool enum void int typedef)
     (left: Identifier NumericLiteral)
 
@@ -198,6 +198,7 @@
     (instance) : $1)
 
    (binding
+    (*) : `(binding #f *)
     (Identifier) : `(binding #f ,$1)
     (Identifier dot Identifier) : `(binding ,$1 ,$3))
 
@@ -231,7 +232,8 @@
     (port-list port) : (append $1 (list $2)))
 
    (port
-    (port-direction Identifier Identifier semicolon) : `(,$1 ,$2 ,$3))
+    (port-direction Identifier Identifier semicolon) : `(,$1 ,$2 ,$3 #f)
+    (port-direction injected Identifier Identifier semicolon) : `(,$1 ,$3 ,$4 ,$2))
 
    (port-direction
     (provides) : 'provides
