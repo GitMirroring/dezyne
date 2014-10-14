@@ -44,7 +44,8 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = i3_start | i7_States_InBusiness | i7_States_InitialState | i7_States_Started | inevitable | return
 -- interface.csp.scm
 
-channel i138_BlindLoop: {i3_start,inevitable,inevitable}
+channel i138_BlindLoop: {i3_start,inevitable}
+
 channel i138_BlindLoop_': {return}
 
 IF_i138_BlindLoop_(IG) = let
@@ -76,7 +77,7 @@ within i138_BlindLoop_(((i7_States_InitialState),(<>)))
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i139_LoopingInterface:{i3_start,inevitable,inevitable}
+channel i139_LoopingInterface:{i3_start,inevitable}
 
 
 channel i139_LoopingInterface_':{return}
@@ -135,7 +136,7 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-Exclude = {i139_LoopingInterface_'.return,i139_LoopingInterface.inevitable,i139_LoopingInterface.inevitable}
+Exclude = {i139_LoopingInterface_'.return,i139_LoopingInterface.inevitable}
 ClientCalls = {i139_LoopingInterface.i3_start}
 UsedModeling = {}
 within compress((CO_i152_TestComponent_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
@@ -147,9 +148,9 @@ SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(r
 
 -- end of component.csp.scm
 assert IF_i138_BlindLoop_(false) :[deadlock free]
-assert IF_i138_BlindLoop_(true)  \ {|i138_BlindLoop.inevitable,i138_BlindLoop.inevitable|} :[livelock free]
+assert IF_i138_BlindLoop_(true)  \ {|i138_BlindLoop.inevitable|} :[livelock free]
 assert CO_i152_TestComponent_(true,true) :[deterministic]
 assert STOP [T= AS_i152_TestComponent_(false) \ diff(Events,{illegal})
 assert AS_i152_TestComponent_(false) :[deadlock free]
-assert IF_i138_BlindLoop_(true) [[i138_BlindLoop.x<-i139_LoopingInterface.x|x<-extensions(i139_LoopingInterface)]][[i138_BlindLoop_'.x<-i139_LoopingInterface_'.x|x<-extensions(i139_LoopingInterface_')]] \ {i139_LoopingInterface.inevitable,i139_LoopingInterface.inevitable} [F= AS_i152_TestComponent_(true) \ diff(Events,{|illegal,i139_LoopingInterface,i139_LoopingInterface_'|})
+assert IF_i138_BlindLoop_(true) [[i138_BlindLoop.x<-i139_LoopingInterface.x|x<-extensions(i139_LoopingInterface)]][[i138_BlindLoop_'.x<-i139_LoopingInterface_'.x|x<-extensions(i139_LoopingInterface_')]]\ {i139_LoopingInterface.inevitable} [F= AS_i152_TestComponent_(true) \ diff(Events,{|illegal,i139_LoopingInterface,i139_LoopingInterface_'|})
 assert AS_i152_TestComponent_(true) \ diff(Events,{|illegal,i139_LoopingInterface,i139_LoopingInterface_'|}) :[livelock free]

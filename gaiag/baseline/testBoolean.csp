@@ -45,6 +45,7 @@ datatype event_enumeration_alphabet = States_State1 | States_State2 | evt | retu
 -- interface.csp.scm
 
 channel TestBool: {evt}
+
 channel TestBool_': {return}
 
 IF_TestBool_(IG) = let
@@ -160,5 +161,5 @@ assert IF_TestBool_(true) :[livelock free]
 assert CO_testBoolean_(true,true) :[deterministic]
 assert STOP [T= AS_testBoolean_(false) \ diff(Events,{illegal})
 assert AS_testBoolean_(false) :[deadlock free]
-assert IF_TestBool_(true) [[TestBool.x<-i.x|x<-extensions(i)]][[TestBool_'.x<-i_'.x|x<-extensions(i_')]] \ {} [F= AS_testBoolean_(true) \ diff(Events,{|illegal,i,i_'|})
+assert IF_TestBool_(true) [[TestBool.x<-i.x|x<-extensions(i)]][[TestBool_'.x<-i_'.x|x<-extensions(i_')]]\ {} [F= AS_testBoolean_(true) \ diff(Events,{|illegal,i,i_'|})
 assert AS_testBoolean_(true) \ diff(Events,{|illegal,i,i_'|}) :[livelock free]

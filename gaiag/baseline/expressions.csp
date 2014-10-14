@@ -44,7 +44,8 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = a | e | hi | lo | return
 -- interface.csp.scm
 
-channel I: {a,e,hi,lo}
+channel I: {e}
+channel I_'': {a,hi,lo}
 channel I_': {return}
 
 IF_I_(IG) = let
@@ -54,14 +55,14 @@ I_(((state,c),(stack'))) =
 I?x:{e} ->
 semi_(\ P',((state,c),(stack')) @ ifthenelse_((state == 0),
 semi_(assign_(\ ((state,c),(stack')) @ ((3,c),(stack'))),
-(\ P',V' @ I!a -> P'(V'))),
+(\ P',V' @ I_''!a -> P'(V'))),
 semi_(assign_(\ ((state,c),(stack')) @ (((state - 1),c),(stack'))),
 \ P',((state,c),(stack')) @ ifthenelse_((c < state),
 assign_(\ ((state,c),(stack')) @ ((state,(c + 1)),(stack'))),
 \ P',((state,c),(stack')) @ ifthenelse_((c <= ((state + 1))),
-(\ P',V' @ I!lo -> P'(V')),
+(\ P',V' @ I_''!lo -> P'(V')),
 \ P',((state,c),(stack')) @ ifthenelse_((c > state),
-(\ P',V' @ I!hi -> P'(V')),
+(\ P',V' @ I_''!hi -> P'(V')),
 skip_
 )(P',((state,c),(stack')))
 )(P',((state,c),(stack')))
@@ -74,8 +75,9 @@ within I_(((3,0),(<>)))
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i:{a,e,hi,lo}
+channel i:{e}
 
+channel i_'':{a,hi,lo}
 
 channel i_':{return}
 
@@ -87,14 +89,14 @@ expressions_(((state,c),(stack'))) = transition_begin -> (
 i?x:{e} ->
 semi_(\ P',((state,c),(stack')) @ ifthenelse_((state == 0),
 semi_(assign_(\ ((state,c),(stack')) @ ((3,c),(stack'))),
-(\ P',V' @ i!a -> P'(V'))),
+(\ P',V' @ i_''!a -> P'(V'))),
 semi_(assign_(\ ((state,c),(stack')) @ (((state - 1),c),(stack'))),
 \ P',((state,c),(stack')) @ ifthenelse_((c < state),
 assign_(\ ((state,c),(stack')) @ ((state,(c + 1)),(stack'))),
 \ P',((state,c),(stack')) @ ifthenelse_((c <= ((state + 1))),
-(\ P',V' @ i!lo -> P'(V')),
+(\ P',V' @ i_''!lo -> P'(V')),
 \ P',((state,c),(stack')) @ ifthenelse_((c > state),
-(\ P',V' @ i!hi -> P'(V')),
+(\ P',V' @ i_''!hi -> P'(V')),
 skip_
 )(P',((state,c),(stack')))
 )(P',((state,c),(stack')))
@@ -165,5 +167,5 @@ assert IF_I_(true) :[livelock free]
 assert CO_expressions_(true,true) :[deterministic]
 assert STOP [T= AS_expressions_(false) \ diff(Events,{illegal})
 assert AS_expressions_(false) :[deadlock free]
-assert IF_I_(true) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]] \ {} [F= AS_expressions_(true) \ diff(Events,{|illegal,i,i_'|})
-assert AS_expressions_(true) \ diff(Events,{|illegal,i,i_'|}) :[livelock free]
+assert IF_I_(true) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]][[I_''.x<-i_''.x|x<-extensions(i_'')]]\ {} [F= AS_expressions_(true) \ diff(Events,{|illegal,i,i_',i_''|})
+assert AS_expressions_(true) \ diff(Events,{|illegal,i,i_',i_''|}) :[livelock free]

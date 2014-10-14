@@ -44,12 +44,13 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = a | b | c | d | return
 -- interface.csp.scm
 
-channel I: {a,b,c,d}
+channel I: {a,b}
+channel I_'': {c,d}
 channel I_': {return}
 
 IF_I_(IG) = let
 toggle = \ P',V' @ context_func_(semi_(\ P',((f),(stack')) @ ifthenelse_(f,
-(\ P',V' @ I!c -> P'(V')),
+(\ P',V' @ I_''!c -> P'(V')),
 skip_
 )(P',((f),(stack'))),
 assign_(\ ((f),(stack')) @ (((not f)),(stack')))))(P',V')
@@ -63,7 +64,7 @@ semi_(callvoid_(\ P',V' @ toggle(P',V')),
   I?x:{b} ->
 semi_(semi_(callvoid_(\ P',V' @ toggle(P',V')),
 semi_(callvoid_(\ P',V' @ toggle(P',V')),
-(\ P',V' @ I!d -> P'(V')))),
+(\ P',V' @ I_''!d -> P'(V')))),
 (\ P',V' @ I_'.return -> P'(V')))(\ V' @ I_(V'),((f),(stack'))))
 
 within I_(((false),(<>)))
@@ -71,15 +72,16 @@ within I_(((false),(<>)))
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i:{a,b,c,d}
+channel i:{a,b}
 
+channel i_'':{c,d}
 
 channel i_':{return}
 
 
 CO_function_(IIG,IG) = let
 toggle = \ P',V' @ context_func_(semi_(\ P',((f),(stack')) @ ifthenelse_(f,
-(\ P',V' @ i!c -> P'(V')),
+(\ P',V' @ i_''!c -> P'(V')),
 skip_
 )(P',((f),(stack'))),
 assign_(\ ((f),(stack')) @ (((not f)),(stack')))))(P',V')
@@ -93,7 +95,7 @@ semi_(callvoid_(\ P',V' @ toggle(P',V')),
   i?x:{b} ->
 semi_(semi_(callvoid_(\ P',V' @ toggle(P',V')),
 semi_(callvoid_(\ P',V' @ toggle(P',V')),
-(\ P',V' @ i!d -> P'(V')))),
+(\ P',V' @ i_''!d -> P'(V')))),
 (\ P',V' @ I_'.return -> P'(V')))(\ V' @ transition_end -> function_(V'),((f),(stack'))))
 )
 
@@ -159,5 +161,5 @@ assert IF_I_(true) :[livelock free]
 assert CO_function_(true,true) :[deterministic]
 assert STOP [T= AS_function_(false) \ diff(Events,{illegal})
 assert AS_function_(false) :[deadlock free]
-assert IF_I_(true) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]] \ {} [F= AS_function_(true) \ diff(Events,{|illegal,i,i_'|})
-assert AS_function_(true) \ diff(Events,{|illegal,i,i_'|}) :[livelock free]
+assert IF_I_(true) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]][[I_''.x<-i_''.x|x<-extensions(i_'')]]\ {} [F= AS_function_(true) \ diff(Events,{|illegal,i,i_',i_''|})
+assert AS_function_(true) \ diff(Events,{|illegal,i,i_',i_''|}) :[livelock free]

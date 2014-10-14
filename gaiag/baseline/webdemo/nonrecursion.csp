@@ -44,14 +44,15 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = i3_e | i4_h | return
 -- interface.csp.scm
 
-channel i23_I: {i3_e,i4_h}
+channel i23_I: {i3_e}
+channel i23_I_'': {i4_h}
 channel i23_I_': {return}
 
 IF_i23_I_(IG) = let
 
 i23_I_(((<>),(stack'))) =
 i23_I?x:{i3_e} ->
-semi_((\ P',V' @ i23_I!i4_h -> P'(V')),
+semi_((\ P',V' @ i23_I_''!i4_h -> P'(V')),
 (\ P',V' @ i23_I_'.return -> P'(V')))(\ V' @ i23_I_(V'),((<>),(stack')))
 
 within i23_I_(((<>),(<>)))
@@ -59,15 +60,16 @@ within i23_I_(((<>),(<>)))
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i24_i:{i3_e,i4_h}
+channel i24_i:{i3_e}
 
+channel i24_i_'':{i4_h}
 
 channel i24_i_':{return}
 
 
 CO_i103_nonrecursion_(IIG,IG) = let
 i52_f = \ P',V' @ context_func_(semi_(callvoid_(\ P',V' @ i60_g(P',V')),
-semi_((\ P',V' @ i24_i!i4_h -> P'(V')),
+semi_((\ P',V' @ i24_i_''!i4_h -> P'(V')),
 skip_)))(P',V')
 i60_g = \ P',V' @ context_func_(semi_(assign_(\ ((i28_b),(stack')) @ ((false),(stack'))),
 skip_))(P',V')
@@ -144,5 +146,5 @@ assert IF_i23_I_(true) :[livelock free]
 assert CO_i103_nonrecursion_(true,true) :[deterministic]
 assert STOP [T= AS_i103_nonrecursion_(false) \ diff(Events,{illegal})
 assert AS_i103_nonrecursion_(false) :[deadlock free]
-assert IF_i23_I_(true) [[i23_I.x<-i24_i.x|x<-extensions(i24_i)]][[i23_I_'.x<-i24_i_'.x|x<-extensions(i24_i_')]] \ {} [F= AS_i103_nonrecursion_(true) \ diff(Events,{|illegal,i24_i,i24_i_'|})
-assert AS_i103_nonrecursion_(true) \ diff(Events,{|illegal,i24_i,i24_i_'|}) :[livelock free]
+assert IF_i23_I_(true) [[i23_I.x<-i24_i.x|x<-extensions(i24_i)]][[i23_I_'.x<-i24_i_'.x|x<-extensions(i24_i_')]][[i23_I_''.x<-i24_i_''.x|x<-extensions(i24_i_'')]]\ {} [F= AS_i103_nonrecursion_(true) \ diff(Events,{|illegal,i24_i,i24_i_',i24_i_''|})
+assert AS_i103_nonrecursion_(true) \ diff(Events,{|illegal,i24_i,i24_i_',i24_i_''|}) :[livelock free]

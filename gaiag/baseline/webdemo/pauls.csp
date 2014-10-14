@@ -45,6 +45,7 @@ datatype event_enumeration_alphabet = i13_result_t_NOK | i13_result_t_OK | i17_S
 -- interface.csp.scm
 
 channel i301_IDevice: {i3_initialize,i5_calibrate,i7_perform_action1,i9_perform_action2}
+
 channel i301_IDevice_': {i13_result_t_OK,i13_result_t_NOK,return}
 
 IF_i301_IDevice_(IG) = let
@@ -95,6 +96,7 @@ within i301_IDevice_(((i17_State_Uninitialized),(<>)))
 -- interface.csp.scm
 
 channel i568_IComp: {i302_initialize,i304_recover,i306_perform_actions}
+
 channel i568_IComp_': {i310_result_t_OK,i310_result_t_NOK,return}
 
 IF_i568_IComp_(IG) = let
@@ -291,5 +293,5 @@ assert IF_i568_IComp_(true) :[livelock free]
 assert CO_i1121_Comp_(true,true) :[deterministic]
 assert STOP [T= AS_i1121_Comp_(false) \ diff(Events,{illegal})
 assert AS_i1121_Comp_(false) :[deadlock free]
-assert IF_i568_IComp_(true) [[i568_IComp.x<-i569_client.x|x<-extensions(i569_client)]][[i568_IComp_'.x<-i569_client_'.x|x<-extensions(i569_client_')]] \ {} [F= AS_i1121_Comp_(true) \ diff(Events,{|illegal,i569_client,i569_client_'|})
+assert IF_i568_IComp_(true) [[i568_IComp.x<-i569_client.x|x<-extensions(i569_client)]][[i568_IComp_'.x<-i569_client_'.x|x<-extensions(i569_client_')]]\ {} [F= AS_i1121_Comp_(true) \ diff(Events,{|illegal,i569_client,i569_client_'|})
 assert AS_i1121_Comp_(true) \ diff(Events,{|illegal,i569_client,i569_client_'|}) :[livelock free]

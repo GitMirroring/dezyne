@@ -44,16 +44,17 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = i3_sleep | i4_zzz | i5_yawn | i6_stretch | return
 -- interface.csp.scm
 
-channel i99_sleeping: {i3_sleep,i4_zzz,i5_yawn,i6_stretch}
+channel i99_sleeping: {i3_sleep}
+channel i99_sleeping_'': {i4_zzz,i5_yawn,i6_stretch}
 channel i99_sleeping_': {return}
 
 IF_i99_sleeping_(IG) = let
-i77_f = \ PF',VF' @ context_func_(semi_((\ P',V' @ i99_sleeping!i5_yawn -> P'(V')),
-semi_((\ P',V' @ i99_sleeping!i4_zzz -> P'(V')),
-semi_((\ P',V' @ i99_sleeping!i5_yawn -> P'(V')),
-semi_((\ P',V' @ i99_sleeping!i6_stretch -> P'(V')),
-semi_((\ P',V' @ i99_sleeping!i4_zzz -> P'(V')),
-semi_((\ P',V' @ i99_sleeping!i6_stretch -> P'(V')),
+i77_f = \ PF',VF' @ context_func_(semi_((\ P',V' @ i99_sleeping_''!i5_yawn -> P'(V')),
+semi_((\ P',V' @ i99_sleeping_''!i4_zzz -> P'(V')),
+semi_((\ P',V' @ i99_sleeping_''!i5_yawn -> P'(V')),
+semi_((\ P',V' @ i99_sleeping_''!i6_stretch -> P'(V')),
+semi_((\ P',V' @ i99_sleeping_''!i4_zzz -> P'(V')),
+semi_((\ P',V' @ i99_sleeping_''!i6_stretch -> P'(V')),
 semi_(callvoid_(\ P',V' @ i77_f(PF',members_(V'))),
 skip_))))))))(PF',VF')
 
@@ -67,8 +68,9 @@ within i99_sleeping_(((<>),(<>)))
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i100_beauty:{i3_sleep,i4_zzz,i5_yawn,i6_stretch}
+channel i100_beauty:{i3_sleep}
 
+channel i100_beauty_'':{i4_zzz,i5_yawn,i6_stretch}
 
 channel i100_beauty_':{return}
 
@@ -76,12 +78,12 @@ channel i100_beauty_':{return}
 CO_i308_mutual_recursion_with_members_(IIG,IG) = let
 i212_f = \ PF',VF',F' @ context_func_args_(F',
 semi_(\ P',((i105_down),((stack',i108_c))) @ ifthenelse_(i105_down,
-semi_((\ P',V' @ i100_beauty!i5_yawn -> P'(V')),
+semi_((\ P',V' @ i100_beauty_''!i5_yawn -> P'(V')),
 \ P',((i105_down),((stack',i108_c))) @ ifthenelse_((0 < i108_c),
 callvoid_(\ P',V' @ i284_g(PF',members_(V'),(\ ((i105_down),((stack',i108_c))) @ ((i108_c - 1)))(V'))),
 skip_
 )(P',((i105_down),((stack',i108_c))))),
-semi_((\ P',V' @ i100_beauty!i6_stretch -> P'(V')),
+semi_((\ P',V' @ i100_beauty_''!i6_stretch -> P'(V')),
 \ P',((i105_down),((stack',i108_c))) @ ifthenelse_((i108_c < 2),
 callvoid_(\ P',V' @ i284_g(PF',members_(V'),(\ ((i105_down),((stack',i108_c))) @ ((i108_c + 1)))(V'))),
 skip_
@@ -93,7 +95,7 @@ semi_(\ P',((i105_down),((stack',i215_c))) @ ifthenelse_((i215_c == 2),
 assign_(\ ((i105_down),((stack',i215_c))) @ ((true),((stack',i215_c)))),
 \ P',((i105_down),((stack',i215_c))) @ ifthenelse_((i215_c == 0),
 assign_(\ ((i105_down),((stack',i215_c))) @ ((false),((stack',i215_c)))),
-(\ P',V' @ i100_beauty!i4_zzz -> P'(V'))
+(\ P',V' @ i100_beauty_''!i4_zzz -> P'(V'))
 )(P',((i105_down),((stack',i215_c))))
 )(P',((i105_down),((stack',i215_c)))),
 semi_(callvoid_(\ P',V' @ i212_f(PF',members_(V'),(\ ((i105_down),((stack',i215_c))) @ (i215_c))(V'))),
@@ -167,5 +169,5 @@ assert IF_i99_sleeping_(true) :[livelock free]
 assert CO_i308_mutual_recursion_with_members_(true,true) :[deterministic]
 assert STOP [T= AS_i308_mutual_recursion_with_members_(false) \ diff(Events,{illegal})
 assert AS_i308_mutual_recursion_with_members_(false) :[deadlock free]
-assert IF_i99_sleeping_(true) [[i99_sleeping.x<-i100_beauty.x|x<-extensions(i100_beauty)]][[i99_sleeping_'.x<-i100_beauty_'.x|x<-extensions(i100_beauty_')]] \ {} [F= AS_i308_mutual_recursion_with_members_(true) \ diff(Events,{|illegal,i100_beauty,i100_beauty_'|})
-assert AS_i308_mutual_recursion_with_members_(true) \ diff(Events,{|illegal,i100_beauty,i100_beauty_'|}) :[livelock free]
+assert IF_i99_sleeping_(true) [[i99_sleeping.x<-i100_beauty.x|x<-extensions(i100_beauty)]][[i99_sleeping_'.x<-i100_beauty_'.x|x<-extensions(i100_beauty_')]][[i99_sleeping_''.x<-i100_beauty_''.x|x<-extensions(i100_beauty_'')]]\ {} [F= AS_i308_mutual_recursion_with_members_(true) \ diff(Events,{|illegal,i100_beauty,i100_beauty_',i100_beauty_''|})
+assert AS_i308_mutual_recursion_with_members_(true) \ diff(Events,{|illegal,i100_beauty,i100_beauty_',i100_beauty_''|}) :[livelock free]

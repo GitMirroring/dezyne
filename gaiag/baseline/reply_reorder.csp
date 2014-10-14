@@ -44,15 +44,16 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = busy | finish | ping | pong | return | start
 -- interface.csp.scm
 
-channel Provides: {busy,finish,start}
+channel Provides: {start}
+channel Provides_'': {busy,finish}
 channel Provides_': {return}
 
 IF_Provides_(IG) = let
 
 Provides_(((<>),(stack'))) =
 Provides?x:{start} ->
-semi_(semi_((\ P',V' @ Provides!busy -> P'(V')),
-(\ P',V' @ Provides!finish -> P'(V'))),
+semi_(semi_((\ P',V' @ Provides_''!busy -> P'(V')),
+(\ P',V' @ Provides_''!finish -> P'(V'))),
 (\ P',V' @ Provides_'.return -> P'(V')))(\ V' @ Provides_(V'),((<>),(stack')))
 
 within Provides_(((<>),(<>)))
@@ -60,15 +61,16 @@ within Provides_(((<>),(<>)))
 -- end of interface.csp.scm
 -- interface.csp.scm
 
-channel Requires: {ping,pong}
+channel Requires: {ping}
+channel Requires_'': {pong}
 channel Requires_': {return}
 
 IF_Requires_(IG) = let
 
 Requires_(((<>),(stack'))) =
 Requires?x:{ping} ->
-semi_(semi_((\ P',V' @ Requires!pong -> P'(V')),
-(\ P',V' @ Requires!pong -> P'(V'))),
+semi_(semi_((\ P',V' @ Requires_''!pong -> P'(V')),
+(\ P',V' @ Requires_''!pong -> P'(V'))),
 (\ P',V' @ Requires_'.return -> P'(V')))(\ V' @ Requires_(V'),((<>),(stack')))
 
 within Requires_(((<>),(<>)))
@@ -76,9 +78,11 @@ within Requires_(((<>),(<>)))
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel p:{busy,finish,start}
-channel r:{ping,pong}
+channel p:{start}
+channel r:{ping}
 
+channel p_'':{busy,finish}
+channel r_'':{pong}
 
 channel p_':{return}
 channel r_':{return}
@@ -88,14 +92,14 @@ CO_reply_reorder_(IIG,IG) = let
 
 reply_reorder_(((first),(stack'))) = transition_begin -> (
 (first) & (
-r?x:{pong} ->
-semi_(semi_((\ P',V' @ p!busy -> P'(V')),
+r_''?x:{pong} ->
+semi_(semi_((\ P',V' @ p_''!busy -> P'(V')),
 assign_(\ ((first),(stack')) @ (((not first)),(stack')))),
 skip_)(\ V' @ transition_end -> reply_reorder_(V'),((first),(stack'))))
 []
 ((not first)) & (
-r?x:{pong} ->
-semi_(semi_((\ P',V' @ p!finish -> P'(V')),
+r_''?x:{pong} ->
+semi_(semi_((\ P',V' @ p_''!finish -> P'(V')),
 assign_(\ ((first),(stack')) @ (((not first)),(stack')))),
 skip_)(\ V' @ transition_end -> reply_reorder_(V'),((first),(stack'))))
 []
@@ -107,7 +111,7 @@ semi_((\ P',V' @ r!ping -> r_'.return -> P'(V')),
 within reply_reorder_(((true),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
-channel IN,OUT : {r.pong,extensions_over_empty_channels_is_undefined}
+channel IN,OUT : {r_''.pong,extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
@@ -155,7 +159,7 @@ ClientCalls = {p.start}
 UsedModeling = {}
 within compress((CO_reply_reorder_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,p,p_',r,r_'|},Exclude)|]
-(((IF_Requires_(true) [[Requires.x<-r.x|x<-extensions(r)]][[Requires_'.x<-r_'.x|x<-extensions(r_')]]
+(((IF_Requires_(true) [[Requires.x<-r.x|x<-extensions(r)]][[Requires_'.x<-r_'.x|x<-extensions(r_')]][[Requires_''.x<-r_''.x|x<-extensions(r_'')]]
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
@@ -168,5 +172,5 @@ assert IF_Requires_(true) :[livelock free]
 assert CO_reply_reorder_(true,true) :[deterministic]
 assert STOP [T= AS_reply_reorder_(false) \ diff(Events,{illegal})
 assert AS_reply_reorder_(false) :[deadlock free]
-assert IF_Provides_(true) [[Provides.x<-p.x|x<-extensions(p)]][[Provides_'.x<-p_'.x|x<-extensions(p_')]] \ {} [F= AS_reply_reorder_(true) \ diff(Events,{|illegal,p,p_'|})
-assert AS_reply_reorder_(true) \ diff(Events,{|illegal,p,p_'|}) :[livelock free]
+assert IF_Provides_(true) [[Provides.x<-p.x|x<-extensions(p)]][[Provides_'.x<-p_'.x|x<-extensions(p_')]][[Provides_''.x<-p_''.x|x<-extensions(p_'')]]\ {} [F= AS_reply_reorder_(true) \ diff(Events,{|illegal,p,p_',p_''|})
+assert AS_reply_reorder_(true) \ diff(Events,{|illegal,p,p_',p_''|}) :[livelock free]

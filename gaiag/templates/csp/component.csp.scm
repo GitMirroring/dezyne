@@ -3,6 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
@@ -25,9 +26,12 @@
 -- component.csp.scm
 
 # (map (lambda (port)
-         (->string "channel " (.name port) ":{" (comma-join (port-events port)) "}\n" ))
+         (->string "channel " (.name port) ":{" (comma-join (port-events port gom:in?)) "}\n" ))
        (filter (lambda (port) (not (eq? (.type port) (.name port)))) ((compose .elements .ports) model)))
-
+# (map (lambda (port)
+         (and-let* ((events (null-is-#f (port-events port gom:out?))))
+                   (->string "channel " (.name port) "_'':{" (comma-join events) "}\n" )))
+       (filter (lambda (port) (not (eq? (.type port) (.name port)))) ((compose .elements .ports) model)))
 # (map (lambda (port)
          (->string "channel " (.name port) "_':{" (comma-join (return-values-port port)) "}\n" ))
        (filter (lambda (port) (not (eq? (.type port) (.name port)))) ((compose .elements .ports) model)))
@@ -45,7 +49,7 @@ channel extensions_over_empty_channels_is_undefined
 channel IN,OUT : {#
  (comma-join (list (comma-join
                     (map (lambda (port)
-                           (comma-join (map (lambda (event) (list (.name port) "." (.name event))) (filter gom:out? ((compose .elements .events gom:import .type) port)))))
+                           (comma-join (map (lambda (event) (list (.name port) "_''." (.name event))) (filter gom:out? ((compose .elements .events gom:import .type) port)))))
                            (filter gom:requires? ((compose .elements .ports) model)))) 'extensions_over_empty_channels_is_undefined))}
 
 SINGLETHREADED = true
@@ -107,7 +111,7 @@ UsedModeling = {#
 within compress((CO_#(.name model) _#((compose .name .behaviour) model) (IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,#(comma-join (apply append (map (lambda (o) (list (.name o) (string-append (symbol->string (.name o)) "_'"))) ((compose .elements .ports) model))))|},Exclude)|]
 (((# (let ((required_processes ((->join "\n ||| ") (map (lambda (port)
-(->string (list "IF_" (.type port) '_ ((compose .name .behaviour gom:import .type) port) "(true) [["(.type port) ".x<-" (.name port) ".x|x<-extensions("(.name port)")]][["(.type port) "_'.x<-" (.name port) "_'.x|x<-extensions("(.name port)"_')]]")))
+(->string (list "IF_" (.type port) '_ ((compose .name .behaviour gom:import .type) port) "(true) [["(.type port) ".x<-" (.name port) ".x|x<-extensions("(.name port)")]][["(.type port) "_'.x<-" (.name port) "_'.x|x<-extensions("(.name port)"_')]]" (if (not (null? (filter gom:out? (gom:events port)))) (list "[["(.type port) "_''.x<-" (.name port) "_''.x|x<-extensions("(.name port)"_'')]]")))))
  (filter gom:requires? ((compose .elements .ports) model)))))) (if (string-null? required_processes) 'STOP required_processes))
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]

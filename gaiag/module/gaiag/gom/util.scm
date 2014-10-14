@@ -278,6 +278,10 @@
 (define-method (gom:out? (o <event>))
   (eq? (.direction o) 'out))
 
+(define-method (gom:in? (o <trigger>)) #t)
+
+(define-method (gom:out? (o <trigger>)) #f)
+
 (define-method (gom:provides? (o <gom:port>))
   (eq? (.direction o) 'provides))
 

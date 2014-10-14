@@ -3,6 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
@@ -70,7 +71,7 @@ datatype event_enumeration_alphabet = #
   (delete-duplicates
    (sort
     (append
-     (interface-events model)
+     (interface-events model identity)
      (enum-values model)
      (return-values model))
     symbol<)))

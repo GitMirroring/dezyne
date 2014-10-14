@@ -45,6 +45,7 @@ datatype event_enumeration_alphabet = Status_No | Status_Nok | Status_Ok | Statu
 -- interface.csp.scm
 
 channel I: {done}
+
 channel I_': {Status_Yes,Status_No,return}
 
 IF_I_(IG) = let
@@ -68,6 +69,7 @@ within I_(((false),(<>)))
 -- interface.csp.scm
 
 channel U: {what}
+
 channel U_': {Status_Ok,Status_Nok,return}
 
 IF_U_(IG) = let
@@ -181,5 +183,5 @@ assert IF_U_(true) :[livelock free]
 assert CO_Reply5_(true,true) :[deterministic]
 assert STOP [T= AS_Reply5_(false) \ diff(Events,{illegal})
 assert AS_Reply5_(false) :[deadlock free]
-assert IF_I_(true) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]] \ {} [F= AS_Reply5_(true) \ diff(Events,{|illegal,i,i_'|})
+assert IF_I_(true) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]]\ {} [F= AS_Reply5_(true) \ diff(Events,{|illegal,i,i_'|})
 assert AS_Reply5_(true) \ diff(Events,{|illegal,i,i_'|}) :[livelock free]

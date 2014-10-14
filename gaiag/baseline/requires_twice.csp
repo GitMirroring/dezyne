@@ -44,14 +44,15 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = a | e | return
 -- interface.csp.scm
 
-channel irequires_twice: {a,e}
+channel irequires_twice: {e}
+channel irequires_twice_'': {a}
 channel irequires_twice_': {return}
 
 IF_irequires_twice_(IG) = let
 
 irequires_twice_(((<>),(stack'))) =
 irequires_twice?x:{e} ->
-semi_((\ P',V' @ irequires_twice!a -> P'(V')),
+semi_((\ P',V' @ irequires_twice_''!a -> P'(V')),
 (\ P',V' @ irequires_twice_'.return -> P'(V')))(\ V' @ irequires_twice_(V'),((<>),(stack')))
 
 within irequires_twice_(((<>),(<>)))
@@ -59,10 +60,13 @@ within irequires_twice_(((<>),(<>)))
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel p:{a,e}
-channel once:{a,e}
-channel twice:{a,e}
+channel p:{e}
+channel once:{e}
+channel twice:{e}
 
+channel p_'':{a}
+channel once_'':{a}
+channel twice_'':{a}
 
 channel p_':{return}
 channel once_':{return}
@@ -73,15 +77,15 @@ CO_requires_twice_(IIG,IG) = let
 
 requires_twice_(((<>),(stack'))) = transition_begin -> (
 p?x:{e} ->
-semi_(semi_((\ P',V' @ once!a -> once_'.return -> P'(V')),
-(\ P',V' @ twice!a -> twice_'.return -> P'(V'))),
+semi_(semi_((\ P',V' @ once_''!a -> once_'.return -> P'(V')),
+(\ P',V' @ twice_''!a -> twice_'.return -> P'(V'))),
 (\ P',V' @ irequires_twice_'.return -> P'(V')))(\ V' @ transition_end -> requires_twice_(V'),((<>),(stack')))
 )
 
 within requires_twice_(((<>),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
-channel IN,OUT : {once.a,twice.a,extensions_over_empty_channels_is_undefined}
+channel IN,OUT : {once_''.a,twice_''.a,extensions_over_empty_channels_is_undefined}
 
 SINGLETHREADED = true
 
@@ -129,8 +133,8 @@ ClientCalls = {p.e}
 UsedModeling = {}
 within compress((CO_requires_twice_(IIG,true) [[x<-OUT.x|x<-extensions(OUT)]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
 [|diff({|OUT,transition_begin,transition_end,reorder_in,p,p_',once,once_',twice,twice_'|},Exclude)|]
-(((IF_irequires_twice_(true) [[irequires_twice.x<-once.x|x<-extensions(once)]][[irequires_twice_'.x<-once_'.x|x<-extensions(once_')]]
- ||| IF_irequires_twice_(true) [[irequires_twice.x<-twice.x|x<-extensions(twice)]][[irequires_twice_'.x<-twice_'.x|x<-extensions(twice_')]]
+(((IF_irequires_twice_(true) [[irequires_twice.x<-once.x|x<-extensions(once)]][[irequires_twice_'.x<-once_'.x|x<-extensions(once_')]][[irequires_twice_''.x<-once_''.x|x<-extensions(once_'')]]
+ ||| IF_irequires_twice_(true) [[irequires_twice.x<-twice.x|x<-extensions(twice)]][[irequires_twice_'.x<-twice_'.x|x<-extensions(twice_')]][[irequires_twice_''.x<-twice_''.x|x<-extensions(twice_'')]]
 ) [[x<-IN.x|x<-extensions(IN)]]
 [|union({|IN|},UsedModeling)|]
 SEMANTICS(IN,OUT,ClientCalls,UsedModeling)))) [[reorder_out.x<-x|x<-extensions(reorder_out)]]\{transition_begin,transition_end})
@@ -141,5 +145,5 @@ assert IF_irequires_twice_(true) :[livelock free]
 assert CO_requires_twice_(true,true) :[deterministic]
 assert STOP [T= AS_requires_twice_(false) \ diff(Events,{illegal})
 assert AS_requires_twice_(false) :[deadlock free]
-assert IF_irequires_twice_(true) [[irequires_twice.x<-p.x|x<-extensions(p)]][[irequires_twice_'.x<-p_'.x|x<-extensions(p_')]] \ {} [F= AS_requires_twice_(true) \ diff(Events,{|illegal,p,p_'|})
-assert AS_requires_twice_(true) \ diff(Events,{|illegal,p,p_'|}) :[livelock free]
+assert IF_irequires_twice_(true) [[irequires_twice.x<-p.x|x<-extensions(p)]][[irequires_twice_'.x<-p_'.x|x<-extensions(p_')]][[irequires_twice_''.x<-p_''.x|x<-extensions(p_'')]]\ {} [F= AS_requires_twice_(true) \ diff(Events,{|illegal,p,p_',p_''|})
+assert AS_requires_twice_(true) \ diff(Events,{|illegal,p,p_',p_''|}) :[livelock free]

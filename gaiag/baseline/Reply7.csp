@@ -45,6 +45,7 @@ datatype event_enumeration_alphabet = E_A | foo | return
 -- interface.csp.scm
 
 channel IReply7: {foo}
+
 channel IReply7_': {E_A,return}
 
 IF_IReply7_(IG) = let
@@ -137,5 +138,5 @@ assert IF_IReply7_(true) :[livelock free]
 assert CO_Reply7_(true,true) :[deterministic]
 assert STOP [T= AS_Reply7_(false) \ diff(Events,{illegal})
 assert AS_Reply7_(false) :[deadlock free]
-assert IF_IReply7_(true) [[IReply7.x<-p.x|x<-extensions(p)]][[IReply7_'.x<-p_'.x|x<-extensions(p_')]] \ {} [F= AS_Reply7_(true) \ diff(Events,{|illegal,p,p_'|})
+assert IF_IReply7_(true) [[IReply7.x<-p.x|x<-extensions(p)]][[IReply7_'.x<-p_'.x|x<-extensions(p_')]]\ {} [F= AS_Reply7_(true) \ diff(Events,{|illegal,p,p_'|})
 assert AS_Reply7_(true) \ diff(Events,{|illegal,p,p_'|}) :[livelock free]

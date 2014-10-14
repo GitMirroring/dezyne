@@ -120,7 +120,9 @@
 (define i-ast '((interface i
                   (types (enum Status (Yes No)))
                   (events (in (signature (type void)) e)
-                          (in (signature (type Status)) f))
+                          (in (signature (type Status)) f)
+                          (out (signature (type void)) g)
+                          (out (signature (type void)) h))
                   (behaviour
                    B
                    (types (enum S (S1 S2)))
@@ -285,7 +287,7 @@ semi_(reply_(i_', (\\ ((s,b,c),(stack')) @ Status_Yes)),
 
           ;; via:
           "i?x:{e} ->
-semi_((\\ P',V' @ i!h -> P'(V')),
+semi_((\\ P',V' @ i_''!h -> P'(V')),
 skip_)(\\ V' @ i_B(V'),((s,b,c),(stack')))"))
 
 (define csp-transform-illegal-action-via
@@ -641,21 +643,21 @@ assign_(\\ ((s,b,c),(stack')) @ ((s,true,c),(stack'))))"))
           "i?x:{e} ->
 semi_(semi_(\\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
                              semi_((\\ P',V' @ i!f -> P'(V')),
-                                  (\\ P',V' @ i!g -> P'(V'))),
+                                  (\\ P',V' @ i_''!g -> P'(V'))),
                              skip_
                              )(P',((s,b,c),(stack'))),
      semi_(\\ P',((s,b,c),(stack')) @ ifthenelse_(b,
                                   semi_(\\ P',((s,b,c),(stack')) @ ifthenelse_(c,
-                                                               (\\ P',V' @ i!g -> P'(V')),
+                                                               (\\ P',V' @ i_''!g -> P'(V')),
                                                                skip_
                                                                )(P',((s,b,c),(stack'))),
                                        semi_(assign_(\\ ((s,b,c),(stack')) @ ((s,b,false),(stack'))),
                                             (\\ P',V' @ i!f -> P'(V')))),
                                   \\ P',((s,b,c),(stack')) @ ifthenelse_(c,
                                                           semi_(assign_(\\ ((s,b,c),(stack')) @ ((s,false,c),(stack'))),
-                                                               (\\ P',V' @ i!h -> P'(V'))),
+                                                               (\\ P',V' @ i_''!h -> P'(V'))),
                                                           semi_(assign_(\\ ((s,b,c),(stack')) @ ((s,true,c),(stack'))),
-                                                               (\\ P',V' @ i!g -> P'(V')))
+                                                               (\\ P',V' @ i_''!g -> P'(V')))
                                                           )(P',((s,b,c),(stack')))
                                   )(P',((s,b,c),(stack'))),
           assign_(\\ ((s,b,c),(stack')) @ ((S_S2,b,c),(stack'))))),
@@ -764,7 +766,7 @@ illegal_(STOP,<>)"))
 
           ;; via:
           "j?x:{e} ->
-semi_((\\ P',V' @ j!h -> P'(V')),
+semi_((\\ P',V' @ j_''!h -> P'(V')),
 skip_)(\\ V' @ transition_end -> c_B(V'),((s,b,c),(stack')))"))
 
 (pass-if "c-csp-transform-required-on"
@@ -839,8 +841,8 @@ skip_(\\ V' @ transition_end -> c_B(V'),((s,b,c),(stack')))"))
           ;; from/via:
           (csp-transform* alarm-ast csp-transform-alarm-snippet-via)
           ;; to:
-"sensor?x:{triggered} ->
-semi_(semi_((\\ P',V' @ console!detected -> P'(V')),
+"sensor_''?x:{triggered} ->
+semi_(semi_((\\ P',V' @ console_''!detected -> P'(V')),
 semi_((\\ P',V' @ siren!turnon -> siren_'.return -> P'(V')),
 semi_(assign_(\\ ((state,sounding),(stack')) @ ((state,true),(stack'))),
 assign_(\\ ((state,sounding),(stack')) @ ((States_Triggered,sounding),(stack')))))),
@@ -958,10 +960,10 @@ skip_)(\\ V' @ transition_end -> Alarm_d(V'),((state,sounding),(stack')))"
          (diff-noisy-equal?
 
           ;; from/via:
-          (csp-transform* (cdr var-ast) csp-transform-variable-valued-action-via)
+          (csp-transform* var-ast csp-transform-variable-valued-action-via)
 
           ;; to:
-          "o?x:{bar} ->
+          "o_''?x:{bar} ->
 context_active_(semi_(send_(i,bar),recv_(i_',bar)),
 skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
 
@@ -975,7 +977,7 @@ skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
                            csp-transform-variable-valued-action-via))
 
           ;; via:
-          "o?x:{bar} ->
+          "o_''?x:{bar} ->
 context_active_(semi_(send_(i,bar),recv_(i_',bar)),
 skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
 
@@ -1006,10 +1008,10 @@ skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
          (diff-noisy-equal?
 
           ;; from/via:
-          (csp-transform* (cdr var-ast) csp-transform-if-variable-valued-action-via)
+          (csp-transform* var-ast csp-transform-if-variable-valued-action-via)
 
           ;; to:
-          "o?x:{bar} ->
+          "o_''?x:{bar} ->
 semi_(\\ P',((<>),(stack')) @ ifthenelse_(true,
 context_active_(semi_(send_(i,bar),recv_(i_',bar)),
 skip_),
@@ -1043,10 +1045,10 @@ skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
          (diff-noisy-equal?
 
           ;; from/via:
-          (csp-transform* (cdr var-ast) csp-transform-if-compound-variable-valued-action-via)
+          (csp-transform* var-ast csp-transform-if-compound-variable-valued-action-via)
 
           ;; to:
-          "o?x:{bar} ->
+          "o_''?x:{bar} ->
 semi_(\\ P',((<>),(stack')) @ ifthenelse_(true,
 context_active_(semi_(send_(i,bar),recv_(i_',bar)),
 skip_),
@@ -1064,7 +1066,7 @@ skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
                            csp-transform-variable-valued-action-via))
 
           ;; via:
-          "o?x:{bar} ->
+          "o_''?x:{bar} ->
 context_active_(semi_(send_(i,bar),recv_(i_',bar)),
 skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
 
@@ -1360,7 +1362,7 @@ reply_(I_', (\\ ((dummy),((stack',s))) @ s)))(P',V')
           "i?x:{e} ->
 semi_(context_(\\ ((b),(stack')) @ true,
 \\ P',((b),((stack',c))) @ ifthenelse_(c,
-(\\ P',V' @ i!f -> P'(V')),
+(\\ P',V' @ i_''!f -> P'(V')),
 skip_
 )(P',((b),((stack',c))))),
 (\\ P',V' @ I_'.return -> P'(V')))(\\ V' @ transition_end -> arguments_(V'),((b),(stack')))"))
@@ -1437,7 +1439,7 @@ context_active_(\\ P',V' @ g (P',V',(\\ ((b),(stack')) @ (b))(V')),
 semi_(assign_active_(\\ P',V' @ g (P',V',(\\ ((b),((stack',c))) @ (c))(V')),
 \\ (((b),((stack',c)))),r' @ ((r'),((stack',c)))),
 \\ P',((b),((stack',c))) @ ifthenelse_(c,
-(\\ P',V' @ i!f -> P'(V')),
+(\\ P',V' @ i_''!f -> P'(V')),
 skip_
 )(P',((b),((stack',c))))))),
 (\\ P',V' @ I_'.return -> P'(V')))(\\ V' @ transition_end -> arguments_(V'),((b),(stack')))"))
@@ -1490,7 +1492,7 @@ context_active_(\\ P',V' @ h (P',V',(\\ ((b),(stack')) @ (s,b))(V')),
 semi_(assign_active_(\\ P',V' @ h (P',V',(\\ ((b),((stack',c))) @ (s,b))(V')),
 \\ (((b),((stack',c)))),r' @ ((r'),((stack',c)))),
 \\ P',((b),((stack',c))) @ ifthenelse_(c,
-(\\ P',V' @ i!f -> P'(V')),
+(\\ P',V' @ i_''!f -> P'(V')),
 skip_
 )(P',((b),((stack',c))))))),
 (\\ P',V' @ I_'.return -> P'(V')))(\\ V' @ transition_end -> arguments_(V'),((b),(stack')))"))
@@ -1756,7 +1758,7 @@ semi_(assign_active_(semi_(send_(u,what),recv_(u_',what)),
 (define member-i-ast
   '((interface i
       (types)
-      (events)
+      (events (in (signature (type void)) e))
       (behaviour
        B
        (compound)))))

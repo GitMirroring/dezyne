@@ -44,7 +44,8 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = a | b | c | return
 -- interface.csp.scm
 
-channel I: {a,b,c}
+channel I: {a}
+channel I_'': {b,c}
 channel I_': {return}
 
 IF_I_(IG) = let
@@ -52,8 +53,8 @@ IF_I_(IG) = let
 I_(((t),(stack'))) =
 I?x:{a} ->
 semi_(semi_(\ P',((t),(stack')) @ ifthenelse_(t,
-(\ P',V' @ I!b -> P'(V')),
-(\ P',V' @ I!c -> P'(V'))
+(\ P',V' @ I_''!b -> P'(V')),
+(\ P',V' @ I_''!c -> P'(V'))
 )(P',((t),(stack'))),
 assign_(\ ((t),(stack')) @ (((not t)),(stack')))),
 (\ P',V' @ I_'.return -> P'(V')))(\ V' @ I_(V'),((t),(stack')))
@@ -63,8 +64,9 @@ within I_(((false),(<>)))
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i:{a,b,c}
+channel i:{a}
 
+channel i_'':{b,c}
 
 channel i_':{return}
 
@@ -74,8 +76,8 @@ CO_If_(IIG,IG) = let
 If_(((t),(stack'))) = transition_begin -> (
 i?x:{a} ->
 semi_(semi_(\ P',((t),(stack')) @ ifthenelse_(t,
-(\ P',V' @ i!b -> P'(V')),
-(\ P',V' @ i!c -> P'(V'))
+(\ P',V' @ i_''!b -> P'(V')),
+(\ P',V' @ i_''!c -> P'(V'))
 )(P',((t),(stack'))),
 assign_(\ ((t),(stack')) @ (((not t)),(stack')))),
 (\ P',V' @ I_'.return -> P'(V')))(\ V' @ transition_end -> If_(V'),((t),(stack')))
@@ -143,5 +145,5 @@ assert IF_I_(true) :[livelock free]
 assert CO_If_(true,true) :[deterministic]
 assert STOP [T= AS_If_(false) \ diff(Events,{illegal})
 assert AS_If_(false) :[deadlock free]
-assert IF_I_(true) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]] \ {} [F= AS_If_(true) \ diff(Events,{|illegal,i,i_'|})
-assert AS_If_(true) \ diff(Events,{|illegal,i,i_'|}) :[livelock free]
+assert IF_I_(true) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]][[I_''.x<-i_''.x|x<-extensions(i_'')]]\ {} [F= AS_If_(true) \ diff(Events,{|illegal,i,i_',i_''|})
+assert AS_If_(true) \ diff(Events,{|illegal,i,i_',i_''|}) :[livelock free]

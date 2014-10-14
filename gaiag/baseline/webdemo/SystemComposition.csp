@@ -45,6 +45,7 @@ datatype event_enumeration_alphabet = i18_State_ALL | i3_evt | return
 -- interface.csp.scm
 
 channel i13_I: {i3_evt}
+
 channel i13_I_': {return}
 
 IF_i13_I_(IG) = let
@@ -134,5 +135,5 @@ assert IF_i13_I_(true) :[livelock free]
 assert CO_i51_Bot_(true,true) :[deterministic]
 assert STOP [T= AS_i51_Bot_(false) \ diff(Events,{illegal})
 assert AS_i51_Bot_(false) :[deadlock free]
-assert IF_i13_I_(true) [[i13_I.x<-i14_p.x|x<-extensions(i14_p)]][[i13_I_'.x<-i14_p_'.x|x<-extensions(i14_p_')]] \ {} [F= AS_i51_Bot_(true) \ diff(Events,{|illegal,i14_p,i14_p_'|})
+assert IF_i13_I_(true) [[i13_I.x<-i14_p.x|x<-extensions(i14_p)]][[i13_I_'.x<-i14_p_'.x|x<-extensions(i14_p_')]]\ {} [F= AS_i51_Bot_(true) \ diff(Events,{|illegal,i14_p,i14_p_'|})
 assert AS_i51_Bot_(true) \ diff(Events,{|illegal,i14_p,i14_p_'|}) :[livelock free]

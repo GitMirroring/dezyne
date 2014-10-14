@@ -45,6 +45,7 @@ datatype event_enumeration_alphabet = State_Calibrated | State_Error | State_Ini
 -- interface.csp.scm
 
 channel IComp: {initialize,perform_actions,recover}
+
 channel IComp_': {result_t_OK,result_t_NOK,return}
 
 IF_IComp_(IG) = let
@@ -93,6 +94,7 @@ within IComp_(((State_Uninitialized),(<>)))
 -- interface.csp.scm
 
 channel IDevice: {calibrate,initialize,perform_action1,perform_action2}
+
 channel IDevice_': {result_t_OK,result_t_NOK,return}
 
 IF_IDevice_(IG) = let
@@ -273,5 +275,5 @@ assert IF_IDevice_(true) :[livelock free]
 assert CO_Comp_(true,true) :[deterministic]
 assert STOP [T= AS_Comp_(false) \ diff(Events,{illegal})
 assert AS_Comp_(false) :[deadlock free]
-assert IF_IComp_(true) [[IComp.x<-client.x|x<-extensions(client)]][[IComp_'.x<-client_'.x|x<-extensions(client_')]] \ {} [F= AS_Comp_(true) \ diff(Events,{|illegal,client,client_'|})
+assert IF_IComp_(true) [[IComp.x<-client.x|x<-extensions(client)]][[IComp_'.x<-client_'.x|x<-extensions(client_')]]\ {} [F= AS_Comp_(true) \ diff(Events,{|illegal,client,client_'|})
 assert AS_Comp_(true) \ diff(Events,{|illegal,client,client_'|}) :[livelock free]

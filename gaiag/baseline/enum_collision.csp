@@ -45,6 +45,7 @@ datatype event_enumeration_alphabet = Retval1_NOK | Retval1_OK | Retval2_NOK | R
 -- interface.csp.scm
 
 channel ienum_collision: {bar,foo}
+
 channel ienum_collision_': {Retval1_OK,Retval1_NOK,Retval2_OK,Retval2_NOK,return}
 
 IF_ienum_collision_(IG) = let
@@ -139,5 +140,5 @@ assert IF_ienum_collision_(true) :[livelock free]
 assert CO_enum_collision_(true,true) :[deterministic]
 assert STOP [T= AS_enum_collision_(false) \ diff(Events,{illegal})
 assert AS_enum_collision_(false) :[deadlock free]
-assert IF_ienum_collision_(true) [[ienum_collision.x<-i.x|x<-extensions(i)]][[ienum_collision_'.x<-i_'.x|x<-extensions(i_')]] \ {} [F= AS_enum_collision_(true) \ diff(Events,{|illegal,i,i_'|})
+assert IF_ienum_collision_(true) [[ienum_collision.x<-i.x|x<-extensions(i)]][[ienum_collision_'.x<-i_'.x|x<-extensions(i_')]]\ {} [F= AS_enum_collision_(true) \ diff(Events,{|illegal,i,i_'|})
 assert AS_enum_collision_(true) \ diff(Events,{|illegal,i,i_'|}) :[livelock free]

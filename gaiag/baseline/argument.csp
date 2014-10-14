@@ -44,12 +44,13 @@ channel transition_begin, transition_end
 datatype event_enumeration_alphabet = e | f | return
 -- interface.csp.scm
 
-channel I: {e,f}
+channel I: {e}
+channel I_'': {f}
 channel I_': {return}
 
 IF_I_(IG) = let
 g = \ P',V',F' @ context_func_args_(F',
-semi_((\ P',V' @ I!f -> P'(V')),
+semi_((\ P',V' @ I_''!f -> P'(V')),
 returnvalue_(\ ((b),((stack',gc))) @ (gc or b))))(P',V')
 
 I_(((b),(stack'))) =
@@ -60,7 +61,7 @@ context_active_(\ P',V' @ g (P',V',(\ ((b),(stack')) @ (b))(V')),
 semi_(assign_active_(\ P',V' @ g (P',V',(\ ((b),((stack',c))) @ (c))(V')),
 \ (((b),((stack',c)))),r' @ ((r'),((stack',c)))),
 \ P',((b),((stack',c))) @ ifthenelse_(c,
-(\ P',V' @ I!f -> P'(V')),
+(\ P',V' @ I_''!f -> P'(V')),
 skip_
 )(P',((b),((stack',c))))))),
 (\ P',V' @ I_'.return -> P'(V')))(\ V' @ I_(V'),((b),(stack'))))
@@ -70,15 +71,16 @@ within I_(((false),(<>)))
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i:{e,f}
+channel i:{e}
 
+channel i_'':{f}
 
 channel i_':{return}
 
 
 CO_argument_(IIG,IG) = let
 g = \ P',V',F' @ context_func_args_(F',
-semi_((\ P',V' @ i!f -> P'(V')),
+semi_((\ P',V' @ i_''!f -> P'(V')),
 returnvalue_(\ ((b),((stack',gc))) @ (gc or b))))(P',V')
 
 argument_(((b),(stack'))) = transition_begin -> (
@@ -89,7 +91,7 @@ context_active_(\ P',V' @ g (P',V',(\ ((b),(stack')) @ (b))(V')),
 semi_(assign_active_(\ P',V' @ g (P',V',(\ ((b),((stack',c))) @ (c))(V')),
 \ (((b),((stack',c)))),r' @ ((r'),((stack',c)))),
 \ P',((b),((stack',c))) @ ifthenelse_(c,
-(\ P',V' @ i!f -> P'(V')),
+(\ P',V' @ i_''!f -> P'(V')),
 skip_
 )(P',((b),((stack',c))))))),
 (\ P',V' @ I_'.return -> P'(V')))(\ V' @ transition_end -> argument_(V'),((b),(stack'))))
@@ -157,5 +159,5 @@ assert IF_I_(true) :[livelock free]
 assert CO_argument_(true,true) :[deterministic]
 assert STOP [T= AS_argument_(false) \ diff(Events,{illegal})
 assert AS_argument_(false) :[deadlock free]
-assert IF_I_(true) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]] \ {} [F= AS_argument_(true) \ diff(Events,{|illegal,i,i_'|})
-assert AS_argument_(true) \ diff(Events,{|illegal,i,i_'|}) :[livelock free]
+assert IF_I_(true) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]][[I_''.x<-i_''.x|x<-extensions(i_'')]]\ {} [F= AS_argument_(true) \ diff(Events,{|illegal,i,i_',i_''|})
+assert AS_argument_(true) \ diff(Events,{|illegal,i,i_',i_''|}) :[livelock free]
