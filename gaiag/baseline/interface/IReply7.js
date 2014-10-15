@@ -26,10 +26,10 @@ interface.IReply7= function() {
     A: 0
   };
 
-  this.ins = {
+  this.in = {
     foo : null
   };
-  this.outs = {
+  this.out = {
 
   };
 };

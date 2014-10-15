@@ -3,6 +3,7 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -21,11 +22,13 @@
 //
 // Code:
 
-interface.ISiren = function() {
-  this.ins = {
-    turnon: null,
-    turnoff: null
+interface.ISiren= function() {
+
+  this.in = {
+    turnon : null,
+    turnoff : null
   };
-  this.outs = {
+  this.out = {
+
   };
 };

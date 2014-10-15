@@ -23,10 +23,10 @@
 
 interface.irequires_twice= function() {
 
-  this.ins = {
+  this.in = {
     e : null
   };
-  this.outs = {
+  this.out = {
     a : null
   };
 };

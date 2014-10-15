@@ -23,10 +23,10 @@
 
 interface.Provides= function() {
 
-  this.ins = {
+  this.in = {
     start : null
   };
-  this.outs = {
+  this.out = {
     busy : null,
     finish : null
   };

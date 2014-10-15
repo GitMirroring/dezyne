@@ -26,25 +26,25 @@
 ///// Test stubs
 component.Console = function() {
   this.console = new interface.IConsole();
-  this.console.outs.detected = function() { console.log('Alarm detected'); }
-  this.console.outs.deactivated = function() { console.log('Alarm deactivated'); }
+  this.console.out.detected = function() { console.log('Alarm detected'); }
+  this.console.out.deactivated = function() { console.log('Alarm deactivated'); }
 };
 component.Sensor = function() {
   this.sensor = new interface.ISensor();
-  this.sensor.ins.enable = function() { console.log('Sensor enable')};
-  this.sensor.ins.disable = function() { console.log('Sensor disable');};
+  this.sensor.in.enable = function() { console.log('Sensor enable')};
+  this.sensor.in.disable = function() { console.log('Sensor disable');};
 }
 component.Siren = function() {
   this.siren = new interface.ISiren();
-  this.siren.ins.turnon = function() { console.log('Siren turnon'); };
-  this.siren.ins.turnoff = function() { console.log('Siren turnoff'); };
+  this.siren.in.turnon = function() { console.log('Siren turnon'); };
+  this.siren.in.turnoff = function() { console.log('Siren turnoff'); };
 }
 
 var alarm = new component.AlarmSystem();
 var gui = new component.Console();
 connect(alarm.console, gui.console);
 ///// Test trace
-alarm.console.ins.arm();
-alarm.sensor.sensor.outs.triggered();
-alarm.console.ins.disarm();
-alarm.sensor.sensor.outs.disabled();
+alarm.console.in.arm();
+alarm.sensor.sensor.out.triggered();
+alarm.console.in.disarm();
+alarm.sensor.sensor.out.disabled();

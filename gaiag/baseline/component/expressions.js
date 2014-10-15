@@ -28,12 +28,12 @@ component.expressions = function() {
 
   this.i = new interface.I();
 
-  this.i.ins.e = function() {
+  this.i.in.e = function() {
     console.log('expressions.i_e');
     if(true) {
       if(this.state === 0) {
         this.state = 3;
-        this.i.outs.a();
+        this.i.out.a();
       }
       else {
         this.state = this.state - 1;
@@ -41,10 +41,10 @@ component.expressions = function() {
           this.c = this.c + 1;
         }
         else if(this.c <= (this.state + 1)) {
-          this.i.outs.lo();
+          this.i.out.lo();
         }
         else if(this.c > this.state) {
-          this.i.outs.hi();
+          this.i.out.hi();
         }
       }
     }

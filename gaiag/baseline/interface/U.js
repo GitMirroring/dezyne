@@ -26,10 +26,10 @@ interface.U= function() {
     Ok: 0, Nok: 1
   };
 
-  this.ins = {
+  this.in = {
     what : null
   };
-  this.outs = {
+  this.out = {
 
   };
 };

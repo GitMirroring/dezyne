@@ -29,11 +29,11 @@ interface.ienum_collision= function() {
     OK: 0, NOK: 1
   };
 
-  this.ins = {
+  this.in = {
     foo : null,
     bar : null
   };
-  this.outs = {
+  this.out = {
 
   };
 };

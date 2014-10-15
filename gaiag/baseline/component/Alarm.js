@@ -34,11 +34,11 @@ component.Alarm = function() {
   this.sensor = new interface.ISensor();
   this.siren = new interface.ISiren();
 
-  this.console.ins.arm = function() {
+  this.console.in.arm = function() {
     console.log('Alarm.console_arm');
     if(this.state === this.States.Disarmed) {
       {
-        this.sensor.ins.enable();
+        this.sensor.in.enable();
         this.state = this.States.Armed;
       }
     }
@@ -52,14 +52,14 @@ component.Alarm = function() {
       assert (false);
     }
   }.bind(this);
-  this.console.ins.disarm = function() {
+  this.console.in.disarm = function() {
     console.log('Alarm.console_disarm');
     if(this.state === this.States.Disarmed) {
       assert (false);
     }
     else if(this.state === this.States.Armed) {
       {
-        this.sensor.ins.disable();
+        this.sensor.in.disable();
         this.state = this.States.Disarming;
       }
     }
@@ -68,22 +68,22 @@ component.Alarm = function() {
     }
     else if(this.state === this.States.Triggered) {
       {
-        this.sensor.ins.disable();
-        this.siren.ins.turnoff();
+        this.sensor.in.disable();
+        this.siren.in.turnoff();
         this.sounding = false;
         this.state = this.States.Disarming;
       }
     }
   }.bind(this);
-  this.sensor.outs.triggered = function() {
+  this.sensor.out.triggered = function() {
     console.log('Alarm.sensor_triggered');
     if(this.state === this.States.Disarmed) {
       assert (false);
     }
     else if(this.state === this.States.Armed) {
       {
-        this.console.outs.detected();
-        this.siren.ins.turnon();
+        this.console.out.detected();
+        this.siren.in.turnon();
         this.sounding = true;
         this.state = this.States.Triggered;
       }
@@ -95,7 +95,7 @@ component.Alarm = function() {
       assert (false);
     }
   }.bind(this);
-  this.sensor.outs.disabled = function() {
+  this.sensor.out.disabled = function() {
     console.log('Alarm.sensor_disabled');
     if(this.state === this.States.Disarmed) {
       assert (false);
@@ -106,13 +106,13 @@ component.Alarm = function() {
     else if(this.state === this.States.Disarming) {
       {
         if(this.sounding) {
-          this.console.outs.deactivated();
-          this.siren.ins.turnoff();
+          this.console.out.deactivated();
+          this.siren.in.turnoff();
           this.state = this.States.Disarmed;
           this.sounding = false;
         }
         else {
-          this.console.outs.deactivated();
+          this.console.out.deactivated();
           this.state = this.States.Disarmed;
         }
       }

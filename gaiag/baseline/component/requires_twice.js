@@ -28,17 +28,17 @@ component.requires_twice = function() {
   this.once = new interface.irequires_twice();
   this.twice = new interface.irequires_twice();
 
-  this.p.ins.e = function() {
+  this.p.in.e = function() {
     console.log('requires_twice.p_e');
     {
-      this.once.outs.a();
-      this.twice.outs.a();
+      this.once.out.a();
+      this.twice.out.a();
     }
   }.bind(this);
-  this.once.outs.a = function() {
+  this.once.out.a = function() {
     console.log('requires_twice.once_a');
   }.bind(this);
-  this.twice.outs.a = function() {
+  this.twice.out.a = function() {
     console.log('requires_twice.twice_a');
   }.bind(this);
 

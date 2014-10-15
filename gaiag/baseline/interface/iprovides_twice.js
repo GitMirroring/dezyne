@@ -23,10 +23,10 @@
 
 interface.iprovides_twice= function() {
 
-  this.ins = {
+  this.in = {
     foo : null
   };
-  this.outs = {
+  this.out = {
     bar : null
   };
 };

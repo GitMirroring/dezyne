@@ -23,10 +23,10 @@
 
 interface.Requires= function() {
 
-  this.ins = {
+  this.in = {
     ping : null
   };
-  this.outs = {
+  this.out = {
     pong : null
   };
 };

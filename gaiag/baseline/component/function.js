@@ -27,7 +27,7 @@ component.function = function() {
 
   this.i = new interface.I();
 
-  this.i.ins.a = function() {
+  this.i.in.a = function() {
     console.log('function.i_a');
     if(true) {
       {
@@ -35,19 +35,19 @@ component.function = function() {
       }
     }
   }.bind(this);
-  this.i.ins.b = function() {
+  this.i.in.b = function() {
     console.log('function.i_b');
     if(true) {
       {
         this.toggle();
         this.toggle();
-        this.i.outs.d();
+        this.i.out.d();
       }
     }
   }.bind(this);
   this.toggle = function () {
     if(this.f) {
-      this.i.outs.c();
+      this.i.out.c();
     }
     this.f = ! (this.f);
   }.bind(this);

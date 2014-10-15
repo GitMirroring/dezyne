@@ -27,19 +27,19 @@ component.argument = function() {
 
   this.i = new interface.I();
 
-  this.i.ins.e = function() {
+  this.i.in.e = function() {
     console.log('argument.i_e');
     if(true) {
       this.b = ! (this.b);
       c = this.g(this.b);
       this.b = this.g(c);
       if(c) {
-        this.i.outs.f();
+        this.i.out.f();
       }
     }
   }.bind(this);
   this.g = function (gc) {
-    this.i.outs.f();
+    this.i.out.f();
     return (gc || this.b);
   }.bind(this);
 

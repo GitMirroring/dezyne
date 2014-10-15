@@ -22,8 +22,8 @@
 // Code:
 
 function connect(provided, required) {
-  provided.outs = required.outs;
-  required.ins = provided.ins;
+  provided.out = required.out;
+  required.in = provided.in;
 }
 
 component.provides_twice = function() {

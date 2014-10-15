@@ -27,7 +27,7 @@ component.testBoolean = function() {
 
   this.i = new interface.TestBool();
 
-  this.i.ins.evt = function() {
+  this.i.in.evt = function() {
     console.log('testBoolean.i_evt');
     if(true) { }
   }.bind(this);

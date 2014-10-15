@@ -23,10 +23,10 @@
 
 interface.iimperative= function() {
 
-  this.ins = {
+  this.in = {
     e : null
   };
-  this.outs = {
+  this.out = {
     f : null,
     g : null,
     h : null

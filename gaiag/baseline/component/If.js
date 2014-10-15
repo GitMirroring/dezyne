@@ -27,14 +27,14 @@ component.If = function() {
 
   this.i = new interface.I();
 
-  this.i.ins.a = function() {
+  this.i.in.a = function() {
     console.log('If.i_a');
     {
       if(this.t) {
-        this.i.outs.b();
+        this.i.out.b();
       }
       else {
-        this.i.outs.c();
+        this.i.out.c();
       }
       this.t = ! (this.t);
     }

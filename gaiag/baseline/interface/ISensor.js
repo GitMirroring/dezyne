@@ -3,6 +3,7 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -21,13 +22,14 @@
 //
 // Code:
 
-interface.ISensor = function() {
-  this.ins = {
-    enable: null,
-    disable: null
+interface.ISensor= function() {
+
+  this.in = {
+    enable : null,
+    disable : null
   };
-  this.outs = {
-    triggered: null,
-    disabled: null
+  this.out = {
+    triggered : null,
+    disabled : null
   };
 };

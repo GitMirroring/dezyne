@@ -30,12 +30,12 @@ component.Reply3 = function() {
   this.i = new interface.I();
   this.u = new interface.U();
 
-  this.i.ins.done = function() {
+  this.i.in.done = function() {
     console.log('Reply3.i_done');
     if(true) {
       {
-        s = this.u.ins.what();
-        this.s = this.u.ins.what();
+        s = this.u.in.what();
+        this.s = this.u.in.what();
         if(s === interface.U.Status.Ok) {
           this.reply_fun();
         }

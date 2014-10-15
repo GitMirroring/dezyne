@@ -26,13 +26,13 @@ interface.IDevice= function() {
     OK: 0, NOK: 1
   };
 
-  this.ins = {
+  this.in = {
     initialize : null,
     calibrate : null,
     perform_action1 : null,
     perform_action2 : null
   };
-  this.outs = {
+  this.out = {
 
   };
 };

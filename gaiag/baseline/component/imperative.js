@@ -30,13 +30,13 @@ component.imperative = function() {
 
   this.i = new interface.iimperative();
 
-  this.i.ins.e = function() {
+  this.i.in.e = function() {
     console.log('imperative.i_e');
     if(this.state === this.States.I) {
       {
-        this.i.outs.f();
-        this.i.outs.g();
-        this.i.outs.h();
+        this.i.out.f();
+        this.i.out.g();
+        this.i.out.h();
         this.state = this.States.II;
       }
     }
@@ -47,16 +47,16 @@ component.imperative = function() {
     }
     else if(this.state === this.States.III) {
       {
-        this.i.outs.f();
-        this.i.outs.g();
-        this.i.outs.g();
-        this.i.outs.f();
+        this.i.out.f();
+        this.i.out.g();
+        this.i.out.g();
+        this.i.out.f();
         this.state = this.States.IV;
       }
     }
     else if(this.state === this.States.IV) {
       {
-        this.i.outs.h();
+        this.i.out.h();
         this.state = this.States.I;
       }
     }

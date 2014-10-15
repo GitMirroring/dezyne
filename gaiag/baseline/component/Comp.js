@@ -33,13 +33,13 @@ component.Comp = function() {
   this.client = new interface.IComp();
   this.device_A = new interface.IDevice();
 
-  this.client.ins.initialize = function() {
+  this.client.in.initialize = function() {
     console.log('Comp.client_initialize');
     if(this.s === this.State.Uninitialized) {
       {
-        res = this.device_A.ins.initialize();
+        res = this.device_A.in.initialize();
         if(res === interface.IDevice.result_t.OK) {
-          this.res = this.device_A.ins.calibrate();
+          this.res = this.device_A.in.calibrate();
         }
         if(res === interface.IDevice.result_t.OK) {
           this.s = this.State.Initialized;
@@ -59,7 +59,7 @@ component.Comp = function() {
     }
     return self.reply_IComp_result_t;
   }.bind(this);
-  this.client.ins.recover = function() {
+  this.client.in.recover = function() {
     console.log('Comp.client_recover');
     if(this.s === this.State.Uninitialized) {
       assert (false);
@@ -69,7 +69,7 @@ component.Comp = function() {
     }
     else if(this.s === this.State.Error) {
       {
-        res = this.device_A.ins.calibrate();
+        res = this.device_A.in.calibrate();
         if(res === interface.IDevice.result_t.OK) {
           this.s = this.State.Initialized;
           this.reply_IDevice_result_t = interface.IDevice.result_t.OK;
@@ -82,16 +82,16 @@ component.Comp = function() {
     }
     return self.reply_IComp_result_t;
   }.bind(this);
-  this.client.ins.perform_actions = function() {
+  this.client.in.perform_actions = function() {
     console.log('Comp.client_perform_actions');
     if(this.s === this.State.Uninitialized) {
       assert (false);
     }
     else if(this.s === this.State.Initialized) {
       {
-        res = this.device_A.ins.perform_action1();
+        res = this.device_A.in.perform_action1();
         if(res === interface.IDevice.result_t.OK) {
-          this.res = this.device_A.ins.perform_action2();
+          this.res = this.device_A.in.perform_action2();
         }
         if(res === interface.IDevice.result_t.OK) {
           this.s = this.State.Initialized;

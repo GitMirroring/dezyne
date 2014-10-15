@@ -23,10 +23,10 @@
 
 interface.TestBool= function() {
 
-  this.ins = {
+  this.in = {
     evt : null
   };
-  this.outs = {
+  this.out = {
 
   };
 };

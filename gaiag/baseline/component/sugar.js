@@ -30,9 +30,9 @@ component.sugar = function() {
 
   this.i = new interface.I();
 
-  this.i.ins.e = function() {
+  this.i.in.e = function() {
     console.log('sugar.i_e');
-    if(this.s === this.Enum.False) if(this.s === this.Enum.False) this.i.outs.a();
+    if(this.s === this.Enum.False) if(this.s === this.Enum.False) this.i.out.a();
   }.bind(this);
 
 };

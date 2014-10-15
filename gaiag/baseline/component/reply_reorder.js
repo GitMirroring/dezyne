@@ -28,21 +28,21 @@ component.reply_reorder = function() {
   this.p = new interface.Provides();
   this.r = new interface.Requires();
 
-  this.p.ins.start = function() {
+  this.p.in.start = function() {
     console.log('reply_reorder.p_start');
     {
-      this.r.ins.ping();
+      this.r.in.ping();
     }
   }.bind(this);
-  this.r.outs.pong = function() {
+  this.r.out.pong = function() {
     console.log('reply_reorder.r_pong');
     {
       if(this.first) {
-        this.p.outs.busy();
+        this.p.out.busy();
         this.first = ! (this.first);
       }
       if(! (this.first)) {
-        this.p.outs.finish();
+        this.p.out.finish();
         this.first = ! (this.first);
       }
     }

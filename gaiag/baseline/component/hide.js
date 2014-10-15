@@ -28,20 +28,20 @@ component.hide = function() {
 
   this.i = new interface.I();
 
-  this.i.ins.e = function() {
+  this.i.in.e = function() {
     console.log('hide.i_e');
     if(true) {
       b = this.b;
       c = this.g(this.b, this.c);
       if(this.c) {
-        this.i.outs.f();
+        this.i.out.f();
       }
     }
   }.bind(this);
   this.g = function (b, d) {
     b = d;
     d = this.c;
-    this.i.outs.f();
+    this.i.out.f();
     return (this.b || d);
   }.bind(this);
 

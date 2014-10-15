@@ -3,6 +3,7 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -21,13 +22,14 @@
 //
 // Code:
 
-interface.IConsole = function() {
-  this.ins = {
-    arm: null,
-    disarm: null
+interface.IConsole= function() {
+
+  this.in = {
+    arm : null,
+    disarm : null
   };
-  this.outs = {
-    detected: null,
-    deactivated: null
+  this.out = {
+    detected : null,
+    deactivated : null
   };
 };

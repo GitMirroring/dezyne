@@ -12,7 +12,7 @@ component.#.model  = function() {
 #(map
    (lambda (port)
      (map (define-on model port #{
-  this.#port .#direction s.#event  = function() {
+  this.#port .#direction .#event  = function() {
   console.log('#model .#port _#event ');
   #statement #(if (not (eq? type 'void))
 (list "return self.reply_" reply-type "_" reply-name ";\n")) }.bind(this);

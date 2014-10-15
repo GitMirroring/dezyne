@@ -26,12 +26,12 @@ interface.IComp= function() {
     OK: 0, NOK: 1
   };
 
-  this.ins = {
+  this.in = {
     initialize : null,
     recover : null,
     perform_actions : null
   };
-  this.outs = {
+  this.out = {
 
   };
 };

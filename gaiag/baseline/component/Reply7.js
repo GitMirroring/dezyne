@@ -28,13 +28,13 @@ component.Reply7 = function() {
   this.p = new interface.IReply7();
   this.r = new interface.IReply7();
 
-  this.p.ins.foo = function() {
+  this.p.in.foo = function() {
     console.log('Reply7.p_foo');
     this.f();
     return self.reply_IReply7_E;
   }.bind(this);
   this.f = function () {
-    v = this.r.ins.foo();
+    v = this.r.in.foo();
     this.reply_IReply7_E = v;
   }.bind(this);
 
