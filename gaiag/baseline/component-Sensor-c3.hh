@@ -28,13 +28,19 @@
 #include "interface-ISensor-c3.hh"
 
 
+namespace dezyne {
+  struct locator;
+  struct runtime;
+}
+
 namespace component
 {
   struct Sensor
   {
+    dezyne::runtime& rt;
     interface::ISensor sensor;
 
-    Sensor();
+    Sensor(const dezyne::locator&);
     void sensor_enable();
     void sensor_disable();
   };

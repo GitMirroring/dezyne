@@ -27,7 +27,7 @@
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
-namespace asd
+namespace dezyne
 {
   using boost::function;
   using boost::bind;
@@ -40,8 +40,8 @@ namespace interface
 
     struct
     {
-      asd::function<void ()> turnon;
-      asd::function<void ()> turnoff;
+      dezyne::function<void ()> turnon;
+      dezyne::function<void ()> turnoff;
 
     } in;
 

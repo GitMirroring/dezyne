@@ -27,14 +27,20 @@
 #include "interface-I-c3.hh"
 
 
+namespace dezyne {
+  struct locator;
+  struct runtime;
+}
+
 namespace component
 {
   struct argument
   {
+    dezyne::runtime& rt;
     bool b;
     interface::I i;
 
-    argument();
+    argument(const dezyne::locator&);
     void i_e();
     bool g(bool gc);
   };

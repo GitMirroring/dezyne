@@ -28,10 +28,16 @@
 #include "interface-U-c3.hh"
 
 
+namespace dezyne {
+  struct locator;
+  struct runtime;
+}
+
 namespace component
 {
   struct Reply4
   {
+    dezyne::runtime& rt;
     struct Status
     {
       enum type
@@ -45,7 +51,7 @@ namespace component
     interface::I i;
     interface::U u;
 
-    Reply4();
+    Reply4(const dezyne::locator&);
     interface::I::Status::type i_done();
     Reply4::Status::type fun();
     Reply4::Status::type fun_arg(Reply4::Status::type s);

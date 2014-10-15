@@ -23,27 +23,58 @@
 
 #include "component-enum_collision-c3.hh"
 
-void handle_event(void*, const asd::function<void()>&);
+#include "locator.h"
+#include "runtime.h"
 
-template <typename R>
-inline asd::function<R()> connect(void*, const asd::function<R()>& event)
-{
-  return event;
-}
+namespace dezyne {
+  template <typename R, bool checked>
+  inline R valued_helper(runtime& rt, void* scope, const function<R()>& event)
+  {
+    bool& handle = rt.handling(scope);
+    if(checked and handle) throw std::logic_error("a valued event cannot be deferred");
 
-template <>
-inline asd::function<void()> connect<void>(void* scope, const asd::function<void()>& event)
-{
-  return asd::bind(handle_event, scope, event);
+    runtime::scoped_value<bool> sv(handle, true);
+    R tmp = event();
+    if(not sv.initial)
+    {
+      rt.flush(scope);
+    }
+    return tmp;
+  }
+
+  template <typename R>
+  inline function<R()> connect_in(runtime& rt, void* scope, const function<R()>& event)
+  {
+    return bind(valued_helper<R,false>, boost::ref(rt), scope, event);
+  }
+
+  template <>
+  inline function<void()> connect_in<void>(runtime& rt, void* scope, const function<void()>& event)
+  {
+    return bind(&runtime::handle_event, boost::ref(rt), scope, event);
+  }
+
+  template <typename R>
+  inline function<R()> connect_out(runtime& rt, void* scope, const function<R()>& event)
+  {
+    return bind(valued_helper<R,true>, boost::ref(rt), scope, event);
+  }
+
+  template <>
+  inline function<void()> connect_out<void>(runtime& rt, void* scope, const function<void()>& event)
+  {
+    return bind(&runtime::handle_event, boost::ref(rt), scope, event);
+  }
 }
 
 namespace component
 {
-  enum_collision::enum_collision()
-  : i()
+  enum_collision::enum_collision(const dezyne::locator& dezyne_locator)
+  : rt(dezyne_locator.get<dezyne::runtime>())
+  , i()
   {
-    i.in.foo = connect<interface::ienum_collision::Retval1::type>(this, asd::bind<interface::ienum_collision::Retval1::type>(&enum_collision::i_foo, this));
-    i.in.bar = connect<interface::ienum_collision::Retval2::type>(this, asd::bind<interface::ienum_collision::Retval2::type>(&enum_collision::i_bar, this));
+    i.in.foo = dezyne::connect_in<interface::ienum_collision::Retval1::type>(rt, this, dezyne::bind<interface::ienum_collision::Retval1::type>(&enum_collision::i_foo, this));
+    i.in.bar = dezyne::connect_in<interface::ienum_collision::Retval2::type>(rt, this, dezyne::bind<interface::ienum_collision::Retval2::type>(&enum_collision::i_bar, this));
   }
 
   interface::ienum_collision::Retval1::type enum_collision::i_foo()

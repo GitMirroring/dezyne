@@ -28,17 +28,23 @@
 #include "interface-U-c3.hh"
 
 
+namespace dezyne {
+  struct locator;
+  struct runtime;
+}
+
 namespace component
 {
   struct Reply2
   {
+    dezyne::runtime& rt;
     bool dummy;
     interface::I::Status::type reply_I_Status;
     interface::U::Status::type reply_U_Status;
     interface::I i;
     interface::U u;
 
-    Reply2();
+    Reply2(const dezyne::locator&);
     interface::I::Status::type i_done();
   };
 }

@@ -4,7 +4,7 @@
 ##include <boost/bind.hpp>
 ##include <boost/function.hpp>
 
-namespace asd
+namespace dezyne
 {
   using boost::function;
   using boost::bind;
@@ -18,14 +18,14 @@ struct #.interface
   struct
   {
    #(map (declare-io
-          #{asd::function<#return-type  ()> #name;
+          #{dezyne::function<#return-type  ()> #name;
 #}) (filter gom:in? ((compose .elements .events) model)))
    } in;
 
   struct
   {
    #(map (declare-io
-          #{asd::function<#return-type  ()> #name;
+          #{dezyne::function<#return-type  ()> #name;
 #}) (filter gom:out? ((compose .elements .events) model)))
  } out;
   };

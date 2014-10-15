@@ -1,5 +1,6 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
 //
@@ -26,7 +27,7 @@
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
-namespace asd
+namespace dezyne
 {
   using boost::function;
   using boost::bind;
@@ -39,15 +40,15 @@ namespace interface
 
     struct
     {
-      asd::function<void ()> e;
+      dezyne::function<void ()> e;
 
     } in;
 
     struct
     {
-      asd::function<void ()> f;
-      asd::function<void ()> g;
-      asd::function<void ()> h;
+      dezyne::function<void ()> f;
+      dezyne::function<void ()> g;
+      dezyne::function<void ()> h;
 
     } out;
   };

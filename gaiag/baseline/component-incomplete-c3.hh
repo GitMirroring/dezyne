@@ -28,14 +28,20 @@
 #include "interface-iincomplete-c3.hh"
 
 
+namespace dezyne {
+  struct locator;
+  struct runtime;
+}
+
 namespace component
 {
   struct incomplete
   {
+    dezyne::runtime& rt;
     interface::iincomplete p;
     interface::iincomplete r;
 
-    incomplete();
+    incomplete(const dezyne::locator&);
     void p_e();
     void r_a();
   };

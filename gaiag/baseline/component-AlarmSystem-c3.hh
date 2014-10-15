@@ -33,6 +33,10 @@
 #include "interface-IConsole-c3.hh"
 
 
+namespace dezyne {
+  struct locator;
+}
+
 namespace component
 {
   struct AlarmSystem
@@ -43,7 +47,7 @@ namespace component
 
     interface::IConsole& console;
 
-    AlarmSystem();
+    AlarmSystem(const dezyne::locator&);
   };
 }
 #endif

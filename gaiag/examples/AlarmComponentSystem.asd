@@ -24,6 +24,7 @@
 import Alarm.asd;
 import Sensor.asd;
 import Siren.asd;
+//import Logger.asd;
 
 component AlarmComponentSystem
 {
@@ -34,9 +35,11 @@ component AlarmComponentSystem
       Alarm alarm;
       Sensor sensor;
       Siren siren;
+      //Logger logger;
 
       console <=> alarm.console;
       alarm.sensor <=> sensor.sensor;
       alarm.siren <=> siren.siren;
+      //logger.log <=> *;
     }
 }

@@ -29,15 +29,21 @@
 #include "interface-IReply7-c3.hh"
 
 
+namespace dezyne {
+  struct locator;
+  struct runtime;
+}
+
 namespace component
 {
   struct Reply7
   {
+    dezyne::runtime& rt;
     interface::IReply7::E::type reply_IReply7_E;
     interface::IReply7 p;
     interface::IReply7 r;
 
-    Reply7();
+    Reply7(const dezyne::locator&);
     interface::IReply7::E::type p_foo();
     void f();
   };

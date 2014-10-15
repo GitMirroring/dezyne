@@ -3,7 +3,6 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -22,29 +21,41 @@
 //
 // Code:
 
-/*
- * This is confidential material the contents of which are the property of Verum Software Tools BV.  
- * All reproduction and/or duplication in whole or in part without the written prior consent of 
- * Verum Software Tools BV is strictly forbidden.  Modification of this code is strictly forbidden 
- * and may result in software runtime failure.
- *
- * Modification or removal of this notice in whole or in part is strictly forbidden.
- * Copyright 1998 - 2014 Verum Software Tools BV
- */
-#ifndef __ASD_INTERFACES_H__
-#define __ASD_INTERFACES_H__
+#ifndef RUNTIME_H
+#define RUNTIME_H
 
-namespace asd
+#include <boost/function.hpp>
+
+#include <map>
+#include <queue>
+
+namespace dezyne {
+
+using boost::function;
+
+struct runtime
 {
-  namespace channels
-  {
-    class ISingleThreaded
-    {
-    public:
-      virtual ~ISingleThreaded()  {}
-      virtual void processCBs() = 0;
-    };
-  }
-}
+  std::map<void*, std::pair<bool, std::queue<function<void()> > > > queues;
 
+  bool& handling(void*);
+  void flush(void*);
+  void defer(void*, const function<void()>&);
+  void handle_event(void*, const function<void()>&);
+
+  template <typename T>
+  struct scoped_value
+  {
+    T& current;
+    T initial;
+    scoped_value(T& current, T value)
+    : current(current)
+    , initial(current)
+    { current = value; }
+    ~scoped_value()
+    {
+      current = initial;
+    }
+  };
+};
+}
 #endif

@@ -3,7 +3,6 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -22,16 +21,87 @@
 //
 // Code:
 
-#ifndef WINDOW_SENSOR_COMPONENT_H
-#define WINDOW_SENSOR_COMPONENT_H
-
-#include "SensorInterface.h"
-
-class WindowSensorComponent: public SensorInterface
+interface itop
 {
-public:
-  static boost::shared_ptr<SensorInterface> GetInstance();
-  static void ReleaseInstance();
-};
+  in void e;
+  out void f;
+  behaviour
+  {
+    on e: f;
+  }
+}
 
-#endif
+interface imiddle
+{
+  in void e;
+  out void f;
+  behaviour
+  {
+    on e: f;
+  }
+}
+
+interface ibottom
+{
+  in void e;
+  out void f;
+  behaviour
+  {
+    on e: f;
+  }
+}
+
+interface ilogger
+{
+  in void log;
+  behaviour
+  {
+    on log:{}
+  }
+}
+
+component logger
+{
+  provides ilogger log;
+  behaviour
+  {
+    on log.log: {}
+  }
+}
+
+component middle
+{
+  provides itop t;
+  requires ibottom b;
+  requires injected ilogger l;
+
+  behaviour
+  {
+    on t.e: {l.log; b.e;}
+    on b.f: {l.log; t.f;}
+  }
+}
+
+component bottom
+{
+  provides ibottom b;
+  behaviour
+  {
+    on b.e: b.f;
+  }
+}
+
+component Injected
+{
+  provides itop t;
+  system
+  {
+    logger l;
+    middle m;
+    bottom b;
+
+    m.t <=> t;
+    m.b <=> b.b;
+    l.log <=> *;
+  }
+}

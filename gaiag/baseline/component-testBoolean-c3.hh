@@ -27,14 +27,20 @@
 #include "interface-TestBool-c3.hh"
 
 
+namespace dezyne {
+  struct locator;
+  struct runtime;
+}
+
 namespace component
 {
   struct testBoolean
   {
+    dezyne::runtime& rt;
     bool b;
     interface::TestBool i;
 
-    testBoolean();
+    testBoolean(const dezyne::locator&);
     void i_evt();
   };
 }

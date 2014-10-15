@@ -22,14 +22,16 @@
 // Code:
 
 import ISensor.asd;
+//import ILogger.asd;
 
 component Sensor
 {
   provides ISensor sensor;
+  //requires injected ILogger logger;
 
   behaviour
   {
-    on enable:{}
-    on disable:{}
+    on sensor.enable:{ }//logger.log; }
+    on sensor.disable:{ }//logger.log; }
   }
 }

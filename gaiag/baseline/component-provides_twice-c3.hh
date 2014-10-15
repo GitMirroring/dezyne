@@ -31,6 +31,10 @@
 #include "interface-iprovides_twice-c3.hh"
 
 
+namespace dezyne {
+  struct locator;
+}
+
 namespace component
 {
   struct provides_twice
@@ -40,7 +44,7 @@ namespace component
     interface::iprovides_once& i;
     interface::iprovides_twice& ii;
 
-    provides_twice();
+    provides_twice(const dezyne::locator&);
   };
 }
 #endif

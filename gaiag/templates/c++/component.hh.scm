@@ -5,10 +5,16 @@
 ##include "interface-#interface -c3.hh"
 #}) (gom:ports model))
 
+namespace dezyne {
+struct locator;
+struct runtime;
+}
+
 namespace component
 {
 struct #.model
 {
+    dezyne::runtime& rt;
     #(->string (map declare-enum (gom:enums (.behaviour model))))#
     (->string (map declare-integer (gom:integers (.behaviour model))))#
     (map (init-member model #{
@@ -18,7 +24,7 @@ struct #.model
     (map (init-port #{
 interface::#interface  #name;
 #}) ((compose .elements .ports) model))
-    #.model ();
+    #.model (const dezyne::locator&);
 #(map
   (lambda (port)
     (map (define-on model port #{

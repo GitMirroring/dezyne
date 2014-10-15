@@ -164,7 +164,7 @@ pretty: compile
 
 out/%.o: examples/regression/%.asd
 define .CC_REGRESSION
-rm -rf out && mkdir out && ln -s ../examples ../templates out
+rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/* .
 cd out && $(shell pwd)/gaiag -l c++ examples/regression/$*.asd
 -$(diff) baseline/component-$*-c3.hh out
 -$(diff) baseline/component-$*-c3.cc out
@@ -194,7 +194,7 @@ out/%.o: examples/regression/%.asd
 c++-regression: $(CC_SOURCES:%.asd=out/%.o)
 c++-update: $(CC_SOURCES:%.asd=out/%.o.up)
 
-c++: compile c++-alarm alarm-legacy c++-regression
+c++: compile c++-alarm c++-inject c++-regression
 
 c++-alarm: alarm-gen alarm
 	$(diff) baseline/interface-IConsole-c3.hh out
@@ -309,9 +309,14 @@ simulate: compile
 	./gaiag -l simulate -t '(i.e i.e i.e)' examples/arguments.asd
 	./gaiag -l simulate -t '(client.initialize result_t.OK result_t.OK client.perform_actions result_t.OK result_t.OK client.perform_actions result_t.NOK client.recover result_t.OK client.perform_actions)' examples/regression/Comp.asd
 
+c++-inject:
+	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/* .
+	cd out && ln -s ../examples/injected.cc .
+	cd out && $(shell pwd)/gaiag -l c++ examples/Injected.asd
+	ccache g++ -Wall -Wextra out/*.cc -o out/test && ./out/test
 
 alarm-gen:
-	rm -rf out && mkdir out && ln -s ../examples ../templates out
+	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/* .
 	cd out && ln -s ../examples/main.cc .
 	cd out && for file in\
 		examples/AlarmSystem.asd\
@@ -324,12 +329,7 @@ alarm-gen:
 	do $(shell pwd)/gaiag -l c++ $$file; done
 
 alarm: alarm-gen
-	-ccache g++ -Wall -Wextra out/*.cc -o out/test && ./out/test
-
-alarm-legacy: alarm-gen
-	rm out/component-Alarm-c3.cc
-	cd out && cp ../alarm_legacy/* .
-	-ccache g++ -g -Wall -Wextra out/*.c* -o out/test && ./out/test
+	ccache g++ -Wall -Wextra out/*.cc -o out/test && ./out/test
 
 asserts:
 	rm -rf out && mkdir out && ln -s ../examples ../../webdemo ../templates ../$(DEPTH)/webdemo/asd out

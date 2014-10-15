@@ -23,28 +23,59 @@
 
 #include "component-incomplete-c3.hh"
 
-void handle_event(void*, const asd::function<void()>&);
+#include "locator.h"
+#include "runtime.h"
 
-template <typename R>
-inline asd::function<R()> connect(void*, const asd::function<R()>& event)
-{
-  return event;
-}
+namespace dezyne {
+  template <typename R, bool checked>
+  inline R valued_helper(runtime& rt, void* scope, const function<R()>& event)
+  {
+    bool& handle = rt.handling(scope);
+    if(checked and handle) throw std::logic_error("a valued event cannot be deferred");
 
-template <>
-inline asd::function<void()> connect<void>(void* scope, const asd::function<void()>& event)
-{
-  return asd::bind(handle_event, scope, event);
+    runtime::scoped_value<bool> sv(handle, true);
+    R tmp = event();
+    if(not sv.initial)
+    {
+      rt.flush(scope);
+    }
+    return tmp;
+  }
+
+  template <typename R>
+  inline function<R()> connect_in(runtime& rt, void* scope, const function<R()>& event)
+  {
+    return bind(valued_helper<R,false>, boost::ref(rt), scope, event);
+  }
+
+  template <>
+  inline function<void()> connect_in<void>(runtime& rt, void* scope, const function<void()>& event)
+  {
+    return bind(&runtime::handle_event, boost::ref(rt), scope, event);
+  }
+
+  template <typename R>
+  inline function<R()> connect_out(runtime& rt, void* scope, const function<R()>& event)
+  {
+    return bind(valued_helper<R,true>, boost::ref(rt), scope, event);
+  }
+
+  template <>
+  inline function<void()> connect_out<void>(runtime& rt, void* scope, const function<void()>& event)
+  {
+    return bind(&runtime::handle_event, boost::ref(rt), scope, event);
+  }
 }
 
 namespace component
 {
-  incomplete::incomplete()
-  : p()
+  incomplete::incomplete(const dezyne::locator& dezyne_locator)
+  : rt(dezyne_locator.get<dezyne::runtime>())
+  , p()
   , r()
   {
-    p.in.e = connect<void>(this, asd::bind<void>(&incomplete::p_e, this));
-    r.out.a = connect<void>(this, asd::bind<void>(&incomplete::r_a, this));
+    p.in.e = dezyne::connect_in<void>(rt, this, dezyne::bind<void>(&incomplete::p_e, this));
+    r.out.a = dezyne::connect_out<void>(rt, this, dezyne::bind<void>(&incomplete::r_a, this));
   }
 
   void incomplete::p_e()

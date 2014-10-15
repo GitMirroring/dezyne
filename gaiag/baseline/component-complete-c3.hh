@@ -28,14 +28,20 @@
 #include "interface-icomplete-c3.hh"
 
 
+namespace dezyne {
+  struct locator;
+  struct runtime;
+}
+
 namespace component
 {
   struct complete
   {
+    dezyne::runtime& rt;
     interface::icomplete p;
     interface::icomplete r;
 
-    complete();
+    complete(const dezyne::locator&);
     void p_e();
     void r_a();
   };

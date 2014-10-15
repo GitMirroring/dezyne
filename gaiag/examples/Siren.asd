@@ -22,14 +22,16 @@
 // Code:
 
 import ISiren.asd;
+//import ILogger.asd;
 
 component Siren
 {
   provides ISiren siren;
+  //requires injected ILogger logger;
 
   behaviour
   {
-    on turnon: {}
-    on turnoff: {}
+    on turnon: { }//logger.log; }
+    on turnoff: { }//logger.log; }
   }
 }

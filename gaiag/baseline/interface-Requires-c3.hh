@@ -28,7 +28,7 @@
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
-namespace asd
+namespace dezyne
 {
   using boost::function;
   using boost::bind;
@@ -41,13 +41,13 @@ namespace interface
 
     struct
     {
-      asd::function<void ()> ping;
+      dezyne::function<void ()> ping;
 
     } in;
 
     struct
     {
-      asd::function<void ()> pong;
+      dezyne::function<void ()> pong;
 
     } out;
   };

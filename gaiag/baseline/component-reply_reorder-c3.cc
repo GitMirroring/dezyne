@@ -24,36 +24,67 @@
 
 #include "component-reply_reorder-c3.hh"
 
-void handle_event(void*, const asd::function<void()>&);
+#include "locator.h"
+#include "runtime.h"
 
-template <typename R>
-inline asd::function<R()> connect(void*, const asd::function<R()>& event)
-{
-  return event;
-}
+namespace dezyne {
+  template <typename R, bool checked>
+  inline R valued_helper(runtime& rt, void* scope, const function<R()>& event)
+  {
+    bool& handle = rt.handling(scope);
+    if(checked and handle) throw std::logic_error("a valued event cannot be deferred");
 
-template <>
-inline asd::function<void()> connect<void>(void* scope, const asd::function<void()>& event)
-{
-  return asd::bind(handle_event, scope, event);
+    runtime::scoped_value<bool> sv(handle, true);
+    R tmp = event();
+    if(not sv.initial)
+    {
+      rt.flush(scope);
+    }
+    return tmp;
+  }
+
+  template <typename R>
+  inline function<R()> connect_in(runtime& rt, void* scope, const function<R()>& event)
+  {
+    return bind(valued_helper<R,false>, boost::ref(rt), scope, event);
+  }
+
+  template <>
+  inline function<void()> connect_in<void>(runtime& rt, void* scope, const function<void()>& event)
+  {
+    return bind(&runtime::handle_event, boost::ref(rt), scope, event);
+  }
+
+  template <typename R>
+  inline function<R()> connect_out(runtime& rt, void* scope, const function<R()>& event)
+  {
+    return bind(valued_helper<R,true>, boost::ref(rt), scope, event);
+  }
+
+  template <>
+  inline function<void()> connect_out<void>(runtime& rt, void* scope, const function<void()>& event)
+  {
+    return bind(&runtime::handle_event, boost::ref(rt), scope, event);
+  }
 }
 
 namespace component
 {
-  reply_reorder::reply_reorder()
-  : first(true)
+  reply_reorder::reply_reorder(const dezyne::locator& dezyne_locator)
+  : rt(dezyne_locator.get<dezyne::runtime>())
+  , first(true)
   , p()
   , r()
   {
-    p.in.start = connect<void>(this, asd::bind<void>(&reply_reorder::p_start, this));
-    r.out.pong = connect<void>(this, asd::bind<void>(&reply_reorder::r_pong, this));
+    p.in.start = dezyne::connect_in<void>(rt, this, dezyne::bind<void>(&reply_reorder::p_start, this));
+    r.out.pong = dezyne::connect_out<void>(rt, this, dezyne::bind<void>(&reply_reorder::r_pong, this));
   }
 
   void reply_reorder::p_start()
   {
     std::cout << "reply_reorder.p_start" << std::endl;
     {
-      r.in.ping ();
+      r.in.ping();
     }
   }
 
@@ -63,12 +94,12 @@ namespace component
     {
       if (first)
       {
-        p.out.busy ();
+        rt.defer(this, p.out.busy);
         first = not (first);
       }
       if (not (first))
       {
-        p.out.finish ();
+        rt.defer(this, p.out.finish);
         first = not (first);
       }
     }

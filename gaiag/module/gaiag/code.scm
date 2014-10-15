@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -59,6 +60,11 @@
            init-instance
            init-member
            init-port
+           injected-binding
+           injected-binding?
+           injected-bindings
+           injected-instance-name
+           non-injected-instances
            join
            dump-indented
            expression->string
@@ -526,7 +532,8 @@
 
 (define ((init-port snippet) port)
   (let* ((name (.name port))
-         (interface (.type port)))
+         (interface (.type port))
+         (injected? (.injected port)))
     (animate snippet `((name ,name) (interface ,interface)))))
 
 (define-method (declare-replies (o <interface>))
@@ -556,5 +563,25 @@
                           (($ <gom:port>) (.name port))
                           (($ <interface>) (list "x" (.name port)))))))))
 
-(define (bind-port? bind)
-  (or (not (.instance (.left bind))) (not (.instance (.right bind)))))
+(define (bind-port? binding)
+  (or (not (.instance (.left binding))) (not (.instance (.right binding)))))
+
+(define (injected-binding? binding)
+  (or (eq? '* (.port (.left binding)))
+      (eq? '* (.port (.right binding)))))
+
+(define (injected-binding binding)
+  (cond ((eq? '* (.port (.left binding))) (.right binding))
+        ((eq? '* (.port (.right binding))) (.left binding))
+        (else #f)))
+
+(define (injected-bindings model)
+  (filter injected-binding? ((compose .elements .bindings) model)))
+
+(define (injected-instance-name binding)
+  (or (.instance (.left binding)) (.instance (.right binding))))
+
+(define (non-injected-instances model)
+(let ((injected-instance-names (map injected-instance-name (injected-bindings model))))
+  (filter (lambda (instance) (not (member (.name instance) injected-instance-names)))
+          ((compose .elements .instances) model))))

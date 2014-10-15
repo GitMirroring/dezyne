@@ -24,33 +24,64 @@
 
 #include "component-Alarm-c3.hh"
 
-void handle_event(void*, const asd::function<void()>&);
+#include "locator.h"
+#include "runtime.h"
 
-template <typename R>
-inline asd::function<R()> connect(void*, const asd::function<R()>& event)
-{
-  return event;
-}
+namespace dezyne {
+  template <typename R, bool checked>
+  inline R valued_helper(runtime& rt, void* scope, const function<R()>& event)
+  {
+    bool& handle = rt.handling(scope);
+    if(checked and handle) throw std::logic_error("a valued event cannot be deferred");
 
-template <>
-inline asd::function<void()> connect<void>(void* scope, const asd::function<void()>& event)
-{
-  return asd::bind(handle_event, scope, event);
+    runtime::scoped_value<bool> sv(handle, true);
+    R tmp = event();
+    if(not sv.initial)
+    {
+      rt.flush(scope);
+    }
+    return tmp;
+  }
+
+  template <typename R>
+  inline function<R()> connect_in(runtime& rt, void* scope, const function<R()>& event)
+  {
+    return bind(valued_helper<R,false>, boost::ref(rt), scope, event);
+  }
+
+  template <>
+  inline function<void()> connect_in<void>(runtime& rt, void* scope, const function<void()>& event)
+  {
+    return bind(&runtime::handle_event, boost::ref(rt), scope, event);
+  }
+
+  template <typename R>
+  inline function<R()> connect_out(runtime& rt, void* scope, const function<R()>& event)
+  {
+    return bind(valued_helper<R,true>, boost::ref(rt), scope, event);
+  }
+
+  template <>
+  inline function<void()> connect_out<void>(runtime& rt, void* scope, const function<void()>& event)
+  {
+    return bind(&runtime::handle_event, boost::ref(rt), scope, event);
+  }
 }
 
 namespace component
 {
-  Alarm::Alarm()
-  : state(States::Disarmed)
+  Alarm::Alarm(const dezyne::locator& dezyne_locator)
+  : rt(dezyne_locator.get<dezyne::runtime>())
+  , state(States::Disarmed)
   , sounding(false)
   , console()
   , sensor()
   , siren()
   {
-    console.in.arm = connect<void>(this, asd::bind<void>(&Alarm::console_arm, this));
-    console.in.disarm = connect<void>(this, asd::bind<void>(&Alarm::console_disarm, this));
-    sensor.out.triggered = connect<void>(this, asd::bind<void>(&Alarm::sensor_triggered, this));
-    sensor.out.disabled = connect<void>(this, asd::bind<void>(&Alarm::sensor_disabled, this));
+    console.in.arm = dezyne::connect_in<void>(rt, this, dezyne::bind<void>(&Alarm::console_arm, this));
+    console.in.disarm = dezyne::connect_in<void>(rt, this, dezyne::bind<void>(&Alarm::console_disarm, this));
+    sensor.out.triggered = dezyne::connect_out<void>(rt, this, dezyne::bind<void>(&Alarm::sensor_triggered, this));
+    sensor.out.disabled = dezyne::connect_out<void>(rt, this, dezyne::bind<void>(&Alarm::sensor_disabled, this));
   }
 
   void Alarm::console_arm()
@@ -59,7 +90,7 @@ namespace component
     if (state == States::Disarmed)
     {
       {
-        sensor.in.enable ();
+        sensor.in.enable();
         state = States::Armed;
       }
     }
@@ -87,7 +118,7 @@ namespace component
     else if (state == States::Armed)
     {
       {
-        sensor.in.disable ();
+        sensor.in.disable();
         state = States::Disarming;
       }
     }
@@ -98,8 +129,8 @@ namespace component
     else if (state == States::Triggered)
     {
       {
-        sensor.in.disable ();
-        siren.in.turnoff ();
+        sensor.in.disable();
+        siren.in.turnoff();
         sounding = false;
         state = States::Disarming;
       }
@@ -116,8 +147,8 @@ namespace component
     else if (state == States::Armed)
     {
       {
-        console.out.detected ();
-        siren.in.turnon ();
+        rt.defer(this, console.out.detected);
+        siren.in.turnon();
         sounding = true;
         state = States::Triggered;
       }
@@ -149,14 +180,14 @@ namespace component
       {
         if (sounding)
         {
-          console.out.deactivated ();
-          siren.in.turnoff ();
+          rt.defer(this, console.out.deactivated);
+          siren.in.turnoff();
           state = States::Disarmed;
           sounding = false;
         }
         else
         {
-          console.out.deactivated ();
+          rt.defer(this, console.out.deactivated);
           state = States::Disarmed;
         }
       }

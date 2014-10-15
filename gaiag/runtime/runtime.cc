@@ -3,7 +3,6 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -22,35 +21,47 @@
 //
 // Code:
 
-#include "component-AlarmSystem-c3.hh"
-
-#include "locator.h"
 #include "runtime.h"
 
-#include <map>
-#include <queue>
-
-void detected()
+namespace dezyne {
+bool& runtime::handling(void* scope)
 {
-  std::cout << "Console.detected" << std::endl;
+  return queues[scope].first;
 }
 
-void deactivated()
+void runtime::flush(void* scope)
 {
-  std::cout << "Console.deactivated" << std::endl;
+  std::map<void*, std::pair<bool, std::queue<function<void()> > > >& qs = queues;
+  std::map<void*, std::pair<bool, std::queue<function<void()> > > >::iterator it = qs.find(scope);
+  if(it != qs.end())
+  {
+    std::queue<function<void()> >& q = it->second.second;
+    while(not q.empty())
+    {
+      q.front()();
+      q.pop();
+    }
+  }
 }
 
-int main()
+void runtime::defer(void* scope, const function<void()>& event)
 {
-  dezyne::runtime runtime;
-  dezyne::locator locator;
-  component::AlarmSystem alarmsystem(locator.set(runtime));
+  queues[scope].second.push(event);
+}
 
-  alarmsystem.console.out.detected = detected;
-  alarmsystem.console.out.deactivated = deactivated;
 
-  alarmsystem.console.in.arm();
-  alarmsystem.sensor.sensor.out.triggered();
-  alarmsystem.console.in.disarm();
-  alarmsystem.sensor.sensor.out.disabled();
+void runtime::handle_event(void* scope, const function<void()>& event)
+{
+  bool& handle = handling(scope);
+  if(not handle)
+  {
+    scoped_value<bool> sv(handle, true);
+    event();
+    flush(scope);
+  }
+  else
+  {
+    defer(scope, event);
+  }
+}
 }

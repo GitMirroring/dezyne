@@ -29,15 +29,21 @@
 #include "interface-irequires_twice-c3.hh"
 
 
+namespace dezyne {
+  struct locator;
+  struct runtime;
+}
+
 namespace component
 {
   struct requires_twice
   {
+    dezyne::runtime& rt;
     interface::irequires_twice p;
     interface::irequires_twice once;
     interface::irequires_twice twice;
 
-    requires_twice();
+    requires_twice(const dezyne::locator&);
     void p_e();
     void once_a();
     void twice_a();

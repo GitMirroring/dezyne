@@ -29,15 +29,21 @@
 #include "interface-Requires-c3.hh"
 
 
+namespace dezyne {
+  struct locator;
+  struct runtime;
+}
+
 namespace component
 {
   struct reply_reorder
   {
+    dezyne::runtime& rt;
     bool first;
     interface::Provides p;
     interface::Requires r;
 
-    reply_reorder();
+    reply_reorder(const dezyne::locator&);
     void p_start();
     void r_pong();
   };

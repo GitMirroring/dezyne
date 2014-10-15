@@ -27,10 +27,16 @@
 #include "interface-I-c3.hh"
 
 
+namespace dezyne {
+  struct locator;
+  struct runtime;
+}
+
 namespace component
 {
   struct sugar
   {
+    dezyne::runtime& rt;
     struct Enum
     {
       enum type
@@ -41,7 +47,7 @@ namespace component
     sugar::Enum::type s;
     interface::I i;
 
-    sugar();
+    sugar(const dezyne::locator&);
     void i_e();
   };
 }

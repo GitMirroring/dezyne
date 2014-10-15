@@ -27,15 +27,21 @@
 #include "interface-ienum_collision-c3.hh"
 
 
+namespace dezyne {
+  struct locator;
+  struct runtime;
+}
+
 namespace component
 {
   struct enum_collision
   {
+    dezyne::runtime& rt;
     interface::ienum_collision::Retval1::type reply_ienum_collision_Retval1;
     interface::ienum_collision::Retval2::type reply_ienum_collision_Retval2;
     interface::ienum_collision i;
 
-    enum_collision();
+    enum_collision(const dezyne::locator&);
     interface::ienum_collision::Retval1::type i_foo();
     interface::ienum_collision::Retval2::type i_bar();
   };

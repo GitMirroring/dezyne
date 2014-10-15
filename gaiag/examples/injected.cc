@@ -3,7 +3,6 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -22,35 +21,27 @@
 //
 // Code:
 
-#include "component-AlarmSystem-c3.hh"
+#include "component-Injected-c3.hh"
 
 #include "locator.h"
 #include "runtime.h"
 
-#include <map>
-#include <queue>
+#include <iostream>
 
-void detected()
+void f()
 {
-  std::cout << "Console.detected" << std::endl;
-}
-
-void deactivated()
-{
-  std::cout << "Console.deactivated" << std::endl;
+  std::cout << "f" << std::endl;
 }
 
 int main()
 {
-  dezyne::runtime runtime;
-  dezyne::locator locator;
-  component::AlarmSystem alarmsystem(locator.set(runtime));
+  dezyne::locator l;
+  dezyne::runtime rt;
+  l.set(rt);
 
-  alarmsystem.console.out.detected = detected;
-  alarmsystem.console.out.deactivated = deactivated;
+  component::Injected i(l);
 
-  alarmsystem.console.in.arm();
-  alarmsystem.sensor.sensor.out.triggered();
-  alarmsystem.console.in.disarm();
-  alarmsystem.sensor.sensor.out.disabled();
+  i.t.out.f = f;
+
+  i.t.in.e();
 }

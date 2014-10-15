@@ -28,14 +28,20 @@
 #include "interface-iincomplete_with_modeling_event-c3.hh"
 
 
+namespace dezyne {
+  struct locator;
+  struct runtime;
+}
+
 namespace component
 {
   struct incomplete_with_modeling_event
   {
+    dezyne::runtime& rt;
     interface::iincomplete_with_modeling_event p;
     interface::iincomplete_with_modeling_event r;
 
-    incomplete_with_modeling_event();
+    incomplete_with_modeling_event(const dezyne::locator&);
     void p_e();
     void r_a();
   };

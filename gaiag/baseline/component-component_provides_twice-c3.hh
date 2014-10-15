@@ -27,13 +27,19 @@
 #include "interface-iprovides_once-c3.hh"
 
 
+namespace dezyne {
+  struct locator;
+  struct runtime;
+}
+
 namespace component
 {
   struct component_provides_twice
   {
+    dezyne::runtime& rt;
     interface::iprovides_once i;
 
-    component_provides_twice();
+    component_provides_twice(const dezyne::locator&);
     void i_foo();
   };
 }

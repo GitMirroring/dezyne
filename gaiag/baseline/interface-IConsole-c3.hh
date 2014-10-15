@@ -27,7 +27,7 @@
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
-namespace asd
+namespace dezyne
 {
   using boost::function;
   using boost::bind;
@@ -40,15 +40,15 @@ namespace interface
 
     struct
     {
-      asd::function<void ()> arm;
-      asd::function<void ()> disarm;
+      dezyne::function<void ()> arm;
+      dezyne::function<void ()> disarm;
 
     } in;
 
     struct
     {
-      asd::function<void ()> detected;
-      asd::function<void ()> deactivated;
+      dezyne::function<void ()> detected;
+      dezyne::function<void ()> deactivated;
 
     } out;
   };

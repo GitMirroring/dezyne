@@ -30,10 +30,16 @@
 #include "interface-ISiren-c3.hh"
 
 
+namespace dezyne {
+  struct locator;
+  struct runtime;
+}
+
 namespace component
 {
   struct Alarm
   {
+    dezyne::runtime& rt;
     struct States
     {
       enum type
@@ -47,7 +53,7 @@ namespace component
     interface::ISensor sensor;
     interface::ISiren siren;
 
-    Alarm();
+    Alarm(const dezyne::locator&);
     void console_arm();
     void console_disarm();
     void sensor_triggered();

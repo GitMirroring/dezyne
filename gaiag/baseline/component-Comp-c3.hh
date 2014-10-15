@@ -28,10 +28,16 @@
 #include "interface-IDevice-c3.hh"
 
 
+namespace dezyne {
+  struct locator;
+  struct runtime;
+}
+
 namespace component
 {
   struct Comp
   {
+    dezyne::runtime& rt;
     struct State
     {
       enum type
@@ -45,7 +51,7 @@ namespace component
     interface::IComp client;
     interface::IDevice device_A;
 
-    Comp();
+    Comp(const dezyne::locator&);
     interface::IComp::result_t::type client_initialize();
     interface::IComp::result_t::type client_recover();
     interface::IComp::result_t::type client_perform_actions();

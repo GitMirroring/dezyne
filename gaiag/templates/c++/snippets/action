@@ -1,1 +1,1 @@
-#space #port .#direction .#event  ();
+#(if (eq? direction 'out) (list space "rt.defer(this, " port "." direction "." event ");") (list space port "." direction "." event "();"))

@@ -27,7 +27,7 @@
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
-namespace asd
+namespace dezyne
 {
   using boost::function;
   using boost::bind;
@@ -47,7 +47,7 @@ namespace interface
 
     struct
     {
-      asd::function<Status::type ()> what;
+      dezyne::function<Status::type ()> what;
 
     } in;
 

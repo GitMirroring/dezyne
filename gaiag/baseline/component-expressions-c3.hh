@@ -28,16 +28,22 @@
 #include "interface-I-c3.hh"
 
 
+namespace dezyne {
+  struct locator;
+  struct runtime;
+}
+
 namespace component
 {
   struct expressions
   {
+    dezyne::runtime& rt;
     typedef int State;
     expressions::State state;
     expressions::State c;
     interface::I i;
 
-    expressions();
+    expressions(const dezyne::locator&);
     void i_e();
   };
 }

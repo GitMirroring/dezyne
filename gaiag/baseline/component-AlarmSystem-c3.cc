@@ -33,10 +33,10 @@ void connect(Port& provided, Port& required)
 
 namespace component
 {
-  AlarmSystem::AlarmSystem()
-  : alarm()
-  , sensor()
-  , siren()
+  AlarmSystem::AlarmSystem(const dezyne::locator& dezyne_locator)
+  : alarm(dezyne_locator)
+  , sensor(dezyne_locator)
+  , siren(dezyne_locator)
   , console(alarm.console)
   {
     connect(sensor.sensor, alarm.sensor);

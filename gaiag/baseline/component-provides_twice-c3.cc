@@ -32,8 +32,8 @@ void connect(Port& provided, Port& required)
 
 namespace component
 {
-  provides_twice::provides_twice()
-  : one()
+  provides_twice::provides_twice(const dezyne::locator& dezyne_locator)
+  : one(dezyne_locator)
   , i(one.i)
   , ii(one.ii)
   {

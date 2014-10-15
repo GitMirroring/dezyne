@@ -28,14 +28,20 @@
 #include "interface-iprovides_twice-c3.hh"
 
 
+namespace dezyne {
+  struct locator;
+  struct runtime;
+}
+
 namespace component
 {
   struct external_provides_twice
   {
+    dezyne::runtime& rt;
     interface::iprovides_once i;
     interface::iprovides_twice ii;
 
-    external_provides_twice();
+    external_provides_twice(const dezyne::locator&);
     void i_foo();
     void ii_foo();
   };

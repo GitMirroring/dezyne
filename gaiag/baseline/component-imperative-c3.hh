@@ -27,10 +27,16 @@
 #include "interface-iimperative-c3.hh"
 
 
+namespace dezyne {
+  struct locator;
+  struct runtime;
+}
+
 namespace component
 {
   struct imperative
   {
+    dezyne::runtime& rt;
     struct States
     {
       enum type
@@ -41,7 +47,7 @@ namespace component
     imperative::States::type state;
     interface::iimperative i;
 
-    imperative();
+    imperative(const dezyne::locator&);
     void i_e();
   };
 }

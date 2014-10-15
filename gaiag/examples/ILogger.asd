@@ -3,7 +3,6 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -22,16 +21,12 @@
 //
 // Code:
 
-#ifndef SIREN_COMPONENT_H
-#define SIREN_COMPONENT_H
-
-#include "SirenInterface.h"
-
-class SirenComponent: public SirenInterface
+interface ILogger
 {
-public:
-  static boost::shared_ptr<SirenInterface> GetInstance();
-  static void ReleaseInstance();
-};
+  in void log;
 
-#endif
+  behaviour
+  {
+    on log: {}
+  }
+}

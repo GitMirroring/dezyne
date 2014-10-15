@@ -28,13 +28,19 @@
 #include "interface-ISiren-c3.hh"
 
 
+namespace dezyne {
+  struct locator;
+  struct runtime;
+}
+
 namespace component
 {
   struct Siren
   {
+    dezyne::runtime& rt;
     interface::ISiren siren;
 
-    Siren();
+    Siren(const dezyne::locator&);
     void siren_turnon();
     void siren_turnoff();
   };
