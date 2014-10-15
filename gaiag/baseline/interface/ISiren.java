@@ -30,7 +30,7 @@ class ISiren extends Interface<ISiren.In, ISiren.Out> {
 
   }
   public ISiren() {
-    setIn(new In());
-    setOut(new Out());
+    in = new In();
+    out = new Out();
   }
 }

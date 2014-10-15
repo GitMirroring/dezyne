@@ -1,5 +1,5 @@
-component.#.model  = function() {
-#(->string (map declare-enum (gom:enums (.behaviour model))))
+component.#.model  = function() {#
+(->string (map declare-enum (gom:enums (.behaviour model))))
 #
     (map (init-member model #{
   this.#name  = #expression;
@@ -15,7 +15,7 @@ component.#.model  = function() {
   this.#port .#direction .#event  = function() {
   console.log('#model .#port _#event ');
   #statement #(if (not (eq? type 'void))
-(list "return self.reply_" reply-type "_" reply-name ";\n")) }.bind(this);
+(list "return this.reply_" reply-type "_" reply-name ";\n")) }.bind(this);
 #}) (filter (gom:dir-matches? port) (gom:events port))))
    (gom:ports model))#
 (map (define-function model #{

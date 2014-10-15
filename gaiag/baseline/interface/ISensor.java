@@ -31,7 +31,7 @@ class ISensor extends Interface<ISensor.In, ISensor.Out> {
     Action disabled;
   }
   public ISensor() {
-    setIn(new In());
-    setOut(new Out());
+    in = new In();
+    out = new Out();
   }
 }

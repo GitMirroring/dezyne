@@ -1,5 +1,5 @@
-interface.#.interface = function() {
-#(->string (map declare-enum (gom:interface-enums model)))
+interface.#.interface = function() {#
+(->string (map declare-enum (gom:interface-enums model)))
   this.in = {
 #((->join ",\n") (map (declare-io #{
     #name  : null#})

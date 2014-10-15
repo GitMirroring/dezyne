@@ -70,7 +70,7 @@ Usage: gaiag [OPTION]... FILE
   -o, --output FILE    generate FILE containing the output
   -v, --version        display version
 
-Languages: asd c++ csp goops javascript python
+Languages: asd c++ csp goops java javascript python
            ast gom normstate simulate wfc
 
 Examples:

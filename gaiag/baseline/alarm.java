@@ -24,14 +24,8 @@
 // header
 //package dezyne;
 
-import java.lang.Runnable;
-
-class Action implements Runnable {
-  public void run() {
-    action();
-  };
-  public void action() {
-  };
+abstract class Action<R> {
+  public abstract R action();
 }
 
 @SuppressWarnings("unchecked")
@@ -67,50 +61,47 @@ abstract class Interface<I extends Interface.In, O extends Interface.Out> {
   };
 }
 // end header
-
 class IConsole extends Interface<IConsole.In, IConsole.Out> {
   class In implements Interface.In {
-    Action arm;
-    Action disarm;
+    Action<Void> arm;
+    Action<Void> disarm;
   }
   class Out implements Interface.Out {
-    Action detected;
-    Action deactivated;
+    Action <Void> detected;
+    Action <Void> deactivated;
   }
   public IConsole() {
-    setIn(new In());
-    setOut(new Out());
+    in = new In();
+    out = new Out();
   }
 }
-
 class ISiren extends Interface<ISiren.In, ISiren.Out> {
   class In implements Interface.In {
-    Action turnon;
-    Action turnoff;
+    Action<Void> turnon;
+    Action<Void> turnoff;
   }
   class Out implements Interface.Out {
+
   }
   public ISiren() {
     in = new In();
     out = new Out();
   }
 }
-
 class ISensor extends Interface<ISensor.In, ISensor.Out> {
   class In implements Interface.In {
-    Action enable;
-    Action disable;
+    Action<Void> enable;
+    Action<Void> disable;
   }
   class Out implements Interface.Out {
-    Action triggered;
-    Action disabled;
+    Action <Void> triggered;
+    Action <Void> disabled;
   }
   public ISensor() {
     in = new In();
     out = new Out();
   }
 }
-
 class AlarmSystem {
   Alarm alarm;
   Sensor sensor;
@@ -118,54 +109,58 @@ class AlarmSystem {
   IConsole console;
 
   public AlarmSystem() {
+    alarm = new Alarm();
     sensor = new Sensor();
     siren = new Siren();
-    alarm = new Alarm();
     console = alarm.console;
+
     Interface.connect(sensor.sensor, alarm.sensor);
     Interface.connect(siren.siren, alarm.siren);
-  }
+  };
 }
-
-class Alarm {
+class Alarm{
   enum States {
     Disarmed, Armed, Triggered, Disarming
   };
+
   States state;
   Boolean sounding;
+
   IConsole console;
   ISensor sensor;
   ISiren siren;
+
   public Alarm() {
+    state = States.Disarmed;
+    sounding = false;
     console = new IConsole();
     sensor = new ISensor();
     siren = new ISiren();
-    console.getIn().arm = new Action() {
-        public void action() {
-          console_arm();
-        }
-      };
-    console.getIn().disarm = new Action() {
-        public void action() {
-          console_disarm();
-        }
-      };
-    sensor.getOut().triggered = new Action() {
-        public void action() {
-          sensor_triggered();
-        }
-      };
-    sensor.getOut().disabled = new Action() {
-        public void action() {
-          sensor_disabled();
-        }
-      };
-
-  }
-
+    console.getIn().arm = new Action<Void>() {
+      public Void action() {
+        console_arm(); return null;
+      }
+    };
+    console.getIn().disarm = new Action<Void>() {
+      public Void action() {
+        console_disarm(); return null;
+      }
+    };
+    sensor.getOut().triggered = new Action<Void>() {
+      public Void action() {
+        sensor_triggered(); return null;
+      }
+    };
+    sensor.getOut().disabled = new Action<Void>() {
+      public Void action() {
+        sensor_disabled(); return null;
+      }
+    };
+  };
   public void console_arm() {
     System.err.println("Alarm.console_arm");
-    if (state == States.Disarmed) { {
+    if (state == States.Disarmed) {
+      {
         sensor.getIn().enable.action();
         state = States.Armed;
       }
@@ -179,14 +174,15 @@ class Alarm {
     else if (state == States.Triggered) {
       assert(false);
     }
-  }
+  };
 
   public void console_disarm() {
     System.err.println("Alarm.console_disarm");
     if (state == States.Disarmed) {
       assert(false);
     }
-    else if (state == States.Armed) { {
+    else if (state == States.Armed) {
+      {
         sensor.getIn().disable.action();
         state = States.Disarming;
       }
@@ -194,34 +190,36 @@ class Alarm {
     else if (state == States.Disarming) {
       assert(false);
     }
-    else if (state == States.Triggered) { {
+    else if (state == States.Triggered) {
+      {
         sensor.getIn().disable.action();
         siren.getIn().turnoff.action();
         sounding = false;
         state = States.Disarming;
       }
     }
-  }
+  };
 
   public void sensor_triggered() {
     System.err.println("Alarm.sensor_triggered");
     if (state == States.Disarmed) {
       assert(false);
     }
-    else if (state == States.Armed) { {
+    else if (state == States.Armed) {
+      {
         console.getOut().detected.action();
         siren.getIn().turnon.action();
         sounding = true;
         state = States.Triggered;
       }
     }
-    else if (state == States.Disarming) { {
-      }
+    else if (state == States.Disarming) {
+      { }
     }
     else if (state == States.Triggered) {
       assert(false);
     }
-  }
+  };
 
   public void sensor_disabled() {
     System.err.println("Alarm.sensor_disabled");
@@ -231,7 +229,8 @@ class Alarm {
     else if (state == States.Armed) {
       assert(false);
     }
-    else if (state == States.Disarming) { {
+    else if (state == States.Disarming) {
+      {
         if (sounding) {
           console.getOut().deactivated.action();
           siren.getIn().turnoff.action();
@@ -247,24 +246,24 @@ class Alarm {
     else if (state == States.Triggered) {
       assert(false);
     }
-  }
+  };
 
 }
-
-
 // Handwritten
 class Console {
   IConsole console;
   public Console() {
     console = new IConsole();
-    console.getOut().detected = new Action() {
-        public void action() {
+    console.getOut().detected = new Action<Void>() {
+        public Void action() {
           System.err.println("Alarm detected");
+          return null;
         }
       };
-    console.getOut().deactivated = new Action() {
-        public void action() {
+    console.getOut().deactivated = new Action<Void>() {
+        public Void action() {
           System.err.println("Alarm deactivated");
+          return null;
         }
       };
   }
@@ -274,14 +273,16 @@ class Sensor {
   ISensor sensor;
   public Sensor() {
     sensor = new ISensor();
-    sensor.getIn().enable = new Action() {
-        public void action() {
+    sensor.getIn().enable = new Action<Void>() {
+        public Void action() {
           System.err.println("Sensor detected");
+          return null;
         }
       };
-    sensor.getIn().disable = new Action() {
-        public void action() {
+    sensor.getIn().disable = new Action<Void>() {
+        public Void action() {
           System.err.println("Sensor deactivated");
+          return null;
         }
       };
   }
@@ -291,14 +292,16 @@ class Siren {
   ISiren siren;
   public Siren() {
     siren = new ISiren();
-    siren.getIn().turnon = new Action() {
-        public void action() {
+    siren.getIn().turnon = new Action<Void>() {
+        public Void action() {
           System.err.println("Siren detected");
+          return null;
         }
       };
-    siren.getIn().turnoff = new Action() {
-        public void action() {
+    siren.getIn().turnoff = new Action<Void>() {
+        public Void action() {
           System.err.println("Siren deactivated");
+          return null;
         }
       };
   }

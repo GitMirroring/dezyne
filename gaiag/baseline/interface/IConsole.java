@@ -31,7 +31,7 @@ class IConsole extends Interface<IConsole.In, IConsole.Out> {
     Action deactivated;
   }
   public IConsole() {
-    setIn(new In());
-    setOut(new Out());
+    in = new In();
+    out = new Out();
   }
 }

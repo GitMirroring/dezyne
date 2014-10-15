@@ -65,7 +65,7 @@ clean:
 test: check
 check: compile
 	./test.sh </dev/null
-	$(MAKE) csp asserts c++ goops javascript python pretty simulate wfc
+	$(MAKE) csp asserts c++ goops java javascript python pretty simulate wfc
 
 REGRESSION_SOURCES = $(shell cd examples/regression && grep -l ^component *.asd)
 WFC_SOURCES = $(shell cd examples/wfc && ls -1 *.asd)
@@ -365,14 +365,7 @@ python-alarm: compile
 	ln -s ../examples/__init__.py out/component
 	cd out && $(PYTHON) alarm.py
 
-PY_BROKEN =\
- Alarm.asd\
- Noot.asd\
- livelock1.asd\
- livelock2.asd\
- mangle.asd\
-
-PY_SOURCES = $(filter-out $(PY_BROKEN),$(REGRESSION_SOURCES))
+PY_SOURCES = $(CC_SOURCES)
 
 define .PY_REGRESSION
 rm -rf out && mkdir out && ln -s ../examples ../templates out
@@ -398,6 +391,62 @@ python-update: $(PY_SOURCES:%.asd=out/%.py.up)
 
 python: compile python-alarm python-regression
 
+JAVA_BROKEN =\
+ hide.asd\
+ provides_twice.asd\
+ Reply5.asd\
+
+JAVA_SOURCES = $(filter-out $(JAVA_BROKEN),$(CC_SOURCES))
+
+define .JAVA_REGRESSION
+rm -rf out && mkdir out && ln -s ../examples ../templates out
+cd out && $(shell pwd)/gaiag -l java $<
+-$(diff) baseline/component/$*.java out/component
+cat templates/java/header.java\
+	 $$(find out/interface out/component -name '*.java')\
+	examples/alarm.java > $@
+cat templates/java/header.java $$(find out/interface out/component -name '*.java') > $@
+cd $(dir $@) && cp -f --backup $(notdir $@) $*.java
+(cd $(dir $@) && javac $*.java) $(UPDATE)
+$(diff) baseline/component/$*.java out/component | diffstat || true
+@$(diff) baseline/component/$*.java out/component > /dev/null
+endef
+
+#out/%.java.up: UPDATE=||:; cp out/component/$*.java baseline/component && cp out/interface/*.java baseline/interface
+out/%.java.up: UPDATE=&& cp out/component/$*.java baseline/component && cp out/interface/*.java baseline/interface
+out/%.java.up: examples/regression/%.asd
+	$(.JAVA_REGRESSION)
+
+out/%.java: examples/regression/%.asd
+	$(.JAVA_REGRESSION)
+
+java-regression: $(JAVA_SOURCES:%.asd=out/%.java)
+java-update: $(JAVA_SOURCES:%.asd=out/%.java.up)
+
+java-alarm: compile
+	rm -rf out && mkdir out && ln -s ../examples ../templates out
+	cd out && for file in\
+	 	examples/AlarmSystem.asd\
+	 	examples/regression/Alarm.asd\
+	 	examples/IConsole.asd\
+	 	examples/ISensor.asd\
+	 	examples/ISiren.asd;\
+	 	do $(shell pwd)/gaiag -l java $$file; done
+	cat templates/java/header.java\
+		 $$(find out/interface out/component -name '*.java')\
+		examples/alarm.java > out/alarm.java
+	cd out && javac alarm.java
+	cd out && java alarm
+	$(diff) baseline/interface/IConsole.java out/interface
+	$(diff) baseline/interface/ISensor.java out/interface
+	$(diff) baseline/interface/ISiren.java out/interface
+	$(diff) baseline/component/Alarm.java out/component
+	$(diff) baseline/component/AlarmSystem.java out/component
+
+java: compile java-alarm java-regression
+
+JS_SOURCES = $(CC_SOURCES)
+
 define .JAVASCRIPT_REGRESSION
 rm -rf out && mkdir out && ln -s ../examples ../templates out
 cd out && $(shell pwd)/gaiag -l javascript $<
@@ -420,8 +469,8 @@ out/%.js.up: examples/regression/%.asd
 out/%.js: examples/regression/%.asd
 	$(.JAVASCRIPT_REGRESSION)
 
-javascript-regression: $(PY_SOURCES:%.asd=out/%.js)
-javascript-update: $(PY_SOURCES:%.asd=out/%.js.up)
+javascript-regression: $(JS_SOURCES:%.asd=out/%.js)
+javascript-update: $(JS_SOURCES:%.asd=out/%.js.up)
 
 javascript-alarm: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
@@ -444,8 +493,9 @@ javascript-alarm: compile
 
 javascript: compile javascript-alarm javascript-regression
 
-code: c++-alarm python-alarm javascript-alarm out/Reply7.compiles out/Reply7.py out/Reply7.js
+code: c++-alarm python-alarm java-alarm javascript-alarm out/Reply7.compiles out/Reply7.java out/Reply7.js out/Reply7.py
 
+GOOPS_SOURCES = $(CC_SOURCES)
 
 define .GOOPS_REGRESSION
 rm -rf out && mkdir out && ln -s ../examples ../templates out
@@ -468,8 +518,8 @@ out/%.scm.up: examples/regression/%.asd
 out/%.scm: examples/regression/%.asd
 	$(.GOOPS_REGRESSION)
 
-goops-regression: $(PY_SOURCES:%.asd=out/%.scm)
-goops-update: $(PY_SOURCES:%.asd=out/%.scm.up)
+goops-regression: $(GOOPS_SOURCES:%.asd=out/%.scm)
+goops-update: $(GOOPS_SOURCES:%.asd=out/%.scm.up)
 
 goops-alarm: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
@@ -511,4 +561,4 @@ glue:
 	-for i in out/*.c*; do ccache g++ -g -Wall -Wextra -I out -I $(DEPTH)/examples/codegen/asd_cpp_runtime -c $$i -o out/$$(basename $$(basename $$i .cpp) .cc).o; done
 	-cd out && g++ -o test *.o && ./test
 
-update: csp-update c++-update python-update javascript-update goops-update
+update: csp-update c++-update goops-update java-update javascript-update python-update java-update
