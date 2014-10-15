@@ -296,12 +296,14 @@
                  `((space ,space)
                    (expression ,(expression->string model expression locals)))))
        (($ <signature> type) (->code model type locals indent))
-       (($ <type> 'bool #f) 'bool)
+       (($ <type> 'bool #f) (snippet 'bool '()))
        (($ <type> 'void #f) 'void)
        (($ <type> (and (? enum?) (get! name)) #f)
         (snippet 'type-local-enum `((space ,space) (scope ,(.name model)) (name ,(name)))))
        (($ <type> name #f)
         (snippet 'type-local `((space ,space) (scope ,(.name model)) (name ,name))))
+       ((and (? enum?) ($ <type> name scope))
+        (snippet 'type-enum `((space ,space) (scope ,scope) (name ,name))))
        (($ <type> name scope)
         (snippet 'type `((space ,space) (scope ,scope) (name ,name))))
        (($ <variable> name type (and ($ <action>) (get! action)))
@@ -534,10 +536,10 @@
   (let ((type ((compose .type .type) event))
         (scope (and=> port .type)))
     (cond
-      ((eq? (.name type) 'bool) 'bool)
+      ((eq? (.name type) 'bool) (snippet 'bool '()))
       ((eq? (.name type) 'void) 'void)
       (scope
-       (snippet 'type `((space "") (scope ,scope) (name ,(.name type)))))
+       (snippet 'type-enum `((space "") (scope ,scope) (name ,(.name type)))))
       (else
        (snippet 'type-local-enum `((space "") (scope ,scope) (name ,(.name type))))))))
 
