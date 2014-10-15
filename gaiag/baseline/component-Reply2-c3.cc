@@ -51,7 +51,6 @@ namespace component
   {
     std::cout << "Reply2.i_done" << std::endl;
     if (true)
-
     {
       {
         interface::U::Status::type s = u.in.what ();
@@ -67,9 +66,6 @@ namespace component
       }
     }
     return reply_I_Status;
-
   }
-
-
 
 }

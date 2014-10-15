@@ -51,16 +51,13 @@ namespace component
     std::cout << "enum_collision.i_foo" << std::endl;
     reply_ienum_collision_Retval1 = interface::ienum_collision::Retval1::OK;
     return reply_ienum_collision_Retval1;
-
   }
+
   interface::ienum_collision::Retval2::type enum_collision::i_bar()
   {
     std::cout << "enum_collision.i_bar" << std::endl;
     reply_ienum_collision_Retval2 = interface::ienum_collision::Retval2::NOK;
     return reply_ienum_collision_Retval2;
-
   }
-
-
 
 }

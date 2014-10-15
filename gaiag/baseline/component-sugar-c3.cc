@@ -50,12 +50,8 @@ namespace component
   {
     std::cout << "sugar.i_e" << std::endl;
     if (s == Enum::False)
-
     if (s == Enum::False)
     i.out.a ();
-
   }
-
-
 
 }

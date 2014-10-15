@@ -50,7 +50,6 @@ namespace component
   {
     std::cout << "argument.i_e" << std::endl;
     if (true)
-
     {
       b = not (b);
       bool c = g (b);
@@ -60,15 +59,11 @@ namespace component
         i.out.f ();
       }
     }
-
   }
-
 
   bool argument::g(bool gc)
   {
     i.out.f ();
     return (gc or b);
-
   }
-
 }

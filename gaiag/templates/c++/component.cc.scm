@@ -47,16 +47,12 @@ namespace component
     #statement #
     (if (not (eq? type 'void))
 (list "    return reply_" reply-type "_" reply-name ";\n"
-      ))
-  }
-#}) (filter (gom:dir-matches? port) (gom:events port))))
-  (gom:ports model))
+      )) }
 
-#((->join "\n")
-  (map (define-function model #{
+#}) (filter (gom:dir-matches? port) (gom:events port))))
+  (gom:ports model))#
+((->join "\n  ")(map (define-function model #{
   #return-type  #model ::#name (#parameters)
   {
-    #statements
-  }
-#}) (gom:functions model)))
-}
+    #statements }
+#}) (gom:functions model))) }

@@ -51,19 +51,17 @@ namespace component
   {
     std::cout << "function.i_a" << std::endl;
     if (true)
-
     {
       {
         toggle ();
       }
     }
-
   }
+
   void function::i_b()
   {
     std::cout << "function.i_b" << std::endl;
     if (true)
-
     {
       {
         toggle ();
@@ -71,9 +69,7 @@ namespace component
         i.out.d ();
       }
     }
-
   }
-
 
   void function::toggle()
   {
@@ -82,7 +78,5 @@ namespace component
       i.out.c ();
     }
     f = not (f);
-
   }
-
 }

@@ -60,9 +60,6 @@ namespace component
       }
       t = not (t);
     }
-
   }
-
-
 
 }

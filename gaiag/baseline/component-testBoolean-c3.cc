@@ -50,12 +50,8 @@ namespace component
   {
     std::cout << "testBoolean.i_evt" << std::endl;
     if (true)
-
     {
     }
-
   }
-
-
 
 }

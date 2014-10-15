@@ -50,14 +50,11 @@ namespace component
   void Siren::siren_turnon()
   {
     std::cout << "Siren.siren_turnon" << std::endl;
-
   }
+
   void Siren::siren_turnoff()
   {
     std::cout << "Siren.siren_turnoff" << std::endl;
-
   }
-
-
 
 }

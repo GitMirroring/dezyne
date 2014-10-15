@@ -50,7 +50,6 @@ namespace component
   {
     std::cout << "imperative.i_e" << std::endl;
     if (state == States::I)
-
     {
       {
         i.out.f ();
@@ -60,14 +59,12 @@ namespace component
       }
     }
     else if (state == States::II)
-
     {
       {
         state = States::III;
       }
     }
     else if (state == States::III)
-
     {
       {
         i.out.f ();
@@ -78,16 +75,12 @@ namespace component
       }
     }
     else if (state == States::IV)
-
     {
       {
         i.out.h ();
         state = States::I;
       }
     }
-
   }
-
-
 
 }

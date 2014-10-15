@@ -55,28 +55,23 @@ namespace component
     {
       r.in.ping ();
     }
-
   }
+
   void reply_reorder::r_pong()
   {
     std::cout << "reply_reorder.r_pong" << std::endl;
     {
       if (first)
-
       {
         p.out.busy ();
         first = not (first);
       }
       if (not (first))
-
       {
         p.out.finish ();
         first = not (first);
       }
     }
-
   }
-
-
 
 }

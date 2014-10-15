@@ -52,15 +52,11 @@ namespace component
     std::cout << "Reply7.p_foo" << std::endl;
     f ();
     return reply_IReply7_E;
-
   }
-
 
   void Reply7::f()
   {
     interface::IReply7::E::type v = r.in.foo ();
     reply_IReply7_E = v;
-
   }
-
 }

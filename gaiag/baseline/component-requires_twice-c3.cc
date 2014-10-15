@@ -56,19 +56,16 @@ namespace component
       once.out.a ();
       twice.out.a ();
     }
-
   }
+
   void requires_twice::once_a()
   {
     std::cout << "requires_twice.once_a" << std::endl;
-
   }
+
   void requires_twice::twice_a()
   {
     std::cout << "requires_twice.twice_a" << std::endl;
-
   }
-
-
 
 }

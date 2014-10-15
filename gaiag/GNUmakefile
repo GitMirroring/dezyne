@@ -493,7 +493,7 @@ javascript-alarm: compile
 
 javascript: compile javascript-alarm javascript-regression
 
-code: c++-alarm python-alarm java-alarm javascript-alarm out/Reply7.compiles out/Reply7.java out/Reply7.js out/Reply7.py
+code: c++-alarm python-alarm java-alarm javascript-alarm out/Reply7.o out/Reply7.java out/Reply7.js out/Reply7.py
 
 GOOPS_SOURCES = $(CC_SOURCES)
 

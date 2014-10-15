@@ -52,7 +52,6 @@ namespace component
   {
     std::cout << "expressions.i_e" << std::endl;
     if (true)
-
     {
       if (state == 0)
       {
@@ -78,9 +77,6 @@ namespace component
         }
       }
     }
-
   }
-
-
 
 }

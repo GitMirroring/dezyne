@@ -53,7 +53,6 @@ namespace component
   {
     std::cout << "Comp.client_initialize" << std::endl;
     if (s == State::Uninitialized)
-
     {
       {
         interface::IDevice::result_t::type res = device_A.in.initialize ();
@@ -74,33 +73,28 @@ namespace component
       }
     }
     else if (s == State::Initialized)
-
     {
       assert(false);
     }
     else if (s == State::Error)
-
     {
       assert(false);
     }
     return reply_IComp_result_t;
-
   }
+
   interface::IComp::result_t::type Comp::client_recover()
   {
     std::cout << "Comp.client_recover" << std::endl;
     if (s == State::Uninitialized)
-
     {
       assert(false);
     }
     else if (s == State::Initialized)
-
     {
       assert(false);
     }
     else if (s == State::Error)
-
     {
       {
         interface::IDevice::result_t::type res = device_A.in.calibrate ();
@@ -117,18 +111,16 @@ namespace component
       }
     }
     return reply_IComp_result_t;
-
   }
+
   interface::IComp::result_t::type Comp::client_perform_actions()
   {
     std::cout << "Comp.client_perform_actions" << std::endl;
     if (s == State::Uninitialized)
-
     {
       assert(false);
     }
     else if (s == State::Initialized)
-
     {
       {
         interface::IDevice::result_t::type res = device_A.in.perform_action1 ();
@@ -149,14 +141,10 @@ namespace component
       }
     }
     else if (s == State::Error)
-
     {
       assert(false);
     }
     return reply_IComp_result_t;
-
   }
-
-
 
 }
