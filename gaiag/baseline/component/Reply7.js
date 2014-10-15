@@ -22,7 +22,6 @@
 // Code:
 
 component.Reply7 = function() {
-
   this.reply_IReply7_E = nul;
 
   this.p = new interface.IReply7();
@@ -31,7 +30,7 @@ component.Reply7 = function() {
   this.p.in.foo = function() {
     console.log('Reply7.p_foo');
     this.f();
-    return self.reply_IReply7_E;
+    return this.reply_IReply7_E;
   }.bind(this);
   this.f = function () {
     v = this.r.in.foo();

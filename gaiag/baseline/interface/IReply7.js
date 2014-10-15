@@ -25,7 +25,6 @@ interface.IReply7= function() {
   this.E= {
     A: 0
   };
-
   this.in = {
     foo : null
   };

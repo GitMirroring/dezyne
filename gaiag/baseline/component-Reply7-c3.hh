@@ -39,7 +39,7 @@ namespace component
 
     Reply7();
     interface::IReply7::E::type p_foo();
-    interface::IReply7::E::type f();
+    void f();
   };
 }
 #endif

@@ -56,7 +56,7 @@ namespace component
   }
 
 
-  interface::IReply7::E::type Reply7::f()
+  void Reply7::f()
   {
     interface::IReply7::E::type v = r.in.foo ();
     reply_IReply7_E = v;
