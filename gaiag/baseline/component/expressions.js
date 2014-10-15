@@ -22,7 +22,6 @@
 // Code:
 
 component.expressions = function() {
-
   this.state = 3;
   this.c = 0;
 

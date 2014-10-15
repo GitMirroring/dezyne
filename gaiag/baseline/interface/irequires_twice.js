@@ -22,7 +22,6 @@
 // Code:
 
 interface.irequires_twice= function() {
-
   this.in = {
     e : null
   };

@@ -21,11 +21,17 @@
 //
 // Code:
 
-interface.TestBool= function() {
-  this.in = {
-    evt : null
-  };
-  this.out = {
-
-  };
-};
+class ISensor extends Interface<ISensor.In, ISensor.Out> {
+  class In implements Interface.In {
+    Action enable;
+    Action disable;
+  }
+  class Out implements Interface.Out {
+    Action triggered;
+    Action disabled;
+  }
+  public ISensor() {
+    setIn(new In());
+    setOut(new Out());
+  }
+}

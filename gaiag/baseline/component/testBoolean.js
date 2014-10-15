@@ -22,7 +22,6 @@
 // Code:
 
 component.testBoolean = function() {
-
   this.b = false;
 
   this.i = new interface.TestBool();

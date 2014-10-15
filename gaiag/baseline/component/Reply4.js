@@ -25,7 +25,6 @@ component.Reply4 = function() {
   this.Status= {
     Yes: 0, No: 1
   };
-
   this.dummy = false;
   this.reply_I_Status = nul;
   this.reply_U_Status = nul;
@@ -51,7 +50,7 @@ component.Reply4 = function() {
         }
       }
     }
-    return self.reply_I_Status;
+    return this.reply_I_Status;
   }.bind(this);
   this.fun = function () {
     return this.Status.Yes;

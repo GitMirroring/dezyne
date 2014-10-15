@@ -25,7 +25,6 @@ interface.IDevice= function() {
   this.result_t= {
     OK: 0, NOK: 1
   };
-
   this.in = {
     initialize : null,
     calibrate : null,

@@ -25,7 +25,6 @@ component.sugar = function() {
   this.Enum= {
     False: 0, True: 1
   };
-
   this.s = this.Enum.False;
 
   this.i = new interface.I();

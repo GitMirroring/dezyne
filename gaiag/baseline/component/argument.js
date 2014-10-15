@@ -22,7 +22,6 @@
 // Code:
 
 component.argument = function() {
-
   this.b = false;
 
   this.i = new interface.I();

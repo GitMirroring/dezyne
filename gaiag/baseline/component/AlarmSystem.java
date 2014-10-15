@@ -21,11 +21,19 @@
 //
 // Code:
 
-interface.TestBool= function() {
-  this.in = {
-    evt : null
-  };
-  this.out = {
+class AlarmSystem {
+  Alarm alarm;
+  Sensor sensor;
+  Siren siren;
+  IConsole console;
 
+  public AlarmSystem() {
+    alarm = new Alarm();
+    sensor = new Sensor();
+    siren = new Siren();
+    console = alarm.console;
+
+    Interface.connect(sensor.sensor, alarm.sensor);
+    Interface.connect(siren.siren, alarm.siren);
   };
-};
+}

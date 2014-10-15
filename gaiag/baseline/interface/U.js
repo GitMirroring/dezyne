@@ -25,7 +25,6 @@ interface.U= function() {
   this.Status= {
     Ok: 0, Nok: 1
   };
-
   this.in = {
     what : null
   };

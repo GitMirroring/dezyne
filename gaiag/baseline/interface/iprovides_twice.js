@@ -22,7 +22,6 @@
 // Code:
 
 interface.iprovides_twice= function() {
-
   this.in = {
     foo : null
   };

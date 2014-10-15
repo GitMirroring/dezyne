@@ -21,11 +21,16 @@
 //
 // Code:
 
-interface.TestBool= function() {
-  this.in = {
-    evt : null
-  };
-  this.out = {
+class ISiren extends Interface<ISiren.In, ISiren.Out> {
+  class In implements Interface.In {
+    Action turnon;
+    Action turnoff;
+  }
+  class Out implements Interface.Out {
 
-  };
-};
+  }
+  public ISiren() {
+    setIn(new In());
+    setOut(new Out());
+  }
+}

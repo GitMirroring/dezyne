@@ -21,11 +21,17 @@
 //
 // Code:
 
-interface.TestBool= function() {
-  this.in = {
-    evt : null
-  };
-  this.out = {
-
-  };
-};
+class IConsole extends Interface<IConsole.In, IConsole.Out> {
+  class In implements Interface.In {
+    Action arm;
+    Action disarm;
+  }
+  class Out implements Interface.Out {
+    Action detected;
+    Action deactivated;
+  }
+  public IConsole() {
+    setIn(new In());
+    setOut(new Out());
+  }
+}

@@ -23,7 +23,6 @@
 
 component.requires_twice = function() {
 
-
   this.p = new interface.irequires_twice();
   this.once = new interface.irequires_twice();
   this.twice = new interface.irequires_twice();

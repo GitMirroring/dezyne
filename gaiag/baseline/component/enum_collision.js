@@ -22,7 +22,6 @@
 // Code:
 
 component.enum_collision = function() {
-
   this.reply_ienum_collision_Retval1 = nul;
   this.reply_ienum_collision_Retval2 = nul;
 
@@ -31,12 +30,12 @@ component.enum_collision = function() {
   this.i.in.foo = function() {
     console.log('enum_collision.i_foo');
     this.reply_ienum_collision_Retval1 = interface.ienum_collision.Retval1.OK;
-    return self.reply_ienum_collision_Retval1;
+    return this.reply_ienum_collision_Retval1;
   }.bind(this);
   this.i.in.bar = function() {
     console.log('enum_collision.i_bar');
     this.reply_ienum_collision_Retval2 = interface.ienum_collision.Retval2.NOK;
-    return self.reply_ienum_collision_Retval2;
+    return this.reply_ienum_collision_Retval2;
   }.bind(this);
 
 };

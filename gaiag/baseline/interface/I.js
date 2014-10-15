@@ -22,7 +22,6 @@
 // Code:
 
 interface.I= function() {
-
   this.in = {
     e : null
   };

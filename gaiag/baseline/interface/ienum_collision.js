@@ -28,7 +28,6 @@ interface.ienum_collision= function() {
   this.Retval2= {
     OK: 0, NOK: 1
   };
-
   this.in = {
     foo : null,
     bar : null

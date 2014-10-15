@@ -22,7 +22,6 @@
 // Code:
 
 component.reply_reorder = function() {
-
   this.first = true;
 
   this.p = new interface.Provides();

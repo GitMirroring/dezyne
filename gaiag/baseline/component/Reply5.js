@@ -22,7 +22,6 @@
 // Code:
 
 component.Reply5 = function() {
-
   this.dummy = false;
   this.reply_I_Status = nul;
   this.reply_U_Status = nul;
@@ -46,7 +45,7 @@ component.Reply5 = function() {
         }
       }
     }
-    return self.reply_I_Status;
+    return this.reply_I_Status;
   }.bind(this);
   this.fun = function () {
     return interface.I.Status.Yes;

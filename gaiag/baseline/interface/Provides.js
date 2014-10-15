@@ -22,7 +22,6 @@
 // Code:
 
 interface.Provides= function() {
-
   this.in = {
     start : null
   };

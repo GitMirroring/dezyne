@@ -25,7 +25,6 @@ component.Comp = function() {
   this.State= {
     Uninitialized: 0, Initialized: 1, Error: 2
   };
-
   this.s = this.State.Uninitialized;
   this.reply_IComp_result_t = nul;
   this.reply_IDevice_result_t = nul;
@@ -57,7 +56,7 @@ component.Comp = function() {
     else if(this.s === this.State.Error) {
       assert (false);
     }
-    return self.reply_IComp_result_t;
+    return this.reply_IComp_result_t;
   }.bind(this);
   this.client.in.recover = function() {
     console.log('Comp.client_recover');
@@ -80,7 +79,7 @@ component.Comp = function() {
         }
       }
     }
-    return self.reply_IComp_result_t;
+    return this.reply_IComp_result_t;
   }.bind(this);
   this.client.in.perform_actions = function() {
     console.log('Comp.client_perform_actions');
@@ -106,7 +105,7 @@ component.Comp = function() {
     else if(this.s === this.State.Error) {
       assert (false);
     }
-    return self.reply_IComp_result_t;
+    return this.reply_IComp_result_t;
   }.bind(this);
 
 };

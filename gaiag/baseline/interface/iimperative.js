@@ -22,7 +22,6 @@
 // Code:
 
 interface.iimperative= function() {
-
   this.in = {
     e : null
   };

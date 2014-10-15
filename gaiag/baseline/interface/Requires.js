@@ -22,7 +22,6 @@
 // Code:
 
 interface.Requires= function() {
-
   this.in = {
     ping : null
   };
