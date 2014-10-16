@@ -40,7 +40,8 @@
 (define resolve-ast
   '((interface
      ivar
-      (types (enum e (v)))
+      (types (enum e (v))
+             (extern xint int&))
       (events (in (signature (type e)) foo)
               (enum mixed (v))
               (out (signature (type mixed)) bar))
@@ -368,6 +369,24 @@
              (parameters (parameter a (type bool #f))))
             #f
             (compound (return (expression (var a)))))))
+
+(pass-if "ast:resolve-extern"
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (car resolve-ast)
+           '(compound
+             (variable e (type xint) (expression 0))))
+          '(compound
+            (variable e (type xint #f) (expression 0)))))
+
+(pass-if "ast:resolve-extern-component"
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (cadr resolve-ast)
+           '(compound
+             (variable i (type xint ivar) (expression 0))))
+          '(compound
+            (variable i (type xint ivar) (expression 0)))))
 
 (pass-if "ast:resolve-recursive"
          (gom-pretty-noisy-equal?

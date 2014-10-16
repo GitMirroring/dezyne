@@ -211,7 +211,8 @@
   (define (type? type) (or (and (not (.scope type))
                                 (member (.name type) '(bool void)))
                            (gom:enum model type)
-                           (gom:integer model type)))
+                           (gom:integer model type)
+                           (gom:extern model type)))
 
   (define (gom:type model o)
     (match o
@@ -257,6 +258,7 @@
     (($ <variable> name type expression) (=> failure)
      (or (and-let* ((e-type (gom:type model expression))
                     ((not (type-equal? e-type type)))
+                    ((not (gom:extern model type)))
                     ((if (eq? (.name e-type) 'int)
                          (not (gom:integer model type)))))
                    (type-mismatch expression (->symbol type) (->symbol e-type)))

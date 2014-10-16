@@ -50,6 +50,8 @@
            gom:enums
            gom:event
            gom:events
+           gom:extern
+           gom:externs
            gom:filter
            gom:find-triggers
            gom:function
@@ -332,7 +334,50 @@
                              (eq? (.scope o) (.scope type))))
             (gom:interface-enums o))))
 
+;;; c&p enum
+(define ((make-interface-extern port) o)
+  (make <extern> :name (.name o) :scope port :value (.value o)))
 
+(define-method (gom:interface-externs (o <interface>))
+  ((gom:filter <extern>) (.types o)))
+
+(define-method (gom:interface-externs (port <gom:port>))
+  (map (make-interface-extern (.type port)) (gom:externs port)))
+
+(define-method (gom:interface-externs (o <component>))
+  (apply append (map gom:interface-externs ((compose .elements .ports) o))))
+
+(define-method (gom:externs (o <interface>))
+  (append ((gom:filter <extern>) (.types o))
+          ((gom:filter <extern>) (or (and=> (.behaviour o) .types) '()))))
+
+(define-method (gom:externs (o <component>))
+  ((gom:filter <extern>) (or (and=> (.behaviour o) .types) '())))
+
+(define-method (gom:externs (o <behaviour>))
+  ((gom:filter <extern>) (.types o)))
+
+(define-method (gom:externs (o <boolean>)) '())
+
+(define-method (gom:externs (port <gom:port>))
+  (gom:interface-externs (gom:import (.type port))))
+
+(define-method (gom:extern (o <model>) (type <type>))
+  (find (lambda (o) (and (eq? (.name o) (.name type))
+                         (eq? (.scope o) (.scope type))))
+        (gom:externs o)))
+
+(define-method (gom:extern (o <component>) (type <type>))
+  (or (next-method)
+      (find (lambda (o) (and (eq? (.name o) (.name type))
+                             (eq? (.scope o) (.scope type))))
+            (gom:interface-externs o))))
+
+(define-method (gom:extern (o <model>) name)
+  (find (lambda (o) (eq? (.name o) name)) (gom:externs o)))
+;;  end c&p
+
+;; c&p enum
 (define ((make-interface-integer port) o)
   (make <int> :name (.name o) :scope port :range (.range o)))
 
@@ -373,6 +418,7 @@
 
 (define-method (gom:integer (o <model>) name)
   (find (lambda (o) (eq? (.name o) name)) (gom:integers o)))
+;;  end c&p
 
 (define-method (gom:variable (o <model>) name)
   (find (lambda (o) (eq? (.name o) name)) (gom:variables o)))
