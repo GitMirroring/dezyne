@@ -74,6 +74,7 @@
            <event>
            <events>
            <expression>
+           <extern>
            <field>
            <fields>
            <function>
@@ -200,12 +201,13 @@
   (instances :accessor .instances :init-form (make <instances>) :init-keyword :instances)
   (bindings :accessor .bindings :init-form (make <bindings>) :init-keyword :bindings))
 
-(define-class <enum> (<named>)
-  (scope :accessor .scope :init-value #f :init-keyword :scope)
+(define-class <enum> (<type>)
   (fields :accessor .fields :init-form (list) :init-keyword :fields))
 
-(define-class <int> (<named>)
-  (scope :accessor .scope :init-value #f :init-keyword :scope)
+(define-class <extern> (<type>)
+  (value :accessor .value :init-value #f :init-keyword :value))
+
+(define-class <int> (<type>)
   (range :accessor .range :init-form (make <range>) :init-keyword :range))
 
 (define-class <range> (<ast>)

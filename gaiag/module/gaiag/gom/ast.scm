@@ -136,6 +136,8 @@
        :name name
        :fields (make <fields> :elements fields)))
 
+    (('extern name value) (make <extern> :name name :value value))
+
     (((and (or 'in 'out) (get! direction)) type name)
      (make <event>
        :name name

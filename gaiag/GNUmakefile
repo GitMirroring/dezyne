@@ -566,7 +566,8 @@ glue:
 update: csp-update c++-update goops-update java-update javascript-update python-update java-update
 
 dataparam: compile
-	-$(TOPDIR)/$(BUILD)/asdgenerator -p examples/Extern.asd
+	$(TOPDIR)/$(BUILD)/asdgenerator -p examples/Extern.asd
 	./gaiag examples/Extern.asd
-	-$(TOPDIR)/$(BUILD)/asdgenerator -p examples/dataparam.asd
+	./gaiag -l gom examples/Extern.asd
+	$(TOPDIR)/$(BUILD)/asdgenerator -p examples/dataparam.asd
 	./gaiag examples/dataparam.asd
