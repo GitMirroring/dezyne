@@ -145,8 +145,9 @@
     (left: illegal)
     (left: behaviour import interface component system)
     (left: provides requires injected)
-    (left: bool enum void int typedef)
+    (left: bool enum extern int typedef void)
     (left: Identifier NumericLiteral)
+    (left: dollar)
 
     (nonassoc: = <=> ..)
     (left: or)
@@ -155,7 +156,7 @@
     (left: !)
     (left: + -)
     (left: * /)
-
+    (left: &)
 
     (right: else)
 
@@ -245,6 +246,7 @@
 
    (type-spec
     (enum-spec) : $1
+    (extern-spec) : $1
     (typedef-spec): $1)
 
    (type
@@ -269,6 +271,16 @@
 
    (typedef-spec
     (typedef int lbracket NumericLiteral .. NumericLiteral rbracket Identifier semicolon) : `(int ,$8 (range ,$4 ,$6)))
+
+   (extern-spec
+    (extern Identifier = dollar extern-type dollar semicolon) : `(,$1 ,$2 ,$5))
+
+   (extern-type
+    (Identifier) : $1
+    (bool) : $1
+    (int) : $1
+    (extern-type *) : (symbol-append $1 $2)
+    (extern-type &) : (symbol-append $1 $2))
 
    (expression
     (false) : $1

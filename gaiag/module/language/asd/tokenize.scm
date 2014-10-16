@@ -38,6 +38,7 @@
          component
          else
          enum
+         extern
          false
          if
          illegal
@@ -87,7 +88,9 @@
     ("&&" . and)
     ("||" . or)
     (":" . colon)
-    ("=" . =)))
+    ("=" . =)
+    ("$" . dollar)
+    ("&" . &)))
 
 (define *future-reserved-words* '())
 
@@ -128,26 +131,28 @@
                (read-char port)
                (lp (peek-char port) (cdr node-tail) (car node-tail))))
          (candidate
-          (make-lexical-token candidate loc #f))
+          (make-lexical-token candidate loc candidate))
          (else
           (syntax-error "bad syntax: character not allowed" loc c)))))))
 
 (module-define! (resolve-module '(language ecmascript tokenize)) 'read-punctuation read-punctuation)
 
 (define (read-identifier port loc)
-  (let lp ((c (peek-char port)) (chars '()))
-    (if (or (eof-object? c)
-            (not (or (char-alphabetic? c)
-                     (char-numeric? c)
-                     (char=? c #\$)
-                     (char=? c #\_))))
-        (let ((word (list->string (reverse chars))))
-          (cond ((assoc-ref *keywords* word)
-                 => (lambda (x) (make-lexical-token x loc (string->symbol word))))
-                (else (make-lexical-token 'Identifier loc
-                                          (string->symbol word)))))
-        (begin (read-char port)
-               (lp (peek-char port) (cons c chars))))))
+  (if (char=? (peek-char port) #\$)
+      (read-punctuation port loc)
+      (let loop ((c (peek-char port)) (chars '()))
+        (if (or (eof-object? c)
+                (char=? c #\$)
+                (not (or (char-alphabetic? c)
+                         (char-numeric? c)
+                         (char=? c #\_))))
+            (let ((word (list->string (reverse chars))))
+              (cond ((assoc-ref *keywords* word)
+                     => (lambda (x) (make-lexical-token x loc (string->symbol word))))
+                    (else (make-lexical-token 'Identifier loc
+                                              (string->symbol word)))))
+            (begin (read-char port)
+                   (loop (peek-char port) (cons c chars)))))))
 
 (module-define! (resolve-module '(language ecmascript tokenize)) 'read-identifier read-identifier)
 
