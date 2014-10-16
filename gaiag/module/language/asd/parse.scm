@@ -262,12 +262,9 @@
    (type
     (bool) : '(type bool)
     (int) : '(type int)
-    (Identifier) : (make 'type (list $1) @1)
-    (void) : '(type void))
-
-   (compound-type
-    (type) : $1
-    (Identifier dot type) : (make 'type (list $1 $3) @1))
+    (void) : '(type void)
+    (Identifier) : (note-location `(type ,$1) @1)
+    (Identifier dot Identifier) : (note-location `(type ,$3 ,$1) @1))
 
    (enum-spec
     (enum Identifier lbrace enum-value-list rbrace semicolon) : `(,$1 ,$2 ,$4))
@@ -334,21 +331,18 @@
    (function
     (type Identifier lparen rparen compound-statement) : (make 'function `(,$2 ,(make 'signature (list $1) @1), $5) @1)
 
-    (type Identifier lparen parameter-list rparen compound-statement) : (make 'function `(,$2 ,(make 'signature (list $1 $4) @1) ,$6) @1)
-    (compound-type Identifier lparen rparen compound-statement) : (make 'function `(,$2 ,(make 'signature (list $1) @1), $5) @1)
-
-    (compound-type Identifier lparen parameter-list rparen compound-statement) : (make 'function `(,$2 ,(make 'signature (list $1 $4) @1) ,$6) @1))
+    (type Identifier lparen parameter-list rparen compound-statement) : (make 'function `(,$2 ,(make 'signature (list $1 $4) @1) ,$6) @1))
 
    (parameter-list
     (parameter) : `(parameters ,$1)
     (parameter-list comma parameter) : (append $1 (list $3)))
 
    (parameter
-    (compound-type Identifier): (make 'parameter (list $2 $1) @1))
+    (type Identifier): (make 'parameter (list $2 $1) @1))
 
    (function-list
     () : '(functions)
-    (function) : `(functions ,$1) ;; FIXME?
+    (function) : `(functions ,$1)
     (function-list function) : (append $1 (list $2)))
 
    (statement-list
@@ -407,8 +401,10 @@
     (trigger-list comma trigger) : (append $1 (list $3)))
 
    (trigger
-    (Identifier) : (make 'trigger (list #f $1) @1)
-    (Identifier dot Identifier) : (make 'trigger (list $1 $3) @1))
+    (Identifier) : (note-location `(trigger #f ,$1) @1)
+    (Identifier dot Identifier) : (note-location `(trigger ,$1 ,$3) @1)
+    (Identifier lparen argument-list rparen) : (note-location `(trigger #f ,$1 ,$3) @1)
+    (Identifier dot Identifier lparen argument-list rparen) : (note-location `(trigger ,$1 ,$3 ,$5) @1))
 
    (illegal-statement
     (illegal semicolon) : (make 'illegal '() @1))
@@ -417,7 +413,9 @@
     (Identifier = expression semicolon) : (make 'assign (list $1 `(expression ,$3)) @1))
 
    (action-statement
-    (trigger semicolon) : (make 'action `(,$1) @1))
+    (Identifier semicolon) : (note-location `(action (trigger #f ,$1)) @1)
+    (Identifier dot Identifier semicolon) : (note-location `(action (trigger ,$1 ,$3)) @1)
+    (Identifier dot Identifier lparen argument-list rparen semicolon) : (note-location `(action (trigger ,$1 ,$3 ,$5)) @1))
 
    (if-statement
     (if lparen expression rparen statement) : `(if (expression ,$3) ,$5)
@@ -431,15 +429,12 @@
     (return expression semicolon) : (make 'return (list `(expression ,$2)) @1))
 
    (variable-statement
-    (variable): $1)
+    (type Identifier = expression semicolon) : `(variable ,$2 ,$1 ,(note-location `(expression ,$4) @3))
+    (Identifier dot Identifier Identifier = expression semicolon) : `(variable ,$4 (type ,$3 ,$1) ,(note-location `(expression ,$6) @3)))
 
    (variable-list
     () : '(variables)
-    (variable-list variable) : (append $1 (list $2)))
-
-   (variable
-    (type Identifier = expression semicolon) : `(variable ,$2 ,$1 ,(note-location `(expression ,$4) @3))
-    (compound-type Identifier = expression semicolon) : `(variable ,$2 ,$1 ,(note-location `(expression ,$4) @3)))))
+    (variable-list variable-statement) : (append $1 (list $2)))))
 
 (define (compile-tree-il exp env opts)
   (values (parse-tree-il (comp exp '())) env env))

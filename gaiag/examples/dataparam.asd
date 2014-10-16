@@ -24,6 +24,7 @@
 interface idataparam
 {
   extern xint = $int$;
+  enum Status {Yes, No};
 
   in void e (in xint i);
   out void a (out xint i);
@@ -35,7 +36,7 @@ interface idataparam
 
     [i != true]
     {
-      on e: //(pi):
+      on e (pi):
       {
         b = pi;
         a (b);
@@ -51,13 +52,20 @@ component dataparam
   behaviour
   {
     idataparam.xint i = 0;
+    idataparam.Status s = idataparam.Status.Yes;
     bool b = true;
 
+    idataparam.Status fun ()
+    {
+      return idataparam.Status.Yes;
+    }
+
     [i != true]
-      on port.e: //(pi):
+      on port.e (pi):
       {
+        idataparam.Status s = idataparam.Status.Yes;
         b = pi;
-        port.a; //(b);
+        port.a (b);
     }
   }
 }
