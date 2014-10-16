@@ -165,7 +165,8 @@
 
 (define-class <trigger> (<ast>)
   (port :accessor .port :init-value #f :init-keyword :port)
-  (event :accessor .event :init-value #f :init-keyword :event))
+  (event :accessor .event :init-value #f :init-keyword :event)
+  (arguments :accessor .arguments :init-form (make <arguments>) :init-keyword :arguments))
 
 (define-class <expression> (<ast>)
   (value :accessor .value :init-value #f :init-keyword :value))

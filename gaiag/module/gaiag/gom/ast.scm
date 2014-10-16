@@ -264,6 +264,12 @@
 
     (('trigger port event) (make <trigger> :port port :event event))
 
+    (('trigger port event arguments)
+     (make <trigger>
+       :port port
+       :event event
+       :arguments (ast->gom- arguments)))
+
     (('triggers triggers ...)
      (make <triggers> :elements (map ast->gom- triggers)))
 
