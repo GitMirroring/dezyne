@@ -564,3 +564,6 @@ glue:
 	-cd out && g++ -o test *.o && ./test
 
 update: csp-update c++-update goops-update java-update javascript-update python-update java-update
+
+dataparam: compile
+	$(TOPDIR)/$(BUILD)/asdgenerator -p examples/dataparam.asd
