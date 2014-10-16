@@ -117,10 +117,10 @@
          (gom-pretty-noisy-equal?
           (ast:resolve-model
            (car resolve-ast)
-           '(on (triggers ((trigger #f e)))
+           '(on (triggers (trigger #f e))
                 (compound
                  (action (trigger #f toggle)))))
-          '(on (triggers ((trigger #f e)))
+          '(on (triggers (trigger #f e))
                (compound
                 (call toggle)))))
 

@@ -428,6 +428,18 @@
                (let ((resolved (resolve-model model (car statements) locals)))
                  (cons resolved (loop (cdr statements) locals))))))))
 
+    (($ <on> triggers statement)
+     (let* ((parameters (apply append (map (compose .elements .arguments)
+                                           (.elements triggers))))
+            (locals (let loop ((parameters parameters) (locals locals))
+                      (if (null? parameters)
+                          locals
+                          (loop (cdr parameters)
+                                (acons ((compose .name .value car) parameters) (car parameters) locals))))))
+       (make <on>
+         :triggers (resolve-model model triggers)
+         :statement (resolve-model model statement locals))))
+
     (($ <interface> name ($ <types> types) ($ <events> types-events) behaviour)
      (receive (types- events) (partition (lambda (x)
                                            (or (is-a? x <enum>) (is-a? x <int>))) types-events)

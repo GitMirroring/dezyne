@@ -574,3 +574,4 @@ dataparam: compile
 	cd out && ccache g++ -c component-Extern-c3.cc
 	./gaiag examples/dataparam.asd
 	./gaiag -l gom examples/dataparam.asd
+	./gaiag -l resolve examples/dataparam.asd
