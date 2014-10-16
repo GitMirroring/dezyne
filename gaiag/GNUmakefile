@@ -569,4 +569,5 @@ dataparam: compile
 	./gaiag examples/Extern.asd
 	./gaiag -l gom examples/Extern.asd
 	./gaiag -l resolve examples/Extern.asd
+	./gaiag -l pretty examples/Extern.asd
 	./gaiag examples/dataparam.asd
