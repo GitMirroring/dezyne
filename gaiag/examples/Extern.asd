@@ -23,7 +23,7 @@
 
 interface IExtern
 {
-  extern xint = $int&$;
+  extern xint = $int$;
 
   in void e;
 
