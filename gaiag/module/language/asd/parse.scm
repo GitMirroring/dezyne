@@ -141,7 +141,7 @@
     if reply return
     true false
 
-    (left: in out)
+    (left: in inout out)
     (left: illegal)
     (left: behaviour import interface component system)
     (left: provides requires injected)
@@ -219,10 +219,20 @@
     (event-list type-spec) : (append $1 (list $2)))
 
    (event
-    (event-direction event-signature Identifier semicolon) : `(,$1 ,$2 ,$3))
+    (event-direction type Identifier semicolon) : `(,$1 ,(note-location `(signature ,$2) @2) ,$3)
+    (event-direction type Identifier lparen event-parameter-list rparen semicolon) : `(,$1 ,(note-location `(signature ,$2 ,$5) @2) ,$3))
 
-   (event-signature
-    (type) : (make 'signature (list $1) @1))
+   (event-parameter-list
+    (event-parameter) : `(parameters ,$1)
+    (event-parameter-list event-parameter) : (append $1 `(,$2)))
+
+   (event-parameter
+    (parameter-direction parameter) : (append $2 `(,$1)))
+
+   (parameter-direction
+    (in) : 'in
+    (out) : 'out
+    (inout) : 'inout)
 
    (event-direction
     (in) : 'in

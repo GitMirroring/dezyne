@@ -46,6 +46,7 @@
          in
          inevitable
          injected
+         inout
          int
          interface
          on

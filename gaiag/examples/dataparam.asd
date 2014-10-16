@@ -35,7 +35,7 @@ interface idataparam
 
     [i != true]
     {
-      on e (pi):
+      on e: //(pi):
       {
         b = pi;
         a (b);
@@ -54,10 +54,10 @@ component dataparam
     bool b = true;
 
     [i != true]
-      on port.e (pi):
+      on port.e: //(pi):
       {
         b = pi;
-        port.a (b);
+        port.a; //(b);
     }
   }
 }
