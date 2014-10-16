@@ -220,6 +220,7 @@
 
    (event
     (event-direction type Identifier semicolon) : `(,$1 ,(note-location `(signature ,$2) @2) ,$3)
+    (event-direction type Identifier lparen rparen semicolon) : `(,$1 ,(note-location `(signature ,$2) @2) ,$3)
     (event-direction type Identifier lparen event-parameter-list rparen semicolon) : `(,$1 ,(note-location `(signature ,$2 ,$5) @2) ,$3))
 
    (event-parameter-list
@@ -402,7 +403,9 @@
 
    (trigger
     (Identifier) : (note-location `(trigger #f ,$1) @1)
+    (Identifier lparen rparen) : (note-location `(trigger #f ,$1) @1)
     (Identifier dot Identifier) : (note-location `(trigger ,$1 ,$3) @1)
+    (Identifier dot Identifier lparen rparen) : (note-location `(trigger ,$1 ,$3) @1)
     (Identifier lparen argument-list rparen) : (note-location `(trigger #f ,$1 ,$3) @1)
     (Identifier dot Identifier lparen argument-list rparen) : (note-location `(trigger ,$1 ,$3 ,$5) @1))
 
