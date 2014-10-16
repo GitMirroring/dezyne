@@ -458,7 +458,7 @@
 
 (define ((declare-io snippet) event)
   (let ((name (.name event))
-         (type (.name (.type (.type event))))
+         (type ((compose .name .type .signature) event))
          (return-type (return-type #f event)))
     (animate snippet `((name ,name) (return-type ,return-type)))))
 
@@ -478,7 +478,7 @@
                        (statements ,statements)))))
 
 (define ((define-on model port snippet) event)
-  (let* ((type ((compose .type .type) event))
+  (let* ((type ((compose .type .signature) event))
          (return-type (return-type port event))
          (reply-name (.name type))
          (reply-type (.type port))
@@ -546,7 +546,7 @@
    (gom:interface-enums o)))
 
 (define-method (return-type port (event <event>))
-  (let ((type ((compose .type .type) event))
+  (let ((type ((compose .type .signature) event))
         (scope (and=> port .type)))
     (cond
       ((eq? (.name type) 'bool) (snippet 'bool '()))
