@@ -186,7 +186,7 @@
 
 (define-method (gom:typed? (o <ast>))
   (match o
-    (($ <event>) (not (eq? (.name (.type (.type o))) 'void)))
+    (($ <event>) (not (eq? (.name (.type (.signature o))) 'void)))
     (($ <gom:port>) (null-is-#f (filter (lambda (x) (gom:typed? x)) (gom:events o))))
     (_ (throw 'match-error  (format #f "~a:gom:typed?: no match: ~a\n" (current-source-location) o)))))
 

@@ -572,6 +572,8 @@ dataparam: compile
 	./gaiag -l pretty examples/Extern.asd
 	cd out && ../gaiag -l c++ ../examples/Extern.asd
 	cd out && ccache g++ -c component-Extern-c3.cc
+	cd out && ../gaiag -l csp ../examples/Extern.asd
 	./gaiag examples/dataparam.asd
 	./gaiag -l gom examples/dataparam.asd
 	./gaiag -l resolve examples/dataparam.asd
+	./gaiag -l pretty examples/dataparam.asd
