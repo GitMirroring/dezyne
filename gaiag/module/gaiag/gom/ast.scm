@@ -138,10 +138,10 @@
 
     (('extern name value) (make <extern> :name name :value value))
 
-    (((and (or 'in 'out) (get! direction)) type name)
+    (((and (or 'in 'out) (get! direction)) signature name)
      (make <event>
        :name name
-       :type (ast->gom- type)
+       :signature (ast->gom- signature)
        :direction (direction)))
 
     (('events events ...) (make <events> :elements (map ast->gom- events)))
@@ -216,6 +216,9 @@
     (('parameter name type)
      (make <gom:parameter> :name name :type (ast->gom- type)))
 
+    (('parameter name type direction)
+     (make <gom:parameter> :name name :type (ast->gom- type) :direction direction))
+
     (('parameters parameters ...)
      (make <parameters> :elements (map ast->gom- parameters)))
 
@@ -237,6 +240,9 @@
     (('return expression) (make <return> :expression (ast->gom- expression)))
 
     (('root elements ...) (make <root> :elements (map ast->gom- elements)))
+
+    (('signature type parameters)
+     (make <signature> :type (ast->gom- type) :parameters (ast->gom- parameters)))
 
     (('signature type) (make <signature> :type (ast->gom- type)))
 

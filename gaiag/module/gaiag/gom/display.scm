@@ -63,12 +63,17 @@
 
 (define-method (display-slots (o <dir-ast>) port)
   (display (.direction o) port)
-  (star port)
-  (sdisplay (.type o) port)
+  (star port))
+
+(define-method (display-slots (o <event>) port)
+  (next-method)
+  (sdisplay (.signature o) port)
   (sdisplay (.name o) port))
 
 (define-method (display-slots (o <gom:port>) port)
   (next-method)
+  (sdisplay (.type o) port)
+  (sdisplay (.name o) port)
   (sdisplay (.injected o) port))
 
 (define-method (display-slots (o <call>) port)
