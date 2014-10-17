@@ -131,6 +131,8 @@
     (('compound statements ...)
      (make <compound> :elements (map ast->gom- statements)))
 
+    (('data value) (make <data> :value value))
+
     (('enum name fields)
      (make <enum>
        :name name

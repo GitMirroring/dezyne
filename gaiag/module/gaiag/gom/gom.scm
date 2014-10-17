@@ -68,6 +68,7 @@
            <call>
            <component>
            <compound>
+           <data>
            <declarative>
            <dir-ast>
            <enum>
@@ -210,6 +211,9 @@
   (fields :accessor .fields :init-form (list) :init-keyword :fields))
 
 (define-class <extern> (<type>)
+  (value :accessor .value :init-value #f :init-keyword :value))
+
+(define-class <data> (<ast>)
   (value :accessor .value :init-value #f :init-keyword :value))
 
 (define-class <int> (<type>)
