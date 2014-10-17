@@ -375,18 +375,18 @@
           (ast:resolve-model
            (car resolve-ast)
            '(compound
-             (variable e (type xint) (expression 0))))
+             (variable e (type xint) (expression (data 0)))))
           '(compound
-            (variable e (type xint #f) (expression 0)))))
+            (variable e (type xint #f) (expression (data 0))))))
 
 (pass-if "ast:resolve-extern-component"
          (gom-pretty-noisy-equal?
           (ast:resolve-model
            (cadr resolve-ast)
            '(compound
-             (variable i (type xint ivar) (expression 0))))
+             (variable i (type xint ivar) (expression (data 0)))))
           '(compound
-            (variable i (type xint ivar) (expression 0)))))
+            (variable i (type xint ivar) (expression (data 0))))))
 
 (pass-if "ast:resolve-recursive"
          (gom-pretty-noisy-equal?
@@ -586,3 +586,10 @@
     (cadr resolve-ast)
     '(variable b (type bool) (literal ivar e v)))
    (type-mismatch '(literal ivar e v) 'bool 'ivar.e)))
+
+(pass-if "ast:resolve-extern-mismatch"
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (car resolve-ast)
+           '(variable e (type xint) (expression 0)))
+          (type-mismatch '(expression 0) 'xint 'int)))

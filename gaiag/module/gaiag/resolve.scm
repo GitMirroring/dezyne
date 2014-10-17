@@ -219,6 +219,7 @@
       (($ <expression> expression) (gom:type model expression))
       ('false (make <type> :name 'bool))
       ('true (make <type> :name 'bool))
+      (($ <data>) (make <type> :name 'data))
       ((? number?) (make <type> :name 'int))
       (($ <literal> scope name field)
        (and-let* ((enum (gom:enum model (make <type>
@@ -258,7 +259,8 @@
     (($ <variable> name type expression) (=> failure)
      (or (and-let* ((e-type (gom:type model expression))
                     ((not (type-equal? e-type type)))
-                    ((not (gom:extern model type)))
+                    ((if (eq? (.name e-type) 'data)
+                         (not (gom:extern model type))))
                     ((if (eq? (.name e-type) 'int)
                          (not (gom:integer model type)))))
                    (type-mismatch expression (->symbol type) (->symbol e-type)))
