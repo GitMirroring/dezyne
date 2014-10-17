@@ -18,11 +18,19 @@
 
 (define ast-transform- (@@ (gaiag csp) ast-transform-))
 (define ast-transform-return (@@ (gaiag csp) ast-transform-return))
+(define purge-data (@@ (gaiag csp) purge-data))
 
 (define (ast-transform* ast src)
   (let ((root (csp->gom ast)))
     ((gom:register csp:norm) root #t)
-    (ast-transform- root (ast-transform-return root (csp->gom src)))))
+    (ast-transform- root
+                    (ast-transform-return root
+                                          (purge-data root (csp->gom src))))))
+
+(define (purge-data* ast src)
+  (let ((root (csp->gom ast)))
+    ((gom:register csp:norm) root #t)
+    (purge-data root (csp->gom src))))
 
 (define (ast-transform-return* ast src)
   (let ((root (csp->gom ast)))
@@ -118,11 +126,15 @@
          #t)
 
 (define i-ast '((interface i
-                  (types (enum Status (Yes No)))
+                  (types (enum Status (Yes No))
+                         (extern xint int&))
                   (events (in (signature (type void)) e)
                           (in (signature (type Status)) f)
                           (out (signature (type void)) g)
-                          (out (signature (type void)) h))
+                          (out (signature (type void)) h)
+                          (in (signature (type void))
+                              (parameters (parameter xint in))
+                              ei))
                   (behaviour
                    B
                    (types (enum S (S1 S2)))
@@ -133,7 +145,8 @@
                    (functions
                     (function toggle (signature (type void)) #f (compound))
                     (function vtoggle (signature (type bool)) (compound))
-                    (function g (signature (type void) (parameters (parameter b1 (type bool)) (parameter b2 (type bool)))) #f (compound)))
+                    (function g (signature (type void) (parameters (parameter b1 (type bool)) (parameter b2 (type bool)))) #f (compound))
+                    (function funx (signature (type S) (parameters (parameter xi (type xint)))) (compound)))
                    (compound)))))
 
 (define ast-return-ast
@@ -679,7 +692,8 @@ semi_(semi_(\\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
                    (variables
                     (variable s (type S) (expression (literal #f S S1)))
                     (variable b (type bool) (expression false))
-                    (variable c (type bool) (expression true)))
+                    (variable c (type bool) (expression true))
+                    (variable xi (type xint j) (data 0)))
                    (compound
                     (on ((trigger j e))
                         (compound))))))))
@@ -1747,10 +1761,19 @@ context_active_(semi_(send_(u,what),recv_(u_',what)),
 
 ;; OM-PARSER parser test
 (define csp-transform-OM-PARSER-assign-action-via
-  '(csp-on (context (dummy)) ((trigger i e))
-    (semi (csp-assign
-           (context (dummy)) r' (action (trigger u what))
-           (context (dummy)))
+  '(csp-on
+    (context (dummy))
+    (triggers (trigger i e (arguments)))
+    (semi (csp-variable
+           (context (dummy))
+           res
+           (type Status U)
+           (expression (literal U Status Ok))
+           (csp-assign
+            (context (dummy) (res))
+            r'
+            (action (trigger u what (arguments)))
+            (context (dummy) (r'))))
           (voidreply))))
 
 (pass-if "ast-transform-OM-PARSER-assign-action"
@@ -1761,6 +1784,7 @@ context_active_(semi_(send_(u,what),recv_(u_',what)),
                          '(on
                            ((trigger i e))
                            (compound
+                            (variable res (type Status U) (expression (literal U Status Ok)))
                             (assign res (action (trigger u what))))))
 
           ;; via:
@@ -1774,8 +1798,9 @@ context_active_(semi_(send_(u,what),recv_(u_',what)),
 
           ;; to:
           "i?x:{e} ->
-semi_(assign_active_(semi_(send_(u,what),recv_(u_',what)),
-\\ ((dummy),(stack')),r' @ ((dummy),(stack'))),
+semi_(context_(\\ ((dummy),(stack')) @ Status_Ok,
+assign_active_(semi_(send_(u,what),recv_(u_',what)),
+\\ ((dummy),((stack',res))),r' @ ((dummy),((stack',r'))))),
 (\\ P',V' @ I_'.return -> P'(V')))(\\ V' @ transition_end -> Reply_(V'),((dummy),(stack')))"))
 
 ;; '
@@ -1926,3 +1951,43 @@ assign_(\\ ((s,b,c),((stack',t))) @ ((s,b,c),((stack',(s == S_S1))))))"))
                               (behaviour
                                #f
                                (compound (on ((e)) (compound)))))))
+
+(pass-if "purge-data-assign"
+         (csp-pretty-noisy-equal?
+          (purge-data* c-ast
+                       '(on (triggers
+                             (trigger j ei
+                                      (arguments (expression (var pi)))))
+                            (compound
+                             (assign xi (expression (var pi))))))
+          '(on (triggers
+                (trigger j ei (arguments (expression (var pi)))))
+               (compound (skip)))))
+
+(pass-if "purge-data-variable"
+         (csp-pretty-noisy-equal?
+          (purge-data* c-ast
+                       '(on (triggers
+                             (trigger j ei
+                                      (arguments (expression (var pi)))))
+                            (compound
+                             (variable xl (type xint j) (data 0)))))
+          '(on (triggers
+                (trigger j ei (arguments (expression (var pi)))))
+               (compound (skip)))))
+
+(pass-if "purge-data-parameter"
+         (csp-pretty-noisy-equal?
+          (purge-data* i-ast
+                       '(function funx (signature (type S) (parameters (parameter xi (type xint)))) (compound)))
+          '(function funx (signature (type S) (parameters)) (compound))))
+
+(pass-if "purge-data-argument"
+         (csp-pretty-noisy-equal?
+          (purge-data* i-ast
+                       '(on (e)
+                            (compound
+                             (assign s (call funx (arguments (data 0)))))))
+          '(on (triggers (trigger #f e (arguments)))
+                (compound
+                 (assign s (call funx (arguments)))))))

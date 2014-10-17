@@ -267,8 +267,6 @@ out/assert/%.refines: $(DEPTH)/examples/assert/%.asd
 	$(.ASSERT_REFINES)
 
 CSP_BROKEN=\
- dataparam.asd\
- Extern.asd\
  provides_twice.asd\
 
 CSP_SOURCES = $(filter-out $(CSP_BROKEN),$(REGRESSION_SOURCES))
@@ -591,7 +589,7 @@ update: csp-update c++-update goops-update java-update javascript-update python-
 
 data-csp:
 	cd out && ../gaiag -l csp ../examples/dataparam.asd
-	-$(CSPMCHECKER) out/dataparam.csp
+	$(CSPMCHECKER) out/dataparam.csp
 	cd out && ../../build/asdgenerator -l scm ../examples/dataparam.asd
 	./gaiag out/dataparam.scm > out/dataparam-om.scm
 	./gaiag examples/dataparam.asd > out/dataparam.scm

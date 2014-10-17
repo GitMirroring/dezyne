@@ -1,0 +1,240 @@
+-- drop_one_local: V => V
+drop_one_local_((M', (L', L0'))) = (M', L')
+
+illegal_(P',V') = illegal -> STOP
+-- send_: (c: channel, e:event) => (P,V)->Proc
+send_(c',e')(P', V') = c'!e' -> P'(V')
+-- recv_: (c: channel, e:event) => (P,V)->Proc
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')                                
+-- skip_: () => (P,V)->Proc
+skip_(P', V') = P'(V')
+-- call_: (B': (P,V)->Proc) => (P,V)->Proc
+call_(B')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', <>))
+-- call_args_: (B': (P,V)->Proc, F': V'->V') => (P,V)->Proc
+call_args_(B', F')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', (<>, F'((M1',L1')))))
+-- assign_: (F': V -> V) => (P,V) -> Proc
+assign_(F')(P', V') = P'(F'(V'))
+-- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
+assign_active_(C', A')(P', V') = C'(\((M', r'),L') @ P'(A'((M',L'),r')), V')
+reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
+-- returnvalue_: (F: V->val) => (P,V)->Proc
+returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
+-- the_end_: P => V->Proc
+the_end_(P', V') = transition_end -> P'(V')
+
+-- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
+semi_(S1',S2')(P', V') = S1'(\V'' @ S2'(P', V''),V')
+-- ifthenelse: (E': val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
+ifthenelse_(E',S1',S2')(P', V') =  if E' then S1'(P', V') else S2'(P', V')
+-- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
+context_(F', S')(P', (M', L')) = S'((\ (M',L2') @ P'((M',L'))), (M', (L', F'((M', L')))))
+-- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
+context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
+
+channel illegal
+channel transition_begin, transition_end
+
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
+datatype event_enumeration_alphabet = Status_No | Status_Yes | a | a0 | a6 | aa | e | e0 | e0r | eer | eio | eio2 | eio2r | eior | eo | eoo | eoor | eor | er | return
+-- interface.csp.scm
+
+channel idataparam: {e,e0,e0r,eer,eio,eio2,eio2r,eior,eo,eoo,eoor,eor,er}
+channel idataparam_'': {a,a0,a6,aa}
+channel idataparam_': {Status_Yes,Status_No,return}
+
+IF_idataparam_(IG,CS) = let
+
+idataparam_(((<>),(stack'))) =
+(true) & (
+idataparam?x:{e0} ->
+semi_((\ P',V' @ idataparam_''!a6 -> P'(V')),
+(\ P',V' @ idataparam_'.return -> P'(V')))(\ V' @ idataparam_(V'),((<>),(stack')))
+ []
+  idataparam?x:{e0r} ->
+semi_((\ P',V' @ idataparam_''!a0 -> P'(V')),
+reply_(idataparam_', (\ ((<>),(stack')) @ Status_Yes)))(\ V' @ idataparam_(V'),((<>),(stack')))
+ []
+  idataparam?x:{e} ->
+semi_(semi_((\ P',V' @ idataparam_''!a -> P'(V')),
+(\ P',V' @ idataparam_''!aa -> P'(V'))),
+(\ P',V' @ idataparam_'.return -> P'(V')))(\ V' @ idataparam_(V'),((<>),(stack')))
+ []
+  idataparam?x:{er,eer} ->
+semi_((\ P',V' @ idataparam_''!a -> P'(V')),
+semi_((\ P',V' @ idataparam_''!aa -> P'(V')),
+reply_(idataparam_', (\ ((<>),(stack')) @ Status_No))))(\ V' @ idataparam_(V'),((<>),(stack')))
+ []
+  idataparam?x:{eo,eoo,eio,eio2} ->
+(\ P',V' @ idataparam_'.return -> P'(V'))(\ V' @ idataparam_(V'),((<>),(stack')))
+ []
+  idataparam?x:{eor,eoor,eior,eio2r} ->
+reply_(idataparam_', (\ ((<>),(stack')) @ Status_Yes))(\ V' @ idataparam_(V'),((<>),(stack'))))
+[]
+CS & idataparam?x:{} -> illegal_(STOP,<>)
+
+within if CS then idataparam_(((<>),(<>)))
+             else idataparam_(((<>),(<>)))
+
+-- end of interface.csp.scm
+-- component.csp.scm
+
+channel port:{e,e0,e0r,eer,eio,eio2,eio2r,eior,eo,eoo,eoor,eor,er}
+
+channel port_'':{a,a0,a6,aa}
+
+channel port_':{Status_Yes,Status_No,return}
+
+
+CO_dataparam_(IIG,IG) = let
+fun(P',V') = returnvalue_(\ ((s),(stack')) @ Status_Yes)(P',V')
+funx(P',V') = returnvalue_(\ ((s),(stack')) @ Status_Yes)(P',V')
+xfunx(P',V') = skip_(P',V')
+
+dataparam_(((s),(stack'))) = transition_begin -> (
+(true) & (
+port?x:{e0} ->
+semi_((\ P',V' @ port_''!a6 -> P'(V')),
+(\ P',V' @ idataparam_'.return -> P'(V')))(\ V' @ transition_end -> dataparam_(V'),((s),(stack'))))
+[]
+port?x:{e0r} ->
+semi_((\ P',V' @ port_''!a0 -> P'(V')),
+reply_(idataparam_', (\ ((s),(stack')) @ Status_Yes)))(\ V' @ transition_end -> dataparam_(V'),((s),(stack')))
+[]
+port?x:{e} ->
+semi_(context_active_(call_(\ P',V' @ funx(P',V')),
+semi_(skip_,
+semi_(skip_,
+semi_((\ P',V' @ port_''!a -> P'(V')),
+(\ P',V' @ port_''!aa -> P'(V')))))),
+(\ P',V' @ idataparam_'.return -> P'(V')))(\ V' @ transition_end -> dataparam_(V'),((s),(stack')))
+[]
+port?x:{er} ->
+context_(\ ((s),(stack')) @ Status_No,
+semi_(skip_,
+semi_((\ P',V' @ port_''!a -> P'(V')),
+semi_((\ P',V' @ port_''!aa -> P'(V')),
+reply_(idataparam_', (\ ((hide_member0'),((stack',s))) @ s))))))(\ V' @ transition_end -> dataparam_(V'),((s),(stack')))
+[]
+port?x:{eer} ->
+context_(\ ((s),(stack')) @ Status_No,
+semi_((\ P',V' @ port_''!a -> P'(V')),
+semi_((\ P',V' @ port_''!aa -> P'(V')),
+reply_(idataparam_', (\ ((hide_member0'),((stack',s))) @ s)))))(\ V' @ transition_end -> dataparam_(V'),((s),(stack')))
+[]
+port?x:{eo} ->
+semi_(assign_(\ ((s),(stack')) @ ((s),(stack'))),
+(\ P',V' @ idataparam_'.return -> P'(V')))(\ V' @ transition_end -> dataparam_(V'),((s),(stack')))
+[]
+port?x:{eoo} ->
+semi_(semi_(assign_(\ ((s),(stack')) @ ((s),(stack'))),
+assign_(\ ((s),(stack')) @ ((s),(stack')))),
+(\ P',V' @ idataparam_'.return -> P'(V')))(\ V' @ transition_end -> dataparam_(V'),((s),(stack')))
+[]
+port?x:{eio} ->
+semi_(assign_(\ ((s),(stack')) @ ((s),(stack'))),
+(\ P',V' @ idataparam_'.return -> P'(V')))(\ V' @ transition_end -> dataparam_(V'),((s),(stack')))
+[]
+port?x:{eio2} ->
+semi_(assign_(\ ((s),(stack')) @ ((s),(stack'))),
+(\ P',V' @ idataparam_'.return -> P'(V')))(\ V' @ transition_end -> dataparam_(V'),((s),(stack')))
+[]
+port?x:{eor} ->
+semi_(assign_(\ ((s),(stack')) @ ((s),(stack'))),
+reply_(idataparam_', (\ ((s),(stack')) @ Status_Yes)))(\ V' @ transition_end -> dataparam_(V'),((s),(stack')))
+[]
+port?x:{eoor} ->
+semi_(assign_(\ ((s),(stack')) @ ((s),(stack'))),
+semi_(assign_(\ ((s),(stack')) @ ((s),(stack'))),
+reply_(idataparam_', (\ ((s),(stack')) @ Status_Yes))))(\ V' @ transition_end -> dataparam_(V'),((s),(stack')))
+[]
+port?x:{eior} ->
+semi_(assign_(\ ((s),(stack')) @ ((s),(stack'))),
+reply_(idataparam_', (\ ((s),(stack')) @ Status_Yes)))(\ V' @ transition_end -> dataparam_(V'),((s),(stack')))
+[]
+port?x:{eio2r} ->
+semi_(assign_(\ ((s),(stack')) @ ((s),(stack'))),
+reply_(idataparam_', (\ ((s),(stack')) @ Status_Yes)))(\ V' @ transition_end -> dataparam_(V'),((s),(stack')))
+)
+
+within dataparam_(((Status_Yes),(<>)))
+
+channel extensions_over_empty_channels_is_undefined
+channel IN',OUT' : {extensions_over_empty_channels_is_undefined}
+
+channel LINK' : {|IN',OUT'|}
+
+SINGLETHREADED = true
+
+channel reorder_in  : {idataparam_'.Status_Yes,idataparam_'.Status_No,idataparam_'.return}
+channel reorder_out : {port_'.Status_Yes,port_'.Status_No,port_'.return}
+
+SEMANTICS(in',out',link',client',modeling') = let
+
+Q' = let
+
+N = card({|in'|})
+
+external chase
+
+Cell = link'.in'?x -> link'.out'!x -> Cell
+
+Back = in'?x -> (link'.out'!x -> Back [] in'?x -> illegal -> STOP)
+
+Front = Cell[[link'.out' <- out']]
+
+within
+       if (N==1) then (Back[[link'.out' <- out']])
+       else if(N==2) then chase(Back [link'.out' <-> link'.in'] Front  \ {|link'|})
+       else chase((Back [link'.out' <-> link'.in'] ([link'.out'<->link'.in'] x : <1..N-2> @ Cell)) [link'.out' <-> link'.in'] Front \ {|link'|})
+
+R'(A') = ([] x' : A' @ x' -> R'(A'))
+       []
+       reorder_in?idataparam_'.x' -> reorder_out!port_'.x' -> R'(A')
+
+S'    = let
+
+Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
+
+Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!port_'.head(r') -> Idle(0))
+            []
+            c' > 0 & transition_end -> transition_begin -> Busy(c',r')
+            []
+            c' < card({|in'|}) & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            []
+            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            []
+            r' == <> & reorder_in?idataparam_'.x' -> Busy(c',<x'>)
+            []
+            r' != <> & reorder_in?idataparam_'.x' -> illegal -> STOP
+
+within Idle(0)
+
+within Q' [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
+
+AS_dataparam_(IIG) = let
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+ClientCalls = {port.e0,port.e0r,port.e,port.er,port.eer,port.eo,port.eoo,port.eio,port.eio2,port.eor,port.eoor,port.eior,port.eio2r}
+UsedModeling = {}
+within compress((CO_dataparam_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+                 [|{|OUT',transition_begin,transition_end,reorder_in,port,port_'|}|]
+                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
+                [|{|IN'|}|]
+                (STOP
+)[[x<-IN'.x|x<-extensions(IN')]])
+
+-- end of component.csp.scm
+assert COMPLETE'({idataparam.e0,idataparam.e0r,idataparam.e,idataparam.er,idataparam.eer,idataparam.eo,idataparam.eoo,idataparam.eio,idataparam.eio2,idataparam.eor,idataparam.eoor,idataparam.eior,idataparam.eio2r}) [F= IF_idataparam_(true,true) \ diff(Events,{idataparam.e0,idataparam.e0r,idataparam.e,idataparam.er,idataparam.eer,idataparam.eo,idataparam.eoo,idataparam.eio,idataparam.eio2,idataparam.eor,idataparam.eoor,idataparam.eior,idataparam.eio2r,illegal})
+assert IF_idataparam_(false,false) :[deadlock free]
+assert IF_idataparam_(true,false) :[livelock free]
+assert CO_dataparam_(true,true) :[deterministic]
+assert COMPLETE'({port.e0,port.e0r,port.e,port.er,port.eer,port.eo,port.eoo,port.eio,port.eio2,port.eor,port.eoor,port.eior,port.eio2r}) [F= CO_dataparam_(true,true)[[idataparam_'.x'<-port_'.x'|x'<-extensions(port_')]] \ diff(Events,{port.e0,port.e0r,port.e,port.er,port.eer,port.eo,port.eoo,port.eio,port.eio2,port.eor,port.eoor,port.eior,port.eio2r,illegal})
+assert STOP [T= AS_dataparam_(false) \ diff(Events,{illegal})
+assert AS_dataparam_(false) :[deadlock free]
+assert IF_idataparam_(true,false) [[idataparam.x<-port.x|x<-extensions(port)]][[idataparam_'.x<-port_'.x|x<-extensions(port_')]][[idataparam_''.x<-port_''.x|x<-extensions(port_'')]]\ {} [F= AS_dataparam_(true) \ diff(Events,{|illegal,port,port_',port_''|})
+assert AS_dataparam_(true) \ diff(Events,{|illegal,port,port_',port_''|}) :[livelock free]

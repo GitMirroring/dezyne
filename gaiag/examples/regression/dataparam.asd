@@ -96,7 +96,12 @@ component dataparam
       return idataparam.Status.Yes;
     }
 
-    xint xfun (xint xi, xint xj)
+    idataparam.Status funx (xint xi)
+    {
+      return idataparam.Status.Yes;
+    }
+
+    xint xfunx (xint xi, xint xj)
     {
       return $(xi + xj) / 3$;
     }
@@ -107,9 +112,9 @@ component dataparam
 
       on port.e (pi):
       {
-        idataparam.Status s = idataparam.Status.Yes;
+        idataparam.Status s = funx (pi);
         mi = pi;
-        mi = xfun (pi, $pi + mi$);
+        mi = xfunx (pi, $pi + mi$);
         port.a (mi);
         port.aa (mi, pi);
 

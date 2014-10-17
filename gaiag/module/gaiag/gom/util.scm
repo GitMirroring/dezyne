@@ -163,11 +163,13 @@
     (#f '())
     (_ (throw 'match-error  (format #f "~a:gom:variables: no match: ~a\n" (current-source-location) ast)))))
 
+(define ((extern? model) var) (gom:extern model (.type var)))
+
 (define (gom:member-names model)
-  (map .name (gom:variables model)))
+  (map .name (filter (negate (extern? model)) (gom:variables model))))
 
 (define (gom:member-values model)
-  (map (compose .value .expression) (gom:variables model)))
+  (map (compose .value .expression) (filter (negate (extern? model)) (gom:variables model))))
 
 (define (gom:statement ast)
   (match ast
