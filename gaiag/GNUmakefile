@@ -577,3 +577,11 @@ dataparam: compile
 	./gaiag -l gom examples/dataparam.asd
 	./gaiag -l resolve examples/dataparam.asd
 	./gaiag -l pretty examples/dataparam.asd
+	cd out && ../gaiag -l c++ ../examples/dataparam.asd
+	-cd out && ccache g++ -c component-dataparam-c3.cc
+	cd out && ../gaiag -l csp ../examples/dataparam.asd
+	-$(CSPMCHECKER) out/dataparam.csp
+	cd out && ../../build/asdgenerator -l scm ../examples/dataparam.asd
+	./gaiag out/dataparam.scm > out/dataparam-om.scm
+	./gaiag examples/dataparam.asd > out/dataparam.scm
+	diff -uw out/dataparam.scm out/dataparam-om.scm

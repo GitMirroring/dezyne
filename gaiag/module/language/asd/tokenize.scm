@@ -108,7 +108,7 @@
 
 ;; FIXME: unchanged copy from ecmascript
 ;; find a way to have it use our punctuation
-(define read-punctuation
+(define read-punctuation-
   (let ((punc-tree (let lp ((nodes '()) (puncs *punctuation*))
                      (cond ((null? puncs)
                             nodes)
@@ -136,11 +136,16 @@
          (else
           (syntax-error "bad syntax: character not allowed" loc c)))))))
 
+(define (read-punctuation port loc)
+  (if (char=? (peek-char port) #\$)
+      (read-data port loc)
+      (read-punctuation- port loc)))
+
 (module-define! (resolve-module '(language ecmascript tokenize)) 'read-punctuation read-punctuation)
 
 (define (read-identifier port loc)
   (if (char=? (peek-char port) #\$)
-      (read-punctuation port loc)
+      (read-data port loc)
       (let loop ((c (peek-char port)) (chars '()))
         (if (or (eof-object? c)
                 (char=? c #\$)
@@ -156,6 +161,18 @@
                    (loop (peek-char port) (cons c chars)))))))
 
 (module-define! (resolve-module '(language ecmascript tokenize)) 'read-identifier read-identifier)
+
+(define (read-data port loc)
+  (read-char port)
+  (let loop ((c (peek-char port)) (chars '()))
+    (if (or (eof-object? c)
+            (char=? c #\$))
+        (let* ((word (list->string (reverse chars)))
+               (data (or (string->number word) (string->symbol word))))
+          (if (char=? c #\$) (read-char port))
+          (make-lexical-token 'Data loc data))
+        (begin (read-char port)
+               (loop (peek-char port) (cons c chars))))))
 
 (define (digit->number c)
   (- (char->integer c) (char->integer #\0)))

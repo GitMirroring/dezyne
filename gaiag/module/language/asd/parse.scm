@@ -146,7 +146,7 @@
     (left: behaviour import interface component system)
     (left: provides requires injected)
     (left: bool enum extern int typedef void)
-    (left: Identifier NumericLiteral)
+    (left: Identifier NumericLiteral Data)
     (left: dollar)
 
     (nonassoc: = <=> ..)
@@ -281,12 +281,14 @@
     (typedef int lbracket NumericLiteral .. NumericLiteral rbracket Identifier semicolon) : `(int ,$8 (range ,$4 ,$6)))
 
    (extern-spec
-    (extern Identifier = dollar extern-type dollar semicolon) : `(,$1 ,$2 ,$5))
+    (extern Identifier = Data semicolon) : `(,$1 ,$2 ,$4))
 
    (extern-type
     (Identifier) : $1
+    (NumericLiteral) : $1
     (bool) : $1
     (int) : $1
+    (void) : $1
     (extern-type *) : (symbol-append $1 $2)
     (extern-type &) : (symbol-append $1 $2))
 
@@ -295,6 +297,7 @@
     (true) : $1
     (NumericLiteral) : $1
     (compound-identifier) : $1
+    (Data) : (note-location `(data ,$1) @1)
 
     (lparen expression rparen) : `(group ,$2)
 
