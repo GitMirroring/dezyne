@@ -29,7 +29,7 @@ interface IExtern
 
   behaviour
   {
-    xint i = 0;
+    xint i = $0$;
     [true]
       on e: illegal;
   }
@@ -41,7 +41,7 @@ component Extern
 
   behaviour
   {
-    IExtern.xint i = 0;
+    IExtern.xint i = $0$;
     [true]
       on port.e: illegal;
   }
