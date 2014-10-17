@@ -566,10 +566,18 @@ glue:
 update: csp-update c++-update goops-update java-update javascript-update python-update java-update
 
 dataparam: compile
+	make -C ..
+	cd out && ../../build/asdgenerator -l scm ../examples/Extern.asd
+	./gaiag out/Extern.scm > out/Extern-om.scm
+	./gaiag examples/Extern.asd > out/Extern.scm
+	diff -uw out/Extern.scm out/Extern-om.scm
+
 	./gaiag examples/Extern.asd
 	./gaiag -l gom examples/Extern.asd
 	./gaiag -l resolve examples/Extern.asd
 	./gaiag -l pretty examples/Extern.asd
+
+
 	cd out && ../gaiag -l c++ ../examples/Extern.asd
 	cd out && ccache g++ -c component-Extern-c3.cc
 	cd out && ../gaiag -l csp ../examples/Extern.asd
