@@ -31,15 +31,15 @@ interface idataparam
 
   behaviour
   {
-    xint i = 0;
-    bool b = true;
+    xint mi = $0$;
 
-    [i != true]
+    //[mi != $0$] unexpected expression type?
+    [true]
     {
       on e (pi):
       {
-        b = pi;
-        a (b);
+        mi = pi;
+        a (mi);
       }
     }
   }
@@ -51,21 +51,21 @@ component dataparam
 
   behaviour
   {
-    idataparam.xint i = 0;
+    idataparam.xint mi = $0$;
     idataparam.Status s = idataparam.Status.Yes;
-    bool b = true;
 
     idataparam.Status fun ()
     {
       return idataparam.Status.Yes;
     }
 
-    [i != true]
+    //[mi != $0$] unexpected expression type?
+    [true]
       on port.e (pi):
       {
         idataparam.Status s = idataparam.Status.Yes;
-        b = pi;
-        port.a (b);
+        mi = pi;
+        port.a (mi);
     }
   }
 }
