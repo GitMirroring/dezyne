@@ -85,7 +85,7 @@
    (gom-pretty-noisy-equal?
     (walk-trail
      (simulate:gom
-      (car
+      (cadr
        (asd->ast
         #{ interface i
                      {

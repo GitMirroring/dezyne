@@ -163,7 +163,7 @@
     )
 
    (program
-    (model-list *eoi*) : $1)
+    (model-list *eoi*) : (cons 'root $1))
 
    (model-list
     () : '()
