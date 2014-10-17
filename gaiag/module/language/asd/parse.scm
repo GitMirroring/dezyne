@@ -19,18 +19,13 @@
 (define-module (language asd parse)
   #:use-module (system base lalr)
   #:use-module (language tree-il)
-  #:use-module (system foreign)
 
   #:use-module (ice-9 match)
   #:use-module (ice-9 and-let-star)
 
-  #:export (ast->
-            compile-tree-il
+  #:export (compile-tree-il
             make-asd-tokenizer
             make-parser
-            object?
-            object-id
-            statement?
             source-location
             source-location->source-properties
             syntax-error))
@@ -46,65 +41,6 @@
                  (lexical-token-category token))
              #f)
       (throw 'syntax-error #f message #f token #f)))
-
-(define (ast:statement? o)
-  (and (pair? o)
-       (member (car o)
-               '(action assign bind call compound guard if illegal instance on reply variable return))))
-
-(define (ast:make type ast)
-  (let ((ast (cons type ast)) ;; (ast (if (pair? t) t (car t)))
-        )
-    (match ast
-      (('imports i ...) ast)
-      (('import type) ast)
-      (('component name ('ports p ...) ('behaviour n ...) ...) ast)
-      (('component name) ast)
-      (('interface name ('types t ...) ('events e ...) ('behaviour n ...) ...) ast)
-      (('interface name ('events e ...)) ast)
-      (('interface name) ast)
-      (('behaviour) ast)
-      (('behaviour name ('types t ...) ('variables v ...) ('compound s ...)) ast)
-      (('call identifier) ast)
-      (('call identifier arguments) ast)
-      (('compound) ast)
-      (('compound (? ast:statement?) ..1) ast)
-      (('types t ...) ast)
-      (('function name ...) ast)
-      (('events e ...) ast)
-      (('in signature name) ast)
-      (('out signature name) ast)
-      (('signature type parameters ...) ast)
-      (('parameter type name) ast)
-      (('ports p ...) ast)
-      (('triggers t ...) ast)
-      (('provides type name) ast)
-      (('value type field) ast)
-      (('var name) ast)
-      (('variables v ...) ast)
-      (('variable type name value ...) ast)
-      (('requires type name) ast)
-      (('trigger port event) ast)
-      (('type name) ast)
-      (('type name scope) ast)
-      ('(inevitable) (ast:make 'trigger '(#f inevitable)))
-      (('optional) (ast:make 'trigger '(#f optional)))
-      (('guard expression statement) ast)
-      (('on (trigger t ...) statement) ast)
-      (('on () statement) ast)
-      (('illegal) '(illegal))
-      (('action ('trigger port-name event-name)) ast)
-      (('assign name expression) ast)
-      (('return expression ...) ast)
-      (_ (throw 'match-error  (format #f "~a:ast:make: no match: ~a\n" (current-source-location) ast))))))
-
-(define (make type ast loc)
-  (note-location (ast:make type ast) loc))
-
-(define (object? lst) #t)
-
-(define (object-id lst)
-  (and=> lst (compose pointer-address scm->pointer)))
 
 (if (not (defined? 'supports-source-properties?))
     (module-define! (current-module) 'supports-source-properties? pair?))
@@ -225,10 +161,10 @@
 
    (event-parameter-list
     (event-parameter) : `(parameters ,$1)
-    (event-parameter-list event-parameter) : (append $1 `(,$2)))
+    (event-parameter-list event-parameter) : (append $1 (list $2)))
 
    (event-parameter
-    (parameter-direction parameter) : (append $2 `(,$1)))
+    (parameter-direction parameter) : (append $2 (list $1)))
 
    (parameter-direction
     (in) : 'in
@@ -318,8 +254,8 @@
     (function-call) : $1)
 
    (function-call
-    (Identifier lparen rparen) : (make 'call (list $1) @1)
-    (Identifier lparen argument-list rparen) : (make 'call (list $1 $3) @1))
+    (Identifier lparen rparen) : (note-location `(call ,$1) @1)
+    (Identifier lparen argument-list rparen) : (note-location `(call ,$1 ,$3) @1))
 
    (argument-list
     (expression) : `(arguments (expression ,$1))
@@ -333,16 +269,16 @@
     (system Identifier lbrace system-statement-list rbrace) : `(,$1 ,$2 ,$4))
 
    (function
-    (type Identifier lparen rparen compound-statement) : (make 'function `(,$2 ,(make 'signature (list $1) @1), $5) @1)
+    (type Identifier lparen rparen compound-statement) : (note-location `(function ,$2 ,(note-location `(signature ,$1) @1), $5) @1)
 
-    (type Identifier lparen parameter-list rparen compound-statement) : (make 'function `(,$2 ,(make 'signature (list $1 $4) @1) ,$6) @1))
+    (type Identifier lparen parameter-list rparen compound-statement) : (note-location `(function ,$2 ,(note-location `(signature ,$1 ,$4) @1) ,$6) @1))
 
    (parameter-list
     (parameter) : `(parameters ,$1)
     (parameter-list comma parameter) : (append $1 (list $3)))
 
    (parameter
-    (type Identifier): (make 'parameter (list $2 $1) @1))
+    (type Identifier): (note-location `(parameter ,$2 ,$1) @1))
 
    (function-list
     () : '(functions)
@@ -378,27 +314,27 @@
     (function-call semicolon) : $1)
 
    (guarded-statement
-    (lbracket guard rbracket statement) : (make 'guard `(,$2 ,$4) @1))
+    (lbracket guard rbracket statement) : (note-location `(guard ,$2 ,$4) @1))
 
    (guard
     (expression) : `(expression ,$1)
     (otherwise) : `(,$1))
 
    (compound-statement
-    (lbrace statement-list rbrace) : (make 'compound (cdr $2) @1))
+    (lbrace statement-list rbrace) : (note-location $2 @1))
 
    (compound-identifier
-    (Identifier) : (make 'var (list $1) @1)
+    (Identifier) : (note-location `(var ,$1) @1)
     (Identifier dot Identifier) : `(value ,$1 ,$3)
     (Identifier dot Identifier dot Identifier) : `(literal ,$1 ,$3 ,$5))
 
    (on-event-statement
-    (on trigger-spec colon statement) : (make $1 `(,$2 ,$4) @1))
+    (on trigger-spec colon statement) : (note-location `(,$1 ,$2 ,$4) @1))
 
    (trigger-spec
-    (trigger-list) : (make 'triggers $1 @1)
-    (optional) : (make 'triggers (list (make $1 '() @1)) @1)
-    (inevitable) : (make 'triggers (list (make $1 '() @1)) @1))
+    (trigger-list) : (note-location (cons 'triggers $1) @1)
+    (optional) : (note-location `(triggers ,(note-location `(trigger #f ,$1) @1)) @1)
+    (inevitable) : (note-location `(triggers ,(note-location `(trigger #f ,$1) @1)) @1))
 
    (trigger-list
     (trigger) : `(,$1)
@@ -413,10 +349,10 @@
     (Identifier dot Identifier lparen argument-list rparen) : (note-location `(trigger ,$1 ,$3 ,$5) @1))
 
    (illegal-statement
-    (illegal semicolon) : (make 'illegal '() @1))
+    (illegal semicolon) : (note-location `(illegal) @1))
 
    (assignment-statement
-    (Identifier = expression semicolon) : (make 'assign (list $1 `(expression ,$3)) @1))
+    (Identifier = expression semicolon) : (note-location `(assign ,$1 (expression ,$3)) @1))
 
    (action-statement
     (Identifier semicolon) : (note-location `(action (trigger #f ,$1)) @1)
@@ -431,8 +367,8 @@
     (reply lparen expression rparen semicolon) : `(,$1 (expression ,$3)))
 
    (return-statement
-    (return semicolon) : (make 'return '() @1)
-    (return expression semicolon) : (make 'return (list `(expression ,$2)) @1))
+    (return semicolon) : (note-location '(retun) @1)
+    (return expression semicolon) : (note-location `(return (expression ,$2)) @1))
 
    (variable-statement
     (type Identifier = expression semicolon) : `(variable ,$2 ,$1 ,(note-location `(expression ,$4) @3))
