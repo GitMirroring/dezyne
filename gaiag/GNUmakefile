@@ -221,8 +221,8 @@ $(diff) -I '^Checking' baseline/$*.refines $@ $(UPDATE)
 @$(diff) baseline/$*.csp out >/dev/null
 endef
 
-out/%.update: UPDATE=||:; cp out/$*.update baseline/$*.refines; cp out/$*.csp baseline/
-#out/%.update: UPDATE=&& cp out/$*.csp baseline/
+#out/%.update: UPDATE=||:; cp out/$*.update baseline/$*.refines; cp out/$*.csp baseline/
+out/%.update: UPDATE=&& cp out/$*.csp baseline/
 out/%.update: examples/regression/%.asd
 	$(.REGRESSION_REFINES)
 
@@ -242,8 +242,8 @@ $(diff) -I '^Checking' baseline/webdemo/$*.refines $@ $(UPDATE)
 @$(diff) baseline/webdemo/$*.csp out/webdemo >/dev/null
 endef
 
-out/webdemo/%.update: UPDATE=||:; cp out/webdemo/$*.update baseline/webdemo/$*.refines; cp out/webdemo/$*.csp baseline/webdemo/
-#out/webdemo/%.update: UPDATE=&& cp out/webdemo/$*.csp baseline/webdemo/
+#out/webdemo/%.update: UPDATE=||:; cp out/webdemo/$*.update baseline/webdemo/$*.refines; cp out/webdemo/$*.csp baseline/webdemo/
+out/webdemo/%.update: UPDATE=&& cp out/webdemo/$*.csp baseline/webdemo/
 out/webdemo/%.update: $(DEPTH)/webdemo/asd/%.asd
 	$(.WEBDEMO_REFINES)
 
@@ -266,8 +266,8 @@ $(diff) -I '^Checking' baseline/assert/$*.refines $@ $(UPDATE)
 @$(diff) baseline/assert/$*.csp out/assert >/dev/null
 endef
 
-out/assert/%.update: UPDATE=||:; cp out/assert/$*.update baseline/assert/$*.refines; cp out/assert/$*.csp baseline/assert
-#out/assert/%.update: UPDATE=&& cp out/assert/$*.csp baseline/assert/
+#out/assert/%.update: UPDATE=||:; cp out/assert/$*.update baseline/assert/$*.refines; cp out/assert/$*.csp baseline/assert
+out/assert/%.update: UPDATE=&& cp out/assert/$*.csp baseline/assert/
 out/assert/%.update: $(DEPTH)/examples/assert/%.asd
 	$(.ASSERT_REFINES)
 

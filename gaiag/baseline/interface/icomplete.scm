@@ -2,7 +2,6 @@
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
@@ -22,18 +21,4 @@
 ;;; 
 ;;; Code:
 
-((interface IConsole completeness)
- (interface IConsole deadlock)
- (interface IConsole livelock)
- (interface ISensor completeness)
- (interface ISensor deadlock)
- (interface ISensor livelock)
- (interface ISiren completeness)
- (interface ISiren deadlock)
- (interface ISiren livelock)
- (component Alarm deterministic)
- (component Alarm completeness)
- (component Alarm illegal)
- (component Alarm deadlock)
- (component Alarm compliance IConsole)
- (component Alarm livelock))
+(define-class <interface:icomplete> (<interface>))

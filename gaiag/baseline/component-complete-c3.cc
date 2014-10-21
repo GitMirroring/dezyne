@@ -1,8 +1,8 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
+//
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -21,7 +21,7 @@
 //
 // Code:
 
-#include "component-requires_twice-c3.hh"
+#include "component-complete-c3.hh"
 
 void handle_event(void*, const asd::function<void()>&);
 
@@ -39,35 +39,25 @@ inline asd::function<void()> connect<void>(void* scope, const asd::function<void
 
 namespace component
 {
-  requires_twice::requires_twice()
+  complete::complete()
   : p()
-  , once()
-  , twice()
+  , r()
   {
-    p.in.e = connect<void>(this, asd::bind<void>(&requires_twice::p_e, this));
-    once.out.a = connect<void>(this, asd::bind<void>(&requires_twice::once_a, this));
-    twice.out.a = connect<void>(this, asd::bind<void>(&requires_twice::twice_a, this));
+    p.in.e = connect<void>(this, asd::bind<void>(&complete::p_e, this));
+    r.out.a = connect<void>(this, asd::bind<void>(&complete::r_a, this));
   }
 
-  void requires_twice::p_e()
+  void complete::p_e()
   {
-    std::cout << "requires_twice.p_e" << std::endl;
+    std::cout << "complete.p_e" << std::endl;
     {
-      once.in.e ();
-      twice.in.e ();
+      r.in.e ();
     }
   }
 
-  void requires_twice::once_a()
+  void complete::r_a()
   {
-    std::cout << "requires_twice.once_a" << std::endl;
-    {
-    }
-  }
-
-  void requires_twice::twice_a()
-  {
-    std::cout << "requires_twice.twice_a" << std::endl;
+    std::cout << "complete.r_a" << std::endl;
     {
       p.out.a ();
     }

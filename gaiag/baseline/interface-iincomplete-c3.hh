@@ -2,7 +2,6 @@
 //
 // This file is part of Gaiag.
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
@@ -22,28 +21,35 @@
 //
 // Code:
 
-component.requires_twice = function() {
+#ifndef INTERFACE_IINCOMPLETE_C3_HH
+#define INTERFACE_IINCOMPLETE_C3_HH
 
-  this.p = new interface.irequires_twice();
-  this.once = new interface.irequires_twice();
-  this.twice = new interface.irequires_twice();
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
 
-  this.p.in.e = function() {
-    console.log('requires_twice.p_e');
+namespace asd
+{
+  using boost::function;
+  using boost::bind;
+}
+
+namespace interface
+{
+  struct iincomplete
+  {
+
+    struct
     {
-      this.once.in.e();
-      this.twice.in.e();
-    }
-  }.bind(this);
-  this.once.out.a = function() {
-    console.log('requires_twice.once_a');
-    { }
-  }.bind(this);
-  this.twice.out.a = function() {
-    console.log('requires_twice.twice_a');
-    {
-      this.p.out.a();
-    }
-  }.bind(this);
+      asd::function<void ()> e;
 
-};
+    } in;
+
+    struct
+    {
+      asd::function<void ()> a;
+
+    } out;
+  };
+}
+
+#endif

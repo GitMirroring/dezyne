@@ -2,7 +2,6 @@
 //
 // This file is part of Gaiag.
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
@@ -22,28 +21,23 @@
 //
 // Code:
 
-component.requires_twice = function() {
+#ifndef COMPONENT_INCOMPLETE_HH
+#define COMPONENT_INCOMPLETE_HH
 
-  this.p = new interface.irequires_twice();
-  this.once = new interface.irequires_twice();
-  this.twice = new interface.irequires_twice();
+#include "interface-iincomplete-c3.hh"
+#include "interface-iincomplete-c3.hh"
 
-  this.p.in.e = function() {
-    console.log('requires_twice.p_e');
-    {
-      this.once.in.e();
-      this.twice.in.e();
-    }
-  }.bind(this);
-  this.once.out.a = function() {
-    console.log('requires_twice.once_a');
-    { }
-  }.bind(this);
-  this.twice.out.a = function() {
-    console.log('requires_twice.twice_a');
-    {
-      this.p.out.a();
-    }
-  }.bind(this);
 
-};
+namespace component
+{
+  struct incomplete
+  {
+    interface::iincomplete p;
+    interface::iincomplete r;
+
+    incomplete();
+    void p_e();
+    void r_a();
+  };
+}
+#endif

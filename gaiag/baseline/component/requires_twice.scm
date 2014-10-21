@@ -1,5 +1,6 @@
 ;;; Gaiag --- Guile in Asd In Asd in Guile.
 ;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
@@ -39,13 +40,15 @@
 
 (define-method (p-e (o <requires_twice>))
   (stderr "requires_twice.p.e\n")
-    (action o .once .out 'a)
-    (action o .twice .out 'a))
+    (action o .once .in 'e)
+    (action o .twice .in 'e))
 
 (define-method (once-a (o <requires_twice>))
-  (stderr "requires_twice.once.a\n"))
+  (stderr "requires_twice.once.a\n")
+    #t)
 
 (define-method (twice-a (o <requires_twice>))
-  (stderr "requires_twice.twice.a\n"))
+  (stderr "requires_twice.twice.a\n")
+    (action o .p .out 'a))
 
 

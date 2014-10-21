@@ -2,7 +2,6 @@
 //
 // This file is part of Gaiag.
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
@@ -22,28 +21,33 @@
 //
 // Code:
 
-component.requires_twice = function() {
+class incomplete{
 
-  this.p = new interface.irequires_twice();
-  this.once = new interface.irequires_twice();
-  this.twice = new interface.irequires_twice();
 
-  this.p.in.e = function() {
-    console.log('requires_twice.p_e');
-    {
-      this.once.in.e();
-      this.twice.in.e();
-    }
-  }.bind(this);
-  this.once.out.a = function() {
-    console.log('requires_twice.once_a');
+  iincomplete p;
+  iincomplete r;
+
+  public incomplete() {
+    p = new iincomplete();
+    r = new iincomplete();
+    p.getIn().e = new Action() {
+      public void action() {
+        p_e();
+      }
+    };
+    r.getOut().a = new Action() {
+      public void action() {
+        r_a();
+      }
+    };
+  };
+  public void p_e() {
+    System.err.println("incomplete.p_e");
     { }
-  }.bind(this);
-  this.twice.out.a = function() {
-    console.log('requires_twice.twice_a');
-    {
-      this.p.out.a();
-    }
-  }.bind(this);
+  };
 
-};
+  public void r_a() {
+    System.err.println("incomplete.r_a");
+  };
+
+}

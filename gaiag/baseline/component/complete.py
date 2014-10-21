@@ -1,8 +1,8 @@
 # Gaiag --- Guile in Asd In Asd in Guile.
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
-# Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Gaiag.
+#
+# Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # Gaiag is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as
@@ -23,36 +23,27 @@
 
 import sys
 #
-import interface.irequires_twice
-import interface.irequires_twice
-import interface.irequires_twice
+import interface.icomplete
+import interface.icomplete
 
 
-class requires_twice ():
+class complete ():
 
     def __init__ (self):
 
-        self.p = interface.irequires_twice ()
-        self.once = interface.irequires_twice ()
-        self.twice = interface.irequires_twice ()
+        self.p = interface.icomplete ()
+        self.r = interface.icomplete ()
 
         self.p.ins.e = self.p_e
-        self.once.outs.a = self.once_a
-        self.twice.outs.a = self.twice_a
+        self.r.outs.a = self.r_a
 
     def p_e (self):
-        sys.stderr.write ('requires_twice.p_e\n')
-        self.once.ins.e ()
-        self.twice.ins.e ()
+        sys.stderr.write ('complete.p_e\n')
+        self.r.ins.e ()
 
 
-    def once_a (self):
-        sys.stderr.write ('requires_twice.once_a\n')
-        pass
-
-
-    def twice_a (self):
-        sys.stderr.write ('requires_twice.twice_a\n')
+    def r_a (self):
+        sys.stderr.write ('complete.r_a\n')
         self.p.outs.a ()
 
 

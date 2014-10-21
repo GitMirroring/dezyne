@@ -2,7 +2,6 @@
 //
 // This file is part of Gaiag.
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
@@ -22,28 +21,35 @@
 //
 // Code:
 
-component.requires_twice = function() {
+#ifndef ICONSOLE_INTERFACE_H
+#define ICONSOLE_INTERFACE_H
 
-  this.p = new interface.irequires_twice();
-  this.once = new interface.irequires_twice();
-  this.twice = new interface.irequires_twice();
+#include "asdInterfaces.h"
 
-  this.p.in.e = function() {
-    console.log('requires_twice.p_e');
-    {
-      this.once.in.e();
-      this.twice.in.e();
-    }
-  }.bind(this);
-  this.once.out.a = function() {
-    console.log('requires_twice.once_a');
-    { }
-  }.bind(this);
-  this.twice.out.a = function() {
-    console.log('requires_twice.twice_a');
-    {
-      this.p.out.a();
-    }
-  }.bind(this);
+#include <boost/shared_ptr.hpp>
 
+struct Console
+{
+  virtual ~Console(){}
+  virtual void SwitchOn() = 0;
+  virtual void SwitchOff() = 0;
 };
+
+
+struct ConsoleCB
+{
+  virtual ~ConsoleCB(){}
+  virtual void Tripped() = 0;
+  virtual void Deactivated() = 0;
+};
+
+
+struct IConsoleInterface
+{
+  virtual void GetAPI(boost::shared_ptr<Console>*) = 0 ;
+  virtual void RegisterCB(boost::shared_ptr<ConsoleCB>) = 0;
+
+  virtual void RegisterCB (boost::shared_ptr<asd::channels::ISingleThreaded>) = 0;
+};
+
+#endif

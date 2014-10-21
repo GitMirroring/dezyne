@@ -23,9 +23,11 @@
                                         requires I j ;
                                         behaviour { }
                                         } #}))
-   '((interface I deadlock)
+   '((interface I completeness)
+     (interface I deadlock)
      (interface I livelock)
      (component C deterministic)
+     (component C completeness)
      (component C illegal)
      (component C deadlock)
      (component C compliance I)
@@ -47,5 +49,6 @@
                                provides I i ;
                                         requires I j ;
                                         } #}))
-   '((interface I deadlock)
+   '((interface I completeness)
+     (interface I deadlock)
      (interface I livelock))))

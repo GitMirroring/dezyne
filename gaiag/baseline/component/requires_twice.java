@@ -3,6 +3,7 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -51,17 +52,21 @@ class requires_twice{
   public void p_e() {
     System.err.println("requires_twice.p_e");
     {
-      once.getOut().a.action();
-      twice.getOut().a.action();
+      once.getIn().e.action();
+      twice.getIn().e.action();
     }
   };
 
   public void once_a() {
     System.err.println("requires_twice.once_a");
+    { }
   };
 
   public void twice_a() {
     System.err.println("requires_twice.twice_a");
+    {
+      p.getOut().a.action();
+    }
   };
 
 }
