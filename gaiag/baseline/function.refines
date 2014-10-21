@@ -9,14 +9,17 @@ true
 Checking CO_function_(true,true) :[deterministic]
 true
 
+Checking COMPLETE'({i.a,i.b}) [F= CO_function_(true,true)\diff(Events,{i.a,i.b,illegal})
+true
+
 Checking STOP [T= AS_function_(false)\diff(Events,{illegal})
 true
 
 Checking AS_function_(false) :[deadlock free]
 true
 
-Checking IF_I_(true)[[I.x<-i.x|x<-extensions(i)]]\{} [F= AS_function_(true)\diff(Events,{|illegal,i|})
+Checking IF_I_(true)[[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]][[I_''.x<-i_''.x|x<-extensions(i_'')]]\{} [F= AS_function_(true)\diff(Events,{|illegal,i,i_',i_''|})
 true
 
-Checking AS_function_(true)\diff(Events,{|illegal,i|}) :[livelock free]
+Checking AS_function_(true)\diff(Events,{|illegal,i,i_',i_''|}) :[livelock free]
 true

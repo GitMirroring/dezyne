@@ -1,36 +1,39 @@
 Checking out/webdemo/bareSiliconAlarm.csp
 
-Checking IF_i109_Siren_(false) :[deadlock free]
+Checking IF_i109_ISiren_(false) :[deadlock free]
 true
 
-Checking IF_i109_Siren_(true) :[livelock free]
+Checking IF_i109_ISiren_(true) :[livelock free]
 true
 
-Checking IF_i160_SecretCode_(false) :[deadlock free]
+Checking IF_i160_ISecretCode_(false) :[deadlock free]
 true
 
-Checking IF_i160_SecretCode_(true) :[livelock free]
+Checking IF_i160_ISecretCode_(true) :[livelock free]
 true
 
-Checking IF_i326_STTimer_(false) :[deadlock free]
+Checking IF_i326_ITimer_(false) :[deadlock free]
 true
 
-Checking IF_i326_STTimer_(true)\{|i326_STTimer.inevitable|} :[livelock free]
+Checking IF_i326_ITimer_(true)\{|i326_ITimer.inevitable|} :[livelock free]
 true
 
-Checking IF_i506_Sensors_(false) :[deadlock free]
+Checking IF_i506_ISensors_(false) :[deadlock free]
 true
 
-Checking IF_i506_Sensors_(true)\{|i506_Sensors.optional|} :[livelock free]
+Checking IF_i506_ISensors_(true)\{|i506_ISensors.optional|} :[livelock free]
 true
 
-Checking IF_i809_AlarmSystem_(false) :[deadlock free]
+Checking IF_i809_IAlarmSystem_(false) :[deadlock free]
 true
 
-Checking IF_i809_AlarmSystem_(true)\{|i809_AlarmSystem.optional|} :[livelock free]
+Checking IF_i809_IAlarmSystem_(true)\{|i809_IAlarmSystem.optional|} :[livelock free]
 true
 
 Checking CO_i1768_bareSiliconAlarm_(true,true) :[deterministic]
+true
+
+Checking COMPLETE'({i810_alarmSystem.i510_SwitchOn,i810_alarmSystem.i512_SwitchOff,i819_preAlarmTimer_''.i165_Timeout,i822_sensors_''.i329_DetectedMovement}) [F= CO_i1768_bareSiliconAlarm_(true,true)\diff(Events,{i810_alarmSystem.i510_SwitchOn,i810_alarmSystem.i512_SwitchOff,i819_preAlarmTimer_''.i165_Timeout,i822_sensors_''.i329_DetectedMovement,illegal})
 true
 
 Checking STOP [T= AS_i1768_bareSiliconAlarm_(false)\diff(Events,{illegal})
@@ -39,8 +42,8 @@ true
 Checking AS_i1768_bareSiliconAlarm_(false) :[deadlock free]
 true
 
-Checking IF_i809_AlarmSystem_(true)[[i809_AlarmSystem.x<-i810_alarmSystem.x|x<-extensions(i810_alarmSystem)]]\{i810_alarmSystem.optional} [F= AS_i1768_bareSiliconAlarm_(true)\diff(Events,{|illegal,i810_alarmSystem|})
+Checking IF_i809_IAlarmSystem_(true)[[i809_IAlarmSystem.x<-i810_alarmSystem.x|x<-extensions(i810_alarmSystem)]][[i809_IAlarmSystem_'.x<-i810_alarmSystem_'.x|x<-extensions(i810_alarmSystem_')]][[i809_IAlarmSystem_''.x<-i810_alarmSystem_''.x|x<-extensions(i810_alarmSystem_'')]]\{i810_alarmSystem.optional} [F= AS_i1768_bareSiliconAlarm_(true)\diff(Events,{|illegal,i810_alarmSystem,i810_alarmSystem_',i810_alarmSystem_''|})
 true
 
-Checking AS_i1768_bareSiliconAlarm_(true)\diff(Events,{|illegal,i810_alarmSystem|}) :[livelock free]
+Checking AS_i1768_bareSiliconAlarm_(true)\diff(Events,{|illegal,i810_alarmSystem,i810_alarmSystem_',i810_alarmSystem_''|}) :[livelock free]
 true

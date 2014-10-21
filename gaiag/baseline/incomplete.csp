@@ -41,75 +41,53 @@ members_((M',L')) = (M',<>)
 channel illegal
 channel transition_begin, transition_end
 
-datatype event_enumeration_alphabet = a | b | c | d | return
+datatype event_enumeration_alphabet = a | e | return
 -- interface.csp.scm
 
-channel I: {a,b}
-channel I_'': {c,d}
-channel I_': {return}
+channel iincomplete: {e}
+channel iincomplete_'': {a}
+channel iincomplete_': {return}
 
-IF_I_(IG) = let
-toggle = \ P',V' @ context_func_(semi_(\ P',((f),(stack')) @ ifthenelse_(f,
-(\ P',V' @ I_''!c -> P'(V')),
-skip_
-)(P',((f),(stack'))),
-assign_(\ ((f),(stack')) @ (((not f)),(stack')))))(P',V')
+IF_iincomplete_(IG) = let
 
-I_(((f),(stack'))) =
-(true) & (
-I?x:{a} ->
-semi_(callvoid_(\ P',V' @ toggle(P',V')),
-(\ P',V' @ I_'.return -> P'(V')))(\ V' @ I_(V'),((f),(stack')))
- []
-  I?x:{b} ->
-semi_(semi_(callvoid_(\ P',V' @ toggle(P',V')),
-semi_(callvoid_(\ P',V' @ toggle(P',V')),
-(\ P',V' @ I_''!d -> P'(V')))),
-(\ P',V' @ I_'.return -> P'(V')))(\ V' @ I_(V'),((f),(stack'))))
+iincomplete_(((<>),(stack'))) =
+iincomplete?x:{e} ->
+semi_((\ P',V' @ iincomplete_''!a -> P'(V')),
+(\ P',V' @ iincomplete_'.return -> P'(V')))(\ V' @ iincomplete_(V'),((<>),(stack')))
 
-within I_(((false),(<>)))
+within iincomplete_(((<>),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i:{a,b}
+channel p:{e}
+channel r:{e}
 
-channel i_'':{c,d}
+channel p_'':{a}
+channel r_'':{a}
 
-channel i_':{return}
+channel p_':{return}
+channel r_':{return}
 
 
-CO_function_(IIG,IG) = let
-toggle = \ P',V' @ context_func_(semi_(\ P',((f),(stack')) @ ifthenelse_(f,
-(\ P',V' @ i_''!c -> P'(V')),
-skip_
-)(P',((f),(stack'))),
-assign_(\ ((f),(stack')) @ (((not f)),(stack')))))(P',V')
+CO_incomplete_(IIG,IG) = let
 
-function_(((f),(stack'))) = transition_begin -> (
-(true) & (
-i?x:{a} ->
-semi_(callvoid_(\ P',V' @ toggle(P',V')),
-(\ P',V' @ I_'.return -> P'(V')))(\ V' @ transition_end -> function_(V'),((f),(stack')))
- []
-  i?x:{b} ->
-semi_(semi_(callvoid_(\ P',V' @ toggle(P',V')),
-semi_(callvoid_(\ P',V' @ toggle(P',V')),
-(\ P',V' @ i_''!d -> P'(V')))),
-(\ P',V' @ I_'.return -> P'(V')))(\ V' @ transition_end -> function_(V'),((f),(stack'))))
+incomplete_(((<>),(stack'))) = transition_begin -> (
+p?x:{e} ->
+(\ P',V' @ iincomplete_'.return -> P'(V'))(\ V' @ transition_end -> incomplete_(V'),((<>),(stack')))
 )
 
-within function_(((false),(<>)))
+within incomplete_(((<>),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
-channel IN',OUT' : {extensions_over_empty_channels_is_undefined}
+channel IN',OUT' : {r_''.a,extensions_over_empty_channels_is_undefined}
 
 channel LINK' : {|IN',OUT'|}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {I_'.return}
-channel reorder_out : {i_'.return}
+channel reorder_in  : {iincomplete_'.return}
+channel reorder_out : {p_'.return}
 
 SEMANTICS(in',out',link',client',modeling') = let
 
@@ -132,13 +110,13 @@ within
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
        []
-       reorder_in?I_'.x' -> reorder_out!i_'.x' -> R'(A')
+       reorder_in?iincomplete_'.x' -> reorder_out!p_'.x' -> R'(A')
 
 S'    = let
 
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
 
-Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i_'.head(r') -> Idle(0))
+Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!p_'.head(r') -> Idle(0))
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
@@ -146,38 +124,39 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
             []
-            r' == <> & reorder_in?I_'.x' -> Busy(c',<x'>)
+            r' == <> & reorder_in?iincomplete_'.x' -> Busy(c',<x'>)
             []
-            r' != <> & reorder_in?I_'.x' -> illegal -> STOP
+            r' != <> & reorder_in?iincomplete_'.x' -> illegal -> STOP
 
 within Idle(0)
 
 within Q' [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-AS_function_(IIG) = let
+AS_incomplete_(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
 
-ClientCalls = {i.a,i.b}
+ClientCalls = {p.e}
 UsedModeling = {}
-within compress((CO_function_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-                 [|{|OUT',transition_begin,transition_end,reorder_in,i,i_'|}|]
+within compress((CO_incomplete_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+                 [|{|OUT',transition_begin,transition_end,reorder_in,p,p_'|}|]
                  SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
-                [|{|IN'|}|]
-                (STOP
+                [|{|IN',r,r_'|}|]
+                (IF_iincomplete_(true) [[iincomplete.x<-r.x|x<-extensions(r)]][[iincomplete_'.x<-r_'.x|x<-extensions(r_')]][[iincomplete_''.x<-r_''.x|x<-extensions(r_'')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
 -- end of component.csp.scm
-assert IF_I_(false) :[deadlock free]
-assert IF_I_(true) :[livelock free]
-assert CO_function_(true,true) :[deterministic]
-assert COMPLETE'({i.a,i.b}) [F= CO_function_(true,true) \ diff(Events,{i.a,i.b,illegal})
-assert STOP [T= AS_function_(false) \ diff(Events,{illegal})
-assert AS_function_(false) :[deadlock free]
-assert IF_I_(true) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]][[I_''.x<-i_''.x|x<-extensions(i_'')]]\ {} [F= AS_function_(true) \ diff(Events,{|illegal,i,i_',i_''|})
-assert AS_function_(true) \ diff(Events,{|illegal,i,i_',i_''|}) :[livelock free]
+assert COMPLETE'({iincomplete.e}) [F= IF_iincomplete_(true) \ diff(Events,{iincomplete.e,illegal})
+assert IF_iincomplete_(false) :[deadlock free]
+assert IF_iincomplete_(true) :[livelock free]
+assert CO_incomplete_(true,true) :[deterministic]
+assert COMPLETE'({p.e,r_''.a}) [F= CO_incomplete_(true,true) \ diff(Events,{p.e,r_''.a,illegal})
+assert STOP [T= AS_incomplete_(false) \ diff(Events,{illegal})
+assert AS_incomplete_(false) :[deadlock free]
+assert IF_iincomplete_(true) [[iincomplete.x<-p.x|x<-extensions(p)]][[iincomplete_'.x<-p_'.x|x<-extensions(p_')]][[iincomplete_''.x<-p_''.x|x<-extensions(p_'')]]\ {} [F= AS_incomplete_(true) \ diff(Events,{|illegal,p,p_',p_''|})
+assert AS_incomplete_(true) \ diff(Events,{|illegal,p,p_',p_''|}) :[livelock free]

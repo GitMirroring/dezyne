@@ -9,14 +9,17 @@ true
 Checking CO_Reply7_(true,true) :[deterministic]
 true
 
+Checking COMPLETE'({p.foo}) [F= CO_Reply7_(true,true)\diff(Events,{p.foo,illegal})
+true
+
 Checking STOP [T= AS_Reply7_(false)\diff(Events,{illegal})
 true
 
 Checking AS_Reply7_(false) :[deadlock free]
 true
 
-Checking IF_IReply7_(true)[[IReply7.x<-p.x|x<-extensions(p)]]\{} [F= AS_Reply7_(true)\diff(Events,{|illegal,p|})
+Checking IF_IReply7_(true)[[IReply7.x<-p.x|x<-extensions(p)]][[IReply7_'.x<-p_'.x|x<-extensions(p_')]]\{} [F= AS_Reply7_(true)\diff(Events,{|illegal,p,p_'|})
 true
 
-Checking AS_Reply7_(true)\diff(Events,{|illegal,p|}) :[livelock free]
+Checking AS_Reply7_(true)\diff(Events,{|illegal,p,p_'|}) :[livelock free]
 true

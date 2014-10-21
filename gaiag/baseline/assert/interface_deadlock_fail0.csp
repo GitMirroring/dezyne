@@ -163,12 +163,15 @@ within compress((CO_i69_DummyC_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<
                 (IF_i29_I_(true) [[i29_I.x<-i50_ii.x|x<-extensions(i50_ii)]][[i29_I_'.x<-i50_ii_'.x|x<-extensions(i50_ii_')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
 -- end of component.csp.scm
 assert IF_i29_I_(false) :[deadlock free]
 assert IF_i29_I_(true) :[livelock free]
 assert IF_i46_DummyI_(false) :[deadlock free]
 assert IF_i46_DummyI_(true) :[livelock free]
 assert CO_i69_DummyC_(true,true) :[deterministic]
+assert COMPLETE'({i47_i.i30_e}) [F= CO_i69_DummyC_(true,true) \ diff(Events,{i47_i.i30_e,illegal})
 assert STOP [T= AS_i69_DummyC_(false) \ diff(Events,{illegal})
 assert AS_i69_DummyC_(false) :[deadlock free]
 assert IF_i46_DummyI_(true) [[i46_DummyI.x<-i47_i.x|x<-extensions(i47_i)]][[i46_DummyI_'.x<-i47_i_'.x|x<-extensions(i47_i_')]]\ {} [F= AS_i69_DummyC_(true) \ diff(Events,{|illegal,i47_i,i47_i_'|})

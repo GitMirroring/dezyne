@@ -9,14 +9,17 @@ true
 Checking CO_co_argument2_(true,true) :[deterministic]
 true
 
+Checking COMPLETE'({po_i.ev_e}) [F= CO_co_argument2_(true,true)\diff(Events,{po_i.ev_e,illegal})
+true
+
 Checking STOP [T= AS_co_argument2_(false)\diff(Events,{illegal})
 true
 
 Checking AS_co_argument2_(false) :[deadlock free]
 true
 
-Checking IF_if_I_(true)[[if_I.x<-po_i.x|x<-extensions(po_i)]]\{} [F= AS_co_argument2_(true)\diff(Events,{|illegal,po_i|})
+Checking IF_if_I_(true)[[if_I.x<-po_i.x|x<-extensions(po_i)]][[if_I_'.x<-po_i_'.x|x<-extensions(po_i_')]][[if_I_''.x<-po_i_''.x|x<-extensions(po_i_'')]]\{} [F= AS_co_argument2_(true)\diff(Events,{|illegal,po_i,po_i_',po_i_''|})
 true
 
-Checking AS_co_argument2_(true)\diff(Events,{|illegal,po_i|}) :[livelock free]
+Checking AS_co_argument2_(true)\diff(Events,{|illegal,po_i,po_i_',po_i_''|}) :[livelock free]
 true

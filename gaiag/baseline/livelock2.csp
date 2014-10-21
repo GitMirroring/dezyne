@@ -168,12 +168,15 @@ within compress((CO_livelock2_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-
                 (IF_nolivelock_(true) [[nolivelock.x<-n.x|x<-extensions(n)]][[nolivelock_'.x<-n_'.x|x<-extensions(n_')]][[nolivelock_''.x<-n_''.x|x<-extensions(n_'')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
 -- end of component.csp.scm
 assert IF_ilivelock_(false) :[deadlock free]
 assert IF_ilivelock_(true)  \ {|ilivelock.inevitable|} :[livelock free]
 assert IF_nolivelock_(false) :[deadlock free]
 assert IF_nolivelock_(true)  \ {|nolivelock.inevitable|} :[livelock free]
 assert CO_livelock2_(true,true) :[deterministic]
+assert COMPLETE'({l.dummy,n_''.dummy}) [F= CO_livelock2_(true,true) \ diff(Events,{l.dummy,n_''.dummy,illegal})
 assert STOP [T= AS_livelock2_(false) \ diff(Events,{illegal})
 assert AS_livelock2_(false) :[deadlock free]
 assert IF_ilivelock_(true) [[ilivelock.x<-l.x|x<-extensions(l)]][[ilivelock_'.x<-l_'.x|x<-extensions(l_')]]\ {l.inevitable} [F= AS_livelock2_(true) \ diff(Events,{|illegal,l,l_'|})

@@ -152,10 +152,13 @@ within compress((CO_i84_function2_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [
                 (STOP
 )[[x<-IN'.x|x<-extensions(IN')]])
 
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
 -- end of component.csp.scm
 assert IF_i13_I_(false) :[deadlock free]
 assert IF_i13_I_(true) :[livelock free]
 assert CO_i84_function2_(true,true) :[deterministic]
+assert COMPLETE'({i14_i.i3_e}) [F= CO_i84_function2_(true,true) \ diff(Events,{i14_i.i3_e,illegal})
 assert STOP [T= AS_i84_function2_(false) \ diff(Events,{illegal})
 assert AS_i84_function2_(false) :[deadlock free]
 assert IF_i13_I_(true) [[i13_I.x<-i14_i.x|x<-extensions(i14_i)]][[i13_I_'.x<-i14_i_'.x|x<-extensions(i14_i_')]]\ {} [F= AS_i84_function2_(true) \ diff(Events,{|illegal,i14_i,i14_i_'|})

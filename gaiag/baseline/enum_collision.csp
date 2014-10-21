@@ -149,10 +149,13 @@ within compress((CO_enum_collision_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] 
                 (STOP
 )[[x<-IN'.x|x<-extensions(IN')]])
 
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
 -- end of component.csp.scm
 assert IF_ienum_collision_(false) :[deadlock free]
 assert IF_ienum_collision_(true) :[livelock free]
 assert CO_enum_collision_(true,true) :[deterministic]
+assert COMPLETE'({i.foo,i.bar}) [F= CO_enum_collision_(true,true) \ diff(Events,{i.foo,i.bar,illegal})
 assert STOP [T= AS_enum_collision_(false) \ diff(Events,{illegal})
 assert AS_enum_collision_(false) :[deadlock free]
 assert IF_ienum_collision_(true) [[ienum_collision.x<-i.x|x<-extensions(i)]][[ienum_collision_'.x<-i_'.x|x<-extensions(i_')]]\ {} [F= AS_enum_collision_(true) \ diff(Events,{|illegal,i,i_'|})

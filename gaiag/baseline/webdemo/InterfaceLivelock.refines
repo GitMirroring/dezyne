@@ -3,10 +3,13 @@ Checking out/webdemo/InterfaceLivelock.csp
 Checking IF_i138_BlindLoop_(false) :[deadlock free]
 true
 
-Checking IF_i138_BlindLoop_(true)\{|i138_BlindLoop.inevitable,i138_BlindLoop.inevitable|} :[livelock free]
+Checking IF_i138_BlindLoop_(true)\{|i138_BlindLoop.inevitable|} :[livelock free]
 xfalse
 
 Checking CO_i152_TestComponent_(true,true) :[deterministic]
+true
+
+Checking COMPLETE'({i139_LoopingInterface.i3_start}) [F= CO_i152_TestComponent_(true,true)\diff(Events,{i139_LoopingInterface.i3_start,illegal})
 true
 
 Checking STOP [T= AS_i152_TestComponent_(false)\diff(Events,{illegal})
@@ -15,8 +18,8 @@ true
 Checking AS_i152_TestComponent_(false) :[deadlock free]
 true
 
-Checking IF_i138_BlindLoop_(true)[[i138_BlindLoop.x<-i139_LoopingInterface.x|x<-extensions(i139_LoopingInterface)]]\{i139_LoopingInterface.inevitable,i139_LoopingInterface.inevitable} [F= AS_i152_TestComponent_(true)\diff(Events,{|illegal,i139_LoopingInterface|})
+Checking IF_i138_BlindLoop_(true)[[i138_BlindLoop.x<-i139_LoopingInterface.x|x<-extensions(i139_LoopingInterface)]][[i138_BlindLoop_'.x<-i139_LoopingInterface_'.x|x<-extensions(i139_LoopingInterface_')]]\{i139_LoopingInterface.inevitable} [F= AS_i152_TestComponent_(true)\diff(Events,{|illegal,i139_LoopingInterface,i139_LoopingInterface_'|})
 xfalse
 
-Checking AS_i152_TestComponent_(true)\diff(Events,{|illegal,i139_LoopingInterface|}) :[livelock free]
+Checking AS_i152_TestComponent_(true)\diff(Events,{|illegal,i139_LoopingInterface,i139_LoopingInterface_'|}) :[livelock free]
 true

@@ -173,12 +173,15 @@ within compress((CO_Reply_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reor
                 (IF_U_(true) [[U.x<-u.x|x<-extensions(u)]][[U_'.x<-u_'.x|x<-extensions(u_')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
 -- end of component.csp.scm
 assert IF_I_(false) :[deadlock free]
 assert IF_I_(true) :[livelock free]
 assert IF_U_(false) :[deadlock free]
 assert IF_U_(true) :[livelock free]
 assert CO_Reply_(true,true) :[deterministic]
+assert COMPLETE'({i.done}) [F= CO_Reply_(true,true) \ diff(Events,{i.done,illegal})
 assert STOP [T= AS_Reply_(false) \ diff(Events,{illegal})
 assert AS_Reply_(false) :[deadlock free]
 assert IF_I_(true) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]]\ {} [F= AS_Reply_(true) \ diff(Events,{|illegal,i,i_'|})

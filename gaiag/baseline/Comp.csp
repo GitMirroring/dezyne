@@ -282,12 +282,15 @@ within compress((CO_Comp_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reord
                 (IF_IDevice_(true) [[IDevice.x<-device_A.x|x<-extensions(device_A)]][[IDevice_'.x<-device_A_'.x|x<-extensions(device_A_')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
 -- end of component.csp.scm
 assert IF_IComp_(false) :[deadlock free]
 assert IF_IComp_(true) :[livelock free]
 assert IF_IDevice_(false) :[deadlock free]
 assert IF_IDevice_(true) :[livelock free]
 assert CO_Comp_(true,true) :[deterministic]
+assert COMPLETE'({client.initialize,client.recover,client.perform_actions}) [F= CO_Comp_(true,true) \ diff(Events,{client.initialize,client.recover,client.perform_actions,illegal})
 assert STOP [T= AS_Comp_(false) \ diff(Events,{illegal})
 assert AS_Comp_(false) :[deadlock free]
 assert IF_IComp_(true) [[IComp.x<-client.x|x<-extensions(client)]][[IComp_'.x<-client_'.x|x<-extensions(client_')]]\ {} [F= AS_Comp_(true) \ diff(Events,{|illegal,client,client_'|})

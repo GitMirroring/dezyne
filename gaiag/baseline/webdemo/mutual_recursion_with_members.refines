@@ -9,14 +9,17 @@ true
 Checking CO_i308_mutual_recursion_with_members_(true,true) :[deterministic]
 true
 
+Checking COMPLETE'({i100_beauty.i3_sleep}) [F= CO_i308_mutual_recursion_with_members_(true,true)\diff(Events,{i100_beauty.i3_sleep,illegal})
+true
+
 Checking STOP [T= AS_i308_mutual_recursion_with_members_(false)\diff(Events,{illegal})
 true
 
 Checking AS_i308_mutual_recursion_with_members_(false) :[deadlock free]
 true
 
-Checking IF_i99_sleeping_(true)[[i99_sleeping.x<-i100_beauty.x|x<-extensions(i100_beauty)]]\{} [F= AS_i308_mutual_recursion_with_members_(true)\diff(Events,{|illegal,i100_beauty|})
+Checking IF_i99_sleeping_(true)[[i99_sleeping.x<-i100_beauty.x|x<-extensions(i100_beauty)]][[i99_sleeping_'.x<-i100_beauty_'.x|x<-extensions(i100_beauty_')]][[i99_sleeping_''.x<-i100_beauty_''.x|x<-extensions(i100_beauty_'')]]\{} [F= AS_i308_mutual_recursion_with_members_(true)\diff(Events,{|illegal,i100_beauty,i100_beauty_',i100_beauty_''|})
 true
 
-Checking AS_i308_mutual_recursion_with_members_(true)\diff(Events,{|illegal,i100_beauty|}) :[livelock free]
+Checking AS_i308_mutual_recursion_with_members_(true)\diff(Events,{|illegal,i100_beauty,i100_beauty_',i100_beauty_''|}) :[livelock free]
 true

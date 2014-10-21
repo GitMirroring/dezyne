@@ -49,7 +49,7 @@
       (list (ast-name model) (.name model) check)))
 
 (define-method (assert-list (o <component>))
-   (or (and-let* ((component-checks '(deterministic illegal deadlock compliance livelock)))
+   (or (and-let* ((component-checks '(deterministic completeness illegal deadlock compliance livelock)))
                  (map (assert o) component-checks))
        '()))
 

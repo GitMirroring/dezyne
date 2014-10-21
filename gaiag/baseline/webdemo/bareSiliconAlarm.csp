@@ -450,6 +450,8 @@ within compress((CO_i1768_bareSiliconAlarm_(IIG,true) [[x<-OUT'.x|x<-extensions(
                  ||| IF_i506_ISensors_(true) [[i506_ISensors.x<-i822_sensors.x|x<-extensions(i822_sensors)]][[i506_ISensors_'.x<-i822_sensors_'.x|x<-extensions(i822_sensors_')]][[i506_ISensors_''.x<-i822_sensors_''.x|x<-extensions(i822_sensors_'')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
 -- end of component.csp.scm
 assert IF_i109_ISiren_(false) :[deadlock free]
 assert IF_i109_ISiren_(true) :[livelock free]
@@ -462,6 +464,7 @@ assert IF_i506_ISensors_(true)  \ {|i506_ISensors.optional|} :[livelock free]
 assert IF_i809_IAlarmSystem_(false) :[deadlock free]
 assert IF_i809_IAlarmSystem_(true)  \ {|i809_IAlarmSystem.optional|} :[livelock free]
 assert CO_i1768_bareSiliconAlarm_(true,true) :[deterministic]
+assert COMPLETE'({i810_alarmSystem.i510_SwitchOn,i810_alarmSystem.i512_SwitchOff,i819_preAlarmTimer_''.i165_Timeout,i822_sensors_''.i329_DetectedMovement}) [F= CO_i1768_bareSiliconAlarm_(true,true) \ diff(Events,{i810_alarmSystem.i510_SwitchOn,i810_alarmSystem.i512_SwitchOff,i819_preAlarmTimer_''.i165_Timeout,i822_sensors_''.i329_DetectedMovement,illegal})
 assert STOP [T= AS_i1768_bareSiliconAlarm_(false) \ diff(Events,{illegal})
 assert AS_i1768_bareSiliconAlarm_(false) :[deadlock free]
 assert IF_i809_IAlarmSystem_(true) [[i809_IAlarmSystem.x<-i810_alarmSystem.x|x<-extensions(i810_alarmSystem)]][[i809_IAlarmSystem_'.x<-i810_alarmSystem_'.x|x<-extensions(i810_alarmSystem_')]][[i809_IAlarmSystem_''.x<-i810_alarmSystem_''.x|x<-extensions(i810_alarmSystem_'')]]\ {i810_alarmSystem.optional} [F= AS_i1768_bareSiliconAlarm_(true) \ diff(Events,{|illegal,i810_alarmSystem,i810_alarmSystem_',i810_alarmSystem_''|})

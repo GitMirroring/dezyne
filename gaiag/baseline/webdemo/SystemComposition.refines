@@ -9,14 +9,17 @@ true
 Checking CO_i51_Bot_(true,true) :[deterministic]
 true
 
+Checking COMPLETE'({i14_p.i3_evt}) [F= CO_i51_Bot_(true,true)\diff(Events,{i14_p.i3_evt,illegal})
+true
+
 Checking STOP [T= AS_i51_Bot_(false)\diff(Events,{illegal})
 true
 
 Checking AS_i51_Bot_(false) :[deadlock free]
 true
 
-Checking IF_i13_I_(true)[[i13_I.x<-i14_p.x|x<-extensions(i14_p)]]\{} [F= AS_i51_Bot_(true)\diff(Events,{|illegal,i14_p|})
+Checking IF_i13_I_(true)[[i13_I.x<-i14_p.x|x<-extensions(i14_p)]][[i13_I_'.x<-i14_p_'.x|x<-extensions(i14_p_')]]\{} [F= AS_i51_Bot_(true)\diff(Events,{|illegal,i14_p,i14_p_'|})
 true
 
-Checking AS_i51_Bot_(true)\diff(Events,{|illegal,i14_p|}) :[livelock free]
+Checking AS_i51_Bot_(true)\diff(Events,{|illegal,i14_p,i14_p_'|}) :[livelock free]
 true

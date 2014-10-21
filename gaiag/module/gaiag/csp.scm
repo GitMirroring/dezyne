@@ -165,6 +165,7 @@
 
 (define asserts-alist
   `(
+    ((component completeness) . ,(gulp-template 'asserts/component-completeness.csp.scm))
     ((component illegal) . "assert STOP [T= AS_#(.name model) _#((compose .name .behaviour) model) (false) \\ diff(Events,{illegal})\n")
     ((component deterministic) . "assert CO_#(.name model) _#((compose .name .behaviour) model)(true,true) :[deterministic]\n")
     ((component deadlock)  . "assert AS_#(.name model) _#((compose .name .behaviour) model) (false) :[deadlock free]\n")

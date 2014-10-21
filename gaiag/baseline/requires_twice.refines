@@ -9,14 +9,17 @@ true
 Checking CO_requires_twice_(true,true) :[deterministic]
 true
 
+Checking COMPLETE'({p.e,once_''.a,twice_''.a}) [F= CO_requires_twice_(true,true)\diff(Events,{p.e,once_''.a,twice_''.a,illegal})
+true
+
 Checking STOP [T= AS_requires_twice_(false)\diff(Events,{illegal})
 true
 
 Checking AS_requires_twice_(false) :[deadlock free]
-xfalse
+true
 
-Checking IF_irequires_twice_(true)[[irequires_twice.x<-p.x|x<-extensions(p)]]\{} [F= AS_requires_twice_(true)\diff(Events,{|illegal,p|})
-xfalse
+Checking IF_irequires_twice_(true)[[irequires_twice.x<-p.x|x<-extensions(p)]][[irequires_twice_'.x<-p_'.x|x<-extensions(p_')]][[irequires_twice_''.x<-p_''.x|x<-extensions(p_'')]]\{} [F= AS_requires_twice_(true)\diff(Events,{|illegal,p,p_',p_''|})
+true
 
-Checking AS_requires_twice_(true)\diff(Events,{|illegal,p|}) :[livelock free]
+Checking AS_requires_twice_(true)\diff(Events,{|illegal,p,p_',p_''|}) :[livelock free]
 true

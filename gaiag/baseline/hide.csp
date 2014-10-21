@@ -168,10 +168,13 @@ within compress((CO_hide_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reord
                 (STOP
 )[[x<-IN'.x|x<-extensions(IN')]])
 
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
 -- end of component.csp.scm
 assert IF_I_(false) :[deadlock free]
 assert IF_I_(true) :[livelock free]
 assert CO_hide_(true,true) :[deterministic]
+assert COMPLETE'({i.e}) [F= CO_hide_(true,true) \ diff(Events,{i.e,illegal})
 assert STOP [T= AS_hide_(false) \ diff(Events,{illegal})
 assert AS_hide_(false) :[deadlock free]
 assert IF_I_(true) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]][[I_''.x<-i_''.x|x<-extensions(i_'')]]\ {} [F= AS_hide_(true) \ diff(Events,{|illegal,i,i_',i_''|})

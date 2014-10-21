@@ -77,9 +77,16 @@ CO_requires_twice_(IIG,IG) = let
 
 requires_twice_(((<>),(stack'))) = transition_begin -> (
 p?x:{e} ->
-semi_(semi_((\ P',V' @ once_''!a -> once_'.return -> P'(V')),
-(\ P',V' @ twice_''!a -> twice_'.return -> P'(V'))),
+semi_(semi_((\ P',V' @ once!e -> once_'.return -> P'(V')),
+(\ P',V' @ twice!e -> twice_'.return -> P'(V'))),
 (\ P',V' @ irequires_twice_'.return -> P'(V')))(\ V' @ transition_end -> requires_twice_(V'),((<>),(stack')))
+[]
+once_''?x:{a} ->
+skip_(\ V' @ transition_end -> requires_twice_(V'),((<>),(stack')))
+[]
+twice_''?x:{a} ->
+semi_((\ P',V' @ p_''!a -> P'(V')),
+skip_)(\ V' @ transition_end -> requires_twice_(V'),((<>),(stack')))
 )
 
 within requires_twice_(((<>),(<>)))
@@ -154,10 +161,13 @@ within compress((CO_requires_twice_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] 
                  ||| IF_irequires_twice_(true) [[irequires_twice.x<-twice.x|x<-extensions(twice)]][[irequires_twice_'.x<-twice_'.x|x<-extensions(twice_')]][[irequires_twice_''.x<-twice_''.x|x<-extensions(twice_'')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
 -- end of component.csp.scm
 assert IF_irequires_twice_(false) :[deadlock free]
 assert IF_irequires_twice_(true) :[livelock free]
 assert CO_requires_twice_(true,true) :[deterministic]
+assert COMPLETE'({p.e,once_''.a,twice_''.a}) [F= CO_requires_twice_(true,true) \ diff(Events,{p.e,once_''.a,twice_''.a,illegal})
 assert STOP [T= AS_requires_twice_(false) \ diff(Events,{illegal})
 assert AS_requires_twice_(false) :[deadlock free]
 assert IF_irequires_twice_(true) [[irequires_twice.x<-p.x|x<-extensions(p)]][[irequires_twice_'.x<-p_'.x|x<-extensions(p_')]][[irequires_twice_''.x<-p_''.x|x<-extensions(p_'')]]\ {} [F= AS_requires_twice_(true) \ diff(Events,{|illegal,p,p_',p_''|})

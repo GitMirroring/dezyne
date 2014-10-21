@@ -15,14 +15,17 @@ true
 Checking CO_i277_TVSet_(true,true) :[deterministic]
 true
 
+Checking COMPLETE'({i170_TVViewer.i3_pushStartButton,i173_TVDisplay_''.i68_activated}) [F= CO_i277_TVSet_(true,true)\diff(Events,{i170_TVViewer.i3_pushStartButton,i173_TVDisplay_''.i68_activated,illegal})
+true
+
 Checking STOP [T= AS_i277_TVSet_(false)\diff(Events,{illegal})
 true
 
 Checking AS_i277_TVSet_(false) :[deadlock free]
 true
 
-Checking IF_i66_Viewer_(true)[[i66_Viewer.x<-i170_TVViewer.x|x<-extensions(i170_TVViewer)]]\{} [F= AS_i277_TVSet_(true)\diff(Events,{|illegal,i170_TVViewer|})
+Checking IF_i66_Viewer_(true)[[i66_Viewer.x<-i170_TVViewer.x|x<-extensions(i170_TVViewer)]][[i66_Viewer_'.x<-i170_TVViewer_'.x|x<-extensions(i170_TVViewer_')]]\{} [F= AS_i277_TVSet_(true)\diff(Events,{|illegal,i170_TVViewer,i170_TVViewer_'|})
 true
 
-Checking AS_i277_TVSet_(true)\diff(Events,{|illegal,i170_TVViewer|}) :[livelock free]
+Checking AS_i277_TVSet_(true)\diff(Events,{|illegal,i170_TVViewer,i170_TVViewer_'|}) :[livelock free]
 xfalse

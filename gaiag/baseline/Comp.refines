@@ -15,14 +15,17 @@ true
 Checking CO_Comp_(true,true) :[deterministic]
 true
 
+Checking COMPLETE'({client.initialize,client.recover,client.perform_actions}) [F= CO_Comp_(true,true)\diff(Events,{client.initialize,client.recover,client.perform_actions,illegal})
+true
+
 Checking STOP [T= AS_Comp_(false)\diff(Events,{illegal})
 true
 
 Checking AS_Comp_(false) :[deadlock free]
 true
 
-Checking IF_IComp_(true)[[IComp.x<-client.x|x<-extensions(client)]]\{} [F= AS_Comp_(true)\diff(Events,{|illegal,client|})
+Checking IF_IComp_(true)[[IComp.x<-client.x|x<-extensions(client)]][[IComp_'.x<-client_'.x|x<-extensions(client_')]]\{} [F= AS_Comp_(true)\diff(Events,{|illegal,client,client_'|})
 true
 
-Checking AS_Comp_(true)\diff(Events,{|illegal,client|}) :[livelock free]
+Checking AS_Comp_(true)\diff(Events,{|illegal,client,client_'|}) :[livelock free]
 true

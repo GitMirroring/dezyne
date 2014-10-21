@@ -15,6 +15,9 @@ true
 Checking CO_i118_DummyC_(true,true) :[deterministic]
 true
 
+Checking COMPLETE'({i96_i.i79_e}) [F= CO_i118_DummyC_(true,true)\diff(Events,{i96_i.i79_e,illegal})
+true
+
 Checking STOP [T= AS_i118_DummyC_(false)\diff(Events,{illegal})
 true
 

@@ -161,10 +161,13 @@ within compress((CO_i152_TestComponent_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT'
                 (STOP
 )[[x<-IN'.x|x<-extensions(IN')]])
 
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
 -- end of component.csp.scm
 assert IF_i138_BlindLoop_(false) :[deadlock free]
 assert IF_i138_BlindLoop_(true)  \ {|i138_BlindLoop.inevitable|} :[livelock free]
 assert CO_i152_TestComponent_(true,true) :[deterministic]
+assert COMPLETE'({i139_LoopingInterface.i3_start}) [F= CO_i152_TestComponent_(true,true) \ diff(Events,{i139_LoopingInterface.i3_start,illegal})
 assert STOP [T= AS_i152_TestComponent_(false) \ diff(Events,{illegal})
 assert AS_i152_TestComponent_(false) :[deadlock free]
 assert IF_i138_BlindLoop_(true) [[i138_BlindLoop.x<-i139_LoopingInterface.x|x<-extensions(i139_LoopingInterface)]][[i138_BlindLoop_'.x<-i139_LoopingInterface_'.x|x<-extensions(i139_LoopingInterface_')]]\ {i139_LoopingInterface.inevitable} [F= AS_i152_TestComponent_(true) \ diff(Events,{|illegal,i139_LoopingInterface,i139_LoopingInterface_'|})

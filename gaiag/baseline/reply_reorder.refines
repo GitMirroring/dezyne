@@ -15,14 +15,17 @@ true
 Checking CO_reply_reorder_(true,true) :[deterministic]
 true
 
+Checking COMPLETE'({p.start,r_''.pong}) [F= CO_reply_reorder_(true,true)\diff(Events,{p.start,r_''.pong,illegal})
+true
+
 Checking STOP [T= AS_reply_reorder_(false)\diff(Events,{illegal})
 true
 
 Checking AS_reply_reorder_(false) :[deadlock free]
 true
 
-Checking IF_Provides_(true)[[Provides.x<-p.x|x<-extensions(p)]][[Provides_'.x<-p_'.x|x<-extensions(p_')]]\{} [F= AS_reply_reorder_(true)\diff(Events,{|illegal,p,p_'|})
+Checking IF_Provides_(true)[[Provides.x<-p.x|x<-extensions(p)]][[Provides_'.x<-p_'.x|x<-extensions(p_')]][[Provides_''.x<-p_''.x|x<-extensions(p_'')]]\{} [F= AS_reply_reorder_(true)\diff(Events,{|illegal,p,p_',p_''|})
 true
 
-Checking AS_reply_reorder_(true)\diff(Events,{|illegal,p,p_'|}) :[livelock free]
+Checking AS_reply_reorder_(true)\diff(Events,{|illegal,p,p_',p_''|}) :[livelock free]
 true

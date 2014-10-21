@@ -15,14 +15,17 @@ true
 Checking CO_Reply5_(true,true) :[deterministic]
 true
 
+Checking COMPLETE'({i.done}) [F= CO_Reply5_(true,true)\diff(Events,{i.done,illegal})
+true
+
 Checking STOP [T= AS_Reply5_(false)\diff(Events,{illegal})
 true
 
 Checking AS_Reply5_(false) :[deadlock free]
 true
 
-Checking IF_I_(true)[[I.x<-i.x|x<-extensions(i)]]\{} [F= AS_Reply5_(true)\diff(Events,{|illegal,i|})
+Checking IF_I_(true)[[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]]\{} [F= AS_Reply5_(true)\diff(Events,{|illegal,i,i_'|})
 true
 
-Checking AS_Reply5_(true)\diff(Events,{|illegal,i|}) :[livelock free]
+Checking AS_Reply5_(true)\diff(Events,{|illegal,i,i_'|}) :[livelock free]
 true

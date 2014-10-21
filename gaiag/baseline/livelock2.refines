@@ -15,14 +15,17 @@ true
 Checking CO_livelock2_(true,true) :[deterministic]
 true
 
+Checking COMPLETE'({l.dummy,n_''.dummy}) [F= CO_livelock2_(true,true)\diff(Events,{l.dummy,n_''.dummy,illegal})
+true
+
 Checking STOP [T= AS_livelock2_(false)\diff(Events,{illegal})
 true
 
 Checking AS_livelock2_(false) :[deadlock free]
 true
 
-Checking IF_ilivelock_(true)[[ilivelock.x<-l.x|x<-extensions(l)]]\{l.inevitable} [F= AS_livelock2_(true)\diff(Events,{|illegal,l|})
+Checking IF_ilivelock_(true)[[ilivelock.x<-l.x|x<-extensions(l)]][[ilivelock_'.x<-l_'.x|x<-extensions(l_')]]\{l.inevitable} [F= AS_livelock2_(true)\diff(Events,{|illegal,l,l_'|})
 true
 
-Checking AS_livelock2_(true)\diff(Events,{|illegal,l|}) :[livelock free]
+Checking AS_livelock2_(true)\diff(Events,{|illegal,l,l_'|}) :[livelock free]
 xfalse

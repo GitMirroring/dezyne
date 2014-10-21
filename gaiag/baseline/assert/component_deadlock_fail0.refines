@@ -9,6 +9,9 @@ true
 Checking CO_i49_C_(true,true) :[deterministic]
 true
 
+Checking COMPLETE'({i21_i.i3_e}) [F= CO_i49_C_(true,true)\diff(Events,{i21_i.i3_e,illegal})
+true
+
 Checking STOP [T= AS_i49_C_(false)\diff(Events,{illegal})
 true
 

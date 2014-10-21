@@ -1,8 +1,8 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
+//
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -21,28 +21,24 @@
 //
 // Code:
 
-interface irequires_twice
+interface iincomplete
 {
   in void e;
   out void a;
   behaviour
-    {
-      on e: a;
-    }
+  {
+    on e: a;
+  }
 }
 
-component requires_twice
+component incomplete
 {
-  provides irequires_twice p;
-  requires irequires_twice once;
-  requires irequires_twice twice;
+  provides iincomplete p;
+  requires iincomplete r;
   behaviour
-    { on p.e:
-      {
-        once.e;
-        twice.e;
-      }
-      on once.a: {}
-      on twice.a: {p.a;}
+  {
+    on p.e:
+    {
     }
+  }
 }

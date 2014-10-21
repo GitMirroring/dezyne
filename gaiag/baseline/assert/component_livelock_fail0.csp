@@ -168,12 +168,15 @@ within compress((CO_i78_C_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reor
                 (IF_i47_II_(true) [[i47_II.x<-i51_ii.x|x<-extensions(i51_ii)]][[i47_II_'.x<-i51_ii_'.x|x<-extensions(i51_ii_')]][[i47_II_''.x<-i51_ii_''.x|x<-extensions(i51_ii_'')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
 -- end of component.csp.scm
 assert IF_i20_I_(false) :[deadlock free]
 assert IF_i20_I_(true) :[livelock free]
 assert IF_i47_II_(false) :[deadlock free]
 assert IF_i47_II_(true)  \ {|i47_II.inevitable|} :[livelock free]
 assert CO_i78_C_(true,true) :[deterministic]
+assert COMPLETE'({i48_i.i3_e,i51_ii_''.i21_e}) [F= CO_i78_C_(true,true) \ diff(Events,{i48_i.i3_e,i51_ii_''.i21_e,illegal})
 assert STOP [T= AS_i78_C_(false) \ diff(Events,{illegal})
 assert AS_i78_C_(false) :[deadlock free]
 assert IF_i20_I_(true) [[i20_I.x<-i48_i.x|x<-extensions(i48_i)]][[i20_I_'.x<-i48_i_'.x|x<-extensions(i48_i_')]]\ {} [F= AS_i78_C_(true) \ diff(Events,{|illegal,i48_i,i48_i_'|})

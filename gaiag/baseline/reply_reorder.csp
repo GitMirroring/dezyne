@@ -179,12 +179,15 @@ within compress((CO_reply_reorder_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [
                 (IF_Requires_(true) [[Requires.x<-r.x|x<-extensions(r)]][[Requires_'.x<-r_'.x|x<-extensions(r_')]][[Requires_''.x<-r_''.x|x<-extensions(r_'')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
 -- end of component.csp.scm
 assert IF_Provides_(false) :[deadlock free]
 assert IF_Provides_(true) :[livelock free]
 assert IF_Requires_(false) :[deadlock free]
 assert IF_Requires_(true) :[livelock free]
 assert CO_reply_reorder_(true,true) :[deterministic]
+assert COMPLETE'({p.start,r_''.pong}) [F= CO_reply_reorder_(true,true) \ diff(Events,{p.start,r_''.pong,illegal})
 assert STOP [T= AS_reply_reorder_(false) \ diff(Events,{illegal})
 assert AS_reply_reorder_(false) :[deadlock free]
 assert IF_Provides_(true) [[Provides.x<-p.x|x<-extensions(p)]][[Provides_'.x<-p_'.x|x<-extensions(p_')]][[Provides_''.x<-p_''.x|x<-extensions(p_'')]]\ {} [F= AS_reply_reorder_(true) \ diff(Events,{|illegal,p,p_',p_''|})

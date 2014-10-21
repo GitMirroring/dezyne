@@ -1,24 +1,27 @@
 Checking out/webdemo/default.csp
 
-Checking IF_i242_Console_(false) :[deadlock free]
+Checking IF_i242_IConsole_(false) :[deadlock free]
 true
 
-Checking IF_i242_Console_(true)\{|i242_Console.inevitable,i242_Console.optional|} :[livelock free]
+Checking IF_i242_IConsole_(true)\{|i242_IConsole.inevitable,i242_IConsole.optional|} :[livelock free]
 true
 
-Checking IF_i482_Sensor_(false) :[deadlock free]
+Checking IF_i482_ISensor_(false) :[deadlock free]
 true
 
-Checking IF_i482_Sensor_(true)\{|i482_Sensor.inevitable,i482_Sensor.optional|} :[livelock free]
+Checking IF_i482_ISensor_(true)\{|i482_ISensor.inevitable,i482_ISensor.optional|} :[livelock free]
 true
 
-Checking IF_i593_Siren_(false) :[deadlock free]
+Checking IF_i593_ISiren_(false) :[deadlock free]
 true
 
-Checking IF_i593_Siren_(true) :[livelock free]
+Checking IF_i593_ISiren_(true) :[livelock free]
 true
 
 Checking CO_i1019_Alarm_(true,true) :[deterministic]
+true
+
+Checking COMPLETE'({i598_console.i3_arm,i598_console.i4_disarm,i601_sensor_''.i245_triggered,i601_sensor_''.i246_disabled}) [F= CO_i1019_Alarm_(true,true)\diff(Events,{i598_console.i3_arm,i598_console.i4_disarm,i601_sensor_''.i245_triggered,i601_sensor_''.i246_disabled,illegal})
 true
 
 Checking STOP [T= AS_i1019_Alarm_(false)\diff(Events,{illegal})
@@ -27,8 +30,8 @@ xfalse
 Checking AS_i1019_Alarm_(false) :[deadlock free]
 xfalse
 
-Checking IF_i242_Console_(true)[[i242_Console.x<-i598_console.x|x<-extensions(i598_console)]]\{i598_console.inevitable,i598_console.optional} [F= AS_i1019_Alarm_(true)\diff(Events,{|illegal,i598_console|})
+Checking IF_i242_IConsole_(true)[[i242_IConsole.x<-i598_console.x|x<-extensions(i598_console)]][[i242_IConsole_'.x<-i598_console_'.x|x<-extensions(i598_console_')]][[i242_IConsole_''.x<-i598_console_''.x|x<-extensions(i598_console_'')]]\{i598_console.inevitable,i598_console.optional} [F= AS_i1019_Alarm_(true)\diff(Events,{|illegal,i598_console,i598_console_',i598_console_''|})
 xfalse
 
-Checking AS_i1019_Alarm_(true)\diff(Events,{|illegal,i598_console|}) :[livelock free]
+Checking AS_i1019_Alarm_(true)\diff(Events,{|illegal,i598_console,i598_console_',i598_console_''|}) :[livelock free]
 true

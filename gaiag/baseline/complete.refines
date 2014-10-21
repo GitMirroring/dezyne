@@ -1,0 +1,28 @@
+Checking out/complete.csp
+
+Checking COMPLETE'({icomplete.e}) [F= IF_icomplete_(true)\diff(Events,{icomplete.e,illegal})
+true
+
+Checking IF_icomplete_(false) :[deadlock free]
+true
+
+Checking IF_icomplete_(true) :[livelock free]
+true
+
+Checking CO_complete_(true,true) :[deterministic]
+true
+
+Checking COMPLETE'({p.e,r_''.a}) [F= CO_complete_(true,true)\diff(Events,{p.e,r_''.a,illegal})
+true
+
+Checking STOP [T= AS_complete_(false)\diff(Events,{illegal})
+true
+
+Checking AS_complete_(false) :[deadlock free]
+true
+
+Checking IF_icomplete_(true)[[icomplete.x<-p.x|x<-extensions(p)]][[icomplete_'.x<-p_'.x|x<-extensions(p_')]][[icomplete_''.x<-p_''.x|x<-extensions(p_'')]]\{} [F= AS_complete_(true)\diff(Events,{|illegal,p,p_',p_''|})
+true
+
+Checking AS_complete_(true)\diff(Events,{|illegal,p,p_',p_''|}) :[livelock free]
+true

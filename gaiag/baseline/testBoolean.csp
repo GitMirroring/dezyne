@@ -170,10 +170,13 @@ within compress((CO_testBoolean_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x
                 (STOP
 )[[x<-IN'.x|x<-extensions(IN')]])
 
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
 -- end of component.csp.scm
 assert IF_TestBool_(false) :[deadlock free]
 assert IF_TestBool_(true) :[livelock free]
 assert CO_testBoolean_(true,true) :[deterministic]
+assert COMPLETE'({i.evt}) [F= CO_testBoolean_(true,true) \ diff(Events,{i.evt,illegal})
 assert STOP [T= AS_testBoolean_(false) \ diff(Events,{illegal})
 assert AS_testBoolean_(false) :[deadlock free]
 assert IF_TestBool_(true) [[TestBool.x<-i.x|x<-extensions(i)]][[TestBool_'.x<-i_'.x|x<-extensions(i_')]]\ {} [F= AS_testBoolean_(true) \ diff(Events,{|illegal,i,i_'|})

@@ -9,14 +9,17 @@ true
 Checking CO_imperative_(true,true) :[deterministic]
 true
 
+Checking COMPLETE'({i.e}) [F= CO_imperative_(true,true)\diff(Events,{i.e,illegal})
+true
+
 Checking STOP [T= AS_imperative_(false)\diff(Events,{illegal})
 true
 
 Checking AS_imperative_(false) :[deadlock free]
 true
 
-Checking IF_iimperative_(true)[[iimperative.x<-i.x|x<-extensions(i)]]\{} [F= AS_imperative_(true)\diff(Events,{|illegal,i|})
+Checking IF_iimperative_(true)[[iimperative.x<-i.x|x<-extensions(i)]][[iimperative_'.x<-i_'.x|x<-extensions(i_')]][[iimperative_''.x<-i_''.x|x<-extensions(i_'')]]\{} [F= AS_imperative_(true)\diff(Events,{|illegal,i,i_',i_''|})
 true
 
-Checking AS_imperative_(true)\diff(Events,{|illegal,i|}) :[livelock free]
+Checking AS_imperative_(true)\diff(Events,{|illegal,i,i_',i_''|}) :[livelock free]
 true

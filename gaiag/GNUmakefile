@@ -41,6 +41,8 @@ PREFIX = $(abspath $(shell pwd))
 GUILE_LOAD_PATH = $(PREFIX):$(PREFIX)/module
 GUILE_FLAGS := $(patsubst %,-L %, $(subst :, ,$(GUILE_LOAD_PATH)))
 PYTHON = PYTHONPATH= python
+WFC = true
+#WFC = $(TOPDIR)/$(BUILD)/asdgenerator
 
 default: all
 
@@ -210,7 +212,7 @@ wfc: compile $(WFC_SOURCES:%.asd=out/%.wfc)
 
 define .REGRESSION_REFINES
 rm -rf out && mkdir -p out && ln -s ../examples ../../webdemo ../templates ../$(DEPTH)/webdemo/asd out
-cd out && $(shell pwd)/gaiag -l csp $^
+cd out && $(WFC) $< && $(shell pwd)/gaiag -l csp $<
 $(diff) baseline/$*.csp out || true
 @$(diff) baseline/$*.csp out | diffstat || true
 $(CSPMCHECKER) out/$*.csp
@@ -219,8 +221,8 @@ $(diff) -I '^Checking' baseline/$*.refines $@ $(UPDATE)
 @$(diff) baseline/$*.csp out >/dev/null
 endef
 
-#out/%.update: UPDATE=||:; cp out/$*.update baseline/$*.refines
-out/%.update: UPDATE=&& cp out/$*.csp baseline/
+out/%.update: UPDATE=||:; cp out/$*.update baseline/$*.refines; cp out/$*.csp baseline/
+#out/%.update: UPDATE=&& cp out/$*.csp baseline/
 out/%.update: examples/regression/%.asd
 	$(.REGRESSION_REFINES)
 
@@ -240,8 +242,8 @@ $(diff) -I '^Checking' baseline/webdemo/$*.refines $@ $(UPDATE)
 @$(diff) baseline/webdemo/$*.csp out/webdemo >/dev/null
 endef
 
-#out/webdemo/%.update: UPDATE=||:; cp out/webdemo/$*.update baseline/webdemo/$*.refines
-out/webdemo/%.update: UPDATE=&& cp out/webdemo/$*.csp baseline/webdemo/
+out/webdemo/%.update: UPDATE=||:; cp out/webdemo/$*.update baseline/webdemo/$*.refines; cp out/webdemo/$*.csp baseline/webdemo/
+#out/webdemo/%.update: UPDATE=&& cp out/webdemo/$*.csp baseline/webdemo/
 out/webdemo/%.update: $(DEPTH)/webdemo/asd/%.asd
 	$(.WEBDEMO_REFINES)
 
@@ -264,8 +266,8 @@ $(diff) -I '^Checking' baseline/assert/$*.refines $@ $(UPDATE)
 @$(diff) baseline/assert/$*.csp out/assert >/dev/null
 endef
 
-#out/assert/%.update: UPDATE=||:; cp out/assert/$*.update baseline/assert/$*.refines
-out/assert/%.update: UPDATE=&& cp out/assert/$*.csp baseline/assert/
+out/assert/%.update: UPDATE=||:; cp out/assert/$*.update baseline/assert/$*.refines; cp out/assert/$*.csp baseline/assert
+#out/assert/%.update: UPDATE=&& cp out/assert/$*.csp baseline/assert/
 out/assert/%.update: $(DEPTH)/examples/assert/%.asd
 	$(.ASSERT_REFINES)
 
@@ -400,7 +402,7 @@ JAVA_SOURCES = $(filter-out $(JAVA_BROKEN),$(CC_SOURCES))
 
 define .JAVA_REGRESSION
 rm -rf out && mkdir out && ln -s ../examples ../templates out
-cd out && $(shell pwd)/gaiag -l java $<
+cd out && $(WFC) $< && $(shell pwd)/gaiag -l java $<
 -$(diff) baseline/component/$*.java out/component
 cat templates/java/header.java\
 	 $$(find out/interface out/component -name '*.java')\
@@ -449,7 +451,7 @@ JS_SOURCES = $(CC_SOURCES)
 
 define .JAVASCRIPT_REGRESSION
 rm -rf out && mkdir out && ln -s ../examples ../templates out
-cd out && $(shell pwd)/gaiag -l javascript $<
+cd out && $(WFC) $< && $(shell pwd)/gaiag -l javascript $<
 -$(diff) baseline/component/$*.js out/component
 cat templates/javascript/header.js\
 	 $$(find out/interface out/component -name '*.js')\
@@ -499,7 +501,7 @@ GOOPS_SOURCES = $(CC_SOURCES)
 
 define .GOOPS_REGRESSION
 rm -rf out && mkdir out && ln -s ../examples ../templates out
-cd out && $(shell pwd)/gaiag -l goops $<
+cd out && $(WFC) $< && $(shell pwd)/gaiag -l goops $<
 -$(diff) baseline/component/$*.scm out/component
 cat templates/goops/header.scm\
 	 $$(find out/interface out/component -name '*.scm')\
