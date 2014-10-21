@@ -1,0 +1,28 @@
+Checking incomplete_with_modeling_event.csp
+
+Checking COMPLETE'({iincomplete_with_modeling_event.inevitable,iincomplete_with_modeling_event.e}) [F= IF_iincomplete_with_modeling_event_(true,true)\diff(Events,{iincomplete_with_modeling_event.inevitable,iincomplete_with_modeling_event.e,illegal})
+xfalse
+
+Checking IF_iincomplete_with_modeling_event_(false,false) :[deadlock free]
+true
+
+Checking IF_iincomplete_with_modeling_event_(true,false)\{|iincomplete_with_modeling_event.inevitable|} :[livelock free]
+true
+
+Checking CO_incomplete_with_modeling_event_(true,true) :[deterministic]
+true
+
+Checking COMPLETE'({p.e,r_''.a}) [F= CO_incomplete_with_modeling_event_(true,true)[[iincomplete_with_modeling_event_'.x'<-p_'.x'|x'<-extensions(p_')]]\diff(Events,{p.e,r_''.a,illegal})
+xfalse
+
+Checking STOP [T= AS_incomplete_with_modeling_event_(false)\diff(Events,{illegal})
+true
+
+Checking AS_incomplete_with_modeling_event_(false) :[deadlock free]
+true
+
+Checking IF_iincomplete_with_modeling_event_(true,false)[[iincomplete_with_modeling_event.x<-p.x|x<-extensions(p)]][[iincomplete_with_modeling_event_'.x<-p_'.x|x<-extensions(p_')]][[iincomplete_with_modeling_event_''.x<-p_''.x|x<-extensions(p_'')]]\{p.inevitable} [F= AS_incomplete_with_modeling_event_(true)\diff(Events,{|illegal,p,p_',p_''|})
+true
+
+Checking AS_incomplete_with_modeling_event_(true)\diff(Events,{|illegal,p,p_',p_''|}) :[livelock free]
+true
