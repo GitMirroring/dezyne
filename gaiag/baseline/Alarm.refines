@@ -1,15 +1,24 @@
 Checking out/Alarm.csp
 
+Checking COMPLETE'({IConsole.arm,IConsole.disarm}) [F= IF_IConsole_a(true)\diff(Events,{IConsole.arm,IConsole.disarm,illegal})
+true
+
 Checking IF_IConsole_a(false) :[deadlock free]
 true
 
 Checking IF_IConsole_a(true)\{|IConsole.inevitable,IConsole.optional|} :[livelock free]
 true
 
+Checking COMPLETE'({ISensor.enable,ISensor.disable}) [F= IF_ISensor_b(true)\diff(Events,{ISensor.enable,ISensor.disable,illegal})
+true
+
 Checking IF_ISensor_b(false) :[deadlock free]
 true
 
 Checking IF_ISensor_b(true)\{|ISensor.inevitable,ISensor.optional|} :[livelock free]
+true
+
+Checking COMPLETE'({ISiren.turnon,ISiren.turnoff}) [F= IF_ISiren_c(true)\diff(Events,{ISiren.turnon,ISiren.turnoff,illegal})
 true
 
 Checking IF_ISiren_c(false) :[deadlock free]

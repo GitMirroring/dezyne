@@ -41,6 +41,8 @@ members_((M',L')) = (M',<>)
 channel illegal
 channel transition_begin, transition_end
 
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
 datatype event_enumeration_alphabet = a | e | return
 -- interface.csp.scm
 
@@ -161,9 +163,8 @@ within compress((CO_requires_twice_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] 
                  ||| IF_irequires_twice_(true) [[irequires_twice.x<-twice.x|x<-extensions(twice)]][[irequires_twice_'.x<-twice_'.x|x<-extensions(twice_')]][[irequires_twice_''.x<-twice_''.x|x<-extensions(twice_'')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
-
 -- end of component.csp.scm
+assert COMPLETE'({irequires_twice.e}) [F= IF_irequires_twice_(true) \ diff(Events,{irequires_twice.e,illegal})
 assert IF_irequires_twice_(false) :[deadlock free]
 assert IF_irequires_twice_(true) :[livelock free]
 assert CO_requires_twice_(true,true) :[deterministic]

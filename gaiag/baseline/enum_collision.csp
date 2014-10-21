@@ -41,6 +41,8 @@ members_((M',L')) = (M',<>)
 channel illegal
 channel transition_begin, transition_end
 
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
 datatype event_enumeration_alphabet = Retval1_NOK | Retval1_OK | Retval2_NOK | Retval2_OK | bar | foo | return
 -- interface.csp.scm
 
@@ -149,9 +151,8 @@ within compress((CO_enum_collision_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] 
                 (STOP
 )[[x<-IN'.x|x<-extensions(IN')]])
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
-
 -- end of component.csp.scm
+assert COMPLETE'({ienum_collision.foo,ienum_collision.bar}) [F= IF_ienum_collision_(true) \ diff(Events,{ienum_collision.foo,ienum_collision.bar,illegal})
 assert IF_ienum_collision_(false) :[deadlock free]
 assert IF_ienum_collision_(true) :[livelock free]
 assert CO_enum_collision_(true,true) :[deterministic]

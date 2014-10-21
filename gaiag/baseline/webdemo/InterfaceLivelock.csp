@@ -41,6 +41,8 @@ members_((M',L')) = (M',<>)
 channel illegal
 channel transition_begin, transition_end
 
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
 datatype event_enumeration_alphabet = i3_start | i7_States_InBusiness | i7_States_InitialState | i7_States_Started | inevitable | return
 -- interface.csp.scm
 
@@ -161,9 +163,8 @@ within compress((CO_i152_TestComponent_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT'
                 (STOP
 )[[x<-IN'.x|x<-extensions(IN')]])
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
-
 -- end of component.csp.scm
+assert COMPLETE'({i138_BlindLoop.i3_start}) [F= IF_i138_BlindLoop_(true) \ diff(Events,{i138_BlindLoop.i3_start,illegal})
 assert IF_i138_BlindLoop_(false) :[deadlock free]
 assert IF_i138_BlindLoop_(true)  \ {|i138_BlindLoop.inevitable|} :[livelock free]
 assert CO_i152_TestComponent_(true,true) :[deterministic]

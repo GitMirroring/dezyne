@@ -41,6 +41,8 @@ members_((M',L')) = (M',<>)
 channel illegal
 channel transition_begin, transition_end
 
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
 datatype event_enumeration_alphabet = i112_Values_CORRECT | i112_Values_WRONG | i113_isCodeCorrect | i161_CreateTimer | i162_CreateTimerEx | i163_CreateTimerMSec | i164_CancelTimer | i165_Timeout | i168_States_Active | i168_States_Inactive | i327_Activate | i328_Deactivate | i329_DetectedMovement | i333_States_Activated | i333_States_Deactivated | i333_States_Triggered | i3_TurnOn | i4_TurnOff | i509_Values_Failed | i509_Values_OK | i510_SwitchOn | i512_SwitchOff | i513_Tripped | i514_SwitchedOff | i515_SwitchOffFailed | i519_States_Activated_AlarmMode | i519_States_Activated_Idle | i519_States_NotActivated | i7_States_SirenOff | i7_States_SirenOn | i830_States_Activated_AlarmMode | i830_States_Activated_Idle | i830_States_Activated_Tripped | i830_States_CheckingDeactivationCode_WrongCode_Retry | i830_States_NotActivated | inevitable | optional | return
 -- interface.csp.scm
 
@@ -450,17 +452,20 @@ within compress((CO_i1768_bareSiliconAlarm_(IIG,true) [[x<-OUT'.x|x<-extensions(
                  ||| IF_i506_ISensors_(true) [[i506_ISensors.x<-i822_sensors.x|x<-extensions(i822_sensors)]][[i506_ISensors_'.x<-i822_sensors_'.x|x<-extensions(i822_sensors_')]][[i506_ISensors_''.x<-i822_sensors_''.x|x<-extensions(i822_sensors_'')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
-
 -- end of component.csp.scm
+assert COMPLETE'({i109_ISiren.i3_TurnOn,i109_ISiren.i4_TurnOff}) [F= IF_i109_ISiren_(true) \ diff(Events,{i109_ISiren.i3_TurnOn,i109_ISiren.i4_TurnOff,illegal})
 assert IF_i109_ISiren_(false) :[deadlock free]
 assert IF_i109_ISiren_(true) :[livelock free]
+assert COMPLETE'({i160_ISecretCode.i113_isCodeCorrect}) [F= IF_i160_ISecretCode_(true) \ diff(Events,{i160_ISecretCode.i113_isCodeCorrect,illegal})
 assert IF_i160_ISecretCode_(false) :[deadlock free]
 assert IF_i160_ISecretCode_(true) :[livelock free]
+assert COMPLETE'({i326_ITimer.i161_CreateTimer,i326_ITimer.i162_CreateTimerEx,i326_ITimer.i163_CreateTimerMSec,i326_ITimer.i164_CancelTimer}) [F= IF_i326_ITimer_(true) \ diff(Events,{i326_ITimer.i161_CreateTimer,i326_ITimer.i162_CreateTimerEx,i326_ITimer.i163_CreateTimerMSec,i326_ITimer.i164_CancelTimer,illegal})
 assert IF_i326_ITimer_(false) :[deadlock free]
 assert IF_i326_ITimer_(true)  \ {|i326_ITimer.inevitable|} :[livelock free]
+assert COMPLETE'({i506_ISensors.i327_Activate,i506_ISensors.i328_Deactivate}) [F= IF_i506_ISensors_(true) \ diff(Events,{i506_ISensors.i327_Activate,i506_ISensors.i328_Deactivate,illegal})
 assert IF_i506_ISensors_(false) :[deadlock free]
 assert IF_i506_ISensors_(true)  \ {|i506_ISensors.optional|} :[livelock free]
+assert COMPLETE'({i809_IAlarmSystem.i510_SwitchOn,i809_IAlarmSystem.i512_SwitchOff}) [F= IF_i809_IAlarmSystem_(true) \ diff(Events,{i809_IAlarmSystem.i510_SwitchOn,i809_IAlarmSystem.i512_SwitchOff,illegal})
 assert IF_i809_IAlarmSystem_(false) :[deadlock free]
 assert IF_i809_IAlarmSystem_(true)  \ {|i809_IAlarmSystem.optional|} :[livelock free]
 assert CO_i1768_bareSiliconAlarm_(true,true) :[deterministic]

@@ -41,6 +41,8 @@ members_((M',L')) = (M',<>)
 channel illegal
 channel transition_begin, transition_end
 
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
 datatype event_enumeration_alphabet = busy | finish | ping | pong | return | start
 -- interface.csp.scm
 
@@ -179,11 +181,11 @@ within compress((CO_reply_reorder_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [
                 (IF_Requires_(true) [[Requires.x<-r.x|x<-extensions(r)]][[Requires_'.x<-r_'.x|x<-extensions(r_')]][[Requires_''.x<-r_''.x|x<-extensions(r_'')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
-
 -- end of component.csp.scm
+assert COMPLETE'({Provides.start}) [F= IF_Provides_(true) \ diff(Events,{Provides.start,illegal})
 assert IF_Provides_(false) :[deadlock free]
 assert IF_Provides_(true) :[livelock free]
+assert COMPLETE'({Requires.ping}) [F= IF_Requires_(true) \ diff(Events,{Requires.ping,illegal})
 assert IF_Requires_(false) :[deadlock free]
 assert IF_Requires_(true) :[livelock free]
 assert CO_reply_reorder_(true,true) :[deterministic]

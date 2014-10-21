@@ -1,5 +1,8 @@
 Checking out/testBoolean.csp
 
+Checking COMPLETE'({TestBool.evt}) [F= IF_TestBool_(true)\diff(Events,{TestBool.evt,illegal})
+true
+
 Checking IF_TestBool_(false) :[deadlock free]
 true
 

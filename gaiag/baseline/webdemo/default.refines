@@ -1,15 +1,24 @@
 Checking out/webdemo/default.csp
 
+Checking COMPLETE'({i242_IConsole.i3_arm,i242_IConsole.i4_disarm}) [F= IF_i242_IConsole_(true)\diff(Events,{i242_IConsole.i3_arm,i242_IConsole.i4_disarm,illegal})
+true
+
 Checking IF_i242_IConsole_(false) :[deadlock free]
 true
 
 Checking IF_i242_IConsole_(true)\{|i242_IConsole.inevitable,i242_IConsole.optional|} :[livelock free]
 true
 
+Checking COMPLETE'({i482_ISensor.i243_enable,i482_ISensor.i244_disable}) [F= IF_i482_ISensor_(true)\diff(Events,{i482_ISensor.i243_enable,i482_ISensor.i244_disable,illegal})
+true
+
 Checking IF_i482_ISensor_(false) :[deadlock free]
 true
 
 Checking IF_i482_ISensor_(true)\{|i482_ISensor.inevitable,i482_ISensor.optional|} :[livelock free]
+true
+
+Checking COMPLETE'({i593_ISiren.i487_turnon,i593_ISiren.i488_turnoff}) [F= IF_i593_ISiren_(true)\diff(Events,{i593_ISiren.i487_turnon,i593_ISiren.i488_turnoff,illegal})
 true
 
 Checking IF_i593_ISiren_(false) :[deadlock free]

@@ -41,6 +41,8 @@ members_((M',L')) = (M',<>)
 channel illegal
 channel transition_begin, transition_end
 
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
 datatype event_enumeration_alphabet = i3_e | i6_States_S0 | i6_States_S1 | i79_e | return
 -- interface.csp.scm
 
@@ -168,11 +170,11 @@ within compress((CO_i118_DummyC_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x
                 (IF_i78_I_(true) [[i78_I.x<-i99_ii.x|x<-extensions(i99_ii)]][[i78_I_'.x<-i99_ii_'.x|x<-extensions(i99_ii_')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
-
 -- end of component.csp.scm
+assert COMPLETE'({i78_I.i3_e}) [F= IF_i78_I_(true) \ diff(Events,{i78_I.i3_e,illegal})
 assert IF_i78_I_(false) :[deadlock free]
 assert IF_i78_I_(true) :[livelock free]
+assert COMPLETE'({i95_DummyI.i79_e}) [F= IF_i95_DummyI_(true) \ diff(Events,{i95_DummyI.i79_e,illegal})
 assert IF_i95_DummyI_(false) :[deadlock free]
 assert IF_i95_DummyI_(true) :[livelock free]
 assert CO_i118_DummyC_(true,true) :[deterministic]

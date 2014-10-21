@@ -1,9 +1,15 @@
 Checking out/assert/interface_deadlock_fail0.csp
 
+Checking COMPLETE'({i29_I.i3_e}) [F= IF_i29_I_(true)\diff(Events,{i29_I.i3_e,illegal})
+true
+
 Checking IF_i29_I_(false) :[deadlock free]
 xfalse
 
 Checking IF_i29_I_(true) :[livelock free]
+true
+
+Checking COMPLETE'({i46_DummyI.i30_e}) [F= IF_i46_DummyI_(true)\diff(Events,{i46_DummyI.i30_e,illegal})
 true
 
 Checking IF_i46_DummyI_(false) :[deadlock free]

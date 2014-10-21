@@ -41,6 +41,8 @@ members_((M',L')) = (M',<>)
 channel illegal
 channel transition_begin, transition_end
 
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
 datatype event_enumeration_alphabet = i178_States_SwitchedOff | i178_States_SwitchedOn | i3_pushStartButton | i67_activate | i68_activated | i6_States_Pushed | i6_States_Released | i71_States_Activated | i71_States_Idle | inevitable | return
 -- interface.csp.scm
 
@@ -191,11 +193,11 @@ within compress((CO_i277_TVSet_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<
                 (IF_i169_Display_(true) [[i169_Display.x<-i173_TVDisplay.x|x<-extensions(i173_TVDisplay)]][[i169_Display_'.x<-i173_TVDisplay_'.x|x<-extensions(i173_TVDisplay_')]][[i169_Display_''.x<-i173_TVDisplay_''.x|x<-extensions(i173_TVDisplay_'')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
-
 -- end of component.csp.scm
+assert COMPLETE'({i169_Display.i67_activate}) [F= IF_i169_Display_(true) \ diff(Events,{i169_Display.i67_activate,illegal})
 assert IF_i169_Display_(false) :[deadlock free]
 assert IF_i169_Display_(true)  \ {|i169_Display.inevitable|} :[livelock free]
+assert COMPLETE'({i66_Viewer.i3_pushStartButton}) [F= IF_i66_Viewer_(true) \ diff(Events,{i66_Viewer.i3_pushStartButton,illegal})
 assert IF_i66_Viewer_(false) :[deadlock free]
 assert IF_i66_Viewer_(true) :[livelock free]
 assert CO_i277_TVSet_(true,true) :[deterministic]

@@ -1,5 +1,8 @@
 Checking out/imperative.csp
 
+Checking COMPLETE'({iimperative.e}) [F= IF_iimperative_(true)\diff(Events,{iimperative.e,illegal})
+true
+
 Checking IF_iimperative_(false) :[deadlock free]
 true
 

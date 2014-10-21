@@ -1,5 +1,8 @@
 Checking out/argument2.csp
 
+Checking COMPLETE'({if_I.ev_e}) [F= IF_if_I_(true)\diff(Events,{if_I.ev_e,illegal})
+true
+
 Checking IF_if_I_(false) :[deadlock free]
 true
 

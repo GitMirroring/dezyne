@@ -1,9 +1,15 @@
 Checking out/assert/component_livelock_fail1.csp
 
+Checking COMPLETE'({i102_II.i21_a}) [F= IF_i102_II_(true)\diff(Events,{i102_II.i21_a,illegal})
+true
+
 Checking IF_i102_II_(false) :[deadlock free]
 true
 
 Checking IF_i102_II_(true)\{|i102_II.inevitable|} :[livelock free]
+true
+
+Checking COMPLETE'({i20_I.i3_e}) [F= IF_i20_I_(true)\diff(Events,{i20_I.i3_e,illegal})
 true
 
 Checking IF_i20_I_(false) :[deadlock free]

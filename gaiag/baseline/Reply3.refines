@@ -1,9 +1,15 @@
 Checking out/Reply3.csp
 
+Checking COMPLETE'({I.done}) [F= IF_I_(true)\diff(Events,{I.done,illegal})
+true
+
 Checking IF_I_(false) :[deadlock free]
 true
 
 Checking IF_I_(true) :[livelock free]
+true
+
+Checking COMPLETE'({U.what}) [F= IF_U_(true)\diff(Events,{U.what,illegal})
 true
 
 Checking IF_U_(false) :[deadlock free]

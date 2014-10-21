@@ -1,10 +1,16 @@
 Checking out/livelock2.csp
 
+Checking COMPLETE'({ilivelock.dummy}) [F= IF_ilivelock_(true)\diff(Events,{ilivelock.dummy,illegal})
+true
+
 Checking IF_ilivelock_(false) :[deadlock free]
 true
 
 Checking IF_ilivelock_(true)\{|ilivelock.inevitable|} :[livelock free]
 xfalse
+
+Checking COMPLETE'({}) [F= IF_nolivelock_(true)\diff(Events,{illegal})
+true
 
 Checking IF_nolivelock_(false) :[deadlock free]
 true

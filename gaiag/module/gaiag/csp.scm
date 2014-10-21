@@ -171,6 +171,7 @@
     ((component deadlock)  . "assert AS_#(.name model) _#((compose .name .behaviour) model) (false) :[deadlock free]\n")
     ((component compliance) . ,(gulp-template 'asserts/component-compliance.csp.scm))
     ((component livelock)  .  "assert AS_#(.name model) _#((compose .name .behaviour) model) (true) \\ diff(Events,{|illegal,#((compose .name gom:port) model),#((compose .name gom:port) model)_'#(->string (if (not (null? (filter gom:out? (gom:events (gom:port model))))) (list \",\" ((compose .name gom:port) model)\"_''\")))|}) :[livelock free]\n")
+    ((interface completeness) . ,(gulp-template 'asserts/interface-completeness.csp.scm))
     ((interface deadlock) . ,(gulp-template 'asserts/interface-deadlock.csp.scm))
     ((interface livelock) . ,(gulp-template 'asserts/interface-livelock.csp.scm))))
 

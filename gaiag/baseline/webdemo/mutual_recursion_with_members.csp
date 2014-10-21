@@ -41,6 +41,8 @@ members_((M',L')) = (M',<>)
 channel illegal
 channel transition_begin, transition_end
 
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
 datatype event_enumeration_alphabet = i3_sleep | i4_zzz | i5_yawn | i6_stretch | return
 -- interface.csp.scm
 
@@ -178,9 +180,8 @@ within compress((CO_i308_mutual_recursion_with_members_(IIG,true) [[x<-OUT'.x|x<
                 (STOP
 )[[x<-IN'.x|x<-extensions(IN')]])
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
-
 -- end of component.csp.scm
+assert COMPLETE'({i99_sleeping.i3_sleep}) [F= IF_i99_sleeping_(true) \ diff(Events,{i99_sleeping.i3_sleep,illegal})
 assert IF_i99_sleeping_(false) :[deadlock free]
 assert IF_i99_sleeping_(true) :[livelock free]
 assert CO_i308_mutual_recursion_with_members_(true,true) :[deterministic]

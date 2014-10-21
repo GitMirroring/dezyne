@@ -1,9 +1,15 @@
 Checking out/reply_reorder.csp
 
+Checking COMPLETE'({Provides.start}) [F= IF_Provides_(true)\diff(Events,{Provides.start,illegal})
+true
+
 Checking IF_Provides_(false) :[deadlock free]
 true
 
 Checking IF_Provides_(true) :[livelock free]
+true
+
+Checking COMPLETE'({Requires.ping}) [F= IF_Requires_(true)\diff(Events,{Requires.ping,illegal})
 true
 
 Checking IF_Requires_(false) :[deadlock free]

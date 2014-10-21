@@ -54,7 +54,7 @@
        '()))
 
 (define-method (assert-list (o <interface>))
-  (or (and-let* ((interface-checks '(deadlock livelock)))
+  (or (and-let* ((interface-checks '(completeness deadlock livelock)))
                 (map (assert o) interface-checks))
       '()))
 

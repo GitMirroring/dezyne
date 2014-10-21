@@ -1,5 +1,8 @@
 Checking out/Reply7.csp
 
+Checking COMPLETE'({IReply7.foo}) [F= IF_IReply7_(true)\diff(Events,{IReply7.foo,illegal})
+true
+
 Checking IF_IReply7_(false) :[deadlock free]
 true
 

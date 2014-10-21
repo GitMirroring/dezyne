@@ -1,9 +1,15 @@
 Checking out/webdemo/ComponentLivelock_TV.csp
 
+Checking COMPLETE'({i169_Display.i67_activate}) [F= IF_i169_Display_(true)\diff(Events,{i169_Display.i67_activate,illegal})
+true
+
 Checking IF_i169_Display_(false) :[deadlock free]
 true
 
 Checking IF_i169_Display_(true)\{|i169_Display.inevitable|} :[livelock free]
+true
+
+Checking COMPLETE'({i66_Viewer.i3_pushStartButton}) [F= IF_i66_Viewer_(true)\diff(Events,{i66_Viewer.i3_pushStartButton,illegal})
 true
 
 Checking IF_i66_Viewer_(false) :[deadlock free]

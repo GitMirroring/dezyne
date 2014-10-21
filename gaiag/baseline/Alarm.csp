@@ -41,6 +41,8 @@ members_((M',L')) = (M',<>)
 channel illegal
 channel transition_begin, transition_end
 
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
 datatype event_enumeration_alphabet = States_Armed | States_Disabled | States_Disabling | States_Disarmed | States_Disarming | States_Enabled | States_Off | States_On | States_Triggered | arm | deactivated | detected | disable | disabled | disarm | enable | inevitable | optional | return | triggered | turnoff | turnon
 -- interface.csp.scm
 
@@ -326,13 +328,14 @@ within compress((CO_Alarm_d(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reo
                  ||| IF_ISiren_c(true) [[ISiren.x<-siren.x|x<-extensions(siren)]][[ISiren_'.x<-siren_'.x|x<-extensions(siren_')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
-
 -- end of component.csp.scm
+assert COMPLETE'({IConsole.arm,IConsole.disarm}) [F= IF_IConsole_a(true) \ diff(Events,{IConsole.arm,IConsole.disarm,illegal})
 assert IF_IConsole_a(false) :[deadlock free]
 assert IF_IConsole_a(true)  \ {|IConsole.inevitable,IConsole.optional|} :[livelock free]
+assert COMPLETE'({ISensor.enable,ISensor.disable}) [F= IF_ISensor_b(true) \ diff(Events,{ISensor.enable,ISensor.disable,illegal})
 assert IF_ISensor_b(false) :[deadlock free]
 assert IF_ISensor_b(true)  \ {|ISensor.inevitable,ISensor.optional|} :[livelock free]
+assert COMPLETE'({ISiren.turnon,ISiren.turnoff}) [F= IF_ISiren_c(true) \ diff(Events,{ISiren.turnon,ISiren.turnoff,illegal})
 assert IF_ISiren_c(false) :[deadlock free]
 assert IF_ISiren_c(true) :[livelock free]
 assert CO_Alarm_d(true,true) :[deterministic]

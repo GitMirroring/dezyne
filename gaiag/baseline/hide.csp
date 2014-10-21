@@ -41,6 +41,8 @@ members_((M',L')) = (M',<>)
 channel illegal
 channel transition_begin, transition_end
 
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
 datatype event_enumeration_alphabet = e | f | return
 -- interface.csp.scm
 
@@ -168,9 +170,8 @@ within compress((CO_hide_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reord
                 (STOP
 )[[x<-IN'.x|x<-extensions(IN')]])
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
-
 -- end of component.csp.scm
+assert COMPLETE'({I.e}) [F= IF_I_(true) \ diff(Events,{I.e,illegal})
 assert IF_I_(false) :[deadlock free]
 assert IF_I_(true) :[livelock free]
 assert CO_hide_(true,true) :[deterministic]

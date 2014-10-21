@@ -1,5 +1,8 @@
 Checking out/assert/component_compliance_fail0.csp
 
+Checking COMPLETE'({i27_I.i3_e,i27_I.i4_f}) [F= IF_i27_I_(true)\diff(Events,{i27_I.i3_e,i27_I.i4_f,illegal})
+true
+
 Checking IF_i27_I_(false) :[deadlock free]
 true
 

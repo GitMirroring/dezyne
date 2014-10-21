@@ -1,0 +1,10 @@
+Checking iincomplete.csp
+
+Checking COMPLETE'({iincomplete.e}) [F= IF_iincomplete_(true)\diff(Events,{iincomplete.e,illegal})
+true
+
+Checking IF_iincomplete_(false) :[deadlock free]
+xfalse
+
+Checking IF_iincomplete_(true) :[livelock free]
+xfalse

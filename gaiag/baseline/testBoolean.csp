@@ -41,6 +41,8 @@ members_((M',L')) = (M',<>)
 channel illegal
 channel transition_begin, transition_end
 
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
 datatype event_enumeration_alphabet = States_State1 | States_State2 | evt | return
 -- interface.csp.scm
 
@@ -170,9 +172,8 @@ within compress((CO_testBoolean_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x
                 (STOP
 )[[x<-IN'.x|x<-extensions(IN')]])
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
-
 -- end of component.csp.scm
+assert COMPLETE'({TestBool.evt}) [F= IF_TestBool_(true) \ diff(Events,{TestBool.evt,illegal})
 assert IF_TestBool_(false) :[deadlock free]
 assert IF_TestBool_(true) :[livelock free]
 assert CO_testBoolean_(true,true) :[deterministic]

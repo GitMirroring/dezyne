@@ -1,9 +1,15 @@
 Checking out/Comp.csp
 
+Checking COMPLETE'({IComp.initialize,IComp.recover,IComp.perform_actions}) [F= IF_IComp_(true)\diff(Events,{IComp.initialize,IComp.recover,IComp.perform_actions,illegal})
+true
+
 Checking IF_IComp_(false) :[deadlock free]
 true
 
 Checking IF_IComp_(true) :[livelock free]
+true
+
+Checking COMPLETE'({IDevice.initialize,IDevice.calibrate,IDevice.perform_action1,IDevice.perform_action2}) [F= IF_IDevice_(true)\diff(Events,{IDevice.initialize,IDevice.calibrate,IDevice.perform_action1,IDevice.perform_action2,illegal})
 true
 
 Checking IF_IDevice_(false) :[deadlock free]

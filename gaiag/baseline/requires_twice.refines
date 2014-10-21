@@ -1,5 +1,8 @@
 Checking out/requires_twice.csp
 
+Checking COMPLETE'({irequires_twice.e}) [F= IF_irequires_twice_(true)\diff(Events,{irequires_twice.e,illegal})
+true
+
 Checking IF_irequires_twice_(false) :[deadlock free]
 true
 

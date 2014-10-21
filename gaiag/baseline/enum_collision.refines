@@ -1,5 +1,8 @@
 Checking out/enum_collision.csp
 
+Checking COMPLETE'({ienum_collision.foo,ienum_collision.bar}) [F= IF_ienum_collision_(true)\diff(Events,{ienum_collision.foo,ienum_collision.bar,illegal})
+true
+
 Checking IF_ienum_collision_(false) :[deadlock free]
 true
 

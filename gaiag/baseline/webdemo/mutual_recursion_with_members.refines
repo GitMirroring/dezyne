@@ -1,5 +1,8 @@
 Checking out/webdemo/mutual_recursion_with_members.csp
 
+Checking COMPLETE'({i99_sleeping.i3_sleep}) [F= IF_i99_sleeping_(true)\diff(Events,{i99_sleeping.i3_sleep,illegal})
+true
+
 Checking IF_i99_sleeping_(false) :[deadlock free]
 true
 

@@ -1,5 +1,8 @@
 Checking out/webdemo/nonrecursion.csp
 
+Checking COMPLETE'({i23_I.i3_e}) [F= IF_i23_I_(true)\diff(Events,{i23_I.i3_e,illegal})
+true
+
 Checking IF_i23_I_(false) :[deadlock free]
 true
 

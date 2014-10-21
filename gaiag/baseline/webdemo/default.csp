@@ -41,6 +41,8 @@ members_((M',L')) = (M',<>)
 channel illegal
 channel transition_begin, transition_end
 
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
 datatype event_enumeration_alphabet = i11_States_Armed | i11_States_Disarmed | i11_States_Disarming | i11_States_Triggered | i243_enable | i244_disable | i245_triggered | i246_disabled | i251_States_Disabled | i251_States_Disabling | i251_States_Enabled | i251_States_Triggered | i3_arm | i487_turnon | i488_turnoff | i491_States_Off | i491_States_On | i4_disarm | i5_detected | i611_States_Armed | i611_States_Disarmed | i611_States_Disarming | i611_States_Triggered | i6_deactivated | inevitable | optional | return
 -- interface.csp.scm
 
@@ -324,13 +326,14 @@ within compress((CO_i1019_Alarm_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x
                  ||| IF_i593_ISiren_(true) [[i593_ISiren.x<-i604_siren.x|x<-extensions(i604_siren)]][[i593_ISiren_'.x<-i604_siren_'.x|x<-extensions(i604_siren_')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
-
 -- end of component.csp.scm
+assert COMPLETE'({i242_IConsole.i3_arm,i242_IConsole.i4_disarm}) [F= IF_i242_IConsole_(true) \ diff(Events,{i242_IConsole.i3_arm,i242_IConsole.i4_disarm,illegal})
 assert IF_i242_IConsole_(false) :[deadlock free]
 assert IF_i242_IConsole_(true)  \ {|i242_IConsole.inevitable,i242_IConsole.optional|} :[livelock free]
+assert COMPLETE'({i482_ISensor.i243_enable,i482_ISensor.i244_disable}) [F= IF_i482_ISensor_(true) \ diff(Events,{i482_ISensor.i243_enable,i482_ISensor.i244_disable,illegal})
 assert IF_i482_ISensor_(false) :[deadlock free]
 assert IF_i482_ISensor_(true)  \ {|i482_ISensor.inevitable,i482_ISensor.optional|} :[livelock free]
+assert COMPLETE'({i593_ISiren.i487_turnon,i593_ISiren.i488_turnoff}) [F= IF_i593_ISiren_(true) \ diff(Events,{i593_ISiren.i487_turnon,i593_ISiren.i488_turnoff,illegal})
 assert IF_i593_ISiren_(false) :[deadlock free]
 assert IF_i593_ISiren_(true) :[livelock free]
 assert CO_i1019_Alarm_(true,true) :[deterministic]

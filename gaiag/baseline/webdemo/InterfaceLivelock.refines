@@ -1,5 +1,8 @@
 Checking out/webdemo/InterfaceLivelock.csp
 
+Checking COMPLETE'({i138_BlindLoop.i3_start}) [F= IF_i138_BlindLoop_(true)\diff(Events,{i138_BlindLoop.i3_start,illegal})
+true
+
 Checking IF_i138_BlindLoop_(false) :[deadlock free]
 true
 

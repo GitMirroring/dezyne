@@ -1,9 +1,15 @@
 Checking out/webdemo/pauls.csp
 
+Checking COMPLETE'({i301_IDevice.i3_initialize,i301_IDevice.i5_calibrate,i301_IDevice.i7_perform_action1,i301_IDevice.i9_perform_action2}) [F= IF_i301_IDevice_(true)\diff(Events,{i301_IDevice.i3_initialize,i301_IDevice.i5_calibrate,i301_IDevice.i7_perform_action1,i301_IDevice.i9_perform_action2,illegal})
+true
+
 Checking IF_i301_IDevice_(false) :[deadlock free]
 true
 
 Checking IF_i301_IDevice_(true) :[livelock free]
+true
+
+Checking COMPLETE'({i568_IComp.i302_initialize,i568_IComp.i304_recover,i568_IComp.i306_perform_actions}) [F= IF_i568_IComp_(true)\diff(Events,{i568_IComp.i302_initialize,i568_IComp.i304_recover,i568_IComp.i306_perform_actions,illegal})
 true
 
 Checking IF_i568_IComp_(false) :[deadlock free]

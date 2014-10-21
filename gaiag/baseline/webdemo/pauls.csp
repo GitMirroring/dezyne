@@ -41,6 +41,8 @@ members_((M',L')) = (M',<>)
 channel illegal
 channel transition_begin, transition_end
 
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
 datatype event_enumeration_alphabet = i13_result_t_NOK | i13_result_t_OK | i17_State_Calibrated | i17_State_Initialized | i17_State_Uninitialized | i302_initialize | i304_recover | i306_perform_actions | i310_result_t_NOK | i310_result_t_OK | i314_State_Error | i314_State_Initialized | i314_State_Uninitialized | i3_initialize | i581_State_Error | i581_State_Initialized | i581_State_Uninitialized | i5_calibrate | i7_perform_action1 | i9_perform_action2 | return
 -- interface.csp.scm
 
@@ -300,11 +302,11 @@ within compress((CO_i1121_Comp_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<
                  ||| IF_i301_IDevice_(true) [[i301_IDevice.x<-i575_device_B.x|x<-extensions(i575_device_B)]][[i301_IDevice_'.x<-i575_device_B_'.x|x<-extensions(i575_device_B_')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
-
 -- end of component.csp.scm
+assert COMPLETE'({i301_IDevice.i3_initialize,i301_IDevice.i5_calibrate,i301_IDevice.i7_perform_action1,i301_IDevice.i9_perform_action2}) [F= IF_i301_IDevice_(true) \ diff(Events,{i301_IDevice.i3_initialize,i301_IDevice.i5_calibrate,i301_IDevice.i7_perform_action1,i301_IDevice.i9_perform_action2,illegal})
 assert IF_i301_IDevice_(false) :[deadlock free]
 assert IF_i301_IDevice_(true) :[livelock free]
+assert COMPLETE'({i568_IComp.i302_initialize,i568_IComp.i304_recover,i568_IComp.i306_perform_actions}) [F= IF_i568_IComp_(true) \ diff(Events,{i568_IComp.i302_initialize,i568_IComp.i304_recover,i568_IComp.i306_perform_actions,illegal})
 assert IF_i568_IComp_(false) :[deadlock free]
 assert IF_i568_IComp_(true) :[livelock free]
 assert CO_i1121_Comp_(true,true) :[deterministic]
