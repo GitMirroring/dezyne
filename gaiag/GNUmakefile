@@ -298,7 +298,7 @@ ASSERT_SOURCES = $(shell cd $(DEPTH)/examples/assert && ls *.asd)
 csp-assert: $(ASSERT_SOURCES:%.asd=out/assert/%.refines)
 csp-assert-update: $(ASSERT_SOURCES:%.asd=out/assert/%.update)
 
-csp: csp-regression-update csp-demo-update csp-assert-update
+csp: csp-regression csp-demo csp-assert
 csp-update: csp-regression-update csp-assert-update csp-demo-update csp-assert-update
 
 simulate: compile
