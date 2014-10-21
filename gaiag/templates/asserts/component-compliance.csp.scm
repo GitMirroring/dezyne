@@ -23,7 +23,7 @@
 ;;; 
 ;;; Code:
 
-assert IF_#((compose .type gom:port) model) _#((compose .name .behaviour gom:import .type gom:port) model)(true) [[#((compose .type gom:port) model) .x<-#((compose .name gom:port) model) .x|x<-extensions(#((compose .name gom:port) model))]][[#((compose .type gom:port) model)_'.x<-#((compose .name gom:port) model)_'.x|x<-extensions(#((compose .name gom:port) model)_')]]#
+assert IF_#((compose .type gom:port) model) _#((compose .name .behaviour gom:import .type gom:port) model)(true,false) [[#((compose .type gom:port) model) .x<-#((compose .name gom:port) model) .x|x<-extensions(#((compose .name gom:port) model))]][[#((compose .type gom:port) model)_'.x<-#((compose .name gom:port) model)_'.x|x<-extensions(#((compose .name gom:port) model)_')]]#
 (->string (if (not (null? (filter gom:out? (gom:events (gom:port model))))) (list "[["((compose .type gom:port) model) "_''.x<-" ((compose .name gom:port) model) "_''.x|x<-extensions("((compose .name gom:port) model) "_'')]]"))) \ {#
    (comma-join
        (map (lambda (x) (map ->string (list ((compose .name gom:port) model) "." x))) (filter

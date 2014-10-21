@@ -22,4 +22,4 @@
 ;;; 
 ;;; Code:
 
-assert IF_#(.name model) _#((compose .name .behaviour) model) (true) #(hide-modeling model) :[livelock free]
+assert IF_#(.name model) _#((compose .name .behaviour) model) (true,false) #(hide-modeling model) :[livelock free]

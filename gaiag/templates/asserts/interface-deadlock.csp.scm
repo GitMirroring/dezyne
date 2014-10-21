@@ -22,4 +22,4 @@
 ;;; 
 ;;; Code:
 
-assert IF_#(.name model) _#((compose .name .behaviour) model) (false) :[deadlock free]
+assert IF_#(.name model) _#((compose .name .behaviour) model) (false,false) :[deadlock free]

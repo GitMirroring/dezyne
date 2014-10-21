@@ -121,7 +121,7 @@ within compress((CO_#(.name model) _#((compose .name .behaviour) model) (IIG,tru
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|#(comma-join (apply append (list "IN'") (map (lambda (o) (list (.name o) (string-append (symbol->string (.name o)) "_'"))) (filter gom:requires? ((compose .elements .ports) model)))))|}|]
                 (# (let ((required_processes ((->join "\n                 ||| ") (map (lambda (port)
-(->string (list "IF_" (.type port) '_ ((compose .name .behaviour gom:import .type) port) "(true) [["(.type port) ".x<-" (.name port) ".x|x<-extensions("(.name port)")]][["(.type port) "_'.x<-" (.name port) "_'.x|x<-extensions("(.name port)"_')]]" (if (not (null? (filter gom:out? (gom:events port)))) (list "[["(.type port) "_''.x<-" (.name port) "_''.x|x<-extensions("(.name port)"_'')]]")))))
+(->string (list "IF_" (.type port) '_ ((compose .name .behaviour gom:import .type) port) "(true,false) [["(.type port) ".x<-" (.name port) ".x|x<-extensions("(.name port)")]][["(.type port) "_'.x<-" (.name port) "_'.x|x<-extensions("(.name port)"_')]]" (if (not (null? (filter gom:out? (gom:events port)))) (list "[["(.type port) "_''.x<-" (.name port) "_''.x|x<-extensions("(.name port)"_'')]]")))))
  (filter gom:requires? ((compose .elements .ports) model)))))) (if (string-null? required_processes) 'STOP required_processes))
 )[[x<-IN'.x|x<-extensions(IN')]])
 
