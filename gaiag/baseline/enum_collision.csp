@@ -156,7 +156,7 @@ assert COMPLETE'({ienum_collision.foo,ienum_collision.bar}) [F= IF_ienum_collisi
 assert IF_ienum_collision_(false) :[deadlock free]
 assert IF_ienum_collision_(true) :[livelock free]
 assert CO_enum_collision_(true,true) :[deterministic]
-assert COMPLETE'({i.foo,i.bar}) [F= CO_enum_collision_(true,true) \ diff(Events,{i.foo,i.bar,illegal})
+assert COMPLETE'({i.foo,i.bar}) [F= CO_enum_collision_(true,true)[[ienum_collision_'.x'<-i_'.x'|x'<-extensions(i_')]] \ diff(Events,{i.foo,i.bar,illegal})
 assert STOP [T= AS_enum_collision_(false) \ diff(Events,{illegal})
 assert AS_enum_collision_(false) :[deadlock free]
 assert IF_ienum_collision_(true) [[ienum_collision.x<-i.x|x<-extensions(i)]][[ienum_collision_'.x<-i_'.x|x<-extensions(i_')]]\ {} [F= AS_enum_collision_(true) \ diff(Events,{|illegal,i,i_'|})

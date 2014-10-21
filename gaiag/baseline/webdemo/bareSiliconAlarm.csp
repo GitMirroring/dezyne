@@ -469,7 +469,7 @@ assert COMPLETE'({i809_IAlarmSystem.i510_SwitchOn,i809_IAlarmSystem.i512_SwitchO
 assert IF_i809_IAlarmSystem_(false) :[deadlock free]
 assert IF_i809_IAlarmSystem_(true)  \ {|i809_IAlarmSystem.optional|} :[livelock free]
 assert CO_i1768_bareSiliconAlarm_(true,true) :[deterministic]
-assert COMPLETE'({i810_alarmSystem.i510_SwitchOn,i810_alarmSystem.i512_SwitchOff,i819_preAlarmTimer_''.i165_Timeout,i822_sensors_''.i329_DetectedMovement}) [F= CO_i1768_bareSiliconAlarm_(true,true) \ diff(Events,{i810_alarmSystem.i510_SwitchOn,i810_alarmSystem.i512_SwitchOff,i819_preAlarmTimer_''.i165_Timeout,i822_sensors_''.i329_DetectedMovement,illegal})
+assert COMPLETE'({i810_alarmSystem.i510_SwitchOn,i810_alarmSystem.i512_SwitchOff,i819_preAlarmTimer_''.i165_Timeout,i822_sensors_''.i329_DetectedMovement}) [F= CO_i1768_bareSiliconAlarm_(true,true)[[i809_IAlarmSystem_'.x'<-i810_alarmSystem_'.x'|x'<-extensions(i810_alarmSystem_')]] \ diff(Events,{i810_alarmSystem.i510_SwitchOn,i810_alarmSystem.i512_SwitchOff,i819_preAlarmTimer_''.i165_Timeout,i822_sensors_''.i329_DetectedMovement,illegal})
 assert STOP [T= AS_i1768_bareSiliconAlarm_(false) \ diff(Events,{illegal})
 assert AS_i1768_bareSiliconAlarm_(false) :[deadlock free]
 assert IF_i809_IAlarmSystem_(true) [[i809_IAlarmSystem.x<-i810_alarmSystem.x|x<-extensions(i810_alarmSystem)]][[i809_IAlarmSystem_'.x<-i810_alarmSystem_'.x|x<-extensions(i810_alarmSystem_')]][[i809_IAlarmSystem_''.x<-i810_alarmSystem_''.x|x<-extensions(i810_alarmSystem_'')]]\ {i810_alarmSystem.optional} [F= AS_i1768_bareSiliconAlarm_(true) \ diff(Events,{|illegal,i810_alarmSystem,i810_alarmSystem_',i810_alarmSystem_''|})

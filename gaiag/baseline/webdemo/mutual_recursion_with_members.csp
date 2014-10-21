@@ -185,7 +185,7 @@ assert COMPLETE'({i99_sleeping.i3_sleep}) [F= IF_i99_sleeping_(true) \ diff(Even
 assert IF_i99_sleeping_(false) :[deadlock free]
 assert IF_i99_sleeping_(true) :[livelock free]
 assert CO_i308_mutual_recursion_with_members_(true,true) :[deterministic]
-assert COMPLETE'({i100_beauty.i3_sleep}) [F= CO_i308_mutual_recursion_with_members_(true,true) \ diff(Events,{i100_beauty.i3_sleep,illegal})
+assert COMPLETE'({i100_beauty.i3_sleep}) [F= CO_i308_mutual_recursion_with_members_(true,true)[[i99_sleeping_'.x'<-i100_beauty_'.x'|x'<-extensions(i100_beauty_')]] \ diff(Events,{i100_beauty.i3_sleep,illegal})
 assert STOP [T= AS_i308_mutual_recursion_with_members_(false) \ diff(Events,{illegal})
 assert AS_i308_mutual_recursion_with_members_(false) :[deadlock free]
 assert IF_i99_sleeping_(true) [[i99_sleeping.x<-i100_beauty.x|x<-extensions(i100_beauty)]][[i99_sleeping_'.x<-i100_beauty_'.x|x<-extensions(i100_beauty_')]][[i99_sleeping_''.x<-i100_beauty_''.x|x<-extensions(i100_beauty_'')]]\ {} [F= AS_i308_mutual_recursion_with_members_(true) \ diff(Events,{|illegal,i100_beauty,i100_beauty_',i100_beauty_''|})

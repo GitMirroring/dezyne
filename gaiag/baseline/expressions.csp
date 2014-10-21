@@ -183,7 +183,7 @@ assert COMPLETE'({I.e}) [F= IF_I_(true) \ diff(Events,{I.e,illegal})
 assert IF_I_(false) :[deadlock free]
 assert IF_I_(true) :[livelock free]
 assert CO_expressions_(true,true) :[deterministic]
-assert COMPLETE'({i.e}) [F= CO_expressions_(true,true) \ diff(Events,{i.e,illegal})
+assert COMPLETE'({i.e}) [F= CO_expressions_(true,true)[[I_'.x'<-i_'.x'|x'<-extensions(i_')]] \ diff(Events,{i.e,illegal})
 assert STOP [T= AS_expressions_(false) \ diff(Events,{illegal})
 assert AS_expressions_(false) :[deadlock free]
 assert IF_I_(true) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]][[I_''.x<-i_''.x|x<-extensions(i_'')]]\ {} [F= AS_expressions_(true) \ diff(Events,{|illegal,i,i_',i_''|})

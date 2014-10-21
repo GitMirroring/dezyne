@@ -175,7 +175,7 @@ assert COMPLETE'({nolivelock.dummy}) [F= IF_nolivelock_(true) \ diff(Events,{nol
 assert IF_nolivelock_(false) :[deadlock free]
 assert IF_nolivelock_(true) :[livelock free]
 assert CO_livelock1_(true,true) :[deterministic]
-assert COMPLETE'({n.dummy,l_''.dummy}) [F= CO_livelock1_(true,true) \ diff(Events,{n.dummy,l_''.dummy,illegal})
+assert COMPLETE'({n.dummy,l_''.dummy}) [F= CO_livelock1_(true,true)[[nolivelock_'.x'<-n_'.x'|x'<-extensions(n_')]] \ diff(Events,{n.dummy,l_''.dummy,illegal})
 assert STOP [T= AS_livelock1_(false) \ diff(Events,{illegal})
 assert AS_livelock1_(false) :[deadlock free]
 assert IF_nolivelock_(true) [[nolivelock.x<-n.x|x<-extensions(n)]][[nolivelock_'.x<-n_'.x|x<-extensions(n_')]]\ {} [F= AS_livelock1_(true) \ diff(Events,{|illegal,n,n_'|})

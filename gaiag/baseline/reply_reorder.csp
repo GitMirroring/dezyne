@@ -189,7 +189,7 @@ assert COMPLETE'({Requires.ping}) [F= IF_Requires_(true) \ diff(Events,{Requires
 assert IF_Requires_(false) :[deadlock free]
 assert IF_Requires_(true) :[livelock free]
 assert CO_reply_reorder_(true,true) :[deterministic]
-assert COMPLETE'({p.start,r_''.pong}) [F= CO_reply_reorder_(true,true) \ diff(Events,{p.start,r_''.pong,illegal})
+assert COMPLETE'({p.start,r_''.pong}) [F= CO_reply_reorder_(true,true)[[Provides_'.x'<-p_'.x'|x'<-extensions(p_')]] \ diff(Events,{p.start,r_''.pong,illegal})
 assert STOP [T= AS_reply_reorder_(false) \ diff(Events,{illegal})
 assert AS_reply_reorder_(false) :[deadlock free]
 assert IF_Provides_(true) [[Provides.x<-p.x|x<-extensions(p)]][[Provides_'.x<-p_'.x|x<-extensions(p_')]][[Provides_''.x<-p_''.x|x<-extensions(p_'')]]\ {} [F= AS_reply_reorder_(true) \ diff(Events,{|illegal,p,p_',p_''|})

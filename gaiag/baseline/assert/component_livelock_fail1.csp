@@ -187,7 +187,7 @@ assert COMPLETE'({i20_I.i3_e}) [F= IF_i20_I_(true) \ diff(Events,{i20_I.i3_e,ill
 assert IF_i20_I_(false) :[deadlock free]
 assert IF_i20_I_(true) :[livelock free]
 assert CO_i143_C_(true,true) :[deterministic]
-assert COMPLETE'({i103_i.i3_e,i106_ii_''.i22_e}) [F= CO_i143_C_(true,true) \ diff(Events,{i103_i.i3_e,i106_ii_''.i22_e,illegal})
+assert COMPLETE'({i103_i.i3_e,i106_ii_''.i22_e}) [F= CO_i143_C_(true,true)[[i20_I_'.x'<-i103_i_'.x'|x'<-extensions(i103_i_')]] \ diff(Events,{i103_i.i3_e,i106_ii_''.i22_e,illegal})
 assert STOP [T= AS_i143_C_(false) \ diff(Events,{illegal})
 assert AS_i143_C_(false) :[deadlock free]
 assert IF_i20_I_(true) [[i20_I.x<-i103_i.x|x<-extensions(i103_i)]][[i20_I_'.x<-i103_i_'.x|x<-extensions(i103_i_')]]\ {} [F= AS_i143_C_(true) \ diff(Events,{|illegal,i103_i,i103_i_'|})

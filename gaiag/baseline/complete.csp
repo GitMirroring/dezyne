@@ -160,7 +160,7 @@ assert COMPLETE'({icomplete.e}) [F= IF_icomplete_(true) \ diff(Events,{icomplete
 assert IF_icomplete_(false) :[deadlock free]
 assert IF_icomplete_(true) :[livelock free]
 assert CO_complete_(true,true) :[deterministic]
-assert COMPLETE'({p.e,r_''.a}) [F= CO_complete_(true,true) \ diff(Events,{p.e,r_''.a,illegal})
+assert COMPLETE'({p.e,r_''.a}) [F= CO_complete_(true,true)[[icomplete_'.x'<-p_'.x'|x'<-extensions(p_')]] \ diff(Events,{p.e,r_''.a,illegal})
 assert STOP [T= AS_complete_(false) \ diff(Events,{illegal})
 assert AS_complete_(false) :[deadlock free]
 assert IF_icomplete_(true) [[icomplete.x<-p.x|x<-extensions(p)]][[icomplete_'.x<-p_'.x|x<-extensions(p_')]][[icomplete_''.x<-p_''.x|x<-extensions(p_'')]]\ {} [F= AS_complete_(true) \ diff(Events,{|illegal,p,p_',p_''|})

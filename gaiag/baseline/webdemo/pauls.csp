@@ -310,7 +310,7 @@ assert COMPLETE'({i568_IComp.i302_initialize,i568_IComp.i304_recover,i568_IComp.
 assert IF_i568_IComp_(false) :[deadlock free]
 assert IF_i568_IComp_(true) :[livelock free]
 assert CO_i1121_Comp_(true,true) :[deterministic]
-assert COMPLETE'({i569_client.i302_initialize,i569_client.i304_recover,i569_client.i306_perform_actions}) [F= CO_i1121_Comp_(true,true) \ diff(Events,{i569_client.i302_initialize,i569_client.i304_recover,i569_client.i306_perform_actions,illegal})
+assert COMPLETE'({i569_client.i302_initialize,i569_client.i304_recover,i569_client.i306_perform_actions}) [F= CO_i1121_Comp_(true,true)[[i568_IComp_'.x'<-i569_client_'.x'|x'<-extensions(i569_client_')]] \ diff(Events,{i569_client.i302_initialize,i569_client.i304_recover,i569_client.i306_perform_actions,illegal})
 assert STOP [T= AS_i1121_Comp_(false) \ diff(Events,{illegal})
 assert AS_i1121_Comp_(false) :[deadlock free]
 assert IF_i568_IComp_(true) [[i568_IComp.x<-i569_client.x|x<-extensions(i569_client)]][[i568_IComp_'.x<-i569_client_'.x|x<-extensions(i569_client_')]]\ {} [F= AS_i1121_Comp_(true) \ diff(Events,{|illegal,i569_client,i569_client_'|})

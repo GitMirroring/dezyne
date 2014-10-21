@@ -154,7 +154,7 @@ assert COMPLETE'({IReply7.foo}) [F= IF_IReply7_(true) \ diff(Events,{IReply7.foo
 assert IF_IReply7_(false) :[deadlock free]
 assert IF_IReply7_(true) :[livelock free]
 assert CO_Reply7_(true,true) :[deterministic]
-assert COMPLETE'({p.foo}) [F= CO_Reply7_(true,true) \ diff(Events,{p.foo,illegal})
+assert COMPLETE'({p.foo}) [F= CO_Reply7_(true,true)[[IReply7_'.x'<-p_'.x'|x'<-extensions(p_')]] \ diff(Events,{p.foo,illegal})
 assert STOP [T= AS_Reply7_(false) \ diff(Events,{illegal})
 assert AS_Reply7_(false) :[deadlock free]
 assert IF_IReply7_(true) [[IReply7.x<-p.x|x<-extensions(p)]][[IReply7_'.x<-p_'.x|x<-extensions(p_')]]\ {} [F= AS_Reply7_(true) \ diff(Events,{|illegal,p,p_'|})

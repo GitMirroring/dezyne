@@ -211,7 +211,7 @@ assert COMPLETE'({iimperative.e}) [F= IF_iimperative_(true) \ diff(Events,{iimpe
 assert IF_iimperative_(false) :[deadlock free]
 assert IF_iimperative_(true) :[livelock free]
 assert CO_imperative_(true,true) :[deterministic]
-assert COMPLETE'({i.e}) [F= CO_imperative_(true,true) \ diff(Events,{i.e,illegal})
+assert COMPLETE'({i.e}) [F= CO_imperative_(true,true)[[iimperative_'.x'<-i_'.x'|x'<-extensions(i_')]] \ diff(Events,{i.e,illegal})
 assert STOP [T= AS_imperative_(false) \ diff(Events,{illegal})
 assert AS_imperative_(false) :[deadlock free]
 assert IF_iimperative_(true) [[iimperative.x<-i.x|x<-extensions(i)]][[iimperative_'.x<-i_'.x|x<-extensions(i_')]][[iimperative_''.x<-i_''.x|x<-extensions(i_'')]]\ {} [F= AS_imperative_(true) \ diff(Events,{|illegal,i,i_',i_''|})

@@ -25,7 +25,7 @@ assert COMPLETE'({#
 (comma-join
  (append (map (lambda (event) (list (.name (gom:port model)) "." (.name event))) (filter gom:in? (gom:events (gom:port model))))
          (map (lambda (port) (comma-join (map (lambda (event) (list (.name port) "_''." (.name event))) (filter gom:out? (gom:events port))))) (filter gom:requires? ((compose .elements .ports) model)))))}) [F= CO_#(.name model) _#
-((compose .name .behaviour) model) (true,true) \ diff(Events,{#
+((compose .name .behaviour) model) (true,true)[[#(.type (gom:port model))_'.x'<-#(.name (gom:port model))_'.x'|x'<-extensions(#(.name (gom:port model))_')]] \ diff(Events,{#
 (comma-join
  (append (map (lambda (event) (list (.name (gom:port model)) "." (.name event))) (filter gom:in? (gom:events (gom:port model))))
          (map (lambda (port) (comma-join (map (lambda (event) (list (.name port) "_''." (.name event))) (filter gom:out? (gom:events port))))) (filter gom:requires? ((compose .elements .ports) model))))),illegal})

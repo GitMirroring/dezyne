@@ -162,7 +162,7 @@ assert COMPLETE'({i23_I.i3_e}) [F= IF_i23_I_(true) \ diff(Events,{i23_I.i3_e,ill
 assert IF_i23_I_(false) :[deadlock free]
 assert IF_i23_I_(true) :[livelock free]
 assert CO_i103_nonrecursion_(true,true) :[deterministic]
-assert COMPLETE'({i24_i.i3_e}) [F= CO_i103_nonrecursion_(true,true) \ diff(Events,{i24_i.i3_e,illegal})
+assert COMPLETE'({i24_i.i3_e}) [F= CO_i103_nonrecursion_(true,true)[[i23_I_'.x'<-i24_i_'.x'|x'<-extensions(i24_i_')]] \ diff(Events,{i24_i.i3_e,illegal})
 assert STOP [T= AS_i103_nonrecursion_(false) \ diff(Events,{illegal})
 assert AS_i103_nonrecursion_(false) :[deadlock free]
 assert IF_i23_I_(true) [[i23_I.x<-i24_i.x|x<-extensions(i24_i)]][[i23_I_'.x<-i24_i_'.x|x<-extensions(i24_i_')]][[i23_I_''.x<-i24_i_''.x|x<-extensions(i24_i_'')]]\ {} [F= AS_i103_nonrecursion_(true) \ diff(Events,{|illegal,i24_i,i24_i_',i24_i_''|})

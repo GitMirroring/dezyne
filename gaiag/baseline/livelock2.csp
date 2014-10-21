@@ -178,7 +178,7 @@ assert COMPLETE'({}) [F= IF_nolivelock_(true) \ diff(Events,{illegal})
 assert IF_nolivelock_(false) :[deadlock free]
 assert IF_nolivelock_(true)  \ {|nolivelock.inevitable|} :[livelock free]
 assert CO_livelock2_(true,true) :[deterministic]
-assert COMPLETE'({l.dummy,n_''.dummy}) [F= CO_livelock2_(true,true) \ diff(Events,{l.dummy,n_''.dummy,illegal})
+assert COMPLETE'({l.dummy,n_''.dummy}) [F= CO_livelock2_(true,true)[[ilivelock_'.x'<-l_'.x'|x'<-extensions(l_')]] \ diff(Events,{l.dummy,n_''.dummy,illegal})
 assert STOP [T= AS_livelock2_(false) \ diff(Events,{illegal})
 assert AS_livelock2_(false) :[deadlock free]
 assert IF_ilivelock_(true) [[ilivelock.x<-l.x|x<-extensions(l)]][[ilivelock_'.x<-l_'.x|x<-extensions(l_')]]\ {l.inevitable} [F= AS_livelock2_(true) \ diff(Events,{|illegal,l,l_'|})
