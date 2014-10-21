@@ -50,13 +50,16 @@ channel IReply7: {foo}
 
 channel IReply7_': {E_A,return}
 
-IF_IReply7_(IG) = let
+IF_IReply7_(IG,CS) = let
 
 IReply7_(((<>),(stack'))) =
 IReply7?x:{foo} ->
 reply_(IReply7_', (\ ((<>),(stack')) @ E_A))(\ V' @ IReply7_(V'),((<>),(stack')))
+[]
+CS & IReply7?x:{} -> illegal_(STOP,<>)
 
-within IReply7_(((<>),(<>)))
+within if CS then IReply7_(((<>),(<>)))
+             else IReply7_(((<>),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -146,16 +149,16 @@ within compress((CO_Reply7_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reo
                  SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN',r,r_'|}|]
-                (IF_IReply7_(true) [[IReply7.x<-r.x|x<-extensions(r)]][[IReply7_'.x<-r_'.x|x<-extensions(r_')]]
+                (IF_IReply7_(true,false) [[IReply7.x<-r.x|x<-extensions(r)]][[IReply7_'.x<-r_'.x|x<-extensions(r_')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({IReply7.foo}) [F= IF_IReply7_(true) \ diff(Events,{IReply7.foo,illegal})
-assert IF_IReply7_(false) :[deadlock free]
-assert IF_IReply7_(true) :[livelock free]
+assert COMPLETE'({IReply7.foo}) [F= IF_IReply7_(true,true) \ diff(Events,{IReply7.foo,illegal})
+assert IF_IReply7_(false,false) :[deadlock free]
+assert IF_IReply7_(true,false) :[livelock free]
 assert CO_Reply7_(true,true) :[deterministic]
 assert COMPLETE'({p.foo}) [F= CO_Reply7_(true,true)[[IReply7_'.x'<-p_'.x'|x'<-extensions(p_')]] \ diff(Events,{p.foo,illegal})
 assert STOP [T= AS_Reply7_(false) \ diff(Events,{illegal})
 assert AS_Reply7_(false) :[deadlock free]
-assert IF_IReply7_(true) [[IReply7.x<-p.x|x<-extensions(p)]][[IReply7_'.x<-p_'.x|x<-extensions(p_')]]\ {} [F= AS_Reply7_(true) \ diff(Events,{|illegal,p,p_'|})
+assert IF_IReply7_(true,false) [[IReply7.x<-p.x|x<-extensions(p)]][[IReply7_'.x<-p_'.x|x<-extensions(p_')]]\ {} [F= AS_Reply7_(true) \ diff(Events,{|illegal,p,p_'|})
 assert AS_Reply7_(true) \ diff(Events,{|illegal,p,p_'|}) :[livelock free]

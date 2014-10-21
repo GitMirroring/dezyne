@@ -50,7 +50,7 @@ channel if_I: {ev_e}
 channel if_I_'': {ev_f}
 channel if_I_': {return}
 
-IF_if_I_(IG) = let
+IF_if_I_(IG,CS) = let
 g = \ P',V',F' @ context_func_args_(F',
 semi_((\ P',V' @ if_I_''!ev_f -> P'(V')),
 returnvalue_(\ ((va_b),((stack',(va_ga,va_gb)))) @ (va_ga or va_gb))))(P',V')
@@ -67,8 +67,11 @@ semi_(assign_active_(\ P',V' @ g (P',V',(\ ((va_b),((stack',va_c))) @ (va_c,va_c
 skip_
 )(P',((va_b),((stack',va_c))))))),
 (\ P',V' @ if_I_'.return -> P'(V')))(\ V' @ if_I_(V'),((va_b),(stack'))))
+[]
+CS & if_I?x:{} -> illegal_(STOP,<>)
 
-within if_I_(((false),(<>)))
+within if CS then if_I_(((false),(<>)))
+             else if_I_(((false),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -171,12 +174,12 @@ within compress((CO_co_argument2_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({if_I.ev_e}) [F= IF_if_I_(true) \ diff(Events,{if_I.ev_e,illegal})
-assert IF_if_I_(false) :[deadlock free]
-assert IF_if_I_(true) :[livelock free]
+assert COMPLETE'({if_I.ev_e}) [F= IF_if_I_(true,true) \ diff(Events,{if_I.ev_e,illegal})
+assert IF_if_I_(false,false) :[deadlock free]
+assert IF_if_I_(true,false) :[livelock free]
 assert CO_co_argument2_(true,true) :[deterministic]
 assert COMPLETE'({po_i.ev_e}) [F= CO_co_argument2_(true,true)[[if_I_'.x'<-po_i_'.x'|x'<-extensions(po_i_')]] \ diff(Events,{po_i.ev_e,illegal})
 assert STOP [T= AS_co_argument2_(false) \ diff(Events,{illegal})
 assert AS_co_argument2_(false) :[deadlock free]
-assert IF_if_I_(true) [[if_I.x<-po_i.x|x<-extensions(po_i)]][[if_I_'.x<-po_i_'.x|x<-extensions(po_i_')]][[if_I_''.x<-po_i_''.x|x<-extensions(po_i_'')]]\ {} [F= AS_co_argument2_(true) \ diff(Events,{|illegal,po_i,po_i_',po_i_''|})
+assert IF_if_I_(true,false) [[if_I.x<-po_i.x|x<-extensions(po_i)]][[if_I_'.x<-po_i_'.x|x<-extensions(po_i_')]][[if_I_''.x<-po_i_''.x|x<-extensions(po_i_'')]]\ {} [F= AS_co_argument2_(true) \ diff(Events,{|illegal,po_i,po_i_',po_i_''|})
 assert AS_co_argument2_(true) \ diff(Events,{|illegal,po_i,po_i_',po_i_''|}) :[livelock free]

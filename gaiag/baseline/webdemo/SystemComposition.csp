@@ -50,13 +50,16 @@ channel i13_I: {i3_evt}
 
 channel i13_I_': {return}
 
-IF_i13_I_(IG) = let
+IF_i13_I_(IG,CS) = let
 
 i13_I_(((<>),(stack'))) =
 i13_I?x:{i3_evt} ->
 (\ P',V' @ i13_I_'.return -> P'(V'))(\ V' @ i13_I_(V'),((<>),(stack')))
+[]
+CS & i13_I?x:{} -> illegal_(STOP,<>)
 
-within i13_I_(((<>),(<>)))
+within if CS then i13_I_(((<>),(<>)))
+             else i13_I_(((<>),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -147,12 +150,12 @@ within compress((CO_i51_Bot_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-re
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({i13_I.i3_evt}) [F= IF_i13_I_(true) \ diff(Events,{i13_I.i3_evt,illegal})
-assert IF_i13_I_(false) :[deadlock free]
-assert IF_i13_I_(true) :[livelock free]
+assert COMPLETE'({i13_I.i3_evt}) [F= IF_i13_I_(true,true) \ diff(Events,{i13_I.i3_evt,illegal})
+assert IF_i13_I_(false,false) :[deadlock free]
+assert IF_i13_I_(true,false) :[livelock free]
 assert CO_i51_Bot_(true,true) :[deterministic]
 assert COMPLETE'({i14_p.i3_evt}) [F= CO_i51_Bot_(true,true)[[i13_I_'.x'<-i14_p_'.x'|x'<-extensions(i14_p_')]] \ diff(Events,{i14_p.i3_evt,illegal})
 assert STOP [T= AS_i51_Bot_(false) \ diff(Events,{illegal})
 assert AS_i51_Bot_(false) :[deadlock free]
-assert IF_i13_I_(true) [[i13_I.x<-i14_p.x|x<-extensions(i14_p)]][[i13_I_'.x<-i14_p_'.x|x<-extensions(i14_p_')]]\ {} [F= AS_i51_Bot_(true) \ diff(Events,{|illegal,i14_p,i14_p_'|})
+assert IF_i13_I_(true,false) [[i13_I.x<-i14_p.x|x<-extensions(i14_p)]][[i13_I_'.x<-i14_p_'.x|x<-extensions(i14_p_')]]\ {} [F= AS_i51_Bot_(true) \ diff(Events,{|illegal,i14_p,i14_p_'|})
 assert AS_i51_Bot_(true) \ diff(Events,{|illegal,i14_p,i14_p_'|}) :[livelock free]

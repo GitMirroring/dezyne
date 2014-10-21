@@ -50,7 +50,7 @@ channel ilivelock: {dummy,inevitable}
 
 channel ilivelock_': {return}
 
-IF_ilivelock_(IG) = let
+IF_ilivelock_(IG,CS) = let
 
 ilivelock_(((<>),(stack'))) =
 IG & ilivelock?x:{dummy} ->
@@ -58,8 +58,11 @@ illegal_(STOP,<>)
 []
 ilivelock?x:{inevitable} ->
 skip_(\ V' @ ilivelock_(V'),((<>),(stack')))
+[]
+CS & ilivelock?x:{inevitable} -> illegal_(STOP,<>)
 
-within ilivelock_(((<>),(<>)))
+within if CS then ilivelock_(((<>),(<>)))
+             else ilivelock_(((<>),(<>)))
 
 -- end of interface.csp.scm
 -- interface.csp.scm
@@ -68,14 +71,17 @@ channel nolivelock: {inevitable}
 channel nolivelock_'': {dummy}
 channel nolivelock_': {return}
 
-IF_nolivelock_(IG) = let
+IF_nolivelock_(IG,CS) = let
 
 nolivelock_(((<>),(stack'))) =
 nolivelock?x:{inevitable} ->
 semi_((\ P',V' @ nolivelock_''!dummy -> P'(V')),
 skip_)(\ V' @ nolivelock_(V'),((<>),(stack')))
+[]
+CS & nolivelock?x:{inevitable} -> illegal_(STOP,<>)
 
-within nolivelock_(((<>),(<>)))
+within if CS then nolivelock_(((<>),(<>)))
+             else nolivelock_(((<>),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -167,19 +173,19 @@ within compress((CO_livelock2_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-
                  SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN',n,n_'|}|]
-                (IF_nolivelock_(true) [[nolivelock.x<-n.x|x<-extensions(n)]][[nolivelock_'.x<-n_'.x|x<-extensions(n_')]][[nolivelock_''.x<-n_''.x|x<-extensions(n_'')]]
+                (IF_nolivelock_(true,false) [[nolivelock.x<-n.x|x<-extensions(n)]][[nolivelock_'.x<-n_'.x|x<-extensions(n_')]][[nolivelock_''.x<-n_''.x|x<-extensions(n_'')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({ilivelock.dummy}) [F= IF_ilivelock_(true) \ diff(Events,{ilivelock.dummy,illegal})
-assert IF_ilivelock_(false) :[deadlock free]
-assert IF_ilivelock_(true)  \ {|ilivelock.inevitable|} :[livelock free]
-assert COMPLETE'({}) [F= IF_nolivelock_(true) \ diff(Events,{illegal})
-assert IF_nolivelock_(false) :[deadlock free]
-assert IF_nolivelock_(true)  \ {|nolivelock.inevitable|} :[livelock free]
+assert COMPLETE'({ilivelock.inevitable,ilivelock.dummy}) [F= IF_ilivelock_(true,true) \ diff(Events,{ilivelock.inevitable,ilivelock.dummy,illegal})
+assert IF_ilivelock_(false,false) :[deadlock free]
+assert IF_ilivelock_(true,false)  \ {|ilivelock.inevitable|} :[livelock free]
+assert COMPLETE'({nolivelock.inevitable}) [F= IF_nolivelock_(true,true) \ diff(Events,{nolivelock.inevitable,illegal})
+assert IF_nolivelock_(false,false) :[deadlock free]
+assert IF_nolivelock_(true,false)  \ {|nolivelock.inevitable|} :[livelock free]
 assert CO_livelock2_(true,true) :[deterministic]
 assert COMPLETE'({l.dummy,n_''.dummy}) [F= CO_livelock2_(true,true)[[ilivelock_'.x'<-l_'.x'|x'<-extensions(l_')]] \ diff(Events,{l.dummy,n_''.dummy,illegal})
 assert STOP [T= AS_livelock2_(false) \ diff(Events,{illegal})
 assert AS_livelock2_(false) :[deadlock free]
-assert IF_ilivelock_(true) [[ilivelock.x<-l.x|x<-extensions(l)]][[ilivelock_'.x<-l_'.x|x<-extensions(l_')]]\ {l.inevitable} [F= AS_livelock2_(true) \ diff(Events,{|illegal,l,l_'|})
+assert IF_ilivelock_(true,false) [[ilivelock.x<-l.x|x<-extensions(l)]][[ilivelock_'.x<-l_'.x|x<-extensions(l_')]]\ {l.inevitable} [F= AS_livelock2_(true) \ diff(Events,{|illegal,l,l_'|})
 assert AS_livelock2_(true) \ diff(Events,{|illegal,l,l_'|}) :[livelock free]

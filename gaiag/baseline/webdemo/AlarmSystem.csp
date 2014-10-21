@@ -50,7 +50,7 @@ channel i242_IConsole: {i3_arm,i4_disarm,inevitable,optional}
 channel i242_IConsole_'': {i5_detected,i6_deactivated}
 channel i242_IConsole_': {return}
 
-IF_i242_IConsole_(IG) = let
+IF_i242_IConsole_(IG,CS) = let
 
 i242_IConsole_(((i19_state),(stack'))) =
 ((i19_state == i11_States_Disarmed)) & (
@@ -90,8 +90,11 @@ skip_)(\ V' @ i242_IConsole_(V'),((i19_state),(stack')))
  []
   IG & i242_IConsole?x:{i3_arm,i4_disarm} ->
 illegal_(STOP,<>))
+[]
+CS & i242_IConsole?x:{inevitable,optional} -> illegal_(STOP,<>)
 
-within i242_IConsole_(((i11_States_Disarmed),(<>))) [|{i242_IConsole.optional}|] CHAOS({i242_IConsole.optional})
+within if CS then i242_IConsole_(((i11_States_Disarmed),(<>)))
+             else i242_IConsole_(((i11_States_Disarmed),(<>))) [|{i242_IConsole.optional}|] CHAOS({i242_IConsole.optional})
 
 -- end of interface.csp.scm
 -- interface.csp.scm
@@ -100,7 +103,7 @@ channel i482_ISensor: {i243_enable,i244_disable,inevitable,optional}
 channel i482_ISensor_'': {i245_triggered,i246_disabled}
 channel i482_ISensor_': {return}
 
-IF_i482_ISensor_(IG) = let
+IF_i482_ISensor_(IG,CS) = let
 
 i482_ISensor_(((i259_state),(stack'))) =
 ((i259_state == i251_States_Disabled)) & (
@@ -140,8 +143,11 @@ illegal_(STOP,<>)
   i482_ISensor?x:{i244_disable} ->
 semi_(assign_(\ ((i259_state),(stack')) @ ((i251_States_Disabling),(stack'))),
 (\ P',V' @ i482_ISensor_'.return -> P'(V')))(\ V' @ i482_ISensor_(V'),((i259_state),(stack'))))
+[]
+CS & i482_ISensor?x:{inevitable,optional} -> illegal_(STOP,<>)
 
-within i482_ISensor_(((i251_States_Disabled),(<>))) [|{i482_ISensor.optional}|] CHAOS({i482_ISensor.optional})
+within if CS then i482_ISensor_(((i251_States_Disabled),(<>)))
+             else i482_ISensor_(((i251_States_Disabled),(<>))) [|{i482_ISensor.optional}|] CHAOS({i482_ISensor.optional})
 
 -- end of interface.csp.scm
 -- interface.csp.scm
@@ -150,7 +156,7 @@ channel i593_ISiren: {i487_turnon,i488_turnoff}
 
 channel i593_ISiren_': {return}
 
-IF_i593_ISiren_(IG) = let
+IF_i593_ISiren_(IG,CS) = let
 
 i593_ISiren_(((i499_state),(stack'))) =
 ((i499_state == i491_States_Off)) & (
@@ -168,8 +174,11 @@ semi_(assign_(\ ((i499_state),(stack')) @ ((i491_States_Off),(stack'))),
  []
   IG & i593_ISiren?x:{i487_turnon} ->
 illegal_(STOP,<>))
+[]
+CS & i593_ISiren?x:{} -> illegal_(STOP,<>)
 
-within i593_ISiren_(((i491_States_Off),(<>)))
+within if CS then i593_ISiren_(((i491_States_Off),(<>)))
+             else i593_ISiren_(((i491_States_Off),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -322,23 +331,23 @@ within compress((CO_i1019_Alarm_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x
                  SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN',i601_sensor,i601_sensor_',i604_siren,i604_siren_'|}|]
-                (IF_i482_ISensor_(true) [[i482_ISensor.x<-i601_sensor.x|x<-extensions(i601_sensor)]][[i482_ISensor_'.x<-i601_sensor_'.x|x<-extensions(i601_sensor_')]][[i482_ISensor_''.x<-i601_sensor_''.x|x<-extensions(i601_sensor_'')]]
-                 ||| IF_i593_ISiren_(true) [[i593_ISiren.x<-i604_siren.x|x<-extensions(i604_siren)]][[i593_ISiren_'.x<-i604_siren_'.x|x<-extensions(i604_siren_')]]
+                (IF_i482_ISensor_(true,false) [[i482_ISensor.x<-i601_sensor.x|x<-extensions(i601_sensor)]][[i482_ISensor_'.x<-i601_sensor_'.x|x<-extensions(i601_sensor_')]][[i482_ISensor_''.x<-i601_sensor_''.x|x<-extensions(i601_sensor_'')]]
+                 ||| IF_i593_ISiren_(true,false) [[i593_ISiren.x<-i604_siren.x|x<-extensions(i604_siren)]][[i593_ISiren_'.x<-i604_siren_'.x|x<-extensions(i604_siren_')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({i242_IConsole.i3_arm,i242_IConsole.i4_disarm}) [F= IF_i242_IConsole_(true) \ diff(Events,{i242_IConsole.i3_arm,i242_IConsole.i4_disarm,illegal})
-assert IF_i242_IConsole_(false) :[deadlock free]
-assert IF_i242_IConsole_(true)  \ {|i242_IConsole.inevitable,i242_IConsole.optional|} :[livelock free]
-assert COMPLETE'({i482_ISensor.i243_enable,i482_ISensor.i244_disable}) [F= IF_i482_ISensor_(true) \ diff(Events,{i482_ISensor.i243_enable,i482_ISensor.i244_disable,illegal})
-assert IF_i482_ISensor_(false) :[deadlock free]
-assert IF_i482_ISensor_(true)  \ {|i482_ISensor.inevitable,i482_ISensor.optional|} :[livelock free]
-assert COMPLETE'({i593_ISiren.i487_turnon,i593_ISiren.i488_turnoff}) [F= IF_i593_ISiren_(true) \ diff(Events,{i593_ISiren.i487_turnon,i593_ISiren.i488_turnoff,illegal})
-assert IF_i593_ISiren_(false) :[deadlock free]
-assert IF_i593_ISiren_(true) :[livelock free]
+assert COMPLETE'({i242_IConsole.inevitable,i242_IConsole.optional,i242_IConsole.i3_arm,i242_IConsole.i4_disarm}) [F= IF_i242_IConsole_(true,true) \ diff(Events,{i242_IConsole.inevitable,i242_IConsole.optional,i242_IConsole.i3_arm,i242_IConsole.i4_disarm,illegal})
+assert IF_i242_IConsole_(false,false) :[deadlock free]
+assert IF_i242_IConsole_(true,false)  \ {|i242_IConsole.inevitable,i242_IConsole.optional|} :[livelock free]
+assert COMPLETE'({i482_ISensor.inevitable,i482_ISensor.optional,i482_ISensor.i243_enable,i482_ISensor.i244_disable}) [F= IF_i482_ISensor_(true,true) \ diff(Events,{i482_ISensor.inevitable,i482_ISensor.optional,i482_ISensor.i243_enable,i482_ISensor.i244_disable,illegal})
+assert IF_i482_ISensor_(false,false) :[deadlock free]
+assert IF_i482_ISensor_(true,false)  \ {|i482_ISensor.inevitable,i482_ISensor.optional|} :[livelock free]
+assert COMPLETE'({i593_ISiren.i487_turnon,i593_ISiren.i488_turnoff}) [F= IF_i593_ISiren_(true,true) \ diff(Events,{i593_ISiren.i487_turnon,i593_ISiren.i488_turnoff,illegal})
+assert IF_i593_ISiren_(false,false) :[deadlock free]
+assert IF_i593_ISiren_(true,false) :[livelock free]
 assert CO_i1019_Alarm_(true,true) :[deterministic]
 assert COMPLETE'({i598_console.i3_arm,i598_console.i4_disarm,i601_sensor_''.i245_triggered,i601_sensor_''.i246_disabled}) [F= CO_i1019_Alarm_(true,true)[[i242_IConsole_'.x'<-i598_console_'.x'|x'<-extensions(i598_console_')]] \ diff(Events,{i598_console.i3_arm,i598_console.i4_disarm,i601_sensor_''.i245_triggered,i601_sensor_''.i246_disabled,illegal})
 assert STOP [T= AS_i1019_Alarm_(false) \ diff(Events,{illegal})
 assert AS_i1019_Alarm_(false) :[deadlock free]
-assert IF_i242_IConsole_(true) [[i242_IConsole.x<-i598_console.x|x<-extensions(i598_console)]][[i242_IConsole_'.x<-i598_console_'.x|x<-extensions(i598_console_')]][[i242_IConsole_''.x<-i598_console_''.x|x<-extensions(i598_console_'')]]\ {i598_console.inevitable,i598_console.optional} [F= AS_i1019_Alarm_(true) \ diff(Events,{|illegal,i598_console,i598_console_',i598_console_''|})
+assert IF_i242_IConsole_(true,false) [[i242_IConsole.x<-i598_console.x|x<-extensions(i598_console)]][[i242_IConsole_'.x<-i598_console_'.x|x<-extensions(i598_console_')]][[i242_IConsole_''.x<-i598_console_''.x|x<-extensions(i598_console_'')]]\ {i598_console.inevitable,i598_console.optional} [F= AS_i1019_Alarm_(true) \ diff(Events,{|illegal,i598_console,i598_console_',i598_console_''|})
 assert AS_i1019_Alarm_(true) \ diff(Events,{|illegal,i598_console,i598_console_',i598_console_''|}) :[livelock free]

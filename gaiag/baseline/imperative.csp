@@ -50,7 +50,7 @@ channel iimperative: {e}
 channel iimperative_'': {f,g,h}
 channel iimperative_': {return}
 
-IF_iimperative_(IG) = let
+IF_iimperative_(IG,CS) = let
 
 iimperative_(((s,b,c),(stack'))) =
 ((s == S_S1)) & (
@@ -90,8 +90,11 @@ skip_
 semi_(assign_(\ ((s,b,c),(stack')) @ ((s,(not b),c),(stack'))),
 assign_(\ ((s,b,c),(stack')) @ ((S_S1,b,c),(stack'))))),
 (\ P',V' @ iimperative_'.return -> P'(V')))(\ V' @ iimperative_(V'),((s,b,c),(stack'))))
+[]
+CS & iimperative?x:{} -> illegal_(STOP,<>)
 
-within iimperative_(((S_S1,false,true),(<>)))
+within if CS then iimperative_(((S_S1,false,true),(<>)))
+             else iimperative_(((S_S1,false,true),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -207,12 +210,12 @@ within compress((CO_imperative_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({iimperative.e}) [F= IF_iimperative_(true) \ diff(Events,{iimperative.e,illegal})
-assert IF_iimperative_(false) :[deadlock free]
-assert IF_iimperative_(true) :[livelock free]
+assert COMPLETE'({iimperative.e}) [F= IF_iimperative_(true,true) \ diff(Events,{iimperative.e,illegal})
+assert IF_iimperative_(false,false) :[deadlock free]
+assert IF_iimperative_(true,false) :[livelock free]
 assert CO_imperative_(true,true) :[deterministic]
 assert COMPLETE'({i.e}) [F= CO_imperative_(true,true)[[iimperative_'.x'<-i_'.x'|x'<-extensions(i_')]] \ diff(Events,{i.e,illegal})
 assert STOP [T= AS_imperative_(false) \ diff(Events,{illegal})
 assert AS_imperative_(false) :[deadlock free]
-assert IF_iimperative_(true) [[iimperative.x<-i.x|x<-extensions(i)]][[iimperative_'.x<-i_'.x|x<-extensions(i_')]][[iimperative_''.x<-i_''.x|x<-extensions(i_'')]]\ {} [F= AS_imperative_(true) \ diff(Events,{|illegal,i,i_',i_''|})
+assert IF_iimperative_(true,false) [[iimperative.x<-i.x|x<-extensions(i)]][[iimperative_'.x<-i_'.x|x<-extensions(i_')]][[iimperative_''.x<-i_''.x|x<-extensions(i_'')]]\ {} [F= AS_imperative_(true) \ diff(Events,{|illegal,i,i_',i_''|})
 assert AS_imperative_(true) \ diff(Events,{|illegal,i,i_',i_''|}) :[livelock free]

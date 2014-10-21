@@ -50,7 +50,7 @@ channel IComp: {initialize,perform_actions,recover}
 
 channel IComp_': {result_t_OK,result_t_NOK,return}
 
-IF_IComp_(IG) = let
+IF_IComp_(IG,CS) = let
 
 IComp_(((s),(stack'))) =
 (((s == State_Uninitialized) and true)) & (
@@ -89,8 +89,11 @@ reply_(IComp_', (\ ((s),(stack')) @ result_t_NOK))(\ V' @ IComp_(V'),((s),(stack
 ((s == State_Error)) & (
 IG & IComp?x:{initialize,perform_actions} ->
 illegal_(STOP,<>))
+[]
+CS & IComp?x:{} -> illegal_(STOP,<>)
 
-within IComp_(((State_Uninitialized),(<>)))
+within if CS then IComp_(((State_Uninitialized),(<>)))
+             else IComp_(((State_Uninitialized),(<>)))
 
 -- end of interface.csp.scm
 -- interface.csp.scm
@@ -99,7 +102,7 @@ channel IDevice: {calibrate,initialize,perform_action1,perform_action2}
 
 channel IDevice_': {result_t_OK,result_t_NOK,return}
 
-IF_IDevice_(IG) = let
+IF_IDevice_(IG,CS) = let
 
 IDevice_(((s),(stack'))) =
 (((s == State_Uninitialized) and true)) & (
@@ -146,8 +149,11 @@ reply_(IDevice_', (\ ((s),(stack')) @ result_t_OK))(\ V' @ IDevice_(V'),((s),(st
  []
   IG & IDevice?x:{initialize} ->
 illegal_(STOP,<>))
+[]
+CS & IDevice?x:{} -> illegal_(STOP,<>)
 
-within IDevice_(((State_Uninitialized),(<>)))
+within if CS then IDevice_(((State_Uninitialized),(<>)))
+             else IDevice_(((State_Uninitialized),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -281,19 +287,19 @@ within compress((CO_Comp_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reord
                  SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN',device_A,device_A_'|}|]
-                (IF_IDevice_(true) [[IDevice.x<-device_A.x|x<-extensions(device_A)]][[IDevice_'.x<-device_A_'.x|x<-extensions(device_A_')]]
+                (IF_IDevice_(true,false) [[IDevice.x<-device_A.x|x<-extensions(device_A)]][[IDevice_'.x<-device_A_'.x|x<-extensions(device_A_')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({IComp.initialize,IComp.recover,IComp.perform_actions}) [F= IF_IComp_(true) \ diff(Events,{IComp.initialize,IComp.recover,IComp.perform_actions,illegal})
-assert IF_IComp_(false) :[deadlock free]
-assert IF_IComp_(true) :[livelock free]
-assert COMPLETE'({IDevice.initialize,IDevice.calibrate,IDevice.perform_action1,IDevice.perform_action2}) [F= IF_IDevice_(true) \ diff(Events,{IDevice.initialize,IDevice.calibrate,IDevice.perform_action1,IDevice.perform_action2,illegal})
-assert IF_IDevice_(false) :[deadlock free]
-assert IF_IDevice_(true) :[livelock free]
+assert COMPLETE'({IComp.initialize,IComp.recover,IComp.perform_actions}) [F= IF_IComp_(true,true) \ diff(Events,{IComp.initialize,IComp.recover,IComp.perform_actions,illegal})
+assert IF_IComp_(false,false) :[deadlock free]
+assert IF_IComp_(true,false) :[livelock free]
+assert COMPLETE'({IDevice.initialize,IDevice.calibrate,IDevice.perform_action1,IDevice.perform_action2}) [F= IF_IDevice_(true,true) \ diff(Events,{IDevice.initialize,IDevice.calibrate,IDevice.perform_action1,IDevice.perform_action2,illegal})
+assert IF_IDevice_(false,false) :[deadlock free]
+assert IF_IDevice_(true,false) :[livelock free]
 assert CO_Comp_(true,true) :[deterministic]
 assert COMPLETE'({client.initialize,client.recover,client.perform_actions}) [F= CO_Comp_(true,true)[[IComp_'.x'<-client_'.x'|x'<-extensions(client_')]] \ diff(Events,{client.initialize,client.recover,client.perform_actions,illegal})
 assert STOP [T= AS_Comp_(false) \ diff(Events,{illegal})
 assert AS_Comp_(false) :[deadlock free]
-assert IF_IComp_(true) [[IComp.x<-client.x|x<-extensions(client)]][[IComp_'.x<-client_'.x|x<-extensions(client_')]]\ {} [F= AS_Comp_(true) \ diff(Events,{|illegal,client,client_'|})
+assert IF_IComp_(true,false) [[IComp.x<-client.x|x<-extensions(client)]][[IComp_'.x<-client_'.x|x<-extensions(client_')]]\ {} [F= AS_Comp_(true) \ diff(Events,{|illegal,client,client_'|})
 assert AS_Comp_(true) \ diff(Events,{|illegal,client,client_'|}) :[livelock free]

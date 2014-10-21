@@ -50,14 +50,17 @@ channel irequires_twice: {e}
 channel irequires_twice_'': {a}
 channel irequires_twice_': {return}
 
-IF_irequires_twice_(IG) = let
+IF_irequires_twice_(IG,CS) = let
 
 irequires_twice_(((<>),(stack'))) =
 irequires_twice?x:{e} ->
 semi_((\ P',V' @ irequires_twice_''!a -> P'(V')),
 (\ P',V' @ irequires_twice_'.return -> P'(V')))(\ V' @ irequires_twice_(V'),((<>),(stack')))
+[]
+CS & irequires_twice?x:{} -> illegal_(STOP,<>)
 
-within irequires_twice_(((<>),(<>)))
+within if CS then irequires_twice_(((<>),(<>)))
+             else irequires_twice_(((<>),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -159,17 +162,17 @@ within compress((CO_requires_twice_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] 
                  SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN',once,once_',twice,twice_'|}|]
-                (IF_irequires_twice_(true) [[irequires_twice.x<-once.x|x<-extensions(once)]][[irequires_twice_'.x<-once_'.x|x<-extensions(once_')]][[irequires_twice_''.x<-once_''.x|x<-extensions(once_'')]]
-                 ||| IF_irequires_twice_(true) [[irequires_twice.x<-twice.x|x<-extensions(twice)]][[irequires_twice_'.x<-twice_'.x|x<-extensions(twice_')]][[irequires_twice_''.x<-twice_''.x|x<-extensions(twice_'')]]
+                (IF_irequires_twice_(true,false) [[irequires_twice.x<-once.x|x<-extensions(once)]][[irequires_twice_'.x<-once_'.x|x<-extensions(once_')]][[irequires_twice_''.x<-once_''.x|x<-extensions(once_'')]]
+                 ||| IF_irequires_twice_(true,false) [[irequires_twice.x<-twice.x|x<-extensions(twice)]][[irequires_twice_'.x<-twice_'.x|x<-extensions(twice_')]][[irequires_twice_''.x<-twice_''.x|x<-extensions(twice_'')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({irequires_twice.e}) [F= IF_irequires_twice_(true) \ diff(Events,{irequires_twice.e,illegal})
-assert IF_irequires_twice_(false) :[deadlock free]
-assert IF_irequires_twice_(true) :[livelock free]
+assert COMPLETE'({irequires_twice.e}) [F= IF_irequires_twice_(true,true) \ diff(Events,{irequires_twice.e,illegal})
+assert IF_irequires_twice_(false,false) :[deadlock free]
+assert IF_irequires_twice_(true,false) :[livelock free]
 assert CO_requires_twice_(true,true) :[deterministic]
 assert COMPLETE'({p.e,once_''.a,twice_''.a}) [F= CO_requires_twice_(true,true)[[irequires_twice_'.x'<-p_'.x'|x'<-extensions(p_')]] \ diff(Events,{p.e,once_''.a,twice_''.a,illegal})
 assert STOP [T= AS_requires_twice_(false) \ diff(Events,{illegal})
 assert AS_requires_twice_(false) :[deadlock free]
-assert IF_irequires_twice_(true) [[irequires_twice.x<-p.x|x<-extensions(p)]][[irequires_twice_'.x<-p_'.x|x<-extensions(p_')]][[irequires_twice_''.x<-p_''.x|x<-extensions(p_'')]]\ {} [F= AS_requires_twice_(true) \ diff(Events,{|illegal,p,p_',p_''|})
+assert IF_irequires_twice_(true,false) [[irequires_twice.x<-p.x|x<-extensions(p)]][[irequires_twice_'.x<-p_'.x|x<-extensions(p_')]][[irequires_twice_''.x<-p_''.x|x<-extensions(p_'')]]\ {} [F= AS_requires_twice_(true) \ diff(Events,{|illegal,p,p_',p_''|})
 assert AS_requires_twice_(true) \ diff(Events,{|illegal,p,p_',p_''|}) :[livelock free]

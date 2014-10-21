@@ -50,14 +50,17 @@ channel icomplete: {e}
 channel icomplete_'': {a}
 channel icomplete_': {return}
 
-IF_icomplete_(IG) = let
+IF_icomplete_(IG,CS) = let
 
 icomplete_(((<>),(stack'))) =
 icomplete?x:{e} ->
 semi_((\ P',V' @ icomplete_''!a -> P'(V')),
 (\ P',V' @ icomplete_'.return -> P'(V')))(\ V' @ icomplete_(V'),((<>),(stack')))
+[]
+CS & icomplete?x:{} -> illegal_(STOP,<>)
 
-within icomplete_(((<>),(<>)))
+within if CS then icomplete_(((<>),(<>)))
+             else icomplete_(((<>),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -152,16 +155,16 @@ within compress((CO_complete_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-r
                  SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN',r,r_'|}|]
-                (IF_icomplete_(true) [[icomplete.x<-r.x|x<-extensions(r)]][[icomplete_'.x<-r_'.x|x<-extensions(r_')]][[icomplete_''.x<-r_''.x|x<-extensions(r_'')]]
+                (IF_icomplete_(true,false) [[icomplete.x<-r.x|x<-extensions(r)]][[icomplete_'.x<-r_'.x|x<-extensions(r_')]][[icomplete_''.x<-r_''.x|x<-extensions(r_'')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({icomplete.e}) [F= IF_icomplete_(true) \ diff(Events,{icomplete.e,illegal})
-assert IF_icomplete_(false) :[deadlock free]
-assert IF_icomplete_(true) :[livelock free]
+assert COMPLETE'({icomplete.e}) [F= IF_icomplete_(true,true) \ diff(Events,{icomplete.e,illegal})
+assert IF_icomplete_(false,false) :[deadlock free]
+assert IF_icomplete_(true,false) :[livelock free]
 assert CO_complete_(true,true) :[deterministic]
 assert COMPLETE'({p.e,r_''.a}) [F= CO_complete_(true,true)[[icomplete_'.x'<-p_'.x'|x'<-extensions(p_')]] \ diff(Events,{p.e,r_''.a,illegal})
 assert STOP [T= AS_complete_(false) \ diff(Events,{illegal})
 assert AS_complete_(false) :[deadlock free]
-assert IF_icomplete_(true) [[icomplete.x<-p.x|x<-extensions(p)]][[icomplete_'.x<-p_'.x|x<-extensions(p_')]][[icomplete_''.x<-p_''.x|x<-extensions(p_'')]]\ {} [F= AS_complete_(true) \ diff(Events,{|illegal,p,p_',p_''|})
+assert IF_icomplete_(true,false) [[icomplete.x<-p.x|x<-extensions(p)]][[icomplete_'.x<-p_'.x|x<-extensions(p_')]][[icomplete_''.x<-p_''.x|x<-extensions(p_'')]]\ {} [F= AS_complete_(true) \ diff(Events,{|illegal,p,p_',p_''|})
 assert AS_complete_(true) \ diff(Events,{|illegal,p,p_',p_''|}) :[livelock free]

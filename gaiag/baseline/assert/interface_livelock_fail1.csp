@@ -50,7 +50,7 @@ channel i75_I: {i3_e,optional}
 
 channel i75_I_': {return}
 
-IF_i75_I_(IG) = let
+IF_i75_I_(IG,CS) = let
 
 i75_I_(((i14_s),(stack'))) =
 ((i14_s == i6_States_S0)) & (
@@ -61,8 +61,11 @@ semi_(assign_(\ ((i14_s),(stack')) @ ((i6_States_S1),(stack'))),
 ((i14_s == i6_States_S1)) & (
 i75_I?x:{optional,i3_e} ->
 skip_(\ V' @ i75_I_(V'),((i14_s),(stack'))))
+[]
+CS & i75_I?x:{optional} -> illegal_(STOP,<>)
 
-within i75_I_(((i6_States_S0),(<>))) [|{i75_I.optional}|] CHAOS({i75_I.optional})
+within if CS then i75_I_(((i6_States_S0),(<>)))
+             else i75_I_(((i6_States_S0),(<>))) [|{i75_I.optional}|] CHAOS({i75_I.optional})
 
 -- end of interface.csp.scm
 -- interface.csp.scm
@@ -71,14 +74,17 @@ channel i92_DummyI: {i76_e}
 
 channel i92_DummyI_': {return}
 
-IF_i92_DummyI_(IG) = let
+IF_i92_DummyI_(IG,CS) = let
 
 i92_DummyI_(((<>),(stack'))) =
 (true) & (
 i92_DummyI?x:{i76_e} ->
 (\ P',V' @ i92_DummyI_'.return -> P'(V'))(\ V' @ i92_DummyI_(V'),((<>),(stack'))))
+[]
+CS & i92_DummyI?x:{} -> illegal_(STOP,<>)
 
-within i92_DummyI_(((<>),(<>)))
+within if CS then i92_DummyI_(((<>),(<>)))
+             else i92_DummyI_(((<>),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -167,19 +173,19 @@ within compress((CO_i115_DummyC_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x
                  SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN',i96_ii,i96_ii_'|}|]
-                (IF_i75_I_(true) [[i75_I.x<-i96_ii.x|x<-extensions(i96_ii)]][[i75_I_'.x<-i96_ii_'.x|x<-extensions(i96_ii_')]]
+                (IF_i75_I_(true,false) [[i75_I.x<-i96_ii.x|x<-extensions(i96_ii)]][[i75_I_'.x<-i96_ii_'.x|x<-extensions(i96_ii_')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({i75_I.i3_e}) [F= IF_i75_I_(true) \ diff(Events,{i75_I.i3_e,illegal})
-assert IF_i75_I_(false) :[deadlock free]
-assert IF_i75_I_(true)  \ {|i75_I.optional|} :[livelock free]
-assert COMPLETE'({i92_DummyI.i76_e}) [F= IF_i92_DummyI_(true) \ diff(Events,{i92_DummyI.i76_e,illegal})
-assert IF_i92_DummyI_(false) :[deadlock free]
-assert IF_i92_DummyI_(true) :[livelock free]
+assert COMPLETE'({i75_I.optional,i75_I.i3_e}) [F= IF_i75_I_(true,true) \ diff(Events,{i75_I.optional,i75_I.i3_e,illegal})
+assert IF_i75_I_(false,false) :[deadlock free]
+assert IF_i75_I_(true,false)  \ {|i75_I.optional|} :[livelock free]
+assert COMPLETE'({i92_DummyI.i76_e}) [F= IF_i92_DummyI_(true,true) \ diff(Events,{i92_DummyI.i76_e,illegal})
+assert IF_i92_DummyI_(false,false) :[deadlock free]
+assert IF_i92_DummyI_(true,false) :[livelock free]
 assert CO_i115_DummyC_(true,true) :[deterministic]
 assert COMPLETE'({i93_i.i76_e}) [F= CO_i115_DummyC_(true,true)[[i92_DummyI_'.x'<-i93_i_'.x'|x'<-extensions(i93_i_')]] \ diff(Events,{i93_i.i76_e,illegal})
 assert STOP [T= AS_i115_DummyC_(false) \ diff(Events,{illegal})
 assert AS_i115_DummyC_(false) :[deadlock free]
-assert IF_i92_DummyI_(true) [[i92_DummyI.x<-i93_i.x|x<-extensions(i93_i)]][[i92_DummyI_'.x<-i93_i_'.x|x<-extensions(i93_i_')]]\ {} [F= AS_i115_DummyC_(true) \ diff(Events,{|illegal,i93_i,i93_i_'|})
+assert IF_i92_DummyI_(true,false) [[i92_DummyI.x<-i93_i.x|x<-extensions(i93_i)]][[i92_DummyI_'.x<-i93_i_'.x|x<-extensions(i93_i_')]]\ {} [F= AS_i115_DummyC_(true) \ diff(Events,{|illegal,i93_i,i93_i_'|})
 assert AS_i115_DummyC_(true) \ diff(Events,{|illegal,i93_i,i93_i_'|}) :[livelock free]

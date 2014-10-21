@@ -50,7 +50,7 @@ channel I: {e}
 channel I_'': {a}
 channel I_': {return}
 
-IF_I_(IG) = let
+IF_I_(IG,CS) = let
 
 I_(((s),(stack'))) =
 ((s == Enum_False)) & (
@@ -60,8 +60,11 @@ semi_(\ P',((s),(stack')) @ ifthenelse_((s == Enum_False),
 skip_
 )(P',((s),(stack'))),
 (\ P',V' @ I_'.return -> P'(V')))(\ V' @ I_(V'),((s),(stack'))))
+[]
+CS & I?x:{} -> illegal_(STOP,<>)
 
-within I_(((Enum_False),(<>)))
+within if CS then I_(((Enum_False),(<>)))
+             else I_(((Enum_False),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -157,12 +160,12 @@ within compress((CO_sugar_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reor
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({I.e}) [F= IF_I_(true) \ diff(Events,{I.e,illegal})
-assert IF_I_(false) :[deadlock free]
-assert IF_I_(true) :[livelock free]
+assert COMPLETE'({I.e}) [F= IF_I_(true,true) \ diff(Events,{I.e,illegal})
+assert IF_I_(false,false) :[deadlock free]
+assert IF_I_(true,false) :[livelock free]
 assert CO_sugar_(true,true) :[deterministic]
 assert COMPLETE'({i.e}) [F= CO_sugar_(true,true)[[I_'.x'<-i_'.x'|x'<-extensions(i_')]] \ diff(Events,{i.e,illegal})
 assert STOP [T= AS_sugar_(false) \ diff(Events,{illegal})
 assert AS_sugar_(false) :[deadlock free]
-assert IF_I_(true) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]][[I_''.x<-i_''.x|x<-extensions(i_'')]]\ {} [F= AS_sugar_(true) \ diff(Events,{|illegal,i,i_',i_''|})
+assert IF_I_(true,false) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]][[I_''.x<-i_''.x|x<-extensions(i_'')]]\ {} [F= AS_sugar_(true) \ diff(Events,{|illegal,i,i_',i_''|})
 assert AS_sugar_(true) \ diff(Events,{|illegal,i,i_',i_''|}) :[livelock free]

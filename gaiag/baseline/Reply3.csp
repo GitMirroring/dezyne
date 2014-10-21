@@ -50,7 +50,7 @@ channel I: {done}
 
 channel I_': {Status_Yes,Status_No,return}
 
-IF_I_(IG) = let
+IF_I_(IG,CS) = let
 reply_fun = \ P',V' @ context_func_(reply_(I_', (\ ((dummy),(stack')) @ Status_Yes)))(P',V')
 reply_fun_arg = \ P',V',F' @ context_func_args_(F',
 reply_(I_', (\ ((dummy),((stack',s))) @ s)))(P',V')
@@ -62,8 +62,11 @@ callvoid_(\ P',V' @ reply_fun(P',V'))(\ V' @ I_(V'),((dummy),(stack')))
  []
   I?x:{done} ->
 callvoid_(\ P',V' @ reply_fun_arg(P',V',(\ ((dummy),(stack')) @ (Status_No))(V')))(\ V' @ I_(V'),((dummy),(stack'))))
+[]
+CS & I?x:{} -> illegal_(STOP,<>)
 
-within I_(((false),(<>)))
+within if CS then I_(((false),(<>)))
+             else I_(((false),(<>)))
 
 -- end of interface.csp.scm
 -- interface.csp.scm
@@ -72,7 +75,7 @@ channel U: {what}
 
 channel U_': {Status_Ok,Status_Nok,return}
 
-IF_U_(IG) = let
+IF_U_(IG,CS) = let
 reply_fun = \ P',V' @ context_func_(reply_(U_', (\ ((dummy),(stack')) @ Status_Ok)))(P',V')
 reply_fun_arg = \ P',V',F' @ context_func_args_(F',
 reply_(U_', (\ ((dummy),((stack',s))) @ s)))(P',V')
@@ -84,8 +87,11 @@ callvoid_(\ P',V' @ reply_fun(P',V'))(\ V' @ U_(V'),((dummy),(stack')))
  []
   U?x:{what} ->
 callvoid_(\ P',V' @ reply_fun_arg(P',V',(\ ((dummy),(stack')) @ (Status_Nok))(V')))(\ V' @ U_(V'),((dummy),(stack'))))
+[]
+CS & U?x:{} -> illegal_(STOP,<>)
 
-within U_(((false),(<>)))
+within if CS then U_(((false),(<>)))
+             else U_(((false),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -183,19 +189,19 @@ within compress((CO_Reply3_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reo
                  SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN',u,u_'|}|]
-                (IF_U_(true) [[U.x<-u.x|x<-extensions(u)]][[U_'.x<-u_'.x|x<-extensions(u_')]]
+                (IF_U_(true,false) [[U.x<-u.x|x<-extensions(u)]][[U_'.x<-u_'.x|x<-extensions(u_')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({I.done}) [F= IF_I_(true) \ diff(Events,{I.done,illegal})
-assert IF_I_(false) :[deadlock free]
-assert IF_I_(true) :[livelock free]
-assert COMPLETE'({U.what}) [F= IF_U_(true) \ diff(Events,{U.what,illegal})
-assert IF_U_(false) :[deadlock free]
-assert IF_U_(true) :[livelock free]
+assert COMPLETE'({I.done}) [F= IF_I_(true,true) \ diff(Events,{I.done,illegal})
+assert IF_I_(false,false) :[deadlock free]
+assert IF_I_(true,false) :[livelock free]
+assert COMPLETE'({U.what}) [F= IF_U_(true,true) \ diff(Events,{U.what,illegal})
+assert IF_U_(false,false) :[deadlock free]
+assert IF_U_(true,false) :[livelock free]
 assert CO_Reply3_(true,true) :[deterministic]
 assert COMPLETE'({i.done}) [F= CO_Reply3_(true,true)[[I_'.x'<-i_'.x'|x'<-extensions(i_')]] \ diff(Events,{i.done,illegal})
 assert STOP [T= AS_Reply3_(false) \ diff(Events,{illegal})
 assert AS_Reply3_(false) :[deadlock free]
-assert IF_I_(true) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]]\ {} [F= AS_Reply3_(true) \ diff(Events,{|illegal,i,i_'|})
+assert IF_I_(true,false) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]]\ {} [F= AS_Reply3_(true) \ diff(Events,{|illegal,i,i_'|})
 assert AS_Reply3_(true) \ diff(Events,{|illegal,i,i_'|}) :[livelock free]

@@ -50,7 +50,7 @@ channel i99_sleeping: {i3_sleep}
 channel i99_sleeping_'': {i4_zzz,i5_yawn,i6_stretch}
 channel i99_sleeping_': {return}
 
-IF_i99_sleeping_(IG) = let
+IF_i99_sleeping_(IG,CS) = let
 i77_f = \ PF',VF' @ context_func_(semi_((\ P',V' @ i99_sleeping_''!i5_yawn -> P'(V')),
 semi_((\ P',V' @ i99_sleeping_''!i4_zzz -> P'(V')),
 semi_((\ P',V' @ i99_sleeping_''!i5_yawn -> P'(V')),
@@ -64,8 +64,11 @@ i99_sleeping_(((<>),(stack'))) =
 i99_sleeping?x:{i3_sleep} ->
 semi_(callvoid_(\ P',V' @ i77_f(P',V')),
 (\ P',V' @ i99_sleeping_'.return -> P'(V')))(\ V' @ i99_sleeping_(V'),((<>),(stack')))
+[]
+CS & i99_sleeping?x:{} -> illegal_(STOP,<>)
 
-within i99_sleeping_(((<>),(<>)))
+within if CS then i99_sleeping_(((<>),(<>)))
+             else i99_sleeping_(((<>),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -181,12 +184,12 @@ within compress((CO_i308_mutual_recursion_with_members_(IIG,true) [[x<-OUT'.x|x<
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({i99_sleeping.i3_sleep}) [F= IF_i99_sleeping_(true) \ diff(Events,{i99_sleeping.i3_sleep,illegal})
-assert IF_i99_sleeping_(false) :[deadlock free]
-assert IF_i99_sleeping_(true) :[livelock free]
+assert COMPLETE'({i99_sleeping.i3_sleep}) [F= IF_i99_sleeping_(true,true) \ diff(Events,{i99_sleeping.i3_sleep,illegal})
+assert IF_i99_sleeping_(false,false) :[deadlock free]
+assert IF_i99_sleeping_(true,false) :[livelock free]
 assert CO_i308_mutual_recursion_with_members_(true,true) :[deterministic]
 assert COMPLETE'({i100_beauty.i3_sleep}) [F= CO_i308_mutual_recursion_with_members_(true,true)[[i99_sleeping_'.x'<-i100_beauty_'.x'|x'<-extensions(i100_beauty_')]] \ diff(Events,{i100_beauty.i3_sleep,illegal})
 assert STOP [T= AS_i308_mutual_recursion_with_members_(false) \ diff(Events,{illegal})
 assert AS_i308_mutual_recursion_with_members_(false) :[deadlock free]
-assert IF_i99_sleeping_(true) [[i99_sleeping.x<-i100_beauty.x|x<-extensions(i100_beauty)]][[i99_sleeping_'.x<-i100_beauty_'.x|x<-extensions(i100_beauty_')]][[i99_sleeping_''.x<-i100_beauty_''.x|x<-extensions(i100_beauty_'')]]\ {} [F= AS_i308_mutual_recursion_with_members_(true) \ diff(Events,{|illegal,i100_beauty,i100_beauty_',i100_beauty_''|})
+assert IF_i99_sleeping_(true,false) [[i99_sleeping.x<-i100_beauty.x|x<-extensions(i100_beauty)]][[i99_sleeping_'.x<-i100_beauty_'.x|x<-extensions(i100_beauty_')]][[i99_sleeping_''.x<-i100_beauty_''.x|x<-extensions(i100_beauty_'')]]\ {} [F= AS_i308_mutual_recursion_with_members_(true) \ diff(Events,{|illegal,i100_beauty,i100_beauty_',i100_beauty_''|})
 assert AS_i308_mutual_recursion_with_members_(true) \ diff(Events,{|illegal,i100_beauty,i100_beauty_',i100_beauty_''|}) :[livelock free]

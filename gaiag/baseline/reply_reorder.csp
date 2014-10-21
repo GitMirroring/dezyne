@@ -50,15 +50,18 @@ channel Provides: {start}
 channel Provides_'': {busy,finish}
 channel Provides_': {return}
 
-IF_Provides_(IG) = let
+IF_Provides_(IG,CS) = let
 
 Provides_(((<>),(stack'))) =
 Provides?x:{start} ->
 semi_(semi_((\ P',V' @ Provides_''!busy -> P'(V')),
 (\ P',V' @ Provides_''!finish -> P'(V'))),
 (\ P',V' @ Provides_'.return -> P'(V')))(\ V' @ Provides_(V'),((<>),(stack')))
+[]
+CS & Provides?x:{} -> illegal_(STOP,<>)
 
-within Provides_(((<>),(<>)))
+within if CS then Provides_(((<>),(<>)))
+             else Provides_(((<>),(<>)))
 
 -- end of interface.csp.scm
 -- interface.csp.scm
@@ -67,15 +70,18 @@ channel Requires: {ping}
 channel Requires_'': {pong}
 channel Requires_': {return}
 
-IF_Requires_(IG) = let
+IF_Requires_(IG,CS) = let
 
 Requires_(((<>),(stack'))) =
 Requires?x:{ping} ->
 semi_(semi_((\ P',V' @ Requires_''!pong -> P'(V')),
 (\ P',V' @ Requires_''!pong -> P'(V'))),
 (\ P',V' @ Requires_'.return -> P'(V')))(\ V' @ Requires_(V'),((<>),(stack')))
+[]
+CS & Requires?x:{} -> illegal_(STOP,<>)
 
-within Requires_(((<>),(<>)))
+within if CS then Requires_(((<>),(<>)))
+             else Requires_(((<>),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -178,19 +184,19 @@ within compress((CO_reply_reorder_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [
                  SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN',r,r_'|}|]
-                (IF_Requires_(true) [[Requires.x<-r.x|x<-extensions(r)]][[Requires_'.x<-r_'.x|x<-extensions(r_')]][[Requires_''.x<-r_''.x|x<-extensions(r_'')]]
+                (IF_Requires_(true,false) [[Requires.x<-r.x|x<-extensions(r)]][[Requires_'.x<-r_'.x|x<-extensions(r_')]][[Requires_''.x<-r_''.x|x<-extensions(r_'')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({Provides.start}) [F= IF_Provides_(true) \ diff(Events,{Provides.start,illegal})
-assert IF_Provides_(false) :[deadlock free]
-assert IF_Provides_(true) :[livelock free]
-assert COMPLETE'({Requires.ping}) [F= IF_Requires_(true) \ diff(Events,{Requires.ping,illegal})
-assert IF_Requires_(false) :[deadlock free]
-assert IF_Requires_(true) :[livelock free]
+assert COMPLETE'({Provides.start}) [F= IF_Provides_(true,true) \ diff(Events,{Provides.start,illegal})
+assert IF_Provides_(false,false) :[deadlock free]
+assert IF_Provides_(true,false) :[livelock free]
+assert COMPLETE'({Requires.ping}) [F= IF_Requires_(true,true) \ diff(Events,{Requires.ping,illegal})
+assert IF_Requires_(false,false) :[deadlock free]
+assert IF_Requires_(true,false) :[livelock free]
 assert CO_reply_reorder_(true,true) :[deterministic]
 assert COMPLETE'({p.start,r_''.pong}) [F= CO_reply_reorder_(true,true)[[Provides_'.x'<-p_'.x'|x'<-extensions(p_')]] \ diff(Events,{p.start,r_''.pong,illegal})
 assert STOP [T= AS_reply_reorder_(false) \ diff(Events,{illegal})
 assert AS_reply_reorder_(false) :[deadlock free]
-assert IF_Provides_(true) [[Provides.x<-p.x|x<-extensions(p)]][[Provides_'.x<-p_'.x|x<-extensions(p_')]][[Provides_''.x<-p_''.x|x<-extensions(p_'')]]\ {} [F= AS_reply_reorder_(true) \ diff(Events,{|illegal,p,p_',p_''|})
+assert IF_Provides_(true,false) [[Provides.x<-p.x|x<-extensions(p)]][[Provides_'.x<-p_'.x|x<-extensions(p_')]][[Provides_''.x<-p_''.x|x<-extensions(p_'')]]\ {} [F= AS_reply_reorder_(true) \ diff(Events,{|illegal,p,p_',p_''|})
 assert AS_reply_reorder_(true) \ diff(Events,{|illegal,p,p_',p_''|}) :[livelock free]

@@ -50,7 +50,7 @@ channel I: {a,b}
 channel I_'': {c,d}
 channel I_': {return}
 
-IF_I_(IG) = let
+IF_I_(IG,CS) = let
 toggle = \ P',V' @ context_func_(semi_(\ P',((f),(stack')) @ ifthenelse_(f,
 (\ P',V' @ I_''!c -> P'(V')),
 skip_
@@ -68,8 +68,11 @@ semi_(semi_(callvoid_(\ P',V' @ toggle(P',V')),
 semi_(callvoid_(\ P',V' @ toggle(P',V')),
 (\ P',V' @ I_''!d -> P'(V')))),
 (\ P',V' @ I_'.return -> P'(V')))(\ V' @ I_(V'),((f),(stack'))))
+[]
+CS & I?x:{} -> illegal_(STOP,<>)
 
-within I_(((false),(<>)))
+within if CS then I_(((false),(<>)))
+             else I_(((false),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -173,12 +176,12 @@ within compress((CO_function_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-r
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({I.a,I.b}) [F= IF_I_(true) \ diff(Events,{I.a,I.b,illegal})
-assert IF_I_(false) :[deadlock free]
-assert IF_I_(true) :[livelock free]
+assert COMPLETE'({I.a,I.b}) [F= IF_I_(true,true) \ diff(Events,{I.a,I.b,illegal})
+assert IF_I_(false,false) :[deadlock free]
+assert IF_I_(true,false) :[livelock free]
 assert CO_function_(true,true) :[deterministic]
 assert COMPLETE'({i.a,i.b}) [F= CO_function_(true,true)[[I_'.x'<-i_'.x'|x'<-extensions(i_')]] \ diff(Events,{i.a,i.b,illegal})
 assert STOP [T= AS_function_(false) \ diff(Events,{illegal})
 assert AS_function_(false) :[deadlock free]
-assert IF_I_(true) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]][[I_''.x<-i_''.x|x<-extensions(i_'')]]\ {} [F= AS_function_(true) \ diff(Events,{|illegal,i,i_',i_''|})
+assert IF_I_(true,false) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]][[I_''.x<-i_''.x|x<-extensions(i_'')]]\ {} [F= AS_function_(true) \ diff(Events,{|illegal,i,i_',i_''|})
 assert AS_function_(true) \ diff(Events,{|illegal,i,i_',i_''|}) :[livelock free]

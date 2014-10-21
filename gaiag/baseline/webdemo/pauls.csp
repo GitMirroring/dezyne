@@ -50,7 +50,7 @@ channel i301_IDevice: {i3_initialize,i5_calibrate,i7_perform_action1,i9_perform_
 
 channel i301_IDevice_': {i13_result_t_OK,i13_result_t_NOK,return}
 
-IF_i301_IDevice_(IG) = let
+IF_i301_IDevice_(IG,CS) = let
 
 i301_IDevice_(((i25_s),(stack'))) =
 (((i25_s == i17_State_Uninitialized) and true)) & (
@@ -91,8 +91,11 @@ assign_(\ ((i25_s),(stack')) @ ((i17_State_Initialized),(stack'))))(\ V' @ i301_
 ((i25_s == i17_State_Calibrated)) & (
 i301_IDevice?x:{i5_calibrate,i3_initialize} ->
 reply_(i301_IDevice_', (\ ((i25_s),(stack')) @ i13_result_t_OK))(\ V' @ i301_IDevice_(V'),((i25_s),(stack'))))
+[]
+CS & i301_IDevice?x:{} -> illegal_(STOP,<>)
 
-within i301_IDevice_(((i17_State_Uninitialized),(<>)))
+within if CS then i301_IDevice_(((i17_State_Uninitialized),(<>)))
+             else i301_IDevice_(((i17_State_Uninitialized),(<>)))
 
 -- end of interface.csp.scm
 -- interface.csp.scm
@@ -101,7 +104,7 @@ channel i568_IComp: {i302_initialize,i304_recover,i306_perform_actions}
 
 channel i568_IComp_': {i310_result_t_OK,i310_result_t_NOK,return}
 
-IF_i568_IComp_(IG) = let
+IF_i568_IComp_(IG,CS) = let
 
 i568_IComp_(((i322_s),(stack'))) =
 (((i322_s == i314_State_Uninitialized) and true)) & (
@@ -139,8 +142,11 @@ reply_(i568_IComp_', (\ ((i322_s),(stack')) @ i310_result_t_NOK))(\ V' @ i568_IC
 ((i322_s == i314_State_Error)) & (
 IG & i568_IComp?x:{i302_initialize,i306_perform_actions} ->
 illegal_(STOP,<>))
+[]
+CS & i568_IComp?x:{} -> illegal_(STOP,<>)
 
-within i568_IComp_(((i314_State_Uninitialized),(<>)))
+within if CS then i568_IComp_(((i314_State_Uninitialized),(<>)))
+             else i568_IComp_(((i314_State_Uninitialized),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -298,20 +304,20 @@ within compress((CO_i1121_Comp_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<
                  SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN',i572_device_A,i572_device_A_',i575_device_B,i575_device_B_'|}|]
-                (IF_i301_IDevice_(true) [[i301_IDevice.x<-i572_device_A.x|x<-extensions(i572_device_A)]][[i301_IDevice_'.x<-i572_device_A_'.x|x<-extensions(i572_device_A_')]]
-                 ||| IF_i301_IDevice_(true) [[i301_IDevice.x<-i575_device_B.x|x<-extensions(i575_device_B)]][[i301_IDevice_'.x<-i575_device_B_'.x|x<-extensions(i575_device_B_')]]
+                (IF_i301_IDevice_(true,false) [[i301_IDevice.x<-i572_device_A.x|x<-extensions(i572_device_A)]][[i301_IDevice_'.x<-i572_device_A_'.x|x<-extensions(i572_device_A_')]]
+                 ||| IF_i301_IDevice_(true,false) [[i301_IDevice.x<-i575_device_B.x|x<-extensions(i575_device_B)]][[i301_IDevice_'.x<-i575_device_B_'.x|x<-extensions(i575_device_B_')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({i301_IDevice.i3_initialize,i301_IDevice.i5_calibrate,i301_IDevice.i7_perform_action1,i301_IDevice.i9_perform_action2}) [F= IF_i301_IDevice_(true) \ diff(Events,{i301_IDevice.i3_initialize,i301_IDevice.i5_calibrate,i301_IDevice.i7_perform_action1,i301_IDevice.i9_perform_action2,illegal})
-assert IF_i301_IDevice_(false) :[deadlock free]
-assert IF_i301_IDevice_(true) :[livelock free]
-assert COMPLETE'({i568_IComp.i302_initialize,i568_IComp.i304_recover,i568_IComp.i306_perform_actions}) [F= IF_i568_IComp_(true) \ diff(Events,{i568_IComp.i302_initialize,i568_IComp.i304_recover,i568_IComp.i306_perform_actions,illegal})
-assert IF_i568_IComp_(false) :[deadlock free]
-assert IF_i568_IComp_(true) :[livelock free]
+assert COMPLETE'({i301_IDevice.i3_initialize,i301_IDevice.i5_calibrate,i301_IDevice.i7_perform_action1,i301_IDevice.i9_perform_action2}) [F= IF_i301_IDevice_(true,true) \ diff(Events,{i301_IDevice.i3_initialize,i301_IDevice.i5_calibrate,i301_IDevice.i7_perform_action1,i301_IDevice.i9_perform_action2,illegal})
+assert IF_i301_IDevice_(false,false) :[deadlock free]
+assert IF_i301_IDevice_(true,false) :[livelock free]
+assert COMPLETE'({i568_IComp.i302_initialize,i568_IComp.i304_recover,i568_IComp.i306_perform_actions}) [F= IF_i568_IComp_(true,true) \ diff(Events,{i568_IComp.i302_initialize,i568_IComp.i304_recover,i568_IComp.i306_perform_actions,illegal})
+assert IF_i568_IComp_(false,false) :[deadlock free]
+assert IF_i568_IComp_(true,false) :[livelock free]
 assert CO_i1121_Comp_(true,true) :[deterministic]
 assert COMPLETE'({i569_client.i302_initialize,i569_client.i304_recover,i569_client.i306_perform_actions}) [F= CO_i1121_Comp_(true,true)[[i568_IComp_'.x'<-i569_client_'.x'|x'<-extensions(i569_client_')]] \ diff(Events,{i569_client.i302_initialize,i569_client.i304_recover,i569_client.i306_perform_actions,illegal})
 assert STOP [T= AS_i1121_Comp_(false) \ diff(Events,{illegal})
 assert AS_i1121_Comp_(false) :[deadlock free]
-assert IF_i568_IComp_(true) [[i568_IComp.x<-i569_client.x|x<-extensions(i569_client)]][[i568_IComp_'.x<-i569_client_'.x|x<-extensions(i569_client_')]]\ {} [F= AS_i1121_Comp_(true) \ diff(Events,{|illegal,i569_client,i569_client_'|})
+assert IF_i568_IComp_(true,false) [[i568_IComp.x<-i569_client.x|x<-extensions(i569_client)]][[i568_IComp_'.x<-i569_client_'.x|x<-extensions(i569_client_')]]\ {} [F= AS_i1121_Comp_(true) \ diff(Events,{|illegal,i569_client,i569_client_'|})
 assert AS_i1121_Comp_(true) \ diff(Events,{|illegal,i569_client,i569_client_'|}) :[livelock free]

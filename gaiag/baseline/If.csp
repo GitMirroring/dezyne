@@ -50,7 +50,7 @@ channel I: {a}
 channel I_'': {b,c}
 channel I_': {return}
 
-IF_I_(IG) = let
+IF_I_(IG,CS) = let
 
 I_(((t),(stack'))) =
 I?x:{a} ->
@@ -60,8 +60,11 @@ semi_(semi_(\ P',((t),(stack')) @ ifthenelse_(t,
 )(P',((t),(stack'))),
 assign_(\ ((t),(stack')) @ (((not t)),(stack')))),
 (\ P',V' @ I_'.return -> P'(V')))(\ V' @ I_(V'),((t),(stack')))
+[]
+CS & I?x:{} -> illegal_(STOP,<>)
 
-within I_(((false),(<>)))
+within if CS then I_(((false),(<>)))
+             else I_(((false),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -157,12 +160,12 @@ within compress((CO_If_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({I.a}) [F= IF_I_(true) \ diff(Events,{I.a,illegal})
-assert IF_I_(false) :[deadlock free]
-assert IF_I_(true) :[livelock free]
+assert COMPLETE'({I.a}) [F= IF_I_(true,true) \ diff(Events,{I.a,illegal})
+assert IF_I_(false,false) :[deadlock free]
+assert IF_I_(true,false) :[livelock free]
 assert CO_If_(true,true) :[deterministic]
 assert COMPLETE'({i.a}) [F= CO_If_(true,true)[[I_'.x'<-i_'.x'|x'<-extensions(i_')]] \ diff(Events,{i.a,illegal})
 assert STOP [T= AS_If_(false) \ diff(Events,{illegal})
 assert AS_If_(false) :[deadlock free]
-assert IF_I_(true) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]][[I_''.x<-i_''.x|x<-extensions(i_'')]]\ {} [F= AS_If_(true) \ diff(Events,{|illegal,i,i_',i_''|})
+assert IF_I_(true,false) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]][[I_''.x<-i_''.x|x<-extensions(i_'')]]\ {} [F= AS_If_(true) \ diff(Events,{|illegal,i,i_',i_''|})
 assert AS_If_(true) \ diff(Events,{|illegal,i,i_',i_''|}) :[livelock free]

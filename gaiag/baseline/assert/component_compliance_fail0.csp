@@ -50,14 +50,17 @@ channel i27_I: {i3_e,i4_f}
 
 channel i27_I_': {return}
 
-IF_i27_I_(IG) = let
+IF_i27_I_(IG,CS) = let
 
 i27_I_(((<>),(stack'))) =
 (true) & (
 i27_I?x:{i3_e,i4_f} ->
 (\ P',V' @ i27_I_'.return -> P'(V'))(\ V' @ i27_I_(V'),((<>),(stack'))))
+[]
+CS & i27_I?x:{} -> illegal_(STOP,<>)
 
-within i27_I_(((<>),(<>)))
+within if CS then i27_I_(((<>),(<>)))
+             else i27_I_(((<>),(<>)))
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -151,12 +154,12 @@ within compress((CO_i64_C_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reor
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({i27_I.i3_e,i27_I.i4_f}) [F= IF_i27_I_(true) \ diff(Events,{i27_I.i3_e,i27_I.i4_f,illegal})
-assert IF_i27_I_(false) :[deadlock free]
-assert IF_i27_I_(true) :[livelock free]
+assert COMPLETE'({i27_I.i3_e,i27_I.i4_f}) [F= IF_i27_I_(true,true) \ diff(Events,{i27_I.i3_e,i27_I.i4_f,illegal})
+assert IF_i27_I_(false,false) :[deadlock free]
+assert IF_i27_I_(true,false) :[livelock free]
 assert CO_i64_C_(true,true) :[deterministic]
 assert COMPLETE'({i28_i.i3_e,i28_i.i4_f}) [F= CO_i64_C_(true,true)[[i27_I_'.x'<-i28_i_'.x'|x'<-extensions(i28_i_')]] \ diff(Events,{i28_i.i3_e,i28_i.i4_f,illegal})
 assert STOP [T= AS_i64_C_(false) \ diff(Events,{illegal})
 assert AS_i64_C_(false) :[deadlock free]
-assert IF_i27_I_(true) [[i27_I.x<-i28_i.x|x<-extensions(i28_i)]][[i27_I_'.x<-i28_i_'.x|x<-extensions(i28_i_')]]\ {} [F= AS_i64_C_(true) \ diff(Events,{|illegal,i28_i,i28_i_'|})
+assert IF_i27_I_(true,false) [[i27_I.x<-i28_i.x|x<-extensions(i28_i)]][[i27_I_'.x<-i28_i_'.x|x<-extensions(i28_i_')]]\ {} [F= AS_i64_C_(true) \ diff(Events,{|illegal,i28_i,i28_i_'|})
 assert AS_i64_C_(true) \ diff(Events,{|illegal,i28_i,i28_i_'|}) :[livelock free]

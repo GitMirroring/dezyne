@@ -50,7 +50,7 @@ channel i109_ISiren: {i3_TurnOn,i4_TurnOff}
 
 channel i109_ISiren_': {return}
 
-IF_i109_ISiren_(IG) = let
+IF_i109_ISiren_(IG,CS) = let
 
 i109_ISiren_(((i15_state),(stack'))) =
 ((i15_state == i7_States_SirenOff)) & (
@@ -68,8 +68,11 @@ semi_(assign_(\ ((i15_state),(stack')) @ ((i7_States_SirenOff),(stack'))),
  []
   IG & i109_ISiren?x:{i3_TurnOn} ->
 illegal_(STOP,<>))
+[]
+CS & i109_ISiren?x:{} -> illegal_(STOP,<>)
 
-within i109_ISiren_(((i7_States_SirenOff),(<>)))
+within if CS then i109_ISiren_(((i7_States_SirenOff),(<>)))
+             else i109_ISiren_(((i7_States_SirenOff),(<>)))
 
 -- end of interface.csp.scm
 -- interface.csp.scm
@@ -78,7 +81,7 @@ channel i160_ISecretCode: {i113_isCodeCorrect}
 
 channel i160_ISecretCode_': {i112_Values_CORRECT,i112_Values_WRONG,return}
 
-IF_i160_ISecretCode_(IG) = let
+IF_i160_ISecretCode_(IG,CS) = let
 
 i160_ISecretCode_(((i116_dummy),(stack'))) =
 (true) & (
@@ -87,8 +90,11 @@ reply_(i160_ISecretCode_', (\ ((i116_dummy),(stack')) @ i112_Values_CORRECT))(\ 
  []
   i160_ISecretCode?x:{i113_isCodeCorrect} ->
 reply_(i160_ISecretCode_', (\ ((i116_dummy),(stack')) @ i112_Values_WRONG))(\ V' @ i160_ISecretCode_(V'),((i116_dummy),(stack'))))
+[]
+CS & i160_ISecretCode?x:{} -> illegal_(STOP,<>)
 
-within i160_ISecretCode_(((false),(<>)))
+within if CS then i160_ISecretCode_(((false),(<>)))
+             else i160_ISecretCode_(((false),(<>)))
 
 -- end of interface.csp.scm
 -- interface.csp.scm
@@ -97,7 +103,7 @@ channel i326_ITimer: {i161_CreateTimer,i162_CreateTimerEx,i163_CreateTimerMSec,i
 channel i326_ITimer_'': {i165_Timeout}
 channel i326_ITimer_': {return}
 
-IF_i326_ITimer_(IG) = let
+IF_i326_ITimer_(IG,CS) = let
 
 i326_ITimer_(((i176_state),(stack'))) =
 ((i176_state == i168_States_Inactive)) & (
@@ -120,8 +126,11 @@ skip_)(\ V' @ i326_ITimer_(V'),((i176_state),(stack')))
  []
   IG & i326_ITimer?x:{i161_CreateTimer,i162_CreateTimerEx,i163_CreateTimerMSec} ->
 illegal_(STOP,<>))
+[]
+CS & i326_ITimer?x:{inevitable} -> illegal_(STOP,<>)
 
-within i326_ITimer_(((i168_States_Inactive),(<>)))
+within if CS then i326_ITimer_(((i168_States_Inactive),(<>)))
+             else i326_ITimer_(((i168_States_Inactive),(<>)))
 
 -- end of interface.csp.scm
 -- interface.csp.scm
@@ -130,7 +139,7 @@ channel i506_ISensors: {i327_Activate,i328_Deactivate,optional}
 channel i506_ISensors_'': {i329_DetectedMovement}
 channel i506_ISensors_': {return}
 
-IF_i506_ISensors_(IG) = let
+IF_i506_ISensors_(IG,CS) = let
 
 i506_ISensors_(((i341_state),(stack'))) =
 ((i341_state == i333_States_Deactivated)) & (
@@ -161,8 +170,11 @@ semi_(assign_(\ ((i341_state),(stack')) @ ((i333_States_Deactivated),(stack'))),
  []
   IG & i506_ISensors?x:{i327_Activate} ->
 illegal_(STOP,<>))
+[]
+CS & i506_ISensors?x:{optional} -> illegal_(STOP,<>)
 
-within i506_ISensors_(((i333_States_Deactivated),(<>))) [|{i506_ISensors.optional}|] CHAOS({i506_ISensors.optional})
+within if CS then i506_ISensors_(((i333_States_Deactivated),(<>)))
+             else i506_ISensors_(((i333_States_Deactivated),(<>))) [|{i506_ISensors.optional}|] CHAOS({i506_ISensors.optional})
 
 -- end of interface.csp.scm
 -- interface.csp.scm
@@ -171,7 +183,7 @@ channel i809_IAlarmSystem: {i510_SwitchOn,i512_SwitchOff,optional}
 channel i809_IAlarmSystem_'': {i513_Tripped,i514_SwitchedOff,i515_SwitchOffFailed}
 channel i809_IAlarmSystem_': {i509_Values_OK,i509_Values_Failed,return}
 
-IF_i809_IAlarmSystem_(IG) = let
+IF_i809_IAlarmSystem_(IG,CS) = let
 
 i809_IAlarmSystem_(((i527_state),(stack'))) =
 (((i527_state == i519_States_NotActivated) and true)) & (
@@ -219,8 +231,11 @@ semi_((\ P',V' @ i809_IAlarmSystem_''!i515_SwitchOffFailed -> P'(V')),
 ((i527_state == i519_States_Activated_AlarmMode)) & (
 IG & i809_IAlarmSystem?x:{i510_SwitchOn} ->
 illegal_(STOP,<>))
+[]
+CS & i809_IAlarmSystem?x:{optional} -> illegal_(STOP,<>)
 
-within i809_IAlarmSystem_(((i519_States_NotActivated),(<>))) [|{i809_IAlarmSystem.optional}|] CHAOS({i809_IAlarmSystem.optional})
+within if CS then i809_IAlarmSystem_(((i519_States_NotActivated),(<>)))
+             else i809_IAlarmSystem_(((i519_States_NotActivated),(<>))) [|{i809_IAlarmSystem.optional}|] CHAOS({i809_IAlarmSystem.optional})
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -446,31 +461,31 @@ within compress((CO_i1768_bareSiliconAlarm_(IIG,true) [[x<-OUT'.x|x<-extensions(
                  SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN',i813_siren,i813_siren_',i816_secretCode,i816_secretCode_',i819_preAlarmTimer,i819_preAlarmTimer_',i822_sensors,i822_sensors_'|}|]
-                (IF_i109_ISiren_(true) [[i109_ISiren.x<-i813_siren.x|x<-extensions(i813_siren)]][[i109_ISiren_'.x<-i813_siren_'.x|x<-extensions(i813_siren_')]]
-                 ||| IF_i160_ISecretCode_(true) [[i160_ISecretCode.x<-i816_secretCode.x|x<-extensions(i816_secretCode)]][[i160_ISecretCode_'.x<-i816_secretCode_'.x|x<-extensions(i816_secretCode_')]]
-                 ||| IF_i326_ITimer_(true) [[i326_ITimer.x<-i819_preAlarmTimer.x|x<-extensions(i819_preAlarmTimer)]][[i326_ITimer_'.x<-i819_preAlarmTimer_'.x|x<-extensions(i819_preAlarmTimer_')]][[i326_ITimer_''.x<-i819_preAlarmTimer_''.x|x<-extensions(i819_preAlarmTimer_'')]]
-                 ||| IF_i506_ISensors_(true) [[i506_ISensors.x<-i822_sensors.x|x<-extensions(i822_sensors)]][[i506_ISensors_'.x<-i822_sensors_'.x|x<-extensions(i822_sensors_')]][[i506_ISensors_''.x<-i822_sensors_''.x|x<-extensions(i822_sensors_'')]]
+                (IF_i109_ISiren_(true,false) [[i109_ISiren.x<-i813_siren.x|x<-extensions(i813_siren)]][[i109_ISiren_'.x<-i813_siren_'.x|x<-extensions(i813_siren_')]]
+                 ||| IF_i160_ISecretCode_(true,false) [[i160_ISecretCode.x<-i816_secretCode.x|x<-extensions(i816_secretCode)]][[i160_ISecretCode_'.x<-i816_secretCode_'.x|x<-extensions(i816_secretCode_')]]
+                 ||| IF_i326_ITimer_(true,false) [[i326_ITimer.x<-i819_preAlarmTimer.x|x<-extensions(i819_preAlarmTimer)]][[i326_ITimer_'.x<-i819_preAlarmTimer_'.x|x<-extensions(i819_preAlarmTimer_')]][[i326_ITimer_''.x<-i819_preAlarmTimer_''.x|x<-extensions(i819_preAlarmTimer_'')]]
+                 ||| IF_i506_ISensors_(true,false) [[i506_ISensors.x<-i822_sensors.x|x<-extensions(i822_sensors)]][[i506_ISensors_'.x<-i822_sensors_'.x|x<-extensions(i822_sensors_')]][[i506_ISensors_''.x<-i822_sensors_''.x|x<-extensions(i822_sensors_'')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({i109_ISiren.i3_TurnOn,i109_ISiren.i4_TurnOff}) [F= IF_i109_ISiren_(true) \ diff(Events,{i109_ISiren.i3_TurnOn,i109_ISiren.i4_TurnOff,illegal})
-assert IF_i109_ISiren_(false) :[deadlock free]
-assert IF_i109_ISiren_(true) :[livelock free]
-assert COMPLETE'({i160_ISecretCode.i113_isCodeCorrect}) [F= IF_i160_ISecretCode_(true) \ diff(Events,{i160_ISecretCode.i113_isCodeCorrect,illegal})
-assert IF_i160_ISecretCode_(false) :[deadlock free]
-assert IF_i160_ISecretCode_(true) :[livelock free]
-assert COMPLETE'({i326_ITimer.i161_CreateTimer,i326_ITimer.i162_CreateTimerEx,i326_ITimer.i163_CreateTimerMSec,i326_ITimer.i164_CancelTimer}) [F= IF_i326_ITimer_(true) \ diff(Events,{i326_ITimer.i161_CreateTimer,i326_ITimer.i162_CreateTimerEx,i326_ITimer.i163_CreateTimerMSec,i326_ITimer.i164_CancelTimer,illegal})
-assert IF_i326_ITimer_(false) :[deadlock free]
-assert IF_i326_ITimer_(true)  \ {|i326_ITimer.inevitable|} :[livelock free]
-assert COMPLETE'({i506_ISensors.i327_Activate,i506_ISensors.i328_Deactivate}) [F= IF_i506_ISensors_(true) \ diff(Events,{i506_ISensors.i327_Activate,i506_ISensors.i328_Deactivate,illegal})
-assert IF_i506_ISensors_(false) :[deadlock free]
-assert IF_i506_ISensors_(true)  \ {|i506_ISensors.optional|} :[livelock free]
-assert COMPLETE'({i809_IAlarmSystem.i510_SwitchOn,i809_IAlarmSystem.i512_SwitchOff}) [F= IF_i809_IAlarmSystem_(true) \ diff(Events,{i809_IAlarmSystem.i510_SwitchOn,i809_IAlarmSystem.i512_SwitchOff,illegal})
-assert IF_i809_IAlarmSystem_(false) :[deadlock free]
-assert IF_i809_IAlarmSystem_(true)  \ {|i809_IAlarmSystem.optional|} :[livelock free]
+assert COMPLETE'({i109_ISiren.i3_TurnOn,i109_ISiren.i4_TurnOff}) [F= IF_i109_ISiren_(true,true) \ diff(Events,{i109_ISiren.i3_TurnOn,i109_ISiren.i4_TurnOff,illegal})
+assert IF_i109_ISiren_(false,false) :[deadlock free]
+assert IF_i109_ISiren_(true,false) :[livelock free]
+assert COMPLETE'({i160_ISecretCode.i113_isCodeCorrect}) [F= IF_i160_ISecretCode_(true,true) \ diff(Events,{i160_ISecretCode.i113_isCodeCorrect,illegal})
+assert IF_i160_ISecretCode_(false,false) :[deadlock free]
+assert IF_i160_ISecretCode_(true,false) :[livelock free]
+assert COMPLETE'({i326_ITimer.inevitable,i326_ITimer.i161_CreateTimer,i326_ITimer.i162_CreateTimerEx,i326_ITimer.i163_CreateTimerMSec,i326_ITimer.i164_CancelTimer}) [F= IF_i326_ITimer_(true,true) \ diff(Events,{i326_ITimer.inevitable,i326_ITimer.i161_CreateTimer,i326_ITimer.i162_CreateTimerEx,i326_ITimer.i163_CreateTimerMSec,i326_ITimer.i164_CancelTimer,illegal})
+assert IF_i326_ITimer_(false,false) :[deadlock free]
+assert IF_i326_ITimer_(true,false)  \ {|i326_ITimer.inevitable|} :[livelock free]
+assert COMPLETE'({i506_ISensors.optional,i506_ISensors.i327_Activate,i506_ISensors.i328_Deactivate}) [F= IF_i506_ISensors_(true,true) \ diff(Events,{i506_ISensors.optional,i506_ISensors.i327_Activate,i506_ISensors.i328_Deactivate,illegal})
+assert IF_i506_ISensors_(false,false) :[deadlock free]
+assert IF_i506_ISensors_(true,false)  \ {|i506_ISensors.optional|} :[livelock free]
+assert COMPLETE'({i809_IAlarmSystem.optional,i809_IAlarmSystem.i510_SwitchOn,i809_IAlarmSystem.i512_SwitchOff}) [F= IF_i809_IAlarmSystem_(true,true) \ diff(Events,{i809_IAlarmSystem.optional,i809_IAlarmSystem.i510_SwitchOn,i809_IAlarmSystem.i512_SwitchOff,illegal})
+assert IF_i809_IAlarmSystem_(false,false) :[deadlock free]
+assert IF_i809_IAlarmSystem_(true,false)  \ {|i809_IAlarmSystem.optional|} :[livelock free]
 assert CO_i1768_bareSiliconAlarm_(true,true) :[deterministic]
 assert COMPLETE'({i810_alarmSystem.i510_SwitchOn,i810_alarmSystem.i512_SwitchOff,i819_preAlarmTimer_''.i165_Timeout,i822_sensors_''.i329_DetectedMovement}) [F= CO_i1768_bareSiliconAlarm_(true,true)[[i809_IAlarmSystem_'.x'<-i810_alarmSystem_'.x'|x'<-extensions(i810_alarmSystem_')]] \ diff(Events,{i810_alarmSystem.i510_SwitchOn,i810_alarmSystem.i512_SwitchOff,i819_preAlarmTimer_''.i165_Timeout,i822_sensors_''.i329_DetectedMovement,illegal})
 assert STOP [T= AS_i1768_bareSiliconAlarm_(false) \ diff(Events,{illegal})
 assert AS_i1768_bareSiliconAlarm_(false) :[deadlock free]
-assert IF_i809_IAlarmSystem_(true) [[i809_IAlarmSystem.x<-i810_alarmSystem.x|x<-extensions(i810_alarmSystem)]][[i809_IAlarmSystem_'.x<-i810_alarmSystem_'.x|x<-extensions(i810_alarmSystem_')]][[i809_IAlarmSystem_''.x<-i810_alarmSystem_''.x|x<-extensions(i810_alarmSystem_'')]]\ {i810_alarmSystem.optional} [F= AS_i1768_bareSiliconAlarm_(true) \ diff(Events,{|illegal,i810_alarmSystem,i810_alarmSystem_',i810_alarmSystem_''|})
+assert IF_i809_IAlarmSystem_(true,false) [[i809_IAlarmSystem.x<-i810_alarmSystem.x|x<-extensions(i810_alarmSystem)]][[i809_IAlarmSystem_'.x<-i810_alarmSystem_'.x|x<-extensions(i810_alarmSystem_')]][[i809_IAlarmSystem_''.x<-i810_alarmSystem_''.x|x<-extensions(i810_alarmSystem_'')]]\ {i810_alarmSystem.optional} [F= AS_i1768_bareSiliconAlarm_(true) \ diff(Events,{|illegal,i810_alarmSystem,i810_alarmSystem_',i810_alarmSystem_''|})
 assert AS_i1768_bareSiliconAlarm_(true) \ diff(Events,{|illegal,i810_alarmSystem,i810_alarmSystem_',i810_alarmSystem_''|}) :[livelock free]
