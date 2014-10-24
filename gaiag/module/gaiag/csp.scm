@@ -690,7 +690,8 @@
 	 (behaviour (.name (.behaviour model)))
          (component? (is-a? model <component>))
          (continuation-p (if tail-recursive? "PF'" "P'"))
-         (continuation-pv (string-append continuation-p (if tail-recursive? ",VF'" ",V'"))))
+;;         (continuation-pv (string-append continuation-p (if tail-recursive? ",VF'" ",V'"))))
+         (continuation-pv (string-append continuation-p ",V'")))
     (=>string ast
      (match src
 
@@ -712,26 +713,28 @@
         (let ((action (list "semi_(send_(" (list (or port channel) (if (gom:out? (gom:event model (trigger))) "_''")) "," event "),recv_(" (or port channel) "_'," event "))")))
           (list "assign_active_(" action ",\n\\ ((" context "))," identifier " @ (" expressions "))" )))
 
-       (($ <csp-assign> context identifier ($ <call> function (and ($ <arguments>) (get! arguments))) expressions)
-        (list "assign_active_(\\ P',V' @ " function " (" continuation-pv ",(\\ (" context ") @ (" (arguments) "))(V')),\n\\ ((" context "))," identifier " @ (" expressions "))"))
+       (($ <csp-assign> context identifier ($ <call> function arguments) expressions)
+        (let* ((call (make <csp-call> :context context :identifier function :arguments arguments))
+               (call (csp-transform ast call inevitable-optional? channel provided-on? tail-recursive?)))
+          (list "assign_active_(" call ",\n\\ (" context ")," identifier " @ (" expressions "))")))
 
        (($ <csp-call> context identifier ($ <arguments> '()))
-        (let ((continuation-pv (string-append continuation-p (if tail-recursive?  ",members_(V')" ",V'"))))
-          (list "callvoid_(\\ P',V' @ " identifier "(" continuation-pv "))")))
+        (let ((continuation-pv (string-append continuation-p ",V'")))
+          (list "call_(\\ P',V' @ " identifier "(" continuation-pv "))")))
 
        (($ <csp-call> context identifier arguments)
-        (let ((continuation-pv (string-append continuation-p (if tail-recursive?  ",members_(V')" ",V'"))))
-          (list "callvoid_(\\ P',V' @ " identifier "(" continuation-pv ",(\\ (" context ") @ (" arguments "))(V')))")))
+        (let ((continuation-pv (string-append continuation-p ",V'")))
+          (list "call_args_(\\ P',V' @ " identifier "(" continuation-pv "),(\\ (" context ") @ (" arguments "))))")))
 
        (($ <function> name ($ <signature> type ($ <parameters> '())) recursive? statement)
         (let ((transformed (csp-transform ast statement inevitable-optional? channel provided-on? recursive?))
               (continuation-pv (if recursive? "PF',VF'" "P',V'")))
-          (list name " = \\ " continuation-pv " @ context_func_(" transformed ")(" continuation-pv ")\n")))
+          (list name "(" continuation-pv ") = " transformed "\n")))
 
        (($ <function> name signature recursive? statement)
         (let ((body (csp-transform ast statement inevitable-optional? channel provided-on? recursive?))
               (continuation-pv (if recursive? "PF',VF'" "P',V'")))
-          (list name " = \\ " continuation-pv ",F' @ context_func_args_(F',\n" body ")(" continuation-pv ")\n")))
+          (list name "(" continuation-pv ") = " body "\n")))
 
        (($ <csp-if>)
         (let ((context (.context src))
@@ -808,13 +811,11 @@
         (let ((continuation (csp-transform ast continuation inevitable-optional? channel provided-on? tail-recursive?)))
           (list "context_active_(semi_(send_(" (or port channel) "," event "),recv_(" (or port channel) "_'," event ")),\n" continuation ")")))
 
-       (($ <csp-variable> context name type ($ <call> identifier ($ <arguments> '())) continuation)
-        (let ((continuation (csp-transform ast continuation inevitable-optional? channel provided-on? tail-recursive?)))
-          (list "context_active_(\\ P',V' @ " identifier " (" continuation-pv "),\n" continuation ")")))
-
-       (($ <csp-variable> context name type ($ <call> identifier (and ($ <arguments>) (get! arguments))) continuation)
-          (let ((continuation (csp-transform ast continuation inevitable-optional? channel provided-on? tail-recursive?)))
-          (list "context_active_(\\ P',V' @ " identifier " (" continuation-pv ",(\\ (" context ") @ (" (arguments) "))(V')),\n" continuation ")")))
+       (($ <csp-variable> context name type ($ <call> identifier arguments) continuation)
+        (let* ((call (make <csp-call>  :context context :identifier identifier  :arguments arguments))
+               (call (csp-transform ast call inevitable-optional? channel provided-on? tail-recursive?))
+               (continuation (csp-transform ast continuation inevitable-optional? channel provided-on? tail-recursive?)))
+          (list "context_active_(" call ",\n" continuation ")")))
 
        (($ <csp-variable> context name type expression continuation)
         (let ((continuation (csp-transform ast continuation inevitable-optional? channel provided-on? tail-recursive?)))
