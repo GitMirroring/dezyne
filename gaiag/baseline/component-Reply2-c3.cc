@@ -26,47 +26,6 @@
 #include "locator.h"
 #include "runtime.h"
 
-namespace dezyne {
-  template <typename R, bool checked>
-  inline R valued_helper(runtime& rt, void* scope, const function<R()>& event)
-  {
-    bool& handle = rt.handling(scope);
-    if(checked and handle) throw std::logic_error("a valued event cannot be deferred");
-
-    runtime::scoped_value<bool> sv(handle, true);
-    R tmp = event();
-    if(not sv.initial)
-    {
-      rt.flush(scope);
-    }
-    return tmp;
-  }
-
-  template <typename R>
-  inline function<R()> connect_in(runtime& rt, void* scope, const function<R()>& event)
-  {
-    return bind(valued_helper<R,false>, boost::ref(rt), scope, event);
-  }
-
-  template <>
-  inline function<void()> connect_in<void>(runtime& rt, void* scope, const function<void()>& event)
-  {
-    return bind(&runtime::handle_event, boost::ref(rt), scope, event);
-  }
-
-  template <typename R>
-  inline function<R()> connect_out(runtime& rt, void* scope, const function<R()>& event)
-  {
-    return bind(valued_helper<R,true>, boost::ref(rt), scope, event);
-  }
-
-  template <>
-  inline function<void()> connect_out<void>(runtime& rt, void* scope, const function<void()>& event)
-  {
-    return bind(&runtime::handle_event, boost::ref(rt), scope, event);
-  }
-}
-
 namespace component
 {
   Reply2::Reply2(const dezyne::locator& dezyne_locator)
@@ -75,7 +34,7 @@ namespace component
   , i()
   , u()
   {
-    i.in.done = dezyne::connect_in<interface::I::Status::type>(rt, this, dezyne::bind<interface::I::Status::type>(&Reply2::i_done, this));
+    i.in.done = dezyne::connect<interface::I::Status::type>(rt, this, dezyne::function<interface::I::Status::type()>(dezyne::bind<interface::I::Status::type>(&Reply2::i_done, this)));
   }
 
   interface::I::Status::type Reply2::i_done()

@@ -1,6 +1,5 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
 //
@@ -21,35 +20,34 @@
 //
 // Code:
 
-#include "component-If-c3.hh"
+#ifndef INTERFACE_IEXTERN_C3_HH
+#define INTERFACE_IEXTERN_C3_HH
 
-#include "locator.h"
-#include "runtime.h"
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
 
-namespace component
+namespace dezyne
 {
-  If::If(const dezyne::locator& dezyne_locator)
-  : rt(dezyne_locator.get<dezyne::runtime>())
-  , t(false)
-  , i()
-  {
-    i.in.a = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&If::i_a, this)));
-  }
-
-  void If::i_a()
-  {
-    std::cout << "If.i_a" << std::endl;
-    {
-      if (t)
-      {
-        rt.defer(this, dezyne::bind(i.out.b));
-      }
-      else
-      {
-        rt.defer(this, dezyne::bind(i.out.c));
-      }
-      t = not (t);
-    }
-  }
-
+  using boost::function;
+  using boost::bind;
 }
+
+namespace interface
+{
+  struct IExtern
+  {
+
+    struct
+    {
+      dezyne::function<void ()> e;
+
+    } in;
+
+    struct
+    {
+
+    } out;
+  };
+}
+
+#endif

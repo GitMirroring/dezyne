@@ -28,13 +28,13 @@ interface::#interface  #name;
 #(map
   (lambda (port)
     (map (define-on model port #{
-#return-type  #port _#event ();
+#return-type  #port _#event (#parameters);
 #}) (filter gom:in? (gom:events port))))
   (filter gom:provides? (gom:ports model)))#
 (map
   (lambda (port)
     (map (define-on model port #{
-#return-type  #port _#event ();
+#return-type  #port _#event (#parameters);
 #}) (filter gom:out? (gom:events port))))
   (filter gom:requires? (gom:ports model)))#
 (map (define-function model #{

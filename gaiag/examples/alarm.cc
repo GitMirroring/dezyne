@@ -1,9 +1,7 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
-//
-// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -22,36 +20,35 @@
 //
 // Code:
 
-#include "component-complete-c3.hh"
+#include "component-AlarmSystem-c3.hh"
 
 #include "locator.h"
 #include "runtime.h"
 
-namespace component
+#include <map>
+#include <queue>
+
+void detected()
 {
-  complete::complete(const dezyne::locator& dezyne_locator)
-  : rt(dezyne_locator.get<dezyne::runtime>())
-  , p()
-  , r()
-  {
-    p.in.e = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&complete::p_e, this)));
-    r.out.a = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&complete::r_a, this)));
-  }
+  std::cout << "Console.detected" << std::endl;
+}
 
-  void complete::p_e()
-  {
-    std::cout << "complete.p_e" << std::endl;
-    {
-      r.in.e();
-    }
-  }
+void deactivated()
+{
+  std::cout << "Console.deactivated" << std::endl;
+}
 
-  void complete::r_a()
-  {
-    std::cout << "complete.r_a" << std::endl;
-    {
-      rt.defer(this, dezyne::bind(p.out.a));
-    }
-  }
+int main()
+{
+  dezyne::runtime runtime;
+  dezyne::locator locator;
+  component::AlarmSystem alarmsystem(locator.set(runtime));
 
+  alarmsystem.console.out.detected = detected;
+  alarmsystem.console.out.deactivated = deactivated;
+
+  alarmsystem.console.in.arm();
+  alarmsystem.sensor.sensor.out.triggered();
+  alarmsystem.console.in.disarm();
+  alarmsystem.sensor.sensor.out.disabled();
 }

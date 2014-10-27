@@ -17,15 +17,15 @@ struct #.interface
  #(->string (map declare-enum (gom:interface-enums model)))
   struct
   {
-   #(map (declare-io
-          #{dezyne::function<#return-type  ()> #name;
+   #(map (declare-io model
+          #{dezyne::function<#return-type  (#parameters)> #name;
 #}) (filter gom:in? ((compose .elements .events) model)))
    } in;
 
   struct
   {
-   #(map (declare-io
-          #{dezyne::function<#return-type  ()> #name;
+   #(map (declare-io model
+          #{dezyne::function<#return-type  (#parameters)> #name;
 #}) (filter gom:out? ((compose .elements .events) model)))
  } out;
   };

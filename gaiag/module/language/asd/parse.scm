@@ -161,7 +161,7 @@
 
    (event-parameter-list
     (event-parameter) : `(parameters ,$1)
-    (event-parameter-list event-parameter) : (append $1 (list $2)))
+    (event-parameter-list comma event-parameter) : (append $1 (list $3)))
 
    (event-parameter
     (parameter-direction parameter) : (append $2 (list $1)))
@@ -251,7 +251,8 @@
     (expression + expression) : `(+ ,$1 ,$3)
     (expression - expression) : `(- ,$1 ,$3)
 
-    (function-call) : $1)
+    (function-call) : $1
+    (action) : $1)
 
    (function-call
     (Identifier lparen rparen) : (note-location `(call ,$1) @1)
@@ -354,10 +355,13 @@
    (assignment-statement
     (Identifier = expression semicolon) : (note-location `(assign ,$1 (expression ,$3)) @1))
 
+   (action
+    (Identifier dot Identifier lparen argument-list rparen) : (note-location `(action (trigger ,$1 ,$3 ,$5)) @1))
+
    (action-statement
     (Identifier semicolon) : (note-location `(action (trigger #f ,$1)) @1)
     (Identifier dot Identifier semicolon) : (note-location `(action (trigger ,$1 ,$3)) @1)
-    (Identifier dot Identifier lparen argument-list rparen semicolon) : (note-location `(action (trigger ,$1 ,$3 ,$5)) @1))
+    (action semicolon) : $1)
 
    (if-statement
     (if lparen expression rparen statement) : `(if (expression ,$3) ,$5)

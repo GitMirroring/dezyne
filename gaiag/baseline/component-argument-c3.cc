@@ -26,47 +26,6 @@
 #include "locator.h"
 #include "runtime.h"
 
-namespace dezyne {
-  template <typename R, bool checked>
-  inline R valued_helper(runtime& rt, void* scope, const function<R()>& event)
-  {
-    bool& handle = rt.handling(scope);
-    if(checked and handle) throw std::logic_error("a valued event cannot be deferred");
-
-    runtime::scoped_value<bool> sv(handle, true);
-    R tmp = event();
-    if(not sv.initial)
-    {
-      rt.flush(scope);
-    }
-    return tmp;
-  }
-
-  template <typename R>
-  inline function<R()> connect_in(runtime& rt, void* scope, const function<R()>& event)
-  {
-    return bind(valued_helper<R,false>, boost::ref(rt), scope, event);
-  }
-
-  template <>
-  inline function<void()> connect_in<void>(runtime& rt, void* scope, const function<void()>& event)
-  {
-    return bind(&runtime::handle_event, boost::ref(rt), scope, event);
-  }
-
-  template <typename R>
-  inline function<R()> connect_out(runtime& rt, void* scope, const function<R()>& event)
-  {
-    return bind(valued_helper<R,true>, boost::ref(rt), scope, event);
-  }
-
-  template <>
-  inline function<void()> connect_out<void>(runtime& rt, void* scope, const function<void()>& event)
-  {
-    return bind(&runtime::handle_event, boost::ref(rt), scope, event);
-  }
-}
-
 namespace component
 {
   argument::argument(const dezyne::locator& dezyne_locator)
@@ -74,7 +33,7 @@ namespace component
   , b(false)
   , i()
   {
-    i.in.e = dezyne::connect_in<void>(rt, this, dezyne::bind<void>(&argument::i_e, this));
+    i.in.e = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&argument::i_e, this)));
   }
 
   void argument::i_e()
@@ -87,14 +46,14 @@ namespace component
       b = g (c);
       if (c)
       {
-        rt.defer(this, i.out.f);
+        rt.defer(this, dezyne::bind(i.out.f));
       }
     }
   }
 
   bool argument::g(bool gc)
   {
-    rt.defer(this, i.out.f);
+    rt.defer(this, dezyne::bind(i.out.f));
     return (gc or b);
   }
 }

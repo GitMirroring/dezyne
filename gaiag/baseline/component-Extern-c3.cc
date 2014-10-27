@@ -1,9 +1,7 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
-//
-// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -22,35 +20,26 @@
 //
 // Code:
 
-#include "component-AlarmSystem-c3.hh"
+#include "component-Extern-c3.hh"
 
 #include "locator.h"
 #include "runtime.h"
 
-#include <map>
-#include <queue>
-
-void detected()
+namespace component
 {
-  std::cout << "Console.detected" << std::endl;
-}
+  Extern::Extern(const dezyne::locator& dezyne_locator)
+  : rt(dezyne_locator.get<dezyne::runtime>())
+  , i(0)
+  , port()
+  {
+    port.in.e = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&Extern::port_e, this)));
+  }
 
-void deactivated()
-{
-  std::cout << "Console.deactivated" << std::endl;
-}
+  void Extern::port_e()
+  {
+    std::cout << "Extern.port_e" << std::endl;
+    if (true)
+    assert(false);
+  }
 
-int main()
-{
-  dezyne::runtime runtime;
-  dezyne::locator locator;
-  component::AlarmSystem alarmsystem(locator.set(runtime));
-
-  alarmsystem.console.out.detected = detected;
-  alarmsystem.console.out.deactivated = deactivated;
-
-  alarmsystem.console.in.arm();
-  alarmsystem.sensor.sensor.out.triggered();
-  alarmsystem.console.in.disarm();
-  alarmsystem.sensor.sensor.out.disabled();
 }

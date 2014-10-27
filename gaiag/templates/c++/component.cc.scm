@@ -3,47 +3,6 @@
 ##include "locator.h"
 ##include "runtime.h"
 
-namespace dezyne {
-template <typename R, bool checked>
-inline R valued_helper(runtime& rt, void* scope, const function<R()>& event)
-{
-  bool& handle = rt.handling(scope);
-  if(checked and handle) throw std::logic_error("a valued event cannot be deferred");
-
-  runtime::scoped_value<bool> sv(handle, true);
-  R tmp = event();
-  if(not sv.initial)
-  {
-    rt.flush(scope);
-  }
-  return tmp;
-}
-
-template <typename R>
-inline function<R()> connect_in(runtime& rt, void* scope, const function<R()>& event)
-{
-  return bind(valued_helper<R,false>, boost::ref(rt), scope, event);
-}
-
-template <>
-inline function<void()> connect_in<void>(runtime& rt, void* scope, const function<void()>& event)
-{
-  return bind(&runtime::handle_event, boost::ref(rt), scope, event);
-}
-
-template <typename R>
-inline function<R()> connect_out(runtime& rt, void* scope, const function<R()>& event)
-{
-  return bind(valued_helper<R,true>, boost::ref(rt), scope, event);
-}
-
-template <>
-inline function<void()> connect_out<void>(runtime& rt, void* scope, const function<void()>& event)
-{
-  return bind(&runtime::handle_event, boost::ref(rt), scope, event);
-}
-}
-
 namespace component
 {
 #.model ::#.model (const dezyne::locator& dezyne_locator)
@@ -59,20 +18,20 @@ namespace component
    (map
     (lambda (port)
       (map (define-on model port #{
-    #port .#direction .#event  = dezyne::connect_in<#return-type >(rt, this, dezyne::bind<#return-type >(&#model ::#port _#event , this));
+#port .#direction .#event  = dezyne::connect#(if (string-null? parameters) (list "<" return-type ">") (list "<" (comma-join (append (if (eq? return-type 'void) '() (list return-type)) parameter-types))">"))(rt, this, dezyne::function<#return-type(#(comma-join parameter-types))>(dezyne::bind<#return-type >(&#model ::#port _#event , #(comma-join (append '("this") (map (lambda (i) (list " _" i)) (iota (length parameter-types) 1)))))));
 #}) (filter gom:in? (gom:events port))))
     (filter gom:provides? (gom:ports model)))#
    (map
     (lambda (port)
       (map (define-on model port #{
-    #port .#direction .#event  = dezyne::connect_out<#return-type >(rt, this, dezyne::bind<#return-type >(&#model ::#port _#event , this));
+#port .#direction .#event  = dezyne::connect#(if (string-null? parameters) (list "<" return-type ">") (list "<" (comma-join (append (if (eq? return-type 'void) '() (list return-type)) parameter-types))">"))(rt, this, dezyne::function<#return-type(#(comma-join parameter-types))>(dezyne::bind<#return-type >(&#model ::#port _#event , #(comma-join (append '("this") (map (lambda (i) (list " _" i)) (iota (length parameter-types) 1)))))));
 #}) (filter gom:out? (gom:events port))))
     (filter gom:requires? (gom:ports model))) }
 
 #(map
   (lambda (port)
     (map (define-on model port #{
-  #return-type  #model ::#port _#event ()
+  #return-type  #model ::#port _#event (#parameters)
   {
     std::cout << "#model .#port _#event" << std::endl;
     #statement #

@@ -194,16 +194,7 @@ out/%.o: examples/regression/%.asd
 c++-regression: $(CC_SOURCES:%.asd=out/%.o)
 c++-update: $(CC_SOURCES:%.asd=out/%.o.up)
 
-c++: compile c++-alarm c++-inject c++-regression
-
-c++-alarm: alarm-gen alarm
-	$(diff) baseline/interface-IConsole-c3.hh out
-	$(diff) baseline/interface-ISensor-c3.hh out
-	$(diff) baseline/interface-ISiren-c3.hh out
-	$(diff) baseline/component-Alarm-c3.hh out
-	$(diff) baseline/component-Alarm-c3.cc out
-	$(diff) baseline/component-AlarmSystem-c3.hh out
-	$(diff) baseline/component-AlarmSystem-c3.cc out
+c++: compile c++-alarm c++-inject c++-dataparam c++-regression
 
 out/%.wfc: examples/wfc/%.asd
 	! ./gaiag -l wfc $<
@@ -275,6 +266,8 @@ out/assert/%.refines: $(DEPTH)/examples/assert/%.asd
 	$(.ASSERT_REFINES)
 
 CSP_BROKEN=\
+ dataparam.asd\
+ Extern.asd\
  provides_twice.asd\
 
 CSP_SOURCES = $(filter-out $(CSP_BROKEN),$(REGRESSION_SOURCES))
@@ -309,15 +302,8 @@ simulate: compile
 	./gaiag -l simulate -t '(i.e i.e i.e)' examples/arguments.asd
 	./gaiag -l simulate -t '(client.initialize result_t.OK result_t.OK client.perform_actions result_t.OK result_t.OK client.perform_actions result_t.NOK client.recover result_t.OK client.perform_actions)' examples/regression/Comp.asd
 
-c++-inject:
+c++-alarm:
 	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/* .
-	cd out && ln -s ../examples/injected.cc .
-	cd out && $(shell pwd)/gaiag -l c++ examples/Injected.asd
-	ccache g++ -Wall -Wextra out/*.cc -o out/test && ./out/test
-
-alarm-gen:
-	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/* .
-	cd out && ln -s ../examples/main.cc .
 	cd out && for file in\
 		examples/AlarmSystem.asd\
 		examples/regression/Alarm.asd\
@@ -328,8 +314,31 @@ alarm-gen:
 		examples/Siren.asd;\
 	do $(shell pwd)/gaiag -l c++ $$file; done
 
-alarm: alarm-gen
-	ccache g++ -Wall -Wextra out/*.cc -o out/test && ./out/test
+	cd out && ln -s ../examples/alarm.cc .
+	cd out && for i in *cc; do ccache g++ -c $$i; done && g++ -o $@ *.o && ./$@ > $@.trace
+	$(diff) baseline/$@.trace out
+
+	$(diff) baseline/interface-IConsole-c3.hh out
+	$(diff) baseline/interface-ISensor-c3.hh out
+	$(diff) baseline/interface-ISiren-c3.hh out
+	$(diff) baseline/component-Alarm-c3.hh out
+	$(diff) baseline/component-Alarm-c3.cc out
+	$(diff) baseline/component-AlarmSystem-c3.hh out
+	$(diff) baseline/component-AlarmSystem-c3.cc out
+
+c++-inject:
+	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/* .
+	cd out && ln -s ../examples/injected.cc .
+	cd out && $(shell pwd)/gaiag -l c++ examples/Injected.asd
+	cd out && for i in *cc; do ccache g++ -c $$i; done && g++ -o $@ *.o && ./$@ > $@.trace
+	$(diff) baseline/$@.trace out
+
+c++-dataparam:
+	rm -rf out && mkdir out && cd out && ln -s ../runtime/* .
+	cd out && ../gaiag -l c++ ../examples/regression/dataparam.asd
+	cd out && ln -sf ../examples/dataparam.cc .
+	cd out && for i in *cc; do ccache g++ -c $$i; done && g++ -o $@ *.o && ./$@ > $@.trace
+	$(diff) baseline/$@.trace out
 
 asserts:
 	rm -rf out && mkdir out && ln -s ../examples ../../webdemo ../templates ../$(DEPTH)/webdemo/asd out
@@ -367,7 +376,11 @@ python-alarm: compile
 	ln -s ../examples/__init__.py out/component
 	cd out && $(PYTHON) alarm.py
 
-PY_SOURCES = $(CC_SOURCES)
+PY_BROKEN=\
+ dataparam.asd\
+ Extern.asd\
+
+PY_SOURCES = $(filter-out $(PY_BROKEN),$(CC_SOURCES))
 
 define .PY_REGRESSION
 rm -rf out && mkdir out && ln -s ../examples ../templates out
@@ -394,6 +407,8 @@ python-update: $(PY_SOURCES:%.asd=out/%.py.up)
 python: compile python-alarm python-regression
 
 JAVA_BROKEN =\
+ dataparam.asd\
+ Extern.asd\
  hide.asd\
  provides_twice.asd\
  Reply5.asd\
@@ -447,7 +462,11 @@ java-alarm: compile
 
 java: compile java-alarm java-regression
 
-JS_SOURCES = $(CC_SOURCES)
+JS_BROKEN=\
+ dataparam.asd\
+ Extern.asd\
+
+JS_SOURCES = $(filter-out $(JS_BROKEN),$(CC_SOURCES))
 
 define .JAVASCRIPT_REGRESSION
 rm -rf out && mkdir out && ln -s ../examples ../templates out
@@ -497,7 +516,11 @@ javascript: compile javascript-alarm javascript-regression
 
 code: c++-alarm python-alarm java-alarm javascript-alarm out/Reply7.o out/Reply7.java out/Reply7.js out/Reply7.py
 
-GOOPS_SOURCES = $(CC_SOURCES)
+GOOPS_BROKEN=\
+ dataparam.asd\
+ Extern.asd\
+
+GOOPS_SOURCES = $(filter-out $(GOOPS_BROKEN),$(CC_SOURCES))
 
 define .GOOPS_REGRESSION
 rm -rf out && mkdir out && ln -s ../examples ../templates out
@@ -565,28 +588,7 @@ glue:
 
 update: csp-update c++-update goops-update java-update javascript-update python-update java-update
 
-dataparam: compile
-	make -C ..
-	cd out && ../../build/asdgenerator -l scm ../examples/Extern.asd
-	./gaiag out/Extern.scm > out/Extern-om.scm
-	./gaiag examples/Extern.asd > out/Extern.scm
-	diff -uw out/Extern.scm out/Extern-om.scm
-
-	./gaiag examples/Extern.asd
-	./gaiag -l gom examples/Extern.asd
-	./gaiag -l resolve examples/Extern.asd
-	./gaiag -l pretty examples/Extern.asd
-
-
-	cd out && ../gaiag -l c++ ../examples/Extern.asd
-	cd out && ccache g++ -c component-Extern-c3.cc
-	cd out && ../gaiag -l csp ../examples/Extern.asd
-	./gaiag examples/dataparam.asd
-	./gaiag -l gom examples/dataparam.asd
-	./gaiag -l resolve examples/dataparam.asd
-	./gaiag -l pretty examples/dataparam.asd
-	cd out && ../gaiag -l c++ ../examples/dataparam.asd
-	-cd out && ccache g++ -c component-dataparam-c3.cc
+data-csp:
 	cd out && ../gaiag -l csp ../examples/dataparam.asd
 	-$(CSPMCHECKER) out/dataparam.csp
 	cd out && ../../build/asdgenerator -l scm ../examples/dataparam.asd

@@ -1,1 +1,1 @@
-#(if (eq? direction 'out) (list space "rt.defer(this, " port "." direction "." event ");") (list space port "." direction "." event "();"))
+#(if (eq? direction 'out) (list space "rt.defer(this, dezyne::bind(" (comma-join (append (list (list port "." direction "." event ) arguments))) "));") (list space port "." direction "." event "(" arguments ");"))

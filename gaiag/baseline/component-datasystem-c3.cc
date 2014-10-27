@@ -1,6 +1,5 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
 //
@@ -21,35 +20,22 @@
 //
 // Code:
 
-#include "component-If-c3.hh"
+#include "component-datasystem-c3.hh"
 
-#include "locator.h"
-#include "runtime.h"
+template<typename Port>
+void connect(Port& provided, Port& required)
+{
+  provided.out = required.out;
+  required.in = provided.in;
+}
 
 namespace component
 {
-  If::If(const dezyne::locator& dezyne_locator)
-  : rt(dezyne_locator.get<dezyne::runtime>())
-  , t(false)
-  , i()
+  datasystem::datasystem(const dezyne::locator& dezyne_locator)
+  : p(dezyne_locator)
+  , c(dezyne_locator)
+  , port(p.top)
   {
-    i.in.a = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&If::i_a, this)));
+    connect(c.port, p.bottom);
   }
-
-  void If::i_a()
-  {
-    std::cout << "If.i_a" << std::endl;
-    {
-      if (t)
-      {
-        rt.defer(this, dezyne::bind(i.out.b));
-      }
-      else
-      {
-        rt.defer(this, dezyne::bind(i.out.c));
-      }
-      t = not (t);
-    }
-  }
-
 }

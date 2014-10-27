@@ -1,8 +1,7 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
-//
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -21,51 +20,30 @@
 //
 // Code:
 
-interface idataparam
-{
-  extern xint = $int$;
-  enum Status {Yes, No};
+#ifndef COMPONENT_DATASYSTEM_HH
+#define COMPONENT_DATASYSTEM_HH
 
-  in void e (in xint i);
-  out void a (out xint i);
+#include "component-proxy-c3.hh"
+#include "component-dataparam-c3.hh"
 
-  behaviour
-  {
-    xint mi = $0$;
 
-    //[mi != $0$] unexpected expression type?
-    [true]
-    {
-      on e (pi):
-      {
-        mi = pi;
-        a (mi);
-      }
-    }
-  }
+#include "interface-idataparam-c3.hh"
+
+
+namespace dezyne {
+  struct locator;
 }
 
-component dataparam
+namespace component
 {
-  provides idataparam port;
-
-  behaviour
+  struct datasystem
   {
-    idataparam.xint mi = $0$;
-    idataparam.Status s = idataparam.Status.Yes;
+    proxy p;
+    dataparam c;
 
-    idataparam.Status fun ()
-    {
-      return idataparam.Status.Yes;
-    }
+    interface::idataparam& port;
 
-    //[mi != $0$] unexpected expression type?
-    [true]
-      on port.e (pi):
-      {
-        idataparam.Status s = idataparam.Status.Yes;
-        mi = pi;
-        port.a (mi);
-    }
-  }
+    datasystem(const dezyne::locator&);
+  };
 }
+#endif

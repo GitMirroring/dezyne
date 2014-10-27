@@ -364,17 +364,21 @@
 
 (define-method (gom:extern (o <model>) (type <type>))
   (find (lambda (o) (and (eq? (.name o) (.name type))
-                         (eq? (.scope o) (.scope type))))
+                         ;;(eq? (.scope o) (.scope type))
+                         ))
         (gom:externs o)))
 
 (define-method (gom:extern (o <component>) (type <type>))
   (or (next-method)
       (find (lambda (o) (and (eq? (.name o) (.name type))
-                             (eq? (.scope o) (.scope type))))
+                             ;;(eq? (.scope o) (.scope type))
+                             ))
             (gom:interface-externs o))))
 
-(define-method (gom:extern (o <model>) name)
-  (find (lambda (o) (eq? (.name o) name)) (gom:externs o)))
+(define-method (gom:extern- (o <model>) name)
+  (or
+   (find (lambda (o) (eq? (.name o) name)) (gom:externs o))
+   (find (lambda (o) (eq? (.name o) name)) (gom:interface-externs o))))
 ;;  end c&p
 
 ;; c&p enum
