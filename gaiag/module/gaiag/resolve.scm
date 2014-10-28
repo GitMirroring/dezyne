@@ -279,6 +279,7 @@
        :identifier identifier
        :arguments (resolve-model model (arguments) locals)))
     (($ <call>) o)
+    (($ <data>) o)
     (($ <event>) o)
     (($ <field>) o)
     (($ <literal>) o)
