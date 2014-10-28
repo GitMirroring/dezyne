@@ -4,15 +4,14 @@ drop_one_local_((M', (L', L0'))) = (M', L')
 illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
+-- recv_: (c: channel, e:event) => (P,V)->Proc
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')                                
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
-
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
-
--- sendrecv_: (c: channel, e:event) => (P,V)->Proc
-sendrecv_(c',e')(P', V') =  c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P', V')
--- callvoid_: (B': (P,V)->Proc) => (P,V)->Proc
-callvoid_(B')(P', V') = B'(P', V')
+-- call_: (B': (P,V)->Proc) => (P,V)->Proc
+call_(B')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', <>))
+-- call_args_: (B': (P,V)->Proc, F': V'->V') => (P,V)->Proc
+call_args_(B', F')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', (<>, F'((M1',L1')))))
 -- assign_: (F': V -> V) => (P,V) -> Proc
 assign_(F')(P', V') = P'(F'(V'))
 -- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
@@ -28,15 +27,9 @@ semi_(S1',S2')(P', V') = S1'(\V'' @ S2'(P', V''),V')
 -- ifthenelse: (E': val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
 ifthenelse_(E',S1',S2')(P', V') =  if E' then S1'(P', V') else S2'(P', V')
 -- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
--- context_(F', S')(P')((M', L')) = S'((\V2' @ P'(drop_one_local_(V2'))), (M', (L', F'((M', L')))))
--- context_(v', S')(P', (M', L')) = S'((\(M',L2') @ P'((M',L'))), (M', (L', v')))
 context_(F', S')(P', (M', L')) = S'((\ (M',L2') @ P'((M',L'))), (M', (L', F'((M', L')))))
 -- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
 context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
-context_func_(S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', <>))
-context_func_args_(v', S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', (<>, v')))
-
-members_((M',L')) = (M',<>)
 
 channel illegal
 channel transition_begin, transition_end
@@ -51,17 +44,16 @@ channel if_I_'': {ev_f}
 channel if_I_': {return}
 
 IF_if_I_(IG,CS) = let
-g = \ P',V',F' @ context_func_args_(F',
-semi_((\ P',V' @ if_I_''!ev_f -> P'(V')),
-returnvalue_(\ ((va_b),((stack',(va_ga,va_gb)))) @ (va_ga or va_gb))))(P',V')
+g(P',V') = semi_((\ P',V' @ if_I_''!ev_f -> P'(V')),
+returnvalue_(\ ((va_b),((stack',(va_ga,va_gb)))) @ (va_ga or va_gb)))(P',V')
 
 if_I_(((va_b),(stack'))) =
 (true) & (
 if_I?x:{ev_e} ->
 semi_(semi_(assign_(\ ((va_b),(stack')) @ ((va_b),(stack'))),
-context_active_(\ P',V' @ g (P',V',(\ ((va_b),(stack')) @ (va_b,va_b))(V')),
-semi_(assign_active_(\ P',V' @ g (P',V',(\ ((va_b),((stack',va_c))) @ (va_c,va_c))(V')),
-\ (((va_b),((stack',va_c)))),r' @ ((va_b),((stack',va_c)))),
+context_active_(call_args_(\ P',V' @ g(P',V'),(\ ((va_b),(stack')) @ (va_b,va_b))),
+semi_(assign_active_(call_args_(\ P',V' @ g(P',V'),(\ ((va_b),((stack',va_c))) @ (va_c,va_c))),
+\ ((va_b),((stack',va_c))),r' @ ((va_b),((stack',va_c)))),
 \ P',((va_b),((stack',va_c))) @ ifthenelse_(va_c,
 (\ P',V' @ if_I_''!ev_f -> P'(V')),
 skip_
@@ -84,17 +76,16 @@ channel po_i_':{return}
 
 
 CO_co_argument2_(IIG,IG) = let
-g = \ P',V',F' @ context_func_args_(F',
-semi_((\ P',V' @ po_i_''!ev_f -> P'(V')),
-returnvalue_(\ ((va_b),((stack',(va_ga,va_gb)))) @ (va_ga or va_gb))))(P',V')
+g(P',V') = semi_((\ P',V' @ po_i_''!ev_f -> P'(V')),
+returnvalue_(\ ((va_b),((stack',(va_ga,va_gb)))) @ (va_ga or va_gb)))(P',V')
 
 co_argument2_(((va_b),(stack'))) = transition_begin -> (
 (true) & (
 po_i?x:{ev_e} ->
 semi_(semi_(assign_(\ ((va_b),(stack')) @ ((va_b),(stack'))),
-context_active_(\ P',V' @ g (P',V',(\ ((va_b),(stack')) @ (va_b,va_b))(V')),
-semi_(assign_active_(\ P',V' @ g (P',V',(\ ((va_b),((stack',va_c))) @ (va_c,va_c))(V')),
-\ (((va_b),((stack',va_c)))),r' @ ((va_b),((stack',va_c)))),
+context_active_(call_args_(\ P',V' @ g(P',V'),(\ ((va_b),(stack')) @ (va_b,va_b))),
+semi_(assign_active_(call_args_(\ P',V' @ g(P',V'),(\ ((va_b),((stack',va_c))) @ (va_c,va_c))),
+\ ((va_b),((stack',va_c))),r' @ ((va_b),((stack',va_c)))),
 \ P',((va_b),((stack',va_c))) @ ifthenelse_(va_c,
 (\ P',V' @ po_i_''!ev_f -> P'(V')),
 skip_

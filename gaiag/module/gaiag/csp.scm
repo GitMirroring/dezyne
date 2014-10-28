@@ -690,7 +690,6 @@
 	 (behaviour (.name (.behaviour model)))
          (component? (is-a? model <component>))
          (continuation-p (if tail-recursive? "PF'" "P'"))
-;;         (continuation-pv (string-append continuation-p (if tail-recursive? ",VF'" ",V'"))))
          (continuation-pv (string-append continuation-p ",V'")))
     (=>string ast
      (match src
@@ -711,7 +710,7 @@
 
        (($ <csp-assign> context identifier ($ <action> (and ($ <trigger> port event) (get! trigger))) expressions)
         (let ((action (list "semi_(send_(" (list (or port channel) (if (gom:out? (gom:event model (trigger))) "_''")) "," event "),recv_(" (or port channel) "_'," event "))")))
-          (list "assign_active_(" action ",\n\\ ((" context "))," identifier " @ (" expressions "))" )))
+          (list "assign_active_(" action ",\n\\ (" context ")," identifier " @ (" expressions "))" )))
 
        (($ <csp-assign> context identifier ($ <call> function arguments) expressions)
         (let* ((call (make <csp-call> :context context :identifier function :arguments arguments))
@@ -719,22 +718,20 @@
           (list "assign_active_(" call ",\n\\ (" context ")," identifier " @ (" expressions "))")))
 
        (($ <csp-call> context identifier ($ <arguments> '()))
-        (let ((continuation-pv (string-append continuation-p ",V'")))
-          (list "call_(\\ P',V' @ " identifier "(" continuation-pv "))")))
+          (list "call_(\\ P',V' @ " identifier "(" continuation-pv "))"))
 
        (($ <csp-call> context identifier arguments)
-        (let ((continuation-pv (string-append continuation-p ",V'")))
-          (list "call_args_(\\ P',V' @ " identifier "(" continuation-pv "),(\\ (" context ") @ (" arguments "))))")))
+          (list "call_args_(\\ P',V' @ " identifier "(" continuation-pv "),(\\ (" context ") @ (" arguments ")))"))
 
        (($ <function> name ($ <signature> type ($ <parameters> '())) recursive? statement)
         (let ((transformed (csp-transform ast statement inevitable-optional? channel provided-on? recursive?))
-              (continuation-pv (if recursive? "PF',VF'" "P',V'")))
-          (list name "(" continuation-pv ") = " transformed "\n")))
+              (continuation-pv (if recursive? "PF',V'" "P',V'")))
+          (list name "(" continuation-pv ") = " transformed "(" continuation-pv ")\n")))
 
        (($ <function> name signature recursive? statement)
         (let ((body (csp-transform ast statement inevitable-optional? channel provided-on? recursive?))
-              (continuation-pv (if recursive? "PF',VF'" "P',V'")))
-          (list name "(" continuation-pv ") = " body "\n")))
+              (continuation-pv (if recursive? "PF',V'" "P',V'")))
+          (list name "(" continuation-pv ") = " body "(" continuation-pv ")\n")))
 
        (($ <csp-if>)
         (let ((context (.context src))

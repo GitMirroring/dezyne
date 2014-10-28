@@ -4,15 +4,14 @@ drop_one_local_((M', (L', L0'))) = (M', L')
 illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
+-- recv_: (c: channel, e:event) => (P,V)->Proc
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')                                
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
-
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
-
--- sendrecv_: (c: channel, e:event) => (P,V)->Proc
-sendrecv_(c',e')(P', V') =  c'!e'  -> c'?r' -> returnvalue_(\V' @ r')(P', V')
--- callvoid_: (B': (P,V)->Proc) => (P,V)->Proc
-callvoid_(B')(P', V') = B'(P', V')
+-- call_: (B': (P,V)->Proc) => (P,V)->Proc
+call_(B')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', <>))
+-- call_args_: (B': (P,V)->Proc, F': V'->V') => (P,V)->Proc
+call_args_(B', F')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', (<>, F'((M1',L1')))))
 -- assign_: (F': V -> V) => (P,V) -> Proc
 assign_(F')(P', V') = P'(F'(V'))
 -- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
@@ -28,15 +27,9 @@ semi_(S1',S2')(P', V') = S1'(\V'' @ S2'(P', V''),V')
 -- ifthenelse: (E': val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
 ifthenelse_(E',S1',S2')(P', V') =  if E' then S1'(P', V') else S2'(P', V')
 -- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
--- context_(F', S')(P')((M', L')) = S'((\V2' @ P'(drop_one_local_(V2'))), (M', (L', F'((M', L')))))
--- context_(v', S')(P', (M', L')) = S'((\(M',L2') @ P'((M',L'))), (M', (L', v')))
 context_(F', S')(P', (M', L')) = S'((\ (M',L2') @ P'((M',L'))), (M', (L', F'((M', L')))))
 -- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
 context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
-context_func_(S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', <>))
-context_func_args_(v', S')(P', (M1', L1')) = S'((\(M2',L2') @ P'((M2',L1'))), (M1', (<>, v')))
-
-members_((M',L')) = (M',<>)
 
 channel illegal
 channel transition_begin, transition_end
@@ -105,7 +98,7 @@ Reply2_(((dummy),(stack'))) = transition_begin -> (
 i?x:{done} ->
 context_active_(semi_(send_(u,what),recv_(u_',what)),
 semi_(assign_active_(semi_(send_(u,what),recv_(u_',what)),
-\ (((dummy),((stack',s)))),r' @ ((dummy),((stack',r')))),
+\ ((dummy),((stack',s))),r' @ ((dummy),((stack',r')))),
 \ P',((dummy),((stack',s))) @ ifthenelse_((s == Status_Ok),
 reply_(I_', (\ ((dummy),((stack',s))) @ Status_Yes)),
 reply_(I_', (\ ((dummy),((stack',s))) @ Status_No))

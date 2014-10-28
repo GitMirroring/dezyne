@@ -1113,7 +1113,7 @@ semi_(call_(\\ P',V' @ toggle(P',V')),
                          '(function toggle (signature (type void)) #f ()))
 
           ;; via:
-          "toggle(P',V') = skip_\n"))
+          "toggle(P',V') = skip_(P',V')\n"))
 
 (define csp-transform-function-arguments
   '(function
@@ -1144,7 +1144,7 @@ semi_(call_(\\ P',V' @ toggle(P',V')),
 
           ;; to:
           "g(P',V') = semi_((\\ P',V' @ i!f -> P'(V')),
-returnvalue_(\\ ((s,b,hide_member2'),((stack',c))) @ c))
+returnvalue_(\\ ((s,b,hide_member2'),((stack',c))) @ c))(P',V')
 "))
 
 
@@ -1176,7 +1176,7 @@ returnvalue_(\\ ((s,b,hide_member2'),((stack',c))) @ c))
 
           ;; via:
           "i?x:{e} ->
-context_active_(call_args_(\\ P',V' @ g(P',V'),(\\ ((s,b,c),(stack')) @ (b,b)))),
+context_active_(call_args_(\\ P',V' @ g(P',V'),(\\ ((s,b,c),(stack')) @ (b,b))),
 (\\ P',V' @ i_'.return -> P'(V')))(\\ V' @ i_B(V'),((s,b,c),(stack')))"))
 
 
@@ -1255,7 +1255,7 @@ reply_(I_', (\\ ((dummy),((stack',s))) @ Status_No))
           (csp-transform* reply-ast csp-reply-function-ast-via)
 
           ;; to:
-          "reply_fun(P',V') = reply_(I_', (\\ ((dummy),(stack')) @ Status_Yes))
+          "reply_fun(P',V') = reply_(I_', (\\ ((dummy),(stack')) @ Status_Yes))(P',V')
 "))
 
 (define csp-reply-function-parameter-ast-via
@@ -1293,7 +1293,7 @@ reply_(I_', (\\ ((dummy),((stack',s))) @ Status_No))
           (csp-transform* reply-ast csp-reply-function-parameter-ast-via)
 
           ;; to:
-          "reply_fun_arg(P',V') = reply_(I_', (\\ ((dummy),((stack',s))) @ s))
+          "reply_fun_arg(P',V') = reply_(I_', (\\ ((dummy),((stack',s))) @ s))(P',V')
 "))
 
 (define return-variable-c-ast
@@ -1433,8 +1433,8 @@ skip_
           ;; via:
          "i?x:{e} ->
 semi_(semi_(assign_(\\ ((b),(stack')) @ (((not b)),(stack'))),
-context_active_(call_args_(\\ P',V' @ g(P',V'),(\\ ((b),(stack')) @ (b)))),
-semi_(assign_active_(call_args_(\\ P',V' @ g(P',V'),(\\ ((b),((stack',c))) @ (c)))),
+context_active_(call_args_(\\ P',V' @ g(P',V'),(\\ ((b),(stack')) @ (b))),
+semi_(assign_active_(call_args_(\\ P',V' @ g(P',V'),(\\ ((b),((stack',c))) @ (c))),
 \\ ((b),((stack',c))),r' @ ((r'),((stack',c)))),
 \\ P',((b),((stack',c))) @ ifthenelse_(c,
 (\\ P',V' @ i_''!f -> P'(V')),
@@ -1486,8 +1486,8 @@ skip_
           ;; via:
          "i?x:{e} ->
 semi_(semi_(assign_(\\ ((b),(stack')) @ (((not b)),(stack'))),
-context_active_(call_args_(\\ P',V' @ h(P',V'),(\\ ((b),(stack')) @ (s,b)))),
-semi_(assign_active_(call_args_(\\ P',V' @ h(P',V'),(\\ ((b),((stack',c))) @ (s,b)))),
+context_active_(call_args_(\\ P',V' @ h(P',V'),(\\ ((b),(stack')) @ (s,b))),
+semi_(assign_active_(call_args_(\\ P',V' @ h(P',V'),(\\ ((b),((stack',c))) @ (s,b))),
 \\ ((b),((stack',c))),r' @ ((r'),((stack',c)))),
 \\ P',((b),((stack',c))) @ ifthenelse_(c,
 (\\ P',V' @ i_''!f -> P'(V')),
@@ -1701,7 +1701,7 @@ context_active_(semi_(send_(u,what),recv_(u_',what)),
           ;; to:
           "i?x:{e} ->
 semi_(assign_active_(semi_(send_(u,what),recv_(u_',what)),
-\\ (((dummy),(stack'))),r' @ ((dummy),(stack'))),
+\\ ((dummy),(stack')),r' @ ((dummy),(stack'))),
 (\\ P',V' @ I_'.return -> P'(V')))(\\ V' @ transition_end -> Reply_(V'),((dummy),(stack')))"))
 
 ;; '
