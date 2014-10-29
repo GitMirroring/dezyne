@@ -96,6 +96,11 @@ component dataparam
       return idataparam.Status.Yes;
     }
 
+    xint xfun (xint xi, xint xj)
+    {
+      return $(xi + xj) / 3$;
+    }
+
     [true]
       on port.e0: { port.a6($0$,$1$,$2$,$3$,$4$,$5$); }
       on port.e0r: {port.a0;reply(idataparam.Status.Yes);}
@@ -104,6 +109,7 @@ component dataparam
       {
         idataparam.Status s = idataparam.Status.Yes;
         mi = pi;
+        mi = xfun (pi, $pi + mi$);
         port.a (mi);
         port.aa (mi, pi);
 

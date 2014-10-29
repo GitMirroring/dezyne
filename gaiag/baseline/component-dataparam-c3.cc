@@ -75,8 +75,9 @@ namespace component
     {
       int pi = i;
       {
-        interface::idataparam::Status::type s = interface::idataparam::Status::Yes;
+        interface::idataparam::Status::type s = funx (pi);
         mi = pi;
+        mi = xfunx (pi, pi + mi);
         rt.defer(this, dezyne::bind(port.out.a,mi));
         rt.defer(this, dezyne::bind(port.out.aa,mi, pi));
       }
@@ -198,5 +199,15 @@ namespace component
   interface::idataparam::Status::type dataparam::fun()
   {
     return interface::idataparam::Status::Yes;
+  }
+
+  interface::idataparam::Status::type dataparam::funx(int xi)
+  {
+    return interface::idataparam::Status::Yes;
+  }
+
+  int dataparam::xfunx(int xi, int xj)
+  {
+    return (xi + xj) / 3;
   }
 }

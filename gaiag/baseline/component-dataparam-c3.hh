@@ -56,6 +56,8 @@ namespace component
     interface::idataparam::Status::type port_eior(int i, int& j);
     interface::idataparam::Status::type port_eio2r(int& i);
     interface::idataparam::Status::type fun();
+    interface::idataparam::Status::type funx(int xi);
+    int xfunx(int xi, int xj);
   };
 }
 #endif
