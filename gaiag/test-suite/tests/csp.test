@@ -130,7 +130,10 @@
                     (variable s (type S) (action (trigger S S1)))
                     (variable b (type bool) (expression false))
                     (variable c (type bool) (expression true)))
-                   (functions (function toggle (signature (type void)) #f (compound)))
+                   (functions
+                    (function toggle (signature (type void)) #f (compound))
+                    (function vtoggle (signature (type bool)) (compound))
+                    (function g (signature (type void) (parameters (parameter b1 (type bool)) (parameter b2 (type bool)))) #f (compound)))
                    (compound)))))
 
 (define ast-return-ast
@@ -1095,10 +1098,10 @@ skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
 (pass-if "csp-transform-function-call"
          (diff-noisy-equal?
 
-          ;; from:
+          ;; via/from:
           (csp-transform* i-ast csp-function-call-ast)
 
-          ;; via:
+          ;; to:
           "i?x:{e} ->
 semi_(call_(\\ P',V' @ toggle(P',V')),
 (\\ P',V' @ i_'.return -> P'(V')))(\\ V' @ i_B(V'),((s,b,c),(stack')))"))
@@ -1114,6 +1117,77 @@ semi_(call_(\\ P',V' @ toggle(P',V')),
 
           ;; via:
           "toggle(P',V') = skip_(P',V')\n"))
+
+(define csp-function-call-valued-ast
+  '(csp-on
+    (context (s b c))
+    (triggers (trigger #f e (arguments)))
+    (semi (csp-assign (context (s b c)) r' (call vtoggle) (context (s r' c)))
+          (voidreply))))
+
+(pass-if "ast-transform-function-call-valued"
+         (csp-pretty-noisy-equal?
+
+          ;; from:
+          (ast-transform*
+
+           i-ast
+
+           '(compound
+             (on (e)
+                 (compound (assign b (call vtoggle))))))
+
+          ;; via:
+          csp-function-call-valued-ast))
+
+(pass-if "csp-transform-function-call-valued"
+         (diff-noisy-equal?
+
+          ;; via/from:
+          (csp-transform* i-ast csp-function-call-valued-ast)
+
+          ;; to
+          "i?x:{e} ->
+semi_(assign_active_(call_(\\ P',V' @ vtoggle(P',V')),
+\\ ((s,b,c),(stack')),r' @ ((s,r',c),(stack'))),
+(\\ P',V' @ i_'.return -> P'(V')))(\\ V' @ i_B(V'),((s,b,c),(stack')))"))
+
+;; '
+
+(define csp-function-call-valued-variable-ast
+  '(csp-on
+    (context (s b c))
+    (triggers (trigger #f e (arguments)))
+    (csp-variable (context (s b c)) b (type bool #f) (call vtoggle)
+                  (voidreply))))
+
+(pass-if "ast-transform-function-call-valued-variable"
+         (csp-pretty-noisy-equal?
+
+          ;; from:
+          (ast-transform*
+
+           i-ast
+
+           '(compound
+             (on (e)
+                 (compound (variable b (type bool) (call vtoggle))))))
+
+          ;; via:
+          csp-function-call-valued-variable-ast))
+
+(pass-if "csp-transform-function-call-valued-variable"
+         (diff-noisy-equal?
+
+          ;; via/from:
+          (csp-transform* i-ast csp-function-call-valued-variable-ast)
+
+          ;; to
+          "i?x:{e} ->
+context_active_(call_(\\ P',V' @ vtoggle(P',V')),
+(\\ P',V' @ i_'.return -> P'(V')))(\\ V' @ i_B(V'),((s,b,c),(stack')))"))
+
+;; '
 
 (define csp-transform-function-arguments
   '(function
