@@ -36,82 +36,84 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = i3_e | i6_States_S0 | i6_States_S1 | i76_e | optional | return
+datatype event_enumeration_alphabet = e | f | optional | return
 -- interface.csp.scm
 
-channel i75_I: {i3_e,optional}
+channel dummy: {e}
 
-channel i75_I_': {return}
+channel dummy_': {return}
 
-IF_i75_I_(IG,CS) = let
+IF_dummy_(IG,CS) = let
 
-i75_I_(((i14_s),(stack'))) =
-((i14_s == i6_States_S0)) & (
-i75_I?x:{i3_e} ->
-semi_(assign_(\ ((i14_s),(stack')) @ ((i6_States_S1),(stack'))),
-(\ P',V' @ i75_I_'.return -> P'(V')))(\ V' @ i75_I_(V'),((i14_s),(stack'))))
+dummy_(((<>),(stack'))) =
+(true) & (
+dummy?x:{e} ->
+(\ P',V' @ dummy_'.return -> P'(V'))(\ V' @ dummy_(V'),((<>),(stack'))))
 []
-((i14_s == i6_States_S1)) & (
-i75_I?x:{i3_e} ->
-(\ P',V' @ i75_I_'.return -> P'(V'))(\ V' @ i75_I_(V'),((i14_s),(stack')))
- []
-  i75_I?x:{optional} ->
-skip_(\ V' @ i75_I_(V'),((i14_s),(stack'))))
-[]
-CS & i75_I?x:{optional} -> illegal_(STOP,<>)
+CS & dummy?x:{} -> illegal_(STOP,<>)
 
-within if CS then i75_I_(((i6_States_S0),(<>)))
-             else i75_I_(((i6_States_S0),(<>))) [|{i75_I.optional}|] CHAOS({i75_I.optional})
+within if CS then dummy_(((<>),(<>)))
+             else dummy_(((<>),(<>)))
 
 -- end of interface.csp.scm
 -- interface.csp.scm
 
-channel i92_DummyI: {i76_e}
+channel imodeling: {e,optional}
+channel imodeling_'': {f}
+channel imodeling_': {return}
 
-channel i92_DummyI_': {return}
+IF_imodeling_(IG,CS) = let
 
-IF_i92_DummyI_(IG,CS) = let
-
-i92_DummyI_(((<>),(stack'))) =
+imodeling_(((<>),(stack'))) =
 (true) & (
-i92_DummyI?x:{i76_e} ->
-(\ P',V' @ i92_DummyI_'.return -> P'(V'))(\ V' @ i92_DummyI_(V'),((<>),(stack'))))
+imodeling?x:{e} ->
+semi_((\ P',V' @ imodeling_''!f -> P'(V')),
+(\ P',V' @ imodeling_'.return -> P'(V')))(\ V' @ imodeling_(V'),((<>),(stack')))
+ []
+  imodeling?x:{optional} ->
+semi_((\ P',V' @ imodeling_''!f -> P'(V')),
+skip_)(\ V' @ imodeling_(V'),((<>),(stack'))))
 []
-CS & i92_DummyI?x:{} -> illegal_(STOP,<>)
+CS & imodeling?x:{optional} -> illegal_(STOP,<>)
 
-within if CS then i92_DummyI_(((<>),(<>)))
-             else i92_DummyI_(((<>),(<>)))
+within if CS then imodeling_(((<>),(<>)))
+             else imodeling_(((<>),(<>))) [|{imodeling.optional}|] CHAOS({imodeling.optional})
 
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i93_i:{i76_e}
-channel i96_ii:{i3_e,optional}
+channel p:{e}
+channel r:{e,optional}
+
+channel r_'':{f}
+
+channel p_':{return}
+channel r_':{return}
 
 
-channel i93_i_':{return}
-channel i96_ii_':{return}
+CO_modeling_(IIG,IG) = let
 
-
-CO_i115_DummyC_(IIG,IG) = let
-
-i115_DummyC_(((<>),(stack'))) = transition_begin -> (
+modeling_(((<>),(stack'))) = transition_begin -> (
 (true) & (
-i93_i?x:{i76_e} ->
-(\ P',V' @ i92_DummyI_'.return -> P'(V'))(\ V' @ transition_end -> i115_DummyC_(V'),((<>),(stack'))))
+p?x:{e} ->
+semi_((\ P',V' @ r!e -> r_'.return -> P'(V')),
+(\ P',V' @ dummy_'.return -> P'(V')))(\ V' @ transition_end -> modeling_(V'),((<>),(stack')))
+ []
+  r_''?x:{f} ->
+skip_(\ V' @ transition_end -> modeling_(V'),((<>),(stack'))))
 )
 
-within i115_DummyC_(((<>),(<>)))
+within modeling_(((<>),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
-channel IN',OUT' : {extensions_over_empty_channels_is_undefined}
+channel IN',OUT' : {r_''.f,extensions_over_empty_channels_is_undefined}
 
 channel LINK' : {|IN',OUT'|}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {i92_DummyI_'.return}
-channel reorder_out : {i93_i_'.return}
+channel reorder_in  : {dummy_'.return}
+channel reorder_out : {p_'.return}
 
 SEMANTICS(in',out',link',client',modeling') = let
 
@@ -134,13 +136,13 @@ within
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
        []
-       reorder_in?i92_DummyI_'.x' -> reorder_out!i93_i_'.x' -> R'(A')
+       reorder_in?dummy_'.x' -> reorder_out!p_'.x' -> R'(A')
 
 S'    = let
 
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
 
-Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i93_i_'.head(r') -> Idle(0))
+Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!p_'.head(r') -> Idle(0))
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
@@ -148,40 +150,40 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
             []
-            r' == <> & reorder_in?i92_DummyI_'.x' -> Busy(c',<x'>)
+            r' == <> & reorder_in?dummy_'.x' -> Busy(c',<x'>)
             []
-            r' != <> & reorder_in?i92_DummyI_'.x' -> illegal -> STOP
+            r' != <> & reorder_in?dummy_'.x' -> illegal -> STOP
 
 within Idle(0)
 
 within Q' [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-AS_i115_DummyC_(IIG) = let
+AS_modeling_(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
 
-ClientCalls = {i93_i.i76_e}
-UsedModeling = {i96_ii.optional}
-within compress((CO_i115_DummyC_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-                 [|{|OUT',transition_begin,transition_end,reorder_in,i93_i,i93_i_'|}|]
+ClientCalls = {p.e}
+UsedModeling = {r.optional}
+within compress((CO_modeling_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+                 [|{|OUT',transition_begin,transition_end,reorder_in,p,p_'|}|]
                  SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
-                [|{|IN',i96_ii,i96_ii_'|}|]
-                (IF_i75_I_(true,false) [[i75_I.x<-i96_ii.x|x<-extensions(i96_ii)]][[i75_I_'.x<-i96_ii_'.x|x<-extensions(i96_ii_')]]
+                [|{|IN',r,r_'|}|]
+                (IF_imodeling_(true,false) [[imodeling.x<-r.x|x<-extensions(r)]][[imodeling_'.x<-r_'.x|x<-extensions(r_')]][[imodeling_''.x<-r_''.x|x<-extensions(r_'')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({i75_I.optional,i75_I.i3_e}) [F= IF_i75_I_(true,true) \ diff(Events,{i75_I.optional,i75_I.i3_e,illegal})
-assert IF_i75_I_(false,false) :[deadlock free]
-assert IF_i75_I_(true,false)  \ {|i75_I.optional|} :[livelock free]
-assert COMPLETE'({i92_DummyI.i76_e}) [F= IF_i92_DummyI_(true,true) \ diff(Events,{i92_DummyI.i76_e,illegal})
-assert IF_i92_DummyI_(false,false) :[deadlock free]
-assert IF_i92_DummyI_(true,false) :[livelock free]
-assert CO_i115_DummyC_(true,true) :[deterministic]
-assert COMPLETE'({i93_i.i76_e}) [F= CO_i115_DummyC_(true,true)[[i92_DummyI_'.x'<-i93_i_'.x'|x'<-extensions(i93_i_')]] \ diff(Events,{i93_i.i76_e,illegal})
-assert STOP [T= AS_i115_DummyC_(false) \ diff(Events,{illegal})
-assert AS_i115_DummyC_(false) :[deadlock free]
-assert IF_i92_DummyI_(true,false) [[i92_DummyI.x<-i93_i.x|x<-extensions(i93_i)]][[i92_DummyI_'.x<-i93_i_'.x|x<-extensions(i93_i_')]]\ {} [F= AS_i115_DummyC_(true) \ diff(Events,{|illegal,i93_i,i93_i_'|})
-assert AS_i115_DummyC_(true) \ diff(Events,{|illegal,i93_i,i93_i_'|}) :[livelock free]
+assert COMPLETE'({dummy.e}) [F= IF_dummy_(true,true) \ diff(Events,{dummy.e,illegal})
+assert IF_dummy_(false,false) :[deadlock free]
+assert IF_dummy_(true,false) :[livelock free]
+assert COMPLETE'({imodeling.optional,imodeling.e}) [F= IF_imodeling_(true,true) \ diff(Events,{imodeling.optional,imodeling.e,illegal})
+assert IF_imodeling_(false,false) :[deadlock free]
+assert IF_imodeling_(true,false)  \ {|imodeling.optional|} :[livelock free]
+assert CO_modeling_(true,true) :[deterministic]
+assert COMPLETE'({p.e,r_''.f}) [F= CO_modeling_(true,true)[[dummy_'.x'<-p_'.x'|x'<-extensions(p_')]] \ diff(Events,{p.e,r_''.f,illegal})
+assert STOP [T= AS_modeling_(false) \ diff(Events,{illegal})
+assert AS_modeling_(false) :[deadlock free]
+assert IF_dummy_(true,false) [[dummy.x<-p.x|x<-extensions(p)]][[dummy_'.x<-p_'.x|x<-extensions(p_')]]\ {} [F= AS_modeling_(true) \ diff(Events,{|illegal,p,p_'|})
+assert AS_modeling_(true) \ diff(Events,{|illegal,p,p_'|}) :[livelock free]

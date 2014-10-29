@@ -180,6 +180,7 @@ CC_BROKEN =\
  livelock1.asd\
  livelock2.asd\
  mangle.asd\
+ modeling.asd\
 
 CC_SOURCES = $(filter-out $(CC_BROKEN),$(REGRESSION_SOURCES))
 

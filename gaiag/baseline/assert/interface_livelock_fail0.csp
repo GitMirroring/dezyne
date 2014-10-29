@@ -47,7 +47,10 @@ IF_i26_I_(IG,CS) = let
 
 i26_I_(((<>),(stack'))) =
 (true) & (
-i26_I?x:{optional,i3_e} ->
+i26_I?x:{i3_e} ->
+(\ P',V' @ i26_I_'.return -> P'(V'))(\ V' @ i26_I_(V'),((<>),(stack')))
+ []
+  i26_I?x:{optional} ->
 skip_(\ V' @ i26_I_(V'),((<>),(stack'))))
 []
 CS & i26_I?x:{optional} -> illegal_(STOP,<>)

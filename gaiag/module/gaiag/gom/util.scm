@@ -68,6 +68,7 @@
            gom:interfaces
            gom:model-with-behaviour
            gom:models-with-behaviour
+           gom:modeling?
            gom:member-names
            gom:member-values
            gom:models
@@ -87,6 +88,7 @@
            gom:typed?
            gom:variable
            gom:variables
+           gom:void?
            ))
 
 (define ((is? class) o)
@@ -184,19 +186,22 @@
     ((? (is? <statement>)) '())
     (_ (throw 'match-error  (format #f "~a:gom:statements-of-type, type: ~a: no match: ~a\n" (current-source-location) type statement)))))
 
-(define-method (gom:typed? (o <ast>))
-  (match o
-    (($ <event>) (not (eq? (.name (.type (.signature o))) 'void)))
-    (($ <gom:port>) (null-is-#f (filter (lambda (x) (gom:typed? x)) (gom:events o))))
-    (_ (throw 'match-error  (format #f "~a:gom:typed?: no match: ~a\n" (current-source-location) o)))))
+(define-method (gom:typed? (o <event>))
+  (not (eq? (.name (.type (.signature o))) 'void)))
 
 (define-method (gom:typed? (o <boolean>)) #f)
 
-(define-method (gom:typed? (m <interface>) (o <trigger>))
+(define-method (gom:typed? (m <model>) (o <trigger>))
   (gom:typed? (gom:event m o)))
 
-(define-method (gom:typed? (m <component>) (o <trigger>))
-  (gom:typed? (gom:event m o)))
+(define-method (gom:modeling? (o <trigger>))
+  (and (not (.port o)) (not (member (.event o) '(optional inevitable)))))
+
+(define-method (gom:modeling? (m <model>) (o <trigger>))
+  (gom:modeling? o))
+
+(define-method (gom:void? (m <model>) (o <trigger>))
+  (and (not (gom:modeling? o)) (not (gom:typed? m o))))
 
 (define-method (gom:dir-matches? (p <gom:port>) (e <event>))
   (or (and (eq? (.direction p) 'provides)

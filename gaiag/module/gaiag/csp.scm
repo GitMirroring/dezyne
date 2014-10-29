@@ -192,11 +192,11 @@
 
 (define (behaviour->csp model default)
 
-  (define (valued? o)
-    (gom:typed? model o))
+  (define (void? o)
+    (gom:void? model o))
 
   (define (split-valued-void o)
-    (receive (valued void) (partition valued? ((compose .elements .triggers) o))
+    (receive (valued void) (partition void? ((compose .elements .triggers) o))
       (let* ((statement (.statement o))
              (valued-on (if (pair? valued)
                             (list

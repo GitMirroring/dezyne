@@ -1,0 +1,37 @@
+Checking out/modeling.csp
+
+Checking COMPLETE'({dummy.e}) [F= IF_dummy_(true,true)\diff(Events,{dummy.e,illegal})
+true
+
+Checking IF_dummy_(false,false) :[deadlock free]
+true
+
+Checking IF_dummy_(true,false) :[livelock free]
+true
+
+Checking COMPLETE'({imodeling.optional,imodeling.e}) [F= IF_imodeling_(true,true)\diff(Events,{imodeling.optional,imodeling.e,illegal})
+true
+
+Checking IF_imodeling_(false,false) :[deadlock free]
+true
+
+Checking IF_imodeling_(true,false)\{|imodeling.optional|} :[livelock free]
+true
+
+Checking CO_modeling_(true,true) :[deterministic]
+true
+
+Checking COMPLETE'({p.e,r_''.f}) [F= CO_modeling_(true,true)[[dummy_'.x'<-p_'.x'|x'<-extensions(p_')]]\diff(Events,{p.e,r_''.f,illegal})
+true
+
+Checking STOP [T= AS_modeling_(false)\diff(Events,{illegal})
+true
+
+Checking AS_modeling_(false) :[deadlock free]
+true
+
+Checking IF_dummy_(true,false)[[dummy.x<-p.x|x<-extensions(p)]][[dummy_'.x<-p_'.x|x<-extensions(p_')]]\{} [F= AS_modeling_(true)\diff(Events,{|illegal,p,p_'|})
+true
+
+Checking AS_modeling_(true)\diff(Events,{|illegal,p,p_'|}) :[livelock free]
+xfalse
