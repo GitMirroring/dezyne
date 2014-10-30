@@ -34,3 +34,12 @@
     (make <interface:imodeling>
       :out `((f . ,(lambda () (r-f o)))))))
 
+(define-method (p-e (o <modeling>))
+  (stderr "modeling.p.e\n")
+    (action o .r .in 'e))
+
+(define-method (r-f (o <modeling>))
+  (stderr "modeling.r.f\n")
+    #t)
+
+

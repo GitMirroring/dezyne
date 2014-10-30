@@ -218,13 +218,16 @@
                           '())))
         (append void-on valued-on))))
 
+  (define (splitted-ons statement)
+    (apply append (map split-valued-void ((gom:statements-of-type 'on) statement))))
+
   (or (string-null-is-#f
        ((->join "\n[]\n")
         (append
          (map
           (lambda (guard)
             (let ((expression (csp-expression->string model (.expression guard)))
-                  (ons ((gom:statements-of-type 'on) (.statement guard))))
+                  (ons (splitted-ons (.statement guard))))
               (list
                "(" expression ") & (\n"
                ((->join "\n []\n  ")
@@ -236,11 +239,11 @@
                                 (append
                                  (filter identity (map (statement-on-p/r- (provides? model)) ons))
                                  (filter identity (map (statement-on-p/r- (requires? model)) ons))))))
-                       (apply append (map split-valued-void ons)))))
+                       ons)))
                ")")))
           ((gom:statements-of-type 'guard) (gom:statement (.behaviour model))))
          (map (lambda (on) (csp-transform model (ast-transform model on)))
-              ((gom:statements-of-type 'on) (gom:statement (.behaviour model)))))))
+              (splitted-ons (gom:statement (.behaviour model)))))))
       default))
 
 (define (enum-type ast identifier)

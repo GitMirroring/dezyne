@@ -28,13 +28,11 @@ component.modeling = function() {
 
   this.p.in.e = function() {
     console.log('modeling.p_e');
-    if(true) this.r.in.e();
-    else if(true) ;
+    this.r.in.e();
   }.bind(this);
   this.r.out.f = function() {
     console.log('modeling.r_f');
-    if(true) ;
-    else if(true) { }
+    { }
   }.bind(this);
 
 };

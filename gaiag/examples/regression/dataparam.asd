@@ -1,5 +1,6 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
 //
@@ -48,37 +49,34 @@ interface idataparam
 
   behaviour
   {
-    [true]
+    on e0: a6;
+    on e0r: {a0;reply(Status.Yes);}
+    on e:
     {
-      on e0: a6;
-      on e0r: {a0;reply(Status.Yes);}
-      on e:
-      {
-        a;
-        aa;
-      }
-      on er:
-      {
-        a;
-        aa;
-        reply(Status.No);
-      }
-      on eer:
-      {
-        a;
-        aa;
-        reply(Status.No);
-      }
-      on eo:{}
-      on eoo:{}
-      on eio:{}
-      on eio2:{}
-
-      on eor: { reply(Status.Yes); }
-      on eoor: { reply(Status.Yes); }
-      on eior: { reply(Status.Yes); }
-      on eio2r: { reply(Status.Yes); }
+      a;
+      aa;
     }
+    on er:
+    {
+      a;
+      aa;
+      reply(Status.No);
+    }
+    on eer:
+    {
+      a;
+      aa;
+      reply(Status.No);
+    }
+    on eo:{}
+    on eoo:{}
+    on eio:{}
+    on eio2:{}
+
+    on eor: { reply(Status.Yes); }
+    on eoor: { reply(Status.Yes); }
+    on eior: { reply(Status.Yes); }
+    on eio2r: { reply(Status.Yes); }
   }
 }
 
@@ -106,45 +104,45 @@ component dataparam
       return $(xi + xj) / 3$;
     }
 
-    [true]
-      on port.e0: { port.a6($0$,$1$,$2$,$3$,$4$,$5$); }
-      on port.e0r: {port.a0;reply(idataparam.Status.Yes);}
+    on port.e0: { port.a6($0$,$1$,$2$,$3$,$4$,$5$); }
 
-      on port.e (pi):
-      {
-        idataparam.Status s = funx (pi);
-        mi = pi;
-        mi = xfunx (pi, $pi + mi$);
-        port.a (mi);
-        port.aa (mi, pi);
+    on port.e0r: {port.a0;reply(idataparam.Status.Yes);}
 
-        // idataparam.Status s = e0r();
-        // s = e0r();
-      }
-      on port.er (pi):
-      {
-        idataparam.Status s = idataparam.Status.No;
-        mi = pi;
-        port.a (mi);
-        port.aa (mi, pi);
-        reply(s);
-      }
-      on port.eer (i,j):
-      {
-        idataparam.Status s = idataparam.Status.No;
-        port.a (j);
-        port.aa (j, i);
-        reply(s);
-      }
-      on port.eo(i): { i = $234$; }
-      on port.eoo(i,j): { i = $123$; j = $456$; }
-      on port.eio(i,j): { j = i; }
-      on port.eio2(i): { i = $i + 123$; }
+    on port.e (pi):
+    {
+      idataparam.Status s = funx (pi);
+      mi = pi;
+      mi = xfunx (pi, $pi + mi$);
+      port.a (mi);
+      port.aa (mi, pi);
 
-      on port.eor(i): { i = $234$; reply(idataparam.Status.Yes); }
-      on port.eoor(i,j): { i = $123$; j = $456$; reply(idataparam.Status.Yes); }
-      on port.eior(i,j): { j = i; reply(idataparam.Status.Yes); }
-      on port.eio2r(i): { i = $i + 123$; reply(idataparam.Status.Yes); }
+      // idataparam.Status s = e0r();
+      // s = e0r();
+    }
+    on port.er (pi):
+    {
+      idataparam.Status s = idataparam.Status.No;
+      mi = pi;
+      port.a (mi);
+      port.aa (mi, pi);
+      reply(s);
+    }
+    on port.eer (i,j):
+    {
+      idataparam.Status s = idataparam.Status.No;
+      port.a (j);
+      port.aa (j, i);
+      reply(s);
+    }
+    on port.eo(i): { i = $234$; }
+    on port.eoo(i,j): { i = $123$; j = $456$; }
+    on port.eio(i,j): { j = i; }
+    on port.eio2(i): { i = $i + 123$; }
+
+    on port.eor(i): { i = $234$; reply(idataparam.Status.Yes); }
+    on port.eoor(i,j): { i = $123$; j = $456$; reply(idataparam.Status.Yes); }
+    on port.eior(i,j): { j = i; reply(idataparam.Status.Yes); }
+    on port.eio2r(i): { i = $i + 123$; reply(idataparam.Status.Yes); }
   }
 }
 

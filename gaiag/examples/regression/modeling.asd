@@ -3,6 +3,7 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -36,8 +37,8 @@ interface imodeling
   out void f;
   behaviour
   {
-    [true] on optional: f;
-    [true] on e: f;
+    on optional: f;
+    on e: f;
   }
 }
 
@@ -48,7 +49,7 @@ component modeling
 
   behaviour
   {
-    [true] on p.e: r.e;
-    [true] on r.f: {}
+    on p.e: r.e;
+    on r.f: {}
   }
 }

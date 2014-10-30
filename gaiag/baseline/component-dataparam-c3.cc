@@ -52,7 +52,6 @@ namespace component
   void dataparam::port_e0()
   {
     std::cout << "dataparam.port_e0" << std::endl;
-    if (true)
     {
       rt.defer(this, dezyne::bind(port.out.a6,0, 1, 2, 3, 4, 5));
     }
@@ -61,8 +60,6 @@ namespace component
   interface::idataparam::Status::type dataparam::port_e0r()
   {
     std::cout << "dataparam.port_e0r" << std::endl;
-    if (true)
-    ;
     {
       rt.defer(this, dezyne::bind(port.out.a0));
       reply_idataparam_Status = interface::idataparam::Status::Yes;
@@ -73,8 +70,6 @@ namespace component
   void dataparam::port_e(int i)
   {
     std::cout << "dataparam.port_e" << std::endl;
-    if (true)
-    ;
     {
       int pi = i;
       {
@@ -90,8 +85,6 @@ namespace component
   interface::idataparam::Status::type dataparam::port_er(int i)
   {
     std::cout << "dataparam.port_er" << std::endl;
-    if (true)
-    ;
     {
       int pi = i;
       {
@@ -108,8 +101,6 @@ namespace component
   interface::idataparam::Status::type dataparam::port_eer(int i, int j)
   {
     std::cout << "dataparam.port_eer" << std::endl;
-    if (true)
-    ;
     {
       interface::idataparam::Status::type s = interface::idataparam::Status::No;
       rt.defer(this, dezyne::bind(port.out.a,j));
@@ -122,8 +113,6 @@ namespace component
   void dataparam::port_eo(int& i)
   {
     std::cout << "dataparam.port_eo" << std::endl;
-    if (true)
-    ;
     {
       i = 234;
     }
@@ -132,8 +121,6 @@ namespace component
   void dataparam::port_eoo(int& i, int& j)
   {
     std::cout << "dataparam.port_eoo" << std::endl;
-    if (true)
-    ;
     {
       i = 123;
       j = 456;
@@ -143,8 +130,6 @@ namespace component
   void dataparam::port_eio(int i, int& j)
   {
     std::cout << "dataparam.port_eio" << std::endl;
-    if (true)
-    ;
     {
       j = i;
     }
@@ -153,8 +138,6 @@ namespace component
   void dataparam::port_eio2(int& i)
   {
     std::cout << "dataparam.port_eio2" << std::endl;
-    if (true)
-    ;
     {
       i = i + 123;
     }
@@ -163,8 +146,6 @@ namespace component
   interface::idataparam::Status::type dataparam::port_eor(int& i)
   {
     std::cout << "dataparam.port_eor" << std::endl;
-    if (true)
-    ;
     {
       i = 234;
       reply_idataparam_Status = interface::idataparam::Status::Yes;
@@ -175,8 +156,6 @@ namespace component
   interface::idataparam::Status::type dataparam::port_eoor(int& i, int& j)
   {
     std::cout << "dataparam.port_eoor" << std::endl;
-    if (true)
-    ;
     {
       i = 123;
       j = 456;
@@ -188,8 +167,6 @@ namespace component
   interface::idataparam::Status::type dataparam::port_eior(int i, int& j)
   {
     std::cout << "dataparam.port_eior" << std::endl;
-    if (true)
-    ;
     {
       j = i;
       reply_idataparam_Status = interface::idataparam::Status::Yes;
@@ -200,8 +177,6 @@ namespace component
   interface::idataparam::Status::type dataparam::port_eio2r(int& i)
   {
     std::cout << "dataparam.port_eio2r" << std::endl;
-    if (true)
-    ;
     {
       i = i + 123;
       reply_idataparam_Status = interface::idataparam::Status::Yes;

@@ -40,18 +40,12 @@ namespace component
   void modeling::p_e()
   {
     std::cout << "modeling.p_e" << std::endl;
-    if (true)
     r.in.e();
-    else if (true)
-    ;
   }
 
   void modeling::r_f()
   {
     std::cout << "modeling.r_f" << std::endl;
-    if (true)
-    ;
-    else if (true)
     {
     }
   }

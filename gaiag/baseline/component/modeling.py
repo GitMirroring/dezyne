@@ -39,18 +39,12 @@ class modeling ():
 
     def p_e (self):
         sys.stderr.write ('modeling.p_e\n')
-        if (True):
-            self.r.ins.e ()
-        elif (True):
-            pass
+        self.r.ins.e ()
 
 
     def r_f (self):
         sys.stderr.write ('modeling.r_f\n')
-        if (True):
-            pass
-        elif (True):
-            pass
+        pass
 
 
 

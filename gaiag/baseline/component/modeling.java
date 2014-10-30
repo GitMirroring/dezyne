@@ -43,14 +43,12 @@ class modeling{
   };
   public void p_e() {
     System.err.println("modeling.p_e");
-    if (true) r.getIn().e.action();
-    else if (true) ;
+    r.getIn().e.action();
   };
 
   public void r_f() {
     System.err.println("modeling.r_f");
-    if (true) ;
-    else if (true) { }
+    { }
   };
 
 }

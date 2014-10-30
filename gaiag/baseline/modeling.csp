@@ -65,14 +65,13 @@ channel imodeling_': {return}
 IF_imodeling_(IG,CS) = let
 
 imodeling_(((<>),(stack'))) =
-(true) & (
 imodeling?x:{e} ->
 semi_((\ P',V' @ imodeling_''!f -> P'(V')),
 (\ P',V' @ imodeling_'.return -> P'(V')))(\ V' @ imodeling_(V'),((<>),(stack')))
- []
-  imodeling?x:{optional} ->
+[]
+imodeling?x:{optional} ->
 semi_((\ P',V' @ imodeling_''!f -> P'(V')),
-skip_)(\ V' @ imodeling_(V'),((<>),(stack'))))
+skip_)(\ V' @ imodeling_(V'),((<>),(stack')))
 []
 CS & imodeling?x:{optional} -> illegal_(STOP,<>)
 
@@ -94,13 +93,12 @@ channel r_':{return}
 CO_modeling_(IIG,IG) = let
 
 modeling_(((<>),(stack'))) = transition_begin -> (
-(true) & (
 p?x:{e} ->
 semi_((\ P',V' @ r!e -> r_'.return -> P'(V')),
 (\ P',V' @ dummy_'.return -> P'(V')))(\ V' @ transition_end -> modeling_(V'),((<>),(stack')))
- []
-  r_''?x:{f} ->
-skip_(\ V' @ transition_end -> modeling_(V'),((<>),(stack'))))
+[]
+r_''?x:{f} ->
+skip_(\ V' @ transition_end -> modeling_(V'),((<>),(stack')))
 )
 
 within modeling_(((<>),(<>)))

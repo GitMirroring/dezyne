@@ -46,30 +46,29 @@ channel idataparam_': {Status_Yes,Status_No,return}
 IF_idataparam_(IG,CS) = let
 
 idataparam_(((<>),(stack'))) =
-(true) & (
 idataparam?x:{e0} ->
 semi_((\ P',V' @ idataparam_''!a6 -> P'(V')),
 (\ P',V' @ idataparam_'.return -> P'(V')))(\ V' @ idataparam_(V'),((<>),(stack')))
- []
-  idataparam?x:{e0r} ->
+[]
+idataparam?x:{e0r} ->
 semi_((\ P',V' @ idataparam_''!a0 -> P'(V')),
 reply_(idataparam_', (\ ((<>),(stack')) @ Status_Yes)))(\ V' @ idataparam_(V'),((<>),(stack')))
- []
-  idataparam?x:{e} ->
+[]
+idataparam?x:{e} ->
 semi_(semi_((\ P',V' @ idataparam_''!a -> P'(V')),
 (\ P',V' @ idataparam_''!aa -> P'(V'))),
 (\ P',V' @ idataparam_'.return -> P'(V')))(\ V' @ idataparam_(V'),((<>),(stack')))
- []
-  idataparam?x:{er,eer} ->
+[]
+idataparam?x:{er,eer} ->
 semi_((\ P',V' @ idataparam_''!a -> P'(V')),
 semi_((\ P',V' @ idataparam_''!aa -> P'(V')),
 reply_(idataparam_', (\ ((<>),(stack')) @ Status_No))))(\ V' @ idataparam_(V'),((<>),(stack')))
- []
-  idataparam?x:{eo,eoo,eio,eio2} ->
+[]
+idataparam?x:{eo,eoo,eio,eio2} ->
 (\ P',V' @ idataparam_'.return -> P'(V'))(\ V' @ idataparam_(V'),((<>),(stack')))
- []
-  idataparam?x:{eor,eoor,eior,eio2r} ->
-reply_(idataparam_', (\ ((<>),(stack')) @ Status_Yes))(\ V' @ idataparam_(V'),((<>),(stack'))))
+[]
+idataparam?x:{eor,eoor,eior,eio2r} ->
+reply_(idataparam_', (\ ((<>),(stack')) @ Status_Yes))(\ V' @ idataparam_(V'),((<>),(stack')))
 []
 CS & idataparam?x:{} -> illegal_(STOP,<>)
 
@@ -92,10 +91,9 @@ funx(P',V') = returnvalue_(\ ((s),(stack')) @ Status_Yes)(P',V')
 xfunx(P',V') = skip_(P',V')
 
 dataparam_(((s),(stack'))) = transition_begin -> (
-(true) & (
 port?x:{e0} ->
 semi_((\ P',V' @ port_''!a6 -> P'(V')),
-(\ P',V' @ idataparam_'.return -> P'(V')))(\ V' @ transition_end -> dataparam_(V'),((s),(stack'))))
+(\ P',V' @ idataparam_'.return -> P'(V')))(\ V' @ transition_end -> dataparam_(V'),((s),(stack')))
 []
 port?x:{e0r} ->
 semi_((\ P',V' @ port_''!a0 -> P'(V')),
