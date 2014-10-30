@@ -59,7 +59,6 @@
 
            assign
            extend
-           statement-on-p/r
            provides?
            requires?
            enum-type
@@ -235,8 +234,8 @@
                             (if (is-a? model <interface>)
                                 ons
                                 (append
-                                 (filter identity (map (statement-on-p/r (provides? model)) ons))
-                                 (filter identity (map (statement-on-p/r (requires? model)) ons))))))
+                                 (filter identity (map (statement-on-p/r- (provides? model)) ons))
+                                 (filter identity (map (statement-on-p/r- (requires? model)) ons))))))
                        (apply append (map split-valued-void ons)))))
                ")")))
           ((gom:statements-of-type 'guard) (gom:statement (.behaviour model))))
@@ -327,10 +326,9 @@
 (define-method (return-values (o <component>))
   (apply append (map (compose return-values gom:import .type) ((compose .elements .ports) o))))
 
-(define ((statement-on-p/r predicate) on)
+(define ((statement-on-p/r- predicate) on)
   (statement-on-p/r predicate on))
 
-(define-generic statement-on-p/r)
 (define-method (statement-on-p/r predicate (o <on>))
   (let* ((triggers (.elements (.triggers o)))
          (filtered-triggers (filter predicate triggers))
@@ -439,9 +437,19 @@
   (define (var? identifier) (or (member? identifier) (local? identifier)))
   (define (extern? identifier) (and=> (var? identifier)
                                       (lambda (var)
-                                        (stderr "extern[~a]? => ~a\n" (.type var)                                        (gom:extern model (.type var)))
                                         (gom:extern model (.type var)))))
   (define (extern-type? type) (gom:extern model type))
+
+  (define (purge-parameter-list function arguments)
+    (let ((types (map .type ((compose .elements .parameters .signature) function))))
+      (let loop ((arguments arguments) (types types))
+        (if (null? arguments)
+                arguments
+                (append
+                 (if (gom:extern model (car types))
+                     '()
+                     (list (car arguments)))
+                 (loop (cdr arguments) (cdr types)))))))
 
   (match o
 
@@ -459,92 +467,34 @@
                (let ((purged (purge-data model (car statements) locals)))
                  (cons purged (loop (cdr statements) locals))))))))
 
-    ;; (($ <on> triggers statement)
-    ;;  (let* ((parameters (apply append (map (compose .elements .arguments)
-    ;;                                        (.elements triggers))))
-    ;;         (locals (let loop ((parameters parameters) (locals locals))
-    ;;                   (if (null? parameters)
-    ;;                       locals
-    ;;                       (loop (cdr parameters)
-    ;;                             (acons ((compose .name .value car) parameters) (car parameters) locals))))))
-    ;;    (make <on>
-    ;;      :triggers (purge-data model triggers)
-    ;;      :statement (purge-data model statement locals))))
-
-    ;; disable purging
-    ;; (($ <assign> identifier expression) o)
-    ;; (($ <variable> name type expression) o)
-
-    ;; purging
     (($ <call> identifier ($ <arguments> arguments))
-     ;;
-     (let* ((f (gom:function model identifier))
-            (types (map .type ((compose .elements .parameters .signature) f)))
-            (arguments
-             (let loop ((arguments arguments) (types types))
-               (stderr "loop: ~a\n" types)
-               (if (null? arguments)
-                   arguments
-                   (append
-                    (if (gom:extern model (car types))
-                        (begin
-                          (stderr "argument: ignoring data param: ~a\n" (car arguments))
-                          '())
-                        (list (car arguments)))
-                    (loop (cdr arguments) (cdr types)))))))
        (make <call>
          :identifier identifier
-         :arguments (make <arguments> :elements arguments))))
+         :arguments (make <arguments> :elements (purge-parameter-list (gom:function model identifier) arguments))))
 
     (($ <function> name ($ <signature> type ($ <parameters> parameters)) recursive? statement)
-     (let ((parameters
-            (let loop ((parameters parameters))
-              (if (null? parameters)
-                  parameters
-                   (append
-                    (if (gom:extern model (.type (car parameters)))
-                        (begin
-                          (stderr "parameter: ignoring data param: ~a\n" (car parameters))
-                          '())
-                        (list (car parameters)))
-                    (loop (cdr parameters))))))
-           (locals
-            (let loop ((parameters parameters) (locals locals))
-              (if (null? parameters)
-                  locals
-                  (loop (cdr parameters)
-                        (acons (.name (car parameters)) (car parameters) locals))))))
        (make <function>
          :name name
          :signature (make <signature>
                       :type type
-                      :parameters (make <parameters> :elements parameters))
+                      :parameters (make <parameters> :elements (purge-parameter-list o parameters)))
          :recursive recursive?
-         :statement (purge-data model statement locals))))
+         :statement (purge-data model statement locals)))
 
-    (($ <assign> (? extern?) expression)
-     (stderr "assign: ignoring data param: ~a\n" o)
-     (make <skip>))
+    (($ <assign> (? extern?) expression) (make <skip>))
 
-    (($ <variable> name (? extern-type?) expression)
-     (stderr "variable: ignoring data param: ~a\n" o)
-     (make <skip>))
+    (($ <variable> name (? extern-type?) expression) (make <skip>))
 
-    (($ <return> ($ <expression> ($ <data>)))
-     (stderr "return: ignoring data param: ~a\n" o)
-     (make <skip>))
+    (($ <return> ($ <expression> ($ <data>))) (make <skip>))
 
-    ;; (($ <event>) o)
-    ;; (($ <field>) o)
-    ;; (($ <literal>) o)
-    ;; (($ <otherwise>) o)
-    ;; (($ <port>) o)
-    ;; (($ <trigger>) o)
-    ;; (($ <type>) o)
-    ;; (($ <var>) o)
-
-    ;; todo: arguments
-    ;; todo: parameters
+    (($ <event>) o)
+    (($ <field>) o)
+    (($ <literal>) o)
+    (($ <otherwise>) o)
+    (($ <port>) o)
+    (($ <trigger>) o)
+    (($ <type>) o)
+    (($ <var>) o)
 
     ((? (is? <ast>)) (gom:map (lambda (o) (purge-data model o locals)) o))
     ((h t ...) (map (lambda (o) (purge-data model o locals)) o))
@@ -637,18 +587,17 @@
          :locals (append (frame-hide locals 'hide_local (list extension))
                          (list extension)))))))
 
-(define ((assign identifier expression) x)
+(define ((assign- identifier expression) x)
   (match x
     (($ <context-vector> expressions)
      (make <context-vector>
-       :elements (map (assign identifier expression) expressions)))
+       :elements (map (assign- identifier expression) expressions)))
     (_ (if (eq? x identifier) expression x))))
 
-(define-generic assign)
 (define-method (assign (o <context>) identifier expression)
   (make <context>
-    :members (map (assign identifier expression) (.members o))
-    :locals (map (assign identifier expression) (.locals o))))
+    :members (map (assign- identifier expression) (.members o))
+    :locals (map (assign- identifier expression) (.locals o))))
 
 (define (element->csp ast x)
   (match x

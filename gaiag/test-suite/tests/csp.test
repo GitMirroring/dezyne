@@ -18,6 +18,7 @@
 
 (define ast-transform- (@@ (gaiag csp) ast-transform-))
 (define ast-transform-return (@@ (gaiag csp) ast-transform-return))
+(define statement-on-p/r- (@@ (gaiag csp) statement-on-p/r-))
 (define purge-data (@@ (gaiag csp) purge-data))
 
 (define (ast-transform* ast src)
@@ -1833,21 +1834,21 @@ assign_active_(semi_(send_(u,what),recv_(u_',what)),
 
 (pass-if "statement-on-p/r"
   (csp-pretty-noisy-equal?
-   ((statement-on-p/r identity)
+   ((statement-on-p/r- identity)
     (ast->gom
      '(on (arm) (compound))))
    '(on (arm) (compound))))
 
 (pass-if "statement-on-p/r-filter"
   (csp-pretty-noisy-equal?
-   ((statement-on-p/r (provides? component))
+   ((statement-on-p/r- (provides? component))
     (ast->gom
      '(on (arm) (compound))))
    #f))
 
 (pass-if "statement-on-p/r-filter"
   (csp-pretty-noisy-equal?
-   ((statement-on-p/r (provides? component))
+   ((statement-on-p/r- (provides? component))
     (ast->gom
      '(on ((j e)) (compound))))
    '(on ((j e)) (compound))))
