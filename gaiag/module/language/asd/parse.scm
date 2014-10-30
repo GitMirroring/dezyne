@@ -356,6 +356,7 @@
     (Identifier = expression semicolon) : (note-location `(assign ,$1 (expression ,$3)) @1))
 
    (action
+    (Identifier dot Identifier lparen rparen) : (note-location `(action (trigger ,$1 ,$3)) @1)
     (Identifier dot Identifier lparen argument-list rparen) : (note-location `(action (trigger ,$1 ,$3 ,$5)) @1))
 
    (action-statement
