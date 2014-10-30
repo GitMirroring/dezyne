@@ -50,7 +50,11 @@
               (in (signature
                    (type void)
                    (parameters (parameter i (type xint) out)))
-                  ei))
+                  ei)
+              (out (signature
+                   (type e)
+                   (parameters (parameter i (type xint) in)))
+                  eo))
       (behaviour
        #f
        (types
@@ -81,6 +85,7 @@
        (int mode (range 0 3)))
       (variables
        (variable m (type state) (expression (value state one)))
+       (variable e (type e ivar) (expression (literal ivar e v)))
        (variable b (type bool) true))
        (functions
         (function fun (signature (type void) (parameters (parameter a (type bool))))
@@ -176,6 +181,14 @@
                (compound
                 (variable e (type ivar (type e)) (action (trigger o foo)))))))
 
+(pass-if "ast:resolve-variable-valued-action-arguments"
+         (gom-pretty-noisy-equal?
+          (ast:resolve-root-model
+           resolve-ast
+           (cadr resolve-ast)
+           '(variable v (type e ivar) (expression (action (trigger eo o (arguments (data 0)))))))
+          '(variable v (type e ivar) (action (trigger eo o (arguments (data 0)))))))
+
 (pass-if "ast:resolve-assign-valued-action"
          (gom-pretty-noisy-equal?
           (ast:resolve-model
@@ -186,6 +199,14 @@
           '(on (triggers (trigger o foo))
                (compound
                 (assign m (action (trigger o foo)))))))
+
+(pass-if "ast:resolve-assign-valued-action-arguments"
+         (gom-pretty-noisy-equal?
+          (ast:resolve-root-model
+           resolve-ast
+           (cadr resolve-ast)
+           '(assign e (expression (action (trigger eo o (arguments (data 0)))))))
+          '(assign e (action (trigger eo o (arguments (data 0)))))))
 
 (pass-if "ast:resolve-variable-valued-action-interface"
          (gom-pretty-noisy-equal?

@@ -329,6 +329,11 @@
        :expression (make <action>
                      :trigger (make <trigger> :port (port) :event event))))
 
+    (($ <assign> identifier ($ <expression> (and ($ <action>) (get! action))))
+     (make <assign>
+       :identifier identifier
+       :expression (resolve-model model (action) locals)))
+
     (($ <assign> identifier
         ($ <expression> ($ <var> (and (? function?) (get! function)))))
      (make <assign>
@@ -366,6 +371,12 @@
        :name name
        :expression (make <action> :trigger
                          (make <trigger> :event (event)))))
+
+    (($ <variable> name type ($ <expression> (and ($ <action>) (get! action))))
+     (make <variable>
+       :type (resolve-model model type locals)
+       :name name
+       :expression (resolve-model model (action) locals)))
 
     (($ <variable> name type
         ($ <expression> ($ <value> (and (? port?) (get! port)) event)))
