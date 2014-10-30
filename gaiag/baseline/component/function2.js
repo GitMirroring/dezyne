@@ -1,7 +1,8 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
+//
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -20,68 +21,33 @@
 //
 // Code:
 
-interface ifunction2
-{
-  in void a;
-  in void b;
+component.function2 = function() {
+  this.f = false;
 
-  out void c;
-  out void d;
+  this.i = new interface.ifunction2();
 
-  behaviour
-  {
-    bool f = false;
-
-    bool vtoggle ()
-    {
-      if (f)
-        c;
-      return !f;
-    }
-    [true]
-    {
-      on a:
+  this.i.in.a = function() {
+    console.log('function2.i_a');
+    if(true) {
       {
-	f = vtoggle();
-      }
-      on b:
-      {
-	f = vtoggle();
-	bool bb = vtoggle();
-        f = bb;
-	d;
+        this.f = this.vtoggle();
       }
     }
-  }
-}
-
-component function2
-{
-  provides ifunction2 i;
-
-  behaviour
-  {
-    bool f = false;
-
-    bool vtoggle ()
-    {
-      if (f)
-        i.c;
-      return !f;
-    }
-    [true]
-    {
-      on i.a:
+  }.bind(this);
+  this.i.in.b = function() {
+    console.log('function2.i_b');
+    if(true) {
       {
-	f = vtoggle();
-      }
-      on i.b:
-      {
-	f = vtoggle();
-	bool bb = vtoggle();
-        f = bb;
-	i.d;
+        this.f = this.vtoggle();
+        bb = this.vtoggle();
+        this.f = bb;
+        this.i.out.d();
       }
     }
-  }
-}
+  }.bind(this);
+  this.vtoggle = function () {
+    if(this.f) this.i.out.c();
+    return ! (this.f);
+  }.bind(this);
+
+};

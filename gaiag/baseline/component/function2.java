@@ -1,7 +1,8 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
+//
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -20,68 +21,49 @@
 //
 // Code:
 
-interface ifunction2
-{
-  in void a;
-  in void b;
+class function2{
 
-  out void c;
-  out void d;
+  Boolean f;
 
-  behaviour
-  {
-    bool f = false;
+  ifunction2 i;
 
-    bool vtoggle ()
-    {
-      if (f)
-        c;
-      return !f;
-    }
-    [true]
-    {
-      on a:
-      {
-	f = vtoggle();
+  public function2() {
+    f = false;
+    i = new ifunction2();
+    i.getIn().a = new Action() {
+      public void action() {
+        i_a();
       }
-      on b:
+    };
+    i.getIn().b = new Action() {
+      public void action() {
+        i_b();
+      }
+    };
+  };
+  public void i_a() {
+    System.err.println("function2.i_a");
+    if (true) {
       {
-	f = vtoggle();
-	bool bb = vtoggle();
+        f = vtoggle();
+      }
+    }
+  };
+
+  public void i_b() {
+    System.err.println("function2.i_b");
+    if (true) {
+      {
+        f = vtoggle();
+        Boolean bb = vtoggle();
         f = bb;
-	d;
+        i.getOut().d.action();
       }
     }
-  }
-}
+  };
+  public Boolean vtoggle () {
+    if (f) i.getOut().c.action();
+    return ! (f);
+  };
 
-component function2
-{
-  provides ifunction2 i;
-
-  behaviour
-  {
-    bool f = false;
-
-    bool vtoggle ()
-    {
-      if (f)
-        i.c;
-      return !f;
-    }
-    [true]
-    {
-      on i.a:
-      {
-	f = vtoggle();
-      }
-      on i.b:
-      {
-	f = vtoggle();
-	bool bb = vtoggle();
-        f = bb;
-	i.d;
-      }
-    }
-  }
 }

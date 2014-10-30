@@ -1,7 +1,8 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
+//
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -20,68 +21,37 @@
 //
 // Code:
 
-interface ifunction2
+#ifndef INTERFACE_IFUNCTION2_C3_HH
+#define INTERFACE_IFUNCTION2_C3_HH
+
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
+
+namespace dezyne
 {
-  in void a;
-  in void b;
-
-  out void c;
-  out void d;
-
-  behaviour
-  {
-    bool f = false;
-
-    bool vtoggle ()
-    {
-      if (f)
-        c;
-      return !f;
-    }
-    [true]
-    {
-      on a:
-      {
-	f = vtoggle();
-      }
-      on b:
-      {
-	f = vtoggle();
-	bool bb = vtoggle();
-        f = bb;
-	d;
-      }
-    }
-  }
+  using boost::function;
+  using boost::bind;
 }
 
-component function2
+namespace interface
 {
-  provides ifunction2 i;
-
-  behaviour
+  struct ifunction2
   {
-    bool f = false;
 
-    bool vtoggle ()
+    struct
     {
-      if (f)
-        i.c;
-      return !f;
-    }
-    [true]
+      dezyne::function<void ()> a;
+      dezyne::function<void ()> b;
+
+    } in;
+
+    struct
     {
-      on i.a:
-      {
-	f = vtoggle();
-      }
-      on i.b:
-      {
-	f = vtoggle();
-	bool bb = vtoggle();
-        f = bb;
-	i.d;
-      }
-    }
-  }
+      dezyne::function<void ()> c;
+      dezyne::function<void ()> d;
+
+    } out;
+  };
 }
+
+#endif

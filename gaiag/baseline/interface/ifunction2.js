@@ -1,7 +1,8 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Gaiag.
+//
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -20,68 +21,13 @@
 //
 // Code:
 
-interface ifunction2
-{
-  in void a;
-  in void b;
-
-  out void c;
-  out void d;
-
-  behaviour
-  {
-    bool f = false;
-
-    bool vtoggle ()
-    {
-      if (f)
-        c;
-      return !f;
-    }
-    [true]
-    {
-      on a:
-      {
-	f = vtoggle();
-      }
-      on b:
-      {
-	f = vtoggle();
-	bool bb = vtoggle();
-        f = bb;
-	d;
-      }
-    }
-  }
-}
-
-component function2
-{
-  provides ifunction2 i;
-
-  behaviour
-  {
-    bool f = false;
-
-    bool vtoggle ()
-    {
-      if (f)
-        i.c;
-      return !f;
-    }
-    [true]
-    {
-      on i.a:
-      {
-	f = vtoggle();
-      }
-      on i.b:
-      {
-	f = vtoggle();
-	bool bb = vtoggle();
-        f = bb;
-	i.d;
-      }
-    }
-  }
-}
+interface.ifunction2= function() {
+  this.in = {
+    a : null,
+    b : null
+  };
+  this.out = {
+    c : null,
+    d : null
+  };
+};

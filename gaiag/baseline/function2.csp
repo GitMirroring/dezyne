@@ -60,9 +60,9 @@ semi_(assign_active_(call_(\ P',V' @ vtoggle(P',V')),
   ifunction2?x:{b} ->
 semi_(semi_(assign_active_(call_(\ P',V' @ vtoggle(P',V')),
 \ ((f),(stack')),r' @ ((r'),(stack'))),
-semi_(assign_active_(call_(\ P',V' @ vtoggle(P',V')),
-\ ((f),(stack')),r' @ ((r'),(stack'))),
-(\ P',V' @ ifunction2_''!d -> P'(V')))),
+context_active_(call_(\ P',V' @ vtoggle(P',V')),
+semi_(assign_(\ ((f),((stack',bb))) @ ((bb),((stack',bb)))),
+(\ P',V' @ ifunction2_''!d -> P'(V'))))),
 (\ P',V' @ ifunction2_'.return -> P'(V')))(\ V' @ ifunction2_(V'),((f),(stack'))))
 []
 CS & ifunction2?x:{} -> illegal_(STOP,<>)
@@ -97,9 +97,9 @@ semi_(assign_active_(call_(\ P',V' @ vtoggle(P',V')),
   i?x:{b} ->
 semi_(semi_(assign_active_(call_(\ P',V' @ vtoggle(P',V')),
 \ ((f),(stack')),r' @ ((r'),(stack'))),
-semi_(assign_active_(call_(\ P',V' @ vtoggle(P',V')),
-\ ((f),(stack')),r' @ ((r'),(stack'))),
-(\ P',V' @ i_''!d -> P'(V')))),
+context_active_(call_(\ P',V' @ vtoggle(P',V')),
+semi_(assign_(\ ((f),((stack',bb))) @ ((bb),((stack',bb)))),
+(\ P',V' @ i_''!d -> P'(V'))))),
 (\ P',V' @ ifunction2_'.return -> P'(V')))(\ V' @ transition_end -> function2_(V'),((f),(stack'))))
 )
 

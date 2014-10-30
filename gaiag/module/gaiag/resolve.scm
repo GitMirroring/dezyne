@@ -59,11 +59,11 @@
   (ast :accessor .ast :init-value #f :init-keyword :ast)
   (message :accessor .message :init-value "" :init-keyword :message))
 
-(define-method (undefined-error (o <ast>) (identifier <symbol>) (message <string>))
-  (make <error> :ast o :message (format #f message identifier)))
+(define-method (resolve-error (o <ast>) (symbol <symbol>) (message <string>))
+  (make <error> :ast o :message (format #f message symbol)))
 
 (define-method (undefined-error (o <ast>) (identifier <symbol>))
-  (undefined-error o identifier "undefined identifier: ~a"))
+  (resolve-error o identifier "undefined identifier: ~a"))
 
 (define-method (undefined-error (identifier <symbol>))
   (undefined-error (make <var> :name identifier) identifier))
@@ -244,10 +244,10 @@
 
     (($ <action> ($ <trigger> #f
                     (and (? (negate event-or-function?)) (get! identifier))))
-     (undefined-error o (identifier) "undefined function or event: ~a"))
+     (resolve-error o (identifier) "undefined function or event: ~a"))
 
     (($ <call> (and (? symbol?) (? (negate event-or-function?)) (get! identifier)))
-     (undefined-error o (identifier) "undefined function or event: ~a"))
+     (resolve-error o (identifier) "undefined function or event: ~a"))
 
     (($ <variable> name (and (? (negate type?)) (get! type)) expression)
      (let ((name
@@ -255,7 +255,7 @@
                            ((not (gom:port model scope))))
                           scope)
                 (.name (type)))))
-      (undefined-error (type) name "undefined type: ~a")))
+      (resolve-error (type) name "undefined type: ~a")))
 
     (($ <variable> name type expression) (=> failure)
      (or (and-let* ((e-type (gom:type model expression))
@@ -391,10 +391,10 @@
      (make <field> :identifier (type) :field (.field o)))
 
     (($ <value> (? enum?) field)
-     (undefined-error o field "undefined enum field: ~a"))
+     (resolve-error o field "undefined enum field: ~a"))
 
     (($ <value> (? var?) field)
-     (undefined-error o field "undefined enum field: ~a"))
+     (resolve-error o field "undefined enum field: ~a"))
 
     (($ <expression> value)
      (make <expression> :value (resolve-model model value locals)))

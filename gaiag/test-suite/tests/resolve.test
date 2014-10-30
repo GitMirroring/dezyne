@@ -11,17 +11,16 @@
   :use-module (oop goops)
   :use-module (gaiag gom))
 
-;;(eval-when (expand) (read-hash-extend #\{ #f))
 (eval-when (compile eval load) (read-hash-extend #\{ #f))
 
 (define resolve-model (@@ (gaiag resolve) resolve-model))
 (define resolve-mixed (@@ (gaiag resolve) resolve-mixed))
 
+(define-method (resolve-error (o <list>) (identifier <symbol>) (message <string>))
+  ((@@ (gaiag resolve) resolve-error) (ast->gom o) identifier message))
+
 (define-method (undefined-error (o <list>) (identifier <symbol>))
   ((@@ (gaiag resolve) undefined-error) (ast->gom o) identifier))
-
-(define-method (undefined-error (o <list>) (identifier <symbol>) (message <string>))
-  ((@@ (gaiag resolve) undefined-error) (ast->gom o) identifier message))
 
 (define-method (type-mismatch (o <list>) (expected <symbol>) (actual <symbol>))
   ((@@ (gaiag resolve) type-mismatch) (ast->gom o) expected actual))
@@ -536,63 +535,63 @@
    (ast:resolve-model
     (car resolve-ast)
     '(action (trigger #f q)))
-   (undefined-error '(action (trigger #f q)) 'q "undefined function or event: ~a")))
+   (resolve-error '(action (trigger #f q)) 'q "undefined function or event: ~a")))
 
 (pass-if "ast:resolve-undefined-call"
   (gom-pretty-noisy-equal?
    (ast:resolve-model
     (car resolve-ast)
     '(call q))
-   (undefined-error '(call q) 'q "undefined function or event: ~a")))
+   (resolve-error '(call q) 'q "undefined function or event: ~a")))
 
 (pass-if "ast:resolve-undefined-enum-field"
   (gom-pretty-noisy-equal?
    (ast:resolve-model
     (car resolve-ast)
     '(value state three))
-   (undefined-error '(value state three) 'three "undefined enum field: ~a")))
+   (resolve-error '(value state three) 'three "undefined enum field: ~a")))
 
 (pass-if "ast:resolve-undefined-enum-var-field"
   (gom-pretty-noisy-equal?
    (ast:resolve-model
     (car resolve-ast)
     '(value m three))
-   (undefined-error '(value m three) 'three "undefined enum field: ~a")))
+   (resolve-error '(value m three) 'three "undefined enum field: ~a")))
 
 (pass-if "ast:resolve-undefined-type"
   (gom-pretty-noisy-equal?
    (ast:resolve-model
     (car resolve-ast)
     '(variable c (type boolean) (expression true)))
-   (undefined-error '(type boolean #f) 'boolean "undefined type: ~a")))
+   (resolve-error '(type boolean #f) 'boolean "undefined type: ~a")))
 
 (pass-if "ast:resolve-undefined-enum-type"
   (gom-pretty-noisy-equal?
    (ast:resolve-model
     (car resolve-ast)
     '(variable c (type status) (expression true)))
-   (undefined-error '(type status #f) 'status "undefined type: ~a")))
+   (resolve-error '(type status #f) 'status "undefined type: ~a")))
 
 (pass-if "ast:resolve-undefined-enum-interface"
   (gom-pretty-noisy-equal?
    (ast:resolve-model
     (cadr resolve-ast)
     '(variable c (type status Q) (expression true)))
-   (undefined-error '(type status Q) 'Q "undefined type: ~a")))
+   (resolve-error '(type status Q) 'Q "undefined type: ~a")))
 
 (pass-if "ast:resolve-undefined-int-type"
   (gom-pretty-noisy-equal?
    (ast:resolve-model
     (car resolve-ast)
     '(variable c (type made) (expression 0)))
-   (undefined-error '(type made #f) 'made "undefined type: ~a")))
+   (resolve-error '(type made #f) 'made "undefined type: ~a")))
 
 (pass-if "ast:resolve-undefined-int-interface"
   (gom-pretty-noisy-equal?
    (ast:resolve-model
     (cadr resolve-ast)
     '(variable c (type mode Q) (expression 0)))
-   (undefined-error '(type mode Q) 'Q "undefined type: ~a")))
+   (resolve-error '(type mode Q) 'Q "undefined type: ~a")))
 
 (pass-if "ast:resolve-init-type-int"
   (gom-pretty-noisy-equal?
