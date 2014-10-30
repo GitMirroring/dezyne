@@ -59,10 +59,10 @@
    (mixing-declarative-imperative
     (asd->gom
      #{
-       interface i { in void a; out void b;
+       interface i { in void a; out void c;
                         behaviour
                         { bool b = false             ;
-                               [true] on a: b        ;
+                               [true] on a: c        ;
                                b = true              ;
                                } } #}))
    (list (wfc-error '(assign b (expression true)) "mixing imperative"))))

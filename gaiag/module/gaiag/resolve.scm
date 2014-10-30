@@ -184,7 +184,8 @@
 (define-method (resolve-model- (model <model>) o locals)
 
   (define (enum? identifier) (gom:enum model identifier))
-  (define (event? identifier) (gom:event model identifier))
+  (define (event? identifier)
+    (and (not (var? identifier)) (gom:event model identifier)))
   (define (function? identifier) (gom:function model identifier))
   (define (int? identifier) (gom:integer model identifier))
   (define (member? identifier) (gom:variable model identifier))

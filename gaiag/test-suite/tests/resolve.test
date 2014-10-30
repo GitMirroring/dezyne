@@ -299,6 +299,17 @@
            '(guard (expression (value m one)) (illegal)))
           '(guard (expression (field m one)) (illegal))))
 
+(pass-if "ast:resolve-shadow-event"
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (car resolve-ast)
+           '(compound
+             (variable foo (type bool) (expression true))
+             (assign b (expression (var foo)))))
+          '(compound
+            (variable foo (type bool #f) (expression true))
+            (assign b (expression (var foo))))))
+
 (define resolve-system
   '(component
     trap
