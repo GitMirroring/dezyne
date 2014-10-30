@@ -180,7 +180,6 @@ CC_BROKEN =\
  livelock1.asd\
  livelock2.asd\
  mangle.asd\
- modeling.asd\
 
 CC_SOURCES = $(filter-out $(CC_BROKEN),$(REGRESSION_SOURCES))
 
@@ -585,7 +584,7 @@ glue:
 	-for i in out/*.c*; do ccache g++ -g -Wall -Wextra -I out -I $(DEPTH)/examples/codegen/asd_cpp_runtime -c $$i -o out/$$(basename $$(basename $$i .cpp) .cc).o; done
 	-cd out && g++ -o test *.o && ./test
 
-update: csp-update c++-update goops-update java-update javascript-update python-update java-update
+update: csp-update c++-update goops-update java-update javascript-update python-update
 
 data-csp:
 	cd out && ../gaiag -l csp ../examples/dataparam.asd

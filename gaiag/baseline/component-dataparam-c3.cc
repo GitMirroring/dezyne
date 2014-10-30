@@ -1,5 +1,6 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
 //
@@ -61,6 +62,7 @@ namespace component
   {
     std::cout << "dataparam.port_e0r" << std::endl;
     if (true)
+    ;
     {
       rt.defer(this, dezyne::bind(port.out.a0));
       reply_idataparam_Status = interface::idataparam::Status::Yes;
@@ -72,6 +74,7 @@ namespace component
   {
     std::cout << "dataparam.port_e" << std::endl;
     if (true)
+    ;
     {
       int pi = i;
       {
@@ -88,6 +91,7 @@ namespace component
   {
     std::cout << "dataparam.port_er" << std::endl;
     if (true)
+    ;
     {
       int pi = i;
       {
@@ -105,6 +109,7 @@ namespace component
   {
     std::cout << "dataparam.port_eer" << std::endl;
     if (true)
+    ;
     {
       interface::idataparam::Status::type s = interface::idataparam::Status::No;
       rt.defer(this, dezyne::bind(port.out.a,j));
@@ -118,6 +123,7 @@ namespace component
   {
     std::cout << "dataparam.port_eo" << std::endl;
     if (true)
+    ;
     {
       i = 234;
     }
@@ -127,6 +133,7 @@ namespace component
   {
     std::cout << "dataparam.port_eoo" << std::endl;
     if (true)
+    ;
     {
       i = 123;
       j = 456;
@@ -137,6 +144,7 @@ namespace component
   {
     std::cout << "dataparam.port_eio" << std::endl;
     if (true)
+    ;
     {
       j = i;
     }
@@ -146,6 +154,7 @@ namespace component
   {
     std::cout << "dataparam.port_eio2" << std::endl;
     if (true)
+    ;
     {
       i = i + 123;
     }
@@ -155,6 +164,7 @@ namespace component
   {
     std::cout << "dataparam.port_eor" << std::endl;
     if (true)
+    ;
     {
       i = 234;
       reply_idataparam_Status = interface::idataparam::Status::Yes;
@@ -166,6 +176,7 @@ namespace component
   {
     std::cout << "dataparam.port_eoor" << std::endl;
     if (true)
+    ;
     {
       i = 123;
       j = 456;
@@ -178,6 +189,7 @@ namespace component
   {
     std::cout << "dataparam.port_eior" << std::endl;
     if (true)
+    ;
     {
       j = i;
       reply_idataparam_Status = interface::idataparam::Status::Yes;
@@ -189,6 +201,7 @@ namespace component
   {
     std::cout << "dataparam.port_eio2r" << std::endl;
     if (true)
+    ;
     {
       i = i + 123;
       reply_idataparam_Status = interface::idataparam::Status::Yes;
