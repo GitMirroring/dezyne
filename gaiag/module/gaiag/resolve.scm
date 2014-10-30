@@ -184,6 +184,7 @@
 (define-method (resolve-model- (model <model>) o locals)
 
   (define (enum? identifier) (gom:enum model identifier))
+  (define (extern? type) (gom:extern model type))
   (define (event? identifier)
     (and (not (var? identifier)) (gom:event model identifier)))
   (define (function? identifier) (gom:function model identifier))
@@ -193,6 +194,7 @@
 
   (define (local? identifier) (assoc-ref locals identifier))
   (define (var? identifier) (or (member? identifier) (local? identifier)))
+  (define (unspecified? x) (eq? x *unspecified*))
 
   (define (event-or-function? identifier)
     (or (function? identifier) (event? identifier)))
@@ -256,6 +258,9 @@
                           scope)
                 (.name (type)))))
       (resolve-error (type) name "undefined type: ~a")))
+
+    (($ <variable> name (and (? (negate extern?)) (get! type)) ($ <expression> (? unspecified?)))
+      (resolve-error (type) name "undefined variable value: ~a"))
 
     (($ <variable> name type expression) (=> failure)
      (or (and-let* ((e-type (gom:type model expression))

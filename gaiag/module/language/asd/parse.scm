@@ -375,6 +375,8 @@
     (return expression semicolon) : (note-location `(return (expression ,$2)) @1))
 
    (variable-statement
+    (type Identifier semicolon) : `(variable ,$2 ,$1 ,(note-location '(expression) @3))
+    (Identifier dot Identifier Identifier semicolon) : `(variable ,$4 (type ,$3 ,$1) ,(note-location '(expression) @5))
     (type Identifier = expression semicolon) : `(variable ,$2 ,$1 ,(note-location `(expression ,$4) @3))
     (Identifier dot Identifier Identifier = expression semicolon) : `(variable ,$4 (type ,$3 ,$1) ,(note-location `(expression ,$6) @3)))
 

@@ -45,6 +45,10 @@
   (display #\space port)
   (display o port))
 
+(define-method (sdisplay (o <ast>) port)
+  (display #\space port)
+  (display o port))
+
 (define-method (sdisplay (o <top>) port)
   (display #\space port)
   (display o port))
@@ -59,8 +63,6 @@
                       (sdisplay (slot-ref o name) port)))))
             (class-slots (class-of o))))
 
-;;(define-method (write (o <expression>) port)  (display (.value o) port))
-
 (define-method (display-slots (o <dir-ast>) port)
   (display (.direction o) port)
   (star port))
@@ -69,6 +71,11 @@
   (next-method)
   (sdisplay (.signature o) port)
   (sdisplay (.name o) port))
+
+(define-method (display-slots (o <expression>) port)
+  (if (eq? (.value o) *unspecified*)
+      (sdisplay "*unspecified*" port)
+      (sdisplay (.value o) port)))
 
 (define-method (display-slots (o <gom:port>) port)
   (next-method)

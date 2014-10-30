@@ -170,7 +170,7 @@
   (arguments :accessor .arguments :init-form (make <arguments>) :init-keyword :arguments))
 
 (define-class <expression> (<ast>)
-  (value :accessor .value :init-value #f :init-keyword :value))
+  (value :accessor .value :init-value *unspecified* :init-keyword :value))
 
 (define-class <otherwise> (<expression>))
 

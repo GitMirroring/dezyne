@@ -400,6 +400,13 @@
           '(compound
             (variable e (type xint #f) (expression (data 0))))))
 
+(pass-if "ast:resolve-extern-unspecified"
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (car resolve-ast)
+           '(variable e (type xint) (expression)))
+          '(variable e (type xint #f) (expression *unspecified*))))
+
 (pass-if "ast:resolve-extern-component"
          (gom-pretty-noisy-equal?
           (ast:resolve-model
@@ -627,5 +634,12 @@
            (car resolve-ast)
            '(variable e (type xint) (expression 0)))
           (type-mismatch '(expression 0) 'xint 'int)))
+
+(pass-if "ast:resolve-bool-unspecified-mismatch"
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           (car resolve-ast)
+           '(variable e (type bool) (expression)))
+          (resolve-error '(type bool #f) 'e "undefined variable value: ~a")))
 
 (read-hash-extend #\{ hash-read-string)

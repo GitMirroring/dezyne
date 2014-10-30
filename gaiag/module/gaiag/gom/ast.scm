@@ -148,6 +148,8 @@
 
     (('events events ...) (make <events> :elements (map ast->gom- events)))
 
+    (('expression) (make <expression>))
+
     (('expression expression) (make <expression> :value (ast->gom- expression)))
 
     (('field identifier field) (make <field> :identifier identifier :field field))
