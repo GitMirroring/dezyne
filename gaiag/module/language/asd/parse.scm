@@ -157,14 +157,7 @@
    (event
     (event-direction type Identifier semicolon) : `(,$1 ,(note-location `(signature ,$2) @2) ,$3)
     (event-direction type Identifier lparen rparen semicolon) : `(,$1 ,(note-location `(signature ,$2) @2) ,$3)
-    (event-direction type Identifier lparen event-parameter-list rparen semicolon) : `(,$1 ,(note-location `(signature ,$2 ,$5) @2) ,$3))
-
-   (event-parameter-list
-    (event-parameter) : `(parameters ,$1)
-    (event-parameter-list comma event-parameter) : (append $1 (list $3)))
-
-   (event-parameter
-    (parameter-direction parameter) : (append $2 (list $1)))
+    (event-direction type Identifier lparen parameter-list rparen semicolon) : `(,$1 ,(note-location `(signature ,$2 ,$5) @2) ,$3))
 
    (parameter-direction
     (in) : 'in
@@ -172,8 +165,8 @@
     (inout) : 'inout)
 
    (event-direction
-    (in) : 'in
-    (out) : 'out)
+    (in) : $1
+    (out) : $1)
 
    (port-list
     () : '(ports)
@@ -279,7 +272,8 @@
     (parameter-list comma parameter) : (append $1 (list $3)))
 
    (parameter
-    (type Identifier): (note-location `(parameter ,$2 ,$1) @1))
+    (type Identifier): (note-location `(parameter ,$2 ,$1) @1)
+    (parameter-direction type Identifier): (note-location `(parameter ,$3 ,$2 ,$1) @1))
 
    (function-list
     () : '(functions)
