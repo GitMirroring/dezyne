@@ -10,7 +10,7 @@ namespace component
 , #
 ((->join  "\n, ")
  (map (init-member model #{
-#name(#expression)#}) (gom:variables model)))#
+#name(#(if (not (eq? expression *unspecified*)) expression))#}) (gom:variables model)))#
 (if (null? (gom:variables model)) "" "\n, ") #
 ((->join  "\n, ") (map (lambda (port) (list (.name port) "(" (if (.injected port) (list "dezyne_locator.get<interface::" (.type port) ">()")) ")")) (gom:ports model)))
   {

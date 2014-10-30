@@ -412,6 +412,7 @@
   (define (member? identifier) (gom:variable model identifier))
   (define (local? identifier) (assoc-ref locals identifier))
   (define (var? identifier) (or (member? identifier) (local? identifier)))
+  (define (unspecified? x) (eq? x *unspecified*))
 
   (define (enum-type o field)
     (or (and-let* ((decl (var? o))
@@ -427,6 +428,7 @@
         ""))
 
   (match o
+    (($ <expression> (? unspecified?)) *unspecified*)
     (($ <expression>) (expression->string model (.value o) locals))
     (($ <action> ($ <trigger> port-name event-name arguments))
      (let* ((port (gom:port model port-name))

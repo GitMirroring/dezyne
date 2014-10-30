@@ -1,5 +1,6 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
 //
@@ -37,6 +38,7 @@ namespace component
   {
     dezyne::runtime& rt;
     int i;
+    int j;
     interface::IExtern port;
 
     Extern(const dezyne::locator&);

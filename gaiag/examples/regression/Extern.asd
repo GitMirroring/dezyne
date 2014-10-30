@@ -1,5 +1,6 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
 //
@@ -28,9 +29,7 @@ interface IExtern
 
   behaviour
   {
-    xint i = $0$;
-    [true]
-      on e: illegal;
+    on e: illegal;
   }
 }
 
@@ -41,7 +40,7 @@ component Extern
   behaviour
   {
     IExtern.xint i = $0$;
-    [true]
-      on port.e: illegal;
+    IExtern.xint j;
+    on port.e: illegal;
   }
 }

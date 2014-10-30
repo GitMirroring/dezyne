@@ -1,1 +1,1 @@
-#type  #name  = #expression;
+#type  #name #(if (not (eq? expression *unspecified*)) (list " = " expression));

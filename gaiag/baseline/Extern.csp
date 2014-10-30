@@ -46,9 +46,8 @@ channel IExtern_': {return}
 IF_IExtern_(IG,CS) = let
 
 IExtern_(((<>),(stack'))) =
-(true) & (
 IG & IExtern?x:{e} ->
-illegal_(STOP,<>))
+illegal_(STOP,<>)
 []
 CS & IExtern?x:{} -> illegal_(STOP,<>)
 
@@ -67,9 +66,8 @@ channel port_':{return}
 CO_Extern_(IIG,IG) = let
 
 Extern_(((<>),(stack'))) = transition_begin -> (
-(true) & (
 IIG & port?x:{e} ->
-illegal_(STOP,<>))
+illegal_(STOP,<>)
 )
 
 within Extern_(((<>),(<>)))
