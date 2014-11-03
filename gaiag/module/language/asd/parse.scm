@@ -213,15 +213,6 @@
     (extern Identifier = Data semicolon) : `(,$1 ,$2 ,$4)
     (extern int = Data semicolon) : `(,$1 ,$2 ,$4))
 
-   (extern-type
-    (Identifier) : $1
-    (NumericLiteral) : $1
-    (bool) : $1
-    (int) : $1
-    (void) : $1
-    (extern-type *) : (symbol-append $1 $2)
-    (extern-type &) : (symbol-append $1 $2))
-
    (expression
     (false) : $1
     (true) : $1
