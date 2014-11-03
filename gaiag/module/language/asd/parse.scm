@@ -210,8 +210,7 @@
     (typedef int lbracket NumericLiteral .. NumericLiteral rbracket Identifier semicolon) : `(int ,$8 (range ,$4 ,$6)))
 
    (extern-spec
-    (extern Identifier = Data semicolon) : `(,$1 ,$2 ,$4)
-    (extern int = Data semicolon) : `(,$1 ,$2 ,$4))
+    (extern Identifier = Data semicolon) : `(,$1 ,$2 ,$4))
 
    (expression
     (false) : $1
