@@ -35,6 +35,7 @@
   (map string-symbol
        '(
          behaviour
+         bool
          component
          else
          enum
