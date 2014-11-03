@@ -807,12 +807,12 @@
        (($ <function> name ($ <signature> type ($ <parameters> '())) recursive? statement)
         (let ((transformed (csp-transform ast statement inevitable-optional? channel provided-on? recursive?))
               (continuation-pv (if recursive? "PF',V'" "P',V'")))
-          (list name "(" continuation-pv ") = " transformed "(" continuation-pv ")\n")))
+          (list name "(" continuation-pv ") = (" transformed ")(" continuation-pv ")\n")))
 
        (($ <function> name signature recursive? statement)
-        (let ((body (csp-transform ast statement inevitable-optional? channel provided-on? recursive?))
+        (let ((transformed (csp-transform ast statement inevitable-optional? channel provided-on? recursive?))
               (continuation-pv (if recursive? "PF',V'" "P',V'")))
-          (list name "(" continuation-pv ") = " body "(" continuation-pv ")\n")))
+          (list name "(" continuation-pv ") = (" transformed ")(" continuation-pv ")\n")))
 
        (($ <csp-if>)
         (let ((context (.context src))
