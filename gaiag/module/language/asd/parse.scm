@@ -28,11 +28,11 @@
             make-parser
             source-location
             source-location->source-properties
-            syntax-error))
+            syntax-error-handler))
 
 (define (debug m x) (display (format #f "~a: ~a\n" m x) (current-error-port)))
 
-(define* (syntax-error message #:optional token)
+(define* (syntax-error-handler message #:optional token)
   (if (lexical-token? token)
       (throw 'syntax-error #f message
              (and=> (lexical-token-source token)

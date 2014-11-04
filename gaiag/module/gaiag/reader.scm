@@ -43,7 +43,7 @@
      (else exp))))
 
 (define (asd-reader port env)
-  ((make-parser) (make-tokenizer port) syntax-error))
+  ((make-parser) (make-tokenizer port) syntax-error-handler))
 
 (define (read-asd- file-name)
   (asd-reader (open-file file-name "r") (current-module)))

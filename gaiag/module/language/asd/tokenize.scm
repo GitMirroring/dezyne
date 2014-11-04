@@ -23,12 +23,12 @@
 
   #:export (make-tokenizer))
 
-(define (syntax-error what loc form . args)
+(define (syntax-error-handler what loc form . args)
   (throw 'syntax-error #f what
          (and=> loc source-location->source-properties)
          form #f args))
 
-(module-define! (resolve-module '(language ecmascript tokenize)) 'syntax-error syntax-error)
+;;(module-define! (resolve-module '(language ecmascript tokenize)) 'syntax-error syntax-error)
 
 (define (string-symbol x) (cons (symbol->string x) x))
 (define *keywords*
@@ -135,7 +135,7 @@
          (candidate
           (make-lexical-token candidate loc candidate))
          (else
-          (syntax-error "bad syntax: character not allowed" loc c)))))))
+          (syntax-error-handler "bad syntax: character not allowed" loc c)))))))
 
 (define (read-punctuation port loc)
   (if (char=? (peek-char port) #\$)
