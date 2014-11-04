@@ -1878,8 +1878,8 @@ assign_active_(semi_(send_(u,what),recv_(u_',what)),
 
 (pass-if "unbehaved"
          (diff-noisy-equal?
-          (behaviour->csp (gom:component (ast->gom member-c-ast)) "<empty>")
-          "<empty>"))
+          (behaviour->csp (gom:component (ast->gom member-c-ast)))
+          "STOP"))
 
 (define guard-i-ast
   '((interface i
@@ -1891,9 +1891,9 @@ assign_active_(semi_(send_(u,what),recv_(u_',what)),
 
 (pass-if "behaviour-guard-true"
   (diff-noisy-equal?
-   (behaviour->csp (gom:interface (ast->gom guard-i-ast)) "boo")
+   (behaviour->csp (gom:interface (ast->gom guard-i-ast)))
    "(true) & (
-)"))
+STOP)"))
 
 (pass-if "enum-type"
   (noisy-equal?

@@ -34,9 +34,7 @@ channel #(.name model)_': {#(comma-join (return-values model))}
 IF_#(.name model) _#((compose .name .behaviour) model)(IG,CS) = let
 # (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (gom:functions (.behaviour model))))
 #(.name model) _#((compose .name .behaviour) model) ((#(->csp model (make <context> :members ((compose gom:member-names csp:import) (.name model)))))) =
-# (behaviour->csp
- (csp:import (.name model))
- (->string (list (.name model) '_ ((compose .name .behaviour) model) "((" (->csp model (make <context> :members ((compose gom:member-names csp:import) (.name model)))) "))" )))
+# (behaviour->csp (csp:import (.name model)))
 []
 CS & #(.name model)?x:{#(comma-join (delete-duplicates (map .event (modeling-events model))))} -> illegal_(STOP,<>)
 

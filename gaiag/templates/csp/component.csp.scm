@@ -39,8 +39,7 @@
 CO_#(.name model) _#((compose .name .behaviour) model) (IIG,IG) = let
 # (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (gom:functions (.behaviour model))))
 #(.name model) _#((compose .name .behaviour) model) ((#(->csp model (make <context> :members ((compose gom:member-names) model))))) = transition_begin -> (
-#(behaviour->csp model
- (->string (list (.name model) "_" ((compose .name .behaviour) model) "((" (->csp model (make <context> :members ((compose gom:member-names) model))) "))" )))
+#(behaviour->csp model)
 )
 
 within #(.name model) _#((compose .name .behaviour) model) ((#(->csp model (make <context> :members ((compose gom:member-values) model) :locals '(<>)))))
