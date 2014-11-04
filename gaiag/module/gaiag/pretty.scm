@@ -37,9 +37,15 @@
 
   :export (ast-> ast->asd ast->pretty pretty:gom))
 
-(define (ast->asd ast)
-  (let ((gom ((gom:register pretty:gom) ast #t)))
-    (indent-string (apply string-append (map ->string (.elements gom))))))
+(define-method (ast->asd (o <list>))
+  (let ((gom ((gom:register pretty:gom) o #t)))
+    (ast->asd gom)))
+
+(define-method (ast->asd (o <ast-list>))
+  (indent-string (apply string-append (map ast->asd (.elements o)))))
+
+(define-method (ast->asd (o <ast>))
+  (indent-string (->string o)))
 
 (define ast-> ast->asd)
 (define ast->pretty ast->asd)

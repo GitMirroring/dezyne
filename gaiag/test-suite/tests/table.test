@@ -1,0 +1,225 @@
+;; -*-mode:scheme-*-
+;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
+
+(read-set! keywords 'prefix)
+
+(define-module (test-handler)
+  :use-module (oop goops)
+
+  :use-module (test-suite lib)
+  :use-module (test-suite misc)
+
+  :use-module (gaiag gom)
+  :use-module (gaiag reader)
+  :use-module (gaiag resolve)
+  :use-module (gaiag table))
+
+(define eval-expression (@@ (gaiag table) eval-expression))
+
+(define-method (model (o <root>))
+  (car (gom:models o)))
+
+(define-method (state-table (o <root>))
+  ((compose .statement .behaviour) (state-table (model o))))
+
+(pass-if "state-table-dummy-test"
+         #t)
+
+(define idle-init-busy-ast
+  (model
+   (ast:resolve
+    (asd->ast
+#{
+interface i
+{
+  in void e;
+  out void a;
+  behaviour
+  {
+     enum S { init, idle, busy };
+     S s = S.init;
+
+        [s.init] on e: { a; s = S.idle;
+                         }
+        [s.idle] on e: { a; s = S.busy;
+                         }
+        [s.busy] on e: { a; s = S.init;
+                         }
+        }
+}
+#}))))
+
+(define idle-init-busy-statement
+  ((compose .statement .behaviour gom:interface) idle-init-busy-ast))
+
+(pass-if "state-table-expression-state-field"
+  (let ((state (make <literal> :type 'S :field 'idle)))
+   (gom-pretty-noisy-equal?
+    (eval-expression
+     (gom:interface idle-init-busy-ast)
+     state
+     (make <field> :identifier 's :field 'idle))
+    #t)))
+
+(pass-if "state-table-expression-state-var"
+  (let ((state (make <literal> :type 'S :field 'idle)))
+   (gom-pretty-noisy-equal?
+    (eval-expression
+     (gom:interface idle-init-busy-ast)
+     state
+     (make <var> :name 's))
+    state)))
+
+(pass-if "state-table-expression-state-b-not-b"
+  (let ((state (make <literal> :type 'S :field 'idle)))
+   (gom-pretty-noisy-equal?
+    (eval-expression
+     (gom:interface idle-init-busy-ast)
+     state
+     (list
+      'or
+      (make <var> :name 'b)
+      (list '! (make <var> :name 'b))))
+    #t)))
+
+(pass-if "state-table-static"
+  (gom-pretty-noisy-equal?
+   (state-table
+    (ast:resolve
+     (asd->ast
+#{
+interface i
+{
+  in void e;
+  out void a;
+  behaviour
+  {
+     enum S { init, idle, busy };
+     S s = S.init;
+
+        [s.idle] on e: { a; s = S.busy;
+                         }
+        [s.busy] on e: { a; s = S.init;
+                         }
+        [s.init] on e: { a; s = S.idle;
+                         }
+        }
+}
+#})))
+   idle-init-busy-statement))
+
+(pass-if "state-table-state-var-equals"
+  (gom-pretty-noisy-equal?
+   (state-table
+    (ast:resolve
+     (asd->ast
+#{
+interface i
+{
+  in void e;
+  out void a;
+  behaviour
+  {
+     enum S { init, idle, busy };
+     S s = S.init;
+
+        [s == S.idle] on e: { a; s = S.busy;
+                         }
+        [s == S.busy] on e: { a; s = S.init;
+                         }
+        [s == S.init] on e: { a; s = S.idle;
+                         }
+        }
+}
+#})))
+   idle-init-busy-statement))
+
+(pass-if "state-table-state-on"
+  (gom-pretty-noisy-equal?
+   (state-table
+    (ast:resolve
+     (asd->ast
+#{
+interface i
+{
+  in void e;
+  out void a;
+  behaviour
+  {
+     enum S { init, idle, busy };
+     S s = S.init;
+     bool b = true;
+
+        [s == S.idle] on e: [true] { a; s = S.busy;
+                                 }
+        [s == S.busy] on e: [false] { a; s = S.init;
+                                 }
+        [s == S.init] on e: [b] { a; s = S.idle;
+                                 }
+        }
+}
+#})))
+'(compound
+(guard
+ (expression (field s init))
+ (on (triggers (trigger #f e (arguments)))
+     (guard
+      (expression (var b))
+      (compound
+       (action (trigger #f a (arguments)))
+       (assign s (expression (literal #f S idle)))))))
+(guard
+ (expression (field s idle))
+ (on (triggers (trigger #f e (arguments)))
+     (compound
+      (action (trigger #f a (arguments)))
+      (assign s (expression (literal #f S busy)))))))))
+
+(pass-if "state-table-expressions"
+  (gom-pretty-noisy-equal?
+   (state-table
+    (ast:resolve
+     (asd->ast
+#{
+interface i
+{
+  in void e;
+  out void a;
+  behaviour
+  {
+     enum S { init, idle, busy };
+     S s = S.init;
+     bool b = true;
+
+        [s.idle && b] on e: { a; s = S.busy;
+                         }
+        [s.busy && !b] on e: { a; s = S.init;
+                         }
+        [s.init && (b || !b)] on e: { a ; s = S.idle;
+                         }
+        }
+}
+#})))
+'(compound
+(guard
+ (expression (field s init))
+ (on (triggers (trigger #f e (arguments)))
+     (compound
+      (action (trigger #f a (arguments)))
+      (assign s (expression (literal #f S idle))))))
+(guard
+ (expression (field s idle))
+ (on (triggers (trigger #f e (arguments)))
+     (guard
+      (expression (var b))
+      (compound
+       (action (trigger #f a (arguments)))
+       (assign s (expression (literal #f S busy)))))))
+(guard
+ (expression (field s busy))
+ (on (triggers (trigger #f e (arguments)))
+     (guard
+      (expression (! (var b)))
+      (compound
+       (action (trigger #f a (arguments)))
+       (assign s (expression (literal #f S init))))))))))

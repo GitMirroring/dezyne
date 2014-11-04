@@ -42,7 +42,11 @@
   :use-module (oop goops describe)
   :use-module (gaiag gom)
 
-  :export (ast-> normstate))
+  :export (
+           ast->
+           flatten-compound
+           normstate
+           ))
 
 (define-method (normstate (o <list>))
   ((compose normstate ast:resolve ast->gom) o))

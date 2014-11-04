@@ -1,0 +1,10 @@
+[{
+"name" : "ISiren",
+"type" : "interface",
+"table" : [
+ {"state" : "[States.Off]",
+  "rules" :
+  [
+  {"triggers" : ["turnon"],  "actions" : "state = States.On;\n", "target": ""},
+  {"triggers" : ["turnoff"], "actions" : "illegal;\n"}
+]}]}]

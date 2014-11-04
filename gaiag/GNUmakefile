@@ -605,3 +605,14 @@ loc:
 	../build/asdgenerator examples/loc.asd ||:
 	! ./gaiag -l resolve out/loc.scm
 	! ./gaiag -l resolve examples/loc.asd
+
+table:
+	./gaiag -j -l table examples/table.asd | ./scm2json | sed -e 's/, /,\n /g'
+	@echo
+	./gaiag -j -l table examples/ISiren.asd | ./scm2json | sed -e 's/, /,\n /g'
+#	@echo
+#	./gaiag -l table examples/ISiren.asd
+	@echo
+	./gaiag -m Alarm -j -l table examples/Alarm.asd | ./scm2json | sed -e 's/, /,\n /g'
+	@echo
+#	./gaiag -j -l table -m Alarm ../webdemo/asd/AlarmSystem.asd | ./scm2json |

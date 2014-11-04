@@ -1,0 +1,9 @@
+[{
+  "name" : "table",
+  "type" : "interface",
+  "table" : [
+  {"state" : "[s.init]",
+   "rules": [
+   {"triggers" : ["e"], "actions" : "a;\ns = S.idle;\n"},
+   {"triggers" : ["e"], "actions" : "a;\ns = S.busy;\n"},
+]}]}]

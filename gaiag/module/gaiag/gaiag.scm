@@ -71,7 +71,7 @@ Usage: gaiag [OPTION]... FILE
   -v, --version        display version
 
 Languages: asd c++ csp goops java javascript python
-           ast annotate gom normstate resolve simulate wfc
+           ast annotate gom normstate resolve simulate table wfc
 
 Examples:
   ./gaiag examples/Alarm.asd
