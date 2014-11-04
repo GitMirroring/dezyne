@@ -81,5 +81,4 @@
     (asd->gom
      #{ component c { behaviour { } } #}))
    (list
-    (wfc-error '(component c (ports) (behaviour #f)) "component with behaviour must have one provides port")
-    (wfc-error '(component c (ports) (behaviour #f)) "component with behaviour must accept an event"))))
+    (wfc-error '(component c (ports) (behaviour #f)) "component with behaviour must have one provides port"))))

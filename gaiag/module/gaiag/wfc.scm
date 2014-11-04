@@ -74,9 +74,6 @@
        (list
         (if (!= (length (filter gom:provides? ports)) 1)
             (wfc-error o "component with behaviour must have one provides port")))
-       (list
-        (if (null? (gom:find-triggers o))
-            (wfc-error o "component with behaviour must accept an event")))
        '())))
     (_ '())))
 
