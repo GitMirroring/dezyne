@@ -26,6 +26,7 @@
   :use-module (srfi srfi-1)
 
   :use-module (system base lalr)
+  :use-module (gaiag annotate)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
 
@@ -61,12 +62,14 @@
   (and (pair? x) (member (car x) '(component imports interface system))))
 
 (define (ast->gom ast)
-  (let ((ast (if (and (pair? ast)
+  (let* ((ast (if (and (pair? ast)
                       (not (ast:model? ast))
                       (not (eq? (car ast) 'root))
                       (find ast:model? ast))
-                 (cons 'root ast)
-                 ast)))
+                  (cons 'root ast)
+                  ast))
+         (ast (if (and (pair? ast) (assoc-ref ast 'locations))
+                 (ast->annotate ast) ast)))
     (ast->gom- ast)))
 
 (define (retain-source-location o t)

@@ -94,7 +94,7 @@
 (define (json-location ast)
   (alist->hash-table
    (or (and-let* ((loc (source-location ast))
-                  (properties (source-location->source-properties loc)))
+                  (properties (source-location->user-source-properties loc)))
                  `((file . ,(assoc-ref properties 'filename))
                    (line . ,(assoc-ref properties 'line))
                    (colum . ,(assoc-ref properties 'column))))

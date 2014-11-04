@@ -27,6 +27,7 @@
   :use-module (ice-9 receive)
   :use-module (srfi srfi-1)
 
+  :use-module (gaiag annotate)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
   :use-module (language asd parse)
@@ -84,7 +85,7 @@
           (or (and-let* (((supports-source-properties? ast))
                          (loc (source-property ast 'loc))
                          (loc (if (list? loc) (source-property loc 'loc) loc))
-                         (properties (source-location->source-properties loc)))
+                         (properties (source-location->user-source-properties loc)))
                         (format #f "~a:~a:~a: error: ~a\n"
                                 (or (assoc-ref properties 'filename) "<unknown file>")
                                 (assoc-ref properties 'line)
@@ -260,7 +261,7 @@
       (resolve-error (type) name "undefined type: ~a")))
 
     (($ <variable> name (and (? (negate extern?)) (get! type)) ($ <expression> (? unspecified?)))
-      (resolve-error (type) name "undefined variable value: ~a"))
+      (resolve-error o name "undefined variable value: ~a"))
 
     (($ <variable> name type expression) (=> failure)
      (or (and-let* ((e-type (gom:type model expression))
@@ -527,4 +528,4 @@
     (_ o)))
 
 (define (ast-> ast)
-  ((compose gom->list ast:resolve ast->gom) ast))
+  ((compose gom->list ast:resolve ast->gom ast->annotate) ast))

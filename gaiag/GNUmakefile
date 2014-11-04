@@ -593,3 +593,13 @@ data-csp:
 	./gaiag out/dataparam.scm > out/dataparam-om.scm
 	./gaiag examples/dataparam.asd > out/dataparam.scm
 	diff -uw out/dataparam.scm out/dataparam-om.scm
+
+loc:
+	make -C .. build/asdgenerator
+	rm -rf out && mkdir -p out && cd out && ln -s ../examples .
+	cd out && ../../build/asdgenerator -L -l scm examples/loc.asd
+	cat out/loc.scm
+	./gaiag -l annotate out/loc.scm
+	../build/asdgenerator examples/loc.asd ||:
+	! ./gaiag -l resolve out/loc.scm
+	! ./gaiag -l resolve examples/loc.asd

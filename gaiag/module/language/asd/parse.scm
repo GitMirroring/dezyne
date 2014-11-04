@@ -27,7 +27,8 @@
             make-asd-tokenizer
             make-parser
             source-location
-            source-location->source-properties
+            source-location->user-source-properties
+            source-location->system-source-properties
             syntax-error-handler))
 
 (define (debug m x) (display (format #f "~a: ~a\n" m x) (current-error-port)))
@@ -36,7 +37,7 @@
   (if (lexical-token? token)
       (throw 'syntax-error #f message
              (and=> (lexical-token-source token)
-                    source-location->source-properties)
+                    source-location->user-source-properties)
              (or (lexical-token-value token)
                  (lexical-token-category token))
              #f)
@@ -57,10 +58,19 @@
 		loc
 		(source-location loc))))
 
-(define (source-location->source-properties loc)
+(define (source-location->user-source-properties loc)
   `((filename . ,(source-location-input loc))
     (line . ,(+ 1 (source-location-line loc)))
-    (column . ,(+ 1 (source-location-column loc)))))
+    (column . ,(+ 1 (source-location-column loc)))
+    (offset . ,(source-location-offset loc))
+    (length . ,(source-location-length loc))))
+
+(define (source-location->system-source-properties loc)
+  `((filename . ,(source-location-input loc))
+    (line . ,(source-location-line loc))
+    (column . ,(source-location-column loc))
+    (offset . ,(source-location-offset loc))
+    (length . ,(source-location-length loc))))
 
 (define *eof-object*
   (call-with-input-string "" read-char))

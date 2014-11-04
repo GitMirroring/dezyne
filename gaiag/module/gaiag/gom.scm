@@ -21,6 +21,7 @@
 (define-module (gaiag gom)
   :use-module (ice-9 pretty-print)
 
+  :use-module (gaiag annotate)
   :use-module (gaiag misc)
 
   :use-module (oop goops)
@@ -39,4 +40,4 @@
  (gaiag gom util))
 
 (define (ast-> ast)
-  ((compose gom->list ast->gom) ast))
+  ((compose gom->list ast->gom ast->annotate) ast))

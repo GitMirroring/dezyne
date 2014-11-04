@@ -661,6 +661,6 @@
           (ast:resolve-model
            (car resolve-ast)
            '(variable e (type bool) (expression)))
-          (resolve-error '(type bool #f) 'e "undefined variable value: ~a")))
+          (resolve-error '(variable e (type bool) (expression)) 'e "undefined variable value: ~a")))
 
 (read-hash-extend #\{ hash-read-string)

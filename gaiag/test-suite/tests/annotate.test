@@ -1,0 +1,92 @@
+;; -*-scheme-*-
+;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
+
+(read-set! keywords 'prefix)
+
+(define-module (test-handler)
+  :use-module (test-suite lib)
+  :use-module (test-suite misc)
+
+  :use-module (gaiag reader)
+  :use-module (gaiag annotate))
+
+(define annotate-locations (@@ (gaiag annotate) annotate-locations))
+
+(pass-if "annotate-first-dummy-test"
+  #t)
+
+(define ast
+  '(root (interface
+        loc
+        (types)
+        (events
+          (in (signature (type void)) e)
+          (out (signature (type void)) a))
+        (behaviour
+          #f
+          (types)
+          (variables
+            (variable e (type bool) (expression 1))
+            (variable f (type bool) (expression)))
+          (functions)
+          (compound)))))
+
+(define locations
+  '(locations
+        (root ((location "examples/loc.asd" 0 0 0 #f)
+               interface
+               loc
+               ((location) types)
+               ((location)
+                events
+                ((location)
+                 in
+                 ((location)
+                  signature
+                  ((location "examples/loc.asd" 2 5 21 #f)
+                   type
+                   void))
+                 e)
+                ((location)
+                 out
+                 ((location)
+                  signature
+                  ((location "examples/loc.asd" 2 5 21 #f)
+                   type
+                   void))
+                 a))
+               ((location)
+                behaviour
+                #f
+                ((location) types)
+                ((location)
+                 variables
+                 ((location "examples/loc.asd" 6 11 70 #f)
+                  variable
+                  e
+                  ((location "examples/loc.asd" 6 4 63 #f)
+                   type
+                   bool)
+                  ((location "examples/loc.asd" 6 11 70 #f)
+                   expression
+                   1))
+                 ((location "examples/loc.asd" 7 9 121 #f)
+                  variable
+                  f
+                  ((location "examples/loc.asd" 6 4 63 #f)
+                   type
+                   bool)
+                  ((location "examples/loc.asd" 7 10 122 #f)
+                   expression)))
+                ((location) functions)
+                ((location) compound))))))
+
+(pass-if "annotate-extract"
+  (pretty-noisy-equal?
+   (extract-locations (read-asd "examples/loc.asd"))
+   locations))
+
+(pass-if "annotate-apply"
+  (pretty-noisy-equal?
+   (extract-locations (annotate-locations (append ast (list locations))))
+   locations))

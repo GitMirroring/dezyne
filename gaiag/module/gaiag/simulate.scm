@@ -129,7 +129,7 @@
 
 (define (trace-location ast)
   (or (and-let* ((loc (source-location ast))
-                 (properties (source-location->source-properties loc)))
+                 (properties (source-location->user-source-properties loc)))
                 (format #f "~a:~a:~a"
                         (assoc-ref properties 'filename)
                         (assoc-ref properties 'line)
