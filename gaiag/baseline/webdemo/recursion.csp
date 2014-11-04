@@ -64,8 +64,8 @@ channel i14_i_':{return}
 
 
 CO_i50_recursion_(IIG,IG) = let
-i27_f(PF',V') = semi_(call_(\ P',V' @ i27_f(PF',V')),
-skip_)(PF',V')
+i27_f(PF',V') = (semi_(call_(\ P',V' @ i27_f(PF',V')),
+skip_))(PF',V')
 
 i50_recursion_(((<>),(stack'))) = transition_begin -> (
 i14_i?x:{i3_e} ->

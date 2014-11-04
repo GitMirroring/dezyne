@@ -1131,7 +1131,7 @@ semi_(call_(\\ P',V' @ toggle(P',V')),
                          '(function toggle (signature (type void)) #f ()))
 
           ;; via:
-          "toggle(P',V') = skip_(P',V')\n"))
+          "toggle(P',V') = (skip_)(P',V')\n"))
 
 (define csp-function-call-valued-ast
   '(csp-on
@@ -1232,8 +1232,8 @@ context_active_(call_(\\ P',V' @ vtoggle(P',V')),
           (csp-transform* i-ast csp-transform-function-arguments)
 
           ;; to:
-          "g(P',V') = semi_((\\ P',V' @ i!f -> P'(V')),
-returnvalue_(\\ ((s,b,hide_member2'),((stack',c))) @ c))(P',V')
+          "g(P',V') = (semi_((\\ P',V' @ i!f -> P'(V')),
+returnvalue_(\\ ((s,b,hide_member2'),((stack',c))) @ c)))(P',V')
 "))
 
 
@@ -1344,7 +1344,7 @@ reply_(I_', (\\ ((dummy),((stack',s))) @ Status_No))
           (csp-transform* reply-ast csp-reply-function-ast-via)
 
           ;; to:
-          "reply_fun(P',V') = reply_(I_', (\\ ((dummy),(stack')) @ Status_Yes))(P',V')
+          "reply_fun(P',V') = (reply_(I_', (\\ ((dummy),(stack')) @ Status_Yes)))(P',V')
 "))
 
 (define csp-reply-function-parameter-ast-via
@@ -1382,7 +1382,7 @@ reply_(I_', (\\ ((dummy),((stack',s))) @ Status_No))
           (csp-transform* reply-ast csp-reply-function-parameter-ast-via)
 
           ;; to:
-          "reply_fun_arg(P',V') = reply_(I_', (\\ ((dummy),((stack',s))) @ s))(P',V')
+          "reply_fun_arg(P',V') = (reply_(I_', (\\ ((dummy),((stack',s))) @ s)))(P',V')
 "))
 
 (define return-variable-c-ast

@@ -44,8 +44,8 @@ channel if_I_'': {ev_f}
 channel if_I_': {return}
 
 IF_if_I_(IG,CS) = let
-g(P',V') = semi_((\ P',V' @ if_I_''!ev_f -> P'(V')),
-returnvalue_(\ ((va_b),((stack',(va_ga,va_gb)))) @ (va_ga or va_gb)))(P',V')
+g(P',V') = (semi_((\ P',V' @ if_I_''!ev_f -> P'(V')),
+returnvalue_(\ ((va_b),((stack',(va_ga,va_gb)))) @ (va_ga or va_gb))))(P',V')
 
 if_I_(((va_b),(stack'))) =
 (true) & (
@@ -76,8 +76,8 @@ channel po_i_':{return}
 
 
 CO_co_argument2_(IIG,IG) = let
-g(P',V') = semi_((\ P',V' @ po_i_''!ev_f -> P'(V')),
-returnvalue_(\ ((va_b),((stack',(va_ga,va_gb)))) @ (va_ga or va_gb)))(P',V')
+g(P',V') = (semi_((\ P',V' @ po_i_''!ev_f -> P'(V')),
+returnvalue_(\ ((va_b),((stack',(va_ga,va_gb)))) @ (va_ga or va_gb))))(P',V')
 
 co_argument2_(((va_b),(stack'))) = transition_begin -> (
 (true) & (

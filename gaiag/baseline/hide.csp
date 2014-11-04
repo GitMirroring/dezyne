@@ -44,10 +44,10 @@ channel I_'': {f}
 channel I_': {return}
 
 IF_I_(IG,CS) = let
-g(P',V') = context_(\ ((hide_member0',c),((stack',(b,d)))) @ d,
+g(P',V') = (context_(\ ((hide_member0',c),((stack',(b,d)))) @ d,
 context_(\ ((hide_member0',c),(((stack',(hide_local0',d)),b))) @ c,
 semi_((\ P',V' @ I_''!f -> P'(V')),
-returnvalue_(\ ((hide_member0',c),((((stack',(hide_local0',hide_local1')),b),d))) @ (b or d)))))(P',V')
+returnvalue_(\ ((hide_member0',c),((((stack',(hide_local0',hide_local1')),b),d))) @ (b or d))))))(P',V')
 
 I_(((b,c),(stack'))) =
 (true) & (
@@ -76,10 +76,10 @@ channel i_':{return}
 
 
 CO_hide_(IIG,IG) = let
-g(P',V') = context_(\ ((hide_member0',c),((stack',(b,d)))) @ d,
+g(P',V') = (context_(\ ((hide_member0',c),((stack',(b,d)))) @ d,
 context_(\ ((hide_member0',c),(((stack',(hide_local0',d)),b))) @ c,
 semi_((\ P',V' @ i_''!f -> P'(V')),
-returnvalue_(\ ((hide_member0',c),((((stack',(hide_local0',hide_local1')),b),d))) @ (b or d)))))(P',V')
+returnvalue_(\ ((hide_member0',c),((((stack',(hide_local0',hide_local1')),b),d))) @ (b or d))))))(P',V')
 
 hide_(((b,c),(stack'))) = transition_begin -> (
 (true) & (

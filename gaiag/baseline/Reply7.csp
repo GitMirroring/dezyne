@@ -66,8 +66,8 @@ channel r_':{E_A,return}
 
 
 CO_Reply7_(IIG,IG) = let
-f(P',V') = context_active_(semi_(send_(r,foo),recv_(r_',foo)),
-reply_(IReply7_', (\ ((<>),((stack',v))) @ v)))(P',V')
+f(P',V') = (context_active_(semi_(send_(r,foo),recv_(r_',foo)),
+reply_(IReply7_', (\ ((<>),((stack',v))) @ v))))(P',V')
 
 Reply7_(((<>),(stack'))) = transition_begin -> (
 p?x:{foo} ->

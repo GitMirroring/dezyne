@@ -44,14 +44,14 @@ channel i99_sleeping_'': {i4_zzz,i5_yawn,i6_stretch}
 channel i99_sleeping_': {return}
 
 IF_i99_sleeping_(IG,CS) = let
-i77_f(PF',V') = semi_((\ P',V' @ i99_sleeping_''!i5_yawn -> P'(V')),
+i77_f(PF',V') = (semi_((\ P',V' @ i99_sleeping_''!i5_yawn -> P'(V')),
 semi_((\ P',V' @ i99_sleeping_''!i4_zzz -> P'(V')),
 semi_((\ P',V' @ i99_sleeping_''!i5_yawn -> P'(V')),
 semi_((\ P',V' @ i99_sleeping_''!i6_stretch -> P'(V')),
 semi_((\ P',V' @ i99_sleeping_''!i4_zzz -> P'(V')),
 semi_((\ P',V' @ i99_sleeping_''!i6_stretch -> P'(V')),
 semi_(call_(\ P',V' @ i77_f(PF',V')),
-skip_)))))))(PF',V')
+skip_))))))))(PF',V')
 
 i99_sleeping_(((<>),(stack'))) =
 i99_sleeping?x:{i3_sleep} ->
@@ -74,7 +74,7 @@ channel i100_beauty_':{return}
 
 
 CO_i308_mutual_recursion_with_members_(IIG,IG) = let
-i212_f(PF',V') = semi_(\ P',((i105_down),((stack',i108_c))) @ ifthenelse_(i105_down,
+i212_f(PF',V') = (semi_(\ P',((i105_down),((stack',i108_c))) @ ifthenelse_(i105_down,
 semi_((\ P',V' @ i100_beauty_''!i5_yawn -> P'(V')),
 \ P',((i105_down),((stack',i108_c))) @ ifthenelse_((0 < i108_c),
 call_args_(\ P',V' @ i284_g(PF',V'),(\ ((i105_down),((stack',i108_c))) @ ((i108_c - 1)))),
@@ -86,8 +86,8 @@ call_args_(\ P',V' @ i284_g(PF',V'),(\ ((i105_down),((stack',i108_c))) @ ((i108_
 skip_
 )(P',((i105_down),((stack',i108_c)))))
 )(P',((i105_down),((stack',i108_c)))),
-skip_)(PF',V')
-i284_g(PF',V') = semi_(\ P',((i105_down),((stack',i215_c))) @ ifthenelse_((i215_c == 2),
+skip_))(PF',V')
+i284_g(PF',V') = (semi_(\ P',((i105_down),((stack',i215_c))) @ ifthenelse_((i215_c == 2),
 assign_(\ ((i105_down),((stack',i215_c))) @ ((true),((stack',i215_c)))),
 \ P',((i105_down),((stack',i215_c))) @ ifthenelse_((i215_c == 0),
 assign_(\ ((i105_down),((stack',i215_c))) @ ((false),((stack',i215_c)))),
@@ -95,7 +95,7 @@ assign_(\ ((i105_down),((stack',i215_c))) @ ((false),((stack',i215_c)))),
 )(P',((i105_down),((stack',i215_c))))
 )(P',((i105_down),((stack',i215_c)))),
 semi_(call_args_(\ P',V' @ i212_f(PF',V'),(\ ((i105_down),((stack',i215_c))) @ (i215_c))),
-skip_))(PF',V')
+skip_)))(PF',V')
 
 i308_mutual_recursion_with_members_(((i105_down),(stack'))) = transition_begin -> (
 i100_beauty?x:{i3_sleep} ->

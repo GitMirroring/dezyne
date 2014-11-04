@@ -44,8 +44,8 @@ channel I: {done}
 channel I_': {Status_Yes,Status_No,return}
 
 IF_I_(IG,CS) = let
-fun(P',V') = returnvalue_(\ ((dummy),(stack')) @ Status_Yes)(P',V')
-fun_arg(P',V') = returnvalue_(\ ((dummy),((stack',s))) @ s)(P',V')
+fun(P',V') = (returnvalue_(\ ((dummy),(stack')) @ Status_Yes))(P',V')
+fun_arg(P',V') = (returnvalue_(\ ((dummy),((stack',s))) @ s))(P',V')
 
 I_(((dummy),(stack'))) =
 (true) & (
@@ -70,8 +70,8 @@ channel U: {what}
 channel U_': {Status_Ok,Status_Nok,return}
 
 IF_U_(IG,CS) = let
-fun(P',V') = returnvalue_(\ ((dummy),(stack')) @ Status_Ok)(P',V')
-fun_arg(P',V') = returnvalue_(\ ((dummy),((stack',s))) @ s)(P',V')
+fun(P',V') = (returnvalue_(\ ((dummy),(stack')) @ Status_Ok))(P',V')
+fun_arg(P',V') = (returnvalue_(\ ((dummy),((stack',s))) @ s))(P',V')
 
 U_(((dummy),(stack'))) =
 (true) & (
@@ -100,8 +100,8 @@ channel u_':{Status_Ok,Status_Nok,return}
 
 
 CO_Reply4_(IIG,IG) = let
-fun(P',V') = returnvalue_(\ ((dummy),(stack')) @ Status_Yes)(P',V')
-fun_arg(P',V') = returnvalue_(\ ((dummy),((stack',s))) @ s)(P',V')
+fun(P',V') = (returnvalue_(\ ((dummy),(stack')) @ Status_Yes))(P',V')
+fun_arg(P',V') = (returnvalue_(\ ((dummy),((stack',s))) @ s))(P',V')
 
 Reply4_(((dummy),(stack'))) = transition_begin -> (
 (true) & (

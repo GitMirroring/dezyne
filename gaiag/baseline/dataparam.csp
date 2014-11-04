@@ -86,9 +86,9 @@ channel port_':{Status_Yes,Status_No,return}
 
 
 CO_dataparam_(IIG,IG) = let
-fun(P',V') = returnvalue_(\ ((s),(stack')) @ Status_Yes)(P',V')
-funx(P',V') = returnvalue_(\ ((s),(stack')) @ Status_Yes)(P',V')
-xfunx(P',V') = skip_(P',V')
+fun(P',V') = (returnvalue_(\ ((s),(stack')) @ Status_Yes))(P',V')
+funx(P',V') = (returnvalue_(\ ((s),(stack')) @ Status_Yes))(P',V')
+xfunx(P',V') = (skip_)(P',V')
 
 dataparam_(((s),(stack'))) = transition_begin -> (
 port?x:{e0} ->

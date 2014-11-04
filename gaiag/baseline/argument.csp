@@ -44,8 +44,8 @@ channel I_'': {f}
 channel I_': {return}
 
 IF_I_(IG,CS) = let
-g(P',V') = semi_((\ P',V' @ I_''!f -> P'(V')),
-returnvalue_(\ ((b),((stack',gc))) @ (gc or b)))(P',V')
+g(P',V') = (semi_((\ P',V' @ I_''!f -> P'(V')),
+returnvalue_(\ ((b),((stack',gc))) @ (gc or b))))(P',V')
 
 I_(((b),(stack'))) =
 (true) & (
@@ -76,8 +76,8 @@ channel i_':{return}
 
 
 CO_argument_(IIG,IG) = let
-g(P',V') = semi_((\ P',V' @ i_''!f -> P'(V')),
-returnvalue_(\ ((b),((stack',gc))) @ (gc or b)))(P',V')
+g(P',V') = (semi_((\ P',V' @ i_''!f -> P'(V')),
+returnvalue_(\ ((b),((stack',gc))) @ (gc or b))))(P',V')
 
 argument_(((b),(stack'))) = transition_begin -> (
 (true) & (
