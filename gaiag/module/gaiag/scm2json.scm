@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright (C) 2014  Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -17,15 +17,16 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (gaiag json2scm)
+(define-module (gaiag scm2json)
   :use-module (system repl error-handling)
   :use-module (ice-9 getopt-long)
-  :use-module (ice-9 match)
-  :use-module (ice-9 pretty-print)
+
+  :use-module (srfi srfi-10)
 
   :use-module (json)
+  :use-module (gaiag hash)
   :use-module (gaiag misc)
-  :export (json->symbol-scm main))
+  :export (main))
 
 (define (parse-opts args)
   (let* ((option-spec
@@ -45,35 +46,28 @@
       (and (or help? usage?)
 	   ((or (and usage? stderr) stdout) "\
 Usage: scm2json [OPTION]... FILE
-Convert JSON in FILE or standard input, to scheme-AST on standard output
+Convert scheme-AST in FILE or standard input, to JSON on standard output
   -d, --debug          run with debugging
   -h, --help           display this help
   -v, --version        display version
 
 Examples:
-  ./gaiag -a \"$(cat examples/assert.json | ./json2scm)\" -l csp examples/Alarm.asd
+  echo \"(console.arm console.disarm sensor.disabled)\" | ./scm2json
+  ./gaiag -l simulate -t \"$(cat examples/Alarm-trail.scm)\" examples/Alarm.asd | ./scm2json
 ")
 	   (exit (or (and usage? 2) 0)))
      options)))
 
-(define (json->symbol-scm src)
-  (match src
-    ((? string?) (string->symbol src))
-    ((h ...) (map json->symbol-scm src))
-    (_ src)))
-
-(define (->scm files)
-  (json->symbol-scm
-   (json->scm
-    (if (null? files)
-	(current-input-port)
-	(open-input-file (car files))))))
-
-(define (script files)
-  (pretty-print (->scm files)))
+(define (->json files)
+  (display (scm->json-string
+            (read
+             (if (null? files)
+                 (current-input-port)
+                 (open-input-file (car files))))))
+  (newline))
 
 (define (main args)
   (let* ((options (parse-opts args))
          (debug? (option-ref options 'debug #f))
 	 (files (option-ref options '() '())))
-    (call-with-error-handling (lambda () (script files)) :on-error (if debug? 'debug 'backtrace))))
+    (call-with-error-handling (lambda () (->json files)) :on-error (if debug? 'debug 'backtrace))))
