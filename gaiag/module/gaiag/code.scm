@@ -253,7 +253,7 @@
                      (let* ((aliases
                              (let loop ((parameters ((compose .elements .parameters .signature) event))
                                         (arguments (map (compose .name .value) ((compose .elements .arguments) trigger))))
-                               (if (null? parameters)
+                               (if (null? arguments)
                                    '()
                                    (let* ((parameter (car parameters))
                                           (type (->code model (.type parameter)))
