@@ -260,7 +260,7 @@
   #f)
 
 (define-method (gom:port (o <model>))
-  (car ((gom:filter gom:provides?) (.ports o))))
+  (and=> (null-is-#f ((gom:filter gom:provides?) (.ports o))) car))
 
 (define-method (gom:port (o <system>) (bind <binding>))
   (let* ((port (.port bind)))
