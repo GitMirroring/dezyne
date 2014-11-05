@@ -281,6 +281,7 @@ BROKEN =\
  Aap.asd\
  LOPW.asd\
  bareSiliconAlarm.asd\
+ default.asd\
 
 DEMO_SOURCES = $(filter-out $(BROKEN) ,$(shell cd $(DEPTH)/webdemo/asd && ls *.asd))
 csp-demo: $(DEMO_SOURCES:%.asd=out/webdemo/%.refines)
