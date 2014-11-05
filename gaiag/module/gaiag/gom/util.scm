@@ -85,6 +85,7 @@
            gom:statement
            gom:statements-of-type
            gom:system
+           gom:systems
            gom:typed?
            gom:variable
            gom:variables
@@ -440,8 +441,9 @@
 (define-method (gom:model (o <component>)) o)
 (define-method (gom:model (o <interface>)) o)
 (define (gom:models o) ((gom:filter <model>) o))
-(define (gom:components o) ((gom:filter <component>) o))
 (define (gom:interfaces o) ((gom:filter <interface>) o))
+(define (gom:components o) ((gom:filter <component>) o))
+(define (gom:systems o) ((gom:filter <system>) o))
 
 (define (gom:models-with-behaviour gom)
   (filter .behaviour (append ((gom:filter <component>) gom) ((gom:filter <interface>) gom))))
