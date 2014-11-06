@@ -96,7 +96,7 @@
                                  (map (lambda (state)
                                         (state-table model state o))
                                       states))))
-                (make <compound> :elements guards))
+                (retain-source-location o (make <compound> :elements guards)))
       o))
 
 (define-method (state-table (model <model>) (state <literal>) (o <compound>))
@@ -126,7 +126,7 @@
        (cond
         ((null? statements) #f)
         ((=1 (length statements)) (car statements))
-        (else (make <compound> :elements statements)))))
+        (else (retain-source-location o (make <compound> :elements statements))))))
 
     (($ <guard> expression ($ <on> triggers statement))
      (and-let*
