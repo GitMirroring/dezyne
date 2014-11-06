@@ -56,6 +56,7 @@
 	   csp-expression->string
 	   csp-transform
            csp:norm
+           csp-queue-size
 
            assign
            extend
@@ -920,3 +921,5 @@
        ((? string?) src)
 
        (_ (throw 'match-error (format #f "~a:csp-transform: no match: ~a\n" (current-source-location) src)))))))
+
+(define (csp-queue-size) (option-ref (parse-opts (command-line)) 'queue-size 3))
