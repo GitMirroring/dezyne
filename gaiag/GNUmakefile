@@ -615,4 +615,4 @@ table:
 	@echo
 	./gaiag -m Alarm -j -l table examples/Alarm.asd | ./scm2json | sed -e 's/, /,\n /g'
 	@echo
-#	./gaiag -j -l table -m Alarm ../webdemo/asd/AlarmSystem.asd | ./scm2json |
+	./gaiag -m SensorMultiplexer4 -l table ../webdemo/asd/choiceexample.asd # | ./scm2json | sed -e 's/, /,\n /g'

@@ -45,6 +45,7 @@
   :export (
            ast->
            flatten-compound
+           guards-not-or
            normstate
            ))
 

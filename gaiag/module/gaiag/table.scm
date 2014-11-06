@@ -113,14 +113,16 @@
 (define-method (evaluate (model <model>) (state <literal>) o)
   (match o
     (($ <compound> statements)
-     (let ((statements
-            (let loop ((statements (.elements o)))
-              (if (null? statements)
-                  '()
-                  (let ((statement (evaluate model state (car statements))))
-                    (if statement
-                        (cons statement (loop (cdr statements)))
-                        (loop (cdr statements))))))))
+     (let* ((statements
+             (let loop ((statements (.elements o)))
+               (if (null? statements)
+                   '()
+                   (let* ((statement (annotate-otherwise o (car statements)))
+                          (statement (evaluate model state statement)))
+                     (if statement
+                         (cons statement (loop (cdr statements)))
+                         (loop (cdr statements))))))))
+
        (cond
         ((null? statements) #f)
         ((=1 (length statements)) (car statements))
@@ -134,7 +136,9 @@
 
     (($ <guard> expression statement)
      (and-let* ((value (eval-expression model state expression))
-                (expression (make <expression> :value value))
+                (expression (if (is-a? value <otherwise>)
+                                value
+                                (make <expression> :value value)))
                 (statement (evaluate model state statement)))
                (match value
                  (#t statement)
@@ -146,7 +150,23 @@
                 (statement (evaluate model state guard)))
                (make <on> :triggers triggers :statement statement)))
 
-    (_ o)))
+    (($ <on> triggers statement)
+     (and-let* ((statement (evaluate model state statement)))
+               (make <on> :triggers triggers :statement statement)))
+
+    (_ (stderr "ignoring:") (pretty-print (gom->list o) (current-error-port))
+     o)))
+
+(define-method (annotate-otherwise (o <compound>) (guard <guard>))
+  (and-let* ((guards ((gom:filter <guard>) (.elements o)))
+             (expression (.expression guard))
+             ((is-a? expression <otherwise>))
+             (value (.value (guards-not-or guards))))
+            (set! (.value (.expression guard)) value))
+  guard)
+
+(define-method (annotate-otherwise (o <compound>) (statement <statement>))
+  statement)
 
 (define-method (eval-expression (model <model>) (state <literal>) o)
 
@@ -157,6 +177,13 @@
   (match o
 
     (($ <expression> expression) (eval-expression model state expression))
+
+    (($ <otherwise> expression)
+     (let ((value (eval-expression model state expression)))
+       (match value
+         (#t #t)
+         (#f #f)
+         (_ o))))
 
     (($ <literal>) o)
 
