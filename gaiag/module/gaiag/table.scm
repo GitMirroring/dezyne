@@ -154,6 +154,28 @@
      (and-let* ((statement (evaluate model state statement)))
                (make <on> :triggers triggers :statement statement)))
 
+    (($ <if> expression then #f)
+     (and-let* ((value (eval-expression model state expression))
+                (expression (make <expression> :value value))
+                (then (evaluate model state then)))
+               (match value
+                 (#t then)
+                 (($ <literal>) (and (equal? value state) then))
+                 (_ (make <if> :expression expression :then then)))))
+
+    (($ <if> expression then else)
+     (or (and-let* ((value (eval-expression model state expression))
+                    (expression (make <expression> :value value)))
+                   (let ((then (evaluate model state then))
+                         (else (evaluate model state else)))
+                     (match value
+                       (#t then)
+                       (($ <literal>) (and (equal? value state) then))
+                       (_ (make <if> :expression expression :then then :else else)))))
+         (and-let* ((then (evaluate model state else))
+                    (expression (list 'not (.value expression))))
+                   (make <if> :expression expression :then then))))
+
     (_ (stderr "ignoring:") (pretty-print (gom->list o) (current-error-port))
      o)))
 
