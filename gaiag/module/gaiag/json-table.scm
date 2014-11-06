@@ -65,49 +65,70 @@
           'out)))
 
 (define-method (json-table (o <guard>))
-  (match o
-    (($ <guard> expression ($ <on> triggers statement))
-     (alist->hash-table
-      `((state . ,(->symbol expression))
-        (rules
-         .
-         ,(list
-           (alist->hash-table
-            `((triggers . ,(map ->symbol (.elements triggers)))
-              (guard . "")
-              (actions . ,(json-actions statement)))))))))
-    (($ <guard> expression ($ <compound> (and (($ <on>) ...) (get! ons))))
-     (alist->hash-table
-      `((state . ,(->symbol expression))
-        (rules . ,(apply append (map json-table (ons)))))))
-    (_ (stderr "catch all:\n")
-       (pretty-print (gom->list o) (current-error-port))
-     (alist->hash-table `((state . ,(->symbol o))
-                          (rules . ,(list
-                                     (alist->hash-table
-                                      `((triggers . ())
-                                        (guard . "")
-                                        (actions . ,(json-actions '())))))))))))
+    (match o
+      (($ <guard> expression ($ <on> triggers statement))
+       (let ((var ((compose .identifier .value) expression)))
+         (alist->hash-table
+          `((state . ,(->symbol expression))
+            (rules
+             .
+             ,(list
+               (alist->hash-table
+                `((triggers . ,(map ->symbol (.elements triggers)))
+                  (guard . "")
+                  (actions . ,(json-actions statement))
+                  (next . ,(json-next var statement))))))))))
+      (($ <guard> expression ($ <compound> (and (($ <on>) ...) (get! ons))))
+       (let ((var ((compose .identifier .value) expression)))
+         (alist->hash-table
+          `((state . ,(->symbol expression))
+            (rules . ,(apply append (map (json-table- var) (ons))))))))
+      (_ (stderr "catch all:\n")
+         (pretty-print (gom->list o) (current-error-port))
+         (alist->hash-table `((state . ,(->symbol o))
+                              (rules . ,(list
+                                         (alist->hash-table
+                                          `((triggers . ())
+                                            (guard . "")
+                                            (actions . ,(json-actions '()))
+                                            (next . ()))))))))))
 
-(define-method (json-table (o <on>))
+(define-method (json-table (var <symbol>) (o <on>))
   (match o
    (($ <on> triggers ($ <compound> (($ <guard> guard statement) ...)))
-    (map (json-inner-guard triggers) guard statement))
+    (map (json-inner-guard var triggers) guard statement))
    (_
     (list
      (alist->hash-table
       `((triggers . ,(map ->symbol ((compose .elements .triggers) o)))
         (guard . "")
-        (actions . ,(json-actions (.statement o)))))))))
+        (actions . ,(json-actions (.statement o)))
+        (next . ,(json-next var (.statement o)))))))))
 
-(define-method (json-inner-guard (triggers <triggers>) (guard <expression>) (statement <statement>))
+(define-method (json-table- (var <symbol>))
+  (lambda (o) (json-table var o)))
+
+(define-method (json-inner-guard (var <symbol>) (triggers <triggers>) (guard <expression>) (statement <statement>))
   (alist->hash-table
    `((triggers . ,(map ->symbol (.elements triggers)))
      (guard . ,(->symbol guard))
-     (actions . ,(json-actions statement)))))
+     (actions . ,(json-actions statement))
+     (next . ,(json-next var statement)))))
 
-(define-method (json-inner-guard (o <triggers>))
-  (lambda (e s) (json-inner-guard o e s)))
+(define-method (json-inner-guard (var <symbol>) (o <triggers>))
+  (lambda (e s) (json-inner-guard var o e s)))
+
+(define-method (json-next (var <symbol>) (o <statement>))
+  (or
+   (and-let* ((assignments ((gom:collect <assign>) o))
+              (state (null-is-#f (filter (lambda (a) (eq? (.identifier a) var))
+                                         assignments)))
+              (o (.expression (last state))))
+             (match o
+               (($ <expression> ($ <literal> scope type field))
+                (->symbol (list var '. field)))
+               (_ '())))
+      '()))
 
 (define-method (json-actions o)
   (alist->hash-table
@@ -118,8 +139,8 @@
   (match o
     (#f 'false)
     (#t 'true)
-    (($ <expression> expression) (->symbol (list "[" expression "]")))
-    (($ <otherwise>) (->symbol "[otherwise]"))
+    (($ <expression> expression) (->symbol expression))
+    (($ <otherwise>) 'otherwise)
     (($ <var> identifier) identifier)
     (($ <field> type field) (->symbol (list (->symbol type) "." field)))
     ((identifier ($ <field> type field)) (->symbol (list (->symbol identifier) " = " (->symbol type) "." field)))
