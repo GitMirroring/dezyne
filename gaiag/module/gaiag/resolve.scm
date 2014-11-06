@@ -73,10 +73,13 @@
   (make <error> :ast o :message (format #f "type mismatch: ~a expected, found: ~a" expected actual)))
 
 (define-method (gom:resolve (o <root>))
-  (let* ((resolved (make <root> :elements (map resolve-top-model (append
-                                                                  (gom:interfaces o)
-                                                                  (gom:components o)
-                                                                  (gom:systems o)))))
+  (let* ((resolved (make <root> :elements
+                         (map resolve-top-model
+                              (append
+                               (gom:imports o)
+                               (gom:interfaces o)
+                               (gom:components o)
+                               (gom:systems o)))))
          (errors (null-is-#f ((gom:collect <error>) resolved))))
     (and=> errors report-errors)
     resolved))

@@ -58,6 +58,7 @@
            gom:function-names
            gom:functions
            gom:import
+           gom:imports
            gom:instance
            gom:in?
            gom:integer
@@ -441,6 +442,7 @@
 (define-method (gom:model (o <component>)) o)
 (define-method (gom:model (o <interface>)) o)
 (define (gom:models o) ((gom:filter <model>) o))
+(define (gom:imports o) ((gom:filter <imports>) o))
 (define (gom:interfaces o) ((gom:filter <interface>) o))
 (define (gom:components o) ((gom:filter <component>) o))
 (define (gom:systems o) ((gom:filter <system>) o))
