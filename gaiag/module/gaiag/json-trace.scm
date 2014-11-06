@@ -24,8 +24,8 @@
 
   :use-module (srfi srfi-1)
 
+  :use-module (gaiag json)
   :use-module (gaiag misc)
-  :use-module (language asd parse)
   :use-module (gaiag pretty-print)
   :use-module (gaiag reader)
   :use-module (gaiag simulate)
@@ -34,9 +34,11 @@
   :use-module (oop goops describe)
   :use-module (gaiag gom)
 
-  :export (json-init
+  :export (
+           json-init
            json-state
-           json-trace))
+           json-trace
+           ))
 
 ;; JSON output mangling disaster area
 
@@ -90,15 +92,6 @@
                      ((.port trigger)))
                     (.port trigger))
           'out)))
-
-(define (json-location ast)
-  (alist->hash-table
-   (or (and-let* ((loc (source-location ast))
-                  (properties (source-location->user-source-properties loc)))
-                 `((file . ,(assoc-ref properties 'filename))
-                   (line . ,(assoc-ref properties 'line))
-                   (colum . ,(assoc-ref properties 'column))))
-      '())))
 
 (define ((json-trace model) tracepoint)
   (let* ((event (car tracepoint))

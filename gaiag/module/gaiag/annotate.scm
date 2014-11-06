@@ -30,8 +30,10 @@
 
   :use-module (ice-9 match)
   :use-module (ice-9 and-let-star)
-  :use-module (language asd parse)
   :use-module (system base lalr)
+
+  :use-module (language asd location)
+  :use-module (gaiag misc)
   :use-module (gaiag reader)
 
   :export (ast-> ast->annotate extract-locations))

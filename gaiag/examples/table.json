@@ -4,6 +4,11 @@
   "table" : [
   {"state" : "[s.init]",
    "rules": [
-   {"triggers" : ["e"], "actions" : "a;\ns = S.idle;\n"},
-   {"triggers" : ["e"], "actions" : "a;\ns = S.busy;\n"},
+       {"triggers" : ["e"], "actions" : {"data": "a;\ns = S.idle;\n",
+                                         "location": {"file": "",
+                                                      "line": 0,
+                                                      "column": 0,
+                                                      "offset": 0
+                                                      "length": 0 }},
+   {"triggers" : ["e"], "actions" : {"actions": "a;\ns = S.busy;\n" },
 ]}]}]

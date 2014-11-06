@@ -31,16 +31,15 @@
 
   :use-module (srfi srfi-1)
 
+  :use-module (oop goops)
+
+  :use-module (gaiag gom)
+  :use-module (gaiag json)
   :use-module (gaiag misc)
-  :use-module (language asd parse)
   :use-module (gaiag pretty)
   :use-module (gaiag pretty-print)
   :use-module (gaiag reader)
   :use-module (gaiag simulate)
-
-  :use-module (oop goops)
-  :use-module (oop goops describe)
-  :use-module (gaiag gom)
 
   :export (json-init
            json-table))
@@ -76,7 +75,7 @@
            (alist->hash-table
             `((triggers . ,(map ->symbol (.elements triggers)))
               (guard . "")
-              (actions . ,(ast->asd statement)))))))))
+              (actions . ,(json-actions statement)))))))))
     (($ <guard> expression ($ <compound> (and (($ <on>) ...) (get! ons))))
      (alist->hash-table
       `((state . ,(->symbol expression))
@@ -88,7 +87,7 @@
                                      (alist->hash-table
                                       `((triggers . ())
                                         (guard . "")
-                                        (actions . ""))))))))))
+                                        (actions . ,(json-actions '())))))))))))
 
 (define-method (json-table (o <on>))
   (match o
@@ -99,16 +98,21 @@
      (alist->hash-table
       `((triggers . ,(map ->symbol ((compose .elements .triggers) o)))
         (guard . "")
-        (actions . ,(ast->asd (.statement o)))))))))
+        (actions . ,(json-actions (.statement o)))))))))
 
 (define-method (json-inner-guard (triggers <triggers>) (guard <expression>) (statement <statement>))
   (alist->hash-table
    `((triggers . ,(map ->symbol (.elements triggers)))
      (guard . ,(->symbol guard))
-     (actions . ,(ast->asd statement)))))
+     (actions . ,(json-actions statement)))))
 
 (define-method (json-inner-guard (o <triggers>))
   (lambda (e s) (json-inner-guard o e s)))
+
+(define-method (json-actions o)
+  (alist->hash-table
+   `((data . ,(ast->asd o))
+     (location . ,(json-location o)))))
 
 (define (->symbol o)
   (match o

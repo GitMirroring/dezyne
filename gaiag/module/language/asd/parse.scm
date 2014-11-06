@@ -17,63 +17,19 @@
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (language asd parse)
-  #:use-module (system base lalr)
-  #:use-module (language tree-il)
-
   #:use-module (ice-9 match)
   #:use-module (ice-9 and-let-star)
 
-  #:export (compile-tree-il
+  #:use-module (system base lalr)
+  #:use-module (language tree-il)
+
+  #:use-module (language asd location)
+
+  #:export (
+            compile-tree-il
             make-asd-tokenizer
             make-parser
-            source-location
-            source-location->user-source-properties
-            source-location->system-source-properties
-            syntax-error-handler))
-
-(define (debug m x) (display (format #f "~a: ~a\n" m x) (current-error-port)))
-
-(define* (syntax-error-handler message #:optional token)
-  (if (lexical-token? token)
-      (throw 'syntax-error #f message
-             (and=> (lexical-token-source token)
-                    source-location->user-source-properties)
-             (or (lexical-token-value token)
-                 (lexical-token-category token))
-             #f)
-      (throw 'syntax-error #f message #f token #f)))
-
-(if (not (defined? 'supports-source-properties?))
-    (module-define! (current-module) 'supports-source-properties? pair?))
-
-(define (note-location ast loc)
-  (when (supports-source-properties? ast)
-      (set-source-property! ast 'loc loc))
-  ast)
-
-(define (source-location src)
-  (and-let* (((supports-source-properties? src))
-	     (loc (source-property src 'loc)))
-	    (if (source-location? loc)
-		loc
-		(source-location loc))))
-
-(define (source-location->user-source-properties loc)
-  `((filename . ,(source-location-input loc))
-    (line . ,(+ 1 (source-location-line loc)))
-    (column . ,(+ 1 (source-location-column loc)))
-    (offset . ,(source-location-offset loc))
-    (length . ,(source-location-length loc))))
-
-(define (source-location->system-source-properties loc)
-  `((filename . ,(source-location-input loc))
-    (line . ,(source-location-line loc))
-    (column . ,(source-location-column loc))
-    (offset . ,(source-location-offset loc))
-    (length . ,(source-location-length loc))))
-
-(define *eof-object*
-  (call-with-input-string "" read-char))
+            ))
 
 (define (make-parser)
   (lalr-parser

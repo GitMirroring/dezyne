@@ -26,6 +26,7 @@
 
   :use-module (gaiag misc)
   :use-module (language asd parse)
+  :use-module (language asd location)
   :use-module (language asd tokenize)
   :export (asd->ast find-file try-find-file parse-asd read-asd read-ast))
 

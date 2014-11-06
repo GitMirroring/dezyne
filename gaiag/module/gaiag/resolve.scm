@@ -30,7 +30,7 @@
   :use-module (gaiag annotate)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
-  :use-module (language asd parse)
+  :use-module (language asd location)
 
   :use-module (oop goops)
   :use-module (gaiag gom)
