@@ -67,12 +67,12 @@
 (define-method (assert-list-all (o <interface>))
   (assert-list o))
 
-(define-method (assert-list (o <top>))
-  (assert-list ((gom:register (compose ast->gom ast:resolve)) o #t)))
-
 (define-method (assert-list (o <ast>))
   (or (and-let* ((model (gom:model-with-behaviour o)))
                 (assert-list-all model))
       '()))
+
+(define-method (assert-list (o <top>))
+  (assert-list ((gom:register (compose ast->gom ast:resolve)) o #t)))
 
 (define ast-> assert-list)

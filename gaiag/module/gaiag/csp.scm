@@ -57,6 +57,7 @@
 	   csp-transform
            csp:norm
            csp-queue-size
+           gom->csp
 
            assign
            extend
@@ -79,9 +80,8 @@
            <skip>
            ))
 
-(define (ast-> ast)
-  (let ((gom ((gom:register ast->gom) ast #t))
-        (name (and=> (option-ref (parse-opts (command-line)) 'model #f)
+(define-method (gom->csp (gom <ast>))
+  (let ((name (and=> (option-ref (parse-opts (command-line)) 'model #f)
                      string->symbol)))
     (or (and-let* ((models (null-is-#f (gom:models-with-behaviour gom)))
                    (model (if name (find (gom:named name) models) (car models))))
@@ -93,7 +93,11 @@
                             "gaiag: no model with behaviour: ~a\n"))
                (message (format #f message name models)))
           (stderr message)
-          (throw 'csp message))))
+          (throw 'csp message)))))
+
+(define (ast-> ast)
+  (let ((gom ((gom:register ast->gom) ast #t)))
+    (gom->csp gom))
   "")
 
 (define-method (generate-csp (o <interface>))
