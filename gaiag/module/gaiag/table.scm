@@ -135,6 +135,14 @@
        (guard (evaluate model state guard)))
       (make <on> :triggers triggers :statement guard)))
 
+    (($ <guard> expression ($ <compound> (and (($ <on>) ..1) (get! ons))))
+     (and-let*
+      ((guards (null-is-#f (filter identity (map (lambda (on) (make <guard> :expression expression :statement on)) (ons)))))
+       (guards (null-is-#f (filter identity (map (lambda (guard) (evaluate model state guard)) guards)))))
+      (if (=1 (length guards))
+          (car guards)
+          (make <compound> :elements guards))))
+
     (($ <guard> expression statement)
      (and-let* ((value (eval-expression model state expression))
                 (expression (if (is-a? value <otherwise>)

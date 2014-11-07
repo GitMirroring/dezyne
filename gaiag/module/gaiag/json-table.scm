@@ -98,6 +98,8 @@
   (match o
    (($ <on> triggers ($ <compound> (($ <guard> guard statement) ..1)))
     (map (json-inner-guard var state triggers) guard statement))
+   (($ <on> triggers ($ <guard> guard statement))
+    (list (json-inner-guard var state triggers guard statement)))
    (_
     (list
      (alist->hash-table
