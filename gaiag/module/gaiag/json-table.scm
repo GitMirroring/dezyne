@@ -49,7 +49,6 @@
     (type . ,(ast-name model))))
 
 (define-method (json-table (o <root>))
-  (stderr "json-table: ~a\n" o)
   (map json-table (.elements o)))
 
 (define-method (json-table (o <compound>))
@@ -95,7 +94,7 @@
 
 (define-method (json-table (var <symbol>) (o <on>))
   (match o
-   (($ <on> triggers ($ <compound> (($ <guard> guard statement) ...)))
+   (($ <on> triggers ($ <compound> (($ <guard> guard statement) ..1)))
     (map (json-inner-guard var triggers) guard statement))
    (_
     (list

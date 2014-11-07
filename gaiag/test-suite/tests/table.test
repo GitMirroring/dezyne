@@ -160,20 +160,23 @@ interface i
 }
 #})))
 '(compound
-(guard
- (expression (field s init))
- (on (triggers (trigger #f e (arguments)))
-     (guard
-      (expression (var b))
-      (compound
-       (action (trigger #f a (arguments)))
-       (assign s (expression (literal #f S idle)))))))
-(guard
- (expression (field s idle))
- (on (triggers (trigger #f e (arguments)))
-     (compound
-      (action (trigger #f a (arguments)))
-      (assign s (expression (literal #f S busy)))))))))
+  (guard
+    (expression (field s init))
+    (on (triggers (trigger #f e (arguments)))
+         (guard
+           (expression (var b))
+           (compound
+             (action (trigger #f a (arguments)))
+             (assign s (expression (literal #f S idle)))))))
+  (guard
+    (expression (field s idle))
+    (on (triggers (trigger #f e (arguments)))
+         (compound
+           (action (trigger #f a (arguments)))
+           (assign s (expression (literal #f S busy))))))
+  (guard
+    (expression (field s busy))
+(compound)))))
 
 (pass-if "state-table-expressions"
   (gom-pretty-noisy-equal?

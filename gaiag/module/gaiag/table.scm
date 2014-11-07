@@ -124,7 +124,6 @@
                          (loop (cdr statements))))))))
 
        (cond
-        ((null? statements) #f)
         ((=1 (length statements)) (car statements))
         (else (retain-source-location o (make <compound> :elements statements))))))
 
@@ -176,7 +175,8 @@
                     (expression (list 'not (.value expression))))
                    (make <if> :expression expression :then then))))
 
-    (_ (stderr "ignoring:") (pretty-print (gom->list o) (current-error-port))
+    (_
+     ;;(stderr "ignoring:") (pretty-print (gom->list o) (current-error-port))
      o)))
 
 (define-method (annotate-otherwise (o <compound>) (guard <guard>))
@@ -269,7 +269,10 @@
     ('false #f)
     ('true #t)
 
-    (_ (stderr "eval-expression: TODO: ~a\n" o) o)))
+    (_
+     ;;(stderr "eval-expression: TODO: ~a\n" o)
+     o
+     )))
 
 (define-method (equal? (lhs <literal>) (rhs <literal>))
   (and (eq? (.scope lhs) (.scope rhs))
