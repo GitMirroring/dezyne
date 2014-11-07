@@ -50,5 +50,5 @@
                    (length . ,(assoc-ref properties 'length))))
       '())))
 
-(define-method (json-location (o <boolean>))
+(define-method (json-location (o <top>))
   '())

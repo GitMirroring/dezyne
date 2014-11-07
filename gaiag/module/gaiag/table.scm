@@ -55,8 +55,7 @@
          (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
                      string->symbol))))
     (or (and-let* ((models (null-is-#f (gom:models-with-behaviour o)))
-                   (models (if name (list (find (gom:named name) models)) models))
-                   (models (null-is-#f (filter has-enum? models))))
+                   (models (if name (list (find (gom:named name) models)) models)))
                   (map state-table models))
         (let* ((models ((gom:filter <model>) o))
                (models (comma-join (map .name models)))
@@ -86,7 +85,8 @@
 
 (define-method (state-table (model <model>) (o <compound>))
   (or (and-let* ((types ((compose .elements .types .behaviour) model))
-                 (enum (find (is? <enum>) types))
+                 (enum (or (find (is? <enum>) types)
+                           (make <enum> :fields (make <fields> :elements '(Initial)))))
                  (fields ((compose .elements .fields) enum))
                  (states (map (lambda (field)
                                 (make <literal>
@@ -97,6 +97,7 @@
                                         (state-table model state o))
                                       states))))
                 (retain-source-location o (make <compound> :elements guards)))
+      ;;(make <guard> (make <expression> :value 'initial) :statement o)
       o))
 
 (define-method (state-table (model <model>) (state <literal>) (o <compound>))
@@ -107,8 +108,9 @@
 
 (define-method (field (model <model>) (state <literal>))
   (define (type? v) (eq? ((compose .name .type) v)) (.type state))
-  (let ((var (find type? (gom:variables model))))
-    (make <field> :identifier (.name var) :field (.field state))))
+  (let* ((var (find type? (gom:variables model)))
+         (name (or (and=> var .name) 'state)))
+    (make <field> :identifier name :field (.field state))))
 
 (define-method (evaluate (model <model>) (state <literal>) o)
   (match o

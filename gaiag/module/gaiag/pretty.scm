@@ -41,6 +41,8 @@
   (let ((gom ((gom:register pretty:gom) o #t)))
     (ast->asd gom)))
 
+(define-method (ast->asd (o <null>)) "")
+
 (define-method (ast->asd (o <root>))
   (indent-string (apply string-append (map ast->asd (.elements o)))))
 
