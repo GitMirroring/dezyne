@@ -5,7 +5,7 @@ illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')                                
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
 -- call_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -36,12 +36,13 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = Status_Nok | Status_Ok | e | return
+datatype event_enumeration_alphabet = Status_Nok | Status_Ok | e | return | the_end'
 -- interface.csp.scm
 
-channel ifreply: {e}
+channel ifreply: {e,the_end'}
 
 channel ifreply_': {Status_Ok,Status_Nok,return}
+channel ifreply_in',ifreply_out': {ifreply_'.Status_Ok,ifreply_'.Status_Nok,ifreply_'.return}
 
 IF_ifreply_(IG,CS) = let
 
@@ -52,18 +53,26 @@ semi_((\ P',((<>),(stack')) @ ifthenelse_(true,
 skip_,
 skip_
 )(P',((<>),(stack')))),
-reply_(ifreply_', (\ ((<>),(stack')) @ Status_Ok)))(\ V' @ ifreply_(V'),((<>),(stack')))
+reply_(ifreply_', (\ ((<>),(stack')) @ Status_Ok)))(\ V' @ ifreply.the_end' -> ifreply_(V'),((<>),(stack')))
  []
   ifreply?x:{e} ->
 (\ P',((<>),(stack')) @ ifthenelse_(true,
 skip_,
 skip_
-)(P',((<>),(stack'))))(\ V' @ ifreply_(V'),((<>),(stack'))))
+)(P',((<>),(stack'))))(\ V' @ ifreply.the_end' -> ifreply_(V'),((<>),(stack'))))
 []
 CS & ifreply?x:{} -> illegal_(STOP,<>)
 
-within if CS then ifreply_(((<>),(<>)))
-             else ifreply_(((<>),(<>)))
+REORDER' = ifreply?x' -> (ifreply_in'?y' -> ifreply.the_end' -> ifreply_out'!y' -> REORDER' [] ifreply.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then ifreply_(((<>),(<>)))
+                 else ifreply_(((<>),(<>)))) [[x<-ifreply_in'.x|x<-extensions(ifreply_in')]] [|{|ifreply,ifreply_in',ifreply.the_end'|}|] REORDER' [[ifreply_out'.x<-x|x<-extensions(ifreply_out')]] \ {|ifreply_in',ifreply.the_end'|})
 
 -- end of interface.csp.scm
 assert COMPLETE'({ifreply.e}) [F= IF_ifreply_(true,true) \ diff(Events,{ifreply.e,illegal})

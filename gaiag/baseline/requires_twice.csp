@@ -5,7 +5,7 @@ illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')                                
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
 -- call_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -36,24 +36,33 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = a | e | return
+datatype event_enumeration_alphabet = a | e | return | the_end'
 -- interface.csp.scm
 
-channel irequires_twice: {e}
+channel irequires_twice: {e,the_end'}
 channel irequires_twice_'': {a}
 channel irequires_twice_': {return}
+channel irequires_twice_in',irequires_twice_out': {irequires_twice_'.return}
 
 IF_irequires_twice_(IG,CS) = let
 
 irequires_twice_(((<>),(stack'))) =
 irequires_twice?x:{e} ->
 semi_((\ P',V' @ irequires_twice_''!a -> P'(V')),
-(\ P',V' @ irequires_twice_'.return -> P'(V')))(\ V' @ irequires_twice_(V'),((<>),(stack')))
+(\ P',V' @ irequires_twice_'.return -> P'(V')))(\ V' @ irequires_twice.the_end' -> irequires_twice_(V'),((<>),(stack')))
 []
 CS & irequires_twice?x:{} -> illegal_(STOP,<>)
 
-within if CS then irequires_twice_(((<>),(<>)))
-             else irequires_twice_(((<>),(<>)))
+REORDER' = irequires_twice?x' -> (irequires_twice_in'?y' -> irequires_twice.the_end' -> irequires_twice_out'!y' -> REORDER' [] irequires_twice.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then irequires_twice_(((<>),(<>)))
+                 else irequires_twice_(((<>),(<>)))) [[x<-irequires_twice_in'.x|x<-extensions(irequires_twice_in')]] [|{|irequires_twice,irequires_twice_in',irequires_twice.the_end'|}|] REORDER' [[irequires_twice_out'.x<-x|x<-extensions(irequires_twice_out')]] \ {|irequires_twice_in',irequires_twice.the_end'|})
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -133,9 +142,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
-            c' < N' & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            c' <= N' & in'?x' -> Busy(c'+1,r')
             []
-            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            c' > 0 & out'?x' -> Busy(c'-1,r')
             []
             r' == <> & reorder_in?irequires_twice_'.x' -> Busy(c',<x'>)
             []

@@ -92,9 +92,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
-            c' < N' & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            c' <= N' & in'?x' -> Busy(c'+1,r')
             []
-            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            c' > 0 & out'?x' -> Busy(c'-1,r')
             []
             r' == <> & reorder_in?#(.type (gom:port model))_'.x' -> Busy(c',<x'>)
             []

@@ -915,8 +915,7 @@
           (list channel-return)))
 
        (($ <the-end> context)
-        (let* ((transition-end (if component? "transition_end -> "))
-               (end (if (not inevitable-optional?) (list transition-end))))
+        (let* ((end (if component? "transition_end -> " (list channel ".the_end' -> "))))
           (list "(\\ V' @ " end model-name "_" behaviour "(V'),(" context "))")))
 
        ('() "skip_")

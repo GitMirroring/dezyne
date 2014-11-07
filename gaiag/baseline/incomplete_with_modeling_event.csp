@@ -5,7 +5,7 @@ illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')                                
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
 -- call_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -36,24 +36,33 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = a | e | inevitable | return
+datatype event_enumeration_alphabet = a | e | inevitable | return | the_end'
 -- interface.csp.scm
 
-channel iincomplete_with_modeling_event: {e,inevitable}
+channel iincomplete_with_modeling_event: {e,inevitable,the_end'}
 channel iincomplete_with_modeling_event_'': {a}
 channel iincomplete_with_modeling_event_': {return}
+channel iincomplete_with_modeling_event_in',iincomplete_with_modeling_event_out': {iincomplete_with_modeling_event_'.return}
 
 IF_iincomplete_with_modeling_event_(IG,CS) = let
 
 iincomplete_with_modeling_event_(((<>),(stack'))) =
 iincomplete_with_modeling_event?x:{inevitable} ->
 semi_((\ P',V' @ iincomplete_with_modeling_event_''!a -> P'(V')),
-skip_)(\ V' @ iincomplete_with_modeling_event_(V'),((<>),(stack')))
+skip_)(\ V' @ iincomplete_with_modeling_event.the_end' -> iincomplete_with_modeling_event_(V'),((<>),(stack')))
 []
 CS & iincomplete_with_modeling_event?x:{inevitable} -> illegal_(STOP,<>)
 
-within if CS then iincomplete_with_modeling_event_(((<>),(<>)))
-             else iincomplete_with_modeling_event_(((<>),(<>)))
+REORDER' = iincomplete_with_modeling_event?x' -> (iincomplete_with_modeling_event_in'?y' -> iincomplete_with_modeling_event.the_end' -> iincomplete_with_modeling_event_out'!y' -> REORDER' [] iincomplete_with_modeling_event.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then iincomplete_with_modeling_event_(((<>),(<>)))
+                 else iincomplete_with_modeling_event_(((<>),(<>)))) [[x<-iincomplete_with_modeling_event_in'.x|x<-extensions(iincomplete_with_modeling_event_in')]] [|{|iincomplete_with_modeling_event,iincomplete_with_modeling_event_in',iincomplete_with_modeling_event.the_end'|}|] REORDER' [[iincomplete_with_modeling_event_out'.x<-x|x<-extensions(iincomplete_with_modeling_event_out')]] \ {|iincomplete_with_modeling_event_in',iincomplete_with_modeling_event.the_end'|})
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -122,9 +131,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
-            c' < N' & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            c' <= N' & in'?x' -> Busy(c'+1,r')
             []
-            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            c' > 0 & out'?x' -> Busy(c'-1,r')
             []
             r' == <> & reorder_in?iincomplete_with_modeling_event_'.x' -> Busy(c',<x'>)
             []

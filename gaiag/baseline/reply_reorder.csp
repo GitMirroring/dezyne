@@ -5,7 +5,7 @@ illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')                                
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
 -- call_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -36,12 +36,13 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = busy | finish | ping | pong | return | start
+datatype event_enumeration_alphabet = busy | finish | ping | pong | return | start | the_end'
 -- interface.csp.scm
 
-channel Provides: {start}
+channel Provides: {start,the_end'}
 channel Provides_'': {busy,finish}
 channel Provides_': {return}
+channel Provides_in',Provides_out': {Provides_'.return}
 
 IF_Provides_(IG,CS) = let
 
@@ -49,19 +50,28 @@ Provides_(((<>),(stack'))) =
 Provides?x:{start} ->
 semi_(semi_((\ P',V' @ Provides_''!busy -> P'(V')),
 (\ P',V' @ Provides_''!finish -> P'(V'))),
-(\ P',V' @ Provides_'.return -> P'(V')))(\ V' @ Provides_(V'),((<>),(stack')))
+(\ P',V' @ Provides_'.return -> P'(V')))(\ V' @ Provides.the_end' -> Provides_(V'),((<>),(stack')))
 []
 CS & Provides?x:{} -> illegal_(STOP,<>)
 
-within if CS then Provides_(((<>),(<>)))
-             else Provides_(((<>),(<>)))
+REORDER' = Provides?x' -> (Provides_in'?y' -> Provides.the_end' -> Provides_out'!y' -> REORDER' [] Provides.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then Provides_(((<>),(<>)))
+                 else Provides_(((<>),(<>)))) [[x<-Provides_in'.x|x<-extensions(Provides_in')]] [|{|Provides,Provides_in',Provides.the_end'|}|] REORDER' [[Provides_out'.x<-x|x<-extensions(Provides_out')]] \ {|Provides_in',Provides.the_end'|})
 
 -- end of interface.csp.scm
 -- interface.csp.scm
 
-channel Requires: {ping}
+channel Requires: {ping,the_end'}
 channel Requires_'': {pong}
 channel Requires_': {return}
+channel Requires_in',Requires_out': {Requires_'.return}
 
 IF_Requires_(IG,CS) = let
 
@@ -69,12 +79,20 @@ Requires_(((<>),(stack'))) =
 Requires?x:{ping} ->
 semi_(semi_((\ P',V' @ Requires_''!pong -> P'(V')),
 (\ P',V' @ Requires_''!pong -> P'(V'))),
-(\ P',V' @ Requires_'.return -> P'(V')))(\ V' @ Requires_(V'),((<>),(stack')))
+(\ P',V' @ Requires_'.return -> P'(V')))(\ V' @ Requires.the_end' -> Requires_(V'),((<>),(stack')))
 []
 CS & Requires?x:{} -> illegal_(STOP,<>)
 
-within if CS then Requires_(((<>),(<>)))
-             else Requires_(((<>),(<>)))
+REORDER' = Requires?x' -> (Requires_in'?y' -> Requires.the_end' -> Requires_out'!y' -> REORDER' [] Requires.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then Requires_(((<>),(<>)))
+                 else Requires_(((<>),(<>)))) [[x<-Requires_in'.x|x<-extensions(Requires_in')]] [|{|Requires,Requires_in',Requires.the_end'|}|] REORDER' [[Requires_out'.x<-x|x<-extensions(Requires_out')]] \ {|Requires_in',Requires.the_end'|})
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -155,9 +173,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
-            c' < N' & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            c' <= N' & in'?x' -> Busy(c'+1,r')
             []
-            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            c' > 0 & out'?x' -> Busy(c'-1,r')
             []
             r' == <> & reorder_in?Provides_'.x' -> Busy(c',<x'>)
             []

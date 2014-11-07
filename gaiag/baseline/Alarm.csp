@@ -5,7 +5,7 @@ illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')                                
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
 -- call_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -36,12 +36,13 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = States_Armed | States_Disabled | States_Disabling | States_Disarmed | States_Disarming | States_Enabled | States_Off | States_On | States_Triggered | arm | deactivated | detected | disable | disabled | disarm | enable | inevitable | optional | return | triggered | turnoff | turnon
+datatype event_enumeration_alphabet = States_Armed | States_Disabled | States_Disabling | States_Disarmed | States_Disarming | States_Enabled | States_Off | States_On | States_Triggered | arm | deactivated | detected | disable | disabled | disarm | enable | inevitable | optional | return | the_end' | triggered | turnoff | turnon
 -- interface.csp.scm
 
-channel IConsole: {arm,disarm,inevitable,optional}
+channel IConsole: {arm,disarm,inevitable,optional,the_end'}
 channel IConsole_'': {deactivated,detected}
 channel IConsole_': {return}
+channel IConsole_in',IConsole_out': {IConsole_'.return}
 
 IF_IConsole_a(IG,CS) = let
 
@@ -49,7 +50,7 @@ IConsole_a(((state),(stack'))) =
 ((state == States_Disarmed)) & (
 IConsole?x:{arm} ->
 semi_(assign_(\ ((state),(stack')) @ ((States_Armed),(stack'))),
-(\ P',V' @ IConsole_'.return -> P'(V')))(\ V' @ IConsole_a(V'),((state),(stack')))
+(\ P',V' @ IConsole_'.return -> P'(V')))(\ V' @ IConsole.the_end' -> IConsole_a(V'),((state),(stack')))
  []
   IG & IConsole?x:{disarm} ->
 illegal_(STOP,<>))
@@ -57,12 +58,12 @@ illegal_(STOP,<>))
 ((state == States_Armed)) & (
 IConsole?x:{disarm} ->
 semi_(assign_(\ ((state),(stack')) @ ((States_Disarming),(stack'))),
-(\ P',V' @ IConsole_'.return -> P'(V')))(\ V' @ IConsole_a(V'),((state),(stack')))
+(\ P',V' @ IConsole_'.return -> P'(V')))(\ V' @ IConsole.the_end' -> IConsole_a(V'),((state),(stack')))
  []
   IConsole?x:{optional} ->
 semi_(semi_((\ P',V' @ IConsole_''!detected -> P'(V')),
 assign_(\ ((state),(stack')) @ ((States_Triggered),(stack')))),
-skip_)(\ V' @ IConsole_a(V'),((state),(stack')))
+skip_)(\ V' @ IConsole.the_end' -> IConsole_a(V'),((state),(stack')))
  []
   IG & IConsole?x:{arm} ->
 illegal_(STOP,<>))
@@ -70,7 +71,7 @@ illegal_(STOP,<>))
 ((state == States_Triggered)) & (
 IConsole?x:{disarm} ->
 semi_(assign_(\ ((state),(stack')) @ ((States_Disarming),(stack'))),
-(\ P',V' @ IConsole_'.return -> P'(V')))(\ V' @ IConsole_a(V'),((state),(stack')))
+(\ P',V' @ IConsole_'.return -> P'(V')))(\ V' @ IConsole.the_end' -> IConsole_a(V'),((state),(stack')))
  []
   IG & IConsole?x:{arm} ->
 illegal_(STOP,<>))
@@ -79,22 +80,31 @@ illegal_(STOP,<>))
 IConsole?x:{inevitable} ->
 semi_(semi_((\ P',V' @ IConsole_''!deactivated -> P'(V')),
 assign_(\ ((state),(stack')) @ ((States_Disarmed),(stack')))),
-skip_)(\ V' @ IConsole_a(V'),((state),(stack')))
+skip_)(\ V' @ IConsole.the_end' -> IConsole_a(V'),((state),(stack')))
  []
   IG & IConsole?x:{arm,disarm} ->
 illegal_(STOP,<>))
 []
 CS & IConsole?x:{inevitable,optional} -> illegal_(STOP,<>)
 
-within if CS then IConsole_a(((States_Disarmed),(<>)))
-             else IConsole_a(((States_Disarmed),(<>))) [|{IConsole.optional}|] CHAOS({IConsole.optional})
+REORDER' = IConsole?x' -> (IConsole_in'?y' -> IConsole.the_end' -> IConsole_out'!y' -> REORDER' [] IConsole.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then IConsole_a(((States_Disarmed),(<>)))
+                 else IConsole_a(((States_Disarmed),(<>))) [|{IConsole.optional}|] CHAOS({IConsole.optional})) [[x<-IConsole_in'.x|x<-extensions(IConsole_in')]] [|{|IConsole,IConsole_in',IConsole.the_end'|}|] REORDER' [[IConsole_out'.x<-x|x<-extensions(IConsole_out')]] \ {|IConsole_in',IConsole.the_end'|})
 
 -- end of interface.csp.scm
 -- interface.csp.scm
 
-channel ISensor: {disable,enable,inevitable,optional}
+channel ISensor: {disable,enable,inevitable,optional,the_end'}
 channel ISensor_'': {disabled,triggered}
 channel ISensor_': {return}
+channel ISensor_in',ISensor_out': {ISensor_'.return}
 
 IF_ISensor_b(IG,CS) = let
 
@@ -102,7 +112,7 @@ ISensor_b(((state),(stack'))) =
 ((state == States_Disabled)) & (
 ISensor?x:{enable} ->
 semi_(assign_(\ ((state),(stack')) @ ((States_Enabled),(stack'))),
-(\ P',V' @ ISensor_'.return -> P'(V')))(\ V' @ ISensor_b(V'),((state),(stack')))
+(\ P',V' @ ISensor_'.return -> P'(V')))(\ V' @ ISensor.the_end' -> ISensor_b(V'),((state),(stack')))
  []
   IG & ISensor?x:{disable} ->
 illegal_(STOP,<>))
@@ -113,12 +123,12 @@ illegal_(STOP,<>)
  []
   ISensor?x:{disable} ->
 semi_(assign_(\ ((state),(stack')) @ ((States_Disabling),(stack'))),
-(\ P',V' @ ISensor_'.return -> P'(V')))(\ V' @ ISensor_b(V'),((state),(stack')))
+(\ P',V' @ ISensor_'.return -> P'(V')))(\ V' @ ISensor.the_end' -> ISensor_b(V'),((state),(stack')))
  []
   ISensor?x:{optional} ->
 semi_(semi_((\ P',V' @ ISensor_''!triggered -> P'(V')),
 assign_(\ ((state),(stack')) @ ((States_Triggered),(stack')))),
-skip_)(\ V' @ ISensor_b(V'),((state),(stack'))))
+skip_)(\ V' @ ISensor.the_end' -> ISensor_b(V'),((state),(stack'))))
 []
 ((state == States_Disabling)) & (
 IG & ISensor?x:{enable,disable} ->
@@ -127,7 +137,7 @@ illegal_(STOP,<>)
   ISensor?x:{inevitable} ->
 semi_(semi_((\ P',V' @ ISensor_''!disabled -> P'(V')),
 assign_(\ ((state),(stack')) @ ((States_Disabled),(stack')))),
-skip_)(\ V' @ ISensor_b(V'),((state),(stack'))))
+skip_)(\ V' @ ISensor.the_end' -> ISensor_b(V'),((state),(stack'))))
 []
 ((state == States_Triggered)) & (
 IG & ISensor?x:{enable} ->
@@ -135,19 +145,28 @@ illegal_(STOP,<>)
  []
   ISensor?x:{disable} ->
 semi_(assign_(\ ((state),(stack')) @ ((States_Disabling),(stack'))),
-(\ P',V' @ ISensor_'.return -> P'(V')))(\ V' @ ISensor_b(V'),((state),(stack'))))
+(\ P',V' @ ISensor_'.return -> P'(V')))(\ V' @ ISensor.the_end' -> ISensor_b(V'),((state),(stack'))))
 []
 CS & ISensor?x:{inevitable,optional} -> illegal_(STOP,<>)
 
-within if CS then ISensor_b(((States_Disabled),(<>)))
-             else ISensor_b(((States_Disabled),(<>))) [|{ISensor.optional}|] CHAOS({ISensor.optional})
+REORDER' = ISensor?x' -> (ISensor_in'?y' -> ISensor.the_end' -> ISensor_out'!y' -> REORDER' [] ISensor.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then ISensor_b(((States_Disabled),(<>)))
+                 else ISensor_b(((States_Disabled),(<>))) [|{ISensor.optional}|] CHAOS({ISensor.optional})) [[x<-ISensor_in'.x|x<-extensions(ISensor_in')]] [|{|ISensor,ISensor_in',ISensor.the_end'|}|] REORDER' [[ISensor_out'.x<-x|x<-extensions(ISensor_out')]] \ {|ISensor_in',ISensor.the_end'|})
 
 -- end of interface.csp.scm
 -- interface.csp.scm
 
-channel ISiren: {turnoff,turnon}
+channel ISiren: {turnoff,turnon,the_end'}
 
 channel ISiren_': {return}
+channel ISiren_in',ISiren_out': {ISiren_'.return}
 
 IF_ISiren_c(IG,CS) = let
 
@@ -155,7 +174,7 @@ ISiren_c(((state),(stack'))) =
 ((state == States_Off)) & (
 ISiren?x:{turnon} ->
 semi_(assign_(\ ((state),(stack')) @ ((States_On),(stack'))),
-(\ P',V' @ ISiren_'.return -> P'(V')))(\ V' @ ISiren_c(V'),((state),(stack')))
+(\ P',V' @ ISiren_'.return -> P'(V')))(\ V' @ ISiren.the_end' -> ISiren_c(V'),((state),(stack')))
  []
   IG & ISiren?x:{turnoff} ->
 illegal_(STOP,<>))
@@ -163,15 +182,23 @@ illegal_(STOP,<>))
 ((state == States_On)) & (
 ISiren?x:{turnoff} ->
 semi_(assign_(\ ((state),(stack')) @ ((States_Off),(stack'))),
-(\ P',V' @ ISiren_'.return -> P'(V')))(\ V' @ ISiren_c(V'),((state),(stack')))
+(\ P',V' @ ISiren_'.return -> P'(V')))(\ V' @ ISiren.the_end' -> ISiren_c(V'),((state),(stack')))
  []
   IG & ISiren?x:{turnon} ->
 illegal_(STOP,<>))
 []
 CS & ISiren?x:{} -> illegal_(STOP,<>)
 
-within if CS then ISiren_c(((States_Off),(<>)))
-             else ISiren_c(((States_Off),(<>)))
+REORDER' = ISiren?x' -> (ISiren_in'?y' -> ISiren.the_end' -> ISiren_out'!y' -> REORDER' [] ISiren.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then ISiren_c(((States_Off),(<>)))
+                 else ISiren_c(((States_Off),(<>)))) [[x<-ISiren_in'.x|x<-extensions(ISiren_in')]] [|{|ISiren,ISiren_in',ISiren.the_end'|}|] REORDER' [[ISiren_out'.x<-x|x<-extensions(ISiren_out')]] \ {|ISiren_in',ISiren.the_end'|})
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -304,9 +331,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
-            c' < N' & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            c' <= N' & in'?x' -> Busy(c'+1,r')
             []
-            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            c' > 0 & out'?x' -> Busy(c'-1,r')
             []
             r' == <> & reorder_in?IConsole_'.x' -> Busy(c',<x'>)
             []

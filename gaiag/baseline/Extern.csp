@@ -5,7 +5,7 @@ illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')                                
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
 -- call_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -36,12 +36,13 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = e | return
+datatype event_enumeration_alphabet = e | return | the_end'
 -- interface.csp.scm
 
-channel IExtern: {e}
+channel IExtern: {e,the_end'}
 
 channel IExtern_': {return}
+channel IExtern_in',IExtern_out': {IExtern_'.return}
 
 IF_IExtern_(IG,CS) = let
 
@@ -51,8 +52,16 @@ illegal_(STOP,<>)
 []
 CS & IExtern?x:{} -> illegal_(STOP,<>)
 
-within if CS then IExtern_(((<>),(<>)))
-             else IExtern_(((<>),(<>)))
+REORDER' = IExtern?x' -> (IExtern_in'?y' -> IExtern.the_end' -> IExtern_out'!y' -> REORDER' [] IExtern.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then IExtern_(((<>),(<>)))
+                 else IExtern_(((<>),(<>)))) [[x<-IExtern_in'.x|x<-extensions(IExtern_in')]] [|{|IExtern,IExtern_in',IExtern.the_end'|}|] REORDER' [[IExtern_out'.x<-x|x<-extensions(IExtern_out')]] \ {|IExtern_in',IExtern.the_end'|})
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -116,9 +125,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
-            c' < N' & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            c' <= N' & in'?x' -> Busy(c'+1,r')
             []
-            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            c' > 0 & out'?x' -> Busy(c'-1,r')
             []
             r' == <> & reorder_in?IExtern_'.x' -> Busy(c',<x'>)
             []

@@ -5,7 +5,7 @@ illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')                                
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
 -- call_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -36,24 +36,33 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = i26_States_S0 | i26_States_S1 | i3_e | return
+datatype event_enumeration_alphabet = i26_States_S0 | i26_States_S1 | i3_e | return | the_end'
 -- interface.csp.scm
 
-channel i20_I: {i3_e}
+channel i20_I: {i3_e,the_end'}
 
 channel i20_I_': {return}
+channel i20_I_in',i20_I_out': {i20_I_'.return}
 
 IF_i20_I_(IG,CS) = let
 
 i20_I_(((<>),(stack'))) =
 (true) & (
 i20_I?x:{i3_e} ->
-(\ P',V' @ i20_I_'.return -> P'(V'))(\ V' @ i20_I_(V'),((<>),(stack'))))
+(\ P',V' @ i20_I_'.return -> P'(V'))(\ V' @ i20_I.the_end' -> i20_I_(V'),((<>),(stack'))))
 []
 CS & i20_I?x:{} -> illegal_(STOP,<>)
 
-within if CS then i20_I_(((<>),(<>)))
-             else i20_I_(((<>),(<>)))
+REORDER' = i20_I?x' -> (i20_I_in'?y' -> i20_I.the_end' -> i20_I_out'!y' -> REORDER' [] i20_I.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then i20_I_(((<>),(<>)))
+                 else i20_I_(((<>),(<>)))) [[x<-i20_I_in'.x|x<-extensions(i20_I_in')]] [|{|i20_I,i20_I_in',i20_I.the_end'|}|] REORDER' [[i20_I_out'.x<-x|x<-extensions(i20_I_out')]] \ {|i20_I_in',i20_I.the_end'|})
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -123,9 +132,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
-            c' < N' & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            c' <= N' & in'?x' -> Busy(c'+1,r')
             []
-            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            c' > 0 & out'?x' -> Busy(c'-1,r')
             []
             r' == <> & reorder_in?i20_I_'.x' -> Busy(c',<x'>)
             []

@@ -5,7 +5,7 @@ illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')                                
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
 -- call_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -36,12 +36,13 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = i3_start | i7_States_InBusiness | i7_States_InitialState | i7_States_Started | inevitable | return
+datatype event_enumeration_alphabet = i3_start | i7_States_InBusiness | i7_States_InitialState | i7_States_Started | inevitable | return | the_end'
 -- interface.csp.scm
 
-channel i138_BlindLoop: {i3_start,inevitable}
+channel i138_BlindLoop: {i3_start,inevitable,the_end'}
 
 channel i138_BlindLoop_': {return}
+channel i138_BlindLoop_in',i138_BlindLoop_out': {i138_BlindLoop_'.return}
 
 IF_i138_BlindLoop_(IG,CS) = let
 
@@ -49,12 +50,12 @@ i138_BlindLoop_(((i15_state),(stack'))) =
 ((i15_state == i7_States_InitialState)) & (
 i138_BlindLoop?x:{i3_start} ->
 semi_(assign_(\ ((i15_state),(stack')) @ ((i7_States_Started),(stack'))),
-(\ P',V' @ i138_BlindLoop_'.return -> P'(V')))(\ V' @ i138_BlindLoop_(V'),((i15_state),(stack'))))
+(\ P',V' @ i138_BlindLoop_'.return -> P'(V')))(\ V' @ i138_BlindLoop.the_end' -> i138_BlindLoop_(V'),((i15_state),(stack'))))
 []
 ((i15_state == i7_States_Started)) & (
 i138_BlindLoop?x:{inevitable} ->
 semi_(assign_(\ ((i15_state),(stack')) @ ((i7_States_InBusiness),(stack'))),
-skip_)(\ V' @ i138_BlindLoop_(V'),((i15_state),(stack')))
+skip_)(\ V' @ i138_BlindLoop.the_end' -> i138_BlindLoop_(V'),((i15_state),(stack')))
  []
   IG & i138_BlindLoop?x:{i3_start} ->
 illegal_(STOP,<>))
@@ -62,15 +63,23 @@ illegal_(STOP,<>))
 ((i15_state == i7_States_InBusiness)) & (
 i138_BlindLoop?x:{inevitable} ->
 semi_(assign_(\ ((i15_state),(stack')) @ ((i7_States_Started),(stack'))),
-skip_)(\ V' @ i138_BlindLoop_(V'),((i15_state),(stack')))
+skip_)(\ V' @ i138_BlindLoop.the_end' -> i138_BlindLoop_(V'),((i15_state),(stack')))
  []
   IG & i138_BlindLoop?x:{i3_start} ->
 illegal_(STOP,<>))
 []
 CS & i138_BlindLoop?x:{inevitable} -> illegal_(STOP,<>)
 
-within if CS then i138_BlindLoop_(((i7_States_InitialState),(<>)))
-             else i138_BlindLoop_(((i7_States_InitialState),(<>)))
+REORDER' = i138_BlindLoop?x' -> (i138_BlindLoop_in'?y' -> i138_BlindLoop.the_end' -> i138_BlindLoop_out'!y' -> REORDER' [] i138_BlindLoop.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then i138_BlindLoop_(((i7_States_InitialState),(<>)))
+                 else i138_BlindLoop_(((i7_States_InitialState),(<>)))) [[x<-i138_BlindLoop_in'.x|x<-extensions(i138_BlindLoop_in')]] [|{|i138_BlindLoop,i138_BlindLoop_in',i138_BlindLoop.the_end'|}|] REORDER' [[i138_BlindLoop_out'.x<-x|x<-extensions(i138_BlindLoop_out')]] \ {|i138_BlindLoop_in',i138_BlindLoop.the_end'|})
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -134,9 +143,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
-            c' < N' & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            c' <= N' & in'?x' -> Busy(c'+1,r')
             []
-            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            c' > 0 & out'?x' -> Busy(c'-1,r')
             []
             r' == <> & reorder_in?i138_BlindLoop_'.x' -> Busy(c',<x'>)
             []

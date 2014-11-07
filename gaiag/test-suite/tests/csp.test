@@ -187,7 +187,7 @@
 
           ;; to:
           "i?x:{e} ->
-(\\ P',V' @ i_'.return -> P'(V'))(\\ V' @ i_B(V'),((s,b,c),(stack')))")) ;; FIXME: NO skip_?
+(\\ P',V' @ i_'.return -> P'(V'))(\\ V' @ i.the_end' -> i_B(V'),((s,b,c),(stack')))")) ;; FIXME: NO skip_?
 
 
 (pass-if "ast-transform-return-reply"
@@ -221,7 +221,7 @@
           ;; via:
           "i?x:{e} ->
 semi_(reply_(i_', (\\ ((s,b,c),(stack')) @ Status_Yes)),
-skip_)(\\ V' @ i_B(V'),((s,b,c),(stack')))"))
+skip_)(\\ V' @ i.the_end' -> i_B(V'),((s,b,c),(stack')))"))
 
 (define csp-transform-reply-via
  '(csp-on (context (s b c)) (f)
@@ -275,7 +275,7 @@ skip_)(\\ V' @ i_B(V'),((s,b,c),(stack')))"))
           ;; to:
           "i?x:{e} ->
 semi_(reply_(i_', (\\ ((s,b,c),(stack')) @ Status_Yes)),
-(\\ P',V' @ i_'.return -> P'(V')))(\\ V' @ i_B(V'),((s,b,c),(stack')))"))
+(\\ P',V' @ i_'.return -> P'(V')))(\\ V' @ i.the_end' -> i_B(V'),((s,b,c),(stack')))"))
 
 (pass-if "ast-transform-action"
          (csp-pretty-noisy-equal?
@@ -305,7 +305,7 @@ semi_(reply_(i_', (\\ ((s,b,c),(stack')) @ Status_Yes)),
           ;; via:
           "i?x:{e} ->
 semi_((\\ P',V' @ i_''!h -> P'(V')),
-skip_)(\\ V' @ i_B(V'),((s,b,c),(stack')))"))
+skip_)(\\ V' @ i.the_end' -> i_B(V'),((s,b,c),(stack')))"))
 
 (define csp-transform-illegal-action-via
   '(csp-on IG (e) (illegal)))
@@ -363,7 +363,7 @@ illegal_(STOP,<>)"))
 
           ;; to:
           "i?x:{e} ->
-(\\ P',V' @ i_'.return -> P'(V'))(\\ V' @ i_B(V'),((s,b,c),(stack')))"))
+(\\ P',V' @ i_'.return -> P'(V'))(\\ V' @ i.the_end' -> i_B(V'),((s,b,c),(stack')))"))
 
 (define csp-transform-assign-via
   '(assign (context (s b c))
@@ -678,7 +678,7 @@ semi_(semi_((\\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
                                                           )(P',((s,b,c),(stack'))))
                                   )(P',((s,b,c),(stack')))),
           assign_(\\ ((s,b,c),(stack')) @ ((S_S2,b,c),(stack'))))),
-(\\ P',V' @ i_'.return -> P'(V')))(\\ V' @ i_B(V'),((s,b,c),(stack')))"))
+(\\ P',V' @ i_'.return -> P'(V')))(\\ V' @ i.the_end' -> i_B(V'),((s,b,c),(stack')))"))
 
 
 (define c-ast (append
@@ -1119,7 +1119,7 @@ skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
           ;; to:
           "i?x:{e} ->
 semi_(call_(\\ P',V' @ toggle(P',V')),
-(\\ P',V' @ i_'.return -> P'(V')))(\\ V' @ i_B(V'),((s,b,c),(stack')))"))
+(\\ P',V' @ i_'.return -> P'(V')))(\\ V' @ i.the_end' -> i_B(V'),((s,b,c),(stack')))"))
 
 ;; '
 
@@ -1165,7 +1165,7 @@ semi_(call_(\\ P',V' @ toggle(P',V')),
           "i?x:{e} ->
 semi_(assign_active_(call_(\\ P',V' @ vtoggle(P',V')),
 \\ ((s,b,c),(stack')),r' @ ((s,r',c),(stack'))),
-(\\ P',V' @ i_'.return -> P'(V')))(\\ V' @ i_B(V'),((s,b,c),(stack')))"))
+(\\ P',V' @ i_'.return -> P'(V')))(\\ V' @ i.the_end' -> i_B(V'),((s,b,c),(stack')))"))
 
 ;; '
 
@@ -1200,7 +1200,7 @@ semi_(assign_active_(call_(\\ P',V' @ vtoggle(P',V')),
           ;; to
           "i?x:{e} ->
 context_active_(call_(\\ P',V' @ vtoggle(P',V')),
-(\\ P',V' @ i_'.return -> P'(V')))(\\ V' @ i_B(V'),((s,b,c),(stack')))"))
+(\\ P',V' @ i_'.return -> P'(V')))(\\ V' @ i.the_end' -> i_B(V'),((s,b,c),(stack')))"))
 
 ;; '
 
@@ -1266,7 +1266,7 @@ returnvalue_(\\ ((s,b,hide_member2'),((stack',c))) @ c)))(P',V')
           ;; via:
           "i?x:{e} ->
 context_active_(call_args_(\\ P',V' @ g(P',V'),(\\ ((s,b,c),(stack')) @ (b,b))),
-(\\ P',V' @ i_'.return -> P'(V')))(\\ V' @ i_B(V'),((s,b,c),(stack')))"))
+(\\ P',V' @ i_'.return -> P'(V')))(\\ V' @ i.the_end' -> i_B(V'),((s,b,c),(stack')))"))
 
 
 (define csp-reply-variable-ast-via
@@ -1874,7 +1874,7 @@ assign_active_(semi_(send_(u,what),recv_(u_',what)),
          (diff-noisy-equal?
           (csp-transform* member-i-ast '(csp-on (context) (e) (voidreply)))
           "i?x:{e} ->
-(\\ P',V' @ i_'.return -> P'(V'))(\\ V' @ i_B(V'),((<>),(stack')))"))
+(\\ P',V' @ i_'.return -> P'(V'))(\\ V' @ i.the_end' -> i_B(V'),((<>),(stack')))"))
 
 (pass-if "unbehaved"
          (diff-noisy-equal?

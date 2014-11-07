@@ -5,7 +5,7 @@ illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')                                
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
 -- call_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -36,12 +36,13 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = a | b | c | d | return
+datatype event_enumeration_alphabet = a | b | c | d | return | the_end'
 -- interface.csp.scm
 
-channel ifunction2: {a,b}
+channel ifunction2: {a,b,the_end'}
 channel ifunction2_'': {c,d}
 channel ifunction2_': {return}
+channel ifunction2_in',ifunction2_out': {ifunction2_'.return}
 
 IF_ifunction2_(IG,CS) = let
 vtoggle(P',V') = (semi_((\ P',((f),(stack')) @ ifthenelse_(f,
@@ -55,7 +56,7 @@ ifunction2_(((f),(stack'))) =
 ifunction2?x:{a} ->
 semi_(assign_active_(call_(\ P',V' @ vtoggle(P',V')),
 \ ((f),(stack')),r' @ ((r'),(stack'))),
-(\ P',V' @ ifunction2_'.return -> P'(V')))(\ V' @ ifunction2_(V'),((f),(stack')))
+(\ P',V' @ ifunction2_'.return -> P'(V')))(\ V' @ ifunction2.the_end' -> ifunction2_(V'),((f),(stack')))
  []
   ifunction2?x:{b} ->
 semi_(semi_(assign_active_(call_(\ P',V' @ vtoggle(P',V')),
@@ -63,12 +64,20 @@ semi_(semi_(assign_active_(call_(\ P',V' @ vtoggle(P',V')),
 context_active_(call_(\ P',V' @ vtoggle(P',V')),
 semi_(assign_(\ ((f),((stack',bb))) @ ((bb),((stack',bb)))),
 (\ P',V' @ ifunction2_''!d -> P'(V'))))),
-(\ P',V' @ ifunction2_'.return -> P'(V')))(\ V' @ ifunction2_(V'),((f),(stack'))))
+(\ P',V' @ ifunction2_'.return -> P'(V')))(\ V' @ ifunction2.the_end' -> ifunction2_(V'),((f),(stack'))))
 []
 CS & ifunction2?x:{} -> illegal_(STOP,<>)
 
-within if CS then ifunction2_(((false),(<>)))
-             else ifunction2_(((false),(<>)))
+REORDER' = ifunction2?x' -> (ifunction2_in'?y' -> ifunction2.the_end' -> ifunction2_out'!y' -> REORDER' [] ifunction2.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then ifunction2_(((false),(<>)))
+                 else ifunction2_(((false),(<>)))) [[x<-ifunction2_in'.x|x<-extensions(ifunction2_in')]] [|{|ifunction2,ifunction2_in',ifunction2.the_end'|}|] REORDER' [[ifunction2_out'.x<-x|x<-extensions(ifunction2_out')]] \ {|ifunction2_in',ifunction2.the_end'|})
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -149,9 +158,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
-            c' < N' & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            c' <= N' & in'?x' -> Busy(c'+1,r')
             []
-            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            c' > 0 & out'?x' -> Busy(c'-1,r')
             []
             r' == <> & reorder_in?ifunction2_'.x' -> Busy(c',<x'>)
             []

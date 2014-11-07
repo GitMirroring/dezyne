@@ -5,7 +5,7 @@ illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')                                
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
 -- call_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -36,12 +36,13 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = States_State1 | States_State2 | evt | return
+datatype event_enumeration_alphabet = States_State1 | States_State2 | evt | return | the_end'
 -- interface.csp.scm
 
-channel TestBool: {evt}
+channel TestBool: {evt,the_end'}
 
 channel TestBool_': {return}
+channel TestBool_in',TestBool_out': {TestBool_'.return}
 
 IF_TestBool_(IG,CS) = let
 
@@ -69,16 +70,24 @@ semi_(assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ ((b1,(b1 or (b2 and b3)),b
 assign_(\ ((b1,b2,b3,state1,state2),(stack')) @ (((not b1),b2,b3,state1,state2),(stack'))),
 skip_
 )(P',((b1,b2,b3,state1,state2),(stack'))))))))))))))))))))),
-(\ P',V' @ TestBool_'.return -> P'(V')))(\ V' @ TestBool_(V'),((b1,b2,b3,state1,state2),(stack'))))
+(\ P',V' @ TestBool_'.return -> P'(V')))(\ V' @ TestBool.the_end' -> TestBool_(V'),((b1,b2,b3,state1,state2),(stack'))))
 []
 (((state2 == States_State1) and b1)) & (
 TestBool?x:{evt} ->
-(\ P',V' @ TestBool_'.return -> P'(V'))(\ V' @ TestBool_(V'),((b1,b2,b3,state1,state2),(stack'))))
+(\ P',V' @ TestBool_'.return -> P'(V'))(\ V' @ TestBool.the_end' -> TestBool_(V'),((b1,b2,b3,state1,state2),(stack'))))
 []
 CS & TestBool?x:{} -> illegal_(STOP,<>)
 
-within if CS then TestBool_(((true,true,true,States_State1,States_State2),(<>)))
-             else TestBool_(((true,true,true,States_State1,States_State2),(<>)))
+REORDER' = TestBool?x' -> (TestBool_in'?y' -> TestBool.the_end' -> TestBool_out'!y' -> REORDER' [] TestBool.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then TestBool_(((true,true,true,States_State1,States_State2),(<>)))
+                 else TestBool_(((true,true,true,States_State1,States_State2),(<>)))) [[x<-TestBool_in'.x|x<-extensions(TestBool_in')]] [|{|TestBool,TestBool_in',TestBool.the_end'|}|] REORDER' [[TestBool_out'.x<-x|x<-extensions(TestBool_out')]] \ {|TestBool_in',TestBool.the_end'|})
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -143,9 +152,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
-            c' < N' & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            c' <= N' & in'?x' -> Busy(c'+1,r')
             []
-            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            c' > 0 & out'?x' -> Busy(c'-1,r')
             []
             r' == <> & reorder_in?TestBool_'.x' -> Busy(c',<x'>)
             []

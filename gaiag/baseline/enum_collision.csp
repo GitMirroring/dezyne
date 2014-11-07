@@ -5,7 +5,7 @@ illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')                                
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
 -- call_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -36,26 +36,35 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = Retval1_NOK | Retval1_OK | Retval2_NOK | Retval2_OK | bar | foo | return
+datatype event_enumeration_alphabet = Retval1_NOK | Retval1_OK | Retval2_NOK | Retval2_OK | bar | foo | return | the_end'
 -- interface.csp.scm
 
-channel ienum_collision: {bar,foo}
+channel ienum_collision: {bar,foo,the_end'}
 
 channel ienum_collision_': {Retval1_OK,Retval1_NOK,Retval2_OK,Retval2_NOK,return}
+channel ienum_collision_in',ienum_collision_out': {ienum_collision_'.Retval1_OK,ienum_collision_'.Retval1_NOK,ienum_collision_'.Retval2_OK,ienum_collision_'.Retval2_NOK,ienum_collision_'.return}
 
 IF_ienum_collision_(IG,CS) = let
 
 ienum_collision_(((<>),(stack'))) =
 ienum_collision?x:{foo} ->
-reply_(ienum_collision_', (\ ((<>),(stack')) @ Retval1_OK))(\ V' @ ienum_collision_(V'),((<>),(stack')))
+reply_(ienum_collision_', (\ ((<>),(stack')) @ Retval1_OK))(\ V' @ ienum_collision.the_end' -> ienum_collision_(V'),((<>),(stack')))
 []
 ienum_collision?x:{bar} ->
-reply_(ienum_collision_', (\ ((<>),(stack')) @ Retval2_NOK))(\ V' @ ienum_collision_(V'),((<>),(stack')))
+reply_(ienum_collision_', (\ ((<>),(stack')) @ Retval2_NOK))(\ V' @ ienum_collision.the_end' -> ienum_collision_(V'),((<>),(stack')))
 []
 CS & ienum_collision?x:{} -> illegal_(STOP,<>)
 
-within if CS then ienum_collision_(((<>),(<>)))
-             else ienum_collision_(((<>),(<>)))
+REORDER' = ienum_collision?x' -> (ienum_collision_in'?y' -> ienum_collision.the_end' -> ienum_collision_out'!y' -> REORDER' [] ienum_collision.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then ienum_collision_(((<>),(<>)))
+                 else ienum_collision_(((<>),(<>)))) [[x<-ienum_collision_in'.x|x<-extensions(ienum_collision_in')]] [|{|ienum_collision,ienum_collision_in',ienum_collision.the_end'|}|] REORDER' [[ienum_collision_out'.x<-x|x<-extensions(ienum_collision_out')]] \ {|ienum_collision_in',ienum_collision.the_end'|})
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -122,9 +131,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
-            c' < N' & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            c' <= N' & in'?x' -> Busy(c'+1,r')
             []
-            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            c' > 0 & out'?x' -> Busy(c'-1,r')
             []
             r' == <> & reorder_in?ienum_collision_'.x' -> Busy(c',<x'>)
             []

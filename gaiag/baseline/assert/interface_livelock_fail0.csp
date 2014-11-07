@@ -5,7 +5,7 @@ illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')                                
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
 -- call_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -36,46 +36,64 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = i27_e | i3_e | optional | return
+datatype event_enumeration_alphabet = i27_e | i3_e | optional | return | the_end'
 -- interface.csp.scm
 
-channel i26_I: {i3_e,optional}
+channel i26_I: {i3_e,optional,the_end'}
 
 channel i26_I_': {return}
+channel i26_I_in',i26_I_out': {i26_I_'.return}
 
 IF_i26_I_(IG,CS) = let
 
 i26_I_(((<>),(stack'))) =
 (true) & (
 i26_I?x:{i3_e} ->
-(\ P',V' @ i26_I_'.return -> P'(V'))(\ V' @ i26_I_(V'),((<>),(stack')))
+(\ P',V' @ i26_I_'.return -> P'(V'))(\ V' @ i26_I.the_end' -> i26_I_(V'),((<>),(stack')))
  []
   i26_I?x:{optional} ->
-skip_(\ V' @ i26_I_(V'),((<>),(stack'))))
+skip_(\ V' @ i26_I.the_end' -> i26_I_(V'),((<>),(stack'))))
 []
 CS & i26_I?x:{optional} -> illegal_(STOP,<>)
 
-within if CS then i26_I_(((<>),(<>)))
-             else i26_I_(((<>),(<>))) [|{i26_I.optional}|] CHAOS({i26_I.optional})
+REORDER' = i26_I?x' -> (i26_I_in'?y' -> i26_I.the_end' -> i26_I_out'!y' -> REORDER' [] i26_I.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then i26_I_(((<>),(<>)))
+                 else i26_I_(((<>),(<>))) [|{i26_I.optional}|] CHAOS({i26_I.optional})) [[x<-i26_I_in'.x|x<-extensions(i26_I_in')]] [|{|i26_I,i26_I_in',i26_I.the_end'|}|] REORDER' [[i26_I_out'.x<-x|x<-extensions(i26_I_out')]] \ {|i26_I_in',i26_I.the_end'|})
 
 -- end of interface.csp.scm
 -- interface.csp.scm
 
-channel i43_DummyI: {i27_e}
+channel i43_DummyI: {i27_e,the_end'}
 
 channel i43_DummyI_': {return}
+channel i43_DummyI_in',i43_DummyI_out': {i43_DummyI_'.return}
 
 IF_i43_DummyI_(IG,CS) = let
 
 i43_DummyI_(((<>),(stack'))) =
 (true) & (
 i43_DummyI?x:{i27_e} ->
-(\ P',V' @ i43_DummyI_'.return -> P'(V'))(\ V' @ i43_DummyI_(V'),((<>),(stack'))))
+(\ P',V' @ i43_DummyI_'.return -> P'(V'))(\ V' @ i43_DummyI.the_end' -> i43_DummyI_(V'),((<>),(stack'))))
 []
 CS & i43_DummyI?x:{} -> illegal_(STOP,<>)
 
-within if CS then i43_DummyI_(((<>),(<>)))
-             else i43_DummyI_(((<>),(<>)))
+REORDER' = i43_DummyI?x' -> (i43_DummyI_in'?y' -> i43_DummyI.the_end' -> i43_DummyI_out'!y' -> REORDER' [] i43_DummyI.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then i43_DummyI_(((<>),(<>)))
+                 else i43_DummyI_(((<>),(<>)))) [[x<-i43_DummyI_in'.x|x<-extensions(i43_DummyI_in')]] [|{|i43_DummyI,i43_DummyI_in',i43_DummyI.the_end'|}|] REORDER' [[i43_DummyI_out'.x<-x|x<-extensions(i43_DummyI_out')]] \ {|i43_DummyI_in',i43_DummyI.the_end'|})
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -142,9 +160,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
-            c' < N' & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            c' <= N' & in'?x' -> Busy(c'+1,r')
             []
-            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            c' > 0 & out'?x' -> Busy(c'-1,r')
             []
             r' == <> & reorder_in?i43_DummyI_'.x' -> Busy(c',<x'>)
             []

@@ -5,7 +5,7 @@ illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')                                
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
 -- call_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -36,44 +36,53 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = Status_No | Status_Yes | a | a0 | a6 | aa | e | e0 | e0r | eer | eio | eio2 | eio2r | eior | eo | eoo | eoor | eor | er | return
+datatype event_enumeration_alphabet = Status_No | Status_Yes | a | a0 | a6 | aa | e | e0 | e0r | eer | eio | eio2 | eio2r | eior | eo | eoo | eoor | eor | er | return | the_end'
 -- interface.csp.scm
 
-channel idataparam: {e,e0,e0r,eer,eio,eio2,eio2r,eior,eo,eoo,eoor,eor,er}
+channel idataparam: {e,e0,e0r,eer,eio,eio2,eio2r,eior,eo,eoo,eoor,eor,er,the_end'}
 channel idataparam_'': {a,a0,a6,aa}
 channel idataparam_': {Status_Yes,Status_No,return}
+channel idataparam_in',idataparam_out': {idataparam_'.Status_Yes,idataparam_'.Status_No,idataparam_'.return}
 
 IF_idataparam_(IG,CS) = let
 
 idataparam_(((<>),(stack'))) =
 idataparam?x:{e0} ->
 semi_((\ P',V' @ idataparam_''!a6 -> P'(V')),
-(\ P',V' @ idataparam_'.return -> P'(V')))(\ V' @ idataparam_(V'),((<>),(stack')))
+(\ P',V' @ idataparam_'.return -> P'(V')))(\ V' @ idataparam.the_end' -> idataparam_(V'),((<>),(stack')))
 []
 idataparam?x:{e0r} ->
 semi_((\ P',V' @ idataparam_''!a0 -> P'(V')),
-reply_(idataparam_', (\ ((<>),(stack')) @ Status_Yes)))(\ V' @ idataparam_(V'),((<>),(stack')))
+reply_(idataparam_', (\ ((<>),(stack')) @ Status_Yes)))(\ V' @ idataparam.the_end' -> idataparam_(V'),((<>),(stack')))
 []
 idataparam?x:{e} ->
 semi_(semi_((\ P',V' @ idataparam_''!a -> P'(V')),
 (\ P',V' @ idataparam_''!aa -> P'(V'))),
-(\ P',V' @ idataparam_'.return -> P'(V')))(\ V' @ idataparam_(V'),((<>),(stack')))
+(\ P',V' @ idataparam_'.return -> P'(V')))(\ V' @ idataparam.the_end' -> idataparam_(V'),((<>),(stack')))
 []
 idataparam?x:{er,eer} ->
 semi_((\ P',V' @ idataparam_''!a -> P'(V')),
 semi_((\ P',V' @ idataparam_''!aa -> P'(V')),
-reply_(idataparam_', (\ ((<>),(stack')) @ Status_No))))(\ V' @ idataparam_(V'),((<>),(stack')))
+reply_(idataparam_', (\ ((<>),(stack')) @ Status_No))))(\ V' @ idataparam.the_end' -> idataparam_(V'),((<>),(stack')))
 []
 idataparam?x:{eo,eoo,eio,eio2} ->
-(\ P',V' @ idataparam_'.return -> P'(V'))(\ V' @ idataparam_(V'),((<>),(stack')))
+(\ P',V' @ idataparam_'.return -> P'(V'))(\ V' @ idataparam.the_end' -> idataparam_(V'),((<>),(stack')))
 []
 idataparam?x:{eor,eoor,eior,eio2r} ->
-reply_(idataparam_', (\ ((<>),(stack')) @ Status_Yes))(\ V' @ idataparam_(V'),((<>),(stack')))
+reply_(idataparam_', (\ ((<>),(stack')) @ Status_Yes))(\ V' @ idataparam.the_end' -> idataparam_(V'),((<>),(stack')))
 []
 CS & idataparam?x:{} -> illegal_(STOP,<>)
 
-within if CS then idataparam_(((<>),(<>)))
-             else idataparam_(((<>),(<>)))
+REORDER' = idataparam?x' -> (idataparam_in'?y' -> idataparam.the_end' -> idataparam_out'!y' -> REORDER' [] idataparam.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then idataparam_(((<>),(<>)))
+                 else idataparam_(((<>),(<>)))) [[x<-idataparam_in'.x|x<-extensions(idataparam_in')]] [|{|idataparam,idataparam_in',idataparam.the_end'|}|] REORDER' [[idataparam_out'.x<-x|x<-extensions(idataparam_out')]] \ {|idataparam_in',idataparam.the_end'|})
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -201,9 +210,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
-            c' < N' & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            c' <= N' & in'?x' -> Busy(c'+1,r')
             []
-            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            c' > 0 & out'?x' -> Busy(c'-1,r')
             []
             r' == <> & reorder_in?idataparam_'.x' -> Busy(c',<x'>)
             []

@@ -5,7 +5,7 @@ illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')                                
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
 -- call_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -36,42 +36,60 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = dummy | inevitable | return
+datatype event_enumeration_alphabet = dummy | inevitable | return | the_end'
 -- interface.csp.scm
 
-channel ilivelock: {inevitable}
+channel ilivelock: {inevitable,the_end'}
 channel ilivelock_'': {dummy}
 channel ilivelock_': {return}
+channel ilivelock_in',ilivelock_out': {ilivelock_'.return}
 
 IF_ilivelock_(IG,CS) = let
 
 ilivelock_(((<>),(stack'))) =
 ilivelock?x:{inevitable} ->
 semi_((\ P',V' @ ilivelock_''!dummy -> P'(V')),
-skip_)(\ V' @ ilivelock_(V'),((<>),(stack')))
+skip_)(\ V' @ ilivelock.the_end' -> ilivelock_(V'),((<>),(stack')))
 []
 CS & ilivelock?x:{inevitable} -> illegal_(STOP,<>)
 
-within if CS then ilivelock_(((<>),(<>)))
-             else ilivelock_(((<>),(<>)))
+REORDER' = ilivelock?x' -> (ilivelock_in'?y' -> ilivelock.the_end' -> ilivelock_out'!y' -> REORDER' [] ilivelock.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then ilivelock_(((<>),(<>)))
+                 else ilivelock_(((<>),(<>)))) [[x<-ilivelock_in'.x|x<-extensions(ilivelock_in')]] [|{|ilivelock,ilivelock_in',ilivelock.the_end'|}|] REORDER' [[ilivelock_out'.x<-x|x<-extensions(ilivelock_out')]] \ {|ilivelock_in',ilivelock.the_end'|})
 
 -- end of interface.csp.scm
 -- interface.csp.scm
 
-channel nolivelock: {dummy}
+channel nolivelock: {dummy,the_end'}
 
 channel nolivelock_': {return}
+channel nolivelock_in',nolivelock_out': {nolivelock_'.return}
 
 IF_nolivelock_(IG,CS) = let
 
 nolivelock_(((<>),(stack'))) =
 nolivelock?x:{dummy} ->
-(\ P',V' @ nolivelock_'.return -> P'(V'))(\ V' @ nolivelock_(V'),((<>),(stack')))
+(\ P',V' @ nolivelock_'.return -> P'(V'))(\ V' @ nolivelock.the_end' -> nolivelock_(V'),((<>),(stack')))
 []
 CS & nolivelock?x:{} -> illegal_(STOP,<>)
 
-within if CS then nolivelock_(((<>),(<>)))
-             else nolivelock_(((<>),(<>)))
+REORDER' = nolivelock?x' -> (nolivelock_in'?y' -> nolivelock.the_end' -> nolivelock_out'!y' -> REORDER' [] nolivelock.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then nolivelock_(((<>),(<>)))
+                 else nolivelock_(((<>),(<>)))) [[x<-nolivelock_in'.x|x<-extensions(nolivelock_in')]] [|{|nolivelock,nolivelock_in',nolivelock.the_end'|}|] REORDER' [[nolivelock_out'.x<-x|x<-extensions(nolivelock_out')]] \ {|nolivelock_in',nolivelock.the_end'|})
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -141,9 +159,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
-            c' < N' & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            c' <= N' & in'?x' -> Busy(c'+1,r')
             []
-            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            c' > 0 & out'?x' -> Busy(c'-1,r')
             []
             r' == <> & reorder_in?nolivelock_'.x' -> Busy(c',<x'>)
             []

@@ -5,7 +5,7 @@ illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')                                
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
 -- call_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -36,12 +36,13 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = i195_States_Activated | i195_States_Deactivated | i195_States_Triggered | i3_Activate | i4_Deactivate | i5_DetectedMovement | i9_States_Activated | i9_States_Deactivated | i9_States_Triggered | optional | return
+datatype event_enumeration_alphabet = i195_States_Activated | i195_States_Deactivated | i195_States_Triggered | i3_Activate | i4_Deactivate | i5_DetectedMovement | i9_States_Activated | i9_States_Deactivated | i9_States_Triggered | optional | return | the_end'
 -- interface.csp.scm
 
-channel i182_ISensor: {i3_Activate,i4_Deactivate,optional}
+channel i182_ISensor: {i3_Activate,i4_Deactivate,optional,the_end'}
 channel i182_ISensor_'': {i5_DetectedMovement}
 channel i182_ISensor_': {return}
+channel i182_ISensor_in',i182_ISensor_out': {i182_ISensor_'.return}
 
 IF_i182_ISensor_(IG,CS) = let
 
@@ -49,7 +50,7 @@ i182_ISensor_(((i17_state),(stack'))) =
 ((i17_state == i9_States_Deactivated)) & (
 i182_ISensor?x:{i3_Activate} ->
 semi_(assign_(\ ((i17_state),(stack')) @ ((i9_States_Activated),(stack'))),
-(\ P',V' @ i182_ISensor_'.return -> P'(V')))(\ V' @ i182_ISensor_(V'),((i17_state),(stack')))
+(\ P',V' @ i182_ISensor_'.return -> P'(V')))(\ V' @ i182_ISensor.the_end' -> i182_ISensor_(V'),((i17_state),(stack')))
  []
   IG & i182_ISensor?x:{i4_Deactivate} ->
 illegal_(STOP,<>))
@@ -57,12 +58,12 @@ illegal_(STOP,<>))
 ((i17_state == i9_States_Activated)) & (
 i182_ISensor?x:{i4_Deactivate} ->
 semi_(assign_(\ ((i17_state),(stack')) @ ((i9_States_Deactivated),(stack'))),
-(\ P',V' @ i182_ISensor_'.return -> P'(V')))(\ V' @ i182_ISensor_(V'),((i17_state),(stack')))
+(\ P',V' @ i182_ISensor_'.return -> P'(V')))(\ V' @ i182_ISensor.the_end' -> i182_ISensor_(V'),((i17_state),(stack')))
  []
   i182_ISensor?x:{optional} ->
 semi_(semi_((\ P',V' @ i182_ISensor_''!i5_DetectedMovement -> P'(V')),
 assign_(\ ((i17_state),(stack')) @ ((i9_States_Triggered),(stack')))),
-skip_)(\ V' @ i182_ISensor_(V'),((i17_state),(stack')))
+skip_)(\ V' @ i182_ISensor.the_end' -> i182_ISensor_(V'),((i17_state),(stack')))
  []
   IG & i182_ISensor?x:{i3_Activate} ->
 illegal_(STOP,<>))
@@ -70,15 +71,23 @@ illegal_(STOP,<>))
 ((i17_state == i9_States_Triggered)) & (
 i182_ISensor?x:{i4_Deactivate} ->
 semi_(assign_(\ ((i17_state),(stack')) @ ((i9_States_Deactivated),(stack'))),
-(\ P',V' @ i182_ISensor_'.return -> P'(V')))(\ V' @ i182_ISensor_(V'),((i17_state),(stack')))
+(\ P',V' @ i182_ISensor_'.return -> P'(V')))(\ V' @ i182_ISensor.the_end' -> i182_ISensor_(V'),((i17_state),(stack')))
  []
   IG & i182_ISensor?x:{i3_Activate} ->
 illegal_(STOP,<>))
 []
 CS & i182_ISensor?x:{optional} -> illegal_(STOP,<>)
 
-within if CS then i182_ISensor_(((i9_States_Deactivated),(<>)))
-             else i182_ISensor_(((i9_States_Deactivated),(<>))) [|{i182_ISensor.optional}|] CHAOS({i182_ISensor.optional})
+REORDER' = i182_ISensor?x' -> (i182_ISensor_in'?y' -> i182_ISensor.the_end' -> i182_ISensor_out'!y' -> REORDER' [] i182_ISensor.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then i182_ISensor_(((i9_States_Deactivated),(<>)))
+                 else i182_ISensor_(((i9_States_Deactivated),(<>))) [|{i182_ISensor.optional}|] CHAOS({i182_ISensor.optional})) [[x<-i182_ISensor_in'.x|x<-extensions(i182_ISensor_in')]] [|{|i182_ISensor,i182_ISensor_in',i182_ISensor.the_end'|}|] REORDER' [[i182_ISensor_out'.x<-x|x<-extensions(i182_ISensor_out')]] \ {|i182_ISensor_in',i182_ISensor.the_end'|})
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -198,9 +207,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
-            c' < N' & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            c' <= N' & in'?x' -> Busy(c'+1,r')
             []
-            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            c' > 0 & out'?x' -> Busy(c'-1,r')
             []
             r' == <> & reorder_in?i182_ISensor_'.x' -> Busy(c',<x'>)
             []

@@ -5,7 +5,7 @@ illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')                                
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
 -- call_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -36,12 +36,13 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = i178_States_SwitchedOff | i178_States_SwitchedOn | i3_pushStartButton | i67_activate | i68_activated | i6_States_Pushed | i6_States_Released | i71_States_Activated | i71_States_Idle | inevitable | return
+datatype event_enumeration_alphabet = i178_States_SwitchedOff | i178_States_SwitchedOn | i3_pushStartButton | i67_activate | i68_activated | i6_States_Pushed | i6_States_Released | i71_States_Activated | i71_States_Idle | inevitable | return | the_end'
 -- interface.csp.scm
 
-channel i169_Display: {i67_activate,inevitable}
+channel i169_Display: {i67_activate,inevitable,the_end'}
 channel i169_Display_'': {i68_activated}
 channel i169_Display_': {return}
+channel i169_Display_in',i169_Display_out': {i169_Display_'.return}
 
 IF_i169_Display_(IG,CS) = let
 
@@ -49,28 +50,37 @@ i169_Display_(((i79_state),(stack'))) =
 ((i79_state == i71_States_Idle)) & (
 i169_Display?x:{i67_activate} ->
 semi_(assign_(\ ((i79_state),(stack')) @ ((i71_States_Activated),(stack'))),
-(\ P',V' @ i169_Display_'.return -> P'(V')))(\ V' @ i169_Display_(V'),((i79_state),(stack'))))
+(\ P',V' @ i169_Display_'.return -> P'(V')))(\ V' @ i169_Display.the_end' -> i169_Display_(V'),((i79_state),(stack'))))
 []
 ((i79_state == i71_States_Activated)) & (
 i169_Display?x:{inevitable} ->
 semi_(semi_((\ P',V' @ i169_Display_''!i68_activated -> P'(V')),
 assign_(\ ((i79_state),(stack')) @ ((i71_States_Activated),(stack')))),
-skip_)(\ V' @ i169_Display_(V'),((i79_state),(stack')))
+skip_)(\ V' @ i169_Display.the_end' -> i169_Display_(V'),((i79_state),(stack')))
  []
   IG & i169_Display?x:{i67_activate} ->
 illegal_(STOP,<>))
 []
 CS & i169_Display?x:{inevitable} -> illegal_(STOP,<>)
 
-within if CS then i169_Display_(((i71_States_Idle),(<>)))
-             else i169_Display_(((i71_States_Idle),(<>)))
+REORDER' = i169_Display?x' -> (i169_Display_in'?y' -> i169_Display.the_end' -> i169_Display_out'!y' -> REORDER' [] i169_Display.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then i169_Display_(((i71_States_Idle),(<>)))
+                 else i169_Display_(((i71_States_Idle),(<>)))) [[x<-i169_Display_in'.x|x<-extensions(i169_Display_in')]] [|{|i169_Display,i169_Display_in',i169_Display.the_end'|}|] REORDER' [[i169_Display_out'.x<-x|x<-extensions(i169_Display_out')]] \ {|i169_Display_in',i169_Display.the_end'|})
 
 -- end of interface.csp.scm
 -- interface.csp.scm
 
-channel i66_Viewer: {i3_pushStartButton}
+channel i66_Viewer: {i3_pushStartButton,the_end'}
 
 channel i66_Viewer_': {return}
+channel i66_Viewer_in',i66_Viewer_out': {i66_Viewer_'.return}
 
 IF_i66_Viewer_(IG,CS) = let
 
@@ -78,16 +88,24 @@ i66_Viewer_(((i14_state),(stack'))) =
 ((i14_state == i6_States_Released)) & (
 i66_Viewer?x:{i3_pushStartButton} ->
 semi_(assign_(\ ((i14_state),(stack')) @ ((i6_States_Pushed),(stack'))),
-(\ P',V' @ i66_Viewer_'.return -> P'(V')))(\ V' @ i66_Viewer_(V'),((i14_state),(stack'))))
+(\ P',V' @ i66_Viewer_'.return -> P'(V')))(\ V' @ i66_Viewer.the_end' -> i66_Viewer_(V'),((i14_state),(stack'))))
 []
 ((i14_state == i6_States_Pushed)) & (
 i66_Viewer?x:{i3_pushStartButton} ->
-(\ P',V' @ i66_Viewer_'.return -> P'(V'))(\ V' @ i66_Viewer_(V'),((i14_state),(stack'))))
+(\ P',V' @ i66_Viewer_'.return -> P'(V'))(\ V' @ i66_Viewer.the_end' -> i66_Viewer_(V'),((i14_state),(stack'))))
 []
 CS & i66_Viewer?x:{} -> illegal_(STOP,<>)
 
-within if CS then i66_Viewer_(((i6_States_Released),(<>)))
-             else i66_Viewer_(((i6_States_Released),(<>)))
+REORDER' = i66_Viewer?x' -> (i66_Viewer_in'?y' -> i66_Viewer.the_end' -> i66_Viewer_out'!y' -> REORDER' [] i66_Viewer.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then i66_Viewer_(((i6_States_Released),(<>)))
+                 else i66_Viewer_(((i6_States_Released),(<>)))) [[x<-i66_Viewer_in'.x|x<-extensions(i66_Viewer_in')]] [|{|i66_Viewer,i66_Viewer_in',i66_Viewer.the_end'|}|] REORDER' [[i66_Viewer_out'.x<-x|x<-extensions(i66_Viewer_out')]] \ {|i66_Viewer_in',i66_Viewer.the_end'|})
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -167,9 +185,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
-            c' < N' & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            c' <= N' & in'?x' -> Busy(c'+1,r')
             []
-            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            c' > 0 & out'?x' -> Busy(c'-1,r')
             []
             r' == <> & reorder_in?i66_Viewer_'.x' -> Busy(c',<x'>)
             []

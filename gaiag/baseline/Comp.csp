@@ -5,7 +5,7 @@ illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')                                
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
 -- call_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -36,12 +36,13 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = State_Calibrated | State_Error | State_Initialized | State_Uninitialized | calibrate | initialize | perform_action1 | perform_action2 | perform_actions | recover | result_t_NOK | result_t_OK | return
+datatype event_enumeration_alphabet = State_Calibrated | State_Error | State_Initialized | State_Uninitialized | calibrate | initialize | perform_action1 | perform_action2 | perform_actions | recover | result_t_NOK | result_t_OK | return | the_end'
 -- interface.csp.scm
 
-channel IComp: {initialize,perform_actions,recover}
+channel IComp: {initialize,perform_actions,recover,the_end'}
 
 channel IComp_': {result_t_OK,result_t_NOK,return}
+channel IComp_in',IComp_out': {IComp_'.result_t_OK,IComp_'.result_t_NOK,IComp_'.return}
 
 IF_IComp_(IG,CS) = let
 
@@ -49,11 +50,11 @@ IComp_(((s),(stack'))) =
 (((s == State_Uninitialized) and true)) & (
 IComp?x:{initialize} ->
 semi_(reply_(IComp_', (\ ((s),(stack')) @ result_t_OK)),
-assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IComp_(V'),((s),(stack')))
+assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IComp.the_end' -> IComp_(V'),((s),(stack')))
  []
   IComp?x:{initialize} ->
 semi_(reply_(IComp_', (\ ((s),(stack')) @ result_t_NOK)),
-assign_(\ ((s),(stack')) @ ((State_Uninitialized),(stack'))))(\ V' @ IComp_(V'),((s),(stack'))))
+assign_(\ ((s),(stack')) @ ((State_Uninitialized),(stack'))))(\ V' @ IComp.the_end' -> IComp_(V'),((s),(stack'))))
 []
 ((s == State_Uninitialized)) & (
 IG & IComp?x:{recover,perform_actions} ->
@@ -61,11 +62,11 @@ illegal_(STOP,<>))
 []
 (((s == State_Initialized) and true)) & (
 IComp?x:{perform_actions} ->
-reply_(IComp_', (\ ((s),(stack')) @ result_t_OK))(\ V' @ IComp_(V'),((s),(stack')))
+reply_(IComp_', (\ ((s),(stack')) @ result_t_OK))(\ V' @ IComp.the_end' -> IComp_(V'),((s),(stack')))
  []
   IComp?x:{perform_actions} ->
 semi_(reply_(IComp_', (\ ((s),(stack')) @ result_t_NOK)),
-assign_(\ ((s),(stack')) @ ((State_Error),(stack'))))(\ V' @ IComp_(V'),((s),(stack'))))
+assign_(\ ((s),(stack')) @ ((State_Error),(stack'))))(\ V' @ IComp.the_end' -> IComp_(V'),((s),(stack'))))
 []
 ((s == State_Initialized)) & (
 IG & IComp?x:{initialize,recover} ->
@@ -74,10 +75,10 @@ illegal_(STOP,<>))
 (((s == State_Error) and true)) & (
 IComp?x:{recover} ->
 semi_(reply_(IComp_', (\ ((s),(stack')) @ result_t_OK)),
-assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IComp_(V'),((s),(stack')))
+assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IComp.the_end' -> IComp_(V'),((s),(stack')))
  []
   IComp?x:{recover} ->
-reply_(IComp_', (\ ((s),(stack')) @ result_t_NOK))(\ V' @ IComp_(V'),((s),(stack'))))
+reply_(IComp_', (\ ((s),(stack')) @ result_t_NOK))(\ V' @ IComp.the_end' -> IComp_(V'),((s),(stack'))))
 []
 ((s == State_Error)) & (
 IG & IComp?x:{initialize,perform_actions} ->
@@ -85,15 +86,24 @@ illegal_(STOP,<>))
 []
 CS & IComp?x:{} -> illegal_(STOP,<>)
 
-within if CS then IComp_(((State_Uninitialized),(<>)))
-             else IComp_(((State_Uninitialized),(<>)))
+REORDER' = IComp?x' -> (IComp_in'?y' -> IComp.the_end' -> IComp_out'!y' -> REORDER' [] IComp.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then IComp_(((State_Uninitialized),(<>)))
+                 else IComp_(((State_Uninitialized),(<>)))) [[x<-IComp_in'.x|x<-extensions(IComp_in')]] [|{|IComp,IComp_in',IComp.the_end'|}|] REORDER' [[IComp_out'.x<-x|x<-extensions(IComp_out')]] \ {|IComp_in',IComp.the_end'|})
 
 -- end of interface.csp.scm
 -- interface.csp.scm
 
-channel IDevice: {calibrate,initialize,perform_action1,perform_action2}
+channel IDevice: {calibrate,initialize,perform_action1,perform_action2,the_end'}
 
 channel IDevice_': {result_t_OK,result_t_NOK,return}
+channel IDevice_in',IDevice_out': {IDevice_'.result_t_OK,IDevice_'.result_t_NOK,IDevice_'.return}
 
 IF_IDevice_(IG,CS) = let
 
@@ -101,11 +111,11 @@ IDevice_(((s),(stack'))) =
 (((s == State_Uninitialized) and true)) & (
 IDevice?x:{initialize} ->
 semi_(reply_(IDevice_', (\ ((s),(stack')) @ result_t_OK)),
-assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IDevice_(V'),((s),(stack')))
+assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IDevice.the_end' -> IDevice_(V'),((s),(stack')))
  []
   IDevice?x:{initialize} ->
 semi_(reply_(IDevice_', (\ ((s),(stack')) @ result_t_NOK)),
-assign_(\ ((s),(stack')) @ ((State_Uninitialized),(stack'))))(\ V' @ IDevice_(V'),((s),(stack'))))
+assign_(\ ((s),(stack')) @ ((State_Uninitialized),(stack'))))(\ V' @ IDevice.the_end' -> IDevice_(V'),((s),(stack'))))
 []
 ((s == State_Uninitialized)) & (
 IG & IDevice?x:{calibrate,perform_action1,perform_action2} ->
@@ -114,15 +124,15 @@ illegal_(STOP,<>))
 (((s == State_Initialized) and true)) & (
 IDevice?x:{calibrate} ->
 semi_(reply_(IDevice_', (\ ((s),(stack')) @ result_t_OK)),
-assign_(\ ((s),(stack')) @ ((State_Calibrated),(stack'))))(\ V' @ IDevice_(V'),((s),(stack')))
+assign_(\ ((s),(stack')) @ ((State_Calibrated),(stack'))))(\ V' @ IDevice.the_end' -> IDevice_(V'),((s),(stack')))
  []
   IDevice?x:{calibrate} ->
 semi_(reply_(IDevice_', (\ ((s),(stack')) @ result_t_NOK)),
-assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IDevice_(V'),((s),(stack'))))
+assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IDevice.the_end' -> IDevice_(V'),((s),(stack'))))
 []
 ((s == State_Initialized)) & (
 IDevice?x:{initialize} ->
-reply_(IDevice_', (\ ((s),(stack')) @ result_t_OK))(\ V' @ IDevice_(V'),((s),(stack')))
+reply_(IDevice_', (\ ((s),(stack')) @ result_t_OK))(\ V' @ IDevice.the_end' -> IDevice_(V'),((s),(stack')))
  []
   IG & IDevice?x:{perform_action1,perform_action2} ->
 illegal_(STOP,<>))
@@ -130,23 +140,31 @@ illegal_(STOP,<>))
 (((s == State_Calibrated) and true)) & (
 IDevice?x:{perform_action1,perform_action2} ->
 semi_(reply_(IDevice_', (\ ((s),(stack')) @ result_t_OK)),
-assign_(\ ((s),(stack')) @ ((State_Calibrated),(stack'))))(\ V' @ IDevice_(V'),((s),(stack')))
+assign_(\ ((s),(stack')) @ ((State_Calibrated),(stack'))))(\ V' @ IDevice.the_end' -> IDevice_(V'),((s),(stack')))
  []
   IDevice?x:{perform_action1,perform_action2} ->
 semi_(reply_(IDevice_', (\ ((s),(stack')) @ result_t_NOK)),
-assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IDevice_(V'),((s),(stack'))))
+assign_(\ ((s),(stack')) @ ((State_Initialized),(stack'))))(\ V' @ IDevice.the_end' -> IDevice_(V'),((s),(stack'))))
 []
 ((s == State_Calibrated)) & (
 IDevice?x:{calibrate} ->
-reply_(IDevice_', (\ ((s),(stack')) @ result_t_OK))(\ V' @ IDevice_(V'),((s),(stack')))
+reply_(IDevice_', (\ ((s),(stack')) @ result_t_OK))(\ V' @ IDevice.the_end' -> IDevice_(V'),((s),(stack')))
  []
   IG & IDevice?x:{initialize} ->
 illegal_(STOP,<>))
 []
 CS & IDevice?x:{} -> illegal_(STOP,<>)
 
-within if CS then IDevice_(((State_Uninitialized),(<>)))
-             else IDevice_(((State_Uninitialized),(<>)))
+REORDER' = IDevice?x' -> (IDevice_in'?y' -> IDevice.the_end' -> IDevice_out'!y' -> REORDER' [] IDevice.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then IDevice_(((State_Uninitialized),(<>)))
+                 else IDevice_(((State_Uninitialized),(<>)))) [[x<-IDevice_in'.x|x<-extensions(IDevice_in')]] [|{|IDevice,IDevice_in',IDevice.the_end'|}|] REORDER' [[IDevice_out'.x<-x|x<-extensions(IDevice_out')]] \ {|IDevice_in',IDevice.the_end'|})
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -258,9 +276,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
-            c' < N' & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            c' <= N' & in'?x' -> Busy(c'+1,r')
             []
-            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            c' > 0 & out'?x' -> Busy(c'-1,r')
             []
             r' == <> & reorder_in?IComp_'.x' -> Busy(c',<x'>)
             []

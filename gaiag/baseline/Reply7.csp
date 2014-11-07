@@ -5,7 +5,7 @@ illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')                                
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
 -- call_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -36,23 +36,32 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = E_A | foo | return
+datatype event_enumeration_alphabet = E_A | foo | return | the_end'
 -- interface.csp.scm
 
-channel IReply7: {foo}
+channel IReply7: {foo,the_end'}
 
 channel IReply7_': {E_A,return}
+channel IReply7_in',IReply7_out': {IReply7_'.E_A,IReply7_'.return}
 
 IF_IReply7_(IG,CS) = let
 
 IReply7_(((<>),(stack'))) =
 IReply7?x:{foo} ->
-reply_(IReply7_', (\ ((<>),(stack')) @ E_A))(\ V' @ IReply7_(V'),((<>),(stack')))
+reply_(IReply7_', (\ ((<>),(stack')) @ E_A))(\ V' @ IReply7.the_end' -> IReply7_(V'),((<>),(stack')))
 []
 CS & IReply7?x:{} -> illegal_(STOP,<>)
 
-within if CS then IReply7_(((<>),(<>)))
-             else IReply7_(((<>),(<>)))
+REORDER' = IReply7?x' -> (IReply7_in'?y' -> IReply7.the_end' -> IReply7_out'!y' -> REORDER' [] IReply7.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then IReply7_(((<>),(<>)))
+                 else IReply7_(((<>),(<>)))) [[x<-IReply7_in'.x|x<-extensions(IReply7_in')]] [|{|IReply7,IReply7_in',IReply7.the_end'|}|] REORDER' [[IReply7_out'.x<-x|x<-extensions(IReply7_out')]] \ {|IReply7_in',IReply7.the_end'|})
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -120,9 +129,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
-            c' < N' & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            c' <= N' & in'?x' -> Busy(c'+1,r')
             []
-            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            c' > 0 & out'?x' -> Busy(c'-1,r')
             []
             r' == <> & reorder_in?IReply7_'.x' -> Busy(c',<x'>)
             []

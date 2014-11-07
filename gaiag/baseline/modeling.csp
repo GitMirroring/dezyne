@@ -5,7 +5,7 @@ illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')                                
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
 -- call_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -36,47 +36,65 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = e | f | optional | return
+datatype event_enumeration_alphabet = e | f | optional | return | the_end'
 -- interface.csp.scm
 
-channel dummy: {e}
+channel dummy: {e,the_end'}
 
 channel dummy_': {return}
+channel dummy_in',dummy_out': {dummy_'.return}
 
 IF_dummy_(IG,CS) = let
 
 dummy_(((<>),(stack'))) =
 (true) & (
 dummy?x:{e} ->
-(\ P',V' @ dummy_'.return -> P'(V'))(\ V' @ dummy_(V'),((<>),(stack'))))
+(\ P',V' @ dummy_'.return -> P'(V'))(\ V' @ dummy.the_end' -> dummy_(V'),((<>),(stack'))))
 []
 CS & dummy?x:{} -> illegal_(STOP,<>)
 
-within if CS then dummy_(((<>),(<>)))
-             else dummy_(((<>),(<>)))
+REORDER' = dummy?x' -> (dummy_in'?y' -> dummy.the_end' -> dummy_out'!y' -> REORDER' [] dummy.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then dummy_(((<>),(<>)))
+                 else dummy_(((<>),(<>)))) [[x<-dummy_in'.x|x<-extensions(dummy_in')]] [|{|dummy,dummy_in',dummy.the_end'|}|] REORDER' [[dummy_out'.x<-x|x<-extensions(dummy_out')]] \ {|dummy_in',dummy.the_end'|})
 
 -- end of interface.csp.scm
 -- interface.csp.scm
 
-channel imodeling: {e,optional}
+channel imodeling: {e,optional,the_end'}
 channel imodeling_'': {f}
 channel imodeling_': {return}
+channel imodeling_in',imodeling_out': {imodeling_'.return}
 
 IF_imodeling_(IG,CS) = let
 
 imodeling_(((<>),(stack'))) =
 imodeling?x:{e} ->
 semi_((\ P',V' @ imodeling_''!f -> P'(V')),
-(\ P',V' @ imodeling_'.return -> P'(V')))(\ V' @ imodeling_(V'),((<>),(stack')))
+(\ P',V' @ imodeling_'.return -> P'(V')))(\ V' @ imodeling.the_end' -> imodeling_(V'),((<>),(stack')))
 []
 imodeling?x:{optional} ->
 semi_((\ P',V' @ imodeling_''!f -> P'(V')),
-skip_)(\ V' @ imodeling_(V'),((<>),(stack')))
+skip_)(\ V' @ imodeling.the_end' -> imodeling_(V'),((<>),(stack')))
 []
 CS & imodeling?x:{optional} -> illegal_(STOP,<>)
 
-within if CS then imodeling_(((<>),(<>)))
-             else imodeling_(((<>),(<>))) [|{imodeling.optional}|] CHAOS({imodeling.optional})
+REORDER' = imodeling?x' -> (imodeling_in'?y' -> imodeling.the_end' -> imodeling_out'!y' -> REORDER' [] imodeling.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then imodeling_(((<>),(<>)))
+                 else imodeling_(((<>),(<>))) [|{imodeling.optional}|] CHAOS({imodeling.optional})) [[x<-imodeling_in'.x|x<-extensions(imodeling_in')]] [|{|imodeling,imodeling_in',imodeling.the_end'|}|] REORDER' [[imodeling_out'.x<-x|x<-extensions(imodeling_out')]] \ {|imodeling_in',imodeling.the_end'|})
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -147,9 +165,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
-            c' < N' & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            c' <= N' & in'?x' -> Busy(c'+1,r')
             []
-            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            c' > 0 & out'?x' -> Busy(c'-1,r')
             []
             r' == <> & reorder_in?dummy_'.x' -> Busy(c',<x'>)
             []

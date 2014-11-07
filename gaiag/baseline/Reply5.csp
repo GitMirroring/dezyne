@@ -5,7 +5,7 @@ illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')                                
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
 -- call_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -36,12 +36,13 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = Status_No | Status_Nok | Status_Ok | Status_Yes | done | return | what
+datatype event_enumeration_alphabet = Status_No | Status_Nok | Status_Ok | Status_Yes | done | return | the_end' | what
 -- interface.csp.scm
 
-channel I: {done}
+channel I: {done,the_end'}
 
 channel I_': {Status_Yes,Status_No,return}
+channel I_in',I_out': {I_'.Status_Yes,I_'.Status_No,I_'.return}
 
 IF_I_(IG,CS) = let
 fun(P',V') = (returnvalue_(\ ((dummy),(stack')) @ Status_Yes))(P',V')
@@ -51,23 +52,32 @@ I_(((dummy),(stack'))) =
 (true) & (
 I?x:{done} ->
 context_active_(call_(\ P',V' @ fun(P',V')),
-reply_(I_', (\ ((dummy),((stack',s))) @ s)))(\ V' @ I_(V'),((dummy),(stack')))
+reply_(I_', (\ ((dummy),((stack',s))) @ s)))(\ V' @ I.the_end' -> I_(V'),((dummy),(stack')))
  []
   I?x:{done} ->
 context_active_(call_args_(\ P',V' @ fun_arg(P',V'),(\ ((dummy),(stack')) @ (Status_No))),
-reply_(I_', (\ ((dummy),((stack',s))) @ s)))(\ V' @ I_(V'),((dummy),(stack'))))
+reply_(I_', (\ ((dummy),((stack',s))) @ s)))(\ V' @ I.the_end' -> I_(V'),((dummy),(stack'))))
 []
 CS & I?x:{} -> illegal_(STOP,<>)
 
-within if CS then I_(((false),(<>)))
-             else I_(((false),(<>)))
+REORDER' = I?x' -> (I_in'?y' -> I.the_end' -> I_out'!y' -> REORDER' [] I.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then I_(((false),(<>)))
+                 else I_(((false),(<>)))) [[x<-I_in'.x|x<-extensions(I_in')]] [|{|I,I_in',I.the_end'|}|] REORDER' [[I_out'.x<-x|x<-extensions(I_out')]] \ {|I_in',I.the_end'|})
 
 -- end of interface.csp.scm
 -- interface.csp.scm
 
-channel U: {what}
+channel U: {what,the_end'}
 
 channel U_': {Status_Ok,Status_Nok,return}
+channel U_in',U_out': {U_'.Status_Ok,U_'.Status_Nok,U_'.return}
 
 IF_U_(IG,CS) = let
 fun(P',V') = (returnvalue_(\ ((dummy),(stack')) @ Status_Ok))(P',V')
@@ -77,16 +87,24 @@ U_(((dummy),(stack'))) =
 (true) & (
 U?x:{what} ->
 context_active_(call_(\ P',V' @ fun(P',V')),
-reply_(U_', (\ ((dummy),((stack',s))) @ s)))(\ V' @ U_(V'),((dummy),(stack')))
+reply_(U_', (\ ((dummy),((stack',s))) @ s)))(\ V' @ U.the_end' -> U_(V'),((dummy),(stack')))
  []
   U?x:{what} ->
 context_active_(call_args_(\ P',V' @ fun_arg(P',V'),(\ ((dummy),(stack')) @ (Status_Nok))),
-reply_(U_', (\ ((dummy),((stack',s))) @ s)))(\ V' @ U_(V'),((dummy),(stack'))))
+reply_(U_', (\ ((dummy),((stack',s))) @ s)))(\ V' @ U.the_end' -> U_(V'),((dummy),(stack'))))
 []
 CS & U?x:{} -> illegal_(STOP,<>)
 
-within if CS then U_(((false),(<>)))
-             else U_(((false),(<>)))
+REORDER' = U?x' -> (U_in'?y' -> U.the_end' -> U_out'!y' -> REORDER' [] U.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then U_(((false),(<>)))
+                 else U_(((false),(<>)))) [[x<-U_in'.x|x<-extensions(U_in')]] [|{|U,U_in',U.the_end'|}|] REORDER' [[U_out'.x<-x|x<-extensions(U_out')]] \ {|U_in',U.the_end'|})
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -163,9 +181,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
-            c' < N' & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            c' <= N' & in'?x' -> Busy(c'+1,r')
             []
-            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            c' > 0 & out'?x' -> Busy(c'-1,r')
             []
             r' == <> & reorder_in?I_'.x' -> Busy(c',<x'>)
             []

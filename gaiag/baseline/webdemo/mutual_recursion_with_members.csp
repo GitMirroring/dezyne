@@ -5,7 +5,7 @@ illegal_(P',V') = illegal -> STOP
 -- send_: (c: channel, e:event) => (P,V)->Proc
 send_(c',e')(P', V') = c'!e' -> P'(V')
 -- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')                                
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
 -- skip_: () => (P,V)->Proc
 skip_(P', V') = P'(V')
 -- call_: (B': (P,V)->Proc) => (P,V)->Proc
@@ -36,12 +36,13 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = i3_sleep | i4_zzz | i5_yawn | i6_stretch | return
+datatype event_enumeration_alphabet = i3_sleep | i4_zzz | i5_yawn | i6_stretch | return | the_end'
 -- interface.csp.scm
 
-channel i99_sleeping: {i3_sleep}
+channel i99_sleeping: {i3_sleep,the_end'}
 channel i99_sleeping_'': {i4_zzz,i5_yawn,i6_stretch}
 channel i99_sleeping_': {return}
+channel i99_sleeping_in',i99_sleeping_out': {i99_sleeping_'.return}
 
 IF_i99_sleeping_(IG,CS) = let
 i77_f(PF',V') = (semi_((\ P',V' @ i99_sleeping_''!i5_yawn -> P'(V')),
@@ -56,12 +57,20 @@ skip_))))))))(PF',V')
 i99_sleeping_(((<>),(stack'))) =
 i99_sleeping?x:{i3_sleep} ->
 semi_(call_(\ P',V' @ i77_f(P',V')),
-(\ P',V' @ i99_sleeping_'.return -> P'(V')))(\ V' @ i99_sleeping_(V'),((<>),(stack')))
+(\ P',V' @ i99_sleeping_'.return -> P'(V')))(\ V' @ i99_sleeping.the_end' -> i99_sleeping_(V'),((<>),(stack')))
 []
 CS & i99_sleeping?x:{} -> illegal_(STOP,<>)
 
-within if CS then i99_sleeping_(((<>),(<>)))
-             else i99_sleeping_(((<>),(<>)))
+REORDER' = i99_sleeping?x' -> (i99_sleeping_in'?y' -> i99_sleeping.the_end' -> i99_sleeping_out'!y' -> REORDER' [] i99_sleeping.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then i99_sleeping_(((<>),(<>)))
+                 else i99_sleeping_(((<>),(<>)))) [[x<-i99_sleeping_in'.x|x<-extensions(i99_sleeping_in')]] [|{|i99_sleeping,i99_sleeping_in',i99_sleeping.the_end'|}|] REORDER' [[i99_sleeping_out'.x<-x|x<-extensions(i99_sleeping_out')]] \ {|i99_sleeping_in',i99_sleeping.the_end'|})
 
 -- end of interface.csp.scm
 -- component.csp.scm
@@ -149,9 +158,9 @@ Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder
             []
             c' > 0 & transition_end -> transition_begin -> Busy(c',r')
             []
-            c' < N' & ([] x' : {|in'|} @ x' -> Busy(c'+1,r'))
+            c' <= N' & in'?x' -> Busy(c'+1,r')
             []
-            c' > 0 & ([] x' : {|out'|} @ x' -> Busy(c'-1,r'))
+            c' > 0 & out'?x' -> Busy(c'-1,r')
             []
             r' == <> & reorder_in?i99_sleeping_'.x' -> Busy(c',<x'>)
             []
