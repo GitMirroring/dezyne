@@ -66,9 +66,10 @@
 (define-method (json-table (o <guard>))
     (match o
       (($ <guard> expression ($ <on> triggers statement))
-       (let ((var ((compose .identifier .value) expression)))
+       (let ((var ((compose .identifier .value) expression))
+             (state (.value expression)))
          (alist->hash-table
-          `((state . ,(->symbol expression))
+          `((state . (->symbol state))
             (rules
              .
              ,(list
@@ -76,12 +77,13 @@
                 `((triggers . ,(map ->symbol (.elements triggers)))
                   (guard . "")
                   (actions . ,(json-actions statement))
-                  (next . ,(json-next var statement))))))))))
+                  (next . ,(json-next var state statement))))))))))
       (($ <guard> expression ($ <compound> (and (($ <on>) ...) (get! ons))))
-       (let ((var ((compose .identifier .value) expression)))
+       (let ((var ((compose .identifier .value) expression))
+             (state (.value expression)))
          (alist->hash-table
-          `((state . ,(->symbol expression))
-            (rules . ,(apply append (map (json-table- var) (ons))))))))
+          `((state . ,(->symbol state))
+            (rules . ,(apply append (map (json-table- var state) (ons))))))))
       (_ (stderr "catch all:\n")
          (pretty-print (gom->list o) (current-error-port))
          (alist->hash-table `((state . ,(->symbol o))
@@ -92,42 +94,60 @@
                                             (actions . ,(json-actions '()))
                                             (next . ()))))))))))
 
-(define-method (json-table (var <symbol>) (o <on>))
+(define-method (json-table (var <symbol>) (state <field>) (o <on>))
   (match o
    (($ <on> triggers ($ <compound> (($ <guard> guard statement) ..1)))
-    (map (json-inner-guard var triggers) guard statement))
+    (map (json-inner-guard var state triggers) guard statement))
    (_
     (list
      (alist->hash-table
       `((triggers . ,(map ->symbol ((compose .elements .triggers) o)))
         (guard . "")
         (actions . ,(json-actions (.statement o)))
-        (next . ,(json-next var (.statement o)))))))))
+        (next . ,(json-next var state (.statement o)))))))))
 
-(define-method (json-table- (var <symbol>))
-  (lambda (o) (json-table var o)))
+(define-method (json-table- (var <symbol>) (state <field>))
+  (lambda (o) (json-table var state o)))
 
-(define-method (json-inner-guard (var <symbol>) (triggers <triggers>) (guard <expression>) (statement <statement>))
+(define-method (json-inner-guard (var <symbol>) (state <field>) (triggers <triggers>) (guard <expression>) (statement <statement>))
   (alist->hash-table
    `((triggers . ,(map ->symbol (.elements triggers)))
      (guard . ,(->symbol guard))
      (actions . ,(json-actions statement))
-     (next . ,(json-next var statement)))))
+     (next . ,(json-next var state statement)))))
 
-(define-method (json-inner-guard (var <symbol>) (o <triggers>))
-  (lambda (e s) (json-inner-guard var o e s)))
+(define-method (json-inner-guard (var <symbol>) (state <field>) (o <triggers>))
+  (lambda (e s) (json-inner-guard var state o e s)))
 
-(define-method (json-next (var <symbol>) (o <statement>))
-  (or
-   (and-let* ((assignments ((gom:collect <assign>) o))
-              (state (null-is-#f (filter (lambda (a) (eq? (.identifier a) var))
-                                         assignments)))
-              (o (.expression (last state))))
-             (match o
-               (($ <expression> ($ <literal> scope type field))
-                (->symbol (list var '. field)))
-               (_ '())))
-      '()))
+(define-method (json-next (var <symbol>) (next <field>) (o <statement>))
+  (let ((next (delete-duplicates (json-next- var (list next) o))))
+    (if (=1 (length next))
+        (->symbol (car next))
+        (map ->symbol next))))
+
+(define-method (json-next- (var <symbol>) (next <list>) (o <statement>))
+  (match o
+    (($ <compound> statements)
+     (let loop ((statements statements) (next next))
+       (if (null? statements)
+           next
+           (loop (cdr statements) (json-next- var next (car statements))))))
+    (($ <assign> var ($ <expression> ($ <literal> scope type field)))
+     (list (make <field> :identifier type :field field)))
+    (($ <if> expression then #f)
+     (let ((then (json-next- var next then)))
+       (add-state next then)))
+    (($ <if> expression then else)
+     (let ((then (json-next- var next then))
+           (else (json-next- var next else)))
+       (add-state (add-state next then) else)))
+    (_ next)))
+
+(define-method (add-state (o <list>) (state <list>))
+  (append o state))
+
+(define-method (add-state (o <list>) (state <field>))
+  (add-state (list state)))
 
 (define-method (json-actions o)
   (alist->hash-table
