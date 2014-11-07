@@ -69,7 +69,7 @@
        (let ((var ((compose .identifier .value) expression))
              (state (.value expression)))
          (alist->hash-table
-          `((state . (->symbol state))
+          `((state . ,(->symbol state))
             (rules
              .
              ,(list
@@ -126,28 +126,34 @@
         (map ->symbol next))))
 
 (define-method (json-next- (var <symbol>) (next <list>) (o <statement>))
-  (match o
-    (($ <compound> statements)
-     (let loop ((statements statements) (next next))
-       (if (null? statements)
-           next
-           (loop (cdr statements) (json-next- var next (car statements))))))
-    (($ <assign> var ($ <expression> ($ <literal> scope type field)))
-     (list (make <field> :identifier type :field field)))
-    (($ <if> expression then #f)
-     (let ((then (json-next- var next then)))
-       (add-state next then)))
-    (($ <if> expression then else)
-     (let ((then (json-next- var next then))
-           (else (json-next- var next else)))
-       (add-state (add-state next then) else)))
-    (_ next)))
+  (define (var? identifier) (eq? identifier var))
+  (let ((unknown (make <field> :identifier var :field '<unknown>)))
+   (match o
+     (($ <compound> statements)
+      (let loop ((statements statements) (next next))
+        (if (null? statements)
+            next
+            (loop (cdr statements) (json-next- var next (car statements))))))
+     (($ <assign> (? var?) ($ <expression> ($ <literal> scope type field)))
+      (list (make <field> :identifier type :field field)))
+     (($ <assign> (? var?) expression)
+      (list unknown))
+     (($ <call>)
+      (list unknown))
+     (($ <if> expression then #f)
+      (let ((then (json-next- var next then)))
+        (add-state next then)))
+     (($ <if> expression then else)
+      (let ((then (json-next- var next then))
+            (else (json-next- var next else)))
+        (add-state (add-state next then) else)))
+     (_ next))))
 
 (define-method (add-state (o <list>) (state <list>))
   (append o state))
 
 (define-method (add-state (o <list>) (state <field>))
-  (add-state (list state)))
+  (add-state o (list state)))
 
 (define-method (json-actions o)
   (alist->hash-table
