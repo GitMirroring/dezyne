@@ -130,7 +130,7 @@
             next
             (loop (cdr statements) (json-next- var next (car statements))))))
      (($ <assign> (? var?) ($ <expression> ($ <literal> scope type field)))
-      (list (make <field> :identifier type :field field)))
+      (list (make <field> :identifier var :field field)))
      (($ <assign> (? var?) expression)
       (list unknown))
      (($ <call>)
