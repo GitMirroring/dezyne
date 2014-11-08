@@ -65,19 +65,12 @@
 
 (define-method (json-table (o <guard>))
     (match o
-      (($ <guard> expression ($ <on> triggers statement))
+      (($ <guard> expression (and ($ <on> triggers statement) (get! on)))
        (let ((var ((compose .identifier .value) expression))
              (state (.value expression)))
          (alist->hash-table
           `((state . ,(->symbol state))
-            (rules
-             .
-             ,(list
-               (alist->hash-table
-                `((triggers . ,(map ->symbol (.elements triggers)))
-                  (guard . "")
-                  (actions . ,(json-actions statement))
-                  (next . ,(json-next var state statement))))))))))
+            (rules . ,(json-table var state (on)))))))
       (($ <guard> expression ($ <compound> (and (($ <on>) ...) (get! ons))))
        (let ((var ((compose .identifier .value) expression))
              (state (.value expression)))
