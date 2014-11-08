@@ -1,3 +1,2 @@
 if (#expression )
-  #statement
-#(if (not (equal? else "false")) (string-append "else\n" else))
+  #statement #(if (not (equal? else "false")) (string-append "else\n" else))
