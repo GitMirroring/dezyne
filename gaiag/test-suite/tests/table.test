@@ -397,3 +397,45 @@ interface i
   }
 }
 "))
+
+(pass-if "state-table-choice"
+  (diff-noisy-equal?
+   (pretty-state-table
+    (ast:resolve
+     (asd->ast
+#{
+interface i
+{
+  in void e;
+  out void a;
+  behaviour
+    {
+     enum S { init };
+     S s = S.init;
+
+     [s.init]
+     on e:
+     {
+      [true]
+      {
+       a;
+      }
+      [true]
+      {
+      }
+     }
+  }
+}
+#})))
+"
+{
+  [s.init]
+  {
+    on e:
+    a;
+    on e:
+    {
+    }
+  }
+}
+"))

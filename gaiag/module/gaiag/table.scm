@@ -129,6 +129,17 @@
         ((=1 (length statements)) (car statements))
         (else (retain-source-location o (make <compound> :elements statements))))))
 
+    (($ <guard> expression ($ <on> triggers ($ <compound> (($ <guard> e s) ..1))))
+     (let ((ons
+            (map (lambda (e s)
+                   (make <on>
+                     :triggers triggers
+                     :statement (make <guard> :expression e :statement s)))
+                 e s)))
+       (evaluate model state (make <guard>
+                               :expression expression
+                               :statement (make <compound> :elements ons)))))
+
     (($ <guard> expression ($ <on> triggers statement))
      (and-let*
       ((guard (make <guard> :expression expression :statement statement))
