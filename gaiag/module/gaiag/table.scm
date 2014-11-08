@@ -97,14 +97,56 @@
                                         (state-table model state o))
                                       states))))
                 (retain-source-location o (make <compound> :elements guards)))
-      ;;(make <guard> (make <expression> :value 'initial) :statement o)
       o))
 
 (define-method (state-table (model <model>) (state <literal>) (o <compound>))
-  (and-let* ((statement (flatten-compound (evaluate model state o))))
+  (and-let* ((statement ((compose if-compound flatten-compound)
+                         (evaluate model state o))))
             (make <guard>
               :expression (make <expression> :value (field model state))
               :statement statement)))
+
+(define-method (if-compound (o <top>))
+  (retain-source-location o (if-compound- o)))
+
+(define-method (if-compound- (o <top>))
+  (match o
+    (($ <if> expression ($ <compound> then) #f)
+     (make <if>
+       :expression expression
+       :then (make <compound> :elements (map if-compound then))))
+    (($ <if> expression then #f)
+     (make <if>
+       :expression expression
+       :then (make <compound> :elements (list (if-compound then)))))
+    (($ <if> expression ($ <compound> then) ($ <compound> else))
+     (make <if>
+       :expression expression
+       :then (make <compound> :elements (map if-compound then))
+       :else (make <compound> :elements (map if-compound else))))
+    (($ <if> expression then ($ <compound> else))
+     (make <if>
+       :expression expression
+       :then (make <compound> :elements (list (if-compound then)))
+       :else (make <compound> :elements (map if-compound else))))
+    (($ <if> expression ($ <compound> then) else)
+     (make <if>
+       :expression expression
+       :then (make <compound> :elements (map if-compound then))
+       :else (make <compound> :elements (list (if-compound else)))))
+    (($ <if> expression then else)
+     (make <if>
+       :expression expression
+       :then (make <compound> :elements (list (if-compound then)))
+       :else (make <compound> :elements (list (if-compound else)))))
+    (($ <compound> (statement)) (if-compound statement))
+    (($ <compound> statements)
+     (make <compound> :elements (map if-compound statements)))
+    (($ <on> triggers statement)
+     (make <on> :triggers triggers :statement (if-compound statement)))
+    ((? (is? <ast>)) (gom:map if-compound o))
+    ((h t ...) (map if-compound o))
+    (_ o)))
 
 (define-method (field (model <model>) (state <literal>))
   (define (type? v) (eq? ((compose .name .type) v)) (.type state))
