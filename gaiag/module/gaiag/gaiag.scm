@@ -115,5 +115,6 @@ Examples:
          (coverage? (option-ref options 'coverage #f)))
     (if coverage?
         (cover (lambda () (main- args)) (list 'gaiag '.info))
-        (call-with-error-handling (lambda () (main- args))
-                                  :on-error (if debug? 'debug 'backtrace)))))
+        (if debug?
+         (call-with-error-handling (lambda () (main- args)))
+         (main- args)))))

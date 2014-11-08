@@ -76,4 +76,6 @@ Examples:
   (let* ((options (parse-opts args))
          (debug? (option-ref options 'debug #f))
 	 (files (option-ref options '() '())))
-    (call-with-error-handling (lambda () (script files)) :on-error (if debug? 'debug 'backtrace))))
+    (if debug?
+        (call-with-error-handling (lambda () (script files)))
+        (script files))))
