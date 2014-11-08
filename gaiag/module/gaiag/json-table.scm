@@ -170,6 +170,8 @@
     (($ <trigger> #f event) (->symbol event))
     (($ <trigger> port event) (->symbol (list port "." event)))
     ((? (is? <ast>)) (->symbol (gom->list o)))
+    (('and lhs rhs) (->symbol (list lhs " " '&& " " rhs)))
+    (('or lhs rhs) (->symbol (list lhs " " 'or " " rhs)))
     ((h ... t) (apply symbol-append (map ->symbol o)))
 ;;    ((h . t) (list (->symbol h) '= (->symbol t)))
     (((h ... t)) (->symbol (car o)))

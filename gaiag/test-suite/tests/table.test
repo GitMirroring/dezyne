@@ -10,6 +10,7 @@
   :use-module (test-suite misc)
 
   :use-module (gaiag gom)
+  :use-module (gaiag pretty)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
   :use-module (gaiag table))
@@ -21,6 +22,9 @@
 
 (define-method (state-table (o <root>))
   ((compose .statement .behaviour) (state-table (model o))))
+
+(define-method (pretty-state-table (o <root>))
+  ((compose ast->asd .statement .behaviour) (state-table (model o))))
 
 (pass-if "state-table-dummy-test"
          #t)
@@ -226,3 +230,170 @@ interface i
       (compound
        (action (trigger #f a (arguments)))
        (assign s (expression (literal #f S init))))))))))
+
+(pass-if "state-table-expressions-pretty"
+  (diff-noisy-equal?
+   (pretty-state-table
+    (ast:resolve
+     (asd->ast
+#{
+interface i
+{
+  in void e;
+  out void a;
+  behaviour
+  {
+     enum S { init, idle, busy };
+     S s = S.init;
+     bool b = true;
+
+     [s.idle && b]
+        on e:
+        {
+          a;
+          s = S.busy;
+        }
+      [s.busy && !b]
+        on e:
+        {
+          a;
+          s = S.init;
+        }
+      [s.init && (b || !b)]
+        on e:
+        {
+          a;
+          s = S.idle;
+        }
+     }
+}
+#})))
+"
+{
+  [s.init]
+    on e:
+    {
+      a;
+      s = S.idle;
+    }
+  [s.idle]
+    on e:
+    [b]
+    {
+      a;
+      s = S.busy;
+    }
+  [s.busy]
+    on e:
+    [!b]
+    {
+      a;
+      s = S.init;
+    }
+}
+"))
+
+(pass-if "state-table-guards"
+  (diff-noisy-equal?
+   (pretty-state-table
+    (ast:resolve
+     (asd->ast
+#{
+interface i
+{
+  in void e;
+  out void a;
+  behaviour
+    {
+      enum S { init, idle, busy };
+      S s = S.init;
+      bool b = true;
+      bool bb = true;
+
+      [s.idle]
+        [bb]
+        {
+          [b]
+            on e:
+            {
+              a;
+              s = S.busy;
+            }
+          [!b]
+            on e:
+            {
+            }
+        }
+      [s.busy]
+        [true]
+        on e:
+        [!b]
+        {
+          a;
+          s = S.init;
+        }
+      [s.init && (b || !b)]
+        {
+          [!bb]
+            {
+              on e:
+                [true]
+                [b]
+              {
+                a;
+                s = S.idle;
+              }
+            }
+          [bb]
+            {
+              on e:
+                [true]
+                [b]
+              {
+                a;
+                s = S.idle;
+              }
+            }
+        }
+    }
+}
+#})))
+"
+{
+  [s.init]
+  {
+    on e:
+    [!bb && b]
+    {
+      a;
+      s = S.idle;
+    }
+    on e:
+    [bb && b]
+    {
+      a;
+      s = S.idle;
+    }
+  }
+  [s.idle]
+  {
+    on e:
+    [bb && b]
+    {
+      a;
+      s = S.busy;
+    }
+    on e:
+    [bb && !b]
+    {
+    }
+  }
+  [s.busy]
+  on e:
+  [!b]
+  {
+    a;
+    s = S.init;
+  }
+}
+"))

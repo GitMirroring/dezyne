@@ -143,6 +143,14 @@
           (car guards)
           (make <compound> :elements guards))))
 
+    (($ <guard> ($ <expression> value1) ($ <guard> ($ <expression> value2) statement))
+     (and-let*
+      ((statement (evaluate model state statement))
+       (value (eval-expression model state (list 'and value1 value2)))
+       (guard (make <guard> :expression (make <expression> :value value)
+                    :statement statement)))
+      (evaluate model state guard)))
+
     (($ <guard> expression statement)
      (and-let* ((value (eval-expression model state expression))
                 (expression (if (is-a? value <otherwise>)
