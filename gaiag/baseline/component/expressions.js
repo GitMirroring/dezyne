@@ -39,11 +39,15 @@ component.expressions = function() {
         if(this.c < this.state) {
           this.c = this.c + 1;
         }
-        else if(this.c <= (this.state + 1)) {
-          this.i.out.lo();
-        }
-        else if(this.c > this.state) {
-          this.i.out.hi();
+        else {
+          if(this.c <= (this.state + 1)) {
+            this.i.out.lo();
+          }
+          else {
+            if(this.c > this.state) {
+              this.i.out.hi();
+            }
+          }
         }
       }
     }

@@ -141,6 +141,11 @@
     (apply template->string x)))
 
 (define (comma-space-join lst) (string-join (map ->string lst) ", "))
+(define (clause->string o)
+  (match o
+    (($ <compound>) (->string o))
+    (#f #f)
+    (_ (->string (make <compound> :elements (list o))))))
 
 (define asd-template-dir (append (prefix-dir) '(templates asd)))
 (define asd-templates
@@ -215,8 +220,8 @@
     (assign-call . ((identifier . ,identity)
                     (arguments . ,arguments->string)))
     (if . ((expression . ,->string)
-           (statement . ,->string)
-           (else . ,->string)))
+           (statement . ,clause->string)
+           (else . ,clause->string)))
     (or . ((left . ,->string)
            (right . ,->string)))
     (and . ((left . ,->string)

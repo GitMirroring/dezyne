@@ -56,14 +56,18 @@ namespace component
           c = c + 1;
         }
         else
-        if (c <= (state + 1))
         {
-          rt.defer(this, dezyne::bind(i.out.lo));
-        }
-        else
-        if (c > state)
-        {
-          rt.defer(this, dezyne::bind(i.out.hi));
+          if (c <= (state + 1))
+          {
+            rt.defer(this, dezyne::bind(i.out.lo));
+          }
+          else
+          {
+            if (c > state)
+            {
+              rt.defer(this, dezyne::bind(i.out.hi));
+            }
+          }
         }
       }
     }

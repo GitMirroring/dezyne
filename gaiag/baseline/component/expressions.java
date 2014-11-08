@@ -50,11 +50,15 @@ class expressions{
         if (c < state) {
           c = c + 1;
         }
-        else if (c <= (state + 1)) {
-          i.getOut().lo.action();
-        }
-        else if (c > state) {
-          i.getOut().hi.action();
+        else {
+          if (c <= (state + 1)) {
+            i.getOut().lo.action();
+          }
+          else {
+            if (c > state) {
+              i.getOut().hi.action();
+            }
+          }
         }
       }
     }

@@ -27,7 +27,7 @@ interface I
   out void a;
   out void hi;
   out void lo;
-  
+
   behaviour
   {
     typedef int[0..3] State;
@@ -43,23 +43,27 @@ interface I
           state = 3;
           a;
         }
-        else 
+        else
         {
           state = state - 1;
           if (c < state)
           {
             c = c + 1;
           }
-          else 
+          else
+          {
             if (c <= (state + 1))
             {
               lo;
             }
-            else 
+            else
+            {
               if (c > state)
               {
                 hi;
               }
+            }
+          }
         }
       }
   }
@@ -76,7 +80,7 @@ component expressions
     State state = 3;
     State c = 0;
 
-    [true] 
+    [true]
       on i.e:
       {
         if (state == 0)
@@ -84,23 +88,27 @@ component expressions
           state = 3;
           i.a;
         }
-        else 
+        else
         {
           state = state - 1;
           if (c < state)
           {
             c = c + 1;
           }
-          else 
+          else
+          {
             if (c <= (state + 1))
             {
               i.lo;
             }
             else
+            {
               if (c > state)
               {
                 i.hi;
               }
+            }
+          }
         }
       }
   }
