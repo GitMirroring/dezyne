@@ -52,8 +52,6 @@
   :use-module (oop goops)
   :use-module (oop goops describe)
   :use-module (gaiag gom)
-  ;;:use-module (gaiag gom gom)
-
 
   :export (animate
            animate-file
@@ -117,14 +115,12 @@
 
 (define (template->string name . key-procedure-pairs)
   (let ((template (assoc-ref (templates) name)))
-    (animate-template name (map (lambda (x)
-                               (let* ((pair (car x))
-                                      (key (car pair))
+    (animate-template name (map (lambda (pair data)
+                               (let* ((key (car pair))
                                       (procedure (cdr pair))
-                                      (data (cadr x))
                                       (value (procedure data)))
                                  (cons key value)))
-                             (zip template key-procedure-pairs)))))
+                                template key-procedure-pairs))))
 
 (define (pairs->module pairs)
   (let ((module (make-module 31 (list (current-module)))))
