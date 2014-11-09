@@ -181,6 +181,7 @@
 ;;    ((h . t) (list (->symbol h) '= (->symbol t)))
     (((h ... t)) (->symbol (car o)))
     ((? string?) (string->symbol o))
+    ((? number?) (->symbol (number->string o)))
     ((? symbol?) o)
     (() (string->symbol ""))
     (_ (throw 'match-error  (format #f "~a: ->symbol match: ~a\n"  (current-source-location) o)))))
