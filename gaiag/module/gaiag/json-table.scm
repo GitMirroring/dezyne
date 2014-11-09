@@ -82,9 +82,9 @@
          (alist->hash-table `((state . ,(->symbol o))
                               (rules . ,(list
                                          (alist->hash-table
-                                          `((triggers . ())
+                                          `((triggers . ,(json-triggers (make <triggers>)))
                                             (guard . "")
-                                            (actions . ,(json-actions '()))
+                                            (actions . ,(json-action '()))
                                             (next . ()))))))))))
 
 (define-method (json-table (var <symbol>) (state <field>) (o <on>))
@@ -96,9 +96,9 @@
    (_
     (list
      (alist->hash-table
-      `((triggers . ,(map ->symbol ((compose .elements .triggers) o)))
+      `((triggers . ,(json-triggers (.triggers o)))
         (guard . "")
-        (actions . ,(json-actions (.statement o)))
+        (actions . ,(json-action (.statement o)))
         (next . ,(json-next var state (.statement o)))))))))
 
 (define-method (json-table- (var <symbol>) (state <field>))
@@ -106,9 +106,9 @@
 
 (define-method (json-inner-guard (var <symbol>) (state <field>) (triggers <triggers>) (guard <expression>) (statement <statement>))
   (alist->hash-table
-   `((triggers . ,(map ->symbol (.elements triggers)))
+   `((triggers . ,(json-triggers triggers))
      (guard . ,(->symbol guard))
-     (actions . ,(json-actions statement))
+     (actions . ,(json-action statement))
      (next . ,(json-next var state statement)))))
 
 (define-method (json-inner-guard (var <symbol>) (state <field>) (o <triggers>))
@@ -150,9 +150,14 @@
 (define-method (add-state (o <list>) (state <field>))
   (add-state o (list state)))
 
-(define-method (json-actions o)
+(define-method (json-action o)
   (alist->hash-table
    `((data . ,(ast->asd o))
+     (location . ,(json-location o)))))
+
+(define-method (json-triggers (o <triggers>))
+  (alist->hash-table
+   `((data . ,(map ->symbol (.elements o)))
      (location . ,(json-location o)))))
 
 (define (->symbol o)
