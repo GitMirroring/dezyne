@@ -323,7 +323,7 @@
     (reply lparen expression rparen semicolon) : `(,$1 (expression ,$3)))
 
    (return-statement
-    (return semicolon) : (note-location '(retun) @1)
+    (return semicolon) : (note-location '(return) @1)
     (return expression semicolon) : (note-location `(return (expression ,$2)) @1))
 
    (variable-statement

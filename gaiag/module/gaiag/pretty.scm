@@ -75,6 +75,7 @@
      (->string (list 'variable name (->string type) (list 'assign-call function arguments))))
     (($ <variable> name type ($ <action> trigger))
      (->string (list 'variable name (->string type) (list 'assign-action trigger))))
+
     ;; comment this out to get ol style system as system
     (($ <system> name ($ <ports> ports) ($ <instances> instances) ($ <bindings> bindings))
      (->string (list 'system-as-component name ports instances bindings)))
@@ -133,7 +134,7 @@
                                       (string-postfix? ")" s))
                                  (string-drop (string-drop-right s 1) 1)
                                  s))))
-    (unparen (->string src))))
+    (and=> src (compose unparen ->string))))
 
 (define (arguments->string arguments)
   (comma-space-join (map ->string (.elements arguments))))
