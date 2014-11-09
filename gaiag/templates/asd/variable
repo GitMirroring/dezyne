@@ -1,1 +1,1 @@
-#type  #var  = #value ;
+#type  #var #(if value  (list " = " value));

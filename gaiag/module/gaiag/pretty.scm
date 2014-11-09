@@ -59,6 +59,8 @@
   (map (lambda (slot) (slot-ref o (slot-definition-name slot))) ((compose class-slots class-of) o)))
 
 (define (->string src)
+  (define (unspecified? x) (eq? x *unspecified*))
+
   (match src
     (#f "false")
     (#t "true")
@@ -117,6 +119,7 @@
        (->string (list lhs " " op " " rhs ))))
 
     ((h ...) (apply string-append (map ->string h)))
+    ((? unspecified?) #f)
     (_ (format #f "~a" src))
     (_ (format #f "~a:->string:no match:~a\n" (current-source-location) src))))
 
