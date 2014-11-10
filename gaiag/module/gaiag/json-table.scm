@@ -69,17 +69,17 @@
        (let ((var ((compose .identifier .value) expression))
              (state (.value expression)))
          (alist->hash-table
-          `((state . ,(->symbol state))
+          `((state . ,(json-state (->symbol state) o))
             (rules . ,(json-table var state (on)))))))
       (($ <guard> expression ($ <compound> (and (($ <on>) ...) (get! ons))))
        (let ((var ((compose .identifier .value) expression))
              (state (.value expression)))
          (alist->hash-table
-          `((state . ,(->symbol state))
+          `((state . ,(json-state (->symbol state) o))
             (rules . ,(apply append (map (json-table- var state) (ons))))))))
       (_ (stderr "catch all:\n")
          (pretty-print (gom->list o) (current-error-port))
-         (alist->hash-table `((state . ,(->symbol o))
+         (alist->hash-table `((state . ,(json-state (->symbol o) o))
                               (rules . ,(list
                                          (alist->hash-table
                                           `((triggers . ,(json-triggers (make <triggers>)))
@@ -150,15 +150,19 @@
 (define-method (add-state (o <list>) (state <field>))
   (add-state o (list state)))
 
-(define-method (json-action o)
+(define-method (json-data-location data location)
   (alist->hash-table
-   `((data . ,(ast->asd o))
-     (location . ,(json-location o)))))
+   `((data . ,data)
+     (location . ,(json-location location)))))
+
+(define-method (json-state data (o <guard>))
+  (json-data-location data o))
+
+(define-method (json-action o)
+  (json-data-location (ast->asd o) o))
 
 (define-method (json-triggers (o <triggers>))
-  (alist->hash-table
-   `((data . ,(map ->symbol (.elements o)))
-     (location . ,(json-location o)))))
+  (json-data-location (map ->symbol (.elements o)) o))
 
 (define (->symbol o)
   (match o

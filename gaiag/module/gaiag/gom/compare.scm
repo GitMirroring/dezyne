@@ -76,14 +76,17 @@
   (and (eq? (.port a) (.port b))
        (eq? (.event a ) (.event b))))
 
-(define-method (equal? (lhs <literal>) (rhs <literal>))
-  (and (eq? (.scope lhs) (.scope rhs))
-       (eq? (.type lhs) (.type rhs))
-       (eq? (.field lhs) (.field rhs))))
+(define-method (equal? (a <literal>) (b <literal>))
+  (and (eq? (.scope a) (.scope b))
+       (eq? (.type a) (.type b))
+       (eq? (.field a) (.field b))))
 
-(define-method (equal? (lhs <field>) (rhs <field>))
-  (and (eq? (.identifier lhs) (.identifier rhs))
-       (eq? (.field lhs) (.field rhs))))
+(define-method (equal? (a <field>) (b <field>))
+  (and (eq? (.identifier a) (.identifier b))
+       (eq? (.field a) (.field b))))
 
-(define-method (equal? (lhs <var>) (rhs <var>))
-  (eq? (.name lhs) (.name rhs)))
+(define-method (equal? (a <var>) (b <var>))
+  (eq? (.name a) (.name b)))
+
+(define-method (equal? (a <expression>) (b <expression>))
+  (equal? (gom->list (.value a)) (gom->list (.value b))))

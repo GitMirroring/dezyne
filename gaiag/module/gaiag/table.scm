@@ -101,11 +101,23 @@
 
 (define-method (state-table (model <model>) (state <literal>) (o <compound>))
   (and-let* ((statement (sort-ons (flatten-compound (evaluate model state o)))))
-            (make <guard>
-              :expression (make <expression> :value (field model state))
-              :statement statement)))
+            (let* ((field (make-field model state))
+                   (expression (make <expression> :value (make-field model state)))
+                   (expression2 (make <expression>
+                                  :value (list '== (make <var>
+                                                     :name (.identifier field))
+                                               state)))
+                   (guards (filter (lambda (g) (let ((e (.expression g)))
+                                                 (or (equal? e expression)
+                                                     (equal? e expression2))))
+                                   ((gom:collect <guard>) o)))
+                   (location (and (pair? guards) (car guards))))
+              (retain-source-location
+               location (make <guard>
+                          :expression expression
+                          :statement statement)))))
 
-(define-method (field (model <model>) (state <literal>))
+(define-method (make-field (model <model>) (state <literal>))
   (define (type? v) (eq? ((compose .name .type) v)) (.type state))
   (let* ((var (find type? (gom:variables model)))
          (name (or (and=> var .name) 'state)))
