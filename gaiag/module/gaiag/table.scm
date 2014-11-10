@@ -302,18 +302,6 @@
      o
      )))
 
-(define-method (equal? (lhs <literal>) (rhs <literal>))
-  (and (eq? (.scope lhs) (.scope rhs))
-       (eq? (.type lhs) (.type rhs))
-       (eq? (.field lhs) (.field rhs))))
-
-(define-method (equal? (lhs <field>) (rhs <field>))
-  (and (eq? (.identifier lhs) (.identifier rhs))
-       (eq? (.field lhs) (.field rhs))))
-
-(define-method (equal? (lhs <var>) (rhs <var>))
-  (eq? (.name lhs) (.name rhs)))
-
 (define-method (mangle-table (o <list>))
   (map mangle-table o))
 

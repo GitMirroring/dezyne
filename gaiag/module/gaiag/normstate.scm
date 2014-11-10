@@ -87,7 +87,7 @@
          (if (null? ons)
              '()
              (receive (shared-ons remainder)
-                 (partition (lambda (x) (on-equal? (car ons) x)) ons)
+                 (partition (lambda (x) (on-same-port-statement? (car ons) x)) ons)
                (let* ((triggers
                        (apply append
                               (map (compose .elements .triggers) shared-ons)))
@@ -101,20 +101,10 @@
      ((h t ...) (map aggregate-on o))
      (_ o)))
 
-(define-method (on-equal? (lhs <on>) (rhs <on>))
-  "On-statements LHS and RHS share the same statement and port."
-  (on-equal?- lhs rhs))
-
-(define-method (on-equal?- (lhs <on>) (rhs <on>))
+(define-method (on-same-port-statement? (lhs <on>) (rhs <on>))
   (and (eq? ((compose .port car .elements .triggers) lhs)
             ((compose .port car .elements .triggers) rhs))
-       (statement-equal? (.statement lhs) (.statement rhs))))
-
-(define-method (statement-equal? (lhs <statement>) (rhs <statement>))
-  (equal? (gom->list lhs) (gom->list rhs)))
-
-(define-method (statement-equal? (lhs <top>) (rhs <top>))
-  (equal? lhs rhs))
+       (equal? (.statement lhs) (.statement rhs))))
 
 (define (expand-on o)
   (match o

@@ -114,16 +114,6 @@
   ((compose string->symbol string-capitalize symbol->string) symbol))
 
 (define (symbol< a b) (string< (symbol->string a) (symbol->string b)))
-(define (list< a b)
-  (if (null? a)
-      (not (null? b))
-      (if (null? b)
-          #f
-          (if (eq? (car a) (car b))
-              (list< (cdr a) (cdr b))
-              (if (pair? (car a))
-		  (list< (car a) (car b))
-		  (symbol< (car a) (car b)))))))
 
 (define (join-components components)
   (apply

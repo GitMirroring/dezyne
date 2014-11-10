@@ -116,15 +116,6 @@
 (define-method (gom:filter (class <class>))
   (lambda (o) (gom:filter (is? class) o)))
 
-(define-method (gom:trigger< (lhs <trigger>) (rhs <trigger>))
-  (if (and (not (.port lhs)) (not (.port rhs)))
-      (symbol< (.event lhs) (.event rhs))
-      (if
-       (and (symbol? (.port lhs)) (symbol? (.port rhs))
-            (list< (list (.port lhs) (.event lhs))
-                   (list (.port rhs) (.event rhs))))
-       (not (symbol? (.port lhs))))))
-
 (define* (gom:find-triggers ast :optional (found '()))
   "Search for optional and inevitable."
   (match ast
@@ -132,7 +123,7 @@
      (or (and=> (.behaviour ast) gom:find-triggers) '()))
     (($ <behaviour>) (or (and=> (.statement ast) gom:find-triggers) '()))
     (($ <compound> statements)
-     (delete-duplicates (sort (append (apply append (map gom:find-triggers statements))) gom:trigger<)))
+     (delete-duplicates (sort (append (apply append (map gom:find-triggers statements))) <)))
     (($ <on>) (gom:find-triggers (.triggers ast)))
     (($ <triggers>) (.elements ast))
     (($ <guard>) (gom:find-triggers (.statement ast) found))

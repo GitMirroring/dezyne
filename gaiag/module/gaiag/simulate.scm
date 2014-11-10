@@ -189,7 +189,7 @@
   (let* ((key (seen-key model state ast))
          (events (seen model state ast)))
     (if (not (seen? model state ast event))
-        (let ((value (delete-duplicates (sort (cons event events) event<))))
+        (let ((value (delete-duplicates (sort (cons event events) <))))
           (set! *state-space* (assoc-set! *state-space* key value))))))
 
 (define (state-ast-todo model state ast events)
@@ -353,8 +353,8 @@
   (and state
        (match ast
          (($ <on> ($ <triggers> t) statement)
-          (debug "on: t=~a, event=~a --> ~a\n" t event (member event t trigger-equal?))
-          (if (member event t trigger-equal?)
+          (debug "on: t=~a, event=~a --> ~a\n" t event (member event t equal?))
+          (if (member event t equal?)
               (process model statement state event (cons ast trace))
               (values state #f #f #f trace)))
          (($ <guard> expression statement)
@@ -465,10 +465,3 @@
     ((? string?) (string->symbol src))
     ((? symbol?) src)
     (_ (throw 'match-error  (format #f "~a: ->symbol match: ~a\n"  (current-source-location) src)))))
-
-(define (event< a b)
-  (list< (list (.port a) (.event a)) (list (.port b) (.event b))))
-
-(define (trigger-equal? a b)
-  (and (eq? (.port a) (.port b))
-       (eq? (.event a ) (.event b))))

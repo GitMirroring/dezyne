@@ -26,14 +26,15 @@
   :use-module (ice-9 pretty-print)
   :use-module (ice-9 receive)
   :use-module (srfi srfi-1)
+  :use-module (oop goops)
+  :use-module (oop goops describe)
+
+  :use-module (gaiag gom)
 
   :use-module (gaiag annotate)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
   :use-module (language asd location)
-
-  :use-module (oop goops)
-  :use-module (gaiag gom)
 
   :export (
            ast:resolve

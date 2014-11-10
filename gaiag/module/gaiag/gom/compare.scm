@@ -27,49 +27,63 @@
 
 (define-module (gaiag gom compare)
   :use-module (oop goops)
+  :use-module (oop goops describe)
 
   :use-module (gaiag misc)
   :use-module (gaiag reader)
   :use-module (gaiag gom ast)
-  :use-module (gaiag gom gom)
   :use-module (gaiag gom display)
+  :use-module (gaiag gom gom)
+  :use-module (gaiag gom util)
 
-  :re-export (<))
+  :re-export (< equal?))
 
-(define-method (< (lhs <on>) (rhs <on>))
-  (< (.triggers lhs) (.triggers rhs)))
+(define-method (< (a <on>) (b <on>))
+  (< (.triggers a) (.triggers b)))
 
-(define-method (< (lhs <triggers>) (rhs <triggers>))
-  (< (stable-sort (.elements lhs) <)
-     (stable-sort (.elements rhs) <)))
+(define-method (< (a <triggers>) (b <triggers>))
+  (< (stable-sort (.elements a) <)
+     (stable-sort (.elements b) <)))
 
-(define-method (< (lhs <trigger>) (rhs <trigger>))
-  (if (and (not (< (.port lhs) (.port rhs)))
-           (not (< (.port rhs) (.port lhs))))
-      (symbol< (.event lhs) (.event rhs))
-      (cond
-       ((not (.port lhs)) #t)
-       ((not (.port rhs)) #f)
-       (else
-        (symbol< (.port lhs) (.port rhs))))))
+(define-method (< (a <trigger>) (b <trigger>))
+  (< (list (.port a) (.event a)) (list (.port b) (.event b))))
 
-(define-method (< (lhs <list>) (rhs <list>))
-  (let loop ((lhs lhs) (rhs rhs))
-    (if (or (null? lhs) (null? rhs))
-        (< (length lhs) (length rhs))
-        (if (and (not (< (car lhs) (car rhs)))
-                 (not (< (car rhs) (car lhs))))
-            (loop (cdr lhs) (cdr rhs))
-            (< (car lhs) (car rhs))))))
+(define-method (< (a <list>) (b <list>))
+  (cond
+   ((null? a) (not (null? b)))
+   ((null? b) #f)
+   ((and (not (< (car a) (car b)))
+               (not (< (car b) (car a))))
+    (< (cdr a) (cdr b)))
+   (else (< (car a) (car b)))))
 
-(define-method (< (lhs <symbol>) (rhs <symbol>))
-  (symbol< lhs rhs))
+(define-method (< (a <symbol>) (b <symbol>))
+  (symbol< a b))
 
-(define-method (< (lhs <boolean>) (rhs <symbol>))
+(define-method (< (a <boolean>) (b <symbol>))
   #t)
 
-(define-method (< (lhs <boolean>) (rhs <boolean>))
+(define-method (< (a <boolean>) (b <boolean>))
   #f)
 
-(define-method (< (lhs <symbol>) (rhs <boolean>))
+(define-method (< (a <symbol>) (b <boolean>))
   #f)
+
+(define-method (equal? (a <statement>) (b <statement>))
+  (equal? (gom->list a) (gom->list b)))
+
+(define-method (equal? (a <trigger>) (b <trigger>))
+  (and (eq? (.port a) (.port b))
+       (eq? (.event a ) (.event b))))
+
+(define-method (equal? (lhs <literal>) (rhs <literal>))
+  (and (eq? (.scope lhs) (.scope rhs))
+       (eq? (.type lhs) (.type rhs))
+       (eq? (.field lhs) (.field rhs))))
+
+(define-method (equal? (lhs <field>) (rhs <field>))
+  (and (eq? (.identifier lhs) (.identifier rhs))
+       (eq? (.field lhs) (.field rhs))))
+
+(define-method (equal? (lhs <var>) (rhs <var>))
+  (eq? (.name lhs) (.name rhs)))

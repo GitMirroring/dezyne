@@ -28,6 +28,7 @@
   :use-module (oop goops describe)
 
   :use-module (gaiag gom ast)
+  :use-module (gaiag gom compare)
   :use-module (gaiag gom gom)
   :use-module (gaiag gom display)
   :use-module (gaiag gom util))
