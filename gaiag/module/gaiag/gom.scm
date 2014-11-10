@@ -34,6 +34,7 @@
 
 (re-export-modules
  (gaiag gom ast)
+ (gaiag gom compare)
  (gaiag gom gom)
  (gaiag gom display)
  (gaiag gom map)

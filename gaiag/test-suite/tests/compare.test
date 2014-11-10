@@ -1,0 +1,49 @@
+;; -*-mode:scheme-*-
+;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
+
+(read-set! keywords 'prefix)
+
+(define-module (test-handler)
+  :use-module (oop goops)
+
+  :use-module (test-suite lib)
+  :use-module (test-suite misc)
+
+  :use-module (gaiag gom)
+  :use-module (gaiag pretty)
+  :use-module (gaiag reader)
+  :use-module (gaiag resolve)
+  :use-module (gaiag table))
+
+(pass-if "compare-first-dummy-test"
+         #t)
+
+(pass-if "compare-list<"
+         (not (< '() '())))
+
+(pass-if "compare-list<"
+         (not (< '(a) '())))
+
+(pass-if "compare-list<"
+         (< '() '(b)))
+
+(pass-if "compare-list<"
+         (< '(a) '(b)))
+
+(pass-if "compare-trigger"
+         (< (make <trigger> :event 'a)
+            (make <trigger> :event 'b)))
+
+(pass-if "compare-trigger"
+         (< (make <trigger> :port 'a :event 'b)
+            (make <trigger> :port 'b :event 'a)))
+
+(pass-if "compare-on"
+         (< (make <on>
+              :triggers (make <triggers>
+                          :elements
+                          (list (make <trigger> :event 'a))))
+            (make <on>
+              :triggers (make <triggers>
+                          :elements
+                          (list (make <trigger> :event 'b))))))
