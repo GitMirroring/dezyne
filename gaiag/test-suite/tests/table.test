@@ -439,3 +439,51 @@ interface i
   }
 }
 "))
+
+
+(pass-if "state-table-sort-triggers"
+  (diff-noisy-equal?
+   (pretty-state-table
+    (ast:resolve
+     (asd->ast
+#{
+interface ISiren
+{
+  in void start();
+  in void stop();
+
+  behaviour
+  {
+    bool running = false;
+    [running]
+    {
+      on start: running = !running;
+      on stop: illegal;
+    }
+    [otherwise]
+    {
+      on start: illegal;
+      on stop: running = !running;
+    }
+  }
+}
+#})))
+"
+{
+  [state.Initial]
+    {
+      on start:
+        [running]
+        running = !running;
+      on start:
+        [!running]
+        illegal;
+      on stop:
+        [running]
+        illegal;
+      on stop:
+        [!running]
+        running = !running;
+    }
+}
+"))

@@ -100,7 +100,7 @@
       o))
 
 (define-method (state-table (model <model>) (state <literal>) (o <compound>))
-  (and-let* ((statement (flatten-compound (evaluate model state o))))
+  (and-let* ((statement (sort-ons (flatten-compound (evaluate model state o)))))
             (make <guard>
               :expression (make <expression> :value (field model state))
               :statement statement)))
@@ -123,7 +123,6 @@
                      (if statement
                          (cons statement (loop (cdr statements)))
                          (loop (cdr statements))))))))
-
        (cond
         ((=1 (length statements)) (car statements))
         (else (retain-source-location o (make <compound> :elements statements))))))
@@ -206,6 +205,12 @@
     (_
      ;;(stderr "ignoring:") (pretty-print (gom->list o) (current-error-port))
      o)))
+
+(define-method (sort-ons (o <ast>))
+  (match o
+    (($ <compound> (and (($ <on>) ..1) (get! ons)))
+     (make <compound> :elements (stable-sort (ons) <)))
+    (_ o)))
 
 (define-method (annotate-otherwise (o <compound>) (guard <guard>))
   (and-let* ((guards ((gom:filter <guard>) (.elements o)))
