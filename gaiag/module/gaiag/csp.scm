@@ -821,7 +821,7 @@
               (expression (csp-expression->string ast (.expression src)))
               (then (csp-transform ast (.then src) inevitable-optional? channel provided-on? tail-recursive?))
               (else (csp-transform ast (.else src) inevitable-optional? channel provided-on? tail-recursive?)))
-          (list "\\ P',(" context ") @ ifthenelse_(" expression ",\n" then ",\n" else "\n)(P',(" context "))")))
+          (list "(\\ P',(" context ") @ ifthenelse_(" expression ",\n" then ",\n" else "\n)(P',(" context ")))")))
 
        (($ <illegal>) "illegal_")
 

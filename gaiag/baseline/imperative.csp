@@ -48,38 +48,38 @@ IF_iimperative_(IG,CS) = let
 iimperative_(((s,b,c),(stack'))) =
 ((s == S_S1)) & (
 iimperative?x:{e} ->
-semi_(semi_(\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
+semi_(semi_((\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
 semi_((\ P',V' @ iimperative_''!f -> P'(V')),
 (\ P',V' @ iimperative_''!g -> P'(V'))),
 skip_
-)(P',((s,b,c),(stack'))),
-semi_(\ P',((s,b,c),(stack')) @ ifthenelse_(b,
-semi_(\ P',((s,b,c),(stack')) @ ifthenelse_(c,
+)(P',((s,b,c),(stack')))),
+semi_((\ P',((s,b,c),(stack')) @ ifthenelse_(b,
+semi_((\ P',((s,b,c),(stack')) @ ifthenelse_(c,
 (\ P',V' @ iimperative_''!g -> P'(V')),
 skip_
-)(P',((s,b,c),(stack'))),
+)(P',((s,b,c),(stack')))),
 semi_(assign_(\ ((s,b,c),(stack')) @ ((s,b,false),(stack'))),
 (\ P',V' @ iimperative_''!f -> P'(V')))),
-\ P',((s,b,c),(stack')) @ ifthenelse_(c,
+(\ P',((s,b,c),(stack')) @ ifthenelse_(c,
 semi_(assign_(\ ((s,b,c),(stack')) @ ((s,false,c),(stack'))),
 (\ P',V' @ iimperative_''!h -> P'(V'))),
 semi_(assign_(\ ((s,b,c),(stack')) @ ((s,true,c),(stack'))),
 (\ P',V' @ iimperative_''!g -> P'(V')))
-)(P',((s,b,c),(stack')))
-)(P',((s,b,c),(stack'))),
+)(P',((s,b,c),(stack'))))
+)(P',((s,b,c),(stack')))),
 assign_(\ ((s,b,c),(stack')) @ ((S_S2,b,c),(stack'))))),
 (\ P',V' @ iimperative_'.return -> P'(V')))(\ V' @ iimperative_(V'),((s,b,c),(stack'))))
 []
 ((s == S_S2)) & (
 iimperative?x:{e} ->
-semi_(semi_(\ P',((s,b,c),(stack')) @ ifthenelse_(b,
-semi_(\ P',((s,b,c),(stack')) @ ifthenelse_((not c),
+semi_(semi_((\ P',((s,b,c),(stack')) @ ifthenelse_(b,
+semi_((\ P',((s,b,c),(stack')) @ ifthenelse_((not c),
 assign_(\ ((s,b,c),(stack')) @ ((s,b,true),(stack'))),
 assign_(\ ((s,b,c),(stack')) @ ((s,b,false),(stack')))
-)(P',((s,b,c),(stack'))),
+)(P',((s,b,c),(stack')))),
 (\ P',V' @ iimperative_''!h -> P'(V'))),
 skip_
-)(P',((s,b,c),(stack'))),
+)(P',((s,b,c),(stack')))),
 semi_(assign_(\ ((s,b,c),(stack')) @ ((s,(not b),c),(stack'))),
 assign_(\ ((s,b,c),(stack')) @ ((S_S1,b,c),(stack'))))),
 (\ P',V' @ iimperative_'.return -> P'(V')))(\ V' @ iimperative_(V'),((s,b,c),(stack'))))

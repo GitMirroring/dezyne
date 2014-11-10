@@ -48,10 +48,10 @@ IF_I_(IG,CS) = let
 I_(((s),(stack'))) =
 ((s == Enum_False)) & (
 I?x:{e} ->
-semi_(\ P',((s),(stack')) @ ifthenelse_((s == Enum_False),
+semi_((\ P',((s),(stack')) @ ifthenelse_((s == Enum_False),
 (\ P',V' @ I_''!a -> P'(V')),
 skip_
-)(P',((s),(stack'))),
+)(P',((s),(stack')))),
 (\ P',V' @ I_'.return -> P'(V')))(\ V' @ I_(V'),((s),(stack'))))
 []
 CS & I?x:{} -> illegal_(STOP,<>)
@@ -74,10 +74,10 @@ CO_sugar_(IIG,IG) = let
 sugar_(((s),(stack'))) = transition_begin -> (
 ((s == Enum_False)) & (
 i?x:{e} ->
-semi_(\ P',((s),(stack')) @ ifthenelse_((s == Enum_False),
+semi_((\ P',((s),(stack')) @ ifthenelse_((s == Enum_False),
 (\ P',V' @ i_''!a -> P'(V')),
 skip_
-)(P',((s),(stack'))),
+)(P',((s),(stack')))),
 (\ P',V' @ I_'.return -> P'(V')))(\ V' @ transition_end -> sugar_(V'),((s),(stack'))))
 )
 

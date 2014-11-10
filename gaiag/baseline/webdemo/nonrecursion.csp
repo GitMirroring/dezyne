@@ -75,10 +75,10 @@ skip_))(P',V')
 i103_nonrecursion_(((i28_b),(stack'))) = transition_begin -> (
 i24_i?x:{i3_e} ->
 semi_(semi_(call_(\ P',V' @ i52_f(P',V')),
-\ P',((i28_b),(stack')) @ ifthenelse_(i28_b,
+(\ P',((i28_b),(stack')) @ ifthenelse_(i28_b,
 illegal_,
 skip_
-)(P',((i28_b),(stack')))),
+)(P',((i28_b),(stack'))))),
 (\ P',V' @ i23_I_'.return -> P'(V')))(\ V' @ transition_end -> i103_nonrecursion_(V'),((i28_b),(stack')))
 )
 

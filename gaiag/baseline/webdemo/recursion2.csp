@@ -65,10 +65,10 @@ channel i14_i_':{return}
 
 CO_i84_recursion2_(IIG,IG) = let
 i21_g(P',V') = (skip_)(P',V')
-i60_f(PF',V') = (semi_(\ P',((<>),((stack',i24_counter))) @ ifthenelse_((i24_counter < 2),
+i60_f(PF',V') = (semi_((\ P',((<>),((stack',i24_counter))) @ ifthenelse_((i24_counter < 2),
 call_args_(\ P',V' @ i60_f(PF',V'),(\ ((<>),((stack',i24_counter))) @ ((i24_counter + 1)))),
 skip_
-)(P',((<>),((stack',i24_counter)))),
+)(P',((<>),((stack',i24_counter))))),
 skip_))(PF',V')
 
 i84_recursion2_(((<>),(stack'))) = transition_begin -> (

@@ -97,10 +97,10 @@ Reply_(((dummy),(stack'))) = transition_begin -> (
 (true) & (
 i?x:{done} ->
 context_active_(semi_(send_(u,what),recv_(u_',what)),
-\ P',((dummy),((stack',s))) @ ifthenelse_((s == Status_Ok),
+(\ P',((dummy),((stack',s))) @ ifthenelse_((s == Status_Ok),
 reply_(I_', (\ ((dummy),((stack',s))) @ Status_Yes)),
 reply_(I_', (\ ((dummy),((stack',s))) @ Status_No))
-)(P',((dummy),((stack',s)))))(\ V' @ transition_end -> Reply_(V'),((dummy),(stack'))))
+)(P',((dummy),((stack',s))))))(\ V' @ transition_end -> Reply_(V'),((dummy),(stack'))))
 )
 
 within Reply_(((false),(<>)))

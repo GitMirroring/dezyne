@@ -165,17 +165,17 @@ Comp_(((s),(stack'))) = transition_begin -> (
 ((s == State_Uninitialized)) & (
 client?x:{initialize} ->
 context_active_(semi_(send_(device_A,initialize),recv_(device_A_',initialize)),
-semi_(\ P',((s),((stack',res))) @ ifthenelse_((res == result_t_OK),
+semi_((\ P',((s),((stack',res))) @ ifthenelse_((res == result_t_OK),
 assign_active_(semi_(send_(device_A,calibrate),recv_(device_A_',calibrate)),
 \ ((s),((stack',res))),r' @ ((s),((stack',r')))),
 skip_
-)(P',((s),((stack',res)))),
-\ P',((s),((stack',res))) @ ifthenelse_((res == result_t_OK),
+)(P',((s),((stack',res))))),
+(\ P',((s),((stack',res))) @ ifthenelse_((res == result_t_OK),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Initialized),((stack',res)))),
 reply_(IComp_', (\ ((s),((stack',res))) @ result_t_OK))),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Uninitialized),((stack',res)))),
 reply_(IComp_', (\ ((s),((stack',res))) @ result_t_NOK)))
-)(P',((s),((stack',res))))))(\ V' @ transition_end -> Comp_(V'),((s),(stack')))
+)(P',((s),((stack',res)))))))(\ V' @ transition_end -> Comp_(V'),((s),(stack')))
  []
   IIG & client?x:{recover,perform_actions} ->
 illegal_(STOP,<>))
@@ -183,17 +183,17 @@ illegal_(STOP,<>))
 ((s == State_Initialized)) & (
 client?x:{perform_actions} ->
 context_active_(semi_(send_(device_A,perform_action1),recv_(device_A_',perform_action1)),
-semi_(\ P',((s),((stack',res))) @ ifthenelse_((res == result_t_OK),
+semi_((\ P',((s),((stack',res))) @ ifthenelse_((res == result_t_OK),
 assign_active_(semi_(send_(device_A,perform_action2),recv_(device_A_',perform_action2)),
 \ ((s),((stack',res))),r' @ ((s),((stack',r')))),
 skip_
-)(P',((s),((stack',res)))),
-\ P',((s),((stack',res))) @ ifthenelse_((res == result_t_OK),
+)(P',((s),((stack',res))))),
+(\ P',((s),((stack',res))) @ ifthenelse_((res == result_t_OK),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Initialized),((stack',res)))),
 reply_(IComp_', (\ ((s),((stack',res))) @ result_t_OK))),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Error),((stack',res)))),
 reply_(IComp_', (\ ((s),((stack',res))) @ result_t_NOK)))
-)(P',((s),((stack',res))))))(\ V' @ transition_end -> Comp_(V'),((s),(stack')))
+)(P',((s),((stack',res)))))))(\ V' @ transition_end -> Comp_(V'),((s),(stack')))
  []
   IIG & client?x:{initialize,recover} ->
 illegal_(STOP,<>))
@@ -201,12 +201,12 @@ illegal_(STOP,<>))
 ((s == State_Error)) & (
 client?x:{recover} ->
 context_active_(semi_(send_(device_A,calibrate),recv_(device_A_',calibrate)),
-\ P',((s),((stack',res))) @ ifthenelse_((res == result_t_OK),
+(\ P',((s),((stack',res))) @ ifthenelse_((res == result_t_OK),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Initialized),((stack',res)))),
 reply_(IComp_', (\ ((s),((stack',res))) @ result_t_OK))),
 semi_(assign_(\ ((s),((stack',res))) @ ((State_Error),((stack',res)))),
 reply_(IComp_', (\ ((s),((stack',res))) @ result_t_NOK)))
-)(P',((s),((stack',res)))))(\ V' @ transition_end -> Comp_(V'),((s),(stack')))
+)(P',((s),((stack',res))))))(\ V' @ transition_end -> Comp_(V'),((s),(stack')))
  []
   IIG & client?x:{initialize,perform_actions} ->
 illegal_(STOP,<>))

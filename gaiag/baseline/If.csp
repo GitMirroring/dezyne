@@ -47,10 +47,10 @@ IF_I_(IG,CS) = let
 
 I_(((t),(stack'))) =
 I?x:{a} ->
-semi_(semi_(\ P',((t),(stack')) @ ifthenelse_(t,
+semi_(semi_((\ P',((t),(stack')) @ ifthenelse_(t,
 (\ P',V' @ I_''!b -> P'(V')),
 (\ P',V' @ I_''!c -> P'(V'))
-)(P',((t),(stack'))),
+)(P',((t),(stack')))),
 assign_(\ ((t),(stack')) @ (((not t)),(stack')))),
 (\ P',V' @ I_'.return -> P'(V')))(\ V' @ I_(V'),((t),(stack')))
 []
@@ -73,10 +73,10 @@ CO_If_(IIG,IG) = let
 
 If_(((t),(stack'))) = transition_begin -> (
 i?x:{a} ->
-semi_(semi_(\ P',((t),(stack')) @ ifthenelse_(t,
+semi_(semi_((\ P',((t),(stack')) @ ifthenelse_(t,
 (\ P',V' @ i_''!b -> P'(V')),
 (\ P',V' @ i_''!c -> P'(V'))
-)(P',((t),(stack'))),
+)(P',((t),(stack')))),
 assign_(\ ((t),(stack')) @ (((not t)),(stack')))),
 (\ P',V' @ I_'.return -> P'(V')))(\ V' @ transition_end -> If_(V'),((t),(stack')))
 )

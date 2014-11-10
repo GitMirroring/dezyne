@@ -109,12 +109,12 @@ i?x:{done} ->
 context_active_(semi_(send_(u,what),recv_(u_',what)),
 semi_(assign_active_(semi_(send_(u,what),recv_(u_',what)),
 \ ((dummy),((stack',s))),r' @ ((dummy),((stack',r')))),
-\ P',((dummy),((stack',s))) @ ifthenelse_((s == Status_Ok),
+(\ P',((dummy),((stack',s))) @ ifthenelse_((s == Status_Ok),
 context_active_(call_(\ P',V' @ fun(P',V')),
 reply_(I_', (\ ((dummy),(((stack',hide_local0'),s))) @ s))),
 context_active_(call_args_(\ P',V' @ fun_arg(P',V'),(\ ((dummy),((stack',s))) @ (Status_No))),
 reply_(I_', (\ ((dummy),(((stack',hide_local0'),s))) @ s)))
-)(P',((dummy),((stack',s))))))(\ V' @ transition_end -> Reply5_(V'),((dummy),(stack'))))
+)(P',((dummy),((stack',s)))))))(\ V' @ transition_end -> Reply5_(V'),((dummy),(stack'))))
 )
 
 within Reply5_(((false),(<>)))

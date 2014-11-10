@@ -44,10 +44,10 @@ channel ifunction2_'': {c,d}
 channel ifunction2_': {return}
 
 IF_ifunction2_(IG,CS) = let
-vtoggle(P',V') = (semi_(\ P',((f),(stack')) @ ifthenelse_(f,
+vtoggle(P',V') = (semi_((\ P',((f),(stack')) @ ifthenelse_(f,
 (\ P',V' @ ifunction2_''!c -> P'(V')),
 skip_
-)(P',((f),(stack'))),
+)(P',((f),(stack')))),
 returnvalue_(\ ((f),(stack')) @ (not f))))(P',V')
 
 ifunction2_(((f),(stack'))) =
@@ -81,10 +81,10 @@ channel i_':{return}
 
 
 CO_function2_(IIG,IG) = let
-vtoggle(P',V') = (semi_(\ P',((f),(stack')) @ ifthenelse_(f,
+vtoggle(P',V') = (semi_((\ P',((f),(stack')) @ ifthenelse_(f,
 (\ P',V' @ i_''!c -> P'(V')),
 skip_
-)(P',((f),(stack'))),
+)(P',((f),(stack')))),
 returnvalue_(\ ((f),(stack')) @ (not f))))(P',V')
 
 function2_(((f),(stack'))) = transition_begin -> (

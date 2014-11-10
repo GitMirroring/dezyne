@@ -69,7 +69,7 @@ check: compile
 	./test.sh </dev/null
 	$(MAKE) csp asserts c++ pretty goops java javascript python simulate wfc
 
-REGRESSION_SOURCES = $(shell cd examples/regression && grep -l ^component *.asd)
+REGRESSION_SOURCES = $(shell cd examples/regression && ls *.asd)
 WFC_SOURCES = $(shell cd examples/wfc && ls -1 *.asd)
 
 coverage: clean cover-compile cover-test cover-regression
@@ -181,7 +181,7 @@ CC_BROKEN =\
  livelock2.asd\
  mangle.asd\
 
-CC_SOURCES = $(filter-out $(CC_BROKEN),$(REGRESSION_SOURCES))
+CC_SOURCES = $(filter-out $(CC_BROKEN),$(shell cd examples/regression && grep -l ^component *.asd))
 
 #out/%.o.up: UPDATE=||:; cp out/component-$*-c3.cc out/*.hh baseline
 out/%.o.up: UPDATE=&& cp out/component-$*-c3.cc out/*.hh baseline

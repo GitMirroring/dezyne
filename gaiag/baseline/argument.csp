@@ -54,10 +54,10 @@ semi_(semi_(assign_(\ ((b),(stack')) @ (((not b)),(stack'))),
 context_active_(call_args_(\ P',V' @ g(P',V'),(\ ((b),(stack')) @ (b))),
 semi_(assign_active_(call_args_(\ P',V' @ g(P',V'),(\ ((b),((stack',c))) @ (c))),
 \ ((b),((stack',c))),r' @ ((r'),((stack',c)))),
-\ P',((b),((stack',c))) @ ifthenelse_(c,
+(\ P',((b),((stack',c))) @ ifthenelse_(c,
 (\ P',V' @ I_''!f -> P'(V')),
 skip_
-)(P',((b),((stack',c))))))),
+)(P',((b),((stack',c)))))))),
 (\ P',V' @ I_'.return -> P'(V')))(\ V' @ I_(V'),((b),(stack'))))
 []
 CS & I?x:{} -> illegal_(STOP,<>)
@@ -86,10 +86,10 @@ semi_(semi_(assign_(\ ((b),(stack')) @ (((not b)),(stack'))),
 context_active_(call_args_(\ P',V' @ g(P',V'),(\ ((b),(stack')) @ (b))),
 semi_(assign_active_(call_args_(\ P',V' @ g(P',V'),(\ ((b),((stack',c))) @ (c))),
 \ ((b),((stack',c))),r' @ ((r'),((stack',c)))),
-\ P',((b),((stack',c))) @ ifthenelse_(c,
+(\ P',((b),((stack',c))) @ ifthenelse_(c,
 (\ P',V' @ i_''!f -> P'(V')),
 skip_
-)(P',((b),((stack',c))))))),
+)(P',((b),((stack',c)))))))),
 (\ P',V' @ I_'.return -> P'(V')))(\ V' @ transition_end -> argument_(V'),((b),(stack'))))
 )
 

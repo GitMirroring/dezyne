@@ -54,10 +54,10 @@ semi_(semi_(assign_(\ ((va_b),(stack')) @ ((va_b),(stack'))),
 context_active_(call_args_(\ P',V' @ g(P',V'),(\ ((va_b),(stack')) @ (va_b,va_b))),
 semi_(assign_active_(call_args_(\ P',V' @ g(P',V'),(\ ((va_b),((stack',va_c))) @ (va_c,va_c))),
 \ ((va_b),((stack',va_c))),r' @ ((va_b),((stack',va_c)))),
-\ P',((va_b),((stack',va_c))) @ ifthenelse_(va_c,
+(\ P',((va_b),((stack',va_c))) @ ifthenelse_(va_c,
 (\ P',V' @ if_I_''!ev_f -> P'(V')),
 skip_
-)(P',((va_b),((stack',va_c))))))),
+)(P',((va_b),((stack',va_c)))))))),
 (\ P',V' @ if_I_'.return -> P'(V')))(\ V' @ if_I_(V'),((va_b),(stack'))))
 []
 CS & if_I?x:{} -> illegal_(STOP,<>)
@@ -86,10 +86,10 @@ semi_(semi_(assign_(\ ((va_b),(stack')) @ ((va_b),(stack'))),
 context_active_(call_args_(\ P',V' @ g(P',V'),(\ ((va_b),(stack')) @ (va_b,va_b))),
 semi_(assign_active_(call_args_(\ P',V' @ g(P',V'),(\ ((va_b),((stack',va_c))) @ (va_c,va_c))),
 \ ((va_b),((stack',va_c))),r' @ ((va_b),((stack',va_c)))),
-\ P',((va_b),((stack',va_c))) @ ifthenelse_(va_c,
+(\ P',((va_b),((stack',va_c))) @ ifthenelse_(va_c,
 (\ P',V' @ po_i_''!ev_f -> P'(V')),
 skip_
-)(P',((va_b),((stack',va_c))))))),
+)(P',((va_b),((stack',va_c)))))))),
 (\ P',V' @ if_I_'.return -> P'(V')))(\ V' @ transition_end -> co_argument2_(V'),((va_b),(stack'))))
 )
 

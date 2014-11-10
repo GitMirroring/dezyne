@@ -1,0 +1,10 @@
+Checking out/ifreply.csp
+
+Checking COMPLETE'({ifreply.e}) [F= IF_ifreply_(true,true)\diff(Events,{ifreply.e,illegal})
+true
+
+Checking IF_ifreply_(false,false) :[deadlock free]
+true
+
+Checking IF_ifreply_(true,false) :[livelock free]
+true

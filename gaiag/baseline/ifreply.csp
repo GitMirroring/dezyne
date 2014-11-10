@@ -1,0 +1,71 @@
+-- drop_one_local: V => V
+drop_one_local_((M', (L', L0'))) = (M', L')
+
+illegal_(P',V') = illegal -> STOP
+-- send_: (c: channel, e:event) => (P,V)->Proc
+send_(c',e')(P', V') = c'!e' -> P'(V')
+-- recv_: (c: channel, e:event) => (P,V)->Proc
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')                                
+-- skip_: () => (P,V)->Proc
+skip_(P', V') = P'(V')
+-- call_: (B': (P,V)->Proc) => (P,V)->Proc
+call_(B')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', <>))
+-- call_args_: (B': (P,V)->Proc, F': V'->V') => (P,V)->Proc
+call_args_(B', F')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', (<>, F'((M1',L1')))))
+-- assign_: (F': V -> V) => (P,V) -> Proc
+assign_(F')(P', V') = P'(F'(V'))
+-- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
+assign_active_(C', A')(P', V') = C'(\((M', r'),L') @ P'(A'((M',L'),r')), V')
+reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
+-- returnvalue_: (F: V->val) => (P,V)->Proc
+returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
+-- the_end_: P => V->Proc
+the_end_(P', V') = transition_end -> P'(V')
+
+-- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
+semi_(S1',S2')(P', V') = S1'(\V'' @ S2'(P', V''),V')
+-- ifthenelse: (E': val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
+ifthenelse_(E',S1',S2')(P', V') =  if E' then S1'(P', V') else S2'(P', V')
+-- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
+context_(F', S')(P', (M', L')) = S'((\ (M',L2') @ P'((M',L'))), (M', (L', F'((M', L')))))
+-- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
+context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
+
+channel illegal
+channel transition_begin, transition_end
+
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
+datatype event_enumeration_alphabet = Status_Nok | Status_Ok | e | return
+-- interface.csp.scm
+
+channel ifreply: {e}
+
+channel ifreply_': {Status_Ok,Status_Nok,return}
+
+IF_ifreply_(IG,CS) = let
+
+ifreply_(((<>),(stack'))) =
+(true) & (
+ifreply?x:{e} ->
+semi_((\ P',((<>),(stack')) @ ifthenelse_(true,
+skip_,
+skip_
+)(P',((<>),(stack')))),
+reply_(ifreply_', (\ ((<>),(stack')) @ Status_Ok)))(\ V' @ ifreply_(V'),((<>),(stack')))
+ []
+  ifreply?x:{e} ->
+(\ P',((<>),(stack')) @ ifthenelse_(true,
+skip_,
+skip_
+)(P',((<>),(stack'))))(\ V' @ ifreply_(V'),((<>),(stack'))))
+[]
+CS & ifreply?x:{} -> illegal_(STOP,<>)
+
+within if CS then ifreply_(((<>),(<>)))
+             else ifreply_(((<>),(<>)))
+
+-- end of interface.csp.scm
+assert COMPLETE'({ifreply.e}) [F= IF_ifreply_(true,true) \ diff(Events,{ifreply.e,illegal})
+assert IF_ifreply_(false,false) :[deadlock free]
+assert IF_ifreply_(true,false) :[livelock free]
