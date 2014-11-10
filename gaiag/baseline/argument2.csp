@@ -36,13 +36,14 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = ev_e | ev_f | return | the_end'
+datatype event_enumeration_alphabet = ev_e | ev_f | modeling | return | the_end'
 -- interface.csp.scm
 
 channel if_I: {ev_e,the_end'}
 channel if_I_'': {ev_f}
 channel if_I_': {return}
 channel if_I_in',if_I_out': {if_I_'.return}
+channel if_I_''': {modeling}
 
 IF_if_I_(IG,CS) = let
 g(P',V') = (semi_((\ P',V' @ if_I_''!ev_f -> P'(V')),
@@ -77,11 +78,14 @@ within compress((if CS
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel po_i:{ev_e}
+channel po_i: extensions(if_I)
 
-channel po_i_'':{ev_f}
+channel po_i_': extensions(if_I_')
 
-channel po_i_':{return}
+channel po_i_'': extensions(if_I_'')
+
+channel po_i_''': extensions(if_I_''')
+
 
 
 CO_co_argument2_(IIG,IG) = let
@@ -115,7 +119,7 @@ channel reorder_in  : {if_I_'.return}
 channel reorder_out : {po_i_'.return}
 channel queue_full'
 
-SEMANTICS(in',out',link',client',modeling') = let
+SEMANTICS(in',out',link',client',modeling',end') = let
 
 Q' = let
 
@@ -142,19 +146,24 @@ S'    = let
 
 N' = 3
 
-Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
 
-Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!po_i_'.head(r') -> Idle(0))
+Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
+
+FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
             []
-            c' > 0 & transition_end -> transition_begin -> Busy(c',r')
+            ([] x':end' @ x' ->  Busy(c',r'))
             []
-            c' <= N' & in'?x' -> Busy(c'+1,r')
-            []
-            c' > 0 & out'?x' -> Busy(c'-1,r')
-            []
-            r' == <> & reorder_in?if_I_'.x' -> Busy(c',<x'>)
-            []
-            r' != <> & reorder_in?if_I_'.x' -> illegal -> STOP
+            (r' == <> & reorder_in?if_I_'.x' -> Busy(c',<x'>))
+
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!po_i_'.head(r') -> Idle(0)))
+              []
+              (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
+              []
+              (c' <= N' & in'?x' -> Busy(c'+1,r'))
+              []
+              (c' > 0 & out'?x' -> Busy(c'-1,r'))
+              []
+              (r' != <> & reorder_in?if_I_'.x' -> illegal -> STOP)
 
 within Idle(0)
 
@@ -168,9 +177,10 @@ within sbisim(diamond(x))
 
 ClientCalls = {po_i.ev_e}
 UsedModeling = {}
+TheEnd = {||}
 within compress((CO_co_argument2_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|OUT',transition_begin,transition_end,reorder_in,po_i,po_i_'|}|]
-                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN'|}|]
                 (STOP
@@ -184,5 +194,5 @@ assert CO_co_argument2_(true,true)[[if_I_'.x<-po_i_'.x|x<-extensions(po_i_')]] :
 assert COMPLETE'({po_i.ev_e}) [F= CO_co_argument2_(true,true)[[if_I_'.x'<-po_i_'.x'|x'<-extensions(po_i_')]] \ diff(Events,{po_i.ev_e,illegal})
 assert STOP [T= AS_co_argument2_(false) \ diff(Events,{illegal})
 assert AS_co_argument2_(false) :[deadlock free]
-assert IF_if_I_(true,false) [[if_I.x<-po_i.x|x<-extensions(po_i)]][[if_I_'.x<-po_i_'.x|x<-extensions(po_i_')]][[if_I_''.x<-po_i_''.x|x<-extensions(po_i_'')]]\ {} [F= AS_co_argument2_(true) \ diff(Events,{|illegal,po_i,po_i_',po_i_''|})
+assert IF_if_I_(true,false) [[if_I.x<-po_i.x|x<-extensions(po_i)]][[if_I_'.x<-po_i_'.x|x<-extensions(po_i_')]][[if_I_''.x<-po_i_''.x|x<-extensions(po_i_'')]]\ {if_I_'''.modeling} [F= AS_co_argument2_(true) \ diff(Events,{|illegal,po_i,po_i_',po_i_''|})
 assert AS_co_argument2_(true) \ diff(Events,{|illegal,po_i,po_i_',po_i_''|}) :[livelock free]

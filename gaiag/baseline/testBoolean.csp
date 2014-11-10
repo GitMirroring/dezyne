@@ -36,13 +36,14 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = States_State1 | States_State2 | evt | return | the_end'
+datatype event_enumeration_alphabet = States_State1 | States_State2 | evt | modeling | return | the_end'
 -- interface.csp.scm
 
 channel TestBool: {evt,the_end'}
 
 channel TestBool_': {return}
 channel TestBool_in',TestBool_out': {TestBool_'.return}
+channel TestBool_''': {modeling}
 
 IF_TestBool_(IG,CS) = let
 
@@ -92,10 +93,13 @@ within compress((if CS
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i:{evt}
+channel i: extensions(TestBool)
+
+channel i_': extensions(TestBool_')
 
 
-channel i_':{return}
+channel i_''': extensions(TestBool_''')
+
 
 
 CO_testBoolean_(IIG,IG) = let
@@ -119,7 +123,7 @@ channel reorder_in  : {TestBool_'.return}
 channel reorder_out : {i_'.return}
 channel queue_full'
 
-SEMANTICS(in',out',link',client',modeling') = let
+SEMANTICS(in',out',link',client',modeling',end') = let
 
 Q' = let
 
@@ -146,19 +150,24 @@ S'    = let
 
 N' = 3
 
-Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
 
-Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i_'.head(r') -> Idle(0))
+Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
+
+FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
             []
-            c' > 0 & transition_end -> transition_begin -> Busy(c',r')
+            ([] x':end' @ x' ->  Busy(c',r'))
             []
-            c' <= N' & in'?x' -> Busy(c'+1,r')
-            []
-            c' > 0 & out'?x' -> Busy(c'-1,r')
-            []
-            r' == <> & reorder_in?TestBool_'.x' -> Busy(c',<x'>)
-            []
-            r' != <> & reorder_in?TestBool_'.x' -> illegal -> STOP
+            (r' == <> & reorder_in?TestBool_'.x' -> Busy(c',<x'>))
+
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i_'.head(r') -> Idle(0)))
+              []
+              (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
+              []
+              (c' <= N' & in'?x' -> Busy(c'+1,r'))
+              []
+              (c' > 0 & out'?x' -> Busy(c'-1,r'))
+              []
+              (r' != <> & reorder_in?TestBool_'.x' -> illegal -> STOP)
 
 within Idle(0)
 
@@ -172,9 +181,10 @@ within sbisim(diamond(x))
 
 ClientCalls = {i.evt}
 UsedModeling = {}
+TheEnd = {||}
 within compress((CO_testBoolean_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|OUT',transition_begin,transition_end,reorder_in,i,i_'|}|]
-                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN'|}|]
                 (STOP
@@ -188,5 +198,5 @@ assert CO_testBoolean_(true,true)[[TestBool_'.x<-i_'.x|x<-extensions(i_')]] :[de
 assert COMPLETE'({i.evt}) [F= CO_testBoolean_(true,true)[[TestBool_'.x'<-i_'.x'|x'<-extensions(i_')]] \ diff(Events,{i.evt,illegal})
 assert STOP [T= AS_testBoolean_(false) \ diff(Events,{illegal})
 assert AS_testBoolean_(false) :[deadlock free]
-assert IF_TestBool_(true,false) [[TestBool.x<-i.x|x<-extensions(i)]][[TestBool_'.x<-i_'.x|x<-extensions(i_')]]\ {} [F= AS_testBoolean_(true) \ diff(Events,{|illegal,i,i_'|})
+assert IF_TestBool_(true,false) [[TestBool.x<-i.x|x<-extensions(i)]][[TestBool_'.x<-i_'.x|x<-extensions(i_')]]\ {TestBool_'''.modeling} [F= AS_testBoolean_(true) \ diff(Events,{|illegal,i,i_'|})
 assert AS_testBoolean_(true) \ diff(Events,{|illegal,i,i_'|}) :[livelock free]

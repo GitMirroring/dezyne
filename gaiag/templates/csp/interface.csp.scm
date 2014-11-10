@@ -31,6 +31,7 @@ channel #(.name model): {#(comma-join (append (interface-events model gom:in?) (
        (list "channel " (.name model) "_'': {" (comma-join events) "}")))
 channel #(.name model)_': {#(comma-join (return-values model))}
 channel #(.name model)_in',#(.name model)_out': {#(comma-join (map (lambda (x) (list (.name model) "_'." x)) (return-values model)))}
+channel #(.name model)_''': {modeling}
 
 IF_#(.name model) _#((compose .name .behaviour) model)(IG,CS) = let
 # (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (gom:functions (.behaviour model))))

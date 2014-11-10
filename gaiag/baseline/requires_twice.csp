@@ -36,13 +36,14 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = a | e | return | the_end'
+datatype event_enumeration_alphabet = a | e | modeling | return | the_end'
 -- interface.csp.scm
 
 channel irequires_twice: {e,the_end'}
 channel irequires_twice_'': {a}
 channel irequires_twice_': {return}
 channel irequires_twice_in',irequires_twice_out': {irequires_twice_'.return}
+channel irequires_twice_''': {modeling}
 
 IF_irequires_twice_(IG,CS) = let
 
@@ -67,17 +68,22 @@ within compress((if CS
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel p:{e}
-channel once:{e}
-channel twice:{e}
+channel p: extensions(irequires_twice)
+channel once: extensions(irequires_twice)
+channel twice: extensions(irequires_twice)
 
-channel p_'':{a}
-channel once_'':{a}
-channel twice_'':{a}
+channel p_': extensions(irequires_twice_')
+channel once_': extensions(irequires_twice_')
+channel twice_': extensions(irequires_twice_')
 
-channel p_':{return}
-channel once_':{return}
-channel twice_':{return}
+channel p_'': extensions(irequires_twice_'')
+channel once_'': extensions(irequires_twice_'')
+channel twice_'': extensions(irequires_twice_'')
+
+channel p_''': extensions(irequires_twice_''')
+channel once_''': extensions(irequires_twice_''')
+channel twice_''': extensions(irequires_twice_''')
+
 
 
 CO_requires_twice_(IIG,IG) = let
@@ -109,7 +115,7 @@ channel reorder_in  : {irequires_twice_'.return}
 channel reorder_out : {p_'.return}
 channel queue_full'
 
-SEMANTICS(in',out',link',client',modeling') = let
+SEMANTICS(in',out',link',client',modeling',end') = let
 
 Q' = let
 
@@ -136,19 +142,24 @@ S'    = let
 
 N' = 3
 
-Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
 
-Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!p_'.head(r') -> Idle(0))
+Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
+
+FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
             []
-            c' > 0 & transition_end -> transition_begin -> Busy(c',r')
+            ([] x':end' @ x' ->  Busy(c',r'))
             []
-            c' <= N' & in'?x' -> Busy(c'+1,r')
-            []
-            c' > 0 & out'?x' -> Busy(c'-1,r')
-            []
-            r' == <> & reorder_in?irequires_twice_'.x' -> Busy(c',<x'>)
-            []
-            r' != <> & reorder_in?irequires_twice_'.x' -> illegal -> STOP
+            (r' == <> & reorder_in?irequires_twice_'.x' -> Busy(c',<x'>))
+
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!p_'.head(r') -> Idle(0)))
+              []
+              (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
+              []
+              (c' <= N' & in'?x' -> Busy(c'+1,r'))
+              []
+              (c' > 0 & out'?x' -> Busy(c'-1,r'))
+              []
+              (r' != <> & reorder_in?irequires_twice_'.x' -> illegal -> STOP)
 
 within Idle(0)
 
@@ -162,13 +173,14 @@ within sbisim(diamond(x))
 
 ClientCalls = {p.e}
 UsedModeling = {}
+TheEnd = {|once_''',twice_'''|}
 within compress((CO_requires_twice_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|OUT',transition_begin,transition_end,reorder_in,p,p_'|}|]
-                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
-                [|{|IN',once,once_',twice,twice_'|}|]
-                (IF_irequires_twice_(true,false) [[irequires_twice.x<-once.x|x<-extensions(once)]][[irequires_twice_'.x<-once_'.x|x<-extensions(once_')]][[irequires_twice_''.x<-once_''.x|x<-extensions(once_'')]]
-                 ||| IF_irequires_twice_(true,false) [[irequires_twice.x<-twice.x|x<-extensions(twice)]][[irequires_twice_'.x<-twice_'.x|x<-extensions(twice_')]][[irequires_twice_''.x<-twice_''.x|x<-extensions(twice_'')]]
+                [|{|IN',once,once_',once_''',twice,twice_',twice_'''|}|]
+                (IF_irequires_twice_(true,false) [[irequires_twice.x<-once.x|x<-extensions(once)]][[irequires_twice_'.x<-once_'.x|x<-extensions(once_')]][[irequires_twice_''.x<-once_''.x|x<-extensions(once_'')]][[irequires_twice_'''.x<-once_'''.x|x<-extensions(once_''')]]
+                 ||| IF_irequires_twice_(true,false) [[irequires_twice.x<-twice.x|x<-extensions(twice)]][[irequires_twice_'.x<-twice_'.x|x<-extensions(twice_')]][[irequires_twice_''.x<-twice_''.x|x<-extensions(twice_'')]][[irequires_twice_'''.x<-twice_'''.x|x<-extensions(twice_''')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
@@ -179,5 +191,5 @@ assert CO_requires_twice_(true,true)[[irequires_twice_'.x<-p_'.x|x<-extensions(p
 assert COMPLETE'({p.e,once_''.a,twice_''.a}) [F= CO_requires_twice_(true,true)[[irequires_twice_'.x'<-p_'.x'|x'<-extensions(p_')]] \ diff(Events,{p.e,once_''.a,twice_''.a,illegal})
 assert STOP [T= AS_requires_twice_(false) \ diff(Events,{illegal})
 assert AS_requires_twice_(false) :[deadlock free]
-assert IF_irequires_twice_(true,false) [[irequires_twice.x<-p.x|x<-extensions(p)]][[irequires_twice_'.x<-p_'.x|x<-extensions(p_')]][[irequires_twice_''.x<-p_''.x|x<-extensions(p_'')]]\ {} [F= AS_requires_twice_(true) \ diff(Events,{|illegal,p,p_',p_''|})
+assert IF_irequires_twice_(true,false) [[irequires_twice.x<-p.x|x<-extensions(p)]][[irequires_twice_'.x<-p_'.x|x<-extensions(p_')]][[irequires_twice_''.x<-p_''.x|x<-extensions(p_'')]]\ {irequires_twice_'''.modeling} [F= AS_requires_twice_(true) \ diff(Events,{|illegal,p,p_',p_''|})
 assert AS_requires_twice_(true) \ diff(Events,{|illegal,p,p_',p_''|}) :[livelock free]

@@ -26,7 +26,7 @@
 assert IF_#((compose .type gom:port) model) _#((compose .name .behaviour gom:import .type gom:port) model)(true,false) [[#((compose .type gom:port) model) .x<-#((compose .name gom:port) model) .x|x<-extensions(#((compose .name gom:port) model))]][[#((compose .type gom:port) model)_'.x<-#((compose .name gom:port) model)_'.x|x<-extensions(#((compose .name gom:port) model)_')]]#
 (->string (if (not (null? (filter gom:out? (gom:events (gom:port model))))) (list "[["((compose .type gom:port) model) "_''.x<-" ((compose .name gom:port) model) "_''.x|x<-extensions("((compose .name gom:port) model) "_'')]]"))) \ {#
    (comma-join
-       (map (lambda (x) (map ->string (list ((compose .name gom:port) model) "." x))) (filter
+       (append (list (->string (list (.type (gom:port model)) "_'''.modeling"))) (map (lambda (x) (map ->string (list ((compose .name gom:port) model) "." x))) (filter
          (lambda (x) (or (eq? x 'optional) (eq? x 'inevitable)))
-         (port-events (gom:port model)))))} [F= AS_#(.name model) _#((compose .name .behaviour) model) (true) \ diff(Events,{|illegal,#((compose .name gom:port)model),#((compose .name gom:port)model)_'#
+         (port-events (gom:port model))))))} [F= AS_#(.name model) _#((compose .name .behaviour) model) (true) \ diff(Events,{|illegal,#((compose .name gom:port)model),#((compose .name gom:port)model)_'#
 (->string (if (not (null? (filter gom:out? (gom:events (gom:port model))))) (list "," ((compose .name gom:port) model) "_''")))|})

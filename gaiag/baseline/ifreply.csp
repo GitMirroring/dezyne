@@ -36,13 +36,14 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = Status_Nok | Status_Ok | e | return | the_end'
+datatype event_enumeration_alphabet = Status_Nok | Status_Ok | e | modeling | return | the_end'
 -- interface.csp.scm
 
 channel ifreply: {e,the_end'}
 
 channel ifreply_': {Status_Ok,Status_Nok,return}
 channel ifreply_in',ifreply_out': {ifreply_'.Status_Ok,ifreply_'.Status_Nok,ifreply_'.return}
+channel ifreply_''': {modeling}
 
 IF_ifreply_(IG,CS) = let
 

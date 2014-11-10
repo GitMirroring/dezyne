@@ -36,13 +36,14 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = i3_e | i4_h | return | the_end'
+datatype event_enumeration_alphabet = i3_e | i4_h | modeling | return | the_end'
 -- interface.csp.scm
 
 channel i23_I: {i3_e,the_end'}
 channel i23_I_'': {i4_h}
 channel i23_I_': {return}
 channel i23_I_in',i23_I_out': {i23_I_'.return}
+channel i23_I_''': {modeling}
 
 IF_i23_I_(IG,CS) = let
 
@@ -67,11 +68,14 @@ within compress((if CS
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i24_i:{i3_e}
+channel i24_i: extensions(i23_I)
 
-channel i24_i_'':{i4_h}
+channel i24_i_': extensions(i23_I_')
 
-channel i24_i_':{return}
+channel i24_i_'': extensions(i23_I_'')
+
+channel i24_i_''': extensions(i23_I_''')
+
 
 
 CO_i103_nonrecursion_(IIG,IG) = let
@@ -104,7 +108,7 @@ channel reorder_in  : {i23_I_'.return}
 channel reorder_out : {i24_i_'.return}
 channel queue_full'
 
-SEMANTICS(in',out',link',client',modeling') = let
+SEMANTICS(in',out',link',client',modeling',end') = let
 
 Q' = let
 
@@ -131,19 +135,24 @@ S'    = let
 
 N' = 3
 
-Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
 
-Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i24_i_'.head(r') -> Idle(0))
+Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
+
+FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
             []
-            c' > 0 & transition_end -> transition_begin -> Busy(c',r')
+            ([] x':end' @ x' ->  Busy(c',r'))
             []
-            c' <= N' & in'?x' -> Busy(c'+1,r')
-            []
-            c' > 0 & out'?x' -> Busy(c'-1,r')
-            []
-            r' == <> & reorder_in?i23_I_'.x' -> Busy(c',<x'>)
-            []
-            r' != <> & reorder_in?i23_I_'.x' -> illegal -> STOP
+            (r' == <> & reorder_in?i23_I_'.x' -> Busy(c',<x'>))
+
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i24_i_'.head(r') -> Idle(0)))
+              []
+              (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
+              []
+              (c' <= N' & in'?x' -> Busy(c'+1,r'))
+              []
+              (c' > 0 & out'?x' -> Busy(c'-1,r'))
+              []
+              (r' != <> & reorder_in?i23_I_'.x' -> illegal -> STOP)
 
 within Idle(0)
 
@@ -157,9 +166,10 @@ within sbisim(diamond(x))
 
 ClientCalls = {i24_i.i3_e}
 UsedModeling = {}
+TheEnd = {||}
 within compress((CO_i103_nonrecursion_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|OUT',transition_begin,transition_end,reorder_in,i24_i,i24_i_'|}|]
-                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN'|}|]
                 (STOP
@@ -173,5 +183,5 @@ assert CO_i103_nonrecursion_(true,true)[[i23_I_'.x<-i24_i_'.x|x<-extensions(i24_
 assert COMPLETE'({i24_i.i3_e}) [F= CO_i103_nonrecursion_(true,true)[[i23_I_'.x'<-i24_i_'.x'|x'<-extensions(i24_i_')]] \ diff(Events,{i24_i.i3_e,illegal})
 assert STOP [T= AS_i103_nonrecursion_(false) \ diff(Events,{illegal})
 assert AS_i103_nonrecursion_(false) :[deadlock free]
-assert IF_i23_I_(true,false) [[i23_I.x<-i24_i.x|x<-extensions(i24_i)]][[i23_I_'.x<-i24_i_'.x|x<-extensions(i24_i_')]][[i23_I_''.x<-i24_i_''.x|x<-extensions(i24_i_'')]]\ {} [F= AS_i103_nonrecursion_(true) \ diff(Events,{|illegal,i24_i,i24_i_',i24_i_''|})
+assert IF_i23_I_(true,false) [[i23_I.x<-i24_i.x|x<-extensions(i24_i)]][[i23_I_'.x<-i24_i_'.x|x<-extensions(i24_i_')]][[i23_I_''.x<-i24_i_''.x|x<-extensions(i24_i_'')]]\ {i23_I_'''.modeling} [F= AS_i103_nonrecursion_(true) \ diff(Events,{|illegal,i24_i,i24_i_',i24_i_''|})
 assert AS_i103_nonrecursion_(true) \ diff(Events,{|illegal,i24_i,i24_i_',i24_i_''|}) :[livelock free]

@@ -36,13 +36,14 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = State_Calibrated | State_Error | State_Initialized | State_Uninitialized | calibrate | initialize | perform_action1 | perform_action2 | perform_actions | recover | result_t_NOK | result_t_OK | return | the_end'
+datatype event_enumeration_alphabet = State_Calibrated | State_Error | State_Initialized | State_Uninitialized | calibrate | initialize | modeling | perform_action1 | perform_action2 | perform_actions | recover | result_t_NOK | result_t_OK | return | the_end'
 -- interface.csp.scm
 
 channel IComp: {initialize,perform_actions,recover,the_end'}
 
 channel IComp_': {result_t_OK,result_t_NOK,return}
 channel IComp_in',IComp_out': {IComp_'.result_t_OK,IComp_'.result_t_NOK,IComp_'.return}
+channel IComp_''': {modeling}
 
 IF_IComp_(IG,CS) = let
 
@@ -104,6 +105,7 @@ channel IDevice: {calibrate,initialize,perform_action1,perform_action2,the_end'}
 
 channel IDevice_': {result_t_OK,result_t_NOK,return}
 channel IDevice_in',IDevice_out': {IDevice_'.result_t_OK,IDevice_'.result_t_NOK,IDevice_'.return}
+channel IDevice_''': {modeling}
 
 IF_IDevice_(IG,CS) = let
 
@@ -169,12 +171,16 @@ within compress((if CS
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel client:{initialize,perform_actions,recover}
-channel device_A:{calibrate,initialize,perform_action1,perform_action2}
+channel client: extensions(IComp)
+channel device_A: extensions(IDevice)
+
+channel client_': extensions(IComp_')
+channel device_A_': extensions(IDevice_')
 
 
-channel client_':{result_t_OK,result_t_NOK,return}
-channel device_A_':{result_t_OK,result_t_NOK,return}
+channel client_''': extensions(IComp_''')
+channel device_A_''': extensions(IDevice_''')
+
 
 
 CO_Comp_(IIG,IG) = let
@@ -243,7 +249,7 @@ channel reorder_in  : {IComp_'.result_t_OK,IComp_'.result_t_NOK,IComp_'.return}
 channel reorder_out : {client_'.result_t_OK,client_'.result_t_NOK,client_'.return}
 channel queue_full'
 
-SEMANTICS(in',out',link',client',modeling') = let
+SEMANTICS(in',out',link',client',modeling',end') = let
 
 Q' = let
 
@@ -270,19 +276,24 @@ S'    = let
 
 N' = 3
 
-Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
 
-Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!client_'.head(r') -> Idle(0))
+Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
+
+FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
             []
-            c' > 0 & transition_end -> transition_begin -> Busy(c',r')
+            ([] x':end' @ x' ->  Busy(c',r'))
             []
-            c' <= N' & in'?x' -> Busy(c'+1,r')
-            []
-            c' > 0 & out'?x' -> Busy(c'-1,r')
-            []
-            r' == <> & reorder_in?IComp_'.x' -> Busy(c',<x'>)
-            []
-            r' != <> & reorder_in?IComp_'.x' -> illegal -> STOP
+            (r' == <> & reorder_in?IComp_'.x' -> Busy(c',<x'>))
+
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!client_'.head(r') -> Idle(0)))
+              []
+              (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
+              []
+              (c' <= N' & in'?x' -> Busy(c'+1,r'))
+              []
+              (c' > 0 & out'?x' -> Busy(c'-1,r'))
+              []
+              (r' != <> & reorder_in?IComp_'.x' -> illegal -> STOP)
 
 within Idle(0)
 
@@ -296,12 +307,13 @@ within sbisim(diamond(x))
 
 ClientCalls = {client.initialize,client.recover,client.perform_actions}
 UsedModeling = {}
+TheEnd = {|device_A_'''|}
 within compress((CO_Comp_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|OUT',transition_begin,transition_end,reorder_in,client,client_'|}|]
-                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
-                [|{|IN',device_A,device_A_'|}|]
-                (IF_IDevice_(true,false) [[IDevice.x<-device_A.x|x<-extensions(device_A)]][[IDevice_'.x<-device_A_'.x|x<-extensions(device_A_')]]
+                [|{|IN',device_A,device_A_',device_A_'''|}|]
+                (IF_IDevice_(true,false) [[IDevice.x<-device_A.x|x<-extensions(device_A)]][[IDevice_'.x<-device_A_'.x|x<-extensions(device_A_')]][[IDevice_'''.x<-device_A_'''.x|x<-extensions(device_A_''')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
@@ -315,5 +327,5 @@ assert CO_Comp_(true,true)[[IComp_'.x<-client_'.x|x<-extensions(client_')]] :[de
 assert COMPLETE'({client.initialize,client.recover,client.perform_actions}) [F= CO_Comp_(true,true)[[IComp_'.x'<-client_'.x'|x'<-extensions(client_')]] \ diff(Events,{client.initialize,client.recover,client.perform_actions,illegal})
 assert STOP [T= AS_Comp_(false) \ diff(Events,{illegal})
 assert AS_Comp_(false) :[deadlock free]
-assert IF_IComp_(true,false) [[IComp.x<-client.x|x<-extensions(client)]][[IComp_'.x<-client_'.x|x<-extensions(client_')]]\ {} [F= AS_Comp_(true) \ diff(Events,{|illegal,client,client_'|})
+assert IF_IComp_(true,false) [[IComp.x<-client.x|x<-extensions(client)]][[IComp_'.x<-client_'.x|x<-extensions(client_')]]\ {IComp_'''.modeling} [F= AS_Comp_(true) \ diff(Events,{|illegal,client,client_'|})
 assert AS_Comp_(true) \ diff(Events,{|illegal,client,client_'|}) :[livelock free]

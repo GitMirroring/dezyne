@@ -389,8 +389,8 @@
              (modeling (null-is-#f (delete-duplicates (map .event (modeling-events model))))))
             (string-append " \\ {|"
                            (comma-join
-                            (map (lambda (x) (->string (list name "." x)))
-                                 modeling))
+                            (append (map (lambda (x) (->string (list name "." x)))
+                                 modeling) (list (->string (list name "_'''")))))
                            "|} ")))
 
 (define-method (optional-chaos (o <interface>)) ;; FIXME: no test
@@ -531,8 +531,7 @@
            (($ <compound> '())
             (make <csp-on>
               :triggers triggers
-              :statement (make <compound>
-                           :elements (list (make <voidreply>)))
+              :statement (make <compound> :elements (list (make <voidreply>)))
               :context (make <context> :members members)))
            ((? valued-triggers?)
             (make <csp-on>
@@ -910,8 +909,10 @@
        (($ <voidreply>)
         (let ((channel-return
                (if (and (not inevitable-optional?) provided-on?)
-                   (list "(\\ P',V' @ " channel "_'.return -> P'(V'))")
-                   (list "skip_"))))
+                       (list "(\\ P',V' @ " channel "_'.return -> P'(V'))")
+                       (if (gom:component ast)
+                           (list "skip_")
+                           (list "(\\ P',V' @ " channel "_'''.modeling -> P'(V'))")))))
           (list channel-return)))
 
        (($ <the-end> context)

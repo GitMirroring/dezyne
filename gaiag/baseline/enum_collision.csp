@@ -36,13 +36,14 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = Retval1_NOK | Retval1_OK | Retval2_NOK | Retval2_OK | bar | foo | return | the_end'
+datatype event_enumeration_alphabet = Retval1_NOK | Retval1_OK | Retval2_NOK | Retval2_OK | bar | foo | modeling | return | the_end'
 -- interface.csp.scm
 
 channel ienum_collision: {bar,foo,the_end'}
 
 channel ienum_collision_': {Retval1_OK,Retval1_NOK,Retval2_OK,Retval2_NOK,return}
 channel ienum_collision_in',ienum_collision_out': {ienum_collision_'.Retval1_OK,ienum_collision_'.Retval1_NOK,ienum_collision_'.Retval2_OK,ienum_collision_'.Retval2_NOK,ienum_collision_'.return}
+channel ienum_collision_''': {modeling}
 
 IF_ienum_collision_(IG,CS) = let
 
@@ -69,10 +70,13 @@ within compress((if CS
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i:{bar,foo}
+channel i: extensions(ienum_collision)
+
+channel i_': extensions(ienum_collision_')
 
 
-channel i_':{Retval1_OK,Retval1_NOK,Retval2_OK,Retval2_NOK,return}
+channel i_''': extensions(ienum_collision_''')
+
 
 
 CO_enum_collision_(IIG,IG) = let
@@ -98,7 +102,7 @@ channel reorder_in  : {ienum_collision_'.Retval1_OK,ienum_collision_'.Retval1_NO
 channel reorder_out : {i_'.Retval1_OK,i_'.Retval1_NOK,i_'.Retval2_OK,i_'.Retval2_NOK,i_'.return}
 channel queue_full'
 
-SEMANTICS(in',out',link',client',modeling') = let
+SEMANTICS(in',out',link',client',modeling',end') = let
 
 Q' = let
 
@@ -125,19 +129,24 @@ S'    = let
 
 N' = 3
 
-Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
 
-Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i_'.head(r') -> Idle(0))
+Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
+
+FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
             []
-            c' > 0 & transition_end -> transition_begin -> Busy(c',r')
+            ([] x':end' @ x' ->  Busy(c',r'))
             []
-            c' <= N' & in'?x' -> Busy(c'+1,r')
-            []
-            c' > 0 & out'?x' -> Busy(c'-1,r')
-            []
-            r' == <> & reorder_in?ienum_collision_'.x' -> Busy(c',<x'>)
-            []
-            r' != <> & reorder_in?ienum_collision_'.x' -> illegal -> STOP
+            (r' == <> & reorder_in?ienum_collision_'.x' -> Busy(c',<x'>))
+
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i_'.head(r') -> Idle(0)))
+              []
+              (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
+              []
+              (c' <= N' & in'?x' -> Busy(c'+1,r'))
+              []
+              (c' > 0 & out'?x' -> Busy(c'-1,r'))
+              []
+              (r' != <> & reorder_in?ienum_collision_'.x' -> illegal -> STOP)
 
 within Idle(0)
 
@@ -151,9 +160,10 @@ within sbisim(diamond(x))
 
 ClientCalls = {i.foo,i.bar}
 UsedModeling = {}
+TheEnd = {||}
 within compress((CO_enum_collision_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|OUT',transition_begin,transition_end,reorder_in,i,i_'|}|]
-                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN'|}|]
                 (STOP
@@ -167,5 +177,5 @@ assert CO_enum_collision_(true,true)[[ienum_collision_'.x<-i_'.x|x<-extensions(i
 assert COMPLETE'({i.foo,i.bar}) [F= CO_enum_collision_(true,true)[[ienum_collision_'.x'<-i_'.x'|x'<-extensions(i_')]] \ diff(Events,{i.foo,i.bar,illegal})
 assert STOP [T= AS_enum_collision_(false) \ diff(Events,{illegal})
 assert AS_enum_collision_(false) :[deadlock free]
-assert IF_ienum_collision_(true,false) [[ienum_collision.x<-i.x|x<-extensions(i)]][[ienum_collision_'.x<-i_'.x|x<-extensions(i_')]]\ {} [F= AS_enum_collision_(true) \ diff(Events,{|illegal,i,i_'|})
+assert IF_ienum_collision_(true,false) [[ienum_collision.x<-i.x|x<-extensions(i)]][[ienum_collision_'.x<-i_'.x|x<-extensions(i_')]]\ {ienum_collision_'''.modeling} [F= AS_enum_collision_(true) \ diff(Events,{|illegal,i,i_'|})
 assert AS_enum_collision_(true) \ diff(Events,{|illegal,i,i_'|}) :[livelock free]

@@ -36,13 +36,14 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = e | return | the_end'
+datatype event_enumeration_alphabet = e | modeling | return | the_end'
 -- interface.csp.scm
 
 channel iincomplete: {e,the_end'}
 
 channel iincomplete_': {return}
 channel iincomplete_in',iincomplete_out': {iincomplete_'.return}
+channel iincomplete_''': {modeling}
 
 IF_iincomplete_(IG,CS) = let
 

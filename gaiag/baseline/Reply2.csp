@@ -36,13 +36,14 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = Status_No | Status_Nok | Status_Ok | Status_Yes | done | return | the_end' | what
+datatype event_enumeration_alphabet = Status_No | Status_Nok | Status_Ok | Status_Yes | done | modeling | return | the_end' | what
 -- interface.csp.scm
 
 channel I: {done,the_end'}
 
 channel I_': {Status_Yes,Status_No,return}
 channel I_in',I_out': {I_'.Status_Yes,I_'.Status_No,I_'.return}
+channel I_''': {modeling}
 
 IF_I_(IG,CS) = let
 
@@ -74,6 +75,7 @@ channel U: {what,the_end'}
 
 channel U_': {Status_Ok,Status_Nok,return}
 channel U_in',U_out': {U_'.Status_Ok,U_'.Status_Nok,U_'.return}
+channel U_''': {modeling}
 
 IF_U_(IG,CS) = let
 
@@ -101,12 +103,16 @@ within compress((if CS
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i:{done}
-channel u:{what}
+channel i: extensions(I)
+channel u: extensions(U)
+
+channel i_': extensions(I_')
+channel u_': extensions(U_')
 
 
-channel i_':{Status_Yes,Status_No,return}
-channel u_':{Status_Ok,Status_Nok,return}
+channel i_''': extensions(I_''')
+channel u_''': extensions(U_''')
+
 
 
 CO_Reply2_(IIG,IG) = let
@@ -136,7 +142,7 @@ channel reorder_in  : {I_'.Status_Yes,I_'.Status_No,I_'.return}
 channel reorder_out : {i_'.Status_Yes,i_'.Status_No,i_'.return}
 channel queue_full'
 
-SEMANTICS(in',out',link',client',modeling') = let
+SEMANTICS(in',out',link',client',modeling',end') = let
 
 Q' = let
 
@@ -163,19 +169,24 @@ S'    = let
 
 N' = 3
 
-Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
 
-Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i_'.head(r') -> Idle(0))
+Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
+
+FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
             []
-            c' > 0 & transition_end -> transition_begin -> Busy(c',r')
+            ([] x':end' @ x' ->  Busy(c',r'))
             []
-            c' <= N' & in'?x' -> Busy(c'+1,r')
-            []
-            c' > 0 & out'?x' -> Busy(c'-1,r')
-            []
-            r' == <> & reorder_in?I_'.x' -> Busy(c',<x'>)
-            []
-            r' != <> & reorder_in?I_'.x' -> illegal -> STOP
+            (r' == <> & reorder_in?I_'.x' -> Busy(c',<x'>))
+
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i_'.head(r') -> Idle(0)))
+              []
+              (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
+              []
+              (c' <= N' & in'?x' -> Busy(c'+1,r'))
+              []
+              (c' > 0 & out'?x' -> Busy(c'-1,r'))
+              []
+              (r' != <> & reorder_in?I_'.x' -> illegal -> STOP)
 
 within Idle(0)
 
@@ -189,12 +200,13 @@ within sbisim(diamond(x))
 
 ClientCalls = {i.done}
 UsedModeling = {}
+TheEnd = {|u_'''|}
 within compress((CO_Reply2_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|OUT',transition_begin,transition_end,reorder_in,i,i_'|}|]
-                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
-                [|{|IN',u,u_'|}|]
-                (IF_U_(true,false) [[U.x<-u.x|x<-extensions(u)]][[U_'.x<-u_'.x|x<-extensions(u_')]]
+                [|{|IN',u,u_',u_'''|}|]
+                (IF_U_(true,false) [[U.x<-u.x|x<-extensions(u)]][[U_'.x<-u_'.x|x<-extensions(u_')]][[U_'''.x<-u_'''.x|x<-extensions(u_''')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
@@ -208,5 +220,5 @@ assert CO_Reply2_(true,true)[[I_'.x<-i_'.x|x<-extensions(i_')]] :[deterministic]
 assert COMPLETE'({i.done}) [F= CO_Reply2_(true,true)[[I_'.x'<-i_'.x'|x'<-extensions(i_')]] \ diff(Events,{i.done,illegal})
 assert STOP [T= AS_Reply2_(false) \ diff(Events,{illegal})
 assert AS_Reply2_(false) :[deadlock free]
-assert IF_I_(true,false) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]]\ {} [F= AS_Reply2_(true) \ diff(Events,{|illegal,i,i_'|})
+assert IF_I_(true,false) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]]\ {I_'''.modeling} [F= AS_Reply2_(true) \ diff(Events,{|illegal,i,i_'|})
 assert AS_Reply2_(true) \ diff(Events,{|illegal,i,i_'|}) :[livelock free]

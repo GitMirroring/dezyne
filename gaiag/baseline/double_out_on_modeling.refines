@@ -1,0 +1,28 @@
+Checking out/double_out_on_modeling.csp
+
+Checking COMPLETE'({I.inevitable,I.start}) [F= IF_I_(true,true)\diff(Events,{I.inevitable,I.start,illegal})
+true
+
+Checking IF_I_(false,false) :[deadlock free]
+true
+
+Checking IF_I_(true,false)\{|I.inevitable,I_'''|} :[livelock free]
+true
+
+Checking CO_double_out_on_modeling_(true,true) :[deterministic]
+true
+
+Checking COMPLETE'({p.start,r_''.foo,r_''.bar}) [F= CO_double_out_on_modeling_(true,true)[[I_'.x'<-p_'.x'|x'<-extensions(p_')]]\diff(Events,{p.start,r_''.foo,r_''.bar,illegal})
+true
+
+Checking STOP [T= AS_double_out_on_modeling_(false)\diff(Events,{illegal})
+true
+
+Checking AS_double_out_on_modeling_(false) :[deadlock free]
+true
+
+Checking IF_I_(true,false)[[I.x<-p.x|x<-extensions(p)]][[I_'.x<-p_'.x|x<-extensions(p_')]][[I_''.x<-p_''.x|x<-extensions(p_'')]]\{I_'''.modeling,p.inevitable} [F= AS_double_out_on_modeling_(true)\diff(Events,{|illegal,p,p_',p_''|})
+true
+
+Checking AS_double_out_on_modeling_(true)\diff(Events,{|illegal,p,p_',p_''|}) :[livelock free]
+true

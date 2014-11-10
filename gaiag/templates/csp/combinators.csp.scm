@@ -69,5 +69,5 @@ datatype event_enumeration_alphabet = #
      (interface-events model identity)
      (enum-values model)
      (return-values model)
-     (list 'the_end'))
+     (list 'the_end' 'modeling))
     symbol<)))

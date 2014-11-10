@@ -36,13 +36,14 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = i178_States_SwitchedOff | i178_States_SwitchedOn | i3_pushStartButton | i67_activate | i68_activated | i6_States_Pushed | i6_States_Released | i71_States_Activated | i71_States_Idle | inevitable | return | the_end'
+datatype event_enumeration_alphabet = i178_States_SwitchedOff | i178_States_SwitchedOn | i3_pushStartButton | i67_activate | i68_activated | i6_States_Pushed | i6_States_Released | i71_States_Activated | i71_States_Idle | inevitable | modeling | return | the_end'
 -- interface.csp.scm
 
 channel i169_Display: {i67_activate,inevitable,the_end'}
 channel i169_Display_'': {i68_activated}
 channel i169_Display_': {return}
 channel i169_Display_in',i169_Display_out': {i169_Display_'.return}
+channel i169_Display_''': {modeling}
 
 IF_i169_Display_(IG,CS) = let
 
@@ -56,7 +57,7 @@ semi_(assign_(\ ((i79_state),(stack')) @ ((i71_States_Activated),(stack'))),
 i169_Display?x:{inevitable} ->
 semi_(semi_((\ P',V' @ i169_Display_''!i68_activated -> P'(V')),
 assign_(\ ((i79_state),(stack')) @ ((i71_States_Activated),(stack')))),
-skip_)(\ V' @ i169_Display.the_end' -> i169_Display_(V'),((i79_state),(stack')))
+(\ P',V' @ i169_Display_'''.modeling -> P'(V')))(\ V' @ i169_Display.the_end' -> i169_Display_(V'),((i79_state),(stack')))
  []
   IG & i169_Display?x:{i67_activate} ->
 illegal_(STOP,<>))
@@ -81,6 +82,7 @@ channel i66_Viewer: {i3_pushStartButton,the_end'}
 
 channel i66_Viewer_': {return}
 channel i66_Viewer_in',i66_Viewer_out': {i66_Viewer_'.return}
+channel i66_Viewer_''': {modeling}
 
 IF_i66_Viewer_(IG,CS) = let
 
@@ -110,13 +112,17 @@ within compress((if CS
 -- end of interface.csp.scm
 -- component.csp.scm
 
-channel i170_TVViewer:{i3_pushStartButton}
-channel i173_TVDisplay:{i67_activate,inevitable}
+channel i170_TVViewer: extensions(i66_Viewer)
+channel i173_TVDisplay: extensions(i169_Display)
 
-channel i173_TVDisplay_'':{i68_activated}
+channel i170_TVViewer_': extensions(i66_Viewer_')
+channel i173_TVDisplay_': extensions(i169_Display_')
 
-channel i170_TVViewer_':{return}
-channel i173_TVDisplay_':{return}
+channel i173_TVDisplay_'': extensions(i169_Display_'')
+
+channel i170_TVViewer_''': extensions(i66_Viewer_''')
+channel i173_TVDisplay_''': extensions(i169_Display_''')
+
 
 
 CO_i277_TVSet_(IIG,IG) = let
@@ -152,7 +158,7 @@ channel reorder_in  : {i66_Viewer_'.return}
 channel reorder_out : {i170_TVViewer_'.return}
 channel queue_full'
 
-SEMANTICS(in',out',link',client',modeling') = let
+SEMANTICS(in',out',link',client',modeling',end') = let
 
 Q' = let
 
@@ -179,19 +185,24 @@ S'    = let
 
 N' = 3
 
-Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> Busy(c',<>))
 
-Busy(c',r') = c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i170_TVViewer_'.head(r') -> Idle(0))
+Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
+
+FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
             []
-            c' > 0 & transition_end -> transition_begin -> Busy(c',r')
+            ([] x':end' @ x' ->  Busy(c',r'))
             []
-            c' <= N' & in'?x' -> Busy(c'+1,r')
-            []
-            c' > 0 & out'?x' -> Busy(c'-1,r')
-            []
-            r' == <> & reorder_in?i66_Viewer_'.x' -> Busy(c',<x'>)
-            []
-            r' != <> & reorder_in?i66_Viewer_'.x' -> illegal -> STOP
+            (r' == <> & reorder_in?i66_Viewer_'.x' -> Busy(c',<x'>))
+
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i170_TVViewer_'.head(r') -> Idle(0)))
+              []
+              (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
+              []
+              (c' <= N' & in'?x' -> Busy(c'+1,r'))
+              []
+              (c' > 0 & out'?x' -> Busy(c'-1,r'))
+              []
+              (r' != <> & reorder_in?i66_Viewer_'.x' -> illegal -> STOP)
 
 within Idle(0)
 
@@ -205,18 +216,19 @@ within sbisim(diamond(x))
 
 ClientCalls = {i170_TVViewer.i3_pushStartButton}
 UsedModeling = {i173_TVDisplay.inevitable}
+TheEnd = {|i173_TVDisplay_'''|}
 within compress((CO_i277_TVSet_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|OUT',transition_begin,transition_end,reorder_in,i170_TVViewer,i170_TVViewer_'|}|]
-                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
-                [|{|IN',i173_TVDisplay,i173_TVDisplay_'|}|]
-                (IF_i169_Display_(true,false) [[i169_Display.x<-i173_TVDisplay.x|x<-extensions(i173_TVDisplay)]][[i169_Display_'.x<-i173_TVDisplay_'.x|x<-extensions(i173_TVDisplay_')]][[i169_Display_''.x<-i173_TVDisplay_''.x|x<-extensions(i173_TVDisplay_'')]]
+                [|{|IN',i173_TVDisplay,i173_TVDisplay_',i173_TVDisplay_'''|}|]
+                (IF_i169_Display_(true,false) [[i169_Display.x<-i173_TVDisplay.x|x<-extensions(i173_TVDisplay)]][[i169_Display_'.x<-i173_TVDisplay_'.x|x<-extensions(i173_TVDisplay_')]][[i169_Display_''.x<-i173_TVDisplay_''.x|x<-extensions(i173_TVDisplay_'')]][[i169_Display_'''.x<-i173_TVDisplay_'''.x|x<-extensions(i173_TVDisplay_''')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
 assert COMPLETE'({i169_Display.inevitable,i169_Display.i67_activate}) [F= IF_i169_Display_(true,true) \ diff(Events,{i169_Display.inevitable,i169_Display.i67_activate,illegal})
 assert IF_i169_Display_(false,false) :[deadlock free]
-assert IF_i169_Display_(true,false)  \ {|i169_Display.inevitable|} :[livelock free]
+assert IF_i169_Display_(true,false)  \ {|i169_Display.inevitable,i169_Display_'''|} :[livelock free]
 assert COMPLETE'({i66_Viewer.i3_pushStartButton}) [F= IF_i66_Viewer_(true,true) \ diff(Events,{i66_Viewer.i3_pushStartButton,illegal})
 assert IF_i66_Viewer_(false,false) :[deadlock free]
 assert IF_i66_Viewer_(true,false) :[livelock free]
@@ -224,5 +236,5 @@ assert CO_i277_TVSet_(true,true)[[i66_Viewer_'.x<-i170_TVViewer_'.x|x<-extension
 assert COMPLETE'({i170_TVViewer.i3_pushStartButton,i173_TVDisplay_''.i68_activated}) [F= CO_i277_TVSet_(true,true)[[i66_Viewer_'.x'<-i170_TVViewer_'.x'|x'<-extensions(i170_TVViewer_')]] \ diff(Events,{i170_TVViewer.i3_pushStartButton,i173_TVDisplay_''.i68_activated,illegal})
 assert STOP [T= AS_i277_TVSet_(false) \ diff(Events,{illegal})
 assert AS_i277_TVSet_(false) :[deadlock free]
-assert IF_i66_Viewer_(true,false) [[i66_Viewer.x<-i170_TVViewer.x|x<-extensions(i170_TVViewer)]][[i66_Viewer_'.x<-i170_TVViewer_'.x|x<-extensions(i170_TVViewer_')]]\ {} [F= AS_i277_TVSet_(true) \ diff(Events,{|illegal,i170_TVViewer,i170_TVViewer_'|})
+assert IF_i66_Viewer_(true,false) [[i66_Viewer.x<-i170_TVViewer.x|x<-extensions(i170_TVViewer)]][[i66_Viewer_'.x<-i170_TVViewer_'.x|x<-extensions(i170_TVViewer_')]]\ {i66_Viewer_'''.modeling} [F= AS_i277_TVSet_(true) \ diff(Events,{|illegal,i170_TVViewer,i170_TVViewer_'|})
 assert AS_i277_TVSet_(true) \ diff(Events,{|illegal,i170_TVViewer,i170_TVViewer_'|}) :[livelock free]
