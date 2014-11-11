@@ -468,3 +468,58 @@
                     (assign
                      state
                      (expression (value States Disarmed))))))))
+
+
+(pass-if "normstate-nested-guards"
+         (gom-pretty-noisy-equal?
+          (normstate
+           (cadr (dezyne->ast
+                           #{
+interface normstate_nested_guards
+{
+  enum Reply {Ok, Nok};
+  in Reply e;
+
+  behaviour
+  {
+    enum State {Foo};
+    State state = State.Foo;
+    bool bar = true;
+    [state.Foo]
+    {
+      [bar] on e: [true] { reply(Reply.Ok);
+      }
+      [bar] on e: [true] { reply(Reply.Nok);
+      }
+    }
+  }
+}
+#})))
+'(interface*
+  normstate_nested_guards
+  (types* (enum* Reply #f (fields* Ok Nok)))
+  (events* (in* (signature* (type* Reply #f)) e))
+  (behaviour*
+    #f
+    (types* (enum* State #f (fields* Foo)))
+    (variables*
+      (variable*
+        state
+        (type* State #f)
+        (expression* (literal* #f State Foo)))
+      (variable*
+        bar
+        (type* bool #f)
+        (expression* true)))
+    (functions*)
+    (compound*
+      (guard*
+        (expression*
+          (and (and (field* state Foo) (var* bar)) true))
+        (compound*
+          (on* (triggers* (trigger* #f e (arguments*)))
+               (compound*
+                 (reply* (expression* (literal* #f Reply Ok)))))
+          (on* (triggers* (trigger* #f e (arguments*)))
+               (compound*
+                 (reply* (expression* (literal* #f Reply Nok))))))))))))

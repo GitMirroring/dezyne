@@ -225,33 +225,34 @@
 
   (define (splitted-ons statement)
     (apply append (map split-valued-void ((gom:statements-of-type 'on) statement))))
-(let ((default "STOP"))
- (or (string-null-is-#f
-      ((->join "\n[]\n")
-       (append
-        (map
-         (lambda (guard)
-           (let ((expression (csp-expression->string model (.expression guard)))
-                 (ons (splitted-ons (.statement guard))))
-             (list
-              "(" expression ") & (\n"
-              (or (string-null-is-#f
-                   ((->join "\n []\n  ")
-                    (map (lambda (on)
-                           (csp-transform model (ast-transform model on)))
-                         (let ((ons
-                                (if (is-a? model <interface>)
-                                    ons
-                                    (append
-                                     (filter identity (map (statement-on-p/r- (provides? model)) ons))
-                                     (filter identity (map (statement-on-p/r- (requires? model)) ons))))))
-                           ons))))
-                  default)
-              ")")))
-         ((gom:statements-of-type 'guard) (gom:statement (.behaviour model))))
-        (map (lambda (on) (csp-transform model (ast-transform model on)))
-             (splitted-ons (gom:statement (.behaviour model)))))))
-     default)))
+
+  (let ((default "STOP"))
+    (or (string-null-is-#f
+         ((->join "\n[]\n")
+          (append
+           (map
+            (lambda (guard)
+              (let ((expression (csp-expression->string model (.expression guard)))
+                    (ons (splitted-ons (.statement guard))))
+                (list
+                 "(" expression ") & (\n"
+                 (or (string-null-is-#f
+                      ((->join "\n []\n  ")
+                       (map (lambda (on)
+                              (csp-transform model (ast-transform model on)))
+                            (let ((ons
+                                   (if (is-a? model <interface>)
+                                       ons
+                                       (append
+                                        (filter identity (map (statement-on-p/r- (provides? model)) ons))
+                                        (filter identity (map (statement-on-p/r- (requires? model)) ons))))))
+                              ons))))
+                     default)
+                 ")")))
+            ((gom:statements-of-type 'guard) (gom:statement (.behaviour model))))
+           (map (lambda (on) (csp-transform model (ast-transform model on)))
+                (splitted-ons (gom:statement (.behaviour model)))))))
+        default)))
 
 (define (enum-type ast identifier)
   (and-let* ((variable (gom:variable ast identifier))

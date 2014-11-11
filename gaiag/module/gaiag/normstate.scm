@@ -200,11 +200,11 @@
   (make <guard> :expression expression :statement o))
 
 (define-method (passdown-guard (o <guard>) (expression <expression>))
-  (make <guard>
-    :expression (make <expression> :value (list 'and
-                                                (.value expression)
-                                                (.value (.expression o))))
-    :statement (.statement o)))
+  ((passdown-guard
+    (make <expression> :value (list 'and
+                                    (.value expression)
+                                    (.value (.expression o)))))
+   (.statement o)))
 
 (define-method (passdown-guard (o <compound>) (expression <expression>))
   (make <compound> :elements (map (passdown-guard expression) (.elements o))))
