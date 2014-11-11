@@ -24,8 +24,8 @@ the_end_(P', V') = transition_end -> P'(V')
 
 -- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
 semi_(S1',S2')(P', V') = S1'(\V'' @ S2'(P', V''),V')
--- ifthenelse: (E': val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
-ifthenelse_(E',S1',S2')(P', V') =  if E' then S1'(P', V') else S2'(P', V')
+-- ifthenelse: (F': V->val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
+ifthenelse_(F',S1',S2')(P', V') =  if F'(V') then S1'(P', V') else S2'(P', V')
 -- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
 context_(F', S')(P', (M', L')) = S'((\ (M',L2') @ P'((M',L'))), (M', (L', F'((M', L')))))
 -- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
@@ -56,10 +56,10 @@ I_(((b,c),(stack'))) =
 I?x:{e} ->
 semi_(context_(\ ((b,c),(stack')) @ b,
 context_active_(call_args_(\ P',V' @ g(P',V'),(\ ((hide_member0',c),((stack',b))) @ (b,c))),
-(\ P',((hide_member0',hide_member1'),(((stack',b),c))) @ ifthenelse_(c,
+ifthenelse_(\ ((hide_member0',hide_member1'),(((stack',b),c))) @ (c),
 (\ P',V' @ I_''!f -> P'(V')),
 skip_
-)(P',((hide_member0',hide_member1'),(((stack',b),c))))))),
+))),
 (\ P',V' @ I_'.return -> P'(V')))(\ V' @ I.the_end' -> I_(V'),((b,c),(stack'))))
 []
 CS & I?x:{} -> illegal_(STOP,<>)
@@ -99,10 +99,10 @@ hide_(((b,c),(stack'))) = transition_begin -> (
 i?x:{e} ->
 semi_(context_(\ ((b,c),(stack')) @ b,
 context_active_(call_args_(\ P',V' @ g(P',V'),(\ ((hide_member0',c),((stack',b))) @ (b,c))),
-(\ P',((hide_member0',hide_member1'),(((stack',b),c))) @ ifthenelse_(c,
+ifthenelse_(\ ((hide_member0',hide_member1'),(((stack',b),c))) @ (c),
 (\ P',V' @ i_''!f -> P'(V')),
 skip_
-)(P',((hide_member0',hide_member1'),(((stack',b),c))))))),
+))),
 (\ P',V' @ I_'.return -> P'(V')))(\ V' @ transition_end -> hide_(V'),((b,c),(stack'))))
 )
 

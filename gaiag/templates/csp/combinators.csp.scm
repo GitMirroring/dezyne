@@ -49,8 +49,8 @@ the_end_(P', V') = transition_end -> P'(V')
 
 -- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
 semi_(S1',S2')(P', V') = S1'(\V'' @ S2'(P', V''),V')
--- ifthenelse: (E': val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
-ifthenelse_(E',S1',S2')(P', V') =  if E' then S1'(P', V') else S2'(P', V')
+-- ifthenelse: (F': V->val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
+ifthenelse_(F',S1',S2')(P', V') =  if F'(V') then S1'(P', V') else S2'(P', V')
 -- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
 context_(F', S')(P', (M', L')) = S'((\ (M',L2') @ P'((M',L'))), (M', (L', F'((M', L')))))
 -- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc

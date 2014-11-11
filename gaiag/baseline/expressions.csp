@@ -24,8 +24,8 @@ the_end_(P', V') = transition_end -> P'(V')
 
 -- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
 semi_(S1',S2')(P', V') = S1'(\V'' @ S2'(P', V''),V')
--- ifthenelse: (E': val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
-ifthenelse_(E',S1',S2')(P', V') =  if E' then S1'(P', V') else S2'(P', V')
+-- ifthenelse: (F': V->val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
+ifthenelse_(F',S1',S2')(P', V') =  if F'(V') then S1'(P', V') else S2'(P', V')
 -- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
 context_(F', S')(P', (M', L')) = S'((\ (M',L2') @ P'((M',L'))), (M', (L', F'((M', L')))))
 -- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
@@ -50,21 +50,21 @@ IF_I_(IG,CS) = let
 I_(((state,c),(stack'))) =
 (true) & (
 I?x:{e} ->
-semi_((\ P',((state,c),(stack')) @ ifthenelse_((state == 0),
+semi_(ifthenelse_(\ ((state,c),(stack')) @ ((state == 0)),
 semi_(assign_(\ ((state,c),(stack')) @ ((3,c),(stack'))),
 (\ P',V' @ I_''!a -> P'(V'))),
 semi_(assign_(\ ((state,c),(stack')) @ (((state - 1),c),(stack'))),
-(\ P',((state,c),(stack')) @ ifthenelse_((c < state),
+ifthenelse_(\ ((state,c),(stack')) @ ((c < state)),
 assign_(\ ((state,c),(stack')) @ ((state,(c + 1)),(stack'))),
-(\ P',((state,c),(stack')) @ ifthenelse_((c <= ((state + 1))),
+ifthenelse_(\ ((state,c),(stack')) @ ((c <= ((state + 1)))),
 (\ P',V' @ I_''!lo -> P'(V')),
-(\ P',((state,c),(stack')) @ ifthenelse_((c > state),
+ifthenelse_(\ ((state,c),(stack')) @ ((c > state)),
 (\ P',V' @ I_''!hi -> P'(V')),
 skip_
-)(P',((state,c),(stack'))))
-)(P',((state,c),(stack'))))
-)(P',((state,c),(stack')))))
-)(P',((state,c),(stack')))),
+)
+)
+))
+),
 (\ P',V' @ I_'.return -> P'(V')))(\ V' @ I.the_end' -> I_(V'),((state,c),(stack'))))
 []
 CS & I?x:{} -> illegal_(STOP,<>)
@@ -98,21 +98,21 @@ CO_expressions_(IIG,IG) = let
 expressions_(((state,c),(stack'))) = transition_begin -> (
 (true) & (
 i?x:{e} ->
-semi_((\ P',((state,c),(stack')) @ ifthenelse_((state == 0),
+semi_(ifthenelse_(\ ((state,c),(stack')) @ ((state == 0)),
 semi_(assign_(\ ((state,c),(stack')) @ ((3,c),(stack'))),
 (\ P',V' @ i_''!a -> P'(V'))),
 semi_(assign_(\ ((state,c),(stack')) @ (((state - 1),c),(stack'))),
-(\ P',((state,c),(stack')) @ ifthenelse_((c < state),
+ifthenelse_(\ ((state,c),(stack')) @ ((c < state)),
 assign_(\ ((state,c),(stack')) @ ((state,(c + 1)),(stack'))),
-(\ P',((state,c),(stack')) @ ifthenelse_((c <= ((state + 1))),
+ifthenelse_(\ ((state,c),(stack')) @ ((c <= ((state + 1)))),
 (\ P',V' @ i_''!lo -> P'(V')),
-(\ P',((state,c),(stack')) @ ifthenelse_((c > state),
+ifthenelse_(\ ((state,c),(stack')) @ ((c > state)),
 (\ P',V' @ i_''!hi -> P'(V')),
 skip_
-)(P',((state,c),(stack'))))
-)(P',((state,c),(stack'))))
-)(P',((state,c),(stack')))))
-)(P',((state,c),(stack')))),
+)
+)
+))
+),
 (\ P',V' @ I_'.return -> P'(V')))(\ V' @ transition_end -> expressions_(V'),((state,c),(stack'))))
 )
 

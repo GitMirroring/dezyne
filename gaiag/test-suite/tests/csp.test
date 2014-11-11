@@ -508,10 +508,10 @@ assign_(\\ ((s,b,c),(((stack',la),lb))) @ ((s,b,c),(((stack',true),lb))))))"))
           (csp-transform* i-ast csp-transform-ifthenelse-via)
 
           ;; to:
-          "(\\ P',((s,b,c),(stack')) @ ifthenelse_(b,
+          "ifthenelse_(\\ ((s,b,c),(stack')) @ (b),
 skip_,
 skip_
-)(P',((s,b,c),(stack'))))"))
+)"))
 
 (pass-if "ast-transform-ifthen-illegal"
          (csp-pretty-noisy-equal?
@@ -579,10 +579,10 @@ skip_
           (csp-transform* i-ast ast-transform-semi)
 
           ;; to:
-          "semi_((\\ P',((s,b,c),(stack')) @ ifthenelse_(b,
+          "semi_(ifthenelse_(\\ ((s,b,c),(stack')) @ (b),
 skip_,
 skip_
-)(P',((s,b,c),(stack')))),
+),
 assign_(\\ ((s,b,c),(stack')) @ ((s,true,c),(stack'))))"))
 
 ;; \\)
@@ -658,26 +658,26 @@ assign_(\\ ((s,b,c),(stack')) @ ((s,true,c),(stack'))))"))
 
           ;; to:
           "i?x:{e} ->
-semi_(semi_((\\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
-                             semi_((\\ P',V' @ i!f -> P'(V')),
-                                  (\\ P',V' @ i_''!g -> P'(V'))),
-                             skip_
-                             )(P',((s,b,c),(stack')))),
-     semi_((\\ P',((s,b,c),(stack')) @ ifthenelse_(b,
-                                  semi_((\\ P',((s,b,c),(stack')) @ ifthenelse_(c,
-                                                               (\\ P',V' @ i_''!g -> P'(V')),
-                                                               skip_
-                                                               )(P',((s,b,c),(stack')))),
-                                       semi_(assign_(\\ ((s,b,c),(stack')) @ ((s,b,false),(stack'))),
-                                            (\\ P',V' @ i!f -> P'(V')))),
-                                  (\\ P',((s,b,c),(stack')) @ ifthenelse_(c,
-                                                          semi_(assign_(\\ ((s,b,c),(stack')) @ ((s,false,c),(stack'))),
-                                                               (\\ P',V' @ i_''!h -> P'(V'))),
-                                                          semi_(assign_(\\ ((s,b,c),(stack')) @ ((s,true,c),(stack'))),
-                                                               (\\ P',V' @ i_''!g -> P'(V')))
-                                                          )(P',((s,b,c),(stack'))))
-                                  )(P',((s,b,c),(stack')))),
-          assign_(\\ ((s,b,c),(stack')) @ ((S_S2,b,c),(stack'))))),
+semi_(semi_(ifthenelse_(\\ ((s,b,c),(stack')) @ ((c or b)),
+semi_((\\ P',V' @ i!f -> P'(V')),
+(\\ P',V' @ i_''!g -> P'(V'))),
+skip_
+),
+semi_(ifthenelse_(\\ ((s,b,c),(stack')) @ (b),
+semi_(ifthenelse_(\\ ((s,b,c),(stack')) @ (c),
+(\\ P',V' @ i_''!g -> P'(V')),
+skip_
+),
+semi_(assign_(\\ ((s,b,c),(stack')) @ ((s,b,false),(stack'))),
+(\\ P',V' @ i!f -> P'(V')))),
+ifthenelse_(\\ ((s,b,c),(stack')) @ (c),
+semi_(assign_(\\ ((s,b,c),(stack')) @ ((s,false,c),(stack'))),
+(\\ P',V' @ i_''!h -> P'(V'))),
+semi_(assign_(\\ ((s,b,c),(stack')) @ ((s,true,c),(stack'))),
+(\\ P',V' @ i_''!g -> P'(V')))
+)
+),
+assign_(\\ ((s,b,c),(stack')) @ ((S_S2,b,c),(stack'))))),
 (\\ P',V' @ i_'.return -> P'(V')))(\\ V' @ i.the_end' -> i_B(V'),((s,b,c),(stack')))"))
 
 
@@ -755,7 +755,6 @@ semi_(semi_((\\ P',((s,b,c),(stack')) @ ifthenelse_((c or b),
           ;; via:
           "IIG & j?x:{e} ->
 illegal_(STOP,<>)"))
-
 
 (pass-if "c-csp-transform-required-action"
          (csp-noisy-equal?
@@ -1030,11 +1029,11 @@ skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
 
           ;; to:
           "o_''?x:{bar} ->
-semi_((\\ P',((<>),(stack')) @ ifthenelse_(true,
+semi_(ifthenelse_(\\ ((<>),(stack')) @ (true),
 context_active_(semi_(send_(i,bar),recv_(i_',bar)),
 skip_),
 skip_
-)(P',((<>),(stack')))),
+),
 skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
 
 (define csp-transform-if-compound-variable-valued-action-via
@@ -1067,11 +1066,11 @@ skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
 
           ;; to:
           "o_''?x:{bar} ->
-semi_((\\ P',((<>),(stack')) @ ifthenelse_(true,
+semi_(ifthenelse_(\\ ((<>),(stack')) @ (true),
 context_active_(semi_(send_(i,bar),recv_(i_',bar)),
 skip_),
 skip_
-)(P',((<>),(stack')))),
+),
 skip_)(\\ V' @ transition_end -> var_(V'),((<>),(stack')))"))
 
 (pass-if "ast-csp-transform-variable-valued-action"
@@ -1305,10 +1304,10 @@ context_active_(call_args_(\\ P',V' @ g(P',V'),(\\ ((s,b,c),(stack')) @ (b,b))),
           ;; to:
           "i?x:{done} ->
 context_active_(semi_(send_(u,what),recv_(u_',what)),
-(\\ P',((dummy),((stack',s))) @ ifthenelse_((s == Status_Ok),
+ifthenelse_(\\ ((dummy),((stack',s))) @ ((s == Status_Ok)),
 reply_(I_', (\\ ((dummy),((stack',s))) @ Status_Yes)),
 reply_(I_', (\\ ((dummy),((stack',s))) @ Status_No))
-)(P',((dummy),((stack',s))))))(\\ V' @ transition_end -> Reply_(V'),((dummy),(stack')))"))
+))(\\ V' @ transition_end -> Reply_(V'),((dummy),(stack')))"))
 
 ;; "
 
@@ -1448,10 +1447,10 @@ reply_(I_', (\\ ((dummy),((stack',s))) @ Status_No))
           ;; via:
           "i?x:{e} ->
 semi_(context_(\\ ((b),(stack')) @ true,
-(\\ P',((b),((stack',c))) @ ifthenelse_(c,
+ifthenelse_(\\ ((b),((stack',c))) @ (c),
 (\\ P',V' @ i_''!f -> P'(V')),
 skip_
-)(P',((b),((stack',c)))))),
+)),
 (\\ P',V' @ I_'.return -> P'(V')))(\\ V' @ transition_end -> arguments_(V'),((b),(stack')))"))
 
 (define callvalued-c-ast
@@ -1525,10 +1524,10 @@ semi_(semi_(assign_(\\ ((b),(stack')) @ (((not b)),(stack'))),
 context_active_(call_args_(\\ P',V' @ g(P',V'),(\\ ((b),(stack')) @ (b))),
 semi_(assign_active_(call_args_(\\ P',V' @ g(P',V'),(\\ ((b),((stack',c))) @ (c))),
 \\ ((b),((stack',c))),r' @ ((r'),((stack',c)))),
-(\\ P',((b),((stack',c))) @ ifthenelse_(c,
+ifthenelse_(\\ ((b),((stack',c))) @ (c),
 (\\ P',V' @ i_''!f -> P'(V')),
 skip_
-)(P',((b),((stack',c)))))))),
+)))),
 (\\ P',V' @ I_'.return -> P'(V')))(\\ V' @ transition_end -> arguments_(V'),((b),(stack')))"))
 
 (define callvalued-on-2
@@ -1578,10 +1577,10 @@ semi_(semi_(assign_(\\ ((b),(stack')) @ (((not b)),(stack'))),
 context_active_(call_args_(\\ P',V' @ h(P',V'),(\\ ((b),(stack')) @ (s,b))),
 semi_(assign_active_(call_args_(\\ P',V' @ h(P',V'),(\\ ((b),((stack',c))) @ (s,b))),
 \\ ((b),((stack',c))),r' @ ((r'),((stack',c)))),
-(\\ P',((b),((stack',c))) @ ifthenelse_(c,
+ifthenelse_(\\ ((b),((stack',c))) @ (c),
 (\\ P',V' @ i_''!f -> P'(V')),
 skip_
-)(P',((b),((stack',c)))))))),
+)))),
 (\\ P',V' @ I_'.return -> P'(V')))(\\ V' @ transition_end -> arguments_(V'),((b),(stack')))"))
 
 
