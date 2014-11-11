@@ -119,6 +119,12 @@
        :identifier identifier
        :arguments (ast->gom- (or (null-is-#f arguments) '(arguments)))))
 
+    (('call identifier arguments last?)
+     (make <call>
+       :identifier identifier
+       :arguments (ast->gom- (or (null-is-#f arguments) '(arguments)))
+       :last? last?))
+
     (('component name ports ('system foo ('compound body ...)))
      (make <system>
        :name name

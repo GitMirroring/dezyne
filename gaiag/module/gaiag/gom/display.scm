@@ -83,11 +83,6 @@
   (sdisplay (.name o) port)
   (sdisplay (.injected o) port))
 
-(define-method (display-slots (o <call>) port)
-  (sdisplay (.identifier o) port)
-  (if (pair? (.elements (.arguments o)))
-      (sdisplay (.arguments o) port)))
-
 (define-method (write (o <dir-ast>) port)
   (display "(" port)
   (display-slots o port)

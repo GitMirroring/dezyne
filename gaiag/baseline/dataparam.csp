@@ -99,9 +99,9 @@ channel port_''': extensions(idataparam_''')
 
 
 CO_dataparam_(IIG,IG) = let
-fun(P',V') = (returnvalue_(\ ((s),(stack')) @ Status_Yes))(P',V')
-funx(P',V') = (returnvalue_(\ ((s),(stack')) @ Status_Yes))(P',V')
-xfunx(P',V') = (skip_)(P',V')
+fun(PF',V') = (returnvalue_(\ ((s),(stack')) @ Status_Yes))(PF',V')
+funx(PF',V') = (returnvalue_(\ ((s),(stack')) @ Status_Yes))(PF',V')
+xfunx(PF',V') = (skip_)(PF',V')
 
 dataparam_(((s),(stack'))) = transition_begin -> (
 port?x:{e0} ->

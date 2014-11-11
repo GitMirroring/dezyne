@@ -79,11 +79,11 @@ channel i24_i_''': extensions(i23_I_''')
 
 
 CO_i103_nonrecursion_(IIG,IG) = let
-i52_f(P',V') = (semi_(call_(\ P',V' @ i60_g(P',V')),
+i52_f(PF',V') = (semi_(call_(\ P',V' @ i60_g(P',V')),
 semi_((\ P',V' @ i24_i_''!i4_h -> P'(V')),
-skip_)))(P',V')
-i60_g(P',V') = (semi_(assign_(\ ((i28_b),(stack')) @ ((false),(stack'))),
-skip_))(P',V')
+skip_)))(PF',V')
+i60_g(PF',V') = (semi_(assign_(\ ((i28_b),(stack')) @ ((false),(stack'))),
+skip_))(PF',V')
 
 i103_nonrecursion_(((i28_b),(stack'))) = transition_begin -> (
 i24_i?x:{i3_e} ->

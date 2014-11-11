@@ -435,7 +435,7 @@
 (define-class <voidreply> (<ast>))
 
 (define (ast-transform ast src)
-  (ast-transform- ast (ast-transform-return ast (purge-data ast src))))
+  (ast-transform- ast (ast-transform-return ast (purge-data ast (tail-call src)))))
 
 (define-method (purge-data (root <root>) o)
   (let ((model (or (gom:component root) (gom:interface root))))
@@ -478,10 +478,11 @@
                (let ((purged (purge-data model (car statements) locals)))
                  (cons purged (loop (cdr statements) locals))))))))
 
-    (($ <call> identifier ($ <arguments> arguments))
+    (($ <call> identifier ($ <arguments> arguments) last?)
        (make <call>
          :identifier identifier
-         :arguments (make <arguments> :elements (purge-parameter-list (gom:function model identifier) arguments))))
+         :arguments (make <arguments> :elements (purge-parameter-list (gom:function model identifier) arguments))
+         :last? last?))
 
     (($ <function> name ($ <signature> type ($ <parameters> parameters)) recursive? statement)
        (make <function>
@@ -509,6 +510,58 @@
 
     ((? (is? <ast>)) (gom:map (lambda (o) (purge-data model o locals)) o))
     ((h t ...) (map (lambda (o) (purge-data model o locals)) o))
+    (_ o)))
+
+(define (tail-call o)
+  (match o
+    (($ <function> name signature recursive? statement)
+     (make <function>
+       :name name
+       :signature signature
+       :recursive recursive?
+       :statement (or (mark-last statement) statement)))
+    (_ o)))
+
+(define-method (mark-last (o <statement>))
+
+  (match o
+
+    (($ <compound> statements)
+     (and-let* ((statements
+                 (let loop ((statements (reverse statements)) (collect '()))
+                   (if (null? statements)
+                       #f
+                       (let* ((statement (car statements))
+                              (marked? (mark-last statement)))
+                         (if marked?
+                             (reverse (append collect (cons marked? (cdr statements))))
+                             (loop (cdr statements) (cons statement collect))))))))
+               (make <compound> :elements statements)))
+
+    (($ <call> identifier arguments)
+     (stderr "LAST: ~a\n" identifier)
+     (make <call> :identifier identifier :arguments arguments :last? #t))
+
+    (($ <if> expression then else)
+     (let ((then- (mark-last then))
+           (else- (and else (mark-last else))))
+       (if (and (not then-) (not else-))
+           #f
+           (make <if>
+             :expression expression
+             :then (or then- then)
+             :else (or else- else)))))
+
+    (($ <assign> identifier (and ($ <call>) (get! call)))
+     (make <assign> :identifier identifier :expression (mark-last (call))))
+
+    (($ <variable> name type (and ($ <call>) (get! call)))
+     (make <variable> :name name :type type :expression (mark-last (call))))
+
+    (($ <skip>) #f)
+
+    (($ <return> #f) #f)
+
     (_ o)))
 
 (define-method (ast-transform-return ast o)
@@ -550,15 +603,6 @@
     (($ <variable> name type ($ <action>)) #t)
     (($ <assign> identifier ($ <action>)) #t)
     (_ #f)))
-
-(define-method (call? (o <variable>))
-  (call? (.expression o)))
-
-(define-method (call? (o <top>))
-  #f)
-
-(define-method (call? (o <call>))
-  #t)
 
 (define (frame-hide frame prefix extension)
   (let loop ((frame frame) (index 0))
@@ -683,11 +727,12 @@
          :expression expression
          :expressions (assign context identifier 'r')))
 
-      (($ <call> identifier arguments)
+      (($ <call> identifier arguments last?)
        (make <csp-call>
          :context context
          :identifier identifier
-         :arguments arguments))
+         :arguments arguments
+         :last? last?))
 
       (($ <function> name signature recursive statement)
        (let* ((context (extend context (.parameters signature))))
@@ -776,9 +821,7 @@
 	 (model-name (.name model))
          (channel (if (is-a? model <interface>) model-name (.type (gom:port model))))
 	 (behaviour (.name (.behaviour model)))
-         (component? (is-a? model <component>))
-         (continuation-p (if tail-recursive? "PF'" "P'"))
-         (continuation-pv (string-append continuation-p ",V'")))
+         (component? (is-a? model <component>)))
     (=>string ast
      (match src
 
@@ -805,21 +848,24 @@
                (call (csp-transform ast call inevitable-optional? channel provided-on? tail-recursive?)))
           (list "assign_active_(" call ",\n\\ (" context ")," identifier " @ (" expressions "))")))
 
-       (($ <csp-call> context identifier ($ <arguments> '()))
-          (list "call_(\\ P',V' @ " identifier "(" continuation-pv "))"))
+       (($ <csp-call> context identifier ($ <arguments> '()) last?)
+        (let ((continuation-p (if last? "PF'" "P'")))
+         (list "call_(\\ P',V' @ " identifier "(" continuation-p ",V'))")))
 
-       (($ <csp-call> context identifier arguments)
-          (list "call_args_(\\ P',V' @ " identifier "(" continuation-pv "),(\\ (" context ") @ (" arguments ")))"))
+       (($ <csp-call> context identifier arguments last?)
+        (stderr "CALL: ~a, last?: ~a\n" identifier last?)
+        (let ((continuation-p (if last? "PF'" "P'")))
+         (list "call_args_(\\ P',V' @ " identifier "(" continuation-p ",V'),(\\ (" context ") @ (" arguments ")))")))
 
        (($ <function> name ($ <signature> type ($ <parameters> '())) recursive? statement)
-        (let ((transformed (csp-transform ast statement inevitable-optional? channel provided-on? recursive?))
-              (continuation-pv (if recursive? "PF',V'" "P',V'")))
-          (list name "(" continuation-pv ") = (" transformed ")(" continuation-pv ")\n")))
+        (let ((transformed (csp-transform ast statement inevitable-optional? channel provided-on? recursive?)))
+          (list name "(PF',V') = (" transformed ")(PF',V')\n")))
 
        (($ <function> name signature recursive? statement)
-        (let ((transformed (csp-transform ast statement inevitable-optional? channel provided-on? recursive?))
-              (continuation-pv (if recursive? "PF',V'" "P',V'")))
-          (list name "(" continuation-pv ") = (" transformed ")(" continuation-pv ")\n")))
+        (stderr "\nFUNCTION: ~a\n" name)
+        ;;(pretty-print (gom->list statement) (current-error-port))
+        (let ((transformed (csp-transform ast statement inevitable-optional? channel provided-on? recursive?)))
+          (list name "(PF',V') = (" transformed ")(PF',V')\n")))
 
        (($ <csp-if>)
         (let ((context (.context src))
@@ -897,7 +943,7 @@
           (list "context_active_(semi_(send_(" (or port channel) "," event "),recv_(" (or port channel) "_'," event ")),\n" continuation ")")))
 
        (($ <csp-variable> context name type ($ <call> identifier arguments) continuation)
-        (let* ((call (make <csp-call>  :context context :identifier identifier  :arguments arguments))
+        (let* ((call (make <csp-call>  :context context :identifier identifier :arguments arguments))
                (call (csp-transform ast call inevitable-optional? channel provided-on? tail-recursive?))
                (continuation (csp-transform ast continuation inevitable-optional? channel provided-on? tail-recursive?)))
           (list "context_active_(" call ",\n" continuation ")")))

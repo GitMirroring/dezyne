@@ -77,12 +77,12 @@ channel i14_i_''': extensions(i13_I_''')
 
 
 CO_i84_function2_(IIG,IG) = let
-i21_g(P',V') = (skip_)(P',V')
-i60_f(P',V') = (semi_(ifthenelse_(\ ((<>),((stack',i24_counter))) @ ((i24_counter < 2)),
-call_args_(\ P',V' @ i21_g(P',V'),(\ ((<>),((stack',i24_counter))) @ ((i24_counter + 1)))),
+i21_g(PF',V') = (skip_)(PF',V')
+i60_f(PF',V') = (semi_(ifthenelse_(\ ((<>),((stack',i24_counter))) @ ((i24_counter < 2)),
+call_args_(\ P',V' @ i21_g(PF',V'),(\ ((<>),((stack',i24_counter))) @ ((i24_counter + 1)))),
 skip_
 ),
-skip_))(P',V')
+skip_))(PF',V')
 
 i84_function2_(((<>),(stack'))) = transition_begin -> (
 i14_i?x:{i3_e} ->

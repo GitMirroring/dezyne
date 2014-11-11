@@ -80,8 +80,8 @@ channel r_''': extensions(IReply7_''')
 
 
 CO_Reply7_(IIG,IG) = let
-f(P',V') = (context_active_(semi_(send_(r,foo),recv_(r_',foo)),
-reply_(IReply7_', (\ ((<>),((stack',v))) @ v))))(P',V')
+f(PF',V') = (context_active_(semi_(send_(r,foo),recv_(r_',foo)),
+reply_(IReply7_', (\ ((<>),((stack',v))) @ v))))(PF',V')
 
 Reply7_(((<>),(stack'))) = transition_begin -> (
 p?x:{foo} ->

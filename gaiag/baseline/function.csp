@@ -46,11 +46,11 @@ channel I_in',I_out': {I_'.return}
 channel I_''': {modeling}
 
 IF_I_(IG,CS) = let
-toggle(P',V') = (semi_(ifthenelse_(\ ((f),(stack')) @ (f),
+toggle(PF',V') = (semi_(ifthenelse_(\ ((f),(stack')) @ (f),
 (\ P',V' @ I_''!c -> P'(V')),
 skip_
 ),
-assign_(\ ((f),(stack')) @ (((not f)),(stack')))))(P',V')
+assign_(\ ((f),(stack')) @ (((not f)),(stack')))))(PF',V')
 
 I_(((f),(stack'))) =
 (true) & (
@@ -91,11 +91,11 @@ channel i_''': extensions(I_''')
 
 
 CO_function_(IIG,IG) = let
-toggle(P',V') = (semi_(ifthenelse_(\ ((f),(stack')) @ (f),
+toggle(PF',V') = (semi_(ifthenelse_(\ ((f),(stack')) @ (f),
 (\ P',V' @ i_''!c -> P'(V')),
 skip_
 ),
-assign_(\ ((f),(stack')) @ (((not f)),(stack')))))(P',V')
+assign_(\ ((f),(stack')) @ (((not f)),(stack')))))(PF',V')
 
 function_(((f),(stack'))) = transition_begin -> (
 (true) & (

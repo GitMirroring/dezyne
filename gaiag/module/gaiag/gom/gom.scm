@@ -38,6 +38,7 @@
            .injected
            .instance
            .instances
+           .last?
            .left
            .name
            .parameters
@@ -248,7 +249,8 @@
 
 (define-class <call> (<imperative>)
   (identifier :accessor .identifier :init-value #f :init-keyword :identifier)
-  (arguments :accessor .arguments :init-form (make <arguments>) :init-keyword :arguments))
+  (arguments :accessor .arguments :init-form (make <arguments>) :init-keyword :arguments)
+  (last? :accessor .last? :init-value #f :init-keyword :last?))
 
 (define-class <compound> (<ast-list> <statement>))
 

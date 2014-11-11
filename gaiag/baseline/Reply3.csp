@@ -46,8 +46,8 @@ channel I_in',I_out': {I_'.Status_Yes,I_'.Status_No,I_'.return}
 channel I_''': {modeling}
 
 IF_I_(IG,CS) = let
-reply_fun(P',V') = (reply_(I_', (\ ((dummy),(stack')) @ Status_Yes)))(P',V')
-reply_fun_arg(P',V') = (reply_(I_', (\ ((dummy),((stack',s))) @ s)))(P',V')
+reply_fun(PF',V') = (reply_(I_', (\ ((dummy),(stack')) @ Status_Yes)))(PF',V')
+reply_fun_arg(PF',V') = (reply_(I_', (\ ((dummy),((stack',s))) @ s)))(PF',V')
 
 I_(((dummy),(stack'))) =
 (true) & (
@@ -80,8 +80,8 @@ channel U_in',U_out': {U_'.Status_Ok,U_'.Status_Nok,U_'.return}
 channel U_''': {modeling}
 
 IF_U_(IG,CS) = let
-reply_fun(P',V') = (reply_(U_', (\ ((dummy),(stack')) @ Status_Ok)))(P',V')
-reply_fun_arg(P',V') = (reply_(U_', (\ ((dummy),((stack',s))) @ s)))(P',V')
+reply_fun(PF',V') = (reply_(U_', (\ ((dummy),(stack')) @ Status_Ok)))(PF',V')
+reply_fun_arg(PF',V') = (reply_(U_', (\ ((dummy),((stack',s))) @ s)))(PF',V')
 
 U_(((dummy),(stack'))) =
 (true) & (
@@ -120,8 +120,8 @@ channel u_''': extensions(U_''')
 
 
 CO_Reply3_(IIG,IG) = let
-reply_fun(P',V') = (reply_(I_', (\ ((dummy),(stack')) @ Status_Yes)))(P',V')
-reply_fun_arg(P',V') = (reply_(I_', (\ ((dummy),((stack',s))) @ s)))(P',V')
+reply_fun(PF',V') = (reply_(I_', (\ ((dummy),(stack')) @ Status_Yes)))(PF',V')
+reply_fun_arg(PF',V') = (reply_(I_', (\ ((dummy),((stack',s))) @ s)))(PF',V')
 
 Reply3_(((dummy),(stack'))) = transition_begin -> (
 (true) & (

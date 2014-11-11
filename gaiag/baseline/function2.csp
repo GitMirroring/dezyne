@@ -46,11 +46,11 @@ channel ifunction2_in',ifunction2_out': {ifunction2_'.return}
 channel ifunction2_''': {modeling}
 
 IF_ifunction2_(IG,CS) = let
-vtoggle(P',V') = (semi_(ifthenelse_(\ ((f),(stack')) @ (f),
+vtoggle(PF',V') = (semi_(ifthenelse_(\ ((f),(stack')) @ (f),
 (\ P',V' @ ifunction2_''!c -> P'(V')),
 skip_
 ),
-returnvalue_(\ ((f),(stack')) @ (not f))))(P',V')
+returnvalue_(\ ((f),(stack')) @ (not f))))(PF',V')
 
 ifunction2_(((f),(stack'))) =
 (true) & (
@@ -94,11 +94,11 @@ channel i_''': extensions(ifunction2_''')
 
 
 CO_function2_(IIG,IG) = let
-vtoggle(P',V') = (semi_(ifthenelse_(\ ((f),(stack')) @ (f),
+vtoggle(PF',V') = (semi_(ifthenelse_(\ ((f),(stack')) @ (f),
 (\ P',V' @ i_''!c -> P'(V')),
 skip_
 ),
-returnvalue_(\ ((f),(stack')) @ (not f))))(P',V')
+returnvalue_(\ ((f),(stack')) @ (not f))))(PF',V')
 
 function2_(((f),(stack'))) = transition_begin -> (
 (true) & (

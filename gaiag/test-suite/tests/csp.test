@@ -20,6 +20,7 @@
 (define ast-transform-return (@@ (gaiag csp) ast-transform-return))
 (define statement-on-p/r- (@@ (gaiag csp) statement-on-p/r-))
 (define purge-data (@@ (gaiag csp) purge-data))
+(define tail-call (@@ (gaiag csp) tail-call))
 
 (define (ast-transform* ast src)
   (let ((root (csp->gom ast)))
@@ -42,6 +43,9 @@
   (let ((root (csp->gom ast)))
     ((gom:register csp->gom) root #t)
     (csp-transform root (csp->gom src))))
+
+(define (csp->gom ast)
+  ((compose ast->gom csp->sugar ast->sugar) ast))
 
 (define (csp->sugar ast)
   (match ast
@@ -73,6 +77,12 @@
        :context (csp->gom context)
        :identifier name
        :arguments (csp->gom arguments)))
+    (('csp-call context name arguments last?)
+     (make <csp-call>
+       :context (csp->gom context)
+       :identifier name
+       :arguments (csp->gom arguments)
+       :last? last?))
     (('csp-reply context expression)
      (make <csp-reply>
        :context (csp->gom context)
@@ -105,10 +115,6 @@
     (('skip) (make <skip>))
     ((h t ...) (map csp->sugar ast))
     (_ ast)))
-
-(define (csp->gom ast)
-  ((compose ast->gom csp->sugar ast->sugar) ast))
-
 
 (define (csp-noisy-equal? actual expected)
   (let ((actual* (gom->list (csp->gom actual)))
@@ -1130,7 +1136,7 @@ semi_(call_(\\ P',V' @ toggle(P',V')),
                          '(function toggle (signature (type void)) #f ()))
 
           ;; via:
-          "toggle(P',V') = (skip_)(P',V')\n"))
+          "toggle(PF',V') = (skip_)(PF',V')\n"))
 
 (define csp-function-call-valued-ast
   '(csp-on
@@ -1231,8 +1237,8 @@ context_active_(call_(\\ P',V' @ vtoggle(P',V')),
           (csp-transform* i-ast csp-transform-function-arguments)
 
           ;; to:
-          "g(P',V') = (semi_((\\ P',V' @ i!f -> P'(V')),
-returnvalue_(\\ ((s,b,hide_member2'),((stack',c))) @ c)))(P',V')
+          "g(PF',V') = (semi_((\\ P',V' @ i!f -> P'(V')),
+returnvalue_(\\ ((s,b,hide_member2'),((stack',c))) @ c)))(PF',V')
 "))
 
 
@@ -1343,7 +1349,7 @@ reply_(I_', (\\ ((dummy),((stack',s))) @ Status_No))
           (csp-transform* reply-ast csp-reply-function-ast-via)
 
           ;; to:
-          "reply_fun(P',V') = (reply_(I_', (\\ ((dummy),(stack')) @ Status_Yes)))(P',V')
+          "reply_fun(PF',V') = (reply_(I_', (\\ ((dummy),(stack')) @ Status_Yes)))(PF',V')
 "))
 
 (define csp-reply-function-parameter-ast-via
@@ -1381,7 +1387,7 @@ reply_(I_', (\\ ((dummy),((stack',s))) @ Status_No))
           (csp-transform* reply-ast csp-reply-function-parameter-ast-via)
 
           ;; to:
-          "reply_fun_arg(P',V') = (reply_(I_', (\\ ((dummy),((stack',s))) @ s)))(P',V')
+          "reply_fun_arg(PF',V') = (reply_(I_', (\\ ((dummy),((stack',s))) @ s)))(PF',V')
 "))
 
 (define return-variable-c-ast
@@ -1991,3 +1997,103 @@ assign_(\\ ((s,b,c),((stack',t))) @ ((s,b,c),((stack',(s == S_S1))))))"))
           '(on (triggers (trigger #f e (arguments)))
                 (compound
                  (assign s (call funx (arguments)))))))
+
+(pass-if "tail-call"
+         (csp-pretty-noisy-equal?
+          (tail-call
+           (csp->gom
+            '(function fun (signature (type void) (parameters))
+                       (compound (call rgun)))))
+          '(function fun (signature (type void #f)) #f
+                     (compound
+                      (call rgun (arguments) #t)))))
+
+(pass-if "tail-call-assign"
+         (csp-pretty-noisy-equal?
+          (tail-call
+           (csp->gom
+            '(function fun (signature (type void) (parameters))
+                       (compound
+                        (assign s (call rgun))))))
+          '(function fun (signature (type void #f)) #f
+            (compound
+             (assign s (call rgun (arguments) #t))))))
+
+(pass-if "tail-call-variable"
+         (csp-pretty-noisy-equal?
+          (tail-call
+           (csp->gom
+            '(function fun (signature (type void) (parameters))
+                       (compound
+                        (variable b (type bool) (call rgun))))))
+          '(function fun (signature (type void #f)) #f
+                     (compound
+                      (variable b (type bool #f) (call rgun (arguments) #t))))))
+
+(pass-if "non-tail-call"
+         (csp-pretty-noisy-equal?
+          (tail-call
+           (csp->gom
+            '(function fun (signature (type void #f))
+                       #f
+                       (compound
+                        (call rgun)
+                        (assign s #t)))))
+          '(function fun (signature (type void #f)) #f
+                     (compound
+                      (call rgun (arguments))
+                      (assign s #t)))))
+
+(pass-if "tail-call-compound"
+         (csp-pretty-noisy-equal?
+          (tail-call
+           (csp->gom
+            '(function fun (signature (type void #f))
+                       #f
+                       (compound
+                        (call rgun)
+                        (compound)))))
+          '(function fun (signature (type void #f)) #f
+                     (compound
+                      (call rgun (arguments) #t)
+                      (compound)))))
+
+(pass-if "tail-call-if"
+         (csp-pretty-noisy-equal?
+          (tail-call
+           (csp->gom
+            '(function fun (signature (type void #f)) #f
+                       (compound
+                        (if (expression #t)
+                            (call rgun)
+                            (call rgun))
+                        (compound)))))
+          '(function fun (signature (type void #f)) #f
+                     (compound
+                      (if (expression #t)
+                          (call rgun (arguments) #t)
+                          (call rgun (arguments) #t))
+                      (compound)))))
+
+(pass-if "tail-call-hairy"
+         (csp-pretty-noisy-equal?
+          (tail-call
+           (csp->gom
+            '(function fun (signature (type void #f)) #f
+                       (compound
+                        (if (expression #t)
+                            (call rgun)
+                            (call rgun))
+                      (compound
+                       (if (expression #t)
+                           (compound)
+                           (compound)))))))
+          '(function fun (signature (type void #f)) #f
+                     (compound
+                      (if (expression #t)
+                          (call rgun (arguments) #t)
+                          (call rgun (arguments) #t))
+                      (compound
+                       (if (expression #t)
+                           (compound)
+                           (compound)))))))
