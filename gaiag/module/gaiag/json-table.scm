@@ -142,6 +142,7 @@
       (let ((then (json-next- var next then))
             (else (json-next- var next else)))
         (add-state (add-state next then) else)))
+     (($ <illegal>) '())
      (_ next))))
 
 (define-method (add-state (o <list>) (state <list>))
