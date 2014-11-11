@@ -259,6 +259,16 @@
     (($ <call> (and (? symbol?) (? (negate event-or-function?)) (get! identifier)))
      (resolve-error o (identifier) "undefined function or event: ~a"))
 
+    (($ <call> identifier ($ <arguments> arguments)) (=> failure)
+     (let* ((function (function? identifier))
+            (parameters ((compose .elements .parameters .signature) function))
+            (argument-count (length arguments))
+            (parameter-count (length parameters)))
+       (if (= argument-count parameter-count)
+           (failure)
+           (resolve-error o identifier
+                          (format #f "function ~a expects ~a arguments, found: ~a" "~a" parameter-count argument-count)))))
+
     (($ <variable> name (and (? (negate type?)) (get! type)) expression)
      (let ((name
             (or (and-let* ((scope (.scope (type)))
