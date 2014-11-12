@@ -34,7 +34,7 @@
 (pass-if "normstate-101"
          (gom-pretty-noisy-equal?
           (normstate
-           (cadr (asd->ast
+           (cadr (dezyne->ast
                            #{
                              interface i { in void a; out void b;
                                           behaviour { on a: [true] { } } } #})))
@@ -46,7 +46,7 @@
 (pass-if "normstate-102"
          (gom-pretty-noisy-equal?
           (normstate
-           (cadr (asd->ast
+           (cadr (dezyne->ast
                            #{
                              interface i { in void a; out void b;
                                               behaviour { on a: [true] b;
@@ -61,7 +61,7 @@
 (pass-if "normstate-aggregate-guard-passive"
          (gom-pretty-noisy-equal?
           (normstate
-           (cadr (asd->ast
+           (cadr (dezyne->ast
                            #{
                              interface i { in void a; in void b; in void c;
                                               out void d;
@@ -78,7 +78,7 @@
 (pass-if "normstate-aggregate-guard-active"
          (gom-pretty-noisy-equal?
           (normstate
-           (cadr (asd->ast
+           (cadr (dezyne->ast
                            #{
                              interface i { in void a; in void b; in void c;
                                               out void d; out void e; out void f;
@@ -163,7 +163,7 @@
 (pass-if "normstate-function-call"
          (gom-pretty-noisy-equal?
           (normstate
-           (cadr (asd->ast
+           (cadr (dezyne->ast
                            #{
                              interface i { in void a; out void d;
                                               behaviour
@@ -184,7 +184,7 @@
 (pass-if "normstate-split-on-passive"
          (gom-pretty-noisy-equal?
           (normstate
-           (cadr (asd->ast
+           (cadr (dezyne->ast
                            #{
                              interface i { in void a; in void b; in void c;
                                               out void d;
@@ -202,7 +202,7 @@
 (pass-if "normstate-split-on-active-single-on"
          (gom-pretty-noisy-equal?
           (normstate
-           (cadr (asd->ast
+           (cadr (dezyne->ast
                            #{
                              component c { behaviour { [true] on i.a: illegal;
                                                        [false] on i.b,i.c,j.a: illegal;
@@ -229,7 +229,7 @@
 (pass-if "normstate-aggregate-on-interface-passive"
          (gom-pretty-noisy-equal?
           (normstate
-           (cadr (asd->ast
+           (cadr (dezyne->ast
                            #{
                              interface i {  in void a; in void b; in void c;
                                               out void d;
@@ -245,7 +245,7 @@
 (pass-if "normstate-aggregate-on-interface-active"
          (gom-pretty-noisy-equal?
           (normstate
-           (cadr (asd->ast
+           (cadr (dezyne->ast
                            #{
                              interface i {  in void a; in void b; in void c;
                                               out void d;
@@ -266,7 +266,7 @@
 (pass-if "normstate-aggregate-on-component-passive"
          (gom-pretty-noisy-equal?
           (normstate
-           (cadr (asd->ast
+           (cadr (dezyne->ast
                            #{
                              component c { behaviour { on i.a,i.b: [true] j.d;
                                                           on j.a:     [true] j.d;
@@ -287,7 +287,7 @@
 (pass-if "normstate-aggregate-on-component-active"
          (gom-pretty-noisy-equal?
           (normstate
-           (cadr (asd->ast
+           (cadr (dezyne->ast
                            #{
                              component c { behaviour { on i.a: [true] j.d;
                                                           on i.b: [true] j.d;

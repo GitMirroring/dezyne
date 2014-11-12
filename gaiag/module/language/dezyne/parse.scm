@@ -1,7 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
-;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -16,25 +15,25 @@
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
 
-(define-module (language asd parse)
+(define-module (language dezyne parse)
   #:use-module (ice-9 match)
   #:use-module (ice-9 and-let-star)
 
   #:use-module (system base lalr)
   #:use-module (language tree-il)
 
-  #:use-module (language asd location)
+  #:use-module (language dezyne location)
 
   #:export (
             compile-tree-il
-            make-asd-tokenizer
+            make-dezyne-tokenizer
             make-parser
             ))
 
 (define (make-parser)
   (lalr-parser
    (driver: lr)
-   ;;(out-table: "asd.out")
+   ;;(out-table: "dezyne.out")
    (
     lbrace rbrace lparen rparen rbracket semicolon colon dot comma
     (left: on lbracket)

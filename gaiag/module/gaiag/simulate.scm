@@ -26,7 +26,7 @@
   :use-module (ice-9 receive)
   :use-module (srfi srfi-1)
 
-  :use-module (language asd location)
+  :use-module (language dezyne location)
 
   :use-module (gaiag gaiag)
   :use-module (gaiag json-trace)

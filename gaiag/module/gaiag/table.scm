@@ -344,10 +344,10 @@
 (define-method (demo-table (o <on>))
   o)
 
-(define-method (pretty (o <ast>)) (ast->asd o))
+(define-method (pretty (o <ast>)) (ast->dezyne o))
 (define-method (pretty (o <list>))
   (match o
-    (((? (is? <ast>)) ...) (string-join (map ast->asd o)))
+    (((? (is? <ast>)) ...) (string-join (map ast->dezyne o)))
     (_ o)))
 (define-method (pretty o) o)
 

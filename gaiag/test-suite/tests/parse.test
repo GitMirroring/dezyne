@@ -24,19 +24,19 @@
 
   :use-module (gaiag reader))
 
-(pass-if "asd-first-dummy-test"
+(pass-if "parse-first-dummy-test"
 	 #t)
 
-(pass-if "asd-parse-interface"
+(pass-if "parse-interface"
   (pretty-noisy-equal?
-   (asd->ast
+   (dezyne->ast
     #{ interface i { } #}
     )
    '(root (interface i (types) (events) (no-behaviour)))))
 
-(pass-if "asd-parse-component"
+(pass-if "parse-component"
   (pretty-noisy-equal?
-   (asd->ast
+   (dezyne->ast
     #{ component c { } #}
     )
    '(root (component c (ports) (no-behaviour)))))

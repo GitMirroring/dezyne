@@ -3,7 +3,6 @@
 # Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
 # Copyright © 2014 Jan Nieuwenhuizen <jan@avatar.nl>
 # Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
-# Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
 # Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Gaiag.
@@ -32,7 +31,6 @@ diff = diff -uw -I '^ *$$' -I '^ *//'
 pydiff = diff -u -I '^ *$$' -I '^ *\#'
 sed = sed -e 's/^-gen/gen/' -re 's/((cppbase.cpp|.hh.scm|.cc.scm):[0-9]*):/\1:warning:/'
 BUILD = build
-#asdgen = ASD_PREFIX=$(DEPTH)/.. $(DEPTH)/../$(BUILD)/asdgenerator
 GUILE = guile
 SCRIPTS = coverage gaiag json2scm scm2json
 SCM_SOURCES = $(shell cd module git ls-files)
@@ -54,11 +52,11 @@ tags:
 	etags $(shell git ls-files)
 
 compile:
-	$(GUILE) $(GUILE_FLAGS) module/language/asd/spec.scm
+	$(GUILE) $(GUILE_FLAGS) module/language/dezyne/spec.scm
 
 compile-all: clean
 #	make -C .. PROJECTS=gaiag GUILE='$(GUILE) --debug' BUILD=build-debug VERBOSE=
-	$(GUILE) $(GUILE_FLAGS) module/language/asd/spec.scm
+	$(GUILE) $(GUILE_FLAGS) module/language/dezyne/spec.scm
 	for i in $(SCRIPTS); do $(GUILE) $(GUILE_FLAGS) $$i; done
 	for i in $(SCM_SOURCES); do $(GUILE) $(GUILE_FLAGS) $$i; done
 	for i in $(SCM_TEST_SOURCES); do $(GUILE) $(GUILE_FLAGS) $$i; done
@@ -93,9 +91,9 @@ cover-test:
 	GUILE='guile --debug --no-auto-compile' ./test.sh --coverage </dev/null
 	lcov -r gaiag.info /usr/share\* $(TOPDIR)/gaiag $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/test-suite\* \*pretty-print.scm \*gaiag/coverage -o gaiag.lcov/gaiag-test.info | grep -v Removing
 
-gaiag.lcov/%-asd.info: examples/regression/%.dzn
+gaiag.lcov/%-dzn.info: examples/regression/%.dzn
 	rm -f gaiag.lcov/gaiag.info
-	cd gaiag.lcov && ../gaiag --coverage -l asd $< >/dev/null
+	cd gaiag.lcov && ../gaiag --coverage -l dezyne $< >/dev/null
 	sed -i s@:[.][.]/@:$(shell pwd)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/gaiag $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/test-suite\* \*pretty-print.scm \*gaiag/coverage -o $@ | grep -v Removing
 
@@ -130,7 +128,7 @@ gaiag.lcov/%-wfc.info: examples/wfc/%.dzn
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/gaiag $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/test-suite\* \*pretty-print.scm \*gaiag/coverage -o $@ | grep -v Removing
 
 cover-regression:\
- $(REGRESSION_SOURCES:%.dzn=gaiag.lcov/%-asd.info)\
+ $(REGRESSION_SOURCES:%.dzn=gaiag.lcov/%-dzn.info)\
  $(REGRESSION_SOURCES:%.dzn=gaiag.lcov/%-csp.info)\
  $(REGRESSION_SOURCES:%.dzn=gaiag.lcov/%-c++.info)\
  gaiag.lcov/Alarm-javascript.info\
@@ -150,18 +148,18 @@ ast: compile
 
 pretty: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
-	./gaiag -l asd examples/interface-enums.dzn > out/interface-enums.dzn
+	./gaiag -l dezyne examples/interface-enums.dzn > out/interface-enums.dzn
 	$(diff) examples/interface-enums.dzn out
-	./gaiag -l asd examples/alarm-component.dzn > out/alarm-component.dzn
+	./gaiag -l dezyne examples/alarm-component.dzn > out/alarm-component.dzn
 	$(diff) examples/alarm-component.dzn out
-	./gaiag -l asd examples/Typedef.dzn > out/Typedef.dzn
+	./gaiag -l dezyne examples/Typedef.dzn > out/Typedef.dzn
 	$(diff) examples/Typedef.dzn out
 
-	./gaiag -l asd examples/regression/function.dzn > out/function.dzn
+	./gaiag -l dezyne examples/regression/function.dzn > out/function.dzn
 	$(diff) examples/regression/function.dzn out
-	./gaiag -l asd examples/regression/argument2.dzn > out/argument2.dzn
+	./gaiag -l dezyne examples/regression/argument2.dzn > out/argument2.dzn
 	$(diff) examples/regression/argument2.dzn out
-	./gaiag -l asd examples/regression/expressions.dzn > out/expressions.dzn
+	./gaiag -l dezyne examples/regression/expressions.dzn > out/expressions.dzn
 	$(diff) examples/regression/expressions.dzn out
 
 out/%.o: examples/regression/%.dzn

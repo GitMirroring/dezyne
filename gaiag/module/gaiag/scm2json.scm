@@ -53,7 +53,7 @@ Convert scheme-AST in FILE or standard input, to JSON on standard output
 
 Examples:
   echo \"(console.arm console.disarm sensor.disabled)\" | ./scm2json
-  ./gaiag -l simulate -t \"$(cat examples/Alarm-trail.scm)\" examples/Alarm.asd | ./scm2json
+  ./gaiag -l simulate -t \"$(cat examples/Alarm-trail.scm)\" examples/Alarm.dzn | ./scm2json
 ")
 	   (exit (or (and usage? 2) 0)))
      options)))

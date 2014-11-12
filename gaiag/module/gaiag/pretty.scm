@@ -35,22 +35,23 @@
   :use-module (oop goops describe)
   :use-module (gaiag gom)
 
-  :export (ast-> ast->asd ast->pretty pretty:gom))
+  :export (ast-> ast->dezyne ast->dzn ast->pretty pretty:gom))
 
-(define-method (ast->asd (o <list>))
+(define-method (ast->dezyne (o <list>))
   (let ((gom ((gom:register pretty:gom) o #t)))
-    (ast->asd gom)))
+    (ast->dezyne gom)))
 
-(define-method (ast->asd (o <null>)) "")
+(define-method (ast->dezyne (o <null>)) "")
 
-(define-method (ast->asd (o <root>))
-  (indent-string (apply string-append (map ast->asd (.elements o)))))
+(define-method (ast->dezyne (o <root>))
+  (indent-string (apply string-append (map ast->dezyne (.elements o)))))
 
-(define-method (ast->asd (o <ast>))
+(define-method (ast->dezyne (o <ast>))
   (indent-string (->string o)))
 
-(define ast-> ast->asd)
-(define ast->pretty ast->asd)
+(define ast-> ast->dezyne)
+(define ast->dzn ast->dezyne)
+(define ast->pretty ast->dezyne)
 
 (define (pretty:gom ast)
   ((compose ast:wfc ast:resolve ast->gom) ast))
@@ -79,8 +80,8 @@
     ;; comment this out to get ol style system as system
     (($ <system> name ($ <ports> ports) ($ <instances> instances) ($ <bindings> bindings))
      (->string (list 'system-as-component name ports instances bindings)))
-    ((and (? pair?) (? asd-template?)) (apply asd-template->string src))
-    ((? asd-template?) (apply asd-template->string
+    ((and (? pair?) (? dezyne-template?)) (apply dezyne-template->string src))
+    ((? dezyne-template?) (apply dezyne-template->string
                               (cons (ast-name src) (children src))))
 
     ((? join?) (apply join-all (children src)))
@@ -139,10 +140,10 @@
 (define (arguments->string arguments)
   (comma-space-join (map ->string (.elements arguments))))
 
-(define (asd-template? x) (parameterize ((templates asd-templates)) (template? x)))
+(define (dezyne-template? x) (parameterize ((templates dezyne-templates)) (template? x)))
 
-(define (asd-template->string . x)
-  (parameterize ((template-dir asd-template-dir) (templates asd-templates))
+(define (dezyne-template->string . x)
+  (parameterize ((template-dir dezyne-template-dir) (templates dezyne-templates))
     (apply template->string x)))
 
 (define (comma-space-join lst) (string-join (map ->string lst) ", "))
@@ -152,8 +153,8 @@
     (#f #f)
     (_ (->string (make <compound> :elements (list o))))))
 
-(define asd-template-dir (append (prefix-dir) '(templates asd)))
-(define asd-templates
+(define dezyne-template-dir (append (prefix-dir) '(templates dezyne)))
+(define dezyne-templates
   `((component . ((name . ,identity)
                   (ports . ,->string)
                   (behaviour . ,(lambda (x) (or (and=> x ->string) "")))))

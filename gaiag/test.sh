@@ -28,7 +28,7 @@ prefix=$(cd $(dirname $self) && pwd)
 GUILE_LOAD_PATH="$prefix:$prefix/module:$GUILE_LOAD_PATH"
 GUILE_LOAD_COMPILED_PATH="$prefix/ccache:$GUILE_LOAD_COMPILED_PATH"
 export GUILE_LOAD_PATH GUILE_LOAD_COMPILED_PATH
-spec=language/asd/spec
+spec=language/dezyne/spec
 [ -f $prefix/ccache/$spec.go ] || guile $prefix/module/$spec.scm
-${GUILE-guile} $prefix/module/language/asd/spec.scm
+${GUILE-guile} $prefix/module/language/dezyne/spec.scm
 exec ${GUILE-guile} -e main test-suite/run-tests "$@"

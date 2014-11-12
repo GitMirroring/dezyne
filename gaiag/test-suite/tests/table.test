@@ -24,7 +24,7 @@
   ((compose .statement .behaviour) (state-table (model o))))
 
 (define-method (pretty-state-table (o <root>))
-  ((compose ast->asd .statement .behaviour) (state-table (model o))))
+  ((compose ast->dezyne .statement .behaviour) (state-table (model o))))
 
 (pass-if "state-table-dummy-test"
          #t)
@@ -32,7 +32,7 @@
 (define idle-init-busy-ast
   (model
    (ast:resolve
-    (asd->ast
+    (dezyne->ast
 #{
 interface i
 {
@@ -90,7 +90,7 @@ interface i
   (gom-pretty-noisy-equal?
    (state-table
     (ast:resolve
-     (asd->ast
+     (dezyne->ast
 #{
 interface i
 {
@@ -116,7 +116,7 @@ interface i
   (gom-pretty-noisy-equal?
    (state-table
     (ast:resolve
-     (asd->ast
+     (dezyne->ast
 #{
 interface i
 {
@@ -142,7 +142,7 @@ interface i
   (gom-pretty-noisy-equal?
    (state-table
     (ast:resolve
-     (asd->ast
+     (dezyne->ast
 #{
 interface i
 {
@@ -186,7 +186,7 @@ interface i
   (gom-pretty-noisy-equal?
    (state-table
     (ast:resolve
-     (asd->ast
+     (dezyne->ast
 #{
 interface i
 {
@@ -235,7 +235,7 @@ interface i
   (diff-noisy-equal?
    (pretty-state-table
     (ast:resolve
-     (asd->ast
+     (dezyne->ast
 #{
 interface i
 {
@@ -297,7 +297,7 @@ interface i
   (diff-noisy-equal?
    (pretty-state-table
     (ast:resolve
-     (asd->ast
+     (dezyne->ast
 #{
 interface i
 {
@@ -402,7 +402,7 @@ interface i
   (diff-noisy-equal?
    (pretty-state-table
     (ast:resolve
-     (asd->ast
+     (dezyne->ast
 #{
 interface i
 {
@@ -445,7 +445,7 @@ interface i
   (diff-noisy-equal?
    (pretty-state-table
     (ast:resolve
-     (asd->ast
+     (dezyne->ast
 #{
 interface ISiren
 {

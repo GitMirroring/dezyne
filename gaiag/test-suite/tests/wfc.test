@@ -27,8 +27,8 @@
   :use-module (gaiag gom)
   :use-module (oop goops))
 
-(define (asd->gom o)
-  ((compose gom:resolve ast->gom asd->ast) o))
+(define (dezyne->gom o)
+  ((compose gom:resolve ast->gom dezyne->ast) o))
 
 (define-method (wfc-error (o <list>) (message <string>))
   ((@@ (gaiag wfc) wfc-error) (ast->gom o) message))
@@ -44,7 +44,7 @@
 (pass-if "wfc-second-on"
   (gom-pretty-noisy-equal?
    (second-on
-    (asd->gom
+    (dezyne->gom
      #{
        interface i { in void a; out void b;
                         behaviour
@@ -57,7 +57,7 @@
 (pass-if "wfc-mixing-declarative-imperative"
   (gom-pretty-noisy-equal?
    (mixing-declarative-imperative
-    (asd->gom
+    (dezyne->gom
      #{
        interface i { in void a; out void c;
                         behaviour
@@ -70,7 +70,7 @@
 (pass-if "wfc-interface"
   (gom-pretty-noisy-equal?
    (interface
-    (asd->gom
+    (dezyne->gom
      #{ interface i { } #} ))
    (list
     (wfc-error '(interface i) "interface must have a behaviour"))))
@@ -78,7 +78,7 @@
 (pass-if "wfc-component"
   (gom-pretty-noisy-equal?
    (component
-    (asd->gom
+    (dezyne->gom
      #{ component c { behaviour { } } #}))
    (list
     (wfc-error '(component c (ports) (behaviour #f)) "component with behaviour must have one provides port"))))

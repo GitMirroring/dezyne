@@ -71,7 +71,7 @@
    (walk-trail
     (gom:interface
      (simulate:gom
-      (asd->ast
+      (dezyne->ast
        #{
          interface i { in void a; out void b;
                           behaviour { on a: b;
@@ -86,7 +86,7 @@
     (walk-trail
      (simulate:gom
       (cadr
-       (asd->ast
+       (dezyne->ast
         #{ interface i
                      {
                       in void a; out void b;

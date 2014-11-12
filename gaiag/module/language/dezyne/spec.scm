@@ -1,8 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
-;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2014  "Mu Lei" known as "NalaGinrut" <NalaGinrut@gmail.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -18,9 +16,15 @@
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
 
-(read-set! keywords 'prefix)
+(define-module (language dezyne spec)
+  #:use-module (system base language)
+  #:use-module (language dezyne parse)
+  #:use-module (language dezyne tokenize)
+  #:export (dezyne))
 
-(define-module (gaiag asd)
-  :use-module (gaiag pretty)
-  :re-export (ast-> ast->asd))
-
+(define-language dezyne
+  #:title       "dezyne"
+  #:reader      (lambda (port env)
+                  ((make-parser) (make-tokenizer port) error))
+  #:compilers   `((tree-il . ,compile-tree-il))
+  #:printer     write)

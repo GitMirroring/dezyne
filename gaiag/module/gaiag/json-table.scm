@@ -160,7 +160,7 @@
   (json-data-location data o))
 
 (define-method (json-action o)
-  (json-data-location (ast->asd o) o))
+  (json-data-location (ast->dezyne o) o))
 
 (define-method (json-triggers (o <triggers>))
   (json-data-location (map ->symbol (.elements o)) o))

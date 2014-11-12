@@ -29,7 +29,7 @@
 	 #t)
 
 (pass-if "pretty-interface"
-  (let ((asd #{
+  (let ((dezyne #{
 interface i
 {
   behaviour
@@ -39,22 +39,22 @@ interface i
 #}))
     (diff-noisy-equal?
      (ast->pretty
-      (asd->ast asd))
-     asd)))
+      (dezyne->ast dezyne))
+     dezyne)))
 
 (pass-if "pretty-component"
-  (let ((asd #{
+  (let ((dezyne #{
 component c
 {
 }
 #}))
 (diff-noisy-equal?
  (ast->pretty
-  (asd->ast asd))
- asd)))
+  (dezyne->ast dezyne))
+ dezyne)))
 
 (pass-if "pretty-in"
-  (let ((asd #{
+  (let ((dezyne #{
 interface i
 {
   in void identifier;
@@ -65,11 +65,11 @@ interface i
 #}))
 (diff-noisy-equal?
  (ast->pretty
-  (asd->ast asd))
- asd)))
+  (dezyne->ast dezyne))
+ dezyne)))
 
 (pass-if "pretty-provides"
-  (let ((asd #{
+  (let ((dezyne #{
 interface Interface
 {
   behaviour
@@ -88,11 +88,11 @@ component c
 #}))
 (diff-noisy-equal?
  (ast->pretty
-  (asd->ast asd))
- asd)))
+  (dezyne->ast dezyne))
+ dezyne)))
 
 (pass-if "pretty-expression"  ;; FIXME: 878d54f Add normstate.scm broke pretty.
-  (let ((asd #{
+  (let ((dezyne #{
 interface i
 {
   behaviour
@@ -105,5 +105,5 @@ interface i
 #}))
 (diff-noisy-equal?
  (ast->pretty
-  (asd->ast asd))
- asd)))
+  (dezyne->ast dezyne))
+ dezyne)))

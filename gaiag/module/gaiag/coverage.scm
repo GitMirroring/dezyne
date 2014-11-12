@@ -50,9 +50,9 @@ Usage: coverage [OPTION]... COMMAND
   -v, --version        display version
 
 Examples:
-  ./coverage gaiag examples/Alarm.asd
-  ./coverage gaiag -l c++ examples/Alarm.asd
-  ./coverage gaiag -l csp examples/Alarm.asd
+  ./coverage gaiag examples/Alarm.dzn
+  ./coverage gaiag -l c++ examples/Alarm.dzn
+  ./coverage gaiag -l csp examples/Alarm.dzn
 ")
 	   (exit (or (and usage? 2) 0)))
      options)))

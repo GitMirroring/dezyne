@@ -26,16 +26,16 @@
   :use-module (system base language)
 
   :use-module (gaiag misc)
-  :use-module (language asd parse)
-  :use-module (language asd location)
-  :use-module (language asd tokenize)
-  :export (asd->ast find-file try-find-file parse-asd read-asd read-ast))
+  :use-module (language dezyne parse)
+  :use-module (language dezyne location)
+  :use-module (language dezyne tokenize)
+  :export (dezyne->ast find-file try-find-file parse-dezyne read-dezyne read-ast))
 
-(define (asd->ast x)
+(define (dezyne->ast x)
   (or (and-let* ((file-name (->string x))
                  ((file-exists? file-name)))
-                (read-asd file-name))
-      (parse-asd x)))
+                (read-dezyne file-name))
+      (parse-dezyne x)))
 
 (define (read-and-parse lang port cenv)
   (let ((exp ((language-reader lang) port cenv)))
@@ -44,17 +44,17 @@
      ((language-parser lang) => (lambda (parse) (parse exp)))
      (else exp))))
 
-(define (asd-reader port env)
+(define (dezyne-reader port env)
   ((make-parser) (make-tokenizer port) syntax-error-handler))
 
-(define (read-asd- file-name)
-  (asd-reader (open-file file-name "r") (current-module)))
+(define (read-dezyne- file-name)
+  (dezyne-reader (open-file file-name "r") (current-module)))
 
 (define *include-path* '("." "examples"))
 (define (path-find-file path file-name)
   (search-path path (components->file-name file-name)))
 
-(define* (find-file file-name :optional (extensions '(.asdi .asd .asdc .dzn)))
+(define* (find-file file-name :optional (extensions '(.dezyne .dzn)))
   (let* ((file-name (if (pair? file-name) file-name (list file-name)))
          (resolved
           (or (path-find-file *include-path* file-name)
@@ -73,7 +73,7 @@
       (set! *include-path* (cons dir *include-path*)))
     resolved))
 
-(define* (try-find-file file-name :optional (extensions '(.asdi .asd .asdc .dzn)))
+(define* (try-find-file file-name :optional (extensions '(.dzni .dzn .dznc .dzn)))
   (catch #t
     (lambda () (with-error-to-port
                    (open-output-file "/dev/null")
@@ -81,14 +81,14 @@
                    (find-file file-name extensions))))
     (lambda (key . args) #f)))
 
-(define* (read-asd file-name :optional (register identity))
-  (register (read-asd- (find-file file-name))))
+(define* (read-dezyne file-name :optional (register identity))
+  (register (read-dezyne- (find-file file-name))))
 
 (define (read-ast- file-name)
   (let ((file-name (find-file file-name)))
     (if (string-suffix? ".scm" file-name)
         (read (open-input-file file-name))
-        (read-asd- file-name))))
+        (read-dezyne- file-name))))
 
 (define* (read-ast file-name :optional (register identity))
   "Read contents of FILE-NAME and return the AST.
@@ -98,10 +98,10 @@ only perform a read, otherwise assume ASD content and also invoke
 the parser."
   (register (read-ast- file-name)))
 
-(define (parse-asd- string)
+(define (parse-dezyne- string)
   (read-hash-extend #\{ hash-read-string)
   (with-input-from-string string
-    (lambda () (asd-reader (current-input-port) (current-module)))))
+    (lambda () (dezyne-reader (current-input-port) (current-module)))))
 
-(define* (parse-asd string :optional (register identity))
-  (register (parse-asd- string)))
+(define* (parse-dezyne string :optional (register identity))
+  (register (parse-dezyne- string)))

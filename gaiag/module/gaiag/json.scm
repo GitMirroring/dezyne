@@ -32,7 +32,7 @@
 
   :use-module (gaiag gom)
   :use-module (gaiag misc)
-  :use-module (language asd location)
+  :use-module (language dezyne location)
   :use-module (gaiag reader)
 
   :export (

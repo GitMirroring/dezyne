@@ -24,9 +24,9 @@
 TARG := gaiag
 FRST :=\
   gaiag/module/system/base/lalr.scm\
-  gaiag/module/language/asd/parse.scm\
-  gaiag/module/language/asd/tokenize.scm\
-  gaiag/module/language/asd/spec.scm\
+  gaiag/module/language/dezyne/parse.scm\
+  gaiag/module/language/dezyne/tokenize.scm\
+  gaiag/module/language/dezyne/spec.scm\
 
 GUILE_LIB_PREFIX := /usr/share/guile/site
 GUILE_LIB_FILES :=\

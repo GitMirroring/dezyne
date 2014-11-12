@@ -1,23 +1,22 @@
-;;; Gaiag --- Guile in Asd In Asd in Guile.
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;;
-;;; This file is part of Gaiag.
-;;;
-;;; Gaiag is free software: you can redistribute it and/or modify it
-;;; under the terms of the GNU Affero General Public License as
-;;; published by the Free Software Foundation, either version 3 of the
-;;; License, or (at your option) any later version.
-;;;
-;;; Gaiag is distributed in the hope that it will be useful, but
-;;; WITHOUT ANY WARRANTY; without even the implied warranty of
-;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;;; Affero General Public License for more details.
-;;;
-;;; You should have received a copy of the GNU Affero General Public
-;;; License along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
+;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
+;;
+;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2009, 2010, 2011 Free Software Foundation, Inc.
+;;
+;; Gaiag is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU Affero General Public License as
+;; published by the Free Software Foundation, either version 3 of the
+;; License, or (at your option) any later version.
+;;
+;; Gaiag is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU Affero General Public License for more details.
+;;
+;; You should have received a copy of the GNU Affero General Public License
+;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
 
-(define-module (language asd tokenize)
+(define-module (language dezyne tokenize)
   #:use-module (language ecmascript tokenize)
   #:use-module (system base lalr)
 

@@ -83,7 +83,7 @@
 
 (pass-if "annotate-extract"
   (pretty-noisy-equal?
-   (extract-locations (read-asd "examples/loc.dzn"))
+   (extract-locations (read-dezyne "examples/loc.dzn"))
    locations))
 
 (pass-if "annotate-apply"

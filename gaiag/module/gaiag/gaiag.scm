@@ -70,18 +70,18 @@ Usage: gaiag [OPTION]... FILE
   -o, --output FILE    generate FILE containing the output
   -v, --version        display version
 
-Languages: asd c++ csp goops java javascript python
+Languages: c++ csp dezyne goops java javascript python
            ast annotate gom normstate resolve simulate table wfc
 
 Examples:
-  ./gaiag examples/Alarm.asd
-  ./gaiag -l asd examples/Alarm.scm
-  ./gaiag -l csp examples/Alarm.asd
-  ./gaiag -l csp -o alarm.csp examples/Alarm.asd
-  ./gaiag -l c++ examples/Alarm.asd
-  ./gaiag -l wfc examples/wfc/wfc-double-on.asd
-  ./gaiag -l simulate -t '(a a a a)' examples/regression/If.asd
-  ./gaiag -l simulate -t '(a a a a)' -j examples/regression/If.asd | ./scm2json
+  ./gaiag examples/Alarm.dzn
+  ./gaiag -l dezyne examples/Alarm.scm
+  ./gaiag -l csp examples/Alarm.dzn
+  ./gaiag -l csp -o alarm.csp examples/Alarm.dzn
+  ./gaiag -l c++ examples/Alarm.dzn
+  ./gaiag -l wfc examples/wfc/wfc-double-on.dzn
+  ./gaiag -l simulate -t '(a a a a)' examples/regression/If.dzn
+  ./gaiag -l simulate -t '(a a a a)' -j examples/regression/If.dzn | ./scm2json
 ")
 	   (exit (or (and usage? 2) 0)))
      options)))

@@ -76,7 +76,7 @@
            gom:named
            gom:out?
            gom:parent
-           gom:parse-asd
+           gom:parse-dezyne
            gom:port
            gom:ports
            gom:provides?
@@ -483,7 +483,7 @@
     gom))
 
 (define* (read-ast name #:optional (transform ast->gom))
-  (and-let* ((ast (null-is-#f (read-asd name (gom:register transform))))
+  (and-let* ((ast (null-is-#f (read-dezyne name (gom:register transform))))
              (models (null-is-#f (gom:models ast))))
             (find (lambda (model) (eq? (.name model) name)) models)))
 
@@ -492,8 +492,8 @@
       (and-let* ((ast (read-ast name transform)))
                 (cache-model name ast))))
 
-(define* (gom:parse-asd string :optional (register (gom:register ast->gom)))
-  (parse-asd string register))
+(define* (gom:parse-dezyne string :optional (register (gom:register ast->gom)))
+  (parse-dezyne string register))
 
 (define-method (gom:declarative? (o <statement>)) #f)
 (define-method (gom:declarative? (o <on>)) #t)
