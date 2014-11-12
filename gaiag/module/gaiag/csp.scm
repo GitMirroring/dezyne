@@ -173,7 +173,7 @@
   `(
     ((component completeness) . ,(gulp-template 'asserts/component-completeness.csp.scm))
     ((component illegal) . "assert STOP [T= AS_#(.name model) _#((compose .name .behaviour) model) (false) \\ diff(Events,{illegal})\n")
-    ((component deterministic) . "assert CO_#(.name model) _#((compose .name .behaviour) model)(true,true) :[deterministic]\n")
+    ((component deterministic) . "assert CO_#(.name model) _#((compose .name .behaviour) model)(true,true)[[#(.type (gom:port model))_'.x<-#(.name (gom:port model))_'.x|x<-extensions(#(.name (gom:port model))_')]] :[deterministic]\n")
     ((component deadlock)  . "assert AS_#(.name model) _#((compose .name .behaviour) model) (false) :[deadlock free]\n")
     ((component compliance) . ,(gulp-template 'asserts/component-compliance.csp.scm))
     ((component livelock)  .  "assert AS_#(.name model) _#((compose .name .behaviour) model) (true) \\ diff(Events,{|illegal,#((compose .name gom:port) model),#((compose .name gom:port) model)_'#(->string (if (not (null? (filter gom:out? (gom:events (gom:port model))))) (list \",\" ((compose .name gom:port) model)\"_''\")))|}) :[livelock free]\n")
