@@ -11,8 +11,6 @@
 
 #(if (pair? (injected-bindings model)) (list "#include \"locator.h\"") (list "namespace dezyne {\nstruct locator;\n}"))
 
-namespace component
-{
 struct #.model
 {
 #(map (lambda (binding) (list (.component (gom:instance model (injected-instance-name binding))) " "
@@ -22,9 +20,8 @@ struct #.model
   #component  #name;
 #}) (non-injected-instances model))
 #(map (init-port #{
-  interface::#interface & #name;
+  #interface & #name;
 #}) ((compose .elements .ports) model))
   #.model (const dezyne::locator&);
 };
-}
 ##endif

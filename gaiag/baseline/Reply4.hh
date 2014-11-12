@@ -33,28 +33,25 @@ namespace dezyne {
   struct runtime;
 }
 
-namespace component
+struct Reply4
 {
-  struct Reply4
+  dezyne::runtime& rt;
+  struct Status
   {
-    dezyne::runtime& rt;
-    struct Status
+    enum type
     {
-      enum type
-      {
-        Yes, No
-      };
+      Yes, No
     };
-    bool dummy;
-    interface::I::Status::type reply_I_Status;
-    interface::U::Status::type reply_U_Status;
-    interface::I i;
-    interface::U u;
-
-    Reply4(const dezyne::locator&);
-    interface::I::Status::type i_done();
-    Reply4::Status::type fun();
-    Reply4::Status::type fun_arg(Reply4::Status::type s);
   };
-}
+  bool dummy;
+  I::Status::type reply_I_Status;
+  U::Status::type reply_U_Status;
+  I i;
+  U u;
+
+  Reply4(const dezyne::locator&);
+  I::Status::type i_done();
+  Reply4::Status::type fun();
+  Reply4::Status::type fun_arg(Reply4::Status::type s);
+};
 #endif

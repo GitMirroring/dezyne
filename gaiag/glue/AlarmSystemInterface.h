@@ -21,32 +21,37 @@
 //
 // Code:
 
-#ifndef INTERFACE_IMODELING_C3_HH
-#define INTERFACE_IMODELING_C3_HH
+#ifndef ICONSOLE_INTERFACE_H
+#define ICONSOLE_INTERFACE_H
 
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
+#include "asdInterfaces.h"
+
+#include <boost/shared_ptr.hpp>
 
 namespace dezyne
 {
-  using boost::function;
-  using boost::bind;
+  struct IConsole
+  {
+    virtual ~IConsole(){}
+    virtual void SwitchOn() = 0;
+    virtual void SwitchOff() = 0;
+  };
+
+
+  struct IConsoleCB
+  {
+    virtual ~IConsoleCB(){}
+    virtual void Tripped() = 0;
+    virtual void Deactivated() = 0;
+  };
+
+
+  struct IConsoleInterface
+  {
+    virtual void GetAPI(boost::shared_ptr<IConsole>*) = 0 ;
+    virtual void RegisterCB(boost::shared_ptr<IConsoleCB>) = 0;
+
+    virtual void RegisterCB (boost::shared_ptr<asd::channels::ISingleThreaded>) = 0;
+  };
 }
-
-struct imodeling
-{
-
-  struct
-  {
-    dezyne::function<void ()> e;
-
-  } in;
-
-  struct
-  {
-    dezyne::function<void ()> f;
-
-  } out;
-};
-
 #endif

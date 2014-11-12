@@ -33,24 +33,21 @@ namespace dezyne
   using boost::bind;
 }
 
-namespace interface
+struct Provides
 {
-  struct Provides
+
+  struct
   {
+    dezyne::function<void ()> start;
 
-    struct
-    {
-      dezyne::function<void ()> start;
+  } in;
 
-    } in;
+  struct
+  {
+    dezyne::function<void ()> busy;
+    dezyne::function<void ()> finish;
 
-    struct
-    {
-      dezyne::function<void ()> busy;
-      dezyne::function<void ()> finish;
-
-    } out;
-  };
-}
+  } out;
+};
 
 #endif

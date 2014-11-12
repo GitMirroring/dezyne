@@ -33,45 +33,42 @@ namespace dezyne
   using boost::bind;
 }
 
-namespace interface
+struct IDataparam
 {
-  struct IDataparam
+  struct Status
   {
-    struct Status
+    enum type
     {
-      enum type
-      {
-        Yes, No
-      };
+      Yes, No
     };
-
-    struct
-    {
-      dezyne::function<void ()> e0;
-      dezyne::function<Status::type ()> e0r;
-      dezyne::function<void (int i)> e;
-      dezyne::function<Status::type (int i)> er;
-      dezyne::function<Status::type (int i, int j)> eer;
-      dezyne::function<void (int& i)> eo;
-      dezyne::function<void (int& i, int& j)> eoo;
-      dezyne::function<void (int i, int& j)> eio;
-      dezyne::function<void (int& i)> eio2;
-      dezyne::function<Status::type (int& i)> eor;
-      dezyne::function<Status::type (int& i, int& j)> eoor;
-      dezyne::function<Status::type (int i, int& j)> eior;
-      dezyne::function<Status::type (int& i)> eio2r;
-
-    } in;
-
-    struct
-    {
-      dezyne::function<void ()> a0;
-      dezyne::function<void (int i)> a;
-      dezyne::function<void (int i, int j)> aa;
-      dezyne::function<void (int a0, int a1, int a2, int a3, int a4, int a5)> a6;
-
-    } out;
   };
-}
+
+  struct
+  {
+    dezyne::function<void ()> e0;
+    dezyne::function<Status::type ()> e0r;
+    dezyne::function<void (int i)> e;
+    dezyne::function<Status::type (int i)> er;
+    dezyne::function<Status::type (int i, int j)> eer;
+    dezyne::function<void (int& i)> eo;
+    dezyne::function<void (int& i, int& j)> eoo;
+    dezyne::function<void (int i, int& j)> eio;
+    dezyne::function<void (int& i)> eio2;
+    dezyne::function<Status::type (int& i)> eor;
+    dezyne::function<Status::type (int& i, int& j)> eoor;
+    dezyne::function<Status::type (int i, int& j)> eior;
+    dezyne::function<Status::type (int& i)> eio2r;
+
+  } in;
+
+  struct
+  {
+    dezyne::function<void ()> a0;
+    dezyne::function<void (int i)> a;
+    dezyne::function<void (int i, int j)> aa;
+    dezyne::function<void (int a0, int a1, int a2, int a3, int a4, int a5)> a6;
+
+  } out;
+};
 
 #endif

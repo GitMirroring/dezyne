@@ -100,7 +100,7 @@ void deactivated()
 
 int main()
 {
-  component::AlarmSystem alarmsystem;
+  AlarmSystem alarmsystem;
 
   alarmsystem.console.out.detected = detected;
   alarmsystem.console.out.deactivated = deactivated;

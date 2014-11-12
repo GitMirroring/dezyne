@@ -33,23 +33,20 @@ namespace dezyne
   using boost::bind;
 }
 
-namespace interface
+struct iprovides_once
 {
-  struct iprovides_once
+
+  struct
   {
+    dezyne::function<void ()> foo;
 
-    struct
-    {
-      dezyne::function<void ()> foo;
+  } in;
 
-    } in;
+  struct
+  {
+    dezyne::function<void ()> bar;
 
-    struct
-    {
-      dezyne::function<void ()> bar;
-
-    } out;
-  };
-}
+  } out;
+};
 
 #endif

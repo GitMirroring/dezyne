@@ -21,11 +21,13 @@
 //
 // Code:
 
-#ifndef ISIREN_INTERFACE_H
-#define ISIREN_INTERFACE_H
+#ifndef DEZYNE_ISIREN_INTERFACE_H
+#define DEZYNE_ISIREN_INTERFACE_H
 
 #include <boost/shared_ptr.hpp>
 
+namespace dezyne
+{
 class ISiren
 {
 public:
@@ -38,5 +40,5 @@ class ISirenInterface
 public:
   virtual void GetAPI(boost::shared_ptr<ISiren>*) = 0;
 };
-
+}
 #endif

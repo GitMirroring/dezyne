@@ -34,29 +34,26 @@ namespace dezyne {
   struct runtime;
 }
 
-namespace component
+struct Alarm
 {
-  struct Alarm
+  dezyne::runtime& rt;
+  struct States
   {
-    dezyne::runtime& rt;
-    struct States
+    enum type
     {
-      enum type
-      {
-        Disarmed, Armed, Triggered, Disarming
-      };
+      Disarmed, Armed, Triggered, Disarming
     };
-    Alarm::States::type state;
-    bool sounding;
-    interface::IConsole console;
-    interface::ISensor sensor;
-    interface::ISiren siren;
-
-    Alarm(const dezyne::locator&);
-    void console_arm();
-    void console_disarm();
-    void sensor_triggered();
-    void sensor_disabled();
   };
-}
+  Alarm::States::type state;
+  bool sounding;
+  IConsole console;
+  ISensor sensor;
+  ISiren siren;
+
+  Alarm(const dezyne::locator&);
+  void console_arm();
+  void console_disarm();
+  void sensor_triggered();
+  void sensor_disabled();
+};
 #endif

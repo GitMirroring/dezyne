@@ -10,8 +10,6 @@ struct locator;
 struct runtime;
 }
 
-namespace component
-{
 struct #.model
 {
     dezyne::runtime& rt;
@@ -22,7 +20,7 @@ struct #.model
 #}) (gom:variables model))#
     (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))#
     (map (init-port #{
-interface::#interface  #name;
+#interface  #name;
 #}) ((compose .elements .ports) model))
     #.model (const dezyne::locator&);
 #(map
@@ -40,5 +38,4 @@ interface::#interface  #name;
 (map (define-function model #{
   #return-type  #name (#parameters);
 #}) (gom:functions model))};
-}
 ##endif

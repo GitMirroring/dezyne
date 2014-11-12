@@ -26,46 +26,44 @@
 #include "locator.h"
 #include "runtime.h"
 
-namespace component
+function2::function2(const dezyne::locator& dezyne_locator)
+: rt(dezyne_locator.get<dezyne::runtime>())
+, f(false)
+, i()
 {
-  function2::function2(const dezyne::locator& dezyne_locator)
-  : rt(dezyne_locator.get<dezyne::runtime>())
-  , f(false)
-  , i()
-  {
-    i.in.a = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&function2::i_a, this)));
-    i.in.b = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&function2::i_b, this)));
-  }
+  i.in.a = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&function2::i_a, this)));
+  i.in.b = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&function2::i_b, this)));
+}
 
-  void function2::i_a()
+void function2::i_a()
+{
+  std::cout << "function2.i_a" << std::endl;
+  if (true)
   {
-    std::cout << "function2.i_a" << std::endl;
-    if (true)
     {
-      {
-        f = vtoggle ();
-      }
+      f = vtoggle ();
     }
-  }
-
-  void function2::i_b()
-  {
-    std::cout << "function2.i_b" << std::endl;
-    if (true)
-    {
-      {
-        f = vtoggle ();
-        bool bb = vtoggle ();
-        f = bb;
-        rt.defer(this, dezyne::bind(i.out.d));
-      }
-    }
-  }
-
-  bool function2::vtoggle()
-  {
-    if (f)
-    rt.defer(this, dezyne::bind(i.out.c));
-    return not (f);
   }
 }
+
+void function2::i_b()
+{
+  std::cout << "function2.i_b" << std::endl;
+  if (true)
+  {
+    {
+      f = vtoggle ();
+      bool bb = vtoggle ();
+      f = bb;
+      rt.defer(this, dezyne::bind(i.out.d));
+    }
+  }
+}
+
+bool function2::vtoggle()
+{
+  if (f)
+  rt.defer(this, dezyne::bind(i.out.c));
+  return not (f);
+}
+

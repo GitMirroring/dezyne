@@ -33,25 +33,22 @@ namespace dezyne
   using boost::bind;
 }
 
-namespace interface
+struct ISensor
 {
-  struct ISensor
+
+  struct
   {
+    dezyne::function<void ()> enable;
+    dezyne::function<void ()> disable;
 
-    struct
-    {
-      dezyne::function<void ()> enable;
-      dezyne::function<void ()> disable;
+  } in;
 
-    } in;
+  struct
+  {
+    dezyne::function<void ()> triggered;
+    dezyne::function<void ()> disabled;
 
-    struct
-    {
-      dezyne::function<void ()> triggered;
-      dezyne::function<void ()> disabled;
-
-    } out;
-  };
-}
+  } out;
+};
 
 #endif

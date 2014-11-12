@@ -32,18 +32,15 @@ namespace dezyne {
   struct runtime;
 }
 
-namespace component
+struct enum_collision
 {
-  struct enum_collision
-  {
-    dezyne::runtime& rt;
-    interface::ienum_collision::Retval1::type reply_ienum_collision_Retval1;
-    interface::ienum_collision::Retval2::type reply_ienum_collision_Retval2;
-    interface::ienum_collision i;
+  dezyne::runtime& rt;
+  ienum_collision::Retval1::type reply_ienum_collision_Retval1;
+  ienum_collision::Retval2::type reply_ienum_collision_Retval2;
+  ienum_collision i;
 
-    enum_collision(const dezyne::locator&);
-    interface::ienum_collision::Retval1::type i_foo();
-    interface::ienum_collision::Retval2::type i_bar();
-  };
-}
+  enum_collision(const dezyne::locator&);
+  ienum_collision::Retval1::type i_foo();
+  ienum_collision::Retval2::type i_bar();
+};
 #endif

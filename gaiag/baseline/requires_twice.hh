@@ -34,19 +34,16 @@ namespace dezyne {
   struct runtime;
 }
 
-namespace component
+struct requires_twice
 {
-  struct requires_twice
-  {
-    dezyne::runtime& rt;
-    interface::irequires_twice p;
-    interface::irequires_twice once;
-    interface::irequires_twice twice;
+  dezyne::runtime& rt;
+  irequires_twice p;
+  irequires_twice once;
+  irequires_twice twice;
 
-    requires_twice(const dezyne::locator&);
-    void p_e();
-    void once_a();
-    void twice_a();
-  };
-}
+  requires_twice(const dezyne::locator&);
+  void p_e();
+  void once_a();
+  void twice_a();
+};
 #endif

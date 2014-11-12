@@ -33,25 +33,22 @@ namespace dezyne
   using boost::bind;
 }
 
-namespace interface
+struct IConsole
 {
-  struct IConsole
+
+  struct
   {
+    dezyne::function<void ()> arm;
+    dezyne::function<void ()> disarm;
 
-    struct
-    {
-      dezyne::function<void ()> arm;
-      dezyne::function<void ()> disarm;
+  } in;
 
-    } in;
+  struct
+  {
+    dezyne::function<void ()> detected;
+    dezyne::function<void ()> deactivated;
 
-    struct
-    {
-      dezyne::function<void ()> detected;
-      dezyne::function<void ()> deactivated;
-
-    } out;
-  };
-}
+  } out;
+};
 
 #endif

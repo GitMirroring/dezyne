@@ -33,18 +33,15 @@ namespace dezyne {
   struct runtime;
 }
 
-namespace component
+struct Reply7
 {
-  struct Reply7
-  {
-    dezyne::runtime& rt;
-    interface::IReply7::E::type reply_IReply7_E;
-    interface::IReply7 p;
-    interface::IReply7 r;
+  dezyne::runtime& rt;
+  IReply7::E::type reply_IReply7_E;
+  IReply7 p;
+  IReply7 r;
 
-    Reply7(const dezyne::locator&);
-    interface::IReply7::E::type p_foo();
-    void f();
-  };
-}
+  Reply7(const dezyne::locator&);
+  IReply7::E::type p_foo();
+  void f();
+};
 #endif

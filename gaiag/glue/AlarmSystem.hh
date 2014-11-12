@@ -21,32 +21,29 @@
 //
 // Code:
 
-#ifndef INTERFACE_IMODELING_C3_HH
-#define INTERFACE_IMODELING_C3_HH
+#ifndef COMPONENT_ALARMSYSTEM_HH
+#define COMPONENT_ALARMSYSTEM_HH
 
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
+#include "Sensor.hh"
+#include "Siren.hh"
+#include "Alarm.hh"
 
-namespace dezyne
-{
-  using boost::function;
-  using boost::bind;
+
+#include "IConsole.hh"
+
+
+namespace dezyne {
+  struct locator;
 }
 
-struct imodeling
+struct AlarmSystem
 {
+  Sensor sensor;
+  Siren siren;
+  Alarm alarm;
 
-  struct
-  {
-    dezyne::function<void ()> e;
+  IConsole& console;
 
-  } in;
-
-  struct
-  {
-    dezyne::function<void ()> f;
-
-  } out;
+  AlarmSystem(const dezyne::locator&);
 };
-
 #endif

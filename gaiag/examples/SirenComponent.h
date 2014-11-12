@@ -24,9 +24,12 @@
 
 #include "ISirenInterface.h"
 
+namespace dezyne
+{
 class SirenComponent: public ISirenInterface
 {
 public:
   static boost::shared_ptr<ISirenInterface> GetInstance();
   static void ReleaseInstance();
 };
+}

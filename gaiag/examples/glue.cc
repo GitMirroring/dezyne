@@ -92,10 +92,10 @@ void handle_event(void* scope, const dezyne::function<void()>& event)
   }
 }
 
-struct CB: public IConsoleCB
+struct CB: public dezyne::IConsoleCB
 {
-  boost::shared_ptr<IConsole> api;
-  CB(  boost::shared_ptr<IConsole> api)
+  boost::shared_ptr<dezyne::IConsole> api;
+  CB(  boost::shared_ptr<dezyne::IConsole> api)
   : api(api)
   {}
   void Tripped()
@@ -110,8 +110,8 @@ struct CB: public IConsoleCB
 
 int main()
 {
-  boost::shared_ptr<IConsoleInterface> alarm_system = AlarmSystemComponent::GetInstance();
-  boost::shared_ptr<IConsole> api;
+  boost::shared_ptr<dezyne::IConsoleInterface> alarm_system = dezyne::AlarmSystemComponent::GetInstance();
+  boost::shared_ptr<dezyne::IConsole> api;
   alarm_system->GetAPI(&api);
   alarm_system->RegisterCB(boost::make_shared<CB>(api));
 

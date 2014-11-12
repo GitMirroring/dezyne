@@ -10,8 +10,6 @@ namespace dezyne
   using boost::bind;
 }
 
-namespace interface
-{
 struct #.interface
 {
  #(->string (map declare-enum (gom:interface-enums model)))
@@ -29,6 +27,5 @@ struct #.interface
 #}) (filter gom:out? ((compose .elements .events) model)))
  } out;
   };
-}
 
 ##endif

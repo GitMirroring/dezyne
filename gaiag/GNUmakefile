@@ -586,8 +586,8 @@ glue:
 	ln -sf examples/ISirenInterface.h out
 	ln -sf examples/SirenComponent.h out
 	ln -sf examples/SirenComponent.cpp out
-	-for i in out/*.c*; do ccache g++ -g -Wall -Wextra -I out -I $(DEPTH)/examples/codegen/asd_cpp_runtime -c $$i -o out/$$(basename $$(basename $$i .cpp) .cc).o; done
-	-cd out && g++ -o test *.o && ./test
+	for i in out/*.c*; do ccache g++ -g -Wall -Wextra -I out -I $(DEPTH)/examples/codegen/asd_cpp_runtime -c $$i -o out/$$(basename $$(basename $$i .cpp) .cc).o; done
+	cd out && g++ -o test *.o && ./test
 
 update: csp-update c++-update goops-update java-update javascript-update python-update
 

@@ -26,28 +26,26 @@
 #include "locator.h"
 #include "runtime.h"
 
-namespace component
+Sensor::Sensor(const dezyne::locator& dezyne_locator)
+: rt(dezyne_locator.get<dezyne::runtime>())
+, sensor()
 {
-  Sensor::Sensor(const dezyne::locator& dezyne_locator)
-  : rt(dezyne_locator.get<dezyne::runtime>())
-  , sensor()
-  {
-    sensor.in.enable = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&Sensor::sensor_enable, this)));
-    sensor.in.disable = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&Sensor::sensor_disable, this)));
-  }
-
-  void Sensor::sensor_enable()
-  {
-    std::cout << "Sensor.sensor_enable" << std::endl;
-    {
-    }
-  }
-
-  void Sensor::sensor_disable()
-  {
-    std::cout << "Sensor.sensor_disable" << std::endl;
-    {
-    }
-  }
-
+  sensor.in.enable = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&Sensor::sensor_enable, this)));
+  sensor.in.disable = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&Sensor::sensor_disable, this)));
 }
+
+void Sensor::sensor_enable()
+{
+  std::cout << "Sensor.sensor_enable" << std::endl;
+  {
+  }
+}
+
+void Sensor::sensor_disable()
+{
+  std::cout << "Sensor.sensor_disable" << std::endl;
+  {
+  }
+}
+
+

@@ -32,16 +32,13 @@ namespace dezyne {
   struct runtime;
 }
 
-namespace component
+struct Sensor
 {
-  struct Sensor
-  {
-    dezyne::runtime& rt;
-    interface::ISensor sensor;
+  dezyne::runtime& rt;
+  ISensor sensor;
 
-    Sensor(const dezyne::locator&);
-    void sensor_enable();
-    void sensor_disable();
-  };
-}
+  Sensor(const dezyne::locator&);
+  void sensor_enable();
+  void sensor_disable();
+};
 #endif

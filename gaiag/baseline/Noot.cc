@@ -32,7 +32,7 @@ namespace component
     po_aap.in.is_aap = asd::bind(&Noot::is_aap, this);
   }
 
-  interface::Aap::AapValues Noot::is_aap()
+  Aap::AapValues Noot::is_aap()
   {
     std::cout << "Noot.is_aap" << std::endl;
     {

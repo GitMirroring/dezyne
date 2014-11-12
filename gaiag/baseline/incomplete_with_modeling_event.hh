@@ -33,17 +33,14 @@ namespace dezyne {
   struct runtime;
 }
 
-namespace component
+struct incomplete_with_modeling_event
 {
-  struct incomplete_with_modeling_event
-  {
-    dezyne::runtime& rt;
-    interface::iincomplete_with_modeling_event p;
-    interface::iincomplete_with_modeling_event r;
+  dezyne::runtime& rt;
+  iincomplete_with_modeling_event p;
+  iincomplete_with_modeling_event r;
 
-    incomplete_with_modeling_event(const dezyne::locator&);
-    void p_e();
-    void r_a();
-  };
-}
+  incomplete_with_modeling_event(const dezyne::locator&);
+  void p_e();
+  void r_a();
+};
 #endif

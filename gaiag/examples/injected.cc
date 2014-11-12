@@ -40,7 +40,7 @@ int main()
   dezyne::runtime rt;
   l.set(rt);
 
-  component::Injected i(l);
+  Injected i(l);
 
   i.t.out.f = f;
 

@@ -26,28 +26,26 @@
 #include "locator.h"
 #include "runtime.h"
 
-namespace component
+enum_collision::enum_collision(const dezyne::locator& dezyne_locator)
+: rt(dezyne_locator.get<dezyne::runtime>())
+, i()
 {
-  enum_collision::enum_collision(const dezyne::locator& dezyne_locator)
-  : rt(dezyne_locator.get<dezyne::runtime>())
-  , i()
-  {
-    i.in.foo = dezyne::connect<interface::ienum_collision::Retval1::type>(rt, this, dezyne::function<interface::ienum_collision::Retval1::type()>(dezyne::bind<interface::ienum_collision::Retval1::type>(&enum_collision::i_foo, this)));
-    i.in.bar = dezyne::connect<interface::ienum_collision::Retval2::type>(rt, this, dezyne::function<interface::ienum_collision::Retval2::type()>(dezyne::bind<interface::ienum_collision::Retval2::type>(&enum_collision::i_bar, this)));
-  }
-
-  interface::ienum_collision::Retval1::type enum_collision::i_foo()
-  {
-    std::cout << "enum_collision.i_foo" << std::endl;
-    reply_ienum_collision_Retval1 = interface::ienum_collision::Retval1::OK;
-    return reply_ienum_collision_Retval1;
-  }
-
-  interface::ienum_collision::Retval2::type enum_collision::i_bar()
-  {
-    std::cout << "enum_collision.i_bar" << std::endl;
-    reply_ienum_collision_Retval2 = interface::ienum_collision::Retval2::NOK;
-    return reply_ienum_collision_Retval2;
-  }
-
+  i.in.foo = dezyne::connect<ienum_collision::Retval1::type>(rt, this, dezyne::function<ienum_collision::Retval1::type()>(dezyne::bind<ienum_collision::Retval1::type>(&enum_collision::i_foo, this)));
+  i.in.bar = dezyne::connect<ienum_collision::Retval2::type>(rt, this, dezyne::function<ienum_collision::Retval2::type()>(dezyne::bind<ienum_collision::Retval2::type>(&enum_collision::i_bar, this)));
 }
+
+ienum_collision::Retval1::type enum_collision::i_foo()
+{
+  std::cout << "enum_collision.i_foo" << std::endl;
+  reply_ienum_collision_Retval1 = ienum_collision::Retval1::OK;
+  return reply_ienum_collision_Retval1;
+}
+
+ienum_collision::Retval2::type enum_collision::i_bar()
+{
+  std::cout << "enum_collision.i_bar" << std::endl;
+  reply_ienum_collision_Retval2 = ienum_collision::Retval2::NOK;
+  return reply_ienum_collision_Retval2;
+}
+
+

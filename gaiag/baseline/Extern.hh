@@ -32,17 +32,14 @@ namespace dezyne {
   struct runtime;
 }
 
-namespace component
+struct Extern
 {
-  struct Extern
-  {
-    dezyne::runtime& rt;
-    int i;
-    int j;
-    interface::IExtern port;
+  dezyne::runtime& rt;
+  int i;
+  int j;
+  IExtern port;
 
-    Extern(const dezyne::locator&);
-    void port_e();
-  };
-}
+  Extern(const dezyne::locator&);
+  void port_e();
+};
 #endif

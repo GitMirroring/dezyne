@@ -34,18 +34,18 @@ namespace component
   , bottom()
   {
     top.in.e0 = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&proxy::top_e0, this)));
-    top.in.e0r = dezyne::connect<interface::IDataparam::Status::type>(rt, this, dezyne::function<interface::IDataparam::Status::type()>(dezyne::bind<interface::IDataparam::Status::type>(&proxy::top_e0r, this)));
+    top.in.e0r = dezyne::connect<IDataparam::Status::type>(rt, this, dezyne::function<IDataparam::Status::type()>(dezyne::bind<IDataparam::Status::type>(&proxy::top_e0r, this)));
     top.in.e = dezyne::connect<int>(rt, this, dezyne::function<void(int)>(dezyne::bind<void>(&proxy::top_e, this, _1)));
-    top.in.er = dezyne::connect<interface::IDataparam::Status::type,int>(rt, this, dezyne::function<interface::IDataparam::Status::type(int)>(dezyne::bind<interface::IDataparam::Status::type>(&proxy::top_er, this, _1)));
-    top.in.eer = dezyne::connect<interface::IDataparam::Status::type,int,int>(rt, this, dezyne::function<interface::IDataparam::Status::type(int,int)>(dezyne::bind<interface::IDataparam::Status::type>(&proxy::top_eer, this, _1, _2)));
+    top.in.er = dezyne::connect<IDataparam::Status::type,int>(rt, this, dezyne::function<IDataparam::Status::type(int)>(dezyne::bind<IDataparam::Status::type>(&proxy::top_er, this, _1)));
+    top.in.eer = dezyne::connect<IDataparam::Status::type,int,int>(rt, this, dezyne::function<IDataparam::Status::type(int,int)>(dezyne::bind<IDataparam::Status::type>(&proxy::top_eer, this, _1, _2)));
     top.in.eo = dezyne::connect<int&>(rt, this, dezyne::function<void(int&)>(dezyne::bind<void>(&proxy::top_eo, this, _1)));
     top.in.eoo = dezyne::connect<int&,int&>(rt, this, dezyne::function<void(int&,int&)>(dezyne::bind<void>(&proxy::top_eoo, this, _1, _2)));
     top.in.eio = dezyne::connect<int,int&>(rt, this, dezyne::function<void(int,int&)>(dezyne::bind<void>(&proxy::top_eio, this, _1, _2)));
     top.in.eio2 = dezyne::connect<int&>(rt, this, dezyne::function<void(int&)>(dezyne::bind<void>(&proxy::top_eio2, this, _1)));
-    top.in.eor = dezyne::connect<interface::IDataparam::Status::type,int&>(rt, this, dezyne::function<interface::IDataparam::Status::type(int&)>(dezyne::bind<interface::IDataparam::Status::type>(&proxy::top_eor, this, _1)));
-    top.in.eoor = dezyne::connect<interface::IDataparam::Status::type,int&,int&>(rt, this, dezyne::function<interface::IDataparam::Status::type(int&,int&)>(dezyne::bind<interface::IDataparam::Status::type>(&proxy::top_eoor, this, _1, _2)));
-    top.in.eior = dezyne::connect<interface::IDataparam::Status::type,int,int&>(rt, this, dezyne::function<interface::IDataparam::Status::type(int,int&)>(dezyne::bind<interface::IDataparam::Status::type>(&proxy::top_eior, this, _1, _2)));
-    top.in.eio2r = dezyne::connect<interface::IDataparam::Status::type,int&>(rt, this, dezyne::function<interface::IDataparam::Status::type(int&)>(dezyne::bind<interface::IDataparam::Status::type>(&proxy::top_eio2r, this, _1)));
+    top.in.eor = dezyne::connect<IDataparam::Status::type,int&>(rt, this, dezyne::function<IDataparam::Status::type(int&)>(dezyne::bind<IDataparam::Status::type>(&proxy::top_eor, this, _1)));
+    top.in.eoor = dezyne::connect<IDataparam::Status::type,int&,int&>(rt, this, dezyne::function<IDataparam::Status::type(int&,int&)>(dezyne::bind<IDataparam::Status::type>(&proxy::top_eoor, this, _1, _2)));
+    top.in.eior = dezyne::connect<IDataparam::Status::type,int,int&>(rt, this, dezyne::function<IDataparam::Status::type(int,int&)>(dezyne::bind<IDataparam::Status::type>(&proxy::top_eior, this, _1, _2)));
+    top.in.eio2r = dezyne::connect<IDataparam::Status::type,int&>(rt, this, dezyne::function<IDataparam::Status::type(int&)>(dezyne::bind<IDataparam::Status::type>(&proxy::top_eio2r, this, _1)));
     bottom.out.a0 = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&proxy::bottom_a0, this)));
     bottom.out.a = dezyne::connect<int>(rt, this, dezyne::function<void(int)>(dezyne::bind<void>(&proxy::bottom_a, this, _1)));
     bottom.out.aa = dezyne::connect<int,int>(rt, this, dezyne::function<void(int,int)>(dezyne::bind<void>(&proxy::bottom_aa, this, _1, _2)));
@@ -58,11 +58,11 @@ namespace component
     bottom.in.e0();
   }
 
-  interface::IDataparam::Status::type proxy::top_e0r()
+  IDataparam::Status::type proxy::top_e0r()
   {
     std::cout << "proxy.top_e0r" << std::endl;
     {
-      interface::IDataparam::Status::type r = bottom.in.e0r ();
+      IDataparam::Status::type r = bottom.in.e0r ();
       reply_IDataparam_Status = r;
     }
     return reply_IDataparam_Status;
@@ -77,24 +77,24 @@ namespace component
     }
   }
 
-  interface::IDataparam::Status::type proxy::top_er(int i)
+  IDataparam::Status::type proxy::top_er(int i)
   {
     std::cout << "proxy.top_er" << std::endl;
     {
       int pi = i;
       {
-        interface::IDataparam::Status::type r = bottom.in.er (pi);
+        IDataparam::Status::type r = bottom.in.er (pi);
         reply_IDataparam_Status = r;
       }
     }
     return reply_IDataparam_Status;
   }
 
-  interface::IDataparam::Status::type proxy::top_eer(int i, int j)
+  IDataparam::Status::type proxy::top_eer(int i, int j)
   {
     std::cout << "proxy.top_eer" << std::endl;
     {
-      interface::IDataparam::Status::type r = bottom.in.eer (i, j);
+      IDataparam::Status::type r = bottom.in.eer (i, j);
       reply_IDataparam_Status = r;
     }
     return reply_IDataparam_Status;
@@ -132,41 +132,41 @@ namespace component
     }
   }
 
-  interface::IDataparam::Status::type proxy::top_eor(int& i)
+  IDataparam::Status::type proxy::top_eor(int& i)
   {
     std::cout << "proxy.top_eor" << std::endl;
     {
-      interface::IDataparam::Status::type s = bottom.in.eor (i);
+      IDataparam::Status::type s = bottom.in.eor (i);
       reply_IDataparam_Status = s;
     }
     return reply_IDataparam_Status;
   }
 
-  interface::IDataparam::Status::type proxy::top_eoor(int& i, int& j)
+  IDataparam::Status::type proxy::top_eoor(int& i, int& j)
   {
     std::cout << "proxy.top_eoor" << std::endl;
     {
-      interface::IDataparam::Status::type s = bottom.in.eoor (i, j);
+      IDataparam::Status::type s = bottom.in.eoor (i, j);
       reply_IDataparam_Status = s;
     }
     return reply_IDataparam_Status;
   }
 
-  interface::IDataparam::Status::type proxy::top_eior(int i, int& j)
+  IDataparam::Status::type proxy::top_eior(int i, int& j)
   {
     std::cout << "proxy.top_eior" << std::endl;
     {
-      interface::IDataparam::Status::type s = bottom.in.eior (i, j);
+      IDataparam::Status::type s = bottom.in.eior (i, j);
       reply_IDataparam_Status = s;
     }
     return reply_IDataparam_Status;
   }
 
-  interface::IDataparam::Status::type proxy::top_eio2r(int& i)
+  IDataparam::Status::type proxy::top_eio2r(int& i)
   {
     std::cout << "proxy.top_eio2r" << std::endl;
     {
-      interface::IDataparam::Status::type s = bottom.in.eio2r (i);
+      IDataparam::Status::type s = bottom.in.eio2r (i);
       reply_IDataparam_Status = s;
     }
     return reply_IDataparam_Status;

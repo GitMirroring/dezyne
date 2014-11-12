@@ -33,29 +33,26 @@ namespace dezyne
   using boost::bind;
 }
 
-namespace interface
+struct U
 {
-  struct U
+  struct Status
   {
-    struct Status
+    enum type
     {
-      enum type
-      {
-        Ok, Nok
-      };
+      Ok, Nok
     };
-
-    struct
-    {
-      dezyne::function<Status::type ()> what;
-
-    } in;
-
-    struct
-    {
-
-    } out;
   };
-}
+
+  struct
+  {
+    dezyne::function<Status::type ()> what;
+
+  } in;
+
+  struct
+  {
+
+  } out;
+};
 
 #endif

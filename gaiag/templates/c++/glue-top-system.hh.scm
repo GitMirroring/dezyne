@@ -3,11 +3,13 @@
 
 ##include "#.model Interface.h"
 
+namespace dezyne
+{
 struct #.model Component
   : public #(.type (gom:port model))Interface
 {
   static boost::shared_ptr<#(.type (gom:port model))Interface> GetInstance();
   static void ReleaseInstance();
 };
-
+}
 ##endif

@@ -21,32 +21,21 @@
 //
 // Code:
 
-#ifndef INTERFACE_IMODELING_C3_HH
-#define INTERFACE_IMODELING_C3_HH
+#include "AlarmSystem.hh"
 
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
-
-namespace dezyne
+template<typename Port>
+void connect(Port& provided, Port& required)
 {
-  using boost::function;
-  using boost::bind;
+  provided.out = required.out;
+  required.in = provided.in;
 }
 
-struct imodeling
+AlarmSystem::AlarmSystem(const dezyne::locator& dezyne_locator)
+: sensor(dezyne_locator)
+, siren(dezyne_locator)
+, alarm(dezyne_locator)
+, console(alarm.console)
 {
-
-  struct
-  {
-    dezyne::function<void ()> e;
-
-  } in;
-
-  struct
-  {
-    dezyne::function<void ()> f;
-
-  } out;
-};
-
-#endif
+  connect(sensor.sensor, alarm.sensor);
+  connect(siren.siren, alarm.siren);
+}

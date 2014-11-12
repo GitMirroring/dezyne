@@ -7,8 +7,6 @@ void connect(Port& provided, Port& required)
   required.in = provided.in;
 }
 
-namespace component
-{
 #.model ::#.model (const dezyne::locator& dezyne_locator)
 : #((->join "\n, ")
     (append (map (lambda (binding) (list (injected-instance-name binding) "(dezyne_locator)"))
@@ -23,4 +21,3 @@ namespace component
  # (map (connect-ports model #{
     connect(#provided , #required );
 #}) (filter (negate bind-port?) ((compose .elements .bindings) model))) }
-}

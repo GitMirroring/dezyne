@@ -35,16 +35,13 @@ namespace dezyne {
   struct locator;
 }
 
-namespace component
+struct Datasystem
 {
-  struct Datasystem
-  {
-    proxy p;
-    Dataparam c;
+  proxy p;
+  Dataparam c;
 
-    interface::IDataparam& port;
+  IDataparam& port;
 
-    Datasystem(const dezyne::locator&);
-  };
-}
+  Datasystem(const dezyne::locator&);
+};
 #endif

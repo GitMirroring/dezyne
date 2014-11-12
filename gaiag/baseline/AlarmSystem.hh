@@ -36,17 +36,14 @@ namespace dezyne {
   struct locator;
 }
 
-namespace component
+struct AlarmSystem
 {
-  struct AlarmSystem
-  {
-    Alarm alarm;
-    Sensor sensor;
-    Siren siren;
+  Alarm alarm;
+  Sensor sensor;
+  Siren siren;
 
-    interface::IConsole& console;
+  IConsole& console;
 
-    AlarmSystem(const dezyne::locator&);
-  };
-}
+  AlarmSystem(const dezyne::locator&);
+};
 #endif

@@ -33,26 +33,23 @@ namespace dezyne {
   struct runtime;
 }
 
-namespace component
+struct double_out_on_modeling
 {
-  struct double_out_on_modeling
+  dezyne::runtime& rt;
+  struct State
   {
-    dezyne::runtime& rt;
-    struct State
+    enum type
     {
-      enum type
-      {
-        First, Second
-      };
+      First, Second
     };
-    double_out_on_modeling::State::type state;
-    interface::I p;
-    interface::I r;
-
-    double_out_on_modeling(const dezyne::locator&);
-    void p_start();
-    void r_foo();
-    void r_bar();
   };
-}
+  double_out_on_modeling::State::type state;
+  I p;
+  I r;
+
+  double_out_on_modeling(const dezyne::locator&);
+  void p_start();
+  void r_foo();
+  void r_bar();
+};
 #endif

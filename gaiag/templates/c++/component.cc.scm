@@ -3,8 +3,6 @@
 ##include "locator.h"
 ##include "runtime.h"
 
-namespace component
-{
 #.model ::#.model (const dezyne::locator& dezyne_locator)
 : rt(dezyne_locator.get<dezyne::runtime>())
 , #
@@ -12,7 +10,7 @@ namespace component
  (map (init-member model #{
 #name(#(if (not (eq? expression *unspecified*)) expression))#}) (gom:variables model)))#
 (if (null? (gom:variables model)) "" "\n, ") #
-((->join  "\n, ") (map (lambda (port) (list (.name port) "(" (if (.injected port) (list "dezyne_locator.get<interface::" (.type port) ">()")) ")")) (gom:ports model)))
+((->join  "\n, ") (map (lambda (port) (list (.name port) "(" (if (.injected port) (list "dezyne_locator.get<" (.type port) ">()")) ")")) (gom:ports model)))
   {
 #
    (map
@@ -45,4 +43,4 @@ namespace component
   #return-type  #model ::#name (#parameters)
   {
     #statements }
-#}) (gom:functions model))) }
+#}) (gom:functions model)))

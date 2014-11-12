@@ -33,17 +33,14 @@ namespace dezyne {
   struct runtime;
 }
 
-namespace component
+struct complete
 {
-  struct complete
-  {
-    dezyne::runtime& rt;
-    interface::icomplete p;
-    interface::icomplete r;
+  dezyne::runtime& rt;
+  icomplete p;
+  icomplete r;
 
-    complete(const dezyne::locator&);
-    void p_e();
-    void r_a();
-  };
-}
+  complete(const dezyne::locator&);
+  void p_e();
+  void r_a();
+};
 #endif

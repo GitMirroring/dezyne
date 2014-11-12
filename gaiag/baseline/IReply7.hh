@@ -33,29 +33,26 @@ namespace dezyne
   using boost::bind;
 }
 
-namespace interface
+struct IReply7
 {
-  struct IReply7
+  struct E
   {
-    struct E
+    enum type
     {
-      enum type
-      {
-        A
-      };
+      A
     };
-
-    struct
-    {
-      dezyne::function<E::type ()> foo;
-
-    } in;
-
-    struct
-    {
-
-    } out;
   };
-}
+
+  struct
+  {
+    dezyne::function<E::type ()> foo;
+
+  } in;
+
+  struct
+  {
+
+  } out;
+};
 
 #endif

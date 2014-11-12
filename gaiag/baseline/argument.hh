@@ -32,17 +32,14 @@ namespace dezyne {
   struct runtime;
 }
 
-namespace component
+struct argument
 {
-  struct argument
-  {
-    dezyne::runtime& rt;
-    bool b;
-    interface::I i;
+  dezyne::runtime& rt;
+  bool b;
+  I i;
 
-    argument(const dezyne::locator&);
-    void i_e();
-    bool g(bool gc);
-  };
-}
+  argument(const dezyne::locator&);
+  void i_e();
+  bool g(bool gc);
+};
 #endif

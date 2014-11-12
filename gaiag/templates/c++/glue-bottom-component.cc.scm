@@ -11,15 +11,15 @@
 
 ##include <map>
 
-namespace component
+namespace dezyne
 {
-  struct SingleThreaded
+struct SingleThreaded
   : public asd::channels::ISingleThreaded
-  {
-    void processCBs(){}
-  };
+{
+  void processCBs(){}
+};
 
-  static std::map<#.model *, boost::shared_ptr<#(.type (gom:port model)) Interface> > g_handwritten ;
+static std::map<#.model *, boost::shared_ptr<#(.type (gom:port model)) Interface> > g_handwritten;
 
 #(define ((gen1-interfaces dir?) model)
    (let* ((port (gom:port model))
@@ -32,11 +32,12 @@ namespace component
 #(map (lambda (alist)
         (let* ((entry (car alist))
                (interface (second entry))
+               (component (symbol-drop interface 1))
                (port-type (.type (gom:port model))))
-         (list "struct " interface "\n: public ::" interface "\n"
+         (list "struct " component "\n: public " interface "\n"
                "{\n"
-               "interface::" port-type "& port;\n"
-               interface "(interface::" port-type "& port)\n"
+               "::" port-type "& port;\n"
+               component "(::" port-type "& port)\n"
                ": port(port)\n"
                "{}\n"
                (map
@@ -46,28 +47,30 @@ namespace component
                "};\n")))
       ((gen1-interfaces gom:out?) model))
 
+}
+
+
 #.model ::#.model (const dezyne::locator& l)
   : rt (l.get<dezyne::runtime>())
 {
-  boost::shared_ptr<#(.type (gom:port model)) Interface> component = #.model Component::GetInstance() ;
-#(map (lambda (port) (->string (list "boost::shared_ptr< ::" (.type port) "> api_" (.name port) ";\n"
+  boost::shared_ptr<dezyne::#(.type (gom:port model)) Interface> component = dezyne::#.model Component::GetInstance() ;
+#(map (lambda (port) (->string (list "boost::shared_ptr<dezyne::" (.type port) "> api_" (.name port) ";\n"
                                        "component->GetAPI(&api_" (.name port) ");\n")))
         (filter gom:provides? ((compose .elements .ports) model)))
-g_handwritten.insert (std::make_pair (this,component));
+dezyne::g_handwritten.insert (std::make_pair (this,component));
 #(map (lambda (alist)
         (let* ((entry (car alist))
-               (interface (second entry)))
-          (list "component->RegisterCB(boost::make_shared<" interface ">(boost::ref(" (.name (gom:port model)) ")));\n")))
+               (interface (second entry))
+               (component (symbol-drop interface 1)))
+          (list "component->RegisterCB(boost::make_shared<dezyne::" component ">(boost::ref(" (.name (gom:port model)) ")));\n")))
       ((gen1-interfaces gom:out?) model))
-#(if (pair? ((gen1-interfaces gom:out?) model)) "component->RegisterCB(boost::make_shared<SingleThreaded>()); //fixme")
+#(if (pair? ((gen1-interfaces gom:out?) model)) "component->RegisterCB(boost::make_shared<dezyne::SingleThreaded>()); //fixme")
 #(map (lambda (alist)
         (let* ((entry (car alist))
                (interface (second entry)))
           (map
            (lambda (entry)
              (let ((port (gom:port model)))
-              (list (.name port) ".in." (first entry) " = dezyne::bind(&::" (.type port) "::" (third entry) ",api_" (.name port) ");\n")))
+              (list (.name port) ".in." (first entry) " = dezyne::bind(&dezyne::" (.type port) "::" (third entry) ",api_" (.name port) ");\n")))
            alist)))
-      ((gen1-interfaces gom:in?) model))
-}
-}
+      ((gen1-interfaces gom:in?) model))}

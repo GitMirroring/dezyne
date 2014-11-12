@@ -33,23 +33,20 @@ namespace dezyne
   using boost::bind;
 }
 
-namespace interface
+struct iincomplete_with_modeling_event
 {
-  struct iincomplete_with_modeling_event
+
+  struct
   {
+    dezyne::function<void ()> e;
 
-    struct
-    {
-      dezyne::function<void ()> e;
+  } in;
 
-    } in;
+  struct
+  {
+    dezyne::function<void ()> a;
 
-    struct
-    {
-      dezyne::function<void ()> a;
-
-    } out;
-  };
-}
+  } out;
+};
 
 #endif

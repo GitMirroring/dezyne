@@ -21,32 +21,41 @@
 //
 // Code:
 
-#ifndef INTERFACE_IMODELING_C3_HH
-#define INTERFACE_IMODELING_C3_HH
+#include "Siren.hh"
 
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
+#include "asdInterfaces.h"
+
+#include "locator.h"
+#include "runtime.h"
+
+#include "SirenComponent.h"
+
+#include <boost/make_shared.hpp>
+
+#include <map>
 
 namespace dezyne
 {
-  using boost::function;
-  using boost::bind;
+  struct SingleThreaded
+  : public asd::channels::ISingleThreaded
+  {
+    void processCBs(){}
+  };
+
+  static std::map<Siren*, boost::shared_ptr<ISirenInterface> > g_handwritten ;
 }
 
-struct imodeling
+
+Siren::Siren(const dezyne::locator& l)
+  : rt (l.get<dezyne::runtime>())
 {
+  boost::shared_ptr<dezyne::ISirenInterface> component = dezyne::SirenComponent::GetInstance();
+  boost::shared_ptr<dezyne::ISiren> api_siren;
+  component->GetAPI(&api_siren);
 
-  struct
-  {
-    dezyne::function<void ()> e;
+  dezyne::g_handwritten.insert (std::make_pair (this,component));
 
-  } in;
 
-  struct
-  {
-    dezyne::function<void ()> f;
-
-  } out;
-};
-
-#endif
+  siren.in.turnon = dezyne::bind(&dezyne::ISiren::Turnon,api_siren);
+  siren.in.turnoff = dezyne::bind(&dezyne::ISiren::Turnoff,api_siren);
+}

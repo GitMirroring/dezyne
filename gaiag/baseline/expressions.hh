@@ -32,18 +32,15 @@ namespace dezyne {
   struct runtime;
 }
 
-namespace component
+struct expressions
 {
-  struct expressions
-  {
-    dezyne::runtime& rt;
-    typedef int State;
-    expressions::State state;
-    expressions::State c;
-    interface::I i;
+  dezyne::runtime& rt;
+  typedef int State;
+  expressions::State state;
+  expressions::State c;
+  I i;
 
-    expressions(const dezyne::locator&);
-    void i_e();
-  };
-}
+  expressions(const dezyne::locator&);
+  void i_e();
+};
 #endif

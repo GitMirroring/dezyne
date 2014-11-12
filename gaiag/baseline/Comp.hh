@@ -33,28 +33,25 @@ namespace dezyne {
   struct runtime;
 }
 
-namespace component
+struct Comp
 {
-  struct Comp
+  dezyne::runtime& rt;
+  struct State
   {
-    dezyne::runtime& rt;
-    struct State
+    enum type
     {
-      enum type
-      {
-        Uninitialized, Initialized, Error
-      };
+      Uninitialized, Initialized, Error
     };
-    Comp::State::type s;
-    interface::IComp::result_t::type reply_IComp_result_t;
-    interface::IDevice::result_t::type reply_IDevice_result_t;
-    interface::IComp client;
-    interface::IDevice device_A;
-
-    Comp(const dezyne::locator&);
-    interface::IComp::result_t::type client_initialize();
-    interface::IComp::result_t::type client_recover();
-    interface::IComp::result_t::type client_perform_actions();
   };
-}
+  Comp::State::type s;
+  IComp::result_t::type reply_IComp_result_t;
+  IDevice::result_t::type reply_IDevice_result_t;
+  IComp client;
+  IDevice device_A;
+
+  Comp(const dezyne::locator&);
+  IComp::result_t::type client_initialize();
+  IComp::result_t::type client_recover();
+  IComp::result_t::type client_perform_actions();
+};
 #endif

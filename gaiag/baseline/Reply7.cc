@@ -26,26 +26,24 @@
 #include "locator.h"
 #include "runtime.h"
 
-namespace component
+Reply7::Reply7(const dezyne::locator& dezyne_locator)
+: rt(dezyne_locator.get<dezyne::runtime>())
+, p()
+, r()
 {
-  Reply7::Reply7(const dezyne::locator& dezyne_locator)
-  : rt(dezyne_locator.get<dezyne::runtime>())
-  , p()
-  , r()
-  {
-    p.in.foo = dezyne::connect<interface::IReply7::E::type>(rt, this, dezyne::function<interface::IReply7::E::type()>(dezyne::bind<interface::IReply7::E::type>(&Reply7::p_foo, this)));
-  }
-
-  interface::IReply7::E::type Reply7::p_foo()
-  {
-    std::cout << "Reply7.p_foo" << std::endl;
-    f ();
-    return reply_IReply7_E;
-  }
-
-  void Reply7::f()
-  {
-    interface::IReply7::E::type v = r.in.foo ();
-    reply_IReply7_E = v;
-  }
+  p.in.foo = dezyne::connect<IReply7::E::type>(rt, this, dezyne::function<IReply7::E::type()>(dezyne::bind<IReply7::E::type>(&Reply7::p_foo, this)));
 }
+
+IReply7::E::type Reply7::p_foo()
+{
+  std::cout << "Reply7.p_foo" << std::endl;
+  f ();
+  return reply_IReply7_E;
+}
+
+void Reply7::f()
+{
+  IReply7::E::type v = r.in.foo ();
+  reply_IReply7_E = v;
+}
+

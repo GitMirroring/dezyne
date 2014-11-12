@@ -32,23 +32,20 @@ namespace dezyne {
   struct runtime;
 }
 
-namespace component
+struct imperative
 {
-  struct imperative
+  dezyne::runtime& rt;
+  struct States
   {
-    dezyne::runtime& rt;
-    struct States
+    enum type
     {
-      enum type
-      {
-        I, II, III, IV
-      };
+      I, II, III, IV
     };
-    imperative::States::type state;
-    interface::iimperative i;
-
-    imperative(const dezyne::locator&);
-    void i_e();
   };
-}
+  imperative::States::type state;
+  iimperative i;
+
+  imperative(const dezyne::locator&);
+  void i_e();
+};
 #endif

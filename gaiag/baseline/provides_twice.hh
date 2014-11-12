@@ -35,16 +35,13 @@ namespace dezyne {
   struct locator;
 }
 
-namespace component
+struct provides_twice
 {
-  struct provides_twice
-  {
-    external_provides_twice one;
+  external_provides_twice one;
 
-    interface::iprovides_once& i;
-    interface::iprovides_twice& ii;
+  iprovides_once& i;
+  iprovides_twice& ii;
 
-    provides_twice(const dezyne::locator&);
-  };
-}
+  provides_twice(const dezyne::locator&);
+};
 #endif

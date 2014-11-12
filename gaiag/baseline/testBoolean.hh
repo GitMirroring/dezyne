@@ -32,16 +32,13 @@ namespace dezyne {
   struct runtime;
 }
 
-namespace component
+struct testBoolean
 {
-  struct testBoolean
-  {
-    dezyne::runtime& rt;
-    bool b;
-    interface::TestBool i;
+  dezyne::runtime& rt;
+  bool b;
+  TestBool i;
 
-    testBoolean(const dezyne::locator&);
-    void i_evt();
-  };
-}
+  testBoolean(const dezyne::locator&);
+  void i_evt();
+};
 #endif

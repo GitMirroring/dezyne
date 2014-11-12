@@ -33,17 +33,14 @@ namespace dezyne {
   struct runtime;
 }
 
-namespace component
+struct modeling
 {
-  struct modeling
-  {
-    dezyne::runtime& rt;
-    interface::dummy p;
-    interface::imodeling r;
+  dezyne::runtime& rt;
+  dummy p;
+  imodeling r;
 
-    modeling(const dezyne::locator&);
-    void p_e();
-    void r_f();
-  };
-}
+  modeling(const dezyne::locator&);
+  void p_e();
+  void r_f();
+};
 #endif

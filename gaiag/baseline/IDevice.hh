@@ -33,32 +33,29 @@ namespace dezyne
   using boost::bind;
 }
 
-namespace interface
+struct IDevice
 {
-  struct IDevice
+  struct result_t
   {
-    struct result_t
+    enum type
     {
-      enum type
-      {
-        OK, NOK
-      };
+      OK, NOK
     };
-
-    struct
-    {
-      dezyne::function<result_t::type ()> initialize;
-      dezyne::function<result_t::type ()> calibrate;
-      dezyne::function<result_t::type ()> perform_action1;
-      dezyne::function<result_t::type ()> perform_action2;
-
-    } in;
-
-    struct
-    {
-
-    } out;
   };
-}
+
+  struct
+  {
+    dezyne::function<result_t::type ()> initialize;
+    dezyne::function<result_t::type ()> calibrate;
+    dezyne::function<result_t::type ()> perform_action1;
+    dezyne::function<result_t::type ()> perform_action2;
+
+  } in;
+
+  struct
+  {
+
+  } out;
+};
 
 #endif

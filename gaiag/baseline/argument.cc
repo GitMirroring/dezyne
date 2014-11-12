@@ -26,34 +26,32 @@
 #include "locator.h"
 #include "runtime.h"
 
-namespace component
+argument::argument(const dezyne::locator& dezyne_locator)
+: rt(dezyne_locator.get<dezyne::runtime>())
+, b(false)
+, i()
 {
-  argument::argument(const dezyne::locator& dezyne_locator)
-  : rt(dezyne_locator.get<dezyne::runtime>())
-  , b(false)
-  , i()
-  {
-    i.in.e = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&argument::i_e, this)));
-  }
+  i.in.e = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&argument::i_e, this)));
+}
 
-  void argument::i_e()
+void argument::i_e()
+{
+  std::cout << "argument.i_e" << std::endl;
+  if (true)
   {
-    std::cout << "argument.i_e" << std::endl;
-    if (true)
+    b = not (b);
+    bool c = g (b);
+    b = g (c);
+    if (c)
     {
-      b = not (b);
-      bool c = g (b);
-      b = g (c);
-      if (c)
-      {
-        rt.defer(this, dezyne::bind(i.out.f));
-      }
+      rt.defer(this, dezyne::bind(i.out.f));
     }
   }
-
-  bool argument::g(bool gc)
-  {
-    rt.defer(this, dezyne::bind(i.out.f));
-    return (gc or b);
-  }
 }
+
+bool argument::g(bool gc)
+{
+  rt.defer(this, dezyne::bind(i.out.f));
+  return (gc or b);
+}
+

@@ -26,62 +26,60 @@
 #include "locator.h"
 #include "runtime.h"
 
-namespace component
+double_out_on_modeling::double_out_on_modeling(const dezyne::locator& dezyne_locator)
+: rt(dezyne_locator.get<dezyne::runtime>())
+, state(State::First)
+, p()
+, r()
 {
-  double_out_on_modeling::double_out_on_modeling(const dezyne::locator& dezyne_locator)
-  : rt(dezyne_locator.get<dezyne::runtime>())
-  , state(State::First)
-  , p()
-  , r()
-  {
-    p.in.start = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&double_out_on_modeling::p_start, this)));
-    r.out.foo = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&double_out_on_modeling::r_foo, this)));
-    r.out.bar = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&double_out_on_modeling::r_bar, this)));
-  }
-
-  void double_out_on_modeling::p_start()
-  {
-    std::cout << "double_out_on_modeling.p_start" << std::endl;
-    if (state == State::First)
-    {
-      {
-        r.in.start();
-        state = State::Second;
-      }
-    }
-    else if (state == State::Second)
-    {
-      assert(false);
-    }
-  }
-
-  void double_out_on_modeling::r_foo()
-  {
-    std::cout << "double_out_on_modeling.r_foo" << std::endl;
-    if (state == State::First)
-    {
-      assert(false);
-    }
-    else if (state == State::Second)
-    {
-      rt.defer(this, dezyne::bind(p.out.foo));
-    }
-  }
-
-  void double_out_on_modeling::r_bar()
-  {
-    std::cout << "double_out_on_modeling.r_bar" << std::endl;
-    if (state == State::First)
-    {
-      assert(false);
-    }
-    else if (state == State::Second)
-    {
-      {
-        rt.defer(this, dezyne::bind(p.out.bar));
-        state = State::First;
-      }
-    }
-  }
-
+  p.in.start = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&double_out_on_modeling::p_start, this)));
+  r.out.foo = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&double_out_on_modeling::r_foo, this)));
+  r.out.bar = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&double_out_on_modeling::r_bar, this)));
 }
+
+void double_out_on_modeling::p_start()
+{
+  std::cout << "double_out_on_modeling.p_start" << std::endl;
+  if (state == State::First)
+  {
+    {
+      r.in.start();
+      state = State::Second;
+    }
+  }
+  else if (state == State::Second)
+  {
+    assert(false);
+  }
+}
+
+void double_out_on_modeling::r_foo()
+{
+  std::cout << "double_out_on_modeling.r_foo" << std::endl;
+  if (state == State::First)
+  {
+    assert(false);
+  }
+  else if (state == State::Second)
+  {
+    rt.defer(this, dezyne::bind(p.out.foo));
+  }
+}
+
+void double_out_on_modeling::r_bar()
+{
+  std::cout << "double_out_on_modeling.r_bar" << std::endl;
+  if (state == State::First)
+  {
+    assert(false);
+  }
+  else if (state == State::Second)
+  {
+    {
+      rt.defer(this, dezyne::bind(p.out.bar));
+      state = State::First;
+    }
+  }
+}
+
+

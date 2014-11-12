@@ -33,22 +33,19 @@ namespace dezyne
   using boost::bind;
 }
 
-namespace interface
+struct IExtern
 {
-  struct IExtern
+
+  struct
+  {
+    dezyne::function<void ()> e;
+
+  } in;
+
+  struct
   {
 
-    struct
-    {
-      dezyne::function<void ()> e;
-
-    } in;
-
-    struct
-    {
-
-    } out;
-  };
-}
+  } out;
+};
 
 #endif

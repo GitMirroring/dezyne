@@ -26,41 +26,39 @@
 #include "locator.h"
 #include "runtime.h"
 
-namespace component
+reply_reorder::reply_reorder(const dezyne::locator& dezyne_locator)
+: rt(dezyne_locator.get<dezyne::runtime>())
+, first(true)
+, p()
+, r()
 {
-  reply_reorder::reply_reorder(const dezyne::locator& dezyne_locator)
-  : rt(dezyne_locator.get<dezyne::runtime>())
-  , first(true)
-  , p()
-  , r()
-  {
-    p.in.start = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&reply_reorder::p_start, this)));
-    r.out.pong = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&reply_reorder::r_pong, this)));
-  }
-
-  void reply_reorder::p_start()
-  {
-    std::cout << "reply_reorder.p_start" << std::endl;
-    {
-      r.in.ping();
-    }
-  }
-
-  void reply_reorder::r_pong()
-  {
-    std::cout << "reply_reorder.r_pong" << std::endl;
-    {
-      if (first)
-      {
-        rt.defer(this, dezyne::bind(p.out.busy));
-        first = not (first);
-      }
-      if (not (first))
-      {
-        rt.defer(this, dezyne::bind(p.out.finish));
-        first = not (first);
-      }
-    }
-  }
-
+  p.in.start = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&reply_reorder::p_start, this)));
+  r.out.pong = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&reply_reorder::r_pong, this)));
 }
+
+void reply_reorder::p_start()
+{
+  std::cout << "reply_reorder.p_start" << std::endl;
+  {
+    r.in.ping();
+  }
+}
+
+void reply_reorder::r_pong()
+{
+  std::cout << "reply_reorder.r_pong" << std::endl;
+  {
+    if (first)
+    {
+      rt.defer(this, dezyne::bind(p.out.busy));
+      first = not (first);
+    }
+    if (not (first))
+    {
+      rt.defer(this, dezyne::bind(p.out.finish));
+      first = not (first);
+    }
+  }
+}
+
+

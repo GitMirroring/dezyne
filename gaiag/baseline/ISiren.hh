@@ -33,23 +33,20 @@ namespace dezyne
   using boost::bind;
 }
 
-namespace interface
+struct ISiren
 {
-  struct ISiren
+
+  struct
+  {
+    dezyne::function<void ()> turnon;
+    dezyne::function<void ()> turnoff;
+
+  } in;
+
+  struct
   {
 
-    struct
-    {
-      dezyne::function<void ()> turnon;
-      dezyne::function<void ()> turnoff;
-
-    } in;
-
-    struct
-    {
-
-    } out;
-  };
-}
+  } out;
+};
 
 #endif

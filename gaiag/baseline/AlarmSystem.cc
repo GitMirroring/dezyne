@@ -30,15 +30,12 @@ void connect(Port& provided, Port& required)
   required.in = provided.in;
 }
 
-namespace component
+AlarmSystem::AlarmSystem(const dezyne::locator& dezyne_locator)
+: alarm(dezyne_locator)
+, sensor(dezyne_locator)
+, siren(dezyne_locator)
+, console(alarm.console)
 {
-  AlarmSystem::AlarmSystem(const dezyne::locator& dezyne_locator)
-  : alarm(dezyne_locator)
-  , sensor(dezyne_locator)
-  , siren(dezyne_locator)
-  , console(alarm.console)
-  {
-    connect(sensor.sensor, alarm.sensor);
-    connect(siren.siren, alarm.siren);
-  }
+  connect(sensor.sensor, alarm.sensor);
+  connect(siren.siren, alarm.siren);
 }

@@ -33,31 +33,28 @@ namespace dezyne
   using boost::bind;
 }
 
-namespace interface
+struct IComp
 {
-  struct IComp
+  struct result_t
   {
-    struct result_t
+    enum type
     {
-      enum type
-      {
-        OK, NOK
-      };
+      OK, NOK
     };
-
-    struct
-    {
-      dezyne::function<result_t::type ()> initialize;
-      dezyne::function<result_t::type ()> recover;
-      dezyne::function<result_t::type ()> perform_actions;
-
-    } in;
-
-    struct
-    {
-
-    } out;
   };
-}
+
+  struct
+  {
+    dezyne::function<result_t::type ()> initialize;
+    dezyne::function<result_t::type ()> recover;
+    dezyne::function<result_t::type ()> perform_actions;
+
+  } in;
+
+  struct
+  {
+
+  } out;
+};
 
 #endif

@@ -39,13 +39,13 @@ inline asd::function<void()> connect<void>(void* scope, const asd::function<void
 
 namespace component
 {
-  colliding_component::colliding_component()
+  colliding_colliding_component()
   : po_i()
   {
-    po_i.in.foo = connect<void>(this, asd::bind<void>(&colliding_component::po_i_foo, this));
+    po_i.in.foo = connect<void>(this, asd::bind<void>(&colliding_po_i_foo, this));
   }
 
-  void colliding_component::po_i_foo()
+  void colliding_po_i_foo()
   {
     std::cout << "colliding_component.po_i_foo" << std::endl;
     assert(false);

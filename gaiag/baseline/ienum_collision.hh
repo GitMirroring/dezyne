@@ -33,37 +33,34 @@ namespace dezyne
   using boost::bind;
 }
 
-namespace interface
+struct ienum_collision
 {
-  struct ienum_collision
+  struct Retval1
   {
-    struct Retval1
+    enum type
     {
-      enum type
-      {
-        OK, NOK
-      };
+      OK, NOK
     };
-    struct Retval2
-    {
-      enum type
-      {
-        OK, NOK
-      };
-    };
-
-    struct
-    {
-      dezyne::function<Retval1::type ()> foo;
-      dezyne::function<Retval2::type ()> bar;
-
-    } in;
-
-    struct
-    {
-
-    } out;
   };
-}
+  struct Retval2
+  {
+    enum type
+    {
+      OK, NOK
+    };
+  };
+
+  struct
+  {
+    dezyne::function<Retval1::type ()> foo;
+    dezyne::function<Retval2::type ()> bar;
+
+  } in;
+
+  struct
+  {
+
+  } out;
+};
 
 #endif

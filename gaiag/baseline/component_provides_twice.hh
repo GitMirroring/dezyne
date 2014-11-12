@@ -32,15 +32,12 @@ namespace dezyne {
   struct runtime;
 }
 
-namespace component
+struct component_provides_twice
 {
-  struct component_provides_twice
-  {
-    dezyne::runtime& rt;
-    interface::iprovides_once i;
+  dezyne::runtime& rt;
+  iprovides_once i;
 
-    component_provides_twice(const dezyne::locator&);
-    void i_foo();
-  };
-}
+  component_provides_twice(const dezyne::locator&);
+  void i_foo();
+};
 #endif

@@ -26,53 +26,51 @@
 #include "locator.h"
 #include "runtime.h"
 
-namespace component
+Reply4::Reply4(const dezyne::locator& dezyne_locator)
+: rt(dezyne_locator.get<dezyne::runtime>())
+, dummy(false)
+, i()
+, u()
 {
-  Reply4::Reply4(const dezyne::locator& dezyne_locator)
-  : rt(dezyne_locator.get<dezyne::runtime>())
-  , dummy(false)
-  , i()
-  , u()
-  {
-    i.in.done = dezyne::connect<interface::I::Status::type>(rt, this, dezyne::function<interface::I::Status::type()>(dezyne::bind<interface::I::Status::type>(&Reply4::i_done, this)));
-  }
+  i.in.done = dezyne::connect<I::Status::type>(rt, this, dezyne::function<I::Status::type()>(dezyne::bind<I::Status::type>(&Reply4::i_done, this)));
+}
 
-  interface::I::Status::type Reply4::i_done()
+I::Status::type Reply4::i_done()
+{
+  std::cout << "Reply4.i_done" << std::endl;
+  if (true)
   {
-    std::cout << "Reply4.i_done" << std::endl;
-    if (true)
     {
+      U::Status::type s = u.in.what ();
+      s = u.in.what ();
+      if (s == U::Status::Ok)
       {
-        interface::U::Status::type s = u.in.what ();
-        s = u.in.what ();
-        if (s == interface::U::Status::Ok)
-        {
-          Reply4::Status::type v = fun ();
-          if (v == Status::Yes)
-          reply_I_Status = interface::I::Status::Yes;
-          else
-          reply_I_Status = interface::I::Status::No;
-        }
+        Reply4::Status::type v = fun ();
+        if (v == Status::Yes)
+        reply_I_Status = I::Status::Yes;
         else
-        {
-          Reply4::Status::type v = fun_arg (Status::No);
-          if (v == Status::Yes)
-          reply_I_Status = interface::I::Status::Yes;
-          else
-          reply_I_Status = interface::I::Status::No;
-        }
+        reply_I_Status = I::Status::No;
+      }
+      else
+      {
+        Reply4::Status::type v = fun_arg (Status::No);
+        if (v == Status::Yes)
+        reply_I_Status = I::Status::Yes;
+        else
+        reply_I_Status = I::Status::No;
       }
     }
-    return reply_I_Status;
   }
-
-  Reply4::Status::type Reply4::fun()
-  {
-    return Status::Yes;
-  }
-
-  Reply4::Status::type Reply4::fun_arg(Reply4::Status::type s)
-  {
-    return s;
-  }
+  return reply_I_Status;
 }
+
+Reply4::Status::type Reply4::fun()
+{
+  return Status::Yes;
+}
+
+Reply4::Status::type Reply4::fun_arg(Reply4::Status::type s)
+{
+  return s;
+}
+

@@ -41,7 +41,7 @@ namespace component
 {
   If2::If2()
   : b(false)
-  , r(interface::IIf2::result::value)
+  , r(IIf2::result::value)
   , po_i()
   {
     po_i.in.e = connect<void>(this, asd::bind<void>(&If2::po_i_e, this));
@@ -53,11 +53,11 @@ namespace component
     {
       if (b)
       {
-        interface::IIf2::result::type v = po_i.out.a();
+        IIf2::result::type v = po_i.out.a();
 
       }
       else
-      interface::IIf2::result::type v = po_i.out.a();
+      IIf2::result::type v = po_i.out.a();
       b = not (b);
 
     }

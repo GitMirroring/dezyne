@@ -33,17 +33,14 @@ namespace dezyne {
   struct runtime;
 }
 
-namespace component
+struct incomplete
 {
-  struct incomplete
-  {
-    dezyne::runtime& rt;
-    interface::iincomplete p;
-    interface::iincomplete r;
+  dezyne::runtime& rt;
+  iincomplete p;
+  iincomplete r;
 
-    incomplete(const dezyne::locator&);
-    void p_e();
-    void r_a();
-  };
-}
+  incomplete(const dezyne::locator&);
+  void p_e();
+  void r_a();
+};
 #endif

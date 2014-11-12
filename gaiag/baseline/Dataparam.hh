@@ -32,33 +32,30 @@ namespace dezyne {
   struct runtime;
 }
 
-namespace component
+struct Dataparam
 {
-  struct Dataparam
-  {
-    dezyne::runtime& rt;
-    int mi;
-    interface::IDataparam::Status::type s;
-    interface::IDataparam::Status::type reply_IDataparam_Status;
-    interface::IDataparam port;
+  dezyne::runtime& rt;
+  int mi;
+  IDataparam::Status::type s;
+  IDataparam::Status::type reply_IDataparam_Status;
+  IDataparam port;
 
-    Dataparam(const dezyne::locator&);
-    void port_e0();
-    interface::IDataparam::Status::type port_e0r();
-    void port_e(int i);
-    interface::IDataparam::Status::type port_er(int i);
-    interface::IDataparam::Status::type port_eer(int i, int j);
-    void port_eo(int& i);
-    void port_eoo(int& i, int& j);
-    void port_eio(int i, int& j);
-    void port_eio2(int& i);
-    interface::IDataparam::Status::type port_eor(int& i);
-    interface::IDataparam::Status::type port_eoor(int& i, int& j);
-    interface::IDataparam::Status::type port_eior(int i, int& j);
-    interface::IDataparam::Status::type port_eio2r(int& i);
-    interface::IDataparam::Status::type fun();
-    interface::IDataparam::Status::type funx(int xi);
-    int xfunx(int xi, int xj);
-  };
-}
+  Dataparam(const dezyne::locator&);
+  void port_e0();
+  IDataparam::Status::type port_e0r();
+  void port_e(int i);
+  IDataparam::Status::type port_er(int i);
+  IDataparam::Status::type port_eer(int i, int j);
+  void port_eo(int& i);
+  void port_eoo(int& i, int& j);
+  void port_eio(int i, int& j);
+  void port_eio2(int& i);
+  IDataparam::Status::type port_eor(int& i);
+  IDataparam::Status::type port_eoor(int& i, int& j);
+  IDataparam::Status::type port_eior(int i, int& j);
+  IDataparam::Status::type port_eio2r(int& i);
+  IDataparam::Status::type fun();
+  IDataparam::Status::type funx(int xi);
+  int xfunx(int xi, int xj);
+};
 #endif

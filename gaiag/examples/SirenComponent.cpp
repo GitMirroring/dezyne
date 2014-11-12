@@ -5,6 +5,8 @@
 
 #include <iostream>
 
+namespace dezyne
+{
 struct SirenForeign: public SirenComponent
                    , public ISiren
                    , public boost::enable_shared_from_this<SirenForeign>
@@ -29,4 +31,5 @@ boost::shared_ptr<ISirenInterface> SirenComponent::GetInstance()
 }
 void SirenComponent::ReleaseInstance()
 {
+}
 }

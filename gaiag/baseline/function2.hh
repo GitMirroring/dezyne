@@ -32,18 +32,15 @@ namespace dezyne {
   struct runtime;
 }
 
-namespace component
+struct function2
 {
-  struct function2
-  {
-    dezyne::runtime& rt;
-    bool f;
-    interface::ifunction2 i;
+  dezyne::runtime& rt;
+  bool f;
+  ifunction2 i;
 
-    function2(const dezyne::locator&);
-    void i_a();
-    void i_b();
-    bool vtoggle();
-  };
-}
+  function2(const dezyne::locator&);
+  void i_a();
+  void i_b();
+  bool vtoggle();
+};
 #endif

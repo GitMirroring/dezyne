@@ -5,6 +5,8 @@
 
 #include <iostream>
 
+namespace dezyne
+{
 struct SensorForeign: public SensorComponent
                     , public ISensor
                     , public boost::enable_shared_from_this<SensorForeign>
@@ -47,4 +49,5 @@ boost::shared_ptr<ISensorInterface> SensorComponent::GetInstance()
 }
 void SensorComponent::ReleaseInstance()
 {
+}
 }

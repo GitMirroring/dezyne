@@ -33,18 +33,15 @@ namespace dezyne {
   struct runtime;
 }
 
-namespace component
+struct reply_reorder
 {
-  struct reply_reorder
-  {
-    dezyne::runtime& rt;
-    bool first;
-    interface::Provides p;
-    interface::Requires r;
+  dezyne::runtime& rt;
+  bool first;
+  Provides p;
+  Requires r;
 
-    reply_reorder(const dezyne::locator&);
-    void p_start();
-    void r_pong();
-  };
-}
+  reply_reorder(const dezyne::locator&);
+  void p_start();
+  void r_pong();
+};
 #endif

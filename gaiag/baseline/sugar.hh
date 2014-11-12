@@ -32,23 +32,20 @@ namespace dezyne {
   struct runtime;
 }
 
-namespace component
+struct sugar
 {
-  struct sugar
+  dezyne::runtime& rt;
+  struct Enum
   {
-    dezyne::runtime& rt;
-    struct Enum
+    enum type
     {
-      enum type
-      {
-        False, True
-      };
+      False, True
     };
-    sugar::Enum::type s;
-    interface::I i;
-
-    sugar(const dezyne::locator&);
-    void i_e();
   };
-}
+  sugar::Enum::type s;
+  I i;
+
+  sugar(const dezyne::locator&);
+  void i_e();
+};
 #endif

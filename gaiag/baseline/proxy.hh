@@ -33,33 +33,30 @@ namespace dezyne {
   struct runtime;
 }
 
-namespace component
+struct proxy
 {
-  struct proxy
-  {
-    dezyne::runtime& rt;
-    interface::IDataparam::Status::type reply_IDataparam_Status;
-    interface::IDataparam top;
-    interface::IDataparam bottom;
+  dezyne::runtime& rt;
+  IDataparam::Status::type reply_IDataparam_Status;
+  IDataparam top;
+  IDataparam bottom;
 
-    proxy(const dezyne::locator&);
-    void top_e0();
-    interface::IDataparam::Status::type top_e0r();
-    void top_e(int i);
-    interface::IDataparam::Status::type top_er(int i);
-    interface::IDataparam::Status::type top_eer(int i, int j);
-    void top_eo(int& i);
-    void top_eoo(int& i, int& j);
-    void top_eio(int i, int& j);
-    void top_eio2(int& i);
-    interface::IDataparam::Status::type top_eor(int& i);
-    interface::IDataparam::Status::type top_eoor(int& i, int& j);
-    interface::IDataparam::Status::type top_eior(int i, int& j);
-    interface::IDataparam::Status::type top_eio2r(int& i);
-    void bottom_a0();
-    void bottom_a(int i);
-    void bottom_aa(int i, int j);
-    void bottom_a6(int a0, int a1, int a2, int a3, int a4, int a5);
-  };
-}
+  proxy(const dezyne::locator&);
+  void top_e0();
+  IDataparam::Status::type top_e0r();
+  void top_e(int i);
+  IDataparam::Status::type top_er(int i);
+  IDataparam::Status::type top_eer(int i, int j);
+  void top_eo(int& i);
+  void top_eoo(int& i, int& j);
+  void top_eio(int i, int& j);
+  void top_eio2(int& i);
+  IDataparam::Status::type top_eor(int& i);
+  IDataparam::Status::type top_eoor(int& i, int& j);
+  IDataparam::Status::type top_eior(int i, int& j);
+  IDataparam::Status::type top_eio2r(int& i);
+  void bottom_a0();
+  void bottom_a(int i);
+  void bottom_aa(int i, int j);
+  void bottom_a6(int a0, int a1, int a2, int a3, int a4, int a5);
+};
 #endif

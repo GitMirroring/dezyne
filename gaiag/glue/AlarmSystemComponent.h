@@ -21,32 +21,18 @@
 //
 // Code:
 
-#ifndef INTERFACE_IMODELING_C3_HH
-#define INTERFACE_IMODELING_C3_HH
+#ifndef ALARMSYSTEM_COMPONENT_H
+#define ALARMSYSTEM_COMPONENT_H
 
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
+#include "AlarmSystemInterface.h"
 
 namespace dezyne
 {
-  using boost::function;
-  using boost::bind;
+  struct AlarmSystemComponent
+  : public IConsoleInterface
+  {
+    static boost::shared_ptr<IConsoleInterface> GetInstance();
+    static void ReleaseInstance();
+  };
 }
-
-struct imodeling
-{
-
-  struct
-  {
-    dezyne::function<void ()> e;
-
-  } in;
-
-  struct
-  {
-    dezyne::function<void ()> f;
-
-  } out;
-};
-
 #endif

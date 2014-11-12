@@ -33,22 +33,19 @@ namespace dezyne
   using boost::bind;
 }
 
-namespace interface
+struct TestBool
 {
-  struct TestBool
+
+  struct
+  {
+    dezyne::function<void ()> evt;
+
+  } in;
+
+  struct
   {
 
-    struct
-    {
-      dezyne::function<void ()> evt;
-
-    } in;
-
-    struct
-    {
-
-    } out;
-  };
-}
+  } out;
+};
 
 #endif

@@ -32,16 +32,13 @@ namespace dezyne {
   struct runtime;
 }
 
-namespace component
+struct Siren
 {
-  struct Siren
-  {
-    dezyne::runtime& rt;
-    interface::ISiren siren;
+  dezyne::runtime& rt;
+  ISiren siren;
 
-    Siren(const dezyne::locator&);
-    void siren_turnon();
-    void siren_turnoff();
-  };
-}
+  Siren(const dezyne::locator&);
+  void siren_turnon();
+  void siren_turnoff();
+};
 #endif

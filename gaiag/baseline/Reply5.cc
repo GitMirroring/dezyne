@@ -26,47 +26,45 @@
 #include "locator.h"
 #include "runtime.h"
 
-namespace component
+Reply5::Reply5(const dezyne::locator& dezyne_locator)
+: rt(dezyne_locator.get<dezyne::runtime>())
+, dummy(false)
+, i()
+, u()
 {
-  Reply5::Reply5(const dezyne::locator& dezyne_locator)
-  : rt(dezyne_locator.get<dezyne::runtime>())
-  , dummy(false)
-  , i()
-  , u()
-  {
-    i.in.done = dezyne::connect<interface::I::Status::type>(rt, this, dezyne::function<interface::I::Status::type()>(dezyne::bind<interface::I::Status::type>(&Reply5::i_done, this)));
-  }
+  i.in.done = dezyne::connect<I::Status::type>(rt, this, dezyne::function<I::Status::type()>(dezyne::bind<I::Status::type>(&Reply5::i_done, this)));
+}
 
-  interface::I::Status::type Reply5::i_done()
+I::Status::type Reply5::i_done()
+{
+  std::cout << "Reply5.i_done" << std::endl;
+  if (true)
   {
-    std::cout << "Reply5.i_done" << std::endl;
-    if (true)
     {
+      U::Status::type s = u.in.what ();
+      s = u.in.what ();
+      if (s == U::Status::Ok)
       {
-        interface::U::Status::type s = u.in.what ();
-        s = u.in.what ();
-        if (s == interface::U::Status::Ok)
-        {
-          interface::I::Status::type s = fun ();
-          reply_I_Status = s;
-        }
-        else
-        {
-          interface::I::Status::type s = fun_arg (interface::I::Status::No);
-          reply_I_Status = s;
-        }
+        I::Status::type s = fun ();
+        reply_I_Status = s;
+      }
+      else
+      {
+        I::Status::type s = fun_arg (I::Status::No);
+        reply_I_Status = s;
       }
     }
-    return reply_I_Status;
   }
-
-  interface::I::Status::type Reply5::fun()
-  {
-    return interface::I::Status::Yes;
-  }
-
-  interface::I::Status::type Reply5::fun_arg(interface::I::Status::type s)
-  {
-    return s;
-  }
+  return reply_I_Status;
 }
+
+I::Status::type Reply5::fun()
+{
+  return I::Status::Yes;
+}
+
+I::Status::type Reply5::fun_arg(I::Status::type s)
+{
+  return s;
+}
+

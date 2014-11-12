@@ -10,6 +10,8 @@
 ##include <boost/enable_shared_from_this.hpp>
 ##include <boost/make_shared.hpp>
 
+namespace dezyne
+{
 inline void push(boost::shared_ptr<asd::channels::ISingleThreaded> st, boost::function<void()> cb)
 {
   cb(); if(st) st->processCBs();
@@ -19,7 +21,7 @@ struct #.model Glue
 : public #.model Component
 , public boost::enable_shared_from_this<#.model Glue>
 {
-  component::#.model  component;
+  ::#.model  component;
 
 #(define (api port) (->string (list (.type port) "_API")))
 #(define (cb port) (->string (list (.type port) "_CB")))
@@ -29,10 +31,10 @@ struct #.model Glue
                (interface (second entry))
                (component (symbol-drop interface 1))
                (port-type (.type (gom:port model))))
-          (list "struct " component "\n: public ::" interface "\n"
+          (list "struct " component "\n: public " interface "\n"
                 "{\n"
-                "interface::" port-type "& api;\n"
-                component "(interface::" port-type "& api)\n"
+                "::" port-type "& api;\n"
+                component "(::" port-type "& api)\n"
                 ": api(api)\n"
                 "{}\n"
                 (map
@@ -60,7 +62,7 @@ struct #.model Glue
       ((gen1-interfaces gom:out?) (gom:interface model)))
 boost::shared_ptr<asd::channels::ISingleThreaded> st;
 
-#.model Glue (const dezyne::locator& l)
+#.model Glue (const locator& l)
 : component(l)
 #(map (lambda (alist)
         (let* ((entry (car alist))
@@ -88,7 +90,7 @@ boost::shared_ptr<asd::channels::ISingleThreaded> st;
         (let* ((entry (car alist))
                (interface (second entry))
                (port-type (.type (gom:port model))))
-          (list "void GetAPI(boost::shared_ptr< ::" interface ">* api)\n"
+          (list "void GetAPI(boost::shared_ptr<" interface ">* api)\n"
                "{\n"
                "*api = api_" interface ";\n"
                "}\n")))
@@ -99,7 +101,7 @@ boost::shared_ptr<asd::channels::ISingleThreaded> st;
         (let* ((entry (car alist))
                (interface (second entry))
                (port-type (.type (gom:port model))))
-          (list "void RegisterCB(boost::shared_ptr< ::" interface "> cb)\n"
+          (list "void RegisterCB(boost::shared_ptr<" interface "> cb)\n"
                "{\n"
                "cb_" interface " = cb;\n"
                "}\n")))
@@ -120,3 +122,4 @@ boost::shared_ptr<#(.type (gom:port model)) Interface> #.model Component::GetIns
   return boost::make_shared<#.model Glue> (dezyne_locator);
 }
 void #.model Component::ReleaseInstance () {}
+}

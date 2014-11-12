@@ -24,9 +24,12 @@
 
 #include "ISensorInterface.h"
 
+namespace dezyne
+{
 class SensorComponent: public ISensorInterface
 {
 public:
   static boost::shared_ptr<ISensorInterface> GetInstance();
   static void ReleaseInstance();
 };
+}

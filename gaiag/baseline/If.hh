@@ -32,16 +32,13 @@ namespace dezyne {
   struct runtime;
 }
 
-namespace component
+struct If
 {
-  struct If
-  {
-    dezyne::runtime& rt;
-    bool t;
-    interface::I i;
+  dezyne::runtime& rt;
+  bool t;
+  I i;
 
-    If(const dezyne::locator&);
-    void i_a();
-  };
-}
+  If(const dezyne::locator&);
+  void i_a();
+};
 #endif

@@ -33,23 +33,20 @@ namespace dezyne
   using boost::bind;
 }
 
-namespace interface
+struct Requires
 {
-  struct Requires
+
+  struct
   {
+    dezyne::function<void ()> ping;
 
-    struct
-    {
-      dezyne::function<void ()> ping;
+  } in;
 
-    } in;
+  struct
+  {
+    dezyne::function<void ()> pong;
 
-    struct
-    {
-      dezyne::function<void ()> pong;
-
-    } out;
-  };
-}
+  } out;
+};
 
 #endif

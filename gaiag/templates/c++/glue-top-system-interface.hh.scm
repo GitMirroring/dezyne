@@ -5,6 +5,8 @@
 
 ##include <boost/shared_ptr.hpp>
 
+namespace dezyne
+{
 #(map (lambda (alist)
         (let* ((entry (car alist))
                (interface (second entry)))
@@ -49,5 +51,5 @@ struct #.model Interface
       ((gen1-interfaces gom:out?) model))
 virtual void RegisterCB (boost::shared_ptr<asd::channels::ISingleThreaded>) = 0;
 };
-
+}
 ##endif

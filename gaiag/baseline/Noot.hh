@@ -42,14 +42,14 @@ namespace component
     State S;
 
 
-    interface::Aap::AapValues reply_Aap_AapValues;
+    Aap::AapValues reply_Aap_AapValues;
 
 
 
-    interface::Aap po_aap;
+    Aap po_aap;
 
     Noot();
-    interface::Aap::AapValues is_aap() ;
+    Aap::AapValues is_aap() ;
 
 
 

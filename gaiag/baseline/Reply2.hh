@@ -33,19 +33,16 @@ namespace dezyne {
   struct runtime;
 }
 
-namespace component
+struct Reply2
 {
-  struct Reply2
-  {
-    dezyne::runtime& rt;
-    bool dummy;
-    interface::I::Status::type reply_I_Status;
-    interface::U::Status::type reply_U_Status;
-    interface::I i;
-    interface::U u;
+  dezyne::runtime& rt;
+  bool dummy;
+  I::Status::type reply_I_Status;
+  U::Status::type reply_U_Status;
+  I i;
+  U u;
 
-    Reply2(const dezyne::locator&);
-    interface::I::Status::type i_done();
-  };
-}
+  Reply2(const dezyne::locator&);
+  I::Status::type i_done();
+};
 #endif
