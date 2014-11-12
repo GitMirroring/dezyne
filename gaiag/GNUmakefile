@@ -166,11 +166,11 @@ out/%.o: examples/regression/%.dzn
 define .CC_REGRESSION
 rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/* .
 cd out && $(shell pwd)/gaiag -l c++ examples/regression/$*.dzn
--$(diff) baseline/component-$*-c3.hh out
--$(diff) baseline/component-$*-c3.cc out
-ccache g++ -o out/component-$*-c3.o -c out/component-$*-c3.cc $(UPDATE)
-@$(diff) baseline/component-$*-c3.hh out >/dev/null
-@$(diff) baseline/component-$*-c3.cc out >/dev/null
+-$(diff) baseline/$*.hh out
+-$(diff) baseline/$*.cc out
+ccache g++ -o out/$*.o -c out/$*.cc $(UPDATE)
+@$(diff) baseline/$*.hh out >/dev/null
+@$(diff) baseline/$*.cc out >/dev/null
 endef
 
 CC_BROKEN =\
@@ -183,8 +183,8 @@ CC_BROKEN =\
 
 CC_SOURCES = $(filter-out $(CC_BROKEN),$(shell cd examples/regression && grep -l ^component *.dzn))
 
-#out/%.o.up: UPDATE=||:; cp out/component-$*-c3.cc out/*.hh baseline
-out/%.o.up: UPDATE=&& cp out/component-$*-c3.cc out/*.hh baseline
+#out/%.o.up: UPDATE=||:; cp out/$*.cc out/*.hh baseline
+out/%.o.up: UPDATE=&& cp out/$*.cc out/*.hh baseline
 out/%.o.up: examples/regression/%.dzn
 	$(.CC_REGRESSION)
 
@@ -318,13 +318,13 @@ c++-alarm:
 	cd out && for i in *cc; do ccache g++ -c $$i; done && g++ -o $@ *.o && ./$@ > $@.trace
 	$(diff) baseline/$@.trace out
 
-	$(diff) baseline/interface-IConsole-c3.hh out
-	$(diff) baseline/interface-ISensor-c3.hh out
-	$(diff) baseline/interface-ISiren-c3.hh out
-	$(diff) baseline/component-Alarm-c3.hh out
-	$(diff) baseline/component-Alarm-c3.cc out
-	$(diff) baseline/component-AlarmSystem-c3.hh out
-	$(diff) baseline/component-AlarmSystem-c3.cc out
+	$(diff) baseline/IConsole.hh out
+	$(diff) baseline/ISensor.hh out
+	$(diff) baseline/ISiren.hh out
+	$(diff) baseline/Alarm.hh out
+	$(diff) baseline/Alarm.cc out
+	$(diff) baseline/AlarmSystem.hh out
+	$(diff) baseline/AlarmSystem.cc out
 
 c++-inject:
 	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/* .
@@ -335,7 +335,7 @@ c++-inject:
 
 c++-dataparam:
 	rm -rf out && mkdir out && cd out && ln -s ../runtime/* .
-	cd out && ../gaiag -l c++ ../examples/regression/dataparam.dzn
+	cd out && ../gaiag -l c++ ../examples/regression/Dataparam.dzn
 	cd out && ln -sf ../examples/dataparam.cc .
 	cd out && for i in *cc; do ccache g++ -c $$i; done && g++ -o $@ *.o && ./$@ > $@.trace
 	$(diff) baseline/$@.trace out
@@ -377,7 +377,7 @@ python-alarm: compile
 	cd out && $(PYTHON) alarm.py
 
 PY_BROKEN=\
- dataparam.dzn\
+ Dataparam.dzn\
  Extern.dzn\
 
 PY_SOURCES = $(filter-out $(PY_BROKEN),$(CC_SOURCES))
@@ -407,7 +407,7 @@ python-update: $(PY_SOURCES:%.dzn=out/%.py.up)
 python: compile python-alarm python-regression
 
 JAVA_BROKEN =\
- dataparam.dzn\
+ Dataparam.dzn\
  Extern.dzn\
  hide.dzn\
  provides_twice.dzn\
@@ -463,7 +463,7 @@ java-alarm: compile
 java: compile java-alarm java-regression
 
 JS_BROKEN=\
- dataparam.dzn\
+ Dataparam.dzn\
  Extern.dzn\
 
 JS_SOURCES = $(filter-out $(JS_BROKEN),$(CC_SOURCES))
@@ -517,7 +517,7 @@ javascript: compile javascript-alarm javascript-regression
 code: c++-alarm python-alarm java-alarm javascript-alarm out/Reply7.o out/Reply7.java out/Reply7.js out/Reply7.py
 
 GOOPS_BROKEN=\
- dataparam.dzn\
+ Dataparam.dzn\
  Extern.dzn\
 
 GOOPS_SOURCES = $(filter-out $(GOOPS_BROKEN),$(CC_SOURCES))
@@ -592,12 +592,12 @@ glue:
 update: csp-update c++-update goops-update java-update javascript-update python-update
 
 data-csp:
-	cd out && ../gaiag -l csp ../examples/dataparam.dzn
-	$(CSPMCHECKER) out/dataparam.csp
-	cd out && ../../build/asdgenerator -l scm ../examples/dataparam.dzn
-	./gaiag out/dataparam.scm > out/dataparam-om.scm
-	./gaiag examples/dataparam.dzn > out/dataparam.scm
-	diff -uw out/dataparam.scm out/dataparam-om.scm
+	cd out && ../gaiag -l csp ../examples/Dataparam.dzn
+	$(CSPMCHECKER) out/Dataparam.csp
+	cd out && ../../build/asdgenerator -l scm ../examples/Dataparam.dzn
+	./gaiag out/Dataparam.scm > out/Dataparam-om.scm
+	./gaiag examples/Dataparam.dzn > out/Dataparam.scm
+	diff -uw out/Dataparam.scm out/Dataparam-om.scm
 
 loc:
 	make -C .. build/asdgenerator

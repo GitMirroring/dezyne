@@ -2,11 +2,11 @@
 ##define COMPONENT_#.COMPONENT _HH
 
 #(map (include-component #{
-##include "component-#component -c3.hh"
+##include "#component .hh"
 #}) ((compose .elements .instances) model))
 
 #(map (include-interface #{
-##include "interface-#interface -c3.hh"
+##include "#interface .hh"
 #}) (gom:ports model))
 
 #(if (pair? (injected-bindings model)) (list "#include \"locator.h\"") (list "namespace dezyne {\nstruct locator;\n}"))

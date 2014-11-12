@@ -203,7 +203,7 @@ within compress((CO_double_out_on_modeling_(IIG,true) [[x<-OUT'.x|x<-extensions(
 assert COMPLETE'({I.inevitable,I.start}) [F= IF_I_(true,true) \ diff(Events,{I.inevitable,I.start,illegal})
 assert IF_I_(false,false) :[deadlock free]
 assert IF_I_(true,false)  \ {|I.inevitable,I_'''|} :[livelock free]
-assert CO_double_out_on_modeling_(true,true) :[deterministic]
+assert CO_double_out_on_modeling_(true,true)[[I_'.x<-p_'.x|x<-extensions(p_')]] :[deterministic]
 assert COMPLETE'({p.start,r_''.foo,r_''.bar}) [F= CO_double_out_on_modeling_(true,true)[[I_'.x'<-p_'.x'|x'<-extensions(p_')]] \ diff(Events,{p.start,r_''.foo,r_''.bar,illegal})
 assert STOP [T= AS_double_out_on_modeling_(false) \ diff(Events,{illegal})
 assert AS_double_out_on_modeling_(false) :[deadlock free]

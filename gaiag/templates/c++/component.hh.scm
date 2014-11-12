@@ -2,7 +2,7 @@
 ##define COMPONENT_#.COMPONENT _HH
 
 #(map (include-interface #{
-##include "interface-#interface -c3.hh"
+##include "#interface .hh"
 #}) (gom:ports model))
 
 namespace dezyne {

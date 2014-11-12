@@ -1,0 +1,60 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+#ifndef COMPONENT_COMP_HH
+#define COMPONENT_COMP_HH
+
+#include "IComp.hh"
+#include "IDevice.hh"
+
+
+namespace dezyne {
+  struct locator;
+  struct runtime;
+}
+
+namespace component
+{
+  struct Comp
+  {
+    dezyne::runtime& rt;
+    struct State
+    {
+      enum type
+      {
+        Uninitialized, Initialized, Error
+      };
+    };
+    Comp::State::type s;
+    interface::IComp::result_t::type reply_IComp_result_t;
+    interface::IDevice::result_t::type reply_IDevice_result_t;
+    interface::IComp client;
+    interface::IDevice device_A;
+
+    Comp(const dezyne::locator&);
+    interface::IComp::result_t::type client_initialize();
+    interface::IComp::result_t::type client_recover();
+    interface::IComp::result_t::type client_perform_actions();
+  };
+}
+#endif

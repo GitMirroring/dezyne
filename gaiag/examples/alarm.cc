@@ -20,7 +20,7 @@
 //
 // Code:
 
-#include "component-AlarmSystem-c3.hh"
+#include "AlarmSystem.hh"
 
 #include "locator.h"
 #include "runtime.h"

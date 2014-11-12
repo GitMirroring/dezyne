@@ -20,7 +20,7 @@
 //
 // Code:
 
-#include "component-datasystem-c3.hh"
+#include "Datasystem.hh"
 
 #include "locator.h"
 #include "runtime.h"
@@ -53,18 +53,18 @@ int main()
   dezyne::runtime rt;
   l.set(rt);
 
-  component::dataparam c(l);
+  component::Dataparam c(l);
 
   c.port.out.a0 = a0;
   c.port.out.a = a;
   c.port.out.aa = aa;
   c.port.out.a6 = a6;
 
-  assert(interface::idataparam::Status::Yes == c.port.in.e0r());
+  assert(interface::IDataparam::Status::Yes == c.port.in.e0r());
   c.port.in.e0();
-  assert(interface::idataparam::Status::No == c.port.in.er(123));
+  assert(interface::IDataparam::Status::No == c.port.in.er(123));
   c.port.in.e(123);
-  assert(interface::idataparam::Status::No == c.port.in.eer(123,345));
+  assert(interface::IDataparam::Status::No == c.port.in.eer(123,345));
 
   int i = 0;
   c.port.in.eo(i);
@@ -81,15 +81,15 @@ int main()
   assert(i == 246);
 
 
-  assert(interface::idataparam::Status::Yes == c.port.in.eor(i));
+  assert(interface::IDataparam::Status::Yes == c.port.in.eor(i));
   assert(i == 234);
 
-  assert(interface::idataparam::Status::Yes == c.port.in.eoor(i,j));
+  assert(interface::IDataparam::Status::Yes == c.port.in.eoor(i,j));
   assert(i == 123 && j == 456);
 
-  assert(interface::idataparam::Status::Yes == c.port.in.eior(i,j));
+  assert(interface::IDataparam::Status::Yes == c.port.in.eior(i,j));
   assert(i == 123 && j == i);
 
-  assert(interface::idataparam::Status::Yes == c.port.in.eio2r(i));
+  assert(interface::IDataparam::Status::Yes == c.port.in.eio2r(i));
   assert(i == 246);
 }

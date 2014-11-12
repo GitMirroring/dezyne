@@ -22,7 +22,7 @@
 //
 // Code:
 
-#include "component-AlarmSystem-c3.hh"
+#include "AlarmSystem.hh"
 
 #include <map>
 #include <queue>

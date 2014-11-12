@@ -1,4 +1,4 @@
-##include "component-#.model -c3.hh"
+##include "#.model .hh"
 
 template<typename Port>
 void connect(Port& provided, Port& required)

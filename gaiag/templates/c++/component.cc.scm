@@ -1,4 +1,4 @@
-##include "component-#.model -c3.hh"
+##include "#.model .hh"
 
 ##include "locator.h"
 ##include "runtime.h"

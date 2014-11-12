@@ -22,7 +22,7 @@
 //
 // Code:
 
-#include "component-Sensor-c3.hh"
+#include "Sensor.hh"
 
 namespace component
 {
