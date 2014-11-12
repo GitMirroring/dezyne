@@ -44,15 +44,15 @@
   :export (json-init
            json-table))
 
-(define-method (json-init (model <model>))
-  `((name . ,(.name model))
-    (type . ,(ast-name model))))
+(define-method (json-init (o <model>))
+  `((name . ,(.name o))
+    (type . ,(ast-name o))))
 
-(define-method (json-table (o <root>))
-  (map json-table (.elements o)))
+(define-method (json-table (model <model>))
+  (lambda (s) (json-table model s)))
 
-(define-method (json-table (o <compound>))
-  `((table . ,(map json-table (.elements o)))))
+(define-method (json-table (model <model>) (o <compound>))
+  `((table . ,(map (json-table model) (.elements o)))))
 
 (define (event statement)
   (if (is-a? statement <on>)
@@ -63,22 +63,21 @@
                     (.port trigger))
           'out)))
 
-(define-method (json-table (o <guard>))
+(define-method (json-table (model <model>) (o <guard>))
     (match o
       (($ <guard> expression (and ($ <on> triggers statement) (get! on)))
        (let ((var ((compose .identifier .value) expression))
              (state (.value expression)))
          (alist->hash-table
           `((state . ,(json-state (->symbol state) o))
-            (rules . ,(json-table var state (on)))))))
+            (rules . ,(json-table model var state (on)))))))
       (($ <guard> expression ($ <compound> (and (($ <on>) ...) (get! ons))))
        (let ((var ((compose .identifier .value) expression))
              (state (.value expression)))
          (alist->hash-table
           `((state . ,(json-state (->symbol state) o))
-            (rules . ,(apply append (map (json-table- var state) (ons))))))))
+            (rules . ,(apply append (map (json-table- model var state) (ons))))))))
       (_ (stderr "catch all:\n")
-         (pretty-print (gom->list o) (current-error-port))
          (alist->hash-table `((state . ,(json-state (->symbol o) o))
                               (rules . ,(list
                                          (alist->hash-table
@@ -87,40 +86,40 @@
                                             (actions . ,(json-action '()))
                                             (next . ()))))))))))
 
-(define-method (json-table (var <symbol>) (state <field>) (o <on>))
+(define-method (json-table (model <model>) (var <symbol>) (state <field>) (o <on>))
   (match o
    (($ <on> triggers ($ <compound> (($ <guard> guard statement) ..1)))
-    (map (json-inner-guard var state triggers) guard statement))
+    (map (json-inner-guard model var state triggers) guard statement))
    (($ <on> triggers ($ <guard> guard statement))
-    (list (json-inner-guard var state triggers guard statement)))
+    (list (json-inner-guard model var state triggers guard statement)))
    (_
     (list
      (alist->hash-table
       `((triggers . ,(json-triggers (.triggers o)))
         (guard . "")
         (actions . ,(json-action (.statement o)))
-        (next . ,(json-next var state (.statement o)))))))))
+        (next . ,(json-next model var state (.statement o)))))))))
 
-(define-method (json-table- (var <symbol>) (state <field>))
-  (lambda (o) (json-table var state o)))
+(define-method (json-table- (model <model>) (var <symbol>) (state <field>))
+  (lambda (o) (json-table model var state o)))
 
-(define-method (json-inner-guard (var <symbol>) (state <field>) (triggers <triggers>) (guard <expression>) (statement <statement>))
+(define-method (json-inner-guard (model <model>) (var <symbol>) (state <field>) (triggers <triggers>) (guard <expression>) (statement <statement>))
   (alist->hash-table
    `((triggers . ,(json-triggers triggers))
      (guard . ,(->symbol guard))
      (actions . ,(json-action statement))
-     (next . ,(json-next var state statement)))))
+     (next . ,(json-next model var state statement)))))
 
-(define-method (json-inner-guard (var <symbol>) (state <field>) (o <triggers>))
-  (lambda (e s) (json-inner-guard var state o e s)))
+(define-method (json-inner-guard (model <model>) (var <symbol>) (state <field>) (o <triggers>))
+  (lambda (e s) (json-inner-guard model var state o e s)))
 
-(define-method (json-next (var <symbol>) (next <field>) (o <statement>))
-  (let ((next (delete-duplicates (json-next- var (list next) o))))
+(define-method (json-next (model <model>) (var <symbol>) (next <field>) (o <statement>))
+  (let ((next (delete-duplicates (json-next- model var (list next) o))))
     (if (=1 (length next))
         (->symbol (car next))
         (map ->symbol next))))
 
-(define-method (json-next- (var <symbol>) (next <list>) (o <statement>))
+(define-method (json-next- (model <model>) (var <symbol>) (next <list>) (o <statement>))
   (define (var? identifier) (eq? identifier var))
   (let ((unknown (make <field> :identifier var :field '<unknown>)))
    (match o
@@ -128,19 +127,22 @@
       (let loop ((statements statements) (next next))
         (if (null? statements)
             next
-            (loop (cdr statements) (json-next- var next (car statements))))))
+            (loop (cdr statements) (json-next- model var next (car statements))))))
      (($ <assign> (? var?) ($ <expression> ($ <literal> scope type field)))
       (list (make <field> :identifier var :field field)))
      (($ <assign> (? var?) expression)
       (list unknown))
-     (($ <call>)
-      (list unknown))
+     (($ <call> identifier)
+      (let ((function (gom:function model identifier)))
+        (if (.recursive function)
+            (list unknown)
+            (json-next- model var next (.statement function)))))
      (($ <if> expression then #f)
-      (let ((then (json-next- var next then)))
+      (let ((then (json-next- model var next then)))
         (add-state next then)))
      (($ <if> expression then else)
-      (let ((then (json-next- var next then))
-            (else (json-next- var next else)))
+      (let ((then (json-next- model var next then))
+            (else (json-next- model var next else)))
         (add-state (add-state next then) else)))
      (($ <illegal>) '())
      (_ next))))

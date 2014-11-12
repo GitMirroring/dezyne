@@ -76,6 +76,7 @@
       :behaviour
       (make <behaviour>
         :name ((compose .name .behaviour) o)
+        :functions ((compose .functions .behaviour) o)
         :statement statement))))
 
 (define-method (state-table (o <imports>))
@@ -329,7 +330,7 @@
         (alist->hash-table
          (append
           (json-init o)
-          (json-table statement)))
+          ((json-table o) statement)))
         (demo-table statement))))
 
 (define-method (demo-table (o <compound>))
