@@ -158,7 +158,7 @@ within compress((CO_i117_C_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reo
 assert COMPLETE'({i20_I.i3_e}) [F= IF_i20_I_(true,true) \ diff(Events,{i20_I.i3_e,illegal})
 assert IF_i20_I_(false,false) :[deadlock free]
 assert IF_i20_I_(true,false) :[livelock free]
-assert CO_i117_C_(true,true) :[deterministic]
+assert CO_i117_C_(true,true)[[i20_I_'.x<-i21_i_'.x|x<-extensions(i21_i_')]] :[deterministic]
 assert COMPLETE'({i21_i.i3_e}) [F= CO_i117_C_(true,true)[[i20_I_'.x'<-i21_i_'.x'|x'<-extensions(i21_i_')]] \ diff(Events,{i21_i.i3_e,illegal})
 assert STOP [T= AS_i117_C_(false) \ diff(Events,{illegal})
 assert AS_i117_C_(false) :[deadlock free]

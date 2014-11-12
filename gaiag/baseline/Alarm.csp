@@ -340,7 +340,7 @@ assert IF_ISensor_b(true,false)  \ {|ISensor.inevitable,ISensor.optional|} :[liv
 assert COMPLETE'({ISiren.turnon,ISiren.turnoff}) [F= IF_ISiren_c(true,true) \ diff(Events,{ISiren.turnon,ISiren.turnoff,illegal})
 assert IF_ISiren_c(false,false) :[deadlock free]
 assert IF_ISiren_c(true,false) :[livelock free]
-assert CO_Alarm_d(true,true) :[deterministic]
+assert CO_Alarm_d(true,true)[[IConsole_'.x<-console_'.x|x<-extensions(console_')]] :[deterministic]
 assert COMPLETE'({console.arm,console.disarm,sensor_''.triggered,sensor_''.disabled}) [F= CO_Alarm_d(true,true)[[IConsole_'.x'<-console_'.x'|x'<-extensions(console_')]] \ diff(Events,{console.arm,console.disarm,sensor_''.triggered,sensor_''.disabled,illegal})
 assert STOP [T= AS_Alarm_d(false) \ diff(Events,{illegal})
 assert AS_Alarm_d(false) :[deadlock free]

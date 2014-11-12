@@ -168,7 +168,7 @@ within compress((CO_co_argument2_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[
 assert COMPLETE'({if_I.ev_e}) [F= IF_if_I_(true,true) \ diff(Events,{if_I.ev_e,illegal})
 assert IF_if_I_(false,false) :[deadlock free]
 assert IF_if_I_(true,false) :[livelock free]
-assert CO_co_argument2_(true,true) :[deterministic]
+assert CO_co_argument2_(true,true)[[if_I_'.x<-po_i_'.x|x<-extensions(po_i_')]] :[deterministic]
 assert COMPLETE'({po_i.ev_e}) [F= CO_co_argument2_(true,true)[[if_I_'.x'<-po_i_'.x'|x'<-extensions(po_i_')]] \ diff(Events,{po_i.ev_e,illegal})
 assert STOP [T= AS_co_argument2_(false) \ diff(Events,{illegal})
 assert AS_co_argument2_(false) :[deadlock free]

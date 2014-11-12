@@ -179,7 +179,7 @@ assert IF_dummy_(true,false) :[livelock free]
 assert COMPLETE'({imodeling.optional,imodeling.e}) [F= IF_imodeling_(true,true) \ diff(Events,{imodeling.optional,imodeling.e,illegal})
 assert IF_imodeling_(false,false) :[deadlock free]
 assert IF_imodeling_(true,false)  \ {|imodeling.optional|} :[livelock free]
-assert CO_modeling_(true,true) :[deterministic]
+assert CO_modeling_(true,true)[[dummy_'.x<-p_'.x|x<-extensions(p_')]] :[deterministic]
 assert COMPLETE'({p.e,r_''.f}) [F= CO_modeling_(true,true)[[dummy_'.x'<-p_'.x'|x'<-extensions(p_')]] \ diff(Events,{p.e,r_''.f,illegal})
 assert STOP [T= AS_modeling_(false) \ diff(Events,{illegal})
 assert AS_modeling_(false) :[deadlock free]

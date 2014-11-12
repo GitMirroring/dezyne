@@ -145,7 +145,7 @@ within compress((CO_Extern_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reo
 assert COMPLETE'({IExtern.e}) [F= IF_IExtern_(true,true) \ diff(Events,{IExtern.e,illegal})
 assert IF_IExtern_(false,false) :[deadlock free]
 assert IF_IExtern_(true,false) :[livelock free]
-assert CO_Extern_(true,true) :[deterministic]
+assert CO_Extern_(true,true)[[IExtern_'.x<-port_'.x|x<-extensions(port_')]] :[deterministic]
 assert COMPLETE'({port.e}) [F= CO_Extern_(true,true)[[IExtern_'.x'<-port_'.x'|x'<-extensions(port_')]] \ diff(Events,{port.e,illegal})
 assert STOP [T= AS_Extern_(false) \ diff(Events,{illegal})
 assert AS_Extern_(false) :[deadlock free]

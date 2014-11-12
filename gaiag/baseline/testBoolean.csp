@@ -172,7 +172,7 @@ within compress((CO_testBoolean_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x
 assert COMPLETE'({TestBool.evt}) [F= IF_TestBool_(true,true) \ diff(Events,{TestBool.evt,illegal})
 assert IF_TestBool_(false,false) :[deadlock free]
 assert IF_TestBool_(true,false) :[livelock free]
-assert CO_testBoolean_(true,true) :[deterministic]
+assert CO_testBoolean_(true,true)[[TestBool_'.x<-i_'.x|x<-extensions(i_')]] :[deterministic]
 assert COMPLETE'({i.evt}) [F= CO_testBoolean_(true,true)[[TestBool_'.x'<-i_'.x'|x'<-extensions(i_')]] \ diff(Events,{i.evt,illegal})
 assert STOP [T= AS_testBoolean_(false) \ diff(Events,{illegal})
 assert AS_testBoolean_(false) :[deadlock free]

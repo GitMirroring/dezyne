@@ -163,7 +163,7 @@ within compress((CO_requires_twice_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] 
 assert COMPLETE'({irequires_twice.e}) [F= IF_irequires_twice_(true,true) \ diff(Events,{irequires_twice.e,illegal})
 assert IF_irequires_twice_(false,false) :[deadlock free]
 assert IF_irequires_twice_(true,false) :[livelock free]
-assert CO_requires_twice_(true,true) :[deterministic]
+assert CO_requires_twice_(true,true)[[irequires_twice_'.x<-p_'.x|x<-extensions(p_')]] :[deterministic]
 assert COMPLETE'({p.e,once_''.a,twice_''.a}) [F= CO_requires_twice_(true,true)[[irequires_twice_'.x'<-p_'.x'|x'<-extensions(p_')]] \ diff(Events,{p.e,once_''.a,twice_''.a,illegal})
 assert STOP [T= AS_requires_twice_(false) \ diff(Events,{illegal})
 assert AS_requires_twice_(false) :[deadlock free]

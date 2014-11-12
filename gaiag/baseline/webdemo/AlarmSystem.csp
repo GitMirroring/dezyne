@@ -338,7 +338,7 @@ assert IF_i482_ISensor_(true,false)  \ {|i482_ISensor.inevitable,i482_ISensor.op
 assert COMPLETE'({i593_ISiren.i487_turnon,i593_ISiren.i488_turnoff}) [F= IF_i593_ISiren_(true,true) \ diff(Events,{i593_ISiren.i487_turnon,i593_ISiren.i488_turnoff,illegal})
 assert IF_i593_ISiren_(false,false) :[deadlock free]
 assert IF_i593_ISiren_(true,false) :[livelock free]
-assert CO_i1019_Alarm_(true,true) :[deterministic]
+assert CO_i1019_Alarm_(true,true)[[i242_IConsole_'.x<-i598_console_'.x|x<-extensions(i598_console_')]] :[deterministic]
 assert COMPLETE'({i598_console.i3_arm,i598_console.i4_disarm,i601_sensor_''.i245_triggered,i601_sensor_''.i246_disabled}) [F= CO_i1019_Alarm_(true,true)[[i242_IConsole_'.x'<-i598_console_'.x'|x'<-extensions(i598_console_')]] \ diff(Events,{i598_console.i3_arm,i598_console.i4_disarm,i601_sensor_''.i245_triggered,i601_sensor_''.i246_disabled,illegal})
 assert STOP [T= AS_i1019_Alarm_(false) \ diff(Events,{illegal})
 assert AS_i1019_Alarm_(false) :[deadlock free]

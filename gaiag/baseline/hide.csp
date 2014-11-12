@@ -168,7 +168,7 @@ within compress((CO_hide_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reord
 assert COMPLETE'({I.e}) [F= IF_I_(true,true) \ diff(Events,{I.e,illegal})
 assert IF_I_(false,false) :[deadlock free]
 assert IF_I_(true,false) :[livelock free]
-assert CO_hide_(true,true) :[deterministic]
+assert CO_hide_(true,true)[[I_'.x<-i_'.x|x<-extensions(i_')]] :[deterministic]
 assert COMPLETE'({i.e}) [F= CO_hide_(true,true)[[I_'.x'<-i_'.x'|x'<-extensions(i_')]] \ diff(Events,{i.e,illegal})
 assert STOP [T= AS_hide_(false) \ diff(Events,{illegal})
 assert AS_hide_(false) :[deadlock free]

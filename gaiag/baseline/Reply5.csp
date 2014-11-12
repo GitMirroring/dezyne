@@ -195,7 +195,7 @@ assert IF_I_(true,false) :[livelock free]
 assert COMPLETE'({U.what}) [F= IF_U_(true,true) \ diff(Events,{U.what,illegal})
 assert IF_U_(false,false) :[deadlock free]
 assert IF_U_(true,false) :[livelock free]
-assert CO_Reply5_(true,true) :[deterministic]
+assert CO_Reply5_(true,true)[[I_'.x<-i_'.x|x<-extensions(i_')]] :[deterministic]
 assert COMPLETE'({i.done}) [F= CO_Reply5_(true,true)[[I_'.x'<-i_'.x'|x'<-extensions(i_')]] \ diff(Events,{i.done,illegal})
 assert STOP [T= AS_Reply5_(false) \ diff(Events,{illegal})
 assert AS_Reply5_(false) :[deadlock free]

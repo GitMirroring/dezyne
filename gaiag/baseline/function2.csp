@@ -178,7 +178,7 @@ within compress((CO_function2_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-
 assert COMPLETE'({ifunction2.a,ifunction2.b}) [F= IF_ifunction2_(true,true) \ diff(Events,{ifunction2.a,ifunction2.b,illegal})
 assert IF_ifunction2_(false,false) :[deadlock free]
 assert IF_ifunction2_(true,false) :[livelock free]
-assert CO_function2_(true,true) :[deterministic]
+assert CO_function2_(true,true)[[ifunction2_'.x<-i_'.x|x<-extensions(i_')]] :[deterministic]
 assert COMPLETE'({i.a,i.b}) [F= CO_function2_(true,true)[[ifunction2_'.x'<-i_'.x'|x'<-extensions(i_')]] \ diff(Events,{i.a,i.b,illegal})
 assert STOP [T= AS_function2_(false) \ diff(Events,{illegal})
 assert AS_function2_(false) :[deadlock free]

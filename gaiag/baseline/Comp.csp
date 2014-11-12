@@ -290,7 +290,7 @@ assert IF_IComp_(true,false) :[livelock free]
 assert COMPLETE'({IDevice.initialize,IDevice.calibrate,IDevice.perform_action1,IDevice.perform_action2}) [F= IF_IDevice_(true,true) \ diff(Events,{IDevice.initialize,IDevice.calibrate,IDevice.perform_action1,IDevice.perform_action2,illegal})
 assert IF_IDevice_(false,false) :[deadlock free]
 assert IF_IDevice_(true,false) :[livelock free]
-assert CO_Comp_(true,true) :[deterministic]
+assert CO_Comp_(true,true)[[IComp_'.x<-client_'.x|x<-extensions(client_')]] :[deterministic]
 assert COMPLETE'({client.initialize,client.recover,client.perform_actions}) [F= CO_Comp_(true,true)[[IComp_'.x'<-client_'.x'|x'<-extensions(client_')]] \ diff(Events,{client.initialize,client.recover,client.perform_actions,illegal})
 assert STOP [T= AS_Comp_(false) \ diff(Events,{illegal})
 assert AS_Comp_(false) :[deadlock free]

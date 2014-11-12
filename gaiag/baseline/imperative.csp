@@ -206,7 +206,7 @@ within compress((CO_imperative_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<
 assert COMPLETE'({iimperative.e}) [F= IF_iimperative_(true,true) \ diff(Events,{iimperative.e,illegal})
 assert IF_iimperative_(false,false) :[deadlock free]
 assert IF_iimperative_(true,false) :[livelock free]
-assert CO_imperative_(true,true) :[deterministic]
+assert CO_imperative_(true,true)[[iimperative_'.x<-i_'.x|x<-extensions(i_')]] :[deterministic]
 assert COMPLETE'({i.e}) [F= CO_imperative_(true,true)[[iimperative_'.x'<-i_'.x'|x'<-extensions(i_')]] \ diff(Events,{i.e,illegal})
 assert STOP [T= AS_imperative_(false) \ diff(Events,{illegal})
 assert AS_imperative_(false) :[deadlock free]

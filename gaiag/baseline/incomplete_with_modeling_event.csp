@@ -151,7 +151,7 @@ within compress((CO_incomplete_with_modeling_event_(IIG,true) [[x<-OUT'.x|x<-ext
 assert COMPLETE'({iincomplete_with_modeling_event.inevitable,iincomplete_with_modeling_event.e}) [F= IF_iincomplete_with_modeling_event_(true,true) \ diff(Events,{iincomplete_with_modeling_event.inevitable,iincomplete_with_modeling_event.e,illegal})
 assert IF_iincomplete_with_modeling_event_(false,false) :[deadlock free]
 assert IF_iincomplete_with_modeling_event_(true,false)  \ {|iincomplete_with_modeling_event.inevitable|} :[livelock free]
-assert CO_incomplete_with_modeling_event_(true,true) :[deterministic]
+assert CO_incomplete_with_modeling_event_(true,true)[[iincomplete_with_modeling_event_'.x<-p_'.x|x<-extensions(p_')]] :[deterministic]
 assert COMPLETE'({p.e,r_''.a}) [F= CO_incomplete_with_modeling_event_(true,true)[[iincomplete_with_modeling_event_'.x'<-p_'.x'|x'<-extensions(p_')]] \ diff(Events,{p.e,r_''.a,illegal})
 assert STOP [T= AS_incomplete_with_modeling_event_(false) \ diff(Events,{illegal})
 assert AS_incomplete_with_modeling_event_(false) :[deadlock free]

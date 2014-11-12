@@ -228,7 +228,7 @@ within compress((CO_i468_SensorMultiplexer1_(IIG,true) [[x<-OUT'.x|x<-extensions
 assert COMPLETE'({i182_ISensor.optional,i182_ISensor.i3_Activate,i182_ISensor.i4_Deactivate}) [F= IF_i182_ISensor_(true,true) \ diff(Events,{i182_ISensor.optional,i182_ISensor.i3_Activate,i182_ISensor.i4_Deactivate,illegal})
 assert IF_i182_ISensor_(false,false) :[deadlock free]
 assert IF_i182_ISensor_(true,false)  \ {|i182_ISensor.optional|} :[livelock free]
-assert CO_i468_SensorMultiplexer1_(true,true) :[deterministic]
+assert CO_i468_SensorMultiplexer1_(true,true)[[i182_ISensor_'.x<-i183_sensors_'.x|x<-extensions(i183_sensors_')]] :[deterministic]
 assert COMPLETE'({i183_sensors.i3_Activate,i183_sensors.i4_Deactivate,i186_aSensor_''.i5_DetectedMovement,i189_bSensor_''.i5_DetectedMovement}) [F= CO_i468_SensorMultiplexer1_(true,true)[[i182_ISensor_'.x'<-i183_sensors_'.x'|x'<-extensions(i183_sensors_')]] \ diff(Events,{i183_sensors.i3_Activate,i183_sensors.i4_Deactivate,i186_aSensor_''.i5_DetectedMovement,i189_bSensor_''.i5_DetectedMovement,illegal})
 assert STOP [T= AS_i468_SensorMultiplexer1_(false) \ diff(Events,{illegal})
 assert AS_i468_SensorMultiplexer1_(false) :[deadlock free]

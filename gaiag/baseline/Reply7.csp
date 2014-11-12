@@ -149,7 +149,7 @@ within compress((CO_Reply7_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reo
 assert COMPLETE'({IReply7.foo}) [F= IF_IReply7_(true,true) \ diff(Events,{IReply7.foo,illegal})
 assert IF_IReply7_(false,false) :[deadlock free]
 assert IF_IReply7_(true,false) :[livelock free]
-assert CO_Reply7_(true,true) :[deterministic]
+assert CO_Reply7_(true,true)[[IReply7_'.x<-p_'.x|x<-extensions(p_')]] :[deterministic]
 assert COMPLETE'({p.foo}) [F= CO_Reply7_(true,true)[[IReply7_'.x'<-p_'.x'|x'<-extensions(p_')]] \ diff(Events,{p.foo,illegal})
 assert STOP [T= AS_Reply7_(false) \ diff(Events,{illegal})
 assert AS_Reply7_(false) :[deadlock free]

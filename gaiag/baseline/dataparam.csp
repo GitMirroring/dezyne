@@ -230,7 +230,7 @@ within compress((CO_dataparam_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-
 assert COMPLETE'({idataparam.e0,idataparam.e0r,idataparam.e,idataparam.er,idataparam.eer,idataparam.eo,idataparam.eoo,idataparam.eio,idataparam.eio2,idataparam.eor,idataparam.eoor,idataparam.eior,idataparam.eio2r}) [F= IF_idataparam_(true,true) \ diff(Events,{idataparam.e0,idataparam.e0r,idataparam.e,idataparam.er,idataparam.eer,idataparam.eo,idataparam.eoo,idataparam.eio,idataparam.eio2,idataparam.eor,idataparam.eoor,idataparam.eior,idataparam.eio2r,illegal})
 assert IF_idataparam_(false,false) :[deadlock free]
 assert IF_idataparam_(true,false) :[livelock free]
-assert CO_dataparam_(true,true) :[deterministic]
+assert CO_dataparam_(true,true)[[idataparam_'.x<-port_'.x|x<-extensions(port_')]] :[deterministic]
 assert COMPLETE'({port.e0,port.e0r,port.e,port.er,port.eer,port.eo,port.eoo,port.eio,port.eio2,port.eor,port.eoor,port.eior,port.eio2r}) [F= CO_dataparam_(true,true)[[idataparam_'.x'<-port_'.x'|x'<-extensions(port_')]] \ diff(Events,{port.e0,port.e0r,port.e,port.er,port.eer,port.eo,port.eoo,port.eio,port.eio2,port.eor,port.eoor,port.eior,port.eio2r,illegal})
 assert STOP [T= AS_dataparam_(false) \ diff(Events,{illegal})
 assert AS_dataparam_(false) :[deadlock free]

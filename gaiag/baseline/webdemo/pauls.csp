@@ -308,7 +308,7 @@ assert IF_i301_IDevice_(true,false) :[livelock free]
 assert COMPLETE'({i568_IComp.i302_initialize,i568_IComp.i304_recover,i568_IComp.i306_perform_actions}) [F= IF_i568_IComp_(true,true) \ diff(Events,{i568_IComp.i302_initialize,i568_IComp.i304_recover,i568_IComp.i306_perform_actions,illegal})
 assert IF_i568_IComp_(false,false) :[deadlock free]
 assert IF_i568_IComp_(true,false) :[livelock free]
-assert CO_i1121_Comp_(true,true) :[deterministic]
+assert CO_i1121_Comp_(true,true)[[i568_IComp_'.x<-i569_client_'.x|x<-extensions(i569_client_')]] :[deterministic]
 assert COMPLETE'({i569_client.i302_initialize,i569_client.i304_recover,i569_client.i306_perform_actions}) [F= CO_i1121_Comp_(true,true)[[i568_IComp_'.x'<-i569_client_'.x'|x'<-extensions(i569_client_')]] \ diff(Events,{i569_client.i302_initialize,i569_client.i304_recover,i569_client.i306_perform_actions,illegal})
 assert STOP [T= AS_i1121_Comp_(false) \ diff(Events,{illegal})
 assert AS_i1121_Comp_(false) :[deadlock free]

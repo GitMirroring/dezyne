@@ -155,7 +155,7 @@ within compress((CO_complete_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-r
 assert COMPLETE'({icomplete.e}) [F= IF_icomplete_(true,true) \ diff(Events,{icomplete.e,illegal})
 assert IF_icomplete_(false,false) :[deadlock free]
 assert IF_icomplete_(true,false) :[livelock free]
-assert CO_complete_(true,true) :[deterministic]
+assert CO_complete_(true,true)[[icomplete_'.x<-p_'.x|x<-extensions(p_')]] :[deterministic]
 assert COMPLETE'({p.e,r_''.a}) [F= CO_complete_(true,true)[[icomplete_'.x'<-p_'.x'|x'<-extensions(p_')]] \ diff(Events,{p.e,r_''.a,illegal})
 assert STOP [T= AS_complete_(false) \ diff(Events,{illegal})
 assert AS_complete_(false) :[deadlock free]

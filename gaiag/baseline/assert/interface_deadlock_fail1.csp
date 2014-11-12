@@ -176,7 +176,7 @@ assert IF_i78_I_(true,false) :[livelock free]
 assert COMPLETE'({i95_DummyI.i79_e}) [F= IF_i95_DummyI_(true,true) \ diff(Events,{i95_DummyI.i79_e,illegal})
 assert IF_i95_DummyI_(false,false) :[deadlock free]
 assert IF_i95_DummyI_(true,false) :[livelock free]
-assert CO_i118_DummyC_(true,true) :[deterministic]
+assert CO_i118_DummyC_(true,true)[[i95_DummyI_'.x<-i96_i_'.x|x<-extensions(i96_i_')]] :[deterministic]
 assert COMPLETE'({i96_i.i79_e}) [F= CO_i118_DummyC_(true,true)[[i95_DummyI_'.x'<-i96_i_'.x'|x'<-extensions(i96_i_')]] \ diff(Events,{i96_i.i79_e,illegal})
 assert STOP [T= AS_i118_DummyC_(false) \ diff(Events,{illegal})
 assert AS_i118_DummyC_(false) :[deadlock free]

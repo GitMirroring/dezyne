@@ -178,7 +178,7 @@ within compress((CO_i308_mutual_recursion_with_members_(IIG,true) [[x<-OUT'.x|x<
 assert COMPLETE'({i99_sleeping.i3_sleep}) [F= IF_i99_sleeping_(true,true) \ diff(Events,{i99_sleeping.i3_sleep,illegal})
 assert IF_i99_sleeping_(false,false) :[deadlock free]
 assert IF_i99_sleeping_(true,false) :[livelock free]
-assert CO_i308_mutual_recursion_with_members_(true,true) :[deterministic]
+assert CO_i308_mutual_recursion_with_members_(true,true)[[i99_sleeping_'.x<-i100_beauty_'.x|x<-extensions(i100_beauty_')]] :[deterministic]
 assert COMPLETE'({i100_beauty.i3_sleep}) [F= CO_i308_mutual_recursion_with_members_(true,true)[[i99_sleeping_'.x'<-i100_beauty_'.x'|x'<-extensions(i100_beauty_')]] \ diff(Events,{i100_beauty.i3_sleep,illegal})
 assert STOP [T= AS_i308_mutual_recursion_with_members_(false) \ diff(Events,{illegal})
 assert AS_i308_mutual_recursion_with_members_(false) :[deadlock free]

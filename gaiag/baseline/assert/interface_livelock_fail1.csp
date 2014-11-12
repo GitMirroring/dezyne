@@ -179,7 +179,7 @@ assert IF_i75_I_(true,false)  \ {|i75_I.optional|} :[livelock free]
 assert COMPLETE'({i92_DummyI.i76_e}) [F= IF_i92_DummyI_(true,true) \ diff(Events,{i92_DummyI.i76_e,illegal})
 assert IF_i92_DummyI_(false,false) :[deadlock free]
 assert IF_i92_DummyI_(true,false) :[livelock free]
-assert CO_i115_DummyC_(true,true) :[deterministic]
+assert CO_i115_DummyC_(true,true)[[i92_DummyI_'.x<-i93_i_'.x|x<-extensions(i93_i_')]] :[deterministic]
 assert COMPLETE'({i93_i.i76_e}) [F= CO_i115_DummyC_(true,true)[[i92_DummyI_'.x'<-i93_i_'.x'|x'<-extensions(i93_i_')]] \ diff(Events,{i93_i.i76_e,illegal})
 assert STOP [T= AS_i115_DummyC_(false) \ diff(Events,{illegal})
 assert AS_i115_DummyC_(false) :[deadlock free]

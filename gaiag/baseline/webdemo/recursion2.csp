@@ -152,7 +152,7 @@ within compress((CO_i84_recursion2_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] 
 assert COMPLETE'({i13_I.i3_e}) [F= IF_i13_I_(true,true) \ diff(Events,{i13_I.i3_e,illegal})
 assert IF_i13_I_(false,false) :[deadlock free]
 assert IF_i13_I_(true,false) :[livelock free]
-assert CO_i84_recursion2_(true,true) :[deterministic]
+assert CO_i84_recursion2_(true,true)[[i13_I_'.x<-i14_i_'.x|x<-extensions(i14_i_')]] :[deterministic]
 assert COMPLETE'({i14_i.i3_e}) [F= CO_i84_recursion2_(true,true)[[i13_I_'.x'<-i14_i_'.x'|x'<-extensions(i14_i_')]] \ diff(Events,{i14_i.i3_e,illegal})
 assert STOP [T= AS_i84_recursion2_(false) \ diff(Events,{illegal})
 assert AS_i84_recursion2_(false) :[deadlock free]

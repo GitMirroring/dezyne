@@ -156,7 +156,7 @@ within compress((CO_If_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder
 assert COMPLETE'({I.a}) [F= IF_I_(true,true) \ diff(Events,{I.a,illegal})
 assert IF_I_(false,false) :[deadlock free]
 assert IF_I_(true,false) :[livelock free]
-assert CO_If_(true,true) :[deterministic]
+assert CO_If_(true,true)[[I_'.x<-i_'.x|x<-extensions(i_')]] :[deterministic]
 assert COMPLETE'({i.a}) [F= CO_If_(true,true)[[I_'.x'<-i_'.x'|x'<-extensions(i_')]] \ diff(Events,{i.a,illegal})
 assert STOP [T= AS_If_(false) \ diff(Events,{illegal})
 assert AS_If_(false) :[deadlock free]

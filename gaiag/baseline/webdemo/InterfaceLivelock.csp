@@ -163,7 +163,7 @@ within compress((CO_i152_TestComponent_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT'
 assert COMPLETE'({i138_BlindLoop.inevitable,i138_BlindLoop.i3_start}) [F= IF_i138_BlindLoop_(true,true) \ diff(Events,{i138_BlindLoop.inevitable,i138_BlindLoop.i3_start,illegal})
 assert IF_i138_BlindLoop_(false,false) :[deadlock free]
 assert IF_i138_BlindLoop_(true,false)  \ {|i138_BlindLoop.inevitable|} :[livelock free]
-assert CO_i152_TestComponent_(true,true) :[deterministic]
+assert CO_i152_TestComponent_(true,true)[[i138_BlindLoop_'.x<-i139_LoopingInterface_'.x|x<-extensions(i139_LoopingInterface_')]] :[deterministic]
 assert COMPLETE'({i139_LoopingInterface.i3_start}) [F= CO_i152_TestComponent_(true,true)[[i138_BlindLoop_'.x'<-i139_LoopingInterface_'.x'|x'<-extensions(i139_LoopingInterface_')]] \ diff(Events,{i139_LoopingInterface.i3_start,illegal})
 assert STOP [T= AS_i152_TestComponent_(false) \ diff(Events,{illegal})
 assert AS_i152_TestComponent_(false) :[deadlock free]
