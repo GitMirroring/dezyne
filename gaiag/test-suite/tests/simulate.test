@@ -127,7 +127,7 @@
        (action (trigger #f b))))))
 
 (pass-if "walk-trail-arguments"
-  (let* ((arguments-ast (read-ast 'examples/arguments.asd))
+  (let* ((arguments-ast (read-ast 'examples/arguments.dzn))
          (gom ((gom:register simulate:gom) arguments-ast #t))
          (model (gom:component gom))
          (trail '(i.e i.e i.e))
@@ -137,7 +137,7 @@
     #t))
 
 (pass-if "walk-trail-pauls"
-  (let* ((pauls-ast (read-ast 'examples/regression/Comp.asd))
+  (let* ((pauls-ast (read-ast 'examples/regression/Comp.dzn))
          (gom ((gom:register simulate:gom) pauls-ast #t))
          (model (gom:component gom))
          (trail '(client.initialize result_t.OK result_t.OK client.perform_actions result_t.OK result_t.OK client.perform_actions result_t.NOK client.recover result_t.OK client.perform_actions))
@@ -146,7 +146,7 @@
     #t))
 
 ;; (pass-if "explore-space-pauls"
-;;   (let* ((pauls-ast (read-ast 'examples/regression/Comp.asd))
+;;   (let* ((pauls-ast (read-ast 'examples/regression/Comp.dzn))
 ;;          (gom ((gom:register simulate:gom) pauls-ast #t))
 ;;          (model (gom:component gom))
 ;;          (pauls-space (explore-space model))

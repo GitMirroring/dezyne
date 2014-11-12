@@ -1,0 +1,140 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface iimperative
+{
+  in void e;
+
+  out void f;
+  out void g;
+  out void h;
+
+  behaviour
+  {
+    enum S {S1, S2};
+
+    //typedef int[0..1] count;
+
+    S s = S.S1;
+
+    bool b = false;
+    //count c = 1;
+    bool c = true;
+
+    [s.S1]
+    {
+      on e:
+      {
+        if(c || b)
+        {
+          f; g;
+        }
+        if(b)
+        {
+          if(c)
+          {
+            g;
+          }
+          c = false;
+          f;
+        }
+        else
+        {
+          if(c)
+          {
+            b = false;
+            h;
+          }
+          else
+          {
+            b = true;
+            g;
+          }
+        }
+        s = S.S2;
+      }
+    }
+    [s.S2]
+    {
+      on e:
+      {
+        if(b)
+        {
+          if(!c)
+          {
+            c = true;
+          }
+          else
+          {
+            c = false;
+          }
+          h;
+        }
+        b = ! b;
+        s = S.S1;
+      }
+    }
+  }
+}
+
+component imperative
+{
+  provides iimperative i;
+
+  behaviour
+  {
+    enum States {I, II, III, IV};
+    States state = States.I;
+    [state.I]
+    {
+      on i.e:
+      {
+        i.f; i.g; i.h;
+        state = States.II;
+      }
+    }
+    [state.II]
+    {
+      on i.e:
+      {
+        state = States.III;
+      }
+    }
+    [state.III]
+    {
+      on i.e:
+      {
+        i.f; i.g; i.g; i.f;
+        state = States.IV;
+      }
+    }
+    [state.IV]
+    {
+      on i.e:
+      {
+        i.h;
+        state = States.I;
+      }
+    }
+  }
+}

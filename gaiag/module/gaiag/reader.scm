@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -53,7 +54,7 @@
 (define (path-find-file path file-name)
   (search-path path (components->file-name file-name)))
 
-(define* (find-file file-name :optional (extensions '(.asdi .asd .asdc)))
+(define* (find-file file-name :optional (extensions '(.asdi .asd .asdc .dzn)))
   (let* ((file-name (if (pair? file-name) file-name (list file-name)))
          (resolved
           (or (path-find-file *include-path* file-name)
@@ -72,7 +73,7 @@
       (set! *include-path* (cons dir *include-path*)))
     resolved))
 
-(define* (try-find-file file-name :optional (extensions '(.asdi .asd .asdc)))
+(define* (try-find-file file-name :optional (extensions '(.asdi .asd .asdc .dzn)))
   (catch #t
     (lambda () (with-error-to-port
                    (open-output-file "/dev/null")

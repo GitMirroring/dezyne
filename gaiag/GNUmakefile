@@ -1,7 +1,9 @@
 # Gaiag --- Guile in Asd In Asd in Guile.
 # Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
 # Copyright © 2014 Jan Nieuwenhuizen <jan@avatar.nl>
 # Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
+# Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
 # Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Gaiag.
@@ -69,8 +71,8 @@ check: compile
 	./test.sh </dev/null
 	$(MAKE) csp asserts c++ pretty goops java javascript python simulate wfc
 
-REGRESSION_SOURCES = $(shell cd examples/regression && ls *.asd)
-WFC_SOURCES = $(shell cd examples/wfc && ls -1 *.asd)
+REGRESSION_SOURCES = $(shell cd examples/regression && ls *.dzn)
+WFC_SOURCES = $(shell cd examples/wfc && ls -1 *.dzn)
 
 coverage: clean cover-compile cover-test cover-regression
 	rm gaiag.lcov/gaiag.info
@@ -91,81 +93,81 @@ cover-test:
 	GUILE='guile --debug --no-auto-compile' ./test.sh --coverage </dev/null
 	lcov -r gaiag.info /usr/share\* $(TOPDIR)/gaiag $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/test-suite\* \*pretty-print.scm \*gaiag/coverage -o gaiag.lcov/gaiag-test.info | grep -v Removing
 
-gaiag.lcov/%-asd.info: examples/regression/%.asd
+gaiag.lcov/%-asd.info: examples/regression/%.dzn
 	rm -f gaiag.lcov/gaiag.info
 	cd gaiag.lcov && ../gaiag --coverage -l asd $< >/dev/null
 	sed -i s@:[.][.]/@:$(shell pwd)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/gaiag $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/test-suite\* \*pretty-print.scm \*gaiag/coverage -o $@ | grep -v Removing
 
-gaiag.lcov/%-csp.info: examples/regression/%.asd
+gaiag.lcov/%-csp.info: examples/regression/%.dzn
 	rm -f gaiag.lcov/gaiag.info
 	cd gaiag.lcov && ../gaiag --coverage -l csp $<
 	sed -i s@:[.][.]/@:$(shell pwd)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/gaiag $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/test-suite\* \*pretty-print.scm \*gaiag/coverage -o $@ | grep -v Removing
 
-gaiag.lcov/%-c++.info: examples/regression/%.asd
+gaiag.lcov/%-c++.info: examples/regression/%.dzn
 	rm -f gaiag.lcov/gaiag.info
 	cd gaiag.lcov && ../gaiag --coverage -l c++ $<
 	sed -i s@:[.][.]/@:$(shell pwd)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/gaiag $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/test-suite\* \*pretty-print.scm \*gaiag/coverage -o $@ | grep -v Removing
 
-gaiag.lcov/%-python.info: examples/regression/%.asd
+gaiag.lcov/%-python.info: examples/regression/%.dzn
 	rm -f gaiag.lcov/gaiag.info
 	cd gaiag.lcov && ../gaiag --coverage -l python $<
 	sed -i s@:[.][.]/@:$(shell pwd)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/gaiag $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/test-suite\* \*pretty-print.scm \*gaiag/coverage -o $@ | grep -v Removing
 
-gaiag.lcov/%-javascript.info: examples/regression/%.asd
+gaiag.lcov/%-javascript.info: examples/regression/%.dzn
 	rm -f gaiag.lcov/gaiag.info
 	cd gaiag.lcov && ../gaiag --coverage -l javascript $<
 	sed -i s@:[.][.]/@:$(shell pwd)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/gaiag $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/test-suite\* \*pretty-print.scm \*gaiag/coverage -o $@ | grep -v Removing
 
-gaiag.lcov/%-wfc.info: examples/wfc/%.asd
+gaiag.lcov/%-wfc.info: examples/wfc/%.dzn
 	rm -f gaiag.lcov/gaiag.info
 	cd gaiag.lcov && ! ../gaiag --coverage -l wfc $<
 	sed -i s@:[.][.]/@:$(shell pwd)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/gaiag $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/test-suite\* \*pretty-print.scm \*gaiag/coverage -o $@ | grep -v Removing
 
 cover-regression:\
- $(REGRESSION_SOURCES:%.asd=gaiag.lcov/%-asd.info)\
- $(REGRESSION_SOURCES:%.asd=gaiag.lcov/%-csp.info)\
- $(REGRESSION_SOURCES:%.asd=gaiag.lcov/%-c++.info)\
+ $(REGRESSION_SOURCES:%.dzn=gaiag.lcov/%-asd.info)\
+ $(REGRESSION_SOURCES:%.dzn=gaiag.lcov/%-csp.info)\
+ $(REGRESSION_SOURCES:%.dzn=gaiag.lcov/%-c++.info)\
  gaiag.lcov/Alarm-javascript.info\
  gaiag.lcov/Alarm-python.info\
 
-# $(WFC_SOURCES:%.asd=gaiag.lcov/%-wfc.info)\
+# $(WFC_SOURCES:%.dzn=gaiag.lcov/%-wfc.info)\
 
 dummy:
 
 ast: compile
-	./gaiag examples/interface-enums.asd
-	./gaiag examples/interface-events.asd
-	./gaiag examples/interface-reply-events.asd
-	./gaiag examples/interface-behaviour.asd
-	./gaiag examples/interface-imports.asd
-	./gaiag examples/alarm-component.asd
+	./gaiag examples/interface-enums.dzn
+	./gaiag examples/interface-events.dzn
+	./gaiag examples/interface-reply-events.dzn
+	./gaiag examples/interface-behaviour.dzn
+	./gaiag examples/interface-imports.dzn
+	./gaiag examples/alarm-component.dzn
 
 pretty: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
-	./gaiag -l asd examples/interface-enums.asd > out/interface-enums.asd
-	$(diff) examples/interface-enums.asd out
-	./gaiag -l asd examples/alarm-component.asd > out/alarm-component.asd
-	$(diff) examples/alarm-component.asd out
-	./gaiag -l asd examples/Typedef.asd > out/Typedef.asd
-	$(diff) examples/Typedef.asd out
+	./gaiag -l asd examples/interface-enums.dzn > out/interface-enums.dzn
+	$(diff) examples/interface-enums.dzn out
+	./gaiag -l asd examples/alarm-component.dzn > out/alarm-component.dzn
+	$(diff) examples/alarm-component.dzn out
+	./gaiag -l asd examples/Typedef.dzn > out/Typedef.dzn
+	$(diff) examples/Typedef.dzn out
 
-	./gaiag -l asd examples/regression/function.asd > out/function.asd
-	$(diff) examples/regression/function.asd out
-	./gaiag -l asd examples/regression/argument2.asd > out/argument2.asd
-	$(diff) examples/regression/argument2.asd out
-	./gaiag -l asd examples/regression/expressions.asd > out/expressions.asd
-	$(diff) examples/regression/expressions.asd out
+	./gaiag -l asd examples/regression/function.dzn > out/function.dzn
+	$(diff) examples/regression/function.dzn out
+	./gaiag -l asd examples/regression/argument2.dzn > out/argument2.dzn
+	$(diff) examples/regression/argument2.dzn out
+	./gaiag -l asd examples/regression/expressions.dzn > out/expressions.dzn
+	$(diff) examples/regression/expressions.dzn out
 
-out/%.o: examples/regression/%.asd
+out/%.o: examples/regression/%.dzn
 define .CC_REGRESSION
 rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/* .
-cd out && $(shell pwd)/gaiag -l c++ examples/regression/$*.asd
+cd out && $(shell pwd)/gaiag -l c++ examples/regression/$*.dzn
 -$(diff) baseline/component-$*-c3.hh out
 -$(diff) baseline/component-$*-c3.cc out
 ccache g++ -o out/component-$*-c3.o -c out/component-$*-c3.cc $(UPDATE)
@@ -174,35 +176,35 @@ ccache g++ -o out/component-$*-c3.o -c out/component-$*-c3.cc $(UPDATE)
 endef
 
 CC_BROKEN =\
- Alarm.asd\
- Noot.asd\
- hide.asd\
- livelock1.asd\
- livelock2.asd\
- mangle.asd\
+ Alarm.dzn\
+ Noot.dzn\
+ hide.dzn\
+ livelock1.dzn\
+ livelock2.dzn\
+ mangle.dzn\
 
-CC_SOURCES = $(filter-out $(CC_BROKEN),$(shell cd examples/regression && grep -l ^component *.asd))
+CC_SOURCES = $(filter-out $(CC_BROKEN),$(shell cd examples/regression && grep -l ^component *.dzn))
 
 #out/%.o.up: UPDATE=||:; cp out/component-$*-c3.cc out/*.hh baseline
 out/%.o.up: UPDATE=&& cp out/component-$*-c3.cc out/*.hh baseline
-out/%.o.up: examples/regression/%.asd
+out/%.o.up: examples/regression/%.dzn
 	$(.CC_REGRESSION)
 
-out/%.o: examples/regression/%.asd
+out/%.o: examples/regression/%.dzn
 	$(.CC_REGRESSION)
 
-c++-regression: $(CC_SOURCES:%.asd=out/%.o)
-c++-update: $(CC_SOURCES:%.asd=out/%.o.up)
+c++-regression: $(CC_SOURCES:%.dzn=out/%.o)
+c++-update: $(CC_SOURCES:%.dzn=out/%.o.up)
 
 c++: compile c++-alarm c++-inject c++-dataparam c++-regression
 
-out/%.wfc: examples/wfc/%.asd
+out/%.wfc: examples/wfc/%.dzn
 	! ./gaiag -l wfc $<
 
-wfc: compile $(WFC_SOURCES:%.asd=out/%.wfc)
+wfc: compile $(WFC_SOURCES:%.dzn=out/%.wfc)
 
 define .REGRESSION_REFINES
-rm -rf out && mkdir -p out && ln -s ../examples ../../webdemo ../templates ../$(DEPTH)/webdemo/asd out
+rm -rf out && mkdir -p out && ln -s ../examples ../../webdemo ../templates ../$(DEPTH)/webdemo/dzn out
 cd out && $(WFC) $< && $(shell pwd)/gaiag -l csp $<
 $(diff) baseline/$*.csp out || true
 @$(diff) baseline/$*.csp out | diffstat || true
@@ -214,14 +216,14 @@ endef
 
 #out/%.update: UPDATE=||:; cp out/$*.update baseline/$*.refines; cp out/$*.csp baseline/
 out/%.update: UPDATE=&& cp out/$*.csp baseline/
-out/%.update: examples/regression/%.asd
+out/%.update: examples/regression/%.dzn
 	$(.REGRESSION_REFINES)
 
-out/%.refines: examples/regression/%.asd
+out/%.refines: examples/regression/%.dzn
 	$(.REGRESSION_REFINES)
 
 define .WEBDEMO_REFINES
-rm -rf out && mkdir -p out/webdemo && ln -s ../../examples ../../webdemo ../../templates ../../$(DEPTH)/webdemo/asd out/webdemo
+rm -rf out && mkdir -p out/webdemo && ln -s ../../examples ../../webdemo ../../templates ../../$(DEPTH)/webdemo/dzn out/webdemo
 cd out/webdemo && $(TOPDIR)/$(BUILD)/asdgenerator -M -l scm $<
 cd out/webdemo && $(shell pwd)/gaiag -l csp $*.scm
 [ -f out/webdemo/$*.csp ] || mv out/webdemo/*.csp out/webdemo/$*.csp
@@ -235,12 +237,12 @@ endef
 
 #out/webdemo/%.update: UPDATE=||:; cp out/webdemo/$*.update baseline/webdemo/$*.refines; cp out/webdemo/$*.csp baseline/webdemo/
 out/webdemo/%.update: UPDATE=&& cp out/webdemo/$*.csp baseline/webdemo/
-out/webdemo/%.update: $(DEPTH)/webdemo/asd/%.asd
+out/webdemo/%.update: $(DEPTH)/webdemo/dzn/%.dzn
 	$(.WEBDEMO_REFINES)
 
-out/webdemo/%.refines: $(DEPTH)/webdemo/asd/%.asd
+out/webdemo/%.refines: $(DEPTH)/webdemo/dzn/%.dzn
 	$(.WEBDEMO_REFINES)
-out/webdemo/%.refines: examples/regression/%.asd
+out/webdemo/%.refines: examples/regression/%.dzn
 	$(.WEBDEMO_REFINES)
 
 define .ASSERT_REFINES
@@ -259,59 +261,59 @@ endef
 
 #out/assert/%.update: UPDATE=||:; cp out/assert/$*.update baseline/assert/$*.refines; cp out/assert/$*.csp baseline/assert
 out/assert/%.update: UPDATE=&& cp out/assert/$*.csp baseline/assert/
-out/assert/%.update: $(DEPTH)/examples/assert/%.asd
+out/assert/%.update: $(DEPTH)/examples/assert/%.dzn
 	$(.ASSERT_REFINES)
 
-out/assert/%.refines: $(DEPTH)/examples/assert/%.asd
+out/assert/%.refines: $(DEPTH)/examples/assert/%.dzn
 	$(.ASSERT_REFINES)
 
 CSP_BROKEN=\
- provides_twice.asd\
+ provides_twice.dzn\
 
 CSP_SOURCES = $(filter-out $(CSP_BROKEN),$(REGRESSION_SOURCES))
 
-csp-regression: compile $(CSP_SOURCES:%.asd=out/%.refines)
+csp-regression: compile $(CSP_SOURCES:%.dzn=out/%.refines)
 
-csp-regression-update: $(CSP_SOURCES:%.asd=out/%.update)
+csp-regression-update: $(CSP_SOURCES:%.dzn=out/%.update)
 
 BROKEN =\
- asdConcepts_Behaviour.asd\
- asdConcepts_Composition.asd\
- exampleLOPW.asd\
- Aap.asd\
- LOPW.asd\
- bareSiliconAlarm.asd\
- default.asd\
+ dznConcepts_Behaviour.dzn\
+ dznConcepts_Composition.dzn\
+ exampleLOPW.dzn\
+ Aap.dzn\
+ LOPW.dzn\
+ bareSiliconAlarm.dzn\
+ default.dzn\
 
-DEMO_SOURCES = $(filter-out $(BROKEN) ,$(shell cd $(DEPTH)/webdemo/asd && ls *.asd))
-csp-demo: $(DEMO_SOURCES:%.asd=out/webdemo/%.refines)
-csp-demo-update: $(DEMO_SOURCES:%.asd=out/webdemo/%.update)
+DEMO_SOURCES = $(filter-out $(BROKEN) ,$(shell cd $(DEPTH)/webdemo/dzn && ls *.dzn))
+csp-demo: $(DEMO_SOURCES:%.dzn=out/webdemo/%.refines)
+csp-demo-update: $(DEMO_SOURCES:%.dzn=out/webdemo/%.update)
 
-ASSERT_SOURCES = $(shell cd $(DEPTH)/examples/assert && ls *.asd)
-csp-assert: $(ASSERT_SOURCES:%.asd=out/assert/%.refines)
-csp-assert-update: $(ASSERT_SOURCES:%.asd=out/assert/%.update)
+ASSERT_SOURCES = $(shell cd $(DEPTH)/examples/assert && ls *.dzn)
+csp-assert: $(ASSERT_SOURCES:%.dzn=out/assert/%.refines)
+csp-assert-update: $(ASSERT_SOURCES:%.dzn=out/assert/%.update)
 
 csp: csp-regression csp-demo csp-assert
 csp-update: csp-regression-update csp-assert-update csp-demo-update csp-assert-update
 
 simulate: compile
-	./gaiag -l simulate -t '(a a a)' examples/simulate.asd
-	./gaiag -l simulate -t '(a a a a a)' examples/regression/If.asd
-	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" examples/alarm-component.asd
-	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" -j examples/alarm-component.asd | ./scm2json | sed -e 's/, /,\n /g'
-	./gaiag -l simulate -t '(i.e i.e i.e)' examples/arguments.asd
-	./gaiag -l simulate -t '(client.initialize result_t.OK result_t.OK client.perform_actions result_t.OK result_t.OK client.perform_actions result_t.NOK client.recover result_t.OK client.perform_actions)' examples/regression/Comp.asd
+	./gaiag -l simulate -t '(a a a)' examples/simulate.dzn
+	./gaiag -l simulate -t '(a a a a a)' examples/regression/If.dzn
+	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" examples/alarm-component.dzn
+	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" -j examples/alarm-component.dzn | ./scm2json | sed -e 's/, /,\n /g'
+	./gaiag -l simulate -t '(i.e i.e i.e)' examples/arguments.dzn
+	./gaiag -l simulate -t '(client.initialize result_t.OK result_t.OK client.perform_actions result_t.OK result_t.OK client.perform_actions result_t.NOK client.recover result_t.OK client.perform_actions)' examples/regression/Comp.dzn
 
 c++-alarm:
 	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/* .
 	cd out && for file in\
-		examples/AlarmSystem.asd\
-		examples/regression/Alarm.asd\
-		examples/IConsole.asd\
-		examples/ISensor.asd\
-		examples/Sensor.asd\
-		examples/ISiren.asd\
-		examples/Siren.asd;\
+		examples/AlarmSystem.dzn\
+		examples/regression/Alarm.dzn\
+		examples/IConsole.dzn\
+		examples/ISensor.dzn\
+		examples/Sensor.dzn\
+		examples/ISiren.dzn\
+		examples/Siren.dzn;\
 	do $(shell pwd)/gaiag -l c++ $$file; done
 
 	cd out && ln -s ../examples/alarm.cc .
@@ -329,27 +331,27 @@ c++-alarm:
 c++-inject:
 	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/* .
 	cd out && ln -s ../examples/injected.cc .
-	cd out && $(shell pwd)/gaiag -l c++ examples/Injected.asd
+	cd out && $(shell pwd)/gaiag -l c++ examples/Injected.dzn
 	cd out && for i in *cc; do ccache g++ -c $$i; done && g++ -o $@ *.o && ./$@ > $@.trace
 	$(diff) baseline/$@.trace out
 
 c++-dataparam:
 	rm -rf out && mkdir out && cd out && ln -s ../runtime/* .
-	cd out && ../gaiag -l c++ ../examples/regression/dataparam.asd
+	cd out && ../gaiag -l c++ ../examples/regression/dataparam.dzn
 	cd out && ln -sf ../examples/dataparam.cc .
 	cd out && for i in *cc; do ccache g++ -c $$i; done && g++ -o $@ *.o && ./$@ > $@.trace
 	$(diff) baseline/$@.trace out
 
 asserts:
-	rm -rf out && mkdir out && ln -s ../examples ../../webdemo ../templates ../$(DEPTH)/webdemo/asd out
-	./gaiag -l asserts examples/regression/Alarm.asd > out/alarm-asserts.scm
+	rm -rf out && mkdir out && ln -s ../examples ../../webdemo ../templates ../$(DEPTH)/webdemo/dzn out
+	./gaiag -l asserts examples/regression/Alarm.dzn > out/alarm-asserts.scm
 	$(diff) baseline/alarm-asserts.scm out
 
 compare:
-	rm -rf out && mkdir out && ln -s ../examples ../../webdemo ../templates ../$(DEPTH)/webdemo/asd out
+	rm -rf out && mkdir out && ln -s ../examples ../../webdemo ../templates ../$(DEPTH)/webdemo/dzn out
 	make -C ../..
-	./gaiag -l resolve examples/regression/trip.asd > out/gaiag-trip.scm
-	cd out && ../$(DEPTH)/build/asdgenerator -l scm examples/trip.asd
+	./gaiag -l resolve examples/regression/trip.dzn > out/gaiag-trip.scm
+	cd out && ../$(DEPTH)/build/asdgenerator -l scm examples/trip.dzn
 	sed -i 's/i[0-9]\+_//g' out/trip.scm
 	./gaiag out/trip.scm > out/om-trip-pretty.scm
 #	guile -c '(use-modules (ice-9 pretty-print)) (pretty-print (read))' < out/trip.scm > out/om-trip-pretty.scm
@@ -359,11 +361,11 @@ compare:
 
 python-alarm: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
-	cd out && $(shell pwd)/gaiag -l python examples/regression/Alarm.asd
-	cd out && $(shell pwd)/gaiag -l python examples/ISensor.asd
-	cd out && $(shell pwd)/gaiag -l python examples/ISiren.asd
-	cd out && $(shell pwd)/gaiag -l python examples/Alarm.asd
-	cd out && $(shell pwd)/gaiag -l python examples/AlarmSystem.asd
+	cd out && $(shell pwd)/gaiag -l python examples/regression/Alarm.dzn
+	cd out && $(shell pwd)/gaiag -l python examples/ISensor.dzn
+	cd out && $(shell pwd)/gaiag -l python examples/ISiren.dzn
+	cd out && $(shell pwd)/gaiag -l python examples/Alarm.dzn
+	cd out && $(shell pwd)/gaiag -l python examples/AlarmSystem.dzn
 	$(pydiff) baseline/interface/IConsole.py out/interface
 	$(pydiff) baseline/interface/ISensor.py out/interface
 	$(pydiff) baseline/interface/ISiren.py out/interface
@@ -377,14 +379,14 @@ python-alarm: compile
 	cd out && $(PYTHON) alarm.py
 
 PY_BROKEN=\
- dataparam.asd\
- Extern.asd\
+ dataparam.dzn\
+ Extern.dzn\
 
 PY_SOURCES = $(filter-out $(PY_BROKEN),$(CC_SOURCES))
 
 define .PY_REGRESSION
 rm -rf out && mkdir out && ln -s ../examples ../templates out
-cd out && $(shell pwd)/gaiag -l python examples/regression/$*.asd
+cd out && $(shell pwd)/gaiag -l python examples/regression/$*.dzn
 -$(pydiff) baseline/component/$*.py out/component
 ln -s ../examples/__init__.py out/interface
 ln -s ../examples/__init__.py out/component
@@ -395,23 +397,23 @@ endef
 
 #out/%.py.up: UPDATE=||:; cp out/component/$*.py baseline/component && cp out/interface/*.py baseline/interface
 out/%.py.up: UPDATE=&& cp out/component/$*.py baseline/component && cp out/interface/*.py baseline/interface
-out/%.py.up: examples/regression/%.asd
+out/%.py.up: examples/regression/%.dzn
 	$(.PY_REGRESSION)
 
-out/%.py: examples/regression/%.asd
+out/%.py: examples/regression/%.dzn
 	$(.PY_REGRESSION)
 
-python-regression: $(PY_SOURCES:%.asd=out/%.py)
-python-update: $(PY_SOURCES:%.asd=out/%.py.up)
+python-regression: $(PY_SOURCES:%.dzn=out/%.py)
+python-update: $(PY_SOURCES:%.dzn=out/%.py.up)
 
 python: compile python-alarm python-regression
 
 JAVA_BROKEN =\
- dataparam.asd\
- Extern.asd\
- hide.asd\
- provides_twice.asd\
- Reply5.asd\
+ dataparam.dzn\
+ Extern.dzn\
+ hide.dzn\
+ provides_twice.dzn\
+ Reply5.dzn\
 
 JAVA_SOURCES = $(filter-out $(JAVA_BROKEN),$(CC_SOURCES))
 
@@ -431,23 +433,23 @@ endef
 
 #out/%.java.up: UPDATE=||:; cp out/component/$*.java baseline/component && cp out/interface/*.java baseline/interface
 out/%.java.up: UPDATE=&& cp out/component/$*.java baseline/component && cp out/interface/*.java baseline/interface
-out/%.java.up: examples/regression/%.asd
+out/%.java.up: examples/regression/%.dzn
 	$(.JAVA_REGRESSION)
 
-out/%.java: examples/regression/%.asd
+out/%.java: examples/regression/%.dzn
 	$(.JAVA_REGRESSION)
 
-java-regression: $(JAVA_SOURCES:%.asd=out/%.java)
-java-update: $(JAVA_SOURCES:%.asd=out/%.java.up)
+java-regression: $(JAVA_SOURCES:%.dzn=out/%.java)
+java-update: $(JAVA_SOURCES:%.dzn=out/%.java.up)
 
 java-alarm: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
 	cd out && for file in\
-	 	examples/AlarmSystem.asd\
-	 	examples/regression/Alarm.asd\
-	 	examples/IConsole.asd\
-	 	examples/ISensor.asd\
-	 	examples/ISiren.asd;\
+	 	examples/AlarmSystem.dzn\
+	 	examples/regression/Alarm.dzn\
+	 	examples/IConsole.dzn\
+	 	examples/ISensor.dzn\
+	 	examples/ISiren.dzn;\
 	 	do $(shell pwd)/gaiag -l java $$file; done
 	cat templates/java/header.java\
 		 $$(find out/interface out/component -name '*.java')\
@@ -463,8 +465,8 @@ java-alarm: compile
 java: compile java-alarm java-regression
 
 JS_BROKEN=\
- dataparam.asd\
- Extern.asd\
+ dataparam.dzn\
+ Extern.dzn\
 
 JS_SOURCES = $(filter-out $(JS_BROKEN),$(CC_SOURCES))
 
@@ -484,23 +486,23 @@ endef
 
 #out/%.js.up: UPDATE=||:; cp out/component/$*.js baseline/component && cp out/interface/*.js baseline/interface
 out/%.js.up: UPDATE=&& cp out/component/$*.js baseline/component && cp out/interface/*.js baseline/interface
-out/%.js.up: examples/regression/%.asd
+out/%.js.up: examples/regression/%.dzn
 	$(.JAVASCRIPT_REGRESSION)
 
-out/%.js: examples/regression/%.asd
+out/%.js: examples/regression/%.dzn
 	$(.JAVASCRIPT_REGRESSION)
 
-javascript-regression: $(JS_SOURCES:%.asd=out/%.js)
-javascript-update: $(JS_SOURCES:%.asd=out/%.js.up)
+javascript-regression: $(JS_SOURCES:%.dzn=out/%.js)
+javascript-update: $(JS_SOURCES:%.dzn=out/%.js.up)
 
 javascript-alarm: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
 	cd out && for file in\
-	 	examples/AlarmSystem.asd\
-	 	examples/regression/Alarm.asd\
-	 	examples/IConsole.asd\
-	 	examples/ISensor.asd\
-	 	examples/ISiren.asd;\
+	 	examples/AlarmSystem.dzn\
+	 	examples/regression/Alarm.dzn\
+	 	examples/IConsole.dzn\
+	 	examples/ISensor.dzn\
+	 	examples/ISiren.dzn;\
 	 	do $(shell pwd)/gaiag -l javascript $$file; done
 	cat templates/javascript/header.js\
 		 $$(find out/interface out/component -name '*.js')\
@@ -517,8 +519,8 @@ javascript: compile javascript-alarm javascript-regression
 code: c++-alarm python-alarm java-alarm javascript-alarm out/Reply7.o out/Reply7.java out/Reply7.js out/Reply7.py
 
 GOOPS_BROKEN=\
- dataparam.asd\
- Extern.asd\
+ dataparam.dzn\
+ Extern.dzn\
 
 GOOPS_SOURCES = $(filter-out $(GOOPS_BROKEN),$(CC_SOURCES))
 
@@ -537,23 +539,23 @@ endef
 
 #out/%.scm.up: UPDATE=||:; cp out/component/$*.scm baseline/component && cp out/interface/*.scm baseline/interface
 out/%.scm.up: UPDATE=&& cp out/component/$*.scm baseline/component && cp out/interface/*.scm baseline/interface
-out/%.scm.up: examples/regression/%.asd
+out/%.scm.up: examples/regression/%.dzn
 	$(.GOOPS_REGRESSION)
 
-out/%.scm: examples/regression/%.asd
+out/%.scm: examples/regression/%.dzn
 	$(.GOOPS_REGRESSION)
 
-goops-regression: $(GOOPS_SOURCES:%.asd=out/%.scm)
-goops-update: $(GOOPS_SOURCES:%.asd=out/%.scm.up)
+goops-regression: $(GOOPS_SOURCES:%.dzn=out/%.scm)
+goops-update: $(GOOPS_SOURCES:%.dzn=out/%.scm.up)
 
 goops-alarm: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
 	cd out && for file in\
-	 	examples/AlarmSystem.asd\
-	 	examples/regression/Alarm.asd\
-	 	examples/IConsole.asd\
-	 	examples/ISensor.asd\
-	 	examples/ISiren.asd;\
+	 	examples/AlarmSystem.dzn\
+	 	examples/regression/Alarm.dzn\
+	 	examples/IConsole.dzn\
+	 	examples/ISensor.dzn\
+	 	examples/ISiren.dzn;\
 	 	do $(shell pwd)/gaiag -l goops $$file; done
 	cat templates/goops/header.scm\
 		 $$(find out/interface out/component -name '*.scm')\
@@ -568,14 +570,14 @@ goops-alarm: compile
 goops: compile goops-alarm goops-regression
 
 glue:
-	rm -rf out && mkdir -p out && ln -s ../examples ../../webdemo ../templates ../$(DEPTH)/webdemo/asd out
+	rm -rf out && mkdir -p out && ln -s ../examples ../../webdemo ../templates ../$(DEPTH)/webdemo/dzn out
 	cd out && for model in\
 	 	AlarmSystem\
 	 	Alarm\
 	 	Console\
 	 	Sensor\
 	 	Siren;\
-	 	do $(shell pwd)/gaiag -m $$model -l c++ webdemo/asd/AlarmSystem.asd; done
+	 	do $(shell pwd)/gaiag -m $$model -l c++ webdemo/dzn/AlarmSystem.dzn; done
 	cp examples/main.cpp out
 	cp examples/SensorInterface.h out
 	cp examples/SensorComponent.h out
@@ -589,30 +591,30 @@ glue:
 update: csp-update c++-update goops-update java-update javascript-update python-update
 
 data-csp:
-	cd out && ../gaiag -l csp ../examples/dataparam.asd
+	cd out && ../gaiag -l csp ../examples/dataparam.dzn
 	$(CSPMCHECKER) out/dataparam.csp
-	cd out && ../../build/asdgenerator -l scm ../examples/dataparam.asd
+	cd out && ../../build/asdgenerator -l scm ../examples/dataparam.dzn
 	./gaiag out/dataparam.scm > out/dataparam-om.scm
-	./gaiag examples/dataparam.asd > out/dataparam.scm
+	./gaiag examples/dataparam.dzn > out/dataparam.scm
 	diff -uw out/dataparam.scm out/dataparam-om.scm
 
 loc:
 	make -C .. build/asdgenerator
 	rm -rf out && mkdir -p out && cd out && ln -s ../examples .
-	cd out && ../../build/asdgenerator -L -l scm examples/loc.asd
+	cd out && ../../build/asdgenerator -L -l scm examples/loc.dzn
 	cat out/loc.scm
 	./gaiag -l annotate out/loc.scm
-	../build/asdgenerator examples/loc.asd ||:
+	../build/asdgenerator examples/loc.dzn ||:
 	! ./gaiag -l resolve out/loc.scm
-	! ./gaiag -l resolve examples/loc.asd
+	! ./gaiag -l resolve examples/loc.dzn
 
 table:
-	./gaiag -j -l table examples/table.asd | ./scm2json | sed -e 's/, /,\n /g'
+	./gaiag -j -l table examples/table.dzn | ./scm2json | sed -e 's/, /,\n /g'
 	@echo
-	./gaiag -j -l table examples/ISiren.asd | ./scm2json | sed -e 's/, /,\n /g'
+	./gaiag -j -l table examples/ISiren.dzn | ./scm2json | sed -e 's/, /,\n /g'
 #	@echo
-#	./gaiag -l table examples/ISiren.asd
+#	./gaiag -l table examples/ISiren.dzn
 	@echo
-	./gaiag -m Alarm -j -l table examples/Alarm.asd | ./scm2json | sed -e 's/, /,\n /g'
+	./gaiag -m Alarm -j -l table examples/Alarm.dzn | ./scm2json | sed -e 's/, /,\n /g'
 	@echo
-	./gaiag -m SensorMultiplexer4 -l table ../webdemo/asd/choiceexample.asd # | ./scm2json | sed -e 's/, /,\n /g'
+	./gaiag -m SensorMultiplexer4 -l table ../webdemo/dzn/choiceexample.dzn # | ./scm2json | sed -e 's/, /,\n /g'

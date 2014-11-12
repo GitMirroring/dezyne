@@ -33,7 +33,7 @@
 
 (define locations
   '(locations
-        (root ((location "examples/loc.asd" 0 0 0 #f)
+        (root ((location "examples/loc.dzn" 0 0 0 #f)
                interface
                loc
                ((location) types)
@@ -43,7 +43,7 @@
                  in
                  ((location)
                   signature
-                  ((location "examples/loc.asd" 2 5 21 #f)
+                  ((location "examples/loc.dzn" 2 5 21 #f)
                    type
                    void))
                  e)
@@ -51,7 +51,7 @@
                  out
                  ((location)
                   signature
-                  ((location "examples/loc.asd" 2 5 21 #f)
+                  ((location "examples/loc.dzn" 2 5 21 #f)
                    type
                    void))
                  a))
@@ -61,29 +61,29 @@
                 ((location) types)
                 ((location)
                  variables
-                 ((location "examples/loc.asd" 6 11 70 #f)
+                 ((location "examples/loc.dzn" 6 11 70 #f)
                   variable
                   e
-                  ((location "examples/loc.asd" 6 4 63 #f)
+                  ((location "examples/loc.dzn" 6 4 63 #f)
                    type
                    bool)
-                  ((location "examples/loc.asd" 6 11 70 #f)
+                  ((location "examples/loc.dzn" 6 11 70 #f)
                    expression
                    1))
-                 ((location "examples/loc.asd" 7 9 121 #f)
+                 ((location "examples/loc.dzn" 7 9 121 #f)
                   variable
                   f
-                  ((location "examples/loc.asd" 6 4 63 #f)
+                  ((location "examples/loc.dzn" 6 4 63 #f)
                    type
                    bool)
-                  ((location "examples/loc.asd" 7 10 122 #f)
+                  ((location "examples/loc.dzn" 7 10 122 #f)
                    expression)))
                 ((location) functions)
                 ((location) compound))))))
 
 (pass-if "annotate-extract"
   (pretty-noisy-equal?
-   (extract-locations (read-asd "examples/loc.asd"))
+   (extract-locations (read-asd "examples/loc.dzn"))
    locations))
 
 (pass-if "annotate-apply"
