@@ -1,53 +1,52 @@
-// Gaiag --- Guile in Asd In Asd in Guile.
+// Dezyne --- Dezyne command line tools
 //
-// This file is part of Gaiag.
-//
-// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
-// Gaiag is free software: you can redistribute it and/or modify it
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
 //
-// Gaiag is distributed in the hope that it will be useful, but
+// Dezyne is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Affero General Public License for more details.
 //
 // You should have received a copy of the GNU Affero General Public
-// License along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 //
 // Commentary:
 //
 // Code:
 
-#ifndef SENSOR_INTERFACE_H
-#define SENSOR_INTERFACE_H
+#ifndef ISENSOR_INTERFACE_H
+#define ISENSOR_INTERFACE_H
 
 #include "asdInterfaces.h"
 
 #include <boost/shared_ptr.hpp>
 
-class Sensor
+class ISensor
 {
 public:
   virtual void Enable() = 0;
   virtual void Disable() = 0;
 };
 
-class SensorCB
+class ISensorCB
 {
 public:
   virtual void Triggered() = 0;
   virtual void Disabled() = 0;
 };
 
-class SensorInterface
+class ISensorInterface
 {
 public:
-  virtual void GetAPI(boost::shared_ptr<Sensor>*) = 0;
-  virtual void RegisterCB(boost::shared_ptr<SensorCB>) = 0;
+  virtual void GetAPI(boost::shared_ptr<ISensor>*) = 0;
+  virtual void RegisterCB(boost::shared_ptr<ISensorCB>) = 0;
   virtual void RegisterCB(boost::shared_ptr<asd::channels::ISingleThreaded>) = 0;
 };
 

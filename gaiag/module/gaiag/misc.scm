@@ -77,6 +77,7 @@
            symbol<
            symbol-null?
            symbol-capitalize
+           symbol-drop
 
            ;; FIXME
 
@@ -112,6 +113,10 @@
 
 (define (symbol-capitalize symbol)
   ((compose string->symbol string-capitalize symbol->string) symbol))
+
+(define (symbol-drop symbol count)
+  (define ((drop count) string) (string-drop string count))
+  ((compose string->symbol (drop count) symbol->string) symbol))
 
 (define (symbol< a b) (string< (symbol->string a) (symbol->string b)))
 

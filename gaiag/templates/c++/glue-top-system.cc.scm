@@ -1,6 +1,9 @@
 ##include "#.model Component.h"
 
-##include "component-#.model -c3.hh"
+##include "locator.h"
+##include "runtime.h"
+
+##include "#.model .hh"
 
 ##include <boost/bind.hpp>
 ##include <boost/function.hpp>
@@ -24,11 +27,12 @@ struct #.model Glue
 #(map (lambda (alist)
         (let* ((entry (car alist))
                (interface (second entry))
+               (component (symbol-drop interface 1))
                (port-type (.type (gom:port model))))
-          (list "struct " interface "\n: public ::" interface "\n"
+          (list "struct " component "\n: public ::" interface "\n"
                 "{\n"
                 "interface::" port-type "& api;\n"
-                interface "(interface::" port-type "& api)\n"
+                component "(interface::" port-type "& api)\n"
                 ": api(api)\n"
                 "{}\n"
                 (map
@@ -56,14 +60,15 @@ struct #.model Glue
       ((gen1-interfaces gom:out?) (gom:interface model)))
 boost::shared_ptr<asd::channels::ISingleThreaded> st;
 
-#.model Glue ()
-: component()
+#.model Glue (const dezyne::locator& l)
+: component(l)
 #(map (lambda (alist)
         (let* ((entry (car alist))
                (interface (second entry))
+               (component (symbol-drop interface 1))
                (port-name (.name (gom:port model))))
           (list ", api_" interface
-                "(boost::make_shared<" interface ">(boost::ref(component." port-name ")))\n")))
+                "(boost::make_shared<" component ">(boost::ref(component." port-name ")))\n")))
       ((gen1-interfaces gom:in?) (gom:interface model)))
 {
 #(map (lambda (alist)
@@ -106,8 +111,12 @@ void RegisterCB (boost::shared_ptr<asd::channels::ISingleThreaded> st)
 }
 };
 
+dezyne::locator dezyne_locator;
+dezyne::runtime dezyne_runtime;
+
 boost::shared_ptr<#(.type (gom:port model)) Interface> #.model Component::GetInstance ()
 {
-  return boost::make_shared<#.model Glue> ();
+  dezyne_locator.set(dezyne_runtime);
+  return boost::make_shared<#.model Glue> (dezyne_locator);
 }
 void #.model Component::ReleaseInstance () {}

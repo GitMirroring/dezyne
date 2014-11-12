@@ -4,7 +4,7 @@
 ##include "#.model Interface.h"
 
 struct #.model Component
-: public #(.type (gom:port model))Interface
+  : public #(.type (gom:port model))Interface
 {
   static boost::shared_ptr<#(.type (gom:port model))Interface> GetInstance();
   static void ReleaseInstance();

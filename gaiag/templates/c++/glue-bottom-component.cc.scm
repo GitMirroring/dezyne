@@ -1,5 +1,9 @@
 ##include "component-#.model -c3.hh"
+
 ##include "asdInterfaces.h"
+
+##include "locator.h"
+##include "runtime.h"
 
 ##include "#.model Component.h"
 
@@ -16,12 +20,6 @@ namespace component
   };
 
   static std::map<#.model *, boost::shared_ptr<#(.type (gom:port model)) Interface> > g_handwritten ;
-
-#(define (ap port) (->string (list (.type port) "_API")))
-#(define (cb port)
-   ;;(event2->interface1-event1-alist (.))
-
-   (->string (list (.type port) "_fixme_from_spec")))
 
 #(define ((gen1-interfaces dir?) model)
    (let* ((port (gom:port model))
@@ -48,7 +46,8 @@ namespace component
                "};\n")))
       ((gen1-interfaces gom:out?) model))
 
-#.model ::#.model ()
+#.model ::#.model (const dezyne::locator& l)
+  : rt (l.get<dezyne::runtime>())
 {
   boost::shared_ptr<#(.type (gom:port model)) Interface> component = #.model Component::GetInstance() ;
 #(map (lambda (port) (->string (list "boost::shared_ptr< ::" (.type port) "> api_" (.name port) ";\n"
@@ -67,7 +66,7 @@ g_handwritten.insert (std::make_pair (this,component));
           (map
            (lambda (entry)
              (let ((port (gom:port model)))
-              (list (.name port) ".in." (first entry) " = asd::bind(&::" (.type port) "::" (third entry) ",api_" (.name port) ");\n")))
+              (list (.name port) ".in." (first entry) " = dezyne::bind(&::" (.type port) "::" (third entry) ",api_" (.name port) ");\n")))
            alist)))
       ((gen1-interfaces gom:in?) model))
 }

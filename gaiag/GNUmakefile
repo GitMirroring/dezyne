@@ -194,7 +194,7 @@ out/%.o: examples/regression/%.dzn
 c++-regression: $(CC_SOURCES:%.dzn=out/%.o)
 c++-update: $(CC_SOURCES:%.dzn=out/%.o.up)
 
-c++: compile c++-alarm c++-inject c++-dataparam c++-regression
+c++: compile c++-alarm glue c++-inject c++-dataparam c++-regression
 
 out/%.wfc: examples/wfc/%.dzn
 	! ./gaiag -l wfc $<
@@ -567,8 +567,10 @@ goops-alarm: compile
 
 goops: compile goops-alarm goops-regression
 
+.PHONY: glue
+
 glue:
-	rm -rf out && mkdir -p out && ln -s ../examples ../../webdemo ../templates ../$(DEPTH)/webdemo/dzn out
+	rm -rf out && mkdir -p out && ln -s ../examples ../runtime ../../webdemo ../templates ../$(DEPTH)/webdemo/dzn out
 	cd out && for model in\
 	 	AlarmSystem\
 	 	Alarm\
@@ -576,13 +578,14 @@ glue:
 	 	Sensor\
 	 	Siren;\
 	 	do $(shell pwd)/gaiag -m $$model -l c++ webdemo/dzn/AlarmSystem.dzn; done
-	cp examples/main.cpp out
-	cp examples/SensorInterface.h out
-	cp examples/SensorComponent.h out
-	cp examples/SensorComponent.cpp out
-	cp examples/SirenInterface.h out
-	cp examples/SirenComponent.h out
-	cp examples/SirenComponent.cpp out
+	ln -sf runtime/* out
+	ln -sf examples/glue.cc out
+	ln -sf examples/ISensorInterface.h out
+	ln -sf examples/SensorComponent.h out
+	ln -sf examples/SensorComponent.cpp out
+	ln -sf examples/ISirenInterface.h out
+	ln -sf examples/SirenComponent.h out
+	ln -sf examples/SirenComponent.cpp out
 	-for i in out/*.c*; do ccache g++ -g -Wall -Wextra -I out -I $(DEPTH)/examples/codegen/asd_cpp_runtime -c $$i -o out/$$(basename $$(basename $$i .cpp) .cc).o; done
 	-cd out && g++ -o test *.o && ./test
 

@@ -6,10 +6,10 @@
 #include <iostream>
 
 struct SirenForeign: public SirenComponent
-                   , public Siren
+                   , public ISiren
                    , public boost::enable_shared_from_this<SirenForeign>
 {
-  void GetAPI(boost::shared_ptr<Siren>* api)
+  void GetAPI(boost::shared_ptr<ISiren>* api)
   {
     *api = shared_from_this();
   }
@@ -23,7 +23,7 @@ struct SirenForeign: public SirenComponent
   }
 };
 
-boost::shared_ptr<SirenInterface> SirenComponent::GetInstance()
+boost::shared_ptr<ISirenInterface> SirenComponent::GetInstance()
 {
   return boost::make_shared<SirenForeign>();
 }
