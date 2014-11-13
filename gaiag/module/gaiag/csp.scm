@@ -539,7 +539,6 @@
                (make <compound> :elements statements)))
 
     (($ <call> identifier arguments)
-     (stderr "LAST: ~a\n" identifier)
      (make <call> :identifier identifier :arguments arguments :last? #t))
 
     (($ <if> expression then else)
@@ -853,7 +852,6 @@
          (list "call_(\\ P',V' @ " identifier "(" continuation-p ",V'))")))
 
        (($ <csp-call> context identifier arguments last?)
-        (stderr "CALL: ~a, last?: ~a\n" identifier last?)
         (let ((continuation-p (if last? "PF'" "P'")))
          (list "call_args_(\\ P',V' @ " identifier "(" continuation-p ",V'),(\\ (" context ") @ (" arguments ")))")))
 
@@ -862,8 +860,6 @@
           (list name "(PF',V') = (" transformed ")(PF',V')\n")))
 
        (($ <function> name signature recursive? statement)
-        (stderr "\nFUNCTION: ~a\n" name)
-        ;;(pretty-print (gom->list statement) (current-error-port))
         (let ((transformed (csp-transform ast statement inevitable-optional? channel provided-on? recursive?)))
           (list name "(PF',V') = (" transformed ")(PF',V')\n")))
 
