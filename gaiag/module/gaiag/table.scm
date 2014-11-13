@@ -119,7 +119,7 @@
                           :statement statement)))))
 
 (define-method (make-field (model <model>) (state <literal>))
-  (define (type? v) (eq? ((compose .name .type) v)) (.type state))
+  (define (type? v) (eq? ((compose .name .type) v) (.type state)))
   (let* ((var (find type? (gom:variables model)))
          (name (or (and=> var .name) 'state)))
     (make <field> :identifier name :field (.field state))))
