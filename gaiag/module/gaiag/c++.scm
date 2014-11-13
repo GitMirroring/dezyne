@@ -97,6 +97,7 @@
 (define (event2->interface1-event1-alist port)
   (and-let* ((string (gulp-file (find-file port '(.map))))
              (lst (string-split string #\newline))
+             (lst (filter (lambda (x) (not (string-prefix? "//" x))) lst))
              (lst (map (lambda (o) (map string->symbol (string-tokenize o char-set:graphic))) lst))
              (lst (filter pair? lst)))
             (fold (lambda (e r) (acons (third e) (take e 2) r)) '() lst)))
