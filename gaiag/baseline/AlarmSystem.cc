@@ -23,19 +23,22 @@
 
 #include "AlarmSystem.hh"
 
-template<typename Port>
-void connect(Port& provided, Port& required)
+namespace dezyne
 {
-  provided.out = required.out;
-  required.in = provided.in;
-}
+  template<typename Port>
+  void connect(Port& provided, Port& required)
+  {
+    provided.out = required.out;
+    required.in = provided.in;
+  }
 
-AlarmSystem::AlarmSystem(const dezyne::locator& dezyne_locator)
-: alarm(dezyne_locator)
-, sensor(dezyne_locator)
-, siren(dezyne_locator)
-, console(alarm.console)
-{
-  connect(sensor.sensor, alarm.sensor);
-  connect(siren.siren, alarm.siren);
+  AlarmSystem::AlarmSystem(const dezyne::locator& dezyne_locator)
+  : alarm(dezyne_locator)
+  , sensor(dezyne_locator)
+  , siren(dezyne_locator)
+  , console(alarm.console)
+  {
+    connect(sensor.sensor, alarm.sensor);
+    connect(siren.siren, alarm.siren);
+  }
 }

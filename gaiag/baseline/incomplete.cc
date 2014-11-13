@@ -26,25 +26,28 @@
 #include "locator.h"
 #include "runtime.h"
 
-incomplete::incomplete(const dezyne::locator& dezyne_locator)
-: rt(dezyne_locator.get<dezyne::runtime>())
-, p()
-, r()
+namespace dezyne
 {
-  p.in.e = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&incomplete::p_e, this)));
-  r.out.a = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&incomplete::r_a, this)));
-}
-
-void incomplete::p_e()
-{
-  std::cout << "incomplete.p_e" << std::endl;
+  incomplete::incomplete(const locator& dezyne_locator)
+  : rt(dezyne_locator.get<runtime>())
+  , p()
+  , r()
   {
+    p.in.e = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&incomplete::p_e, this)));
+    r.out.a = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&incomplete::r_a, this)));
   }
+
+  void incomplete::p_e()
+  {
+    std::cout << "incomplete.p_e" << std::endl;
+    {
+    }
+  }
+
+  void incomplete::r_a()
+  {
+    std::cout << "incomplete.r_a" << std::endl;
+  }
+
+
 }
-
-void incomplete::r_a()
-{
-  std::cout << "incomplete.r_a" << std::endl;
-}
-
-

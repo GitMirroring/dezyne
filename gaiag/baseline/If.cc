@@ -26,28 +26,31 @@
 #include "locator.h"
 #include "runtime.h"
 
-If::If(const dezyne::locator& dezyne_locator)
-: rt(dezyne_locator.get<dezyne::runtime>())
-, t(false)
-, i()
+namespace dezyne
 {
-  i.in.a = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&If::i_a, this)));
-}
-
-void If::i_a()
-{
-  std::cout << "If.i_a" << std::endl;
+  If::If(const locator& dezyne_locator)
+  : rt(dezyne_locator.get<runtime>())
+  , t(false)
+  , i()
   {
-    if (t)
-    {
-      rt.defer(this, dezyne::bind(i.out.b));
-    }
-    else
-    {
-      rt.defer(this, dezyne::bind(i.out.c));
-    }
-    t = not (t);
+    i.in.a = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&If::i_a, this)));
   }
+
+  void If::i_a()
+  {
+    std::cout << "If.i_a" << std::endl;
+    {
+      if (t)
+      {
+        rt.defer(this, boost::bind(i.out.b));
+      }
+      else
+      {
+        rt.defer(this, boost::bind(i.out.c));
+      }
+      t = not (t);
+    }
+  }
+
+
 }
-
-

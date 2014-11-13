@@ -21,31 +21,28 @@
 //
 // Code:
 
-#ifndef INTERFACE_DUMMY_C3_HH
-#define INTERFACE_DUMMY_C3_HH
+#ifndef DEZYNE_DUMMY_HH
+#define DEZYNE_DUMMY_HH
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
 namespace dezyne
 {
-  using boost::function;
-  using boost::bind;
+
+  struct dummy
+  {
+
+    struct
+    {
+      boost::function<void ()> e;
+
+    } in;
+
+    struct
+    {
+
+    } out;
+  };
 }
-
-struct dummy
-{
-
-  struct
-  {
-    dezyne::function<void ()> e;
-
-  } in;
-
-  struct
-  {
-
-  } out;
-};
-
-#endif
+#endif // DEZYNE_DUMMY_HH

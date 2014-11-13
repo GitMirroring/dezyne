@@ -21,26 +21,27 @@
 //
 // Code:
 
-#ifndef COMPONENT_INCOMPLETE_WITH_MODELING_EVENT_HH
-#define COMPONENT_INCOMPLETE_WITH_MODELING_EVENT_HH
+#ifndef DEZYNE_INCOMPLETE_WITH_MODELING_EVENT_HH
+#define DEZYNE_INCOMPLETE_WITH_MODELING_EVENT_HH
 
 #include "iincomplete_with_modeling_event.hh"
 #include "iincomplete_with_modeling_event.hh"
 
 
-namespace dezyne {
+namespace dezyne
+{
   struct locator;
   struct runtime;
+
+  struct incomplete_with_modeling_event
+  {
+    runtime& rt;
+    iincomplete_with_modeling_event p;
+    iincomplete_with_modeling_event r;
+
+    incomplete_with_modeling_event(const locator&);
+    void p_e();
+    void r_a();
+  };
 }
-
-struct incomplete_with_modeling_event
-{
-  dezyne::runtime& rt;
-  iincomplete_with_modeling_event p;
-  iincomplete_with_modeling_event r;
-
-  incomplete_with_modeling_event(const dezyne::locator&);
-  void p_e();
-  void r_a();
-};
-#endif
+#endif // DEZYNE_INCOMPLETE_WITH_MODELING_EVENT_HH

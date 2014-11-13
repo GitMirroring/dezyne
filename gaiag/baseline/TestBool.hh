@@ -21,31 +21,28 @@
 //
 // Code:
 
-#ifndef INTERFACE_TESTBOOL_C3_HH
-#define INTERFACE_TESTBOOL_C3_HH
+#ifndef DEZYNE_TESTBOOL_HH
+#define DEZYNE_TESTBOOL_HH
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
 namespace dezyne
 {
-  using boost::function;
-  using boost::bind;
+
+  struct TestBool
+  {
+
+    struct
+    {
+      boost::function<void ()> evt;
+
+    } in;
+
+    struct
+    {
+
+    } out;
+  };
 }
-
-struct TestBool
-{
-
-  struct
-  {
-    dezyne::function<void ()> evt;
-
-  } in;
-
-  struct
-  {
-
-  } out;
-};
-
-#endif
+#endif // DEZYNE_TESTBOOL_HH

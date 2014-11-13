@@ -21,37 +21,38 @@
 //
 // Code:
 
-#ifndef COMPONENT_REPLY4_HH
-#define COMPONENT_REPLY4_HH
+#ifndef DEZYNE_REPLY4_HH
+#define DEZYNE_REPLY4_HH
 
 #include "I.hh"
 #include "U.hh"
 
 
-namespace dezyne {
+namespace dezyne
+{
   struct locator;
   struct runtime;
-}
 
-struct Reply4
-{
-  dezyne::runtime& rt;
-  struct Status
+  struct Reply4
   {
-    enum type
+    runtime& rt;
+    struct Status
     {
-      Yes, No
+      enum type
+      {
+        Yes, No
+      };
     };
-  };
-  bool dummy;
-  I::Status::type reply_I_Status;
-  U::Status::type reply_U_Status;
-  I i;
-  U u;
+    bool dummy;
+    I::Status::type reply_I_Status;
+    U::Status::type reply_U_Status;
+    I i;
+    U u;
 
-  Reply4(const dezyne::locator&);
-  I::Status::type i_done();
-  Reply4::Status::type fun();
-  Reply4::Status::type fun_arg(Reply4::Status::type s);
-};
-#endif
+    Reply4(const locator&);
+    I::Status::type i_done();
+    Reply4::Status::type fun();
+    Reply4::Status::type fun_arg(Reply4::Status::type s);
+  };
+}
+#endif // DEZYNE_REPLY4_HH

@@ -38,20 +38,18 @@
 
 namespace dezyne
 {
-  using boost::bind;
-  using boost::function;
 
   struct runtime
   {
-    std::map<void*, std::pair<bool, std::queue<function<void()> > > > queues;
+    std::map<void*, std::pair<bool, std::queue<boost::function<void()> > > > queues;
 
     bool& handling(void*);
     void flush(void*);
-    void defer(void*, const function<void()>&);
-    void handle_event(void*, const function<void()>&);
+    void defer(void*, const boost::function<void()>&);
+    void handle_event(void*, const boost::function<void()>&);
 
     template <typename R, bool checked>
-    inline R valued_helper(void* scope, const function<R()>& event)
+    inline R valued_helper(void* scope, const boost::function<R()>& event)
     {
       bool& handle = handling(scope);
       if(checked and handle) throw std::logic_error("a valued event cannot be deferred");
@@ -99,14 +97,14 @@ namespace dezyne
   }
 
   template <typename R>
-  inline function<R()> connect(runtime& rt, void* scope, const function<R()>& event)
+  inline boost::function<R()> connect(runtime& rt, void* scope, const boost::function<R()>& event)
   {
-    return bind(&runtime::valued_helper<R,true>, &rt, scope, event);
+    return boost::bind(&runtime::valued_helper<R,true>, &rt, scope, event);
   }
   template <>
-  inline function<void()> connect<void>(runtime& rt, void* scope, const function<void()>& event)
+  inline boost::function<void()> connect<void>(runtime& rt, void* scope, const boost::function<void()>& event)
   {
-    return bind(&runtime::handle_event, &rt, scope, event);
+    return boost::bind(&runtime::handle_event, &rt, scope, event);
   }
 
 
@@ -115,14 +113,14 @@ namespace dezyne
 
 #define BOOST_PP_LOCAL_MACRO(N) \
   template <typename R BOOST_PP_ENUM_TRAILING_PARAMS(N,typename A)> \
-    R handle_event_closure(runtime& rt, void* scope, const function<R(BOOST_PP_ENUM_PARAMS(N,A))>& e BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(N,A,a)) \
+    R handle_event_closure(runtime& rt, void* scope, const boost::function<R(BOOST_PP_ENUM_PARAMS(N,A))>& e BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(N,A,a)) \
   { \
-    return rt.valued_helper<R,false>(scope, function<R()>(bind(e BOOST_PP_ENUM_TRAILING(N,DREF,a)))); \
+    return rt.valued_helper<R,false>(scope, boost::function<R()>(boost::bind(e BOOST_PP_ENUM_TRAILING(N,DREF,a)))); \
   } \
   template <typename R BOOST_PP_ENUM_TRAILING_PARAMS(N,typename A)>                       \
-  function<R(BOOST_PP_ENUM_PARAMS(N,A))> connect(runtime& rt, void* scope, const function<R(BOOST_PP_ENUM_PARAMS(N,A))>& event) \
+  boost::function<R(BOOST_PP_ENUM_PARAMS(N,A))> connect(runtime& rt, void* scope, const boost::function<R(BOOST_PP_ENUM_PARAMS(N,A))>& event) \
   { \
-    return bind(handle_event_closure<R BOOST_PP_ENUM_TRAILING_PARAMS(N,A)>, ref(rt), scope, event BOOST_PP_ENUM_TRAILING(N,PLACE,_)); \
+    return boost::bind(handle_event_closure<R BOOST_PP_ENUM_TRAILING_PARAMS(N,A)>, ref(rt), scope, event BOOST_PP_ENUM_TRAILING(N,PLACE,_)); \
   } \
 
 #define BOOST_PP_LOCAL_LIMITS (1,6)
@@ -130,14 +128,14 @@ namespace dezyne
 
 #define BOOST_PP_LOCAL_MACRO(N) \
   template <BOOST_PP_ENUM_PARAMS(N,typename A)> \
-  void handle_event_closure(runtime& rt, void* scope, const function<void(BOOST_PP_ENUM_PARAMS(N,A))>& e BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(N,A,a)) \
+  void handle_event_closure(runtime& rt, void* scope, const boost::function<void(BOOST_PP_ENUM_PARAMS(N,A))>& e BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(N,A,a)) \
   { \
-    rt.handle_event(scope, function<void()>(bind(e, BOOST_PP_ENUM(N,DREF,a)))); \
+    rt.handle_event(scope, boost::function<void()>(boost::bind(e, BOOST_PP_ENUM(N,DREF,a)))); \
   } \
   template <BOOST_PP_ENUM_PARAMS(N,typename A)> \
-  function<void(BOOST_PP_ENUM_PARAMS(N,A))> connect(runtime& rt, void* scope, const function<void(BOOST_PP_ENUM_PARAMS(N,A))>& event) \
+  boost::function<void(BOOST_PP_ENUM_PARAMS(N,A))> connect(runtime& rt, void* scope, const boost::function<void(BOOST_PP_ENUM_PARAMS(N,A))>& event) \
   { \
-    return bind(handle_event_closure<BOOST_PP_ENUM_PARAMS(N,A)>, ref(rt), scope, event BOOST_PP_ENUM_TRAILING(N,PLACE,_)); \
+    return boost::bind(handle_event_closure<BOOST_PP_ENUM_PARAMS(N,A)>, ref(rt), scope, event BOOST_PP_ENUM_TRAILING(N,PLACE,_)); \
   } \
 
 #define BOOST_PP_LOCAL_LIMITS (1,6)

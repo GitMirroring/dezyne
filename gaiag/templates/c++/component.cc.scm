@@ -3,8 +3,10 @@
 ##include "locator.h"
 ##include "runtime.h"
 
-#.model ::#.model (const dezyne::locator& dezyne_locator)
-: rt(dezyne_locator.get<dezyne::runtime>())
+namespace dezyne
+{
+#.model ::#.model (const locator& dezyne_locator)
+: rt(dezyne_locator.get<runtime>())
 , #
 ((->join  "\n, ")
  (map (init-member model #{
@@ -16,13 +18,13 @@
    (map
     (lambda (port)
       (map (define-on model port #{
-#port .#direction .#event  = dezyne::connect#(if (string-null? parameters) (list "<" return-type ">") (list "<" (comma-join (append (if (eq? return-type 'void) '() (list return-type)) parameter-types))">"))(rt, this, dezyne::function<#return-type(#(comma-join parameter-types))>(dezyne::bind<#return-type >(&#model ::#port _#event , #(comma-join (append '("this") (map (lambda (i) (list " _" i)) (iota (length parameter-types) 1)))))));
+#port .#direction .#event  = connect#(if (string-null? parameters) (list "<" return-type ">") (list "<" (comma-join (append (if (eq? return-type 'void) '() (list return-type)) parameter-types))">"))(rt, this, boost::function<#return-type(#(comma-join parameter-types))>(boost::bind<#return-type >(&#model ::#port _#event , #(comma-join (append '("this") (map (lambda (i) (list " _" i)) (iota (length parameter-types) 1)))))));
 #}) (filter gom:in? (gom:events port))))
     (filter gom:provides? (gom:ports model)))#
    (map
     (lambda (port)
       (map (define-on model port #{
-#port .#direction .#event  = dezyne::connect#(if (string-null? parameters) (list "<" return-type ">") (list "<" (comma-join (append (if (eq? return-type 'void) '() (list return-type)) parameter-types))">"))(rt, this, dezyne::function<#return-type(#(comma-join parameter-types))>(dezyne::bind<#return-type >(&#model ::#port _#event , #(comma-join (append '("this") (map (lambda (i) (list " _" i)) (iota (length parameter-types) 1)))))));
+#port .#direction .#event  = connect#(if (string-null? parameters) (list "<" return-type ">") (list "<" (comma-join (append (if (eq? return-type 'void) '() (list return-type)) parameter-types))">"))(rt, this, boost::function<#return-type(#(comma-join parameter-types))>(boost::bind<#return-type >(&#model ::#port _#event , #(comma-join (append '("this") (map (lambda (i) (list " _" i)) (iota (length parameter-types) 1)))))));
 #}) (filter gom:out? (gom:events port))))
     (filter gom:requires? (gom:ports model))) }
 
@@ -44,3 +46,4 @@
   {
     #statements }
 #}) (gom:functions model)))
+}

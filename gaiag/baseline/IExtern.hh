@@ -21,31 +21,28 @@
 //
 // Code:
 
-#ifndef INTERFACE_IEXTERN_C3_HH
-#define INTERFACE_IEXTERN_C3_HH
+#ifndef DEZYNE_IEXTERN_HH
+#define DEZYNE_IEXTERN_HH
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
 namespace dezyne
 {
-  using boost::function;
-  using boost::bind;
+
+  struct IExtern
+  {
+
+    struct
+    {
+      boost::function<void ()> e;
+
+    } in;
+
+    struct
+    {
+
+    } out;
+  };
 }
-
-struct IExtern
-{
-
-  struct
-  {
-    dezyne::function<void ()> e;
-
-  } in;
-
-  struct
-  {
-
-  } out;
-};
-
-#endif
+#endif // DEZYNE_IEXTERN_HH

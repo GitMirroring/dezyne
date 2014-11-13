@@ -25,77 +25,12 @@
 
 #include <boost/make_shared.hpp>
 
-#include "runtime.h"
-
 #include <iostream>
-#include <map>
-#include <queue>
 
-std::map<void*, std::pair<bool, std::queue<dezyne::function<void()> > > >& queues()
+struct CB: public IConsoleCB
 {
-  static std::map<void*, std::pair<bool, std::queue<dezyne::function<void()> > > > instance;
-  return instance;
-}
-
-bool& handling(void* scope)
-{
-  return queues()[scope].first;
-}
-
-void flush(void* scope)
-{
-  std::map<void*, std::pair<bool, std::queue<dezyne::function<void()> > > >& qs = queues();
-  std::map<void*, std::pair<bool, std::queue<dezyne::function<void()> > > >::iterator it = qs.find(scope);
-  if(it != qs.end())
-  {
-    std::queue<dezyne::function<void()> >& q = it->second.second;
-    while(not q.empty())
-    {
-      q.front()();
-      q.pop();
-    }
-  }
-}
-
-void defer(void* scope, const dezyne::function<void()>& event)
-{
-  queues()[scope].second.push(event);
-}
-
-template <typename T>
-struct scoped_value
-{
-  T& current;
-  T initial;
-  scoped_value(T& current, T value)
-  : current(current)
-  , initial(current)
-  { current = value; }
-  ~scoped_value()
-  {
-    current = initial;
-  }
-};
-
-void handle_event(void* scope, const dezyne::function<void()>& event)
-{
-  bool& handle = handling(scope);
-  if(not handle)
-  {
-    scoped_value<bool> sv(handle, true);
-    event();
-    flush(scope);
-  }
-  else
-  {
-    defer(scope, event);
-  }
-}
-
-struct CB: public dezyne::IConsoleCB
-{
-  boost::shared_ptr<dezyne::IConsole> api;
-  CB(  boost::shared_ptr<dezyne::IConsole> api)
+  boost::shared_ptr<IConsole> api;
+  CB(  boost::shared_ptr<IConsole> api)
   : api(api)
   {}
   void Tripped()
@@ -110,8 +45,8 @@ struct CB: public dezyne::IConsoleCB
 
 int main()
 {
-  boost::shared_ptr<dezyne::IConsoleInterface> alarm_system = dezyne::AlarmSystemComponent::GetInstance();
-  boost::shared_ptr<dezyne::IConsole> api;
+  boost::shared_ptr<IConsoleInterface> alarm_system = AlarmSystemComponent::GetInstance();
+  boost::shared_ptr<IConsole> api;
   alarm_system->GetAPI(&api);
   alarm_system->RegisterCB(boost::make_shared<CB>(api));
 

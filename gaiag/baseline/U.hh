@@ -21,38 +21,35 @@
 //
 // Code:
 
-#ifndef INTERFACE_U_C3_HH
-#define INTERFACE_U_C3_HH
+#ifndef DEZYNE_U_HH
+#define DEZYNE_U_HH
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
 namespace dezyne
 {
-  using boost::function;
-  using boost::bind;
-}
 
-struct U
-{
-  struct Status
+  struct U
   {
-    enum type
+    struct Status
     {
-      Ok, Nok
+      enum type
+      {
+        Ok, Nok
+      };
     };
+
+    struct
+    {
+      boost::function<Status::type ()> what;
+
+    } in;
+
+    struct
+    {
+
+    } out;
   };
-
-  struct
-  {
-    dezyne::function<Status::type ()> what;
-
-  } in;
-
-  struct
-  {
-
-  } out;
-};
-
-#endif
+}
+#endif // DEZYNE_U_HH

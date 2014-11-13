@@ -21,31 +21,32 @@
 //
 // Code:
 
-#ifndef COMPONENT_IMPERATIVE_HH
-#define COMPONENT_IMPERATIVE_HH
+#ifndef DEZYNE_IMPERATIVE_HH
+#define DEZYNE_IMPERATIVE_HH
 
 #include "iimperative.hh"
 
 
-namespace dezyne {
+namespace dezyne
+{
   struct locator;
   struct runtime;
-}
 
-struct imperative
-{
-  dezyne::runtime& rt;
-  struct States
+  struct imperative
   {
-    enum type
+    runtime& rt;
+    struct States
     {
-      I, II, III, IV
+      enum type
+      {
+        I, II, III, IV
+      };
     };
-  };
-  imperative::States::type state;
-  iimperative i;
+    imperative::States::type state;
+    iimperative i;
 
-  imperative(const dezyne::locator&);
-  void i_e();
-};
-#endif
+    imperative(const locator&);
+    void i_e();
+  };
+}
+#endif // DEZYNE_IMPERATIVE_HH

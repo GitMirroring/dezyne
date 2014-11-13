@@ -21,26 +21,27 @@
 //
 // Code:
 
-#ifndef COMPONENT_MODELING_HH
-#define COMPONENT_MODELING_HH
+#ifndef DEZYNE_MODELING_HH
+#define DEZYNE_MODELING_HH
 
 #include "dummy.hh"
 #include "imodeling.hh"
 
 
-namespace dezyne {
+namespace dezyne
+{
   struct locator;
   struct runtime;
+
+  struct modeling
+  {
+    runtime& rt;
+    dummy p;
+    imodeling r;
+
+    modeling(const locator&);
+    void p_e();
+    void r_f();
+  };
 }
-
-struct modeling
-{
-  dezyne::runtime& rt;
-  dummy p;
-  imodeling r;
-
-  modeling(const dezyne::locator&);
-  void p_e();
-  void r_f();
-};
-#endif
+#endif // DEZYNE_MODELING_HH

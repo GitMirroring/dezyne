@@ -21,34 +21,31 @@
 //
 // Code:
 
-#ifndef INTERFACE_ICONSOLE_C3_HH
-#define INTERFACE_ICONSOLE_C3_HH
+#ifndef DEZYNE_ICONSOLE_HH
+#define DEZYNE_ICONSOLE_HH
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
 namespace dezyne
 {
-  using boost::function;
-  using boost::bind;
+
+  struct IConsole
+  {
+
+    struct
+    {
+      boost::function<void ()> arm;
+      boost::function<void ()> disarm;
+
+    } in;
+
+    struct
+    {
+      boost::function<void ()> detected;
+      boost::function<void ()> deactivated;
+
+    } out;
+  };
 }
-
-struct IConsole
-{
-
-  struct
-  {
-    dezyne::function<void ()> arm;
-    dezyne::function<void ()> disarm;
-
-  } in;
-
-  struct
-  {
-    dezyne::function<void ()> detected;
-    dezyne::function<void ()> deactivated;
-
-  } out;
-};
-
-#endif
+#endif // DEZYNE_ICONSOLE_HH

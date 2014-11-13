@@ -21,8 +21,8 @@
 //
 // Code:
 
-#ifndef COMPONENT_ALARMSYSTEM_HH
-#define COMPONENT_ALARMSYSTEM_HH
+#ifndef DEZYNE_ALARMSYSTEM_HH
+#define DEZYNE_ALARMSYSTEM_HH
 
 #include "Alarm.hh"
 #include "Sensor.hh"
@@ -32,18 +32,22 @@
 #include "IConsole.hh"
 
 
-namespace dezyne {
+namespace dezyne
+{
   struct locator;
 }
 
-struct AlarmSystem
+namespace dezyne
 {
-  Alarm alarm;
-  Sensor sensor;
-  Siren siren;
+  struct AlarmSystem
+  {
+    Alarm alarm;
+    Sensor sensor;
+    Siren siren;
 
-  IConsole& console;
+    IConsole& console;
 
-  AlarmSystem(const dezyne::locator&);
-};
-#endif
+    AlarmSystem(const dezyne::locator&);
+  };
+}
+#endif // DEZYNE_ALARMSYSTEM_HH

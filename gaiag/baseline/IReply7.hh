@@ -21,38 +21,35 @@
 //
 // Code:
 
-#ifndef INTERFACE_IREPLY7_C3_HH
-#define INTERFACE_IREPLY7_C3_HH
+#ifndef DEZYNE_IREPLY7_HH
+#define DEZYNE_IREPLY7_HH
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
 namespace dezyne
 {
-  using boost::function;
-  using boost::bind;
-}
 
-struct IReply7
-{
-  struct E
+  struct IReply7
   {
-    enum type
+    struct E
     {
-      A
+      enum type
+      {
+        A
+      };
     };
+
+    struct
+    {
+      boost::function<E::type ()> foo;
+
+    } in;
+
+    struct
+    {
+
+    } out;
   };
-
-  struct
-  {
-    dezyne::function<E::type ()> foo;
-
-  } in;
-
-  struct
-  {
-
-  } out;
-};
-
-#endif
+}
+#endif // DEZYNE_IREPLY7_HH

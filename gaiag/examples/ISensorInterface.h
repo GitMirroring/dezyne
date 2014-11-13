@@ -28,8 +28,6 @@
 
 #include <boost/shared_ptr.hpp>
 
-namespace dezyne
-{
 class ISensor
 {
 public:
@@ -51,5 +49,4 @@ public:
   virtual void RegisterCB(boost::shared_ptr<ISensorCB>) = 0;
   virtual void RegisterCB(boost::shared_ptr<asd::channels::ISingleThreaded>) = 0;
 };
-}
 #endif

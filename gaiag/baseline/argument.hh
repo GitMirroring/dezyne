@@ -21,25 +21,26 @@
 //
 // Code:
 
-#ifndef COMPONENT_ARGUMENT_HH
-#define COMPONENT_ARGUMENT_HH
+#ifndef DEZYNE_ARGUMENT_HH
+#define DEZYNE_ARGUMENT_HH
 
 #include "I.hh"
 
 
-namespace dezyne {
+namespace dezyne
+{
   struct locator;
   struct runtime;
+
+  struct argument
+  {
+    runtime& rt;
+    bool b;
+    I i;
+
+    argument(const locator&);
+    void i_e();
+    bool g(bool gc);
+  };
 }
-
-struct argument
-{
-  dezyne::runtime& rt;
-  bool b;
-  I i;
-
-  argument(const dezyne::locator&);
-  void i_e();
-  bool g(bool gc);
-};
-#endif
+#endif // DEZYNE_ARGUMENT_HH

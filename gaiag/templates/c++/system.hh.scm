@@ -1,5 +1,5 @@
-##ifndef COMPONENT_#.COMPONENT _HH
-##define COMPONENT_#.COMPONENT _HH
+##ifndef DEZYNE_#.COMPONENT _HH
+##define DEZYNE_#.COMPONENT _HH
 
 #(map (include-component #{
 ##include "#component .hh"
@@ -9,8 +9,10 @@
 ##include "#interface .hh"
 #}) (gom:ports model))
 
-#(if (pair? (injected-bindings model)) (list "#include \"locator.h\"") (list "namespace dezyne {\nstruct locator;\n}"))
+#(if (pair? (injected-bindings model)) (list "#include \"locator.h\"") (list "namespace dezyne\n {\nstruct locator;\n}"))
 
+namespace dezyne
+{
 struct #.model
 {
 #(map (lambda (binding) (list (.component (gom:instance model (injected-instance-name binding))) " "
@@ -24,4 +26,5 @@ struct #.model
 #}) ((compose .elements .ports) model))
   #.model (const dezyne::locator&);
 };
-##endif
+}
+##endif // DEZYNE_#.COMPONENT _HH

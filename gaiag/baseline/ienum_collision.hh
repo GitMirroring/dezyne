@@ -21,46 +21,43 @@
 //
 // Code:
 
-#ifndef INTERFACE_IENUM_COLLISION_C3_HH
-#define INTERFACE_IENUM_COLLISION_C3_HH
+#ifndef DEZYNE_IENUM_COLLISION_HH
+#define DEZYNE_IENUM_COLLISION_HH
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
 namespace dezyne
 {
-  using boost::function;
-  using boost::bind;
+
+  struct ienum_collision
+  {
+    struct Retval1
+    {
+      enum type
+      {
+        OK, NOK
+      };
+    };
+    struct Retval2
+    {
+      enum type
+      {
+        OK, NOK
+      };
+    };
+
+    struct
+    {
+      boost::function<Retval1::type ()> foo;
+      boost::function<Retval2::type ()> bar;
+
+    } in;
+
+    struct
+    {
+
+    } out;
+  };
 }
-
-struct ienum_collision
-{
-  struct Retval1
-  {
-    enum type
-    {
-      OK, NOK
-    };
-  };
-  struct Retval2
-  {
-    enum type
-    {
-      OK, NOK
-    };
-  };
-
-  struct
-  {
-    dezyne::function<Retval1::type ()> foo;
-    dezyne::function<Retval2::type ()> bar;
-
-  } in;
-
-  struct
-  {
-
-  } out;
-};
-
-#endif
+#endif // DEZYNE_IENUM_COLLISION_HH

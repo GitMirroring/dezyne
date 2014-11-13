@@ -26,24 +26,27 @@
 #include "locator.h"
 #include "runtime.h"
 
-incomplete_with_modeling_event::incomplete_with_modeling_event(const dezyne::locator& dezyne_locator)
-: rt(dezyne_locator.get<dezyne::runtime>())
-, p()
-, r()
+namespace dezyne
 {
-  p.in.e = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&incomplete_with_modeling_event::p_e, this)));
-  r.out.a = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&incomplete_with_modeling_event::r_a, this)));
+  incomplete_with_modeling_event::incomplete_with_modeling_event(const locator& dezyne_locator)
+  : rt(dezyne_locator.get<runtime>())
+  , p()
+  , r()
+  {
+    p.in.e = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&incomplete_with_modeling_event::p_e, this)));
+    r.out.a = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&incomplete_with_modeling_event::r_a, this)));
+  }
+
+  void incomplete_with_modeling_event::p_e()
+  {
+    std::cout << "incomplete_with_modeling_event.p_e" << std::endl;
+  }
+
+  void incomplete_with_modeling_event::r_a()
+  {
+    std::cout << "incomplete_with_modeling_event.r_a" << std::endl;
+    rt.defer(this, boost::bind(p.out.a));
+  }
+
+
 }
-
-void incomplete_with_modeling_event::p_e()
-{
-  std::cout << "incomplete_with_modeling_event.p_e" << std::endl;
-}
-
-void incomplete_with_modeling_event::r_a()
-{
-  std::cout << "incomplete_with_modeling_event.r_a" << std::endl;
-  rt.defer(this, dezyne::bind(p.out.a));
-}
-
-

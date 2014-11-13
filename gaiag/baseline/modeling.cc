@@ -26,26 +26,29 @@
 #include "locator.h"
 #include "runtime.h"
 
-modeling::modeling(const dezyne::locator& dezyne_locator)
-: rt(dezyne_locator.get<dezyne::runtime>())
-, p()
-, r()
+namespace dezyne
 {
-  p.in.e = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&modeling::p_e, this)));
-  r.out.f = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&modeling::r_f, this)));
-}
-
-void modeling::p_e()
-{
-  std::cout << "modeling.p_e" << std::endl;
-  r.in.e();
-}
-
-void modeling::r_f()
-{
-  std::cout << "modeling.r_f" << std::endl;
+  modeling::modeling(const locator& dezyne_locator)
+  : rt(dezyne_locator.get<runtime>())
+  , p()
+  , r()
   {
+    p.in.e = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&modeling::p_e, this)));
+    r.out.f = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&modeling::r_f, this)));
   }
+
+  void modeling::p_e()
+  {
+    std::cout << "modeling.p_e" << std::endl;
+    r.in.e();
+  }
+
+  void modeling::r_f()
+  {
+    std::cout << "modeling.r_f" << std::endl;
+    {
+    }
+  }
+
+
 }
-
-

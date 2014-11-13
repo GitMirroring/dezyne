@@ -21,25 +21,26 @@
 //
 // Code:
 
-#ifndef COMPONENT_EXTERN_HH
-#define COMPONENT_EXTERN_HH
+#ifndef DEZYNE_EXTERN_HH
+#define DEZYNE_EXTERN_HH
 
 #include "IExtern.hh"
 
 
-namespace dezyne {
+namespace dezyne
+{
   struct locator;
   struct runtime;
+
+  struct Extern
+  {
+    runtime& rt;
+    int i;
+    int j;
+    IExtern port;
+
+    Extern(const locator&);
+    void port_e();
+  };
 }
-
-struct Extern
-{
-  dezyne::runtime& rt;
-  int i;
-  int j;
-  IExtern port;
-
-  Extern(const dezyne::locator&);
-  void port_e();
-};
-#endif
+#endif // DEZYNE_EXTERN_HH

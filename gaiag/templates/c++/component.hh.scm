@@ -1,18 +1,18 @@
-##ifndef COMPONENT_#.COMPONENT _HH
-##define COMPONENT_#.COMPONENT _HH
+##ifndef DEZYNE_#.COMPONENT _HH
+##define DEZYNE_#.COMPONENT _HH
 
 #(map (include-interface #{
 ##include "#interface .hh"
 #}) (gom:ports model))
 
-namespace dezyne {
+namespace dezyne
+{
 struct locator;
 struct runtime;
-}
 
 struct #.model
 {
-    dezyne::runtime& rt;
+    runtime& rt;
     #(->string (map declare-enum (gom:enums (.behaviour model))))#
     (->string (map declare-integer (gom:integers (.behaviour model))))#
     (map (init-member model #{
@@ -22,7 +22,7 @@ struct #.model
     (map (init-port #{
 #interface  #name;
 #}) ((compose .elements .ports) model))
-    #.model (const dezyne::locator&);
+    #.model (const locator&);
 #(map
   (lambda (port)
     (map (define-on model port #{
@@ -38,4 +38,5 @@ struct #.model
 (map (define-function model #{
   #return-type  #name (#parameters);
 #}) (gom:functions model))};
-##endif
+}
+##endif // DEZYNE_#.COMPONENT _HH

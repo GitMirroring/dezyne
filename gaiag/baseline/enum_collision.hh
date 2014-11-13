@@ -21,26 +21,27 @@
 //
 // Code:
 
-#ifndef COMPONENT_ENUM_COLLISION_HH
-#define COMPONENT_ENUM_COLLISION_HH
+#ifndef DEZYNE_ENUM_COLLISION_HH
+#define DEZYNE_ENUM_COLLISION_HH
 
 #include "ienum_collision.hh"
 
 
-namespace dezyne {
+namespace dezyne
+{
   struct locator;
   struct runtime;
+
+  struct enum_collision
+  {
+    runtime& rt;
+    ienum_collision::Retval1::type reply_ienum_collision_Retval1;
+    ienum_collision::Retval2::type reply_ienum_collision_Retval2;
+    ienum_collision i;
+
+    enum_collision(const locator&);
+    ienum_collision::Retval1::type i_foo();
+    ienum_collision::Retval2::type i_bar();
+  };
 }
-
-struct enum_collision
-{
-  dezyne::runtime& rt;
-  ienum_collision::Retval1::type reply_ienum_collision_Retval1;
-  ienum_collision::Retval2::type reply_ienum_collision_Retval2;
-  ienum_collision i;
-
-  enum_collision(const dezyne::locator&);
-  ienum_collision::Retval1::type i_foo();
-  ienum_collision::Retval2::type i_bar();
-};
-#endif
+#endif // DEZYNE_ENUM_COLLISION_HH

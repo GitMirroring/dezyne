@@ -21,34 +21,31 @@
 //
 // Code:
 
-#ifndef INTERFACE_ISENSOR_C3_HH
-#define INTERFACE_ISENSOR_C3_HH
+#ifndef DEZYNE_ISENSOR_HH
+#define DEZYNE_ISENSOR_HH
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
 namespace dezyne
 {
-  using boost::function;
-  using boost::bind;
+
+  struct ISensor
+  {
+
+    struct
+    {
+      boost::function<void ()> enable;
+      boost::function<void ()> disable;
+
+    } in;
+
+    struct
+    {
+      boost::function<void ()> triggered;
+      boost::function<void ()> disabled;
+
+    } out;
+  };
 }
-
-struct ISensor
-{
-
-  struct
-  {
-    dezyne::function<void ()> enable;
-    dezyne::function<void ()> disable;
-
-  } in;
-
-  struct
-  {
-    dezyne::function<void ()> triggered;
-    dezyne::function<void ()> disabled;
-
-  } out;
-};
-
-#endif
+#endif // DEZYNE_ISENSOR_HH

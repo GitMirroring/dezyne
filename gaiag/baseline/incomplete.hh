@@ -21,26 +21,27 @@
 //
 // Code:
 
-#ifndef COMPONENT_INCOMPLETE_HH
-#define COMPONENT_INCOMPLETE_HH
+#ifndef DEZYNE_INCOMPLETE_HH
+#define DEZYNE_INCOMPLETE_HH
 
 #include "iincomplete.hh"
 #include "iincomplete.hh"
 
 
-namespace dezyne {
+namespace dezyne
+{
   struct locator;
   struct runtime;
+
+  struct incomplete
+  {
+    runtime& rt;
+    iincomplete p;
+    iincomplete r;
+
+    incomplete(const locator&);
+    void p_e();
+    void r_a();
+  };
 }
-
-struct incomplete
-{
-  dezyne::runtime& rt;
-  iincomplete p;
-  iincomplete r;
-
-  incomplete(const dezyne::locator&);
-  void p_e();
-  void r_a();
-};
-#endif
+#endif // DEZYNE_INCOMPLETE_HH

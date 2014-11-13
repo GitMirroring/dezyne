@@ -21,24 +21,25 @@
 //
 // Code:
 
-#ifndef COMPONENT_SENSOR_HH
-#define COMPONENT_SENSOR_HH
+#ifndef DEZYNE_SENSOR_HH
+#define DEZYNE_SENSOR_HH
 
 #include "ISensor.hh"
 
 
-namespace dezyne {
+namespace dezyne
+{
   struct locator;
   struct runtime;
+
+  struct Sensor
+  {
+    runtime& rt;
+    ISensor sensor;
+
+    Sensor(const locator&);
+    void sensor_enable();
+    void sensor_disable();
+  };
 }
-
-struct Sensor
-{
-  dezyne::runtime& rt;
-  ISensor sensor;
-
-  Sensor(const dezyne::locator&);
-  void sensor_enable();
-  void sensor_disable();
-};
-#endif
+#endif // DEZYNE_SENSOR_HH

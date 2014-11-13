@@ -21,32 +21,29 @@
 //
 // Code:
 
-#ifndef INTERFACE_REQUIRES_C3_HH
-#define INTERFACE_REQUIRES_C3_HH
+#ifndef DEZYNE_REQUIRES_HH
+#define DEZYNE_REQUIRES_HH
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
 namespace dezyne
 {
-  using boost::function;
-  using boost::bind;
+
+  struct Requires
+  {
+
+    struct
+    {
+      boost::function<void ()> ping;
+
+    } in;
+
+    struct
+    {
+      boost::function<void ()> pong;
+
+    } out;
+  };
 }
-
-struct Requires
-{
-
-  struct
-  {
-    dezyne::function<void ()> ping;
-
-  } in;
-
-  struct
-  {
-    dezyne::function<void ()> pong;
-
-  } out;
-};
-
-#endif
+#endif // DEZYNE_REQUIRES_HH

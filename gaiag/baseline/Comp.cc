@@ -26,113 +26,116 @@
 #include "locator.h"
 #include "runtime.h"
 
-Comp::Comp(const dezyne::locator& dezyne_locator)
-: rt(dezyne_locator.get<dezyne::runtime>())
-, s(State::Uninitialized)
-, client()
-, device_A()
+namespace dezyne
 {
-  client.in.initialize = dezyne::connect<IComp::result_t::type>(rt, this, dezyne::function<IComp::result_t::type()>(dezyne::bind<IComp::result_t::type>(&Comp::client_initialize, this)));
-  client.in.recover = dezyne::connect<IComp::result_t::type>(rt, this, dezyne::function<IComp::result_t::type()>(dezyne::bind<IComp::result_t::type>(&Comp::client_recover, this)));
-  client.in.perform_actions = dezyne::connect<IComp::result_t::type>(rt, this, dezyne::function<IComp::result_t::type()>(dezyne::bind<IComp::result_t::type>(&Comp::client_perform_actions, this)));
-}
-
-IComp::result_t::type Comp::client_initialize()
-{
-  std::cout << "Comp.client_initialize" << std::endl;
-  if (s == State::Uninitialized)
+  Comp::Comp(const locator& dezyne_locator)
+  : rt(dezyne_locator.get<runtime>())
+  , s(State::Uninitialized)
+  , client()
+  , device_A()
   {
+    client.in.initialize = connect<IComp::result_t::type>(rt, this, boost::function<IComp::result_t::type()>(boost::bind<IComp::result_t::type>(&Comp::client_initialize, this)));
+    client.in.recover = connect<IComp::result_t::type>(rt, this, boost::function<IComp::result_t::type()>(boost::bind<IComp::result_t::type>(&Comp::client_recover, this)));
+    client.in.perform_actions = connect<IComp::result_t::type>(rt, this, boost::function<IComp::result_t::type()>(boost::bind<IComp::result_t::type>(&Comp::client_perform_actions, this)));
+  }
+
+  IComp::result_t::type Comp::client_initialize()
+  {
+    std::cout << "Comp.client_initialize" << std::endl;
+    if (s == State::Uninitialized)
     {
-      IDevice::result_t::type res = device_A.in.initialize ();
-      if (res == IDevice::result_t::OK)
       {
-        res = device_A.in.calibrate ();
-      }
-      if (res == IDevice::result_t::OK)
-      {
-        s = State::Initialized;
-        reply_IDevice_result_t = IDevice::result_t::OK;
-      }
-      else
-      {
-        s = State::Uninitialized;
-        reply_IDevice_result_t = IDevice::result_t::NOK;
+        IDevice::result_t::type res = device_A.in.initialize ();
+        if (res == IDevice::result_t::OK)
+        {
+          res = device_A.in.calibrate ();
+        }
+        if (res == IDevice::result_t::OK)
+        {
+          s = State::Initialized;
+          reply_IDevice_result_t = IDevice::result_t::OK;
+        }
+        else
+        {
+          s = State::Uninitialized;
+          reply_IDevice_result_t = IDevice::result_t::NOK;
+        }
       }
     }
-  }
-  else if (s == State::Initialized)
-  {
-    assert(false);
-  }
-  else if (s == State::Error)
-  {
-    assert(false);
-  }
-  return reply_IComp_result_t;
-}
-
-IComp::result_t::type Comp::client_recover()
-{
-  std::cout << "Comp.client_recover" << std::endl;
-  if (s == State::Uninitialized)
-  {
-    assert(false);
-  }
-  else if (s == State::Initialized)
-  {
-    assert(false);
-  }
-  else if (s == State::Error)
-  {
+    else if (s == State::Initialized)
     {
-      IDevice::result_t::type res = device_A.in.calibrate ();
-      if (res == IDevice::result_t::OK)
+      assert(false);
+    }
+    else if (s == State::Error)
+    {
+      assert(false);
+    }
+    return reply_IComp_result_t;
+  }
+
+  IComp::result_t::type Comp::client_recover()
+  {
+    std::cout << "Comp.client_recover" << std::endl;
+    if (s == State::Uninitialized)
+    {
+      assert(false);
+    }
+    else if (s == State::Initialized)
+    {
+      assert(false);
+    }
+    else if (s == State::Error)
+    {
       {
-        s = State::Initialized;
-        reply_IDevice_result_t = IDevice::result_t::OK;
-      }
-      else
-      {
-        s = State::Error;
-        reply_IDevice_result_t = IDevice::result_t::NOK;
+        IDevice::result_t::type res = device_A.in.calibrate ();
+        if (res == IDevice::result_t::OK)
+        {
+          s = State::Initialized;
+          reply_IDevice_result_t = IDevice::result_t::OK;
+        }
+        else
+        {
+          s = State::Error;
+          reply_IDevice_result_t = IDevice::result_t::NOK;
+        }
       }
     }
+    return reply_IComp_result_t;
   }
-  return reply_IComp_result_t;
-}
 
-IComp::result_t::type Comp::client_perform_actions()
-{
-  std::cout << "Comp.client_perform_actions" << std::endl;
-  if (s == State::Uninitialized)
+  IComp::result_t::type Comp::client_perform_actions()
   {
-    assert(false);
-  }
-  else if (s == State::Initialized)
-  {
+    std::cout << "Comp.client_perform_actions" << std::endl;
+    if (s == State::Uninitialized)
     {
-      IDevice::result_t::type res = device_A.in.perform_action1 ();
-      if (res == IDevice::result_t::OK)
+      assert(false);
+    }
+    else if (s == State::Initialized)
+    {
       {
-        res = device_A.in.perform_action2 ();
-      }
-      if (res == IDevice::result_t::OK)
-      {
-        s = State::Initialized;
-        reply_IDevice_result_t = IDevice::result_t::OK;
-      }
-      else
-      {
-        s = State::Error;
-        reply_IDevice_result_t = IDevice::result_t::NOK;
+        IDevice::result_t::type res = device_A.in.perform_action1 ();
+        if (res == IDevice::result_t::OK)
+        {
+          res = device_A.in.perform_action2 ();
+        }
+        if (res == IDevice::result_t::OK)
+        {
+          s = State::Initialized;
+          reply_IDevice_result_t = IDevice::result_t::OK;
+        }
+        else
+        {
+          s = State::Error;
+          reply_IDevice_result_t = IDevice::result_t::NOK;
+        }
       }
     }
+    else if (s == State::Error)
+    {
+      assert(false);
+    }
+    return reply_IComp_result_t;
   }
-  else if (s == State::Error)
-  {
-    assert(false);
-  }
-  return reply_IComp_result_t;
+
+
 }
-
-

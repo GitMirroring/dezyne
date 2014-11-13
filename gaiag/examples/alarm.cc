@@ -42,7 +42,7 @@ int main()
 {
   dezyne::runtime runtime;
   dezyne::locator locator;
-  AlarmSystem alarmsystem(locator.set(runtime));
+  dezyne::AlarmSystem alarmsystem(locator.set(runtime));
 
   alarmsystem.console.out.detected = detected;
   alarmsystem.console.out.deactivated = deactivated;

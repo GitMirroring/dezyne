@@ -21,24 +21,25 @@
 //
 // Code:
 
-#ifndef COMPONENT_TESTBOOLEAN_HH
-#define COMPONENT_TESTBOOLEAN_HH
+#ifndef DEZYNE_TESTBOOLEAN_HH
+#define DEZYNE_TESTBOOLEAN_HH
 
 #include "TestBool.hh"
 
 
-namespace dezyne {
+namespace dezyne
+{
   struct locator;
   struct runtime;
+
+  struct testBoolean
+  {
+    runtime& rt;
+    bool b;
+    TestBool i;
+
+    testBoolean(const locator&);
+    void i_evt();
+  };
 }
-
-struct testBoolean
-{
-  dezyne::runtime& rt;
-  bool b;
-  TestBool i;
-
-  testBoolean(const dezyne::locator&);
-  void i_evt();
-};
-#endif
+#endif // DEZYNE_TESTBOOLEAN_HH

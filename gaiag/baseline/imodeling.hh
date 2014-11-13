@@ -21,32 +21,29 @@
 //
 // Code:
 
-#ifndef INTERFACE_IMODELING_C3_HH
-#define INTERFACE_IMODELING_C3_HH
+#ifndef DEZYNE_IMODELING_HH
+#define DEZYNE_IMODELING_HH
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
 namespace dezyne
 {
-  using boost::function;
-  using boost::bind;
+
+  struct imodeling
+  {
+
+    struct
+    {
+      boost::function<void ()> e;
+
+    } in;
+
+    struct
+    {
+      boost::function<void ()> f;
+
+    } out;
+  };
 }
-
-struct imodeling
-{
-
-  struct
-  {
-    dezyne::function<void ()> e;
-
-  } in;
-
-  struct
-  {
-    dezyne::function<void ()> f;
-
-  } out;
-};
-
-#endif
+#endif // DEZYNE_IMODELING_HH

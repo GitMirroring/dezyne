@@ -21,41 +21,42 @@
 //
 // Code:
 
-#ifndef COMPONENT_DATAPARAM_HH
-#define COMPONENT_DATAPARAM_HH
+#ifndef DEZYNE_DATAPARAM_HH
+#define DEZYNE_DATAPARAM_HH
 
 #include "IDataparam.hh"
 
 
-namespace dezyne {
+namespace dezyne
+{
   struct locator;
   struct runtime;
+
+  struct Dataparam
+  {
+    runtime& rt;
+    int mi;
+    IDataparam::Status::type s;
+    IDataparam::Status::type reply_IDataparam_Status;
+    IDataparam port;
+
+    Dataparam(const locator&);
+    void port_e0();
+    IDataparam::Status::type port_e0r();
+    void port_e(int i);
+    IDataparam::Status::type port_er(int i);
+    IDataparam::Status::type port_eer(int i, int j);
+    void port_eo(int& i);
+    void port_eoo(int& i, int& j);
+    void port_eio(int i, int& j);
+    void port_eio2(int& i);
+    IDataparam::Status::type port_eor(int& i);
+    IDataparam::Status::type port_eoor(int& i, int& j);
+    IDataparam::Status::type port_eior(int i, int& j);
+    IDataparam::Status::type port_eio2r(int& i);
+    IDataparam::Status::type fun();
+    IDataparam::Status::type funx(int xi);
+    int xfunx(int xi, int xj);
+  };
 }
-
-struct Dataparam
-{
-  dezyne::runtime& rt;
-  int mi;
-  IDataparam::Status::type s;
-  IDataparam::Status::type reply_IDataparam_Status;
-  IDataparam port;
-
-  Dataparam(const dezyne::locator&);
-  void port_e0();
-  IDataparam::Status::type port_e0r();
-  void port_e(int i);
-  IDataparam::Status::type port_er(int i);
-  IDataparam::Status::type port_eer(int i, int j);
-  void port_eo(int& i);
-  void port_eoo(int& i, int& j);
-  void port_eio(int i, int& j);
-  void port_eio2(int& i);
-  IDataparam::Status::type port_eor(int& i);
-  IDataparam::Status::type port_eoor(int& i, int& j);
-  IDataparam::Status::type port_eior(int i, int& j);
-  IDataparam::Status::type port_eio2r(int& i);
-  IDataparam::Status::type fun();
-  IDataparam::Status::type funx(int xi);
-  int xfunx(int xi, int xj);
-};
-#endif
+#endif // DEZYNE_DATAPARAM_HH

@@ -23,16 +23,19 @@
 
 #include "provides_twice.hh"
 
-template<typename Port>
-void connect(Port& provided, Port& required)
+namespace dezyne
 {
-  provided.out = required.out;
-  required.in = provided.in;
-}
+  template<typename Port>
+  void connect(Port& provided, Port& required)
+  {
+    provided.out = required.out;
+    required.in = provided.in;
+  }
 
-provides_twice::provides_twice(const dezyne::locator& dezyne_locator)
-: one(dezyne_locator)
-, i(one.i)
-, ii(one.ii)
-{
+  provides_twice::provides_twice(const dezyne::locator& dezyne_locator)
+  : one(dezyne_locator)
+  , i(one.i)
+  , ii(one.ii)
+  {
+  }
 }

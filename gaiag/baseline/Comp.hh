@@ -21,37 +21,38 @@
 //
 // Code:
 
-#ifndef COMPONENT_COMP_HH
-#define COMPONENT_COMP_HH
+#ifndef DEZYNE_COMP_HH
+#define DEZYNE_COMP_HH
 
 #include "IComp.hh"
 #include "IDevice.hh"
 
 
-namespace dezyne {
+namespace dezyne
+{
   struct locator;
   struct runtime;
-}
 
-struct Comp
-{
-  dezyne::runtime& rt;
-  struct State
+  struct Comp
   {
-    enum type
+    runtime& rt;
+    struct State
     {
-      Uninitialized, Initialized, Error
+      enum type
+      {
+        Uninitialized, Initialized, Error
+      };
     };
-  };
-  Comp::State::type s;
-  IComp::result_t::type reply_IComp_result_t;
-  IDevice::result_t::type reply_IDevice_result_t;
-  IComp client;
-  IDevice device_A;
+    Comp::State::type s;
+    IComp::result_t::type reply_IComp_result_t;
+    IDevice::result_t::type reply_IDevice_result_t;
+    IComp client;
+    IDevice device_A;
 
-  Comp(const dezyne::locator&);
-  IComp::result_t::type client_initialize();
-  IComp::result_t::type client_recover();
-  IComp::result_t::type client_perform_actions();
-};
-#endif
+    Comp(const locator&);
+    IComp::result_t::type client_initialize();
+    IComp::result_t::type client_recover();
+    IComp::result_t::type client_perform_actions();
+  };
+}
+#endif // DEZYNE_COMP_HH

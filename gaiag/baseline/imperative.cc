@@ -26,49 +26,52 @@
 #include "locator.h"
 #include "runtime.h"
 
-imperative::imperative(const dezyne::locator& dezyne_locator)
-: rt(dezyne_locator.get<dezyne::runtime>())
-, state(States::I)
-, i()
+namespace dezyne
 {
-  i.in.e = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&imperative::i_e, this)));
+  imperative::imperative(const locator& dezyne_locator)
+  : rt(dezyne_locator.get<runtime>())
+  , state(States::I)
+  , i()
+  {
+    i.in.e = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&imperative::i_e, this)));
+  }
+
+  void imperative::i_e()
+  {
+    std::cout << "imperative.i_e" << std::endl;
+    if (state == States::I)
+    {
+      {
+        rt.defer(this, boost::bind(i.out.f));
+        rt.defer(this, boost::bind(i.out.g));
+        rt.defer(this, boost::bind(i.out.h));
+        state = States::II;
+      }
+    }
+    else if (state == States::II)
+    {
+      {
+        state = States::III;
+      }
+    }
+    else if (state == States::III)
+    {
+      {
+        rt.defer(this, boost::bind(i.out.f));
+        rt.defer(this, boost::bind(i.out.g));
+        rt.defer(this, boost::bind(i.out.g));
+        rt.defer(this, boost::bind(i.out.f));
+        state = States::IV;
+      }
+    }
+    else if (state == States::IV)
+    {
+      {
+        rt.defer(this, boost::bind(i.out.h));
+        state = States::I;
+      }
+    }
+  }
+
+
 }
-
-void imperative::i_e()
-{
-  std::cout << "imperative.i_e" << std::endl;
-  if (state == States::I)
-  {
-    {
-      rt.defer(this, dezyne::bind(i.out.f));
-      rt.defer(this, dezyne::bind(i.out.g));
-      rt.defer(this, dezyne::bind(i.out.h));
-      state = States::II;
-    }
-  }
-  else if (state == States::II)
-  {
-    {
-      state = States::III;
-    }
-  }
-  else if (state == States::III)
-  {
-    {
-      rt.defer(this, dezyne::bind(i.out.f));
-      rt.defer(this, dezyne::bind(i.out.g));
-      rt.defer(this, dezyne::bind(i.out.g));
-      rt.defer(this, dezyne::bind(i.out.f));
-      state = States::IV;
-    }
-  }
-  else if (state == States::IV)
-  {
-    {
-      rt.defer(this, dezyne::bind(i.out.h));
-      state = States::I;
-    }
-  }
-}
-
-

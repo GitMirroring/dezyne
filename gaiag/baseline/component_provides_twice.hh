@@ -21,23 +21,24 @@
 //
 // Code:
 
-#ifndef COMPONENT_COMPONENT_PROVIDES_TWICE_HH
-#define COMPONENT_COMPONENT_PROVIDES_TWICE_HH
+#ifndef DEZYNE_COMPONENT_PROVIDES_TWICE_HH
+#define DEZYNE_COMPONENT_PROVIDES_TWICE_HH
 
 #include "iprovides_once.hh"
 
 
-namespace dezyne {
+namespace dezyne
+{
   struct locator;
   struct runtime;
+
+  struct component_provides_twice
+  {
+    runtime& rt;
+    iprovides_once i;
+
+    component_provides_twice(const locator&);
+    void i_foo();
+  };
 }
-
-struct component_provides_twice
-{
-  dezyne::runtime& rt;
-  iprovides_once i;
-
-  component_provides_twice(const dezyne::locator&);
-  void i_foo();
-};
-#endif
+#endif // DEZYNE_COMPONENT_PROVIDES_TWICE_HH

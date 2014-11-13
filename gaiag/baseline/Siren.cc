@@ -26,22 +26,25 @@
 #include "locator.h"
 #include "runtime.h"
 
-Siren::Siren(const dezyne::locator& dezyne_locator)
-: rt(dezyne_locator.get<dezyne::runtime>())
-, siren()
+namespace dezyne
 {
-  siren.in.turnon = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&Siren::siren_turnon, this)));
-  siren.in.turnoff = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&Siren::siren_turnoff, this)));
+  Siren::Siren(const locator& dezyne_locator)
+  : rt(dezyne_locator.get<runtime>())
+  , siren()
+  {
+    siren.in.turnon = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&Siren::siren_turnon, this)));
+    siren.in.turnoff = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&Siren::siren_turnoff, this)));
+  }
+
+  void Siren::siren_turnon()
+  {
+    std::cout << "Siren.siren_turnon" << std::endl;
+  }
+
+  void Siren::siren_turnoff()
+  {
+    std::cout << "Siren.siren_turnoff" << std::endl;
+  }
+
+
 }
-
-void Siren::siren_turnon()
-{
-  std::cout << "Siren.siren_turnon" << std::endl;
-}
-
-void Siren::siren_turnoff()
-{
-  std::cout << "Siren.siren_turnoff" << std::endl;
-}
-
-

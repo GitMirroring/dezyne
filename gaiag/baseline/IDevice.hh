@@ -21,41 +21,38 @@
 //
 // Code:
 
-#ifndef INTERFACE_IDEVICE_C3_HH
-#define INTERFACE_IDEVICE_C3_HH
+#ifndef DEZYNE_IDEVICE_HH
+#define DEZYNE_IDEVICE_HH
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
 namespace dezyne
 {
-  using boost::function;
-  using boost::bind;
-}
 
-struct IDevice
-{
-  struct result_t
+  struct IDevice
   {
-    enum type
+    struct result_t
     {
-      OK, NOK
+      enum type
+      {
+        OK, NOK
+      };
     };
+
+    struct
+    {
+      boost::function<result_t::type ()> initialize;
+      boost::function<result_t::type ()> calibrate;
+      boost::function<result_t::type ()> perform_action1;
+      boost::function<result_t::type ()> perform_action2;
+
+    } in;
+
+    struct
+    {
+
+    } out;
   };
-
-  struct
-  {
-    dezyne::function<result_t::type ()> initialize;
-    dezyne::function<result_t::type ()> calibrate;
-    dezyne::function<result_t::type ()> perform_action1;
-    dezyne::function<result_t::type ()> perform_action2;
-
-  } in;
-
-  struct
-  {
-
-  } out;
-};
-
-#endif
+}
+#endif // DEZYNE_IDEVICE_HH

@@ -21,40 +21,37 @@
 //
 // Code:
 
-#ifndef INTERFACE_ICOMP_C3_HH
-#define INTERFACE_ICOMP_C3_HH
+#ifndef DEZYNE_ICOMP_HH
+#define DEZYNE_ICOMP_HH
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
 namespace dezyne
 {
-  using boost::function;
-  using boost::bind;
-}
 
-struct IComp
-{
-  struct result_t
+  struct IComp
   {
-    enum type
+    struct result_t
     {
-      OK, NOK
+      enum type
+      {
+        OK, NOK
+      };
     };
+
+    struct
+    {
+      boost::function<result_t::type ()> initialize;
+      boost::function<result_t::type ()> recover;
+      boost::function<result_t::type ()> perform_actions;
+
+    } in;
+
+    struct
+    {
+
+    } out;
   };
-
-  struct
-  {
-    dezyne::function<result_t::type ()> initialize;
-    dezyne::function<result_t::type ()> recover;
-    dezyne::function<result_t::type ()> perform_actions;
-
-  } in;
-
-  struct
-  {
-
-  } out;
-};
-
-#endif
+}
+#endif // DEZYNE_ICOMP_HH

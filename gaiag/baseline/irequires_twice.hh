@@ -21,32 +21,29 @@
 //
 // Code:
 
-#ifndef INTERFACE_IREQUIRES_TWICE_C3_HH
-#define INTERFACE_IREQUIRES_TWICE_C3_HH
+#ifndef DEZYNE_IREQUIRES_TWICE_HH
+#define DEZYNE_IREQUIRES_TWICE_HH
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
 namespace dezyne
 {
-  using boost::function;
-  using boost::bind;
+
+  struct irequires_twice
+  {
+
+    struct
+    {
+      boost::function<void ()> e;
+
+    } in;
+
+    struct
+    {
+      boost::function<void ()> a;
+
+    } out;
+  };
 }
-
-struct irequires_twice
-{
-
-  struct
-  {
-    dezyne::function<void ()> e;
-
-  } in;
-
-  struct
-  {
-    dezyne::function<void ()> a;
-
-  } out;
-};
-
-#endif
+#endif // DEZYNE_IREQUIRES_TWICE_HH

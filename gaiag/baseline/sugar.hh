@@ -21,31 +21,32 @@
 //
 // Code:
 
-#ifndef COMPONENT_SUGAR_HH
-#define COMPONENT_SUGAR_HH
+#ifndef DEZYNE_SUGAR_HH
+#define DEZYNE_SUGAR_HH
 
 #include "I.hh"
 
 
-namespace dezyne {
+namespace dezyne
+{
   struct locator;
   struct runtime;
-}
 
-struct sugar
-{
-  dezyne::runtime& rt;
-  struct Enum
+  struct sugar
   {
-    enum type
+    runtime& rt;
+    struct Enum
     {
-      False, True
+      enum type
+      {
+        False, True
+      };
     };
-  };
-  sugar::Enum::type s;
-  I i;
+    sugar::Enum::type s;
+    I i;
 
-  sugar(const dezyne::locator&);
-  void i_e();
-};
-#endif
+    sugar(const locator&);
+    void i_e();
+  };
+}
+#endif // DEZYNE_SUGAR_HH

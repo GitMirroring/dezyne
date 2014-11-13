@@ -34,11 +34,11 @@ bool& runtime::handling(void* scope)
 
 void runtime::flush(void* scope)
 {
-  std::map<void*, std::pair<bool, std::queue<function<void()> > > >& qs = queues;
-  std::map<void*, std::pair<bool, std::queue<function<void()> > > >::iterator it = qs.find(scope);
+  std::map<void*, std::pair<bool, std::queue<boost::function<void()> > > >& qs = queues;
+  std::map<void*, std::pair<bool, std::queue<boost::function<void()> > > >::iterator it = qs.find(scope);
   if(it != qs.end())
   {
-    std::queue<function<void()> >& q = it->second.second;
+    std::queue<boost::function<void()> >& q = it->second.second;
     while(not q.empty())
     {
       q.front()();
@@ -47,12 +47,12 @@ void runtime::flush(void* scope)
   }
 }
 
-void runtime::defer(void* scope, const function<void()>& event)
+void runtime::defer(void* scope, const boost::function<void()>& event)
 {
   queues[scope].second.push(event);
 }
 
-void runtime::handle_event(void* scope, const function<void()>& event)
+void runtime::handle_event(void* scope, const boost::function<void()>& event)
 {
   bool& handle = handling(scope);
   if(not handle)

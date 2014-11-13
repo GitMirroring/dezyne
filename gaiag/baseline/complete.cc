@@ -26,29 +26,32 @@
 #include "locator.h"
 #include "runtime.h"
 
-complete::complete(const dezyne::locator& dezyne_locator)
-: rt(dezyne_locator.get<dezyne::runtime>())
-, p()
-, r()
+namespace dezyne
 {
-  p.in.e = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&complete::p_e, this)));
-  r.out.a = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&complete::r_a, this)));
-}
-
-void complete::p_e()
-{
-  std::cout << "complete.p_e" << std::endl;
+  complete::complete(const locator& dezyne_locator)
+  : rt(dezyne_locator.get<runtime>())
+  , p()
+  , r()
   {
-    r.in.e();
+    p.in.e = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&complete::p_e, this)));
+    r.out.a = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&complete::r_a, this)));
   }
-}
 
-void complete::r_a()
-{
-  std::cout << "complete.r_a" << std::endl;
+  void complete::p_e()
   {
-    rt.defer(this, dezyne::bind(p.out.a));
+    std::cout << "complete.p_e" << std::endl;
+    {
+      r.in.e();
+    }
   }
+
+  void complete::r_a()
+  {
+    std::cout << "complete.r_a" << std::endl;
+    {
+      rt.defer(this, boost::bind(p.out.a));
+    }
+  }
+
+
 }
-
-

@@ -26,39 +26,42 @@
 #include "locator.h"
 #include "runtime.h"
 
-requires_twice::requires_twice(const dezyne::locator& dezyne_locator)
-: rt(dezyne_locator.get<dezyne::runtime>())
-, p()
-, once()
-, twice()
+namespace dezyne
 {
-  p.in.e = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&requires_twice::p_e, this)));
-  once.out.a = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&requires_twice::once_a, this)));
-  twice.out.a = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&requires_twice::twice_a, this)));
-}
-
-void requires_twice::p_e()
-{
-  std::cout << "requires_twice.p_e" << std::endl;
+  requires_twice::requires_twice(const locator& dezyne_locator)
+  : rt(dezyne_locator.get<runtime>())
+  , p()
+  , once()
+  , twice()
   {
-    once.in.e();
-    twice.in.e();
+    p.in.e = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&requires_twice::p_e, this)));
+    once.out.a = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&requires_twice::once_a, this)));
+    twice.out.a = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&requires_twice::twice_a, this)));
   }
-}
 
-void requires_twice::once_a()
-{
-  std::cout << "requires_twice.once_a" << std::endl;
+  void requires_twice::p_e()
   {
+    std::cout << "requires_twice.p_e" << std::endl;
+    {
+      once.in.e();
+      twice.in.e();
+    }
   }
-}
 
-void requires_twice::twice_a()
-{
-  std::cout << "requires_twice.twice_a" << std::endl;
+  void requires_twice::once_a()
   {
-    rt.defer(this, dezyne::bind(p.out.a));
+    std::cout << "requires_twice.once_a" << std::endl;
+    {
+    }
   }
+
+  void requires_twice::twice_a()
+  {
+    std::cout << "requires_twice.twice_a" << std::endl;
+    {
+      rt.defer(this, boost::bind(p.out.a));
+    }
+  }
+
+
 }
-
-

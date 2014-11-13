@@ -21,27 +21,28 @@
 //
 // Code:
 
-#ifndef COMPONENT_REPLY7_HH
-#define COMPONENT_REPLY7_HH
+#ifndef DEZYNE_REPLY7_HH
+#define DEZYNE_REPLY7_HH
 
 #include "IReply7.hh"
 #include "IReply7.hh"
 
 
-namespace dezyne {
+namespace dezyne
+{
   struct locator;
   struct runtime;
+
+  struct Reply7
+  {
+    runtime& rt;
+    IReply7::E::type reply_IReply7_E;
+    IReply7 p;
+    IReply7 r;
+
+    Reply7(const locator&);
+    IReply7::E::type p_foo();
+    void f();
+  };
 }
-
-struct Reply7
-{
-  dezyne::runtime& rt;
-  IReply7::E::type reply_IReply7_E;
-  IReply7 p;
-  IReply7 r;
-
-  Reply7(const dezyne::locator&);
-  IReply7::E::type p_foo();
-  void f();
-};
-#endif
+#endif // DEZYNE_REPLY7_HH

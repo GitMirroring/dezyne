@@ -21,32 +21,29 @@
 //
 // Code:
 
-#ifndef INTERFACE_I_C3_HH
-#define INTERFACE_I_C3_HH
+#ifndef DEZYNE_I_HH
+#define DEZYNE_I_HH
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
 namespace dezyne
 {
-  using boost::function;
-  using boost::bind;
+
+  struct I
+  {
+
+    struct
+    {
+      boost::function<void ()> e;
+
+    } in;
+
+    struct
+    {
+      boost::function<void ()> a;
+
+    } out;
+  };
 }
-
-struct I
-{
-
-  struct
-  {
-    dezyne::function<void ()> e;
-
-  } in;
-
-  struct
-  {
-    dezyne::function<void ()> a;
-
-  } out;
-};
-
-#endif
+#endif // DEZYNE_I_HH

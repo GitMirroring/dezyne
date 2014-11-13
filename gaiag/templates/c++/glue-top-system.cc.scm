@@ -10,8 +10,6 @@
 ##include <boost/enable_shared_from_this.hpp>
 ##include <boost/make_shared.hpp>
 
-namespace dezyne
-{
 inline void push(boost::shared_ptr<asd::channels::ISingleThreaded> st, boost::function<void()> cb)
 {
   cb(); if(st) st->processCBs();
@@ -21,7 +19,7 @@ struct #.model Glue
 : public #.model Component
 , public boost::enable_shared_from_this<#.model Glue>
 {
-  ::#.model  component;
+  dezyne::#.model  component;
 
 #(define (api port) (->string (list (.type port) "_API")))
 #(define (cb port) (->string (list (.type port) "_CB")))
@@ -33,8 +31,8 @@ struct #.model Glue
                (port-type (.type (gom:port model))))
           (list "struct " component "\n: public " interface "\n"
                 "{\n"
-                "::" port-type "& api;\n"
-                component "(::" port-type "& api)\n"
+                "dezyne::" port-type "& api;\n"
+                component "(dezyne::" port-type "& api)\n"
                 ": api(api)\n"
                 "{}\n"
                 (map
@@ -62,7 +60,7 @@ struct #.model Glue
       ((gen1-interfaces gom:out?) (gom:interface model)))
 boost::shared_ptr<asd::channels::ISingleThreaded> st;
 
-#.model Glue (const locator& l)
+#.model Glue (const dezyne::locator& l)
 : component(l)
 #(map (lambda (alist)
         (let* ((entry (car alist))
@@ -122,4 +120,3 @@ boost::shared_ptr<#(.type (gom:port model)) Interface> #.model Component::GetIns
   return boost::make_shared<#.model Glue> (dezyne_locator);
 }
 void #.model Component::ReleaseInstance () {}
-}

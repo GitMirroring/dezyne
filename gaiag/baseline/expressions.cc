@@ -26,48 +26,51 @@
 #include "locator.h"
 #include "runtime.h"
 
-expressions::expressions(const dezyne::locator& dezyne_locator)
-: rt(dezyne_locator.get<dezyne::runtime>())
-, state(3)
-, c(0)
-, i()
+namespace dezyne
 {
-  i.in.e = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&expressions::i_e, this)));
-}
-
-void expressions::i_e()
-{
-  std::cout << "expressions.i_e" << std::endl;
-  if (true)
+  expressions::expressions(const locator& dezyne_locator)
+  : rt(dezyne_locator.get<runtime>())
+  , state(3)
+  , c(0)
+  , i()
   {
-    if (state == 0)
+    i.in.e = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&expressions::i_e, this)));
+  }
+
+  void expressions::i_e()
+  {
+    std::cout << "expressions.i_e" << std::endl;
+    if (true)
     {
-      state = 3;
-      rt.defer(this, dezyne::bind(i.out.a));
-    }
-    else
-    {
-      state = state - 1;
-      if (c < state)
+      if (state == 0)
       {
-        c = c + 1;
+        state = 3;
+        rt.defer(this, boost::bind(i.out.a));
       }
       else
       {
-        if (c <= (state + 1))
+        state = state - 1;
+        if (c < state)
         {
-          rt.defer(this, dezyne::bind(i.out.lo));
+          c = c + 1;
         }
         else
         {
-          if (c > state)
+          if (c <= (state + 1))
           {
-            rt.defer(this, dezyne::bind(i.out.hi));
+            rt.defer(this, boost::bind(i.out.lo));
+          }
+          else
+          {
+            if (c > state)
+            {
+              rt.defer(this, boost::bind(i.out.hi));
+            }
           }
         }
       }
     }
   }
+
+
 }
-
-

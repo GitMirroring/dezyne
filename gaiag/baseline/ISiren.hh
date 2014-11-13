@@ -21,32 +21,29 @@
 //
 // Code:
 
-#ifndef INTERFACE_ISIREN_C3_HH
-#define INTERFACE_ISIREN_C3_HH
+#ifndef DEZYNE_ISIREN_HH
+#define DEZYNE_ISIREN_HH
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
 namespace dezyne
 {
-  using boost::function;
-  using boost::bind;
+
+  struct ISiren
+  {
+
+    struct
+    {
+      boost::function<void ()> turnon;
+      boost::function<void ()> turnoff;
+
+    } in;
+
+    struct
+    {
+
+    } out;
+  };
 }
-
-struct ISiren
-{
-
-  struct
-  {
-    dezyne::function<void ()> turnon;
-    dezyne::function<void ()> turnoff;
-
-  } in;
-
-  struct
-  {
-
-  } out;
-};
-
-#endif
+#endif // DEZYNE_ISIREN_HH

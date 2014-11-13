@@ -26,24 +26,27 @@
 #include "locator.h"
 #include "runtime.h"
 
-Reply7::Reply7(const dezyne::locator& dezyne_locator)
-: rt(dezyne_locator.get<dezyne::runtime>())
-, p()
-, r()
+namespace dezyne
 {
-  p.in.foo = dezyne::connect<IReply7::E::type>(rt, this, dezyne::function<IReply7::E::type()>(dezyne::bind<IReply7::E::type>(&Reply7::p_foo, this)));
-}
+  Reply7::Reply7(const locator& dezyne_locator)
+  : rt(dezyne_locator.get<runtime>())
+  , p()
+  , r()
+  {
+    p.in.foo = connect<IReply7::E::type>(rt, this, boost::function<IReply7::E::type()>(boost::bind<IReply7::E::type>(&Reply7::p_foo, this)));
+  }
 
-IReply7::E::type Reply7::p_foo()
-{
-  std::cout << "Reply7.p_foo" << std::endl;
-  f ();
-  return reply_IReply7_E;
-}
+  IReply7::E::type Reply7::p_foo()
+  {
+    std::cout << "Reply7.p_foo" << std::endl;
+    f ();
+    return reply_IReply7_E;
+  }
 
-void Reply7::f()
-{
-  IReply7::E::type v = r.in.foo ();
-  reply_IReply7_E = v;
-}
+  void Reply7::f()
+  {
+    IReply7::E::type v = r.in.foo ();
+    reply_IReply7_E = v;
+  }
 
+}

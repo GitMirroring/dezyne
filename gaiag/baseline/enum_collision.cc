@@ -26,26 +26,29 @@
 #include "locator.h"
 #include "runtime.h"
 
-enum_collision::enum_collision(const dezyne::locator& dezyne_locator)
-: rt(dezyne_locator.get<dezyne::runtime>())
-, i()
+namespace dezyne
 {
-  i.in.foo = dezyne::connect<ienum_collision::Retval1::type>(rt, this, dezyne::function<ienum_collision::Retval1::type()>(dezyne::bind<ienum_collision::Retval1::type>(&enum_collision::i_foo, this)));
-  i.in.bar = dezyne::connect<ienum_collision::Retval2::type>(rt, this, dezyne::function<ienum_collision::Retval2::type()>(dezyne::bind<ienum_collision::Retval2::type>(&enum_collision::i_bar, this)));
+  enum_collision::enum_collision(const locator& dezyne_locator)
+  : rt(dezyne_locator.get<runtime>())
+  , i()
+  {
+    i.in.foo = connect<ienum_collision::Retval1::type>(rt, this, boost::function<ienum_collision::Retval1::type()>(boost::bind<ienum_collision::Retval1::type>(&enum_collision::i_foo, this)));
+    i.in.bar = connect<ienum_collision::Retval2::type>(rt, this, boost::function<ienum_collision::Retval2::type()>(boost::bind<ienum_collision::Retval2::type>(&enum_collision::i_bar, this)));
+  }
+
+  ienum_collision::Retval1::type enum_collision::i_foo()
+  {
+    std::cout << "enum_collision.i_foo" << std::endl;
+    reply_ienum_collision_Retval1 = ienum_collision::Retval1::OK;
+    return reply_ienum_collision_Retval1;
+  }
+
+  ienum_collision::Retval2::type enum_collision::i_bar()
+  {
+    std::cout << "enum_collision.i_bar" << std::endl;
+    reply_ienum_collision_Retval2 = ienum_collision::Retval2::NOK;
+    return reply_ienum_collision_Retval2;
+  }
+
+
 }
-
-ienum_collision::Retval1::type enum_collision::i_foo()
-{
-  std::cout << "enum_collision.i_foo" << std::endl;
-  reply_ienum_collision_Retval1 = ienum_collision::Retval1::OK;
-  return reply_ienum_collision_Retval1;
-}
-
-ienum_collision::Retval2::type enum_collision::i_bar()
-{
-  std::cout << "enum_collision.i_bar" << std::endl;
-  reply_ienum_collision_Retval2 = ienum_collision::Retval2::NOK;
-  return reply_ienum_collision_Retval2;
-}
-
-

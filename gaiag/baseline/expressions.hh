@@ -21,26 +21,27 @@
 //
 // Code:
 
-#ifndef COMPONENT_EXPRESSIONS_HH
-#define COMPONENT_EXPRESSIONS_HH
+#ifndef DEZYNE_EXPRESSIONS_HH
+#define DEZYNE_EXPRESSIONS_HH
 
 #include "I.hh"
 
 
-namespace dezyne {
+namespace dezyne
+{
   struct locator;
   struct runtime;
+
+  struct expressions
+  {
+    runtime& rt;
+    typedef int State;
+    expressions::State state;
+    expressions::State c;
+    I i;
+
+    expressions(const locator&);
+    void i_e();
+  };
 }
-
-struct expressions
-{
-  dezyne::runtime& rt;
-  typedef int State;
-  expressions::State state;
-  expressions::State c;
-  I i;
-
-  expressions(const dezyne::locator&);
-  void i_e();
-};
-#endif
+#endif // DEZYNE_EXPRESSIONS_HH

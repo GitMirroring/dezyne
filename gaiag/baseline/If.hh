@@ -21,24 +21,25 @@
 //
 // Code:
 
-#ifndef COMPONENT_IF_HH
-#define COMPONENT_IF_HH
+#ifndef DEZYNE_IF_HH
+#define DEZYNE_IF_HH
 
 #include "I.hh"
 
 
-namespace dezyne {
+namespace dezyne
+{
   struct locator;
   struct runtime;
+
+  struct If
+  {
+    runtime& rt;
+    bool t;
+    I i;
+
+    If(const locator&);
+    void i_a();
+  };
 }
-
-struct If
-{
-  dezyne::runtime& rt;
-  bool t;
-  I i;
-
-  If(const dezyne::locator&);
-  void i_a();
-};
-#endif
+#endif // DEZYNE_IF_HH

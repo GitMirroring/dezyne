@@ -1,5 +1,7 @@
 ##include "#.model .hh"
 
+namespace dezyne
+{
 template<typename Port>
 void connect(Port& provided, Port& required)
 {
@@ -21,3 +23,4 @@ void connect(Port& provided, Port& required)
  # (map (connect-ports model #{
     connect(#provided , #required );
 #}) (filter (negate bind-port?) ((compose .elements .bindings) model))) }
+}

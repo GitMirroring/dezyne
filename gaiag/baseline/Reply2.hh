@@ -21,28 +21,29 @@
 //
 // Code:
 
-#ifndef COMPONENT_REPLY2_HH
-#define COMPONENT_REPLY2_HH
+#ifndef DEZYNE_REPLY2_HH
+#define DEZYNE_REPLY2_HH
 
 #include "I.hh"
 #include "U.hh"
 
 
-namespace dezyne {
+namespace dezyne
+{
   struct locator;
   struct runtime;
+
+  struct Reply2
+  {
+    runtime& rt;
+    bool dummy;
+    I::Status::type reply_I_Status;
+    U::Status::type reply_U_Status;
+    I i;
+    U u;
+
+    Reply2(const locator&);
+    I::Status::type i_done();
+  };
 }
-
-struct Reply2
-{
-  dezyne::runtime& rt;
-  bool dummy;
-  I::Status::type reply_I_Status;
-  U::Status::type reply_U_Status;
-  I i;
-  U u;
-
-  Reply2(const dezyne::locator&);
-  I::Status::type i_done();
-};
-#endif
+#endif // DEZYNE_REPLY2_HH

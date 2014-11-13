@@ -26,39 +26,42 @@
 #include "locator.h"
 #include "runtime.h"
 
-reply_reorder::reply_reorder(const dezyne::locator& dezyne_locator)
-: rt(dezyne_locator.get<dezyne::runtime>())
-, first(true)
-, p()
-, r()
+namespace dezyne
 {
-  p.in.start = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&reply_reorder::p_start, this)));
-  r.out.pong = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&reply_reorder::r_pong, this)));
-}
-
-void reply_reorder::p_start()
-{
-  std::cout << "reply_reorder.p_start" << std::endl;
+  reply_reorder::reply_reorder(const locator& dezyne_locator)
+  : rt(dezyne_locator.get<runtime>())
+  , first(true)
+  , p()
+  , r()
   {
-    r.in.ping();
+    p.in.start = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&reply_reorder::p_start, this)));
+    r.out.pong = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&reply_reorder::r_pong, this)));
   }
-}
 
-void reply_reorder::r_pong()
-{
-  std::cout << "reply_reorder.r_pong" << std::endl;
+  void reply_reorder::p_start()
   {
-    if (first)
+    std::cout << "reply_reorder.p_start" << std::endl;
     {
-      rt.defer(this, dezyne::bind(p.out.busy));
-      first = not (first);
-    }
-    if (not (first))
-    {
-      rt.defer(this, dezyne::bind(p.out.finish));
-      first = not (first);
+      r.in.ping();
     }
   }
+
+  void reply_reorder::r_pong()
+  {
+    std::cout << "reply_reorder.r_pong" << std::endl;
+    {
+      if (first)
+      {
+        rt.defer(this, boost::bind(p.out.busy));
+        first = not (first);
+      }
+      if (not (first))
+      {
+        rt.defer(this, boost::bind(p.out.finish));
+        first = not (first);
+      }
+    }
+  }
+
+
 }
-
-

@@ -21,32 +21,29 @@
 //
 // Code:
 
-#ifndef INTERFACE_IINCOMPLETE_WITH_MODELING_EVENT_C3_HH
-#define INTERFACE_IINCOMPLETE_WITH_MODELING_EVENT_C3_HH
+#ifndef DEZYNE_IINCOMPLETE_WITH_MODELING_EVENT_HH
+#define DEZYNE_IINCOMPLETE_WITH_MODELING_EVENT_HH
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
 namespace dezyne
 {
-  using boost::function;
-  using boost::bind;
+
+  struct iincomplete_with_modeling_event
+  {
+
+    struct
+    {
+      boost::function<void ()> e;
+
+    } in;
+
+    struct
+    {
+      boost::function<void ()> a;
+
+    } out;
+  };
 }
-
-struct iincomplete_with_modeling_event
-{
-
-  struct
-  {
-    dezyne::function<void ()> e;
-
-  } in;
-
-  struct
-  {
-    dezyne::function<void ()> a;
-
-  } out;
-};
-
-#endif
+#endif // DEZYNE_IINCOMPLETE_WITH_MODELING_EVENT_HH

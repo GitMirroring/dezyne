@@ -21,24 +21,25 @@
 //
 // Code:
 
-#ifndef COMPONENT_SIREN_HH
-#define COMPONENT_SIREN_HH
+#ifndef DEZYNE_SIREN_HH
+#define DEZYNE_SIREN_HH
 
 #include "ISiren.hh"
 
 
-namespace dezyne {
+namespace dezyne
+{
   struct locator;
   struct runtime;
+
+  struct Siren
+  {
+    runtime& rt;
+    ISiren siren;
+
+    Siren(const locator&);
+    void siren_turnon();
+    void siren_turnoff();
+  };
 }
-
-struct Siren
-{
-  dezyne::runtime& rt;
-  ISiren siren;
-
-  Siren(const dezyne::locator&);
-  void siren_turnon();
-  void siren_turnoff();
-};
-#endif
+#endif // DEZYNE_SIREN_HH

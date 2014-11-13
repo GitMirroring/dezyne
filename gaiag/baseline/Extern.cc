@@ -26,19 +26,22 @@
 #include "locator.h"
 #include "runtime.h"
 
-Extern::Extern(const dezyne::locator& dezyne_locator)
-: rt(dezyne_locator.get<dezyne::runtime>())
-, i(0)
-, j()
-, port()
+namespace dezyne
 {
-  port.in.e = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&Extern::port_e, this)));
+  Extern::Extern(const locator& dezyne_locator)
+  : rt(dezyne_locator.get<runtime>())
+  , i(0)
+  , j()
+  , port()
+  {
+    port.in.e = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&Extern::port_e, this)));
+  }
+
+  void Extern::port_e()
+  {
+    std::cout << "Extern.port_e" << std::endl;
+    assert(false);
+  }
+
+
 }
-
-void Extern::port_e()
-{
-  std::cout << "Extern.port_e" << std::endl;
-  assert(false);
-}
-
-

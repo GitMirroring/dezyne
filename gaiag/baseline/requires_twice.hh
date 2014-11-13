@@ -21,29 +21,30 @@
 //
 // Code:
 
-#ifndef COMPONENT_REQUIRES_TWICE_HH
-#define COMPONENT_REQUIRES_TWICE_HH
+#ifndef DEZYNE_REQUIRES_TWICE_HH
+#define DEZYNE_REQUIRES_TWICE_HH
 
 #include "irequires_twice.hh"
 #include "irequires_twice.hh"
 #include "irequires_twice.hh"
 
 
-namespace dezyne {
+namespace dezyne
+{
   struct locator;
   struct runtime;
+
+  struct requires_twice
+  {
+    runtime& rt;
+    irequires_twice p;
+    irequires_twice once;
+    irequires_twice twice;
+
+    requires_twice(const locator&);
+    void p_e();
+    void once_a();
+    void twice_a();
+  };
 }
-
-struct requires_twice
-{
-  dezyne::runtime& rt;
-  irequires_twice p;
-  irequires_twice once;
-  irequires_twice twice;
-
-  requires_twice(const dezyne::locator&);
-  void p_e();
-  void once_a();
-  void twice_a();
-};
-#endif
+#endif // DEZYNE_REQUIRES_TWICE_HH

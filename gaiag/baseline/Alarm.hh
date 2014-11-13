@@ -21,39 +21,40 @@
 //
 // Code:
 
-#ifndef COMPONENT_ALARM_HH
-#define COMPONENT_ALARM_HH
+#ifndef DEZYNE_ALARM_HH
+#define DEZYNE_ALARM_HH
 
 #include "IConsole.hh"
 #include "ISensor.hh"
 #include "ISiren.hh"
 
 
-namespace dezyne {
+namespace dezyne
+{
   struct locator;
   struct runtime;
-}
 
-struct Alarm
-{
-  dezyne::runtime& rt;
-  struct States
+  struct Alarm
   {
-    enum type
+    runtime& rt;
+    struct States
     {
-      Disarmed, Armed, Triggered, Disarming
+      enum type
+      {
+        Disarmed, Armed, Triggered, Disarming
+      };
     };
-  };
-  Alarm::States::type state;
-  bool sounding;
-  IConsole console;
-  ISensor sensor;
-  ISiren siren;
+    Alarm::States::type state;
+    bool sounding;
+    IConsole console;
+    ISensor sensor;
+    ISiren siren;
 
-  Alarm(const dezyne::locator&);
-  void console_arm();
-  void console_disarm();
-  void sensor_triggered();
-  void sensor_disabled();
-};
-#endif
+    Alarm(const locator&);
+    void console_arm();
+    void console_disarm();
+    void sensor_triggered();
+    void sensor_disabled();
+  };
+}
+#endif // DEZYNE_ALARM_HH

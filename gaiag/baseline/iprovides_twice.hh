@@ -21,32 +21,29 @@
 //
 // Code:
 
-#ifndef INTERFACE_IPROVIDES_TWICE_C3_HH
-#define INTERFACE_IPROVIDES_TWICE_C3_HH
+#ifndef DEZYNE_IPROVIDES_TWICE_HH
+#define DEZYNE_IPROVIDES_TWICE_HH
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
 namespace dezyne
 {
-  using boost::function;
-  using boost::bind;
+
+  struct iprovides_twice
+  {
+
+    struct
+    {
+      boost::function<void ()> foo;
+
+    } in;
+
+    struct
+    {
+      boost::function<void ()> bar;
+
+    } out;
+  };
 }
-
-struct iprovides_twice
-{
-
-  struct
-  {
-    dezyne::function<void ()> foo;
-
-  } in;
-
-  struct
-  {
-    dezyne::function<void ()> bar;
-
-  } out;
-};
-
-#endif
+#endif // DEZYNE_IPROVIDES_TWICE_HH

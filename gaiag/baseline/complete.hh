@@ -21,26 +21,27 @@
 //
 // Code:
 
-#ifndef COMPONENT_COMPLETE_HH
-#define COMPONENT_COMPLETE_HH
+#ifndef DEZYNE_COMPLETE_HH
+#define DEZYNE_COMPLETE_HH
 
 #include "icomplete.hh"
 #include "icomplete.hh"
 
 
-namespace dezyne {
+namespace dezyne
+{
   struct locator;
   struct runtime;
+
+  struct complete
+  {
+    runtime& rt;
+    icomplete p;
+    icomplete r;
+
+    complete(const locator&);
+    void p_e();
+    void r_a();
+  };
 }
-
-struct complete
-{
-  dezyne::runtime& rt;
-  icomplete p;
-  icomplete r;
-
-  complete(const dezyne::locator&);
-  void p_e();
-  void r_a();
-};
-#endif
+#endif // DEZYNE_COMPLETE_HH

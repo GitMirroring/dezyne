@@ -26,20 +26,23 @@
 #include "locator.h"
 #include "runtime.h"
 
-sugar::sugar(const dezyne::locator& dezyne_locator)
-: rt(dezyne_locator.get<dezyne::runtime>())
-, s(Enum::False)
-, i()
+namespace dezyne
 {
-  i.in.e = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&sugar::i_e, this)));
+  sugar::sugar(const locator& dezyne_locator)
+  : rt(dezyne_locator.get<runtime>())
+  , s(Enum::False)
+  , i()
+  {
+    i.in.e = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&sugar::i_e, this)));
+  }
+
+  void sugar::i_e()
+  {
+    std::cout << "sugar.i_e" << std::endl;
+    if (s == Enum::False)
+    if (s == Enum::False)
+    rt.defer(this, boost::bind(i.out.a));
+  }
+
+
 }
-
-void sugar::i_e()
-{
-  std::cout << "sugar.i_e" << std::endl;
-  if (s == Enum::False)
-  if (s == Enum::False)
-  rt.defer(this, dezyne::bind(i.out.a));
-}
-
-

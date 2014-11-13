@@ -21,8 +21,8 @@
 //
 // Code:
 
-#ifndef COMPONENT_PROVIDES_TWICE_HH
-#define COMPONENT_PROVIDES_TWICE_HH
+#ifndef DEZYNE_PROVIDES_TWICE_HH
+#define DEZYNE_PROVIDES_TWICE_HH
 
 #include "external_provides_twice.hh"
 
@@ -31,17 +31,21 @@
 #include "iprovides_twice.hh"
 
 
-namespace dezyne {
+namespace dezyne
+{
   struct locator;
 }
 
-struct provides_twice
+namespace dezyne
 {
-  external_provides_twice one;
+  struct provides_twice
+  {
+    external_provides_twice one;
 
-  iprovides_once& i;
-  iprovides_twice& ii;
+    iprovides_once& i;
+    iprovides_twice& ii;
 
-  provides_twice(const dezyne::locator&);
-};
-#endif
+    provides_twice(const dezyne::locator&);
+  };
+}
+#endif // DEZYNE_PROVIDES_TWICE_HH

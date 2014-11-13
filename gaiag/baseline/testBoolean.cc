@@ -26,20 +26,23 @@
 #include "locator.h"
 #include "runtime.h"
 
-testBoolean::testBoolean(const dezyne::locator& dezyne_locator)
-: rt(dezyne_locator.get<dezyne::runtime>())
-, b(false)
-, i()
+namespace dezyne
 {
-  i.in.evt = dezyne::connect<void>(rt, this, dezyne::function<void()>(dezyne::bind<void>(&testBoolean::i_evt, this)));
-}
-
-void testBoolean::i_evt()
-{
-  std::cout << "testBoolean.i_evt" << std::endl;
-  if (true)
+  testBoolean::testBoolean(const locator& dezyne_locator)
+  : rt(dezyne_locator.get<runtime>())
+  , b(false)
+  , i()
   {
+    i.in.evt = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&testBoolean::i_evt, this)));
   }
+
+  void testBoolean::i_evt()
+  {
+    std::cout << "testBoolean.i_evt" << std::endl;
+    if (true)
+    {
+    }
+  }
+
+
 }
-
-

@@ -4,6 +4,7 @@
     (setq c-basic-offset 2)
     (c-set-offset 'substatement-open 0)
     (c-set-offset 'member-init-intro 0)
-    ))
+    (c-set-offset 'innamespace [0])))
+
 
 (add-hook 'before-save-hook 'delete-trailing-whitespace)

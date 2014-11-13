@@ -21,8 +21,8 @@
 //
 // Code:
 
-#ifndef COMPONENT_DATASYSTEM_HH
-#define COMPONENT_DATASYSTEM_HH
+#ifndef DEZYNE_DATASYSTEM_HH
+#define DEZYNE_DATASYSTEM_HH
 
 #include "proxy.hh"
 #include "Dataparam.hh"
@@ -31,17 +31,21 @@
 #include "IDataparam.hh"
 
 
-namespace dezyne {
+namespace dezyne
+{
   struct locator;
 }
 
-struct Datasystem
+namespace dezyne
 {
-  proxy p;
-  Dataparam c;
+  struct Datasystem
+  {
+    proxy p;
+    Dataparam c;
 
-  IDataparam& port;
+    IDataparam& port;
 
-  Datasystem(const dezyne::locator&);
-};
-#endif
+    Datasystem(const dezyne::locator&);
+  };
+}
+#endif // DEZYNE_DATASYSTEM_HH

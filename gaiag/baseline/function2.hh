@@ -21,26 +21,27 @@
 //
 // Code:
 
-#ifndef COMPONENT_FUNCTION2_HH
-#define COMPONENT_FUNCTION2_HH
+#ifndef DEZYNE_FUNCTION2_HH
+#define DEZYNE_FUNCTION2_HH
 
 #include "ifunction2.hh"
 
 
-namespace dezyne {
+namespace dezyne
+{
   struct locator;
   struct runtime;
+
+  struct function2
+  {
+    runtime& rt;
+    bool f;
+    ifunction2 i;
+
+    function2(const locator&);
+    void i_a();
+    void i_b();
+    bool vtoggle();
+  };
 }
-
-struct function2
-{
-  dezyne::runtime& rt;
-  bool f;
-  ifunction2 i;
-
-  function2(const dezyne::locator&);
-  void i_a();
-  void i_b();
-  bool vtoggle();
-};
-#endif
+#endif // DEZYNE_FUNCTION2_HH

@@ -21,34 +21,31 @@
 //
 // Code:
 
-#ifndef INTERFACE_IIMPERATIVE_C3_HH
-#define INTERFACE_IIMPERATIVE_C3_HH
+#ifndef DEZYNE_IIMPERATIVE_HH
+#define DEZYNE_IIMPERATIVE_HH
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
 namespace dezyne
 {
-  using boost::function;
-  using boost::bind;
+
+  struct iimperative
+  {
+
+    struct
+    {
+      boost::function<void ()> e;
+
+    } in;
+
+    struct
+    {
+      boost::function<void ()> f;
+      boost::function<void ()> g;
+      boost::function<void ()> h;
+
+    } out;
+  };
 }
-
-struct iimperative
-{
-
-  struct
-  {
-    dezyne::function<void ()> e;
-
-  } in;
-
-  struct
-  {
-    dezyne::function<void ()> f;
-    dezyne::function<void ()> g;
-    dezyne::function<void ()> h;
-
-  } out;
-};
-
-#endif
+#endif // DEZYNE_IIMPERATIVE_HH

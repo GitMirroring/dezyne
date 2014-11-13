@@ -26,43 +26,46 @@
 #include "locator.h"
 #include "runtime.h"
 
-Reply3::Reply3(const dezyne::locator& dezyne_locator)
-: rt(dezyne_locator.get<dezyne::runtime>())
-, dummy(false)
-, i()
-, u()
+namespace dezyne
 {
-  i.in.done = dezyne::connect<I::Status::type>(rt, this, dezyne::function<I::Status::type()>(dezyne::bind<I::Status::type>(&Reply3::i_done, this)));
-}
-
-I::Status::type Reply3::i_done()
-{
-  std::cout << "Reply3.i_done" << std::endl;
-  if (true)
+  Reply3::Reply3(const locator& dezyne_locator)
+  : rt(dezyne_locator.get<runtime>())
+  , dummy(false)
+  , i()
+  , u()
   {
+    i.in.done = connect<I::Status::type>(rt, this, boost::function<I::Status::type()>(boost::bind<I::Status::type>(&Reply3::i_done, this)));
+  }
+
+  I::Status::type Reply3::i_done()
+  {
+    std::cout << "Reply3.i_done" << std::endl;
+    if (true)
     {
-      U::Status::type s = u.in.what ();
-      s = u.in.what ();
-      if (s == U::Status::Ok)
       {
-        reply_fun ();
-      }
-      else
-      {
-        reply_fun_arg (I::Status::No);
+        U::Status::type s = u.in.what ();
+        s = u.in.what ();
+        if (s == U::Status::Ok)
+        {
+          reply_fun ();
+        }
+        else
+        {
+          reply_fun_arg (I::Status::No);
+        }
       }
     }
+    return reply_I_Status;
   }
-  return reply_I_Status;
-}
 
-void Reply3::reply_fun()
-{
-  reply_I_Status = I::Status::Yes;
-}
+  void Reply3::reply_fun()
+  {
+    reply_I_Status = I::Status::Yes;
+  }
 
-void Reply3::reply_fun_arg(I::Status::type s)
-{
-  reply_I_Status = s;
-}
+  void Reply3::reply_fun_arg(I::Status::type s)
+  {
+    reply_I_Status = s;
+  }
 
+}
