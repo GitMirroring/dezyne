@@ -1,0 +1,67 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+class expressions{
+
+  Integer state;
+  Integer c;
+
+  I i;
+
+  public expressions() {
+    state = 3;
+    c = 0;
+    i = new I();
+    i.getIn().e = new Action() {
+      public void action() {
+        i_e();
+      }
+    };
+  };
+  public void i_e() {
+    System.err.println("expressions.i_e");
+    if (true) {
+      if (state == 0) {
+        state = 3;
+        i.getOut().a.action();
+      }
+      else {
+        state = state - 1;
+        if (c < state) {
+          c = c + 1;
+        }
+        else {
+          if (c <= (state + 1)) {
+            i.getOut().lo.action();
+          }
+          else {
+            if (c > state) {
+              i.getOut().hi.action();
+            }
+          }
+        }
+      }
+    }
+  };
+
+}

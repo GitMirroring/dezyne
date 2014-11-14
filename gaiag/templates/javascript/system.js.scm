@@ -3,9 +3,9 @@ function connect(provided, required) {
   required.in = provided.in;
 }
 
-component.#.model  = function() {
+dezyne.#.model  = function() {
 #(map (init-instance #{
-    this.#name  = new component.#component ();
+    this.#name  = new dezyne.#component ();
 #}) ((compose .elements .instances) model))#
 (map (init-bind model #{
     this.#port  = this.#instance;

@@ -1,0 +1,55 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+dezyne.Reply3 = function() {
+  this.dummy = false;
+  this.reply_I_Status = nul;
+  this.reply_U_Status = nul;
+
+  this.i = new dezyne.I();
+  this.u = new dezyne.U();
+
+  this.i.in.done = function() {
+    console.log('Reply3.i_done');
+    if(true) {
+      {
+        s = this.u.in.what();
+        this.s = this.u.in.what();
+        if(s === interface.U.Status.Ok) {
+          this.reply_fun();
+        }
+        else {
+          this.reply_fun_arg(interface.I.Status.No);
+        }
+      }
+    }
+    return this.reply_I_Status;
+  }.bind(this);
+  this.reply_fun = function () {
+    this.reply_I_Status = interface.I.Status.Yes;
+  }.bind(this);
+  this.reply_fun_arg = function (s) {
+    this.reply_I_Status = s;
+  }.bind(this);
+
+};

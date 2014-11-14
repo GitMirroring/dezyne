@@ -1,1 +1,1 @@
-#name  = #expression;
+var #name  = #expression;

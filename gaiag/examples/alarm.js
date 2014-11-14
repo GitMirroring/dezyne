@@ -24,24 +24,24 @@
 
 /* main */
 ///// Test stubs
-component.Console = function() {
-  this.console = new interface.IConsole();
+dezyne.Console = function() {
+  this.console = new dezyne.IConsole();
   this.console.out.detected = function() { console.log('Alarm detected'); }
   this.console.out.deactivated = function() { console.log('Alarm deactivated'); }
 };
-component.Sensor = function() {
-  this.sensor = new interface.ISensor();
+dezyne.Sensor = function() {
+  this.sensor = new dezyne.ISensor();
   this.sensor.in.enable = function() { console.log('Sensor enable')};
   this.sensor.in.disable = function() { console.log('Sensor disable');};
 }
-component.Siren = function() {
-  this.siren = new interface.ISiren();
+dezyne.Siren = function() {
+  this.siren = new dezyne.ISiren();
   this.siren.in.turnon = function() { console.log('Siren turnon'); };
   this.siren.in.turnoff = function() { console.log('Siren turnoff'); };
 }
 
-var alarm = new component.AlarmSystem();
-var gui = new component.Console();
+var alarm = new dezyne.AlarmSystem();
+var gui = new dezyne.Console();
 connect(alarm.console, gui.console);
 ///// Test trace
 alarm.console.in.arm();

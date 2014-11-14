@@ -1,5 +1,5 @@
 
-this.#name = {
+this.#name  = {
    #((->join ", ")
      (map (lambda (x) (list (car x) ": " (cadr x))) (zip fields (iota length))))
 };

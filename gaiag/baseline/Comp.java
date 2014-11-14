@@ -21,87 +21,6 @@
 //
 // Code:
 
-// header
-//package dezyne;
-
-import java.lang.Runnable;
-
-abstract class Action<R> {
-  public abstract R action();
-}
-
-abstract class Function extends Action<Void> {
-  public abstract Void action();
-}
-
-@SuppressWarnings("unchecked")
-abstract class Interface<I extends Interface.In, O extends Interface.Out> {
-  interface In {
-  }
-  interface Out {
-  }
-
-  protected In in;
-  protected Out out;
-
-  public I getIn() {
-    return (I) in;
-  }
-
-  public void setIn(I in) {
-    this.in = in;
-  }
-
-  public O getOut() {
-    return (O) out;
-  }
-
-  public void setOut(O out) {
-    this.out = out;
-  }
-
-  @SuppressWarnings("rawtypes")
-    public static void connect(Interface provided, Interface required) {
-    provided.setOut(required.getOut());
-    required.setIn(provided.getIn());
-  };
-}
-// end header
-class IDevice extends Interface<IDevice.In, IDevice.Out> {
-  enum result_t {
-    OK, NOK
-  };
-  class In implements Interface.In {
-    Action<result_t> initialize;
-    Action<result_t> calibrate;
-    Action<result_t> perform_action1;
-    Action<result_t> perform_action2;
-  }
-  class Out implements Interface.Out {
-
-  }
-  public IDevice() {
-    in = new In();
-    out = new Out();
-  }
-}
-class IComp extends Interface<IComp.In, IComp.Out> {
-  enum result_t {
-    OK, NOK
-  };
-  class In implements Interface.In {
-    Action initialize;
-    Action recover;
-    Action perform_actions;
-  }
-  class Out implements Interface.Out {
-
-  }
-  public IComp() {
-    in = new In();
-    out = new Out();
-  }
-}
 class Comp{
   enum State {
     Uninitialized, Initialized, Error
@@ -117,25 +36,26 @@ class Comp{
   IDevice device_A;
 
   public Comp() {
+    s = State.Uninitialized;
     client = new IComp();
     device_A = new IDevice();
-    client.getIn().initialize = new Action() {
-      public IDevice.result_t action() {
+    client.getIn().initialize = new ValuedAction<IComp.result_t>() {
+      public IComp.result_t action() {
         return client_initialize();
       }
     };
-    client.getIn().recover = new Action() {
-      public IDevice.result_t action() {
+    client.getIn().recover = new ValuedAction<IComp.result_t>() {
+      public IComp.result_t action() {
         return client_recover();
       }
     };
-    client.getIn().perform_actions = new Action() {
-      public IDevice.result_t action() {
+    client.getIn().perform_actions = new ValuedAction<IComp.result_t>() {
+      public IComp.result_t action() {
         return client_perform_actions();
       }
     };
   };
-  public IDevice.result_t client_initialize() {
+  public IComp.result_t client_initialize() {
     System.err.println("Comp.client_initialize");
     if (s == State.Uninitialized) {
       {
@@ -159,10 +79,10 @@ class Comp{
     else if (s == State.Error) {
       assert(false);
     }
-    return reply_IDevice_result_t;
+    return reply_IComp_result_t;
   };
 
-  public IDevice.result_t client_recover() {
+  public IComp.result_t client_recover() {
     System.err.println("Comp.client_recover");
     if (s == State.Uninitialized) {
       assert(false);
@@ -183,10 +103,10 @@ class Comp{
         }
       }
     }
-    return reply_IDevice_result_t;
+    return reply_IComp_result_t;
   };
 
-  public IDevice.result_t client_perform_actions() {
+  public IComp.result_t client_perform_actions() {
     System.err.println("Comp.client_perform_actions");
     if (s == State.Uninitialized) {
       assert(false);
@@ -210,7 +130,7 @@ class Comp{
     else if (s == State.Error) {
       assert(false);
     }
-    return reply_IDevice_result_t;
+    return reply_IComp_result_t;
   };
 
 }

@@ -1,4 +1,4 @@
-component.#.model  = function() {#
+dezyne.#.model  = function() {#
 (->string (map declare-enum (gom:enums (.behaviour model))))
 #
     (map (init-member model #{
@@ -7,7 +7,7 @@ component.#.model  = function() {#
     (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))
 #
     (map (init-port #{
-  this.#name  = new interface.#interface ();
+  this.#name  = new dezyne.#interface ();
 #}) ((compose .elements .ports) model))
 #(map
    (lambda (port)

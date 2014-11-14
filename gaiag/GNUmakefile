@@ -148,7 +148,7 @@ ast: compile
 
 pretty: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
-	./gaiag -l dezyne examples/interface-enums.dzn > out/interface-enums.dzn
+	./gaiag -l dezyne examples/interface-enums.dzn > out/dezyne-enums.dzn
 	$(diff) examples/interface-enums.dzn out
 	./gaiag -l dezyne examples/alarm-component.dzn > out/alarm-component.dzn
 	$(diff) examples/alarm-component.dzn out
@@ -164,7 +164,7 @@ pretty: compile
 
 out/%.o: examples/regression/%.dzn
 define .CC_REGRESSION
-rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/* .
+rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c++/* .
 cd out && $(shell pwd)/gaiag -l c++ examples/regression/$*.dzn
 -$(diff) baseline/$*.hh out
 -$(diff) baseline/$*.cc out
@@ -303,7 +303,7 @@ simulate: compile
 	./gaiag -l simulate -t '(client.initialize result_t.OK result_t.OK client.perform_actions result_t.OK result_t.OK client.perform_actions result_t.NOK client.recover result_t.OK client.perform_actions)' examples/regression/Comp.dzn
 
 c++-alarm:
-	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/* .
+	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c++/* .
 	cd out && for file in\
 		examples/AlarmSystem.dzn\
 		examples/regression/Alarm.dzn\
@@ -327,14 +327,14 @@ c++-alarm:
 	$(diff) baseline/AlarmSystem.cc out
 
 c++-inject:
-	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/* .
+	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c++/* .
 	cd out && ln -s ../examples/injected.cc .
 	cd out && $(shell pwd)/gaiag -l c++ examples/Injected.dzn
 	cd out && for i in *cc; do ccache g++ -c $$i; done && g++ -o $@ *.o && ./$@ > $@.trace
 	$(diff) baseline/$@.trace out
 
 c++-dataparam:
-	rm -rf out && mkdir out && cd out && ln -s ../runtime/* .
+	rm -rf out && mkdir out && cd out && ln -s ../runtime/c++/* .
 	cd out && ../gaiag -l c++ ../examples/regression/Dataparam.dzn
 	cd out && ln -sf ../examples/dataparam.cc .
 	cd out && for i in *cc; do ccache g++ -c $$i; done && g++ -o $@ *.o && ./$@ > $@.trace
@@ -364,16 +364,15 @@ python-alarm: compile
 	cd out && $(shell pwd)/gaiag -l python examples/ISiren.dzn
 	cd out && $(shell pwd)/gaiag -l python examples/Alarm.dzn
 	cd out && $(shell pwd)/gaiag -l python examples/AlarmSystem.dzn
-	$(pydiff) baseline/interface/IConsole.py out/interface
-	$(pydiff) baseline/interface/ISensor.py out/interface
-	$(pydiff) baseline/interface/ISiren.py out/interface
-	$(pydiff) baseline/component/Alarm.py out/component
-	$(pydiff) baseline/component/AlarmSystem.py out/component
-	ln -s ../examples/Sensor.py out/component
-	ln -s ../examples/Siren.py out/component
+	$(pydiff) baseline/IConsole.py out/dezyne
+	$(pydiff) baseline/ISensor.py out/dezyne
+	$(pydiff) baseline/ISiren.py out/dezyne
+	$(pydiff) baseline/Alarm.py out/dezyne
+	$(pydiff) baseline/AlarmSystem.py out/dezyne
+	ln -s ../examples/Sensor.py out/dezyne
+	ln -s ../examples/Siren.py out/dezyne
 	ln -s ../examples/alarm.py out
-	ln -s ../examples/__init__.py out/interface
-	ln -s ../examples/__init__.py out/component
+	ln -s ../examples/__init__.py out/dezyne
 	cd out && $(PYTHON) alarm.py
 
 PY_BROKEN=\
@@ -385,16 +384,15 @@ PY_SOURCES = $(filter-out $(PY_BROKEN),$(CC_SOURCES))
 define .PY_REGRESSION
 rm -rf out && mkdir out && ln -s ../examples ../templates out
 cd out && $(shell pwd)/gaiag -l python examples/regression/$*.dzn
--$(pydiff) baseline/component/$*.py out/component
-ln -s ../examples/__init__.py out/interface
-ln -s ../examples/__init__.py out/component
+-$(pydiff) baseline/$*.py out/dezyne
+ln -s ../examples/__init__.py out/dezyne
 (cd out && $(PYTHON) component/$*.py) $(UPDATE)
-$(pydiff) baseline/component/$*.py out/component | diffstat || true
-$(pydiff) baseline/component/$*.py out/component > /dev/null
+$(pydiff) baseline/$*.py out/dezyne | diffstat || true
+$(pydiff) baseline/$*.py out/dezyne > /dev/null
 endef
 
-#out/%.py.up: UPDATE=||:; cp out/component/$*.py baseline/component && cp out/interface/*.py baseline/interface
-out/%.py.up: UPDATE=&& cp out/component/$*.py baseline/component && cp out/interface/*.py baseline/interface
+#out/%.py.up: UPDATE=||:; cp out/dezyne/$*.py baseline && cp out/dezyne/*.py baseline
+out/%.py.up: UPDATE=&& cp out/dezyne/$*.py baseline && cp out/dezyne/*.py baseline
 out/%.py.up: examples/regression/%.dzn
 	$(.PY_REGRESSION)
 
@@ -418,19 +416,19 @@ JAVA_SOURCES = $(filter-out $(JAVA_BROKEN),$(CC_SOURCES))
 define .JAVA_REGRESSION
 rm -rf out && mkdir out && ln -s ../examples ../templates out
 cd out && $(WFC) $< && $(shell pwd)/gaiag -l java $<
--$(diff) baseline/component/$*.java out/component
+-$(diff) baseline/$*.java out/dezyne
 cat templates/java/header.java\
-	 $$(find out/interface out/component -name '*.java')\
+	 $$(find out/dezyne out/dezyne -name '*.java')\
 	examples/alarm.java > $@
-cat templates/java/header.java $$(find out/interface out/component -name '*.java') > $@
+cat templates/java/header.java $$(find out/dezyne out/dezyne -name '*.java') > $@
 cd $(dir $@) && cp -f --backup $(notdir $@) $*.java
 (cd $(dir $@) && javac $*.java) $(UPDATE)
-$(diff) baseline/component/$*.java out/component | diffstat || true
-@$(diff) baseline/component/$*.java out/component > /dev/null
+$(diff) baseline/$*.java out/dezyne | diffstat || true
+@$(diff) baseline/$*.java out/dezyne > /dev/null
 endef
 
-#out/%.java.up: UPDATE=||:; cp out/component/$*.java baseline/component && cp out/interface/*.java baseline/interface
-out/%.java.up: UPDATE=&& cp out/component/$*.java baseline/component && cp out/interface/*.java baseline/interface
+#out/%.java.up: UPDATE=||:; cp out/dezyne/$*.java baseline && cp out/dezyne/*.java baseline
+out/%.java.up: UPDATE=&& cp out/dezyne/$*.java baseline && cp out/dezyne/*.java baseline
 out/%.java.up: examples/regression/%.dzn
 	$(.JAVA_REGRESSION)
 
@@ -450,15 +448,15 @@ java-alarm: compile
 	 	examples/ISiren.dzn;\
 	 	do $(shell pwd)/gaiag -l java $$file; done
 	cat templates/java/header.java\
-		 $$(find out/interface out/component -name '*.java')\
+		 $$(find out/dezyne out/dezyne -name '*.java')\
 		examples/alarm.java > out/alarm.java
 	cd out && javac alarm.java
 	cd out && java alarm
-	$(diff) baseline/interface/IConsole.java out/interface
-	$(diff) baseline/interface/ISensor.java out/interface
-	$(diff) baseline/interface/ISiren.java out/interface
-	$(diff) baseline/component/Alarm.java out/component
-	$(diff) baseline/component/AlarmSystem.java out/component
+	$(diff) baseline/IConsole.java out/dezyne
+	$(diff) baseline/ISensor.java out/dezyne
+	$(diff) baseline/ISiren.java out/dezyne
+	$(diff) baseline/Alarm.java out/dezyne
+	$(diff) baseline/AlarmSystem.java out/dezyne
 
 java: compile java-alarm java-regression
 
@@ -471,19 +469,19 @@ JS_SOURCES = $(filter-out $(JS_BROKEN),$(CC_SOURCES))
 define .JAVASCRIPT_REGRESSION
 rm -rf out && mkdir out && ln -s ../examples ../templates out
 cd out && $(WFC) $< && $(shell pwd)/gaiag -l javascript $<
--$(diff) baseline/component/$*.js out/component
-cat templates/javascript/header.js\
-	 $$(find out/interface out/component -name '*.js')\
+-$(diff) baseline/$*.js out/dezyne
+cat runtime/javascript/header.js\
+	 $$(find out/dezyne out/dezyne -name '*.js')\
 	examples/alarm.js > $@
-cat templates/javascript/header.js $$(find out/interface out/component -name '*.js') > $@
+cat runtime/javascript/header.js $$(find out/dezyne out/dezyne -name '*.js') > $@
 if [ -f node_modules/jshint/bin/jshint ]; then nodejs node_modules/jshint/bin/jshint $@; fi
 nodejs $@ $(UPDATE)
-$(diff) baseline/component/$*.js out/component | diffstat || true
-@$(diff) baseline/component/$*.js out/component > /dev/null
+$(diff) baseline/$*.js out/dezyne | diffstat || true
+@$(diff) baseline/$*.js out/dezyne > /dev/null
 endef
 
-#out/%.js.up: UPDATE=||:; cp out/component/$*.js baseline/component && cp out/interface/*.js baseline/interface
-out/%.js.up: UPDATE=&& cp out/component/$*.js baseline/component && cp out/interface/*.js baseline/interface
+#out/%.js.up: UPDATE=||:; cp out/dezyne/$*.js baseline
+out/%.js.up: UPDATE=&& cp out/dezyne/$*.js baseline
 out/%.js.up: examples/regression/%.dzn
 	$(.JAVASCRIPT_REGRESSION)
 
@@ -502,15 +500,15 @@ javascript-alarm: compile
 	 	examples/ISensor.dzn\
 	 	examples/ISiren.dzn;\
 	 	do $(shell pwd)/gaiag -l javascript $$file; done
-	cat templates/javascript/header.js\
-		 $$(find out/interface out/component -name '*.js')\
+	cat runtime/javascript/header.js\
+		 $$(find out/dezyne -name '*.js')\
 		examples/alarm.js > out/alarm.js
 	nodejs out/alarm.js
-	$(diff) baseline/interface/IConsole.js out/interface
-	$(diff) baseline/interface/ISensor.js out/interface
-	$(diff) baseline/interface/ISiren.js out/interface
-	$(diff) baseline/component/Alarm.js out/component
-	$(diff) baseline/component/AlarmSystem.js out/component
+	$(diff) baseline/IConsole.js out/dezyne
+	$(diff) baseline/ISensor.js out/dezyne
+	$(diff) baseline/ISiren.js out/dezyne
+	$(diff) baseline/Alarm.js out/dezyne
+	$(diff) baseline/AlarmSystem.js out/dezyne
 
 javascript: compile javascript-alarm javascript-regression
 
@@ -525,18 +523,18 @@ GOOPS_SOURCES = $(filter-out $(GOOPS_BROKEN),$(CC_SOURCES))
 define .GOOPS_REGRESSION
 rm -rf out && mkdir out && ln -s ../examples ../templates out
 cd out && $(WFC) $< && $(shell pwd)/gaiag -l goops $<
--$(diff) baseline/component/$*.scm out/component
+-$(diff) baseline/$*.scm out/dezyne
 cat templates/goops/header.scm\
-	 $$(find out/interface out/component -name '*.scm')\
+	 $$(find out/dezyne out/dezyne -name '*.scm')\
 	examples/alarm.scm > $@
-cat templates/goops/header.scm $$(find out/interface out/component -name '*.scm') > $@
+cat templates/goops/header.scm $$(find out/dezyne out/dezyne -name '*.scm') > $@
 guile $@ $(UPDATE)
-$(diff) baseline/component/$*.scm out/component | diffstat || true
-@$(diff) baseline/component/$*.scm out/component > /dev/null
+$(diff) baseline/$*.scm out/dezyne | diffstat || true
+@$(diff) baseline/$*.scm out/dezyne > /dev/null
 endef
 
-#out/%.scm.up: UPDATE=||:; cp out/component/$*.scm baseline/component && cp out/interface/*.scm baseline/interface
-out/%.scm.up: UPDATE=&& cp out/component/$*.scm baseline/component && cp out/interface/*.scm baseline/interface
+#out/%.scm.up: UPDATE=||:; cp out/dezyne/$*.scm baseline && cp out/dezyne/*.scm baseline
+out/%.scm.up: UPDATE=&& cp out/dezyne/$*.scm baseline && cp out/dezyne/*.scm baseline
 out/%.scm.up: examples/regression/%.dzn
 	$(.GOOPS_REGRESSION)
 
@@ -556,21 +554,21 @@ goops-alarm: compile
 	 	examples/ISiren.dzn;\
 	 	do $(shell pwd)/gaiag -l goops $$file; done
 	cat templates/goops/header.scm\
-		 $$(find out/interface out/component -name '*.scm')\
+		 $$(find out/dezyne out/dezyne -name '*.scm')\
 		examples/alarm.scm > out/alarm.scm
 	cd out && bash ./alarm.scm
-	$(diff) baseline/interface/IConsole.scm out/interface
-	$(diff) baseline/interface/ISensor.scm out/interface
-	$(diff) baseline/interface/ISiren.scm out/interface
-	$(diff) baseline/component/Alarm.scm out/component
-	$(diff) baseline/component/AlarmSystem.scm out/component
+	$(diff) baseline/IConsole.scm out/dezyne
+	$(diff) baseline/ISensor.scm out/dezyne
+	$(diff) baseline/ISiren.scm out/dezyne
+	$(diff) baseline/Alarm.scm out/dezyne
+	$(diff) baseline/AlarmSystem.scm out/dezyne
 
 goops: compile goops-alarm goops-regression
 
 .PHONY: glue
 
 glue:
-	rm -rf out && mkdir -p out && ln -s ../examples ../runtime ../../webdemo ../templates ../$(DEPTH)/webdemo/dzn out
+	rm -rf out && mkdir -p out && cd out && ln -s ../examples ../runtime/c++/* ../../webdemo ../templates ../$(DEPTH)/webdemo/dzn .
 	cd out && for model in\
 	 	AlarmSystem\
 	 	Alarm\
@@ -578,7 +576,6 @@ glue:
 	 	Sensor\
 	 	Siren;\
 	 	do $(shell pwd)/gaiag -m $$model -l c++ webdemo/dzn/AlarmSystem.dzn; done
-	ln -sf runtime/* out
 	ln -sf examples/glue.cc out
 	ln -sf examples/ISensorInterface.h out
 	ln -sf examples/SensorComponent.h out
