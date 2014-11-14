@@ -1,7 +1,7 @@
 ##include "#.model Component.h"
 
-##include "locator.h"
-##include "runtime.h"
+##include "locator.hh"
+##include "runtime.hh"
 
 ##include "#.model .hh"
 

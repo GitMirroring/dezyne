@@ -22,7 +22,7 @@
 //
 // Code:
 
-#include "runtime.h"
+#include "runtime.hh"
 
 namespace dezyne {
 runtime::runtime(){}

@@ -36,70 +36,7 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = i11_States_Armed | i11_States_Disarmed | i11_States_Disarming | i11_States_Triggered | i243_enable | i244_disable | i245_triggered | i246_disabled | i251_States_Disabled | i251_States_Disabling | i251_States_Enabled | i251_States_Triggered | i3_arm | i487_turnon | i488_turnoff | i491_States_Off | i491_States_On | i4_disarm | i5_detected | i611_States_Armed | i611_States_Disarmed | i611_States_Disarming | i611_States_Triggered | i6_deactivated | inevitable | modeling | optional | return | the_end'
--- interface.csp.scm
-
-channel i242_IConsole: {i3_arm,i4_disarm,inevitable,optional,the_end'}
-channel i242_IConsole_'': {i5_detected,i6_deactivated}
-channel i242_IConsole_': {return}
-channel i242_IConsole_in',i242_IConsole_out': {i242_IConsole_'.return}
-channel i242_IConsole_''': {modeling}
-
-IF_i242_IConsole_(IG,CS) = let
-
-i242_IConsole_(((i19_state),(stack'))) =
-((i19_state == i11_States_Disarmed)) & (
-i242_IConsole?x:{i3_arm} ->
-semi_(assign_(\ ((i19_state),(stack')) @ ((i11_States_Armed),(stack'))),
-(\ P',V' @ i242_IConsole_'.return -> P'(V')))(\ V' @ i242_IConsole.the_end' -> i242_IConsole_(V'),((i19_state),(stack')))
- []
-  IG & i242_IConsole?x:{i4_disarm} ->
-illegal_(STOP,<>))
-[]
-((i19_state == i11_States_Armed)) & (
-i242_IConsole?x:{i4_disarm} ->
-semi_(assign_(\ ((i19_state),(stack')) @ ((i11_States_Disarming),(stack'))),
-(\ P',V' @ i242_IConsole_'.return -> P'(V')))(\ V' @ i242_IConsole.the_end' -> i242_IConsole_(V'),((i19_state),(stack')))
- []
-  i242_IConsole?x:{optional} ->
-semi_(semi_((\ P',V' @ i242_IConsole_''!i5_detected -> P'(V')),
-assign_(\ ((i19_state),(stack')) @ ((i11_States_Triggered),(stack')))),
-(\ P',V' @ i242_IConsole_'''.modeling -> P'(V')))(\ V' @ i242_IConsole.the_end' -> i242_IConsole_(V'),((i19_state),(stack')))
- []
-  IG & i242_IConsole?x:{i3_arm} ->
-illegal_(STOP,<>))
-[]
-((i19_state == i11_States_Triggered)) & (
-i242_IConsole?x:{i4_disarm} ->
-semi_(assign_(\ ((i19_state),(stack')) @ ((i11_States_Disarming),(stack'))),
-(\ P',V' @ i242_IConsole_'.return -> P'(V')))(\ V' @ i242_IConsole.the_end' -> i242_IConsole_(V'),((i19_state),(stack')))
- []
-  IG & i242_IConsole?x:{i3_arm} ->
-illegal_(STOP,<>))
-[]
-((i19_state == i11_States_Disarming)) & (
-i242_IConsole?x:{inevitable} ->
-semi_(semi_((\ P',V' @ i242_IConsole_''!i6_deactivated -> P'(V')),
-assign_(\ ((i19_state),(stack')) @ ((i11_States_Disarmed),(stack')))),
-(\ P',V' @ i242_IConsole_'''.modeling -> P'(V')))(\ V' @ i242_IConsole.the_end' -> i242_IConsole_(V'),((i19_state),(stack')))
- []
-  IG & i242_IConsole?x:{i3_arm,i4_disarm} ->
-illegal_(STOP,<>))
-[]
-CS & i242_IConsole?x:{inevitable,optional} -> illegal_(STOP,<>)
-
-REORDER' = i242_IConsole?x' -> (i242_IConsole_in'?y' -> i242_IConsole.the_end' -> i242_IConsole_out'!y' -> REORDER' [] i242_IConsole.the_end' -> REORDER')
-
-compress(x) = let
-transparent sbisim
-transparent diamond
-within sbisim(diamond(x))
-
-within compress((if CS
-                 then i242_IConsole_(((i11_States_Disarmed),(<>)))
-                 else i242_IConsole_(((i11_States_Disarmed),(<>))) [|{i242_IConsole.optional}|] CHAOS({i242_IConsole.optional})) [[x<-i242_IConsole_in'.x|x<-extensions(i242_IConsole_in')]] [|{|i242_IConsole,i242_IConsole_in',i242_IConsole.the_end'|}|] REORDER' [[i242_IConsole_out'.x<-x|x<-extensions(i242_IConsole_out')]] \ {|i242_IConsole_in',i242_IConsole.the_end'|})
-
--- end of interface.csp.scm
+datatype event_enumeration_alphabet = i243_enable | i244_disable | i245_triggered | i246_disabled | i251_States_Disabled | i251_States_Disabling | i251_States_Enabled | i251_States_Triggered | inevitable | modeling | optional | return | the_end'
 -- interface.csp.scm
 
 channel i482_ISensor: {i243_enable,i244_disable,inevitable,optional,the_end'}
@@ -163,145 +100,41 @@ within compress((if CS
                  else i482_ISensor_(((i251_States_Disabled),(<>))) [|{i482_ISensor.optional}|] CHAOS({i482_ISensor.optional})) [[x<-i482_ISensor_in'.x|x<-extensions(i482_ISensor_in')]] [|{|i482_ISensor,i482_ISensor_in',i482_ISensor.the_end'|}|] REORDER' [[i482_ISensor_out'.x<-x|x<-extensions(i482_ISensor_out')]] \ {|i482_ISensor_in',i482_ISensor.the_end'|})
 
 -- end of interface.csp.scm
--- interface.csp.scm
-
-channel i593_ISiren: {i487_turnon,i488_turnoff,the_end'}
-
-channel i593_ISiren_': {return}
-channel i593_ISiren_in',i593_ISiren_out': {i593_ISiren_'.return}
-channel i593_ISiren_''': {modeling}
-
-IF_i593_ISiren_(IG,CS) = let
-
-i593_ISiren_(((i499_state),(stack'))) =
-((i499_state == i491_States_Off)) & (
-i593_ISiren?x:{i487_turnon} ->
-semi_(assign_(\ ((i499_state),(stack')) @ ((i491_States_On),(stack'))),
-(\ P',V' @ i593_ISiren_'.return -> P'(V')))(\ V' @ i593_ISiren.the_end' -> i593_ISiren_(V'),((i499_state),(stack')))
- []
-  IG & i593_ISiren?x:{i488_turnoff} ->
-illegal_(STOP,<>))
-[]
-((i499_state == i491_States_On)) & (
-i593_ISiren?x:{i488_turnoff} ->
-semi_(assign_(\ ((i499_state),(stack')) @ ((i491_States_Off),(stack'))),
-(\ P',V' @ i593_ISiren_'.return -> P'(V')))(\ V' @ i593_ISiren.the_end' -> i593_ISiren_(V'),((i499_state),(stack')))
- []
-  IG & i593_ISiren?x:{i487_turnon} ->
-illegal_(STOP,<>))
-[]
-CS & i593_ISiren?x:{} -> illegal_(STOP,<>)
-
-REORDER' = i593_ISiren?x' -> (i593_ISiren_in'?y' -> i593_ISiren.the_end' -> i593_ISiren_out'!y' -> REORDER' [] i593_ISiren.the_end' -> REORDER')
-
-compress(x) = let
-transparent sbisim
-transparent diamond
-within sbisim(diamond(x))
-
-within compress((if CS
-                 then i593_ISiren_(((i491_States_Off),(<>)))
-                 else i593_ISiren_(((i491_States_Off),(<>)))) [[x<-i593_ISiren_in'.x|x<-extensions(i593_ISiren_in')]] [|{|i593_ISiren,i593_ISiren_in',i593_ISiren.the_end'|}|] REORDER' [[i593_ISiren_out'.x<-x|x<-extensions(i593_ISiren_out')]] \ {|i593_ISiren_in',i593_ISiren.the_end'|})
-
--- end of interface.csp.scm
 -- component.csp.scm
 
-channel i598_console: extensions(i242_IConsole)
-channel i601_sensor: extensions(i482_ISensor)
-channel i604_siren: extensions(i593_ISiren)
+channel i483_sensor: extensions(i482_ISensor)
 
-channel i598_console_': extensions(i242_IConsole_')
-channel i601_sensor_': extensions(i482_ISensor_')
-channel i604_siren_': extensions(i593_ISiren_')
+channel i483_sensor_': extensions(i482_ISensor_')
 
-channel i598_console_'': extensions(i242_IConsole_'')
-channel i601_sensor_'': extensions(i482_ISensor_'')
+channel i483_sensor_'': extensions(i482_ISensor_'')
 
-channel i598_console_''': extensions(i242_IConsole_''')
-channel i601_sensor_''': extensions(i482_ISensor_''')
-channel i604_siren_''': extensions(i593_ISiren_''')
+channel i483_sensor_''': extensions(i482_ISensor_''')
 
 
 
-CO_i1019_Alarm_(IIG,IG) = let
+CO_i525_Sensor_(IIG,IG) = let
 
-i1019_Alarm_(((i619_state,i623_sounding),(stack'))) = transition_begin -> (
-((i619_state == i611_States_Disarmed)) & (
-i598_console?x:{i3_arm} ->
-semi_(semi_((\ P',V' @ i601_sensor!i243_enable -> i601_sensor_'.return -> P'(V')),
-assign_(\ ((i619_state,i623_sounding),(stack')) @ ((i611_States_Armed,i623_sounding),(stack')))),
-(\ P',V' @ i242_IConsole_'.return -> P'(V')))(\ V' @ transition_end -> i1019_Alarm_(V'),((i619_state,i623_sounding),(stack')))
- []
-  IIG & i598_console?x:{i4_disarm} ->
-illegal_(STOP,<>)
- []
-  IG & i601_sensor_''?x:{i245_triggered,i246_disabled} ->
-illegal_(STOP,<>))
+i525_Sensor_(((<>),(stack'))) = transition_begin -> (
+i483_sensor?x:{i243_enable} ->
+semi_((\ P',V' @ i483_sensor_''!i245_triggered -> P'(V')),
+(\ P',V' @ i482_ISensor_'.return -> P'(V')))(\ V' @ transition_end -> i525_Sensor_(V'),((<>),(stack')))
 []
-((i619_state == i611_States_Armed)) & (
-IIG & i598_console?x:{i3_arm} ->
-illegal_(STOP,<>)
- []
-  i598_console?x:{i4_disarm} ->
-semi_(semi_((\ P',V' @ i601_sensor!i244_disable -> i601_sensor_'.return -> P'(V')),
-assign_(\ ((i619_state,i623_sounding),(stack')) @ ((i611_States_Disarming,i623_sounding),(stack')))),
-(\ P',V' @ i242_IConsole_'.return -> P'(V')))(\ V' @ transition_end -> i1019_Alarm_(V'),((i619_state,i623_sounding),(stack')))
- []
-  i601_sensor_''?x:{i245_triggered} ->
-semi_(semi_((\ P',V' @ i598_console_''!i5_detected -> P'(V')),
-semi_((\ P',V' @ i604_siren!i487_turnon -> i604_siren_'.return -> P'(V')),
-semi_(assign_(\ ((i619_state,i623_sounding),(stack')) @ ((i619_state,true),(stack'))),
-assign_(\ ((i619_state,i623_sounding),(stack')) @ ((i611_States_Triggered,i623_sounding),(stack')))))),
-skip_)(\ V' @ transition_end -> i1019_Alarm_(V'),((i619_state,i623_sounding),(stack')))
- []
-  IG & i601_sensor_''?x:{i246_disabled} ->
-illegal_(STOP,<>))
-[]
-((i619_state == i611_States_Disarming)) & (
-IIG & i598_console?x:{i3_arm,i4_disarm} ->
-illegal_(STOP,<>)
- []
-  IG & i601_sensor_''?x:{i245_triggered} ->
-illegal_(STOP,<>))
-[]
-(((i619_state == i611_States_Disarming) and i623_sounding)) & (
-i601_sensor_''?x:{i246_disabled} ->
-semi_(semi_((\ P',V' @ i598_console_''!i6_deactivated -> P'(V')),
-semi_(assign_(\ ((i619_state,i623_sounding),(stack')) @ ((i619_state,false),(stack'))),
-assign_(\ ((i619_state,i623_sounding),(stack')) @ ((i611_States_Disarmed,i623_sounding),(stack'))))),
-skip_)(\ V' @ transition_end -> i1019_Alarm_(V'),((i619_state,i623_sounding),(stack'))))
-[]
-(((i619_state == i611_States_Disarming) and (not i623_sounding))) & (
-i601_sensor_''?x:{i246_disabled} ->
-semi_(semi_((\ P',V' @ i598_console_''!i6_deactivated -> P'(V')),
-assign_(\ ((i619_state,i623_sounding),(stack')) @ ((i611_States_Disarmed,i623_sounding),(stack')))),
-skip_)(\ V' @ transition_end -> i1019_Alarm_(V'),((i619_state,i623_sounding),(stack'))))
-[]
-((i619_state == i611_States_Triggered)) & (
-IIG & i598_console?x:{i3_arm} ->
-illegal_(STOP,<>)
- []
-  i598_console?x:{i4_disarm} ->
-semi_(semi_((\ P',V' @ i601_sensor!i244_disable -> i601_sensor_'.return -> P'(V')),
-semi_(assign_(\ ((i619_state,i623_sounding),(stack')) @ ((i619_state,false),(stack'))),
-assign_(\ ((i619_state,i623_sounding),(stack')) @ ((i611_States_Disarming,i623_sounding),(stack'))))),
-(\ P',V' @ i242_IConsole_'.return -> P'(V')))(\ V' @ transition_end -> i1019_Alarm_(V'),((i619_state,i623_sounding),(stack')))
- []
-  IG & i601_sensor_''?x:{i245_triggered,i246_disabled} ->
-illegal_(STOP,<>))
+i483_sensor?x:{i244_disable} ->
+semi_((\ P',V' @ i483_sensor_''!i246_disabled -> P'(V')),
+(\ P',V' @ i482_ISensor_'.return -> P'(V')))(\ V' @ transition_end -> i525_Sensor_(V'),((<>),(stack')))
 )
 
-within i1019_Alarm_(((i611_States_Disarmed,false),(<>)))
+within i525_Sensor_(((<>),(<>)))
 
 channel extensions_over_empty_channels_is_undefined
-channel IN',OUT' : {i601_sensor_''.i245_triggered,i601_sensor_''.i246_disabled,extensions_over_empty_channels_is_undefined}
+channel IN',OUT' : {extensions_over_empty_channels_is_undefined}
 
 channel LINK' : {|IN',OUT'|}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {i242_IConsole_'.return}
-channel reorder_out : {i598_console_'.return}
+channel reorder_in  : {i482_ISensor_'.return}
+channel reorder_out : {i483_sensor_'.return}
 channel queue_full'
 
 SEMANTICS(in',out',link',client',modeling',end') = let
@@ -325,7 +158,7 @@ within
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
        []
-       reorder_in?i242_IConsole_'.x' -> reorder_out!i598_console_'.x' -> R'(A')
+       reorder_in?i482_ISensor_'.x' -> reorder_out!i483_sensor_'.x' -> R'(A')
 
 S'    = let
 
@@ -338,9 +171,9 @@ FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
             []
             ([] x':end' @ x' ->  Busy(c',r'))
             []
-            (r' == <> & reorder_in?i242_IConsole_'.x' -> Busy(c',<x'>))
+            (r' == <> & reorder_in?i482_ISensor_'.x' -> Busy(c',<x'>))
 
-Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i598_console_'.head(r') -> Idle(0)))
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i483_sensor_'.head(r') -> Idle(0)))
               []
               (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
               []
@@ -348,43 +181,36 @@ Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorde
               []
               (c' > 0 & out'?x' -> Busy(c'-1,r'))
               []
-              (r' != <> & reorder_in?i242_IConsole_'.x' -> illegal -> STOP)
+              (r' != <> & reorder_in?i482_ISensor_'.x' -> illegal -> STOP)
 
 within Idle(0)
 
 within Q' [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-AS_i1019_Alarm_(IIG) = let
+AS_i525_Sensor_(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
 
-ClientCalls = {i598_console.i3_arm,i598_console.i4_disarm}
-UsedModeling = {i601_sensor.inevitable,i601_sensor.optional}
-TheEnd = {|i601_sensor_''',i604_siren_'''|}
-within compress((CO_i1019_Alarm_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-                 [|{|OUT',transition_begin,transition_end,reorder_in,i598_console,i598_console_'|}|]
+ClientCalls = {i483_sensor.i243_enable,i483_sensor.i244_disable}
+UsedModeling = {}
+TheEnd = {||}
+within compress((CO_i525_Sensor_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+                 [|{|OUT',transition_begin,transition_end,reorder_in,i483_sensor,i483_sensor_'|}|]
                  SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
-                [|{|IN',i601_sensor,i601_sensor_',i601_sensor_''',i604_siren,i604_siren_',i604_siren_'''|}|]
-                (IF_i482_ISensor_(true,false) [[i482_ISensor.x<-i601_sensor.x|x<-extensions(i601_sensor)]][[i482_ISensor_'.x<-i601_sensor_'.x|x<-extensions(i601_sensor_')]][[i482_ISensor_''.x<-i601_sensor_''.x|x<-extensions(i601_sensor_'')]][[i482_ISensor_'''.x<-i601_sensor_'''.x|x<-extensions(i601_sensor_''')]]
-                 ||| IF_i593_ISiren_(true,false) [[i593_ISiren.x<-i604_siren.x|x<-extensions(i604_siren)]][[i593_ISiren_'.x<-i604_siren_'.x|x<-extensions(i604_siren_')]][[i593_ISiren_'''.x<-i604_siren_'''.x|x<-extensions(i604_siren_''')]]
+                [|{|IN'|}|]
+                (STOP
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({i242_IConsole.inevitable,i242_IConsole.optional,i242_IConsole.i3_arm,i242_IConsole.i4_disarm}) [F= IF_i242_IConsole_(true,true) \ diff(Events,{i242_IConsole.inevitable,i242_IConsole.optional,i242_IConsole.i3_arm,i242_IConsole.i4_disarm,illegal})
-assert IF_i242_IConsole_(false,false) :[deadlock free]
-assert IF_i242_IConsole_(true,false)  \ {|i242_IConsole.inevitable,i242_IConsole.optional,i242_IConsole_'''|} :[livelock free]
 assert COMPLETE'({i482_ISensor.inevitable,i482_ISensor.optional,i482_ISensor.i243_enable,i482_ISensor.i244_disable}) [F= IF_i482_ISensor_(true,true) \ diff(Events,{i482_ISensor.inevitable,i482_ISensor.optional,i482_ISensor.i243_enable,i482_ISensor.i244_disable,illegal})
 assert IF_i482_ISensor_(false,false) :[deadlock free]
 assert IF_i482_ISensor_(true,false)  \ {|i482_ISensor.inevitable,i482_ISensor.optional,i482_ISensor_'''|} :[livelock free]
-assert COMPLETE'({i593_ISiren.i487_turnon,i593_ISiren.i488_turnoff}) [F= IF_i593_ISiren_(true,true) \ diff(Events,{i593_ISiren.i487_turnon,i593_ISiren.i488_turnoff,illegal})
-assert IF_i593_ISiren_(false,false) :[deadlock free]
-assert IF_i593_ISiren_(true,false) :[livelock free]
-assert CO_i1019_Alarm_(true,true)[[i242_IConsole_'.x<-i598_console_'.x|x<-extensions(i598_console_')]] :[deterministic]
-assert COMPLETE'({i598_console.i3_arm,i598_console.i4_disarm,i601_sensor_''.i245_triggered,i601_sensor_''.i246_disabled}) [F= CO_i1019_Alarm_(true,true)[[i242_IConsole_'.x'<-i598_console_'.x'|x'<-extensions(i598_console_')]] \ diff(Events,{i598_console.i3_arm,i598_console.i4_disarm,i601_sensor_''.i245_triggered,i601_sensor_''.i246_disabled,illegal})
-assert STOP [T= AS_i1019_Alarm_(false) \ diff(Events,{illegal})
-assert AS_i1019_Alarm_(false) :[deadlock free]
-assert IF_i242_IConsole_(true,false) [[i242_IConsole.x<-i598_console.x|x<-extensions(i598_console)]][[i242_IConsole_'.x<-i598_console_'.x|x<-extensions(i598_console_')]][[i242_IConsole_''.x<-i598_console_''.x|x<-extensions(i598_console_'')]]\ {i242_IConsole_'''.modeling,i598_console.inevitable,i598_console.optional} [F= AS_i1019_Alarm_(true) \ diff(Events,{|illegal,i598_console,i598_console_',i598_console_''|})
-assert AS_i1019_Alarm_(true) \ diff(Events,{|illegal,i598_console,i598_console_',i598_console_''|}) :[livelock free]
+assert CO_i525_Sensor_(true,true)[[i482_ISensor_'.x<-i483_sensor_'.x|x<-extensions(i483_sensor_')]] :[deterministic]
+assert COMPLETE'({i483_sensor.i243_enable,i483_sensor.i244_disable}) [F= CO_i525_Sensor_(true,true)[[i482_ISensor_'.x'<-i483_sensor_'.x'|x'<-extensions(i483_sensor_')]] \ diff(Events,{i483_sensor.i243_enable,i483_sensor.i244_disable,illegal})
+assert STOP [T= AS_i525_Sensor_(false) \ diff(Events,{illegal})
+assert AS_i525_Sensor_(false) :[deadlock free]
+assert IF_i482_ISensor_(true,false) [[i482_ISensor.x<-i483_sensor.x|x<-extensions(i483_sensor)]][[i482_ISensor_'.x<-i483_sensor_'.x|x<-extensions(i483_sensor_')]][[i482_ISensor_''.x<-i483_sensor_''.x|x<-extensions(i483_sensor_'')]]\ {i482_ISensor_'''.modeling,i483_sensor.inevitable,i483_sensor.optional} [F= AS_i525_Sensor_(true) \ diff(Events,{|illegal,i483_sensor,i483_sensor_',i483_sensor_''|})
+assert AS_i525_Sensor_(true) \ diff(Events,{|illegal,i483_sensor,i483_sensor_',i483_sensor_''|}) :[livelock free]

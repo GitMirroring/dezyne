@@ -9,7 +9,7 @@
 ##include "#interface .hh"
 #}) (gom:ports model))
 
-#(if (pair? (injected-bindings model)) (list "#include \"locator.h\"") (list "namespace dezyne\n {\nstruct locator;\n}"))
+#(if (pair? (injected-bindings model)) (list "#include \"locator.hh\"") (list "namespace dezyne\n {\nstruct locator;\n}"))
 
 namespace dezyne
 {

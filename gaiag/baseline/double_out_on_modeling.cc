@@ -23,8 +23,8 @@
 
 #include "double_out_on_modeling.hh"
 
-#include "locator.h"
-#include "runtime.h"
+#include "locator.hh"
+#include "runtime.hh"
 
 double_out_on_modeling::double_out_on_modeling(const dezyne::locator& dezyne_locator)
 : rt(dezyne_locator.get<dezyne::runtime>())

@@ -2,8 +2,8 @@
 
 ##include "asdInterfaces.h"
 
-##include "locator.h"
-##include "runtime.h"
+##include "locator.hh"
+##include "runtime.hh"
 
 ##include "#.model Component.h"
 

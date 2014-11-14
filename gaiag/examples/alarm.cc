@@ -22,8 +22,8 @@
 
 #include "AlarmSystem.hh"
 
-#include "locator.h"
-#include "runtime.h"
+#include "locator.hh"
+#include "runtime.hh"
 
 #include <map>
 #include <queue>

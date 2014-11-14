@@ -23,8 +23,8 @@
 
 #include "Siren.hh"
 
-#include "locator.h"
-#include "runtime.h"
+#include "locator.hh"
+#include "runtime.hh"
 
 namespace dezyne
 {
