@@ -672,5 +672,32 @@
                          'rfun
                          (format #f "function ~a expects ~a arguments, found: ~a" "~a" 0 1))))
 
+(pass-if "ast:resolve-variable-range-error"
+         (gom-pretty-noisy-equal?
+          (ast:resolve-model
+           '(interface
+             I
+             (types (int I02 (range 0 2)))
+             (events)
+             (behaviour
+              #f
+              (types)
+              (variables
+               (variable i (type I02) (expression 3)))
+              (functions)
+              (compound))))
+           `(interface
+             I
+             (types (int I02 (range 0 2)))
+             (events)
+             (behaviour
+              #f
+              (types)
+              (variables
+               ,(resolve-error '(variable i (type I02) (expression 3))
+                              'i
+                              (format #f "variable ~a out of range, expected ~a..~a, found: ~a" "~a" 0 2 3)))
+              (functions)
+              (compound)))))
 
 (read-hash-extend #\{ hash-read-string)

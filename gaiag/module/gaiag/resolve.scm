@@ -292,7 +292,7 @@
 
     ((or 'false 'true) o)
     ((or 'and 'or) o)
-    ((or '! '+ '- ) o)
+    ((or '! '+ '- '/ '*) o)
     ((or '== '!= '< '<= '> '>= 'group) o)
 
     (($ <gom:parameter> name type)
@@ -498,13 +498,43 @@
        (make <behaviour>
          :name name
          :types types
-         :variables (gom:map (resolve-model model) variables)
+         :variables (resolve-model model variables)
          :functions (gom:map (resolve-model model) (make <functions> :elements (append functions functions-)))
          :statement (gom:map (resolve-model model) (make <compound> :elements statements)))))
+
+    (($ <variables> variables)
+     (let ((variables (map (range-check model) variables)))
+       (make <variables> :elements (map (resolve-model model) variables))))
 
     ((? (is? <ast>)) (gom:map (lambda (o) (resolve-model model o locals)) o))
     ((h t ...) (map (lambda (o) (resolve-model model o locals)) o))
     (_ o)))
+
+(define ((range-check model) variable)
+  (define (int-type? type) (gom:integer model type))
+  (or (and-let* ((int (int-type? (.type variable)))
+                 (range (.range int))
+                 (expression (.expression variable))
+                 (value (evaluate model expression))
+                 (from (.from range))
+                 (to (.to range))
+                 ((or (< value from) (> value to))))
+                (resolve-error variable
+                               (.name variable)
+                               (format #f "variable ~a out of range, expected ~a..~a, found: ~a" "~a" from to value)))
+      variable))
+
+(define-method (evaluate (model <model>) o)
+  (define (member? identifier) (gom:variable model identifier))
+  (match o
+    (($ <expression> expression) (evaluate model expression))
+    ((? number?) o)
+    (('+ a b) (+ (evaluate model a) (evaluate model b)))
+    (('- a b) (- (evaluate model a) (evaluate model b)))
+    (('* a b) (* (evaluate model a) (evaluate model b)))
+    (('/ a b) (/ (evaluate model a) (evaluate model b)))
+    (($ <var> name) (evaluate model (.expression (member? name))))
+    (('group g) g)))
 
 (define* ((recurses? model :optional (seen '())) name)
   (define (return-call ast)
