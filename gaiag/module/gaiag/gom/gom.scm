@@ -33,6 +33,7 @@
            .expression
            .field
            .fields
+           .from
            .functions
            .identifier
            .injected
@@ -51,6 +52,7 @@
            .signature
            .statement
            .then
+           .to
            .trigger
            .triggers
            .type

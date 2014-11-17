@@ -485,13 +485,14 @@
          :last? last?))
 
     (($ <function> name ($ <signature> type ($ <parameters> parameters)) recursive? statement)
-       (make <function>
-         :name name
-         :signature (make <signature>
-                      :type type
-                      :parameters (make <parameters> :elements (purge-parameter-list o parameters)))
-         :recursive recursive?
-         :statement (purge-data model statement locals)))
+     ;; FIXME: extend locals?
+     (make <function>
+       :name name
+       :signature (make <signature>
+                    :type type
+                    :parameters (make <parameters> :elements (purge-parameter-list o parameters)))
+       :recursive recursive?
+       :statement (purge-data model statement locals)))
 
     (($ <assign> (? extern?) expression) (make <skip>))
 
@@ -714,15 +715,16 @@
                    transformed)))))
 
       (($ <assign> identifier ($ <expression> value))
-       (make <assign>
-         :identifier context
-         :expression (make <expression>
-                       :value (assign context identifier value))))
+       (make <csp-assign>
+         :identifier identifier
+         :context (make <context> :members '(unused))
+         :expression context
+         :expressions (assign context identifier value)))
 
       (($ <assign> identifier expression)
        (make <csp-assign>
          :context context
-         :identifier 'r'
+         :identifier identifier
          :expression expression
          :expressions (assign context identifier 'r')))
 
@@ -815,13 +817,26 @@
     ((h t ...) (->string (map (lambda (x) (=>string ast x)) src)))
     (_ (->string src))))
 
-(define* (csp-transform ast src :optional (inevitable-optional? #f) (channel #f) (provided-on? #t) (tail-recursive? #f))
-  (let* ((model (or (gom:component ast) (gom:interface ast)))
-	 (model-name (.name model))
+(define* (csp-transform ast src :optional (inevitable-optional? #f) (channel #f) (provided-on? #t) (locals '()))
+  (let ((model (or (gom:component ast) (gom:interface ast))))
+    (csp-transform model src inevitable-optional? channel provided-on? locals)))
+
+(define-generic csp-transform)
+
+(define-method (csp-transform (model <model>) src inevitable-optional? channel provided-on? locals)
+  (define (member? identifier) (gom:variable model identifier))
+  (define (local? identifier) (assoc-ref locals identifier))
+  (define (var? identifier) (or (member? identifier) (local? identifier)))
+  (define (int-type? type) (gom:integer model type))
+  (define (int? identifier) (and=> (var? identifier)
+                                   (lambda (var) (int-type? (.type var)))))
+
+  (let* ((model-name (.name model))
          (channel (if (is-a? model <interface>) model-name (.type (gom:port model))))
 	 (behaviour (.name (.behaviour model)))
          (component? (is-a? model <component>)))
-    (=>string ast
+
+    (=>string model
      (match src
 
        (($ <context>) src)
@@ -835,39 +850,59 @@
                (channel (list channel suffix)))
           (list "(\\ P',V' @ " channel "!" event-name channel-return " -> P'(V'))")))
 
-       (($ <assign> identifier ($ <expression> value))
-        (list "assign_(\\ (" identifier ") @ (" value "))"))
 
        (($ <csp-assign> context identifier ($ <action> (and ($ <trigger> port event) (get! trigger))) expressions)
         (let ((action (list "semi_(send_(" (list (or port channel) (if (gom:out? (gom:event model (trigger))) "_''")) "," event "),recv_(" (or port channel) "_'," event "))")))
-          (list "assign_active_(" action ",\n\\ (" context ")," identifier " @ (" expressions "))" )))
+          (list "assign_active_(" action ",\n\\ (" context ")," "r'" " @ (" expressions "))" )))
+
+       (($ <csp-assign> context (and (? int?) (get! identifier)) ($ <call> function arguments) expressions)
+        (let* ((range (.range (int? (identifier))))
+               (lo (.from range))
+               (hi (.to range))
+               (call (make <csp-call> :context context :identifier function :arguments arguments))
+               (call (csp-transform model call inevitable-optional? channel provided-on? locals)))
+          (list "let " function "_result' = " call " within assign_int_active_(" function "_result',\n\\ (" context ")," "r'" " @ (" expressions ")," lo "<=" lo " and " hi "<=" hi ")")))
 
        (($ <csp-assign> context identifier ($ <call> function arguments) expressions)
         (let* ((call (make <csp-call> :context context :identifier function :arguments arguments))
-               (call (csp-transform ast call inevitable-optional? channel provided-on? tail-recursive?)))
-          (list "assign_active_(" call ",\n\\ (" context ")," identifier " @ (" expressions "))")))
+               (call (csp-transform model call inevitable-optional? channel provided-on? locals)))
+          (list "assign_active_(" call ",\n\\ (" context ")," "r'" " @ (" expressions "))")))
 
-       (($ <csp-call> context identifier ($ <arguments> '()) last?)
-        (let ((continuation-p (if last? "PF'" "P'")))
+       (($ <csp-assign> context (and (? int?) (get! identifier)) expression expressions)
+        (let* ((range (.range (int? (identifier))))
+               (lo (.from range))
+               (hi (.to range)))
+         (list "assign_int_((\\ (" expression ") @ (" expressions ")),(\\ (" expression ") @ " lo "<=" (identifier) " and " (identifier) "<=" hi "))")))
+
+       (($ <csp-assign> context identifier expression expressions)
+        (list "assign_(\\ (" expression ") @ (" expressions "))"))
+
+       (($ <csp-call> context identifier ($ <arguments> '()) lmodel?)
+        (let ((continuation-p (if lmodel? "PF'" "P'")))
          (list "call_(\\ P',V' @ " identifier "(" continuation-p ",V'))")))
 
-       (($ <csp-call> context identifier arguments last?)
-        (let ((continuation-p (if last? "PF'" "P'")))
+       (($ <csp-call> context identifier arguments lmodel?)
+        (let ((continuation-p (if lmodel? "PF'" "P'")))
          (list "call_args_(\\ P',V' @ " identifier "(" continuation-p ",V'),(\\ (" context ") @ (" arguments ")))")))
 
        (($ <function> name ($ <signature> type ($ <parameters> '())) recursive? statement)
-        (let ((transformed (csp-transform ast statement inevitable-optional? channel provided-on? recursive?)))
+        (let ((transformed (csp-transform model statement inevitable-optional? channel provided-on? locals)))
           (list name "(PF',V') = (" transformed ")(PF',V')\n")))
 
-       (($ <function> name signature recursive? statement)
-        (let ((transformed (csp-transform ast statement inevitable-optional? channel provided-on? recursive?)))
+       (($ <function> name ($ <signature> type ($ <parameters> parameters)) recursive? statement)
+        (let* ((locals (let loop ((parameters parameters) (locals locals))
+                         (if (null? parameters)
+                             locals
+                             (loop (cdr parameters)
+                                   (acons (.name (car parameters)) (car parameters) locals)))))
+               (transformed (csp-transform model statement inevitable-optional? channel provided-on? locals)))
           (list name "(PF',V') = (" transformed ")(PF',V')\n")))
 
        (($ <csp-if>)
         (let ((context (.context src))
-              (expression (csp-expression->string ast (.expression src)))
-              (then (csp-transform ast (.then src) inevitable-optional? channel provided-on? tail-recursive?))
-              (else (csp-transform ast (.else src) inevitable-optional? channel provided-on? tail-recursive?)))
+              (expression (csp-expression->string model (.expression src)))
+              (then (csp-transform model (.then src) inevitable-optional? channel provided-on? locals))
+              (else (csp-transform model (.else src) inevitable-optional? channel provided-on? locals)))
           (list "ifthenelse_(\\ (" context ") @ (" expression "),\n" then ",\n" else "\n)")))
 
        (($ <illegal>) "illegal_")
@@ -881,7 +916,7 @@
             (let* ((channel (if (is-a? model <interface>) model-name (.port (car triggers))))
                    (IG (if ((provides-event? model) (car triggers)) "IIG & "  "IG & "))
                    (event-names (comma-join (map .event triggers)))
-                   (transformed (csp-transform ast statement inevitable-optional? channel provided-on? tail-recursive?)))
+                   (transformed (csp-transform model statement inevitable-optional? channel provided-on? locals)))
               ((->join "\n[]\n")
                (list (if (pair? ins)
                          (list IG (if (is-a? model <interface>) model-name (.port (car ins))) "?x:{" (comma-join (append modeling-triggers (map .event ins))) "} ->\n" transformed "(STOP,<>)")
@@ -905,8 +940,8 @@
                   (provided-on? (or (and (is-a? model <interface>) (not inevitable-optional?))
                                     (or (is-a? model <interface>) ((provides-event? model) (car triggers)))))
                   (event-names (comma-join (map .event triggers)))
-                  (transformed (csp-transform ast statement inevitable-optional? channel provided-on? tail-recursive?))
-                  (transformed-end (csp-transform ast the-end inevitable-optional? channel provided-on? tail-recursive?)))
+                  (transformed (csp-transform model statement inevitable-optional? channel provided-on? locals))
+                  (transformed-end (csp-transform model the-end inevitable-optional? channel provided-on? locals)))
              ;;(list channel "?x:{" event-names "}" " ->\n" transformed transformed-end)
              ((->join "\n[]\n")
               (list  (if (pair? ins)
@@ -924,35 +959,59 @@
        (($ <return>) "skip_")
 
        (($ <csp-return> context ($ <expression> expression))
-        (let ((expression (csp-expression->string ast expression)))
+        (let ((expression (csp-expression->string model expression)))
           (list "returnvalue_(\\ (" context ") @ " expression ")")))
 
        (($ <semi> statement continuation)
-        (let ((statement (csp-transform ast statement inevitable-optional? channel provided-on? tail-recursive?))
-              (continuation (csp-transform ast continuation inevitable-optional? channel provided-on? tail-recursive?)))
-          (list "semi_(" statement ",\n" continuation ")")))
+        (let* ((transformed (csp-transform model statement inevitable-optional? channel provided-on? locals))
+               (locals (match statement
+                         (($ <csp-variable> name type expression)
+                          (acons name statement locals))
+                         (_ locals)))
+               (continuation (csp-transform model continuation inevitable-optional? channel provided-on? locals)))
+          (list "semi_(" transformed ",\n" continuation ")")))
 
        (($ <skip>) "skip_")
 
        (($ <csp-variable> context name type ($ <action> ($ <trigger> port event)) continuation)
-        (let ((continuation (csp-transform ast continuation inevitable-optional? channel provided-on? tail-recursive?)))
+        (let* ((locals (acons name src locals))
+               (continuation (csp-transform model continuation inevitable-optional? channel provided-on? locals)))
           (list "context_active_(semi_(send_(" (or port channel) "," event "),recv_(" (or port channel) "_'," event ")),\n" continuation ")")))
+
+       (($ <csp-variable> context name (and (? int-type?) (get! type)) ($ <call> identifier arguments) continuation)
+        (let* ((range (.range (int-type? (type))))
+               (lo (.from range))
+               (hi (.to range))
+               (locals (acons name src locals))
+               (call (make <csp-call>  :context context :identifier identifier :arguments arguments))
+               (call (csp-transform model call inevitable-optional? channel provided-on? locals))
+               (continuation (csp-transform model continuation inevitable-optional? channel provided-on? locals)))
+          (list "let " identifier "_result' = "  call " within context_int_active_(" identifier "_result'," lo "<= "lo " and " hi "<=" hi ",\n" continuation ")")))
 
        (($ <csp-variable> context name type ($ <call> identifier arguments) continuation)
         (let* ((call (make <csp-call>  :context context :identifier identifier :arguments arguments))
-               (call (csp-transform ast call inevitable-optional? channel provided-on? tail-recursive?))
-               (continuation (csp-transform ast continuation inevitable-optional? channel provided-on? tail-recursive?)))
+               (call (csp-transform model call inevitable-optional? channel provided-on? locals))
+               (continuation (csp-transform model continuation inevitable-optional? channel provided-on? locals)))
           (list "context_active_(" call ",\n" continuation ")")))
 
+       (($ <csp-variable> context name (and (? int-type?) (get! type)) expression continuation)
+        (let* ((range (.range (int-type? (type))))
+               (lo (.from range))
+               (hi (.to range))
+               (locals (acons name src locals))
+               (continuation (csp-transform model continuation inevitable-optional? channel provided-on? locals)))
+          (list "context_int_(\\ (" context ") @ " expression ",\\ (" context ") @ " lo " <= " expression " and " expression "<=" hi ",\n" continuation ")" )))
+
        (($ <csp-variable> context name type expression continuation)
-        (let ((continuation (csp-transform ast continuation inevitable-optional? channel provided-on? tail-recursive?)))
+        (let* ((locals (acons name src locals))
+               (continuation (csp-transform model continuation inevitable-optional? channel provided-on? locals)))
           (list "context_(\\ (" context ") @ " expression ",\n" continuation ")" )))
 
        (($ <voidreply>)
         (let ((channel-return
                (if (and (not inevitable-optional?) provided-on?)
                        (list "(\\ P',V' @ " channel "_'.return -> P'(V'))")
-                       (if (gom:component ast)
+                       (if (is-a? model <component>)
                            (list "skip_")
                            (list "(\\ P',V' @ " channel "_'''.modeling -> P'(V'))")))))
           (list channel-return)))

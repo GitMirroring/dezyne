@@ -1,0 +1,10 @@
+Checking out/range.csp
+
+Checking COMPLETE'({range.e}) [F= IF_range_(true,true)\diff(Events,{range.e,illegal})
+xfalse
+
+Checking IF_range_(false,false) :[deadlock free]
+xfalse
+
+Checking IF_range_(true,false) :[livelock free]
+true

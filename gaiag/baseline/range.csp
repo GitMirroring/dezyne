@@ -53,35 +53,31 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-datatype event_enumeration_alphabet = Status_Nok | Status_Ok | e | modeling | return | the_end'
+datatype event_enumeration_alphabet = a | e | modeling | return | the_end'
 -- interface.csp.scm
 
-channel ifreply: {e,the_end'}
+channel range: {e,the_end'}
+channel range_'': {a}
+channel range_': {return}
+channel range_in',range_out': {range_'.return}
+channel range_''': {modeling}
 
-channel ifreply_': {Status_Ok,Status_Nok,return}
-channel ifreply_in',ifreply_out': {ifreply_'.Status_Ok,ifreply_'.Status_Nok,ifreply_'.return}
-channel ifreply_''': {modeling}
+IF_range_(IG,CS) = let
+f(PF',V') = (returnvalue_(\ ((state),(stack')) @ 5))(PF',V')
 
-IF_ifreply_(IG,CS) = let
-
-ifreply_(((<>),(stack'))) =
-(true) & (
-ifreply?x:{e} ->
-semi_(ifthenelse_(\ ((<>),(stack')) @ (true),
-skip_,
-skip_
-),
-reply_(ifreply_', (\ ((<>),(stack')) @ Status_Ok)))(\ V' @ ifreply.the_end' -> ifreply_(V'),((<>),(stack')))
- []
-  ifreply?x:{e} ->
-ifthenelse_(\ ((<>),(stack')) @ (true),
-skip_,
-skip_
-)(\ V' @ ifreply.the_end' -> ifreply_(V'),((<>),(stack'))))
+range_(((state),(stack'))) =
+range?x:{e} ->
+semi_(semi_(assign_int_((\ ((state),(stack')) @ ((4),(stack'))),(\ ((state),(stack')) @ 0<=state and state<=3)),
+semi_(let f_result' = call_(\ P',V' @ f(P',V')) within assign_int_active_(f_result',
+\ ((state),(stack')),r' @ ((r'),(stack')),0<=0 and 3<=3),
+context_int_(\ ((state),(stack')) @ 6,\ ((state),(stack')) @ 0 <= 6 and 6<=3,
+let f_result' = call_(\ P',V' @ f(P',V')) within context_int_active_(f_result',0<= 0 and 3<=3,
+(\ P',V' @ range_''!a -> P'(V')))))),
+(\ P',V' @ range_'.return -> P'(V')))(\ V' @ range.the_end' -> range_(V'),((state),(stack')))
 []
-CS & ifreply?x:{} -> illegal_(STOP,<>)
+CS & range?x:{} -> illegal_(STOP,<>)
 
-REORDER' = ifreply?x' -> (ifreply_in'?y' -> ifreply.the_end' -> ifreply_out'!y' -> REORDER' [] ifreply.the_end' -> REORDER')
+REORDER' = range?x' -> (range_in'?y' -> range.the_end' -> range_out'!y' -> REORDER' [] range.the_end' -> REORDER')
 
 compress(x) = let
 transparent sbisim
@@ -89,10 +85,10 @@ transparent diamond
 within sbisim(diamond(x))
 
 within compress((if CS
-                 then ifreply_(((<>),(<>)))
-                 else ifreply_(((<>),(<>)))) [[x<-ifreply_in'.x|x<-extensions(ifreply_in')]] [|{|ifreply,ifreply_in',ifreply.the_end'|}|] REORDER' [[ifreply_out'.x<-x|x<-extensions(ifreply_out')]] \ {|ifreply_in',ifreply.the_end'|})
+                 then range_(((3),(<>)))
+                 else range_(((3),(<>)))) [[x<-range_in'.x|x<-extensions(range_in')]] [|{|range,range_in',range.the_end'|}|] REORDER' [[range_out'.x<-x|x<-extensions(range_out')]] \ {|range_in',range.the_end'|})
 
 -- end of interface.csp.scm
-assert COMPLETE'({ifreply.e}) [F= IF_ifreply_(true,true) \ diff(Events,{ifreply.e,illegal})
-assert IF_ifreply_(false,false) :[deadlock free]
-assert IF_ifreply_(true,false) :[livelock free]
+assert COMPLETE'({range.e}) [F= IF_range_(true,true) \ diff(Events,{range.e,illegal})
+assert IF_range_(false,false) :[deadlock free]
+assert IF_range_(true,false) :[livelock free]
