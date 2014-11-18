@@ -23,18 +23,18 @@
 
 import sys
 #
-import interface.irequires_twice
-import interface.irequires_twice
-import interface.irequires_twice
+import dezyne.irequires_twice
+import dezyne.irequires_twice
+import dezyne.irequires_twice
 
 
 class requires_twice ():
 
     def __init__ (self):
 
-        self.p = interface.irequires_twice ()
-        self.once = interface.irequires_twice ()
-        self.twice = interface.irequires_twice ()
+        self.p = dezyne.irequires_twice ()
+        self.once = dezyne.irequires_twice ()
+        self.twice = dezyne.irequires_twice ()
 
         self.p.ins.e = self.p_e
         self.once.outs.a = self.once_a

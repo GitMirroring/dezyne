@@ -386,7 +386,7 @@ rm -rf out && mkdir out && ln -s ../examples ../templates out
 cd out && $(shell pwd)/gaiag -l python examples/regression/$*.dzn
 -$(pydiff) baseline/$*.py out/dezyne
 ln -s ../examples/__init__.py out/dezyne
-(cd out && $(PYTHON) component/$*.py) $(UPDATE)
+(cd out && $(PYTHON) dezyne/$*.py) $(UPDATE)
 $(pydiff) baseline/$*.py out/dezyne | diffstat || true
 $(pydiff) baseline/$*.py out/dezyne > /dev/null
 endef
@@ -418,9 +418,9 @@ rm -rf out && mkdir out && ln -s ../examples ../templates out
 cd out && $(WFC) $< && $(shell pwd)/gaiag -l java $<
 -$(diff) baseline/$*.java out/dezyne
 cat templates/java/header.java\
-	 $$(find out/dezyne out/dezyne -name '*.java')\
+	 $$(find out/dezyne -name '*.java')\
 	examples/alarm.java > $@
-cat templates/java/header.java $$(find out/dezyne out/dezyne -name '*.java') > $@
+cat templates/java/header.java $$(find out/dezyne -name '*.java') > $@
 cd $(dir $@) && cp -f --backup $(notdir $@) $*.java
 (cd $(dir $@) && javac $*.java) $(UPDATE)
 $(diff) baseline/$*.java out/dezyne | diffstat || true
@@ -448,7 +448,7 @@ java-alarm: compile
 	 	examples/ISiren.dzn;\
 	 	do $(shell pwd)/gaiag -l java $$file; done
 	cat templates/java/header.java\
-		 $$(find out/dezyne out/dezyne -name '*.java')\
+		 $$(find out/dezyne -name '*.java')\
 		examples/alarm.java > out/alarm.java
 	cd out && javac alarm.java
 	cd out && java alarm
@@ -471,9 +471,9 @@ rm -rf out && mkdir out && ln -s ../examples ../templates out
 cd out && $(WFC) $< && $(shell pwd)/gaiag -l javascript $<
 -$(diff) baseline/$*.js out/dezyne
 cat runtime/javascript/header.js\
-	 $$(find out/dezyne out/dezyne -name '*.js')\
+	 $$(find out/dezyne -name '*.js')\
 	examples/alarm.js > $@
-cat runtime/javascript/header.js $$(find out/dezyne out/dezyne -name '*.js') > $@
+cat runtime/javascript/header.js $$(find out/dezyne -name '*.js') > $@
 if [ -f node_modules/jshint/bin/jshint ]; then nodejs node_modules/jshint/bin/jshint $@; fi
 nodejs $@ $(UPDATE)
 $(diff) baseline/$*.js out/dezyne | diffstat || true
@@ -525,9 +525,9 @@ rm -rf out && mkdir out && ln -s ../examples ../templates out
 cd out && $(WFC) $< && $(shell pwd)/gaiag -l goops $<
 -$(diff) baseline/$*.scm out/dezyne
 cat templates/goops/header.scm\
-	 $$(find out/dezyne out/dezyne -name '*.scm')\
+	 $$(find out/dezyne -name '*.scm')\
 	examples/alarm.scm > $@
-cat templates/goops/header.scm $$(find out/dezyne out/dezyne -name '*.scm') > $@
+cat templates/goops/header.scm $$(find out/dezyne -name '*.scm') > $@
 guile $@ $(UPDATE)
 $(diff) baseline/$*.scm out/dezyne | diffstat || true
 @$(diff) baseline/$*.scm out/dezyne > /dev/null
@@ -554,7 +554,7 @@ goops-alarm: compile
 	 	examples/ISiren.dzn;\
 	 	do $(shell pwd)/gaiag -l goops $$file; done
 	cat templates/goops/header.scm\
-		 $$(find out/dezyne out/dezyne -name '*.scm')\
+		 $$(find out/dezyne -name '*.scm')\
 		examples/alarm.scm > out/alarm.scm
 	cd out && bash ./alarm.scm
 	$(diff) baseline/IConsole.scm out/dezyne

@@ -23,7 +23,7 @@
 
 import sys
 #
-import interface.I
+import dezyne.I
 
 
 class If ():
@@ -31,7 +31,7 @@ class If ():
     def __init__ (self):
         self.t = False
 
-        self.i = interface.I ()
+        self.i = dezyne.I ()
 
         self.i.ins.a = self.i_a
 

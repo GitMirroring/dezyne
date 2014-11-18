@@ -21,7 +21,7 @@
 # 
 # Code:
 
-import component
+import dezyne
 
 def connect (provided, required):
     provided.outs = required.outs
@@ -29,7 +29,7 @@ def connect (provided, required):
 
 class provides_twice ():
     def __init__ (self):
-        self.one = component.external_provides_twice ()
+        self.one = dezyne.external_provides_twice ()
         self.i = self.one.i
         self.ii = self.one.ii
 

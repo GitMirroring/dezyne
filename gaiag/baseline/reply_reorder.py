@@ -23,8 +23,8 @@
 
 import sys
 #
-import interface.Provides
-import interface.Requires
+import dezyne.Provides
+import dezyne.Requires
 
 
 class reply_reorder ():
@@ -32,8 +32,8 @@ class reply_reorder ():
     def __init__ (self):
         self.first = True
 
-        self.p = interface.Provides ()
-        self.r = interface.Requires ()
+        self.p = dezyne.Provides ()
+        self.r = dezyne.Requires ()
 
         self.p.ins.start = self.p_start
         self.r.outs.pong = self.r_pong

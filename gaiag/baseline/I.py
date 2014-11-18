@@ -27,5 +27,5 @@ class I ():
             e = None
         self.ins = Ins ()
         class Outs ():
-            f = None
+            a = None
         self.outs = Outs ()

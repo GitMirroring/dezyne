@@ -1,4 +1,4 @@
-import component
+import dezyne
 
 def connect (provided, required):
     provided.outs = required.outs
@@ -7,7 +7,7 @@ def connect (provided, required):
 class #.model  ():
     def __init__ (self):
 #(map (init-instance #{
-        self.#name  = component.#component  ()
+        self.#name  = dezyne.#component  ()
 #}) ((compose .elements .instances) model))#
 (map (init-bind model #{
         self.#port  = self.#instance

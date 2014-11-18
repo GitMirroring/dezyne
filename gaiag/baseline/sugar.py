@@ -23,7 +23,7 @@
 
 import sys
 #
-import interface.I
+import dezyne.I
 
 
 class sugar ():
@@ -33,7 +33,7 @@ class sugar ():
     def __init__ (self):
         self.s = self.Enum.False
 
-        self.i = interface.I ()
+        self.i = dezyne.I ()
 
         self.i.ins.e = self.i_e
 

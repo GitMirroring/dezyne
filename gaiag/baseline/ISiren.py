@@ -22,7 +22,6 @@
 # Code:
 
 class ISiren ():
-
     def __init__ (self):
         class Ins ():
             turnon = None

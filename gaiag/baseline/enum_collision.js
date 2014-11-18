@@ -22,19 +22,19 @@
 // Code:
 
 dezyne.enum_collision = function() {
-  this.reply_ienum_collision_Retval1 = nul;
-  this.reply_ienum_collision_Retval2 = nul;
+  this.reply_ienum_collision_Retval1 = null;
+  this.reply_ienum_collision_Retval2 = null;
 
   this.i = new dezyne.ienum_collision();
 
   this.i.in.foo = function() {
     console.log('enum_collision.i_foo');
-    this.reply_ienum_collision_Retval1 = interface.ienum_collision.Retval1.OK;
+    this.reply_ienum_collision_Retval1 = new dezyne.ienum_collision().Retval1.OK;
     return this.reply_ienum_collision_Retval1;
   }.bind(this);
   this.i.in.bar = function() {
     console.log('enum_collision.i_bar');
-    this.reply_ienum_collision_Retval2 = interface.ienum_collision.Retval2.NOK;
+    this.reply_ienum_collision_Retval2 = new dezyne.ienum_collision().Retval2.NOK;
     return this.reply_ienum_collision_Retval2;
   }.bind(this);
 

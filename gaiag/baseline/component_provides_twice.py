@@ -23,19 +23,20 @@
 
 import sys
 #
-import interface.iprovides_once
+import dezyne.iprovides_once
 
 
 class component_provides_twice ():
 
     def __init__ (self):
 
-        self.i = interface.iprovides_once ()
+        self.i = dezyne.iprovides_once ()
 
         self.i.ins.foo = self.i_foo
 
     def i_foo (self):
         sys.stderr.write ('component_provides_twice.i_foo\n')
         assert (False)
+
 
 

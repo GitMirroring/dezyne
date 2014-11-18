@@ -23,7 +23,7 @@
 
 import sys
 #
-import interface.I
+import dezyne.I
 
 
 class argument2 ():
@@ -31,7 +31,7 @@ class argument2 ():
     def __init__ (self):
         self.b = False
 
-        self.i = interface.I ()
+        self.i = dezyne.I ()
 
         self.i.ins.e = self.i_e
 

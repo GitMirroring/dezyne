@@ -3,6 +3,7 @@
 # This file is part of Gaiag.
 #
 # Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # Gaiag is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as
@@ -23,11 +24,11 @@
 
 import sys
 #
-import interface
+import dezyne
 
 class Sensor:
     def __init__ (self):
-        self.sensor = interface.ISensor ()
+        self.sensor = dezyne.ISensor ()
         self.sensor.ins.enable = self.sensor_enable
         self.sensor.ins.disable = self.sensor_enable
 

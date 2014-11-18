@@ -23,16 +23,16 @@
 
 import sys
 #
-import interface.dummy
-import interface.imodeling
+import dezyne.dummy
+import dezyne.imodeling
 
 
 class modeling ():
 
     def __init__ (self):
 
-        self.p = interface.dummy ()
-        self.r = interface.imodeling ()
+        self.p = dezyne.dummy ()
+        self.r = dezyne.imodeling ()
 
         self.p.ins.e = self.p_e
         self.r.outs.f = self.r_f

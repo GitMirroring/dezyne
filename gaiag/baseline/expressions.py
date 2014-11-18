@@ -23,7 +23,7 @@
 
 import sys
 #
-import interface.I
+import dezyne.I
 
 
 class expressions ():
@@ -32,7 +32,7 @@ class expressions ():
         self.state = 3
         self.c = 0
 
-        self.i = interface.I ()
+        self.i = dezyne.I ()
 
         self.i.ins.e = self.i_e
 

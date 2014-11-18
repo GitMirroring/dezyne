@@ -23,16 +23,16 @@
 
 import sys
 #
-import interface.icomplete
-import interface.icomplete
+import dezyne.icomplete
+import dezyne.icomplete
 
 
 class complete ():
 
     def __init__ (self):
 
-        self.p = interface.icomplete ()
-        self.r = interface.icomplete ()
+        self.p = dezyne.icomplete ()
+        self.r = dezyne.icomplete ()
 
         self.p.ins.e = self.p_e
         self.r.outs.a = self.r_a

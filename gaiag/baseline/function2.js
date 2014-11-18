@@ -39,7 +39,7 @@ dezyne.function2 = function() {
     if(true) {
       {
         this.f = this.vtoggle();
-        bb = this.vtoggle();
+        var bb = this.vtoggle();
         this.f = bb;
         this.i.out.d.defer();
       }

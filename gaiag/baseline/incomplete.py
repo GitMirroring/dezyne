@@ -23,16 +23,16 @@
 
 import sys
 #
-import interface.iincomplete
-import interface.iincomplete
+import dezyne.iincomplete
+import dezyne.iincomplete
 
 
 class incomplete ():
 
     def __init__ (self):
 
-        self.p = interface.iincomplete ()
-        self.r = interface.iincomplete ()
+        self.p = dezyne.iincomplete ()
+        self.r = dezyne.iincomplete ()
 
         self.p.ins.e = self.p_e
         self.r.outs.a = self.r_a

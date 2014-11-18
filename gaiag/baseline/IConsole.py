@@ -22,7 +22,6 @@
 # Code:
 
 class IConsole ():
-
     def __init__ (self):
         class Ins ():
             arm = None

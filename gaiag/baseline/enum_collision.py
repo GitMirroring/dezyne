@@ -23,7 +23,7 @@
 
 import sys
 #
-import interface.ienum_collision
+import dezyne.ienum_collision
 
 
 class enum_collision ():
@@ -32,19 +32,19 @@ class enum_collision ():
         self.reply_ienum_collision_Retval1 = None
         self.reply_ienum_collision_Retval2 = None
 
-        self.i = interface.ienum_collision ()
+        self.i = dezyne.ienum_collision ()
 
         self.i.ins.foo = self.i_foo
         self.i.ins.bar = self.i_bar
 
     def i_foo (self):
         sys.stderr.write ('enum_collision.i_foo\n')
-        self.reply_ienum_collision_Retval1 = interface.ienum_collision.Retval1.OK
+        self.reply_ienum_collision_Retval1 = ienum_collision.Retval1.OK
         return self.reply_ienum_collision_Retval1
 
     def i_bar (self):
         sys.stderr.write ('enum_collision.i_bar\n')
-        self.reply_ienum_collision_Retval2 = interface.ienum_collision.Retval2.NOK
+        self.reply_ienum_collision_Retval2 = ienum_collision.Retval2.NOK
         return self.reply_ienum_collision_Retval2
 
 

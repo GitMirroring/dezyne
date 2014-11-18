@@ -23,7 +23,7 @@
 
 import sys
 #
-import interface.TestBool
+import dezyne.TestBool
 
 
 class testBoolean ():
@@ -31,7 +31,7 @@ class testBoolean ():
     def __init__ (self):
         self.b = False
 
-        self.i = interface.TestBool ()
+        self.i = dezyne.TestBool ()
 
         self.i.ins.evt = self.i_evt
 

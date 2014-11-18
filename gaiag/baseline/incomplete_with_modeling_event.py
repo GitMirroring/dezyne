@@ -23,16 +23,16 @@
 
 import sys
 #
-import interface.iincomplete_with_modeling_event
-import interface.iincomplete_with_modeling_event
+import dezyne.iincomplete_with_modeling_event
+import dezyne.iincomplete_with_modeling_event
 
 
 class incomplete_with_modeling_event ():
 
     def __init__ (self):
 
-        self.p = interface.iincomplete_with_modeling_event ()
-        self.r = interface.iincomplete_with_modeling_event ()
+        self.p = dezyne.iincomplete_with_modeling_event ()
+        self.r = dezyne.iincomplete_with_modeling_event ()
 
         self.p.ins.e = self.p_e
         self.r.outs.a = self.r_a

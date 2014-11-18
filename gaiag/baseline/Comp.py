@@ -23,8 +23,8 @@
 
 import sys
 #
-import interface.IComp
-import interface.IDevice
+import dezyne.IComp
+import dezyne.IDevice
 
 
 class Comp ():
@@ -36,8 +36,8 @@ class Comp ():
         self.reply_IComp_result_t = None
         self.reply_IDevice_result_t = None
 
-        self.client = interface.IComp ()
-        self.device_A = interface.IDevice ()
+        self.client = dezyne.IComp ()
+        self.device_A = dezyne.IDevice ()
 
         self.client.ins.initialize = self.client_initialize
         self.client.ins.recover = self.client_recover
@@ -47,14 +47,14 @@ class Comp ():
         sys.stderr.write ('Comp.client_initialize\n')
         if (self.s == self.State.Uninitialized):
             res = self.device_A.ins.initialize ()
-            if (res == interface.IDevice.result_t.OK):
-                self.res = self.device_A.ins.calibrate ()
-            if (res == interface.IDevice.result_t.OK):
+            if (res == IDevice.result_t.OK):
+                res = self.device_A.ins.calibrate ()
+            if (res == IDevice.result_t.OK):
                 self.s = self.State.Initialized
-                self.reply_IDevice_result_t = interface.IDevice.result_t.OK
+                self.reply_IDevice_result_t = IDevice.result_t.OK
             else:
                 self.s = self.State.Uninitialized
-                self.reply_IDevice_result_t = interface.IDevice.result_t.NOK
+                self.reply_IDevice_result_t = IDevice.result_t.NOK
         elif (self.s == self.State.Initialized):
             assert (False)
         elif (self.s == self.State.Error):
@@ -69,12 +69,12 @@ class Comp ():
             assert (False)
         elif (self.s == self.State.Error):
             res = self.device_A.ins.calibrate ()
-            if (res == interface.IDevice.result_t.OK):
+            if (res == IDevice.result_t.OK):
                 self.s = self.State.Initialized
-                self.reply_IDevice_result_t = interface.IDevice.result_t.OK
+                self.reply_IDevice_result_t = IDevice.result_t.OK
             else:
                 self.s = self.State.Error
-                self.reply_IDevice_result_t = interface.IDevice.result_t.NOK
+                self.reply_IDevice_result_t = IDevice.result_t.NOK
         return self.reply_IComp_result_t
 
     def client_perform_actions (self):
@@ -83,14 +83,14 @@ class Comp ():
             assert (False)
         elif (self.s == self.State.Initialized):
             res = self.device_A.ins.perform_action1 ()
-            if (res == interface.IDevice.result_t.OK):
-                self.res = self.device_A.ins.perform_action2 ()
-            if (res == interface.IDevice.result_t.OK):
+            if (res == IDevice.result_t.OK):
+                res = self.device_A.ins.perform_action2 ()
+            if (res == IDevice.result_t.OK):
                 self.s = self.State.Initialized
-                self.reply_IDevice_result_t = interface.IDevice.result_t.OK
+                self.reply_IDevice_result_t = IDevice.result_t.OK
             else:
                 self.s = self.State.Error
-                self.reply_IDevice_result_t = interface.IDevice.result_t.NOK
+                self.reply_IDevice_result_t = IDevice.result_t.NOK
         elif (self.s == self.State.Error):
             assert (False)
         return self.reply_IComp_result_t

@@ -30,7 +30,7 @@ dezyne.argument = function() {
     console.log('argument.i_e');
     if(true) {
       this.b = ! (this.b);
-      c = this.g(this.b);
+      var c = this.g(this.b);
       this.b = this.g(c);
       if(c) {
         this.i.out.f.defer();

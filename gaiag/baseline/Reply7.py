@@ -23,8 +23,8 @@
 
 import sys
 #
-import interface.IReply7
-import interface.IReply7
+import dezyne.IReply7
+import dezyne.IReply7
 
 
 class Reply7 ():
@@ -32,8 +32,8 @@ class Reply7 ():
     def __init__ (self):
         self.reply_IReply7_E = None
 
-        self.p = interface.IReply7 ()
-        self.r = interface.IReply7 ()
+        self.p = dezyne.IReply7 ()
+        self.r = dezyne.IReply7 ()
 
         self.p.ins.foo = self.p_foo
 

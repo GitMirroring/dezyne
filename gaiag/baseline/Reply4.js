@@ -22,12 +22,12 @@
 // Code:
 
 dezyne.Reply4 = function() {
-  this.Status= {
+  this.Status = {
     Yes: 0, No: 1
   };
   this.dummy = false;
-  this.reply_I_Status = nul;
-  this.reply_U_Status = nul;
+  this.reply_I_Status = null;
+  this.reply_U_Status = null;
 
   this.i = new dezyne.I();
   this.u = new dezyne.U();
@@ -36,17 +36,17 @@ dezyne.Reply4 = function() {
     console.log('Reply4.i_done');
     if(true) {
       {
+        var s = this.u.in.what();
         s = this.u.in.what();
-        this.s = this.u.in.what();
-        if(s === interface.U.Status.Ok) {
-          v = this.fun();
-          if(v === this.Status.Yes) this.reply_I_Status = interface.I.Status.Yes;
-          else this.reply_I_Status = interface.I.Status.No;
+        if(s === new dezyne.U().Status.Ok) {
+          var v = this.fun();
+          if(v === this.Status.Yes) this.reply_I_Status = new dezyne.I().Status.Yes;
+          else this.reply_I_Status = new dezyne.I().Status.No;
         }
         else {
-          v = this.fun_arg(this.Status.No);
-          if(v === this.Status.Yes) this.reply_I_Status = interface.I.Status.Yes;
-          else this.reply_I_Status = interface.I.Status.No;
+          var v = this.fun_arg(this.Status.No);
+          if(v === this.Status.Yes) this.reply_I_Status = new dezyne.I().Status.Yes;
+          else this.reply_I_Status = new dezyne.I().Status.No;
         }
       }
     }

@@ -22,7 +22,7 @@
 
 import sys
 #
-import component.AlarmSystem
+import dezyne.AlarmSystem
 
 def detected ():
    sys.stderr.write ('Console.detected\n')
@@ -31,7 +31,7 @@ def deactivated ():
    sys.stderr.write ('Console.deactivated\n')
 
 def main ():
-    alarm_system = component.AlarmSystem ()
+    alarm_system = dezyne.AlarmSystem ()
     alarm_system.console.outs.detected = detected
     alarm_system.console.outs.deactivated = deactivated
 

@@ -1,7 +1,7 @@
 import sys
 ##
 #(map (include-interface #{
-import interface.#interface
+import dezyne.#interface
 #}) (gom:ports model))
 
 class #.model  ():
@@ -14,7 +14,7 @@ class #.model  ():
     (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))
 #
     (map (init-port #{
-        self.#name  = interface.#interface  ()
+        self.#name  = dezyne.#interface  ()
 #}) ((compose .elements .ports) model))
 #
    (map

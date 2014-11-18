@@ -23,8 +23,8 @@
 
 import sys
 #
-import interface.I
-import interface.U
+import dezyne.I
+import dezyne.U
 
 
 class Reply ():
@@ -34,8 +34,8 @@ class Reply ():
         self.reply_I_Status = None
         self.reply_U_Status = None
 
-        self.i = interface.I ()
-        self.u = interface.U ()
+        self.i = dezyne.I ()
+        self.u = dezyne.U ()
 
         self.i.ins.done = self.i_done
 
@@ -43,10 +43,10 @@ class Reply ():
         sys.stderr.write ('Reply.i_done\n')
         if (True):
             s = self.u.ins.what ()
-            if (s == interface.U.Status.Ok):
-                self.reply_I_Status = interface.I.Status.Yes
+            if (s == U.Status.Ok):
+                self.reply_I_Status = I.Status.Yes
             else:
-                self.reply_I_Status = interface.I.Status.No
+                self.reply_I_Status = I.Status.No
         return self.reply_I_Status
 
 

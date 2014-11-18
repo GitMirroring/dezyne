@@ -22,7 +22,7 @@
 // Code:
 
 dezyne.Reply7 = function() {
-  this.reply_IReply7_E = nul;
+  this.reply_IReply7_E = null;
 
   this.p = new dezyne.IReply7();
   this.r = new dezyne.IReply7();
@@ -33,7 +33,7 @@ dezyne.Reply7 = function() {
     return this.reply_IReply7_E;
   }.bind(this);
   this.f = function () {
-    v = this.r.in.foo();
+    var v = this.r.in.foo();
     this.reply_IReply7_E = v;
   }.bind(this);
 

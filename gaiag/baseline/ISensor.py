@@ -22,7 +22,6 @@
 # Code:
 
 class ISensor ():
-
     def __init__ (self):
         class Ins ():
             enable = None

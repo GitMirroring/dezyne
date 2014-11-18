@@ -23,9 +23,9 @@
 
 import sys
 #
-import interface.IConsole
-import interface.ISensor
-import interface.ISiren
+import dezyne.IConsole
+import dezyne.ISensor
+import dezyne.ISiren
 
 
 class Alarm ():
@@ -36,9 +36,9 @@ class Alarm ():
         self.state = self.States.Disarmed
         self.sounding = False
 
-        self.console = interface.IConsole ()
-        self.sensor = interface.ISensor ()
-        self.siren = interface.ISiren ()
+        self.console = dezyne.IConsole ()
+        self.sensor = dezyne.ISensor ()
+        self.siren = dezyne.ISiren ()
 
         self.console.ins.arm = self.console_arm
         self.console.ins.disarm = self.console_disarm
@@ -106,3 +106,6 @@ class Alarm ():
                 self.state = self.States.Disarmed
         elif (self.state == self.States.Triggered):
             assert (False)
+
+
+

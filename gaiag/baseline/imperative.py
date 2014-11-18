@@ -23,7 +23,7 @@
 
 import sys
 #
-import interface.iimperative
+import dezyne.iimperative
 
 
 class imperative ():
@@ -33,7 +33,7 @@ class imperative ():
     def __init__ (self):
         self.state = self.States.I
 
-        self.i = interface.iimperative ()
+        self.i = dezyne.iimperative ()
 
         self.i.ins.e = self.i_e
 

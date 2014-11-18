@@ -21,7 +21,7 @@
 # 
 # Code:
 
-import component
+import dezyne
 
 def connect (provided, required):
     provided.outs = required.outs
@@ -29,10 +29,11 @@ def connect (provided, required):
 
 class AlarmSystem ():
     def __init__ (self):
-        self.alarm = component.Alarm ()
-        self.sensor = component.Sensor ()
-        self.siren = component.Siren ()
+        self.alarm = dezyne.Alarm ()
+        self.sensor = dezyne.Sensor ()
+        self.siren = dezyne.Siren ()
         self.console = self.alarm.console
 
         connect (self.sensor.sensor, self.alarm.sensor)
         connect (self.siren.siren, self.alarm.siren)
+

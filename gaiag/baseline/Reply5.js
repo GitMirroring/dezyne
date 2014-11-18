@@ -23,8 +23,8 @@
 
 dezyne.Reply5 = function() {
   this.dummy = false;
-  this.reply_I_Status = nul;
-  this.reply_U_Status = nul;
+  this.reply_I_Status = null;
+  this.reply_U_Status = null;
 
   this.i = new dezyne.I();
   this.u = new dezyne.U();
@@ -33,14 +33,14 @@ dezyne.Reply5 = function() {
     console.log('Reply5.i_done');
     if(true) {
       {
+        var s = this.u.in.what();
         s = this.u.in.what();
-        this.s = this.u.in.what();
-        if(s === interface.U.Status.Ok) {
-          s = this.fun();
+        if(s === new dezyne.U().Status.Ok) {
+          var s = this.fun();
           this.reply_I_Status = s;
         }
         else {
-          s = this.fun_arg(interface.I.Status.No);
+          var s = this.fun_arg(new dezyne.I().Status.No);
           this.reply_I_Status = s;
         }
       }
@@ -48,7 +48,7 @@ dezyne.Reply5 = function() {
     return this.reply_I_Status;
   }.bind(this);
   this.fun = function () {
-    return interface.I.Status.Yes;
+    return new dezyne.I().Status.Yes;
   }.bind(this);
   this.fun_arg = function (s) {
     return s;
