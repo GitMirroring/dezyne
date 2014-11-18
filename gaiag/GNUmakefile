@@ -148,7 +148,7 @@ ast: compile
 
 pretty: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
-	./gaiag -l dezyne examples/interface-enums.dzn > out/dezyne-enums.dzn
+	./gaiag -l dezyne examples/interface-enums.dzn > out/interface-enums.dzn
 	$(diff) examples/interface-enums.dzn out
 	./gaiag -l dezyne examples/alarm-component.dzn > out/alarm-component.dzn
 	$(diff) examples/alarm-component.dzn out
