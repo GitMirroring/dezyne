@@ -84,6 +84,7 @@
                                           `((triggers . ,(json-triggers (make <triggers>)))
                                             (guard . "")
                                             (actions . ,(json-action '()))
+                                            (callbacks . ,(json-callback model '()))
                                             (next . ()))))))))))
 
 (define-method (json-table (model <model>) (var <symbol>) (state <field>) (o <on>))
@@ -98,6 +99,7 @@
       `((triggers . ,(json-triggers (.triggers o)))
         (guard . "")
         (actions . ,(json-action (.statement o)))
+        (callbacks . ,(json-callback model (.statement o)))
         (next . ,(json-next model var state (.statement o)))))))))
 
 (define-method (json-table- (model <model>) (var <symbol>) (state <field>))
@@ -108,6 +110,7 @@
    `((triggers . ,(json-triggers triggers))
      (guard . ,(->symbol guard))
      (actions . ,(json-action statement))
+     (callbacks . ,(json-callback model statement))
      (next . ,(json-next model var state statement)))))
 
 (define-method (json-inner-guard (model <model>) (var <symbol>) (state <field>) (o <triggers>))
@@ -163,6 +166,21 @@
 
 (define-method (json-action o)
   (json-data-location (ast->dezyne o) o))
+
+(define-method (json-callback (model <model>) o)
+  '())
+
+(define-method (json-callback (model <interface>) (o <statement>))
+  (define (return-action o)
+    (match o
+      (($ <action>) o)
+      (($ <assign> name (and ($ <action>) (get! action))) (action))
+      (($ <variable> name type (and ($ <action>) (get! action))) (action))
+      (_ #f)))
+  (or (and-let* (((is-a? o <statement>))
+              (actions (null-is-#f ((gom:collect return-action) o))))
+             (map ast->dezyne actions))
+      '()))
 
 (define-method (json-triggers (o <triggers>))
   (json-data-location (map ->symbol (.elements o)) o))
