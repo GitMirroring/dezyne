@@ -171,15 +171,29 @@
   '())
 
 (define-method (json-callback (model <interface>) (o <statement>))
+  (define (function? identifier) (gom:function model identifier))
+  (define (recursive? identifier) (.recursive (function? identifier)))
+  (define (non-recursive? identifier)
+    (not (recursive? identifier)))
+
   (define (return-action o)
     (match o
-      (($ <action>) o)
-      (($ <assign> name (and ($ <action>) (get! action))) (action))
-      (($ <variable> name type (and ($ <action>) (get! action))) (action))
-      (_ #f)))
+      (($ <action>) (list o))
+       (($ <assign> name (and ($ <action>) (get! action))) (list (action)))
+       (($ <variable> name type (and ($ <action>) (get! action))) (list (action)))
+       (($ <call> (and (? non-recursive?) (get! function))) (return-actions (function? (function))))
+       (($ <function> name signature #f statement) (return-actions statement))
+       (_ (list #f))))
+
+  (define (return-actions o)
+    (filter identity
+            (apply append
+                   (map return-action ((gom:collect return-action) o)))))
+
   (or (and-let* (((is-a? o <statement>))
-              (actions (null-is-#f ((gom:collect return-action) o))))
-             (map ast->dezyne actions))
+                 (actions (return-actions o))
+                 (actions (delete-duplicates actions)))
+                (map ast->dezyne actions))
       '()))
 
 (define-method (json-triggers (o <triggers>))

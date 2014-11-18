@@ -1,0 +1,87 @@
+;; -*-mode:scheme-*-
+;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
+
+(read-set! keywords 'prefix)
+
+(define-module (test-handler)
+  :use-module (oop goops)
+
+  :use-module (test-suite lib)
+  :use-module (test-suite misc)
+
+  :use-module (gaiag gom)
+  :use-module (gaiag json-table)
+  :use-module (gaiag pretty)
+  :use-module (gaiag reader)
+  :use-module (gaiag resolve)
+  )
+
+(define json-callback (@@ (gaiag json-table) json-callback))
+
+(pass-if "json-table-first-dummy-test"
+         #t)
+
+(define i-ast
+ (gom:interface
+  (ast:resolve
+   (dezyne->ast
+#{
+interface I
+{
+  in void e;
+  out void a;
+
+  behaviour
+  {
+    void f ()
+    {
+      e;
+    }
+    void g ()
+    {
+      e;
+      g ();
+    }
+    on e: {}
+  }
+}
+#}))))
+
+(pass-if "json-table-json-callback"
+         (pretty-noisy-equal?
+          (json-callback
+           i-ast
+           (make <action> :trigger (make <trigger> :event 'e)))
+          '("e;\n")))
+
+(pass-if "json-table-json-callback-if"
+         (pretty-noisy-equal?
+          (json-callback
+           i-ast
+           (make <if>
+             :then (make <action> :trigger (make <trigger> :event 'e))
+             :else (make <action> :trigger (make <trigger> :event 'f))))
+          '("e;\n" "f;\n")))
+
+(pass-if "json-table-json-callback-if-same"
+         (pretty-noisy-equal?
+          (json-callback
+           i-ast
+           (make <if>
+             :then (make <action> :trigger (make <trigger> :event 'e))
+             :else (make <action> :trigger (make <trigger> :event 'e))))
+          '("e;\n")))
+
+(pass-if "json-table-json-callback-function"
+         (pretty-noisy-equal?
+          (json-callback
+           i-ast
+           (make <call> :identifier 'f))
+          '("e;\n")))
+
+(pass-if "json-table-json-callback-recursive-function"
+         (pretty-noisy-equal?
+          (json-callback
+           i-ast
+           (make <call> :identifier 'g))
+          '()))
