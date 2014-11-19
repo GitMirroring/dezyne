@@ -35,19 +35,17 @@ dezyne.Reply4 = function() {
   this.i.in.done = function() {
     console.log('Reply4.i_done');
     if(true) {
-      {
-        var s = this.u.in.what();
-        s = this.u.in.what();
-        if(s === new dezyne.U().Status.Ok) {
-          var v = this.fun();
-          if(v === this.Status.Yes) this.reply_I_Status = new dezyne.I().Status.Yes;
-          else this.reply_I_Status = new dezyne.I().Status.No;
-        }
-        else {
-          var v = this.fun_arg(this.Status.No);
-          if(v === this.Status.Yes) this.reply_I_Status = new dezyne.I().Status.Yes;
-          else this.reply_I_Status = new dezyne.I().Status.No;
-        }
+      var s = this.u.in.what();
+      s = this.u.in.what();
+      if(s === new dezyne.U().Status.Ok) {
+        var v = this.fun();
+        if(v === this.Status.Yes) this.reply_I_Status = new dezyne.I().Status.Yes;
+        else this.reply_I_Status = new dezyne.I().Status.No;
+      }
+      else {
+        var v = this.fun_arg(this.Status.No);
+        if(v === this.Status.Yes) this.reply_I_Status = new dezyne.I().Status.Yes;
+        else this.reply_I_Status = new dezyne.I().Status.No;
       }
     }
     return this.reply_I_Status;

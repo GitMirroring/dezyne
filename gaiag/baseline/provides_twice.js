@@ -21,11 +21,6 @@
 //
 // Code:
 
-function connect(provided, required) {
-  provided.out = required.out;
-  required.in = provided.in;
-}
-
 dezyne.provides_twice = function() {
   this.one = new dezyne.external_provides_twice();
   this.i = this.one.i;

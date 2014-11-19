@@ -28,15 +28,11 @@ dezyne.complete = function() {
 
   this.p.in.e = function() {
     console.log('complete.p_e');
-    {
-      this.r.in.e();
-    }
+    this.r.in.e();
   }.bind(this);
   this.r.out.a = function() {
     console.log('complete.r_a');
-    {
-      this.p.out.a.defer();
-    }
+    this.p.out.a.defer();
   }.bind(this);
 
 };

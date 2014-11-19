@@ -45,22 +45,18 @@ class reply_reorder{
   };
   public void p_start() {
     System.err.println("reply_reorder.p_start");
-    {
-      r.getIn().ping.action();
-    }
+    r.getIn().ping.action();
   };
 
   public void r_pong() {
     System.err.println("reply_reorder.r_pong");
-    {
-      if (first) {
-        p.getOut().busy.action();
-        first = ! (first);
-      }
-      if (! (first)) {
-        p.getOut().finish.action();
-        first = ! (first);
-      }
+    if (first) {
+      p.getOut().busy.action();
+      first = ! (first);
+    }
+    if (! (first)) {
+      p.getOut().finish.action();
+      first = ! (first);
     }
   };
 

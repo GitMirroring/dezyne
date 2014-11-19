@@ -29,20 +29,16 @@ dezyne.function2 = function() {
   this.i.in.a = function() {
     console.log('function2.i_a');
     if(true) {
-      {
-        this.f = this.vtoggle();
-      }
+      this.f = this.vtoggle();
     }
   }.bind(this);
   this.i.in.b = function() {
     console.log('function2.i_b');
     if(true) {
-      {
-        this.f = this.vtoggle();
-        var bb = this.vtoggle();
-        this.f = bb;
-        this.i.out.d.defer();
-      }
+      this.f = this.vtoggle();
+      var bb = this.vtoggle();
+      this.f = bb;
+      this.i.out.d.defer();
     }
   }.bind(this);
   this.vtoggle = function () {

@@ -42,25 +42,23 @@ namespace dezyne
     std::cout << "Reply4.i_done" << std::endl;
     if (true)
     {
+      U::Status::type s = u.in.what ();
+      s = u.in.what ();
+      if (s == U::Status::Ok)
       {
-        U::Status::type s = u.in.what ();
-        s = u.in.what ();
-        if (s == U::Status::Ok)
-        {
-          Reply4::Status::type v = fun ();
-          if (v == Status::Yes)
-          reply_I_Status = I::Status::Yes;
-          else
-          reply_I_Status = I::Status::No;
-        }
+        Reply4::Status::type v = fun ();
+        if (v == Status::Yes)
+        reply_I_Status = I::Status::Yes;
         else
-        {
-          Reply4::Status::type v = fun_arg (Status::No);
-          if (v == Status::Yes)
-          reply_I_Status = I::Status::Yes;
-          else
-          reply_I_Status = I::Status::No;
-        }
+        reply_I_Status = I::Status::No;
+      }
+      else
+      {
+        Reply4::Status::type v = fun_arg (Status::No);
+        if (v == Status::Yes)
+        reply_I_Status = I::Status::Yes;
+        else
+        reply_I_Status = I::Status::No;
       }
     }
     return reply_I_Status;

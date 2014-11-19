@@ -42,16 +42,14 @@ namespace dezyne
     std::cout << "Reply.i_done" << std::endl;
     if (true)
     {
+      U::Status::type s = u.in.what ();
+      if (s == U::Status::Ok)
       {
-        U::Status::type s = u.in.what ();
-        if (s == U::Status::Ok)
-        {
-          reply_I_Status = I::Status::Yes;
-        }
-        else
-        {
-          reply_I_Status = I::Status::No;
-        }
+        reply_I_Status = I::Status::Yes;
+      }
+      else
+      {
+        reply_I_Status = I::Status::No;
       }
     }
     return reply_I_Status;

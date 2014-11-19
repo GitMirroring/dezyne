@@ -32,32 +32,24 @@ dezyne.imperative = function() {
   this.i.in.e = function() {
     console.log('imperative.i_e');
     if(this.state === this.States.I) {
-      {
-        this.i.out.f.defer();
-        this.i.out.g.defer();
-        this.i.out.h.defer();
-        this.state = this.States.II;
-      }
+      this.i.out.f.defer();
+      this.i.out.g.defer();
+      this.i.out.h.defer();
+      this.state = this.States.II;
     }
     else if(this.state === this.States.II) {
-      {
-        this.state = this.States.III;
-      }
+      this.state = this.States.III;
     }
     else if(this.state === this.States.III) {
-      {
-        this.i.out.f.defer();
-        this.i.out.g.defer();
-        this.i.out.g.defer();
-        this.i.out.f.defer();
-        this.state = this.States.IV;
-      }
+      this.i.out.f.defer();
+      this.i.out.g.defer();
+      this.i.out.g.defer();
+      this.i.out.f.defer();
+      this.state = this.States.IV;
     }
     else if(this.state === this.States.IV) {
-      {
-        this.i.out.h.defer();
-        this.state = this.States.I;
-      }
+      this.i.out.h.defer();
+      this.state = this.States.I;
     }
   }.bind(this);
 

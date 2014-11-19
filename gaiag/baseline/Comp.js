@@ -35,19 +35,17 @@ dezyne.Comp = function() {
   this.client.in.initialize = function() {
     console.log('Comp.client_initialize');
     if(this.s === this.State.Uninitialized) {
-      {
-        var res = this.device_A.in.initialize();
-        if(res === new dezyne.IDevice().result_t.OK) {
-          res = this.device_A.in.calibrate();
-        }
-        if(res === new dezyne.IDevice().result_t.OK) {
-          this.s = this.State.Initialized;
-          this.reply_IDevice_result_t = new dezyne.IDevice().result_t.OK;
-        }
-        else {
-          this.s = this.State.Uninitialized;
-          this.reply_IDevice_result_t = new dezyne.IDevice().result_t.NOK;
-        }
+      var res = this.device_A.in.initialize();
+      if(res === new dezyne.IDevice().result_t.OK) {
+        res = this.device_A.in.calibrate();
+      }
+      if(res === new dezyne.IDevice().result_t.OK) {
+        this.s = this.State.Initialized;
+        this.reply_IDevice_result_t = new dezyne.IDevice().result_t.OK;
+      }
+      else {
+        this.s = this.State.Uninitialized;
+        this.reply_IDevice_result_t = new dezyne.IDevice().result_t.NOK;
       }
     }
     else if(this.s === this.State.Initialized) {
@@ -67,16 +65,14 @@ dezyne.Comp = function() {
       console.assert (false);
     }
     else if(this.s === this.State.Error) {
-      {
-        var res = this.device_A.in.calibrate();
-        if(res === new dezyne.IDevice().result_t.OK) {
-          this.s = this.State.Initialized;
-          this.reply_IDevice_result_t = new dezyne.IDevice().result_t.OK;
-        }
-        else {
-          this.s = this.State.Error;
-          this.reply_IDevice_result_t = new dezyne.IDevice().result_t.NOK;
-        }
+      var res = this.device_A.in.calibrate();
+      if(res === new dezyne.IDevice().result_t.OK) {
+        this.s = this.State.Initialized;
+        this.reply_IDevice_result_t = new dezyne.IDevice().result_t.OK;
+      }
+      else {
+        this.s = this.State.Error;
+        this.reply_IDevice_result_t = new dezyne.IDevice().result_t.NOK;
       }
     }
     return this.reply_IComp_result_t;
@@ -87,19 +83,17 @@ dezyne.Comp = function() {
       console.assert (false);
     }
     else if(this.s === this.State.Initialized) {
-      {
-        var res = this.device_A.in.perform_action1();
-        if(res === new dezyne.IDevice().result_t.OK) {
-          res = this.device_A.in.perform_action2();
-        }
-        if(res === new dezyne.IDevice().result_t.OK) {
-          this.s = this.State.Initialized;
-          this.reply_IDevice_result_t = new dezyne.IDevice().result_t.OK;
-        }
-        else {
-          this.s = this.State.Error;
-          this.reply_IDevice_result_t = new dezyne.IDevice().result_t.NOK;
-        }
+      var res = this.device_A.in.perform_action1();
+      if(res === new dezyne.IDevice().result_t.OK) {
+        res = this.device_A.in.perform_action2();
+      }
+      if(res === new dezyne.IDevice().result_t.OK) {
+        this.s = this.State.Initialized;
+        this.reply_IDevice_result_t = new dezyne.IDevice().result_t.OK;
+      }
+      else {
+        this.s = this.State.Error;
+        this.reply_IDevice_result_t = new dezyne.IDevice().result_t.NOK;
       }
     }
     else if(this.s === this.State.Error) {

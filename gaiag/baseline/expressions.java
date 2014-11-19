@@ -40,24 +40,22 @@ class expressions{
   };
   public void i_e() {
     System.err.println("expressions.i_e");
-    if (true) {
-      if (state == 0) {
-        state = 3;
-        i.getOut().a.action();
+    if (true) if (state == 0) {
+      state = 3;
+      i.getOut().a.action();
+    }
+    else {
+      state = state - 1;
+      if (c < state) {
+        c = c + 1;
       }
       else {
-        state = state - 1;
-        if (c < state) {
-          c = c + 1;
+        if (c <= (state + 1)) {
+          i.getOut().lo.action();
         }
         else {
-          if (c <= (state + 1)) {
-            i.getOut().lo.action();
-          }
-          else {
-            if (c > state) {
-              i.getOut().hi.action();
-            }
+          if (c > state) {
+            i.getOut().hi.action();
           }
         }
       }

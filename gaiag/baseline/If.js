@@ -28,15 +28,13 @@ dezyne.If = function() {
 
   this.i.in.a = function() {
     console.log('If.i_a');
-    {
-      if(this.t) {
-        this.i.out.b.defer();
-      }
-      else {
-        this.i.out.c.defer();
-      }
-      this.t = ! (this.t);
+    if(this.t) {
+      this.i.out.b.defer();
     }
+    else {
+      this.i.out.c.defer();
+    }
+    this.t = ! (this.t);
   }.bind(this);
 
 };

@@ -39,17 +39,15 @@ namespace dezyne
   void If::i_a()
   {
     std::cout << "If.i_a" << std::endl;
+    if (t)
     {
-      if (t)
-      {
-        rt.defer(this, boost::bind(i.out.b));
-      }
-      else
-      {
-        rt.defer(this, boost::bind(i.out.c));
-      }
-      t = not (t);
+      rt.defer(this, boost::bind(i.out.b));
     }
+    else
+    {
+      rt.defer(this, boost::bind(i.out.c));
+    }
+    t = not (t);
   }
 
 

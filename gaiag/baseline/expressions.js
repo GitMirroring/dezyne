@@ -29,24 +29,22 @@ dezyne.expressions = function() {
 
   this.i.in.e = function() {
     console.log('expressions.i_e');
-    if(true) {
-      if(this.state === 0) {
-        this.state = 3;
-        this.i.out.a.defer();
+    if(true) if(this.state === 0) {
+      this.state = 3;
+      this.i.out.a.defer();
+    }
+    else {
+      this.state = this.state - 1;
+      if(this.c < this.state) {
+        this.c = this.c + 1;
       }
       else {
-        this.state = this.state - 1;
-        if(this.c < this.state) {
-          this.c = this.c + 1;
+        if(this.c <= (this.state + 1)) {
+          this.i.out.lo.defer();
         }
         else {
-          if(this.c <= (this.state + 1)) {
-            this.i.out.lo.defer();
-          }
-          else {
-            if(this.c > this.state) {
-              this.i.out.hi.defer();
-            }
+          if(this.c > this.state) {
+            this.i.out.hi.defer();
           }
         }
       }

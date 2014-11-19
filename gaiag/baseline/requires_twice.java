@@ -50,10 +50,8 @@ class requires_twice{
   };
   public void p_e() {
     System.err.println("requires_twice.p_e");
-    {
-      once.getIn().e.action();
-      twice.getIn().e.action();
-    }
+    once.getIn().e.action();
+    twice.getIn().e.action();
   };
 
   public void once_a() {
@@ -63,9 +61,7 @@ class requires_twice{
 
   public void twice_a() {
     System.err.println("requires_twice.twice_a");
-    {
-      p.getOut().a.action();
-    }
+    p.getOut().a.action();
   };
 
 }

@@ -44,22 +44,20 @@ namespace dezyne
     std::cout << "Comp.client_initialize" << std::endl;
     if (s == State::Uninitialized)
     {
+      IDevice::result_t::type res = device_A.in.initialize ();
+      if (res == IDevice::result_t::OK)
       {
-        IDevice::result_t::type res = device_A.in.initialize ();
-        if (res == IDevice::result_t::OK)
-        {
-          res = device_A.in.calibrate ();
-        }
-        if (res == IDevice::result_t::OK)
-        {
-          s = State::Initialized;
-          reply_IDevice_result_t = IDevice::result_t::OK;
-        }
-        else
-        {
-          s = State::Uninitialized;
-          reply_IDevice_result_t = IDevice::result_t::NOK;
-        }
+        res = device_A.in.calibrate ();
+      }
+      if (res == IDevice::result_t::OK)
+      {
+        s = State::Initialized;
+        reply_IDevice_result_t = IDevice::result_t::OK;
+      }
+      else
+      {
+        s = State::Uninitialized;
+        reply_IDevice_result_t = IDevice::result_t::NOK;
       }
     }
     else if (s == State::Initialized)
@@ -86,18 +84,16 @@ namespace dezyne
     }
     else if (s == State::Error)
     {
+      IDevice::result_t::type res = device_A.in.calibrate ();
+      if (res == IDevice::result_t::OK)
       {
-        IDevice::result_t::type res = device_A.in.calibrate ();
-        if (res == IDevice::result_t::OK)
-        {
-          s = State::Initialized;
-          reply_IDevice_result_t = IDevice::result_t::OK;
-        }
-        else
-        {
-          s = State::Error;
-          reply_IDevice_result_t = IDevice::result_t::NOK;
-        }
+        s = State::Initialized;
+        reply_IDevice_result_t = IDevice::result_t::OK;
+      }
+      else
+      {
+        s = State::Error;
+        reply_IDevice_result_t = IDevice::result_t::NOK;
       }
     }
     return reply_IComp_result_t;
@@ -112,22 +108,20 @@ namespace dezyne
     }
     else if (s == State::Initialized)
     {
+      IDevice::result_t::type res = device_A.in.perform_action1 ();
+      if (res == IDevice::result_t::OK)
       {
-        IDevice::result_t::type res = device_A.in.perform_action1 ();
-        if (res == IDevice::result_t::OK)
-        {
-          res = device_A.in.perform_action2 ();
-        }
-        if (res == IDevice::result_t::OK)
-        {
-          s = State::Initialized;
-          reply_IDevice_result_t = IDevice::result_t::OK;
-        }
-        else
-        {
-          s = State::Error;
-          reply_IDevice_result_t = IDevice::result_t::NOK;
-        }
+        res = device_A.in.perform_action2 ();
+      }
+      if (res == IDevice::result_t::OK)
+      {
+        s = State::Initialized;
+        reply_IDevice_result_t = IDevice::result_t::OK;
+      }
+      else
+      {
+        s = State::Error;
+        reply_IDevice_result_t = IDevice::result_t::NOK;
       }
     }
     else if (s == State::Error)

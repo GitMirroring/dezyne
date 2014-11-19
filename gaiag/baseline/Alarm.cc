@@ -47,10 +47,8 @@ namespace dezyne
     std::cout << "Alarm.console_arm" << std::endl;
     if (state == States::Disarmed)
     {
-      {
-        sensor.in.enable();
-        state = States::Armed;
-      }
+      sensor.in.enable();
+      state = States::Armed;
     }
     else if (state == States::Armed)
     {
@@ -75,10 +73,8 @@ namespace dezyne
     }
     else if (state == States::Armed)
     {
-      {
-        sensor.in.disable();
-        state = States::Disarming;
-      }
+      sensor.in.disable();
+      state = States::Disarming;
     }
     else if (state == States::Disarming)
     {
@@ -86,12 +82,10 @@ namespace dezyne
     }
     else if (state == States::Triggered)
     {
-      {
-        sensor.in.disable();
-        siren.in.turnoff();
-        sounding = false;
-        state = States::Disarming;
-      }
+      sensor.in.disable();
+      siren.in.turnoff();
+      sounding = false;
+      state = States::Disarming;
     }
   }
 
@@ -104,12 +98,10 @@ namespace dezyne
     }
     else if (state == States::Armed)
     {
-      {
-        rt.defer(this, boost::bind(console.out.detected));
-        siren.in.turnon();
-        sounding = true;
-        state = States::Triggered;
-      }
+      rt.defer(this, boost::bind(console.out.detected));
+      siren.in.turnon();
+      sounding = true;
+      state = States::Triggered;
     }
     else if (state == States::Disarming)
     {
@@ -135,19 +127,17 @@ namespace dezyne
     }
     else if (state == States::Disarming)
     {
+      if (sounding)
       {
-        if (sounding)
-        {
-          rt.defer(this, boost::bind(console.out.deactivated));
-          siren.in.turnoff();
-          state = States::Disarmed;
-          sounding = false;
-        }
-        else
-        {
-          rt.defer(this, boost::bind(console.out.deactivated));
-          state = States::Disarmed;
-        }
+        rt.defer(this, boost::bind(console.out.deactivated));
+        siren.in.turnoff();
+        state = States::Disarmed;
+        sounding = false;
+      }
+      else
+      {
+        rt.defer(this, boost::bind(console.out.deactivated));
+        state = States::Disarmed;
       }
     }
     else if (state == States::Triggered)

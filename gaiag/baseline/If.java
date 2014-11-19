@@ -38,15 +38,13 @@ class If{
   };
   public void i_a() {
     System.err.println("If.i_a");
-    {
-      if (t) {
-        i.getOut().b.action();
-      }
-      else {
-        i.getOut().c.action();
-      }
-      t = ! (t);
+    if (t) {
+      i.getOut().b.action();
     }
+    else {
+      i.getOut().c.action();
+    }
+    t = ! (t);
   };
 
 }

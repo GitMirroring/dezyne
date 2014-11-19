@@ -41,31 +41,29 @@ namespace dezyne
   {
     std::cout << "expressions.i_e" << std::endl;
     if (true)
+    if (state == 0)
     {
-      if (state == 0)
+      state = 3;
+      rt.defer(this, boost::bind(i.out.a));
+    }
+    else
+    {
+      state = state - 1;
+      if (c < state)
       {
-        state = 3;
-        rt.defer(this, boost::bind(i.out.a));
+        c = c + 1;
       }
       else
       {
-        state = state - 1;
-        if (c < state)
+        if (c <= (state + 1))
         {
-          c = c + 1;
+          rt.defer(this, boost::bind(i.out.lo));
         }
         else
         {
-          if (c <= (state + 1))
+          if (c > state)
           {
-            rt.defer(this, boost::bind(i.out.lo));
-          }
-          else
-          {
-            if (c > state)
-            {
-              rt.defer(this, boost::bind(i.out.hi));
-            }
+            rt.defer(this, boost::bind(i.out.hi));
           }
         }
       }

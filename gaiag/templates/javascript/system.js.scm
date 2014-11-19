@@ -1,8 +1,3 @@
-function connect(provided, required) {
-  provided.out = required.out;
-  required.in = provided.in;
-}
-
 dezyne.#.model  = function() {
 #(map (init-instance #{
     this.#name  = new dezyne.#component ();
@@ -11,6 +6,6 @@ dezyne.#.model  = function() {
     this.#port  = this.#instance;
 #}) (filter bind-port? ((compose .elements .bindings) model)))
 # (map (connect-ports model #{
-    connect(this.#provided , this.#required);
+    dezyne.connect(this.#provided , this.#required);
 #}) (filter (negate bind-port?) ((compose .elements .bindings) model)))
 };

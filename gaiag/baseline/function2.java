@@ -44,21 +44,17 @@ class function2{
   public void i_a() {
     System.err.println("function2.i_a");
     if (true) {
-      {
-        f = vtoggle();
-      }
+      f = vtoggle();
     }
   };
 
   public void i_b() {
     System.err.println("function2.i_b");
     if (true) {
-      {
-        f = vtoggle();
-        Boolean bb = vtoggle();
-        f = bb;
-        i.getOut().d.action();
-      }
+      f = vtoggle();
+      Boolean bb = vtoggle();
+      f = bb;
+      i.getOut().d.action();
     }
   };
   public Boolean vtoggle () {

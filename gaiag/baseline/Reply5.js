@@ -32,17 +32,15 @@ dezyne.Reply5 = function() {
   this.i.in.done = function() {
     console.log('Reply5.i_done');
     if(true) {
-      {
-        var s = this.u.in.what();
-        s = this.u.in.what();
-        if(s === new dezyne.U().Status.Ok) {
-          var s = this.fun();
-          this.reply_I_Status = s;
-        }
-        else {
-          var s = this.fun_arg(new dezyne.I().Status.No);
-          this.reply_I_Status = s;
-        }
+      var s = this.u.in.what();
+      s = this.u.in.what();
+      if(s === new dezyne.U().Status.Ok) {
+        var s = this.fun();
+        this.reply_I_Status = s;
+      }
+      else {
+        var s = this.fun_arg(new dezyne.I().Status.No);
+        this.reply_I_Status = s;
       }
     }
     return this.reply_I_Status;

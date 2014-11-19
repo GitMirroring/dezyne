@@ -38,13 +38,11 @@ class argument2{
   };
   public void i_e() {
     System.err.println("argument2.i_e");
-    if (true) {
-      b = ! (b);
-      Boolean c = this.g(b, b);
-      b = this.g(c, c);
-      if (c) {
-        i.getOut().f.action();
-      }
+    if (true) b = ! (b);
+    Boolean c = this.g(b, b);
+    b = this.g(c, c);
+    if (c) {
+      i.getOut().f.action();
     }
   };
   public Boolean g (Boolean ga, Boolean gb) {

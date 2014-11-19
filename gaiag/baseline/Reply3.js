@@ -32,15 +32,13 @@ dezyne.Reply3 = function() {
   this.i.in.done = function() {
     console.log('Reply3.i_done');
     if(true) {
-      {
-        var s = this.u.in.what();
-        s = this.u.in.what();
-        if(s === new dezyne.U().Status.Ok) {
-          this.reply_fun();
-        }
-        else {
-          this.reply_fun_arg(new dezyne.I().Status.No);
-        }
+      var s = this.u.in.what();
+      s = this.u.in.what();
+      if(s === new dezyne.U().Status.Ok) {
+        this.reply_fun();
+      }
+      else {
+        this.reply_fun_arg(new dezyne.I().Status.No);
       }
     }
     return this.reply_I_Status;

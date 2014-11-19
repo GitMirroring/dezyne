@@ -44,20 +44,16 @@ class function{
   public void i_a() {
     System.err.println("function.i_a");
     if (true) {
-      {
-        toggle();
-      }
+      toggle();
     }
   };
 
   public void i_b() {
     System.err.println("function.i_b");
     if (true) {
-      {
-        toggle();
-        toggle();
-        i.getOut().d.action();
-      }
+      toggle();
+      toggle();
+      i.getOut().d.action();
     }
   };
   public void toggle () {

@@ -40,14 +40,12 @@ namespace dezyne
   {
     std::cout << "argument2.i_e" << std::endl;
     if (true)
+    b = not (b);
+    bool c = g (b, b);
+    b = g (c, c);
+    if (c)
     {
-      b = not (b);
-      bool c = g (b, b);
-      b = g (c, c);
-      if (c)
-      {
-        rt.defer(this, boost::bind(i.out.f));
-      }
+      rt.defer(this, boost::bind(i.out.f));
     }
   }
 

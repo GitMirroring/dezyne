@@ -41,35 +41,27 @@ namespace dezyne
     std::cout << "imperative.i_e" << std::endl;
     if (state == States::I)
     {
-      {
-        rt.defer(this, boost::bind(i.out.f));
-        rt.defer(this, boost::bind(i.out.g));
-        rt.defer(this, boost::bind(i.out.h));
-        state = States::II;
-      }
+      rt.defer(this, boost::bind(i.out.f));
+      rt.defer(this, boost::bind(i.out.g));
+      rt.defer(this, boost::bind(i.out.h));
+      state = States::II;
     }
     else if (state == States::II)
     {
-      {
-        state = States::III;
-      }
+      state = States::III;
     }
     else if (state == States::III)
     {
-      {
-        rt.defer(this, boost::bind(i.out.f));
-        rt.defer(this, boost::bind(i.out.g));
-        rt.defer(this, boost::bind(i.out.g));
-        rt.defer(this, boost::bind(i.out.f));
-        state = States::IV;
-      }
+      rt.defer(this, boost::bind(i.out.f));
+      rt.defer(this, boost::bind(i.out.g));
+      rt.defer(this, boost::bind(i.out.g));
+      rt.defer(this, boost::bind(i.out.f));
+      state = States::IV;
     }
     else if (state == States::IV)
     {
-      {
-        rt.defer(this, boost::bind(i.out.h));
-        state = States::I;
-      }
+      rt.defer(this, boost::bind(i.out.h));
+      state = States::I;
     }
   }
 

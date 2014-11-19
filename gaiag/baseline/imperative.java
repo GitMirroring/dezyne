@@ -42,32 +42,24 @@ class imperative{
   public void i_e() {
     System.err.println("imperative.i_e");
     if (state == States.I) {
-      {
-        i.getOut().f.action();
-        i.getOut().g.action();
-        i.getOut().h.action();
-        state = States.II;
-      }
+      i.getOut().f.action();
+      i.getOut().g.action();
+      i.getOut().h.action();
+      state = States.II;
     }
     else if (state == States.II) {
-      {
-        state = States.III;
-      }
+      state = States.III;
     }
     else if (state == States.III) {
-      {
-        i.getOut().f.action();
-        i.getOut().g.action();
-        i.getOut().g.action();
-        i.getOut().f.action();
-        state = States.IV;
-      }
+      i.getOut().f.action();
+      i.getOut().g.action();
+      i.getOut().g.action();
+      i.getOut().f.action();
+      state = States.IV;
     }
     else if (state == States.IV) {
-      {
-        i.getOut().h.action();
-        state = States.I;
-      }
+      i.getOut().h.action();
+      state = States.I;
     }
   };
 

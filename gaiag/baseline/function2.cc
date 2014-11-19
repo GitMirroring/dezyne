@@ -42,9 +42,7 @@ namespace dezyne
     std::cout << "function2.i_a" << std::endl;
     if (true)
     {
-      {
-        f = vtoggle ();
-      }
+      f = vtoggle ();
     }
   }
 
@@ -53,12 +51,10 @@ namespace dezyne
     std::cout << "function2.i_b" << std::endl;
     if (true)
     {
-      {
-        f = vtoggle ();
-        bool bb = vtoggle ();
-        f = bb;
-        rt.defer(this, boost::bind(i.out.d));
-      }
+      f = vtoggle ();
+      bool bb = vtoggle ();
+      f = bb;
+      rt.defer(this, boost::bind(i.out.d));
     }
   }
 

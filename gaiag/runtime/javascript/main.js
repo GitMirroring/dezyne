@@ -22,6 +22,6 @@
 // Code:
 
 
-// main
+// handwritten generic main
 var main = new dezyne.Main();
 main.run.in.run();

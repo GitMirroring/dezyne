@@ -23,11 +23,16 @@
 
 #! /usr/bin/nodejs
 
-// header
+// handwritten runtime header
 var dezyne = {};
 
 Function.prototype.defer = function ()
 {
   setTimeout (this, 0.01);
 };
+
+dezyne.connect = function (provided, required) {
+  provided.out = required.out;
+  required.in = provided.in;
+}
 // end header

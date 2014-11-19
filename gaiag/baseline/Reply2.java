@@ -45,15 +45,13 @@ class Reply2{
   public I.Status i_done() {
     System.err.println("Reply2.i_done");
     if (true) {
-      {
-        U.Status s = u.getIn().what.action();
-        s = u.getIn().what.action();
-        if (s == U.Status.Ok) {
-          reply_I_Status = I.Status.Yes;
-        }
-        else {
-          reply_I_Status = I.Status.No;
-        }
+      U.Status s = u.getIn().what.action();
+      s = u.getIn().what.action();
+      if (s == U.Status.Ok) {
+        reply_I_Status = I.Status.Yes;
+      }
+      else {
+        reply_I_Status = I.Status.No;
       }
     }
     return reply_I_Status;

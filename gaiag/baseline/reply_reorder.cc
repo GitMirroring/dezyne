@@ -41,25 +41,21 @@ namespace dezyne
   void reply_reorder::p_start()
   {
     std::cout << "reply_reorder.p_start" << std::endl;
-    {
-      r.in.ping();
-    }
+    r.in.ping();
   }
 
   void reply_reorder::r_pong()
   {
     std::cout << "reply_reorder.r_pong" << std::endl;
+    if (first)
     {
-      if (first)
-      {
-        rt.defer(this, boost::bind(p.out.busy));
-        first = not (first);
-      }
-      if (not (first))
-      {
-        rt.defer(this, boost::bind(p.out.finish));
-        first = not (first);
-      }
+      rt.defer(this, boost::bind(p.out.busy));
+      first = not (first);
+    }
+    if (not (first))
+    {
+      rt.defer(this, boost::bind(p.out.finish));
+      first = not (first);
     }
   }
 

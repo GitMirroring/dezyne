@@ -272,7 +272,7 @@
                                          (cons (snippet 'alias `((type ,type) (name ,name) (out? ,out?) (alias ,alias)))
                                                rest))))))
                             (indent (if (pair? aliases) (1+ indent) indent))
-                            (statement (->code model statement locals indent))
+                            (statement (->code model statement locals indent #f))
                             (statement (if (pair? aliases)
                                            (snippet 'compound `((space space)
                                                                 (statements ,(string-join (append aliases (list statement))))))
@@ -304,7 +304,7 @@
                          (variable? (is-a? statement <variable>))
                          (locals (if variable? (acons (.name statement) statement locals)
                                      locals)))
-                    (let ((statement (->code model (car statements) locals indent compound?))
+                    (let ((statement (->code model (car statements) locals indent))
                           (continuation (loop (cdr statements) locals)))
                       (if variable?
                           (list (snippet 'context `((space ,space)
