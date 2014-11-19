@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -21,7 +22,7 @@
 //
 // Code:
 
-dezyne.ISiren= function() {
+dezyne.ISiren = function() {
   this.in = {
     turnon : null,
     turnoff : null
