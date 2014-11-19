@@ -30,8 +30,8 @@ dezyne.requires_twice = function() {
   this.p.in.e = function() {
     console.log('requires_twice.p_e');
     {
-      this.once.in.e.defer();
-      this.twice.in.e.defer();
+      this.once.in.e();
+      this.twice.in.e();
     }
   }.bind(this);
   this.once.out.a = function() {

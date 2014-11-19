@@ -30,7 +30,7 @@ dezyne.reply_reorder = function() {
   this.p.in.start = function() {
     console.log('reply_reorder.p_start');
     {
-      this.r.in.ping.defer();
+      this.r.in.ping();
     }
   }.bind(this);
   this.r.out.pong = function() {

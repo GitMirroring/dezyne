@@ -29,7 +29,7 @@ dezyne.complete = function() {
   this.p.in.e = function() {
     console.log('complete.p_e');
     {
-      this.r.in.e.defer();
+      this.r.in.e();
     }
   }.bind(this);
   this.r.out.a = function() {

@@ -51,20 +51,20 @@ dezyne.Comp = function() {
       }
     }
     else if(this.s === this.State.Initialized) {
-      assert (false);
+      console.assert (false);
     }
     else if(this.s === this.State.Error) {
-      assert (false);
+      console.assert (false);
     }
     return this.reply_IComp_result_t;
   }.bind(this);
   this.client.in.recover = function() {
     console.log('Comp.client_recover');
     if(this.s === this.State.Uninitialized) {
-      assert (false);
+      console.assert (false);
     }
     else if(this.s === this.State.Initialized) {
-      assert (false);
+      console.assert (false);
     }
     else if(this.s === this.State.Error) {
       {
@@ -84,7 +84,7 @@ dezyne.Comp = function() {
   this.client.in.perform_actions = function() {
     console.log('Comp.client_perform_actions');
     if(this.s === this.State.Uninitialized) {
-      assert (false);
+      console.assert (false);
     }
     else if(this.s === this.State.Initialized) {
       {
@@ -103,7 +103,7 @@ dezyne.Comp = function() {
       }
     }
     else if(this.s === this.State.Error) {
-      assert (false);
+      console.assert (false);
     }
     return this.reply_IComp_result_t;
   }.bind(this);

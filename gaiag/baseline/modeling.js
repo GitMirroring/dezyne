@@ -28,7 +28,7 @@ dezyne.modeling = function() {
 
   this.p.in.e = function() {
     console.log('modeling.p_e');
-    this.r.in.e.defer();
+    this.r.in.e();
   }.bind(this);
   this.r.out.f = function() {
     console.log('modeling.r_f');
