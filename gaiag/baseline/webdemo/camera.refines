@@ -1,0 +1,55 @@
+Checking out/webdemo/camera.csp
+
+Checking COMPLETE'({i1105_IAcquisition.inevitable,i1105_IAcquisition.i839_auto_focus,i1105_IAcquisition.i840_cancel,i1105_IAcquisition.i841_acquire}) [F= IF_i1105_IAcquisition_(true,true)\diff(Events,{i1105_IAcquisition.inevitable,i1105_IAcquisition.i839_auto_focus,i1105_IAcquisition.i840_cancel,i1105_IAcquisition.i841_acquire,illegal})
+true
+
+Checking IF_i1105_IAcquisition_(false,false) :[deadlock free]
+true
+
+Checking IF_i1105_IAcquisition_(true,false)\{|i1105_IAcquisition.inevitable,i1105_IAcquisition_'''|} :[livelock free]
+true
+
+Checking COMPLETE'({i2155_IShutter.i2145_expose}) [F= IF_i2155_IShutter_(true,true)\diff(Events,{i2155_IShutter.i2145_expose,illegal})
+true
+
+Checking IF_i2155_IShutter_(false,false) :[deadlock free]
+true
+
+Checking IF_i2155_IShutter_(true,false) :[livelock free]
+true
+
+Checking COMPLETE'({i306_IControl.inevitable,i306_IControl.i3_setup,i306_IControl.i4_shoot,i306_IControl.i5_release}) [F= IF_i306_IControl_(true,true)\diff(Events,{i306_IControl.inevitable,i306_IControl.i3_setup,i306_IControl.i4_shoot,i306_IControl.i5_release,illegal})
+true
+
+Checking IF_i306_IControl_(false,false) :[deadlock free]
+true
+
+Checking IF_i306_IControl_(true,false)\{|i306_IControl.inevitable,i306_IControl_'''|} :[livelock free]
+true
+
+Checking COMPLETE'({i824_IMemory.i814_store}) [F= IF_i824_IMemory_(true,true)\diff(Events,{i824_IMemory.i814_store,illegal})
+true
+
+Checking IF_i824_IMemory_(false,false) :[deadlock free]
+true
+
+Checking IF_i824_IMemory_(true,false) :[livelock free]
+true
+
+Checking CO_i813_Driver_(true,true)[[i306_IControl_'.x<-i383_control_'.x|x<-extensions(i383_control_')]] :[deterministic]
+true
+
+Checking COMPLETE'({i383_control.i3_setup,i383_control.i4_shoot,i383_control.i5_release,i389_acquisition_''.i842_image,i389_acquisition_''.i843_ready,i389_acquisition_''.i844_focus}) [F= CO_i813_Driver_(true,true)[[i306_IControl_'.x'<-i383_control_'.x'|x'<-extensions(i383_control_')]]\diff(Events,{i383_control.i3_setup,i383_control.i4_shoot,i383_control.i5_release,i389_acquisition_''.i842_image,i389_acquisition_''.i843_ready,i389_acquisition_''.i844_focus,illegal})
+true
+
+Checking STOP [T= AS_i813_Driver_(false)\diff(Events,{illegal})
+true
+
+Checking AS_i813_Driver_(false) :[deadlock free]
+true
+
+Checking IF_i306_IControl_(true,false)[[i306_IControl.x<-i383_control.x|x<-extensions(i383_control)]][[i306_IControl_'.x<-i383_control_'.x|x<-extensions(i383_control_')]][[i306_IControl_''.x<-i383_control_''.x|x<-extensions(i383_control_'')]]\{i306_IControl_'''.modeling,i383_control.inevitable} [F= AS_i813_Driver_(true)\diff(Events,{|illegal,i383_control,i383_control_',i383_control_''|})
+true
+
+Checking AS_i813_Driver_(true)\diff(Events,{|illegal,i383_control,i383_control_',i383_control_''|}) :[livelock free]
+true
