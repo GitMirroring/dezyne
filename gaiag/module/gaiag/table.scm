@@ -140,12 +140,13 @@
         ((=1 (length statements)) (car statements))
         (else (retain-source-location o (make <compound> :elements statements))))))
 
-    (($ <guard> expression ($ <on> triggers ($ <compound> (($ <guard> e s) ..1))))
+    (($ <guard> expression ($ <on> triggers (and ($ <compound> (($ <guard> e s) ..1)) (get! compound))))
      (let ((ons
             (map (lambda (e s)
-                   (make <on>
-                     :triggers triggers
-                     :statement (make <guard> :expression e :statement s)))
+                   (let ((e (annotate-otherwise (compound) e)))
+                    (make <on>
+                      :triggers triggers
+                      :statement (make <guard> :expression e :statement s))))
                  e s)))
        (evaluate model state (make <guard>
                                :expression expression
@@ -226,12 +227,21 @@
     (_ o)))
 
 (define-method (annotate-otherwise (o <compound>) (guard <guard>))
-  (and-let* ((guards ((gom:filter <guard>) (.elements o)))
-             (expression (.expression guard))
-             ((is-a? expression <otherwise>))
-             (value (.value (guards-not-or guards))))
-            (set! (.value (.expression guard)) value))
-  guard)
+  (or (and-let* ((expression (.expression guard))
+                 ((is-a? expression <otherwise>))
+                 (expression (annotate-otherwise o expression))
+                 (statement (.statement guard)))
+                (retain-source-location
+                 guard
+                 (make <guard> :expression expression :statement statement)))
+      guard))
+
+(define-method (annotate-otherwise (o <compound>) (expression <expression>))
+  (or (and-let* ((guards ((gom:filter <guard>) (.elements o)))
+                 ((is-a? expression <otherwise>))
+                 (value (.value (guards-not-or guards))))
+                (make <expression> :value value))
+      expression))
 
 (define-method (annotate-otherwise (o <compound>) (statement <statement>))
   statement)

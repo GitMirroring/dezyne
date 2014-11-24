@@ -26,7 +26,7 @@
 (define-method (pretty-state-table (o <root>))
   ((compose ast->dezyne .statement .behaviour) (state-table (model o))))
 
-(pass-if "state-table-dummy-test"
+(pass-if "table-dummy-test"
          #t)
 
 (define idle-init-busy-ast
@@ -56,7 +56,7 @@ interface i
 (define idle-init-busy-statement
   ((compose .statement .behaviour gom:interface) idle-init-busy-ast))
 
-(pass-if "state-table-expression-state-field"
+(pass-if "table-expression-state-field"
   (let ((state (make <literal> :type 'S :field 'idle)))
    (gom-pretty-noisy-equal?
     (eval-expression
@@ -65,7 +65,7 @@ interface i
      (make <field> :identifier 's :field 'idle))
     #t)))
 
-(pass-if "state-table-expression-state-var"
+(pass-if "table-expression-state-var"
   (let ((state (make <literal> :type 'S :field 'idle)))
    (gom-pretty-noisy-equal?
     (eval-expression
@@ -74,7 +74,7 @@ interface i
      (make <var> :name 's))
     state)))
 
-(pass-if "state-table-expression-state-b-not-b"
+(pass-if "table-expression-state-b-not-b"
   (let ((state (make <literal> :type 'S :field 'idle)))
    (gom-pretty-noisy-equal?
     (eval-expression
@@ -86,7 +86,7 @@ interface i
       (list '! (make <var> :name 'b))))
     #t)))
 
-(pass-if "state-table-static"
+(pass-if "table-static"
   (gom-pretty-noisy-equal?
    (state-table
     (ast:resolve
@@ -112,7 +112,7 @@ interface i
 #})))
    idle-init-busy-statement))
 
-(pass-if "state-table-state-var-equals"
+(pass-if "table-state-var-equals"
   (gom-pretty-noisy-equal?
    (state-table
     (ast:resolve
@@ -138,7 +138,7 @@ interface i
 #})))
    idle-init-busy-statement))
 
-(pass-if "state-table-state-on"
+(pass-if "table-state-on"
   (gom-pretty-noisy-equal?
    (state-table
     (ast:resolve
@@ -182,7 +182,7 @@ interface i
     (expression (field s busy))
 (compound)))))
 
-(pass-if "state-table-expressions"
+(pass-if "table-expressions"
   (gom-pretty-noisy-equal?
    (state-table
     (ast:resolve
@@ -231,7 +231,7 @@ interface i
        (action (trigger #f a (arguments)))
        (assign s (expression (literal #f S init))))))))))
 
-(pass-if "state-table-expressions-pretty"
+(pass-if "table-expressions-pretty"
   (diff-noisy-equal?
    (pretty-state-table
     (ast:resolve
@@ -293,7 +293,7 @@ interface i
 }
 "))
 
-(pass-if "state-table-guards"
+(pass-if "table-guards"
   (diff-noisy-equal?
    (pretty-state-table
     (ast:resolve
@@ -398,7 +398,7 @@ interface i
 }
 "))
 
-(pass-if "state-table-choice"
+(pass-if "table-choice"
   (diff-noisy-equal?
    (pretty-state-table
     (ast:resolve
@@ -441,7 +441,7 @@ interface i
 "))
 
 
-(pass-if "state-table-sort-triggers"
+(pass-if "table-sort-triggers"
   (diff-noisy-equal?
    (pretty-state-table
     (ast:resolve
@@ -485,5 +485,55 @@ interface ISiren
         [!running]
         running = !running;
     }
+}
+"))
+
+
+(pass-if "table-resolve-deep-otherwise"
+  (diff-noisy-equal?
+   (pretty-state-table
+    (ast:resolve
+     (dezyne->ast
+#{
+interface i
+{
+  in void e;
+  out void a;
+  behaviour
+  {
+     enum S { init, idle, busy };
+     S s = S.init;
+
+    [s.init || s.idle]
+    {
+      on e:
+      {
+        [s.init]
+        {
+          a;
+          s = S.busy;
+        }
+        [otherwise] {}
+      }
+    }
+    [s.busy] on e: s = S.init;
+  }
+}
+#})))
+"
+{
+  [s.init]
+  on e:
+  {
+    a;
+    s = S.busy;
+  }
+  [s.idle]
+  on e:
+  {
+  }
+  [s.busy]
+  on e:
+  s = S.init;
 }
 "))
