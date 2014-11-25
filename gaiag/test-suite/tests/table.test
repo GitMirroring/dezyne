@@ -476,13 +476,13 @@ interface ISiren
         [running]
         running = !running;
       on start:
-        [!running]
+        [otherwise]
         illegal;
       on stop:
         [running]
         illegal;
       on stop:
-        [!running]
+        [otherwise]
         running = !running;
     }
 }
@@ -535,5 +535,50 @@ interface i
   [s.busy]
   on e:
   s = S.init;
+}
+"))
+
+(pass-if "table-expand-deep-otherwise"
+  (diff-noisy-equal?
+   (pretty-state-table
+    (ast:resolve
+     (dezyne->ast
+#{
+interface i
+{
+  in void e;
+  out void a;
+  behaviour
+  {
+    enum S { init };
+    S s = S.init;
+    bool b = true;
+
+    [s.init]
+    {
+      on e:
+      {
+        [b]
+        {
+          a;
+        }
+        [otherwise] {}
+      }
+    }
+  }
+}
+#})))
+"
+{
+  [s.init]
+  {
+    on e:
+    [b]
+    a;
+    on e:
+    [otherwise]
+    {
+    }
+  }
 }
 "))

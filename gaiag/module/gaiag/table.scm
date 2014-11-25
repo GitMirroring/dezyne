@@ -240,7 +240,7 @@
   (or (and-let* ((guards ((gom:filter <guard>) (.elements o)))
                  ((is-a? expression <otherwise>))
                  (value (.value (guards-not-or guards))))
-                (make <expression> :value value))
+                (make <otherwise> :value value))
       expression))
 
 (define-method (annotate-otherwise (o <compound>) (statement <statement>))
