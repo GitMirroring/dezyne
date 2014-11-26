@@ -101,7 +101,7 @@
       o))
 
 (define-method (state-table (model <model>) (state <literal>) (o <compound>))
-  (and-let* ((statement (sort-ons (flatten-compound (evaluate model state o)))))
+  (and-let* ((statement (sort-ons (flatten-compound (evaluate model state (flatten-compound o))))))
             (let* ((field (make-field model state))
                    (expression (make <expression> :value (make-field model state)))
                    (expression2 (make <expression>

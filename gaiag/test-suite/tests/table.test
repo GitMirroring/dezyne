@@ -582,3 +582,29 @@ interface i
   }
 }
 "))
+
+(pass-if "table-nested-compound"
+  (diff-noisy-equal?
+   (pretty-state-table
+    (ast:resolve
+     (dezyne->ast
+#{
+interface I
+{
+  in void e;
+  behaviour
+  {
+    bool b = true;
+    [b] { {on e: {}} }
+  }
+}
+#})))
+"
+{
+  [state.Initial]
+  on e:
+  [b]
+  {
+  }
+}
+"))
