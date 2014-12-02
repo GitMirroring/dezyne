@@ -42,7 +42,7 @@ dezyne.Siren = function() {
 
 var alarm = new dezyne.AlarmSystem();
 var gui = new dezyne.Console();
-connect(alarm.console, gui.console);
+dezyne.connect(alarm.console, gui.console);
 ///// Test trace
 alarm.console.in.arm();
 alarm.sensor.sensor.out.triggered();

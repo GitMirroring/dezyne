@@ -21,18 +21,13 @@
 //
 // Code:
 
-function connect(provided, required) {
-  provided.out = required.out;
-  required.in = provided.in;
-}
-
 dezyne.AlarmSystem = function() {
   this.alarm = new dezyne.Alarm();
   this.sensor = new dezyne.Sensor();
   this.siren = new dezyne.Siren();
   this.console = this.alarm.console;
 
-  connect(this.sensor.sensor, this.alarm.sensor);
-  connect(this.siren.siren, this.alarm.siren);
+  dezyne.connect(this.sensor.sensor, this.alarm.sensor);
+  dezyne.connect(this.siren.siren, this.alarm.siren);
 
 };

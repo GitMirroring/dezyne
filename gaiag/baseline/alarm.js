@@ -21,154 +21,171 @@
 //
 // Code:
 
-#! /usr/bin/env node
-var interface = {};
-var component = {};
-function connect(provided, required) {
+#! /usr/bin/nodejs
+
+// handwritten runtime header
+var dezyne = {};
+
+Function.prototype.defer = function ()
+{
+  setTimeout (this, 0.01);
+};
+
+dezyne.connect = function (provided, required) {
   provided.out = required.out;
   required.in = provided.in;
 }
-interface.Console = function() {
+// end header
+dezyne.ISiren = function() {
   this.in = {
-    arm: null,
-    disarm: null
+    turnon : null,
+    turnoff : null
   };
   this.out = {
-    detected: null,
-    deactivated: null
+
   };
 };
-interface.Siren = function() {
-  this.in = {
-    turnon: null,
-    turnoff: null
-  };
-  this.out = {
-  };
-};
-interface.Sensor = function() {
-  this.in = {
-    enable: null,
-    disable: null
-  };
-  this.out = {
-    triggered: null,
-    disabled: null
-  };
-};
-component.AlarmSystem = function() {
-  this.sensor = new component.Sensor();
-  this.siren = new component.Siren();
-  this.alarm = new component.Alarm();
+dezyne.AlarmSystem = function() {
+  this.alarm = new dezyne.Alarm();
+  this.sensor = new dezyne.Sensor();
+  this.siren = new dezyne.Siren();
   this.console = this.alarm.console;
- connect(this.sensor.sensor, this.alarm.sensor);
-  connect(this.siren.siren, this.alarm.siren);
-}
-component.Alarm = function() {
-    this.States = {
-        Disarmed: 0, Armed: 1, Triggered: 2, Disarming: 3
-    };
-    this.state = this.States.Disarmed;
-    this.sounding = false;
-    this.console = new interface.Console();
-    this.sensor = new interface.Sensor();
-    this.siren = new interface.Siren();
-    this.console.in.arm  = function() {
-        console.log('Alarm.console_arm');
-        if(this.state == this.States.Disarmed) {
-            this.sensor.in.enable();
-            this.state = this.States.Armed;
-        }
-        else if (this.state == this.States.Armed) {
-            assert(false);
-        }
-        else if (this.state == this.States.Disarming) {
-            assert(false);
-        }
-        else if (this.state == this.States.Triggered) {
-            assert(false);
-        }
-    }.bind(this);
-    this.console.in.disarm = function() {
-        console.log('Alarm.console_disarm');
-        if(this.state == this.States.Disarmed) {
-            assert(false);
-        }
-        else if (this.state == this.States.Armed) {
-            this.sensor.in.disable();
-            this.state = this.States.Disarming;
-        }
-        else if (this.state == this.States.Disarming) {
-            assert(false);
-        }
-        else if (this.state == this.States.Triggered) {
-            this.sensor.in.disable();
-            this.sounding = false;
-            this.state = this.States.Disarming;
-        }
-    }.bind(this);
-    this.sensor.out.triggered = function() {
-        console.log('Alarm.sensor_triggered');
-        if(this.state == this.States.Disarmed) {
-            assert(false);
-        }
-        else if (this.state == this.States.Armed) {
-            this.console.out.detected();
-            this.siren.in.turnon();
-            this.sounding = true;
-            this.state = this.States.Triggered;
-        }
-        else if (this.state == this.States.Disarming) {
-            assert(false);
-        }
-        else if (this.state == this.States.Triggered) {
-            assert(false);
-        }
-    }.bind(this);
-    this.sensor.out.disabled = function() {
-        console.log('Alarm.sensor_disabled')
-        if(this.state == this.States.Disarmed) {
-            assert(false)
-        }
-        else if (this.state == this.States.Armed) {
-            assert(false);
-        }
-        else if (this.state == this.States.Disarming) {
-            if(this.sounding) {
-                this.console.out.deactivated();
-                this.sounding = false;
-                this.state = this.States.Disarmed;
-            }
-            else {
-                this.console.out.deactivated();
-                this.state = this.States.Disarmed;
-            }
-        }
-        else if (this.state == this.States.Triggered) {
-            assert(false);
-        }
-    }.bind(this);
-}
+
+  dezyne.connect(this.sensor.sensor, this.alarm.sensor);
+  dezyne.connect(this.siren.siren, this.alarm.siren);
+
+};
+dezyne.IConsole = function() {
+  this.in = {
+    arm : null,
+    disarm : null
+  };
+  this.out = {
+    detected : null,
+    deactivated : null
+  };
+};
+dezyne.ISensor = function() {
+  this.in = {
+    enable : null,
+    disable : null
+  };
+  this.out = {
+    triggered : null,
+    disabled : null
+  };
+};
+dezyne.Alarm = function() {
+  this.States = {
+    Disarmed: 0, Armed: 1, Triggered: 2, Disarming: 3
+  };
+  this.state = this.States.Disarmed;
+  this.sounding = false;
+
+  this.console = new dezyne.IConsole();
+  this.sensor = new dezyne.ISensor();
+  this.siren = new dezyne.ISiren();
+
+  this.console.in.arm = function() {
+    console.log('Alarm.console_arm');
+    if(this.state === this.States.Disarmed) {
+      this.sensor.in.enable();
+      this.state = this.States.Armed;
+    }
+    else if(this.state === this.States.Armed) {
+      console.assert (false);
+    }
+    else if(this.state === this.States.Disarming) {
+      console.assert (false);
+    }
+    else if(this.state === this.States.Triggered) {
+      console.assert (false);
+    }
+  }.bind(this);
+  this.console.in.disarm = function() {
+    console.log('Alarm.console_disarm');
+    if(this.state === this.States.Disarmed) {
+      console.assert (false);
+    }
+    else if(this.state === this.States.Armed) {
+      this.sensor.in.disable();
+      this.state = this.States.Disarming;
+    }
+    else if(this.state === this.States.Disarming) {
+      console.assert (false);
+    }
+    else if(this.state === this.States.Triggered) {
+      this.sensor.in.disable();
+      this.siren.in.turnoff();
+      this.sounding = false;
+      this.state = this.States.Disarming;
+    }
+  }.bind(this);
+  this.sensor.out.triggered = function() {
+    console.log('Alarm.sensor_triggered');
+    if(this.state === this.States.Disarmed) {
+      console.assert (false);
+    }
+    else if(this.state === this.States.Armed) {
+      this.console.out.detected.defer();
+      this.siren.in.turnon();
+      this.sounding = true;
+      this.state = this.States.Triggered;
+    }
+    else if(this.state === this.States.Disarming) {
+      { }
+    }
+    else if(this.state === this.States.Triggered) {
+      console.assert (false);
+    }
+  }.bind(this);
+  this.sensor.out.disabled = function() {
+    console.log('Alarm.sensor_disabled');
+    if(this.state === this.States.Disarmed) {
+      console.assert (false);
+    }
+    else if(this.state === this.States.Armed) {
+      console.assert (false);
+    }
+    else if(this.state === this.States.Disarming) {
+      if(this.sounding) {
+        this.console.out.deactivated.defer();
+        this.siren.in.turnoff();
+        this.state = this.States.Disarmed;
+        this.sounding = false;
+      }
+      else {
+        this.console.out.deactivated.defer();
+        this.state = this.States.Disarmed;
+      }
+    }
+    else if(this.state === this.States.Triggered) {
+      console.assert (false);
+    }
+  }.bind(this);
+
+};
+/* main */
 ///// Test stubs
-component.Console = function() {
-  this.console = new interface.Console();
+dezyne.Console = function() {
+  this.console = new dezyne.IConsole();
   this.console.out.detected = function() { console.log('Alarm detected'); }
   this.console.out.deactivated = function() { console.log('Alarm deactivated'); }
 };
-component.Sensor = function() {
-  this.sensor = new interface.Sensor();
-  this.sensor.in.enable = function() { console.log('Sensor enabled')};
-  this.sensor.in.disable = function() { console.log('Sensor disabled');};
+dezyne.Sensor = function() {
+  this.sensor = new dezyne.ISensor();
+  this.sensor.in.enable = function() { console.log('Sensor enable')};
+  this.sensor.in.disable = function() { console.log('Sensor disable');};
 }
-component.Siren = function() {
-  this.siren = new interface.Siren();
-  this.siren.in.turnon = function() { console.log('Siren on'); };
-  this.siren.in.turnoff = function() { console.log('Siren off'); };
+dezyne.Siren = function() {
+  this.siren = new dezyne.ISiren();
+  this.siren.in.turnon = function() { console.log('Siren turnon'); };
+  this.siren.in.turnoff = function() { console.log('Siren turnoff'); };
 }
 
-var alarm = new component.AlarmSystem();
-var gui = new component.Console();
-connect(alarm.console, gui.console);
+var alarm = new dezyne.AlarmSystem();
+var gui = new dezyne.Console();
+dezyne.connect(alarm.console, gui.console);
 ///// Test trace
 alarm.console.in.arm();
 alarm.sensor.sensor.out.triggered();
