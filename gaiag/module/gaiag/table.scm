@@ -66,6 +66,7 @@
 
 (define-method (in-file (o <model>) (file <symbol>))
   (and-let* ((model-file (source-file o)))
+            (stderr "model-file: ~a ==~a\n" model-file file)
             (eq? (basename file) (basename model-file))))
 
 (define-method (state-table (o <root>))
