@@ -34,6 +34,7 @@
 
   :use-module (oop goops)
 
+  :use-module (language dezyne location)
   :use-module (gaiag gaiag)
   :use-module (gaiag json-table)
   :use-module (gaiag misc)
@@ -49,13 +50,34 @@
 (define-method (state-table (o <list>))
   (filter identity (map state-table o)))
 
+(define (source-file o)
+  (and-let* (((supports-source-properties? o))
+             (loc (source-property o 'loc))
+             (properties (source-location->user-source-properties loc))
+             (file-name (assoc-ref properties 'filename)))
+            (string->symbol file-name)))
+
+(define-method (in-file (o <symbol>))
+  (lambda (m) (in-file m o)))
+
+(define-generic basename)
+(define-method (basename (o <symbol>))
+  (string->symbol (basename (symbol->string o))))
+
+(define-method (in-file (o <model>) (file <symbol>))
+  (and-let* ((model-file (source-file o)))
+            (eq? (basename file) (basename model-file))))
+
 (define-method (state-table (o <root>))
   ;; FIXME: c&p csp.scm
-  (let ((name
-         (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
-                     string->symbol))))
+  (let ((file (and=> (option-ref (parse-opts (command-line)) 'file #f)
+                     string->symbol))
+        (name
+            (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
+                        string->symbol))))
     (or (and-let* ((models (null-is-#f (gom:models-with-behaviour o)))
-                   (models (if name (list (find (gom:named name) models)) models)))
+                   (models (null-is-#f (if name (list (find (gom:named name) models)) models)))
+                   (models (null-is-#f (if file (filter (in-file file) models) models))))
                   (map state-table models))
         (let* ((models ((gom:filter <model>) o))
                (models (comma-join (map .name models)))
