@@ -76,17 +76,9 @@
             (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
                         string->symbol))))
     (or (and-let* ((models (null-is-#f (gom:models-with-behaviour o)))
-                   (models (null-is-#f (if name (list (find (gom:named name) models)) models)))
+                   (models (null-is-#f (if name (and=> (find (gom:named name) models) list) models)))
                    (models (null-is-#f (if file (filter (in-file file) models) models))))
-                  (map state-table models))
-        (let* ((models ((gom:filter <model>) o))
-               (models (comma-join (map .name models)))
-               (message (if name
-                            "gaiag: no model [name=~a] with behaviour: ~a\n"
-                            "gaiag: no model with behaviour: ~a\n"))
-               (message (format #f message name models)))
-          (stderr message)
-          (throw 'state message)))))
+                  (map state-table models)))))
 
 (define (has-enum? o)
   (null-is-#f (gom:enums (.behaviour o))))
@@ -355,6 +347,10 @@
 (define-method (mangle-table (o <list>))
   (map mangle-table o))
 
+(define-method (mangle-table (o <boolean>))
+  (if (option-ref (parse-opts (command-line)) 'json #f)
+      (list (make-hash-table))))
+
 (define-method (mangle-table (o <model>))
   (let ((json? (option-ref (parse-opts (command-line)) 'json #f))
         (statement ((compose .statement .behaviour) o)))
@@ -388,4 +384,5 @@
   ((compose
     pretty
     mangle-table
-    state-table ast:resolve) ast))
+    state-table
+    ast:resolve) ast))
