@@ -36,7 +36,8 @@ SCRIPTS = coverage gaiag json2scm scm2json
 SCM_SOURCES = $(shell cd module git ls-files)
 SCM_TEST_SOURCES = $(shell cd test-suite git ls-files)
 CSPMCHECKER = cspmchecker
-REFINES =  fdr2 batch
+REFINES = fdr2 batch
+TRANSIT = transit
 PREFIX = $(abspath $(shell pwd))
 GUILE_LOAD_PATH = $(PREFIX):$(PREFIX)/module
 GUILE_FLAGS := $(patsubst %,-L %, $(subst :, ,$(GUILE_LOAD_PATH)))
@@ -282,6 +283,7 @@ BROKEN =\
  LOPW.dzn\
  bareSiliconAlarm.dzn\
  default.dzn\
+ StartControl.dzn\
 
 DEMO_SOURCES = $(filter-out $(BROKEN) ,$(shell cd $(DEPTH)/webdemo/dzn && ls *.dzn))
 csp-demo: $(DEMO_SOURCES:%.dzn=out/webdemo/%.refines)
@@ -616,3 +618,17 @@ table:
 	./gaiag -m Alarm -j -l table examples/Alarm.dzn | ./scm2json | sed -e 's/, /,\n /g'
 	@echo
 	./gaiag -m SensorMultiplexer4 -l table ../webdemo/dzn/choiceexample.dzn # | ./scm2json | sed -e 's/, /,\n /g'
+
+lts/%.svg: ../webdemo/dzn/%.dzn
+	mkdir -p $(dir $@)
+	for component in `grep -E '^component' $< | sed 's,^component \([^ ]*\).*,\1,'`; do \
+	  if sed -e 's,^component,###component,' -e 's,^interface,###interface,' $< | tr -d '\n' | sed 's,###,\n,g'| grep -E "^component[ ]*$$component[^{]*{" | grep -q -E 'behaviour[ ]*{'; then \
+	    ./gaiag -m $$component -l csp -o lts/$(notdir $(basename $<)).csp $<; \
+	    for process in `grep -E -o '^LTS_[^ =]*' lts/$(notdir $(basename $<)).csp`; do \
+	      $(TRANSIT) -n lts/$(notdir $(basename $<)).csp $$process lts/$(notdir $(basename $<)).$$process.svg svg >&/dev/null; \
+	    done; rm lts/$(notdir $(basename $<)).csp; \
+	  fi; \
+	done; \
+	touch $@
+
+lts: $(DEMO_SOURCES:%.dzn=lts/$(notdir %).svg)

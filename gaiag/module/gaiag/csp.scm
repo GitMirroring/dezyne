@@ -126,7 +126,10 @@
                                        (csp-model model)
                                        (if separate-asserts?
                                            (animate-string "\ninclude \"asserts.csp\"\n")
-                                           (csp-asserts model))))
+                                           (csp-asserts model))
+                                       (let ((models (append (interfaces model) (list model))))
+                                         (map csp-lts models))
+                                       (assembly-lts model)))
               (if separate-asserts? (dump-output "asserts.csp" (lambda () (csp-asserts model)))))))
 
 (define (csp:import name)
@@ -149,8 +152,22 @@
                 (string->symbol (string-drop svar 3)))
       var))
 
+(define-method (interfaces (o <interface>))
+  '())
+
 (define-method (interfaces (o <component>))
   (map gom:import (delete-duplicates (sort (map .type ((compose .elements .ports) o)) symbol<))))
+
+(define-method (assembly-lts (o <component>))
+  (csp-file 'assembly-lts.csp.scm (csp-module o)))
+
+(define-method (assembly-lts (o <interface>)))
+
+(define-method (csp-lts (o <component>))
+  (csp-file 'component-lts.csp.scm (csp-module o)))
+
+(define-method (csp-lts (o <interface>))
+  (csp-file 'interface-lts.csp.scm (csp-module o)))
 
 (define-method (csp-model (o <component>))
   (for-each csp-model (interfaces o))
