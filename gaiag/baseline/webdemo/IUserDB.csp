@@ -1,0 +1,108 @@
+-- drop_one_local: V => V
+drop_one_local_((M', (L', L0'))) = (M', L')
+
+illegal_(P',V') = illegal -> STOP
+-- send_: (c: channel, e:event) => (P,V)->Proc
+send_(c',e')(P', V') = c'!e' -> P'(V')
+-- recv_: (c: channel, e:event) => (P,V)->Proc
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
+-- skip_: () => (P,V)->Proc
+skip_(P', V') = P'(V')
+-- call_: (B': (P,V)->Proc) => (P,V)->Proc
+call_(B')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', <>))
+-- call_args_: (B': (P,V)->Proc, F': V'->V') => (P,V)->Proc
+call_args_(B', F')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', (<>, F'((M1',L1')))))
+-- assign_: (F': V -> V) => (P,V) -> Proc
+assign_(F')(P', V') = P'(F'(V'))
+-- assign_int_: (F': V -> V) => (P,V) -> Proc
+assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & range_error -> STOP [] b' & P'(F'(V'))
+-- assign_int_: (F': V -> V, B': V -> bool) => (P,V) -> Proc
+assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & illegal -> STOP [] b' & P'(F'(V'))
+-- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
+assign_active_(C', A')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
+-- assign_int_active_: C':(P,V)->Proc, A: (V,val)->V, B': V -> bool => (P,V)->Proc
+-- Paul, HELP! assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ not b' & range_error -> STOP [] b' & P'(A'((M',L'),r')), V')
+-- assign_int_active_(C',A',b')(P', V') = assign_active_(C', A')
+-- assign_int_active_(C',A',b')(P', V') = (\ (C', A', b') @ assign_active_(C', A'))
+assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
+
+reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
+-- returnvalue_: (F: V->val) => (P,V)->Proc
+returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
+-- the_end_: P => V->Proc
+the_end_(P', V') = transition_end -> P'(V')
+
+-- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
+semi_(S1',S2')(P', V') = S1'(\V'' @ S2'(P', V''),V')
+-- ifthenelse: (F': V->val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
+ifthenelse_(F',S1',S2')(P', V') =  if F'(V') then S1'(P', V') else S2'(P', V')
+-- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
+context_(F', S')(P', (M', L')) = S'((\ (M',L2') @ P'((M',L'))), (M', (L', F'((M', L')))))
+-- context_int_: (F': V->val, B: bool, S': (P,V)->Proc) => (P,V)->Proc
+context_int_(F', B', S')(P', (M', L')) = S'((\ (M',L2') @ let b' = B'((M',L2')) within not b' & range_error -> STOP [] b' & P'((M',L'))), (M', (L', F'((M', L')))))
+-- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
+context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
+-- context_int_active_: (C':(P,V)->Proc, B': bool, S: (P,V)->Proc) => (P,V)->Proc
+-- Paul, HELP! context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ let b' = B'((M',r')) within not b' & range_error -> STOP [] b' & S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
+--context_int_active_(C', B', S')(P', V') = (\ (C', B', S') @ context_active_(C', S'))
+context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
+
+channel illegal
+channel range_error
+channel transition_begin, transition_end
+
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
+datatype event_enumeration_alphabet = i3_checkUser | i4_UserCredentialsOK | i5_UserCredentialsNOK | i6_UserUnknown | i9_States_Checking | i9_States_Idle | inevitable | modeling | return | the_end'
+-- interface.csp.scm
+
+channel i161_IUserDB: {i3_checkUser,inevitable,the_end'}
+channel i161_IUserDB_'': {i4_UserCredentialsOK,i5_UserCredentialsNOK,i6_UserUnknown}
+channel i161_IUserDB_': {return}
+channel i161_IUserDB_in',i161_IUserDB_out': {i161_IUserDB_'.return}
+channel i161_IUserDB_''': {modeling}
+
+IF_i161_IUserDB_(IG,CS) = let
+
+i161_IUserDB_(((i17_state),(stack'))) =
+((i17_state == i9_States_Idle)) & (
+i161_IUserDB?x:{i3_checkUser} ->
+semi_(assign_(\ ((i17_state),(stack')) @ ((i9_States_Checking),(stack'))),
+(\ P',V' @ i161_IUserDB_'.return -> P'(V')))(\ V' @ i161_IUserDB.the_end' -> i161_IUserDB_(V'),((i17_state),(stack'))))
+[]
+((i17_state == i9_States_Checking)) & (
+IG & i161_IUserDB?x:{i3_checkUser} ->
+illegal_(STOP,<>)
+ []
+  i161_IUserDB?x:{inevitable} ->
+semi_(semi_(assign_(\ ((i17_state),(stack')) @ ((i9_States_Idle),(stack'))),
+(\ P',V' @ i161_IUserDB_''!i4_UserCredentialsOK -> P'(V'))),
+(\ P',V' @ i161_IUserDB_'''.modeling -> P'(V')))(\ V' @ i161_IUserDB.the_end' -> i161_IUserDB_(V'),((i17_state),(stack')))
+ []
+  i161_IUserDB?x:{inevitable} ->
+semi_(semi_(assign_(\ ((i17_state),(stack')) @ ((i9_States_Idle),(stack'))),
+(\ P',V' @ i161_IUserDB_''!i5_UserCredentialsNOK -> P'(V'))),
+(\ P',V' @ i161_IUserDB_'''.modeling -> P'(V')))(\ V' @ i161_IUserDB.the_end' -> i161_IUserDB_(V'),((i17_state),(stack')))
+ []
+  i161_IUserDB?x:{inevitable} ->
+semi_(semi_(assign_(\ ((i17_state),(stack')) @ ((i9_States_Idle),(stack'))),
+(\ P',V' @ i161_IUserDB_''!i6_UserUnknown -> P'(V'))),
+(\ P',V' @ i161_IUserDB_'''.modeling -> P'(V')))(\ V' @ i161_IUserDB.the_end' -> i161_IUserDB_(V'),((i17_state),(stack'))))
+[]
+CS & i161_IUserDB?x:{inevitable} -> illegal_(STOP,<>)
+
+REORDER' = i161_IUserDB?x' -> (i161_IUserDB_in'?y' -> i161_IUserDB.the_end' -> i161_IUserDB_out'!y' -> REORDER' [] i161_IUserDB.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then i161_IUserDB_(((i9_States_Idle),(<>)))
+                 else i161_IUserDB_(((i9_States_Idle),(<>)))) [[x<-i161_IUserDB_in'.x|x<-extensions(i161_IUserDB_in')]] [|{|i161_IUserDB,i161_IUserDB_in',i161_IUserDB.the_end'|}|] REORDER' [[i161_IUserDB_out'.x<-x|x<-extensions(i161_IUserDB_out')]] \ {|i161_IUserDB_in',i161_IUserDB.the_end'|})
+
+-- end of interface.csp.scm
+assert COMPLETE'({i161_IUserDB.inevitable,i161_IUserDB.i3_checkUser}) [F= IF_i161_IUserDB_(true,true) \ diff(Events,{i161_IUserDB.inevitable,i161_IUserDB.i3_checkUser,illegal})
+assert IF_i161_IUserDB_(false,false) :[deadlock free]
+assert IF_i161_IUserDB_(true,false)  \ {|i161_IUserDB.inevitable,i161_IUserDB_'''|} :[livelock free]

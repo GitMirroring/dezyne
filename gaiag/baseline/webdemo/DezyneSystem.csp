@@ -1,0 +1,172 @@
+-- drop_one_local: V => V
+drop_one_local_((M', (L', L0'))) = (M', L')
+
+illegal_(P',V') = illegal -> STOP
+-- send_: (c: channel, e:event) => (P,V)->Proc
+send_(c',e')(P', V') = c'!e' -> P'(V')
+-- recv_: (c: channel, e:event) => (P,V)->Proc
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
+-- skip_: () => (P,V)->Proc
+skip_(P', V') = P'(V')
+-- call_: (B': (P,V)->Proc) => (P,V)->Proc
+call_(B')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', <>))
+-- call_args_: (B': (P,V)->Proc, F': V'->V') => (P,V)->Proc
+call_args_(B', F')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', (<>, F'((M1',L1')))))
+-- assign_: (F': V -> V) => (P,V) -> Proc
+assign_(F')(P', V') = P'(F'(V'))
+-- assign_int_: (F': V -> V) => (P,V) -> Proc
+assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & range_error -> STOP [] b' & P'(F'(V'))
+-- assign_int_: (F': V -> V, B': V -> bool) => (P,V) -> Proc
+assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & illegal -> STOP [] b' & P'(F'(V'))
+-- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
+assign_active_(C', A')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
+-- assign_int_active_: C':(P,V)->Proc, A: (V,val)->V, B': V -> bool => (P,V)->Proc
+-- Paul, HELP! assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ not b' & range_error -> STOP [] b' & P'(A'((M',L'),r')), V')
+-- assign_int_active_(C',A',b')(P', V') = assign_active_(C', A')
+-- assign_int_active_(C',A',b')(P', V') = (\ (C', A', b') @ assign_active_(C', A'))
+assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
+
+reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
+-- returnvalue_: (F: V->val) => (P,V)->Proc
+returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
+-- the_end_: P => V->Proc
+the_end_(P', V') = transition_end -> P'(V')
+
+-- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
+semi_(S1',S2')(P', V') = S1'(\V'' @ S2'(P', V''),V')
+-- ifthenelse: (F': V->val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
+ifthenelse_(F',S1',S2')(P', V') =  if F'(V') then S1'(P', V') else S2'(P', V')
+-- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
+context_(F', S')(P', (M', L')) = S'((\ (M',L2') @ P'((M',L'))), (M', (L', F'((M', L')))))
+-- context_int_: (F': V->val, B: bool, S': (P,V)->Proc) => (P,V)->Proc
+context_int_(F', B', S')(P', (M', L')) = S'((\ (M',L2') @ let b' = B'((M',L2')) within not b' & range_error -> STOP [] b' & P'((M',L'))), (M', (L', F'((M', L')))))
+-- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
+context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
+-- context_int_active_: (C':(P,V)->Proc, B': bool, S: (P,V)->Proc) => (P,V)->Proc
+-- Paul, HELP! context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ let b' = B'((M',r')) within not b' & range_error -> STOP [] b' & S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
+--context_int_active_(C', B', S')(P', V') = (\ (C', B', S') @ context_active_(C', S'))
+context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
+
+channel illegal
+channel range_error
+channel transition_begin, transition_end
+
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
+datatype event_enumeration_alphabet = i10_reauthenticateNeeded | i11_checkModel | i13_verifyModel | i15_checkModelRes | i16_verifyModelRes | i20_AuthState_Authenticating | i20_AuthState_Authorized | i20_AuthState_Unknown | i6_res_Nok | i6_res_Ok | i7_authenticate | i8_authenticateSuccess | i9_authenticateFailed | inevitable | modeling | return | the_end'
+-- interface.csp.scm
+
+channel i649_IDezyne: {i11_checkModel,i13_verifyModel,i7_authenticate,inevitable,the_end'}
+channel i649_IDezyne_'': {i10_reauthenticateNeeded,i15_checkModelRes,i16_verifyModelRes,i8_authenticateSuccess,i9_authenticateFailed}
+channel i649_IDezyne_': {i6_res_Ok,i6_res_Nok,return}
+channel i649_IDezyne_in',i649_IDezyne_out': {i649_IDezyne_'.i6_res_Ok,i649_IDezyne_'.i6_res_Nok,i649_IDezyne_'.return}
+channel i649_IDezyne_''': {modeling}
+
+IF_i649_IDezyne_(IG,CS) = let
+
+i649_IDezyne_(((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack'))) =
+((i40_state == i20_AuthState_Unknown)) & (
+IG & i649_IDezyne?x:{i11_checkModel,i13_verifyModel} ->
+illegal_(STOP,<>)
+ []
+  i649_IDezyne?x:{i7_authenticate} ->
+semi_(assign_(\ ((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack')) @ ((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i20_AuthState_Authenticating),(stack'))),
+(\ P',V' @ i649_IDezyne_'.return -> P'(V')))(\ V' @ i649_IDezyne.the_end' -> i649_IDezyne_(V'),((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack'))))
+[]
+((i40_state == i20_AuthState_Authenticating)) & (
+IG & i649_IDezyne?x:{i11_checkModel,i13_verifyModel,i7_authenticate} ->
+illegal_(STOP,<>)
+ []
+  i649_IDezyne?x:{inevitable} ->
+semi_(semi_(assign_(\ ((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack')) @ ((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i20_AuthState_Authorized),(stack'))),
+(\ P',V' @ i649_IDezyne_''!i8_authenticateSuccess -> P'(V'))),
+(\ P',V' @ i649_IDezyne_'''.modeling -> P'(V')))(\ V' @ i649_IDezyne.the_end' -> i649_IDezyne_(V'),((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack')))
+ []
+  i649_IDezyne?x:{inevitable} ->
+semi_(semi_((\ P',V' @ i649_IDezyne_''!i9_authenticateFailed -> P'(V')),
+assign_(\ ((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack')) @ ((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i20_AuthState_Unknown),(stack')))),
+(\ P',V' @ i649_IDezyne_'''.modeling -> P'(V')))(\ V' @ i649_IDezyne.the_end' -> i649_IDezyne_(V'),((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack'))))
+[]
+((i40_state == i20_AuthState_Authorized)) & (
+IG & i649_IDezyne?x:{i7_authenticate} ->
+illegal_(STOP,<>))
+[]
+((((i40_state == i20_AuthState_Authorized) and (not i30_SessionExpired)) and (not i22_ModelCheckOngoing))) & (
+i649_IDezyne?x:{i11_checkModel} ->
+semi_(reply_(i649_IDezyne_', (\ ((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack')) @ i6_res_Ok)),
+assign_(\ ((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack')) @ ((true,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack'))))(\ V' @ i649_IDezyne.the_end' -> i649_IDezyne_(V'),((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack')))
+ []
+  i649_IDezyne?x:{i11_checkModel} ->
+reply_(i649_IDezyne_', (\ ((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack')) @ i6_res_Nok))(\ V' @ i649_IDezyne.the_end' -> i649_IDezyne_(V'),((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack'))))
+[]
+((((i40_state == i20_AuthState_Authorized) and (not i30_SessionExpired)) and i22_ModelCheckOngoing)) & (
+IG & i649_IDezyne?x:{i11_checkModel} ->
+illegal_(STOP,<>))
+[]
+(((i40_state == i20_AuthState_Authorized) and (not ((not i30_SessionExpired))))) & (
+i649_IDezyne?x:{i11_checkModel,i13_verifyModel} ->
+reply_(i649_IDezyne_', (\ ((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack')) @ i6_res_Nok))(\ V' @ i649_IDezyne.the_end' -> i649_IDezyne_(V'),((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack'))))
+[]
+((((i40_state == i20_AuthState_Authorized) and (not i30_SessionExpired)) and (not i26_VerificationOngoing))) & (
+i649_IDezyne?x:{i13_verifyModel} ->
+semi_(reply_(i649_IDezyne_', (\ ((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack')) @ i6_res_Ok)),
+assign_(\ ((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack')) @ ((i22_ModelCheckOngoing,true,i30_SessionExpired,i40_state),(stack'))))(\ V' @ i649_IDezyne.the_end' -> i649_IDezyne_(V'),((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack')))
+ []
+  i649_IDezyne?x:{i13_verifyModel} ->
+reply_(i649_IDezyne_', (\ ((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack')) @ i6_res_Nok))(\ V' @ i649_IDezyne.the_end' -> i649_IDezyne_(V'),((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack'))))
+[]
+((((i40_state == i20_AuthState_Authorized) and (not i30_SessionExpired)) and i26_VerificationOngoing)) & (
+IG & i649_IDezyne?x:{i13_verifyModel} ->
+illegal_(STOP,<>))
+[]
+(((i40_state == i20_AuthState_Authorized) and i22_ModelCheckOngoing)) & (
+i649_IDezyne?x:{inevitable} ->
+semi_(semi_(assign_(\ ((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack')) @ ((false,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack'))),
+semi_(ifthenelse_(\ ((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack')) @ ((i30_SessionExpired and (not i26_VerificationOngoing))),
+semi_(assign_(\ ((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack')) @ ((i22_ModelCheckOngoing,i26_VerificationOngoing,false,i40_state),(stack'))),
+assign_(\ ((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack')) @ ((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i20_AuthState_Unknown),(stack')))),
+skip_
+),
+(\ P',V' @ i649_IDezyne_''!i15_checkModelRes -> P'(V')))),
+(\ P',V' @ i649_IDezyne_'''.modeling -> P'(V')))(\ V' @ i649_IDezyne.the_end' -> i649_IDezyne_(V'),((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack'))))
+[]
+(((i40_state == i20_AuthState_Authorized) and i26_VerificationOngoing)) & (
+i649_IDezyne?x:{inevitable} ->
+semi_(semi_(assign_(\ ((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack')) @ ((i22_ModelCheckOngoing,false,i30_SessionExpired,i40_state),(stack'))),
+semi_(ifthenelse_(\ ((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack')) @ ((i30_SessionExpired and (not i22_ModelCheckOngoing))),
+semi_(assign_(\ ((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack')) @ ((i22_ModelCheckOngoing,i26_VerificationOngoing,false,i40_state),(stack'))),
+assign_(\ ((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack')) @ ((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i20_AuthState_Unknown),(stack')))),
+skip_
+),
+(\ P',V' @ i649_IDezyne_''!i16_verifyModelRes -> P'(V')))),
+(\ P',V' @ i649_IDezyne_'''.modeling -> P'(V')))(\ V' @ i649_IDezyne.the_end' -> i649_IDezyne_(V'),((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack'))))
+[]
+((((i40_state == i20_AuthState_Authorized) and (not i30_SessionExpired)) and ((not i22_ModelCheckOngoing) and (not i26_VerificationOngoing)))) & (
+i649_IDezyne?x:{inevitable} ->
+semi_(semi_((\ P',V' @ i649_IDezyne_''!i10_reauthenticateNeeded -> P'(V')),
+assign_(\ ((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack')) @ ((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i20_AuthState_Unknown),(stack')))),
+(\ P',V' @ i649_IDezyne_'''.modeling -> P'(V')))(\ V' @ i649_IDezyne.the_end' -> i649_IDezyne_(V'),((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack'))))
+[]
+((((i40_state == i20_AuthState_Authorized) and (not i30_SessionExpired)) and (not (((not i22_ModelCheckOngoing) and (not i26_VerificationOngoing)))))) & (
+i649_IDezyne?x:{inevitable} ->
+semi_(semi_(assign_(\ ((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack')) @ ((i22_ModelCheckOngoing,i26_VerificationOngoing,true,i40_state),(stack'))),
+(\ P',V' @ i649_IDezyne_''!i10_reauthenticateNeeded -> P'(V'))),
+(\ P',V' @ i649_IDezyne_'''.modeling -> P'(V')))(\ V' @ i649_IDezyne.the_end' -> i649_IDezyne_(V'),((i22_ModelCheckOngoing,i26_VerificationOngoing,i30_SessionExpired,i40_state),(stack'))))
+[]
+CS & i649_IDezyne?x:{inevitable} -> illegal_(STOP,<>)
+
+REORDER' = i649_IDezyne?x' -> (i649_IDezyne_in'?y' -> i649_IDezyne.the_end' -> i649_IDezyne_out'!y' -> REORDER' [] i649_IDezyne.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then i649_IDezyne_(((false,false,false,i20_AuthState_Unknown),(<>)))
+                 else i649_IDezyne_(((false,false,false,i20_AuthState_Unknown),(<>)))) [[x<-i649_IDezyne_in'.x|x<-extensions(i649_IDezyne_in')]] [|{|i649_IDezyne,i649_IDezyne_in',i649_IDezyne.the_end'|}|] REORDER' [[i649_IDezyne_out'.x<-x|x<-extensions(i649_IDezyne_out')]] \ {|i649_IDezyne_in',i649_IDezyne.the_end'|})
+
+-- end of interface.csp.scm
+assert COMPLETE'({i649_IDezyne.inevitable,i649_IDezyne.i7_authenticate,i649_IDezyne.i11_checkModel,i649_IDezyne.i13_verifyModel}) [F= IF_i649_IDezyne_(true,true) \ diff(Events,{i649_IDezyne.inevitable,i649_IDezyne.i7_authenticate,i649_IDezyne.i11_checkModel,i649_IDezyne.i13_verifyModel,illegal})
+assert IF_i649_IDezyne_(false,false) :[deadlock free]
+assert IF_i649_IDezyne_(true,false)  \ {|i649_IDezyne.inevitable,i649_IDezyne_'''|} :[livelock free]

@@ -1,0 +1,10 @@
+Checking out/webdemo/StartControlIF.csp
+
+Checking COMPLETE'({i159_StartControlIF.inevitable,i159_StartControlIF.i6_startAll,i159_StartControlIF.i7_stopAll}) [F= IF_i159_StartControlIF_(true,true)\diff(Events,{i159_StartControlIF.inevitable,i159_StartControlIF.i6_startAll,i159_StartControlIF.i7_stopAll,illegal})
+true
+
+Checking IF_i159_StartControlIF_(false,false) :[deadlock free]
+true
+
+Checking IF_i159_StartControlIF_(true,false)\{|i159_StartControlIF.inevitable,i159_StartControlIF_'''|} :[livelock free]
+true

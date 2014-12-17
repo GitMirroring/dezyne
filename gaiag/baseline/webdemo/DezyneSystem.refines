@@ -1,0 +1,10 @@
+Checking out/webdemo/DezyneSystem.csp
+
+Checking COMPLETE'({i649_IDezyne.inevitable,i649_IDezyne.i7_authenticate,i649_IDezyne.i11_checkModel,i649_IDezyne.i13_verifyModel}) [F= IF_i649_IDezyne_(true,true)\diff(Events,{i649_IDezyne.inevitable,i649_IDezyne.i7_authenticate,i649_IDezyne.i11_checkModel,i649_IDezyne.i13_verifyModel,illegal})
+true
+
+Checking IF_i649_IDezyne_(false,false) :[deadlock free]
+true
+
+Checking IF_i649_IDezyne_(true,false)\{|i649_IDezyne.inevitable,i649_IDezyne_'''|} :[livelock free]
+true

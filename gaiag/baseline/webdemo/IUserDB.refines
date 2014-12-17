@@ -1,0 +1,10 @@
+Checking out/webdemo/IUserDB.csp
+
+Checking COMPLETE'({i161_IUserDB.inevitable,i161_IUserDB.i3_checkUser}) [F= IF_i161_IUserDB_(true,true)\diff(Events,{i161_IUserDB.inevitable,i161_IUserDB.i3_checkUser,illegal})
+true
+
+Checking IF_i161_IUserDB_(false,false) :[deadlock free]
+true
+
+Checking IF_i161_IUserDB_(true,false)\{|i161_IUserDB.inevitable,i161_IUserDB_'''|} :[livelock free]
+true

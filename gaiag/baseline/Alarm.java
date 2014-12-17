@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -63,10 +64,8 @@ class Alarm{
   public void console_arm() {
     System.err.println("Alarm.console_arm");
     if (state == States.Disarmed) {
-      {
-        sensor.getIn().enable.action();
-        state = States.Armed;
-      }
+      sensor.getIn().enable.action();
+      state = States.Armed;
     }
     else if (state == States.Armed) {
       assert(false);
@@ -85,21 +84,17 @@ class Alarm{
       assert(false);
     }
     else if (state == States.Armed) {
-      {
-        sensor.getIn().disable.action();
-        state = States.Disarming;
-      }
+      sensor.getIn().disable.action();
+      state = States.Disarming;
     }
     else if (state == States.Disarming) {
       assert(false);
     }
     else if (state == States.Triggered) {
-      {
-        sensor.getIn().disable.action();
-        siren.getIn().turnoff.action();
-        sounding = false;
-        state = States.Disarming;
-      }
+      sensor.getIn().disable.action();
+      siren.getIn().turnoff.action();
+      sounding = false;
+      state = States.Disarming;
     }
   };
 
@@ -109,12 +104,10 @@ class Alarm{
       assert(false);
     }
     else if (state == States.Armed) {
-      {
-        console.getOut().detected.action();
-        siren.getIn().turnon.action();
-        sounding = true;
-        state = States.Triggered;
-      }
+      console.getOut().detected.action();
+      siren.getIn().turnon.action();
+      sounding = true;
+      state = States.Triggered;
     }
     else if (state == States.Disarming) {
       { }
@@ -133,17 +126,15 @@ class Alarm{
       assert(false);
     }
     else if (state == States.Disarming) {
-      {
-        if (sounding) {
-          console.getOut().deactivated.action();
-          siren.getIn().turnoff.action();
-          state = States.Disarmed;
-          sounding = false;
-        }
-        else {
-          console.getOut().deactivated.action();
-          state = States.Disarmed;
-        }
+      if (sounding) {
+        console.getOut().deactivated.action();
+        siren.getIn().turnoff.action();
+        state = States.Disarmed;
+        sounding = false;
+      }
+      else {
+        console.getOut().deactivated.action();
+        state = States.Disarmed;
       }
     }
     else if (state == States.Triggered) {

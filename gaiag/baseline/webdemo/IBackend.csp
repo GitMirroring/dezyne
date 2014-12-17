@@ -1,0 +1,114 @@
+-- drop_one_local: V => V
+drop_one_local_((M', (L', L0'))) = (M', L')
+
+illegal_(P',V') = illegal -> STOP
+-- send_: (c: channel, e:event) => (P,V)->Proc
+send_(c',e')(P', V') = c'!e' -> P'(V')
+-- recv_: (c: channel, e:event) => (P,V)->Proc
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
+-- skip_: () => (P,V)->Proc
+skip_(P', V') = P'(V')
+-- call_: (B': (P,V)->Proc) => (P,V)->Proc
+call_(B')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', <>))
+-- call_args_: (B': (P,V)->Proc, F': V'->V') => (P,V)->Proc
+call_args_(B', F')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', (<>, F'((M1',L1')))))
+-- assign_: (F': V -> V) => (P,V) -> Proc
+assign_(F')(P', V') = P'(F'(V'))
+-- assign_int_: (F': V -> V) => (P,V) -> Proc
+assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & range_error -> STOP [] b' & P'(F'(V'))
+-- assign_int_: (F': V -> V, B': V -> bool) => (P,V) -> Proc
+assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & illegal -> STOP [] b' & P'(F'(V'))
+-- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
+assign_active_(C', A')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
+-- assign_int_active_: C':(P,V)->Proc, A: (V,val)->V, B': V -> bool => (P,V)->Proc
+-- Paul, HELP! assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ not b' & range_error -> STOP [] b' & P'(A'((M',L'),r')), V')
+-- assign_int_active_(C',A',b')(P', V') = assign_active_(C', A')
+-- assign_int_active_(C',A',b')(P', V') = (\ (C', A', b') @ assign_active_(C', A'))
+assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
+
+reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
+-- returnvalue_: (F: V->val) => (P,V)->Proc
+returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
+-- the_end_: P => V->Proc
+the_end_(P', V') = transition_end -> P'(V')
+
+-- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
+semi_(S1',S2')(P', V') = S1'(\V'' @ S2'(P', V''),V')
+-- ifthenelse: (F': V->val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
+ifthenelse_(F',S1',S2')(P', V') =  if F'(V') then S1'(P', V') else S2'(P', V')
+-- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
+context_(F', S')(P', (M', L')) = S'((\ (M',L2') @ P'((M',L'))), (M', (L', F'((M', L')))))
+-- context_int_: (F': V->val, B: bool, S': (P,V)->Proc) => (P,V)->Proc
+context_int_(F', B', S')(P', (M', L')) = S'((\ (M',L2') @ let b' = B'((M',L2')) within not b' & range_error -> STOP [] b' & P'((M',L'))), (M', (L', F'((M', L')))))
+-- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
+context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
+-- context_int_active_: (C':(P,V)->Proc, B': bool, S: (P,V)->Proc) => (P,V)->Proc
+-- Paul, HELP! context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ let b' = B'((M',r')) within not b' & range_error -> STOP [] b' & S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
+--context_int_active_(C', B', S')(P', V') = (\ (C', B', S') @ context_active_(C', S'))
+context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
+
+channel illegal
+channel range_error
+channel transition_begin, transition_end
+
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
+datatype event_enumeration_alphabet = i3_checkModel | i4_verifyModel | i5_checkModelRes | i6_verifyModelRes | inevitable | modeling | return | the_end'
+-- interface.csp.scm
+
+channel i154_IBackend: {i3_checkModel,i4_verifyModel,inevitable,the_end'}
+channel i154_IBackend_'': {i5_checkModelRes,i6_verifyModelRes}
+channel i154_IBackend_': {return}
+channel i154_IBackend_in',i154_IBackend_out': {i154_IBackend_'.return}
+channel i154_IBackend_''': {modeling}
+
+IF_i154_IBackend_(IG,CS) = let
+
+i154_IBackend_(((i8_ModelCheckOngoing,i12_VerificationOngoing),(stack'))) =
+((not i8_ModelCheckOngoing)) & (
+i154_IBackend?x:{i3_checkModel} ->
+semi_(assign_(\ ((i8_ModelCheckOngoing,i12_VerificationOngoing),(stack')) @ ((true,i12_VerificationOngoing),(stack'))),
+(\ P',V' @ i154_IBackend_'.return -> P'(V')))(\ V' @ i154_IBackend.the_end' -> i154_IBackend_(V'),((i8_ModelCheckOngoing,i12_VerificationOngoing),(stack'))))
+[]
+((not ((not i8_ModelCheckOngoing)))) & (
+IG & i154_IBackend?x:{i3_checkModel} ->
+illegal_(STOP,<>))
+[]
+((not i12_VerificationOngoing)) & (
+i154_IBackend?x:{i4_verifyModel} ->
+semi_(assign_(\ ((i8_ModelCheckOngoing,i12_VerificationOngoing),(stack')) @ ((i8_ModelCheckOngoing,true),(stack'))),
+(\ P',V' @ i154_IBackend_'.return -> P'(V')))(\ V' @ i154_IBackend.the_end' -> i154_IBackend_(V'),((i8_ModelCheckOngoing,i12_VerificationOngoing),(stack'))))
+[]
+((not ((not i12_VerificationOngoing)))) & (
+IG & i154_IBackend?x:{i4_verifyModel} ->
+illegal_(STOP,<>))
+[]
+(i8_ModelCheckOngoing) & (
+i154_IBackend?x:{inevitable} ->
+semi_(semi_(assign_(\ ((i8_ModelCheckOngoing,i12_VerificationOngoing),(stack')) @ ((false,i12_VerificationOngoing),(stack'))),
+(\ P',V' @ i154_IBackend_''!i5_checkModelRes -> P'(V'))),
+(\ P',V' @ i154_IBackend_'''.modeling -> P'(V')))(\ V' @ i154_IBackend.the_end' -> i154_IBackend_(V'),((i8_ModelCheckOngoing,i12_VerificationOngoing),(stack'))))
+[]
+(i12_VerificationOngoing) & (
+i154_IBackend?x:{inevitable} ->
+semi_(semi_(assign_(\ ((i8_ModelCheckOngoing,i12_VerificationOngoing),(stack')) @ ((i8_ModelCheckOngoing,false),(stack'))),
+(\ P',V' @ i154_IBackend_''!i6_verifyModelRes -> P'(V'))),
+(\ P',V' @ i154_IBackend_'''.modeling -> P'(V')))(\ V' @ i154_IBackend.the_end' -> i154_IBackend_(V'),((i8_ModelCheckOngoing,i12_VerificationOngoing),(stack'))))
+[]
+CS & i154_IBackend?x:{inevitable} -> illegal_(STOP,<>)
+
+REORDER' = i154_IBackend?x' -> (i154_IBackend_in'?y' -> i154_IBackend.the_end' -> i154_IBackend_out'!y' -> REORDER' [] i154_IBackend.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then i154_IBackend_(((false,false),(<>)))
+                 else i154_IBackend_(((false,false),(<>)))) [[x<-i154_IBackend_in'.x|x<-extensions(i154_IBackend_in')]] [|{|i154_IBackend,i154_IBackend_in',i154_IBackend.the_end'|}|] REORDER' [[i154_IBackend_out'.x<-x|x<-extensions(i154_IBackend_out')]] \ {|i154_IBackend_in',i154_IBackend.the_end'|})
+
+-- end of interface.csp.scm
+assert COMPLETE'({i154_IBackend.inevitable,i154_IBackend.i3_checkModel,i154_IBackend.i4_verifyModel}) [F= IF_i154_IBackend_(true,true) \ diff(Events,{i154_IBackend.inevitable,i154_IBackend.i3_checkModel,i154_IBackend.i4_verifyModel,illegal})
+assert IF_i154_IBackend_(false,false) :[deadlock free]
+assert IF_i154_IBackend_(true,false)  \ {|i154_IBackend.inevitable,i154_IBackend_'''|} :[livelock free]

@@ -1,0 +1,10 @@
+Checking out/webdemo/DeviceIF.csp
+
+Checking COMPLETE'({i210_Device1IF.inevitable,i210_Device1IF.i3_turnon,i210_Device1IF.i4_turnoff}) [F= IF_i210_Device1IF_(true,true)\diff(Events,{i210_Device1IF.inevitable,i210_Device1IF.i3_turnon,i210_Device1IF.i4_turnoff,illegal})
+true
+
+Checking IF_i210_Device1IF_(false,false) :[deadlock free]
+true
+
+Checking IF_i210_Device1IF_(true,false)\{|i210_Device1IF.inevitable,i210_Device1IF_'''|} :[livelock free]
+true

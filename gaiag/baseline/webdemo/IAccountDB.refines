@@ -1,0 +1,10 @@
+Checking out/webdemo/IAccountDB.csp
+
+Checking COMPLETE'({i41_IAccountDB.i6_checkIfSeatAvailable}) [F= IF_i41_IAccountDB_(true,true)\diff(Events,{i41_IAccountDB.i6_checkIfSeatAvailable,illegal})
+true
+
+Checking IF_i41_IAccountDB_(false,false) :[deadlock free]
+true
+
+Checking IF_i41_IAccountDB_(true,false) :[livelock free]
+true

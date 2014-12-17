@@ -1,0 +1,64 @@
+Checking out/webdemo/DezyneApplication.csp
+
+Checking COMPLETE'({i1003_IAccountDB.i968_checkIfSeatAvailable}) [F= IF_i1003_IAccountDB_(true,true)\diff(Events,{i1003_IAccountDB.i968_checkIfSeatAvailable,illegal})
+true
+
+Checking IF_i1003_IAccountDB_(false,false) :[deadlock free]
+true
+
+Checking IF_i1003_IAccountDB_(true,false) :[livelock free]
+true
+
+Checking COMPLETE'({i1132_ITimer.inevitable,i1132_ITimer.i1005_createTimer,i1132_ITimer.i1006_cancelTimer}) [F= IF_i1132_ITimer_(true,true)\diff(Events,{i1132_ITimer.inevitable,i1132_ITimer.i1005_createTimer,i1132_ITimer.i1006_cancelTimer,illegal})
+true
+
+Checking IF_i1132_ITimer_(false,false) :[deadlock free]
+true
+
+Checking IF_i1132_ITimer_(true,false)\{|i1132_ITimer.inevitable,i1132_ITimer_'''|} :[livelock free]
+true
+
+Checking COMPLETE'({i649_IDezyne.inevitable,i649_IDezyne.i7_authenticate,i649_IDezyne.i11_checkModel,i649_IDezyne.i13_verifyModel}) [F= IF_i649_IDezyne_(true,true)\diff(Events,{i649_IDezyne.inevitable,i649_IDezyne.i7_authenticate,i649_IDezyne.i11_checkModel,i649_IDezyne.i13_verifyModel,illegal})
+true
+
+Checking IF_i649_IDezyne_(false,false) :[deadlock free]
+true
+
+Checking IF_i649_IDezyne_(true,false)\{|i649_IDezyne.inevitable,i649_IDezyne_'''|} :[livelock free]
+true
+
+Checking COMPLETE'({i803_IBackend.inevitable,i803_IBackend.i652_checkModel,i803_IBackend.i653_verifyModel}) [F= IF_i803_IBackend_(true,true)\diff(Events,{i803_IBackend.inevitable,i803_IBackend.i652_checkModel,i803_IBackend.i653_verifyModel,illegal})
+true
+
+Checking IF_i803_IBackend_(false,false) :[deadlock free]
+true
+
+Checking IF_i803_IBackend_(true,false)\{|i803_IBackend.inevitable,i803_IBackend_'''|} :[livelock free]
+true
+
+Checking COMPLETE'({i963_IUserDB.inevitable,i963_IUserDB.i805_checkUser}) [F= IF_i963_IUserDB_(true,true)\diff(Events,{i963_IUserDB.inevitable,i963_IUserDB.i805_checkUser,illegal})
+true
+
+Checking IF_i963_IUserDB_(false,false) :[deadlock free]
+true
+
+Checking IF_i963_IUserDB_(true,false)\{|i963_IUserDB.inevitable,i963_IUserDB_'''|} :[livelock free]
+true
+
+Checking CO_i1958_DezyneApplication_(true,true)[[i649_IDezyne_'.x<-i1133_iDezyne_'.x|x<-extensions(i1133_iDezyne_')]] :[deterministic]
+true
+
+Checking COMPLETE'({i1133_iDezyne.i7_authenticate,i1133_iDezyne.i11_checkModel,i1133_iDezyne.i13_verifyModel,i1136_ibackend_''.i654_checkModelRes,i1136_ibackend_''.i655_verifyModelRes,i1139_userDB_''.i806_UserCredentialsOK,i1139_userDB_''.i807_UserCredentialsNOK,i1139_userDB_''.i808_UserUnknown,i1145_timer_''.i1007_timeout}) [F= CO_i1958_DezyneApplication_(true,true)[[i649_IDezyne_'.x'<-i1133_iDezyne_'.x'|x'<-extensions(i1133_iDezyne_')]]\diff(Events,{i1133_iDezyne.i7_authenticate,i1133_iDezyne.i11_checkModel,i1133_iDezyne.i13_verifyModel,i1136_ibackend_''.i654_checkModelRes,i1136_ibackend_''.i655_verifyModelRes,i1139_userDB_''.i806_UserCredentialsOK,i1139_userDB_''.i807_UserCredentialsNOK,i1139_userDB_''.i808_UserUnknown,i1145_timer_''.i1007_timeout,illegal})
+true
+
+Checking STOP [T= AS_i1958_DezyneApplication_(false)\diff(Events,{illegal})
+true
+
+Checking AS_i1958_DezyneApplication_(false) :[deadlock free]
+true
+
+Checking IF_i649_IDezyne_(true,false)[[i649_IDezyne.x<-i1133_iDezyne.x|x<-extensions(i1133_iDezyne)]][[i649_IDezyne_'.x<-i1133_iDezyne_'.x|x<-extensions(i1133_iDezyne_')]][[i649_IDezyne_''.x<-i1133_iDezyne_''.x|x<-extensions(i1133_iDezyne_'')]]\{i649_IDezyne_'''.modeling,i1133_iDezyne.inevitable} [F= AS_i1958_DezyneApplication_(true)\diff(Events,{|illegal,i1133_iDezyne,i1133_iDezyne_',i1133_iDezyne_''|})
+true
+
+Checking AS_i1958_DezyneApplication_(true)\diff(Events,{|illegal,i1133_iDezyne,i1133_iDezyne_',i1133_iDezyne_''|}) :[livelock free]
+true

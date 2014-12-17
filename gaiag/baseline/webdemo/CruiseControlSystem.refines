@@ -1,0 +1,37 @@
+Checking out/webdemo/CruiseControlSystem.csp
+
+Checking COMPLETE'({i333_iMotorUnit.inevitable,i333_iMotorUnit.optional,i333_iMotorUnit.i6_SpeedUp,i333_iMotorUnit.i8_CancelSpeedUp,i333_iMotorUnit.i9_MotorUnitDoneAck,i333_iMotorUnit.i10_Reset}) [F= IF_i333_iMotorUnit_(true,true)\diff(Events,{i333_iMotorUnit.inevitable,i333_iMotorUnit.optional,i333_iMotorUnit.i6_SpeedUp,i333_iMotorUnit.i8_CancelSpeedUp,i333_iMotorUnit.i9_MotorUnitDoneAck,i333_iMotorUnit.i10_Reset,illegal})
+true
+
+Checking IF_i333_iMotorUnit_(false,false) :[deadlock free]
+true
+
+Checking IF_i333_iMotorUnit_(true,false)\{|i333_iMotorUnit.inevitable,i333_iMotorUnit.optional,i333_iMotorUnit_'''|} :[livelock free]
+true
+
+Checking COMPLETE'({i630_iCruiseController.inevitable,i630_iCruiseController.optional,i630_iCruiseController.i337_SpeedTooLow,i630_iCruiseController.i339_BrakeHit,i630_iCruiseController.i340_HandleError}) [F= IF_i630_iCruiseController_(true,true)\diff(Events,{i630_iCruiseController.inevitable,i630_iCruiseController.optional,i630_iCruiseController.i337_SpeedTooLow,i630_iCruiseController.i339_BrakeHit,i630_iCruiseController.i340_HandleError,illegal})
+true
+
+Checking IF_i630_iCruiseController_(false,false) :[deadlock free]
+true
+
+Checking IF_i630_iCruiseController_(true,false)\{|i630_iCruiseController.inevitable,i630_iCruiseController.optional,i630_iCruiseController_'''|} :[livelock free]
+true
+
+Checking CO_i1087_CruiseController_(true,true)[[i630_iCruiseController_'.x<-i631_cc_'.x|x<-extensions(i631_cc_')]] :[deterministic]
+true
+
+Checking COMPLETE'({i631_cc.i337_SpeedTooLow,i631_cc.i339_BrakeHit,i631_cc.i340_HandleError,i634_mu_''.i11_MotorUnitDone,i634_mu_''.i12_MotorUnitError}) [F= CO_i1087_CruiseController_(true,true)[[i630_iCruiseController_'.x'<-i631_cc_'.x'|x'<-extensions(i631_cc_')]]\diff(Events,{i631_cc.i337_SpeedTooLow,i631_cc.i339_BrakeHit,i631_cc.i340_HandleError,i634_mu_''.i11_MotorUnitDone,i634_mu_''.i12_MotorUnitError,illegal})
+true
+
+Checking STOP [T= AS_i1087_CruiseController_(false)\diff(Events,{illegal})
+true
+
+Checking AS_i1087_CruiseController_(false) :[deadlock free]
+true
+
+Checking IF_i630_iCruiseController_(true,false)[[i630_iCruiseController.x<-i631_cc.x|x<-extensions(i631_cc)]][[i630_iCruiseController_'.x<-i631_cc_'.x|x<-extensions(i631_cc_')]][[i630_iCruiseController_''.x<-i631_cc_''.x|x<-extensions(i631_cc_'')]]\{i630_iCruiseController_'''.modeling,i631_cc.inevitable,i631_cc.optional} [F= AS_i1087_CruiseController_(true)\diff(Events,{|illegal,i631_cc,i631_cc_',i631_cc_''|})
+true
+
+Checking AS_i1087_CruiseController_(true)\diff(Events,{|illegal,i631_cc,i631_cc_',i631_cc_''|}) :[livelock free]
+true
