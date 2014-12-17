@@ -623,7 +623,7 @@ lts/%.svg: ../webdemo/dzn/%.dzn
 	mkdir -p $(dir $@)
 	for component in `grep -E '^component' $< | sed 's,^component \([^ ]*\).*,\1,'`; do \
 	  if sed -e 's,^component,###component,' -e 's,^interface,###interface,' $< | tr -d '\n' | sed 's,###,\n,g'| grep -E "^component[ ]*$$component[^{]*{" | grep -q -E 'behaviour[ ]*{'; then \
-	    ./gaiag -m $$component -l csp -o lts/$(notdir $(basename $<)).csp $<; \
+	    ./gaiag --lts -m $$component -l csp -o lts/$(notdir $(basename $<)).csp $<; \
 	    for process in `grep -E -o '^LTS_[^ =]*' lts/$(notdir $(basename $<)).csp`; do \
 	      $(TRANSIT) -n lts/$(notdir $(basename $<)).csp $$process lts/$(notdir $(basename $<)).$$process.svg svg >&/dev/null; \
 	    done; rm lts/$(notdir $(basename $<)).csp; \

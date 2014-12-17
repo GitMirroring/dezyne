@@ -127,9 +127,10 @@
                                        (if separate-asserts?
                                            (animate-string "\ninclude \"asserts.csp\"\n")
                                            (csp-asserts model))
-                                       (let ((models (append (interfaces model) (list model))))
-                                         (map csp-lts models))
-                                       (assembly-lts model)))
+                                       (if (option-ref (parse-opts (command-line)) 'lts #f)
+                                           (let ((models (append (interfaces model) (list model))))
+                                             (map csp-lts models)
+                                             (assembly-lts model)))))
               (if separate-asserts? (dump-output "asserts.csp" (lambda () (csp-asserts model)))))))
 
 (define (csp:import name)

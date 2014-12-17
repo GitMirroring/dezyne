@@ -43,6 +43,7 @@
             (help (single-char #\h))
             (json (single-char #\j))
             (language (single-char #\l) (value #t))
+            (lts)
             (model (single-char #\m) (value #t))
             (trail (single-char #\t) (value #t))
             (output (single-char #\o) (value #t))
