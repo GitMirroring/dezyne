@@ -38,10 +38,4 @@ void runtime_handle_event(void* scope, void* event);
 
 #define ASD_LOG(msg) printf("%s\n", msg)
 
-#define CONNECT(provided, required)\
-  {\
-	  provided.out = required.out;\
-	  required.in = provided.in;\
-  }
-
 #endif

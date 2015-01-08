@@ -23,19 +23,18 @@
 #ifndef DEZYNE_ALARMSYSTEM_H
 #define DEZYNE_ALARMSYSTEM_H
 
+#include "Alarm.h"
 #include "Sensor.h"
 #include "Siren.h"
-#include "Alarm.h"
 
 #include "IConsole.h"
 
 #include "locator.h"
 
-typedef struct
-{
+typedef struct {
+	Alarm alarm;
 	Sensor sensor;
 	Siren siren;
-	Alarm alarm;
 
 	IConsole console;
 

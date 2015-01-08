@@ -1,4 +1,8 @@
 Alarm.console_arm
+Sensor.sensor_enable
 Alarm.sensor_triggered
+Siren.siren_turnon
 Alarm.console_disarm
+Sensor.sensor_disable
+Siren.siren_turnoff
 Alarm.sensor_disabled

@@ -6,15 +6,12 @@
 #}) ((compose .elements .instances) model))
 
 #(map (include-interface #{
-##include "#interface .hh"
+##include "#interface .h"
 #}) (gom:ports model))
 
-#(if (pair? (injected-bindings model)) (list "#include \"locator.hh\"") (list "namespace dezyne\n {\nstruct locator;\n}"))
+##include "locator.h"
 
-namespace dezyne
-{
-struct #.model
-{
+typedef struct {
 #(map (lambda (binding) (list (.component (gom:instance model (injected-instance-name binding))) " "
                               (injected-instance-name binding) ";\n")) (injected-bindings model)) #
 (if (pair? (injected-bindings model)) (list "dezyne::locator dezyne_local_locator;\n")) #
@@ -22,9 +19,10 @@ struct #.model
   #component  #name;
 #}) (non-injected-instances model))
 #(map (init-port #{
-  #interface & #name;
+  #interface  #name;
 #}) ((compose .elements .ports) model))
-  #.model (const dezyne::locator&);
-};
-}
+} #.model;
+
+void #.model _init(#.model *self, locator* dezyne_locator);
+
 ##endif // DEZYNE_#.COMPONENT _H

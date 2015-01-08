@@ -186,8 +186,8 @@ c-alarm:
 
 	#cp baseline/*.c baseline/*.h out
 	cd out && ln -s ../examples/alarm.c .
-#	cd out && for i in *c; do ccache gcc -c $$i; done && gcc -o $@ *.o && ./$@ > $@.trace
-#	$(diff) baseline/$@.trace out
+	cd out && for i in *c; do ccache gcc -c $$i; done && gcc -o $@ *.o && ./$@ > $@.trace
+	$(diff) baseline/$@.trace out
 
 	$(diff) baseline/IConsole.h out
 	$(diff) baseline/ISensor.h out

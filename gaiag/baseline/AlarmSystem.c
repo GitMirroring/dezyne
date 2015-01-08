@@ -22,10 +22,16 @@
 
 #include "AlarmSystem.h"
 
+#define CONNECT(provided, required)\
+  {\
+	  provided.out = required.out;\
+	  required.in = provided.in;\
+  }
+
 void AlarmSystem_init(AlarmSystem* self, locator* dezyne_locator) {
+	Alarm_init(&self->alarm, dezyne_locator);
 	Sensor_init(&self->sensor, dezyne_locator);
 	Siren_init(&self->siren, dezyne_locator);
-	Alarm_init(&self->alarm, dezyne_locator);
 
 	self->console = self->alarm.console;
 	CONNECT(self->sensor.sensor, self->alarm.sensor);
