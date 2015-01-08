@@ -1,7 +1,3 @@
-struct #name
-{
-  enum type
-  {
-    #((->join ", ") fields)
-  };
-};
+typedef enum {
+    #((->join ", ") (map (lambda (f) (symbol-append name '_ f)) fields))
+} #name;

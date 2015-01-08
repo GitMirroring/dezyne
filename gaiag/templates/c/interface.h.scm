@@ -1,28 +1,23 @@
-##ifndef DEZYNE_#.INTERFACE _HH
-##define DEZYNE_#.INTERFACE _HH
+##ifndef DEZYNE_#.INTERFACE _H
+##define DEZYNE_#.INTERFACE _H
 
-##include <boost/bind.hpp>
-##include <boost/function.hpp>
+typedef struct #.interface  #.interface;
 
-namespace dezyne
-{
-
-struct #.interface
-{
+struct #.interface  {
  #(->string (map declare-enum (gom:interface-enums model)))
-  struct
-  {
+  struct {
    #(map (declare-io model
-          #{boost::function<#return-type  (#parameters)> #name;
+          #{ #return-type  (*#name)(void* self);
 #}) (filter gom:in? ((compose .elements .events) model)))
+     void* self;
    } in;
 
-  struct
-  {
+  struct {
    #(map (declare-io model
-          #{boost::function<#return-type  (#parameters)> #name;
+          #{ #return-type  (*#name) (void* self);
 #}) (filter gom:out? ((compose .elements .events) model)))
+     void* self;
  } out;
-  };
-}
-##endif // DEZYNE_#.INTERFACE _HH
+};
+
+##endif // DEZYNE_#.INTERFACE _H

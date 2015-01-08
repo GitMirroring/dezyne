@@ -1,39 +1,17 @@
-##include "#.model .hh"
+##include "#.model .h"
 
-##include "locator.hh"
-##include "runtime.hh"
+##include "locator.h"
+##include "runtime.h"
+##include <assert.h>
 
-namespace dezyne
-{
-#.model ::#.model (const locator& dezyne_locator)
-: rt(dezyne_locator.get<runtime>())
-, #
-((->join  "\n, ")
- (map (init-member model #{
-#name(#(if (not (eq? expression *unspecified*)) expression))#}) (gom:variables model)))#
-(if (null? (gom:variables model)) "" "\n, ") #
-((->join  "\n, ") (map (lambda (port) (list (.name port) "(" (if (.injected port) (list "dezyne_locator.get<" (.type port) ">()")) ")")) (gom:ports model)))
-  {
-#
-   (map
-    (lambda (port)
-      (map (define-on model port #{
-#port .#direction .#event  = connect#(if (string-null? parameters) (list "<" return-type ">") (list "<" (comma-join (append (if (eq? return-type 'void) '() (list return-type)) parameter-types))">"))(rt, this, boost::function<#return-type(#(comma-join parameter-types))>(boost::bind<#return-type >(&#model ::#port _#event , #(comma-join (append '("this") (map (lambda (i) (list " _" i)) (iota (length parameter-types) 1)))))));
-#}) (filter gom:in? (gom:events port))))
-    (filter gom:provides? (gom:ports model)))#
-   (map
-    (lambda (port)
-      (map (define-on model port #{
-#port .#direction .#event  = connect#(if (string-null? parameters) (list "<" return-type ">") (list "<" (comma-join (append (if (eq? return-type 'void) '() (list return-type)) parameter-types))">"))(rt, this, boost::function<#return-type(#(comma-join parameter-types))>(boost::bind<#return-type >(&#model ::#port _#event , #(comma-join (append '("this") (map (lambda (i) (list " _" i)) (iota (length parameter-types) 1)))))));
-#}) (filter gom:out? (gom:events port))))
-    (filter gom:requires? (gom:ports model))) }
+#(->string (map declare-enum (gom:enums (.behaviour model))))
 
 #(map
   (lambda (port)
     (map (define-on model port #{
-  #return-type  #model ::#port _#event (#parameters)
-  {
-    std::cout << "#model .#port _#event" << std::endl;
+  static #return-type  #port _#event (void* self_) {
+    #.model * self = (#.model *)(self_);
+    ASD_LOG("#model .#port _#event");
     #statement #
     (if (not (eq? type 'void))
 (list "    return reply_" reply-type "_" reply-name ";\n"
@@ -45,5 +23,29 @@ namespace dezyne
   #return-type  #model ::#name (#parameters)
   {
     #statements }
-#}) (gom:functions model)))
-}
+#}) (gom:functions model)))#
+'()void #.model _init (#.model *self, locator* dezyne_locator) {
+  self->rt = dezyne_locator->runtime_inst;
+#((->join  ";\n")
+ (map (init-member model #{
+   self->#name  = #(if (not (eq? expression *unspecified*)) expression)#}) (gom:variables model)))#
+(if (null? (gom:variables model)) "" ";")
+#
+   (map
+    (lambda (port)
+      (string-join
+       (append
+       (map (define-on model port #{
+       self->#port .#direction .#event  = #port _#event;
+       #}) (filter gom:in? (gom:events port)))
+      (list (->string (list "self->" (.name port) ".in.self = self;\n"))))))
+    (filter gom:provides? (gom:ports model)))#
+   (map
+    (lambda (port)
+      (string-join
+       (append
+       (map (define-on model port #{
+       self->#port .#direction .#event  = #port _#event;
+       #}) (filter gom:out? (gom:events port)))
+      (list (->string (list "self->" (.name port) ".out.self = self;\n"))))))
+    (filter gom:requires? (gom:ports model))) }

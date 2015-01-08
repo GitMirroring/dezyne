@@ -1,1 +1,1 @@
-#scope #(if scope "::")#name ::type
+int

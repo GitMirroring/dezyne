@@ -33,7 +33,7 @@ struct ISiren {
 	} in;
 
 	struct {
-		int dummy; // not used; empty structs are not allowed in c
+          void *self;
 	} out;
 
 };

@@ -25,7 +25,6 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
-#include <stdlib.h>
 
 typedef enum {
 	States_Disarmed, States_Armed, States_Triggered, States_Disarming
@@ -64,6 +63,7 @@ static void console_disarm(void* self_) {
 	}
 	else if (self->state == States_Triggered) {
 		(*self->sensor.in.disable)(self->sensor.in.self);
+                (*self->siren.in.turnoff)(self->siren.in.self);
 		self->sounding = false;
 		self->state = States_Disarming;
 	}
@@ -82,7 +82,8 @@ static void sensor_triggered(void* self_) {
 		self->state = States_Triggered;
 	}
 	else if (self->state == States_Disarming) {
-		assert(false);
+          {
+          }
 	}
 	else if (self->state == States_Triggered) {
 		assert(false);
@@ -101,8 +102,9 @@ static void sensor_disabled(void* self_) {
 	else if (self->state == States_Disarming) {
 		if (self->sounding) {
 			//rt.defer(this, boost::bind(console.out.deactivated));
-			self->sounding = false;
+                        (*self->siren.in.turnoff)(self->siren.in.self);
 			self->state = States_Disarmed;
+			self->sounding = false;
 		}
 		else {
 			//rt.defer(this, boost::bind(console.out.deactivated));
@@ -124,5 +126,5 @@ void Alarm_init(Alarm* self, locator* dezyne_locator) {
 	self->sensor.out.triggered = sensor_triggered;
 	self->sensor.out.disabled = sensor_disabled;
 	self->sensor.out.self = self;
+	self->siren.out.self = self;
 }
-

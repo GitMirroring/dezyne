@@ -1,8 +1,8 @@
-##ifndef DEZYNE_#.COMPONENT _HH
-##define DEZYNE_#.COMPONENT _HH
+##ifndef DEZYNE_#.COMPONENT _H
+##define DEZYNE_#.COMPONENT _H
 
 #(map (include-component #{
-##include "#component .hh"
+##include "#component .h"
 #}) ((compose .elements .instances) model))
 
 #(map (include-interface #{
@@ -27,4 +27,4 @@ struct #.model
   #.model (const dezyne::locator&);
 };
 }
-##endif // DEZYNE_#.COMPONENT _HH
+##endif // DEZYNE_#.COMPONENT _H

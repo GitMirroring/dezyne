@@ -1,1 +1,1 @@
-#space #port .#direction .#event (#arguments);
+#space (*self->#port .#direction .#event)(self->#port .#direction .self);

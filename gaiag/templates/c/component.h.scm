@@ -1,42 +1,28 @@
-##ifndef DEZYNE_#.COMPONENT _HH
-##define DEZYNE_#.COMPONENT _HH
+##ifndef DEZYNE_#.COMPONENT _H
+##define DEZYNE_#.COMPONENT _H
 
 #(map (include-interface #{
-##include "#interface .hh"
+##include "#interface .h"
 #}) (gom:ports model))
 
-namespace dezyne
-{
-struct locator;
-struct runtime;
+##include "runtime.h"
+##include "locator.h"
 
-struct #.model
-{
-    runtime& rt;
-    #(->string (map declare-enum (gom:enums (.behaviour model))))#
-    (->string (map declare-integer (gom:integers (.behaviour model))))#
-    (map (init-member model #{
+
+typedef struct {
+    runtime* rt;
+    #(map (init-member model #{
 #type  #name;
 #}) (gom:variables model))#
     (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))#
     (map (init-port #{
 #interface  #name;
 #}) ((compose .elements .ports) model))
-    #.model (const locator&);
-#(map
-  (lambda (port)
-    (map (define-on model port #{
-#return-type  #port _#event (#parameters);
-#}) (filter gom:in? (gom:events port))))
-  (filter gom:provides? (gom:ports model)))#
-(map
-  (lambda (port)
-    (map (define-on model port #{
-#return-type  #port _#event (#parameters);
-#}) (filter gom:out? (gom:events port))))
-  (filter gom:requires? (gom:ports model)))#
+#
 (map (define-function model #{
   #return-type  #name (#parameters);
-#}) (gom:functions model))};
-}
-##endif // DEZYNE_#.COMPONENT _HH
+#}) (gom:functions model))} #.model;
+
+void #.model _init(#.model * self, locator* dezyne_locator);
+
+##endif // DEZYNE_#.COMPONENT _H
