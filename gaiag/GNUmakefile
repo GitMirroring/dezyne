@@ -68,7 +68,7 @@ clean:
 test: check
 check: compile
 	./test.sh </dev/null
-	$(MAKE) csp asserts c++ pretty goops java javascript python simulate wfc
+	$(MAKE) csp asserts c c++ pretty goops java javascript python simulate wfc
 
 REGRESSION_SOURCES = $(shell cd examples/regression && ls *.dzn)
 WFC_SOURCES = $(shell cd examples/wfc && ls -1 *.dzn)
@@ -101,6 +101,12 @@ gaiag.lcov/%-dzn.info: examples/regression/%.dzn
 gaiag.lcov/%-csp.info: examples/regression/%.dzn
 	rm -f gaiag.lcov/gaiag.info
 	cd gaiag.lcov && ../gaiag --coverage -l csp $<
+	sed -i s@:[.][.]/@:$(shell pwd)/@ gaiag.lcov/gaiag.info
+	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/gaiag $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/test-suite\* \*pretty-print.scm \*gaiag/coverage -o $@ | grep -v Removing
+
+gaiag.lcov/%-c.info: examples/regression/%.dzn
+	rm -f gaiag.lcov/gaiag.info
+	cd gaiag.lcov && ../gaiag --coverage -l c $<
 	sed -i s@:[.][.]/@:$(shell pwd)/@ gaiag.lcov/gaiag.info
 	lcov -r gaiag.lcov/gaiag.info /usr/share\* $(TOPDIR)/gaiag $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/test-suite\* \*pretty-print.scm \*gaiag/coverage -o $@ | grep -v Removing
 
@@ -163,7 +169,110 @@ pretty: compile
 	./gaiag -l dezyne examples/regression/expressions.dzn > out/expressions.dzn
 	$(diff) examples/regression/expressions.dzn out
 
-out/%.o: examples/regression/%.dzn
+# c
+c: compile c-alarm c-inject c-dataparam c-regression
+
+c-alarm:
+	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c/* .
+	cd out && for file in\
+		examples/AlarmSystem.dzn\
+		examples/regression/Alarm.dzn\
+		examples/IConsole.dzn\
+		examples/ISensor.dzn\
+		examples/Sensor.dzn\
+		examples/ISiren.dzn\
+		examples/Siren.dzn;\
+	do $(shell pwd)/gaiag -l c $$file; done
+
+	cd out && ln -s ../examples/alarm.c .
+	cd out && for i in *cc; do ccache gcc -c $$i; done && gcc -o $@ *.o && ./$@ > $@.trace
+	$(diff) baseline/$@.trace out
+
+	$(diff) baseline/IConsole.h out
+	$(diff) baseline/ISensor.h out
+	$(diff) baseline/ISiren.h out
+	$(diff) baseline/Alarm.h out
+	$(diff) baseline/Alarm.c out
+	$(diff) baseline/AlarmSystem.h out
+	$(diff) baseline/AlarmSystem.c out
+
+c-inject:
+c-dataparam:
+
+#out/%.c: examples/regression/%.dzn
+define .CC_REGRESSION
+rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c/* .
+cd out && $(shell pwd)/gaiag -l c examples/regression/$*.dzn
+-$(diff) baseline/$*.hh out
+-$(diff) baseline/$*.cc out
+ccache g++ -o out/$*.o -c out/$*.cc $(UPDATE)
+@$(diff) baseline/$*.hh out >/dev/null
+@$(diff) baseline/$*.cc out >/dev/null
+endef
+
+CC_BROKEN =\
+ Alarm.dzn\
+ Noot.dzn\
+ hide.dzn\
+ livelock1.dzn\
+ livelock2.dzn\
+ mangle.dzn\
+
+CC_SOURCES = $(filter-out $(CC_BROKEN),$(shell cd examples/regression && grep -l ^component *.dzn))
+
+#out/%.c.up: UPDATE=||:; cp out/$*.cc out/*.hh baseline
+out/%.c.up: UPDATE=&& cp out/$*.cc out/*.hh baseline
+out/%.c.up: examples/regression/%.dzn
+	$(.CC_REGRESSION)
+
+out/%.c: examples/regression/%.dzn
+	$(.CC_REGRESSION)
+
+c-regression: $(CC_SOURCES:%.dzn=out/%.c)
+c-update: $(CC_SOURCES:%.dzn=out/%.c.up)
+
+# c++
+c++: compile c++-alarm glue c++-inject c++-dataparam c++-regression
+
+c++-alarm:
+	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c++/* .
+	cd out && for file in\
+		examples/AlarmSystem.dzn\
+		examples/regression/Alarm.dzn\
+		examples/IConsole.dzn\
+		examples/ISensor.dzn\
+		examples/Sensor.dzn\
+		examples/ISiren.dzn\
+		examples/Siren.dzn;\
+	do $(shell pwd)/gaiag -l c++ $$file; done
+
+	cd out && ln -s ../examples/alarm.cc .
+	cd out && for i in *cc; do ccache g++ -c $$i; done && g++ -o $@ *.o && ./$@ > $@.trace
+	$(diff) baseline/$@.trace out
+
+	$(diff) baseline/IConsole.hh out
+	$(diff) baseline/ISensor.hh out
+	$(diff) baseline/ISiren.hh out
+	$(diff) baseline/Alarm.hh out
+	$(diff) baseline/Alarm.cc out
+	$(diff) baseline/AlarmSystem.hh out
+	$(diff) baseline/AlarmSystem.cc out
+
+c++-inject:
+	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c++/* .
+	cd out && ln -s ../examples/injected.cc .
+	cd out && $(shell pwd)/gaiag -l c++ examples/Injected.dzn
+	cd out && for i in *cc; do ccache g++ -c $$i; done && g++ -o $@ *.o && ./$@ > $@.trace
+	$(diff) baseline/$@.trace out
+
+c++-dataparam:
+	rm -rf out && mkdir out && cd out && ln -s ../runtime/c++/* .
+	cd out && ../gaiag -l c++ ../examples/regression/Dataparam.dzn
+	cd out && ln -sf ../examples/dataparam.cc .
+	cd out && for i in *cc; do ccache g++ -c $$i; done && g++ -o $@ *.o && ./$@ > $@.trace
+	$(diff) baseline/$@.trace out
+
+#out/%.c++: examples/regression/%.dzn
 define .CC_REGRESSION
 rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c++/* .
 cd out && $(shell pwd)/gaiag -l c++ examples/regression/$*.dzn
@@ -184,18 +293,16 @@ CC_BROKEN =\
 
 CC_SOURCES = $(filter-out $(CC_BROKEN),$(shell cd examples/regression && grep -l ^component *.dzn))
 
-#out/%.o.up: UPDATE=||:; cp out/$*.cc out/*.hh baseline
-out/%.o.up: UPDATE=&& cp out/$*.cc out/*.hh baseline
-out/%.o.up: examples/regression/%.dzn
+#out/%.c++.up: UPDATE=||:; cp out/$*.cc out/*.hh baseline
+out/%.c++.up: UPDATE=&& cp out/$*.cc out/*.hh baseline
+out/%.c++.up: examples/regression/%.dzn
 	$(.CC_REGRESSION)
 
-out/%.o: examples/regression/%.dzn
+out/%.c++: examples/regression/%.dzn
 	$(.CC_REGRESSION)
 
-c++-regression: $(CC_SOURCES:%.dzn=out/%.o)
-c++-update: $(CC_SOURCES:%.dzn=out/%.o.up)
-
-c++: compile c++-alarm glue c++-inject c++-dataparam c++-regression
+c++-regression: $(CC_SOURCES:%.dzn=out/%.c++)
+c++-update: $(CC_SOURCES:%.dzn=out/%.c++.up)
 
 out/%.wfc: examples/wfc/%.dzn
 	! ./gaiag -l wfc $<
@@ -297,44 +404,6 @@ simulate: compile
 	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" -j examples/alarm-component.dzn | ./scm2json | sed -e 's/, /,\n /g'
 	./gaiag -l simulate -t '(i.e i.e i.e)' examples/arguments.dzn
 	./gaiag -l simulate -t '(client.initialize result_t.OK result_t.OK client.perform_actions result_t.OK result_t.OK client.perform_actions result_t.NOK client.recover result_t.OK client.perform_actions)' examples/regression/Comp.dzn
-
-c++-alarm:
-	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c++/* .
-	cd out && for file in\
-		examples/AlarmSystem.dzn\
-		examples/regression/Alarm.dzn\
-		examples/IConsole.dzn\
-		examples/ISensor.dzn\
-		examples/Sensor.dzn\
-		examples/ISiren.dzn\
-		examples/Siren.dzn;\
-	do $(shell pwd)/gaiag -l c++ $$file; done
-
-	cd out && ln -s ../examples/alarm.cc .
-	cd out && for i in *cc; do ccache g++ -c $$i; done && g++ -o $@ *.o && ./$@ > $@.trace
-	$(diff) baseline/$@.trace out
-
-	$(diff) baseline/IConsole.hh out
-	$(diff) baseline/ISensor.hh out
-	$(diff) baseline/ISiren.hh out
-	$(diff) baseline/Alarm.hh out
-	$(diff) baseline/Alarm.cc out
-	$(diff) baseline/AlarmSystem.hh out
-	$(diff) baseline/AlarmSystem.cc out
-
-c++-inject:
-	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c++/* .
-	cd out && ln -s ../examples/injected.cc .
-	cd out && $(shell pwd)/gaiag -l c++ examples/Injected.dzn
-	cd out && for i in *cc; do ccache g++ -c $$i; done && g++ -o $@ *.o && ./$@ > $@.trace
-	$(diff) baseline/$@.trace out
-
-c++-dataparam:
-	rm -rf out && mkdir out && cd out && ln -s ../runtime/c++/* .
-	cd out && ../gaiag -l c++ ../examples/regression/Dataparam.dzn
-	cd out && ln -sf ../examples/dataparam.cc .
-	cd out && for i in *cc; do ccache g++ -c $$i; done && g++ -o $@ *.o && ./$@ > $@.trace
-	$(diff) baseline/$@.trace out
 
 asserts:
 	rm -rf out && mkdir out && ln -s ../examples ../../webdemo ../templates out
@@ -582,7 +651,7 @@ glue:
 	for i in out/*.c*; do ccache g++ -g -Wall -Wextra -I out -I $(DEPTH)/examples/codegen/asd_cpp_runtime -c $$i -o out/$$(basename $$(basename $$i .cpp) .cc).o; done
 	cd out && g++ -o test *.o && ./test
 
-update: csp-update c++-update goops-update java-update javascript-update python-update
+update: csp-update c-update c++-update goops-update java-update javascript-update python-update
 
 data-csp:
 	cd out && ../gaiag -l csp ../examples/Dataparam.dzn

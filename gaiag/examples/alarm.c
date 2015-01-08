@@ -20,21 +20,41 @@
 //
 // Code:
 
-#ifndef DEZYNE_MAIN_H
-#define DEZYNE_MAIN_H
-
-#include "Adaptor.h"
 #include "AlarmSystem.h"
 
-#include "IRun.h"
+#include "locator.h"
+#include "runtime.h"
 
+#define CONNECT(provided, required)\
+  {\
+  provided.out = required.out; \
+  required.in = provided.in; \
+  }
 
-typedef struct
+static void detected()
 {
-	Adaptor adaptor;
-	AlarmSystem alarm;
+  ASD_LOG("Console.detected");
+}
 
-	IRun run;
+static void deactivated()
+{
+  ASD_LOG("Console.deactivated");
+}
 
-} Main;
-#endif // DEZYNE_MAIN_H
+int main()
+{
+  dezyne::runtime runtime;
+  locator dezyne_locator;
+  locator_init(&dezyne_locator);
+
+  AlarmSystem alarmsystem;
+  AlarmSystem_init(&alarmsystem, &dezyne_locator);
+
+  CONNECT(alarmsystem.console.out.detected, detected);
+  CONNECT(alarmsystem.console.out.deactivated, deactivated);
+
+  alarmsystem.console.in.arm();
+  alarmsystem.sensor.sensor.out.triggered();
+  alarmsystem.console.in.disarm();
+  alarmsystem.sensor.sensor.out.disabled();
+}
