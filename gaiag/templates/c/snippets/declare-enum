@@ -1,0 +1,7 @@
+struct #name
+{
+  enum type
+  {
+    #((->join ", ") fields)
+  };
+};
