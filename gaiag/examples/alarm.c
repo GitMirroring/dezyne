@@ -25,12 +25,6 @@
 #include "locator.h"
 #include "runtime.h"
 
-#define CONNECT(provided, required)\
-  {\
-  provided.out = required.out; \
-  required.in = provided.in; \
-  }
-
 static void detected()
 {
   ASD_LOG("Console.detected");
@@ -43,18 +37,19 @@ static void deactivated()
 
 int main()
 {
-  dezyne::runtime runtime;
+  runtime dezyne_runtime;
   locator dezyne_locator;
   locator_init(&dezyne_locator);
 
   AlarmSystem alarmsystem;
   AlarmSystem_init(&alarmsystem, &dezyne_locator);
 
-  CONNECT(alarmsystem.console.out.detected, detected);
-  CONNECT(alarmsystem.console.out.deactivated, deactivated);
+  alarmsystem.console.out.detected = detected;
+  alarmsystem.console.out.deactivated = deactivated;
 
-  alarmsystem.console.in.arm();
-  alarmsystem.sensor.sensor.out.triggered();
-  alarmsystem.console.in.disarm();
-  alarmsystem.sensor.sensor.out.disabled();
+  alarmsystem.console.in.arm(&alarmsystem);
+  alarmsystem.sensor.sensor.out.triggered(&alarmsystem);
+  alarmsystem.console.in.disarm(&alarmsystem);
+  alarmsystem.sensor.sensor.out.disabled(&alarmsystem);
+  return 0;
 }

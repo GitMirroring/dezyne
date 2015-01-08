@@ -1,0 +1,4 @@
+Alarm.console_arm
+Alarm.sensor_triggered
+Alarm.console_disarm
+Alarm.sensor_disabled

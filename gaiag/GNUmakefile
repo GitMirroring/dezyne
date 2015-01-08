@@ -184,8 +184,9 @@ c-alarm:
 		examples/Siren.dzn;\
 	do $(shell pwd)/gaiag -l c $$file; done
 
+	cp baseline/*.c baseline/*.h out
 	cd out && ln -s ../examples/alarm.c .
-	cd out && for i in *cc; do ccache gcc -c $$i; done && gcc -o $@ *.o && ./$@ > $@.trace
+	cd out && for i in *c; do ccache gcc -c $$i; done && gcc -o $@ *.o && ./$@ > $@.trace
 	$(diff) baseline/$@.trace out
 
 	$(diff) baseline/IConsole.h out
