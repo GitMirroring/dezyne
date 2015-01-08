@@ -1,0 +1,55 @@
+Checking out/webdemo/BurglarAlarm.csp
+
+Checking COMPLETE'({i2414_IAlarmSystem.optional,i2414_IAlarmSystem.i2138_SwitchOn,i2414_IAlarmSystem.i2143_SwitchOff}) [F= IF_i2414_IAlarmSystem_(true,true)\diff(Events,{i2414_IAlarmSystem.optional,i2414_IAlarmSystem.i2138_SwitchOn,i2414_IAlarmSystem.i2143_SwitchOff,illegal})
+true
+
+Checking IF_i2414_IAlarmSystem_(false,false) :[deadlock free]
+true
+
+Checking IF_i2414_IAlarmSystem_(true,false)\{|i2414_IAlarmSystem.optional,i2414_IAlarmSystem_'''|} :[livelock free]
+true
+
+Checking COMPLETE'({i2437_IAlarmStatusUI.i2415_SignalTripped,i2437_IAlarmStatusUI.i2416_SignalArmed,i2437_IAlarmStatusUI.i2417_SignalUnarmed,i2437_IAlarmStatusUI.i2418_SignalTrippedWrongCode}) [F= IF_i2437_IAlarmStatusUI_(true,true)\diff(Events,{i2437_IAlarmStatusUI.i2415_SignalTripped,i2437_IAlarmStatusUI.i2416_SignalArmed,i2437_IAlarmStatusUI.i2417_SignalUnarmed,i2437_IAlarmStatusUI.i2418_SignalTrippedWrongCode,illegal})
+true
+
+Checking IF_i2437_IAlarmStatusUI_(false,false) :[deadlock free]
+true
+
+Checking IF_i2437_IAlarmStatusUI_(true,false) :[livelock free]
+true
+
+Checking COMPLETE'({i2482_IAlarmConsole.i2465_KeyPressed,i2482_IAlarmConsole.i2466_Initialize}) [F= IF_i2482_IAlarmConsole_(true,true)\diff(Events,{i2482_IAlarmConsole.i2465_KeyPressed,i2482_IAlarmConsole.i2466_Initialize,illegal})
+true
+
+Checking IF_i2482_IAlarmConsole_(false,false) :[deadlock free]
+true
+
+Checking IF_i2482_IAlarmConsole_(true,false) :[livelock free]
+true
+
+Checking COMPLETE'({i2646_ICodeBuilder.i2493_AddDigit,i2646_ICodeBuilder.i2498_GetCode}) [F= IF_i2646_ICodeBuilder_(true,true)\diff(Events,{i2646_ICodeBuilder.i2493_AddDigit,i2646_ICodeBuilder.i2498_GetCode,illegal})
+true
+
+Checking IF_i2646_ICodeBuilder_(false,false) :[deadlock free]
+true
+
+Checking IF_i2646_ICodeBuilder_(true,false) :[livelock free]
+true
+
+Checking CO_i969_AlarmConsole_(true,true)[[i2482_IAlarmConsole_'.x<-i262_alarmConsole_'.x|x<-extensions(i262_alarmConsole_')]] :[deterministic]
+true
+
+Checking COMPLETE'({i262_alarmConsole.i2465_KeyPressed,i262_alarmConsole.i2466_Initialize,i265_alarmSystem_''.i2144_Tripped,i265_alarmSystem_''.i2145_SwitchedOff,i265_alarmSystem_''.i2149_SwitchOffFailed}) [F= CO_i969_AlarmConsole_(true,true)[[i2482_IAlarmConsole_'.x'<-i262_alarmConsole_'.x'|x'<-extensions(i262_alarmConsole_')]]\diff(Events,{i262_alarmConsole.i2465_KeyPressed,i262_alarmConsole.i2466_Initialize,i265_alarmSystem_''.i2144_Tripped,i265_alarmSystem_''.i2145_SwitchedOff,i265_alarmSystem_''.i2149_SwitchOffFailed,illegal})
+true
+
+Checking STOP [T= AS_i969_AlarmConsole_(false)\diff(Events,{illegal})
+true
+
+Checking AS_i969_AlarmConsole_(false) :[deadlock free]
+true
+
+Checking IF_i2482_IAlarmConsole_(true,false)[[i2482_IAlarmConsole.x<-i262_alarmConsole.x|x<-extensions(i262_alarmConsole)]][[i2482_IAlarmConsole_'.x<-i262_alarmConsole_'.x|x<-extensions(i262_alarmConsole_')]]\{i2482_IAlarmConsole_'''.modeling} [F= AS_i969_AlarmConsole_(true)\diff(Events,{|illegal,i262_alarmConsole,i262_alarmConsole_'|})
+true
+
+Checking AS_i969_AlarmConsole_(true)\diff(Events,{|illegal,i262_alarmConsole,i262_alarmConsole_'|}) :[livelock free]
+true

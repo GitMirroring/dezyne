@@ -1,5 +1,5 @@
 # Gaiag --- Guile in Asd In Asd in Guile.
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
 # Copyright © 2014 Jan Nieuwenhuizen <jan@avatar.nl>
 # Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
@@ -203,7 +203,7 @@ out/%.wfc: examples/wfc/%.dzn
 wfc: compile $(WFC_SOURCES:%.dzn=out/%.wfc)
 
 define .REGRESSION_REFINES
-rm -rf out && mkdir -p out && ln -s ../examples ../../webdemo ../templates ../$(DEPTH)/webdemo/dzn out
+rm -rf out && mkdir -p out && ln -s ../examples ../../webdemo ../templates out
 cd out && $(WFC) $< && $(shell pwd)/gaiag -l csp $<
 $(diff) baseline/$*.csp out || true
 @$(diff) baseline/$*.csp out | diffstat || true
@@ -222,7 +222,7 @@ out/%.refines: examples/regression/%.dzn
 	$(.REGRESSION_REFINES)
 
 define .WEBDEMO_REFINES
-rm -rf out && mkdir -p out/webdemo && ln -s ../../examples ../../webdemo ../../templates ../../$(DEPTH)/webdemo/dzn out/webdemo
+rm -rf out && mkdir -p out/webdemo && ln -s ../../webdemo ../../templates ../../$(DEPTH)/webdemo/examples out/webdemo
 cd out/webdemo && $(TOPDIR)/$(BUILD)/asdgenerator -M -l scm $<
 cd out/webdemo && $(shell pwd)/gaiag -l csp $*.scm
 [ -f out/webdemo/$*.csp ] || mv out/webdemo/*.csp out/webdemo/$*.csp
@@ -236,10 +236,10 @@ endef
 
 #out/webdemo/%.update: UPDATE=||:; cp out/webdemo/$*.update baseline/webdemo/$*.refines; cp out/webdemo/$*.csp baseline/webdemo/
 out/webdemo/%.update: UPDATE=&& cp out/webdemo/$*.csp baseline/webdemo/
-out/webdemo/%.update: $(DEPTH)/webdemo/dzn/%.dzn
+out/webdemo/%.update: $(DEPTH)/webdemo/examples/%.dzn
 	$(.WEBDEMO_REFINES)
 
-out/webdemo/%.refines: $(DEPTH)/webdemo/dzn/%.dzn
+out/webdemo/%.refines: $(DEPTH)/webdemo/examples/%.dzn
 	$(.WEBDEMO_REFINES)
 out/webdemo/%.refines: examples/regression/%.dzn
 	$(.WEBDEMO_REFINES)
@@ -276,16 +276,10 @@ csp-regression: compile $(CSP_SOURCES:%.dzn=out/%.refines)
 csp-regression-update: $(CSP_SOURCES:%.dzn=out/%.update)
 
 BROKEN =\
- dznConcepts_Behaviour.dzn\
- dznConcepts_Composition.dzn\
  exampleLOPW.dzn\
- Aap.dzn\
- LOPW.dzn\
- bareSiliconAlarm.dzn\
- default.dzn\
- StartControl.dzn\
+ OK_NOK.dzn\
 
-DEMO_SOURCES = $(filter-out $(BROKEN) ,$(shell cd $(DEPTH)/webdemo/dzn && ls *.dzn))
+DEMO_SOURCES = $(filter-out $(BROKEN) ,$(shell cd $(DEPTH)/webdemo/examples && ls *.dzn))
 csp-demo: $(DEMO_SOURCES:%.dzn=out/webdemo/%.refines)
 csp-demo-update: $(DEMO_SOURCES:%.dzn=out/webdemo/%.update)
 
@@ -343,12 +337,12 @@ c++-dataparam:
 	$(diff) baseline/$@.trace out
 
 asserts:
-	rm -rf out && mkdir out && ln -s ../examples ../../webdemo ../templates ../$(DEPTH)/webdemo/dzn out
+	rm -rf out && mkdir out && ln -s ../examples ../../webdemo ../templates out
 	./gaiag -l asserts examples/regression/Alarm.dzn > out/alarm-asserts.scm
 	$(diff) baseline/alarm-asserts.scm out
 
 compare:
-	rm -rf out && mkdir out && ln -s ../examples ../../webdemo ../templates ../$(DEPTH)/webdemo/dzn out
+	rm -rf out && mkdir out && ln -s ../examples ../../webdemo ../templates . out
 	make -C ../..
 	./gaiag -l resolve examples/regression/trip.dzn > out/gaiag-trip.scm
 	cd out && ../$(DEPTH)/build/asdgenerator -l scm examples/trip.dzn
@@ -570,14 +564,14 @@ goops: compile goops-alarm goops-regression
 .PHONY: glue
 
 glue:
-	rm -rf out && mkdir -p out && cd out && ln -s ../examples ../runtime/c++/* ../../webdemo ../templates ../$(DEPTH)/webdemo/dzn .
+	rm -rf out && mkdir -p out && cd out && ln -s ../examples ../runtime/c++/* ../../webdemo ../templates .
 	cd out && for model in\
 	 	AlarmSystem\
 	 	Alarm\
 	 	Console\
 	 	Sensor\
 	 	Siren;\
-	 	do $(shell pwd)/gaiag -m $$model -l c++ webdemo/dzn/AlarmSystem.dzn; done
+	 	do $(shell pwd)/gaiag -m $$model -l c++ webdemo/examples/AlarmSystem.dzn; done
 	ln -sf examples/glue.cc out
 	ln -sf examples/ISensorInterface.h out
 	ln -sf examples/SensorComponent.h out
@@ -617,9 +611,9 @@ table:
 	@echo
 	./gaiag -m Alarm -j -l table examples/Alarm.dzn | ./scm2json | sed -e 's/, /,\n /g'
 	@echo
-	./gaiag -m SensorMultiplexer4 -l table ../webdemo/dzn/choiceexample.dzn # | ./scm2json | sed -e 's/, /,\n /g'
+	./gaiag -m SensorMultiplexer4 -l table ../webdemo/examples/choiceexample.dzn # | ./scm2json | sed -e 's/, /,\n /g'
 
-lts/%.svg: ../webdemo/dzn/%.dzn
+lts/%.svg: ../webdemo/examples/%.dzn
 	mkdir -p $(dir $@)
 	for component in `grep -E '^component' $< | sed 's,^component \([^ ]*\).*,\1,'`; do \
 	  if sed -e 's,^component,###component,' -e 's,^interface,###interface,' $< | tr -d '\n' | sed 's,###,\n,g'| grep -E "^component[ ]*$$component[^{]*{" | grep -q -E 'behaviour[ ]*{'; then \

@@ -1,0 +1,448 @@
+-- drop_one_local: V => V
+drop_one_local_((M', (L', L0'))) = (M', L')
+
+illegal_(P',V') = illegal -> STOP
+-- send_: (c: channel, e:event) => (P,V)->Proc
+send_(c',e')(P', V') = c'!e' -> P'(V')
+-- recv_: (c: channel, e:event) => (P,V)->Proc
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
+-- skip_: () => (P,V)->Proc
+skip_(P', V') = P'(V')
+-- call_: (B': (P,V)->Proc) => (P,V)->Proc
+call_(B')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', <>))
+-- call_args_: (B': (P,V)->Proc, F': V'->V') => (P,V)->Proc
+call_args_(B', F')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', (<>, F'((M1',L1')))))
+-- assign_: (F': V -> V) => (P,V) -> Proc
+assign_(F')(P', V') = P'(F'(V'))
+-- assign_int_: (F': V -> V) => (P,V) -> Proc
+assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & range_error -> STOP [] b' & P'(F'(V'))
+-- assign_int_: (F': V -> V, B': V -> bool) => (P,V) -> Proc
+assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & illegal -> STOP [] b' & P'(F'(V'))
+-- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
+assign_active_(C', A')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
+-- assign_int_active_: C':(P,V)->Proc, A: (V,val)->V, B': V -> bool => (P,V)->Proc
+-- Paul, HELP! assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ not b' & range_error -> STOP [] b' & P'(A'((M',L'),r')), V')
+-- assign_int_active_(C',A',b')(P', V') = assign_active_(C', A')
+-- assign_int_active_(C',A',b')(P', V') = (\ (C', A', b') @ assign_active_(C', A'))
+assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
+
+reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
+-- returnvalue_: (F: V->val) => (P,V)->Proc
+returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
+-- the_end_: P => V->Proc
+the_end_(P', V') = transition_end -> P'(V')
+
+-- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
+semi_(S1',S2')(P', V') = S1'(\V'' @ S2'(P', V''),V')
+-- ifthenelse: (F': V->val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
+ifthenelse_(F',S1',S2')(P', V') =  if F'(V') then S1'(P', V') else S2'(P', V')
+-- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
+context_(F', S')(P', (M', L')) = S'((\ (M',L2') @ P'((M',L'))), (M', (L', F'((M', L')))))
+-- context_int_: (F': V->val, B: bool, S': (P,V)->Proc) => (P,V)->Proc
+context_int_(F', B', S')(P', (M', L')) = S'((\ (M',L2') @ let b' = B'((M',L2')) within not b' & range_error -> STOP [] b' & P'((M',L'))), (M', (L', F'((M', L')))))
+-- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
+context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
+-- context_int_active_: (C':(P,V)->Proc, B': bool, S: (P,V)->Proc) => (P,V)->Proc
+-- Paul, HELP! context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ let b' = B'((M',r')) within not b' & range_error -> STOP [] b' & S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
+--context_int_active_(C', B', S')(P', V') = (\ (C', B', S') @ context_active_(C', S'))
+context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
+
+channel illegal
+channel range_error
+channel transition_begin, transition_end
+
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
+datatype event_enumeration_alphabet = i2134_Result_Failed | i2134_Result_OK | i2138_SwitchOn | i2143_SwitchOff | i2144_Tripped | i2145_SwitchedOff | i2149_SwitchOffFailed | i2153_States_Activated_AlarmMode | i2153_States_Activated_Idle | i2153_States_NotActivated | i2415_SignalTripped | i2416_SignalArmed | i2417_SignalUnarmed | i2418_SignalTrippedWrongCode | i2465_KeyPressed | i2466_Initialize | i2489_Result_BufferCleared | i2489_Result_CharAdded | i2489_Result_CodeComplete | i2489_Result_InvalidChar | i2493_AddDigit | i2498_GetCode | i2501_States_Building | i2501_States_Complete | i279_States_Armed | i279_States_Disarming | i279_States_Tripped | i279_States_Unarmed | i279_States_Uninitialized | modeling | optional | return | the_end'
+-- interface.csp.scm
+
+channel i2414_IAlarmSystem: {i2138_SwitchOn,i2143_SwitchOff,optional,the_end'}
+channel i2414_IAlarmSystem_'': {i2144_Tripped,i2145_SwitchedOff,i2149_SwitchOffFailed}
+channel i2414_IAlarmSystem_': {i2134_Result_OK,i2134_Result_Failed,return}
+channel i2414_IAlarmSystem_in',i2414_IAlarmSystem_out': {i2414_IAlarmSystem_'.i2134_Result_OK,i2414_IAlarmSystem_'.i2134_Result_Failed,i2414_IAlarmSystem_'.return}
+channel i2414_IAlarmSystem_''': {modeling}
+
+IF_i2414_IAlarmSystem_(IG,CS) = let
+
+i2414_IAlarmSystem_(((i2161_state),(stack'))) =
+((i2161_state == i2153_States_NotActivated)) & (
+i2414_IAlarmSystem?x:{i2138_SwitchOn} ->
+semi_(reply_(i2414_IAlarmSystem_', (\ ((i2161_state),(stack')) @ i2134_Result_OK)),
+assign_(\ ((i2161_state),(stack')) @ ((i2153_States_Activated_Idle),(stack'))))(\ V' @ i2414_IAlarmSystem.the_end' -> i2414_IAlarmSystem_(V'),((i2161_state),(stack')))
+ []
+  i2414_IAlarmSystem?x:{i2138_SwitchOn} ->
+reply_(i2414_IAlarmSystem_', (\ ((i2161_state),(stack')) @ i2134_Result_Failed))(\ V' @ i2414_IAlarmSystem.the_end' -> i2414_IAlarmSystem_(V'),((i2161_state),(stack')))
+ []
+  IG & i2414_IAlarmSystem?x:{i2143_SwitchOff} ->
+illegal_(STOP,<>))
+[]
+((i2161_state == i2153_States_Activated_Idle)) & (
+i2414_IAlarmSystem?x:{i2143_SwitchOff} ->
+semi_(semi_((\ P',V' @ i2414_IAlarmSystem_''!i2145_SwitchedOff -> P'(V')),
+assign_(\ ((i2161_state),(stack')) @ ((i2153_States_NotActivated),(stack')))),
+(\ P',V' @ i2414_IAlarmSystem_'.return -> P'(V')))(\ V' @ i2414_IAlarmSystem.the_end' -> i2414_IAlarmSystem_(V'),((i2161_state),(stack')))
+ []
+  i2414_IAlarmSystem?x:{i2143_SwitchOff} ->
+semi_(semi_((\ P',V' @ i2414_IAlarmSystem_''!i2149_SwitchOffFailed -> P'(V')),
+assign_(\ ((i2161_state),(stack')) @ ((i2153_States_Activated_AlarmMode),(stack')))),
+(\ P',V' @ i2414_IAlarmSystem_'.return -> P'(V')))(\ V' @ i2414_IAlarmSystem.the_end' -> i2414_IAlarmSystem_(V'),((i2161_state),(stack')))
+ []
+  i2414_IAlarmSystem?x:{optional} ->
+semi_(semi_((\ P',V' @ i2414_IAlarmSystem_''!i2144_Tripped -> P'(V')),
+assign_(\ ((i2161_state),(stack')) @ ((i2153_States_Activated_AlarmMode),(stack')))),
+(\ P',V' @ i2414_IAlarmSystem_'''.modeling -> P'(V')))(\ V' @ i2414_IAlarmSystem.the_end' -> i2414_IAlarmSystem_(V'),((i2161_state),(stack')))
+ []
+  IG & i2414_IAlarmSystem?x:{i2138_SwitchOn} ->
+illegal_(STOP,<>))
+[]
+((i2161_state == i2153_States_Activated_AlarmMode)) & (
+i2414_IAlarmSystem?x:{i2143_SwitchOff} ->
+semi_(semi_((\ P',V' @ i2414_IAlarmSystem_''!i2145_SwitchedOff -> P'(V')),
+assign_(\ ((i2161_state),(stack')) @ ((i2153_States_NotActivated),(stack')))),
+(\ P',V' @ i2414_IAlarmSystem_'.return -> P'(V')))(\ V' @ i2414_IAlarmSystem.the_end' -> i2414_IAlarmSystem_(V'),((i2161_state),(stack')))
+ []
+  i2414_IAlarmSystem?x:{i2143_SwitchOff} ->
+semi_((\ P',V' @ i2414_IAlarmSystem_''!i2149_SwitchOffFailed -> P'(V')),
+(\ P',V' @ i2414_IAlarmSystem_'.return -> P'(V')))(\ V' @ i2414_IAlarmSystem.the_end' -> i2414_IAlarmSystem_(V'),((i2161_state),(stack')))
+ []
+  IG & i2414_IAlarmSystem?x:{i2138_SwitchOn} ->
+illegal_(STOP,<>))
+[]
+CS & i2414_IAlarmSystem?x:{optional} -> illegal_(STOP,<>)
+
+REORDER' = i2414_IAlarmSystem?x' -> (i2414_IAlarmSystem_in'?y' -> i2414_IAlarmSystem.the_end' -> i2414_IAlarmSystem_out'!y' -> REORDER' [] i2414_IAlarmSystem.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then i2414_IAlarmSystem_(((i2153_States_NotActivated),(<>)))
+                 else i2414_IAlarmSystem_(((i2153_States_NotActivated),(<>))) [|{i2414_IAlarmSystem.optional}|] CHAOS({i2414_IAlarmSystem.optional})) [[x<-i2414_IAlarmSystem_in'.x|x<-extensions(i2414_IAlarmSystem_in')]] [|{|i2414_IAlarmSystem,i2414_IAlarmSystem_in',i2414_IAlarmSystem.the_end'|}|] REORDER' [[i2414_IAlarmSystem_out'.x<-x|x<-extensions(i2414_IAlarmSystem_out')]] \ {|i2414_IAlarmSystem_in',i2414_IAlarmSystem.the_end'|})
+
+-- end of interface.csp.scm
+-- interface.csp.scm
+
+channel i2437_IAlarmStatusUI: {i2415_SignalTripped,i2416_SignalArmed,i2417_SignalUnarmed,i2418_SignalTrippedWrongCode,the_end'}
+
+channel i2437_IAlarmStatusUI_': {return}
+channel i2437_IAlarmStatusUI_in',i2437_IAlarmStatusUI_out': {i2437_IAlarmStatusUI_'.return}
+channel i2437_IAlarmStatusUI_''': {modeling}
+
+IF_i2437_IAlarmStatusUI_(IG,CS) = let
+
+i2437_IAlarmStatusUI_(((<>),(stack'))) =
+i2437_IAlarmStatusUI?x:{i2415_SignalTripped,i2416_SignalArmed,i2417_SignalUnarmed,i2418_SignalTrippedWrongCode} ->
+(\ P',V' @ i2437_IAlarmStatusUI_'.return -> P'(V'))(\ V' @ i2437_IAlarmStatusUI.the_end' -> i2437_IAlarmStatusUI_(V'),((<>),(stack')))
+[]
+CS & i2437_IAlarmStatusUI?x:{} -> illegal_(STOP,<>)
+
+REORDER' = i2437_IAlarmStatusUI?x' -> (i2437_IAlarmStatusUI_in'?y' -> i2437_IAlarmStatusUI.the_end' -> i2437_IAlarmStatusUI_out'!y' -> REORDER' [] i2437_IAlarmStatusUI.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then i2437_IAlarmStatusUI_(((<>),(<>)))
+                 else i2437_IAlarmStatusUI_(((<>),(<>)))) [[x<-i2437_IAlarmStatusUI_in'.x|x<-extensions(i2437_IAlarmStatusUI_in')]] [|{|i2437_IAlarmStatusUI,i2437_IAlarmStatusUI_in',i2437_IAlarmStatusUI.the_end'|}|] REORDER' [[i2437_IAlarmStatusUI_out'.x<-x|x<-extensions(i2437_IAlarmStatusUI_out')]] \ {|i2437_IAlarmStatusUI_in',i2437_IAlarmStatusUI.the_end'|})
+
+-- end of interface.csp.scm
+-- interface.csp.scm
+
+channel i2482_IAlarmConsole: {i2465_KeyPressed,i2466_Initialize,the_end'}
+
+channel i2482_IAlarmConsole_': {return}
+channel i2482_IAlarmConsole_in',i2482_IAlarmConsole_out': {i2482_IAlarmConsole_'.return}
+channel i2482_IAlarmConsole_''': {modeling}
+
+IF_i2482_IAlarmConsole_(IG,CS) = let
+
+i2482_IAlarmConsole_(((<>),(stack'))) =
+i2482_IAlarmConsole?x:{i2465_KeyPressed,i2466_Initialize} ->
+(\ P',V' @ i2482_IAlarmConsole_'.return -> P'(V'))(\ V' @ i2482_IAlarmConsole.the_end' -> i2482_IAlarmConsole_(V'),((<>),(stack')))
+[]
+CS & i2482_IAlarmConsole?x:{} -> illegal_(STOP,<>)
+
+REORDER' = i2482_IAlarmConsole?x' -> (i2482_IAlarmConsole_in'?y' -> i2482_IAlarmConsole.the_end' -> i2482_IAlarmConsole_out'!y' -> REORDER' [] i2482_IAlarmConsole.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then i2482_IAlarmConsole_(((<>),(<>)))
+                 else i2482_IAlarmConsole_(((<>),(<>)))) [[x<-i2482_IAlarmConsole_in'.x|x<-extensions(i2482_IAlarmConsole_in')]] [|{|i2482_IAlarmConsole,i2482_IAlarmConsole_in',i2482_IAlarmConsole.the_end'|}|] REORDER' [[i2482_IAlarmConsole_out'.x<-x|x<-extensions(i2482_IAlarmConsole_out')]] \ {|i2482_IAlarmConsole_in',i2482_IAlarmConsole.the_end'|})
+
+-- end of interface.csp.scm
+-- interface.csp.scm
+
+channel i2646_ICodeBuilder: {i2493_AddDigit,i2498_GetCode,the_end'}
+
+channel i2646_ICodeBuilder_': {i2489_Result_CharAdded,i2489_Result_InvalidChar,i2489_Result_CodeComplete,i2489_Result_BufferCleared,return}
+channel i2646_ICodeBuilder_in',i2646_ICodeBuilder_out': {i2646_ICodeBuilder_'.i2489_Result_CharAdded,i2646_ICodeBuilder_'.i2489_Result_InvalidChar,i2646_ICodeBuilder_'.i2489_Result_CodeComplete,i2646_ICodeBuilder_'.i2489_Result_BufferCleared,i2646_ICodeBuilder_'.return}
+channel i2646_ICodeBuilder_''': {modeling}
+
+IF_i2646_ICodeBuilder_(IG,CS) = let
+
+i2646_ICodeBuilder_(((i2509_state),(stack'))) =
+((i2509_state == i2501_States_Building)) & (
+i2646_ICodeBuilder?x:{i2493_AddDigit} ->
+reply_(i2646_ICodeBuilder_', (\ ((i2509_state),(stack')) @ i2489_Result_CharAdded))(\ V' @ i2646_ICodeBuilder.the_end' -> i2646_ICodeBuilder_(V'),((i2509_state),(stack')))
+ []
+  i2646_ICodeBuilder?x:{i2493_AddDigit} ->
+reply_(i2646_ICodeBuilder_', (\ ((i2509_state),(stack')) @ i2489_Result_InvalidChar))(\ V' @ i2646_ICodeBuilder.the_end' -> i2646_ICodeBuilder_(V'),((i2509_state),(stack')))
+ []
+  i2646_ICodeBuilder?x:{i2493_AddDigit} ->
+semi_(reply_(i2646_ICodeBuilder_', (\ ((i2509_state),(stack')) @ i2489_Result_CodeComplete)),
+assign_(\ ((i2509_state),(stack')) @ ((i2501_States_Complete),(stack'))))(\ V' @ i2646_ICodeBuilder.the_end' -> i2646_ICodeBuilder_(V'),((i2509_state),(stack')))
+ []
+  i2646_ICodeBuilder?x:{i2493_AddDigit} ->
+reply_(i2646_ICodeBuilder_', (\ ((i2509_state),(stack')) @ i2489_Result_BufferCleared))(\ V' @ i2646_ICodeBuilder.the_end' -> i2646_ICodeBuilder_(V'),((i2509_state),(stack')))
+ []
+  i2646_ICodeBuilder?x:{i2498_GetCode} ->
+(\ P',V' @ i2646_ICodeBuilder_'.return -> P'(V'))(\ V' @ i2646_ICodeBuilder.the_end' -> i2646_ICodeBuilder_(V'),((i2509_state),(stack'))))
+[]
+((i2509_state == i2501_States_Complete)) & (
+IG & i2646_ICodeBuilder?x:{i2493_AddDigit} ->
+illegal_(STOP,<>)
+ []
+  i2646_ICodeBuilder?x:{i2498_GetCode} ->
+semi_(assign_(\ ((i2509_state),(stack')) @ ((i2501_States_Building),(stack'))),
+(\ P',V' @ i2646_ICodeBuilder_'.return -> P'(V')))(\ V' @ i2646_ICodeBuilder.the_end' -> i2646_ICodeBuilder_(V'),((i2509_state),(stack'))))
+[]
+CS & i2646_ICodeBuilder?x:{} -> illegal_(STOP,<>)
+
+REORDER' = i2646_ICodeBuilder?x' -> (i2646_ICodeBuilder_in'?y' -> i2646_ICodeBuilder.the_end' -> i2646_ICodeBuilder_out'!y' -> REORDER' [] i2646_ICodeBuilder.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then i2646_ICodeBuilder_(((i2501_States_Building),(<>)))
+                 else i2646_ICodeBuilder_(((i2501_States_Building),(<>)))) [[x<-i2646_ICodeBuilder_in'.x|x<-extensions(i2646_ICodeBuilder_in')]] [|{|i2646_ICodeBuilder,i2646_ICodeBuilder_in',i2646_ICodeBuilder.the_end'|}|] REORDER' [[i2646_ICodeBuilder_out'.x<-x|x<-extensions(i2646_ICodeBuilder_out')]] \ {|i2646_ICodeBuilder_in',i2646_ICodeBuilder.the_end'|})
+
+-- end of interface.csp.scm
+-- component.csp.scm
+
+channel i262_alarmConsole: extensions(i2482_IAlarmConsole)
+channel i265_alarmSystem: extensions(i2414_IAlarmSystem)
+channel i268_statusUI: extensions(i2437_IAlarmStatusUI)
+channel i271_codestore: extensions(i2646_ICodeBuilder)
+
+channel i262_alarmConsole_': extensions(i2482_IAlarmConsole_')
+channel i265_alarmSystem_': extensions(i2414_IAlarmSystem_')
+channel i268_statusUI_': extensions(i2437_IAlarmStatusUI_')
+channel i271_codestore_': extensions(i2646_ICodeBuilder_')
+
+channel i265_alarmSystem_'': extensions(i2414_IAlarmSystem_'')
+
+channel i262_alarmConsole_''': extensions(i2482_IAlarmConsole_''')
+channel i265_alarmSystem_''': extensions(i2414_IAlarmSystem_''')
+channel i268_statusUI_''': extensions(i2437_IAlarmStatusUI_''')
+channel i271_codestore_''': extensions(i2646_ICodeBuilder_''')
+
+
+
+CO_i969_AlarmConsole_(IIG,IG) = let
+
+i969_AlarmConsole_(((i287_state),(stack'))) = transition_begin -> (
+((i287_state == i279_States_Uninitialized)) & (
+i262_alarmConsole?x:{i2466_Initialize} ->
+semi_(semi_((\ P',V' @ i268_statusUI!i2417_SignalUnarmed -> i268_statusUI_'.return -> P'(V')),
+assign_(\ ((i287_state),(stack')) @ ((i279_States_Unarmed),(stack')))),
+(\ P',V' @ i2482_IAlarmConsole_'.return -> P'(V')))(\ V' @ transition_end -> i969_AlarmConsole_(V'),((i287_state),(stack')))
+ []
+  i262_alarmConsole?x:{i2465_KeyPressed} ->
+(\ P',V' @ i2482_IAlarmConsole_'.return -> P'(V'))(\ V' @ transition_end -> i969_AlarmConsole_(V'),((i287_state),(stack')))
+ []
+  IG & i265_alarmSystem_''?x:{i2144_Tripped,i2145_SwitchedOff,i2149_SwitchOffFailed} ->
+illegal_(STOP,<>))
+[]
+((i287_state == i279_States_Unarmed)) & (
+i262_alarmConsole?x:{i2466_Initialize} ->
+(\ P',V' @ i2482_IAlarmConsole_'.return -> P'(V'))(\ V' @ transition_end -> i969_AlarmConsole_(V'),((i287_state),(stack')))
+ []
+  i262_alarmConsole?x:{i2465_KeyPressed} ->
+semi_(context_active_(semi_(send_(i271_codestore,i2493_AddDigit),recv_(i271_codestore_',i2493_AddDigit)),
+ifthenelse_(\ ((i287_state),((stack',i408_val))) @ ((i408_val == i2489_Result_CodeComplete)),
+semi_(skip_,
+semi_((\ P',V' @ i271_codestore!i2498_GetCode -> i271_codestore_'.return -> P'(V')),
+context_active_(semi_(send_(i265_alarmSystem,i2138_SwitchOn),recv_(i265_alarmSystem_',i2138_SwitchOn)),
+ifthenelse_(\ ((i287_state),(((stack',i408_val),i460_val))) @ ((i460_val == i2134_Result_OK)),
+semi_((\ P',V' @ i268_statusUI!i2416_SignalArmed -> i268_statusUI_'.return -> P'(V')),
+assign_(\ ((i287_state),(((stack',i408_val),i460_val))) @ ((i279_States_Armed),(((stack',i408_val),i460_val))))),
+skip_
+)))),
+skip_
+)),
+(\ P',V' @ i2482_IAlarmConsole_'.return -> P'(V')))(\ V' @ transition_end -> i969_AlarmConsole_(V'),((i287_state),(stack')))
+ []
+  IG & i265_alarmSystem_''?x:{i2144_Tripped,i2145_SwitchedOff,i2149_SwitchOffFailed} ->
+illegal_(STOP,<>))
+[]
+((i287_state == i279_States_Armed)) & (
+i262_alarmConsole?x:{i2466_Initialize} ->
+(\ P',V' @ i2482_IAlarmConsole_'.return -> P'(V'))(\ V' @ transition_end -> i969_AlarmConsole_(V'),((i287_state),(stack')))
+ []
+  i262_alarmConsole?x:{i2465_KeyPressed} ->
+semi_(context_active_(semi_(send_(i271_codestore,i2493_AddDigit),recv_(i271_codestore_',i2493_AddDigit)),
+ifthenelse_(\ ((i287_state),((stack',i588_val))) @ ((i588_val == i2489_Result_CodeComplete)),
+semi_(skip_,
+semi_((\ P',V' @ i271_codestore!i2498_GetCode -> i271_codestore_'.return -> P'(V')),
+semi_((\ P',V' @ i265_alarmSystem!i2143_SwitchOff -> i265_alarmSystem_'.return -> P'(V')),
+assign_(\ ((i287_state),((stack',i588_val))) @ ((i279_States_Disarming),((stack',i588_val))))))),
+skip_
+)),
+(\ P',V' @ i2482_IAlarmConsole_'.return -> P'(V')))(\ V' @ transition_end -> i969_AlarmConsole_(V'),((i287_state),(stack')))
+ []
+  i265_alarmSystem_''?x:{i2144_Tripped} ->
+semi_(semi_((\ P',V' @ i268_statusUI!i2415_SignalTripped -> i268_statusUI_'.return -> P'(V')),
+assign_(\ ((i287_state),(stack')) @ ((i279_States_Tripped),(stack')))),
+skip_)(\ V' @ transition_end -> i969_AlarmConsole_(V'),((i287_state),(stack')))
+ []
+  IG & i265_alarmSystem_''?x:{i2145_SwitchedOff,i2149_SwitchOffFailed} ->
+illegal_(STOP,<>))
+[]
+((i287_state == i279_States_Disarming)) & (
+i262_alarmConsole?x:{i2466_Initialize,i2465_KeyPressed} ->
+(\ P',V' @ i2482_IAlarmConsole_'.return -> P'(V'))(\ V' @ transition_end -> i969_AlarmConsole_(V'),((i287_state),(stack')))
+ []
+  i265_alarmSystem_''?x:{i2144_Tripped} ->
+skip_(\ V' @ transition_end -> i969_AlarmConsole_(V'),((i287_state),(stack')))
+ []
+  i265_alarmSystem_''?x:{i2145_SwitchedOff} ->
+semi_(semi_((\ P',V' @ i268_statusUI!i2417_SignalUnarmed -> i268_statusUI_'.return -> P'(V')),
+assign_(\ ((i287_state),(stack')) @ ((i279_States_Unarmed),(stack')))),
+skip_)(\ V' @ transition_end -> i969_AlarmConsole_(V'),((i287_state),(stack')))
+ []
+  i265_alarmSystem_''?x:{i2149_SwitchOffFailed} ->
+semi_(semi_((\ P',V' @ i268_statusUI!i2418_SignalTrippedWrongCode -> i268_statusUI_'.return -> P'(V')),
+assign_(\ ((i287_state),(stack')) @ ((i279_States_Tripped),(stack')))),
+skip_)(\ V' @ transition_end -> i969_AlarmConsole_(V'),((i287_state),(stack'))))
+[]
+((i287_state == i279_States_Tripped)) & (
+i262_alarmConsole?x:{i2466_Initialize} ->
+(\ P',V' @ i2482_IAlarmConsole_'.return -> P'(V'))(\ V' @ transition_end -> i969_AlarmConsole_(V'),((i287_state),(stack')))
+ []
+  i262_alarmConsole?x:{i2465_KeyPressed} ->
+semi_(context_active_(semi_(send_(i271_codestore,i2493_AddDigit),recv_(i271_codestore_',i2493_AddDigit)),
+ifthenelse_(\ ((i287_state),((stack',i858_val))) @ ((i858_val == i2489_Result_CodeComplete)),
+semi_(skip_,
+semi_((\ P',V' @ i271_codestore!i2498_GetCode -> i271_codestore_'.return -> P'(V')),
+semi_((\ P',V' @ i265_alarmSystem!i2143_SwitchOff -> i265_alarmSystem_'.return -> P'(V')),
+assign_(\ ((i287_state),((stack',i858_val))) @ ((i279_States_Disarming),((stack',i858_val))))))),
+skip_
+)),
+(\ P',V' @ i2482_IAlarmConsole_'.return -> P'(V')))(\ V' @ transition_end -> i969_AlarmConsole_(V'),((i287_state),(stack')))
+ []
+  IG & i265_alarmSystem_''?x:{i2144_Tripped,i2145_SwitchedOff,i2149_SwitchOffFailed} ->
+illegal_(STOP,<>))
+)
+
+within i969_AlarmConsole_(((i279_States_Uninitialized),(<>)))
+
+channel extensions_over_empty_channels_is_undefined
+channel IN',OUT' : {i265_alarmSystem_''.i2144_Tripped,i265_alarmSystem_''.i2145_SwitchedOff,i265_alarmSystem_''.i2149_SwitchOffFailed,extensions_over_empty_channels_is_undefined}
+
+channel LINK' : {|IN',OUT'|}
+
+SINGLETHREADED = true
+
+channel reorder_in  : {i2482_IAlarmConsole_'.return}
+channel reorder_out : {i262_alarmConsole_'.return}
+channel queue_full'
+
+SEMANTICS(in',out',link',client',modeling',end') = let
+
+Q' = let
+
+N' = 3
+
+external chase
+
+Cell = link'.in'?x' -> link'.out'!x' -> Cell
+
+Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full' -> illegal -> STOP)
+
+Front = Cell[[link'.out' <- out']]
+
+within
+       if (N'==1) then (Back[[link'.out' <- out']])
+       else if(N'==2) then chase(Back [link'.out' <-> link'.in'] Front  \ {|link'|})
+       else chase((Back [link'.out' <-> link'.in'] ([link'.out'<->link'.in'] x : <1..N'-2> @ Cell)) [link'.out' <-> link'.in'] Front \ {|link'|})
+
+R'(A') = ([] x' : A' @ x' -> R'(A'))
+       []
+       reorder_in?i2482_IAlarmConsole_'.x' -> reorder_out!i262_alarmConsole_'.x' -> R'(A')
+
+S'    = let
+
+N' = 3
+
+
+Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
+
+FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
+            []
+            ([] x':end' @ x' ->  Busy(c',r'))
+            []
+            (r' == <> & reorder_in?i2482_IAlarmConsole_'.x' -> Busy(c',<x'>))
+
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i262_alarmConsole_'.head(r') -> Idle(0)))
+              []
+              (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
+              []
+              (c' <= N' & in'?x' -> Busy(c'+1,r'))
+              []
+              (c' > 0 & out'?x' -> Busy(c'-1,r'))
+              []
+              (r' != <> & reorder_in?i2482_IAlarmConsole_'.x' -> illegal -> STOP)
+
+within Idle(0)
+
+within Q' [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
+
+AS_i969_AlarmConsole_(IIG) = let
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+ClientCalls = {i262_alarmConsole.i2465_KeyPressed,i262_alarmConsole.i2466_Initialize}
+UsedModeling = {i265_alarmSystem.optional}
+TheEnd = {|i265_alarmSystem_''',i268_statusUI_''',i271_codestore_'''|}
+within compress((CO_i969_AlarmConsole_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+                 [|{|OUT',transition_begin,transition_end,reorder_in,i262_alarmConsole,i262_alarmConsole_'|}|]
+                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
+                [|{|IN',i265_alarmSystem,i265_alarmSystem_',i265_alarmSystem_''',i268_statusUI,i268_statusUI_',i268_statusUI_''',i271_codestore,i271_codestore_',i271_codestore_'''|}|]
+                (IF_i2414_IAlarmSystem_(true,false) [[i2414_IAlarmSystem.x<-i265_alarmSystem.x|x<-extensions(i265_alarmSystem)]][[i2414_IAlarmSystem_'.x<-i265_alarmSystem_'.x|x<-extensions(i265_alarmSystem_')]][[i2414_IAlarmSystem_''.x<-i265_alarmSystem_''.x|x<-extensions(i265_alarmSystem_'')]][[i2414_IAlarmSystem_'''.x<-i265_alarmSystem_'''.x|x<-extensions(i265_alarmSystem_''')]]
+                 ||| IF_i2437_IAlarmStatusUI_(true,false) [[i2437_IAlarmStatusUI.x<-i268_statusUI.x|x<-extensions(i268_statusUI)]][[i2437_IAlarmStatusUI_'.x<-i268_statusUI_'.x|x<-extensions(i268_statusUI_')]][[i2437_IAlarmStatusUI_'''.x<-i268_statusUI_'''.x|x<-extensions(i268_statusUI_''')]]
+                 ||| IF_i2646_ICodeBuilder_(true,false) [[i2646_ICodeBuilder.x<-i271_codestore.x|x<-extensions(i271_codestore)]][[i2646_ICodeBuilder_'.x<-i271_codestore_'.x|x<-extensions(i271_codestore_')]][[i2646_ICodeBuilder_'''.x<-i271_codestore_'''.x|x<-extensions(i271_codestore_''')]]
+)[[x<-IN'.x|x<-extensions(IN')]])
+
+-- end of component.csp.scm
+assert COMPLETE'({i2414_IAlarmSystem.optional,i2414_IAlarmSystem.i2138_SwitchOn,i2414_IAlarmSystem.i2143_SwitchOff}) [F= IF_i2414_IAlarmSystem_(true,true) \ diff(Events,{i2414_IAlarmSystem.optional,i2414_IAlarmSystem.i2138_SwitchOn,i2414_IAlarmSystem.i2143_SwitchOff,illegal})
+assert IF_i2414_IAlarmSystem_(false,false) :[deadlock free]
+assert IF_i2414_IAlarmSystem_(true,false)  \ {|i2414_IAlarmSystem.optional,i2414_IAlarmSystem_'''|} :[livelock free]
+assert COMPLETE'({i2437_IAlarmStatusUI.i2415_SignalTripped,i2437_IAlarmStatusUI.i2416_SignalArmed,i2437_IAlarmStatusUI.i2417_SignalUnarmed,i2437_IAlarmStatusUI.i2418_SignalTrippedWrongCode}) [F= IF_i2437_IAlarmStatusUI_(true,true) \ diff(Events,{i2437_IAlarmStatusUI.i2415_SignalTripped,i2437_IAlarmStatusUI.i2416_SignalArmed,i2437_IAlarmStatusUI.i2417_SignalUnarmed,i2437_IAlarmStatusUI.i2418_SignalTrippedWrongCode,illegal})
+assert IF_i2437_IAlarmStatusUI_(false,false) :[deadlock free]
+assert IF_i2437_IAlarmStatusUI_(true,false) :[livelock free]
+assert COMPLETE'({i2482_IAlarmConsole.i2465_KeyPressed,i2482_IAlarmConsole.i2466_Initialize}) [F= IF_i2482_IAlarmConsole_(true,true) \ diff(Events,{i2482_IAlarmConsole.i2465_KeyPressed,i2482_IAlarmConsole.i2466_Initialize,illegal})
+assert IF_i2482_IAlarmConsole_(false,false) :[deadlock free]
+assert IF_i2482_IAlarmConsole_(true,false) :[livelock free]
+assert COMPLETE'({i2646_ICodeBuilder.i2493_AddDigit,i2646_ICodeBuilder.i2498_GetCode}) [F= IF_i2646_ICodeBuilder_(true,true) \ diff(Events,{i2646_ICodeBuilder.i2493_AddDigit,i2646_ICodeBuilder.i2498_GetCode,illegal})
+assert IF_i2646_ICodeBuilder_(false,false) :[deadlock free]
+assert IF_i2646_ICodeBuilder_(true,false) :[livelock free]
+assert CO_i969_AlarmConsole_(true,true)[[i2482_IAlarmConsole_'.x<-i262_alarmConsole_'.x|x<-extensions(i262_alarmConsole_')]] :[deterministic]
+assert COMPLETE'({i262_alarmConsole.i2465_KeyPressed,i262_alarmConsole.i2466_Initialize,i265_alarmSystem_''.i2144_Tripped,i265_alarmSystem_''.i2145_SwitchedOff,i265_alarmSystem_''.i2149_SwitchOffFailed}) [F= CO_i969_AlarmConsole_(true,true)[[i2482_IAlarmConsole_'.x'<-i262_alarmConsole_'.x'|x'<-extensions(i262_alarmConsole_')]] \ diff(Events,{i262_alarmConsole.i2465_KeyPressed,i262_alarmConsole.i2466_Initialize,i265_alarmSystem_''.i2144_Tripped,i265_alarmSystem_''.i2145_SwitchedOff,i265_alarmSystem_''.i2149_SwitchOffFailed,illegal})
+assert STOP [T= AS_i969_AlarmConsole_(false) \ diff(Events,{illegal})
+assert AS_i969_AlarmConsole_(false) :[deadlock free]
+assert IF_i2482_IAlarmConsole_(true,false) [[i2482_IAlarmConsole.x<-i262_alarmConsole.x|x<-extensions(i262_alarmConsole)]][[i2482_IAlarmConsole_'.x<-i262_alarmConsole_'.x|x<-extensions(i262_alarmConsole_')]]\ {i2482_IAlarmConsole_'''.modeling} [F= AS_i969_AlarmConsole_(true) \ diff(Events,{|illegal,i262_alarmConsole,i262_alarmConsole_'|})
+assert AS_i969_AlarmConsole_(true) \ diff(Events,{|illegal,i262_alarmConsole,i262_alarmConsole_'|}) :[livelock free]

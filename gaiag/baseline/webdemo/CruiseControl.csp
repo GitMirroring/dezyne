@@ -1,0 +1,397 @@
+-- drop_one_local: V => V
+drop_one_local_((M', (L', L0'))) = (M', L')
+
+illegal_(P',V') = illegal -> STOP
+-- send_: (c: channel, e:event) => (P,V)->Proc
+send_(c',e')(P', V') = c'!e' -> P'(V')
+-- recv_: (c: channel, e:event) => (P,V)->Proc
+recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
+-- skip_: () => (P,V)->Proc
+skip_(P', V') = P'(V')
+-- call_: (B': (P,V)->Proc) => (P,V)->Proc
+call_(B')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', <>))
+-- call_args_: (B': (P,V)->Proc, F': V'->V') => (P,V)->Proc
+call_args_(B', F')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', (<>, F'((M1',L1')))))
+-- assign_: (F': V -> V) => (P,V) -> Proc
+assign_(F')(P', V') = P'(F'(V'))
+-- assign_int_: (F': V -> V) => (P,V) -> Proc
+assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & range_error -> STOP [] b' & P'(F'(V'))
+-- assign_int_: (F': V -> V, B': V -> bool) => (P,V) -> Proc
+assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & illegal -> STOP [] b' & P'(F'(V'))
+-- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
+assign_active_(C', A')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
+-- assign_int_active_: C':(P,V)->Proc, A: (V,val)->V, B': V -> bool => (P,V)->Proc
+-- Paul, HELP! assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ not b' & range_error -> STOP [] b' & P'(A'((M',L'),r')), V')
+-- assign_int_active_(C',A',b')(P', V') = assign_active_(C', A')
+-- assign_int_active_(C',A',b')(P', V') = (\ (C', A', b') @ assign_active_(C', A'))
+assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
+
+reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
+-- returnvalue_: (F: V->val) => (P,V)->Proc
+returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
+-- the_end_: P => V->Proc
+the_end_(P', V') = transition_end -> P'(V')
+
+-- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
+semi_(S1',S2')(P', V') = S1'(\V'' @ S2'(P', V''),V')
+-- ifthenelse: (F': V->val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
+ifthenelse_(F',S1',S2')(P', V') =  if F'(V') then S1'(P', V') else S2'(P', V')
+-- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
+context_(F', S')(P', (M', L')) = S'((\ (M',L2') @ P'((M',L'))), (M', (L', F'((M', L')))))
+-- context_int_: (F': V->val, B: bool, S': (P,V)->Proc) => (P,V)->Proc
+context_int_(F', B', S')(P', (M', L')) = S'((\ (M',L2') @ let b' = B'((M',L2')) within not b' & range_error -> STOP [] b' & P'((M',L'))), (M', (L', F'((M', L')))))
+-- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
+context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
+-- context_int_active_: (C':(P,V)->Proc, B': bool, S: (P,V)->Proc) => (P,V)->Proc
+-- Paul, HELP! context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ let b' = B'((M',r')) within not b' & range_error -> STOP [] b' & S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
+--context_int_active_(C', B', S')(P', V') = (\ (C', B', S') @ context_active_(C', S'))
+context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
+
+channel illegal
+channel range_error
+channel transition_begin, transition_end
+
+COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+
+datatype event_enumeration_alphabet = i10_Reset | i11_MotorUnitDone | i12_MotorUnitError | i17_States_Error | i17_States_Idle | i17_States_SpeedingUp | i17_States_WaitingForAck | i336_result_NOK | i336_result_OK | i337_SpeedTooLow | i339_BrakeHit | i340_HandleError | i341_SpeedReached | i342_ErrorReported | i343_ErrorHandled | i347_States_Busy | i347_States_Error | i347_States_Idle | i5_result_NOK | i5_result_OK | i640_States_Busy | i640_States_Error | i640_States_Idle | i6_SpeedUp | i8_CancelSpeedUp | i9_MotorUnitDoneAck | inevitable | modeling | optional | return | the_end'
+-- interface.csp.scm
+
+channel i333_iMotorUnit: {i10_Reset,i6_SpeedUp,i8_CancelSpeedUp,i9_MotorUnitDoneAck,inevitable,optional,the_end'}
+channel i333_iMotorUnit_'': {i11_MotorUnitDone,i12_MotorUnitError}
+channel i333_iMotorUnit_': {i5_result_OK,i5_result_NOK,return}
+channel i333_iMotorUnit_in',i333_iMotorUnit_out': {i333_iMotorUnit_'.i5_result_OK,i333_iMotorUnit_'.i5_result_NOK,i333_iMotorUnit_'.return}
+channel i333_iMotorUnit_''': {modeling}
+
+IF_i333_iMotorUnit_(IG,CS) = let
+
+i333_iMotorUnit_(((i25_state),(stack'))) =
+((i25_state == i17_States_Idle)) & (
+i333_iMotorUnit?x:{i6_SpeedUp} ->
+semi_(reply_(i333_iMotorUnit_', (\ ((i25_state),(stack')) @ i5_result_OK)),
+assign_(\ ((i25_state),(stack')) @ ((i17_States_SpeedingUp),(stack'))))(\ V' @ i333_iMotorUnit.the_end' -> i333_iMotorUnit_(V'),((i25_state),(stack')))
+ []
+  i333_iMotorUnit?x:{i6_SpeedUp} ->
+reply_(i333_iMotorUnit_', (\ ((i25_state),(stack')) @ i5_result_NOK))(\ V' @ i333_iMotorUnit.the_end' -> i333_iMotorUnit_(V'),((i25_state),(stack')))
+ []
+  IG & i333_iMotorUnit?x:{i8_CancelSpeedUp,i9_MotorUnitDoneAck,i10_Reset} ->
+illegal_(STOP,<>))
+[]
+((i25_state == i17_States_SpeedingUp)) & (
+IG & i333_iMotorUnit?x:{i6_SpeedUp,i9_MotorUnitDoneAck,i10_Reset} ->
+illegal_(STOP,<>)
+ []
+  i333_iMotorUnit?x:{inevitable} ->
+semi_(semi_((\ P',V' @ i333_iMotorUnit_''!i11_MotorUnitDone -> P'(V')),
+assign_(\ ((i25_state),(stack')) @ ((i17_States_WaitingForAck),(stack')))),
+(\ P',V' @ i333_iMotorUnit_'''.modeling -> P'(V')))(\ V' @ i333_iMotorUnit.the_end' -> i333_iMotorUnit_(V'),((i25_state),(stack')))
+ []
+  i333_iMotorUnit?x:{optional} ->
+semi_(semi_((\ P',V' @ i333_iMotorUnit_''!i12_MotorUnitError -> P'(V')),
+assign_(\ ((i25_state),(stack')) @ ((i17_States_Error),(stack')))),
+(\ P',V' @ i333_iMotorUnit_'''.modeling -> P'(V')))(\ V' @ i333_iMotorUnit.the_end' -> i333_iMotorUnit_(V'),((i25_state),(stack')))
+ []
+  i333_iMotorUnit?x:{i8_CancelSpeedUp} ->
+semi_(assign_(\ ((i25_state),(stack')) @ ((i17_States_Idle),(stack'))),
+(\ P',V' @ i333_iMotorUnit_'.return -> P'(V')))(\ V' @ i333_iMotorUnit.the_end' -> i333_iMotorUnit_(V'),((i25_state),(stack'))))
+[]
+((i25_state == i17_States_WaitingForAck)) & (
+IG & i333_iMotorUnit?x:{i6_SpeedUp,i10_Reset} ->
+illegal_(STOP,<>)
+ []
+  i333_iMotorUnit?x:{i8_CancelSpeedUp} ->
+(\ P',V' @ i333_iMotorUnit_'.return -> P'(V'))(\ V' @ i333_iMotorUnit.the_end' -> i333_iMotorUnit_(V'),((i25_state),(stack')))
+ []
+  i333_iMotorUnit?x:{i9_MotorUnitDoneAck} ->
+semi_(assign_(\ ((i25_state),(stack')) @ ((i17_States_Idle),(stack'))),
+(\ P',V' @ i333_iMotorUnit_'.return -> P'(V')))(\ V' @ i333_iMotorUnit.the_end' -> i333_iMotorUnit_(V'),((i25_state),(stack'))))
+[]
+((i25_state == i17_States_Error)) & (
+i333_iMotorUnit?x:{i10_Reset} ->
+semi_(assign_(\ ((i25_state),(stack')) @ ((i17_States_Idle),(stack'))),
+(\ P',V' @ i333_iMotorUnit_'.return -> P'(V')))(\ V' @ i333_iMotorUnit.the_end' -> i333_iMotorUnit_(V'),((i25_state),(stack')))
+ []
+  IG & i333_iMotorUnit?x:{i6_SpeedUp,i8_CancelSpeedUp,i9_MotorUnitDoneAck} ->
+illegal_(STOP,<>)
+ []
+  i333_iMotorUnit?x:{optional} ->
+semi_((\ P',V' @ i333_iMotorUnit_''!i12_MotorUnitError -> P'(V')),
+(\ P',V' @ i333_iMotorUnit_'''.modeling -> P'(V')))(\ V' @ i333_iMotorUnit.the_end' -> i333_iMotorUnit_(V'),((i25_state),(stack'))))
+[]
+CS & i333_iMotorUnit?x:{inevitable,optional} -> illegal_(STOP,<>)
+
+REORDER' = i333_iMotorUnit?x' -> (i333_iMotorUnit_in'?y' -> i333_iMotorUnit.the_end' -> i333_iMotorUnit_out'!y' -> REORDER' [] i333_iMotorUnit.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then i333_iMotorUnit_(((i17_States_Idle),(<>)))
+                 else i333_iMotorUnit_(((i17_States_Idle),(<>))) [|{i333_iMotorUnit.optional}|] CHAOS({i333_iMotorUnit.optional})) [[x<-i333_iMotorUnit_in'.x|x<-extensions(i333_iMotorUnit_in')]] [|{|i333_iMotorUnit,i333_iMotorUnit_in',i333_iMotorUnit.the_end'|}|] REORDER' [[i333_iMotorUnit_out'.x<-x|x<-extensions(i333_iMotorUnit_out')]] \ {|i333_iMotorUnit_in',i333_iMotorUnit.the_end'|})
+
+-- end of interface.csp.scm
+-- interface.csp.scm
+
+channel i630_iCruiseController: {i337_SpeedTooLow,i339_BrakeHit,i340_HandleError,inevitable,optional,the_end'}
+channel i630_iCruiseController_'': {i341_SpeedReached,i342_ErrorReported,i343_ErrorHandled}
+channel i630_iCruiseController_': {i336_result_OK,i336_result_NOK,return}
+channel i630_iCruiseController_in',i630_iCruiseController_out': {i630_iCruiseController_'.i336_result_OK,i630_iCruiseController_'.i336_result_NOK,i630_iCruiseController_'.return}
+channel i630_iCruiseController_''': {modeling}
+
+IF_i630_iCruiseController_(IG,CS) = let
+
+i630_iCruiseController_(((i355_state),(stack'))) =
+((i355_state == i347_States_Idle)) & (
+i630_iCruiseController?x:{i337_SpeedTooLow} ->
+semi_(assign_(\ ((i355_state),(stack')) @ ((i347_States_Busy),(stack'))),
+reply_(i630_iCruiseController_', (\ ((i355_state),(stack')) @ i336_result_OK)))(\ V' @ i630_iCruiseController.the_end' -> i630_iCruiseController_(V'),((i355_state),(stack')))
+ []
+  i630_iCruiseController?x:{i337_SpeedTooLow} ->
+reply_(i630_iCruiseController_', (\ ((i355_state),(stack')) @ i336_result_NOK))(\ V' @ i630_iCruiseController.the_end' -> i630_iCruiseController_(V'),((i355_state),(stack')))
+ []
+  i630_iCruiseController?x:{i339_BrakeHit} ->
+(\ P',V' @ i630_iCruiseController_'.return -> P'(V'))(\ V' @ i630_iCruiseController.the_end' -> i630_iCruiseController_(V'),((i355_state),(stack')))
+ []
+  IG & i630_iCruiseController?x:{i340_HandleError} ->
+illegal_(STOP,<>))
+[]
+((i355_state == i347_States_Busy)) & (
+IG & i630_iCruiseController?x:{i337_SpeedTooLow} ->
+illegal_(STOP,<>)
+ []
+  i630_iCruiseController?x:{i339_BrakeHit} ->
+semi_(assign_(\ ((i355_state),(stack')) @ ((i347_States_Idle),(stack'))),
+(\ P',V' @ i630_iCruiseController_'.return -> P'(V')))(\ V' @ i630_iCruiseController.the_end' -> i630_iCruiseController_(V'),((i355_state),(stack')))
+ []
+  IG & i630_iCruiseController?x:{i340_HandleError} ->
+illegal_(STOP,<>)
+ []
+  i630_iCruiseController?x:{inevitable} ->
+semi_(semi_((\ P',V' @ i630_iCruiseController_''!i341_SpeedReached -> P'(V')),
+assign_(\ ((i355_state),(stack')) @ ((i347_States_Idle),(stack')))),
+(\ P',V' @ i630_iCruiseController_'''.modeling -> P'(V')))(\ V' @ i630_iCruiseController.the_end' -> i630_iCruiseController_(V'),((i355_state),(stack')))
+ []
+  i630_iCruiseController?x:{optional} ->
+semi_(semi_((\ P',V' @ i630_iCruiseController_''!i342_ErrorReported -> P'(V')),
+assign_(\ ((i355_state),(stack')) @ ((i347_States_Error),(stack')))),
+(\ P',V' @ i630_iCruiseController_'''.modeling -> P'(V')))(\ V' @ i630_iCruiseController.the_end' -> i630_iCruiseController_(V'),((i355_state),(stack'))))
+[]
+((i355_state == i347_States_Error)) & (
+i630_iCruiseController?x:{i340_HandleError} ->
+semi_(semi_((\ P',V' @ i630_iCruiseController_''!i343_ErrorHandled -> P'(V')),
+assign_(\ ((i355_state),(stack')) @ ((i347_States_Idle),(stack')))),
+(\ P',V' @ i630_iCruiseController_'.return -> P'(V')))(\ V' @ i630_iCruiseController.the_end' -> i630_iCruiseController_(V'),((i355_state),(stack')))
+ []
+  i630_iCruiseController?x:{i340_HandleError} ->
+(\ P',V' @ i630_iCruiseController_'.return -> P'(V'))(\ V' @ i630_iCruiseController.the_end' -> i630_iCruiseController_(V'),((i355_state),(stack')))
+ []
+  IG & i630_iCruiseController?x:{i337_SpeedTooLow,i339_BrakeHit} ->
+illegal_(STOP,<>)
+ []
+  i630_iCruiseController?x:{optional} ->
+semi_((\ P',V' @ i630_iCruiseController_''!i342_ErrorReported -> P'(V')),
+(\ P',V' @ i630_iCruiseController_'''.modeling -> P'(V')))(\ V' @ i630_iCruiseController.the_end' -> i630_iCruiseController_(V'),((i355_state),(stack'))))
+[]
+CS & i630_iCruiseController?x:{inevitable,optional} -> illegal_(STOP,<>)
+
+REORDER' = i630_iCruiseController?x' -> (i630_iCruiseController_in'?y' -> i630_iCruiseController.the_end' -> i630_iCruiseController_out'!y' -> REORDER' [] i630_iCruiseController.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                 then i630_iCruiseController_(((i347_States_Idle),(<>)))
+                 else i630_iCruiseController_(((i347_States_Idle),(<>))) [|{i630_iCruiseController.optional}|] CHAOS({i630_iCruiseController.optional})) [[x<-i630_iCruiseController_in'.x|x<-extensions(i630_iCruiseController_in')]] [|{|i630_iCruiseController,i630_iCruiseController_in',i630_iCruiseController.the_end'|}|] REORDER' [[i630_iCruiseController_out'.x<-x|x<-extensions(i630_iCruiseController_out')]] \ {|i630_iCruiseController_in',i630_iCruiseController.the_end'|})
+
+-- end of interface.csp.scm
+-- component.csp.scm
+
+channel i631_cc: extensions(i630_iCruiseController)
+channel i634_mu: extensions(i333_iMotorUnit)
+
+channel i631_cc_': extensions(i630_iCruiseController_')
+channel i634_mu_': extensions(i333_iMotorUnit_')
+
+channel i631_cc_'': extensions(i630_iCruiseController_'')
+channel i634_mu_'': extensions(i333_iMotorUnit_'')
+
+channel i631_cc_''': extensions(i630_iCruiseController_''')
+channel i634_mu_''': extensions(i333_iMotorUnit_''')
+
+
+
+CO_i1087_CruiseController_(IIG,IG) = let
+
+i1087_CruiseController_(((i648_state,i658_MotorUnitOk,i662_IsFatalError),(stack'))) = transition_begin -> (
+((i648_state == i640_States_Idle)) & (
+i631_cc?x:{i337_SpeedTooLow} ->
+semi_(assign_active_(semi_(send_(i634_mu,i6_SpeedUp),recv_(i634_mu_',i6_SpeedUp)),
+\ ((i648_state,i658_MotorUnitOk,i662_IsFatalError),(stack')),r' @ ((i648_state,r',i662_IsFatalError),(stack'))),
+ifthenelse_(\ ((i648_state,i658_MotorUnitOk,i662_IsFatalError),(stack')) @ ((i658_MotorUnitOk == i5_result_OK)),
+semi_(assign_(\ ((i648_state,i658_MotorUnitOk,i662_IsFatalError),(stack')) @ ((i640_States_Busy,i658_MotorUnitOk,i662_IsFatalError),(stack'))),
+reply_(i630_iCruiseController_', (\ ((i648_state,i658_MotorUnitOk,i662_IsFatalError),(stack')) @ i336_result_OK))),
+semi_(assign_active_(semi_(send_(i634_mu,i6_SpeedUp),recv_(i634_mu_',i6_SpeedUp)),
+\ ((i648_state,i658_MotorUnitOk,i662_IsFatalError),(stack')),r' @ ((i648_state,r',i662_IsFatalError),(stack'))),
+ifthenelse_(\ ((i648_state,i658_MotorUnitOk,i662_IsFatalError),(stack')) @ ((i658_MotorUnitOk == i5_result_OK)),
+semi_(assign_(\ ((i648_state,i658_MotorUnitOk,i662_IsFatalError),(stack')) @ ((i640_States_Busy,i658_MotorUnitOk,i662_IsFatalError),(stack'))),
+reply_(i630_iCruiseController_', (\ ((i648_state,i658_MotorUnitOk,i662_IsFatalError),(stack')) @ i336_result_OK))),
+reply_(i630_iCruiseController_', (\ ((i648_state,i658_MotorUnitOk,i662_IsFatalError),(stack')) @ i336_result_NOK))
+))
+))(\ V' @ transition_end -> i1087_CruiseController_(V'),((i648_state,i658_MotorUnitOk,i662_IsFatalError),(stack')))
+ []
+  i631_cc?x:{i339_BrakeHit} ->
+(\ P',V' @ i630_iCruiseController_'.return -> P'(V'))(\ V' @ transition_end -> i1087_CruiseController_(V'),((i648_state,i658_MotorUnitOk,i662_IsFatalError),(stack')))
+ []
+  IIG & i631_cc?x:{i340_HandleError} ->
+illegal_(STOP,<>)
+ []
+  IG & i634_mu_''?x:{i11_MotorUnitDone} ->
+illegal_(STOP,<>)
+ []
+  IG & i634_mu_''?x:{i12_MotorUnitError} ->
+illegal_(STOP,<>))
+[]
+((i648_state == i640_States_Busy)) & (
+i631_cc?x:{i339_BrakeHit} ->
+semi_(semi_((\ P',V' @ i634_mu!i8_CancelSpeedUp -> i634_mu_'.return -> P'(V')),
+assign_(\ ((i648_state,i658_MotorUnitOk,i662_IsFatalError),(stack')) @ ((i640_States_Idle,i658_MotorUnitOk,i662_IsFatalError),(stack')))),
+(\ P',V' @ i630_iCruiseController_'.return -> P'(V')))(\ V' @ transition_end -> i1087_CruiseController_(V'),((i648_state,i658_MotorUnitOk,i662_IsFatalError),(stack')))
+ []
+  IIG & i631_cc?x:{i337_SpeedTooLow} ->
+illegal_(STOP,<>)
+ []
+  IIG & i631_cc?x:{i340_HandleError} ->
+illegal_(STOP,<>)
+ []
+  i634_mu_''?x:{i11_MotorUnitDone} ->
+semi_(semi_((\ P',V' @ i634_mu!i9_MotorUnitDoneAck -> i634_mu_'.return -> P'(V')),
+semi_((\ P',V' @ i631_cc_''!i341_SpeedReached -> P'(V')),
+assign_(\ ((i648_state,i658_MotorUnitOk,i662_IsFatalError),(stack')) @ ((i640_States_Idle,i658_MotorUnitOk,i662_IsFatalError),(stack'))))),
+skip_)(\ V' @ transition_end -> i1087_CruiseController_(V'),((i648_state,i658_MotorUnitOk,i662_IsFatalError),(stack')))
+ []
+  i634_mu_''?x:{i12_MotorUnitError} ->
+semi_(semi_((\ P',V' @ i631_cc_''!i342_ErrorReported -> P'(V')),
+assign_(\ ((i648_state,i658_MotorUnitOk,i662_IsFatalError),(stack')) @ ((i640_States_Error,i658_MotorUnitOk,i662_IsFatalError),(stack')))),
+skip_)(\ V' @ transition_end -> i1087_CruiseController_(V'),((i648_state,i658_MotorUnitOk,i662_IsFatalError),(stack'))))
+[]
+((i648_state == i640_States_Error)) & (
+IIG & i631_cc?x:{i337_SpeedTooLow} ->
+illegal_(STOP,<>)
+ []
+  IIG & i631_cc?x:{i339_BrakeHit} ->
+illegal_(STOP,<>)
+ []
+  i631_cc?x:{i340_HandleError} ->
+semi_(ifthenelse_(\ ((i648_state,i658_MotorUnitOk,i662_IsFatalError),(stack')) @ (i662_IsFatalError),
+skip_,
+semi_((\ P',V' @ i634_mu!i10_Reset -> i634_mu_'.return -> P'(V')),
+semi_((\ P',V' @ i631_cc_''!i343_ErrorHandled -> P'(V')),
+assign_(\ ((i648_state,i658_MotorUnitOk,i662_IsFatalError),(stack')) @ ((i640_States_Idle,i658_MotorUnitOk,i662_IsFatalError),(stack')))))
+),
+(\ P',V' @ i630_iCruiseController_'.return -> P'(V')))(\ V' @ transition_end -> i1087_CruiseController_(V'),((i648_state,i658_MotorUnitOk,i662_IsFatalError),(stack')))
+ []
+  IG & i634_mu_''?x:{i11_MotorUnitDone} ->
+illegal_(STOP,<>)
+ []
+  i634_mu_''?x:{i12_MotorUnitError} ->
+semi_(semi_(assign_(\ ((i648_state,i658_MotorUnitOk,i662_IsFatalError),(stack')) @ ((i648_state,i658_MotorUnitOk,true),(stack'))),
+(\ P',V' @ i631_cc_''!i342_ErrorReported -> P'(V'))),
+skip_)(\ V' @ transition_end -> i1087_CruiseController_(V'),((i648_state,i658_MotorUnitOk,i662_IsFatalError),(stack'))))
+)
+
+within i1087_CruiseController_(((i640_States_Idle,i5_result_NOK,false),(<>)))
+
+channel extensions_over_empty_channels_is_undefined
+channel IN',OUT' : {i634_mu_''.i11_MotorUnitDone,i634_mu_''.i12_MotorUnitError,extensions_over_empty_channels_is_undefined}
+
+channel LINK' : {|IN',OUT'|}
+
+SINGLETHREADED = true
+
+channel reorder_in  : {i630_iCruiseController_'.i336_result_OK,i630_iCruiseController_'.i336_result_NOK,i630_iCruiseController_'.return}
+channel reorder_out : {i631_cc_'.i336_result_OK,i631_cc_'.i336_result_NOK,i631_cc_'.return}
+channel queue_full'
+
+SEMANTICS(in',out',link',client',modeling',end') = let
+
+Q' = let
+
+N' = 3
+
+external chase
+
+Cell = link'.in'?x' -> link'.out'!x' -> Cell
+
+Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full' -> illegal -> STOP)
+
+Front = Cell[[link'.out' <- out']]
+
+within
+       if (N'==1) then (Back[[link'.out' <- out']])
+       else if(N'==2) then chase(Back [link'.out' <-> link'.in'] Front  \ {|link'|})
+       else chase((Back [link'.out' <-> link'.in'] ([link'.out'<->link'.in'] x : <1..N'-2> @ Cell)) [link'.out' <-> link'.in'] Front \ {|link'|})
+
+R'(A') = ([] x' : A' @ x' -> R'(A'))
+       []
+       reorder_in?i630_iCruiseController_'.x' -> reorder_out!i631_cc_'.x' -> R'(A')
+
+S'    = let
+
+N' = 3
+
+
+Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
+
+FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
+            []
+            ([] x':end' @ x' ->  Busy(c',r'))
+            []
+            (r' == <> & reorder_in?i630_iCruiseController_'.x' -> Busy(c',<x'>))
+
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i631_cc_'.head(r') -> Idle(0)))
+              []
+              (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
+              []
+              (c' <= N' & in'?x' -> Busy(c'+1,r'))
+              []
+              (c' > 0 & out'?x' -> Busy(c'-1,r'))
+              []
+              (r' != <> & reorder_in?i630_iCruiseController_'.x' -> illegal -> STOP)
+
+within Idle(0)
+
+within Q' [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
+
+AS_i1087_CruiseController_(IIG) = let
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+ClientCalls = {i631_cc.i337_SpeedTooLow,i631_cc.i339_BrakeHit,i631_cc.i340_HandleError}
+UsedModeling = {i634_mu.inevitable,i634_mu.optional}
+TheEnd = {|i634_mu_'''|}
+within compress((CO_i1087_CruiseController_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+                 [|{|OUT',transition_begin,transition_end,reorder_in,i631_cc,i631_cc_'|}|]
+                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
+                [|{|IN',i634_mu,i634_mu_',i634_mu_'''|}|]
+                (IF_i333_iMotorUnit_(true,false) [[i333_iMotorUnit.x<-i634_mu.x|x<-extensions(i634_mu)]][[i333_iMotorUnit_'.x<-i634_mu_'.x|x<-extensions(i634_mu_')]][[i333_iMotorUnit_''.x<-i634_mu_''.x|x<-extensions(i634_mu_'')]][[i333_iMotorUnit_'''.x<-i634_mu_'''.x|x<-extensions(i634_mu_''')]]
+)[[x<-IN'.x|x<-extensions(IN')]])
+
+-- end of component.csp.scm
+assert COMPLETE'({i333_iMotorUnit.inevitable,i333_iMotorUnit.optional,i333_iMotorUnit.i6_SpeedUp,i333_iMotorUnit.i8_CancelSpeedUp,i333_iMotorUnit.i9_MotorUnitDoneAck,i333_iMotorUnit.i10_Reset}) [F= IF_i333_iMotorUnit_(true,true) \ diff(Events,{i333_iMotorUnit.inevitable,i333_iMotorUnit.optional,i333_iMotorUnit.i6_SpeedUp,i333_iMotorUnit.i8_CancelSpeedUp,i333_iMotorUnit.i9_MotorUnitDoneAck,i333_iMotorUnit.i10_Reset,illegal})
+assert IF_i333_iMotorUnit_(false,false) :[deadlock free]
+assert IF_i333_iMotorUnit_(true,false)  \ {|i333_iMotorUnit.inevitable,i333_iMotorUnit.optional,i333_iMotorUnit_'''|} :[livelock free]
+assert COMPLETE'({i630_iCruiseController.inevitable,i630_iCruiseController.optional,i630_iCruiseController.i337_SpeedTooLow,i630_iCruiseController.i339_BrakeHit,i630_iCruiseController.i340_HandleError}) [F= IF_i630_iCruiseController_(true,true) \ diff(Events,{i630_iCruiseController.inevitable,i630_iCruiseController.optional,i630_iCruiseController.i337_SpeedTooLow,i630_iCruiseController.i339_BrakeHit,i630_iCruiseController.i340_HandleError,illegal})
+assert IF_i630_iCruiseController_(false,false) :[deadlock free]
+assert IF_i630_iCruiseController_(true,false)  \ {|i630_iCruiseController.inevitable,i630_iCruiseController.optional,i630_iCruiseController_'''|} :[livelock free]
+assert CO_i1087_CruiseController_(true,true)[[i630_iCruiseController_'.x<-i631_cc_'.x|x<-extensions(i631_cc_')]] :[deterministic]
+assert COMPLETE'({i631_cc.i337_SpeedTooLow,i631_cc.i339_BrakeHit,i631_cc.i340_HandleError,i634_mu_''.i11_MotorUnitDone,i634_mu_''.i12_MotorUnitError}) [F= CO_i1087_CruiseController_(true,true)[[i630_iCruiseController_'.x'<-i631_cc_'.x'|x'<-extensions(i631_cc_')]] \ diff(Events,{i631_cc.i337_SpeedTooLow,i631_cc.i339_BrakeHit,i631_cc.i340_HandleError,i634_mu_''.i11_MotorUnitDone,i634_mu_''.i12_MotorUnitError,illegal})
+assert STOP [T= AS_i1087_CruiseController_(false) \ diff(Events,{illegal})
+assert AS_i1087_CruiseController_(false) :[deadlock free]
+assert IF_i630_iCruiseController_(true,false) [[i630_iCruiseController.x<-i631_cc.x|x<-extensions(i631_cc)]][[i630_iCruiseController_'.x<-i631_cc_'.x|x<-extensions(i631_cc_')]][[i630_iCruiseController_''.x<-i631_cc_''.x|x<-extensions(i631_cc_'')]]\ {i630_iCruiseController_'''.modeling,i631_cc.inevitable,i631_cc.optional} [F= AS_i1087_CruiseController_(true) \ diff(Events,{|illegal,i631_cc,i631_cc_',i631_cc_''|})
+assert AS_i1087_CruiseController_(true) \ diff(Events,{|illegal,i631_cc,i631_cc_',i631_cc_''|}) :[livelock free]
