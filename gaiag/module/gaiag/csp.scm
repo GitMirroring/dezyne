@@ -3,7 +3,7 @@
 ;; Copyright © 2014  Rutger van Beusekom
 ;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -53,7 +53,6 @@
            csp-component
            csp-module
 	   ast-transform
-	   csp-expression->string
 	   csp-transform
            csp:norm
            csp-queue-size
@@ -63,7 +62,6 @@
            extend
            provides?
            requires?
-           enum-type
 
            <semi>
            <context-vector>
@@ -250,7 +248,7 @@
           (append
            (map
             (lambda (guard)
-              (let ((expression (csp-expression->string model (.expression guard)))
+              (let ((expression (csp-expression->string model (.expression guard) '()))
                     (ons (splitted-ons (.statement guard))))
                 (list
                  "(" expression ") & (\n"
@@ -272,33 +270,33 @@
                 (splitted-ons (gom:statement (.behaviour model)))))))
         default)))
 
-(define (enum-type ast identifier)
-  (and-let* ((variable (gom:variable ast identifier))
-             ((is-a? variable <variable>))
-             (type (.type variable)))
-            (.name type)))
+(define-method (csp-expression->string (model <model>) src locals)
+  (define (member? identifier) (gom:variable model identifier))
+  (define (local? identifier) (assoc-ref locals identifier))
+  (define (var? identifier) (or (member? identifier) (local? identifier)))
 
-(define (csp-expression->string ast src) ;; FIXME: more tests
   (define (paren expression)
     (let ((value (if (is-a? expression <expression>) (.value expression) expression)))
       (if (or (number? value) (symbol? value) (is-a? value <var>))
-          (csp-expression->string ast expression)
-          (list "(" (csp-expression->string ast expression) ")"))))
+          (csp-expression->string model expression locals)
+          (list "(" (csp-expression->string model expression locals) ")"))))
   (match src
     (($ <var> identifier) identifier)
-    (($ <expression>) (csp-expression->string ast (.value src)))
+    (($ <expression>) (csp-expression->string model (.value src) locals))
     ((or (? number?) (? string?) (? symbol?)) src)
     (($ <field> identifier field)
-     (let ((enum (enum-type ast identifier)))
-       (list "(" identifier " == " enum "_" field ")")))
+     (let* ((var (var? identifier))
+            (type (and=> var .type))
+            (name (and=> type .name)))
+       (list "(" identifier " == " name "_" field ")")))
     (($ <literal> scope type field) (list type "_" field))
 
     (($ <var> identifier) identifier)
-    (('group expression) (list "(" (csp-expression->string ast expression) ")"))
+    (('group expression) (list "(" (csp-expression->string model expression locals) ")"))
     (('! expression) (->string (list "(" "not " (paren expression) ")")))
     (((or 'and 'or '== '!= '< '<= '> '>= '+ '-) lhs rhs)
-     (let ((lhs (csp-expression->string ast lhs))
-           (rhs (csp-expression->string ast rhs))
+     (let ((lhs (csp-expression->string model lhs locals))
+           (rhs (csp-expression->string model rhs locals))
            (op (car src)))
        (list "(" lhs " " op " " rhs ")")))
 
@@ -671,24 +669,24 @@
     :members (map (assign- identifier expression) (.members o))
     :locals (map (assign- identifier expression) (.locals o))))
 
-(define (element->csp ast x)
-  (match x
+(define (element->csp ast o locals)
+  (match o
     (($ <context-vector> expressions)
      (let ((expressions
-            (map (lambda (x) (csp-expression->string ast x)) expressions)))
+            (map (lambda (o) (csp-expression->string ast o locals)) expressions)))
        (string-append "(" (comma-join expressions) ")")))
-    (_ (->string (csp-expression->string ast x)))))
+    (_ (->string (csp-expression->string ast o locals)))))
 
 (define-method (->csp ast (o <context>))
   (let* ((members (.members o))
          (locals (.locals o))
-         (members (comma-join (map (lambda (x) (csp-expression->string ast x)) members)))
+         (members (comma-join (map (lambda (x) (csp-expression->string ast x locals)) members)))
          (members (if (string-null? members) '<> members))
          (locals (if (equal? locals '(<>))
                      '<>
                      (reduce (lambda (x y)
-                               (string-append "(" (element->csp ast y) ","
-                                              (element->csp ast x) ")"))
+                               (string-append "(" (element->csp ast y locals) ","
+                                              (element->csp ast x locals) ")"))
                              #f (cons "stack'" locals)))))
     (list "(" members "),(" locals ")")))
 
@@ -826,13 +824,13 @@
       (_ o))))
 
 
-(define (=>string ast src)
+(define (=>string ast src locals)
   (match src
     (($ <context>) (->csp ast src))
     (($ <expression> (and ($ <csp-call>) (get! call))) (csp-transform ast (call)))
-    (($ <expression>) (csp-expression->string ast src))
-    (($ <arguments> arguments) (comma-join (map (lambda (x) (=>string ast x)) arguments)))
-    ((h t ...) (->string (map (lambda (x) (=>string ast x)) src)))
+    (($ <expression>) (csp-expression->string ast src locals))
+    (($ <arguments> arguments) (comma-join (map (lambda (x) (=>string ast x locals)) arguments)))
+    ((h t ...) (->string (map (lambda (x) (=>string ast x locals)) src)))
     (_ (->string src))))
 
 (define* (csp-transform ast src :optional (inevitable-optional? #f) (channel #f) (provided-on? #t) (locals '()))
@@ -918,7 +916,7 @@
 
        (($ <csp-if>)
         (let ((context (.context src))
-              (expression (csp-expression->string model (.expression src)))
+              (expression (csp-expression->string model (.expression src) locals))
               (then (csp-transform model (.then src) inevitable-optional? channel provided-on? locals))
               (else (csp-transform model (.else src) inevitable-optional? channel provided-on? locals)))
           (list "ifthenelse_(\\ (" context ") @ (" expression "),\n" then ",\n" else "\n)")))
@@ -977,7 +975,7 @@
        (($ <return>) "skip_")
 
        (($ <csp-return> context ($ <expression> expression))
-        (let ((expression (csp-expression->string model expression)))
+        (let ((expression (csp-expression->string model expression locals)))
           (list "returnvalue_(\\ (" context ") @ " expression ")")))
 
        (($ <semi> statement continuation)
@@ -1044,6 +1042,6 @@
 
        ((? string?) src)
 
-       (_ (throw 'match-error (format #f "~a:csp-transform: no match: ~a\n" (current-source-location) src)))))))
+       (_ (throw 'match-error (format #f "~a:csp-transform: no match: ~a\n" (current-source-location) src)))) locals)))
 
 (define (csp-queue-size) (option-ref (parse-opts (command-line)) 'queue-size 3))

@@ -18,20 +18,20 @@ true
 Checking IF_i568_IComp_(true,false) :[livelock free]
 true
 
-Checking CO_i1121_OK_NOK_(true,true)[[i568_IComp_'.x<-i569_client_'.x|x<-extensions(i569_client_')]] :[deterministic]
+Checking CO_i1031_OK_NOK_(true,true)[[i568_IComp_'.x<-i569_client_'.x|x<-extensions(i569_client_')]] :[deterministic]
 true
 
-Checking COMPLETE'({i569_client.i302_initialize,i569_client.i304_recover,i569_client.i306_perform_actions}) [F= CO_i1121_OK_NOK_(true,true)[[i568_IComp_'.x'<-i569_client_'.x'|x'<-extensions(i569_client_')]]\diff(Events,{i569_client.i302_initialize,i569_client.i304_recover,i569_client.i306_perform_actions,illegal})
+Checking COMPLETE'({i569_client.i302_initialize,i569_client.i304_recover,i569_client.i306_perform_actions}) [F= CO_i1031_OK_NOK_(true,true)[[i568_IComp_'.x'<-i569_client_'.x'|x'<-extensions(i569_client_')]]\diff(Events,{i569_client.i302_initialize,i569_client.i304_recover,i569_client.i306_perform_actions,illegal})
 true
 
-Checking STOP [T= AS_i1121_OK_NOK_(false)\diff(Events,{illegal})
+Checking STOP [T= AS_i1031_OK_NOK_(false)\diff(Events,{illegal})
 true
 
-Checking AS_i1121_OK_NOK_(false) :[deadlock free]
+Checking AS_i1031_OK_NOK_(false) :[deadlock free]
 true
 
-Checking IF_i568_IComp_(true,false)[[i568_IComp.x<-i569_client.x|x<-extensions(i569_client)]][[i568_IComp_'.x<-i569_client_'.x|x<-extensions(i569_client_')]]\{i568_IComp_'''.modeling} [F= AS_i1121_OK_NOK_(true)\diff(Events,{|illegal,i569_client,i569_client_'|})
+Checking IF_i568_IComp_(true,false)[[i568_IComp.x<-i569_client.x|x<-extensions(i569_client)]][[i568_IComp_'.x<-i569_client_'.x|x<-extensions(i569_client_')]]\{i568_IComp_'''.modeling} [F= AS_i1031_OK_NOK_(true)\diff(Events,{|illegal,i569_client,i569_client_'|})
 true
 
-Checking AS_i1121_OK_NOK_(true)\diff(Events,{|illegal,i569_client,i569_client_'|}) :[livelock free]
+Checking AS_i1031_OK_NOK_(true)\diff(Events,{|illegal,i569_client,i569_client_'|}) :[livelock free]
 true

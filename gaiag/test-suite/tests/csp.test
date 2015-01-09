@@ -21,6 +21,10 @@
 (define statement-on-p/r- (@@ (gaiag csp) statement-on-p/r-))
 (define purge-data (@@ (gaiag csp) purge-data))
 (define tail-call (@@ (gaiag csp) tail-call))
+(define csp-expression->string (@@ (gaiag csp) csp-expression->string))
+
+(define (csp-expression->string* ast expression locals)
+  (csp-expression->string (csp->gom ast) (csp->sugar expression) locals))
 
 (define (ast-transform* ast src)
   (let ((root (csp->gom ast)))
@@ -540,11 +544,11 @@ assign_int_((\\ ((s,b,c),((stack',i))) @ ((s,b,1),(stack'))),(\\ ((s,b,c),((stac
          (csp-noisy-equal?
 
           ;; from:
-          (csp-expression->string
+          (csp-expression->string*
+           (car i-ast)
 
-           i-ast
-
-           (csp->sugar '(expression (! (and (or (!= c  b) true) (== c b))))))
+           '(expression (! (and (or (!= c  b) true) (== c b))))
+           '())
 
           ;; to:
           "(not ((((c != b) or true) and (c == b))))"))
@@ -1522,6 +1526,81 @@ skip_
 )),
 (\\ P',V' @ I_'.return -> P'(V')))(\\ V' @ transition_end -> arguments_(V'),((b),(stack')))"))
 
+(define csp-field-sugar-ast
+  '(csp-if (context (s b c))
+    (expression (field s S1))
+    (action (trigger #f g (arguments)))
+    ()))
+
+(pass-if "ast-transform-field-sugar"
+         (csp-pretty-noisy-equal?
+
+          ;; from:
+          (ast-transform*
+
+           i-ast
+
+           '(if (expression (field s S1))
+                (action (trigger #f g))))
+
+          ;; via:
+          csp-field-sugar-ast))
+
+(pass-if "csp-transform-field-sugar"
+         (diff-noisy-equal?
+
+          ;; via/from:
+          (csp-transform* i-ast csp-field-sugar-ast)
+
+          ;; to
+          "ifthenelse_(\\ ((s,b,c),(stack')) @ ((s == S_S1)),
+(\\ P',V' @ i_''!g -> P'(V')),
+skip_
+)"))
+
+(define csp-field-local-sugar-ast
+  '(csp-variable
+    (context (s b c))
+    t
+    (type S #f)
+    (expression (literal #f S S1))
+    (csp-if (context (s b c))
+     (expression (field t S1))
+     (action (trigger #f g (arguments)))
+     ())))
+
+(pass-if "ast-transform-field-local-sugar"
+         (csp-pretty-noisy-equal?
+
+          ;; from:
+          (ast-transform*
+
+           i-ast
+
+           '(compound
+             (variable
+              t
+              (type S)
+              (expression (literal #f S S1)))
+             (if (expression (field t S1))
+                 (action (trigger #f g)))))
+
+          ;; via:
+          csp-field-local-sugar-ast))
+
+(pass-if "csp-transform-field-local-sugar"
+         (diff-noisy-equal?
+
+          ;; via/from:
+          (csp-transform* i-ast csp-field-local-sugar-ast)
+
+          ;; to
+          "context_(\\ ((s,b,c),(stack')) @ S_S1,
+ifthenelse_(\\ ((s,b,c),(stack')) @ ((t == S_S1)),
+(\\ P',V' @ i_''!g -> P'(V')),
+skip_
+))"))
+
 (define callvalued-c-ast
   '((interface I
       (events (in void e)
@@ -1963,20 +2042,6 @@ assign_active_(semi_(send_(u,what),recv_(u_',what)),
    (behaviour->csp (gom:interface (ast->gom guard-i-ast)))
    "(true) & (
 STOP)"))
-
-(pass-if "enum-type"
-  (noisy-equal?
-   (enum-type (gom:interface (ast->gom i-ast)) 's)
-   'S))
-
-(pass-if "enum-type"
-  (noisy-equal?
-   (enum-type (gom:interface (ast->gom i-ast)) 'q)
-   #f))
-
-
-(define (2gom ast)
-  ((compose ast->gom ast:resolve) ast))
 
 (define expression-via
   '(csp-variable (context (s b c)) t (type bool) (expression false)

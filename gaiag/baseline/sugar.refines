@@ -1,18 +1,18 @@
 Checking out/sugar.csp
 
-Checking COMPLETE'({I.e}) [F= IF_I_(true)\diff(Events,{I.e,illegal})
+Checking COMPLETE'({I.e}) [F= IF_I_(true,true)\diff(Events,{I.e,illegal})
 true
 
-Checking IF_I_(false) :[deadlock free]
+Checking IF_I_(false,false) :[deadlock free]
 true
 
-Checking IF_I_(true) :[livelock free]
+Checking IF_I_(true,false) :[livelock free]
 true
 
-Checking CO_sugar_(true,true) :[deterministic]
+Checking CO_sugar_(true,true)[[I_'.x<-i_'.x|x<-extensions(i_')]] :[deterministic]
 true
 
-Checking COMPLETE'({i.e}) [F= CO_sugar_(true,true)\diff(Events,{i.e,illegal})
+Checking COMPLETE'({i.e}) [F= CO_sugar_(true,true)[[I_'.x'<-i_'.x'|x'<-extensions(i_')]]\diff(Events,{i.e,illegal})
 true
 
 Checking STOP [T= AS_sugar_(false)\diff(Events,{illegal})
@@ -21,7 +21,7 @@ true
 Checking AS_sugar_(false) :[deadlock free]
 true
 
-Checking IF_I_(true)[[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]][[I_''.x<-i_''.x|x<-extensions(i_'')]]\{} [F= AS_sugar_(true)\diff(Events,{|illegal,i,i_',i_''|})
+Checking IF_I_(true,false)[[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]][[I_''.x<-i_''.x|x<-extensions(i_'')]]\{I_'''.modeling} [F= AS_sugar_(true)\diff(Events,{|illegal,i,i_',i_''|})
 true
 
 Checking AS_sugar_(true)\diff(Events,{|illegal,i,i_',i_''|}) :[livelock free]

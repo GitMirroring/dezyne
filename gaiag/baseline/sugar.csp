@@ -69,6 +69,17 @@ I_(((s),(stack'))) =
 I?x:{e} ->
 semi_(ifthenelse_(\ ((s),(stack')) @ ((s == Enum_False)),
 (\ P',V' @ I_''!a -> P'(V')),
+context_(\ ((s),(stack')) @ Enum_False,
+ifthenelse_(\ ((s),((stack',t))) @ ((t == Enum_True)),
+(\ P',V' @ I_''!a -> P'(V')),
+skip_
+))
+),
+(\ P',V' @ I_'.return -> P'(V')))(\ V' @ I.the_end' -> I_(V'),((s),(stack')))
+ []
+  I?x:{e} ->
+semi_(ifthenelse_(\ ((s),(stack')) @ ((s == Enum_False)),
+(\ P',V' @ I_''!a -> P'(V')),
 skip_
 ),
 (\ P',V' @ I_'.return -> P'(V')))(\ V' @ I.the_end' -> I_(V'),((s),(stack'))))
@@ -106,7 +117,11 @@ sugar_(((s),(stack'))) = transition_begin -> (
 i?x:{e} ->
 semi_(ifthenelse_(\ ((s),(stack')) @ ((s == Enum_False)),
 (\ P',V' @ i_''!a -> P'(V')),
+context_(\ ((s),(stack')) @ Enum_False,
+ifthenelse_(\ ((s),((stack',t))) @ ((t == Enum_True)),
+(\ P',V' @ i_''!a -> P'(V')),
 skip_
+))
 ),
 (\ P',V' @ I_'.return -> P'(V')))(\ V' @ transition_end -> sugar_(V'),((s),(stack'))))
 )

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -42,6 +42,10 @@ class sugar{
   public void i_e() {
     System.err.println("sugar.i_e");
     if (s == Enum.False) if (s == Enum.False) i.getOut().a.action();
+    else {
+      Enum t = Enum.False;
+      if (t == Enum.True) i.getOut().a.action();
+    }
   };
 
 }

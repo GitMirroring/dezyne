@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -42,6 +42,12 @@ namespace dezyne
     if (s == Enum::False)
     if (s == Enum::False)
     rt.defer(this, boost::bind(i.out.a));
+    else
+    {
+      sugar::Enum::type t = Enum::False;
+      if (t == Enum::True)
+      rt.defer(this, boost::bind(i.out.a));
+    }
   }
 
 
