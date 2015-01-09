@@ -384,7 +384,7 @@ csp-regression: compile $(CSP_SOURCES:%.dzn=out/%.refines)
 csp-regression-update: $(CSP_SOURCES:%.dzn=out/%.update)
 
 BROKEN =\
- exampleLOPW.dzn\
+ large-injection.dzn\
 
 DEMO_SOURCES = $(filter-out $(BROKEN) ,$(shell cd $(DEPTH)/webdemo/examples && ls *.dzn))
 csp-demo: $(DEMO_SOURCES:%.dzn=out/webdemo/%.refines)
