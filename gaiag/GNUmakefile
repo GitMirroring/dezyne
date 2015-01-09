@@ -3,7 +3,7 @@
 # Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
 # Copyright © 2014 Jan Nieuwenhuizen <jan@avatar.nl>
 # Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
-# Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+# Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Gaiag.
 #
@@ -385,7 +385,6 @@ csp-regression-update: $(CSP_SOURCES:%.dzn=out/%.update)
 
 BROKEN =\
  exampleLOPW.dzn\
- OK_NOK.dzn\
 
 DEMO_SOURCES = $(filter-out $(BROKEN) ,$(shell cd $(DEPTH)/webdemo/examples && ls *.dzn))
 csp-demo: $(DEMO_SOURCES:%.dzn=out/webdemo/%.refines)
