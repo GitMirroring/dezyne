@@ -24,8 +24,9 @@
   {
     #statements }
 #}) (gom:functions model)))#
-'()void #.model _init (#.model *self, locator* dezyne_locator) {
-  self->rt = dezyne_locator->runtime_inst;
+'()void #.model _init (#.model * self, locator* dezyne_locator) {
+  self->rt = dezyne_locator->rt;
+  runtime_set (self->rt, self);
 #((->join  ";\n")
  (map (init-member model #{
    self->#name  = #(if (not (eq? expression *unspecified*)) expression)#}) (gom:variables model)))#
@@ -36,7 +37,7 @@
       (string-join
        (append
        (map (define-on model port #{
-       self->#port .#direction .#event  = #port _#event;
+        component_connect (self, &self->#port .#direction .#event , #port _#event);
        #}) (filter gom:in? (gom:events port)))
       (list (->string (list "self->" (.name port) ".in.self = self;\n"))))))
     (filter gom:provides? (gom:ports model)))#
@@ -45,7 +46,7 @@
       (string-join
        (append
        (map (define-on model port #{
-       self->#port .#direction .#event  = #port _#event;
+       component_connect (self, &self->#port .#direction .#event , #port _#event);
        #}) (filter gom:out? (gom:events port)))
       (list (->string (list "self->" (.name port) ".out.self = self;\n"))))))
     (filter gom:requires? (gom:ports model))) }

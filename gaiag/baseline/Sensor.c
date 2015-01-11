@@ -25,28 +25,28 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
-#include <stdlib.h>
 
-static void sensor_enable(void* self_)
-{
-	Sensor* self = (Sensor*)(self_);
-	ASD_LOG("Sensor.sensor_enable");
-	//rt.defer(this, boost::bind(sensor.out.triggered));
-	(*self->sensor.out.triggered)(self->sensor.out.self);
+
+
+static void sensor_enable(void* self_) {
+  Sensor* self = (Sensor*)(self_);
+  ASD_LOG("Sensor.sensor_enable");
+  {
+  }
 }
 
-static void sensor_disable(void* self_)
-{
-	Sensor* self = (Sensor*)(self_);
-	ASD_LOG("Sensor.sensor_disable");
-	//rt.defer(this, boost::bind(sensor.out.disabled));
-	(*self->sensor.out.disabled)(self->sensor.out.self);
+static void sensor_disable(void* self_) {
+  Sensor* self = (Sensor*)(self_);
+  ASD_LOG("Sensor.sensor_disable");
+  {
+  }
 }
 
-void Sensor_init(Sensor* self, locator* dezyne_locator)
-{
-	self->rt = dezyne_locator->runtime_inst;
-	self->sensor.in.enable = sensor_enable;
-	self->sensor.in.disable = sensor_disable;
-	self->sensor.in.self = self;
+void Sensor_init (Sensor* self, locator* dezyne_locator) {
+  self->rt = dezyne_locator->rt;
+  runtime_set (self->rt, self);
+
+  component_connect (self, &self->sensor.in.enable, sensor_enable);
+  component_connect (self, &self->sensor.in.disable, sensor_disable);
+  self->sensor.in.self = self;
 }

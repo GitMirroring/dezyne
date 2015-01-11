@@ -27,7 +27,8 @@
 
 typedef struct
 {
-	runtime* runtime_inst;
+	runtime* rt;
 } locator;
-void locator_init(locator* self);
-#endif
+void locator_init(locator* self, runtime* rt);
+
+#endif // LOCATOR_H

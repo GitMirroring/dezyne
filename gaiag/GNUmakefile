@@ -174,6 +174,7 @@ c: compile c-alarm c-inject c-dataparam c-regression
 
 c-alarm:
 	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c/* .
+	[ -f /usr/include/callback.h ] || sudo apt-get install libffcall1-dev
 	cd out && for file in\
 		examples/AlarmSystem.dzn\
 		examples/regression/Alarm.dzn\
@@ -184,10 +185,9 @@ c-alarm:
 		examples/Siren.dzn;\
 	do $(shell pwd)/gaiag -l c $$file; done
 
-	#cp baseline/*.c baseline/*.h out
 	cd out && ln -s ../examples/alarm.c .
-	cd out && for i in *c; do ccache gcc -c $$i; done && gcc -o $@ *.o && ./$@ > $@.trace
-	$(diff) baseline/$@.trace out
+	-	for i in out/*c; do ccache gcc -g -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o -lcallback && out/$@ > out/$@.trace
+	-$(diff) baseline/$@.trace out
 
 	$(diff) baseline/IConsole.h out
 	$(diff) baseline/ISensor.h out
@@ -248,7 +248,7 @@ c++-alarm:
 	do $(shell pwd)/gaiag -l c++ $$file; done
 
 	cd out && ln -s ../examples/alarm.cc .
-	cd out && for i in *cc; do ccache g++ -c $$i; done && g++ -o $@ *.o && ./$@ > $@.trace
+	cd out && for i in *cc; do ccache g++ -g -c $$i; done && g++ -o $@ *.o && ./$@ > $@.trace
 	$(diff) baseline/$@.trace out
 
 	$(diff) baseline/IConsole.hh out

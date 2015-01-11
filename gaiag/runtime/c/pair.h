@@ -20,33 +20,12 @@
 //
 // Code:
 
-#include "Siren.h"
+#ifndef PAIR_H
+#define PAIR_H
 
-#include "locator.h"
-#include "runtime.h"
-#include <assert.h>
+typedef struct {
+  void* first;
+  void* second;
+} pair;
 
-
-
-static void siren_turnon(void* self_) {
-  Siren* self = (Siren*)(self_);
-  ASD_LOG("Siren.siren_turnon");
-  {
-  }
-}
-
-static void siren_turnoff(void* self_) {
-  Siren* self = (Siren*)(self_);
-  ASD_LOG("Siren.siren_turnoff");
-  {
-  }
-}
-
-void Siren_init (Siren* self, locator* dezyne_locator) {
-  self->rt = dezyne_locator->rt;
-  runtime_set (self->rt, self);
-
-  component_connect (self, &self->siren.in.turnon, siren_turnon);
-  component_connect (self, &self->siren.in.turnoff, siren_turnoff);
-  self->siren.in.self = self;
-}
+#endif // PAIR_H

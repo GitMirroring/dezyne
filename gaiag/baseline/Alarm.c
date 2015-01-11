@@ -27,104 +27,106 @@
 #include <assert.h>
 
 typedef enum {
-	States_Disarmed, States_Armed, States_Triggered, States_Disarming
+  States_Disarmed, States_Armed, States_Triggered, States_Disarming
 } States;
 
+
 static void console_arm(void* self_) {
-	Alarm* self = (Alarm*)(self_);
-	ASD_LOG("Alarm.console_arm");
-	if (self->state == States_Disarmed) {
-		(*self->sensor.in.enable)(self->sensor.in.self);
-		self->state = States_Armed;
-	}
-	else if (self->state == States_Armed) {
-		assert(false);
-	}
-	else if (self->state == States_Disarming) {
-		assert(false);
-	}
-	else if (self->state == States_Triggered) {
-		assert(false);
-	}
+  Alarm* self = (Alarm*)(self_);
+  ASD_LOG("Alarm.console_arm");
+  if (self->state == States_Disarmed){
+    (*self->sensor.in.enable)(self->sensor.in.self);
+    self->state = States_Armed;
+  }
+  else if (self->state == States_Armed){
+    assert(false);
+  }
+  else if (self->state == States_Disarming){
+    assert(false);
+  }
+  else if (self->state == States_Triggered){
+    assert(false);
+  }
 }
 
 static void console_disarm(void* self_) {
-	Alarm* self = (Alarm*)(self_);
-	ASD_LOG("Alarm.console_disarm");
-	if (self->state == States_Disarmed) {
-		assert(false);
-	}
-	else if (self->state == States_Armed) {
-		(*self->sensor.in.disable)(self->sensor.in.self);
-		self->state = States_Disarming;
-	}
-	else if (self->state == States_Disarming) {
-		assert(false);
-	}
-	else if (self->state == States_Triggered) {
-		(*self->sensor.in.disable)(self->sensor.in.self);
-                (*self->siren.in.turnoff)(self->siren.in.self);
-		self->sounding = false;
-		self->state = States_Disarming;
-	}
+  Alarm* self = (Alarm*)(self_);
+  ASD_LOG("Alarm.console_disarm");
+  if (self->state == States_Disarmed){
+    assert(false);
+  }
+  else if (self->state == States_Armed){
+    (*self->sensor.in.disable)(self->sensor.in.self);
+    self->state = States_Disarming;
+  }
+  else if (self->state == States_Disarming){
+    assert(false);
+  }
+  else if (self->state == States_Triggered){
+    (*self->sensor.in.disable)(self->sensor.in.self);
+    (*self->siren.in.turnoff)(self->siren.in.self);
+    self->sounding = false;
+    self->state = States_Disarming;
+  }
 }
 
 static void sensor_triggered(void* self_) {
-	Alarm* self = (Alarm*)(self_);
-	ASD_LOG("Alarm.sensor_triggered");
-	if (self->state == States_Disarmed) {
-		assert(false);
-	}
-	else if (self->state == States_Armed) {
-		//rt.defer(this, boost::bind(console.out.detected));
-		(*self->siren.in.turnon)(self->siren.in.self);
-		self->sounding = true;
-		self->state = States_Triggered;
-	}
-	else if (self->state == States_Disarming) {
-          {
-          }
-	}
-	else if (self->state == States_Triggered) {
-		assert(false);
-	}
+  Alarm* self = (Alarm*)(self_);
+  ASD_LOG("Alarm.sensor_triggered");
+  if (self->state == States_Disarmed){
+    assert(false);
+  }
+  else if (self->state == States_Armed){
+    runtime_defer (self->rt, self, self->console.out.detected); //));
+    (*self->siren.in.turnon)(self->siren.in.self);
+    self->sounding = true;
+    self->state = States_Triggered;
+  }
+  else if (self->state == States_Disarming){
+    {
+    }
+  }
+  else if (self->state == States_Triggered){
+    assert(false);
+  }
 }
 
 static void sensor_disabled(void* self_) {
-	Alarm* self = (Alarm*)(self_);
-	ASD_LOG("Alarm.sensor_disabled");
-	if (self->state == States_Disarmed) {
-		assert(false);
-	}
-	else if (self->state == States_Armed) {
-		assert(false);
-	}
-	else if (self->state == States_Disarming) {
-		if (self->sounding) {
-			//rt.defer(this, boost::bind(console.out.deactivated));
-                        (*self->siren.in.turnoff)(self->siren.in.self);
-			self->state = States_Disarmed;
-			self->sounding = false;
-		}
-		else {
-			//rt.defer(this, boost::bind(console.out.deactivated));
-			self->state = States_Disarmed;
-		}
-	}
-	else if (self->state == States_Triggered) {
-		assert(false);
-	}
+  Alarm* self = (Alarm*)(self_);
+  ASD_LOG("Alarm.sensor_disabled");
+  if (self->state == States_Disarmed){
+    assert(false);
+  }
+  else if (self->state == States_Armed){
+    assert(false);
+  }
+  else if (self->state == States_Disarming){
+    if (self->sounding){
+      runtime_defer (self->rt, self, self->console.out.deactivated); //));
+      (*self->siren.in.turnoff)(self->siren.in.self);
+      self->state = States_Disarmed;
+      self->sounding = false;
+    }
+    else {
+      runtime_defer (self->rt, self, self->console.out.deactivated); //));
+      self->state = States_Disarmed;
+    }
+  }
+  else if (self->state == States_Triggered){
+    assert(false);
+  }
 }
 
-void Alarm_init(Alarm* self, locator* dezyne_locator) {
-	self->rt = dezyne_locator->runtime_inst;
-	self->state = States_Disarmed;
-	self->sounding = false;
-	self->console.in.arm = console_arm;
-	self->console.in.disarm = console_disarm;
-	self->console.in.self = self;
-	self->sensor.out.triggered = sensor_triggered;
-	self->sensor.out.disabled = sensor_disabled;
-	self->sensor.out.self = self;
-	self->siren.out.self = self;
+void Alarm_init (Alarm* self, locator* dezyne_locator) {
+  self->rt = dezyne_locator->rt;
+  runtime_set (self->rt, self);
+  self->state = States_Disarmed;
+  self->sounding = false;
+  component_connect (self, &self->console.in.arm, console_arm);
+  component_connect (self, &self->console.in.disarm, console_disarm);
+  self->console.in.self = self;
+  component_connect (self, &self->sensor.out.triggered, sensor_triggered);
+  component_connect (self, &self->sensor.out.disabled, sensor_disabled);
+  self->sensor.out.self = self;
+  self->siren.out.self = self;
 }

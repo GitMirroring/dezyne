@@ -20,33 +20,26 @@
 //
 // Code:
 
-#include "Siren.h"
+#ifndef QUEUE_H
+#define QUEUE_H
 
-#include "locator.h"
-#include "runtime.h"
-#include <assert.h>
+#include <stdbool.h>
 
+typedef struct Node {
+    void* item;
+    struct Node* next;
+} Node;
 
+typedef struct {
+    Node* head;
+    Node* tail;
+    int size;
+} queue;
 
-static void siren_turnon(void* self_) {
-  Siren* self = (Siren*)(self_);
-  ASD_LOG("Siren.siren_turnon");
-  {
-  }
-}
+bool queue_empty (queue*);
+void queue_push (queue*, void*);
+int queue_size (queue*);
+void* queue_front (queue*);
+void* queue_pop (queue*);
 
-static void siren_turnoff(void* self_) {
-  Siren* self = (Siren*)(self_);
-  ASD_LOG("Siren.siren_turnoff");
-  {
-  }
-}
-
-void Siren_init (Siren* self, locator* dezyne_locator) {
-  self->rt = dezyne_locator->rt;
-  runtime_set (self->rt, self);
-
-  component_connect (self, &self->siren.in.turnon, siren_turnon);
-  component_connect (self, &self->siren.in.turnoff, siren_turnoff);
-  self->siren.in.self = self;
-}
+#endif // QUEUE_H

@@ -26,5 +26,6 @@
 #include <stdlib.h>
 
 
-void locator_init(locator* self) {
+void locator_init(locator* self, runtime* rt) {
+  self->rt = rt;
 }

@@ -23,19 +23,28 @@
 #ifndef RUNTIME_H
 #define RUNTIME_H
 
-#include <stdio.h>
 #include <stdbool.h>
+#include <stdio.h>
 
-typedef struct
-{
-	int dummy;
+#include "pair.h"
+#include "map.h"
+
+typedef struct {
+  map map;
 } runtime;
 
-bool runtime_handling(void* scope);
-void runtime_flush(void* scope);
-void runtime_defer(void* scope, void *event);
-void runtime_handle_event(void* scope, void* event);
+void runtime_init (runtime*);
 
-#define ASD_LOG(msg) printf("%s\n", msg)
+bool* runtime_handling (runtime* self, void* scope);
+void runtime_flush (runtime* self, void* scope);
+void runtime_defer (runtime* self, void* scope, void *event);
+void runtime_handle_event (runtime* self, void* scope, void* event);
+void runtime_set (runtime* self, void* scope);
+pair* runtime_get (runtime* self, void* scope);
+
+void component_connect_in (void* self, void (**f)(void*), void* event);
+void component_connect_out (void* self, void (**f)(void*), void* event);
+
+#define ASD_LOG(msg) printf ("%s\n", msg)
 
 #endif

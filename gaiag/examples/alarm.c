@@ -38,14 +38,19 @@ static void deactivated()
 int main()
 {
   runtime dezyne_runtime;
+  runtime_init (&dezyne_runtime);
+
   locator dezyne_locator;
-  locator_init(&dezyne_locator);
+  locator_init (&dezyne_locator, &dezyne_runtime);
 
   AlarmSystem alarmsystem;
   AlarmSystem_init(&alarmsystem, &dezyne_locator);
 
-  alarmsystem.console.out.detected = detected;
-  alarmsystem.console.out.deactivated = deactivated;
+  //alarmsystem.console.out.detected = detected;
+  alarmsystem.alarm.console.out.detected = detected;
+
+  //alarmsystem.console.out.deactivated = deactivated;
+  alarmsystem.alarm.console.out.deactivated = deactivated;
 
   alarmsystem.console.in.arm(&alarmsystem);
   alarmsystem.sensor.sensor.out.triggered(&alarmsystem);

@@ -1,1 +1,1 @@
-#space // rt.defer(this, boost::bind(#port .#direction .#event #comma #arguments));
+#space runtime_defer (self->rt, self, self->#port .#direction .#event); //#comma #arguments));
