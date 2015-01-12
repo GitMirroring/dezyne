@@ -174,7 +174,6 @@ c: compile c-alarm c-inject c-dataparam c-regression
 
 c-alarm:
 	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c/* .
-	[ -f /usr/include/callback.h ] || sudo apt-get install libffcall1-dev
 	cd out && for file in\
 		examples/AlarmSystem.dzn\
 		examples/regression/Alarm.dzn\
@@ -186,8 +185,8 @@ c-alarm:
 	do $(shell pwd)/gaiag -l c $$file; done
 
 	cd out && ln -s ../examples/alarm.c .
-	-	for i in out/*c; do ccache gcc -g -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o -lcallback && out/$@ > out/$@.trace
-	-$(diff) baseline/$@.trace out
+	for i in out/*c; do ccache gcc -g -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o && out/$@ > out/$@.trace
+	$(diff) baseline/$@.trace out
 
 	$(diff) baseline/IConsole.h out
 	$(diff) baseline/ISensor.h out

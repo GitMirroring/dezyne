@@ -28,25 +28,33 @@
 
 
 
-static void siren_turnon(void* self_) {
+static void _siren_turnon(void* self_) {
   Siren* self = (Siren*)(self_);
-  ASD_LOG("Siren.siren_turnon");
+  DZN_LOG("Siren.siren_turnon");
   {
   }
 }
 
-static void siren_turnoff(void* self_) {
+static void _siren_turnoff(void* self_) {
   Siren* self = (Siren*)(self_);
-  ASD_LOG("Siren.siren_turnoff");
+  DZN_LOG("Siren.siren_turnoff");
   {
   }
+}
+
+static void siren_turnon(void* self) {
+  runtime_event (self, _siren_turnon);
+}
+
+static void siren_turnoff(void* self) {
+  runtime_event (self, _siren_turnoff);
 }
 
 void Siren_init (Siren* self, locator* dezyne_locator) {
   self->rt = dezyne_locator->rt;
   runtime_set (self->rt, self);
 
-  component_connect (self, &self->siren.in.turnon, siren_turnon);
-  component_connect (self, &self->siren.in.turnoff, siren_turnoff);
+  self->siren.in.turnon = siren_turnon;
+  self->siren.in.turnoff = siren_turnoff;
   self->siren.in.self = self;
 }

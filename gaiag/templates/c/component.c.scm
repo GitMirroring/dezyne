@@ -9,11 +9,22 @@
 #(map
   (lambda (port)
     (map (define-on model port #{
-  static #return-type  #port _#event (void* self_) {
+  static #return-type  _#port _#event (void* self_) {
     #.model * self = (#.model *)(self_);
-    ASD_LOG("#model .#port _#event");
+    DZN_LOG("#model .#port _#event");
     #statement #
     (if (not (eq? type 'void))
+(list "    return reply_" reply-type "_" reply-name ";\n"
+      )) }
+
+#}) (filter (gom:dir-matches? port) (gom:events port))))
+  (gom:ports model))#
+(map
+  (lambda (port)
+    (map (define-on model port #{
+  static #return-type  #port _#event (void* self) {
+    runtime_event (self, _#port _#event);
+#(if (not (eq? type 'void))
 (list "    return reply_" reply-type "_" reply-name ";\n"
       )) }
 
@@ -37,7 +48,7 @@
       (string-join
        (append
        (map (define-on model port #{
-        component_connect (self, &self->#port .#direction .#event , #port _#event);
+        self->#port .#direction .#event  = #port _#event;
        #}) (filter gom:in? (gom:events port)))
       (list (->string (list "self->" (.name port) ".in.self = self;\n"))))))
     (filter gom:provides? (gom:ports model)))#
@@ -46,7 +57,7 @@
       (string-join
        (append
        (map (define-on model port #{
-       component_connect (self, &self->#port .#direction .#event , #port _#event);
+        self->#port .#direction .#event  = #port _#event;
        #}) (filter gom:out? (gom:events port)))
       (list (->string (list "self->" (.name port) ".out.self = self;\n"))))))
     (filter gom:requires? (gom:ports model))) }

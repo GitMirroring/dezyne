@@ -27,12 +27,12 @@
 
 static void detected()
 {
-  ASD_LOG("Console.detected");
+  DZN_LOG("Console.detected");
 }
 
 static void deactivated()
 {
-  ASD_LOG("Console.deactivated");
+  DZN_LOG("Console.deactivated");
 }
 
 int main()

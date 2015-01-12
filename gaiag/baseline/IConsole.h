@@ -27,17 +27,19 @@ typedef struct IConsole IConsole;
 
 struct IConsole {
 
-	struct {
-		void (*arm)(void* self);
-		void (*disarm)(void* self);
-		void* self;
-	} in;
+  struct {
+    void (*arm)(void* self);
+    void (*disarm)(void* self);
 
-	struct {
-		void (*detected)(void* self);
-		void (*deactivated)(void* self);
-		void* self;
-	} out;
+    void* self;
+  } in;
 
+  struct {
+    void (*detected) (void* self);
+    void (*deactivated) (void* self);
+
+    void* self;
+  } out;
 };
+
 #endif // DEZYNE_ICONSOLE_H

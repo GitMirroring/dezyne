@@ -20,20 +20,22 @@
 //
 // Code:
 
-#ifndef DEZYNE_SIREN_HH
-#define DEZYNE_SIREN_HH
+#ifndef DEZYNE_SIREN_H
+#define DEZYNE_SIREN_H
 
 #include "ISiren.h"
+
 
 #include "runtime.h"
 #include "locator.h"
 
-typedef struct
-{
-	runtime* rt;
-	int state;
-	ISiren siren;
+
+typedef struct {
+  runtime* rt;
+  ISiren siren;
 
 } Siren;
+
 void Siren_init(Siren* self, locator* dezyne_locator);
-#endif // DEZYNE_SIREN_HH
+
+#endif // DEZYNE_SIREN_H

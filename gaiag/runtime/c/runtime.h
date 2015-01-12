@@ -34,17 +34,10 @@ typedef struct {
 } runtime;
 
 void runtime_init (runtime*);
-
-bool* runtime_handling (runtime* self, void* scope);
 void runtime_flush (runtime* self, void* scope);
 void runtime_defer (runtime* self, void* scope, void *event);
-void runtime_handle_event (runtime* self, void* scope, void* event);
-void runtime_set (runtime* self, void* scope);
-pair* runtime_get (runtime* self, void* scope);
+void runtime_event (void* scope, void* event);
 
-void component_connect_in (void* self, void (**f)(void*), void* event);
-void component_connect_out (void* self, void (**f)(void*), void* event);
-
-#define ASD_LOG(msg) printf ("%s\n", msg)
+#define DZN_LOG(msg) printf ("%s\n", msg)
 
 #endif

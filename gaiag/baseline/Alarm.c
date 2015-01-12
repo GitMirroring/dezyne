@@ -31,9 +31,9 @@ typedef enum {
 } States;
 
 
-static void console_arm(void* self_) {
+static void _console_arm(void* self_) {
   Alarm* self = (Alarm*)(self_);
-  ASD_LOG("Alarm.console_arm");
+  DZN_LOG("Alarm.console_arm");
   if (self->state == States_Disarmed){
     (*self->sensor.in.enable)(self->sensor.in.self);
     self->state = States_Armed;
@@ -49,9 +49,9 @@ static void console_arm(void* self_) {
   }
 }
 
-static void console_disarm(void* self_) {
+static void _console_disarm(void* self_) {
   Alarm* self = (Alarm*)(self_);
-  ASD_LOG("Alarm.console_disarm");
+  DZN_LOG("Alarm.console_disarm");
   if (self->state == States_Disarmed){
     assert(false);
   }
@@ -70,9 +70,9 @@ static void console_disarm(void* self_) {
   }
 }
 
-static void sensor_triggered(void* self_) {
+static void _sensor_triggered(void* self_) {
   Alarm* self = (Alarm*)(self_);
-  ASD_LOG("Alarm.sensor_triggered");
+  DZN_LOG("Alarm.sensor_triggered");
   if (self->state == States_Disarmed){
     assert(false);
   }
@@ -91,9 +91,9 @@ static void sensor_triggered(void* self_) {
   }
 }
 
-static void sensor_disabled(void* self_) {
+static void _sensor_disabled(void* self_) {
   Alarm* self = (Alarm*)(self_);
-  ASD_LOG("Alarm.sensor_disabled");
+  DZN_LOG("Alarm.sensor_disabled");
   if (self->state == States_Disarmed){
     assert(false);
   }
@@ -117,16 +117,32 @@ static void sensor_disabled(void* self_) {
   }
 }
 
+static void console_arm(void* self) {
+  runtime_event (self, _console_arm);
+}
+
+static void console_disarm(void* self) {
+  runtime_event (self, _console_disarm);
+}
+
+static void sensor_triggered(void* self) {
+  runtime_event (self, _sensor_triggered);
+}
+
+static void sensor_disabled(void* self) {
+  runtime_event (self, _sensor_disabled);
+}
+
 void Alarm_init (Alarm* self, locator* dezyne_locator) {
   self->rt = dezyne_locator->rt;
   runtime_set (self->rt, self);
   self->state = States_Disarmed;
   self->sounding = false;
-  component_connect (self, &self->console.in.arm, console_arm);
-  component_connect (self, &self->console.in.disarm, console_disarm);
+  self->console.in.arm = console_arm;
+  self->console.in.disarm = console_disarm;
   self->console.in.self = self;
-  component_connect (self, &self->sensor.out.triggered, sensor_triggered);
-  component_connect (self, &self->sensor.out.disabled, sensor_disabled);
+  self->sensor.out.triggered = sensor_triggered;
+  self->sensor.out.disabled = sensor_disabled;
   self->sensor.out.self = self;
   self->siren.out.self = self;
 }

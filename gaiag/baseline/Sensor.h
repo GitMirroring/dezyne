@@ -25,13 +25,15 @@
 
 #include "ISensor.h"
 
+
 #include "runtime.h"
 #include "locator.h"
 
-typedef struct 
-{
-	runtime* rt;
-	ISensor sensor;
+
+typedef struct {
+  runtime* rt;
+  ISensor sensor;
+
 } Sensor;
 
 void Sensor_init(Sensor* self, locator* dezyne_locator);

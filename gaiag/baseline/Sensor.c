@@ -28,25 +28,33 @@
 
 
 
-static void sensor_enable(void* self_) {
+static void _sensor_enable(void* self_) {
   Sensor* self = (Sensor*)(self_);
-  ASD_LOG("Sensor.sensor_enable");
+  DZN_LOG("Sensor.sensor_enable");
   {
   }
 }
 
-static void sensor_disable(void* self_) {
+static void _sensor_disable(void* self_) {
   Sensor* self = (Sensor*)(self_);
-  ASD_LOG("Sensor.sensor_disable");
+  DZN_LOG("Sensor.sensor_disable");
   {
   }
+}
+
+static void sensor_enable(void* self) {
+  runtime_event (self, _sensor_enable);
+}
+
+static void sensor_disable(void* self) {
+  runtime_event (self, _sensor_disable);
 }
 
 void Sensor_init (Sensor* self, locator* dezyne_locator) {
   self->rt = dezyne_locator->rt;
   runtime_set (self->rt, self);
 
-  component_connect (self, &self->sensor.in.enable, sensor_enable);
-  component_connect (self, &self->sensor.in.disable, sensor_disable);
+  self->sensor.in.enable = sensor_enable;
+  self->sensor.in.disable = sensor_disable;
   self->sensor.in.self = self;
 }

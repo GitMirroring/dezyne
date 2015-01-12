@@ -27,17 +27,21 @@
 #include "Sensor.h"
 #include "Siren.h"
 
+
 #include "IConsole.h"
+
 
 #include "locator.h"
 
 typedef struct {
-	Alarm alarm;
-	Sensor sensor;
-	Siren siren;
+  Alarm alarm;
+  Sensor sensor;
+  Siren siren;
 
-	IConsole console;
+  IConsole console;
 
 } AlarmSystem;
-void AlarmSystem_init(AlarmSystem* self, locator* dezyne_locator);
+
+void AlarmSystem_init(AlarmSystem*self, locator* dezyne_locator);
+
 #endif // DEZYNE_ALARMSYSTEM_H

@@ -92,7 +92,7 @@ runtime_defer (runtime* self, void* scope, void *event)
   queue_push (p->second, event);
 }
 
-void 
+static void 
 runtime_handle_event (runtime* self, void* scope, void* event)
 {
   bool* handle = runtime_handling (self, scope);
@@ -110,29 +110,12 @@ runtime_handle_event (runtime* self, void* scope, void* event)
 }
 
 typedef struct {
-  void (*callback)();
-  void* self;
-} closure;
-
-
-typedef struct {
   runtime* rt;
-} Component;
+} component;
 
-static void
-handle_event (closure* c)
+void 
+runtime_event (void* scope, void* event)
 {
-  Component* self = (Component*)(c->self);
-
-  c->callback (c->self);
-  runtime_flush (self->rt, c->self);
-}
-
-void
-component_connect (void* self, void (**f)(void*), void* event)
-{
-  closure* event_closure = malloc (sizeof (closure));
-  event_closure->callback = event;
-  event_closure->self = self;
-  *f = (void (*) (void*)) alloc_callback (handle_event, event_closure);
+  component* c = (component*)scope;
+  runtime_handle_event (c->rt, scope, event);
 }
