@@ -1,1 +1,1 @@
-#type #(if out? "&")
+#type #(if out? "*")

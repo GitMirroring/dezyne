@@ -1,1 +1,1 @@
-reply_#type _#name  = #expression;
+self->reply_#type _#name  = #expression;

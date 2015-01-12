@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -319,6 +319,7 @@
               (event (gom:event interface event-name))
               (direction (.direction event))
               (comma (if (pair? (.elements arguments)) ", " ""))
+              (number (number->string (length (.elements arguments))))
               (arguments (->code model arguments)))
          (snippet (symbol-append 'action- direction)
                   `((space ,space)
@@ -326,6 +327,7 @@
                     (direction ,direction)
                     (event ,event-name)
                     (arguments ,arguments)
+                    (number ,number)
                     (comma ,comma)))))
       (($ <reply> (and ($ <expression> ($ <literal> scope type field)) (get! expression)))
        (snippet 'reply
@@ -445,11 +447,13 @@
             (name (.type port))
             (interface (gom:import name))
             (event (gom:event interface event-name))
+            (comma (if (pair? (.elements arguments)) ", " ""))
             (arguments (->code model arguments)))
        (snippet 'action-expression
                 `((port ,port-name)
                   (direction ,(.direction event))
                   (event ,event-name)
+                  (comma ,comma)
                   (arguments ,arguments)))))
     (($ <var> (and (? member?) (get! identifier)))
      (snippet 'member `((identifier ,(identifier)))))
@@ -507,8 +511,10 @@
          (signature (.signature event))
          (type ((compose .name .type) signature))
          (return-type (return-type #f event))
-         (parameters (code:->code model (.parameters signature))))
-    (animate snippet `((name ,name) (parameters ,parameters) (return-type ,return-type)))))
+         (parameters (.parameters signature))
+         (comma (if (pair? (.elements parameters)) ", " ""))
+         (parameters (code:->code model parameters)))
+    (animate snippet `((name ,name) (comma ,comma) (parameters ,parameters) (return-type ,return-type)))))
 
 (define ((define-function model snippet) function)
   (let* ((signature (.signature function))
@@ -529,7 +535,9 @@
   (let* ((signature (.signature event))
          (type (.type signature))
          (return-type (return-type port event))
-         (parameters (code:->code model (.parameters signature)))
+         (parameters (.parameters signature))
+         (comma (if (pair? (.elements parameters)) ", " ""))
+         (parameters (code:->code model parameters))
          (parameter-types (map (lambda (parameter)
                                  (animate-snippet 'parameter-type `((type ,(->code model (.type parameter))) (out? ,(member (.direction parameter) '(inout out))))))
                                ((compose .elements .parameters) signature)))
@@ -549,6 +557,7 @@
                        (event ,(.name event))
                        (direction ,(.direction event))
                        (model ,(.name model))
+                       (comma ,comma)
                        (parameters ,parameters)
                        (parameter-types ,parameter-types)
                        (reply-name ,reply-name)

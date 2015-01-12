@@ -1,1 +1,1 @@
-#type #(if out? "&")  #alias  = #name;
+#type #(if out? "*")  #alias  = #name;
