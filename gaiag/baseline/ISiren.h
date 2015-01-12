@@ -25,19 +25,20 @@
 
 typedef struct ISiren ISiren;
 
+
+
 struct ISiren {
+	struct {
+		void (*turnon)(void* self );
+		void (*turnoff)(void* self );
 
-  struct {
-    void (*turnon)(void* self);
-    void (*turnoff)(void* self);
+		void* self;
+	} in;
 
-    void* self;
-  } in;
+	struct {
 
-  struct {
-
-    void* self;
-  } out;
+		void* self;
+	} out;
 };
 
 #endif // DEZYNE_ISIREN_H

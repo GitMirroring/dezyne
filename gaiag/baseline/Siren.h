@@ -31,11 +31,13 @@
 
 
 typedef struct {
-  runtime* rt;
-  ISiren siren;
+	runtime* rt;
+	ISiren siren;
 
 } Siren;
 
 void Siren_init(Siren* self, locator* dezyne_locator);
+
+
 
 #endif // DEZYNE_SIREN_H

@@ -18,11 +18,12 @@ typedef struct {
     (map (init-port #{
 #interface  #name;
 #}) ((compose .elements .ports) model))
-#
-(map (define-function model #{
-  #return-type  #name (#parameters);
-#}) (gom:functions model))} #.model;
+} #.model;
 
 void #.model _init(#.model * self, locator* dezyne_locator);
+
+#(map (define-function model #{
+  #return-type  #name (#parameters);
+#}) (gom:functions model))
 
 ##endif // DEZYNE_#.COMPONENT _H

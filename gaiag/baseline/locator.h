@@ -20,27 +20,15 @@
 //
 // Code:
 
-#ifndef DEZYNE_ICONSOLE_H
-#define DEZYNE_ICONSOLE_H
+#ifndef LOCATOR_H
+#define LOCATOR_H
 
-typedef struct IConsole IConsole;
+#include "runtime.h"
 
+typedef struct
+{
+	runtime* rt;
+} locator;
+void locator_init(locator* self, runtime* rt);
 
-
-struct IConsole {
-	struct {
-		void (*arm)(void* self );
-		void (*disarm)(void* self );
-
-		void* self;
-	} in;
-
-	struct {
-		void (*detected) (void* self );
-		void (*deactivated) (void* self );
-
-		void* self;
-	} out;
-};
-
-#endif // DEZYNE_ICONSOLE_H
+#endif // LOCATOR_H

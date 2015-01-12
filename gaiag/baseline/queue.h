@@ -20,27 +20,26 @@
 //
 // Code:
 
-#ifndef DEZYNE_ICONSOLE_H
-#define DEZYNE_ICONSOLE_H
+#ifndef QUEUE_H
+#define QUEUE_H
 
-typedef struct IConsole IConsole;
+#include <stdbool.h>
 
+typedef struct Node {
+    void* item;
+    struct Node* next;
+} Node;
 
+typedef struct {
+    Node* head;
+    Node* tail;
+    int size;
+} queue;
 
-struct IConsole {
-	struct {
-		void (*arm)(void* self );
-		void (*disarm)(void* self );
+bool queue_empty (queue*);
+void queue_push (queue*, void*);
+int queue_size (queue*);
+void* queue_front (queue*);
+void* queue_pop (queue*);
 
-		void* self;
-	} in;
-
-	struct {
-		void (*detected) (void* self );
-		void (*deactivated) (void* self );
-
-		void* self;
-	} out;
-};
-
-#endif // DEZYNE_ICONSOLE_H
+#endif // QUEUE_H

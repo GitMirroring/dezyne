@@ -20,27 +20,43 @@
 //
 // Code:
 
-#ifndef DEZYNE_ICONSOLE_H
-#define DEZYNE_ICONSOLE_H
+#ifndef DEZYNE_IDATAPARAM_H
+#define DEZYNE_IDATAPARAM_H
 
-typedef struct IConsole IConsole;
+typedef struct IDataparam IDataparam;
+
+typedef enum {
+	Status_Yes, Status_No
+} Status;
 
 
-
-struct IConsole {
+struct IDataparam {
 	struct {
-		void (*arm)(void* self );
-		void (*disarm)(void* self );
+		void (*e0)(void* self );
+		int (*e0r)(void* self );
+		void (*e)(void* self , int i);
+		int (*er)(void* self , int i);
+		int (*eer)(void* self , int i, int j);
+		void (*eo)(void* self , int* i);
+		void (*eoo)(void* self , int* i, int* j);
+		void (*eio)(void* self , int i, int* j);
+		void (*eio2)(void* self , int* i);
+		int (*eor)(void* self , int* i);
+		int (*eoor)(void* self , int* i, int* j);
+		int (*eior)(void* self , int i, int* j);
+		int (*eio2r)(void* self , int* i);
 
 		void* self;
 	} in;
 
 	struct {
-		void (*detected) (void* self );
-		void (*deactivated) (void* self );
+		void (*a0) (void* self );
+		void (*a) (void* self , int i);
+		void (*aa) (void* self , int i, int j);
+		void (*a6) (void* self , int a0, int a1, int a2, int a3, int a4, int a5);
 
 		void* self;
 	} out;
 };
 
-#endif // DEZYNE_ICONSOLE_H
+#endif // DEZYNE_IDATAPARAM_H

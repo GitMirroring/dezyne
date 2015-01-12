@@ -48,7 +48,8 @@
 
 (define (ast-> ast)
   (let ((gom ((gom:register code:gom) ast #t)))
-    (map dump ((gom:filter <model>) gom)))
+    (parameterize ((indenter (lambda () (indent 1))))
+      (map dump ((gom:filter <model>) gom))))
   "")
 
 (define-method (dump (o <interface>))

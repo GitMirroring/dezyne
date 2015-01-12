@@ -25,36 +25,79 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
+#include <stdlib.h>
+#include <string.h>
 
 
 
-static void _sensor_enable(void* self_) {
-  Sensor* self = (Sensor*)(self_);
-  DZN_LOG("Sensor.sensor_enable");
-  {
-  }
+typedef struct {Sensor* self;} args_sensor_triggered;
+typedef struct {Sensor* self;} args_sensor_disabled;
+
+
+static void opaque_sensor_triggered(void* args) {
+	args_sensor_triggered *a = args;
+	void (*f)(void*) = a->self->sensor.out.triggered;
+	f(a->self);
 }
 
-static void _sensor_disable(void* self_) {
-  Sensor* self = (Sensor*)(self_);
-  DZN_LOG("Sensor.sensor_disable");
-  {
-  }
+static void opaque_sensor_disabled(void* args) {
+	args_sensor_disabled *a = args;
+	void (*f)(void*) = a->self->sensor.out.disabled;
+	f(a->self);
 }
 
-static void sensor_enable(void* self) {
-  runtime_event (self, _sensor_enable);
+
+
+static void internal_sensor_enable(void* self_) {
+	Sensor* self = (Sensor*)(self_);
+	(void)self;
+	DZN_LOG("Sensor.sensor_enable");
+	{
+	}
 }
 
-static void sensor_disable(void* self) {
-  runtime_event (self, _sensor_disable);
+static void internal_sensor_disable(void* self_) {
+	Sensor* self = (Sensor*)(self_);
+	(void)self;
+	DZN_LOG("Sensor.sensor_disable");
+	{
+	}
 }
+
+static void opaque_sensor_enable(void* a) {
+	typedef struct {Sensor* self; } args;
+	args* b = (args*) a;
+	internal_sensor_enable(b->self);
+}
+
+static void opaque_sensor_disable(void* a) {
+	typedef struct {Sensor* self; } args;
+	args* b = (args*) a;
+	internal_sensor_disable(b->self);
+}
+
+static void sensor_enable(void* self_) {
+	Sensor* self = (Sensor*)(self_);
+	typedef struct {Sensor* self; } args;
+	args* a = (args*)malloc(sizeof(args));
+	a->self=self;
+	runtime_event(opaque_sensor_enable, a);
+}
+
+static void sensor_disable(void* self_) {
+	Sensor* self = (Sensor*)(self_);
+	typedef struct {Sensor* self; } args;
+	args* a = (args*)malloc(sizeof(args));
+	a->self=self;
+	runtime_event(opaque_sensor_disable, a);
+}
+
 
 void Sensor_init (Sensor* self, locator* dezyne_locator) {
-  self->rt = dezyne_locator->rt;
-  runtime_set (self->rt, self);
+	self->rt = dezyne_locator->rt;
+	runtime_set(self->rt, self);
 
-  self->sensor.in.enable = sensor_enable;
-  self->sensor.in.disable = sensor_disable;
-  self->sensor.in.self = self;
+	self->sensor.in.enable = sensor_enable;
+	self->sensor.in.disable = sensor_disable;
+	self->sensor.in.self = self;
 }

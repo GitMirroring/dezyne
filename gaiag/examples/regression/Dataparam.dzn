@@ -114,7 +114,8 @@ component Dataparam
       IDataparam.Status s = funx (pi);
       s = s;
       mi = pi;
-      mi = xfunx (pi, $pi + mi$);
+      // mi = xfunx (pi, $pi + mi$);  // member in $: Ok for C++ but C: self->mi, Python: self.mi
+      mi = xfunx (pi, $pi + pi$);
       port.a (mi);
       port.aa (mi, pi);
     }

@@ -20,27 +20,17 @@
 //
 // Code:
 
-#ifndef DEZYNE_ICONSOLE_H
-#define DEZYNE_ICONSOLE_H
+#include "Datasystem.h"
 
-typedef struct IConsole IConsole;
+#define CONNECT(provided, required)\
+{\
+		  provided.out = required.out;\
+		  required.in = provided.in;\
+}
 
-
-
-struct IConsole {
-	struct {
-		void (*arm)(void* self );
-		void (*disarm)(void* self );
-
-		void* self;
-	} in;
-
-	struct {
-		void (*detected) (void* self );
-		void (*deactivated) (void* self );
-
-		void* self;
-	} out;
-};
-
-#endif // DEZYNE_ICONSOLE_H
+void Datasystem_init(Datasystem*self, locator* dezyne_locator) {
+	proxy_init (&self->p, dezyne_locator);
+	Dataparam_init (&self->c, dezyne_locator);
+	self->port = self->p.top; 
+	CONNECT(self->c.port, self->p.bottom);
+}

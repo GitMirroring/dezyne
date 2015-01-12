@@ -1,1 +1,6 @@
-#space runtime_defer (self->rt, self, self->#port .#direction .#event); //#comma #arguments));
+{
+#space args_#port _#event  a = {self #comma #arguments };
+#space args_#port _#event * p = malloc(sizeof (args_#port _#event));
+#space memcpy (p, &a, sizeof(args_#port _#event));
+#space runtime_defer(self->rt, self, opaque_#port _#event , p);
+}

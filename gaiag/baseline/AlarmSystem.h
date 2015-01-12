@@ -34,11 +34,11 @@
 #include "locator.h"
 
 typedef struct {
-  Alarm alarm;
-  Sensor sensor;
-  Siren siren;
+	Alarm alarm;
+	Sensor sensor;
+	Siren siren;
 
-  IConsole console;
+	IConsole console;
 
 } AlarmSystem;
 

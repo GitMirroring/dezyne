@@ -20,27 +20,12 @@
 //
 // Code:
 
-#ifndef DEZYNE_ICONSOLE_H
-#define DEZYNE_ICONSOLE_H
+#ifndef PAIR_H
+#define PAIR_H
 
-typedef struct IConsole IConsole;
+typedef struct {
+  void* first;
+  void* second;
+} pair;
 
-
-
-struct IConsole {
-	struct {
-		void (*arm)(void* self );
-		void (*disarm)(void* self );
-
-		void* self;
-	} in;
-
-	struct {
-		void (*detected) (void* self );
-		void (*deactivated) (void* self );
-
-		void* self;
-	} out;
-};
-
-#endif // DEZYNE_ICONSOLE_H
+#endif // PAIR_H

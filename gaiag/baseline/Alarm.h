@@ -33,15 +33,17 @@
 
 
 typedef struct {
-  runtime* rt;
-  int state;
-  bool sounding;
-  IConsole console;
-  ISensor sensor;
-  ISiren siren;
+	runtime* rt;
+	int state;
+	bool sounding;
+	IConsole console;
+	ISensor sensor;
+	ISiren siren;
 
 } Alarm;
 
 void Alarm_init(Alarm* self, locator* dezyne_locator);
+
+
 
 #endif // DEZYNE_ALARM_H

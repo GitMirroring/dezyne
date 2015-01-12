@@ -31,11 +31,13 @@
 
 
 typedef struct {
-  runtime* rt;
-  ISensor sensor;
+	runtime* rt;
+	ISensor sensor;
 
 } Sensor;
 
 void Sensor_init(Sensor* self, locator* dezyne_locator);
+
+
 
 #endif // DEZYNE_SENSOR_H

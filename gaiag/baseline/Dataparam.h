@@ -20,27 +20,30 @@
 //
 // Code:
 
-#ifndef DEZYNE_ICONSOLE_H
-#define DEZYNE_ICONSOLE_H
+#ifndef DEZYNE_DATAPARAM_H
+#define DEZYNE_DATAPARAM_H
 
-typedef struct IConsole IConsole;
+#include "IDataparam.h"
 
 
+#include "runtime.h"
+#include "locator.h"
 
-struct IConsole {
-	struct {
-		void (*arm)(void* self );
-		void (*disarm)(void* self );
 
-		void* self;
-	} in;
+typedef struct {
+	runtime* rt;
+	int mi;
+	int s;
+	int reply_IDataparam_Status;
+	IDataparam port;
 
-	struct {
-		void (*detected) (void* self );
-		void (*deactivated) (void* self );
+} Dataparam;
 
-		void* self;
-	} out;
-};
+void Dataparam_init(Dataparam* self, locator* dezyne_locator);
 
-#endif // DEZYNE_ICONSOLE_H
+int fun();
+int funx(int xi);
+int xfunx(int xi, int xj);
+
+
+#endif // DEZYNE_DATAPARAM_H

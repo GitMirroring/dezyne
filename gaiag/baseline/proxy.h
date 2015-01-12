@@ -20,27 +20,27 @@
 //
 // Code:
 
-#ifndef DEZYNE_ICONSOLE_H
-#define DEZYNE_ICONSOLE_H
+#ifndef DEZYNE_PROXY_H
+#define DEZYNE_PROXY_H
 
-typedef struct IConsole IConsole;
+#include "IDataparam.h"
+#include "IDataparam.h"
+
+
+#include "runtime.h"
+#include "locator.h"
+
+
+typedef struct {
+	runtime* rt;
+	int reply_IDataparam_Status;
+	IDataparam top;
+	IDataparam bottom;
+
+} proxy;
+
+void proxy_init(proxy* self, locator* dezyne_locator);
 
 
 
-struct IConsole {
-	struct {
-		void (*arm)(void* self );
-		void (*disarm)(void* self );
-
-		void* self;
-	} in;
-
-	struct {
-		void (*detected) (void* self );
-		void (*deactivated) (void* self );
-
-		void* self;
-	} out;
-};
-
-#endif // DEZYNE_ICONSOLE_H
+#endif // DEZYNE_PROXY_H

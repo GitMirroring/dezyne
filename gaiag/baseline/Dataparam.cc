@@ -71,7 +71,7 @@ namespace dezyne
       IDataparam::Status::type s = funx (pi);
       s = s;
       mi = pi;
-      mi = xfunx (pi, pi + mi);
+      mi = xfunx (pi, pi + pi);
       rt.defer(this, boost::bind(port.out.a, mi));
       rt.defer(this, boost::bind(port.out.aa, mi, pi));
     }

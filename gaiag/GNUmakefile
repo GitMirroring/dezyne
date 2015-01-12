@@ -198,6 +198,12 @@ c-alarm:
 
 c-inject:
 c-dataparam:
+	rm -rf out && mkdir out && cd out && ln -s ../runtime/c/* .
+	cd out && ../gaiag -l c ../examples/regression/Dataparam.dzn
+	cd out && ln -sf ../examples/dataparam.c .
+	for i in out/*c; do ccache gcc -g -Wall -Wextra -std=c99 -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o && out/$@ > out/$@.trace
+	$(diff) baseline/$@.trace out
+	for i in out/*.h out/*.c; do $(diff) baseline/$$(basename $$i) $$i; done
 
 #out/%.c: examples/regression/%.dzn
 define .CC_REGRESSION
