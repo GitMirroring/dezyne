@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -40,6 +40,8 @@ namespace dezyne
     iprovides_twice ii;
 
     external_provides_twice(const locator&);
+
+    private:
     void i_foo();
     void ii_foo();
   };

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -40,6 +40,8 @@ namespace dezyne
     ienum_collision i;
 
     enum_collision(const locator&);
+
+    private:
     ienum_collision::Retval1::type i_foo();
     ienum_collision::Retval2::type i_bar();
   };

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -50,6 +50,8 @@ namespace dezyne
     IDevice device_A;
 
     Comp(const locator&);
+
+    private:
     IComp::result_t::type client_initialize();
     IComp::result_t::type client_recover();
     IComp::result_t::type client_perform_actions();

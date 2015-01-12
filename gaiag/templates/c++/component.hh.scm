@@ -23,6 +23,8 @@ struct #.model
 #interface  #name;
 #}) ((compose .elements .ports) model))
     #.model (const locator&);
+
+private:
 #(map
   (lambda (port)
     (map (define-on model port #{

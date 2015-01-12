@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -42,6 +42,8 @@ namespace dezyne
     irequires_twice twice;
 
     requires_twice(const locator&);
+
+    private:
     void p_e();
     void once_a();
     void twice_a();

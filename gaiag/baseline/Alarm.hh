@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -51,6 +51,8 @@ namespace dezyne
     ISiren siren;
 
     Alarm(const locator&);
+
+    private:
     void console_arm();
     void console_disarm();
     void sensor_triggered();

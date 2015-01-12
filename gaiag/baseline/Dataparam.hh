@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -41,6 +41,8 @@ namespace dezyne
     IDataparam port;
 
     Dataparam(const locator&);
+
+    private:
     void port_e0();
     IDataparam::Status::type port_e0r();
     void port_e(int i);
