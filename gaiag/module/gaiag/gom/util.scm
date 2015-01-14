@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -75,6 +75,7 @@
            gom:models
            gom:named
            gom:out?
+           gom:out-or-inout?
            gom:parent
            gom:parse-dezyne
            gom:port
@@ -283,6 +284,10 @@
 (define-method (gom:in? (o <trigger>)) #t)
 
 (define-method (gom:out? (o <trigger>)) #f)
+
+(define-method (gom:out-or-inout? (o <gom:parameter>)) 
+  (or (eq? (.direction o) 'out)
+      (eq? (.direction o) 'inout)))
 
 (define-method (gom:provides? (o <gom:port>))
   (eq? (.direction o) 'provides))
