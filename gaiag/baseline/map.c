@@ -320,7 +320,8 @@ int map_iterate(map* m, map_f f, void* item) {
 	/* Linear probing */
 	for(i = 0; i< m->table_size; i++)
 		if(m->data[i].in_use != 0) {
-			void* data = (void*) (m->data[i].data);
+                	//void* data = (void*) (m->data[i].data);
+                	void* data = &m->data[i];
 			int status = f(item, data);
 			if (status != MAP_OK) {
 				return status;

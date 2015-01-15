@@ -32,7 +32,7 @@
 void
 runtime_init (runtime* self)
 {
-  map_init (&self->map);
+  map_init (&self->queues);
 }
 
 static char*
@@ -46,11 +46,9 @@ runtime_key (void* scope)
 pair*
 runtime_get (runtime* self, void* scope)
 {
-  void* p;
-  if (map_get (&self->map, runtime_key (scope), &p) == MAP_OK) {
-    return p;
-  }
-  return 0;
+  void* p = 0;
+  map_get (&self->queues, runtime_key (scope), &p);
+  return p;
 }
 
 void
@@ -60,7 +58,7 @@ runtime_set (runtime* self, void* scope)
   pair* p = malloc (sizeof (pair));
   p->first = false;
   p->second = q;
-  map_put (&self->map, runtime_key (scope), p);
+  map_put (&self->queues, runtime_key (scope), p);
 }
 
 bool*
@@ -128,6 +126,7 @@ typedef struct {
 typedef struct {
   runtime* rt;
 } component;
+
 
 void 
 runtime_event (void* event, void* args)

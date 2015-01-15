@@ -1,4 +1,5 @@
 // Dezyne --- Dezyne command line tools
+//
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -20,39 +21,47 @@
 //
 // Code:
 
-#include "locator.h"
+#include "logger.h"
 
+#include "locator.h"
 #include "runtime.h"
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
 
-void locator_init(locator* self, runtime* rt) {
-  self->rt = rt;
-  map_init (&self->services);
+
+
+
+
+
+static void internal_log_log(void* self_) {
+	logger* self = (logger*)(self_);
+	(void)self;
+	DZN_LOG("logger.log_log");
+	{
+	}
 }
 
-int map_copy(map_element* elt, void* dst) {
-  map* m = dst;
-  return map_put (m, elt->key, elt->data);
+static void opaque_log_log(void* a) {
+	typedef struct {logger* self;} args;
+	args* b = a;
+	internal_log_log(b->self);
 }
 
-locator* locator_clone(locator* self) {
-  locator* clone = malloc(sizeof(locator));
-  //memcpy(clone, self, sizeof(locator));
-  clone->rt = self->rt;
-  map_init (&clone->services);
-  map_iterate(&self->services, map_copy, clone); 
-  return clone;
+static void log_log(void* self_) {
+	logger* self = (logger*)(self_);
+	typedef struct {logger* self;} args;
+	args* a = malloc(sizeof(args));
+	a->self=self;
+	runtime_event(opaque_log_log, a);
 }
 
-void* locator_get(locator* self, char* key) {
-  void* p = 0;
-  map_get (&self->services, key, &p);
-  return p;
-}
 
-locator* locator_set(locator* self, char* key, void* value) {
-  map_put (&self->services, key, value);
-  return self;
+void logger_init (logger* self, locator* dezyne_locator) {
+	self->rt = dezyne_locator->rt;
+	runtime_set(self->rt, self);
+
+	self->log.in.log = log_log;
+	self->log.in.self = self;
 }

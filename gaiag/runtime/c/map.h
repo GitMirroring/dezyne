@@ -36,8 +36,6 @@
 #define MAP_OMEM -1 	/* Out of Memory */
 #define MAP_OK 0 	/* OK */
 
-typedef int (*map_f)(void*, void*);
-
 /* We need to keep keys and values */
 typedef struct {
 	char* key;
@@ -52,6 +50,8 @@ typedef struct {
 	int size;
 	map_element *data;
 } map;
+
+typedef int (*map_f)(map_element*, void*);
 
 extern void map_init(map* m);
 

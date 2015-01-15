@@ -44,8 +44,8 @@
   (lambda (port)
     (map (define-on model port #{
   static #return-type  opaque_#port _#event(void* a) {
-    typedef struct {#.model * self; #((->join "; ") parameter-list)#(if (null? parameter-list) "" ";")} args;
-  args* b = (args*) a;
+    typedef struct {#.model * self;#((->join "; ") parameter-list)#(if (null? parameter-list) "" ";")} args;
+  args* b = a;
   internal_#port _#event (b->self#comma #(comma-join (map (lambda (x) (symbol-append 'b-> x)) argument-list)));
   #(if (not (eq? type 'void))
 (list "    return b->self->reply_" reply-type "_" reply-name ";\n"
@@ -58,8 +58,8 @@
     (map (define-on model port #{
   static #return-type  #port _#event(void* self_#comma #parameters) {
     #.model * self = (#.model *)(self_);
-    typedef struct {#.model * self; #((->join "; ") parameter-list)#(if (null? parameter-list) "" ";")} args;
-  args* a = (args*)malloc(sizeof(args));
+    typedef struct {#.model * self;#((->join "; ") parameter-list)#(if (null? parameter-list) "" ";")} args;
+  args* a = malloc(sizeof(args));
   a->self=self;
   #((->join ";\n") (map (lambda (x) (symbol-append 'a-> x '= x)) argument-list))#
   (if (null? argument-list) "" ";\n")runtime_event(opaque_#port _#event , a);
@@ -76,7 +76,8 @@
 void #.model _init (#.model * self, locator* dezyne_locator) {
   self->rt = dezyne_locator->rt;
   runtime_set(self->rt, self);
-#((->join  ";\n")
+  #(map (lambda (port) (->string (list "self->" (.name port) " = *(" (.type port) "*)locator_get(dezyne_locator, \"" (.type port) "\");\n"))) (filter .injected (gom:ports model)))#
+((->join  ";\n")
  (map (init-member model #{
    self->#name  = #(if (not (eq? expression *unspecified*)) expression)#}) (gom:variables model)))#
 (if (null? (gom:variables model)) "" ";")

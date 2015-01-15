@@ -63,7 +63,10 @@
            injected-binding
            injected-binding?
            injected-bindings
+           injected-instance-interface
            injected-instance-name
+           injected-instance-port
+           injected-instance-type
            non-injected-instances
            join
            dump-indented
@@ -667,7 +670,20 @@
 (define (injected-instance-name binding)
   (or (.instance (.left binding)) (.instance (.right binding))))
 
+(define (injected-instance-port binding)
+  (if (.instance (.left binding))
+      (.port (.left binding))
+      (.port (.right binding))))
+
+(define (injected-instance-type model binding)
+  (.component (gom:instance model (if (.instance (.left binding))
+                                      (.left binding)
+                                      (.right binding)))))
+
+(define (injected-instance-interface model binding)
+  (.type (gom:port (code:import (injected-instance-type model binding)))))
+
 (define (non-injected-instances model)
-(let ((injected-instance-names (map injected-instance-name (injected-bindings model))))
-  (filter (lambda (instance) (not (member (.name instance) injected-instance-names)))
-          ((compose .elements .instances) model))))
+  (let ((injected-instance-names (map injected-instance-name (injected-bindings model))))
+    (filter (lambda (instance) (not (member (.name instance) injected-instance-names)))
+            ((compose .elements .instances) model))))

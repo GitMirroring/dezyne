@@ -1,4 +1,5 @@
 // Dezyne --- Dezyne command line tools
+//
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -20,39 +21,23 @@
 //
 // Code:
 
-#include "locator.h"
+#include "Injected.h"
 
-#include "runtime.h"
-#include <stdlib.h>
-#include <string.h>
-
-
-void locator_init(locator* self, runtime* rt) {
-  self->rt = rt;
-  map_init (&self->services);
+#define CONNECT(provided, required)\
+{\
+	provided.out = required.out;\
+	required.in = provided.in;\
 }
 
-int map_copy(map_element* elt, void* dst) {
-  map* m = dst;
-  return map_put (m, elt->key, elt->data);
-}
-
-locator* locator_clone(locator* self) {
-  locator* clone = malloc(sizeof(locator));
-  //memcpy(clone, self, sizeof(locator));
-  clone->rt = self->rt;
-  map_init (&clone->services);
-  map_iterate(&self->services, map_copy, clone); 
-  return clone;
-}
-
-void* locator_get(locator* self, char* key) {
-  void* p = 0;
-  map_get (&self->services, key, &p);
-  return p;
-}
-
-locator* locator_set(locator* self, char* key, void* value) {
-  map_put (&self->services, key, value);
-  return self;
+void Injected_init(Injected *self, locator* dezyne_locator) {
+	locator* local_locator = locator_clone(dezyne_locator);
+	locator_set(local_locator, "ilogger", &self->l.log);
+	logger_init(&self->l, local_locator);
+	middle_init(&self->m, local_locator);
+	bottom_init(&self->b, local_locator);
+	self->m.b.in.self = &self->b;
+	self->b.b.in.self = &self->m;
+	self->l.log.in.self = &self->l;
+	self->t = self->m.t; 
+	CONNECT(self->b.b, self->m.b);
 }

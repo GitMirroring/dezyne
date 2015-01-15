@@ -30,7 +30,7 @@
 #include "map.h"
 
 typedef struct {
-  map map;
+  map queues;
 } runtime;
 
 void runtime_init (runtime*);

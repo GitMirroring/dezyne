@@ -1,4 +1,5 @@
 // Dezyne --- Dezyne command line tools
+//
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -20,39 +21,27 @@
 //
 // Code:
 
-#include "locator.h"
+#include "Injected.hh"
 
-#include "runtime.h"
-#include <stdlib.h>
-#include <string.h>
+#include "locator.hh"
+#include "runtime.hh"
 
+#include <iostream>
 
-void locator_init(locator* self, runtime* rt) {
-  self->rt = rt;
-  map_init (&self->services);
+void f()
+{
+  std::cout << "f" << std::endl;
 }
 
-int map_copy(map_element* elt, void* dst) {
-  map* m = dst;
-  return map_put (m, elt->key, elt->data);
-}
+int main()
+{
+  dezyne::locator l;
+  dezyne::runtime rt;
+  l.set(rt);
 
-locator* locator_clone(locator* self) {
-  locator* clone = malloc(sizeof(locator));
-  //memcpy(clone, self, sizeof(locator));
-  clone->rt = self->rt;
-  map_init (&clone->services);
-  map_iterate(&self->services, map_copy, clone); 
-  return clone;
-}
+  dezyne::Injected i(l);
 
-void* locator_get(locator* self, char* key) {
-  void* p = 0;
-  map_get (&self->services, key, &p);
-  return p;
-}
+  i.t.out.f = f;
 
-locator* locator_set(locator* self, char* key, void* value) {
-  map_put (&self->services, key, value);
-  return self;
+  i.t.in.e();
 }

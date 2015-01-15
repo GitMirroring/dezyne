@@ -14,7 +14,7 @@
 typedef struct {
 #(map (lambda (binding) (list (.component (gom:instance model (injected-instance-name binding))) " "
                               (injected-instance-name binding) ";\n")) (injected-bindings model)) #
-(if (pair? (injected-bindings model)) (list "dezyne::locator dezyne_local_locator;\n")) #
+(if (pair? (injected-bindings model)) (list "locator local_locator;\n")) #
 (map (init-instance #{
   #component  #name;
 #}) (non-injected-instances model))

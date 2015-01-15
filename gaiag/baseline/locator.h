@@ -28,7 +28,13 @@
 typedef struct
 {
 	runtime* rt;
+  	map services;
+
 } locator;
+
 void locator_init(locator* self, runtime* rt);
+locator* locator_clone(locator* self);
+void* locator_get(locator* self, char* key);
+locator* locator_set(locator* self, char* key, void* value);
 
 #endif // LOCATOR_H

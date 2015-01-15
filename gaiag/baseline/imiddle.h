@@ -1,4 +1,5 @@
 // Dezyne --- Dezyne command line tools
+//
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -20,39 +21,25 @@
 //
 // Code:
 
-#include "locator.h"
+#ifndef DEZYNE_IMIDDLE_H
+#define DEZYNE_IMIDDLE_H
 
-#include "runtime.h"
-#include <stdlib.h>
-#include <string.h>
+typedef struct imiddle imiddle;
 
 
-void locator_init(locator* self, runtime* rt) {
-  self->rt = rt;
-  map_init (&self->services);
-}
 
-int map_copy(map_element* elt, void* dst) {
-  map* m = dst;
-  return map_put (m, elt->key, elt->data);
-}
+struct imiddle {
+	struct {
+		void (*e)(void* self );
 
-locator* locator_clone(locator* self) {
-  locator* clone = malloc(sizeof(locator));
-  //memcpy(clone, self, sizeof(locator));
-  clone->rt = self->rt;
-  map_init (&clone->services);
-  map_iterate(&self->services, map_copy, clone); 
-  return clone;
-}
+		void* self;
+	} in;
 
-void* locator_get(locator* self, char* key) {
-  void* p = 0;
-  map_get (&self->services, key, &p);
-  return p;
-}
+	struct {
+		void (*f) (void* self );
 
-locator* locator_set(locator* self, char* key, void* value) {
-  map_put (&self->services, key, value);
-  return self;
-}
+		void* self;
+	} out;
+};
+
+#endif // DEZYNE_IMIDDLE_H

@@ -1,4 +1,5 @@
 // Dezyne --- Dezyne command line tools
+//
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -20,39 +21,36 @@
 //
 // Code:
 
-#include "locator.h"
+#include "middle.hh"
 
-#include "runtime.h"
-#include <stdlib.h>
-#include <string.h>
+#include "locator.hh"
+#include "runtime.hh"
+
+namespace dezyne
+{
+  middle::middle(const locator& dezyne_locator)
+  : rt(dezyne_locator.get<runtime>())
+  , t()
+  , b()
+  , l(dezyne_locator.get<ilogger>())
+  {
+    t.in.e = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&middle::t_e, this)));
+    b.out.f = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&middle::b_f, this)));
+  }
+
+  void middle::t_e()
+  {
+    std::cout << "middle.t_e" << std::endl;
+    l.in.log();
+    b.in.e();
+  }
+
+  void middle::b_f()
+  {
+    std::cout << "middle.b_f" << std::endl;
+    l.in.log();
+    rt.defer(this, boost::bind(t.out.f));
+  }
 
 
-void locator_init(locator* self, runtime* rt) {
-  self->rt = rt;
-  map_init (&self->services);
-}
-
-int map_copy(map_element* elt, void* dst) {
-  map* m = dst;
-  return map_put (m, elt->key, elt->data);
-}
-
-locator* locator_clone(locator* self) {
-  locator* clone = malloc(sizeof(locator));
-  //memcpy(clone, self, sizeof(locator));
-  clone->rt = self->rt;
-  map_init (&clone->services);
-  map_iterate(&self->services, map_copy, clone); 
-  return clone;
-}
-
-void* locator_get(locator* self, char* key) {
-  void* p = 0;
-  map_get (&self->services, key, &p);
-  return p;
-}
-
-locator* locator_set(locator* self, char* key, void* value) {
-  map_put (&self->services, key, value);
-  return self;
 }

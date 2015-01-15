@@ -1,4 +1,5 @@
 // Dezyne --- Dezyne command line tools
+//
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -20,39 +21,31 @@
 //
 // Code:
 
-#include "locator.h"
+#ifndef DEZYNE_MIDDLE_HH
+#define DEZYNE_MIDDLE_HH
 
-#include "runtime.h"
-#include <stdlib.h>
-#include <string.h>
+#include "itop.hh"
+#include "ibottom.hh"
+#include "ilogger.hh"
 
 
-void locator_init(locator* self, runtime* rt) {
-  self->rt = rt;
-  map_init (&self->services);
+namespace dezyne
+{
+  struct locator;
+  struct runtime;
+
+  struct middle
+  {
+    runtime& rt;
+    itop t;
+    ibottom b;
+    ilogger l;
+
+    middle(const locator&);
+
+    private:
+    void t_e();
+    void b_f();
+  };
 }
-
-int map_copy(map_element* elt, void* dst) {
-  map* m = dst;
-  return map_put (m, elt->key, elt->data);
-}
-
-locator* locator_clone(locator* self) {
-  locator* clone = malloc(sizeof(locator));
-  //memcpy(clone, self, sizeof(locator));
-  clone->rt = self->rt;
-  map_init (&clone->services);
-  map_iterate(&self->services, map_copy, clone); 
-  return clone;
-}
-
-void* locator_get(locator* self, char* key) {
-  void* p = 0;
-  map_get (&self->services, key, &p);
-  return p;
-}
-
-locator* locator_set(locator* self, char* key, void* value) {
-  map_put (&self->services, key, value);
-  return self;
-}
+#endif // DEZYNE_MIDDLE_HH

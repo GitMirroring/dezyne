@@ -1,1 +1,1 @@
-#scope ::#name ::type
+#scope _#name _type

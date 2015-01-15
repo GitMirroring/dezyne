@@ -32,7 +32,7 @@
   :export (indent indent-string))
 
 (define* (eat-space :optional (port (current-input-port)))
-  (while (and-let* ((c (peek-char port)) ((eq? c #\space))) (read-char port))))
+  (while (and-let* ((c (peek-char port)) ((or (eq? c #\space) (eq? c #\tab)))) (read-char port))))
 
 (define no-indent "#")
 (define* (indent :optional (indent 2) (port (current-input-port)))
