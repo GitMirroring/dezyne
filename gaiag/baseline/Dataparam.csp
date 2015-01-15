@@ -117,7 +117,8 @@ channel port_''': extensions(IDataparam_''')
 
 CO_Dataparam_(IIG,IG) = let
 fun(PF',V') = (returnvalue_(\ ((s),(stack')) @ Status_Yes))(PF',V')
-funx(PF',V') = (returnvalue_(\ ((s),(stack')) @ Status_Yes))(PF',V')
+funx(PF',V') = (semi_(assign_(\ ((s),(stack')) @ ((s),(stack'))),
+returnvalue_(\ ((s),(stack')) @ Status_Yes)))(PF',V')
 xfunx(PF',V') = (skip_)(PF',V')
 
 Dataparam_(((s),(stack'))) = transition_begin -> (
@@ -131,10 +132,11 @@ reply_(IDataparam_', (\ ((s),(stack')) @ Status_Yes)))(\ V' @ transition_end -> 
 []
 port?x:{e} ->
 semi_(context_active_(call_(\ P',V' @ funx(P',V')),
+semi_(assign_(\ ((hide_member0'),((stack',s))) @ ((hide_member0'),((stack',s)))),
 semi_(skip_,
 semi_(skip_,
 semi_((\ P',V' @ port_''!a -> P'(V')),
-(\ P',V' @ port_''!aa -> P'(V')))))),
+(\ P',V' @ port_''!aa -> P'(V'))))))),
 (\ P',V' @ IDataparam_'.return -> P'(V')))(\ V' @ transition_end -> Dataparam_(V'),((s),(stack')))
 []
 port?x:{er} ->
@@ -164,7 +166,8 @@ semi_(assign_(\ ((s),(stack')) @ ((s),(stack'))),
 (\ P',V' @ IDataparam_'.return -> P'(V')))(\ V' @ transition_end -> Dataparam_(V'),((s),(stack')))
 []
 port?x:{eio2} ->
-semi_(assign_(\ ((s),(stack')) @ ((s),(stack'))),
+semi_(semi_(skip_,
+assign_(\ ((s),(stack')) @ ((s),(stack')))),
 (\ P',V' @ IDataparam_'.return -> P'(V')))(\ V' @ transition_end -> Dataparam_(V'),((s),(stack')))
 []
 port?x:{eor} ->
@@ -181,8 +184,9 @@ semi_(assign_(\ ((s),(stack')) @ ((s),(stack'))),
 reply_(IDataparam_', (\ ((s),(stack')) @ Status_Yes)))(\ V' @ transition_end -> Dataparam_(V'),((s),(stack')))
 []
 port?x:{eio2r} ->
+semi_(skip_,
 semi_(assign_(\ ((s),(stack')) @ ((s),(stack'))),
-reply_(IDataparam_', (\ ((s),(stack')) @ Status_Yes)))(\ V' @ transition_end -> Dataparam_(V'),((s),(stack')))
+reply_(IDataparam_', (\ ((s),(stack')) @ Status_Yes))))(\ V' @ transition_end -> Dataparam_(V'),((s),(stack')))
 )
 
 within Dataparam_(((Status_Yes),(<>)))

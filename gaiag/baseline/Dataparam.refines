@@ -9,7 +9,7 @@ true
 Checking IF_IDataparam_(true,false) :[livelock free]
 true
 
-Checking CO_Dataparam_(true,true) :[deterministic]
+Checking CO_Dataparam_(true,true)[[IDataparam_'.x<-port_'.x|x<-extensions(port_')]] :[deterministic]
 true
 
 Checking COMPLETE'({port.e0,port.e0r,port.e,port.er,port.eer,port.eo,port.eoo,port.eio,port.eio2,port.eor,port.eoor,port.eior,port.eio2r}) [F= CO_Dataparam_(true,true)[[IDataparam_'.x'<-port_'.x'|x'<-extensions(port_')]]\diff(Events,{port.e0,port.e0r,port.e,port.er,port.eer,port.eo,port.eoo,port.eio,port.eio2,port.eor,port.eoor,port.eior,port.eio2r,illegal})
@@ -21,7 +21,7 @@ true
 Checking AS_Dataparam_(false) :[deadlock free]
 true
 
-Checking IF_IDataparam_(true,false)[[IDataparam.x<-port.x|x<-extensions(port)]][[IDataparam_'.x<-port_'.x|x<-extensions(port_')]][[IDataparam_''.x<-port_''.x|x<-extensions(port_'')]]\{} [F= AS_Dataparam_(true)\diff(Events,{|illegal,port,port_',port_''|})
+Checking IF_IDataparam_(true,false)[[IDataparam.x<-port.x|x<-extensions(port)]][[IDataparam_'.x<-port_'.x|x<-extensions(port_')]][[IDataparam_''.x<-port_''.x|x<-extensions(port_'')]]\{IDataparam_'''.modeling} [F= AS_Dataparam_(true)\diff(Events,{|illegal,port,port_',port_''|})
 true
 
 Checking AS_Dataparam_(true)\diff(Events,{|illegal,port,port_',port_''|}) :[livelock free]

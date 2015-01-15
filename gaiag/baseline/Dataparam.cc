@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -69,6 +69,7 @@ namespace dezyne
     {
       int pi = i;
       IDataparam::Status::type s = funx (pi);
+      s = s;
       mi = pi;
       mi = xfunx (pi, pi + mi);
       rt.defer(this, boost::bind(port.out.a, mi));
@@ -122,7 +123,8 @@ namespace dezyne
   void Dataparam::port_eio2(int& i)
   {
     std::cout << "Dataparam.port_eio2" << std::endl;
-    i = i + 123;
+    int t = i;
+    i = t + 123;
   }
 
   IDataparam::Status::type Dataparam::port_eor(int& i)
@@ -153,7 +155,8 @@ namespace dezyne
   IDataparam::Status::type Dataparam::port_eio2r(int& i)
   {
     std::cout << "Dataparam.port_eio2r" << std::endl;
-    i = i + 123;
+    int t = i;
+    i = t + 123;
     reply_IDataparam_Status = IDataparam::Status::Yes;
     return reply_IDataparam_Status;
   }
@@ -165,6 +168,7 @@ namespace dezyne
 
   IDataparam::Status::type Dataparam::funx(int xi)
   {
+    xi = xi;
     return IDataparam::Status::Yes;
   }
 

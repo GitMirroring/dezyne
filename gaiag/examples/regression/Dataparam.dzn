@@ -96,6 +96,7 @@ component Dataparam
 
     IDataparam.Status funx (xint xi)
     {
+      xi = xi;
       return IDataparam.Status.Yes;
     }
 
@@ -111,13 +112,11 @@ component Dataparam
     on port.e (pi):
     {
       IDataparam.Status s = funx (pi);
+      s = s;
       mi = pi;
       mi = xfunx (pi, $pi + mi$);
       port.a (mi);
       port.aa (mi, pi);
-
-      // IDataparam.Status s = e0r();
-      // s = e0r();
     }
     on port.er (pi):
     {

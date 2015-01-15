@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,18 +21,18 @@
 //
 // Code:
 
-#include "datasystem.hh"
+#include "Datasystem.hh"
 
-template<typename Port>
-void connect(Port& provided, Port& required)
+namespace dezyne
 {
-  provided.out = required.out;
-  required.in = provided.in;
-}
+  template<typename Port>
+  void connect(Port& provided, Port& required)
+  {
+    provided.out = required.out;
+    required.in = provided.in;
+  }
 
-namespace component
-{
-  datasystem::datasystem(const dezyne::locator& dezyne_locator)
+  Datasystem::Datasystem(const dezyne::locator& dezyne_locator)
   : p(dezyne_locator)
   , c(dezyne_locator)
   , port(p.top)
