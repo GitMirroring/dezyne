@@ -35,7 +35,7 @@
 
 
 static void internal_siren_turnon(void* self_) {
-	Siren* self = (Siren*)(self_);
+	Siren* self = self_;
 	(void)self;
 	DZN_LOG("Siren.siren_turnon");
 	{
@@ -43,7 +43,7 @@ static void internal_siren_turnon(void* self_) {
 }
 
 static void internal_siren_turnoff(void* self_) {
-	Siren* self = (Siren*)(self_);
+	Siren* self = self_;
 	(void)self;
 	DZN_LOG("Siren.siren_turnoff");
 	{
@@ -51,29 +51,29 @@ static void internal_siren_turnoff(void* self_) {
 }
 
 static void opaque_siren_turnon(void* a) {
-	typedef struct {Siren* self; } args;
-	args* b = (args*) a;
+	typedef struct {Siren* self;} args;
+	args* b = a;
 	internal_siren_turnon(b->self);
 }
 
 static void opaque_siren_turnoff(void* a) {
-	typedef struct {Siren* self; } args;
-	args* b = (args*) a;
+	typedef struct {Siren* self;} args;
+	args* b = a;
 	internal_siren_turnoff(b->self);
 }
 
 static void siren_turnon(void* self_) {
-	Siren* self = (Siren*)(self_);
-	typedef struct {Siren* self; } args;
-	args* a = (args*)malloc(sizeof(args));
+	Siren* self = ((ISiren*)self_)->in.self;
+	typedef struct {Siren* self;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	runtime_event(opaque_siren_turnon, a);
 }
 
 static void siren_turnoff(void* self_) {
-	Siren* self = (Siren*)(self_);
-	typedef struct {Siren* self; } args;
-	args* a = (args*)malloc(sizeof(args));
+	Siren* self = ((ISiren*)self_)->in.self;
+	typedef struct {Siren* self;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	runtime_event(opaque_siren_turnoff, a);
 }
@@ -83,7 +83,8 @@ void Siren_init (Siren* self, locator* dezyne_locator) {
 	self->rt = dezyne_locator->rt;
 	runtime_set(self->rt, self);
 
-	self->siren.in.turnon = siren_turnon;
-	self->siren.in.turnoff = siren_turnoff;
-	self->siren.in.self = self;
+	self->siren = &self->siren_;
+	self->siren->in.turnon = siren_turnon;
+	self->siren->in.turnoff = siren_turnoff;
+	self->siren->in.self = self;
 }

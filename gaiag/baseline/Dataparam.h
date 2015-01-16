@@ -35,8 +35,8 @@ typedef struct {
 	int mi;
 	int s;
 	int reply_IDataparam_Status;
-	IDataparam port;
-
+	IDataparam port_;
+	IDataparam* port;
 } Dataparam;
 
 void Dataparam_init(Dataparam* self, locator* dezyne_locator);

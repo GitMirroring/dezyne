@@ -33,8 +33,8 @@
 
 typedef struct {
 	runtime* rt;
-	ibottom b;
-
+	ibottom b_;
+	ibottom* b;
 } bottom;
 
 void bottom_init(bottom* self, locator* dezyne_locator);

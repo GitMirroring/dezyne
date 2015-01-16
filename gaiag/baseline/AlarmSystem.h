@@ -38,7 +38,7 @@ typedef struct {
 	Sensor sensor;
 	Siren siren;
 
-	IConsole console;
+	IConsole* console;
 
 } AlarmSystem;
 

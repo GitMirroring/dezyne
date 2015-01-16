@@ -36,7 +36,7 @@
 
 
 static void internal_log_log(void* self_) {
-	logger* self = (logger*)(self_);
+	logger* self = self_;
 	(void)self;
 	DZN_LOG("logger.log_log");
 	{
@@ -50,7 +50,7 @@ static void opaque_log_log(void* a) {
 }
 
 static void log_log(void* self_) {
-	logger* self = (logger*)(self_);
+	logger* self = ((ilogger*)self_)->in.self;
 	typedef struct {logger* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
@@ -62,6 +62,7 @@ void logger_init (logger* self, locator* dezyne_locator) {
 	self->rt = dezyne_locator->rt;
 	runtime_set(self->rt, self);
 
-	self->log.in.log = log_log;
-	self->log.in.self = self;
+	self->log = &self->log_;
+	self->log->in.log = log_log;
+	self->log->in.self = self;
 }

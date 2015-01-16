@@ -40,7 +40,7 @@ typedef struct {
 	middle m;
 	bottom b;
 
-	itop t;
+	itop* t;
 
 } Injected;
 

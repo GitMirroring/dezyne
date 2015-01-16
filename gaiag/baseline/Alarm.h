@@ -36,10 +36,12 @@ typedef struct {
 	runtime* rt;
 	int state;
 	bool sounding;
-	IConsole console;
-	ISensor sensor;
-	ISiren siren;
-
+	IConsole console_;
+	IConsole* console;
+	ISensor sensor_;
+	ISensor* sensor;
+	ISiren siren_;
+	ISiren* siren;
 } Alarm;
 
 void Alarm_init(Alarm* self, locator* dezyne_locator);

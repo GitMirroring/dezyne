@@ -32,8 +32,8 @@
 
 typedef struct {
 	runtime* rt;
-	ISiren siren;
-
+	ISiren siren_;
+	ISiren* siren;
 } Siren;
 
 void Siren_init(Siren* self, locator* dezyne_locator);

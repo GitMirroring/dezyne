@@ -20,8 +20,8 @@
     (map (define-on model port #{
   static void opaque_#port _#event (void* args) {
     args_#port _#event  *a = args;
-    void (*f)(void*#comma #((->join ", ") parameter-list)) = a->self->#port .#direction .#event;
-    f(a->self#comma #(comma-join (map (lambda (x) (symbol-append 'a-> x)) argument-list)));
+    void (*f)(void*#comma #((->join ", ") parameter-list)) = a->self->#port ->#direction .#event;
+    f(a->self->#port #comma #(comma-join (map (lambda (x) (symbol-append 'a-> x)) argument-list)));
 }
 
     #}) (filter (negate (gom:dir-matches? port)) (gom:events port))))
@@ -31,9 +31,9 @@
   (lambda (port)
     (map (define-on model port #{
   static #return-type  internal_#port _#event(void* self_#comma #parameters) {
-    #.model * self = (#.model *)(self_);
+    #.model * self = self_;
     (void)self;
-    DZN_LOG("#model .#port _#event");
+    DZN_LOG("#.model .#port _#event");
     #statement #
     (if (not (eq? type 'void))
 (list "    return self->reply_" reply-type "_" reply-name ";\n"
@@ -46,7 +46,7 @@
   static #return-type  opaque_#port _#event(void* a) {
     typedef struct {#.model * self;#((->join "; ") parameter-list)#(if (null? parameter-list) "" ";")} args;
   args* b = a;
-  internal_#port _#event (b->self#comma #(comma-join (map (lambda (x) (symbol-append 'b-> x)) argument-list)));
+  internal_#port _#event (b->self#comma #(comma-join (map (lambda (x) (symbol-append 'b-> x '-> port)) argument-list)));
   #(if (not (eq? type 'void))
 (list "    return b->self->reply_" reply-type "_" reply-name ";\n"
       ))}
@@ -57,7 +57,7 @@
   (lambda (port)
     (map (define-on model port #{
   static #return-type  #port _#event(void* self_#comma #parameters) {
-    #.model * self = (#.model *)(self_);
+    #.model * self = ((#interface *)self_)->#direction .self;
     typedef struct {#.model * self;#((->join "; ") parameter-list)#(if (null? parameter-list) "" ";")} args;
   args* a = malloc(sizeof(args));
   a->self=self;
@@ -76,7 +76,7 @@
 void #.model _init (#.model * self, locator* dezyne_locator) {
   self->rt = dezyne_locator->rt;
   runtime_set(self->rt, self);
-  #(map (lambda (port) (->string (list "self->" (.name port) " = *(" (.type port) "*)locator_get(dezyne_locator, \"" (.type port) "\");\n"))) (filter .injected (gom:ports model)))#
+  #(map (lambda (port) (->string (list "self->" (.name port) "_ = *(" (.type port) "*)locator_get(dezyne_locator, \"" (.type port) "\");\n"))) (filter .injected (gom:ports model)))#
 ((->join  ";\n")
  (map (init-member model #{
    self->#name  = #(if (not (eq? expression *unspecified*)) expression)#}) (gom:variables model)))#
@@ -86,17 +86,19 @@ void #.model _init (#.model * self, locator* dezyne_locator) {
     (lambda (port)
       (string-join
        (append
-       (map (define-on model port #{
-        self->#port .#direction .#event  = #port _#event;
-       #}) (filter gom:in? (gom:events port)))
-      (list (->string (list "self->" (.name port) ".in.self = self;\n"))))))
+        (list (->string (list "self->" (.name port) " = &self->" (.name port) "_;\n")))
+        (map (define-on model port #{
+                                     self->#port ->#direction .#event  = #port _#event;
+                                                 #}) (filter gom:in? (gom:events port)))
+        (list (->string (list "self->" (.name port) "->in.self = self;\n"))))))
     (filter gom:provides? (gom:ports model)))#
    (map
     (lambda (port)
       (string-join
        (append
-       (map (define-on model port #{
-        self->#port .#direction .#event  = #port _#event;
-       #}) (filter gom:out? (gom:events port)))
-      (list (->string (list "self->" (.name port) ".out.self = self;\n"))))))
-    (filter gom:requires? (gom:ports model))) }
+        (list (->string (list "self->" (.name port) " = &self->" (.name port) "_;\n")))
+        (list (->string (list "self->" (.name port) "->out.self = self;\n")))
+        (map (define-on model port #{
+                                     self->#port ->#direction .#event  = #port _#event;
+                                                 #}) (filter gom:out? (gom:events port))))))
+    (filter gom:requires? (gom:ports model)))}

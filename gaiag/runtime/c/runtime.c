@@ -74,7 +74,7 @@ typedef struct {
   void *args;
 } closure;
 
-void 
+void
 runtime_flush (runtime* self, void* scope)
 {
   pair* p = runtime_get (self, scope);
@@ -90,7 +90,7 @@ runtime_flush (runtime* self, void* scope)
   }
 }
 
-void 
+void
 runtime_defer (runtime* self, void* scope, void *event, void* args)
 {
   pair* p = runtime_get (self, scope);
@@ -101,7 +101,7 @@ runtime_defer (runtime* self, void* scope, void *event, void* args)
   queue_push (p->second, c);
 }
 
-static void 
+static void
 runtime_handle_event (runtime* self, void* scope, void* event, void* args)
 {
   bool* handle = runtime_handling (self, scope);
@@ -128,7 +128,7 @@ typedef struct {
 } component;
 
 
-void 
+void
 runtime_event (void* event, void* args)
 {
   arguments* a = args;

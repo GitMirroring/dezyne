@@ -36,7 +36,7 @@ typedef struct {
 	proxy p;
 	Dataparam c;
 
-	IDataparam port;
+	IDataparam* port;
 
 } Datasystem;
 

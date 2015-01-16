@@ -24,22 +24,20 @@
 #ifndef DEZYNE_IMIDDLE_H
 #define DEZYNE_IMIDDLE_H
 
-typedef struct imiddle imiddle;
 
 
-
-struct imiddle {
+typedef struct {
 	struct {
+		void* self;
 		void (*e)(void* self );
 
-		void* self;
 	} in;
 
 	struct {
+		void* self;
 		void (*f) (void* self );
 
-		void* self;
 	} out;
-};
+} imiddle;
 
 #endif // DEZYNE_IMIDDLE_H

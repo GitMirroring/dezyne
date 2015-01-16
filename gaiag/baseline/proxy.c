@@ -38,179 +38,179 @@ typedef struct {proxy* self;int a0; int a1; int a2; int a3; int a4; int a5;} arg
 
 static void opaque_top_a0(void* args) {
 	args_top_a0 *a = args;
-	void (*f)(void*) = a->self->top.out.a0;
+	void (*f)(void*) = a->self->top->out.a0;
 	f(a->self);
 }
 
 static void opaque_top_a(void* args) {
 	args_top_a *a = args;
-	void (*f)(void*, int i) = a->self->top.out.a;
+	void (*f)(void*, int i) = a->self->top->out.a;
 	f(a->self, a->i);
 }
 
 static void opaque_top_aa(void* args) {
 	args_top_aa *a = args;
-	void (*f)(void*, int i, int j) = a->self->top.out.aa;
+	void (*f)(void*, int i, int j) = a->self->top->out.aa;
 	f(a->self, a->i,a->j);
 }
 
 static void opaque_top_a6(void* args) {
 	args_top_a6 *a = args;
-	void (*f)(void*, int a0, int a1, int a2, int a3, int a4, int a5) = a->self->top.out.a6;
+	void (*f)(void*, int a0, int a1, int a2, int a3, int a4, int a5) = a->self->top->out.a6;
 	f(a->self, a->a0,a->a1,a->a2,a->a3,a->a4,a->a5);
 }
 
 
 
 static void internal_top_e0(void* self_) {
-	proxy* self = (proxy*)(self_);
+	proxy* self = self_;
 	(void)self;
 	DZN_LOG("proxy.top_e0");
-	(*self->bottom.in.e0)(self->bottom.in.self );
+	self->bottom->in.e0(self->bottom);
 }
 
 static int internal_top_e0r(void* self_) {
-	proxy* self = (proxy*)(self_);
+	proxy* self = self_;
 	(void)self;
 	DZN_LOG("proxy.top_e0r");
-	int r = (*self->bottom.in.e0r)(self->bottom.in.self );
+	int r = self->bottom->in.e0r(self->bottom);
 	self->reply_IDataparam_Status = r;
 	return self->reply_IDataparam_Status;
 }
 
 static void internal_top_e(void* self_, int i) {
-	proxy* self = (proxy*)(self_);
+	proxy* self = self_;
 	(void)self;
 	DZN_LOG("proxy.top_e");
 	{
 		int pi = i;
-		(*self->bottom.in.e)(self->bottom.in.self , pi);
+		self->bottom->in.e(self->bottom, pi);
 	}
 }
 
 static int internal_top_er(void* self_, int i) {
-	proxy* self = (proxy*)(self_);
+	proxy* self = self_;
 	(void)self;
 	DZN_LOG("proxy.top_er");
 	{
 		int pi = i;
-		int r = (*self->bottom.in.er)(self->bottom.in.self , pi);
+		int r = self->bottom->in.er(self->bottom, pi);
 		self->reply_IDataparam_Status = r;
 	}
 	return self->reply_IDataparam_Status;
 }
 
 static int internal_top_eer(void* self_, int i, int j) {
-	proxy* self = (proxy*)(self_);
+	proxy* self = self_;
 	(void)self;
 	DZN_LOG("proxy.top_eer");
-	int r = (*self->bottom.in.eer)(self->bottom.in.self , i, j);
+	int r = self->bottom->in.eer(self->bottom, i, j);
 	self->reply_IDataparam_Status = r;
 	return self->reply_IDataparam_Status;
 }
 
 static void internal_top_eo(void* self_, int* i) {
-	proxy* self = (proxy*)(self_);
+	proxy* self = self_;
 	(void)self;
 	DZN_LOG("proxy.top_eo");
-	(*self->bottom.in.eo)(self->bottom.in.self , i);
+	self->bottom->in.eo(self->bottom, i);
 }
 
 static void internal_top_eoo(void* self_, int* i, int* j) {
-	proxy* self = (proxy*)(self_);
+	proxy* self = self_;
 	(void)self;
 	DZN_LOG("proxy.top_eoo");
-	(*self->bottom.in.eoo)(self->bottom.in.self , i, j);
+	self->bottom->in.eoo(self->bottom, i, j);
 }
 
 static void internal_top_eio(void* self_, int i, int* j) {
-	proxy* self = (proxy*)(self_);
+	proxy* self = self_;
 	(void)self;
 	DZN_LOG("proxy.top_eio");
-	(*self->bottom.in.eio)(self->bottom.in.self , i, j);
+	self->bottom->in.eio(self->bottom, i, j);
 }
 
 static void internal_top_eio2(void* self_, int* i) {
-	proxy* self = (proxy*)(self_);
+	proxy* self = self_;
 	(void)self;
 	DZN_LOG("proxy.top_eio2");
-	(*self->bottom.in.eio2)(self->bottom.in.self , i);
+	self->bottom->in.eio2(self->bottom, i);
 }
 
 static int internal_top_eor(void* self_, int* i) {
-	proxy* self = (proxy*)(self_);
+	proxy* self = self_;
 	(void)self;
 	DZN_LOG("proxy.top_eor");
-	int s = (*self->bottom.in.eor)(self->bottom.in.self , i);
+	int s = self->bottom->in.eor(self->bottom, i);
 	self->reply_IDataparam_Status = s;
 	return self->reply_IDataparam_Status;
 }
 
 static int internal_top_eoor(void* self_, int* i, int* j) {
-	proxy* self = (proxy*)(self_);
+	proxy* self = self_;
 	(void)self;
 	DZN_LOG("proxy.top_eoor");
-	int s = (*self->bottom.in.eoor)(self->bottom.in.self , i, j);
+	int s = self->bottom->in.eoor(self->bottom, i, j);
 	self->reply_IDataparam_Status = s;
 	return self->reply_IDataparam_Status;
 }
 
 static int internal_top_eior(void* self_, int i, int* j) {
-	proxy* self = (proxy*)(self_);
+	proxy* self = self_;
 	(void)self;
 	DZN_LOG("proxy.top_eior");
-	int s = (*self->bottom.in.eior)(self->bottom.in.self , i, j);
+	int s = self->bottom->in.eior(self->bottom, i, j);
 	self->reply_IDataparam_Status = s;
 	return self->reply_IDataparam_Status;
 }
 
 static int internal_top_eio2r(void* self_, int* i) {
-	proxy* self = (proxy*)(self_);
+	proxy* self = self_;
 	(void)self;
 	DZN_LOG("proxy.top_eio2r");
-	int s = (*self->bottom.in.eio2r)(self->bottom.in.self , i);
+	int s = self->bottom->in.eio2r(self->bottom, i);
 	self->reply_IDataparam_Status = s;
 	return self->reply_IDataparam_Status;
 }
 
 static void internal_bottom_a0(void* self_) {
-	proxy* self = (proxy*)(self_);
+	proxy* self = self_;
 	(void)self;
 	DZN_LOG("proxy.bottom_a0");
 	{
-		args_top_a0 a = {self };
-		args_top_a0* p = malloc(sizeof (args_top_a0));
+		args_top_a0 a = {self};
+		args_top_a0* p = malloc(sizeof(args_top_a0));
 		memcpy (p, &a, sizeof(args_top_a0));
 		runtime_defer(self->rt, self, opaque_top_a0, p);
 	}
 }
 
 static void internal_bottom_a(void* self_, int i) {
-	proxy* self = (proxy*)(self_);
+	proxy* self = self_;
 	(void)self;
 	DZN_LOG("proxy.bottom_a");
 	{
-		args_top_a a = {self , i};
-		args_top_a* p = malloc(sizeof (args_top_a));
+		args_top_a a = {self, i};
+		args_top_a* p = malloc(sizeof(args_top_a));
 		memcpy (p, &a, sizeof(args_top_a));
 		runtime_defer(self->rt, self, opaque_top_a, p);
 	}
 }
 
 static void internal_bottom_aa(void* self_, int i, int j) {
-	proxy* self = (proxy*)(self_);
+	proxy* self = self_;
 	(void)self;
 	DZN_LOG("proxy.bottom_aa");
 	{
-		args_top_aa a = {self , i, j};
-		args_top_aa* p = malloc(sizeof (args_top_aa));
+		args_top_aa a = {self, i, j};
+		args_top_aa* p = malloc(sizeof(args_top_aa));
 		memcpy (p, &a, sizeof(args_top_aa));
 		runtime_defer(self->rt, self, opaque_top_aa, p);
 	}
 }
 
 static void internal_bottom_a6(void* self_, int a0, int a1, int a2, int a3, int a4, int a5) {
-	proxy* self = (proxy*)(self_);
+	proxy* self = self_;
 	(void)self;
 	DZN_LOG("proxy.bottom_a6");
 	{
@@ -221,8 +221,8 @@ static void internal_bottom_a6(void* self_, int a0, int a1, int a2, int a3, int 
 		int A4 = a4;
 		int A5 = a5;
 		{
-			args_top_a6 a = {self , A0, A1, A2, A3, A4, A5};
-			args_top_a6* p = malloc(sizeof (args_top_a6));
+			args_top_a6 a = {self, A0, A1, A2, A3, A4, A5};
+			args_top_a6* p = malloc(sizeof(args_top_a6));
 			memcpy (p, &a, sizeof(args_top_a6));
 			runtime_defer(self->rt, self, opaque_top_a6, p);
 		}
@@ -230,144 +230,144 @@ static void internal_bottom_a6(void* self_, int a0, int a1, int a2, int a3, int 
 }
 
 static void opaque_top_e0(void* a) {
-	typedef struct {proxy* self; } args;
-	args* b = (args*) a;
+	typedef struct {proxy* self;} args;
+	args* b = a;
 	internal_top_e0(b->self);
 }
 
 static int opaque_top_e0r(void* a) {
-	typedef struct {proxy* self; } args;
-	args* b = (args*) a;
+	typedef struct {proxy* self;} args;
+	args* b = a;
 	internal_top_e0r(b->self);
 	return b->self->reply_IDataparam_Status;
 }
 
 static void opaque_top_e(void* a) {
-	typedef struct {proxy* self; int i;} args;
-	args* b = (args*) a;
+	typedef struct {proxy* self;int i;} args;
+	args* b = a;
 	internal_top_e(b->self, b->i);
 }
 
 static int opaque_top_er(void* a) {
-	typedef struct {proxy* self; int i;} args;
-	args* b = (args*) a;
+	typedef struct {proxy* self;int i;} args;
+	args* b = a;
 	internal_top_er(b->self, b->i);
 	return b->self->reply_IDataparam_Status;
 }
 
 static int opaque_top_eer(void* a) {
-	typedef struct {proxy* self; int i; int j;} args;
-	args* b = (args*) a;
+	typedef struct {proxy* self;int i; int j;} args;
+	args* b = a;
 	internal_top_eer(b->self, b->i,b->j);
 	return b->self->reply_IDataparam_Status;
 }
 
 static void opaque_top_eo(void* a) {
-	typedef struct {proxy* self; int* i;} args;
-	args* b = (args*) a;
+	typedef struct {proxy* self;int* i;} args;
+	args* b = a;
 	internal_top_eo(b->self, b->i);
 }
 
 static void opaque_top_eoo(void* a) {
-	typedef struct {proxy* self; int* i; int* j;} args;
-	args* b = (args*) a;
+	typedef struct {proxy* self;int* i; int* j;} args;
+	args* b = a;
 	internal_top_eoo(b->self, b->i,b->j);
 }
 
 static void opaque_top_eio(void* a) {
-	typedef struct {proxy* self; int i; int* j;} args;
-	args* b = (args*) a;
+	typedef struct {proxy* self;int i; int* j;} args;
+	args* b = a;
 	internal_top_eio(b->self, b->i,b->j);
 }
 
 static void opaque_top_eio2(void* a) {
-	typedef struct {proxy* self; int* i;} args;
-	args* b = (args*) a;
+	typedef struct {proxy* self;int* i;} args;
+	args* b = a;
 	internal_top_eio2(b->self, b->i);
 }
 
 static int opaque_top_eor(void* a) {
-	typedef struct {proxy* self; int* i;} args;
-	args* b = (args*) a;
+	typedef struct {proxy* self;int* i;} args;
+	args* b = a;
 	internal_top_eor(b->self, b->i);
 	return b->self->reply_IDataparam_Status;
 }
 
 static int opaque_top_eoor(void* a) {
-	typedef struct {proxy* self; int* i; int* j;} args;
-	args* b = (args*) a;
+	typedef struct {proxy* self;int* i; int* j;} args;
+	args* b = a;
 	internal_top_eoor(b->self, b->i,b->j);
 	return b->self->reply_IDataparam_Status;
 }
 
 static int opaque_top_eior(void* a) {
-	typedef struct {proxy* self; int i; int* j;} args;
-	args* b = (args*) a;
+	typedef struct {proxy* self;int i; int* j;} args;
+	args* b = a;
 	internal_top_eior(b->self, b->i,b->j);
 	return b->self->reply_IDataparam_Status;
 }
 
 static int opaque_top_eio2r(void* a) {
-	typedef struct {proxy* self; int* i;} args;
-	args* b = (args*) a;
+	typedef struct {proxy* self;int* i;} args;
+	args* b = a;
 	internal_top_eio2r(b->self, b->i);
 	return b->self->reply_IDataparam_Status;
 }
 
 static void opaque_bottom_a0(void* a) {
-	typedef struct {proxy* self; } args;
-	args* b = (args*) a;
+	typedef struct {proxy* self;} args;
+	args* b = a;
 	internal_bottom_a0(b->self);
 }
 
 static void opaque_bottom_a(void* a) {
-	typedef struct {proxy* self; int i;} args;
-	args* b = (args*) a;
+	typedef struct {proxy* self;int i;} args;
+	args* b = a;
 	internal_bottom_a(b->self, b->i);
 }
 
 static void opaque_bottom_aa(void* a) {
-	typedef struct {proxy* self; int i; int j;} args;
-	args* b = (args*) a;
+	typedef struct {proxy* self;int i; int j;} args;
+	args* b = a;
 	internal_bottom_aa(b->self, b->i,b->j);
 }
 
 static void opaque_bottom_a6(void* a) {
-	typedef struct {proxy* self; int a0; int a1; int a2; int a3; int a4; int a5;} args;
-	args* b = (args*) a;
+	typedef struct {proxy* self;int a0; int a1; int a2; int a3; int a4; int a5;} args;
+	args* b = a;
 	internal_bottom_a6(b->self, b->a0,b->a1,b->a2,b->a3,b->a4,b->a5);
 }
 
 static void top_e0(void* self_) {
-	proxy* self = (proxy*)(self_);
-	typedef struct {proxy* self; } args;
-	args* a = (args*)malloc(sizeof(args));
+	proxy* self = ((IDataparam*)self_)->in.self;
+	typedef struct {proxy* self;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	runtime_event(opaque_top_e0, a);
 }
 
 static int top_e0r(void* self_) {
-	proxy* self = (proxy*)(self_);
-	typedef struct {proxy* self; } args;
-	args* a = (args*)malloc(sizeof(args));
+	proxy* self = ((IDataparam*)self_)->in.self;
+	typedef struct {proxy* self;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	runtime_event(opaque_top_e0r, a);
 	return self->reply_IDataparam_Status;
 }
 
 static void top_e(void* self_, int i) {
-	proxy* self = (proxy*)(self_);
-	typedef struct {proxy* self; int i;} args;
-	args* a = (args*)malloc(sizeof(args));
+	proxy* self = ((IDataparam*)self_)->in.self;
+	typedef struct {proxy* self;int i;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
 	runtime_event(opaque_top_e, a);
 }
 
 static int top_er(void* self_, int i) {
-	proxy* self = (proxy*)(self_);
-	typedef struct {proxy* self; int i;} args;
-	args* a = (args*)malloc(sizeof(args));
+	proxy* self = ((IDataparam*)self_)->in.self;
+	typedef struct {proxy* self;int i;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
 	runtime_event(opaque_top_er, a);
@@ -375,9 +375,9 @@ static int top_er(void* self_, int i) {
 }
 
 static int top_eer(void* self_, int i, int j) {
-	proxy* self = (proxy*)(self_);
-	typedef struct {proxy* self; int i; int j;} args;
-	args* a = (args*)malloc(sizeof(args));
+	proxy* self = ((IDataparam*)self_)->in.self;
+	typedef struct {proxy* self;int i; int j;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
 	a->j=j;
@@ -386,18 +386,18 @@ static int top_eer(void* self_, int i, int j) {
 }
 
 static void top_eo(void* self_, int* i) {
-	proxy* self = (proxy*)(self_);
-	typedef struct {proxy* self; int* i;} args;
-	args* a = (args*)malloc(sizeof(args));
+	proxy* self = ((IDataparam*)self_)->in.self;
+	typedef struct {proxy* self;int* i;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
 	runtime_event(opaque_top_eo, a);
 }
 
 static void top_eoo(void* self_, int* i, int* j) {
-	proxy* self = (proxy*)(self_);
-	typedef struct {proxy* self; int* i; int* j;} args;
-	args* a = (args*)malloc(sizeof(args));
+	proxy* self = ((IDataparam*)self_)->in.self;
+	typedef struct {proxy* self;int* i; int* j;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
 	a->j=j;
@@ -405,9 +405,9 @@ static void top_eoo(void* self_, int* i, int* j) {
 }
 
 static void top_eio(void* self_, int i, int* j) {
-	proxy* self = (proxy*)(self_);
-	typedef struct {proxy* self; int i; int* j;} args;
-	args* a = (args*)malloc(sizeof(args));
+	proxy* self = ((IDataparam*)self_)->in.self;
+	typedef struct {proxy* self;int i; int* j;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
 	a->j=j;
@@ -415,18 +415,18 @@ static void top_eio(void* self_, int i, int* j) {
 }
 
 static void top_eio2(void* self_, int* i) {
-	proxy* self = (proxy*)(self_);
-	typedef struct {proxy* self; int* i;} args;
-	args* a = (args*)malloc(sizeof(args));
+	proxy* self = ((IDataparam*)self_)->in.self;
+	typedef struct {proxy* self;int* i;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
 	runtime_event(opaque_top_eio2, a);
 }
 
 static int top_eor(void* self_, int* i) {
-	proxy* self = (proxy*)(self_);
-	typedef struct {proxy* self; int* i;} args;
-	args* a = (args*)malloc(sizeof(args));
+	proxy* self = ((IDataparam*)self_)->in.self;
+	typedef struct {proxy* self;int* i;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
 	runtime_event(opaque_top_eor, a);
@@ -434,9 +434,9 @@ static int top_eor(void* self_, int* i) {
 }
 
 static int top_eoor(void* self_, int* i, int* j) {
-	proxy* self = (proxy*)(self_);
-	typedef struct {proxy* self; int* i; int* j;} args;
-	args* a = (args*)malloc(sizeof(args));
+	proxy* self = ((IDataparam*)self_)->in.self;
+	typedef struct {proxy* self;int* i; int* j;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
 	a->j=j;
@@ -445,9 +445,9 @@ static int top_eoor(void* self_, int* i, int* j) {
 }
 
 static int top_eior(void* self_, int i, int* j) {
-	proxy* self = (proxy*)(self_);
-	typedef struct {proxy* self; int i; int* j;} args;
-	args* a = (args*)malloc(sizeof(args));
+	proxy* self = ((IDataparam*)self_)->in.self;
+	typedef struct {proxy* self;int i; int* j;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
 	a->j=j;
@@ -456,9 +456,9 @@ static int top_eior(void* self_, int i, int* j) {
 }
 
 static int top_eio2r(void* self_, int* i) {
-	proxy* self = (proxy*)(self_);
-	typedef struct {proxy* self; int* i;} args;
-	args* a = (args*)malloc(sizeof(args));
+	proxy* self = ((IDataparam*)self_)->in.self;
+	typedef struct {proxy* self;int* i;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
 	runtime_event(opaque_top_eio2r, a);
@@ -466,26 +466,26 @@ static int top_eio2r(void* self_, int* i) {
 }
 
 static void bottom_a0(void* self_) {
-	proxy* self = (proxy*)(self_);
-	typedef struct {proxy* self; } args;
-	args* a = (args*)malloc(sizeof(args));
+	proxy* self = ((IDataparam*)self_)->out.self;
+	typedef struct {proxy* self;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	runtime_event(opaque_bottom_a0, a);
 }
 
 static void bottom_a(void* self_, int i) {
-	proxy* self = (proxy*)(self_);
-	typedef struct {proxy* self; int i;} args;
-	args* a = (args*)malloc(sizeof(args));
+	proxy* self = ((IDataparam*)self_)->out.self;
+	typedef struct {proxy* self;int i;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
 	runtime_event(opaque_bottom_a, a);
 }
 
 static void bottom_aa(void* self_, int i, int j) {
-	proxy* self = (proxy*)(self_);
-	typedef struct {proxy* self; int i; int j;} args;
-	args* a = (args*)malloc(sizeof(args));
+	proxy* self = ((IDataparam*)self_)->out.self;
+	typedef struct {proxy* self;int i; int j;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
 	a->j=j;
@@ -493,9 +493,9 @@ static void bottom_aa(void* self_, int i, int j) {
 }
 
 static void bottom_a6(void* self_, int a0, int a1, int a2, int a3, int a4, int a5) {
-	proxy* self = (proxy*)(self_);
-	typedef struct {proxy* self; int a0; int a1; int a2; int a3; int a4; int a5;} args;
-	args* a = (args*)malloc(sizeof(args));
+	proxy* self = ((IDataparam*)self_)->out.self;
+	typedef struct {proxy* self;int a0; int a1; int a2; int a3; int a4; int a5;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->a0=a0;
 	a->a1=a1;
@@ -511,23 +511,25 @@ void proxy_init (proxy* self, locator* dezyne_locator) {
 	self->rt = dezyne_locator->rt;
 	runtime_set(self->rt, self);
 
-	self->top.in.e0 = top_e0;
-	self->top.in.e0r = top_e0r;
-	self->top.in.e = top_e;
-	self->top.in.er = top_er;
-	self->top.in.eer = top_eer;
-	self->top.in.eo = top_eo;
-	self->top.in.eoo = top_eoo;
-	self->top.in.eio = top_eio;
-	self->top.in.eio2 = top_eio2;
-	self->top.in.eor = top_eor;
-	self->top.in.eoor = top_eoor;
-	self->top.in.eior = top_eior;
-	self->top.in.eio2r = top_eio2r;
-	self->top.in.self = self;
-	self->bottom.out.a0 = bottom_a0;
-	self->bottom.out.a = bottom_a;
-	self->bottom.out.aa = bottom_aa;
-	self->bottom.out.a6 = bottom_a6;
-	self->bottom.out.self = self;
+	self->top = &self->top_;
+	self->top->in.e0 = top_e0;
+	self->top->in.e0r = top_e0r;
+	self->top->in.e = top_e;
+	self->top->in.er = top_er;
+	self->top->in.eer = top_eer;
+	self->top->in.eo = top_eo;
+	self->top->in.eoo = top_eoo;
+	self->top->in.eio = top_eio;
+	self->top->in.eio2 = top_eio2;
+	self->top->in.eor = top_eor;
+	self->top->in.eoor = top_eoor;
+	self->top->in.eior = top_eior;
+	self->top->in.eio2r = top_eio2r;
+	self->top->in.self = self;
+	self->bottom = &self->bottom_;
+	self->bottom->out.self = self;
+	self->bottom->out.a0 = bottom_a0;
+	self->bottom->out.a = bottom_a;
+	self->bottom->out.aa = bottom_aa;
+	self->bottom->out.a6 = bottom_a6;
 }

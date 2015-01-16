@@ -23,22 +23,20 @@
 #ifndef DEZYNE_ISIREN_H
 #define DEZYNE_ISIREN_H
 
-typedef struct ISiren ISiren;
 
 
-
-struct ISiren {
+typedef struct {
 	struct {
+		void* self;
 		void (*turnon)(void* self );
 		void (*turnoff)(void* self );
 
-		void* self;
 	} in;
 
 	struct {
-
 		void* self;
+
 	} out;
-};
+} ISiren;
 
 #endif // DEZYNE_ISIREN_H

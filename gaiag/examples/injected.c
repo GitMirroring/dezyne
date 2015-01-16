@@ -31,23 +31,21 @@
 void f(void* self)
 {
   (void)self;
-  printf ("f\n");
+  printf("f\n");
 }
 
 int main()
 {
   runtime rt;
-  runtime_init (&rt);
+  runtime_init(&rt);
 
   locator l;
-  locator_init (&l, &rt);
-  //locator_set (rt);
+  locator_init(&l, &rt);
 
   Injected i;
-  Injected_init (&i, &l);
-  i.t.out.f = f;
-  i.m.t.out.f = f;
+  Injected_init(&i, &l);
+  i.t->out.f = f;
 
-  i.t.in.e(&i.m);
+  i.t->in.e(i.t);
   return 0;
 }

@@ -1,1 +1,1 @@
-(*self->#port .#direction .#event)(self->#port .#direction .self #comma #arguments)
+self->#port ->#direction .#event(self->#port #comma #arguments)

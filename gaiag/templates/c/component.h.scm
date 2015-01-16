@@ -16,9 +16,9 @@ typedef struct {
 #}) (gom:variables model))#
     (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))#
     (map (init-port #{
-#interface  #name;
-#}) ((compose .elements .ports) model))
-} #.model;
+#interface  #name _;
+#interface * #name;
+#}) ((compose .elements .ports) model))} #.model;
 
 void #.model _init(#.model * self, locator* dezyne_locator);
 

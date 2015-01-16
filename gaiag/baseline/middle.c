@@ -36,25 +36,25 @@ typedef struct {middle* self;} args_t_f;
 
 static void opaque_t_f(void* args) {
 	args_t_f *a = args;
-	void (*f)(void*) = a->self->t.out.f;
-	f(a->self);
+	void (*f)(void*) = a->self->t->out.f;
+	f(a->self->t);
 }
 
 
 
 static void internal_t_e(void* self_) {
-	middle* self = (middle*)(self_);
+	middle* self = self_;
 	(void)self;
 	DZN_LOG("middle.t_e");
-	(*self->l.in.log)(self->l.in.self);
-	(*self->b.in.e)(self->b.in.self);
+	self->l->in.log(self->l);
+	self->b->in.e(self->b);
 }
 
 static void internal_b_f(void* self_) {
-	middle* self = (middle*)(self_);
+	middle* self = self_;
 	(void)self;
 	DZN_LOG("middle.b_f");
-	(*self->l.in.log)(self->l.in.self);
+	self->l->in.log(self->l);
 	{
 		args_t_f a = {self};
 		args_t_f* p = malloc(sizeof(args_t_f));
@@ -76,7 +76,7 @@ static void opaque_b_f(void* a) {
 }
 
 static void t_e(void* self_) {
-	middle* self = (middle*)(self_);
+	middle* self = ((itop*)self_)->in.self;
 	typedef struct {middle* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
@@ -84,7 +84,7 @@ static void t_e(void* self_) {
 }
 
 static void b_f(void* self_) {
-	middle* self = (middle*)(self_);
+	middle* self = ((ibottom*)self_)->out.self;
 	typedef struct {middle* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
@@ -95,11 +95,14 @@ static void b_f(void* self_) {
 void middle_init (middle* self, locator* dezyne_locator) {
 	self->rt = dezyne_locator->rt;
 	runtime_set(self->rt, self);
-	self->l = *(ilogger*)locator_get(dezyne_locator, "ilogger");
+	self->l_ = *(ilogger*)locator_get(dezyne_locator, "ilogger");
 
-	self->t.in.e = t_e;
-	self->t.in.self = self;
-	self->b.out.f = b_f;
-	self->b.out.self = self;
-	self->l.out.self = self;
+	self->t = &self->t_;
+	self->t->in.e = t_e;
+	self->t->in.self = self;
+	self->b = &self->b_;
+	self->b->out.self = self;
+	self->b->out.f = b_f;
+	self->l = &self->l_;
+	self->l->out.self = self;
 }

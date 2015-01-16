@@ -38,49 +38,49 @@ typedef struct {Dataparam* self;int a0; int a1; int a2; int a3; int a4; int a5;}
 
 static void opaque_port_a0(void* args) {
 	args_port_a0 *a = args;
-	void (*f)(void*) = a->self->port.out.a0;
+	void (*f)(void*) = a->self->port->out.a0;
 	f(a->self);
 }
 
 static void opaque_port_a(void* args) {
 	args_port_a *a = args;
-	void (*f)(void*, int i) = a->self->port.out.a;
+	void (*f)(void*, int i) = a->self->port->out.a;
 	f(a->self, a->i);
 }
 
 static void opaque_port_aa(void* args) {
 	args_port_aa *a = args;
-	void (*f)(void*, int i, int j) = a->self->port.out.aa;
+	void (*f)(void*, int i, int j) = a->self->port->out.aa;
 	f(a->self, a->i,a->j);
 }
 
 static void opaque_port_a6(void* args) {
 	args_port_a6 *a = args;
-	void (*f)(void*, int a0, int a1, int a2, int a3, int a4, int a5) = a->self->port.out.a6;
+	void (*f)(void*, int a0, int a1, int a2, int a3, int a4, int a5) = a->self->port->out.a6;
 	f(a->self, a->a0,a->a1,a->a2,a->a3,a->a4,a->a5);
 }
 
 
 
 static void internal_port_e0(void* self_) {
-	Dataparam* self = (Dataparam*)(self_);
+	Dataparam* self = self_;
 	(void)self;
 	DZN_LOG("Dataparam.port_e0");
 	{
-		args_port_a6 a = {self , 0, 1, 2, 3, 4, 5};
-		args_port_a6* p = malloc(sizeof (args_port_a6));
+		args_port_a6 a = {self, 0, 1, 2, 3, 4, 5};
+		args_port_a6* p = malloc(sizeof(args_port_a6));
 		memcpy (p, &a, sizeof(args_port_a6));
 		runtime_defer(self->rt, self, opaque_port_a6, p);
 	}
 }
 
 static int internal_port_e0r(void* self_) {
-	Dataparam* self = (Dataparam*)(self_);
+	Dataparam* self = self_;
 	(void)self;
 	DZN_LOG("Dataparam.port_e0r");
 	{
-		args_port_a0 a = {self };
-		args_port_a0* p = malloc(sizeof (args_port_a0));
+		args_port_a0 a = {self};
+		args_port_a0* p = malloc(sizeof(args_port_a0));
 		memcpy (p, &a, sizeof(args_port_a0));
 		runtime_defer(self->rt, self, opaque_port_a0, p);
 	}
@@ -89,7 +89,7 @@ static int internal_port_e0r(void* self_) {
 }
 
 static void internal_port_e(void* self_, int i) {
-	Dataparam* self = (Dataparam*)(self_);
+	Dataparam* self = self_;
 	(void)self;
 	DZN_LOG("Dataparam.port_e");
 	{
@@ -99,14 +99,14 @@ static void internal_port_e(void* self_, int i) {
 		self->mi = pi;
 		self->mi = xfunx (pi, pi + pi);
 		{
-			args_port_a a = {self , self->mi};
-			args_port_a* p = malloc(sizeof (args_port_a));
+			args_port_a a = {self, self->mi};
+			args_port_a* p = malloc(sizeof(args_port_a));
 			memcpy (p, &a, sizeof(args_port_a));
 			runtime_defer(self->rt, self, opaque_port_a, p);
 		}
 		{
-			args_port_aa a = {self , self->mi, pi};
-			args_port_aa* p = malloc(sizeof (args_port_aa));
+			args_port_aa a = {self, self->mi, pi};
+			args_port_aa* p = malloc(sizeof(args_port_aa));
 			memcpy (p, &a, sizeof(args_port_aa));
 			runtime_defer(self->rt, self, opaque_port_aa, p);
 		}
@@ -114,7 +114,7 @@ static void internal_port_e(void* self_, int i) {
 }
 
 static int internal_port_er(void* self_, int i) {
-	Dataparam* self = (Dataparam*)(self_);
+	Dataparam* self = self_;
 	(void)self;
 	DZN_LOG("Dataparam.port_er");
 	{
@@ -122,14 +122,14 @@ static int internal_port_er(void* self_, int i) {
 		int s = Status_No;
 		self->mi = pi;
 		{
-			args_port_a a = {self , self->mi};
-			args_port_a* p = malloc(sizeof (args_port_a));
+			args_port_a a = {self, self->mi};
+			args_port_a* p = malloc(sizeof(args_port_a));
 			memcpy (p, &a, sizeof(args_port_a));
 			runtime_defer(self->rt, self, opaque_port_a, p);
 		}
 		{
-			args_port_aa a = {self , self->mi, pi};
-			args_port_aa* p = malloc(sizeof (args_port_aa));
+			args_port_aa a = {self, self->mi, pi};
+			args_port_aa* p = malloc(sizeof(args_port_aa));
 			memcpy (p, &a, sizeof(args_port_aa));
 			runtime_defer(self->rt, self, opaque_port_aa, p);
 		}
@@ -139,19 +139,19 @@ static int internal_port_er(void* self_, int i) {
 }
 
 static int internal_port_eer(void* self_, int i, int j) {
-	Dataparam* self = (Dataparam*)(self_);
+	Dataparam* self = self_;
 	(void)self;
 	DZN_LOG("Dataparam.port_eer");
 	int s = Status_No;
 	{
-		args_port_a a = {self , j};
-		args_port_a* p = malloc(sizeof (args_port_a));
+		args_port_a a = {self, j};
+		args_port_a* p = malloc(sizeof(args_port_a));
 		memcpy (p, &a, sizeof(args_port_a));
 		runtime_defer(self->rt, self, opaque_port_a, p);
 	}
 	{
-		args_port_aa a = {self , j, i};
-		args_port_aa* p = malloc(sizeof (args_port_aa));
+		args_port_aa a = {self, j, i};
+		args_port_aa* p = malloc(sizeof(args_port_aa));
 		memcpy (p, &a, sizeof(args_port_aa));
 		runtime_defer(self->rt, self, opaque_port_aa, p);
 	}
@@ -160,14 +160,14 @@ static int internal_port_eer(void* self_, int i, int j) {
 }
 
 static void internal_port_eo(void* self_, int* i) {
-	Dataparam* self = (Dataparam*)(self_);
+	Dataparam* self = self_;
 	(void)self;
 	DZN_LOG("Dataparam.port_eo");
 	*i = 234;
 }
 
 static void internal_port_eoo(void* self_, int* i, int* j) {
-	Dataparam* self = (Dataparam*)(self_);
+	Dataparam* self = self_;
 	(void)self;
 	DZN_LOG("Dataparam.port_eoo");
 	*i = 123;
@@ -175,14 +175,14 @@ static void internal_port_eoo(void* self_, int* i, int* j) {
 }
 
 static void internal_port_eio(void* self_, int i, int* j) {
-	Dataparam* self = (Dataparam*)(self_);
+	Dataparam* self = self_;
 	(void)self;
 	DZN_LOG("Dataparam.port_eio");
 	*j = i;
 }
 
 static void internal_port_eio2(void* self_, int* i) {
-	Dataparam* self = (Dataparam*)(self_);
+	Dataparam* self = self_;
 	(void)self;
 	DZN_LOG("Dataparam.port_eio2");
 	int t = *i;
@@ -190,7 +190,7 @@ static void internal_port_eio2(void* self_, int* i) {
 }
 
 static int internal_port_eor(void* self_, int* i) {
-	Dataparam* self = (Dataparam*)(self_);
+	Dataparam* self = self_;
 	(void)self;
 	DZN_LOG("Dataparam.port_eor");
 	*i = 234;
@@ -199,7 +199,7 @@ static int internal_port_eor(void* self_, int* i) {
 }
 
 static int internal_port_eoor(void* self_, int* i, int* j) {
-	Dataparam* self = (Dataparam*)(self_);
+	Dataparam* self = self_;
 	(void)self;
 	DZN_LOG("Dataparam.port_eoor");
 	*i = 123;
@@ -209,7 +209,7 @@ static int internal_port_eoor(void* self_, int* i, int* j) {
 }
 
 static int internal_port_eior(void* self_, int i, int* j) {
-	Dataparam* self = (Dataparam*)(self_);
+	Dataparam* self = self_;
 	(void)self;
 	DZN_LOG("Dataparam.port_eior");
 	*j = i;
@@ -218,7 +218,7 @@ static int internal_port_eior(void* self_, int i, int* j) {
 }
 
 static int internal_port_eio2r(void* self_, int* i) {
-	Dataparam* self = (Dataparam*)(self_);
+	Dataparam* self = self_;
 	(void)self;
 	DZN_LOG("Dataparam.port_eio2r");
 	int t = *i;
@@ -228,120 +228,120 @@ static int internal_port_eio2r(void* self_, int* i) {
 }
 
 static void opaque_port_e0(void* a) {
-	typedef struct {Dataparam* self; } args;
-	args* b = (args*) a;
+	typedef struct {Dataparam* self;} args;
+	args* b = a;
 	internal_port_e0(b->self);
 }
 
 static int opaque_port_e0r(void* a) {
-	typedef struct {Dataparam* self; } args;
-	args* b = (args*) a;
+	typedef struct {Dataparam* self;} args;
+	args* b = a;
 	internal_port_e0r(b->self);
 	return b->self->reply_IDataparam_Status;
 }
 
 static void opaque_port_e(void* a) {
-	typedef struct {Dataparam* self; int i;} args;
-	args* b = (args*) a;
+	typedef struct {Dataparam* self;int i;} args;
+	args* b = a;
 	internal_port_e(b->self, b->i);
 }
 
 static int opaque_port_er(void* a) {
-	typedef struct {Dataparam* self; int i;} args;
-	args* b = (args*) a;
+	typedef struct {Dataparam* self;int i;} args;
+	args* b = a;
 	internal_port_er(b->self, b->i);
 	return b->self->reply_IDataparam_Status;
 }
 
 static int opaque_port_eer(void* a) {
-	typedef struct {Dataparam* self; int i; int j;} args;
-	args* b = (args*) a;
+	typedef struct {Dataparam* self;int i; int j;} args;
+	args* b = a;
 	internal_port_eer(b->self, b->i,b->j);
 	return b->self->reply_IDataparam_Status;
 }
 
 static void opaque_port_eo(void* a) {
-	typedef struct {Dataparam* self; int* i;} args;
-	args* b = (args*) a;
+	typedef struct {Dataparam* self;int* i;} args;
+	args* b = a;
 	internal_port_eo(b->self, b->i);
 }
 
 static void opaque_port_eoo(void* a) {
-	typedef struct {Dataparam* self; int* i; int* j;} args;
-	args* b = (args*) a;
+	typedef struct {Dataparam* self;int* i; int* j;} args;
+	args* b = a;
 	internal_port_eoo(b->self, b->i,b->j);
 }
 
 static void opaque_port_eio(void* a) {
-	typedef struct {Dataparam* self; int i; int* j;} args;
-	args* b = (args*) a;
+	typedef struct {Dataparam* self;int i; int* j;} args;
+	args* b = a;
 	internal_port_eio(b->self, b->i,b->j);
 }
 
 static void opaque_port_eio2(void* a) {
-	typedef struct {Dataparam* self; int* i;} args;
-	args* b = (args*) a;
+	typedef struct {Dataparam* self;int* i;} args;
+	args* b = a;
 	internal_port_eio2(b->self, b->i);
 }
 
 static int opaque_port_eor(void* a) {
-	typedef struct {Dataparam* self; int* i;} args;
-	args* b = (args*) a;
+	typedef struct {Dataparam* self;int* i;} args;
+	args* b = a;
 	internal_port_eor(b->self, b->i);
 	return b->self->reply_IDataparam_Status;
 }
 
 static int opaque_port_eoor(void* a) {
-	typedef struct {Dataparam* self; int* i; int* j;} args;
-	args* b = (args*) a;
+	typedef struct {Dataparam* self;int* i; int* j;} args;
+	args* b = a;
 	internal_port_eoor(b->self, b->i,b->j);
 	return b->self->reply_IDataparam_Status;
 }
 
 static int opaque_port_eior(void* a) {
-	typedef struct {Dataparam* self; int i; int* j;} args;
-	args* b = (args*) a;
+	typedef struct {Dataparam* self;int i; int* j;} args;
+	args* b = a;
 	internal_port_eior(b->self, b->i,b->j);
 	return b->self->reply_IDataparam_Status;
 }
 
 static int opaque_port_eio2r(void* a) {
-	typedef struct {Dataparam* self; int* i;} args;
-	args* b = (args*) a;
+	typedef struct {Dataparam* self;int* i;} args;
+	args* b = a;
 	internal_port_eio2r(b->self, b->i);
 	return b->self->reply_IDataparam_Status;
 }
 
 static void port_e0(void* self_) {
-	Dataparam* self = (Dataparam*)(self_);
-	typedef struct {Dataparam* self; } args;
-	args* a = (args*)malloc(sizeof(args));
+	Dataparam* self = ((IDataparam*)self_)->in.self;
+	typedef struct {Dataparam* self;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	runtime_event(opaque_port_e0, a);
 }
 
 static int port_e0r(void* self_) {
-	Dataparam* self = (Dataparam*)(self_);
-	typedef struct {Dataparam* self; } args;
-	args* a = (args*)malloc(sizeof(args));
+	Dataparam* self = ((IDataparam*)self_)->in.self;
+	typedef struct {Dataparam* self;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	runtime_event(opaque_port_e0r, a);
 	return self->reply_IDataparam_Status;
 }
 
 static void port_e(void* self_, int i) {
-	Dataparam* self = (Dataparam*)(self_);
-	typedef struct {Dataparam* self; int i;} args;
-	args* a = (args*)malloc(sizeof(args));
+	Dataparam* self = ((IDataparam*)self_)->in.self;
+	typedef struct {Dataparam* self;int i;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
 	runtime_event(opaque_port_e, a);
 }
 
 static int port_er(void* self_, int i) {
-	Dataparam* self = (Dataparam*)(self_);
-	typedef struct {Dataparam* self; int i;} args;
-	args* a = (args*)malloc(sizeof(args));
+	Dataparam* self = ((IDataparam*)self_)->in.self;
+	typedef struct {Dataparam* self;int i;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
 	runtime_event(opaque_port_er, a);
@@ -349,9 +349,9 @@ static int port_er(void* self_, int i) {
 }
 
 static int port_eer(void* self_, int i, int j) {
-	Dataparam* self = (Dataparam*)(self_);
-	typedef struct {Dataparam* self; int i; int j;} args;
-	args* a = (args*)malloc(sizeof(args));
+	Dataparam* self = ((IDataparam*)self_)->in.self;
+	typedef struct {Dataparam* self;int i; int j;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
 	a->j=j;
@@ -360,18 +360,18 @@ static int port_eer(void* self_, int i, int j) {
 }
 
 static void port_eo(void* self_, int* i) {
-	Dataparam* self = (Dataparam*)(self_);
-	typedef struct {Dataparam* self; int* i;} args;
-	args* a = (args*)malloc(sizeof(args));
+	Dataparam* self = ((IDataparam*)self_)->in.self;
+	typedef struct {Dataparam* self;int* i;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
 	runtime_event(opaque_port_eo, a);
 }
 
 static void port_eoo(void* self_, int* i, int* j) {
-	Dataparam* self = (Dataparam*)(self_);
-	typedef struct {Dataparam* self; int* i; int* j;} args;
-	args* a = (args*)malloc(sizeof(args));
+	Dataparam* self = ((IDataparam*)self_)->in.self;
+	typedef struct {Dataparam* self;int* i; int* j;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
 	a->j=j;
@@ -379,9 +379,9 @@ static void port_eoo(void* self_, int* i, int* j) {
 }
 
 static void port_eio(void* self_, int i, int* j) {
-	Dataparam* self = (Dataparam*)(self_);
-	typedef struct {Dataparam* self; int i; int* j;} args;
-	args* a = (args*)malloc(sizeof(args));
+	Dataparam* self = ((IDataparam*)self_)->in.self;
+	typedef struct {Dataparam* self;int i; int* j;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
 	a->j=j;
@@ -389,18 +389,18 @@ static void port_eio(void* self_, int i, int* j) {
 }
 
 static void port_eio2(void* self_, int* i) {
-	Dataparam* self = (Dataparam*)(self_);
-	typedef struct {Dataparam* self; int* i;} args;
-	args* a = (args*)malloc(sizeof(args));
+	Dataparam* self = ((IDataparam*)self_)->in.self;
+	typedef struct {Dataparam* self;int* i;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
 	runtime_event(opaque_port_eio2, a);
 }
 
 static int port_eor(void* self_, int* i) {
-	Dataparam* self = (Dataparam*)(self_);
-	typedef struct {Dataparam* self; int* i;} args;
-	args* a = (args*)malloc(sizeof(args));
+	Dataparam* self = ((IDataparam*)self_)->in.self;
+	typedef struct {Dataparam* self;int* i;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
 	runtime_event(opaque_port_eor, a);
@@ -408,9 +408,9 @@ static int port_eor(void* self_, int* i) {
 }
 
 static int port_eoor(void* self_, int* i, int* j) {
-	Dataparam* self = (Dataparam*)(self_);
-	typedef struct {Dataparam* self; int* i; int* j;} args;
-	args* a = (args*)malloc(sizeof(args));
+	Dataparam* self = ((IDataparam*)self_)->in.self;
+	typedef struct {Dataparam* self;int* i; int* j;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
 	a->j=j;
@@ -419,9 +419,9 @@ static int port_eoor(void* self_, int* i, int* j) {
 }
 
 static int port_eior(void* self_, int i, int* j) {
-	Dataparam* self = (Dataparam*)(self_);
-	typedef struct {Dataparam* self; int i; int* j;} args;
-	args* a = (args*)malloc(sizeof(args));
+	Dataparam* self = ((IDataparam*)self_)->in.self;
+	typedef struct {Dataparam* self;int i; int* j;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
 	a->j=j;
@@ -430,9 +430,9 @@ static int port_eior(void* self_, int i, int* j) {
 }
 
 static int port_eio2r(void* self_, int* i) {
-	Dataparam* self = (Dataparam*)(self_);
-	typedef struct {Dataparam* self; int* i;} args;
-	args* a = (args*)malloc(sizeof(args));
+	Dataparam* self = ((IDataparam*)self_)->in.self;
+	typedef struct {Dataparam* self;int* i;} args;
+	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
 	runtime_event(opaque_port_eio2r, a);
@@ -457,18 +457,19 @@ void Dataparam_init (Dataparam* self, locator* dezyne_locator) {
 	runtime_set(self->rt, self);
 	self->mi = 0;
 	self->s = Status_Yes;
-	self->port.in.e0 = port_e0;
-	self->port.in.e0r = port_e0r;
-	self->port.in.e = port_e;
-	self->port.in.er = port_er;
-	self->port.in.eer = port_eer;
-	self->port.in.eo = port_eo;
-	self->port.in.eoo = port_eoo;
-	self->port.in.eio = port_eio;
-	self->port.in.eio2 = port_eio2;
-	self->port.in.eor = port_eor;
-	self->port.in.eoor = port_eoor;
-	self->port.in.eior = port_eior;
-	self->port.in.eio2r = port_eio2r;
-	self->port.in.self = self;
+	self->port = &self->port_;
+	self->port->in.e0 = port_e0;
+	self->port->in.e0r = port_e0r;
+	self->port->in.e = port_e;
+	self->port->in.er = port_er;
+	self->port->in.eer = port_eer;
+	self->port->in.eo = port_eo;
+	self->port->in.eoo = port_eoo;
+	self->port->in.eio = port_eio;
+	self->port->in.eio2 = port_eio2;
+	self->port->in.eor = port_eor;
+	self->port->in.eoor = port_eoor;
+	self->port->in.eior = port_eior;
+	self->port->in.eio2r = port_eio2r;
+	self->port->in.self = self;
 }

@@ -33,8 +33,8 @@
 
 typedef struct {
 	runtime* rt;
-	ilogger log;
-
+	ilogger log_;
+	ilogger* log;
 } logger;
 
 void logger_init(logger* self, locator* dezyne_locator);

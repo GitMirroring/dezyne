@@ -19,7 +19,7 @@ typedef struct {
   #component  #name;
 #}) (non-injected-instances model))
 #(map (init-port #{
-  #interface  #name;
+  #interface * #name;
 #}) ((compose .elements .ports) model))
 } #.model;
 

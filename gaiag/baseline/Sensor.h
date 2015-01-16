@@ -32,8 +32,8 @@
 
 typedef struct {
 	runtime* rt;
-	ISensor sensor;
-
+	ISensor sensor_;
+	ISensor* sensor;
 } Sensor;
 
 void Sensor_init(Sensor* self, locator* dezyne_locator);

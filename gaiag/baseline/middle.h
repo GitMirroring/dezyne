@@ -35,10 +35,12 @@
 
 typedef struct {
 	runtime* rt;
-	itop t;
-	ibottom b;
-	ilogger l;
-
+	itop t_;
+	itop* t;
+	ibottom b_;
+	ibottom* b;
+	ilogger l_;
+	ilogger* l;
 } middle;
 
 void middle_init(middle* self, locator* dezyne_locator);

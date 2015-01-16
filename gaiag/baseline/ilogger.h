@@ -24,21 +24,19 @@
 #ifndef DEZYNE_ILOGGER_H
 #define DEZYNE_ILOGGER_H
 
-typedef struct ilogger ilogger;
 
 
-
-struct ilogger {
+typedef struct {
 	struct {
+		void* self;
 		void (*log)(void* self );
 
-		void* self;
 	} in;
 
 	struct {
-
 		void* self;
+
 	} out;
-};
+} ilogger;
 
 #endif // DEZYNE_ILOGGER_H

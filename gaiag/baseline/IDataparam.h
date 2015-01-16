@@ -23,15 +23,14 @@
 #ifndef DEZYNE_IDATAPARAM_H
 #define DEZYNE_IDATAPARAM_H
 
-typedef struct IDataparam IDataparam;
-
 typedef enum {
 	Status_Yes, Status_No
 } Status;
 
 
-struct IDataparam {
+typedef struct {
 	struct {
+		void* self;
 		void (*e0)(void* self );
 		int (*e0r)(void* self );
 		void (*e)(void* self , int i);
@@ -46,17 +45,16 @@ struct IDataparam {
 		int (*eior)(void* self , int i, int* j);
 		int (*eio2r)(void* self , int* i);
 
-		void* self;
 	} in;
 
 	struct {
+		void* self;
 		void (*a0) (void* self );
 		void (*a) (void* self , int i);
 		void (*aa) (void* self , int i, int j);
 		void (*a6) (void* self , int a0, int a1, int a2, int a3, int a4, int a5);
 
-		void* self;
 	} out;
-};
+} IDataparam;
 
 #endif // DEZYNE_IDATAPARAM_H

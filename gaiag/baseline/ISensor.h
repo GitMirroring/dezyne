@@ -23,24 +23,22 @@
 #ifndef DEZYNE_ISENSOR_H
 #define DEZYNE_ISENSOR_H
 
-typedef struct ISensor ISensor;
 
 
-
-struct ISensor {
+typedef struct {
 	struct {
+		void* self;
 		void (*enable)(void* self );
 		void (*disable)(void* self );
 
-		void* self;
 	} in;
 
 	struct {
+		void* self;
 		void (*triggered) (void* self );
 		void (*disabled) (void* self );
 
-		void* self;
 	} out;
-};
+} ISensor;
 
 #endif // DEZYNE_ISENSOR_H

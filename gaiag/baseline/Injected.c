@@ -25,19 +25,16 @@
 
 #define CONNECT(provided, required)\
 {\
-	provided.out = required.out;\
-	required.in = provided.in;\
+	provided->out = required->out;\
+	required->in = provided->in;\
 }
 
 void Injected_init(Injected *self, locator* dezyne_locator) {
 	locator* local_locator = locator_clone(dezyne_locator);
-	locator_set(local_locator, "ilogger", &self->l.log);
+	locator_set(local_locator, "ilogger", &self->l.log_);
 	logger_init(&self->l, local_locator);
 	middle_init(&self->m, local_locator);
 	bottom_init(&self->b, local_locator);
-	self->m.b.in.self = &self->b;
-	self->b.b.in.self = &self->m;
-	self->l.log.in.self = &self->l;
 	self->t = self->m.t; 
 	CONNECT(self->b.b, self->m.b);
 }

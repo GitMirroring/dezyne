@@ -24,22 +24,20 @@
 #ifndef DEZYNE_ITOP_H
 #define DEZYNE_ITOP_H
 
-typedef struct itop itop;
 
 
-
-struct itop {
+typedef struct {
 	struct {
+		void* self;
 		void (*e)(void* self );
 
-		void* self;
 	} in;
 
 	struct {
+		void* self;
 		void (*f) (void* self );
 
-		void* self;
 	} out;
-};
+} itop;
 
 #endif // DEZYNE_ITOP_H

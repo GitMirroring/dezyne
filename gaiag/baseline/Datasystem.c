@@ -24,13 +24,13 @@
 
 #define CONNECT(provided, required)\
 {\
-		  provided.out = required.out;\
-		  required.in = provided.in;\
+	provided->out = required->out;\
+	required->in = provided->in;\
 }
 
-void Datasystem_init(Datasystem*self, locator* dezyne_locator) {
-	proxy_init (&self->p, dezyne_locator);
-	Dataparam_init (&self->c, dezyne_locator);
+void Datasystem_init(Datasystem *self, locator* dezyne_locator) {
+	proxy_init(&self->p, dezyne_locator);
+	Dataparam_init(&self->c, dezyne_locator);
 	self->port = self->p.top; 
 	CONNECT(self->c.port, self->p.bottom);
 }

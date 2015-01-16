@@ -24,22 +24,20 @@
 #ifndef DEZYNE_IBOTTOM_H
 #define DEZYNE_IBOTTOM_H
 
-typedef struct ibottom ibottom;
 
 
-
-struct ibottom {
+typedef struct {
 	struct {
+		void* self;
 		void (*e)(void* self );
 
-		void* self;
 	} in;
 
 	struct {
+		void* self;
 		void (*f) (void* self );
 
-		void* self;
 	} out;
-};
+} ibottom;
 
 #endif // DEZYNE_IBOTTOM_H

@@ -34,9 +34,10 @@
 typedef struct {
 	runtime* rt;
 	int reply_IDataparam_Status;
-	IDataparam top;
-	IDataparam bottom;
-
+	IDataparam top_;
+	IDataparam* top;
+	IDataparam bottom_;
+	IDataparam* bottom;
 } proxy;
 
 void proxy_init(proxy* self, locator* dezyne_locator);

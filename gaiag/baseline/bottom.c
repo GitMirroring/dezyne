@@ -36,14 +36,14 @@ typedef struct {bottom* self;} args_b_f;
 
 static void opaque_b_f(void* args) {
 	args_b_f *a = args;
-	void (*f)(void*) = a->self->b.out.f;
-	f(a->self);
+	void (*f)(void*) = a->self->b->out.f;
+	f(a->self->b);
 }
 
 
 
 static void internal_b_e(void* self_) {
-	bottom* self = (bottom*)(self_);
+	bottom* self = self_;
 	(void)self;
 	DZN_LOG("bottom.b_e");
 	{
@@ -61,7 +61,7 @@ static void opaque_b_e(void* a) {
 }
 
 static void b_e(void* self_) {
-	bottom* self = (bottom*)(self_);
+	bottom* self = ((ibottom*)self_)->in.self;
 	typedef struct {bottom* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
@@ -73,6 +73,7 @@ void bottom_init (bottom* self, locator* dezyne_locator) {
 	self->rt = dezyne_locator->rt;
 	runtime_set(self->rt, self);
 
-	self->b.in.e = b_e;
-	self->b.in.self = self;
+	self->b = &self->b_;
+	self->b->in.e = b_e;
+	self->b->in.self = self;
 }
