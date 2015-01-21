@@ -13,7 +13,7 @@ dezyne.#.model  = function() {#
    (lambda (port)
      (map (define-on model port #{
   this.#port .#direction .#event  = function() {
-  console.log('#3model .#port _#event ');
+  console.log('#.model .#port _#event ');
   #statement #(if (not (eq? type 'void))
 (list "return this.reply_" reply-type "_" reply-name ";\n")) }.bind(this);
 #}) (filter (gom:dir-matches? port) (gom:events port))))

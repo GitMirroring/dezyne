@@ -186,8 +186,8 @@ c-alarm:
 	cd out && ln -s ../examples/alarm.c .
 	#cp baseline/{AlarmSystem,Alarm,Sensor,Siren}.{h,c} out
 	#cp baseline/{IConsole,ISensor,ISiren}.h out
-	-for i in out/*c; do ccache gcc -g -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o && out/$@ > out/$@.trace
-	-$(diff) baseline/$@.trace out
+	for i in out/*c; do ccache gcc -g -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o && out/$@ > out/$@.trace
+	$(diff) baseline/$@.trace out
 	for i in out/*.h out/*.c; do $(diff) baseline/$$(basename $$i) $$i; done
 
 c-dataparam:
@@ -202,7 +202,7 @@ c-inject:
 	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c/* .
 	cd out && ln -s ../examples/injected.c .
 	cd out && $(shell pwd)/gaiag -l c examples/Injected.dzn
-	-for i in out/*c; do ccache gcc -g -Wall -Wextra -std=c99 -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o && out/$@ > out/$@.trace
+	for i in out/*c; do ccache gcc -g -Wall -Wextra -std=c99 -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o && out/$@ > out/$@.trace
 	for i in out/*.h out/*.c; do $(diff) baseline/$$(basename $$i) $$i; done
 	$(diff) baseline/$@.trace out
 
@@ -583,7 +583,9 @@ javascript-alarm: compile
 
 javascript: compile javascript-alarm javascript-regression
 
-code: c++-alarm python-alarm java-alarm javascript-alarm out/Reply7.o out/Reply7.java out/Reply7.js out/Reply7.py
+alarm: c-alarm c++-alarm goops-alarm java-alarm javascript-alarm python-alarm
+
+code: alarm out/Reply7.o out/Reply7.java out/Reply7.js out/Reply7.py
 
 GOOPS_BROKEN=\
  Dataparam.dzn\
@@ -627,12 +629,9 @@ goops-alarm: compile
 	cat templates/goops/header.scm\
 		 $$(find out/dezyne -name '*.scm')\
 		examples/alarm.scm > out/alarm.scm
-	cd out && bash ./alarm.scm
-	$(diff) baseline/IConsole.scm out/dezyne
-	$(diff) baseline/ISensor.scm out/dezyne
-	$(diff) baseline/ISiren.scm out/dezyne
-	$(diff) baseline/Alarm.scm out/dezyne
-	$(diff) baseline/AlarmSystem.scm out/dezyne
+	cd out && bash ./alarm.scm 2>$@.trace
+	$(diff) baseline/$@.trace out
+	for i in out/*.scm; do $(diff) baseline/$$(basename $$i) $$i; done
 
 goops: compile goops-alarm goops-regression
 

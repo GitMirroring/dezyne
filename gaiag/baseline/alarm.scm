@@ -1,5 +1,6 @@
 ;;; Gaiag --- Guile in Asd In Asd in Guile.
 ;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
@@ -52,28 +53,42 @@
 
 (define-method (action (o <component>) (port <accessor>) (dir <accessor>) (event <symbol>))
   ((assoc-ref ((compose dir port) o) event)))
-(define-class <interface:Console> (<interface>))
-(define-class <interface:Siren> (<interface>))
-(define-class <interface:Sensor> (<interface>))
+(define-class <interface:ISiren> (<interface>))
+(define-class <interface:ISensor> (<interface>))
+(define-class <AlarmSystem> (<system>)
+  (alarm :accessor .alarm :init-form (make <Alarm>))
+  (sensor :accessor .sensor :init-form (make <Sensor>))
+  (siren :accessor .siren :init-form (make <Siren>))
+  (console :accessor .console :init-value #f :init-keyword :console))
+
+(define-method (initialize (o <AlarmSystem>) args)
+  (next-method)
+  (let-keywords
+   args #f ((out-console #f))
+  (set! (.console o) (.console (.alarm o)))
+  (set! (.out (.console o)) out-console))
+  (connect-ports (.sensor (.sensor o)) (.sensor (.alarm o)))
+  (connect-ports (.siren (.siren o)) (.siren (.alarm o))))
+(define-class <interface:IConsole> (<interface>))
 (define-class <Alarm> (<component>)
   (state :accessor .state :init-value '(States Disarmed))
   (sounding :accessor .sounding :init-value #f)
-  (console :accessor .console :init-form (make <interface:Console>))
-  (sensor :accessor .sensor :init-form (make <interface:Sensor>))
-  (siren :accessor .siren :init-form (make <interface:Siren>)))
+  (console :accessor .console :init-form (make <interface:IConsole>))
+  (sensor :accessor .sensor :init-form (make <interface:ISensor>))
+  (siren :accessor .siren :init-form (make <interface:ISiren>)))
 
 (define-method (initialize (o <Alarm>) args)
   (next-method)
   (set! (.console o)
-    (make <interface:Console>
+    (make <interface:IConsole>
       :in `((arm . ,(lambda () (console-arm o)))
             (disarm . ,(lambda () (console-disarm o))))))
   (set! (.sensor o)
-    (make <interface:Sensor>
+    (make <interface:ISensor>
       :out `((triggered . ,(lambda () (sensor-triggered o)))
             (disabled . ,(lambda () (sensor-disabled o))))))
   (set! (.siren o)
-    (make <interface:Siren>)))
+    (make <interface:ISiren>)))
 
 (define-method (console-arm (o <Alarm>))
   (stderr "Alarm.console.arm\n")
@@ -140,51 +155,37 @@
       (illegal))))
 
 
-(define-class <AlarmSystem> (<system>)
-  (alarm :accessor .alarm :init-form (make <Alarm>))
-  (sensor :accessor .sensor :init-form (make <SensorExt>))
-  (siren :accessor .siren :init-form (make <SirenExt>))
-  (console :accessor .console :init-value #f :init-keyword :console))
-
-(define-method (initialize (o <AlarmSystem>) args)
-  (next-method)
-  (let-keywords
-   args #f ((out-console #f))
-  (set! (.console o) (.console (.alarm o)))
-  (set! (.out (.console o)) out-console))
-  (connect-ports (.sensor (.sensor o)) (.sensor (.alarm o)))
-  (connect-ports (.siren (.siren o)) (.siren (.alarm o))))
 ;; Handwritten
-(define-class <SensorExt> ()
+(define-class <Sensor> ()
   (sensor :accessor .sensor :init-value #f))
 
-(define-method (initialize (o <SensorExt>) args)
+(define-method (initialize (o <Sensor>) args)
   (next-method)
   (set! (.sensor o)
-        (make <interface:Sensor>
+        (make <interface:ISensor>
           :in `((enable . ,(lambda () (enable o)))
                 (disable . ,(lambda () (disable o)))))))
 
-(define-method (enable (o <SensorExt>))
-  (stderr "SensorExt.enable\n"))
+(define-method (enable (o <Sensor>))
+  (stderr "Sensor.enable\n"))
 
-(define-method (disable (o <SensorExt>))
-  (stderr "SensorExt.disable\n"))
+(define-method (disable (o <Sensor>))
+  (stderr "Sensor.disable\n"))
 
-(define-class <SirenExt> ()
+(define-class <Siren> ()
   (siren :accessor .siren :init-value #f))
 
-(define-method (initialize (o <SirenExt>) args)
+(define-method (initialize (o <Siren>) args)
   (next-method)
-  (set! (.siren o) (make <interface:Siren>
+  (set! (.siren o) (make <interface:ISiren>
                      :in `((turnon . ,(lambda () (turnon o)))
                            (turnoff . ,(lambda () (turnoff o)))))))
 
-(define-method (turnon (o <SirenExt>))
-  (stderr "SirenExt.turnon\n"))
+(define-method (turnon (o <Siren>))
+  (stderr "Siren.turnon\n"))
 
-(define-method (turnoff (o <SirenExt>))
-  (stderr "SirenExt.turnoff\n"))
+(define-method (turnoff (o <Siren>))
+  (stderr "Siren.turnoff\n"))
 
 (define ((port name) o) (assoc-ref o name))
 

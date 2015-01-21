@@ -1,0 +1,16 @@
+;;; note: source file /home/rutgervanbeusekom/development.git/gaiag/out/./alarm.scm
+;;;       newer than compiled /home/rutgervanbeusekom/.cache/guile/ccache/2.0-LE-8-2.0/home/rutgervanbeusekom/development.git/gaiag/out/alarm.scm.go
+;;; note: auto-compilation is enabled, set GUILE_AUTO_COMPILE=0
+;;;       or pass the --no-auto-compile argument to disable.
+;;; compiling /home/rutgervanbeusekom/development.git/gaiag/out/./alarm.scm
+;;; compiled /home/rutgervanbeusekom/.cache/guile/ccache/2.0-LE-8-2.0/home/rutgervanbeusekom/development.git/gaiag/out/alarm.scm.go
+Alarm.console.arm
+Sensor.enable
+Alarm.sensor.triggered
+Console.detected
+Siren.turnon
+Alarm.console.disarm
+Sensor.disable
+Siren.turnoff
+Alarm.sensor.disabled
+Console.deactivated

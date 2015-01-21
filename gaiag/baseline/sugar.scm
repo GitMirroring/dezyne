@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -39,7 +40,7 @@
         (action o .i .out 'a))
       (else 
         (let ((t '(Enum False))) 
-        (cond ((equal? (.t o) '(Enum True)) 
+        (cond ((equal? t '(Enum True)) 
           (action o .i .out 'a)))))))))
 
 
