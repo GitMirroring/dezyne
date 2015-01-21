@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -150,7 +151,7 @@ unsigned long crc32(const unsigned char *s, unsigned int len)
 {
   unsigned int i;
   unsigned long crc32val;
-  
+
   crc32val = 0;
   for (i = 0;  i < len;  i ++)
     {
@@ -240,7 +241,7 @@ int map_rehash(map* m){
 
         if (curr[i].in_use == 0)
             continue;
-            
+
 		status = map_put(m, curr[i].key, curr[i].data);
 		if (status != MAP_OK)
 			return status;
@@ -270,7 +271,7 @@ int map_put(map* m, char* key, void* value){
 	m->data[index].data = value;
 	m->data[index].key = key;
 	m->data[index].in_use = 1;
-	m->size++; 
+	m->size++;
 
 	return MAP_OK;
 }
@@ -315,14 +316,14 @@ int map_iterate(map* m, map_f f, void* item) {
 
 	/* On empty map, return immediately */
 	if (map_length(m) <= 0)
-		return MAP_MISSING;	
+		return MAP_MISSING;
 
 	/* Linear probing */
 	for(i = 0; i< m->table_size; i++)
 		if(m->data[i].in_use != 0) {
                 	//void* data = (void*) (m->data[i].data);
                 	void* data = &m->data[i];
-			int status = f(item, data);
+			int status = f(data, item);
 			if (status != MAP_OK) {
 				return status;
 			}
@@ -400,7 +401,7 @@ int main(char* argv, int argc)
     map mymap;
     char key_string[KEY_MAX_LENGTH];
     data_struct_t* value;
-    
+
     mymap = map_new();
 
     /* First, populate the hash map with ascending values */
@@ -421,17 +422,17 @@ int main(char* argv, int argc)
         snprintf(key_string, KEY_MAX_LENGTH, "%s%d", KEY_PREFIX, index);
 
         error = map_get(mymap, key_string, (void**)(&value));
-        
+
         /* Make sure the value was both found and the correct number */
         assert(error==MAP_OK);
         assert(value->number==index);
     }
-    
+
     /* Make sure that a value that wasn't in the map can't be found */
     snprintf(key_string, KEY_MAX_LENGTH, "%s%d", KEY_PREFIX, KEY_COUNT);
 
     error = map_get(mymap, key_string, (void**)(&value));
-        
+
     /* Make sure the value was not found */
     assert(error==MAP_MISSING);
 
@@ -446,9 +447,9 @@ int main(char* argv, int argc)
         error = map_remove(mymap, key_string);
         assert(error==MAP_OK);
 
-        free(value);        
+        free(value);
     }
-    
+
     /* Now, destroy the map */
     map_free(mymap);
 

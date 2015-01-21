@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -43,7 +44,7 @@ runtime_key (void* scope)
   return buf;
 }
 
-pair*
+static pair*
 runtime_get (runtime* self, void* scope)
 {
   void* p = 0;
