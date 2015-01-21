@@ -207,17 +207,17 @@ c-inject:
 	$(diff) baseline/$@.trace out
 
 #out/%.c: examples/regression/%.dzn
-define .CC_REGRESSION
+define .C_REGRESSION
 rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c/* .
 cd out && $(shell pwd)/gaiag -l c examples/regression/$*.dzn
--$(diff) baseline/$*.hh out
--$(diff) baseline/$*.cc out
-ccache g++ -o out/$*.o -c out/$*.cc $(UPDATE)
-@$(diff) baseline/$*.hh out >/dev/null
-@$(diff) baseline/$*.cc out >/dev/null
+-$(diff) baseline/$*.h out
+-$(diff) baseline/$*.c out
+ccache gcc -std=c99 -Wall -Wextra -o out/$*.o -c out/$*.c $(UPDATE)
+@$(diff) baseline/$*.h out >/dev/null
+@$(diff) baseline/$*.c out >/dev/null
 endef
 
-CC_BROKEN =\
+C_BROKEN =\
  Alarm.dzn\
  Noot.dzn\
  hide.dzn\
@@ -225,18 +225,18 @@ CC_BROKEN =\
  livelock2.dzn\
  mangle.dzn\
 
-CC_SOURCES = $(filter-out $(CC_BROKEN),$(shell cd examples/regression && grep -l ^component *.dzn))
+C_SOURCES = $(filter-out $(C_BROKEN),$(shell cd examples/regression && grep -l ^component *.dzn))
 
-#out/%.c.up: UPDATE=||:; cp out/$*.cc out/*.hh baseline
-out/%.c.up: UPDATE=&& cp out/$*.cc out/*.hh baseline
+#out/%.c.up: UPDATE=||:; cp out/$*.c out/*.h baseline
+out/%.c.up: UPDATE=&& cp out/$*.c out/*.h baseline
 out/%.c.up: examples/regression/%.dzn
-	$(.CC_REGRESSION)
+	$(.C_REGRESSION)
 
 out/%.c: examples/regression/%.dzn
-	$(.CC_REGRESSION)
+	$(.C_REGRESSION)
 
-c-regression: $(CC_SOURCES:%.dzn=out/%.c)
-c-update: $(CC_SOURCES:%.dzn=out/%.c.up)
+c-regression: $(C_SOURCES:%.dzn=out/%.c)
+c-update: $(C_SOURCES:%.dzn=out/%.c.up)
 
 # c++
 c++: compile c++-alarm glue c++-inject c++-dataparam c++-regression

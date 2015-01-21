@@ -46,7 +46,7 @@
   static #return-type  opaque_#port _#event(void* a) {
     typedef struct {#.model * self;#((->join "; ") parameter-list)#(if (null? parameter-list) "" ";")} args;
   args* b = a;
-  internal_#port _#event (b->self#comma #(comma-join (map (lambda (x) (symbol-append 'b-> x '-> port)) argument-list)));
+  internal_#port _#event (b->self#comma #(comma-join (map (lambda (x) (symbol-append 'b-> x)) argument-list)));
   #(if (not (eq? type 'void))
 (list "    return b->self->reply_" reply-type "_" reply-name ";\n"
       ))}
@@ -71,6 +71,7 @@
   (gom:ports model))#
 ((->join "\n  ")(map (define-function model #{
   #return-type  #name (#.model * self#comma #parameters) {
+   (void)self;
     #statements }
 #}) (gom:functions model)))
 void #.model _init (#.model * self, locator* dezyne_locator) {
@@ -79,7 +80,7 @@ void #.model _init (#.model * self, locator* dezyne_locator) {
   #(map (lambda (port) (->string (list "self->" (.name port) "_ = *(" (.type port) "*)locator_get(dezyne_locator, \"" (.type port) "\");\n"))) (filter .injected (gom:ports model)))#
 ((->join  ";\n")
  (map (init-member model #{
-   self->#name  = #(if (not (eq? expression *unspecified*)) expression)#}) (gom:variables model)))#
+   #(if (not (eq? expression *unspecified*)) (->string (list 'self-> name " = " expression)))#}) (gom:variables model)))#
 (if (null? (gom:variables model)) "" ";")
 #
    (map

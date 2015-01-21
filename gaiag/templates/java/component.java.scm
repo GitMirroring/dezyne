@@ -28,7 +28,7 @@ class #.model {#
    (lambda (port)
      (map (define-on model port #{#'()
   public #return-type  #port _#event () {
-    System.err.println("#model .#port _#event ");
+    System.err.println("#.model .#port _#event ");
   #statement #(if (not (eq? type 'void))
 (list "return reply_" reply-type "_" reply-name ";\n")) };
 #}) (filter (gom:dir-matches? port) (gom:events port))))

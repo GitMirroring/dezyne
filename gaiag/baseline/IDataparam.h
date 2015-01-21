@@ -24,8 +24,8 @@
 #define DEZYNE_IDATAPARAM_H
 
 typedef enum {
-	Status_Yes, Status_No
-} Status;
+	IDataparam_Status_Yes, IDataparam_Status_No
+} IDataparam_Status;
 
 
 typedef struct {

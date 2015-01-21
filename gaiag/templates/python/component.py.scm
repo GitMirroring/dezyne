@@ -33,7 +33,7 @@ class #.model  ():
    (lambda (port)
      (map (define-on model port #{
     def #port _#event  (self):
-        sys.stderr.write ('#model .#port _#event \n')
+        sys.stderr.write ('#.model .#port _#event \n')
 #statement #(if (not (eq? type 'void))
 (list "        return self.reply_" reply-type "_" reply-name))
 

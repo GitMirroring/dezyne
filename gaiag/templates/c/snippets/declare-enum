@@ -1,3 +1,3 @@
 typedef enum {
-    #((->join ", ") (map (lambda (f) (symbol-append name '_ f)) fields))
-} #name;
+    #((->join ", ") (map (lambda (f) (symbol-append .model '_ name '_ f)) fields))
+} #.model _#name;

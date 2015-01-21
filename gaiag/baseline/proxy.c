@@ -39,25 +39,25 @@ typedef struct {proxy* self;int a0; int a1; int a2; int a3; int a4; int a5;} arg
 static void opaque_top_a0(void* args) {
 	args_top_a0 *a = args;
 	void (*f)(void*) = a->self->top->out.a0;
-	f(a->self);
+	f(a->self->top);
 }
 
 static void opaque_top_a(void* args) {
 	args_top_a *a = args;
 	void (*f)(void*, int i) = a->self->top->out.a;
-	f(a->self, a->i);
+	f(a->self->top, a->i);
 }
 
 static void opaque_top_aa(void* args) {
 	args_top_aa *a = args;
 	void (*f)(void*, int i, int j) = a->self->top->out.aa;
-	f(a->self, a->i,a->j);
+	f(a->self->top, a->i,a->j);
 }
 
 static void opaque_top_a6(void* args) {
 	args_top_a6 *a = args;
 	void (*f)(void*, int a0, int a1, int a2, int a3, int a4, int a5) = a->self->top->out.a6;
-	f(a->self, a->a0,a->a1,a->a2,a->a3,a->a4,a->a5);
+	f(a->self->top, a->a0,a->a1,a->a2,a->a3,a->a4,a->a5);
 }
 
 

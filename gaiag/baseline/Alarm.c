@@ -29,8 +29,8 @@
 #include <string.h>
 
 typedef enum {
-	States_Disarmed, States_Armed, States_Triggered, States_Disarming
-} States;
+	Alarm_States_Disarmed, Alarm_States_Armed, Alarm_States_Triggered, Alarm_States_Disarming
+} Alarm_States;
 
 
 typedef struct {Alarm* self;} args_console_detected;
@@ -55,17 +55,17 @@ static void internal_console_arm(void* self_) {
 	Alarm* self = self_;
 	(void)self;
 	DZN_LOG("Alarm.console_arm");
-	if (self->state == States_Disarmed) {
+	if (self->state == Alarm_States_Disarmed) {
 		self->sensor->in.enable(self->sensor);
-		self->state = States_Armed;
+		self->state = Alarm_States_Armed;
 	}
-	else if (self->state == States_Armed) {
+	else if (self->state == Alarm_States_Armed) {
 		assert(false);
 	}
-	else if (self->state == States_Disarming) {
+	else if (self->state == Alarm_States_Disarming) {
 		assert(false);
 	}
-	else if (self->state == States_Triggered) {
+	else if (self->state == Alarm_States_Triggered) {
 		assert(false);
 	}
 }
@@ -74,21 +74,21 @@ static void internal_console_disarm(void* self_) {
 	Alarm* self = self_;
 	(void)self;
 	DZN_LOG("Alarm.console_disarm");
-	if (self->state == States_Disarmed) {
+	if (self->state == Alarm_States_Disarmed) {
 		assert(false);
 	}
-	else if (self->state == States_Armed) {
+	else if (self->state == Alarm_States_Armed) {
 		self->sensor->in.disable(self->sensor);
-		self->state = States_Disarming;
+		self->state = Alarm_States_Disarming;
 	}
-	else if (self->state == States_Disarming) {
+	else if (self->state == Alarm_States_Disarming) {
 		assert(false);
 	}
-	else if (self->state == States_Triggered) {
+	else if (self->state == Alarm_States_Triggered) {
 		self->sensor->in.disable(self->sensor);
 		self->siren->in.turnoff(self->siren);
 		self->sounding = false;
-		self->state = States_Disarming;
+		self->state = Alarm_States_Disarming;
 	}
 }
 
@@ -96,10 +96,10 @@ static void internal_sensor_triggered(void* self_) {
 	Alarm* self = self_;
 	(void)self;
 	DZN_LOG("Alarm.sensor_triggered");
-	if (self->state == States_Disarmed) {
+	if (self->state == Alarm_States_Disarmed) {
 		assert(false);
 	}
-	else if (self->state == States_Armed) {
+	else if (self->state == Alarm_States_Armed) {
 		{
 			args_console_detected a = {self};
 			args_console_detected* p = malloc(sizeof(args_console_detected));
@@ -108,13 +108,13 @@ static void internal_sensor_triggered(void* self_) {
 		}
 		self->siren->in.turnon(self->siren);
 		self->sounding = true;
-		self->state = States_Triggered;
+		self->state = Alarm_States_Triggered;
 	}
-	else if (self->state == States_Disarming) {
+	else if (self->state == Alarm_States_Disarming) {
 		{
 		}
 	}
-	else if (self->state == States_Triggered) {
+	else if (self->state == Alarm_States_Triggered) {
 		assert(false);
 	}
 }
@@ -123,13 +123,13 @@ static void internal_sensor_disabled(void* self_) {
 	Alarm* self = self_;
 	(void)self;
 	DZN_LOG("Alarm.sensor_disabled");
-	if (self->state == States_Disarmed) {
+	if (self->state == Alarm_States_Disarmed) {
 		assert(false);
 	}
-	else if (self->state == States_Armed) {
+	else if (self->state == Alarm_States_Armed) {
 		assert(false);
 	}
-	else if (self->state == States_Disarming) {
+	else if (self->state == Alarm_States_Disarming) {
 		if (self->sounding) {
 			{
 				args_console_deactivated a = {self};
@@ -138,7 +138,7 @@ static void internal_sensor_disabled(void* self_) {
 				runtime_defer(self->rt, self, opaque_console_deactivated, p);
 			}
 			self->siren->in.turnoff(self->siren);
-			self->state = States_Disarmed;
+			self->state = Alarm_States_Disarmed;
 			self->sounding = false;
 		}
 		else {
@@ -148,10 +148,10 @@ static void internal_sensor_disabled(void* self_) {
 				memcpy (p, &a, sizeof(args_console_deactivated));
 				runtime_defer(self->rt, self, opaque_console_deactivated, p);
 			}
-			self->state = States_Disarmed;
+			self->state = Alarm_States_Disarmed;
 		}
 	}
-	else if (self->state == States_Triggered) {
+	else if (self->state == Alarm_States_Triggered) {
 		assert(false);
 	}
 }
@@ -216,7 +216,7 @@ static void sensor_disabled(void* self_) {
 void Alarm_init (Alarm* self, locator* dezyne_locator) {
 	self->rt = dezyne_locator->rt;
 	runtime_set(self->rt, self);
-	self->state = States_Disarmed;
+	self->state = Alarm_States_Disarmed;
 	self->sounding = false;
 	self->console = &self->console_;
 	self->console->in.arm = console_arm;

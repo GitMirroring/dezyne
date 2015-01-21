@@ -39,25 +39,25 @@ typedef struct {Dataparam* self;int a0; int a1; int a2; int a3; int a4; int a5;}
 static void opaque_port_a0(void* args) {
 	args_port_a0 *a = args;
 	void (*f)(void*) = a->self->port->out.a0;
-	f(a->self);
+	f(a->self->port);
 }
 
 static void opaque_port_a(void* args) {
 	args_port_a *a = args;
 	void (*f)(void*, int i) = a->self->port->out.a;
-	f(a->self, a->i);
+	f(a->self->port, a->i);
 }
 
 static void opaque_port_aa(void* args) {
 	args_port_aa *a = args;
 	void (*f)(void*, int i, int j) = a->self->port->out.aa;
-	f(a->self, a->i,a->j);
+	f(a->self->port, a->i,a->j);
 }
 
 static void opaque_port_a6(void* args) {
 	args_port_a6 *a = args;
 	void (*f)(void*, int a0, int a1, int a2, int a3, int a4, int a5) = a->self->port->out.a6;
-	f(a->self, a->a0,a->a1,a->a2,a->a3,a->a4,a->a5);
+	f(a->self->port, a->a0,a->a1,a->a2,a->a3,a->a4,a->a5);
 }
 
 
@@ -84,7 +84,7 @@ static int internal_port_e0r(void* self_) {
 		memcpy (p, &a, sizeof(args_port_a0));
 		runtime_defer(self->rt, self, opaque_port_a0, p);
 	}
-	self->reply_IDataparam_Status = Status_Yes;
+	self->reply_IDataparam_Status = IDataparam_Status_Yes;
 	return self->reply_IDataparam_Status;
 }
 
@@ -94,10 +94,10 @@ static void internal_port_e(void* self_, int i) {
 	DZN_LOG("Dataparam.port_e");
 	{
 		int pi = i;
-		int s = funx (pi);
+		int s = funx(self, pi);
 		s = s;
 		self->mi = pi;
-		self->mi = xfunx (pi, pi + pi);
+		self->mi = xfunx(self, pi, pi + pi);
 		{
 			args_port_a a = {self, self->mi};
 			args_port_a* p = malloc(sizeof(args_port_a));
@@ -119,7 +119,7 @@ static int internal_port_er(void* self_, int i) {
 	DZN_LOG("Dataparam.port_er");
 	{
 		int pi = i;
-		int s = Status_No;
+		int s = IDataparam_Status_No;
 		self->mi = pi;
 		{
 			args_port_a a = {self, self->mi};
@@ -142,7 +142,7 @@ static int internal_port_eer(void* self_, int i, int j) {
 	Dataparam* self = self_;
 	(void)self;
 	DZN_LOG("Dataparam.port_eer");
-	int s = Status_No;
+	int s = IDataparam_Status_No;
 	{
 		args_port_a a = {self, j};
 		args_port_a* p = malloc(sizeof(args_port_a));
@@ -194,7 +194,7 @@ static int internal_port_eor(void* self_, int* i) {
 	(void)self;
 	DZN_LOG("Dataparam.port_eor");
 	*i = 234;
-	self->reply_IDataparam_Status = Status_Yes;
+	self->reply_IDataparam_Status = IDataparam_Status_Yes;
 	return self->reply_IDataparam_Status;
 }
 
@@ -204,7 +204,7 @@ static int internal_port_eoor(void* self_, int* i, int* j) {
 	DZN_LOG("Dataparam.port_eoor");
 	*i = 123;
 	*j = 456;
-	self->reply_IDataparam_Status = Status_Yes;
+	self->reply_IDataparam_Status = IDataparam_Status_Yes;
 	return self->reply_IDataparam_Status;
 }
 
@@ -213,7 +213,7 @@ static int internal_port_eior(void* self_, int i, int* j) {
 	(void)self;
 	DZN_LOG("Dataparam.port_eior");
 	*j = i;
-	self->reply_IDataparam_Status = Status_Yes;
+	self->reply_IDataparam_Status = IDataparam_Status_Yes;
 	return self->reply_IDataparam_Status;
 }
 
@@ -223,7 +223,7 @@ static int internal_port_eio2r(void* self_, int* i) {
 	DZN_LOG("Dataparam.port_eio2r");
 	int t = *i;
 	*i = t + 123;
-	self->reply_IDataparam_Status = Status_Yes;
+	self->reply_IDataparam_Status = IDataparam_Status_Yes;
 	return self->reply_IDataparam_Status;
 }
 
@@ -439,16 +439,19 @@ static int port_eio2r(void* self_, int* i) {
 	return self->reply_IDataparam_Status;
 }
 
-int fun() {
-	return Status_Yes;
+int fun(Dataparam* self) {
+	(void)self;
+	return IDataparam_Status_Yes;
 }
 
-int funx(int xi) {
+int funx(Dataparam* self, int xi) {
+	(void)self;
 	xi = xi;
-	return Status_Yes;
+	return IDataparam_Status_Yes;
 }
 
-int xfunx(int xi, int xj) {
+int xfunx(Dataparam* self, int xi, int xj) {
+	(void)self;
 	return (xi + xj) / 3;
 }
 
@@ -456,7 +459,7 @@ void Dataparam_init (Dataparam* self, locator* dezyne_locator) {
 	self->rt = dezyne_locator->rt;
 	runtime_set(self->rt, self);
 	self->mi = 0;
-	self->s = Status_Yes;
+	self->s = IDataparam_Status_Yes;
 	self->port = &self->port_;
 	self->port->in.e0 = port_e0;
 	self->port->in.e0r = port_e0r;

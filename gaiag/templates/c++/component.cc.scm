@@ -18,22 +18,22 @@ namespace dezyne
    (map
     (lambda (port)
       (map (define-on model port #{
-#port .#direction .#event  = connect#(if (string-null? parameters) (list "<" return-type ">") (list "<" (comma-join (append (if (eq? return-type 'void) '() (list return-type)) parameter-types))">"))(rt, this, boost::function<#return-type(#(comma-join parameter-types))>(boost::bind<#return-type >(&#model ::#port _#event , #(comma-join (append '("this") (map (lambda (i) (list " _" i)) (iota (length parameter-types) 1)))))));
+#port .#direction .#event  = connect#(if (string-null? parameters) (list "<" return-type ">") (list "<" (comma-join (append (if (eq? return-type 'void) '() (list return-type)) parameter-types))">"))(rt, this, boost::function<#return-type(#(comma-join parameter-types))>(boost::bind<#return-type >(&#.model ::#port _#event , #(comma-join (append '("this") (map (lambda (i) (list " _" i)) (iota (length parameter-types) 1)))))));
 #}) (filter gom:in? (gom:events port))))
     (filter gom:provides? (gom:ports model)))#
    (map
     (lambda (port)
       (map (define-on model port #{
-#port .#direction .#event  = connect#(if (string-null? parameters) (list "<" return-type ">") (list "<" (comma-join (append (if (eq? return-type 'void) '() (list return-type)) parameter-types))">"))(rt, this, boost::function<#return-type(#(comma-join parameter-types))>(boost::bind<#return-type >(&#model ::#port _#event , #(comma-join (append '("this") (map (lambda (i) (list " _" i)) (iota (length parameter-types) 1)))))));
+#port .#direction .#event  = connect#(if (string-null? parameters) (list "<" return-type ">") (list "<" (comma-join (append (if (eq? return-type 'void) '() (list return-type)) parameter-types))">"))(rt, this, boost::function<#return-type(#(comma-join parameter-types))>(boost::bind<#return-type >(&#.model ::#port _#event , #(comma-join (append '("this") (map (lambda (i) (list " _" i)) (iota (length parameter-types) 1)))))));
 #}) (filter gom:out? (gom:events port))))
     (filter gom:requires? (gom:ports model))) }
 
 #(map
   (lambda (port)
     (map (define-on model port #{
-  #return-type  #model ::#port _#event (#parameters)
+  #return-type  #.model ::#port _#event (#parameters)
   {
-    std::cout << "#model .#port _#event" << std::endl;
+    std::cout << "#.model .#port _#event" << std::endl;
     #statement #
     (if (not (eq? type 'void))
 (list "    return reply_" reply-type "_" reply-name ";\n"
@@ -42,7 +42,7 @@ namespace dezyne
 #}) (filter (gom:dir-matches? port) (gom:events port))))
   (gom:ports model))#
 ((->join "\n  ")(map (define-function model #{
-  #return-type  #model ::#name (#parameters)
+  #return-type  #.model ::#name (#parameters)
   {
     #statements }
 #}) (gom:functions model)))
