@@ -39,6 +39,4 @@ typedef struct {
 
 void imperative_init(imperative* self, locator* dezyne_locator);
 
-
-
 #endif // DEZYNE_IMPERATIVE_H

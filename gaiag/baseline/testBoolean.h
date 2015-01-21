@@ -39,6 +39,4 @@ typedef struct {
 
 void testBoolean_init(testBoolean* self, locator* dezyne_locator);
 
-
-
 #endif // DEZYNE_TESTBOOLEAN_H

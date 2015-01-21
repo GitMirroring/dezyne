@@ -38,6 +38,10 @@ typedef enum {
 
 
 
+
+
+
+
 static int internal_client_initialize(void* self_) {
 	Comp* self = self_;
 	(void)self;
@@ -142,7 +146,7 @@ static int client_initialize(void* self_) {
 	typedef struct {Comp* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_client_initialize, a);
+	runtime_event((void(*)(void*))opaque_client_initialize, a);
 	return self->reply_IComp_result_t;
 }
 
@@ -151,7 +155,7 @@ static int client_recover(void* self_) {
 	typedef struct {Comp* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_client_recover, a);
+	runtime_event((void(*)(void*))opaque_client_recover, a);
 	return self->reply_IComp_result_t;
 }
 
@@ -160,7 +164,7 @@ static int client_perform_actions(void* self_) {
 	typedef struct {Comp* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_client_perform_actions, a);
+	runtime_event((void(*)(void*))opaque_client_perform_actions, a);
 	return self->reply_IComp_result_t;
 }
 

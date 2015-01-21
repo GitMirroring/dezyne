@@ -38,6 +38,4 @@ typedef struct {
 
 void component_provides_twice_init(component_provides_twice* self, locator* dezyne_locator);
 
-
-
 #endif // DEZYNE_COMPONENT_PROVIDES_TWICE_H

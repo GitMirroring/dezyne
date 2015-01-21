@@ -40,6 +40,4 @@ typedef struct {
 
 void enum_collision_init(enum_collision* self, locator* dezyne_locator);
 
-
-
 #endif // DEZYNE_ENUM_COLLISION_H

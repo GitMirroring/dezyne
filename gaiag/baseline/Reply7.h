@@ -42,7 +42,4 @@ typedef struct {
 
 void Reply7_init(Reply7* self, locator* dezyne_locator);
 
-void f(Reply7*self);
-
-
 #endif // DEZYNE_REPLY7_H

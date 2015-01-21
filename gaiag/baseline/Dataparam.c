@@ -62,6 +62,28 @@ static void opaque_port_a6(void* args) {
 
 
 
+static int fun(Dataparam* self);
+static int funx(Dataparam* self, int xi);
+static int xfunx(Dataparam* self, int xi, int xj);
+
+
+static int fun(Dataparam* self) {
+	(void)self;
+	return IDataparam_Status_Yes;
+}
+
+static int funx(Dataparam* self, int xi) {
+	(void)self;
+	xi = xi;
+	return IDataparam_Status_Yes;
+}
+
+static int xfunx(Dataparam* self, int xi, int xj) {
+	(void)self;
+	return (xi + xj) / 3;
+}
+
+
 static void internal_port_e0(void* self_) {
 	Dataparam* self = self_;
 	(void)self;
@@ -317,7 +339,7 @@ static void port_e0(void* self_) {
 	typedef struct {Dataparam* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_port_e0, a);
+	runtime_event((void(*)(void*))opaque_port_e0, a);
 }
 
 static int port_e0r(void* self_) {
@@ -325,7 +347,7 @@ static int port_e0r(void* self_) {
 	typedef struct {Dataparam* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_port_e0r, a);
+	runtime_event((void(*)(void*))opaque_port_e0r, a);
 	return self->reply_IDataparam_Status;
 }
 
@@ -335,7 +357,7 @@ static void port_e(void* self_, int i) {
 	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
-	runtime_event(opaque_port_e, a);
+	runtime_event((void(*)(void*))opaque_port_e, a);
 }
 
 static int port_er(void* self_, int i) {
@@ -344,7 +366,7 @@ static int port_er(void* self_, int i) {
 	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
-	runtime_event(opaque_port_er, a);
+	runtime_event((void(*)(void*))opaque_port_er, a);
 	return self->reply_IDataparam_Status;
 }
 
@@ -355,7 +377,7 @@ static int port_eer(void* self_, int i, int j) {
 	a->self=self;
 	a->i=i;
 	a->j=j;
-	runtime_event(opaque_port_eer, a);
+	runtime_event((void(*)(void*))opaque_port_eer, a);
 	return self->reply_IDataparam_Status;
 }
 
@@ -365,7 +387,7 @@ static void port_eo(void* self_, int* i) {
 	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
-	runtime_event(opaque_port_eo, a);
+	runtime_event((void(*)(void*))opaque_port_eo, a);
 }
 
 static void port_eoo(void* self_, int* i, int* j) {
@@ -375,7 +397,7 @@ static void port_eoo(void* self_, int* i, int* j) {
 	a->self=self;
 	a->i=i;
 	a->j=j;
-	runtime_event(opaque_port_eoo, a);
+	runtime_event((void(*)(void*))opaque_port_eoo, a);
 }
 
 static void port_eio(void* self_, int i, int* j) {
@@ -385,7 +407,7 @@ static void port_eio(void* self_, int i, int* j) {
 	a->self=self;
 	a->i=i;
 	a->j=j;
-	runtime_event(opaque_port_eio, a);
+	runtime_event((void(*)(void*))opaque_port_eio, a);
 }
 
 static void port_eio2(void* self_, int* i) {
@@ -394,7 +416,7 @@ static void port_eio2(void* self_, int* i) {
 	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
-	runtime_event(opaque_port_eio2, a);
+	runtime_event((void(*)(void*))opaque_port_eio2, a);
 }
 
 static int port_eor(void* self_, int* i) {
@@ -403,7 +425,7 @@ static int port_eor(void* self_, int* i) {
 	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
-	runtime_event(opaque_port_eor, a);
+	runtime_event((void(*)(void*))opaque_port_eor, a);
 	return self->reply_IDataparam_Status;
 }
 
@@ -414,7 +436,7 @@ static int port_eoor(void* self_, int* i, int* j) {
 	a->self=self;
 	a->i=i;
 	a->j=j;
-	runtime_event(opaque_port_eoor, a);
+	runtime_event((void(*)(void*))opaque_port_eoor, a);
 	return self->reply_IDataparam_Status;
 }
 
@@ -425,7 +447,7 @@ static int port_eior(void* self_, int i, int* j) {
 	a->self=self;
 	a->i=i;
 	a->j=j;
-	runtime_event(opaque_port_eior, a);
+	runtime_event((void(*)(void*))opaque_port_eior, a);
 	return self->reply_IDataparam_Status;
 }
 
@@ -435,25 +457,10 @@ static int port_eio2r(void* self_, int* i) {
 	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
-	runtime_event(opaque_port_eio2r, a);
+	runtime_event((void(*)(void*))opaque_port_eio2r, a);
 	return self->reply_IDataparam_Status;
 }
 
-int fun(Dataparam* self) {
-	(void)self;
-	return IDataparam_Status_Yes;
-}
-
-int funx(Dataparam* self, int xi) {
-	(void)self;
-	xi = xi;
-	return IDataparam_Status_Yes;
-}
-
-int xfunx(Dataparam* self, int xi, int xj) {
-	(void)self;
-	return (xi + xj) / 3;
-}
 
 void Dataparam_init (Dataparam* self, locator* dezyne_locator) {
 	self->rt = dezyne_locator->rt;

@@ -39,7 +39,4 @@ typedef struct {
 
 void argument_init(argument* self, locator* dezyne_locator);
 
-bool g(argument*self, bool gc);
-
-
 #endif // DEZYNE_ARGUMENT_H

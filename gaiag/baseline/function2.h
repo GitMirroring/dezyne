@@ -39,7 +39,4 @@ typedef struct {
 
 void function2_init(function2* self, locator* dezyne_locator);
 
-bool vtoggle(function2*self);
-
-
 #endif // DEZYNE_FUNCTION2_H

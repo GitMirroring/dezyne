@@ -42,6 +42,10 @@ static void opaque_t_f(void* args) {
 
 
 
+
+
+
+
 static void internal_t_e(void* self_) {
 	middle* self = self_;
 	(void)self;
@@ -80,7 +84,7 @@ static void t_e(void* self_) {
 	typedef struct {middle* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_t_e, a);
+	runtime_event((void(*)(void*))opaque_t_e, a);
 }
 
 static void b_f(void* self_) {
@@ -88,7 +92,7 @@ static void b_f(void* self_) {
 	typedef struct {middle* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_b_f, a);
+	runtime_event((void(*)(void*))opaque_b_f, a);
 }
 
 

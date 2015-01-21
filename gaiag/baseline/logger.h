@@ -39,6 +39,4 @@ typedef struct {
 
 void logger_init(logger* self, locator* dezyne_locator);
 
-
-
 #endif // DEZYNE_LOGGER_H

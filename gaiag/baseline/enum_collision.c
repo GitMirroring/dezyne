@@ -34,6 +34,10 @@
 
 
 
+
+
+
+
 static int internal_i_foo(void* self_) {
 	enum_collision* self = self_;
 	(void)self;
@@ -69,7 +73,7 @@ static int i_foo(void* self_) {
 	typedef struct {enum_collision* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_i_foo, a);
+	runtime_event((void(*)(void*))opaque_i_foo, a);
 	return self->reply_ienum_collision_Retval1;
 }
 
@@ -78,7 +82,7 @@ static int i_bar(void* self_) {
 	typedef struct {enum_collision* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_i_bar, a);
+	runtime_event((void(*)(void*))opaque_i_bar, a);
 	return self->reply_ienum_collision_Retval2;
 }
 

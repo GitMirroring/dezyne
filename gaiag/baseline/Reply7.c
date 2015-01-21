@@ -34,6 +34,16 @@
 
 
 
+static void f(Reply7* self);
+
+
+static void f(Reply7* self) {
+	(void)self;
+	int v = self->r->in.foo(self->r);
+	self->reply_IReply7_E = v;
+}
+
+
 static int internal_p_foo(void* self_) {
 	Reply7* self = self_;
 	(void)self;
@@ -54,15 +64,10 @@ static int p_foo(void* self_) {
 	typedef struct {Reply7* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_p_foo, a);
+	runtime_event((void(*)(void*))opaque_p_foo, a);
 	return self->reply_IReply7_E;
 }
 
-void f(Reply7* self) {
-	(void)self;
-	int v = self->r->in.foo(self->r);
-	self->reply_IReply7_E = v;
-}
 
 void Reply7_init (Reply7* self, locator* dezyne_locator) {
 	self->rt = dezyne_locator->rt;

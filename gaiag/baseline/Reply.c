@@ -35,6 +35,10 @@
 
 
 
+
+
+
+
 static int internal_i_done(void* self_) {
 	Reply* self = self_;
 	(void)self;
@@ -63,7 +67,7 @@ static int i_done(void* self_) {
 	typedef struct {Reply* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_i_done, a);
+	runtime_event((void(*)(void*))opaque_i_done, a);
 	return self->reply_I_Status;
 }
 

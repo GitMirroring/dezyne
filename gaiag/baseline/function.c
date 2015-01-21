@@ -49,6 +49,23 @@ static void opaque_i_d(void* args) {
 
 
 
+static void toggle(function* self);
+
+
+static void toggle(function* self) {
+	(void)self;
+	if (self->f) {
+		{
+			args_i_c a = {self};
+			args_i_c* p = malloc(sizeof(args_i_c));
+			memcpy (p, &a, sizeof(args_i_c));
+			runtime_defer(self->rt, self, opaque_i_c, p);
+		}
+	}
+	self->f = !(self->f);
+}
+
+
 static void internal_i_a(void* self_) {
 	function* self = self_;
 	(void)self;
@@ -91,7 +108,7 @@ static void i_a(void* self_) {
 	typedef struct {function* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_i_a, a);
+	runtime_event((void(*)(void*))opaque_i_a, a);
 }
 
 static void i_b(void* self_) {
@@ -99,21 +116,9 @@ static void i_b(void* self_) {
 	typedef struct {function* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_i_b, a);
+	runtime_event((void(*)(void*))opaque_i_b, a);
 }
 
-void toggle(function* self) {
-	(void)self;
-	if (self->f) {
-		{
-			args_i_c a = {self};
-			args_i_c* p = malloc(sizeof(args_i_c));
-			memcpy (p, &a, sizeof(args_i_c));
-			runtime_defer(self->rt, self, opaque_i_c, p);
-		}
-	}
-	self->f = !(self->f);
-}
 
 void function_init (function* self, locator* dezyne_locator) {
 	self->rt = dezyne_locator->rt;

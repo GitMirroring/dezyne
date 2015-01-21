@@ -45,6 +45,10 @@ static void opaque_i_a(void* args) {
 
 
 
+
+
+
+
 static void internal_i_e(void* self_) {
 	sugar* self = self_;
 	(void)self;
@@ -77,7 +81,7 @@ static void i_e(void* self_) {
 	typedef struct {sugar* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_i_e, a);
+	runtime_event((void(*)(void*))opaque_i_e, a);
 }
 
 

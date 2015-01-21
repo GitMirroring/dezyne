@@ -62,6 +62,27 @@ static void opaque_top_a6(void* args) {
 
 
 
+static void outfunc(proxy* self, int i);
+static void deferfunc(proxy* self, int i);
+
+
+static void outfunc(proxy* self, int i) {
+	(void)self;
+	int j = i;
+	self->bottom->in.eo(self->bottom, &j);
+}
+
+static void deferfunc(proxy* self, int i) {
+	(void)self;
+	{
+		args_top_a a = {self, i};
+		args_top_a* p = malloc(sizeof(args_top_a));
+		memcpy (p, &a, sizeof(args_top_a));
+		runtime_defer(self->rt, self, opaque_top_a, p);
+	}
+}
+
+
 static void internal_top_e0(void* self_) {
 	proxy* self = self_;
 	(void)self;
@@ -113,28 +134,28 @@ static void internal_top_eo(void* self_, int* i) {
 	proxy* self = self_;
 	(void)self;
 	DZN_LOG("proxy.top_eo");
-	self->bottom->in.eo(self->bottom, i);
+	outfunc(self,*i);
 }
 
 static void internal_top_eoo(void* self_, int* i, int* j) {
 	proxy* self = self_;
 	(void)self;
 	DZN_LOG("proxy.top_eoo");
-	self->bottom->in.eoo(self->bottom, i, j);
+	self->bottom->in.eoo(self->bottom, &*i, &*j);
 }
 
 static void internal_top_eio(void* self_, int i, int* j) {
 	proxy* self = self_;
 	(void)self;
 	DZN_LOG("proxy.top_eio");
-	self->bottom->in.eio(self->bottom, i, j);
+	self->bottom->in.eio(self->bottom, i, &*j);
 }
 
 static void internal_top_eio2(void* self_, int* i) {
 	proxy* self = self_;
 	(void)self;
 	DZN_LOG("proxy.top_eio2");
-	self->bottom->in.eio2(self->bottom, i);
+	self->bottom->in.eio2(self->bottom, &*i);
 }
 
 static int internal_top_eor(void* self_, int* i) {
@@ -189,12 +210,7 @@ static void internal_bottom_a(void* self_, int i) {
 	proxy* self = self_;
 	(void)self;
 	DZN_LOG("proxy.bottom_a");
-	{
-		args_top_a a = {self, i};
-		args_top_a* p = malloc(sizeof(args_top_a));
-		memcpy (p, &a, sizeof(args_top_a));
-		runtime_defer(self->rt, self, opaque_top_a, p);
-	}
+	deferfunc(self,i);
 }
 
 static void internal_bottom_aa(void* self_, int i, int j) {
@@ -343,7 +359,7 @@ static void top_e0(void* self_) {
 	typedef struct {proxy* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_top_e0, a);
+	runtime_event((void(*)(void*))opaque_top_e0, a);
 }
 
 static int top_e0r(void* self_) {
@@ -351,7 +367,7 @@ static int top_e0r(void* self_) {
 	typedef struct {proxy* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_top_e0r, a);
+	runtime_event((void(*)(void*))opaque_top_e0r, a);
 	return self->reply_IDataparam_Status;
 }
 
@@ -361,7 +377,7 @@ static void top_e(void* self_, int i) {
 	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
-	runtime_event(opaque_top_e, a);
+	runtime_event((void(*)(void*))opaque_top_e, a);
 }
 
 static int top_er(void* self_, int i) {
@@ -370,7 +386,7 @@ static int top_er(void* self_, int i) {
 	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
-	runtime_event(opaque_top_er, a);
+	runtime_event((void(*)(void*))opaque_top_er, a);
 	return self->reply_IDataparam_Status;
 }
 
@@ -381,7 +397,7 @@ static int top_eer(void* self_, int i, int j) {
 	a->self=self;
 	a->i=i;
 	a->j=j;
-	runtime_event(opaque_top_eer, a);
+	runtime_event((void(*)(void*))opaque_top_eer, a);
 	return self->reply_IDataparam_Status;
 }
 
@@ -391,7 +407,7 @@ static void top_eo(void* self_, int* i) {
 	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
-	runtime_event(opaque_top_eo, a);
+	runtime_event((void(*)(void*))opaque_top_eo, a);
 }
 
 static void top_eoo(void* self_, int* i, int* j) {
@@ -401,7 +417,7 @@ static void top_eoo(void* self_, int* i, int* j) {
 	a->self=self;
 	a->i=i;
 	a->j=j;
-	runtime_event(opaque_top_eoo, a);
+	runtime_event((void(*)(void*))opaque_top_eoo, a);
 }
 
 static void top_eio(void* self_, int i, int* j) {
@@ -411,7 +427,7 @@ static void top_eio(void* self_, int i, int* j) {
 	a->self=self;
 	a->i=i;
 	a->j=j;
-	runtime_event(opaque_top_eio, a);
+	runtime_event((void(*)(void*))opaque_top_eio, a);
 }
 
 static void top_eio2(void* self_, int* i) {
@@ -420,7 +436,7 @@ static void top_eio2(void* self_, int* i) {
 	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
-	runtime_event(opaque_top_eio2, a);
+	runtime_event((void(*)(void*))opaque_top_eio2, a);
 }
 
 static int top_eor(void* self_, int* i) {
@@ -429,7 +445,7 @@ static int top_eor(void* self_, int* i) {
 	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
-	runtime_event(opaque_top_eor, a);
+	runtime_event((void(*)(void*))opaque_top_eor, a);
 	return self->reply_IDataparam_Status;
 }
 
@@ -440,7 +456,7 @@ static int top_eoor(void* self_, int* i, int* j) {
 	a->self=self;
 	a->i=i;
 	a->j=j;
-	runtime_event(opaque_top_eoor, a);
+	runtime_event((void(*)(void*))opaque_top_eoor, a);
 	return self->reply_IDataparam_Status;
 }
 
@@ -451,7 +467,7 @@ static int top_eior(void* self_, int i, int* j) {
 	a->self=self;
 	a->i=i;
 	a->j=j;
-	runtime_event(opaque_top_eior, a);
+	runtime_event((void(*)(void*))opaque_top_eior, a);
 	return self->reply_IDataparam_Status;
 }
 
@@ -461,7 +477,7 @@ static int top_eio2r(void* self_, int* i) {
 	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
-	runtime_event(opaque_top_eio2r, a);
+	runtime_event((void(*)(void*))opaque_top_eio2r, a);
 	return self->reply_IDataparam_Status;
 }
 
@@ -470,7 +486,7 @@ static void bottom_a0(void* self_) {
 	typedef struct {proxy* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_bottom_a0, a);
+	runtime_event((void(*)(void*))opaque_bottom_a0, a);
 }
 
 static void bottom_a(void* self_, int i) {
@@ -479,7 +495,7 @@ static void bottom_a(void* self_, int i) {
 	args* a = malloc(sizeof(args));
 	a->self=self;
 	a->i=i;
-	runtime_event(opaque_bottom_a, a);
+	runtime_event((void(*)(void*))opaque_bottom_a, a);
 }
 
 static void bottom_aa(void* self_, int i, int j) {
@@ -489,7 +505,7 @@ static void bottom_aa(void* self_, int i, int j) {
 	a->self=self;
 	a->i=i;
 	a->j=j;
-	runtime_event(opaque_bottom_aa, a);
+	runtime_event((void(*)(void*))opaque_bottom_aa, a);
 }
 
 static void bottom_a6(void* self_, int a0, int a1, int a2, int a3, int a4, int a5) {
@@ -503,7 +519,7 @@ static void bottom_a6(void* self_, int a0, int a1, int a2, int a3, int a4, int a
 	a->a3=a3;
 	a->a4=a4;
 	a->a5=a5;
-	runtime_event(opaque_bottom_a6, a);
+	runtime_event((void(*)(void*))opaque_bottom_a6, a);
 }
 
 

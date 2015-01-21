@@ -39,6 +39,4 @@ typedef struct {
 
 void sugar_init(sugar* self, locator* dezyne_locator);
 
-
-
 #endif // DEZYNE_SUGAR_H

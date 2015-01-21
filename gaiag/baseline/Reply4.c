@@ -38,6 +38,21 @@ typedef enum {
 
 
 
+static int fun(Reply4* self);
+static int fun_arg(Reply4* self, int s);
+
+
+static int fun(Reply4* self) {
+	(void)self;
+	return Reply4_Status_Yes;
+}
+
+static int fun_arg(Reply4* self, int s) {
+	(void)self;
+	return s;
+}
+
+
 static int internal_i_done(void* self_) {
 	Reply4* self = self_;
 	(void)self;
@@ -71,19 +86,10 @@ static int i_done(void* self_) {
 	typedef struct {Reply4* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_i_done, a);
+	runtime_event((void(*)(void*))opaque_i_done, a);
 	return self->reply_I_Status;
 }
 
-int fun(Reply4* self) {
-	(void)self;
-	return Reply4_Status_Yes;
-}
-
-int fun_arg(Reply4* self, int s) {
-	(void)self;
-	return s;
-}
 
 void Reply4_init (Reply4* self, locator* dezyne_locator) {
 	self->rt = dezyne_locator->rt;

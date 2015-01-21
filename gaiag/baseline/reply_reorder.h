@@ -42,6 +42,4 @@ typedef struct {
 
 void reply_reorder_init(reply_reorder* self, locator* dezyne_locator);
 
-
-
 #endif // DEZYNE_REPLY_REORDER_H

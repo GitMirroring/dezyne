@@ -39,7 +39,4 @@ typedef struct {
 
 void function_init(function* self, locator* dezyne_locator);
 
-void toggle(function*self);
-
-
 #endif // DEZYNE_FUNCTION_H

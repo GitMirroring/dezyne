@@ -27,6 +27,16 @@
     #}) (filter (negate (gom:dir-matches? port)) (gom:events port))))
   (filter gom:provides? (gom:ports model)))
 
+#(map (define-function model #{
+  static #return-type  #name (#.model * self#comma #parameters);
+#}) (gom:functions model))
+
+#((->join "\n  ")(map (define-function model #{
+  static #return-type  #name (#.model * self#comma #parameters) {
+   (void)self;
+    #statements }
+#}) (gom:functions model)))
+
 #(map
   (lambda (port)
     (map (define-on model port #{
@@ -62,18 +72,13 @@
   args* a = malloc(sizeof(args));
   a->self=self;
   #((->join ";\n") (map (lambda (x) (symbol-append 'a-> x '= x)) argument-list))#
-  (if (null? argument-list) "" ";\n")runtime_event(opaque_#port _#event , a);
+  (if (null? argument-list) "" ";\n")runtime_event((void(*)(void*))opaque_#port _#event , a);
 #(if (not (eq? type 'void))
 (list "    return self->reply_" reply-type "_" reply-name ";\n"
       )) }
 
 #}) (filter (gom:dir-matches? port) (gom:events port))))
-  (gom:ports model))#
-((->join "\n  ")(map (define-function model #{
-  #return-type  #name (#.model * self#comma #parameters) {
-   (void)self;
-    #statements }
-#}) (gom:functions model)))
+  (gom:ports model))
 void #.model _init (#.model * self, locator* dezyne_locator) {
   self->rt = dezyne_locator->rt;
   runtime_set(self->rt, self);

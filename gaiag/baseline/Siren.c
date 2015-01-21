@@ -34,6 +34,10 @@
 
 
 
+
+
+
+
 static void internal_siren_turnon(void* self_) {
 	Siren* self = self_;
 	(void)self;
@@ -67,7 +71,7 @@ static void siren_turnon(void* self_) {
 	typedef struct {Siren* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_siren_turnon, a);
+	runtime_event((void(*)(void*))opaque_siren_turnon, a);
 }
 
 static void siren_turnoff(void* self_) {
@@ -75,7 +79,7 @@ static void siren_turnoff(void* self_) {
 	typedef struct {Siren* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_siren_turnoff, a);
+	runtime_event((void(*)(void*))opaque_siren_turnoff, a);
 }
 
 

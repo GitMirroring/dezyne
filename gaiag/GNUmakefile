@@ -186,7 +186,7 @@ c-alarm:
 	cd out && ln -s ../examples/alarm.c .
 	#cp baseline/{AlarmSystem,Alarm,Sensor,Siren}.{h,c} out
 	#cp baseline/{IConsole,ISensor,ISiren}.h out
-	for i in out/*c; do ccache gcc -g -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o && out/$@ > out/$@.trace
+	for i in out/*c; do ccache gcc -g -std=c99 -Wall -pedantic -pedantic-errors -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o && out/$@ > out/$@.trace
 	$(diff) baseline/$@.trace out
 	for i in out/*.h out/*.c; do $(diff) baseline/$$(basename $$i) $$i; done
 
@@ -194,7 +194,7 @@ c-dataparam:
 	rm -rf out && mkdir out && cd out && ln -s ../runtime/c/* .
 	cd out && ../gaiag -l c ../examples/regression/Dataparam.dzn
 	cd out && ln -sf ../examples/dataparam.c .
-	for i in out/*c; do ccache gcc -g -Wall -Wextra -std=c99 -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o && out/$@ > out/$@.trace
+	-for i in out/*c; do ccache gcc -g -std=c99 -Wall -pedantic -pedantic-errors -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o && out/$@ > out/$@.trace
 	$(diff) baseline/$@.trace out
 	for i in out/*.h out/*.c; do $(diff) baseline/$$(basename $$i) $$i; done
 
@@ -202,7 +202,7 @@ c-inject:
 	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c/* .
 	cd out && ln -s ../examples/injected.c .
 	cd out && $(shell pwd)/gaiag -l c examples/Injected.dzn
-	for i in out/*c; do ccache gcc -g -Wall -Wextra -std=c99 -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o && out/$@ > out/$@.trace
+	for i in out/*c; do ccache gcc -g -std=c99 -Wall -pedantic -pedantic-errors -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o && out/$@ > out/$@.trace
 	for i in out/*.h out/*.c; do $(diff) baseline/$$(basename $$i) $$i; done
 	$(diff) baseline/$@.trace out
 
@@ -212,7 +212,7 @@ rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c
 cd out && $(shell pwd)/gaiag -l c examples/regression/$*.dzn
 -$(diff) baseline/$*.h out
 -$(diff) baseline/$*.c out
-ccache gcc -std=c99 -Wall -Wextra -o out/$*.o -c out/$*.c $(UPDATE)
+ccache gcc -std=c99 -Wall -pedantic -pedantic-errors -o out/$*.o -c out/$*.c $(UPDATE)
 @$(diff) baseline/$*.h out >/dev/null
 @$(diff) baseline/$*.c out >/dev/null
 endef
@@ -239,7 +239,7 @@ c-regression: $(C_SOURCES:%.dzn=out/%.c)
 c-update: $(C_SOURCES:%.dzn=out/%.c.up)
 
 # c++
-c++: compile c++-alarm glue c++-inject c++-dataparam c++-regression
+c++: compile c++-alarm glue c++-inject c++-dataparam c++-choice c++-regression
 
 c++-alarm:
 	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c++/* .
@@ -256,14 +256,7 @@ c++-alarm:
 	cd out && ln -s ../examples/alarm.cc .
 	cd out && for i in *cc; do ccache g++ -g -c $$i; done && g++ -o $@ *.o && ./$@ > $@.trace
 	$(diff) baseline/$@.trace out
-
-	$(diff) baseline/IConsole.hh out
-	$(diff) baseline/ISensor.hh out
-	$(diff) baseline/ISiren.hh out
-	$(diff) baseline/Alarm.hh out
-	$(diff) baseline/Alarm.cc out
-	$(diff) baseline/AlarmSystem.hh out
-	$(diff) baseline/AlarmSystem.cc out
+	for i in out/*.h out/*.c; do $(diff) baseline/$$(basename $$i) $$i; done
 
 c++-inject:
 	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c++/* .
@@ -278,6 +271,14 @@ c++-dataparam:
 	cd out && ln -sf ../examples/dataparam.cc .
 	cd out && for i in *cc; do ccache g++ -c $$i; done && g++ -o $@ *.o && ./$@ > $@.trace
 	$(diff) baseline/$@.trace out
+
+c++-choice:
+	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c++/* .
+	cd out && $(shell pwd)/gaiag -l c++ examples/regression/Choice.dzn
+	ln -s ../../webapp/server/commands/code/c++/main.cc out
+	for i in out/*cc; do ccache g++ -g -Wall -Wextra -c -o out/$$(basename $$i .cc).o $$i; done && g++ -o out/$@ out/*.o && out/$@ > out/$@.trace
+	-$(diff) baseline/$@.trace out
+	$(diff) baseline/Choice.cc out
 
 #out/%.c++: examples/regression/%.dzn
 define .CC_REGRESSION
@@ -629,9 +630,9 @@ goops-alarm: compile
 	cat templates/goops/header.scm\
 		 $$(find out/dezyne -name '*.scm')\
 		examples/alarm.scm > out/alarm.scm
-	cd out && bash ./alarm.scm 2>$@.trace
+	cd out && bash ./alarm.scm |& grep -v ^';' >$@.trace
 	$(diff) baseline/$@.trace out
-	for i in out/*.scm; do $(diff) baseline/$$(basename $$i) $$i; done
+	for i in out/dezyne/*.scm; do $(diff) baseline/$$(basename $$i) $$i; done
 
 goops: compile goops-alarm goops-regression
 

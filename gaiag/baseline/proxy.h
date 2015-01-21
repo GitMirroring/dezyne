@@ -42,6 +42,4 @@ typedef struct {
 
 void proxy_init(proxy* self, locator* dezyne_locator);
 
-
-
 #endif // DEZYNE_PROXY_H

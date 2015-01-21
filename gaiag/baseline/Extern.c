@@ -34,6 +34,10 @@
 
 
 
+
+
+
+
 static void internal_port_e(void* self_) {
 	Extern* self = self_;
 	(void)self;
@@ -52,7 +56,7 @@ static void port_e(void* self_) {
 	typedef struct {Extern* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_port_e, a);
+	runtime_event((void(*)(void*))opaque_port_e, a);
 }
 
 

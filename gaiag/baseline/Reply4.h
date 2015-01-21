@@ -44,8 +44,4 @@ typedef struct {
 
 void Reply4_init(Reply4* self, locator* dezyne_locator);
 
-int fun(Reply4*self);
-int fun_arg(Reply4*self, int s);
-
-
 #endif // DEZYNE_REPLY4_H

@@ -42,6 +42,21 @@ static void opaque_i_f(void* args) {
 
 
 
+static bool g(argument2* self, bool ga, bool gb);
+
+
+static bool g(argument2* self, bool ga, bool gb) {
+	(void)self;
+	{
+		args_i_f a = {self};
+		args_i_f* p = malloc(sizeof(args_i_f));
+		memcpy (p, &a, sizeof(args_i_f));
+		runtime_defer(self->rt, self, opaque_i_f, p);
+	}
+	return (ga || gb);
+}
+
+
 static void internal_i_e(void* self_) {
 	argument2* self = self_;
 	(void)self;
@@ -70,19 +85,9 @@ static void i_e(void* self_) {
 	typedef struct {argument2* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_i_e, a);
+	runtime_event((void(*)(void*))opaque_i_e, a);
 }
 
-bool g(argument2* self, bool ga, bool gb) {
-	(void)self;
-	{
-		args_i_f a = {self};
-		args_i_f* p = malloc(sizeof(args_i_f));
-		memcpy (p, &a, sizeof(args_i_f));
-		runtime_defer(self->rt, self, opaque_i_f, p);
-	}
-	return (ga || gb);
-}
 
 void argument2_init (argument2* self, locator* dezyne_locator) {
 	self->rt = dezyne_locator->rt;

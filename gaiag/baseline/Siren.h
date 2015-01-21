@@ -38,6 +38,4 @@ typedef struct {
 
 void Siren_init(Siren* self, locator* dezyne_locator);
 
-
-
 #endif // DEZYNE_SIREN_H

@@ -41,6 +41,4 @@ typedef struct {
 
 void incomplete_with_modeling_event_init(incomplete_with_modeling_event* self, locator* dezyne_locator);
 
-
-
 #endif // DEZYNE_INCOMPLETE_WITH_MODELING_EVENT_H

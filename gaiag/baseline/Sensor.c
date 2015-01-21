@@ -48,6 +48,10 @@ static void opaque_sensor_disabled(void* args) {
 
 
 
+
+
+
+
 static void internal_sensor_enable(void* self_) {
 	Sensor* self = self_;
 	(void)self;
@@ -81,7 +85,7 @@ static void sensor_enable(void* self_) {
 	typedef struct {Sensor* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_sensor_enable, a);
+	runtime_event((void(*)(void*))opaque_sensor_enable, a);
 }
 
 static void sensor_disable(void* self_) {
@@ -89,7 +93,7 @@ static void sensor_disable(void* self_) {
 	typedef struct {Sensor* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_sensor_disable, a);
+	runtime_event((void(*)(void*))opaque_sensor_disable, a);
 }
 
 

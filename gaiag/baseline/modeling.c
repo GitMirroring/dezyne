@@ -34,6 +34,10 @@
 
 
 
+
+
+
+
 static void internal_p_e(void* self_) {
 	modeling* self = self_;
 	(void)self;
@@ -66,7 +70,7 @@ static void p_e(void* self_) {
 	typedef struct {modeling* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_p_e, a);
+	runtime_event((void(*)(void*))opaque_p_e, a);
 }
 
 static void r_f(void* self_) {
@@ -74,7 +78,7 @@ static void r_f(void* self_) {
 	typedef struct {modeling* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_r_f, a);
+	runtime_event((void(*)(void*))opaque_r_f, a);
 }
 
 

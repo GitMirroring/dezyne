@@ -41,6 +41,10 @@ static void opaque_p_a(void* args) {
 
 
 
+
+
+
+
 static void internal_p_e(void* self_) {
 	requires_twice* self = self_;
 	(void)self;
@@ -92,7 +96,7 @@ static void p_e(void* self_) {
 	typedef struct {requires_twice* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_p_e, a);
+	runtime_event((void(*)(void*))opaque_p_e, a);
 }
 
 static void once_a(void* self_) {
@@ -100,7 +104,7 @@ static void once_a(void* self_) {
 	typedef struct {requires_twice* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_once_a, a);
+	runtime_event((void(*)(void*))opaque_once_a, a);
 }
 
 static void twice_a(void* self_) {
@@ -108,7 +112,7 @@ static void twice_a(void* self_) {
 	typedef struct {requires_twice* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_twice_a, a);
+	runtime_event((void(*)(void*))opaque_twice_a, a);
 }
 
 

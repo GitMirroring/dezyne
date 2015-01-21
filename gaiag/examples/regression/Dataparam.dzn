@@ -155,13 +155,22 @@ component proxy
 
   behaviour
   {
+    void outfunc (xint i)
+    {
+      xint j = i;
+      bottom.eo(j);
+    }
+    void deferfunc (xint i)
+    {
+      top.a(i);
+    }
     on top.e0: bottom.e0;
     on top.e0r: {IDataparam.Status r = bottom.e0r; reply(r);}
     on top.e(pi): bottom.e(pi);
     on top.er(pi): {IDataparam.Status r = bottom.er(pi); reply(r);}
     on top.eer(i,j): {IDataparam.Status r = bottom.eer(i,j); reply(r);}
 
-    on top.eo(i): { bottom.eo(i); }
+    on top.eo(i): { outfunc(i); }
     on top.eoo(i,j): { bottom.eoo(i,j); }
     on top.eio(i,j): { bottom.eio(i,j); }
     on top.eio2(i): { bottom.eio2(i); }
@@ -173,7 +182,7 @@ component proxy
 
     on bottom.a0: top.a0;
     on bottom.a6(A0,A1,A2,A3,A4,A5): top.a6(A0,A1,A2,A3,A4,A5);
-    on bottom.a(i): top.a(i);
+    on bottom.a(i): deferfunc(i);
     on bottom.aa(i,j): top.aa(i,j);
   }
 }

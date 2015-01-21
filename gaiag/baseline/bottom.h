@@ -39,6 +39,4 @@ typedef struct {
 
 void bottom_init(bottom* self, locator* dezyne_locator);
 
-
-
 #endif // DEZYNE_BOTTOM_H

@@ -49,6 +49,10 @@ static void opaque_i_c(void* args) {
 
 
 
+
+
+
+
 static void internal_i_a(void* self_) {
 	If* self = self_;
 	(void)self;
@@ -83,7 +87,7 @@ static void i_a(void* self_) {
 	typedef struct {If* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_i_a, a);
+	runtime_event((void(*)(void*))opaque_i_a, a);
 }
 
 

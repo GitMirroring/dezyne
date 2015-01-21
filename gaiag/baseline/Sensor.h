@@ -38,6 +38,4 @@ typedef struct {
 
 void Sensor_init(Sensor* self, locator* dezyne_locator);
 
-
-
 #endif // DEZYNE_SENSOR_H

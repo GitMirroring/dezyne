@@ -41,6 +41,4 @@ typedef struct {
 
 void modeling_init(modeling* self, locator* dezyne_locator);
 
-
-
 #endif // DEZYNE_MODELING_H

@@ -41,6 +41,4 @@ typedef struct {
 
 void external_provides_twice_init(external_provides_twice* self, locator* dezyne_locator);
 
-
-
 #endif // DEZYNE_EXTERNAL_PROVIDES_TWICE_H

@@ -35,6 +35,21 @@
 
 
 
+static void reply_fun(Reply3* self);
+static void reply_fun_arg(Reply3* self, int s);
+
+
+static void reply_fun(Reply3* self) {
+	(void)self;
+	self->reply_I_Status = I_Status_Yes;
+}
+
+static void reply_fun_arg(Reply3* self, int s) {
+	(void)self;
+	self->reply_I_Status = s;
+}
+
+
 static int internal_i_done(void* self_) {
 	Reply3* self = self_;
 	(void)self;
@@ -64,19 +79,10 @@ static int i_done(void* self_) {
 	typedef struct {Reply3* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_i_done, a);
+	runtime_event((void(*)(void*))opaque_i_done, a);
 	return self->reply_I_Status;
 }
 
-void reply_fun(Reply3* self) {
-	(void)self;
-	self->reply_I_Status = I_Status_Yes;
-}
-
-void reply_fun_arg(Reply3* self, int s) {
-	(void)self;
-	self->reply_I_Status = s;
-}
 
 void Reply3_init (Reply3* self, locator* dezyne_locator) {
 	self->rt = dezyne_locator->rt;

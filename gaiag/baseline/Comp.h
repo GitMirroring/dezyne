@@ -44,6 +44,4 @@ typedef struct {
 
 void Comp_init(Comp* self, locator* dezyne_locator);
 
-
-
 #endif // DEZYNE_COMP_H

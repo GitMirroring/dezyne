@@ -22,8 +22,4 @@ typedef struct {
 
 void #.model _init(#.model * self, locator* dezyne_locator);
 
-#(map (define-function model #{
-  #return-type  #name (#.model *self#comma #parameters);
-#}) (gom:functions model))
-
 ##endif // DEZYNE_#.COMPONENT _H

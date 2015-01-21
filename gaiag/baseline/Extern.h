@@ -40,6 +40,4 @@ typedef struct {
 
 void Extern_init(Extern* self, locator* dezyne_locator);
 
-
-
 #endif // DEZYNE_EXTERN_H

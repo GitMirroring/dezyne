@@ -51,6 +51,10 @@ static void opaque_console_deactivated(void* args) {
 
 
 
+
+
+
+
 static void internal_console_arm(void* self_) {
 	Alarm* self = self_;
 	(void)self;
@@ -185,7 +189,7 @@ static void console_arm(void* self_) {
 	typedef struct {Alarm* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_console_arm, a);
+	runtime_event((void(*)(void*))opaque_console_arm, a);
 }
 
 static void console_disarm(void* self_) {
@@ -193,7 +197,7 @@ static void console_disarm(void* self_) {
 	typedef struct {Alarm* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_console_disarm, a);
+	runtime_event((void(*)(void*))opaque_console_disarm, a);
 }
 
 static void sensor_triggered(void* self_) {
@@ -201,7 +205,7 @@ static void sensor_triggered(void* self_) {
 	typedef struct {Alarm* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_sensor_triggered, a);
+	runtime_event((void(*)(void*))opaque_sensor_triggered, a);
 }
 
 static void sensor_disabled(void* self_) {
@@ -209,7 +213,7 @@ static void sensor_disabled(void* self_) {
 	typedef struct {Alarm* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_sensor_disabled, a);
+	runtime_event((void(*)(void*))opaque_sensor_disabled, a);
 }
 
 

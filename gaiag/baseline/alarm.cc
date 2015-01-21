@@ -1,4 +1,5 @@
 // Dezyne --- Dezyne command line tools
+//
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -20,24 +21,35 @@
 //
 // Code:
 
-#ifndef DEZYNE_EXPRESSIONS_H
-#define DEZYNE_EXPRESSIONS_H
+#include "AlarmSystem.hh"
 
-#include "I.h"
+#include "locator.hh"
+#include "runtime.hh"
 
+#include <map>
+#include <queue>
 
-#include "runtime.h"
-#include "locator.h"
+void detected()
+{
+  std::cout << "Console.detected" << std::endl;
+}
 
+void deactivated()
+{
+  std::cout << "Console.deactivated" << std::endl;
+}
 
-typedef struct {
-	runtime* rt;
-	int state;
-	int c;
-	I i_;
-	I* i;
-} expressions;
+int main()
+{
+  dezyne::runtime runtime;
+  dezyne::locator locator;
+  dezyne::AlarmSystem alarmsystem(locator.set(runtime));
 
-void expressions_init(expressions* self, locator* dezyne_locator);
+  alarmsystem.console.out.detected = detected;
+  alarmsystem.console.out.deactivated = deactivated;
 
-#endif // DEZYNE_EXPRESSIONS_H
+  alarmsystem.console.in.arm();
+  alarmsystem.sensor.sensor.out.triggered();
+  alarmsystem.console.in.disarm();
+  alarmsystem.sensor.sensor.out.disabled();
+}

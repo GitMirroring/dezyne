@@ -41,6 +41,4 @@ typedef struct {
 
 void incomplete_init(incomplete* self, locator* dezyne_locator);
 
-
-
 #endif // DEZYNE_INCOMPLETE_H

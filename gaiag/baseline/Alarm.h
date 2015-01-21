@@ -46,6 +46,4 @@ typedef struct {
 
 void Alarm_init(Alarm* self, locator* dezyne_locator);
 
-
-
 #endif // DEZYNE_ALARM_H

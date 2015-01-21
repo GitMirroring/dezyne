@@ -39,6 +39,4 @@ typedef struct {
 
 void If_init(If* self, locator* dezyne_locator);
 
-
-
 #endif // DEZYNE_IF_H

@@ -34,6 +34,10 @@
 
 
 
+
+
+
+
 static void internal_i_evt(void* self_) {
 	testBoolean* self = self_;
 	(void)self;
@@ -53,7 +57,7 @@ static void i_evt(void* self_) {
 	typedef struct {testBoolean* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_i_evt, a);
+	runtime_event((void(*)(void*))opaque_i_evt, a);
 }
 
 

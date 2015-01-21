@@ -48,6 +48,10 @@ static void opaque_p_finish(void* args) {
 
 
 
+
+
+
+
 static void internal_p_start(void* self_) {
 	reply_reorder* self = self_;
 	(void)self;
@@ -68,7 +72,7 @@ static void internal_r_pong(void* self_) {
 		}
 		self->first = !(self->first);
 	}
-	if (!(self->first)) {
+	else if (!(self->first)) {
 		{
 			args_p_finish a = {self};
 			args_p_finish* p = malloc(sizeof(args_p_finish));
@@ -96,7 +100,7 @@ static void p_start(void* self_) {
 	typedef struct {reply_reorder* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_p_start, a);
+	runtime_event((void(*)(void*))opaque_p_start, a);
 }
 
 static void r_pong(void* self_) {
@@ -104,7 +108,7 @@ static void r_pong(void* self_) {
 	typedef struct {reply_reorder* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_r_pong, a);
+	runtime_event((void(*)(void*))opaque_r_pong, a);
 }
 
 

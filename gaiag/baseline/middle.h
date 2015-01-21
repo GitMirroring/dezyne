@@ -45,6 +45,4 @@ typedef struct {
 
 void middle_init(middle* self, locator* dezyne_locator);
 
-
-
 #endif // DEZYNE_MIDDLE_H

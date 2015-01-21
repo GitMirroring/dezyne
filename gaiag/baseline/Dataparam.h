@@ -41,9 +41,4 @@ typedef struct {
 
 void Dataparam_init(Dataparam* self, locator* dezyne_locator);
 
-int fun(Dataparam*self);
-int funx(Dataparam*self, int xi);
-int xfunx(Dataparam*self, int xi, int xj);
-
-
 #endif // DEZYNE_DATAPARAM_H

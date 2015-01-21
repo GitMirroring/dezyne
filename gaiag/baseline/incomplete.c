@@ -41,6 +41,10 @@ static void opaque_p_a(void* args) {
 
 
 
+
+
+
+
 static void internal_p_e(void* self_) {
 	incomplete* self = self_;
 	(void)self;
@@ -72,7 +76,7 @@ static void p_e(void* self_) {
 	typedef struct {incomplete* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_p_e, a);
+	runtime_event((void(*)(void*))opaque_p_e, a);
 }
 
 static void r_a(void* self_) {
@@ -80,7 +84,7 @@ static void r_a(void* self_) {
 	typedef struct {incomplete* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_r_a, a);
+	runtime_event((void(*)(void*))opaque_r_a, a);
 }
 
 

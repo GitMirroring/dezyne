@@ -41,6 +41,4 @@ typedef struct {
 
 void complete_init(complete* self, locator* dezyne_locator);
 
-
-
 #endif // DEZYNE_COMPLETE_H

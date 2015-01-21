@@ -44,6 +44,4 @@ typedef struct {
 
 void requires_twice_init(requires_twice* self, locator* dezyne_locator);
 
-
-
 #endif // DEZYNE_REQUIRES_TWICE_H

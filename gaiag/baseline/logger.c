@@ -35,6 +35,10 @@
 
 
 
+
+
+
+
 static void internal_log_log(void* self_) {
 	logger* self = self_;
 	(void)self;
@@ -54,7 +58,7 @@ static void log_log(void* self_) {
 	typedef struct {logger* self;} args;
 	args* a = malloc(sizeof(args));
 	a->self=self;
-	runtime_event(opaque_log_log, a);
+	runtime_event((void(*)(void*))opaque_log_log, a);
 }
 
 
