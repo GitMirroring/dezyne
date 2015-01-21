@@ -1,6 +1,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -44,7 +45,7 @@ class sugar ():
                 self.i.outs.a ()
             else:
                 t = self.Enum.False
-                if (self.t == self.Enum.True):
+                if (t == self.Enum.True):
                     self.i.outs.a ()
 
 

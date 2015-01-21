@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -48,18 +49,15 @@ static void internal_i_e(void* self_) {
 	sugar* self = self_;
 	(void)self;
 	DZN_LOG("sugar.i_e");
-	if (self->s == sugar_Enum_False) if (self->s == sugar_Enum_False)
-	{
+	if (self->s == sugar_Enum_False) if (self->s == sugar_Enum_False) {
 		args_i_a a = {self};
 		args_i_a* p = malloc(sizeof(args_i_a));
 		memcpy (p, &a, sizeof(args_i_a));
 		runtime_defer(self->rt, self, opaque_i_a, p);
 	}
-	else
-	{
+	else {
 		int t = sugar_Enum_False;
-		if (t == sugar_Enum_True)
-		{
+		if (t == sugar_Enum_True) {
 			args_i_a a = {self};
 			args_i_a* p = malloc(sizeof(args_i_a));
 			memcpy (p, &a, sizeof(args_i_a));

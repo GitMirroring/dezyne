@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -43,17 +44,14 @@ static int internal_client_initialize(void* self_) {
 	DZN_LOG("Comp.client_initialize");
 	if (self->s == Comp_State_Uninitialized) {
 		int res = self->device_A->in.initialize(self->device_A);
-		if (res == IDevice_result_t_OK)
-		{
+		if (res == IDevice_result_t_OK) {
 			res = self->device_A->in.calibrate(self->device_A);
 		}
-		if (res == IDevice_result_t_OK)
-		{
+		if (res == IDevice_result_t_OK) {
 			self->s = Comp_State_Initialized;
 			self->reply_IDevice_result_t = IDevice_result_t_OK;
 		}
-		else
-		{
+		else {
 			self->s = Comp_State_Uninitialized;
 			self->reply_IDevice_result_t = IDevice_result_t_NOK;
 		}
@@ -79,13 +77,11 @@ static int internal_client_recover(void* self_) {
 	}
 	else if (self->s == Comp_State_Error) {
 		int res = self->device_A->in.calibrate(self->device_A);
-		if (res == IDevice_result_t_OK)
-		{
+		if (res == IDevice_result_t_OK) {
 			self->s = Comp_State_Initialized;
 			self->reply_IDevice_result_t = IDevice_result_t_OK;
 		}
-		else
-		{
+		else {
 			self->s = Comp_State_Error;
 			self->reply_IDevice_result_t = IDevice_result_t_NOK;
 		}
@@ -102,17 +98,14 @@ static int internal_client_perform_actions(void* self_) {
 	}
 	else if (self->s == Comp_State_Initialized) {
 		int res = self->device_A->in.perform_action1(self->device_A);
-		if (res == IDevice_result_t_OK)
-		{
+		if (res == IDevice_result_t_OK) {
 			res = self->device_A->in.perform_action2(self->device_A);
 		}
-		if (res == IDevice_result_t_OK)
-		{
+		if (res == IDevice_result_t_OK) {
 			self->s = Comp_State_Initialized;
 			self->reply_IDevice_result_t = IDevice_result_t_OK;
 		}
-		else
-		{
+		else {
 			self->s = Comp_State_Error;
 			self->reply_IDevice_result_t = IDevice_result_t_NOK;
 		}

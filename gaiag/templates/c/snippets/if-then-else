@@ -1,3 +1,1 @@
-if (#expression)
-#then else
-#else
+if (#expression) #then else #else

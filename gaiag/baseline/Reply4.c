@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -44,21 +45,15 @@ static int internal_i_done(void* self_) {
 	if (true) {
 		int s = self->u->in.what(self->u);
 		s = self->u->in.what(self->u);
-		if (s == U_Status_Ok)
-		{
+		if (s == U_Status_Ok) {
 			int v = fun (self);
-			if (v == Reply4_Status_Yes)
-			self->reply_I_Status = I_Status_Yes;
-			else
-			self->reply_I_Status = I_Status_No;
+			if (v == Reply4_Status_Yes) self->reply_I_Status = I_Status_Yes;
+			else self->reply_I_Status = I_Status_No;
 		}
-		else
-		{
+		else {
 			int v = fun_arg(self, Reply4_Status_No);
-			if (v == Reply4_Status_Yes)
-			self->reply_I_Status = I_Status_Yes;
-			else
-			self->reply_I_Status = I_Status_No;
+			if (v == Reply4_Status_Yes) self->reply_I_Status = I_Status_Yes;
+			else self->reply_I_Status = I_Status_No;
 		}
 	}
 	return self->reply_I_Status;

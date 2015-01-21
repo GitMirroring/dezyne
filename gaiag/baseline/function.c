@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -103,8 +104,7 @@ static void i_b(void* self_) {
 
 void toggle(function* self) {
 	(void)self;
-	if (self->f)
-	{
+	if (self->f) {
 		{
 			args_i_c a = {self};
 			args_i_c* p = malloc(sizeof(args_i_c));

@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -52,8 +53,7 @@ static void internal_i_a(void* self_) {
 	If* self = self_;
 	(void)self;
 	DZN_LOG("If.i_a");
-	if (self->t)
-	{
+	if (self->t) {
 		{
 			args_i_b a = {self};
 			args_i_b* p = malloc(sizeof(args_i_b));
@@ -61,8 +61,7 @@ static void internal_i_a(void* self_) {
 			runtime_defer(self->rt, self, opaque_i_b, p);
 		}
 	}
-	else
-	{
+	else {
 		{
 			args_i_c a = {self};
 			args_i_c* p = malloc(sizeof(args_i_c));

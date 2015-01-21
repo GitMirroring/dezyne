@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -34,7 +35,7 @@ dezyne.sugar = function() {
     if(this.s === this.Enum.False) if(this.s === this.Enum.False) this.i.out.a.defer();
     else {
       var t = this.Enum.False;
-      if(this.t === this.Enum.True) this.i.out.a.defer();
+      if(t === this.Enum.True) this.i.out.a.defer();
     }
   }.bind(this);
 
