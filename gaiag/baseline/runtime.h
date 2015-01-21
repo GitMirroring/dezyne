@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -35,8 +36,8 @@ typedef struct {
 
 void runtime_init (runtime*);
 void runtime_flush (runtime* self, void* scope);
-void runtime_defer (runtime* self, void* scope, void *event, void* args);
-void runtime_event (void* event, void* args);
+void runtime_defer (runtime* self, void* scope, void (*event)(void*), void* args);
+void runtime_event (void (*event)(void*), void* args);
 void runtime_set (runtime* runtime, void* self);
 
 #define DZN_LOG(msg) printf ("%s\n", msg)

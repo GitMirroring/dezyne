@@ -92,7 +92,7 @@ runtime_flush (runtime* self, void* scope)
 }
 
 void
-runtime_defer (runtime* self, void* scope, void *event, void* args)
+runtime_defer (runtime* self, void* scope, void (*event)(void*), void* args)
 {
   pair* p = runtime_get (self, scope);
   assert (p);
@@ -103,13 +103,13 @@ runtime_defer (runtime* self, void* scope, void *event, void* args)
 }
 
 static void
-runtime_handle_event (runtime* self, void* scope, void* event, void* args)
+runtime_handle_event (runtime* self, void* scope, void (*event)(void*), void* args)
 {
   bool* handle = runtime_handling (self, scope);
   if (!*handle)
   {
     *handle = true;
-    (*(void (*)(void*))event) (args);
+    event (args);
     free (args);
     runtime_flush (self, scope);
     *handle = false;
@@ -130,7 +130,7 @@ typedef struct {
 
 
 void
-runtime_event (void* event, void* args)
+runtime_event (void (*event)(void*), void* args)
 {
   arguments* a = args;
   component* c = a->self;
