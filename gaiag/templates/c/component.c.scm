@@ -70,7 +70,7 @@
 #}) (filter (gom:dir-matches? port) (gom:events port))))
   (gom:ports model))#
 ((->join "\n  ")(map (define-function model #{
-  #return-type  #name (#parameters) {
+  #return-type  #name (#.model * self#comma #parameters) {
     #statements }
 #}) (gom:functions model)))
 void #.model _init (#.model * self, locator* dezyne_locator) {
