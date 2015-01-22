@@ -84,8 +84,9 @@ void #.model _init (#.model * self, locator* dezyne_locator) {
   runtime_set(self->rt, self);
   #(map (lambda (port) (->string (list "self->" (.name port) "_ = *(" (.type port) "*)locator_get(dezyne_locator, \"" (.type port) "\");\n"))) (filter .injected (gom:ports model)))#
 ((->join  ";\n")
- (map (init-member model #{
-   #(if (not (eq? expression *unspecified*)) (->string (list 'self-> name " = " expression)))#}) (gom:variables model)))#
+ (filter (negate (compose string-null? string-trim))
+   (map (init-member model #{
+   #(if (not (eq? expression *unspecified*)) (->string (list 'self-> name " = " expression)))#}) (gom:variables model))))#
 (if (null? (gom:variables model)) "" ";")
 #
    (map

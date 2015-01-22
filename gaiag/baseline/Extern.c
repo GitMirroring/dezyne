@@ -64,7 +64,6 @@ void Extern_init (Extern* self, locator* dezyne_locator) {
 	self->rt = dezyne_locator->rt;
 	runtime_set(self->rt, self);
 	self->i = 0;
-	;
 	self->port = &self->port_;
 	self->port->in.e = port_e;
 	self->port->in.self = self;
