@@ -60,6 +60,8 @@ namespace dezyne
     void bottom_a(int i);
     void bottom_aa(int i, int j);
     void bottom_a6(int a0, int a1, int a2, int a3, int a4, int a5);
+    void outfunc(int i);
+    void deferfunc(int i);
   };
 }
 #endif // DEZYNE_PROXY_HH

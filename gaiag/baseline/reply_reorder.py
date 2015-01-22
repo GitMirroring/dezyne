@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -48,7 +48,7 @@ class reply_reorder ():
         if (self.first):
             self.p.outs.busy ()
             self.first = not (self.first)
-        if (not (self.first)):
+        elif (not (self.first)):
             self.p.outs.finish ()
             self.first = not (self.first)
 

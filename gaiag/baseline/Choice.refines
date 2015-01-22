@@ -1,0 +1,28 @@
+Checking out/Choice.csp
+
+Checking COMPLETE'({IChoice.e}) [F= IF_IChoice_(true,true)\diff(Events,{IChoice.e,illegal})
+true
+
+Checking IF_IChoice_(false,false) :[deadlock free]
+true
+
+Checking IF_IChoice_(true,false) :[livelock free]
+true
+
+Checking CO_Choice_(true,true)[[IChoice_'.x<-c_'.x|x<-extensions(c_')]] :[deterministic]
+true
+
+Checking COMPLETE'({c.e}) [F= CO_Choice_(true,true)[[IChoice_'.x'<-c_'.x'|x'<-extensions(c_')]]\diff(Events,{c.e,illegal})
+true
+
+Checking STOP [T= AS_Choice_(false)\diff(Events,{illegal})
+true
+
+Checking AS_Choice_(false) :[deadlock free]
+true
+
+Checking IF_IChoice_(true,false)[[IChoice.x<-c.x|x<-extensions(c)]][[IChoice_'.x<-c_'.x|x<-extensions(c_')]][[IChoice_''.x<-c_''.x|x<-extensions(c_'')]]\{IChoice_'''.modeling} [F= AS_Choice_(true)\diff(Events,{|illegal,c,c_',c_''|})
+true
+
+Checking AS_Choice_(true)\diff(Events,{|illegal,c,c_',c_''|}) :[livelock free]
+true

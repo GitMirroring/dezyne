@@ -256,7 +256,7 @@ c++-alarm:
 	cd out && ln -s ../examples/alarm.cc .
 	cd out && for i in *cc; do ccache g++ -g -c $$i; done && g++ -o $@ *.o && ./$@ > $@.trace
 	$(diff) baseline/$@.trace out
-	for i in out/*.h out/*.c; do $(diff) baseline/$$(basename $$i) $$i; done
+	for i in out/*.hh out/*.cc; do $(diff) baseline/$$(basename $$i) $$i; done
 
 c++-inject:
 	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c++/* .
@@ -657,7 +657,8 @@ glue:
 	for i in out/*.c*; do ccache g++ -g -Wall -Wextra -I out -I $(DEPTH)/examples/codegen/asd_cpp_runtime -c $$i -o out/$$(basename $$(basename $$i .cpp) .cc).o; done
 	cd out && g++ -o test *.o && ./test
 
-update: csp-update c-update c++-update goops-update java-update javascript-update python-update
+code-update: c-update c++-update goops-update java-update javascript-update python-update
+update: csp-update code-update
 
 data-csp:
 	cd out && ../gaiag -l csp ../examples/Dataparam.dzn

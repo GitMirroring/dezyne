@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,26 +21,34 @@
 //
 // Code:
 
-dezyne.reply_reorder = function() {
-  this.first = true;
+#ifndef DEZYNE_CHOICE_HH
+#define DEZYNE_CHOICE_HH
 
-  this.p = new dezyne.Provides();
-  this.r = new dezyne.Requires();
+#include "IChoice.hh"
 
-  this.p.in.start = function() {
-    console.log('reply_reorder.p_start');
-    this.r.in.ping();
-  }.bind(this);
-  this.r.out.pong = function() {
-    console.log('reply_reorder.r_pong');
-    if(this.first) {
-      this.p.out.busy.defer();
-      this.first = ! (this.first);
-    }
-    else if(! (this.first)) {
-      this.p.out.finish.defer();
-      this.first = ! (this.first);
-    }
-  }.bind(this);
 
-};
+namespace dezyne
+{
+  struct locator;
+  struct runtime;
+
+  struct Choice
+  {
+    runtime& rt;
+    struct State
+    {
+      enum type
+      {
+        Off, Idle, Busy
+      };
+    };
+    Choice::State::type s;
+    IChoice c;
+
+    Choice(const locator&);
+
+    private:
+    void c_e();
+  };
+}
+#endif // DEZYNE_CHOICE_HH

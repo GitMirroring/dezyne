@@ -1,4 +1,5 @@
 // Dezyne --- Dezyne command line tools
+//
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -20,22 +21,23 @@
 //
 // Code:
 
-#ifndef DEZYNE_IRUN_H
-#define DEZYNE_IRUN_H
+#ifndef DEZYNE_CHOICE_H
+#define DEZYNE_CHOICE_H
 
-typedef struct
-{
+#include "IChoice.h"
 
-	struct
-	{
-		void(*run)();
-		void* self;
-	} in;
 
-	struct
-	{
-		int dummy; // not used; empty structs are not allowed in c
-	} out;
+#include "runtime.h"
+#include "locator.h"
 
-} IRun;
-#endif // DEZYNE_IRUN_H
+
+typedef struct {
+	runtime* rt;
+	int s;
+	IChoice c_;
+	IChoice* c;
+} Choice;
+
+void Choice_init(Choice* self, locator* dezyne_locator);
+
+#endif // DEZYNE_CHOICE_H

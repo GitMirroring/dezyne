@@ -1,4 +1,5 @@
 // Dezyne --- Dezyne command line tools
+//
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -20,22 +21,15 @@
 //
 // Code:
 
-#ifndef DEZYNE_ADAPTOR_H
-#define DEZYNE_ADAPTOR_H
+#include "ChoiceSystem.h"
 
-#include "IRun.h"
-#include "IConsole.h"
+#define CONNECT(provided, required)\
+{\
+	provided->out = required->out;\
+	required->in = provided->in;\
+}
 
-#include "runtime.h"
-#include "locator.h"
-
-typedef struct
-{
-	runtime* rt;
-	int state; 
-	int count;
-	IRun run;
-	IConsole console;
-} Adaptor;
-void Adaptor_init(Adaptor* self, locator* dezyne_locator);
-#endif // DEZYNE_ADAPTOR_HH
+void ChoiceSystem_init(ChoiceSystem *self, locator* dezyne_locator) {
+	Choice_init(&self->choice, dezyne_locator);
+	self->c = self->choice.c; 
+}

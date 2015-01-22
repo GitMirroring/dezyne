@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,43 +21,40 @@
 //
 // Code:
 
-class reply_reorder{
+#include "Choice.hh"
 
-  Boolean first;
+#include "locator.hh"
+#include "runtime.hh"
 
-  Provides p;
-  Requires r;
+namespace dezyne
+{
+  Choice::Choice(const locator& dezyne_locator)
+  : rt(dezyne_locator.get<runtime>())
+  , s(State::Off)
+  , c()
+  {
+    c.in.e = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&Choice::c_e, this)));
+  }
 
-  public reply_reorder() {
-    first = true;
-    p = new Provides();
-    r = new Requires();
-    p.getIn().start = new Action() {
-      public void action() {
-        p_start();
-      }
-    };
-    r.getOut().pong = new Action() {
-      public void action() {
-        r_pong();
-      }
-    };
-  };
-  public void p_start() {
-    System.err.println("reply_reorder.p_start");
-    r.getIn().ping.action();
-  };
-
-  public void r_pong() {
-    System.err.println("reply_reorder.r_pong");
-    if (first) {
-      p.getOut().busy.action();
-      first = ! (first);
+  void Choice::c_e()
+  {
+    std::cout << "Choice.c_e" << std::endl;
+    if (s == State::Off)
+    {
+      s = State::Idle;
+      rt.defer(this, boost::bind(c.out.a));
     }
-    else if (! (first)) {
-      p.getOut().finish.action();
-      first = ! (first);
+    else if (s == State::Idle)
+    {
+      s = State::Busy;
+      rt.defer(this, boost::bind(c.out.a));
     }
-  };
+    else if (s == State::Busy)
+    {
+      s = State::Idle;
+      rt.defer(this, boost::bind(c.out.a));
+    }
+  }
+
 
 }
