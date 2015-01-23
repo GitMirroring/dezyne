@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -32,13 +33,23 @@
 
 
 
+typedef struct {void (*f)(void*); testBoolean* self;} args_i_evt;
+
+
+
+
+static void helper_i_evt(void* args) {
+	args_i_evt *a = args;
+	a->f(a->self);
+}
 
 
 
 
 
 
-static void internal_i_evt(void* self_) {
+
+static void i_evt(void* self_) {
 	testBoolean* self = self_;
 	(void)self;
 	DZN_LOG("testBoolean.i_evt");
@@ -46,18 +57,12 @@ static void internal_i_evt(void* self_) {
 	}
 }
 
-static void opaque_i_evt(void* a) {
-	typedef struct {testBoolean* self;} args;
-	args* b = a;
-	internal_i_evt(b->self);
-}
-
-static void i_evt(void* self_) {
+static void callback_i_evt(void* self_) {
 	testBoolean* self = ((TestBool*)self_)->in.self;
-	typedef struct {testBoolean* self;} args;
-	args* a = malloc(sizeof(args));
+	args_i_evt* a = malloc(sizeof(args_i_evt));
+	a->f=i_evt;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_i_evt, a);
+	runtime_event(helper_i_evt, a);
 }
 
 
@@ -66,6 +71,6 @@ void testBoolean_init (testBoolean* self, locator* dezyne_locator) {
 	runtime_set(self->rt, self);
 	self->b = false;
 	self->i = &self->i_;
-	self->i->in.evt = i_evt;
+	self->i->in.evt = callback_i_evt;
 	self->i->in.self = self;
 }

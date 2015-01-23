@@ -31,20 +31,28 @@
 
 
 
-typedef struct {If* self;} args_i_b;
-typedef struct {If* self;} args_i_c;
+typedef struct {void (*f)(void*); If* self;} args_i_b;
+typedef struct {void (*f)(void*); If* self;} args_i_c;
 
 
-static void opaque_i_b(void* args) {
+typedef struct {void (*f)(void*); If* self;} args_i_a;
+
+
+static void helper_i_b(void* args) {
 	args_i_b *a = args;
-	void (*f)(void*) = a->self->i->out.b;
-	f(a->self->i);
+	a->f(a->self->i);
 }
 
-static void opaque_i_c(void* args) {
+static void helper_i_c(void* args) {
 	args_i_c *a = args;
-	void (*f)(void*) = a->self->i->out.c;
-	f(a->self->i);
+	a->f(a->self->i);
+}
+
+
+
+static void helper_i_a(void* args) {
+	args_i_a *a = args;
+	a->f(a->self);
 }
 
 
@@ -53,41 +61,35 @@ static void opaque_i_c(void* args) {
 
 
 
-static void internal_i_a(void* self_) {
+static void i_a(void* self_) {
 	If* self = self_;
 	(void)self;
 	DZN_LOG("If.i_a");
 	if (self->t) {
 		{
-			args_i_b a = {self};
+			args_i_b a = {self->i->out.b,self};
 			args_i_b* p = malloc(sizeof(args_i_b));
-			memcpy (p, &a, sizeof(args_i_b));
-			runtime_defer(self->rt, self, opaque_i_b, p);
+			memcpy(p, &a, sizeof(args_i_b));
+			runtime_defer(self->rt, self, helper_i_b, p);
 		}
 	}
 	else {
 		{
-			args_i_c a = {self};
+			args_i_c a = {self->i->out.c,self};
 			args_i_c* p = malloc(sizeof(args_i_c));
-			memcpy (p, &a, sizeof(args_i_c));
-			runtime_defer(self->rt, self, opaque_i_c, p);
+			memcpy(p, &a, sizeof(args_i_c));
+			runtime_defer(self->rt, self, helper_i_c, p);
 		}
 	}
 	self->t = !(self->t);
 }
 
-static void opaque_i_a(void* a) {
-	typedef struct {If* self;} args;
-	args* b = a;
-	internal_i_a(b->self);
-}
-
-static void i_a(void* self_) {
+static void callback_i_a(void* self_) {
 	If* self = ((I*)self_)->in.self;
-	typedef struct {If* self;} args;
-	args* a = malloc(sizeof(args));
+	args_i_a* a = malloc(sizeof(args_i_a));
+	a->f=i_a;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_i_a, a);
+	runtime_event(helper_i_a, a);
 }
 
 
@@ -96,6 +98,6 @@ void If_init (If* self, locator* dezyne_locator) {
 	runtime_set(self->rt, self);
 	self->t = false;
 	self->i = &self->i_;
-	self->i->in.a = i_a;
+	self->i->in.a = callback_i_a;
 	self->i->in.self = self;
 }

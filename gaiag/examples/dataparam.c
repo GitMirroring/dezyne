@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -69,7 +70,7 @@ int main()
 
   assert(IDataparam_Status_Yes == c.port->in.e0r(c.port));
   c.port->in.e0(c.port);
-  assert(IDataparam_Status_No == c.port->in.er(c.port,123));
+  assert(IDataparam_Status_Yes == c.port->in.er(c.port,123));
   c.port->in.e(c.port,123);
   assert(IDataparam_Status_No == c.port->in.eer(c.port,123,345));
 

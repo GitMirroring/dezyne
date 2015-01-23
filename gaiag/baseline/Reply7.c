@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -32,6 +33,16 @@
 
 
 
+typedef struct {int (*f)(void*); Reply7* self;} args_p_foo;
+
+
+
+
+static void helper_p_foo(void* args) {
+	args_p_foo *a = args;
+	a->f(a->self);
+}
+
 
 
 static void f(Reply7* self);
@@ -44,7 +55,7 @@ static void f(Reply7* self) {
 }
 
 
-static int internal_p_foo(void* self_) {
+static int p_foo(void* self_) {
 	Reply7* self = self_;
 	(void)self;
 	DZN_LOG("Reply7.p_foo");
@@ -52,19 +63,12 @@ static int internal_p_foo(void* self_) {
 	return self->reply_IReply7_E;
 }
 
-static int opaque_p_foo(void* a) {
-	typedef struct {Reply7* self;} args;
-	args* b = a;
-	internal_p_foo(b->self);
-	return b->self->reply_IReply7_E;
-}
-
-static int p_foo(void* self_) {
+static int callback_p_foo(void* self_) {
 	Reply7* self = ((IReply7*)self_)->in.self;
-	typedef struct {Reply7* self;} args;
-	args* a = malloc(sizeof(args));
+	args_p_foo* a = malloc(sizeof(args_p_foo));
+	a->f=p_foo;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_p_foo, a);
+	runtime_event(helper_p_foo, a);
 	return self->reply_IReply7_E;
 }
 
@@ -74,7 +78,7 @@ void Reply7_init (Reply7* self, locator* dezyne_locator) {
 	runtime_set(self->rt, self);
 
 	self->p = &self->p_;
-	self->p->in.foo = p_foo;
+	self->p->in.foo = callback_p_foo;
 	self->p->in.self = self;
 	self->r = &self->r_;
 	self->r->out.self = self;

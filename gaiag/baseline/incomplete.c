@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -30,13 +31,28 @@
 
 
 
-typedef struct {incomplete* self;} args_p_a;
+typedef struct {void (*f)(void*); incomplete* self;} args_p_a;
 
 
-static void opaque_p_a(void* args) {
+typedef struct {void (*f)(void*); incomplete* self;} args_p_e;
+typedef struct {void (*f)(void*); incomplete* self;} args_r_a;
+
+
+static void helper_p_a(void* args) {
 	args_p_a *a = args;
-	void (*f)(void*) = a->self->p->out.a;
-	f(a->self->p);
+	a->f(a->self->p);
+}
+
+
+
+static void helper_p_e(void* args) {
+	args_p_e *a = args;
+	a->f(a->self);
+}
+
+static void helper_r_a(void* args) {
+	args_r_a *a = args;
+	a->f(a->self);
 }
 
 
@@ -45,7 +61,7 @@ static void opaque_p_a(void* args) {
 
 
 
-static void internal_p_e(void* self_) {
+static void p_e(void* self_) {
 	incomplete* self = self_;
 	(void)self;
 	DZN_LOG("incomplete.p_e");
@@ -53,38 +69,26 @@ static void internal_p_e(void* self_) {
 	}
 }
 
-static void internal_r_a(void* self_) {
+static void r_a(void* self_) {
 	incomplete* self = self_;
 	(void)self;
 	DZN_LOG("incomplete.r_a");
 }
 
-static void opaque_p_e(void* a) {
-	typedef struct {incomplete* self;} args;
-	args* b = a;
-	internal_p_e(b->self);
-}
-
-static void opaque_r_a(void* a) {
-	typedef struct {incomplete* self;} args;
-	args* b = a;
-	internal_r_a(b->self);
-}
-
-static void p_e(void* self_) {
+static void callback_p_e(void* self_) {
 	incomplete* self = ((iincomplete*)self_)->in.self;
-	typedef struct {incomplete* self;} args;
-	args* a = malloc(sizeof(args));
+	args_p_e* a = malloc(sizeof(args_p_e));
+	a->f=p_e;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_p_e, a);
+	runtime_event(helper_p_e, a);
 }
 
-static void r_a(void* self_) {
+static void callback_r_a(void* self_) {
 	incomplete* self = ((iincomplete*)self_)->out.self;
-	typedef struct {incomplete* self;} args;
-	args* a = malloc(sizeof(args));
+	args_r_a* a = malloc(sizeof(args_r_a));
+	a->f=r_a;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_r_a, a);
+	runtime_event(helper_r_a, a);
 }
 
 
@@ -93,9 +97,9 @@ void incomplete_init (incomplete* self, locator* dezyne_locator) {
 	runtime_set(self->rt, self);
 
 	self->p = &self->p_;
-	self->p->in.e = p_e;
+	self->p->in.e = callback_p_e;
 	self->p->in.self = self;
 	self->r = &self->r_;
 	self->r->out.self = self;
-	self->r->out.a = r_a;
+	self->r->out.a = callback_r_a;
 }

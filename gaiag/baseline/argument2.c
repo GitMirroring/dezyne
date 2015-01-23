@@ -31,13 +31,22 @@
 
 
 
-typedef struct {argument2* self;} args_i_f;
+typedef struct {void (*f)(void*); argument2* self;} args_i_f;
 
 
-static void opaque_i_f(void* args) {
+typedef struct {void (*f)(void*); argument2* self;} args_i_e;
+
+
+static void helper_i_f(void* args) {
 	args_i_f *a = args;
-	void (*f)(void*) = a->self->i->out.f;
-	f(a->self->i);
+	a->f(a->self->i);
+}
+
+
+
+static void helper_i_e(void* args) {
+	args_i_e *a = args;
+	a->f(a->self);
 }
 
 
@@ -48,16 +57,16 @@ static bool g(argument2* self, bool ga, bool gb);
 static bool g(argument2* self, bool ga, bool gb) {
 	(void)self;
 	{
-		args_i_f a = {self};
+		args_i_f a = {self->i->out.f,self};
 		args_i_f* p = malloc(sizeof(args_i_f));
-		memcpy (p, &a, sizeof(args_i_f));
-		runtime_defer(self->rt, self, opaque_i_f, p);
+		memcpy(p, &a, sizeof(args_i_f));
+		runtime_defer(self->rt, self, helper_i_f, p);
 	}
 	return (ga || gb);
 }
 
 
-static void internal_i_e(void* self_) {
+static void i_e(void* self_) {
 	argument2* self = self_;
 	(void)self;
 	DZN_LOG("argument2.i_e");
@@ -66,26 +75,20 @@ static void internal_i_e(void* self_) {
 	self->b = g(self, c, c);
 	if (c) {
 		{
-			args_i_f a = {self};
+			args_i_f a = {self->i->out.f,self};
 			args_i_f* p = malloc(sizeof(args_i_f));
-			memcpy (p, &a, sizeof(args_i_f));
-			runtime_defer(self->rt, self, opaque_i_f, p);
+			memcpy(p, &a, sizeof(args_i_f));
+			runtime_defer(self->rt, self, helper_i_f, p);
 		}
 	}
 }
 
-static void opaque_i_e(void* a) {
-	typedef struct {argument2* self;} args;
-	args* b = a;
-	internal_i_e(b->self);
-}
-
-static void i_e(void* self_) {
+static void callback_i_e(void* self_) {
 	argument2* self = ((I*)self_)->in.self;
-	typedef struct {argument2* self;} args;
-	args* a = malloc(sizeof(args));
+	args_i_e* a = malloc(sizeof(args_i_e));
+	a->f=i_e;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_i_e, a);
+	runtime_event(helper_i_e, a);
 }
 
 
@@ -94,6 +97,6 @@ void argument2_init (argument2* self, locator* dezyne_locator) {
 	runtime_set(self->rt, self);
 	self->b = false;
 	self->i = &self->i_;
-	self->i->in.e = i_e;
+	self->i->in.e = callback_i_e;
 	self->i->in.self = self;
 }

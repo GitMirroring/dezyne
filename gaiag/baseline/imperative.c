@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -33,27 +34,34 @@ typedef enum {
 } imperative_States;
 
 
-typedef struct {imperative* self;} args_i_f;
-typedef struct {imperative* self;} args_i_g;
-typedef struct {imperative* self;} args_i_h;
+typedef struct {void (*f)(void*); imperative* self;} args_i_f;
+typedef struct {void (*f)(void*); imperative* self;} args_i_g;
+typedef struct {void (*f)(void*); imperative* self;} args_i_h;
 
 
-static void opaque_i_f(void* args) {
+typedef struct {void (*f)(void*); imperative* self;} args_i_e;
+
+
+static void helper_i_f(void* args) {
 	args_i_f *a = args;
-	void (*f)(void*) = a->self->i->out.f;
-	f(a->self->i);
+	a->f(a->self->i);
 }
 
-static void opaque_i_g(void* args) {
+static void helper_i_g(void* args) {
 	args_i_g *a = args;
-	void (*f)(void*) = a->self->i->out.g;
-	f(a->self->i);
+	a->f(a->self->i);
 }
 
-static void opaque_i_h(void* args) {
+static void helper_i_h(void* args) {
 	args_i_h *a = args;
-	void (*f)(void*) = a->self->i->out.h;
-	f(a->self->i);
+	a->f(a->self->i);
+}
+
+
+
+static void helper_i_e(void* args) {
+	args_i_e *a = args;
+	a->f(a->self);
 }
 
 
@@ -62,28 +70,28 @@ static void opaque_i_h(void* args) {
 
 
 
-static void internal_i_e(void* self_) {
+static void i_e(void* self_) {
 	imperative* self = self_;
 	(void)self;
 	DZN_LOG("imperative.i_e");
 	if (self->state == imperative_States_I) {
 		{
-			args_i_f a = {self};
+			args_i_f a = {self->i->out.f,self};
 			args_i_f* p = malloc(sizeof(args_i_f));
-			memcpy (p, &a, sizeof(args_i_f));
-			runtime_defer(self->rt, self, opaque_i_f, p);
+			memcpy(p, &a, sizeof(args_i_f));
+			runtime_defer(self->rt, self, helper_i_f, p);
 		}
 		{
-			args_i_g a = {self};
+			args_i_g a = {self->i->out.g,self};
 			args_i_g* p = malloc(sizeof(args_i_g));
-			memcpy (p, &a, sizeof(args_i_g));
-			runtime_defer(self->rt, self, opaque_i_g, p);
+			memcpy(p, &a, sizeof(args_i_g));
+			runtime_defer(self->rt, self, helper_i_g, p);
 		}
 		{
-			args_i_h a = {self};
+			args_i_h a = {self->i->out.h,self};
 			args_i_h* p = malloc(sizeof(args_i_h));
-			memcpy (p, &a, sizeof(args_i_h));
-			runtime_defer(self->rt, self, opaque_i_h, p);
+			memcpy(p, &a, sizeof(args_i_h));
+			runtime_defer(self->rt, self, helper_i_h, p);
 		}
 		self->state = imperative_States_II;
 	}
@@ -92,54 +100,48 @@ static void internal_i_e(void* self_) {
 	}
 	else if (self->state == imperative_States_III) {
 		{
-			args_i_f a = {self};
+			args_i_f a = {self->i->out.f,self};
 			args_i_f* p = malloc(sizeof(args_i_f));
-			memcpy (p, &a, sizeof(args_i_f));
-			runtime_defer(self->rt, self, opaque_i_f, p);
+			memcpy(p, &a, sizeof(args_i_f));
+			runtime_defer(self->rt, self, helper_i_f, p);
 		}
 		{
-			args_i_g a = {self};
+			args_i_g a = {self->i->out.g,self};
 			args_i_g* p = malloc(sizeof(args_i_g));
-			memcpy (p, &a, sizeof(args_i_g));
-			runtime_defer(self->rt, self, opaque_i_g, p);
+			memcpy(p, &a, sizeof(args_i_g));
+			runtime_defer(self->rt, self, helper_i_g, p);
 		}
 		{
-			args_i_g a = {self};
+			args_i_g a = {self->i->out.g,self};
 			args_i_g* p = malloc(sizeof(args_i_g));
-			memcpy (p, &a, sizeof(args_i_g));
-			runtime_defer(self->rt, self, opaque_i_g, p);
+			memcpy(p, &a, sizeof(args_i_g));
+			runtime_defer(self->rt, self, helper_i_g, p);
 		}
 		{
-			args_i_f a = {self};
+			args_i_f a = {self->i->out.f,self};
 			args_i_f* p = malloc(sizeof(args_i_f));
-			memcpy (p, &a, sizeof(args_i_f));
-			runtime_defer(self->rt, self, opaque_i_f, p);
+			memcpy(p, &a, sizeof(args_i_f));
+			runtime_defer(self->rt, self, helper_i_f, p);
 		}
 		self->state = imperative_States_IV;
 	}
 	else if (self->state == imperative_States_IV) {
 		{
-			args_i_h a = {self};
+			args_i_h a = {self->i->out.h,self};
 			args_i_h* p = malloc(sizeof(args_i_h));
-			memcpy (p, &a, sizeof(args_i_h));
-			runtime_defer(self->rt, self, opaque_i_h, p);
+			memcpy(p, &a, sizeof(args_i_h));
+			runtime_defer(self->rt, self, helper_i_h, p);
 		}
 		self->state = imperative_States_I;
 	}
 }
 
-static void opaque_i_e(void* a) {
-	typedef struct {imperative* self;} args;
-	args* b = a;
-	internal_i_e(b->self);
-}
-
-static void i_e(void* self_) {
+static void callback_i_e(void* self_) {
 	imperative* self = ((iimperative*)self_)->in.self;
-	typedef struct {imperative* self;} args;
-	args* a = malloc(sizeof(args));
+	args_i_e* a = malloc(sizeof(args_i_e));
+	a->f=i_e;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_i_e, a);
+	runtime_event(helper_i_e, a);
 }
 
 
@@ -148,6 +150,6 @@ void imperative_init (imperative* self, locator* dezyne_locator) {
 	runtime_set(self->rt, self);
 	self->state = imperative_States_I;
 	self->i = &self->i_;
-	self->i->in.e = i_e;
+	self->i->in.e = callback_i_e;
 	self->i->in.self = self;
 }

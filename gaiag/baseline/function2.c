@@ -31,20 +31,34 @@
 
 
 
-typedef struct {function2* self;} args_i_c;
-typedef struct {function2* self;} args_i_d;
+typedef struct {void (*f)(void*); function2* self;} args_i_c;
+typedef struct {void (*f)(void*); function2* self;} args_i_d;
 
 
-static void opaque_i_c(void* args) {
+typedef struct {void (*f)(void*); function2* self;} args_i_a;
+typedef struct {void (*f)(void*); function2* self;} args_i_b;
+
+
+static void helper_i_c(void* args) {
 	args_i_c *a = args;
-	void (*f)(void*) = a->self->i->out.c;
-	f(a->self->i);
+	a->f(a->self->i);
 }
 
-static void opaque_i_d(void* args) {
+static void helper_i_d(void* args) {
 	args_i_d *a = args;
-	void (*f)(void*) = a->self->i->out.d;
-	f(a->self->i);
+	a->f(a->self->i);
+}
+
+
+
+static void helper_i_a(void* args) {
+	args_i_a *a = args;
+	a->f(a->self);
+}
+
+static void helper_i_b(void* args) {
+	args_i_b *a = args;
+	a->f(a->self);
 }
 
 
@@ -55,16 +69,16 @@ static bool vtoggle(function2* self);
 static bool vtoggle(function2* self) {
 	(void)self;
 	if (self->f) {
-		args_i_c a = {self};
+		args_i_c a = {self->i->out.c,self};
 		args_i_c* p = malloc(sizeof(args_i_c));
-		memcpy (p, &a, sizeof(args_i_c));
-		runtime_defer(self->rt, self, opaque_i_c, p);
+		memcpy(p, &a, sizeof(args_i_c));
+		runtime_defer(self->rt, self, helper_i_c, p);
 	}
 	return !(self->f);
 }
 
 
-static void internal_i_a(void* self_) {
+static void i_a(void* self_) {
 	function2* self = self_;
 	(void)self;
 	DZN_LOG("function2.i_a");
@@ -73,7 +87,7 @@ static void internal_i_a(void* self_) {
 	}
 }
 
-static void internal_i_b(void* self_) {
+static void i_b(void* self_) {
 	function2* self = self_;
 	(void)self;
 	DZN_LOG("function2.i_b");
@@ -82,40 +96,28 @@ static void internal_i_b(void* self_) {
 		bool bb = vtoggle (self);
 		self->f = bb;
 		{
-			args_i_d a = {self};
+			args_i_d a = {self->i->out.d,self};
 			args_i_d* p = malloc(sizeof(args_i_d));
-			memcpy (p, &a, sizeof(args_i_d));
-			runtime_defer(self->rt, self, opaque_i_d, p);
+			memcpy(p, &a, sizeof(args_i_d));
+			runtime_defer(self->rt, self, helper_i_d, p);
 		}
 	}
 }
 
-static void opaque_i_a(void* a) {
-	typedef struct {function2* self;} args;
-	args* b = a;
-	internal_i_a(b->self);
-}
-
-static void opaque_i_b(void* a) {
-	typedef struct {function2* self;} args;
-	args* b = a;
-	internal_i_b(b->self);
-}
-
-static void i_a(void* self_) {
+static void callback_i_a(void* self_) {
 	function2* self = ((ifunction2*)self_)->in.self;
-	typedef struct {function2* self;} args;
-	args* a = malloc(sizeof(args));
+	args_i_a* a = malloc(sizeof(args_i_a));
+	a->f=i_a;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_i_a, a);
+	runtime_event(helper_i_a, a);
 }
 
-static void i_b(void* self_) {
+static void callback_i_b(void* self_) {
 	function2* self = ((ifunction2*)self_)->in.self;
-	typedef struct {function2* self;} args;
-	args* a = malloc(sizeof(args));
+	args_i_b* a = malloc(sizeof(args_i_b));
+	a->f=i_b;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_i_b, a);
+	runtime_event(helper_i_b, a);
 }
 
 
@@ -124,7 +126,7 @@ void function2_init (function2* self, locator* dezyne_locator) {
 	runtime_set(self->rt, self);
 	self->f = false;
 	self->i = &self->i_;
-	self->i->in.a = i_a;
-	self->i->in.b = i_b;
+	self->i->in.a = callback_i_a;
+	self->i->in.b = callback_i_b;
 	self->i->in.self = self;
 }

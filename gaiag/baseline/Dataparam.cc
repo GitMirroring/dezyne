@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -86,7 +87,14 @@ namespace dezyne
       mi = pi;
       rt.defer(this, boost::bind(port.out.a, mi));
       rt.defer(this, boost::bind(port.out.aa, mi, pi));
-      reply_IDataparam_Status = s;
+      if (true)
+      {
+        reply_IDataparam_Status = IDataparam::Status::Yes;
+      }
+      else
+      {
+        reply_IDataparam_Status = s;
+      }
     }
     return reply_IDataparam_Status;
   }

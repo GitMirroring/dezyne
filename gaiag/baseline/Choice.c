@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -34,13 +35,22 @@ typedef enum {
 } Choice_State;
 
 
-typedef struct {Choice* self;} args_c_a;
+typedef struct {void (*f)(void*); Choice* self;} args_c_a;
 
 
-static void opaque_c_a(void* args) {
+typedef struct {void (*f)(void*); Choice* self;} args_c_e;
+
+
+static void helper_c_a(void* args) {
 	args_c_a *a = args;
-	void (*f)(void*) = a->self->c->out.a;
-	f(a->self->c);
+	a->f(a->self->c);
+}
+
+
+
+static void helper_c_e(void* args) {
+	args_c_e *a = args;
+	a->f(a->self);
 }
 
 
@@ -49,51 +59,45 @@ static void opaque_c_a(void* args) {
 
 
 
-static void internal_c_e(void* self_) {
+static void c_e(void* self_) {
 	Choice* self = self_;
 	(void)self;
 	DZN_LOG("Choice.c_e");
 	if (self->s == Choice_State_Off) {
 		self->s = Choice_State_Idle;
 		{
-			args_c_a a = {self};
+			args_c_a a = {self->c->out.a,self};
 			args_c_a* p = malloc(sizeof(args_c_a));
-			memcpy (p, &a, sizeof(args_c_a));
-			runtime_defer(self->rt, self, opaque_c_a, p);
+			memcpy(p, &a, sizeof(args_c_a));
+			runtime_defer(self->rt, self, helper_c_a, p);
 		}
 	}
 	else if (self->s == Choice_State_Idle) {
 		self->s = Choice_State_Busy;
 		{
-			args_c_a a = {self};
+			args_c_a a = {self->c->out.a,self};
 			args_c_a* p = malloc(sizeof(args_c_a));
-			memcpy (p, &a, sizeof(args_c_a));
-			runtime_defer(self->rt, self, opaque_c_a, p);
+			memcpy(p, &a, sizeof(args_c_a));
+			runtime_defer(self->rt, self, helper_c_a, p);
 		}
 	}
 	else if (self->s == Choice_State_Busy) {
 		self->s = Choice_State_Idle;
 		{
-			args_c_a a = {self};
+			args_c_a a = {self->c->out.a,self};
 			args_c_a* p = malloc(sizeof(args_c_a));
-			memcpy (p, &a, sizeof(args_c_a));
-			runtime_defer(self->rt, self, opaque_c_a, p);
+			memcpy(p, &a, sizeof(args_c_a));
+			runtime_defer(self->rt, self, helper_c_a, p);
 		}
 	}
 }
 
-static void opaque_c_e(void* a) {
-	typedef struct {Choice* self;} args;
-	args* b = a;
-	internal_c_e(b->self);
-}
-
-static void c_e(void* self_) {
+static void callback_c_e(void* self_) {
 	Choice* self = ((IChoice*)self_)->in.self;
-	typedef struct {Choice* self;} args;
-	args* a = malloc(sizeof(args));
+	args_c_e* a = malloc(sizeof(args_c_e));
+	a->f=c_e;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_c_e, a);
+	runtime_event(helper_c_e, a);
 }
 
 
@@ -102,6 +106,6 @@ void Choice_init (Choice* self, locator* dezyne_locator) {
 	runtime_set(self->rt, self);
 	self->s = Choice_State_Off;
 	self->c = &self->c_;
-	self->c->in.e = c_e;
+	self->c->in.e = callback_c_e;
 	self->c->in.self = self;
 }

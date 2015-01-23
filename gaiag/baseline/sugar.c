@@ -34,13 +34,22 @@ typedef enum {
 } sugar_Enum;
 
 
-typedef struct {sugar* self;} args_i_a;
+typedef struct {void (*f)(void*); sugar* self;} args_i_a;
 
 
-static void opaque_i_a(void* args) {
+typedef struct {void (*f)(void*); sugar* self;} args_i_e;
+
+
+static void helper_i_a(void* args) {
 	args_i_a *a = args;
-	void (*f)(void*) = a->self->i->out.a;
-	f(a->self->i);
+	a->f(a->self->i);
+}
+
+
+
+static void helper_i_e(void* args) {
+	args_i_e *a = args;
+	a->f(a->self);
 }
 
 
@@ -49,39 +58,33 @@ static void opaque_i_a(void* args) {
 
 
 
-static void internal_i_e(void* self_) {
+static void i_e(void* self_) {
 	sugar* self = self_;
 	(void)self;
 	DZN_LOG("sugar.i_e");
 	if (self->s == sugar_Enum_False) if (self->s == sugar_Enum_False) {
-		args_i_a a = {self};
+		args_i_a a = {self->i->out.a,self};
 		args_i_a* p = malloc(sizeof(args_i_a));
-		memcpy (p, &a, sizeof(args_i_a));
-		runtime_defer(self->rt, self, opaque_i_a, p);
+		memcpy(p, &a, sizeof(args_i_a));
+		runtime_defer(self->rt, self, helper_i_a, p);
 	}
 	else {
 		int t = sugar_Enum_False;
 		if (t == sugar_Enum_True) {
-			args_i_a a = {self};
+			args_i_a a = {self->i->out.a,self};
 			args_i_a* p = malloc(sizeof(args_i_a));
-			memcpy (p, &a, sizeof(args_i_a));
-			runtime_defer(self->rt, self, opaque_i_a, p);
+			memcpy(p, &a, sizeof(args_i_a));
+			runtime_defer(self->rt, self, helper_i_a, p);
 		}
 	}
 }
 
-static void opaque_i_e(void* a) {
-	typedef struct {sugar* self;} args;
-	args* b = a;
-	internal_i_e(b->self);
-}
-
-static void i_e(void* self_) {
+static void callback_i_e(void* self_) {
 	sugar* self = ((I*)self_)->in.self;
-	typedef struct {sugar* self;} args;
-	args* a = malloc(sizeof(args));
+	args_i_e* a = malloc(sizeof(args_i_e));
+	a->f=i_e;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_i_e, a);
+	runtime_event(helper_i_e, a);
 }
 
 
@@ -90,6 +93,6 @@ void sugar_init (sugar* self, locator* dezyne_locator) {
 	runtime_set(self->rt, self);
 	self->s = sugar_Enum_False;
 	self->i = &self->i_;
-	self->i->in.e = i_e;
+	self->i->in.e = callback_i_e;
 	self->i->in.self = self;
 }

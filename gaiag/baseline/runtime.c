@@ -121,6 +121,7 @@ runtime_handle_event (runtime* self, void* scope, void (*event)(void*), void* ar
 }
 
 typedef struct {
+  void (*f)(void*);
   void* self;
 } arguments;
 

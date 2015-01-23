@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -32,13 +33,29 @@
 
 
 
+typedef struct {void (*f)(void*); Siren* self;} args_siren_turnon;
+typedef struct {void (*f)(void*); Siren* self;} args_siren_turnoff;
+
+
+
+
+static void helper_siren_turnon(void* args) {
+	args_siren_turnon *a = args;
+	a->f(a->self);
+}
+
+static void helper_siren_turnoff(void* args) {
+	args_siren_turnoff *a = args;
+	a->f(a->self);
+}
 
 
 
 
 
 
-static void internal_siren_turnon(void* self_) {
+
+static void siren_turnon(void* self_) {
 	Siren* self = self_;
 	(void)self;
 	DZN_LOG("Siren.siren_turnon");
@@ -46,7 +63,7 @@ static void internal_siren_turnon(void* self_) {
 	}
 }
 
-static void internal_siren_turnoff(void* self_) {
+static void siren_turnoff(void* self_) {
 	Siren* self = self_;
 	(void)self;
 	DZN_LOG("Siren.siren_turnoff");
@@ -54,32 +71,20 @@ static void internal_siren_turnoff(void* self_) {
 	}
 }
 
-static void opaque_siren_turnon(void* a) {
-	typedef struct {Siren* self;} args;
-	args* b = a;
-	internal_siren_turnon(b->self);
-}
-
-static void opaque_siren_turnoff(void* a) {
-	typedef struct {Siren* self;} args;
-	args* b = a;
-	internal_siren_turnoff(b->self);
-}
-
-static void siren_turnon(void* self_) {
+static void callback_siren_turnon(void* self_) {
 	Siren* self = ((ISiren*)self_)->in.self;
-	typedef struct {Siren* self;} args;
-	args* a = malloc(sizeof(args));
+	args_siren_turnon* a = malloc(sizeof(args_siren_turnon));
+	a->f=siren_turnon;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_siren_turnon, a);
+	runtime_event(helper_siren_turnon, a);
 }
 
-static void siren_turnoff(void* self_) {
+static void callback_siren_turnoff(void* self_) {
 	Siren* self = ((ISiren*)self_)->in.self;
-	typedef struct {Siren* self;} args;
-	args* a = malloc(sizeof(args));
+	args_siren_turnoff* a = malloc(sizeof(args_siren_turnoff));
+	a->f=siren_turnoff;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_siren_turnoff, a);
+	runtime_event(helper_siren_turnoff, a);
 }
 
 
@@ -88,7 +93,7 @@ void Siren_init (Siren* self, locator* dezyne_locator) {
 	runtime_set(self->rt, self);
 
 	self->siren = &self->siren_;
-	self->siren->in.turnon = siren_turnon;
-	self->siren->in.turnoff = siren_turnoff;
+	self->siren->in.turnon = callback_siren_turnon;
+	self->siren->in.turnoff = callback_siren_turnoff;
 	self->siren->in.self = self;
 }

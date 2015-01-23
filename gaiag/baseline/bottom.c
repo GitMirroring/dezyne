@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -31,13 +32,22 @@
 
 
 
-typedef struct {bottom* self;} args_b_f;
+typedef struct {void (*f)(void*); bottom* self;} args_b_f;
 
 
-static void opaque_b_f(void* args) {
+typedef struct {void (*f)(void*); bottom* self;} args_b_e;
+
+
+static void helper_b_f(void* args) {
 	args_b_f *a = args;
-	void (*f)(void*) = a->self->b->out.f;
-	f(a->self->b);
+	a->f(a->self->b);
+}
+
+
+
+static void helper_b_e(void* args) {
+	args_b_e *a = args;
+	a->f(a->self);
 }
 
 
@@ -46,30 +56,24 @@ static void opaque_b_f(void* args) {
 
 
 
-static void internal_b_e(void* self_) {
+static void b_e(void* self_) {
 	bottom* self = self_;
 	(void)self;
 	DZN_LOG("bottom.b_e");
 	{
-		args_b_f a = {self};
+		args_b_f a = {self->b->out.f,self};
 		args_b_f* p = malloc(sizeof(args_b_f));
-		memcpy (p, &a, sizeof(args_b_f));
-		runtime_defer(self->rt, self, opaque_b_f, p);
+		memcpy(p, &a, sizeof(args_b_f));
+		runtime_defer(self->rt, self, helper_b_f, p);
 	}
 }
 
-static void opaque_b_e(void* a) {
-	typedef struct {bottom* self;} args;
-	args* b = a;
-	internal_b_e(b->self);
-}
-
-static void b_e(void* self_) {
+static void callback_b_e(void* self_) {
 	bottom* self = ((ibottom*)self_)->in.self;
-	typedef struct {bottom* self;} args;
-	args* a = malloc(sizeof(args));
+	args_b_e* a = malloc(sizeof(args_b_e));
+	a->f=b_e;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_b_e, a);
+	runtime_event(helper_b_e, a);
 }
 
 
@@ -78,6 +82,6 @@ void bottom_init (bottom* self, locator* dezyne_locator) {
 	runtime_set(self->rt, self);
 
 	self->b = &self->b_;
-	self->b->in.e = b_e;
+	self->b->in.e = callback_b_e;
 	self->b->in.self = self;
 }

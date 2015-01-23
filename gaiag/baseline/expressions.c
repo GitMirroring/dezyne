@@ -31,27 +31,34 @@
 
 
 
-typedef struct {expressions* self;} args_i_a;
-typedef struct {expressions* self;} args_i_hi;
-typedef struct {expressions* self;} args_i_lo;
+typedef struct {void (*f)(void*); expressions* self;} args_i_a;
+typedef struct {void (*f)(void*); expressions* self;} args_i_hi;
+typedef struct {void (*f)(void*); expressions* self;} args_i_lo;
 
 
-static void opaque_i_a(void* args) {
+typedef struct {void (*f)(void*); expressions* self;} args_i_e;
+
+
+static void helper_i_a(void* args) {
 	args_i_a *a = args;
-	void (*f)(void*) = a->self->i->out.a;
-	f(a->self->i);
+	a->f(a->self->i);
 }
 
-static void opaque_i_hi(void* args) {
+static void helper_i_hi(void* args) {
 	args_i_hi *a = args;
-	void (*f)(void*) = a->self->i->out.hi;
-	f(a->self->i);
+	a->f(a->self->i);
 }
 
-static void opaque_i_lo(void* args) {
+static void helper_i_lo(void* args) {
 	args_i_lo *a = args;
-	void (*f)(void*) = a->self->i->out.lo;
-	f(a->self->i);
+	a->f(a->self->i);
+}
+
+
+
+static void helper_i_e(void* args) {
+	args_i_e *a = args;
+	a->f(a->self);
 }
 
 
@@ -60,17 +67,17 @@ static void opaque_i_lo(void* args) {
 
 
 
-static void internal_i_e(void* self_) {
+static void i_e(void* self_) {
 	expressions* self = self_;
 	(void)self;
 	DZN_LOG("expressions.i_e");
 	if (true) if (self->state == 0) {
 		self->state = 3;
 		{
-			args_i_a a = {self};
+			args_i_a a = {self->i->out.a,self};
 			args_i_a* p = malloc(sizeof(args_i_a));
-			memcpy (p, &a, sizeof(args_i_a));
-			runtime_defer(self->rt, self, opaque_i_a, p);
+			memcpy(p, &a, sizeof(args_i_a));
+			runtime_defer(self->rt, self, helper_i_a, p);
 		}
 	}
 	else {
@@ -81,19 +88,19 @@ static void internal_i_e(void* self_) {
 		else {
 			if (self->c <= (self->state + 1)) {
 				{
-					args_i_lo a = {self};
+					args_i_lo a = {self->i->out.lo,self};
 					args_i_lo* p = malloc(sizeof(args_i_lo));
-					memcpy (p, &a, sizeof(args_i_lo));
-					runtime_defer(self->rt, self, opaque_i_lo, p);
+					memcpy(p, &a, sizeof(args_i_lo));
+					runtime_defer(self->rt, self, helper_i_lo, p);
 				}
 			}
 			else {
 				if (self->c > self->state) {
 					{
-						args_i_hi a = {self};
+						args_i_hi a = {self->i->out.hi,self};
 						args_i_hi* p = malloc(sizeof(args_i_hi));
-						memcpy (p, &a, sizeof(args_i_hi));
-						runtime_defer(self->rt, self, opaque_i_hi, p);
+						memcpy(p, &a, sizeof(args_i_hi));
+						runtime_defer(self->rt, self, helper_i_hi, p);
 					}
 				}
 			}
@@ -101,18 +108,12 @@ static void internal_i_e(void* self_) {
 	}
 }
 
-static void opaque_i_e(void* a) {
-	typedef struct {expressions* self;} args;
-	args* b = a;
-	internal_i_e(b->self);
-}
-
-static void i_e(void* self_) {
+static void callback_i_e(void* self_) {
 	expressions* self = ((I*)self_)->in.self;
-	typedef struct {expressions* self;} args;
-	args* a = malloc(sizeof(args));
+	args_i_e* a = malloc(sizeof(args_i_e));
+	a->f=i_e;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_i_e, a);
+	runtime_event(helper_i_e, a);
 }
 
 
@@ -122,6 +123,6 @@ void expressions_init (expressions* self, locator* dezyne_locator) {
 	self->state = 3;
 	self->c = 0;
 	self->i = &self->i_;
-	self->i->in.e = i_e;
+	self->i->in.e = callback_i_e;
 	self->i->in.self = self;
 }

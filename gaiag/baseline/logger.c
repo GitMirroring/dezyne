@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -33,13 +34,23 @@
 
 
 
+typedef struct {void (*f)(void*); logger* self;} args_log_log;
+
+
+
+
+static void helper_log_log(void* args) {
+	args_log_log *a = args;
+	a->f(a->self);
+}
 
 
 
 
 
 
-static void internal_log_log(void* self_) {
+
+static void log_log(void* self_) {
 	logger* self = self_;
 	(void)self;
 	DZN_LOG("logger.log_log");
@@ -47,18 +58,12 @@ static void internal_log_log(void* self_) {
 	}
 }
 
-static void opaque_log_log(void* a) {
-	typedef struct {logger* self;} args;
-	args* b = a;
-	internal_log_log(b->self);
-}
-
-static void log_log(void* self_) {
+static void callback_log_log(void* self_) {
 	logger* self = ((ilogger*)self_)->in.self;
-	typedef struct {logger* self;} args;
-	args* a = malloc(sizeof(args));
+	args_log_log* a = malloc(sizeof(args_log_log));
+	a->f=log_log;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_log_log, a);
+	runtime_event(helper_log_log, a);
 }
 
 
@@ -67,6 +72,6 @@ void logger_init (logger* self, locator* dezyne_locator) {
 	runtime_set(self->rt, self);
 
 	self->log = &self->log_;
-	self->log->in.log = log_log;
+	self->log->in.log = callback_log_log;
 	self->log->in.self = self;
 }

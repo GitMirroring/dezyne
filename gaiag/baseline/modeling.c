@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -32,20 +33,36 @@
 
 
 
+typedef struct {void (*f)(void*); modeling* self;} args_p_e;
+typedef struct {void (*f)(void*); modeling* self;} args_r_f;
+
+
+
+
+static void helper_p_e(void* args) {
+	args_p_e *a = args;
+	a->f(a->self);
+}
+
+static void helper_r_f(void* args) {
+	args_r_f *a = args;
+	a->f(a->self);
+}
 
 
 
 
 
 
-static void internal_p_e(void* self_) {
+
+static void p_e(void* self_) {
 	modeling* self = self_;
 	(void)self;
 	DZN_LOG("modeling.p_e");
 	self->r->in.e(self->r);
 }
 
-static void internal_r_f(void* self_) {
+static void r_f(void* self_) {
 	modeling* self = self_;
 	(void)self;
 	DZN_LOG("modeling.r_f");
@@ -53,32 +70,20 @@ static void internal_r_f(void* self_) {
 	}
 }
 
-static void opaque_p_e(void* a) {
-	typedef struct {modeling* self;} args;
-	args* b = a;
-	internal_p_e(b->self);
-}
-
-static void opaque_r_f(void* a) {
-	typedef struct {modeling* self;} args;
-	args* b = a;
-	internal_r_f(b->self);
-}
-
-static void p_e(void* self_) {
+static void callback_p_e(void* self_) {
 	modeling* self = ((dummy*)self_)->in.self;
-	typedef struct {modeling* self;} args;
-	args* a = malloc(sizeof(args));
+	args_p_e* a = malloc(sizeof(args_p_e));
+	a->f=p_e;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_p_e, a);
+	runtime_event(helper_p_e, a);
 }
 
-static void r_f(void* self_) {
+static void callback_r_f(void* self_) {
 	modeling* self = ((imodeling*)self_)->out.self;
-	typedef struct {modeling* self;} args;
-	args* a = malloc(sizeof(args));
+	args_r_f* a = malloc(sizeof(args_r_f));
+	a->f=r_f;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_r_f, a);
+	runtime_event(helper_r_f, a);
 }
 
 
@@ -87,9 +92,9 @@ void modeling_init (modeling* self, locator* dezyne_locator) {
 	runtime_set(self->rt, self);
 
 	self->p = &self->p_;
-	self->p->in.e = p_e;
+	self->p->in.e = callback_p_e;
 	self->p->in.self = self;
 	self->r = &self->r_;
 	self->r->out.self = self;
-	self->r->out.f = r_f;
+	self->r->out.f = callback_r_f;
 }

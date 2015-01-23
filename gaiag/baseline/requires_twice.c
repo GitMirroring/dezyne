@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -30,13 +31,34 @@
 
 
 
-typedef struct {requires_twice* self;} args_p_a;
+typedef struct {void (*f)(void*); requires_twice* self;} args_p_a;
 
 
-static void opaque_p_a(void* args) {
+typedef struct {void (*f)(void*); requires_twice* self;} args_p_e;
+typedef struct {void (*f)(void*); requires_twice* self;} args_once_a;
+typedef struct {void (*f)(void*); requires_twice* self;} args_twice_a;
+
+
+static void helper_p_a(void* args) {
 	args_p_a *a = args;
-	void (*f)(void*) = a->self->p->out.a;
-	f(a->self->p);
+	a->f(a->self->p);
+}
+
+
+
+static void helper_p_e(void* args) {
+	args_p_e *a = args;
+	a->f(a->self);
+}
+
+static void helper_once_a(void* args) {
+	args_once_a *a = args;
+	a->f(a->self);
+}
+
+static void helper_twice_a(void* args) {
+	args_twice_a *a = args;
+	a->f(a->self);
 }
 
 
@@ -45,7 +67,7 @@ static void opaque_p_a(void* args) {
 
 
 
-static void internal_p_e(void* self_) {
+static void p_e(void* self_) {
 	requires_twice* self = self_;
 	(void)self;
 	DZN_LOG("requires_twice.p_e");
@@ -53,7 +75,7 @@ static void internal_p_e(void* self_) {
 	self->twice->in.e(self->twice);
 }
 
-static void internal_once_a(void* self_) {
+static void once_a(void* self_) {
 	requires_twice* self = self_;
 	(void)self;
 	DZN_LOG("requires_twice.once_a");
@@ -61,58 +83,40 @@ static void internal_once_a(void* self_) {
 	}
 }
 
-static void internal_twice_a(void* self_) {
+static void twice_a(void* self_) {
 	requires_twice* self = self_;
 	(void)self;
 	DZN_LOG("requires_twice.twice_a");
 	{
-		args_p_a a = {self};
+		args_p_a a = {self->p->out.a,self};
 		args_p_a* p = malloc(sizeof(args_p_a));
-		memcpy (p, &a, sizeof(args_p_a));
-		runtime_defer(self->rt, self, opaque_p_a, p);
+		memcpy(p, &a, sizeof(args_p_a));
+		runtime_defer(self->rt, self, helper_p_a, p);
 	}
 }
 
-static void opaque_p_e(void* a) {
-	typedef struct {requires_twice* self;} args;
-	args* b = a;
-	internal_p_e(b->self);
-}
-
-static void opaque_once_a(void* a) {
-	typedef struct {requires_twice* self;} args;
-	args* b = a;
-	internal_once_a(b->self);
-}
-
-static void opaque_twice_a(void* a) {
-	typedef struct {requires_twice* self;} args;
-	args* b = a;
-	internal_twice_a(b->self);
-}
-
-static void p_e(void* self_) {
+static void callback_p_e(void* self_) {
 	requires_twice* self = ((irequires_twice*)self_)->in.self;
-	typedef struct {requires_twice* self;} args;
-	args* a = malloc(sizeof(args));
+	args_p_e* a = malloc(sizeof(args_p_e));
+	a->f=p_e;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_p_e, a);
+	runtime_event(helper_p_e, a);
 }
 
-static void once_a(void* self_) {
+static void callback_once_a(void* self_) {
 	requires_twice* self = ((irequires_twice*)self_)->out.self;
-	typedef struct {requires_twice* self;} args;
-	args* a = malloc(sizeof(args));
+	args_once_a* a = malloc(sizeof(args_once_a));
+	a->f=once_a;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_once_a, a);
+	runtime_event(helper_once_a, a);
 }
 
-static void twice_a(void* self_) {
+static void callback_twice_a(void* self_) {
 	requires_twice* self = ((irequires_twice*)self_)->out.self;
-	typedef struct {requires_twice* self;} args;
-	args* a = malloc(sizeof(args));
+	args_twice_a* a = malloc(sizeof(args_twice_a));
+	a->f=twice_a;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_twice_a, a);
+	runtime_event(helper_twice_a, a);
 }
 
 
@@ -121,12 +125,12 @@ void requires_twice_init (requires_twice* self, locator* dezyne_locator) {
 	runtime_set(self->rt, self);
 
 	self->p = &self->p_;
-	self->p->in.e = p_e;
+	self->p->in.e = callback_p_e;
 	self->p->in.self = self;
 	self->once = &self->once_;
 	self->once->out.self = self;
-	self->once->out.a = once_a;
+	self->once->out.a = callback_once_a;
 	self->twice = &self->twice_;
 	self->twice->out.self = self;
-	self->twice->out.a = twice_a;
+	self->twice->out.a = callback_twice_a;
 }

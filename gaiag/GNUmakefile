@@ -195,7 +195,7 @@ c-dataparam:
 	cd out && ../gaiag -l c ../examples/regression/Dataparam.dzn
 	cd out && ln -sf ../examples/dataparam.c .
 	-for i in out/*c; do ccache gcc -g -std=c99 -Wall -pedantic -pedantic-errors -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o && out/$@ > out/$@.trace
-	$(diff) baseline/$@.trace out
+	-$(diff) baseline/$@.trace out
 	for i in out/*.h out/*.c; do $(diff) baseline/$$(basename $$i) $$i; done
 
 c-inject:

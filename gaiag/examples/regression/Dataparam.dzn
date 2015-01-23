@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -60,7 +61,7 @@ interface IDataparam
     {
       a;
       aa;
-      reply(Status.No);
+      reply(Status.Yes);
     }
     on eer:
     {
@@ -125,7 +126,12 @@ component Dataparam
       mi = pi;
       port.a (mi);
       port.aa (mi, pi);
-      reply(s);
+
+      if(true) {
+        reply(IDataparam.Status.Yes);
+      } else {
+        reply(s);
+      }
     }
     on port.eer (i,j):
     {

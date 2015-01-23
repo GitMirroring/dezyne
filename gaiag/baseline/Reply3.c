@@ -33,6 +33,16 @@
 
 
 
+typedef struct {int (*f)(void*); Reply3* self;} args_i_done;
+
+
+
+
+static void helper_i_done(void* args) {
+	args_i_done *a = args;
+	a->f(a->self);
+}
+
 
 
 static void reply_fun(Reply3* self);
@@ -50,7 +60,7 @@ static void reply_fun_arg(Reply3* self, int s) {
 }
 
 
-static int internal_i_done(void* self_) {
+static int i_done(void* self_) {
 	Reply3* self = self_;
 	(void)self;
 	DZN_LOG("Reply3.i_done");
@@ -67,19 +77,12 @@ static int internal_i_done(void* self_) {
 	return self->reply_I_Status;
 }
 
-static int opaque_i_done(void* a) {
-	typedef struct {Reply3* self;} args;
-	args* b = a;
-	internal_i_done(b->self);
-	return b->self->reply_I_Status;
-}
-
-static int i_done(void* self_) {
+static int callback_i_done(void* self_) {
 	Reply3* self = ((I*)self_)->in.self;
-	typedef struct {Reply3* self;} args;
-	args* a = malloc(sizeof(args));
+	args_i_done* a = malloc(sizeof(args_i_done));
+	a->f=i_done;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_i_done, a);
+	runtime_event(helper_i_done, a);
 	return self->reply_I_Status;
 }
 
@@ -89,7 +92,7 @@ void Reply3_init (Reply3* self, locator* dezyne_locator) {
 	runtime_set(self->rt, self);
 	self->dummy = false;
 	self->i = &self->i_;
-	self->i->in.done = i_done;
+	self->i->in.done = callback_i_done;
 	self->i->in.self = self;
 	self->u = &self->u_;
 	self->u->out.self = self;

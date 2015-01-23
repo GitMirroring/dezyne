@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -32,31 +33,35 @@
 
 
 
+typedef struct {void (*f)(void*); Extern* self;} args_port_e;
+
+
+
+
+static void helper_port_e(void* args) {
+	args_port_e *a = args;
+	a->f(a->self);
+}
 
 
 
 
 
 
-static void internal_port_e(void* self_) {
+
+static void port_e(void* self_) {
 	Extern* self = self_;
 	(void)self;
 	DZN_LOG("Extern.port_e");
 	assert(false);
 }
 
-static void opaque_port_e(void* a) {
-	typedef struct {Extern* self;} args;
-	args* b = a;
-	internal_port_e(b->self);
-}
-
-static void port_e(void* self_) {
+static void callback_port_e(void* self_) {
 	Extern* self = ((IExtern*)self_)->in.self;
-	typedef struct {Extern* self;} args;
-	args* a = malloc(sizeof(args));
+	args_port_e* a = malloc(sizeof(args_port_e));
+	a->f=port_e;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_port_e, a);
+	runtime_event(helper_port_e, a);
 }
 
 
@@ -65,6 +70,6 @@ void Extern_init (Extern* self, locator* dezyne_locator) {
 	runtime_set(self->rt, self);
 	self->i = 0;
 	self->port = &self->port_;
-	self->port->in.e = port_e;
+	self->port->in.e = callback_port_e;
 	self->port->in.self = self;
 }

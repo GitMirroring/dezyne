@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -32,13 +33,29 @@
 
 
 
+typedef struct {int (*f)(void*); enum_collision* self;} args_i_foo;
+typedef struct {int (*f)(void*); enum_collision* self;} args_i_bar;
+
+
+
+
+static void helper_i_foo(void* args) {
+	args_i_foo *a = args;
+	a->f(a->self);
+}
+
+static void helper_i_bar(void* args) {
+	args_i_bar *a = args;
+	a->f(a->self);
+}
 
 
 
 
 
 
-static int internal_i_foo(void* self_) {
+
+static int i_foo(void* self_) {
 	enum_collision* self = self_;
 	(void)self;
 	DZN_LOG("enum_collision.i_foo");
@@ -46,7 +63,7 @@ static int internal_i_foo(void* self_) {
 	return self->reply_ienum_collision_Retval1;
 }
 
-static int internal_i_bar(void* self_) {
+static int i_bar(void* self_) {
 	enum_collision* self = self_;
 	(void)self;
 	DZN_LOG("enum_collision.i_bar");
@@ -54,35 +71,21 @@ static int internal_i_bar(void* self_) {
 	return self->reply_ienum_collision_Retval2;
 }
 
-static int opaque_i_foo(void* a) {
-	typedef struct {enum_collision* self;} args;
-	args* b = a;
-	internal_i_foo(b->self);
-	return b->self->reply_ienum_collision_Retval1;
-}
-
-static int opaque_i_bar(void* a) {
-	typedef struct {enum_collision* self;} args;
-	args* b = a;
-	internal_i_bar(b->self);
-	return b->self->reply_ienum_collision_Retval2;
-}
-
-static int i_foo(void* self_) {
+static int callback_i_foo(void* self_) {
 	enum_collision* self = ((ienum_collision*)self_)->in.self;
-	typedef struct {enum_collision* self;} args;
-	args* a = malloc(sizeof(args));
+	args_i_foo* a = malloc(sizeof(args_i_foo));
+	a->f=i_foo;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_i_foo, a);
+	runtime_event(helper_i_foo, a);
 	return self->reply_ienum_collision_Retval1;
 }
 
-static int i_bar(void* self_) {
+static int callback_i_bar(void* self_) {
 	enum_collision* self = ((ienum_collision*)self_)->in.self;
-	typedef struct {enum_collision* self;} args;
-	args* a = malloc(sizeof(args));
+	args_i_bar* a = malloc(sizeof(args_i_bar));
+	a->f=i_bar;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_i_bar, a);
+	runtime_event(helper_i_bar, a);
 	return self->reply_ienum_collision_Retval2;
 }
 
@@ -92,7 +95,7 @@ void enum_collision_init (enum_collision* self, locator* dezyne_locator) {
 	runtime_set(self->rt, self);
 
 	self->i = &self->i_;
-	self->i->in.foo = i_foo;
-	self->i->in.bar = i_bar;
+	self->i->in.foo = callback_i_foo;
+	self->i->in.bar = callback_i_bar;
 	self->i->in.self = self;
 }

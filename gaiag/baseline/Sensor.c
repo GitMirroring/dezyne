@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -30,20 +31,34 @@
 
 
 
-typedef struct {Sensor* self;} args_sensor_triggered;
-typedef struct {Sensor* self;} args_sensor_disabled;
+typedef struct {void (*f)(void*); Sensor* self;} args_sensor_triggered;
+typedef struct {void (*f)(void*); Sensor* self;} args_sensor_disabled;
 
 
-static void opaque_sensor_triggered(void* args) {
+typedef struct {void (*f)(void*); Sensor* self;} args_sensor_enable;
+typedef struct {void (*f)(void*); Sensor* self;} args_sensor_disable;
+
+
+static void helper_sensor_triggered(void* args) {
 	args_sensor_triggered *a = args;
-	void (*f)(void*) = a->self->sensor->out.triggered;
-	f(a->self->sensor);
+	a->f(a->self->sensor);
 }
 
-static void opaque_sensor_disabled(void* args) {
+static void helper_sensor_disabled(void* args) {
 	args_sensor_disabled *a = args;
-	void (*f)(void*) = a->self->sensor->out.disabled;
-	f(a->self->sensor);
+	a->f(a->self->sensor);
+}
+
+
+
+static void helper_sensor_enable(void* args) {
+	args_sensor_enable *a = args;
+	a->f(a->self);
+}
+
+static void helper_sensor_disable(void* args) {
+	args_sensor_disable *a = args;
+	a->f(a->self);
 }
 
 
@@ -52,7 +67,7 @@ static void opaque_sensor_disabled(void* args) {
 
 
 
-static void internal_sensor_enable(void* self_) {
+static void sensor_enable(void* self_) {
 	Sensor* self = self_;
 	(void)self;
 	DZN_LOG("Sensor.sensor_enable");
@@ -60,7 +75,7 @@ static void internal_sensor_enable(void* self_) {
 	}
 }
 
-static void internal_sensor_disable(void* self_) {
+static void sensor_disable(void* self_) {
 	Sensor* self = self_;
 	(void)self;
 	DZN_LOG("Sensor.sensor_disable");
@@ -68,32 +83,20 @@ static void internal_sensor_disable(void* self_) {
 	}
 }
 
-static void opaque_sensor_enable(void* a) {
-	typedef struct {Sensor* self;} args;
-	args* b = a;
-	internal_sensor_enable(b->self);
-}
-
-static void opaque_sensor_disable(void* a) {
-	typedef struct {Sensor* self;} args;
-	args* b = a;
-	internal_sensor_disable(b->self);
-}
-
-static void sensor_enable(void* self_) {
+static void callback_sensor_enable(void* self_) {
 	Sensor* self = ((ISensor*)self_)->in.self;
-	typedef struct {Sensor* self;} args;
-	args* a = malloc(sizeof(args));
+	args_sensor_enable* a = malloc(sizeof(args_sensor_enable));
+	a->f=sensor_enable;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_sensor_enable, a);
+	runtime_event(helper_sensor_enable, a);
 }
 
-static void sensor_disable(void* self_) {
+static void callback_sensor_disable(void* self_) {
 	Sensor* self = ((ISensor*)self_)->in.self;
-	typedef struct {Sensor* self;} args;
-	args* a = malloc(sizeof(args));
+	args_sensor_disable* a = malloc(sizeof(args_sensor_disable));
+	a->f=sensor_disable;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_sensor_disable, a);
+	runtime_event(helper_sensor_disable, a);
 }
 
 
@@ -102,7 +105,7 @@ void Sensor_init (Sensor* self, locator* dezyne_locator) {
 	runtime_set(self->rt, self);
 
 	self->sensor = &self->sensor_;
-	self->sensor->in.enable = sensor_enable;
-	self->sensor->in.disable = sensor_disable;
+	self->sensor->in.enable = callback_sensor_enable;
+	self->sensor->in.disable = callback_sensor_disable;
 	self->sensor->in.self = self;
 }

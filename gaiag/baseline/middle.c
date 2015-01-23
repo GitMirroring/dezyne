@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -31,13 +32,28 @@
 
 
 
-typedef struct {middle* self;} args_t_f;
+typedef struct {void (*f)(void*); middle* self;} args_t_f;
 
 
-static void opaque_t_f(void* args) {
+typedef struct {void (*f)(void*); middle* self;} args_t_e;
+typedef struct {void (*f)(void*); middle* self;} args_b_f;
+
+
+static void helper_t_f(void* args) {
 	args_t_f *a = args;
-	void (*f)(void*) = a->self->t->out.f;
-	f(a->self->t);
+	a->f(a->self->t);
+}
+
+
+
+static void helper_t_e(void* args) {
+	args_t_e *a = args;
+	a->f(a->self);
+}
+
+static void helper_b_f(void* args) {
+	args_b_f *a = args;
+	a->f(a->self);
 }
 
 
@@ -46,7 +62,7 @@ static void opaque_t_f(void* args) {
 
 
 
-static void internal_t_e(void* self_) {
+static void t_e(void* self_) {
 	middle* self = self_;
 	(void)self;
 	DZN_LOG("middle.t_e");
@@ -54,45 +70,33 @@ static void internal_t_e(void* self_) {
 	self->b->in.e(self->b);
 }
 
-static void internal_b_f(void* self_) {
+static void b_f(void* self_) {
 	middle* self = self_;
 	(void)self;
 	DZN_LOG("middle.b_f");
 	self->l->in.log(self->l);
 	{
-		args_t_f a = {self};
+		args_t_f a = {self->t->out.f,self};
 		args_t_f* p = malloc(sizeof(args_t_f));
-		memcpy (p, &a, sizeof(args_t_f));
-		runtime_defer(self->rt, self, opaque_t_f, p);
+		memcpy(p, &a, sizeof(args_t_f));
+		runtime_defer(self->rt, self, helper_t_f, p);
 	}
 }
 
-static void opaque_t_e(void* a) {
-	typedef struct {middle* self;} args;
-	args* b = a;
-	internal_t_e(b->self);
-}
-
-static void opaque_b_f(void* a) {
-	typedef struct {middle* self;} args;
-	args* b = a;
-	internal_b_f(b->self);
-}
-
-static void t_e(void* self_) {
+static void callback_t_e(void* self_) {
 	middle* self = ((itop*)self_)->in.self;
-	typedef struct {middle* self;} args;
-	args* a = malloc(sizeof(args));
+	args_t_e* a = malloc(sizeof(args_t_e));
+	a->f=t_e;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_t_e, a);
+	runtime_event(helper_t_e, a);
 }
 
-static void b_f(void* self_) {
+static void callback_b_f(void* self_) {
 	middle* self = ((ibottom*)self_)->out.self;
-	typedef struct {middle* self;} args;
-	args* a = malloc(sizeof(args));
+	args_b_f* a = malloc(sizeof(args_b_f));
+	a->f=b_f;
 	a->self=self;
-	runtime_event((void(*)(void*))opaque_b_f, a);
+	runtime_event(helper_b_f, a);
 }
 
 
@@ -102,11 +106,11 @@ void middle_init (middle* self, locator* dezyne_locator) {
 	self->l_ = *(ilogger*)locator_get(dezyne_locator, "ilogger");
 
 	self->t = &self->t_;
-	self->t->in.e = t_e;
+	self->t->in.e = callback_t_e;
 	self->t->in.self = self;
 	self->b = &self->b_;
 	self->b->out.self = self;
-	self->b->out.f = b_f;
+	self->b->out.f = callback_b_f;
 	self->l = &self->l_;
 	self->l->out.self = self;
 }

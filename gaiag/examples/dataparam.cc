@@ -1,5 +1,6 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
 //
@@ -62,7 +63,7 @@ int main()
 
   assert(dezyne::IDataparam::Status::Yes == c.port.in.e0r());
   c.port.in.e0();
-  assert(dezyne::IDataparam::Status::No == c.port.in.er(123));
+  assert(dezyne::IDataparam::Status::Yes == c.port.in.er(123));
   c.port.in.e(123);
   assert(dezyne::IDataparam::Status::No == c.port.in.eer(123,345));
 

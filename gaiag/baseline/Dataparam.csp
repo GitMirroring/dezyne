@@ -78,7 +78,12 @@ semi_(semi_((\ P',V' @ IDataparam_''!a -> P'(V')),
 (\ P',V' @ IDataparam_''!aa -> P'(V'))),
 (\ P',V' @ IDataparam_'.return -> P'(V')))(\ V' @ IDataparam.the_end' -> IDataparam_(V'),((<>),(stack')))
 []
-IDataparam?x:{er,eer} ->
+IDataparam?x:{er} ->
+semi_((\ P',V' @ IDataparam_''!a -> P'(V')),
+semi_((\ P',V' @ IDataparam_''!aa -> P'(V')),
+reply_(IDataparam_', (\ ((<>),(stack')) @ Status_Yes))))(\ V' @ IDataparam.the_end' -> IDataparam_(V'),((<>),(stack')))
+[]
+IDataparam?x:{eer} ->
 semi_((\ P',V' @ IDataparam_''!a -> P'(V')),
 semi_((\ P',V' @ IDataparam_''!aa -> P'(V')),
 reply_(IDataparam_', (\ ((<>),(stack')) @ Status_No))))(\ V' @ IDataparam.the_end' -> IDataparam_(V'),((<>),(stack')))
@@ -144,7 +149,10 @@ context_(\ ((s),(stack')) @ Status_No,
 semi_(skip_,
 semi_((\ P',V' @ port_''!a -> P'(V')),
 semi_((\ P',V' @ port_''!aa -> P'(V')),
-reply_(IDataparam_', (\ ((hide_member0'),((stack',s))) @ s))))))(\ V' @ transition_end -> Dataparam_(V'),((s),(stack')))
+ifthenelse_(\ ((hide_member0'),((stack',s))) @ (true),
+reply_(IDataparam_', (\ ((hide_member0'),((stack',s))) @ Status_Yes)),
+reply_(IDataparam_', (\ ((hide_member0'),((stack',s))) @ s))
+)))))(\ V' @ transition_end -> Dataparam_(V'),((s),(stack')))
 []
 port?x:{eer} ->
 context_(\ ((s),(stack')) @ Status_No,
