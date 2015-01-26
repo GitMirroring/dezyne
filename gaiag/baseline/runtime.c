@@ -26,7 +26,6 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#include "callback.h"
 #include "pair.h"
 #include "queue.h"
 
