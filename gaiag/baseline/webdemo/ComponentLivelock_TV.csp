@@ -254,4 +254,4 @@ assert COMPLETE'({i170_TVViewer.i3_pushStartButton,i173_TVDisplay_''.i68_activat
 assert STOP [T= AS_i277_TVSet_(false) \ diff(Events,{illegal})
 assert AS_i277_TVSet_(false) :[deadlock free]
 assert IF_i66_Viewer_(true,false) [[i66_Viewer.x<-i170_TVViewer.x|x<-extensions(i170_TVViewer)]][[i66_Viewer_'.x<-i170_TVViewer_'.x|x<-extensions(i170_TVViewer_')]]\ {i66_Viewer_'''.modeling} [F= AS_i277_TVSet_(true) \ diff(Events,{|illegal,i170_TVViewer,i170_TVViewer_'|})
-assert AS_i277_TVSet_(true) \ diff(Events,{|illegal,i170_TVViewer,i170_TVViewer_'|}) :[livelock free]
+assert AS_i277_TVSet_(true) \ diff(Events,{|i173_TVDisplay.inevitable,illegal,i170_TVViewer,i170_TVViewer_'|}) :[livelock free]

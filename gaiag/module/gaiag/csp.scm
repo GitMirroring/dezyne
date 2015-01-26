@@ -2,7 +2,7 @@
 ;;
 ;; Copyright © 2014  Rutger van Beusekom
 ;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -49,7 +49,6 @@
            ast->
            behaviour->csp
            csp:import
-           csp->gom
            csp-component
            csp-module
 	   ast-transform
@@ -197,7 +196,7 @@
     ((component deterministic) . "assert CO_#(.name model) _#((compose .name .behaviour) model)(true,true)[[#(.type (gom:port model))_'.x<-#(.name (gom:port model))_'.x|x<-extensions(#(.name (gom:port model))_')]] :[deterministic]\n")
     ((component deadlock)  . "assert AS_#(.name model) _#((compose .name .behaviour) model) (false) :[deadlock free]\n")
     ((component compliance) . ,(gulp-template 'asserts/component-compliance.csp.scm))
-    ((component livelock)  .  "assert AS_#(.name model) _#((compose .name .behaviour) model) (true) \\ diff(Events,{|illegal,#((compose .name gom:port) model),#((compose .name gom:port) model)_'#(->string (if (not (null? (filter gom:out? (gom:events (gom:port model))))) (list \",\" ((compose .name gom:port) model)\"_''\")))|}) :[livelock free]\n")
+    ((component livelock)  .  "assert AS_#(.name model) _#((compose .name .behaviour) model) (true) \\ diff(Events,{|#(comma-join (append (required-modeling-events model) (list \"illegal\" ((compose .name gom:port) model) ((compose .name gom:port) model))))_'#(->string (if (not (null? (filter gom:out? (gom:events (gom:port model))))) (list \",\" ((compose .name gom:port) model)\"_''\")))|}) :[livelock free]\n")
     ((interface completeness) . ,(gulp-template 'asserts/interface-completeness.csp.scm))
     ((interface deadlock) . ,(gulp-template 'asserts/interface-deadlock.csp.scm))
     ((interface livelock) . ,(gulp-template 'asserts/interface-livelock.csp.scm))))
@@ -321,8 +320,15 @@
 (define (modeling-event? event)
   (member (.event event) '(optional inevitable)))
 
-(define (modeling-events interface)
-  (filter modeling-event? (gom:find-triggers interface)))
+(define-method (modeling-events (o <interface>))
+  (filter modeling-event? (gom:find-triggers o)))
+
+(define-method (required-modeling-events (o <component>))
+  (apply append
+         (map (lambda (port)
+                (map (lambda (event) (->string (list (.name port) '. (.event event))))
+                     (modeling-events (csp:import (.type port)))))
+              (filter gom:requires? (gom:ports o)))))
 
 (define-method (typed-elements (o <enum>))
    (map (lambda (x) (symbol-append (.name o) '_ x)) ((compose .elements .fields) o)))

@@ -240,4 +240,4 @@ assert COMPLETE'({i103_i.i3_e,i106_ii_''.i22_e}) [F= CO_i143_C_(true,true)[[i20_
 assert STOP [T= AS_i143_C_(false) \ diff(Events,{illegal})
 assert AS_i143_C_(false) :[deadlock free]
 assert IF_i20_I_(true,false) [[i20_I.x<-i103_i.x|x<-extensions(i103_i)]][[i20_I_'.x<-i103_i_'.x|x<-extensions(i103_i_')]]\ {i20_I_'''.modeling} [F= AS_i143_C_(true) \ diff(Events,{|illegal,i103_i,i103_i_'|})
-assert AS_i143_C_(true) \ diff(Events,{|illegal,i103_i,i103_i_'|}) :[livelock free]
+assert AS_i143_C_(true) \ diff(Events,{|i106_ii.inevitable,illegal,i103_i,i103_i_'|}) :[livelock free]

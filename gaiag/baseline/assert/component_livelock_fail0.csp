@@ -231,4 +231,4 @@ assert COMPLETE'({i48_i.i3_e,i51_ii_''.i21_e}) [F= CO_i78_C_(true,true)[[i20_I_'
 assert STOP [T= AS_i78_C_(false) \ diff(Events,{illegal})
 assert AS_i78_C_(false) :[deadlock free]
 assert IF_i20_I_(true,false) [[i20_I.x<-i48_i.x|x<-extensions(i48_i)]][[i20_I_'.x<-i48_i_'.x|x<-extensions(i48_i_')]]\ {i20_I_'''.modeling} [F= AS_i78_C_(true) \ diff(Events,{|illegal,i48_i,i48_i_'|})
-assert AS_i78_C_(true) \ diff(Events,{|illegal,i48_i,i48_i_'|}) :[livelock free]
+assert AS_i78_C_(true) \ diff(Events,{|i51_ii.inevitable,illegal,i48_i,i48_i_'|}) :[livelock free]

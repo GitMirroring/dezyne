@@ -406,4 +406,4 @@ assert COMPLETE'({console.arm,console.disarm,sensor_''.triggered,sensor_''.disab
 assert STOP [T= AS_Alarm_d(false) \ diff(Events,{illegal})
 assert AS_Alarm_d(false) :[deadlock free]
 assert IF_IConsole_a(true,false) [[IConsole.x<-console.x|x<-extensions(console)]][[IConsole_'.x<-console_'.x|x<-extensions(console_')]][[IConsole_''.x<-console_''.x|x<-extensions(console_'')]]\ {IConsole_'''.modeling,console.inevitable,console.optional} [F= AS_Alarm_d(true) \ diff(Events,{|illegal,console,console_',console_''|})
-assert AS_Alarm_d(true) \ diff(Events,{|illegal,console,console_',console_''|}) :[livelock free]
+assert AS_Alarm_d(true) \ diff(Events,{|sensor.inevitable,sensor.optional,illegal,console,console_',console_''|}) :[livelock free]

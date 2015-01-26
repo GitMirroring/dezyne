@@ -445,4 +445,4 @@ assert COMPLETE'({i262_alarmConsole.i2465_KeyPressed,i262_alarmConsole.i2466_Ini
 assert STOP [T= AS_i969_AlarmConsole_(false) \ diff(Events,{illegal})
 assert AS_i969_AlarmConsole_(false) :[deadlock free]
 assert IF_i2482_IAlarmConsole_(true,false) [[i2482_IAlarmConsole.x<-i262_alarmConsole.x|x<-extensions(i262_alarmConsole)]][[i2482_IAlarmConsole_'.x<-i262_alarmConsole_'.x|x<-extensions(i262_alarmConsole_')]]\ {i2482_IAlarmConsole_'''.modeling} [F= AS_i969_AlarmConsole_(true) \ diff(Events,{|illegal,i262_alarmConsole,i262_alarmConsole_'|})
-assert AS_i969_AlarmConsole_(true) \ diff(Events,{|illegal,i262_alarmConsole,i262_alarmConsole_'|}) :[livelock free]
+assert AS_i969_AlarmConsole_(true) \ diff(Events,{|i265_alarmSystem.optional,illegal,i262_alarmConsole,i262_alarmConsole_'|}) :[livelock free]

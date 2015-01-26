@@ -231,4 +231,4 @@ assert COMPLETE'({l.dummy,n_''.dummy}) [F= CO_livelock2_(true,true)[[ilivelock_'
 assert STOP [T= AS_livelock2_(false) \ diff(Events,{illegal})
 assert AS_livelock2_(false) :[deadlock free]
 assert IF_ilivelock_(true,false) [[ilivelock.x<-l.x|x<-extensions(l)]][[ilivelock_'.x<-l_'.x|x<-extensions(l_')]]\ {ilivelock_'''.modeling,l.inevitable} [F= AS_livelock2_(true) \ diff(Events,{|illegal,l,l_'|})
-assert AS_livelock2_(true) \ diff(Events,{|illegal,l,l_'|}) :[livelock free]
+assert AS_livelock2_(true) \ diff(Events,{|n.inevitable,illegal,l,l_'|}) :[livelock free]

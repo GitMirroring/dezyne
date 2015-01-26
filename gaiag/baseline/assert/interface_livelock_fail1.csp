@@ -234,4 +234,4 @@ assert COMPLETE'({i93_i.i76_e}) [F= CO_i115_DummyC_(true,true)[[i92_DummyI_'.x'<
 assert STOP [T= AS_i115_DummyC_(false) \ diff(Events,{illegal})
 assert AS_i115_DummyC_(false) :[deadlock free]
 assert IF_i92_DummyI_(true,false) [[i92_DummyI.x<-i93_i.x|x<-extensions(i93_i)]][[i92_DummyI_'.x<-i93_i_'.x|x<-extensions(i93_i_')]]\ {i92_DummyI_'''.modeling} [F= AS_i115_DummyC_(true) \ diff(Events,{|illegal,i93_i,i93_i_'|})
-assert AS_i115_DummyC_(true) \ diff(Events,{|illegal,i93_i,i93_i_'|}) :[livelock free]
+assert AS_i115_DummyC_(true) \ diff(Events,{|i96_ii.optional,illegal,i93_i,i93_i_'|}) :[livelock free]

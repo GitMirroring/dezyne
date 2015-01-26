@@ -394,4 +394,4 @@ assert COMPLETE'({i631_cc.i337_SpeedTooLow,i631_cc.i339_BrakeHit,i631_cc.i340_Ha
 assert STOP [T= AS_i1087_CruiseController_(false) \ diff(Events,{illegal})
 assert AS_i1087_CruiseController_(false) :[deadlock free]
 assert IF_i630_iCruiseController_(true,false) [[i630_iCruiseController.x<-i631_cc.x|x<-extensions(i631_cc)]][[i630_iCruiseController_'.x<-i631_cc_'.x|x<-extensions(i631_cc_')]][[i630_iCruiseController_''.x<-i631_cc_''.x|x<-extensions(i631_cc_'')]]\ {i630_iCruiseController_'''.modeling,i631_cc.inevitable,i631_cc.optional} [F= AS_i1087_CruiseController_(true) \ diff(Events,{|illegal,i631_cc,i631_cc_',i631_cc_''|})
-assert AS_i1087_CruiseController_(true) \ diff(Events,{|illegal,i631_cc,i631_cc_',i631_cc_''|}) :[livelock free]
+assert AS_i1087_CruiseController_(true) \ diff(Events,{|i634_mu.inevitable,i634_mu.optional,illegal,i631_cc,i631_cc_',i631_cc_''|}) :[livelock free]

@@ -1,27 +1,27 @@
 Checking out/livelock2.csp
 
-Checking COMPLETE'({ilivelock.dummy}) [F= IF_ilivelock_(true)\diff(Events,{ilivelock.dummy,illegal})
+Checking COMPLETE'({ilivelock.inevitable,ilivelock.dummy}) [F= IF_ilivelock_(true,true)\diff(Events,{ilivelock.inevitable,ilivelock.dummy,illegal})
 true
 
-Checking IF_ilivelock_(false) :[deadlock free]
+Checking IF_ilivelock_(false,false) :[deadlock free]
 true
 
-Checking IF_ilivelock_(true)\{|ilivelock.inevitable|} :[livelock free]
+Checking IF_ilivelock_(true,false)\{|ilivelock.inevitable,ilivelock_'''|} :[livelock free]
 xfalse
 
-Checking COMPLETE'({}) [F= IF_nolivelock_(true)\diff(Events,{illegal})
+Checking COMPLETE'({nolivelock.inevitable}) [F= IF_nolivelock_(true,true)\diff(Events,{nolivelock.inevitable,illegal})
 true
 
-Checking IF_nolivelock_(false) :[deadlock free]
+Checking IF_nolivelock_(false,false) :[deadlock free]
 true
 
-Checking IF_nolivelock_(true)\{|nolivelock.inevitable|} :[livelock free]
+Checking IF_nolivelock_(true,false)\{|nolivelock.inevitable,nolivelock_'''|} :[livelock free]
 true
 
-Checking CO_livelock2_(true,true) :[deterministic]
+Checking CO_livelock2_(true,true)[[ilivelock_'.x<-l_'.x|x<-extensions(l_')]] :[deterministic]
 true
 
-Checking COMPLETE'({l.dummy,n_''.dummy}) [F= CO_livelock2_(true,true)\diff(Events,{l.dummy,n_''.dummy,illegal})
+Checking COMPLETE'({l.dummy,n_''.dummy}) [F= CO_livelock2_(true,true)[[ilivelock_'.x'<-l_'.x'|x'<-extensions(l_')]]\diff(Events,{l.dummy,n_''.dummy,illegal})
 true
 
 Checking STOP [T= AS_livelock2_(false)\diff(Events,{illegal})
@@ -30,8 +30,8 @@ true
 Checking AS_livelock2_(false) :[deadlock free]
 true
 
-Checking IF_ilivelock_(true)[[ilivelock.x<-l.x|x<-extensions(l)]][[ilivelock_'.x<-l_'.x|x<-extensions(l_')]]\{l.inevitable} [F= AS_livelock2_(true)\diff(Events,{|illegal,l,l_'|})
+Checking IF_ilivelock_(true,false)[[ilivelock.x<-l.x|x<-extensions(l)]][[ilivelock_'.x<-l_'.x|x<-extensions(l_')]]\{ilivelock_'''.modeling,l.inevitable} [F= AS_livelock2_(true)\diff(Events,{|illegal,l,l_'|})
 true
 
-Checking AS_livelock2_(true)\diff(Events,{|illegal,l,l_'|}) :[livelock free]
-xfalse
+Checking AS_livelock2_(true)\diff(Events,{|n.inevitable,illegal,l,l_'|}) :[livelock free]
+true

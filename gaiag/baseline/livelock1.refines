@@ -1,27 +1,27 @@
 Checking out/livelock1.csp
 
-Checking COMPLETE'({}) [F= IF_ilivelock_(true)\diff(Events,{illegal})
+Checking COMPLETE'({ilivelock.inevitable}) [F= IF_ilivelock_(true,true)\diff(Events,{ilivelock.inevitable,illegal})
 true
 
-Checking IF_ilivelock_(false) :[deadlock free]
+Checking IF_ilivelock_(false,false) :[deadlock free]
 true
 
-Checking IF_ilivelock_(true)\{|ilivelock.inevitable|} :[livelock free]
+Checking IF_ilivelock_(true,false)\{|ilivelock.inevitable,ilivelock_'''|} :[livelock free]
 true
 
-Checking COMPLETE'({nolivelock.dummy}) [F= IF_nolivelock_(true)\diff(Events,{nolivelock.dummy,illegal})
+Checking COMPLETE'({nolivelock.dummy}) [F= IF_nolivelock_(true,true)\diff(Events,{nolivelock.dummy,illegal})
 true
 
-Checking IF_nolivelock_(false) :[deadlock free]
+Checking IF_nolivelock_(false,false) :[deadlock free]
 true
 
-Checking IF_nolivelock_(true) :[livelock free]
+Checking IF_nolivelock_(true,false) :[livelock free]
 true
 
-Checking CO_livelock1_(true,true) :[deterministic]
+Checking CO_livelock1_(true,true)[[nolivelock_'.x<-n_'.x|x<-extensions(n_')]] :[deterministic]
 true
 
-Checking COMPLETE'({n.dummy,l_''.dummy}) [F= CO_livelock1_(true,true)\diff(Events,{n.dummy,l_''.dummy,illegal})
+Checking COMPLETE'({n.dummy,l_''.dummy}) [F= CO_livelock1_(true,true)[[nolivelock_'.x'<-n_'.x'|x'<-extensions(n_')]]\diff(Events,{n.dummy,l_''.dummy,illegal})
 true
 
 Checking STOP [T= AS_livelock1_(false)\diff(Events,{illegal})
@@ -30,8 +30,8 @@ true
 Checking AS_livelock1_(false) :[deadlock free]
 true
 
-Checking IF_nolivelock_(true)[[nolivelock.x<-n.x|x<-extensions(n)]][[nolivelock_'.x<-n_'.x|x<-extensions(n_')]]\{} [F= AS_livelock1_(true)\diff(Events,{|illegal,n,n_'|})
+Checking IF_nolivelock_(true,false)[[nolivelock.x<-n.x|x<-extensions(n)]][[nolivelock_'.x<-n_'.x|x<-extensions(n_')]]\{nolivelock_'''.modeling} [F= AS_livelock1_(true)\diff(Events,{|illegal,n,n_'|})
 true
 
-Checking AS_livelock1_(true)\diff(Events,{|illegal,n,n_'|}) :[livelock free]
-xfalse
+Checking AS_livelock1_(true)\diff(Events,{|l.inevitable,illegal,n,n_'|}) :[livelock free]
+true

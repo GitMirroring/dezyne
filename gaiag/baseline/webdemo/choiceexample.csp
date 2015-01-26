@@ -274,4 +274,4 @@ assert COMPLETE'({i183_sensors.i3_Activate,i183_sensors.i4_Deactivate,i186_aSens
 assert STOP [T= AS_i468_SensorMultiplexer1_(false) \ diff(Events,{illegal})
 assert AS_i468_SensorMultiplexer1_(false) :[deadlock free]
 assert IF_i182_ISensor_(true,false) [[i182_ISensor.x<-i183_sensors.x|x<-extensions(i183_sensors)]][[i182_ISensor_'.x<-i183_sensors_'.x|x<-extensions(i183_sensors_')]][[i182_ISensor_''.x<-i183_sensors_''.x|x<-extensions(i183_sensors_'')]]\ {i182_ISensor_'''.modeling,i183_sensors.optional} [F= AS_i468_SensorMultiplexer1_(true) \ diff(Events,{|illegal,i183_sensors,i183_sensors_',i183_sensors_''|})
-assert AS_i468_SensorMultiplexer1_(true) \ diff(Events,{|illegal,i183_sensors,i183_sensors_',i183_sensors_''|}) :[livelock free]
+assert AS_i468_SensorMultiplexer1_(true) \ diff(Events,{|i186_aSensor.optional,i189_bSensor.optional,illegal,i183_sensors,i183_sensors_',i183_sensors_''|}) :[livelock free]

@@ -445,4 +445,4 @@ assert COMPLETE'({i383_control.i3_setup,i383_control.i4_shoot,i383_control.i5_re
 assert STOP [T= AS_i813_Driver_(false) \ diff(Events,{illegal})
 assert AS_i813_Driver_(false) :[deadlock free]
 assert IF_i306_IControl_(true,false) [[i306_IControl.x<-i383_control.x|x<-extensions(i383_control)]][[i306_IControl_'.x<-i383_control_'.x|x<-extensions(i383_control_')]][[i306_IControl_''.x<-i383_control_''.x|x<-extensions(i383_control_'')]]\ {i306_IControl_'''.modeling,i383_control.inevitable} [F= AS_i813_Driver_(true) \ diff(Events,{|illegal,i383_control,i383_control_',i383_control_''|})
-assert AS_i813_Driver_(true) \ diff(Events,{|illegal,i383_control,i383_control_',i383_control_''|}) :[livelock free]
+assert AS_i813_Driver_(true) \ diff(Events,{|i389_acquisition.inevitable,illegal,i383_control,i383_control_',i383_control_''|}) :[livelock free]

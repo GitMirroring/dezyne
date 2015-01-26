@@ -196,4 +196,4 @@ assert COMPLETE'({p.e,r_''.a}) [F= CO_incomplete_with_modeling_event_(true,true)
 assert STOP [T= AS_incomplete_with_modeling_event_(false) \ diff(Events,{illegal})
 assert AS_incomplete_with_modeling_event_(false) :[deadlock free]
 assert IF_iincomplete_with_modeling_event_(true,false) [[iincomplete_with_modeling_event.x<-p.x|x<-extensions(p)]][[iincomplete_with_modeling_event_'.x<-p_'.x|x<-extensions(p_')]][[iincomplete_with_modeling_event_''.x<-p_''.x|x<-extensions(p_'')]]\ {iincomplete_with_modeling_event_'''.modeling,p.inevitable} [F= AS_incomplete_with_modeling_event_(true) \ diff(Events,{|illegal,p,p_',p_''|})
-assert AS_incomplete_with_modeling_event_(true) \ diff(Events,{|illegal,p,p_',p_''|}) :[livelock free]
+assert AS_incomplete_with_modeling_event_(true) \ diff(Events,{|r.inevitable,illegal,p,p_',p_''|}) :[livelock free]
