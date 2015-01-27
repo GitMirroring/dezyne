@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -54,7 +54,7 @@
 
 (define (note-location ast loc)
   (when (supports-source-properties? ast)
-      (set-source-property! ast 'loc loc))
+    (set-source-property! ast 'loc loc))
   ast)
 
 (define (source-location src)

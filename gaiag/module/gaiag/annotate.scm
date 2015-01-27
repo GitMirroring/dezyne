@@ -2,7 +2,7 @@
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -43,7 +43,8 @@
     (('root t ... ('locations locations ...)) (annotate-locations- o (car locations)) (cons 'root t))
     (_ o)))
 
-(define ast->annotate annotate-locations)
+;;(define ast->annotate annotate-locations)
+(define ast->annotate identity)
 
 (define (loc? o)
   (match o (('location t ...) o) (_ #f)))
@@ -53,10 +54,10 @@
     (if (not (pair? locations))
         '()
         (let* ((head (car o))
-              (head-l (car locations))
-              (loc (loc? head-l))
-              (locations (if loc (cdr locations) locations))
-              (head-l (car locations)))
+               (head-l (car locations))
+               (loc (loc? head-l))
+               (locations (if loc (cdr locations) locations))
+               (head-l (car locations)))
           (if loc
               (annotate-location o loc))
           (if (list? head)

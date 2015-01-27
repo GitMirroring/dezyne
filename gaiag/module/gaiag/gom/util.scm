@@ -19,13 +19,16 @@
 (read-set! keywords 'prefix)
 
 (define-module (gaiag gom util)
-  :use-module (ice-9 curried-definitions)
-  :use-module (ice-9 pretty-print)
   :use-module (ice-9 and-let-star)
+  :use-module (ice-9 curried-definitions)
+  :use-module (ice-9 getopt-long)
+  :use-module (ice-9 pretty-print)
   :use-module (ice-9 match)
   :use-module (system foreign)
   :use-module (srfi srfi-1)
+  :use-module (language dezyne location)
 
+  :use-module (gaiag gaiag)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
 ;;  :use-module (gaiag resolve)
@@ -59,6 +62,7 @@
            gom:functions
            gom:import
            gom:imports
+           gom:imported?
            gom:instance
            gom:in?
            gom:integer
@@ -533,3 +537,32 @@
 
 (define ((gom:named name) model)
   (eq? (.name model) name))
+
+(define (source-file o)
+  (and-let* (((supports-source-properties? o))
+             (loc (source-property o 'loc))
+             (properties (source-location->user-source-properties loc))
+             (file-name (assoc-ref properties 'filename)))
+            (string->symbol file-name)))
+
+(define-method (in-file? (o <symbol>))
+  (lambda (m) (in-file? m o)))
+
+(define-generic basename)
+(define-method (basename (o <symbol>))
+  (string->symbol (basename (symbol->string o))))
+
+(define-method (in-file? (o <model>) (file <symbol>))
+  (and-let* ((model-file (source-file o)))
+            (eq? (basename file) (basename model-file))))
+
+(define-method (in-file? (o <model>) (file <string>))
+  (in-file? o (string->symbol file)))
+
+(define-method (gom:imported? (o <model>))
+  (if (assoc 'imported? (source-properties o))
+      (source-property o 'imported?)
+      (and-let* (((>2 (length (command-line))))
+                 (file (car (option-ref (parse-opts (command-line)) '() '(#f))))
+                 ((not (string-suffix? ".scm" file))))
+                (not (in-file? o file)))))

@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -39,7 +39,6 @@
 	  '((assert (single-char #\a))
 	    (coverage (single-char #\c))
 	    (debug (single-char #\d))
-	    (file (single-char #\f) (value #t))
             (help (single-char #\h))
             (json (single-char #\j))
             (language (single-char #\l) (value #t))
@@ -65,7 +64,6 @@ Usage: gaiag [OPTION]... FILE
   -a, --assert         generate all asserts inline, not in asserts.csp
   -c, --coverage       write lcov coverage data to gaiag.info
   -d, --debug          run with debugging
-  -f, --file=FILE      only consider models from file FILE
   -h, --help           display this help
   -j, --json           use json-friendly format; strings and hash tables
   -m, --model=MODEL    use model named MODEL

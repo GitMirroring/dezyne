@@ -2,7 +2,7 @@
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -50,35 +50,14 @@
 (define-method (state-table (o <list>))
   (filter identity (map state-table o)))
 
-(define (source-file o)
-  (and-let* (((supports-source-properties? o))
-             (loc (source-property o 'loc))
-             (properties (source-location->user-source-properties loc))
-             (file-name (assoc-ref properties 'filename)))
-            (string->symbol file-name)))
-
-(define-method (in-file (o <symbol>))
-  (lambda (m) (in-file m o)))
-
-(define-generic basename)
-(define-method (basename (o <symbol>))
-  (string->symbol (basename (symbol->string o))))
-
-(define-method (in-file (o <model>) (file <symbol>))
-  (and-let* ((model-file (source-file o)))
-            (stderr "model-file: ~a ==~a\n" model-file file)
-            (eq? (basename file) (basename model-file))))
-
 (define-method (state-table (o <root>))
   ;; FIXME: c&p csp.scm
-  (let ((file (and=> (option-ref (parse-opts (command-line)) 'file #f)
-                     string->symbol))
-        (name
-            (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
-                        string->symbol))))
+  (let ((name
+         (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
+                     string->symbol))))
     (or (and-let* ((models (null-is-#f (gom:models-with-behaviour o)))
-                   (models (null-is-#f (if name (and=> (find (gom:named name) models) list) models)))
-                   (models (null-is-#f (if file (filter (in-file file) models) models))))
+                   (models (null-is-#f (filter (negate gom:imported?) models)))
+                   (models (null-is-#f (if name (and=> (find (gom:named name) models) list) models))))
                   (map state-table models)))))
 
 (define (has-enum? o)
@@ -112,7 +91,7 @@
                                  (map (lambda (state)
                                         (state-table model state o))
                                       states))))
-                (retain-source-location o (make <compound> :elements guards)))
+                (retain-source-properties o (make <compound> :elements guards)))
       o))
 
 (define-method (state-table (model <model>) (state <literal>) (o <compound>))
@@ -128,7 +107,7 @@
                                                      (equal? e expression2))))
                                    ((gom:collect <guard>) o)))
                    (location (and (pair? guards) (car guards))))
-              (retain-source-location
+              (retain-source-properties
                location (make <guard>
                           :expression expression
                           :statement statement)))))
@@ -153,7 +132,7 @@
                          (loop (cdr statements))))))))
        (cond
         ((=1 (length statements)) (car statements))
-        (else (retain-source-location o (make <compound> :elements statements))))))
+        (else (retain-source-properties o (make <compound> :elements statements))))))
 
     (($ <guard> expression ($ <on> triggers (and ($ <compound> (($ <guard> e s) ..1)) (get! compound))))
      (let ((ons
@@ -246,7 +225,7 @@
                  ((is-a? expression <otherwise>))
                  (expression (annotate-otherwise o expression))
                  (statement (.statement guard)))
-                (retain-source-location
+                (retain-source-properties
                  guard
                  (make <guard> :expression expression :statement statement)))
       guard))

@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -24,9 +25,8 @@
 import Alarm.dzn;
 import Sensor.dzn;
 import Siren.dzn;
-//import Logger.dzn;
 
-component AlarmComponentSystem
+component AlarmSystem
 {
   provides IConsole console;
 
@@ -35,11 +35,9 @@ component AlarmComponentSystem
       Alarm alarm;
       Sensor sensor;
       Siren siren;
-      //Logger logger;
 
       console <=> alarm.console;
       alarm.sensor <=> sensor.sensor;
       alarm.siren <=> siren.siren;
-      //logger.log <=> *;
     }
 }

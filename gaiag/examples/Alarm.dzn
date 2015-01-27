@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -23,73 +24,7 @@
 
 import ISensor.dzn;
 import ISiren.dzn;
-
-interface IConsole
-{
-    in void arm;
-    in void disarm;
-
-    out void detected;
-    out void deactivated;
-
-  behaviour a
-  {
-    enum States {
-        Disarmed,
-        Armed,
-        Triggered,
-        Disarming
-    };
-
-    States state = States.Disarmed;
-
-    [state.Disarmed]
-    {
-      on arm:
-      {
-        state = States.Armed;
-      }
-      on disarm:
-        illegal;
-    }
-
-    [state.Armed]
-    {
-      on disarm:
-      {
-        state = States.Disarming;
-      }
-      on optional:
-      {
-        detected;
-        state = States.Triggered;
-      }
-      on arm:
-        illegal;
-    }
-
-    [state.Triggered]
-    {
-      on disarm:
-      {
-        state = States.Disarming;
-      }
-      on arm:
-        illegal;
-    }
-
-    [state.Disarming]
-    {
-      on inevitable:
-      {
-        deactivated;
-        state = States.Disarmed;
-      }
-      on arm, disarm:
-        illegal;
-    }
-  }
-}
+import IConsole.dzn;
 
 component Alarm
 {

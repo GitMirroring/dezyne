@@ -2,7 +2,7 @@
 ;;
 ;; Copyright © 2014  Rutger van Beusekom
 ;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -118,16 +118,18 @@
   (resolve-model o o))
 
 (define (resolve-mixed o)
-  (retain-source-location o (resolve-mixed- o)))
+  (retain-source-properties o (resolve-mixed- o)))
 
 (define (resolve-mixed- o)
   (match o
+
     (($ <component> name ports behaviour)
      (let ((cache-interfaces (map resolve:import (map .type ((compose .elements .ports) o)))))
        (make <component>
          :name name
          :ports ports
          :behaviour (resolve-mixed behaviour))))
+
     (($ <interface> name ($ <types> types) ($ <events> types-events) behaviour)
      (receive (types- events) (partition (lambda (x)
                                            (or (is-a? x <enum>) (is-a? x <int>))) types-events)
@@ -157,7 +159,7 @@
   (resolve-model model o '()))
 
 (define-method (resolve-model (model <model>) o locals)
-  (retain-source-location o (resolve-model- model o locals)))
+  (retain-source-properties o (resolve-model- model o locals)))
 
 (define (resolve:import name)
   (gom:import name resolve:gom))
@@ -554,6 +556,9 @@
                      (map (recurses? model (cons name seen)) names)))))
 
 (define-method (resolve-model (model <system>) o)
+  (retain-source-properties o (resolve-model- model o)))
+
+(define-method (resolve-model- (model <system>) o)
 
   (match o
     (($ <system> name ports instances bindings)

@@ -43,7 +43,7 @@
 
 (define (ast-> ast)
   (let ((gom ((gom:register code:gom) ast #t)))
-    (map dump ((gom:filter <model>) gom)))
+    (map dump (filter (negate gom:imported?) ((gom:filter <model>) gom))))
   "")
 
 (define-method (dump (o <interface>))

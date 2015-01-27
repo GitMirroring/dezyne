@@ -175,14 +175,16 @@ c: compile c-alarm c-inject c-dataparam c-regression
 c-alarm:
 	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c/* .
 	cd out && for file in\
-		examples/AlarmSystem.dzn\
-		examples/regression/Alarm.dzn\
+		examples/Alarm.dzn\
 		examples/IConsole.dzn\
 		examples/ISensor.dzn\
 		examples/Sensor.dzn\
 		examples/ISiren.dzn\
-		examples/Siren.dzn;\
-	do $(shell pwd)/gaiag -l c $$file; done
+		examples/Siren.dzn\
+		examples/AlarmComponentSystem.dzn\
+		;\
+	do $(shell pwd)/../build/asdgenerator -l scm $$file && $(shell pwd)/gaiag -l c $$(basename $$file .dzn).scm; done
+	#do $(shell pwd)/gaiag -l c $$file; done
 	cd out && ln -s ../examples/alarm.c .
 	#cp baseline/{AlarmSystem,Alarm,Sensor,Siren}.{h,c} out
 	#cp baseline/{IConsole,ISensor,ISiren}.h out

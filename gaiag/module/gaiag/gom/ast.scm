@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -40,7 +40,7 @@
            ast->trigger-sugar
            ast:public
            ast:interface
-           retain-source-location
+           retain-source-properties
            ))
 
 (define (ast->sugar ast)
@@ -69,14 +69,20 @@
                   (cons 'root ast)
                   ast))
          (ast (if (and (pair? ast) (assoc-ref ast 'locations))
-                 (ast->annotate ast) ast)))
+                  (ast->annotate ast) ast)))
     (ast->gom- ast)))
 
 (define (retain-source-location o t)
   (and-let* (((supports-source-properties? o))
-             (loc (source-property o 'loc))
-             ((supports-source-properties? t)))
+             ((supports-source-properties? t))
+             (loc (source-property o 'loc)))
             (set-source-property! t 'loc loc))
+  t)
+
+(define (retain-source-properties o t)
+  (and-let* (((supports-source-properties? o))
+             ((supports-source-properties? t)))
+            (set-source-properties! t (source-properties o)))
   t)
 
 (define (ast->gom- ast)
@@ -126,16 +132,20 @@
        :last? last?))
 
     (('component name ports ('system foo ('compound body ...)))
-     (make <system>
-       :name name
-       :ports (ast->gom- ports)
-       :instances (make <instances> :elements (ast->gom- body))))
+     (mark-imported
+      (make <system>
+        :name name
+        :ports (ast->gom- ports)
+        :instances (make <instances> :elements (ast->gom- body)))
+      (assoc 'imported (cddr ast))))
 
     (('component name body ...)
-     (make <component>
-       :name name
-       :ports (ast->gom- (or (null-is-#f (assoc 'ports body)) '(ports)))
-       :behaviour (and=> (null-is-#f (assoc 'behaviour body)) ast->gom-)))
+     (mark-imported
+      (make <component>
+        :name name
+        :ports (ast->gom- (or (null-is-#f (assoc 'ports body)) '(ports)))
+        :behaviour (and=> (null-is-#f (assoc 'behaviour body)) ast->gom-))
+      (assoc 'imported body)))
 
     (('compound statements ...)
      (make <compound> :elements (map ast->gom- statements)))
@@ -212,11 +222,13 @@
      (make <instances> :elements (map ast->gom- instances)))
 
     (('interface name body ...)
-     (make <interface>
-       :name name
-       :types (ast->gom- (or (null-is-#f (assoc 'types body)) '(types)))
-       :events (ast->gom- (or (null-is-#f (assoc 'events body)) '(events)))
-       :behaviour (and=> (null-is-#f (assoc 'behaviour body)) ast->gom-)))
+     (mark-imported
+      (make <interface>
+        :name name
+        :types (ast->gom- (or (null-is-#f (assoc 'types body)) '(types)))
+        :events (ast->gom- (or (null-is-#f (assoc 'events body)) '(events)))
+        :behaviour (and=> (null-is-#f (assoc 'behaviour body)) ast->gom-))
+      (assoc 'imported body)))
 
     (('literal scope type field)
      (make <literal> :scope scope :type type :field field))
@@ -263,17 +275,21 @@
      (make <signature> :type (ast->gom- type) :parameters (ast->gom- parameters)))
 
     (('system name ports ('compound body ...))
-     (make <system>
-       :name name
-       :ports (ast->gom- ports)
-       :instances (make <instances> :elements (ast->gom- body))))
+     (mark-imported
+      (make <system>
+        :name name
+        :ports (ast->gom- ports)
+        :instances (make <instances> :elements (ast->gom- body)))
+      (assoc 'imported (cddr ast))))
 
     (('system name ports instances bindings)
-     (make <system>
-       :name name
-       :ports (ast->gom- ports)
-       :instances (ast->gom- instances)
-       :bindings (ast->gom- bindings)))
+     (mark-imported
+      (make <system>
+        :name name
+        :ports (ast->gom- ports)
+        :instances (ast->gom- instances)
+        :bindings (ast->gom- bindings))
+      (assoc 'imported (cddr ast))))
 
     (('trigger port event) (make <trigger> :port port :event event))
 
@@ -307,6 +323,10 @@
     ((h t ...) (map ast->gom- ast))
 
     (_ ast)))
+
+(define-method (mark-imported (o <model>) entry)
+  (if entry (set-source-property! o 'imported? (cdr entry)))
+  o)
 
 (define (ast:public ast)
 ;;  (stderr "public: ~a\n" ast)
