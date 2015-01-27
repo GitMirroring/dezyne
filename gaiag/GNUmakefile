@@ -656,6 +656,11 @@ glue:
 	ln -sf examples/SirenComponent.cpp out
 	for i in out/*.c*; do ccache g++ -g -Wall -Wextra -I out -I $(DEPTH)/examples/codegen/asd_cpp_runtime -c $$i -o out/$$(basename $$(basename $$i .cpp) .cc).o; done
 	cd out && g++ -o test *.o && ./test
+	ln -sf examples/AlarmComponent.h out
+	ln -sf examples/IConsoleInterface.h out
+	cd out && $(shell pwd)/gaiag -l c++ examples/ExternalAlarm.dzn
+	g++ -g -Wall -Wextra -I out -I $(DEPTH)/examples/codegen/asd_cpp_runtime -c out/glue-Alarm.cc -o out/glue-Alarm.o
+	$(diff) baseline/glue-Alarm.cc out
 
 code-update: c-update c++-update goops-update java-update javascript-update python-update
 update: csp-update code-update
