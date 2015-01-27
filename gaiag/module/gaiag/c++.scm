@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -26,6 +26,7 @@
   :use-module (srfi srfi-1)
 
   :use-module (gaiag animate)
+  :use-module (gaiag c)
   :use-module (gaiag code)
   :use-module (gaiag indent)
   :use-module (gaiag misc)
@@ -46,43 +47,26 @@
   "")
 
 (define-method (dump (o <interface>))
-  (let ((name (.name o)))
-    (dump-indented (symbol-append name '.hh)
-                   (lambda ()
-                     (c++-file 'interface.hh.scm (code:module o))))))
+  ((@@ (gaiag c) dump) o))
 
 (define-method (dump (o <component>))
-  (let ((name (.name o))
-        (interfaces (map code:import (map .type ((compose .elements .ports) o)))))
-    (dump-indented (symbol-append name '.hh)
-                   (lambda ()
-                     (c++-file 'component.hh.scm (code:module o))))
-    (if (.behaviour o)
-        (dump-indented (symbol-append name '.cc)
+  ((@@ (gaiag c) dump) o)
+  (let ((name (.name o)))
+    (if (and (not (.behaviour o))
+             (map-file o))
+        (dump-indented (symbol-append 'glue- name '.cc)
                        (lambda ()
-                         (c++-file 'component.cc.scm (code:module o))))
-        (if (and (gom:port o) (try-find-file (.type (gom:port o)) '(.map)))
-
-            (dump-indented (symbol-append 'glue- name '.cc)
-                           (lambda ()
-                             (c++-file 'glue-bottom-component.cc.scm (code:module o)))))
+                         (c++-file 'glue-bottom-component.cc.scm (code:module o))))
 )))
 
 (define-method (dump (o <system>))
-  (let ((name (.name o))
-        (interfaces (map code:import (map .type ((compose .elements .ports) o))))
-        (components (map code:import (map .component ((compose .elements .instances) o)))))
-    (dump-indented (symbol-append name '.hh)
-                   (lambda ()
-                     (c++-file 'system.hh.scm (code:module o))))
-    (dump-indented (symbol-append name '.cc)
-                   (lambda ()
-                     (c++-file 'system.cc.scm (code:module o))))
-    (if (and (gom:port o) (try-find-file (.type (gom:port o)) '(.map)))
-      (dump-indented (symbol-append name 'Interface.h)
-                     (lambda ()
-                       (c++-file 'glue-top-system-interface.hh.scm (code:module (gom:interface (gom:port o)))))))
-    (when (and (gom:port o) (try-find-file (.type (gom:port o)) '(.map)))
+  ((@@ (gaiag c) dump) o)
+  (let ((name (.name o)))
+    (if (map-file o)
+        (dump-indented (symbol-append name 'Interface.h)
+                       (lambda ()
+                         (c++-file 'glue-top-system-interface.hh.scm (code:module (gom:interface (gom:port o)))))))
+    (when (map-file o)
       (dump-indented (symbol-append name 'Component.h)
                      (lambda ()
                        (c++-file 'glue-top-system.hh.scm (code:module o))))
@@ -112,3 +96,7 @@
          (alist (event2->interface1-event1-alist (.name model)))
          (gen1-provided (filter identity (map (lambda (x) (assoc (.name x) alist)) provided))))
     (if (pair? gen1-provided) (list gen1-provided) '())))
+
+(define-method (map-file (o <model>))
+  (and (gom:port o)
+       (try-find-file (.type (gom:port o)) '(.map))))

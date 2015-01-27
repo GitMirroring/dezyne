@@ -42,6 +42,7 @@
            code:gom
            code:import
            code:->code
+           code:extension
            enum-type
            ->code
            bind-port?
@@ -67,6 +68,7 @@
            injected-instance-name
            injected-instance-port
            injected-instance-type
+           language
            non-injected-instances
            join
            dump-indented
@@ -103,7 +105,7 @@
                    thunk)))
 
 (define (dump-header)
-  (and-let* ((header (template-file `(header ,(extension (make <component>)))))
+  (and-let* ((header (template-file `(header ,(code:extension (make <component>)))))
              (header (components->file-name header))
              ((file-exists? header)))
             (dump-file (basename header) (gulp-file header))))
@@ -111,7 +113,7 @@
 (define-method (dump (o <interface>))
   (mkdir-p "dezyne")
   (let ((name (.name o)))
-    (dump-indented (list 'dezyne name (extension o))
+    (dump-indented (list 'dezyne name (code:extension o))
                    (lambda ()
                      (code-file 'interface (code:module o))))))
 
@@ -121,7 +123,7 @@
         (interfaces (map code:import (map .type ((compose .elements .ports) o)))))
     (when (.behaviour o)
       (map dump interfaces)
-      (dump-indented (list 'dezyne name (extension o))
+      (dump-indented (list 'dezyne name (code:extension o))
                    (lambda ()
                      (code-file 'component (code:module o)))))))
 
@@ -129,14 +131,14 @@
   (mkdir-p "dezyne")
   (let ((name (.name o))
         (interfaces (map code:import (map .type ((compose .elements .ports) o)))))
-    (dump-indented (list 'dezyne name (extension o))
+    (dump-indented (list 'dezyne name (code:extension o))
                    (lambda ()
                      (code-file 'system (code:module o))))))
 
 (define (code-file file-name module)
   (let ((model (module-ref module 'model)))
    (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
-     (animate-file (symbol-append file-name (extension model) '.scm) module))))
+     (animate-file (symbol-append file-name (code:extension model) '.scm) module))))
 
 (define* (code:->code model src :optional (locals '()) (indent 1) (compound? #t))
   (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
@@ -155,16 +157,18 @@
 (define (language)
   (string->symbol (option-ref (parse-opts (command-line)) 'language 'c++)))
 
-(define-method (extension (o <interface>))
-  (assoc-ref `((c++ . .hh)
+(define-method (code:extension (o <interface>))
+  (assoc-ref `((c . .h)
+               (c++ . .hh)
                (goops . .scm)
                (java . .java)
                (javascript . .js)
                (python . .py))
              (language)))
 
-(define-method (extension (o <model>))
-  (assoc-ref '((c++ . .cc)
+(define-method (code:extension (o <model>))
+  (assoc-ref '((c . .c)
+               (c++ . .cc)
                (goops . .scm)
                (java . .java)
                (javascript . .js)
