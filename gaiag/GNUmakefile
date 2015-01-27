@@ -275,7 +275,7 @@ c++-dataparam:
 c++-choice:
 	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c++/* .
 	cd out && $(shell pwd)/gaiag -l c++ examples/regression/Choice.dzn
-	ln -s ../../webapp/server/commands/code/c++/main.cc out
+	ln -s ../../webapp/server/commands/runtime/c++/main.cc out
 	for i in out/*cc; do ccache g++ -g -Wall -Wextra -c -o out/$$(basename $$i .cc).o $$i; done && g++ -o out/$@ out/*.o && out/$@ > out/$@.trace
 	-$(diff) baseline/$@.trace out
 	$(diff) baseline/Choice.cc out
