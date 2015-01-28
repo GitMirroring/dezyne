@@ -72,13 +72,6 @@
                   (ast->annotate ast) ast)))
     (ast->gom- ast)))
 
-(define (retain-source-location o t)
-  (and-let* (((supports-source-properties? o))
-             ((supports-source-properties? t))
-             (loc (source-property o 'loc)))
-            (set-source-property! t 'loc loc))
-  t)
-
 (define (retain-source-properties o t)
   (and-let* (((supports-source-properties? o))
              ((supports-source-properties? t)))
@@ -86,7 +79,7 @@
   t)
 
 (define (ast->gom- ast)
-  (retain-source-location ast ((compose ast->gom-- ast->sugar) ast)))
+  (retain-source-properties ast ((compose ast->gom-- ast->sugar) ast)))
 
 (define (ast->gom-- ast)
   (match ast
@@ -132,20 +125,18 @@
        :last? last?))
 
     (('component name ports ('system foo ('compound body ...)))
-     (mark-imported
+     (and=> (assoc 'imported (cddr ast)) (mark-imported ast))
       (make <system>
         :name name
         :ports (ast->gom- ports)
-        :instances (make <instances> :elements (ast->gom- body)))
-      (assoc 'imported (cddr ast))))
+        :instances (make <instances> :elements (ast->gom- body))))
 
     (('component name body ...)
-     (mark-imported
+     (and=> (assoc 'imported body) (mark-imported ast))
       (make <component>
         :name name
         :ports (ast->gom- (or (null-is-#f (assoc 'ports body)) '(ports)))
-        :behaviour (and=> (null-is-#f (assoc 'behaviour body)) ast->gom-))
-      (assoc 'imported body)))
+        :behaviour (and=> (null-is-#f (assoc 'behaviour body)) ast->gom-)))
 
     (('compound statements ...)
      (make <compound> :elements (map ast->gom- statements)))
@@ -222,13 +213,12 @@
      (make <instances> :elements (map ast->gom- instances)))
 
     (('interface name body ...)
-     (mark-imported
-      (make <interface>
-        :name name
-        :types (ast->gom- (or (null-is-#f (assoc 'types body)) '(types)))
-        :events (ast->gom- (or (null-is-#f (assoc 'events body)) '(events)))
-        :behaviour (and=> (null-is-#f (assoc 'behaviour body)) ast->gom-))
-      (assoc 'imported body)))
+     (and=> (assoc 'imported body) (mark-imported ast))
+     (make <interface>
+       :name name
+       :types (ast->gom- (or (null-is-#f (assoc 'types body)) '(types)))
+       :events (ast->gom- (or (null-is-#f (assoc 'events body)) '(events)))
+       :behaviour (and=> (null-is-#f (assoc 'behaviour body)) ast->gom-)))
 
     (('literal scope type field)
      (make <literal> :scope scope :type type :field field))
@@ -275,21 +265,19 @@
      (make <signature> :type (ast->gom- type) :parameters (ast->gom- parameters)))
 
     (('system name ports ('compound body ...))
-     (mark-imported
-      (make <system>
+     (and=> (assoc 'imported (cddr ast)) (mark-imported ast))
+     (make <system>
         :name name
         :ports (ast->gom- ports)
-        :instances (make <instances> :elements (ast->gom- body)))
-      (assoc 'imported (cddr ast))))
+        :instances (make <instances> :elements (ast->gom- body))))
 
     (('system name ports instances bindings)
-     (mark-imported
-      (make <system>
+     (and=> (assoc 'imported (cddr ast)) (mark-imported ast))
+     (make <system>
         :name name
         :ports (ast->gom- ports)
         :instances (ast->gom- instances)
-        :bindings (ast->gom- bindings))
-      (assoc 'imported (cddr ast))))
+        :bindings (ast->gom- bindings)))
 
     (('trigger port event) (make <trigger> :port port :event event))
 
@@ -324,9 +312,8 @@
 
     (_ ast)))
 
-(define-method (mark-imported (o <model>) entry)
-  (if entry (set-source-property! o 'imported? (cdr entry)))
-  o)
+(define ((mark-imported o) entry)
+  (set-source-property! o 'imported? (cdr entry)))
 
 (define (ast:public ast)
 ;;  (stderr "public: ~a\n" ast)
