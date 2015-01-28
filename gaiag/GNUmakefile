@@ -252,9 +252,9 @@ c++-alarm:
 		examples/ISensor.dzn\
 		examples/Sensor.dzn\
 		examples/ISiren.dzn\
-		examples/Siren.dzn;\
+		examples/Siren.dzn\
+		;\
 	do $(shell pwd)/gaiag -l c++ $$file; done
-
 	cd out && ln -s ../examples/alarm.cc .
 	cd out && for i in *cc; do ccache g++ -g -c $$i; done && g++ -o $@ *.o && ./$@ > $@.trace
 	$(diff) baseline/$@.trace out
