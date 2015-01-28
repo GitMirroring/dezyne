@@ -26,16 +26,14 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
-#include <stdlib.h>
-#include <string.h>
 
 
 
-typedef struct {void (*f)(void*); If* self;} args_i_b;
-typedef struct {void (*f)(void*); If* self;} args_i_c;
+typedef struct {int size;void (*f)(void*);If* self;} args_i_b;
+typedef struct {int size;void (*f)(void*);If* self;} args_i_c;
 
 
-typedef struct {void (*f)(void*); If* self;} args_i_a;
+typedef struct {int size;void (*f)(void*);If* self;} args_i_a;
 
 
 static void helper_i_b(void* args) {
@@ -67,18 +65,14 @@ static void i_a(void* self_) {
 	DZN_LOG("If.i_a");
 	if (self->t) {
 		{
-			args_i_b a = {self->i->out.b,self};
-			args_i_b* p = malloc(sizeof(args_i_b));
-			memcpy(p, &a, sizeof(args_i_b));
-			runtime_defer(self->rt, self, helper_i_b, p);
+			args_i_b a = {sizeof(args_i_b), self->i->out.b, self};
+			runtime_defer(self->rt, self, helper_i_b, &a);
 		}
 	}
 	else {
 		{
-			args_i_c a = {self->i->out.c,self};
-			args_i_c* p = malloc(sizeof(args_i_c));
-			memcpy(p, &a, sizeof(args_i_c));
-			runtime_defer(self->rt, self, helper_i_c, p);
+			args_i_c a = {sizeof(args_i_c), self->i->out.c, self};
+			runtime_defer(self->rt, self, helper_i_c, &a);
 		}
 	}
 	self->t = !(self->t);
@@ -86,10 +80,8 @@ static void i_a(void* self_) {
 
 static void callback_i_a(void* self_) {
 	If* self = ((I*)self_)->in.self;
-	args_i_a* a = malloc(sizeof(args_i_a));
-	a->f=i_a;
-	a->self=self;
-	runtime_event(helper_i_a, a);
+	args_i_a a = {sizeof(args_i_a), i_a, self};
+	runtime_event(helper_i_a, &a);
 }
 
 

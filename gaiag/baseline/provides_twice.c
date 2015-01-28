@@ -30,6 +30,6 @@
 
 void provides_twice_init(provides_twice *self, locator* dezyne_locator) {
 	external_provides_twice_init(&self->one, dezyne_locator);
-	self->i = self->one.i; ;
-	self->ii = self->one.ii; 
+	self->i = self->one.i;
+	self->ii = self->one.ii;
 }

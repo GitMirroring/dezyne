@@ -26,16 +26,14 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
-#include <stdlib.h>
-#include <string.h>
 
 
 
-typedef struct {void (*f)(void*); incomplete* self;} args_p_a;
+typedef struct {int size;void (*f)(void*);incomplete* self;} args_p_a;
 
 
-typedef struct {void (*f)(void*); incomplete* self;} args_p_e;
-typedef struct {void (*f)(void*); incomplete* self;} args_r_a;
+typedef struct {int size;void (*f)(void*);incomplete* self;} args_p_e;
+typedef struct {int size;void (*f)(void*);incomplete* self;} args_r_a;
 
 
 static void helper_p_a(void* args) {
@@ -77,18 +75,14 @@ static void r_a(void* self_) {
 
 static void callback_p_e(void* self_) {
 	incomplete* self = ((iincomplete*)self_)->in.self;
-	args_p_e* a = malloc(sizeof(args_p_e));
-	a->f=p_e;
-	a->self=self;
-	runtime_event(helper_p_e, a);
+	args_p_e a = {sizeof(args_p_e), p_e, self};
+	runtime_event(helper_p_e, &a);
 }
 
 static void callback_r_a(void* self_) {
 	incomplete* self = ((iincomplete*)self_)->out.self;
-	args_r_a* a = malloc(sizeof(args_r_a));
-	a->f=r_a;
-	a->self=self;
-	runtime_event(helper_r_a, a);
+	args_r_a a = {sizeof(args_r_a), r_a, self};
+	runtime_event(helper_r_a, &a);
 }
 
 

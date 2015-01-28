@@ -26,8 +26,6 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
-#include <stdlib.h>
-#include <string.h>
 
 typedef enum {
 	Comp_State_Uninitialized, Comp_State_Initialized, Comp_State_Error
@@ -36,9 +34,9 @@ typedef enum {
 
 
 
-typedef struct {int (*f)(void*); Comp* self;} args_client_initialize;
-typedef struct {int (*f)(void*); Comp* self;} args_client_recover;
-typedef struct {int (*f)(void*); Comp* self;} args_client_perform_actions;
+typedef struct {int size;int (*f)(void*);Comp* self;} args_client_initialize;
+typedef struct {int size;int (*f)(void*);Comp* self;} args_client_recover;
+typedef struct {int size;int (*f)(void*);Comp* self;} args_client_perform_actions;
 
 
 
@@ -144,28 +142,22 @@ static int client_perform_actions(void* self_) {
 
 static int callback_client_initialize(void* self_) {
 	Comp* self = ((IComp*)self_)->in.self;
-	args_client_initialize* a = malloc(sizeof(args_client_initialize));
-	a->f=client_initialize;
-	a->self=self;
-	runtime_event(helper_client_initialize, a);
+	args_client_initialize a = {sizeof(args_client_initialize), client_initialize, self};
+	runtime_event(helper_client_initialize, &a);
 	return self->reply_IComp_result_t;
 }
 
 static int callback_client_recover(void* self_) {
 	Comp* self = ((IComp*)self_)->in.self;
-	args_client_recover* a = malloc(sizeof(args_client_recover));
-	a->f=client_recover;
-	a->self=self;
-	runtime_event(helper_client_recover, a);
+	args_client_recover a = {sizeof(args_client_recover), client_recover, self};
+	runtime_event(helper_client_recover, &a);
 	return self->reply_IComp_result_t;
 }
 
 static int callback_client_perform_actions(void* self_) {
 	Comp* self = ((IComp*)self_)->in.self;
-	args_client_perform_actions* a = malloc(sizeof(args_client_perform_actions));
-	a->f=client_perform_actions;
-	a->self=self;
-	runtime_event(helper_client_perform_actions, a);
+	args_client_perform_actions a = {sizeof(args_client_perform_actions), client_perform_actions, self};
+	runtime_event(helper_client_perform_actions, &a);
 	return self->reply_IComp_result_t;
 }
 

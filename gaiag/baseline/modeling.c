@@ -26,15 +26,13 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
-#include <stdlib.h>
-#include <string.h>
 
 
 
 
 
-typedef struct {void (*f)(void*); modeling* self;} args_p_e;
-typedef struct {void (*f)(void*); modeling* self;} args_r_f;
+typedef struct {int size;void (*f)(void*);modeling* self;} args_p_e;
+typedef struct {int size;void (*f)(void*);modeling* self;} args_r_f;
 
 
 
@@ -72,18 +70,14 @@ static void r_f(void* self_) {
 
 static void callback_p_e(void* self_) {
 	modeling* self = ((dummy*)self_)->in.self;
-	args_p_e* a = malloc(sizeof(args_p_e));
-	a->f=p_e;
-	a->self=self;
-	runtime_event(helper_p_e, a);
+	args_p_e a = {sizeof(args_p_e), p_e, self};
+	runtime_event(helper_p_e, &a);
 }
 
 static void callback_r_f(void* self_) {
 	modeling* self = ((imodeling*)self_)->out.self;
-	args_r_f* a = malloc(sizeof(args_r_f));
-	a->f=r_f;
-	a->self=self;
-	runtime_event(helper_r_f, a);
+	args_r_f a = {sizeof(args_r_f), r_f, self};
+	runtime_event(helper_r_f, &a);
 }
 
 

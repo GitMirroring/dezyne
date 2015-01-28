@@ -26,16 +26,14 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
-#include <stdlib.h>
-#include <string.h>
 
 
 
-typedef struct {void (*f)(void*); incomplete_with_modeling_event* self;} args_p_a;
+typedef struct {int size;void (*f)(void*);incomplete_with_modeling_event* self;} args_p_a;
 
 
-typedef struct {void (*f)(void*); incomplete_with_modeling_event* self;} args_p_e;
-typedef struct {void (*f)(void*); incomplete_with_modeling_event* self;} args_r_a;
+typedef struct {int size;void (*f)(void*);incomplete_with_modeling_event* self;} args_p_e;
+typedef struct {int size;void (*f)(void*);incomplete_with_modeling_event* self;} args_r_a;
 
 
 static void helper_p_a(void* args) {
@@ -72,27 +70,21 @@ static void r_a(void* self_) {
 	(void)self;
 	DZN_LOG("incomplete_with_modeling_event.r_a");
 	{
-		args_p_a a = {self->p->out.a,self};
-		args_p_a* p = malloc(sizeof(args_p_a));
-		memcpy(p, &a, sizeof(args_p_a));
-		runtime_defer(self->rt, self, helper_p_a, p);
+		args_p_a a = {sizeof(args_p_a), self->p->out.a, self};
+		runtime_defer(self->rt, self, helper_p_a, &a);
 	}
 }
 
 static void callback_p_e(void* self_) {
 	incomplete_with_modeling_event* self = ((iincomplete_with_modeling_event*)self_)->in.self;
-	args_p_e* a = malloc(sizeof(args_p_e));
-	a->f=p_e;
-	a->self=self;
-	runtime_event(helper_p_e, a);
+	args_p_e a = {sizeof(args_p_e), p_e, self};
+	runtime_event(helper_p_e, &a);
 }
 
 static void callback_r_a(void* self_) {
 	incomplete_with_modeling_event* self = ((iincomplete_with_modeling_event*)self_)->out.self;
-	args_r_a* a = malloc(sizeof(args_r_a));
-	a->f=r_a;
-	a->self=self;
-	runtime_event(helper_r_a, a);
+	args_r_a a = {sizeof(args_r_a), r_a, self};
+	runtime_event(helper_r_a, &a);
 }
 
 

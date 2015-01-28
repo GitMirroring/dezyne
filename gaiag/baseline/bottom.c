@@ -27,15 +27,13 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
-#include <stdlib.h>
-#include <string.h>
 
 
 
-typedef struct {void (*f)(void*); bottom* self;} args_b_f;
+typedef struct {int size;void (*f)(void*);bottom* self;} args_b_f;
 
 
-typedef struct {void (*f)(void*); bottom* self;} args_b_e;
+typedef struct {int size;void (*f)(void*);bottom* self;} args_b_e;
 
 
 static void helper_b_f(void* args) {
@@ -61,19 +59,15 @@ static void b_e(void* self_) {
 	(void)self;
 	DZN_LOG("bottom.b_e");
 	{
-		args_b_f a = {self->b->out.f,self};
-		args_b_f* p = malloc(sizeof(args_b_f));
-		memcpy(p, &a, sizeof(args_b_f));
-		runtime_defer(self->rt, self, helper_b_f, p);
+		args_b_f a = {sizeof(args_b_f), self->b->out.f, self};
+		runtime_defer(self->rt, self, helper_b_f, &a);
 	}
 }
 
 static void callback_b_e(void* self_) {
 	bottom* self = ((ibottom*)self_)->in.self;
-	args_b_e* a = malloc(sizeof(args_b_e));
-	a->f=b_e;
-	a->self=self;
-	runtime_event(helper_b_e, a);
+	args_b_e a = {sizeof(args_b_e), b_e, self};
+	runtime_event(helper_b_e, &a);
 }
 
 

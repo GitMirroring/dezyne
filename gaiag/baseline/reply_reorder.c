@@ -26,17 +26,15 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
-#include <stdlib.h>
-#include <string.h>
 
 
 
-typedef struct {void (*f)(void*); reply_reorder* self;} args_p_busy;
-typedef struct {void (*f)(void*); reply_reorder* self;} args_p_finish;
+typedef struct {int size;void (*f)(void*);reply_reorder* self;} args_p_busy;
+typedef struct {int size;void (*f)(void*);reply_reorder* self;} args_p_finish;
 
 
-typedef struct {void (*f)(void*); reply_reorder* self;} args_p_start;
-typedef struct {void (*f)(void*); reply_reorder* self;} args_r_pong;
+typedef struct {int size;void (*f)(void*);reply_reorder* self;} args_p_start;
+typedef struct {int size;void (*f)(void*);reply_reorder* self;} args_r_pong;
 
 
 static void helper_p_busy(void* args) {
@@ -80,19 +78,15 @@ static void r_pong(void* self_) {
 	DZN_LOG("reply_reorder.r_pong");
 	if (self->first) {
 		{
-			args_p_busy a = {self->p->out.busy,self};
-			args_p_busy* p = malloc(sizeof(args_p_busy));
-			memcpy(p, &a, sizeof(args_p_busy));
-			runtime_defer(self->rt, self, helper_p_busy, p);
+			args_p_busy a = {sizeof(args_p_busy), self->p->out.busy, self};
+			runtime_defer(self->rt, self, helper_p_busy, &a);
 		}
 		self->first = !(self->first);
 	}
 	else if (!(self->first)) {
 		{
-			args_p_finish a = {self->p->out.finish,self};
-			args_p_finish* p = malloc(sizeof(args_p_finish));
-			memcpy(p, &a, sizeof(args_p_finish));
-			runtime_defer(self->rt, self, helper_p_finish, p);
+			args_p_finish a = {sizeof(args_p_finish), self->p->out.finish, self};
+			runtime_defer(self->rt, self, helper_p_finish, &a);
 		}
 		self->first = !(self->first);
 	}
@@ -100,18 +94,14 @@ static void r_pong(void* self_) {
 
 static void callback_p_start(void* self_) {
 	reply_reorder* self = ((Provides*)self_)->in.self;
-	args_p_start* a = malloc(sizeof(args_p_start));
-	a->f=p_start;
-	a->self=self;
-	runtime_event(helper_p_start, a);
+	args_p_start a = {sizeof(args_p_start), p_start, self};
+	runtime_event(helper_p_start, &a);
 }
 
 static void callback_r_pong(void* self_) {
 	reply_reorder* self = ((Requires*)self_)->out.self;
-	args_r_pong* a = malloc(sizeof(args_r_pong));
-	a->f=r_pong;
-	a->self=self;
-	runtime_event(helper_r_pong, a);
+	args_r_pong a = {sizeof(args_r_pong), r_pong, self};
+	runtime_event(helper_r_pong, &a);
 }
 
 

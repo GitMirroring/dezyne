@@ -26,17 +26,15 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
-#include <stdlib.h>
-#include <string.h>
 
 
 
-typedef struct {void (*f)(void*); Sensor* self;} args_sensor_triggered;
-typedef struct {void (*f)(void*); Sensor* self;} args_sensor_disabled;
+typedef struct {int size;void (*f)(void*);Sensor* self;} args_sensor_triggered;
+typedef struct {int size;void (*f)(void*);Sensor* self;} args_sensor_disabled;
 
 
-typedef struct {void (*f)(void*); Sensor* self;} args_sensor_enable;
-typedef struct {void (*f)(void*); Sensor* self;} args_sensor_disable;
+typedef struct {int size;void (*f)(void*);Sensor* self;} args_sensor_enable;
+typedef struct {int size;void (*f)(void*);Sensor* self;} args_sensor_disable;
 
 
 static void helper_sensor_triggered(void* args) {
@@ -85,18 +83,14 @@ static void sensor_disable(void* self_) {
 
 static void callback_sensor_enable(void* self_) {
 	Sensor* self = ((ISensor*)self_)->in.self;
-	args_sensor_enable* a = malloc(sizeof(args_sensor_enable));
-	a->f=sensor_enable;
-	a->self=self;
-	runtime_event(helper_sensor_enable, a);
+	args_sensor_enable a = {sizeof(args_sensor_enable),sensor_enable,self};
+	runtime_event(helper_sensor_enable, &a);
 }
 
 static void callback_sensor_disable(void* self_) {
 	Sensor* self = ((ISensor*)self_)->in.self;
-	args_sensor_disable* a = malloc(sizeof(args_sensor_disable));
-	a->f=sensor_disable;
-	a->self=self;
-	runtime_event(helper_sensor_disable, a);
+	args_sensor_disable a = {sizeof(args_sensor_disable),sensor_disable,self};
+	runtime_event(helper_sensor_disable, &a);
 }
 
 

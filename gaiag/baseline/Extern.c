@@ -26,14 +26,12 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
-#include <stdlib.h>
-#include <string.h>
 
 
 
 
 
-typedef struct {void (*f)(void*); Extern* self;} args_port_e;
+typedef struct {int size;void (*f)(void*);Extern* self;} args_port_e;
 
 
 
@@ -58,10 +56,8 @@ static void port_e(void* self_) {
 
 static void callback_port_e(void* self_) {
 	Extern* self = ((IExtern*)self_)->in.self;
-	args_port_e* a = malloc(sizeof(args_port_e));
-	a->f=port_e;
-	a->self=self;
-	runtime_event(helper_port_e, a);
+	args_port_e a = {sizeof(args_port_e), port_e, self};
+	runtime_event(helper_port_e, &a);
 }
 
 

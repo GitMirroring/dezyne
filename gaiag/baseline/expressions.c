@@ -26,17 +26,15 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
-#include <stdlib.h>
-#include <string.h>
 
 
 
-typedef struct {void (*f)(void*); expressions* self;} args_i_a;
-typedef struct {void (*f)(void*); expressions* self;} args_i_hi;
-typedef struct {void (*f)(void*); expressions* self;} args_i_lo;
+typedef struct {int size;void (*f)(void*);expressions* self;} args_i_a;
+typedef struct {int size;void (*f)(void*);expressions* self;} args_i_hi;
+typedef struct {int size;void (*f)(void*);expressions* self;} args_i_lo;
 
 
-typedef struct {void (*f)(void*); expressions* self;} args_i_e;
+typedef struct {int size;void (*f)(void*);expressions* self;} args_i_e;
 
 
 static void helper_i_a(void* args) {
@@ -74,10 +72,8 @@ static void i_e(void* self_) {
 	if (true) if (self->state == 0) {
 		self->state = 3;
 		{
-			args_i_a a = {self->i->out.a,self};
-			args_i_a* p = malloc(sizeof(args_i_a));
-			memcpy(p, &a, sizeof(args_i_a));
-			runtime_defer(self->rt, self, helper_i_a, p);
+			args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
+			runtime_defer(self->rt, self, helper_i_a, &a);
 		}
 	}
 	else {
@@ -88,19 +84,15 @@ static void i_e(void* self_) {
 		else {
 			if (self->c <= (self->state + 1)) {
 				{
-					args_i_lo a = {self->i->out.lo,self};
-					args_i_lo* p = malloc(sizeof(args_i_lo));
-					memcpy(p, &a, sizeof(args_i_lo));
-					runtime_defer(self->rt, self, helper_i_lo, p);
+					args_i_lo a = {sizeof(args_i_lo), self->i->out.lo, self};
+					runtime_defer(self->rt, self, helper_i_lo, &a);
 				}
 			}
 			else {
 				if (self->c > self->state) {
 					{
-						args_i_hi a = {self->i->out.hi,self};
-						args_i_hi* p = malloc(sizeof(args_i_hi));
-						memcpy(p, &a, sizeof(args_i_hi));
-						runtime_defer(self->rt, self, helper_i_hi, p);
+						args_i_hi a = {sizeof(args_i_hi), self->i->out.hi, self};
+						runtime_defer(self->rt, self, helper_i_hi, &a);
 					}
 				}
 			}
@@ -110,10 +102,8 @@ static void i_e(void* self_) {
 
 static void callback_i_e(void* self_) {
 	expressions* self = ((I*)self_)->in.self;
-	args_i_e* a = malloc(sizeof(args_i_e));
-	a->f=i_e;
-	a->self=self;
-	runtime_event(helper_i_e, a);
+	args_i_e a = {sizeof(args_i_e), i_e, self};
+	runtime_event(helper_i_e, &a);
 }
 
 

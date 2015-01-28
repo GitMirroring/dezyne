@@ -27,18 +27,16 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
-#include <stdlib.h>
-#include <string.h>
 
 typedef enum {
 	Choice_State_Off, Choice_State_Idle, Choice_State_Busy
 } Choice_State;
 
 
-typedef struct {void (*f)(void*); Choice* self;} args_c_a;
+typedef struct {int size;void (*f)(void*);Choice* self;} args_c_a;
 
 
-typedef struct {void (*f)(void*); Choice* self;} args_c_e;
+typedef struct {int size;void (*f)(void*);Choice* self;} args_c_e;
 
 
 static void helper_c_a(void* args) {
@@ -66,38 +64,30 @@ static void c_e(void* self_) {
 	if (self->s == Choice_State_Off) {
 		self->s = Choice_State_Idle;
 		{
-			args_c_a a = {self->c->out.a,self};
-			args_c_a* p = malloc(sizeof(args_c_a));
-			memcpy(p, &a, sizeof(args_c_a));
-			runtime_defer(self->rt, self, helper_c_a, p);
+			args_c_a a = {sizeof(args_c_a), self->c->out.a, self};
+			runtime_defer(self->rt, self, helper_c_a, &a);
 		}
 	}
 	else if (self->s == Choice_State_Idle) {
 		self->s = Choice_State_Busy;
 		{
-			args_c_a a = {self->c->out.a,self};
-			args_c_a* p = malloc(sizeof(args_c_a));
-			memcpy(p, &a, sizeof(args_c_a));
-			runtime_defer(self->rt, self, helper_c_a, p);
+			args_c_a a = {sizeof(args_c_a), self->c->out.a, self};
+			runtime_defer(self->rt, self, helper_c_a, &a);
 		}
 	}
 	else if (self->s == Choice_State_Busy) {
 		self->s = Choice_State_Idle;
 		{
-			args_c_a a = {self->c->out.a,self};
-			args_c_a* p = malloc(sizeof(args_c_a));
-			memcpy(p, &a, sizeof(args_c_a));
-			runtime_defer(self->rt, self, helper_c_a, p);
+			args_c_a a = {sizeof(args_c_a), self->c->out.a, self};
+			runtime_defer(self->rt, self, helper_c_a, &a);
 		}
 	}
 }
 
 static void callback_c_e(void* self_) {
 	Choice* self = ((IChoice*)self_)->in.self;
-	args_c_e* a = malloc(sizeof(args_c_e));
-	a->f=c_e;
-	a->self=self;
-	runtime_event(helper_c_e, a);
+	args_c_e a = {sizeof(args_c_e), c_e, self};
+	runtime_event(helper_c_e, &a);
 }
 
 

@@ -26,22 +26,20 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
-#include <stdlib.h>
-#include <string.h>
 
 typedef enum {
 	Alarm_States_Disarmed, Alarm_States_Armed, Alarm_States_Triggered, Alarm_States_Disarming
 } Alarm_States;
 
 
-typedef struct {void (*f)(void*); Alarm* self;} args_console_detected;
-typedef struct {void (*f)(void*); Alarm* self;} args_console_deactivated;
+typedef struct {int size;void (*f)(void*);Alarm* self;} args_console_detected;
+typedef struct {int size;void (*f)(void*);Alarm* self;} args_console_deactivated;
 
 
-typedef struct {void (*f)(void*); Alarm* self;} args_console_arm;
-typedef struct {void (*f)(void*); Alarm* self;} args_console_disarm;
-typedef struct {void (*f)(void*); Alarm* self;} args_sensor_triggered;
-typedef struct {void (*f)(void*); Alarm* self;} args_sensor_disabled;
+typedef struct {int size;void (*f)(void*);Alarm* self;} args_console_arm;
+typedef struct {int size;void (*f)(void*);Alarm* self;} args_console_disarm;
+typedef struct {int size;void (*f)(void*);Alarm* self;} args_sensor_triggered;
+typedef struct {int size;void (*f)(void*);Alarm* self;} args_sensor_disabled;
 
 
 static void helper_console_detected(void* args) {
@@ -132,10 +130,8 @@ static void sensor_triggered(void* self_) {
 	}
 	else if (self->state == Alarm_States_Armed) {
 		{
-			args_console_detected a = {self->console->out.detected,self};
-			args_console_detected* p = malloc(sizeof(args_console_detected));
-			memcpy(p, &a, sizeof(args_console_detected));
-			runtime_defer(self->rt, self, helper_console_detected, p);
+			args_console_detected a = {sizeof(args_console_detected),self->console->out.detected,self};
+			runtime_defer(self->rt, self, helper_console_detected, &a);
 		}
 		self->siren->in.turnon(self->siren);
 		self->sounding = true;
@@ -163,10 +159,8 @@ static void sensor_disabled(void* self_) {
 	else if (self->state == Alarm_States_Disarming) {
 		if (self->sounding) {
 			{
-				args_console_deactivated a = {self->console->out.deactivated,self};
-				args_console_deactivated* p = malloc(sizeof(args_console_deactivated));
-				memcpy(p, &a, sizeof(args_console_deactivated));
-				runtime_defer(self->rt, self, helper_console_deactivated, p);
+				args_console_deactivated a = {sizeof(args_console_deactivated),self->console->out.deactivated,self};
+				runtime_defer(self->rt, self, helper_console_deactivated, &a);
 			}
 			self->siren->in.turnoff(self->siren);
 			self->state = Alarm_States_Disarmed;
@@ -174,10 +168,8 @@ static void sensor_disabled(void* self_) {
 		}
 		else {
 			{
-				args_console_deactivated a = {self->console->out.deactivated,self};
-				args_console_deactivated* p = malloc(sizeof(args_console_deactivated));
-				memcpy(p, &a, sizeof(args_console_deactivated));
-				runtime_defer(self->rt, self, helper_console_deactivated, p);
+				args_console_deactivated a = {sizeof(args_console_deactivated),self->console->out.deactivated,self};
+				runtime_defer(self->rt, self, helper_console_deactivated, &a);
 			}
 			self->state = Alarm_States_Disarmed;
 		}
@@ -189,34 +181,26 @@ static void sensor_disabled(void* self_) {
 
 static void callback_console_arm(void* self_) {
 	Alarm* self = ((IConsole*)self_)->in.self;
-	args_console_arm* a = malloc(sizeof(args_console_arm));
-	a->f=console_arm;
-	a->self=self;
-	runtime_event(helper_console_arm, a);
+	args_console_arm a = {sizeof(args_console_arm),console_arm,self};
+	runtime_event(helper_console_arm, &a);
 }
 
 static void callback_console_disarm(void* self_) {
 	Alarm* self = ((IConsole*)self_)->in.self;
-	args_console_disarm* a = malloc(sizeof(args_console_disarm));
-	a->f=console_disarm;
-	a->self=self;
-	runtime_event(helper_console_disarm, a);
+	args_console_disarm a = {sizeof(args_console_disarm),console_disarm,self};
+	runtime_event(helper_console_disarm, &a);
 }
 
 static void callback_sensor_triggered(void* self_) {
 	Alarm* self = ((ISensor*)self_)->out.self;
-	args_sensor_triggered* a = malloc(sizeof(args_sensor_triggered));
-	a->f=sensor_triggered;
-	a->self=self;
-	runtime_event(helper_sensor_triggered, a);
+	args_sensor_triggered a = {sizeof(args_sensor_triggered),sensor_triggered,self};
+	runtime_event(helper_sensor_triggered, &a);
 }
 
 static void callback_sensor_disabled(void* self_) {
 	Alarm* self = ((ISensor*)self_)->out.self;
-	args_sensor_disabled* a = malloc(sizeof(args_sensor_disabled));
-	a->f=sensor_disabled;
-	a->self=self;
-	runtime_event(helper_sensor_disabled, a);
+	args_sensor_disabled a = {sizeof(args_sensor_disabled),sensor_disabled,self};
+	runtime_event(helper_sensor_disabled, &a);
 }
 
 

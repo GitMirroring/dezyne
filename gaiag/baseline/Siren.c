@@ -26,15 +26,13 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
-#include <stdlib.h>
-#include <string.h>
 
 
 
 
 
-typedef struct {void (*f)(void*); Siren* self;} args_siren_turnon;
-typedef struct {void (*f)(void*); Siren* self;} args_siren_turnoff;
+typedef struct {int size;void (*f)(void*);Siren* self;} args_siren_turnon;
+typedef struct {int size;void (*f)(void*);Siren* self;} args_siren_turnoff;
 
 
 
@@ -73,18 +71,14 @@ static void siren_turnoff(void* self_) {
 
 static void callback_siren_turnon(void* self_) {
 	Siren* self = ((ISiren*)self_)->in.self;
-	args_siren_turnon* a = malloc(sizeof(args_siren_turnon));
-	a->f=siren_turnon;
-	a->self=self;
-	runtime_event(helper_siren_turnon, a);
+	args_siren_turnon a = {sizeof(args_siren_turnon),siren_turnon,self};
+	runtime_event(helper_siren_turnon, &a);
 }
 
 static void callback_siren_turnoff(void* self_) {
 	Siren* self = ((ISiren*)self_)->in.self;
-	args_siren_turnoff* a = malloc(sizeof(args_siren_turnoff));
-	a->f=siren_turnoff;
-	a->self=self;
-	runtime_event(helper_siren_turnoff, a);
+	args_siren_turnoff a = {sizeof(args_siren_turnoff),siren_turnoff,self};
+	runtime_event(helper_siren_turnoff, &a);
 }
 
 

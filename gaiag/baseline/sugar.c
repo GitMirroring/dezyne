@@ -26,18 +26,16 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
-#include <stdlib.h>
-#include <string.h>
 
 typedef enum {
 	sugar_Enum_False, sugar_Enum_True
 } sugar_Enum;
 
 
-typedef struct {void (*f)(void*); sugar* self;} args_i_a;
+typedef struct {int size;void (*f)(void*);sugar* self;} args_i_a;
 
 
-typedef struct {void (*f)(void*); sugar* self;} args_i_e;
+typedef struct {int size;void (*f)(void*);sugar* self;} args_i_e;
 
 
 static void helper_i_a(void* args) {
@@ -63,28 +61,22 @@ static void i_e(void* self_) {
 	(void)self;
 	DZN_LOG("sugar.i_e");
 	if (self->s == sugar_Enum_False) if (self->s == sugar_Enum_False) {
-		args_i_a a = {self->i->out.a,self};
-		args_i_a* p = malloc(sizeof(args_i_a));
-		memcpy(p, &a, sizeof(args_i_a));
-		runtime_defer(self->rt, self, helper_i_a, p);
+		args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
+		runtime_defer(self->rt, self, helper_i_a, &a);
 	}
 	else {
 		int t = sugar_Enum_False;
 		if (t == sugar_Enum_True) {
-			args_i_a a = {self->i->out.a,self};
-			args_i_a* p = malloc(sizeof(args_i_a));
-			memcpy(p, &a, sizeof(args_i_a));
-			runtime_defer(self->rt, self, helper_i_a, p);
+			args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
+			runtime_defer(self->rt, self, helper_i_a, &a);
 		}
 	}
 }
 
 static void callback_i_e(void* self_) {
 	sugar* self = ((I*)self_)->in.self;
-	args_i_e* a = malloc(sizeof(args_i_e));
-	a->f=i_e;
-	a->self=self;
-	runtime_event(helper_i_e, a);
+	args_i_e a = {sizeof(args_i_e), i_e, self};
+	runtime_event(helper_i_e, &a);
 }
 
 

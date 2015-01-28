@@ -3,22 +3,20 @@
 ##include "locator.h"
 ##include "runtime.h"
 ##include <assert.h>
-##include <stdlib.h>
-##include <string.h>
 
 #(->string (map declare-enum (gom:enums (.behaviour model))))
 
 #(map
   (lambda (port)
     (map (define-on model port #{
-  typedef struct {#return-type  (*f)(void*#comma #((->join ", ") parameter-types)); #.model * self;#((->join "; ") parameter-list)#(if (null? parameter-list) "" ";")} args_#port _#event;
+  typedef struct {int size;#return-type  (*f)(void*#comma #((->join ", ") parameter-types));#.model * self;#((->join ";") parameter-list)#(if (null? parameter-list) "" ";")} args_#port _#event;
 #}) (filter (negate (gom:dir-matches? port)) (gom:events port))))
   (filter gom:provides? (gom:ports model)))
 
 #(map
   (lambda (port)
     (map (define-on model port #{
-  typedef struct {#return-type  (*f)(void*#comma #((->join ", ") parameter-types)); #.model * self;#((->join "; ") parameter-list)#(if (null? parameter-list) "" ";")} args_#port _#event;
+  typedef struct {int size;#return-type  (*f)(void*#comma #((->join ", ") parameter-types));#.model * self;#((->join ";") parameter-list)#(if (null? parameter-list) "" ";")} args_#port _#event;
 #}) (filter (gom:dir-matches? port) (gom:events port))))
   (gom:ports model))
 
@@ -27,7 +25,7 @@
     (map (define-on model port #{
   static void helper_#port _#event (void* args) {
     args_#port _#event  *a = args;
-    a->f(a->self->#port #comma #(comma-join (map (lambda (x) (symbol-append 'a-> x)) argument-list)));
+    a->f(a->self->#port #comma #(comma-space-join (map (lambda (x) (symbol-append 'a-> x)) argument-list)));
   }
 
     #}) (filter (negate (gom:dir-matches? port)) (gom:events port))))
@@ -38,7 +36,7 @@
     (map (define-on model port #{
   static void helper_#port _#event(void* args) {
     args_#port _#event  *a = args;
-    a->f(a->self#comma #(comma-join (map (lambda (x) (symbol-append 'a-> x)) argument-list)));
+    a->f(a->self#comma #(comma-space-join (map (lambda (x) (symbol-append 'a-> x)) argument-list)));
   }
 
 #}) (filter (gom:dir-matches? port) (gom:events port))))
@@ -73,11 +71,8 @@
     (map (define-on model port #{
   static #return-type  callback_#port _#event(void* self_#comma #parameters) {
     #.model * self = ((#interface *)self_)->#direction .self;
-    args_#port _#event * a = malloc(sizeof(args_#port _#event));
-  a->f=#port _#event;
-  a->self=self;
-  #((->join ";\n") (map (lambda (x) (symbol-append 'a-> x '= x)) argument-list))#
-  (if (null? argument-list) "" ";\n")runtime_event(helper_#port _#event , a);
+    args_#port _#event  a = {sizeof(args_#port _#event), #port _#event , self#comma #(comma-space-join argument-list)};
+   runtime_event(helper_#port _#event , &a);
 #(if (not (eq? type 'void))
 (list "    return self->reply_" reply-type "_" reply-name ";\n"
       )) }

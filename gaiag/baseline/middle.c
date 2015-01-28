@@ -27,16 +27,14 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
-#include <stdlib.h>
-#include <string.h>
 
 
 
-typedef struct {void (*f)(void*); middle* self;} args_t_f;
+typedef struct {int size;void (*f)(void*);middle* self;} args_t_f;
 
 
-typedef struct {void (*f)(void*); middle* self;} args_t_e;
-typedef struct {void (*f)(void*); middle* self;} args_b_f;
+typedef struct {int size;void (*f)(void*);middle* self;} args_t_e;
+typedef struct {int size;void (*f)(void*);middle* self;} args_b_f;
 
 
 static void helper_t_f(void* args) {
@@ -76,27 +74,21 @@ static void b_f(void* self_) {
 	DZN_LOG("middle.b_f");
 	self->l->in.log(self->l);
 	{
-		args_t_f a = {self->t->out.f,self};
-		args_t_f* p = malloc(sizeof(args_t_f));
-		memcpy(p, &a, sizeof(args_t_f));
-		runtime_defer(self->rt, self, helper_t_f, p);
+		args_t_f a = {sizeof(args_t_f), self->t->out.f, self};
+		runtime_defer(self->rt, self, helper_t_f, &a);
 	}
 }
 
 static void callback_t_e(void* self_) {
 	middle* self = ((itop*)self_)->in.self;
-	args_t_e* a = malloc(sizeof(args_t_e));
-	a->f=t_e;
-	a->self=self;
-	runtime_event(helper_t_e, a);
+	args_t_e a = {sizeof(args_t_e), t_e, self};
+	runtime_event(helper_t_e, &a);
 }
 
 static void callback_b_f(void* self_) {
 	middle* self = ((ibottom*)self_)->out.self;
-	args_b_f* a = malloc(sizeof(args_b_f));
-	a->f=b_f;
-	a->self=self;
-	runtime_event(helper_b_f, a);
+	args_b_f a = {sizeof(args_b_f), b_f, self};
+	runtime_event(helper_b_f, &a);
 }
 
 

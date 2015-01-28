@@ -26,15 +26,13 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
-#include <stdlib.h>
-#include <string.h>
 
 
 
-typedef struct {void (*f)(void*); argument2* self;} args_i_f;
+typedef struct {int size;void (*f)(void*);argument2* self;} args_i_f;
 
 
-typedef struct {void (*f)(void*); argument2* self;} args_i_e;
+typedef struct {int size;void (*f)(void*);argument2* self;} args_i_e;
 
 
 static void helper_i_f(void* args) {
@@ -57,10 +55,8 @@ static bool g(argument2* self, bool ga, bool gb);
 static bool g(argument2* self, bool ga, bool gb) {
 	(void)self;
 	{
-		args_i_f a = {self->i->out.f,self};
-		args_i_f* p = malloc(sizeof(args_i_f));
-		memcpy(p, &a, sizeof(args_i_f));
-		runtime_defer(self->rt, self, helper_i_f, p);
+		args_i_f a = {sizeof(args_i_f), self->i->out.f, self};
+		runtime_defer(self->rt, self, helper_i_f, &a);
 	}
 	return (ga || gb);
 }
@@ -75,20 +71,16 @@ static void i_e(void* self_) {
 	self->b = g(self, c, c);
 	if (c) {
 		{
-			args_i_f a = {self->i->out.f,self};
-			args_i_f* p = malloc(sizeof(args_i_f));
-			memcpy(p, &a, sizeof(args_i_f));
-			runtime_defer(self->rt, self, helper_i_f, p);
+			args_i_f a = {sizeof(args_i_f), self->i->out.f, self};
+			runtime_defer(self->rt, self, helper_i_f, &a);
 		}
 	}
 }
 
 static void callback_i_e(void* self_) {
 	argument2* self = ((I*)self_)->in.self;
-	args_i_e* a = malloc(sizeof(args_i_e));
-	a->f=i_e;
-	a->self=self;
-	runtime_event(helper_i_e, a);
+	args_i_e a = {sizeof(args_i_e), i_e, self};
+	runtime_event(helper_i_e, &a);
 }
 
 

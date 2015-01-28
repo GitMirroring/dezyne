@@ -25,9 +25,25 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "pair.h"
 #include "queue.h"
+
+typedef struct {
+  int size;
+  void (*f)(void*);
+  void* self;
+} arguments;
+
+typedef struct {
+  runtime* rt;
+} component;
+
+typedef struct {
+  void (*func)(void*);
+  void *args;
+} closure;
 
 void
 runtime_init (runtime* self)
@@ -69,11 +85,6 @@ runtime_handling (runtime* self, void* scope)
   return (bool*)&p->first;
 }
 
-typedef struct {
-  void (*func)(void*);
-  void *args;
-} closure;
-
 void
 runtime_flush (runtime* self, void* scope)
 {
@@ -97,7 +108,9 @@ runtime_defer (runtime* self, void* scope, void (*event)(void*), void* args)
   assert (p);
   closure *c = malloc (sizeof (closure));
   c->func = event;
-  c->args = args;
+  arguments *a = args;
+  c->args = malloc (a->size);
+  memcpy (c->args, a, a->size);
   queue_push (p->second, c);
 }
 
@@ -109,7 +122,6 @@ runtime_handle_event (runtime* self, void* scope, void (*event)(void*), void* ar
   {
     *handle = true;
     event (args);
-    free (args);
     runtime_flush (self, scope);
     *handle = false;
   }
@@ -118,16 +130,6 @@ runtime_handle_event (runtime* self, void* scope, void (*event)(void*), void* ar
     runtime_defer (self, scope, event, args);
   }
 }
-
-typedef struct {
-  void (*f)(void*);
-  void* self;
-} arguments;
-
-typedef struct {
-  runtime* rt;
-} component;
-
 
 void
 runtime_event (void (*event)(void*), void* args)

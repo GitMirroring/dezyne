@@ -26,20 +26,18 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
-#include <stdlib.h>
-#include <string.h>
 
 typedef enum {
 	imperative_States_I, imperative_States_II, imperative_States_III, imperative_States_IV
 } imperative_States;
 
 
-typedef struct {void (*f)(void*); imperative* self;} args_i_f;
-typedef struct {void (*f)(void*); imperative* self;} args_i_g;
-typedef struct {void (*f)(void*); imperative* self;} args_i_h;
+typedef struct {int size;void (*f)(void*);imperative* self;} args_i_f;
+typedef struct {int size;void (*f)(void*);imperative* self;} args_i_g;
+typedef struct {int size;void (*f)(void*);imperative* self;} args_i_h;
 
 
-typedef struct {void (*f)(void*); imperative* self;} args_i_e;
+typedef struct {int size;void (*f)(void*);imperative* self;} args_i_e;
 
 
 static void helper_i_f(void* args) {
@@ -76,22 +74,16 @@ static void i_e(void* self_) {
 	DZN_LOG("imperative.i_e");
 	if (self->state == imperative_States_I) {
 		{
-			args_i_f a = {self->i->out.f,self};
-			args_i_f* p = malloc(sizeof(args_i_f));
-			memcpy(p, &a, sizeof(args_i_f));
-			runtime_defer(self->rt, self, helper_i_f, p);
+			args_i_f a = {sizeof(args_i_f), self->i->out.f, self};
+			runtime_defer(self->rt, self, helper_i_f, &a);
 		}
 		{
-			args_i_g a = {self->i->out.g,self};
-			args_i_g* p = malloc(sizeof(args_i_g));
-			memcpy(p, &a, sizeof(args_i_g));
-			runtime_defer(self->rt, self, helper_i_g, p);
+			args_i_g a = {sizeof(args_i_g), self->i->out.g, self};
+			runtime_defer(self->rt, self, helper_i_g, &a);
 		}
 		{
-			args_i_h a = {self->i->out.h,self};
-			args_i_h* p = malloc(sizeof(args_i_h));
-			memcpy(p, &a, sizeof(args_i_h));
-			runtime_defer(self->rt, self, helper_i_h, p);
+			args_i_h a = {sizeof(args_i_h), self->i->out.h, self};
+			runtime_defer(self->rt, self, helper_i_h, &a);
 		}
 		self->state = imperative_States_II;
 	}
@@ -100,37 +92,27 @@ static void i_e(void* self_) {
 	}
 	else if (self->state == imperative_States_III) {
 		{
-			args_i_f a = {self->i->out.f,self};
-			args_i_f* p = malloc(sizeof(args_i_f));
-			memcpy(p, &a, sizeof(args_i_f));
-			runtime_defer(self->rt, self, helper_i_f, p);
+			args_i_f a = {sizeof(args_i_f), self->i->out.f, self};
+			runtime_defer(self->rt, self, helper_i_f, &a);
 		}
 		{
-			args_i_g a = {self->i->out.g,self};
-			args_i_g* p = malloc(sizeof(args_i_g));
-			memcpy(p, &a, sizeof(args_i_g));
-			runtime_defer(self->rt, self, helper_i_g, p);
+			args_i_g a = {sizeof(args_i_g), self->i->out.g, self};
+			runtime_defer(self->rt, self, helper_i_g, &a);
 		}
 		{
-			args_i_g a = {self->i->out.g,self};
-			args_i_g* p = malloc(sizeof(args_i_g));
-			memcpy(p, &a, sizeof(args_i_g));
-			runtime_defer(self->rt, self, helper_i_g, p);
+			args_i_g a = {sizeof(args_i_g), self->i->out.g, self};
+			runtime_defer(self->rt, self, helper_i_g, &a);
 		}
 		{
-			args_i_f a = {self->i->out.f,self};
-			args_i_f* p = malloc(sizeof(args_i_f));
-			memcpy(p, &a, sizeof(args_i_f));
-			runtime_defer(self->rt, self, helper_i_f, p);
+			args_i_f a = {sizeof(args_i_f), self->i->out.f, self};
+			runtime_defer(self->rt, self, helper_i_f, &a);
 		}
 		self->state = imperative_States_IV;
 	}
 	else if (self->state == imperative_States_IV) {
 		{
-			args_i_h a = {self->i->out.h,self};
-			args_i_h* p = malloc(sizeof(args_i_h));
-			memcpy(p, &a, sizeof(args_i_h));
-			runtime_defer(self->rt, self, helper_i_h, p);
+			args_i_h a = {sizeof(args_i_h), self->i->out.h, self};
+			runtime_defer(self->rt, self, helper_i_h, &a);
 		}
 		self->state = imperative_States_I;
 	}
@@ -138,10 +120,8 @@ static void i_e(void* self_) {
 
 static void callback_i_e(void* self_) {
 	imperative* self = ((iimperative*)self_)->in.self;
-	args_i_e* a = malloc(sizeof(args_i_e));
-	a->f=i_e;
-	a->self=self;
-	runtime_event(helper_i_e, a);
+	args_i_e a = {sizeof(args_i_e), i_e, self};
+	runtime_event(helper_i_e, &a);
 }
 
 

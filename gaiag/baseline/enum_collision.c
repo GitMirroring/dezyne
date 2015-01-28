@@ -26,15 +26,13 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
-#include <stdlib.h>
-#include <string.h>
 
 
 
 
 
-typedef struct {int (*f)(void*); enum_collision* self;} args_i_foo;
-typedef struct {int (*f)(void*); enum_collision* self;} args_i_bar;
+typedef struct {int size;int (*f)(void*);enum_collision* self;} args_i_foo;
+typedef struct {int size;int (*f)(void*);enum_collision* self;} args_i_bar;
 
 
 
@@ -73,19 +71,15 @@ static int i_bar(void* self_) {
 
 static int callback_i_foo(void* self_) {
 	enum_collision* self = ((ienum_collision*)self_)->in.self;
-	args_i_foo* a = malloc(sizeof(args_i_foo));
-	a->f=i_foo;
-	a->self=self;
-	runtime_event(helper_i_foo, a);
+	args_i_foo a = {sizeof(args_i_foo), i_foo, self};
+	runtime_event(helper_i_foo, &a);
 	return self->reply_ienum_collision_Retval1;
 }
 
 static int callback_i_bar(void* self_) {
 	enum_collision* self = ((ienum_collision*)self_)->in.self;
-	args_i_bar* a = malloc(sizeof(args_i_bar));
-	a->f=i_bar;
-	a->self=self;
-	runtime_event(helper_i_bar, a);
+	args_i_bar a = {sizeof(args_i_bar), i_bar, self};
+	runtime_event(helper_i_bar, &a);
 	return self->reply_ienum_collision_Retval2;
 }
 

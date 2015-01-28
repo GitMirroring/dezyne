@@ -27,14 +27,12 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
-#include <stdlib.h>
-#include <string.h>
 
 
 
 
 
-typedef struct {void (*f)(void*); logger* self;} args_log_log;
+typedef struct {int size;void (*f)(void*);logger* self;} args_log_log;
 
 
 
@@ -60,10 +58,8 @@ static void log_log(void* self_) {
 
 static void callback_log_log(void* self_) {
 	logger* self = ((ilogger*)self_)->in.self;
-	args_log_log* a = malloc(sizeof(args_log_log));
-	a->f=log_log;
-	a->self=self;
-	runtime_event(helper_log_log, a);
+	args_log_log a = {sizeof(args_log_log), log_log, self};
+	runtime_event(helper_log_log, &a);
 }
 
 

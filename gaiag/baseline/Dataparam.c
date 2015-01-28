@@ -26,30 +26,28 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
-#include <stdlib.h>
-#include <string.h>
 
 
 
-typedef struct {void (*f)(void*); Dataparam* self;} args_port_a0;
-typedef struct {void (*f)(void*, int); Dataparam* self;int i;} args_port_a;
-typedef struct {void (*f)(void*, int, int); Dataparam* self;int i; int j;} args_port_aa;
-typedef struct {void (*f)(void*, int, int, int, int, int, int); Dataparam* self;int a0; int a1; int a2; int a3; int a4; int a5;} args_port_a6;
+typedef struct {int size;void (*f)(void*);Dataparam* self;} args_port_a0;
+typedef struct {int size;void (*f)(void*, int);Dataparam* self;int i;} args_port_a;
+typedef struct {int size;void (*f)(void*, int, int);Dataparam* self;int i;int j;} args_port_aa;
+typedef struct {int size;void (*f)(void*, int, int, int, int, int, int);Dataparam* self;int a0;int a1;int a2;int a3;int a4;int a5;} args_port_a6;
 
 
-typedef struct {void (*f)(void*); Dataparam* self;} args_port_e0;
-typedef struct {int (*f)(void*); Dataparam* self;} args_port_e0r;
-typedef struct {void (*f)(void*, int); Dataparam* self;int i;} args_port_e;
-typedef struct {int (*f)(void*, int); Dataparam* self;int i;} args_port_er;
-typedef struct {int (*f)(void*, int, int); Dataparam* self;int i; int j;} args_port_eer;
-typedef struct {void (*f)(void*, int*); Dataparam* self;int* i;} args_port_eo;
-typedef struct {void (*f)(void*, int*, int*); Dataparam* self;int* i; int* j;} args_port_eoo;
-typedef struct {void (*f)(void*, int, int*); Dataparam* self;int i; int* j;} args_port_eio;
-typedef struct {void (*f)(void*, int*); Dataparam* self;int* i;} args_port_eio2;
-typedef struct {int (*f)(void*, int*); Dataparam* self;int* i;} args_port_eor;
-typedef struct {int (*f)(void*, int*, int*); Dataparam* self;int* i; int* j;} args_port_eoor;
-typedef struct {int (*f)(void*, int, int*); Dataparam* self;int i; int* j;} args_port_eior;
-typedef struct {int (*f)(void*, int*); Dataparam* self;int* i;} args_port_eio2r;
+typedef struct {int size;void (*f)(void*);Dataparam* self;} args_port_e0;
+typedef struct {int size;int (*f)(void*);Dataparam* self;} args_port_e0r;
+typedef struct {int size;void (*f)(void*, int);Dataparam* self;int i;} args_port_e;
+typedef struct {int size;int (*f)(void*, int);Dataparam* self;int i;} args_port_er;
+typedef struct {int size;int (*f)(void*, int, int);Dataparam* self;int i;int j;} args_port_eer;
+typedef struct {int size;void (*f)(void*, int*);Dataparam* self;int* i;} args_port_eo;
+typedef struct {int size;void (*f)(void*, int*, int*);Dataparam* self;int* i;int* j;} args_port_eoo;
+typedef struct {int size;void (*f)(void*, int, int*);Dataparam* self;int i;int* j;} args_port_eio;
+typedef struct {int size;void (*f)(void*, int*);Dataparam* self;int* i;} args_port_eio2;
+typedef struct {int size;int (*f)(void*, int*);Dataparam* self;int* i;} args_port_eor;
+typedef struct {int size;int (*f)(void*, int*, int*);Dataparam* self;int* i;int* j;} args_port_eoor;
+typedef struct {int size;int (*f)(void*, int, int*);Dataparam* self;int i;int* j;} args_port_eior;
+typedef struct {int size;int (*f)(void*, int*);Dataparam* self;int* i;} args_port_eio2r;
 
 
 static void helper_port_a0(void* args) {
@@ -64,12 +62,12 @@ static void helper_port_a(void* args) {
 
 static void helper_port_aa(void* args) {
 	args_port_aa *a = args;
-	a->f(a->self->port, a->i,a->j);
+	a->f(a->self->port, a->i, a->j);
 }
 
 static void helper_port_a6(void* args) {
 	args_port_a6 *a = args;
-	a->f(a->self->port, a->a0,a->a1,a->a2,a->a3,a->a4,a->a5);
+	a->f(a->self->port, a->a0, a->a1, a->a2, a->a3, a->a4, a->a5);
 }
 
 
@@ -96,7 +94,7 @@ static void helper_port_er(void* args) {
 
 static void helper_port_eer(void* args) {
 	args_port_eer *a = args;
-	a->f(a->self, a->i,a->j);
+	a->f(a->self, a->i, a->j);
 }
 
 static void helper_port_eo(void* args) {
@@ -106,12 +104,12 @@ static void helper_port_eo(void* args) {
 
 static void helper_port_eoo(void* args) {
 	args_port_eoo *a = args;
-	a->f(a->self, a->i,a->j);
+	a->f(a->self, a->i, a->j);
 }
 
 static void helper_port_eio(void* args) {
 	args_port_eio *a = args;
-	a->f(a->self, a->i,a->j);
+	a->f(a->self, a->i, a->j);
 }
 
 static void helper_port_eio2(void* args) {
@@ -126,12 +124,12 @@ static void helper_port_eor(void* args) {
 
 static void helper_port_eoor(void* args) {
 	args_port_eoor *a = args;
-	a->f(a->self, a->i,a->j);
+	a->f(a->self, a->i, a->j);
 }
 
 static void helper_port_eior(void* args) {
 	args_port_eior *a = args;
-	a->f(a->self, a->i,a->j);
+	a->f(a->self, a->i, a->j);
 }
 
 static void helper_port_eio2r(void* args) {
@@ -168,10 +166,8 @@ static void port_e0(void* self_) {
 	(void)self;
 	DZN_LOG("Dataparam.port_e0");
 	{
-		args_port_a6 a = {self->port->out.a6,self, 0, 1, 2, 3, 4, 5};
-		args_port_a6* p = malloc(sizeof(args_port_a6));
-		memcpy(p, &a, sizeof(args_port_a6));
-		runtime_defer(self->rt, self, helper_port_a6, p);
+		args_port_a6 a = {sizeof(args_port_a6), self->port->out.a6, self, 0, 1, 2, 3, 4, 5};
+		runtime_defer(self->rt, self, helper_port_a6, &a);
 	}
 }
 
@@ -180,10 +176,8 @@ static int port_e0r(void* self_) {
 	(void)self;
 	DZN_LOG("Dataparam.port_e0r");
 	{
-		args_port_a0 a = {self->port->out.a0,self};
-		args_port_a0* p = malloc(sizeof(args_port_a0));
-		memcpy(p, &a, sizeof(args_port_a0));
-		runtime_defer(self->rt, self, helper_port_a0, p);
+		args_port_a0 a = {sizeof(args_port_a0), self->port->out.a0, self};
+		runtime_defer(self->rt, self, helper_port_a0, &a);
 	}
 	self->reply_IDataparam_Status = IDataparam_Status_Yes;
 	return self->reply_IDataparam_Status;
@@ -200,16 +194,12 @@ static void port_e(void* self_, int i) {
 		self->mi = pi;
 		self->mi = xfunx(self, pi, pi + pi);
 		{
-			args_port_a a = {self->port->out.a,self, self->mi};
-			args_port_a* p = malloc(sizeof(args_port_a));
-			memcpy(p, &a, sizeof(args_port_a));
-			runtime_defer(self->rt, self, helper_port_a, p);
+			args_port_a a = {sizeof(args_port_a), self->port->out.a, self, self->mi};
+			runtime_defer(self->rt, self, helper_port_a, &a);
 		}
 		{
-			args_port_aa a = {self->port->out.aa,self, self->mi, pi};
-			args_port_aa* p = malloc(sizeof(args_port_aa));
-			memcpy(p, &a, sizeof(args_port_aa));
-			runtime_defer(self->rt, self, helper_port_aa, p);
+			args_port_aa a = {sizeof(args_port_aa), self->port->out.aa, self, self->mi, pi};
+			runtime_defer(self->rt, self, helper_port_aa, &a);
 		}
 	}
 }
@@ -223,16 +213,12 @@ static int port_er(void* self_, int i) {
 		int s = IDataparam_Status_No;
 		self->mi = pi;
 		{
-			args_port_a a = {self->port->out.a,self, self->mi};
-			args_port_a* p = malloc(sizeof(args_port_a));
-			memcpy(p, &a, sizeof(args_port_a));
-			runtime_defer(self->rt, self, helper_port_a, p);
+			args_port_a a = {sizeof(args_port_a), self->port->out.a, self, self->mi};
+			runtime_defer(self->rt, self, helper_port_a, &a);
 		}
 		{
-			args_port_aa a = {self->port->out.aa,self, self->mi, pi};
-			args_port_aa* p = malloc(sizeof(args_port_aa));
-			memcpy(p, &a, sizeof(args_port_aa));
-			runtime_defer(self->rt, self, helper_port_aa, p);
+			args_port_aa a = {sizeof(args_port_aa), self->port->out.aa, self, self->mi, pi};
+			runtime_defer(self->rt, self, helper_port_aa, &a);
 		}
 		if (true) {
 			self->reply_IDataparam_Status = IDataparam_Status_Yes;
@@ -250,16 +236,12 @@ static int port_eer(void* self_, int i, int j) {
 	DZN_LOG("Dataparam.port_eer");
 	int s = IDataparam_Status_No;
 	{
-		args_port_a a = {self->port->out.a,self, j};
-		args_port_a* p = malloc(sizeof(args_port_a));
-		memcpy(p, &a, sizeof(args_port_a));
-		runtime_defer(self->rt, self, helper_port_a, p);
+		args_port_a a = {sizeof(args_port_a), self->port->out.a, self, j};
+		runtime_defer(self->rt, self, helper_port_a, &a);
 	}
 	{
-		args_port_aa a = {self->port->out.aa,self, j, i};
-		args_port_aa* p = malloc(sizeof(args_port_aa));
-		memcpy(p, &a, sizeof(args_port_aa));
-		runtime_defer(self->rt, self, helper_port_aa, p);
+		args_port_aa a = {sizeof(args_port_aa), self->port->out.aa, self, j, i};
+		runtime_defer(self->rt, self, helper_port_aa, &a);
 	}
 	self->reply_IDataparam_Status = s;
 	return self->reply_IDataparam_Status;
@@ -335,128 +317,86 @@ static int port_eio2r(void* self_, int* i) {
 
 static void callback_port_e0(void* self_) {
 	Dataparam* self = ((IDataparam*)self_)->in.self;
-	args_port_e0* a = malloc(sizeof(args_port_e0));
-	a->f=port_e0;
-	a->self=self;
-	runtime_event(helper_port_e0, a);
+	args_port_e0 a = {sizeof(args_port_e0), port_e0, self};
+	runtime_event(helper_port_e0, &a);
 }
 
 static int callback_port_e0r(void* self_) {
 	Dataparam* self = ((IDataparam*)self_)->in.self;
-	args_port_e0r* a = malloc(sizeof(args_port_e0r));
-	a->f=port_e0r;
-	a->self=self;
-	runtime_event(helper_port_e0r, a);
+	args_port_e0r a = {sizeof(args_port_e0r), port_e0r, self};
+	runtime_event(helper_port_e0r, &a);
 	return self->reply_IDataparam_Status;
 }
 
 static void callback_port_e(void* self_, int i) {
 	Dataparam* self = ((IDataparam*)self_)->in.self;
-	args_port_e* a = malloc(sizeof(args_port_e));
-	a->f=port_e;
-	a->self=self;
-	a->i=i;
-	runtime_event(helper_port_e, a);
+	args_port_e a = {sizeof(args_port_e), port_e, self, i};
+	runtime_event(helper_port_e, &a);
 }
 
 static int callback_port_er(void* self_, int i) {
 	Dataparam* self = ((IDataparam*)self_)->in.self;
-	args_port_er* a = malloc(sizeof(args_port_er));
-	a->f=port_er;
-	a->self=self;
-	a->i=i;
-	runtime_event(helper_port_er, a);
+	args_port_er a = {sizeof(args_port_er), port_er, self, i};
+	runtime_event(helper_port_er, &a);
 	return self->reply_IDataparam_Status;
 }
 
 static int callback_port_eer(void* self_, int i, int j) {
 	Dataparam* self = ((IDataparam*)self_)->in.self;
-	args_port_eer* a = malloc(sizeof(args_port_eer));
-	a->f=port_eer;
-	a->self=self;
-	a->i=i;
-	a->j=j;
-	runtime_event(helper_port_eer, a);
+	args_port_eer a = {sizeof(args_port_eer), port_eer, self, i, j};
+	runtime_event(helper_port_eer, &a);
 	return self->reply_IDataparam_Status;
 }
 
 static void callback_port_eo(void* self_, int* i) {
 	Dataparam* self = ((IDataparam*)self_)->in.self;
-	args_port_eo* a = malloc(sizeof(args_port_eo));
-	a->f=port_eo;
-	a->self=self;
-	a->i=i;
-	runtime_event(helper_port_eo, a);
+	args_port_eo a = {sizeof(args_port_eo), port_eo, self, i};
+	runtime_event(helper_port_eo, &a);
 }
 
 static void callback_port_eoo(void* self_, int* i, int* j) {
 	Dataparam* self = ((IDataparam*)self_)->in.self;
-	args_port_eoo* a = malloc(sizeof(args_port_eoo));
-	a->f=port_eoo;
-	a->self=self;
-	a->i=i;
-	a->j=j;
-	runtime_event(helper_port_eoo, a);
+	args_port_eoo a = {sizeof(args_port_eoo), port_eoo, self, i, j};
+	runtime_event(helper_port_eoo, &a);
 }
 
 static void callback_port_eio(void* self_, int i, int* j) {
 	Dataparam* self = ((IDataparam*)self_)->in.self;
-	args_port_eio* a = malloc(sizeof(args_port_eio));
-	a->f=port_eio;
-	a->self=self;
-	a->i=i;
-	a->j=j;
-	runtime_event(helper_port_eio, a);
+	args_port_eio a = {sizeof(args_port_eio), port_eio, self, i, j};
+	runtime_event(helper_port_eio, &a);
 }
 
 static void callback_port_eio2(void* self_, int* i) {
 	Dataparam* self = ((IDataparam*)self_)->in.self;
-	args_port_eio2* a = malloc(sizeof(args_port_eio2));
-	a->f=port_eio2;
-	a->self=self;
-	a->i=i;
-	runtime_event(helper_port_eio2, a);
+	args_port_eio2 a = {sizeof(args_port_eio2), port_eio2, self, i};
+	runtime_event(helper_port_eio2, &a);
 }
 
 static int callback_port_eor(void* self_, int* i) {
 	Dataparam* self = ((IDataparam*)self_)->in.self;
-	args_port_eor* a = malloc(sizeof(args_port_eor));
-	a->f=port_eor;
-	a->self=self;
-	a->i=i;
-	runtime_event(helper_port_eor, a);
+	args_port_eor a = {sizeof(args_port_eor), port_eor, self, i};
+	runtime_event(helper_port_eor, &a);
 	return self->reply_IDataparam_Status;
 }
 
 static int callback_port_eoor(void* self_, int* i, int* j) {
 	Dataparam* self = ((IDataparam*)self_)->in.self;
-	args_port_eoor* a = malloc(sizeof(args_port_eoor));
-	a->f=port_eoor;
-	a->self=self;
-	a->i=i;
-	a->j=j;
-	runtime_event(helper_port_eoor, a);
+	args_port_eoor a = {sizeof(args_port_eoor), port_eoor, self, i, j};
+	runtime_event(helper_port_eoor, &a);
 	return self->reply_IDataparam_Status;
 }
 
 static int callback_port_eior(void* self_, int i, int* j) {
 	Dataparam* self = ((IDataparam*)self_)->in.self;
-	args_port_eior* a = malloc(sizeof(args_port_eior));
-	a->f=port_eior;
-	a->self=self;
-	a->i=i;
-	a->j=j;
-	runtime_event(helper_port_eior, a);
+	args_port_eior a = {sizeof(args_port_eior), port_eior, self, i, j};
+	runtime_event(helper_port_eior, &a);
 	return self->reply_IDataparam_Status;
 }
 
 static int callback_port_eio2r(void* self_, int* i) {
 	Dataparam* self = ((IDataparam*)self_)->in.self;
-	args_port_eio2r* a = malloc(sizeof(args_port_eio2r));
-	a->f=port_eio2r;
-	a->self=self;
-	a->i=i;
-	runtime_event(helper_port_eio2r, a);
+	args_port_eio2r a = {sizeof(args_port_eio2r), port_eio2r, self, i};
+	runtime_event(helper_port_eio2r, &a);
 	return self->reply_IDataparam_Status;
 }
 

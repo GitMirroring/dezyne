@@ -26,14 +26,12 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
-#include <stdlib.h>
-#include <string.h>
 
 
 
 
 
-typedef struct {void (*f)(void*); testBoolean* self;} args_i_evt;
+typedef struct {int size;void (*f)(void*);testBoolean* self;} args_i_evt;
 
 
 
@@ -59,10 +57,8 @@ static void i_evt(void* self_) {
 
 static void callback_i_evt(void* self_) {
 	testBoolean* self = ((TestBool*)self_)->in.self;
-	args_i_evt* a = malloc(sizeof(args_i_evt));
-	a->f=i_evt;
-	a->self=self;
-	runtime_event(helper_i_evt, a);
+	args_i_evt a = {sizeof(args_i_evt), i_evt, self};
+	runtime_event(helper_i_evt, &a);
 }
 
 
