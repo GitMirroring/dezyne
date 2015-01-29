@@ -112,11 +112,15 @@
                           :expression expression
                           :statement statement)))))
 
-(define-method (make-field (model <model>) (state <literal>))
+(define-method (state-var (o <model>) (state <literal>))
   (define (type? v) (eq? ((compose .name .type) v) (.type state)))
-  (let* ((var (find type? (gom:variables model)))
-         (name (or (and=> var .name) 'state)))
-    (make <field> :identifier name :field (.field state))))
+  (find type? (gom:variables o)))
+
+(define-method (state-identifier (o <model>) (state <literal>))
+  (or (and=> (state-var o state) .name) 'state))
+
+(define-method (make-field (model <model>) (state <literal>))
+  (make <field> :identifier (state-identifier model state) :field (.field state)))
 
 (define-method (evaluate (model <model>) (state <literal>) o)
   (match o
@@ -238,9 +242,7 @@
 
 (define-method (eval-expression (model <model>) (state <literal>) o)
 
-  (define (type? identifier) (and-let* ((var (gom:variable model identifier)))
-                                       (eq? ((compose .name .type) var)
-                                            (.type state))))
+  (define (state-var? identifier) (eq? identifier (state-identifier model state)))
 
   (match o
 
@@ -255,7 +257,7 @@
 
     (($ <literal>) o)
 
-    (($ <field> (? type?) field)
+    (($ <field> (? state-var?) field)
      (eq? field (.field state)))
 
     (($ <field>) o)
@@ -308,7 +310,7 @@
         ((eq? expression #f) #f)
         (else (list 'group expression)))))
 
-    (($ <var> (? type?)) state)
+    (($ <var> (? state-var?)) state)
 
     (($ <var>) o)
 
