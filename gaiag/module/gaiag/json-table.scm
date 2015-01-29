@@ -2,7 +2,7 @@
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -146,7 +146,7 @@
      (($ <if> expression then else)
       (let ((then (json-next- model var next then))
             (else (json-next- model var next else)))
-        (add-state (add-state next then) else)))
+        (add-state then else)))
      (($ <illegal>) '())
      (_ next))))
 
