@@ -164,10 +164,10 @@
           (car guards)
           (retain-source-properties (compound) (make <compound> :elements guards)))))
 
-    (($ <guard> ($ <expression> value1) ($ <guard> ($ <expression> value2) statement))
+    (($ <guard> expression1 ($ <guard> expression2 statement))
      (and-let*
       ((statement (evaluate model state statement))
-       (value (eval-expression model state (list 'and value1 value2)))
+       (value (eval-expression model state (list 'and (.value expression1) (.value expression2))))
        (guard (make <guard> :expression (make <expression> :value value)
                     :statement statement)))
       (evaluate model state guard)))
