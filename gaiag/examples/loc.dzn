@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,13 +22,21 @@
 //
 // Code:
 
-interface loc
+interface iloc
 {
   in void e;
   out void a;
   behaviour
   {
-    bool e = 1; // type error for checking locations
-    bool f; //
+    on e: a;
+  }
+}
+
+component loc
+{
+  provides iloc i;
+  behaviour
+  {
+    on i.e: i.a;
   }
 }

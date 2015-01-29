@@ -68,7 +68,7 @@ clean:
 test: check
 check: compile
 	./test.sh </dev/null
-	$(MAKE) csp asserts c c++ pretty goops java javascript python simulate wfc
+	$(MAKE) csp asserts c c++ pretty loc goops java javascript python simulate wfc
 
 REGRESSION_SOURCES = $(shell cd examples/regression && ls *.dzn)
 WFC_SOURCES = $(shell cd examples/wfc && ls -1 *.dzn)
@@ -679,16 +679,19 @@ loc:
 	make -C .. build/asdgenerator
 	rm -rf out && mkdir -p out && cd out && ln -s ../examples .
 	cd out && ../../build/asdgenerator -L -l scm examples/loc.dzn
-	cat out/loc.scm
-	./gaiag -l annotate out/loc.scm
-	../build/asdgenerator examples/loc.dzn ||:
-	! ./gaiag -l resolve out/loc.scm
-	! ./gaiag -l resolve examples/loc.dzn
+	./gaiag out/loc.scm | sed -re 's@ [0-9]+[)]@ #f)@g' > out/om-loc.scm
+	$(diff) baseline/om-loc.scm out/om-loc.scm
+	./gaiag -l annotate examples/loc.dzn | sed -e s@[.]/@@g > out/loc.scm
+	$(diff) baseline/loc.scm out/loc.scm
+	./gaiag -j -l table out/om-loc.scm | ./scm2json | sed -e 's/,/,\n /g' > out/om-loc.json
+	$(diff) baseline/om-loc.json out/om-loc.json
+	./gaiag -j -l table examples/loc.dzn | ./scm2json | sed -e 's/,/,\n /g' > out/loc.json
+	$(diff) baseline/loc.json out/loc.json
 
 table:
-	./gaiag -j -l table examples/table.dzn | ./scm2json | sed -e 's/, /,\n /g'
+	./gaiag -j -l table examples/table.dzn | ./scm2json | sed -e 's/,/,\n /g'
 	@echo
-	./gaiag -j -l table examples/ISiren.dzn | ./scm2json | sed -e 's/, /,\n /g'
+	./gaiag -j -l table examples/ISiren.dzn | ./scm2json | sed -e 's/,/,\n /g'
 #	@echo
 #	./gaiag -l table examples/ISiren.dzn
 	@echo
