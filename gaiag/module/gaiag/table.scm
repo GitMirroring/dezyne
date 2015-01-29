@@ -95,7 +95,7 @@
       o))
 
 (define-method (state-table (model <model>) (state <literal>) (o <compound>))
-  (and-let* ((statement (sort-ons (flatten-compound (evaluate model state (flatten-compound o))))))
+  (and-let* ((statement (flatten-compound (evaluate model state (flatten-compound o)))))
             (let* ((field (make-field model state))
                    (expression (make <expression> :value (make-field model state)))
                    (expression2 (make <expression>
@@ -210,12 +210,6 @@
                     (expression (list 'not (.value expression))))
                    (retain-source-properties o (make <if> :expression expression :then then)))))
 
-    (_ o)))
-
-(define-method (sort-ons (o <ast>))
-  (match o
-    (($ <compound> (and (($ <on>) ..1) (get! ons)))
-     (make <compound> :elements (stable-sort (ons) <)))
     (_ o)))
 
 (define-method (annotate-otherwise (o <compound>) (guard <guard>))

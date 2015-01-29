@@ -475,11 +475,11 @@ interface ISiren
       on start:
         [running]
         running = !running;
-      on start:
-        [otherwise]
-        illegal;
       on stop:
         [running]
+        illegal;
+      on start:
+        [otherwise]
         illegal;
       on stop:
         [otherwise]
