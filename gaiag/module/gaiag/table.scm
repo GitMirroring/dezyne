@@ -122,6 +122,13 @@
 (define-method (make-field (model <model>) (state <literal>))
   (make <field> :identifier (state-identifier model state) :field (.field state)))
 
+(define-method (declarative? (o <statement>))
+  (or (is-a? o <guard>)
+      (is-a? o <on>)
+      (and (is-a? o <compound>)
+           (>0 (length (.elements o)))
+           (declarative? (car (.elements o))))))
+
 (define-method (evaluate (model <model>) (state <literal>) o)
   (match o
     (($ <compound> statements)
@@ -140,15 +147,18 @@
               (not (null? (.elements o)))
               (is-a? (car (.elements o)) <guard>))
          #f)
-        (else (retain-source-properties o (make <compound> :elements statements))))))
+        (else
+         (retain-source-properties o (make <compound> :elements 
+                                           (map (lambda (o) (evaluate model state o)) statements)))))))
 
     (($ <guard> expression ($ <on> triggers (and ($ <compound> (($ <guard> e s) ..1)) (get! compound))))
      (let ((ons
             (map (lambda (e s)
                    (let ((e (annotate-otherwise (compound) e)))
-                    (make <on>
-                      :triggers triggers
-                      :statement (make <guard> :expression e :statement s))))
+                     (evaluate model state
+                               (make <on>
+                                 :triggers triggers
+                                 :statement (make <guard> :expression e :statement s)))))
                  e s)))
        (evaluate model state (make <guard>
                                :expression expression
@@ -158,7 +168,7 @@
      (and-let*
       ((guard (make <guard> :expression expression :statement statement))
        (guard (evaluate model state guard)))
-      (make <on> :triggers triggers :statement guard)))
+      (evaluate model state (make <on> :triggers triggers :statement guard))))
 
     (($ <guard> expression (and ($ <compound> (and (($ <on>) ..1) (get! ons))) (get! compound)))
      (and-let*
@@ -166,14 +176,22 @@
        (guards (null-is-#f (filter identity (map (lambda (guard) (evaluate model state guard)) guards)))))
       (if (=1 (length guards))
           (car guards)
-          (retain-source-properties (compound) (make <compound> :elements guards)))))
+          (retain-source-properties 
+           (compound) 
+           (evaluate model state (make <compound> :elements guards))))))
 
     (($ <guard> expression1 ($ <guard> expression2 statement))
      (and-let*
       ((statement (evaluate model state statement))
        (value (eval-expression model state (list 'and (.value expression1) (.value expression2))))
-       (guard (make <guard> :expression (make <expression> :value value)
-                    :statement statement)))
+       (expression (cond ((and (equal? (.value expression1) value)
+                               (is-a? expression1 <otherwise>))
+                          expression1)
+                         ((and (equal? (.value expression2) value) 
+                               (is-a? expression2 <otherwise>))
+                          expression2)
+                         (else (make <expression> :value value))))
+       (guard (make <guard> :expression expression :statement statement)))
       (evaluate model state guard)))
 
     (($ <guard> expression statement)
@@ -183,14 +201,26 @@
                                 (make <expression> :value value)))
                 (statement (evaluate model state statement)))
                (match value
-                 (#t statement)
-                 (($ <literal>) (and (equal? value state) statement))
+                 (#t (if (declarative? statement) 
+                         statement
+                         (make <guard> :expression expression :statement statement)))
+                 (($ <literal>) (and (equal? value state) 
+                                     (if (declarative? statement) 
+                                         statement
+                                         (make <guard> :expression expression :statement statement))))
                  (_ (make <guard> :expression expression :statement statement)))))
 
     (($ <on> triggers ($ <guard> expression statement))
      (and-let* ((guard (.statement o))
-                (statement (evaluate model state guard)))
-               (make <on> :triggers triggers :statement statement)))
+                (value (eval-expression model state expression)))
+               (match value
+                 (#t (evaluate model state (make <on> :triggers triggers :statement statement)))
+                 (($ <literal>) (and (equal? value state)
+                                     (evaluate model state
+                                               (make <on>
+                                                 :triggers triggers
+                                                 :statement statement))))
+                 (_ (make <on> :triggers triggers :statement (evaluate model state guard))))))
 
     (($ <on> triggers statement)
      (and-let* ((statement (evaluate model state statement)))
@@ -238,6 +268,9 @@
       expression))
 
 (define-method (annotate-otherwise (o <compound>) (statement <statement>))
+  statement)
+
+(define-method (annotate-otherwise (o <compound>) (statement <boolean>))
   statement)
 
 (define-method (eval-expression (model <model>) (state <literal>) o)

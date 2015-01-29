@@ -177,10 +177,7 @@ interface i
     (on (triggers (trigger #f e (arguments)))
          (compound
            (action (trigger #f a (arguments)))
-           (assign s (expression (literal #f S busy))))))
-  (guard
-    (expression (field s busy))
-(compound)))))
+           (assign s (expression (literal #f S busy)))))))))
 
 (pass-if "table-expressions"
   (gom-pretty-noisy-equal?
