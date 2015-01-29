@@ -320,7 +320,7 @@ out/%.wfc: examples/wfc/%.dzn
 wfc: compile $(WFC_SOURCES:%.dzn=out/%.wfc)
 
 define .REGRESSION_REFINES
-rm -rf out && mkdir -p out && ln -s ../examples ../../webdemo ../templates out
+rm -rf out && mkdir -p out && ln -s ../examples ../templates out
 cd out && $(WFC) $< && $(shell pwd)/gaiag -l csp $<
 $(diff) baseline/$*.csp out || true
 @$(diff) baseline/$*.csp out | diffstat || true
@@ -339,7 +339,7 @@ out/%.refines: examples/regression/%.dzn
 	$(.REGRESSION_REFINES)
 
 define .WEBDEMO_REFINES
-rm -rf out && mkdir -p out/webdemo && ln -s ../../webdemo ../../templates ../../$(DEPTH)/webdemo/examples out/webdemo
+rm -rf out && mkdir -p out/webdemo && ln -s ../../$(DEPTH)/webapp/server/commands ../../templates out/webdemo && ln -s commands/examples out/webdemo/examples && ln -s commands out/webdemo/webdemo && ln -s ../$(DEPTH)/webapp out
 cd out/webdemo && $(TOPDIR)/$(BUILD)/asdgenerator -M -l scm $<
 cd out/webdemo && $(shell pwd)/gaiag -l csp $*.scm
 [ -f out/webdemo/$*.csp ] || mv out/webdemo/*.csp out/webdemo/$*.csp
@@ -353,16 +353,16 @@ endef
 
 #out/webdemo/%.update: UPDATE=||:; cp out/webdemo/$*.update baseline/webdemo/$*.refines; cp out/webdemo/$*.csp baseline/webdemo/
 out/webdemo/%.update: UPDATE=&& cp out/webdemo/$*.csp baseline/webdemo/
-out/webdemo/%.update: $(DEPTH)/webdemo/examples/%.dzn
+out/webdemo/%.update: $(DEPTH)/webapp/server/commands/examples/%.dzn
 	$(.WEBDEMO_REFINES)
 
-out/webdemo/%.refines: $(DEPTH)/webdemo/examples/%.dzn
+out/webdemo/%.refines: $(DEPTH)/webapp/server/commands/examples/%.dzn
 	$(.WEBDEMO_REFINES)
 out/webdemo/%.refines: examples/regression/%.dzn
 	$(.WEBDEMO_REFINES)
 
 define .ASSERT_REFINES
-rm -rf out && mkdir -p out/assert && ln -s ../../examples ../../webdemo ../templates ../../$(DEPTH)/examples/assert out/assert
+rm -rf out && mkdir -p out/assert && ln -s ../../examples ../templates ../../$(DEPTH)/examples/assert out/assert
 ln -s assert out/examples
 cd out/assert && $(TOPDIR)/$(BUILD)/asdgenerator -M -l scm $<
 cd out/assert && $(shell pwd)/gaiag -l csp $*.scm
@@ -395,7 +395,7 @@ csp-regression-update: $(CSP_SOURCES:%.dzn=out/%.update)
 BROKEN =\
  large-injection.dzn\
 
-DEMO_SOURCES = $(filter-out $(BROKEN) ,$(shell cd $(DEPTH)/webdemo/examples && ls *.dzn))
+DEMO_SOURCES = $(filter-out $(BROKEN) ,$(shell cd $(DEPTH)/webapp/server/commands/examples && ls *.dzn))
 csp-demo: $(DEMO_SOURCES:%.dzn=out/webdemo/%.refines)
 csp-demo-update: $(DEMO_SOURCES:%.dzn=out/webdemo/%.update)
 
@@ -415,12 +415,12 @@ simulate: compile
 	./gaiag -l simulate -t '(client.initialize result_t.OK result_t.OK client.perform_actions result_t.OK result_t.OK client.perform_actions result_t.NOK client.recover result_t.OK client.perform_actions)' examples/regression/Comp.dzn
 
 asserts:
-	rm -rf out && mkdir out && ln -s ../examples ../../webdemo ../templates out
+	rm -rf out && mkdir out
 	./gaiag -l asserts examples/regression/Alarm.dzn > out/alarm-asserts.scm
 	$(diff) baseline/alarm-asserts.scm out
 
 compare:
-	rm -rf out && mkdir out && ln -s ../examples ../../webdemo ../templates . out
+	rm -rf out && mkdir out && ln -s ../examples ../templates . out
 	make -C ../..
 	./gaiag -l resolve examples/regression/trip.dzn > out/gaiag-trip.scm
 	cd out && ../$(DEPTH)/build/asdgenerator -l scm examples/trip.dzn
@@ -641,14 +641,14 @@ goops: compile goops-alarm goops-regression
 .PHONY: glue
 
 glue:
-	rm -rf out && mkdir -p out && cd out && ln -s ../examples ../runtime/c++/* ../../webdemo ../templates .
+	rm -rf out && mkdir -p out && cd out && ln -s ../examples ../../webapp/server/commands ../runtime/c++/* ../templates .
 	cd out && for model in\
 	 	AlarmSystem\
 	 	Alarm\
 	 	Console\
 	 	Sensor\
 	 	Siren;\
-	 	do $(shell pwd)/gaiag -m $$model -l c++ webdemo/examples/AlarmSystem.dzn; done
+	 	do $(shell pwd)/gaiag -m $$model -l c++ commands/examples/AlarmSystem.dzn; done
 	ln -sf examples/glue.cc out
 	ln -sf examples/ISensorInterface.h out
 	ln -sf examples/SensorComponent.h out
@@ -694,7 +694,7 @@ table:
 	@echo
 	./gaiag -m Alarm -j -l table examples/Alarm.dzn | ./scm2json | sed -e 's/, /,\n /g'
 	@echo
-	./gaiag -m SensorMultiplexer4 -l table ../webdemo/examples/choiceexample.dzn # | ./scm2json | sed -e 's/, /,\n /g'
+	./gaiag -m SensorMultiplexer4 -l table ../webapp/server/commands/examples/choiceexample.dzn # | ./scm2json | sed -e 's/, /,\n /g'
 
 lts/%.svg: ../webdemo/examples/%.dzn
 	mkdir -p $(dir $@)
