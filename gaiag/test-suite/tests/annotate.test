@@ -17,7 +17,7 @@
 
 (define ast
   '(root (interface
-        loc
+        iloc
         (types)
         (events
           (in (signature (type void)) e)
@@ -25,61 +25,76 @@
         (behaviour
           #f
           (types)
-          (variables
-            (variable e (type bool) (expression 1))
-            (variable f (type bool) (expression)))
+          (variables)
           (functions)
-          (compound)))))
+          (compound
+            (on (triggers (trigger #f e))
+                (action (trigger #f a))))))
+      (component
+        loc
+        (ports (provides iloc i #f))
+        (behaviour
+          #f
+          (types)
+          (variables)
+          (functions)
+          (compound
+            (on (triggers (trigger i e))
+                (action (trigger i a))))))))
 
 (define locations
   '(locations
-        (root ((location "examples/loc.dzn" 0 0 0 #f)
-               interface
-               loc
-               ((location) types)
-               ((location)
-                events
-                ((location)
-                 in
-                 ((location)
-                  signature
-                  ((location "examples/loc.dzn" 2 5 21 #f)
+  (root ((location "examples/loc.dzn" 0 0 0 #f)
+         interface
+         iloc
+         (types)
+         (events
+           (in (signature
+                 ((location "examples/loc.dzn" 2 5 22 #f)
+                  type
+                  void))
+               e)
+           (out (signature
+                  ((location "examples/loc.dzn" 2 5 22 #f)
                    type
                    void))
-                 e)
-                ((location)
-                 out
-                 ((location)
-                  signature
-                  ((location "examples/loc.dzn" 2 5 21 #f)
-                   type
-                   void))
-                 a))
-               ((location)
-                behaviour
-                #f
-                ((location) types)
-                ((location)
-                 variables
-                 ((location "examples/loc.dzn" 6 11 70 #f)
-                  variable
-                  e
-                  ((location "examples/loc.dzn" 6 4 63 #f)
-                   type
-                   bool)
-                  ((location "examples/loc.dzn" 6 11 70 #f)
-                   expression
-                   1))
-                 ((location "examples/loc.dzn" 7 9 121 #f)
-                  variable
-                  f
-                  ((location "examples/loc.dzn" 6 4 63 #f)
-                   type
-                   bool)
-                  ((location "examples/loc.dzn" 7 10 122 #f)
-                   expression)))
-                ((location) functions)
-                ((location) compound))))))
+                a))
+         (behaviour
+           #f
+           (types)
+           (variables)
+           (functions)
+           (compound
+             ((location "examples/loc.dzn" 6 4 64 #f)
+              on
+              (triggers
+                ((location "examples/loc.dzn" 6 7 67 #f)
+                 trigger
+                 #f
+                 e))
+              ((location "examples/loc.dzn" 6 10 70 #f)
+               action
+               (trigger #f a))))))
+        ((location "examples/loc.dzn" 10 0 80 #f)
+         component
+         loc
+         (ports (provides iloc i #f))
+         (behaviour
+           #f
+           (types)
+           (variables)
+           (functions)
+           (compound
+             ((location "examples/loc.dzn" 15 4 135 #f)
+              on
+              (triggers
+                ((location "examples/loc.dzn" 15 7 138 #f)
+                 trigger
+                 i
+                 e))
+              ((location "examples/loc.dzn" 15 12 143 #f)
+               action
+               (trigger i a)))))))))
 
 (pass-if "annotate-extract"
   (pretty-noisy-equal?
