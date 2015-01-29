@@ -207,7 +207,7 @@
                        (($ <literal>) (and (equal? value state) then))
                        (_ (retain-source-properties o (make <if> :expression expression :then then :else else))))))
          (and-let* ((then (evaluate model state else))
-                    (expression (list 'not (.value expression))))
+                    (expression (list '! (.value expression))))
                    (retain-source-properties o (make <if> :expression expression :then then)))))
 
     (_ o)))
