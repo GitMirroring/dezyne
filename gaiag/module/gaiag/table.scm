@@ -144,7 +144,7 @@
                  e s)))
        (evaluate model state (make <guard>
                                :expression expression
-                               :statement (make <compound> :elements ons)))))
+                               :statement (retain-source-properties (compound) (make <compound> :elements ons))))))
 
     (($ <guard> expression ($ <on> triggers statement))
      (and-let*
@@ -152,13 +152,13 @@
        (guard (evaluate model state guard)))
       (make <on> :triggers triggers :statement guard)))
 
-    (($ <guard> expression ($ <compound> (and (($ <on>) ..1) (get! ons))))
+    (($ <guard> expression (and ($ <compound> (and (($ <on>) ..1) (get! ons))) (get! compound)))
      (and-let*
       ((guards (null-is-#f (filter identity (map (lambda (on) (make <guard> :expression expression :statement on)) (ons)))))
        (guards (null-is-#f (filter identity (map (lambda (guard) (evaluate model state guard)) guards)))))
       (if (=1 (length guards))
           (car guards)
-          (make <compound> :elements guards))))
+          (retain-source-properties (compound) (make <compound> :elements guards)))))
 
     (($ <guard> ($ <expression> value1) ($ <guard> ($ <expression> value2) statement))
      (and-let*
@@ -195,7 +195,7 @@
                (match value
                  (#t then)
                  (($ <literal>) (and (equal? value state) then))
-                 (_ (make <if> :expression expression :then then)))))
+                 (_ (retain-source-properties o (make <if> :expression expression :then then))))))
 
     (($ <if> expression then else)
      (or (and-let* ((value (eval-expression model state expression))
@@ -205,14 +205,12 @@
                      (match value
                        (#t then)
                        (($ <literal>) (and (equal? value state) then))
-                       (_ (make <if> :expression expression :then then :else else)))))
+                       (_ (retain-source-properties o (make <if> :expression expression :then then :else else))))))
          (and-let* ((then (evaluate model state else))
                     (expression (list 'not (.value expression))))
-                   (make <if> :expression expression :then then))))
+                   (retain-source-properties o (make <if> :expression expression :then then)))))
 
-    (_
-     ;;(stderr "ignoring:") (pretty-print (gom->list o) (current-error-port))
-     o)))
+    (_ o)))
 
 (define-method (sort-ons (o <ast>))
   (match o

@@ -317,6 +317,10 @@
     (Identifier dot Identifier semicolon) : (note-location `(action (trigger ,$1 ,$3)) @1)
     (action semicolon) : $1)
 
+   ;; (if-statement
+   ;;  (if lparen expression rparen statement) : (note-location `(if (expression ,$3) ,$5) @1)
+   ;;  (if lparen expression rparen statement else statement) : (note-location `(if (expression ,$3) ,$5 ,$7) @1))
+
    (if-statement
     (if lparen expression rparen statement) : `(if (expression ,$3) ,$5)
     (if lparen expression rparen statement else statement) : `(if (expression ,$3) ,$5 ,$7))
