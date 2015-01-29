@@ -132,6 +132,10 @@
                          (loop (cdr statements))))))))
        (cond
         ((=1 (length statements)) (car statements))
+        ((and (null? statements) 
+              (not (null? (.elements o)))
+              (is-a? (car (.elements o)) <guard>))
+         #f)
         (else (retain-source-properties o (make <compound> :elements statements))))))
 
     (($ <guard> expression ($ <on> triggers (and ($ <compound> (($ <guard> e s) ..1)) (get! compound))))
