@@ -605,3 +605,211 @@ interface I
   }
 }
 "))
+
+(pass-if "table-other-enum"
+  (diff-noisy-equal?
+   (pretty-state-table
+    (ast:resolve
+     (dezyne->ast
+#{
+interface I {
+ in void e;
+ 
+ behaviour {
+  enum S { init };
+  
+  S s = S.init;
+  S o = S.init;
+  
+  bool b = false;
+  
+  [o.init] {
+   on e: {
+    [b] { }
+    [otherwise] illegal;
+   }
+  }
+ }
+}
+#}
+)))
+"
+{
+  [s.init]
+  {
+    on e:
+       [o.init && b]
+       {
+       }
+     on e:
+       [o.init && !b]
+       illegal;
+   }
+}
+"))
+
+(pass-if "table-collapse-inevitable"
+  (diff-noisy-equal?
+   (pretty-state-table
+    (ast:resolve
+     (dezyne->ast
+#{
+interface I {
+  in void i;
+  in void o;
+  out void a;
+  
+  behaviour
+  {
+    enum S {init, setup, idle};
+    
+    S s = S.init;
+    
+    on o: s = S.init;
+    on i: {
+      [s.init] s = S.setup;
+      [otherwise] illegal;
+    }    
+    
+    on inevitable: {
+      [s.setup]
+      {
+        a;
+        s = S.idle;
+      }
+    }
+  }
+}
+#}
+)))
+"
+{
+  [s.init]
+  {
+    on o:
+    s = S.init;
+    on i:
+    s = S.setup;
+  }
+  [s.setup]
+  {
+    on o:
+    s = S.init;
+    on i:
+    illegal;
+    on inevitable:
+    {
+      a;
+      s = S.idle;
+    }
+  }
+  [s.idle]
+  {
+    on o:
+    s = S.init;
+    on i:
+    illegal;
+  }
+}
+"))
+
+(pass-if "table-expression-otherwise"
+  (diff-noisy-equal?
+   (pretty-state-table
+    (ast:resolve
+     (dezyne->ast
+#{
+interface I {
+ in void e;
+ 
+ behaviour {
+  enum S { init };
+  bool b = false;
+  
+  S s = S.init;
+  S o = S.init;
+  
+  [o.init] {
+   on e: {
+    [b] { }
+    [otherwise] illegal;
+   }
+  }
+ }
+}
+#}
+)))
+"
+{
+  [s.init]
+  {
+    on e:
+    [o.init && b]
+    {
+    }
+    on e:
+    [o.init && !b]
+    illegal;
+  }
+}
+"))
+
+(pass-if "table-non-det"
+  (diff-noisy-equal?
+   (pretty-state-table
+    (ast:resolve
+     (dezyne->ast
+#{interface IDevice {
+ 
+ enum Res { OK, NOK };
+ 
+ in Res turnon();
+ in void turnoff();
+
+ behaviour {
+  
+  enum State { Off, On };
+  State s = State.Off;
+  
+  on turnon: {
+   [s.Off] {
+    reply(Res.OK);
+    s = State.On;
+   }
+   [s.Off] reply(Res.NOK);
+   [s.On] illegal;
+  }
+  on turnoff: {
+   [s.Off] illegal;
+   [s.On] s = State.Off;    
+  }
+ }
+}
+#}
+)))
+"
+{
+  [s.Off]
+  {
+    on turnon:
+    {
+      [true]
+      {
+        reply(Res.OK);
+        s = State.On;
+      }
+      [true]
+      reply(Res.NOK);
+    }
+    on turnoff:
+    illegal;
+  }
+  [s.On]
+  {
+    on turnon:
+    illegal;
+    on turnoff:
+    s = State.Off;
+  }
+}
+"))

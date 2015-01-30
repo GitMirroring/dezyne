@@ -17,6 +17,7 @@
   )
 
 (define json-callback (@@ (gaiag json-table) json-callback))
+(define json-next (@@ (gaiag json-table) json-next))
 
 (pass-if "json-table-first-dummy-test"
          #t)
@@ -85,3 +86,61 @@ interface I
            i-ast
            (make <call> :identifier 'g))
           '()))
+
+(define if-ast
+ (gom:interface
+  (ast:resolve
+   (dezyne->ast
+#{
+interface I {
+  in void e;
+  in void f;
+  in void g;
+  behaviour 
+    {
+      enum S {one, two, three};
+      S s = S.one;
+      bool b = false;
+      void fun () {
+        fun ();
+      }
+      on e: if (b) {} else s = S.three;
+      on f: if (b) s = S.two; else s = S.three;
+      on g: if (b) fun(); else s = S.three;
+    }
+}
+#}))))
+
+(pass-if "json-table-if-one"
+         (pretty-noisy-equal?
+          (json-next
+           if-ast 
+           's
+           (make <field> :identifier 's :field 'one) 
+           (ast->gom
+            '(if (expression (var b)) 
+                 (compound)
+                 (assign s (expression (literal #f S three))))))
+          '(s.one s.three)))
+
+(pass-if "json-table-if-two"
+         (pretty-noisy-equal?
+          (json-next
+           if-ast 
+           's
+           (make <field> :identifier 's :field 'one) 
+           (ast->gom
+            '(if (expression (var b))
+                 (assign s (expression (literal #f S two)))
+                 (assign s (expression (literal #f S three))))))
+          '(s.two s.three)))
+
+(pass-if "json-table-if-recursive"
+         (pretty-noisy-equal?
+          (json-next
+           if-ast 
+           's
+           (make <field> :identifier 's :field 'one) 
+           (ast->gom
+            '(if (expression (var b)) (call fun (arguments) #f) (assign s (expression (literal #f S three))))))
+          '(s.one s.three)))
