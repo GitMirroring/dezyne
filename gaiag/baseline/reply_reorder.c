@@ -29,12 +29,12 @@
 
 
 
-typedef struct {int size;void (*f)(void*);reply_reorder* self;} args_p_busy;
-typedef struct {int size;void (*f)(void*);reply_reorder* self;} args_p_finish;
+typedef struct {int size;void (*f)(Provides*);reply_reorder* self;} args_p_busy;
+typedef struct {int size;void (*f)(Provides*);reply_reorder* self;} args_p_finish;
 
 
-typedef struct {int size;void (*f)(void*);reply_reorder* self;} args_p_start;
-typedef struct {int size;void (*f)(void*);reply_reorder* self;} args_r_pong;
+typedef struct {int size;void (*f)(reply_reorder*);reply_reorder* self;} args_p_start;
+typedef struct {int size;void (*f)(reply_reorder*);reply_reorder* self;} args_r_pong;
 
 
 static void helper_p_busy(void* args) {
@@ -65,15 +65,13 @@ static void helper_r_pong(void* args) {
 
 
 
-static void p_start(void* self_) {
-	reply_reorder* self = self_;
+static void p_start(reply_reorder* self) {
 	(void)self;
 	DZN_LOG("reply_reorder.p_start");
 	self->r->in.ping(self->r);
 }
 
-static void r_pong(void* self_) {
-	reply_reorder* self = self_;
+static void r_pong(reply_reorder* self) {
 	(void)self;
 	DZN_LOG("reply_reorder.r_pong");
 	if (self->first) {
@@ -92,15 +90,13 @@ static void r_pong(void* self_) {
 	}
 }
 
-static void callback_p_start(void* self_) {
-	reply_reorder* self = ((Provides*)self_)->in.self;
-	args_p_start a = {sizeof(args_p_start), p_start, self};
+static void callback_p_start(Provides* self) {
+	args_p_start a = {sizeof(args_p_start), p_start, self->in.self};
 	runtime_event(helper_p_start, &a);
 }
 
-static void callback_r_pong(void* self_) {
-	reply_reorder* self = ((Requires*)self_)->out.self;
-	args_r_pong a = {sizeof(args_r_pong), r_pong, self};
+static void callback_r_pong(Requires* self) {
+	args_r_pong a = {sizeof(args_r_pong), r_pong, self->out.self};
 	runtime_event(helper_r_pong, &a);
 }
 

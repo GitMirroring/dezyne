@@ -29,12 +29,12 @@
 
 
 
-typedef struct {int size;void (*f)(void*);requires_twice* self;} args_p_a;
+typedef struct {int size;void (*f)(irequires_twice*);requires_twice* self;} args_p_a;
 
 
-typedef struct {int size;void (*f)(void*);requires_twice* self;} args_p_e;
-typedef struct {int size;void (*f)(void*);requires_twice* self;} args_once_a;
-typedef struct {int size;void (*f)(void*);requires_twice* self;} args_twice_a;
+typedef struct {int size;void (*f)(requires_twice*);requires_twice* self;} args_p_e;
+typedef struct {int size;void (*f)(requires_twice*);requires_twice* self;} args_once_a;
+typedef struct {int size;void (*f)(requires_twice*);requires_twice* self;} args_twice_a;
 
 
 static void helper_p_a(void* args) {
@@ -65,24 +65,21 @@ static void helper_twice_a(void* args) {
 
 
 
-static void p_e(void* self_) {
-	requires_twice* self = self_;
+static void p_e(requires_twice* self) {
 	(void)self;
 	DZN_LOG("requires_twice.p_e");
 	self->once->in.e(self->once);
 	self->twice->in.e(self->twice);
 }
 
-static void once_a(void* self_) {
-	requires_twice* self = self_;
+static void once_a(requires_twice* self) {
 	(void)self;
 	DZN_LOG("requires_twice.once_a");
 	{
 	}
 }
 
-static void twice_a(void* self_) {
-	requires_twice* self = self_;
+static void twice_a(requires_twice* self) {
 	(void)self;
 	DZN_LOG("requires_twice.twice_a");
 	{
@@ -91,21 +88,18 @@ static void twice_a(void* self_) {
 	}
 }
 
-static void callback_p_e(void* self_) {
-	requires_twice* self = ((irequires_twice*)self_)->in.self;
-	args_p_e a = {sizeof(args_p_e), p_e, self};
+static void callback_p_e(irequires_twice* self) {
+	args_p_e a = {sizeof(args_p_e), p_e, self->in.self};
 	runtime_event(helper_p_e, &a);
 }
 
-static void callback_once_a(void* self_) {
-	requires_twice* self = ((irequires_twice*)self_)->out.self;
-	args_once_a a = {sizeof(args_once_a), once_a, self};
+static void callback_once_a(irequires_twice* self) {
+	args_once_a a = {sizeof(args_once_a), once_a, self->out.self};
 	runtime_event(helper_once_a, &a);
 }
 
-static void callback_twice_a(void* self_) {
-	requires_twice* self = ((irequires_twice*)self_)->out.self;
-	args_twice_a a = {sizeof(args_twice_a), twice_a, self};
+static void callback_twice_a(irequires_twice* self) {
+	args_twice_a a = {sizeof(args_twice_a), twice_a, self->out.self};
 	runtime_event(helper_twice_a, &a);
 }
 

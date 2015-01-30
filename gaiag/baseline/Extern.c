@@ -31,7 +31,7 @@
 
 
 
-typedef struct {int size;void (*f)(void*);Extern* self;} args_port_e;
+typedef struct {int size;void (*f)(Extern*);Extern* self;} args_port_e;
 
 
 
@@ -47,16 +47,14 @@ static void helper_port_e(void* args) {
 
 
 
-static void port_e(void* self_) {
-	Extern* self = self_;
+static void port_e(Extern* self) {
 	(void)self;
 	DZN_LOG("Extern.port_e");
 	assert(false);
 }
 
-static void callback_port_e(void* self_) {
-	Extern* self = ((IExtern*)self_)->in.self;
-	args_port_e a = {sizeof(args_port_e), port_e, self};
+static void callback_port_e(IExtern* self) {
+	args_port_e a = {sizeof(args_port_e), port_e, self->in.self};
 	runtime_event(helper_port_e, &a);
 }
 

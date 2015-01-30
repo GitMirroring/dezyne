@@ -29,12 +29,12 @@
 
 
 
-typedef struct {int size;void (*f)(void*);Sensor* self;} args_sensor_triggered;
-typedef struct {int size;void (*f)(void*);Sensor* self;} args_sensor_disabled;
+typedef struct {int size;void (*f)(ISensor*);Sensor* self;} args_sensor_triggered;
+typedef struct {int size;void (*f)(ISensor*);Sensor* self;} args_sensor_disabled;
 
 
-typedef struct {int size;void (*f)(void*);Sensor* self;} args_sensor_enable;
-typedef struct {int size;void (*f)(void*);Sensor* self;} args_sensor_disable;
+typedef struct {int size;void (*f)(Sensor*);Sensor* self;} args_sensor_enable;
+typedef struct {int size;void (*f)(Sensor*);Sensor* self;} args_sensor_disable;
 
 
 static void helper_sensor_triggered(void* args) {
@@ -65,31 +65,27 @@ static void helper_sensor_disable(void* args) {
 
 
 
-static void sensor_enable(void* self_) {
-	Sensor* self = self_;
+static void sensor_enable(Sensor* self) {
 	(void)self;
 	DZN_LOG("Sensor.sensor_enable");
 	{
 	}
 }
 
-static void sensor_disable(void* self_) {
-	Sensor* self = self_;
+static void sensor_disable(Sensor* self) {
 	(void)self;
 	DZN_LOG("Sensor.sensor_disable");
 	{
 	}
 }
 
-static void callback_sensor_enable(void* self_) {
-	Sensor* self = ((ISensor*)self_)->in.self;
-	args_sensor_enable a = {sizeof(args_sensor_enable),sensor_enable,self};
+static void callback_sensor_enable(ISensor* self) {
+	args_sensor_enable a = {sizeof(args_sensor_enable), sensor_enable, self->in.self};
 	runtime_event(helper_sensor_enable, &a);
 }
 
-static void callback_sensor_disable(void* self_) {
-	Sensor* self = ((ISensor*)self_)->in.self;
-	args_sensor_disable a = {sizeof(args_sensor_disable),sensor_disable,self};
+static void callback_sensor_disable(ISensor* self) {
+	args_sensor_disable a = {sizeof(args_sensor_disable), sensor_disable, self->in.self};
 	runtime_event(helper_sensor_disable, &a);
 }
 

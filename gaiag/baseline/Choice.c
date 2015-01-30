@@ -33,10 +33,10 @@ typedef enum {
 } Choice_State;
 
 
-typedef struct {int size;void (*f)(void*);Choice* self;} args_c_a;
+typedef struct {int size;void (*f)(IChoice*);Choice* self;} args_c_a;
 
 
-typedef struct {int size;void (*f)(void*);Choice* self;} args_c_e;
+typedef struct {int size;void (*f)(Choice*);Choice* self;} args_c_e;
 
 
 static void helper_c_a(void* args) {
@@ -57,8 +57,7 @@ static void helper_c_e(void* args) {
 
 
 
-static void c_e(void* self_) {
-	Choice* self = self_;
+static void c_e(Choice* self) {
 	(void)self;
 	DZN_LOG("Choice.c_e");
 	if (self->s == Choice_State_Off) {
@@ -84,9 +83,8 @@ static void c_e(void* self_) {
 	}
 }
 
-static void callback_c_e(void* self_) {
-	Choice* self = ((IChoice*)self_)->in.self;
-	args_c_e a = {sizeof(args_c_e), c_e, self};
+static void callback_c_e(IChoice* self) {
+	args_c_e a = {sizeof(args_c_e), c_e, self->in.self};
 	runtime_event(helper_c_e, &a);
 }
 

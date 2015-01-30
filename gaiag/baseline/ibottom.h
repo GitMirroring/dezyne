@@ -26,18 +26,20 @@
 
 
 
-typedef struct {
+typedef struct ibottom ibottom;
+
+struct ibottom{
 	struct {
 		void* self;
-		void (*e)(void* self );
+		void (*e)(ibottom* self);
 
 	} in;
 
 	struct {
 		void* self;
-		void (*f) (void* self );
+		void (*f) (ibottom* self);
 
 	} out;
-} ibottom;
+};
 
 #endif // DEZYNE_IBOTTOM_H

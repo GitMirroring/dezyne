@@ -29,12 +29,12 @@
 
 
 
-typedef struct {int size;void (*f)(void*);expressions* self;} args_i_a;
-typedef struct {int size;void (*f)(void*);expressions* self;} args_i_hi;
-typedef struct {int size;void (*f)(void*);expressions* self;} args_i_lo;
+typedef struct {int size;void (*f)(I*);expressions* self;} args_i_a;
+typedef struct {int size;void (*f)(I*);expressions* self;} args_i_hi;
+typedef struct {int size;void (*f)(I*);expressions* self;} args_i_lo;
 
 
-typedef struct {int size;void (*f)(void*);expressions* self;} args_i_e;
+typedef struct {int size;void (*f)(expressions*);expressions* self;} args_i_e;
 
 
 static void helper_i_a(void* args) {
@@ -65,8 +65,7 @@ static void helper_i_e(void* args) {
 
 
 
-static void i_e(void* self_) {
-	expressions* self = self_;
+static void i_e(expressions* self) {
 	(void)self;
 	DZN_LOG("expressions.i_e");
 	if (true) if (self->state == 0) {
@@ -100,9 +99,8 @@ static void i_e(void* self_) {
 	}
 }
 
-static void callback_i_e(void* self_) {
-	expressions* self = ((I*)self_)->in.self;
-	args_i_e a = {sizeof(args_i_e), i_e, self};
+static void callback_i_e(I* self) {
+	args_i_e a = {sizeof(args_i_e), i_e, self->in.self};
 	runtime_event(helper_i_e, &a);
 }
 

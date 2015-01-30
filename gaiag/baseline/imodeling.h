@@ -25,18 +25,20 @@
 
 
 
-typedef struct {
+typedef struct imodeling imodeling;
+
+struct imodeling{
 	struct {
 		void* self;
-		void (*e)(void* self );
+		void (*e)(imodeling* self);
 
 	} in;
 
 	struct {
 		void* self;
-		void (*f) (void* self );
+		void (*f) (imodeling* self);
 
 	} out;
-} imodeling;
+};
 
 #endif // DEZYNE_IMODELING_H

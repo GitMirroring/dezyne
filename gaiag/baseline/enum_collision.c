@@ -31,8 +31,8 @@
 
 
 
-typedef struct {int size;int (*f)(void*);enum_collision* self;} args_i_foo;
-typedef struct {int size;int (*f)(void*);enum_collision* self;} args_i_bar;
+typedef struct {int size;int (*f)(enum_collision*);enum_collision* self;} args_i_foo;
+typedef struct {int size;int (*f)(enum_collision*);enum_collision* self;} args_i_bar;
 
 
 
@@ -53,34 +53,32 @@ static void helper_i_bar(void* args) {
 
 
 
-static int i_foo(void* self_) {
-	enum_collision* self = self_;
+static int i_foo(enum_collision* self) {
 	(void)self;
 	DZN_LOG("enum_collision.i_foo");
 	self->reply_ienum_collision_Retval1 = ienum_collision_Retval1_OK;
 	return self->reply_ienum_collision_Retval1;
 }
 
-static int i_bar(void* self_) {
-	enum_collision* self = self_;
+static int i_bar(enum_collision* self) {
 	(void)self;
 	DZN_LOG("enum_collision.i_bar");
 	self->reply_ienum_collision_Retval2 = ienum_collision_Retval2_NOK;
 	return self->reply_ienum_collision_Retval2;
 }
 
-static int callback_i_foo(void* self_) {
-	enum_collision* self = ((ienum_collision*)self_)->in.self;
-	args_i_foo a = {sizeof(args_i_foo), i_foo, self};
+static int callback_i_foo(ienum_collision* self) {
+	args_i_foo a = {sizeof(args_i_foo), i_foo, self->in.self};
 	runtime_event(helper_i_foo, &a);
-	return self->reply_ienum_collision_Retval1;
+	enum_collision* self_ = self->in.self;
+	return self_->reply_ienum_collision_Retval1;
 }
 
-static int callback_i_bar(void* self_) {
-	enum_collision* self = ((ienum_collision*)self_)->in.self;
-	args_i_bar a = {sizeof(args_i_bar), i_bar, self};
+static int callback_i_bar(ienum_collision* self) {
+	args_i_bar a = {sizeof(args_i_bar), i_bar, self->in.self};
 	runtime_event(helper_i_bar, &a);
-	return self->reply_ienum_collision_Retval2;
+	enum_collision* self_ = self->in.self;
+	return self_->reply_ienum_collision_Retval2;
 }
 
 

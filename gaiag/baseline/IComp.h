@@ -28,12 +28,14 @@ typedef enum {
 } IComp_result_t;
 
 
-typedef struct {
+typedef struct IComp IComp;
+
+struct IComp{
 	struct {
 		void* self;
-		int (*initialize)(void* self );
-		int (*recover)(void* self );
-		int (*perform_actions)(void* self );
+		int (*initialize)(IComp* self);
+		int (*recover)(IComp* self);
+		int (*perform_actions)(IComp* self);
 
 	} in;
 
@@ -41,6 +43,6 @@ typedef struct {
 		void* self;
 
 	} out;
-} IComp;
+};
 
 #endif // DEZYNE_ICOMP_H

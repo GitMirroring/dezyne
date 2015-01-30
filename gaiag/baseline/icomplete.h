@@ -25,18 +25,20 @@
 
 
 
-typedef struct {
+typedef struct icomplete icomplete;
+
+struct icomplete{
 	struct {
 		void* self;
-		void (*e)(void* self );
+		void (*e)(icomplete* self);
 
 	} in;
 
 	struct {
 		void* self;
-		void (*a) (void* self );
+		void (*a) (icomplete* self);
 
 	} out;
-} icomplete;
+};
 
 #endif // DEZYNE_ICOMPLETE_H

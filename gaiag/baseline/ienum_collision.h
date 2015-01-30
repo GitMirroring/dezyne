@@ -31,11 +31,13 @@ typedef enum {
 } ienum_collision_Retval2;
 
 
-typedef struct {
+typedef struct ienum_collision ienum_collision;
+
+struct ienum_collision{
 	struct {
 		void* self;
-		int (*foo)(void* self );
-		int (*bar)(void* self );
+		int (*foo)(ienum_collision* self);
+		int (*bar)(ienum_collision* self);
 
 	} in;
 
@@ -43,6 +45,6 @@ typedef struct {
 		void* self;
 
 	} out;
-} ienum_collision;
+};
 
 #endif // DEZYNE_IENUM_COLLISION_H

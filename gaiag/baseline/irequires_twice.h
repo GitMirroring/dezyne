@@ -25,18 +25,20 @@
 
 
 
-typedef struct {
+typedef struct irequires_twice irequires_twice;
+
+struct irequires_twice{
 	struct {
 		void* self;
-		void (*e)(void* self );
+		void (*e)(irequires_twice* self);
 
 	} in;
 
 	struct {
 		void* self;
-		void (*a) (void* self );
+		void (*a) (irequires_twice* self);
 
 	} out;
-} irequires_twice;
+};
 
 #endif // DEZYNE_IREQUIRES_TWICE_H

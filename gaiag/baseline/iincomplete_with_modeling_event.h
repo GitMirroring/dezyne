@@ -25,18 +25,20 @@
 
 
 
-typedef struct {
+typedef struct iincomplete_with_modeling_event iincomplete_with_modeling_event;
+
+struct iincomplete_with_modeling_event{
 	struct {
 		void* self;
-		void (*e)(void* self );
+		void (*e)(iincomplete_with_modeling_event* self);
 
 	} in;
 
 	struct {
 		void* self;
-		void (*a) (void* self );
+		void (*a) (iincomplete_with_modeling_event* self);
 
 	} out;
-} iincomplete_with_modeling_event;
+};
 
 #endif // DEZYNE_IINCOMPLETE_WITH_MODELING_EVENT_H

@@ -35,6 +35,6 @@ void Injected_init(Injected *self, locator* dezyne_locator) {
 	logger_init(&self->l, local_locator);
 	middle_init(&self->m, local_locator);
 	bottom_init(&self->b, local_locator);
-	self->t = self->m.t; 
+	self->t = self->m.t;
 	CONNECT(self->b.b, self->m.b);
 }

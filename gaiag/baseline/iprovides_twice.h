@@ -25,18 +25,20 @@
 
 
 
-typedef struct {
+typedef struct iprovides_twice iprovides_twice;
+
+struct iprovides_twice{
 	struct {
 		void* self;
-		void (*foo)(void* self );
+		void (*foo)(iprovides_twice* self);
 
 	} in;
 
 	struct {
 		void* self;
-		void (*bar) (void* self );
+		void (*bar) (iprovides_twice* self);
 
 	} out;
-} iprovides_twice;
+};
 
 #endif // DEZYNE_IPROVIDES_TWICE_H

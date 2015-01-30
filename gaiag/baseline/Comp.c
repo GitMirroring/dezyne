@@ -34,9 +34,9 @@ typedef enum {
 
 
 
-typedef struct {int size;int (*f)(void*);Comp* self;} args_client_initialize;
-typedef struct {int size;int (*f)(void*);Comp* self;} args_client_recover;
-typedef struct {int size;int (*f)(void*);Comp* self;} args_client_perform_actions;
+typedef struct {int size;int (*f)(Comp*);Comp* self;} args_client_initialize;
+typedef struct {int size;int (*f)(Comp*);Comp* self;} args_client_recover;
+typedef struct {int size;int (*f)(Comp*);Comp* self;} args_client_perform_actions;
 
 
 
@@ -62,8 +62,7 @@ static void helper_client_perform_actions(void* args) {
 
 
 
-static int client_initialize(void* self_) {
-	Comp* self = self_;
+static int client_initialize(Comp* self) {
 	(void)self;
 	DZN_LOG("Comp.client_initialize");
 	if (self->s == Comp_State_Uninitialized) {
@@ -89,8 +88,7 @@ static int client_initialize(void* self_) {
 	return self->reply_IComp_result_t;
 }
 
-static int client_recover(void* self_) {
-	Comp* self = self_;
+static int client_recover(Comp* self) {
 	(void)self;
 	DZN_LOG("Comp.client_recover");
 	if (self->s == Comp_State_Uninitialized) {
@@ -113,8 +111,7 @@ static int client_recover(void* self_) {
 	return self->reply_IComp_result_t;
 }
 
-static int client_perform_actions(void* self_) {
-	Comp* self = self_;
+static int client_perform_actions(Comp* self) {
 	(void)self;
 	DZN_LOG("Comp.client_perform_actions");
 	if (self->s == Comp_State_Uninitialized) {
@@ -140,25 +137,25 @@ static int client_perform_actions(void* self_) {
 	return self->reply_IComp_result_t;
 }
 
-static int callback_client_initialize(void* self_) {
-	Comp* self = ((IComp*)self_)->in.self;
-	args_client_initialize a = {sizeof(args_client_initialize), client_initialize, self};
+static int callback_client_initialize(IComp* self) {
+	args_client_initialize a = {sizeof(args_client_initialize), client_initialize, self->in.self};
 	runtime_event(helper_client_initialize, &a);
-	return self->reply_IComp_result_t;
+	Comp* self_ = self->in.self;
+	return self_->reply_IComp_result_t;
 }
 
-static int callback_client_recover(void* self_) {
-	Comp* self = ((IComp*)self_)->in.self;
-	args_client_recover a = {sizeof(args_client_recover), client_recover, self};
+static int callback_client_recover(IComp* self) {
+	args_client_recover a = {sizeof(args_client_recover), client_recover, self->in.self};
 	runtime_event(helper_client_recover, &a);
-	return self->reply_IComp_result_t;
+	Comp* self_ = self->in.self;
+	return self_->reply_IComp_result_t;
 }
 
-static int callback_client_perform_actions(void* self_) {
-	Comp* self = ((IComp*)self_)->in.self;
-	args_client_perform_actions a = {sizeof(args_client_perform_actions), client_perform_actions, self};
+static int callback_client_perform_actions(IComp* self) {
+	args_client_perform_actions a = {sizeof(args_client_perform_actions), client_perform_actions, self->in.self};
 	runtime_event(helper_client_perform_actions, &a);
-	return self->reply_IComp_result_t;
+	Comp* self_ = self->in.self;
+	return self_->reply_IComp_result_t;
 }
 
 

@@ -28,7 +28,7 @@
 
 #include <stdio.h>
 
-void f(void* self)
+void f(itop* self)
 {
   (void)self;
   printf("f\n");

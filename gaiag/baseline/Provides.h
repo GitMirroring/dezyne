@@ -25,19 +25,21 @@
 
 
 
-typedef struct {
+typedef struct Provides Provides;
+
+struct Provides{
 	struct {
 		void* self;
-		void (*start)(void* self );
+		void (*start)(Provides* self);
 
 	} in;
 
 	struct {
 		void* self;
-		void (*busy) (void* self );
-		void (*finish) (void* self );
+		void (*busy) (Provides* self);
+		void (*finish) (Provides* self);
 
 	} out;
-} Provides;
+};
 
 #endif // DEZYNE_PROVIDES_H

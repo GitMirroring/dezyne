@@ -32,10 +32,10 @@ typedef enum {
 } sugar_Enum;
 
 
-typedef struct {int size;void (*f)(void*);sugar* self;} args_i_a;
+typedef struct {int size;void (*f)(I*);sugar* self;} args_i_a;
 
 
-typedef struct {int size;void (*f)(void*);sugar* self;} args_i_e;
+typedef struct {int size;void (*f)(sugar*);sugar* self;} args_i_e;
 
 
 static void helper_i_a(void* args) {
@@ -56,8 +56,7 @@ static void helper_i_e(void* args) {
 
 
 
-static void i_e(void* self_) {
-	sugar* self = self_;
+static void i_e(sugar* self) {
 	(void)self;
 	DZN_LOG("sugar.i_e");
 	if (self->s == sugar_Enum_False) if (self->s == sugar_Enum_False) {
@@ -73,9 +72,8 @@ static void i_e(void* self_) {
 	}
 }
 
-static void callback_i_e(void* self_) {
-	sugar* self = ((I*)self_)->in.self;
-	args_i_e a = {sizeof(args_i_e), i_e, self};
+static void callback_i_e(I* self) {
+	args_i_e a = {sizeof(args_i_e), i_e, self->in.self};
 	runtime_event(helper_i_e, &a);
 }
 

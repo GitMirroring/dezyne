@@ -31,7 +31,7 @@
 
 
 
-typedef struct {int size;void (*f)(void*);testBoolean* self;} args_i_evt;
+typedef struct {int size;void (*f)(testBoolean*);testBoolean* self;} args_i_evt;
 
 
 
@@ -47,17 +47,15 @@ static void helper_i_evt(void* args) {
 
 
 
-static void i_evt(void* self_) {
-	testBoolean* self = self_;
+static void i_evt(testBoolean* self) {
 	(void)self;
 	DZN_LOG("testBoolean.i_evt");
 	if (true) {
 	}
 }
 
-static void callback_i_evt(void* self_) {
-	testBoolean* self = ((TestBool*)self_)->in.self;
-	args_i_evt a = {sizeof(args_i_evt), i_evt, self};
+static void callback_i_evt(TestBool* self) {
+	args_i_evt a = {sizeof(args_i_evt), i_evt, self->in.self};
 	runtime_event(helper_i_evt, &a);
 }
 

@@ -28,33 +28,35 @@ typedef enum {
 } IDataparam_Status;
 
 
-typedef struct {
+typedef struct IDataparam IDataparam;
+
+struct IDataparam{
 	struct {
 		void* self;
-		void (*e0)(void* self );
-		int (*e0r)(void* self );
-		void (*e)(void* self , int i);
-		int (*er)(void* self , int i);
-		int (*eer)(void* self , int i, int j);
-		void (*eo)(void* self , int* i);
-		void (*eoo)(void* self , int* i, int* j);
-		void (*eio)(void* self , int i, int* j);
-		void (*eio2)(void* self , int* i);
-		int (*eor)(void* self , int* i);
-		int (*eoor)(void* self , int* i, int* j);
-		int (*eior)(void* self , int i, int* j);
-		int (*eio2r)(void* self , int* i);
+		void (*e0)(IDataparam* self);
+		int (*e0r)(IDataparam* self);
+		void (*e)(IDataparam* self, int i);
+		int (*er)(IDataparam* self, int i);
+		int (*eer)(IDataparam* self, int i, int j);
+		void (*eo)(IDataparam* self, int* i);
+		void (*eoo)(IDataparam* self, int* i, int* j);
+		void (*eio)(IDataparam* self, int i, int* j);
+		void (*eio2)(IDataparam* self, int* i);
+		int (*eor)(IDataparam* self, int* i);
+		int (*eoor)(IDataparam* self, int* i, int* j);
+		int (*eior)(IDataparam* self, int i, int* j);
+		int (*eio2r)(IDataparam* self, int* i);
 
 	} in;
 
 	struct {
 		void* self;
-		void (*a0) (void* self );
-		void (*a) (void* self , int i);
-		void (*aa) (void* self , int i, int j);
-		void (*a6) (void* self , int a0, int a1, int a2, int a3, int a4, int a5);
+		void (*a0) (IDataparam* self);
+		void (*a) (IDataparam* self, int i);
+		void (*aa) (IDataparam* self, int i, int j);
+		void (*a6) (IDataparam* self, int a0, int a1, int a2, int a3, int a4, int a5);
 
 	} out;
-} IDataparam;
+};
 
 #endif // DEZYNE_IDATAPARAM_H

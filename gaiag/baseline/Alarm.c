@@ -32,14 +32,14 @@ typedef enum {
 } Alarm_States;
 
 
-typedef struct {int size;void (*f)(void*);Alarm* self;} args_console_detected;
-typedef struct {int size;void (*f)(void*);Alarm* self;} args_console_deactivated;
+typedef struct {int size;void (*f)(IConsole*);Alarm* self;} args_console_detected;
+typedef struct {int size;void (*f)(IConsole*);Alarm* self;} args_console_deactivated;
 
 
-typedef struct {int size;void (*f)(void*);Alarm* self;} args_console_arm;
-typedef struct {int size;void (*f)(void*);Alarm* self;} args_console_disarm;
-typedef struct {int size;void (*f)(void*);Alarm* self;} args_sensor_triggered;
-typedef struct {int size;void (*f)(void*);Alarm* self;} args_sensor_disabled;
+typedef struct {int size;void (*f)(Alarm*);Alarm* self;} args_console_arm;
+typedef struct {int size;void (*f)(Alarm*);Alarm* self;} args_console_disarm;
+typedef struct {int size;void (*f)(Alarm*);Alarm* self;} args_sensor_triggered;
+typedef struct {int size;void (*f)(Alarm*);Alarm* self;} args_sensor_disabled;
 
 
 static void helper_console_detected(void* args) {
@@ -80,8 +80,7 @@ static void helper_sensor_disabled(void* args) {
 
 
 
-static void console_arm(void* self_) {
-	Alarm* self = self_;
+static void console_arm(Alarm* self) {
 	(void)self;
 	DZN_LOG("Alarm.console_arm");
 	if (self->state == Alarm_States_Disarmed) {
@@ -99,8 +98,7 @@ static void console_arm(void* self_) {
 	}
 }
 
-static void console_disarm(void* self_) {
-	Alarm* self = self_;
+static void console_disarm(Alarm* self) {
 	(void)self;
 	DZN_LOG("Alarm.console_disarm");
 	if (self->state == Alarm_States_Disarmed) {
@@ -121,8 +119,7 @@ static void console_disarm(void* self_) {
 	}
 }
 
-static void sensor_triggered(void* self_) {
-	Alarm* self = self_;
+static void sensor_triggered(Alarm* self) {
 	(void)self;
 	DZN_LOG("Alarm.sensor_triggered");
 	if (self->state == Alarm_States_Disarmed) {
@@ -130,7 +127,7 @@ static void sensor_triggered(void* self_) {
 	}
 	else if (self->state == Alarm_States_Armed) {
 		{
-			args_console_detected a = {sizeof(args_console_detected),self->console->out.detected,self};
+			args_console_detected a = {sizeof(args_console_detected), self->console->out.detected, self};
 			runtime_defer(self->rt, self, helper_console_detected, &a);
 		}
 		self->siren->in.turnon(self->siren);
@@ -146,8 +143,7 @@ static void sensor_triggered(void* self_) {
 	}
 }
 
-static void sensor_disabled(void* self_) {
-	Alarm* self = self_;
+static void sensor_disabled(Alarm* self) {
 	(void)self;
 	DZN_LOG("Alarm.sensor_disabled");
 	if (self->state == Alarm_States_Disarmed) {
@@ -159,7 +155,7 @@ static void sensor_disabled(void* self_) {
 	else if (self->state == Alarm_States_Disarming) {
 		if (self->sounding) {
 			{
-				args_console_deactivated a = {sizeof(args_console_deactivated),self->console->out.deactivated,self};
+				args_console_deactivated a = {sizeof(args_console_deactivated), self->console->out.deactivated, self};
 				runtime_defer(self->rt, self, helper_console_deactivated, &a);
 			}
 			self->siren->in.turnoff(self->siren);
@@ -168,7 +164,7 @@ static void sensor_disabled(void* self_) {
 		}
 		else {
 			{
-				args_console_deactivated a = {sizeof(args_console_deactivated),self->console->out.deactivated,self};
+				args_console_deactivated a = {sizeof(args_console_deactivated), self->console->out.deactivated, self};
 				runtime_defer(self->rt, self, helper_console_deactivated, &a);
 			}
 			self->state = Alarm_States_Disarmed;
@@ -179,27 +175,23 @@ static void sensor_disabled(void* self_) {
 	}
 }
 
-static void callback_console_arm(void* self_) {
-	Alarm* self = ((IConsole*)self_)->in.self;
-	args_console_arm a = {sizeof(args_console_arm),console_arm,self};
+static void callback_console_arm(IConsole* self) {
+	args_console_arm a = {sizeof(args_console_arm), console_arm, self->in.self};
 	runtime_event(helper_console_arm, &a);
 }
 
-static void callback_console_disarm(void* self_) {
-	Alarm* self = ((IConsole*)self_)->in.self;
-	args_console_disarm a = {sizeof(args_console_disarm),console_disarm,self};
+static void callback_console_disarm(IConsole* self) {
+	args_console_disarm a = {sizeof(args_console_disarm), console_disarm, self->in.self};
 	runtime_event(helper_console_disarm, &a);
 }
 
-static void callback_sensor_triggered(void* self_) {
-	Alarm* self = ((ISensor*)self_)->out.self;
-	args_sensor_triggered a = {sizeof(args_sensor_triggered),sensor_triggered,self};
+static void callback_sensor_triggered(ISensor* self) {
+	args_sensor_triggered a = {sizeof(args_sensor_triggered), sensor_triggered, self->out.self};
 	runtime_event(helper_sensor_triggered, &a);
 }
 
-static void callback_sensor_disabled(void* self_) {
-	Alarm* self = ((ISensor*)self_)->out.self;
-	args_sensor_disabled a = {sizeof(args_sensor_disabled),sensor_disabled,self};
+static void callback_sensor_disabled(ISensor* self) {
+	args_sensor_disabled a = {sizeof(args_sensor_disabled), sensor_disabled, self->out.self};
 	runtime_event(helper_sensor_disabled, &a);
 }
 

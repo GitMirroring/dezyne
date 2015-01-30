@@ -32,7 +32,7 @@
 
 
 
-typedef struct {int size;void (*f)(void*);logger* self;} args_log_log;
+typedef struct {int size;void (*f)(logger*);logger* self;} args_log_log;
 
 
 
@@ -48,17 +48,15 @@ static void helper_log_log(void* args) {
 
 
 
-static void log_log(void* self_) {
-	logger* self = self_;
+static void log_log(logger* self) {
 	(void)self;
 	DZN_LOG("logger.log_log");
 	{
 	}
 }
 
-static void callback_log_log(void* self_) {
-	logger* self = ((ilogger*)self_)->in.self;
-	args_log_log a = {sizeof(args_log_log), log_log, self};
+static void callback_log_log(ilogger* self) {
+	args_log_log a = {sizeof(args_log_log), log_log, self->in.self};
 	runtime_event(helper_log_log, &a);
 }
 

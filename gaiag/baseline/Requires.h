@@ -25,18 +25,20 @@
 
 
 
-typedef struct {
+typedef struct Requires Requires;
+
+struct Requires{
 	struct {
 		void* self;
-		void (*ping)(void* self );
+		void (*ping)(Requires* self);
 
 	} in;
 
 	struct {
 		void* self;
-		void (*pong) (void* self );
+		void (*pong) (Requires* self);
 
 	} out;
-} Requires;
+};
 
 #endif // DEZYNE_REQUIRES_H

@@ -28,13 +28,15 @@ typedef enum {
 } IDevice_result_t;
 
 
-typedef struct {
+typedef struct IDevice IDevice;
+
+struct IDevice{
 	struct {
 		void* self;
-		int (*initialize)(void* self );
-		int (*calibrate)(void* self );
-		int (*perform_action1)(void* self );
-		int (*perform_action2)(void* self );
+		int (*initialize)(IDevice* self);
+		int (*calibrate)(IDevice* self);
+		int (*perform_action1)(IDevice* self);
+		int (*perform_action2)(IDevice* self);
 
 	} in;
 
@@ -42,6 +44,6 @@ typedef struct {
 		void* self;
 
 	} out;
-} IDevice;
+};
 
 #endif // DEZYNE_IDEVICE_H

@@ -9,14 +9,14 @@
 #(map
   (lambda (port)
     (map (define-on model port #{
-  typedef struct {int size;#return-type  (*f)(void*#comma #((->join ", ") parameter-types));#.model * self;#((->join ";") parameter-list)#(if (null? parameter-list) "" ";")} args_#port _#event;
+  typedef struct {int size;#return-type  (*f)(#interface *#comma #((->join ", ") parameter-types));#.model * self;#((->join ";") parameter-list)#(if (null? parameter-list) "" ";")} args_#port _#event;
 #}) (filter (negate (gom:dir-matches? port)) (gom:events port))))
   (filter gom:provides? (gom:ports model)))
 
 #(map
   (lambda (port)
     (map (define-on model port #{
-  typedef struct {int size;#return-type  (*f)(void*#comma #((->join ", ") parameter-types));#.model * self;#((->join ";") parameter-list)#(if (null? parameter-list) "" ";")} args_#port _#event;
+  typedef struct {int size;#return-type  (*f)(#.model *#comma #((->join ", ") parameter-types));#.model * self;#((->join ";") parameter-list)#(if (null? parameter-list) "" ";")} args_#port _#event;
 #}) (filter (gom:dir-matches? port) (gom:events port))))
   (gom:ports model))
 
@@ -55,8 +55,7 @@
 #(map
   (lambda (port)
     (map (define-on model port #{
-  static #return-type  #port _#event(void* self_#comma #parameters) {
-    #.model * self = self_;
+  static #return-type  #port _#event(#.model * self#comma #parameters) {
     (void)self;
     DZN_LOG("#.model .#port _#event");
     #statement #
@@ -69,12 +68,11 @@
 (map
   (lambda (port)
     (map (define-on model port #{
-  static #return-type  callback_#port _#event(void* self_#comma #parameters) {
-    #.model * self = ((#interface *)self_)->#direction .self;
-    args_#port _#event  a = {sizeof(args_#port _#event), #port _#event , self#comma #(comma-space-join argument-list)};
+  static #return-type  callback_#port _#event(#interface * self#comma #parameters) {
+    args_#port _#event  a = {sizeof(args_#port _#event), #port _#event , self->#direction .self#comma #(comma-space-join argument-list)};
    runtime_event(helper_#port _#event , &a);
 #(if (not (eq? type 'void))
-(list "    return self->reply_" reply-type "_" reply-name ";\n"
+(list .model "* self_ = self->" direction ".self;\n  return self_->reply_" reply-type "_" reply-name ";\n"
       )) }
 
 #}) (filter (gom:dir-matches? port) (gom:events port))))

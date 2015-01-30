@@ -28,10 +28,12 @@ typedef enum {
 } U_Status;
 
 
-typedef struct {
+typedef struct U U;
+
+struct U{
 	struct {
 		void* self;
-		int (*what)(void* self );
+		int (*what)(U* self);
 
 	} in;
 
@@ -39,6 +41,6 @@ typedef struct {
 		void* self;
 
 	} out;
-} U;
+};
 
 #endif // DEZYNE_U_H

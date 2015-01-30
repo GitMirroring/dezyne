@@ -25,18 +25,20 @@
 
 
 
-typedef struct {
+typedef struct iincomplete iincomplete;
+
+struct iincomplete{
 	struct {
 		void* self;
-		void (*e)(void* self );
+		void (*e)(iincomplete* self);
 
 	} in;
 
 	struct {
 		void* self;
-		void (*a) (void* self );
+		void (*a) (iincomplete* self);
 
 	} out;
-} iincomplete;
+};
 
 #endif // DEZYNE_IINCOMPLETE_H

@@ -29,10 +29,10 @@
 
 
 
-typedef struct {int size;void (*f)(void*);argument2* self;} args_i_f;
+typedef struct {int size;void (*f)(I*);argument2* self;} args_i_f;
 
 
-typedef struct {int size;void (*f)(void*);argument2* self;} args_i_e;
+typedef struct {int size;void (*f)(argument2*);argument2* self;} args_i_e;
 
 
 static void helper_i_f(void* args) {
@@ -62,8 +62,7 @@ static bool g(argument2* self, bool ga, bool gb) {
 }
 
 
-static void i_e(void* self_) {
-	argument2* self = self_;
+static void i_e(argument2* self) {
 	(void)self;
 	DZN_LOG("argument2.i_e");
 	if (true) self->b = !(self->b);
@@ -77,9 +76,8 @@ static void i_e(void* self_) {
 	}
 }
 
-static void callback_i_e(void* self_) {
-	argument2* self = ((I*)self_)->in.self;
-	args_i_e a = {sizeof(args_i_e), i_e, self};
+static void callback_i_e(I* self) {
+	args_i_e a = {sizeof(args_i_e), i_e, self->in.self};
 	runtime_event(helper_i_e, &a);
 }
 

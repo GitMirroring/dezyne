@@ -28,10 +28,12 @@ typedef enum {
 } IReply7_E;
 
 
-typedef struct {
+typedef struct IReply7 IReply7;
+
+struct IReply7{
 	struct {
 		void* self;
-		int (*foo)(void* self );
+		int (*foo)(IReply7* self);
 
 	} in;
 
@@ -39,6 +41,6 @@ typedef struct {
 		void* self;
 
 	} out;
-} IReply7;
+};
 
 #endif // DEZYNE_IREPLY7_H

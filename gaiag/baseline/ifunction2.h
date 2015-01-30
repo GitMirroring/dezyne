@@ -25,20 +25,22 @@
 
 
 
-typedef struct {
+typedef struct ifunction2 ifunction2;
+
+struct ifunction2{
 	struct {
 		void* self;
-		void (*a)(void* self );
-		void (*b)(void* self );
+		void (*a)(ifunction2* self);
+		void (*b)(ifunction2* self);
 
 	} in;
 
 	struct {
 		void* self;
-		void (*c) (void* self );
-		void (*d) (void* self );
+		void (*c) (ifunction2* self);
+		void (*d) (ifunction2* self);
 
 	} out;
-} ifunction2;
+};
 
 #endif // DEZYNE_IFUNCTION2_H

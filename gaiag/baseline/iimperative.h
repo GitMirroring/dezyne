@@ -25,20 +25,22 @@
 
 
 
-typedef struct {
+typedef struct iimperative iimperative;
+
+struct iimperative{
 	struct {
 		void* self;
-		void (*e)(void* self );
+		void (*e)(iimperative* self);
 
 	} in;
 
 	struct {
 		void* self;
-		void (*f) (void* self );
-		void (*g) (void* self );
-		void (*h) (void* self );
+		void (*f) (iimperative* self);
+		void (*g) (iimperative* self);
+		void (*h) (iimperative* self);
 
 	} out;
-} iimperative;
+};
 
 #endif // DEZYNE_IIMPERATIVE_H

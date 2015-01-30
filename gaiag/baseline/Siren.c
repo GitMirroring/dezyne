@@ -31,8 +31,8 @@
 
 
 
-typedef struct {int size;void (*f)(void*);Siren* self;} args_siren_turnon;
-typedef struct {int size;void (*f)(void*);Siren* self;} args_siren_turnoff;
+typedef struct {int size;void (*f)(Siren*);Siren* self;} args_siren_turnon;
+typedef struct {int size;void (*f)(Siren*);Siren* self;} args_siren_turnoff;
 
 
 
@@ -53,31 +53,27 @@ static void helper_siren_turnoff(void* args) {
 
 
 
-static void siren_turnon(void* self_) {
-	Siren* self = self_;
+static void siren_turnon(Siren* self) {
 	(void)self;
 	DZN_LOG("Siren.siren_turnon");
 	{
 	}
 }
 
-static void siren_turnoff(void* self_) {
-	Siren* self = self_;
+static void siren_turnoff(Siren* self) {
 	(void)self;
 	DZN_LOG("Siren.siren_turnoff");
 	{
 	}
 }
 
-static void callback_siren_turnon(void* self_) {
-	Siren* self = ((ISiren*)self_)->in.self;
-	args_siren_turnon a = {sizeof(args_siren_turnon),siren_turnon,self};
+static void callback_siren_turnon(ISiren* self) {
+	args_siren_turnon a = {sizeof(args_siren_turnon), siren_turnon, self->in.self};
 	runtime_event(helper_siren_turnon, &a);
 }
 
-static void callback_siren_turnoff(void* self_) {
-	Siren* self = ((ISiren*)self_)->in.self;
-	args_siren_turnoff a = {sizeof(args_siren_turnoff),siren_turnoff,self};
+static void callback_siren_turnoff(ISiren* self) {
+	args_siren_turnoff a = {sizeof(args_siren_turnoff), siren_turnoff, self->in.self};
 	runtime_event(helper_siren_turnoff, &a);
 }
 

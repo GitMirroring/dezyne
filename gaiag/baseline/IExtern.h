@@ -25,10 +25,12 @@
 
 
 
-typedef struct {
+typedef struct IExtern IExtern;
+
+struct IExtern{
 	struct {
 		void* self;
-		void (*e)(void* self );
+		void (*e)(IExtern* self);
 
 	} in;
 
@@ -36,6 +38,6 @@ typedef struct {
 		void* self;
 
 	} out;
-} IExtern;
+};
 
 #endif // DEZYNE_IEXTERN_H

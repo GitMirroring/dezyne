@@ -29,25 +29,25 @@
 
 
 
-typedef struct {int size;void (*f)(void*);Dataparam* self;} args_port_a0;
-typedef struct {int size;void (*f)(void*, int);Dataparam* self;int i;} args_port_a;
-typedef struct {int size;void (*f)(void*, int, int);Dataparam* self;int i;int j;} args_port_aa;
-typedef struct {int size;void (*f)(void*, int, int, int, int, int, int);Dataparam* self;int a0;int a1;int a2;int a3;int a4;int a5;} args_port_a6;
+typedef struct {int size;void (*f)(IDataparam*);Dataparam* self;} args_port_a0;
+typedef struct {int size;void (*f)(IDataparam*, int);Dataparam* self;int i;} args_port_a;
+typedef struct {int size;void (*f)(IDataparam*, int, int);Dataparam* self;int i;int j;} args_port_aa;
+typedef struct {int size;void (*f)(IDataparam*, int, int, int, int, int, int);Dataparam* self;int a0;int a1;int a2;int a3;int a4;int a5;} args_port_a6;
 
 
-typedef struct {int size;void (*f)(void*);Dataparam* self;} args_port_e0;
-typedef struct {int size;int (*f)(void*);Dataparam* self;} args_port_e0r;
-typedef struct {int size;void (*f)(void*, int);Dataparam* self;int i;} args_port_e;
-typedef struct {int size;int (*f)(void*, int);Dataparam* self;int i;} args_port_er;
-typedef struct {int size;int (*f)(void*, int, int);Dataparam* self;int i;int j;} args_port_eer;
-typedef struct {int size;void (*f)(void*, int*);Dataparam* self;int* i;} args_port_eo;
-typedef struct {int size;void (*f)(void*, int*, int*);Dataparam* self;int* i;int* j;} args_port_eoo;
-typedef struct {int size;void (*f)(void*, int, int*);Dataparam* self;int i;int* j;} args_port_eio;
-typedef struct {int size;void (*f)(void*, int*);Dataparam* self;int* i;} args_port_eio2;
-typedef struct {int size;int (*f)(void*, int*);Dataparam* self;int* i;} args_port_eor;
-typedef struct {int size;int (*f)(void*, int*, int*);Dataparam* self;int* i;int* j;} args_port_eoor;
-typedef struct {int size;int (*f)(void*, int, int*);Dataparam* self;int i;int* j;} args_port_eior;
-typedef struct {int size;int (*f)(void*, int*);Dataparam* self;int* i;} args_port_eio2r;
+typedef struct {int size;void (*f)(Dataparam*);Dataparam* self;} args_port_e0;
+typedef struct {int size;int (*f)(Dataparam*);Dataparam* self;} args_port_e0r;
+typedef struct {int size;void (*f)(Dataparam*, int);Dataparam* self;int i;} args_port_e;
+typedef struct {int size;int (*f)(Dataparam*, int);Dataparam* self;int i;} args_port_er;
+typedef struct {int size;int (*f)(Dataparam*, int, int);Dataparam* self;int i;int j;} args_port_eer;
+typedef struct {int size;void (*f)(Dataparam*, int*);Dataparam* self;int* i;} args_port_eo;
+typedef struct {int size;void (*f)(Dataparam*, int*, int*);Dataparam* self;int* i;int* j;} args_port_eoo;
+typedef struct {int size;void (*f)(Dataparam*, int, int*);Dataparam* self;int i;int* j;} args_port_eio;
+typedef struct {int size;void (*f)(Dataparam*, int*);Dataparam* self;int* i;} args_port_eio2;
+typedef struct {int size;int (*f)(Dataparam*, int*);Dataparam* self;int* i;} args_port_eor;
+typedef struct {int size;int (*f)(Dataparam*, int*, int*);Dataparam* self;int* i;int* j;} args_port_eoor;
+typedef struct {int size;int (*f)(Dataparam*, int, int*);Dataparam* self;int i;int* j;} args_port_eior;
+typedef struct {int size;int (*f)(Dataparam*, int*);Dataparam* self;int* i;} args_port_eio2r;
 
 
 static void helper_port_a0(void* args) {
@@ -161,8 +161,7 @@ static int xfunx(Dataparam* self, int xi, int xj) {
 }
 
 
-static void port_e0(void* self_) {
-	Dataparam* self = self_;
+static void port_e0(Dataparam* self) {
 	(void)self;
 	DZN_LOG("Dataparam.port_e0");
 	{
@@ -171,8 +170,7 @@ static void port_e0(void* self_) {
 	}
 }
 
-static int port_e0r(void* self_) {
-	Dataparam* self = self_;
+static int port_e0r(Dataparam* self) {
 	(void)self;
 	DZN_LOG("Dataparam.port_e0r");
 	{
@@ -183,8 +181,7 @@ static int port_e0r(void* self_) {
 	return self->reply_IDataparam_Status;
 }
 
-static void port_e(void* self_, int i) {
-	Dataparam* self = self_;
+static void port_e(Dataparam* self, int i) {
 	(void)self;
 	DZN_LOG("Dataparam.port_e");
 	{
@@ -204,8 +201,7 @@ static void port_e(void* self_, int i) {
 	}
 }
 
-static int port_er(void* self_, int i) {
-	Dataparam* self = self_;
+static int port_er(Dataparam* self, int i) {
 	(void)self;
 	DZN_LOG("Dataparam.port_er");
 	{
@@ -230,8 +226,7 @@ static int port_er(void* self_, int i) {
 	return self->reply_IDataparam_Status;
 }
 
-static int port_eer(void* self_, int i, int j) {
-	Dataparam* self = self_;
+static int port_eer(Dataparam* self, int i, int j) {
 	(void)self;
 	DZN_LOG("Dataparam.port_eer");
 	int s = IDataparam_Status_No;
@@ -247,38 +242,33 @@ static int port_eer(void* self_, int i, int j) {
 	return self->reply_IDataparam_Status;
 }
 
-static void port_eo(void* self_, int* i) {
-	Dataparam* self = self_;
+static void port_eo(Dataparam* self, int* i) {
 	(void)self;
 	DZN_LOG("Dataparam.port_eo");
 	*i = 234;
 }
 
-static void port_eoo(void* self_, int* i, int* j) {
-	Dataparam* self = self_;
+static void port_eoo(Dataparam* self, int* i, int* j) {
 	(void)self;
 	DZN_LOG("Dataparam.port_eoo");
 	*i = 123;
 	*j = 456;
 }
 
-static void port_eio(void* self_, int i, int* j) {
-	Dataparam* self = self_;
+static void port_eio(Dataparam* self, int i, int* j) {
 	(void)self;
 	DZN_LOG("Dataparam.port_eio");
 	*j = i;
 }
 
-static void port_eio2(void* self_, int* i) {
-	Dataparam* self = self_;
+static void port_eio2(Dataparam* self, int* i) {
 	(void)self;
 	DZN_LOG("Dataparam.port_eio2");
 	int t = *i;
 	*i = t + 123;
 }
 
-static int port_eor(void* self_, int* i) {
-	Dataparam* self = self_;
+static int port_eor(Dataparam* self, int* i) {
 	(void)self;
 	DZN_LOG("Dataparam.port_eor");
 	*i = 234;
@@ -286,8 +276,7 @@ static int port_eor(void* self_, int* i) {
 	return self->reply_IDataparam_Status;
 }
 
-static int port_eoor(void* self_, int* i, int* j) {
-	Dataparam* self = self_;
+static int port_eoor(Dataparam* self, int* i, int* j) {
 	(void)self;
 	DZN_LOG("Dataparam.port_eoor");
 	*i = 123;
@@ -296,8 +285,7 @@ static int port_eoor(void* self_, int* i, int* j) {
 	return self->reply_IDataparam_Status;
 }
 
-static int port_eior(void* self_, int i, int* j) {
-	Dataparam* self = self_;
+static int port_eior(Dataparam* self, int i, int* j) {
 	(void)self;
 	DZN_LOG("Dataparam.port_eior");
 	*j = i;
@@ -305,8 +293,7 @@ static int port_eior(void* self_, int i, int* j) {
 	return self->reply_IDataparam_Status;
 }
 
-static int port_eio2r(void* self_, int* i) {
-	Dataparam* self = self_;
+static int port_eio2r(Dataparam* self, int* i) {
 	(void)self;
 	DZN_LOG("Dataparam.port_eio2r");
 	int t = *i;
@@ -315,89 +302,83 @@ static int port_eio2r(void* self_, int* i) {
 	return self->reply_IDataparam_Status;
 }
 
-static void callback_port_e0(void* self_) {
-	Dataparam* self = ((IDataparam*)self_)->in.self;
-	args_port_e0 a = {sizeof(args_port_e0), port_e0, self};
+static void callback_port_e0(IDataparam* self) {
+	args_port_e0 a = {sizeof(args_port_e0), port_e0, self->in.self};
 	runtime_event(helper_port_e0, &a);
 }
 
-static int callback_port_e0r(void* self_) {
-	Dataparam* self = ((IDataparam*)self_)->in.self;
-	args_port_e0r a = {sizeof(args_port_e0r), port_e0r, self};
+static int callback_port_e0r(IDataparam* self) {
+	args_port_e0r a = {sizeof(args_port_e0r), port_e0r, self->in.self};
 	runtime_event(helper_port_e0r, &a);
-	return self->reply_IDataparam_Status;
+	Dataparam* self_ = self->in.self;
+	return self_->reply_IDataparam_Status;
 }
 
-static void callback_port_e(void* self_, int i) {
-	Dataparam* self = ((IDataparam*)self_)->in.self;
-	args_port_e a = {sizeof(args_port_e), port_e, self, i};
+static void callback_port_e(IDataparam* self, int i) {
+	args_port_e a = {sizeof(args_port_e), port_e, self->in.self, i};
 	runtime_event(helper_port_e, &a);
 }
 
-static int callback_port_er(void* self_, int i) {
-	Dataparam* self = ((IDataparam*)self_)->in.self;
-	args_port_er a = {sizeof(args_port_er), port_er, self, i};
+static int callback_port_er(IDataparam* self, int i) {
+	args_port_er a = {sizeof(args_port_er), port_er, self->in.self, i};
 	runtime_event(helper_port_er, &a);
-	return self->reply_IDataparam_Status;
+	Dataparam* self_ = self->in.self;
+	return self_->reply_IDataparam_Status;
 }
 
-static int callback_port_eer(void* self_, int i, int j) {
-	Dataparam* self = ((IDataparam*)self_)->in.self;
-	args_port_eer a = {sizeof(args_port_eer), port_eer, self, i, j};
+static int callback_port_eer(IDataparam* self, int i, int j) {
+	args_port_eer a = {sizeof(args_port_eer), port_eer, self->in.self, i, j};
 	runtime_event(helper_port_eer, &a);
-	return self->reply_IDataparam_Status;
+	Dataparam* self_ = self->in.self;
+	return self_->reply_IDataparam_Status;
 }
 
-static void callback_port_eo(void* self_, int* i) {
-	Dataparam* self = ((IDataparam*)self_)->in.self;
-	args_port_eo a = {sizeof(args_port_eo), port_eo, self, i};
+static void callback_port_eo(IDataparam* self, int* i) {
+	args_port_eo a = {sizeof(args_port_eo), port_eo, self->in.self, i};
 	runtime_event(helper_port_eo, &a);
 }
 
-static void callback_port_eoo(void* self_, int* i, int* j) {
-	Dataparam* self = ((IDataparam*)self_)->in.self;
-	args_port_eoo a = {sizeof(args_port_eoo), port_eoo, self, i, j};
+static void callback_port_eoo(IDataparam* self, int* i, int* j) {
+	args_port_eoo a = {sizeof(args_port_eoo), port_eoo, self->in.self, i, j};
 	runtime_event(helper_port_eoo, &a);
 }
 
-static void callback_port_eio(void* self_, int i, int* j) {
-	Dataparam* self = ((IDataparam*)self_)->in.self;
-	args_port_eio a = {sizeof(args_port_eio), port_eio, self, i, j};
+static void callback_port_eio(IDataparam* self, int i, int* j) {
+	args_port_eio a = {sizeof(args_port_eio), port_eio, self->in.self, i, j};
 	runtime_event(helper_port_eio, &a);
 }
 
-static void callback_port_eio2(void* self_, int* i) {
-	Dataparam* self = ((IDataparam*)self_)->in.self;
-	args_port_eio2 a = {sizeof(args_port_eio2), port_eio2, self, i};
+static void callback_port_eio2(IDataparam* self, int* i) {
+	args_port_eio2 a = {sizeof(args_port_eio2), port_eio2, self->in.self, i};
 	runtime_event(helper_port_eio2, &a);
 }
 
-static int callback_port_eor(void* self_, int* i) {
-	Dataparam* self = ((IDataparam*)self_)->in.self;
-	args_port_eor a = {sizeof(args_port_eor), port_eor, self, i};
+static int callback_port_eor(IDataparam* self, int* i) {
+	args_port_eor a = {sizeof(args_port_eor), port_eor, self->in.self, i};
 	runtime_event(helper_port_eor, &a);
-	return self->reply_IDataparam_Status;
+	Dataparam* self_ = self->in.self;
+	return self_->reply_IDataparam_Status;
 }
 
-static int callback_port_eoor(void* self_, int* i, int* j) {
-	Dataparam* self = ((IDataparam*)self_)->in.self;
-	args_port_eoor a = {sizeof(args_port_eoor), port_eoor, self, i, j};
+static int callback_port_eoor(IDataparam* self, int* i, int* j) {
+	args_port_eoor a = {sizeof(args_port_eoor), port_eoor, self->in.self, i, j};
 	runtime_event(helper_port_eoor, &a);
-	return self->reply_IDataparam_Status;
+	Dataparam* self_ = self->in.self;
+	return self_->reply_IDataparam_Status;
 }
 
-static int callback_port_eior(void* self_, int i, int* j) {
-	Dataparam* self = ((IDataparam*)self_)->in.self;
-	args_port_eior a = {sizeof(args_port_eior), port_eior, self, i, j};
+static int callback_port_eior(IDataparam* self, int i, int* j) {
+	args_port_eior a = {sizeof(args_port_eior), port_eior, self->in.self, i, j};
 	runtime_event(helper_port_eior, &a);
-	return self->reply_IDataparam_Status;
+	Dataparam* self_ = self->in.self;
+	return self_->reply_IDataparam_Status;
 }
 
-static int callback_port_eio2r(void* self_, int* i) {
-	Dataparam* self = ((IDataparam*)self_)->in.self;
-	args_port_eio2r a = {sizeof(args_port_eio2r), port_eio2r, self, i};
+static int callback_port_eio2r(IDataparam* self, int* i) {
+	args_port_eio2r a = {sizeof(args_port_eio2r), port_eio2r, self->in.self, i};
 	runtime_event(helper_port_eio2r, &a);
-	return self->reply_IDataparam_Status;
+	Dataparam* self_ = self->in.self;
+	return self_->reply_IDataparam_Status;
 }
 
 

@@ -26,10 +26,12 @@
 
 
 
-typedef struct {
+typedef struct ilogger ilogger;
+
+struct ilogger{
 	struct {
 		void* self;
-		void (*log)(void* self );
+		void (*log)(ilogger* self);
 
 	} in;
 
@@ -37,6 +39,6 @@ typedef struct {
 		void* self;
 
 	} out;
-} ilogger;
+};
 
 #endif // DEZYNE_ILOGGER_H

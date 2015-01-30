@@ -29,29 +29,29 @@
 
 
 
-typedef struct {int size;void (*f)(void*);proxy* self;} args_top_a0;
-typedef struct {int size;void (*f)(void*, int);proxy* self;int i;} args_top_a;
-typedef struct {int size;void (*f)(void*, int, int);proxy* self;int i;int j;} args_top_aa;
-typedef struct {int size;void (*f)(void*, int, int, int, int, int, int);proxy* self;int a0;int a1;int a2;int a3;int a4;int a5;} args_top_a6;
+typedef struct {int size;void (*f)(IDataparam*);proxy* self;} args_top_a0;
+typedef struct {int size;void (*f)(IDataparam*, int);proxy* self;int i;} args_top_a;
+typedef struct {int size;void (*f)(IDataparam*, int, int);proxy* self;int i;int j;} args_top_aa;
+typedef struct {int size;void (*f)(IDataparam*, int, int, int, int, int, int);proxy* self;int a0;int a1;int a2;int a3;int a4;int a5;} args_top_a6;
 
 
-typedef struct {int size;void (*f)(void*);proxy* self;} args_top_e0;
-typedef struct {int size;int (*f)(void*);proxy* self;} args_top_e0r;
-typedef struct {int size;void (*f)(void*, int);proxy* self;int i;} args_top_e;
-typedef struct {int size;int (*f)(void*, int);proxy* self;int i;} args_top_er;
-typedef struct {int size;int (*f)(void*, int, int);proxy* self;int i;int j;} args_top_eer;
-typedef struct {int size;void (*f)(void*, int*);proxy* self;int* i;} args_top_eo;
-typedef struct {int size;void (*f)(void*, int*, int*);proxy* self;int* i;int* j;} args_top_eoo;
-typedef struct {int size;void (*f)(void*, int, int*);proxy* self;int i;int* j;} args_top_eio;
-typedef struct {int size;void (*f)(void*, int*);proxy* self;int* i;} args_top_eio2;
-typedef struct {int size;int (*f)(void*, int*);proxy* self;int* i;} args_top_eor;
-typedef struct {int size;int (*f)(void*, int*, int*);proxy* self;int* i;int* j;} args_top_eoor;
-typedef struct {int size;int (*f)(void*, int, int*);proxy* self;int i;int* j;} args_top_eior;
-typedef struct {int size;int (*f)(void*, int*);proxy* self;int* i;} args_top_eio2r;
-typedef struct {int size;void (*f)(void*);proxy* self;} args_bottom_a0;
-typedef struct {int size;void (*f)(void*, int);proxy* self;int i;} args_bottom_a;
-typedef struct {int size;void (*f)(void*, int, int);proxy* self;int i;int j;} args_bottom_aa;
-typedef struct {int size;void (*f)(void*, int, int, int, int, int, int);proxy* self;int a0;int a1;int a2;int a3;int a4;int a5;} args_bottom_a6;
+typedef struct {int size;void (*f)(proxy*);proxy* self;} args_top_e0;
+typedef struct {int size;int (*f)(proxy*);proxy* self;} args_top_e0r;
+typedef struct {int size;void (*f)(proxy*, int);proxy* self;int i;} args_top_e;
+typedef struct {int size;int (*f)(proxy*, int);proxy* self;int i;} args_top_er;
+typedef struct {int size;int (*f)(proxy*, int, int);proxy* self;int i;int j;} args_top_eer;
+typedef struct {int size;void (*f)(proxy*, int*);proxy* self;int* i;} args_top_eo;
+typedef struct {int size;void (*f)(proxy*, int*, int*);proxy* self;int* i;int* j;} args_top_eoo;
+typedef struct {int size;void (*f)(proxy*, int, int*);proxy* self;int i;int* j;} args_top_eio;
+typedef struct {int size;void (*f)(proxy*, int*);proxy* self;int* i;} args_top_eio2;
+typedef struct {int size;int (*f)(proxy*, int*);proxy* self;int* i;} args_top_eor;
+typedef struct {int size;int (*f)(proxy*, int*, int*);proxy* self;int* i;int* j;} args_top_eoor;
+typedef struct {int size;int (*f)(proxy*, int, int*);proxy* self;int i;int* j;} args_top_eior;
+typedef struct {int size;int (*f)(proxy*, int*);proxy* self;int* i;} args_top_eio2r;
+typedef struct {int size;void (*f)(proxy*);proxy* self;} args_bottom_a0;
+typedef struct {int size;void (*f)(proxy*, int);proxy* self;int i;} args_bottom_a;
+typedef struct {int size;void (*f)(proxy*, int, int);proxy* self;int i;int j;} args_bottom_aa;
+typedef struct {int size;void (*f)(proxy*, int, int, int, int, int, int);proxy* self;int a0;int a1;int a2;int a3;int a4;int a5;} args_bottom_a6;
 
 
 static void helper_top_a0(void* args) {
@@ -182,15 +182,13 @@ static void deferfunc(proxy* self, int i) {
 }
 
 
-static void top_e0(void* self_) {
-	proxy* self = self_;
+static void top_e0(proxy* self) {
 	(void)self;
 	DZN_LOG("proxy.top_e0");
 	self->bottom->in.e0(self->bottom);
 }
 
-static int top_e0r(void* self_) {
-	proxy* self = self_;
+static int top_e0r(proxy* self) {
 	(void)self;
 	DZN_LOG("proxy.top_e0r");
 	int r = self->bottom->in.e0r(self->bottom);
@@ -198,8 +196,7 @@ static int top_e0r(void* self_) {
 	return self->reply_IDataparam_Status;
 }
 
-static void top_e(void* self_, int i) {
-	proxy* self = self_;
+static void top_e(proxy* self, int i) {
 	(void)self;
 	DZN_LOG("proxy.top_e");
 	{
@@ -208,8 +205,7 @@ static void top_e(void* self_, int i) {
 	}
 }
 
-static int top_er(void* self_, int i) {
-	proxy* self = self_;
+static int top_er(proxy* self, int i) {
 	(void)self;
 	DZN_LOG("proxy.top_er");
 	{
@@ -220,8 +216,7 @@ static int top_er(void* self_, int i) {
 	return self->reply_IDataparam_Status;
 }
 
-static int top_eer(void* self_, int i, int j) {
-	proxy* self = self_;
+static int top_eer(proxy* self, int i, int j) {
 	(void)self;
 	DZN_LOG("proxy.top_eer");
 	int r = self->bottom->in.eer(self->bottom, i, j);
@@ -229,36 +224,31 @@ static int top_eer(void* self_, int i, int j) {
 	return self->reply_IDataparam_Status;
 }
 
-static void top_eo(void* self_, int* i) {
-	proxy* self = self_;
+static void top_eo(proxy* self, int* i) {
 	(void)self;
 	DZN_LOG("proxy.top_eo");
 	outfunc(self,*i);
 }
 
-static void top_eoo(void* self_, int* i, int* j) {
-	proxy* self = self_;
+static void top_eoo(proxy* self, int* i, int* j) {
 	(void)self;
 	DZN_LOG("proxy.top_eoo");
 	self->bottom->in.eoo(self->bottom, &*i, &*j);
 }
 
-static void top_eio(void* self_, int i, int* j) {
-	proxy* self = self_;
+static void top_eio(proxy* self, int i, int* j) {
 	(void)self;
 	DZN_LOG("proxy.top_eio");
 	self->bottom->in.eio(self->bottom, i, &*j);
 }
 
-static void top_eio2(void* self_, int* i) {
-	proxy* self = self_;
+static void top_eio2(proxy* self, int* i) {
 	(void)self;
 	DZN_LOG("proxy.top_eio2");
 	self->bottom->in.eio2(self->bottom, &*i);
 }
 
-static int top_eor(void* self_, int* i) {
-	proxy* self = self_;
+static int top_eor(proxy* self, int* i) {
 	(void)self;
 	DZN_LOG("proxy.top_eor");
 	int s = self->bottom->in.eor(self->bottom, i);
@@ -266,8 +256,7 @@ static int top_eor(void* self_, int* i) {
 	return self->reply_IDataparam_Status;
 }
 
-static int top_eoor(void* self_, int* i, int* j) {
-	proxy* self = self_;
+static int top_eoor(proxy* self, int* i, int* j) {
 	(void)self;
 	DZN_LOG("proxy.top_eoor");
 	int s = self->bottom->in.eoor(self->bottom, i, j);
@@ -275,8 +264,7 @@ static int top_eoor(void* self_, int* i, int* j) {
 	return self->reply_IDataparam_Status;
 }
 
-static int top_eior(void* self_, int i, int* j) {
-	proxy* self = self_;
+static int top_eior(proxy* self, int i, int* j) {
 	(void)self;
 	DZN_LOG("proxy.top_eior");
 	int s = self->bottom->in.eior(self->bottom, i, j);
@@ -284,8 +272,7 @@ static int top_eior(void* self_, int i, int* j) {
 	return self->reply_IDataparam_Status;
 }
 
-static int top_eio2r(void* self_, int* i) {
-	proxy* self = self_;
+static int top_eio2r(proxy* self, int* i) {
 	(void)self;
 	DZN_LOG("proxy.top_eio2r");
 	int s = self->bottom->in.eio2r(self->bottom, i);
@@ -293,8 +280,7 @@ static int top_eio2r(void* self_, int* i) {
 	return self->reply_IDataparam_Status;
 }
 
-static void bottom_a0(void* self_) {
-	proxy* self = self_;
+static void bottom_a0(proxy* self) {
 	(void)self;
 	DZN_LOG("proxy.bottom_a0");
 	{
@@ -303,15 +289,13 @@ static void bottom_a0(void* self_) {
 	}
 }
 
-static void bottom_a(void* self_, int i) {
-	proxy* self = self_;
+static void bottom_a(proxy* self, int i) {
 	(void)self;
 	DZN_LOG("proxy.bottom_a");
 	deferfunc(self,i);
 }
 
-static void bottom_aa(void* self_, int i, int j) {
-	proxy* self = self_;
+static void bottom_aa(proxy* self, int i, int j) {
 	(void)self;
 	DZN_LOG("proxy.bottom_aa");
 	{
@@ -320,8 +304,7 @@ static void bottom_aa(void* self_, int i, int j) {
 	}
 }
 
-static void bottom_a6(void* self_, int a0, int a1, int a2, int a3, int a4, int a5) {
-	proxy* self = self_;
+static void bottom_a6(proxy* self, int a0, int a1, int a2, int a3, int a4, int a5) {
 	(void)self;
 	DZN_LOG("proxy.bottom_a6");
 	{
@@ -338,112 +321,95 @@ static void bottom_a6(void* self_, int a0, int a1, int a2, int a3, int a4, int a
 	}
 }
 
-static void callback_top_e0(void* self_) {
-	proxy* self = ((IDataparam*)self_)->in.self;
-	args_top_e0 a = {sizeof(args_top_e0), top_e0, self};
+static void callback_top_e0(IDataparam* self) {
+	args_top_e0 a = {sizeof(args_top_e0), top_e0, self->in.self};
 	runtime_event(helper_top_e0, &a);
 }
 
-static int callback_top_e0r(void* self_) {
-	proxy* self = ((IDataparam*)self_)->in.self;
-	args_top_e0r a = {sizeof(args_top_e0r), top_e0r, self};
+static int callback_top_e0r(IDataparam* self) {
+	args_top_e0r a = {sizeof(args_top_e0r), top_e0r, self->in.self};
 	runtime_event(helper_top_e0r, &a);
 	return self->reply_IDataparam_Status;
 }
 
-static void callback_top_e(void* self_, int i) {
-	proxy* self = ((IDataparam*)self_)->in.self;
-	args_top_e a = {sizeof(args_top_e), top_e, self, i};
+static void callback_top_e(IDataparam* self, int i) {
+	args_top_e a = {sizeof(args_top_e), top_e, self->in.self, i};
 	runtime_event(helper_top_e, &a);
 }
 
-static int callback_top_er(void* self_, int i) {
-	proxy* self = ((IDataparam*)self_)->in.self;
-	args_top_er a = {sizeof(args_top_er), top_er, self, i};
+static int callback_top_er(IDataparam* self, int i) {
+	args_top_er a = {sizeof(args_top_er), top_er, self->in.self, i};
 	runtime_event(helper_top_er, &a);
 	return self->reply_IDataparam_Status;
 }
 
-static int callback_top_eer(void* self_, int i, int j) {
-	proxy* self = ((IDataparam*)self_)->in.self;
-	args_top_eer a = {sizeof(args_top_eer), top_eer, self, i, j};
+static int callback_top_eer(IDataparam* self, int i, int j) {
+	args_top_eer a = {sizeof(args_top_eer), top_eer, self->in.self, i, j};
 	runtime_event(helper_top_eer, &a);
 	return self->reply_IDataparam_Status;
 }
 
-static void callback_top_eo(void* self_, int* i) {
-	proxy* self = ((IDataparam*)self_)->in.self;
-	args_top_eo a = {sizeof(args_top_eo), top_eo, self, i};
+static void callback_top_eo(IDataparam* self, int* i) {
+	args_top_eo a = {sizeof(args_top_eo), top_eo, self->in.self, i};
 	runtime_event(helper_top_eo, &a);
 }
 
-static void callback_top_eoo(void* self_, int* i, int* j) {
-	proxy* self = ((IDataparam*)self_)->in.self;
-	args_top_eoo a = {sizeof(args_top_eoo), top_eoo, self, i, j};
+static void callback_top_eoo(IDataparam* self, int* i, int* j) {
+	args_top_eoo a = {sizeof(args_top_eoo), top_eoo, self->in.self, i, j};
 	runtime_event(helper_top_eoo, &a);
 }
 
-static void callback_top_eio(void* self_, int i, int* j) {
-	proxy* self = ((IDataparam*)self_)->in.self;
-	args_top_eio a = {sizeof(args_top_eio), top_eio, self, i, j};
+static void callback_top_eio(IDataparam* self, int i, int* j) {
+	args_top_eio a = {sizeof(args_top_eio), top_eio, self->in.self, i, j};
 	runtime_event(helper_top_eio, &a);
 }
 
-static void callback_top_eio2(void* self_, int* i) {
-	proxy* self = ((IDataparam*)self_)->in.self;
-	args_top_eio2 a = {sizeof(args_top_eio2), top_eio2, self, i};
+static void callback_top_eio2(IDataparam* self, int* i) {
+	args_top_eio2 a = {sizeof(args_top_eio2), top_eio2, self->in.self, i};
 	runtime_event(helper_top_eio2, &a);
 }
 
-static int callback_top_eor(void* self_, int* i) {
-	proxy* self = ((IDataparam*)self_)->in.self;
-	args_top_eor a = {sizeof(args_top_eor), top_eor, self, i};
+static int callback_top_eor(IDataparam* self, int* i) {
+	args_top_eor a = {sizeof(args_top_eor), top_eor, self->in.self, i};
 	runtime_event(helper_top_eor, &a);
 	return self->reply_IDataparam_Status;
 }
 
-static int callback_top_eoor(void* self_, int* i, int* j) {
-	proxy* self = ((IDataparam*)self_)->in.self;
-	args_top_eoor a = {sizeof(args_top_eoor), top_eoor, self, i, j};
+static int callback_top_eoor(IDataparam* self, int* i, int* j) {
+	args_top_eoor a = {sizeof(args_top_eoor), top_eoor, self->in.self, i, j};
 	runtime_event(helper_top_eoor, &a);
 	return self->reply_IDataparam_Status;
 }
 
-static int callback_top_eior(void* self_, int i, int* j) {
-	proxy* self = ((IDataparam*)self_)->in.self;
-	args_top_eior a = {sizeof(args_top_eior), top_eior, self, i, j};
+static int callback_top_eior(IDataparam* self, int i, int* j) {
+	args_top_eior a = {sizeof(args_top_eior), top_eior, self->in.self, i, j};
 	runtime_event(helper_top_eior, &a);
 	return self->reply_IDataparam_Status;
 }
 
-static int callback_top_eio2r(void* self_, int* i) {
-	proxy* self = ((IDataparam*)self_)->in.self;
-	args_top_eio2r a = {sizeof(args_top_eio2r), top_eio2r, self, i};
+static int callback_top_eio2r(IDataparam* self, int* i) {
+	args_top_eio2r a = {sizeof(args_top_eio2r), top_eio2r, self->in.self, i};
 	runtime_event(helper_top_eio2r, &a);
 	return self->reply_IDataparam_Status;
 }
 
-static void callback_bottom_a0(void* self_) {
-	proxy* self = ((IDataparam*)self_)->out.self;
-	args_bottom_a0 a = {sizeof(args_bottom_a0), bottom_a0, self};
+static void callback_bottom_a0(IDataparam* self) {
+	args_bottom_a0 a = {sizeof(args_bottom_a0), bottom_a0, self->out.self};
 	runtime_event(helper_bottom_a0, &a);
 }
 
-static void callback_bottom_a(void* self_, int i) {
-	proxy* self = ((IDataparam*)self_)->out.self;
-	args_bottom_a a = {sizeof(args_bottom_a), bottom_a, self, i};
+static void callback_bottom_a(IDataparam* self, int i) {
+	args_bottom_a a = {sizeof(args_bottom_a), bottom_a, self->out.self, i};
 	runtime_event(helper_bottom_a, &a);
 }
 
-static void callback_bottom_aa(void* self_, int i, int j) {
-	proxy* self = ((IDataparam*)self_)->out.self;
-	args_bottom_aa a = {sizeof(args_bottom_aa), bottom_aa, self, i, j};
+static void callback_bottom_aa(IDataparam* self, int i, int j) {
+	args_bottom_aa a = {sizeof(args_bottom_aa), bottom_aa, self->out.self, i, j};
 	runtime_event(helper_bottom_aa, &a);
 }
 
-static void callback_bottom_a6(void* self_, int a0, int a1, int a2, int a3, int a4, int a5) {
-	proxy* self = ((IDataparam*)self_)->out.self;
-	args_bottom_a6 a = {sizeof(args_bottom_a6), bottom_a6, self, a0, a1, a2, a3, a4, a5};
+static void callback_bottom_a6(IDataparam* self, int a0, int a1, int a2, int a3, int a4, int a5) {
+	args_bottom_a6 a = {sizeof(args_bottom_a6), bottom_a6, self->out.self, a0, a1, a2, a3, a4, a5};
 	runtime_event(helper_bottom_a6, &a);
 }
 

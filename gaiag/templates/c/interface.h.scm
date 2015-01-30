@@ -3,20 +3,22 @@
 
 #(->string (map declare-enum (gom:interface-enums model)))
 
-typedef struct {
+typedef struct #.model  #.model;
+
+struct #.model {
   struct {
      void* self;
    #(map (declare-io model
-          #{ #return-type  (*#name)(void* self #comma #parameters);
+          #{ #return-type  (*#name)(#.model * self#comma #parameters);
 #}) (filter gom:in? ((compose .elements .events) model)))
    } in;
 
   struct {
      void* self;
    #(map (declare-io model
-          #{ #return-type  (*#name) (void* self #comma #parameters);
+          #{ #return-type  (*#name) (#.model * self#comma #parameters);
 #}) (filter gom:out? ((compose .elements .events) model)))
  } out;
-} #.interface;
+};
 
 ##endif // DEZYNE_#.INTERFACE _H

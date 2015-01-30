@@ -31,8 +31,8 @@
 
 
 
-typedef struct {int size;void (*f)(void*);modeling* self;} args_p_e;
-typedef struct {int size;void (*f)(void*);modeling* self;} args_r_f;
+typedef struct {int size;void (*f)(modeling*);modeling* self;} args_p_e;
+typedef struct {int size;void (*f)(modeling*);modeling* self;} args_r_f;
 
 
 
@@ -53,30 +53,26 @@ static void helper_r_f(void* args) {
 
 
 
-static void p_e(void* self_) {
-	modeling* self = self_;
+static void p_e(modeling* self) {
 	(void)self;
 	DZN_LOG("modeling.p_e");
 	self->r->in.e(self->r);
 }
 
-static void r_f(void* self_) {
-	modeling* self = self_;
+static void r_f(modeling* self) {
 	(void)self;
 	DZN_LOG("modeling.r_f");
 	{
 	}
 }
 
-static void callback_p_e(void* self_) {
-	modeling* self = ((dummy*)self_)->in.self;
-	args_p_e a = {sizeof(args_p_e), p_e, self};
+static void callback_p_e(dummy* self) {
+	args_p_e a = {sizeof(args_p_e), p_e, self->in.self};
 	runtime_event(helper_p_e, &a);
 }
 
-static void callback_r_f(void* self_) {
-	modeling* self = ((imodeling*)self_)->out.self;
-	args_r_f a = {sizeof(args_r_f), r_f, self};
+static void callback_r_f(imodeling* self) {
+	args_r_f a = {sizeof(args_r_f), r_f, self->out.self};
 	runtime_event(helper_r_f, &a);
 }
 

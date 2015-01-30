@@ -26,18 +26,20 @@
 
 
 
-typedef struct {
+typedef struct itop itop;
+
+struct itop{
 	struct {
 		void* self;
-		void (*e)(void* self );
+		void (*e)(itop* self);
 
 	} in;
 
 	struct {
 		void* self;
-		void (*f) (void* self );
+		void (*f) (itop* self);
 
 	} out;
-} itop;
+};
 
 #endif // DEZYNE_ITOP_H

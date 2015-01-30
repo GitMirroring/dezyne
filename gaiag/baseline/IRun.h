@@ -26,10 +26,12 @@
 
 
 
-typedef struct {
+typedef struct IRun IRun;
+
+struct IRun{
 	struct {
 		void* self;
-		void (*run)(void* self );
+		void (*run)(IRun* self);
 
 	} in;
 
@@ -37,6 +39,6 @@ typedef struct {
 		void* self;
 
 	} out;
-} IRun;
+};
 
 #endif // DEZYNE_IRUN_H

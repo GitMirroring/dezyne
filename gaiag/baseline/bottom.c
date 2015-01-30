@@ -30,10 +30,10 @@
 
 
 
-typedef struct {int size;void (*f)(void*);bottom* self;} args_b_f;
+typedef struct {int size;void (*f)(ibottom*);bottom* self;} args_b_f;
 
 
-typedef struct {int size;void (*f)(void*);bottom* self;} args_b_e;
+typedef struct {int size;void (*f)(bottom*);bottom* self;} args_b_e;
 
 
 static void helper_b_f(void* args) {
@@ -54,8 +54,7 @@ static void helper_b_e(void* args) {
 
 
 
-static void b_e(void* self_) {
-	bottom* self = self_;
+static void b_e(bottom* self) {
 	(void)self;
 	DZN_LOG("bottom.b_e");
 	{
@@ -64,9 +63,8 @@ static void b_e(void* self_) {
 	}
 }
 
-static void callback_b_e(void* self_) {
-	bottom* self = ((ibottom*)self_)->in.self;
-	args_b_e a = {sizeof(args_b_e), b_e, self};
+static void callback_b_e(ibottom* self) {
+	args_b_e a = {sizeof(args_b_e), b_e, self->in.self};
 	runtime_event(helper_b_e, &a);
 }
 

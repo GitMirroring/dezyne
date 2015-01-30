@@ -29,11 +29,11 @@
 
 
 
-typedef struct {int size;void (*f)(void*);incomplete_with_modeling_event* self;} args_p_a;
+typedef struct {int size;void (*f)(iincomplete_with_modeling_event*);incomplete_with_modeling_event* self;} args_p_a;
 
 
-typedef struct {int size;void (*f)(void*);incomplete_with_modeling_event* self;} args_p_e;
-typedef struct {int size;void (*f)(void*);incomplete_with_modeling_event* self;} args_r_a;
+typedef struct {int size;void (*f)(incomplete_with_modeling_event*);incomplete_with_modeling_event* self;} args_p_e;
+typedef struct {int size;void (*f)(incomplete_with_modeling_event*);incomplete_with_modeling_event* self;} args_r_a;
 
 
 static void helper_p_a(void* args) {
@@ -59,14 +59,12 @@ static void helper_r_a(void* args) {
 
 
 
-static void p_e(void* self_) {
-	incomplete_with_modeling_event* self = self_;
+static void p_e(incomplete_with_modeling_event* self) {
 	(void)self;
 	DZN_LOG("incomplete_with_modeling_event.p_e");
 }
 
-static void r_a(void* self_) {
-	incomplete_with_modeling_event* self = self_;
+static void r_a(incomplete_with_modeling_event* self) {
 	(void)self;
 	DZN_LOG("incomplete_with_modeling_event.r_a");
 	{
@@ -75,15 +73,13 @@ static void r_a(void* self_) {
 	}
 }
 
-static void callback_p_e(void* self_) {
-	incomplete_with_modeling_event* self = ((iincomplete_with_modeling_event*)self_)->in.self;
-	args_p_e a = {sizeof(args_p_e), p_e, self};
+static void callback_p_e(iincomplete_with_modeling_event* self) {
+	args_p_e a = {sizeof(args_p_e), p_e, self->in.self};
 	runtime_event(helper_p_e, &a);
 }
 
-static void callback_r_a(void* self_) {
-	incomplete_with_modeling_event* self = ((iincomplete_with_modeling_event*)self_)->out.self;
-	args_r_a a = {sizeof(args_r_a), r_a, self};
+static void callback_r_a(iincomplete_with_modeling_event* self) {
+	args_r_a a = {sizeof(args_r_a), r_a, self->out.self};
 	runtime_event(helper_r_a, &a);
 }
 

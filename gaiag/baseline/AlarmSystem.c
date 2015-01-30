@@ -32,7 +32,7 @@ void AlarmSystem_init(AlarmSystem *self, locator* dezyne_locator) {
 	Alarm_init(&self->alarm, dezyne_locator);
 	Sensor_init(&self->sensor, dezyne_locator);
 	Siren_init(&self->siren, dezyne_locator);
-	self->console = self->alarm.console; 
+	self->console = self->alarm.console;
 	CONNECT(self->sensor.sensor, self->alarm.sensor);
 	CONNECT(self->siren.siren, self->alarm.siren);
 }

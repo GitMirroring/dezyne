@@ -34,7 +34,7 @@ typedef enum {
 
 
 
-typedef struct {int size;int (*f)(void*);Reply4* self;} args_i_done;
+typedef struct {int size;int (*f)(Reply4*);Reply4* self;} args_i_done;
 
 
 
@@ -61,8 +61,7 @@ static int fun_arg(Reply4* self, int s) {
 }
 
 
-static int i_done(void* self_) {
-	Reply4* self = self_;
+static int i_done(Reply4* self) {
 	(void)self;
 	DZN_LOG("Reply4.i_done");
 	if (true) {
@@ -82,11 +81,11 @@ static int i_done(void* self_) {
 	return self->reply_I_Status;
 }
 
-static int callback_i_done(void* self_) {
-	Reply4* self = ((I*)self_)->in.self;
-	args_i_done a = {sizeof(args_i_done), i_done, self};
+static int callback_i_done(I* self) {
+	args_i_done a = {sizeof(args_i_done), i_done, self->in.self};
 	runtime_event(helper_i_done, &a);
-	return self->reply_I_Status;
+	Reply4* self_ = self->in.self;
+	return self_->reply_I_Status;
 }
 
 

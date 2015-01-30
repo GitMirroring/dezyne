@@ -26,18 +26,20 @@
 
 
 
-typedef struct {
+typedef struct imiddle imiddle;
+
+struct imiddle{
 	struct {
 		void* self;
-		void (*e)(void* self );
+		void (*e)(imiddle* self);
 
 	} in;
 
 	struct {
 		void* self;
-		void (*f) (void* self );
+		void (*f) (imiddle* self);
 
 	} out;
-} imiddle;
+};
 
 #endif // DEZYNE_IMIDDLE_H

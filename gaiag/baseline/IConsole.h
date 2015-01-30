@@ -25,20 +25,22 @@
 
 
 
-typedef struct {
+typedef struct IConsole IConsole;
+
+struct IConsole{
 	struct {
 		void* self;
-		void (*arm)(void* self );
-		void (*disarm)(void* self );
+		void (*arm)(IConsole* self);
+		void (*disarm)(IConsole* self);
 
 	} in;
 
 	struct {
 		void* self;
-		void (*detected) (void* self );
-		void (*deactivated) (void* self );
+		void (*detected) (IConsole* self);
+		void (*deactivated) (IConsole* self);
 
 	} out;
-} IConsole;
+};
 
 #endif // DEZYNE_ICONSOLE_H

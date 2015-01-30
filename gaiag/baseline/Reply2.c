@@ -31,7 +31,7 @@
 
 
 
-typedef struct {int size;int (*f)(void*);Reply2* self;} args_i_done;
+typedef struct {int size;int (*f)(Reply2*);Reply2* self;} args_i_done;
 
 
 
@@ -47,8 +47,7 @@ static void helper_i_done(void* args) {
 
 
 
-static int i_done(void* self_) {
-	Reply2* self = self_;
+static int i_done(Reply2* self) {
 	(void)self;
 	DZN_LOG("Reply2.i_done");
 	if (true) {
@@ -64,11 +63,11 @@ static int i_done(void* self_) {
 	return self->reply_I_Status;
 }
 
-static int callback_i_done(void* self_) {
-	Reply2* self = ((I*)self_)->in.self;
-	args_i_done a = {sizeof(args_i_done), i_done, self};
+static int callback_i_done(I* self) {
+	args_i_done a = {sizeof(args_i_done), i_done, self->in.self};
 	runtime_event(helper_i_done, &a);
-	return self->reply_I_Status;
+	Reply2* self_ = self->in.self;
+	return self_->reply_I_Status;
 }
 
 

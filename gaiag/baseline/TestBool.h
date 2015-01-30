@@ -25,10 +25,12 @@
 
 
 
-typedef struct {
+typedef struct TestBool TestBool;
+
+struct TestBool{
 	struct {
 		void* self;
-		void (*evt)(void* self );
+		void (*evt)(TestBool* self);
 
 	} in;
 
@@ -36,6 +38,6 @@ typedef struct {
 		void* self;
 
 	} out;
-} TestBool;
+};
 
 #endif // DEZYNE_TESTBOOL_H

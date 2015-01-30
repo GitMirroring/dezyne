@@ -31,7 +31,7 @@
 
 
 
-typedef struct {int size;int (*f)(void*);Reply7* self;} args_p_foo;
+typedef struct {int size;int (*f)(Reply7*);Reply7* self;} args_p_foo;
 
 
 
@@ -53,19 +53,18 @@ static void f(Reply7* self) {
 }
 
 
-static int p_foo(void* self_) {
-	Reply7* self = self_;
+static int p_foo(Reply7* self) {
 	(void)self;
 	DZN_LOG("Reply7.p_foo");
 	f (self);
 	return self->reply_IReply7_E;
 }
 
-static int callback_p_foo(void* self_) {
-	Reply7* self = ((IReply7*)self_)->in.self;
-	args_p_foo a = {sizeof(args_p_foo), p_foo, self};
+static int callback_p_foo(IReply7* self) {
+	args_p_foo a = {sizeof(args_p_foo), p_foo, self->in.self};
 	runtime_event(helper_p_foo, &a);
-	return self->reply_IReply7_E;
+	Reply7* self_ = self->in.self;
+	return self_->reply_IReply7_E;
 }
 
 

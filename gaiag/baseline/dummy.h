@@ -25,10 +25,12 @@
 
 
 
-typedef struct {
+typedef struct dummy dummy;
+
+struct dummy{
 	struct {
 		void* self;
-		void (*e)(void* self );
+		void (*e)(dummy* self);
 
 	} in;
 
@@ -36,6 +38,6 @@ typedef struct {
 		void* self;
 
 	} out;
-} dummy;
+};
 
 #endif // DEZYNE_DUMMY_H

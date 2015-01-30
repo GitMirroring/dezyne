@@ -25,18 +25,20 @@
 
 
 
-typedef struct {
+typedef struct I I;
+
+struct I{
 	struct {
 		void* self;
-		void (*e)(void* self );
+		void (*e)(I* self);
 
 	} in;
 
 	struct {
 		void* self;
-		void (*a) (void* self );
+		void (*a) (I* self);
 
 	} out;
-} I;
+};
 
 #endif // DEZYNE_I_H

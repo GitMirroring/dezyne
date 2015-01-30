@@ -30,11 +30,11 @@
 
 
 
-typedef struct {int size;void (*f)(void*);middle* self;} args_t_f;
+typedef struct {int size;void (*f)(itop*);middle* self;} args_t_f;
 
 
-typedef struct {int size;void (*f)(void*);middle* self;} args_t_e;
-typedef struct {int size;void (*f)(void*);middle* self;} args_b_f;
+typedef struct {int size;void (*f)(middle*);middle* self;} args_t_e;
+typedef struct {int size;void (*f)(middle*);middle* self;} args_b_f;
 
 
 static void helper_t_f(void* args) {
@@ -60,16 +60,14 @@ static void helper_b_f(void* args) {
 
 
 
-static void t_e(void* self_) {
-	middle* self = self_;
+static void t_e(middle* self) {
 	(void)self;
 	DZN_LOG("middle.t_e");
 	self->l->in.log(self->l);
 	self->b->in.e(self->b);
 }
 
-static void b_f(void* self_) {
-	middle* self = self_;
+static void b_f(middle* self) {
 	(void)self;
 	DZN_LOG("middle.b_f");
 	self->l->in.log(self->l);
@@ -79,15 +77,13 @@ static void b_f(void* self_) {
 	}
 }
 
-static void callback_t_e(void* self_) {
-	middle* self = ((itop*)self_)->in.self;
-	args_t_e a = {sizeof(args_t_e), t_e, self};
+static void callback_t_e(itop* self) {
+	args_t_e a = {sizeof(args_t_e), t_e, self->in.self};
 	runtime_event(helper_t_e, &a);
 }
 
-static void callback_b_f(void* self_) {
-	middle* self = ((ibottom*)self_)->out.self;
-	args_b_f a = {sizeof(args_b_f), b_f, self};
+static void callback_b_f(ibottom* self) {
+	args_b_f a = {sizeof(args_b_f), b_f, self->out.self};
 	runtime_event(helper_b_f, &a);
 }
 
