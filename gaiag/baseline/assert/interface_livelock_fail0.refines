@@ -1,37 +1,37 @@
 Checking out/assert/interface_livelock_fail0.csp
 
-Checking COMPLETE'({i26_I.i3_e}) [F= IF_i26_I_(true)\diff(Events,{i26_I.i3_e,illegal})
+Checking COMPLETE'({i26_I.optional,i26_I.i3_e}) [F= IF_i26_I_(true,true)\diff(Events,{i26_I.optional,i26_I.i3_e,illegal})
 true
 
-Checking IF_i26_I_(false) :[deadlock free]
+Checking IF_i26_I_(false,false) :[deadlock free]
 true
 
-Checking IF_i26_I_(true)\{|i26_I.optional|} :[livelock free]
+Checking IF_i26_I_(true,false)\{|i26_I.optional,i26_I_'''|} :[livelock free]
 xfalse
 
-Checking COMPLETE'({i43_DummyI.i27_e}) [F= IF_i43_DummyI_(true)\diff(Events,{i43_DummyI.i27_e,illegal})
+Checking COMPLETE'({i43_DummyI.i27_e}) [F= IF_i43_DummyI_(true,true)\diff(Events,{i43_DummyI.i27_e,illegal})
 true
 
-Checking IF_i43_DummyI_(false) :[deadlock free]
+Checking IF_i43_DummyI_(false,false) :[deadlock free]
 true
 
-Checking IF_i43_DummyI_(true) :[livelock free]
+Checking IF_i43_DummyI_(true,false) :[livelock free]
 true
 
-Checking CO_i66_DummyC_(true,true) :[deterministic]
+Checking CO_i66_DummyC_(true,true)[[i43_DummyI_'.x<-i44_i_'.x|x<-extensions(i44_i_')]] :[deterministic]
 true
 
-Checking COMPLETE'({i44_i.i27_e}) [F= CO_i66_DummyC_(true,true)\diff(Events,{i44_i.i27_e,illegal})
+Checking COMPLETE'({i44_i.i27_e}) [F= CO_i66_DummyC_(true,true)[[i43_DummyI_'.x'<-i44_i_'.x'|x'<-extensions(i44_i_')]]\diff(Events,{i44_i.i27_e,illegal})
 true
 
 Checking STOP [T= AS_i66_DummyC_(false)\diff(Events,{illegal})
 true
 
 Checking AS_i66_DummyC_(false) :[deadlock free]
-xfalse
+true
 
-Checking IF_i43_DummyI_(true)[[i43_DummyI.x<-i44_i.x|x<-extensions(i44_i)]][[i43_DummyI_'.x<-i44_i_'.x|x<-extensions(i44_i_')]]\{} [F= AS_i66_DummyC_(true)\diff(Events,{|illegal,i44_i,i44_i_'|})
-xfalse
+Checking IF_i43_DummyI_(true,false)[[i43_DummyI.x<-i44_i.x|x<-extensions(i44_i)]][[i43_DummyI_'.x<-i44_i_'.x|x<-extensions(i44_i_')]]\{i43_DummyI_'''.modeling} [F= AS_i66_DummyC_(true)\diff(Events,{|illegal,i44_i,i44_i_'|})
+true
 
-Checking AS_i66_DummyC_(true)\diff(Events,{|illegal,i44_i,i44_i_'|}) :[livelock free]
+Checking AS_i66_DummyC_(true)\diff(Events,{|i47_ii.optional,illegal,i44_i,i44_i_'|}) :[livelock free]
 true

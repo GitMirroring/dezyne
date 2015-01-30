@@ -3,7 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
@@ -95,7 +95,7 @@ Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c
 
 FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
             []
-            ([] x':end' @ x' ->  Busy(c',r'))
+            ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
             []
             (r' == <> & reorder_in?#(.type (gom:port model))_'.x' -> Busy(c',<x'>))
 

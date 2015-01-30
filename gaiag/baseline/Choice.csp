@@ -176,7 +176,7 @@ Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c
 
 FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
             []
-            ([] x':end' @ x' ->  Busy(c',r'))
+            ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
             []
             (r' == <> & reorder_in?IChoice_'.x' -> Busy(c',<x'>))
 
