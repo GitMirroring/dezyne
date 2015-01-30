@@ -1,1 +1,1 @@
-#identifier
+#identifier #(if out? ".value")

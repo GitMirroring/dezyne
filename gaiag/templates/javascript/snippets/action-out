@@ -1,1 +1,1 @@
-this.#port .#direction .#event .defer();
+this.#port .#direction .#event .defer(#arguments);

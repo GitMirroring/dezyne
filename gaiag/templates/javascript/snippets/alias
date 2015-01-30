@@ -1,0 +1,1 @@
+var #alias  = #(if out? '{value:') #name #(if out? '}');

@@ -1,1 +1,1 @@
-#name
+#name #(if out? ".value")

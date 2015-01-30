@@ -169,6 +169,11 @@ pretty: compile
 	./gaiag -l dezyne examples/regression/expressions.dzn > out/expressions.dzn
 	$(diff) examples/regression/expressions.dzn out
 
+alarm: c-alarm c++-alarm goops-alarm java-alarm javascript-alarm python-alarm
+dataparam: c-dataparam c++-dataparam goops-dataparam java-dataparam javascript-dataparamparam python-dataparam
+
+code: alarm out/Reply7.o out/Reply7.java out/Reply7.js out/Reply7.py
+
 # c
 c: compile c-alarm c-inject c-dataparam c-regression
 
@@ -534,6 +539,10 @@ java-alarm: compile
 
 java: compile java-alarm java-regression
 
+# javascript // js FIXME
+
+javascript: compile javascript-alarm javascript-dataparam javascript-regression
+
 JS_BROKEN=\
  Dataparam.dzn\
  Extern.dzn\
@@ -577,18 +586,21 @@ javascript-alarm: compile
 	cat runtime/javascript/header.js\
 		 $$(find out/dezyne -name '*.js')\
 		examples/alarm.js > out/alarm.js
-	nodejs out/alarm.js
-	$(diff) baseline/IConsole.js out/dezyne
-	$(diff) baseline/ISensor.js out/dezyne
-	$(diff) baseline/ISiren.js out/dezyne
-	$(diff) baseline/Alarm.js out/dezyne
-	$(diff) baseline/AlarmSystem.js out/dezyne
+	nodejs out/alarm.js > out/$@.trace
+	$(diff) baseline/$@.trace out || echo '**********FIXME: semantics**********'
+	for i in out/dezyne/*.js; do $(diff) baseline/$$(basename $$i) $$i; done
 
-javascript: compile javascript-alarm javascript-regression
+javascript-dataparam: compile
+	rm -rf out && mkdir out && ln -s ../examples ../templates out
+	cd out && ../gaiag -l javascript ../examples/regression/Dataparam.dzn
+	cat runtime/javascript/header.js\
+		 $$(find out/dezyne -name '*.js')\
+		examples/dataparam.js > out/dataparam.js
+	nodejs out/dataparam.js > out/$@.trace
+	$(diff) baseline/$@.trace out || echo '**********FIXME: semantics**********'
+	for i in out/dezyne/*.js; do $(diff) baseline/$$(basename $$i) $$i; done
 
-alarm: c-alarm c++-alarm goops-alarm java-alarm javascript-alarm python-alarm
-
-code: alarm out/Reply7.o out/Reply7.java out/Reply7.js out/Reply7.py
+# goops
 
 GOOPS_BROKEN=\
  Dataparam.dzn\

@@ -43,7 +43,7 @@ void a(void* self, int i)
 void aa(void* self, int i, int j)
 {
 (void)self;
-  printf("a(%d, %d)\n", i, j);
+  printf("aa(%d, %d)\n", i, j);
 }
 
 void a6(void* self, int i0, int i1, int i2,int i3, int i4, int i5)

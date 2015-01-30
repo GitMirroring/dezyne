@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,19 +21,29 @@
 //
 // Code:
 
-#! /usr/bin/nodejs
-
-// handwritten runtime header
-var dezyne = {};
-
-Function.prototype.defer = function (a0, a1, a2, a3, a4, a5)
-{
-  //FIXME: semantics
-  setTimeout (function () { this(a0, a1, a2, a3, a4, a5); }.bind(this), 0.01);
+dezyne.IDataparam = function() {
+  this.Status = {
+    Yes: 0, No: 1
+  };
+  this.in = {
+    e0 : null,
+    e0r : null,
+    e : null,
+    er : null,
+    eer : null,
+    eo : null,
+    eoo : null,
+    eio : null,
+    eio2 : null,
+    eor : null,
+    eoor : null,
+    eior : null,
+    eio2r : null
+  };
+  this.out = {
+    a0 : null,
+    a : null,
+    aa : null,
+    a6 : null
+  };
 };
-
-dezyne.connect = function (provided, required) {
-  provided.out = required.out;
-  required.in = provided.in;
-}
-// end header

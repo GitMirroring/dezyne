@@ -12,7 +12,7 @@ dezyne.#.model  = function() {#
 #(map
    (lambda (port)
      (map (define-on model port #{
-  this.#port .#direction .#event  = function() {
+  this.#port .#direction .#event  = function(#arguments) {
   console.log('#.model .#port _#event ');
   #statement #(if (not (eq? type 'void))
 (list "return this.reply_" reply-type "_" reply-name ";\n")) }.bind(this);

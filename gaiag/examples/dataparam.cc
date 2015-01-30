@@ -1,5 +1,5 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
@@ -40,12 +40,12 @@ void a(int i)
 
 void aa(int i, int j)
 {
-  std::cout << "a(" << i << "," << j << ")" << std::endl;
+  std::cout << "aa(" << i << "," << j << ")" << std::endl;
 }
 
 void a6(int i0, int i1, int i2,int i3, int i4, int i5)
 {
-  std::cout << "a6(" << i0 << "," << i1 << "," << i2 << ","<< i3 << "," << i4 << "," << i5 << ")" << std::endl;
+  std::cout << "a6(" << i0 << "," << i1 << "," << i2 << "," << i3 << "," << i4 << "," << i5 << ")" << std::endl;
 }
 
 int main()
