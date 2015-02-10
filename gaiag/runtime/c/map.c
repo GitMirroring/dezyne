@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -31,6 +32,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "mem.h"
+
 #define INITIAL_SIZE (256)
 #define MAX_CHAIN_LENGTH (8)
 
@@ -39,7 +42,7 @@
  */
 void
 map_init (map* m) {
-	m->data = (map_element*) calloc(INITIAL_SIZE, sizeof(map_element));
+	m->data = (map_element*) dzn_calloc(INITIAL_SIZE, sizeof(map_element));
 	assert (m->data);
 
 	m->table_size = INITIAL_SIZE;
@@ -223,7 +226,7 @@ int map_rehash(map* m){
 
 	/* Setup the new elements */
 	map_element* temp = (map_element *)
-		calloc(2 * m->table_size, sizeof(map_element));
+		dzn_calloc(2 * m->table_size, sizeof(map_element));
 	if(!temp) return MAP_OMEM;
 
 	/* Update the array */

@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -25,6 +26,8 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#include "mem.h"
+
 bool
 queue_empty (queue* self)
 {
@@ -41,7 +44,7 @@ queue_size (queue* self)
 void
 queue_push (queue* self, void* e)
 {
-  Node* n = (Node*) malloc (sizeof (Node));
+  Node* n = (Node*) dzn_malloc (sizeof (Node));
   n->item = e;
   n->next = 0;
   

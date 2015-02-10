@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -27,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "mem.h"
 #include "pair.h"
 #include "queue.h"
 
@@ -44,6 +46,7 @@ typedef struct {
   void (*func)(void*);
   void *args;
 } closure;
+
 
 void
 runtime_init (runtime* self)
@@ -70,8 +73,8 @@ runtime_get (runtime* self, void* scope)
 void
 runtime_set (runtime* self, void* scope)
 {
-  queue* q = malloc (sizeof (queue));
-  pair* p = malloc (sizeof (pair));
+  queue* q = dzn_calloc (sizeof (queue), 1);
+  pair* p = dzn_malloc (sizeof (pair));
   p->first = false;
   p->second = q;
   map_put (&self->queues, runtime_key (scope), p);
@@ -106,10 +109,10 @@ runtime_defer (runtime* self, void* scope, void (*event)(void*), void* args)
 {
   pair* p = runtime_get (self, scope);
   assert (p);
-  closure *c = malloc (sizeof (closure));
+  closure *c = dzn_malloc (sizeof (closure));
   c->func = event;
   arguments *a = args;
-  c->args = malloc (a->size);
+  c->args = dzn_malloc (a->size);
   memcpy (c->args, a, a->size);
   queue_push (p->second, c);
 }
