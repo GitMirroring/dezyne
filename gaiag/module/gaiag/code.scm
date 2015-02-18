@@ -148,7 +148,6 @@
 (define statements.event (make-parameter #f))
 
 (define (animate-snippet name pairs)
-  ;;(stderr "snippet: ~a\n" name)
   (parameterize ((template-dir (append (template-dir) '(snippets))))
     (animate-template name pairs)))
 
@@ -224,6 +223,15 @@
     (match src
       (() "")
       ('$empty-statement$ (snippet 'empty `((space ,space))))
+      (($ <guard> expression (and ($ <guard>) statement))
+       (let* ((statement (->code model (make <compound> :elements (list statement)) locals (1+ indent)))
+              (statement (if (eq? statement '$empty-statement$)
+                             (->code model statement locals (1+ indent))
+                             statement)))
+         (snippet 'guard
+                  `((space ,space)
+                    (clause ,(expr->clause model src expression))
+                    (statement ,statement)))))
       (($ <guard> expression statement)
        (let* ((statement (->code- model statement locals (1+ indent)))
               (statement (if (eq? statement '$empty-statement$)
@@ -420,9 +428,10 @@
   ((compose .elements .statement .behaviour) o))
 
 (define-method (gom:first-guard? (model <model>) (o <guard>))
-  (and-let* ((parent (gom:parent model o))
-             (guards ((gom:statements-of-type 'guard) parent)))
-            (eq? o (car guards))))
+  (not
+   (and-let* ((parent (gom:parent model o))
+              (guards ((gom:statements-of-type 'guard) parent)))
+             (not (eq? o (car guards))))))
 
 (define-method (gom:top-guard? (model <model>) (o <guard>))
   (eq? o (car (gom:guards model))))
