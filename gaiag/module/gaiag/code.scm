@@ -424,7 +424,7 @@
              (else-if-clause (snippet 'clause-else-if `((expression ,c-expression)))))
         (->string (list (if (gom:first-guard? model o) if-clause else-if-clause))))))
 
-(define-method (gom:guards (o <model>))
+(define-method (gom:top-statements (o <model>))
   ((compose .elements .statement .behaviour) o))
 
 (define-method (gom:first-guard? (model <model>) (o <guard>))
@@ -434,7 +434,7 @@
              (not (eq? o (car guards))))))
 
 (define-method (gom:top-guard? (model <model>) (o <guard>))
-  (eq? o (car (gom:guards model))))
+  (member o (gom:top-statements model)))
 
 (define (bool-expression->string model o)
   (match o
