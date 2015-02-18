@@ -177,13 +177,15 @@
     (_ (throw 'match-error  (format #f "~a:gom:statement: no match: ~a\n" (current-source-location) ast)))))
 
 (define ((gom:statement-of-type type) statement)
-  (eq? (ast-name statement) type))
+  (and statement
+   (eq? (ast-name statement) type)))
 
 (define ((gom:statements-of-type type) statement)
   (match statement
     ((? (gom:statement-of-type type)) (list statement))
     (($ <compound>) (filter identity (apply append (map (gom:statements-of-type type) (.elements statement)))))
     ((? (is? <statement>)) '())
+    (#f '())
     (_ (throw 'match-error  (format #f "~a:gom:statements-of-type, type: ~a: no match: ~a\n" (current-source-location) type statement)))))
 
 (define-method (gom:typed? (o <event>))

@@ -420,9 +420,9 @@
   ((compose .elements .statement .behaviour) o))
 
 (define-method (gom:first-guard? (model <model>) (o <guard>))
-  (let* ((parent (gom:parent model o))
-         (guards ((gom:statements-of-type 'guard) parent)))
-    (eq? o (car guards))))
+  (and-let* ((parent (gom:parent model o))
+             (guards ((gom:statements-of-type 'guard) parent)))
+            (eq? o (car guards))))
 
 (define-method (gom:top-guard? (model <model>) (o <guard>))
   (eq? o (car (gom:guards model))))
