@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -26,6 +27,8 @@
 #include "locator.hh"
 #include "runtime.hh"
 
+#include <iostream>
+
 namespace dezyne
 {
   requires_twice::requires_twice(const locator& dezyne_locator)
@@ -34,14 +37,48 @@ namespace dezyne
   , once()
   , twice()
   {
-    p.in.e = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&requires_twice::p_e, this)));
-    once.out.a = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&requires_twice::once_a, this)));
-    twice.out.a = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&requires_twice::twice_a, this)));
+    p.in.meta.component = "requires_twice";
+    p.in.meta.port = "p";
+    p.in.meta.address = this;
+    once.out.meta.component = "requires_twice";
+    once.out.meta.port = "once";
+    once.out.meta.address = this;
+    twice.out.meta.component = "requires_twice";
+    twice.out.meta.port = "twice";
+    twice.out.meta.address = this;
+
+    p.in.e = connect<void>(rt, this,
+    boost::function<void()>
+    ([this] ()
+    {
+      trace (p, "e");
+      p_e();
+      trace_return (p, "return");
+      return;
+    }
+    ));
+    once.out.a= [this] {trace (once, "a");
+      rt.defer (once.in.meta.address, connect<void>(rt, this,
+      boost::function<void()>(
+      [this] ()
+      {
+        once_a() ;
+        return;
+      }
+      )));};
+    twice.out.a= [this] {trace (twice, "a");
+      rt.defer (twice.in.meta.address, connect<void>(rt, this,
+      boost::function<void()>(
+      [this] ()
+      {
+        twice_a() ;
+        return;
+      }
+      )));};
   }
 
   void requires_twice::p_e()
   {
-    std::cout << "requires_twice.p_e" << std::endl;
     {
       once.in.e();
       twice.in.e();
@@ -50,16 +87,14 @@ namespace dezyne
 
   void requires_twice::once_a()
   {
-    std::cout << "requires_twice.once_a" << std::endl;
     {
     }
   }
 
   void requires_twice::twice_a()
   {
-    std::cout << "requires_twice.twice_a" << std::endl;
     {
-      rt.defer(this, boost::bind(p.out.a));
+      p.out.a();
     }
   }
 

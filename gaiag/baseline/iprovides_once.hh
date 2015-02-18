@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -29,7 +30,6 @@
 
 namespace dezyne
 {
-
   struct iprovides_once
   {
 
@@ -37,13 +37,35 @@ namespace dezyne
     {
       boost::function<void ()> foo;
 
+      struct
+      {
+        const char* component;
+        const char* port;
+        void*       address;
+      } meta;
     } in;
 
     struct
     {
       boost::function<void ()> bar;
 
+      struct
+      {
+        const char* component;
+        const char* port;
+        void*       address;
+      } meta;
     } out;
   };
+
+  inline void connect (iprovides_once& provided, iprovides_once& required)
+  {
+    assert (not required.in.foo);
+
+    assert (not provided.out.bar);
+
+    provided.out = required.out;
+    required.in = provided.in;
+  }
 }
 #endif // DEZYNE_IPROVIDES_ONCE_HH

@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -133,6 +134,7 @@ static void sensor_triggered(Alarm* self) {
 	}
 	else if (self->state == Alarm_States_Armed) {
 		{
+<<<<<<< HEAD
 			{
 				args_console_detected a = {sizeof(args_console_detected), self->console->out.detected, self};
 				runtime_defer(self->rt, self, helper_console_detected, &a);
@@ -140,6 +142,10 @@ static void sensor_triggered(Alarm* self) {
 			self->siren->in.turnon(self->siren);
 			self->sounding = true;
 			self->state = Alarm_States_Triggered;
+=======
+			args_console_detected a = {sizeof(args_console_detected), self->console->out.detected, self};
+			runtime_defer(&self->sub, helper_console_detected, &a);
+>>>>>>> c191e39... c: add runtime_comp struct
 		}
 	}
 	else if (self->state == Alarm_States_Disarming) {
@@ -160,6 +166,7 @@ static void sensor_disabled(Alarm* self) {
 	else if (self->state == Alarm_States_Armed) {
 		assert(false);
 	}
+<<<<<<< HEAD
 	else if (self->state == Alarm_States_Disarming && self->sounding) {
 		{
 			args_console_deactivated a = {sizeof(args_console_deactivated), self->console->out.deactivated, self};
@@ -173,6 +180,24 @@ static void sensor_disabled(Alarm* self) {
 		{
 			args_console_deactivated a = {sizeof(args_console_deactivated), self->console->out.deactivated, self};
 			runtime_defer(self->rt, self, helper_console_deactivated, &a);
+=======
+	else if (self->state == Alarm_States_Disarming) {
+		if (self->sounding) {
+			{
+				args_console_deactivated a = {sizeof(args_console_deactivated), self->console->out.deactivated, self};
+				runtime_defer(&self->sub, helper_console_deactivated, &a);
+			}
+			self->siren->in.turnoff(self->siren);
+			self->state = Alarm_States_Disarmed;
+			self->sounding = false;
+		}
+		else {
+			{
+				args_console_deactivated a = {sizeof(args_console_deactivated), self->console->out.deactivated, self};
+				runtime_defer(&self->sub, helper_console_deactivated, &a);
+			}
+			self->state = Alarm_States_Disarmed;
+>>>>>>> c191e39... c: add runtime_comp struct
 		}
 		self->state = Alarm_States_Disarmed;
 	}
@@ -203,8 +228,7 @@ static void callback_sensor_disabled(ISensor* self) {
 
 
 void Alarm_init (Alarm* self, locator* dezyne_locator) {
-	self->rt = dezyne_locator->rt;
-	runtime_set(self->rt, self);
+	runtime_sub_init(dezyne_locator->rt, &self->sub);
 	self->state = Alarm_States_Disarmed;
 	self->sounding = false;
 	self->console = &self->console_;

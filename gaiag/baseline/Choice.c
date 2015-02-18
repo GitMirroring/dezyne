@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -64,21 +65,21 @@ static void c_e(Choice* self) {
 		self->s = Choice_State_Idle;
 		{
 			args_c_a a = {sizeof(args_c_a), self->c->out.a, self};
-			runtime_defer(self->rt, self, helper_c_a, &a);
+			runtime_defer(&self->sub, helper_c_a, &a);
 		}
 	}
 	else if (self->s == Choice_State_Idle) {
 		self->s = Choice_State_Busy;
 		{
 			args_c_a a = {sizeof(args_c_a), self->c->out.a, self};
-			runtime_defer(self->rt, self, helper_c_a, &a);
+			runtime_defer(&self->sub, helper_c_a, &a);
 		}
 	}
 	else if (self->s == Choice_State_Busy) {
 		self->s = Choice_State_Idle;
 		{
 			args_c_a a = {sizeof(args_c_a), self->c->out.a, self};
-			runtime_defer(self->rt, self, helper_c_a, &a);
+			runtime_defer(&self->sub, helper_c_a, &a);
 		}
 	}
 }
@@ -90,8 +91,7 @@ static void callback_c_e(IChoice* self) {
 
 
 void Choice_init (Choice* self, locator* dezyne_locator) {
-	self->rt = dezyne_locator->rt;
-	runtime_set(self->rt, self);
+	runtime_sub_init(dezyne_locator->rt, &self->sub);
 	self->s = Choice_State_Off;
 	self->c = &self->c_;
 	self->c->in.e = callback_c_e;

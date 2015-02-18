@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -69,7 +70,7 @@ static void toggle(function* self) {
 	if (self->f) {
 		{
 			args_i_c a = {sizeof(args_i_c), self->i->out.c, self};
-			runtime_defer(self->rt, self, helper_i_c, &a);
+			runtime_defer(&self->sub, helper_i_c, &a);
 		}
 	}
 	self->f = !(self->f);
@@ -95,7 +96,7 @@ static void i_b(function* self) {
 			toggle (self);
 			{
 				args_i_d a = {sizeof(args_i_d), self->i->out.d, self};
-				runtime_defer(self->rt, self, helper_i_d, &a);
+				runtime_defer(&self->sub, helper_i_d, &a);
 			}
 		}
 	}
@@ -113,8 +114,7 @@ static void callback_i_b(I* self) {
 
 
 void function_init (function* self, locator* dezyne_locator) {
-	self->rt = dezyne_locator->rt;
-	runtime_set(self->rt, self);
+	runtime_sub_init(dezyne_locator->rt, &self->sub);
 	self->f = false;
 	self->i = &self->i_;
 	self->i->in.a = callback_i_a;

@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -26,6 +27,8 @@
 #include "locator.hh"
 #include "runtime.hh"
 
+#include <iostream>
+
 namespace dezyne
 {
   Choice::Choice(const locator& dezyne_locator)
@@ -33,26 +36,38 @@ namespace dezyne
   , s(State::Off)
   , c()
   {
-    c.in.e = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&Choice::c_e, this)));
+    c.in.meta.component = "Choice";
+    c.in.meta.port = "c";
+    c.in.meta.address = this;
+
+    c.in.e = connect<void>(rt, this,
+    boost::function<void()>
+    ([this] ()
+    {
+      trace (c, "e");
+      c_e();
+      trace_return (c, "return");
+      return;
+    }
+    ));
   }
 
   void Choice::c_e()
   {
-    std::cout << "Choice.c_e" << std::endl;
     if (s == State::Off)
     {
       s = State::Idle;
-      rt.defer(this, boost::bind(c.out.a));
+      c.out.a();
     }
     else if (s == State::Idle)
     {
       s = State::Busy;
-      rt.defer(this, boost::bind(c.out.a));
+      c.out.a();
     }
     else if (s == State::Busy)
     {
       s = State::Idle;
-      rt.defer(this, boost::bind(c.out.a));
+      c.out.a();
     }
   }
 

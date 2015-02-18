@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -76,14 +77,14 @@ static void i_e(Guardthreetopon* self) {
 	if (true && self->b) {
 		{
 			args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-			runtime_defer(self->rt, self, helper_i_a, &a);
+			runtime_defer(&self->sub, helper_i_a, &a);
 		}
 	}
 	else if (true && !(self->b)) {
 		bool c = true;
 		if (c) {
 			args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-			runtime_defer(self->rt, self, helper_i_a, &a);
+			runtime_defer(&self->sub, helper_i_a, &a);
 		}
 	}
 }
@@ -93,11 +94,11 @@ static void i_t(Guardthreetopon* self) {
 	DZN_LOG("Guardthreetopon.i_t");
 	if (self->b) {
 		args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-		runtime_defer(self->rt, self, helper_i_a, &a);
+		runtime_defer(&self->sub, helper_i_a, &a);
 	}
 	else if (!(self->b)) {
 		args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-		runtime_defer(self->rt, self, helper_i_a, &a);
+		runtime_defer(&self->sub, helper_i_a, &a);
 	}
 }
 
@@ -106,7 +107,7 @@ static void i_s(Guardthreetopon* self) {
 	DZN_LOG("Guardthreetopon.i_s");
 	{
 		args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-		runtime_defer(self->rt, self, helper_i_a, &a);
+		runtime_defer(&self->sub, helper_i_a, &a);
 	}
 }
 
@@ -139,8 +140,7 @@ static void callback_r_a(RGuardthreetopon* self) {
 
 
 void Guardthreetopon_init (Guardthreetopon* self, locator* dezyne_locator) {
-	self->rt = dezyne_locator->rt;
-	runtime_set(self->rt, self);
+	runtime_sub_init(dezyne_locator->rt, &self->sub);
 	self->b = false;
 	self->i = &self->i_;
 	self->i->in.e = callback_i_e;

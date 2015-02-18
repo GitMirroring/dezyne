@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -28,6 +29,8 @@
 #include "IChoice.hh"
 
 
+#include "runtime.hh"
+
 namespace dezyne
 {
   struct locator;
@@ -35,6 +38,7 @@ namespace dezyne
 
   struct Adaptor
   {
+    dezyne::meta meta;
     runtime& rt;
     struct State
     {
@@ -42,6 +46,17 @@ namespace dezyne
       {
         Idle, Active, Terminating
       };
+      static const char* to_string(type v)
+      {
+        switch(v)
+        {
+          case Idle: return "State_Idle";
+          case Active: return "State_Active";
+          case Terminating: return "State_Terminating";
+
+        }
+        return "";
+      }
     };
     typedef int Twice;
     Adaptor::State::type state;

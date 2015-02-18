@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -28,6 +29,8 @@
 #include "imodeling.hh"
 
 
+#include "runtime.hh"
+
 namespace dezyne
 {
   struct locator;
@@ -35,6 +38,7 @@ namespace dezyne
 
   struct modeling
   {
+    dezyne::meta meta;
     runtime& rt;
     dummy p;
     imodeling r;

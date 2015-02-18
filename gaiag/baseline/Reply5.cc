@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -26,6 +27,8 @@
 #include "locator.hh"
 #include "runtime.hh"
 
+#include <iostream>
+
 namespace dezyne
 {
   Reply5::Reply5(const locator& dezyne_locator)
@@ -34,12 +37,27 @@ namespace dezyne
   , i()
   , u()
   {
-    i.in.done = connect<I::Status::type>(rt, this, boost::function<I::Status::type()>(boost::bind<I::Status::type>(&Reply5::i_done, this)));
+    i.in.meta.component = "Reply5";
+    i.in.meta.port = "i";
+    i.in.meta.address = this;
+    u.out.meta.component = "Reply5";
+    u.out.meta.port = "u";
+    u.out.meta.address = this;
+
+    i.in.done = connect<I::Status::type>(rt, this,
+    boost::function<I::Status::type()>
+    ([this] ()
+    {
+      trace (i, "done");
+      auto r = i_done();
+      trace_return (i, I::Status::to_string(r));
+      return r;
+    }
+    ));
   }
 
   I::Status::type Reply5::i_done()
   {
-    std::cout << "Reply5.i_done" << std::endl;
     if (true)
     {
       U::Status::type s = u.in.what ();

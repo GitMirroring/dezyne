@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -25,8 +26,9 @@
 #define DEZYNE_INCOMPLETE_HH
 
 #include "iincomplete.hh"
-#include "iincomplete.hh"
 
+
+#include "runtime.hh"
 
 namespace dezyne
 {
@@ -35,6 +37,7 @@ namespace dezyne
 
   struct incomplete
   {
+    dezyne::meta meta;
     runtime& rt;
     iincomplete p;
     iincomplete r;

@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -63,15 +64,15 @@ static void i_e(Topon* self) {
 	DZN_LOG("Topon.i_e");
 	if (self->b && !(self->c)) {
 		args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-		runtime_defer(self->rt, self, helper_i_a, &a);
+		runtime_defer(&self->sub, helper_i_a, &a);
 	}
 	else if (!(self->b) && !(self->c)) {
 		args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-		runtime_defer(self->rt, self, helper_i_a, &a);
+		runtime_defer(&self->sub, helper_i_a, &a);
 	}
 	else if (!(self->c) && !(self->b)) {
 		args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-		runtime_defer(self->rt, self, helper_i_a, &a);
+		runtime_defer(&self->sub, helper_i_a, &a);
 	}
 }
 
@@ -81,7 +82,7 @@ static void i_t(Topon* self) {
 	{
 		{
 			args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-			runtime_defer(self->rt, self, helper_i_a, &a);
+			runtime_defer(&self->sub, helper_i_a, &a);
 		}
 	}
 }
@@ -98,8 +99,7 @@ static void callback_i_t(ITopon* self) {
 
 
 void Topon_init (Topon* self, locator* dezyne_locator) {
-	self->rt = dezyne_locator->rt;
-	runtime_set(self->rt, self);
+	runtime_sub_init(dezyne_locator->rt, &self->sub);
 	self->b = false;
 	self->c = false;
 	self->i = &self->i_;

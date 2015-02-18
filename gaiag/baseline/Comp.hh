@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -28,6 +29,8 @@
 #include "IDevice.hh"
 
 
+#include "runtime.hh"
+
 namespace dezyne
 {
   struct locator;
@@ -35,6 +38,7 @@ namespace dezyne
 
   struct Comp
   {
+    dezyne::meta meta;
     runtime& rt;
     struct State
     {
@@ -42,6 +46,17 @@ namespace dezyne
       {
         Uninitialized, Initialized, Error
       };
+      static const char* to_string(type v)
+      {
+        switch(v)
+        {
+          case Uninitialized: return "State_Uninitialized";
+          case Initialized: return "State_Initialized";
+          case Error: return "State_Error";
+
+        }
+        return "";
+      }
     };
     Comp::State::type s;
     IComp::result_t::type reply_IComp_result_t;

@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -61,13 +62,13 @@ static void i_e(sugar* self) {
 	DZN_LOG("sugar.i_e");
 	if (self->s == sugar_Enum_False) if (self->s == sugar_Enum_False) {
 		args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-		runtime_defer(self->rt, self, helper_i_a, &a);
+		runtime_defer(&self->sub, helper_i_a, &a);
 	}
 	else {
 		int t = sugar_Enum_False;
 		if (t == sugar_Enum_True) {
 			args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-			runtime_defer(self->rt, self, helper_i_a, &a);
+			runtime_defer(&self->sub, helper_i_a, &a);
 		}
 	}
 }
@@ -79,8 +80,7 @@ static void callback_i_e(I* self) {
 
 
 void sugar_init (sugar* self, locator* dezyne_locator) {
-	self->rt = dezyne_locator->rt;
-	runtime_set(self->rt, self);
+	runtime_sub_init(dezyne_locator->rt, &self->sub);
 	self->s = sugar_Enum_False;
 	self->i = &self->i_;
 	self->i->in.e = callback_i_e;

@@ -2,7 +2,7 @@
 # Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
 # Copyright © 2014 Jan Nieuwenhuizen <jan@avatar.nl>
-# Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
+# Copyright © 2014, 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 # Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Gaiag.
@@ -285,7 +285,7 @@ c++-choice:
 	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c++/* .
 	cd out && $(shell pwd)/gaiag -l c++ examples/regression/Choice.dzn
 	ln -s ../../webapp/server/commands/runtime/c++/main.cc out
-	for i in out/*cc; do ccache g++ -g -Wall -Wextra -c -o out/$$(basename $$i .cc).o $$i; done && g++ -o out/$@ out/*.o && out/$@ > out/$@.trace
+	for i in out/*cc; do ccache g++ -std=c++11 -g -Wall -Wextra -c -o out/$$(basename $$i .cc).o $$i; done && g++ -o out/$@ out/*.o && out/$@ > out/$@.trace
 	-$(diff) baseline/$@.trace out
 	$(diff) baseline/Choice.cc out
 
@@ -295,7 +295,7 @@ rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c
 cd out && $(shell pwd)/gaiag -l c++ examples/regression/$*.dzn
 -$(diff) baseline/$*.hh out
 -$(diff) baseline/$*.cc out
-ccache g++ -o out/$*.o -c out/$*.cc $(UPDATE)
+ccache g++ -std=c++11 -o out/$*.o -c out/$*.cc $(UPDATE)
 @$(diff) baseline/$*.hh out >/dev/null
 @$(diff) baseline/$*.cc out >/dev/null
 endef
@@ -670,12 +670,12 @@ glue:
 	ln -sf examples/ISirenInterface.h out
 	ln -sf examples/SirenComponent.h out
 	ln -sf examples/SirenComponent.cpp out
-	for i in out/*.c*; do ccache g++ -g -Wall -Wextra -I out -I $(DEPTH)/examples/codegen/asd_cpp_runtime -c $$i -o out/$$(basename $$(basename $$i .cpp) .cc).o; done
+	for i in out/*.c*; do ccache g++ -std=c++11 -g -Wall -Wextra -I out -I $(DEPTH)/examples/codegen/asd_cpp_runtime -c $$i -o out/$$(basename $$(basename $$i .cpp) .cc).o; done
 	cd out && g++ -o test *.o && ./test
 	ln -sf examples/AlarmComponent.h out
 	ln -sf examples/IConsoleInterface.h out
 	cd out && $(shell pwd)/gaiag -l c++ examples/ExternalAlarm.dzn
-	g++ -g -Wall -Wextra -I out -I $(DEPTH)/examples/codegen/asd_cpp_runtime -c out/glue-Alarm.cc -o out/glue-Alarm.o
+	g++ -std=c++11 -g -Wall -Wextra -I out -I $(DEPTH)/examples/codegen/asd_cpp_runtime -c out/glue-Alarm.cc -o out/glue-Alarm.o
 	$(diff) baseline/glue-Alarm.cc out
 
 code-update: c-update c++-update goops-update java-update javascript-update python-update

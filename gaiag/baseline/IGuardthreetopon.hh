@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -28,7 +29,6 @@
 
 namespace dezyne
 {
-
   struct IGuardthreetopon
   {
 
@@ -38,13 +38,37 @@ namespace dezyne
       boost::function<void ()> t;
       boost::function<void ()> s;
 
+      struct
+      {
+        const char* component;
+        const char* port;
+        void*       address;
+      } meta;
     } in;
 
     struct
     {
       boost::function<void ()> a;
 
+      struct
+      {
+        const char* component;
+        const char* port;
+        void*       address;
+      } meta;
     } out;
   };
+
+  inline void connect (IGuardthreetopon& provided, IGuardthreetopon& required)
+  {
+    assert (not required.in.e);
+    assert (not required.in.t);
+    assert (not required.in.s);
+
+    assert (not provided.out.a);
+
+    provided.out = required.out;
+    required.in = provided.in;
+  }
 }
 #endif // DEZYNE_IGUARDTHREETOPON_HH

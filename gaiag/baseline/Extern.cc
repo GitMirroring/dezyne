@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -26,6 +27,8 @@
 #include "locator.hh"
 #include "runtime.hh"
 
+#include <iostream>
+
 namespace dezyne
 {
   Extern::Extern(const locator& dezyne_locator)
@@ -34,12 +37,24 @@ namespace dezyne
   , j()
   , port()
   {
-    port.in.e = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&Extern::port_e, this)));
+    port.in.meta.component = "Extern";
+    port.in.meta.port = "port";
+    port.in.meta.address = this;
+
+    port.in.e = connect<void>(rt, this,
+    boost::function<void()>
+    ([this] ()
+    {
+      trace (port, "e");
+      port_e();
+      trace_return (port, "return");
+      return;
+    }
+    ));
   }
 
   void Extern::port_e()
   {
-    std::cout << "Extern.port_e" << std::endl;
     assert(false);
   }
 

@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -27,19 +28,24 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "pair.h"
+#include "queue.h"
 #include "map.h"
 
 typedef struct {
   map queues;
 } runtime;
 
-void runtime_init (runtime*);
-void runtime_flush (runtime* self, void* scope);
-void runtime_defer (runtime* self, void* scope, void (*event)(void*), void* args);
-void runtime_event (void (*event)(void*), void* args);
-void runtime_set (runtime* runtime, void* self);
+typedef struct {
+  runtime* rt;
+  bool handling;
+  queue *q;
+} runtime_sub;
 
+void runtime_init (runtime*);
+void runtime_sub_init (runtime* self, runtime_sub* sub);
+void runtime_flush (runtime_sub* self);
+void runtime_defer (runtime_sub* self, void (*event)(void*), void* args);
+void runtime_event (void (*event)(void*), void* args);
 #define DZN_LOG(msg) printf ("%s\n", msg)
 
 #endif

@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -27,6 +28,8 @@
 #include "Bottom.hh"
 
 
+#include "runtime.hh"
+
 namespace dezyne
 {
   struct locator;
@@ -34,6 +37,7 @@ namespace dezyne
 
   struct GuardedRequiredIllegal
   {
+    dezyne::meta meta;
     runtime& rt;
     bool c;
     Top t;

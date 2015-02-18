@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -25,9 +26,9 @@
 #define DEZYNE_REQUIRES_TWICE_HH
 
 #include "irequires_twice.hh"
-#include "irequires_twice.hh"
-#include "irequires_twice.hh"
 
+
+#include "runtime.hh"
 
 namespace dezyne
 {
@@ -36,6 +37,7 @@ namespace dezyne
 
   struct requires_twice
   {
+    dezyne::meta meta;
     runtime& rt;
     irequires_twice p;
     irequires_twice once;

@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -25,8 +26,9 @@
 #define DEZYNE_INCOMPLETE_WITH_MODELING_EVENT_HH
 
 #include "iincomplete_with_modeling_event.hh"
-#include "iincomplete_with_modeling_event.hh"
 
+
+#include "runtime.hh"
 
 namespace dezyne
 {
@@ -35,6 +37,7 @@ namespace dezyne
 
   struct incomplete_with_modeling_event
   {
+    dezyne::meta meta;
     runtime& rt;
     iincomplete_with_modeling_event p;
     iincomplete_with_modeling_event r;

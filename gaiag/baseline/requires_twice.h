@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -33,7 +34,7 @@
 
 
 typedef struct {
-	runtime* rt;
+	runtime_sub sub;
 	irequires_twice p_;
 	irequires_twice* p;
 	irequires_twice once_;

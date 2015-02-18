@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -26,6 +27,8 @@
 #include "locator.hh"
 #include "runtime.hh"
 
+#include <iostream>
+
 namespace dezyne
 {
   imperative::imperative(const locator& dezyne_locator)
@@ -33,17 +36,29 @@ namespace dezyne
   , state(States::I)
   , i()
   {
-    i.in.e = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&imperative::i_e, this)));
+    i.in.meta.component = "imperative";
+    i.in.meta.port = "i";
+    i.in.meta.address = this;
+
+    i.in.e = connect<void>(rt, this,
+    boost::function<void()>
+    ([this] ()
+    {
+      trace (i, "e");
+      i_e();
+      trace_return (i, "return");
+      return;
+    }
+    ));
   }
 
   void imperative::i_e()
   {
-    std::cout << "imperative.i_e" << std::endl;
     if (state == States::I)
     {
-      rt.defer(this, boost::bind(i.out.f));
-      rt.defer(this, boost::bind(i.out.g));
-      rt.defer(this, boost::bind(i.out.h));
+      i.out.f();
+      i.out.g();
+      i.out.h();
       state = States::II;
     }
     else if (state == States::II)
@@ -52,15 +67,15 @@ namespace dezyne
     }
     else if (state == States::III)
     {
-      rt.defer(this, boost::bind(i.out.f));
-      rt.defer(this, boost::bind(i.out.g));
-      rt.defer(this, boost::bind(i.out.g));
-      rt.defer(this, boost::bind(i.out.f));
+      i.out.f();
+      i.out.g();
+      i.out.g();
+      i.out.f();
       state = States::IV;
     }
     else if (state == States::IV)
     {
-      rt.defer(this, boost::bind(i.out.h));
+      i.out.h();
       state = States::I;
     }
   }

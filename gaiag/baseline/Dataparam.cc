@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -31,18 +32,6 @@
 
 namespace dezyne
 {
-  template <typename T>
-  void trace(const T& t, const char* e)
-  {
-    std::clog << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << ":" << e << std::endl;
-  }
-
-  template <typename T>
-  void trace_return(const T& t, const char* e)
-  {
-    std::clog << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << " return " << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << ":" << e << std::endl ;
-  }
-
   Dataparam::Dataparam(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , mi(0)
@@ -53,133 +42,133 @@ namespace dezyne
     port.in.meta.port = "port";
     port.in.meta.address = this;
 
-    port.in.e0 = connect<void>(rt, this, 
+    port.in.e0 = connect<void>(rt, this,
     boost::function<void()>
-    ([this] () 
-    { 
+    ([this] ()
+    {
       trace (port, "e0");
       port_e0();
-      trace_return (port, "e0");
-      return ;
+      trace_return (port, "return");
+      return;
     }
     ));
-    port.in.e0r = connect<IDataparam::Status::type>(rt, this, 
+    port.in.e0r = connect<IDataparam::Status::type>(rt, this,
     boost::function<IDataparam::Status::type()>
-    ([this] () 
-    { 
+    ([this] ()
+    {
       trace (port, "e0r");
       auto r = port_e0r();
-      trace_return (port, "e0r");
+      trace_return (port, IDataparam::Status::to_string(r));
       return r;
     }
     ));
-    port.in.e = connect<int>(rt, this, 
+    port.in.e = connect<int>(rt, this,
     boost::function<void(int)>
-    ([this] (int i) 
-    { 
+    ([this] (int i)
+    {
       trace (port, "e");
       port_e(i);
-      trace_return (port, "e");
-      return ;
+      trace_return (port, "return");
+      return;
     }
     ));
-    port.in.er = connect<IDataparam::Status::type,int>(rt, this, 
+    port.in.er = connect<IDataparam::Status::type,int>(rt, this,
     boost::function<IDataparam::Status::type(int)>
-    ([this] (int i) 
-    { 
+    ([this] (int i)
+    {
       trace (port, "er");
       auto r = port_er(i);
-      trace_return (port, "er");
+      trace_return (port, IDataparam::Status::to_string(r));
       return r;
     }
     ));
-    port.in.eer = connect<IDataparam::Status::type,int,int>(rt, this, 
+    port.in.eer = connect<IDataparam::Status::type,int,int>(rt, this,
     boost::function<IDataparam::Status::type(int,int)>
-    ([this] (int i, int j) 
-    { 
+    ([this] (int i, int j)
+    {
       trace (port, "eer");
       auto r = port_eer(i,j);
-      trace_return (port, "eer");
+      trace_return (port, IDataparam::Status::to_string(r));
       return r;
     }
     ));
-    port.in.eo = connect<int&>(rt, this, 
+    port.in.eo = connect<int&>(rt, this,
     boost::function<void(int&)>
-    ([this] (int& i) 
-    { 
+    ([this] (int& i)
+    {
       trace (port, "eo");
       port_eo(i);
-      trace_return (port, "eo");
-      return ;
+      trace_return (port, "return");
+      return;
     }
     ));
-    port.in.eoo = connect<int&,int&>(rt, this, 
+    port.in.eoo = connect<int&,int&>(rt, this,
     boost::function<void(int&,int&)>
-    ([this] (int& i, int& j) 
-    { 
+    ([this] (int& i, int& j)
+    {
       trace (port, "eoo");
       port_eoo(i,j);
-      trace_return (port, "eoo");
-      return ;
+      trace_return (port, "return");
+      return;
     }
     ));
-    port.in.eio = connect<int,int&>(rt, this, 
+    port.in.eio = connect<int,int&>(rt, this,
     boost::function<void(int,int&)>
-    ([this] (int i, int& j) 
-    { 
+    ([this] (int i, int& j)
+    {
       trace (port, "eio");
       port_eio(i,j);
-      trace_return (port, "eio");
-      return ;
+      trace_return (port, "return");
+      return;
     }
     ));
-    port.in.eio2 = connect<int&>(rt, this, 
+    port.in.eio2 = connect<int&>(rt, this,
     boost::function<void(int&)>
-    ([this] (int& i) 
-    { 
+    ([this] (int& i)
+    {
       trace (port, "eio2");
       port_eio2(i);
-      trace_return (port, "eio2");
-      return ;
+      trace_return (port, "return");
+      return;
     }
     ));
-    port.in.eor = connect<IDataparam::Status::type,int&>(rt, this, 
+    port.in.eor = connect<IDataparam::Status::type,int&>(rt, this,
     boost::function<IDataparam::Status::type(int&)>
-    ([this] (int& i) 
-    { 
+    ([this] (int& i)
+    {
       trace (port, "eor");
       auto r = port_eor(i);
-      trace_return (port, "eor");
+      trace_return (port, IDataparam::Status::to_string(r));
       return r;
     }
     ));
-    port.in.eoor = connect<IDataparam::Status::type,int&,int&>(rt, this, 
+    port.in.eoor = connect<IDataparam::Status::type,int&,int&>(rt, this,
     boost::function<IDataparam::Status::type(int&,int&)>
-    ([this] (int& i, int& j) 
-    { 
+    ([this] (int& i, int& j)
+    {
       trace (port, "eoor");
       auto r = port_eoor(i,j);
-      trace_return (port, "eoor");
+      trace_return (port, IDataparam::Status::to_string(r));
       return r;
     }
     ));
-    port.in.eior = connect<IDataparam::Status::type,int,int&>(rt, this, 
+    port.in.eior = connect<IDataparam::Status::type,int,int&>(rt, this,
     boost::function<IDataparam::Status::type(int,int&)>
-    ([this] (int i, int& j) 
-    { 
+    ([this] (int i, int& j)
+    {
       trace (port, "eior");
       auto r = port_eior(i,j);
-      trace_return (port, "eior");
+      trace_return (port, IDataparam::Status::to_string(r));
       return r;
     }
     ));
-    port.in.eio2r = connect<IDataparam::Status::type,int&>(rt, this, 
+    port.in.eio2r = connect<IDataparam::Status::type,int&>(rt, this,
     boost::function<IDataparam::Status::type(int&)>
-    ([this] (int& i) 
-    { 
+    ([this] (int& i)
+    {
       trace (port, "eio2r");
       auto r = port_eio2r(i);
-      trace_return (port, "eio2r");
+      trace_return (port, IDataparam::Status::to_string(r));
       return r;
     }
     ));
@@ -188,14 +177,14 @@ namespace dezyne
   void Dataparam::port_e0()
   {
     {
-      rt.defer(this, [=] { port.out.a6(0, 1, 2, 3, 4, 5); });
+      port.out.a6(0, 1, 2, 3, 4, 5);
     }
   }
 
   IDataparam::Status::type Dataparam::port_e0r()
   {
     {
-      rt.defer(this, [=] { port.out.a0(); });
+      port.out.a0();
       reply_IDataparam_Status = IDataparam::Status::Yes;
     }
     return reply_IDataparam_Status;
@@ -210,8 +199,8 @@ namespace dezyne
         s = s;
         mi = pi;
         mi = xfunx (pi, pi + pi);
-        rt.defer(this, [=] { port.out.a(mi); });
-        rt.defer(this, [=] { port.out.aa(mi, pi); });
+        port.out.a(mi);
+        port.out.aa(mi, pi);
       }
     }
   }
@@ -223,8 +212,8 @@ namespace dezyne
       {
         IDataparam::Status::type s = IDataparam::Status::No;
         mi = pi;
-        rt.defer(this, [=] { port.out.a(mi); });
-        rt.defer(this, [=] { port.out.aa(mi, pi); });
+        port.out.a(mi);
+        port.out.aa(mi, pi);
         if (true)
         {
           reply_IDataparam_Status = IDataparam::Status::Yes;
@@ -242,8 +231,8 @@ namespace dezyne
   {
     {
       IDataparam::Status::type s = IDataparam::Status::No;
-      rt.defer(this, [=] { port.out.a(j); });
-      rt.defer(this, [=] { port.out.aa(j, i); });
+      port.out.a(j);
+      port.out.aa(j, i);
       reply_IDataparam_Status = s;
     }
     return reply_IDataparam_Status;

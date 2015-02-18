@@ -29,7 +29,7 @@
 #include <string.h>
 
 #include "mem.h"
-#include "pair.h"
+#include "closure.h"
 #include "queue.h"
 
 typedef struct {
@@ -39,14 +39,8 @@ typedef struct {
 } arguments;
 
 typedef struct {
-  runtime* rt;
+  runtime_sub sub;
 } component;
-
-typedef struct {
-  void (*func)(void*);
-  void *args;
-} closure;
-
 
 void
 runtime_init (runtime* self)
@@ -54,83 +48,58 @@ runtime_init (runtime* self)
   map_init (&self->queues);
 }
 
-static char*
-runtime_key (void* scope)
-{
-  static char buf[sizeof (void*) * 2 + 3];
-  sprintf (buf, "%p", scope);
-  return buf;
-}
-
-static pair*
-runtime_get (runtime* self, void* scope)
-{
-  void* p = 0;
-  map_get (&self->queues, runtime_key (scope), &p);
-  return p;
-}
-
 void
-runtime_set (runtime* self, void* scope)
+runtime_sub_init (runtime* self, runtime_sub* sub)
 {
-  queue* q = dzn_calloc (sizeof (queue), 1);
-  pair* p = dzn_malloc (sizeof (pair));
-  p->first = false;
-  p->second = q;
-  map_put (&self->queues, runtime_key (scope), p);
+  sub->rt = self;
+  sub->handling = false;
+  sub->q = dzn_calloc (sizeof (queue), 1);
 }
 
 bool*
-runtime_handling (runtime* self, void* scope)
+runtime_handling (runtime_sub* sub)
 {
-  pair* p = runtime_get (self, scope);
-  assert (p);
-  return (bool*)&p->first;
+  return &sub->handling;
 }
 
 void
-runtime_flush (runtime* self, void* scope)
+runtime_flush (runtime_sub* sub)
 {
-  pair* p = runtime_get (self, scope);
-  if (p) {
-    queue* q = p->second;
-    while (!queue_empty (q))
-    {
-      closure* c = queue_pop (q);
-      c->func (c->args);
-      free (c->args);
-      free (c);
-    }
+  queue* q = sub->q;
+  while (!queue_empty (q))
+  {
+    closure* c = queue_pop (q);
+    c->func (c->args);
+    free (c->args);
+    free (c);
   }
 }
 
 void
-runtime_defer (runtime* self, void* scope, void (*event)(void*), void* args)
+runtime_defer (runtime_sub* sub, void (*event)(void*), void* args)
 {
-  pair* p = runtime_get (self, scope);
-  assert (p);
   closure *c = dzn_malloc (sizeof (closure));
   c->func = event;
   arguments *a = args;
   c->args = dzn_malloc (a->size);
   memcpy (c->args, a, a->size);
-  queue_push (p->second, c);
+  queue_push (sub->q, c);
 }
 
 static void
-runtime_handle_event (runtime* self, void* scope, void (*event)(void*), void* args)
+runtime_handle_event (runtime_sub* sub, void (*event)(void*), void* args)
 {
-  bool* handle = runtime_handling (self, scope);
+  bool* handle = runtime_handling (sub);
   if (!*handle)
   {
     *handle = true;
     event (args);
-    runtime_flush (self, scope);
+    runtime_flush (sub);
     *handle = false;
   }
   else
   {
-    runtime_defer (self, scope, event, args);
+    runtime_defer (sub, event, args);
   }
 }
 
@@ -139,5 +108,5 @@ runtime_event (void (*event)(void*), void* args)
 {
   arguments* a = args;
   component* c = a->self;
-  runtime_handle_event (c->rt, c, event, args);
+  runtime_handle_event (&c->sub, event, args);
 }

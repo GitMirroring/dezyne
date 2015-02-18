@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -26,6 +27,8 @@
 #include "locator.hh"
 #include "runtime.hh"
 
+#include <iostream>
+
 namespace dezyne
 {
   reply_reorder::reply_reorder(const locator& dezyne_locator)
@@ -34,13 +37,36 @@ namespace dezyne
   , p()
   , r()
   {
-    p.in.start = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&reply_reorder::p_start, this)));
-    r.out.pong = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&reply_reorder::r_pong, this)));
+    p.in.meta.component = "reply_reorder";
+    p.in.meta.port = "p";
+    p.in.meta.address = this;
+    r.out.meta.component = "reply_reorder";
+    r.out.meta.port = "r";
+    r.out.meta.address = this;
+
+    p.in.start = connect<void>(rt, this,
+    boost::function<void()>
+    ([this] ()
+    {
+      trace (p, "start");
+      p_start();
+      trace_return (p, "return");
+      return;
+    }
+    ));
+    r.out.pong= [this] {trace (r, "pong");
+      rt.defer (r.in.meta.address, connect<void>(rt, this,
+      boost::function<void()>(
+      [this] ()
+      {
+        r_pong() ;
+        return;
+      }
+      )));};
   }
 
   void reply_reorder::p_start()
   {
-    std::cout << "reply_reorder.p_start" << std::endl;
     {
       r.in.ping();
     }
@@ -48,15 +74,14 @@ namespace dezyne
 
   void reply_reorder::r_pong()
   {
-    std::cout << "reply_reorder.r_pong" << std::endl;
     if (first)
     {
-      rt.defer(this, boost::bind(p.out.busy));
+      p.out.busy();
       first = not (first);
     }
     else if (not (first))
     {
-      rt.defer(this, boost::bind(p.out.finish));
+      p.out.finish();
       first = not (first);
     }
   }

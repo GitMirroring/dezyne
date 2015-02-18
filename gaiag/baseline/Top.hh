@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -28,7 +29,6 @@
 
 namespace dezyne
 {
-
   struct Top
   {
 
@@ -37,13 +37,36 @@ namespace dezyne
       boost::function<void ()> unguarded;
       boost::function<void ()> e;
 
+      struct
+      {
+        const char* component;
+        const char* port;
+        void*       address;
+      } meta;
     } in;
 
     struct
     {
       boost::function<void ()> f;
 
+      struct
+      {
+        const char* component;
+        const char* port;
+        void*       address;
+      } meta;
     } out;
   };
+
+  inline void connect (Top& provided, Top& required)
+  {
+    assert (not required.in.unguarded);
+    assert (not required.in.e);
+
+    assert (not provided.out.f);
+
+    provided.out = required.out;
+    required.in = provided.in;
+  }
 }
 #endif // DEZYNE_TOP_HH

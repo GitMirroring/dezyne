@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -56,7 +57,7 @@ static bool g(argument2* self, bool ga, bool gb) {
 	(void)self;
 	{
 		args_i_f a = {sizeof(args_i_f), self->i->out.f, self};
-		runtime_defer(self->rt, self, helper_i_f, &a);
+		runtime_defer(&self->sub, helper_i_f, &a);
 	}
 	return (ga || gb);
 }
@@ -72,7 +73,7 @@ static void i_e(argument2* self) {
 		if (c) {
 			{
 				args_i_f a = {sizeof(args_i_f), self->i->out.f, self};
-				runtime_defer(self->rt, self, helper_i_f, &a);
+				runtime_defer(&self->sub, helper_i_f, &a);
 			}
 		}
 	}
@@ -85,8 +86,7 @@ static void callback_i_e(I* self) {
 
 
 void argument2_init (argument2* self, locator* dezyne_locator) {
-	self->rt = dezyne_locator->rt;
-	runtime_set(self->rt, self);
+	runtime_sub_init(dezyne_locator->rt, &self->sub);
 	self->b = false;
 	self->i = &self->i_;
 	self->i->in.e = callback_i_e;

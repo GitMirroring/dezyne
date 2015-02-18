@@ -1,6 +1,5 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -22,34 +21,20 @@
 //
 // Code:
 
-#ifndef DEZYNE_REPLY2_HH
-#define DEZYNE_REPLY2_HH
+#include "mem.h"
 
-#include "I.hh"
-#include "U.hh"
+#include <assert.h>
 
-
-#include "runtime.hh"
-
-namespace dezyne
+void*
+dzn_calloc (size_t n, size_t size)
 {
-  struct locator;
-  struct runtime;
-
-  struct Reply2
-  {
-    dezyne::meta meta;
-    runtime& rt;
-    bool dummy;
-    I::Status::type reply_I_Status;
-    U::Status::type reply_U_Status;
-    I i;
-    U u;
-
-    Reply2(const locator&);
-
-    private:
-    I::Status::type i_done();
-  };
+  void* res = calloc(n, size);
+  if (!res) assert (0);
+  return res;
 }
-#endif // DEZYNE_REPLY2_HH
+
+void*
+dzn_malloc(size_t size)
+{
+  return dzn_calloc(1, size);
+}

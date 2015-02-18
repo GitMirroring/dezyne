@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -25,6 +26,8 @@
 #include "locator.hh"
 #include "runtime.hh"
 
+#include <iostream>
+
 namespace dezyne
 {
   GuardedRequiredIllegal::GuardedRequiredIllegal(const locator& dezyne_locator)
@@ -33,21 +36,52 @@ namespace dezyne
   , t()
   , b()
   {
-    t.in.unguarded = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&GuardedRequiredIllegal::t_unguarded, this)));
-    t.in.e = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&GuardedRequiredIllegal::t_e, this)));
-    b.out.f = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&GuardedRequiredIllegal::b_f, this)));
+    t.in.meta.component = "GuardedRequiredIllegal";
+    t.in.meta.port = "t";
+    t.in.meta.address = this;
+    b.out.meta.component = "GuardedRequiredIllegal";
+    b.out.meta.port = "b";
+    b.out.meta.address = this;
+
+    t.in.unguarded = connect<void>(rt, this,
+    boost::function<void()>
+    ([this] ()
+    {
+      trace (t, "unguarded");
+      t_unguarded();
+      trace_return (t, "return");
+      return;
+    }
+    ));
+    t.in.e = connect<void>(rt, this,
+    boost::function<void()>
+    ([this] ()
+    {
+      trace (t, "e");
+      t_e();
+      trace_return (t, "return");
+      return;
+    }
+    ));
+    b.out.f= [this] {trace (b, "f");
+      rt.defer (b.in.meta.address, connect<void>(rt, this,
+      boost::function<void()>(
+      [this] ()
+      {
+        b_f() ;
+        return;
+      }
+      )));};
   }
 
   void GuardedRequiredIllegal::t_unguarded()
   {
-    std::cout << "GuardedRequiredIllegal.t_unguarded" << std::endl;
     {
     }
   }
 
   void GuardedRequiredIllegal::t_e()
   {
-    std::cout << "GuardedRequiredIllegal.t_e" << std::endl;
     if (not (c))
     {
       c = true;
@@ -60,7 +94,6 @@ namespace dezyne
 
   void GuardedRequiredIllegal::b_f()
   {
-    std::cout << "GuardedRequiredIllegal.b_f" << std::endl;
     if (not (c))
     assert(false);
     else if (c)

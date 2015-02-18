@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -64,14 +65,14 @@ static void i_e(Guardtwotopon* self) {
 	if (true && self->b) {
 		{
 			args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-			runtime_defer(self->rt, self, helper_i_a, &a);
+			runtime_defer(&self->sub, helper_i_a, &a);
 		}
 	}
 	else if (true && !(self->b)) {
 		bool c = true;
 		if (c) {
 			args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-			runtime_defer(self->rt, self, helper_i_a, &a);
+			runtime_defer(&self->sub, helper_i_a, &a);
 		}
 	}
 }
@@ -81,7 +82,7 @@ static void i_t(Guardtwotopon* self) {
 	DZN_LOG("Guardtwotopon.i_t");
 	{
 		args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-		runtime_defer(self->rt, self, helper_i_a, &a);
+		runtime_defer(&self->sub, helper_i_a, &a);
 	}
 }
 
@@ -97,8 +98,7 @@ static void callback_i_t(IGuardtwotopon* self) {
 
 
 void Guardtwotopon_init (Guardtwotopon* self, locator* dezyne_locator) {
-	self->rt = dezyne_locator->rt;
-	runtime_set(self->rt, self);
+	runtime_sub_init(dezyne_locator->rt, &self->sub);
 	self->b = false;
 	self->i = &self->i_;
 	self->i->in.e = callback_i_e;

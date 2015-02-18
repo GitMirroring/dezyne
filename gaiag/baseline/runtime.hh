@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -37,6 +38,18 @@
 
 namespace dezyne
 {
+  template <typename T>
+  void trace(const T& t, const char* e)
+  {
+    std::clog << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << e << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << e << std::endl;
+  }
+
+  template <typename T>
+  void trace_return(const T& t, const char* e)
+  {
+    std::clog << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << e << " -> " << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << e << std::endl ;
+  }
+
   struct component;
 
   struct meta
@@ -51,6 +64,16 @@ namespace dezyne
   {
     dezyne::meta meta;
   };
+
+  template <typename T>
+  void apply(const T* t, const std::function<void(const dezyne::meta&)>& f)
+  {
+    f(t->meta);
+    for (auto c : t->meta.children)
+    {
+      apply(c, f);
+    }
+  }
 
   struct runtime
   {

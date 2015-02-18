@@ -1,4 +1,4 @@
 {
 #space args_#port _#event  a = {sizeof(args_#port _#event), self->#port ->#direction .#event , self#comma #arguments };
-#space runtime_defer(self->rt, self, helper_#port _#event , &a);
+#space runtime_defer(&self->sub, helper_#port _#event , &a);
 }

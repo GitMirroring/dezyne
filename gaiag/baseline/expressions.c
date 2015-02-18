@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -73,7 +74,7 @@ static void i_e(expressions* self) {
 			self->state = 3;
 			{
 				args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-				runtime_defer(self->rt, self, helper_i_a, &a);
+				runtime_defer(&self->sub, helper_i_a, &a);
 			}
 		}
 		else {
@@ -85,14 +86,14 @@ static void i_e(expressions* self) {
 				if (self->c <= (self->state + 1)) {
 					{
 						args_i_lo a = {sizeof(args_i_lo), self->i->out.lo, self};
-						runtime_defer(self->rt, self, helper_i_lo, &a);
+						runtime_defer(&self->sub, helper_i_lo, &a);
 					}
 				}
 				else {
 					if (self->c > self->state) {
 						{
 							args_i_hi a = {sizeof(args_i_hi), self->i->out.hi, self};
-							runtime_defer(self->rt, self, helper_i_hi, &a);
+							runtime_defer(&self->sub, helper_i_hi, &a);
 						}
 					}
 				}
@@ -108,8 +109,7 @@ static void callback_i_e(I* self) {
 
 
 void expressions_init (expressions* self, locator* dezyne_locator) {
-	self->rt = dezyne_locator->rt;
-	runtime_set(self->rt, self);
+	runtime_sub_init(dezyne_locator->rt, &self->sub);
 	self->state = 3;
 	self->c = 0;
 	self->i = &self->i_;

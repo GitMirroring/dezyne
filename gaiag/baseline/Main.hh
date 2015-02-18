@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -40,6 +41,7 @@ namespace dezyne
 {
   struct Main
   {
+    dezyne::meta meta;
     Adaptor adaptor;
     ChoiceSystem choice;
 

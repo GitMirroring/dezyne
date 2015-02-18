@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -25,6 +26,8 @@
 #include "locator.hh"
 #include "runtime.hh"
 
+#include <iostream>
+
 namespace dezyne
 {
   Guardthreetopon::Guardthreetopon(const locator& dezyne_locator)
@@ -33,45 +36,83 @@ namespace dezyne
   , i()
   , r()
   {
-    i.in.e = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&Guardthreetopon::i_e, this)));
-    i.in.t = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&Guardthreetopon::i_t, this)));
-    i.in.s = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&Guardthreetopon::i_s, this)));
-    r.out.a = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&Guardthreetopon::r_a, this)));
+    i.in.meta.component = "Guardthreetopon";
+    i.in.meta.port = "i";
+    i.in.meta.address = this;
+    r.out.meta.component = "Guardthreetopon";
+    r.out.meta.port = "r";
+    r.out.meta.address = this;
+
+    i.in.e = connect<void>(rt, this,
+    boost::function<void()>
+    ([this] ()
+    {
+      trace (i, "e");
+      i_e();
+      trace_return (i, "return");
+      return;
+    }
+    ));
+    i.in.t = connect<void>(rt, this,
+    boost::function<void()>
+    ([this] ()
+    {
+      trace (i, "t");
+      i_t();
+      trace_return (i, "return");
+      return;
+    }
+    ));
+    i.in.s = connect<void>(rt, this,
+    boost::function<void()>
+    ([this] ()
+    {
+      trace (i, "s");
+      i_s();
+      trace_return (i, "return");
+      return;
+    }
+    ));
+    r.out.a= [this] {trace (r, "a");
+      rt.defer (r.in.meta.address, connect<void>(rt, this,
+      boost::function<void()>(
+      [this] ()
+      {
+        r_a() ;
+        return;
+      }
+      )));};
   }
 
   void Guardthreetopon::i_e()
   {
-    std::cout << "Guardthreetopon.i_e" << std::endl;
     if (true and b)
     {
-      rt.defer(this, boost::bind(i.out.a));
+      i.out.a();
     }
     else if (true and not (b))
     {
       bool c = true;
       if (c)
-      rt.defer(this, boost::bind(i.out.a));
+      i.out.a();
     }
   }
 
   void Guardthreetopon::i_t()
   {
-    std::cout << "Guardthreetopon.i_t" << std::endl;
     if (b)
-    rt.defer(this, boost::bind(i.out.a));
+    i.out.a();
     else if (not (b))
-    rt.defer(this, boost::bind(i.out.a));
+    i.out.a();
   }
 
   void Guardthreetopon::i_s()
   {
-    std::cout << "Guardthreetopon.i_s" << std::endl;
-    rt.defer(this, boost::bind(i.out.a));
+    i.out.a();
   }
 
   void Guardthreetopon::r_a()
   {
-    std::cout << "Guardthreetopon.r_a" << std::endl;
     {
     }
   }

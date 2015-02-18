@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -29,7 +30,6 @@
 
 namespace dezyne
 {
-
   struct Provides
   {
 
@@ -37,6 +37,12 @@ namespace dezyne
     {
       boost::function<void ()> start;
 
+      struct
+      {
+        const char* component;
+        const char* port;
+        void*       address;
+      } meta;
     } in;
 
     struct
@@ -44,7 +50,24 @@ namespace dezyne
       boost::function<void ()> busy;
       boost::function<void ()> finish;
 
+      struct
+      {
+        const char* component;
+        const char* port;
+        void*       address;
+      } meta;
     } out;
   };
+
+  inline void connect (Provides& provided, Provides& required)
+  {
+    assert (not required.in.start);
+
+    assert (not provided.out.busy);
+    assert (not provided.out.finish);
+
+    provided.out = required.out;
+    required.in = provided.in;
+  }
 }
 #endif // DEZYNE_PROVIDES_HH

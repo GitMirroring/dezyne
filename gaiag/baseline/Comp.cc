@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -26,6 +27,8 @@
 #include "locator.hh"
 #include "runtime.hh"
 
+#include <iostream>
+
 namespace dezyne
 {
   Comp::Comp(const locator& dezyne_locator)
@@ -34,14 +37,47 @@ namespace dezyne
   , client()
   , device_A()
   {
-    client.in.initialize = connect<IComp::result_t::type>(rt, this, boost::function<IComp::result_t::type()>(boost::bind<IComp::result_t::type>(&Comp::client_initialize, this)));
-    client.in.recover = connect<IComp::result_t::type>(rt, this, boost::function<IComp::result_t::type()>(boost::bind<IComp::result_t::type>(&Comp::client_recover, this)));
-    client.in.perform_actions = connect<IComp::result_t::type>(rt, this, boost::function<IComp::result_t::type()>(boost::bind<IComp::result_t::type>(&Comp::client_perform_actions, this)));
+    client.in.meta.component = "Comp";
+    client.in.meta.port = "client";
+    client.in.meta.address = this;
+    device_A.out.meta.component = "Comp";
+    device_A.out.meta.port = "device_A";
+    device_A.out.meta.address = this;
+
+    client.in.initialize = connect<IComp::result_t::type>(rt, this,
+    boost::function<IComp::result_t::type()>
+    ([this] ()
+    {
+      trace (client, "initialize");
+      auto r = client_initialize();
+      trace_return (client, IComp::result_t::to_string(r));
+      return r;
+    }
+    ));
+    client.in.recover = connect<IComp::result_t::type>(rt, this,
+    boost::function<IComp::result_t::type()>
+    ([this] ()
+    {
+      trace (client, "recover");
+      auto r = client_recover();
+      trace_return (client, IComp::result_t::to_string(r));
+      return r;
+    }
+    ));
+    client.in.perform_actions = connect<IComp::result_t::type>(rt, this,
+    boost::function<IComp::result_t::type()>
+    ([this] ()
+    {
+      trace (client, "perform_actions");
+      auto r = client_perform_actions();
+      trace_return (client, IComp::result_t::to_string(r));
+      return r;
+    }
+    ));
   }
 
   IComp::result_t::type Comp::client_initialize()
   {
-    std::cout << "Comp.client_initialize" << std::endl;
     if (s == State::Uninitialized)
     {
       {
@@ -75,7 +111,6 @@ namespace dezyne
 
   IComp::result_t::type Comp::client_recover()
   {
-    std::cout << "Comp.client_recover" << std::endl;
     if (s == State::Uninitialized)
     {
       assert(false);
@@ -105,7 +140,6 @@ namespace dezyne
 
   IComp::result_t::type Comp::client_perform_actions()
   {
-    std::cout << "Comp.client_perform_actions" << std::endl;
     if (s == State::Uninitialized)
     {
       assert(false);

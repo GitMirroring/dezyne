@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -26,6 +27,8 @@
 #include "locator.hh"
 #include "runtime.hh"
 
+#include <iostream>
+
 namespace dezyne
 {
   incomplete::incomplete(const locator& dezyne_locator)
@@ -33,20 +36,42 @@ namespace dezyne
   , p()
   , r()
   {
-    p.in.e = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&incomplete::p_e, this)));
-    r.out.a = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&incomplete::r_a, this)));
+    p.in.meta.component = "incomplete";
+    p.in.meta.port = "p";
+    p.in.meta.address = this;
+    r.out.meta.component = "incomplete";
+    r.out.meta.port = "r";
+    r.out.meta.address = this;
+
+    p.in.e = connect<void>(rt, this,
+    boost::function<void()>
+    ([this] ()
+    {
+      trace (p, "e");
+      p_e();
+      trace_return (p, "return");
+      return;
+    }
+    ));
+    r.out.a= [this] {trace (r, "a");
+      rt.defer (r.in.meta.address, connect<void>(rt, this,
+      boost::function<void()>(
+      [this] ()
+      {
+        r_a() ;
+        return;
+      }
+      )));};
   }
 
   void incomplete::p_e()
   {
-    std::cout << "incomplete.p_e" << std::endl;
     {
     }
   }
 
   void incomplete::r_a()
   {
-    std::cout << "incomplete.r_a" << std::endl;
     {
     }
   }

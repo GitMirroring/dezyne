@@ -1,6 +1,5 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -22,34 +21,23 @@
 //
 // Code:
 
-#ifndef DEZYNE_REPLY2_HH
-#define DEZYNE_REPLY2_HH
+#ifndef CLOSURE_H
+#define CLOSURE_H
 
-#include "I.hh"
-#include "U.hh"
+#ifndef DZN_STATIC_QUEUES
 
+typedef struct {
+  void (*func)(void*);
+  void *args;
+} closure;
 
-#include "runtime.hh"
+#else
 
-namespace dezyne
-{
-  struct locator;
-  struct runtime;
+typedef struct {
+  void (*func)(void*);
+  char args[DZN_MAX_ARGS_SIZE];
+} closure;
 
-  struct Reply2
-  {
-    dezyne::meta meta;
-    runtime& rt;
-    bool dummy;
-    I::Status::type reply_I_Status;
-    U::Status::type reply_U_Status;
-    I i;
-    U u;
+#endif
 
-    Reply2(const locator&);
-
-    private:
-    I::Status::type i_done();
-  };
-}
-#endif // DEZYNE_REPLY2_HH
+#endif /* CLOSURE_H */

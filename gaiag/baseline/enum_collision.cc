@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -26,26 +27,48 @@
 #include "locator.hh"
 #include "runtime.hh"
 
+#include <iostream>
+
 namespace dezyne
 {
   enum_collision::enum_collision(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , i()
   {
-    i.in.foo = connect<ienum_collision::Retval1::type>(rt, this, boost::function<ienum_collision::Retval1::type()>(boost::bind<ienum_collision::Retval1::type>(&enum_collision::i_foo, this)));
-    i.in.bar = connect<ienum_collision::Retval2::type>(rt, this, boost::function<ienum_collision::Retval2::type()>(boost::bind<ienum_collision::Retval2::type>(&enum_collision::i_bar, this)));
+    i.in.meta.component = "enum_collision";
+    i.in.meta.port = "i";
+    i.in.meta.address = this;
+
+    i.in.foo = connect<ienum_collision::Retval1::type>(rt, this,
+    boost::function<ienum_collision::Retval1::type()>
+    ([this] ()
+    {
+      trace (i, "foo");
+      auto r = i_foo();
+      trace_return (i, ienum_collision::Retval1::to_string(r));
+      return r;
+    }
+    ));
+    i.in.bar = connect<ienum_collision::Retval2::type>(rt, this,
+    boost::function<ienum_collision::Retval2::type()>
+    ([this] ()
+    {
+      trace (i, "bar");
+      auto r = i_bar();
+      trace_return (i, ienum_collision::Retval2::to_string(r));
+      return r;
+    }
+    ));
   }
 
   ienum_collision::Retval1::type enum_collision::i_foo()
   {
-    std::cout << "enum_collision.i_foo" << std::endl;
     reply_ienum_collision_Retval1 = ienum_collision::Retval1::OK;
     return reply_ienum_collision_Retval1;
   }
 
   ienum_collision::Retval2::type enum_collision::i_bar()
   {
-    std::cout << "enum_collision.i_bar" << std::endl;
     reply_ienum_collision_Retval2 = ienum_collision::Retval2::NOK;
     return reply_ienum_collision_Retval2;
   }

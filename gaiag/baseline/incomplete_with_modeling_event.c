@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -71,7 +72,7 @@ static void r_a(incomplete_with_modeling_event* self) {
 	DZN_LOG("incomplete_with_modeling_event.r_a");
 	{
 		args_p_a a = {sizeof(args_p_a), self->p->out.a, self};
-		runtime_defer(self->rt, self, helper_p_a, &a);
+		runtime_defer(&self->sub, helper_p_a, &a);
 	}
 }
 
@@ -87,8 +88,7 @@ static void callback_r_a(iincomplete_with_modeling_event* self) {
 
 
 void incomplete_with_modeling_event_init (incomplete_with_modeling_event* self, locator* dezyne_locator) {
-	self->rt = dezyne_locator->rt;
-	runtime_set(self->rt, self);
+	runtime_sub_init(dezyne_locator->rt, &self->sub);
 
 	self->p = &self->p_;
 	self->p->in.e = callback_p_e;

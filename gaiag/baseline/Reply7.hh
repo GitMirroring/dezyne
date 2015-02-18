@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -25,8 +26,9 @@
 #define DEZYNE_REPLY7_HH
 
 #include "IReply7.hh"
-#include "IReply7.hh"
 
+
+#include "runtime.hh"
 
 namespace dezyne
 {
@@ -35,6 +37,7 @@ namespace dezyne
 
   struct Reply7
   {
+    dezyne::meta meta;
     runtime& rt;
     IReply7::E::type reply_IReply7_E;
     IReply7 p;

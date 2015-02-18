@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -26,6 +27,8 @@
 #include "locator.hh"
 #include "runtime.hh"
 
+#include <iostream>
+
 namespace dezyne
 {
   modeling::modeling(const locator& dezyne_locator)
@@ -33,19 +36,41 @@ namespace dezyne
   , p()
   , r()
   {
-    p.in.e = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&modeling::p_e, this)));
-    r.out.f = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&modeling::r_f, this)));
+    p.in.meta.component = "modeling";
+    p.in.meta.port = "p";
+    p.in.meta.address = this;
+    r.out.meta.component = "modeling";
+    r.out.meta.port = "r";
+    r.out.meta.address = this;
+
+    p.in.e = connect<void>(rt, this,
+    boost::function<void()>
+    ([this] ()
+    {
+      trace (p, "e");
+      p_e();
+      trace_return (p, "return");
+      return;
+    }
+    ));
+    r.out.f= [this] {trace (r, "f");
+      rt.defer (r.in.meta.address, connect<void>(rt, this,
+      boost::function<void()>(
+      [this] ()
+      {
+        r_f() ;
+        return;
+      }
+      )));};
   }
 
   void modeling::p_e()
   {
-    std::cout << "modeling.p_e" << std::endl;
     r.in.e();
   }
 
   void modeling::r_f()
   {
-    std::cout << "modeling.r_f" << std::endl;
     {
     }
   }

@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -74,15 +75,15 @@ static void i_e(imperative* self) {
 	if (self->state == imperative_States_I) {
 		{
 			args_i_f a = {sizeof(args_i_f), self->i->out.f, self};
-			runtime_defer(self->rt, self, helper_i_f, &a);
+			runtime_defer(&self->sub, helper_i_f, &a);
 		}
 		{
 			args_i_g a = {sizeof(args_i_g), self->i->out.g, self};
-			runtime_defer(self->rt, self, helper_i_g, &a);
+			runtime_defer(&self->sub, helper_i_g, &a);
 		}
 		{
 			args_i_h a = {sizeof(args_i_h), self->i->out.h, self};
-			runtime_defer(self->rt, self, helper_i_h, &a);
+			runtime_defer(&self->sub, helper_i_h, &a);
 		}
 		self->state = imperative_States_II;
 	}
@@ -92,26 +93,26 @@ static void i_e(imperative* self) {
 	else if (self->state == imperative_States_III) {
 		{
 			args_i_f a = {sizeof(args_i_f), self->i->out.f, self};
-			runtime_defer(self->rt, self, helper_i_f, &a);
+			runtime_defer(&self->sub, helper_i_f, &a);
 		}
 		{
 			args_i_g a = {sizeof(args_i_g), self->i->out.g, self};
-			runtime_defer(self->rt, self, helper_i_g, &a);
+			runtime_defer(&self->sub, helper_i_g, &a);
 		}
 		{
 			args_i_g a = {sizeof(args_i_g), self->i->out.g, self};
-			runtime_defer(self->rt, self, helper_i_g, &a);
+			runtime_defer(&self->sub, helper_i_g, &a);
 		}
 		{
 			args_i_f a = {sizeof(args_i_f), self->i->out.f, self};
-			runtime_defer(self->rt, self, helper_i_f, &a);
+			runtime_defer(&self->sub, helper_i_f, &a);
 		}
 		self->state = imperative_States_IV;
 	}
 	else if (self->state == imperative_States_IV) {
 		{
 			args_i_h a = {sizeof(args_i_h), self->i->out.h, self};
-			runtime_defer(self->rt, self, helper_i_h, &a);
+			runtime_defer(&self->sub, helper_i_h, &a);
 		}
 		self->state = imperative_States_I;
 	}
@@ -124,8 +125,7 @@ static void callback_i_e(iimperative* self) {
 
 
 void imperative_init (imperative* self, locator* dezyne_locator) {
-	self->rt = dezyne_locator->rt;
-	runtime_set(self->rt, self);
+	runtime_sub_init(dezyne_locator->rt, &self->sub);
 	self->state = imperative_States_I;
 	self->i = &self->i_;
 	self->i->in.e = callback_i_e;

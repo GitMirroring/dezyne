@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -26,6 +27,8 @@
 #include "locator.hh"
 #include "runtime.hh"
 
+#include <iostream>
+
 namespace dezyne
 {
   function2::function2(const locator& dezyne_locator)
@@ -33,13 +36,34 @@ namespace dezyne
   , f(false)
   , i()
   {
-    i.in.a = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&function2::i_a, this)));
-    i.in.b = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&function2::i_b, this)));
+    i.in.meta.component = "function2";
+    i.in.meta.port = "i";
+    i.in.meta.address = this;
+
+    i.in.a = connect<void>(rt, this,
+    boost::function<void()>
+    ([this] ()
+    {
+      trace (i, "a");
+      i_a();
+      trace_return (i, "return");
+      return;
+    }
+    ));
+    i.in.b = connect<void>(rt, this,
+    boost::function<void()>
+    ([this] ()
+    {
+      trace (i, "b");
+      i_b();
+      trace_return (i, "return");
+      return;
+    }
+    ));
   }
 
   void function2::i_a()
   {
-    std::cout << "function2.i_a" << std::endl;
     if (true)
     {
       {
@@ -50,14 +74,13 @@ namespace dezyne
 
   void function2::i_b()
   {
-    std::cout << "function2.i_b" << std::endl;
     if (true)
     {
       {
         f = vtoggle ();
         bool bb = vtoggle ();
         f = bb;
-        rt.defer(this, boost::bind(i.out.d));
+        i.out.d();
       }
     }
   }
@@ -65,7 +88,7 @@ namespace dezyne
   bool function2::vtoggle()
   {
     if (f)
-    rt.defer(this, boost::bind(i.out.c));
+    i.out.c();
     return not (f);
   }
 

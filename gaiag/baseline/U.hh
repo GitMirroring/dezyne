@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -29,7 +30,6 @@
 
 namespace dezyne
 {
-
   struct U
   {
     struct Status
@@ -38,18 +38,49 @@ namespace dezyne
       {
         Ok, Nok
       };
+      static const char* to_string(type v)
+      {
+        switch(v)
+        {
+          case Ok: return "Status_Ok";
+          case Nok: return "Status_Nok";
+
+        }
+        return "";
+      }
     };
 
     struct
     {
       boost::function<Status::type ()> what;
 
+      struct
+      {
+        const char* component;
+        const char* port;
+        void*       address;
+      } meta;
     } in;
 
     struct
     {
 
+      struct
+      {
+        const char* component;
+        const char* port;
+        void*       address;
+      } meta;
     } out;
   };
+
+  inline void connect (U& provided, U& required)
+  {
+    assert (not required.in.what);
+
+
+    provided.out = required.out;
+    required.in = provided.in;
+  }
 }
 #endif // DEZYNE_U_HH

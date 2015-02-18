@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -25,6 +26,8 @@
 #include "locator.hh"
 #include "runtime.hh"
 
+#include <iostream>
+
 namespace dezyne
 {
   Guardtwotopon::Guardtwotopon(const locator& dezyne_locator)
@@ -32,29 +35,49 @@ namespace dezyne
   , b(false)
   , i()
   {
-    i.in.e = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&Guardtwotopon::i_e, this)));
-    i.in.t = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&Guardtwotopon::i_t, this)));
+    i.in.meta.component = "Guardtwotopon";
+    i.in.meta.port = "i";
+    i.in.meta.address = this;
+
+    i.in.e = connect<void>(rt, this,
+    boost::function<void()>
+    ([this] ()
+    {
+      trace (i, "e");
+      i_e();
+      trace_return (i, "return");
+      return;
+    }
+    ));
+    i.in.t = connect<void>(rt, this,
+    boost::function<void()>
+    ([this] ()
+    {
+      trace (i, "t");
+      i_t();
+      trace_return (i, "return");
+      return;
+    }
+    ));
   }
 
   void Guardtwotopon::i_e()
   {
-    std::cout << "Guardtwotopon.i_e" << std::endl;
     if (true and b)
     {
-      rt.defer(this, boost::bind(i.out.a));
+      i.out.a();
     }
     else if (true and not (b))
     {
       bool c = true;
       if (c)
-      rt.defer(this, boost::bind(i.out.a));
+      i.out.a();
     }
   }
 
   void Guardtwotopon::i_t()
   {
-    std::cout << "Guardtwotopon.i_t" << std::endl;
-    rt.defer(this, boost::bind(i.out.a));
+    i.out.a();
   }
 
 

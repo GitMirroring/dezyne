@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -26,6 +27,8 @@
 #include "locator.hh"
 #include "runtime.hh"
 
+#include <iostream>
+
 namespace dezyne
 {
   Reply7::Reply7(const locator& dezyne_locator)
@@ -33,12 +36,27 @@ namespace dezyne
   , p()
   , r()
   {
-    p.in.foo = connect<IReply7::E::type>(rt, this, boost::function<IReply7::E::type()>(boost::bind<IReply7::E::type>(&Reply7::p_foo, this)));
+    p.in.meta.component = "Reply7";
+    p.in.meta.port = "p";
+    p.in.meta.address = this;
+    r.out.meta.component = "Reply7";
+    r.out.meta.port = "r";
+    r.out.meta.address = this;
+
+    p.in.foo = connect<IReply7::E::type>(rt, this,
+    boost::function<IReply7::E::type()>
+    ([this] ()
+    {
+      trace (p, "foo");
+      auto r = p_foo();
+      trace_return (p, IReply7::E::to_string(r));
+      return r;
+    }
+    ));
   }
 
   IReply7::E::type Reply7::p_foo()
   {
-    std::cout << "Reply7.p_foo" << std::endl;
     f ();
     return reply_IReply7_E;
   }

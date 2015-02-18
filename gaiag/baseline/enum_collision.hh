@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -27,6 +28,8 @@
 #include "ienum_collision.hh"
 
 
+#include "runtime.hh"
+
 namespace dezyne
 {
   struct locator;
@@ -34,6 +37,7 @@ namespace dezyne
 
   struct enum_collision
   {
+    dezyne::meta meta;
     runtime& rt;
     ienum_collision::Retval1::type reply_ienum_collision_Retval1;
     ienum_collision::Retval2::type reply_ienum_collision_Retval2;

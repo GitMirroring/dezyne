@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -29,7 +30,6 @@
 
 namespace dezyne
 {
-
   struct IComp
   {
     struct result_t
@@ -38,6 +38,16 @@ namespace dezyne
       {
         OK, NOK
       };
+      static const char* to_string(type v)
+      {
+        switch(v)
+        {
+          case OK: return "result_t_OK";
+          case NOK: return "result_t_NOK";
+
+        }
+        return "";
+      }
     };
 
     struct
@@ -46,12 +56,35 @@ namespace dezyne
       boost::function<result_t::type ()> recover;
       boost::function<result_t::type ()> perform_actions;
 
+      struct
+      {
+        const char* component;
+        const char* port;
+        void*       address;
+      } meta;
     } in;
 
     struct
     {
 
+      struct
+      {
+        const char* component;
+        const char* port;
+        void*       address;
+      } meta;
     } out;
   };
+
+  inline void connect (IComp& provided, IComp& required)
+  {
+    assert (not required.in.initialize);
+    assert (not required.in.recover);
+    assert (not required.in.perform_actions);
+
+
+    provided.out = required.out;
+    required.in = provided.in;
+  }
 }
 #endif // DEZYNE_ICOMP_HH

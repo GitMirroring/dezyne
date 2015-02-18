@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -26,6 +27,8 @@
 #include "locator.hh"
 #include "runtime.hh"
 
+#include <iostream>
+
 namespace dezyne
 {
   sugar::sugar(const locator& dezyne_locator)
@@ -33,20 +36,32 @@ namespace dezyne
   , s(Enum::False)
   , i()
   {
-    i.in.e = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&sugar::i_e, this)));
+    i.in.meta.component = "sugar";
+    i.in.meta.port = "i";
+    i.in.meta.address = this;
+
+    i.in.e = connect<void>(rt, this,
+    boost::function<void()>
+    ([this] ()
+    {
+      trace (i, "e");
+      i_e();
+      trace_return (i, "return");
+      return;
+    }
+    ));
   }
 
   void sugar::i_e()
   {
-    std::cout << "sugar.i_e" << std::endl;
     if (s == Enum::False)
     if (s == Enum::False)
-    rt.defer(this, boost::bind(i.out.a));
+    i.out.a();
     else
     {
       sugar::Enum::type t = Enum::False;
       if (t == Enum::True)
-      rt.defer(this, boost::bind(i.out.a));
+      i.out.a();
     }
   }
 

@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -108,8 +109,7 @@ static void callback_b_f(Bottom* self) {
 
 
 void GuardedRequiredIllegal_init (GuardedRequiredIllegal* self, locator* dezyne_locator) {
-	self->rt = dezyne_locator->rt;
-	runtime_set(self->rt, self);
+	runtime_sub_init(dezyne_locator->rt, &self->sub);
 	self->c = false;
 	self->t = &self->t_;
 	self->t->in.unguarded = callback_t_unguarded;

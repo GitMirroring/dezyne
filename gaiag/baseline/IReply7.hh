@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -29,7 +30,6 @@
 
 namespace dezyne
 {
-
   struct IReply7
   {
     struct E
@@ -38,18 +38,48 @@ namespace dezyne
       {
         A
       };
+      static const char* to_string(type v)
+      {
+        switch(v)
+        {
+          case A: return "E_A";
+
+        }
+        return "";
+      }
     };
 
     struct
     {
       boost::function<E::type ()> foo;
 
+      struct
+      {
+        const char* component;
+        const char* port;
+        void*       address;
+      } meta;
     } in;
 
     struct
     {
 
+      struct
+      {
+        const char* component;
+        const char* port;
+        void*       address;
+      } meta;
     } out;
   };
+
+  inline void connect (IReply7& provided, IReply7& required)
+  {
+    assert (not required.in.foo);
+
+
+    provided.out = required.out;
+    required.in = provided.in;
+  }
 }
 #endif // DEZYNE_IREPLY7_HH

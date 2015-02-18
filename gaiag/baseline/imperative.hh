@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -27,6 +28,8 @@
 #include "iimperative.hh"
 
 
+#include "runtime.hh"
+
 namespace dezyne
 {
   struct locator;
@@ -34,6 +37,7 @@ namespace dezyne
 
   struct imperative
   {
+    dezyne::meta meta;
     runtime& rt;
     struct States
     {
@@ -41,6 +45,18 @@ namespace dezyne
       {
         I, II, III, IV
       };
+      static const char* to_string(type v)
+      {
+        switch(v)
+        {
+          case I: return "States_I";
+          case II: return "States_II";
+          case III: return "States_III";
+          case IV: return "States_IV";
+
+        }
+        return "";
+      }
     };
     imperative::States::type state;
     iimperative i;

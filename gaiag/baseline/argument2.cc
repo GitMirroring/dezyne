@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -26,6 +27,8 @@
 #include "locator.hh"
 #include "runtime.hh"
 
+#include <iostream>
+
 namespace dezyne
 {
   argument2::argument2(const locator& dezyne_locator)
@@ -33,12 +36,24 @@ namespace dezyne
   , b(false)
   , i()
   {
-    i.in.e = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&argument2::i_e, this)));
+    i.in.meta.component = "argument2";
+    i.in.meta.port = "i";
+    i.in.meta.address = this;
+
+    i.in.e = connect<void>(rt, this,
+    boost::function<void()>
+    ([this] ()
+    {
+      trace (i, "e");
+      i_e();
+      trace_return (i, "return");
+      return;
+    }
+    ));
   }
 
   void argument2::i_e()
   {
-    std::cout << "argument2.i_e" << std::endl;
     if (true)
     {
       b = not (b);
@@ -46,14 +61,14 @@ namespace dezyne
       b = g (c, c);
       if (c)
       {
-        rt.defer(this, boost::bind(i.out.f));
+        i.out.f();
       }
     }
   }
 
   bool argument2::g(bool ga, bool gb)
   {
-    rt.defer(this, boost::bind(i.out.f));
+    i.out.f();
     return (ga or gb);
   }
 
