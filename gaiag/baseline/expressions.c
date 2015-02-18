@@ -69,6 +69,7 @@ static void helper_i_e(void* args) {
 static void i_e(expressions* self) {
 	(void)self;
 	DZN_LOG("expressions.i_e");
+<<<<<<< HEAD
 	if (true) {
 		if (self->state == 0) {
 			self->state = 3;
@@ -81,10 +82,31 @@ static void i_e(expressions* self) {
 			self->state = self->state - 1;
 			if (self->c < self->state) {
 				self->c = self->c + 1;
+=======
+	if (true) if (self->state == 0) {
+		self->state = 3;
+		{
+			args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
+			runtime_defer(&self->sub, helper_i_a, &a);
+		}
+	}
+	else {
+		self->state = self->state - 1;
+		if (self->c < self->state) {
+			self->c = self->c + 1;
+		}
+		else {
+			if (self->c <= (self->state + 1)) {
+				{
+					args_i_lo a = {sizeof(args_i_lo), self->i->out.lo, self};
+					runtime_defer(&self->sub, helper_i_lo, &a);
+				}
+>>>>>>> c: add runtime_comp struct
 			}
 			else {
 				if (self->c <= (self->state + 1)) {
 					{
+<<<<<<< HEAD
 						args_i_lo a = {sizeof(args_i_lo), self->i->out.lo, self};
 						runtime_defer(&self->sub, helper_i_lo, &a);
 					}
@@ -95,6 +117,10 @@ static void i_e(expressions* self) {
 							args_i_hi a = {sizeof(args_i_hi), self->i->out.hi, self};
 							runtime_defer(&self->sub, helper_i_hi, &a);
 						}
+=======
+						args_i_hi a = {sizeof(args_i_hi), self->i->out.hi, self};
+						runtime_defer(&self->sub, helper_i_hi, &a);
+>>>>>>> c: add runtime_comp struct
 					}
 				}
 			}
