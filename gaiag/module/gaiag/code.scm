@@ -420,6 +420,12 @@
                          (eq? (.event t) (.name event))))
         ((compose .elements .triggers) o)))
 
+(define-method (find-trigger (o <guard>) (port <gom:port>) (event <event>))
+  (find-trigger (.statement o) port event))
+
+(define-method (find-trigger (o <compound>) (port <gom:port>) (event <event>))
+  (null-is-#f (map (find-trigger port event) (.elements o))))
+
 (define-method (find-trigger (port <gom:port>) (event <event>))
   (lambda (o) (find-trigger o port event)))
 
@@ -437,7 +443,8 @@
 (define-method (gom:first-guard? (model <model>) (o <guard>))
   (not
    (and-let* ((parent (gom:parent model o))
-              (guards ((gom:statements-of-type 'guard) parent)))
+              (guards ((gom:statements-of-type 'guard) parent))
+              (guards (filter (find-trigger (statements.port) (statements.event)) guards)))
              (not (eq? o (car guards))))))
 
 (define-method (gom:top-guard? (model <model>) (o <guard>))
@@ -603,6 +610,7 @@
                 (behaviour (.behaviour component))
                 (statement (.statement behaviour))
                 (guards ((gom:statements-of-type 'guard) statement))
+                (guards (filter (find-trigger port event) guards))
                 (ons ((gom:statements-of-type 'on) statement))
                 (ons (filter (find-trigger port event) ons)))
                (parameterize ((statements.port port)
