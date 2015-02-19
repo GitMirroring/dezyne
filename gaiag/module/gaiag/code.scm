@@ -288,7 +288,7 @@
                                          (cons (snippet 'alias `((type ,type) (name ,name) (out? ,out?) (alias ,alias)))
                                                rest))))))
                             (indent (if (pair? aliases) (1+ indent) indent))
-                            (statement (->code model statement locals indent #f))
+                            (statement (->code model statement locals indent compound?))
                             (statement (if (pair? aliases)
                                            (snippet 'compound `((space space)
                                                                 (statements ,(string-join (append aliases (list statement))))))
@@ -570,8 +570,6 @@
                        (statements ,statements)))))
 
 (define ((define-on model port snippet) event)
-  ;;(stderr "\nstatement")
-  ;;(pretty-print (gom->list (.statement (.behaviour model))) (current-error-port))
   (let* ((signature (.signature event))
          (type (.type signature))
          (return-type (return-type port event))
