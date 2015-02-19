@@ -616,7 +616,7 @@
                (parameterize ((statements.port port)
                               (statements.event event))
                  (if (null? ons)
-                     (code:->code model guards locals 2 #f)
+                     (code:->code model (make <compound> :elements guards) locals 2 #f)
                      (code:->code model ons locals 2 #f))))
               "")))
     (animate snippet `((port ,(.name port))
