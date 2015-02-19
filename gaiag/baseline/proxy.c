@@ -191,8 +191,10 @@ static void top_e0(proxy* self) {
 static int top_e0r(proxy* self) {
 	(void)self;
 	DZN_LOG("proxy.top_e0r");
-	int r = self->bottom->in.e0r(self->bottom);
-	self->reply_IDataparam_Status = r;
+	{
+		int r = self->bottom->in.e0r(self->bottom);
+		self->reply_IDataparam_Status = r;
+	}
 	return self->reply_IDataparam_Status;
 }
 
@@ -210,8 +212,10 @@ static int top_er(proxy* self, int i) {
 	DZN_LOG("proxy.top_er");
 	{
 		int pi = i;
-		int r = self->bottom->in.er(self->bottom, pi);
-		self->reply_IDataparam_Status = r;
+		{
+			int r = self->bottom->in.er(self->bottom, pi);
+			self->reply_IDataparam_Status = r;
+		}
 	}
 	return self->reply_IDataparam_Status;
 }
@@ -219,64 +223,82 @@ static int top_er(proxy* self, int i) {
 static int top_eer(proxy* self, int i, int j) {
 	(void)self;
 	DZN_LOG("proxy.top_eer");
-	int r = self->bottom->in.eer(self->bottom, i, j);
-	self->reply_IDataparam_Status = r;
+	{
+		int r = self->bottom->in.eer(self->bottom, i, j);
+		self->reply_IDataparam_Status = r;
+	}
 	return self->reply_IDataparam_Status;
 }
 
 static void top_eo(proxy* self, int* i) {
 	(void)self;
 	DZN_LOG("proxy.top_eo");
-	outfunc(self,*i);
+	{
+		outfunc(self,*i);
+	}
 }
 
 static void top_eoo(proxy* self, int* i, int* j) {
 	(void)self;
 	DZN_LOG("proxy.top_eoo");
-	self->bottom->in.eoo(self->bottom, &*i, &*j);
+	{
+		self->bottom->in.eoo(self->bottom, &*i, &*j);
+	}
 }
 
 static void top_eio(proxy* self, int i, int* j) {
 	(void)self;
 	DZN_LOG("proxy.top_eio");
-	self->bottom->in.eio(self->bottom, i, &*j);
+	{
+		self->bottom->in.eio(self->bottom, i, &*j);
+	}
 }
 
 static void top_eio2(proxy* self, int* i) {
 	(void)self;
 	DZN_LOG("proxy.top_eio2");
-	self->bottom->in.eio2(self->bottom, &*i);
+	{
+		self->bottom->in.eio2(self->bottom, &*i);
+	}
 }
 
 static int top_eor(proxy* self, int* i) {
 	(void)self;
 	DZN_LOG("proxy.top_eor");
-	int s = self->bottom->in.eor(self->bottom, i);
-	self->reply_IDataparam_Status = s;
+	{
+		int s = self->bottom->in.eor(self->bottom, i);
+		self->reply_IDataparam_Status = s;
+	}
 	return self->reply_IDataparam_Status;
 }
 
 static int top_eoor(proxy* self, int* i, int* j) {
 	(void)self;
 	DZN_LOG("proxy.top_eoor");
-	int s = self->bottom->in.eoor(self->bottom, i, j);
-	self->reply_IDataparam_Status = s;
+	{
+		int s = self->bottom->in.eoor(self->bottom, i, j);
+		self->reply_IDataparam_Status = s;
+	}
 	return self->reply_IDataparam_Status;
 }
 
 static int top_eior(proxy* self, int i, int* j) {
 	(void)self;
 	DZN_LOG("proxy.top_eior");
-	int s = self->bottom->in.eior(self->bottom, i, j);
-	self->reply_IDataparam_Status = s;
+	{
+		int s = self->bottom->in.eior(self->bottom, i, j);
+		self->reply_IDataparam_Status = s;
+	}
 	return self->reply_IDataparam_Status;
 }
 
 static int top_eio2r(proxy* self, int* i) {
 	(void)self;
 	DZN_LOG("proxy.top_eio2r");
-	int s = self->bottom->in.eio2r(self->bottom, i);
-	self->reply_IDataparam_Status = s;
+	{
+		int s = self->bottom->in.eio2r(self->bottom, i);
+		self->reply_IDataparam_Status = s;
+	}
 	return self->reply_IDataparam_Status;
 }
 
@@ -329,7 +351,8 @@ static void callback_top_e0(IDataparam* self) {
 static int callback_top_e0r(IDataparam* self) {
 	args_top_e0r a = {sizeof(args_top_e0r), top_e0r, self->in.self};
 	runtime_event(helper_top_e0r, &a);
-	return self->reply_IDataparam_Status;
+	proxy* self_ = self->in.self;
+	return self_->reply_IDataparam_Status;
 }
 
 static void callback_top_e(IDataparam* self, int i) {
@@ -340,13 +363,15 @@ static void callback_top_e(IDataparam* self, int i) {
 static int callback_top_er(IDataparam* self, int i) {
 	args_top_er a = {sizeof(args_top_er), top_er, self->in.self, i};
 	runtime_event(helper_top_er, &a);
-	return self->reply_IDataparam_Status;
+	proxy* self_ = self->in.self;
+	return self_->reply_IDataparam_Status;
 }
 
 static int callback_top_eer(IDataparam* self, int i, int j) {
 	args_top_eer a = {sizeof(args_top_eer), top_eer, self->in.self, i, j};
 	runtime_event(helper_top_eer, &a);
-	return self->reply_IDataparam_Status;
+	proxy* self_ = self->in.self;
+	return self_->reply_IDataparam_Status;
 }
 
 static void callback_top_eo(IDataparam* self, int* i) {
@@ -372,25 +397,29 @@ static void callback_top_eio2(IDataparam* self, int* i) {
 static int callback_top_eor(IDataparam* self, int* i) {
 	args_top_eor a = {sizeof(args_top_eor), top_eor, self->in.self, i};
 	runtime_event(helper_top_eor, &a);
-	return self->reply_IDataparam_Status;
+	proxy* self_ = self->in.self;
+	return self_->reply_IDataparam_Status;
 }
 
 static int callback_top_eoor(IDataparam* self, int* i, int* j) {
 	args_top_eoor a = {sizeof(args_top_eoor), top_eoor, self->in.self, i, j};
 	runtime_event(helper_top_eoor, &a);
-	return self->reply_IDataparam_Status;
+	proxy* self_ = self->in.self;
+	return self_->reply_IDataparam_Status;
 }
 
 static int callback_top_eior(IDataparam* self, int i, int* j) {
 	args_top_eior a = {sizeof(args_top_eior), top_eior, self->in.self, i, j};
 	runtime_event(helper_top_eior, &a);
-	return self->reply_IDataparam_Status;
+	proxy* self_ = self->in.self;
+	return self_->reply_IDataparam_Status;
 }
 
 static int callback_top_eio2r(IDataparam* self, int* i) {
 	args_top_eio2r a = {sizeof(args_top_eio2r), top_eio2r, self->in.self, i};
 	runtime_event(helper_top_eio2r, &a);
-	return self->reply_IDataparam_Status;
+	proxy* self_ = self->in.self;
+	return self_->reply_IDataparam_Status;
 }
 
 static void callback_bottom_a0(IDataparam* self) {

@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -43,7 +43,7 @@
 
 (define-method (console-arm (o <Alarm>))
   (stderr "Alarm.console.arm\n")
-    (cond
+    (cond 
     ((equal? (.state o) '(States Disarmed))
       (action o .sensor .in 'enable)
       (set! (.state o) '(States Armed)))
@@ -56,7 +56,7 @@
 
 (define-method (console-disarm (o <Alarm>))
   (stderr "Alarm.console.disarm\n")
-    (cond
+    (cond 
     ((equal? (.state o) '(States Disarmed))
       (illegal))
     ((equal? (.state o) '(States Armed))
@@ -72,7 +72,7 @@
 
 (define-method (sensor-triggered (o <Alarm>))
   (stderr "Alarm.sensor.triggered\n")
-    (cond
+    (cond 
     ((equal? (.state o) '(States Disarmed))
       (illegal))
     ((equal? (.state o) '(States Armed))
@@ -87,20 +87,20 @@
 
 (define-method (sensor-disabled (o <Alarm>))
   (stderr "Alarm.sensor.disabled\n")
-    (cond
+    (cond 
     ((equal? (.state o) '(States Disarmed))
       (illegal))
     ((equal? (.state o) '(States Armed))
       (illegal))
-    ((equal? (.state o) '(States Disarming))
-      (cond
-    ((.sounding o)
-        (action o .console .out 'deactivated)
-        (action o .siren .in 'turnoff)
-        (set! (.state o) '(States Disarmed))
-        (set! (.sounding o) #f))
-    (else
-        (action o .console .out 'deactivated)
-        (set! (.state o) '(States Disarmed)))))
+    ((and (equal? (.state o) '(States Disarming)) (.sounding o))
+      (action o .console .out 'deactivated)
+      (action o .siren .in 'turnoff)
+      (set! (.state o) '(States Disarmed))
+      (set! (.sounding o) #f))
+    ((and (equal? (.state o) '(States Disarming)) (not (.sounding o)))
+      (action o .console .out 'deactivated)
+      (set! (.state o) '(States Disarmed)))
     ((equal? (.state o) '(States Triggered))
       (illegal))))
+
+

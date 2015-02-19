@@ -30,93 +30,119 @@ dezyne.Dataparam = function() {
 
   this.port.in.e0 = function() {
     console.log('Dataparam.port_e0');
-    this.port.out.a6.defer(0, 1, 2, 3, 4, 5);
+    {
+      this.port.out.a6.defer(0, 1, 2, 3, 4, 5);
+    }
   }.bind(this);
   this.port.in.e0r = function() {
     console.log('Dataparam.port_e0r');
-    this.port.out.a0.defer();
-    this.reply_IDataparam_Status = new dezyne.IDataparam().Status.Yes;
+    {
+      this.port.out.a0.defer();
+      this.reply_IDataparam_Status = new dezyne.IDataparam().Status.Yes;
+    }
     return this.reply_IDataparam_Status;
   }.bind(this);
   this.port.in.e = function(i) {
     console.log('Dataparam.port_e');
     {
-      var pi= i;
-      var s = this.funx(pi);
-      s = s;
-      this.mi = pi;
-      this.mi = this.xfunx(pi, pi + pi);
-      this.port.out.a.defer(this.mi);
-      this.port.out.aa.defer(this.mi, pi);
+      var pi = i;
+      {
+        var s = this.funx(pi);
+        s = s;
+        this.mi = pi;
+        this.mi = this.xfunx(pi, pi + pi);
+        this.port.out.a.defer(this.mi);
+        this.port.out.aa.defer(this.mi, pi);
+      }
     }
   }.bind(this);
   this.port.in.er = function(i) {
     console.log('Dataparam.port_er');
     {
-      var pi= i;
-      var s = new dezyne.IDataparam().Status.No;
-      this.mi = pi;
-      this.port.out.a.defer(this.mi);
-      this.port.out.aa.defer(this.mi, pi);
-      if(true) {
-        this.reply_IDataparam_Status = new dezyne.IDataparam().Status.Yes;
-      }
-      else {
-        this.reply_IDataparam_Status = s;
+      var pi = i;
+      {
+        var s = new dezyne.IDataparam().Status.No;
+        this.mi = pi;
+        this.port.out.a.defer(this.mi);
+        this.port.out.aa.defer(this.mi, pi);
+        if(true) {
+          this.reply_IDataparam_Status = new dezyne.IDataparam().Status.Yes;
+        }
+        else {
+          this.reply_IDataparam_Status = s;
+        }
       }
     }
     return this.reply_IDataparam_Status;
   }.bind(this);
   this.port.in.eer = function(i,j) {
     console.log('Dataparam.port_eer');
-    var s = new dezyne.IDataparam().Status.No;
-    this.port.out.a.defer(j);
-    this.port.out.aa.defer(j, i);
-    this.reply_IDataparam_Status = s;
+    {
+      var s = new dezyne.IDataparam().Status.No;
+      this.port.out.a.defer(j);
+      this.port.out.aa.defer(j, i);
+      this.reply_IDataparam_Status = s;
+    }
     return this.reply_IDataparam_Status;
   }.bind(this);
   this.port.in.eo = function(i) {
     console.log('Dataparam.port_eo');
-    i.value = 234;
+    {
+      i.value = 234;
+    }
   }.bind(this);
   this.port.in.eoo = function(i,j) {
     console.log('Dataparam.port_eoo');
-    i.value = 123;
-    j.value = 456;
+    {
+      i.value = 123;
+      j.value = 456;
+    }
   }.bind(this);
   this.port.in.eio = function(i,j) {
     console.log('Dataparam.port_eio');
-    j.value = i;
+    {
+      j.value = i;
+    }
   }.bind(this);
   this.port.in.eio2 = function(i) {
     console.log('Dataparam.port_eio2');
-    var t = i.value;
-    i.value = t + 123;
+    {
+      var t = i.value;
+      i.value = t + 123;
+    }
   }.bind(this);
   this.port.in.eor = function(i) {
     console.log('Dataparam.port_eor');
-    i.value = 234;
-    this.reply_IDataparam_Status = new dezyne.IDataparam().Status.Yes;
+    {
+      i.value = 234;
+      this.reply_IDataparam_Status = new dezyne.IDataparam().Status.Yes;
+    }
     return this.reply_IDataparam_Status;
   }.bind(this);
   this.port.in.eoor = function(i,j) {
     console.log('Dataparam.port_eoor');
-    i.value = 123;
-    j.value = 456;
-    this.reply_IDataparam_Status = new dezyne.IDataparam().Status.Yes;
+    {
+      i.value = 123;
+      j.value = 456;
+      this.reply_IDataparam_Status = new dezyne.IDataparam().Status.Yes;
+    }
     return this.reply_IDataparam_Status;
   }.bind(this);
   this.port.in.eior = function(i,j) {
     console.log('Dataparam.port_eior');
-    j.value = i;
-    this.reply_IDataparam_Status = new dezyne.IDataparam().Status.Yes;
+    {
+      j.value = i;
+      this.reply_IDataparam_Status = new dezyne.IDataparam().Status.Yes;
+    }
     return this.reply_IDataparam_Status;
   }.bind(this);
   this.port.in.eio2r = function(i) {
     console.log('Dataparam.port_eio2r');
-    var t = i.value;
-    i.value = t + 123;
-    this.reply_IDataparam_Status = new dezyne.IDataparam().Status.Yes;
+    {
+      var t = i.value;
+      i.value = t + 123;
+      this.reply_IDataparam_Status = new dezyne.IDataparam().Status.Yes;
+    }
     return this.reply_IDataparam_Status;
   }.bind(this);
   this.fun = function () {

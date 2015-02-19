@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -36,8 +36,10 @@ dezyne.Alarm = function() {
   this.console.in.arm = function() {
     console.log('Alarm.console_arm');
     if(this.state === this.States.Disarmed) {
-      this.sensor.in.enable();
-      this.state = this.States.Armed;
+      {
+        this.sensor.in.enable();
+        this.state = this.States.Armed;
+      }
     }
     else if(this.state === this.States.Armed) {
       console.assert (false);
@@ -55,17 +57,21 @@ dezyne.Alarm = function() {
       console.assert (false);
     }
     else if(this.state === this.States.Armed) {
-      this.sensor.in.disable();
-      this.state = this.States.Disarming;
+      {
+        this.sensor.in.disable();
+        this.state = this.States.Disarming;
+      }
     }
     else if(this.state === this.States.Disarming) {
       console.assert (false);
     }
     else if(this.state === this.States.Triggered) {
-      this.sensor.in.disable();
-      this.siren.in.turnoff();
-      this.sounding = false;
-      this.state = this.States.Disarming;
+      {
+        this.sensor.in.disable();
+        this.siren.in.turnoff();
+        this.sounding = false;
+        this.state = this.States.Disarming;
+      }
     }
   }.bind(this);
   this.sensor.out.triggered = function() {
@@ -74,10 +80,12 @@ dezyne.Alarm = function() {
       console.assert (false);
     }
     else if(this.state === this.States.Armed) {
-      this.console.out.detected.defer();
-      this.siren.in.turnon();
-      this.sounding = true;
-      this.state = this.States.Triggered;
+      {
+        this.console.out.detected.defer();
+        this.siren.in.turnon();
+        this.sounding = true;
+        this.state = this.States.Triggered;
+      }
     }
     else if(this.state === this.States.Disarming) {
       { }
@@ -94,17 +102,15 @@ dezyne.Alarm = function() {
     else if(this.state === this.States.Armed) {
       console.assert (false);
     }
-    else if(this.state === this.States.Disarming) {
-      if(this.sounding) {
-        this.console.out.deactivated.defer();
-        this.siren.in.turnoff();
-        this.state = this.States.Disarmed;
-        this.sounding = false;
-      }
-      else {
-        this.console.out.deactivated.defer();
-        this.state = this.States.Disarmed;
-      }
+    else if(this.state === this.States.Disarming && this.sounding) {
+      this.console.out.deactivated.defer();
+      this.siren.in.turnoff();
+      this.state = this.States.Disarmed;
+      this.sounding = false;
+    }
+    else if(this.state === this.States.Disarming && ! (this.sounding)) {
+      this.console.out.deactivated.defer();
+      this.state = this.States.Disarmed;
     }
     else if(this.state === this.States.Triggered) {
       console.assert (false);

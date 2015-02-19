@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -95,15 +95,14 @@ class Alarm ():
             assert (False)
         elif (self.state == self.States.Armed):
             assert (False)
-        elif (self.state == self.States.Disarming):
-            if (self.sounding):
-                self.console.outs.deactivated ()
-                self.siren.ins.turnoff ()
-                self.state = self.States.Disarmed
-                self.sounding = False
-            else:
-                self.console.outs.deactivated ()
-                self.state = self.States.Disarmed
+        elif (self.state == self.States.Disarming and self.sounding):
+            self.console.outs.deactivated ()
+            self.siren.ins.turnoff ()
+            self.state = self.States.Disarmed
+            self.sounding = False
+        elif (self.state == self.States.Disarming and not (self.sounding)):
+            self.console.outs.deactivated ()
+            self.state = self.States.Disarmed
         elif (self.state == self.States.Triggered):
             assert (False)
 

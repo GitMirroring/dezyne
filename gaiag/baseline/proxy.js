@@ -33,70 +33,92 @@ dezyne.proxy = function() {
   }.bind(this);
   this.top.in.e0r = function() {
     console.log('proxy.top_e0r');
-    var r = this.bottom.in.e0r();
-    this.reply_IDataparam_Status = r;
+    {
+      var r = this.bottom.in.e0r();
+      this.reply_IDataparam_Status = r;
+    }
     return this.reply_IDataparam_Status;
   }.bind(this);
   this.top.in.e = function(i) {
     console.log('proxy.top_e');
     {
-      var pi= i;
+      var pi = i;
       this.bottom.in.e(pi);
     }
   }.bind(this);
   this.top.in.er = function(i) {
     console.log('proxy.top_er');
     {
-      var pi= i;
-      var r = this.bottom.in.er(pi);
-      this.reply_IDataparam_Status = r;
+      var pi = i;
+      {
+        var r = this.bottom.in.er(pi);
+        this.reply_IDataparam_Status = r;
+      }
     }
     return this.reply_IDataparam_Status;
   }.bind(this);
   this.top.in.eer = function(i,j) {
     console.log('proxy.top_eer');
-    var r = this.bottom.in.eer(i, j);
-    this.reply_IDataparam_Status = r;
+    {
+      var r = this.bottom.in.eer(i, j);
+      this.reply_IDataparam_Status = r;
+    }
     return this.reply_IDataparam_Status;
   }.bind(this);
   this.top.in.eo = function(i) {
     console.log('proxy.top_eo');
-    this.outfunc(i.value);
+    {
+      this.outfunc(i.value);
+    }
   }.bind(this);
   this.top.in.eoo = function(i,j) {
     console.log('proxy.top_eoo');
-    this.bottom.in.eoo(i.value, j.value);
+    {
+      this.bottom.in.eoo(i.value, j.value);
+    }
   }.bind(this);
   this.top.in.eio = function(i,j) {
     console.log('proxy.top_eio');
-    this.bottom.in.eio(i, j.value);
+    {
+      this.bottom.in.eio(i, j.value);
+    }
   }.bind(this);
   this.top.in.eio2 = function(i) {
     console.log('proxy.top_eio2');
-    this.bottom.in.eio2(i.value);
+    {
+      this.bottom.in.eio2(i.value);
+    }
   }.bind(this);
   this.top.in.eor = function(i) {
     console.log('proxy.top_eor');
-    var s = this.bottom.in.eor(i);
-    this.reply_IDataparam_Status = s;
+    {
+      var s = this.bottom.in.eor(i);
+      this.reply_IDataparam_Status = s;
+    }
     return this.reply_IDataparam_Status;
   }.bind(this);
   this.top.in.eoor = function(i,j) {
     console.log('proxy.top_eoor');
-    var s = this.bottom.in.eoor(i, j);
-    this.reply_IDataparam_Status = s;
+    {
+      var s = this.bottom.in.eoor(i, j);
+      this.reply_IDataparam_Status = s;
+    }
     return this.reply_IDataparam_Status;
   }.bind(this);
   this.top.in.eior = function(i,j) {
     console.log('proxy.top_eior');
-    var s = this.bottom.in.eior(i, j);
-    this.reply_IDataparam_Status = s;
+    {
+      var s = this.bottom.in.eior(i, j);
+      this.reply_IDataparam_Status = s;
+    }
     return this.reply_IDataparam_Status;
   }.bind(this);
   this.top.in.eio2r = function(i) {
     console.log('proxy.top_eio2r');
-    var s = this.bottom.in.eio2r(i);
-    this.reply_IDataparam_Status = s;
+    {
+      var s = this.bottom.in.eio2r(i);
+      this.reply_IDataparam_Status = s;
+    }
     return this.reply_IDataparam_Status;
   }.bind(this);
   this.bottom.out.a0 = function() {
@@ -114,12 +136,12 @@ dezyne.proxy = function() {
   this.bottom.out.a6 = function(a0,a1,a2,a3,a4,a5) {
     console.log('proxy.bottom_a6');
     {
-      var A0= a0;
-      var A1= a1;
-      var A2= a2;
-      var A3= a3;
-      var A4= a4;
-      var A5= a5;
+      var A0 = a0;
+      var A1 = a1;
+      var A2 = a2;
+      var A3 = a3;
+      var A4 = a4;
+      var A5 = a5;
       this.top.out.a6.defer(A0, A1, A2, A3, A4, A5);
     }
   }.bind(this);

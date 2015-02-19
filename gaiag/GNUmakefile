@@ -171,6 +171,7 @@ pretty: compile
 
 alarm: c-alarm c++-alarm goops-alarm java-alarm javascript-alarm python-alarm
 dataparam: c-dataparam c++-dataparam goops-dataparam java-dataparam javascript-dataparamparam python-dataparam
+inject: c-inject c++-inject
 
 code: alarm out/Reply7.o out/Reply7.java out/Reply7.js out/Reply7.py
 
@@ -193,8 +194,8 @@ c-alarm:
 	cd out && ln -s ../examples/alarm.c .
 	#cp baseline/{AlarmSystem,Alarm,Sensor,Siren}.{h,c} out
 	#cp baseline/{IConsole,ISensor,ISiren}.h out
-	-for i in out/*c; do ccache gcc -g -std=c99 -Wall -pedantic -pedantic-errors -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o && out/$@ > out/$@.trace
-	-$(diff) baseline/$@.trace out
+	for i in out/*c; do ccache gcc -g -std=c99 -Wall -pedantic -pedantic-errors -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o && out/$@ > out/$@.trace
+	$(diff) baseline/$@.trace out
 	for i in out/*.h out/*.c; do $(diff) baseline/$$(basename $$i) $$i; done
 
 c-dataparam:

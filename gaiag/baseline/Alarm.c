@@ -84,8 +84,10 @@ static void console_arm(Alarm* self) {
 	(void)self;
 	DZN_LOG("Alarm.console_arm");
 	if (self->state == Alarm_States_Disarmed) {
-		self->sensor->in.enable(self->sensor);
-		self->state = Alarm_States_Armed;
+		{
+			self->sensor->in.enable(self->sensor);
+			self->state = Alarm_States_Armed;
+		}
 	}
 	else if (self->state == Alarm_States_Armed) {
 		assert(false);
@@ -105,17 +107,21 @@ static void console_disarm(Alarm* self) {
 		assert(false);
 	}
 	else if (self->state == Alarm_States_Armed) {
-		self->sensor->in.disable(self->sensor);
-		self->state = Alarm_States_Disarming;
+		{
+			self->sensor->in.disable(self->sensor);
+			self->state = Alarm_States_Disarming;
+		}
 	}
 	else if (self->state == Alarm_States_Disarming) {
 		assert(false);
 	}
 	else if (self->state == Alarm_States_Triggered) {
-		self->sensor->in.disable(self->sensor);
-		self->siren->in.turnoff(self->siren);
-		self->sounding = false;
-		self->state = Alarm_States_Disarming;
+		{
+			self->sensor->in.disable(self->sensor);
+			self->siren->in.turnoff(self->siren);
+			self->sounding = false;
+			self->state = Alarm_States_Disarming;
+		}
 	}
 }
 
@@ -127,12 +133,14 @@ static void sensor_triggered(Alarm* self) {
 	}
 	else if (self->state == Alarm_States_Armed) {
 		{
-			args_console_detected a = {sizeof(args_console_detected), self->console->out.detected, self};
-			runtime_defer(self->rt, self, helper_console_detected, &a);
+			{
+				args_console_detected a = {sizeof(args_console_detected), self->console->out.detected, self};
+				runtime_defer(self->rt, self, helper_console_detected, &a);
+			}
+			self->siren->in.turnon(self->siren);
+			self->sounding = true;
+			self->state = Alarm_States_Triggered;
 		}
-		self->siren->in.turnon(self->siren);
-		self->sounding = true;
-		self->state = Alarm_States_Triggered;
 	}
 	else if (self->state == Alarm_States_Disarming) {
 		{
@@ -152,23 +160,21 @@ static void sensor_disabled(Alarm* self) {
 	else if (self->state == Alarm_States_Armed) {
 		assert(false);
 	}
-	else if (self->state == Alarm_States_Disarming) {
-		if (self->sounding) {
-			{
-				args_console_deactivated a = {sizeof(args_console_deactivated), self->console->out.deactivated, self};
-				runtime_defer(self->rt, self, helper_console_deactivated, &a);
-			}
-			self->siren->in.turnoff(self->siren);
-			self->state = Alarm_States_Disarmed;
-			self->sounding = false;
+	else if (self->state == Alarm_States_Disarming && self->sounding) {
+		{
+			args_console_deactivated a = {sizeof(args_console_deactivated), self->console->out.deactivated, self};
+			runtime_defer(self->rt, self, helper_console_deactivated, &a);
 		}
-		else {
-			{
-				args_console_deactivated a = {sizeof(args_console_deactivated), self->console->out.deactivated, self};
-				runtime_defer(self->rt, self, helper_console_deactivated, &a);
-			}
-			self->state = Alarm_States_Disarmed;
+		self->siren->in.turnoff(self->siren);
+		self->state = Alarm_States_Disarmed;
+		self->sounding = false;
+	}
+	else if (self->state == Alarm_States_Disarming && !(self->sounding)) {
+		{
+			args_console_deactivated a = {sizeof(args_console_deactivated), self->console->out.deactivated, self};
+			runtime_defer(self->rt, self, helper_console_deactivated, &a);
 		}
+		self->state = Alarm_States_Disarmed;
 	}
 	else if (self->state == Alarm_States_Triggered) {
 		assert(false);

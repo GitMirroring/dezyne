@@ -63,17 +63,21 @@ static void helper_b_f(void* args) {
 static void t_e(middle* self) {
 	(void)self;
 	DZN_LOG("middle.t_e");
-	self->l->in.log(self->l);
-	self->b->in.e(self->b);
+	{
+		self->l->in.log(self->l);
+		self->b->in.e(self->b);
+	}
 }
 
 static void b_f(middle* self) {
 	(void)self;
 	DZN_LOG("middle.b_f");
-	self->l->in.log(self->l);
 	{
-		args_t_f a = {sizeof(args_t_f), self->t->out.f, self};
-		runtime_defer(self->rt, self, helper_t_f, &a);
+		self->l->in.log(self->l);
+		{
+			args_t_f a = {sizeof(args_t_f), self->t->out.f, self};
+			runtime_defer(self->rt, self, helper_t_f, &a);
+		}
 	}
 }
 
