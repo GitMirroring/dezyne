@@ -423,6 +423,9 @@
 (define-method (find-trigger (o <guard>) (port <gom:port>) (event <event>))
   (find-trigger (.statement o) port event))
 
+(define-method (find-trigger (o <ast>) (port <gom:port>) (event <event>))
+  #f)
+
 (define-method (find-trigger (o <compound>) (port <gom:port>) (event <event>))
   (null-is-#f (map (find-trigger port event) (.elements o))))
 
@@ -443,8 +446,12 @@
 (define-method (gom:first-guard? (model <model>) (o <guard>))
   (not
    (and-let* ((parent (gom:parent model o))
+              (parent (cond ((is-a? parent <guard>) (.statement parent))
+                            ((is-a? parent <on>) (gom:parent model parent))
+                            (else parent)))
               (guards ((gom:statements-of-type 'guard) parent))
-              (guards (filter (find-trigger (statements.port) (statements.event)) guards)))
+              (guards (filter (find-trigger (statements.port) (statements.event)) guards))
+              (guards (null-is-#f guards)))
              (not (eq? o (car guards))))))
 
 (define-method (gom:top-guard? (model <model>) (o <guard>))

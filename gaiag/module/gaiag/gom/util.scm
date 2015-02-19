@@ -184,6 +184,7 @@
   (match statement
     ((? (gom:statement-of-type type)) (list statement))
     (($ <compound>) (filter identity (apply append (map (gom:statements-of-type type) (.elements statement)))))
+    (($ <on> triggers statement) (filter identity ((gom:statements-of-type type) statement)))
     ((? (is? <statement>)) '())
     (#f '())
     (_ (throw 'match-error  (format #f "~a:gom:statements-of-type, type: ~a: no match: ~a\n" (current-source-location) type statement)))))
@@ -530,12 +531,12 @@
   (gom:parent ((compose .statement .behaviour) o) t))
 
 (define-method (gom:parent (o <guard>) (t <ast>))
-  (or (and (eq? (.expression o) t) o)
-      (and (eq? (gom:id (.expression o)) (gom:id t)) o)
+  (or (and (eq? (gom:id (.statement o)) (gom:id t)) o)
       (gom:parent (.statement o) t)))
 
 (define-method (gom:parent (o <on>) (t <ast>))
-  (gom:parent (.statement o) t))
+  (or (and (eq? (gom:id (.statement o)) (gom:id t)) o)
+      (gom:parent (.statement o) t)))
 
 (define ((gom:named name) model)
   (eq? (.name model) name))
