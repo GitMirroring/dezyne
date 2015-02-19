@@ -427,7 +427,7 @@
   #f)
 
 (define-method (find-trigger (o <compound>) (port <gom:port>) (event <event>))
-  (null-is-#f (map (find-trigger port event) (.elements o))))
+  (null-is-#f (filter identity (map (find-trigger port event) (.elements o)))))
 
 (define-method (find-trigger (port <gom:port>) (event <event>))
   (lambda (o) (find-trigger o port event)))
