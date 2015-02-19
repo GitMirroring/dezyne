@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -44,6 +44,7 @@ class incomplete ():
 
     def r_a (self):
         sys.stderr.write ('incomplete.r_a\n')
+        pass
 
 
 

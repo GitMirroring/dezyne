@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -28,6 +28,7 @@ dezyne.incomplete_with_modeling_event = function() {
 
   this.p.in.e = function() {
     console.log('incomplete_with_modeling_event.p_e');
+    { }
   }.bind(this);
   this.r.out.a = function() {
     console.log('incomplete_with_modeling_event.r_a');
