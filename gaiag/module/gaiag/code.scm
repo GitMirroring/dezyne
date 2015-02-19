@@ -269,9 +269,7 @@
                   (identifier ,(identifier-snippet identifier))
                   (expression ,(expression->string model expression locals)))))
       (($ <on> triggers statement)
-       (or (and-let* ((trigger (find (lambda (t) (and (eq? (.port t) (.name port))
-                                                      (eq? (.event t) (.name event))))
-                                     (.elements triggers))))
+       (or (and-let* ((trigger (find-trigger src port event)))
                      (let* ((aliases
                              (let loop ((parameters ((compose .elements .parameters .signature) event))
                                         (arguments (map (compose .name .value) ((compose .elements .arguments) trigger))))
@@ -416,6 +414,14 @@
       ((? symbol?) src)
       ((h t ...) (map (lambda (x) (->code model x locals indent)) src))
       (_ (throw 'match-error (format #f "~a:code:->code: no match: ~a\n" (current-source-location) src))))))
+
+(define-method (find-trigger (o <on>) (port <gom:port>) (event <event>))
+  (find (lambda (t) (and (eq? (.port t) (.name port))
+                         (eq? (.event t) (.name event))))
+        ((compose .elements .triggers) o)))
+
+(define-method (find-trigger (port <gom:port>) (event <event>))
+  (lambda (o) (find-trigger o port event)))
 
 (define-method (expr->clause (model <model>) (o <guard>) expression)
   (if (is-a? expression <otherwise>)
@@ -597,12 +603,13 @@
                 (behaviour (.behaviour component))
                 (statement (.statement behaviour))
                 (guards ((gom:statements-of-type 'guard) statement))
-                (ons ((gom:statements-of-type 'on) statement)))
+                (ons ((gom:statements-of-type 'on) statement))
+                (ons (filter (find-trigger port event) ons)))
                (parameterize ((statements.port port)
                               (statements.event event))
-                 (string-append
-                  (code:->code model guards locals 2 #f)
-                  (code:->code model ons locals 2 #f))))
+                 (if (null? ons)
+                     (code:->code model guards locals 2 #f)
+                     (code:->code model ons locals 2 #f))))
               "")))
     (animate snippet `((port ,(.name port))
                        (event ,(.name event))
