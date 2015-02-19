@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -60,7 +60,7 @@
         (names (map slot-definition-name slots))
         (initializers (map (make-initializer o) names))
         (arguments (cons class (apply append initializers))))
-   (apply make arguments)))
+   (retain-source-properties o (apply make arguments))))
 
 (define ((ref-slot o) name) (slot-ref o name))
 
