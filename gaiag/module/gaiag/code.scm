@@ -30,6 +30,7 @@
   :use-module (gaiag gaiag)
   :use-module (gaiag indent)
   :use-module (gaiag misc)
+  :use-module (gaiag normstate)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
   :use-module (gaiag wfc)
@@ -90,7 +91,7 @@
   (gom:import name code:gom))
 
 (define (code:gom ast)
-  ((compose ast:wfc ast:resolve ast->gom) ast))
+  ((compose normstate ast:wfc ast:resolve ast->gom) ast))
 
 (define (pipe producer consumer)
   (with-input-from-string (with-output-to-string producer) consumer))
@@ -569,6 +570,8 @@
                        (statements ,statements)))))
 
 (define ((define-on model port snippet) event)
+  ;;(stderr "\nstatement")
+  ;;(pretty-print (gom->list (.statement (.behaviour model))) (current-error-port))
   (let* ((signature (.signature event))
          (type (.type signature))
          (return-type (return-type port event))
