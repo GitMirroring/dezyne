@@ -62,6 +62,8 @@ static void helper_r_a(void* args) {
 static void p_e(incomplete_with_modeling_event* self) {
 	(void)self;
 	DZN_LOG("incomplete_with_modeling_event.p_e");
+	{
+	}
 }
 
 static void r_a(incomplete_with_modeling_event* self) {

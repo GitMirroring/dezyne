@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -40,22 +40,24 @@ class expressions{
   };
   public void i_e() {
     System.err.println("expressions.i_e");
-    if (true) if (state == 0) {
-      state = 3;
-      i.getOut().a.action();
-    }
-    else {
-      state = state - 1;
-      if (c < state) {
-        c = c + 1;
+    if (true) {
+      if (state == 0) {
+        state = 3;
+        i.getOut().a.action();
       }
       else {
-        if (c <= (state + 1)) {
-          i.getOut().lo.action();
+        state = state - 1;
+        if (c < state) {
+          c = c + 1;
         }
         else {
-          if (c > state) {
-            i.getOut().hi.action();
+          if (c <= (state + 1)) {
+            i.getOut().lo.action();
+          }
+          else {
+            if (c > state) {
+              i.getOut().hi.action();
+            }
           }
         }
       }

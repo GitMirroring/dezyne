@@ -1,0 +1,28 @@
+Checking out/Twotopon.csp
+
+Checking COMPLETE'({ITwotopon.e,ITwotopon.t}) [F= IF_ITwotopon_(true,true)\diff(Events,{ITwotopon.e,ITwotopon.t,illegal})
+true
+
+Checking IF_ITwotopon_(false,false) :[deadlock free]
+true
+
+Checking IF_ITwotopon_(true,false) :[livelock free]
+true
+
+Checking CO_Twotopon_(true,true)[[ITwotopon_'.x<-i_'.x|x<-extensions(i_')]] :[deterministic]
+true
+
+Checking COMPLETE'({i.e,i.t}) [F= CO_Twotopon_(true,true)[[ITwotopon_'.x'<-i_'.x'|x'<-extensions(i_')]]\diff(Events,{i.e,i.t,illegal})
+true
+
+Checking STOP [T= AS_Twotopon_(false)\diff(Events,{illegal})
+true
+
+Checking AS_Twotopon_(false) :[deadlock free]
+true
+
+Checking IF_ITwotopon_(true,false)[[ITwotopon.x<-i.x|x<-extensions(i)]][[ITwotopon_'.x<-i_'.x|x<-extensions(i_')]][[ITwotopon_''.x<-i_''.x|x<-extensions(i_'')]]\{ITwotopon_'''.modeling} [F= AS_Twotopon_(true)\diff(Events,{|illegal,i,i_',i_''|})
+true
+
+Checking AS_Twotopon_(true)\diff(Events,{|illegal,i,i_',i_''|}) :[livelock free]
+true

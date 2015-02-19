@@ -2,7 +2,7 @@
 //
 // This file is part of Gaiag.
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -58,17 +58,19 @@ class Comp{
   public IComp.result_t client_initialize() {
     System.err.println("Comp.client_initialize");
     if (s == State.Uninitialized) {
-      IDevice.result_t res = device_A.getIn().initialize.action();
-      if (res == IDevice.result_t.OK) {
-        res = device_A.getIn().calibrate.action();
-      }
-      if (res == IDevice.result_t.OK) {
-        s = State.Initialized;
-        reply_IDevice_result_t = IDevice.result_t.OK;
-      }
-      else {
-        s = State.Uninitialized;
-        reply_IDevice_result_t = IDevice.result_t.NOK;
+      {
+        IDevice.result_t res = device_A.getIn().initialize.action();
+        if (res == IDevice.result_t.OK) {
+          res = device_A.getIn().calibrate.action();
+        }
+        if (res == IDevice.result_t.OK) {
+          s = State.Initialized;
+          reply_IDevice_result_t = IDevice.result_t.OK;
+        }
+        else {
+          s = State.Uninitialized;
+          reply_IDevice_result_t = IDevice.result_t.NOK;
+        }
       }
     }
     else if (s == State.Initialized) {
@@ -89,14 +91,16 @@ class Comp{
       assert(false);
     }
     else if (s == State.Error) {
-      IDevice.result_t res = device_A.getIn().calibrate.action();
-      if (res == IDevice.result_t.OK) {
-        s = State.Initialized;
-        reply_IDevice_result_t = IDevice.result_t.OK;
-      }
-      else {
-        s = State.Error;
-        reply_IDevice_result_t = IDevice.result_t.NOK;
+      {
+        IDevice.result_t res = device_A.getIn().calibrate.action();
+        if (res == IDevice.result_t.OK) {
+          s = State.Initialized;
+          reply_IDevice_result_t = IDevice.result_t.OK;
+        }
+        else {
+          s = State.Error;
+          reply_IDevice_result_t = IDevice.result_t.NOK;
+        }
       }
     }
     return reply_IComp_result_t;
@@ -108,17 +112,19 @@ class Comp{
       assert(false);
     }
     else if (s == State.Initialized) {
-      IDevice.result_t res = device_A.getIn().perform_action1.action();
-      if (res == IDevice.result_t.OK) {
-        res = device_A.getIn().perform_action2.action();
-      }
-      if (res == IDevice.result_t.OK) {
-        s = State.Initialized;
-        reply_IDevice_result_t = IDevice.result_t.OK;
-      }
-      else {
-        s = State.Error;
-        reply_IDevice_result_t = IDevice.result_t.NOK;
+      {
+        IDevice.result_t res = device_A.getIn().perform_action1.action();
+        if (res == IDevice.result_t.OK) {
+          res = device_A.getIn().perform_action2.action();
+        }
+        if (res == IDevice.result_t.OK) {
+          s = State.Initialized;
+          reply_IDevice_result_t = IDevice.result_t.OK;
+        }
+        else {
+          s = State.Error;
+          reply_IDevice_result_t = IDevice.result_t.NOK;
+        }
       }
     }
     else if (s == State.Error) {

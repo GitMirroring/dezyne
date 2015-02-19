@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -35,7 +35,8 @@
       :out `((a . ,(lambda () (r-a o)))))))
 
 (define-method (p-e (o <incomplete_with_modeling_event>))
-  (stderr "incomplete_with_modeling_event.p.e\n"))
+  (stderr "incomplete_with_modeling_event.p.e\n")
+    #t)
 
 (define-method (r-a (o <incomplete_with_modeling_event>))
   (stderr "incomplete_with_modeling_event.r.a\n")

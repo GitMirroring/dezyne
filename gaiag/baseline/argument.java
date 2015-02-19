@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -38,11 +38,13 @@ class argument{
   };
   public void i_e() {
     System.err.println("argument.i_e");
-    if (true) b = ! (b);
-    Boolean c = this.g(b);
-    b = this.g(c);
-    if (c) {
-      i.getOut().f.action();
+    if (true) {
+      b = ! (b);
+      Boolean c = this.g(b);
+      b = this.g(c);
+      if (c) {
+        i.getOut().f.action();
+      }
     }
   };
   public Boolean g (Boolean gc) {

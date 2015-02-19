@@ -68,7 +68,9 @@ static void helper_r_pong(void* args) {
 static void p_start(reply_reorder* self) {
 	(void)self;
 	DZN_LOG("reply_reorder.p_start");
-	self->r->in.ping(self->r);
+	{
+		self->r->in.ping(self->r);
+	}
 }
 
 static void r_pong(reply_reorder* self) {

@@ -62,19 +62,21 @@ static void helper_i_a(void* args) {
 static void i_a(If* self) {
 	(void)self;
 	DZN_LOG("If.i_a");
-	if (self->t) {
-		{
-			args_i_b a = {sizeof(args_i_b), self->i->out.b, self};
-			runtime_defer(self->rt, self, helper_i_b, &a);
+	{
+		if (self->t) {
+			{
+				args_i_b a = {sizeof(args_i_b), self->i->out.b, self};
+				runtime_defer(self->rt, self, helper_i_b, &a);
+			}
 		}
-	}
-	else {
-		{
-			args_i_c a = {sizeof(args_i_c), self->i->out.c, self};
-			runtime_defer(self->rt, self, helper_i_c, &a);
+		else {
+			{
+				args_i_c a = {sizeof(args_i_c), self->i->out.c, self};
+				runtime_defer(self->rt, self, helper_i_c, &a);
+			}
 		}
+		self->t = !(self->t);
 	}
-	self->t = !(self->t);
 }
 
 static void callback_i_a(I* self) {

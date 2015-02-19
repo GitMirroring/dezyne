@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -50,38 +51,32 @@ class Adaptor{
   };
   public void runner_run() {
     System.err.println("Adaptor.runner_run");
-    if (state == State.Idle) {
-      if (count < 2) {
-        choice.getIn().e.action();
-        state = State.Active;
-      }
-      else { }
+    if (state == State.Idle && count < 2) {
+      choice.getIn().e.action();
+      state = State.Active;
     }
+    else if (state == State.Idle && ! (count < 2)) { }
     else if (state == State.Active) {
       { }
     }
-    else if (state == State.Terminating) {
-      { }
-    }
+    else if (state == State.Terminating) { }
   };
 
   public void choice_a() {
     System.err.println("Adaptor.choice_a");
-    if (state == State.Idle) {
-      { }
-    }
+    if (state == State.Idle) { }
     else if (state == State.Active) {
-      count = count + 1;
-      choice.getIn().e.action();
-      state = State.Terminating;
-    }
-    else if (state == State.Terminating) {
-      if (count < 2) {
+      {
+        count = count + 1;
         choice.getIn().e.action();
-        state = State.Active;
+        state = State.Terminating;
       }
-      else state = State.Idle;
     }
+    else if (state == State.Terminating && count < 2) {
+      choice.getIn().e.action();
+      state = State.Active;
+    }
+    else if (state == State.Terminating && ! (count < 2)) state = State.Idle;
   };
 
 }

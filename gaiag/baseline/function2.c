@@ -78,7 +78,9 @@ static void i_a(function2* self) {
 	(void)self;
 	DZN_LOG("function2.i_a");
 	if (true) {
-		self->f = vtoggle (self);
+		{
+			self->f = vtoggle (self);
+		}
 	}
 }
 
@@ -86,12 +88,14 @@ static void i_b(function2* self) {
 	(void)self;
 	DZN_LOG("function2.i_b");
 	if (true) {
-		self->f = vtoggle (self);
-		bool bb = vtoggle (self);
-		self->f = bb;
 		{
-			args_i_d a = {sizeof(args_i_d), self->i->out.d, self};
-			runtime_defer(self->rt, self, helper_i_d, &a);
+			self->f = vtoggle (self);
+			bool bb = vtoggle (self);
+			self->f = bb;
+			{
+				args_i_d a = {sizeof(args_i_d), self->i->out.d, self};
+				runtime_defer(self->rt, self, helper_i_d, &a);
+			}
 		}
 	}
 }

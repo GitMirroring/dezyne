@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -44,16 +44,20 @@ class function{
   public void i_a() {
     System.err.println("function.i_a");
     if (true) {
-      toggle();
+      {
+        toggle();
+      }
     }
   };
 
   public void i_b() {
     System.err.println("function.i_b");
     if (true) {
-      toggle();
-      toggle();
-      i.getOut().d.action();
+      {
+        toggle();
+        toggle();
+        i.getOut().d.action();
+      }
     }
   };
   public void toggle () {

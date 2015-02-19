@@ -1,6 +1,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+# Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -43,12 +44,11 @@ class Adaptor ():
 
     def runner_run (self):
         sys.stderr.write ('Adaptor.runner_run\n')
-        if (self.state == self.State.Idle):
-            if (self.count < 2):
-                self.choice.ins.e ()
-                self.state = self.State.Active
-            else:
-                pass
+        if (self.state == self.State.Idle and self.count < 2):
+            self.choice.ins.e ()
+            self.state = self.State.Active
+        elif (self.state == self.State.Idle and not (self.count < 2)):
+            pass
         elif (self.state == self.State.Active):
             pass
         elif (self.state == self.State.Terminating):
@@ -63,12 +63,11 @@ class Adaptor ():
             self.count = self.count + 1
             self.choice.ins.e ()
             self.state = self.State.Terminating
-        elif (self.state == self.State.Terminating):
-            if (self.count < 2):
-                self.choice.ins.e ()
-                self.state = self.State.Active
-            else:
-                self.state = self.State.Idle
+        elif (self.state == self.State.Terminating and self.count < 2):
+            self.choice.ins.e ()
+            self.state = self.State.Active
+        elif (self.state == self.State.Terminating and not (self.count < 2)):
+            self.state = self.State.Idle
 
 
 

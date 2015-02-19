@@ -45,7 +45,9 @@ class reply_reorder{
   };
   public void p_start() {
     System.err.println("reply_reorder.p_start");
-    r.getIn().ping.action();
+    {
+      r.getIn().ping.action();
+    }
   };
 
   public void r_pong() {

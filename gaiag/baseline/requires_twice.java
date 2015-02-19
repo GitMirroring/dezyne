@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -50,8 +50,10 @@ class requires_twice{
   };
   public void p_e() {
     System.err.println("requires_twice.p_e");
-    once.getIn().e.action();
-    twice.getIn().e.action();
+    {
+      once.getIn().e.action();
+      twice.getIn().e.action();
+    }
   };
 
   public void once_a() {
@@ -61,7 +63,9 @@ class requires_twice{
 
   public void twice_a() {
     System.err.println("requires_twice.twice_a");
-    p.getOut().a.action();
+    {
+      p.getOut().a.action();
+    }
   };
 
 }

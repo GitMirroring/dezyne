@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -42,7 +42,9 @@ namespace dezyne
     std::cout << "function2.i_a" << std::endl;
     if (true)
     {
-      f = vtoggle ();
+      {
+        f = vtoggle ();
+      }
     }
   }
 
@@ -51,10 +53,12 @@ namespace dezyne
     std::cout << "function2.i_b" << std::endl;
     if (true)
     {
-      f = vtoggle ();
-      bool bb = vtoggle ();
-      f = bb;
-      rt.defer(this, boost::bind(i.out.d));
+      {
+        f = vtoggle ();
+        bool bb = vtoggle ();
+        f = bb;
+        rt.defer(this, boost::bind(i.out.d));
+      }
     }
   }
 

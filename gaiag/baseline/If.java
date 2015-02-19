@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -38,13 +38,15 @@ class If{
   };
   public void i_a() {
     System.err.println("If.i_a");
-    if (t) {
-      i.getOut().b.action();
+    {
+      if (t) {
+        i.getOut().b.action();
+      }
+      else {
+        i.getOut().c.action();
+      }
+      t = ! (t);
     }
-    else {
-      i.getOut().c.action();
-    }
-    t = ! (t);
   };
 
 }

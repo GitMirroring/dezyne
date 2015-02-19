@@ -1,0 +1,37 @@
+Checking out/Guardthreetopon.csp
+
+Checking COMPLETE'({IGuardthreetopon.e,IGuardthreetopon.t,IGuardthreetopon.s}) [F= IF_IGuardthreetopon_(true,true)\diff(Events,{IGuardthreetopon.e,IGuardthreetopon.t,IGuardthreetopon.s,illegal})
+true
+
+Checking IF_IGuardthreetopon_(false,false) :[deadlock free]
+true
+
+Checking IF_IGuardthreetopon_(true,false) :[livelock free]
+true
+
+Checking COMPLETE'({RGuardthreetopon.e}) [F= IF_RGuardthreetopon_(true,true)\diff(Events,{RGuardthreetopon.e,illegal})
+true
+
+Checking IF_RGuardthreetopon_(false,false) :[deadlock free]
+xfalse
+
+Checking IF_RGuardthreetopon_(true,false) :[livelock free]
+true
+
+Checking CO_Guardthreetopon_(true,true)[[IGuardthreetopon_'.x<-i_'.x|x<-extensions(i_')]] :[deterministic]
+true
+
+Checking COMPLETE'({i.e,i.t,i.s,r_''.a}) [F= CO_Guardthreetopon_(true,true)[[IGuardthreetopon_'.x'<-i_'.x'|x'<-extensions(i_')]]\diff(Events,{i.e,i.t,i.s,r_''.a,illegal})
+true
+
+Checking STOP [T= AS_Guardthreetopon_(false)\diff(Events,{illegal})
+true
+
+Checking AS_Guardthreetopon_(false) :[deadlock free]
+true
+
+Checking IF_IGuardthreetopon_(true,false)[[IGuardthreetopon.x<-i.x|x<-extensions(i)]][[IGuardthreetopon_'.x<-i_'.x|x<-extensions(i_')]][[IGuardthreetopon_''.x<-i_''.x|x<-extensions(i_'')]]\{IGuardthreetopon_'''.modeling} [F= AS_Guardthreetopon_(true)\diff(Events,{|illegal,i,i_',i_''|})
+true
+
+Checking AS_Guardthreetopon_(true)\diff(Events,{|illegal,i,i_',i_''|}) :[livelock free]
+true

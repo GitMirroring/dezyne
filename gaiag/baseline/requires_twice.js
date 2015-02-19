@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -29,8 +29,10 @@ dezyne.requires_twice = function() {
 
   this.p.in.e = function() {
     console.log('requires_twice.p_e');
-    this.once.in.e();
-    this.twice.in.e();
+    {
+      this.once.in.e();
+      this.twice.in.e();
+    }
   }.bind(this);
   this.once.out.a = function() {
     console.log('requires_twice.once_a');
@@ -38,7 +40,9 @@ dezyne.requires_twice = function() {
   }.bind(this);
   this.twice.out.a = function() {
     console.log('requires_twice.twice_a');
-    this.p.out.a.defer();
+    {
+      this.p.out.a.defer();
+    }
   }.bind(this);
 
 };

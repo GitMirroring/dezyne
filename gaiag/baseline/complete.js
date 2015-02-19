@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -28,11 +28,15 @@ dezyne.complete = function() {
 
   this.p.in.e = function() {
     console.log('complete.p_e');
-    this.r.in.e();
+    {
+      this.r.in.e();
+    }
   }.bind(this);
   this.r.out.a = function() {
     console.log('complete.r_a');
-    this.p.out.a.defer();
+    {
+      this.p.out.a.defer();
+    }
   }.bind(this);
 
 };

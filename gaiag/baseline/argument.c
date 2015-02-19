@@ -65,13 +65,15 @@ static bool g(argument* self, bool gc) {
 static void i_e(argument* self) {
 	(void)self;
 	DZN_LOG("argument.i_e");
-	if (true) self->b = !(self->b);
-	bool c = g(self, self->b);
-	self->b = g(self, c);
-	if (c) {
-		{
-			args_i_f a = {sizeof(args_i_f), self->i->out.f, self};
-			runtime_defer(self->rt, self, helper_i_f, &a);
+	if (true) {
+		self->b = !(self->b);
+		bool c = g(self, self->b);
+		self->b = g(self, c);
+		if (c) {
+			{
+				args_i_f a = {sizeof(args_i_f), self->i->out.f, self};
+				runtime_defer(self->rt, self, helper_i_f, &a);
+			}
 		}
 	}
 }

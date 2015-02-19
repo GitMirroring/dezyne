@@ -69,6 +69,8 @@ static void p_e(incomplete* self) {
 static void r_a(incomplete* self) {
 	(void)self;
 	DZN_LOG("incomplete.r_a");
+	{
+	}
 }
 
 static void callback_p_e(iincomplete* self) {

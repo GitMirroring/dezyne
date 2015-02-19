@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -40,13 +40,17 @@ namespace dezyne
   void complete::p_e()
   {
     std::cout << "complete.p_e" << std::endl;
-    r.in.e();
+    {
+      r.in.e();
+    }
   }
 
   void complete::r_a()
   {
     std::cout << "complete.r_a" << std::endl;
-    rt.defer(this, boost::bind(p.out.a));
+    {
+      rt.defer(this, boost::bind(p.out.a));
+    }
   }
 
 

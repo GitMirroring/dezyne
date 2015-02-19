@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -43,6 +43,7 @@ class incomplete_with_modeling_event{
   };
   public void p_e() {
     System.err.println("incomplete_with_modeling_event.p_e");
+    { }
   };
 
   public void r_a() {

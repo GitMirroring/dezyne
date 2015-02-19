@@ -165,8 +165,10 @@ static void port_e0(Dataparam* self) {
 	(void)self;
 	DZN_LOG("Dataparam.port_e0");
 	{
-		args_port_a6 a = {sizeof(args_port_a6), self->port->out.a6, self, 0, 1, 2, 3, 4, 5};
-		runtime_defer(self->rt, self, helper_port_a6, &a);
+		{
+			args_port_a6 a = {sizeof(args_port_a6), self->port->out.a6, self, 0, 1, 2, 3, 4, 5};
+			runtime_defer(self->rt, self, helper_port_a6, &a);
+		}
 	}
 }
 
@@ -174,10 +176,12 @@ static int port_e0r(Dataparam* self) {
 	(void)self;
 	DZN_LOG("Dataparam.port_e0r");
 	{
-		args_port_a0 a = {sizeof(args_port_a0), self->port->out.a0, self};
-		runtime_defer(self->rt, self, helper_port_a0, &a);
+		{
+			args_port_a0 a = {sizeof(args_port_a0), self->port->out.a0, self};
+			runtime_defer(self->rt, self, helper_port_a0, &a);
+		}
+		self->reply_IDataparam_Status = IDataparam_Status_Yes;
 	}
-	self->reply_IDataparam_Status = IDataparam_Status_Yes;
 	return self->reply_IDataparam_Status;
 }
 
@@ -186,17 +190,19 @@ static void port_e(Dataparam* self, int i) {
 	DZN_LOG("Dataparam.port_e");
 	{
 		int pi = i;
-		int s = funx(self, pi);
-		s = s;
-		self->mi = pi;
-		self->mi = xfunx(self, pi, pi + pi);
 		{
-			args_port_a a = {sizeof(args_port_a), self->port->out.a, self, self->mi};
-			runtime_defer(self->rt, self, helper_port_a, &a);
-		}
-		{
-			args_port_aa a = {sizeof(args_port_aa), self->port->out.aa, self, self->mi, pi};
-			runtime_defer(self->rt, self, helper_port_aa, &a);
+			int s = funx(self, pi);
+			s = s;
+			self->mi = pi;
+			self->mi = xfunx(self, pi, pi + pi);
+			{
+				args_port_a a = {sizeof(args_port_a), self->port->out.a, self, self->mi};
+				runtime_defer(self->rt, self, helper_port_a, &a);
+			}
+			{
+				args_port_aa a = {sizeof(args_port_aa), self->port->out.aa, self, self->mi, pi};
+				runtime_defer(self->rt, self, helper_port_aa, &a);
+			}
 		}
 	}
 }
@@ -206,21 +212,23 @@ static int port_er(Dataparam* self, int i) {
 	DZN_LOG("Dataparam.port_er");
 	{
 		int pi = i;
-		int s = IDataparam_Status_No;
-		self->mi = pi;
 		{
-			args_port_a a = {sizeof(args_port_a), self->port->out.a, self, self->mi};
-			runtime_defer(self->rt, self, helper_port_a, &a);
-		}
-		{
-			args_port_aa a = {sizeof(args_port_aa), self->port->out.aa, self, self->mi, pi};
-			runtime_defer(self->rt, self, helper_port_aa, &a);
-		}
-		if (true) {
-			self->reply_IDataparam_Status = IDataparam_Status_Yes;
-		}
-		else {
-			self->reply_IDataparam_Status = s;
+			int s = IDataparam_Status_No;
+			self->mi = pi;
+			{
+				args_port_a a = {sizeof(args_port_a), self->port->out.a, self, self->mi};
+				runtime_defer(self->rt, self, helper_port_a, &a);
+			}
+			{
+				args_port_aa a = {sizeof(args_port_aa), self->port->out.aa, self, self->mi, pi};
+				runtime_defer(self->rt, self, helper_port_aa, &a);
+			}
+			if (true) {
+				self->reply_IDataparam_Status = IDataparam_Status_Yes;
+			}
+			else {
+				self->reply_IDataparam_Status = s;
+			}
 		}
 	}
 	return self->reply_IDataparam_Status;
@@ -229,76 +237,94 @@ static int port_er(Dataparam* self, int i) {
 static int port_eer(Dataparam* self, int i, int j) {
 	(void)self;
 	DZN_LOG("Dataparam.port_eer");
-	int s = IDataparam_Status_No;
 	{
-		args_port_a a = {sizeof(args_port_a), self->port->out.a, self, j};
-		runtime_defer(self->rt, self, helper_port_a, &a);
+		int s = IDataparam_Status_No;
+		{
+			args_port_a a = {sizeof(args_port_a), self->port->out.a, self, j};
+			runtime_defer(self->rt, self, helper_port_a, &a);
+		}
+		{
+			args_port_aa a = {sizeof(args_port_aa), self->port->out.aa, self, j, i};
+			runtime_defer(self->rt, self, helper_port_aa, &a);
+		}
+		self->reply_IDataparam_Status = s;
 	}
-	{
-		args_port_aa a = {sizeof(args_port_aa), self->port->out.aa, self, j, i};
-		runtime_defer(self->rt, self, helper_port_aa, &a);
-	}
-	self->reply_IDataparam_Status = s;
 	return self->reply_IDataparam_Status;
 }
 
 static void port_eo(Dataparam* self, int* i) {
 	(void)self;
 	DZN_LOG("Dataparam.port_eo");
-	*i = 234;
+	{
+		*i = 234;
+	}
 }
 
 static void port_eoo(Dataparam* self, int* i, int* j) {
 	(void)self;
 	DZN_LOG("Dataparam.port_eoo");
-	*i = 123;
-	*j = 456;
+	{
+		*i = 123;
+		*j = 456;
+	}
 }
 
 static void port_eio(Dataparam* self, int i, int* j) {
 	(void)self;
 	DZN_LOG("Dataparam.port_eio");
-	*j = i;
+	{
+		*j = i;
+	}
 }
 
 static void port_eio2(Dataparam* self, int* i) {
 	(void)self;
 	DZN_LOG("Dataparam.port_eio2");
-	int t = *i;
-	*i = t + 123;
+	{
+		int t = *i;
+		*i = t + 123;
+	}
 }
 
 static int port_eor(Dataparam* self, int* i) {
 	(void)self;
 	DZN_LOG("Dataparam.port_eor");
-	*i = 234;
-	self->reply_IDataparam_Status = IDataparam_Status_Yes;
+	{
+		*i = 234;
+		self->reply_IDataparam_Status = IDataparam_Status_Yes;
+	}
 	return self->reply_IDataparam_Status;
 }
 
 static int port_eoor(Dataparam* self, int* i, int* j) {
 	(void)self;
 	DZN_LOG("Dataparam.port_eoor");
-	*i = 123;
-	*j = 456;
-	self->reply_IDataparam_Status = IDataparam_Status_Yes;
+	{
+		*i = 123;
+		*j = 456;
+		self->reply_IDataparam_Status = IDataparam_Status_Yes;
+	}
 	return self->reply_IDataparam_Status;
 }
 
 static int port_eior(Dataparam* self, int i, int* j) {
 	(void)self;
 	DZN_LOG("Dataparam.port_eior");
-	*j = i;
-	self->reply_IDataparam_Status = IDataparam_Status_Yes;
+	{
+		*j = i;
+		self->reply_IDataparam_Status = IDataparam_Status_Yes;
+	}
 	return self->reply_IDataparam_Status;
 }
 
 static int port_eio2r(Dataparam* self, int* i) {
 	(void)self;
 	DZN_LOG("Dataparam.port_eio2r");
-	int t = *i;
-	*i = t + 123;
-	self->reply_IDataparam_Status = IDataparam_Status_Yes;
+	{
+		int t = *i;
+		*i = t + 123;
+		self->reply_IDataparam_Status = IDataparam_Status_Yes;
+	}
 	return self->reply_IDataparam_Status;
 }
 

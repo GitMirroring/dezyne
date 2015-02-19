@@ -68,8 +68,10 @@ static void helper_twice_a(void* args) {
 static void p_e(requires_twice* self) {
 	(void)self;
 	DZN_LOG("requires_twice.p_e");
-	self->once->in.e(self->once);
-	self->twice->in.e(self->twice);
+	{
+		self->once->in.e(self->once);
+		self->twice->in.e(self->twice);
+	}
 }
 
 static void once_a(requires_twice* self) {
@@ -83,8 +85,10 @@ static void twice_a(requires_twice* self) {
 	(void)self;
 	DZN_LOG("requires_twice.twice_a");
 	{
-		args_p_a a = {sizeof(args_p_a), self->p->out.a, self};
-		runtime_defer(self->rt, self, helper_p_a, &a);
+		{
+			args_p_a a = {sizeof(args_p_a), self->p->out.a, self};
+			runtime_defer(self->rt, self, helper_p_a, &a);
+		}
 	}
 }
 

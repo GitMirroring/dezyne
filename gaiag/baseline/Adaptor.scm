@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -39,13 +40,11 @@
 (define-method (runner-run (o <Adaptor>))
   (stderr "Adaptor.runner.run\n")
     (cond 
-    ((equal? (.state o) '(State Idle))
-      (cond 
-    ((< (.count o) 2)
-        (action o .choice .in 'e)
-        (set! (.state o) '(State Active)))
-    (else
-        #t)))
+    ((and (equal? (.state o) '(State Idle)) (< (.count o) 2))
+      (action o .choice .in 'e)
+      (set! (.state o) '(State Active)))
+    ((and (equal? (.state o) '(State Idle)) (not (< (.count o) 2)))
+      #t)
     ((equal? (.state o) '(State Active))
       #t)
     ((equal? (.state o) '(State Terminating))
@@ -60,12 +59,10 @@
       (set! (.count o) (+ (.count o) 1))
       (action o .choice .in 'e)
       (set! (.state o) '(State Terminating)))
-    ((equal? (.state o) '(State Terminating))
-      (cond 
-    ((< (.count o) 2)
-        (action o .choice .in 'e)
-        (set! (.state o) '(State Active)))
-    (else
-        (set! (.state o) '(State Idle)))))))
+    ((and (equal? (.state o) '(State Terminating)) (< (.count o) 2))
+      (action o .choice .in 'e)
+      (set! (.state o) '(State Active)))
+    ((and (equal? (.state o) '(State Terminating)) (not (< (.count o) 2)))
+      (set! (.state o) '(State Idle)))))
 
 

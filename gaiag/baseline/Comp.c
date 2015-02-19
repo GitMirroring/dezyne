@@ -66,17 +66,19 @@ static int client_initialize(Comp* self) {
 	(void)self;
 	DZN_LOG("Comp.client_initialize");
 	if (self->s == Comp_State_Uninitialized) {
-		int res = self->device_A->in.initialize(self->device_A);
-		if (res == IDevice_result_t_OK) {
-			res = self->device_A->in.calibrate(self->device_A);
-		}
-		if (res == IDevice_result_t_OK) {
-			self->s = Comp_State_Initialized;
-			self->reply_IDevice_result_t = IDevice_result_t_OK;
-		}
-		else {
-			self->s = Comp_State_Uninitialized;
-			self->reply_IDevice_result_t = IDevice_result_t_NOK;
+		{
+			int res = self->device_A->in.initialize(self->device_A);
+			if (res == IDevice_result_t_OK) {
+				res = self->device_A->in.calibrate(self->device_A);
+			}
+			if (res == IDevice_result_t_OK) {
+				self->s = Comp_State_Initialized;
+				self->reply_IDevice_result_t = IDevice_result_t_OK;
+			}
+			else {
+				self->s = Comp_State_Uninitialized;
+				self->reply_IDevice_result_t = IDevice_result_t_NOK;
+			}
 		}
 	}
 	else if (self->s == Comp_State_Initialized) {
@@ -98,14 +100,16 @@ static int client_recover(Comp* self) {
 		assert(false);
 	}
 	else if (self->s == Comp_State_Error) {
-		int res = self->device_A->in.calibrate(self->device_A);
-		if (res == IDevice_result_t_OK) {
-			self->s = Comp_State_Initialized;
-			self->reply_IDevice_result_t = IDevice_result_t_OK;
-		}
-		else {
-			self->s = Comp_State_Error;
-			self->reply_IDevice_result_t = IDevice_result_t_NOK;
+		{
+			int res = self->device_A->in.calibrate(self->device_A);
+			if (res == IDevice_result_t_OK) {
+				self->s = Comp_State_Initialized;
+				self->reply_IDevice_result_t = IDevice_result_t_OK;
+			}
+			else {
+				self->s = Comp_State_Error;
+				self->reply_IDevice_result_t = IDevice_result_t_NOK;
+			}
 		}
 	}
 	return self->reply_IComp_result_t;
@@ -118,17 +122,19 @@ static int client_perform_actions(Comp* self) {
 		assert(false);
 	}
 	else if (self->s == Comp_State_Initialized) {
-		int res = self->device_A->in.perform_action1(self->device_A);
-		if (res == IDevice_result_t_OK) {
-			res = self->device_A->in.perform_action2(self->device_A);
-		}
-		if (res == IDevice_result_t_OK) {
-			self->s = Comp_State_Initialized;
-			self->reply_IDevice_result_t = IDevice_result_t_OK;
-		}
-		else {
-			self->s = Comp_State_Error;
-			self->reply_IDevice_result_t = IDevice_result_t_NOK;
+		{
+			int res = self->device_A->in.perform_action1(self->device_A);
+			if (res == IDevice_result_t_OK) {
+				res = self->device_A->in.perform_action2(self->device_A);
+			}
+			if (res == IDevice_result_t_OK) {
+				self->s = Comp_State_Initialized;
+				self->reply_IDevice_result_t = IDevice_result_t_OK;
+			}
+			else {
+				self->s = Comp_State_Error;
+				self->reply_IDevice_result_t = IDevice_result_t_NOK;
+			}
 		}
 	}
 	else if (self->s == Comp_State_Error) {

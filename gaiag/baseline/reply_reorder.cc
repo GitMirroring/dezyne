@@ -41,7 +41,9 @@ namespace dezyne
   void reply_reorder::p_start()
   {
     std::cout << "reply_reorder.p_start" << std::endl;
-    r.in.ping();
+    {
+      r.in.ping();
+    }
   }
 
   void reply_reorder::r_pong()

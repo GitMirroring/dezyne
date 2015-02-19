@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -43,12 +43,16 @@ class complete{
   };
   public void p_e() {
     System.err.println("complete.p_e");
-    r.getIn().e.action();
+    {
+      r.getIn().e.action();
+    }
   };
 
   public void r_a() {
     System.err.println("complete.r_a");
-    p.getOut().a.action();
+    {
+      p.getOut().a.action();
+    }
   };
 
 }

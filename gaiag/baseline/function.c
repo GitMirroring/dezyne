@@ -80,7 +80,9 @@ static void i_a(function* self) {
 	(void)self;
 	DZN_LOG("function.i_a");
 	if (true) {
-		toggle (self);
+		{
+			toggle (self);
+		}
 	}
 }
 
@@ -88,11 +90,13 @@ static void i_b(function* self) {
 	(void)self;
 	DZN_LOG("function.i_b");
 	if (true) {
-		toggle (self);
-		toggle (self);
 		{
-			args_i_d a = {sizeof(args_i_d), self->i->out.d, self};
-			runtime_defer(self->rt, self, helper_i_d, &a);
+			toggle (self);
+			toggle (self);
+			{
+				args_i_d a = {sizeof(args_i_d), self->i->out.d, self};
+				runtime_defer(self->rt, self, helper_i_d, &a);
+			}
 		}
 	}
 }

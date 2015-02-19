@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -41,29 +41,31 @@ namespace dezyne
   {
     std::cout << "expressions.i_e" << std::endl;
     if (true)
-    if (state == 0)
     {
-      state = 3;
-      rt.defer(this, boost::bind(i.out.a));
-    }
-    else
-    {
-      state = state - 1;
-      if (c < state)
+      if (state == 0)
       {
-        c = c + 1;
+        state = 3;
+        rt.defer(this, boost::bind(i.out.a));
       }
       else
       {
-        if (c <= (state + 1))
+        state = state - 1;
+        if (c < state)
         {
-          rt.defer(this, boost::bind(i.out.lo));
+          c = c + 1;
         }
         else
         {
-          if (c > state)
+          if (c <= (state + 1))
           {
-            rt.defer(this, boost::bind(i.out.hi));
+            rt.defer(this, boost::bind(i.out.lo));
+          }
+          else
+          {
+            if (c > state)
+            {
+              rt.defer(this, boost::bind(i.out.hi));
+            }
           }
         }
       }

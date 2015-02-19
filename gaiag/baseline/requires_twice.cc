@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -42,8 +42,10 @@ namespace dezyne
   void requires_twice::p_e()
   {
     std::cout << "requires_twice.p_e" << std::endl;
-    once.in.e();
-    twice.in.e();
+    {
+      once.in.e();
+      twice.in.e();
+    }
   }
 
   void requires_twice::once_a()
@@ -56,7 +58,9 @@ namespace dezyne
   void requires_twice::twice_a()
   {
     std::cout << "requires_twice.twice_a" << std::endl;
-    rt.defer(this, boost::bind(p.out.a));
+    {
+      rt.defer(this, boost::bind(p.out.a));
+    }
   }
 
 

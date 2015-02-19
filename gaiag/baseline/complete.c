@@ -62,15 +62,19 @@ static void helper_r_a(void* args) {
 static void p_e(complete* self) {
 	(void)self;
 	DZN_LOG("complete.p_e");
-	self->r->in.e(self->r);
+	{
+		self->r->in.e(self->r);
+	}
 }
 
 static void r_a(complete* self) {
 	(void)self;
 	DZN_LOG("complete.r_a");
 	{
-		args_p_a a = {sizeof(args_p_a), self->p->out.a, self};
-		runtime_defer(self->rt, self, helper_p_a, &a);
+		{
+			args_p_a a = {sizeof(args_p_a), self->p->out.a, self};
+			runtime_defer(self->rt, self, helper_p_a, &a);
+		}
 	}
 }
 
