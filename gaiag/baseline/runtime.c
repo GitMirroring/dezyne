@@ -45,7 +45,6 @@ typedef struct {
 void
 runtime_init (runtime* self)
 {
-  map_init (&self->queues);
 }
 
 void
@@ -53,7 +52,7 @@ runtime_sub_init (runtime* self, runtime_sub* sub)
 {
   sub->rt = self;
   sub->handling = false;
-  sub->q = dzn_calloc (sizeof (queue), 1);
+  queue_init(&sub->q);
 }
 
 bool*
@@ -65,25 +64,39 @@ runtime_handling (runtime_sub* sub)
 void
 runtime_flush (runtime_sub* sub)
 {
-  queue* q = sub->q;
+  queue* q = &sub->q;
   while (!queue_empty (q))
   {
+#ifndef DZN_STATIC_QUEUES
     closure* c = queue_pop (q);
     c->func (c->args);
     free (c->args);
     free (c);
+#else
+    closure c = *(closure*)queue_pop (q);
+    c.func (c.args);
+#endif
   }
 }
 
 void
 runtime_defer (runtime_sub* sub, void (*event)(void*), void* args)
 {
+#ifndef DZN_STATIC_QUEUES
   closure *c = dzn_malloc (sizeof (closure));
   c->func = event;
   arguments *a = args;
   c->args = dzn_malloc (a->size);
   memcpy (c->args, a, a->size);
-  queue_push (sub->q, c);
+  queue_push (&sub->q, c);
+#else
+  closure c;
+  c.func = event;
+  arguments *a = args;
+  assert(a->size <= DZN_MAX_ARGS_SIZE);
+  memcpy(&c.args, a, a->size);
+  queue_push (&sub->q, &c);
+#endif
 }
 
 static void

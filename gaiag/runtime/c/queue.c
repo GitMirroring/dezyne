@@ -28,6 +28,20 @@
 
 #include "mem.h"
 
+void
+queue_init(queue* self)
+{
+#ifndef DZN_STATIC_QUEUES
+  self->head = 0;
+  self->tail = 0;
+  self->size = 0;
+#else
+  self->head = self->element;
+  self->tail = self->element;
+  self->size = 0;
+#endif
+}
+
 bool
 queue_empty (queue* self)
 {
@@ -44,6 +58,7 @@ queue_size (queue* self)
 void
 queue_push (queue* self, void* e)
 {
+#ifndef DZN_STATIC_QUEUES
   Node* n = (Node*) dzn_malloc (sizeof (Node));
   n->item = e;
   n->next = 0;
@@ -55,11 +70,21 @@ queue_push (queue* self, void* e)
   }
   self->tail = n;
   self->size++;
+#else
+  *(self->tail) = *((Node*)e);
+  if (self->tail - self->element == DZN_DEFAULT_QUEUE_SIZE) {
+    self->tail = self->element;
+  }
+  self->tail++;
+  self->size++;
+  assert (self->size <= DZN_DEFAULT_QUEUE_SIZE);
+#endif
 }
 
 void* 
 queue_pop (queue* self)
 {
+#ifndef DZN_STATIC_QUEUES
   assert (self->size);
   Node* head = self->head;
   void* item = head->item;
@@ -67,12 +92,26 @@ queue_pop (queue* self)
   self->size--;
   free (head);
   return item;
+#else
+  assert (self->size);
+  Node* res = self->head;
+  self->head++;
+  if (self->head - self->element == DZN_DEFAULT_QUEUE_SIZE) {
+    self->head = self->element;
+  }
+  self->size--;
+  return res;
+#endif
 }
 
 void* 
 queue_front (queue* self)
 {
+#ifndef DZN_STATIC_QUEUES
   return self->head->item;
+#else
+  return self->head;
+#endif
 }
 
 #ifdef QUEUE_TEST
