@@ -30,18 +30,18 @@
 
 void a0()
 {
-  std::cout << "a0()" << std::endl;
+  std::clog << "a0()" << std::endl;
 }
 
 void a(int i)
 {
-  std::cout << "a(" << i << ")" << std::endl;
+  std::clog << "a(" << i << ")" << std::endl;
 }
 
 void aa(int i, int j)
 {
   assert(j == 123);
-  std::cout << "aa(" << i << "," << j << ")" << std::endl;
+  std::clog << "aa(" << i << "," << j << ")" << std::endl;
 }
 
 void a6(int i0, int i1, int i2, int i3, int i4, int i5)
@@ -52,7 +52,7 @@ void a6(int i0, int i1, int i2, int i3, int i4, int i5)
   assert(i3 == 3);
   assert(i4 == 4);
   assert(i5 == 5);
-  std::cout << "a6(" << i0 << "," << i1 << "," << i2 << "," << i3 << "," << i4 << "," << i5 << ")" << std::endl;
+  std::clog << "a6(" << i0 << "," << i1 << "," << i2 << "," << i3 << "," << i4 << "," << i5 << ")" << std::endl;
 }
 
 int main()
@@ -63,10 +63,21 @@ int main()
 
   dezyne::Datasystem c(l);
 
+  c.meta.parent = 0;
+  c.meta.name = "c";
+
+  c.port.out.meta.component = "main";
+  c.port.out.meta.port = "port";
+  c.port.out.meta.address = 0;
+
   c.port.out.a0 = a0;
   c.port.out.a = a;
   c.port.out.aa = aa;
   c.port.out.a6 = a6;
+
+  dezyne::apply(reinterpret_cast<dezyne::component*>(&c), [](const dezyne::meta& m){
+      std::clog << m.parent << " " << m.address << " " << m.name << std::endl;
+    });
 
   assert(dezyne::IDataparam::Status::Yes == c.port.in.e0r());
   c.port.in.e0();

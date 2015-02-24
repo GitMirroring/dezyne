@@ -203,7 +203,7 @@ c-dataparam:
 	cd out && ../gaiag -l c ../examples/regression/Dataparam.dzn
 	cd out && ln -sf ../examples/dataparam.c .
 	-for i in out/*c; do ccache gcc -g -std=c99 -Wall -pedantic -pedantic-errors -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o && out/$@ > out/$@.trace
-	-$(diff) baseline/$@.trace out
+	$(diff) baseline/$@.trace out
 	for i in out/*.h out/*.c; do $(diff) baseline/$$(basename $$i) $$i; done
 
 c-inject:
@@ -262,7 +262,7 @@ c++-alarm:
 		;\
 	do $(shell pwd)/gaiag -l c++ $$file; done
 	cd out && ln -s ../examples/alarm.cc .
-	cd out && for i in *cc; do ccache g++ -g -c $$i; done && g++ -o $@ *.o && ./$@ > $@.trace
+	cd out && for i in *cc; do ccache g++ -std=c++11 -g -c $$i; done && g++ -o $@ *.o && ./$@ |& sed -e s/0[^:]*://g >$@.trace
 	$(diff) baseline/$@.trace out
 	for i in out/*.hh out/*.cc; do $(diff) baseline/$$(basename $$i) $$i; done
 
@@ -270,15 +270,16 @@ c++-inject:
 	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c++/* .
 	cd out && ln -s ../examples/injected.cc .
 	cd out && $(shell pwd)/gaiag -l c++ examples/Injected.dzn
-	cd out && for i in *cc; do ccache g++ -c $$i; done && g++ -o $@ *.o && ./$@ > $@.trace
+	cd out && for i in *cc; do ccache g++ -g --std=c++11 -c $$i; done && g++ -o $@ *.o && ./$@ |& sed -e s/0[^:]*://g >$@.trace
 	$(diff) baseline/$@.trace out
 
 c++-dataparam:
 	rm -rf out && mkdir out && cd out && ln -s ../runtime/c++/* .
 	cd out && ../gaiag -l c++ ../examples/regression/Dataparam.dzn
 	cd out && ln -sf ../examples/dataparam.cc .
-	cd out && for i in *cc; do ccache g++ -std=c++11 -c $$i; done && g++ -o $@ *.o && ./$@ #> $@.trace
-	$(diff) baseline/$@.trace out
+	-cd out && for i in *cc; do ccache g++ --std=c++11 -c $$i; done && g++ -o $@ *.o && ./$@ |& sed -e s/0[^:]*://g | grep -v ^0x >$@.trace
+	-$(diff) baseline/$@.trace out
+	for i in out/*.hh out/*.cc; do $(diff) baseline/$$(basename $$i) $$i; done
 
 c++-choice:
 	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c++/* .

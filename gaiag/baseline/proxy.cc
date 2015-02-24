@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -26,49 +27,222 @@
 #include "locator.hh"
 #include "runtime.hh"
 
+#include <iostream>
+
 namespace dezyne
 {
+  template <typename T>
+  void trace(const T& t, const char* e)
+  {
+    std::clog << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << ":" << e << std::endl;
+  }
+
+  template <typename T>
+  void trace_return(const T& t, const char* e)
+  {
+    std::clog << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << " return " << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << ":" << e << std::endl ;
+  }
+
   proxy::proxy(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , top()
   , bottom()
   {
-    top.in.e0 = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&proxy::top_e0, this)));
-    top.in.e0r = connect<IDataparam::Status::type>(rt, this, boost::function<IDataparam::Status::type()>(boost::bind<IDataparam::Status::type>(&proxy::top_e0r, this)));
-    top.in.e = connect<int>(rt, this, boost::function<void(int)>(boost::bind<void>(&proxy::top_e, this, _1)));
-    top.in.er = connect<IDataparam::Status::type,int>(rt, this, boost::function<IDataparam::Status::type(int)>(boost::bind<IDataparam::Status::type>(&proxy::top_er, this, _1)));
-    top.in.eer = connect<IDataparam::Status::type,int,int>(rt, this, boost::function<IDataparam::Status::type(int,int)>(boost::bind<IDataparam::Status::type>(&proxy::top_eer, this, _1, _2)));
-    top.in.eo = connect<int&>(rt, this, boost::function<void(int&)>(boost::bind<void>(&proxy::top_eo, this, _1)));
-    top.in.eoo = connect<int&,int&>(rt, this, boost::function<void(int&,int&)>(boost::bind<void>(&proxy::top_eoo, this, _1, _2)));
-    top.in.eio = connect<int,int&>(rt, this, boost::function<void(int,int&)>(boost::bind<void>(&proxy::top_eio, this, _1, _2)));
-    top.in.eio2 = connect<int&>(rt, this, boost::function<void(int&)>(boost::bind<void>(&proxy::top_eio2, this, _1)));
-    top.in.eor = connect<IDataparam::Status::type,int&>(rt, this, boost::function<IDataparam::Status::type(int&)>(boost::bind<IDataparam::Status::type>(&proxy::top_eor, this, _1)));
-    top.in.eoor = connect<IDataparam::Status::type,int&,int&>(rt, this, boost::function<IDataparam::Status::type(int&,int&)>(boost::bind<IDataparam::Status::type>(&proxy::top_eoor, this, _1, _2)));
-    top.in.eior = connect<IDataparam::Status::type,int,int&>(rt, this, boost::function<IDataparam::Status::type(int,int&)>(boost::bind<IDataparam::Status::type>(&proxy::top_eior, this, _1, _2)));
-    top.in.eio2r = connect<IDataparam::Status::type,int&>(rt, this, boost::function<IDataparam::Status::type(int&)>(boost::bind<IDataparam::Status::type>(&proxy::top_eio2r, this, _1)));
-    bottom.out.a0 = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&proxy::bottom_a0, this)));
-    bottom.out.a = connect<int>(rt, this, boost::function<void(int)>(boost::bind<void>(&proxy::bottom_a, this, _1)));
-    bottom.out.aa = connect<int,int>(rt, this, boost::function<void(int,int)>(boost::bind<void>(&proxy::bottom_aa, this, _1, _2)));
-    bottom.out.a6 = connect<int,int,int,int,int,int>(rt, this, boost::function<void(int,int,int,int,int,int)>(boost::bind<void>(&proxy::bottom_a6, this, _1, _2, _3, _4, _5, _6)));
+    top.in.meta.component = "proxy";
+    top.in.meta.port = "top";
+    top.in.meta.address = this;
+    bottom.out.meta.component = "proxy";
+    bottom.out.meta.port = "bottom";
+    bottom.out.meta.address = this;
+
+    top.in.e0 = connect<void>(rt, this, 
+    boost::function<void()>
+    ([this] () 
+    { 
+      trace (top, "e0");
+      top_e0();
+      trace_return (top, "e0");
+      return ;
+    }
+    ));
+    top.in.e0r = connect<IDataparam::Status::type>(rt, this, 
+    boost::function<IDataparam::Status::type()>
+    ([this] () 
+    { 
+      trace (top, "e0r");
+      auto r = top_e0r();
+      trace_return (top, "e0r");
+      return r;
+    }
+    ));
+    top.in.e = connect<int>(rt, this, 
+    boost::function<void(int)>
+    ([this] (int i) 
+    { 
+      trace (top, "e");
+      top_e(i);
+      trace_return (top, "e");
+      return ;
+    }
+    ));
+    top.in.er = connect<IDataparam::Status::type,int>(rt, this, 
+    boost::function<IDataparam::Status::type(int)>
+    ([this] (int i) 
+    { 
+      trace (top, "er");
+      auto r = top_er(i);
+      trace_return (top, "er");
+      return r;
+    }
+    ));
+    top.in.eer = connect<IDataparam::Status::type,int,int>(rt, this, 
+    boost::function<IDataparam::Status::type(int,int)>
+    ([this] (int i, int j) 
+    { 
+      trace (top, "eer");
+      auto r = top_eer(i,j);
+      trace_return (top, "eer");
+      return r;
+    }
+    ));
+    top.in.eo = connect<int&>(rt, this, 
+    boost::function<void(int&)>
+    ([this] (int& i) 
+    { 
+      trace (top, "eo");
+      top_eo(i);
+      trace_return (top, "eo");
+      return ;
+    }
+    ));
+    top.in.eoo = connect<int&,int&>(rt, this, 
+    boost::function<void(int&,int&)>
+    ([this] (int& i, int& j) 
+    { 
+      trace (top, "eoo");
+      top_eoo(i,j);
+      trace_return (top, "eoo");
+      return ;
+    }
+    ));
+    top.in.eio = connect<int,int&>(rt, this, 
+    boost::function<void(int,int&)>
+    ([this] (int i, int& j) 
+    { 
+      trace (top, "eio");
+      top_eio(i,j);
+      trace_return (top, "eio");
+      return ;
+    }
+    ));
+    top.in.eio2 = connect<int&>(rt, this, 
+    boost::function<void(int&)>
+    ([this] (int& i) 
+    { 
+      trace (top, "eio2");
+      top_eio2(i);
+      trace_return (top, "eio2");
+      return ;
+    }
+    ));
+    top.in.eor = connect<IDataparam::Status::type,int&>(rt, this, 
+    boost::function<IDataparam::Status::type(int&)>
+    ([this] (int& i) 
+    { 
+      trace (top, "eor");
+      auto r = top_eor(i);
+      trace_return (top, "eor");
+      return r;
+    }
+    ));
+    top.in.eoor = connect<IDataparam::Status::type,int&,int&>(rt, this, 
+    boost::function<IDataparam::Status::type(int&,int&)>
+    ([this] (int& i, int& j) 
+    { 
+      trace (top, "eoor");
+      auto r = top_eoor(i,j);
+      trace_return (top, "eoor");
+      return r;
+    }
+    ));
+    top.in.eior = connect<IDataparam::Status::type,int,int&>(rt, this, 
+    boost::function<IDataparam::Status::type(int,int&)>
+    ([this] (int i, int& j) 
+    { 
+      trace (top, "eior");
+      auto r = top_eior(i,j);
+      trace_return (top, "eior");
+      return r;
+    }
+    ));
+    top.in.eio2r = connect<IDataparam::Status::type,int&>(rt, this, 
+    boost::function<IDataparam::Status::type(int&)>
+    ([this] (int& i) 
+    { 
+      trace (top, "eio2r");
+      auto r = top_eio2r(i);
+      trace_return (top, "eio2r");
+      return r;
+    }
+    ));
+    bottom.out.a0 = connect<void>(rt, this, 
+    boost::function<void()>
+    ([this] () 
+    { 
+      trace (bottom, "a0");
+      bottom_a0();
+      trace_return (bottom, "a0");
+      return ;
+    }
+    ));
+    bottom.out.a = connect<int>(rt, this, 
+    boost::function<void(int)>
+    ([this] (int i) 
+    { 
+      trace (bottom, "a");
+      bottom_a(i);
+      trace_return (bottom, "a");
+      return ;
+    }
+    ));
+    bottom.out.aa = connect<int,int>(rt, this, 
+    boost::function<void(int,int)>
+    ([this] (int i, int j) 
+    { 
+      trace (bottom, "aa");
+      bottom_aa(i,j);
+      trace_return (bottom, "aa");
+      return ;
+    }
+    ));
+    bottom.out.a6 = connect<int,int,int,int,int,int>(rt, this, 
+    boost::function<void(int,int,int,int,int,int)>
+    ([this] (int a0, int a1, int a2, int a3, int a4, int a5) 
+    { 
+      trace (bottom, "a6");
+      bottom_a6(a0,a1,a2,a3,a4,a5);
+      trace_return (bottom, "a6");
+      return ;
+    }
+    ));
   }
 
   void proxy::top_e0()
   {
-    std::cout << "proxy.top_e0" << std::endl;
     bottom.in.e0();
   }
 
   IDataparam::Status::type proxy::top_e0r()
   {
-    std::cout << "proxy.top_e0r" << std::endl;
-    IDataparam::Status::type r = bottom.in.e0r ();
-    reply_IDataparam_Status = r;
+    {
+      IDataparam::Status::type r = bottom.in.e0r ();
+      reply_IDataparam_Status = r;
+    }
     return reply_IDataparam_Status;
   }
 
   void proxy::top_e(int i)
   {
-    std::cout << "proxy.top_e" << std::endl;
     {
       int pi = i;
       bottom.in.e(pi);
@@ -77,100 +251,106 @@ namespace dezyne
 
   IDataparam::Status::type proxy::top_er(int i)
   {
-    std::cout << "proxy.top_er" << std::endl;
     {
       int pi = i;
-      IDataparam::Status::type r = bottom.in.er (pi);
-      reply_IDataparam_Status = r;
+      {
+        IDataparam::Status::type r = bottom.in.er (pi);
+        reply_IDataparam_Status = r;
+      }
     }
     return reply_IDataparam_Status;
   }
 
   IDataparam::Status::type proxy::top_eer(int i, int j)
   {
-    std::cout << "proxy.top_eer" << std::endl;
-    IDataparam::Status::type r = bottom.in.eer (i, j);
-    reply_IDataparam_Status = r;
+    {
+      IDataparam::Status::type r = bottom.in.eer (i, j);
+      reply_IDataparam_Status = r;
+    }
     return reply_IDataparam_Status;
   }
 
   void proxy::top_eo(int& i)
   {
-    std::cout << "proxy.top_eo" << std::endl;
-    bottom.in.eo(i);
+    {
+      outfunc (i);
+    }
   }
 
   void proxy::top_eoo(int& i, int& j)
   {
-    std::cout << "proxy.top_eoo" << std::endl;
-    bottom.in.eoo(i, j);
+    {
+      bottom.in.eoo(i, j);
+    }
   }
 
   void proxy::top_eio(int i, int& j)
   {
-    std::cout << "proxy.top_eio" << std::endl;
-    bottom.in.eio(i, j);
+    {
+      bottom.in.eio(i, j);
+    }
   }
 
   void proxy::top_eio2(int& i)
   {
-    std::cout << "proxy.top_eio2" << std::endl;
-    bottom.in.eio2(i);
+    {
+      bottom.in.eio2(i);
+    }
   }
 
   IDataparam::Status::type proxy::top_eor(int& i)
   {
-    std::cout << "proxy.top_eor" << std::endl;
-    IDataparam::Status::type s = bottom.in.eor (i);
-    reply_IDataparam_Status = s;
+    {
+      IDataparam::Status::type s = bottom.in.eor (i);
+      reply_IDataparam_Status = s;
+    }
     return reply_IDataparam_Status;
   }
 
   IDataparam::Status::type proxy::top_eoor(int& i, int& j)
   {
-    std::cout << "proxy.top_eoor" << std::endl;
-    IDataparam::Status::type s = bottom.in.eoor (i, j);
-    reply_IDataparam_Status = s;
+    {
+      IDataparam::Status::type s = bottom.in.eoor (i, j);
+      reply_IDataparam_Status = s;
+    }
     return reply_IDataparam_Status;
   }
 
   IDataparam::Status::type proxy::top_eior(int i, int& j)
   {
-    std::cout << "proxy.top_eior" << std::endl;
-    IDataparam::Status::type s = bottom.in.eior (i, j);
-    reply_IDataparam_Status = s;
+    {
+      IDataparam::Status::type s = bottom.in.eior (i, j);
+      reply_IDataparam_Status = s;
+    }
     return reply_IDataparam_Status;
   }
 
   IDataparam::Status::type proxy::top_eio2r(int& i)
   {
-    std::cout << "proxy.top_eio2r" << std::endl;
-    IDataparam::Status::type s = bottom.in.eio2r (i);
-    reply_IDataparam_Status = s;
+    {
+      IDataparam::Status::type s = bottom.in.eio2r (i);
+      reply_IDataparam_Status = s;
+    }
     return reply_IDataparam_Status;
   }
 
   void proxy::bottom_a0()
   {
-    std::cout << "proxy.bottom_a0" << std::endl;
-    rt.defer(this, boost::bind(top.out.a0));
+    rt.defer(this, [=] { top.out.a0(); });
   }
 
   void proxy::bottom_a(int i)
   {
-    std::cout << "proxy.bottom_a" << std::endl;
-    rt.defer(this, boost::bind(top.out.a, i));
+    deferfunc (i);
   }
 
   void proxy::bottom_aa(int i, int j)
   {
-    std::cout << "proxy.bottom_aa" << std::endl;
-    rt.defer(this, boost::bind(top.out.aa, i, j));
+    rt.defer(this, [=] { top.out.aa(i, j); });
   }
 
   void proxy::bottom_a6(int a0, int a1, int a2, int a3, int a4, int a5)
   {
-    std::cout << "proxy.bottom_a6" << std::endl;
     {
       int A0 = a0;
       int A1 = a1;
@@ -178,9 +358,20 @@ namespace dezyne
       int A3 = a3;
       int A4 = a4;
       int A5 = a5;
-      rt.defer(this, boost::bind(top.out.a6, A0, A1, A2, A3, A4, A5));
+      rt.defer(this, [=] { top.out.a6(A0, A1, A2, A3, A4, A5); });
     }
   }
 
+  void proxy::outfunc(int& i)
+  {
+    int j = i;
+    bottom.in.eo(j);
+    i = j;
+  }
+
+  void proxy::deferfunc(int i)
+  {
+    rt.defer(this, [=] { top.out.a(i); });
+  }
 
 }

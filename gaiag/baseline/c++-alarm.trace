@@ -1,10 +1,18 @@
-Alarm.console_arm
-Sensor.sensor_enable
-Alarm.sensor_triggered
-Siren.siren_turnon
+main.console -> Alarm.console:arm
+Alarm.sensor -> Sensor.sensor:enable
+Sensor.sensor return Alarm.sensor:enable
+Alarm.console return main.console:arm
+Alarm.sensor -> Sensor.sensor:triggered
+Alarm.siren -> Siren.siren:turnon
+Siren.siren return Alarm.siren:turnon
+Sensor.sensor return Alarm.sensor:triggered
 Console.detected
-Alarm.console_disarm
-Sensor.sensor_disable
-Siren.siren_turnoff
-Alarm.sensor_disabled
+main.console -> Alarm.console:disarm
+Alarm.sensor -> Sensor.sensor:disable
+Sensor.sensor return Alarm.sensor:disable
+Alarm.siren -> Siren.siren:turnoff
+Siren.siren return Alarm.siren:turnoff
+Alarm.console return main.console:disarm
+Alarm.sensor -> Sensor.sensor:disabled
+Sensor.sensor return Alarm.sensor:disabled
 Console.deactivated

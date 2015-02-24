@@ -2,7 +2,7 @@
 //
 // This file is part of Gaiag.
 //
-// Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
@@ -31,7 +31,7 @@
 
 void f()
 {
-  std::cout << "f" << std::endl;
+  std::clog << "f" << std::endl;
 }
 
 int main()
@@ -42,6 +42,9 @@ int main()
 
   dezyne::Injected i(l);
 
+  i.t.out.meta.component = "main";
+  i.t.out.meta.port = "t";
+  i.t.out.meta.address = 0;
   i.t.out.f = f;
 
   i.t.in.e();

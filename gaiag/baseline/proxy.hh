@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -25,8 +26,9 @@
 #define DEZYNE_PROXY_HH
 
 #include "IDataparam.hh"
-#include "IDataparam.hh"
 
+
+#include "runtime.hh"
 
 namespace dezyne
 {
@@ -35,6 +37,7 @@ namespace dezyne
 
   struct proxy
   {
+    dezyne::meta meta;
     runtime& rt;
     IDataparam::Status::type reply_IDataparam_Status;
     IDataparam top;
@@ -60,7 +63,7 @@ namespace dezyne
     void bottom_a(int i);
     void bottom_aa(int i, int j);
     void bottom_a6(int a0, int a1, int a2, int a3, int a4, int a5);
-    void outfunc(int i);
+    void outfunc(int& i);
     void deferfunc(int i);
   };
 }

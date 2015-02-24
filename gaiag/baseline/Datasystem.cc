@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -25,18 +26,18 @@
 
 namespace dezyne
 {
-  template<typename Port>
-  void connect(Port& provided, Port& required)
-  {
-    provided.out = required.out;
-    required.in = provided.in;
-  }
-
   Datasystem::Datasystem(const dezyne::locator& dezyne_locator)
-  : p(dezyne_locator)
+  : meta{{reinterpret_cast<component*>(&p),reinterpret_cast<component*>(&c)}, reinterpret_cast<component*>(this)}
+  , p(dezyne_locator)
   , c(dezyne_locator)
   , port(p.top)
   {
+    p.meta.parent = reinterpret_cast<component*>(this);
+    p.meta.address = reinterpret_cast<component*>(&p);
+    p.meta.name = "p";
+    c.meta.parent = reinterpret_cast<component*>(this);
+    c.meta.address = reinterpret_cast<component*>(&c);
+    c.meta.name = "c";
     connect(c.port, p.bottom);
   }
 }

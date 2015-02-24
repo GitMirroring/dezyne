@@ -4,7 +4,17 @@ namespace dezyne
 {
 #.model ::#.model (const dezyne::locator& dezyne_locator)
 : #((->join "\n, ")
-    (append (map (lambda (binding) (list (injected-instance-name binding) "(dezyne_locator)"))
+    (append
+            (list
+             (->string
+              (list
+               "meta{{"
+               ((->join ",")
+                (map (init-instance #{reinterpret_cast<component*>(&#name)#})
+                     (non-injected-instances model)))
+               "}, reinterpret_cast<component*>(this)}"
+               )))
+            (map (lambda (binding) (list (injected-instance-name binding) "(dezyne_locator)"))
                  (injected-bindings model))
             (list (if (pair? (injected-bindings model))
                       (list "dezyne_local_locator(dezyne_locator.clone()" (map (lambda (binding) (list ".set(" (binding-name model (injected-binding binding)) ")"))  (injected-bindings model)) ")")))
@@ -13,7 +23,12 @@ namespace dezyne
             (map (init-bind model #{ #port(#instance)#})
                  (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model))))))
 {
- # (map (connect-ports model #{
+ #(map (init-instance #{#name .meta.parent = reinterpret_cast<component*>(this);
+    #name .meta.address = reinterpret_cast<component*>(&#name );
+    #name .meta.name = "#name ";
+#})
+       (non-injected-instances model))#
+ (map (connect-ports model #{
     connect(#provided , #required );
 #}) (filter (negate bind-port?) ((compose .elements .bindings) model))) }
 }

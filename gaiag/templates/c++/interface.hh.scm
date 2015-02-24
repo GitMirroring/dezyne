@@ -6,7 +6,6 @@
 
 namespace dezyne
 {
-
 struct #.interface
 {
  #(->string (map declare-enum (gom:interface-enums model)))
@@ -15,6 +14,12 @@ struct #.interface
    #(map (declare-io model
           #{boost::function<#return-type  (#parameters)> #name;
 #}) (filter gom:in? ((compose .elements .events) model)))
+    struct
+    {
+      const char* component;
+      const char* port;
+      void*       address;
+    } meta;
    } in;
 
   struct
@@ -22,6 +27,12 @@ struct #.interface
    #(map (declare-io model
           #{boost::function<#return-type  (#parameters)> #name;
 #}) (filter gom:out? ((compose .elements .events) model)))
+    struct
+    {
+      const char* component;
+      const char* port;
+      void*       address;
+    } meta;
  } out;
   };
 

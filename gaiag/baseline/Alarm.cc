@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -28,6 +29,13 @@
 
 namespace dezyne
 {
+  template <typename T>
+  void log(const T& t, const char* e, std::function<void()> f)
+  {
+    std::cout << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << ":" << e << std::endl;
+    f();
+  }
+
   Alarm::Alarm(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , state(States::Disarmed)
@@ -36,15 +44,27 @@ namespace dezyne
   , sensor()
   , siren()
   {
-    console.in.arm = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&Alarm::console_arm, this)));
-    console.in.disarm = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&Alarm::console_disarm, this)));
-    sensor.out.triggered = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&Alarm::sensor_triggered, this)));
-    sensor.out.disabled = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&Alarm::sensor_disabled, this)));
+    console.in.meta.component = "Alarm";
+    console.in.meta.port = "console";
+    console.in.meta.address = this;
+
+
+    sensor.out.meta.component = "Alarm";
+    sensor.out.meta.port = "sensor";
+    sensor.out.meta.address = this;
+    siren.out.meta.component = "Alarm";
+    siren.out.meta.port = "siren";
+    siren.out.meta.address = this;
+
+
+    console.in.arm = connect<void>(rt, this, boost::function<void()>(boost::bind(&log<IConsole>, boost::cref(console), "arm", boost::function<void()>(boost::bind(&Alarm::console_arm, this)))));
+    console.in.disarm = connect<void>(rt, this, boost::function<void()>(boost::bind(&log<IConsole>, boost::cref(console), "disarm", boost::function<void()>(boost::bind(&Alarm::console_disarm, this)))));
+    sensor.out.triggered = connect<void>(rt, this, boost::function<void()>(boost::bind(&log<ISensor>, boost::cref(sensor), "triggered", boost::function<void()>(boost::bind(&Alarm::sensor_triggered, this)))));
+    sensor.out.disabled = connect<void>(rt, this, boost::function<void()>(boost::bind(&log<ISensor>, boost::cref(sensor), "disabled", boost::function<void()>(boost::bind(&Alarm::sensor_disabled, this)))));
   }
 
   void Alarm::console_arm()
   {
-    std::cout << "Alarm.console_arm" << std::endl;
     if (state == States::Disarmed)
     {
       {
@@ -68,7 +88,6 @@ namespace dezyne
 
   void Alarm::console_disarm()
   {
-    std::cout << "Alarm.console_disarm" << std::endl;
     if (state == States::Disarmed)
     {
       assert(false);
@@ -97,7 +116,6 @@ namespace dezyne
 
   void Alarm::sensor_triggered()
   {
-    std::cout << "Alarm.sensor_triggered" << std::endl;
     if (state == States::Disarmed)
     {
       assert(false);
@@ -124,7 +142,6 @@ namespace dezyne
 
   void Alarm::sensor_disabled()
   {
-    std::cout << "Alarm.sensor_disabled" << std::endl;
     if (state == States::Disarmed)
     {
       assert(false);

@@ -3,7 +3,9 @@
 
 #(map (include-interface #{
 ##include "#interface .hh"
-#}) (gom:ports model))
+#}) (delete-duplicates (gom:ports model) (lambda (x y) (eq? (.type x) (.type y)))))
+
+##include "runtime.hh"
 
 namespace dezyne
 {
@@ -12,6 +14,7 @@ struct runtime;
 
 struct #.model
 {
+    dezyne::meta meta;
     runtime& rt;
     #(->string (map declare-enum (gom:enums (.behaviour model))))#
     (->string (map declare-integer (gom:integers (.behaviour model))))#
