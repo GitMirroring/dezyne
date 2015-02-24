@@ -24,5 +24,17 @@ struct #.interface
 #}) (filter gom:out? ((compose .elements .events) model)))
  } out;
   };
+
+  inline void connect (#.interface & provided, #.interface & required)
+  {
+    #(map (declare-io model
+          #{assert (not required.in.#name);
+#}) (filter gom:in? ((compose .elements .events) model)))
+    #(map (declare-io model
+          #{assert (not provided.out.#name);
+#}) (filter gom:out? ((compose .elements .events) model)))
+     provided.out = required.out;
+     required.in = provided.in;
+   }
 }
 ##endif // DEZYNE_#.INTERFACE _HH

@@ -2,13 +2,6 @@
 
 namespace dezyne
 {
-template<typename Port>
-void connect(Port& provided, Port& required)
-{
-  provided.out = required.out;
-  required.in = provided.in;
-}
-
 #.model ::#.model (const dezyne::locator& dezyne_locator)
 : #((->join "\n, ")
     (append (map (lambda (binding) (list (injected-instance-name binding) "(dezyne_locator)"))
