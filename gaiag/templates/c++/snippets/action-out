@@ -1,1 +1,1 @@
-#space rt.defer(this, boost::bind(#port .#direction .#event #comma #arguments));
+#space rt.defer(this, [=] { #port .#direction .#event (#arguments); });

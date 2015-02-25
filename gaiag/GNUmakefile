@@ -277,7 +277,7 @@ c++-dataparam:
 	rm -rf out && mkdir out && cd out && ln -s ../runtime/c++/* .
 	cd out && ../gaiag -l c++ ../examples/regression/Dataparam.dzn
 	cd out && ln -sf ../examples/dataparam.cc .
-	cd out && for i in *cc; do ccache g++ -c $$i; done && g++ -o $@ *.o && ./$@ > $@.trace
+	cd out && for i in *cc; do ccache g++ -std=c++11 -c $$i; done && g++ -o $@ *.o && ./$@ #> $@.trace
 	$(diff) baseline/$@.trace out
 
 c++-choice:

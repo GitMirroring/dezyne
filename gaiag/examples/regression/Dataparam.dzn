@@ -161,10 +161,11 @@ component proxy
 
   behaviour
   {
-    void outfunc (xint i)
+    void outfunc (out xint i)
     {
       xint j = i;
       bottom.eo(j);
+      i = j;
     }
     void deferfunc (xint i)
     {
