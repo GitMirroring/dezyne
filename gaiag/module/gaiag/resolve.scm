@@ -1,7 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014  Rutger van Beusekom
-;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -297,8 +297,8 @@
     ((or '! '+ '- '/ '*) o)
     ((or '== '!= '< '<= '> '>= 'group) o)
 
-    (($ <gom:parameter> name type)
-     (make <gom:parameter> :name name :type (resolve-model model type locals)))
+    (($ <gom:parameter> name type direction)
+     (make <gom:parameter> :name name :type (resolve-model model type locals) :direction direction))
 
     (($ <call> identifier (and ($ <arguments>) (get! arguments)))
      (make <call>
