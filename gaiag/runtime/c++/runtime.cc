@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -50,7 +51,15 @@ void runtime::flush(void* scope)
 
 void runtime::defer(void* scope, const boost::function<void()>& event)
 {
-  queues[scope].second.push(event);
+  auto it = std::find_if(queues.begin(), queues.end(), [](const std::pair<void*, std::pair<bool, std::queue<boost::function<void()>>>>& p){ return p.second.first;});
+  if(it == queues.end())
+  {
+    event();
+  }
+  else
+  {
+    queues[scope].second.push(event);
+  }
 }
 
 void runtime::handle_event(void* scope, const boost::function<void()>& event)

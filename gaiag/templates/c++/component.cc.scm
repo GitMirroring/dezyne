@@ -51,18 +51,18 @@ boost::function<#return-type(#(comma-join parameter-types))>
 ));
 #}) (filter gom:in? (gom:events port))))
     (filter gom:provides? (gom:ports model)))#
-   (map
+(map
     (lambda (port)
       (map (define-on model port #{
-#port .#direction .#event  = connect#(if (string-null? parameters) (list "<" return-type ">") (list "<" (comma-join (append (if (eq? return-type 'void) '() (list return-type)) parameter-types))">"))(rt, this,
-boost::function<#return-type(#(comma-join parameter-types))>
-([this] (#parameters)
+#port .#direction .#event = [this] {trace (#port , "#event ");
+rt.defer (#port .in.meta.address, connect#(if (string-null? parameters) (list "<" return-type ">") (list "<" (comma-join (append (if (eq? return-type 'void) '() (list return-type)) parameter-types))">"))(rt, this,
+boost::function<#return-type(#(comma-join parameter-types))>(
+[this] (#parameters)
 {
-   trace (#port , "#event ");
-   #(if (eq? return-type 'void) "" "auto r = ") #port _#event (#arguments);
-   return#(if (eq? return-type 'void) "" " r");
-   }
-));
+ #(if (eq? return-type 'void) "" "auto r = ") #port _#event (#arguments) ;
+ return#(if (eq? return-type 'void) "" " r") ;
+ }
+)));};
 #}) (filter gom:out? (gom:events port))))
     (filter gom:requires? (gom:ports model))) }
 
