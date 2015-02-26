@@ -94,8 +94,8 @@ runtime_handle_event (runtime_sub* sub, void (*event)(void*), void* args)
   {
     *handle = true;
     event (args);
-    runtime_flush (sub);
     *handle = false;
+    runtime_flush (sub);
   }
   else
   {
