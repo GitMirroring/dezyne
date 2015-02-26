@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -40,8 +41,9 @@ void runtime::flush(void* scope)
     std::queue<boost::function<void()> >& q = it->second.second;
     while(not q.empty())
     {
-      q.front()();
+      boost::function<void()> event = q.front();
       q.pop();
+      event();	
     }
   }
 }
@@ -56,8 +58,10 @@ void runtime::handle_event(void* scope, const boost::function<void()>& event)
   bool& handle = handling(scope);
   if(not handle)
   {
-    scoped_value<bool> sv(handle, true);
-    event();
+    {
+      scoped_value<bool> sv(handle, true);
+      event();
+    }
     flush(scope);
   }
   else
