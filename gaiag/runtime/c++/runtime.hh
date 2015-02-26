@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -22,8 +23,8 @@
 //
 // Code:
 
-#ifndef RUNTIME_H
-#define RUNTIME_H
+#ifndef RUNTIME_HH
+#define RUNTIME_HH
 
 #include <boost/bind.hpp>
 #include <boost/bind/placeholders.hpp>

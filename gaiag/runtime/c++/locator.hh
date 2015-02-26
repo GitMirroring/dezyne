@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -21,8 +22,8 @@
 //
 // Code:
 
-#ifndef LOCATOR_H
-#define LOCATOR_H
+#ifndef LOCATOR_HH
+#define LOCATOR_HH
 
 #include <map>
 #include <stdexcept>
