@@ -12,7 +12,7 @@ namespace dezyne
                ((->join ",")
                 (map (init-instance #{reinterpret_cast<component*>(&#name)#})
                      (non-injected-instances model)))
-               "}, reinterpret_cast<component*>(this)}"
+               "}, 0, reinterpret_cast<component*>(this), \"\"}"
                )))
             (map (lambda (binding) (list (injected-instance-name binding) "(dezyne_locator)"))
                  (injected-bindings model))
