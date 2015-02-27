@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -29,7 +30,6 @@
 
 namespace dezyne
 {
-
   struct ISensor
   {
 
@@ -38,6 +38,12 @@ namespace dezyne
       boost::function<void ()> enable;
       boost::function<void ()> disable;
 
+      struct
+      {
+        const char* component;
+        const char* port;
+        void*       address;
+      } meta;
     } in;
 
     struct
@@ -45,7 +51,25 @@ namespace dezyne
       boost::function<void ()> triggered;
       boost::function<void ()> disabled;
 
+      struct
+      {
+        const char* component;
+        const char* port;
+        void*       address;
+      } meta;
     } out;
   };
+
+  inline void connect (ISensor& provided, ISensor& required)
+  {
+    assert (not required.in.enable);
+    assert (not required.in.disable);
+
+    assert (not provided.out.triggered);
+    assert (not provided.out.disabled);
+
+    provided.out = required.out;
+    required.in = provided.in;
+  }
 }
 #endif // DEZYNE_ISENSOR_HH

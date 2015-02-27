@@ -170,8 +170,60 @@ pretty: compile
 	$(diff) examples/regression/expressions.dzn out
 
 alarm: c-alarm c++-alarm goops-alarm java-alarm javascript-alarm python-alarm
-dataparam: c-dataparam c++-dataparam goops-dataparam java-dataparam javascript-dataparamparam python-dataparam
+dataparam: c-dataparam c++-dataparam goops-dataparam javascript-dataparam
 inject: c-inject c++-inject
+
+c++-alarm-update:
+	-$(MAKE) c++-alarm
+	cp out/*cc out/*hh baseline
+
+c++-dataparam-update:
+	-$(MAKE) c++-dataparam
+	cp out/*cc out/*hh baseline
+
+c++-inject-update:
+	-$(MAKE) c++-inject
+	cp out/*cc out/*hh baseline
+
+c-alarm-update:
+	-$(MAKE) c-alarm
+	cp out/*c out/*h baseline
+
+c-dataparam-update:
+	-$(MAKE) c-dataparam
+	cp out/*c out/*h baseline
+
+c-inject-update:
+	-$(MAKE) c-inject
+	cp out/*c out/*h baseline
+
+
+goops-alarm-update:
+	 -$(MAKE) goops-alarm
+	cp out/*dezyne/*scm baseline
+
+goops-dataparam-update:
+	 -$(MAKE) goops-dataparam
+	cp out/*dezyne/*scm baseline
+
+
+javascript-alarm-update:
+	 -$(MAKE) javascript-alarm
+	cp out/*dezyne/*js baseline
+
+javascript-dataparam-update:
+	 -$(MAKE) javascript-dataparam
+	cp out/*dezyne/*js baseline
+
+
+java-alarm-update:
+	 -$(MAKE) java-alarm
+	cp out/*dezyne/*java baseline
+
+
+python-alarm-update:
+	 -$(MAKE) python-alarm
+	cp out/*dezyne/*py baseline
 
 code: alarm out/Reply7.o out/Reply7.java out/Reply7.js out/Reply7.py
 
@@ -244,7 +296,7 @@ out/%.c: examples/regression/%.dzn
 	$(.C_REGRESSION)
 
 c-regression: $(C_SOURCES:%.dzn=out/%.c)
-c-update: $(C_SOURCES:%.dzn=out/%.c.up)
+c-update: $(C_SOURCES:%.dzn=out/%.c.up) c-alarm-update c-inject-update c-dataparam-update
 
 # c++
 c++: compile c++-alarm glue c++-inject c++-dataparam c++-choice c++-regression
@@ -319,7 +371,7 @@ out/%.c++: examples/regression/%.dzn
 	$(.CC_REGRESSION)
 
 c++-regression: $(CC_SOURCES:%.dzn=out/%.c++)
-c++-update: $(CC_SOURCES:%.dzn=out/%.c++.up)
+c++-update: $(CC_SOURCES:%.dzn=out/%.c++.up) c++-alarm-update c++-inject-update c++-dataparam-update
 
 out/%.wfc: examples/wfc/%.dzn
 	! ./gaiag -l wfc $<
@@ -481,7 +533,7 @@ out/%.py: examples/regression/%.dzn
 	$(.PY_REGRESSION)
 
 python-regression: $(PY_SOURCES:%.dzn=out/%.py)
-python-update: $(PY_SOURCES:%.dzn=out/%.py.up)
+python-update: $(PY_SOURCES:%.dzn=out/%.py.up) python-alarm-update
 
 python: compile python-alarm python-regression
 
@@ -517,7 +569,7 @@ out/%.java: examples/regression/%.dzn
 	$(.JAVA_REGRESSION)
 
 java-regression: $(JAVA_SOURCES:%.dzn=out/%.java)
-java-update: $(JAVA_SOURCES:%.dzn=out/%.java.up)
+java-update: $(JAVA_SOURCES:%.dzn=out/%.java.up) java-alarm-update
 
 java-alarm: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
@@ -574,7 +626,7 @@ out/%.js: examples/regression/%.dzn
 	$(.JAVASCRIPT_REGRESSION)
 
 javascript-regression: $(JS_SOURCES:%.dzn=out/%.js)
-javascript-update: $(JS_SOURCES:%.dzn=out/%.js.up)
+javascript-update: $(JS_SOURCES:%.dzn=out/%.js.up) javascript-alarm-update javascript-dataparam-update
 
 javascript-alarm: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
@@ -632,7 +684,7 @@ out/%.scm: examples/regression/%.dzn
 	$(.GOOPS_REGRESSION)
 
 goops-regression: $(GOOPS_SOURCES:%.dzn=out/%.scm)
-goops-update: $(GOOPS_SOURCES:%.dzn=out/%.scm.up)
+goops-update: $(GOOPS_SOURCES:%.dzn=out/%.scm.up) goops-alarm-update goops-dataparam-update
 
 goops-alarm: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out

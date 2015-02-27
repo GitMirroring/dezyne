@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -25,19 +26,22 @@
 
 namespace dezyne
 {
-  template<typename Port>
-  void connect(Port& provided, Port& required)
-  {
-    provided.out = required.out;
-    required.in = provided.in;
-  }
-
   AlarmSystem::AlarmSystem(const dezyne::locator& dezyne_locator)
-  : alarm(dezyne_locator)
+  : meta{{reinterpret_cast<component*>(&alarm),reinterpret_cast<component*>(&sensor),reinterpret_cast<component*>(&siren)}, reinterpret_cast<component*>(this)}
+  , alarm(dezyne_locator)
   , sensor(dezyne_locator)
   , siren(dezyne_locator)
   , console(alarm.console)
   {
+    alarm.meta.parent = reinterpret_cast<component*>(this);
+    alarm.meta.address = reinterpret_cast<component*>(&alarm);
+    alarm.meta.name = "alarm";
+    sensor.meta.parent = reinterpret_cast<component*>(this);
+    sensor.meta.address = reinterpret_cast<component*>(&sensor);
+    sensor.meta.name = "sensor";
+    siren.meta.parent = reinterpret_cast<component*>(this);
+    siren.meta.address = reinterpret_cast<component*>(&siren);
+    siren.meta.name = "siren";
     connect(sensor.sensor, alarm.sensor);
     connect(siren.siren, alarm.siren);
   }

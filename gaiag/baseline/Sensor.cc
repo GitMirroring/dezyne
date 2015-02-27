@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -26,26 +27,60 @@
 #include "locator.hh"
 #include "runtime.hh"
 
+#include <iostream>
+
 namespace dezyne
 {
+  template <typename T>
+  void trace(const T& t, const char* e)
+  {
+    std::clog << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << e << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << e << std::endl;
+  }
+
+  template <typename T>
+  void trace_return(const T& t, const char* e)
+  {
+    std::clog << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << "return" << " -> " << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << "return" << std::endl ;
+  }
+
   Sensor::Sensor(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , sensor()
   {
-    sensor.in.enable = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&Sensor::sensor_enable, this)));
-    sensor.in.disable = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&Sensor::sensor_disable, this)));
+    sensor.in.meta.component = "Sensor";
+    sensor.in.meta.port = "sensor";
+    sensor.in.meta.address = this;
+
+    sensor.in.enable = connect<void>(rt, this,
+    boost::function<void()>
+    ([this] ()
+    {
+      trace (sensor, "enable");
+      sensor_enable();
+      trace_return (sensor, "enable");
+      return;
+    }
+    ));
+    sensor.in.disable = connect<void>(rt, this,
+    boost::function<void()>
+    ([this] ()
+    {
+      trace (sensor, "disable");
+      sensor_disable();
+      trace_return (sensor, "disable");
+      return;
+    }
+    ));
   }
 
   void Sensor::sensor_enable()
   {
-    std::cout << "Sensor.sensor_enable" << std::endl;
     {
     }
   }
 
   void Sensor::sensor_disable()
   {
-    std::cout << "Sensor.sensor_disable" << std::endl;
     {
     }
   }

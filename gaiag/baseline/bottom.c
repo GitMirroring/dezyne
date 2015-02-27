@@ -59,7 +59,7 @@ static void b_e(bottom* self) {
 	DZN_LOG("bottom.b_e");
 	{
 		args_b_f a = {sizeof(args_b_f), self->b->out.f, self};
-		runtime_defer(self->rt, self, helper_b_f, &a);
+		runtime_defer(&self->sub, helper_b_f, &a);
 	}
 }
 
@@ -70,8 +70,7 @@ static void callback_b_e(ibottom* self) {
 
 
 void bottom_init (bottom* self, locator* dezyne_locator) {
-	self->rt = dezyne_locator->rt;
-	runtime_set(self->rt, self);
+	runtime_sub_init(dezyne_locator->rt, &self->sub);
 
 	self->b = &self->b_;
 	self->b->in.e = callback_b_e;

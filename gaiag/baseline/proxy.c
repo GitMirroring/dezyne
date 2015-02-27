@@ -163,21 +163,22 @@ static void helper_bottom_a6(void* args) {
 
 
 
-static void outfunc(proxy* self, int i);
+static void outfunc(proxy* self, int* i);
 static void deferfunc(proxy* self, int i);
 
 
-static void outfunc(proxy* self, int i) {
+static void outfunc(proxy* self, int* i) {
 	(void)self;
-	int j = i;
+	int j = *i;
 	self->bottom->in.eo(self->bottom, &j);
+	*i = j;
 }
 
 static void deferfunc(proxy* self, int i) {
 	(void)self;
 	{
 		args_top_a a = {sizeof(args_top_a), self->top->out.a, self, i};
-		runtime_defer(self->rt, self, helper_top_a, &a);
+		runtime_defer(&self->sub, helper_top_a, &a);
 	}
 }
 
@@ -307,7 +308,7 @@ static void bottom_a0(proxy* self) {
 	DZN_LOG("proxy.bottom_a0");
 	{
 		args_top_a0 a = {sizeof(args_top_a0), self->top->out.a0, self};
-		runtime_defer(self->rt, self, helper_top_a0, &a);
+		runtime_defer(&self->sub, helper_top_a0, &a);
 	}
 }
 
@@ -322,7 +323,7 @@ static void bottom_aa(proxy* self, int i, int j) {
 	DZN_LOG("proxy.bottom_aa");
 	{
 		args_top_aa a = {sizeof(args_top_aa), self->top->out.aa, self, i, j};
-		runtime_defer(self->rt, self, helper_top_aa, &a);
+		runtime_defer(&self->sub, helper_top_aa, &a);
 	}
 }
 
@@ -338,7 +339,7 @@ static void bottom_a6(proxy* self, int a0, int a1, int a2, int a3, int a4, int a
 		int A5 = a5;
 		{
 			args_top_a6 a = {sizeof(args_top_a6), self->top->out.a6, self, A0, A1, A2, A3, A4, A5};
-			runtime_defer(self->rt, self, helper_top_a6, &a);
+			runtime_defer(&self->sub, helper_top_a6, &a);
 		}
 	}
 }
@@ -444,8 +445,7 @@ static void callback_bottom_a6(IDataparam* self, int a0, int a1, int a2, int a3,
 
 
 void proxy_init (proxy* self, locator* dezyne_locator) {
-	self->rt = dezyne_locator->rt;
-	runtime_set(self->rt, self);
+	runtime_sub_init(dezyne_locator->rt, &self->sub);
 
 	self->top = &self->top_;
 	self->top->in.e0 = callback_top_e0;

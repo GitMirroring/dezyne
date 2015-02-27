@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -31,6 +32,18 @@
 
 namespace dezyne
 {
+  template <typename T>
+  void trace(const T& t, const char* e)
+  {
+    std::clog << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << e << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << e << std::endl;
+  }
+
+  template <typename T>
+  void trace_return(const T& t, const char* e)
+  {
+    std::clog << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << "return" << " -> " << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << "return" << std::endl ;
+  }
+
   Comp::Comp(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , s(State::Uninitialized)
@@ -50,7 +63,7 @@ namespace dezyne
     {
       trace (client, "initialize");
       auto r = client_initialize();
-      trace_return (client, IComp::result_t::to_string(r));
+      trace_return (client, "initialize");
       return r;
     }
     ));
@@ -60,7 +73,7 @@ namespace dezyne
     {
       trace (client, "recover");
       auto r = client_recover();
-      trace_return (client, IComp::result_t::to_string(r));
+      trace_return (client, "recover");
       return r;
     }
     ));
@@ -70,7 +83,7 @@ namespace dezyne
     {
       trace (client, "perform_actions");
       auto r = client_perform_actions();
-      trace_return (client, IComp::result_t::to_string(r));
+      trace_return (client, "perform_actions");
       return r;
     }
     ));

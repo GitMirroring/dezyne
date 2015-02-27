@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -41,6 +42,7 @@ namespace dezyne
 {
   struct AlarmSystem
   {
+    dezyne::meta meta;
     Alarm alarm;
     Sensor sensor;
     Siren siren;

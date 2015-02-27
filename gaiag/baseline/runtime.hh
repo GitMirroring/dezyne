@@ -22,8 +22,8 @@
 //
 // Code:
 
-#ifndef RUNTIME_H
-#define RUNTIME_H
+#ifndef RUNTIME_HH
+#define RUNTIME_HH
 
 #include <boost/bind.hpp>
 #include <boost/bind/placeholders.hpp>
@@ -38,18 +38,6 @@
 
 namespace dezyne
 {
-  template <typename T>
-  void trace(const T& t, const char* e)
-  {
-    std::clog << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << e << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << e << std::endl;
-  }
-
-  template <typename T>
-  void trace_return(const T& t, const char* e)
-  {
-    std::clog << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << e << " -> " << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << e << std::endl ;
-  }
-
   struct component;
 
   struct meta

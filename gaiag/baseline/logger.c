@@ -62,8 +62,7 @@ static void callback_log_log(ilogger* self) {
 
 
 void logger_init (logger* self, locator* dezyne_locator) {
-	self->rt = dezyne_locator->rt;
-	runtime_set(self->rt, self);
+	runtime_sub_init(dezyne_locator->rt, &self->sub);
 
 	self->log = &self->log_;
 	self->log->in.log = callback_log_log;

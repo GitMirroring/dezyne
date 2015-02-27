@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -26,18 +27,44 @@
 #include "locator.hh"
 #include "runtime.hh"
 
+#include <iostream>
+
 namespace dezyne
 {
+  template <typename T>
+  void trace(const T& t, const char* e)
+  {
+    std::clog << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << e << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << e << std::endl;
+  }
+
+  template <typename T>
+  void trace_return(const T& t, const char* e)
+  {
+    std::clog << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << "return" << " -> " << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << "return" << std::endl ;
+  }
+
   logger::logger(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , log()
   {
-    log.in.log = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&logger::log_log, this)));
+    log.in.meta.component = "logger";
+    log.in.meta.port = "log";
+    log.in.meta.address = this;
+
+    log.in.log = connect<void>(rt, this,
+    boost::function<void()>
+    ([this] ()
+    {
+      trace (log, "log");
+      log_log();
+      trace_return (log, "log");
+      return;
+    }
+    ));
   }
 
   void logger::log_log()
   {
-    std::cout << "logger.log_log" << std::endl;
     {
     }
   }

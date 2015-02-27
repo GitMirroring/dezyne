@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -27,6 +28,8 @@
 #include "ISiren.hh"
 
 
+#include "runtime.hh"
+
 namespace dezyne
 {
   struct locator;
@@ -34,6 +37,7 @@ namespace dezyne
 
   struct Siren
   {
+    dezyne::meta meta;
     runtime& rt;
     ISiren siren;
 

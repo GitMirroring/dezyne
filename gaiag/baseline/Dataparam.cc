@@ -32,6 +32,18 @@
 
 namespace dezyne
 {
+  template <typename T>
+  void trace(const T& t, const char* e)
+  {
+    std::clog << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << e << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << e << std::endl;
+  }
+
+  template <typename T>
+  void trace_return(const T& t, const char* e)
+  {
+    std::clog << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << "return" << " -> " << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << "return" << std::endl ;
+  }
+
   Dataparam::Dataparam(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , mi(0)
@@ -48,7 +60,7 @@ namespace dezyne
     {
       trace (port, "e0");
       port_e0();
-      trace_return (port, "return");
+      trace_return (port, "e0");
       return;
     }
     ));
@@ -58,7 +70,7 @@ namespace dezyne
     {
       trace (port, "e0r");
       auto r = port_e0r();
-      trace_return (port, IDataparam::Status::to_string(r));
+      trace_return (port, "e0r");
       return r;
     }
     ));
@@ -68,7 +80,7 @@ namespace dezyne
     {
       trace (port, "e");
       port_e(i);
-      trace_return (port, "return");
+      trace_return (port, "e");
       return;
     }
     ));
@@ -78,7 +90,7 @@ namespace dezyne
     {
       trace (port, "er");
       auto r = port_er(i);
-      trace_return (port, IDataparam::Status::to_string(r));
+      trace_return (port, "er");
       return r;
     }
     ));
@@ -88,7 +100,7 @@ namespace dezyne
     {
       trace (port, "eer");
       auto r = port_eer(i,j);
-      trace_return (port, IDataparam::Status::to_string(r));
+      trace_return (port, "eer");
       return r;
     }
     ));
@@ -98,7 +110,7 @@ namespace dezyne
     {
       trace (port, "eo");
       port_eo(i);
-      trace_return (port, "return");
+      trace_return (port, "eo");
       return;
     }
     ));
@@ -108,7 +120,7 @@ namespace dezyne
     {
       trace (port, "eoo");
       port_eoo(i,j);
-      trace_return (port, "return");
+      trace_return (port, "eoo");
       return;
     }
     ));
@@ -118,7 +130,7 @@ namespace dezyne
     {
       trace (port, "eio");
       port_eio(i,j);
-      trace_return (port, "return");
+      trace_return (port, "eio");
       return;
     }
     ));
@@ -128,7 +140,7 @@ namespace dezyne
     {
       trace (port, "eio2");
       port_eio2(i);
-      trace_return (port, "return");
+      trace_return (port, "eio2");
       return;
     }
     ));
@@ -138,7 +150,7 @@ namespace dezyne
     {
       trace (port, "eor");
       auto r = port_eor(i);
-      trace_return (port, IDataparam::Status::to_string(r));
+      trace_return (port, "eor");
       return r;
     }
     ));
@@ -148,7 +160,7 @@ namespace dezyne
     {
       trace (port, "eoor");
       auto r = port_eoor(i,j);
-      trace_return (port, IDataparam::Status::to_string(r));
+      trace_return (port, "eoor");
       return r;
     }
     ));
@@ -158,7 +170,7 @@ namespace dezyne
     {
       trace (port, "eior");
       auto r = port_eior(i,j);
-      trace_return (port, IDataparam::Status::to_string(r));
+      trace_return (port, "eior");
       return r;
     }
     ));
@@ -168,7 +180,7 @@ namespace dezyne
     {
       trace (port, "eio2r");
       auto r = port_eio2r(i);
-      trace_return (port, IDataparam::Status::to_string(r));
+      trace_return (port, "eio2r");
       return r;
     }
     ));
@@ -177,14 +189,14 @@ namespace dezyne
   void Dataparam::port_e0()
   {
     {
-      port.out.a6(0, 1, 2, 3, 4, 5);
+      rt.defer(this, [=] { port.out.a6(0, 1, 2, 3, 4, 5); });
     }
   }
 
   IDataparam::Status::type Dataparam::port_e0r()
   {
     {
-      port.out.a0();
+      rt.defer(this, [=] { port.out.a0(); });
       reply_IDataparam_Status = IDataparam::Status::Yes;
     }
     return reply_IDataparam_Status;
@@ -199,8 +211,8 @@ namespace dezyne
         s = s;
         mi = pi;
         mi = xfunx (pi, pi + pi);
-        port.out.a(mi);
-        port.out.aa(mi, pi);
+        rt.defer(this, [=] { port.out.a(mi); });
+        rt.defer(this, [=] { port.out.aa(mi, pi); });
       }
     }
   }
@@ -212,8 +224,8 @@ namespace dezyne
       {
         IDataparam::Status::type s = IDataparam::Status::No;
         mi = pi;
-        port.out.a(mi);
-        port.out.aa(mi, pi);
+        rt.defer(this, [=] { port.out.a(mi); });
+        rt.defer(this, [=] { port.out.aa(mi, pi); });
         if (true)
         {
           reply_IDataparam_Status = IDataparam::Status::Yes;
@@ -231,8 +243,8 @@ namespace dezyne
   {
     {
       IDataparam::Status::type s = IDataparam::Status::No;
-      port.out.a(j);
-      port.out.aa(j, i);
+      rt.defer(this, [=] { port.out.a(j); });
+      rt.defer(this, [=] { port.out.aa(j, i); });
       reply_IDataparam_Status = s;
     }
     return reply_IDataparam_Status;

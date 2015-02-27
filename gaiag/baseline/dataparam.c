@@ -29,26 +29,27 @@
 #include <assert.h>
 #include <stdio.h>
 
-void a0()
+void a0(IDataparam* self)
 {
+  (void)self;
   printf("a0()\n");
 }
 
-void a(void* self, int i)
+void a(IDataparam* self, int i)
 {
-(void)self;
+  (void)self;
   printf("a(%d)\n", i);
 }
 
-void aa(void* self, int i, int j)
+void aa(IDataparam* self, int i, int j)
 {
-(void)self;
+  (void)self;
   printf("aa(%d, %d)\n", i, j);
 }
 
-void a6(void* self, int i0, int i1, int i2,int i3, int i4, int i5)
+void a6(IDataparam* self, int i0, int i1, int i2,int i3, int i4, int i5)
 {
-(void)self;
+  (void)self;
   printf("a6(%d,%d,%d,%d,%d,%d)\n", i0, i1, i2, i3, i4, i5);
 }
 

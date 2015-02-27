@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -29,7 +30,6 @@
 
 namespace dezyne
 {
-
   struct IConsole
   {
 
@@ -38,6 +38,12 @@ namespace dezyne
       boost::function<void ()> arm;
       boost::function<void ()> disarm;
 
+      struct
+      {
+        const char* component;
+        const char* port;
+        void*       address;
+      } meta;
     } in;
 
     struct
@@ -45,7 +51,25 @@ namespace dezyne
       boost::function<void ()> detected;
       boost::function<void ()> deactivated;
 
+      struct
+      {
+        const char* component;
+        const char* port;
+        void*       address;
+      } meta;
     } out;
   };
+
+  inline void connect (IConsole& provided, IConsole& required)
+  {
+    assert (not required.in.arm);
+    assert (not required.in.disarm);
+
+    assert (not provided.out.detected);
+    assert (not provided.out.deactivated);
+
+    provided.out = required.out;
+    required.in = provided.in;
+  }
 }
 #endif // DEZYNE_ICONSOLE_HH

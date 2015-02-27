@@ -76,7 +76,7 @@ static void b_f(middle* self) {
 		self->l->in.log(self->l);
 		{
 			args_t_f a = {sizeof(args_t_f), self->t->out.f, self};
-			runtime_defer(self->rt, self, helper_t_f, &a);
+			runtime_defer(&self->sub, helper_t_f, &a);
 		}
 	}
 }
@@ -93,8 +93,7 @@ static void callback_b_f(ibottom* self) {
 
 
 void middle_init (middle* self, locator* dezyne_locator) {
-	self->rt = dezyne_locator->rt;
-	runtime_set(self->rt, self);
+	runtime_sub_init(dezyne_locator->rt, &self->sub);
 	self->l_ = *(ilogger*)locator_get(dezyne_locator, "ilogger");
 
 	self->t = &self->t_;

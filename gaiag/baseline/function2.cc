@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -31,6 +32,18 @@
 
 namespace dezyne
 {
+  template <typename T>
+  void trace(const T& t, const char* e)
+  {
+    std::clog << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << e << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << e << std::endl;
+  }
+
+  template <typename T>
+  void trace_return(const T& t, const char* e)
+  {
+    std::clog << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << "return" << " -> " << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << "return" << std::endl ;
+  }
+
   function2::function2(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , f(false)
@@ -46,7 +59,7 @@ namespace dezyne
     {
       trace (i, "a");
       i_a();
-      trace_return (i, "return");
+      trace_return (i, "a");
       return;
     }
     ));
@@ -56,7 +69,7 @@ namespace dezyne
     {
       trace (i, "b");
       i_b();
-      trace_return (i, "return");
+      trace_return (i, "b");
       return;
     }
     ));
@@ -80,7 +93,7 @@ namespace dezyne
         f = vtoggle ();
         bool bb = vtoggle ();
         f = bb;
-        i.out.d();
+        rt.defer(this, [=] { i.out.d(); });
       }
     }
   }
@@ -88,7 +101,7 @@ namespace dezyne
   bool function2::vtoggle()
   {
     if (f)
-    i.out.c();
+    rt.defer(this, [=] { i.out.c(); });
     return not (f);
   }
 

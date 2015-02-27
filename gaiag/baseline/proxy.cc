@@ -34,13 +34,13 @@ namespace dezyne
   template <typename T>
   void trace(const T& t, const char* e)
   {
-    std::clog << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << ":" << e << std::endl;
+    std::clog << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << e << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << e << std::endl;
   }
 
   template <typename T>
   void trace_return(const T& t, const char* e)
   {
-    std::clog << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << " return " << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << ":" << e << std::endl ;
+    std::clog << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << "return" << " -> " << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << "return" << std::endl ;
   }
 
   proxy::proxy(const locator& dezyne_locator)
@@ -55,174 +55,170 @@ namespace dezyne
     bottom.out.meta.port = "bottom";
     bottom.out.meta.address = this;
 
-    top.in.e0 = connect<void>(rt, this, 
+    top.in.e0 = connect<void>(rt, this,
     boost::function<void()>
-    ([this] () 
-    { 
+    ([this] ()
+    {
       trace (top, "e0");
       top_e0();
       trace_return (top, "e0");
-      return ;
+      return;
     }
     ));
-    top.in.e0r = connect<IDataparam::Status::type>(rt, this, 
+    top.in.e0r = connect<IDataparam::Status::type>(rt, this,
     boost::function<IDataparam::Status::type()>
-    ([this] () 
-    { 
+    ([this] ()
+    {
       trace (top, "e0r");
       auto r = top_e0r();
       trace_return (top, "e0r");
       return r;
     }
     ));
-    top.in.e = connect<int>(rt, this, 
+    top.in.e = connect<int>(rt, this,
     boost::function<void(int)>
-    ([this] (int i) 
-    { 
+    ([this] (int i)
+    {
       trace (top, "e");
       top_e(i);
       trace_return (top, "e");
-      return ;
+      return;
     }
     ));
-    top.in.er = connect<IDataparam::Status::type,int>(rt, this, 
+    top.in.er = connect<IDataparam::Status::type,int>(rt, this,
     boost::function<IDataparam::Status::type(int)>
-    ([this] (int i) 
-    { 
+    ([this] (int i)
+    {
       trace (top, "er");
       auto r = top_er(i);
       trace_return (top, "er");
       return r;
     }
     ));
-    top.in.eer = connect<IDataparam::Status::type,int,int>(rt, this, 
+    top.in.eer = connect<IDataparam::Status::type,int,int>(rt, this,
     boost::function<IDataparam::Status::type(int,int)>
-    ([this] (int i, int j) 
-    { 
+    ([this] (int i, int j)
+    {
       trace (top, "eer");
       auto r = top_eer(i,j);
       trace_return (top, "eer");
       return r;
     }
     ));
-    top.in.eo = connect<int&>(rt, this, 
+    top.in.eo = connect<int&>(rt, this,
     boost::function<void(int&)>
-    ([this] (int& i) 
-    { 
+    ([this] (int& i)
+    {
       trace (top, "eo");
       top_eo(i);
       trace_return (top, "eo");
-      return ;
+      return;
     }
     ));
-    top.in.eoo = connect<int&,int&>(rt, this, 
+    top.in.eoo = connect<int&,int&>(rt, this,
     boost::function<void(int&,int&)>
-    ([this] (int& i, int& j) 
-    { 
+    ([this] (int& i, int& j)
+    {
       trace (top, "eoo");
       top_eoo(i,j);
       trace_return (top, "eoo");
-      return ;
+      return;
     }
     ));
-    top.in.eio = connect<int,int&>(rt, this, 
+    top.in.eio = connect<int,int&>(rt, this,
     boost::function<void(int,int&)>
-    ([this] (int i, int& j) 
-    { 
+    ([this] (int i, int& j)
+    {
       trace (top, "eio");
       top_eio(i,j);
       trace_return (top, "eio");
-      return ;
+      return;
     }
     ));
-    top.in.eio2 = connect<int&>(rt, this, 
+    top.in.eio2 = connect<int&>(rt, this,
     boost::function<void(int&)>
-    ([this] (int& i) 
-    { 
+    ([this] (int& i)
+    {
       trace (top, "eio2");
       top_eio2(i);
       trace_return (top, "eio2");
-      return ;
+      return;
     }
     ));
-    top.in.eor = connect<IDataparam::Status::type,int&>(rt, this, 
+    top.in.eor = connect<IDataparam::Status::type,int&>(rt, this,
     boost::function<IDataparam::Status::type(int&)>
-    ([this] (int& i) 
-    { 
+    ([this] (int& i)
+    {
       trace (top, "eor");
       auto r = top_eor(i);
       trace_return (top, "eor");
       return r;
     }
     ));
-    top.in.eoor = connect<IDataparam::Status::type,int&,int&>(rt, this, 
+    top.in.eoor = connect<IDataparam::Status::type,int&,int&>(rt, this,
     boost::function<IDataparam::Status::type(int&,int&)>
-    ([this] (int& i, int& j) 
-    { 
+    ([this] (int& i, int& j)
+    {
       trace (top, "eoor");
       auto r = top_eoor(i,j);
       trace_return (top, "eoor");
       return r;
     }
     ));
-    top.in.eior = connect<IDataparam::Status::type,int,int&>(rt, this, 
+    top.in.eior = connect<IDataparam::Status::type,int,int&>(rt, this,
     boost::function<IDataparam::Status::type(int,int&)>
-    ([this] (int i, int& j) 
-    { 
+    ([this] (int i, int& j)
+    {
       trace (top, "eior");
       auto r = top_eior(i,j);
       trace_return (top, "eior");
       return r;
     }
     ));
-    top.in.eio2r = connect<IDataparam::Status::type,int&>(rt, this, 
+    top.in.eio2r = connect<IDataparam::Status::type,int&>(rt, this,
     boost::function<IDataparam::Status::type(int&)>
-    ([this] (int& i) 
-    { 
+    ([this] (int& i)
+    {
       trace (top, "eio2r");
       auto r = top_eio2r(i);
       trace_return (top, "eio2r");
       return r;
     }
     ));
-    bottom.out.a0 = connect<void>(rt, this, 
+    bottom.out.a0 = connect<void>(rt, this,
     boost::function<void()>
-    ([this] () 
-    { 
+    ([this] ()
+    {
       trace (bottom, "a0");
       bottom_a0();
-      trace_return (bottom, "a0");
-      return ;
+      return;
     }
     ));
-    bottom.out.a = connect<int>(rt, this, 
+    bottom.out.a = connect<int>(rt, this,
     boost::function<void(int)>
-    ([this] (int i) 
-    { 
+    ([this] (int i)
+    {
       trace (bottom, "a");
       bottom_a(i);
-      trace_return (bottom, "a");
-      return ;
+      return;
     }
     ));
-    bottom.out.aa = connect<int,int>(rt, this, 
+    bottom.out.aa = connect<int,int>(rt, this,
     boost::function<void(int,int)>
-    ([this] (int i, int j) 
-    { 
+    ([this] (int i, int j)
+    {
       trace (bottom, "aa");
       bottom_aa(i,j);
-      trace_return (bottom, "aa");
-      return ;
+      return;
     }
     ));
-    bottom.out.a6 = connect<int,int,int,int,int,int>(rt, this, 
+    bottom.out.a6 = connect<int,int,int,int,int,int>(rt, this,
     boost::function<void(int,int,int,int,int,int)>
-    ([this] (int a0, int a1, int a2, int a3, int a4, int a5) 
-    { 
+    ([this] (int a0, int a1, int a2, int a3, int a4, int a5)
+    {
       trace (bottom, "a6");
       bottom_a6(a0,a1,a2,a3,a4,a5);
-      trace_return (bottom, "a6");
-      return ;
+      return;
     }
     ));
   }

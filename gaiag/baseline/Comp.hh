@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -46,17 +47,6 @@ namespace dezyne
       {
         Uninitialized, Initialized, Error
       };
-      static const char* to_string(type v)
-      {
-        switch(v)
-        {
-          case Uninitialized: return "State_Uninitialized";
-          case Initialized: return "State_Initialized";
-          case Error: return "State_Error";
-
-        }
-        return "";
-      }
     };
     Comp::State::type s;
     IComp::result_t::type reply_IComp_result_t;

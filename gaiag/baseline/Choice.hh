@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -45,17 +46,6 @@ namespace dezyne
       {
         Off, Idle, Busy
       };
-      static const char* to_string(type v)
-      {
-        switch(v)
-        {
-          case Off: return "State_Off";
-          case Idle: return "State_Idle";
-          case Busy: return "State_Busy";
-
-        }
-        return "";
-      }
     };
     Choice::State::type s;
     IChoice c;

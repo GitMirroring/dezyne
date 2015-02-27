@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -30,6 +31,18 @@
 
 namespace dezyne
 {
+  template <typename T>
+  void trace(const T& t, const char* e)
+  {
+    std::clog << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << e << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << e << std::endl;
+  }
+
+  template <typename T>
+  void trace_return(const T& t, const char* e)
+  {
+    std::clog << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << "return" << " -> " << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << "return" << std::endl ;
+  }
+
   GuardedRequiredIllegal::GuardedRequiredIllegal(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , c(false)
@@ -49,7 +62,7 @@ namespace dezyne
     {
       trace (t, "unguarded");
       t_unguarded();
-      trace_return (t, "return");
+      trace_return (t, "unguarded");
       return;
     }
     ));
@@ -59,19 +72,19 @@ namespace dezyne
     {
       trace (t, "e");
       t_e();
-      trace_return (t, "return");
+      trace_return (t, "e");
       return;
     }
     ));
-    b.out.f= [this] {trace (b, "f");
-      rt.defer (b.in.meta.address, connect<void>(rt, this,
-      boost::function<void()>(
-      [this] ()
-      {
-        b_f() ;
-        return;
-      }
-      )));};
+    b.out.f = connect<void>(rt, this,
+    boost::function<void()>
+    ([this] ()
+    {
+      trace (b, "f");
+      b_f();
+      return;
+    }
+    ));
   }
 
   void GuardedRequiredIllegal::t_unguarded()

@@ -27,13 +27,20 @@
 #include "locator.hh"
 #include "runtime.hh"
 
+#include <iostream>
+
 namespace dezyne
 {
   template <typename T>
-  void log(const T& t, const char* e, std::function<void()> f)
+  void trace(const T& t, const char* e)
   {
-    std::cout << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << ":" << e << std::endl;
-    f();
+    std::clog << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << e << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << e << std::endl;
+  }
+
+  template <typename T>
+  void trace_return(const T& t, const char* e)
+  {
+    std::clog << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << "return" << " -> " << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << "return" << std::endl ;
   }
 
   Alarm::Alarm(const locator& dezyne_locator)
@@ -47,8 +54,6 @@ namespace dezyne
     console.in.meta.component = "Alarm";
     console.in.meta.port = "console";
     console.in.meta.address = this;
-
-
     sensor.out.meta.component = "Alarm";
     sensor.out.meta.port = "sensor";
     sensor.out.meta.address = this;
@@ -56,11 +61,44 @@ namespace dezyne
     siren.out.meta.port = "siren";
     siren.out.meta.address = this;
 
-
-    console.in.arm = connect<void>(rt, this, boost::function<void()>(boost::bind(&log<IConsole>, boost::cref(console), "arm", boost::function<void()>(boost::bind(&Alarm::console_arm, this)))));
-    console.in.disarm = connect<void>(rt, this, boost::function<void()>(boost::bind(&log<IConsole>, boost::cref(console), "disarm", boost::function<void()>(boost::bind(&Alarm::console_disarm, this)))));
-    sensor.out.triggered = connect<void>(rt, this, boost::function<void()>(boost::bind(&log<ISensor>, boost::cref(sensor), "triggered", boost::function<void()>(boost::bind(&Alarm::sensor_triggered, this)))));
-    sensor.out.disabled = connect<void>(rt, this, boost::function<void()>(boost::bind(&log<ISensor>, boost::cref(sensor), "disabled", boost::function<void()>(boost::bind(&Alarm::sensor_disabled, this)))));
+    console.in.arm = connect<void>(rt, this,
+    boost::function<void()>
+    ([this] ()
+    {
+      trace (console, "arm");
+      console_arm();
+      trace_return (console, "arm");
+      return;
+    }
+    ));
+    console.in.disarm = connect<void>(rt, this,
+    boost::function<void()>
+    ([this] ()
+    {
+      trace (console, "disarm");
+      console_disarm();
+      trace_return (console, "disarm");
+      return;
+    }
+    ));
+    sensor.out.triggered = connect<void>(rt, this,
+    boost::function<void()>
+    ([this] ()
+    {
+      trace (sensor, "triggered");
+      sensor_triggered();
+      return;
+    }
+    ));
+    sensor.out.disabled = connect<void>(rt, this,
+    boost::function<void()>
+    ([this] ()
+    {
+      trace (sensor, "disabled");
+      sensor_disabled();
+      return;
+    }
+    ));
   }
 
   void Alarm::console_arm()
@@ -123,7 +161,7 @@ namespace dezyne
     else if (state == States::Armed)
     {
       {
-        rt.defer(this, boost::bind(console.out.detected));
+        rt.defer(this, [=] { console.out.detected(); });
         siren.in.turnon();
         sounding = true;
         state = States::Triggered;
@@ -152,14 +190,14 @@ namespace dezyne
     }
     else if (state == States::Disarming and sounding)
     {
-      rt.defer(this, boost::bind(console.out.deactivated));
+      rt.defer(this, [=] { console.out.deactivated(); });
       siren.in.turnoff();
       state = States::Disarmed;
       sounding = false;
     }
     else if (state == States::Disarming and not (sounding))
     {
-      rt.defer(this, boost::bind(console.out.deactivated));
+      rt.defer(this, [=] { console.out.deactivated(); });
       state = States::Disarmed;
     }
     else if (state == States::Triggered)

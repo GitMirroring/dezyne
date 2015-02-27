@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -45,16 +46,6 @@ namespace dezyne
       {
         False, True
       };
-      static const char* to_string(type v)
-      {
-        switch(v)
-        {
-          case False: return "Enum_False";
-          case True: return "Enum_True";
-
-        }
-        return "";
-      }
     };
     sugar::Enum::type s;
     I i;

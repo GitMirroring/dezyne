@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -29,7 +30,6 @@
 
 namespace dezyne
 {
-
   struct ilogger
   {
 
@@ -37,12 +37,33 @@ namespace dezyne
     {
       boost::function<void ()> log;
 
+      struct
+      {
+        const char* component;
+        const char* port;
+        void*       address;
+      } meta;
     } in;
 
     struct
     {
 
+      struct
+      {
+        const char* component;
+        const char* port;
+        void*       address;
+      } meta;
     } out;
   };
+
+  inline void connect (ilogger& provided, ilogger& required)
+  {
+    assert (not required.in.log);
+
+
+    provided.out = required.out;
+    required.in = provided.in;
+  }
 }
 #endif // DEZYNE_ILOGGER_HH

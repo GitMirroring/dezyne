@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -46,16 +47,6 @@ namespace dezyne
       {
         Yes, No
       };
-      static const char* to_string(type v)
-      {
-        switch(v)
-        {
-          case Yes: return "Status_Yes";
-          case No: return "Status_No";
-
-        }
-        return "";
-      }
     };
     bool dummy;
     I::Status::type reply_I_Status;

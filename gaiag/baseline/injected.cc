@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -30,7 +31,7 @@
 
 void f()
 {
-  std::cout << "f" << std::endl;
+  std::clog << "f" << std::endl;
 }
 
 int main()
@@ -41,6 +42,9 @@ int main()
 
   dezyne::Injected i(l);
 
+  i.t.out.meta.component = "main";
+  i.t.out.meta.port = "t";
+  i.t.out.meta.address = 0;
   i.t.out.f = f;
 
   i.t.in.e();

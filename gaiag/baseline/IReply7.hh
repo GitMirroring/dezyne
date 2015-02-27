@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -38,15 +39,6 @@ namespace dezyne
       {
         A
       };
-      static const char* to_string(type v)
-      {
-        switch(v)
-        {
-          case A: return "E_A";
-
-        }
-        return "";
-      }
     };
 
     struct

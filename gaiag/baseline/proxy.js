@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -145,9 +146,10 @@ dezyne.proxy = function() {
       this.top.out.a6.defer(A0, A1, A2, A3, A4, A5);
     }
   }.bind(this);
-  this.outfunc = function (i) {
-    var j = i;
+  this.outfunc = function (i.value) {
+    var j = i.value;
     this.bottom.in.eo(j);
+    i.value = j;
   }.bind(this);
   this.deferfunc = function (i) {
     this.top.out.a.defer(i);

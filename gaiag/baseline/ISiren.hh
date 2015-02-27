@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -29,7 +30,6 @@
 
 namespace dezyne
 {
-
   struct ISiren
   {
 
@@ -38,12 +38,34 @@ namespace dezyne
       boost::function<void ()> turnon;
       boost::function<void ()> turnoff;
 
+      struct
+      {
+        const char* component;
+        const char* port;
+        void*       address;
+      } meta;
     } in;
 
     struct
     {
 
+      struct
+      {
+        const char* component;
+        const char* port;
+        void*       address;
+      } meta;
     } out;
   };
+
+  inline void connect (ISiren& provided, ISiren& required)
+  {
+    assert (not required.in.turnon);
+    assert (not required.in.turnoff);
+
+
+    provided.out = required.out;
+    required.in = provided.in;
+  }
 }
 #endif // DEZYNE_ISIREN_HH

@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -38,16 +39,6 @@ namespace dezyne
       {
         OK, NOK
       };
-      static const char* to_string(type v)
-      {
-        switch(v)
-        {
-          case OK: return "Retval1_OK";
-          case NOK: return "Retval1_NOK";
-
-        }
-        return "";
-      }
     };
     struct Retval2
     {
@@ -55,16 +46,6 @@ namespace dezyne
       {
         OK, NOK
       };
-      static const char* to_string(type v)
-      {
-        switch(v)
-        {
-          case OK: return "Retval2_OK";
-          case NOK: return "Retval2_NOK";
-
-        }
-        return "";
-      }
     };
 
     struct

@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -26,19 +27,45 @@
 #include "locator.hh"
 #include "runtime.hh"
 
+#include <iostream>
+
 namespace dezyne
 {
+  template <typename T>
+  void trace(const T& t, const char* e)
+  {
+    std::clog << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << e << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << e << std::endl;
+  }
+
+  template <typename T>
+  void trace_return(const T& t, const char* e)
+  {
+    std::clog << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << "return" << " -> " << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << "return" << std::endl ;
+  }
+
   bottom::bottom(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , b()
   {
-    b.in.e = connect<void>(rt, this, boost::function<void()>(boost::bind<void>(&bottom::b_e, this)));
+    b.in.meta.component = "bottom";
+    b.in.meta.port = "b";
+    b.in.meta.address = this;
+
+    b.in.e = connect<void>(rt, this,
+    boost::function<void()>
+    ([this] ()
+    {
+      trace (b, "e");
+      b_e();
+      trace_return (b, "e");
+      return;
+    }
+    ));
   }
 
   void bottom::b_e()
   {
-    std::cout << "bottom.b_e" << std::endl;
-    rt.defer(this, boost::bind(b.out.f));
+    rt.defer(this, [=] { b.out.f(); });
   }
 
 
