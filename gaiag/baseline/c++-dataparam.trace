@@ -1,77 +1,69 @@
 0 0 c
-main.port -> proxy.top:e0r
-proxy.bottom -> Dataparam.port:e0r
-Dataparam.port return proxy.bottom:e0r
-proxy.top return main.port:e0r
-proxy.bottom -> Dataparam.port:a0
-Dataparam.port return proxy.bottom:a0
+main.port.eproxy.top.e0r
+proxy.bottom.eDataparam.port.e0r
+Dataparam.port.return -> proxy.bottom.return
+proxy.top.return -> main.port.return
+proxy.bottom.aDataparam.port.a0
 a0()
-main.port -> proxy.top:e0
-proxy.bottom -> Dataparam.port:e0
-Dataparam.port return proxy.bottom:e0
-proxy.top return main.port:e0
-proxy.bottom -> Dataparam.port:a6
-Dataparam.port return proxy.bottom:a6
+main.port.eproxy.top.e0
+proxy.bottom.eDataparam.port.e0
+Dataparam.port.return -> proxy.bottom.return
+proxy.top.return -> main.port.return
+proxy.bottom.a6 -> Dataparam.port.a6
 a6(0,1,2,3,4,5)
-main.port -> proxy.top:er
-proxy.bottom -> Dataparam.port:er
-Dataparam.port return proxy.bottom:er
-proxy.top return main.port:er
-proxy.bottom -> Dataparam.port:a
-Dataparam.port return proxy.bottom:a
-proxy.bottom -> Dataparam.port:aa
-Dataparam.port return proxy.bottom:aa
+main.port.er -> proxy.top.er
+proxy.bottom.er -> Dataparam.port.er
+Dataparam.port.return -> proxy.bottom.return
+proxy.top.return -> main.port.return
+proxy.bottom.a -> Dataparam.port.a
+proxy.bottom.aa -> Dataparam.port.aa
 a(0)
 aa(123,123)
-main.port -> proxy.top:e
-proxy.bottom -> Dataparam.port:e
-Dataparam.port return proxy.bottom:e
-proxy.top return main.port:e
-proxy.bottom -> Dataparam.port:a
-Dataparam.port return proxy.bottom:a
-proxy.bottom -> Dataparam.port:aa
-Dataparam.port return proxy.bottom:aa
+main.port.e -> proxy.top.e
+proxy.bottom.e -> Dataparam.port.e
+Dataparam.port.return -> proxy.bottom.return
+proxy.top.return -> main.port.return
+proxy.bottom.a -> Dataparam.port.a
+proxy.bottom.aa -> Dataparam.port.aa
 a(0)
 aa(123,123)
-main.port -> proxy.top:eer
-proxy.bottom -> Dataparam.port:eer
-Dataparam.port return proxy.bottom:eer
-proxy.top return main.port:eer
-proxy.bottom -> Dataparam.port:a
-Dataparam.port return proxy.bottom:a
-proxy.bottom -> Dataparam.port:aa
-Dataparam.port return proxy.bottom:aa
+main.port.eer -> proxy.top.eer
+proxy.bottom.eer -> Dataparam.port.eer
+Dataparam.port.return -> proxy.bottom.return
+proxy.top.return -> main.port.return
+proxy.bottom.a -> Dataparam.port.a
+proxy.bottom.aa -> Dataparam.port.aa
 a(0)
 aa(345,123)
-main.port -> proxy.top:eo
-proxy.bottom -> Dataparam.port:eo
-Dataparam.port return proxy.bottom:eo
-proxy.top return main.port:eo
-main.port -> proxy.top:eoo
-proxy.bottom -> Dataparam.port:eoo
-Dataparam.port return proxy.bottom:eoo
-proxy.top return main.port:eoo
-main.port -> proxy.top:eio
-proxy.bottom -> Dataparam.port:eio
-Dataparam.port return proxy.bottom:eio
-proxy.top return main.port:eio
-main.port -> proxy.top:eio2
-proxy.bottom -> Dataparam.port:eio2
-Dataparam.port return proxy.bottom:eio2
-proxy.top return main.port:eio2
-main.port -> proxy.top:eor
-proxy.bottom -> Dataparam.port:eor
-Dataparam.port return proxy.bottom:eor
-proxy.top return main.port:eor
-main.port -> proxy.top:eoor
-proxy.bottom -> Dataparam.port:eoor
-Dataparam.port return proxy.bottom:eoor
-proxy.top return main.port:eoor
-main.port -> proxy.top:eior
-proxy.bottom -> Dataparam.port:eior
-Dataparam.port return proxy.bottom:eior
-proxy.top return main.port:eior
-main.port -> proxy.top:eio2r
-proxy.bottom -> Dataparam.port:eio2r
-Dataparam.port return proxy.bottom:eio2r
-proxy.top return main.port:eio2r
+main.port.eo -> proxy.top.eo
+proxy.bottom.eo -> Dataparam.port.eo
+Dataparam.port.return -> proxy.bottom.return
+proxy.top.return -> main.port.return
+main.port.eoo -> proxy.top.eoo
+proxy.bottom.eoo -> Dataparam.port.eoo
+Dataparam.port.return -> proxy.bottom.return
+proxy.top.return -> main.port.return
+main.port.eio -> proxy.top.eio
+proxy.bottom.eio -> Dataparam.port.eio
+Dataparam.port.return -> proxy.bottom.return
+proxy.top.return -> main.port.return
+main.port.eio2 -> proxy.top.eio2
+proxy.bottom.eio2 -> Dataparam.port.eio2
+Dataparam.port.return -> proxy.bottom.return
+proxy.top.return -> main.port.return
+main.port.eor -> proxy.top.eor
+proxy.bottom.eor -> Dataparam.port.eor
+Dataparam.port.return -> proxy.bottom.return
+proxy.top.return -> main.port.return
+main.port.eoor -> proxy.top.eoor
+proxy.bottom.eoor -> Dataparam.port.eoor
+Dataparam.port.return -> proxy.bottom.return
+proxy.top.return -> main.port.return
+main.port.eior -> proxy.top.eior
+proxy.bottom.eior -> Dataparam.port.eior
+Dataparam.port.return -> proxy.bottom.return
+proxy.top.return -> main.port.return
+main.port.eio2r -> proxy.top.eio2r
+proxy.bottom.eio2r -> Dataparam.port.eio2r
+Dataparam.port.return -> proxy.bottom.return
+proxy.top.return -> main.port.return
