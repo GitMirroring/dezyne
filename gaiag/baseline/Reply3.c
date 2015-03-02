@@ -69,7 +69,7 @@ static int i_done(Reply3* self) {
 			reply_fun (self);
 		}
 		else {
-			reply_fun_arg(self,I_Status_No);
+			reply_fun_arg(self, I_Status_No);
 		}
 	}
 	return self->reply_I_Status;

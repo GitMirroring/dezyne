@@ -235,7 +235,7 @@ static void top_eo(proxy* self, int* i) {
 	(void)self;
 	DZN_LOG("proxy.top_eo");
 	{
-		outfunc(self,*i);
+		outfunc(self, &*i);
 	}
 }
 
@@ -315,7 +315,7 @@ static void bottom_a0(proxy* self) {
 static void bottom_a(proxy* self, int i) {
 	(void)self;
 	DZN_LOG("proxy.bottom_a");
-	deferfunc(self,i);
+	deferfunc(self, i);
 }
 
 static void bottom_aa(proxy* self, int i, int j) {
