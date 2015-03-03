@@ -27,7 +27,7 @@
 namespace dezyne
 {
   Datasystem::Datasystem(const dezyne::locator& dezyne_locator)
-  : meta{{reinterpret_cast<component*>(&p),reinterpret_cast<component*>(&c)}, reinterpret_cast<component*>(this)}
+  : meta{{reinterpret_cast<component*>(&p),reinterpret_cast<component*>(&c)}, 0, reinterpret_cast<component*>(this), ""}
   , p(dezyne_locator)
   , c(dezyne_locator)
   , port(p.top)

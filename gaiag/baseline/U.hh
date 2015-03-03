@@ -39,6 +39,16 @@ namespace dezyne
       {
         Ok, Nok
       };
+      static const char* to_string(type v)
+      {
+        switch(v)
+        {
+          case Ok: return "Status_Ok";
+          case Nok: return "Status_Nok";
+
+        }
+        return "";
+      }
     };
 
     struct

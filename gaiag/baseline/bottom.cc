@@ -31,18 +31,6 @@
 
 namespace dezyne
 {
-  template <typename T>
-  void trace(const T& t, const char* e)
-  {
-    std::clog << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << e << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << e << std::endl;
-  }
-
-  template <typename T>
-  void trace_return(const T& t, const char* e)
-  {
-    std::clog << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << "return" << " -> " << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << "return" << std::endl ;
-  }
-
   bottom::bottom(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , b()
@@ -57,7 +45,7 @@ namespace dezyne
     {
       trace (b, "e");
       b_e();
-      trace_return (b, "e");
+      trace_return (b, "return");
       return;
     }
     ));
@@ -65,7 +53,7 @@ namespace dezyne
 
   void bottom::b_e()
   {
-    rt.defer(this, [=] { b.out.f(); });
+    b.out.f();
   }
 
 

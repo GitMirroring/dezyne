@@ -39,6 +39,15 @@ namespace dezyne
       {
         A
       };
+      static const char* to_string(type v)
+      {
+        switch(v)
+        {
+          case A: return "E_A";
+
+        }
+        return "";
+      }
     };
 
     struct

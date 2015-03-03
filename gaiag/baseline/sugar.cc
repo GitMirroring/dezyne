@@ -32,18 +32,6 @@
 
 namespace dezyne
 {
-  template <typename T>
-  void trace(const T& t, const char* e)
-  {
-    std::clog << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << e << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << e << std::endl;
-  }
-
-  template <typename T>
-  void trace_return(const T& t, const char* e)
-  {
-    std::clog << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << "return" << " -> " << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << "return" << std::endl ;
-  }
-
   sugar::sugar(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , s(Enum::False)
@@ -59,7 +47,7 @@ namespace dezyne
     {
       trace (i, "e");
       i_e();
-      trace_return (i, "e");
+      trace_return (i, "return");
       return;
     }
     ));
@@ -69,12 +57,12 @@ namespace dezyne
   {
     if (s == Enum::False)
     if (s == Enum::False)
-    rt.defer(this, [=] { i.out.a(); });
+    i.out.a();
     else
     {
       sugar::Enum::type t = Enum::False;
       if (t == Enum::True)
-      rt.defer(this, [=] { i.out.a(); });
+      i.out.a();
     }
   }
 

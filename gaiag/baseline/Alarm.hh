@@ -47,6 +47,18 @@ namespace dezyne
       {
         Disarmed, Armed, Triggered, Disarming
       };
+      static const char* to_string(type v)
+      {
+        switch(v)
+        {
+          case Disarmed: return "States_Disarmed";
+          case Armed: return "States_Armed";
+          case Triggered: return "States_Triggered";
+          case Disarming: return "States_Disarming";
+
+        }
+        return "";
+      }
     };
     Alarm::States::type state;
     bool sounding;

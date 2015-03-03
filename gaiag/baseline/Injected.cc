@@ -27,7 +27,7 @@
 namespace dezyne
 {
   Injected::Injected(const dezyne::locator& dezyne_locator)
-  : meta{{reinterpret_cast<component*>(&m),reinterpret_cast<component*>(&b)}, reinterpret_cast<component*>(this)}
+  : meta{{reinterpret_cast<component*>(&m),reinterpret_cast<component*>(&b)}, 0, reinterpret_cast<component*>(this), ""}
   , l(dezyne_locator)
   , dezyne_local_locator(dezyne_locator.clone().set(l.log))
   , m(dezyne_local_locator)

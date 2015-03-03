@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -27,7 +28,7 @@
 namespace dezyne
 {
   provides_twice::provides_twice(const dezyne::locator& dezyne_locator)
-  : meta{{reinterpret_cast<component*>(&one)}, reinterpret_cast<component*>(this)}
+  : meta{{reinterpret_cast<component*>(&one)}, 0, reinterpret_cast<component*>(this), ""}
   , one(dezyne_locator)
   , i(one.i)
   , ii(one.ii)

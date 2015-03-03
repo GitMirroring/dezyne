@@ -27,7 +27,7 @@
 namespace dezyne
 {
   AlarmSystem::AlarmSystem(const dezyne::locator& dezyne_locator)
-  : meta{{reinterpret_cast<component*>(&alarm),reinterpret_cast<component*>(&sensor),reinterpret_cast<component*>(&siren)}, reinterpret_cast<component*>(this)}
+  : meta{{reinterpret_cast<component*>(&alarm),reinterpret_cast<component*>(&sensor),reinterpret_cast<component*>(&siren)}, 0, reinterpret_cast<component*>(this), ""}
   , alarm(dezyne_locator)
   , sensor(dezyne_locator)
   , siren(dezyne_locator)

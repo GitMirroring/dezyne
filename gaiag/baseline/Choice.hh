@@ -46,6 +46,17 @@ namespace dezyne
       {
         Off, Idle, Busy
       };
+      static const char* to_string(type v)
+      {
+        switch(v)
+        {
+          case Off: return "State_Off";
+          case Idle: return "State_Idle";
+          case Busy: return "State_Busy";
+
+        }
+        return "";
+      }
     };
     Choice::State::type s;
     IChoice c;

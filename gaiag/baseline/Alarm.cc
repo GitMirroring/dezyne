@@ -31,18 +31,6 @@
 
 namespace dezyne
 {
-  template <typename T>
-  void trace(const T& t, const char* e)
-  {
-    std::clog << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << e << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << e << std::endl;
-  }
-
-  template <typename T>
-  void trace_return(const T& t, const char* e)
-  {
-    std::clog << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << "return" << " -> " << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << "return" << std::endl ;
-  }
-
   Alarm::Alarm(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , state(States::Disarmed)
@@ -67,7 +55,7 @@ namespace dezyne
     {
       trace (console, "arm");
       console_arm();
-      trace_return (console, "arm");
+      trace_return (console, "return");
       return;
     }
     ));
@@ -77,28 +65,30 @@ namespace dezyne
     {
       trace (console, "disarm");
       console_disarm();
-      trace_return (console, "disarm");
+      trace_return (console, "return");
       return;
     }
     ));
-    sensor.out.triggered = connect<void>(rt, this,
-    boost::function<void()>
-    ([this] ()
-    {
+    sensor.out.triggered=  [this] () {
       trace (sensor, "triggered");
-      sensor_triggered();
-      return;
-    }
-    ));
-    sensor.out.disabled = connect<void>(rt, this,
-    boost::function<void()>
-    ([this] ()
-    {
+      rt.defer (sensor.in.meta.address, connect<void>(rt, this,
+      boost::function<void()>(
+      [=]
+      {
+        sensor_triggered();
+        return;
+      }
+      )));};
+    sensor.out.disabled=  [this] () {
       trace (sensor, "disabled");
-      sensor_disabled();
-      return;
-    }
-    ));
+      rt.defer (sensor.in.meta.address, connect<void>(rt, this,
+      boost::function<void()>(
+      [=]
+      {
+        sensor_disabled();
+        return;
+      }
+      )));};
   }
 
   void Alarm::console_arm()
@@ -161,7 +151,7 @@ namespace dezyne
     else if (state == States::Armed)
     {
       {
-        rt.defer(this, [=] { console.out.detected(); });
+        console.out.detected();
         siren.in.turnon();
         sounding = true;
         state = States::Triggered;
@@ -190,14 +180,14 @@ namespace dezyne
     }
     else if (state == States::Disarming and sounding)
     {
-      rt.defer(this, [=] { console.out.deactivated(); });
+      console.out.deactivated();
       siren.in.turnoff();
       state = States::Disarmed;
       sounding = false;
     }
     else if (state == States::Disarming and not (sounding))
     {
-      rt.defer(this, [=] { console.out.deactivated(); });
+      console.out.deactivated();
       state = States::Disarmed;
     }
     else if (state == States::Triggered)

@@ -32,18 +32,6 @@
 
 namespace dezyne
 {
-  template <typename T>
-  void trace(const T& t, const char* e)
-  {
-    std::clog << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << e << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << e << std::endl;
-  }
-
-  template <typename T>
-  void trace_return(const T& t, const char* e)
-  {
-    std::clog << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << "return" << " -> " << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << "return" << std::endl ;
-  }
-
   modeling::modeling(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , p()
@@ -62,19 +50,20 @@ namespace dezyne
     {
       trace (p, "e");
       p_e();
-      trace_return (p, "e");
+      trace_return (p, "return");
       return;
     }
     ));
-    r.out.f = connect<void>(rt, this,
-    boost::function<void()>
-    ([this] ()
-    {
+    r.out.f=  [this] () {
       trace (r, "f");
-      r_f();
-      return;
-    }
-    ));
+      rt.defer (r.in.meta.address, connect<void>(rt, this,
+      boost::function<void()>(
+      [=]
+      {
+        r_f();
+        return;
+      }
+      )));};
   }
 
   void modeling::p_e()

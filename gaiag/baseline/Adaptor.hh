@@ -46,6 +46,17 @@ namespace dezyne
       {
         Idle, Active, Terminating
       };
+      static const char* to_string(type v)
+      {
+        switch(v)
+        {
+          case Idle: return "State_Idle";
+          case Active: return "State_Active";
+          case Terminating: return "State_Terminating";
+
+        }
+        return "";
+      }
     };
     typedef int Twice;
     Adaptor::State::type state;

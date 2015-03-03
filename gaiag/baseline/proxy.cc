@@ -31,18 +31,6 @@
 
 namespace dezyne
 {
-  template <typename T>
-  void trace(const T& t, const char* e)
-  {
-    std::clog << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << e << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << e << std::endl;
-  }
-
-  template <typename T>
-  void trace_return(const T& t, const char* e)
-  {
-    std::clog << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << "return" << " -> " << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << "return" << std::endl ;
-  }
-
   proxy::proxy(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , top()
@@ -61,7 +49,7 @@ namespace dezyne
     {
       trace (top, "e0");
       top_e0();
-      trace_return (top, "e0");
+      trace_return (top, "return");
       return;
     }
     ));
@@ -71,7 +59,7 @@ namespace dezyne
     {
       trace (top, "e0r");
       auto r = top_e0r();
-      trace_return (top, "e0r");
+      trace_return (top, IDataparam::Status::to_string(r));
       return r;
     }
     ));
@@ -81,7 +69,7 @@ namespace dezyne
     {
       trace (top, "e");
       top_e(i);
-      trace_return (top, "e");
+      trace_return (top, "return");
       return;
     }
     ));
@@ -91,7 +79,7 @@ namespace dezyne
     {
       trace (top, "er");
       auto r = top_er(i);
-      trace_return (top, "er");
+      trace_return (top, IDataparam::Status::to_string(r));
       return r;
     }
     ));
@@ -101,7 +89,7 @@ namespace dezyne
     {
       trace (top, "eer");
       auto r = top_eer(i,j);
-      trace_return (top, "eer");
+      trace_return (top, IDataparam::Status::to_string(r));
       return r;
     }
     ));
@@ -111,7 +99,7 @@ namespace dezyne
     {
       trace (top, "eo");
       top_eo(i);
-      trace_return (top, "eo");
+      trace_return (top, "return");
       return;
     }
     ));
@@ -121,7 +109,7 @@ namespace dezyne
     {
       trace (top, "eoo");
       top_eoo(i,j);
-      trace_return (top, "eoo");
+      trace_return (top, "return");
       return;
     }
     ));
@@ -131,7 +119,7 @@ namespace dezyne
     {
       trace (top, "eio");
       top_eio(i,j);
-      trace_return (top, "eio");
+      trace_return (top, "return");
       return;
     }
     ));
@@ -141,7 +129,7 @@ namespace dezyne
     {
       trace (top, "eio2");
       top_eio2(i);
-      trace_return (top, "eio2");
+      trace_return (top, "return");
       return;
     }
     ));
@@ -151,7 +139,7 @@ namespace dezyne
     {
       trace (top, "eor");
       auto r = top_eor(i);
-      trace_return (top, "eor");
+      trace_return (top, IDataparam::Status::to_string(r));
       return r;
     }
     ));
@@ -161,7 +149,7 @@ namespace dezyne
     {
       trace (top, "eoor");
       auto r = top_eoor(i,j);
-      trace_return (top, "eoor");
+      trace_return (top, IDataparam::Status::to_string(r));
       return r;
     }
     ));
@@ -171,7 +159,7 @@ namespace dezyne
     {
       trace (top, "eior");
       auto r = top_eior(i,j);
-      trace_return (top, "eior");
+      trace_return (top, IDataparam::Status::to_string(r));
       return r;
     }
     ));
@@ -181,46 +169,50 @@ namespace dezyne
     {
       trace (top, "eio2r");
       auto r = top_eio2r(i);
-      trace_return (top, "eio2r");
+      trace_return (top, IDataparam::Status::to_string(r));
       return r;
     }
     ));
-    bottom.out.a0 = connect<void>(rt, this,
-    boost::function<void()>
-    ([this] ()
-    {
+    bottom.out.a0=  [this] () {
       trace (bottom, "a0");
-      bottom_a0();
-      return;
-    }
-    ));
-    bottom.out.a = connect<int>(rt, this,
-    boost::function<void(int)>
-    ([this] (int i)
-    {
+      rt.defer (bottom.in.meta.address, connect<void>(rt, this,
+      boost::function<void()>(
+      [=]
+      {
+        bottom_a0();
+        return;
+      }
+      )));};
+    bottom.out.a=  [this] (int i) {
       trace (bottom, "a");
-      bottom_a(i);
-      return;
-    }
-    ));
-    bottom.out.aa = connect<int,int>(rt, this,
-    boost::function<void(int,int)>
-    ([this] (int i, int j)
-    {
+      rt.defer (bottom.in.meta.address, connect<void>(rt, this,
+      boost::function<void()>(
+      [=]
+      {
+        bottom_a(i);
+        return;
+      }
+      )));};
+    bottom.out.aa=  [this] (int i, int j) {
       trace (bottom, "aa");
-      bottom_aa(i,j);
-      return;
-    }
-    ));
-    bottom.out.a6 = connect<int,int,int,int,int,int>(rt, this,
-    boost::function<void(int,int,int,int,int,int)>
-    ([this] (int a0, int a1, int a2, int a3, int a4, int a5)
-    {
+      rt.defer (bottom.in.meta.address, connect<void>(rt, this,
+      boost::function<void()>(
+      [=]
+      {
+        bottom_aa(i,j);
+        return;
+      }
+      )));};
+    bottom.out.a6=  [this] (int a0, int a1, int a2, int a3, int a4, int a5) {
       trace (bottom, "a6");
-      bottom_a6(a0,a1,a2,a3,a4,a5);
-      return;
-    }
-    ));
+      rt.defer (bottom.in.meta.address, connect<void>(rt, this,
+      boost::function<void()>(
+      [=]
+      {
+        bottom_a6(a0,a1,a2,a3,a4,a5);
+        return;
+      }
+      )));};
   }
 
   void proxy::top_e0()
@@ -332,7 +324,7 @@ namespace dezyne
 
   void proxy::bottom_a0()
   {
-    rt.defer(this, [=] { top.out.a0(); });
+    top.out.a0();
   }
 
   void proxy::bottom_a(int i)
@@ -342,7 +334,7 @@ namespace dezyne
 
   void proxy::bottom_aa(int i, int j)
   {
-    rt.defer(this, [=] { top.out.aa(i, j); });
+    top.out.aa(i, j);
   }
 
   void proxy::bottom_a6(int a0, int a1, int a2, int a3, int a4, int a5)
@@ -354,7 +346,7 @@ namespace dezyne
       int A3 = a3;
       int A4 = a4;
       int A5 = a5;
-      rt.defer(this, [=] { top.out.a6(A0, A1, A2, A3, A4, A5); });
+      top.out.a6(A0, A1, A2, A3, A4, A5);
     }
   }
 
@@ -367,7 +359,7 @@ namespace dezyne
 
   void proxy::deferfunc(int i)
   {
-    rt.defer(this, [=] { top.out.a(i); });
+    top.out.a(i);
   }
 
 }

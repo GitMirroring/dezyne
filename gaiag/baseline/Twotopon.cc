@@ -31,18 +31,6 @@
 
 namespace dezyne
 {
-  template <typename T>
-  void trace(const T& t, const char* e)
-  {
-    std::clog << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << e << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << e << std::endl;
-  }
-
-  template <typename T>
-  void trace_return(const T& t, const char* e)
-  {
-    std::clog << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << "return" << " -> " << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << "return" << std::endl ;
-  }
-
   Twotopon::Twotopon(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , b(false)
@@ -58,7 +46,7 @@ namespace dezyne
     {
       trace (i, "e");
       i_e();
-      trace_return (i, "e");
+      trace_return (i, "return");
       return;
     }
     ));
@@ -68,7 +56,7 @@ namespace dezyne
     {
       trace (i, "t");
       i_t();
-      trace_return (i, "t");
+      trace_return (i, "return");
       return;
     }
     ));
@@ -78,17 +66,17 @@ namespace dezyne
   {
     if (b)
     {
-      rt.defer(this, [=] { i.out.a(); });
+      i.out.a();
     }
     else if (not (b))
     {
-      rt.defer(this, [=] { i.out.a(); });
+      i.out.a();
     }
   }
 
   void Twotopon::i_t()
   {
-    rt.defer(this, [=] { i.out.a(); });
+    i.out.a();
   }
 
 

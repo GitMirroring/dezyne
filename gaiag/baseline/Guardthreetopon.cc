@@ -31,18 +31,6 @@
 
 namespace dezyne
 {
-  template <typename T>
-  void trace(const T& t, const char* e)
-  {
-    std::clog << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << e << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << e << std::endl;
-  }
-
-  template <typename T>
-  void trace_return(const T& t, const char* e)
-  {
-    std::clog << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << "return" << " -> " << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << "return" << std::endl ;
-  }
-
   Guardthreetopon::Guardthreetopon(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , b(false)
@@ -62,7 +50,7 @@ namespace dezyne
     {
       trace (i, "e");
       i_e();
-      trace_return (i, "e");
+      trace_return (i, "return");
       return;
     }
     ));
@@ -72,7 +60,7 @@ namespace dezyne
     {
       trace (i, "t");
       i_t();
-      trace_return (i, "t");
+      trace_return (i, "return");
       return;
     }
     ));
@@ -82,46 +70,47 @@ namespace dezyne
     {
       trace (i, "s");
       i_s();
-      trace_return (i, "s");
+      trace_return (i, "return");
       return;
     }
     ));
-    r.out.a = connect<void>(rt, this,
-    boost::function<void()>
-    ([this] ()
-    {
+    r.out.a=  [this] () {
       trace (r, "a");
-      r_a();
-      return;
-    }
-    ));
+      rt.defer (r.in.meta.address, connect<void>(rt, this,
+      boost::function<void()>(
+      [=]
+      {
+        r_a();
+        return;
+      }
+      )));};
   }
 
   void Guardthreetopon::i_e()
   {
     if (true and b)
     {
-      rt.defer(this, [=] { i.out.a(); });
+      i.out.a();
     }
     else if (true and not (b))
     {
       bool c = true;
       if (c)
-      rt.defer(this, [=] { i.out.a(); });
+      i.out.a();
     }
   }
 
   void Guardthreetopon::i_t()
   {
     if (b)
-    rt.defer(this, [=] { i.out.a(); });
+    i.out.a();
     else if (not (b))
-    rt.defer(this, [=] { i.out.a(); });
+    i.out.a();
   }
 
   void Guardthreetopon::i_s()
   {
-    rt.defer(this, [=] { i.out.a(); });
+    i.out.a();
   }
 
   void Guardthreetopon::r_a()

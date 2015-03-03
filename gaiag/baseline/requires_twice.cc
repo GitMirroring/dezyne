@@ -32,18 +32,6 @@
 
 namespace dezyne
 {
-  template <typename T>
-  void trace(const T& t, const char* e)
-  {
-    std::clog << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << e << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << e << std::endl;
-  }
-
-  template <typename T>
-  void trace_return(const T& t, const char* e)
-  {
-    std::clog << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << "return" << " -> " << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << "return" << std::endl ;
-  }
-
   requires_twice::requires_twice(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , p()
@@ -66,28 +54,30 @@ namespace dezyne
     {
       trace (p, "e");
       p_e();
-      trace_return (p, "e");
+      trace_return (p, "return");
       return;
     }
     ));
-    once.out.a = connect<void>(rt, this,
-    boost::function<void()>
-    ([this] ()
-    {
+    once.out.a=  [this] () {
       trace (once, "a");
-      once_a();
-      return;
-    }
-    ));
-    twice.out.a = connect<void>(rt, this,
-    boost::function<void()>
-    ([this] ()
-    {
+      rt.defer (once.in.meta.address, connect<void>(rt, this,
+      boost::function<void()>(
+      [=]
+      {
+        once_a();
+        return;
+      }
+      )));};
+    twice.out.a=  [this] () {
       trace (twice, "a");
-      twice_a();
-      return;
-    }
-    ));
+      rt.defer (twice.in.meta.address, connect<void>(rt, this,
+      boost::function<void()>(
+      [=]
+      {
+        twice_a();
+        return;
+      }
+      )));};
   }
 
   void requires_twice::p_e()
@@ -107,7 +97,7 @@ namespace dezyne
   void requires_twice::twice_a()
   {
     {
-      rt.defer(this, [=] { p.out.a(); });
+      p.out.a();
     }
   }
 

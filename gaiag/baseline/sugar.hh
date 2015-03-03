@@ -46,6 +46,16 @@ namespace dezyne
       {
         False, True
       };
+      static const char* to_string(type v)
+      {
+        switch(v)
+        {
+          case False: return "Enum_False";
+          case True: return "Enum_True";
+
+        }
+        return "";
+      }
     };
     sugar::Enum::type s;
     I i;

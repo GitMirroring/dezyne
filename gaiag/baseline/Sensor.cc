@@ -31,18 +31,6 @@
 
 namespace dezyne
 {
-  template <typename T>
-  void trace(const T& t, const char* e)
-  {
-    std::clog << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << e << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << e << std::endl;
-  }
-
-  template <typename T>
-  void trace_return(const T& t, const char* e)
-  {
-    std::clog << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << "return" << " -> " << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << "return" << std::endl ;
-  }
-
   Sensor::Sensor(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , sensor()
@@ -57,7 +45,7 @@ namespace dezyne
     {
       trace (sensor, "enable");
       sensor_enable();
-      trace_return (sensor, "enable");
+      trace_return (sensor, "return");
       return;
     }
     ));
@@ -67,7 +55,7 @@ namespace dezyne
     {
       trace (sensor, "disable");
       sensor_disable();
-      trace_return (sensor, "disable");
+      trace_return (sensor, "return");
       return;
     }
     ));

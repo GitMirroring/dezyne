@@ -32,18 +32,6 @@
 
 namespace dezyne
 {
-  template <typename T>
-  void trace(const T& t, const char* e)
-  {
-    std::clog << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << e << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << e << std::endl;
-  }
-
-  template <typename T>
-  void trace_return(const T& t, const char* e)
-  {
-    std::clog << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << "return" << " -> " << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << "return" << std::endl ;
-  }
-
   reply_reorder::reply_reorder(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , first(true)
@@ -63,19 +51,20 @@ namespace dezyne
     {
       trace (p, "start");
       p_start();
-      trace_return (p, "start");
+      trace_return (p, "return");
       return;
     }
     ));
-    r.out.pong = connect<void>(rt, this,
-    boost::function<void()>
-    ([this] ()
-    {
+    r.out.pong=  [this] () {
       trace (r, "pong");
-      r_pong();
-      return;
-    }
-    ));
+      rt.defer (r.in.meta.address, connect<void>(rt, this,
+      boost::function<void()>(
+      [=]
+      {
+        r_pong();
+        return;
+      }
+      )));};
   }
 
   void reply_reorder::p_start()
@@ -89,12 +78,12 @@ namespace dezyne
   {
     if (first)
     {
-      rt.defer(this, [=] { p.out.busy(); });
+      p.out.busy();
       first = not (first);
     }
     else if (not (first))
     {
-      rt.defer(this, [=] { p.out.finish(); });
+      p.out.finish();
       first = not (first);
     }
   }

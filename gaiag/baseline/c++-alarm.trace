@@ -3,9 +3,9 @@ Alarm.sensor.enable -> Sensor.sensor.enable
 Sensor.sensor.return -> Alarm.sensor.return
 Alarm.console.return -> main.console.return
 Alarm.sensor.triggered -> Sensor.sensor.triggered
+Console.detected
 Alarm.siren.turnon -> Siren.siren.turnon
 Siren.siren.return -> Alarm.siren.return
-Console.detected
 main.console.disarm -> Alarm.console.disarm
 Alarm.sensor.disable -> Sensor.sensor.disable
 Sensor.sensor.return -> Alarm.sensor.return

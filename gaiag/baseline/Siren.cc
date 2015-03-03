@@ -31,18 +31,6 @@
 
 namespace dezyne
 {
-  template <typename T>
-  void trace(const T& t, const char* e)
-  {
-    std::clog << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << e << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << e << std::endl;
-  }
-
-  template <typename T>
-  void trace_return(const T& t, const char* e)
-  {
-    std::clog << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << "return" << " -> " << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << "return" << std::endl ;
-  }
-
   Siren::Siren(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , siren()
@@ -57,7 +45,7 @@ namespace dezyne
     {
       trace (siren, "turnon");
       siren_turnon();
-      trace_return (siren, "turnon");
+      trace_return (siren, "return");
       return;
     }
     ));
@@ -67,7 +55,7 @@ namespace dezyne
     {
       trace (siren, "turnoff");
       siren_turnoff();
-      trace_return (siren, "turnoff");
+      trace_return (siren, "return");
       return;
     }
     ));

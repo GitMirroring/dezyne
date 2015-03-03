@@ -39,6 +39,16 @@ namespace dezyne
       {
         OK, NOK
       };
+      static const char* to_string(type v)
+      {
+        switch(v)
+        {
+          case OK: return "Retval1_OK";
+          case NOK: return "Retval1_NOK";
+
+        }
+        return "";
+      }
     };
     struct Retval2
     {
@@ -46,6 +56,16 @@ namespace dezyne
       {
         OK, NOK
       };
+      static const char* to_string(type v)
+      {
+        switch(v)
+        {
+          case OK: return "Retval2_OK";
+          case NOK: return "Retval2_NOK";
+
+        }
+        return "";
+      }
     };
 
     struct
