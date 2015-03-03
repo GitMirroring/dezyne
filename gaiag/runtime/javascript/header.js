@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -29,7 +30,7 @@ var dezyne = {};
 Function.prototype.defer = function (a0, a1, a2, a3, a4, a5)
 {
   //FIXME: semantics
-  setTimeout (function () { this(a0, a1, a2, a3, a4, a5); }.bind(this), 0.01);
+  setTimeout (function () { this(a0, a1, a2, a3, a4, a5); }.bind(this), 0);
 };
 
 dezyne.connect = function (provided, required) {

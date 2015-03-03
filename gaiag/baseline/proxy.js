@@ -146,7 +146,7 @@ dezyne.proxy = function() {
       this.top.out.a6.defer(A0, A1, A2, A3, A4, A5);
     }
   }.bind(this);
-  this.outfunc = function (i.value) {
+  this.outfunc = function (i) {
     var j = i.value;
     this.bottom.in.eo(j);
     i.value = j;
