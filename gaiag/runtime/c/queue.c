@@ -23,6 +23,8 @@
 
 #include "queue.h"
 
+#include "config.h"
+
 #include <assert.h>
 #include <stdlib.h>
 
@@ -72,10 +74,10 @@ queue_push (queue* self, void* e)
   self->size++;
 #else
   *(self->tail) = *((Node*)e);
+  self->tail++;
   if (self->tail - self->element == DZN_DEFAULT_QUEUE_SIZE) {
     self->tail = self->element;
   }
-  self->tail++;
   self->size++;
   assert (self->size <= DZN_DEFAULT_QUEUE_SIZE);
 #endif
