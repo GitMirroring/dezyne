@@ -45,6 +45,7 @@ typedef struct {
 void
 runtime_init (runtime* self)
 {
+  (void)self;
 }
 
 void
