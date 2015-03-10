@@ -56,6 +56,7 @@
            define-function
            define-on
            connect-ports
+           enum-to-string
            include-component
            include-interface
            init-bind
@@ -336,7 +337,8 @@
               (interface (gom:import name))
               (event (gom:event interface event-name))
               (direction (.direction event))
-              (comma (if (pair? arguments) ", " ""))
+              (comma (if (pair? arguments) "," ""))
+              (comma-space (if (pair? arguments) ", " ""))
               (number (number->string (length arguments)))
               (arguments (map (lambda (o) (expression->string model o locals)) arguments))
               (parameters ((compose .elements .parameters .signature) event))
@@ -351,7 +353,8 @@
                     (event ,event-name)
                     (arguments ,arguments)
                     (number ,number)
-                    (comma ,comma)))))
+                    (comma ,comma)
+                    (comma-space ,comma-space)))))
       (($ <reply> (and ($ <expression> ($ <literal> scope type field)) (get! expression)))
        (snippet 'reply
                 `((space ,space)
@@ -502,13 +505,15 @@
             (name (.type port))
             (interface (gom:import name))
             (event (gom:event interface event-name))
-            (comma (if (pair? (.elements arguments)) ", " ""))
+            (comma (if (pair? (.elements arguments)) "," ""))
+            (comma-space (if (pair? (.elements arguments)) ", " ""))
             (arguments (->code model arguments)))
        (snippet 'action-expression
                 `((port ,port-name)
                   (direction ,(.direction event))
                   (event ,event-name)
                   (comma ,comma)
+                  (comma-space ,comma-space)
                   (arguments ,arguments)))))
     (($ <var> (and (? member?) (get! identifier)))
      (snippet 'member `((identifier ,(identifier)))))
@@ -570,6 +575,12 @@
    (snippet 'declare-enum
             `((name ,(.name enum)) (fields ,fields) (length ,length)))))
 
+(define (enum-to-string enum)
+  (let* ((fields ((compose .elements .fields) enum))
+         (length (length fields)))
+   (snippet 'enum-to-string
+            `((name ,(.name enum)) (fields ,fields) (length ,length)))))
+
 (define (declare-integer integer)
   (snippet 'declare-integer `((name ,(.name integer)))))
 
@@ -579,23 +590,25 @@
          (type ((compose .name .type) signature))
          (return-type (return-type #f event))
          (parameters (.parameters signature))
-         (comma (if (pair? (.elements parameters)) ", " ""))
+         (comma (if (pair? (.elements parameters)) "," ""))
+         (comma-space (if (pair? (.elements parameters)) ", " ""))
          (parameters (code:->code model parameters)))
-    (animate snippet `((name ,name) (comma ,comma) (parameters ,parameters) (return-type ,return-type)))))
+    (animate snippet `((name ,name) (comma ,comma) (comma-space ,comma-space) (parameters ,parameters) (return-type ,return-type)))))
 
 (define ((define-function model snippet) function)
   (let* ((signature (.signature function))
          (return-type (code:->code model signature))
          (name (.name function))
          (parameters (.parameters signature))
-         (comma (if (null? (.elements parameters)) "" ", "))
+         (comma (if (null? (.elements parameters)) "" ","))
+         (comma-space (if (null? (.elements parameters)) "" ", "))
          (statement (.statement function))
          (locals (map (lambda (x) (cons (.name x) x)) (.elements parameters)))
          (parameters (code:->code model parameters))
          (statements (code:->code model statement locals 2 #f))
          (model (.name model)))
     (animate snippet `((name ,name) (model ,model) (return-type ,return-type)
-                       (comma ,comma) (parameters ,parameters)
+                       (comma ,comma) (comma-space ,comma-space) (parameters ,parameters)
                        (statements ,statements)))))
 
 (define ((define-on model port snippet) event)
@@ -611,7 +624,8 @@
                        locals
                        (loop (cdr parameters)
                              (acons (.name (car parameters)) (car parameters) locals)))))
-         (comma (if (pair? (.elements parameters)) ", " ""))
+         (comma (if (pair? (.elements parameters)) "," ""))
+         (comma-space (if (pair? (.elements parameters)) "," ""))
          (parameter-list (map (lambda (x) (code:->code model x)) (.elements parameters)))
          (parameters (code:->code model parameters))
          (parameter-types (map (lambda (parameter)
@@ -641,6 +655,7 @@
                        (arguments ,arguments)
                        (direction ,(.direction event))
                        (comma ,comma)
+                       (comma-space ,comma-space)
                        (interface ,(.type port))
                        (number ,number)
                        (parameters ,parameters)

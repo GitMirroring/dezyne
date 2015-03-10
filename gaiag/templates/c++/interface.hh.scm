@@ -1,8 +1,8 @@
 ##ifndef DEZYNE_#.INTERFACE _HH
 ##define DEZYNE_#.INTERFACE _HH
 
-##include <boost/bind.hpp>
-##include <boost/function.hpp>
+##include <cassert>
+##include <functional>
 
 namespace dezyne
 {
@@ -12,7 +12,7 @@ struct #.interface
   struct
   {
    #(map (declare-io model
-          #{boost::function<#return-type  (#parameters)> #name;
+          #{std::function<#return-type  (#parameters)> #name;
 #}) (filter gom:in? ((compose .elements .events) model)))
     struct
     {
@@ -25,7 +25,7 @@ struct #.interface
   struct
   {
    #(map (declare-io model
-          #{boost::function<#return-type  (#parameters)> #name;
+          #{std::function<#return-type  (#parameters)> #name;
 #}) (filter gom:out? ((compose .elements .events) model)))
     struct
     {
@@ -47,5 +47,6 @@ struct #.interface
      provided.out = required.out;
      required.in = provided.in;
    }
+   #(->string (map enum-to-string (gom:interface-enums model)))
 }
 ##endif // DEZYNE_#.INTERFACE _HH

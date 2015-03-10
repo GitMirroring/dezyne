@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
@@ -25,6 +25,8 @@
 
 #include "runtime.hh"
 
+#include <algorithm>
+
 namespace dezyne {
 runtime::runtime(){}
 
@@ -35,23 +37,23 @@ bool& runtime::handling(void* scope)
 
 void runtime::flush(void* scope)
 {
-  std::map<void*, std::pair<bool, std::queue<boost::function<void()> > > >& qs = queues;
-  std::map<void*, std::pair<bool, std::queue<boost::function<void()> > > >::iterator it = qs.find(scope);
+  std::map<void*, std::pair<bool, std::queue<std::function<void()> > > >& qs = queues;
+  std::map<void*, std::pair<bool, std::queue<std::function<void()> > > >::iterator it = qs.find(scope);
   if(it != qs.end())
   {
-    std::queue<boost::function<void()> >& q = it->second.second;
+    std::queue<std::function<void()> >& q = it->second.second;
     while(not q.empty())
     {
-      boost::function<void()> event = q.front();
+      std::function<void()> event = q.front();
       q.pop();
-      event();	
+      event();
     }
   }
 }
 
-void runtime::defer(void* scope, const boost::function<void()>& event)
+void runtime::defer(void* scope, const std::function<void()>& event)
 {
-  auto it = std::find_if(queues.begin(), queues.end(), [](const std::pair<void*, std::pair<bool, std::queue<boost::function<void()>>>>& p){ return p.second.first;});
+  auto it = std::find_if(queues.begin(), queues.end(), [](const std::pair<void*, std::pair<bool, std::queue<std::function<void()>>>>& p){ return p.second.first;});
   if(it == queues.end())
   {
     event();
@@ -62,7 +64,7 @@ void runtime::defer(void* scope, const boost::function<void()>& event)
   }
 }
 
-void runtime::handle_event(void* scope, const boost::function<void()>& event)
+  void runtime::handle(void* scope, const std::function<void()>& event)
 {
   bool& handle = handling(scope);
   if(not handle)

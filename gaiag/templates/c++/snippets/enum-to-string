@@ -1,0 +1,8 @@
+inline const char* to_string(#.model ::#name ::type v)
+{
+  switch(v)
+  {
+  #(->string (map (lambda (field) (->string (list "case " .model "::" name "::" field ": return \"" name "_" field "\";\n"))) fields))
+  }
+  return "";
+}

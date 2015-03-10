@@ -4,12 +4,4 @@ struct #name
   {
     #((->join ", ") fields)
   };
-  static const char* to_string(type v)
-  {
-    switch(v)
-    {
-    #(->string (map (lambda (field) (->string (list "case " field ": return \"" name "_" field "\";\n"))) fields))
-    }
-    return "";
-  }
 };

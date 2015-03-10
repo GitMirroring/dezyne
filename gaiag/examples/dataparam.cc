@@ -40,19 +40,19 @@ void a(int i)
 
 void aa(int i, int j)
 {
-  assert(j == 123);
   std::clog << "aa(" << i << "," << j << ")" << std::endl;
+  assert(j == 123);
 }
 
 void a6(int i0, int i1, int i2, int i3, int i4, int i5)
 {
+  std::clog << "a6(" << i0 << "," << i1 << "," << i2 << "," << i3 << "," << i4 << "," << i5 << ")" << std::endl;
   assert(i0 == 0);
   assert(i1 == 1);
   assert(i2 == 2);
   assert(i3 == 3);
   assert(i4 == 4);
   assert(i5 == 5);
-  std::clog << "a6(" << i0 << "," << i1 << "," << i2 << "," << i3 << "," << i4 << "," << i5 << ")" << std::endl;
 }
 
 int main()

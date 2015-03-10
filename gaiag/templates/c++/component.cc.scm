@@ -39,31 +39,17 @@ namespace dezyne
    (map
     (lambda (port)
       (map (define-on model port #{
-#port .#direction .#event  = connect#(if (string-null? parameters) (list "<" return-type ">") (list "<" (comma-join (append (if (eq? return-type 'void) '() (list return-type)) parameter-types))">"))(rt, this,
-boost::function<#return-type(#(comma-join parameter-types))>
-([this] (#parameters)
-{
-   trace (#port , "#event ");
-   #(if (eq? return-type 'void) "" "auto r = ") #port _#event (#arguments);
-   trace_return (#port , #(if (eq? return-type 'void) "\"return\"" (->string (list reply-type "::" reply-name "::to_string(r)"))));
-   return#(if (eq? return-type 'void) "" " r");
-   }
-));
+#port .#direction .#event  = [&] (#parameters) {
+    #(if (eq? return-type 'void) "" "return ")call_in(this, std::function<#return-type ()>([&] {#(if (eq? return-type 'void) "" "return ")this->#port _#event (#arguments); }), std::make_tuple(&#port , "#event ", "return"));
+};
 #}) (filter gom:in? (gom:events port))))
     (filter gom:provides? (gom:ports model)))#
 (map
     (lambda (port)
       (map (define-on model port #{
-#port .#direction .#event =  [this] (#parameters) {
-trace (#port , "#event ");
-rt.defer (#port .in.meta.address, connect<#return-type >(rt, this,
-boost::function<#return-type()>(
-[=]
-{
- #(if (eq? return-type 'void) "" "auto r = ") #port _#event (#arguments);
- return#(if (eq? return-type 'void) "" " r");
- }
-)));};
+#port .#direction .#event  = [&] (#parameters) {
+    call_out(this, std::function<#return-type ()>([&#comma #arguments] {this->#port _#event (#arguments); }), std::make_tuple(&#port , "#event ", "return"));
+};
 #}) (filter gom:out? (gom:events port))))
     (filter gom:requires? (gom:ports model))) }
 
