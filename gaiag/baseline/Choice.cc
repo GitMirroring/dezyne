@@ -38,7 +38,7 @@ namespace dezyne
   , c({{"Choice","c",this},{0,0,0}})
   {
     c.in.e = [&] () {
-      call_in(this, std::function<void()>([&] {this->c_e(); }), std::make_tuple(&c, "e", "return"));
+      call_in(this, [this] {c_e();}, std::make_tuple(&c, "e", "return"));
     };
   }
 

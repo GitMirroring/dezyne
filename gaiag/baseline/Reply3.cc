@@ -39,7 +39,7 @@ namespace dezyne
   , u({{0,0,0},{"Reply3","u",this}})
   {
     i.in.done = [&] () {
-      return call_in(this, std::function<I::Status::type()>([&] {return this->i_done(); }), std::make_tuple(&i, "done", "return"));
+      return call_in(this, std::function<I::Status::type()>([&] {return i_done();}), std::make_tuple(&i, "done", "return"));
     };
   }
 

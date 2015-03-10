@@ -38,7 +38,7 @@ namespace dezyne
   , i({{"sugar","i",this},{0,0,0}})
   {
     i.in.e = [&] () {
-      call_in(this, std::function<void()>([&] {this->i_e(); }), std::make_tuple(&i, "e", "return"));
+      call_in(this, [this] {i_e();}, std::make_tuple(&i, "e", "return"));
     };
   }
 

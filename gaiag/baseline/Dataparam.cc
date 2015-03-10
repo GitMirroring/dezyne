@@ -39,43 +39,43 @@ namespace dezyne
   , port({{"Dataparam","port",this},{0,0,0}})
   {
     port.in.e0 = [&] () {
-      call_in(this, std::function<void()>([&] {this->port_e0(); }), std::make_tuple(&port, "e0", "return"));
+      call_in(this, [this] {port_e0();}, std::make_tuple(&port, "e0", "return"));
     };
     port.in.e0r = [&] () {
-      return call_in(this, std::function<IDataparam::Status::type()>([&] {return this->port_e0r(); }), std::make_tuple(&port, "e0r", "return"));
+      return call_in(this, std::function<IDataparam::Status::type()>([&] {return port_e0r();}), std::make_tuple(&port, "e0r", "return"));
     };
     port.in.e = [&] (int i) {
-      call_in(this, std::function<void()>([&] {this->port_e(i); }), std::make_tuple(&port, "e", "return"));
+      call_in(this, std::function<void()>([&] {port_e(i);}), std::make_tuple(&port, "e", "return"));
     };
     port.in.er = [&] (int i) {
-      return call_in(this, std::function<IDataparam::Status::type()>([&] {return this->port_er(i); }), std::make_tuple(&port, "er", "return"));
+      return call_in(this, std::function<IDataparam::Status::type()>([&] {return port_er(i);}), std::make_tuple(&port, "er", "return"));
     };
     port.in.eer = [&] (int i, int j) {
-      return call_in(this, std::function<IDataparam::Status::type()>([&] {return this->port_eer(i,j); }), std::make_tuple(&port, "eer", "return"));
+      return call_in(this, std::function<IDataparam::Status::type()>([&] {return port_eer(i,j);}), std::make_tuple(&port, "eer", "return"));
     };
     port.in.eo = [&] (int& i) {
-      call_in(this, std::function<void()>([&] {this->port_eo(i); }), std::make_tuple(&port, "eo", "return"));
+      call_in(this, std::function<void()>([&] {port_eo(i);}), std::make_tuple(&port, "eo", "return"));
     };
     port.in.eoo = [&] (int& i, int& j) {
-      call_in(this, std::function<void()>([&] {this->port_eoo(i,j); }), std::make_tuple(&port, "eoo", "return"));
+      call_in(this, std::function<void()>([&] {port_eoo(i,j);}), std::make_tuple(&port, "eoo", "return"));
     };
     port.in.eio = [&] (int i, int& j) {
-      call_in(this, std::function<void()>([&] {this->port_eio(i,j); }), std::make_tuple(&port, "eio", "return"));
+      call_in(this, std::function<void()>([&] {port_eio(i,j);}), std::make_tuple(&port, "eio", "return"));
     };
     port.in.eio2 = [&] (int& i) {
-      call_in(this, std::function<void()>([&] {this->port_eio2(i); }), std::make_tuple(&port, "eio2", "return"));
+      call_in(this, std::function<void()>([&] {port_eio2(i);}), std::make_tuple(&port, "eio2", "return"));
     };
     port.in.eor = [&] (int& i) {
-      return call_in(this, std::function<IDataparam::Status::type()>([&] {return this->port_eor(i); }), std::make_tuple(&port, "eor", "return"));
+      return call_in(this, std::function<IDataparam::Status::type()>([&] {return port_eor(i);}), std::make_tuple(&port, "eor", "return"));
     };
     port.in.eoor = [&] (int& i, int& j) {
-      return call_in(this, std::function<IDataparam::Status::type()>([&] {return this->port_eoor(i,j); }), std::make_tuple(&port, "eoor", "return"));
+      return call_in(this, std::function<IDataparam::Status::type()>([&] {return port_eoor(i,j);}), std::make_tuple(&port, "eoor", "return"));
     };
     port.in.eior = [&] (int i, int& j) {
-      return call_in(this, std::function<IDataparam::Status::type()>([&] {return this->port_eior(i,j); }), std::make_tuple(&port, "eior", "return"));
+      return call_in(this, std::function<IDataparam::Status::type()>([&] {return port_eior(i,j);}), std::make_tuple(&port, "eior", "return"));
     };
     port.in.eio2r = [&] (int& i) {
-      return call_in(this, std::function<IDataparam::Status::type()>([&] {return this->port_eio2r(i); }), std::make_tuple(&port, "eio2r", "return"));
+      return call_in(this, std::function<IDataparam::Status::type()>([&] {return port_eio2r(i);}), std::make_tuple(&port, "eio2r", "return"));
     };
   }
 

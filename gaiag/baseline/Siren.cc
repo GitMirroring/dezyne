@@ -36,10 +36,10 @@ namespace dezyne
   , siren({{"Siren","siren",this},{0,0,0}})
   {
     siren.in.turnon = [&] () {
-      call_in(this, std::function<void()>([&] {this->siren_turnon(); }), std::make_tuple(&siren, "turnon", "return"));
+      call_in(this, [this] {siren_turnon();}, std::make_tuple(&siren, "turnon", "return"));
     };
     siren.in.turnoff = [&] () {
-      call_in(this, std::function<void()>([&] {this->siren_turnoff(); }), std::make_tuple(&siren, "turnoff", "return"));
+      call_in(this, [this] {siren_turnoff();}, std::make_tuple(&siren, "turnoff", "return"));
     };
   }
 

@@ -38,10 +38,10 @@ namespace dezyne
   , r({{0,0,0},{"incomplete","r",this}})
   {
     p.in.e = [&] () {
-      call_in(this, std::function<void()>([&] {this->p_e(); }), std::make_tuple(&p, "e", "return"));
+      call_in(this, [this] {p_e();}, std::make_tuple(&p, "e", "return"));
     };
     r.out.a = [&] () {
-      call_out(this, std::function<void()>([&] {this->r_a(); }), std::make_tuple(&r, "a", "return"));
+      call_out(this, [this] {r_a();}, std::make_tuple(&r, "a", "return"));
     };
   }
 

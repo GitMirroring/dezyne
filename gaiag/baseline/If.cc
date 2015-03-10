@@ -38,7 +38,7 @@ namespace dezyne
   , i({{"If","i",this},{0,0,0}})
   {
     i.in.a = [&] () {
-      call_in(this, std::function<void()>([&] {this->i_a(); }), std::make_tuple(&i, "a", "return"));
+      call_in(this, [this] {i_a();}, std::make_tuple(&i, "a", "return"));
     };
   }
 

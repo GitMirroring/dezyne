@@ -36,7 +36,7 @@ namespace dezyne
   , log({{"logger","log",this},{0,0,0}})
   {
     log.in.log = [&] () {
-      call_in(this, std::function<void()>([&] {this->log_log(); }), std::make_tuple(&log, "log", "return"));
+      call_in(this, [this] {log_log();}, std::make_tuple(&log, "log", "return"));
     };
   }
 

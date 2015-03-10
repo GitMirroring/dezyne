@@ -39,13 +39,13 @@ namespace dezyne
   , device_A({{0,0,0},{"Comp","device_A",this}})
   {
     client.in.initialize = [&] () {
-      return call_in(this, std::function<IComp::result_t::type()>([&] {return this->client_initialize(); }), std::make_tuple(&client, "initialize", "return"));
+      return call_in(this, std::function<IComp::result_t::type()>([&] {return client_initialize();}), std::make_tuple(&client, "initialize", "return"));
     };
     client.in.recover = [&] () {
-      return call_in(this, std::function<IComp::result_t::type()>([&] {return this->client_recover(); }), std::make_tuple(&client, "recover", "return"));
+      return call_in(this, std::function<IComp::result_t::type()>([&] {return client_recover();}), std::make_tuple(&client, "recover", "return"));
     };
     client.in.perform_actions = [&] () {
-      return call_in(this, std::function<IComp::result_t::type()>([&] {return this->client_perform_actions(); }), std::make_tuple(&client, "perform_actions", "return"));
+      return call_in(this, std::function<IComp::result_t::type()>([&] {return client_perform_actions();}), std::make_tuple(&client, "perform_actions", "return"));
     };
   }
 

@@ -38,7 +38,7 @@ namespace dezyne
   , r({{0,0,0},{"Reply7","r",this}})
   {
     p.in.foo = [&] () {
-      return call_in(this, std::function<IReply7::E::type()>([&] {return this->p_foo(); }), std::make_tuple(&p, "foo", "return"));
+      return call_in(this, std::function<IReply7::E::type()>([&] {return p_foo();}), std::make_tuple(&p, "foo", "return"));
     };
   }
 

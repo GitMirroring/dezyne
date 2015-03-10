@@ -39,10 +39,10 @@ namespace dezyne
   , r({{0,0,0},{"reply_reorder","r",this}})
   {
     p.in.start = [&] () {
-      call_in(this, std::function<void()>([&] {this->p_start(); }), std::make_tuple(&p, "start", "return"));
+      call_in(this, [this] {p_start();}, std::make_tuple(&p, "start", "return"));
     };
     r.out.pong = [&] () {
-      call_out(this, std::function<void()>([&] {this->r_pong(); }), std::make_tuple(&r, "pong", "return"));
+      call_out(this, [this] {r_pong();}, std::make_tuple(&r, "pong", "return"));
     };
   }
 

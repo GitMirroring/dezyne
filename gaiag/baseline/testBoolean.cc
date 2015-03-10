@@ -38,7 +38,7 @@ namespace dezyne
   , i({{"testBoolean","i",this},{0,0,0}})
   {
     i.in.evt = [&] () {
-      call_in(this, std::function<void()>([&] {this->i_evt(); }), std::make_tuple(&i, "evt", "return"));
+      call_in(this, [this] {i_evt();}, std::make_tuple(&i, "evt", "return"));
     };
   }
 

@@ -39,7 +39,7 @@ namespace dezyne
   , port({{"Extern","port",this},{0,0,0}})
   {
     port.in.e = [&] () {
-      call_in(this, std::function<void()>([&] {this->port_e(); }), std::make_tuple(&port, "e", "return"));
+      call_in(this, [this] {port_e();}, std::make_tuple(&port, "e", "return"));
     };
   }
 

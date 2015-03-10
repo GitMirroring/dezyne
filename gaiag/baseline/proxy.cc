@@ -37,55 +37,55 @@ namespace dezyne
   , bottom({{0,0,0},{"proxy","bottom",this}})
   {
     top.in.e0 = [&] () {
-      call_in(this, std::function<void()>([&] {this->top_e0(); }), std::make_tuple(&top, "e0", "return"));
+      call_in(this, [this] {top_e0();}, std::make_tuple(&top, "e0", "return"));
     };
     top.in.e0r = [&] () {
-      return call_in(this, std::function<IDataparam::Status::type()>([&] {return this->top_e0r(); }), std::make_tuple(&top, "e0r", "return"));
+      return call_in(this, std::function<IDataparam::Status::type()>([&] {return top_e0r();}), std::make_tuple(&top, "e0r", "return"));
     };
     top.in.e = [&] (int i) {
-      call_in(this, std::function<void()>([&] {this->top_e(i); }), std::make_tuple(&top, "e", "return"));
+      call_in(this, std::function<void()>([&] {top_e(i);}), std::make_tuple(&top, "e", "return"));
     };
     top.in.er = [&] (int i) {
-      return call_in(this, std::function<IDataparam::Status::type()>([&] {return this->top_er(i); }), std::make_tuple(&top, "er", "return"));
+      return call_in(this, std::function<IDataparam::Status::type()>([&] {return top_er(i);}), std::make_tuple(&top, "er", "return"));
     };
     top.in.eer = [&] (int i, int j) {
-      return call_in(this, std::function<IDataparam::Status::type()>([&] {return this->top_eer(i,j); }), std::make_tuple(&top, "eer", "return"));
+      return call_in(this, std::function<IDataparam::Status::type()>([&] {return top_eer(i,j);}), std::make_tuple(&top, "eer", "return"));
     };
     top.in.eo = [&] (int& i) {
-      call_in(this, std::function<void()>([&] {this->top_eo(i); }), std::make_tuple(&top, "eo", "return"));
+      call_in(this, std::function<void()>([&] {top_eo(i);}), std::make_tuple(&top, "eo", "return"));
     };
     top.in.eoo = [&] (int& i, int& j) {
-      call_in(this, std::function<void()>([&] {this->top_eoo(i,j); }), std::make_tuple(&top, "eoo", "return"));
+      call_in(this, std::function<void()>([&] {top_eoo(i,j);}), std::make_tuple(&top, "eoo", "return"));
     };
     top.in.eio = [&] (int i, int& j) {
-      call_in(this, std::function<void()>([&] {this->top_eio(i,j); }), std::make_tuple(&top, "eio", "return"));
+      call_in(this, std::function<void()>([&] {top_eio(i,j);}), std::make_tuple(&top, "eio", "return"));
     };
     top.in.eio2 = [&] (int& i) {
-      call_in(this, std::function<void()>([&] {this->top_eio2(i); }), std::make_tuple(&top, "eio2", "return"));
+      call_in(this, std::function<void()>([&] {top_eio2(i);}), std::make_tuple(&top, "eio2", "return"));
     };
     top.in.eor = [&] (int& i) {
-      return call_in(this, std::function<IDataparam::Status::type()>([&] {return this->top_eor(i); }), std::make_tuple(&top, "eor", "return"));
+      return call_in(this, std::function<IDataparam::Status::type()>([&] {return top_eor(i);}), std::make_tuple(&top, "eor", "return"));
     };
     top.in.eoor = [&] (int& i, int& j) {
-      return call_in(this, std::function<IDataparam::Status::type()>([&] {return this->top_eoor(i,j); }), std::make_tuple(&top, "eoor", "return"));
+      return call_in(this, std::function<IDataparam::Status::type()>([&] {return top_eoor(i,j);}), std::make_tuple(&top, "eoor", "return"));
     };
     top.in.eior = [&] (int i, int& j) {
-      return call_in(this, std::function<IDataparam::Status::type()>([&] {return this->top_eior(i,j); }), std::make_tuple(&top, "eior", "return"));
+      return call_in(this, std::function<IDataparam::Status::type()>([&] {return top_eior(i,j);}), std::make_tuple(&top, "eior", "return"));
     };
     top.in.eio2r = [&] (int& i) {
-      return call_in(this, std::function<IDataparam::Status::type()>([&] {return this->top_eio2r(i); }), std::make_tuple(&top, "eio2r", "return"));
+      return call_in(this, std::function<IDataparam::Status::type()>([&] {return top_eio2r(i);}), std::make_tuple(&top, "eio2r", "return"));
     };
     bottom.out.a0 = [&] () {
-      call_out(this, std::function<void()>([&] {this->bottom_a0(); }), std::make_tuple(&bottom, "a0", "return"));
+      call_out(this, [this] {bottom_a0();}, std::make_tuple(&bottom, "a0", "return"));
     };
     bottom.out.a = [&] (int i) {
-      call_out(this, std::function<void()>([&,i] {this->bottom_a(i); }), std::make_tuple(&bottom, "a", "return"));
+      call_out(this, std::function<void()>([&,i] {this->bottom_a(i);}) , std::make_tuple(&bottom, "a", "return"));
     };
     bottom.out.aa = [&] (int i, int j) {
-      call_out(this, std::function<void()>([&,i,j] {this->bottom_aa(i,j); }), std::make_tuple(&bottom, "aa", "return"));
+      call_out(this, std::function<void()>([&,i,j] {this->bottom_aa(i,j);}) , std::make_tuple(&bottom, "aa", "return"));
     };
     bottom.out.a6 = [&] (int a0, int a1, int a2, int a3, int a4, int a5) {
-      call_out(this, std::function<void()>([&,a0,a1,a2,a3,a4,a5] {this->bottom_a6(a0,a1,a2,a3,a4,a5); }), std::make_tuple(&bottom, "a6", "return"));
+      call_out(this, std::function<void()>([&,a0,a1,a2,a3,a4,a5] {this->bottom_a6(a0,a1,a2,a3,a4,a5);}) , std::make_tuple(&bottom, "a6", "return"));
     };
   }
 

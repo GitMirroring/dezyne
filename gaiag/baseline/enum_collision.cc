@@ -37,10 +37,10 @@ namespace dezyne
   , i({{"enum_collision","i",this},{0,0,0}})
   {
     i.in.foo = [&] () {
-      return call_in(this, std::function<ienum_collision::Retval1::type()>([&] {return this->i_foo(); }), std::make_tuple(&i, "foo", "return"));
+      return call_in(this, std::function<ienum_collision::Retval1::type()>([&] {return i_foo();}), std::make_tuple(&i, "foo", "return"));
     };
     i.in.bar = [&] () {
-      return call_in(this, std::function<ienum_collision::Retval2::type()>([&] {return this->i_bar(); }), std::make_tuple(&i, "bar", "return"));
+      return call_in(this, std::function<ienum_collision::Retval2::type()>([&] {return i_bar();}), std::make_tuple(&i, "bar", "return"));
     };
   }
 

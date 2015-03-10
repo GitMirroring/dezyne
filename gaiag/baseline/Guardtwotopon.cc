@@ -37,10 +37,10 @@ namespace dezyne
   , i({{"Guardtwotopon","i",this},{0,0,0}})
   {
     i.in.e = [&] () {
-      call_in(this, std::function<void()>([&] {this->i_e(); }), std::make_tuple(&i, "e", "return"));
+      call_in(this, [this] {i_e();}, std::make_tuple(&i, "e", "return"));
     };
     i.in.t = [&] () {
-      call_in(this, std::function<void()>([&] {this->i_t(); }), std::make_tuple(&i, "t", "return"));
+      call_in(this, [this] {i_t();}, std::make_tuple(&i, "t", "return"));
     };
   }
 

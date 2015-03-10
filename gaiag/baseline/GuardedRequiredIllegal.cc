@@ -38,13 +38,13 @@ namespace dezyne
   , b({{0,0,0},{"GuardedRequiredIllegal","b",this}})
   {
     t.in.unguarded = [&] () {
-      call_in(this, std::function<void()>([&] {this->t_unguarded(); }), std::make_tuple(&t, "unguarded", "return"));
+      call_in(this, [this] {t_unguarded();}, std::make_tuple(&t, "unguarded", "return"));
     };
     t.in.e = [&] () {
-      call_in(this, std::function<void()>([&] {this->t_e(); }), std::make_tuple(&t, "e", "return"));
+      call_in(this, [this] {t_e();}, std::make_tuple(&t, "e", "return"));
     };
     b.out.f = [&] () {
-      call_out(this, std::function<void()>([&] {this->b_f(); }), std::make_tuple(&b, "f", "return"));
+      call_out(this, [this] {b_f();}, std::make_tuple(&b, "f", "return"));
     };
   }
 

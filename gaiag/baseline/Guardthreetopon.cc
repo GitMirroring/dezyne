@@ -38,16 +38,16 @@ namespace dezyne
   , r({{0,0,0},{"Guardthreetopon","r",this}})
   {
     i.in.e = [&] () {
-      call_in(this, std::function<void()>([&] {this->i_e(); }), std::make_tuple(&i, "e", "return"));
+      call_in(this, [this] {i_e();}, std::make_tuple(&i, "e", "return"));
     };
     i.in.t = [&] () {
-      call_in(this, std::function<void()>([&] {this->i_t(); }), std::make_tuple(&i, "t", "return"));
+      call_in(this, [this] {i_t();}, std::make_tuple(&i, "t", "return"));
     };
     i.in.s = [&] () {
-      call_in(this, std::function<void()>([&] {this->i_s(); }), std::make_tuple(&i, "s", "return"));
+      call_in(this, [this] {i_s();}, std::make_tuple(&i, "s", "return"));
     };
     r.out.a = [&] () {
-      call_out(this, std::function<void()>([&] {this->r_a(); }), std::make_tuple(&r, "a", "return"));
+      call_out(this, [this] {r_a();}, std::make_tuple(&r, "a", "return"));
     };
   }
 

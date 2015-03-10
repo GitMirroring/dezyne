@@ -40,16 +40,16 @@ namespace dezyne
   , siren({{0,0,0},{"Alarm","siren",this}})
   {
     console.in.arm = [&] () {
-      call_in(this, std::function<void()>([&] {this->console_arm(); }), std::make_tuple(&console, "arm", "return"));
+      call_in(this, [this] {console_arm();}, std::make_tuple(&console, "arm", "return"));
     };
     console.in.disarm = [&] () {
-      call_in(this, std::function<void()>([&] {this->console_disarm(); }), std::make_tuple(&console, "disarm", "return"));
+      call_in(this, [this] {console_disarm();}, std::make_tuple(&console, "disarm", "return"));
     };
     sensor.out.triggered = [&] () {
-      call_out(this, std::function<void()>([&] {this->sensor_triggered(); }), std::make_tuple(&sensor, "triggered", "return"));
+      call_out(this, [this] {sensor_triggered();}, std::make_tuple(&sensor, "triggered", "return"));
     };
     sensor.out.disabled = [&] () {
-      call_out(this, std::function<void()>([&] {this->sensor_disabled(); }), std::make_tuple(&sensor, "disabled", "return"));
+      call_out(this, [this] {sensor_disabled();}, std::make_tuple(&sensor, "disabled", "return"));
     };
   }
 

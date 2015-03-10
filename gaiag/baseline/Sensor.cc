@@ -36,10 +36,10 @@ namespace dezyne
   , sensor({{"Sensor","sensor",this},{0,0,0}})
   {
     sensor.in.enable = [&] () {
-      call_in(this, std::function<void()>([&] {this->sensor_enable(); }), std::make_tuple(&sensor, "enable", "return"));
+      call_in(this, [this] {sensor_enable();}, std::make_tuple(&sensor, "enable", "return"));
     };
     sensor.in.disable = [&] () {
-      call_in(this, std::function<void()>([&] {this->sensor_disable(); }), std::make_tuple(&sensor, "disable", "return"));
+      call_in(this, [this] {sensor_disable();}, std::make_tuple(&sensor, "disable", "return"));
     };
   }
 

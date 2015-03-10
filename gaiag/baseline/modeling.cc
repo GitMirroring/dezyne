@@ -38,10 +38,10 @@ namespace dezyne
   , r({{0,0,0},{"modeling","r",this}})
   {
     p.in.e = [&] () {
-      call_in(this, std::function<void()>([&] {this->p_e(); }), std::make_tuple(&p, "e", "return"));
+      call_in(this, [this] {p_e();}, std::make_tuple(&p, "e", "return"));
     };
     r.out.f = [&] () {
-      call_out(this, std::function<void()>([&] {this->r_f(); }), std::make_tuple(&r, "f", "return"));
+      call_out(this, [this] {r_f();}, std::make_tuple(&r, "f", "return"));
     };
   }
 
