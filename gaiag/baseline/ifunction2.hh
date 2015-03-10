@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
@@ -26,6 +26,8 @@
 #ifndef DEZYNE_IFUNCTION2_HH
 #define DEZYNE_IFUNCTION2_HH
 
+#include "meta.hh"
+
 #include <cassert>
 #include <functional>
 
@@ -38,27 +40,16 @@ namespace dezyne
     {
       std::function<void ()> a;
       std::function<void ()> b;
-
-      struct
-      {
-        const char* component;
-        const char* port;
-        void*       address;
-      } meta;
     } in;
 
     struct
     {
       std::function<void ()> c;
       std::function<void ()> d;
-
-      struct
-      {
-        const char* component;
-        const char* port;
-        void*       address;
-      } meta;
     } out;
+
+    port::meta meta;
+    inline ifunction2(port::meta m) : meta(m) {}
   };
 
   inline void connect (ifunction2& provided, ifunction2& required)
@@ -71,6 +62,8 @@ namespace dezyne
 
     provided.out = required.out;
     required.in = provided.in;
+    provided.meta.requires = required.meta.requires;
+    required.meta.provides = provided.meta.provides;
   }
 
 }

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -25,6 +25,8 @@
 #ifndef DEZYNE_ISIREN_HH
 #define DEZYNE_ISIREN_HH
 
+#include "meta.hh"
+
 #include <cassert>
 #include <functional>
 
@@ -37,25 +39,14 @@ namespace dezyne
     {
       std::function<void ()> turnon;
       std::function<void ()> turnoff;
-
-      struct
-      {
-        const char* component;
-        const char* port;
-        void*       address;
-      } meta;
     } in;
 
     struct
     {
-
-      struct
-      {
-        const char* component;
-        const char* port;
-        void*       address;
-      } meta;
     } out;
+
+    port::meta meta;
+    inline ISiren(port::meta m) : meta(m) {}
   };
 
   inline void connect (ISiren& provided, ISiren& required)
@@ -66,6 +57,8 @@ namespace dezyne
 
     provided.out = required.out;
     required.in = provided.in;
+    provided.meta.requires = required.meta.requires;
+    required.meta.provides = provided.meta.provides;
   }
 
 }

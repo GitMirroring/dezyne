@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
@@ -25,6 +25,8 @@
 
 #ifndef DEZYNE_IENUM_COLLISION_HH
 #define DEZYNE_IENUM_COLLISION_HH
+
+#include "meta.hh"
 
 #include <cassert>
 #include <functional>
@@ -52,25 +54,14 @@ namespace dezyne
     {
       std::function<Retval1::type ()> foo;
       std::function<Retval2::type ()> bar;
-
-      struct
-      {
-        const char* component;
-        const char* port;
-        void*       address;
-      } meta;
     } in;
 
     struct
     {
-
-      struct
-      {
-        const char* component;
-        const char* port;
-        void*       address;
-      } meta;
     } out;
+
+    port::meta meta;
+    inline ienum_collision(port::meta m) : meta(m) {}
   };
 
   inline void connect (ienum_collision& provided, ienum_collision& required)
@@ -81,6 +72,8 @@ namespace dezyne
 
     provided.out = required.out;
     required.in = provided.in;
+    provided.meta.requires = required.meta.requires;
+    required.meta.provides = provided.meta.provides;
   }
   inline const char* to_string(ienum_collision::Retval1::type v)
   {

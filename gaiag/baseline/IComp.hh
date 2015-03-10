@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
@@ -26,6 +26,8 @@
 #ifndef DEZYNE_ICOMP_HH
 #define DEZYNE_ICOMP_HH
 
+#include "meta.hh"
+
 #include <cassert>
 #include <functional>
 
@@ -46,25 +48,14 @@ namespace dezyne
       std::function<result_t::type ()> initialize;
       std::function<result_t::type ()> recover;
       std::function<result_t::type ()> perform_actions;
-
-      struct
-      {
-        const char* component;
-        const char* port;
-        void*       address;
-      } meta;
     } in;
 
     struct
     {
-
-      struct
-      {
-        const char* component;
-        const char* port;
-        void*       address;
-      } meta;
     } out;
+
+    port::meta meta;
+    inline IComp(port::meta m) : meta(m) {}
   };
 
   inline void connect (IComp& provided, IComp& required)
@@ -76,6 +67,8 @@ namespace dezyne
 
     provided.out = required.out;
     required.in = provided.in;
+    provided.meta.requires = required.meta.requires;
+    required.meta.provides = provided.meta.provides;
   }
   inline const char* to_string(IComp::result_t::type v)
   {

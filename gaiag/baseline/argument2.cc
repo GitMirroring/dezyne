@@ -35,12 +35,8 @@ namespace dezyne
   argument2::argument2(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , b(false)
-  , i()
+  , i({{"argument2","i",this},{0,0,0}})
   {
-    i.in.meta.component = "argument2";
-    i.in.meta.port = "i";
-    i.in.meta.address = this;
-
     i.in.e = [&] () {
       call_in(this, std::function<void()>([&] {this->i_e(); }), std::make_tuple(&i, "e", "return"));
     };

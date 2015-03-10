@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
@@ -35,12 +35,8 @@ namespace dezyne
   imperative::imperative(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , state(States::I)
-  , i()
+  , i({{"imperative","i",this},{0,0,0}})
   {
-    i.in.meta.component = "imperative";
-    i.in.meta.port = "i";
-    i.in.meta.address = this;
-
     i.in.e = [&] () {
       call_in(this, std::function<void()>([&] {this->i_e(); }), std::make_tuple(&i, "e", "return"));
     };

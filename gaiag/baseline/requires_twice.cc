@@ -34,20 +34,10 @@ namespace dezyne
 {
   requires_twice::requires_twice(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
-  , p()
-  , once()
-  , twice()
+  , p({{"requires_twice","p",this},{0,0,0}})
+  , once({{0,0,0},{"requires_twice","once",this}})
+  , twice({{0,0,0},{"requires_twice","twice",this}})
   {
-    p.in.meta.component = "requires_twice";
-    p.in.meta.port = "p";
-    p.in.meta.address = this;
-    once.out.meta.component = "requires_twice";
-    once.out.meta.port = "once";
-    once.out.meta.address = this;
-    twice.out.meta.component = "requires_twice";
-    twice.out.meta.port = "twice";
-    twice.out.meta.address = this;
-
     p.in.e = [&] () {
       call_in(this, std::function<void()>([&] {this->p_e(); }), std::make_tuple(&p, "e", "return"));
     };

@@ -35,16 +35,9 @@ namespace dezyne
   reply_reorder::reply_reorder(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , first(true)
-  , p()
-  , r()
+  , p({{"reply_reorder","p",this},{0,0,0}})
+  , r({{0,0,0},{"reply_reorder","r",this}})
   {
-    p.in.meta.component = "reply_reorder";
-    p.in.meta.port = "p";
-    p.in.meta.address = this;
-    r.out.meta.component = "reply_reorder";
-    r.out.meta.port = "r";
-    r.out.meta.address = this;
-
     p.in.start = [&] () {
       call_in(this, std::function<void()>([&] {this->p_start(); }), std::make_tuple(&p, "start", "return"));
     };

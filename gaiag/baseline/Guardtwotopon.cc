@@ -34,12 +34,8 @@ namespace dezyne
   Guardtwotopon::Guardtwotopon(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , b(false)
-  , i()
+  , i({{"Guardtwotopon","i",this},{0,0,0}})
   {
-    i.in.meta.component = "Guardtwotopon";
-    i.in.meta.port = "i";
-    i.in.meta.address = this;
-
     i.in.e = [&] () {
       call_in(this, std::function<void()>([&] {this->i_e(); }), std::make_tuple(&i, "e", "return"));
     };

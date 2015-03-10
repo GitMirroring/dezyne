@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
@@ -25,6 +25,8 @@
 
 #ifndef DEZYNE_IDATAPARAM_HH
 #define DEZYNE_IDATAPARAM_HH
+
+#include "meta.hh"
 
 #include <cassert>
 #include <functional>
@@ -56,13 +58,6 @@ namespace dezyne
       std::function<Status::type (int& i, int& j)> eoor;
       std::function<Status::type (int i, int& j)> eior;
       std::function<Status::type (int& i)> eio2r;
-
-      struct
-      {
-        const char* component;
-        const char* port;
-        void*       address;
-      } meta;
     } in;
 
     struct
@@ -71,14 +66,10 @@ namespace dezyne
       std::function<void (int i)> a;
       std::function<void (int i, int j)> aa;
       std::function<void (int a0, int a1, int a2, int a3, int a4, int a5)> a6;
-
-      struct
-      {
-        const char* component;
-        const char* port;
-        void*       address;
-      } meta;
     } out;
+
+    port::meta meta;
+    inline IDataparam(port::meta m) : meta(m) {}
   };
 
   inline void connect (IDataparam& provided, IDataparam& required)
@@ -104,6 +95,8 @@ namespace dezyne
 
     provided.out = required.out;
     required.in = provided.in;
+    provided.meta.requires = required.meta.requires;
+    required.meta.provides = provided.meta.provides;
   }
   inline const char* to_string(IDataparam::Status::type v)
   {

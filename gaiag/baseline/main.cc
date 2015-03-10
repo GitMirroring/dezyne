@@ -2,7 +2,7 @@
 //
 // This file is part of Gaiag.
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
@@ -37,9 +37,6 @@ int main()
 
   dezyne::Main m(l);
 
-  m.runner.out.meta.component = "main";
-  m.runner.out.meta.port = "runner";
-  m.runner.out.meta.address = 0;
-
+  m.runner.meta.requires = {"main","runner",0};
   m.runner.in.run();
 }

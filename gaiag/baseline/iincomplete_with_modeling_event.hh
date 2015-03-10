@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
@@ -26,6 +26,8 @@
 #ifndef DEZYNE_IINCOMPLETE_WITH_MODELING_EVENT_HH
 #define DEZYNE_IINCOMPLETE_WITH_MODELING_EVENT_HH
 
+#include "meta.hh"
+
 #include <cassert>
 #include <functional>
 
@@ -37,26 +39,15 @@ namespace dezyne
     struct
     {
       std::function<void ()> e;
-
-      struct
-      {
-        const char* component;
-        const char* port;
-        void*       address;
-      } meta;
     } in;
 
     struct
     {
       std::function<void ()> a;
-
-      struct
-      {
-        const char* component;
-        const char* port;
-        void*       address;
-      } meta;
     } out;
+
+    port::meta meta;
+    inline iincomplete_with_modeling_event(port::meta m) : meta(m) {}
   };
 
   inline void connect (iincomplete_with_modeling_event& provided, iincomplete_with_modeling_event& required)
@@ -67,6 +58,8 @@ namespace dezyne
 
     provided.out = required.out;
     required.in = provided.in;
+    provided.meta.requires = required.meta.requires;
+    required.meta.provides = provided.meta.provides;
   }
 
 }

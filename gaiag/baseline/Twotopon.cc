@@ -34,12 +34,8 @@ namespace dezyne
   Twotopon::Twotopon(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , b(false)
-  , i()
+  , i({{"Twotopon","i",this},{0,0,0}})
   {
-    i.in.meta.component = "Twotopon";
-    i.in.meta.port = "i";
-    i.in.meta.address = this;
-
     i.in.e = [&] () {
       call_in(this, std::function<void()>([&] {this->i_e(); }), std::make_tuple(&i, "e", "return"));
     };

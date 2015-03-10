@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
@@ -36,12 +36,8 @@ namespace dezyne
   : rt(dezyne_locator.get<runtime>())
   , i(0)
   , j()
-  , port()
+  , port({{"Extern","port",this},{0,0,0}})
   {
-    port.in.meta.component = "Extern";
-    port.in.meta.port = "port";
-    port.in.meta.address = this;
-
     port.in.e = [&] () {
       call_in(this, std::function<void()>([&] {this->port_e(); }), std::make_tuple(&port, "e", "return"));
     };

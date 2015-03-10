@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
@@ -26,6 +26,8 @@
 #ifndef DEZYNE_IREPLY7_HH
 #define DEZYNE_IREPLY7_HH
 
+#include "meta.hh"
+
 #include <cassert>
 #include <functional>
 
@@ -44,25 +46,14 @@ namespace dezyne
     struct
     {
       std::function<E::type ()> foo;
-
-      struct
-      {
-        const char* component;
-        const char* port;
-        void*       address;
-      } meta;
     } in;
 
     struct
     {
-
-      struct
-      {
-        const char* component;
-        const char* port;
-        void*       address;
-      } meta;
     } out;
+
+    port::meta meta;
+    inline IReply7(port::meta m) : meta(m) {}
   };
 
   inline void connect (IReply7& provided, IReply7& required)
@@ -72,6 +63,8 @@ namespace dezyne
 
     provided.out = required.out;
     required.in = provided.in;
+    provided.meta.requires = required.meta.requires;
+    required.meta.provides = provided.meta.provides;
   }
   inline const char* to_string(IReply7::E::type v)
   {

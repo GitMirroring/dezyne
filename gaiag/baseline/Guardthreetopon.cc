@@ -34,16 +34,9 @@ namespace dezyne
   Guardthreetopon::Guardthreetopon(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , b(false)
-  , i()
-  , r()
+  , i({{"Guardthreetopon","i",this},{0,0,0}})
+  , r({{0,0,0},{"Guardthreetopon","r",this}})
   {
-    i.in.meta.component = "Guardthreetopon";
-    i.in.meta.port = "i";
-    i.in.meta.address = this;
-    r.out.meta.component = "Guardthreetopon";
-    r.out.meta.port = "r";
-    r.out.meta.address = this;
-
     i.in.e = [&] () {
       call_in(this, std::function<void()>([&] {this->i_e(); }), std::make_tuple(&i, "e", "return"));
     };

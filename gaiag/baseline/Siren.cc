@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -33,12 +33,8 @@ namespace dezyne
 {
   Siren::Siren(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
-  , siren()
+  , siren({{"Siren","siren",this},{0,0,0}})
   {
-    siren.in.meta.component = "Siren";
-    siren.in.meta.port = "siren";
-    siren.in.meta.address = this;
-
     siren.in.turnon = [&] () {
       call_in(this, std::function<void()>([&] {this->siren_turnon(); }), std::make_tuple(&siren, "turnon", "return"));
     };

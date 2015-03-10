@@ -34,16 +34,9 @@ namespace dezyne
 {
   complete::complete(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
-  , p()
-  , r()
+  , p({{"complete","p",this},{0,0,0}})
+  , r({{0,0,0},{"complete","r",this}})
   {
-    p.in.meta.component = "complete";
-    p.in.meta.port = "p";
-    p.in.meta.address = this;
-    r.out.meta.component = "complete";
-    r.out.meta.port = "r";
-    r.out.meta.address = this;
-
     p.in.e = [&] () {
       call_in(this, std::function<void()>([&] {this->p_e(); }), std::make_tuple(&p, "e", "return"));
     };

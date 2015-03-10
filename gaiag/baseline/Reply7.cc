@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
@@ -34,16 +34,9 @@ namespace dezyne
 {
   Reply7::Reply7(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
-  , p()
-  , r()
+  , p({{"Reply7","p",this},{0,0,0}})
+  , r({{0,0,0},{"Reply7","r",this}})
   {
-    p.in.meta.component = "Reply7";
-    p.in.meta.port = "p";
-    p.in.meta.address = this;
-    r.out.meta.component = "Reply7";
-    r.out.meta.port = "r";
-    r.out.meta.address = this;
-
     p.in.foo = [&] () {
       return call_in(this, std::function<IReply7::E::type()>([&] {return this->p_foo(); }), std::make_tuple(&p, "foo", "return"));
     };

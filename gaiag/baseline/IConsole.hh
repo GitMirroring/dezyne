@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -25,6 +25,8 @@
 #ifndef DEZYNE_ICONSOLE_HH
 #define DEZYNE_ICONSOLE_HH
 
+#include "meta.hh"
+
 #include <cassert>
 #include <functional>
 
@@ -37,27 +39,16 @@ namespace dezyne
     {
       std::function<void ()> arm;
       std::function<void ()> disarm;
-
-      struct
-      {
-        const char* component;
-        const char* port;
-        void*       address;
-      } meta;
     } in;
 
     struct
     {
       std::function<void ()> detected;
       std::function<void ()> deactivated;
-
-      struct
-      {
-        const char* component;
-        const char* port;
-        void*       address;
-      } meta;
     } out;
+
+    port::meta meta;
+    inline IConsole(port::meta m) : meta(m) {}
   };
 
   inline void connect (IConsole& provided, IConsole& required)
@@ -70,6 +61,8 @@ namespace dezyne
 
     provided.out = required.out;
     required.in = provided.in;
+    provided.meta.requires = required.meta.requires;
+    required.meta.provides = provided.meta.provides;
   }
 
 }

@@ -25,40 +25,26 @@
 #ifndef RUNTIME_HH
 #define RUNTIME_HH
 
+#include "meta.hh"
+
 #include <functional>
-#include <iostream>
 #include <map>
 #include <queue>
 #include <tuple>
 
 namespace dezyne
 {
-  struct trace_data
-  {
-    const char* call;
-    const char* reply;
-  };
-
-  template <typename T>
-  void trace(const T& t, const char* e)
-  {
-    std::clog << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << e << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << e << std::endl;
-  }
-
-  template <typename T>
-  void trace_return(const T& t, const char* e)
-  {
-    std::clog << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << e << " -> " << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << e << std::endl ;
-  }
+  void trace_in(port::meta const& m, const char* e);
+  void trace_out(port::meta const& m, const char* e);
 
   struct component;
 
   struct meta
   {
-    std::vector<const component*> children;
-    const component* parent;
-    const component* address;
     const char* name;
+    const component* address;
+    const component* parent;
+    std::vector<const component*> children;
   };
 
   struct component
@@ -123,25 +109,25 @@ namespace dezyne
   template <typename C, typename P>
   void call_in(C* c, std::function<void()> f, std::tuple<P*, const char*, const char*> m)
   {
-    trace(*std::get<0>(m), std::get<1>(m));
+    trace_in(std::get<0>(m)->meta, std::get<1>(m));
     c->rt.handle(c, f);
-    trace_return(*std::get<0>(m), std::get<2>(m) ? std::get<2>(m) : "return");
+    trace_out(std::get<0>(m)->meta, std::get<2>(m) ? std::get<2>(m) : "return");
   }
 
   template <typename R, typename C, typename P>
   R call_in(C* c, std::function<R()> f, std::tuple<P*, const char*, const char*> m)
   {
-    trace(*std::get<0>(m), std::get<1>(m));
+    trace_in(std::get<0>(m)->meta, std::get<1>(m));
     auto r = c->rt.valued_helper(c, f);
-    trace_return(*std::get<0>(m), to_string (r));
+    trace_out(std::get<0>(m)->meta, to_string (r));
     return r;
   }
 
   template <typename C, typename P>
-  void call_out(C* c, std::function<void()> l, std::tuple<P*, const char*, const char*> m)
+  void call_out(C* c, std::function<void()> f, std::tuple<P*, const char*, const char*> m)
   {
-    trace_return(*std::get<0>(m), std::get<1>(m));
-    c->rt.defer(std::get<0>(m)->in.meta.address, [=]{c->rt.handle(c, l);});
+    trace_out(std::get<0>(m)->meta, std::get<1>(m));
+    c->rt.defer(std::get<0>(m)->meta.provides.address, [=]{c->rt.handle(c, f);});
   }
 }
 #endif

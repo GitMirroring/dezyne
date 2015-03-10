@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -25,6 +26,8 @@
 #ifndef DEZYNE_IRUN_HH
 #define DEZYNE_IRUN_HH
 
+#include "meta.hh"
+
 #include <cassert>
 #include <functional>
 
@@ -36,25 +39,14 @@ namespace dezyne
     struct
     {
       std::function<void ()> run;
-
-      struct
-      {
-        const char* component;
-        const char* port;
-        void*       address;
-      } meta;
     } in;
 
     struct
     {
-
-      struct
-      {
-        const char* component;
-        const char* port;
-        void*       address;
-      } meta;
     } out;
+
+    port::meta meta;
+    inline IRun(port::meta m) : meta(m) {}
   };
 
   inline void connect (IRun& provided, IRun& required)
@@ -64,6 +56,8 @@ namespace dezyne
 
     provided.out = required.out;
     required.in = provided.in;
+    provided.meta.requires = required.meta.requires;
+    required.meta.provides = provided.meta.provides;
   }
 
 }

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -27,7 +27,7 @@
 namespace dezyne
 {
   AlarmSystem::AlarmSystem(const dezyne::locator& dezyne_locator)
-  : meta{{reinterpret_cast<component*>(&alarm),reinterpret_cast<component*>(&sensor),reinterpret_cast<component*>(&siren)}, 0, reinterpret_cast<component*>(this), ""}
+  : meta{"",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&alarm),reinterpret_cast<component*>(&sensor),reinterpret_cast<component*>(&siren)}}
   , alarm(dezyne_locator)
   , sensor(dezyne_locator)
   , siren(dezyne_locator)

@@ -34,16 +34,9 @@ namespace dezyne
 {
   incomplete::incomplete(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
-  , p()
-  , r()
+  , p({{"incomplete","p",this},{0,0,0}})
+  , r({{0,0,0},{"incomplete","r",this}})
   {
-    p.in.meta.component = "incomplete";
-    p.in.meta.port = "p";
-    p.in.meta.address = this;
-    r.out.meta.component = "incomplete";
-    r.out.meta.port = "r";
-    r.out.meta.address = this;
-
     p.in.e = [&] () {
       call_in(this, std::function<void()>([&] {this->p_e(); }), std::make_tuple(&p, "e", "return"));
     };

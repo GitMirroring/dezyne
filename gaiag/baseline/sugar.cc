@@ -35,12 +35,8 @@ namespace dezyne
   sugar::sugar(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , s(Enum::False)
-  , i()
+  , i({{"sugar","i",this},{0,0,0}})
   {
-    i.in.meta.component = "sugar";
-    i.in.meta.port = "i";
-    i.in.meta.address = this;
-
     i.in.e = [&] () {
       call_in(this, std::function<void()>([&] {this->i_e(); }), std::make_tuple(&i, "e", "return"));
     };

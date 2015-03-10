@@ -35,12 +35,8 @@ namespace dezyne
   If::If(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , t(false)
-  , i()
+  , i({{"If","i",this},{0,0,0}})
   {
-    i.in.meta.component = "If";
-    i.in.meta.port = "i";
-    i.in.meta.address = this;
-
     i.in.a = [&] () {
       call_in(this, std::function<void()>([&] {this->i_a(); }), std::make_tuple(&i, "a", "return"));
     };

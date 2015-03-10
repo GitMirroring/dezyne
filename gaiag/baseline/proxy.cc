@@ -33,16 +33,9 @@ namespace dezyne
 {
   proxy::proxy(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
-  , top()
-  , bottom()
+  , top({{"proxy","top",this},{0,0,0}})
+  , bottom({{0,0,0},{"proxy","bottom",this}})
   {
-    top.in.meta.component = "proxy";
-    top.in.meta.port = "top";
-    top.in.meta.address = this;
-    bottom.out.meta.component = "proxy";
-    bottom.out.meta.port = "bottom";
-    bottom.out.meta.address = this;
-
     top.in.e0 = [&] () {
       call_in(this, std::function<void()>([&] {this->top_e0(); }), std::make_tuple(&top, "e0", "return"));
     };

@@ -33,12 +33,8 @@ namespace dezyne
 {
   bottom::bottom(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
-  , b()
+  , b({{"bottom","b",this},{0,0,0}})
   {
-    b.in.meta.component = "bottom";
-    b.in.meta.port = "b";
-    b.in.meta.address = this;
-
     b.in.e = [&] () {
       call_in(this, std::function<void()>([&] {this->b_e(); }), std::make_tuple(&b, "e", "return"));
     };

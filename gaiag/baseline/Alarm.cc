@@ -35,20 +35,10 @@ namespace dezyne
   : rt(dezyne_locator.get<runtime>())
   , state(States::Disarmed)
   , sounding(false)
-  , console()
-  , sensor()
-  , siren()
+  , console({{"Alarm","console",this},{0,0,0}})
+  , sensor({{0,0,0},{"Alarm","sensor",this}})
+  , siren({{0,0,0},{"Alarm","siren",this}})
   {
-    console.in.meta.component = "Alarm";
-    console.in.meta.port = "console";
-    console.in.meta.address = this;
-    sensor.out.meta.component = "Alarm";
-    sensor.out.meta.port = "sensor";
-    sensor.out.meta.address = this;
-    siren.out.meta.component = "Alarm";
-    siren.out.meta.port = "siren";
-    siren.out.meta.address = this;
-
     console.in.arm = [&] () {
       call_in(this, std::function<void()>([&] {this->console_arm(); }), std::make_tuple(&console, "arm", "return"));
     };

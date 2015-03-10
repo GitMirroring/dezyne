@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
@@ -34,16 +34,9 @@ namespace dezyne
 {
   modeling::modeling(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
-  , p()
-  , r()
+  , p({{"modeling","p",this},{0,0,0}})
+  , r({{0,0,0},{"modeling","r",this}})
   {
-    p.in.meta.component = "modeling";
-    p.in.meta.port = "p";
-    p.in.meta.address = this;
-    r.out.meta.component = "modeling";
-    r.out.meta.port = "r";
-    r.out.meta.address = this;
-
     p.in.e = [&] () {
       call_in(this, std::function<void()>([&] {this->p_e(); }), std::make_tuple(&p, "e", "return"));
     };

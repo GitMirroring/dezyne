@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
@@ -35,12 +35,8 @@ namespace dezyne
   testBoolean::testBoolean(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , b(false)
-  , i()
+  , i({{"testBoolean","i",this},{0,0,0}})
   {
-    i.in.meta.component = "testBoolean";
-    i.in.meta.port = "i";
-    i.in.meta.address = this;
-
     i.in.evt = [&] () {
       call_in(this, std::function<void()>([&] {this->i_evt(); }), std::make_tuple(&i, "evt", "return"));
     };

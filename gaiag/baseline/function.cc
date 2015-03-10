@@ -35,12 +35,8 @@ namespace dezyne
   function::function(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , f(false)
-  , i()
+  , i({{"function","i",this},{0,0,0}})
   {
-    i.in.meta.component = "function";
-    i.in.meta.port = "i";
-    i.in.meta.address = this;
-
     i.in.a = [&] () {
       call_in(this, std::function<void()>([&] {this->i_a(); }), std::make_tuple(&i, "a", "return"));
     };

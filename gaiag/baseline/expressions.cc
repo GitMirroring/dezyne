@@ -36,12 +36,8 @@ namespace dezyne
   : rt(dezyne_locator.get<runtime>())
   , state(3)
   , c(0)
-  , i()
+  , i({{"expressions","i",this},{0,0,0}})
   {
-    i.in.meta.component = "expressions";
-    i.in.meta.port = "i";
-    i.in.meta.address = this;
-
     i.in.e = [&] () {
       call_in(this, std::function<void()>([&] {this->i_e(); }), std::make_tuple(&i, "e", "return"));
     };

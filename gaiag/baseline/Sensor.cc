@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -33,12 +33,8 @@ namespace dezyne
 {
   Sensor::Sensor(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
-  , sensor()
+  , sensor({{"Sensor","sensor",this},{0,0,0}})
   {
-    sensor.in.meta.component = "Sensor";
-    sensor.in.meta.port = "sensor";
-    sensor.in.meta.address = this;
-
     sensor.in.enable = [&] () {
       call_in(this, std::function<void()>([&] {this->sensor_enable(); }), std::make_tuple(&sensor, "enable", "return"));
     };

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
@@ -34,12 +34,8 @@ namespace dezyne
 {
   enum_collision::enum_collision(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
-  , i()
+  , i({{"enum_collision","i",this},{0,0,0}})
   {
-    i.in.meta.component = "enum_collision";
-    i.in.meta.port = "i";
-    i.in.meta.address = this;
-
     i.in.foo = [&] () {
       return call_in(this, std::function<ienum_collision::Retval1::type()>([&] {return this->i_foo(); }), std::make_tuple(&i, "foo", "return"));
     };

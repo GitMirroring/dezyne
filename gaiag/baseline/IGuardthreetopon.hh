@@ -25,6 +25,8 @@
 #ifndef DEZYNE_IGUARDTHREETOPON_HH
 #define DEZYNE_IGUARDTHREETOPON_HH
 
+#include "meta.hh"
+
 #include <cassert>
 #include <functional>
 
@@ -38,26 +40,15 @@ namespace dezyne
       std::function<void ()> e;
       std::function<void ()> t;
       std::function<void ()> s;
-
-      struct
-      {
-        const char* component;
-        const char* port;
-        void*       address;
-      } meta;
     } in;
 
     struct
     {
       std::function<void ()> a;
-
-      struct
-      {
-        const char* component;
-        const char* port;
-        void*       address;
-      } meta;
     } out;
+
+    port::meta meta;
+    inline IGuardthreetopon(port::meta m) : meta(m) {}
   };
 
   inline void connect (IGuardthreetopon& provided, IGuardthreetopon& required)
@@ -70,6 +61,8 @@ namespace dezyne
 
     provided.out = required.out;
     required.in = provided.in;
+    provided.meta.requires = required.meta.requires;
+    required.meta.provides = provided.meta.provides;
   }
 
 }

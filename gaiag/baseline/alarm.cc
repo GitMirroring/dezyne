@@ -27,17 +27,16 @@
 #include "locator.hh"
 #include "runtime.hh"
 
-#include <map>
-#include <queue>
+#include <iostream>
 
 void detected()
 {
-  std::cout << "Console.detected" << std::endl;
+  std::clog << "Console.detected" << std::endl;
 }
 
 void deactivated()
 {
-  std::cout << "Console.deactivated" << std::endl;
+  std::clog << "Console.deactivated" << std::endl;
 }
 
 int main()
@@ -46,9 +45,8 @@ int main()
   dezyne::locator locator;
   dezyne::AlarmSystem alarmsystem(locator.set(runtime));
 
-  alarmsystem.console.out.meta.component = "main";
-  alarmsystem.console.out.meta.port = "console";
-  alarmsystem.console.out.meta.address = 0;
+  alarmsystem.meta = {"alarmsystem",0,0,{}};
+  alarmsystem.console.meta.requires = {"main","console",0};
 
   alarmsystem.console.out.detected = detected;
   alarmsystem.console.out.deactivated = deactivated;

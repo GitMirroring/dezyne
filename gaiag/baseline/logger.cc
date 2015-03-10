@@ -33,12 +33,8 @@ namespace dezyne
 {
   logger::logger(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
-  , log()
+  , log({{"logger","log",this},{0,0,0}})
   {
-    log.in.meta.component = "logger";
-    log.in.meta.port = "log";
-    log.in.meta.address = this;
-
     log.in.log = [&] () {
       call_in(this, std::function<void()>([&] {this->log_log(); }), std::make_tuple(&log, "log", "return"));
     };

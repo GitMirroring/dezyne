@@ -24,9 +24,21 @@
 #include "runtime.hh"
 
 #include <algorithm>
+#include <iostream>
 
 namespace dezyne {
+
 runtime::runtime(){}
+
+void trace_in(port::meta const& m, const char* e)
+{
+  std::clog << m.requires.address << ":" << m.requires.component << "." << m.requires.port << "." << e << " -> " << m.provides.address << ":" << m.provides.component << "." << m.provides.port << "." << e << std::endl;
+}
+
+void trace_out(port::meta const& m, const char* e)
+{
+  std::clog << m.provides.address << ":" << m.provides.component << "." << m.provides.port << "." << e << " -> " << m.requires.address << ":" << m.requires.component << "." << m.requires.port << "." << e << std::endl ;
+}
 
 bool& runtime::handling(void* scope)
 {
@@ -62,7 +74,7 @@ void runtime::defer(void* scope, const std::function<void()>& event)
   }
 }
 
-  void runtime::handle(void* scope, const std::function<void()>& event)
+void runtime::handle(void* scope, const std::function<void()>& event)
 {
   bool& handle = handling(scope);
   if(not handle)

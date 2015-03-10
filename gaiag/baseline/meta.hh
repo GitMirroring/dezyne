@@ -1,8 +1,5 @@
 // Dezyne --- Dezyne command line tools
-//
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -23,43 +20,29 @@
 //
 // Code:
 
-#include "Choice.hh"
-
-#include "locator.hh"
-#include "runtime.hh"
-
-#include <iostream>
+#ifndef META_HH
+#define META_HH
 
 namespace dezyne
 {
-  Choice::Choice(const locator& dezyne_locator)
-  : rt(dezyne_locator.get<runtime>())
-  , s(State::Off)
-  , c({{"Choice","c",this},{0,0,0}})
+  namespace port
   {
-    c.in.e = [&] () {
-      call_in(this, std::function<void()>([&] {this->c_e(); }), std::make_tuple(&c, "e", "return"));
+    struct meta
+    {
+      struct
+      {
+        const char* component;
+        const char* port;
+        void*       address;
+      } provides;
+
+      struct
+      {
+        const char* component;
+        const char* port;
+        void*       address;
+      } requires;
     };
   }
-
-  void Choice::c_e()
-  {
-    if (s == State::Off)
-    {
-      s = State::Idle;
-      c.out.a();
-    }
-    else if (s == State::Idle)
-    {
-      s = State::Busy;
-      c.out.a();
-    }
-    else if (s == State::Busy)
-    {
-      s = State::Idle;
-      c.out.a();
-    }
-  }
-
-
 }
+#endif

@@ -25,6 +25,8 @@
 #ifndef DEZYNE_BOTTOM_HH
 #define DEZYNE_BOTTOM_HH
 
+#include "meta.hh"
+
 #include <cassert>
 #include <functional>
 
@@ -36,26 +38,15 @@ namespace dezyne
     struct
     {
       std::function<void ()> e;
-
-      struct
-      {
-        const char* component;
-        const char* port;
-        void*       address;
-      } meta;
     } in;
 
     struct
     {
       std::function<void ()> f;
-
-      struct
-      {
-        const char* component;
-        const char* port;
-        void*       address;
-      } meta;
     } out;
+
+    port::meta meta;
+    inline Bottom(port::meta m) : meta(m) {}
   };
 
   inline void connect (Bottom& provided, Bottom& required)
@@ -66,6 +57,8 @@ namespace dezyne
 
     provided.out = required.out;
     required.in = provided.in;
+    provided.meta.requires = required.meta.requires;
+    required.meta.provides = provided.meta.provides;
   }
 
 }

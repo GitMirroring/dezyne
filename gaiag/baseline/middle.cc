@@ -33,20 +33,10 @@ namespace dezyne
 {
   middle::middle(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
-  , t()
-  , b()
+  , t({{"middle","t",this},{0,0,0}})
+  , b({{0,0,0},{"middle","b",this}})
   , l(dezyne_locator.get<ilogger>())
   {
-    t.in.meta.component = "middle";
-    t.in.meta.port = "t";
-    t.in.meta.address = this;
-    b.out.meta.component = "middle";
-    b.out.meta.port = "b";
-    b.out.meta.address = this;
-    l.out.meta.component = "middle";
-    l.out.meta.port = "l";
-    l.out.meta.address = this;
-
     t.in.e = [&] () {
       call_in(this, std::function<void()>([&] {this->t_e(); }), std::make_tuple(&t, "e", "return"));
     };

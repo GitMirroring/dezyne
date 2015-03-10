@@ -34,16 +34,9 @@ namespace dezyne
   GuardedRequiredIllegal::GuardedRequiredIllegal(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , c(false)
-  , t()
-  , b()
+  , t({{"GuardedRequiredIllegal","t",this},{0,0,0}})
+  , b({{0,0,0},{"GuardedRequiredIllegal","b",this}})
   {
-    t.in.meta.component = "GuardedRequiredIllegal";
-    t.in.meta.port = "t";
-    t.in.meta.address = this;
-    b.out.meta.component = "GuardedRequiredIllegal";
-    b.out.meta.port = "b";
-    b.out.meta.address = this;
-
     t.in.unguarded = [&] () {
       call_in(this, std::function<void()>([&] {this->t_unguarded(); }), std::make_tuple(&t, "unguarded", "return"));
     };

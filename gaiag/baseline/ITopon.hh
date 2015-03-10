@@ -25,6 +25,8 @@
 #ifndef DEZYNE_ITOPON_HH
 #define DEZYNE_ITOPON_HH
 
+#include "meta.hh"
+
 #include <cassert>
 #include <functional>
 
@@ -37,26 +39,15 @@ namespace dezyne
     {
       std::function<void ()> e;
       std::function<void ()> t;
-
-      struct
-      {
-        const char* component;
-        const char* port;
-        void*       address;
-      } meta;
     } in;
 
     struct
     {
       std::function<void ()> a;
-
-      struct
-      {
-        const char* component;
-        const char* port;
-        void*       address;
-      } meta;
     } out;
+
+    port::meta meta;
+    inline ITopon(port::meta m) : meta(m) {}
   };
 
   inline void connect (ITopon& provided, ITopon& required)
@@ -68,6 +59,8 @@ namespace dezyne
 
     provided.out = required.out;
     required.in = provided.in;
+    provided.meta.requires = required.meta.requires;
+    required.meta.provides = provided.meta.provides;
   }
 
 }
