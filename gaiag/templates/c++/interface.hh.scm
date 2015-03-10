@@ -1,6 +1,8 @@
 ##ifndef DEZYNE_#.INTERFACE _HH
 ##define DEZYNE_#.INTERFACE _HH
 
+##include "meta.hh"
+
 ##include <cassert>
 ##include <functional>
 
@@ -13,27 +15,15 @@ struct #.interface
   {
    #(map (declare-io model
           #{std::function<#return-type  (#parameters)> #name;
-#}) (filter gom:in? ((compose .elements .events) model)))
-    struct
-    {
-      const char* component;
-      const char* port;
-      void*       address;
-    } meta;
-   } in;
+#}) (filter gom:in? ((compose .elements .events) model))) } in;
 
   struct
   {
    #(map (declare-io model
           #{std::function<#return-type  (#parameters)> #name;
-#}) (filter gom:out? ((compose .elements .events) model)))
-    struct
-    {
-      const char* component;
-      const char* port;
-      void*       address;
-    } meta;
- } out;
+#}) (filter gom:out? ((compose .elements .events) model))) } out;
+   port::meta meta;
+   inline #.interface(port::meta m) : meta(m) {}
   };
 
   inline void connect (#.interface & provided, #.interface & required)
@@ -46,6 +36,8 @@ struct #.interface
 #}) (filter gom:out? ((compose .elements .events) model)))
      provided.out = required.out;
      required.in = provided.in;
+     provided.meta.requires = required.meta.requires;
+     required.meta.provides = provided.meta.provides;
    }
    #(->string (map enum-to-string (gom:interface-enums model)))
 }

@@ -14,27 +14,8 @@ namespace dezyne
  (map (init-member model #{
 #name(#(if (not (eq? expression *unspecified*)) expression))#}) (gom:variables model)))#
 (if (null? (gom:variables model)) "" "\n, ") #
-((->join  "\n, ") (map (lambda (port) (list (.name port) "(" (if (.injected port) (list "dezyne_locator.get<" (.type port) ">()")) ")")) (gom:ports model)))
+((->join  "\n, ") (map (lambda (port) (list (.name port) "(" (if (.injected port) (list "dezyne_locator.get<" (.type port) ">()") (list "{" (if (eq? (.direction port) 'requires) "{0,0,0},") "{\"" .model "\",\"" (.name port) "\",this}" (if (eq? (.direction port) 'provides) ",{0,0,0}") "}")) ")")) (gom:ports model)))
   {
-#
-   (map
-    (lambda (port)
-      (->string
-       (list
-        (.name port) ".in.meta.component = \"" .model "\";\n"
-        (.name port) ".in.meta.port = \"" (.name port) "\";\n"
-        (.name port) ".in.meta.address = this;\n"
-        )))
-    (filter gom:provides? (gom:ports model)))#
-   (map
-    (lambda (port)
-      (->string
-       (list
-        (.name port) ".out.meta.component = \"" .model "\";\n"
-        (.name port) ".out.meta.port = \"" (.name port) "\";\n"
-        (.name port) ".out.meta.address = this;\n"
-        )))
-    (filter gom:requires? (gom:ports model)))
 #
    (map
     (lambda (port)

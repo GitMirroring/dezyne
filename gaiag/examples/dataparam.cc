@@ -63,12 +63,8 @@ int main()
 
   dezyne::Datasystem c(l);
 
-  c.meta.parent = 0;
-  c.meta.name = "c";
-
-  c.port.out.meta.component = "main";
-  c.port.out.meta.port = "port";
-  c.port.out.meta.address = 0;
+  c.meta = {"c",0,0,{}};
+  c.port.meta.requires = {"main","port",0};
 
   c.port.out.a0 = a0;
   c.port.out.a = a;

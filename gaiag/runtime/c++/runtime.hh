@@ -43,23 +43,23 @@ namespace dezyne
   template <typename T>
   void trace(const T& t, const char* e)
   {
-    std::clog << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << e << " -> " << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << e << std::endl;
+    std::clog << t.meta.requires.address << ":" << t.meta.requires.component << "." << t.meta.requires.port << "." << e << " -> " << t.meta.provides.address << ":" << t.meta.provides.component << "." << t.meta.provides.port << "." << e << std::endl;
   }
 
   template <typename T>
   void trace_return(const T& t, const char* e)
   {
-    std::clog << t.in.meta.address << ":" << t.in.meta.component << "." << t.in.meta.port << "." << e << " -> " << t.out.meta.address << ":" << t.out.meta.component << "." << t.out.meta.port << "." << e << std::endl ;
+    std::clog << t.meta.provides.address << ":" << t.meta.provides.component << "." << t.meta.provides.port << "." << e << " -> " << t.meta.requires.address << ":" << t.meta.requires.component << "." << t.meta.requires.port << "." << e << std::endl ;
   }
 
   struct component;
 
   struct meta
   {
-    std::vector<const component*> children;
-    const component* parent;
-    const component* address;
     const char* name;
+    const component* address;
+    const component* parent;
+    std::vector<const component*> children;
   };
 
   struct component
@@ -142,7 +142,7 @@ namespace dezyne
   void call_out(C* c, std::function<void()> l, std::tuple<P*, const char*, const char*> m)
   {
     trace_return(*std::get<0>(m), std::get<1>(m));
-    c->rt.defer(std::get<0>(m)->in.meta.address, [=]{c->rt.handle(c, l);});
+    c->rt.defer(std::get<0>(m)->meta.provides.address, [=]{c->rt.handle(c, l);});
   }
 }
 #endif

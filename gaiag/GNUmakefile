@@ -333,8 +333,8 @@ c++-dataparam:
 	rm -rf out && mkdir out && cd out && ln -s ../runtime/c++/* .
 	cd out && ../gaiag -l c++ ../examples/regression/Dataparam.dzn
 	cd out && ln -sf ../examples/dataparam.cc .
-	for i in out/*cc; do ccache g++ -std=c++11 -g -Wall -Wextra -c -o out/$$(basename $$i .cc).o $$i; done && g++ -o out/$@ out/*.o && out/$@ |& sed -e s/0[^:]*://g | grep -Ev '^(|0 )0x' >out/$@.trace
-	$(diff) baseline/$@.trace out
+	-for i in out/*cc; do ccache g++ -std=c++11 -g -Wall -Wextra -c -o out/$$(basename $$i .cc).o $$i; done && g++ -o out/$@ out/*.o && out/$@ |& sed -e s/0[^:]*://g | grep -Ev '^(|0 )0x' >out/$@.trace
+	-$(diff) baseline/$@.trace out
 	for i in out/*.hh out/*.cc; do $(diff) baseline/$$(basename $$i) $$i; done
 
 c++-choice:

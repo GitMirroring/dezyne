@@ -45,9 +45,8 @@ int main()
   dezyne::locator locator;
   dezyne::AlarmSystem alarmsystem(locator.set(runtime));
 
-  alarmsystem.console.out.meta.component = "main";
-  alarmsystem.console.out.meta.port = "console";
-  alarmsystem.console.out.meta.address = 0;
+  alarmsystem.meta = {"alarmsystem",0,0,{}};
+  alarmsystem.console.meta.requires = {"main","console",0};
 
   alarmsystem.console.out.detected = detected;
   alarmsystem.console.out.deactivated = deactivated;

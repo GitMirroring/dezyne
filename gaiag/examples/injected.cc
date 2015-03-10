@@ -42,9 +42,8 @@ int main()
 
   dezyne::Injected i(l);
 
-  i.t.out.meta.component = "main";
-  i.t.out.meta.port = "t";
-  i.t.out.meta.address = 0;
+  i.meta = {"i", 0, 0, {}};
+  i.t.meta.requires = {"main","port",0};
   i.t.out.f = f;
 
   i.t.in.e();

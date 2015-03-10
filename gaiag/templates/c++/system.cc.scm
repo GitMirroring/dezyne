@@ -8,12 +8,11 @@ namespace dezyne
             (list
              (->string
               (list
-               "meta{{"
+               "meta{\"\",reinterpret_cast<component*>(this),0,{"
                ((->join ",")
                 (map (init-instance #{reinterpret_cast<component*>(&#name)#})
                      (non-injected-instances model)))
-               "}, 0, reinterpret_cast<component*>(this), \"\"}"
-               )))
+               "}}")))
             (map (lambda (binding) (list (injected-instance-name binding) "(dezyne_locator)"))
                  (injected-bindings model))
             (list (if (pair? (injected-bindings model))
