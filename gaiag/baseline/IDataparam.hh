@@ -26,8 +26,8 @@
 #ifndef DEZYNE_IDATAPARAM_HH
 #define DEZYNE_IDATAPARAM_HH
 
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
+#include <cassert>
+#include <functional>
 
 namespace dezyne
 {
@@ -39,33 +39,23 @@ namespace dezyne
       {
         Yes, No
       };
-      static const char* to_string(type v)
-      {
-        switch(v)
-        {
-          case Yes: return "Status_Yes";
-          case No: return "Status_No";
-
-        }
-        return "";
-      }
     };
 
     struct
     {
-      boost::function<void ()> e0;
-      boost::function<Status::type ()> e0r;
-      boost::function<void (int i)> e;
-      boost::function<Status::type (int i)> er;
-      boost::function<Status::type (int i, int j)> eer;
-      boost::function<void (int& i)> eo;
-      boost::function<void (int& i, int& j)> eoo;
-      boost::function<void (int i, int& j)> eio;
-      boost::function<void (int& i)> eio2;
-      boost::function<Status::type (int& i)> eor;
-      boost::function<Status::type (int& i, int& j)> eoor;
-      boost::function<Status::type (int i, int& j)> eior;
-      boost::function<Status::type (int& i)> eio2r;
+      std::function<void ()> e0;
+      std::function<Status::type ()> e0r;
+      std::function<void (int i)> e;
+      std::function<Status::type (int i)> er;
+      std::function<Status::type (int i, int j)> eer;
+      std::function<void (int& i)> eo;
+      std::function<void (int& i, int& j)> eoo;
+      std::function<void (int i, int& j)> eio;
+      std::function<void (int& i)> eio2;
+      std::function<Status::type (int& i)> eor;
+      std::function<Status::type (int& i, int& j)> eoor;
+      std::function<Status::type (int i, int& j)> eior;
+      std::function<Status::type (int& i)> eio2r;
 
       struct
       {
@@ -77,10 +67,10 @@ namespace dezyne
 
     struct
     {
-      boost::function<void ()> a0;
-      boost::function<void (int i)> a;
-      boost::function<void (int i, int j)> aa;
-      boost::function<void (int a0, int a1, int a2, int a3, int a4, int a5)> a6;
+      std::function<void ()> a0;
+      std::function<void (int i)> a;
+      std::function<void (int i, int j)> aa;
+      std::function<void (int a0, int a1, int a2, int a3, int a4, int a5)> a6;
 
       struct
       {
@@ -115,5 +105,16 @@ namespace dezyne
     provided.out = required.out;
     required.in = provided.in;
   }
+  inline const char* to_string(IDataparam::Status::type v)
+  {
+    switch(v)
+    {
+      case IDataparam::Status::Yes: return "Status_Yes";
+      case IDataparam::Status::No: return "Status_No";
+
+    }
+    return "";
+  }
+
 }
 #endif // DEZYNE_IDATAPARAM_HH

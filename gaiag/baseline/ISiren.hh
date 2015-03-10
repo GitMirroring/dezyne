@@ -25,8 +25,8 @@
 #ifndef DEZYNE_ISIREN_HH
 #define DEZYNE_ISIREN_HH
 
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
+#include <cassert>
+#include <functional>
 
 namespace dezyne
 {
@@ -35,8 +35,8 @@ namespace dezyne
 
     struct
     {
-      boost::function<void ()> turnon;
-      boost::function<void ()> turnoff;
+      std::function<void ()> turnon;
+      std::function<void ()> turnoff;
 
       struct
       {
@@ -67,5 +67,6 @@ namespace dezyne
     provided.out = required.out;
     required.in = provided.in;
   }
+
 }
 #endif // DEZYNE_ISIREN_HH

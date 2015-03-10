@@ -43,176 +43,57 @@ namespace dezyne
     bottom.out.meta.port = "bottom";
     bottom.out.meta.address = this;
 
-    top.in.e0 = connect<void>(rt, this,
-    boost::function<void()>
-    ([this] ()
-    {
-      trace (top, "e0");
-      top_e0();
-      trace_return (top, "return");
-      return;
-    }
-    ));
-    top.in.e0r = connect<IDataparam::Status::type>(rt, this,
-    boost::function<IDataparam::Status::type()>
-    ([this] ()
-    {
-      trace (top, "e0r");
-      auto r = top_e0r();
-      trace_return (top, IDataparam::Status::to_string(r));
-      return r;
-    }
-    ));
-    top.in.e = connect<int>(rt, this,
-    boost::function<void(int)>
-    ([this] (int i)
-    {
-      trace (top, "e");
-      top_e(i);
-      trace_return (top, "return");
-      return;
-    }
-    ));
-    top.in.er = connect<IDataparam::Status::type,int>(rt, this,
-    boost::function<IDataparam::Status::type(int)>
-    ([this] (int i)
-    {
-      trace (top, "er");
-      auto r = top_er(i);
-      trace_return (top, IDataparam::Status::to_string(r));
-      return r;
-    }
-    ));
-    top.in.eer = connect<IDataparam::Status::type,int,int>(rt, this,
-    boost::function<IDataparam::Status::type(int,int)>
-    ([this] (int i, int j)
-    {
-      trace (top, "eer");
-      auto r = top_eer(i,j);
-      trace_return (top, IDataparam::Status::to_string(r));
-      return r;
-    }
-    ));
-    top.in.eo = connect<int&>(rt, this,
-    boost::function<void(int&)>
-    ([this] (int& i)
-    {
-      trace (top, "eo");
-      top_eo(i);
-      trace_return (top, "return");
-      return;
-    }
-    ));
-    top.in.eoo = connect<int&,int&>(rt, this,
-    boost::function<void(int&,int&)>
-    ([this] (int& i, int& j)
-    {
-      trace (top, "eoo");
-      top_eoo(i,j);
-      trace_return (top, "return");
-      return;
-    }
-    ));
-    top.in.eio = connect<int,int&>(rt, this,
-    boost::function<void(int,int&)>
-    ([this] (int i, int& j)
-    {
-      trace (top, "eio");
-      top_eio(i,j);
-      trace_return (top, "return");
-      return;
-    }
-    ));
-    top.in.eio2 = connect<int&>(rt, this,
-    boost::function<void(int&)>
-    ([this] (int& i)
-    {
-      trace (top, "eio2");
-      top_eio2(i);
-      trace_return (top, "return");
-      return;
-    }
-    ));
-    top.in.eor = connect<IDataparam::Status::type,int&>(rt, this,
-    boost::function<IDataparam::Status::type(int&)>
-    ([this] (int& i)
-    {
-      trace (top, "eor");
-      auto r = top_eor(i);
-      trace_return (top, IDataparam::Status::to_string(r));
-      return r;
-    }
-    ));
-    top.in.eoor = connect<IDataparam::Status::type,int&,int&>(rt, this,
-    boost::function<IDataparam::Status::type(int&,int&)>
-    ([this] (int& i, int& j)
-    {
-      trace (top, "eoor");
-      auto r = top_eoor(i,j);
-      trace_return (top, IDataparam::Status::to_string(r));
-      return r;
-    }
-    ));
-    top.in.eior = connect<IDataparam::Status::type,int,int&>(rt, this,
-    boost::function<IDataparam::Status::type(int,int&)>
-    ([this] (int i, int& j)
-    {
-      trace (top, "eior");
-      auto r = top_eior(i,j);
-      trace_return (top, IDataparam::Status::to_string(r));
-      return r;
-    }
-    ));
-    top.in.eio2r = connect<IDataparam::Status::type,int&>(rt, this,
-    boost::function<IDataparam::Status::type(int&)>
-    ([this] (int& i)
-    {
-      trace (top, "eio2r");
-      auto r = top_eio2r(i);
-      trace_return (top, IDataparam::Status::to_string(r));
-      return r;
-    }
-    ));
-    bottom.out.a0=  [this] () {
-      trace (bottom, "a0");
-      rt.defer (bottom.in.meta.address, connect<void>(rt, this,
-      boost::function<void()>(
-      [=]
-      {
-        bottom_a0();
-        return;
-      }
-      )));};
-    bottom.out.a=  [this] (int i) {
-      trace (bottom, "a");
-      rt.defer (bottom.in.meta.address, connect<void>(rt, this,
-      boost::function<void()>(
-      [=]
-      {
-        bottom_a(i);
-        return;
-      }
-      )));};
-    bottom.out.aa=  [this] (int i, int j) {
-      trace (bottom, "aa");
-      rt.defer (bottom.in.meta.address, connect<void>(rt, this,
-      boost::function<void()>(
-      [=]
-      {
-        bottom_aa(i,j);
-        return;
-      }
-      )));};
-    bottom.out.a6=  [this] (int a0, int a1, int a2, int a3, int a4, int a5) {
-      trace (bottom, "a6");
-      rt.defer (bottom.in.meta.address, connect<void>(rt, this,
-      boost::function<void()>(
-      [=]
-      {
-        bottom_a6(a0,a1,a2,a3,a4,a5);
-        return;
-      }
-      )));};
+    top.in.e0 = [&] () {
+      call_in(this, std::function<void()>([&] {this->top_e0(); }), std::make_tuple(&top, "e0", "return"));
+    };
+    top.in.e0r = [&] () {
+      return call_in(this, std::function<IDataparam::Status::type()>([&] {return this->top_e0r(); }), std::make_tuple(&top, "e0r", "return"));
+    };
+    top.in.e = [&] (int i) {
+      call_in(this, std::function<void()>([&] {this->top_e(i); }), std::make_tuple(&top, "e", "return"));
+    };
+    top.in.er = [&] (int i) {
+      return call_in(this, std::function<IDataparam::Status::type()>([&] {return this->top_er(i); }), std::make_tuple(&top, "er", "return"));
+    };
+    top.in.eer = [&] (int i, int j) {
+      return call_in(this, std::function<IDataparam::Status::type()>([&] {return this->top_eer(i,j); }), std::make_tuple(&top, "eer", "return"));
+    };
+    top.in.eo = [&] (int& i) {
+      call_in(this, std::function<void()>([&] {this->top_eo(i); }), std::make_tuple(&top, "eo", "return"));
+    };
+    top.in.eoo = [&] (int& i, int& j) {
+      call_in(this, std::function<void()>([&] {this->top_eoo(i,j); }), std::make_tuple(&top, "eoo", "return"));
+    };
+    top.in.eio = [&] (int i, int& j) {
+      call_in(this, std::function<void()>([&] {this->top_eio(i,j); }), std::make_tuple(&top, "eio", "return"));
+    };
+    top.in.eio2 = [&] (int& i) {
+      call_in(this, std::function<void()>([&] {this->top_eio2(i); }), std::make_tuple(&top, "eio2", "return"));
+    };
+    top.in.eor = [&] (int& i) {
+      return call_in(this, std::function<IDataparam::Status::type()>([&] {return this->top_eor(i); }), std::make_tuple(&top, "eor", "return"));
+    };
+    top.in.eoor = [&] (int& i, int& j) {
+      return call_in(this, std::function<IDataparam::Status::type()>([&] {return this->top_eoor(i,j); }), std::make_tuple(&top, "eoor", "return"));
+    };
+    top.in.eior = [&] (int i, int& j) {
+      return call_in(this, std::function<IDataparam::Status::type()>([&] {return this->top_eior(i,j); }), std::make_tuple(&top, "eior", "return"));
+    };
+    top.in.eio2r = [&] (int& i) {
+      return call_in(this, std::function<IDataparam::Status::type()>([&] {return this->top_eio2r(i); }), std::make_tuple(&top, "eio2r", "return"));
+    };
+    bottom.out.a0 = [&] () {
+      call_out(this, std::function<void()>([&] {this->bottom_a0(); }), std::make_tuple(&bottom, "a0", "return"));
+    };
+    bottom.out.a = [&] (int i) {
+      call_out(this, std::function<void()>([&,i] {this->bottom_a(i); }), std::make_tuple(&bottom, "a", "return"));
+    };
+    bottom.out.aa = [&] (int i, int j) {
+      call_out(this, std::function<void()>([&,i,j] {this->bottom_aa(i,j); }), std::make_tuple(&bottom, "aa", "return"));
+    };
+    bottom.out.a6 = [&] (int a0, int a1, int a2, int a3, int a4, int a5) {
+      call_out(this, std::function<void()>([&,a0,a1,a2,a3,a4,a5] {this->bottom_a6(a0,a1,a2,a3,a4,a5); }), std::make_tuple(&bottom, "a6", "return"));
+    };
   }
 
   void proxy::top_e0()

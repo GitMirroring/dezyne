@@ -39,16 +39,9 @@ namespace dezyne
     log.in.meta.port = "log";
     log.in.meta.address = this;
 
-    log.in.log = connect<void>(rt, this,
-    boost::function<void()>
-    ([this] ()
-    {
-      trace (log, "log");
-      log_log();
-      trace_return (log, "return");
-      return;
-    }
-    ));
+    log.in.log = [&] () {
+      call_in(this, std::function<void()>([&] {this->log_log(); }), std::make_tuple(&log, "log", "return"));
+    };
   }
 
   void logger::log_log()

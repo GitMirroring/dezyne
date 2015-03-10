@@ -25,8 +25,8 @@
 #ifndef DEZYNE_ISENSOR_HH
 #define DEZYNE_ISENSOR_HH
 
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
+#include <cassert>
+#include <functional>
 
 namespace dezyne
 {
@@ -35,8 +35,8 @@ namespace dezyne
 
     struct
     {
-      boost::function<void ()> enable;
-      boost::function<void ()> disable;
+      std::function<void ()> enable;
+      std::function<void ()> disable;
 
       struct
       {
@@ -48,8 +48,8 @@ namespace dezyne
 
     struct
     {
-      boost::function<void ()> triggered;
-      boost::function<void ()> disabled;
+      std::function<void ()> triggered;
+      std::function<void ()> disabled;
 
       struct
       {
@@ -71,5 +71,6 @@ namespace dezyne
     provided.out = required.out;
     required.in = provided.in;
   }
+
 }
 #endif // DEZYNE_ISENSOR_HH

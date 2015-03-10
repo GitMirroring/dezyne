@@ -26,8 +26,8 @@
 #ifndef DEZYNE_IREPLY7_HH
 #define DEZYNE_IREPLY7_HH
 
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
+#include <cassert>
+#include <functional>
 
 namespace dezyne
 {
@@ -39,20 +39,11 @@ namespace dezyne
       {
         A
       };
-      static const char* to_string(type v)
-      {
-        switch(v)
-        {
-          case A: return "E_A";
-
-        }
-        return "";
-      }
     };
 
     struct
     {
-      boost::function<E::type ()> foo;
+      std::function<E::type ()> foo;
 
       struct
       {
@@ -82,5 +73,15 @@ namespace dezyne
     provided.out = required.out;
     required.in = provided.in;
   }
+  inline const char* to_string(IReply7::E::type v)
+  {
+    switch(v)
+    {
+      case IReply7::E::A: return "E_A";
+
+    }
+    return "";
+  }
+
 }
 #endif // DEZYNE_IREPLY7_HH

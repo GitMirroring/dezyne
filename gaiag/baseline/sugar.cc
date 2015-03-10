@@ -41,16 +41,9 @@ namespace dezyne
     i.in.meta.port = "i";
     i.in.meta.address = this;
 
-    i.in.e = connect<void>(rt, this,
-    boost::function<void()>
-    ([this] ()
-    {
-      trace (i, "e");
-      i_e();
-      trace_return (i, "return");
-      return;
-    }
-    ));
+    i.in.e = [&] () {
+      call_in(this, std::function<void()>([&] {this->i_e(); }), std::make_tuple(&i, "e", "return"));
+    };
   }
 
   void sugar::i_e()

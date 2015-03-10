@@ -39,26 +39,12 @@ namespace dezyne
     siren.in.meta.port = "siren";
     siren.in.meta.address = this;
 
-    siren.in.turnon = connect<void>(rt, this,
-    boost::function<void()>
-    ([this] ()
-    {
-      trace (siren, "turnon");
-      siren_turnon();
-      trace_return (siren, "return");
-      return;
-    }
-    ));
-    siren.in.turnoff = connect<void>(rt, this,
-    boost::function<void()>
-    ([this] ()
-    {
-      trace (siren, "turnoff");
-      siren_turnoff();
-      trace_return (siren, "return");
-      return;
-    }
-    ));
+    siren.in.turnon = [&] () {
+      call_in(this, std::function<void()>([&] {this->siren_turnon(); }), std::make_tuple(&siren, "turnon", "return"));
+    };
+    siren.in.turnoff = [&] () {
+      call_in(this, std::function<void()>([&] {this->siren_turnoff(); }), std::make_tuple(&siren, "turnoff", "return"));
+    };
   }
 
   void Siren::siren_turnon()

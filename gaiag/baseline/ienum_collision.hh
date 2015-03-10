@@ -26,8 +26,8 @@
 #ifndef DEZYNE_IENUM_COLLISION_HH
 #define DEZYNE_IENUM_COLLISION_HH
 
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
+#include <cassert>
+#include <functional>
 
 namespace dezyne
 {
@@ -39,16 +39,6 @@ namespace dezyne
       {
         OK, NOK
       };
-      static const char* to_string(type v)
-      {
-        switch(v)
-        {
-          case OK: return "Retval1_OK";
-          case NOK: return "Retval1_NOK";
-
-        }
-        return "";
-      }
     };
     struct Retval2
     {
@@ -56,22 +46,12 @@ namespace dezyne
       {
         OK, NOK
       };
-      static const char* to_string(type v)
-      {
-        switch(v)
-        {
-          case OK: return "Retval2_OK";
-          case NOK: return "Retval2_NOK";
-
-        }
-        return "";
-      }
     };
 
     struct
     {
-      boost::function<Retval1::type ()> foo;
-      boost::function<Retval2::type ()> bar;
+      std::function<Retval1::type ()> foo;
+      std::function<Retval2::type ()> bar;
 
       struct
       {
@@ -102,5 +82,26 @@ namespace dezyne
     provided.out = required.out;
     required.in = provided.in;
   }
+  inline const char* to_string(ienum_collision::Retval1::type v)
+  {
+    switch(v)
+    {
+      case ienum_collision::Retval1::OK: return "Retval1_OK";
+      case ienum_collision::Retval1::NOK: return "Retval1_NOK";
+
+    }
+    return "";
+  }
+  inline const char* to_string(ienum_collision::Retval2::type v)
+  {
+    switch(v)
+    {
+      case ienum_collision::Retval2::OK: return "Retval2_OK";
+      case ienum_collision::Retval2::NOK: return "Retval2_NOK";
+
+    }
+    return "";
+  }
+
 }
 #endif // DEZYNE_IENUM_COLLISION_HH

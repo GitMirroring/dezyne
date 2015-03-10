@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -24,8 +25,8 @@
 #ifndef DEZYNE_RGUARDTHREETOPON_HH
 #define DEZYNE_RGUARDTHREETOPON_HH
 
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
+#include <cassert>
+#include <functional>
 
 namespace dezyne
 {
@@ -34,7 +35,7 @@ namespace dezyne
 
     struct
     {
-      boost::function<void ()> e;
+      std::function<void ()> e;
 
       struct
       {
@@ -46,7 +47,7 @@ namespace dezyne
 
     struct
     {
-      boost::function<void ()> a;
+      std::function<void ()> a;
 
       struct
       {
@@ -66,5 +67,6 @@ namespace dezyne
     provided.out = required.out;
     required.in = provided.in;
   }
+
 }
 #endif // DEZYNE_RGUARDTHREETOPON_HH

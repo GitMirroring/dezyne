@@ -44,46 +44,18 @@ namespace dezyne
     r.out.meta.port = "r";
     r.out.meta.address = this;
 
-    i.in.e = connect<void>(rt, this,
-    boost::function<void()>
-    ([this] ()
-    {
-      trace (i, "e");
-      i_e();
-      trace_return (i, "return");
-      return;
-    }
-    ));
-    i.in.t = connect<void>(rt, this,
-    boost::function<void()>
-    ([this] ()
-    {
-      trace (i, "t");
-      i_t();
-      trace_return (i, "return");
-      return;
-    }
-    ));
-    i.in.s = connect<void>(rt, this,
-    boost::function<void()>
-    ([this] ()
-    {
-      trace (i, "s");
-      i_s();
-      trace_return (i, "return");
-      return;
-    }
-    ));
-    r.out.a=  [this] () {
-      trace (r, "a");
-      rt.defer (r.in.meta.address, connect<void>(rt, this,
-      boost::function<void()>(
-      [=]
-      {
-        r_a();
-        return;
-      }
-      )));};
+    i.in.e = [&] () {
+      call_in(this, std::function<void()>([&] {this->i_e(); }), std::make_tuple(&i, "e", "return"));
+    };
+    i.in.t = [&] () {
+      call_in(this, std::function<void()>([&] {this->i_t(); }), std::make_tuple(&i, "t", "return"));
+    };
+    i.in.s = [&] () {
+      call_in(this, std::function<void()>([&] {this->i_s(); }), std::make_tuple(&i, "s", "return"));
+    };
+    r.out.a = [&] () {
+      call_out(this, std::function<void()>([&] {this->r_a(); }), std::make_tuple(&r, "a", "return"));
+    };
   }
 
   void Guardthreetopon::i_e()

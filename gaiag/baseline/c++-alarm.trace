@@ -2,7 +2,7 @@ main.console.arm -> Alarm.console.arm
 Alarm.sensor.enable -> Sensor.sensor.enable
 Sensor.sensor.return -> Alarm.sensor.return
 Alarm.console.return -> main.console.return
-Alarm.sensor.triggered -> Sensor.sensor.triggered
+Sensor.sensor.triggered -> Alarm.sensor.triggered
 Console.detected
 Alarm.siren.turnon -> Siren.siren.turnon
 Siren.siren.return -> Alarm.siren.return
@@ -12,5 +12,5 @@ Sensor.sensor.return -> Alarm.sensor.return
 Alarm.siren.turnoff -> Siren.siren.turnoff
 Siren.siren.return -> Alarm.siren.return
 Alarm.console.return -> main.console.return
-Alarm.sensor.disabled -> Sensor.sensor.disabled
+Sensor.sensor.disabled -> Alarm.sensor.disabled
 Console.deactivated

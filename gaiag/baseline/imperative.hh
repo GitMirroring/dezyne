@@ -46,18 +46,6 @@ namespace dezyne
       {
         I, II, III, IV
       };
-      static const char* to_string(type v)
-      {
-        switch(v)
-        {
-          case I: return "States_I";
-          case II: return "States_II";
-          case III: return "States_III";
-          case IV: return "States_IV";
-
-        }
-        return "";
-      }
     };
     imperative::States::type state;
     iimperative i;

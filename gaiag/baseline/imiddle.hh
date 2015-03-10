@@ -25,8 +25,8 @@
 #ifndef DEZYNE_IMIDDLE_HH
 #define DEZYNE_IMIDDLE_HH
 
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
+#include <cassert>
+#include <functional>
 
 namespace dezyne
 {
@@ -35,7 +35,7 @@ namespace dezyne
 
     struct
     {
-      boost::function<void ()> e;
+      std::function<void ()> e;
 
       struct
       {
@@ -47,7 +47,7 @@ namespace dezyne
 
     struct
     {
-      boost::function<void ()> f;
+      std::function<void ()> f;
 
       struct
       {
@@ -67,5 +67,6 @@ namespace dezyne
     provided.out = required.out;
     required.in = provided.in;
   }
+
 }
 #endif // DEZYNE_IMIDDLE_HH

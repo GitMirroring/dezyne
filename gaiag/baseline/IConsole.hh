@@ -25,8 +25,8 @@
 #ifndef DEZYNE_ICONSOLE_HH
 #define DEZYNE_ICONSOLE_HH
 
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
+#include <cassert>
+#include <functional>
 
 namespace dezyne
 {
@@ -35,8 +35,8 @@ namespace dezyne
 
     struct
     {
-      boost::function<void ()> arm;
-      boost::function<void ()> disarm;
+      std::function<void ()> arm;
+      std::function<void ()> disarm;
 
       struct
       {
@@ -48,8 +48,8 @@ namespace dezyne
 
     struct
     {
-      boost::function<void ()> detected;
-      boost::function<void ()> deactivated;
+      std::function<void ()> detected;
+      std::function<void ()> deactivated;
 
       struct
       {
@@ -71,5 +71,6 @@ namespace dezyne
     provided.out = required.out;
     required.in = provided.in;
   }
+
 }
 #endif // DEZYNE_ICONSOLE_HH

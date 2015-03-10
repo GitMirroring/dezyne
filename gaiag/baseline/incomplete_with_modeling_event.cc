@@ -44,26 +44,12 @@ namespace dezyne
     r.out.meta.port = "r";
     r.out.meta.address = this;
 
-    p.in.e = connect<void>(rt, this,
-    boost::function<void()>
-    ([this] ()
-    {
-      trace (p, "e");
-      p_e();
-      trace_return (p, "return");
-      return;
-    }
-    ));
-    r.out.a=  [this] () {
-      trace (r, "a");
-      rt.defer (r.in.meta.address, connect<void>(rt, this,
-      boost::function<void()>(
-      [=]
-      {
-        r_a();
-        return;
-      }
-      )));};
+    p.in.e = [&] () {
+      call_in(this, std::function<void()>([&] {this->p_e(); }), std::make_tuple(&p, "e", "return"));
+    };
+    r.out.a = [&] () {
+      call_out(this, std::function<void()>([&] {this->r_a(); }), std::make_tuple(&r, "a", "return"));
+    };
   }
 
   void incomplete_with_modeling_event::p_e()

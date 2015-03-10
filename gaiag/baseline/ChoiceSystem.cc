@@ -1,8 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -23,35 +21,17 @@
 //
 // Code:
 
-#include "testBoolean.hh"
-
-#include "locator.hh"
-#include "runtime.hh"
-
-#include <iostream>
+#include "ChoiceSystem.hh"
 
 namespace dezyne
 {
-  testBoolean::testBoolean(const locator& dezyne_locator)
-  : rt(dezyne_locator.get<runtime>())
-  , b(false)
-  , i()
+  ChoiceSystem::ChoiceSystem(const dezyne::locator& dezyne_locator)
+  : meta{{reinterpret_cast<component*>(&choice)}, 0, reinterpret_cast<component*>(this), ""}
+  , choice(dezyne_locator)
+  , c(choice.c)
   {
-    i.in.meta.component = "testBoolean";
-    i.in.meta.port = "i";
-    i.in.meta.address = this;
-
-    i.in.evt = [&] () {
-      call_in(this, std::function<void()>([&] {this->i_evt(); }), std::make_tuple(&i, "evt", "return"));
-    };
+    choice.meta.parent = reinterpret_cast<component*>(this);
+    choice.meta.address = reinterpret_cast<component*>(&choice);
+    choice.meta.name = "choice";
   }
-
-  void testBoolean::i_evt()
-  {
-    if (true)
-    {
-    }
-  }
-
-
 }

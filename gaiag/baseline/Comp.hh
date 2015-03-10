@@ -47,17 +47,6 @@ namespace dezyne
       {
         Uninitialized, Initialized, Error
       };
-      static const char* to_string(type v)
-      {
-        switch(v)
-        {
-          case Uninitialized: return "State_Uninitialized";
-          case Initialized: return "State_Initialized";
-          case Error: return "State_Error";
-
-        }
-        return "";
-      }
     };
     Comp::State::type s;
     IComp::result_t::type reply_IComp_result_t;

@@ -48,36 +48,15 @@ namespace dezyne
     twice.out.meta.port = "twice";
     twice.out.meta.address = this;
 
-    p.in.e = connect<void>(rt, this,
-    boost::function<void()>
-    ([this] ()
-    {
-      trace (p, "e");
-      p_e();
-      trace_return (p, "return");
-      return;
-    }
-    ));
-    once.out.a=  [this] () {
-      trace (once, "a");
-      rt.defer (once.in.meta.address, connect<void>(rt, this,
-      boost::function<void()>(
-      [=]
-      {
-        once_a();
-        return;
-      }
-      )));};
-    twice.out.a=  [this] () {
-      trace (twice, "a");
-      rt.defer (twice.in.meta.address, connect<void>(rt, this,
-      boost::function<void()>(
-      [=]
-      {
-        twice_a();
-        return;
-      }
-      )));};
+    p.in.e = [&] () {
+      call_in(this, std::function<void()>([&] {this->p_e(); }), std::make_tuple(&p, "e", "return"));
+    };
+    once.out.a = [&] () {
+      call_out(this, std::function<void()>([&] {this->once_a(); }), std::make_tuple(&once, "a", "return"));
+    };
+    twice.out.a = [&] () {
+      call_out(this, std::function<void()>([&] {this->twice_a(); }), std::make_tuple(&twice, "a", "return"));
+    };
   }
 
   void requires_twice::p_e()

@@ -26,8 +26,8 @@
 #ifndef DEZYNE_ICOMP_HH
 #define DEZYNE_ICOMP_HH
 
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
+#include <cassert>
+#include <functional>
 
 namespace dezyne
 {
@@ -39,23 +39,13 @@ namespace dezyne
       {
         OK, NOK
       };
-      static const char* to_string(type v)
-      {
-        switch(v)
-        {
-          case OK: return "result_t_OK";
-          case NOK: return "result_t_NOK";
-
-        }
-        return "";
-      }
     };
 
     struct
     {
-      boost::function<result_t::type ()> initialize;
-      boost::function<result_t::type ()> recover;
-      boost::function<result_t::type ()> perform_actions;
+      std::function<result_t::type ()> initialize;
+      std::function<result_t::type ()> recover;
+      std::function<result_t::type ()> perform_actions;
 
       struct
       {
@@ -87,5 +77,16 @@ namespace dezyne
     provided.out = required.out;
     required.in = provided.in;
   }
+  inline const char* to_string(IComp::result_t::type v)
+  {
+    switch(v)
+    {
+      case IComp::result_t::OK: return "result_t_OK";
+      case IComp::result_t::NOK: return "result_t_NOK";
+
+    }
+    return "";
+  }
+
 }
 #endif // DEZYNE_ICOMP_HH

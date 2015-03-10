@@ -44,16 +44,9 @@ namespace dezyne
     r.out.meta.port = "r";
     r.out.meta.address = this;
 
-    p.in.foo = connect<IReply7::E::type>(rt, this,
-    boost::function<IReply7::E::type()>
-    ([this] ()
-    {
-      trace (p, "foo");
-      auto r = p_foo();
-      trace_return (p, IReply7::E::to_string(r));
-      return r;
-    }
-    ));
+    p.in.foo = [&] () {
+      return call_in(this, std::function<IReply7::E::type()>([&] {return this->p_foo(); }), std::make_tuple(&p, "foo", "return"));
+    };
   }
 
   IReply7::E::type Reply7::p_foo()

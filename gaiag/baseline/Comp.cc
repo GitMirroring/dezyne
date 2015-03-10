@@ -45,36 +45,15 @@ namespace dezyne
     device_A.out.meta.port = "device_A";
     device_A.out.meta.address = this;
 
-    client.in.initialize = connect<IComp::result_t::type>(rt, this,
-    boost::function<IComp::result_t::type()>
-    ([this] ()
-    {
-      trace (client, "initialize");
-      auto r = client_initialize();
-      trace_return (client, IComp::result_t::to_string(r));
-      return r;
-    }
-    ));
-    client.in.recover = connect<IComp::result_t::type>(rt, this,
-    boost::function<IComp::result_t::type()>
-    ([this] ()
-    {
-      trace (client, "recover");
-      auto r = client_recover();
-      trace_return (client, IComp::result_t::to_string(r));
-      return r;
-    }
-    ));
-    client.in.perform_actions = connect<IComp::result_t::type>(rt, this,
-    boost::function<IComp::result_t::type()>
-    ([this] ()
-    {
-      trace (client, "perform_actions");
-      auto r = client_perform_actions();
-      trace_return (client, IComp::result_t::to_string(r));
-      return r;
-    }
-    ));
+    client.in.initialize = [&] () {
+      return call_in(this, std::function<IComp::result_t::type()>([&] {return this->client_initialize(); }), std::make_tuple(&client, "initialize", "return"));
+    };
+    client.in.recover = [&] () {
+      return call_in(this, std::function<IComp::result_t::type()>([&] {return this->client_recover(); }), std::make_tuple(&client, "recover", "return"));
+    };
+    client.in.perform_actions = [&] () {
+      return call_in(this, std::function<IComp::result_t::type()>([&] {return this->client_perform_actions(); }), std::make_tuple(&client, "perform_actions", "return"));
+    };
   }
 
   IComp::result_t::type Comp::client_initialize()

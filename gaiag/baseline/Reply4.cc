@@ -45,16 +45,9 @@ namespace dezyne
     u.out.meta.port = "u";
     u.out.meta.address = this;
 
-    i.in.done = connect<I::Status::type>(rt, this,
-    boost::function<I::Status::type()>
-    ([this] ()
-    {
-      trace (i, "done");
-      auto r = i_done();
-      trace_return (i, I::Status::to_string(r));
-      return r;
-    }
-    ));
+    i.in.done = [&] () {
+      return call_in(this, std::function<I::Status::type()>([&] {return this->i_done(); }), std::make_tuple(&i, "done", "return"));
+    };
   }
 
   I::Status::type Reply4::i_done()

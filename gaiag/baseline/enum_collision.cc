@@ -40,26 +40,12 @@ namespace dezyne
     i.in.meta.port = "i";
     i.in.meta.address = this;
 
-    i.in.foo = connect<ienum_collision::Retval1::type>(rt, this,
-    boost::function<ienum_collision::Retval1::type()>
-    ([this] ()
-    {
-      trace (i, "foo");
-      auto r = i_foo();
-      trace_return (i, ienum_collision::Retval1::to_string(r));
-      return r;
-    }
-    ));
-    i.in.bar = connect<ienum_collision::Retval2::type>(rt, this,
-    boost::function<ienum_collision::Retval2::type()>
-    ([this] ()
-    {
-      trace (i, "bar");
-      auto r = i_bar();
-      trace_return (i, ienum_collision::Retval2::to_string(r));
-      return r;
-    }
-    ));
+    i.in.foo = [&] () {
+      return call_in(this, std::function<ienum_collision::Retval1::type()>([&] {return this->i_foo(); }), std::make_tuple(&i, "foo", "return"));
+    };
+    i.in.bar = [&] () {
+      return call_in(this, std::function<ienum_collision::Retval2::type()>([&] {return this->i_bar(); }), std::make_tuple(&i, "bar", "return"));
+    };
   }
 
   ienum_collision::Retval1::type enum_collision::i_foo()

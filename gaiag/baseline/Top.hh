@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -24,8 +25,8 @@
 #ifndef DEZYNE_TOP_HH
 #define DEZYNE_TOP_HH
 
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
+#include <cassert>
+#include <functional>
 
 namespace dezyne
 {
@@ -34,8 +35,8 @@ namespace dezyne
 
     struct
     {
-      boost::function<void ()> unguarded;
-      boost::function<void ()> e;
+      std::function<void ()> unguarded;
+      std::function<void ()> e;
 
       struct
       {
@@ -47,7 +48,7 @@ namespace dezyne
 
     struct
     {
-      boost::function<void ()> f;
+      std::function<void ()> f;
 
       struct
       {
@@ -68,5 +69,6 @@ namespace dezyne
     provided.out = required.out;
     required.in = provided.in;
   }
+
 }
 #endif // DEZYNE_TOP_HH

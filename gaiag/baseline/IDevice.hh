@@ -26,8 +26,8 @@
 #ifndef DEZYNE_IDEVICE_HH
 #define DEZYNE_IDEVICE_HH
 
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
+#include <cassert>
+#include <functional>
 
 namespace dezyne
 {
@@ -39,24 +39,14 @@ namespace dezyne
       {
         OK, NOK
       };
-      static const char* to_string(type v)
-      {
-        switch(v)
-        {
-          case OK: return "result_t_OK";
-          case NOK: return "result_t_NOK";
-
-        }
-        return "";
-      }
     };
 
     struct
     {
-      boost::function<result_t::type ()> initialize;
-      boost::function<result_t::type ()> calibrate;
-      boost::function<result_t::type ()> perform_action1;
-      boost::function<result_t::type ()> perform_action2;
+      std::function<result_t::type ()> initialize;
+      std::function<result_t::type ()> calibrate;
+      std::function<result_t::type ()> perform_action1;
+      std::function<result_t::type ()> perform_action2;
 
       struct
       {
@@ -89,5 +79,16 @@ namespace dezyne
     provided.out = required.out;
     required.in = provided.in;
   }
+  inline const char* to_string(IDevice::result_t::type v)
+  {
+    switch(v)
+    {
+      case IDevice::result_t::OK: return "result_t_OK";
+      case IDevice::result_t::NOK: return "result_t_NOK";
+
+    }
+    return "";
+  }
+
 }
 #endif // DEZYNE_IDEVICE_HH

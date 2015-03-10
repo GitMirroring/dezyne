@@ -42,16 +42,9 @@ namespace dezyne
     port.in.meta.port = "port";
     port.in.meta.address = this;
 
-    port.in.e = connect<void>(rt, this,
-    boost::function<void()>
-    ([this] ()
-    {
-      trace (port, "e");
-      port_e();
-      trace_return (port, "return");
-      return;
-    }
-    ));
+    port.in.e = [&] () {
+      call_in(this, std::function<void()>([&] {this->port_e(); }), std::make_tuple(&port, "e", "return"));
+    };
   }
 
   void Extern::port_e()

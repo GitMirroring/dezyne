@@ -40,26 +40,12 @@ namespace dezyne
     i.in.meta.port = "i";
     i.in.meta.address = this;
 
-    i.in.e = connect<void>(rt, this,
-    boost::function<void()>
-    ([this] ()
-    {
-      trace (i, "e");
-      i_e();
-      trace_return (i, "return");
-      return;
-    }
-    ));
-    i.in.t = connect<void>(rt, this,
-    boost::function<void()>
-    ([this] ()
-    {
-      trace (i, "t");
-      i_t();
-      trace_return (i, "return");
-      return;
-    }
-    ));
+    i.in.e = [&] () {
+      call_in(this, std::function<void()>([&] {this->i_e(); }), std::make_tuple(&i, "e", "return"));
+    };
+    i.in.t = [&] () {
+      call_in(this, std::function<void()>([&] {this->i_t(); }), std::make_tuple(&i, "t", "return"));
+    };
   }
 
   void Guardtwotopon::i_e()

@@ -39,16 +39,9 @@ namespace dezyne
     b.in.meta.port = "b";
     b.in.meta.address = this;
 
-    b.in.e = connect<void>(rt, this,
-    boost::function<void()>
-    ([this] ()
-    {
-      trace (b, "e");
-      b_e();
-      trace_return (b, "return");
-      return;
-    }
-    ));
+    b.in.e = [&] () {
+      call_in(this, std::function<void()>([&] {this->b_e(); }), std::make_tuple(&b, "e", "return"));
+    };
   }
 
   void bottom::b_e()

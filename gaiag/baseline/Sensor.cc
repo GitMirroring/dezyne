@@ -39,26 +39,12 @@ namespace dezyne
     sensor.in.meta.port = "sensor";
     sensor.in.meta.address = this;
 
-    sensor.in.enable = connect<void>(rt, this,
-    boost::function<void()>
-    ([this] ()
-    {
-      trace (sensor, "enable");
-      sensor_enable();
-      trace_return (sensor, "return");
-      return;
-    }
-    ));
-    sensor.in.disable = connect<void>(rt, this,
-    boost::function<void()>
-    ([this] ()
-    {
-      trace (sensor, "disable");
-      sensor_disable();
-      trace_return (sensor, "return");
-      return;
-    }
-    ));
+    sensor.in.enable = [&] () {
+      call_in(this, std::function<void()>([&] {this->sensor_enable(); }), std::make_tuple(&sensor, "enable", "return"));
+    };
+    sensor.in.disable = [&] () {
+      call_in(this, std::function<void()>([&] {this->sensor_disable(); }), std::make_tuple(&sensor, "disable", "return"));
+    };
   }
 
   void Sensor::sensor_enable()

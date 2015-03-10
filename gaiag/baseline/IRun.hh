@@ -25,8 +25,8 @@
 #ifndef DEZYNE_IRUN_HH
 #define DEZYNE_IRUN_HH
 
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
+#include <cassert>
+#include <functional>
 
 namespace dezyne
 {
@@ -35,7 +35,7 @@ namespace dezyne
 
     struct
     {
-      boost::function<void ()> run;
+      std::function<void ()> run;
 
       struct
       {
@@ -65,5 +65,6 @@ namespace dezyne
     provided.out = required.out;
     required.in = provided.in;
   }
+
 }
 #endif // DEZYNE_IRUN_HH

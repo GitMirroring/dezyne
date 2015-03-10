@@ -49,46 +49,18 @@ namespace dezyne
     siren.out.meta.port = "siren";
     siren.out.meta.address = this;
 
-    console.in.arm = connect<void>(rt, this,
-    boost::function<void()>
-    ([this] ()
-    {
-      trace (console, "arm");
-      console_arm();
-      trace_return (console, "return");
-      return;
-    }
-    ));
-    console.in.disarm = connect<void>(rt, this,
-    boost::function<void()>
-    ([this] ()
-    {
-      trace (console, "disarm");
-      console_disarm();
-      trace_return (console, "return");
-      return;
-    }
-    ));
-    sensor.out.triggered=  [this] () {
-      trace (sensor, "triggered");
-      rt.defer (sensor.in.meta.address, connect<void>(rt, this,
-      boost::function<void()>(
-      [=]
-      {
-        sensor_triggered();
-        return;
-      }
-      )));};
-    sensor.out.disabled=  [this] () {
-      trace (sensor, "disabled");
-      rt.defer (sensor.in.meta.address, connect<void>(rt, this,
-      boost::function<void()>(
-      [=]
-      {
-        sensor_disabled();
-        return;
-      }
-      )));};
+    console.in.arm = [&] () {
+      call_in(this, std::function<void()>([&] {this->console_arm(); }), std::make_tuple(&console, "arm", "return"));
+    };
+    console.in.disarm = [&] () {
+      call_in(this, std::function<void()>([&] {this->console_disarm(); }), std::make_tuple(&console, "disarm", "return"));
+    };
+    sensor.out.triggered = [&] () {
+      call_out(this, std::function<void()>([&] {this->sensor_triggered(); }), std::make_tuple(&sensor, "triggered", "return"));
+    };
+    sensor.out.disabled = [&] () {
+      call_out(this, std::function<void()>([&] {this->sensor_disabled(); }), std::make_tuple(&sensor, "disabled", "return"));
+    };
   }
 
   void Alarm::console_arm()

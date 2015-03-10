@@ -26,8 +26,8 @@
 #ifndef DEZYNE_U_HH
 #define DEZYNE_U_HH
 
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
+#include <cassert>
+#include <functional>
 
 namespace dezyne
 {
@@ -39,21 +39,11 @@ namespace dezyne
       {
         Ok, Nok
       };
-      static const char* to_string(type v)
-      {
-        switch(v)
-        {
-          case Ok: return "Status_Ok";
-          case Nok: return "Status_Nok";
-
-        }
-        return "";
-      }
     };
 
     struct
     {
-      boost::function<Status::type ()> what;
+      std::function<Status::type ()> what;
 
       struct
       {
@@ -83,5 +73,16 @@ namespace dezyne
     provided.out = required.out;
     required.in = provided.in;
   }
+  inline const char* to_string(U::Status::type v)
+  {
+    switch(v)
+    {
+      case U::Status::Ok: return "Status_Ok";
+      case U::Status::Nok: return "Status_Nok";
+
+    }
+    return "";
+  }
+
 }
 #endif // DEZYNE_U_HH

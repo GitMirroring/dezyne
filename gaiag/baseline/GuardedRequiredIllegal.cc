@@ -44,36 +44,15 @@ namespace dezyne
     b.out.meta.port = "b";
     b.out.meta.address = this;
 
-    t.in.unguarded = connect<void>(rt, this,
-    boost::function<void()>
-    ([this] ()
-    {
-      trace (t, "unguarded");
-      t_unguarded();
-      trace_return (t, "return");
-      return;
-    }
-    ));
-    t.in.e = connect<void>(rt, this,
-    boost::function<void()>
-    ([this] ()
-    {
-      trace (t, "e");
-      t_e();
-      trace_return (t, "return");
-      return;
-    }
-    ));
-    b.out.f=  [this] () {
-      trace (b, "f");
-      rt.defer (b.in.meta.address, connect<void>(rt, this,
-      boost::function<void()>(
-      [=]
-      {
-        b_f();
-        return;
-      }
-      )));};
+    t.in.unguarded = [&] () {
+      call_in(this, std::function<void()>([&] {this->t_unguarded(); }), std::make_tuple(&t, "unguarded", "return"));
+    };
+    t.in.e = [&] () {
+      call_in(this, std::function<void()>([&] {this->t_e(); }), std::make_tuple(&t, "e", "return"));
+    };
+    b.out.f = [&] () {
+      call_out(this, std::function<void()>([&] {this->b_f(); }), std::make_tuple(&b, "f", "return"));
+    };
   }
 
   void GuardedRequiredIllegal::t_unguarded()
