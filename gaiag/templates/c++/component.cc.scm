@@ -21,7 +21,7 @@ namespace dezyne
     (lambda (port)
       (map (define-on model port #{
 #port .#direction .#event  = [&] (#parameters) {
-    #(if (eq? return-type 'void) "" "return ")call_in(this, std::function<#return-type ()>([&] {#(if (eq? return-type 'void) "" "return ")this->#port _#event (#arguments); }), std::make_tuple(&#port , "#event ", "return"));
+    #(if (eq? return-type 'void) "" "return ")call_in(this, #(string-if (and (eq? return-type 'void) (null? argument-list)) #{ [this] {#port _#event();}#} #{std::function<#return-type ()>([&] {#(if (eq? return-type 'void) "" "return ")#port _#event (#arguments);})#}), std::make_tuple(&#port , "#event ", "return"));
 };
 #}) (filter gom:in? (gom:events port))))
     (filter gom:provides? (gom:ports model)))#
@@ -29,7 +29,7 @@ namespace dezyne
     (lambda (port)
       (map (define-on model port #{
 #port .#direction .#event  = [&] (#parameters) {
-    call_out(this, std::function<#return-type ()>([&#comma #arguments] {this->#port _#event (#arguments); }), std::make_tuple(&#port , "#event ", "return"));
+    call_out(this, #(string-if (null? argument-list) #{[this] {#port _#event();}#} #{ std::function<void()>([&#comma #arguments] {this->#port _#event (#arguments);}) #}), std::make_tuple(&#port , "#event ", "return"));
 };
 #}) (filter gom:out? (gom:events port))))
     (filter gom:requires? (gom:ports model))) }
