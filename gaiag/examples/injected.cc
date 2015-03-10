@@ -3,7 +3,7 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -42,7 +42,7 @@ int main()
 
   dezyne::Injected i(l);
 
-  i.meta = {"i", 0, 0, {}};
+  i.meta = {"i",0,0,{}};
   i.t.meta.requires = {"main","port",0};
   i.t.out.f = f;
 

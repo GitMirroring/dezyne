@@ -22,6 +22,7 @@ struct #.interface
    #(map (declare-io model
           #{std::function<#return-type  (#parameters)> #name;
 #}) (filter gom:out? ((compose .elements .events) model))) } out;
+
    port::meta meta;
    inline #.interface(port::meta m) : meta(m) {}
   };

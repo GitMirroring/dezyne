@@ -1,5 +1,5 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
@@ -26,17 +26,16 @@
 #include "locator.hh"
 #include "runtime.hh"
 
-#include <map>
-#include <queue>
+#include <iostream>
 
 void detected()
 {
-  std::cout << "Console.detected" << std::endl;
+  std::clog << "Console.detected" << std::endl;
 }
 
 void deactivated()
 {
-  std::cout << "Console.deactivated" << std::endl;
+  std::clog << "Console.deactivated" << std::endl;
 }
 
 int main()
