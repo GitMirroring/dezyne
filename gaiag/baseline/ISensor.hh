@@ -28,7 +28,6 @@
 #include "meta.hh"
 
 #include <cassert>
-#include <functional>
 
 namespace dezyne
 {
@@ -49,6 +48,16 @@ namespace dezyne
 
     port::meta meta;
     inline ISensor(port::meta m) : meta(m) {}
+
+    void check_bindings() const
+    {
+      if (not in.enable) throw dezyne::binding_error_in(meta, "in.enable");
+      if (not in.disable) throw dezyne::binding_error_in(meta, "in.disable");
+
+      if (not out.triggered) throw dezyne::binding_error_out(meta, "out.triggered");
+      if (not out.disabled) throw dezyne::binding_error_out(meta, "out.disabled");
+
+    }
   };
 
   inline void connect (ISensor& provided, ISensor& required)

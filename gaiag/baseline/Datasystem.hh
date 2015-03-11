@@ -48,6 +48,7 @@ namespace dezyne
     IDataparam& port;
 
     Datasystem(const dezyne::locator&);
+    void check_bindings() const;
   };
 }
 #endif // DEZYNE_DATASYSTEM_HH

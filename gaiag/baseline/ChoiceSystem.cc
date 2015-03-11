@@ -27,12 +27,17 @@
 namespace dezyne
 {
   ChoiceSystem::ChoiceSystem(const dezyne::locator& dezyne_locator)
-  : meta{"",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&choice)}}
+  : meta{"",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&choice)},{}}
   , choice(dezyne_locator)
   , c(choice.c)
   {
     choice.meta.parent = reinterpret_cast<component*>(this);
     choice.meta.address = reinterpret_cast<component*>(&choice);
     choice.meta.name = "choice";
+  }
+
+  void ChoiceSystem::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
   }
 }

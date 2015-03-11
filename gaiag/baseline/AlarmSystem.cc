@@ -27,7 +27,7 @@
 namespace dezyne
 {
   AlarmSystem::AlarmSystem(const dezyne::locator& dezyne_locator)
-  : meta{"",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&alarm),reinterpret_cast<component*>(&sensor),reinterpret_cast<component*>(&siren)}}
+  : meta{"",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&alarm),reinterpret_cast<component*>(&sensor),reinterpret_cast<component*>(&siren)},{}}
   , alarm(dezyne_locator)
   , sensor(dezyne_locator)
   , siren(dezyne_locator)
@@ -44,5 +44,10 @@ namespace dezyne
     siren.meta.name = "siren";
     connect(sensor.sensor, alarm.sensor);
     connect(siren.siren, alarm.siren);
+  }
+
+  void AlarmSystem::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
   }
 }

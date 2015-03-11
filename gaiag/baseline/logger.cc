@@ -32,7 +32,8 @@
 namespace dezyne
 {
   logger::logger(const locator& dezyne_locator)
-  : rt(dezyne_locator.get<runtime>())
+  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{log.check_bindings();}}}
+  , rt(dezyne_locator.get<runtime>())
   , log({{"logger","log",this},{"","",0}})
   {
     log.in.log = [&] () {

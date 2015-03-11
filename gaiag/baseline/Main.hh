@@ -48,6 +48,7 @@ namespace dezyne
     IRun& runner;
 
     Main(const dezyne::locator&);
+    void check_bindings() const;
   };
 }
 #endif // DEZYNE_MAIN_HH

@@ -29,7 +29,6 @@
 #include "meta.hh"
 
 #include <cassert>
-#include <functional>
 
 namespace dezyne
 {
@@ -62,6 +61,14 @@ namespace dezyne
 
     port::meta meta;
     inline ienum_collision(port::meta m) : meta(m) {}
+
+    void check_bindings() const
+    {
+      if (not in.foo) throw dezyne::binding_error_in(meta, "in.foo");
+      if (not in.bar) throw dezyne::binding_error_in(meta, "in.bar");
+
+
+    }
   };
 
   inline void connect (ienum_collision& provided, ienum_collision& required)

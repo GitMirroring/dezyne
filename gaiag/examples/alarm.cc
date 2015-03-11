@@ -44,11 +44,13 @@ int main()
   dezyne::locator locator;
   dezyne::AlarmSystem alarmsystem(locator.set(runtime));
 
-  alarmsystem.meta = {"alarmsystem",0,0,{}};
-  alarmsystem.console.meta.requires = {"main","console",0};
+  alarmsystem.meta.name = "alarmsystem";
+  alarmsystem.console.meta.requires = {"alarmsystem","console",&alarmsystem};
 
   alarmsystem.console.out.detected = detected;
   alarmsystem.console.out.deactivated = deactivated;
+
+  alarmsystem.check_bindings();
 
   alarmsystem.console.in.arm();
   alarmsystem.sensor.sensor.out.triggered();

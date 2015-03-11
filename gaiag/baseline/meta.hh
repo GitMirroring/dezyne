@@ -24,7 +24,10 @@
 #ifndef META_HH
 #define META_HH
 
+#include <functional>
 #include <string>
+#include <stdexcept>
+#include <vector>
 
 namespace dezyne
 {
@@ -47,5 +50,43 @@ namespace dezyne
       } requires;
     };
   }
+
+  struct component;
+
+  struct meta
+  {
+    std::string name;
+    const component* address;
+    const component* parent;
+    std::vector<const component*> children;
+    std::vector<std::function<void()>> ports_connected;
+  };
+
+  struct component
+  {
+    dezyne::meta meta;
+  };
+
+  inline std::string path(meta const* top, std::string p="")
+  {
+    if(top->parent)
+      return path(&top->parent->meta, top->name + (p.empty() ? p : "." + p));
+    return top->name + (p.empty() ? p : "." + p);
+  }
+
+  struct binding_error_in: public std::runtime_error
+  {
+    template <typename T>
+    binding_error_in(T const& m, const std::string& msg)
+    : std::runtime_error("not connected: " + path(&reinterpret_cast<const component*>(m.provides.address ? m.provides.address : m.requires.address)->meta, m.provides.address ? m.provides.port : m.requires.port) + "." + msg)
+    {}
+  };
+  struct binding_error_out: public std::runtime_error
+  {
+    template <typename T>
+    binding_error_out(T const& m, const std::string& msg)
+    : std::runtime_error("not connected: " + path(&reinterpret_cast<const component*>(m.requires.address ? m.requires.address : m.provides.address)->meta, m.requires.address ? m.requires.port : m.provides.port) + "." + msg)
+    {}
+  };
 }
 #endif

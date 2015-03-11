@@ -1,6 +1,10 @@
-middle.t_e
-logger.log_log
-bottom.b_e
-middle.b_f
-logger.log_log
+i.t.e -> middle.t.e
+..log -> logger.log.log
+logger.log.return -> ..return
+middle.b.e -> bottom.b.e
+bottom.b.f -> middle.b.f
+bottom.b.return -> middle.b.return
+..log -> logger.log.log
+logger.log.return -> ..return
 f
+middle.t.return -> i.t.return

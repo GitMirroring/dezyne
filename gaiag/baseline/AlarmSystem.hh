@@ -50,6 +50,7 @@ namespace dezyne
     IConsole& console;
 
     AlarmSystem(const dezyne::locator&);
+    void check_bindings() const;
   };
 }
 #endif // DEZYNE_ALARMSYSTEM_HH

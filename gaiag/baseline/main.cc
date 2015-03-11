@@ -37,6 +37,10 @@ int main()
 
   dezyne::Main m(l);
 
-  m.runner.meta.requires = {"main","runner",0};
+  m.meta.name = "m";
+  m.runner.meta.requires = {"m","runner",&m};
+
+  m.check_bindings();
+
   m.runner.in.run();
 }

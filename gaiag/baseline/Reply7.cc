@@ -33,7 +33,8 @@
 namespace dezyne
 {
   Reply7::Reply7(const locator& dezyne_locator)
-  : rt(dezyne_locator.get<runtime>())
+  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{p.check_bindings();},[this]{r.check_bindings();}}}
+  , rt(dezyne_locator.get<runtime>())
   , p({{"Reply7","p",this},{"","",0}})
   , r({{"","",0},{"Reply7","r",this}})
   {

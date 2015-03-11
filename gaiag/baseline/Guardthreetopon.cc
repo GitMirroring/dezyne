@@ -32,7 +32,8 @@
 namespace dezyne
 {
   Guardthreetopon::Guardthreetopon(const locator& dezyne_locator)
-  : rt(dezyne_locator.get<runtime>())
+  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{i.check_bindings();},[this]{r.check_bindings();}}}
+  , rt(dezyne_locator.get<runtime>())
   , b(false)
   , i({{"Guardthreetopon","i",this},{"","",0}})
   , r({{"","",0},{"Guardthreetopon","r",this}})

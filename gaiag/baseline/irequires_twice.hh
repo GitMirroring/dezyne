@@ -29,7 +29,6 @@
 #include "meta.hh"
 
 #include <cassert>
-#include <functional>
 
 namespace dezyne
 {
@@ -48,6 +47,14 @@ namespace dezyne
 
     port::meta meta;
     inline irequires_twice(port::meta m) : meta(m) {}
+
+    void check_bindings() const
+    {
+      if (not in.e) throw dezyne::binding_error_in(meta, "in.e");
+
+      if (not out.a) throw dezyne::binding_error_out(meta, "out.a");
+
+    }
   };
 
   inline void connect (irequires_twice& provided, irequires_twice& required)

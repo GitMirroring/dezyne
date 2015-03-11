@@ -29,7 +29,6 @@
 #include "meta.hh"
 
 #include <cassert>
-#include <functional>
 
 namespace dezyne
 {
@@ -48,6 +47,14 @@ namespace dezyne
 
     port::meta meta;
     inline Requires(port::meta m) : meta(m) {}
+
+    void check_bindings() const
+    {
+      if (not in.ping) throw dezyne::binding_error_in(meta, "in.ping");
+
+      if (not out.pong) throw dezyne::binding_error_out(meta, "out.pong");
+
+    }
   };
 
   inline void connect (Requires& provided, Requires& required)

@@ -26,6 +26,7 @@
 #include "locator.hh"
 #include "runtime.hh"
 
+#include <algorithm>
 #include <iostream>
 
 void a0()
@@ -61,50 +62,48 @@ int main()
   dezyne::runtime rt;
   l.set(rt);
 
-  dezyne::Datasystem c(l);
+  dezyne::Datasystem d(l);
 
-  c.meta = {"c",0,0,{}};
-  c.port.meta.requires = {"main","port",0};
+  d.meta.name = "d";
+  d.port.meta.requires = {"d","port",&d};
 
-  c.port.out.a0 = a0;
-  c.port.out.a = a;
-  c.port.out.aa = aa;
-  c.port.out.a6 = a6;
+  d.port.out.a0 = a0;
+  d.port.out.a = a;
+  d.port.out.aa = aa;
+  d.port.out.a6 = a6;
 
-  dezyne::apply(reinterpret_cast<dezyne::component*>(&c), [](const dezyne::meta& m){
-      std::clog << m.parent << " " << m.address << " " << m.name << std::endl;
-    });
+  d.check_bindings();
 
-  assert(dezyne::IDataparam::Status::Yes == c.port.in.e0r());
-  c.port.in.e0();
-  assert(dezyne::IDataparam::Status::Yes == c.port.in.er(123));
-  c.port.in.e(123);
-  assert(dezyne::IDataparam::Status::No == c.port.in.eer(123,345));
+  assert(dezyne::IDataparam::Status::Yes == d.port.in.e0r());
+  d.port.in.e0();
+  assert(dezyne::IDataparam::Status::Yes == d.port.in.er(123));
+  d.port.in.e(123);
+  assert(dezyne::IDataparam::Status::No == d.port.in.eer(123,345));
 
   int i = 0;
-  c.port.in.eo(i);
+  d.port.in.eo(i);
   assert(i == 234);
 
   int j = 0;
-  c.port.in.eoo(i,j);
+  d.port.in.eoo(i,j);
   assert(i == 123 && j == 456);
 
-  c.port.in.eio(i,j);
+  d.port.in.eio(i,j);
   assert(i == 123 && j == i);
 
-  c.port.in.eio2(i);
+  d.port.in.eio2(i);
   assert(i == 246);
 
 
-  assert(dezyne::IDataparam::Status::Yes == c.port.in.eor(i));
+  assert(dezyne::IDataparam::Status::Yes == d.port.in.eor(i));
   assert(i == 234);
 
-  assert(dezyne::IDataparam::Status::Yes == c.port.in.eoor(i,j));
+  assert(dezyne::IDataparam::Status::Yes == d.port.in.eoor(i,j));
   assert(i == 123 && j == 456);
 
-  assert(dezyne::IDataparam::Status::Yes == c.port.in.eior(i,j));
+  assert(dezyne::IDataparam::Status::Yes == d.port.in.eior(i,j));
   assert(i == 123 && j == i);
 
-  assert(dezyne::IDataparam::Status::Yes == c.port.in.eio2r(i));
+  assert(dezyne::IDataparam::Status::Yes == d.port.in.eio2r(i));
   assert(i == 246);
 }

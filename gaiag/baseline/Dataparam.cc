@@ -33,7 +33,8 @@
 namespace dezyne
 {
   Dataparam::Dataparam(const locator& dezyne_locator)
-  : rt(dezyne_locator.get<runtime>())
+  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{port.check_bindings();}}}
+  , rt(dezyne_locator.get<runtime>())
   , mi(0)
   , s(IDataparam::Status::Yes)
   , port({{"Dataparam","port",this},{"","",0}})

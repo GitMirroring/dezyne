@@ -46,6 +46,7 @@ namespace dezyne
     IChoice& c;
 
     ChoiceSystem(const dezyne::locator&);
+    void check_bindings() const;
   };
 }
 #endif // DEZYNE_CHOICESYSTEM_HH

@@ -27,7 +27,7 @@
 namespace dezyne
 {
   Main::Main(const dezyne::locator& dezyne_locator)
-  : meta{"",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&adaptor),reinterpret_cast<component*>(&choice)}}
+  : meta{"",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&adaptor),reinterpret_cast<component*>(&choice)},{}}
   , adaptor(dezyne_locator)
   , choice(dezyne_locator)
   , runner(adaptor.runner)
@@ -39,5 +39,10 @@ namespace dezyne
     choice.meta.address = reinterpret_cast<component*>(&choice);
     choice.meta.name = "choice";
     connect(choice.c, adaptor.choice);
+  }
+
+  void Main::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
   }
 }

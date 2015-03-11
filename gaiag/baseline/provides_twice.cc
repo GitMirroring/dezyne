@@ -28,7 +28,7 @@
 namespace dezyne
 {
   provides_twice::provides_twice(const dezyne::locator& dezyne_locator)
-  : meta{"",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&one)}}
+  : meta{"",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&one)},{}}
   , one(dezyne_locator)
   , i(one.i)
   , ii(one.ii)
@@ -36,5 +36,10 @@ namespace dezyne
     one.meta.parent = reinterpret_cast<component*>(this);
     one.meta.address = reinterpret_cast<component*>(&one);
     one.meta.name = "one";
+  }
+
+  void provides_twice::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
   }
 }

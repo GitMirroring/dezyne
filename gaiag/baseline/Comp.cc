@@ -33,7 +33,8 @@
 namespace dezyne
 {
   Comp::Comp(const locator& dezyne_locator)
-  : rt(dezyne_locator.get<runtime>())
+  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{client.check_bindings();},[this]{device_A.check_bindings();}}}
+  , rt(dezyne_locator.get<runtime>())
   , s(State::Uninitialized)
   , client({{"Comp","client",this},{"","",0}})
   , device_A({{"","",0},{"Comp","device_A",this}})

@@ -1,4 +1,4 @@
-main.runner.run -> Adaptor.runner.run
+m.runner.run -> Adaptor.runner.run
 Adaptor.choice.e -> Choice.c.e
 Choice.c.a -> Adaptor.choice.a
 Choice.c.return -> Adaptor.choice.return
@@ -8,4 +8,4 @@ Adaptor.choice.e -> Choice.c.e
 Choice.c.a -> Adaptor.choice.a
 Choice.c.return -> Adaptor.choice.return
 Choice.c.return -> Adaptor.choice.return
-Adaptor.runner.return -> main.runner.return
+Adaptor.runner.return -> m.runner.return

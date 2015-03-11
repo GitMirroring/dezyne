@@ -33,7 +33,8 @@
 namespace dezyne
 {
   requires_twice::requires_twice(const locator& dezyne_locator)
-  : rt(dezyne_locator.get<runtime>())
+  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{p.check_bindings();},[this]{once.check_bindings();},[this]{twice.check_bindings();}}}
+  , rt(dezyne_locator.get<runtime>())
   , p({{"requires_twice","p",this},{"","",0}})
   , once({{"","",0},{"requires_twice","once",this}})
   , twice({{"","",0},{"requires_twice","twice",this}})

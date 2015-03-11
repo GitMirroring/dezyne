@@ -33,7 +33,8 @@
 namespace dezyne
 {
   function::function(const locator& dezyne_locator)
-  : rt(dezyne_locator.get<runtime>())
+  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{i.check_bindings();}}}
+  , rt(dezyne_locator.get<runtime>())
   , f(false)
   , i({{"function","i",this},{"","",0}})
   {

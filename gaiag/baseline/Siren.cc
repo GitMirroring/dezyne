@@ -32,7 +32,8 @@
 namespace dezyne
 {
   Siren::Siren(const locator& dezyne_locator)
-  : rt(dezyne_locator.get<runtime>())
+  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{siren.check_bindings();}}}
+  , rt(dezyne_locator.get<runtime>())
   , siren({{"Siren","siren",this},{"","",0}})
   {
     siren.in.turnon = [&] () {

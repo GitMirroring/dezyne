@@ -29,7 +29,6 @@
 #include "meta.hh"
 
 #include <cassert>
-#include <functional>
 
 namespace dezyne
 {
@@ -50,6 +49,16 @@ namespace dezyne
 
     port::meta meta;
     inline iimperative(port::meta m) : meta(m) {}
+
+    void check_bindings() const
+    {
+      if (not in.e) throw dezyne::binding_error_in(meta, "in.e");
+
+      if (not out.f) throw dezyne::binding_error_out(meta, "out.f");
+      if (not out.g) throw dezyne::binding_error_out(meta, "out.g");
+      if (not out.h) throw dezyne::binding_error_out(meta, "out.h");
+
+    }
   };
 
   inline void connect (iimperative& provided, iimperative& required)

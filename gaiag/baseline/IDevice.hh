@@ -29,7 +29,6 @@
 #include "meta.hh"
 
 #include <cassert>
-#include <functional>
 
 namespace dezyne
 {
@@ -57,6 +56,16 @@ namespace dezyne
 
     port::meta meta;
     inline IDevice(port::meta m) : meta(m) {}
+
+    void check_bindings() const
+    {
+      if (not in.initialize) throw dezyne::binding_error_in(meta, "in.initialize");
+      if (not in.calibrate) throw dezyne::binding_error_in(meta, "in.calibrate");
+      if (not in.perform_action1) throw dezyne::binding_error_in(meta, "in.perform_action1");
+      if (not in.perform_action2) throw dezyne::binding_error_in(meta, "in.perform_action2");
+
+
+    }
   };
 
   inline void connect (IDevice& provided, IDevice& required)

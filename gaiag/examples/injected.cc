@@ -42,9 +42,11 @@ int main()
 
   dezyne::Injected i(l);
 
-  i.meta = {"i",0,0,{}};
-  i.t.meta.requires = {"main","port",0};
+  i.meta.name = "i";
+  i.t.meta.requires = {"i","t",&i};
   i.t.out.f = f;
+
+  i.check_bindings();
 
   i.t.in.e();
 }

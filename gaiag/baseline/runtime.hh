@@ -27,7 +27,8 @@
 
 #include "meta.hh"
 
-#include <functional>
+#include <algorithm>
+#include <cassert>
 #include <map>
 #include <queue>
 #include <tuple>
@@ -37,29 +38,20 @@ namespace dezyne
   void trace_in(port::meta const& m, const char* e);
   void trace_out(port::meta const& m, const char* e);
 
-  struct component;
-
-  struct meta
-  {
-    std::string name;
-    const component* address;
-    const component* parent;
-    std::vector<const component*> children;
-  };
-
-  struct component
-  {
-    dezyne::meta meta;
-  };
-
-  template <typename T>
-  void apply(const T* t, const std::function<void(const dezyne::meta&)>& f)
+  inline void apply(const component* t, const std::function<void(const dezyne::meta&)>& f)
   {
     f(t->meta);
     for (auto c : t->meta.children)
     {
       apply(c, f);
     }
+  }
+
+  inline void check_bindings(const component* c)
+  {
+    dezyne::apply(c, [](const dezyne::meta& m){
+        std::for_each(m.ports_connected.begin(), m.ports_connected.end(), [&](std::function<void()> p){p();});
+      });
   }
 
   struct runtime

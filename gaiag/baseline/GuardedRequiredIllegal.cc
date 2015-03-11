@@ -32,7 +32,8 @@
 namespace dezyne
 {
   GuardedRequiredIllegal::GuardedRequiredIllegal(const locator& dezyne_locator)
-  : rt(dezyne_locator.get<runtime>())
+  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{t.check_bindings();},[this]{b.check_bindings();}}}
+  , rt(dezyne_locator.get<runtime>())
   , c(false)
   , t({{"GuardedRequiredIllegal","t",this},{"","",0}})
   , b({{"","",0},{"GuardedRequiredIllegal","b",this}})

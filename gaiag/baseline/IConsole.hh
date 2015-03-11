@@ -28,7 +28,6 @@
 #include "meta.hh"
 
 #include <cassert>
-#include <functional>
 
 namespace dezyne
 {
@@ -49,6 +48,16 @@ namespace dezyne
 
     port::meta meta;
     inline IConsole(port::meta m) : meta(m) {}
+
+    void check_bindings() const
+    {
+      if (not in.arm) throw dezyne::binding_error_in(meta, "in.arm");
+      if (not in.disarm) throw dezyne::binding_error_in(meta, "in.disarm");
+
+      if (not out.detected) throw dezyne::binding_error_out(meta, "out.detected");
+      if (not out.deactivated) throw dezyne::binding_error_out(meta, "out.deactivated");
+
+    }
   };
 
   inline void connect (IConsole& provided, IConsole& required)

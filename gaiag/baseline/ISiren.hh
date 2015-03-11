@@ -28,7 +28,6 @@
 #include "meta.hh"
 
 #include <cassert>
-#include <functional>
 
 namespace dezyne
 {
@@ -47,6 +46,14 @@ namespace dezyne
 
     port::meta meta;
     inline ISiren(port::meta m) : meta(m) {}
+
+    void check_bindings() const
+    {
+      if (not in.turnon) throw dezyne::binding_error_in(meta, "in.turnon");
+      if (not in.turnoff) throw dezyne::binding_error_in(meta, "in.turnoff");
+
+
+    }
   };
 
   inline void connect (ISiren& provided, ISiren& required)

@@ -32,7 +32,8 @@
 namespace dezyne
 {
   Alarm::Alarm(const locator& dezyne_locator)
-  : rt(dezyne_locator.get<runtime>())
+  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{console.check_bindings();},[this]{sensor.check_bindings();},[this]{siren.check_bindings();}}}
+  , rt(dezyne_locator.get<runtime>())
   , state(States::Disarmed)
   , sounding(false)
   , console({{"Alarm","console",this},{"","",0}})

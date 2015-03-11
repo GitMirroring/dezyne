@@ -29,7 +29,6 @@
 #include "meta.hh"
 
 #include <cassert>
-#include <functional>
 
 namespace dezyne
 {
@@ -70,6 +69,29 @@ namespace dezyne
 
     port::meta meta;
     inline IDataparam(port::meta m) : meta(m) {}
+
+    void check_bindings() const
+    {
+      if (not in.e0) throw dezyne::binding_error_in(meta, "in.e0");
+      if (not in.e0r) throw dezyne::binding_error_in(meta, "in.e0r");
+      if (not in.e) throw dezyne::binding_error_in(meta, "in.e");
+      if (not in.er) throw dezyne::binding_error_in(meta, "in.er");
+      if (not in.eer) throw dezyne::binding_error_in(meta, "in.eer");
+      if (not in.eo) throw dezyne::binding_error_in(meta, "in.eo");
+      if (not in.eoo) throw dezyne::binding_error_in(meta, "in.eoo");
+      if (not in.eio) throw dezyne::binding_error_in(meta, "in.eio");
+      if (not in.eio2) throw dezyne::binding_error_in(meta, "in.eio2");
+      if (not in.eor) throw dezyne::binding_error_in(meta, "in.eor");
+      if (not in.eoor) throw dezyne::binding_error_in(meta, "in.eoor");
+      if (not in.eior) throw dezyne::binding_error_in(meta, "in.eior");
+      if (not in.eio2r) throw dezyne::binding_error_in(meta, "in.eio2r");
+
+      if (not out.a0) throw dezyne::binding_error_out(meta, "out.a0");
+      if (not out.a) throw dezyne::binding_error_out(meta, "out.a");
+      if (not out.aa) throw dezyne::binding_error_out(meta, "out.aa");
+      if (not out.a6) throw dezyne::binding_error_out(meta, "out.a6");
+
+    }
   };
 
   inline void connect (IDataparam& provided, IDataparam& required)

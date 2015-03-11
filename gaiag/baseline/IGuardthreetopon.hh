@@ -28,7 +28,6 @@
 #include "meta.hh"
 
 #include <cassert>
-#include <functional>
 
 namespace dezyne
 {
@@ -49,6 +48,16 @@ namespace dezyne
 
     port::meta meta;
     inline IGuardthreetopon(port::meta m) : meta(m) {}
+
+    void check_bindings() const
+    {
+      if (not in.e) throw dezyne::binding_error_in(meta, "in.e");
+      if (not in.t) throw dezyne::binding_error_in(meta, "in.t");
+      if (not in.s) throw dezyne::binding_error_in(meta, "in.s");
+
+      if (not out.a) throw dezyne::binding_error_out(meta, "out.a");
+
+    }
   };
 
   inline void connect (IGuardthreetopon& provided, IGuardthreetopon& required)

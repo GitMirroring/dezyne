@@ -33,7 +33,8 @@
 namespace dezyne
 {
   imperative::imperative(const locator& dezyne_locator)
-  : rt(dezyne_locator.get<runtime>())
+  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{i.check_bindings();}}}
+  , rt(dezyne_locator.get<runtime>())
   , state(States::I)
   , i({{"imperative","i",this},{"","",0}})
   {

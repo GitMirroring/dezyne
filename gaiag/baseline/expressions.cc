@@ -33,7 +33,8 @@
 namespace dezyne
 {
   expressions::expressions(const locator& dezyne_locator)
-  : rt(dezyne_locator.get<runtime>())
+  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{i.check_bindings();}}}
+  , rt(dezyne_locator.get<runtime>())
   , state(3)
   , c(0)
   , i({{"expressions","i",this},{"","",0}})

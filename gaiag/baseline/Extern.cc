@@ -33,7 +33,8 @@
 namespace dezyne
 {
   Extern::Extern(const locator& dezyne_locator)
-  : rt(dezyne_locator.get<runtime>())
+  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{port.check_bindings();}}}
+  , rt(dezyne_locator.get<runtime>())
   , i(0)
   , j()
   , port({{"Extern","port",this},{"","",0}})

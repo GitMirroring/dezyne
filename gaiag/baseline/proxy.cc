@@ -32,7 +32,8 @@
 namespace dezyne
 {
   proxy::proxy(const locator& dezyne_locator)
-  : rt(dezyne_locator.get<runtime>())
+  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{top.check_bindings();},[this]{bottom.check_bindings();}}}
+  , rt(dezyne_locator.get<runtime>())
   , top({{"proxy","top",this},{"","",0}})
   , bottom({{"","",0},{"proxy","bottom",this}})
   {

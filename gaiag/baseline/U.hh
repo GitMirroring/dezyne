@@ -29,7 +29,6 @@
 #include "meta.hh"
 
 #include <cassert>
-#include <functional>
 
 namespace dezyne
 {
@@ -54,6 +53,13 @@ namespace dezyne
 
     port::meta meta;
     inline U(port::meta m) : meta(m) {}
+
+    void check_bindings() const
+    {
+      if (not in.what) throw dezyne::binding_error_in(meta, "in.what");
+
+
+    }
   };
 
   inline void connect (U& provided, U& required)

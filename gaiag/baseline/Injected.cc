@@ -27,7 +27,7 @@
 namespace dezyne
 {
   Injected::Injected(const dezyne::locator& dezyne_locator)
-  : meta{"",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&m),reinterpret_cast<component*>(&b)}}
+  : meta{"",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&m),reinterpret_cast<component*>(&b)},{}}
   , l(dezyne_locator)
   , dezyne_local_locator(dezyne_locator.clone().set(l.log))
   , m(dezyne_local_locator)
@@ -41,5 +41,10 @@ namespace dezyne
     b.meta.address = reinterpret_cast<component*>(&b);
     b.meta.name = "b";
     connect(b.b, m.b);
+  }
+
+  void Injected::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
   }
 }

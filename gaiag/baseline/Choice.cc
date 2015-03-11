@@ -33,7 +33,8 @@
 namespace dezyne
 {
   Choice::Choice(const locator& dezyne_locator)
-  : rt(dezyne_locator.get<runtime>())
+  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{c.check_bindings();}}}
+  , rt(dezyne_locator.get<runtime>())
   , s(State::Off)
   , c({{"Choice","c",this},{"","",0}})
   {

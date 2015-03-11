@@ -33,7 +33,8 @@
 namespace dezyne
 {
   argument2::argument2(const locator& dezyne_locator)
-  : rt(dezyne_locator.get<runtime>())
+  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{i.check_bindings();}}}
+  , rt(dezyne_locator.get<runtime>())
   , b(false)
   , i({{"argument2","i",this},{"","",0}})
   {

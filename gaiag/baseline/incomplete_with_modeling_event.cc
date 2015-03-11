@@ -33,7 +33,8 @@
 namespace dezyne
 {
   incomplete_with_modeling_event::incomplete_with_modeling_event(const locator& dezyne_locator)
-  : rt(dezyne_locator.get<runtime>())
+  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{p.check_bindings();},[this]{r.check_bindings();}}}
+  , rt(dezyne_locator.get<runtime>())
   , p({{"incomplete_with_modeling_event","p",this},{"","",0}})
   , r({{"","",0},{"incomplete_with_modeling_event","r",this}})
   {

@@ -28,7 +28,6 @@
 #include "meta.hh"
 
 #include <cassert>
-#include <functional>
 
 namespace dezyne
 {
@@ -46,6 +45,13 @@ namespace dezyne
 
     port::meta meta;
     inline ilogger(port::meta m) : meta(m) {}
+
+    void check_bindings() const
+    {
+      if (not in.log) throw dezyne::binding_error_in(meta, "in.log");
+
+
+    }
   };
 
   inline void connect (ilogger& provided, ilogger& required)

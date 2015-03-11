@@ -33,7 +33,8 @@
 namespace dezyne
 {
   If::If(const locator& dezyne_locator)
-  : rt(dezyne_locator.get<runtime>())
+  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{i.check_bindings();}}}
+  , rt(dezyne_locator.get<runtime>())
   , t(false)
   , i({{"If","i",this},{"","",0}})
   {

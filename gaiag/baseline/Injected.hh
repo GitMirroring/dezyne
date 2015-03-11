@@ -48,6 +48,7 @@ namespace dezyne
     itop& t;
 
     Injected(const dezyne::locator&);
+    void check_bindings() const;
   };
 }
 #endif // DEZYNE_INJECTED_HH
