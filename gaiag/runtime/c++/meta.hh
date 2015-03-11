@@ -24,6 +24,8 @@
 #ifndef META_HH
 #define META_HH
 
+#include <string>
+
 namespace dezyne
 {
   namespace port
@@ -32,15 +34,15 @@ namespace dezyne
     {
       struct
       {
-        const char* component;
-        const char* port;
+        std::string component;
+        std::string port;
         void*       address;
       } provides;
 
       struct
       {
-        const char* component;
-        const char* port;
+        std::string component;
+        std::string port;
         void*       address;
       } requires;
     };
