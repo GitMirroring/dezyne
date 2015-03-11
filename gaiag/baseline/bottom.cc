@@ -33,7 +33,7 @@ namespace dezyne
 {
   bottom::bottom(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
-  , b({{"bottom","b",this},{0,0,0}})
+  , b({{"bottom","b",this},{"","",0}})
   {
     b.in.e = [&] () {
       call_in(this, [this] {b_e();}, std::make_tuple(&b, "e", "return"));

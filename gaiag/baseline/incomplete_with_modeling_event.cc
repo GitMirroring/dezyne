@@ -34,8 +34,8 @@ namespace dezyne
 {
   incomplete_with_modeling_event::incomplete_with_modeling_event(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
-  , p({{"incomplete_with_modeling_event","p",this},{0,0,0}})
-  , r({{0,0,0},{"incomplete_with_modeling_event","r",this}})
+  , p({{"incomplete_with_modeling_event","p",this},{"","",0}})
+  , r({{"","",0},{"incomplete_with_modeling_event","r",this}})
   {
     p.in.e = [&] () {
       call_in(this, [this] {p_e();}, std::make_tuple(&p, "e", "return"));

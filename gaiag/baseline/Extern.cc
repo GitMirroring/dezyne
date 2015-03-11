@@ -36,7 +36,7 @@ namespace dezyne
   : rt(dezyne_locator.get<runtime>())
   , i(0)
   , j()
-  , port({{"Extern","port",this},{0,0,0}})
+  , port({{"Extern","port",this},{"","",0}})
   {
     port.in.e = [&] () {
       call_in(this, [this] {port_e();}, std::make_tuple(&port, "e", "return"));

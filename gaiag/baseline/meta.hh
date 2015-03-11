@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -23,6 +24,8 @@
 #ifndef META_HH
 #define META_HH
 
+#include <string>
+
 namespace dezyne
 {
   namespace port
@@ -31,15 +34,15 @@ namespace dezyne
     {
       struct
       {
-        const char* component;
-        const char* port;
+        std::string component;
+        std::string port;
         void*       address;
       } provides;
 
       struct
       {
-        const char* component;
-        const char* port;
+        std::string component;
+        std::string port;
         void*       address;
       } requires;
     };

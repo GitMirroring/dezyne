@@ -33,8 +33,8 @@ namespace dezyne
 {
   middle::middle(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
-  , t({{"middle","t",this},{0,0,0}})
-  , b({{0,0,0},{"middle","b",this}})
+  , t({{"middle","t",this},{"","",0}})
+  , b({{"","",0},{"middle","b",this}})
   , l(dezyne_locator.get<ilogger>())
   {
     t.in.e = [&] () {

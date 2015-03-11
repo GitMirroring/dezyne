@@ -36,7 +36,7 @@ namespace dezyne
   : rt(dezyne_locator.get<runtime>())
   , mi(0)
   , s(IDataparam::Status::Yes)
-  , port({{"Dataparam","port",this},{0,0,0}})
+  , port({{"Dataparam","port",this},{"","",0}})
   {
     port.in.e0 = [&] () {
       call_in(this, [this] {port_e0();}, std::make_tuple(&port, "e0", "return"));

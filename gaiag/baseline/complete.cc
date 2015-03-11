@@ -34,8 +34,8 @@ namespace dezyne
 {
   complete::complete(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
-  , p({{"complete","p",this},{0,0,0}})
-  , r({{0,0,0},{"complete","r",this}})
+  , p({{"complete","p",this},{"","",0}})
+  , r({{"","",0},{"complete","r",this}})
   {
     p.in.e = [&] () {
       call_in(this, [this] {p_e();}, std::make_tuple(&p, "e", "return"));

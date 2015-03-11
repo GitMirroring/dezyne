@@ -34,8 +34,8 @@ namespace dezyne
 {
   modeling::modeling(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
-  , p({{"modeling","p",this},{0,0,0}})
-  , r({{0,0,0},{"modeling","r",this}})
+  , p({{"modeling","p",this},{"","",0}})
+  , r({{"","",0},{"modeling","r",this}})
   {
     p.in.e = [&] () {
       call_in(this, [this] {p_e();}, std::make_tuple(&p, "e", "return"));

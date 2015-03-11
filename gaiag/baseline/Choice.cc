@@ -35,7 +35,7 @@ namespace dezyne
   Choice::Choice(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , s(State::Off)
-  , c({{"Choice","c",this},{0,0,0}})
+  , c({{"Choice","c",this},{"","",0}})
   {
     c.in.e = [&] () {
       call_in(this, [this] {c_e();}, std::make_tuple(&c, "e", "return"));

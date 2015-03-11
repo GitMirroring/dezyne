@@ -35,7 +35,7 @@ namespace dezyne
   : rt(dezyne_locator.get<runtime>())
   , b(false)
   , c(false)
-  , i({{"Topon","i",this},{0,0,0}})
+  , i({{"Topon","i",this},{"","",0}})
   {
     i.in.e = [&] () {
       call_in(this, [this] {i_e();}, std::make_tuple(&i, "e", "return"));

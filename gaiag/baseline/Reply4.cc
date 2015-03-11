@@ -35,8 +35,8 @@ namespace dezyne
   Reply4::Reply4(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , dummy(false)
-  , i({{"Reply4","i",this},{0,0,0}})
-  , u({{0,0,0},{"Reply4","u",this}})
+  , i({{"Reply4","i",this},{"","",0}})
+  , u({{"","",0},{"Reply4","u",this}})
   {
     i.in.done = [&] () {
       return call_in(this, std::function<I::Status::type()>([&] {return i_done();}), std::make_tuple(&i, "done", "return"));

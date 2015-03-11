@@ -35,9 +35,9 @@ namespace dezyne
   : rt(dezyne_locator.get<runtime>())
   , state(States::Disarmed)
   , sounding(false)
-  , console({{"Alarm","console",this},{0,0,0}})
-  , sensor({{0,0,0},{"Alarm","sensor",this}})
-  , siren({{0,0,0},{"Alarm","siren",this}})
+  , console({{"Alarm","console",this},{"","",0}})
+  , sensor({{"","",0},{"Alarm","sensor",this}})
+  , siren({{"","",0},{"Alarm","siren",this}})
   {
     console.in.arm = [&] () {
       call_in(this, [this] {console_arm();}, std::make_tuple(&console, "arm", "return"));

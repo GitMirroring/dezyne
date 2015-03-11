@@ -34,7 +34,7 @@ namespace dezyne
   Guardtwotopon::Guardtwotopon(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , b(false)
-  , i({{"Guardtwotopon","i",this},{0,0,0}})
+  , i({{"Guardtwotopon","i",this},{"","",0}})
   {
     i.in.e = [&] () {
       call_in(this, [this] {i_e();}, std::make_tuple(&i, "e", "return"));

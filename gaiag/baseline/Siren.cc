@@ -33,7 +33,7 @@ namespace dezyne
 {
   Siren::Siren(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
-  , siren({{"Siren","siren",this},{0,0,0}})
+  , siren({{"Siren","siren",this},{"","",0}})
   {
     siren.in.turnon = [&] () {
       call_in(this, [this] {siren_turnon();}, std::make_tuple(&siren, "turnon", "return"));

@@ -34,8 +34,8 @@ namespace dezyne
 {
   Reply7::Reply7(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
-  , p({{"Reply7","p",this},{0,0,0}})
-  , r({{0,0,0},{"Reply7","r",this}})
+  , p({{"Reply7","p",this},{"","",0}})
+  , r({{"","",0},{"Reply7","r",this}})
   {
     p.in.foo = [&] () {
       return call_in(this, std::function<IReply7::E::type()>([&] {return p_foo();}), std::make_tuple(&p, "foo", "return"));

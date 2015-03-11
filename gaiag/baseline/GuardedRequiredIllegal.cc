@@ -34,8 +34,8 @@ namespace dezyne
   GuardedRequiredIllegal::GuardedRequiredIllegal(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , c(false)
-  , t({{"GuardedRequiredIllegal","t",this},{0,0,0}})
-  , b({{0,0,0},{"GuardedRequiredIllegal","b",this}})
+  , t({{"GuardedRequiredIllegal","t",this},{"","",0}})
+  , b({{"","",0},{"GuardedRequiredIllegal","b",this}})
   {
     t.in.unguarded = [&] () {
       call_in(this, [this] {t_unguarded();}, std::make_tuple(&t, "unguarded", "return"));

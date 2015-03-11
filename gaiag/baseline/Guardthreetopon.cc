@@ -34,8 +34,8 @@ namespace dezyne
   Guardthreetopon::Guardthreetopon(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , b(false)
-  , i({{"Guardthreetopon","i",this},{0,0,0}})
-  , r({{0,0,0},{"Guardthreetopon","r",this}})
+  , i({{"Guardthreetopon","i",this},{"","",0}})
+  , r({{"","",0},{"Guardthreetopon","r",this}})
   {
     i.in.e = [&] () {
       call_in(this, [this] {i_e();}, std::make_tuple(&i, "e", "return"));

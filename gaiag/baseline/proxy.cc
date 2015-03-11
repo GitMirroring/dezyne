@@ -33,8 +33,8 @@ namespace dezyne
 {
   proxy::proxy(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
-  , top({{"proxy","top",this},{0,0,0}})
-  , bottom({{0,0,0},{"proxy","bottom",this}})
+  , top({{"proxy","top",this},{"","",0}})
+  , bottom({{"","",0},{"proxy","bottom",this}})
   {
     top.in.e0 = [&] () {
       call_in(this, [this] {top_e0();}, std::make_tuple(&top, "e0", "return"));

@@ -35,7 +35,7 @@ namespace dezyne
   If::If(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , t(false)
-  , i({{"If","i",this},{0,0,0}})
+  , i({{"If","i",this},{"","",0}})
   {
     i.in.a = [&] () {
       call_in(this, [this] {i_a();}, std::make_tuple(&i, "a", "return"));

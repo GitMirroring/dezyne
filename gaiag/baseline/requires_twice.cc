@@ -34,9 +34,9 @@ namespace dezyne
 {
   requires_twice::requires_twice(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
-  , p({{"requires_twice","p",this},{0,0,0}})
-  , once({{0,0,0},{"requires_twice","once",this}})
-  , twice({{0,0,0},{"requires_twice","twice",this}})
+  , p({{"requires_twice","p",this},{"","",0}})
+  , once({{"","",0},{"requires_twice","once",this}})
+  , twice({{"","",0},{"requires_twice","twice",this}})
   {
     p.in.e = [&] () {
       call_in(this, [this] {p_e();}, std::make_tuple(&p, "e", "return"));

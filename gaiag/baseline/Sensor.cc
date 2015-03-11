@@ -33,7 +33,7 @@ namespace dezyne
 {
   Sensor::Sensor(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
-  , sensor({{"Sensor","sensor",this},{0,0,0}})
+  , sensor({{"Sensor","sensor",this},{"","",0}})
   {
     sensor.in.enable = [&] () {
       call_in(this, [this] {sensor_enable();}, std::make_tuple(&sensor, "enable", "return"));

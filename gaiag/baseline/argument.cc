@@ -35,7 +35,7 @@ namespace dezyne
   argument::argument(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , b(false)
-  , i({{"argument","i",this},{0,0,0}})
+  , i({{"argument","i",this},{"","",0}})
   {
     i.in.e = [&] () {
       call_in(this, [this] {i_e();}, std::make_tuple(&i, "e", "return"));

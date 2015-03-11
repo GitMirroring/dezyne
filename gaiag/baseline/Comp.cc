@@ -35,8 +35,8 @@ namespace dezyne
   Comp::Comp(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
   , s(State::Uninitialized)
-  , client({{"Comp","client",this},{0,0,0}})
-  , device_A({{0,0,0},{"Comp","device_A",this}})
+  , client({{"Comp","client",this},{"","",0}})
+  , device_A({{"","",0},{"Comp","device_A",this}})
   {
     client.in.initialize = [&] () {
       return call_in(this, std::function<IComp::result_t::type()>([&] {return client_initialize();}), std::make_tuple(&client, "initialize", "return"));

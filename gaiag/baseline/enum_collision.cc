@@ -34,7 +34,7 @@ namespace dezyne
 {
   enum_collision::enum_collision(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
-  , i({{"enum_collision","i",this},{0,0,0}})
+  , i({{"enum_collision","i",this},{"","",0}})
   {
     i.in.foo = [&] () {
       return call_in(this, std::function<ienum_collision::Retval1::type()>([&] {return i_foo();}), std::make_tuple(&i, "foo", "return"));

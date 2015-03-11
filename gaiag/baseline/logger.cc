@@ -33,7 +33,7 @@ namespace dezyne
 {
   logger::logger(const locator& dezyne_locator)
   : rt(dezyne_locator.get<runtime>())
-  , log({{"logger","log",this},{0,0,0}})
+  , log({{"logger","log",this},{"","",0}})
   {
     log.in.log = [&] () {
       call_in(this, [this] {log_log();}, std::make_tuple(&log, "log", "return"));
