@@ -4,7 +4,6 @@
 ##include "meta.hh"
 
 ##include <cassert>
-##include <functional>
 
 namespace dezyne
 {
@@ -25,6 +24,16 @@ struct #.interface
 
    port::meta meta;
    inline #.interface(port::meta m) : meta(m) {}
+
+   void check_bindings() const
+   {
+   #(map (declare-io model
+         #{if (not in.#name) throw dezyne::binding_error_in(meta, "in.#name");
+#}) (filter gom:in? ((compose .elements .events) model)))
+   #(map (declare-io model
+         #{if (not out.#name) throw dezyne::binding_error_out(meta, "out.#name");
+#}) (filter gom:out? ((compose .elements .events) model)))
+   }
   };
 
   inline void connect (#.interface & provided, #.interface & required)

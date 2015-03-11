@@ -26,6 +26,7 @@ struct #.model
   #interface & #name;
 #}) ((compose .elements .ports) model))
   #.model (const dezyne::locator&);
+  void check_bindings() const;
 };
 }
 ##endif // DEZYNE_#.COMPONENT _HH

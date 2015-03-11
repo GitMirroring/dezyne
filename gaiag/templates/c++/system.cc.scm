@@ -12,7 +12,7 @@ namespace dezyne
                ((->join ",")
                 (map (init-instance #{reinterpret_cast<component*>(&#name)#})
                      (non-injected-instances model)))
-               "}}")))
+               "},{}}")))
             (map (lambda (binding) (list (injected-instance-name binding) "(dezyne_locator)"))
                  (injected-bindings model))
             (list (if (pair? (injected-bindings model))
@@ -30,4 +30,9 @@ namespace dezyne
  (map (connect-ports model #{
     connect(#provided , #required );
 #}) (filter (negate bind-port?) ((compose .elements .bindings) model))) }
+
+  void #.model ::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
 }
