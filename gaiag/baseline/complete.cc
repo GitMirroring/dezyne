@@ -33,10 +33,10 @@
 namespace dezyne
 {
   complete::complete(const locator& dezyne_locator)
-  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{p.check_bindings();},[this]{r.check_bindings();}}}
+  : meta{"","complete",reinterpret_cast<const component*>(this),0,{},{[this]{p.check_bindings();},[this]{r.check_bindings();}}}
   , rt(dezyne_locator.get<runtime>())
-  , p({{"complete","p",this},{"","",0}})
-  , r({{"","",0},{"complete","r",this}})
+  , p({{"p",this},{"",0}})
+  , r({{"",0},{"r",this}})
   {
     p.in.e = [&] () {
       call_in(this, [this] {p_e();}, std::make_tuple(&p, "e", "return"));

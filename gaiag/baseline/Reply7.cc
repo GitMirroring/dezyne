@@ -33,10 +33,10 @@
 namespace dezyne
 {
   Reply7::Reply7(const locator& dezyne_locator)
-  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{p.check_bindings();},[this]{r.check_bindings();}}}
+  : meta{"","Reply7",reinterpret_cast<const component*>(this),0,{},{[this]{p.check_bindings();},[this]{r.check_bindings();}}}
   , rt(dezyne_locator.get<runtime>())
-  , p({{"Reply7","p",this},{"","",0}})
-  , r({{"","",0},{"Reply7","r",this}})
+  , p({{"p",this},{"",0}})
+  , r({{"",0},{"r",this}})
   {
     p.in.foo = [&] () {
       return call_in(this, std::function<IReply7::E::type()>([&] {return p_foo();}), std::make_tuple(&p, "foo", "return"));

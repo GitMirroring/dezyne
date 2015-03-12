@@ -32,10 +32,10 @@
 namespace dezyne
 {
   proxy::proxy(const locator& dezyne_locator)
-  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{top.check_bindings();},[this]{bottom.check_bindings();}}}
+  : meta{"","proxy",reinterpret_cast<const component*>(this),0,{},{[this]{top.check_bindings();},[this]{bottom.check_bindings();}}}
   , rt(dezyne_locator.get<runtime>())
-  , top({{"proxy","top",this},{"","",0}})
-  , bottom({{"","",0},{"proxy","bottom",this}})
+  , top({{"top",this},{"",0}})
+  , bottom({{"",0},{"bottom",this}})
   {
     top.in.e0 = [&] () {
       call_in(this, [this] {top_e0();}, std::make_tuple(&top, "e0", "return"));

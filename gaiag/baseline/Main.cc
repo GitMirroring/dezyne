@@ -27,7 +27,7 @@
 namespace dezyne
 {
   Main::Main(const dezyne::locator& dezyne_locator)
-  : meta{"",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&adaptor),reinterpret_cast<component*>(&choice)},{}}
+  : meta{"","Main",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&adaptor),reinterpret_cast<component*>(&choice)},{}}
   , adaptor(dezyne_locator)
   , choice(dezyne_locator)
   , runner(adaptor.runner)

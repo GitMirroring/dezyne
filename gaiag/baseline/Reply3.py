@@ -1,6 +1,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -53,7 +54,7 @@ class Reply3 ():
     def reply_fun (self):
         self.reply_I_Status = I.Status.Yes
 
-    def reply_fun_arg (self, s):
+    def reply_fun_arg (self,s):
         self.reply_I_Status = s
 
 

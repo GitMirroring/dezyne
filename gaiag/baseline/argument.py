@@ -1,6 +1,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -45,7 +46,7 @@ class argument ():
                 self.i.outs.f ()
 
 
-    def g (self, gc):
+    def g (self,gc):
         self.i.outs.f ()
         return (gc or self.b)
 

@@ -32,9 +32,9 @@
 namespace dezyne
 {
   Sensor::Sensor(const locator& dezyne_locator)
-  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{sensor.check_bindings();}}}
+  : meta{"","Sensor",reinterpret_cast<const component*>(this),0,{},{[this]{sensor.check_bindings();}}}
   , rt(dezyne_locator.get<runtime>())
-  , sensor({{"Sensor","sensor",this},{"","",0}})
+  , sensor({{"sensor",this},{"",0}})
   {
     sensor.in.enable = [&] () {
       call_in(this, [this] {sensor_enable();}, std::make_tuple(&sensor, "enable", "return"));

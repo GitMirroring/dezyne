@@ -33,11 +33,11 @@
 namespace dezyne
 {
   expressions::expressions(const locator& dezyne_locator)
-  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{i.check_bindings();}}}
+  : meta{"","expressions",reinterpret_cast<const component*>(this),0,{},{[this]{i.check_bindings();}}}
   , rt(dezyne_locator.get<runtime>())
   , state(3)
   , c(0)
-  , i({{"expressions","i",this},{"","",0}})
+  , i({{"i",this},{"",0}})
   {
     i.in.e = [&] () {
       call_in(this, [this] {i_e();}, std::make_tuple(&i, "e", "return"));

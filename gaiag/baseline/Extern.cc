@@ -33,11 +33,11 @@
 namespace dezyne
 {
   Extern::Extern(const locator& dezyne_locator)
-  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{port.check_bindings();}}}
+  : meta{"","Extern",reinterpret_cast<const component*>(this),0,{},{[this]{port.check_bindings();}}}
   , rt(dezyne_locator.get<runtime>())
   , i(0)
   , j()
-  , port({{"Extern","port",this},{"","",0}})
+  , port({{"port",this},{"",0}})
   {
     port.in.e = [&] () {
       call_in(this, [this] {port_e();}, std::make_tuple(&port, "e", "return"));

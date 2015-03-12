@@ -28,7 +28,7 @@
 namespace dezyne
 {
   provides_twice::provides_twice(const dezyne::locator& dezyne_locator)
-  : meta{"",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&one)},{}}
+  : meta{"","provides_twice",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&one)},{}}
   , one(dezyne_locator)
   , i(one.i)
   , ii(one.ii)

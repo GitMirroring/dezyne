@@ -33,11 +33,11 @@
 namespace dezyne
 {
   Dataparam::Dataparam(const locator& dezyne_locator)
-  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{port.check_bindings();}}}
+  : meta{"","Dataparam",reinterpret_cast<const component*>(this),0,{},{[this]{port.check_bindings();}}}
   , rt(dezyne_locator.get<runtime>())
   , mi(0)
   , s(IDataparam::Status::Yes)
-  , port({{"Dataparam","port",this},{"","",0}})
+  , port({{"port",this},{"",0}})
   {
     port.in.e0 = [&] () {
       call_in(this, [this] {port_e0();}, std::make_tuple(&port, "e0", "return"));

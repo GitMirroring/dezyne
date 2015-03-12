@@ -27,7 +27,7 @@
 namespace dezyne
 {
   ChoiceSystem::ChoiceSystem(const dezyne::locator& dezyne_locator)
-  : meta{"",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&choice)},{}}
+  : meta{"","ChoiceSystem",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&choice)},{}}
   , choice(dezyne_locator)
   , c(choice.c)
   {

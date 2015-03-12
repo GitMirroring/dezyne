@@ -1,10 +1,8 @@
-i.t.e -> middle.t.e
-..log -> logger.log.log
-logger.log.return -> ..return
-middle.b.e -> bottom.b.e
-bottom.b.f -> middle.b.f
-bottom.b.return -> middle.b.return
-..log -> logger.log.log
-logger.log.return -> ..return
+i.t.e -> i.m.t.e
+.log.return -> 0x0..return
+i.m.b.e -> i.b.b.e
+i.b.b.f -> i.m.b.f
+i.b.b.return -> i.m.b.return
+.log.return -> 0x0..return
 f
-middle.t.return -> i.t.return
+i.m.t.return -> i.t.return

@@ -32,13 +32,13 @@
 namespace dezyne
 {
   Alarm::Alarm(const locator& dezyne_locator)
-  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{console.check_bindings();},[this]{sensor.check_bindings();},[this]{siren.check_bindings();}}}
+  : meta{"","Alarm",reinterpret_cast<const component*>(this),0,{},{[this]{console.check_bindings();},[this]{sensor.check_bindings();},[this]{siren.check_bindings();}}}
   , rt(dezyne_locator.get<runtime>())
   , state(States::Disarmed)
   , sounding(false)
-  , console({{"Alarm","console",this},{"","",0}})
-  , sensor({{"","",0},{"Alarm","sensor",this}})
-  , siren({{"","",0},{"Alarm","siren",this}})
+  , console({{"console",this},{"",0}})
+  , sensor({{"",0},{"sensor",this}})
+  , siren({{"",0},{"siren",this}})
   {
     console.in.arm = [&] () {
       call_in(this, [this] {console_arm();}, std::make_tuple(&console, "arm", "return"));

@@ -32,9 +32,9 @@
 namespace dezyne
 {
   bottom::bottom(const locator& dezyne_locator)
-  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{b.check_bindings();}}}
+  : meta{"","bottom",reinterpret_cast<const component*>(this),0,{},{[this]{b.check_bindings();}}}
   , rt(dezyne_locator.get<runtime>())
-  , b({{"bottom","b",this},{"","",0}})
+  , b({{"b",this},{"",0}})
   {
     b.in.e = [&] () {
       call_in(this, [this] {b_e();}, std::make_tuple(&b, "e", "return"));

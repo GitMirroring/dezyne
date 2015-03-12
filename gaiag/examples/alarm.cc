@@ -45,7 +45,7 @@ int main()
   dezyne::AlarmSystem alarmsystem(locator.set(runtime));
 
   alarmsystem.meta.name = "alarmsystem";
-  alarmsystem.console.meta.requires = {"alarmsystem","console",&alarmsystem};
+  alarmsystem.console.meta.requires = {"console",&alarmsystem};
 
   alarmsystem.console.out.detected = detected;
   alarmsystem.console.out.deactivated = deactivated;

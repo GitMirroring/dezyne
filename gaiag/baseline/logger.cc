@@ -32,9 +32,9 @@
 namespace dezyne
 {
   logger::logger(const locator& dezyne_locator)
-  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{log.check_bindings();}}}
+  : meta{"","logger",reinterpret_cast<const component*>(this),0,{},{[this]{log.check_bindings();}}}
   , rt(dezyne_locator.get<runtime>())
-  , log({{"logger","log",this},{"","",0}})
+  , log({{"log",this},{"",0}})
   {
     log.in.log = [&] () {
       call_in(this, [this] {log_log();}, std::make_tuple(&log, "log", "return"));

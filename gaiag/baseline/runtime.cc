@@ -32,12 +32,14 @@ runtime::runtime(){}
 
 void trace_in(port::meta const& m, const char* e)
 {
-  std::clog << m.requires.address << ":" << m.requires.component << "." << m.requires.port << "." << e << " -> " << m.provides.address << ":" << m.provides.component << "." << m.provides.port << "." << e << std::endl;
+  std::clog << path(m.requires.address, m.requires.port) << "." << e << " -> "
+            << path(m.provides.address, m.provides.port) << "." << e << std::endl;
 }
 
 void trace_out(port::meta const& m, const char* e)
 {
-  std::clog << m.provides.address << ":" << m.provides.component << "." << m.provides.port << "." << e << " -> " << m.requires.address << ":" << m.requires.component << "." << m.requires.port << "." << e << std::endl ;
+  std::clog << path(m.provides.address, m.provides.port) << "." << e << " -> "
+            << path(m.requires.address, m.requires.port) << "." << e << std::endl;
 }
 
 bool& runtime::handling(void* scope)
@@ -47,6 +49,9 @@ bool& runtime::handling(void* scope)
 
 void runtime::flush(void* scope)
 {
+#ifdef DEBUG
+  std::cout << path(scope) << " flush" << std::endl;
+#endif
   std::map<void*, std::pair<bool, std::queue<std::function<void()> > > >& qs = queues;
   std::map<void*, std::pair<bool, std::queue<std::function<void()> > > >::iterator it = qs.find(scope);
   if(it != qs.end())
@@ -64,6 +69,11 @@ void runtime::flush(void* scope)
 void runtime::defer(void* scope, const std::function<void()>& event)
 {
   auto it = std::find_if(queues.begin(), queues.end(), [](const std::pair<void*, std::pair<bool, std::queue<std::function<void()>>>>& p){ return p.second.first;});
+
+#ifdef DEBUG
+  std::cout << path(scope) << " defer " << std::boolalpha << (it != queues.end()) << std::endl;
+#endif
+
   if(it == queues.end())
   {
     event();
@@ -77,6 +87,11 @@ void runtime::defer(void* scope, const std::function<void()>& event)
 void runtime::handle(void* scope, const std::function<void()>& event)
 {
   bool& handle = handling(scope);
+
+#ifdef DEBUG
+  std::cout << path(scope) << " handle " << std::boolalpha << handle << std::endl;
+#endif
+
   if(not handle)
   {
     {
@@ -87,7 +102,7 @@ void runtime::handle(void* scope, const std::function<void()>& event)
   }
   else
   {
-    defer(scope, event);
+    defer(scope, [=]{this->handle (scope, event);});
   }
 }
 }

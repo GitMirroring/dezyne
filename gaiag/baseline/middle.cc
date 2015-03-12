@@ -32,10 +32,10 @@
 namespace dezyne
 {
   middle::middle(const locator& dezyne_locator)
-  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{t.check_bindings();},[this]{b.check_bindings();},[this]{l.check_bindings();}}}
+  : meta{"","middle",reinterpret_cast<const component*>(this),0,{},{[this]{t.check_bindings();},[this]{b.check_bindings();},[this]{l.check_bindings();}}}
   , rt(dezyne_locator.get<runtime>())
-  , t({{"middle","t",this},{"","",0}})
-  , b({{"","",0},{"middle","b",this}})
+  , t({{"t",this},{"",0}})
+  , b({{"",0},{"b",this}})
   , l(dezyne_locator.get<ilogger>())
   {
     t.in.e = [&] () {

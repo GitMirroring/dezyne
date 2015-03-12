@@ -45,7 +45,7 @@ static void helper_i_done(void* args) {
 
 
 static int fun(Reply5* self);
-static int fun_arg(Reply5* self, int s);
+static int fun_arg(Reply5* self,int s);
 
 
 static int fun(Reply5* self) {
@@ -53,7 +53,7 @@ static int fun(Reply5* self) {
 	return I_Status_Yes;
 }
 
-static int fun_arg(Reply5* self, int s) {
+static int fun_arg(Reply5* self,int s) {
 	(void)self;
 	return s;
 }

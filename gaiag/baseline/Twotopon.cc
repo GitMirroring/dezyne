@@ -32,10 +32,10 @@
 namespace dezyne
 {
   Twotopon::Twotopon(const locator& dezyne_locator)
-  : meta{"",reinterpret_cast<const component*>(this),0,{},{[this]{i.check_bindings();}}}
+  : meta{"","Twotopon",reinterpret_cast<const component*>(this),0,{},{[this]{i.check_bindings();}}}
   , rt(dezyne_locator.get<runtime>())
   , b(false)
-  , i({{"Twotopon","i",this},{"","",0}})
+  , i({{"i",this},{"",0}})
   {
     i.in.e = [&] () {
       call_in(this, [this] {i_e();}, std::make_tuple(&i, "e", "return"));

@@ -45,7 +45,7 @@ static void helper_i_done(void* args) {
 
 
 static void reply_fun(Reply3* self);
-static void reply_fun_arg(Reply3* self, int s);
+static void reply_fun_arg(Reply3* self,int s);
 
 
 static void reply_fun(Reply3* self) {
@@ -53,7 +53,7 @@ static void reply_fun(Reply3* self) {
 	self->reply_I_Status = I_Status_Yes;
 }
 
-static void reply_fun_arg(Reply3* self, int s) {
+static void reply_fun_arg(Reply3* self,int s) {
 	(void)self;
 	self->reply_I_Status = s;
 }

@@ -50,10 +50,10 @@ static void helper_i_e(void* args) {
 
 
 
-static bool g(argument* self, bool gc);
+static bool g(argument* self,bool gc);
 
 
-static bool g(argument* self, bool gc) {
+static bool g(argument* self,bool gc) {
 	(void)self;
 	{
 		args_i_f a = {sizeof(args_i_f), self->i->out.f, self};
