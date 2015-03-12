@@ -64,18 +64,17 @@ namespace dezyne
     void defer(void*, const std::function<void()>&);
     void handle(void*, const std::function<void()>&); // trace_data const&);
 
-    template <typename R, bool checked = true>
+    template <typename R>
     inline R valued_helper(void* scope, const std::function<R()>& event)
     {
       bool& handle = handling(scope);
-      if(checked and handle) throw std::logic_error("a valued event cannot be deferred");
-
-      runtime::scoped_value<bool> sv(handle, true);
-      R tmp = event();
-      if(not sv.initial)
+      if(handle) throw std::logic_error("a valued event cannot be deferred");
+      R tmp;
       {
-        flush(scope);
+        runtime::scoped_value<bool> sv(handle, true);
+        tmp = event();
       }
+      flush(scope);
       return tmp;
     }
 
