@@ -104,7 +104,7 @@ void runtime::handle(void* scope, const std::function<void()>& event)
   }
   else
   {
-    defer(scope, event);
+    defer(scope, [=]{this->handle (scope, event);});
   }
 }
 }
