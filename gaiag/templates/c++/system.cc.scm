@@ -8,7 +8,7 @@ namespace dezyne
             (list
              (->string
               (list
-               "meta{\"\",reinterpret_cast<component*>(this),0,{"
+               "meta{\"\",\"" .model "\",reinterpret_cast<component*>(this),0,{"
                ((->join ",")
                 (map (init-instance #{reinterpret_cast<component*>(&#name)#})
                      (non-injected-instances model)))

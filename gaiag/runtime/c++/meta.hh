@@ -56,6 +56,7 @@ namespace dezyne
   struct meta
   {
     std::string name;
+    std::string type;
     const component* address;
     const component* parent;
     std::vector<const component*> children;
