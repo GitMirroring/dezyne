@@ -67,25 +67,32 @@ namespace dezyne
     dezyne::meta meta;
   };
 
-  inline std::string path(meta const* top, std::string p="")
+  inline std::string path(meta const& m, std::string p="")
   {
-    if(top->parent)
-      return path(&top->parent->meta, top->name + (p.empty() ? p : "." + p));
-    return top->name + (p.empty() ? p : "." + p);
+    if(m.parent)
+      return path(m.parent->meta, m.name + (p.empty() ? p : "." + p));
+    return m.name + (p.empty() ? p : "." + p);
+  }
+
+  inline std::string path(void* c, std::string p="")
+  {
+    if (!c)
+      return "0x0." + p;
+    return path(reinterpret_cast<const component*>(c)->meta, p);
   }
 
   struct binding_error_in: public std::runtime_error
   {
     template <typename T>
     binding_error_in(T const& m, const std::string& msg)
-    : std::runtime_error("not connected: " + path(&reinterpret_cast<const component*>(m.provides.address ? m.provides.address : m.requires.address)->meta, m.provides.address ? m.provides.port : m.requires.port) + "." + msg)
+    : std::runtime_error("not connected: " + path(m.provides.address ? m.provides.address : m.requires.address, m.provides.address ? m.provides.port : m.requires.port) + "." + msg)
     {}
   };
   struct binding_error_out: public std::runtime_error
   {
     template <typename T>
     binding_error_out(T const& m, const std::string& msg)
-    : std::runtime_error("not connected: " + path(&reinterpret_cast<const component*>(m.requires.address ? m.requires.address : m.provides.address)->meta, m.requires.address ? m.requires.port : m.provides.port) + "." + msg)
+    : std::runtime_error("not connected: " + path(m.requires.address ? m.requires.address : m.provides.address, m.requires.address ? m.requires.port : m.provides.port) + "." + msg)
     {}
   };
 }
