@@ -43,7 +43,7 @@ int main()
   dezyne::Injected i(l);
 
   i.meta.name = "i";
-  i.t.meta.requires = {"i","t",&i};
+  i.t.meta.requires = {"t",&i};
   i.t.out.f = f;
 
   i.check_bindings();

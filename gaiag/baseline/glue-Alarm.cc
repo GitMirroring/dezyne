@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -30,7 +31,9 @@
 
 #include "AlarmComponent.h"
 
+#include <boost/bind.hpp>
 #include <boost/make_shared.hpp>
+#include <boost/ref.hpp>
 
 #include <map>
 
@@ -59,7 +62,11 @@ struct ConsoleCB
 namespace dezyne
 {
   Alarm::Alarm(const locator& l)
-  : rt (l.get<runtime>())
+  : meta{"glue","Alarm",reinterpret_cast<const component*>(this),0,{},{[this]{console.check_bindings();},[this]{sensor.check_bindings();},[this]{siren.check_bindings();}}}
+  , rt (l.get<runtime>())
+  , console({{"console",this},{"",0}})
+  , sensor({{"",0},{"sensor",this}})
+  , siren({{"",0},{"siren",this}})
   {
     boost::shared_ptr< ::IConsoleInterface> component = ::AlarmComponent::GetInstance() ;
     boost::shared_ptr< ::IConsole> api_console;

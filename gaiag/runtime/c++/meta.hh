@@ -37,14 +37,12 @@ namespace dezyne
     {
       struct
       {
-        std::string component;
         std::string port;
         void*       address;
       } provides;
 
       struct
       {
-        std::string component;
         std::string port;
         void*       address;
       } requires;

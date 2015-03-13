@@ -7,7 +7,9 @@
 
 ##include "#.model Component.h"
 
+##include <boost/bind.hpp>
 ##include <boost/make_shared.hpp>
+##include <boost/ref.hpp>
 
 ##include <map>
 
@@ -48,7 +50,9 @@ static std::map<dezyne::#.model *, boost::shared_ptr<#(.type (gom:port model)) I
 namespace dezyne
 {
 #.model ::#.model (const locator& l)
-  : rt (l.get<runtime>())
+: meta{"glue","#.model",reinterpret_cast<const component*>(this),0,{},{#((->join ",") (map (lambda (port) (list "[this]{" (.name port) ".check_bindings();}")) (gom:ports model)))}}
+, rt (l.get<runtime>())#
+(map (lambda (port) (if (eq? (.direction port) 'provides) (list "\n, " (.name port) "({{\"" (.name port) "\",this},{\"\",0}})") (list "\n, " (.name port) "({{\"\",0},{\"" (.name port) "\",this}})"))) ((compose .elements .ports) model))
 {
   boost::shared_ptr< ::#(.type (gom:port model)) Interface> component = ::#.model Component::GetInstance() ;
 #(map (lambda (port) (->string (list "boost::shared_ptr< ::" (.type port) "> api_" (.name port) ";\n"
