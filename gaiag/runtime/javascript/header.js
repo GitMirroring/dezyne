@@ -27,23 +27,17 @@
 // handwritten runtime header
 var dezyne = {};
 
-Function.prototype.defer = function(a0, a1, a2, a3, a4, a5)
-{
-  //FIXME: semantics
-  setTimeout(function() { this(a0, a1, a2, a3, a4, a5); }.bind(this), 0);
-};
-
 dezyne.runtime = function () {
 };
 
 var runtime = {
-  path : function(m, p)
-  {
+  path : function(m, p) {
+    p = p ? p : '';
     if (!m) {
       return 'null.' + p;
     }
-    if (m.rt) {
-      return runtime.path(m.meta, p);
+    if (m.component) {
+      return runtime.path(m.component.meta, m.name + (p ? '.' + p : p));
     }
     if (m.parent) {
       return runtime.path(m.parent.meta, m.name + (p ? '.' + p : p));
@@ -94,17 +88,17 @@ var runtime = {
   },
 
   trace_in : function(m, e) {
-    process.stderr.write(runtime.path(m[0].meta.requires, m[1]) + '.' + e + ' -> '
-                         + runtime.path(m[0].meta.provides, m[1]) + '.' + e + '\n');
+    process.stderr.write(runtime.path(m[0].meta.requires) + '.' + e + ' -> '
+                         + runtime.path(m[0].meta.provides) + '.' + e + '\n');
   },
 
   trace_out : function(m, e) {
-    process.stderr.write(runtime.path(m[0].meta.provides, m[1]) + '.' + e + ' -> '
-                         + runtime.path(m[0].meta.requires, m[1]) + '.' + e + '\n');
+    process.stderr.write(runtime.path(m[0].meta.provides) + '.' + e + ' -> '
+                         + runtime.path(m[0].meta.requires) + '.' + e + '\n');
   },
 
   call_in : function(c, f, m) {
-    runtime.trace_in(m, m[2]);
+    runtime.trace_in(m, m[1]);
     var handle = c.handling;
     c.handling = true;
     var r = f();
@@ -112,14 +106,14 @@ var runtime = {
       throw 'a valued event cannot be deferred';
     }
     c.handling = false;
-    runtime.trace_out(m, r ? r : 'return');
     runtime.flush(c);
+    runtime.trace_out(m, r === undefined ? 'return' : m[2][r]);
     return r;
   },
 
   call_out : function(c, f, m) {
-    runtime.trace_out(m, m[2]);
-    runtime.defer(m[0].meta.provides, function() {runtime.handle(c, f);});
+    runtime.trace_out(m, m[1]);
+    runtime.defer(m[0].meta.provides.component, function() {runtime.handle(c, f);});
   },
 };
 

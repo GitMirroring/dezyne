@@ -1,1 +1,1 @@
-this.reply_#type _#name  = #expression;
+this.reply_#type _#name  = ((typeof(#expression) === 'object') ? #expression .value : #expression);

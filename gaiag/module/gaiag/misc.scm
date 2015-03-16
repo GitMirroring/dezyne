@@ -62,7 +62,6 @@
            gulp-port
            hash-read-string
            hash-table->alist
-           identifier?
            list<
            mkdir-p
            null-is-#f
@@ -275,13 +274,6 @@
   (and (<= (string-length postfix) (string-length string))
        (and (equal? postfix (string-take-right string (string-length postfix)))
             postfix)))
-
-(define (identifier? name)
-  (let* ((name (->string name))
-         (first (car (string->list (->string name)))))
-    (and (or (char-alphabetic? first)
-             (eq? first #\_))
-         (string-every (char-set-adjoin char-set:letter+digit #\_) name))))
 
 (define* (diff a b :optional (options "-u") (virtual-name-a "a") (virtual-name-b "b"))
   (let ((file-name-a (fifo a))

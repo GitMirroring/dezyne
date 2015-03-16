@@ -41,6 +41,7 @@
 
   :export (ast:code
            code:gom
+           code:identifier?
            code:import
            code:->code
            code:extension
@@ -703,9 +704,10 @@
 
 (define ((init-port snippet) port)
   (let* ((name (.name port))
+         (direction (.direction port))
          (interface (.type port))
          (injected? (.injected port)))
-    (animate snippet `((name ,name) (interface ,interface)))))
+    (animate snippet `((name ,name) (direction ,direction) (interface ,interface)))))
 
 (define-method (declare-replies (o <interface>))
   (map
@@ -776,3 +778,10 @@
      (animate-string (if (null-is-#f condition) then "") (current-module)))
     ((_ condition then else)
      (animate-string (if (null-is-#f condition) then else) (current-module)))))
+
+(define (code:identifier? name)
+  (let* ((name (->string name))
+         (first (car (string->list (->string name)))))
+    (and (or (char-alphabetic? first)
+             (eq? first #\_))
+         (string-every (char-set-adjoin char-set:letter+digit #\_) name))))

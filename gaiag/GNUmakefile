@@ -655,7 +655,8 @@ javascript-dataparam: compile
 	cat runtime/javascript/header.js\
 		 $$(find out/dezyne -name '*.js')\
 		examples/dataparam.js > out/dataparam.js
-	nodejs out/dataparam.js > out/$@.trace
+	chmod +x out/dataparam.js
+	nodejs out/dataparam.js 2> out/$@.trace
 	$(diff) baseline/$@.trace out || echo '**********FIXME: semantics**********'
 	for i in out/dezyne/*.js; do $(diff) baseline/$$(basename $$i) $$i; done
 
@@ -707,7 +708,9 @@ goops-alarm: compile
 	$(diff) baseline/$@.trace out
 	for i in out/dezyne/*.scm; do $(diff) baseline/$$(basename $$i) $$i; done
 
-goops: compile goops-alarm goops-regression
+goops-dataparam:
+
+goops: compile goops-alarm goops-dataparam goops-regression
 
 .PHONY: glue
 

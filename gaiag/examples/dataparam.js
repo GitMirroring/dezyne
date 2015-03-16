@@ -34,16 +34,23 @@ function a(i) {
 
 function aa(i, j) {
   process.stderr.write('aa(' + i + ',' + j + ')\n')
+  console.assert(j == 123);
 }
 
 function a6(i0, i1, i2,i3, i4, i5) {
   process.stderr.write('a6(' + i0 + ',' + i1 + ',' + i2 + ',' + i3 + ',' + i4 + ',' + i5 + ')\n');
+  console.assert(i0 == 0);
+  console.assert(i1 == 1);
+  console.assert(i2 == 2);
+  console.assert(i3 == 3);
+  console.assert(i4 == 4);
+  console.assert(i5 == 5);
 }
 
 function main() {
   var rt = new dezyne.runtime();
   var d = new dezyne.Datasystem(rt, {name: 'd'});
-  d.port.meta.requires = d;
+  d.port.meta.requires = {name: 'port', component: d};
 
   d.port.out.a0 = a0;
   d.port.out.a = a;

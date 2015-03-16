@@ -1,1 +1,1 @@
-#expression
+#(string-if out? #{ #(string-if (string-postfix? ".value" (->string expression)) #{ #(substring expression 0 (- (string-length expression) 6))#} #{((typeof(#expression) === 'object') ? #expression : {value: #expression })#}) #} #{#(string-if (code:identifier? expression) #{((typeof(#expression) === 'object') ? #expression .value : #expression )#} #{#expression #})#})

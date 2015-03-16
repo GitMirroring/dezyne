@@ -9,7 +9,7 @@ dezyne.#.model  = function(rt, meta) {
     (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))
 #
     (map (init-port #{
-  this.#name  = new dezyne.#interface ({provides: this, requires: this});
+  this.#name  = new dezyne.#interface (#(string-if (eq? direction 'requires) #{{provides: {}, requires: {name: '#name ', component: this}}#} #{{provides: {name: '#name ', component: this}, requires: {}}#}));
 #}) ((compose .elements .ports) model))
 #(map
    (lambda (port)
@@ -18,7 +18,7 @@ dezyne.#.model  = function(rt, meta) {
   #(string-if (not (eq? type 'void)) #{return #})runtime.call_#direction(this, function() {
   #statement #(string-if (not (eq? type 'void))
 #{ return this.reply_#reply-type _#reply-name;
-#}) }.bind(this), [this.#port , '#port ', '#event ']);
+#}) }.bind(this), [this.#port , '#event '#(string-if (not (eq? type 'void))#{, this.#port .#reply-name _to_string#})]);
 }.bind(this);
 #}) (filter (gom:dir-matches? port) (gom:events port))))
    (gom:ports model))#

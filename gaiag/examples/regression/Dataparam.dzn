@@ -103,7 +103,7 @@ component Dataparam
 
     xint xfunx (xint xi, xint xj)
     {
-      return $(xi + xj) / 3$;
+      return $(xi + xj) / 2$;
     }
 
     on port.e0: { port.a6($0$,$1$,$2$,$3$,$4$,$5$); }
@@ -116,7 +116,8 @@ component Dataparam
       s = s;
       mi = pi;
       // mi = xfunx (pi, $pi + mi$);  // member in $: Ok for C++ but C: self->mi, Python: self.mi
-      mi = xfunx (pi, $pi + pi$);
+      //mi = xfunx (pi, $pi + pi$); // javascript: foobar NaN
+      mi = xfunx (pi, pi);
       port.a (mi);
       port.aa (mi, pi);
     }
@@ -144,13 +145,15 @@ component Dataparam
     on port.eoo(i,j): { i = $123$; j = $456$; }
     on port.eio(i,j): { j = i; }
     // on port.eio2(i): { i = $i + 123$; } // parameter in $: Ok for C++ but C: *i
-    on port.eio2(i): { xint t = i; i = $t + 123$; }
+    // on port.eio2(i): { xint t = i; i = $t + 123$; } // Ok for C, C++; not portable to javascript
+    on port.eio2(i): { xint t = i; i = $123 + 123$; }
 
     on port.eor(i): { i = $234$; reply(IDataparam.Status.Yes); }
     on port.eoor(i,j): { i = $123$; j = $456$; reply(IDataparam.Status.Yes); }
     on port.eior(i,j): { j = i; reply(IDataparam.Status.Yes); }
     // on port.eio2r(i): { i = $i + 123$; reply(IDataparam.Status.Yes); } // parameter in $: Ok for C++ but C: *i
-    on port.eio2r(i): { xint t = i; i = $t + 123$; reply(IDataparam.Status.Yes); }
+    // on port.eio2r(i): { xint t = i; i = $t + 123$; reply(IDataparam.Status.Yes); }
+    on port.eio2r(i): { xint t = i; i = $123 + 123$; reply(IDataparam.Status.Yes); }
   }
 }
 

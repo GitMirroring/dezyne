@@ -28,7 +28,7 @@
 dezyne.Console = function(rt, meta) {
   this.rt = rt;
   this.meta = meta;
-  this.console = new dezyne.IConsole({provides: this, requires: this});
+  this.console = new dezyne.IConsole({provides: {}, requires: {component: this, name: 'console'}});
   this.console.out.detected = function() {process.stderr.write('Console.detected\n');}
   this.console.out.deactivated = function() {process.stderr.write('Console.deactivated\n');}
 };
@@ -36,17 +36,17 @@ dezyne.Console = function(rt, meta) {
 dezyne.Sensor = function(rt, meta) {
   this.rt = rt;
   this.meta = meta;
-  this.sensor = new dezyne.ISensor({provides: this, requires: this});
-  this.sensor.in.enable = function() {runtime.call_in(this, function() {}, [this.sensor, 'sensor', 'enable']);}.bind(this);
-  this.sensor.in.disable = function() {runtime.call_in(this, function() {}, [this.sensor, 'sensor', 'disable']);}.bind(this);
+  this.sensor = new dezyne.ISensor({provides: {component: this, name: 'sensor'}, requires: {}});
+  this.sensor.in.enable = function() {runtime.call_in(this, function() {}, [this.sensor, 'enable']);}.bind(this);
+  this.sensor.in.disable = function() {runtime.call_in(this, function() {}, [this.sensor, 'disable']);}.bind(this);
 }
 
 dezyne.Siren = function(rt, meta) {
   this.rt = rt;
   this.meta = meta;
-  this.siren = new dezyne.ISiren({provides: this, requires: this});
-  this.siren.in.turnon = function() {runtime.call_in(this, function() {}, [this.siren, 'siren', 'turnon']); }.bind(this);
-  this.siren.in.turnoff = function() {runtime.call_in(this, function() {}, [this.siren, 'siren', 'turnoff']); }.bind(this);
+  this.siren = new dezyne.ISiren({provides: {component: this, name: 'siren'}, requires: {}});
+  this.siren.in.turnon = function() {runtime.call_in(this, function() {}, [this.siren, 'turnon']); }.bind(this);
+  this.siren.in.turnoff = function() {runtime.call_in(this, function() {}, [this.siren, 'turnoff']); }.bind(this);
 }
 
 function main() {
