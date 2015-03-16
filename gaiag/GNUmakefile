@@ -644,8 +644,9 @@ javascript-alarm: compile
 	cat runtime/javascript/header.js\
 		 $$(find out/dezyne -name '*.js')\
 		examples/alarm.js > out/alarm.js
-	nodejs out/alarm.js > out/$@.trace
-	$(diff) baseline/$@.trace out || echo '**********FIXME: semantics**********'
+	chmod +x out/alarm.js
+	nodejs out/alarm.js 2> out/$@.trace
+	$(diff) baseline/$@.trace out
 	for i in out/dezyne/*.js; do $(diff) baseline/$$(basename $$i) $$i; done
 
 javascript-dataparam: compile

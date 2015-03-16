@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,12 +21,15 @@
 //
 // Code:
 
-dezyne.AlarmSystem = function() {
-  this.alarm = new dezyne.Alarm();
-  this.sensor = new dezyne.Sensor();
-  this.siren = new dezyne.Siren();
+dezyne.AlarmSystem = function(rt, meta) {
+  rt.top = rt.top || this;
+  this.rt = rt;
+  this.meta = meta;
+  this.alarm = new dezyne.Alarm(rt, {parent: this, name: 'alarm'});
+  this.sensor = new dezyne.Sensor(rt, {parent: this, name: 'sensor'});
+  this.siren = new dezyne.Siren(rt, {parent: this, name: 'siren'});
   this.console = this.alarm.console;
-
+  this.children = [this.alarm, this.sensor, this.siren];
   dezyne.connect(this.sensor.sensor, this.alarm.sensor);
   dezyne.connect(this.siren.siren, this.alarm.siren);
 

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -22,7 +22,7 @@
 //
 // Code:
 
-dezyne.ISensor = function() {
+dezyne.ISensor = function(meta) {
   this.in = {
     enable : null,
     disable : null
@@ -31,4 +31,5 @@ dezyne.ISensor = function() {
     triggered : null,
     disabled : null
   };
+  this.meta = meta;
 };

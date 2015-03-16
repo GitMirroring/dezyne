@@ -25,33 +25,40 @@
 
 /* handwritten alarm.js */
 
-dezyne.Console = function() {
-  this.console = new dezyne.IConsole();
-  this.console.out.detected = function() { console.log('Console.detected'); }
-  this.console.out.deactivated = function() { console.log('Console.deactivated'); }
+dezyne.Console = function(rt, meta) {
+  this.rt = rt;
+  this.meta = meta;
+  this.console = new dezyne.IConsole({provides: this, requires: this});
+  this.console.out.detected = function() {process.stderr.write('Console.detected\n');}
+  this.console.out.deactivated = function() {process.stderr.write('Console.deactivated\n');}
 };
 
-dezyne.Sensor = function() {
-  this.sensor = new dezyne.ISensor();
-  this.sensor.in.enable = function() { console.log('Sensor.sensor_enable')};
-  this.sensor.in.disable = function() { console.log('Sensor.sensor_disable');};
+dezyne.Sensor = function(rt, meta) {
+  this.rt = rt;
+  this.meta = meta;
+  this.sensor = new dezyne.ISensor({provides: this, requires: this});
+  this.sensor.in.enable = function() {runtime.call_in(this, function() {}, [this.sensor, 'sensor', 'enable']);}.bind(this);
+  this.sensor.in.disable = function() {runtime.call_in(this, function() {}, [this.sensor, 'sensor', 'disable']);}.bind(this);
 }
 
-dezyne.Siren = function() {
-  this.siren = new dezyne.ISiren();
-  this.siren.in.turnon = function() { console.log('Siren.siren_turnon'); };
-  this.siren.in.turnoff = function() { console.log('Siren.siren_turnoff'); };
+dezyne.Siren = function(rt, meta) {
+  this.rt = rt;
+  this.meta = meta;
+  this.siren = new dezyne.ISiren({provides: this, requires: this});
+  this.siren.in.turnon = function() {runtime.call_in(this, function() {}, [this.siren, 'siren', 'turnon']); }.bind(this);
+  this.siren.in.turnoff = function() {runtime.call_in(this, function() {}, [this.siren, 'siren', 'turnoff']); }.bind(this);
 }
 
 function main() {
-  var alarm = new dezyne.AlarmSystem();
-  var gui = new dezyne.Console();
-  dezyne.connect(alarm.console, gui.console);
+  var rt = new dezyne.runtime();
+  var alarmsystem = new dezyne.AlarmSystem(rt, {name: 'alarmsystem'});
+  var gui = new dezyne.Console(rt, {name: 'alarmsystem'});
+  dezyne.connect(alarmsystem.console, gui.console);
 
-  alarm.console.in.arm();
-  alarm.sensor.sensor.out.triggered();
-  alarm.console.in.disarm();
-  alarm.sensor.sensor.out.disabled();
+  alarmsystem.console.in.arm();
+  alarmsystem.sensor.sensor.out.triggered();
+  alarmsystem.console.in.disarm();
+  alarmsystem.sensor.sensor.out.disabled();
 }
 
 main();

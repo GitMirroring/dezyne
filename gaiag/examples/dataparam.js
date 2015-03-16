@@ -25,60 +25,62 @@
 /* handwritten dataparam.js */
 
 function a0() {
-  console.log('a0()');
+  process.stderr.write('a0()\n');
 }
 
 function a(i) {
-  console.log('a(' + i + ')');
+  process.stderr.write('a(' + i + ')\n');
 }
 
 function aa(i, j) {
-  console.log ('aa(' + i + ',' + j + ')')
+  process.stderr.write('aa(' + i + ',' + j + ')\n')
 }
 
 function a6(i0, i1, i2,i3, i4, i5) {
-  console.log('a6(' + i0 + ',' + i1 + ',' + i2 + ',' + i3 + ',' + i4 + ',' + i5 + ')');
+  process.stderr.write('a6(' + i0 + ',' + i1 + ',' + i2 + ',' + i3 + ',' + i4 + ',' + i5 + ')\n');
 }
 
 function main() {
-  var c = new dezyne.Dataparam();
+  var rt = new dezyne.runtime();
+  var d = new dezyne.Datasystem(rt, {name: 'd'});
+  d.port.meta.requires = d;
 
-  c.port.out.a0 = a0;
-  c.port.out.a = a;
-  c.port.out.aa = aa;
-  c.port.out.a6 = a6;
+  d.port.out.a0 = a0;
+  d.port.out.a = a;
+  d.port.out.aa = aa;
+  d.port.out.a6 = a6;
 
-  console.assert(new dezyne.IDataparam().Status.Yes == c.port.in.e0r());
-  c.port.in.e0();
-  console.assert(new dezyne.IDataparam().Status.Yes == c.port.in.er(123));
-  c.port.in.e(123);
-  console.assert(new dezyne.IDataparam().Status.No == c.port.in.eer(123,345));
+  console.assert(new dezyne.IDataparam().Status.Yes == d.port.in.e0r());
+  d.port.in.e0();
+  console.assert(new dezyne.IDataparam().Status.Yes == d.port.in.er(123));
+  d.port.in.e(123);
+  console.assert(new dezyne.IDataparam().Status.No == d.port.in.eer(123,345));
 
   var i = {value:0};
-  c.port.in.eo(i);
+  d.port.in.eo(i);
   console.assert(i.value == 234);
 
   var j = {value:0};
-  c.port.in.eoo(i,j);
+  d.port.in.eoo(i,j);
   console.assert(i.value == 123 && j.value == 456);
 
-  c.port.in.eio(i.value,j);
+  d.port.in.eio(i.value,j);
   console.assert(i.value == 123 && j.value == i.value);
 
-  c.port.in.eio2(i);
+  d.port.in.eio2(i);
   console.assert(i.value == 246);
 
 
-  console.assert(new dezyne.IDataparam().Status.Yes == c.port.in.eor(i));
+  console.assert(new dezyne.IDataparam().Status.Yes == d.port.in.eor(i));
   console.assert(i.value == 234);
 
-  console.assert(new dezyne.IDataparam().Status.Yes == c.port.in.eoor(i,j));
+  console.assert(new dezyne.IDataparam().Status.Yes == d.port.in.eoor(i,j));
   console.assert(i.value == 123 && j.value == 456);
 
-  console.assert(new dezyne.IDataparam().Status.Yes == c.port.in.eior(i.value,j));
+  console.assert(new dezyne.IDataparam().Status.Yes == d.port.in.eior(i.value,j));
   console.assert(i.value == 123 && j.value == i.value);
 
-  console.assert(new dezyne.IDataparam().Status.Yes == c.port.in.eio2r(i));
+  console.assert(new dezyne.IDataparam().Status.Yes == d.port.in.eio2r(i));
   console.assert(i.value == 246);
 }
 

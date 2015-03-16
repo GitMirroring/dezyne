@@ -27,14 +27,106 @@
 // handwritten runtime header
 var dezyne = {};
 
-Function.prototype.defer = function (a0, a1, a2, a3, a4, a5)
+Function.prototype.defer = function(a0, a1, a2, a3, a4, a5)
 {
   //FIXME: semantics
-  setTimeout (function () { this(a0, a1, a2, a3, a4, a5); }.bind(this), 0);
+  setTimeout(function() { this(a0, a1, a2, a3, a4, a5); }.bind(this), 0);
 };
 
-dezyne.connect = function (provided, required) {
+dezyne.runtime = function () {
+};
+
+var runtime = {
+  path : function(m, p)
+  {
+    if (!m) {
+      return 'null.' + p;
+    }
+    if (m.rt) {
+      return runtime.path(m.meta, p);
+    }
+    if (m.parent) {
+      return runtime.path(m.parent.meta, m.name + (p ? '.' + p : p));
+    }
+    return m.name + (p ? '.' + p : p);
+  },
+
+  active : function(c) {
+    if (c.handling) {
+      return c.handling;
+    }
+    if (c.children) {
+      for (var i = 0; i < c.children.length; i++) {
+        if (runtime.active(c.children[i])) {
+          return true;
+        }
+      }
+    }
+    return false;
+  },
+
+  defer : function(c, f) {
+    if (!runtime.active(c.rt.top)) {
+      f();
+    }
+    else {
+      c.queue = (c.queue || []).concat([f]);
+    }
+  },
+
+  flush : function(c) {
+    while (c.queue && c.queue.length) {
+      var f = c.queue.pop();
+      f();
+    }
+  },
+
+  handle : function(c, f) {
+    if (!c.handling) {
+      c.handling = true;
+      f();
+      c.handling = false;
+      runtime.flush(c);
+    }
+    else {
+      runtime.defer(c, function(){runtime.handle(c, f);});
+    }
+  },
+
+  trace_in : function(m, e) {
+    process.stderr.write(runtime.path(m[0].meta.requires, m[1]) + '.' + e + ' -> '
+                         + runtime.path(m[0].meta.provides, m[1]) + '.' + e + '\n');
+  },
+
+  trace_out : function(m, e) {
+    process.stderr.write(runtime.path(m[0].meta.provides, m[1]) + '.' + e + ' -> '
+                         + runtime.path(m[0].meta.requires, m[1]) + '.' + e + '\n');
+  },
+
+  call_in : function(c, f, m) {
+    runtime.trace_in(m, m[2]);
+    var handle = c.handling;
+    c.handling = true;
+    var r = f();
+    if (handle) {
+      throw 'a valued event cannot be deferred';
+    }
+    c.handling = false;
+    runtime.trace_out(m, r ? r : 'return');
+    runtime.flush(c);
+    return r;
+  },
+
+  call_out : function(c, f, m) {
+    runtime.trace_out(m, m[2]);
+    runtime.defer(m[0].meta.provides, function() {runtime.handle(c, f);});
+  },
+};
+
+dezyne.connect = function(provided, required) {
   provided.out = required.out;
   required.in = provided.in;
+  provided.meta.requires = required.meta.requires;
+  required.meta.provides = provided.meta.provides;
 }
 // end header
