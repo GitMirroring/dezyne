@@ -20,30 +20,35 @@
 //
 // Code:
 
-dezyne.GuardedRequiredIllegal = function() {
+dezyne.GuardedRequiredIllegal = function(rt, meta) {
+  this.rt = rt;
+  this.meta = meta;
   this.c = false;
 
-  this.t = new dezyne.Top();
-  this.b = new dezyne.Bottom();
+  this.t = new dezyne.Top({provides: {name: 't', component: this}, requires: {}});
+  this.b = new dezyne.Bottom({provides: {}, requires: {name: 'b', component: this}});
 
   this.t.in.unguarded = function() {
-    console.log('GuardedRequiredIllegal.t_unguarded');
-    { }
+    runtime.call_in(this, function() {
+      { }
+    }.bind(this), [this.t, 'unguarded']);
   }.bind(this);
   this.t.in.e = function() {
-    console.log('GuardedRequiredIllegal.t_e');
-    if(! (this.c)) {
-      this.c = true;
-      this.b.in.e();
-    }
-    else if(this.c) { }
+    runtime.call_in(this, function() {
+      if(! (this.c)) {
+        if (typeof(this.c) === 'object') this.c.value = ((typeof(true) === 'object') ? true.value : true); else this.c = ((typeof(true) === 'object') ? true.value : true); 
+        this.b.in.e();
+      }
+      else if(this.c) { }
+    }.bind(this), [this.t, 'e']);
   }.bind(this);
   this.b.out.f = function() {
-    console.log('GuardedRequiredIllegal.b_f');
-    if(! (this.c)) console.assert (false);
-    else if(this.c) {
-      this.c = false;
-    }
+    runtime.call_out(this, function() {
+      if(! (this.c)) console.assert (false);
+      else if(this.c) {
+        if (typeof(this.c) === 'object') this.c.value = ((typeof(false) === 'object') ? false.value : false); else this.c = ((typeof(false) === 'object') ? false.value : false); 
+      }
+    }.bind(this), [this.b, 'f']);
   }.bind(this);
 
 };

@@ -104,7 +104,7 @@ namespace dezyne
         IDataparam::Status::type s = funx (pi);
         s = s;
         mi = pi;
-        mi = xfunx (pi, pi + pi);
+        mi = xfunx (pi, pi);
         port.out.a(mi);
         port.out.aa(mi, pi);
       }
@@ -170,7 +170,7 @@ namespace dezyne
   {
     {
       int t = i;
-      i = t + 123;
+      i = 123 + 123;
     }
   }
 
@@ -206,7 +206,7 @@ namespace dezyne
   {
     {
       int t = i;
-      i = t + 123;
+      i = 123 + 123;
       reply_IDataparam_Status = IDataparam::Status::Yes;
     }
     return reply_IDataparam_Status;
@@ -225,7 +225,7 @@ namespace dezyne
 
   int Dataparam::xfunx(int xi, int xj)
   {
-    return (xi + xj) / 3;
+    return (xi + xj) / 2;
   }
 
 }

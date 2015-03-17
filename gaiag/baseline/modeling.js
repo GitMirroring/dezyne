@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,18 +21,22 @@
 //
 // Code:
 
-dezyne.modeling = function() {
+dezyne.modeling = function(rt, meta) {
+  this.rt = rt;
+  this.meta = meta;
 
-  this.p = new dezyne.dummy();
-  this.r = new dezyne.imodeling();
+  this.p = new dezyne.dummy({provides: {name: 'p', component: this}, requires: {}});
+  this.r = new dezyne.imodeling({provides: {}, requires: {name: 'r', component: this}});
 
   this.p.in.e = function() {
-    console.log('modeling.p_e');
-    this.r.in.e();
+    runtime.call_in(this, function() {
+      this.r.in.e();
+    }.bind(this), [this.p, 'e']);
   }.bind(this);
   this.r.out.f = function() {
-    console.log('modeling.r_f');
-    { }
+    runtime.call_out(this, function() {
+      { }
+    }.bind(this), [this.r, 'f']);
   }.bind(this);
 
 };

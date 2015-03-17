@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,20 +21,23 @@
 //
 // Code:
 
-dezyne.Reply7 = function() {
+dezyne.Reply7 = function(rt, meta) {
+  this.rt = rt;
+  this.meta = meta;
   this.reply_IReply7_E = null;
 
-  this.p = new dezyne.IReply7();
-  this.r = new dezyne.IReply7();
+  this.p = new dezyne.IReply7({provides: {name: 'p', component: this}, requires: {}});
+  this.r = new dezyne.IReply7({provides: {}, requires: {name: 'r', component: this}});
 
   this.p.in.foo = function() {
-    console.log('Reply7.p_foo');
-    this.f();
-    return this.reply_IReply7_E;
+    return runtime.call_in(this, function() {
+      this.f();
+      return this.reply_IReply7_E;
+    }.bind(this), [this.p, 'foo', this.p.E_to_string]);
   }.bind(this);
   this.f = function () {
-    var v = this.r.in.foo();
-    this.reply_IReply7_E = v;
+    var v = {value: this.r.in.foo()};
+    this.reply_IReply7_E = ((typeof(v) === 'object') ? v.value : v);
   }.bind(this);
 
 };

@@ -22,21 +22,27 @@
 //
 // Code:
 
-dezyne.sugar = function() {
+dezyne.sugar = function(rt, meta) {
+  this.rt = rt;
+  this.meta = meta;
   this.Enum = {
     False: 0, True: 1
   };
+  this.Enum_to_string = {
+    0: 'Enum_False', 1: 'Enum_True'
+  };
   this.s = this.Enum.False;
 
-  this.i = new dezyne.I();
+  this.i = new dezyne.I({provides: {name: 'i', component: this}, requires: {}});
 
   this.i.in.e = function() {
-    console.log('sugar.i_e');
-    if(this.s === this.Enum.False) if(this.s === this.Enum.False) this.i.out.a.defer();
-    else {
-      var t = this.Enum.False;
-      if(t === this.Enum.True) this.i.out.a.defer();
-    }
+    runtime.call_in(this, function() {
+      if(this.s === this.Enum.False) if(this.s === this.Enum.False) this.i.out.a();
+      else {
+        var t = {value: this.Enum.False};
+        if(t === this.Enum.True) this.i.out.a();
+      }
+    }.bind(this), [this.i, 'e']);
   }.bind(this);
 
 };

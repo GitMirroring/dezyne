@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,10 +21,13 @@
 //
 // Code:
 
-dezyne.provides_twice = function() {
-  this.one = new dezyne.external_provides_twice();
+dezyne.provides_twice = function(rt, meta) {
+  rt.top = rt.top || this;
+  this.rt = rt;
+  this.meta = meta;
+  this.one = new dezyne.external_provides_twice(rt, {parent: this, name: 'one'});
   this.i = this.one.i;
   this.ii = this.one.ii;
-
+  this.children = [this.one];
 
 };

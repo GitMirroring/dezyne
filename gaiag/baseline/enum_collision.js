@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,21 +21,25 @@
 //
 // Code:
 
-dezyne.enum_collision = function() {
+dezyne.enum_collision = function(rt, meta) {
+  this.rt = rt;
+  this.meta = meta;
   this.reply_ienum_collision_Retval1 = null;
   this.reply_ienum_collision_Retval2 = null;
 
-  this.i = new dezyne.ienum_collision();
+  this.i = new dezyne.ienum_collision({provides: {name: 'i', component: this}, requires: {}});
 
   this.i.in.foo = function() {
-    console.log('enum_collision.i_foo');
-    this.reply_ienum_collision_Retval1 = new dezyne.ienum_collision().Retval1.OK;
-    return this.reply_ienum_collision_Retval1;
+    return runtime.call_in(this, function() {
+      this.reply_ienum_collision_Retval1 = ((typeof(new dezyne.ienum_collision().Retval1.OK) === 'object') ? new dezyne.ienum_collision().Retval1.OK.value : new dezyne.ienum_collision().Retval1.OK);
+      return this.reply_ienum_collision_Retval1;
+    }.bind(this), [this.i, 'foo', this.i.Retval1_to_string]);
   }.bind(this);
   this.i.in.bar = function() {
-    console.log('enum_collision.i_bar');
-    this.reply_ienum_collision_Retval2 = new dezyne.ienum_collision().Retval2.NOK;
-    return this.reply_ienum_collision_Retval2;
+    return runtime.call_in(this, function() {
+      this.reply_ienum_collision_Retval2 = ((typeof(new dezyne.ienum_collision().Retval2.NOK) === 'object') ? new dezyne.ienum_collision().Retval2.NOK.value : new dezyne.ienum_collision().Retval2.NOK);
+      return this.reply_ienum_collision_Retval2;
+    }.bind(this), [this.i, 'bar', this.i.Retval2_to_string]);
   }.bind(this);
 
 };

@@ -20,23 +20,27 @@
 //
 // Code:
 
-dezyne.Topon = function() {
+dezyne.Topon = function(rt, meta) {
+  this.rt = rt;
+  this.meta = meta;
   this.b = false;
   this.c = false;
 
-  this.i = new dezyne.ITopon();
+  this.i = new dezyne.ITopon({provides: {name: 'i', component: this}, requires: {}});
 
   this.i.in.e = function() {
-    console.log('Topon.i_e');
-    if(this.b && ! (this.c)) this.i.out.a.defer();
-    else if(! (this.b) && ! (this.c)) this.i.out.a.defer();
-    else if(! (this.c) && ! (this.b)) this.i.out.a.defer();
+    runtime.call_in(this, function() {
+      if(this.b && ! (this.c)) this.i.out.a();
+      else if(! (this.b) && ! (this.c)) this.i.out.a();
+      else if(! (this.c) && ! (this.b)) this.i.out.a();
+    }.bind(this), [this.i, 'e']);
   }.bind(this);
   this.i.in.t = function() {
-    console.log('Topon.i_t');
-    {
-      this.i.out.a.defer();
-    }
+    runtime.call_in(this, function() {
+      {
+        this.i.out.a();
+      }
+    }.bind(this), [this.i, 't']);
   }.bind(this);
 
 };

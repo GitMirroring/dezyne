@@ -21,34 +21,38 @@
 //
 // Code:
 
-dezyne.function = function() {
+dezyne.function = function(rt, meta) {
+  this.rt = rt;
+  this.meta = meta;
   this.f = false;
 
-  this.i = new dezyne.I();
+  this.i = new dezyne.I({provides: {name: 'i', component: this}, requires: {}});
 
   this.i.in.a = function() {
-    console.log('function.i_a');
-    if(true) {
-      {
-        this.toggle();
+    runtime.call_in(this, function() {
+      if(true) {
+        {
+          this.toggle();
+        }
       }
-    }
+    }.bind(this), [this.i, 'a']);
   }.bind(this);
   this.i.in.b = function() {
-    console.log('function.i_b');
-    if(true) {
-      {
-        this.toggle();
-        this.toggle();
-        this.i.out.d.defer();
+    runtime.call_in(this, function() {
+      if(true) {
+        {
+          this.toggle();
+          this.toggle();
+          this.i.out.d();
+        }
       }
-    }
+    }.bind(this), [this.i, 'b']);
   }.bind(this);
   this.toggle = function () {
     if(this.f) {
-      this.i.out.c.defer();
+      this.i.out.c();
     }
-    this.f = ! (this.f);
+    if (typeof(this.f) === 'object') this.f.value = ! (this.f); else this.f = ! (this.f)
   }.bind(this);
 
 };

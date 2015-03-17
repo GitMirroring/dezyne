@@ -22,137 +22,156 @@
 //
 // Code:
 
-dezyne.proxy = function() {
+dezyne.proxy = function(rt, meta) {
+  this.rt = rt;
+  this.meta = meta;
   this.reply_IDataparam_Status = null;
 
-  this.top = new dezyne.IDataparam();
-  this.bottom = new dezyne.IDataparam();
+  this.top = new dezyne.IDataparam({provides: {name: 'top', component: this}, requires: {}});
+  this.bottom = new dezyne.IDataparam({provides: {}, requires: {name: 'bottom', component: this}});
 
   this.top.in.e0 = function() {
-    console.log('proxy.top_e0');
-    this.bottom.in.e0();
+    runtime.call_in(this, function() {
+      this.bottom.in.e0();
+    }.bind(this), [this.top, 'e0']);
   }.bind(this);
   this.top.in.e0r = function() {
-    console.log('proxy.top_e0r');
-    {
-      var r = this.bottom.in.e0r();
-      this.reply_IDataparam_Status = r;
-    }
-    return this.reply_IDataparam_Status;
+    return runtime.call_in(this, function() {
+      {
+        var r = {value: this.bottom.in.e0r()};
+        this.reply_IDataparam_Status = ((typeof(r) === 'object') ? r.value : r);
+      }
+      return this.reply_IDataparam_Status;
+    }.bind(this), [this.top, 'e0r', this.top.Status_to_string]);
   }.bind(this);
   this.top.in.e = function(i) {
-    console.log('proxy.top_e');
-    {
-      var pi = i;
-      this.bottom.in.e(pi);
-    }
+    runtime.call_in(this, function() {
+      {
+        var pi = {value: i};
+        this.bottom.in.e(((typeof(pi) === 'object') ? pi.value : pi));
+      }
+    }.bind(this), [this.top, 'e']);
   }.bind(this);
   this.top.in.er = function(i) {
-    console.log('proxy.top_er');
-    {
-      var pi = i;
+    return runtime.call_in(this, function() {
       {
-        var r = this.bottom.in.er(pi);
-        this.reply_IDataparam_Status = r;
+        var pi = {value: i};
+        {
+          var r = {value: this.bottom.in.er(pi)};
+          this.reply_IDataparam_Status = ((typeof(r) === 'object') ? r.value : r);
+        }
       }
-    }
-    return this.reply_IDataparam_Status;
+      return this.reply_IDataparam_Status;
+    }.bind(this), [this.top, 'er', this.top.Status_to_string]);
   }.bind(this);
   this.top.in.eer = function(i,j) {
-    console.log('proxy.top_eer');
-    {
-      var r = this.bottom.in.eer(i, j);
-      this.reply_IDataparam_Status = r;
-    }
-    return this.reply_IDataparam_Status;
+    return runtime.call_in(this, function() {
+      {
+        var r = {value: this.bottom.in.eer(i, j)};
+        this.reply_IDataparam_Status = ((typeof(r) === 'object') ? r.value : r);
+      }
+      return this.reply_IDataparam_Status;
+    }.bind(this), [this.top, 'eer', this.top.Status_to_string]);
   }.bind(this);
   this.top.in.eo = function(i) {
-    console.log('proxy.top_eo');
-    {
-      this.outfunc(i.value);
-    }
+    runtime.call_in(this, function() {
+      {
+        this.outfunc(i);
+      }
+    }.bind(this), [this.top, 'eo']);
   }.bind(this);
   this.top.in.eoo = function(i,j) {
-    console.log('proxy.top_eoo');
-    {
-      this.bottom.in.eoo(i.value, j.value);
-    }
+    runtime.call_in(this, function() {
+      {
+        this.bottom.in.eoo(i, j);
+      }
+    }.bind(this), [this.top, 'eoo']);
   }.bind(this);
   this.top.in.eio = function(i,j) {
-    console.log('proxy.top_eio');
-    {
-      this.bottom.in.eio(i, j.value);
-    }
+    runtime.call_in(this, function() {
+      {
+        this.bottom.in.eio(((typeof(i) === 'object') ? i.value : i), j);
+      }
+    }.bind(this), [this.top, 'eio']);
   }.bind(this);
   this.top.in.eio2 = function(i) {
-    console.log('proxy.top_eio2');
-    {
-      this.bottom.in.eio2(i.value);
-    }
+    runtime.call_in(this, function() {
+      {
+        this.bottom.in.eio2(i);
+      }
+    }.bind(this), [this.top, 'eio2']);
   }.bind(this);
   this.top.in.eor = function(i) {
-    console.log('proxy.top_eor');
-    {
-      var s = this.bottom.in.eor(i);
-      this.reply_IDataparam_Status = s;
-    }
-    return this.reply_IDataparam_Status;
+    return runtime.call_in(this, function() {
+      {
+        var s = {value: this.bottom.in.eor(i)};
+        this.reply_IDataparam_Status = ((typeof(s) === 'object') ? s.value : s);
+      }
+      return this.reply_IDataparam_Status;
+    }.bind(this), [this.top, 'eor', this.top.Status_to_string]);
   }.bind(this);
   this.top.in.eoor = function(i,j) {
-    console.log('proxy.top_eoor');
-    {
-      var s = this.bottom.in.eoor(i, j);
-      this.reply_IDataparam_Status = s;
-    }
-    return this.reply_IDataparam_Status;
+    return runtime.call_in(this, function() {
+      {
+        var s = {value: this.bottom.in.eoor(i, j)};
+        this.reply_IDataparam_Status = ((typeof(s) === 'object') ? s.value : s);
+      }
+      return this.reply_IDataparam_Status;
+    }.bind(this), [this.top, 'eoor', this.top.Status_to_string]);
   }.bind(this);
   this.top.in.eior = function(i,j) {
-    console.log('proxy.top_eior');
-    {
-      var s = this.bottom.in.eior(i, j);
-      this.reply_IDataparam_Status = s;
-    }
-    return this.reply_IDataparam_Status;
+    return runtime.call_in(this, function() {
+      {
+        var s = {value: this.bottom.in.eior(i, j)};
+        this.reply_IDataparam_Status = ((typeof(s) === 'object') ? s.value : s);
+      }
+      return this.reply_IDataparam_Status;
+    }.bind(this), [this.top, 'eior', this.top.Status_to_string]);
   }.bind(this);
   this.top.in.eio2r = function(i) {
-    console.log('proxy.top_eio2r');
-    {
-      var s = this.bottom.in.eio2r(i);
-      this.reply_IDataparam_Status = s;
-    }
-    return this.reply_IDataparam_Status;
+    return runtime.call_in(this, function() {
+      {
+        var s = {value: this.bottom.in.eio2r(i)};
+        this.reply_IDataparam_Status = ((typeof(s) === 'object') ? s.value : s);
+      }
+      return this.reply_IDataparam_Status;
+    }.bind(this), [this.top, 'eio2r', this.top.Status_to_string]);
   }.bind(this);
   this.bottom.out.a0 = function() {
-    console.log('proxy.bottom_a0');
-    this.top.out.a0.defer();
+    runtime.call_out(this, function() {
+      this.top.out.a0();
+    }.bind(this), [this.bottom, 'a0']);
   }.bind(this);
   this.bottom.out.a = function(i) {
-    console.log('proxy.bottom_a');
-    this.deferfunc(i);
+    runtime.call_out(this, function() {
+      this.deferfunc(((typeof(i) === 'object') ? i.value : i));
+    }.bind(this), [this.bottom, 'a']);
   }.bind(this);
   this.bottom.out.aa = function(i,j) {
-    console.log('proxy.bottom_aa');
-    this.top.out.aa.defer(i, j);
+    runtime.call_out(this, function() {
+      this.top.out.aa(((typeof(i) === 'object') ? i.value : i), ((typeof(j) === 'object') ? j.value : j));
+    }.bind(this), [this.bottom, 'aa']);
   }.bind(this);
   this.bottom.out.a6 = function(a0,a1,a2,a3,a4,a5) {
-    console.log('proxy.bottom_a6');
-    {
-      var A0 = a0;
-      var A1 = a1;
-      var A2 = a2;
-      var A3 = a3;
-      var A4 = a4;
-      var A5 = a5;
-      this.top.out.a6.defer(A0, A1, A2, A3, A4, A5);
-    }
+    runtime.call_out(this, function() {
+      {
+        var A0 = {value: a0};
+        var A1 = {value: a1};
+        var A2 = {value: a2};
+        var A3 = {value: a3};
+        var A4 = {value: a4};
+        var A5 = {value: a5};
+        this.top.out.a6(((typeof(A0) === 'object') ? A0.value : A0), ((typeof(A1) === 'object') ? A1.value : A1), ((typeof(A2) === 'object') ? A2.value : A2), ((typeof(A3) === 'object') ? A3.value : A3), ((typeof(A4) === 'object') ? A4.value : A4), ((typeof(A5) === 'object') ? A5.value : A5));
+      }
+    }.bind(this), [this.bottom, 'a6']);
   }.bind(this);
   this.outfunc = function (i) {
-    var j = i.value;
-    this.bottom.in.eo(j);
-    i.value = j;
+    var j = {value: i.value};
+    this.bottom.in.eo(((typeof(j) === 'object') ? j: {value: j}));
+    if (typeof(i.value) === 'object') i.value.value = ((typeof(j) === 'object') ? j.value : j); else i.value = ((typeof(j) === 'object') ? j.value : j); 
   }.bind(this);
   this.deferfunc = function (i) {
-    this.top.out.a.defer(i);
+    this.top.out.a(((typeof(i) === 'object') ? i.value : i));
   }.bind(this);
 
 };

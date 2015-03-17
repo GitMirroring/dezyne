@@ -21,22 +21,26 @@
 //
 // Code:
 
-dezyne.complete = function() {
+dezyne.complete = function(rt, meta) {
+  this.rt = rt;
+  this.meta = meta;
 
-  this.p = new dezyne.icomplete();
-  this.r = new dezyne.icomplete();
+  this.p = new dezyne.icomplete({provides: {name: 'p', component: this}, requires: {}});
+  this.r = new dezyne.icomplete({provides: {}, requires: {name: 'r', component: this}});
 
   this.p.in.e = function() {
-    console.log('complete.p_e');
-    {
-      this.r.in.e();
-    }
+    runtime.call_in(this, function() {
+      {
+        this.r.in.e();
+      }
+    }.bind(this), [this.p, 'e']);
   }.bind(this);
   this.r.out.a = function() {
-    console.log('complete.r_a');
-    {
-      this.p.out.a.defer();
-    }
+    runtime.call_out(this, function() {
+      {
+        this.p.out.a();
+      }
+    }.bind(this), [this.r, 'a']);
   }.bind(this);
 
 };

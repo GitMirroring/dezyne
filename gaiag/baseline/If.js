@@ -21,22 +21,25 @@
 //
 // Code:
 
-dezyne.If = function() {
+dezyne.If = function(rt, meta) {
+  this.rt = rt;
+  this.meta = meta;
   this.t = false;
 
-  this.i = new dezyne.I();
+  this.i = new dezyne.I({provides: {name: 'i', component: this}, requires: {}});
 
   this.i.in.a = function() {
-    console.log('If.i_a');
-    {
-      if(this.t) {
-        this.i.out.b.defer();
+    runtime.call_in(this, function() {
+      {
+        if(this.t) {
+          this.i.out.b();
+        }
+        else {
+          this.i.out.c();
+        }
+        if (typeof(this.t) === 'object') this.t.value = ! (this.t); else this.t = ! (this.t)
       }
-      else {
-        this.i.out.c.defer();
-      }
-      this.t = ! (this.t);
-    }
+    }.bind(this), [this.i, 'a']);
   }.bind(this);
 
 };

@@ -21,28 +21,33 @@
 //
 // Code:
 
-dezyne.requires_twice = function() {
+dezyne.requires_twice = function(rt, meta) {
+  this.rt = rt;
+  this.meta = meta;
 
-  this.p = new dezyne.irequires_twice();
-  this.once = new dezyne.irequires_twice();
-  this.twice = new dezyne.irequires_twice();
+  this.p = new dezyne.irequires_twice({provides: {name: 'p', component: this}, requires: {}});
+  this.once = new dezyne.irequires_twice({provides: {}, requires: {name: 'once', component: this}});
+  this.twice = new dezyne.irequires_twice({provides: {}, requires: {name: 'twice', component: this}});
 
   this.p.in.e = function() {
-    console.log('requires_twice.p_e');
-    {
-      this.once.in.e();
-      this.twice.in.e();
-    }
+    runtime.call_in(this, function() {
+      {
+        this.once.in.e();
+        this.twice.in.e();
+      }
+    }.bind(this), [this.p, 'e']);
   }.bind(this);
   this.once.out.a = function() {
-    console.log('requires_twice.once_a');
-    { }
+    runtime.call_out(this, function() {
+      { }
+    }.bind(this), [this.once, 'a']);
   }.bind(this);
   this.twice.out.a = function() {
-    console.log('requires_twice.twice_a');
-    {
-      this.p.out.a.defer();
-    }
+    runtime.call_out(this, function() {
+      {
+        this.p.out.a();
+      }
+    }.bind(this), [this.twice, 'a']);
   }.bind(this);
 
 };

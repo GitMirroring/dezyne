@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,34 +21,40 @@
 //
 // Code:
 
-dezyne.Reply4 = function() {
+dezyne.Reply4 = function(rt, meta) {
+  this.rt = rt;
+  this.meta = meta;
   this.Status = {
     Yes: 0, No: 1
+  };
+  this.Status_to_string = {
+    0: 'Status_Yes', 1: 'Status_No'
   };
   this.dummy = false;
   this.reply_I_Status = null;
   this.reply_U_Status = null;
 
-  this.i = new dezyne.I();
-  this.u = new dezyne.U();
+  this.i = new dezyne.I({provides: {name: 'i', component: this}, requires: {}});
+  this.u = new dezyne.U({provides: {}, requires: {name: 'u', component: this}});
 
   this.i.in.done = function() {
-    console.log('Reply4.i_done');
-    if(true) {
-      var s = this.u.in.what();
-      s = this.u.in.what();
-      if(s === new dezyne.U().Status.Ok) {
-        var v = this.fun();
-        if(v === this.Status.Yes) this.reply_I_Status = new dezyne.I().Status.Yes;
-        else this.reply_I_Status = new dezyne.I().Status.No;
+    return runtime.call_in(this, function() {
+      if(true) {
+        var s = {value: this.u.in.what()};
+        if (typeof(s) === 'object') s.value = this.u.in.what(); else s = this.u.in.what()
+        if(s === new dezyne.U().Status.Ok) {
+          var v = {value: this.fun()};
+          if(v === this.Status.Yes) this.reply_I_Status = ((typeof(new dezyne.I().Status.Yes) === 'object') ? new dezyne.I().Status.Yes.value : new dezyne.I().Status.Yes);
+          else this.reply_I_Status = ((typeof(new dezyne.I().Status.No) === 'object') ? new dezyne.I().Status.No.value : new dezyne.I().Status.No);
+        }
+        else {
+          var v = {value: this.fun_arg(this.Status.No)};
+          if(v === this.Status.Yes) this.reply_I_Status = ((typeof(new dezyne.I().Status.Yes) === 'object') ? new dezyne.I().Status.Yes.value : new dezyne.I().Status.Yes);
+          else this.reply_I_Status = ((typeof(new dezyne.I().Status.No) === 'object') ? new dezyne.I().Status.No.value : new dezyne.I().Status.No);
+        }
       }
-      else {
-        var v = this.fun_arg(this.Status.No);
-        if(v === this.Status.Yes) this.reply_I_Status = new dezyne.I().Status.Yes;
-        else this.reply_I_Status = new dezyne.I().Status.No;
-      }
-    }
-    return this.reply_I_Status;
+      return this.reply_I_Status;
+    }.bind(this), [this.i, 'done', this.i.Status_to_string]);
   }.bind(this);
   this.fun = function () {
     return this.Status.Yes;

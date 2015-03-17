@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,36 +21,42 @@
 //
 // Code:
 
-dezyne.imperative = function() {
+dezyne.imperative = function(rt, meta) {
+  this.rt = rt;
+  this.meta = meta;
   this.States = {
     I: 0, II: 1, III: 2, IV: 3
   };
+  this.States_to_string = {
+    0: 'States_I', 1: 'States_II', 2: 'States_III', 3: 'States_IV'
+  };
   this.state = this.States.I;
 
-  this.i = new dezyne.iimperative();
+  this.i = new dezyne.iimperative({provides: {name: 'i', component: this}, requires: {}});
 
   this.i.in.e = function() {
-    console.log('imperative.i_e');
-    if(this.state === this.States.I) {
-      this.i.out.f.defer();
-      this.i.out.g.defer();
-      this.i.out.h.defer();
-      this.state = this.States.II;
-    }
-    else if(this.state === this.States.II) {
-      this.state = this.States.III;
-    }
-    else if(this.state === this.States.III) {
-      this.i.out.f.defer();
-      this.i.out.g.defer();
-      this.i.out.g.defer();
-      this.i.out.f.defer();
-      this.state = this.States.IV;
-    }
-    else if(this.state === this.States.IV) {
-      this.i.out.h.defer();
-      this.state = this.States.I;
-    }
+    runtime.call_in(this, function() {
+      if(this.state === this.States.I) {
+        this.i.out.f();
+        this.i.out.g();
+        this.i.out.h();
+        if (typeof(this.state) === 'object') this.state.value = this.States.II; else this.state = this.States.II
+      }
+      else if(this.state === this.States.II) {
+        if (typeof(this.state) === 'object') this.state.value = this.States.III; else this.state = this.States.III
+      }
+      else if(this.state === this.States.III) {
+        this.i.out.f();
+        this.i.out.g();
+        this.i.out.g();
+        this.i.out.f();
+        if (typeof(this.state) === 'object') this.state.value = this.States.IV; else this.state = this.States.IV
+      }
+      else if(this.state === this.States.IV) {
+        this.i.out.h();
+        if (typeof(this.state) === 'object') this.state.value = this.States.I; else this.state = this.States.I
+      }
+    }.bind(this), [this.i, 'e']);
   }.bind(this);
 
 };

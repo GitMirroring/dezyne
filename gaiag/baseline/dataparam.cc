@@ -66,7 +66,7 @@ int main()
   dezyne::Datasystem d(l);
 
   d.meta.name = "d";
-  d.port.meta.requires = {"d","port",&d};
+  d.port.meta.requires = {"port",&d};
 
   d.port.out.a0 = a0;
   d.port.out.a = a;

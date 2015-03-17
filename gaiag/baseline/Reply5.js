@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,29 +21,32 @@
 //
 // Code:
 
-dezyne.Reply5 = function() {
+dezyne.Reply5 = function(rt, meta) {
+  this.rt = rt;
+  this.meta = meta;
   this.dummy = false;
   this.reply_I_Status = null;
   this.reply_U_Status = null;
 
-  this.i = new dezyne.I();
-  this.u = new dezyne.U();
+  this.i = new dezyne.I({provides: {name: 'i', component: this}, requires: {}});
+  this.u = new dezyne.U({provides: {}, requires: {name: 'u', component: this}});
 
   this.i.in.done = function() {
-    console.log('Reply5.i_done');
-    if(true) {
-      var s = this.u.in.what();
-      s = this.u.in.what();
-      if(s === new dezyne.U().Status.Ok) {
-        var s = this.fun();
-        this.reply_I_Status = s;
+    return runtime.call_in(this, function() {
+      if(true) {
+        var s = {value: this.u.in.what()};
+        if (typeof(s) === 'object') s.value = this.u.in.what(); else s = this.u.in.what()
+        if(s === new dezyne.U().Status.Ok) {
+          var s = {value: this.fun()};
+          this.reply_I_Status = ((typeof(s) === 'object') ? s.value : s);
+        }
+        else {
+          var s = {value: this.fun_arg(new dezyne.I().Status.No)};
+          this.reply_I_Status = ((typeof(s) === 'object') ? s.value : s);
+        }
       }
-      else {
-        var s = this.fun_arg(new dezyne.I().Status.No);
-        this.reply_I_Status = s;
-      }
-    }
-    return this.reply_I_Status;
+      return this.reply_I_Status;
+    }.bind(this), [this.i, 'done', this.i.Status_to_string]);
   }.bind(this);
   this.fun = function () {
     return new dezyne.I().Status.Yes;

@@ -20,24 +20,28 @@
 //
 // Code:
 
-dezyne.Guardtwotopon = function() {
+dezyne.Guardtwotopon = function(rt, meta) {
+  this.rt = rt;
+  this.meta = meta;
   this.b = false;
 
-  this.i = new dezyne.IGuardtwotopon();
+  this.i = new dezyne.IGuardtwotopon({provides: {name: 'i', component: this}, requires: {}});
 
   this.i.in.e = function() {
-    console.log('Guardtwotopon.i_e');
-    if(true && this.b) {
-      this.i.out.a.defer();
-    }
-    else if(true && ! (this.b)) {
-      var c = true;
-      if(c) this.i.out.a.defer();
-    }
+    runtime.call_in(this, function() {
+      if(true && this.b) {
+        this.i.out.a();
+      }
+      else if(true && ! (this.b)) {
+        var c = {value: true};
+        if(c) this.i.out.a();
+      }
+    }.bind(this), [this.i, 'e']);
   }.bind(this);
   this.i.in.t = function() {
-    console.log('Guardtwotopon.i_t');
-    this.i.out.a.defer();
+    runtime.call_in(this, function() {
+      this.i.out.a();
+    }.bind(this), [this.i, 't']);
   }.bind(this);
 
 };

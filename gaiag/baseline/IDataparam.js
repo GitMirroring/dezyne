@@ -21,9 +21,12 @@
 //
 // Code:
 
-dezyne.IDataparam = function() {
+dezyne.IDataparam = function(meta) {
   this.Status = {
     Yes: 0, No: 1
+  };
+  this.Status_to_string = {
+    0: 'Status_Yes', 1: 'Status_No'
   };
   this.in = {
     e0 : null,
@@ -46,4 +49,5 @@ dezyne.IDataparam = function() {
     aa : null,
     a6 : null
   };
+  this.meta = meta;
 };

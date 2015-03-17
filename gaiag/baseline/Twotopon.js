@@ -20,23 +20,27 @@
 //
 // Code:
 
-dezyne.Twotopon = function() {
+dezyne.Twotopon = function(rt, meta) {
+  this.rt = rt;
+  this.meta = meta;
   this.b = false;
 
-  this.i = new dezyne.ITwotopon();
+  this.i = new dezyne.ITwotopon({provides: {name: 'i', component: this}, requires: {}});
 
   this.i.in.e = function() {
-    console.log('Twotopon.i_e');
-    if(this.b) {
-      this.i.out.a.defer();
-    }
-    else if(! (this.b)) {
-      this.i.out.a.defer();
-    }
+    runtime.call_in(this, function() {
+      if(this.b) {
+        this.i.out.a();
+      }
+      else if(! (this.b)) {
+        this.i.out.a();
+      }
+    }.bind(this), [this.i, 'e']);
   }.bind(this);
   this.i.in.t = function() {
-    console.log('Twotopon.i_t');
-    this.i.out.a.defer();
+    runtime.call_in(this, function() {
+      this.i.out.a();
+    }.bind(this), [this.i, 't']);
   }.bind(this);
 
 };

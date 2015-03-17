@@ -21,11 +21,14 @@
 //
 // Code:
 
-dezyne.Datasystem = function() {
-  this.p = new dezyne.proxy();
-  this.c = new dezyne.Dataparam();
+dezyne.Datasystem = function(rt, meta) {
+  rt.top = rt.top || this;
+  this.rt = rt;
+  this.meta = meta;
+  this.p = new dezyne.proxy(rt, {parent: this, name: 'p'});
+  this.c = new dezyne.Dataparam(rt, {parent: this, name: 'c'});
   this.port = this.p.top;
-
+  this.children = [this.p, this.c];
   dezyne.connect(this.c.port, this.p.bottom);
 
 };

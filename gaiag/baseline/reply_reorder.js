@@ -21,28 +21,32 @@
 //
 // Code:
 
-dezyne.reply_reorder = function() {
+dezyne.reply_reorder = function(rt, meta) {
+  this.rt = rt;
+  this.meta = meta;
   this.first = true;
 
-  this.p = new dezyne.Provides();
-  this.r = new dezyne.Requires();
+  this.p = new dezyne.Provides({provides: {name: 'p', component: this}, requires: {}});
+  this.r = new dezyne.Requires({provides: {}, requires: {name: 'r', component: this}});
 
   this.p.in.start = function() {
-    console.log('reply_reorder.p_start');
-    {
-      this.r.in.ping();
-    }
+    runtime.call_in(this, function() {
+      {
+        this.r.in.ping();
+      }
+    }.bind(this), [this.p, 'start']);
   }.bind(this);
   this.r.out.pong = function() {
-    console.log('reply_reorder.r_pong');
-    if(this.first) {
-      this.p.out.busy.defer();
-      this.first = ! (this.first);
-    }
-    else if(! (this.first)) {
-      this.p.out.finish.defer();
-      this.first = ! (this.first);
-    }
+    runtime.call_out(this, function() {
+      if(this.first) {
+        this.p.out.busy();
+        if (typeof(this.first) === 'object') this.first.value = ! (this.first); else this.first = ! (this.first)
+      }
+      else if(! (this.first)) {
+        this.p.out.finish();
+        if (typeof(this.first) === 'object') this.first.value = ! (this.first); else this.first = ! (this.first)
+      }
+    }.bind(this), [this.r, 'pong']);
   }.bind(this);
 
 };

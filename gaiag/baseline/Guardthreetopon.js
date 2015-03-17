@@ -20,34 +20,40 @@
 //
 // Code:
 
-dezyne.Guardthreetopon = function() {
+dezyne.Guardthreetopon = function(rt, meta) {
+  this.rt = rt;
+  this.meta = meta;
   this.b = false;
 
-  this.i = new dezyne.IGuardthreetopon();
-  this.r = new dezyne.RGuardthreetopon();
+  this.i = new dezyne.IGuardthreetopon({provides: {name: 'i', component: this}, requires: {}});
+  this.r = new dezyne.RGuardthreetopon({provides: {}, requires: {name: 'r', component: this}});
 
   this.i.in.e = function() {
-    console.log('Guardthreetopon.i_e');
-    if(true && this.b) {
-      this.i.out.a.defer();
-    }
-    else if(true && ! (this.b)) {
-      var c = true;
-      if(c) this.i.out.a.defer();
-    }
+    runtime.call_in(this, function() {
+      if(true && this.b) {
+        this.i.out.a();
+      }
+      else if(true && ! (this.b)) {
+        var c = {value: true};
+        if(c) this.i.out.a();
+      }
+    }.bind(this), [this.i, 'e']);
   }.bind(this);
   this.i.in.t = function() {
-    console.log('Guardthreetopon.i_t');
-    if(this.b) this.i.out.a.defer();
-    else if(! (this.b)) this.i.out.a.defer();
+    runtime.call_in(this, function() {
+      if(this.b) this.i.out.a();
+      else if(! (this.b)) this.i.out.a();
+    }.bind(this), [this.i, 't']);
   }.bind(this);
   this.i.in.s = function() {
-    console.log('Guardthreetopon.i_s');
-    this.i.out.a.defer();
+    runtime.call_in(this, function() {
+      this.i.out.a();
+    }.bind(this), [this.i, 's']);
   }.bind(this);
   this.r.out.a = function() {
-    console.log('Guardthreetopon.r_a');
-    { }
+    runtime.call_out(this, function() {
+      { }
+    }.bind(this), [this.r, 'a']);
   }.bind(this);
 
 };

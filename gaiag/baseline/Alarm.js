@@ -28,19 +28,22 @@ dezyne.Alarm = function(rt, meta) {
   this.States = {
     Disarmed: 0, Armed: 1, Triggered: 2, Disarming: 3
   };
+  this.States_to_string = {
+    0: 'States_Disarmed', 1: 'States_Armed', 2: 'States_Triggered', 3: 'States_Disarming'
+  };
   this.state = this.States.Disarmed;
   this.sounding = false;
 
-  this.console = new dezyne.IConsole({provides: this, requires: this});
-  this.sensor = new dezyne.ISensor({provides: this, requires: this});
-  this.siren = new dezyne.ISiren({provides: this, requires: this});
+  this.console = new dezyne.IConsole({provides: {name: 'console', component: this}, requires: {}});
+  this.sensor = new dezyne.ISensor({provides: {}, requires: {name: 'sensor', component: this}});
+  this.siren = new dezyne.ISiren({provides: {}, requires: {name: 'siren', component: this}});
 
   this.console.in.arm = function() {
     runtime.call_in(this, function() {
       if(this.state === this.States.Disarmed) {
         {
           this.sensor.in.enable();
-          this.state = this.States.Armed;
+          if (typeof(this.state) === 'object') this.state.value = this.States.Armed; else this.state = this.States.Armed
         }
       }
       else if(this.state === this.States.Armed) {
@@ -52,7 +55,7 @@ dezyne.Alarm = function(rt, meta) {
       else if(this.state === this.States.Triggered) {
         console.assert (false);
       }
-    }.bind(this), [this.console, 'console', 'arm']);
+    }.bind(this), [this.console, 'arm']);
   }.bind(this);
   this.console.in.disarm = function() {
     runtime.call_in(this, function() {
@@ -62,7 +65,7 @@ dezyne.Alarm = function(rt, meta) {
       else if(this.state === this.States.Armed) {
         {
           this.sensor.in.disable();
-          this.state = this.States.Disarming;
+          if (typeof(this.state) === 'object') this.state.value = this.States.Disarming; else this.state = this.States.Disarming
         }
       }
       else if(this.state === this.States.Disarming) {
@@ -72,11 +75,11 @@ dezyne.Alarm = function(rt, meta) {
         {
           this.sensor.in.disable();
           this.siren.in.turnoff();
-          this.sounding = false;
-          this.state = this.States.Disarming;
+          if (typeof(this.sounding) === 'object') this.sounding.value = ((typeof(false) === 'object') ? false.value : false); else this.sounding = ((typeof(false) === 'object') ? false.value : false); 
+          if (typeof(this.state) === 'object') this.state.value = this.States.Disarming; else this.state = this.States.Disarming
         }
       }
-    }.bind(this), [this.console, 'console', 'disarm']);
+    }.bind(this), [this.console, 'disarm']);
   }.bind(this);
   this.sensor.out.triggered = function() {
     runtime.call_out(this, function() {
@@ -87,8 +90,8 @@ dezyne.Alarm = function(rt, meta) {
         {
           this.console.out.detected();
           this.siren.in.turnon();
-          this.sounding = true;
-          this.state = this.States.Triggered;
+          if (typeof(this.sounding) === 'object') this.sounding.value = ((typeof(true) === 'object') ? true.value : true); else this.sounding = ((typeof(true) === 'object') ? true.value : true); 
+          if (typeof(this.state) === 'object') this.state.value = this.States.Triggered; else this.state = this.States.Triggered
         }
       }
       else if(this.state === this.States.Disarming) {
@@ -97,7 +100,7 @@ dezyne.Alarm = function(rt, meta) {
       else if(this.state === this.States.Triggered) {
         console.assert (false);
       }
-    }.bind(this), [this.sensor, 'sensor', 'triggered']);
+    }.bind(this), [this.sensor, 'triggered']);
   }.bind(this);
   this.sensor.out.disabled = function() {
     runtime.call_out(this, function() {
@@ -110,17 +113,17 @@ dezyne.Alarm = function(rt, meta) {
       else if(this.state === this.States.Disarming && this.sounding) {
         this.console.out.deactivated();
         this.siren.in.turnoff();
-        this.state = this.States.Disarmed;
-        this.sounding = false;
+        if (typeof(this.state) === 'object') this.state.value = this.States.Disarmed; else this.state = this.States.Disarmed
+        if (typeof(this.sounding) === 'object') this.sounding.value = ((typeof(false) === 'object') ? false.value : false); else this.sounding = ((typeof(false) === 'object') ? false.value : false); 
       }
       else if(this.state === this.States.Disarming && ! (this.sounding)) {
         this.console.out.deactivated();
-        this.state = this.States.Disarmed;
+        if (typeof(this.state) === 'object') this.state.value = this.States.Disarmed; else this.state = this.States.Disarmed
       }
       else if(this.state === this.States.Triggered) {
         console.assert (false);
       }
-    }.bind(this), [this.sensor, 'sensor', 'disabled']);
+    }.bind(this), [this.sensor, 'disabled']);
   }.bind(this);
 
 };

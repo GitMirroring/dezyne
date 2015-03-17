@@ -21,32 +21,36 @@
 //
 // Code:
 
-dezyne.function2 = function() {
+dezyne.function2 = function(rt, meta) {
+  this.rt = rt;
+  this.meta = meta;
   this.f = false;
 
-  this.i = new dezyne.ifunction2();
+  this.i = new dezyne.ifunction2({provides: {name: 'i', component: this}, requires: {}});
 
   this.i.in.a = function() {
-    console.log('function2.i_a');
-    if(true) {
-      {
-        this.f = this.vtoggle();
+    runtime.call_in(this, function() {
+      if(true) {
+        {
+          if (typeof(this.f) === 'object') this.f.value = this.vtoggle(); else this.f = this.vtoggle()
+        }
       }
-    }
+    }.bind(this), [this.i, 'a']);
   }.bind(this);
   this.i.in.b = function() {
-    console.log('function2.i_b');
-    if(true) {
-      {
-        this.f = this.vtoggle();
-        var bb = this.vtoggle();
-        this.f = bb;
-        this.i.out.d.defer();
+    runtime.call_in(this, function() {
+      if(true) {
+        {
+          if (typeof(this.f) === 'object') this.f.value = this.vtoggle(); else this.f = this.vtoggle()
+          var bb = {value: this.vtoggle()};
+          if (typeof(this.f) === 'object') this.f.value = ((typeof(bb) === 'object') ? bb.value : bb); else this.f = ((typeof(bb) === 'object') ? bb.value : bb); 
+          this.i.out.d();
+        }
       }
-    }
+    }.bind(this), [this.i, 'b']);
   }.bind(this);
   this.vtoggle = function () {
-    if(this.f) this.i.out.c.defer();
+    if(this.f) this.i.out.c();
     return ! (this.f);
   }.bind(this);
 

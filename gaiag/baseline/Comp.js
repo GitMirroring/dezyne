@@ -21,91 +21,99 @@
 //
 // Code:
 
-dezyne.Comp = function() {
+dezyne.Comp = function(rt, meta) {
+  this.rt = rt;
+  this.meta = meta;
   this.State = {
     Uninitialized: 0, Initialized: 1, Error: 2
+  };
+  this.State_to_string = {
+    0: 'State_Uninitialized', 1: 'State_Initialized', 2: 'State_Error'
   };
   this.s = this.State.Uninitialized;
   this.reply_IComp_result_t = null;
   this.reply_IDevice_result_t = null;
 
-  this.client = new dezyne.IComp();
-  this.device_A = new dezyne.IDevice();
+  this.client = new dezyne.IComp({provides: {name: 'client', component: this}, requires: {}});
+  this.device_A = new dezyne.IDevice({provides: {}, requires: {name: 'device_A', component: this}});
 
   this.client.in.initialize = function() {
-    console.log('Comp.client_initialize');
-    if(this.s === this.State.Uninitialized) {
-      {
-        var res = this.device_A.in.initialize();
-        if(res === new dezyne.IDevice().result_t.OK) {
-          res = this.device_A.in.calibrate();
-        }
-        if(res === new dezyne.IDevice().result_t.OK) {
-          this.s = this.State.Initialized;
-          this.reply_IDevice_result_t = new dezyne.IDevice().result_t.OK;
-        }
-        else {
-          this.s = this.State.Uninitialized;
-          this.reply_IDevice_result_t = new dezyne.IDevice().result_t.NOK;
+    return runtime.call_in(this, function() {
+      if(this.s === this.State.Uninitialized) {
+        {
+          var res = {value: this.device_A.in.initialize()};
+          if(res === new dezyne.IDevice().result_t.OK) {
+            if (typeof(res) === 'object') res.value = this.device_A.in.calibrate(); else res = this.device_A.in.calibrate()
+          }
+          if(res === new dezyne.IDevice().result_t.OK) {
+            if (typeof(this.s) === 'object') this.s.value = this.State.Initialized; else this.s = this.State.Initialized
+            this.reply_IDevice_result_t = ((typeof(new dezyne.IDevice().result_t.OK) === 'object') ? new dezyne.IDevice().result_t.OK.value : new dezyne.IDevice().result_t.OK);
+          }
+          else {
+            if (typeof(this.s) === 'object') this.s.value = this.State.Uninitialized; else this.s = this.State.Uninitialized
+            this.reply_IDevice_result_t = ((typeof(new dezyne.IDevice().result_t.NOK) === 'object') ? new dezyne.IDevice().result_t.NOK.value : new dezyne.IDevice().result_t.NOK);
+          }
         }
       }
-    }
-    else if(this.s === this.State.Initialized) {
-      console.assert (false);
-    }
-    else if(this.s === this.State.Error) {
-      console.assert (false);
-    }
-    return this.reply_IComp_result_t;
+      else if(this.s === this.State.Initialized) {
+        console.assert (false);
+      }
+      else if(this.s === this.State.Error) {
+        console.assert (false);
+      }
+      return this.reply_IComp_result_t;
+    }.bind(this), [this.client, 'initialize', this.client.result_t_to_string]);
   }.bind(this);
   this.client.in.recover = function() {
-    console.log('Comp.client_recover');
-    if(this.s === this.State.Uninitialized) {
-      console.assert (false);
-    }
-    else if(this.s === this.State.Initialized) {
-      console.assert (false);
-    }
-    else if(this.s === this.State.Error) {
-      {
-        var res = this.device_A.in.calibrate();
-        if(res === new dezyne.IDevice().result_t.OK) {
-          this.s = this.State.Initialized;
-          this.reply_IDevice_result_t = new dezyne.IDevice().result_t.OK;
-        }
-        else {
-          this.s = this.State.Error;
-          this.reply_IDevice_result_t = new dezyne.IDevice().result_t.NOK;
+    return runtime.call_in(this, function() {
+      if(this.s === this.State.Uninitialized) {
+        console.assert (false);
+      }
+      else if(this.s === this.State.Initialized) {
+        console.assert (false);
+      }
+      else if(this.s === this.State.Error) {
+        {
+          var res = {value: this.device_A.in.calibrate()};
+          if(res === new dezyne.IDevice().result_t.OK) {
+            if (typeof(this.s) === 'object') this.s.value = this.State.Initialized; else this.s = this.State.Initialized
+            this.reply_IDevice_result_t = ((typeof(new dezyne.IDevice().result_t.OK) === 'object') ? new dezyne.IDevice().result_t.OK.value : new dezyne.IDevice().result_t.OK);
+          }
+          else {
+            if (typeof(this.s) === 'object') this.s.value = this.State.Error; else this.s = this.State.Error
+            this.reply_IDevice_result_t = ((typeof(new dezyne.IDevice().result_t.NOK) === 'object') ? new dezyne.IDevice().result_t.NOK.value : new dezyne.IDevice().result_t.NOK);
+          }
         }
       }
-    }
-    return this.reply_IComp_result_t;
+      return this.reply_IComp_result_t;
+    }.bind(this), [this.client, 'recover', this.client.result_t_to_string]);
   }.bind(this);
   this.client.in.perform_actions = function() {
-    console.log('Comp.client_perform_actions');
-    if(this.s === this.State.Uninitialized) {
-      console.assert (false);
-    }
-    else if(this.s === this.State.Initialized) {
-      {
-        var res = this.device_A.in.perform_action1();
-        if(res === new dezyne.IDevice().result_t.OK) {
-          res = this.device_A.in.perform_action2();
-        }
-        if(res === new dezyne.IDevice().result_t.OK) {
-          this.s = this.State.Initialized;
-          this.reply_IDevice_result_t = new dezyne.IDevice().result_t.OK;
-        }
-        else {
-          this.s = this.State.Error;
-          this.reply_IDevice_result_t = new dezyne.IDevice().result_t.NOK;
+    return runtime.call_in(this, function() {
+      if(this.s === this.State.Uninitialized) {
+        console.assert (false);
+      }
+      else if(this.s === this.State.Initialized) {
+        {
+          var res = {value: this.device_A.in.perform_action1()};
+          if(res === new dezyne.IDevice().result_t.OK) {
+            if (typeof(res) === 'object') res.value = this.device_A.in.perform_action2(); else res = this.device_A.in.perform_action2()
+          }
+          if(res === new dezyne.IDevice().result_t.OK) {
+            if (typeof(this.s) === 'object') this.s.value = this.State.Initialized; else this.s = this.State.Initialized
+            this.reply_IDevice_result_t = ((typeof(new dezyne.IDevice().result_t.OK) === 'object') ? new dezyne.IDevice().result_t.OK.value : new dezyne.IDevice().result_t.OK);
+          }
+          else {
+            if (typeof(this.s) === 'object') this.s.value = this.State.Error; else this.s = this.State.Error
+            this.reply_IDevice_result_t = ((typeof(new dezyne.IDevice().result_t.NOK) === 'object') ? new dezyne.IDevice().result_t.NOK.value : new dezyne.IDevice().result_t.NOK);
+          }
         }
       }
-    }
-    else if(this.s === this.State.Error) {
-      console.assert (false);
-    }
-    return this.reply_IComp_result_t;
+      else if(this.s === this.State.Error) {
+        console.assert (false);
+      }
+      return this.reply_IComp_result_t;
+    }.bind(this), [this.client, 'perform_actions', this.client.result_t_to_string]);
   }.bind(this);
 
 };

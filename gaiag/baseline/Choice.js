@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,28 +22,34 @@
 //
 // Code:
 
-dezyne.Choice = function() {
+dezyne.Choice = function(rt, meta) {
+  this.rt = rt;
+  this.meta = meta;
   this.State = {
     Off: 0, Idle: 1, Busy: 2
   };
+  this.State_to_string = {
+    0: 'State_Off', 1: 'State_Idle', 2: 'State_Busy'
+  };
   this.s = this.State.Off;
 
-  this.c = new dezyne.IChoice();
+  this.c = new dezyne.IChoice({provides: {name: 'c', component: this}, requires: {}});
 
   this.c.in.e = function() {
-    console.log('Choice.c_e');
-    if(this.s === this.State.Off) {
-      this.s = this.State.Idle;
-      this.c.out.a.defer();
-    }
-    else if(this.s === this.State.Idle) {
-      this.s = this.State.Busy;
-      this.c.out.a.defer();
-    }
-    else if(this.s === this.State.Busy) {
-      this.s = this.State.Idle;
-      this.c.out.a.defer();
-    }
+    runtime.call_in(this, function() {
+      if(this.s === this.State.Off) {
+        if (typeof(this.s) === 'object') this.s.value = this.State.Idle; else this.s = this.State.Idle
+        this.c.out.a();
+      }
+      else if(this.s === this.State.Idle) {
+        if (typeof(this.s) === 'object') this.s.value = this.State.Busy; else this.s = this.State.Busy
+        this.c.out.a();
+      }
+      else if(this.s === this.State.Busy) {
+        if (typeof(this.s) === 'object') this.s.value = this.State.Idle; else this.s = this.State.Idle
+        this.c.out.a();
+      }
+    }.bind(this), [this.c, 'e']);
   }.bind(this);
 
 };

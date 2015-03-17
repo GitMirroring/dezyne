@@ -21,24 +21,27 @@
 //
 // Code:
 
-dezyne.argument = function() {
+dezyne.argument = function(rt, meta) {
+  this.rt = rt;
+  this.meta = meta;
   this.b = false;
 
-  this.i = new dezyne.I();
+  this.i = new dezyne.I({provides: {name: 'i', component: this}, requires: {}});
 
   this.i.in.e = function() {
-    console.log('argument.i_e');
-    if(true) {
-      this.b = ! (this.b);
-      var c = this.g(this.b);
-      this.b = this.g(c);
-      if(c) {
-        this.i.out.f.defer();
+    runtime.call_in(this, function() {
+      if(true) {
+        if (typeof(this.b) === 'object') this.b.value = ! (this.b); else this.b = ! (this.b)
+        var c = {value: this.g(this.b)};
+        if (typeof(this.b) === 'object') this.b.value = this.g(((typeof(c) === 'object') ? c.value : c)); else this.b = this.g(((typeof(c) === 'object') ? c.value : c))
+        if(c) {
+          this.i.out.f();
+        }
       }
-    }
+    }.bind(this), [this.i, 'e']);
   }.bind(this);
   this.g = function (gc) {
-    this.i.out.f.defer();
+    this.i.out.f();
     return (gc || this.b);
   }.bind(this);
 

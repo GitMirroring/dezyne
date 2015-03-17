@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,14 +21,17 @@
 //
 // Code:
 
-dezyne.testBoolean = function() {
+dezyne.testBoolean = function(rt, meta) {
+  this.rt = rt;
+  this.meta = meta;
   this.b = false;
 
-  this.i = new dezyne.TestBool();
+  this.i = new dezyne.TestBool({provides: {name: 'i', component: this}, requires: {}});
 
   this.i.in.evt = function() {
-    console.log('testBoolean.i_evt');
-    if(true) { }
+    runtime.call_in(this, function() {
+      if(true) { }
+    }.bind(this), [this.i, 'evt']);
   }.bind(this);
 
 };

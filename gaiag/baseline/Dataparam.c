@@ -158,7 +158,7 @@ static int funx(Dataparam* self,int xi) {
 
 static int xfunx(Dataparam* self,int xi, int xj) {
 	(void)self;
-	return (xi + xj) / 3;
+	return (xi + xj) / 2;
 }
 
 
@@ -195,7 +195,7 @@ static void port_e(Dataparam* self,int i) {
 			int s = funx(self, pi);
 			s = s;
 			self->mi = pi;
-			self->mi = xfunx(self, pi, pi + pi);
+			self->mi = xfunx(self, pi, pi);
 			{
 				args_port_a a = {sizeof(args_port_a), self->port->out.a, self,self->mi};
 				runtime_defer(&self->sub, helper_port_a, &a);
@@ -283,7 +283,7 @@ static void port_eio2(Dataparam* self,int* i) {
 	DZN_LOG("Dataparam.port_eio2");
 	{
 		int t = *i;
-		*i = t + 123;
+		*i = 123 + 123;
 	}
 }
 
@@ -323,7 +323,7 @@ static int port_eio2r(Dataparam* self,int* i) {
 	DZN_LOG("Dataparam.port_eio2r");
 	{
 		int t = *i;
-		*i = t + 123;
+		*i = 123 + 123;
 		self->reply_IDataparam_Status = IDataparam_Status_Yes;
 	}
 	return self->reply_IDataparam_Status;
