@@ -287,8 +287,10 @@
                                           (rest (loop (cdr parameters) (cdr arguments))))
                                      (if (eq? alias name)
                                          rest
-                                         (cons (snippet 'alias `((type ,type) (name ,name) (out? ,out?) (alias ,alias)))
-                                               rest))))))
+                                         (begin
+                                           (set! locals (acons alias (.name parameter) locals))
+                                           (cons (snippet 'alias `((type ,type) (name ,name) (out? ,out?) (alias ,alias)))
+                                                 rest)))))))
                             (indent (if (pair? aliases) (1+ indent) indent))
                             (statement (->code model statement locals indent compound?))
                             (statement (if (pair? aliases)
@@ -524,6 +526,8 @@
      (snippet 'parameter-identifier
               `((identifier ,(identifier))
                 (out? ,(gom:out-or-inout? (parameter? (identifier)))))))
+    (($ <var> (and (? local?) (get! identifier)))
+     (snippet 'local `((identifier ,(identifier)))))
     (($ <var> identifier) identifier)
     (($ <field> (and (? member?) (get! identifier)) field)
      (snippet 'field-expression `((identifier ,(snippet 'member `((identifier ,(identifier)))))

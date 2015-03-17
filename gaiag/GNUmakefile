@@ -657,7 +657,7 @@ javascript-dataparam: compile
 		examples/dataparam.js > out/dataparam.js
 	chmod +x out/dataparam.js
 	nodejs out/dataparam.js 2> out/$@.trace
-	$(diff) baseline/$@.trace out || echo '**********FIXME: semantics**********'
+	$(diff) baseline/$@.trace out
 	for i in out/dezyne/*.js; do $(diff) baseline/$$(basename $$i) $$i; done
 
 # goops

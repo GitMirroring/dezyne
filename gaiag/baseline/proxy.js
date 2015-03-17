@@ -39,7 +39,7 @@ dezyne.proxy = function(rt, meta) {
     return runtime.call_in(this, function() {
       {
         var r = {value: this.bottom.in.e0r()};
-        this.reply_IDataparam_Status = ((typeof(r) === 'object') ? r.value : r);
+        this.reply_IDataparam_Status = r.value;
       }
       return this.reply_IDataparam_Status;
     }.bind(this), [this.top, 'e0r', this.top.Status_to_string]);
@@ -48,7 +48,7 @@ dezyne.proxy = function(rt, meta) {
     runtime.call_in(this, function() {
       {
         var pi = {value: i};
-        this.bottom.in.e(((typeof(pi) === 'object') ? pi.value : pi));
+        this.bottom.in.e(pi.value);
       }
     }.bind(this), [this.top, 'e']);
   }.bind(this);
@@ -58,7 +58,7 @@ dezyne.proxy = function(rt, meta) {
         var pi = {value: i};
         {
           var r = {value: this.bottom.in.er(pi)};
-          this.reply_IDataparam_Status = ((typeof(r) === 'object') ? r.value : r);
+          this.reply_IDataparam_Status = r.value;
         }
       }
       return this.reply_IDataparam_Status;
@@ -68,7 +68,7 @@ dezyne.proxy = function(rt, meta) {
     return runtime.call_in(this, function() {
       {
         var r = {value: this.bottom.in.eer(i, j)};
-        this.reply_IDataparam_Status = ((typeof(r) === 'object') ? r.value : r);
+        this.reply_IDataparam_Status = r.value;
       }
       return this.reply_IDataparam_Status;
     }.bind(this), [this.top, 'eer', this.top.Status_to_string]);
@@ -105,7 +105,7 @@ dezyne.proxy = function(rt, meta) {
     return runtime.call_in(this, function() {
       {
         var s = {value: this.bottom.in.eor(i)};
-        this.reply_IDataparam_Status = ((typeof(s) === 'object') ? s.value : s);
+        this.reply_IDataparam_Status = s.value;
       }
       return this.reply_IDataparam_Status;
     }.bind(this), [this.top, 'eor', this.top.Status_to_string]);
@@ -114,7 +114,7 @@ dezyne.proxy = function(rt, meta) {
     return runtime.call_in(this, function() {
       {
         var s = {value: this.bottom.in.eoor(i, j)};
-        this.reply_IDataparam_Status = ((typeof(s) === 'object') ? s.value : s);
+        this.reply_IDataparam_Status = s.value;
       }
       return this.reply_IDataparam_Status;
     }.bind(this), [this.top, 'eoor', this.top.Status_to_string]);
@@ -123,7 +123,7 @@ dezyne.proxy = function(rt, meta) {
     return runtime.call_in(this, function() {
       {
         var s = {value: this.bottom.in.eior(i, j)};
-        this.reply_IDataparam_Status = ((typeof(s) === 'object') ? s.value : s);
+        this.reply_IDataparam_Status = s.value;
       }
       return this.reply_IDataparam_Status;
     }.bind(this), [this.top, 'eior', this.top.Status_to_string]);
@@ -132,7 +132,7 @@ dezyne.proxy = function(rt, meta) {
     return runtime.call_in(this, function() {
       {
         var s = {value: this.bottom.in.eio2r(i)};
-        this.reply_IDataparam_Status = ((typeof(s) === 'object') ? s.value : s);
+        this.reply_IDataparam_Status = s.value;
       }
       return this.reply_IDataparam_Status;
     }.bind(this), [this.top, 'eio2r', this.top.Status_to_string]);
@@ -161,14 +161,14 @@ dezyne.proxy = function(rt, meta) {
         var A3 = {value: a3};
         var A4 = {value: a4};
         var A5 = {value: a5};
-        this.top.out.a6(((typeof(A0) === 'object') ? A0.value : A0), ((typeof(A1) === 'object') ? A1.value : A1), ((typeof(A2) === 'object') ? A2.value : A2), ((typeof(A3) === 'object') ? A3.value : A3), ((typeof(A4) === 'object') ? A4.value : A4), ((typeof(A5) === 'object') ? A5.value : A5));
+        this.top.out.a6(A0.value, A1.value, A2.value, A3.value, A4.value, A5.value);
       }
     }.bind(this), [this.bottom, 'a6']);
   }.bind(this);
   this.outfunc = function (i) {
     var j = {value: i.value};
-    this.bottom.in.eo(((typeof(j) === 'object') ? j: {value: j}));
-    if (typeof(i.value) === 'object') i.value.value = ((typeof(j) === 'object') ? j.value : j); else i.value = ((typeof(j) === 'object') ? j.value : j); 
+    this.bottom.in.eo(j);
+    i.value = j.value;
   }.bind(this);
   this.deferfunc = function (i) {
     this.top.out.a(((typeof(i) === 'object') ? i.value : i));

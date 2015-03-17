@@ -1,1 +1,1 @@
-#(string-if (and (code:identifier? identifier) (code:identifier? expression)) #{ #identifier .value = ((typeof(#expression) === 'object') ? #expression .value : #expression);#} #{ if (typeof(#identifier) === 'object') #identifier .value = #(string-if (code:identifier? expression) #{((typeof(#expression) === 'object') ? #expression .value : #expression)#} #{#expression #}); else #identifier  = #(string-if (code:identifier? expression) #{((typeof(#expression) === 'object') ? #expression .value : #expression); #} #{#expression #}) #})
+#identifier  = #expression ;
