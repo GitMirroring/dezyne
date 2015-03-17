@@ -37,7 +37,7 @@ dezyne.Reply7 = function(rt, meta) {
   }.bind(this);
   this.f = function () {
     var v = {value: this.r.in.foo()};
-    this.reply_IReply7_E = ((typeof(v) === 'object') ? v.value : v);
+    this.reply_IReply7_E = v.value;
   }.bind(this);
 
 };

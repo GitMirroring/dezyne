@@ -35,8 +35,8 @@ dezyne.Reply3 = function(rt, meta) {
     return runtime.call_in(this, function() {
       if(true) {
         var s = {value: this.u.in.what()};
-        if (typeof(s) === 'object') s.value = this.u.in.what(); else s = this.u.in.what()
-        if(s === new dezyne.U().Status.Ok) {
+        s = this.u.in.what();
+        if(s.value === new dezyne.U().Status.Ok) {
           this.reply_fun();
         }
         else {
@@ -47,10 +47,10 @@ dezyne.Reply3 = function(rt, meta) {
     }.bind(this), [this.i, 'done', this.i.Status_to_string]);
   }.bind(this);
   this.reply_fun = function () {
-    this.reply_I_Status = ((typeof(new dezyne.I().Status.Yes) === 'object') ? new dezyne.I().Status.Yes.value : new dezyne.I().Status.Yes);
+    this.reply_I_Status = new dezyne.I().Status.Yes;
   }.bind(this);
   this.reply_fun_arg = function (s) {
-    this.reply_I_Status = ((typeof(s) === 'object') ? s.value : s);
+    this.reply_I_Status = s;
   }.bind(this);
 
 };

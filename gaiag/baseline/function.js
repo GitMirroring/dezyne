@@ -52,7 +52,7 @@ dezyne.function = function(rt, meta) {
     if(this.f) {
       this.i.out.c();
     }
-    if (typeof(this.f) === 'object') this.f.value = ! (this.f); else this.f = ! (this.f)
+    this.f = ! (this.f);
   }.bind(this);
 
 };

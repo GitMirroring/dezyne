@@ -35,7 +35,7 @@ dezyne.Guardthreetopon = function(rt, meta) {
       }
       else if(true && ! (this.b)) {
         var c = {value: true};
-        if(c) this.i.out.a();
+        if(c.value) this.i.out.a();
       }
     }.bind(this), [this.i, 'e']);
   }.bind(this);

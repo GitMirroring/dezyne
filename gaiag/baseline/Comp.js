@@ -42,16 +42,16 @@ dezyne.Comp = function(rt, meta) {
       if(this.s === this.State.Uninitialized) {
         {
           var res = {value: this.device_A.in.initialize()};
-          if(res === new dezyne.IDevice().result_t.OK) {
-            if (typeof(res) === 'object') res.value = this.device_A.in.calibrate(); else res = this.device_A.in.calibrate()
+          if(res.value === new dezyne.IDevice().result_t.OK) {
+            res = this.device_A.in.calibrate();
           }
-          if(res === new dezyne.IDevice().result_t.OK) {
-            if (typeof(this.s) === 'object') this.s.value = this.State.Initialized; else this.s = this.State.Initialized
-            this.reply_IDevice_result_t = ((typeof(new dezyne.IDevice().result_t.OK) === 'object') ? new dezyne.IDevice().result_t.OK.value : new dezyne.IDevice().result_t.OK);
+          if(res.value === new dezyne.IDevice().result_t.OK) {
+            this.s = this.State.Initialized;
+            this.reply_IDevice_result_t = new dezyne.IDevice().result_t.OK;
           }
           else {
-            if (typeof(this.s) === 'object') this.s.value = this.State.Uninitialized; else this.s = this.State.Uninitialized
-            this.reply_IDevice_result_t = ((typeof(new dezyne.IDevice().result_t.NOK) === 'object') ? new dezyne.IDevice().result_t.NOK.value : new dezyne.IDevice().result_t.NOK);
+            this.s = this.State.Uninitialized;
+            this.reply_IDevice_result_t = new dezyne.IDevice().result_t.NOK;
           }
         }
       }
@@ -75,13 +75,13 @@ dezyne.Comp = function(rt, meta) {
       else if(this.s === this.State.Error) {
         {
           var res = {value: this.device_A.in.calibrate()};
-          if(res === new dezyne.IDevice().result_t.OK) {
-            if (typeof(this.s) === 'object') this.s.value = this.State.Initialized; else this.s = this.State.Initialized
-            this.reply_IDevice_result_t = ((typeof(new dezyne.IDevice().result_t.OK) === 'object') ? new dezyne.IDevice().result_t.OK.value : new dezyne.IDevice().result_t.OK);
+          if(res.value === new dezyne.IDevice().result_t.OK) {
+            this.s = this.State.Initialized;
+            this.reply_IDevice_result_t = new dezyne.IDevice().result_t.OK;
           }
           else {
-            if (typeof(this.s) === 'object') this.s.value = this.State.Error; else this.s = this.State.Error
-            this.reply_IDevice_result_t = ((typeof(new dezyne.IDevice().result_t.NOK) === 'object') ? new dezyne.IDevice().result_t.NOK.value : new dezyne.IDevice().result_t.NOK);
+            this.s = this.State.Error;
+            this.reply_IDevice_result_t = new dezyne.IDevice().result_t.NOK;
           }
         }
       }
@@ -96,16 +96,16 @@ dezyne.Comp = function(rt, meta) {
       else if(this.s === this.State.Initialized) {
         {
           var res = {value: this.device_A.in.perform_action1()};
-          if(res === new dezyne.IDevice().result_t.OK) {
-            if (typeof(res) === 'object') res.value = this.device_A.in.perform_action2(); else res = this.device_A.in.perform_action2()
+          if(res.value === new dezyne.IDevice().result_t.OK) {
+            res = this.device_A.in.perform_action2();
           }
-          if(res === new dezyne.IDevice().result_t.OK) {
-            if (typeof(this.s) === 'object') this.s.value = this.State.Initialized; else this.s = this.State.Initialized
-            this.reply_IDevice_result_t = ((typeof(new dezyne.IDevice().result_t.OK) === 'object') ? new dezyne.IDevice().result_t.OK.value : new dezyne.IDevice().result_t.OK);
+          if(res.value === new dezyne.IDevice().result_t.OK) {
+            this.s = this.State.Initialized;
+            this.reply_IDevice_result_t = new dezyne.IDevice().result_t.OK;
           }
           else {
-            if (typeof(this.s) === 'object') this.s.value = this.State.Error; else this.s = this.State.Error
-            this.reply_IDevice_result_t = ((typeof(new dezyne.IDevice().result_t.NOK) === 'object') ? new dezyne.IDevice().result_t.NOK.value : new dezyne.IDevice().result_t.NOK);
+            this.s = this.State.Error;
+            this.reply_IDevice_result_t = new dezyne.IDevice().result_t.NOK;
           }
         }
       }

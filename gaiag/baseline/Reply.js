@@ -35,11 +35,11 @@ dezyne.Reply = function(rt, meta) {
     return runtime.call_in(this, function() {
       if(true) {
         var s = {value: this.u.in.what()};
-        if(s === new dezyne.U().Status.Ok) {
-          this.reply_I_Status = ((typeof(new dezyne.I().Status.Yes) === 'object') ? new dezyne.I().Status.Yes.value : new dezyne.I().Status.Yes);
+        if(s.value === new dezyne.U().Status.Ok) {
+          this.reply_I_Status = new dezyne.I().Status.Yes;
         }
         else {
-          this.reply_I_Status = ((typeof(new dezyne.I().Status.No) === 'object') ? new dezyne.I().Status.No.value : new dezyne.I().Status.No);
+          this.reply_I_Status = new dezyne.I().Status.No;
         }
       }
       return this.reply_I_Status;

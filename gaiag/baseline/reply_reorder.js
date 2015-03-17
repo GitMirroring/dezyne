@@ -40,11 +40,11 @@ dezyne.reply_reorder = function(rt, meta) {
     runtime.call_out(this, function() {
       if(this.first) {
         this.p.out.busy();
-        if (typeof(this.first) === 'object') this.first.value = ! (this.first); else this.first = ! (this.first)
+        this.first = ! (this.first);
       }
       else if(! (this.first)) {
         this.p.out.finish();
-        if (typeof(this.first) === 'object') this.first.value = ! (this.first); else this.first = ! (this.first)
+        this.first = ! (this.first);
       }
     }.bind(this), [this.r, 'pong']);
   }.bind(this);

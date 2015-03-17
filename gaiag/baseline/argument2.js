@@ -31,10 +31,10 @@ dezyne.argument2 = function(rt, meta) {
   this.i.in.e = function() {
     runtime.call_in(this, function() {
       if(true) {
-        if (typeof(this.b) === 'object') this.b.value = ! (this.b); else this.b = ! (this.b)
+        this.b = ! (this.b);
         var c = {value: this.g(this.b, this.b)};
-        if (typeof(this.b) === 'object') this.b.value = this.g(((typeof(c) === 'object') ? c.value : c), ((typeof(c) === 'object') ? c.value : c)); else this.b = this.g(((typeof(c) === 'object') ? c.value : c), ((typeof(c) === 'object') ? c.value : c))
-        if(c) {
+        this.b = this.g(c.value, c.value);
+        if(c.value) {
           this.i.out.f();
         }
       }

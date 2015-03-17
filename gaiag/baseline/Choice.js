@@ -38,15 +38,15 @@ dezyne.Choice = function(rt, meta) {
   this.c.in.e = function() {
     runtime.call_in(this, function() {
       if(this.s === this.State.Off) {
-        if (typeof(this.s) === 'object') this.s.value = this.State.Idle; else this.s = this.State.Idle
+        this.s = this.State.Idle;
         this.c.out.a();
       }
       else if(this.s === this.State.Idle) {
-        if (typeof(this.s) === 'object') this.s.value = this.State.Busy; else this.s = this.State.Busy
+        this.s = this.State.Busy;
         this.c.out.a();
       }
       else if(this.s === this.State.Busy) {
-        if (typeof(this.s) === 'object') this.s.value = this.State.Idle; else this.s = this.State.Idle
+        this.s = this.State.Idle;
         this.c.out.a();
       }
     }.bind(this), [this.c, 'e']);

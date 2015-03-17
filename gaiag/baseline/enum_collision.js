@@ -31,13 +31,13 @@ dezyne.enum_collision = function(rt, meta) {
 
   this.i.in.foo = function() {
     return runtime.call_in(this, function() {
-      this.reply_ienum_collision_Retval1 = ((typeof(new dezyne.ienum_collision().Retval1.OK) === 'object') ? new dezyne.ienum_collision().Retval1.OK.value : new dezyne.ienum_collision().Retval1.OK);
+      this.reply_ienum_collision_Retval1 = new dezyne.ienum_collision().Retval1.OK;
       return this.reply_ienum_collision_Retval1;
     }.bind(this), [this.i, 'foo', this.i.Retval1_to_string]);
   }.bind(this);
   this.i.in.bar = function() {
     return runtime.call_in(this, function() {
-      this.reply_ienum_collision_Retval2 = ((typeof(new dezyne.ienum_collision().Retval2.NOK) === 'object') ? new dezyne.ienum_collision().Retval2.NOK.value : new dezyne.ienum_collision().Retval2.NOK);
+      this.reply_ienum_collision_Retval2 = new dezyne.ienum_collision().Retval2.NOK;
       return this.reply_ienum_collision_Retval2;
     }.bind(this), [this.i, 'bar', this.i.Retval2_to_string]);
   }.bind(this);

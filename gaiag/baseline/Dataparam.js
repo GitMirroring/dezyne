@@ -64,12 +64,12 @@ dezyne.Dataparam = function(rt, meta) {
   this.port.in.er = function(i) {
     return runtime.call_in(this, function() {
       {
-        var xpi = {value: i};
+        var pi = {value: i};
         {
           var s = {value: new dezyne.IDataparam().Status.No};
-          this.mi = xpi.value;
+          this.mi = pi.value;
           this.port.out.a(this.mi);
-          this.port.out.aa(this.mi, xpi.value);
+          this.port.out.aa(this.mi, pi.value);
           if(true) {
             this.reply_IDataparam_Status = new dezyne.IDataparam().Status.Yes;
           }

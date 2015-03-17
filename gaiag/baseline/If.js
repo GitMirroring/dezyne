@@ -37,7 +37,7 @@ dezyne.If = function(rt, meta) {
         else {
           this.i.out.c();
         }
-        if (typeof(this.t) === 'object') this.t.value = ! (this.t); else this.t = ! (this.t)
+        this.t = ! (this.t);
       }
     }.bind(this), [this.i, 'a']);
   }.bind(this);

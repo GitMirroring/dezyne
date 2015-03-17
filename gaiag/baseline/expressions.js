@@ -33,13 +33,13 @@ dezyne.expressions = function(rt, meta) {
     runtime.call_in(this, function() {
       if(true) {
         if(this.state === 0) {
-          if (typeof(this.state) === 'object') this.state.value = 3; else this.state = 3
+          this.state = 3;
           this.i.out.a();
         }
         else {
-          if (typeof(this.state) === 'object') this.state.value = this.state - 1; else this.state = this.state - 1
+          this.state = this.state - 1;
           if(this.c < this.state) {
-            if (typeof(this.c) === 'object') this.c.value = this.c + 1; else this.c = this.c + 1
+            this.c = this.c + 1;
           }
           else {
             if(this.c <= (this.state + 1)) {

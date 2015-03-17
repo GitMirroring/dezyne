@@ -40,21 +40,21 @@ dezyne.imperative = function(rt, meta) {
         this.i.out.f();
         this.i.out.g();
         this.i.out.h();
-        if (typeof(this.state) === 'object') this.state.value = this.States.II; else this.state = this.States.II
+        this.state = this.States.II;
       }
       else if(this.state === this.States.II) {
-        if (typeof(this.state) === 'object') this.state.value = this.States.III; else this.state = this.States.III
+        this.state = this.States.III;
       }
       else if(this.state === this.States.III) {
         this.i.out.f();
         this.i.out.g();
         this.i.out.g();
         this.i.out.f();
-        if (typeof(this.state) === 'object') this.state.value = this.States.IV; else this.state = this.States.IV
+        this.state = this.States.IV;
       }
       else if(this.state === this.States.IV) {
         this.i.out.h();
-        if (typeof(this.state) === 'object') this.state.value = this.States.I; else this.state = this.States.I
+        this.state = this.States.I;
       }
     }.bind(this), [this.i, 'e']);
   }.bind(this);

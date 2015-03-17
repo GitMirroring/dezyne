@@ -36,7 +36,7 @@ dezyne.GuardedRequiredIllegal = function(rt, meta) {
   this.t.in.e = function() {
     runtime.call_in(this, function() {
       if(! (this.c)) {
-        if (typeof(this.c) === 'object') this.c.value = ((typeof(true) === 'object') ? true.value : true); else this.c = ((typeof(true) === 'object') ? true.value : true); 
+        this.c = true;
         this.b.in.e();
       }
       else if(this.c) { }
@@ -46,7 +46,7 @@ dezyne.GuardedRequiredIllegal = function(rt, meta) {
     runtime.call_out(this, function() {
       if(! (this.c)) console.assert (false);
       else if(this.c) {
-        if (typeof(this.c) === 'object') this.c.value = ((typeof(false) === 'object') ? false.value : false); else this.c = ((typeof(false) === 'object') ? false.value : false); 
+        this.c = false;
       }
     }.bind(this), [this.b, 'f']);
   }.bind(this);

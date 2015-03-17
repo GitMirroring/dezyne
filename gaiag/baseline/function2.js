@@ -32,7 +32,7 @@ dezyne.function2 = function(rt, meta) {
     runtime.call_in(this, function() {
       if(true) {
         {
-          if (typeof(this.f) === 'object') this.f.value = this.vtoggle(); else this.f = this.vtoggle()
+          this.f = this.vtoggle();
         }
       }
     }.bind(this), [this.i, 'a']);
@@ -41,9 +41,9 @@ dezyne.function2 = function(rt, meta) {
     runtime.call_in(this, function() {
       if(true) {
         {
-          if (typeof(this.f) === 'object') this.f.value = this.vtoggle(); else this.f = this.vtoggle()
+          this.f = this.vtoggle();
           var bb = {value: this.vtoggle()};
-          if (typeof(this.f) === 'object') this.f.value = ((typeof(bb) === 'object') ? bb.value : bb); else this.f = ((typeof(bb) === 'object') ? bb.value : bb); 
+          this.f = bb.value;
           this.i.out.d();
         }
       }

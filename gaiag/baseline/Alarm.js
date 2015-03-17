@@ -43,7 +43,7 @@ dezyne.Alarm = function(rt, meta) {
       if(this.state === this.States.Disarmed) {
         {
           this.sensor.in.enable();
-          if (typeof(this.state) === 'object') this.state.value = this.States.Armed; else this.state = this.States.Armed
+          this.state = this.States.Armed;
         }
       }
       else if(this.state === this.States.Armed) {
@@ -65,7 +65,7 @@ dezyne.Alarm = function(rt, meta) {
       else if(this.state === this.States.Armed) {
         {
           this.sensor.in.disable();
-          if (typeof(this.state) === 'object') this.state.value = this.States.Disarming; else this.state = this.States.Disarming
+          this.state = this.States.Disarming;
         }
       }
       else if(this.state === this.States.Disarming) {
@@ -75,8 +75,8 @@ dezyne.Alarm = function(rt, meta) {
         {
           this.sensor.in.disable();
           this.siren.in.turnoff();
-          if (typeof(this.sounding) === 'object') this.sounding.value = ((typeof(false) === 'object') ? false.value : false); else this.sounding = ((typeof(false) === 'object') ? false.value : false); 
-          if (typeof(this.state) === 'object') this.state.value = this.States.Disarming; else this.state = this.States.Disarming
+          this.sounding = false;
+          this.state = this.States.Disarming;
         }
       }
     }.bind(this), [this.console, 'disarm']);
@@ -90,8 +90,8 @@ dezyne.Alarm = function(rt, meta) {
         {
           this.console.out.detected();
           this.siren.in.turnon();
-          if (typeof(this.sounding) === 'object') this.sounding.value = ((typeof(true) === 'object') ? true.value : true); else this.sounding = ((typeof(true) === 'object') ? true.value : true); 
-          if (typeof(this.state) === 'object') this.state.value = this.States.Triggered; else this.state = this.States.Triggered
+          this.sounding = true;
+          this.state = this.States.Triggered;
         }
       }
       else if(this.state === this.States.Disarming) {
@@ -113,12 +113,12 @@ dezyne.Alarm = function(rt, meta) {
       else if(this.state === this.States.Disarming && this.sounding) {
         this.console.out.deactivated();
         this.siren.in.turnoff();
-        if (typeof(this.state) === 'object') this.state.value = this.States.Disarmed; else this.state = this.States.Disarmed
-        if (typeof(this.sounding) === 'object') this.sounding.value = ((typeof(false) === 'object') ? false.value : false); else this.sounding = ((typeof(false) === 'object') ? false.value : false); 
+        this.state = this.States.Disarmed;
+        this.sounding = false;
       }
       else if(this.state === this.States.Disarming && ! (this.sounding)) {
         this.console.out.deactivated();
-        if (typeof(this.state) === 'object') this.state.value = this.States.Disarmed; else this.state = this.States.Disarmed
+        this.state = this.States.Disarmed;
       }
       else if(this.state === this.States.Triggered) {
         console.assert (false);
