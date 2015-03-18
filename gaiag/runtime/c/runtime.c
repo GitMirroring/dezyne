@@ -92,6 +92,7 @@ void
 runtime_flush (runtime* self, void* scope)
 {
   pair* p = runtime_get (self, scope);
+  //printf ("flush: %p\n", scope);
   if (p) {
     queue* q = p->second;
     while (!queue_empty (q))
@@ -104,9 +105,23 @@ runtime_flush (runtime* self, void* scope)
   }
 }
 
+int map_active(map_element* elt, void* dst) {
+  pair* p = elt->data;
+  bool* b = dst;
+  *b = *b || *(bool*)&p->first;
+  return 0;
+}
+
 void
 runtime_defer (runtime* self, void* scope, void (*event)(void*), void* args)
 {
+  bool active = false;
+  map_iterate(&self->queues, map_active, &active);
+  //printf ("defer: %p, %d\n", scope, active);
+  if (!active) {
+    event(args);
+    return;
+  }
   pair* p = runtime_get (self, scope);
   assert (p);
   closure *c = dzn_malloc (sizeof (closure));
@@ -117,10 +132,25 @@ runtime_defer (runtime* self, void* scope, void (*event)(void*), void* args)
   queue_push (p->second, c);
 }
 
+typedef struct {int size; runtime* self; void* scope; void (*event)(void*); void* args;} args_defer;
+
+static void
+runtime_handle_event (runtime* self, void* scope, void (*event)(void*), void* args);
+
+static void
+helper_runtime_handle (void* args)
+{
+  args_defer* a = args;
+  //printf ("helper handle: %p\n", a->scope);
+  runtime_handle_event (a->self, a->scope, a->event, a->args);
+  free (a->args);
+}
+
 static void
 runtime_handle_event (runtime* self, void* scope, void (*event)(void*), void* args)
 {
   bool* handle = runtime_handling (self, scope);
+  //printf ("handle: %p, %d\n", scope, *handle);
   if (!*handle)
   {
     *handle = true;
@@ -130,7 +160,11 @@ runtime_handle_event (runtime* self, void* scope, void (*event)(void*), void* ar
   }
   else
   {
-    runtime_defer (self, scope, event, args);
+    arguments *d = args;
+    arguments *dc = dzn_malloc (d->size);
+    memcpy (dc, d, d->size);
+    args_defer a = {sizeof (args_defer), self, scope, event, dc};
+    runtime_defer (self, scope, helper_runtime_handle, &a);
   }
 }
 
