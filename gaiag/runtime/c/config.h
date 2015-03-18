@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -24,9 +25,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-
-// uncomment line below to have preallocated static queues iso dynamically allocated queues.
-// #define DZN_STATIC_QUEUES
+//#define DZN_STATIC_QUEUES
 
 #ifdef DZN_STATIC_QUEUES
   #define DZN_MAX_ARGS_SIZE 24
