@@ -32,13 +32,13 @@
 #include "map.h"
 
 typedef struct {
-  int dummy;
+  map queues;
 } runtime;
 
 typedef struct {
   runtime* rt;
   bool handling;
-  queue q;
+  queue *q;
 } runtime_sub;
 
 void runtime_init (runtime*);
