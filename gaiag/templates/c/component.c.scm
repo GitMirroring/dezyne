@@ -78,7 +78,8 @@
 #}) (filter (gom:dir-matches? port) (gom:events port))))
   (gom:ports model))
 void #.model _init (#.model * self, locator* dezyne_locator) {
-  runtime_sub_init(dezyne_locator->rt, &self->sub);
+  self->rt = dezyne_locator->rt;
+  runtime_set(self->rt, self);
   #(map (lambda (port) (->string (list "self->" (.name port) "_ = *(" (.type port) "*)locator_get(dezyne_locator, \"" (.type port) "\");\n"))) (filter .injected (gom:ports model)))#
 ((->join  ";\n")
  (filter (negate (compose string-null? string-trim))

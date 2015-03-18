@@ -28,24 +28,19 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "queue.h"
+#include "pair.h"
 #include "map.h"
 
 typedef struct {
   map queues;
 } runtime;
 
-typedef struct {
-  runtime* rt;
-  bool handling;
-  queue *q;
-} runtime_sub;
-
 void runtime_init (runtime*);
-void runtime_sub_init (runtime* self, runtime_sub* sub);
-void runtime_flush (runtime_sub* self);
-void runtime_defer (runtime_sub* self, void (*event)(void*), void* args);
+void runtime_flush (runtime* self, void* scope);
+void runtime_defer (runtime* self, void* scope, void (*event)(void*), void* args);
 void runtime_event (void (*event)(void*), void* args);
+void runtime_set (runtime* runtime, void* self);
+
 #define DZN_LOG(msg) printf ("%s\n", msg)
 
 #endif

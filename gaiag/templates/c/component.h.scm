@@ -10,7 +10,7 @@
 
 
 typedef struct {
-    runtime_sub sub;
+    runtime* rt;
     #(map (init-member model #{
 #type  #name;
 #}) (gom:variables model))#
