@@ -57,7 +57,7 @@ dezyne.proxy = function(rt, meta) {
       {
         var pi = {value: i};
         {
-          var r = {value: this.bottom.in.er(pi)};
+          var r = {value: this.bottom.in.er(pi.value)};
           this.reply_IDataparam_Status = r.value;
         }
       }
@@ -90,7 +90,7 @@ dezyne.proxy = function(rt, meta) {
   this.top.in.eio = function(i,j) {
     runtime.call_in(this, function() {
       {
-        this.bottom.in.eio(((typeof(i) === 'object') ? i.value : i), j);
+        this.bottom.in.eio(i, j);
       }
     }.bind(this), [this.top, 'eio']);
   }.bind(this);
@@ -144,12 +144,12 @@ dezyne.proxy = function(rt, meta) {
   }.bind(this);
   this.bottom.out.a = function(i) {
     runtime.call_out(this, function() {
-      this.deferfunc(((typeof(i) === 'object') ? i.value : i));
+      this.deferfunc(i);
     }.bind(this), [this.bottom, 'a']);
   }.bind(this);
   this.bottom.out.aa = function(i,j) {
     runtime.call_out(this, function() {
-      this.top.out.aa(((typeof(i) === 'object') ? i.value : i), ((typeof(j) === 'object') ? j.value : j));
+      this.top.out.aa(i, j);
     }.bind(this), [this.bottom, 'aa']);
   }.bind(this);
   this.bottom.out.a6 = function(a0,a1,a2,a3,a4,a5) {
@@ -171,7 +171,7 @@ dezyne.proxy = function(rt, meta) {
     i.value = j.value;
   }.bind(this);
   this.deferfunc = function (i) {
-    this.top.out.a(((typeof(i) === 'object') ? i.value : i));
+    this.top.out.a(i);
   }.bind(this);
 
 };

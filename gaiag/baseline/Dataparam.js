@@ -52,7 +52,7 @@ dezyne.Dataparam = function(rt, meta) {
         var pi = {value: i};
         {
           var s = {value: this.funx(pi.value)};
-          s = s.value;
+          s.value = s.value;
           this.mi = pi.value;
           this.mi = this.xfunx(pi.value, pi.value);
           this.port.out.a(this.mi);
@@ -85,8 +85,8 @@ dezyne.Dataparam = function(rt, meta) {
     return runtime.call_in(this, function() {
       {
         var s = {value: new dezyne.IDataparam().Status.No};
-        this.port.out.a(((typeof(j) === 'object') ? j.value : j));
-        this.port.out.aa(((typeof(j) === 'object') ? j.value : j), ((typeof(i) === 'object') ? i.value : i));
+        this.port.out.a(j);
+        this.port.out.aa(j, i);
         this.reply_IDataparam_Status = s.value;
       }
       return this.reply_IDataparam_Status;

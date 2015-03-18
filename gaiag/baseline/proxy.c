@@ -267,7 +267,7 @@ static int top_eor(proxy* self,int* i) {
 	(void)self;
 	DZN_LOG("proxy.top_eor");
 	{
-		int s = self->bottom->in.eor(self->bottom,i);
+		int s = self->bottom->in.eor(self->bottom,&*i);
 		self->reply_IDataparam_Status = s;
 	}
 	return self->reply_IDataparam_Status;
@@ -277,7 +277,7 @@ static int top_eoor(proxy* self,int* i, int* j) {
 	(void)self;
 	DZN_LOG("proxy.top_eoor");
 	{
-		int s = self->bottom->in.eoor(self->bottom,i, j);
+		int s = self->bottom->in.eoor(self->bottom,&*i, &*j);
 		self->reply_IDataparam_Status = s;
 	}
 	return self->reply_IDataparam_Status;
@@ -287,7 +287,7 @@ static int top_eior(proxy* self,int i, int* j) {
 	(void)self;
 	DZN_LOG("proxy.top_eior");
 	{
-		int s = self->bottom->in.eior(self->bottom,i, j);
+		int s = self->bottom->in.eior(self->bottom,i, &*j);
 		self->reply_IDataparam_Status = s;
 	}
 	return self->reply_IDataparam_Status;
@@ -297,7 +297,7 @@ static int top_eio2r(proxy* self,int* i) {
 	(void)self;
 	DZN_LOG("proxy.top_eio2r");
 	{
-		int s = self->bottom->in.eio2r(self->bottom,i);
+		int s = self->bottom->in.eio2r(self->bottom,&*i);
 		self->reply_IDataparam_Status = s;
 	}
 	return self->reply_IDataparam_Status;

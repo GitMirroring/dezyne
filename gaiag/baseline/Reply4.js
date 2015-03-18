@@ -41,7 +41,7 @@ dezyne.Reply4 = function(rt, meta) {
     return runtime.call_in(this, function() {
       if(true) {
         var s = {value: this.u.in.what()};
-        s = this.u.in.what();
+        s.value = this.u.in.what();
         if(s.value === new dezyne.U().Status.Ok) {
           var v = {value: this.fun()};
           if(v.value === this.Status.Yes) this.reply_I_Status = new dezyne.I().Status.Yes;

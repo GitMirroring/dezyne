@@ -43,7 +43,7 @@ dezyne.Comp = function(rt, meta) {
         {
           var res = {value: this.device_A.in.initialize()};
           if(res.value === new dezyne.IDevice().result_t.OK) {
-            res = this.device_A.in.calibrate();
+            res.value = this.device_A.in.calibrate();
           }
           if(res.value === new dezyne.IDevice().result_t.OK) {
             this.s = this.State.Initialized;
@@ -97,7 +97,7 @@ dezyne.Comp = function(rt, meta) {
         {
           var res = {value: this.device_A.in.perform_action1()};
           if(res.value === new dezyne.IDevice().result_t.OK) {
-            res = this.device_A.in.perform_action2();
+            res.value = this.device_A.in.perform_action2();
           }
           if(res.value === new dezyne.IDevice().result_t.OK) {
             this.s = this.State.Initialized;
