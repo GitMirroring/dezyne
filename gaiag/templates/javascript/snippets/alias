@@ -1,1 +1,1 @@
-var #alias  = {value: #name };
+var #alias  = #(string-if out? #{#name #} #{{value: #name }#});
