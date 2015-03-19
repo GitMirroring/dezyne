@@ -36,17 +36,17 @@ GUILE_LIB_FILES :=\
 MODULE_SRCS := $(filter %.scm,$(shell git ls-files $(CDIR)/module))
 SRCS := $(subst :,\:,$(filter-out $(FRST),$(GUILE_LIB_SRCS) $(MODULE_SRCS)))
 
-include makeutils/guile.mk
+include make/guile.mk
 
 TARG := scm2json
-include makeutils/guile.mk
+include make/guile.mk
 
 TARG := json2scm
-include makeutils/guile.mk
+include make/guile.mk
 
 TEST := $(TEST) $(CDIR)-check
 
 $(CDIR)-check:
 	make check -C gaiag
 
-include makeutils/check.mk
+include make/check.mk
