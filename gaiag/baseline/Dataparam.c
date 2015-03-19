@@ -168,7 +168,7 @@ static void port_e0(Dataparam* self) {
 	{
 		{
 			args_port_a6 a = {sizeof(args_port_a6), self->port->out.a6, self,0, 1, 2, 3, 4, 5};
-			runtime_defer(&self->sub, helper_port_a6, &a);
+			runtime_defer(self->rt, self, helper_port_a6, &a);
 		}
 	}
 }
@@ -179,7 +179,7 @@ static int port_e0r(Dataparam* self) {
 	{
 		{
 			args_port_a0 a = {sizeof(args_port_a0), self->port->out.a0, self};
-			runtime_defer(&self->sub, helper_port_a0, &a);
+			runtime_defer(self->rt, self, helper_port_a0, &a);
 		}
 		self->reply_IDataparam_Status = IDataparam_Status_Yes;
 	}
@@ -198,11 +198,11 @@ static void port_e(Dataparam* self,int i) {
 			self->mi = xfunx(self, pi, pi);
 			{
 				args_port_a a = {sizeof(args_port_a), self->port->out.a, self,self->mi};
-				runtime_defer(&self->sub, helper_port_a, &a);
+				runtime_defer(self->rt, self, helper_port_a, &a);
 			}
 			{
 				args_port_aa a = {sizeof(args_port_aa), self->port->out.aa, self,self->mi, pi};
-				runtime_defer(&self->sub, helper_port_aa, &a);
+				runtime_defer(self->rt, self, helper_port_aa, &a);
 			}
 		}
 	}
@@ -218,11 +218,11 @@ static int port_er(Dataparam* self,int i) {
 			self->mi = pi;
 			{
 				args_port_a a = {sizeof(args_port_a), self->port->out.a, self,self->mi};
-				runtime_defer(&self->sub, helper_port_a, &a);
+				runtime_defer(self->rt, self, helper_port_a, &a);
 			}
 			{
 				args_port_aa a = {sizeof(args_port_aa), self->port->out.aa, self,self->mi, pi};
-				runtime_defer(&self->sub, helper_port_aa, &a);
+				runtime_defer(self->rt, self, helper_port_aa, &a);
 			}
 			if (true) {
 				self->reply_IDataparam_Status = IDataparam_Status_Yes;
@@ -242,11 +242,11 @@ static int port_eer(Dataparam* self,int i, int j) {
 		int s = IDataparam_Status_No;
 		{
 			args_port_a a = {sizeof(args_port_a), self->port->out.a, self,j};
-			runtime_defer(&self->sub, helper_port_a, &a);
+			runtime_defer(self->rt, self, helper_port_a, &a);
 		}
 		{
 			args_port_aa a = {sizeof(args_port_aa), self->port->out.aa, self,j, i};
-			runtime_defer(&self->sub, helper_port_aa, &a);
+			runtime_defer(self->rt, self, helper_port_aa, &a);
 		}
 		self->reply_IDataparam_Status = s;
 	}
@@ -410,7 +410,8 @@ static int callback_port_eio2r(IDataparam* self,int* i) {
 
 
 void Dataparam_init (Dataparam* self, locator* dezyne_locator) {
-	runtime_sub_init(dezyne_locator->rt, &self->sub);
+	self->rt = dezyne_locator->rt;
+	runtime_set(self->rt, self);
 	self->mi = 0;
 	self->s = IDataparam_Status_Yes;
 	self->port = &self->port_;

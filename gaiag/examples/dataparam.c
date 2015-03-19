@@ -61,45 +61,45 @@ int main()
   locator l;
   locator_init(&l, &rt);
 
-  Dataparam c;
-  Dataparam_init(&c,&l);
+  Datasystem d;
+  Datasystem_init(&d,&l);
 
-  c.port->out.a0 = a0;
-  c.port->out.a = a;
-  c.port->out.aa = aa;
-  c.port->out.a6 = a6;
+  d.port->out.a0 = a0;
+  d.port->out.a = a;
+  d.port->out.aa = aa;
+  d.port->out.a6 = a6;
 
-  assert(IDataparam_Status_Yes == c.port->in.e0r(c.port));
-  c.port->in.e0(c.port);
-  assert(IDataparam_Status_Yes == c.port->in.er(c.port,123));
-  c.port->in.e(c.port,123);
-  assert(IDataparam_Status_No == c.port->in.eer(c.port,123,345));
+  assert(IDataparam_Status_Yes == d.port->in.e0r(d.port));
+  d.port->in.e0(d.port);
+  assert(IDataparam_Status_Yes == d.port->in.er(d.port,123));
+  d.port->in.e(d.port,123);
+  assert(IDataparam_Status_No == d.port->in.eer(d.port,123,345));
 
   int i = 0;
-  c.port->in.eo(c.port,&i);
+  d.port->in.eo(d.port,&i);
   assert(i == 234);
 
   int j = 0;
-  c.port->in.eoo(c.port,&i,&j);
+  d.port->in.eoo(d.port,&i,&j);
   assert(i == 123 && j == 456);
 
-  c.port->in.eio(c.port,i,&j);
+  d.port->in.eio(d.port,i,&j);
   assert(i == 123 && j == i);
 
-  c.port->in.eio2(c.port,&i);
+  d.port->in.eio2(d.port,&i);
   assert(i == 246);
 
 
-  assert(IDataparam_Status_Yes == c.port->in.eor(c.port,&i));
+  assert(IDataparam_Status_Yes == d.port->in.eor(d.port,&i));
   assert(i == 234);
 
-  assert(IDataparam_Status_Yes == c.port->in.eoor(c.port,&i,&j));
+  assert(IDataparam_Status_Yes == d.port->in.eoor(d.port,&i,&j));
   assert(i == 123 && j == 456);
 
-  assert(IDataparam_Status_Yes == c.port->in.eior(c.port,i,&j));
+  assert(IDataparam_Status_Yes == d.port->in.eior(d.port,i,&j));
   assert(i == 123 && j == i);
 
-  assert(IDataparam_Status_Yes == c.port->in.eio2r(c.port,&i));
+  assert(IDataparam_Status_Yes == d.port->in.eio2r(d.port,&i));
   assert(i == 246);
   return 0;
 }
