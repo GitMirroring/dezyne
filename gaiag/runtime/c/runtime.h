@@ -45,6 +45,6 @@ void runtime_defer (runtime* self, void* in, void* out, void (*event)(void*), vo
 void runtime_event (void (*event)(void*), void* args);
 void runtime_set (runtime* runtime, void* self);
 
-#define DZN_LOG(msg) printf ("%s\n", msg)
+#define DZN_TRACE(msg) fputs (msg, stderr)
 
 #endif

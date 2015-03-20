@@ -57,7 +57,6 @@
     (map (define-on model port #{
   static #return-type  #port _#event(#.model * self#comma #parameters) {
     (void)self;
-    DZN_LOG("#.model .#port _#event");
     #statement #
     (if (not (eq? type 'void))
 (list "    return self->reply_" reply-type "_" reply-name ";\n"
@@ -69,17 +68,27 @@
   (lambda (port)
     (map (define-on model port #{
     static #return-type  call_#direction _#port _#event(#interface * self#comma #parameters) {
+    DZN_TRACE("#.model .#port _#event \n");
     args_#port _#event  a = {sizeof(args_#port _#event), #port _#event , self->#direction .self#comma #(comma-space-join argument-list)};
-    #(string-if (eq? direction 'out) #{component *c = self->out.self;
-#})
-    runtime_#(string-if (eq? direction 'in) #{event(#} #{defer(c->rt, self->in.self, self->out.self, #})helper_#port _#event , &a);
+    runtime_event(helper_#port _#event , &a);
 #(string-if (not (eq? type 'void))
 #{ #.model * self_ = self->#direction .self;
    return self_->reply_#reply-type _#reply-name;
 #}) }
+#}) (filter gom:in? (gom:events port))))
+    (filter gom:provides? (gom:ports model)))#
+(map
+  (lambda (port)
+    (map (define-on model port #{
+    static #return-type  call_#direction _#port _#event(#interface * self#comma #parameters) {
+    DZN_TRACE("#.model .#port _#event \n");
+    args_#port _#event  a = {sizeof(args_#port _#event), #port _#event , self->#direction .self#comma #(comma-space-join argument-list)};
+    component *c = self->out.self;
+    runtime_defer(c->rt, self->in.self, self->out.self, helper_#port _#event , &a);
+}
 
-#}) (filter (gom:dir-matches? port) (gom:events port))))
-  (gom:ports model))
+#}) (filter gom:out? (gom:events port))))
+    (filter gom:requires? (gom:ports model)))
 void #.model _init (#.model * self, locator* dezyne_locator) {
   self->rt = dezyne_locator->rt;
   runtime_set(self->rt, self);
