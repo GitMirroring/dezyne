@@ -68,12 +68,15 @@
 (map
   (lambda (port)
     (map (define-on model port #{
-  static #return-type  callback_#port _#event(#interface * self#comma #parameters) {
+    static #return-type  call_#direction _#port _#event(#interface * self#comma #parameters) {
     args_#port _#event  a = {sizeof(args_#port _#event), #port _#event , self->#direction .self#comma #(comma-space-join argument-list)};
-   runtime_event(helper_#port _#event , &a);
-#(if (not (eq? type 'void))
-(list .model "* self_ = self->" direction ".self;\n  return self_->reply_" reply-type "_" reply-name ";\n"
-      )) }
+    #(string-if (eq? direction 'out) #{component *c = self->out.self;
+#})
+    runtime_#(string-if (eq? direction 'in) #{event(#} #{defer(c->rt, self->in.self, self->out.self, #})helper_#port _#event , &a);
+#(string-if (not (eq? type 'void))
+#{ #.model * self_ = self->#direction .self;
+   return self_->reply_#reply-type _#reply-name;
+#}) }
 
 #}) (filter (gom:dir-matches? port) (gom:events port))))
   (gom:ports model))
@@ -93,8 +96,8 @@ void #.model _init (#.model * self, locator* dezyne_locator) {
        (append
         (list (->string (list "self->" (.name port) " = &self->" (.name port) "_;\n")))
         (map (define-on model port #{
-                                     self->#port ->#direction .#event  = callback_#port _#event;
-                                                 #}) (filter gom:in? (gom:events port)))
+   self->#port ->#direction .#event  = call_in_#port _#event;
+#}) (filter gom:in? (gom:events port)))
         (list (->string (list "self->" (.name port) "->in.self = self;\n"))))))
     (filter gom:provides? (gom:ports model)))#
    (map
@@ -104,6 +107,6 @@ void #.model _init (#.model * self, locator* dezyne_locator) {
         (list (->string (list "self->" (.name port) " = &self->" (.name port) "_;\n")))
         (list (->string (list "self->" (.name port) "->out.self = self;\n")))
         (map (define-on model port #{
-                                     self->#port ->#direction .#event  = callback_#port _#event;
-                                                 #}) (filter gom:out? (gom:events port))))))
+    self->#port ->#direction .#event  = call_out_#port _#event;
+ #}) (filter gom:out? (gom:events port))))))
     (filter gom:requires? (gom:ports model)))}

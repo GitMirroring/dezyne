@@ -39,10 +39,6 @@ typedef struct {
 } arguments;
 
 typedef struct {
-  runtime* rt;
-} component;
-
-typedef struct {
   void (*func)(void*);
   void *args;
 } closure;
@@ -112,8 +108,8 @@ int map_active(map_element* elt, void* dst) {
   return 0;
 }
 
-void
-runtime_defer (runtime* self, void* scope, void (*event)(void*), void* args)
+static void
+runtime_defer_event (runtime* self, void* scope, void (*event)(void*), void* args)
 {
   bool active = false;
   map_iterate(&self->queues, map_active, &active);
@@ -146,6 +142,16 @@ helper_runtime_handle (void* args)
   free (a->args);
 }
 
+void
+runtime_defer (runtime* self, void* in, void* out, void (*event)(void*), void* args)
+{
+    arguments *d = args;
+    arguments *dc = dzn_malloc (d->size);
+    memcpy (dc, d, d->size);
+    args_defer a = {sizeof (args_defer), self, out, event, dc};
+    runtime_defer_event (self, in, helper_runtime_handle, &a);
+}
+
 static void
 runtime_handle_event (runtime* self, void* scope, void (*event)(void*), void* args)
 {
@@ -160,11 +166,7 @@ runtime_handle_event (runtime* self, void* scope, void (*event)(void*), void* ar
   }
   else
   {
-    arguments *d = args;
-    arguments *dc = dzn_malloc (d->size);
-    memcpy (dc, d, d->size);
-    args_defer a = {sizeof (args_defer), self, scope, event, dc};
-    runtime_defer (self, scope, helper_runtime_handle, &a);
+    runtime_defer (self, scope, scope, event, args);
   }
 }
 

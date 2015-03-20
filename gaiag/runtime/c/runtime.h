@@ -35,9 +35,13 @@ typedef struct {
   map queues;
 } runtime;
 
+typedef struct {
+  runtime* rt;
+} component;
+
 void runtime_init (runtime*);
 void runtime_flush (runtime* self, void* scope);
-void runtime_defer (runtime* self, void* scope, void (*event)(void*), void* args);
+void runtime_defer (runtime* self, void* in, void* out, void (*event)(void*), void* args);
 void runtime_event (void (*event)(void*), void* args);
 void runtime_set (runtime* runtime, void* self);
 
