@@ -7,6 +7,7 @@ typedef struct #.model  #.model;
 
 struct #.model {
   struct {
+     char const* name;
      void* self;
    #(map (declare-io model
           #{ #return-type  (*#name)(#.model * self#comma #parameters);
@@ -14,6 +15,7 @@ struct #.model {
    } in;
 
   struct {
+     char const* name;
      void* self;
    #(map (declare-io model
           #{ #return-type  (*#name) (#.model * self#comma #parameters);

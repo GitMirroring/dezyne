@@ -32,25 +32,25 @@
 void a0(IDataparam* self)
 {
   (void)self;
-  printf("a0()\n");
+  fprintf(stderr, "a0()\n");
 }
 
 void a(IDataparam* self, int i)
 {
   (void)self;
-  printf("a(%d)\n", i);
+  fprintf(stderr, "a(%d)\n", i);
 }
 
 void aa(IDataparam* self, int i, int j)
 {
   (void)self;
-  printf("aa(%d, %d)\n", i, j);
+  fprintf(stderr, "aa(%d, %d)\n", i, j);
 }
 
 void a6(IDataparam* self, int i0, int i1, int i2,int i3, int i4, int i5)
 {
   (void)self;
-  printf("a6(%d,%d,%d,%d,%d,%d)\n", i0, i1, i2, i3, i4, i5);
+  fprintf(stderr, "a6(%d,%d,%d,%d,%d,%d)\n", i0, i1, i2, i3, i4, i5);
 }
 
 int main()
@@ -62,7 +62,10 @@ int main()
   locator_init(&l, &rt);
 
   Datasystem d;
-  Datasystem_init(&d,&l);
+  meta m = {"d", 0};
+  Datasystem_init(&d,&l,&m);
+  d.port->out.name = "port";
+  d.port->out.self = &d;
 
   d.port->out.a0 = a0;
   d.port->out.a = a;

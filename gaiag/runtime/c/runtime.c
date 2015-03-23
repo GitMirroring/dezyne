@@ -177,3 +177,55 @@ runtime_event (void (*event)(void*), void* args)
   component* c = a->self;
   runtime_handle_event (c->rt, c, event, args);
 }
+
+char*
+runtime_path (void *m, char* p)
+{
+  char buf[1023];
+  if (!m) {
+    strcpy (buf, p);
+    strcpy (p, "null.");
+    strcat (p, buf);
+    return p;
+  }
+  component *c = m;
+  //if (m.component) {
+  //  return runtime.path(m.component.meta, m.name + (p ? "." + p : p));
+  // }
+  if (c->m.parent) {
+    strcpy (buf, p);
+    strcpy (p, c->m.name);
+    if (strlen (buf))
+      strcat (p, ".");
+    return runtime_path (c->m.parent, strcat (p, buf));
+  }
+  strcpy (buf, p);
+  strcpy (p, c->m.name);
+  if (strlen (buf))
+    strcat (p, ".");
+  return strcat (p, buf);
+}
+
+void
+runtime_trace_in (void* in, void* out, char const* e)
+{
+  char ibuf[1024] = "";
+  char obuf[1024] = "";
+  meta* i = in;
+  meta* o = out;
+  fprintf (stderr, "%s.%s.%s -> %s.%s.%s\n",
+           runtime_path (o->parent, obuf), o->name, e,
+           runtime_path (i->parent, ibuf), i->name, e);
+}
+
+void
+runtime_trace_out (void* in, void* out, char const* e)
+{
+  char ibuf[1024] = "";
+  char obuf[1024] = "";
+  meta* i = in;
+  meta* o = out;
+  fprintf (stderr, "%s.%s.%s -> %s.%s.%s\n",
+           runtime_path (i->parent, ibuf), i->name, e,
+           runtime_path (o->parent, obuf), o->name, e);
+}

@@ -10,6 +10,7 @@
 
 
 typedef struct {
+    meta m;
     runtime* rt;
     #(map (init-member model #{
 #type  #name;
@@ -20,6 +21,6 @@ typedef struct {
 #interface * #name;
 #}) ((compose .elements .ports) model))} #.model;
 
-void #.model _init(#.model * self, locator* dezyne_locator);
+void #.model _init(#.model * self, locator* dezyne_locator, meta* m);
 
 ##endif // DEZYNE_#.COMPONENT _H

@@ -12,6 +12,7 @@
 ##include "locator.h"
 
 typedef struct {
+    meta m;
 #(map (lambda (binding) (list (.component (gom:instance model (injected-instance-name binding))) " "
                               (injected-instance-name binding) ";\n")) (injected-bindings model)) #
 (if (pair? (injected-bindings model)) (list "locator local_locator;\n")) #
@@ -23,6 +24,6 @@ typedef struct {
 #}) ((compose .elements .ports) model))
 } #.model;
 
-void #.model _init(#.model *self, locator* dezyne_locator);
+void #.model _init(#.model *self, locator* dezyne_locator, meta* m);
 
 ##endif // DEZYNE_#.COMPONENT _H

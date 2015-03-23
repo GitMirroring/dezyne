@@ -1,42 +1,68 @@
-proxy.top_e0r
-Dataparam.port_e0r
-proxy.bottom_a0
+d.port.e0r -> d.p.top.e0r
+d.p.bottom.e0r -> d.c.port.e0r
+d.c.port.a0 -> d.p.bottom.a0
+d.c.port.Status_Yes -> d.p.bottom.Status_Yes
 a0()
-proxy.top_e0
-Dataparam.port_e0
-proxy.bottom_a6
+d.p.top.Status_Yes -> d.port.Status_Yes
+d.port.e0 -> d.p.top.e0
+d.p.bottom.e0 -> d.c.port.e0
+d.c.port.a6 -> d.p.bottom.a6
+d.c.port.return -> d.p.bottom.return
 a6(0,1,2,3,4,5)
-proxy.top_er
-Dataparam.port_er
-proxy.bottom_a
-proxy.bottom_aa
+d.p.top.return -> d.port.return
+d.port.er -> d.p.top.er
+d.p.bottom.er -> d.c.port.er
+d.c.port.a -> d.p.bottom.a
+d.c.port.aa -> d.p.bottom.aa
+d.c.port.Status_Yes -> d.p.bottom.Status_Yes
 a(123)
-aa(123, 123)
-proxy.top_e
-Dataparam.port_e
-proxy.bottom_a
-proxy.bottom_aa
+aa(123,123)
+d.p.top.Status_Yes -> d.port.Status_Yes
+d.port.e -> d.p.top.e
+d.p.bottom.e -> d.c.port.e
+d.c.port.a -> d.p.bottom.a
+d.c.port.aa -> d.p.bottom.aa
+d.c.port.return -> d.p.bottom.return
 a(123)
-aa(123, 123)
-proxy.top_eer
-Dataparam.port_eer
-proxy.bottom_a
-proxy.bottom_aa
+aa(123,123)
+d.p.top.return -> d.port.return
+d.port.eer -> d.p.top.eer
+d.p.bottom.eer -> d.c.port.eer
+d.c.port.a -> d.p.bottom.a
+d.c.port.aa -> d.p.bottom.aa
+d.c.port.Status_No -> d.p.bottom.Status_No
 a(345)
-aa(345, 123)
-proxy.top_eo
-Dataparam.port_eo
-proxy.top_eoo
-Dataparam.port_eoo
-proxy.top_eio
-Dataparam.port_eio
-proxy.top_eio2
-Dataparam.port_eio2
-proxy.top_eor
-Dataparam.port_eor
-proxy.top_eoor
-Dataparam.port_eoor
-proxy.top_eior
-Dataparam.port_eior
-proxy.top_eio2r
-Dataparam.port_eio2r
+aa(345,123)
+d.p.top.Status_No -> d.port.Status_No
+d.port.eo -> d.p.top.eo
+d.p.bottom.eo -> d.c.port.eo
+d.c.port.return -> d.p.bottom.return
+d.p.top.return -> d.port.return
+d.port.eoo -> d.p.top.eoo
+d.p.bottom.eoo -> d.c.port.eoo
+d.c.port.return -> d.p.bottom.return
+d.p.top.return -> d.port.return
+d.port.eio -> d.p.top.eio
+d.p.bottom.eio -> d.c.port.eio
+d.c.port.return -> d.p.bottom.return
+d.p.top.return -> d.port.return
+d.port.eio2 -> d.p.top.eio2
+d.p.bottom.eio2 -> d.c.port.eio2
+d.c.port.return -> d.p.bottom.return
+d.p.top.return -> d.port.return
+d.port.eor -> d.p.top.eor
+d.p.bottom.eor -> d.c.port.eor
+d.c.port.Status_Yes -> d.p.bottom.Status_Yes
+d.p.top.Status_Yes -> d.port.Status_Yes
+d.port.eoor -> d.p.top.eoor
+d.p.bottom.eoor -> d.c.port.eoor
+d.c.port.Status_Yes -> d.p.bottom.Status_Yes
+d.p.top.Status_Yes -> d.port.Status_Yes
+d.port.eior -> d.p.top.eior
+d.p.bottom.eior -> d.c.port.eior
+d.c.port.Status_Yes -> d.p.bottom.Status_Yes
+d.p.top.Status_Yes -> d.port.Status_Yes
+d.port.eio2r -> d.p.top.eio2r
+d.p.bottom.eio2r -> d.c.port.eio2r
+d.c.port.Status_Yes -> d.p.bottom.Status_Yes
+d.p.top.Status_Yes -> d.port.Status_Yes

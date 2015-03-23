@@ -36,6 +36,12 @@ typedef struct {
 } runtime;
 
 typedef struct {
+  char const* name;
+  void* parent;
+} meta;
+
+typedef struct {
+  meta m;
   runtime* rt;
 } component;
 
@@ -44,7 +50,10 @@ void runtime_flush (runtime* self, void* scope);
 void runtime_defer (runtime* self, void* in, void* out, void (*event)(void*), void* args);
 void runtime_event (void (*event)(void*), void* args);
 void runtime_set (runtime* runtime, void* self);
+char* runtime_path (void* m, char* p);
+void runtime_trace_in (void* in, void *out, char const* e);
+void runtime_trace_out (void* in, void *out, char const* e);
 
-#define DZN_TRACE(msg) fputs (msg, stderr)
+#define DZN_TRACE(msg) fprintf (stderr, "%s\n", msg)
 
 #endif

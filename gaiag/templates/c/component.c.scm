@@ -3,6 +3,12 @@
 ##include "locator.h"
 ##include "runtime.h"
 ##include <assert.h>
+##include <string.h>
+
+#(map (lambda (port)
+   (module-define! (current-module) '.interface port)
+   (->string (map enum-to-string (gom:interface-enums (gom:import port)))))
+  (delete-duplicates (map .type (gom:ports model))))
 
 #(->string (map declare-enum (gom:enums (.behaviour model))))
 
@@ -68,12 +74,14 @@
   (lambda (port)
     (map (define-on model port #{
     static #return-type  call_#direction _#port _#event(#interface * self#comma #parameters) {
-    DZN_TRACE("#.model .#port _#event \n");
+                                                                                              runtime_trace_#direction(&self->in, &self->out, "#event ");
     args_#port _#event  a = {sizeof(args_#port _#event), #port _#event , self->#direction .self#comma #(comma-space-join argument-list)};
     runtime_event(helper_#port _#event , &a);
 #(string-if (not (eq? type 'void))
-#{ #.model * self_ = self->#direction .self;
-   return self_->reply_#reply-type _#reply-name;
+#{ #.model * self_ = self->#direction .self; #})
+    runtime_trace_out(&self->in, &self->out, #(string-if (eq? type 'void) #{"return"#} #{#reply-type _#reply-name _to_string (self_->reply_#reply-type _#reply-name)#}));
+#(string-if (not (eq? type 'void))
+#{ return self_->reply_#reply-type _#reply-name;
 #}) }
 #}) (filter gom:in? (gom:events port))))
     (filter gom:provides? (gom:ports model)))#
@@ -81,7 +89,7 @@
   (lambda (port)
     (map (define-on model port #{
     static #return-type  call_#direction _#port _#event(#interface * self#comma #parameters) {
-    DZN_TRACE("#.model .#port _#event \n");
+    runtime_trace_#direction(&self->in, &self->out, "#event ");
     args_#port _#event  a = {sizeof(args_#port _#event), #port _#event , self->#direction .self#comma #(comma-space-join argument-list)};
     component *c = self->out.self;
     runtime_defer(c->rt, self->in.self, self->out.self, helper_#port _#event , &a);
@@ -89,14 +97,15 @@
 
 #}) (filter gom:out? (gom:events port))))
     (filter gom:requires? (gom:ports model)))
-void #.model _init (#.model * self, locator* dezyne_locator) {
+void #.model _init (#.model * self, locator* dezyne_locator, meta *m) {
+  memcpy(&self->m, m, sizeof(meta));
   self->rt = dezyne_locator->rt;
   runtime_set(self->rt, self);
   #(map (lambda (port) (->string (list "self->" (.name port) "_ = *(" (.type port) "*)locator_get(dezyne_locator, \"" (.type port) "\");\n"))) (filter .injected (gom:ports model)))#
 ((->join  ";\n")
  (filter (negate (compose string-null? string-trim))
    (map (init-member model #{
-   #(if (not (eq? expression *unspecified*)) (->string (list 'self-> name " = " expression)))#}) (gom:variables model))))#
+   #(string-if (not (eq? expression *unspecified*)) #{ self->#name  = #expression #})#}) (gom:variables model))))#
 (if (null? (gom:variables model)) "" ";")
 #
    (map
@@ -107,6 +116,7 @@ void #.model _init (#.model * self, locator* dezyne_locator) {
         (map (define-on model port #{
    self->#port ->#direction .#event  = call_in_#port _#event;
 #}) (filter gom:in? (gom:events port)))
+        (list (->string (list "self->" (.name port) "->in.name = \"" (.name port) "\";\n")))
         (list (->string (list "self->" (.name port) "->in.self = self;\n"))))))
     (filter gom:provides? (gom:ports model)))#
    (map
@@ -114,6 +124,7 @@ void #.model _init (#.model * self, locator* dezyne_locator) {
       (string-join
        (append
         (list (->string (list "self->" (.name port) " = &self->" (.name port) "_;\n")))
+        (list (->string (list "self->" (.name port) "->out.name = \"" (.name port) "\";\n")))
         (list (->string (list "self->" (.name port) "->out.self = self;\n")))
         (map (define-on model port #{
     self->#port ->#direction .#event  = call_out_#port _#event;

@@ -27,12 +27,12 @@
 
 static void detected()
 {
-  DZN_LOG("Console.detected");
+  DZN_TRACE("Console.detected");
 }
 
 static void deactivated()
 {
-  DZN_LOG("Console.deactivated");
+  DZN_TRACE("Console.deactivated");
 }
 
 int main()
@@ -44,7 +44,10 @@ int main()
   locator_init (&dezyne_locator, &dezyne_runtime);
 
   AlarmSystem alarmsystem;
-  AlarmSystem_init(&alarmsystem, &dezyne_locator);
+  meta m = {"alarmsystem", 0};
+  AlarmSystem_init(&alarmsystem, &dezyne_locator, &m);
+  alarmsystem.console->out.name = "console";
+  alarmsystem.console->out.self = &alarmsystem;
 
   alarmsystem.console->out.detected = detected;
 
