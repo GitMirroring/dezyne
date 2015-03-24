@@ -175,32 +175,31 @@ inject: c-inject c++-inject
 
 c++-alarm-update:
 	-$(MAKE) c++-alarm
-	cp out/*cc out/*hh baseline
+	find out -type f -a '(' -name '*.cc' -o -name '*.hh' ')' -exec cp '{}' baseline ';'
 
 c++-choice-update:
 	-$(MAKE) c++-choice
-	cp out/*cc out/*hh baseline
+	find out -type f -a '(' -name '*.cc' -o -name '*.hh' ')' -exec cp '{}' baseline ';'
 
 c++-dataparam-update:
 	-$(MAKE) c++-dataparam
-	cp out/*cc out/*hh baseline
+	find out -type f -a '(' -name '*.cc' -o -name '*.hh' ')' -exec cp '{}' baseline ';'
 
 c++-inject-update:
 	-$(MAKE) c++-inject
-	cp out/*cc out/*hh baseline
+	find out -type f -a '(' -name '*.cc' -o -name '*.hh' ')' -exec cp '{}' baseline ';'
 
 c-alarm-update:
 	-$(MAKE) c-alarm
-	cp out/*c out/*h baseline
+	find out -type f -a '(' -name '*.c' -o -name '*.h' ')' -exec cp '{}' baseline ';'
 
 c-dataparam-update:
 	-$(MAKE) c-dataparam
-	cp out/*c out/*h baseline
+	find out -type f -a '(' -name '*.c' -o -name '*.h' ')' -exec cp '{}' baseline ';'
 
 c-inject-update:
 	-$(MAKE) c-inject
-	cp out/*c out/*h baseline
-
+	find out -type f -a '(' -name '*.c' -o -name '*.h' ')' -exec cp '{}' baseline ';'
 
 goops-alarm-update:
 	 -$(MAKE) goops-alarm
@@ -252,7 +251,7 @@ c-alarm:
 	#cp baseline/{IConsole,ISensor,ISiren}.h out
 	for i in out/*c; do ccache gcc -g -std=c99 -Wall -pedantic -pedantic-errors -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o && out/$@ > out/$@.trace
 	$(diff) baseline/$@.trace out
-	for i in out/*.h out/*.c; do $(diff) baseline/$$(basename $$i) $$i; done
+	for i in $$(find out -type f -a '(' -name '*.h' -o -name '*.c' ')'); do $(diff) baseline/$$(basename $$i) $$i; done
 
 c-dataparam:
 	rm -rf out && mkdir out && cd out && ln -s ../runtime/c/* .
@@ -260,14 +259,14 @@ c-dataparam:
 	cd out && ln -sf ../examples/dataparam.c .
 	for i in out/*c; do ccache gcc -g -std=c99 -Wall -pedantic -pedantic-errors -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o && out/$@ > out/$@.trace
 	$(diff) baseline/$@.trace out
-	for i in out/*.h out/*.c; do $(diff) baseline/$$(basename $$i) $$i; done
+	for i in $$(find out -type f -a '(' -name '*.h' -o -name '*.c' ')'); do $(diff) baseline/$$(basename $$i) $$i; done
 
 c-inject:
 	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c/* .
 	cd out && ln -s ../examples/injected.c .
 	cd out && $(shell pwd)/gaiag -l c examples/Injected.dzn
 	for i in out/*c; do ccache gcc -g -std=c99 -Wall -pedantic -pedantic-errors -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o && out/$@ > out/$@.trace
-	for i in out/*.h out/*.c; do $(diff) baseline/$$(basename $$i) $$i; done
+	for i in $$(find out -type f -a '(' -name '*.h' -o -name '*.c' ')'); do $(diff) baseline/$$(basename $$i) $$i; done
 	$(diff) baseline/$@.trace out
 
 #out/%.c: examples/regression/%.dzn
@@ -320,7 +319,7 @@ c++-alarm:
 	cd out && ln -s ../examples/alarm.cc .
 	for i in out/*cc; do ccache g++ -std=c++11 -g -Wall -Wextra -c -o out/$$(basename $$i .cc).o $$i; done && g++ -o out/$@ out/*.o && out/$@ |& sed -e s/0[^:]*://g | grep -Ev '^(|0 )0x' >out/$@.trace
 	$(diff) baseline/$@.trace out
-	for i in out/*.hh out/*.cc; do $(diff) baseline/$$(basename $$i) $$i; done
+	for i in $$(find out -type f -a '(' -name '*.hh' -o -name '*.cc' ')'); do $(diff) baseline/$$(basename $$i) $$i; done
 
 c++-inject:
 	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c++/* .
@@ -335,7 +334,7 @@ c++-dataparam:
 	cd out && ln -sf ../examples/dataparam.cc .
 	for i in out/*cc; do ccache g++ -std=c++11 -g -Wall -Wextra -c -o out/$$(basename $$i .cc).o $$i; done && g++ -o out/$@ out/*.o && out/$@ |& sed -e s/0[^:]*://g | grep -Ev '^(|0 )0x' >out/$@.trace
 	$(diff) baseline/$@.trace out
-	for i in out/*.hh out/*.cc; do $(diff) baseline/$$(basename $$i) $$i; done
+	for i in $$(find out -type f -a '(' -name '*.hh' -o -name '*.cc' ')'); do $(diff) baseline/$$(basename $$i) $$i; done
 
 c++-choice:
 	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c++/* .
