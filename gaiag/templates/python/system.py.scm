@@ -4,10 +4,12 @@ def connect (provided, required):
     provided.outs = required.outs
     required.ins = provided.ins
 
-class #.model  ():
-    def __init__ (self):
+class #.model :
+    def __init__ (self, parent=None, name=''):
+        self.parent = parent
+        self.name = name
 #(map (init-instance #{
-        self.#name  = dezyne.#component  ()
+        self.#name  = dezyne.#component  (parent=self, name='#name ')
 #}) ((compose .elements .instances) model))#
 (map (init-bind model #{
         self.#port  = self.#instance

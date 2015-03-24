@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Dezyne.
@@ -24,16 +24,29 @@
 
 import sys
 #
-import dezyne
+import dezyne.ISiren
 
-class Siren:
-    def __init__ (self):
-        self.siren = dezyne.ISiren ()
+
+class Siren ():
+
+    def __init__ (self, parent=None, name=''):
+        self.parent = parent
+        self.name = name
+        self.handling = False
+        self.deferred = None
+        self.queue = []
+
+        self.siren = dezyne.ISiren (provides=('siren', self))
+
         self.siren.ins.turnon = self.siren_turnon
         self.siren.ins.turnoff = self.siren_turnoff
 
     def siren_turnon (self):
-        sys.stderr.write ('Siren.turnon\n')
+        pass
+
 
     def siren_turnoff (self):
-        sys.stderr.write ('Siren.turnoff\n')
+        pass
+
+
+

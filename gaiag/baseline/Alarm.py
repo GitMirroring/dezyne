@@ -21,32 +21,35 @@
 # 
 # Code:
 
-import sys
-#
 import dezyne.IConsole
 import dezyne.ISensor
 import dezyne.ISiren
-
+import runtime
 
 class Alarm ():
     class States ():
         Disarmed, Armed, Triggered, Disarming = range (4)
 
-    def __init__ (self):
+    def __init__ (self, parent=None, name=''):
+        self.parent = parent
+        self.name = name
+        self.handling = False
+        self.deferred = None
+        self.queue = []
+
         self.state = self.States.Disarmed
         self.sounding = False
 
-        self.console = dezyne.IConsole ()
-        self.sensor = dezyne.ISensor ()
-        self.siren = dezyne.ISiren ()
+        self.console = dezyne.IConsole (provides=('console', self))
+        self.sensor = dezyne.ISensor (requires=('sensor', self), provides=('foo', 'foe'))
+        self.siren = dezyne.ISiren (requires=('siren', self))
 
-        self.console.ins.arm = self.console_arm
-        self.console.ins.disarm = self.console_disarm
-        self.sensor.outs.triggered = self.sensor_triggered
-        self.sensor.outs.disabled = self.sensor_disabled
+        self.console.ins.arm = lambda: runtime.call_in (self, self.console_arm, (self.console, 'arm'))
+        self.console.ins.disarm = lambda: runtime.call_in (self, self.console_disarm, (self.console, 'disarm'))
+        self.sensor.outs.triggered = lambda: runtime.call_out (self, self.sensor_triggered, (self.sensor, 'triggered'))
+        self.sensor.outs.disabled =  lambda: runtime.call_out (self, self.sensor_disabled, (self.sensor, 'disabled'))
 
     def console_arm (self):
-        sys.stderr.write ('Alarm.console_arm\n')
         if (self.state == self.States.Disarmed):
             self.sensor.ins.enable ()
             self.state = self.States.Armed
@@ -59,7 +62,6 @@ class Alarm ():
 
 
     def console_disarm (self):
-        sys.stderr.write ('Alarm.console_disarm\n')
         if (self.state == self.States.Disarmed):
             assert (False)
         elif (self.state == self.States.Armed):
@@ -75,7 +77,6 @@ class Alarm ():
 
 
     def sensor_triggered (self):
-        sys.stderr.write ('Alarm.sensor_triggered\n')
         if (self.state == self.States.Disarmed):
             assert (False)
         elif (self.state == self.States.Armed):
@@ -90,7 +91,6 @@ class Alarm ():
 
 
     def sensor_disabled (self):
-        sys.stderr.write ('Alarm.sensor_disabled\n')
         if (self.state == self.States.Disarmed):
             assert (False)
         elif (self.state == self.States.Armed):

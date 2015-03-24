@@ -41,7 +41,7 @@ TRANSIT = transit
 PREFIX = $(abspath $(shell pwd))
 GUILE_LOAD_PATH = $(PREFIX):$(PREFIX)/module
 GUILE_FLAGS := $(patsubst %,-L %, $(subst :, ,$(GUILE_LOAD_PATH)))
-PYTHON = PYTHONPATH= python
+PYTHON = PYTHONPATH=out python
 WFC = true
 #WFC = $(TOPDIR)/$(BUILD)/asdgenerator
 
@@ -495,21 +495,23 @@ compare:
 
 python-alarm: compile
 	rm -rf out && mkdir out && ln -s ../examples ../templates out
-	cd out && $(shell pwd)/gaiag -l python examples/regression/Alarm.dzn
-	cd out && $(shell pwd)/gaiag -l python examples/ISensor.dzn
-	cd out && $(shell pwd)/gaiag -l python examples/ISiren.dzn
-	cd out && $(shell pwd)/gaiag -l python examples/Alarm.dzn
-	cd out && $(shell pwd)/gaiag -l python examples/AlarmSystem.dzn
-	$(pydiff) baseline/IConsole.py out/dezyne
-	$(pydiff) baseline/ISensor.py out/dezyne
-	$(pydiff) baseline/ISiren.py out/dezyne
-	$(pydiff) baseline/Alarm.py out/dezyne
-	$(pydiff) baseline/AlarmSystem.py out/dezyne
-	ln -s ../examples/Sensor.py out/dezyne
-	ln -s ../examples/Siren.py out/dezyne
-	ln -s ../examples/alarm.py out
-	ln -s ../examples/__init__.py out/dezyne
-	cd out && $(PYTHON) alarm.py
+	cd out && for file in\
+		examples/AlarmSystem.dzn\
+		examples/regression/Alarm.dzn\
+		examples/IConsole.dzn\
+		examples/ISensor.dzn\
+		examples/Sensor.dzn\
+		examples/ISiren.dzn\
+		examples/Siren.dzn\
+		;\
+	do $(shell pwd)/gaiag -l python $$file; done
+	(cd out && ln -s ../examples/alarm.py .)
+	(cd out && ln -s ../runtime/python/*.py .)
+	(cd out/dezyne && ln -s ../../runtime/python/dezyne/*.py .)
+	chmod +x out/alarm.py
+	$(PYTHON) out/alarm.py 2> out/$@.trace
+	$(diff) baseline/$@.trace out
+	for i in $$(find out/dezyne -type f -a -name '*.py'); do $(pydiff) baseline/$$(basename $$i) $$i; done
 
 PY_BROKEN=\
  Dataparam.dzn\

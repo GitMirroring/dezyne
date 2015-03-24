@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -22,11 +22,16 @@
 # Code:
 
 class ISiren ():
-    def __init__ (self):
+    def __init__ (self, provides=('', None), requires=('', None)):
         class Ins ():
-            turnon = None
-            turnoff = None
-        self.ins = Ins ()
-        class Outs ():
-            pass
-        self.outs = Outs ()
+            def __init__ (self, name, c):
+                self.name = name
+                self.self = c
+                self.turnon = None
+                self.turnoff = None
+        self.ins = Ins (*provides)
+        class Outs:
+            def __init__ (self, name, c):
+                self.name = name
+                self.self = c
+        self.outs = Outs (*requires)

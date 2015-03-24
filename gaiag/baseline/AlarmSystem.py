@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -28,10 +28,12 @@ def connect (provided, required):
     required.ins = provided.ins
 
 class AlarmSystem ():
-    def __init__ (self):
-        self.alarm = dezyne.Alarm ()
-        self.sensor = dezyne.Sensor ()
-        self.siren = dezyne.Siren ()
+    def __init__ (self, parent=None, name=''):
+        self.parent = parent
+        self.name = name
+        self.alarm = dezyne.Alarm (parent=self, name='alarm')
+        self.sensor = dezyne.Sensor (parent=self, name='sensor')
+        self.siren = dezyne.Siren (parent=self, name='siren')
         self.console = self.alarm.console
 
         connect (self.sensor.sensor, self.alarm.sensor)

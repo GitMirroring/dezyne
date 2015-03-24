@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Dezyne.
@@ -24,16 +24,29 @@
 
 import sys
 #
-import dezyne
+import dezyne.ISensor
 
-class Sensor:
-    def __init__ (self):
-        self.sensor = dezyne.ISensor ()
+
+class Sensor ():
+
+    def __init__ (self, parent=None, name=''):
+        self.parent = parent
+        self.name = name
+        self.handling = False
+        self.deferred = None
+        self.queue = []
+
+        self.sensor = dezyne.ISensor (provides=('sensor', self), requires=('bar', 'baar'))
+
         self.sensor.ins.enable = self.sensor_enable
-        self.sensor.ins.disable = self.sensor_enable
+        self.sensor.ins.disable = self.sensor_disable
 
     def sensor_enable (self):
-        sys.stderr.write ('Sensor.enable\n')
+        pass
+
 
     def sensor_disable (self):
-        sys.stderr.write ('Sensor.disable\n')
+        pass
+
+
+

@@ -1,17 +1,19 @@
-class #.interface  ():
+class #.interface :
 #(->string (map declare-enum (gom:interface-enums model)))#'(
-)     def __init__ (self):
-        class Ins ():
+)     def __init__ (self, provides=('', None), requires=('', None)):
+        class Ins:
+            def __init__ (self, name, c):
+                self.name = name
+                self.self = c
 #(map (declare-io model #{
-            #name  = None
-#}) (filter gom:in? ((compose .elements .events) model)))#
-(if (null? (filter gom:in? ((compose .elements .events) model)))
-    "            pass")#'(
-)         self.ins = Ins ()
-        class Outs ():
+                self.#name  = None
+#}) (filter gom:in? ((compose .elements .events) model)))#'(
+)         self.ins = Ins (*provides)
+        class Outs:
+            def __init__ (self, name, c):
+                self.name = name
+                self.self = c
 #(map (declare-io model #{
-            #name  = None
-#}) (filter gom:out? ((compose .elements .events) model)))#
-(if (null? (filter gom:out? ((compose .elements .events) model)))
-    "            pass\n")#'(
-)         self.outs = Outs ()
+                self.#name  = None
+#}) (filter gom:out? ((compose .elements .events) model)))#'(
+)         self.outs = Outs (*requires)

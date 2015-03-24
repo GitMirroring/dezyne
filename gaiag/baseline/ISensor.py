@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -22,12 +22,19 @@
 # Code:
 
 class ISensor ():
-    def __init__ (self):
+    def __init__ (self, provides=('', None), requires=('', None)):
         class Ins ():
-            enable = None
-            disable = None
-        self.ins = Ins ()
-        class Outs ():
-            triggered = None
-            disabled = None
-        self.outs = Outs ()
+            def __init__ (self, name, c):
+                self.name = name
+                self.self = c
+                self.enable = None
+                self.disable = None
+        self.ins = Ins (*provides)
+        class Outs:
+            def __init__ (self, name, c):
+                self.name = name
+                self.self = c
+                self.triggered = None
+                self.disabled = None
+        self.outs = Outs (*requires)
+

@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -21,13 +21,19 @@
 # 
 # Code:
 
-class IConsole ():
-    def __init__ (self):
-        class Ins ():
-            arm = None
-            disarm = None
-        self.ins = Ins ()
-        class Outs ():
-            detected = None
-            deactivated = None
-        self.outs = Outs ()
+class IConsole:
+    def __init__ (self, provides=('', None), requires=('', None)):
+        class Ins:
+            def __init__ (self, name, c):
+                self.name = name
+                self.self = c
+                self.arm = None
+                self.disarm = None
+        self.ins = Ins (*provides)
+        class Outs:
+            def __init__ (self, name, c):
+                self.name = name
+                self.self = c
+                self.detected = None
+                self.deactivated = None
+        self.outs = Outs (*requires)
