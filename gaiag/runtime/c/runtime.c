@@ -29,7 +29,7 @@
 #include <string.h>
 
 #include "mem.h"
-#include "trio.h"
+#include "closure.h"
 #include "queue.h"
 
 typedef struct {
@@ -38,133 +38,106 @@ typedef struct {
   void* self;
 } arguments;
 
-typedef struct {
-  void (*func)(void*);
-  void *args;
-} closure;
-
-
 void
 runtime_init (runtime* self)
 {
-  map_init (&self->queues);
-}
-
-static char*
-runtime_key (void* scope)
-{
-  static char buf[sizeof (void*) * 2 + 3];
-  sprintf (buf, "%p", scope);
-  return buf;
-}
-
-static trio*
-runtime_get (runtime* self, void* scope)
-{
-  void* p = 0;
-  map_get (&self->queues, runtime_key (scope), &p);
-  return p;
+  (void)self;
 }
 
 void
-runtime_set (runtime* self, void* scope)
+runtime_sub_init (runtime* self, runtime_sub* sub)
 {
-  queue* q = dzn_calloc (sizeof (queue), 1);
-  trio* p = dzn_malloc (sizeof (trio));
-  p->first = false;
-  p->second = 0;
-  p->third = q;
-  map_put (&self->queues, runtime_key (scope), p);
+  sub->rt = self;
+  sub->handling = false;
+  queue_init(&sub->q);
 }
 
 static bool*
-runtime_handling (runtime* self, void* scope)
+runtime_handling (runtime_sub* sub)
 {
-  trio* p = runtime_get (self, scope);
-  assert (p);
-  return (bool*)&p->first;
+  return &sub->handling;
 }
 
-static void**
-runtime_deferred (runtime* self, void* scope)
+static runtime_sub**
+runtime_deferred (runtime_sub* sub)
 {
-  trio* p = runtime_get (self, scope);
-  assert (p);
-  return &p->second;
-}
-
-static queue*
-runtime_queue (runtime* self, void* scope)
-{
-  trio* p = runtime_get (self, scope);
-  assert (p);
-  return p->third;
+  return (runtime_sub**)&sub->deferred;
 }
 
 static bool*
-runtime_external (runtime* self, void* scope)
+runtime_external (runtime_sub* sub)
 {
   return false; // FIXME Paul
 }
 
-static void runtime_handle_event (runtime* self, void* scope, void (*event)(void*), void* args);
+static void runtime_handle_event (runtime_sub* sub, void (*event)(void*), void* args);
 
 void
-runtime_flush (runtime* self, void* scope)
+runtime_flush (runtime_sub* sub)
 {
-  if (runtime_external (self, scope))
+  if (runtime_external (sub))
     return;
-  trio* p = runtime_get (self, scope);
-  //printf ("flush: %p\n", scope);
-  if (p) {
-    queue* q = p->third;
-    while (!queue_empty (q))
-    {
-      closure* c = queue_pop (q);
-      runtime_handle_event (self, scope, c->func, c->args);
-      free (c->args);
-      free (c);
-    }
-  }
-  if (runtime_deferred (self, scope))
+  queue* q = &sub->q;
+  while (!queue_empty (q))
   {
-    void** target = runtime_deferred (self, scope);
-    *runtime_deferred (self, scope) = 0;
-    if (*target && !runtime_handling (self, *target))
-      runtime_flush (self, *target);
+#ifndef DZN_STATIC_QUEUES
+    closure* c = queue_pop (q);
+    runtime_handle_event (sub, c->func, c->args);
+    free (c->args);
+    free (c);
+#else
+    closure c = *(closure*)queue_pop (q);
+    runtime_handle_event (sub, c.func, c.args);
+#endif
+  }
+  if (runtime_deferred (sub))
+  {
+    runtime_sub** tgt = runtime_deferred (sub);
+    *runtime_deferred (sub) = 0;
+    if (*tgt && !runtime_handling (*tgt))
+      runtime_flush (*tgt);
   }
 }
 
 void
-runtime_defer (runtime* self, void* vin, void* vout, void (*event)(void*), void* args)
+runtime_defer (void* vsrc, void* vtgt, void (*event)(void*), void* args)
 {
-  if (runtime_external (self, vin) || runtime_external (self, vout))
+  component* csrc = vsrc;
+  component* ctgt = vtgt;
+  runtime_sub* src = &csrc->sub;
+  runtime_sub* tgt = &ctgt->sub;
+  if (runtime_external (src) || runtime_external (tgt))
   {
-    runtime_handle_event (self, vout, event, args);
+    runtime_handle_event (tgt, event, args);
     return;
   }
-  component* in = vin;
-  trio* p = runtime_get (self, in);
-  assert (p);
+#ifndef DZN_STATIC_QUEUES
   closure *c = dzn_malloc (sizeof (closure));
   c->func = event;
   arguments *a = args;
   c->args = dzn_malloc (a->size);
   memcpy (c->args, a, a->size);
-  queue_push (p->third, c);
+  queue_push (&src->q, c);
+#else
+  closure c;
+  c.func = event;
+  arguments *a = args;
+  assert(a->size <= DZN_MAX_ARGS_SIZE);
+  memcpy(&c.args, a, a->size);
+  queue_push (&src->q, &c);
+#endif
 }
 
 static void
-runtime_handle_event (runtime* self, void* scope, void (*event)(void*), void* args)
+runtime_handle_event (runtime_sub* sub, void (*event)(void*), void* args)
 {
-  bool* handle = runtime_handling (self, scope);
-  //printf ("handle: %p, %d\n", scope, *handle);
+  bool* handle = runtime_handling (sub);
   if (!*handle)
   {
     *handle = true;
     event (args);
     *handle = false;
-    runtime_flush (self, scope);
+    runtime_flush (sub);
   }
   else
   {
@@ -177,7 +150,7 @@ runtime_event (void (*event)(void*), void* args)
 {
   arguments* a = args;
   component* c = a->self;
-  runtime_handle_event (c->rt, c, event, args);
+  runtime_handle_event (&c->sub, event, args);
 }
 
 char*

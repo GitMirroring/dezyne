@@ -11,7 +11,7 @@
 
 typedef struct {
     meta m;
-    runtime* rt;
+    runtime_sub sub;
     #(map (init-member model #{
 #type  #name;
 #}) (gom:variables model))#

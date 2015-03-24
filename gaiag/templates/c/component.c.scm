@@ -92,15 +92,14 @@
     runtime_trace_#direction(&self->in, &self->out, "#event ");
     args_#port _#event  a = {sizeof(args_#port _#event), #port _#event , self->#direction .self#comma #(comma-space-join argument-list)};
     component *c = self->out.self;
-    runtime_defer(c->rt, self->in.self, self->out.self, helper_#port _#event , &a);
+    runtime_defer(self->in.self, self->out.self, helper_#port _#event , &a);
 }
 
 #}) (filter gom:out? (gom:events port))))
     (filter gom:requires? (gom:ports model)))
 void #.model _init (#.model * self, locator* dezyne_locator, meta *m) {
+  runtime_sub_init(dezyne_locator->rt, &self->sub);
   memcpy(&self->m, m, sizeof(meta));
-  self->rt = dezyne_locator->rt;
-  runtime_set(self->rt, self);
   #(map (lambda (port) (->string (list "self->" (.name port) "_ = *(" (.type port) "*)locator_get(dezyne_locator, \"" (.type port) "\");\n"))) (filter .injected (gom:ports model)))#
 ((->join  ";\n")
  (filter (negate (compose string-null? string-trim))

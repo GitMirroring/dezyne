@@ -1,6 +1,5 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -21,39 +20,12 @@
 //
 // Code:
 
-#ifndef QUEUE_H
-#define QUEUE_H
-
-#include "config.h"
-
-#include <stdbool.h>
-
-#ifndef DZN_STATIC_QUEUES
-typedef struct Node {
-    void* item;
-    struct Node* next;
-} Node;
-#else
-#include "closure.h"
-typedef struct Node {
-    closure item;
-} Node;
-#endif
+#ifndef PAIR_H
+#define PAIR_H
 
 typedef struct {
-    Node* head;
-    Node* tail;
-    int size;
-#ifdef DZN_STATIC_QUEUES
-    Node element[DZN_DEFAULT_QUEUE_SIZE];
-#endif
-} queue;
+  void* first;
+  void* second;
+} pair;
 
-void queue_init(queue*);
-bool queue_empty (queue*);
-void queue_push (queue*, void*);
-int queue_size (queue*);
-void* queue_front (queue*);
-void* queue_pop (queue*);
-
-#endif // QUEUE_H
+#endif // PAIR_H

@@ -28,10 +28,11 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "queue.h"
 #include "map.h"
 
 typedef struct {
-  map queues;
+  int dummy;
 } runtime;
 
 typedef struct {
@@ -40,15 +41,22 @@ typedef struct {
 } meta;
 
 typedef struct {
-  meta m;
   runtime* rt;
+  bool handling;
+  void* deferred;
+  queue q;
+} runtime_sub;
+
+typedef struct {
+  meta m;
+  runtime_sub sub;
 } component;
 
 void runtime_init (runtime*);
-void runtime_flush (runtime* self, void* scope);
-void runtime_defer (runtime* self, void* in, void* out, void (*event)(void*), void* args);
+void runtime_sub_init (runtime* self, runtime_sub* sub);
+void runtime_flush (runtime_sub* self);
+void runtime_defer (void* src, void* tgt, void (*event)(void*), void* args);
 void runtime_event (void (*event)(void*), void* args);
-void runtime_set (runtime* runtime, void* self);
 char* runtime_path (void* m, char* p);
 void runtime_trace_in (void* in, void *out, char const* e);
 void runtime_trace_out (void* in, void *out, char const* e);
