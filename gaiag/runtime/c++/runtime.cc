@@ -121,7 +121,7 @@ void runtime::handle(void* scope, const std::function<void()>& event)
   }
   else
   {
-    assert(!"component already handling an event");
+    throw std::logic_error("component already handling an event");
   }
 }
 }
