@@ -57,8 +57,10 @@ function main() {
 
   alarmsystem.console.in.arm();
   alarmsystem.sensor.sensor.out.triggered();
+  runtime.flush(alarmsystem.sensor);
   alarmsystem.console.in.disarm();
   alarmsystem.sensor.sensor.out.disabled();
+  runtime.flush(alarmsystem.sensor);
 }
 
 main();

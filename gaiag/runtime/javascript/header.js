@@ -45,45 +45,47 @@ var runtime = {
     return m.name + (p ? '.' + p : p);
   },
 
-  active : function(c) {
-    if (c.handling) {
-      return c.handling;
-    }
-    if (c.children) {
-      for (var i = 0; i < c.children.length; i++) {
-        if (runtime.active(c.children[i])) {
-          return true;
-        }
-      }
-    }
+  external : function(c) {
     return false;
   },
 
-  defer : function(c, f) {
-    if (!runtime.active(c.rt.top)) {
-      f();
+  flush : function(c) {
+    if (runtime.external(c)) {
+      return;
     }
-    else {
-      c.queue = (c.queue || []).concat([f]);
+    while (c.queue && c.queue.length) {
+      runtime.handle(c, c.queue.pop());
+    }
+    if (c.deferred) {
+      var t = c.deferred;
+      c.deferred = null;
+      if (!t.handling) {
+        runtime.flush(t);
+      }
     }
   },
 
-  flush : function(c) {
-    while (c.queue && c.queue.length) {
-      var f = c.queue.pop();
-      f();
+  defer : function(i, o, f) {
+    if(runtime.external(i) || runtime.external(o)) {
+      runtime.handle(o, f);
+    }
+    else {
+      i.deferred = o;
+      o.queue = [f].concat (o.queue || []);
     }
   },
 
   handle : function(c, f) {
     if (!c.handling) {
-      c.handling = true;
-      f();
-      c.handling = false;
+      {
+        c.handling = true;
+        f();
+        c.handling = false;
+      }
       runtime.flush(c);
     }
     else {
-      runtime.defer(c, function(){runtime.handle(c, f);});
+      throw 'component already handling an event';
     }
   },
 
@@ -113,7 +115,7 @@ var runtime = {
 
   call_out : function(c, f, m) {
     runtime.trace_out(m, m[1]);
-    runtime.defer(m[0].meta.provides.component, function() {runtime.handle(c, f);});
+    runtime.defer(m[0].meta.provides.component, c, f);
   },
 };
 
