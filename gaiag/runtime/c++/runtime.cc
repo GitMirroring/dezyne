@@ -44,9 +44,22 @@ void trace_out(port::meta const& m, const char* e)
             << path(m.requires.address, m.requires.port) << "." << e << std::endl;
 }
 
+bool runtime::external(void* scope) {
+  return (queues.find(scope) == queues.end());
+}
+
 bool& runtime::handling(void* scope)
 {
-  return queues[scope].first;
+  return std::get<0>(queues[scope]);
+}
+
+void*& runtime::deferred(void* scope)
+{
+  return std::get<1>(queues[scope]);
+}
+std::queue<std::function<void()> >& runtime::queue(void* scope)
+{
+  return std::get<2>(queues[scope]);
 }
 
 void runtime::flush(void* scope)
@@ -54,35 +67,39 @@ void runtime::flush(void* scope)
 #ifdef DEBUG
   std::cout << path(scope) << " flush" << std::endl;
 #endif
-  std::map<void*, std::pair<bool, std::queue<std::function<void()> > > >& qs = queues;
-  std::map<void*, std::pair<bool, std::queue<std::function<void()> > > >::iterator it = qs.find(scope);
-  if(it != qs.end())
+  if(!external(scope))
   {
-    std::queue<std::function<void()> >& q = it->second.second;
+    std::queue<std::function<void()> >& q = queue(scope);
     while(not q.empty())
     {
       std::function<void()> event = q.front();
       q.pop();
       event();
     }
+    if (deferred(scope)) {
+      void* tgt = deferred(scope);
+      deferred(scope) = NULL;
+      if (!handling(tgt)) {
+        runtime::flush(tgt);
+      }
+    }
   }
 }
 
-void runtime::defer(void* scope, const std::function<void()>& event)
+void runtime::defer(void* src, void* tgt, const std::function<void()>& event)
 {
-  auto it = std::find_if(queues.begin(), queues.end(), [](const std::pair<void*, std::pair<bool, std::queue<std::function<void()>>>>& p){ return p.second.first;});
-
 #ifdef DEBUG
-  std::cout << path(scope) << " defer " << std::boolalpha << (it != queues.end()) << std::endl;
+  std::cout << path(tgt) << " defer" << std::endl;
 #endif
 
-  if(it == queues.end())
+  if(external(src) || external(tgt))
   {
     event();
   }
   else
   {
-    queues[scope].second.push(event);
+	deferred(src) = tgt;
+    queue(tgt).push(event);
   }
 }
 
@@ -104,7 +121,7 @@ void runtime::handle(void* scope, const std::function<void()>& event)
   }
   else
   {
-    defer(scope, [=]{this->handle (scope, event);});
+    assert(!"component already handling an event");
   }
 }
 }
