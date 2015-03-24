@@ -1,5 +1,6 @@
 class #.interface :
 #(->string (map declare-enum (gom:interface-enums model)))#'(
+)#(->string (map enum-to-string (gom:interface-enums model)))#'(
 )     def __init__ (self, provides=('', None), requires=('', None)):
         class Ins:
             def __init__ (self, name, c):

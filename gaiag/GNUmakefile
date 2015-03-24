@@ -228,6 +228,10 @@ python-alarm-update:
 	 -$(MAKE) python-alarm
 	cp out/*dezyne/*py baseline
 
+python-dataparam-update:
+	 -$(MAKE) python-dataparam
+	cp out/*dezyne/*py baseline
+
 code: alarm out/Reply7.o out/Reply7.java out/Reply7.js out/Reply7.py
 
 # c
@@ -513,6 +517,18 @@ python-alarm: compile
 	$(diff) baseline/$@.trace out
 	for i in $$(find out/dezyne -type f -a -name '*.py'); do $(pydiff) baseline/$$(basename $$i) $$i; done
 
+python-dataparam: compile
+	rm -rf out && mkdir out && ln -s ../examples ../templates out
+	cd out && ../gaiag -l python ../examples/regression/Dataparam.dzn
+	(cd out && ln -s ../examples/dataparam.py .)
+	(cd out && ln -s ../runtime/python/*.py .)
+	(cd out/dezyne && ln -s ../../runtime/python/dezyne/*.py .)
+	chmod +x out/dataparam.py
+	$(PYTHON) out/dataparam.py 2> out/$@.trace
+	$(diff) baseline/$@.trace out
+	for i in $$(find out/dezyne -type f -a -name '*.py'); do $(pydiff) baseline/$$(basename $$i) $$i; done
+
+
 PY_BROKEN=\
  Dataparam.dzn\
  Extern.dzn\
@@ -538,9 +554,9 @@ out/%.py: examples/regression/%.dzn
 	$(.PY_REGRESSION)
 
 python-regression: $(PY_SOURCES:%.dzn=out/%.py)
-python-update: $(PY_SOURCES:%.dzn=out/%.py.up) python-alarm-update
+python-update: $(PY_SOURCES:%.dzn=out/%.py.up) python-alarm-update python-dataparam-update
 
-python: compile python-alarm python-regression
+python: compile python-alarm python-dataparam python-regression
 
 JAVA_BROKEN =\
  Dataparam.dzn\

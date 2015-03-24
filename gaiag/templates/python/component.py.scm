@@ -29,19 +29,19 @@ class #.model :
    (map
     (lambda (port)
       (map (define-on model port #{
-        self.#port .#direction s.#event  = lambda: runtime.call_in (self, self.#port _#event , (self.#port , '#event '))
+        self.#port .#direction s.#event  = lambda *args: runtime.call_in (self, lambda: self.#port _#event  (*args), (self.#port , '#event '#(string-if (not (eq? type 'void))#{, self.#port .#reply-name _to_string#})))
 #}) (filter gom:in? (gom:events port))))
     (filter gom:provides? (gom:ports model)))#
    (map
     (lambda (port)
       (map (define-on model port #{
-        self.#port .#direction s.#event  = lambda: runtime.call_out (self, self.#port _#event , (self.#port , '#event '))
+        self.#port .#direction s.#event  = lambda *args: runtime.call_out (self, lambda: self.#port _#event  (*args), (self.#port , '#event '))
 #}) (filter gom:out? (gom:events port))))
     (filter gom:requires? (gom:ports model)))
 #(map
    (lambda (port)
      (map (define-on model port #{
-    def #port _#event  (self):
+    def #port _#event  (self#comma #arguments):
 #statement #(if (not (eq? type 'void))
 (list "        return self.reply_" reply-type "_" reply-name))
 

@@ -292,13 +292,12 @@
                                          rest
                                          (begin
                                            (set! locals (acons alias (.name parameter) locals))
-                                           (cons (snippet 'alias `((type ,type) (name ,name) (out? ,out?) (alias ,alias)))
+                                           (cons (snippet 'alias `((type ,type) (name ,name) (out? ,out?) (alias ,alias) (space ,space)))
                                                  rest)))))))
-                            (indent (if (pair? aliases) (1+ indent) indent))
                             (statement (->code model statement locals indent compound?))
                             (statement (if (pair? aliases)
-                                           (snippet 'compound `((space space)
-                                                                (statements ,(string-join (append aliases (list statement))))))
+                                           (snippet 'statements `((space space)
+                                                                  (statements ,(string-join (append aliases (list statement)) ""))))
                                            statement)))
                        statement))
            '$empty-statement$))

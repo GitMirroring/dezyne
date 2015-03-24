@@ -1,1 +1,1 @@
-self.#port .#direction s.#event  ()
+self.#port .#direction s.#event  (#arguments)
