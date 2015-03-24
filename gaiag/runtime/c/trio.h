@@ -1,4 +1,5 @@
 // Dezyne --- Dezyne command line tools
+//
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -20,12 +21,13 @@
 //
 // Code:
 
-#ifndef PAIR_H
-#define PAIR_H
+#ifndef TRIO_H
+#define TRIO_H
 
 typedef struct {
   void* first;
   void* second;
-} pair;
+  void* third;
+} trio;
 
-#endif // PAIR_H
+#endif // TRIO_H

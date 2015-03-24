@@ -28,7 +28,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "pair.h"
 #include "map.h"
 
 typedef struct {

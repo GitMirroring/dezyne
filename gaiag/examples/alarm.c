@@ -55,7 +55,9 @@ int main()
 
   alarmsystem.console->in.arm(alarmsystem.console);
   alarmsystem.sensor.sensor->out.triggered(alarmsystem.sensor.sensor);
+  runtime_flush(&dezyne_runtime, &alarmsystem.sensor);
   alarmsystem.console->in.disarm(alarmsystem.console);
   alarmsystem.sensor.sensor->out.disabled(alarmsystem.sensor.sensor);
+  runtime_flush(&dezyne_runtime, &alarmsystem.sensor);
   return 0;
 }

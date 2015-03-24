@@ -78,8 +78,8 @@
     args_#port _#event  a = {sizeof(args_#port _#event), #port _#event , self->#direction .self#comma #(comma-space-join argument-list)};
     runtime_event(helper_#port _#event , &a);
 #(string-if (not (eq? type 'void))
-#{ #.model * self_ = self->#direction .self; #})
-    runtime_trace_out(&self->in, &self->out, #(string-if (eq? type 'void) #{"return"#} #{#reply-type _#reply-name _to_string (self_->reply_#reply-type _#reply-name)#}));
+#{ #.model * self_ = self->#direction .self; 
+#}) runtime_trace_out(&self->in, &self->out, #(string-if (eq? type 'void) #{"return"#} #{#reply-type _#reply-name _to_string (self_->reply_#reply-type _#reply-name)#}));
 #(string-if (not (eq? type 'void))
 #{ return self_->reply_#reply-type _#reply-name;
 #}) }
