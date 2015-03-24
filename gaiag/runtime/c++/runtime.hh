@@ -122,7 +122,7 @@ namespace dezyne
   void call_out(C* c, std::function<void()> f, std::tuple<P*, const char*, const char*> m)
   {
     trace_out(std::get<0>(m)->meta, std::get<1>(m));
-    c->rt.defer(std::get<0>(m)->meta.provides.address, c, [=]{c->rt.handle(c, f);});
+    c->rt.defer(std::get<0>(m)->meta.provides.address, c, f);
   }
 }
 #endif

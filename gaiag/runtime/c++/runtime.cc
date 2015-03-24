@@ -74,7 +74,7 @@ void runtime::flush(void* scope)
     {
       std::function<void()> event = q.front();
       q.pop();
-      event();
+      handle(scope, event);
     }
     if (deferred(scope)) {
       void* tgt = deferred(scope);
@@ -94,11 +94,11 @@ void runtime::defer(void* src, void* tgt, const std::function<void()>& event)
 
   if(external(src) || external(tgt))
   {
-    event();
+    handle(tgt, event);
   }
   else
   {
-	deferred(src) = tgt;
+    deferred(src) = tgt;
     queue(tgt).push(event);
   }
 }
