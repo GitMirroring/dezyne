@@ -202,35 +202,33 @@ c-inject-update:
 	find out -type f -a '(' -name '*.c' -o -name '*.h' ')' -exec cp '{}' baseline ';'
 
 goops-alarm-update:
-	 -$(MAKE) goops-alarm
-	cp out/*dezyne/*scm baseline
+	-$(MAKE) goops-alarm
+	find out/dezyne -type f -a -name '*.scm' -exec cp '{}' baseline ';'
 
 goops-dataparam-update:
-	 -$(MAKE) goops-dataparam
-	cp out/*dezyne/*scm baseline
-
+	-$(MAKE) goops-dataparam
+	find out/dezyne -type f -a -name '*.scm' -exec cp '{}' baseline ';'
 
 javascript-alarm-update:
-	 -$(MAKE) javascript-alarm
-	cp out/*dezyne/*js baseline
+	-$(MAKE) javascript-alarm
+	find out/dezyne -type f -a -name '*.js' -exec cp '{}' baseline ';'
 
 javascript-dataparam-update:
-	 -$(MAKE) javascript-dataparam
-	cp out/*dezyne/*js baseline
-
+	-$(MAKE) javascript-dataparam
+	find out/dezyne -type f -a -name '*.js' -exec cp '{}' baseline ';'
 
 java-alarm-update:
-	 -$(MAKE) java-alarm
-	cp out/*dezyne/*java baseline
+	-$(MAKE) java-alarm
+	find out/dezyne -type f -a -name '*.java' -exec cp '{}' baseline ';'
 
 
 python-alarm-update:
-	 -$(MAKE) python-alarm
-	cp out/*dezyne/*py baseline
+	-$(MAKE) python-alarm
+	find out/dezyne -type f -a -name '*.py' -exec cp '{}' baseline ';'
 
 python-dataparam-update:
-	 -$(MAKE) python-dataparam
-	cp out/*dezyne/*py baseline
+	-$(MAKE) python-dataparam
+	find out/dezyne -type f -a -name '*.py' -exec cp '{}' baseline ';'
 
 code: alarm out/Reply7.o out/Reply7.java out/Reply7.js out/Reply7.py
 
@@ -295,7 +293,7 @@ C_BROKEN =\
 C_SOURCES = $(filter-out $(C_BROKEN),$(shell cd examples/regression && grep -l ^component *.dzn))
 
 #out/%.c.up: UPDATE=||:; cp out/$*.c out/*.h baseline
-out/%.c.up: UPDATE=&& cp out/$*.c out/*.h baseline
+out/%.c.up: UPDATE=&& find out -type f -a '(' -name '*.c' -o -name '*.h' ')' -exec cp '{}' baseline ';'
 out/%.c.up: examples/regression/%.dzn
 	$(.C_REGRESSION)
 
@@ -369,8 +367,8 @@ CC_BROKEN =\
 
 CC_SOURCES = $(filter-out $(CC_BROKEN),$(shell cd examples/regression && grep -l ^component *.dzn))
 
-#out/%.c++.up: UPDATE=||:; cp out/$*.cc out/*.hh baseline
-out/%.c++.up: UPDATE=&& cp out/$*.cc out/*.hh baseline
+#out/%.c++.up: UPDATE=||:; find out -type f -a '(' -name '*.cc' -o -name '*.hh' ')' -exec cp '{}' baseline ';'
+out/%.c++.up: UPDATE=&& find out -type f -a '(' -name '*.cc' -o -name '*.hh' ')' -exec cp '{}' baseline ';'
 out/%.c++.up: examples/regression/%.dzn
 	$(.CC_REGRESSION)
 
@@ -539,14 +537,15 @@ define .PY_REGRESSION
 rm -rf out && mkdir out && ln -s ../examples ../templates out
 cd out && $(shell pwd)/gaiag -l python examples/regression/$*.dzn
 -$(pydiff) baseline/$*.py out/dezyne
-ln -s ../examples/__init__.py out/dezyne
-(cd out && $(PYTHON) dezyne/$*.py) $(UPDATE)
+(cd out/dezyne && ln -s ../../runtime/python/dezyne/__init__.py .)
+(cd out && ln -s ../runtime/python/*.py .)
+$(PYTHON) out/dezyne/$*.py $(UPDATE)
 $(pydiff) baseline/$*.py out/dezyne | diffstat || true
 $(pydiff) baseline/$*.py out/dezyne > /dev/null
 endef
 
-#out/%.py.up: UPDATE=||:; cp out/dezyne/$*.py baseline && cp out/dezyne/*.py baseline
-out/%.py.up: UPDATE=&& cp out/dezyne/$*.py baseline && cp out/dezyne/*.py baseline
+#out/%.py.up: UPDATE=||:; find out -type f -a -name '*.py' -exec cp '{}' baseline ';'
+out/%.py.up: UPDATE=&& find out -type f -a -name '*.py' -exec cp '{}' baseline ';'
 out/%.py.up: examples/regression/%.dzn
 	$(.PY_REGRESSION)
 
@@ -575,14 +574,14 @@ cat templates/java/header.java\
 	 $$(find out/dezyne -name '*.java')\
 	examples/alarm.java > $@
 cat templates/java/header.java $$(find out/dezyne -name '*.java') > $@
-cd $(dir $@) && cp -f --backup $(notdir $@) $*.java
+(cd $(dir $@) && cp -f --backup $(notdir $@) $*.java)
 (cd $(dir $@) && javac $*.java) $(UPDATE)
 $(diff) baseline/$*.java out/dezyne | diffstat || true
 @$(diff) baseline/$*.java out/dezyne > /dev/null
 endef
 
-#out/%.java.up: UPDATE=||:; cp out/dezyne/$*.java baseline && cp out/dezyne/*.java baseline
-out/%.java.up: UPDATE=&& cp out/dezyne/$*.java baseline && cp out/dezyne/*.java baseline
+#out/%.java.up: UPDATE=||:; find out/dezyne -type f -a -name '*.java' -exec cp '{}' baseline ';'
+out/%.java.up: UPDATE=&& find out/dezyne -type f -a -name '*.java' -exec cp '{}' baseline ';'
 out/%.java.up: examples/regression/%.dzn
 	$(.JAVA_REGRESSION)
 
@@ -638,8 +637,8 @@ $(diff) baseline/$*.js out/dezyne | diffstat || true
 @$(diff) baseline/$*.js out/dezyne > /dev/null
 endef
 
-#out/%.js.up: UPDATE=||:; cp out/dezyne/$*.js baseline
-out/%.js.up: UPDATE=&& cp out/dezyne/$*.js baseline
+#out/%.js.up: UPDATE=||:; find out/dezyne -type f -a -name '*.js' -exec cp '{}' baseline ';'
+out/%.js.up: UPDATE=&& find out/dezyne -type f -a -name '*.js' -exec cp '{}' baseline ';'
 out/%.js.up: examples/regression/%.dzn
 	$(.JAVASCRIPT_REGRESSION)
 
@@ -698,8 +697,8 @@ $(diff) baseline/$*.scm out/dezyne | diffstat || true
 @$(diff) baseline/$*.scm out/dezyne > /dev/null
 endef
 
-#out/%.scm.up: UPDATE=||:; cp out/dezyne/$*.scm baseline && cp out/dezyne/*.scm baseline
-out/%.scm.up: UPDATE=&& cp out/dezyne/$*.scm baseline && cp out/dezyne/*.scm baseline
+#out/%.scm.up: UPDATE=||:; find out/dezyne -type f -a -name '*.scm' -exec cp '{}' baseline ';'
+out/%.scm.up: UPDATE=&& find out/dezyne -type f -a -name '*.scm' -exec cp '{}' baseline ';'
 out/%.scm.up: examples/regression/%.dzn
 	$(.GOOPS_REGRESSION)
 
