@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -21,29 +21,33 @@
 # 
 # Code:
 
-import sys
-#
 import dezyne.dummy
 import dezyne.imodeling
 
+import runtime
 
-class modeling ():
+class modeling:
 
-    def __init__ (self):
+    def __init__ (self, parent=None, name=''):
+        self.parent = parent
+        self.name = name
+        self.handling = False
+        self.deferred = None
+        self.queue = []
 
-        self.p = dezyne.dummy ()
-        self.r = dezyne.imodeling ()
 
-        self.p.ins.e = self.p_e
-        self.r.outs.f = self.r_f
+        self.p = dezyne.dummy (provides=('p', self))
+
+        self.r = dezyne.imodeling (requires=('r', self))
+
+        self.p.ins.e = lambda *args: runtime.call_in (self, lambda: self.p_e (*args), (self.p, 'e'))
+        self.r.outs.f = lambda *args: runtime.call_out (self, lambda: self.r_f (*args), (self.r, 'f'))
 
     def p_e (self):
-        sys.stderr.write ('modeling.p_e\n')
         self.r.ins.e ()
 
 
     def r_f (self):
-        sys.stderr.write ('modeling.r_f\n')
         pass
 
 

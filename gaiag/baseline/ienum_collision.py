@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -21,16 +21,23 @@
 # 
 # Code:
 
-class ienum_collision ():
+class ienum_collision:
     class Retval1 ():
         OK, NOK = range (2)
     class Retval2 ():
         OK, NOK = range (2)
-    def __init__ (self):
-        class Ins ():
-            foo = None
-            bar = None
-        self.ins = Ins ()
-        class Outs ():
-            pass
-        self.outs = Outs ()
+    Retval1_to_string = [ 'Retval1_OK', 'Retval1_NOK']
+    Retval2_to_string = [ 'Retval2_OK', 'Retval2_NOK']
+    def __init__ (self, provides=('', None), requires=('', None)):
+        class Ins:
+            def __init__ (self, name, c):
+                self.name = name
+                self.self = c
+                self.foo = None
+                self.bar = None
+        self.ins = Ins (*provides)
+        class Outs:
+            def __init__ (self, name, c):
+                self.name = name
+                self.self = c
+        self.outs = Outs (*requires)

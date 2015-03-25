@@ -22,12 +22,11 @@
 # 
 # Code:
 
-import sys
-#
 import dezyne.ISiren
 
+import runtime
 
-class Siren ():
+class Siren:
 
     def __init__ (self, parent=None, name=''):
         self.parent = parent
@@ -36,10 +35,12 @@ class Siren ():
         self.deferred = None
         self.queue = []
 
+
         self.siren = dezyne.ISiren (provides=('siren', self))
 
-        self.siren.ins.turnon = self.siren_turnon
-        self.siren.ins.turnoff = self.siren_turnoff
+
+        self.siren.ins.turnon = lambda *args: runtime.call_in (self, lambda: self.siren_turnon (*args), (self.siren, 'turnon'))
+        self.siren.ins.turnoff = lambda *args: runtime.call_in (self, lambda: self.siren_turnoff (*args), (self.siren, 'turnoff'))
 
     def siren_turnon (self):
         pass

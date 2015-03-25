@@ -32,12 +32,13 @@
 
 
 typedef struct {
+	meta m;
 	runtime_sub sub;
 	bool f;
 	I i_;
 	I* i;
 } function;
 
-void function_init(function* self, locator* dezyne_locator);
+void function_init(function* self, locator* dezyne_locator, meta* m);
 
 #endif // DEZYNE_FUNCTION_H

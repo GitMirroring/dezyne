@@ -29,12 +29,14 @@ typedef struct imodeling imodeling;
 
 struct imodeling{
 	struct {
+		char const* name;
 		void* self;
 		void (*e)(imodeling* self);
 
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 		void (*f) (imodeling* self);
 

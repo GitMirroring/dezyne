@@ -27,6 +27,9 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
+#include <string.h>
+
+
 
 
 
@@ -67,17 +70,13 @@ static bool vtoggle(function2* self);
 
 static bool vtoggle(function2* self) {
 	(void)self;
-	if (self->f) {
-		args_i_c a = {sizeof(args_i_c), self->i->out.c, self};
-		runtime_defer(&self->sub, helper_i_c, &a);
-	}
+	if (self->f)       self->i->out.c(self->i);
 	return !(self->f);
 }
 
 
 static void i_a(function2* self) {
 	(void)self;
-	DZN_LOG("function2.i_a");
 	if (true) {
 		{
 			self->f = vtoggle (self);
@@ -87,36 +86,36 @@ static void i_a(function2* self) {
 
 static void i_b(function2* self) {
 	(void)self;
-	DZN_LOG("function2.i_b");
 	if (true) {
 		{
 			self->f = vtoggle (self);
 			bool bb = vtoggle (self);
 			self->f = bb;
-			{
-				args_i_d a = {sizeof(args_i_d), self->i->out.d, self};
-				runtime_defer(&self->sub, helper_i_d, &a);
-			}
+			self->i->out.d(self->i);
 		}
 	}
 }
 
-static void callback_i_a(ifunction2* self) {
+static void call_in_i_a(ifunction2* self) {
+	runtime_trace_in(&self->in, &self->out, "a");
 	args_i_a a = {sizeof(args_i_a), i_a, self->in.self};
 	runtime_event(helper_i_a, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
-
-static void callback_i_b(ifunction2* self) {
+static void call_in_i_b(ifunction2* self) {
+	runtime_trace_in(&self->in, &self->out, "b");
 	args_i_b a = {sizeof(args_i_b), i_b, self->in.self};
 	runtime_event(helper_i_b, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
 
-
-void function2_init (function2* self, locator* dezyne_locator) {
+void function2_init (function2* self, locator* dezyne_locator, meta *m) {
 	runtime_sub_init(dezyne_locator->rt, &self->sub);
+	memcpy(&self->m, m, sizeof(meta));
 	self->f = false;
 	self->i = &self->i_;
-	self->i->in.a = callback_i_a;
-	self->i->in.b = callback_i_b;
+	self->i->in.a = call_in_i_a;
+	self->i->in.b = call_in_i_b;
+	self->i->in.name = "i";
 	self->i->in.self = self;
 }

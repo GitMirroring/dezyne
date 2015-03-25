@@ -26,6 +26,9 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
+#include <string.h>
+
+
 
 
 
@@ -73,81 +76,70 @@ static void helper_r_a(void* args) {
 
 static void i_e(Guardthreetopon* self) {
 	(void)self;
-	DZN_LOG("Guardthreetopon.i_e");
 	if (true && self->b) {
-		{
-			args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-			runtime_defer(&self->sub, helper_i_a, &a);
-		}
+		self->i->out.a(self->i);
 	}
 	else if (true && !(self->b)) {
 		bool c = true;
-		if (c) {
-			args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-			runtime_defer(&self->sub, helper_i_a, &a);
-		}
+		if (c)         self->i->out.a(self->i);
 	}
 }
 
 static void i_t(Guardthreetopon* self) {
 	(void)self;
-	DZN_LOG("Guardthreetopon.i_t");
-	if (self->b) {
-		args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-		runtime_defer(&self->sub, helper_i_a, &a);
-	}
-	else if (!(self->b)) {
-		args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-		runtime_defer(&self->sub, helper_i_a, &a);
-	}
+	if (self->b)       self->i->out.a(self->i);
+	else if (!(self->b))       self->i->out.a(self->i);
 }
 
 static void i_s(Guardthreetopon* self) {
 	(void)self;
-	DZN_LOG("Guardthreetopon.i_s");
-	{
-		args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-		runtime_defer(&self->sub, helper_i_a, &a);
-	}
+	self->i->out.a(self->i);
 }
 
 static void r_a(Guardthreetopon* self) {
 	(void)self;
-	DZN_LOG("Guardthreetopon.r_a");
 	{
 	}
 }
 
-static void callback_i_e(IGuardthreetopon* self) {
+static void call_in_i_e(IGuardthreetopon* self) {
+	runtime_trace_in(&self->in, &self->out, "e");
 	args_i_e a = {sizeof(args_i_e), i_e, self->in.self};
 	runtime_event(helper_i_e, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
-
-static void callback_i_t(IGuardthreetopon* self) {
+static void call_in_i_t(IGuardthreetopon* self) {
+	runtime_trace_in(&self->in, &self->out, "t");
 	args_i_t a = {sizeof(args_i_t), i_t, self->in.self};
 	runtime_event(helper_i_t, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
-
-static void callback_i_s(IGuardthreetopon* self) {
+static void call_in_i_s(IGuardthreetopon* self) {
+	runtime_trace_in(&self->in, &self->out, "s");
 	args_i_s a = {sizeof(args_i_s), i_s, self->in.self};
 	runtime_event(helper_i_s, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
-
-static void callback_r_a(RGuardthreetopon* self) {
+static void call_out_r_a(RGuardthreetopon* self) {
+	runtime_trace_out(&self->in, &self->out, "a");
 	args_r_a a = {sizeof(args_r_a), r_a, self->out.self};
-	runtime_event(helper_r_a, &a);
+	component *c = self->out.self;
+	runtime_defer(self->in.self, self->out.self, helper_r_a, &a);
 }
 
 
-void Guardthreetopon_init (Guardthreetopon* self, locator* dezyne_locator) {
+void Guardthreetopon_init (Guardthreetopon* self, locator* dezyne_locator, meta *m) {
 	runtime_sub_init(dezyne_locator->rt, &self->sub);
+	memcpy(&self->m, m, sizeof(meta));
 	self->b = false;
 	self->i = &self->i_;
-	self->i->in.e = callback_i_e;
-	self->i->in.t = callback_i_t;
-	self->i->in.s = callback_i_s;
+	self->i->in.e = call_in_i_e;
+	self->i->in.t = call_in_i_t;
+	self->i->in.s = call_in_i_s;
+	self->i->in.name = "i";
 	self->i->in.self = self;
 	self->r = &self->r_;
+	self->r->out.name = "r";
 	self->r->out.self = self;
-	self->r->out.a = callback_r_a;
+	self->r->out.a = call_out_r_a;
 }

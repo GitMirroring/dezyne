@@ -27,6 +27,9 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
+#include <string.h>
+
+
 
 
 
@@ -62,7 +65,6 @@ static void helper_b_f(void* args) {
 
 static void t_e(middle* self) {
 	(void)self;
-	DZN_LOG("middle.t_e");
 	{
 		self->l->in.log(self->l);
 		self->b->in.e(self->b);
@@ -71,37 +73,40 @@ static void t_e(middle* self) {
 
 static void b_f(middle* self) {
 	(void)self;
-	DZN_LOG("middle.b_f");
 	{
 		self->l->in.log(self->l);
-		{
-			args_t_f a = {sizeof(args_t_f), self->t->out.f, self};
-			runtime_defer(&self->sub, helper_t_f, &a);
-		}
+		self->t->out.f(self->t);
 	}
 }
 
-static void callback_t_e(itop* self) {
+static void call_in_t_e(itop* self) {
+	runtime_trace_in(&self->in, &self->out, "e");
 	args_t_e a = {sizeof(args_t_e), t_e, self->in.self};
 	runtime_event(helper_t_e, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
-
-static void callback_b_f(ibottom* self) {
+static void call_out_b_f(ibottom* self) {
+	runtime_trace_out(&self->in, &self->out, "f");
 	args_b_f a = {sizeof(args_b_f), b_f, self->out.self};
-	runtime_event(helper_b_f, &a);
+	component *c = self->out.self;
+	runtime_defer(self->in.self, self->out.self, helper_b_f, &a);
 }
 
 
-void middle_init (middle* self, locator* dezyne_locator) {
+void middle_init (middle* self, locator* dezyne_locator, meta *m) {
 	runtime_sub_init(dezyne_locator->rt, &self->sub);
+	memcpy(&self->m, m, sizeof(meta));
 	self->l_ = *(ilogger*)locator_get(dezyne_locator, "ilogger");
 
 	self->t = &self->t_;
-	self->t->in.e = callback_t_e;
+	self->t->in.e = call_in_t_e;
+	self->t->in.name = "t";
 	self->t->in.self = self;
 	self->b = &self->b_;
+	self->b->out.name = "b";
 	self->b->out.self = self;
-	self->b->out.f = callback_b_f;
+	self->b->out.f = call_out_b_f;
 	self->l = &self->l_;
+	self->l->out.name = "l";
 	self->l->out.self = self;
 }

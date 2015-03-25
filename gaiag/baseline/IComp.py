@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -21,15 +21,21 @@
 # 
 # Code:
 
-class IComp ():
+class IComp:
     class result_t ():
         OK, NOK = range (2)
-    def __init__ (self):
-        class Ins ():
-            initialize = None
-            recover = None
-            perform_actions = None
-        self.ins = Ins ()
-        class Outs ():
-            pass
-        self.outs = Outs ()
+    result_t_to_string = [ 'result_t_OK', 'result_t_NOK']
+    def __init__ (self, provides=('', None), requires=('', None)):
+        class Ins:
+            def __init__ (self, name, c):
+                self.name = name
+                self.self = c
+                self.initialize = None
+                self.recover = None
+                self.perform_actions = None
+        self.ins = Ins (*provides)
+        class Outs:
+            def __init__ (self, name, c):
+                self.name = name
+                self.self = c
+        self.outs = Outs (*requires)

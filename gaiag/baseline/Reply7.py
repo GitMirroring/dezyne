@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -21,29 +21,34 @@
 # 
 # Code:
 
-import sys
-#
 import dezyne.IReply7
 import dezyne.IReply7
 
+import runtime
 
-class Reply7 ():
+class Reply7:
 
-    def __init__ (self):
+    def __init__ (self, parent=None, name=''):
+        self.parent = parent
+        self.name = name
+        self.handling = False
+        self.deferred = None
+        self.queue = []
+
         self.reply_IReply7_E = None
 
-        self.p = dezyne.IReply7 ()
-        self.r = dezyne.IReply7 ()
+        self.p = dezyne.IReply7 (provides=('p', self))
 
-        self.p.ins.foo = self.p_foo
+        self.r = dezyne.IReply7 (requires=('r', self))
+
+        self.p.ins.foo = lambda *args: runtime.call_in (self, lambda: self.p_foo (*args), (self.p, 'foo', self.p.E_to_string))
 
     def p_foo (self):
-        sys.stderr.write ('Reply7.p_foo\n')
         self.f ()
         return self.reply_IReply7_E
 
     def f (self):
-        v = self.r.ins.foo ()
-        self.reply_IReply7_E = v
+        v = {'value': self.r.ins.foo ()}
+        self.reply_IReply7_E = v['value']
 
 

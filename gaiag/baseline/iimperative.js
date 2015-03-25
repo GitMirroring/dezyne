@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,7 +21,7 @@
 //
 // Code:
 
-interface.iimperative= function() {
+dezyne.iimperative = function(meta) {
   this.in = {
     e : null
   };
@@ -30,4 +30,5 @@ interface.iimperative= function() {
     g : null,
     h : null
   };
+  this.meta = meta;
 };

@@ -21,9 +21,9 @@
 # 
 # Code:
 
-class ISiren ():
+class ISiren:
     def __init__ (self, provides=('', None), requires=('', None)):
-        class Ins ():
+        class Ins:
             def __init__ (self, name, c):
                 self.name = name
                 self.self = c

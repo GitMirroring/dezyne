@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -21,24 +21,29 @@
 # 
 # Code:
 
-import sys
-#
 import dezyne.iimperative
 
+import runtime
 
-class imperative ():
+class imperative:
     class States ():
         I, II, III, IV = range (4)
 
-    def __init__ (self):
+    def __init__ (self, parent=None, name=''):
+        self.parent = parent
+        self.name = name
+        self.handling = False
+        self.deferred = None
+        self.queue = []
+
         self.state = self.States.I
 
-        self.i = dezyne.iimperative ()
+        self.i = dezyne.iimperative (provides=('i', self))
 
-        self.i.ins.e = self.i_e
+
+        self.i.ins.e = lambda *args: runtime.call_in (self, lambda: self.i_e (*args), (self.i, 'e'))
 
     def i_e (self):
-        sys.stderr.write ('imperative.i_e\n')
         if (self.state == self.States.I):
             self.i.outs.f ()
             self.i.outs.g ()

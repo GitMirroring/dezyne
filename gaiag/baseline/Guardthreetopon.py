@@ -20,37 +20,41 @@
 # 
 # Code:
 
-import sys
-#
 import dezyne.IGuardthreetopon
 import dezyne.RGuardthreetopon
 
+import runtime
 
-class Guardthreetopon ():
+class Guardthreetopon:
 
-    def __init__ (self):
+    def __init__ (self, parent=None, name=''):
+        self.parent = parent
+        self.name = name
+        self.handling = False
+        self.deferred = None
+        self.queue = []
+
         self.b = False
 
-        self.i = dezyne.IGuardthreetopon ()
-        self.r = dezyne.RGuardthreetopon ()
+        self.i = dezyne.IGuardthreetopon (provides=('i', self))
 
-        self.i.ins.e = self.i_e
-        self.i.ins.t = self.i_t
-        self.i.ins.s = self.i_s
-        self.r.outs.a = self.r_a
+        self.r = dezyne.RGuardthreetopon (requires=('r', self))
+
+        self.i.ins.e = lambda *args: runtime.call_in (self, lambda: self.i_e (*args), (self.i, 'e'))
+        self.i.ins.t = lambda *args: runtime.call_in (self, lambda: self.i_t (*args), (self.i, 't'))
+        self.i.ins.s = lambda *args: runtime.call_in (self, lambda: self.i_s (*args), (self.i, 's'))
+        self.r.outs.a = lambda *args: runtime.call_out (self, lambda: self.r_a (*args), (self.r, 'a'))
 
     def i_e (self):
-        sys.stderr.write ('Guardthreetopon.i_e\n')
         if (True and self.b):
             self.i.outs.a ()
         elif (True and not (self.b)):
-            c = True
-            if (c):
+            c = {'value': True}
+            if (c['value']):
                 self.i.outs.a ()
 
 
     def i_t (self):
-        sys.stderr.write ('Guardthreetopon.i_t\n')
         if (self.b):
             self.i.outs.a ()
         elif (not (self.b)):
@@ -58,12 +62,10 @@ class Guardthreetopon ():
 
 
     def i_s (self):
-        sys.stderr.write ('Guardthreetopon.i_s\n')
         self.i.outs.a ()
 
 
     def r_a (self):
-        sys.stderr.write ('Guardthreetopon.r_a\n')
         pass
 
 

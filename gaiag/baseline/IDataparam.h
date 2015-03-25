@@ -33,6 +33,7 @@ typedef struct IDataparam IDataparam;
 
 struct IDataparam{
 	struct {
+		char const* name;
 		void* self;
 		void (*e0)(IDataparam* self);
 		int (*e0r)(IDataparam* self);
@@ -51,6 +52,7 @@ struct IDataparam{
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 		void (*a0) (IDataparam* self);
 		void (*a) (IDataparam* self,int i);

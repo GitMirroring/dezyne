@@ -27,6 +27,9 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
+#include <string.h>
+
+
 
 
 
@@ -56,34 +59,36 @@ static void helper_siren_turnoff(void* args) {
 
 static void siren_turnon(Siren* self) {
 	(void)self;
-	DZN_LOG("Siren.siren_turnon");
 	{
 	}
 }
 
 static void siren_turnoff(Siren* self) {
 	(void)self;
-	DZN_LOG("Siren.siren_turnoff");
 	{
 	}
 }
 
-static void callback_siren_turnon(ISiren* self) {
+static void call_in_siren_turnon(ISiren* self) {
+	runtime_trace_in(&self->in, &self->out, "turnon");
 	args_siren_turnon a = {sizeof(args_siren_turnon), siren_turnon, self->in.self};
 	runtime_event(helper_siren_turnon, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
-
-static void callback_siren_turnoff(ISiren* self) {
+static void call_in_siren_turnoff(ISiren* self) {
+	runtime_trace_in(&self->in, &self->out, "turnoff");
 	args_siren_turnoff a = {sizeof(args_siren_turnoff), siren_turnoff, self->in.self};
 	runtime_event(helper_siren_turnoff, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
 
-
-void Siren_init (Siren* self, locator* dezyne_locator) {
+void Siren_init (Siren* self, locator* dezyne_locator, meta *m) {
 	runtime_sub_init(dezyne_locator->rt, &self->sub);
+	memcpy(&self->m, m, sizeof(meta));
 
 	self->siren = &self->siren_;
-	self->siren->in.turnon = callback_siren_turnon;
-	self->siren->in.turnoff = callback_siren_turnoff;
+	self->siren->in.turnon = call_in_siren_turnon;
+	self->siren->in.turnoff = call_in_siren_turnoff;
+	self->siren->in.name = "siren";
 	self->siren->in.self = self;
 }

@@ -22,28 +22,33 @@
 # 
 # Code:
 
-import sys
-#
 import dezyne.IRun
 import dezyne.IChoice
 
+import runtime
 
-class Adaptor ():
+class Adaptor:
     class State ():
         Idle, Active, Terminating = range (3)
 
-    def __init__ (self):
+    def __init__ (self, parent=None, name=''):
+        self.parent = parent
+        self.name = name
+        self.handling = False
+        self.deferred = None
+        self.queue = []
+
         self.state = self.State.Idle
         self.count = 0
 
-        self.runner = dezyne.IRun ()
-        self.choice = dezyne.IChoice ()
+        self.runner = dezyne.IRun (provides=('runner', self))
 
-        self.runner.ins.run = self.runner_run
-        self.choice.outs.a = self.choice_a
+        self.choice = dezyne.IChoice (requires=('choice', self))
+
+        self.runner.ins.run = lambda *args: runtime.call_in (self, lambda: self.runner_run (*args), (self.runner, 'run'))
+        self.choice.outs.a = lambda *args: runtime.call_out (self, lambda: self.choice_a (*args), (self.choice, 'a'))
 
     def runner_run (self):
-        sys.stderr.write ('Adaptor.runner_run\n')
         if (self.state == self.State.Idle and self.count < 2):
             self.choice.ins.e ()
             self.state = self.State.Active
@@ -56,7 +61,6 @@ class Adaptor ():
 
 
     def choice_a (self):
-        sys.stderr.write ('Adaptor.choice_a\n')
         if (self.state == self.State.Idle):
             pass
         elif (self.state == self.State.Active):

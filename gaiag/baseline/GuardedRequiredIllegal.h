@@ -33,6 +33,7 @@
 
 
 typedef struct {
+	meta m;
 	runtime_sub sub;
 	bool c;
 	Top t_;
@@ -41,6 +42,6 @@ typedef struct {
 	Bottom* b;
 } GuardedRequiredIllegal;
 
-void GuardedRequiredIllegal_init(GuardedRequiredIllegal* self, locator* dezyne_locator);
+void GuardedRequiredIllegal_init(GuardedRequiredIllegal* self, locator* dezyne_locator, meta* m);
 
 #endif // DEZYNE_GUARDEDREQUIREDILLEGAL_H

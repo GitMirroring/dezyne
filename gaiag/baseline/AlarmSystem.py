@@ -27,7 +27,7 @@ def connect (provided, required):
     provided.outs = required.outs
     required.ins = provided.ins
 
-class AlarmSystem ():
+class AlarmSystem:
     def __init__ (self, parent=None, name=''):
         self.parent = parent
         self.name = name

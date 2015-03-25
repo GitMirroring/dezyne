@@ -32,12 +32,13 @@
 
 
 typedef struct {
+	meta m;
 	runtime_sub sub;
 	bool b;
 	ITwotopon i_;
 	ITwotopon* i;
 } Twotopon;
 
-void Twotopon_init(Twotopon* self, locator* dezyne_locator);
+void Twotopon_init(Twotopon* self, locator* dezyne_locator, meta* m);
 
 #endif // DEZYNE_TWOTOPON_H

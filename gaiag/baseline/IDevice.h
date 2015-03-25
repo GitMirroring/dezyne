@@ -32,6 +32,7 @@ typedef struct IDevice IDevice;
 
 struct IDevice{
 	struct {
+		char const* name;
 		void* self;
 		int (*initialize)(IDevice* self);
 		int (*calibrate)(IDevice* self);
@@ -41,6 +42,7 @@ struct IDevice{
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 
 	} out;

@@ -30,12 +30,14 @@ typedef struct IRun IRun;
 
 struct IRun{
 	struct {
+		char const* name;
 		void* self;
 		void (*run)(IRun* self);
 
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 
 	} out;

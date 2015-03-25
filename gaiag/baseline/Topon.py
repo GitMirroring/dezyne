@@ -20,24 +20,29 @@
 # 
 # Code:
 
-import sys
-#
 import dezyne.ITopon
 
+import runtime
 
-class Topon ():
+class Topon:
 
-    def __init__ (self):
+    def __init__ (self, parent=None, name=''):
+        self.parent = parent
+        self.name = name
+        self.handling = False
+        self.deferred = None
+        self.queue = []
+
         self.b = False
         self.c = False
 
-        self.i = dezyne.ITopon ()
+        self.i = dezyne.ITopon (provides=('i', self))
 
-        self.i.ins.e = self.i_e
-        self.i.ins.t = self.i_t
+
+        self.i.ins.e = lambda *args: runtime.call_in (self, lambda: self.i_e (*args), (self.i, 'e'))
+        self.i.ins.t = lambda *args: runtime.call_in (self, lambda: self.i_t (*args), (self.i, 't'))
 
     def i_e (self):
-        sys.stderr.write ('Topon.i_e\n')
         if (self.b and not (self.c)):
             self.i.outs.a ()
         elif (not (self.b) and not (self.c)):
@@ -47,7 +52,6 @@ class Topon ():
 
 
     def i_t (self):
-        sys.stderr.write ('Topon.i_t\n')
         self.i.outs.a ()
 
 

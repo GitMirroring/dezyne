@@ -27,6 +27,9 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
+#include <string.h>
+
+
 
 typedef enum {
 	imperative_States_I, imperative_States_II, imperative_States_III, imperative_States_IV
@@ -71,63 +74,41 @@ static void helper_i_e(void* args) {
 
 static void i_e(imperative* self) {
 	(void)self;
-	DZN_LOG("imperative.i_e");
 	if (self->state == imperative_States_I) {
-		{
-			args_i_f a = {sizeof(args_i_f), self->i->out.f, self};
-			runtime_defer(&self->sub, helper_i_f, &a);
-		}
-		{
-			args_i_g a = {sizeof(args_i_g), self->i->out.g, self};
-			runtime_defer(&self->sub, helper_i_g, &a);
-		}
-		{
-			args_i_h a = {sizeof(args_i_h), self->i->out.h, self};
-			runtime_defer(&self->sub, helper_i_h, &a);
-		}
+		self->i->out.f(self->i);
+		self->i->out.g(self->i);
+		self->i->out.h(self->i);
 		self->state = imperative_States_II;
 	}
 	else if (self->state == imperative_States_II) {
 		self->state = imperative_States_III;
 	}
 	else if (self->state == imperative_States_III) {
-		{
-			args_i_f a = {sizeof(args_i_f), self->i->out.f, self};
-			runtime_defer(&self->sub, helper_i_f, &a);
-		}
-		{
-			args_i_g a = {sizeof(args_i_g), self->i->out.g, self};
-			runtime_defer(&self->sub, helper_i_g, &a);
-		}
-		{
-			args_i_g a = {sizeof(args_i_g), self->i->out.g, self};
-			runtime_defer(&self->sub, helper_i_g, &a);
-		}
-		{
-			args_i_f a = {sizeof(args_i_f), self->i->out.f, self};
-			runtime_defer(&self->sub, helper_i_f, &a);
-		}
+		self->i->out.f(self->i);
+		self->i->out.g(self->i);
+		self->i->out.g(self->i);
+		self->i->out.f(self->i);
 		self->state = imperative_States_IV;
 	}
 	else if (self->state == imperative_States_IV) {
-		{
-			args_i_h a = {sizeof(args_i_h), self->i->out.h, self};
-			runtime_defer(&self->sub, helper_i_h, &a);
-		}
+		self->i->out.h(self->i);
 		self->state = imperative_States_I;
 	}
 }
 
-static void callback_i_e(iimperative* self) {
+static void call_in_i_e(iimperative* self) {
+	runtime_trace_in(&self->in, &self->out, "e");
 	args_i_e a = {sizeof(args_i_e), i_e, self->in.self};
 	runtime_event(helper_i_e, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
 
-
-void imperative_init (imperative* self, locator* dezyne_locator) {
+void imperative_init (imperative* self, locator* dezyne_locator, meta *m) {
 	runtime_sub_init(dezyne_locator->rt, &self->sub);
+	memcpy(&self->m, m, sizeof(meta));
 	self->state = imperative_States_I;
 	self->i = &self->i_;
-	self->i->in.e = callback_i_e;
+	self->i->in.e = call_in_i_e;
+	self->i->in.name = "i";
 	self->i->in.self = self;
 }

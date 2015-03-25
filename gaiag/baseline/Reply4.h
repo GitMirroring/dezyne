@@ -33,6 +33,7 @@
 
 
 typedef struct {
+	meta m;
 	runtime_sub sub;
 	bool dummy;
 	int reply_I_Status;
@@ -43,6 +44,6 @@ typedef struct {
 	U* u;
 } Reply4;
 
-void Reply4_init(Reply4* self, locator* dezyne_locator);
+void Reply4_init(Reply4* self, locator* dezyne_locator, meta* m);
 
 #endif // DEZYNE_REPLY4_H

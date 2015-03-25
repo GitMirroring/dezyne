@@ -32,6 +32,7 @@
 
 
 typedef struct {
+	meta m;
 	runtime_sub sub;
 	int reply_ienum_collision_Retval1;
 	int reply_ienum_collision_Retval2;
@@ -39,6 +40,6 @@ typedef struct {
 	ienum_collision* i;
 } enum_collision;
 
-void enum_collision_init(enum_collision* self, locator* dezyne_locator);
+void enum_collision_init(enum_collision* self, locator* dezyne_locator, meta* m);
 
 #endif // DEZYNE_ENUM_COLLISION_H

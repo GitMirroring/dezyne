@@ -27,6 +27,9 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
+#include <string.h>
+
+
 
 
 
@@ -68,7 +71,6 @@ static void helper_r_pong(void* args) {
 
 static void p_start(reply_reorder* self) {
 	(void)self;
-	DZN_LOG("reply_reorder.p_start");
 	{
 		self->r->in.ping(self->r);
 	}
@@ -76,41 +78,40 @@ static void p_start(reply_reorder* self) {
 
 static void r_pong(reply_reorder* self) {
 	(void)self;
-	DZN_LOG("reply_reorder.r_pong");
 	if (self->first) {
-		{
-			args_p_busy a = {sizeof(args_p_busy), self->p->out.busy, self};
-			runtime_defer(&self->sub, helper_p_busy, &a);
-		}
+		self->p->out.busy(self->p);
 		self->first = !(self->first);
 	}
 	else if (!(self->first)) {
-		{
-			args_p_finish a = {sizeof(args_p_finish), self->p->out.finish, self};
-			runtime_defer(&self->sub, helper_p_finish, &a);
-		}
+		self->p->out.finish(self->p);
 		self->first = !(self->first);
 	}
 }
 
-static void callback_p_start(Provides* self) {
+static void call_in_p_start(Provides* self) {
+	runtime_trace_in(&self->in, &self->out, "start");
 	args_p_start a = {sizeof(args_p_start), p_start, self->in.self};
 	runtime_event(helper_p_start, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
-
-static void callback_r_pong(Requires* self) {
+static void call_out_r_pong(Requires* self) {
+	runtime_trace_out(&self->in, &self->out, "pong");
 	args_r_pong a = {sizeof(args_r_pong), r_pong, self->out.self};
-	runtime_event(helper_r_pong, &a);
+	component *c = self->out.self;
+	runtime_defer(self->in.self, self->out.self, helper_r_pong, &a);
 }
 
 
-void reply_reorder_init (reply_reorder* self, locator* dezyne_locator) {
+void reply_reorder_init (reply_reorder* self, locator* dezyne_locator, meta *m) {
 	runtime_sub_init(dezyne_locator->rt, &self->sub);
+	memcpy(&self->m, m, sizeof(meta));
 	self->first = true;
 	self->p = &self->p_;
-	self->p->in.start = callback_p_start;
+	self->p->in.start = call_in_p_start;
+	self->p->in.name = "p";
 	self->p->in.self = self;
 	self->r = &self->r_;
+	self->r->out.name = "r";
 	self->r->out.self = self;
-	self->r->out.pong = callback_r_pong;
+	self->r->out.pong = call_out_r_pong;
 }

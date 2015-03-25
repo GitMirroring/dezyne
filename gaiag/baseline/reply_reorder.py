@@ -21,30 +21,34 @@
 # 
 # Code:
 
-import sys
-#
 import dezyne.Provides
 import dezyne.Requires
 
+import runtime
 
-class reply_reorder ():
+class reply_reorder:
 
-    def __init__ (self):
+    def __init__ (self, parent=None, name=''):
+        self.parent = parent
+        self.name = name
+        self.handling = False
+        self.deferred = None
+        self.queue = []
+
         self.first = True
 
-        self.p = dezyne.Provides ()
-        self.r = dezyne.Requires ()
+        self.p = dezyne.Provides (provides=('p', self))
 
-        self.p.ins.start = self.p_start
-        self.r.outs.pong = self.r_pong
+        self.r = dezyne.Requires (requires=('r', self))
+
+        self.p.ins.start = lambda *args: runtime.call_in (self, lambda: self.p_start (*args), (self.p, 'start'))
+        self.r.outs.pong = lambda *args: runtime.call_out (self, lambda: self.r_pong (*args), (self.r, 'pong'))
 
     def p_start (self):
-        sys.stderr.write ('reply_reorder.p_start\n')
         self.r.ins.ping ()
 
 
     def r_pong (self):
-        sys.stderr.write ('reply_reorder.r_pong\n')
         if (self.first):
             self.p.outs.busy ()
             self.first = not (self.first)

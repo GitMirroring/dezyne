@@ -21,9 +21,9 @@
 # 
 # Code:
 
-class ISensor ():
+class ISensor:
     def __init__ (self, provides=('', None), requires=('', None)):
-        class Ins ():
+        class Ins:
             def __init__ (self, name, c):
                 self.name = name
                 self.self = c
@@ -37,4 +37,3 @@ class ISensor ():
                 self.triggered = None
                 self.disabled = None
         self.outs = Outs (*requires)
-

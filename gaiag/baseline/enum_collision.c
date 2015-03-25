@@ -27,6 +27,29 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
+#include <string.h>
+
+static char const* ienum_collision_Retval1_to_string(ienum_collision_Retval1 v)
+{
+	switch(v)
+	{
+		case ienum_collision_Retval1_OK: return "Retval1_OK";
+		case ienum_collision_Retval1_NOK: return "Retval1_NOK";
+
+	}
+	return "";
+}
+static char const* ienum_collision_Retval2_to_string(ienum_collision_Retval2 v)
+{
+	switch(v)
+	{
+		case ienum_collision_Retval2_OK: return "Retval2_OK";
+		case ienum_collision_Retval2_NOK: return "Retval2_NOK";
+
+	}
+	return "";
+}
+
 
 
 
@@ -56,38 +79,40 @@ static void helper_i_bar(void* args) {
 
 static int i_foo(enum_collision* self) {
 	(void)self;
-	DZN_LOG("enum_collision.i_foo");
 	self->reply_ienum_collision_Retval1 = ienum_collision_Retval1_OK;
 	return self->reply_ienum_collision_Retval1;
 }
 
 static int i_bar(enum_collision* self) {
 	(void)self;
-	DZN_LOG("enum_collision.i_bar");
 	self->reply_ienum_collision_Retval2 = ienum_collision_Retval2_NOK;
 	return self->reply_ienum_collision_Retval2;
 }
 
-static int callback_i_foo(ienum_collision* self) {
+static int call_in_i_foo(ienum_collision* self) {
+	runtime_trace_in(&self->in, &self->out, "foo");
 	args_i_foo a = {sizeof(args_i_foo), i_foo, self->in.self};
 	runtime_event(helper_i_foo, &a);
-	enum_collision* self_ = self->in.self;
+	enum_collision* self_ = self->in.self; 
+	runtime_trace_out(&self->in, &self->out, ienum_collision_Retval1_to_string (self_->reply_ienum_collision_Retval1));
 	return self_->reply_ienum_collision_Retval1;
 }
-
-static int callback_i_bar(ienum_collision* self) {
+static int call_in_i_bar(ienum_collision* self) {
+	runtime_trace_in(&self->in, &self->out, "bar");
 	args_i_bar a = {sizeof(args_i_bar), i_bar, self->in.self};
 	runtime_event(helper_i_bar, &a);
-	enum_collision* self_ = self->in.self;
+	enum_collision* self_ = self->in.self; 
+	runtime_trace_out(&self->in, &self->out, ienum_collision_Retval2_to_string (self_->reply_ienum_collision_Retval2));
 	return self_->reply_ienum_collision_Retval2;
 }
 
-
-void enum_collision_init (enum_collision* self, locator* dezyne_locator) {
+void enum_collision_init (enum_collision* self, locator* dezyne_locator, meta *m) {
 	runtime_sub_init(dezyne_locator->rt, &self->sub);
+	memcpy(&self->m, m, sizeof(meta));
 
 	self->i = &self->i_;
-	self->i->in.foo = callback_i_foo;
-	self->i->in.bar = callback_i_bar;
+	self->i->in.foo = call_in_i_foo;
+	self->i->in.bar = call_in_i_bar;
+	self->i->in.name = "i";
 	self->i->in.self = self;
 }

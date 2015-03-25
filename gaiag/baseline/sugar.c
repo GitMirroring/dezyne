@@ -27,6 +27,9 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
+#include <string.h>
+
+
 
 typedef enum {
 	sugar_Enum_False, sugar_Enum_True
@@ -59,30 +62,26 @@ static void helper_i_e(void* args) {
 
 static void i_e(sugar* self) {
 	(void)self;
-	DZN_LOG("sugar.i_e");
-	if (self->s == sugar_Enum_False) if (self->s == sugar_Enum_False) {
-		args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-		runtime_defer(&self->sub, helper_i_a, &a);
-	}
+	if (self->s == sugar_Enum_False) if (self->s == sugar_Enum_False)         self->i->out.a(self->i);
 	else {
 		int t = sugar_Enum_False;
-		if (t == sugar_Enum_True) {
-			args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-			runtime_defer(&self->sub, helper_i_a, &a);
-		}
+		if (t == sugar_Enum_True)           self->i->out.a(self->i);
 	}
 }
 
-static void callback_i_e(I* self) {
+static void call_in_i_e(I* self) {
+	runtime_trace_in(&self->in, &self->out, "e");
 	args_i_e a = {sizeof(args_i_e), i_e, self->in.self};
 	runtime_event(helper_i_e, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
 
-
-void sugar_init (sugar* self, locator* dezyne_locator) {
+void sugar_init (sugar* self, locator* dezyne_locator, meta *m) {
 	runtime_sub_init(dezyne_locator->rt, &self->sub);
+	memcpy(&self->m, m, sizeof(meta));
 	self->s = sugar_Enum_False;
 	self->i = &self->i_;
-	self->i->in.e = callback_i_e;
+	self->i->in.e = call_in_i_e;
+	self->i->in.name = "i";
 	self->i->in.self = self;
 }

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -23,25 +23,27 @@
 
 #include "component_provides_twice.hh"
 
-namespace component
+#include "locator.hh"
+#include "runtime.hh"
+
+#include <iostream>
+
+namespace dezyne
 {
-  component_provides_twice::component_provides_twice()
-  : 
-  po_i()
+  component_provides_twice::component_provides_twice(const locator& dezyne_locator)
+  : meta{"","component_provides_twice",reinterpret_cast<const component*>(this),0,{},{[this]{i.check_bindings();}}}
+  , rt(dezyne_locator.get<runtime>())
+  , i({{"i",this},{"",0}})
   {
-    po_i.in.foo = asd::bind(&component_provides_twice::po_i_foo, this);
+    i.in.foo = [&] () {
+      call_in(this, [this] {i_foo();}, std::make_tuple(&i, "foo", "return"));
+    };
   }
 
-  void component_provides_twice::po_i_foo()
+  void component_provides_twice::i_foo()
   {
-    std::cout << "component_provides_twice.po_i_foo" << std::endl;
-    //illegal
-
+    assert(false);
   }
-
-
-
-
 
 
 }

@@ -27,6 +27,29 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
+#include <string.h>
+
+static char const* I_Status_to_string(I_Status v)
+{
+	switch(v)
+	{
+		case I_Status_Yes: return "Status_Yes";
+		case I_Status_No: return "Status_No";
+
+	}
+	return "";
+}
+static char const* U_Status_to_string(U_Status v)
+{
+	switch(v)
+	{
+		case U_Status_Ok: return "Status_Ok";
+		case U_Status_Nok: return "Status_Nok";
+
+	}
+	return "";
+}
+
 
 typedef enum {
 	Reply4_Status_Yes, Reply4_Status_No
@@ -64,7 +87,6 @@ static int fun_arg(Reply4* self,int s) {
 
 static int i_done(Reply4* self) {
 	(void)self;
-	DZN_LOG("Reply4.i_done");
 	if (true) {
 		int s = self->u->in.what(self->u);
 		s = self->u->in.what(self->u);
@@ -82,20 +104,24 @@ static int i_done(Reply4* self) {
 	return self->reply_I_Status;
 }
 
-static int callback_i_done(I* self) {
+static int call_in_i_done(I* self) {
+	runtime_trace_in(&self->in, &self->out, "done");
 	args_i_done a = {sizeof(args_i_done), i_done, self->in.self};
 	runtime_event(helper_i_done, &a);
-	Reply4* self_ = self->in.self;
+	Reply4* self_ = self->in.self; 
+	runtime_trace_out(&self->in, &self->out, I_Status_to_string (self_->reply_I_Status));
 	return self_->reply_I_Status;
 }
 
-
-void Reply4_init (Reply4* self, locator* dezyne_locator) {
+void Reply4_init (Reply4* self, locator* dezyne_locator, meta *m) {
 	runtime_sub_init(dezyne_locator->rt, &self->sub);
+	memcpy(&self->m, m, sizeof(meta));
 	self->dummy = false;
 	self->i = &self->i_;
-	self->i->in.done = callback_i_done;
+	self->i->in.done = call_in_i_done;
+	self->i->in.name = "i";
 	self->i->in.self = self;
 	self->u = &self->u_;
+	self->u->out.name = "u";
 	self->u->out.self = self;
 }

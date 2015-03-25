@@ -23,13 +23,17 @@
 
 #include "ChoiceSystem.h"
 
+#include <string.h>
+
 #define CONNECT(provided, required)\
 {\
 	provided->out = required->out;\
 	required->in = provided->in;\
 }
 
-void ChoiceSystem_init(ChoiceSystem *self, locator* dezyne_locator) {
-	Choice_init(&self->choice, dezyne_locator);
-	self->c = self->choice.c; 
+void ChoiceSystem_init(ChoiceSystem *self, locator* dezyne_locator, meta* m) {
+	memcpy(&self->m, m, sizeof(meta));
+	meta m_choice = {"choice", self};
+	Choice_init(&self->choice, dezyne_locator, &m_choice);
+	self->c = self->choice.c;
 }

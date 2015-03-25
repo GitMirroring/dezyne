@@ -22,12 +22,11 @@
 # 
 # Code:
 
-import sys
-#
 import dezyne.ISensor
 
+import runtime
 
-class Sensor ():
+class Sensor:
 
     def __init__ (self, parent=None, name=''):
         self.parent = parent
@@ -36,10 +35,12 @@ class Sensor ():
         self.deferred = None
         self.queue = []
 
-        self.sensor = dezyne.ISensor (provides=('sensor', self), requires=('bar', 'baar'))
 
-        self.sensor.ins.enable = self.sensor_enable
-        self.sensor.ins.disable = self.sensor_disable
+        self.sensor = dezyne.ISensor (provides=('sensor', self))
+
+
+        self.sensor.ins.enable = lambda *args: runtime.call_in (self, lambda: self.sensor_enable (*args), (self.sensor, 'enable'))
+        self.sensor.ins.disable = lambda *args: runtime.call_in (self, lambda: self.sensor_disable (*args), (self.sensor, 'disable'))
 
     def sensor_enable (self):
         pass

@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -21,33 +21,37 @@
 # 
 # Code:
 
-import sys
-#
 import dezyne.ifunction2
 
+import runtime
 
-class function2 ():
+class function2:
 
-    def __init__ (self):
+    def __init__ (self, parent=None, name=''):
+        self.parent = parent
+        self.name = name
+        self.handling = False
+        self.deferred = None
+        self.queue = []
+
         self.f = False
 
-        self.i = dezyne.ifunction2 ()
+        self.i = dezyne.ifunction2 (provides=('i', self))
 
-        self.i.ins.a = self.i_a
-        self.i.ins.b = self.i_b
+
+        self.i.ins.a = lambda *args: runtime.call_in (self, lambda: self.i_a (*args), (self.i, 'a'))
+        self.i.ins.b = lambda *args: runtime.call_in (self, lambda: self.i_b (*args), (self.i, 'b'))
 
     def i_a (self):
-        sys.stderr.write ('function2.i_a\n')
         if (True):
             self.f = self.vtoggle ()
 
 
     def i_b (self):
-        sys.stderr.write ('function2.i_b\n')
         if (True):
             self.f = self.vtoggle ()
-            bb = self.vtoggle ()
-            self.f = bb
+            bb = {'value': self.vtoggle ()}
+            self.f = bb['value']
             self.i.outs.d ()
 
 

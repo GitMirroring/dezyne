@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -34,6 +35,7 @@
 #include "locator.h"
 
 typedef struct {
+	meta m;
 	Adaptor adaptor;
 	ChoiceSystem choice;
 
@@ -41,6 +43,6 @@ typedef struct {
 
 } Main;
 
-void Main_init(Main*self, locator* dezyne_locator);
+void Main_init(Main*self, locator* dezyne_locator, meta* m);
 
 #endif // DEZYNE_MAIN_H

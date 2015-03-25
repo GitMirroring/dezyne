@@ -29,6 +29,7 @@ typedef struct ifunction2 ifunction2;
 
 struct ifunction2{
 	struct {
+		char const* name;
 		void* self;
 		void (*a)(ifunction2* self);
 		void (*b)(ifunction2* self);
@@ -36,6 +37,7 @@ struct ifunction2{
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 		void (*c) (ifunction2* self);
 		void (*d) (ifunction2* self);

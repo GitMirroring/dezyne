@@ -30,12 +30,14 @@ typedef struct imiddle imiddle;
 
 struct imiddle{
 	struct {
+		char const* name;
 		void* self;
 		void (*e)(imiddle* self);
 
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 		void (*f) (imiddle* self);
 

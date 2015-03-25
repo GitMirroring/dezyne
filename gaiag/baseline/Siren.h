@@ -32,11 +32,12 @@
 
 
 typedef struct {
+	meta m;
 	runtime_sub sub;
 	ISiren siren_;
 	ISiren* siren;
 } Siren;
 
-void Siren_init(Siren* self, locator* dezyne_locator);
+void Siren_init(Siren* self, locator* dezyne_locator, meta* m);
 
 #endif // DEZYNE_SIREN_H

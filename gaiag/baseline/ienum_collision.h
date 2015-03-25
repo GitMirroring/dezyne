@@ -35,6 +35,7 @@ typedef struct ienum_collision ienum_collision;
 
 struct ienum_collision{
 	struct {
+		char const* name;
 		void* self;
 		int (*foo)(ienum_collision* self);
 		int (*bar)(ienum_collision* self);
@@ -42,6 +43,7 @@ struct ienum_collision{
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 
 	} out;

@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -21,29 +21,33 @@
 # 
 # Code:
 
-import sys
-#
 import dezyne.I
 
+import runtime
 
-class function ():
+class function:
 
-    def __init__ (self):
+    def __init__ (self, parent=None, name=''):
+        self.parent = parent
+        self.name = name
+        self.handling = False
+        self.deferred = None
+        self.queue = []
+
         self.f = False
 
-        self.i = dezyne.I ()
+        self.i = dezyne.I (provides=('i', self))
 
-        self.i.ins.a = self.i_a
-        self.i.ins.b = self.i_b
+
+        self.i.ins.a = lambda *args: runtime.call_in (self, lambda: self.i_a (*args), (self.i, 'a'))
+        self.i.ins.b = lambda *args: runtime.call_in (self, lambda: self.i_b (*args), (self.i, 'b'))
 
     def i_a (self):
-        sys.stderr.write ('function.i_a\n')
         if (True):
             self.toggle ()
 
 
     def i_b (self):
-        sys.stderr.write ('function.i_b\n')
         if (True):
             self.toggle ()
             self.toggle ()

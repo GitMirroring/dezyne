@@ -32,6 +32,7 @@
 
 
 typedef struct {
+	meta m;
 	runtime_sub sub;
 	int i;
 	int j;
@@ -39,6 +40,6 @@ typedef struct {
 	IExtern* port;
 } Extern;
 
-void Extern_init(Extern* self, locator* dezyne_locator);
+void Extern_init(Extern* self, locator* dezyne_locator, meta* m);
 
 #endif // DEZYNE_EXTERN_H

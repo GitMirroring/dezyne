@@ -27,6 +27,9 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
+#include <string.h>
+
+
 
 
 
@@ -56,35 +59,39 @@ static void helper_r_f(void* args) {
 
 static void p_e(modeling* self) {
 	(void)self;
-	DZN_LOG("modeling.p_e");
 	self->r->in.e(self->r);
 }
 
 static void r_f(modeling* self) {
 	(void)self;
-	DZN_LOG("modeling.r_f");
 	{
 	}
 }
 
-static void callback_p_e(dummy* self) {
+static void call_in_p_e(dummy* self) {
+	runtime_trace_in(&self->in, &self->out, "e");
 	args_p_e a = {sizeof(args_p_e), p_e, self->in.self};
 	runtime_event(helper_p_e, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
-
-static void callback_r_f(imodeling* self) {
+static void call_out_r_f(imodeling* self) {
+	runtime_trace_out(&self->in, &self->out, "f");
 	args_r_f a = {sizeof(args_r_f), r_f, self->out.self};
-	runtime_event(helper_r_f, &a);
+	component *c = self->out.self;
+	runtime_defer(self->in.self, self->out.self, helper_r_f, &a);
 }
 
 
-void modeling_init (modeling* self, locator* dezyne_locator) {
+void modeling_init (modeling* self, locator* dezyne_locator, meta *m) {
 	runtime_sub_init(dezyne_locator->rt, &self->sub);
+	memcpy(&self->m, m, sizeof(meta));
 
 	self->p = &self->p_;
-	self->p->in.e = callback_p_e;
+	self->p->in.e = call_in_p_e;
+	self->p->in.name = "p";
 	self->p->in.self = self;
 	self->r = &self->r_;
+	self->r->out.name = "r";
 	self->r->out.self = self;
-	self->r->out.f = callback_r_f;
+	self->r->out.f = call_out_r_f;
 }

@@ -67,14 +67,12 @@ class proxy:
         self.reply_IDataparam_Status = r['value']
         return self.reply_IDataparam_Status
 
-    def top_e (self,i):
-        pi = {'value': i}
-        self.bottom.ins.e (pi['value'])
+    def top_e (self,pi):
+        self.bottom.ins.e (pi)
 
 
-    def top_er (self,i):
-        pi = {'value': i}
-        r = {'value': self.bottom.ins.er (pi['value'])}
+    def top_er (self,pi):
+        r = {'value': self.bottom.ins.er (pi)}
         self.reply_IDataparam_Status = r['value']
         return self.reply_IDataparam_Status
 
@@ -131,14 +129,8 @@ class proxy:
         self.top.outs.aa (i, j)
 
 
-    def bottom_a6 (self,a0,a1,a2,a3,a4,a5):
-        A0 = {'value': a0}
-        A1 = {'value': a1}
-        A2 = {'value': a2}
-        A3 = {'value': a3}
-        A4 = {'value': a4}
-        A5 = {'value': a5}
-        self.top.outs.a6 (A0['value'], A1['value'], A2['value'], A3['value'], A4['value'], A5['value'])
+    def bottom_a6 (self,A0,A1,A2,A3,A4,A5):
+        self.top.outs.a6 (A0, A1, A2, A3, A4, A5)
 
 
     def outfunc (self,i):

@@ -34,6 +34,7 @@
 
 
 typedef struct {
+	meta m;
 	runtime_sub sub;
 	int state;
 	int count;
@@ -43,6 +44,6 @@ typedef struct {
 	IChoice* choice;
 } Adaptor;
 
-void Adaptor_init(Adaptor* self, locator* dezyne_locator);
+void Adaptor_init(Adaptor* self, locator* dezyne_locator, meta* m);
 
 #endif // DEZYNE_ADAPTOR_H

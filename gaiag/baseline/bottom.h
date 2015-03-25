@@ -33,11 +33,12 @@
 
 
 typedef struct {
+	meta m;
 	runtime_sub sub;
 	ibottom b_;
 	ibottom* b;
 } bottom;
 
-void bottom_init(bottom* self, locator* dezyne_locator);
+void bottom_init(bottom* self, locator* dezyne_locator, meta* m);
 
 #endif // DEZYNE_BOTTOM_H

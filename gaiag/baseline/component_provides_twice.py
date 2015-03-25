@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -21,21 +21,26 @@
 # 
 # Code:
 
-import sys
-#
 import dezyne.iprovides_once
 
+import runtime
 
-class component_provides_twice ():
+class component_provides_twice:
 
-    def __init__ (self):
+    def __init__ (self, parent=None, name=''):
+        self.parent = parent
+        self.name = name
+        self.handling = False
+        self.deferred = None
+        self.queue = []
 
-        self.i = dezyne.iprovides_once ()
 
-        self.i.ins.foo = self.i_foo
+        self.i = dezyne.iprovides_once (provides=('i', self))
+
+
+        self.i.ins.foo = lambda *args: runtime.call_in (self, lambda: self.i_foo (*args), (self.i, 'foo'))
 
     def i_foo (self):
-        sys.stderr.write ('component_provides_twice.i_foo\n')
         assert (False)
 
 

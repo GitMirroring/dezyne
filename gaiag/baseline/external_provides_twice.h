@@ -33,6 +33,7 @@
 
 
 typedef struct {
+	meta m;
 	runtime_sub sub;
 	iprovides_once i_;
 	iprovides_once* i;
@@ -40,6 +41,6 @@ typedef struct {
 	iprovides_twice* ii;
 } external_provides_twice;
 
-void external_provides_twice_init(external_provides_twice* self, locator* dezyne_locator);
+void external_provides_twice_init(external_provides_twice* self, locator* dezyne_locator, meta* m);
 
 #endif // DEZYNE_EXTERNAL_PROVIDES_TWICE_H

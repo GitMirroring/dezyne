@@ -27,6 +27,9 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
+#include <string.h>
+
+
 
 
 
@@ -68,7 +71,6 @@ static void helper_twice_a(void* args) {
 
 static void p_e(requires_twice* self) {
 	(void)self;
-	DZN_LOG("requires_twice.p_e");
 	{
 		self->once->in.e(self->once);
 		self->twice->in.e(self->twice);
@@ -77,48 +79,52 @@ static void p_e(requires_twice* self) {
 
 static void once_a(requires_twice* self) {
 	(void)self;
-	DZN_LOG("requires_twice.once_a");
 	{
 	}
 }
 
 static void twice_a(requires_twice* self) {
 	(void)self;
-	DZN_LOG("requires_twice.twice_a");
 	{
-		{
-			args_p_a a = {sizeof(args_p_a), self->p->out.a, self};
-			runtime_defer(&self->sub, helper_p_a, &a);
-		}
+		self->p->out.a(self->p);
 	}
 }
 
-static void callback_p_e(irequires_twice* self) {
+static void call_in_p_e(irequires_twice* self) {
+	runtime_trace_in(&self->in, &self->out, "e");
 	args_p_e a = {sizeof(args_p_e), p_e, self->in.self};
 	runtime_event(helper_p_e, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
-
-static void callback_once_a(irequires_twice* self) {
+static void call_out_once_a(irequires_twice* self) {
+	runtime_trace_out(&self->in, &self->out, "a");
 	args_once_a a = {sizeof(args_once_a), once_a, self->out.self};
-	runtime_event(helper_once_a, &a);
+	component *c = self->out.self;
+	runtime_defer(self->in.self, self->out.self, helper_once_a, &a);
 }
 
-static void callback_twice_a(irequires_twice* self) {
+static void call_out_twice_a(irequires_twice* self) {
+	runtime_trace_out(&self->in, &self->out, "a");
 	args_twice_a a = {sizeof(args_twice_a), twice_a, self->out.self};
-	runtime_event(helper_twice_a, &a);
+	component *c = self->out.self;
+	runtime_defer(self->in.self, self->out.self, helper_twice_a, &a);
 }
 
 
-void requires_twice_init (requires_twice* self, locator* dezyne_locator) {
+void requires_twice_init (requires_twice* self, locator* dezyne_locator, meta *m) {
 	runtime_sub_init(dezyne_locator->rt, &self->sub);
+	memcpy(&self->m, m, sizeof(meta));
 
 	self->p = &self->p_;
-	self->p->in.e = callback_p_e;
+	self->p->in.e = call_in_p_e;
+	self->p->in.name = "p";
 	self->p->in.self = self;
 	self->once = &self->once_;
+	self->once->out.name = "once";
 	self->once->out.self = self;
-	self->once->out.a = callback_once_a;
+	self->once->out.a = call_out_once_a;
 	self->twice = &self->twice_;
+	self->twice->out.name = "twice";
 	self->twice->out.self = self;
-	self->twice->out.a = callback_twice_a;
+	self->twice->out.a = call_out_twice_a;
 }

@@ -49,8 +49,8 @@ namespace dezyne
     private:
     void port_e0();
     IDataparam::Status::type port_e0r();
-    void port_e(int i);
-    IDataparam::Status::type port_er(int i);
+    void port_e(int pi);
+    IDataparam::Status::type port_er(int pi);
     IDataparam::Status::type port_eer(int i, int j);
     void port_eo(int& i);
     void port_eoo(int& i, int& j);

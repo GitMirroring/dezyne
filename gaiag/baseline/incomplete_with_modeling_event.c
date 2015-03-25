@@ -27,6 +27,9 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
+#include <string.h>
+
+
 
 
 
@@ -62,38 +65,39 @@ static void helper_r_a(void* args) {
 
 static void p_e(incomplete_with_modeling_event* self) {
 	(void)self;
-	DZN_LOG("incomplete_with_modeling_event.p_e");
 	{
 	}
 }
 
 static void r_a(incomplete_with_modeling_event* self) {
 	(void)self;
-	DZN_LOG("incomplete_with_modeling_event.r_a");
-	{
-		args_p_a a = {sizeof(args_p_a), self->p->out.a, self};
-		runtime_defer(&self->sub, helper_p_a, &a);
-	}
+	self->p->out.a(self->p);
 }
 
-static void callback_p_e(iincomplete_with_modeling_event* self) {
+static void call_in_p_e(iincomplete_with_modeling_event* self) {
+	runtime_trace_in(&self->in, &self->out, "e");
 	args_p_e a = {sizeof(args_p_e), p_e, self->in.self};
 	runtime_event(helper_p_e, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
-
-static void callback_r_a(iincomplete_with_modeling_event* self) {
+static void call_out_r_a(iincomplete_with_modeling_event* self) {
+	runtime_trace_out(&self->in, &self->out, "a");
 	args_r_a a = {sizeof(args_r_a), r_a, self->out.self};
-	runtime_event(helper_r_a, &a);
+	component *c = self->out.self;
+	runtime_defer(self->in.self, self->out.self, helper_r_a, &a);
 }
 
 
-void incomplete_with_modeling_event_init (incomplete_with_modeling_event* self, locator* dezyne_locator) {
+void incomplete_with_modeling_event_init (incomplete_with_modeling_event* self, locator* dezyne_locator, meta *m) {
 	runtime_sub_init(dezyne_locator->rt, &self->sub);
+	memcpy(&self->m, m, sizeof(meta));
 
 	self->p = &self->p_;
-	self->p->in.e = callback_p_e;
+	self->p->in.e = call_in_p_e;
+	self->p->in.name = "p";
 	self->p->in.self = self;
 	self->r = &self->r_;
+	self->r->out.name = "r";
 	self->r->out.self = self;
-	self->r->out.a = callback_r_a;
+	self->r->out.a = call_out_r_a;
 }

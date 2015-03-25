@@ -33,6 +33,7 @@
 
 
 typedef struct {
+	meta m;
 	runtime_sub sub;
 	iincomplete_with_modeling_event p_;
 	iincomplete_with_modeling_event* p;
@@ -40,6 +41,6 @@ typedef struct {
 	iincomplete_with_modeling_event* r;
 } incomplete_with_modeling_event;
 
-void incomplete_with_modeling_event_init(incomplete_with_modeling_event* self, locator* dezyne_locator);
+void incomplete_with_modeling_event_init(incomplete_with_modeling_event* self, locator* dezyne_locator, meta* m);
 
 #endif // DEZYNE_INCOMPLETE_WITH_MODELING_EVENT_H

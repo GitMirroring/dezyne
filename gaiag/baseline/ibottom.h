@@ -30,12 +30,14 @@ typedef struct ibottom ibottom;
 
 struct ibottom{
 	struct {
+		char const* name;
 		void* self;
 		void (*e)(ibottom* self);
 
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 		void (*f) (ibottom* self);
 

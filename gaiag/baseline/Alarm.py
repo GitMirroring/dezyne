@@ -24,9 +24,10 @@
 import dezyne.IConsole
 import dezyne.ISensor
 import dezyne.ISiren
+
 import runtime
 
-class Alarm ():
+class Alarm:
     class States ():
         Disarmed, Armed, Triggered, Disarming = range (4)
 
@@ -41,13 +42,14 @@ class Alarm ():
         self.sounding = False
 
         self.console = dezyne.IConsole (provides=('console', self))
-        self.sensor = dezyne.ISensor (requires=('sensor', self), provides=('foo', 'foe'))
+
+        self.sensor = dezyne.ISensor (requires=('sensor', self))
         self.siren = dezyne.ISiren (requires=('siren', self))
 
-        self.console.ins.arm = lambda: runtime.call_in (self, self.console_arm, (self.console, 'arm'))
-        self.console.ins.disarm = lambda: runtime.call_in (self, self.console_disarm, (self.console, 'disarm'))
-        self.sensor.outs.triggered = lambda: runtime.call_out (self, self.sensor_triggered, (self.sensor, 'triggered'))
-        self.sensor.outs.disabled =  lambda: runtime.call_out (self, self.sensor_disabled, (self.sensor, 'disabled'))
+        self.console.ins.arm = lambda *args: runtime.call_in (self, lambda: self.console_arm (*args), (self.console, 'arm'))
+        self.console.ins.disarm = lambda *args: runtime.call_in (self, lambda: self.console_disarm (*args), (self.console, 'disarm'))
+        self.sensor.outs.triggered = lambda *args: runtime.call_out (self, lambda: self.sensor_triggered (*args), (self.sensor, 'triggered'))
+        self.sensor.outs.disabled = lambda *args: runtime.call_out (self, lambda: self.sensor_disabled (*args), (self.sensor, 'disabled'))
 
     def console_arm (self):
         if (self.state == self.States.Disarmed):

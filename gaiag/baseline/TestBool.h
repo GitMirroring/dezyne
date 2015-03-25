@@ -29,12 +29,14 @@ typedef struct TestBool TestBool;
 
 struct TestBool{
 	struct {
+		char const* name;
 		void* self;
 		void (*evt)(TestBool* self);
 
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 
 	} out;

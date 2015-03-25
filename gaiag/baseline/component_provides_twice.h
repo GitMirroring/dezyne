@@ -32,11 +32,12 @@
 
 
 typedef struct {
+	meta m;
 	runtime_sub sub;
 	iprovides_once i_;
 	iprovides_once* i;
 } component_provides_twice;
 
-void component_provides_twice_init(component_provides_twice* self, locator* dezyne_locator);
+void component_provides_twice_init(component_provides_twice* self, locator* dezyne_locator, meta* m);
 
 #endif // DEZYNE_COMPONENT_PROVIDES_TWICE_H

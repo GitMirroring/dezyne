@@ -33,6 +33,7 @@
 
 
 typedef struct {
+	meta m;
 	runtime_sub sub;
 	icomplete p_;
 	icomplete* p;
@@ -40,6 +41,6 @@ typedef struct {
 	icomplete* r;
 } complete;
 
-void complete_init(complete* self, locator* dezyne_locator);
+void complete_init(complete* self, locator* dezyne_locator, meta* m);
 
 #endif // DEZYNE_COMPLETE_H

@@ -26,6 +26,9 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
+#include <string.h>
+
+
 
 
 
@@ -67,14 +70,12 @@ static void helper_b_f(void* args) {
 
 static void t_unguarded(GuardedRequiredIllegal* self) {
 	(void)self;
-	DZN_LOG("GuardedRequiredIllegal.t_unguarded");
 	{
 	}
 }
 
 static void t_e(GuardedRequiredIllegal* self) {
 	(void)self;
-	DZN_LOG("GuardedRequiredIllegal.t_e");
 	if (!(self->c)) {
 		self->c = true;
 		self->b->in.e(self->b);
@@ -85,37 +86,43 @@ static void t_e(GuardedRequiredIllegal* self) {
 
 static void b_f(GuardedRequiredIllegal* self) {
 	(void)self;
-	DZN_LOG("GuardedRequiredIllegal.b_f");
 	if (!(self->c)) assert(false);
 	else if (self->c) {
 		self->c = false;
 	}
 }
 
-static void callback_t_unguarded(Top* self) {
+static void call_in_t_unguarded(Top* self) {
+	runtime_trace_in(&self->in, &self->out, "unguarded");
 	args_t_unguarded a = {sizeof(args_t_unguarded), t_unguarded, self->in.self};
 	runtime_event(helper_t_unguarded, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
-
-static void callback_t_e(Top* self) {
+static void call_in_t_e(Top* self) {
+	runtime_trace_in(&self->in, &self->out, "e");
 	args_t_e a = {sizeof(args_t_e), t_e, self->in.self};
 	runtime_event(helper_t_e, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
-
-static void callback_b_f(Bottom* self) {
+static void call_out_b_f(Bottom* self) {
+	runtime_trace_out(&self->in, &self->out, "f");
 	args_b_f a = {sizeof(args_b_f), b_f, self->out.self};
-	runtime_event(helper_b_f, &a);
+	component *c = self->out.self;
+	runtime_defer(self->in.self, self->out.self, helper_b_f, &a);
 }
 
 
-void GuardedRequiredIllegal_init (GuardedRequiredIllegal* self, locator* dezyne_locator) {
+void GuardedRequiredIllegal_init (GuardedRequiredIllegal* self, locator* dezyne_locator, meta *m) {
 	runtime_sub_init(dezyne_locator->rt, &self->sub);
+	memcpy(&self->m, m, sizeof(meta));
 	self->c = false;
 	self->t = &self->t_;
-	self->t->in.unguarded = callback_t_unguarded;
-	self->t->in.e = callback_t_e;
+	self->t->in.unguarded = call_in_t_unguarded;
+	self->t->in.e = call_in_t_e;
+	self->t->in.name = "t";
 	self->t->in.self = self;
 	self->b = &self->b_;
+	self->b->out.name = "b";
 	self->b->out.self = self;
-	self->b->out.f = callback_b_f;
+	self->b->out.f = call_out_b_f;
 }

@@ -29,12 +29,14 @@ typedef struct dummy dummy;
 
 struct dummy{
 	struct {
+		char const* name;
 		void* self;
 		void (*e)(dummy* self);
 
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 
 	} out;

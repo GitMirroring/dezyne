@@ -27,6 +27,9 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
+#include <string.h>
+
+
 
 
 
@@ -68,14 +71,10 @@ static void helper_i_e(void* args) {
 
 static void i_e(expressions* self) {
 	(void)self;
-	DZN_LOG("expressions.i_e");
 	if (true) {
 		if (self->state == 0) {
 			self->state = 3;
-			{
-				args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-				runtime_defer(&self->sub, helper_i_a, &a);
-			}
+			self->i->out.a(self->i);
 		}
 		else {
 			self->state = self->state - 1;
@@ -84,17 +83,11 @@ static void i_e(expressions* self) {
 			}
 			else {
 				if (self->c <= (self->state + 1)) {
-					{
-						args_i_lo a = {sizeof(args_i_lo), self->i->out.lo, self};
-						runtime_defer(&self->sub, helper_i_lo, &a);
-					}
+					self->i->out.lo(self->i);
 				}
 				else {
 					if (self->c > self->state) {
-						{
-							args_i_hi a = {sizeof(args_i_hi), self->i->out.hi, self};
-							runtime_defer(&self->sub, helper_i_hi, &a);
-						}
+						self->i->out.hi(self->i);
 					}
 				}
 			}
@@ -102,17 +95,20 @@ static void i_e(expressions* self) {
 	}
 }
 
-static void callback_i_e(I* self) {
+static void call_in_i_e(I* self) {
+	runtime_trace_in(&self->in, &self->out, "e");
 	args_i_e a = {sizeof(args_i_e), i_e, self->in.self};
 	runtime_event(helper_i_e, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
 
-
-void expressions_init (expressions* self, locator* dezyne_locator) {
+void expressions_init (expressions* self, locator* dezyne_locator, meta *m) {
 	runtime_sub_init(dezyne_locator->rt, &self->sub);
+	memcpy(&self->m, m, sizeof(meta));
 	self->state = 3;
 	self->c = 0;
 	self->i = &self->i_;
-	self->i->in.e = callback_i_e;
+	self->i->in.e = call_in_i_e;
+	self->i->in.name = "i";
 	self->i->in.self = self;
 }

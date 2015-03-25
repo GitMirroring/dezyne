@@ -29,6 +29,7 @@ typedef struct IConsole IConsole;
 
 struct IConsole{
 	struct {
+		char const* name;
 		void* self;
 		void (*arm)(IConsole* self);
 		void (*disarm)(IConsole* self);
@@ -36,6 +37,7 @@ struct IConsole{
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 		void (*detected) (IConsole* self);
 		void (*deactivated) (IConsole* self);

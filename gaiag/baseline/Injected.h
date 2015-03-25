@@ -35,6 +35,7 @@
 #include "locator.h"
 
 typedef struct {
+	meta m;
 	logger l;
 	locator local_locator;
 	middle m;
@@ -44,6 +45,6 @@ typedef struct {
 
 } Injected;
 
-void Injected_init(Injected*self, locator* dezyne_locator);
+void Injected_init(Injected*self, locator* dezyne_locator, meta* m);
 
 #endif // DEZYNE_INJECTED_H

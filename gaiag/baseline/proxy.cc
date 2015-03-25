@@ -43,11 +43,11 @@ namespace dezyne
     top.in.e0r = [&] () {
       return call_in(this, std::function<IDataparam::Status::type()>([&] {return top_e0r();}), std::make_tuple(&top, "e0r", "return"));
     };
-    top.in.e = [&] (int i) {
-      call_in(this, std::function<void()>([&] {top_e(i);}), std::make_tuple(&top, "e", "return"));
+    top.in.e = [&] (int pi) {
+      call_in(this, std::function<void()>([&] {top_e(pi);}), std::make_tuple(&top, "e", "return"));
     };
-    top.in.er = [&] (int i) {
-      return call_in(this, std::function<IDataparam::Status::type()>([&] {return top_er(i);}), std::make_tuple(&top, "er", "return"));
+    top.in.er = [&] (int pi) {
+      return call_in(this, std::function<IDataparam::Status::type()>([&] {return top_er(pi);}), std::make_tuple(&top, "er", "return"));
     };
     top.in.eer = [&] (int i, int j) {
       return call_in(this, std::function<IDataparam::Status::type()>([&] {return top_eer(i,j);}), std::make_tuple(&top, "eer", "return"));
@@ -85,8 +85,8 @@ namespace dezyne
     bottom.out.aa = [&] (int i, int j) {
       call_out(this, std::function<void()>([&,i,j] {this->bottom_aa(i,j);}) , std::make_tuple(&bottom, "aa", "return"));
     };
-    bottom.out.a6 = [&] (int a0, int a1, int a2, int a3, int a4, int a5) {
-      call_out(this, std::function<void()>([&,a0,a1,a2,a3,a4,a5] {this->bottom_a6(a0,a1,a2,a3,a4,a5);}) , std::make_tuple(&bottom, "a6", "return"));
+    bottom.out.a6 = [&] (int A0, int A1, int A2, int A3, int A4, int A5) {
+      call_out(this, std::function<void()>([&,A0,A1,A2,A3,A4,A5] {this->bottom_a6(A0,A1,A2,A3,A4,A5);}) , std::make_tuple(&bottom, "a6", "return"));
     };
   }
 
@@ -104,22 +104,16 @@ namespace dezyne
     return reply_IDataparam_Status;
   }
 
-  void proxy::top_e(int i)
+  void proxy::top_e(int pi)
   {
-    {
-      int pi = i;
-      bottom.in.e(pi);
-    }
+    bottom.in.e(pi);
   }
 
-  IDataparam::Status::type proxy::top_er(int i)
+  IDataparam::Status::type proxy::top_er(int pi)
   {
     {
-      int pi = i;
-      {
-        IDataparam::Status::type r = bottom.in.er (pi);
-        reply_IDataparam_Status = r;
-      }
+      IDataparam::Status::type r = bottom.in.er (pi);
+      reply_IDataparam_Status = r;
     }
     return reply_IDataparam_Status;
   }
@@ -212,17 +206,9 @@ namespace dezyne
     top.out.aa(i, j);
   }
 
-  void proxy::bottom_a6(int a0, int a1, int a2, int a3, int a4, int a5)
+  void proxy::bottom_a6(int A0, int A1, int A2, int A3, int A4, int A5)
   {
-    {
-      int A0 = a0;
-      int A1 = a1;
-      int A2 = a2;
-      int A3 = a3;
-      int A4 = a4;
-      int A5 = a5;
-      top.out.a6(A0, A1, A2, A3, A4, A5);
-    }
+    top.out.a6(A0, A1, A2, A3, A4, A5);
   }
 
   void proxy::outfunc(int& i)

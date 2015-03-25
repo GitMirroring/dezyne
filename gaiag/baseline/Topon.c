@@ -26,6 +26,9 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
+#include <string.h>
+
+
 
 
 
@@ -61,49 +64,39 @@ static void helper_i_t(void* args) {
 
 static void i_e(Topon* self) {
 	(void)self;
-	DZN_LOG("Topon.i_e");
-	if (self->b && !(self->c)) {
-		args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-		runtime_defer(&self->sub, helper_i_a, &a);
-	}
-	else if (!(self->b) && !(self->c)) {
-		args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-		runtime_defer(&self->sub, helper_i_a, &a);
-	}
-	else if (!(self->c) && !(self->b)) {
-		args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-		runtime_defer(&self->sub, helper_i_a, &a);
-	}
+	if (self->b && !(self->c))       self->i->out.a(self->i);
+	else if (!(self->b) && !(self->c))       self->i->out.a(self->i);
+	else if (!(self->c) && !(self->b))       self->i->out.a(self->i);
 }
 
 static void i_t(Topon* self) {
 	(void)self;
-	DZN_LOG("Topon.i_t");
 	{
-		{
-			args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-			runtime_defer(&self->sub, helper_i_a, &a);
-		}
+		self->i->out.a(self->i);
 	}
 }
 
-static void callback_i_e(ITopon* self) {
+static void call_in_i_e(ITopon* self) {
+	runtime_trace_in(&self->in, &self->out, "e");
 	args_i_e a = {sizeof(args_i_e), i_e, self->in.self};
 	runtime_event(helper_i_e, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
-
-static void callback_i_t(ITopon* self) {
+static void call_in_i_t(ITopon* self) {
+	runtime_trace_in(&self->in, &self->out, "t");
 	args_i_t a = {sizeof(args_i_t), i_t, self->in.self};
 	runtime_event(helper_i_t, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
 
-
-void Topon_init (Topon* self, locator* dezyne_locator) {
+void Topon_init (Topon* self, locator* dezyne_locator, meta *m) {
 	runtime_sub_init(dezyne_locator->rt, &self->sub);
+	memcpy(&self->m, m, sizeof(meta));
 	self->b = false;
 	self->c = false;
 	self->i = &self->i_;
-	self->i->in.e = callback_i_e;
-	self->i->in.t = callback_i_t;
+	self->i->in.e = call_in_i_e;
+	self->i->in.t = call_in_i_t;
+	self->i->in.name = "i";
 	self->i->in.self = self;
 }

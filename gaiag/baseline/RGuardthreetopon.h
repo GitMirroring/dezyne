@@ -29,12 +29,14 @@ typedef struct RGuardthreetopon RGuardthreetopon;
 
 struct RGuardthreetopon{
 	struct {
+		char const* name;
 		void* self;
 		void (*e)(RGuardthreetopon* self);
 
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 		void (*a) (RGuardthreetopon* self);
 

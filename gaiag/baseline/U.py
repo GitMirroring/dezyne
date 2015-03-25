@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -21,13 +21,19 @@
 # 
 # Code:
 
-class U ():
+class U:
     class Status ():
         Ok, Nok = range (2)
-    def __init__ (self):
-        class Ins ():
-            what = None
-        self.ins = Ins ()
-        class Outs ():
-            pass
-        self.outs = Outs ()
+    Status_to_string = [ 'Status_Ok', 'Status_Nok']
+    def __init__ (self, provides=('', None), requires=('', None)):
+        class Ins:
+            def __init__ (self, name, c):
+                self.name = name
+                self.self = c
+                self.what = None
+        self.ins = Ins (*provides)
+        class Outs:
+            def __init__ (self, name, c):
+                self.name = name
+                self.self = c
+        self.outs = Outs (*requires)

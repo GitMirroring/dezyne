@@ -27,6 +27,9 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
+#include <string.h>
+
+
 
 
 
@@ -50,20 +53,22 @@ static void helper_port_e(void* args) {
 
 static void port_e(Extern* self) {
 	(void)self;
-	DZN_LOG("Extern.port_e");
 	assert(false);
 }
 
-static void callback_port_e(IExtern* self) {
+static void call_in_port_e(IExtern* self) {
+	runtime_trace_in(&self->in, &self->out, "e");
 	args_port_e a = {sizeof(args_port_e), port_e, self->in.self};
 	runtime_event(helper_port_e, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
 
-
-void Extern_init (Extern* self, locator* dezyne_locator) {
+void Extern_init (Extern* self, locator* dezyne_locator, meta *m) {
 	runtime_sub_init(dezyne_locator->rt, &self->sub);
+	memcpy(&self->m, m, sizeof(meta));
 	self->i = 0;
 	self->port = &self->port_;
-	self->port->in.e = callback_port_e;
+	self->port->in.e = call_in_port_e;
+	self->port->in.name = "port";
 	self->port->in.self = self;
 }

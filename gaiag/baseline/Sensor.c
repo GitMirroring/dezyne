@@ -27,6 +27,9 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
+#include <string.h>
+
+
 
 
 
@@ -68,34 +71,36 @@ static void helper_sensor_disable(void* args) {
 
 static void sensor_enable(Sensor* self) {
 	(void)self;
-	DZN_LOG("Sensor.sensor_enable");
 	{
 	}
 }
 
 static void sensor_disable(Sensor* self) {
 	(void)self;
-	DZN_LOG("Sensor.sensor_disable");
 	{
 	}
 }
 
-static void callback_sensor_enable(ISensor* self) {
+static void call_in_sensor_enable(ISensor* self) {
+	runtime_trace_in(&self->in, &self->out, "enable");
 	args_sensor_enable a = {sizeof(args_sensor_enable), sensor_enable, self->in.self};
 	runtime_event(helper_sensor_enable, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
-
-static void callback_sensor_disable(ISensor* self) {
+static void call_in_sensor_disable(ISensor* self) {
+	runtime_trace_in(&self->in, &self->out, "disable");
 	args_sensor_disable a = {sizeof(args_sensor_disable), sensor_disable, self->in.self};
 	runtime_event(helper_sensor_disable, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
 
-
-void Sensor_init (Sensor* self, locator* dezyne_locator) {
+void Sensor_init (Sensor* self, locator* dezyne_locator, meta *m) {
 	runtime_sub_init(dezyne_locator->rt, &self->sub);
+	memcpy(&self->m, m, sizeof(meta));
 
 	self->sensor = &self->sensor_;
-	self->sensor->in.enable = callback_sensor_enable;
-	self->sensor->in.disable = callback_sensor_disable;
+	self->sensor->in.enable = call_in_sensor_enable;
+	self->sensor->in.disable = call_in_sensor_disable;
+	self->sensor->in.name = "sensor";
 	self->sensor->in.self = self;
 }

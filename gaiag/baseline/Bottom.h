@@ -29,12 +29,14 @@ typedef struct Bottom Bottom;
 
 struct Bottom{
 	struct {
+		char const* name;
 		void* self;
 		void (*e)(Bottom* self);
 
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 		void (*f) (Bottom* self);
 

@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -21,40 +21,45 @@
 # 
 # Code:
 
-import sys
-#
 import dezyne.IComp
 import dezyne.IDevice
 
+import runtime
 
-class Comp ():
+class Comp:
     class State ():
         Uninitialized, Initialized, Error = range (3)
 
-    def __init__ (self):
+    def __init__ (self, parent=None, name=''):
+        self.parent = parent
+        self.name = name
+        self.handling = False
+        self.deferred = None
+        self.queue = []
+
         self.s = self.State.Uninitialized
         self.reply_IComp_result_t = None
         self.reply_IDevice_result_t = None
 
-        self.client = dezyne.IComp ()
-        self.device_A = dezyne.IDevice ()
+        self.client = dezyne.IComp (provides=('client', self))
 
-        self.client.ins.initialize = self.client_initialize
-        self.client.ins.recover = self.client_recover
-        self.client.ins.perform_actions = self.client_perform_actions
+        self.device_A = dezyne.IDevice (requires=('device_A', self))
+
+        self.client.ins.initialize = lambda *args: runtime.call_in (self, lambda: self.client_initialize (*args), (self.client, 'initialize', self.client.result_t_to_string))
+        self.client.ins.recover = lambda *args: runtime.call_in (self, lambda: self.client_recover (*args), (self.client, 'recover', self.client.result_t_to_string))
+        self.client.ins.perform_actions = lambda *args: runtime.call_in (self, lambda: self.client_perform_actions (*args), (self.client, 'perform_actions', self.client.result_t_to_string))
 
     def client_initialize (self):
-        sys.stderr.write ('Comp.client_initialize\n')
         if (self.s == self.State.Uninitialized):
-            res = self.device_A.ins.initialize ()
-            if (res == IDevice.result_t.OK):
-                res = self.device_A.ins.calibrate ()
-            if (res == IDevice.result_t.OK):
+            res = {'value': self.device_A.ins.initialize ()}
+            if (res['value'] == dezyne.IDevice.result_t.OK):
+                res['value'] = self.device_A.ins.calibrate ()
+            if (res['value'] == dezyne.IDevice.result_t.OK):
                 self.s = self.State.Initialized
-                self.reply_IDevice_result_t = IDevice.result_t.OK
+                self.reply_IDevice_result_t = dezyne.IDevice.result_t.OK
             else:
                 self.s = self.State.Uninitialized
-                self.reply_IDevice_result_t = IDevice.result_t.NOK
+                self.reply_IDevice_result_t = dezyne.IDevice.result_t.NOK
         elif (self.s == self.State.Initialized):
             assert (False)
         elif (self.s == self.State.Error):
@@ -62,35 +67,33 @@ class Comp ():
         return self.reply_IComp_result_t
 
     def client_recover (self):
-        sys.stderr.write ('Comp.client_recover\n')
         if (self.s == self.State.Uninitialized):
             assert (False)
         elif (self.s == self.State.Initialized):
             assert (False)
         elif (self.s == self.State.Error):
-            res = self.device_A.ins.calibrate ()
-            if (res == IDevice.result_t.OK):
+            res = {'value': self.device_A.ins.calibrate ()}
+            if (res['value'] == dezyne.IDevice.result_t.OK):
                 self.s = self.State.Initialized
-                self.reply_IDevice_result_t = IDevice.result_t.OK
+                self.reply_IDevice_result_t = dezyne.IDevice.result_t.OK
             else:
                 self.s = self.State.Error
-                self.reply_IDevice_result_t = IDevice.result_t.NOK
+                self.reply_IDevice_result_t = dezyne.IDevice.result_t.NOK
         return self.reply_IComp_result_t
 
     def client_perform_actions (self):
-        sys.stderr.write ('Comp.client_perform_actions\n')
         if (self.s == self.State.Uninitialized):
             assert (False)
         elif (self.s == self.State.Initialized):
-            res = self.device_A.ins.perform_action1 ()
-            if (res == IDevice.result_t.OK):
-                res = self.device_A.ins.perform_action2 ()
-            if (res == IDevice.result_t.OK):
+            res = {'value': self.device_A.ins.perform_action1 ()}
+            if (res['value'] == dezyne.IDevice.result_t.OK):
+                res['value'] = self.device_A.ins.perform_action2 ()
+            if (res['value'] == dezyne.IDevice.result_t.OK):
                 self.s = self.State.Initialized
-                self.reply_IDevice_result_t = IDevice.result_t.OK
+                self.reply_IDevice_result_t = dezyne.IDevice.result_t.OK
             else:
                 self.s = self.State.Error
-                self.reply_IDevice_result_t = IDevice.result_t.NOK
+                self.reply_IDevice_result_t = dezyne.IDevice.result_t.NOK
         elif (self.s == self.State.Error):
             assert (False)
         return self.reply_IComp_result_t

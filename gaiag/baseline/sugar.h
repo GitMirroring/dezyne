@@ -32,12 +32,13 @@
 
 
 typedef struct {
+	meta m;
 	runtime_sub sub;
 	int s;
 	I i_;
 	I* i;
 } sugar;
 
-void sugar_init(sugar* self, locator* dezyne_locator);
+void sugar_init(sugar* self, locator* dezyne_locator, meta* m);
 
 #endif // DEZYNE_SUGAR_H

@@ -33,6 +33,7 @@
 
 
 typedef struct {
+	meta m;
 	runtime_sub sub;
 	dummy p_;
 	dummy* p;
@@ -40,6 +41,6 @@ typedef struct {
 	imodeling* r;
 } modeling;
 
-void modeling_init(modeling* self, locator* dezyne_locator);
+void modeling_init(modeling* self, locator* dezyne_locator, meta* m);
 
 #endif // DEZYNE_MODELING_H

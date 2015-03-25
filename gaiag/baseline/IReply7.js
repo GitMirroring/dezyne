@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,9 +21,12 @@
 //
 // Code:
 
-interface.IReply7= function() {
-  this.E= {
+dezyne.IReply7 = function(meta) {
+  this.E = {
     A: 0
+  };
+  this.E_to_string = {
+    0: 'E_A'
   };
   this.in = {
     foo : null
@@ -31,4 +34,5 @@ interface.IReply7= function() {
   this.out = {
 
   };
+  this.meta = meta;
 };

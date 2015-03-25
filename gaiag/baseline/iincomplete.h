@@ -29,12 +29,14 @@ typedef struct iincomplete iincomplete;
 
 struct iincomplete{
 	struct {
+		char const* name;
 		void* self;
 		void (*e)(iincomplete* self);
 
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 		void (*a) (iincomplete* self);
 

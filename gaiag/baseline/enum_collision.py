@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -21,30 +21,34 @@
 # 
 # Code:
 
-import sys
-#
 import dezyne.ienum_collision
 
+import runtime
 
-class enum_collision ():
+class enum_collision:
 
-    def __init__ (self):
+    def __init__ (self, parent=None, name=''):
+        self.parent = parent
+        self.name = name
+        self.handling = False
+        self.deferred = None
+        self.queue = []
+
         self.reply_ienum_collision_Retval1 = None
         self.reply_ienum_collision_Retval2 = None
 
-        self.i = dezyne.ienum_collision ()
+        self.i = dezyne.ienum_collision (provides=('i', self))
 
-        self.i.ins.foo = self.i_foo
-        self.i.ins.bar = self.i_bar
+
+        self.i.ins.foo = lambda *args: runtime.call_in (self, lambda: self.i_foo (*args), (self.i, 'foo', self.i.Retval1_to_string))
+        self.i.ins.bar = lambda *args: runtime.call_in (self, lambda: self.i_bar (*args), (self.i, 'bar', self.i.Retval2_to_string))
 
     def i_foo (self):
-        sys.stderr.write ('enum_collision.i_foo\n')
-        self.reply_ienum_collision_Retval1 = ienum_collision.Retval1.OK
+        self.reply_ienum_collision_Retval1 = dezyne.ienum_collision.Retval1.OK
         return self.reply_ienum_collision_Retval1
 
     def i_bar (self):
-        sys.stderr.write ('enum_collision.i_bar\n')
-        self.reply_ienum_collision_Retval2 = ienum_collision.Retval2.NOK
+        self.reply_ienum_collision_Retval2 = dezyne.ienum_collision.Retval2.NOK
         return self.reply_ienum_collision_Retval2
 
 

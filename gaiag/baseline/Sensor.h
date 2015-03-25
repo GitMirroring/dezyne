@@ -32,11 +32,12 @@
 
 
 typedef struct {
+	meta m;
 	runtime_sub sub;
 	ISensor sensor_;
 	ISensor* sensor;
 } Sensor;
 
-void Sensor_init(Sensor* self, locator* dezyne_locator);
+void Sensor_init(Sensor* self, locator* dezyne_locator, meta* m);
 
 #endif // DEZYNE_SENSOR_H

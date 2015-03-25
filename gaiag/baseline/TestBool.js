@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,11 +21,12 @@
 //
 // Code:
 
-interface.TestBool= function() {
+dezyne.TestBool = function(meta) {
   this.in = {
     evt : null
   };
   this.out = {
 
   };
+  this.meta = meta;
 };

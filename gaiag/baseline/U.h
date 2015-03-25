@@ -32,12 +32,14 @@ typedef struct U U;
 
 struct U{
 	struct {
+		char const* name;
 		void* self;
 		int (*what)(U* self);
 
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 
 	} out;

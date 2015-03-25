@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,12 +21,18 @@
 //
 // Code:
 
-interface.ienum_collision= function() {
-  this.Retval1= {
+dezyne.ienum_collision = function(meta) {
+  this.Retval1 = {
     OK: 0, NOK: 1
   };
-  this.Retval2= {
+  this.Retval1_to_string = {
+    0: 'Retval1_OK', 1: 'Retval1_NOK'
+  };
+  this.Retval2 = {
     OK: 0, NOK: 1
+  };
+  this.Retval2_to_string = {
+    0: 'Retval2_OK', 1: 'Retval2_NOK'
   };
   this.in = {
     foo : null,
@@ -35,4 +41,5 @@ interface.ienum_collision= function() {
   this.out = {
 
   };
+  this.meta = meta;
 };

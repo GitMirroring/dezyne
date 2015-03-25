@@ -27,6 +27,18 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
+#include <string.h>
+
+static char const* IReply7_E_to_string(IReply7_E v)
+{
+	switch(v)
+	{
+		case IReply7_E_A: return "E_A";
+
+	}
+	return "";
+}
+
 
 
 
@@ -56,25 +68,28 @@ static void f(Reply7* self) {
 
 static int p_foo(Reply7* self) {
 	(void)self;
-	DZN_LOG("Reply7.p_foo");
 	f (self);
 	return self->reply_IReply7_E;
 }
 
-static int callback_p_foo(IReply7* self) {
+static int call_in_p_foo(IReply7* self) {
+	runtime_trace_in(&self->in, &self->out, "foo");
 	args_p_foo a = {sizeof(args_p_foo), p_foo, self->in.self};
 	runtime_event(helper_p_foo, &a);
-	Reply7* self_ = self->in.self;
+	Reply7* self_ = self->in.self; 
+	runtime_trace_out(&self->in, &self->out, IReply7_E_to_string (self_->reply_IReply7_E));
 	return self_->reply_IReply7_E;
 }
 
-
-void Reply7_init (Reply7* self, locator* dezyne_locator) {
+void Reply7_init (Reply7* self, locator* dezyne_locator, meta *m) {
 	runtime_sub_init(dezyne_locator->rt, &self->sub);
+	memcpy(&self->m, m, sizeof(meta));
 
 	self->p = &self->p_;
-	self->p->in.foo = callback_p_foo;
+	self->p->in.foo = call_in_p_foo;
+	self->p->in.name = "p";
 	self->p->in.self = self;
 	self->r = &self->r_;
+	self->r->out.name = "r";
 	self->r->out.self = self;
 }

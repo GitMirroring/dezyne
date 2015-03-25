@@ -35,6 +35,7 @@
 
 
 typedef struct {
+	meta m;
 	runtime_sub sub;
 	itop t_;
 	itop* t;
@@ -44,6 +45,6 @@ typedef struct {
 	ilogger* l;
 } middle;
 
-void middle_init(middle* self, locator* dezyne_locator);
+void middle_init(middle* self, locator* dezyne_locator, meta* m);
 
 #endif // DEZYNE_MIDDLE_H

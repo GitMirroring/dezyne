@@ -31,12 +31,14 @@ typedef struct IChoice IChoice;
 
 struct IChoice{
 	struct {
+		char const* name;
 		void* self;
 		void (*e)(IChoice* self);
 
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 		void (*a) (IChoice* self);
 

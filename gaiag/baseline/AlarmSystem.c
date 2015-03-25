@@ -22,16 +22,22 @@
 
 #include "AlarmSystem.h"
 
+#include <string.h>
+
 #define CONNECT(provided, required)\
 {\
 	provided->out = required->out;\
 	required->in = provided->in;\
 }
 
-void AlarmSystem_init(AlarmSystem *self, locator* dezyne_locator) {
-	Alarm_init(&self->alarm, dezyne_locator);
-	Sensor_init(&self->sensor, dezyne_locator);
-	Siren_init(&self->siren, dezyne_locator);
+void AlarmSystem_init(AlarmSystem *self, locator* dezyne_locator, meta* m) {
+	memcpy(&self->m, m, sizeof(meta));
+	meta m_alarm = {"alarm", self};
+	Alarm_init(&self->alarm, dezyne_locator, &m_alarm);
+	meta m_sensor = {"sensor", self};
+	Sensor_init(&self->sensor, dezyne_locator, &m_sensor);
+	meta m_siren = {"siren", self};
+	Siren_init(&self->siren, dezyne_locator, &m_siren);
 	self->console = self->alarm.console;
 	CONNECT(self->sensor.sensor, self->alarm.sensor);
 	CONNECT(self->siren.siren, self->alarm.siren);

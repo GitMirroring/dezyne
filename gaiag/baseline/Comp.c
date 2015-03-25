@@ -27,6 +27,29 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
+#include <string.h>
+
+static char const* IComp_result_t_to_string(IComp_result_t v)
+{
+	switch(v)
+	{
+		case IComp_result_t_OK: return "result_t_OK";
+		case IComp_result_t_NOK: return "result_t_NOK";
+
+	}
+	return "";
+}
+static char const* IDevice_result_t_to_string(IDevice_result_t v)
+{
+	switch(v)
+	{
+		case IDevice_result_t_OK: return "result_t_OK";
+		case IDevice_result_t_NOK: return "result_t_NOK";
+
+	}
+	return "";
+}
+
 
 typedef enum {
 	Comp_State_Uninitialized, Comp_State_Initialized, Comp_State_Error
@@ -65,7 +88,6 @@ static void helper_client_perform_actions(void* args) {
 
 static int client_initialize(Comp* self) {
 	(void)self;
-	DZN_LOG("Comp.client_initialize");
 	if (self->s == Comp_State_Uninitialized) {
 		{
 			int res = self->device_A->in.initialize(self->device_A);
@@ -93,7 +115,6 @@ static int client_initialize(Comp* self) {
 
 static int client_recover(Comp* self) {
 	(void)self;
-	DZN_LOG("Comp.client_recover");
 	if (self->s == Comp_State_Uninitialized) {
 		assert(false);
 	}
@@ -118,7 +139,6 @@ static int client_recover(Comp* self) {
 
 static int client_perform_actions(Comp* self) {
 	(void)self;
-	DZN_LOG("Comp.client_perform_actions");
 	if (self->s == Comp_State_Uninitialized) {
 		assert(false);
 	}
@@ -144,36 +164,42 @@ static int client_perform_actions(Comp* self) {
 	return self->reply_IComp_result_t;
 }
 
-static int callback_client_initialize(IComp* self) {
+static int call_in_client_initialize(IComp* self) {
+	runtime_trace_in(&self->in, &self->out, "initialize");
 	args_client_initialize a = {sizeof(args_client_initialize), client_initialize, self->in.self};
 	runtime_event(helper_client_initialize, &a);
-	Comp* self_ = self->in.self;
+	Comp* self_ = self->in.self; 
+	runtime_trace_out(&self->in, &self->out, IComp_result_t_to_string (self_->reply_IComp_result_t));
 	return self_->reply_IComp_result_t;
 }
-
-static int callback_client_recover(IComp* self) {
+static int call_in_client_recover(IComp* self) {
+	runtime_trace_in(&self->in, &self->out, "recover");
 	args_client_recover a = {sizeof(args_client_recover), client_recover, self->in.self};
 	runtime_event(helper_client_recover, &a);
-	Comp* self_ = self->in.self;
+	Comp* self_ = self->in.self; 
+	runtime_trace_out(&self->in, &self->out, IComp_result_t_to_string (self_->reply_IComp_result_t));
 	return self_->reply_IComp_result_t;
 }
-
-static int callback_client_perform_actions(IComp* self) {
+static int call_in_client_perform_actions(IComp* self) {
+	runtime_trace_in(&self->in, &self->out, "perform_actions");
 	args_client_perform_actions a = {sizeof(args_client_perform_actions), client_perform_actions, self->in.self};
 	runtime_event(helper_client_perform_actions, &a);
-	Comp* self_ = self->in.self;
+	Comp* self_ = self->in.self; 
+	runtime_trace_out(&self->in, &self->out, IComp_result_t_to_string (self_->reply_IComp_result_t));
 	return self_->reply_IComp_result_t;
 }
 
-
-void Comp_init (Comp* self, locator* dezyne_locator) {
+void Comp_init (Comp* self, locator* dezyne_locator, meta *m) {
 	runtime_sub_init(dezyne_locator->rt, &self->sub);
+	memcpy(&self->m, m, sizeof(meta));
 	self->s = Comp_State_Uninitialized;
 	self->client = &self->client_;
-	self->client->in.initialize = callback_client_initialize;
-	self->client->in.recover = callback_client_recover;
-	self->client->in.perform_actions = callback_client_perform_actions;
+	self->client->in.initialize = call_in_client_initialize;
+	self->client->in.recover = call_in_client_recover;
+	self->client->in.perform_actions = call_in_client_perform_actions;
+	self->client->in.name = "client";
 	self->client->in.self = self;
 	self->device_A = &self->device_A_;
+	self->device_A->out.name = "device_A";
 	self->device_A->out.self = self;
 }

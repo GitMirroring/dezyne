@@ -30,12 +30,14 @@ typedef struct itop itop;
 
 struct itop{
 	struct {
+		char const* name;
 		void* self;
 		void (*e)(itop* self);
 
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 		void (*f) (itop* self);
 

@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -21,38 +21,41 @@
 # 
 # Code:
 
-import sys
-#
 import dezyne.irequires_twice
 import dezyne.irequires_twice
 import dezyne.irequires_twice
 
+import runtime
 
-class requires_twice ():
+class requires_twice:
 
-    def __init__ (self):
+    def __init__ (self, parent=None, name=''):
+        self.parent = parent
+        self.name = name
+        self.handling = False
+        self.deferred = None
+        self.queue = []
 
-        self.p = dezyne.irequires_twice ()
-        self.once = dezyne.irequires_twice ()
-        self.twice = dezyne.irequires_twice ()
 
-        self.p.ins.e = self.p_e
-        self.once.outs.a = self.once_a
-        self.twice.outs.a = self.twice_a
+        self.p = dezyne.irequires_twice (provides=('p', self))
+
+        self.once = dezyne.irequires_twice (requires=('once', self))
+        self.twice = dezyne.irequires_twice (requires=('twice', self))
+
+        self.p.ins.e = lambda *args: runtime.call_in (self, lambda: self.p_e (*args), (self.p, 'e'))
+        self.once.outs.a = lambda *args: runtime.call_out (self, lambda: self.once_a (*args), (self.once, 'a'))
+        self.twice.outs.a = lambda *args: runtime.call_out (self, lambda: self.twice_a (*args), (self.twice, 'a'))
 
     def p_e (self):
-        sys.stderr.write ('requires_twice.p_e\n')
         self.once.ins.e ()
         self.twice.ins.e ()
 
 
     def once_a (self):
-        sys.stderr.write ('requires_twice.once_a\n')
         pass
 
 
     def twice_a (self):
-        sys.stderr.write ('requires_twice.twice_a\n')
         self.p.outs.a ()
 
 

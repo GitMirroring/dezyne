@@ -27,6 +27,9 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
+#include <string.h>
+
+
 
 
 
@@ -56,23 +59,22 @@ static void helper_b_e(void* args) {
 
 static void b_e(bottom* self) {
 	(void)self;
-	DZN_LOG("bottom.b_e");
-	{
-		args_b_f a = {sizeof(args_b_f), self->b->out.f, self};
-		runtime_defer(&self->sub, helper_b_f, &a);
-	}
+	self->b->out.f(self->b);
 }
 
-static void callback_b_e(ibottom* self) {
+static void call_in_b_e(ibottom* self) {
+	runtime_trace_in(&self->in, &self->out, "e");
 	args_b_e a = {sizeof(args_b_e), b_e, self->in.self};
 	runtime_event(helper_b_e, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
 
-
-void bottom_init (bottom* self, locator* dezyne_locator) {
+void bottom_init (bottom* self, locator* dezyne_locator, meta *m) {
 	runtime_sub_init(dezyne_locator->rt, &self->sub);
+	memcpy(&self->m, m, sizeof(meta));
 
 	self->b = &self->b_;
-	self->b->in.e = callback_b_e;
+	self->b->in.e = call_in_b_e;
+	self->b->in.name = "b";
 	self->b->in.self = self;
 }

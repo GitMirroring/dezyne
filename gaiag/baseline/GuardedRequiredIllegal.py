@@ -20,31 +20,35 @@
 # 
 # Code:
 
-import sys
-#
 import dezyne.Top
 import dezyne.Bottom
 
+import runtime
 
-class GuardedRequiredIllegal ():
+class GuardedRequiredIllegal:
 
-    def __init__ (self):
+    def __init__ (self, parent=None, name=''):
+        self.parent = parent
+        self.name = name
+        self.handling = False
+        self.deferred = None
+        self.queue = []
+
         self.c = False
 
-        self.t = dezyne.Top ()
-        self.b = dezyne.Bottom ()
+        self.t = dezyne.Top (provides=('t', self))
 
-        self.t.ins.unguarded = self.t_unguarded
-        self.t.ins.e = self.t_e
-        self.b.outs.f = self.b_f
+        self.b = dezyne.Bottom (requires=('b', self))
+
+        self.t.ins.unguarded = lambda *args: runtime.call_in (self, lambda: self.t_unguarded (*args), (self.t, 'unguarded'))
+        self.t.ins.e = lambda *args: runtime.call_in (self, lambda: self.t_e (*args), (self.t, 'e'))
+        self.b.outs.f = lambda *args: runtime.call_out (self, lambda: self.b_f (*args), (self.b, 'f'))
 
     def t_unguarded (self):
-        sys.stderr.write ('GuardedRequiredIllegal.t_unguarded\n')
         pass
 
 
     def t_e (self):
-        sys.stderr.write ('GuardedRequiredIllegal.t_e\n')
         if (not (self.c)):
             self.c = True
             self.b.ins.e ()
@@ -53,7 +57,6 @@ class GuardedRequiredIllegal ():
 
 
     def b_f (self):
-        sys.stderr.write ('GuardedRequiredIllegal.b_f\n')
         if (not (self.c)):
             assert (False)
         elif (self.c):

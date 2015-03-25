@@ -27,6 +27,9 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
+#include <string.h>
+
+
 
 
 
@@ -50,21 +53,23 @@ static void helper_log_log(void* args) {
 
 static void log_log(logger* self) {
 	(void)self;
-	DZN_LOG("logger.log_log");
 	{
 	}
 }
 
-static void callback_log_log(ilogger* self) {
+static void call_in_log_log(ilogger* self) {
+	runtime_trace_in(&self->in, &self->out, "log");
 	args_log_log a = {sizeof(args_log_log), log_log, self->in.self};
 	runtime_event(helper_log_log, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
 
-
-void logger_init (logger* self, locator* dezyne_locator) {
+void logger_init (logger* self, locator* dezyne_locator, meta *m) {
 	runtime_sub_init(dezyne_locator->rt, &self->sub);
+	memcpy(&self->m, m, sizeof(meta));
 
 	self->log = &self->log_;
-	self->log->in.log = callback_log_log;
+	self->log->in.log = call_in_log_log;
+	self->log->in.name = "log";
 	self->log->in.self = self;
 }

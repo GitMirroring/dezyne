@@ -32,6 +32,7 @@
 
 
 typedef struct {
+	meta m;
 	runtime_sub sub;
 	bool b;
 	bool c;
@@ -39,6 +40,6 @@ typedef struct {
 	ITopon* i;
 } Topon;
 
-void Topon_init(Topon* self, locator* dezyne_locator);
+void Topon_init(Topon* self, locator* dezyne_locator, meta* m);
 
 #endif // DEZYNE_TOPON_H

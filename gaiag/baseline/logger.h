@@ -33,11 +33,12 @@
 
 
 typedef struct {
+	meta m;
 	runtime_sub sub;
 	ilogger log_;
 	ilogger* log;
 } logger;
 
-void logger_init(logger* self, locator* dezyne_locator);
+void logger_init(logger* self, locator* dezyne_locator, meta* m);
 
 #endif // DEZYNE_LOGGER_H

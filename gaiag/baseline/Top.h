@@ -29,6 +29,7 @@ typedef struct Top Top;
 
 struct Top{
 	struct {
+		char const* name;
 		void* self;
 		void (*unguarded)(Top* self);
 		void (*e)(Top* self);
@@ -36,6 +37,7 @@ struct Top{
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 		void (*f) (Top* self);
 

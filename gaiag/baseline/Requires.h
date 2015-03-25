@@ -29,12 +29,14 @@ typedef struct Requires Requires;
 
 struct Requires{
 	struct {
+		char const* name;
 		void* self;
 		void (*ping)(Requires* self);
 
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 		void (*pong) (Requires* self);
 

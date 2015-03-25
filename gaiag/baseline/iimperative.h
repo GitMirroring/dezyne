@@ -29,12 +29,14 @@ typedef struct iimperative iimperative;
 
 struct iimperative{
 	struct {
+		char const* name;
 		void* self;
 		void (*e)(iimperative* self);
 
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 		void (*f) (iimperative* self);
 		void (*g) (iimperative* self);

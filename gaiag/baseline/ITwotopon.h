@@ -29,6 +29,7 @@ typedef struct ITwotopon ITwotopon;
 
 struct ITwotopon{
 	struct {
+		char const* name;
 		void* self;
 		void (*e)(ITwotopon* self);
 		void (*t)(ITwotopon* self);
@@ -36,6 +37,7 @@ struct ITwotopon{
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 		void (*a) (ITwotopon* self);
 

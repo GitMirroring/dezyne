@@ -27,6 +27,9 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
+#include <string.h>
+
+
 
 
 
@@ -50,21 +53,23 @@ static void helper_i_evt(void* args) {
 
 static void i_evt(testBoolean* self) {
 	(void)self;
-	DZN_LOG("testBoolean.i_evt");
 	if (true) {
 	}
 }
 
-static void callback_i_evt(TestBool* self) {
+static void call_in_i_evt(TestBool* self) {
+	runtime_trace_in(&self->in, &self->out, "evt");
 	args_i_evt a = {sizeof(args_i_evt), i_evt, self->in.self};
 	runtime_event(helper_i_evt, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
 
-
-void testBoolean_init (testBoolean* self, locator* dezyne_locator) {
+void testBoolean_init (testBoolean* self, locator* dezyne_locator, meta *m) {
 	runtime_sub_init(dezyne_locator->rt, &self->sub);
+	memcpy(&self->m, m, sizeof(meta));
 	self->b = false;
 	self->i = &self->i_;
-	self->i->in.evt = callback_i_evt;
+	self->i->in.evt = call_in_i_evt;
+	self->i->in.name = "i";
 	self->i->in.self = self;
 }

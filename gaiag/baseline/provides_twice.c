@@ -22,14 +22,18 @@
 
 #include "provides_twice.h"
 
+#include <string.h>
+
 #define CONNECT(provided, required)\
 {\
 	provided->out = required->out;\
 	required->in = provided->in;\
 }
 
-void provides_twice_init(provides_twice *self, locator* dezyne_locator) {
-	external_provides_twice_init(&self->one, dezyne_locator);
+void provides_twice_init(provides_twice *self, locator* dezyne_locator, meta* m) {
+	memcpy(&self->m, m, sizeof(meta));
+	meta m_one = {"one", self};
+	external_provides_twice_init(&self->one, dezyne_locator, &m_one);
 	self->i = self->one.i;
 	self->ii = self->one.ii;
 }

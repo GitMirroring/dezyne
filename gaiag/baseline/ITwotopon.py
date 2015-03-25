@@ -20,12 +20,18 @@
 # 
 # Code:
 
-class ITwotopon ():
-    def __init__ (self):
-        class Ins ():
-            e = None
-            t = None
-        self.ins = Ins ()
-        class Outs ():
-            a = None
-        self.outs = Outs ()
+class ITwotopon:
+    def __init__ (self, provides=('', None), requires=('', None)):
+        class Ins:
+            def __init__ (self, name, c):
+                self.name = name
+                self.self = c
+                self.e = None
+                self.t = None
+        self.ins = Ins (*provides)
+        class Outs:
+            def __init__ (self, name, c):
+                self.name = name
+                self.self = c
+                self.a = None
+        self.outs = Outs (*requires)

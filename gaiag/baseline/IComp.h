@@ -32,6 +32,7 @@ typedef struct IComp IComp;
 
 struct IComp{
 	struct {
+		char const* name;
 		void* self;
 		int (*initialize)(IComp* self);
 		int (*recover)(IComp* self);
@@ -40,6 +41,7 @@ struct IComp{
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 
 	} out;

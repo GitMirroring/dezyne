@@ -29,12 +29,14 @@ typedef struct irequires_twice irequires_twice;
 
 struct irequires_twice{
 	struct {
+		char const* name;
 		void* self;
 		void (*e)(irequires_twice* self);
 
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 		void (*a) (irequires_twice* self);
 

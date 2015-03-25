@@ -29,12 +29,14 @@ typedef struct iprovides_twice iprovides_twice;
 
 struct iprovides_twice{
 	struct {
+		char const* name;
 		void* self;
 		void (*foo)(iprovides_twice* self);
 
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 		void (*bar) (iprovides_twice* self);
 

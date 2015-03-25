@@ -29,12 +29,14 @@ typedef struct IExtern IExtern;
 
 struct IExtern{
 	struct {
+		char const* name;
 		void* self;
 		void (*e)(IExtern* self);
 
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 
 	} out;

@@ -29,12 +29,14 @@ typedef struct icomplete icomplete;
 
 struct icomplete{
 	struct {
+		char const* name;
 		void* self;
 		void (*e)(icomplete* self);
 
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 		void (*a) (icomplete* self);
 

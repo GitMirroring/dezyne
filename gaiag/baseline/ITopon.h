@@ -29,6 +29,7 @@ typedef struct ITopon ITopon;
 
 struct ITopon{
 	struct {
+		char const* name;
 		void* self;
 		void (*e)(ITopon* self);
 		void (*t)(ITopon* self);
@@ -36,6 +37,7 @@ struct ITopon{
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 		void (*a) (ITopon* self);
 

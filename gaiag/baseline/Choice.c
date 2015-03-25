@@ -28,6 +28,9 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
+#include <string.h>
+
+
 
 typedef enum {
 	Choice_State_Off, Choice_State_Idle, Choice_State_Busy
@@ -60,40 +63,33 @@ static void helper_c_e(void* args) {
 
 static void c_e(Choice* self) {
 	(void)self;
-	DZN_LOG("Choice.c_e");
 	if (self->s == Choice_State_Off) {
 		self->s = Choice_State_Idle;
-		{
-			args_c_a a = {sizeof(args_c_a), self->c->out.a, self};
-			runtime_defer(&self->sub, helper_c_a, &a);
-		}
+		self->c->out.a(self->c);
 	}
 	else if (self->s == Choice_State_Idle) {
 		self->s = Choice_State_Busy;
-		{
-			args_c_a a = {sizeof(args_c_a), self->c->out.a, self};
-			runtime_defer(&self->sub, helper_c_a, &a);
-		}
+		self->c->out.a(self->c);
 	}
 	else if (self->s == Choice_State_Busy) {
 		self->s = Choice_State_Idle;
-		{
-			args_c_a a = {sizeof(args_c_a), self->c->out.a, self};
-			runtime_defer(&self->sub, helper_c_a, &a);
-		}
+		self->c->out.a(self->c);
 	}
 }
 
-static void callback_c_e(IChoice* self) {
+static void call_in_c_e(IChoice* self) {
+	runtime_trace_in(&self->in, &self->out, "e");
 	args_c_e a = {sizeof(args_c_e), c_e, self->in.self};
 	runtime_event(helper_c_e, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
 
-
-void Choice_init (Choice* self, locator* dezyne_locator) {
+void Choice_init (Choice* self, locator* dezyne_locator, meta *m) {
 	runtime_sub_init(dezyne_locator->rt, &self->sub);
+	memcpy(&self->m, m, sizeof(meta));
 	self->s = Choice_State_Off;
 	self->c = &self->c_;
-	self->c->in.e = callback_c_e;
+	self->c->in.e = call_in_c_e;
+	self->c->in.name = "c";
 	self->c->in.self = self;
 }

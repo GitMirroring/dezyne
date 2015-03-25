@@ -29,6 +29,7 @@ typedef struct IGuardthreetopon IGuardthreetopon;
 
 struct IGuardthreetopon{
 	struct {
+		char const* name;
 		void* self;
 		void (*e)(IGuardthreetopon* self);
 		void (*t)(IGuardthreetopon* self);
@@ -37,6 +38,7 @@ struct IGuardthreetopon{
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 		void (*a) (IGuardthreetopon* self);
 

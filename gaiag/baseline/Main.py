@@ -1,6 +1,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+# Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -27,10 +28,12 @@ def connect (provided, required):
     provided.outs = required.outs
     required.ins = provided.ins
 
-class Main ():
-    def __init__ (self):
-        self.adaptor = dezyne.Adaptor ()
-        self.choice = dezyne.ChoiceSystem ()
+class Main:
+    def __init__ (self, parent=None, name=''):
+        self.parent = parent
+        self.name = name
+        self.adaptor = dezyne.Adaptor (parent=self, name='adaptor')
+        self.choice = dezyne.ChoiceSystem (parent=self, name='choice')
         self.runner = self.adaptor.runner
 
         connect (self.choice.c, self.adaptor.choice)

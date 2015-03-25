@@ -1,6 +1,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+# Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -21,11 +22,16 @@
 # 
 # Code:
 
-class IRun ():
-    def __init__ (self):
-        class Ins ():
-            run = None
-        self.ins = Ins ()
-        class Outs ():
-            pass
-        self.outs = Outs ()
+class IRun:
+    def __init__ (self, provides=('', None), requires=('', None)):
+        class Ins:
+            def __init__ (self, name, c):
+                self.name = name
+                self.self = c
+                self.run = None
+        self.ins = Ins (*provides)
+        class Outs:
+            def __init__ (self, name, c):
+                self.name = name
+                self.self = c
+        self.outs = Outs (*requires)

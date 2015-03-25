@@ -27,6 +27,9 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
+#include <string.h>
+
+
 
 
 
@@ -62,34 +65,30 @@ static void helper_i_a(void* args) {
 
 static void i_a(If* self) {
 	(void)self;
-	DZN_LOG("If.i_a");
 	{
 		if (self->t) {
-			{
-				args_i_b a = {sizeof(args_i_b), self->i->out.b, self};
-				runtime_defer(&self->sub, helper_i_b, &a);
-			}
+			self->i->out.b(self->i);
 		}
 		else {
-			{
-				args_i_c a = {sizeof(args_i_c), self->i->out.c, self};
-				runtime_defer(&self->sub, helper_i_c, &a);
-			}
+			self->i->out.c(self->i);
 		}
 		self->t = !(self->t);
 	}
 }
 
-static void callback_i_a(I* self) {
+static void call_in_i_a(I* self) {
+	runtime_trace_in(&self->in, &self->out, "a");
 	args_i_a a = {sizeof(args_i_a), i_a, self->in.self};
 	runtime_event(helper_i_a, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
 
-
-void If_init (If* self, locator* dezyne_locator) {
+void If_init (If* self, locator* dezyne_locator, meta *m) {
 	runtime_sub_init(dezyne_locator->rt, &self->sub);
+	memcpy(&self->m, m, sizeof(meta));
 	self->t = false;
 	self->i = &self->i_;
-	self->i->in.a = callback_i_a;
+	self->i->in.a = call_in_i_a;
+	self->i->in.name = "i";
 	self->i->in.self = self;
 }

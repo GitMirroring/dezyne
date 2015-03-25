@@ -33,6 +33,7 @@
 #include "locator.h"
 
 typedef struct {
+	meta m;
 	external_provides_twice one;
 
 	iprovides_once* i;
@@ -40,6 +41,6 @@ typedef struct {
 
 } provides_twice;
 
-void provides_twice_init(provides_twice*self, locator* dezyne_locator);
+void provides_twice_init(provides_twice*self, locator* dezyne_locator, meta* m);
 
 #endif // DEZYNE_PROVIDES_TWICE_H

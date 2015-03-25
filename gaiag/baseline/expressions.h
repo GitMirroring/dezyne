@@ -32,6 +32,7 @@
 
 
 typedef struct {
+	meta m;
 	runtime_sub sub;
 	int state;
 	int c;
@@ -39,6 +40,6 @@ typedef struct {
 	I* i;
 } expressions;
 
-void expressions_init(expressions* self, locator* dezyne_locator);
+void expressions_init(expressions* self, locator* dezyne_locator, meta* m);
 
 #endif // DEZYNE_EXPRESSIONS_H

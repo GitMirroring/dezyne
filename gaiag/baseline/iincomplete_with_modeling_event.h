@@ -29,12 +29,14 @@ typedef struct iincomplete_with_modeling_event iincomplete_with_modeling_event;
 
 struct iincomplete_with_modeling_event{
 	struct {
+		char const* name;
 		void* self;
 		void (*e)(iincomplete_with_modeling_event* self);
 
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 		void (*a) (iincomplete_with_modeling_event* self);
 

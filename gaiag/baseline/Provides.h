@@ -29,12 +29,14 @@ typedef struct Provides Provides;
 
 struct Provides{
 	struct {
+		char const* name;
 		void* self;
 		void (*start)(Provides* self);
 
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 		void (*busy) (Provides* self);
 		void (*finish) (Provides* self);

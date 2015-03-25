@@ -32,12 +32,14 @@ typedef struct IReply7 IReply7;
 
 struct IReply7{
 	struct {
+		char const* name;
 		void* self;
 		int (*foo)(IReply7* self);
 
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 
 	} out;

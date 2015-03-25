@@ -32,12 +32,13 @@
 
 
 typedef struct {
+	meta m;
 	runtime_sub sub;
 	bool b;
 	I i_;
 	I* i;
 } argument;
 
-void argument_init(argument* self, locator* dezyne_locator);
+void argument_init(argument* self, locator* dezyne_locator, meta* m);
 
 #endif // DEZYNE_ARGUMENT_H

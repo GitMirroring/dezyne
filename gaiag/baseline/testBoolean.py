@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -21,22 +21,27 @@
 # 
 # Code:
 
-import sys
-#
 import dezyne.TestBool
 
+import runtime
 
-class testBoolean ():
+class testBoolean:
 
-    def __init__ (self):
+    def __init__ (self, parent=None, name=''):
+        self.parent = parent
+        self.name = name
+        self.handling = False
+        self.deferred = None
+        self.queue = []
+
         self.b = False
 
-        self.i = dezyne.TestBool ()
+        self.i = dezyne.TestBool (provides=('i', self))
 
-        self.i.ins.evt = self.i_evt
+
+        self.i.ins.evt = lambda *args: runtime.call_in (self, lambda: self.i_evt (*args), (self.i, 'evt'))
 
     def i_evt (self):
-        sys.stderr.write ('testBoolean.i_evt\n')
         if (True):
             pass
 

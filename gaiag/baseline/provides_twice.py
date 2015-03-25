@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -27,9 +27,11 @@ def connect (provided, required):
     provided.outs = required.outs
     required.ins = provided.ins
 
-class provides_twice ():
-    def __init__ (self):
-        self.one = dezyne.external_provides_twice ()
+class provides_twice:
+    def __init__ (self, parent=None, name=''):
+        self.parent = parent
+        self.name = name
+        self.one = dezyne.external_provides_twice (parent=self, name='one')
         self.i = self.one.i
         self.ii = self.one.ii
 

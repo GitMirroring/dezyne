@@ -22,15 +22,20 @@
 
 #include "Datasystem.h"
 
+#include <string.h>
+
 #define CONNECT(provided, required)\
 {\
 	provided->out = required->out;\
 	required->in = provided->in;\
 }
 
-void Datasystem_init(Datasystem *self, locator* dezyne_locator) {
-	proxy_init(&self->p, dezyne_locator);
-	Dataparam_init(&self->c, dezyne_locator);
+void Datasystem_init(Datasystem *self, locator* dezyne_locator, meta* m) {
+	memcpy(&self->m, m, sizeof(meta));
+	meta m_p = {"p", self};
+	proxy_init(&self->p, dezyne_locator, &m_p);
+	meta m_c = {"c", self};
+	Dataparam_init(&self->c, dezyne_locator, &m_c);
 	self->port = self->p.top;
 	CONNECT(self->c.port, self->p.bottom);
 }

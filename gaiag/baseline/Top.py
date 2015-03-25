@@ -20,12 +20,18 @@
 # 
 # Code:
 
-class Top ():
-    def __init__ (self):
-        class Ins ():
-            unguarded = None
-            e = None
-        self.ins = Ins ()
-        class Outs ():
-            f = None
-        self.outs = Outs ()
+class Top:
+    def __init__ (self, provides=('', None), requires=('', None)):
+        class Ins:
+            def __init__ (self, name, c):
+                self.name = name
+                self.self = c
+                self.unguarded = None
+                self.e = None
+        self.ins = Ins (*provides)
+        class Outs:
+            def __init__ (self, name, c):
+                self.name = name
+                self.self = c
+                self.f = None
+        self.outs = Outs (*requires)

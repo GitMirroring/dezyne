@@ -33,6 +33,7 @@
 
 
 typedef struct {
+	meta m;
 	runtime_sub sub;
 	int reply_IReply7_E;
 	IReply7 p_;
@@ -41,6 +42,6 @@ typedef struct {
 	IReply7* r;
 } Reply7;
 
-void Reply7_init(Reply7* self, locator* dezyne_locator);
+void Reply7_init(Reply7* self, locator* dezyne_locator, meta* m);
 
 #endif // DEZYNE_REPLY7_H

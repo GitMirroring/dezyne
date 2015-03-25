@@ -1,6 +1,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+# Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -21,11 +22,17 @@
 # 
 # Code:
 
-class IChoice ():
-    def __init__ (self):
-        class Ins ():
-            e = None
-        self.ins = Ins ()
-        class Outs ():
-            a = None
-        self.outs = Outs ()
+class IChoice:
+    def __init__ (self, provides=('', None), requires=('', None)):
+        class Ins:
+            def __init__ (self, name, c):
+                self.name = name
+                self.self = c
+                self.e = None
+        self.ins = Ins (*provides)
+        class Outs:
+            def __init__ (self, name, c):
+                self.name = name
+                self.self = c
+                self.a = None
+        self.outs = Outs (*requires)

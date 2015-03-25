@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,9 +21,12 @@
 //
 // Code:
 
-interface.IComp= function() {
-  this.result_t= {
+dezyne.IComp = function(meta) {
+  this.result_t = {
     OK: 0, NOK: 1
+  };
+  this.result_t_to_string = {
+    0: 'result_t_OK', 1: 'result_t_NOK'
   };
   this.in = {
     initialize : null,
@@ -33,4 +36,5 @@ interface.IComp= function() {
   this.out = {
 
   };
+  this.meta = meta;
 };

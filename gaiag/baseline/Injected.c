@@ -23,18 +23,24 @@
 
 #include "Injected.h"
 
+#include <string.h>
+
 #define CONNECT(provided, required)\
 {\
 	provided->out = required->out;\
 	required->in = provided->in;\
 }
 
-void Injected_init(Injected *self, locator* dezyne_locator) {
+void Injected_init(Injected *self, locator* dezyne_locator, meta* m) {
 	locator* local_locator = locator_clone(dezyne_locator);
 	locator_set(local_locator, "ilogger", &self->l.log_);
-	logger_init(&self->l, local_locator);
-	middle_init(&self->m, local_locator);
-	bottom_init(&self->b, local_locator);
+	memcpy(&self->m, m, sizeof(meta));
+	meta m_l = {"l", self};
+	logger_init(&self->l, local_locator, &m_l);
+	meta m_m = {"m", self};
+	middle_init(&self->m, local_locator, &m_m);
+	meta m_b = {"b", self};
+	bottom_init(&self->b, local_locator, &m_b);
 	self->t = self->m.t;
 	CONNECT(self->b.b, self->m.b);
 }

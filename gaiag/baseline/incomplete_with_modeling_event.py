@@ -21,29 +21,33 @@
 # 
 # Code:
 
-import sys
-#
 import dezyne.iincomplete_with_modeling_event
 import dezyne.iincomplete_with_modeling_event
 
+import runtime
 
-class incomplete_with_modeling_event ():
+class incomplete_with_modeling_event:
 
-    def __init__ (self):
+    def __init__ (self, parent=None, name=''):
+        self.parent = parent
+        self.name = name
+        self.handling = False
+        self.deferred = None
+        self.queue = []
 
-        self.p = dezyne.iincomplete_with_modeling_event ()
-        self.r = dezyne.iincomplete_with_modeling_event ()
 
-        self.p.ins.e = self.p_e
-        self.r.outs.a = self.r_a
+        self.p = dezyne.iincomplete_with_modeling_event (provides=('p', self))
+
+        self.r = dezyne.iincomplete_with_modeling_event (requires=('r', self))
+
+        self.p.ins.e = lambda *args: runtime.call_in (self, lambda: self.p_e (*args), (self.p, 'e'))
+        self.r.outs.a = lambda *args: runtime.call_out (self, lambda: self.r_a (*args), (self.r, 'a'))
 
     def p_e (self):
-        sys.stderr.write ('incomplete_with_modeling_event.p_e\n')
         pass
 
 
     def r_a (self):
-        sys.stderr.write ('incomplete_with_modeling_event.r_a\n')
         self.p.outs.a ()
 
 

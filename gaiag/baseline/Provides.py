@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -21,12 +21,18 @@
 # 
 # Code:
 
-class Provides ():
-    def __init__ (self):
-        class Ins ():
-            start = None
-        self.ins = Ins ()
-        class Outs ():
-            busy = None
-            finish = None
-        self.outs = Outs ()
+class Provides:
+    def __init__ (self, provides=('', None), requires=('', None)):
+        class Ins:
+            def __init__ (self, name, c):
+                self.name = name
+                self.self = c
+                self.start = None
+        self.ins = Ins (*provides)
+        class Outs:
+            def __init__ (self, name, c):
+                self.name = name
+                self.self = c
+                self.busy = None
+                self.finish = None
+        self.outs = Outs (*requires)

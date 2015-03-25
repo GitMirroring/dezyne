@@ -26,6 +26,9 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
+#include <string.h>
+
+
 
 
 
@@ -61,46 +64,39 @@ static void helper_i_t(void* args) {
 
 static void i_e(Twotopon* self) {
 	(void)self;
-	DZN_LOG("Twotopon.i_e");
 	if (self->b) {
-		{
-			args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-			runtime_defer(&self->sub, helper_i_a, &a);
-		}
+		self->i->out.a(self->i);
 	}
 	else if (!(self->b)) {
-		{
-			args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-			runtime_defer(&self->sub, helper_i_a, &a);
-		}
+		self->i->out.a(self->i);
 	}
 }
 
 static void i_t(Twotopon* self) {
 	(void)self;
-	DZN_LOG("Twotopon.i_t");
-	{
-		args_i_a a = {sizeof(args_i_a), self->i->out.a, self};
-		runtime_defer(&self->sub, helper_i_a, &a);
-	}
+	self->i->out.a(self->i);
 }
 
-static void callback_i_e(ITwotopon* self) {
+static void call_in_i_e(ITwotopon* self) {
+	runtime_trace_in(&self->in, &self->out, "e");
 	args_i_e a = {sizeof(args_i_e), i_e, self->in.self};
 	runtime_event(helper_i_e, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
-
-static void callback_i_t(ITwotopon* self) {
+static void call_in_i_t(ITwotopon* self) {
+	runtime_trace_in(&self->in, &self->out, "t");
 	args_i_t a = {sizeof(args_i_t), i_t, self->in.self};
 	runtime_event(helper_i_t, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
 
-
-void Twotopon_init (Twotopon* self, locator* dezyne_locator) {
+void Twotopon_init (Twotopon* self, locator* dezyne_locator, meta *m) {
 	runtime_sub_init(dezyne_locator->rt, &self->sub);
+	memcpy(&self->m, m, sizeof(meta));
 	self->b = false;
 	self->i = &self->i_;
-	self->i->in.e = callback_i_e;
-	self->i->in.t = callback_i_t;
+	self->i->in.e = call_in_i_e;
+	self->i->in.t = call_in_i_t;
+	self->i->in.name = "i";
 	self->i->in.self = self;
 }

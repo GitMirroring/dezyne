@@ -29,6 +29,7 @@ typedef struct ISiren ISiren;
 
 struct ISiren{
 	struct {
+		char const* name;
 		void* self;
 		void (*turnon)(ISiren* self);
 		void (*turnoff)(ISiren* self);
@@ -36,6 +37,7 @@ struct ISiren{
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 
 	} out;

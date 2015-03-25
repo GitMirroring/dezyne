@@ -33,6 +33,7 @@
 #include "locator.h"
 
 typedef struct {
+	meta m;
 	proxy p;
 	Dataparam c;
 
@@ -40,6 +41,6 @@ typedef struct {
 
 } Datasystem;
 
-void Datasystem_init(Datasystem*self, locator* dezyne_locator);
+void Datasystem_init(Datasystem*self, locator* dezyne_locator, meta* m);
 
 #endif // DEZYNE_DATASYSTEM_H

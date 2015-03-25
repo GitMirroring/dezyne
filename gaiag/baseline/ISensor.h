@@ -29,6 +29,7 @@ typedef struct ISensor ISensor;
 
 struct ISensor{
 	struct {
+		char const* name;
 		void* self;
 		void (*enable)(ISensor* self);
 		void (*disable)(ISensor* self);
@@ -36,6 +37,7 @@ struct ISensor{
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 		void (*triggered) (ISensor* self);
 		void (*disabled) (ISensor* self);

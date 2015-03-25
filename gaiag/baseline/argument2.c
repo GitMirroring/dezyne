@@ -27,6 +27,9 @@
 #include "locator.h"
 #include "runtime.h"
 #include <assert.h>
+#include <string.h>
+
+
 
 
 
@@ -55,40 +58,36 @@ static bool g(argument2* self,bool ga, bool gb);
 
 static bool g(argument2* self,bool ga, bool gb) {
 	(void)self;
-	{
-		args_i_f a = {sizeof(args_i_f), self->i->out.f, self};
-		runtime_defer(&self->sub, helper_i_f, &a);
-	}
+	self->i->out.f(self->i);
 	return (ga || gb);
 }
 
 
 static void i_e(argument2* self) {
 	(void)self;
-	DZN_LOG("argument2.i_e");
 	if (true) {
 		self->b = !(self->b);
 		bool c = g(self, self->b, self->b);
 		self->b = g(self, c, c);
 		if (c) {
-			{
-				args_i_f a = {sizeof(args_i_f), self->i->out.f, self};
-				runtime_defer(&self->sub, helper_i_f, &a);
-			}
+			self->i->out.f(self->i);
 		}
 	}
 }
 
-static void callback_i_e(I* self) {
+static void call_in_i_e(I* self) {
+	runtime_trace_in(&self->in, &self->out, "e");
 	args_i_e a = {sizeof(args_i_e), i_e, self->in.self};
 	runtime_event(helper_i_e, &a);
+	runtime_trace_out(&self->in, &self->out, "return");
 }
 
-
-void argument2_init (argument2* self, locator* dezyne_locator) {
+void argument2_init (argument2* self, locator* dezyne_locator, meta *m) {
 	runtime_sub_init(dezyne_locator->rt, &self->sub);
+	memcpy(&self->m, m, sizeof(meta));
 	self->b = false;
 	self->i = &self->i_;
-	self->i->in.e = callback_i_e;
+	self->i->in.e = call_in_i_e;
+	self->i->in.name = "i";
 	self->i->in.self = self;
 }

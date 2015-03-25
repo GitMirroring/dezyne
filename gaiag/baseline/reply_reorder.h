@@ -33,6 +33,7 @@
 
 
 typedef struct {
+	meta m;
 	runtime_sub sub;
 	bool first;
 	Provides p_;
@@ -41,6 +42,6 @@ typedef struct {
 	Requires* r;
 } reply_reorder;
 
-void reply_reorder_init(reply_reorder* self, locator* dezyne_locator);
+void reply_reorder_init(reply_reorder* self, locator* dezyne_locator, meta* m);
 
 #endif // DEZYNE_REPLY_REORDER_H

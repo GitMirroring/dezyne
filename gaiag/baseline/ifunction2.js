@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,7 +21,7 @@
 //
 // Code:
 
-interface.ifunction2= function() {
+dezyne.ifunction2 = function(meta) {
   this.in = {
     a : null,
     b : null
@@ -30,4 +30,5 @@ interface.ifunction2= function() {
     c : null,
     d : null
   };
+  this.meta = meta;
 };

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,9 +21,12 @@
 //
 // Code:
 
-interface.U= function() {
-  this.Status= {
+dezyne.U = function(meta) {
+  this.Status = {
     Ok: 0, Nok: 1
+  };
+  this.Status_to_string = {
+    0: 'Status_Ok', 1: 'Status_Nok'
   };
   this.in = {
     what : null
@@ -31,4 +34,5 @@ interface.U= function() {
   this.out = {
 
   };
+  this.meta = meta;
 };

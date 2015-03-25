@@ -30,12 +30,14 @@ typedef struct ilogger ilogger;
 
 struct ilogger{
 	struct {
+		char const* name;
 		void* self;
 		void (*log)(ilogger* self);
 
 	} in;
 
 	struct {
+		char const* name;
 		void* self;
 
 	} out;
