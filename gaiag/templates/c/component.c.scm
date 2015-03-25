@@ -116,13 +116,17 @@ void #.model _init (#.model * self, locator* dezyne_locator, meta *m) {
    self->#port ->#direction .#event  = call_in_#port _#event;
 #}) (filter gom:in? (gom:events port)))
         (list (->string (list "self->" (.name port) "->in.name = \"" (.name port) "\";\n")))
-        (list (->string (list "self->" (.name port) "->in.self = self;\n"))))))
+        (list (->string (list "self->" (.name port) "->in.self = self;\n")))
+        (list (->string (list "self->" (.name port) "->out.name = \"" "\";\n")))
+        (list (->string (list "self->" (.name port) "->out.self = 0;\n"))))))
     (filter gom:provides? (gom:ports model)))#
    (map
     (lambda (port)
       (string-join
        (append
         (list (->string (list "self->" (.name port) " = &self->" (.name port) "_;\n")))
+        (list (->string (list "self->" (.name port) "->in.name = \"" "\";\n")))
+        (list (->string (list "self->" (.name port) "->in.self = 0;\n")))
         (list (->string (list "self->" (.name port) "->out.name = \"" (.name port) "\";\n")))
         (list (->string (list "self->" (.name port) "->out.self = self;\n")))
         (map (define-on model port #{
