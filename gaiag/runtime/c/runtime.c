@@ -49,25 +49,9 @@ runtime_sub_init (runtime* self, runtime_sub* sub)
 {
   sub->rt = self;
   sub->handling = false;
+  sub->performs_flush = false;
+  sub->deferred = 0;
   queue_init(&sub->q);
-}
-
-static bool*
-runtime_handling (runtime_sub* sub)
-{
-  return &sub->handling;
-}
-
-static runtime_sub**
-runtime_deferred (runtime_sub* sub)
-{
-  return (runtime_sub**)&sub->deferred;
-}
-
-static bool*
-runtime_external (runtime_sub* sub)
-{
-  return false; // FIXME Paul
 }
 
 static void runtime_handle_event (runtime_sub* sub, void (*event)(void*), void* args);
@@ -75,8 +59,6 @@ static void runtime_handle_event (runtime_sub* sub, void (*event)(void*), void* 
 void
 runtime_flush (runtime_sub* sub)
 {
-  if (runtime_external (sub))
-    return;
   queue* q = &sub->q;
   while (!queue_empty (q))
   {
@@ -90,12 +72,12 @@ runtime_flush (runtime_sub* sub)
     runtime_handle_event (sub, c.func, c.args);
 #endif
   }
-  if (runtime_deferred (sub))
+  if (sub->deferred)
   {
-    runtime_sub** tgt = runtime_deferred (sub);
-    *runtime_deferred (sub) = 0;
-    if (*tgt && !runtime_handling (*tgt))
-      runtime_flush (*tgt);
+    runtime_sub* tgt = sub->deferred;
+    sub->deferred = 0;
+    if (tgt && !tgt->handling)
+      runtime_flush (tgt);
   }
 }
 
@@ -104,9 +86,9 @@ runtime_defer (void* vsrc, void* vtgt, void (*event)(void*), void* args)
 {
   component* csrc = vsrc;
   component* ctgt = vtgt;
-  runtime_sub* src = &csrc->sub;
-  runtime_sub* tgt = &ctgt->sub;
-  if (runtime_external (src) || runtime_external (tgt))
+  runtime_sub* src = csrc?&csrc->sub:0;
+  runtime_sub* tgt = ctgt?&ctgt->sub:0;
+  if ((!(src && src->performs_flush)) && !(tgt->handling))
   {
     runtime_handle_event (tgt, event, args);
     return;
@@ -117,26 +99,27 @@ runtime_defer (void* vsrc, void* vtgt, void (*event)(void*), void* args)
   arguments *a = args;
   c->args = dzn_malloc (a->size);
   memcpy (c->args, a, a->size);
-  queue_push (&src->q, c);
+  queue_push (&tgt->q, c);
+  src->deferred = tgt;
 #else
   closure c;
   c.func = event;
   arguments *a = args;
   assert(a->size <= DZN_MAX_ARGS_SIZE);
   memcpy(&c.args, a, a->size);
-  queue_push (&src->q, &c);
+  queue_push (&tgt_sub->q, &c);
+  src->deferred = tgt;
 #endif
 }
 
 static void
 runtime_handle_event (runtime_sub* sub, void (*event)(void*), void* args)
 {
-  bool* handle = runtime_handling (sub);
-  if (!*handle)
+  if (!sub->handling)
   {
-    *handle = true;
+    sub->handling = true;
     event (args);
-    *handle = false;
+    sub->handling = false;
     runtime_flush (sub);
   }
   else
@@ -159,14 +142,11 @@ runtime_path (void *m, char* p)
   char buf[1023];
   if (!m) {
     strcpy (buf, p);
-    strcpy (p, "null.");
+    strcpy (p, "<external>");
     strcat (p, buf);
     return p;
   }
   component *c = m;
-  //if (m.component) {
-  //  return runtime.path(m.component.meta, m.name + (p ? "." + p : p));
-  // }
   if (c->m.parent) {
     strcpy (buf, p);
     strcpy (p, c->m.name);

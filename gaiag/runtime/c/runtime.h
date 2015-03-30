@@ -31,9 +31,6 @@
 #include "queue.h"
 #include "map.h"
 
-typedef struct {
-  int dummy;
-} runtime;
 
 typedef struct {
   char const* name;
@@ -41,16 +38,28 @@ typedef struct {
 } meta;
 
 typedef struct {
+  int dummy;
+} runtime;
+
+typedef struct runtime_sub runtime_sub;
+struct runtime_sub {
   runtime* rt;
   bool handling;
-  void* deferred;
+  bool performs_flush;
+  runtime_sub* deferred;
   queue q;
-} runtime_sub;
+};
 
 typedef struct {
   meta m;
   runtime_sub sub;
 } component;
+
+typedef struct {
+  meta m;
+  runtime_sub sub;
+  void* self;
+} component_header;
 
 void runtime_init (runtime*);
 void runtime_sub_init (runtime* self, runtime_sub* sub);
