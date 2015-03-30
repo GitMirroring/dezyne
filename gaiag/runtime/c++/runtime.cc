@@ -57,9 +57,15 @@ void*& runtime::deferred(void* scope)
 {
   return std::get<1>(queues[scope]);
 }
+
 std::queue<std::function<void()> >& runtime::queue(void* scope)
 {
   return std::get<2>(queues[scope]);
+}
+
+bool& runtime::performs_flush(void* scope)
+{
+  return std::get<3>(queues[scope]);
 }
 
 void runtime::flush(void* scope)
@@ -92,7 +98,7 @@ void runtime::defer(void* src, void* tgt, const std::function<void()>& event)
   std::cout << path(tgt) << " defer" << std::endl;
 #endif
 
-  if(external(src) || external(tgt))
+  if(!performs_flush(src) && !handling(tgt))
   {
     handle(tgt, event);
   }

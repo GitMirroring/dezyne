@@ -17,6 +17,7 @@ namespace dezyne
 (if (null? (gom:variables model)) "" "\n, ") #
 ((->join  "\n, ") (map (lambda (port) (list (.name port) "(" (if (.injected port) (list "dezyne_locator.get<" (.type port) ">()") (list "{" (if (eq? (.direction port) 'requires) "{\"\",0},") "{\"" (.name port) "\",this}" (if (eq? (.direction port) 'provides) ",{\"\",0}") "}")) ")")) (gom:ports model)))
   {
+    rt.performs_flush(this) = true; 
 #
    (map
     (lambda (port)

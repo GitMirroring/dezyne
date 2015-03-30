@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -76,7 +77,7 @@ namespace dezyne
   inline std::string path(void* c, std::string p="")
   {
     if (!c)
-      return "0x0." + p;
+      return "<external>." + p;
     return path(reinterpret_cast<const component*>(c)->meta, p);
   }
 

@@ -57,12 +57,13 @@ namespace dezyne
 
   struct runtime
   {
-    std::map<void*, std::tuple<bool, void*, std::queue<std::function<void()> > > > queues;
+    std::map<void*, std::tuple<bool, void*, std::queue<std::function<void()> >, bool> > queues;
 
     bool external(void*);
     bool& handling(void*);
     void*& deferred(void*);
     std::queue<std::function<void()> >& queue(void*);
+    bool& performs_flush(void* scope);
     void flush(void*);
     void defer(void*, void*, const std::function<void()>&);
     void handle(void*, const std::function<void()>&); // trace_data const&);
