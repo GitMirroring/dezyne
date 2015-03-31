@@ -10,8 +10,8 @@
 
 
 typedef struct {
-    meta m;
-    runtime_sub sub;
+    dzn_meta_t dzn_meta;
+    runtime_sub dzn_sub;
     #(map (init-member model #{
 #type  #name;
 #}) (gom:variables model))#
@@ -21,6 +21,6 @@ typedef struct {
 #interface * #name;
 #}) ((compose .elements .ports) model))} #.model;
 
-void #.model _init(#.model * self, locator* dezyne_locator, meta* m);
+void #.model _init(#.model * self, locator* dezyne_locator, dzn_meta_t* dzn_meta);
 
 ##endif // DEZYNE_#.COMPONENT _H

@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -62,7 +63,7 @@ int main()
   locator_init(&l, &rt);
 
   Datasystem d;
-  meta m = {"d", 0};
+  dzn_meta_t m = {"d", 0};
   Datasystem_init(&d,&l,&m);
   d.port->out.name = "port";
   d.port->out.self = &d;

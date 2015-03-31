@@ -97,10 +97,10 @@
 
 #}) (filter gom:out? (gom:events port))))
     (filter gom:requires? (gom:ports model)))
-void #.model _init (#.model * self, locator* dezyne_locator, meta *m) {
-  runtime_sub_init(dezyne_locator->rt, &self->sub);
-  memcpy(&self->m, m, sizeof(meta));
-  #(map (lambda (port) (->string (list "self->" (.name port) "_ = *(" (.type port) "*)locator_get(dezyne_locator, \"" (.type port) "\");\n"))) (filter .injected (gom:ports model)))#
+void #.model _init (#.model * self, locator* dezyne_locator, dzn_meta_t *dzn_meta) {
+  runtime_sub_init(dezyne_locator->rt, &self->dzn_sub);
+  memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
+  #(map (lambda (port) (->string (list "self->" (.name port) " = locator_get(dezyne_locator, \"" (.type port) "\");\n"))) (filter .injected (gom:ports model)))#
 ((->join  ";\n")
  (filter (negate (compose string-null? string-trim))
    (map (init-member model #{
@@ -124,9 +124,12 @@ void #.model _init (#.model * self, locator* dezyne_locator, meta *m) {
     (lambda (port)
       (string-join
        (append
-        (list (->string (list "self->" (.name port) " = &self->" (.name port) "_;\n")))
-        (list (->string (list "self->" (.name port) "->in.name = \"" "\";\n")))
-        (list (->string (list "self->" (.name port) "->in.self = 0;\n")))
+        (if (.injected port)
+            '()
+            (append
+             (list (->string (list "self->" (.name port) " = &self->" (.name port) "_;\n")))
+             (list (->string (list "self->" (.name port) "->in.name = \"" "\";\n")))
+             (list (->string (list "self->" (.name port) "->in.self = 0;\n")))))
         (list (->string (list "self->" (.name port) "->out.name = \"" (.name port) "\";\n")))
         (list (->string (list "self->" (.name port) "->out.self = self;\n")))
         (map (define-on model port #{

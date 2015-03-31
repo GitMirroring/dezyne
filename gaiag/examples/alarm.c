@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -44,7 +45,7 @@ int main()
   locator_init (&dezyne_locator, &dezyne_runtime);
 
   AlarmSystem alarmsystem;
-  meta m = {"alarmsystem", 0};
+  dzn_meta_t m = {"alarmsystem", 0};
   AlarmSystem_init(&alarmsystem, &dezyne_locator, &m);
   alarmsystem.console->out.name = "console";
   alarmsystem.console->out.self = &alarmsystem;
@@ -55,9 +56,9 @@ int main()
 
   alarmsystem.console->in.arm(alarmsystem.console);
   alarmsystem.sensor.sensor->out.triggered(alarmsystem.sensor.sensor);
-  runtime_flush(&alarmsystem.sensor.sub);
+  runtime_flush(&alarmsystem.sensor.dzn_sub);
   alarmsystem.console->in.disarm(alarmsystem.console);
   alarmsystem.sensor.sensor->out.disabled(alarmsystem.sensor.sensor);
-  runtime_flush(&alarmsystem.sensor.sub);
+  runtime_flush(&alarmsystem.sensor.dzn_sub);
   return 0;
 }

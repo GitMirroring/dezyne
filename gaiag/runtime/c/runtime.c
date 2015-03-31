@@ -86,8 +86,8 @@ runtime_defer (void* vsrc, void* vtgt, void (*event)(void*), void* args)
 {
   component* csrc = vsrc;
   component* ctgt = vtgt;
-  runtime_sub* src = csrc?&csrc->sub:0;
-  runtime_sub* tgt = ctgt?&ctgt->sub:0;
+  runtime_sub* src = csrc?&csrc->dzn_sub:0;
+  runtime_sub* tgt = ctgt?&ctgt->dzn_sub:0;
   if ((!(src && src->performs_flush)) && !(tgt->handling))
   {
     runtime_handle_event (tgt, event, args);
@@ -133,7 +133,7 @@ runtime_event (void (*event)(void*), void* args)
 {
   arguments* a = args;
   component* c = a->self;
-  runtime_handle_event (&c->sub, event, args);
+  runtime_handle_event (&c->dzn_sub, event, args);
 }
 
 char*
@@ -147,15 +147,15 @@ runtime_path (void *m, char* p)
     return p;
   }
   component *c = m;
-  if (c->m.parent) {
+  if (c->dzn_meta.parent) {
     strcpy (buf, p);
-    strcpy (p, c->m.name);
+    strcpy (p, c->dzn_meta.name);
     if (strlen (buf))
       strcat (p, ".");
-    return runtime_path (c->m.parent, strcat (p, buf));
+    return runtime_path (c->dzn_meta.parent, strcat (p, buf));
   }
   strcpy (buf, p);
-  strcpy (p, c->m.name);
+  strcpy (p, c->dzn_meta.name);
   if (strlen (buf))
     strcat (p, ".");
   return strcat (p, buf);
@@ -166,8 +166,8 @@ runtime_trace_in (void* in, void* out, char const* e)
 {
   char ibuf[1024] = "";
   char obuf[1024] = "";
-  meta* i = in;
-  meta* o = out;
+  dzn_meta_t* i = in;
+  dzn_meta_t* o = out;
   fprintf (stderr, "%s.%s.%s -> %s.%s.%s\n",
            runtime_path (o->parent, obuf), o->name, e,
            runtime_path (i->parent, ibuf), i->name, e);
@@ -178,8 +178,8 @@ runtime_trace_out (void* in, void* out, char const* e)
 {
   char ibuf[1024] = "";
   char obuf[1024] = "";
-  meta* i = in;
-  meta* o = out;
+  dzn_meta_t* i = in;
+  dzn_meta_t* o = out;
   fprintf (stderr, "%s.%s.%s -> %s.%s.%s\n",
            runtime_path (i->parent, ibuf), i->name, e,
            runtime_path (o->parent, obuf), o->name, e);

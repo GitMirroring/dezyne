@@ -1,6 +1,5 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -22,32 +21,24 @@
 //
 // Code:
 
-#include "Injected.h"
-
-#include "locator.h"
-#include "runtime.h"
-
-#include <stdio.h>
-
-void f(itop* self)
+interface I
 {
-  (void)self;
-  printf("f\n");
+  in void e;
+
+  behaviour
+  {
+    bool b = false;
+    bool g () 
+    {
+      return true; 
+    }
+
+    [true]
+    on e:
+    {
+      b = g();
+    }
+  }
 }
 
-int main()
-{
-  runtime rt;
-  runtime_init(&rt);
 
-  locator l;
-  locator_init(&l, &rt);
-
-  Injected i;
-  dzn_meta_t mt = {"m", 0};
-  Injected_init(&i, &l, &mt);
-  i.t->out.f = f;
-
-  i.t->in.e(i.t);
-  return 0;
-}

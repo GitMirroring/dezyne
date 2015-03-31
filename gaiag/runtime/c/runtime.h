@@ -35,7 +35,7 @@
 typedef struct {
   char const* name;
   void* parent;
-} meta;
+} dzn_meta_t;
 
 typedef struct {
   int dummy;
@@ -51,13 +51,13 @@ struct runtime_sub {
 };
 
 typedef struct {
-  meta m;
-  runtime_sub sub;
+  dzn_meta_t dzn_meta;
+  runtime_sub dzn_sub;
 } component;
 
 typedef struct {
-  meta m;
-  runtime_sub sub;
+  dzn_meta_t dzn_meta;
+  runtime_sub dzn_sub;
   void* self;
 } component_header;
 
