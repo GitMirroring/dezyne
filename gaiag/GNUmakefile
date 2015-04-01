@@ -38,8 +38,8 @@ SCM_TEST_SOURCES = $(shell cd test-suite git ls-files)
 CSPMCHECKER = cspmchecker
 REFINES = fdr2 batch
 TRANSIT = transit
-PREFIX = $(abspath $(shell pwd))
-GUILE_LOAD_PATH = $(PREFIX):$(PREFIX)/module
+GAIAG_PREFIX = $(abspath $(shell pwd))
+GUILE_LOAD_PATH = $(GAIAG_PREFIX):$(GAIAG_PREFIX)/module
 GUILE_FLAGS := $(patsubst %,-L %, $(subst :, ,$(GUILE_LOAD_PATH)))
 PYTHON = PYTHONPATH=out python
 WFC = true
@@ -738,6 +738,7 @@ goops: compile goops-alarm goops-dataparam goops-regression
 
 glue:
 	rm -rf out && mkdir -p out && cd out && ln -s ../examples ../../webapp/server/commands ../runtime/c++/* ../templates .
+	rm -f out/main.cc
 	cd out && for model in\
 	 	AlarmSystem\
 	 	Alarm\
