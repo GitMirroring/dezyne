@@ -37,7 +37,7 @@ def flush (c):
             flush (t)
 
 def defer (i, o, f):
-    if (external (i) or external (o)):
+    if (not i.flushes and not o.handling):
         handle (o, f)
     else:
         i.deferred = o

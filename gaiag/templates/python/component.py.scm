@@ -9,6 +9,7 @@ class #.model :
         self.parent = parent
         self.name = name
         self.handling = False
+        self.flushes = True
         self.deferred = None
         self.queue = []
 
