@@ -42,7 +42,7 @@ locator* locator_clone(locator* self) {
   //memcpy(clone, self, sizeof(locator));
   clone->rt = self->rt;
   map_init (&clone->services);
-  map_iterate(&self->services, map_copy, clone); 
+  map_iterate(&self->services, map_copy, &clone->services); 
   return clone;
 }
 
