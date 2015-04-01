@@ -46,7 +46,7 @@ var runtime = {
   },
 
   external : function(c) {
-    return false;
+    return c.rt.components.indexOf (c) == -1;
   },
 
   flush : function(c) {
@@ -66,7 +66,7 @@ var runtime = {
   },
 
   defer : function(i, o, f) {
-    if(runtime.external(i) || runtime.external(o)) {
+    if(!i.flushes && !o.handling) {
       runtime.handle(o, f);
     }
     else {

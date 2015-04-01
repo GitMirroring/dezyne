@@ -1,5 +1,6 @@
 dezyne.#.model  = function(rt, meta) {
   rt.top = rt.top || this;
+  rt.components = (rt.components || []).concat ([this]);
   this.rt = rt;
   this.meta = meta;
 #(map (init-instance #{

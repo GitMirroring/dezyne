@@ -1,6 +1,8 @@
 dezyne.#.model  = function(rt, meta) {
   this.rt = rt;
-  this.meta = meta;#
+  rt.components = (rt.components || []).concat ([this]);
+  this.meta = meta;
+  this.flushes = true;#
 (->string (map declare-enum (gom:enums (.behaviour model))))
 #
     (map (init-member model #{
