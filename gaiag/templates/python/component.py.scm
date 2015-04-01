@@ -5,7 +5,9 @@ import runtime
 
 class #.model :
 #(->string (map declare-enum (gom:enums (.behaviour model))))
-    def __init__ (self, parent=None, name=''):
+    def __init__ (self, rt, parent=None, name=''):
+        self.rt = rt
+        rt.components += [self]
         self.parent = parent
         self.name = name
         self.handling = False

@@ -30,13 +30,14 @@ import dezyne.AlarmSystem
 import runtime
 
 def detected ():
-   sys.stderr.write ('Console.detected\n')
+    sys.stderr.write ('Console.detected\n')
 
 def deactivated ():
-   sys.stderr.write ('Console.deactivated\n')
+    sys.stderr.write ('Console.deactivated\n')
 
 def main ():
-    alarm_system = dezyne.AlarmSystem (name='alarmsystem')
+    rt = runtime.runtime ()
+    alarm_system = dezyne.AlarmSystem (rt, name='alarmsystem')
     alarm_system.console.outs.name = 'console'
     alarm_system.console.outs.self = alarm_system
 

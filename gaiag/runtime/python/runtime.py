@@ -22,8 +22,12 @@
 
 import sys
 
+class runtime:
+    def __init__ (self):
+        self.components = []
+
 def external (c):
-    return False
+    return c not in c.rt.components
 
 def flush (c):
     if (external (c)):

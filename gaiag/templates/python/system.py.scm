@@ -5,11 +5,13 @@ def connect (provided, required):
     required.ins = provided.ins
 
 class #.model :
-    def __init__ (self, parent=None, name=''):
+    def __init__ (self, rt, parent=None, name=''):
+        self.rt = rt
+        rt.components += [self]
         self.parent = parent
         self.name = name
 #(map (init-instance #{
-        self.#name  = dezyne.#component  (parent=self, name='#name ')
+        self.#name  = dezyne.#component  (self.rt, parent=self, name='#name ')
 #}) ((compose .elements .instances) model))#
 (map (init-bind model #{
         self.#port  = self.#instance

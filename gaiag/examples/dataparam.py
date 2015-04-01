@@ -49,7 +49,8 @@ def a6(i0, i1, i2,i3, i4, i5):
     assert(i5 == 5);
 
 def main():
-    d = dezyne.Datasystem(name='d');
+    rt = runtime.runtime ()
+    d = dezyne.Datasystem(rt, name='d');
     d.port.outs.name = 'port'
     d.port.outs.self = d
 
