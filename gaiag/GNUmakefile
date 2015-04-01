@@ -237,6 +237,7 @@ c: compile c-alarm c-inject c-dataparam c-regression
 
 c-alarm:
 	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c/* .
+	rm -f out/main.c
 	cd out && for file in\
 		examples/Alarm.dzn\
 		examples/IConsole.dzn\
@@ -257,6 +258,7 @@ c-alarm:
 
 c-dataparam:
 	rm -rf out && mkdir out && cd out && ln -s ../runtime/c/* .
+	rm -f out/main.c
 	cd out && ../gaiag -l c ../examples/regression/Dataparam.dzn
 	cd out && ln -sf ../examples/dataparam.c .
 	for i in out/*c; do ccache gcc -g -std=c99 -Wall -pedantic -pedantic-errors -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o && out/$@ 2> out/$@.trace
@@ -265,6 +267,7 @@ c-dataparam:
 
 c-inject:
 	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c/* .
+	rm -f out/main.c
 	cd out && ln -s ../examples/injected.c .
 	cd out && $(shell pwd)/gaiag -l c examples/Injected.dzn
 	for i in out/*c; do ccache gcc -g -std=c99 -Wall -pedantic -pedantic-errors -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o && out/$@ 2> out/$@.trace
@@ -308,6 +311,7 @@ c++: compile c++-alarm glue c++-inject c++-dataparam c++-choice c++-regression
 
 c++-alarm:
 	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c++/* .
+	rm -f out/main.cc
 	cd out && for file in\
 		examples/AlarmSystem.dzn\
 		examples/regression/Alarm.dzn\
@@ -325,6 +329,7 @@ c++-alarm:
 
 c++-inject:
 	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c++/* .
+	rm -f out/main.cc
 	cd out && ln -s ../examples/injected.cc .
 	cd out && $(shell pwd)/gaiag -l c++ examples/Injected.dzn
 	for i in out/*cc; do ccache g++ -std=c++11 -g -Wall -Wextra -c -o out/$$(basename $$i .cc).o $$i; done && g++ -o out/$@ out/*.o && out/$@ |& sed -e s/0[^:]*://g | grep -Ev '^(|0 )0x' >out/$@.trace
@@ -332,6 +337,7 @@ c++-inject:
 
 c++-dataparam:
 	rm -rf out && mkdir out && cd out && ln -s ../runtime/c++/* .
+	rm -f out/main.cc
 	cd out && ../gaiag -l c++ ../examples/regression/Dataparam.dzn
 	cd out && ln -sf ../examples/dataparam.cc .
 	for i in out/*cc; do ccache g++ -std=c++11 -g -Wall -Wextra -c -o out/$$(basename $$i .cc).o $$i; done && g++ -o out/$@ out/*.o && out/$@ |& sed -e s/0[^:]*://g | grep -Ev '^(|0 )0x' >out/$@.trace
@@ -340,8 +346,8 @@ c++-dataparam:
 
 c++-choice:
 	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c++/* .
+#	rm -f out/main.cc #choice already works with generic main
 	cd out && $(shell pwd)/gaiag -l c++ examples/regression/Choice.dzn
-	ln -s ../../webapp/server/commands/runtime/c++/main.cc out
 	for i in out/*cc; do ccache g++ -std=c++11 -g -Wall -Wextra -c -o out/$$(basename $$i .cc).o $$i; done && g++ -o out/$@ out/*.o && out/$@ |& sed -e s/0[^:]*://g | grep -Ev '^(|0 )0x' >out/$@.trace
 	$(diff) baseline/$@.trace out
 	$(diff) baseline/Choice.cc out
