@@ -52,6 +52,7 @@ int main()
   alarmsystem.console.out.deactivated = deactivated;
 
   alarmsystem.check_bindings();
+  alarmsystem.dump_tree();
 
   alarmsystem.console.in.arm();
   alarmsystem.sensor.sensor.out.triggered();

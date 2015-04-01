@@ -48,6 +48,7 @@ int main()
   i.t.out.f = f;
 
   i.check_bindings();
+  i.dump_tree();
 
   i.t.in.e();
 }

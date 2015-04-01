@@ -35,4 +35,8 @@ namespace dezyne
   {
     dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
   }
+  void #.model ::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

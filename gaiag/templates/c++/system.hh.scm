@@ -27,6 +27,7 @@ struct #.model
 #}) ((compose .elements .ports) model))
   #.model (const dezyne::locator&);
   void check_bindings() const;
+  void dump_tree() const;
 };
 }
 ##endif // DEZYNE_#.COMPONENT _HH

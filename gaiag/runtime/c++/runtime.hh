@@ -30,6 +30,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <iostream>
 #include <map>
 #include <queue>
 #include <tuple>
@@ -53,6 +54,13 @@ namespace dezyne
     dezyne::apply(c, [](const dezyne::meta& m){
         std::for_each(m.ports_connected.begin(), m.ports_connected.end(), [&](std::function<void()> p){p();});
       });
+  }
+
+  inline void dump_tree(const component* c)
+  {
+    dezyne::apply(c, [](const dezyne::meta& m){
+        std::clog << path(m) << ":" << m.type << std::endl;
+    });
   }
 
   struct runtime

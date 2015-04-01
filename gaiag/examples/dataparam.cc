@@ -74,6 +74,7 @@ int main()
   d.port.out.a6 = a6;
 
   d.check_bindings();
+  d.dump_tree();
 
   assert(dezyne::IDataparam::Status::Yes == d.port.in.e0r());
   d.port.in.e0();

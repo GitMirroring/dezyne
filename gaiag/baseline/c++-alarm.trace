@@ -1,3 +1,7 @@
+alarmsystem:AlarmSystem
+alarmsystem.alarm:Alarm
+alarmsystem.sensor:Sensor
+alarmsystem.siren:Siren
 alarmsystem.console.arm -> alarmsystem.alarm.console.arm
 alarmsystem.alarm.sensor.enable -> alarmsystem.sensor.sensor.enable
 alarmsystem.sensor.sensor.return -> alarmsystem.alarm.sensor.return
