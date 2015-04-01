@@ -8,8 +8,8 @@
 namespace dezyne
 {
 #.model ::#.model (const locator& dezyne_locator)
-: meta{"","#.model",reinterpret_cast<const component*>(this),0,{},{#((->join ",") (map (lambda (port) (list "[this]{" (.name port) ".check_bindings();}")) (gom:ports model)))}}
-, rt(dezyne_locator.get<runtime>())
+: dzn_meta{"","#.model",reinterpret_cast<const component*>(this),0,{},{#((->join ",") (map (lambda (port) (list "[this]{" (.name port) ".check_bindings();}")) (gom:ports model)))}}
+, dzn_rt(dezyne_locator.get<runtime>())
 , #
 ((->join  "\n, ")
  (map (init-member model #{
@@ -17,7 +17,7 @@ namespace dezyne
 (if (null? (gom:variables model)) "" "\n, ") #
 ((->join  "\n, ") (map (lambda (port) (list (.name port) "(" (if (.injected port) (list "dezyne_locator.get<" (.type port) ">()") (list "{" (if (eq? (.direction port) 'requires) "{\"\",0},") "{\"" (.name port) "\",this}" (if (eq? (.direction port) 'provides) ",{\"\",0}") "}")) ")")) (gom:ports model)))
   {
-    rt.performs_flush(this) = true; 
+    dzn_rt.performs_flush(this) = true; 
 #
    (map
     (lambda (port)

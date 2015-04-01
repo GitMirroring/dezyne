@@ -14,8 +14,8 @@ struct runtime;
 
 struct #.model
 {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     #(->string (map declare-enum (gom:enums (.behaviour model))))#
     (->string (map declare-integer (gom:integers (.behaviour model))))#
     (map (init-member model #{

@@ -1,5 +1,6 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
@@ -44,7 +45,7 @@ int main()
   dezyne::locator locator;
   dezyne::AlarmSystem alarmsystem(locator.set(runtime));
 
-  alarmsystem.meta.name = "alarmsystem";
+  alarmsystem.dzn_meta.name = "alarmsystem";
   alarmsystem.console.meta.requires = {"console",&alarmsystem};
 
   alarmsystem.console.out.detected = detected;

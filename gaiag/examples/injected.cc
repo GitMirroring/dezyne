@@ -3,6 +3,7 @@
 // This file is part of Gaiag.
 //
 // Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
@@ -42,7 +43,7 @@ int main()
 
   dezyne::Injected i(l);
 
-  i.meta.name = "i";
+  i.dzn_meta.name = "i";
   i.t.meta.requires = {"t",&i};
   i.t.out.f = f;
 

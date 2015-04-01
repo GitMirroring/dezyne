@@ -64,13 +64,13 @@ namespace dezyne
 
   struct component
   {
-    dezyne::meta meta;
+    dezyne::meta dzn_meta;
   };
 
   inline std::string path(meta const& m, std::string p="")
   {
     if(m.parent)
-      return path(m.parent->meta, m.name + (p.empty() ? p : "." + p));
+      return path(m.parent->dzn_meta, m.name + (p.empty() ? p : "." + p));
     return m.name + (p.empty() ? p : "." + p);
   }
 
@@ -78,7 +78,7 @@ namespace dezyne
   {
     if (!c)
       return "<external>." + p;
-    return path(reinterpret_cast<const component*>(c)->meta, p);
+    return path(reinterpret_cast<const component*>(c)->dzn_meta, p);
   }
 
   struct binding_error_in: public std::runtime_error

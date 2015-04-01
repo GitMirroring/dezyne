@@ -41,8 +41,8 @@ namespace dezyne
 
   inline void apply(const component* t, const std::function<void(const dezyne::meta&)>& f)
   {
-    f(t->meta);
-    for (auto c : t->meta.children)
+    f(t->dzn_meta);
+    for (auto c : t->dzn_meta.children)
     {
       apply(c, f);
     }
@@ -106,7 +106,7 @@ namespace dezyne
   void call_in(C* c, std::function<void()> f, std::tuple<P*, const char*, const char*> m)
   {
     trace_in(std::get<0>(m)->meta, std::get<1>(m));
-    c->rt.handle(c, f);
+    c->dzn_rt.handle(c, f);
     trace_out(std::get<0>(m)->meta, std::get<2>(m) ? std::get<2>(m) : "return");
   }
 
@@ -114,7 +114,7 @@ namespace dezyne
   R call_in(C* c, std::function<R()> f, std::tuple<P*, const char*, const char*> m)
   {
     trace_in(std::get<0>(m)->meta, std::get<1>(m));
-    auto r = c->rt.valued_helper(c, f);
+    auto r = c->dzn_rt.valued_helper(c, f);
     trace_out(std::get<0>(m)->meta, to_string (r));
     return r;
   }
@@ -123,7 +123,7 @@ namespace dezyne
   void call_out(C* c, std::function<void()> f, std::tuple<P*, const char*, const char*> m)
   {
     trace_out(std::get<0>(m)->meta, std::get<1>(m));
-    c->rt.defer(std::get<0>(m)->meta.provides.address, c, f);
+    c->dzn_rt.defer(std::get<0>(m)->meta.provides.address, c, f);
   }
 }
 #endif

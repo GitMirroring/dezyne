@@ -1,5 +1,6 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Gaiag.
@@ -64,7 +65,7 @@ int main()
 
   dezyne::Datasystem d(l);
 
-  d.meta.name = "d";
+  d.dzn_meta.name = "d";
   d.port.meta.requires = {"port",&d};
 
   d.port.out.a0 = a0;

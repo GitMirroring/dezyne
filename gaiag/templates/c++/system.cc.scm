@@ -8,7 +8,7 @@ namespace dezyne
             (list
              (->string
               (list
-               "meta{\"\",\"" .model "\",reinterpret_cast<component*>(this),0,{"
+               "dzn_meta{\"\",\"" .model "\",reinterpret_cast<component*>(this),0,{"
                ((->join ",")
                 (map (init-instance #{reinterpret_cast<component*>(&#name)#})
                      (non-injected-instances model)))
@@ -22,9 +22,9 @@ namespace dezyne
             (map (init-bind model #{ #port(#instance)#})
                  (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model))))))
 {
- #(map (init-instance #{#name .meta.parent = reinterpret_cast<component*>(this);
-    #name .meta.address = reinterpret_cast<component*>(&#name );
-    #name .meta.name = "#name ";
+ #(map (init-instance #{#name .dzn_meta.parent = reinterpret_cast<component*>(this);
+    #name .dzn_meta.address = reinterpret_cast<component*>(&#name );
+    #name .dzn_meta.name = "#name ";
 #})
        (non-injected-instances model))#
  (map (connect-ports model #{
