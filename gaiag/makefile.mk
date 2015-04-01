@@ -47,6 +47,6 @@ include make/guile.mk
 TEST := $(TEST) $(CDIR)-check
 
 $(CDIR)-check:
-	make check -C gaiag
+	$(MAKE) check -C gaiag
 
 include make/check.mk

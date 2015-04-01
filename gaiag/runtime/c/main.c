@@ -36,7 +36,7 @@ int main() {
   Main m;
   dzn_meta_t mt = {"m", 0};
   Main_init(&m, &dezyne_locator, &mt);
-  m.runner->out.name = "p";
+  m.runner->out.name = "runner";
 
   m.runner->in.run(m.runner);
 

@@ -21,14 +21,14 @@
 # 
 # Code:
 
-CXXFLAGS:=--std=c++11
-SOURCE_EXT:=.cc
-HEADER_EXT:=.hh
+CPPFLAGS += -MMD -MF $(@:%.o=%.dep) -MT '$(@:%.o=%.dep) $@' -I. -I $(OUT)
 
-$(OUT)/%.o: %.cpp
-	$(CCACHE) $(COMPILE.cc) $(OUTPUT_OPTION) $<
+ifeq ($(strip $(filter-out clean depend,$(MAKECMDGOALS))),$(MAKECMDGOALS))
+-include $(wildcard $(OUT)/*.dep)
+endif
 
-$(OUT)/%.o: $(OUT)/%.cpp
-	$(CCACHE) $(COMPILE.cc) $(OUTPUT_OPTION) $<
+$(OUT)/.gitignore:
+	mkdir -p $(OUT)
+	echo '*' > $(OUT)/.gitignore
 
-O_FILES += $(patsubst %.cpp,$(OUT)/%.o,$(wildcard *.cpp))
+include make/$(LANGUAGE).make

@@ -58,9 +58,7 @@ define RUNTIME.rule
 $(OUT)/$(1):
 	@mkdir -p $(OUT)
 	@rm -f $$@
-	#dzn cat /runtime/$(LANGUAGE)/$$(notdir $$@) > $$@
-	#ln -s ~/development.git/gaiag/runtime/$(LANGUAGE)/$$(notdir $$@) $$@
-	ln -s ~/development.git/webapp/server/commands/runtime/$(LANGUAGE)/$$(notdir $$@) $$@
+	dzn cat /runtime/$(LANGUAGE)/$$(notdir $$@) > $$@
 endef
 
 $(foreach i,$(RUNTIME),$(eval $(call RUNTIME.rule,$(i))))

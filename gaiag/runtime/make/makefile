@@ -52,8 +52,8 @@ clean:
 
 ## specific
 
-include make/compile.mk
-include make/dezyne.mk
+include make/compile.make
+include make/dezyne.make
 
 TARGET:=$(OUT)/test
 $(TARGET).o: $(RUNTIME:%=$(OUT)/%) $(O_FILES)
@@ -62,5 +62,5 @@ $(TARGET): $(O_FILES)
 
 all: $(TARGET)
 
-test: $(TARGET)
+test: all
 	$(TARGET)

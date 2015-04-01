@@ -39,7 +39,7 @@ int main()
   dezyne::Main m(l);
 
   m.dzn_meta.name = "m";
-  m.runner.meta.requires = {"p", &m};
+  m.runner.meta.requires = {"runner", &m};
 
   m.check_bindings();
   m.dump_tree();
