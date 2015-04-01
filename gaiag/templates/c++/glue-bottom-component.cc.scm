@@ -50,8 +50,8 @@ static std::map<dezyne::#.model *, boost::shared_ptr<#(.type (gom:port model)) I
 namespace dezyne
 {
 #.model ::#.model (const locator& l)
-: meta{"glue","#.model",reinterpret_cast<const component*>(this),0,{},{#((->join ",") (map (lambda (port) (list "[this]{" (.name port) ".check_bindings();}")) (gom:ports model)))}}
-, rt (l.get<runtime>())#
+: dzn_meta{"glue","#.model",reinterpret_cast<const component*>(this),0,{},{#((->join ",") (map (lambda (port) (list "[this]{" (.name port) ".check_bindings();}")) (gom:ports model)))}}
+, dzn_rt (l.get<runtime>())#
 (map (lambda (port) (if (eq? (.direction port) 'provides) (list "\n, " (.name port) "({{\"" (.name port) "\",this},{\"\",0}})") (list "\n, " (.name port) "({{\"\",0},{\"" (.name port) "\",this}})"))) ((compose .elements .ports) model))
 {
   boost::shared_ptr< ::#(.type (gom:port model)) Interface> component = ::#.model Component::GetInstance() ;

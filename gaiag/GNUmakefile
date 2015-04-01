@@ -189,6 +189,10 @@ c++-inject-update:
 	-$(MAKE) c++-inject
 	find out -type f -a '(' -name '*.cc' -o -name '*.hh' ')' -exec cp '{}' baseline ';'
 
+c++-glue-update:
+	-$(MAKE) glue
+	find out -type f -a '(' -name '*.cc' -o -name '*.hh' ')' -exec cp '{}' baseline ';'
+
 c-alarm-update:
 	-$(MAKE) c-alarm
 	find out -type f -a '(' -name '*.c' -o -name '*.h' ')' -exec cp '{}' baseline ';'
@@ -382,7 +386,7 @@ out/%.c++: examples/regression/%.dzn
 	$(.CC_REGRESSION)
 
 c++-regression: $(CC_SOURCES:%.dzn=out/%.c++)
-c++-update: $(CC_SOURCES:%.dzn=out/%.c++.up) c++-alarm-update c++-choice-update c++-inject-update c++-dataparam-update
+c++-update: $(CC_SOURCES:%.dzn=out/%.c++.up) c++-alarm-update c++-choice-update c++-inject-update c++-dataparam-update c++-glue-update
 
 out/%.wfc: examples/wfc/%.dzn
 	! ./gaiag -l wfc $<
