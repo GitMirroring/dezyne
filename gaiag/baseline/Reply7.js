@@ -23,7 +23,9 @@
 
 dezyne.Reply7 = function(rt, meta) {
   this.rt = rt;
+  rt.components = (rt.components || []).concat ([this]);
   this.meta = meta;
+  this.flushes = true;
   this.reply_IReply7_E = null;
 
   this.p = new dezyne.IReply7({provides: {name: 'p', component: this}, requires: {}});

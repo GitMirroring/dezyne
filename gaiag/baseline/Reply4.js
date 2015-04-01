@@ -23,7 +23,9 @@
 
 dezyne.Reply4 = function(rt, meta) {
   this.rt = rt;
+  rt.components = (rt.components || []).concat ([this]);
   this.meta = meta;
+  this.flushes = true;
   this.Status = {
     Yes: 0, No: 1
   };

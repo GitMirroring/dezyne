@@ -106,13 +106,16 @@ static int call_in_i_bar(ienum_collision* self) {
 	return self_->reply_ienum_collision_Retval2;
 }
 
-void enum_collision_init (enum_collision* self, locator* dezyne_locator, meta *m) {
-	runtime_sub_init(dezyne_locator->rt, &self->sub);
-	memcpy(&self->m, m, sizeof(meta));
+void enum_collision_init (enum_collision* self, locator* dezyne_locator, dzn_meta_t *dzn_meta) {
+	runtime_sub_init(dezyne_locator->rt, &self->dzn_sub);
+	self->dzn_sub.performs_flush = true;
+	memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
 
 	self->i = &self->i_;
 	self->i->in.foo = call_in_i_foo;
 	self->i->in.bar = call_in_i_bar;
 	self->i->in.name = "i";
 	self->i->in.self = self;
+	self->i->out.name = "";
+	self->i->out.self = 0;
 }

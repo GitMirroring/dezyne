@@ -38,8 +38,8 @@ namespace dezyne
 
   struct imperative
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     struct States
     {
       enum type

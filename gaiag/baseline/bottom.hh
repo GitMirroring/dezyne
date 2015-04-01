@@ -37,8 +37,8 @@ namespace dezyne
 
   struct bottom
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     ibottom b;
 
     bottom(const locator&);

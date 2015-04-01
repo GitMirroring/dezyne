@@ -36,8 +36,8 @@ namespace dezyne
 
   struct Topon
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     bool b;
     bool c;
     ITopon i;

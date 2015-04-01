@@ -23,6 +23,7 @@
 
 dezyne.Main = function(rt, meta) {
   rt.top = rt.top || this;
+  rt.components = (rt.components || []).concat ([this]);
   this.rt = rt;
   this.meta = meta;
   this.adaptor = new dezyne.Adaptor(rt, {parent: this, name: 'adaptor'});

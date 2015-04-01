@@ -37,8 +37,8 @@ namespace dezyne
 
   struct requires_twice
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     irequires_twice p;
     irequires_twice once;
     irequires_twice twice;

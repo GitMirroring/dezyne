@@ -1,3 +1,7 @@
+m:Main
+m.adaptor:Adaptor
+m.choice:ChoiceSystem
+m.choice.choice:Choice
 m.runner.run -> m.adaptor.runner.run
 m.adaptor.choice.e -> m.choice.choice.c.e
 m.choice.choice.c.a -> m.adaptor.choice.a

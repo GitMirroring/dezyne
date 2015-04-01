@@ -37,8 +37,8 @@ namespace dezyne
 
   struct Guardthreetopon
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     bool b;
     IGuardthreetopon i;
     RGuardthreetopon r;

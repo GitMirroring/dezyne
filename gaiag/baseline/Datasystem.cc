@@ -27,22 +27,26 @@
 namespace dezyne
 {
   Datasystem::Datasystem(const dezyne::locator& dezyne_locator)
-  : meta{"","Datasystem",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&p),reinterpret_cast<component*>(&c)},{}}
+  : dzn_meta{"","Datasystem",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&p),reinterpret_cast<component*>(&c)},{}}
   , p(dezyne_locator)
   , c(dezyne_locator)
   , port(p.top)
   {
-    p.meta.parent = reinterpret_cast<component*>(this);
-    p.meta.address = reinterpret_cast<component*>(&p);
-    p.meta.name = "p";
-    c.meta.parent = reinterpret_cast<component*>(this);
-    c.meta.address = reinterpret_cast<component*>(&c);
-    c.meta.name = "c";
+    p.dzn_meta.parent = reinterpret_cast<component*>(this);
+    p.dzn_meta.address = reinterpret_cast<component*>(&p);
+    p.dzn_meta.name = "p";
+    c.dzn_meta.parent = reinterpret_cast<component*>(this);
+    c.dzn_meta.address = reinterpret_cast<component*>(&c);
+    c.dzn_meta.name = "c";
     connect(c.port, p.bottom);
   }
 
   void Datasystem::check_bindings() const
   {
     dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void Datasystem::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
   }
 }

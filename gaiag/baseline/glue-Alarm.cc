@@ -62,8 +62,8 @@ struct ConsoleCB
 namespace dezyne
 {
   Alarm::Alarm(const locator& l)
-  : meta{"glue","Alarm",reinterpret_cast<const component*>(this),0,{},{[this]{console.check_bindings();},[this]{sensor.check_bindings();},[this]{siren.check_bindings();}}}
-  , rt (l.get<runtime>())
+  : dzn_meta{"glue","Alarm",reinterpret_cast<const component*>(this),0,{},{[this]{console.check_bindings();},[this]{sensor.check_bindings();},[this]{siren.check_bindings();}}}
+  , dzn_rt (l.get<runtime>())
   , console({{"console",this},{"",0}})
   , sensor({{"",0},{"sensor",this}})
   , siren({{"",0},{"siren",this}})

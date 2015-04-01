@@ -23,7 +23,9 @@
 
 dezyne.component_provides_twice = function(rt, meta) {
   this.rt = rt;
+  rt.components = (rt.components || []).concat ([this]);
   this.meta = meta;
+  this.flushes = true;
 
   this.i = new dezyne.iprovides_once({provides: {name: 'i', component: this}, requires: {}});
 

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -41,7 +41,7 @@ namespace dezyne
 {
   struct Datasystem
   {
-    dezyne::meta meta;
+    dezyne::meta dzn_meta;
     proxy p;
     Dataparam c;
 
@@ -49,6 +49,7 @@ namespace dezyne
 
     Datasystem(const dezyne::locator&);
     void check_bindings() const;
+    void dump_tree() const;
   };
 }
 #endif // DEZYNE_DATASYSTEM_HH

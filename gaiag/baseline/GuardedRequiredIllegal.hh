@@ -37,8 +37,8 @@ namespace dezyne
 
   struct GuardedRequiredIllegal
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     bool c;
     Top t;
     Bottom b;

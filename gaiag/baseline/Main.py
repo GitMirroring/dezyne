@@ -29,11 +29,13 @@ def connect (provided, required):
     required.ins = provided.ins
 
 class Main:
-    def __init__ (self, parent=None, name=''):
+    def __init__ (self, rt, parent=None, name=''):
+        self.rt = rt
+        rt.components += [self]
         self.parent = parent
         self.name = name
-        self.adaptor = dezyne.Adaptor (parent=self, name='adaptor')
-        self.choice = dezyne.ChoiceSystem (parent=self, name='choice')
+        self.adaptor = dezyne.Adaptor (self.rt, parent=self, name='adaptor')
+        self.choice = dezyne.ChoiceSystem (self.rt, parent=self, name='choice')
         self.runner = self.adaptor.runner
 
         connect (self.choice.c, self.adaptor.choice)

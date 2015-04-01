@@ -23,6 +23,7 @@
 
 dezyne.AlarmSystem = function(rt, meta) {
   rt.top = rt.top || this;
+  rt.components = (rt.components || []).concat ([this]);
   this.rt = rt;
   this.meta = meta;
   this.alarm = new dezyne.Alarm(rt, {parent: this, name: 'alarm'});

@@ -30,14 +30,14 @@
 	required->in = provided->in;\
 }
 
-void AlarmSystem_init(AlarmSystem *self, locator* dezyne_locator, meta* m) {
-	memcpy(&self->m, m, sizeof(meta));
-	meta m_alarm = {"alarm", self};
-	Alarm_init(&self->alarm, dezyne_locator, &m_alarm);
-	meta m_sensor = {"sensor", self};
-	Sensor_init(&self->sensor, dezyne_locator, &m_sensor);
-	meta m_siren = {"siren", self};
-	Siren_init(&self->siren, dezyne_locator, &m_siren);
+void AlarmSystem_init(AlarmSystem *self, locator* dezyne_locator, dzn_meta_t* dzn_meta) {
+	memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
+	dzn_meta_t dzn_m_alarm = {"alarm", self};
+	Alarm_init(&self->alarm, dezyne_locator, &dzn_m_alarm);
+	dzn_meta_t dzn_m_sensor = {"sensor", self};
+	Sensor_init(&self->sensor, dezyne_locator, &dzn_m_sensor);
+	dzn_meta_t dzn_m_siren = {"siren", self};
+	Siren_init(&self->siren, dezyne_locator, &dzn_m_siren);
 	self->console = self->alarm.console;
 	CONNECT(self->sensor.sensor, self->alarm.sensor);
 	CONNECT(self->siren.siren, self->alarm.siren);

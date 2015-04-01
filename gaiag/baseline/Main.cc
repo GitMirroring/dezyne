@@ -27,22 +27,26 @@
 namespace dezyne
 {
   Main::Main(const dezyne::locator& dezyne_locator)
-  : meta{"","Main",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&adaptor),reinterpret_cast<component*>(&choice)},{}}
+  : dzn_meta{"","Main",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&adaptor),reinterpret_cast<component*>(&alarm)},{}}
   , adaptor(dezyne_locator)
-  , choice(dezyne_locator)
+  , alarm(dezyne_locator)
   , runner(adaptor.runner)
   {
-    adaptor.meta.parent = reinterpret_cast<component*>(this);
-    adaptor.meta.address = reinterpret_cast<component*>(&adaptor);
-    adaptor.meta.name = "adaptor";
-    choice.meta.parent = reinterpret_cast<component*>(this);
-    choice.meta.address = reinterpret_cast<component*>(&choice);
-    choice.meta.name = "choice";
-    connect(choice.c, adaptor.choice);
+    adaptor.dzn_meta.parent = reinterpret_cast<component*>(this);
+    adaptor.dzn_meta.address = reinterpret_cast<component*>(&adaptor);
+    adaptor.dzn_meta.name = "adaptor";
+    alarm.dzn_meta.parent = reinterpret_cast<component*>(this);
+    alarm.dzn_meta.address = reinterpret_cast<component*>(&alarm);
+    alarm.dzn_meta.name = "alarm";
+    connect(alarm.console, adaptor.console);
   }
 
   void Main::check_bindings() const
   {
     dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void Main::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
   }
 }

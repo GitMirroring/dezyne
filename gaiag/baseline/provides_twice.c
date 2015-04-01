@@ -30,10 +30,10 @@
 	required->in = provided->in;\
 }
 
-void provides_twice_init(provides_twice *self, locator* dezyne_locator, meta* m) {
-	memcpy(&self->m, m, sizeof(meta));
-	meta m_one = {"one", self};
-	external_provides_twice_init(&self->one, dezyne_locator, &m_one);
+void provides_twice_init(provides_twice *self, locator* dezyne_locator, dzn_meta_t* dzn_meta) {
+	memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
+	dzn_meta_t dzn_m_one = {"one", self};
+	external_provides_twice_init(&self->one, dezyne_locator, &dzn_m_one);
 	self->i = self->one.i;
 	self->ii = self->one.ii;
 }

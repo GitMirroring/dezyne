@@ -23,7 +23,9 @@
 
 dezyne.incomplete_with_modeling_event = function(rt, meta) {
   this.rt = rt;
+  rt.components = (rt.components || []).concat ([this]);
   this.meta = meta;
+  this.flushes = true;
 
   this.p = new dezyne.iincomplete_with_modeling_event({provides: {name: 'p', component: this}, requires: {}});
   this.r = new dezyne.iincomplete_with_modeling_event({provides: {}, requires: {name: 'r', component: this}});

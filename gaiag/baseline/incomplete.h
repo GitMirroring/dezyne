@@ -33,14 +33,14 @@
 
 
 typedef struct {
-	meta m;
-	runtime_sub sub;
+	dzn_meta_t dzn_meta;
+	runtime_sub dzn_sub;
 	iincomplete p_;
 	iincomplete* p;
 	iincomplete r_;
 	iincomplete* r;
 } incomplete;
 
-void incomplete_init(incomplete* self, locator* dezyne_locator, meta* m);
+void incomplete_init(incomplete* self, locator* dezyne_locator, dzn_meta_t* dzn_meta);
 
 #endif // DEZYNE_INCOMPLETE_H

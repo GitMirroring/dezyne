@@ -27,11 +27,13 @@ def connect (provided, required):
     required.ins = provided.ins
 
 class Datasystem:
-    def __init__ (self, parent=None, name=''):
+    def __init__ (self, rt, parent=None, name=''):
+        self.rt = rt
+        rt.components += [self]
         self.parent = parent
         self.name = name
-        self.p = dezyne.proxy (parent=self, name='p')
-        self.c = dezyne.Dataparam (parent=self, name='c')
+        self.p = dezyne.proxy (self.rt, parent=self, name='p')
+        self.c = dezyne.Dataparam (self.rt, parent=self, name='c')
         self.port = self.p.top
 
         connect (self.c.port, self.p.bottom)

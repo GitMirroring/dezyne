@@ -34,8 +34,8 @@
 
 
 typedef struct {
-	meta m;
-	runtime_sub sub;
+	dzn_meta_t dzn_meta;
+	runtime_sub dzn_sub;
 	irequires_twice p_;
 	irequires_twice* p;
 	irequires_twice once_;
@@ -44,6 +44,6 @@ typedef struct {
 	irequires_twice* twice;
 } requires_twice;
 
-void requires_twice_init(requires_twice* self, locator* dezyne_locator, meta* m);
+void requires_twice_init(requires_twice* self, locator* dezyne_locator, dzn_meta_t* dzn_meta);
 
 #endif // DEZYNE_REQUIRES_TWICE_H

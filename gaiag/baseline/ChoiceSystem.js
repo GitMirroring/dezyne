@@ -23,6 +23,7 @@
 
 dezyne.ChoiceSystem = function(rt, meta) {
   rt.top = rt.top || this;
+  rt.components = (rt.components || []).concat ([this]);
   this.rt = rt;
   this.meta = meta;
   this.choice = new dezyne.Choice(rt, {parent: this, name: 'choice'});

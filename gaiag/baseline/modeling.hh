@@ -38,8 +38,8 @@ namespace dezyne
 
   struct modeling
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     dummy p;
     imodeling r;
 

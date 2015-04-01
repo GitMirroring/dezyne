@@ -64,12 +64,15 @@ static void call_in_log_log(ilogger* self) {
 	runtime_trace_out(&self->in, &self->out, "return");
 }
 
-void logger_init (logger* self, locator* dezyne_locator, meta *m) {
-	runtime_sub_init(dezyne_locator->rt, &self->sub);
-	memcpy(&self->m, m, sizeof(meta));
+void logger_init (logger* self, locator* dezyne_locator, dzn_meta_t *dzn_meta) {
+	runtime_sub_init(dezyne_locator->rt, &self->dzn_sub);
+	self->dzn_sub.performs_flush = true;
+	memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
 
 	self->log = &self->log_;
 	self->log->in.log = call_in_log_log;
 	self->log->in.name = "log";
 	self->log->in.self = self;
+	self->log->out.name = "";
+	self->log->out.self = 0;
 }

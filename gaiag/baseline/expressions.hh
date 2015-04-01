@@ -37,8 +37,8 @@ namespace dezyne
 
   struct expressions
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     typedef int State;
     expressions::State state;
     expressions::State c;

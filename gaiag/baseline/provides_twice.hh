@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
@@ -42,7 +42,7 @@ namespace dezyne
 {
   struct provides_twice
   {
-    dezyne::meta meta;
+    dezyne::meta dzn_meta;
     external_provides_twice one;
 
     iprovides_once& i;
@@ -50,6 +50,7 @@ namespace dezyne
 
     provides_twice(const dezyne::locator&);
     void check_bindings() const;
+    void dump_tree() const;
   };
 }
 #endif // DEZYNE_PROVIDES_TWICE_HH

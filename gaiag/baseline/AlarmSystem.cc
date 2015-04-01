@@ -27,21 +27,21 @@
 namespace dezyne
 {
   AlarmSystem::AlarmSystem(const dezyne::locator& dezyne_locator)
-  : meta{"","AlarmSystem",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&alarm),reinterpret_cast<component*>(&sensor),reinterpret_cast<component*>(&siren)},{}}
-  , alarm(dezyne_locator)
+  : dzn_meta{"","AlarmSystem",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&sensor),reinterpret_cast<component*>(&siren),reinterpret_cast<component*>(&alarm)},{}}
   , sensor(dezyne_locator)
   , siren(dezyne_locator)
+  , alarm(dezyne_locator)
   , console(alarm.console)
   {
-    alarm.meta.parent = reinterpret_cast<component*>(this);
-    alarm.meta.address = reinterpret_cast<component*>(&alarm);
-    alarm.meta.name = "alarm";
-    sensor.meta.parent = reinterpret_cast<component*>(this);
-    sensor.meta.address = reinterpret_cast<component*>(&sensor);
-    sensor.meta.name = "sensor";
-    siren.meta.parent = reinterpret_cast<component*>(this);
-    siren.meta.address = reinterpret_cast<component*>(&siren);
-    siren.meta.name = "siren";
+    sensor.dzn_meta.parent = reinterpret_cast<component*>(this);
+    sensor.dzn_meta.address = reinterpret_cast<component*>(&sensor);
+    sensor.dzn_meta.name = "sensor";
+    siren.dzn_meta.parent = reinterpret_cast<component*>(this);
+    siren.dzn_meta.address = reinterpret_cast<component*>(&siren);
+    siren.dzn_meta.name = "siren";
+    alarm.dzn_meta.parent = reinterpret_cast<component*>(this);
+    alarm.dzn_meta.address = reinterpret_cast<component*>(&alarm);
+    alarm.dzn_meta.name = "alarm";
     connect(sensor.sensor, alarm.sensor);
     connect(siren.siren, alarm.siren);
   }
@@ -49,5 +49,9 @@ namespace dezyne
   void AlarmSystem::check_bindings() const
   {
     dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void AlarmSystem::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
   }
 }

@@ -33,11 +33,12 @@
 namespace dezyne
 {
   testBoolean::testBoolean(const locator& dezyne_locator)
-  : meta{"","testBoolean",reinterpret_cast<const component*>(this),0,{},{[this]{i.check_bindings();}}}
-  , rt(dezyne_locator.get<runtime>())
+  : dzn_meta{"","testBoolean",reinterpret_cast<const component*>(this),0,{},{[this]{i.check_bindings();}}}
+  , dzn_rt(dezyne_locator.get<runtime>())
   , b(false)
   , i({{"i",this},{"",0}})
   {
+    dzn_rt.performs_flush(this) = true; 
     i.in.evt = [&] () {
       call_in(this, [this] {i_evt();}, std::make_tuple(&i, "evt", "return"));
     };

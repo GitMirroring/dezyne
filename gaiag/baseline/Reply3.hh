@@ -38,8 +38,8 @@ namespace dezyne
 
   struct Reply3
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     bool dummy;
     I::Status::type reply_I_Status;
     U::Status::type reply_U_Status;

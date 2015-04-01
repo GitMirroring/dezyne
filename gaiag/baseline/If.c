@@ -83,12 +83,15 @@ static void call_in_i_a(I* self) {
 	runtime_trace_out(&self->in, &self->out, "return");
 }
 
-void If_init (If* self, locator* dezyne_locator, meta *m) {
-	runtime_sub_init(dezyne_locator->rt, &self->sub);
-	memcpy(&self->m, m, sizeof(meta));
+void If_init (If* self, locator* dezyne_locator, dzn_meta_t *dzn_meta) {
+	runtime_sub_init(dezyne_locator->rt, &self->dzn_sub);
+	self->dzn_sub.performs_flush = true;
+	memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
 	self->t = false;
 	self->i = &self->i_;
 	self->i->in.a = call_in_i_a;
 	self->i->in.name = "i";
 	self->i->in.self = self;
+	self->i->out.name = "";
+	self->i->out.self = 0;
 }

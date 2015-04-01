@@ -38,8 +38,8 @@ namespace dezyne
 
   struct external_provides_twice
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     iprovides_once i;
     iprovides_twice ii;
 

@@ -89,9 +89,10 @@ static void call_in_i_t(ITopon* self) {
 	runtime_trace_out(&self->in, &self->out, "return");
 }
 
-void Topon_init (Topon* self, locator* dezyne_locator, meta *m) {
-	runtime_sub_init(dezyne_locator->rt, &self->sub);
-	memcpy(&self->m, m, sizeof(meta));
+void Topon_init (Topon* self, locator* dezyne_locator, dzn_meta_t *dzn_meta) {
+	runtime_sub_init(dezyne_locator->rt, &self->dzn_sub);
+	self->dzn_sub.performs_flush = true;
+	memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
 	self->b = false;
 	self->c = false;
 	self->i = &self->i_;
@@ -99,4 +100,6 @@ void Topon_init (Topon* self, locator* dezyne_locator, meta *m) {
 	self->i->in.t = call_in_i_t;
 	self->i->in.name = "i";
 	self->i->in.self = self;
+	self->i->out.name = "";
+	self->i->out.self = 0;
 }

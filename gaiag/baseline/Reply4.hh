@@ -39,8 +39,8 @@ namespace dezyne
 
   struct Reply4
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     struct Status
     {
       enum type

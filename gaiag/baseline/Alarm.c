@@ -199,9 +199,10 @@ static void call_out_sensor_disabled(ISensor* self) {
 }
 
 
-void Alarm_init (Alarm* self, locator* dezyne_locator, meta *m) {
-	runtime_sub_init(dezyne_locator->rt, &self->sub);
-	memcpy(&self->m, m, sizeof(meta));
+void Alarm_init (Alarm* self, locator* dezyne_locator, dzn_meta_t *dzn_meta) {
+	runtime_sub_init(dezyne_locator->rt, &self->dzn_sub);
+	self->dzn_sub.performs_flush = true;
+	memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
 	self->state = Alarm_States_Disarmed;
 	self->sounding = false;
 	self->console = &self->console_;
@@ -209,12 +210,18 @@ void Alarm_init (Alarm* self, locator* dezyne_locator, meta *m) {
 	self->console->in.disarm = call_in_console_disarm;
 	self->console->in.name = "console";
 	self->console->in.self = self;
+	self->console->out.name = "";
+	self->console->out.self = 0;
 	self->sensor = &self->sensor_;
+	self->sensor->in.name = "";
+	self->sensor->in.self = 0;
 	self->sensor->out.name = "sensor";
 	self->sensor->out.self = self;
 	self->sensor->out.triggered = call_out_sensor_triggered;
 	self->sensor->out.disabled = call_out_sensor_disabled;
 	self->siren = &self->siren_;
+	self->siren->in.name = "";
+	self->siren->in.self = 0;
 	self->siren->out.name = "siren";
 	self->siren->out.self = self;
 }

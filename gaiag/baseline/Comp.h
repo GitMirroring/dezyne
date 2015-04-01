@@ -33,8 +33,8 @@
 
 
 typedef struct {
-	meta m;
-	runtime_sub sub;
+	dzn_meta_t dzn_meta;
+	runtime_sub dzn_sub;
 	int s;
 	int reply_IComp_result_t;
 	int reply_IDevice_result_t;
@@ -44,6 +44,6 @@ typedef struct {
 	IDevice* device_A;
 } Comp;
 
-void Comp_init(Comp* self, locator* dezyne_locator, meta* m);
+void Comp_init(Comp* self, locator* dezyne_locator, dzn_meta_t* dzn_meta);
 
 #endif // DEZYNE_COMP_H

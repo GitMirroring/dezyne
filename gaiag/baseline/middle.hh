@@ -39,8 +39,8 @@ namespace dezyne
 
   struct middle
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     itop t;
     ibottom b;
     ilogger l;

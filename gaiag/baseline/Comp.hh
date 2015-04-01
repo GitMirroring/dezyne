@@ -39,8 +39,8 @@ namespace dezyne
 
   struct Comp
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     struct State
     {
       enum type

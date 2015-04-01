@@ -33,12 +33,13 @@
 namespace dezyne
 {
   Reply5::Reply5(const locator& dezyne_locator)
-  : meta{"","Reply5",reinterpret_cast<const component*>(this),0,{},{[this]{i.check_bindings();},[this]{u.check_bindings();}}}
-  , rt(dezyne_locator.get<runtime>())
+  : dzn_meta{"","Reply5",reinterpret_cast<const component*>(this),0,{},{[this]{i.check_bindings();},[this]{u.check_bindings();}}}
+  , dzn_rt(dezyne_locator.get<runtime>())
   , dummy(false)
   , i({{"i",this},{"",0}})
   , u({{"",0},{"u",this}})
   {
+    dzn_rt.performs_flush(this) = true; 
     i.in.done = [&] () {
       return call_in(this, std::function<I::Status::type()>([&] {return i_done();}), std::make_tuple(&i, "done", "return"));
     };

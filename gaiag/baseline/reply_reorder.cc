@@ -33,12 +33,13 @@
 namespace dezyne
 {
   reply_reorder::reply_reorder(const locator& dezyne_locator)
-  : meta{"","reply_reorder",reinterpret_cast<const component*>(this),0,{},{[this]{p.check_bindings();},[this]{r.check_bindings();}}}
-  , rt(dezyne_locator.get<runtime>())
+  : dzn_meta{"","reply_reorder",reinterpret_cast<const component*>(this),0,{},{[this]{p.check_bindings();},[this]{r.check_bindings();}}}
+  , dzn_rt(dezyne_locator.get<runtime>())
   , first(true)
   , p({{"p",this},{"",0}})
   , r({{"",0},{"r",this}})
   {
+    dzn_rt.performs_flush(this) = true; 
     p.in.start = [&] () {
       call_in(this, [this] {p_start();}, std::make_tuple(&p, "start", "return"));
     };

@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -26,7 +27,7 @@
 #define DEZYNE_MAIN_HH
 
 #include "Adaptor.hh"
-#include "ChoiceSystem.hh"
+#include "AlarmSystem.hh"
 
 
 #include "IRun.hh"
@@ -41,14 +42,15 @@ namespace dezyne
 {
   struct Main
   {
-    dezyne::meta meta;
+    dezyne::meta dzn_meta;
     Adaptor adaptor;
-    ChoiceSystem choice;
+    AlarmSystem alarm;
 
     IRun& runner;
 
     Main(const dezyne::locator&);
     void check_bindings() const;
+    void dump_tree() const;
   };
 }
 #endif // DEZYNE_MAIN_HH

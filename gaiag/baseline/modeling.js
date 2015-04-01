@@ -23,7 +23,9 @@
 
 dezyne.modeling = function(rt, meta) {
   this.rt = rt;
+  rt.components = (rt.components || []).concat ([this]);
   this.meta = meta;
+  this.flushes = true;
 
   this.p = new dezyne.dummy({provides: {name: 'p', component: this}, requires: {}});
   this.r = new dezyne.imodeling({provides: {}, requires: {name: 'r', component: this}});

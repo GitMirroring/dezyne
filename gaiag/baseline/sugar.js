@@ -24,7 +24,9 @@
 
 dezyne.sugar = function(rt, meta) {
   this.rt = rt;
+  rt.components = (rt.components || []).concat ([this]);
   this.meta = meta;
+  this.flushes = true;
   this.Enum = {
     False: 0, True: 1
   };

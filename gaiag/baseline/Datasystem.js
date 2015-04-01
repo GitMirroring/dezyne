@@ -23,6 +23,7 @@
 
 dezyne.Datasystem = function(rt, meta) {
   rt.top = rt.top || this;
+  rt.components = (rt.components || []).concat ([this]);
   this.rt = rt;
   this.meta = meta;
   this.p = new dezyne.proxy(rt, {parent: this, name: 'p'});

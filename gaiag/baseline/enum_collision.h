@@ -32,14 +32,14 @@
 
 
 typedef struct {
-	meta m;
-	runtime_sub sub;
+	dzn_meta_t dzn_meta;
+	runtime_sub dzn_sub;
 	int reply_ienum_collision_Retval1;
 	int reply_ienum_collision_Retval2;
 	ienum_collision i_;
 	ienum_collision* i;
 } enum_collision;
 
-void enum_collision_init(enum_collision* self, locator* dezyne_locator, meta* m);
+void enum_collision_init(enum_collision* self, locator* dezyne_locator, dzn_meta_t* dzn_meta);
 
 #endif // DEZYNE_ENUM_COLLISION_H

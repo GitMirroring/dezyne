@@ -23,7 +23,9 @@
 
 dezyne.expressions = function(rt, meta) {
   this.rt = rt;
+  rt.components = (rt.components || []).concat ([this]);
   this.meta = meta;
+  this.flushes = true;
   this.state = 3;
   this.c = 0;
 

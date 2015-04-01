@@ -33,12 +33,13 @@
 namespace dezyne
 {
   Comp::Comp(const locator& dezyne_locator)
-  : meta{"","Comp",reinterpret_cast<const component*>(this),0,{},{[this]{client.check_bindings();},[this]{device_A.check_bindings();}}}
-  , rt(dezyne_locator.get<runtime>())
+  : dzn_meta{"","Comp",reinterpret_cast<const component*>(this),0,{},{[this]{client.check_bindings();},[this]{device_A.check_bindings();}}}
+  , dzn_rt(dezyne_locator.get<runtime>())
   , s(State::Uninitialized)
   , client({{"client",this},{"",0}})
   , device_A({{"",0},{"device_A",this}})
   {
+    dzn_rt.performs_flush(this) = true; 
     client.in.initialize = [&] () {
       return call_in(this, std::function<IComp::result_t::type()>([&] {return client_initialize();}), std::make_tuple(&client, "initialize", "return"));
     };

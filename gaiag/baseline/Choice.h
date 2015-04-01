@@ -33,13 +33,13 @@
 
 
 typedef struct {
-	meta m;
-	runtime_sub sub;
+	dzn_meta_t dzn_meta;
+	runtime_sub dzn_sub;
 	int s;
 	IChoice c_;
 	IChoice* c;
 } Choice;
 
-void Choice_init(Choice* self, locator* dezyne_locator, meta* m);
+void Choice_init(Choice* self, locator* dezyne_locator, dzn_meta_t* dzn_meta);
 
 #endif // DEZYNE_CHOICE_H

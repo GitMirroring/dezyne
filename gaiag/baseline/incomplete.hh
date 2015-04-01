@@ -37,8 +37,8 @@ namespace dezyne
 
   struct incomplete
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     iincomplete p;
     iincomplete r;
 

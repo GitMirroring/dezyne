@@ -91,13 +91,16 @@ static void call_in_i_t(IGuardtwotopon* self) {
 	runtime_trace_out(&self->in, &self->out, "return");
 }
 
-void Guardtwotopon_init (Guardtwotopon* self, locator* dezyne_locator, meta *m) {
-	runtime_sub_init(dezyne_locator->rt, &self->sub);
-	memcpy(&self->m, m, sizeof(meta));
+void Guardtwotopon_init (Guardtwotopon* self, locator* dezyne_locator, dzn_meta_t *dzn_meta) {
+	runtime_sub_init(dezyne_locator->rt, &self->dzn_sub);
+	self->dzn_sub.performs_flush = true;
+	memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
 	self->b = false;
 	self->i = &self->i_;
 	self->i->in.e = call_in_i_e;
 	self->i->in.t = call_in_i_t;
 	self->i->in.name = "i";
 	self->i->in.self = self;
+	self->i->out.name = "";
+	self->i->out.self = 0;
 }

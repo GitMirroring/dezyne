@@ -69,12 +69,15 @@ static void call_in_b_e(ibottom* self) {
 	runtime_trace_out(&self->in, &self->out, "return");
 }
 
-void bottom_init (bottom* self, locator* dezyne_locator, meta *m) {
-	runtime_sub_init(dezyne_locator->rt, &self->sub);
-	memcpy(&self->m, m, sizeof(meta));
+void bottom_init (bottom* self, locator* dezyne_locator, dzn_meta_t *dzn_meta) {
+	runtime_sub_init(dezyne_locator->rt, &self->dzn_sub);
+	self->dzn_sub.performs_flush = true;
+	memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
 
 	self->b = &self->b_;
 	self->b->in.e = call_in_b_e;
 	self->b->in.name = "b";
 	self->b->in.self = self;
+	self->b->out.name = "";
+	self->b->out.self = 0;
 }

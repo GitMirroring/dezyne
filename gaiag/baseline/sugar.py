@@ -30,10 +30,13 @@ class sugar:
     class Enum ():
         False, True = range (2)
 
-    def __init__ (self, parent=None, name=''):
+    def __init__ (self, rt, parent=None, name=''):
+        self.rt = rt
+        rt.components += [self]
         self.parent = parent
         self.name = name
         self.handling = False
+        self.flushes = True
         self.deferred = None
         self.queue = []
 

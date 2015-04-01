@@ -38,8 +38,8 @@ namespace dezyne
 
   struct reply_reorder
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     bool first;
     Provides p;
     Requires r;

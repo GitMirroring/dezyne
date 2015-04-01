@@ -1,6 +1,9 @@
-middle.t_e
-logger.log_log
-bottom.b_e
-middle.b_f
-logger.log_log
-f
+<external>..e -> m.m.t.e
+m.m.l.log -> m.l.log.log
+m.l.log.return -> m.m.l.return
+m.m.b.e -> m.b.b.e
+m.b.b.f -> m.m.b.f
+m.b.b.return -> m.m.b.return
+m.m.l.log -> m.l.log.log
+m.l.log.return -> m.m.l.return
+m.m.t.return -> <external>..return

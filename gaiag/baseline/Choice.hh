@@ -38,8 +38,8 @@ namespace dezyne
 
   struct Choice
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     struct State
     {
       enum type

@@ -51,8 +51,8 @@ typedef struct {int size;void (*f)(IDataparam*,int, int, int, int, int, int);Dat
 
 typedef struct {int size;void (*f)(Dataparam*);Dataparam* self;} args_port_e0;
 typedef struct {int size;int (*f)(Dataparam*);Dataparam* self;} args_port_e0r;
-typedef struct {int size;void (*f)(Dataparam*,int);Dataparam* self;int pi;} args_port_e;
-typedef struct {int size;int (*f)(Dataparam*,int);Dataparam* self;int pi;} args_port_er;
+typedef struct {int size;void (*f)(Dataparam*,int);Dataparam* self;int i;} args_port_e;
+typedef struct {int size;int (*f)(Dataparam*,int);Dataparam* self;int i;} args_port_er;
 typedef struct {int size;int (*f)(Dataparam*,int, int);Dataparam* self;int i;int j;} args_port_eer;
 typedef struct {int size;void (*f)(Dataparam*,int*);Dataparam* self;int* i;} args_port_eo;
 typedef struct {int size;void (*f)(Dataparam*,int*, int*);Dataparam* self;int* i;int* j;} args_port_eoo;
@@ -98,12 +98,12 @@ static void helper_port_e0r(void* args) {
 
 static void helper_port_e(void* args) {
 	args_port_e *a = args;
-	a->f(a->self,a->pi);
+	a->f(a->self,a->i);
 }
 
 static void helper_port_er(void* args) {
 	args_port_er *a = args;
-	a->f(a->self,a->pi);
+	a->f(a->self,a->i);
 }
 
 static void helper_port_eer(void* args) {
@@ -191,30 +191,36 @@ static int port_e0r(Dataparam* self) {
 	return self->reply_IDataparam_Status;
 }
 
-static void port_e(Dataparam* self,int pi) {
+static void port_e(Dataparam* self,int i) {
 	(void)self;
 	{
-		int s = funx(self, pi);
-		s = s;
-		self->mi = pi;
-		self->mi = xfunx(self, pi, pi);
-		self->port->out.a(self->port,self->mi);
-		self->port->out.aa(self->port,self->mi, pi);
+		int pi = i;
+		{
+			int s = funx(self, pi);
+			s = s;
+			self->mi = pi;
+			self->mi = xfunx(self, pi, pi);
+			self->port->out.a(self->port,self->mi);
+			self->port->out.aa(self->port,self->mi, pi);
+		}
 	}
 }
 
-static int port_er(Dataparam* self,int pi) {
+static int port_er(Dataparam* self,int i) {
 	(void)self;
 	{
-		int s = IDataparam_Status_No;
-		self->mi = pi;
-		self->port->out.a(self->port,self->mi);
-		self->port->out.aa(self->port,self->mi, pi);
-		if (true) {
-			self->reply_IDataparam_Status = IDataparam_Status_Yes;
-		}
-		else {
-			self->reply_IDataparam_Status = s;
+		int pi = i;
+		{
+			int s = IDataparam_Status_No;
+			self->mi = pi;
+			self->port->out.a(self->port,self->mi);
+			self->port->out.aa(self->port,self->mi, pi);
+			if (true) {
+				self->reply_IDataparam_Status = IDataparam_Status_Yes;
+			}
+			else {
+				self->reply_IDataparam_Status = s;
+			}
 		}
 	}
 	return self->reply_IDataparam_Status;
@@ -313,15 +319,15 @@ static int call_in_port_e0r(IDataparam* self) {
 	runtime_trace_out(&self->in, &self->out, IDataparam_Status_to_string (self_->reply_IDataparam_Status));
 	return self_->reply_IDataparam_Status;
 }
-static void call_in_port_e(IDataparam* self,int pi) {
+static void call_in_port_e(IDataparam* self,int i) {
 	runtime_trace_in(&self->in, &self->out, "e");
-	args_port_e a = {sizeof(args_port_e), port_e, self->in.self,pi};
+	args_port_e a = {sizeof(args_port_e), port_e, self->in.self,i};
 	runtime_event(helper_port_e, &a);
 	runtime_trace_out(&self->in, &self->out, "return");
 }
-static int call_in_port_er(IDataparam* self,int pi) {
+static int call_in_port_er(IDataparam* self,int i) {
 	runtime_trace_in(&self->in, &self->out, "er");
-	args_port_er a = {sizeof(args_port_er), port_er, self->in.self,pi};
+	args_port_er a = {sizeof(args_port_er), port_er, self->in.self,i};
 	runtime_event(helper_port_er, &a);
 	Dataparam* self_ = self->in.self; 
 	runtime_trace_out(&self->in, &self->out, IDataparam_Status_to_string (self_->reply_IDataparam_Status));
@@ -392,9 +398,10 @@ static int call_in_port_eio2r(IDataparam* self,int* i) {
 	return self_->reply_IDataparam_Status;
 }
 
-void Dataparam_init (Dataparam* self, locator* dezyne_locator, meta *m) {
-	runtime_sub_init(dezyne_locator->rt, &self->sub);
-	memcpy(&self->m, m, sizeof(meta));
+void Dataparam_init (Dataparam* self, locator* dezyne_locator, dzn_meta_t *dzn_meta) {
+	runtime_sub_init(dezyne_locator->rt, &self->dzn_sub);
+	self->dzn_sub.performs_flush = true;
+	memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
 	self->mi = 0;
 	self->s = IDataparam_Status_Yes;
 	self->port = &self->port_;
@@ -413,4 +420,6 @@ void Dataparam_init (Dataparam* self, locator* dezyne_locator, meta *m) {
 	self->port->in.eio2r = call_in_port_eio2r;
 	self->port->in.name = "port";
 	self->port->in.self = self;
+	self->port->out.name = "";
+	self->port->out.self = 0;
 }

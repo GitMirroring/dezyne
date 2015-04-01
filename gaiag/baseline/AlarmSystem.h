@@ -34,7 +34,7 @@
 #include "locator.h"
 
 typedef struct {
-	meta m;
+	dzn_meta_t dzn_meta;
 	Alarm alarm;
 	Sensor sensor;
 	Siren siren;
@@ -43,6 +43,6 @@ typedef struct {
 
 } AlarmSystem;
 
-void AlarmSystem_init(AlarmSystem*self, locator* dezyne_locator, meta* m);
+void AlarmSystem_init(AlarmSystem*self, locator* dezyne_locator, dzn_meta_t* dzn_meta);
 
 #endif // DEZYNE_ALARMSYSTEM_H

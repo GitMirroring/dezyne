@@ -23,7 +23,9 @@
 
 dezyne.reply_reorder = function(rt, meta) {
   this.rt = rt;
+  rt.components = (rt.components || []).concat ([this]);
   this.meta = meta;
+  this.flushes = true;
   this.first = true;
 
   this.p = new dezyne.Provides({provides: {name: 'p', component: this}, requires: {}});

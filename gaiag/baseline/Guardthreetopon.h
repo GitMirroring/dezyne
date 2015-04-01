@@ -33,8 +33,8 @@
 
 
 typedef struct {
-	meta m;
-	runtime_sub sub;
+	dzn_meta_t dzn_meta;
+	runtime_sub dzn_sub;
 	bool b;
 	IGuardthreetopon i_;
 	IGuardthreetopon* i;
@@ -42,6 +42,6 @@ typedef struct {
 	RGuardthreetopon* r;
 } Guardthreetopon;
 
-void Guardthreetopon_init(Guardthreetopon* self, locator* dezyne_locator, meta* m);
+void Guardthreetopon_init(Guardthreetopon* self, locator* dezyne_locator, dzn_meta_t* dzn_meta);
 
 #endif // DEZYNE_GUARDTHREETOPON_H

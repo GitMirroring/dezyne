@@ -32,13 +32,13 @@
 
 
 typedef struct {
-	meta m;
-	runtime_sub sub;
+	dzn_meta_t dzn_meta;
+	runtime_sub dzn_sub;
 	bool b;
 	TestBool i_;
 	TestBool* i;
 } testBoolean;
 
-void testBoolean_init(testBoolean* self, locator* dezyne_locator, meta* m);
+void testBoolean_init(testBoolean* self, locator* dezyne_locator, dzn_meta_t* dzn_meta);
 
 #endif // DEZYNE_TESTBOOLEAN_H

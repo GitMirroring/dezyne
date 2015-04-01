@@ -93,20 +93,24 @@ static void call_out_b_f(ibottom* self) {
 }
 
 
-void middle_init (middle* self, locator* dezyne_locator, meta *m) {
-	runtime_sub_init(dezyne_locator->rt, &self->sub);
-	memcpy(&self->m, m, sizeof(meta));
-	self->l_ = *(ilogger*)locator_get(dezyne_locator, "ilogger");
+void middle_init (middle* self, locator* dezyne_locator, dzn_meta_t *dzn_meta) {
+	runtime_sub_init(dezyne_locator->rt, &self->dzn_sub);
+	self->dzn_sub.performs_flush = true;
+	memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
+	self->l = locator_get(dezyne_locator, "ilogger");
 
 	self->t = &self->t_;
 	self->t->in.e = call_in_t_e;
 	self->t->in.name = "t";
 	self->t->in.self = self;
+	self->t->out.name = "";
+	self->t->out.self = 0;
 	self->b = &self->b_;
+	self->b->in.name = "";
+	self->b->in.self = 0;
 	self->b->out.name = "b";
 	self->b->out.self = self;
 	self->b->out.f = call_out_b_f;
-	self->l = &self->l_;
 	self->l->out.name = "l";
 	self->l->out.self = self;
 }

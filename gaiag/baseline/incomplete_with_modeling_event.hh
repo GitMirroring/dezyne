@@ -37,8 +37,8 @@ namespace dezyne
 
   struct incomplete_with_modeling_event
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     iincomplete_with_modeling_event p;
     iincomplete_with_modeling_event r;
 

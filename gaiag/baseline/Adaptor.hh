@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -26,7 +27,7 @@
 #define DEZYNE_ADAPTOR_HH
 
 #include "IRun.hh"
-#include "IChoice.hh"
+#include "IConsole.hh"
 
 
 #include "runtime.hh"
@@ -38,8 +39,8 @@ namespace dezyne
 
   struct Adaptor
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     struct State
     {
       enum type
@@ -51,13 +52,14 @@ namespace dezyne
     Adaptor::State::type state;
     Adaptor::Twice count;
     IRun runner;
-    IChoice choice;
+    IConsole console;
 
     Adaptor(const locator&);
 
     private:
     void runner_run();
-    void choice_a();
+    void console_detected();
+    void console_deactivated();
   };
 }
 #endif // DEZYNE_ADAPTOR_HH

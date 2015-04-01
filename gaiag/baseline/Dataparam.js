@@ -23,7 +23,9 @@
 
 dezyne.Dataparam = function(rt, meta) {
   this.rt = rt;
+  rt.components = (rt.components || []).concat ([this]);
   this.meta = meta;
+  this.flushes = true;
   this.mi = 0;
   this.s = new dezyne.IDataparam().Status.Yes;
   this.reply_IDataparam_Status = null;
@@ -46,30 +48,36 @@ dezyne.Dataparam = function(rt, meta) {
       return this.reply_IDataparam_Status;
     }.bind(this), [this.port, 'e0r', this.port.Status_to_string]);
   }.bind(this);
-  this.port.in.e = function(pi) {
+  this.port.in.e = function(i) {
     runtime.call_in(this, function() {
       {
-        var s = {value: this.funx(pi)};
-        s.value = s.value;
-        this.mi = pi;
-        this.mi = this.xfunx(pi, pi);
-        this.port.out.a(this.mi);
-        this.port.out.aa(this.mi, pi);
+        var pi = {value: i};
+        {
+          var s = {value: this.funx(pi.value)};
+          s.value = s.value;
+          this.mi = pi.value;
+          this.mi = this.xfunx(pi.value, pi.value);
+          this.port.out.a(this.mi);
+          this.port.out.aa(this.mi, pi.value);
+        }
       }
     }.bind(this), [this.port, 'e']);
   }.bind(this);
-  this.port.in.er = function(pi) {
+  this.port.in.er = function(i) {
     return runtime.call_in(this, function() {
       {
-        var s = {value: new dezyne.IDataparam().Status.No};
-        this.mi = pi;
-        this.port.out.a(this.mi);
-        this.port.out.aa(this.mi, pi);
-        if(true) {
-          this.reply_IDataparam_Status = new dezyne.IDataparam().Status.Yes;
-        }
-        else {
-          this.reply_IDataparam_Status = s.value;
+        var pi = {value: i};
+        {
+          var s = {value: new dezyne.IDataparam().Status.No};
+          this.mi = pi.value;
+          this.port.out.a(this.mi);
+          this.port.out.aa(this.mi, pi.value);
+          if(true) {
+            this.reply_IDataparam_Status = new dezyne.IDataparam().Status.Yes;
+          }
+          else {
+            this.reply_IDataparam_Status = s.value;
+          }
         }
       }
       return this.reply_IDataparam_Status;

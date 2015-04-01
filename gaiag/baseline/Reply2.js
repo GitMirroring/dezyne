@@ -23,7 +23,9 @@
 
 dezyne.Reply2 = function(rt, meta) {
   this.rt = rt;
+  rt.components = (rt.components || []).concat ([this]);
   this.meta = meta;
+  this.flushes = true;
   this.dummy = false;
   this.reply_I_Status = null;
   this.reply_U_Status = null;

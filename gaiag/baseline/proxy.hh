@@ -37,8 +37,8 @@ namespace dezyne
 
   struct proxy
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     IDataparam::Status::type reply_IDataparam_Status;
     IDataparam top;
     IDataparam bottom;
@@ -48,8 +48,8 @@ namespace dezyne
     private:
     void top_e0();
     IDataparam::Status::type top_e0r();
-    void top_e(int pi);
-    IDataparam::Status::type top_er(int pi);
+    void top_e(int i);
+    IDataparam::Status::type top_er(int i);
     IDataparam::Status::type top_eer(int i, int j);
     void top_eo(int& i);
     void top_eoo(int& i, int& j);
@@ -62,7 +62,7 @@ namespace dezyne
     void bottom_a0();
     void bottom_a(int i);
     void bottom_aa(int i, int j);
-    void bottom_a6(int A0, int A1, int A2, int A3, int A4, int A5);
+    void bottom_a6(int a0, int a1, int a2, int a3, int a4, int a5);
     void outfunc(int& i);
     void deferfunc(int i);
   };

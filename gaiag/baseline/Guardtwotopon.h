@@ -32,13 +32,13 @@
 
 
 typedef struct {
-	meta m;
-	runtime_sub sub;
+	dzn_meta_t dzn_meta;
+	runtime_sub dzn_sub;
 	bool b;
 	IGuardtwotopon i_;
 	IGuardtwotopon* i;
 } Guardtwotopon;
 
-void Guardtwotopon_init(Guardtwotopon* self, locator* dezyne_locator, meta* m);
+void Guardtwotopon_init(Guardtwotopon* self, locator* dezyne_locator, dzn_meta_t* dzn_meta);
 
 #endif // DEZYNE_GUARDTWOTOPON_H

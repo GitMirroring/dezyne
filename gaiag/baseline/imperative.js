@@ -23,7 +23,9 @@
 
 dezyne.imperative = function(rt, meta) {
   this.rt = rt;
+  rt.components = (rt.components || []).concat ([this]);
   this.meta = meta;
+  this.flushes = true;
   this.States = {
     I: 0, II: 1, III: 2, IV: 3
   };

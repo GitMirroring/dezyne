@@ -35,7 +35,7 @@
 #include "locator.h"
 
 typedef struct {
-	meta m;
+	dzn_meta_t dzn_meta;
 	Adaptor adaptor;
 	ChoiceSystem choice;
 
@@ -43,6 +43,6 @@ typedef struct {
 
 } Main;
 
-void Main_init(Main*self, locator* dezyne_locator, meta* m);
+void Main_init(Main*self, locator* dezyne_locator, dzn_meta_t* dzn_meta);
 
 #endif // DEZYNE_MAIN_H

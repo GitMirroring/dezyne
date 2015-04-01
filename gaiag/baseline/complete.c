@@ -91,15 +91,20 @@ static void call_out_r_a(icomplete* self) {
 }
 
 
-void complete_init (complete* self, locator* dezyne_locator, meta *m) {
-	runtime_sub_init(dezyne_locator->rt, &self->sub);
-	memcpy(&self->m, m, sizeof(meta));
+void complete_init (complete* self, locator* dezyne_locator, dzn_meta_t *dzn_meta) {
+	runtime_sub_init(dezyne_locator->rt, &self->dzn_sub);
+	self->dzn_sub.performs_flush = true;
+	memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
 
 	self->p = &self->p_;
 	self->p->in.e = call_in_p_e;
 	self->p->in.name = "p";
 	self->p->in.self = self;
+	self->p->out.name = "";
+	self->p->out.self = 0;
 	self->r = &self->r_;
+	self->r->in.name = "";
+	self->r->in.self = 0;
 	self->r->out.name = "r";
 	self->r->out.self = self;
 	self->r->out.a = call_out_r_a;

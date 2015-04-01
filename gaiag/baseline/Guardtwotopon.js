@@ -22,7 +22,9 @@
 
 dezyne.Guardtwotopon = function(rt, meta) {
   this.rt = rt;
+  rt.components = (rt.components || []).concat ([this]);
   this.meta = meta;
+  this.flushes = true;
   this.b = false;
 
   this.i = new dezyne.IGuardtwotopon({provides: {name: 'i', component: this}, requires: {}});

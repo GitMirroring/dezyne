@@ -34,8 +34,8 @@
 
 
 typedef struct {
-	meta m;
-	runtime_sub sub;
+	dzn_meta_t dzn_meta;
+	runtime_sub dzn_sub;
 	int state;
 	bool sounding;
 	IConsole console_;
@@ -46,6 +46,6 @@ typedef struct {
 	ISiren* siren;
 } Alarm;
 
-void Alarm_init(Alarm* self, locator* dezyne_locator, meta* m);
+void Alarm_init(Alarm* self, locator* dezyne_locator, dzn_meta_t* dzn_meta);
 
 #endif // DEZYNE_ALARM_H

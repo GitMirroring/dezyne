@@ -38,8 +38,8 @@ namespace dezyne
 
   struct sugar
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     struct Enum
     {
       enum type

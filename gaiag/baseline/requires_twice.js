@@ -23,7 +23,9 @@
 
 dezyne.requires_twice = function(rt, meta) {
   this.rt = rt;
+  rt.components = (rt.components || []).concat ([this]);
   this.meta = meta;
+  this.flushes = true;
 
   this.p = new dezyne.irequires_twice({provides: {name: 'p', component: this}, requires: {}});
   this.once = new dezyne.irequires_twice({provides: {}, requires: {name: 'once', component: this}});

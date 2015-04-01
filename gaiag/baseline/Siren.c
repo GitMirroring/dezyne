@@ -82,13 +82,16 @@ static void call_in_siren_turnoff(ISiren* self) {
 	runtime_trace_out(&self->in, &self->out, "return");
 }
 
-void Siren_init (Siren* self, locator* dezyne_locator, meta *m) {
-	runtime_sub_init(dezyne_locator->rt, &self->sub);
-	memcpy(&self->m, m, sizeof(meta));
+void Siren_init (Siren* self, locator* dezyne_locator, dzn_meta_t *dzn_meta) {
+	runtime_sub_init(dezyne_locator->rt, &self->dzn_sub);
+	self->dzn_sub.performs_flush = true;
+	memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
 
 	self->siren = &self->siren_;
 	self->siren->in.turnon = call_in_siren_turnon;
 	self->siren->in.turnoff = call_in_siren_turnoff;
 	self->siren->in.name = "siren";
 	self->siren->in.self = self;
+	self->siren->out.name = "";
+	self->siren->out.self = 0;
 }

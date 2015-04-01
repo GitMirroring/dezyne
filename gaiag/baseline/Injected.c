@@ -31,16 +31,16 @@
 	required->in = provided->in;\
 }
 
-void Injected_init(Injected *self, locator* dezyne_locator, meta* m) {
+void Injected_init(Injected *self, locator* dezyne_locator, dzn_meta_t* dzn_meta) {
 	locator* local_locator = locator_clone(dezyne_locator);
 	locator_set(local_locator, "ilogger", &self->l.log_);
-	memcpy(&self->m, m, sizeof(meta));
-	meta m_l = {"l", self};
-	logger_init(&self->l, local_locator, &m_l);
-	meta m_m = {"m", self};
-	middle_init(&self->m, local_locator, &m_m);
-	meta m_b = {"b", self};
-	bottom_init(&self->b, local_locator, &m_b);
+	memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
+	dzn_meta_t dzn_m_l = {"l", self};
+	logger_init(&self->l, local_locator, &dzn_m_l);
+	dzn_meta_t dzn_m_m = {"m", self};
+	middle_init(&self->m, local_locator, &dzn_m_m);
+	dzn_meta_t dzn_m_b = {"b", self};
+	bottom_init(&self->b, local_locator, &dzn_m_b);
 	self->t = self->m.t;
 	CONNECT(self->b.b, self->m.b);
 }

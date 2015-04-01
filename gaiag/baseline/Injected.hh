@@ -39,7 +39,7 @@ namespace dezyne
 {
   struct Injected
   {
-    dezyne::meta meta;
+    dezyne::meta dzn_meta;
     logger l;
     dezyne::locator dezyne_local_locator;
     middle m;
@@ -49,6 +49,7 @@ namespace dezyne
 
     Injected(const dezyne::locator&);
     void check_bindings() const;
+    void dump_tree() const;
   };
 }
 #endif // DEZYNE_INJECTED_HH

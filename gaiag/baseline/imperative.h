@@ -32,13 +32,13 @@
 
 
 typedef struct {
-	meta m;
-	runtime_sub sub;
+	dzn_meta_t dzn_meta;
+	runtime_sub dzn_sub;
 	int state;
 	iimperative i_;
 	iimperative* i;
 } imperative;
 
-void imperative_init(imperative* self, locator* dezyne_locator, meta* m);
+void imperative_init(imperative* self, locator* dezyne_locator, dzn_meta_t* dzn_meta);
 
 #endif // DEZYNE_IMPERATIVE_H

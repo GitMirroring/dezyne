@@ -31,12 +31,12 @@
 	required->in = provided->in;\
 }
 
-void Main_init(Main *self, locator* dezyne_locator, meta* m) {
-	memcpy(&self->m, m, sizeof(meta));
-	meta m_adaptor = {"adaptor", self};
-	Adaptor_init(&self->adaptor, dezyne_locator, &m_adaptor);
-	meta m_choice = {"choice", self};
-	ChoiceSystem_init(&self->choice, dezyne_locator, &m_choice);
+void Main_init(Main *self, locator* dezyne_locator, dzn_meta_t* dzn_meta) {
+	memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
+	dzn_meta_t dzn_m_adaptor = {"adaptor", self};
+	Adaptor_init(&self->adaptor, dezyne_locator, &dzn_m_adaptor);
+	dzn_meta_t dzn_m_choice = {"choice", self};
+	ChoiceSystem_init(&self->choice, dezyne_locator, &dzn_m_choice);
 	self->runner = self->adaptor.runner;
 	CONNECT(self->choice.c, self->adaptor.choice);
 }

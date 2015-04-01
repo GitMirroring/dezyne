@@ -23,6 +23,7 @@
 
 dezyne.provides_twice = function(rt, meta) {
   rt.top = rt.top || this;
+  rt.components = (rt.components || []).concat ([this]);
   this.rt = rt;
   this.meta = meta;
   this.one = new dezyne.external_provides_twice(rt, {parent: this, name: 'one'});

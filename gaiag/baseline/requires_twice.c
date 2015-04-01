@@ -111,19 +111,26 @@ static void call_out_twice_a(irequires_twice* self) {
 }
 
 
-void requires_twice_init (requires_twice* self, locator* dezyne_locator, meta *m) {
-	runtime_sub_init(dezyne_locator->rt, &self->sub);
-	memcpy(&self->m, m, sizeof(meta));
+void requires_twice_init (requires_twice* self, locator* dezyne_locator, dzn_meta_t *dzn_meta) {
+	runtime_sub_init(dezyne_locator->rt, &self->dzn_sub);
+	self->dzn_sub.performs_flush = true;
+	memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
 
 	self->p = &self->p_;
 	self->p->in.e = call_in_p_e;
 	self->p->in.name = "p";
 	self->p->in.self = self;
+	self->p->out.name = "";
+	self->p->out.self = 0;
 	self->once = &self->once_;
+	self->once->in.name = "";
+	self->once->in.self = 0;
 	self->once->out.name = "once";
 	self->once->out.self = self;
 	self->once->out.a = call_out_once_a;
 	self->twice = &self->twice_;
+	self->twice->in.name = "";
+	self->twice->in.self = 0;
 	self->twice->out.name = "twice";
 	self->twice->out.self = self;
 	self->twice->out.a = call_out_twice_a;

@@ -31,9 +31,9 @@
 	required->in = provided->in;\
 }
 
-void ChoiceSystem_init(ChoiceSystem *self, locator* dezyne_locator, meta* m) {
-	memcpy(&self->m, m, sizeof(meta));
-	meta m_choice = {"choice", self};
-	Choice_init(&self->choice, dezyne_locator, &m_choice);
+void ChoiceSystem_init(ChoiceSystem *self, locator* dezyne_locator, dzn_meta_t* dzn_meta) {
+	memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
+	dzn_meta_t dzn_m_choice = {"choice", self};
+	Choice_init(&self->choice, dezyne_locator, &dzn_m_choice);
 	self->c = self->choice.c;
 }

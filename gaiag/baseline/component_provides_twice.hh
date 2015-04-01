@@ -37,8 +37,8 @@ namespace dezyne
 
   struct component_provides_twice
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     iprovides_once i;
 
     component_provides_twice(const locator&);

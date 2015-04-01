@@ -28,18 +28,22 @@
 namespace dezyne
 {
   provides_twice::provides_twice(const dezyne::locator& dezyne_locator)
-  : meta{"","provides_twice",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&one)},{}}
+  : dzn_meta{"","provides_twice",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&one)},{}}
   , one(dezyne_locator)
   , i(one.i)
   , ii(one.ii)
   {
-    one.meta.parent = reinterpret_cast<component*>(this);
-    one.meta.address = reinterpret_cast<component*>(&one);
-    one.meta.name = "one";
+    one.dzn_meta.parent = reinterpret_cast<component*>(this);
+    one.dzn_meta.address = reinterpret_cast<component*>(&one);
+    one.dzn_meta.name = "one";
   }
 
   void provides_twice::check_bindings() const
   {
     dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void provides_twice::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
   }
 }

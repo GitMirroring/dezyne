@@ -39,17 +39,8 @@ namespace dezyne
 
   struct Alarm
   {
-    dezyne::meta meta;
-    runtime& rt;
-    struct States
-    {
-      enum type
-      {
-        Disarmed, Armed, Triggered, Disarming
-      };
-    };
-    Alarm::States::type state;
-    bool sounding;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     IConsole console;
     ISensor sensor;
     ISiren siren;

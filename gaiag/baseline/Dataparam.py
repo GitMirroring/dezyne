@@ -27,10 +27,13 @@ import runtime
 
 class Dataparam:
 
-    def __init__ (self, parent=None, name=''):
+    def __init__ (self, rt, parent=None, name=''):
+        self.rt = rt
+        rt.components += [self]
         self.parent = parent
         self.name = name
         self.handling = False
+        self.flushes = True
         self.deferred = None
         self.queue = []
 
@@ -64,20 +67,22 @@ class Dataparam:
         self.reply_IDataparam_Status = dezyne.IDataparam.Status.Yes
         return self.reply_IDataparam_Status
 
-    def port_e (self,pi):
-        s = {'value': self.funx (pi)}
+    def port_e (self,i):
+        pi = {'value': i}
+        s = {'value': self.funx (pi['value'])}
         s['value'] = s['value']
-        self.mi = pi
-        self.mi = self.xfunx (pi, pi)
+        self.mi = pi['value']
+        self.mi = self.xfunx (pi['value'], pi['value'])
         self.port.outs.a (self.mi)
-        self.port.outs.aa (self.mi, pi)
+        self.port.outs.aa (self.mi, pi['value'])
 
 
-    def port_er (self,pi):
+    def port_er (self,i):
+        pi = {'value': i}
         s = {'value': dezyne.IDataparam.Status.No}
-        self.mi = pi
+        self.mi = pi['value']
         self.port.outs.a (self.mi)
-        self.port.outs.aa (self.mi, pi)
+        self.port.outs.aa (self.mi, pi['value'])
         if (True):
             self.reply_IDataparam_Status = dezyne.IDataparam.Status.Yes
         else:

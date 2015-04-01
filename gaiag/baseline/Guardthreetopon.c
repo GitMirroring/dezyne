@@ -128,9 +128,10 @@ static void call_out_r_a(RGuardthreetopon* self) {
 }
 
 
-void Guardthreetopon_init (Guardthreetopon* self, locator* dezyne_locator, meta *m) {
-	runtime_sub_init(dezyne_locator->rt, &self->sub);
-	memcpy(&self->m, m, sizeof(meta));
+void Guardthreetopon_init (Guardthreetopon* self, locator* dezyne_locator, dzn_meta_t *dzn_meta) {
+	runtime_sub_init(dezyne_locator->rt, &self->dzn_sub);
+	self->dzn_sub.performs_flush = true;
+	memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
 	self->b = false;
 	self->i = &self->i_;
 	self->i->in.e = call_in_i_e;
@@ -138,7 +139,11 @@ void Guardthreetopon_init (Guardthreetopon* self, locator* dezyne_locator, meta 
 	self->i->in.s = call_in_i_s;
 	self->i->in.name = "i";
 	self->i->in.self = self;
+	self->i->out.name = "";
+	self->i->out.self = 0;
 	self->r = &self->r_;
+	self->r->in.name = "";
+	self->r->in.self = 0;
 	self->r->out.name = "r";
 	self->r->out.self = self;
 	self->r->out.a = call_out_r_a;

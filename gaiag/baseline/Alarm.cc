@@ -32,14 +32,15 @@
 namespace dezyne
 {
   Alarm::Alarm(const locator& dezyne_locator)
-  : meta{"","Alarm",reinterpret_cast<const component*>(this),0,{},{[this]{console.check_bindings();},[this]{sensor.check_bindings();},[this]{siren.check_bindings();}}}
-  , rt(dezyne_locator.get<runtime>())
+  : dzn_meta{"","Alarm",reinterpret_cast<const component*>(this),0,{},{[this]{console.check_bindings();},[this]{sensor.check_bindings();},[this]{siren.check_bindings();}}}
+  , dzn_rt(dezyne_locator.get<runtime>())
   , state(States::Disarmed)
   , sounding(false)
   , console({{"console",this},{"",0}})
   , sensor({{"",0},{"sensor",this}})
   , siren({{"",0},{"siren",this}})
   {
+    dzn_rt.performs_flush(this) = true; 
     console.in.arm = [&] () {
       call_in(this, [this] {console_arm();}, std::make_tuple(&console, "arm", "return"));
     };
@@ -98,7 +99,6 @@ namespace dezyne
     {
       {
         sensor.in.disable();
-        siren.in.turnoff();
         sounding = false;
         state = States::Disarming;
       }
@@ -122,8 +122,7 @@ namespace dezyne
     }
     else if (state == States::Disarming)
     {
-      {
-      }
+      assert(false);
     }
     else if (state == States::Triggered)
     {
@@ -144,9 +143,8 @@ namespace dezyne
     else if (state == States::Disarming and sounding)
     {
       console.out.deactivated();
-      siren.in.turnoff();
-      state = States::Disarmed;
       sounding = false;
+      state = States::Disarmed;
     }
     else if (state == States::Disarming and not (sounding))
     {

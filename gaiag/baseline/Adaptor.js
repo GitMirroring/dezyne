@@ -23,7 +23,9 @@
 
 dezyne.Adaptor = function(rt, meta) {
   this.rt = rt;
+  rt.components = (rt.components || []).concat ([this]);
   this.meta = meta;
+  this.flushes = true;
   this.State = {
     Idle: 0, Active: 1, Terminating: 2
   };

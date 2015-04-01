@@ -106,16 +106,21 @@ static void call_out_choice_a(IChoice* self) {
 }
 
 
-void Adaptor_init (Adaptor* self, locator* dezyne_locator, meta *m) {
-	runtime_sub_init(dezyne_locator->rt, &self->sub);
-	memcpy(&self->m, m, sizeof(meta));
+void Adaptor_init (Adaptor* self, locator* dezyne_locator, dzn_meta_t *dzn_meta) {
+	runtime_sub_init(dezyne_locator->rt, &self->dzn_sub);
+	self->dzn_sub.performs_flush = true;
+	memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
 	self->state = Adaptor_State_Idle;
 	self->count = 0;
 	self->runner = &self->runner_;
 	self->runner->in.run = call_in_runner_run;
 	self->runner->in.name = "runner";
 	self->runner->in.self = self;
+	self->runner->out.name = "";
+	self->runner->out.self = 0;
 	self->choice = &self->choice_;
+	self->choice->in.name = "";
+	self->choice->in.self = 0;
 	self->choice->out.name = "choice";
 	self->choice->out.self = self;
 	self->choice->out.a = call_out_choice_a;

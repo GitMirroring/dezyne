@@ -23,7 +23,9 @@
 
 dezyne.Comp = function(rt, meta) {
   this.rt = rt;
+  rt.components = (rt.components || []).concat ([this]);
   this.meta = meta;
+  this.flushes = true;
   this.State = {
     Uninitialized: 0, Initialized: 1, Error: 2
   };

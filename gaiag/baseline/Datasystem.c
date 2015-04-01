@@ -30,12 +30,12 @@
 	required->in = provided->in;\
 }
 
-void Datasystem_init(Datasystem *self, locator* dezyne_locator, meta* m) {
-	memcpy(&self->m, m, sizeof(meta));
-	meta m_p = {"p", self};
-	proxy_init(&self->p, dezyne_locator, &m_p);
-	meta m_c = {"c", self};
-	Dataparam_init(&self->c, dezyne_locator, &m_c);
+void Datasystem_init(Datasystem *self, locator* dezyne_locator, dzn_meta_t* dzn_meta) {
+	memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
+	dzn_meta_t dzn_m_p = {"p", self};
+	proxy_init(&self->p, dezyne_locator, &dzn_m_p);
+	dzn_meta_t dzn_m_c = {"c", self};
+	Dataparam_init(&self->c, dezyne_locator, &dzn_m_c);
 	self->port = self->p.top;
 	CONNECT(self->c.port, self->p.bottom);
 }

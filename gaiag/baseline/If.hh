@@ -37,8 +37,8 @@ namespace dezyne
 
   struct If
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     bool t;
     I i;
 

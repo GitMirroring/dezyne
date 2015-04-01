@@ -24,7 +24,9 @@
 
 dezyne.Alarm = function(rt, meta) {
   this.rt = rt;
+  rt.components = (rt.components || []).concat ([this]);
   this.meta = meta;
+  this.flushes = true;
   this.States = {
     Disarmed: 0, Armed: 1, Triggered: 2, Disarming: 3
   };

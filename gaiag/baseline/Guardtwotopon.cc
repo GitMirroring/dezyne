@@ -32,11 +32,12 @@
 namespace dezyne
 {
   Guardtwotopon::Guardtwotopon(const locator& dezyne_locator)
-  : meta{"","Guardtwotopon",reinterpret_cast<const component*>(this),0,{},{[this]{i.check_bindings();}}}
-  , rt(dezyne_locator.get<runtime>())
+  : dzn_meta{"","Guardtwotopon",reinterpret_cast<const component*>(this),0,{},{[this]{i.check_bindings();}}}
+  , dzn_rt(dezyne_locator.get<runtime>())
   , b(false)
   , i({{"i",this},{"",0}})
   {
+    dzn_rt.performs_flush(this) = true; 
     i.in.e = [&] () {
       call_in(this, [this] {i_e();}, std::make_tuple(&i, "e", "return"));
     };

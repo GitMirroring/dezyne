@@ -36,8 +36,8 @@ namespace dezyne
 
   struct Twotopon
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     bool b;
     ITwotopon i;
 

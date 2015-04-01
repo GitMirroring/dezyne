@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -40,13 +41,14 @@ namespace dezyne
 {
   struct ChoiceSystem
   {
-    dezyne::meta meta;
+    dezyne::meta dzn_meta;
     Choice choice;
 
     IChoice& c;
 
     ChoiceSystem(const dezyne::locator&);
     void check_bindings() const;
+    void dump_tree() const;
   };
 }
 #endif // DEZYNE_CHOICESYSTEM_HH

@@ -24,7 +24,9 @@
 
 dezyne.Choice = function(rt, meta) {
   this.rt = rt;
+  rt.components = (rt.components || []).concat ([this]);
   this.meta = meta;
+  this.flushes = true;
   this.State = {
     Off: 0, Idle: 1, Busy: 2
   };

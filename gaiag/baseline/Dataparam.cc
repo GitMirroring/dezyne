@@ -33,23 +33,24 @@
 namespace dezyne
 {
   Dataparam::Dataparam(const locator& dezyne_locator)
-  : meta{"","Dataparam",reinterpret_cast<const component*>(this),0,{},{[this]{port.check_bindings();}}}
-  , rt(dezyne_locator.get<runtime>())
+  : dzn_meta{"","Dataparam",reinterpret_cast<const component*>(this),0,{},{[this]{port.check_bindings();}}}
+  , dzn_rt(dezyne_locator.get<runtime>())
   , mi(0)
   , s(IDataparam::Status::Yes)
   , port({{"port",this},{"",0}})
   {
+    dzn_rt.performs_flush(this) = true; 
     port.in.e0 = [&] () {
       call_in(this, [this] {port_e0();}, std::make_tuple(&port, "e0", "return"));
     };
     port.in.e0r = [&] () {
       return call_in(this, std::function<IDataparam::Status::type()>([&] {return port_e0r();}), std::make_tuple(&port, "e0r", "return"));
     };
-    port.in.e = [&] (int pi) {
-      call_in(this, std::function<void()>([&] {port_e(pi);}), std::make_tuple(&port, "e", "return"));
+    port.in.e = [&] (int i) {
+      call_in(this, std::function<void()>([&] {port_e(i);}), std::make_tuple(&port, "e", "return"));
     };
-    port.in.er = [&] (int pi) {
-      return call_in(this, std::function<IDataparam::Status::type()>([&] {return port_er(pi);}), std::make_tuple(&port, "er", "return"));
+    port.in.er = [&] (int i) {
+      return call_in(this, std::function<IDataparam::Status::type()>([&] {return port_er(i);}), std::make_tuple(&port, "er", "return"));
     };
     port.in.eer = [&] (int i, int j) {
       return call_in(this, std::function<IDataparam::Status::type()>([&] {return port_eer(i,j);}), std::make_tuple(&port, "eer", "return"));
@@ -96,32 +97,38 @@ namespace dezyne
     return reply_IDataparam_Status;
   }
 
-  void Dataparam::port_e(int pi)
+  void Dataparam::port_e(int i)
   {
     {
-      IDataparam::Status::type s = funx (pi);
-      s = s;
-      mi = pi;
-      mi = xfunx (pi, pi);
-      port.out.a(mi);
-      port.out.aa(mi, pi);
+      int pi = i;
+      {
+        IDataparam::Status::type s = funx (pi);
+        s = s;
+        mi = pi;
+        mi = xfunx (pi, pi);
+        port.out.a(mi);
+        port.out.aa(mi, pi);
+      }
     }
   }
 
-  IDataparam::Status::type Dataparam::port_er(int pi)
+  IDataparam::Status::type Dataparam::port_er(int i)
   {
     {
-      IDataparam::Status::type s = IDataparam::Status::No;
-      mi = pi;
-      port.out.a(mi);
-      port.out.aa(mi, pi);
-      if (true)
+      int pi = i;
       {
-        reply_IDataparam_Status = IDataparam::Status::Yes;
-      }
-      else
-      {
-        reply_IDataparam_Status = s;
+        IDataparam::Status::type s = IDataparam::Status::No;
+        mi = pi;
+        port.out.a(mi);
+        port.out.aa(mi, pi);
+        if (true)
+        {
+          reply_IDataparam_Status = IDataparam::Status::Yes;
+        }
+        else
+        {
+          reply_IDataparam_Status = s;
+        }
       }
     }
     return reply_IDataparam_Status;

@@ -33,10 +33,11 @@
 namespace dezyne
 {
   enum_collision::enum_collision(const locator& dezyne_locator)
-  : meta{"","enum_collision",reinterpret_cast<const component*>(this),0,{},{[this]{i.check_bindings();}}}
-  , rt(dezyne_locator.get<runtime>())
+  : dzn_meta{"","enum_collision",reinterpret_cast<const component*>(this),0,{},{[this]{i.check_bindings();}}}
+  , dzn_rt(dezyne_locator.get<runtime>())
   , i({{"i",this},{"",0}})
   {
+    dzn_rt.performs_flush(this) = true; 
     i.in.foo = [&] () {
       return call_in(this, std::function<ienum_collision::Retval1::type()>([&] {return i_foo();}), std::make_tuple(&i, "foo", "return"));
     };

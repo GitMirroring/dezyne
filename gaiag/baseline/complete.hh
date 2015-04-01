@@ -37,8 +37,8 @@ namespace dezyne
 
   struct complete
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     icomplete p;
     icomplete r;
 

@@ -27,24 +27,28 @@
 namespace dezyne
 {
   Injected::Injected(const dezyne::locator& dezyne_locator)
-  : meta{"","Injected",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&m),reinterpret_cast<component*>(&b)},{}}
+  : dzn_meta{"","Injected",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&m),reinterpret_cast<component*>(&b)},{}}
   , l(dezyne_locator)
   , dezyne_local_locator(dezyne_locator.clone().set(l.log))
   , m(dezyne_local_locator)
   , b(dezyne_local_locator)
   , t(m.t)
   {
-    m.meta.parent = reinterpret_cast<component*>(this);
-    m.meta.address = reinterpret_cast<component*>(&m);
-    m.meta.name = "m";
-    b.meta.parent = reinterpret_cast<component*>(this);
-    b.meta.address = reinterpret_cast<component*>(&b);
-    b.meta.name = "b";
+    m.dzn_meta.parent = reinterpret_cast<component*>(this);
+    m.dzn_meta.address = reinterpret_cast<component*>(&m);
+    m.dzn_meta.name = "m";
+    b.dzn_meta.parent = reinterpret_cast<component*>(this);
+    b.dzn_meta.address = reinterpret_cast<component*>(&b);
+    b.dzn_meta.name = "b";
     connect(b.b, m.b);
   }
 
   void Injected::check_bindings() const
   {
     dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void Injected::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
   }
 }

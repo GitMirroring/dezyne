@@ -37,8 +37,8 @@ namespace dezyne
 
   struct Reply7
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     IReply7::E::type reply_IReply7_E;
     IReply7 p;
     IReply7 r;

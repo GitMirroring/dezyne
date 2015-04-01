@@ -94,13 +94,16 @@ static void call_in_sensor_disable(ISensor* self) {
 	runtime_trace_out(&self->in, &self->out, "return");
 }
 
-void Sensor_init (Sensor* self, locator* dezyne_locator, meta *m) {
-	runtime_sub_init(dezyne_locator->rt, &self->sub);
-	memcpy(&self->m, m, sizeof(meta));
+void Sensor_init (Sensor* self, locator* dezyne_locator, dzn_meta_t *dzn_meta) {
+	runtime_sub_init(dezyne_locator->rt, &self->dzn_sub);
+	self->dzn_sub.performs_flush = true;
+	memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
 
 	self->sensor = &self->sensor_;
 	self->sensor->in.enable = call_in_sensor_enable;
 	self->sensor->in.disable = call_in_sensor_disable;
 	self->sensor->in.name = "sensor";
 	self->sensor->in.self = self;
+	self->sensor->out.name = "";
+	self->sensor->out.self = 0;
 }

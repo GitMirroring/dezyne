@@ -37,8 +37,8 @@ namespace dezyne
 
   struct logger
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     ilogger log;
 
     logger(const locator&);

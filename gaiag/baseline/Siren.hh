@@ -37,8 +37,16 @@ namespace dezyne
 
   struct Siren
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
+    struct States
+    {
+      enum type
+      {
+        Off, On
+      };
+    };
+    Siren::States::type state;
     ISiren siren;
 
     Siren(const locator&);

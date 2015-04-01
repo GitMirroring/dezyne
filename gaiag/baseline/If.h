@@ -32,13 +32,13 @@
 
 
 typedef struct {
-	meta m;
-	runtime_sub sub;
+	dzn_meta_t dzn_meta;
+	runtime_sub dzn_sub;
 	bool t;
 	I i_;
 	I* i;
 } If;
 
-void If_init(If* self, locator* dezyne_locator, meta* m);
+void If_init(If* self, locator* dezyne_locator, dzn_meta_t* dzn_meta);
 
 #endif // DEZYNE_IF_H

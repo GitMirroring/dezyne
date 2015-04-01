@@ -189,9 +189,10 @@ static int call_in_client_perform_actions(IComp* self) {
 	return self_->reply_IComp_result_t;
 }
 
-void Comp_init (Comp* self, locator* dezyne_locator, meta *m) {
-	runtime_sub_init(dezyne_locator->rt, &self->sub);
-	memcpy(&self->m, m, sizeof(meta));
+void Comp_init (Comp* self, locator* dezyne_locator, dzn_meta_t *dzn_meta) {
+	runtime_sub_init(dezyne_locator->rt, &self->dzn_sub);
+	self->dzn_sub.performs_flush = true;
+	memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
 	self->s = Comp_State_Uninitialized;
 	self->client = &self->client_;
 	self->client->in.initialize = call_in_client_initialize;
@@ -199,7 +200,11 @@ void Comp_init (Comp* self, locator* dezyne_locator, meta *m) {
 	self->client->in.perform_actions = call_in_client_perform_actions;
 	self->client->in.name = "client";
 	self->client->in.self = self;
+	self->client->out.name = "";
+	self->client->out.self = 0;
 	self->device_A = &self->device_A_;
+	self->device_A->in.name = "";
+	self->device_A->in.self = 0;
 	self->device_A->out.name = "device_A";
 	self->device_A->out.self = self;
 }

@@ -29,10 +29,12 @@ def connect (provided, required):
     required.ins = provided.ins
 
 class ChoiceSystem:
-    def __init__ (self, parent=None, name=''):
+    def __init__ (self, rt, parent=None, name=''):
+        self.rt = rt
+        rt.components += [self]
         self.parent = parent
         self.name = name
-        self.choice = dezyne.Choice (parent=self, name='choice')
+        self.choice = dezyne.Choice (self.rt, parent=self, name='choice')
         self.c = self.choice.c
 
 

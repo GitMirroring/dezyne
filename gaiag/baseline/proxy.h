@@ -33,8 +33,8 @@
 
 
 typedef struct {
-	meta m;
-	runtime_sub sub;
+	dzn_meta_t dzn_meta;
+	runtime_sub dzn_sub;
 	int reply_IDataparam_Status;
 	IDataparam top_;
 	IDataparam* top;
@@ -42,6 +42,6 @@ typedef struct {
 	IDataparam* bottom;
 } proxy;
 
-void proxy_init(proxy* self, locator* dezyne_locator, meta* m);
+void proxy_init(proxy* self, locator* dezyne_locator, dzn_meta_t* dzn_meta);
 
 #endif // DEZYNE_PROXY_H

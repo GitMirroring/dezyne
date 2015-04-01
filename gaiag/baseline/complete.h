@@ -33,14 +33,14 @@
 
 
 typedef struct {
-	meta m;
-	runtime_sub sub;
+	dzn_meta_t dzn_meta;
+	runtime_sub dzn_sub;
 	icomplete p_;
 	icomplete* p;
 	icomplete r_;
 	icomplete* r;
 } complete;
 
-void complete_init(complete* self, locator* dezyne_locator, meta* m);
+void complete_init(complete* self, locator* dezyne_locator, dzn_meta_t* dzn_meta);
 
 #endif // DEZYNE_COMPLETE_H

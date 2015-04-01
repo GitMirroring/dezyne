@@ -37,8 +37,8 @@ namespace dezyne
 
   struct enum_collision
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     ienum_collision::Retval1::type reply_ienum_collision_Retval1;
     ienum_collision::Retval2::type reply_ienum_collision_Retval2;
     ienum_collision i;

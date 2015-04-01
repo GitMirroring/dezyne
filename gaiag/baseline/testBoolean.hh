@@ -37,8 +37,8 @@ namespace dezyne
 
   struct testBoolean
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     bool b;
     TestBool i;
 

@@ -33,13 +33,13 @@
 #include "locator.h"
 
 typedef struct {
-	meta m;
+	dzn_meta_t dzn_meta;
 	Choice choice;
 
 	IChoice* c;
 
 } ChoiceSystem;
 
-void ChoiceSystem_init(ChoiceSystem*self, locator* dezyne_locator, meta* m);
+void ChoiceSystem_init(ChoiceSystem*self, locator* dezyne_locator, dzn_meta_t* dzn_meta);
 
 #endif // DEZYNE_CHOICESYSTEM_H

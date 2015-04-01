@@ -23,7 +23,9 @@
 
 dezyne.function2 = function(rt, meta) {
   this.rt = rt;
+  rt.components = (rt.components || []).concat ([this]);
   this.meta = meta;
+  this.flushes = true;
   this.f = false;
 
   this.i = new dezyne.ifunction2({provides: {name: 'i', component: this}, requires: {}});

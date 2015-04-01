@@ -37,8 +37,8 @@ namespace dezyne
 
   struct function
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     bool f;
     I i;
 

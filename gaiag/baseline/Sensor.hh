@@ -37,8 +37,8 @@ namespace dezyne
 
   struct Sensor
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     ISensor sensor;
 
     Sensor(const locator&);

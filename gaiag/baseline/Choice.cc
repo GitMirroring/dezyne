@@ -33,11 +33,12 @@
 namespace dezyne
 {
   Choice::Choice(const locator& dezyne_locator)
-  : meta{"","Choice",reinterpret_cast<const component*>(this),0,{},{[this]{c.check_bindings();}}}
-  , rt(dezyne_locator.get<runtime>())
+  : dzn_meta{"","Choice",reinterpret_cast<const component*>(this),0,{},{[this]{c.check_bindings();}}}
+  , dzn_rt(dezyne_locator.get<runtime>())
   , s(State::Off)
   , c({{"c",this},{"",0}})
   {
+    dzn_rt.performs_flush(this) = true; 
     c.in.e = [&] () {
       call_in(this, [this] {c_e();}, std::make_tuple(&c, "e", "return"));
     };

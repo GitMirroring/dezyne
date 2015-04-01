@@ -28,12 +28,14 @@ def connect (provided, required):
     required.ins = provided.ins
 
 class AlarmSystem:
-    def __init__ (self, parent=None, name=''):
+    def __init__ (self, rt, parent=None, name=''):
+        self.rt = rt
+        rt.components += [self]
         self.parent = parent
         self.name = name
-        self.alarm = dezyne.Alarm (parent=self, name='alarm')
-        self.sensor = dezyne.Sensor (parent=self, name='sensor')
-        self.siren = dezyne.Siren (parent=self, name='siren')
+        self.alarm = dezyne.Alarm (self.rt, parent=self, name='alarm')
+        self.sensor = dezyne.Sensor (self.rt, parent=self, name='sensor')
+        self.siren = dezyne.Siren (self.rt, parent=self, name='siren')
         self.console = self.alarm.console
 
         connect (self.sensor.sensor, self.alarm.sensor)

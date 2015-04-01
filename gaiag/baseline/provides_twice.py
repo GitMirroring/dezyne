@@ -28,10 +28,12 @@ def connect (provided, required):
     required.ins = provided.ins
 
 class provides_twice:
-    def __init__ (self, parent=None, name=''):
+    def __init__ (self, rt, parent=None, name=''):
+        self.rt = rt
+        rt.components += [self]
         self.parent = parent
         self.name = name
-        self.one = dezyne.external_provides_twice (parent=self, name='one')
+        self.one = dezyne.external_provides_twice (self.rt, parent=self, name='one')
         self.i = self.one.i
         self.ii = self.one.ii
 

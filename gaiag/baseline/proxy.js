@@ -24,7 +24,9 @@
 
 dezyne.proxy = function(rt, meta) {
   this.rt = rt;
+  rt.components = (rt.components || []).concat ([this]);
   this.meta = meta;
+  this.flushes = true;
   this.reply_IDataparam_Status = null;
 
   this.top = new dezyne.IDataparam({provides: {name: 'top', component: this}, requires: {}});
@@ -44,16 +46,22 @@ dezyne.proxy = function(rt, meta) {
       return this.reply_IDataparam_Status;
     }.bind(this), [this.top, 'e0r', this.top.Status_to_string]);
   }.bind(this);
-  this.top.in.e = function(pi) {
+  this.top.in.e = function(i) {
     runtime.call_in(this, function() {
-      this.bottom.in.e(pi);
+      {
+        var pi = {value: i};
+        this.bottom.in.e(pi.value);
+      }
     }.bind(this), [this.top, 'e']);
   }.bind(this);
-  this.top.in.er = function(pi) {
+  this.top.in.er = function(i) {
     return runtime.call_in(this, function() {
       {
-        var r = {value: this.bottom.in.er(pi)};
-        this.reply_IDataparam_Status = r.value;
+        var pi = {value: i};
+        {
+          var r = {value: this.bottom.in.er(pi.value)};
+          this.reply_IDataparam_Status = r.value;
+        }
       }
       return this.reply_IDataparam_Status;
     }.bind(this), [this.top, 'er', this.top.Status_to_string]);
@@ -146,9 +154,17 @@ dezyne.proxy = function(rt, meta) {
       this.top.out.aa(i, j);
     }.bind(this), [this.bottom, 'aa']);
   }.bind(this);
-  this.bottom.out.a6 = function(A0,A1,A2,A3,A4,A5) {
+  this.bottom.out.a6 = function(a0,a1,a2,a3,a4,a5) {
     runtime.call_out(this, function() {
-      this.top.out.a6(A0, A1, A2, A3, A4, A5);
+      {
+        var A0 = {value: a0};
+        var A1 = {value: a1};
+        var A2 = {value: a2};
+        var A3 = {value: a3};
+        var A4 = {value: a4};
+        var A5 = {value: a5};
+        this.top.out.a6(A0.value, A1.value, A2.value, A3.value, A4.value, A5.value);
+      }
     }.bind(this), [this.bottom, 'a6']);
   }.bind(this);
   this.outfunc = function (i) {

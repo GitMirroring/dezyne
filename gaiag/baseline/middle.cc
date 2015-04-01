@@ -32,12 +32,13 @@
 namespace dezyne
 {
   middle::middle(const locator& dezyne_locator)
-  : meta{"","middle",reinterpret_cast<const component*>(this),0,{},{[this]{t.check_bindings();},[this]{b.check_bindings();},[this]{l.check_bindings();}}}
-  , rt(dezyne_locator.get<runtime>())
+  : dzn_meta{"","middle",reinterpret_cast<const component*>(this),0,{},{[this]{t.check_bindings();},[this]{b.check_bindings();},[this]{l.check_bindings();}}}
+  , dzn_rt(dezyne_locator.get<runtime>())
   , t({{"t",this},{"",0}})
   , b({{"",0},{"b",this}})
   , l(dezyne_locator.get<ilogger>())
   {
+    dzn_rt.performs_flush(this) = true; 
     t.in.e = [&] () {
       call_in(this, [this] {t_e();}, std::make_tuple(&t, "e", "return"));
     };

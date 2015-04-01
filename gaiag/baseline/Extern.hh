@@ -37,8 +37,8 @@ namespace dezyne
 
   struct Extern
   {
-    dezyne::meta meta;
-    runtime& rt;
+    dezyne::meta dzn_meta;
+    runtime& dzn_rt;
     int i;
     int j;
     IExtern port;

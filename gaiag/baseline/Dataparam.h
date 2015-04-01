@@ -32,8 +32,8 @@
 
 
 typedef struct {
-	meta m;
-	runtime_sub sub;
+	dzn_meta_t dzn_meta;
+	runtime_sub dzn_sub;
 	int mi;
 	int s;
 	int reply_IDataparam_Status;
@@ -41,6 +41,6 @@ typedef struct {
 	IDataparam* port;
 } Dataparam;
 
-void Dataparam_init(Dataparam* self, locator* dezyne_locator, meta* m);
+void Dataparam_init(Dataparam* self, locator* dezyne_locator, dzn_meta_t* dzn_meta);
 
 #endif // DEZYNE_DATAPARAM_H
