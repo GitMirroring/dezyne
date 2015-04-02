@@ -362,7 +362,7 @@ rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c
 cd out && $(shell pwd)/gaiag -l c++ examples/regression/$*.dzn
 -$(diff) baseline/$*.hh out
 -$(diff) baseline/$*.cc out
-ccache g++ -std=c++11 -o out/$*.o -c out/$*.cc $(UPDATE)
+ccache g++ $(CXXFLAGS) -o out/$*.o -c out/$*.cc $(UPDATE)
 @$(diff) baseline/$*.hh out >/dev/null
 @$(diff) baseline/$*.cc out >/dev/null
 endef
@@ -813,3 +813,15 @@ lts/%.svg: ../webdemo/examples/%.dzn
 	touch $@
 
 lts: $(DEMO_SOURCES:%.dzn=lts/$(notdir %).svg)
+
+CXXFLAGS:=--std=c++11
+CXXFLAGS+=-DDEBUG
+out/main.o:
+	rm -f out/main.cc
+	cd out && ln -sf ../examples/main.cc .
+	ccache g++ --std=c++11 -c -DCOMPONENT=argument out/main.cc -o out/main.o
+
+out/test: out/argument.c++ out/main.o out/runtime.o
+#out/test: out/argument.o out/main.o out/runtime.o
+	g++ -o out/test out/*o
+	echo 'i.e' | out/test

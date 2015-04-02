@@ -34,7 +34,24 @@ namespace dezyne
     call_out(this, #(string-if (null? argument-list) #{[this] {#port _#event();}#} #{ std::function<void()>([&#comma #arguments] {this->#port _#event (#arguments);}) #}), std::make_tuple(&#port , "#event ", "return"));
 };
 #}) (filter gom:out? (gom:events port))))
-    (filter gom:requires? (gom:ports model))) }
+    (filter gom:requires? (gom:ports model)))
+##ifdef DEBUG
+    if (event_map* e = dezyne_locator.try_get<event_map>("event-map")) 
+    {
+#(map
+    (lambda (port)
+      (map (define-on model port #{
+      (*e)["#port .#event "] = #(string-if (null? argument-list) #{ #port .#direction .#event #} #{ [this] { #port .#direction .#event (#(comma-join (iota (length argument-list))));} #});
+#}) (filter (gom:dir-matches? port) (gom:events port))))
+  (gom:ports model))#
+(map
+    (lambda (port)
+      (map (define-on model port #{
+      #port .#direction .#event  = [&] (#parameters) {std::clog << "#port .#direction .#event " << std::endl;};
+#}) (filter (negate (gom:dir-matches? port)) (gom:events port))))
+  (gom:ports model)) }
+##endif
+}
 
 #(map
   (lambda (port)

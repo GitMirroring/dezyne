@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -58,11 +58,19 @@ public:
     return *this;
   }
   template <typename T>
-  T& get(const Key& key = Key()) const
+  T* try_get(const Key& key = Key()) const
   {
     std::map<std::pair<Key,type_info>, void*>::const_iterator it = services.find(std::make_pair(key,type_info(typeid(T))));
-    if(it == services.end() || not it->second) throw std::runtime_error("<" + std::string(typeid(T).name()) + ",\"" + key + "\"> not available");
-    return *reinterpret_cast<T*>(it->second);
+    if(it != services.end() and it->second)
+      return reinterpret_cast<T*>(it->second);
+    return 0;
+  }
+  template <typename T>
+  T& get(const Key& key = Key()) const
+  {
+    if(T* t = try_get<T>(key))
+      return *t;
+    throw std::runtime_error("<" + std::string(typeid(T).name()) + ",\"" + key + "\"> not available");
   }
 };
 }

@@ -42,6 +42,14 @@ namespace dezyne
     i.in.e = [&] () {
       call_in(this, [this] {i_e();}, std::make_tuple(&i, "e", "return"));
     };
+
+#ifdef DEBUG
+    if (event_map* e = dezyne_locator.try_get<event_map>("event-map")) 
+    {
+      (*e)["i.e"] = i.in.e;
+      i.out.f = [&] () {std::clog << "i.out.f" << std::endl;};
+    }
+#endif
   }
 
   void argument::i_e()

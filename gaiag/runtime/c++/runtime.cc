@@ -70,7 +70,7 @@ bool& runtime::performs_flush(void* scope)
 
 void runtime::flush(void* scope)
 {
-#ifdef DEBUG
+#ifdef DEBUG_RUNTIME
   std::cout << path(scope) << " flush" << std::endl;
 #endif
   if(!external(scope))
@@ -94,7 +94,7 @@ void runtime::flush(void* scope)
 
 void runtime::defer(void* src, void* tgt, const std::function<void()>& event)
 {
-#ifdef DEBUG
+#ifdef DEBUG_RUNTIME
   std::cout << path(tgt) << " defer" << std::endl;
 #endif
 
@@ -113,7 +113,7 @@ void runtime::handle(void* scope, const std::function<void()>& event)
 {
   bool& handle = handling(scope);
 
-#ifdef DEBUG
+#ifdef DEBUG_RUNTIME
   std::cout << path(scope) << " handle " << std::boolalpha << handle << std::endl;
 #endif
 
