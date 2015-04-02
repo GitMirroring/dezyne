@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -25,9 +26,9 @@
 #ifndef DEZYNE_ALARMSYSTEM_HH
 #define DEZYNE_ALARMSYSTEM_HH
 
+#include "Alarm.hh"
 #include "Sensor.hh"
 #include "Siren.hh"
-#include "Alarm.hh"
 
 
 #include "IConsole.hh"
@@ -43,9 +44,9 @@ namespace dezyne
   struct AlarmSystem
   {
     dezyne::meta dzn_meta;
+    Alarm alarm;
     Sensor sensor;
     Siren siren;
-    Alarm alarm;
 
     IConsole& console;
 

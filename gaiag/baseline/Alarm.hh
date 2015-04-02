@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -41,6 +42,15 @@ namespace dezyne
   {
     dezyne::meta dzn_meta;
     runtime& dzn_rt;
+    struct States
+    {
+      enum type
+      {
+        Disarmed, Armed, Triggered, Disarming
+      };
+    };
+    Alarm::States::type state;
+    bool sounding;
     IConsole console;
     ISensor sensor;
     ISiren siren;

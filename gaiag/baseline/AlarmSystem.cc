@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -27,21 +28,21 @@
 namespace dezyne
 {
   AlarmSystem::AlarmSystem(const dezyne::locator& dezyne_locator)
-  : dzn_meta{"","AlarmSystem",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&sensor),reinterpret_cast<component*>(&siren),reinterpret_cast<component*>(&alarm)},{}}
+  : dzn_meta{"","AlarmSystem",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&alarm),reinterpret_cast<component*>(&sensor),reinterpret_cast<component*>(&siren)},{}}
+  , alarm(dezyne_locator)
   , sensor(dezyne_locator)
   , siren(dezyne_locator)
-  , alarm(dezyne_locator)
   , console(alarm.console)
   {
+    alarm.dzn_meta.parent = reinterpret_cast<component*>(this);
+    alarm.dzn_meta.address = reinterpret_cast<component*>(&alarm);
+    alarm.dzn_meta.name = "alarm";
     sensor.dzn_meta.parent = reinterpret_cast<component*>(this);
     sensor.dzn_meta.address = reinterpret_cast<component*>(&sensor);
     sensor.dzn_meta.name = "sensor";
     siren.dzn_meta.parent = reinterpret_cast<component*>(this);
     siren.dzn_meta.address = reinterpret_cast<component*>(&siren);
     siren.dzn_meta.name = "siren";
-    alarm.dzn_meta.parent = reinterpret_cast<component*>(this);
-    alarm.dzn_meta.address = reinterpret_cast<component*>(&alarm);
-    alarm.dzn_meta.name = "alarm";
     connect(sensor.sensor, alarm.sensor);
     connect(siren.siren, alarm.siren);
   }

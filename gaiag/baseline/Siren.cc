@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -34,7 +35,6 @@ namespace dezyne
   Siren::Siren(const locator& dezyne_locator)
   : dzn_meta{"","Siren",reinterpret_cast<const component*>(this),0,{},{[this]{siren.check_bindings();}}}
   , dzn_rt(dezyne_locator.get<runtime>())
-  , state(States::Off)
   , siren({{"siren",this},{"",0}})
   {
     dzn_rt.performs_flush(this) = true; 
@@ -48,25 +48,13 @@ namespace dezyne
 
   void Siren::siren_turnon()
   {
-    if (state == States::Off)
     {
-      state = States::On;
-    }
-    else if (state == States::On)
-    {
-      assert(false);
     }
   }
 
   void Siren::siren_turnoff()
   {
-    if (state == States::Off)
     {
-      assert(false);
-    }
-    else if (state == States::On)
-    {
-      state = States::Off;
     }
   }
 
