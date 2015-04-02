@@ -26,9 +26,15 @@
 #include "runtime.hh"
 #include "locator.hh"
 
-#include "Main.hh"
+#define STR(s) #s
+#define XSTR(s) STR(s)
+#define HEADER(NAME) NAME.hh
+#define COMPONENT_HH XSTR(HEADER(COMPONENT))
+
+#include COMPONENT_HH
 
 #include <iostream>
+
 
 int main()
 {
@@ -36,13 +42,17 @@ int main()
   dezyne::locator l;
   l.set(rt);
 
-  dezyne::Main m(l);
+  dezyne::event_map event_map;
+  l.set(event_map, "event-map");
 
-  m.dzn_meta.name = "m";
-  m.runner.meta.requires = {"runner", &m};
+  dezyne::COMPONENT sut(l);
 
-  m.check_bindings();
-  m.dump_tree();
+  sut.dzn_meta.name = "sut";
 
-  m.runner.in.run();
+  sut.check_bindings();
+  sut.dump_tree();
+
+  std::string event;
+  while(std::cin >> event)
+    event_map[event]();
 }

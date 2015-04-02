@@ -18,6 +18,13 @@ namespace dezyne
 ((->join  "\n, ") (map (lambda (port) (list (.name port) "(" (if (.injected port) (list "dezyne_locator.get<" (.type port) ">()") (list "{" (if (eq? (.direction port) 'requires) "{\"\",0},") "{\"" (.name port) "\",this}" (if (eq? (.direction port) 'provides) ",{\"\",0}") "}")) ")")) (gom:ports model)))
   {
     dzn_rt.performs_flush(this) = true; 
+##ifdef TEST_EVENT
+#(map
+    (lambda (port)
+      (map (define-on model port #{
+      #port .#direction .#event  = [&] (#parameters) {std::clog << "#port .#direction .#event " << std::endl;};
+#}) (gom:events port))) (gom:ports model))
+##endif // TEST_EVENT
 #
    (map
     (lambda (port)
@@ -35,22 +42,15 @@ namespace dezyne
 };
 #}) (filter gom:out? (gom:events port))))
     (filter gom:requires? (gom:ports model)))
-##ifdef DEBUG
+##ifdef TEST_EVENT
     if (event_map* e = dezyne_locator.try_get<event_map>("event-map")) 
     {
 #(map
     (lambda (port)
       (map (define-on model port #{
       (*e)["#port .#event "] = #(string-if (null? argument-list) #{ #port .#direction .#event #} #{ [this] { #port .#direction .#event (#(comma-join (iota (length argument-list))));} #});
-#}) (filter (gom:dir-matches? port) (gom:events port))))
-  (gom:ports model))#
-(map
-    (lambda (port)
-      (map (define-on model port #{
-      #port .#direction .#event  = [&] (#parameters) {std::clog << "#port .#direction .#event " << std::endl;};
-#}) (filter (negate (gom:dir-matches? port)) (gom:events port))))
-  (gom:ports model)) }
-##endif
+#}) (gom:events port))) (gom:ports model)) }
+##endif // TEST_EVENT
 }
 
 #(map
@@ -70,4 +70,12 @@ namespace dezyne
   {
     #statements }
 #}) (gom:functions model)))
+  void #.model ::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void #.model ::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

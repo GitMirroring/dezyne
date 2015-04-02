@@ -26,6 +26,8 @@ struct #.model
 #interface  #name;
 #}) ((compose .elements .ports) model))
     #.model (const locator&);
+  void check_bindings() const;
+  void dump_tree() const;
 
 private:
 #(map
@@ -42,6 +44,6 @@ private:
   (filter gom:requires? (gom:ports model)))#
 (map (define-function model #{
   #return-type  #name (#parameters);
-#}) (gom:functions model))};
+#}) (gom:functions model)) };
 }
 ##endif // DEZYNE_#.COMPONENT _HH

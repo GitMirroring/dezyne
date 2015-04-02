@@ -815,11 +815,9 @@ lts/%.svg: ../webdemo/examples/%.dzn
 lts: $(DEMO_SOURCES:%.dzn=lts/$(notdir %).svg)
 
 CXXFLAGS:=--std=c++11
-CXXFLAGS+=-DDEBUG
+CXXFLAGS+=-DDEBUG -DTEST_EVENT
 out/main.o:
-	rm -f out/main.cc
-	cd out && ln -sf ../examples/main.cc .
-	ccache g++ --std=c++11 -c -DCOMPONENT=argument out/main.cc -o out/main.o
+	ccache g++ --std=c++11 -c -DTEST_EVENT -DCOMPONENT=argument out/main.cc -o out/main.o
 
 out/test: out/argument.c++ out/main.o out/runtime.o
 #out/test: out/argument.o out/main.o out/runtime.o

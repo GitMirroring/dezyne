@@ -37,7 +37,7 @@
 
 namespace dezyne
 {
-#ifdef DEBUG
+#ifdef TEST_EVENT
   typedef std::map<std::string, std::function<void()>> event_map;
 #endif
 
