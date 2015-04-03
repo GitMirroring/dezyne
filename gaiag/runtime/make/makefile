@@ -56,6 +56,7 @@ include make/compile.make
 include make/dezyne.make
 
 TARGET:=$(OUT)/test
+$(OUT)/main.o: CPPFLAGS+=-DCOMPONENT=Main -DTEST_EVENT
 $(TARGET).o: $(RUNTIME:%=$(OUT)/%) $(O_FILES)
 $(TARGET): $(O_FILES)
 	$(LINK.cc) $^ $(LOADLIBES) $(LDLIBS) -o $@
@@ -63,4 +64,4 @@ $(TARGET): $(O_FILES)
 all: $(TARGET)
 
 test: all
-	$(TARGET)
+	echo runner.run | $(TARGET)

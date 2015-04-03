@@ -21,6 +21,7 @@
 # 
 # Code:
 
+CPPFLAGS += -DTEST_EVENT
 CPPFLAGS += -MMD -MF $(@:%.o=%.dep) -MT '$(@:%.o=%.dep) $@' -I. -I $(OUT)
 
 ifeq ($(strip $(filter-out clean depend,$(MAKECMDGOALS))),$(MAKECMDGOALS))
