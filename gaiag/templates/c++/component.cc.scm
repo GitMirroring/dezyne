@@ -22,7 +22,7 @@ namespace dezyne
 #(map
     (lambda (port)
       (map (define-on model port #{
-      #port .#direction .#event  = [&] (#parameters) {std::clog << "#port .#direction .#event " << std::endl;};
+      #port .#direction .#event  = [&] (#parameters) {std::clog << "#port .#direction .#event " << std::endl; #(string-if (not (eq? return-type 'void)) #{ return reply_#reply-type _#reply-name ;#}) };
 #}) (gom:events port))) (gom:ports model))
 ##endif // TEST_EVENT
 #
@@ -45,10 +45,11 @@ namespace dezyne
 ##ifdef TEST_EVENT
     if (event_map* e = dezyne_locator.try_get<event_map>("event-map")) 
     {
+      int dzn_i = 0;
 #(map
     (lambda (port)
       (map (define-on model port #{
-      (*e)["#port .#event "] = #(string-if (null? argument-list) #{ #port .#direction .#event #} #{ [this] { #port .#direction .#event (#(comma-join (iota (length argument-list))));} #});
+          (*e)["#port .#event "] = #(string-if (null? argument-list) #{ #port .#direction .#event #} #{ [this,&dzn_i] {#port .#direction .#event (#(comma-join (map (lambda (i) "dzn_i") argument-list)));}#});
 #}) (gom:events port))) (gom:ports model)) }
 ##endif // TEST_EVENT
 }
@@ -59,9 +60,9 @@ namespace dezyne
   #return-type  #.model ::#port _#event (#parameters)
   {
     #statement #
-    (if (not (eq? type 'void))
-(list "    return reply_" reply-type "_" reply-name ";\n"
-      )) }
+    (string-if (not (eq? type 'void))
+#{  return reply_#reply-type _#reply-name ;
+#}) }
 
 #}) (filter (gom:dir-matches? port) (gom:events port))))
   (gom:ports model))#
