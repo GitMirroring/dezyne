@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -23,5 +23,6 @@
 
 
 // handwritten generic main
-var main = new dezyne.Main();
-main.run.in.run();
+var rt = new dezyne.runtime();
+var main = new dezyne.Main(rt, {name: 'm'});
+main.runner.in.run();
