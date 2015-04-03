@@ -49,7 +49,7 @@ namespace dezyne
 #(map
     (lambda (port)
       (map (define-on model port #{
-          (*e)["#port .#event "] = #(string-if (null? argument-list) #{ #port .#direction .#event #} #{ [this,&dzn_i] {#port .#direction .#event (#(comma-join (map (lambda (i) "dzn_i") argument-list)));}#});
+          if (e->find ("#port .#event ") == e->end()) (*e)["#port .#event "] = #(string-if (null? argument-list) #{ #port .#direction .#event #} #{ [this,&dzn_i] {#port .#direction .#event (#(comma-join (map (lambda (i) "dzn_i") argument-list)));}#});
 #}) (gom:events port))) (gom:ports model)) }
 ##endif // TEST_EVENT
 }
