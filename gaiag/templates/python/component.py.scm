@@ -1,3 +1,4 @@
+import sys
 #(map (include-interface #{
 import dezyne.#interface
 #}) (gom:ports model))
@@ -19,15 +20,19 @@ class #.model :
     (map (init-member model #{
         self.#name  = #expression
 #}) (gom:variables model))#
-    (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))
-#
+    (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))#
     (map (init-port #{
         self.#name  = dezyne.#interface  (provides=('#name ', self))
-#}) (filter gom:provides? ((compose .elements .ports) model)))
-#
+#}) (filter gom:provides? ((compose .elements .ports) model)))#
     (map (init-port #{
         self.#name  = dezyne.#interface  (requires=('#name ', self))
 #}) (filter gom:requires? ((compose .elements .ports) model)))
+        if 'event_map' in self.rt.__dict__.keys ():
+#(map
+    (lambda (port)
+      (map (define-on model port #{
+            self.#port .#direction s.#event  = lambda *args: sys.stderr.write ('#port .#event \n')
+#}) (gom:events port))) (gom:ports model))
 #
    (map
     (lambda (port)
@@ -41,6 +46,12 @@ class #.model :
         self.#port .#direction s.#event  = lambda *args: runtime.call_out (self, lambda: self.#port _#event  (*args), (self.#port , '#event '))
 #}) (filter gom:out? (gom:events port))))
     (filter gom:requires? (gom:ports model)))
+        if 'event_map' in self.rt.__dict__.keys ():
+#(map
+    (lambda (port)
+      (map (define-on model port #{
+            self.rt.event_map['#port .#event '] = self.#port .#direction s.#event
+#}) (gom:events port))) (gom:ports model))
 #(map
    (lambda (port)
      (map (define-on model port #{
