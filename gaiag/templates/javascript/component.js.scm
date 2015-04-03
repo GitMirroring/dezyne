@@ -13,6 +13,13 @@ dezyne.#.model  = function(rt, meta) {
     (map (init-port #{
   this.#name  = new dezyne.#interface (#(string-if (eq? direction 'requires) #{{provides: {}, requires: {name: '#name ', component: this}}#} #{{provides: {name: '#name ', component: this}, requires: {}}#}));
 #}) ((compose .elements .ports) model))
+  if (this.rt.event_map) {
+#(map
+    (lambda (port)
+      (map (define-on model port #{
+      this.#port .#direction .#event  = function() {console.error('#port .#event '); };
+#}) (gom:events port))) (gom:ports model))
+  }
 #(map
    (lambda (port)
      (map (define-on model port #{
@@ -23,7 +30,15 @@ dezyne.#.model  = function(rt, meta) {
 #}) }.bind(this), [this.#port , '#event '#(string-if (not (eq? type 'void))#{, this.#port .#reply-name _to_string#})]);
 }.bind(this);
 #}) (filter (gom:dir-matches? port) (gom:events port))))
-   (gom:ports model))#
+   (gom:ports model))
+  if (this.rt.event_map) {
+#(map
+    (lambda (port)
+      (map (define-on model port #{
+          this.rt.event_map['#port .#event '] = this.#port .#direction .#event;
+#}) (gom:events port))) (gom:ports model))
+}
+#
 (map (define-function model #{
    this.#name  = function (#parameters) {
 #statements }.bind(this);

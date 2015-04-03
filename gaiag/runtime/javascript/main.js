@@ -23,6 +23,20 @@
 
 
 // handwritten generic main
-var rt = new dezyne.runtime();
-var main = new dezyne.Main(rt, {name: 'm'});
-main.runner.in.run();
+function main () {
+  var rt = new dezyne.runtime ();
+  rt.event_map = {};
+  var component = new dezyne.@COMPONENT@ (rt, {name: 'sut'});
+  
+  var readline = require ('readline');
+  var rl = readline.createInterface ({
+    input: process.stdin,
+    output: process.stdout
+  });
+  
+  rl.on ('line', function (event) {
+    rt.event_map[event] ();
+  });
+}
+
+main ();
