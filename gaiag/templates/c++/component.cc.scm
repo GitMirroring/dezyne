@@ -18,13 +18,6 @@ namespace dezyne
 ((->join  "\n, ") (map (lambda (port) (list (.name port) "(" (if (.injected port) (list "dezyne_locator.get<" (.type port) ">()") (list "{" (if (eq? (.direction port) 'requires) "{\"\",0},") "{\"" (.name port) "\",this}" (if (eq? (.direction port) 'provides) ",{\"\",0}") "}")) ")")) (gom:ports model)))
   {
     dzn_rt.performs_flush(this) = true; 
-##ifdef TEST_EVENT
-#(map
-    (lambda (port)
-      (map (define-on model port #{
-      #port .#direction .#event  = [&] (#parameters) {std::clog << "#port .#direction .#event " << std::endl; #(string-if (not (eq? return-type 'void)) #{ return reply_#reply-type _#reply-name ;#}) };
-#}) (gom:events port))) (gom:ports model))
-##endif // TEST_EVENT
 #
    (map
     (lambda (port)
@@ -42,16 +35,6 @@ namespace dezyne
 };
 #}) (filter gom:out? (gom:events port))))
     (filter gom:requires? (gom:ports model)))
-##ifdef TEST_EVENT
-    if (event_map* e = dezyne_locator.try_get<event_map>("event-map")) 
-    {
-      int dzn_i = 0;
-#(map
-    (lambda (port)
-      (map (define-on model port #{
-          if (e->find ("#port .#event ") == e->end()) (*e)["#port .#event "] = #(string-if (null? argument-list) #{ #port .#direction .#event #} #{ [this,&dzn_i] {#port .#direction .#event (#(comma-join (map (lambda (i) "dzn_i") argument-list)));}#});
-#}) (gom:events port))) (gom:ports model)) }
-##endif // TEST_EVENT
 }
 
 #(map

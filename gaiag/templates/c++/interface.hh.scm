@@ -38,14 +38,6 @@ struct #.interface
 
   inline void connect (#.interface & provided, #.interface & required)
   {
-##ifndef TEST_EVENT
-    #(map (declare-io model
-          #{assert (not required.in.#name);
-#}) (filter gom:in? ((compose .elements .events) model)))
-    #(map (declare-io model
-          #{assert (not provided.out.#name);
-#}) (filter gom:out? ((compose .elements .events) model)))
-##endif // TEST_EVENT
      provided.out = required.out;
      required.in = provided.in;
      provided.meta.requires = required.meta.requires;

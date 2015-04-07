@@ -37,10 +37,6 @@
 
 namespace dezyne
 {
-#ifdef TEST_EVENT
-  typedef std::map<std::string, std::function<void()>> event_map;
-#endif
-
   void trace_in(port::meta const& m, const char* e);
   void trace_out(port::meta const& m, const char* e);
   
