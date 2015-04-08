@@ -579,10 +579,10 @@ define .JAVA_REGRESSION
 rm -rf out && mkdir out && ln -s ../examples ../templates out
 cd out && $(WFC) $< && $(shell pwd)/gaiag -l java $<
 -$(diff) baseline/$*.java out/dezyne
-cat templates/java/header.java\
+cat runtime/java/header.java\
 	 $$(find out/dezyne -name '*.java')\
 	examples/alarm.java > $@
-cat templates/java/header.java $$(find out/dezyne -name '*.java') > $@
+cat runtime/java/header.java $$(find out/dezyne -name '*.java') > $@
 (cd $(dir $@) && cp -f --backup $(notdir $@) $*.java)
 (cd $(dir $@) && javac $*.java) $(UPDATE)
 $(diff) baseline/$*.java out/dezyne | diffstat || true
@@ -609,7 +609,7 @@ java-alarm: compile
 	 	examples/ISensor.dzn\
 	 	examples/ISiren.dzn;\
 	 	do $(shell pwd)/gaiag -l java $$file; done
-	cat templates/java/header.java\
+	cat runtime/java/header.java\
 		 $$(find out/dezyne -name '*.java')\
 		examples/alarm.java > out/alarm.java
 	cd out && javac alarm.java
@@ -697,10 +697,10 @@ define .GOOPS_REGRESSION
 rm -rf out && mkdir out && ln -s ../examples ../templates out
 cd out && $(WFC) $< && $(shell pwd)/gaiag -l goops $<
 -$(diff) baseline/$*.scm out/dezyne
-cat templates/goops/header.scm\
+cat runtime/goops/header.scm\
 	 $$(find out/dezyne -name '*.scm')\
 	examples/alarm.scm > $@
-cat templates/goops/header.scm $$(find out/dezyne -name '*.scm') > $@
+cat runtime/goops/header.scm $$(find out/dezyne -name '*.scm') > $@
 guile $@ $(UPDATE)
 $(diff) baseline/$*.scm out/dezyne | diffstat || true
 @$(diff) baseline/$*.scm out/dezyne > /dev/null
@@ -726,10 +726,11 @@ goops-alarm: compile
 	 	examples/ISensor.dzn\
 	 	examples/ISiren.dzn;\
 	 	do $(shell pwd)/gaiag -l goops $$file; done
-	cat templates/goops/header.scm\
+	cat runtime/goops/header.scm\
 		 $$(find out/dezyne -name '*.scm')\
 		examples/alarm.scm > out/alarm.scm
-	cd out && bash ./alarm.scm |& grep -v ^';' >$@.trace
+	chmod +x out/alarm.scm
+	out/alarm.scm |& grep -v ^';' >out/$@.trace
 	$(diff) baseline/$@.trace out
 	for i in out/dezyne/*.scm; do $(diff) baseline/$$(basename $$i) $$i; done
 
