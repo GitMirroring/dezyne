@@ -75,9 +75,9 @@ def call_out (c, f, m):
 def path (m, p=''):
     if (not m):
         return 'null.' + p;
-    if (m.__dict__.has_key ('self')):
+    if ('self' in m.__dict__.keys ()):
         return path (m.self, m.name + ('.' + p if p else p))
-    if (m.__dict__.has_key ('parent') and m.parent):
+    if ('parent' in m.__dict__.keys () and m.parent):
         return path (m.parent, m.name + ('.' + p if p else p))
     return m.name + ('.' + p if p else p)
 
