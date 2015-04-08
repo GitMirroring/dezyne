@@ -46,8 +46,8 @@ O_FILES += $(patsubst %.cc,$(OUT)/%.o,$(filter %.cc,$(RUNTIME)))
 $(OUT)/%.d: %.dzn
 	@mkdir -p $(OUT)
 	echo -e '.PRECIOUS: $(OUT)/%$(SOURCE_EXT) $(OUT)/%$(HEADER_EXT)' > $@
-	$(DZN) depends -l $(LANGUAGE) -o $(OUT) $< >> $@
-	echo -e '\t$(DZN) code -l $(LANGUAGE) -o $(OUT) $<' >> $@
+	$(DZN) depends -l $(LANGUAGE) -m $(SUT) -o $(OUT) $< >> $@
+	echo -e '\t$(DZN) code -l $(LANGUAGE) -m $(SUT) -o $(OUT) $<' >> $@
 
 depend: $(D_FILES)
 ifeq ($(strip $(filter-out clean depend,$(MAKECMDGOALS))),$(MAKECMDGOALS))

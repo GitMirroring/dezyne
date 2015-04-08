@@ -55,8 +55,9 @@ clean:
 include make/compile.make
 include make/dezyne.make
 
+SUT:=Main
 TARGET:=$(OUT)/test
-$(OUT)/main.o: CPPFLAGS+=-DCOMPONENT=Main -DTEST_EVENT
+O_FILES+=$(OUT)/main.o
 $(TARGET).o: $(RUNTIME:%=$(OUT)/%) $(O_FILES)
 $(TARGET): $(O_FILES)
 	$(LINK.cc) $^ $(LOADLIBES) $(LDLIBS) -o $@
