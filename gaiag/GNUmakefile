@@ -234,8 +234,7 @@ python-dataparam-update:
 	-$(MAKE) python-dataparam
 	find out/dezyne -type f -a -name '*.py' -exec cp '{}' baseline ';'
 
-code: alarm out/Reply7.o out/Reply7.java out/Reply7.js out/Reply7.py
-
+code: c c++ goops java javascript python
 # c
 c: compile c-alarm c-inject c-dataparam c-regression
 
@@ -351,8 +350,8 @@ c++-dataparam:
 c++-choice:
 	rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c++/* .
 #	rm -f out/main.cc #choice already works with generic main
-	cd out && $(shell pwd)/gaiag -l c++ examples/regression/Choice.dzn
-	for i in out/*cc; do ccache g++ -std=c++11 -g -Wall -Wextra -c -o out/$$(basename $$i .cc).o $$i; done && g++ -o out/$@ out/*.o && out/$@ |& sed -e s/0[^:]*://g | grep -Ev '^(|0 )0x' >out/$@.trace
+	cd out && $(shell pwd)/gaiag -l c++ -m Main examples/regression/Choice.dzn
+	for i in out/*cc; do ccache g++ -std=c++11 -g -Wall -Wextra -c -o out/$$(basename $$i .cc).o $$i; done && g++ -o out/$@ out/*.o && echo runner.run | out/$@ |& sed -e s/0[^:]*://g | grep -Ev '^(|0 )0x' >out/$@.trace
 	$(diff) baseline/$@.trace out
 	$(diff) baseline/Choice.cc out
 
@@ -750,6 +749,7 @@ glue:
 	 	Sensor\
 	 	Siren;\
 	 	do $(shell pwd)/gaiag -m $$model -l c++ commands/examples/AlarmSystem.dzn; done
+	rm -f out/main.cc
 	ln -sf examples/glue.cc out
 	ln -sf examples/ISensorInterface.h out
 	ln -sf examples/SensorComponent.h out

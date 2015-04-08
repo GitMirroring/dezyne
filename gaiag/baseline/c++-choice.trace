@@ -1,18 +1,18 @@
-m:Main
-m.adaptor:Adaptor
-m.choice:ChoiceSystem
-m.choice.choice:Choice
-m.runner.run -> m.adaptor.runner.run
-m.adaptor.choice.e -> m.choice.choice.c.e
-m.choice.choice.c.a -> m.adaptor.choice.a
-m.choice.choice.c.return -> m.adaptor.choice.return
-m.adaptor.choice.e -> m.choice.choice.c.e
-m.choice.choice.c.a -> m.adaptor.choice.a
-m.choice.choice.c.return -> m.adaptor.choice.return
-m.adaptor.choice.e -> m.choice.choice.c.e
-m.choice.choice.c.a -> m.adaptor.choice.a
-m.choice.choice.c.return -> m.adaptor.choice.return
-m.adaptor.choice.e -> m.choice.choice.c.e
-m.choice.choice.c.a -> m.adaptor.choice.a
-m.choice.choice.c.return -> m.adaptor.choice.return
-m.adaptor.runner.return -> m.runner.return
+sut:Main
+sut.adaptor:Adaptor
+sut.choice:ChoiceSystem
+sut.choice.choice:Choice
+<external>..run -> sut.adaptor.runner.run
+sut.adaptor.choice.e -> sut.choice.choice.c.e
+sut.choice.choice.c.a -> sut.adaptor.choice.a
+sut.choice.choice.c.return -> sut.adaptor.choice.return
+sut.adaptor.choice.e -> sut.choice.choice.c.e
+sut.choice.choice.c.a -> sut.adaptor.choice.a
+sut.choice.choice.c.return -> sut.adaptor.choice.return
+sut.adaptor.choice.e -> sut.choice.choice.c.e
+sut.choice.choice.c.a -> sut.adaptor.choice.a
+sut.choice.choice.c.return -> sut.adaptor.choice.return
+sut.adaptor.choice.e -> sut.choice.choice.c.e
+sut.choice.choice.c.a -> sut.adaptor.choice.a
+sut.choice.choice.c.return -> sut.adaptor.choice.return
+sut.adaptor.runner.return -> <external>..return
