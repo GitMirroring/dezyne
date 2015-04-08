@@ -55,6 +55,8 @@ namespace dezyne
     IConsole console;
 
     Adaptor(const locator&);
+    void check_bindings() const;
+    void dump_tree() const;
 
     private:
     void runner_run();

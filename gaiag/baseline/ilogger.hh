@@ -56,9 +56,6 @@ namespace dezyne
 
   inline void connect (ilogger& provided, ilogger& required)
   {
-    assert (not required.in.log);
-
-
     provided.out = required.out;
     required.in = provided.in;
     provided.meta.requires = required.meta.requires;

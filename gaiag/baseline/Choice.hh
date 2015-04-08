@@ -51,6 +51,8 @@ namespace dezyne
     IChoice c;
 
     Choice(const locator&);
+    void check_bindings() const;
+    void dump_tree() const;
 
     private:
     void c_e();

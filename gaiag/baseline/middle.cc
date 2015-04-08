@@ -45,6 +45,7 @@ namespace dezyne
     b.out.f = [&] () {
       call_out(this, [this] {b_f();}, std::make_tuple(&b, "f", "return"));
     };
+
   }
 
   void middle::t_e()
@@ -64,4 +65,12 @@ namespace dezyne
   }
 
 
+  void middle::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void middle::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

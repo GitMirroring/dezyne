@@ -43,6 +43,7 @@ namespace dezyne
     i.in.e = [&] () {
       call_in(this, [this] {i_e();}, std::make_tuple(&i, "e", "return"));
     };
+
   }
 
   void expressions::i_e()
@@ -80,4 +81,12 @@ namespace dezyne
   }
 
 
+  void expressions::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void expressions::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

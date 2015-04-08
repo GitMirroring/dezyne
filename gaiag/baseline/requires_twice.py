@@ -21,6 +21,7 @@
 # 
 # Code:
 
+import sys
 import dezyne.irequires_twice
 import dezyne.irequires_twice
 import dezyne.irequires_twice
@@ -39,9 +40,7 @@ class requires_twice:
         self.deferred = None
         self.queue = []
 
-
         self.p = dezyne.irequires_twice (provides=('p', self))
-
         self.once = dezyne.irequires_twice (requires=('once', self))
         self.twice = dezyne.irequires_twice (requires=('twice', self))
 

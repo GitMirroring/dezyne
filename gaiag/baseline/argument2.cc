@@ -42,6 +42,7 @@ namespace dezyne
     i.in.e = [&] () {
       call_in(this, [this] {i_e();}, std::make_tuple(&i, "e", "return"));
     };
+
   }
 
   void argument2::i_e()
@@ -64,4 +65,12 @@ namespace dezyne
     return (ga or gb);
   }
 
+  void argument2::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void argument2::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

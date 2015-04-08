@@ -59,10 +59,6 @@ namespace dezyne
 
   inline void connect (iincomplete_with_modeling_event& provided, iincomplete_with_modeling_event& required)
   {
-    assert (not required.in.e);
-
-    assert (not provided.out.a);
-
     provided.out = required.out;
     required.in = provided.in;
     provided.meta.requires = required.meta.requires;

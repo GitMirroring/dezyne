@@ -21,6 +21,7 @@
 # 
 # Code:
 
+import sys
 import dezyne.IDataparam
 
 import runtime
@@ -40,9 +41,7 @@ class Dataparam:
         self.mi = 0
         self.s = dezyne.IDataparam.Status.Yes
         self.reply_IDataparam_Status = None
-
         self.port = dezyne.IDataparam (provides=('port', self))
-
 
         self.port.ins.e0 = lambda *args: runtime.call_in (self, lambda: self.port_e0 (*args), (self.port, 'e0'))
         self.port.ins.e0r = lambda *args: runtime.call_in (self, lambda: self.port_e0r (*args), (self.port, 'e0r', self.port.Status_to_string))

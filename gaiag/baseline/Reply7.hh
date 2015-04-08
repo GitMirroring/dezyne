@@ -44,6 +44,8 @@ namespace dezyne
     IReply7 r;
 
     Reply7(const locator&);
+    void check_bindings() const;
+    void dump_tree() const;
 
     private:
     IReply7::E::type p_foo();

@@ -45,6 +45,7 @@ namespace dezyne
     i.in.t = [&] () {
       call_in(this, [this] {i_t();}, std::make_tuple(&i, "t", "return"));
     };
+
   }
 
   void Topon::i_e()
@@ -65,4 +66,12 @@ namespace dezyne
   }
 
 
+  void Topon::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void Topon::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

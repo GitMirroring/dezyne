@@ -44,6 +44,8 @@ namespace dezyne
     Bottom b;
 
     GuardedRequiredIllegal(const locator&);
+    void check_bindings() const;
+    void dump_tree() const;
 
     private:
     void t_unguarded();

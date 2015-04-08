@@ -44,6 +44,8 @@ namespace dezyne
     iprovides_twice ii;
 
     external_provides_twice(const locator&);
+    void check_bindings() const;
+    void dump_tree() const;
 
     private:
     void i_foo();

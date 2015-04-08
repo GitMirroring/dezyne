@@ -43,6 +43,7 @@ namespace dezyne
     i.in.done = [&] () {
       return call_in(this, std::function<I::Status::type()>([&] {return i_done();}), std::make_tuple(&i, "done", "return"));
     };
+
   }
 
   I::Status::type Reply5::i_done()
@@ -75,4 +76,12 @@ namespace dezyne
     return s;
   }
 
+  void Reply5::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void Reply5::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

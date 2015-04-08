@@ -40,6 +40,7 @@ namespace dezyne
     b.in.e = [&] () {
       call_in(this, [this] {b_e();}, std::make_tuple(&b, "e", "return"));
     };
+
   }
 
   void bottom::b_e()
@@ -48,4 +49,12 @@ namespace dezyne
   }
 
 
+  void bottom::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void bottom::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

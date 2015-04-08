@@ -39,6 +39,7 @@ namespace dezyne
     i.in.foo = [&] () {
       call_in(this, [this] {i_foo();}, std::make_tuple(&i, "foo", "return"));
     };
+
   }
 
   void component_provides_twice::i_foo()
@@ -47,4 +48,12 @@ namespace dezyne
   }
 
 
+  void component_provides_twice::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void component_provides_twice::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

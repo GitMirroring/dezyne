@@ -68,11 +68,6 @@ namespace dezyne
 
   inline void connect (IComp& provided, IComp& required)
   {
-    assert (not required.in.initialize);
-    assert (not required.in.recover);
-    assert (not required.in.perform_actions);
-
-
     provided.out = required.out;
     required.in = provided.in;
     provided.meta.requires = required.meta.requires;

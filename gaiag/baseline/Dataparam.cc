@@ -79,6 +79,7 @@ namespace dezyne
     port.in.eio2r = [&] (int& i) {
       return call_in(this, std::function<IDataparam::Status::type()>([&] {return port_eio2r(i);}), std::make_tuple(&port, "eio2r", "return"));
     };
+
   }
 
   void Dataparam::port_e0()
@@ -229,4 +230,12 @@ namespace dezyne
     return (xi + xj) / 2;
   }
 
+  void Dataparam::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void Dataparam::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

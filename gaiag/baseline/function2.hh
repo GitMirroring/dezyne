@@ -43,6 +43,8 @@ namespace dezyne
     ifunction2 i;
 
     function2(const locator&);
+    void check_bindings() const;
+    void dump_tree() const;
 
     private:
     void i_a();

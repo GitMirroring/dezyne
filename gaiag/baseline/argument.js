@@ -42,6 +42,7 @@ dezyne.argument = function(rt, meta) {
       }
     }.bind(this), [this.i, 'e']);
   }.bind(this);
+
   this.g = function (gc) {
     this.i.out.f();
     return (gc || this.b);

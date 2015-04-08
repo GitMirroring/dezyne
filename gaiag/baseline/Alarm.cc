@@ -54,6 +54,7 @@ namespace dezyne
     sensor.out.disabled = [&] () {
       call_out(this, [this] {sensor_disabled();}, std::make_tuple(&sensor, "disabled", "return"));
     };
+
   }
 
   void Alarm::console_arm()
@@ -162,4 +163,12 @@ namespace dezyne
   }
 
 
+  void Alarm::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void Alarm::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

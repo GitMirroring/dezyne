@@ -21,6 +21,7 @@
 # 
 # Code:
 
+import sys
 import dezyne.IReply7
 import dezyne.IReply7
 
@@ -39,9 +40,7 @@ class Reply7:
         self.queue = []
 
         self.reply_IReply7_E = None
-
         self.p = dezyne.IReply7 (provides=('p', self))
-
         self.r = dezyne.IReply7 (requires=('r', self))
 
         self.p.ins.foo = lambda *args: runtime.call_in (self, lambda: self.p_foo (*args), (self.p, 'foo', self.p.E_to_string))

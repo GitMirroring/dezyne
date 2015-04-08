@@ -42,6 +42,7 @@ namespace dezyne
     p.in.foo = [&] () {
       return call_in(this, std::function<IReply7::E::type()>([&] {return p_foo();}), std::make_tuple(&p, "foo", "return"));
     };
+
   }
 
   IReply7::E::type Reply7::p_foo()
@@ -56,4 +57,12 @@ namespace dezyne
     reply_IReply7_E = v;
   }
 
+  void Reply7::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void Reply7::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

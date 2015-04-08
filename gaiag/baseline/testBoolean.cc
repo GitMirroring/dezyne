@@ -42,6 +42,7 @@ namespace dezyne
     i.in.evt = [&] () {
       call_in(this, [this] {i_evt();}, std::make_tuple(&i, "evt", "return"));
     };
+
   }
 
   void testBoolean::i_evt()
@@ -52,4 +53,12 @@ namespace dezyne
   }
 
 
+  void testBoolean::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void testBoolean::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

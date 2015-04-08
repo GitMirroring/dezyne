@@ -42,6 +42,8 @@ namespace dezyne
     IGuardtwotopon i;
 
     Guardtwotopon(const locator&);
+    void check_bindings() const;
+    void dump_tree() const;
 
     private:
     void i_e();

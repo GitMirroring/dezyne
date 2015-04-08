@@ -45,6 +45,8 @@ namespace dezyne
     Requires r;
 
     reply_reorder(const locator&);
+    void check_bindings() const;
+    void dump_tree() const;
 
     private:
     void p_start();

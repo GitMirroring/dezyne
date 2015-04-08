@@ -42,6 +42,8 @@ namespace dezyne
     ibottom b;
 
     bottom(const locator&);
+    void check_bindings() const;
+    void dump_tree() const;
 
     private:
     void b_e();

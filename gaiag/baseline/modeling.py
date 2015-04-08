@@ -21,6 +21,7 @@
 # 
 # Code:
 
+import sys
 import dezyne.dummy
 import dezyne.imodeling
 
@@ -38,9 +39,7 @@ class modeling:
         self.deferred = None
         self.queue = []
 
-
         self.p = dezyne.dummy (provides=('p', self))
-
         self.r = dezyne.imodeling (requires=('r', self))
 
         self.p.ins.e = lambda *args: runtime.call_in (self, lambda: self.p_e (*args), (self.p, 'e'))

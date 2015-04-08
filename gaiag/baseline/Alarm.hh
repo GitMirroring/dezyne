@@ -56,6 +56,8 @@ namespace dezyne
     ISiren siren;
 
     Alarm(const locator&);
+    void check_bindings() const;
+    void dump_tree() const;
 
     private:
     void console_arm();

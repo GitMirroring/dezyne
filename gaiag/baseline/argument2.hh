@@ -43,6 +43,8 @@ namespace dezyne
     I i;
 
     argument2(const locator&);
+    void check_bindings() const;
+    void dump_tree() const;
 
     private:
     void i_e();

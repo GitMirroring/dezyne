@@ -43,6 +43,8 @@ namespace dezyne
     TestBool i;
 
     testBoolean(const locator&);
+    void check_bindings() const;
+    void dump_tree() const;
 
     private:
     void i_evt();

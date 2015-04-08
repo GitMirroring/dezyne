@@ -63,12 +63,6 @@ namespace dezyne
 
   inline void connect (ifunction2& provided, ifunction2& required)
   {
-    assert (not required.in.a);
-    assert (not required.in.b);
-
-    assert (not provided.out.c);
-    assert (not provided.out.d);
-
     provided.out = required.out;
     required.in = provided.in;
     provided.meta.requires = required.meta.requires;

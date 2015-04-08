@@ -43,6 +43,8 @@ namespace dezyne
     iincomplete r;
 
     incomplete(const locator&);
+    void check_bindings() const;
+    void dump_tree() const;
 
     private:
     void p_e();

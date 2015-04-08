@@ -62,12 +62,6 @@ namespace dezyne
 
   inline void connect (IGuardthreetopon& provided, IGuardthreetopon& required)
   {
-    assert (not required.in.e);
-    assert (not required.in.t);
-    assert (not required.in.s);
-
-    assert (not provided.out.a);
-
     provided.out = required.out;
     required.in = provided.in;
     provided.meta.requires = required.meta.requires;

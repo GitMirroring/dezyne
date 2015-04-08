@@ -40,6 +40,7 @@ namespace dezyne
     log.in.log = [&] () {
       call_in(this, [this] {log_log();}, std::make_tuple(&log, "log", "return"));
     };
+
   }
 
   void logger::log_log()
@@ -49,4 +50,12 @@ namespace dezyne
   }
 
 
+  void logger::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void logger::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

@@ -22,6 +22,7 @@
 # 
 # Code:
 
+import sys
 import dezyne.I
 import dezyne.U
 
@@ -42,9 +43,7 @@ class Reply5:
         self.dummy = False
         self.reply_I_Status = None
         self.reply_U_Status = None
-
         self.i = dezyne.I (provides=('i', self))
-
         self.u = dezyne.U (requires=('u', self))
 
         self.i.ins.done = lambda *args: runtime.call_in (self, lambda: self.i_done (*args), (self.i, 'done', self.i.Status_to_string))

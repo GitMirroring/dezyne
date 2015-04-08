@@ -37,6 +37,7 @@ dezyne.Reply7 = function(rt, meta) {
       return this.reply_IReply7_E;
     }.bind(this), [this.p, 'foo', this.p.E_to_string]);
   }.bind(this);
+
   this.f = function () {
     var v = {value: this.r.in.foo()};
     this.reply_IReply7_E = v.value;

@@ -69,4 +69,5 @@ dezyne.Adaptor = function(rt, meta) {
     }.bind(this), [this.choice, 'a']);
   }.bind(this);
 
+
 };

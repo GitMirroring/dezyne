@@ -48,6 +48,7 @@ namespace dezyne
     console.out.deactivated = [&] () {
       call_out(this, [this] {console_deactivated();}, std::make_tuple(&console, "deactivated", "return"));
     };
+
   }
 
   void Adaptor::runner_run()
@@ -112,4 +113,12 @@ namespace dezyne
   }
 
 
+  void Adaptor::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void Adaptor::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

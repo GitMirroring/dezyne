@@ -21,6 +21,7 @@
 # 
 # Code:
 
+import sys
 import dezyne.Provides
 import dezyne.Requires
 
@@ -39,9 +40,7 @@ class reply_reorder:
         self.queue = []
 
         self.first = True
-
         self.p = dezyne.Provides (provides=('p', self))
-
         self.r = dezyne.Requires (requires=('r', self))
 
         self.p.ins.start = lambda *args: runtime.call_in (self, lambda: self.p_start (*args), (self.p, 'start'))

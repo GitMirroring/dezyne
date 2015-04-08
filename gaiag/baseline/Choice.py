@@ -22,6 +22,7 @@
 # 
 # Code:
 
+import sys
 import dezyne.IChoice
 
 import runtime
@@ -41,9 +42,7 @@ class Choice:
         self.queue = []
 
         self.s = self.State.Off
-
         self.c = dezyne.IChoice (provides=('c', self))
-
 
         self.c.ins.e = lambda *args: runtime.call_in (self, lambda: self.c_e (*args), (self.c, 'e'))
 

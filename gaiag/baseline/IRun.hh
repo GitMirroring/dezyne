@@ -57,9 +57,6 @@ namespace dezyne
 
   inline void connect (IRun& provided, IRun& required)
   {
-    assert (not required.in.run);
-
-
     provided.out = required.out;
     required.in = provided.in;
     provided.meta.requires = required.meta.requires;

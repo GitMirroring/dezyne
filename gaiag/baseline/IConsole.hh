@@ -62,12 +62,6 @@ namespace dezyne
 
   inline void connect (IConsole& provided, IConsole& required)
   {
-    assert (not required.in.arm);
-    assert (not required.in.disarm);
-
-    assert (not provided.out.detected);
-    assert (not provided.out.deactivated);
-
     provided.out = required.out;
     required.in = provided.in;
     provided.meta.requires = required.meta.requires;

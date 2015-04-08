@@ -21,6 +21,7 @@
 # 
 # Code:
 
+import sys
 import dezyne.I
 
 import runtime
@@ -39,9 +40,7 @@ class expressions:
 
         self.state = 3
         self.c = 0
-
         self.i = dezyne.I (provides=('i', self))
-
 
         self.i.ins.e = lambda *args: runtime.call_in (self, lambda: self.i_e (*args), (self.i, 'e'))
 

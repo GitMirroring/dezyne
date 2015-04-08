@@ -45,6 +45,7 @@ namespace dezyne
     i.in.b = [&] () {
       call_in(this, [this] {i_b();}, std::make_tuple(&i, "b", "return"));
     };
+
   }
 
   void function::i_a()
@@ -78,4 +79,12 @@ namespace dezyne
     f = not (f);
   }
 
+  void function::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void function::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

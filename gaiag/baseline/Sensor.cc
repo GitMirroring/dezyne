@@ -44,6 +44,7 @@ namespace dezyne
     sensor.in.disable = [&] () {
       call_in(this, [this] {sensor_disable();}, std::make_tuple(&sensor, "disable", "return"));
     };
+
   }
 
   void Sensor::sensor_enable()
@@ -59,4 +60,12 @@ namespace dezyne
   }
 
 
+  void Sensor::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void Sensor::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

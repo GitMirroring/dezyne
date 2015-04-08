@@ -47,6 +47,8 @@ namespace dezyne
     U u;
 
     Reply2(const locator&);
+    void check_bindings() const;
+    void dump_tree() const;
 
     private:
     I::Status::type i_done();

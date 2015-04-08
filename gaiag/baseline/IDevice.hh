@@ -70,12 +70,6 @@ namespace dezyne
 
   inline void connect (IDevice& provided, IDevice& required)
   {
-    assert (not required.in.initialize);
-    assert (not required.in.calibrate);
-    assert (not required.in.perform_action1);
-    assert (not required.in.perform_action2);
-
-
     provided.out = required.out;
     required.in = provided.in;
     provided.meta.requires = required.meta.requires;

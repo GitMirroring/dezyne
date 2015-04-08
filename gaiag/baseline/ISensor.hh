@@ -62,12 +62,6 @@ namespace dezyne
 
   inline void connect (ISensor& provided, ISensor& required)
   {
-    assert (not required.in.enable);
-    assert (not required.in.disable);
-
-    assert (not provided.out.triggered);
-    assert (not provided.out.disabled);
-
     provided.out = required.out;
     required.in = provided.in;
     provided.meta.requires = required.meta.requires;

@@ -43,6 +43,8 @@ namespace dezyne
     ISiren siren;
 
     Siren(const locator&);
+    void check_bindings() const;
+    void dump_tree() const;
 
     private:
     void siren_turnon();

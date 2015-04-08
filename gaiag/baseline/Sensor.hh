@@ -42,6 +42,8 @@ namespace dezyne
     ISensor sensor;
 
     Sensor(const locator&);
+    void check_bindings() const;
+    void dump_tree() const;
 
     private:
     void sensor_enable();

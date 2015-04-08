@@ -51,6 +51,7 @@ namespace dezyne
     r.out.a = [&] () {
       call_out(this, [this] {r_a();}, std::make_tuple(&r, "a", "return"));
     };
+
   }
 
   void Guardthreetopon::i_e()
@@ -87,4 +88,12 @@ namespace dezyne
   }
 
 
+  void Guardthreetopon::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void Guardthreetopon::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

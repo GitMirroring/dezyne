@@ -44,6 +44,8 @@ namespace dezyne
     IDataparam bottom;
 
     proxy(const locator&);
+    void check_bindings() const;
+    void dump_tree() const;
 
     private:
     void top_e0();

@@ -43,13 +43,6 @@ namespace dezyne
       call_in(this, [this] {i_e();}, std::make_tuple(&i, "e", "return"));
     };
 
-#ifdef DEBUG
-    if (event_map* e = dezyne_locator.try_get<event_map>("event-map")) 
-    {
-      (*e)["i.e"] = i.in.e;
-      i.out.f = [&] () {std::clog << "i.out.f" << std::endl;};
-    }
-#endif
   }
 
   void argument::i_e()
@@ -72,4 +65,12 @@ namespace dezyne
     return (gc or b);
   }
 
+  void argument::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void argument::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

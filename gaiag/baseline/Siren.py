@@ -22,6 +22,7 @@
 # 
 # Code:
 
+import sys
 import dezyne.ISiren
 
 import runtime
@@ -38,9 +39,7 @@ class Siren:
         self.deferred = None
         self.queue = []
 
-
         self.siren = dezyne.ISiren (provides=('siren', self))
-
 
         self.siren.ins.turnon = lambda *args: runtime.call_in (self, lambda: self.siren_turnon (*args), (self.siren, 'turnon'))
         self.siren.ins.turnoff = lambda *args: runtime.call_in (self, lambda: self.siren_turnoff (*args), (self.siren, 'turnoff'))

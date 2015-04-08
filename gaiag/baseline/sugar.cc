@@ -42,6 +42,7 @@ namespace dezyne
     i.in.e = [&] () {
       call_in(this, [this] {i_e();}, std::make_tuple(&i, "e", "return"));
     };
+
   }
 
   void sugar::i_e()
@@ -58,4 +59,12 @@ namespace dezyne
   }
 
 
+  void sugar::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void sugar::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

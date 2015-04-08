@@ -57,9 +57,6 @@ namespace dezyne
 
   inline void connect (TestBool& provided, TestBool& required)
   {
-    assert (not required.in.evt);
-
-
     provided.out = required.out;
     required.in = provided.in;
     provided.meta.requires = required.meta.requires;

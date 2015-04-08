@@ -21,6 +21,7 @@
 # 
 # Code:
 
+import sys
 import dezyne.TestBool
 
 import runtime
@@ -38,9 +39,7 @@ class testBoolean:
         self.queue = []
 
         self.b = False
-
         self.i = dezyne.TestBool (provides=('i', self))
-
 
         self.i.ins.evt = lambda *args: runtime.call_in (self, lambda: self.i_evt (*args), (self.i, 'evt'))
 

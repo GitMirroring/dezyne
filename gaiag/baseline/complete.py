@@ -21,6 +21,7 @@
 # 
 # Code:
 
+import sys
 import dezyne.icomplete
 import dezyne.icomplete
 
@@ -38,9 +39,7 @@ class complete:
         self.deferred = None
         self.queue = []
 
-
         self.p = dezyne.icomplete (provides=('p', self))
-
         self.r = dezyne.icomplete (requires=('r', self))
 
         self.p.ins.e = lambda *args: runtime.call_in (self, lambda: self.p_e (*args), (self.p, 'e'))

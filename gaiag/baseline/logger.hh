@@ -42,6 +42,8 @@ namespace dezyne
     ilogger log;
 
     logger(const locator&);
+    void check_bindings() const;
+    void dump_tree() const;
 
     private:
     void log_log();

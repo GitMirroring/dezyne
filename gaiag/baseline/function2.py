@@ -21,6 +21,7 @@
 # 
 # Code:
 
+import sys
 import dezyne.ifunction2
 
 import runtime
@@ -38,9 +39,7 @@ class function2:
         self.queue = []
 
         self.f = False
-
         self.i = dezyne.ifunction2 (provides=('i', self))
-
 
         self.i.ins.a = lambda *args: runtime.call_in (self, lambda: self.i_a (*args), (self.i, 'a'))
         self.i.ins.b = lambda *args: runtime.call_in (self, lambda: self.i_b (*args), (self.i, 'b'))

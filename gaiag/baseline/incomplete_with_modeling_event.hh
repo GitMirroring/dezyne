@@ -43,6 +43,8 @@ namespace dezyne
     iincomplete_with_modeling_event r;
 
     incomplete_with_modeling_event(const locator&);
+    void check_bindings() const;
+    void dump_tree() const;
 
     private:
     void p_e();

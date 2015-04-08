@@ -49,6 +49,7 @@ namespace dezyne
     twice.out.a = [&] () {
       call_out(this, [this] {twice_a();}, std::make_tuple(&twice, "a", "return"));
     };
+
   }
 
   void requires_twice::p_e()
@@ -73,4 +74,12 @@ namespace dezyne
   }
 
 
+  void requires_twice::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void requires_twice::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

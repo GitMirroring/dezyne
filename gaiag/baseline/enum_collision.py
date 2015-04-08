@@ -21,6 +21,7 @@
 # 
 # Code:
 
+import sys
 import dezyne.ienum_collision
 
 import runtime
@@ -39,9 +40,7 @@ class enum_collision:
 
         self.reply_ienum_collision_Retval1 = None
         self.reply_ienum_collision_Retval2 = None
-
         self.i = dezyne.ienum_collision (provides=('i', self))
-
 
         self.i.ins.foo = lambda *args: runtime.call_in (self, lambda: self.i_foo (*args), (self.i, 'foo', self.i.Retval1_to_string))
         self.i.ins.bar = lambda *args: runtime.call_in (self, lambda: self.i_bar (*args), (self.i, 'bar', self.i.Retval2_to_string))

@@ -45,6 +45,8 @@ namespace dezyne
     IDataparam port;
 
     Dataparam(const locator&);
+    void check_bindings() const;
+    void dump_tree() const;
 
     private:
     void port_e0();

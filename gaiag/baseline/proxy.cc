@@ -89,6 +89,7 @@ namespace dezyne
     bottom.out.a6 = [&] (int a0, int a1, int a2, int a3, int a4, int a5) {
       call_out(this, std::function<void()>([&,a0,a1,a2,a3,a4,a5] {this->bottom_a6(a0,a1,a2,a3,a4,a5);}) , std::make_tuple(&bottom, "a6", "return"));
     };
+
   }
 
   void proxy::top_e0()
@@ -238,4 +239,12 @@ namespace dezyne
     top.out.a(i);
   }
 
+  void proxy::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void proxy::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

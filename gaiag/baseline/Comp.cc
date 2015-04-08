@@ -49,6 +49,7 @@ namespace dezyne
     client.in.perform_actions = [&] () {
       return call_in(this, std::function<IComp::result_t::type()>([&] {return client_perform_actions();}), std::make_tuple(&client, "perform_actions", "return"));
     };
+
   }
 
   IComp::result_t::type Comp::client_initialize()
@@ -147,4 +148,12 @@ namespace dezyne
   }
 
 
+  void Comp::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void Comp::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

@@ -20,6 +20,7 @@
 # 
 # Code:
 
+import sys
 import dezyne.Top
 import dezyne.Bottom
 
@@ -38,9 +39,7 @@ class GuardedRequiredIllegal:
         self.queue = []
 
         self.c = False
-
         self.t = dezyne.Top (provides=('t', self))
-
         self.b = dezyne.Bottom (requires=('b', self))
 
         self.t.ins.unguarded = lambda *args: runtime.call_in (self, lambda: self.t_unguarded (*args), (self.t, 'unguarded'))

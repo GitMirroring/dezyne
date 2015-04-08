@@ -162,6 +162,7 @@ dezyne.Dataparam = function(rt, meta) {
       return this.reply_IDataparam_Status;
     }.bind(this), [this.port, 'eio2r', this.port.Status_to_string]);
   }.bind(this);
+
   this.fun = function () {
     return new dezyne.IDataparam().Status.Yes;
   }.bind(this);

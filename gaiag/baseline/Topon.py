@@ -20,6 +20,7 @@
 # 
 # Code:
 
+import sys
 import dezyne.ITopon
 
 import runtime
@@ -38,9 +39,7 @@ class Topon:
 
         self.b = False
         self.c = False
-
         self.i = dezyne.ITopon (provides=('i', self))
-
 
         self.i.ins.e = lambda *args: runtime.call_in (self, lambda: self.i_e (*args), (self.i, 'e'))
         self.i.ins.t = lambda *args: runtime.call_in (self, lambda: self.i_t (*args), (self.i, 't'))

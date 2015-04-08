@@ -21,6 +21,7 @@
 # 
 # Code:
 
+import sys
 import dezyne.IConsole
 import dezyne.ISensor
 import dezyne.ISiren
@@ -43,9 +44,7 @@ class Alarm:
 
         self.state = self.States.Disarmed
         self.sounding = False
-
         self.console = dezyne.IConsole (provides=('console', self))
-
         self.sensor = dezyne.ISensor (requires=('sensor', self))
         self.siren = dezyne.ISiren (requires=('siren', self))
 

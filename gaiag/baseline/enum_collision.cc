@@ -44,6 +44,7 @@ namespace dezyne
     i.in.bar = [&] () {
       return call_in(this, std::function<ienum_collision::Retval2::type()>([&] {return i_bar();}), std::make_tuple(&i, "bar", "return"));
     };
+
   }
 
   ienum_collision::Retval1::type enum_collision::i_foo()
@@ -59,4 +60,12 @@ namespace dezyne
   }
 
 
+  void enum_collision::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void enum_collision::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

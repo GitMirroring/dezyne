@@ -73,10 +73,6 @@ namespace dezyne
 
   inline void connect (ienum_collision& provided, ienum_collision& required)
   {
-    assert (not required.in.foo);
-    assert (not required.in.bar);
-
-
     provided.out = required.out;
     required.in = provided.in;
     provided.meta.requires = required.meta.requires;

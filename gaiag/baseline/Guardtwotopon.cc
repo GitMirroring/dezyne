@@ -44,6 +44,7 @@ namespace dezyne
     i.in.t = [&] () {
       call_in(this, [this] {i_t();}, std::make_tuple(&i, "t", "return"));
     };
+
   }
 
   void Guardtwotopon::i_e()
@@ -66,4 +67,12 @@ namespace dezyne
   }
 
 
+  void Guardtwotopon::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void Guardtwotopon::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

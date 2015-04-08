@@ -21,6 +21,7 @@
 # 
 # Code:
 
+import sys
 import dezyne.iincomplete_with_modeling_event
 import dezyne.iincomplete_with_modeling_event
 
@@ -38,9 +39,7 @@ class incomplete_with_modeling_event:
         self.deferred = None
         self.queue = []
 
-
         self.p = dezyne.iincomplete_with_modeling_event (provides=('p', self))
-
         self.r = dezyne.iincomplete_with_modeling_event (requires=('r', self))
 
         self.p.ins.e = lambda *args: runtime.call_in (self, lambda: self.p_e (*args), (self.p, 'e'))

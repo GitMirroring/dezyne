@@ -58,10 +58,6 @@ namespace dezyne
 
   inline void connect (ISiren& provided, ISiren& required)
   {
-    assert (not required.in.turnon);
-    assert (not required.in.turnoff);
-
-
     provided.out = required.out;
     required.in = provided.in;
     provided.meta.requires = required.meta.requires;

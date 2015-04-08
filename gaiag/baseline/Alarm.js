@@ -128,4 +128,5 @@ dezyne.Alarm = function(rt, meta) {
     }.bind(this), [this.sensor, 'disabled']);
   }.bind(this);
 
+
 };

@@ -20,6 +20,7 @@
 # 
 # Code:
 
+import sys
 import dezyne.IDataparam
 import dezyne.IDataparam
 
@@ -38,9 +39,7 @@ class proxy:
         self.queue = []
 
         self.reply_IDataparam_Status = None
-
         self.top = dezyne.IDataparam (provides=('top', self))
-
         self.bottom = dezyne.IDataparam (requires=('bottom', self))
 
         self.top.ins.e0 = lambda *args: runtime.call_in (self, lambda: self.top_e0 (*args), (self.top, 'e0'))

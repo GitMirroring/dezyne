@@ -44,6 +44,8 @@ namespace dezyne
     imodeling r;
 
     modeling(const locator&);
+    void check_bindings() const;
+    void dump_tree() const;
 
     private:
     void p_e();

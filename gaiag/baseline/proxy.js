@@ -167,6 +167,7 @@ dezyne.proxy = function(rt, meta) {
       }
     }.bind(this), [this.bottom, 'a6']);
   }.bind(this);
+
   this.outfunc = function (i) {
     var j = {value: i.value};
     this.bottom.in.eo(j);

@@ -46,6 +46,7 @@ namespace dezyne
     r.out.pong = [&] () {
       call_out(this, [this] {r_pong();}, std::make_tuple(&r, "pong", "return"));
     };
+
   }
 
   void reply_reorder::p_start()
@@ -70,4 +71,12 @@ namespace dezyne
   }
 
 
+  void reply_reorder::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void reply_reorder::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

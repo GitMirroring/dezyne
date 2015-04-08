@@ -44,6 +44,8 @@ namespace dezyne
     ienum_collision i;
 
     enum_collision(const locator&);
+    void check_bindings() const;
+    void dump_tree() const;
 
     private:
     ienum_collision::Retval1::type i_foo();

@@ -43,6 +43,7 @@ namespace dezyne
     port.in.e = [&] () {
       call_in(this, [this] {port_e();}, std::make_tuple(&port, "e", "return"));
     };
+
   }
 
   void Extern::port_e()
@@ -51,4 +52,12 @@ namespace dezyne
   }
 
 
+  void Extern::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void Extern::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

@@ -22,6 +22,7 @@
 # 
 # Code:
 
+import sys
 import dezyne.I
 
 import runtime
@@ -39,9 +40,7 @@ class argument:
         self.queue = []
 
         self.b = False
-
         self.i = dezyne.I (provides=('i', self))
-
 
         self.i.ins.e = lambda *args: runtime.call_in (self, lambda: self.i_e (*args), (self.i, 'e'))
 

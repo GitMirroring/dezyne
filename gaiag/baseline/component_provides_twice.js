@@ -35,4 +35,5 @@ dezyne.component_provides_twice = function(rt, meta) {
     }.bind(this), [this.i, 'foo']);
   }.bind(this);
 
+
 };

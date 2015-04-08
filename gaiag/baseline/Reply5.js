@@ -50,6 +50,7 @@ dezyne.Reply5 = function(rt, meta) {
       return this.reply_I_Status;
     }.bind(this), [this.i, 'done', this.i.Status_to_string]);
   }.bind(this);
+
   this.fun = function () {
     return new dezyne.I().Status.Yes;
   }.bind(this);

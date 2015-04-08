@@ -55,6 +55,8 @@ namespace dezyne
     IDevice device_A;
 
     Comp(const locator&);
+    void check_bindings() const;
+    void dump_tree() const;
 
     private:
     IComp::result_t::type client_initialize();

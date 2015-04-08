@@ -21,6 +21,7 @@
 # 
 # Code:
 
+import sys
 import dezyne.iprovides_once
 
 import runtime
@@ -37,9 +38,7 @@ class component_provides_twice:
         self.deferred = None
         self.queue = []
 
-
         self.i = dezyne.iprovides_once (provides=('i', self))
-
 
         self.i.ins.foo = lambda *args: runtime.call_in (self, lambda: self.i_foo (*args), (self.i, 'foo'))
 

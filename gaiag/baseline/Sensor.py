@@ -22,6 +22,7 @@
 # 
 # Code:
 
+import sys
 import dezyne.ISensor
 
 import runtime
@@ -38,9 +39,7 @@ class Sensor:
         self.deferred = None
         self.queue = []
 
-
         self.sensor = dezyne.ISensor (provides=('sensor', self))
-
 
         self.sensor.ins.enable = lambda *args: runtime.call_in (self, lambda: self.sensor_enable (*args), (self.sensor, 'enable'))
         self.sensor.ins.disable = lambda *args: runtime.call_in (self, lambda: self.sensor_disable (*args), (self.sensor, 'disable'))

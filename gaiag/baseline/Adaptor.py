@@ -22,6 +22,7 @@
 # 
 # Code:
 
+import sys
 import dezyne.IRun
 import dezyne.IChoice
 
@@ -43,9 +44,7 @@ class Adaptor:
 
         self.state = self.State.Idle
         self.count = 0
-
         self.runner = dezyne.IRun (provides=('runner', self))
-
         self.choice = dezyne.IChoice (requires=('choice', self))
 
         self.runner.ins.run = lambda *args: runtime.call_in (self, lambda: self.runner_run (*args), (self.runner, 'run'))

@@ -51,6 +51,7 @@ dezyne.function2 = function(rt, meta) {
       }
     }.bind(this), [this.i, 'b']);
   }.bind(this);
+
   this.vtoggle = function () {
     if(this.f) this.i.out.c();
     return ! (this.f);

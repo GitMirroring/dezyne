@@ -48,6 +48,7 @@ namespace dezyne
     b.out.f = [&] () {
       call_out(this, [this] {b_f();}, std::make_tuple(&b, "f", "return"));
     };
+
   }
 
   void GuardedRequiredIllegal::t_unguarded()
@@ -79,4 +80,12 @@ namespace dezyne
   }
 
 
+  void GuardedRequiredIllegal::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void GuardedRequiredIllegal::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

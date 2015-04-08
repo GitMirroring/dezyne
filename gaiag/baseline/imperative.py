@@ -21,6 +21,7 @@
 # 
 # Code:
 
+import sys
 import dezyne.iimperative
 
 import runtime
@@ -40,9 +41,7 @@ class imperative:
         self.queue = []
 
         self.state = self.States.I
-
         self.i = dezyne.iimperative (provides=('i', self))
-
 
         self.i.ins.e = lambda *args: runtime.call_in (self, lambda: self.i_e (*args), (self.i, 'e'))
 

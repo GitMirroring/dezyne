@@ -20,6 +20,7 @@
 # 
 # Code:
 
+import sys
 import dezyne.IGuardthreetopon
 import dezyne.RGuardthreetopon
 
@@ -38,9 +39,7 @@ class Guardthreetopon:
         self.queue = []
 
         self.b = False
-
         self.i = dezyne.IGuardthreetopon (provides=('i', self))
-
         self.r = dezyne.RGuardthreetopon (requires=('r', self))
 
         self.i.ins.e = lambda *args: runtime.call_in (self, lambda: self.i_e (*args), (self.i, 'e'))

@@ -42,6 +42,8 @@ namespace dezyne
     iprovides_once i;
 
     component_provides_twice(const locator&);
+    void check_bindings() const;
+    void dump_tree() const;
 
     private:
     void i_foo();

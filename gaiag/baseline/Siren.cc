@@ -44,6 +44,7 @@ namespace dezyne
     siren.in.turnoff = [&] () {
       call_in(this, [this] {siren_turnoff();}, std::make_tuple(&siren, "turnoff", "return"));
     };
+
   }
 
   void Siren::siren_turnon()
@@ -59,4 +60,12 @@ namespace dezyne
   }
 
 
+  void Siren::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void Siren::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

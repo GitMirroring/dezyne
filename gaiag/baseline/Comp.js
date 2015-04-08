@@ -118,4 +118,5 @@ dezyne.Comp = function(rt, meta) {
     }.bind(this), [this.client, 'perform_actions', this.client.result_t_to_string]);
   }.bind(this);
 
+
 };

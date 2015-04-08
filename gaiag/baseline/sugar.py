@@ -22,6 +22,7 @@
 # 
 # Code:
 
+import sys
 import dezyne.I
 
 import runtime
@@ -41,9 +42,7 @@ class sugar:
         self.queue = []
 
         self.s = self.Enum.False
-
         self.i = dezyne.I (provides=('i', self))
-
 
         self.i.ins.e = lambda *args: runtime.call_in (self, lambda: self.i_e (*args), (self.i, 'e'))
 

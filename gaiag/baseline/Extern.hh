@@ -44,6 +44,8 @@ namespace dezyne
     IExtern port;
 
     Extern(const locator&);
+    void check_bindings() const;
+    void dump_tree() const;
 
     private:
     void port_e();

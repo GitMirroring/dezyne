@@ -23,11 +23,30 @@
 // Code:
 
 
-// handwritten generic main
 #include "runtime.hh"
 #include "locator.hh"
 
-#include "Main.hh"
+#include "Siren.hh"
+
+#include <iostream>
+
+namespace dezyne
+{
+  typedef std::map<std::string, std::function<void()>> event_map;
+
+  void fill_event_map(Siren& m, event_map& e)
+  {
+    int dzn_i = 0;
+    if (not m.siren.in.turnon) {
+      m.siren.in.turnon = [] () {std::clog << "siren.in.turnon" << std::endl;};
+    }
+    if (e.find("siren.turnon") == e.end()) e["siren.turnon"] = m.siren.in.turnon; 
+    if (not m.siren.in.turnoff) {
+      m.siren.in.turnoff = [] () {std::clog << "siren.in.turnoff" << std::endl;};
+    }
+    if (e.find("siren.turnoff") == e.end()) e["siren.turnoff"] = m.siren.in.turnoff; 
+  }
+}
 
 int main()
 {
@@ -35,12 +54,16 @@ int main()
   dezyne::locator l;
   l.set(rt);
 
-  dezyne::Main m(l);
+  dezyne::event_map event_map;
+  dezyne::Siren sut(l);
+  sut.dzn_meta.name = "sut";
 
-  m.meta.name = "m";
-  m.runner.meta.requires = {"runner",&m};
+  dezyne::fill_event_map(sut, event_map); 
+  sut.check_bindings();
+  sut.dump_tree();
 
-  m.check_bindings();
-
-  m.runner.in.run();
+  std::string event;
+  while(std::cin >> event) {
+    event_map[event]();
+  }
 }

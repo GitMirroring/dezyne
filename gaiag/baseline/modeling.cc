@@ -45,6 +45,7 @@ namespace dezyne
     r.out.f = [&] () {
       call_out(this, [this] {r_f();}, std::make_tuple(&r, "f", "return"));
     };
+
   }
 
   void modeling::p_e()
@@ -59,4 +60,12 @@ namespace dezyne
   }
 
 
+  void modeling::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void modeling::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

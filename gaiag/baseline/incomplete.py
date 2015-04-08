@@ -21,6 +21,7 @@
 # 
 # Code:
 
+import sys
 import dezyne.iincomplete
 import dezyne.iincomplete
 
@@ -38,9 +39,7 @@ class incomplete:
         self.deferred = None
         self.queue = []
 
-
         self.p = dezyne.iincomplete (provides=('p', self))
-
         self.r = dezyne.iincomplete (requires=('r', self))
 
         self.p.ins.e = lambda *args: runtime.call_in (self, lambda: self.p_e (*args), (self.p, 'e'))

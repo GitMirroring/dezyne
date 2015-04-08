@@ -21,6 +21,7 @@
 # 
 # Code:
 
+import sys
 import dezyne.IComp
 import dezyne.IDevice
 
@@ -43,9 +44,7 @@ class Comp:
         self.s = self.State.Uninitialized
         self.reply_IComp_result_t = None
         self.reply_IDevice_result_t = None
-
         self.client = dezyne.IComp (provides=('client', self))
-
         self.device_A = dezyne.IDevice (requires=('device_A', self))
 
         self.client.ins.initialize = lambda *args: runtime.call_in (self, lambda: self.client_initialize (*args), (self.client, 'initialize', self.client.result_t_to_string))

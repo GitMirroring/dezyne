@@ -42,6 +42,7 @@ namespace dezyne
     c.in.e = [&] () {
       call_in(this, [this] {c_e();}, std::make_tuple(&c, "e", "return"));
     };
+
   }
 
   void Choice::c_e()
@@ -64,4 +65,12 @@ namespace dezyne
   }
 
 
+  void Choice::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void Choice::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

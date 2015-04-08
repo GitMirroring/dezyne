@@ -42,6 +42,7 @@ namespace dezyne
     i.in.a = [&] () {
       call_in(this, [this] {i_a();}, std::make_tuple(&i, "a", "return"));
     };
+
   }
 
   void If::i_a()
@@ -60,4 +61,12 @@ namespace dezyne
   }
 
 
+  void If::check_bindings() const
+  {
+    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+  }
+  void If::dump_tree() const
+  {
+    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+  }
 }

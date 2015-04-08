@@ -64,9 +64,6 @@ namespace dezyne
 
   inline void connect (IReply7& provided, IReply7& required)
   {
-    assert (not required.in.foo);
-
-
     provided.out = required.out;
     required.in = provided.in;
     provided.meta.requires = required.meta.requires;

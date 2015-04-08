@@ -46,6 +46,8 @@ namespace dezyne
     ilogger l;
 
     middle(const locator&);
+    void check_bindings() const;
+    void dump_tree() const;
 
     private:
     void t_e();

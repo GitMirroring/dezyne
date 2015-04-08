@@ -44,6 +44,8 @@ namespace dezyne
     irequires_twice twice;
 
     requires_twice(const locator&);
+    void check_bindings() const;
+    void dump_tree() const;
 
     private:
     void p_e();

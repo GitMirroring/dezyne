@@ -96,25 +96,6 @@ namespace dezyne
 
   inline void connect (IDataparam& provided, IDataparam& required)
   {
-    assert (not required.in.e0);
-    assert (not required.in.e0r);
-    assert (not required.in.e);
-    assert (not required.in.er);
-    assert (not required.in.eer);
-    assert (not required.in.eo);
-    assert (not required.in.eoo);
-    assert (not required.in.eio);
-    assert (not required.in.eio2);
-    assert (not required.in.eor);
-    assert (not required.in.eoor);
-    assert (not required.in.eior);
-    assert (not required.in.eio2r);
-
-    assert (not provided.out.a0);
-    assert (not provided.out.a);
-    assert (not provided.out.aa);
-    assert (not provided.out.a6);
-
     provided.out = required.out;
     required.in = provided.in;
     provided.meta.requires = required.meta.requires;

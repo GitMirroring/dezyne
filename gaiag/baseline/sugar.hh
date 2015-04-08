@@ -51,6 +51,8 @@ namespace dezyne
     I i;
 
     sugar(const locator&);
+    void check_bindings() const;
+    void dump_tree() const;
 
     private:
     void i_e();
