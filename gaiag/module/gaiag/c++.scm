@@ -20,7 +20,6 @@
 
 (define-module (gaiag c++)
   :use-module (ice-9 curried-definitions)
-  :use-module (ice-9 getopt-long)
   :use-module (ice-9 match)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 pretty-print)
@@ -29,7 +28,6 @@
   :use-module (gaiag animate)
   :use-module (gaiag c)
   :use-module (gaiag code)
-  :use-module (gaiag gaiag)
   :use-module (gaiag indent)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
@@ -53,13 +51,7 @@
 
 (define-method (dump (o <component>))
   ((@@ (gaiag c) dump) o)
-  (let ((name (.name o))
-        (model (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
-                           string->symbol))))
-    (if (eq? model name)
-        (dump-indented 'main.cc
-                       (lambda ()
-                         (c++-file 'main.cc.scm (code:module o)))))
+  (let ((name (.name o)))
     (if (and (not (.behaviour o))
              (map-file o))
         (dump-indented (symbol-append 'glue- name '.cc)
@@ -69,13 +61,7 @@
 
 (define-method (dump (o <system>))
   ((@@ (gaiag c) dump) o)
-  (let ((name (.name o))
-        (model (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
-                           string->symbol))))
-    (if (eq? model name)
-        (dump-indented 'main.cc
-                       (lambda ()
-                         (c++-file 'main.cc.scm (code:module o)))))
+  (let ((name (.name o)))
     (if (map-file o)
         (dump-indented (symbol-append name 'Interface.h)
                        (lambda ()
