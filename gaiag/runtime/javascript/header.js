@@ -33,8 +33,8 @@ dezyne.runtime = function () {
 var runtime = {
   path : function(m, p) {
     p = p ? p : '';
-    if (!m) {
-      return 'null.' + p;
+    if (!m || !m.name) {
+      return '<external>.' + p;
     }
     if (m.component) {
       return runtime.path(m.component.meta, m.name + (p ? '.' + p : p));
@@ -66,7 +66,7 @@ var runtime = {
   },
 
   defer : function(i, o, f) {
-    if(!i.flushes && !o.handling) {
+    if(!i || (!i.flushes && !o.handling)) {
       runtime.handle(o, f);
     }
     else {

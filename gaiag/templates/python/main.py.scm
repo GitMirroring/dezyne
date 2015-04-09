@@ -16,7 +16,7 @@ import runtime
        (lambda (port)
        (map (define-on model port #{
     if (not m.#port .#direction s.#event):
-        m.#port .#direction s.#event  = lambda *args: sys.stderr.write ('#port .#event \n')
+        m.#port .#direction s.#event  = lambda *args: sys.stderr.write ('#port .#direction .#event \n')
     if ('#port .#event ' not in e.keys ()):
         e['#port .#event '] = m.#port .#direction s.#event
 #}) (gom:events port))) (delete-duplicates (gom:ports model)))

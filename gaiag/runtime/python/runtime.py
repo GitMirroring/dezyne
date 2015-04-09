@@ -41,7 +41,7 @@ def flush (c):
             flush (t)
 
 def defer (i, o, f):
-    if (not i.flushes and not o.handling):
+    if (not i or (not i.flushes and not o.handling)):
         handle (o, f)
     else:
         i.deferred = o
@@ -74,7 +74,7 @@ def call_out (c, f, m):
 
 def path (m, p=''):
     if (not m):
-        return 'null.' + p;
+        return '<external>.' + p;
     if ('self' in m.__dict__.keys ()):
         return path (m.self, m.name + ('.' + p if p else p))
     if ('parent' in m.__dict__.keys () and m.parent):

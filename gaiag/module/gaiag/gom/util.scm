@@ -317,12 +317,18 @@
 (define-method (gom:interface-enums (o <component>))
   (apply append (map gom:interface-enums ((compose .elements .ports) o))))
 
+(define-method (gom:interface-enums (o <system>))
+  (apply append (map gom:interface-enums ((compose .elements .ports) o))))
+
 (define-method (gom:enums (o <interface>))
   (append ((gom:filter <enum>) (.types o))
           ((gom:filter <enum>) (or (and=> (.behaviour o) .types) '()))))
 
 (define-method (gom:enums (o <component>))
   ((gom:filter <enum>) (or (and=> (.behaviour o) .types) '())))
+
+(define-method (gom:enums (o <system>))
+  '())
 
 (define-method (gom:enums (o <behaviour>))
   ((gom:filter <enum>) (.types o)))
@@ -346,6 +352,12 @@
                              (eq? (.scope o) (.scope type))))
             (gom:interface-enums o))))
 
+(define-method (gom:enum (o <system>) (type <type>))
+  (or (next-method)
+      (find (lambda (o) (and (eq? (.name o) (.name type))
+                             (eq? (.scope o) (.scope type))))
+            (gom:interface-enums o))))
+
 ;;; c&p enum
 (define ((make-interface-extern port) o)
   (make <extern> :name (.name o) :scope port :value (.value o)))
@@ -359,12 +371,18 @@
 (define-method (gom:interface-externs (o <component>))
   (apply append (map gom:interface-externs ((compose .elements .ports) o))))
 
+(define-method (gom:interface-externs (o <system>))
+  (apply append (map gom:interface-externs ((compose .elements .ports) o))))
+
 (define-method (gom:externs (o <interface>))
   (append ((gom:filter <extern>) (.types o))
           ((gom:filter <extern>) (or (and=> (.behaviour o) .types) '()))))
 
 (define-method (gom:externs (o <component>))
   ((gom:filter <extern>) (or (and=> (.behaviour o) .types) '())))
+
+(define-method (gom:externs (o <system>))
+  '())
 
 (define-method (gom:externs (o <behaviour>))
   ((gom:filter <extern>) (.types o)))
@@ -381,6 +399,13 @@
         (gom:externs o)))
 
 (define-method (gom:extern (o <component>) (type <type>))
+  (or (next-method)
+      (find (lambda (o) (and (eq? (.name o) (.name type))
+                             ;;(eq? (.scope o) (.scope type))
+                             ))
+            (gom:interface-externs o))))
+
+(define-method (gom:extern (o <system>) (type <type>))
   (or (next-method)
       (find (lambda (o) (and (eq? (.name o) (.name type))
                              ;;(eq? (.scope o) (.scope type))

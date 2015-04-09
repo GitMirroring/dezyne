@@ -9,37 +9,43 @@
 ##include <stdlib.h>
 ##include <string.h>
 
-void print_event ()
-{
-  fprintf (stderr, "event\n");
-}
-
 typedef struct {
   void (*f)(void*);
   void *self;
 } closure;
 
 #(map
-  (lambda (model)
-  (append
-   `("void " ,(.name model) "_fill_event_map(" ,(.name model) "* m, map* e)\n{\nint dzn_i = 0;\nvoid *p;\nclosure *c;\n")
-   (if (is-a? model <component>)
-      (map
-       (lambda (port)
+ (lambda (port)
+   (map (define-on model port #{
+   void #.model _log_event_#port _#direction _#event (#interface * m) {
+     (void)m;
+     fprintf(stderr, "%s\n", "#port .#direction .#event");
+   }
+#}) (filter (negate (gom:dir-matches? port))
+       (gom:events port)))) (gom:ports model))
+void #.model _fill_event_map(#.model * m, map* e) {
+   int dzn_i = 0;
+   void *p;
+   closure *c;
+   #(map
+     (lambda (port)
        (map (define-on model port #{
           if (!m->#port ->#direction .#event  || !m->#port ->#direction .self) {
-            m->#port ->#direction .#event  = print_event;
+            m->#port ->#direction .#event  = #.model _log_event_#port _#direction _#event;
          }
+#}) (filter (negate (gom:dir-matches? port))
+       (gom:events port)))) (gom:ports model))
+   #(map
+     (lambda (port)
+       (map (define-on model port #{
          if (map_get(e, "#port .#event ", &p)) {
            c = malloc(sizeof (closure));
-           c->f = m->#port ->#direction .#event;
+           c->f = (void (*))m->#port ->#direction .#event;
            c->self = m->#port;
            map_put(e, "#port .#event ", c);
          }
-#}) (gom:events port))) (delete-duplicates (gom:ports model)))
-    '())
-    '("}\n")))
-  (if (is-a? model <component>) (list model) (delete-duplicates (map (lambda (i) (gom:import (.component i))) (.elements (.instances model))))))
+#}) (filter (gom:dir-matches? port)
+       (gom:events port)))) (gom:ports model)) }
 
 int main() {
   runtime dezyne_runtime;
@@ -53,26 +59,21 @@ int main() {
 
   map event_map;
   map_init(&event_map);
-  #(string-if (is-a? model <component>)
-              #{#.model _fill_event_map(&sut, &event_map); #}
-              (->string
-              (map
-                (lambda (i)
-                   `(,(.component i) "_fill_event_map(&sut." ,(.name i) ", &event_map);\n")) (.elements (.instances model)))))
+  #.model _fill_event_map(&sut, &event_map);
 
-   char *event = 0;
-   size_t size;
-   while (getline(&event, &size, stdin) != -1) {
-     if (strlen(event) > 1 && event[strlen(event)-1] == '\n') {
-       void *p = 0;
-       event[strlen(event)-1] = 0;
-       if (!map_get(&event_map, event, &p)) {
-         closure *c = p;
-         c->f(c->self);
-       }
-     }
-     free(event);
-     event = 0;
+  char *event = 0;
+  size_t size;
+  while (getline(&event, &size, stdin) != -1) {
+    if (strlen(event) > 1 && event[strlen(event)-1] == '\n') {
+      void *p = 0;
+      event[strlen(event)-1] = 0;
+      if (!map_get(&event_map, event, &p)) {
+        closure *c = p;
+        c->f(c->self);
+      }
+    }
+    free(event);
+    event = 0;
   }
   return 0;
 }
