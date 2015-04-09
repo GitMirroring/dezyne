@@ -1,6 +1,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015 Buildmaster <buildmaster@build3.oban.verum.local>
 #
 # This file is part of Dezyne.
 #
@@ -30,9 +31,9 @@ INTERFACES:=$(shell grep -hEo '^interface [_a-zA-Z0-9]+' $(DZN_FILES) | sed 's/^
 COMPONENTS:=$(shell grep -hEo '^component [_a-zA-Z0-9]+' $(DZN_FILES) | sed 's/^component //')
 endif
 
-HELLO:=$(shell dzn hello)
+HELLO:=$(shell $(DZN) hello)
 ifeq ($(strip $(HELLO)),hello)
-RUNTIME := $(filter-out makefile,$(shell dzn ls /runtime/$(LANGUAGE)))
+RUNTIME := $(filter-out makefile,$(shell $(DZN) ls /runtime/$(LANGUAGE)))
 endif
 
 RUNTIME_HEADERS := $(filter %$(HEADER_EXT),$(RUNTIME))
@@ -58,7 +59,7 @@ define RUNTIME.rule
 $(OUT)/$(1):
 	@mkdir -p $(OUT)
 	@rm -f $$@
-	dzn cat /runtime/$(LANGUAGE)/$$(notdir $$@) > $$@
+	$(DZN) cat /runtime/$(LANGUAGE)/$$(notdir $$@) > $$@
 endef
 
 $(foreach i,$(RUNTIME),$(eval $(call RUNTIME.rule,$(i))))
