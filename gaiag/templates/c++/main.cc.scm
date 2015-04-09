@@ -48,6 +48,8 @@ int main()
 
   std::string event;
   while(std::cin >> event) {
-    event_map[event]();
+    if (event_map.find(event) != event_map.end()) {
+      event_map[event]();
+    }
   }
 }

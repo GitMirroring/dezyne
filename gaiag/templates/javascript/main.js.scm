@@ -36,7 +36,9 @@ function main () {
   });
   
   rl.on ('line', function (event) {
-    event_map[event] ();
+    if (event_map[event]) {
+      event_map[event] ();
+    }
   });
 }
 

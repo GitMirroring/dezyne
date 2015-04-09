@@ -35,10 +35,11 @@ def main ():
  (map
  (lambda (i)
  `("    " ,(.component i) "_fill_event_map (sut." ,(.name i) ", event_map)\n")) (.elements (.instances model)))))
-    line = sys.stdin.readline ()
-    while line:
-        event_map[line.strip ()] ()
-        line = sys.stdin.readline ()
+    event = sys.stdin.readline ().strip ()
+    while event:
+        if event in event_map.keys ():
+            event_map[event] ()
+        event = sys.stdin.readline ().strip ()
 
 if __name__ == '__main__':
     main ()

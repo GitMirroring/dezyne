@@ -66,9 +66,10 @@ int main() {
      if (strlen(event) > 1 && event[strlen(event)-1] == '\n') {
        void *p = 0;
        event[strlen(event)-1] = 0;
-       map_get(&event_map, event, &p);
-       closure *c = p;
-       c->f(c->self);
+       if (!map_get(&event_map, event, &p)) {
+         closure *c = p;
+         c->f(c->self);
+       }
      }
      free(event);
      event = 0;
