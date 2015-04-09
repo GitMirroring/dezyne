@@ -1,5 +1,5 @@
 ;;; Gaiag --- Guile in Asd In Asd in Guile.
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Gaiag.
@@ -145,6 +145,9 @@
   (with-output-to-string
     (lambda ()
       (with-input-from-string o (lambda () (animate-input- module))))))
+
+(define-method (animate (o <string>))
+  (animate o (current-module)))
 
 (define* (line-column-location tell :optional (port (current-input-port)))
   (seek port 0 SEEK_SET)

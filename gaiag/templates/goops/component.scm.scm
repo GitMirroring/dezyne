@@ -1,3 +1,4 @@
+
 (define-class <#.model > (<component>)#
 (map (init-member model #{#'()
   (#name  :accessor .#name  :init-value #expression)#})
@@ -5,39 +6,37 @@
   (delete-duplicates (map (compose declare-replies code:import .type)
                           ((compose .elements .ports) model)))#
   (map (init-port #{#'()
-  (#name  :accessor .#name  :init-form (make <#interface >))#})
+  (#name  :accessor .#name  :init-value ##f)#})
        ((compose .elements .ports) model)))
 
 (define-method (initialize (o <#.model >) args)
   (next-method)#
   (map
-   (lambda (port)
-     (let ((in (filter gom:in? (gom:events port))))
-       (list "\n  (set! (." (.name port) " o)"
-             (if (null? in)
-                 (list "\n    (make <" (.type port) ">)")
-                 (list "\n    (make <" (.type port) ">\n"
-                       "      :in `("
-                       ((->join "\n            ")
-                        (map (lambda (event)
-                               (list "(" (.name event)  " . ,(lambda () (" (.name port) "-" (.name event) " o)))"))
-                             in))
-                       "))"))
-             ")"))) (filter gom:provides? (gom:ports model)))#
-  (map
-   (lambda (port)
-     (let ((out (filter gom:out? (gom:events port))))
-       (list "\n  (set! (." (.name port) " o)"
-             (if (null? out)
-                 (list "\n    (make <" (.type port) ">)")
-                 (list "\n    (make <" (.type port) ">\n"
-                       "      :out `("
-                       ((->join "\n            ")
-                        (map (lambda (event)
-                               (list "(" (.name event)  " . ,(lambda () (" (.name port) "-" (.name event) " o)))"))
-                             out))
-                       "))"))
-             ")"))) (filter gom:requires? (gom:ports model))))
+    (lambda (port)
+    (append
+     (list
+    "\n"
+    "  (set! (." (.name port) " o)\n"
+    "    (make <"(.type port)">\n"
+    "       :in (make <" (.type port) ".in>")
+      (map (define-on model port #{#'()
+              :#event  (lambda (. args) (#port -#event  o))#})
+    (filter gom:in? (gom:events port)))
+    (list ")))")))
+    (filter gom:provides? (gom:ports model)))#
+(map
+    (lambda (port)
+    (append
+     (list
+    "\n"
+    "  (set! (." (.name port) " o)\n"
+    "     (make <"(.type port)">\n"
+    "       :out (make <" (.type port) ".out>")
+      (map (define-on model port #{#'()
+              :#event  (lambda (. args) (#port -#event  o))#})
+          (filter gom:out? (gom:events port)))
+   (list ")))")))
+   (filter gom:requires? (gom:ports model))))
 
 #(map
    (lambda (port)
