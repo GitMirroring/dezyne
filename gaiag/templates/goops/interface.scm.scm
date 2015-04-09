@@ -1,1 +1,1 @@
-(define-class <interface:#.interface > (<interface>))
+(define-class <#.interface > (<interface>))

@@ -20,17 +20,18 @@
 ;;; 
 ;;; Code:
 
-
-(define (main . args)
-  ((@ (dezyne) main) (command-line)))
-
-(read-set! keywords 'prefix)
-
-(define-module (dezyne)
-  :use-module (ice-9 curried-definitions)
-  :use-module (ice-9 optargs)
+(define-module (dezyne runtime)
   :use-module (oop goops)
-  :export (main))
+  :export (<model>
+           <interface>
+           <component>
+           <system>
+           .in
+           .out
+           action
+           connect-ports
+           illegal
+           stderr))
 
 (define (stderr . args)
   (apply format (cons* (current-error-port) args)))
@@ -52,3 +53,7 @@
 
 (define-method (action (o <component>) (port <accessor>) (dir <accessor>) (event <symbol>))
   ((assoc-ref ((compose dir port) o) event)))
+(define-class <interface:IConsole> (<interface>))
+(define-class <interface:ISensor> (<interface>))
+(define-class <interface:IHardware> (<interface>))
+(define-class <interface:ISiren> (<interface>))

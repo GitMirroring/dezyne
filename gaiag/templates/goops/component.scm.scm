@@ -5,7 +5,7 @@
   (delete-duplicates (map (compose declare-replies code:import .type)
                           ((compose .elements .ports) model)))#
   (map (init-port #{#'()
-  (#name  :accessor .#name  :init-form (make <interface:#interface >))#})
+  (#name  :accessor .#name  :init-form (make <#interface >))#})
        ((compose .elements .ports) model)))
 
 (define-method (initialize (o <#.model >) args)
@@ -15,8 +15,8 @@
      (let ((in (filter gom:in? (gom:events port))))
        (list "\n  (set! (." (.name port) " o)"
              (if (null? in)
-                 (list "\n    (make <interface:" (.type port) ">)")
-                 (list "\n    (make <interface:" (.type port) ">\n"
+                 (list "\n    (make <" (.type port) ">)")
+                 (list "\n    (make <" (.type port) ">\n"
                        "      :in `("
                        ((->join "\n            ")
                         (map (lambda (event)
@@ -29,8 +29,8 @@
      (let ((out (filter gom:out? (gom:events port))))
        (list "\n  (set! (." (.name port) " o)"
              (if (null? out)
-                 (list "\n    (make <interface:" (.type port) ">)")
-                 (list "\n    (make <interface:" (.type port) ">\n"
+                 (list "\n    (make <" (.type port) ">)")
+                 (list "\n    (make <" (.type port) ">\n"
                        "      :out `("
                        ((->join "\n            ")
                         (map (lambda (event)
