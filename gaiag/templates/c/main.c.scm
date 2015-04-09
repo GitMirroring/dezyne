@@ -30,20 +30,16 @@ void #.model _fill_event_map(#.model * m, map* e) {
    #(map
      (lambda (port)
        (map (define-on model port #{
-          if (!m->#port ->#direction .#event  || !m->#port ->#direction .self) {
-            m->#port ->#direction .#event  = #.model _log_event_#port _#direction _#event;
-         }
+          m->#port ->#direction .#event  = #.model _log_event_#port _#direction _#event;
 #}) (filter (negate (gom:dir-matches? port))
        (gom:events port)))) (gom:ports model))
    #(map
      (lambda (port)
        (map (define-on model port #{
-         if (map_get(e, "#port .#event ", &p)) {
            c = malloc(sizeof (closure));
            c->f = (void (*))m->#port ->#direction .#event;
            c->self = m->#port;
            map_put(e, "#port .#event ", c);
-         }
 #}) (filter (gom:dir-matches? port)
        (gom:events port)))) (gom:ports model)) }
 
