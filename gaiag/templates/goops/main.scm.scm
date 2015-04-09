@@ -1,9 +1,26 @@
 
+(define (fill-event-alist o)
+#(map
+    (lambda (port)
+    (map (define-on model port #{
+    (set! (.#event  (.#direction  (.#port  o))) (lambda (. args) (stderr "~a.~a.~a\n" '#port  '#direction  '#event)))
+#}) (filter (negate (gom:dir-matches? port))
+            (gom:events port)))) (gom:ports model))
+  `(#
+(map
+    (lambda (port)
+    (map (define-on model port #{#'()
+    (#port .#event  . ,(.#event  (.#direction  (.#port  o))))#})
+    (filter (gom:dir-matches? port)
+       (gom:events port)))) (gom:ports model))))
+
 (define (main . args)
-  (let ((sut (make <#.model >)))
-    (format ##t "run\n")
+  (let* ((sut (make <#.model >))
+         (event-alist (fill-event-alist sut)))
     (while (and-let*
             ((line (read-line))
-             ((not (eof-object? line))))
-            (action (.alarm sut) .console .in .arm)))))
-
+             ((not (eof-object? line)))
+             (event (string->symbol line)))
+            (and-let* ((event (assoc-ref event-alist (string->symbol line))))
+                      (event))
+            ##t))))

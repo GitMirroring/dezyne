@@ -711,11 +711,12 @@
          (right (.right bind))
          (port (and (bind-port? bind)
                     (if (not (.instance left)) (.port left) (.port right))))
+         (interface (.type (gom:port model port)))
          (instance (and (bind-port? bind)
                         (if (not (.instance left))
                             (binding-name model right)
                             (binding-name model left)))))
-    (animate snippet `((port ,port) (instance ,instance)))))
+    (animate snippet `((port ,port) (instance ,instance) (interface ,interface)))))
 
 (define ((init-instance snippet) instance)
   (let ((component (.component instance))

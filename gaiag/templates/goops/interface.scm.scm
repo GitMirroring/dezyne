@@ -1,10 +1,19 @@
 
 (define-class <#.interface .in> ()
-#(map (declare-io model #{#'()
+  (name :accessor .name :init-value "" :init-keyword :name)
+  (self :accessor .self :init-value ##f :init-keyword :self)#
+(map (declare-io model #{#'()
   (#name  :accessor .#name  :init-value ##f :init-keyword :#name)#})
   (filter gom:in? ((compose .elements .events) model))))
 (define-class <#.interface .out> ()
-#(map (declare-io model #{#'()
+  (name :accessor .name :init-value "" :init-keyword :name)
+  (self :accessor .self :init-value ##f :init-keyword :self)#
+(map (declare-io model #{#'()
   (#name  :accessor .#name  :init-value ##f :init-keyword :#name)#})
   (filter gom:out? ((compose .elements .events) model))))
 (define-class <#.interface > (<interface>))
+
+(define-method (initialize (o <#.model >) args)
+  (set! (.in o) (make <#.model .in>))
+  (set! (.out o) (make <#.model .out>))
+  (next-method))
