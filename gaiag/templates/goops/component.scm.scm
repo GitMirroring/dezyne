@@ -27,7 +27,7 @@
     "              :name '" (.name port) "\n"
     "              :self o")
       (map (define-on model port #{#'()
-              :#event  (lambda (. args) (call-in o (lambda () (#port -#event  o)) `(,(.#port  o) #event))) #})
+              :#event  (lambda (. args) (call-in o (lambda () (apply #port -#event  (cons o args))) `(,(.#port  o) #event))) #})
     (filter gom:in? (gom:events port)))
     (list ")))")))
     (filter gom:provides? (gom:ports model)))#
@@ -42,7 +42,7 @@
     "              :name '" (.name port) "\n"
     "              :self o")
       (map (define-on model port #{#'()
-              :#event  (lambda (. args) (call-out o (lambda () (#port -#event  o)) `(,(.#port  o) #event))) #})
+              :#event  (lambda (. args) (call-out o (lambda () (apply #port -#event  (cons o args))) `(,(.#port  o) #event))) #})
           (filter gom:out? (gom:events port)))
    (list ")))")))
    (filter gom:requires? (gom:ports model))))
@@ -50,14 +50,14 @@
 #(map
    (lambda (port)
      (map (define-on model port #{
-(define-method (#port -#event  (o <#.model >))#
+(define-method (#port -#event  (o <#.model >) #parameters)#
 statement #(if (not (eq? type 'void))
 (list "\n    (.reply-" reply-type "-" reply-name " o)")))
 
 #}) (filter (gom:dir-matches? port) (gom:events port))))
    (gom:ports model))#
 (map (define-function model #{
-(define-method (#name  (o <#.model >) #parameters )
+(define-method (#name  (o <#.model >) #parameters)
   (call/cc
    (lambda (return) #statements)))
 

@@ -1,5 +1,5 @@
 ;;; Gaiag --- Guile in Asd In Asd in Guile.
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
@@ -38,7 +38,7 @@
   :export (ast->))
 
 (define (ast-> ast)
-  (parameterize ((indenter #f) (join (->join " "))) (ast:code ast)))
+  (parameterize ((indenter #f) (sep " ") (join (->join " "))) (ast:code ast)))
 ;;(define (ast-> ast) (parameterize ((indenter pretty-printer)) (ast:code ast)))
 
 (define (pretty-printer) (pretty-print (read) :width 120 :max-expr-width 80))

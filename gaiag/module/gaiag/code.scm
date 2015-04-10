@@ -79,6 +79,7 @@
            indenter
            pipe
            return-type
+           sep
            statements.event
            statements.port
            string-if
@@ -101,6 +102,7 @@
   (with-input-from-string (with-output-to-string producer) consumer))
 
 (define join (make-parameter (->join ", ")))
+(define sep (make-parameter ","))
 (define indenter (make-parameter indent))
 
 (define (dump-indented file-name thunk)
@@ -312,8 +314,11 @@
                                                  rest)))))))
                             (statement (->code model statement locals indent compound?))
                             (statement (if (pair? aliases)
-                                           (snippet 'compound `((space space)
-                                                                (statements ,(string-join (append aliases (list statement)) ""))))
+                                           (snippet 'compound
+                                                    `((space ,space)
+                                                      (statements
+                                                       ,(snippet 'context
+                                                                 `((space ,space) (statement ,aliases) (continuation ,statement))))))
                                            statement)))
                        statement))
            '$empty-statement$))
@@ -361,8 +366,8 @@
               (interface (gom:import name))
               (event (gom:event interface event-name))
               (direction (.direction event))
-              (comma (if (pair? arguments) "," ""))
-              (comma-space (if (pair? arguments) ", " ""))
+              (comma (if (pair? arguments) (sep) ""))
+              (comma-space (if (pair? arguments) `(,(sep) " ") ""))
               (number (number->string (length arguments)))
               (parameters ((compose .elements .parameters .signature) event))
               (arguments ((join) 
@@ -531,8 +536,8 @@
             (interface (gom:import name))
             (event (gom:event interface event-name))
             (direction (.direction event))
-            (comma (if (pair? arguments) "," ""))
-            (comma-space (if (pair? arguments) ", " ""))
+            (comma (if (pair? arguments) (sep) ""))
+            (comma-space (if (pair? arguments) `(,(sep) " ") ""))
             (number (number->string (length arguments)))
             (parameters ((compose .elements .parameters .signature) event))
             (arguments ((join) 
@@ -628,8 +633,8 @@
          (type ((compose .name .type) signature))
          (return-type (return-type #f event))
          (parameters (.parameters signature))
-         (comma (if (pair? (.elements parameters)) "," ""))
-         (comma-space (if (pair? (.elements parameters)) ", " ""))
+         (comma (if (pair? (.elements parameters)) (sep) ""))
+         (comma-space (if (pair? (.elements parameters)) `(,(sep) " ") ""))
          (parameters (code:->code model parameters)))
     (animate snippet `((name ,name) (comma ,comma) (comma-space ,comma-space) (parameters ,parameters) (return-type ,return-type)))))
 
@@ -638,8 +643,8 @@
          (return-type (code:->code model signature))
          (name (.name function))
          (parameters (.parameters signature))
-         (comma (if (null? (.elements parameters)) "" ","))
-         (comma-space (if (null? (.elements parameters)) "" ", "))
+         (comma (if (null? (.elements parameters)) "" (sep)))
+         (comma-space (if (null? (.elements parameters)) "" `(,(sep) " ")))
          (statement (.statement function))
          (locals (map (lambda (x) (cons (.name x) x)) (.elements parameters)))
          (parameters (code:->code model parameters))
@@ -662,8 +667,8 @@
                        locals
                        (loop (cdr parameters)
                              (acons (.name (car parameters)) (car parameters) locals)))))
-         (comma (if (pair? (.elements parameters)) "," ""))
-         (comma-space (if (pair? (.elements parameters)) "," ""))
+         (comma (if (pair? (.elements parameters)) (sep) ""))
+         (comma-space (if (pair? (.elements parameters)) (sep) ""))
          (parameter-list (map (lambda (x) (code:->code model x)) (.elements parameters)))
          (parameters (code:->code model parameters))
          (parameter-types (map (lambda (parameter)

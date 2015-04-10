@@ -34,6 +34,14 @@
   :use-module (ice-9 q)
   :use-module (oop goops))
 
+(define-syntax assert
+  (syntax-rules ()
+    ((assert e)
+     (or e (throw 'assert 'e)))))
+
+(define-class <v> ()
+  (v :accessor .v :init-value 0 :init-keyword :v))
+
 (define (stderr . args)
   (apply format (cons* (current-error-port) args)))
 
@@ -64,8 +72,11 @@
 
 (define (illegal) (throw 'assert 'illegal))
 
-(define-method (action (o <component>) (port <accessor>) (dir <accessor>) (event <accessor>))
-  (((compose event dir port) o)))
+(define-method (action (o <component>) (port <accessor>) (dir <accessor>) (event <accessor>) . args)
+  (apply ((compose event dir port) o) args))
+
+(define-method (action (o <interface>) (dir <accessor>) (event <accessor>) . args)
+  (apply ((compose event dir) o) args))
 
 (define-class <runtime> ()
   (components :accessor .components :init-form (list) :init-keyword :components))
@@ -98,6 +109,13 @@
         (flush o))
       (throw 'handle "component already handling an event")))
 
+(define (return-value? r)
+  (and-let* (((list? r))
+             ((= (length r) 2))
+             ((symbol? (car r)))
+             ((symbol? (cadr r))))
+            (symbol-append (car r) '_ (cadr r))))
+  
 (define-method (call-in (o <component>) f m)
   (apply trace-in m)
   (let ((handle (.handling? o)))
@@ -106,7 +124,7 @@
       (if handle (throw 'defer "a valued event cannot be deferred"))
       (set! (.handling? o) #f)
       (flush o)
-      (trace-out (car m) (if (or #t (eq? r (if #f #f))) 'return 'TODO))
+      (trace-out (car m) (or (return-value? r) 'return))
       r)))
 
 (define-method (call-out (o <component>) f m)
