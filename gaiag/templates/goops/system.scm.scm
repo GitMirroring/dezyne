@@ -1,7 +1,4 @@
-(define-class <#.model > (<system>)
-  (runtime :accessor .runtime :init-form (make <runtime>) :init-keyword :runtime)
-  (parent :accessor .parent :init-value ##f :init-keyword :parent)
-  (name :accessor .name :init-value (symbol) :init-keyword :name)#
+(define-class <#.model > (<system>)#
 (map (init-instance #{#'()
   (#name  :accessor .#name  :init-value ##f)#})
      ((compose .elements .instances) model))#
@@ -16,7 +13,7 @@
    args ##f ((runtime ##f)
             (name (symbol))
             (parent ##f)
-#((->join "\n            ")
+            #((->join "\n            ")
  (map (init-bind model #{(#port .#edir  (make <#interface .out>))#})
       (filter bind-port? ((compose .elements .bindings) model)))))#
 (map (init-instance #{#'()

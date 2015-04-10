@@ -1,8 +1,5 @@
 
 (define-class <#.model > (<component>)
-  (runtime :accessor .runtime :init-form (make <runtime>) :init-keyword :runtime)
-  (parent :accessor .parent :init-value ##f :init-keyword :parent)
-  (name :accessor .name :init-value (symbol) :init-keyword :name)
   (handling? :accessor .handling? :init-value ##f :init-keyword :handling?)
   (flushes? :accessor .flushes? :init-value ##f :init-keyword :flushes?)
   (deferred? :accessor .deferred? :init-value ##f :init-keyword :deferred?)
@@ -53,8 +50,8 @@
 #(map
    (lambda (port)
      (map (define-on model port #{
-(define-method (#port -#event  (o <#.model >))
-  #statement #(if (not (eq? type 'void))
+(define-method (#port -#event  (o <#.model >))#
+statement #(if (not (eq? type 'void))
 (list "\n    (.reply-" reply-type "-" reply-name " o)")))
 
 #}) (filter (gom:dir-matches? port) (gom:events port))))

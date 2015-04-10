@@ -39,14 +39,24 @@
 
 (define-class <model> ())
 
-(define-class <iport> ())
+(define-class <port-base> ())
 
 (define-class <interface> (<model>)
   (in :accessor .in :init-value #f :init-keyword :in)
   (out :accessor .out :init-value #f :init-keyword :out))
 
-(define-class <component> (<interface>))
-(define-class <system> (<model>))
+(define-class <component-base> (<model>)
+ (runtime :accessor .runtime :init-form (make <runtime>) :init-keyword :runtime)
+ (parent :accessor .parent :init-value #f :init-keyword :parent)
+ (name :accessor .name :init-value (symbol) :init-keyword :name))
+
+(define-class <component> (<component-base>)
+ (handling? :accessor .handling? :init-value #f :init-keyword :handling?)
+ (flushes? :accessor .flushes? :init-value #f :init-keyword :flushes?)
+ (deferred? :accessor .deferred? :init-value #f :init-keyword :deferred?)
+ (q :accessor .q :init-form (make-q) :init-keyword :q))
+
+(define-class <system> (<component-base>))
 
 (define-method (connect-ports (provided <interface>) (required <interface>))
   (set! (.out provided) (.out required))
@@ -108,7 +118,7 @@
                                   (if (string-null? p) p ".") p))))
     (cond
      ((not o) (string-append "<external>." p))
-     ((is-a? o <iport>) (path (.self o) pp))
+     ((is-a? o <port-base>) (path (.self o) pp))
      ((and (is-a? o <model>) (.parent o)) (path (.parent o) pp))
      (else pp))))
 
