@@ -31,7 +31,8 @@ class main {
   }
 
   public static void main(String[] args) throws IOException {
-    #.model  sut = new #.model ();
+    Runtime runtime = new Runtime();
+    #.model  sut = new #.model(runtime);
     System.out.println("run");
     EventMap e = fillEventMap(sut);
     String line;
