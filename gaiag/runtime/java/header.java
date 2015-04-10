@@ -23,7 +23,9 @@
 // header
 //package dezyne;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 abstract class Action {
@@ -34,47 +36,31 @@ abstract class ValuedAction<R> {
   public abstract R action();
 }
 
-interface ActionQueue extends Queue<Action> {};
-        
 @SuppressWarnings("unchecked")
 abstract class Interface<I extends Interface.In, O extends Interface.Out> {
-  interface In {
+  abstract class Port {
+    public String name;
+    public Component self;
   }
-  interface Out {
+  abstract class In extends Port {
   }
-
-  protected In in;
-  protected Out out;
-
-  public I getIn() {
-    return (I) in;
+  abstract class Out extends Port {
   }
-
-  public void setIn(I in) {
-    this.in = in;
-  }
-
-  public O getOut() {
-    return (O) out;
-  }
-
-  public void setOut(O out) {
-    this.out = out;
-  }
-
+  public I in;
+  public O out;
   @SuppressWarnings("rawtypes")
     public static void connect(Interface provided, Interface required) {
-    provided.setOut(required.getOut());
-    required.setIn(provided.getIn());
-  };
+    provided.out = required.out;
+    required.in = provided.in;
+  }
 }
 
 abstract class ComponentBase {
   public Runtime runtime;
   public SystemComponent parent;
   public String name;
-  public ComponentBase(Runtime runtime, String name, SystemComponent parent) {this.runtime = runtime; this.parent = parent; this.name = name;};
-};
+  public ComponentBase(Runtime runtime, String name, SystemComponent parent) {this.runtime = runtime; this.parent = parent; this.name = name; runtime.components.add(this);};
+}
 
 abstract class Component extends ComponentBase {
   public boolean handling;
@@ -82,34 +68,107 @@ abstract class Component extends ComponentBase {
   public Component deferred;
   public Queue<Action> q;
   public Component(Runtime runtime, String name, SystemComponent parent) {super(runtime, name, parent); this.q = new LinkedList<Action>();};
-};
+}
 
 abstract class SystemComponent extends ComponentBase {
   public SystemComponent(Runtime runtime, String name, SystemComponent parent) {super(runtime, name, parent);};
-};
+}
 
 class Meta {
   public Interface i;
   public String e;
   public Meta(Interface i, String e) {this.i = i; this.e = e;};
-};
+}
 
 class Runtime {
+  public List<ComponentBase> components;
+  {
+    this.components = new ArrayList<ComponentBase> ();
+  }
+  public static boolean external(Component c) {
+    return !c.runtime.components.contains(c);
+  }
+  public static void flush(Component c) {
+    if (!external(c)) {
+      while (!c.q.isEmpty()) {
+        handle(c, c.q.remove());
+      }
+      if (c.deferred != null) {
+        Component t = c.deferred;
+        c.deferred = null;
+        if (!t.handling) {
+          flush(t);
+        }
+      }
+    }
+  }
+  public static void defer(Component i, Component o, Action f) {
+    if (i == null || (!i.flushes && !o.handling)) {
+      handle(o, f);
+    }
+    else {
+      i.deferred = o;
+      o.q.add(f);
+    }
+  }
+  public static void handle(Component c, Action f) {
+    if (!c.handling) {
+      c.handling = true;
+      f.action();
+      c.handling = false;
+      flush(c);
+    }
+    else {
+      //throw new Exception("component already handling an event");
+      assert("component already handling an event" == "");
+    }
+  }
   public static void callIn(Component c, Action f, Meta m) {
     traceIn(m.i, m.e);
+    boolean handle = c.handling;
+    c.handling = true;
     f.action();
+    c.handling = false;
+    flush(c);
     traceOut(m.i, "return");
-  };
+  }
+  // public static R callIn(Component c, ValuedAction<R> f, Meta m) {
+  //   traceIn(m.i, m.e);
+  //   if (c.handling) {
+  //     throw new Exception("a valued event cannot be deferred");
+  //   }
+  //   c.handling = true;
+  //   f.action();
+  //   c.handling = false;
+  //   flush(c);
+  //   traceOut(m.i, "return");
+  // };
   public static void callOut(Component c, Action f, Meta m) {
-    f.action();
     traceOut(m.i, m.e);
-  };
+    defer(m.i.in.self, c, f);
+  }
+  public static String path(ComponentBase o, String p) {
+    if (o == null) {
+      return "<external>." + p;
+    }
+    if (o.parent != null) {
+      return path(o.parent, o.name + (p.isEmpty() ? p : ".") + p);
+    }
+    return o.name + (p.isEmpty() ? p : ".") + p;
+  }
+  public static String path(Interface.Port o) {
+    return path(o, "");
+  }
+  public static String path(Interface.Port o, String p) {
+    return path(o.self, (o.name == null ? "" : o.name) + (p.isEmpty() ? p : ".") + p);
+  }
   public static void traceIn(Interface i, String e) {
-    System.err.println("" + i + "." + e);
+    System.err.println(path(i.out) + "." + e + " -> "
+                       + path(i.in) + "." + e);
   }
   public static void traceOut(Interface i, String e) {
-    System.err.println("" + i + "." + e);
+    System.err.println(path(i.in) + "." + e + " -> "
+                       + path(i.out) + "." + e);
   }
-};
-
+}
 // end header

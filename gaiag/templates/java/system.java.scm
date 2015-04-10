@@ -1,4 +1,4 @@
-class #.model  {
+class #.model  extends SystemComponent {
 #(map (init-instance #{
     #component  #name;
 #}) ((compose .elements .instances) model))#
@@ -10,10 +10,10 @@ class #.model  {
 
   public #.model(Runtime runtime, String name) {this(runtime, name, null);};
 
-  public #.model(Runtime runtime, String name, System parent) {
+  public #.model(Runtime runtime, String name, SystemComponent parent) {
   super(runtime, name, parent);
 #(map (init-instance #{
-    #name  = new #component(runtime);
+    #name  = new #component(runtime, "#name ", this);
 #}) ((compose .elements .instances) model))#
 (map (init-bind model #{
     #port  = #instance;
