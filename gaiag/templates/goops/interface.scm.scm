@@ -1,12 +1,12 @@
 
-(define-class <#.interface .in> ()
-  (name :accessor .name :init-value "" :init-keyword :name)
+(define-class <#.interface .in> (<iport>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
   (self :accessor .self :init-value ##f :init-keyword :self)#
 (map (declare-io model #{#'()
   (#name  :accessor .#name  :init-value ##f :init-keyword :#name)#})
   (filter gom:in? ((compose .elements .events) model))))
-(define-class <#.interface .out> ()
-  (name :accessor .name :init-value "" :init-keyword :name)
+(define-class <#.interface .out> (<iport>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
   (self :accessor .self :init-value ##f :init-keyword :self)#
 (map (declare-io model #{#'()
   (#name  :accessor .#name  :init-value ##f :init-keyword :#name)#})

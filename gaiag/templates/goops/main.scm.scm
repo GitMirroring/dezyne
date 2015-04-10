@@ -15,7 +15,7 @@
        (gom:events port)))) (gom:ports model))))
 
 (define (main . args)
-  (let* ((sut (make <#.model >))
+  (let* ((sut (make <#.model > :name 'sut))
          (event-alist (fill-event-alist sut)))
     (while (and-let*
             ((line (read-line))

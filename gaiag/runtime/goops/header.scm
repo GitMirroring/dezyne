@@ -38,6 +38,8 @@
 
 (define-class <model> ())
 
+(define-class <iport> ())
+
 (define-class <interface> (<model>)
   (in :accessor .in :init-value #f :init-keyword :in)
   (out :accessor .out :init-value #f :init-keyword :out))
@@ -73,8 +75,19 @@
   (apply trace-out m)
   (defer (.self (.in m)) o f))
 
+(define* (path o :optional (p ""))
+  (let ((pp (and o (string-append (symbol->string (.name o))
+                                  (if (string-null? p) p ".") p))))
+    (cond
+     ((not o) (string-append "<external>." p))
+     ((is-a? o <iport>) (path (.self o) pp))
+     ((and (is-a? o <model>) (.parent o)) (path (.parent o) pp))
+     (else pp))))
+
 (define (trace-in i e)
-  (stderr "~a.~a\n" i e))
+  ;;  (stderr "~a.~a\n" i e)
+  (stderr "~a.~a -> ~a.~a\n" (path (.out i)) e (path (.in i)) e))
 
 (define (trace-out i e)
-  (stderr "~a.~a\n" i e))
+  ;; (stderr "~a.~a\n" i e)
+  (stderr "~a.~a -> ~a.~a\n" (path (.in i)) e (path (.out i)) e))

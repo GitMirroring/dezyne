@@ -1,7 +1,7 @@
 
 (define-class <#.model > (<component>)
   (parent :accessor .parent :init-value ##f :init-keyword :parent)
-  (name :accessor .name :init-value "" :init-keyword :name)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
   (handling :accessor .handling :init-value ##f :init-keyword :handling)
   (flushes :accessor .flushes :init-value ##f :init-keyword :flushes)
   (deferred :accessor .deferred :init-value ##f :init-keyword :deferred)
@@ -28,7 +28,7 @@
     "              :name '" (.name port) "\n"
     "              :self o")
       (map (define-on model port #{#'()
-              :#event  (lambda (. args) (call-in o (lambda () (#port -#event  o))`(,(.#port  o) '#event))) #})
+              :#event  (lambda (. args) (call-in o (lambda () (#port -#event  o)) `(,(.#port  o) #event))) #})
     (filter gom:in? (gom:events port)))
     (list ")))")))
     (filter gom:provides? (gom:ports model)))#
@@ -43,7 +43,7 @@
     "              :name '" (.name port) "\n"
     "              :self o")
       (map (define-on model port #{#'()
-              :#event  (lambda (. args) (call-out o (lambda () (#port -#event  o))`(,(.#port  o) '#event))) #})
+              :#event  (lambda (. args) (call-out o (lambda () (#port -#event  o)) `(,(.#port  o) #event))) #})
           (filter gom:out? (gom:events port)))
    (list ")))")))
    (filter gom:requires? (gom:ports model))))

@@ -1,6 +1,6 @@
 (define-class <#.model > (<system>)
   (parent :accessor .parent :init-value ##f :init-keyword :parent)
-  (name :accessor .name :init-value "" :init-keyword :name)#
+  (name :accessor .name :init-value (symbol) :init-keyword :name)#
 (map (init-instance #{#'()
   (#name  :accessor .#name  :init-value ##f)#})
      ((compose .elements .instances) model))#
@@ -11,7 +11,8 @@
 (define-method (initialize (o <#.model >) args)
   (next-method)
   (let-keywords
-   args ##f (#
+   args ##f ((name (symbol))
+             (parent ##f)#
 ((->join "\n            ")
  (map (init-bind model #{(out-#port  (make <#interface .out>))#})
       (filter bind-port? ((compose .elements .bindings) model)))))#
