@@ -20,4 +20,19 @@
 ;;; 
 ;;; Code:
 
-(define-class <interface:Top> (<interface>))
+
+(define-class <Top.in> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (unguarded :accessor .unguarded :init-value #f :init-keyword :unguarded)
+  (e :accessor .e :init-value #f :init-keyword :e))
+(define-class <Top.out> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (f :accessor .f :init-value #f :init-keyword :f))
+(define-class <Top> (<interface>))
+
+(define-method (initialize (o <Top>) args)
+  (set! (.in o) (make <Top.in>))
+  (set! (.out o) (make <Top.out>))
+  (next-method))

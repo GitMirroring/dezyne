@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,4 +21,20 @@
 ;;; 
 ;;; Code:
 
-(define-class <interface:IConsole> (<interface>))
+
+(define-class <IConsole.in> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (arm :accessor .arm :init-value #f :init-keyword :arm)
+  (disarm :accessor .disarm :init-value #f :init-keyword :disarm))
+(define-class <IConsole.out> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (detected :accessor .detected :init-value #f :init-keyword :detected)
+  (deactivated :accessor .deactivated :init-value #f :init-keyword :deactivated))
+(define-class <IConsole> (<interface>))
+
+(define-method (initialize (o <IConsole>) args)
+  (set! (.in o) (make <IConsole.in>))
+  (set! (.out o) (make <IConsole.out>))
+  (next-method))

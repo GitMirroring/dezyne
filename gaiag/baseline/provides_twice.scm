@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -22,16 +22,21 @@
 ;;; Code:
 
 (define-class <provides_twice> (<system>)
-  (one :accessor .one :init-form (make <external_provides_twice>))
+  (one :accessor .one :init-value #f)
   (i :accessor .i :init-value #f :init-keyword :i)
   (ii :accessor .ii :init-value #f :init-keyword :ii))
 
 (define-method (initialize (o <provides_twice>) args)
   (next-method)
+  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))
   (let-keywords
-   args #f ((out-i #f)
-            (out-ii #f))
+   args #f ((runtime #f)
+            (name (symbol))
+            (parent #f)
+            (i.out (make <iprovides_once.out>))
+            (ii.out (make <iprovides_twice.out>)))
+  (set! (.one o) (make <external_provides_twice> :runtime (.runtime o) :parent o :name 'one))
   (set! (.i o) (.i (.one o)))
-  (set! (.out (.i o)) out-i)
+  (set! (.out (.i o)) i.out)
   (set! (.ii o) (.ii (.one o)))
-  (set! (.out (.ii o)) out-ii)))
+  (set! (.out (.ii o)) ii.out)))

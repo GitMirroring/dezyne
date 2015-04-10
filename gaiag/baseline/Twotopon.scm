@@ -20,27 +20,34 @@
 ;;; 
 ;;; Code:
 
+
 (define-class <Twotopon> (<component>)
+  (handling? :accessor .handling? :init-value #f :init-keyword :handling?)
+  (flushes? :accessor .flushes? :init-value #f :init-keyword :flushes?)
+  (deferred? :accessor .deferred? :init-value #f :init-keyword :deferred?)
+  (q :accessor .q :init-form (make-q) :init-keyword :q)
   (b :accessor .b :init-value #f)
-  (i :accessor .i :init-form (make <interface:ITwotopon>)))
+  (i :accessor .i :init-value #f))
 
 (define-method (initialize (o <Twotopon>) args)
   (next-method)
+  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))
   (set! (.i o)
-    (make <interface:ITwotopon>
-      :in `((e . ,(lambda () (i-e o)))
-            (t . ,(lambda () (i-t o)))))))
+    (make <ITwotopon>
+       :in (make <ITwotopon.in>
+              :name 'i
+              :self o
+              :e (lambda (. args) (call-in o (lambda () (i-e o)) `(,(.i o) e))) 
+              :t (lambda (. args) (call-in o (lambda () (i-t o)) `(,(.i o) t))) ))))
 
 (define-method (i-e (o <Twotopon>))
-  (stderr "Twotopon.i.e\n")
     (cond 
     ((.b o)
-      (action o .i .out 'a))
+      (action o .i .out .a))
     ((not (.b o))
-      (action o .i .out 'a))))
+      (action o .i .out .a))))
 
 (define-method (i-t (o <Twotopon>))
-  (stderr "Twotopon.i.t\n")
-    (action o .i .out 'a))
+    (action o .i .out .a))
 
 

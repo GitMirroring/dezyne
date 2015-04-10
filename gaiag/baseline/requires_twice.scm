@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,34 +21,46 @@
 ;;; 
 ;;; Code:
 
+
 (define-class <requires_twice> (<component>)
-  (p :accessor .p :init-form (make <interface:irequires_twice>))
-  (once :accessor .once :init-form (make <interface:irequires_twice>))
-  (twice :accessor .twice :init-form (make <interface:irequires_twice>)))
+  (handling? :accessor .handling? :init-value #f :init-keyword :handling?)
+  (flushes? :accessor .flushes? :init-value #f :init-keyword :flushes?)
+  (deferred? :accessor .deferred? :init-value #f :init-keyword :deferred?)
+  (q :accessor .q :init-form (make-q) :init-keyword :q)
+  (p :accessor .p :init-value #f)
+  (once :accessor .once :init-value #f)
+  (twice :accessor .twice :init-value #f))
 
 (define-method (initialize (o <requires_twice>) args)
   (next-method)
+  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))
   (set! (.p o)
-    (make <interface:irequires_twice>
-      :in `((e . ,(lambda () (p-e o))))))
+    (make <irequires_twice>
+       :in (make <irequires_twice.in>
+              :name 'p
+              :self o
+              :e (lambda (. args) (call-in o (lambda () (p-e o)) `(,(.p o) e))) )))
   (set! (.once o)
-    (make <interface:irequires_twice>
-      :out `((a . ,(lambda () (once-a o))))))
+     (make <irequires_twice>
+       :out (make <irequires_twice.out>
+              :name 'once
+              :self o
+              :a (lambda (. args) (call-out o (lambda () (once-a o)) `(,(.once o) a))) )))
   (set! (.twice o)
-    (make <interface:irequires_twice>
-      :out `((a . ,(lambda () (twice-a o)))))))
+     (make <irequires_twice>
+       :out (make <irequires_twice.out>
+              :name 'twice
+              :self o
+              :a (lambda (. args) (call-out o (lambda () (twice-a o)) `(,(.twice o) a))) ))))
 
 (define-method (p-e (o <requires_twice>))
-  (stderr "requires_twice.p.e\n")
-    (action o .once .in 'e)
-    (action o .twice .in 'e))
+    (action o .once .in .e)
+    (action o .twice .in .e))
 
 (define-method (once-a (o <requires_twice>))
-  (stderr "requires_twice.once.a\n")
     #t)
 
 (define-method (twice-a (o <requires_twice>))
-  (stderr "requires_twice.twice.a\n")
-    (action o .p .out 'a))
+    (action o .p .out .a))
 
 

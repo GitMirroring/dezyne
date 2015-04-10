@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,32 +21,42 @@
 ;;; 
 ;;; Code:
 
+
 (define-class <reply_reorder> (<component>)
+  (handling? :accessor .handling? :init-value #f :init-keyword :handling?)
+  (flushes? :accessor .flushes? :init-value #f :init-keyword :flushes?)
+  (deferred? :accessor .deferred? :init-value #f :init-keyword :deferred?)
+  (q :accessor .q :init-form (make-q) :init-keyword :q)
   (first :accessor .first :init-value #t)
-  (p :accessor .p :init-form (make <interface:Provides>))
-  (r :accessor .r :init-form (make <interface:Requires>)))
+  (p :accessor .p :init-value #f)
+  (r :accessor .r :init-value #f))
 
 (define-method (initialize (o <reply_reorder>) args)
   (next-method)
+  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))
   (set! (.p o)
-    (make <interface:Provides>
-      :in `((start . ,(lambda () (p-start o))))))
+    (make <Provides>
+       :in (make <Provides.in>
+              :name 'p
+              :self o
+              :start (lambda (. args) (call-in o (lambda () (p-start o)) `(,(.p o) start))) )))
   (set! (.r o)
-    (make <interface:Requires>
-      :out `((pong . ,(lambda () (r-pong o)))))))
+     (make <Requires>
+       :out (make <Requires.out>
+              :name 'r
+              :self o
+              :pong (lambda (. args) (call-out o (lambda () (r-pong o)) `(,(.r o) pong))) ))))
 
 (define-method (p-start (o <reply_reorder>))
-  (stderr "reply_reorder.p.start\n")
-    (action o .r .in 'ping))
+    (action o .r .in .ping))
 
 (define-method (r-pong (o <reply_reorder>))
-  (stderr "reply_reorder.r.pong\n")
     (cond 
     ((.first o)
-      (action o .p .out 'busy)
+      (action o .p .out .busy)
       (set! (.first o) (not (.first o))))
     ((not (.first o))
-      (action o .p .out 'finish)
+      (action o .p .out .finish)
       (set! (.first o) (not (.first o))))))
 
 

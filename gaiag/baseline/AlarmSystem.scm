@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -22,16 +22,23 @@
 ;;; Code:
 
 (define-class <AlarmSystem> (<system>)
-  (alarm :accessor .alarm :init-form (make <Alarm>))
-  (sensor :accessor .sensor :init-form (make <Sensor>))
-  (siren :accessor .siren :init-form (make <Siren>))
+  (alarm :accessor .alarm :init-value #f)
+  (sensor :accessor .sensor :init-value #f)
+  (siren :accessor .siren :init-value #f)
   (console :accessor .console :init-value #f :init-keyword :console))
 
 (define-method (initialize (o <AlarmSystem>) args)
   (next-method)
+  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))
   (let-keywords
-   args #f ((out-console #f))
+   args #f ((runtime #f)
+            (name (symbol))
+            (parent #f)
+            (console.out (make <IConsole.out>)))
+  (set! (.alarm o) (make <Alarm> :runtime (.runtime o) :parent o :name 'alarm))
+  (set! (.sensor o) (make <Sensor> :runtime (.runtime o) :parent o :name 'sensor))
+  (set! (.siren o) (make <Siren> :runtime (.runtime o) :parent o :name 'siren))
   (set! (.console o) (.console (.alarm o)))
-  (set! (.out (.console o)) out-console))
+  (set! (.out (.console o)) console.out))
   (connect-ports (.sensor (.sensor o)) (.sensor (.alarm o)))
   (connect-ports (.siren (.siren o)) (.siren (.alarm o))))

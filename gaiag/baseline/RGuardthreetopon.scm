@@ -20,4 +20,18 @@
 ;;; 
 ;;; Code:
 
-(define-class <interface:RGuardthreetopon> (<interface>))
+
+(define-class <RGuardthreetopon.in> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (e :accessor .e :init-value #f :init-keyword :e))
+(define-class <RGuardthreetopon.out> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (a :accessor .a :init-value #f :init-keyword :a))
+(define-class <RGuardthreetopon> (<interface>))
+
+(define-method (initialize (o <RGuardthreetopon>) args)
+  (set! (.in o) (make <RGuardthreetopon.in>))
+  (set! (.out o) (make <RGuardthreetopon.out>))
+  (next-method))

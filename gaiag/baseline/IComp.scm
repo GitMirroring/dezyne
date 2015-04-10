@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,4 +21,19 @@
 ;;; 
 ;;; Code:
 
-(define-class <interface:IComp> (<interface>))
+
+(define-class <IComp.in> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (initialize :accessor .initialize :init-value #f :init-keyword :initialize)
+  (recover :accessor .recover :init-value #f :init-keyword :recover)
+  (perform_actions :accessor .perform_actions :init-value #f :init-keyword :perform_actions))
+(define-class <IComp.out> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self))
+(define-class <IComp> (<interface>))
+
+(define-method (initialize (o <IComp>) args)
+  (set! (.in o) (make <IComp.in>))
+  (set! (.out o) (make <IComp.out>))
+  (next-method))

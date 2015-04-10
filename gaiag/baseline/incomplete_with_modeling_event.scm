@@ -21,25 +21,35 @@
 ;;; 
 ;;; Code:
 
+
 (define-class <incomplete_with_modeling_event> (<component>)
-  (p :accessor .p :init-form (make <interface:iincomplete_with_modeling_event>))
-  (r :accessor .r :init-form (make <interface:iincomplete_with_modeling_event>)))
+  (handling? :accessor .handling? :init-value #f :init-keyword :handling?)
+  (flushes? :accessor .flushes? :init-value #f :init-keyword :flushes?)
+  (deferred? :accessor .deferred? :init-value #f :init-keyword :deferred?)
+  (q :accessor .q :init-form (make-q) :init-keyword :q)
+  (p :accessor .p :init-value #f)
+  (r :accessor .r :init-value #f))
 
 (define-method (initialize (o <incomplete_with_modeling_event>) args)
   (next-method)
+  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))
   (set! (.p o)
-    (make <interface:iincomplete_with_modeling_event>
-      :in `((e . ,(lambda () (p-e o))))))
+    (make <iincomplete_with_modeling_event>
+       :in (make <iincomplete_with_modeling_event.in>
+              :name 'p
+              :self o
+              :e (lambda (. args) (call-in o (lambda () (p-e o)) `(,(.p o) e))) )))
   (set! (.r o)
-    (make <interface:iincomplete_with_modeling_event>
-      :out `((a . ,(lambda () (r-a o)))))))
+     (make <iincomplete_with_modeling_event>
+       :out (make <iincomplete_with_modeling_event.out>
+              :name 'r
+              :self o
+              :a (lambda (. args) (call-out o (lambda () (r-a o)) `(,(.r o) a))) ))))
 
 (define-method (p-e (o <incomplete_with_modeling_event>))
-  (stderr "incomplete_with_modeling_event.p.e\n")
     #t)
 
 (define-method (r-a (o <incomplete_with_modeling_event>))
-  (stderr "incomplete_with_modeling_event.r.a\n")
-    (action o .p .out 'a))
+    (action o .p .out .a))
 
 

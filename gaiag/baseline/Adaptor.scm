@@ -22,26 +22,37 @@
 ;;; 
 ;;; Code:
 
+
 (define-class <Adaptor> (<component>)
+  (handling? :accessor .handling? :init-value #f :init-keyword :handling?)
+  (flushes? :accessor .flushes? :init-value #f :init-keyword :flushes?)
+  (deferred? :accessor .deferred? :init-value #f :init-keyword :deferred?)
+  (q :accessor .q :init-form (make-q) :init-keyword :q)
   (state :accessor .state :init-value '(State Idle))
   (count :accessor .count :init-value 0)
-  (runner :accessor .runner :init-form (make <interface:IRun>))
-  (choice :accessor .choice :init-form (make <interface:IChoice>)))
+  (runner :accessor .runner :init-value #f)
+  (choice :accessor .choice :init-value #f))
 
 (define-method (initialize (o <Adaptor>) args)
   (next-method)
+  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))
   (set! (.runner o)
-    (make <interface:IRun>
-      :in `((run . ,(lambda () (runner-run o))))))
+    (make <IRun>
+       :in (make <IRun.in>
+              :name 'runner
+              :self o
+              :run (lambda (. args) (call-in o (lambda () (runner-run o)) `(,(.runner o) run))) )))
   (set! (.choice o)
-    (make <interface:IChoice>
-      :out `((a . ,(lambda () (choice-a o)))))))
+     (make <IChoice>
+       :out (make <IChoice.out>
+              :name 'choice
+              :self o
+              :a (lambda (. args) (call-out o (lambda () (choice-a o)) `(,(.choice o) a))) ))))
 
 (define-method (runner-run (o <Adaptor>))
-  (stderr "Adaptor.runner.run\n")
     (cond 
     ((and (equal? (.state o) '(State Idle)) (< (.count o) 2))
-      (action o .choice .in 'e)
+      (action o .choice .in .e)
       (set! (.state o) '(State Active)))
     ((and (equal? (.state o) '(State Idle)) (not (< (.count o) 2)))
       #t)
@@ -51,16 +62,15 @@
       #t)))
 
 (define-method (choice-a (o <Adaptor>))
-  (stderr "Adaptor.choice.a\n")
     (cond 
     ((equal? (.state o) '(State Idle))
       #t)
     ((equal? (.state o) '(State Active))
       (set! (.count o) (+ (.count o) 1))
-      (action o .choice .in 'e)
+      (action o .choice .in .e)
       (set! (.state o) '(State Terminating)))
     ((and (equal? (.state o) '(State Terminating)) (< (.count o) 2))
-      (action o .choice .in 'e)
+      (action o .choice .in .e)
       (set! (.state o) '(State Active)))
     ((and (equal? (.state o) '(State Terminating)) (not (< (.count o) 2)))
       (set! (.state o) '(State Idle)))))

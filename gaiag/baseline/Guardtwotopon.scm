@@ -20,29 +20,36 @@
 ;;; 
 ;;; Code:
 
+
 (define-class <Guardtwotopon> (<component>)
+  (handling? :accessor .handling? :init-value #f :init-keyword :handling?)
+  (flushes? :accessor .flushes? :init-value #f :init-keyword :flushes?)
+  (deferred? :accessor .deferred? :init-value #f :init-keyword :deferred?)
+  (q :accessor .q :init-form (make-q) :init-keyword :q)
   (b :accessor .b :init-value #f)
-  (i :accessor .i :init-form (make <interface:IGuardtwotopon>)))
+  (i :accessor .i :init-value #f))
 
 (define-method (initialize (o <Guardtwotopon>) args)
   (next-method)
+  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))
   (set! (.i o)
-    (make <interface:IGuardtwotopon>
-      :in `((e . ,(lambda () (i-e o)))
-            (t . ,(lambda () (i-t o)))))))
+    (make <IGuardtwotopon>
+       :in (make <IGuardtwotopon.in>
+              :name 'i
+              :self o
+              :e (lambda (. args) (call-in o (lambda () (i-e o)) `(,(.i o) e))) 
+              :t (lambda (. args) (call-in o (lambda () (i-t o)) `(,(.i o) t))) ))))
 
 (define-method (i-e (o <Guardtwotopon>))
-  (stderr "Guardtwotopon.i.e\n")
     (cond 
     ((and #t (.b o))
-      (action o .i .out 'a))
+      (action o .i .out .a))
     ((and #t (not (.b o)))
       (let ((c #t)) 
       (cond (c 
-        (action o .i .out 'a)))))))
+        (action o .i .out .a)))))))
 
 (define-method (i-t (o <Guardtwotopon>))
-  (stderr "Guardtwotopon.i.t\n")
-    (action o .i .out 'a))
+    (action o .i .out .a))
 
 

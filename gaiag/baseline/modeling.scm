@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,25 +21,35 @@
 ;;; 
 ;;; Code:
 
+
 (define-class <modeling> (<component>)
-  (p :accessor .p :init-form (make <interface:dummy>))
-  (r :accessor .r :init-form (make <interface:imodeling>)))
+  (handling? :accessor .handling? :init-value #f :init-keyword :handling?)
+  (flushes? :accessor .flushes? :init-value #f :init-keyword :flushes?)
+  (deferred? :accessor .deferred? :init-value #f :init-keyword :deferred?)
+  (q :accessor .q :init-form (make-q) :init-keyword :q)
+  (p :accessor .p :init-value #f)
+  (r :accessor .r :init-value #f))
 
 (define-method (initialize (o <modeling>) args)
   (next-method)
+  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))
   (set! (.p o)
-    (make <interface:dummy>
-      :in `((e . ,(lambda () (p-e o))))))
+    (make <dummy>
+       :in (make <dummy.in>
+              :name 'p
+              :self o
+              :e (lambda (. args) (call-in o (lambda () (p-e o)) `(,(.p o) e))) )))
   (set! (.r o)
-    (make <interface:imodeling>
-      :out `((f . ,(lambda () (r-f o)))))))
+     (make <imodeling>
+       :out (make <imodeling.out>
+              :name 'r
+              :self o
+              :f (lambda (. args) (call-out o (lambda () (r-f o)) `(,(.r o) f))) ))))
 
 (define-method (p-e (o <modeling>))
-  (stderr "modeling.p.e\n")
-    (action o .r .in 'e))
+    (action o .r .in .e))
 
 (define-method (r-f (o <modeling>))
-  (stderr "modeling.r.f\n")
     #t)
 
 

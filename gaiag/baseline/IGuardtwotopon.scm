@@ -20,4 +20,19 @@
 ;;; 
 ;;; Code:
 
-(define-class <interface:IGuardtwotopon> (<interface>))
+
+(define-class <IGuardtwotopon.in> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (e :accessor .e :init-value #f :init-keyword :e)
+  (t :accessor .t :init-value #f :init-keyword :t))
+(define-class <IGuardtwotopon.out> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (a :accessor .a :init-value #f :init-keyword :a))
+(define-class <IGuardtwotopon> (<interface>))
+
+(define-method (initialize (o <IGuardtwotopon>) args)
+  (set! (.in o) (make <IGuardtwotopon.in>))
+  (set! (.out o) (make <IGuardtwotopon.out>))
+  (next-method))

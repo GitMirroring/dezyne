@@ -21,31 +21,45 @@
 ;;; 
 ;;; Code:
 
+
 (define-class <Alarm> (<component>)
+  (handling? :accessor .handling? :init-value #f :init-keyword :handling?)
+  (flushes? :accessor .flushes? :init-value #f :init-keyword :flushes?)
+  (deferred? :accessor .deferred? :init-value #f :init-keyword :deferred?)
+  (q :accessor .q :init-form (make-q) :init-keyword :q)
   (state :accessor .state :init-value '(States Disarmed))
   (sounding :accessor .sounding :init-value #f)
-  (console :accessor .console :init-form (make <interface:IConsole>))
-  (sensor :accessor .sensor :init-form (make <interface:ISensor>))
-  (siren :accessor .siren :init-form (make <interface:ISiren>)))
+  (console :accessor .console :init-value #f)
+  (sensor :accessor .sensor :init-value #f)
+  (siren :accessor .siren :init-value #f))
 
 (define-method (initialize (o <Alarm>) args)
   (next-method)
+  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))
   (set! (.console o)
-    (make <interface:IConsole>
-      :in `((arm . ,(lambda () (console-arm o)))
-            (disarm . ,(lambda () (console-disarm o))))))
+    (make <IConsole>
+       :in (make <IConsole.in>
+              :name 'console
+              :self o
+              :arm (lambda (. args) (call-in o (lambda () (console-arm o)) `(,(.console o) arm))) 
+              :disarm (lambda (. args) (call-in o (lambda () (console-disarm o)) `(,(.console o) disarm))) )))
   (set! (.sensor o)
-    (make <interface:ISensor>
-      :out `((triggered . ,(lambda () (sensor-triggered o)))
-            (disabled . ,(lambda () (sensor-disabled o))))))
+     (make <ISensor>
+       :out (make <ISensor.out>
+              :name 'sensor
+              :self o
+              :triggered (lambda (. args) (call-out o (lambda () (sensor-triggered o)) `(,(.sensor o) triggered))) 
+              :disabled (lambda (. args) (call-out o (lambda () (sensor-disabled o)) `(,(.sensor o) disabled))) )))
   (set! (.siren o)
-    (make <interface:ISiren>)))
+     (make <ISiren>
+       :out (make <ISiren.out>
+              :name 'siren
+              :self o))))
 
 (define-method (console-arm (o <Alarm>))
-  (stderr "Alarm.console.arm\n")
     (cond 
     ((equal? (.state o) '(States Disarmed))
-      (action o .sensor .in 'enable)
+      (action o .sensor .in .enable)
       (set! (.state o) '(States Armed)))
     ((equal? (.state o) '(States Armed))
       (illegal))
@@ -55,29 +69,27 @@
       (illegal))))
 
 (define-method (console-disarm (o <Alarm>))
-  (stderr "Alarm.console.disarm\n")
     (cond 
     ((equal? (.state o) '(States Disarmed))
       (illegal))
     ((equal? (.state o) '(States Armed))
-      (action o .sensor .in 'disable)
+      (action o .sensor .in .disable)
       (set! (.state o) '(States Disarming)))
     ((equal? (.state o) '(States Disarming))
       (illegal))
     ((equal? (.state o) '(States Triggered))
-      (action o .sensor .in 'disable)
-      (action o .siren .in 'turnoff)
+      (action o .sensor .in .disable)
+      (action o .siren .in .turnoff)
       (set! (.sounding o) #f)
       (set! (.state o) '(States Disarming)))))
 
 (define-method (sensor-triggered (o <Alarm>))
-  (stderr "Alarm.sensor.triggered\n")
     (cond 
     ((equal? (.state o) '(States Disarmed))
       (illegal))
     ((equal? (.state o) '(States Armed))
-      (action o .console .out 'detected)
-      (action o .siren .in 'turnon)
+      (action o .console .out .detected)
+      (action o .siren .in .turnon)
       (set! (.sounding o) #t)
       (set! (.state o) '(States Triggered)))
     ((equal? (.state o) '(States Disarming))
@@ -86,19 +98,18 @@
       (illegal))))
 
 (define-method (sensor-disabled (o <Alarm>))
-  (stderr "Alarm.sensor.disabled\n")
     (cond 
     ((equal? (.state o) '(States Disarmed))
       (illegal))
     ((equal? (.state o) '(States Armed))
       (illegal))
     ((and (equal? (.state o) '(States Disarming)) (.sounding o))
-      (action o .console .out 'deactivated)
-      (action o .siren .in 'turnoff)
+      (action o .console .out .deactivated)
+      (action o .siren .in .turnoff)
       (set! (.state o) '(States Disarmed))
       (set! (.sounding o) #f))
     ((and (equal? (.state o) '(States Disarming)) (not (.sounding o)))
-      (action o .console .out 'deactivated)
+      (action o .console .out .deactivated)
       (set! (.state o) '(States Disarmed)))
     ((equal? (.state o) '(States Triggered))
       (illegal))))

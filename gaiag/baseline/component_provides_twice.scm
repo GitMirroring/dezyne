@@ -20,17 +20,25 @@
 ;;; 
 ;;; Code:
 
+
 (define-class <component_provides_twice> (<component>)
-  (i :accessor .i :init-form (make <interface:iprovides_once>)))
+  (handling? :accessor .handling? :init-value #f :init-keyword :handling?)
+  (flushes? :accessor .flushes? :init-value #f :init-keyword :flushes?)
+  (deferred? :accessor .deferred? :init-value #f :init-keyword :deferred?)
+  (q :accessor .q :init-form (make-q) :init-keyword :q)
+  (i :accessor .i :init-value #f))
 
 (define-method (initialize (o <component_provides_twice>) args)
   (next-method)
+  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))
   (set! (.i o)
-    (make <interface:iprovides_once>
-      :in `((foo . ,(lambda () (i-foo o)))))))
+    (make <iprovides_once>
+       :in (make <iprovides_once.in>
+              :name 'i
+              :self o
+              :foo (lambda (. args) (call-in o (lambda () (i-foo o)) `(,(.i o) foo))) ))))
 
 (define-method (i-foo (o <component_provides_twice>))
-  (stderr "component_provides_twice.i.foo\n")
     (illegal))
 
 

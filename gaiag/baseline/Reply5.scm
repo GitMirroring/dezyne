@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,27 +21,38 @@
 ;;; 
 ;;; Code:
 
+
 (define-class <Reply5> (<component>)
+  (handling? :accessor .handling? :init-value #f :init-keyword :handling?)
+  (flushes? :accessor .flushes? :init-value #f :init-keyword :flushes?)
+  (deferred? :accessor .deferred? :init-value #f :init-keyword :deferred?)
+  (q :accessor .q :init-form (make-q) :init-keyword :q)
   (dummy :accessor .dummy :init-value #f)
   (reply-I-Status :accessor .reply-I-Status :init-value #f)
   (reply-U-Status :accessor .reply-U-Status :init-value #f)
-  (i :accessor .i :init-form (make <interface:I>))
-  (u :accessor .u :init-form (make <interface:U>)))
+  (i :accessor .i :init-value #f)
+  (u :accessor .u :init-value #f))
 
 (define-method (initialize (o <Reply5>) args)
   (next-method)
+  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))
   (set! (.i o)
-    (make <interface:I>
-      :in `((done . ,(lambda () (i-done o))))))
+    (make <I>
+       :in (make <I.in>
+              :name 'i
+              :self o
+              :done (lambda (. args) (call-in o (lambda () (i-done o)) `(,(.i o) done))) )))
   (set! (.u o)
-    (make <interface:U>)))
+     (make <U>
+       :out (make <U.out>
+              :name 'u
+              :self o))))
 
 (define-method (i-done (o <Reply5>))
-  (stderr "Reply5.i.done\n")
     (cond 
     (#t
-      (let ((s (action o .u .in 'what))) 
-      (set! s (action o .u .in 'what))
+      (let ((s (action o .u .in .what))) 
+      (set! s (action o .u .in .what))
       (cond ((equal? s '(Status Ok)) 
         (let ((s (fun o))) 
         (set! (.reply-I-Status o) s)))

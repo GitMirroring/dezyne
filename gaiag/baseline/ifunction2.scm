@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,4 +21,20 @@
 ;;; 
 ;;; Code:
 
-(define-class <interface:ifunction2> (<interface>))
+
+(define-class <ifunction2.in> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (a :accessor .a :init-value #f :init-keyword :a)
+  (b :accessor .b :init-value #f :init-keyword :b))
+(define-class <ifunction2.out> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (c :accessor .c :init-value #f :init-keyword :c)
+  (d :accessor .d :init-value #f :init-keyword :d))
+(define-class <ifunction2> (<interface>))
+
+(define-method (initialize (o <ifunction2>) args)
+  (set! (.in o) (make <ifunction2.in>))
+  (set! (.out o) (make <ifunction2.out>))
+  (next-method))

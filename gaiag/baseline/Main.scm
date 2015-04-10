@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -22,14 +23,20 @@
 ;;; Code:
 
 (define-class <Main> (<system>)
-  (adaptor :accessor .adaptor :init-form (make <Adaptor>))
-  (choice :accessor .choice :init-form (make <ChoiceSystem>))
+  (adaptor :accessor .adaptor :init-value #f)
+  (choice :accessor .choice :init-value #f)
   (runner :accessor .runner :init-value #f :init-keyword :runner))
 
 (define-method (initialize (o <Main>) args)
   (next-method)
+  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))
   (let-keywords
-   args #f ((out-runner #f))
+   args #f ((runtime #f)
+            (name (symbol))
+            (parent #f)
+            (runner.out (make <IRun.out>)))
+  (set! (.adaptor o) (make <Adaptor> :runtime (.runtime o) :parent o :name 'adaptor))
+  (set! (.choice o) (make <ChoiceSystem> :runtime (.runtime o) :parent o :name 'choice))
   (set! (.runner o) (.runner (.adaptor o)))
-  (set! (.out (.runner o)) out-runner))
+  (set! (.out (.runner o)) runner.out))
   (connect-ports (.c (.choice o)) (.choice (.adaptor o))))

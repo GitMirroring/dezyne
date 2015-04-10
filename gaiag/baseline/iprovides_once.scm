@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,4 +21,18 @@
 ;;; 
 ;;; Code:
 
-(define-class <interface:iprovides_once> (<interface>))
+
+(define-class <iprovides_once.in> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (foo :accessor .foo :init-value #f :init-keyword :foo))
+(define-class <iprovides_once.out> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (bar :accessor .bar :init-value #f :init-keyword :bar))
+(define-class <iprovides_once> (<interface>))
+
+(define-method (initialize (o <iprovides_once>) args)
+  (set! (.in o) (make <iprovides_once.in>))
+  (set! (.out o) (make <iprovides_once.out>))
+  (next-method))

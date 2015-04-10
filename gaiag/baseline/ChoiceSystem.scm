@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -22,12 +23,17 @@
 ;;; Code:
 
 (define-class <ChoiceSystem> (<system>)
-  (choice :accessor .choice :init-form (make <Choice>))
+  (choice :accessor .choice :init-value #f)
   (c :accessor .c :init-value #f :init-keyword :c))
 
 (define-method (initialize (o <ChoiceSystem>) args)
   (next-method)
+  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))
   (let-keywords
-   args #f ((out-c #f))
+   args #f ((runtime #f)
+            (name (symbol))
+            (parent #f)
+            (c.out (make <IChoice.out>)))
+  (set! (.choice o) (make <Choice> :runtime (.runtime o) :parent o :name 'choice))
   (set! (.c o) (.c (.choice o)))
-  (set! (.out (.c o)) out-c)))
+  (set! (.out (.c o)) c.out)))

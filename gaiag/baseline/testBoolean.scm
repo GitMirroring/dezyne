@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,18 +21,26 @@
 ;;; 
 ;;; Code:
 
+
 (define-class <testBoolean> (<component>)
+  (handling? :accessor .handling? :init-value #f :init-keyword :handling?)
+  (flushes? :accessor .flushes? :init-value #f :init-keyword :flushes?)
+  (deferred? :accessor .deferred? :init-value #f :init-keyword :deferred?)
+  (q :accessor .q :init-form (make-q) :init-keyword :q)
   (b :accessor .b :init-value #f)
-  (i :accessor .i :init-form (make <interface:TestBool>)))
+  (i :accessor .i :init-value #f))
 
 (define-method (initialize (o <testBoolean>) args)
   (next-method)
+  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))
   (set! (.i o)
-    (make <interface:TestBool>
-      :in `((evt . ,(lambda () (i-evt o)))))))
+    (make <TestBool>
+       :in (make <TestBool.in>
+              :name 'i
+              :self o
+              :evt (lambda (. args) (call-in o (lambda () (i-evt o)) `(,(.i o) evt))) ))))
 
 (define-method (i-evt (o <testBoolean>))
-  (stderr "testBoolean.i.evt\n")
     (cond 
     (#t
       #t)))

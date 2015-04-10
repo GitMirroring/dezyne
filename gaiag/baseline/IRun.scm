@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,4 +22,17 @@
 ;;; 
 ;;; Code:
 
-(define-class <interface:IRun> (<interface>))
+
+(define-class <IRun.in> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (run :accessor .run :init-value #f :init-keyword :run))
+(define-class <IRun.out> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self))
+(define-class <IRun> (<interface>))
+
+(define-method (initialize (o <IRun>) args)
+  (set! (.in o) (make <IRun.in>))
+  (set! (.out o) (make <IRun.out>))
+  (next-method))

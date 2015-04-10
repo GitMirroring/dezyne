@@ -20,4 +20,19 @@
 ;;; 
 ;;; Code:
 
-(define-class <interface:ITwotopon> (<interface>))
+
+(define-class <ITwotopon.in> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (e :accessor .e :init-value #f :init-keyword :e)
+  (t :accessor .t :init-value #f :init-keyword :t))
+(define-class <ITwotopon.out> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (a :accessor .a :init-value #f :init-keyword :a))
+(define-class <ITwotopon> (<interface>))
+
+(define-method (initialize (o <ITwotopon>) args)
+  (set! (.in o) (make <ITwotopon.in>))
+  (set! (.out o) (make <ITwotopon.out>))
+  (next-method))

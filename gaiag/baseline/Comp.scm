@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,30 +21,41 @@
 ;;; 
 ;;; Code:
 
+
 (define-class <Comp> (<component>)
+  (handling? :accessor .handling? :init-value #f :init-keyword :handling?)
+  (flushes? :accessor .flushes? :init-value #f :init-keyword :flushes?)
+  (deferred? :accessor .deferred? :init-value #f :init-keyword :deferred?)
+  (q :accessor .q :init-form (make-q) :init-keyword :q)
   (s :accessor .s :init-value '(State Uninitialized))
   (reply-IComp-result_t :accessor .reply-IComp-result_t :init-value #f)
   (reply-IDevice-result_t :accessor .reply-IDevice-result_t :init-value #f)
-  (client :accessor .client :init-form (make <interface:IComp>))
-  (device_A :accessor .device_A :init-form (make <interface:IDevice>)))
+  (client :accessor .client :init-value #f)
+  (device_A :accessor .device_A :init-value #f))
 
 (define-method (initialize (o <Comp>) args)
   (next-method)
+  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))
   (set! (.client o)
-    (make <interface:IComp>
-      :in `((initialize . ,(lambda () (client-initialize o)))
-            (recover . ,(lambda () (client-recover o)))
-            (perform_actions . ,(lambda () (client-perform_actions o))))))
+    (make <IComp>
+       :in (make <IComp.in>
+              :name 'client
+              :self o
+              :initialize (lambda (. args) (call-in o (lambda () (client-initialize o)) `(,(.client o) initialize))) 
+              :recover (lambda (. args) (call-in o (lambda () (client-recover o)) `(,(.client o) recover))) 
+              :perform_actions (lambda (. args) (call-in o (lambda () (client-perform_actions o)) `(,(.client o) perform_actions))) )))
   (set! (.device_A o)
-    (make <interface:IDevice>)))
+     (make <IDevice>
+       :out (make <IDevice.out>
+              :name 'device_A
+              :self o))))
 
 (define-method (client-initialize (o <Comp>))
-  (stderr "Comp.client.initialize\n")
     (cond 
     ((equal? (.s o) '(State Uninitialized))
-      (let ((res (action o .device_A .in 'initialize))) 
+      (let ((res (action o .device_A .in .initialize))) 
       (cond ((equal? res '(result_t OK)) 
-        (set! res (action o .device_A .in 'calibrate))))
+        (set! res (action o .device_A .in .calibrate))))
       (cond ((equal? res '(result_t OK)) 
         (set! (.s o) '(State Initialized))
         (set! (.reply-IDevice-result_t o) '(result_t OK)))
@@ -58,14 +69,13 @@
     (.reply-IComp-result_t o))
 
 (define-method (client-recover (o <Comp>))
-  (stderr "Comp.client.recover\n")
     (cond 
     ((equal? (.s o) '(State Uninitialized))
       (illegal))
     ((equal? (.s o) '(State Initialized))
       (illegal))
     ((equal? (.s o) '(State Error))
-      (let ((res (action o .device_A .in 'calibrate))) 
+      (let ((res (action o .device_A .in .calibrate))) 
       (cond ((equal? res '(result_t OK)) 
         (set! (.s o) '(State Initialized))
         (set! (.reply-IDevice-result_t o) '(result_t OK)))
@@ -75,14 +85,13 @@
     (.reply-IComp-result_t o))
 
 (define-method (client-perform_actions (o <Comp>))
-  (stderr "Comp.client.perform_actions\n")
     (cond 
     ((equal? (.s o) '(State Uninitialized))
       (illegal))
     ((equal? (.s o) '(State Initialized))
-      (let ((res (action o .device_A .in 'perform_action1))) 
+      (let ((res (action o .device_A .in .perform_action1))) 
       (cond ((equal? res '(result_t OK)) 
-        (set! res (action o .device_A .in 'perform_action2))))
+        (set! res (action o .device_A .in .perform_action2))))
       (cond ((equal? res '(result_t OK)) 
         (set! (.s o) '(State Initialized))
         (set! (.reply-IDevice-result_t o) '(result_t OK)))

@@ -20,30 +20,37 @@
 ;;; 
 ;;; Code:
 
+
 (define-class <Topon> (<component>)
+  (handling? :accessor .handling? :init-value #f :init-keyword :handling?)
+  (flushes? :accessor .flushes? :init-value #f :init-keyword :flushes?)
+  (deferred? :accessor .deferred? :init-value #f :init-keyword :deferred?)
+  (q :accessor .q :init-form (make-q) :init-keyword :q)
   (b :accessor .b :init-value #f)
   (c :accessor .c :init-value #f)
-  (i :accessor .i :init-form (make <interface:ITopon>)))
+  (i :accessor .i :init-value #f))
 
 (define-method (initialize (o <Topon>) args)
   (next-method)
+  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))
   (set! (.i o)
-    (make <interface:ITopon>
-      :in `((e . ,(lambda () (i-e o)))
-            (t . ,(lambda () (i-t o)))))))
+    (make <ITopon>
+       :in (make <ITopon.in>
+              :name 'i
+              :self o
+              :e (lambda (. args) (call-in o (lambda () (i-e o)) `(,(.i o) e))) 
+              :t (lambda (. args) (call-in o (lambda () (i-t o)) `(,(.i o) t))) ))))
 
 (define-method (i-e (o <Topon>))
-  (stderr "Topon.i.e\n")
     (cond 
     ((and (.b o) (not (.c o)))
-      (action o .i .out 'a))
+      (action o .i .out .a))
     ((and (not (.b o)) (not (.c o)))
-      (action o .i .out 'a))
+      (action o .i .out .a))
     ((and (not (.c o)) (not (.b o)))
-      (action o .i .out 'a))))
+      (action o .i .out .a))))
 
 (define-method (i-t (o <Topon>))
-  (stderr "Topon.i.t\n")
-    (action o .i .out 'a))
+    (action o .i .out .a))
 
 

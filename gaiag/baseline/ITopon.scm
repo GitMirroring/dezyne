@@ -20,4 +20,19 @@
 ;;; 
 ;;; Code:
 
-(define-class <interface:ITopon> (<interface>))
+
+(define-class <ITopon.in> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (e :accessor .e :init-value #f :init-keyword :e)
+  (t :accessor .t :init-value #f :init-keyword :t))
+(define-class <ITopon.out> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (a :accessor .a :init-value #f :init-keyword :a))
+(define-class <ITopon> (<interface>))
+
+(define-method (initialize (o <ITopon>) args)
+  (set! (.in o) (make <ITopon.in>))
+  (set! (.out o) (make <ITopon.out>))
+  (next-method))

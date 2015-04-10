@@ -20,4 +20,18 @@
 ;;; 
 ;;; Code:
 
-(define-class <interface:Bottom> (<interface>))
+
+(define-class <Bottom.in> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (e :accessor .e :init-value #f :init-keyword :e))
+(define-class <Bottom.out> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (f :accessor .f :init-value #f :init-keyword :f))
+(define-class <Bottom> (<interface>))
+
+(define-method (initialize (o <Bottom>) args)
+  (set! (.in o) (make <Bottom.in>))
+  (set! (.out o) (make <Bottom.out>))
+  (next-method))

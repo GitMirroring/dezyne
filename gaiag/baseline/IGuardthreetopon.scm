@@ -20,4 +20,20 @@
 ;;; 
 ;;; Code:
 
-(define-class <interface:IGuardthreetopon> (<interface>))
+
+(define-class <IGuardthreetopon.in> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (e :accessor .e :init-value #f :init-keyword :e)
+  (t :accessor .t :init-value #f :init-keyword :t)
+  (s :accessor .s :init-value #f :init-keyword :s))
+(define-class <IGuardthreetopon.out> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (a :accessor .a :init-value #f :init-keyword :a))
+(define-class <IGuardthreetopon> (<interface>))
+
+(define-method (initialize (o <IGuardthreetopon>) args)
+  (set! (.in o) (make <IGuardthreetopon.in>))
+  (set! (.out o) (make <IGuardthreetopon.out>))
+  (next-method))

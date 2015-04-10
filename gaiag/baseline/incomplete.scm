@@ -21,25 +21,35 @@
 ;;; 
 ;;; Code:
 
+
 (define-class <incomplete> (<component>)
-  (p :accessor .p :init-form (make <interface:iincomplete>))
-  (r :accessor .r :init-form (make <interface:iincomplete>)))
+  (handling? :accessor .handling? :init-value #f :init-keyword :handling?)
+  (flushes? :accessor .flushes? :init-value #f :init-keyword :flushes?)
+  (deferred? :accessor .deferred? :init-value #f :init-keyword :deferred?)
+  (q :accessor .q :init-form (make-q) :init-keyword :q)
+  (p :accessor .p :init-value #f)
+  (r :accessor .r :init-value #f))
 
 (define-method (initialize (o <incomplete>) args)
   (next-method)
+  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))
   (set! (.p o)
-    (make <interface:iincomplete>
-      :in `((e . ,(lambda () (p-e o))))))
+    (make <iincomplete>
+       :in (make <iincomplete.in>
+              :name 'p
+              :self o
+              :e (lambda (. args) (call-in o (lambda () (p-e o)) `(,(.p o) e))) )))
   (set! (.r o)
-    (make <interface:iincomplete>
-      :out `((a . ,(lambda () (r-a o)))))))
+     (make <iincomplete>
+       :out (make <iincomplete.out>
+              :name 'r
+              :self o
+              :a (lambda (. args) (call-out o (lambda () (r-a o)) `(,(.r o) a))) ))))
 
 (define-method (p-e (o <incomplete>))
-  (stderr "incomplete.p.e\n")
     #t)
 
 (define-method (r-a (o <incomplete>))
-  (stderr "incomplete.r.a\n")
     #t)
 
 

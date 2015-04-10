@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,25 +21,32 @@
 ;;; 
 ;;; Code:
 
+
 (define-class <enum_collision> (<component>)
+  (handling? :accessor .handling? :init-value #f :init-keyword :handling?)
+  (flushes? :accessor .flushes? :init-value #f :init-keyword :flushes?)
+  (deferred? :accessor .deferred? :init-value #f :init-keyword :deferred?)
+  (q :accessor .q :init-form (make-q) :init-keyword :q)
   (reply-ienum_collision-Retval1 :accessor .reply-ienum_collision-Retval1 :init-value #f)
   (reply-ienum_collision-Retval2 :accessor .reply-ienum_collision-Retval2 :init-value #f)
-  (i :accessor .i :init-form (make <interface:ienum_collision>)))
+  (i :accessor .i :init-value #f))
 
 (define-method (initialize (o <enum_collision>) args)
   (next-method)
+  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))
   (set! (.i o)
-    (make <interface:ienum_collision>
-      :in `((foo . ,(lambda () (i-foo o)))
-            (bar . ,(lambda () (i-bar o)))))))
+    (make <ienum_collision>
+       :in (make <ienum_collision.in>
+              :name 'i
+              :self o
+              :foo (lambda (. args) (call-in o (lambda () (i-foo o)) `(,(.i o) foo))) 
+              :bar (lambda (. args) (call-in o (lambda () (i-bar o)) `(,(.i o) bar))) ))))
 
 (define-method (i-foo (o <enum_collision>))
-  (stderr "enum_collision.i.foo\n")
     (set! (.reply-ienum_collision-Retval1 o) '(Retval1 OK))
     (.reply-ienum_collision-Retval1 o))
 
 (define-method (i-bar (o <enum_collision>))
-  (stderr "enum_collision.i.bar\n")
     (set! (.reply-ienum_collision-Retval2 o) '(Retval2 NOK))
     (.reply-ienum_collision-Retval2 o))
 

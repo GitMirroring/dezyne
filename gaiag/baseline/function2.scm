@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,37 +21,44 @@
 ;;; 
 ;;; Code:
 
+
 (define-class <function2> (<component>)
+  (handling? :accessor .handling? :init-value #f :init-keyword :handling?)
+  (flushes? :accessor .flushes? :init-value #f :init-keyword :flushes?)
+  (deferred? :accessor .deferred? :init-value #f :init-keyword :deferred?)
+  (q :accessor .q :init-form (make-q) :init-keyword :q)
   (f :accessor .f :init-value #f)
-  (i :accessor .i :init-form (make <interface:ifunction2>)))
+  (i :accessor .i :init-value #f))
 
 (define-method (initialize (o <function2>) args)
   (next-method)
+  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))
   (set! (.i o)
-    (make <interface:ifunction2>
-      :in `((a . ,(lambda () (i-a o)))
-            (b . ,(lambda () (i-b o)))))))
+    (make <ifunction2>
+       :in (make <ifunction2.in>
+              :name 'i
+              :self o
+              :a (lambda (. args) (call-in o (lambda () (i-a o)) `(,(.i o) a))) 
+              :b (lambda (. args) (call-in o (lambda () (i-b o)) `(,(.i o) b))) ))))
 
 (define-method (i-a (o <function2>))
-  (stderr "function2.i.a\n")
     (cond 
     (#t
       (set! (.f o) (vtoggle o)))))
 
 (define-method (i-b (o <function2>))
-  (stderr "function2.i.b\n")
     (cond 
     (#t
       (set! (.f o) (vtoggle o))
       (let ((bb (vtoggle o))) 
       (set! (.f o) bb)
-      (action o .i .out 'd)))))
+      (action o .i .out .d)))))
 
 (define-method (vtoggle (o <function2>) )
   (call/cc
    (lambda (return) 
     (cond ((.f o) 
-      (action o .i .out 'c)))
+      (action o .i .out .c)))
     (return (not (.f o))))))
 
 

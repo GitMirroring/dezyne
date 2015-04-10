@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,4 +21,18 @@
 ;;; 
 ;;; Code:
 
-(define-class <interface:ienum_collision> (<interface>))
+
+(define-class <ienum_collision.in> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (foo :accessor .foo :init-value #f :init-keyword :foo)
+  (bar :accessor .bar :init-value #f :init-keyword :bar))
+(define-class <ienum_collision.out> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self))
+(define-class <ienum_collision> (<interface>))
+
+(define-method (initialize (o <ienum_collision>) args)
+  (set! (.in o) (make <ienum_collision.in>))
+  (set! (.out o) (make <ienum_collision.out>))
+  (next-method))

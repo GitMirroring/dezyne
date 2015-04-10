@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,25 +21,35 @@
 ;;; 
 ;;; Code:
 
+
 (define-class <complete> (<component>)
-  (p :accessor .p :init-form (make <interface:icomplete>))
-  (r :accessor .r :init-form (make <interface:icomplete>)))
+  (handling? :accessor .handling? :init-value #f :init-keyword :handling?)
+  (flushes? :accessor .flushes? :init-value #f :init-keyword :flushes?)
+  (deferred? :accessor .deferred? :init-value #f :init-keyword :deferred?)
+  (q :accessor .q :init-form (make-q) :init-keyword :q)
+  (p :accessor .p :init-value #f)
+  (r :accessor .r :init-value #f))
 
 (define-method (initialize (o <complete>) args)
   (next-method)
+  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))
   (set! (.p o)
-    (make <interface:icomplete>
-      :in `((e . ,(lambda () (p-e o))))))
+    (make <icomplete>
+       :in (make <icomplete.in>
+              :name 'p
+              :self o
+              :e (lambda (. args) (call-in o (lambda () (p-e o)) `(,(.p o) e))) )))
   (set! (.r o)
-    (make <interface:icomplete>
-      :out `((a . ,(lambda () (r-a o)))))))
+     (make <icomplete>
+       :out (make <icomplete.out>
+              :name 'r
+              :self o
+              :a (lambda (. args) (call-out o (lambda () (r-a o)) `(,(.r o) a))) ))))
 
 (define-method (p-e (o <complete>))
-  (stderr "complete.p.e\n")
-    (action o .r .in 'e))
+    (action o .r .in .e))
 
 (define-method (r-a (o <complete>))
-  (stderr "complete.r.a\n")
-    (action o .p .out 'a))
+    (action o .p .out .a))
 
 

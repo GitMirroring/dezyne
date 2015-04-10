@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,4 +21,18 @@
 ;;; 
 ;;; Code:
 
-(define-class <interface:iincomplete_with_modeling_event> (<interface>))
+
+(define-class <iincomplete_with_modeling_event.in> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (e :accessor .e :init-value #f :init-keyword :e))
+(define-class <iincomplete_with_modeling_event.out> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (a :accessor .a :init-value #f :init-keyword :a))
+(define-class <iincomplete_with_modeling_event> (<interface>))
+
+(define-method (initialize (o <iincomplete_with_modeling_event>) args)
+  (set! (.in o) (make <iincomplete_with_modeling_event.in>))
+  (set! (.out o) (make <iincomplete_with_modeling_event.out>))
+  (next-method))

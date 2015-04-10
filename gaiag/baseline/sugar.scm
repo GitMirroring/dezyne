@@ -22,25 +22,33 @@
 ;;; 
 ;;; Code:
 
+
 (define-class <sugar> (<component>)
+  (handling? :accessor .handling? :init-value #f :init-keyword :handling?)
+  (flushes? :accessor .flushes? :init-value #f :init-keyword :flushes?)
+  (deferred? :accessor .deferred? :init-value #f :init-keyword :deferred?)
+  (q :accessor .q :init-form (make-q) :init-keyword :q)
   (s :accessor .s :init-value '(Enum False))
-  (i :accessor .i :init-form (make <interface:I>)))
+  (i :accessor .i :init-value #f))
 
 (define-method (initialize (o <sugar>) args)
   (next-method)
+  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))
   (set! (.i o)
-    (make <interface:I>
-      :in `((e . ,(lambda () (i-e o)))))))
+    (make <I>
+       :in (make <I.in>
+              :name 'i
+              :self o
+              :e (lambda (. args) (call-in o (lambda () (i-e o)) `(,(.i o) e))) ))))
 
 (define-method (i-e (o <sugar>))
-  (stderr "sugar.i.e\n")
     (cond 
     ((equal? (.s o) '(Enum False))
       (cond ((equal? (.s o) '(Enum False)) 
-        (action o .i .out 'a))
+        (action o .i .out .a))
       (else 
         (let ((t '(Enum False))) 
         (cond ((equal? t '(Enum True)) 
-          (action o .i .out 'a)))))))))
+          (action o .i .out .a)))))))))
 
 

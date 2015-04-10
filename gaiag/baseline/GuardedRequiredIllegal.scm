@@ -20,36 +20,45 @@
 ;;; 
 ;;; Code:
 
+
 (define-class <GuardedRequiredIllegal> (<component>)
+  (handling? :accessor .handling? :init-value #f :init-keyword :handling?)
+  (flushes? :accessor .flushes? :init-value #f :init-keyword :flushes?)
+  (deferred? :accessor .deferred? :init-value #f :init-keyword :deferred?)
+  (q :accessor .q :init-form (make-q) :init-keyword :q)
   (c :accessor .c :init-value #f)
-  (t :accessor .t :init-form (make <interface:Top>))
-  (b :accessor .b :init-form (make <interface:Bottom>)))
+  (t :accessor .t :init-value #f)
+  (b :accessor .b :init-value #f))
 
 (define-method (initialize (o <GuardedRequiredIllegal>) args)
   (next-method)
+  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))
   (set! (.t o)
-    (make <interface:Top>
-      :in `((unguarded . ,(lambda () (t-unguarded o)))
-            (e . ,(lambda () (t-e o))))))
+    (make <Top>
+       :in (make <Top.in>
+              :name 't
+              :self o
+              :unguarded (lambda (. args) (call-in o (lambda () (t-unguarded o)) `(,(.t o) unguarded))) 
+              :e (lambda (. args) (call-in o (lambda () (t-e o)) `(,(.t o) e))) )))
   (set! (.b o)
-    (make <interface:Bottom>
-      :out `((f . ,(lambda () (b-f o)))))))
+     (make <Bottom>
+       :out (make <Bottom.out>
+              :name 'b
+              :self o
+              :f (lambda (. args) (call-out o (lambda () (b-f o)) `(,(.b o) f))) ))))
 
 (define-method (t-unguarded (o <GuardedRequiredIllegal>))
-  (stderr "GuardedRequiredIllegal.t.unguarded\n")
     #t)
 
 (define-method (t-e (o <GuardedRequiredIllegal>))
-  (stderr "GuardedRequiredIllegal.t.e\n")
     (cond 
     ((not (.c o))
       (set! (.c o) #t)
-      (action o .b .in 'e))
+      (action o .b .in .e))
     ((.c o)
       #t)))
 
 (define-method (b-f (o <GuardedRequiredIllegal>))
-  (stderr "GuardedRequiredIllegal.b.f\n")
     (cond 
     ((not (.c o))
       (illegal))

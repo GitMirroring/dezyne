@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,4 +21,18 @@
 ;;; 
 ;;; Code:
 
-(define-class <interface:Requires> (<interface>))
+
+(define-class <Requires.in> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (ping :accessor .ping :init-value #f :init-keyword :ping))
+(define-class <Requires.out> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (pong :accessor .pong :init-value #f :init-keyword :pong))
+(define-class <Requires> (<interface>))
+
+(define-method (initialize (o <Requires>) args)
+  (set! (.in o) (make <Requires.in>))
+  (set! (.out o) (make <Requires.out>))
+  (next-method))

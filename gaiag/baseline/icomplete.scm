@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,4 +21,18 @@
 ;;; 
 ;;; Code:
 
-(define-class <interface:icomplete> (<interface>))
+
+(define-class <icomplete.in> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (e :accessor .e :init-value #f :init-keyword :e))
+(define-class <icomplete.out> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (a :accessor .a :init-value #f :init-keyword :a))
+(define-class <icomplete> (<interface>))
+
+(define-method (initialize (o <icomplete>) args)
+  (set! (.in o) (make <icomplete.in>))
+  (set! (.out o) (make <icomplete.out>))
+  (next-method))

@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,33 +21,41 @@
 ;;; 
 ;;; Code:
 
+
 (define-class <expressions> (<component>)
+  (handling? :accessor .handling? :init-value #f :init-keyword :handling?)
+  (flushes? :accessor .flushes? :init-value #f :init-keyword :flushes?)
+  (deferred? :accessor .deferred? :init-value #f :init-keyword :deferred?)
+  (q :accessor .q :init-form (make-q) :init-keyword :q)
   (state :accessor .state :init-value 3)
   (c :accessor .c :init-value 0)
-  (i :accessor .i :init-form (make <interface:I>)))
+  (i :accessor .i :init-value #f))
 
 (define-method (initialize (o <expressions>) args)
   (next-method)
+  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))
   (set! (.i o)
-    (make <interface:I>
-      :in `((e . ,(lambda () (i-e o)))))))
+    (make <I>
+       :in (make <I.in>
+              :name 'i
+              :self o
+              :e (lambda (. args) (call-in o (lambda () (i-e o)) `(,(.i o) e))) ))))
 
 (define-method (i-e (o <expressions>))
-  (stderr "expressions.i.e\n")
     (cond 
     (#t
       (cond ((equal? (.state o) 0) 
         (set! (.state o) 3)
-        (action o .i .out 'a))
+        (action o .i .out .a))
       (else 
         (set! (.state o) (- (.state o) 1))
         (cond ((< (.c o) (.state o)) 
           (set! (.c o) (+ (.c o) 1)))
         (else 
           (cond ((<= (.c o) ((+ (.state o) 1))) 
-            (action o .i .out 'lo))
+            (action o .i .out .lo))
           (else 
             (cond ((> (.c o) (.state o)) 
-              (action o .i .out 'hi))))))))))))
+              (action o .i .out .hi))))))))))))
 
 

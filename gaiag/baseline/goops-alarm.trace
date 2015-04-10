@@ -1,10 +1,12 @@
-Alarm.console.arm
+<external>..arm -> .alarm.console.arm
 Sensor.enable
-Alarm.sensor.triggered
+.alarm.console.return -> <external>..return
+.sensor.sensor.triggered -> .alarm.sensor.triggered
 Console.detected
 Siren.turnon
-Alarm.console.disarm
+<external>..disarm -> .alarm.console.disarm
 Sensor.disable
 Siren.turnoff
-Alarm.sensor.disabled
+.alarm.console.return -> <external>..return
+.sensor.sensor.disabled -> .alarm.sensor.disabled
 Console.deactivated

@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,4 +21,20 @@
 ;;; 
 ;;; Code:
 
-(define-class <interface:IDevice> (<interface>))
+
+(define-class <IDevice.in> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (initialize :accessor .initialize :init-value #f :init-keyword :initialize)
+  (calibrate :accessor .calibrate :init-value #f :init-keyword :calibrate)
+  (perform_action1 :accessor .perform_action1 :init-value #f :init-keyword :perform_action1)
+  (perform_action2 :accessor .perform_action2 :init-value #f :init-keyword :perform_action2))
+(define-class <IDevice.out> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self))
+(define-class <IDevice> (<interface>))
+
+(define-method (initialize (o <IDevice>) args)
+  (set! (.in o) (make <IDevice.in>))
+  (set! (.out o) (make <IDevice.out>))
+  (next-method))

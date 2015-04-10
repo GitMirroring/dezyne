@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,4 +21,17 @@
 ;;; 
 ;;; Code:
 
-(define-class <interface:TestBool> (<interface>))
+
+(define-class <TestBool.in> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (evt :accessor .evt :init-value #f :init-keyword :evt))
+(define-class <TestBool.out> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self))
+(define-class <TestBool> (<interface>))
+
+(define-method (initialize (o <TestBool>) args)
+  (set! (.in o) (make <TestBool.in>))
+  (set! (.out o) (make <TestBool.out>))
+  (next-method))

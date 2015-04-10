@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,4 +21,20 @@
 ;;; 
 ;;; Code:
 
-(define-class <interface:ISensor> (<interface>))
+
+(define-class <ISensor.in> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (enable :accessor .enable :init-value #f :init-keyword :enable)
+  (disable :accessor .disable :init-value #f :init-keyword :disable))
+(define-class <ISensor.out> (<port-base>)
+  (name :accessor .name :init-value (symbol) :init-keyword :name)
+  (self :accessor .self :init-value #f :init-keyword :self)
+  (triggered :accessor .triggered :init-value #f :init-keyword :triggered)
+  (disabled :accessor .disabled :init-value #f :init-keyword :disabled))
+(define-class <ISensor> (<interface>))
+
+(define-method (initialize (o <ISensor>) args)
+  (set! (.in o) (make <ISensor.in>))
+  (set! (.out o) (make <ISensor.out>))
+  (next-method))

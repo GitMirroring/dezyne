@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,27 +22,35 @@
 ;;; 
 ;;; Code:
 
+
 (define-class <Choice> (<component>)
+  (handling? :accessor .handling? :init-value #f :init-keyword :handling?)
+  (flushes? :accessor .flushes? :init-value #f :init-keyword :flushes?)
+  (deferred? :accessor .deferred? :init-value #f :init-keyword :deferred?)
+  (q :accessor .q :init-form (make-q) :init-keyword :q)
   (s :accessor .s :init-value '(State Off))
-  (c :accessor .c :init-form (make <interface:IChoice>)))
+  (c :accessor .c :init-value #f))
 
 (define-method (initialize (o <Choice>) args)
   (next-method)
+  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))
   (set! (.c o)
-    (make <interface:IChoice>
-      :in `((e . ,(lambda () (c-e o)))))))
+    (make <IChoice>
+       :in (make <IChoice.in>
+              :name 'c
+              :self o
+              :e (lambda (. args) (call-in o (lambda () (c-e o)) `(,(.c o) e))) ))))
 
 (define-method (c-e (o <Choice>))
-  (stderr "Choice.c.e\n")
     (cond 
     ((equal? (.s o) '(State Off))
       (set! (.s o) '(State Idle))
-      (action o .c .out 'a))
+      (action o .c .out .a))
     ((equal? (.s o) '(State Idle))
       (set! (.s o) '(State Busy))
-      (action o .c .out 'a))
+      (action o .c .out .a))
     ((equal? (.s o) '(State Busy))
       (set! (.s o) '(State Idle))
-      (action o .c .out 'a))))
+      (action o .c .out .a))))
 
 
