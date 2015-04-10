@@ -38,18 +38,18 @@
        :in (make <iincomplete_with_modeling_event.in>
               :name 'p
               :self o
-              :e (lambda (. args) (call-in o (lambda () (p-e o)) `(,(.p o) e))) )))
+              :e (lambda (. args) (call-in o (lambda () (apply p-e (cons o args))) `(,(.p o) e))) )))
   (set! (.r o)
      (make <iincomplete_with_modeling_event>
        :out (make <iincomplete_with_modeling_event.out>
               :name 'r
               :self o
-              :a (lambda (. args) (call-out o (lambda () (r-a o)) `(,(.r o) a))) ))))
+              :a (lambda (. args) (call-out o (lambda () (apply r-a (cons o args))) `(,(.r o) a))) ))))
 
-(define-method (p-e (o <incomplete_with_modeling_event>))
+(define-method (p-e (o <incomplete_with_modeling_event>) )
     #t)
 
-(define-method (r-a (o <incomplete_with_modeling_event>))
+(define-method (r-a (o <incomplete_with_modeling_event>) )
     (action o .p .out .a))
 
 

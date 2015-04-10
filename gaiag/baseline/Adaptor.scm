@@ -41,15 +41,15 @@
        :in (make <IRun.in>
               :name 'runner
               :self o
-              :run (lambda (. args) (call-in o (lambda () (runner-run o)) `(,(.runner o) run))) )))
+              :run (lambda (. args) (call-in o (lambda () (apply runner-run (cons o args))) `(,(.runner o) run))) )))
   (set! (.choice o)
      (make <IChoice>
        :out (make <IChoice.out>
               :name 'choice
               :self o
-              :a (lambda (. args) (call-out o (lambda () (choice-a o)) `(,(.choice o) a))) ))))
+              :a (lambda (. args) (call-out o (lambda () (apply choice-a (cons o args))) `(,(.choice o) a))) ))))
 
-(define-method (runner-run (o <Adaptor>))
+(define-method (runner-run (o <Adaptor>) )
     (cond 
     ((and (equal? (.state o) '(State Idle)) (< (.count o) 2))
       (action o .choice .in .e)
@@ -61,7 +61,7 @@
     ((equal? (.state o) '(State Terminating))
       #t)))
 
-(define-method (choice-a (o <Adaptor>))
+(define-method (choice-a (o <Adaptor>) )
     (cond 
     ((equal? (.state o) '(State Idle))
       #t)

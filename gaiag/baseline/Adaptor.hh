@@ -27,7 +27,7 @@
 #define DEZYNE_ADAPTOR_HH
 
 #include "IRun.hh"
-#include "IConsole.hh"
+#include "IChoice.hh"
 
 
 #include "runtime.hh"
@@ -52,7 +52,7 @@ namespace dezyne
     Adaptor::State::type state;
     Adaptor::Twice count;
     IRun runner;
-    IConsole console;
+    IChoice choice;
 
     Adaptor(const locator&);
     void check_bindings() const;
@@ -60,8 +60,7 @@ namespace dezyne
 
     private:
     void runner_run();
-    void console_detected();
-    void console_deactivated();
+    void choice_a();
   };
 }
 #endif // DEZYNE_ADAPTOR_HH

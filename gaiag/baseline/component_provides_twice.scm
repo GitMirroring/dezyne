@@ -36,9 +36,9 @@
        :in (make <iprovides_once.in>
               :name 'i
               :self o
-              :foo (lambda (. args) (call-in o (lambda () (i-foo o)) `(,(.i o) foo))) ))))
+              :foo (lambda (. args) (call-in o (lambda () (apply i-foo (cons o args))) `(,(.i o) foo))) ))))
 
-(define-method (i-foo (o <component_provides_twice>))
+(define-method (i-foo (o <component_provides_twice>) )
     (illegal))
 
 

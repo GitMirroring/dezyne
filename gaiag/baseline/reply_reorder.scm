@@ -39,18 +39,18 @@
        :in (make <Provides.in>
               :name 'p
               :self o
-              :start (lambda (. args) (call-in o (lambda () (p-start o)) `(,(.p o) start))) )))
+              :start (lambda (. args) (call-in o (lambda () (apply p-start (cons o args))) `(,(.p o) start))) )))
   (set! (.r o)
      (make <Requires>
        :out (make <Requires.out>
               :name 'r
               :self o
-              :pong (lambda (. args) (call-out o (lambda () (r-pong o)) `(,(.r o) pong))) ))))
+              :pong (lambda (. args) (call-out o (lambda () (apply r-pong (cons o args))) `(,(.r o) pong))) ))))
 
-(define-method (p-start (o <reply_reorder>))
+(define-method (p-start (o <reply_reorder>) )
     (action o .r .in .ping))
 
-(define-method (r-pong (o <reply_reorder>))
+(define-method (r-pong (o <reply_reorder>) )
     (cond 
     ((.first o)
       (action o .p .out .busy)

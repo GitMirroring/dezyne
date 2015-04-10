@@ -39,28 +39,28 @@
        :in (make <irequires_twice.in>
               :name 'p
               :self o
-              :e (lambda (. args) (call-in o (lambda () (p-e o)) `(,(.p o) e))) )))
+              :e (lambda (. args) (call-in o (lambda () (apply p-e (cons o args))) `(,(.p o) e))) )))
   (set! (.once o)
      (make <irequires_twice>
        :out (make <irequires_twice.out>
               :name 'once
               :self o
-              :a (lambda (. args) (call-out o (lambda () (once-a o)) `(,(.once o) a))) )))
+              :a (lambda (. args) (call-out o (lambda () (apply once-a (cons o args))) `(,(.once o) a))) )))
   (set! (.twice o)
      (make <irequires_twice>
        :out (make <irequires_twice.out>
               :name 'twice
               :self o
-              :a (lambda (. args) (call-out o (lambda () (twice-a o)) `(,(.twice o) a))) ))))
+              :a (lambda (. args) (call-out o (lambda () (apply twice-a (cons o args))) `(,(.twice o) a))) ))))
 
-(define-method (p-e (o <requires_twice>))
+(define-method (p-e (o <requires_twice>) )
     (action o .once .in .e)
     (action o .twice .in .e))
 
-(define-method (once-a (o <requires_twice>))
+(define-method (once-a (o <requires_twice>) )
     #t)
 
-(define-method (twice-a (o <requires_twice>))
+(define-method (twice-a (o <requires_twice>) )
     (action o .p .out .a))
 
 

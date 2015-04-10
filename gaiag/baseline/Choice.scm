@@ -39,9 +39,9 @@
        :in (make <IChoice.in>
               :name 'c
               :self o
-              :e (lambda (. args) (call-in o (lambda () (c-e o)) `(,(.c o) e))) ))))
+              :e (lambda (. args) (call-in o (lambda () (apply c-e (cons o args))) `(,(.c o) e))) ))))
 
-(define-method (c-e (o <Choice>))
+(define-method (c-e (o <Choice>) )
     (cond 
     ((equal? (.s o) '(State Off))
       (set! (.s o) '(State Idle))

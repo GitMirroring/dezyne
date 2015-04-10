@@ -39,21 +39,21 @@
        :in (make <IReply7.in>
               :name 'p
               :self o
-              :foo (lambda (. args) (call-in o (lambda () (p-foo o)) `(,(.p o) foo))) )))
+              :foo (lambda (. args) (call-in o (lambda () (apply p-foo (cons o args))) `(,(.p o) foo))) )))
   (set! (.r o)
      (make <IReply7>
        :out (make <IReply7.out>
               :name 'r
               :self o))))
 
-(define-method (p-foo (o <Reply7>))
+(define-method (p-foo (o <Reply7>) )
     (f o)
     (.reply-IReply7-E o))
 
 (define-method (f (o <Reply7>) )
   (call/cc
    (lambda (return) 
-    (let ((v (action o .r .in .foo))) 
-    (set! (.reply-IReply7-E o) v)))))
+    (let ((v (make <v> :v (action o .r .in .foo)))) 
+    (set! (.reply-IReply7-E o) (.v v))))))
 
 

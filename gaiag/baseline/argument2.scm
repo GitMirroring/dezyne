@@ -38,15 +38,15 @@
        :in (make <I.in>
               :name 'i
               :self o
-              :e (lambda (. args) (call-in o (lambda () (i-e o)) `(,(.i o) e))) ))))
+              :e (lambda (. args) (call-in o (lambda () (apply i-e (cons o args))) `(,(.i o) e))) ))))
 
-(define-method (i-e (o <argument2>))
+(define-method (i-e (o <argument2>) )
     (cond 
     (#t
       (set! (.b o) (not (.b o)))
-      (let ((c (g o (.b o) (.b o)))) 
-      (set! (.b o) (g o c c))
-      (cond (c 
+      (let ((c (make <v> :v (g o (.b o) (.b o))))) 
+      (set! (.b o) (g o (.v c) (.v c)))
+      (cond ((.v c) 
         (action o .i .out .f)))))))
 
 (define-method (g (o <argument2>) ga gb)

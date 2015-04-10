@@ -38,20 +38,20 @@
        :in (make <ifunction2.in>
               :name 'i
               :self o
-              :a (lambda (. args) (call-in o (lambda () (i-a o)) `(,(.i o) a))) 
-              :b (lambda (. args) (call-in o (lambda () (i-b o)) `(,(.i o) b))) ))))
+              :a (lambda (. args) (call-in o (lambda () (apply i-a (cons o args))) `(,(.i o) a))) 
+              :b (lambda (. args) (call-in o (lambda () (apply i-b (cons o args))) `(,(.i o) b))) ))))
 
-(define-method (i-a (o <function2>))
+(define-method (i-a (o <function2>) )
     (cond 
     (#t
       (set! (.f o) (vtoggle o)))))
 
-(define-method (i-b (o <function2>))
+(define-method (i-b (o <function2>) )
     (cond 
     (#t
       (set! (.f o) (vtoggle o))
-      (let ((bb (vtoggle o))) 
-      (set! (.f o) bb)
+      (let ((bb (make <v> :v (vtoggle o)))) 
+      (set! (.f o) (.v bb))
       (action o .i .out .d)))))
 
 (define-method (vtoggle (o <function2>) )

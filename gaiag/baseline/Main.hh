@@ -27,7 +27,7 @@
 #define DEZYNE_MAIN_HH
 
 #include "Adaptor.hh"
-#include "AlarmSystem.hh"
+#include "ChoiceSystem.hh"
 
 
 #include "IRun.hh"
@@ -44,7 +44,7 @@ namespace dezyne
   {
     dezyne::meta dzn_meta;
     Adaptor adaptor;
-    AlarmSystem alarm;
+    ChoiceSystem choice;
 
     IRun& runner;
 

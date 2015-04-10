@@ -41,22 +41,22 @@
        :in (make <IComp.in>
               :name 'client
               :self o
-              :initialize (lambda (. args) (call-in o (lambda () (client-initialize o)) `(,(.client o) initialize))) 
-              :recover (lambda (. args) (call-in o (lambda () (client-recover o)) `(,(.client o) recover))) 
-              :perform_actions (lambda (. args) (call-in o (lambda () (client-perform_actions o)) `(,(.client o) perform_actions))) )))
+              :initialize (lambda (. args) (call-in o (lambda () (apply client-initialize (cons o args))) `(,(.client o) initialize))) 
+              :recover (lambda (. args) (call-in o (lambda () (apply client-recover (cons o args))) `(,(.client o) recover))) 
+              :perform_actions (lambda (. args) (call-in o (lambda () (apply client-perform_actions (cons o args))) `(,(.client o) perform_actions))) )))
   (set! (.device_A o)
      (make <IDevice>
        :out (make <IDevice.out>
               :name 'device_A
               :self o))))
 
-(define-method (client-initialize (o <Comp>))
+(define-method (client-initialize (o <Comp>) )
     (cond 
     ((equal? (.s o) '(State Uninitialized))
-      (let ((res (action o .device_A .in .initialize))) 
-      (cond ((equal? res '(result_t OK)) 
-        (set! res (action o .device_A .in .calibrate))))
-      (cond ((equal? res '(result_t OK)) 
+      (let ((res (make <v> :v (action o .device_A .in .initialize)))) 
+      (cond ((equal? (.v res) '(result_t OK)) 
+        (set! (.v res) (action o .device_A .in .calibrate))))
+      (cond ((equal? (.v res) '(result_t OK)) 
         (set! (.s o) '(State Initialized))
         (set! (.reply-IDevice-result_t o) '(result_t OK)))
       (else 
@@ -68,15 +68,15 @@
       (illegal)))
     (.reply-IComp-result_t o))
 
-(define-method (client-recover (o <Comp>))
+(define-method (client-recover (o <Comp>) )
     (cond 
     ((equal? (.s o) '(State Uninitialized))
       (illegal))
     ((equal? (.s o) '(State Initialized))
       (illegal))
     ((equal? (.s o) '(State Error))
-      (let ((res (action o .device_A .in .calibrate))) 
-      (cond ((equal? res '(result_t OK)) 
+      (let ((res (make <v> :v (action o .device_A .in .calibrate)))) 
+      (cond ((equal? (.v res) '(result_t OK)) 
         (set! (.s o) '(State Initialized))
         (set! (.reply-IDevice-result_t o) '(result_t OK)))
       (else 
@@ -84,15 +84,15 @@
         (set! (.reply-IDevice-result_t o) '(result_t NOK)))))))
     (.reply-IComp-result_t o))
 
-(define-method (client-perform_actions (o <Comp>))
+(define-method (client-perform_actions (o <Comp>) )
     (cond 
     ((equal? (.s o) '(State Uninitialized))
       (illegal))
     ((equal? (.s o) '(State Initialized))
-      (let ((res (action o .device_A .in .perform_action1))) 
-      (cond ((equal? res '(result_t OK)) 
-        (set! res (action o .device_A .in .perform_action2))))
-      (cond ((equal? res '(result_t OK)) 
+      (let ((res (make <v> :v (action o .device_A .in .perform_action1)))) 
+      (cond ((equal? (.v res) '(result_t OK)) 
+        (set! (.v res) (action o .device_A .in .perform_action2))))
+      (cond ((equal? (.v res) '(result_t OK)) 
         (set! (.s o) '(State Initialized))
         (set! (.reply-IDevice-result_t o) '(result_t OK)))
       (else 

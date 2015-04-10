@@ -38,10 +38,10 @@
        :in (make <ITopon.in>
               :name 'i
               :self o
-              :e (lambda (. args) (call-in o (lambda () (i-e o)) `(,(.i o) e))) 
-              :t (lambda (. args) (call-in o (lambda () (i-t o)) `(,(.i o) t))) ))))
+              :e (lambda (. args) (call-in o (lambda () (apply i-e (cons o args))) `(,(.i o) e))) 
+              :t (lambda (. args) (call-in o (lambda () (apply i-t (cons o args))) `(,(.i o) t))) ))))
 
-(define-method (i-e (o <Topon>))
+(define-method (i-e (o <Topon>) )
     (cond 
     ((and (.b o) (not (.c o)))
       (action o .i .out .a))
@@ -50,7 +50,7 @@
     ((and (not (.c o)) (not (.b o)))
       (action o .i .out .a))))
 
-(define-method (i-t (o <Topon>))
+(define-method (i-t (o <Topon>) )
     (action o .i .out .a))
 
 

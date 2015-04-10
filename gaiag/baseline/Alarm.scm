@@ -41,22 +41,22 @@
        :in (make <IConsole.in>
               :name 'console
               :self o
-              :arm (lambda (. args) (call-in o (lambda () (console-arm o)) `(,(.console o) arm))) 
-              :disarm (lambda (. args) (call-in o (lambda () (console-disarm o)) `(,(.console o) disarm))) )))
+              :arm (lambda (. args) (call-in o (lambda () (apply console-arm (cons o args))) `(,(.console o) arm))) 
+              :disarm (lambda (. args) (call-in o (lambda () (apply console-disarm (cons o args))) `(,(.console o) disarm))) )))
   (set! (.sensor o)
      (make <ISensor>
        :out (make <ISensor.out>
               :name 'sensor
               :self o
-              :triggered (lambda (. args) (call-out o (lambda () (sensor-triggered o)) `(,(.sensor o) triggered))) 
-              :disabled (lambda (. args) (call-out o (lambda () (sensor-disabled o)) `(,(.sensor o) disabled))) )))
+              :triggered (lambda (. args) (call-out o (lambda () (apply sensor-triggered (cons o args))) `(,(.sensor o) triggered))) 
+              :disabled (lambda (. args) (call-out o (lambda () (apply sensor-disabled (cons o args))) `(,(.sensor o) disabled))) )))
   (set! (.siren o)
      (make <ISiren>
        :out (make <ISiren.out>
               :name 'siren
               :self o))))
 
-(define-method (console-arm (o <Alarm>))
+(define-method (console-arm (o <Alarm>) )
     (cond 
     ((equal? (.state o) '(States Disarmed))
       (action o .sensor .in .enable)
@@ -68,7 +68,7 @@
     ((equal? (.state o) '(States Triggered))
       (illegal))))
 
-(define-method (console-disarm (o <Alarm>))
+(define-method (console-disarm (o <Alarm>) )
     (cond 
     ((equal? (.state o) '(States Disarmed))
       (illegal))
@@ -83,7 +83,7 @@
       (set! (.sounding o) #f)
       (set! (.state o) '(States Disarming)))))
 
-(define-method (sensor-triggered (o <Alarm>))
+(define-method (sensor-triggered (o <Alarm>) )
     (cond 
     ((equal? (.state o) '(States Disarmed))
       (illegal))
@@ -97,7 +97,7 @@
     ((equal? (.state o) '(States Triggered))
       (illegal))))
 
-(define-method (sensor-disabled (o <Alarm>))
+(define-method (sensor-disabled (o <Alarm>) )
     (cond 
     ((equal? (.state o) '(States Disarmed))
       (illegal))

@@ -31,22 +31,19 @@
 namespace dezyne
 {
   Adaptor::Adaptor(const locator& dezyne_locator)
-  : dzn_meta{"","Adaptor",reinterpret_cast<const component*>(this),0,{},{[this]{runner.check_bindings();},[this]{console.check_bindings();}}}
+  : dzn_meta{"","Adaptor",reinterpret_cast<const component*>(this),0,{},{[this]{runner.check_bindings();},[this]{choice.check_bindings();}}}
   , dzn_rt(dezyne_locator.get<runtime>())
   , state(State::Idle)
   , count(0)
   , runner({{"runner",this},{"",0}})
-  , console({{"",0},{"console",this}})
+  , choice({{"",0},{"choice",this}})
   {
     dzn_rt.performs_flush(this) = true; 
     runner.in.run = [&] () {
       call_in(this, [this] {runner_run();}, std::make_tuple(&runner, "run", "return"));
     };
-    console.out.detected = [&] () {
-      call_out(this, [this] {console_detected();}, std::make_tuple(&console, "detected", "return"));
-    };
-    console.out.deactivated = [&] () {
-      call_out(this, [this] {console_deactivated();}, std::make_tuple(&console, "deactivated", "return"));
+    choice.out.a = [&] () {
+      call_out(this, [this] {choice_a();}, std::make_tuple(&choice, "a", "return"));
     };
 
   }
@@ -55,7 +52,7 @@ namespace dezyne
   {
     if (state == State::Idle and count < 2)
     {
-      console.in.arm();
+      choice.in.e();
       state = State::Active;
     }
     else if (state == State::Idle and not (count < 2))
@@ -68,44 +65,25 @@ namespace dezyne
     }
     else if (state == State::Terminating)
     {
-      {
-      }
     }
   }
 
-  void Adaptor::console_detected()
+  void Adaptor::choice_a()
   {
     if (state == State::Idle)
     {
-      assert(false);
     }
     else if (state == State::Active)
     {
       {
         count = count + 1;
-        console.in.disarm();
+        choice.in.e();
         state = State::Terminating;
       }
     }
-    else if (state == State::Terminating)
-    {
-      assert(false);
-    }
-  }
-
-  void Adaptor::console_deactivated()
-  {
-    if (state == State::Idle)
-    {
-      assert(false);
-    }
-    else if (state == State::Active)
-    {
-      assert(false);
-    }
     else if (state == State::Terminating and count < 2)
     {
-      console.in.arm();
+      choice.in.e();
       state = State::Active;
     }
     else if (state == State::Terminating and not (count < 2))

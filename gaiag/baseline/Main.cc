@@ -27,18 +27,18 @@
 namespace dezyne
 {
   Main::Main(const dezyne::locator& dezyne_locator)
-  : dzn_meta{"","Main",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&adaptor),reinterpret_cast<component*>(&alarm)},{}}
+  : dzn_meta{"","Main",reinterpret_cast<component*>(this),0,{reinterpret_cast<component*>(&adaptor),reinterpret_cast<component*>(&choice)},{}}
   , adaptor(dezyne_locator)
-  , alarm(dezyne_locator)
+  , choice(dezyne_locator)
   , runner(adaptor.runner)
   {
     adaptor.dzn_meta.parent = reinterpret_cast<component*>(this);
     adaptor.dzn_meta.address = reinterpret_cast<component*>(&adaptor);
     adaptor.dzn_meta.name = "adaptor";
-    alarm.dzn_meta.parent = reinterpret_cast<component*>(this);
-    alarm.dzn_meta.address = reinterpret_cast<component*>(&alarm);
-    alarm.dzn_meta.name = "alarm";
-    connect(alarm.console, adaptor.console);
+    choice.dzn_meta.parent = reinterpret_cast<component*>(this);
+    choice.dzn_meta.address = reinterpret_cast<component*>(&choice);
+    choice.dzn_meta.name = "choice";
+    connect(choice.c, adaptor.choice);
   }
 
   void Main::check_bindings() const

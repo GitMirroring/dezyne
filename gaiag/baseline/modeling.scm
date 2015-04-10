@@ -38,18 +38,18 @@
        :in (make <dummy.in>
               :name 'p
               :self o
-              :e (lambda (. args) (call-in o (lambda () (p-e o)) `(,(.p o) e))) )))
+              :e (lambda (. args) (call-in o (lambda () (apply p-e (cons o args))) `(,(.p o) e))) )))
   (set! (.r o)
      (make <imodeling>
        :out (make <imodeling.out>
               :name 'r
               :self o
-              :f (lambda (. args) (call-out o (lambda () (r-f o)) `(,(.r o) f))) ))))
+              :f (lambda (. args) (call-out o (lambda () (apply r-f (cons o args))) `(,(.r o) f))) ))))
 
-(define-method (p-e (o <modeling>))
+(define-method (p-e (o <modeling>) )
     (action o .r .in .e))
 
-(define-method (r-f (o <modeling>))
+(define-method (r-f (o <modeling>) )
     #t)
 
 

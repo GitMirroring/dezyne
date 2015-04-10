@@ -38,18 +38,18 @@
        :in (make <iincomplete.in>
               :name 'p
               :self o
-              :e (lambda (. args) (call-in o (lambda () (p-e o)) `(,(.p o) e))) )))
+              :e (lambda (. args) (call-in o (lambda () (apply p-e (cons o args))) `(,(.p o) e))) )))
   (set! (.r o)
      (make <iincomplete>
        :out (make <iincomplete.out>
               :name 'r
               :self o
-              :a (lambda (. args) (call-out o (lambda () (r-a o)) `(,(.r o) a))) ))))
+              :a (lambda (. args) (call-out o (lambda () (apply r-a (cons o args))) `(,(.r o) a))) ))))
 
-(define-method (p-e (o <incomplete>))
+(define-method (p-e (o <incomplete>) )
     #t)
 
-(define-method (r-a (o <incomplete>))
+(define-method (r-a (o <incomplete>) )
     #t)
 
 

@@ -38,19 +38,19 @@
        :in (make <Top.in>
               :name 't
               :self o
-              :unguarded (lambda (. args) (call-in o (lambda () (t-unguarded o)) `(,(.t o) unguarded))) 
-              :e (lambda (. args) (call-in o (lambda () (t-e o)) `(,(.t o) e))) )))
+              :unguarded (lambda (. args) (call-in o (lambda () (apply t-unguarded (cons o args))) `(,(.t o) unguarded))) 
+              :e (lambda (. args) (call-in o (lambda () (apply t-e (cons o args))) `(,(.t o) e))) )))
   (set! (.b o)
      (make <Bottom>
        :out (make <Bottom.out>
               :name 'b
               :self o
-              :f (lambda (. args) (call-out o (lambda () (b-f o)) `(,(.b o) f))) ))))
+              :f (lambda (. args) (call-out o (lambda () (apply b-f (cons o args))) `(,(.b o) f))) ))))
 
-(define-method (t-unguarded (o <GuardedRequiredIllegal>))
+(define-method (t-unguarded (o <GuardedRequiredIllegal>) )
     #t)
 
-(define-method (t-e (o <GuardedRequiredIllegal>))
+(define-method (t-e (o <GuardedRequiredIllegal>) )
     (cond 
     ((not (.c o))
       (set! (.c o) #t)
@@ -58,7 +58,7 @@
     ((.c o)
       #t)))
 
-(define-method (b-f (o <GuardedRequiredIllegal>))
+(define-method (b-f (o <GuardedRequiredIllegal>) )
     (cond 
     ((not (.c o))
       (illegal))

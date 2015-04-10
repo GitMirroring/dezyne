@@ -39,14 +39,14 @@
        :in (make <ienum_collision.in>
               :name 'i
               :self o
-              :foo (lambda (. args) (call-in o (lambda () (i-foo o)) `(,(.i o) foo))) 
-              :bar (lambda (. args) (call-in o (lambda () (i-bar o)) `(,(.i o) bar))) ))))
+              :foo (lambda (. args) (call-in o (lambda () (apply i-foo (cons o args))) `(,(.i o) foo))) 
+              :bar (lambda (. args) (call-in o (lambda () (apply i-bar (cons o args))) `(,(.i o) bar))) ))))
 
-(define-method (i-foo (o <enum_collision>))
+(define-method (i-foo (o <enum_collision>) )
     (set! (.reply-ienum_collision-Retval1 o) '(Retval1 OK))
     (.reply-ienum_collision-Retval1 o))
 
-(define-method (i-bar (o <enum_collision>))
+(define-method (i-bar (o <enum_collision>) )
     (set! (.reply-ienum_collision-Retval2 o) '(Retval2 NOK))
     (.reply-ienum_collision-Retval2 o))
 

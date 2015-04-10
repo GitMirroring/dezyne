@@ -385,7 +385,7 @@ out/%.c++: examples/regression/%.dzn
 	$(.CC_REGRESSION)
 
 c++-regression: $(CC_SOURCES:%.dzn=out/%.c++)
-c++-update: $(CC_SOURCES:%.dzn=out/%.c++.up) c++-alarm-update c++-choice-update c++-inject-update c++-dataparam-update c++-glue-update
+c++-update: $(CC_SOURCES:%.dzn=out/%.c++.up) c++-glue-update c++-alarm-update c++-choice-update c++-inject-update c++-dataparam-update
 
 out/%.wfc: examples/wfc/%.dzn
 	! ./gaiag -l wfc $<

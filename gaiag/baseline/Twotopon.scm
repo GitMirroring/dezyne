@@ -37,17 +37,17 @@
        :in (make <ITwotopon.in>
               :name 'i
               :self o
-              :e (lambda (. args) (call-in o (lambda () (i-e o)) `(,(.i o) e))) 
-              :t (lambda (. args) (call-in o (lambda () (i-t o)) `(,(.i o) t))) ))))
+              :e (lambda (. args) (call-in o (lambda () (apply i-e (cons o args))) `(,(.i o) e))) 
+              :t (lambda (. args) (call-in o (lambda () (apply i-t (cons o args))) `(,(.i o) t))) ))))
 
-(define-method (i-e (o <Twotopon>))
+(define-method (i-e (o <Twotopon>) )
     (cond 
     ((.b o)
       (action o .i .out .a))
     ((not (.b o))
       (action o .i .out .a))))
 
-(define-method (i-t (o <Twotopon>))
+(define-method (i-t (o <Twotopon>) )
     (action o .i .out .a))
 
 

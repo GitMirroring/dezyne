@@ -38,9 +38,9 @@
        :in (make <TestBool.in>
               :name 'i
               :self o
-              :evt (lambda (. args) (call-in o (lambda () (i-evt o)) `(,(.i o) evt))) ))))
+              :evt (lambda (. args) (call-in o (lambda () (apply i-evt (cons o args))) `(,(.i o) evt))) ))))
 
-(define-method (i-evt (o <testBoolean>))
+(define-method (i-evt (o <testBoolean>) )
     (cond 
     (#t
       #t)))

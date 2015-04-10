@@ -26,7 +26,7 @@
 #include "runtime.hh"
 #include "locator.hh"
 
-#include "Siren.hh"
+#include "Main.hh"
 
 #include <iostream>
 
@@ -34,17 +34,12 @@ namespace dezyne
 {
   typedef std::map<std::string, std::function<void()>> event_map;
 
-  void fill_event_map(Siren& m, event_map& e)
+
+  void fill_event_map(Main& m, event_map& e)
   {
     int dzn_i = 0;
-    if (not m.siren.in.turnon) {
-      m.siren.in.turnon = [] () {std::clog << "siren.in.turnon" << std::endl;};
-    }
-    if (e.find("siren.turnon") == e.end()) e["siren.turnon"] = m.siren.in.turnon; 
-    if (not m.siren.in.turnoff) {
-      m.siren.in.turnoff = [] () {std::clog << "siren.in.turnoff" << std::endl;};
-    }
-    if (e.find("siren.turnoff") == e.end()) e["siren.turnoff"] = m.siren.in.turnoff; 
+
+    e["runner.run"] = m.runner.in.run; 
   }
 }
 
@@ -55,15 +50,18 @@ int main()
   l.set(rt);
 
   dezyne::event_map event_map;
-  dezyne::Siren sut(l);
+  dezyne::Main sut(l);
   sut.dzn_meta.name = "sut";
 
-  dezyne::fill_event_map(sut, event_map); 
+  dezyne::fill_event_map(sut, event_map);
+
   sut.check_bindings();
   sut.dump_tree();
 
   std::string event;
   while(std::cin >> event) {
-    event_map[event]();
+    if (event_map.find(event) != event_map.end()) {
+      event_map[event]();
+    }
   }
 }

@@ -39,15 +39,15 @@
        :in (make <I.in>
               :name 'i
               :self o
-              :e (lambda (. args) (call-in o (lambda () (i-e o)) `(,(.i o) e))) ))))
+              :e (lambda (. args) (call-in o (lambda () (apply i-e (cons o args))) `(,(.i o) e))) ))))
 
-(define-method (i-e (o <sugar>))
+(define-method (i-e (o <sugar>) )
     (cond 
     ((equal? (.s o) '(Enum False))
       (cond ((equal? (.s o) '(Enum False)) 
         (action o .i .out .a))
       (else 
-        (let ((t '(Enum False))) 
+        (let ((t (make <v> :v '(Enum False)))) 
         (cond ((equal? t '(Enum True)) 
           (action o .i .out .a)))))))))
 

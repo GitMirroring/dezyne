@@ -38,9 +38,9 @@
        :in (make <I.in>
               :name 'i
               :self o
-              :a (lambda (. args) (call-in o (lambda () (i-a o)) `(,(.i o) a))) ))))
+              :a (lambda (. args) (call-in o (lambda () (apply i-a (cons o args))) `(,(.i o) a))) ))))
 
-(define-method (i-a (o <If>))
+(define-method (i-a (o <If>) )
     (cond ((.t o) 
       (action o .i .out .b))
     (else 

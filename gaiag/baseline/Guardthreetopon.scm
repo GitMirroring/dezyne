@@ -38,36 +38,36 @@
        :in (make <IGuardthreetopon.in>
               :name 'i
               :self o
-              :e (lambda (. args) (call-in o (lambda () (i-e o)) `(,(.i o) e))) 
-              :t (lambda (. args) (call-in o (lambda () (i-t o)) `(,(.i o) t))) 
-              :s (lambda (. args) (call-in o (lambda () (i-s o)) `(,(.i o) s))) )))
+              :e (lambda (. args) (call-in o (lambda () (apply i-e (cons o args))) `(,(.i o) e))) 
+              :t (lambda (. args) (call-in o (lambda () (apply i-t (cons o args))) `(,(.i o) t))) 
+              :s (lambda (. args) (call-in o (lambda () (apply i-s (cons o args))) `(,(.i o) s))) )))
   (set! (.r o)
      (make <RGuardthreetopon>
        :out (make <RGuardthreetopon.out>
               :name 'r
               :self o
-              :a (lambda (. args) (call-out o (lambda () (r-a o)) `(,(.r o) a))) ))))
+              :a (lambda (. args) (call-out o (lambda () (apply r-a (cons o args))) `(,(.r o) a))) ))))
 
-(define-method (i-e (o <Guardthreetopon>))
+(define-method (i-e (o <Guardthreetopon>) )
     (cond 
     ((and #t (.b o))
       (action o .i .out .a))
     ((and #t (not (.b o)))
-      (let ((c #t)) 
-      (cond (c 
+      (let ((c (make <v> :v #t))) 
+      (cond ((.v c) 
         (action o .i .out .a)))))))
 
-(define-method (i-t (o <Guardthreetopon>))
+(define-method (i-t (o <Guardthreetopon>) )
     (cond 
     ((.b o)
       (action o .i .out .a))
     ((not (.b o))
       (action o .i .out .a))))
 
-(define-method (i-s (o <Guardthreetopon>))
+(define-method (i-s (o <Guardthreetopon>) )
     (action o .i .out .a))
 
-(define-method (r-a (o <Guardthreetopon>))
+(define-method (r-a (o <Guardthreetopon>) )
     #t)
 
 

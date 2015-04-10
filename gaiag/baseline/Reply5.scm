@@ -41,24 +41,24 @@
        :in (make <I.in>
               :name 'i
               :self o
-              :done (lambda (. args) (call-in o (lambda () (i-done o)) `(,(.i o) done))) )))
+              :done (lambda (. args) (call-in o (lambda () (apply i-done (cons o args))) `(,(.i o) done))) )))
   (set! (.u o)
      (make <U>
        :out (make <U.out>
               :name 'u
               :self o))))
 
-(define-method (i-done (o <Reply5>))
+(define-method (i-done (o <Reply5>) )
     (cond 
     (#t
-      (let ((s (action o .u .in .what))) 
-      (set! s (action o .u .in .what))
-      (cond ((equal? s '(Status Ok)) 
-        (let ((s (fun o))) 
-        (set! (.reply-I-Status o) s)))
+      (let ((s (make <v> :v (action o .u .in .what)))) 
+      (set! (.v s) (action o .u .in .what))
+      (cond ((equal? (.v s) '(Status Ok)) 
+        (let ((s (make <v> :v (fun o)))) 
+        (set! (.reply-I-Status o) (.v s))))
       (else 
-        (let ((s (fun_arg o '(Status No)))) 
-        (set! (.reply-I-Status o) s)))))))
+        (let ((s (make <v> :v (fun_arg o '(Status No))))) 
+        (set! (.reply-I-Status o) (.v s))))))))
     (.reply-I-Status o))
 
 (define-method (fun (o <Reply5>) )
