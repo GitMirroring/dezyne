@@ -7,25 +7,25 @@ sys.path.insert (0, os.path.dirname (sys.argv[0]))
 import dezyne.#.model
 import runtime
 
-def #.model _fill_event_map (m, e):
+def #.model _fill_event_map (m):
 #(map
     (lambda (port)
     (map (define-on model port #{
     m.#port .#direction s.#event  = lambda *args: sys.stderr.write ('#port .#direction .#event \n')
 #}) (filter (negate (gom:dir-matches? port))
-       (gom:events port)))) (gom:ports model))#
-(map
+       (gom:events port)))) (gom:ports model))     return {
+#(map
     (lambda (port)
     (map (define-on model port #{
-    e['#port .#event '] = m.#port .#direction s.#event
+        '#port .#event ': m.#port .#direction s.#event ,
 #}) (filter (gom:dir-matches? port)
-       (gom:events port)))) (gom:ports model))
+       (gom:events port)))) (gom:ports model))     }
+
 def main ():
     rt = runtime.runtime ()
-    event_map = {}
     sut = dezyne.#.model  (rt, name='sut')
 
-    #.model _fill_event_map (sut, event_map)
+    event_map = #.model _fill_event_map (sut)
 
     event = sys.stdin.readline ().strip ()
     while event:
