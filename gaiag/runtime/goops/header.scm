@@ -31,6 +31,7 @@
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 optargs)
   :use-module (ice-9 rdelim)
+  :use-module (ice-9 q)
   :use-module (oop goops))
 
 (define (stderr . args)
@@ -56,24 +57,51 @@
 (define-method (action (o <component>) (port <accessor>) (dir <accessor>) (event <accessor>))
   (((compose event dir port) o)))
 
-(define (flush o) #f)
+(define-class <runtime> ()
+  (components :accessor .components :init-form (list) :init-keyword :components))
+
+(define (external? o)
+  (not (member o (.components (.runtime o)))))
+
+(define (flush o)
+  (when (not (external? o))
+    (while (not (q-empty? (.q o)))
+      (handle o (deq! (.q o))))
+    (and-let* ((t (.deferred? o)))
+              (set! (.deferred? o) #f)
+              (if (not (.handling? t))
+                  (flush t)))))
+
 (define (defer i o f)
-  (f))
+  (if (or (not i) (and (not (.flushes? i)) (not (.handling? o))))
+      (handle o f)
+      (begin
+        (set! (.deferred? i) o)
+        (enq! (.q o) f))))
+
+(define (handle o f)
+  (if (not (.handling? o))
+      (begin
+        (set! (.handling? o) #t)
+        (f)
+        (set! (.handling? o) #f)
+        (flush o))
+      (throw 'handle "component already handling an event")))
 
 (define-method (call-in (o <component>) f m)
   (apply trace-in m)
-  (let ((handle (.handling o)))
-    (set! (.handling o) #t)
+  (let ((handle (.handling? o)))
+    (set! (.handling? o) #t)
     (let ((r (f)))
       (if handle (throw 'defer "a valued event cannot be deferred"))
-      (set! (.handling o) #f)
+      (set! (.handling? o) #f)
       (flush o)
-      (trace-out (car m) (if (eq? r (if #f #f)) 'return 'TODO))
+      (trace-out (car m) (if (or #t (eq? r (if #f #f))) 'return 'TODO))
       r)))
 
 (define-method (call-out (o <component>) f m)
   (apply trace-out m)
-  (defer (.self (.in m)) o f))
+  (defer (.self (.in (car m))) o f))
 
 (define* (path o :optional (p ""))
   (let ((pp (and o (string-append (symbol->string (.name o))
@@ -85,9 +113,7 @@
      (else pp))))
 
 (define (trace-in i e)
-  ;;  (stderr "~a.~a\n" i e)
   (stderr "~a.~a -> ~a.~a\n" (path (.out i)) e (path (.in i)) e))
 
 (define (trace-out i e)
-  ;; (stderr "~a.~a\n" i e)
   (stderr "~a.~a -> ~a.~a\n" (path (.in i)) e (path (.out i)) e))

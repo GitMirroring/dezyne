@@ -1,11 +1,12 @@
 
 (define-class <#.model > (<component>)
+  (runtime :accessor .runtime :init-form (make <runtime>) :init-keyword :runtime)
   (parent :accessor .parent :init-value ##f :init-keyword :parent)
   (name :accessor .name :init-value (symbol) :init-keyword :name)
-  (handling :accessor .handling :init-value ##f :init-keyword :handling)
-  (flushes :accessor .flushes :init-value ##f :init-keyword :flushes)
-  (deferred :accessor .deferred :init-value ##f :init-keyword :deferred)
-  (queue :accessor .queue :init-value ##f :init-keyword :queue)#
+  (handling? :accessor .handling? :init-value ##f :init-keyword :handling?)
+  (flushes? :accessor .flushes? :init-value ##f :init-keyword :flushes?)
+  (deferred? :accessor .deferred? :init-value ##f :init-keyword :deferred?)
+  (q :accessor .q :init-form (make-q) :init-keyword :q)#
 (map (init-member model #{#'()
   (#name  :accessor .#name  :init-value #expression)#})
      (gom:variables model))#
@@ -16,7 +17,8 @@
        ((compose .elements .ports) model)))
 
 (define-method (initialize (o <#.model >) args)
-  (next-method)#
+  (next-method)
+  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))#
   (map
     (lambda (port)
     (append
@@ -52,7 +54,7 @@
    (lambda (port)
      (map (define-on model port #{
 (define-method (#port -#event  (o <#.model >))
-  (stderr "#.model .#port .#event \n")#statement #(if (not (eq? type 'void))
+  #statement #(if (not (eq? type 'void))
 (list "\n    (.reply-" reply-type "-" reply-name " o)")))
 
 #}) (filter (gom:dir-matches? port) (gom:events port))))
