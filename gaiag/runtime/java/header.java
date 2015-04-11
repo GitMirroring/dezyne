@@ -95,12 +95,12 @@ abstract class Interface<I extends Interface.In, O extends Interface.Out> {
     public String name;
     public Component self;
   }
-  abstract class In extends Port {
-  }
-  abstract class Out extends Port {
-  }
-  public I in;
-  public O out;
+  abstract class In extends Port {}
+  abstract class Out extends Port {}
+  protected In in;
+  protected Out out;
+  public I getIn() {return (I)in;}
+  public O getOut() {return (O)out;}
   @SuppressWarnings("rawtypes")
     public static void connect(Interface provided, Interface required) {
     provided.out = required.out;

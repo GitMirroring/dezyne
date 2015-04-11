@@ -20,17 +20,17 @@ class main {
 
   private static class EventMap extends HashMap<String, Action> {};
                         
-  private static EventMap fillEventMap(#.model  m) {
+  private static EventMap fillEventMap(final #.model  m) {
 #(map
     (lambda (port)
     (map (define-on model port #{
-    m.#port .#direction .#event  = new Action() {public void action() {System.err.println("#port .#direction .#event");}};
+    m.#port .get#(symbol-capitalize direction)().#event  = new #(action-type return-type parameter-types)() {public #return-type  action(#parameters) {System.err.println("#port .#direction .#event");#(string-if (not (eq? return-type 'void)) #{ return new (#return-type)();#})}};
 #}) (filter (negate (gom:dir-matches? port))
        (gom:events port)))) (gom:ports model))     EventMap e = new EventMap();
 #(map
     (lambda (port)
     (map (define-on model port #{
-        e.put("#port .#event ", m.#port .#direction .#event);
+        e.put("#port .#event ", new Action() {public void action() {m.#port .get#(symbol-capitalize direction)().#event .action(#((->join ", ") (map (lambda (i) i) (iota (length parameter-list)))));}});
 #}) (filter (gom:dir-matches? port)
        (gom:events port)))) (gom:ports model)) return e;
 }
