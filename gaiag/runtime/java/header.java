@@ -112,6 +112,7 @@ abstract class ComponentBase {
   public Runtime runtime;
   public SystemComponent parent;
   public String name;
+  @SuppressWarnings("unchecked")
   public ComponentBase(Runtime runtime, String name, SystemComponent parent) {this.runtime = runtime; this.parent = parent; this.name = name; runtime.components.add(this);};
 }
 
