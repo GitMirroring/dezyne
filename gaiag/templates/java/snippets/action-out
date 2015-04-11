@@ -1,1 +1,1 @@
-#port .get#(symbol-capitalize direction)().#event .action(#arguments);
+#port .#direction .#event .action(#arguments);
