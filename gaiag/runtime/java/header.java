@@ -28,12 +28,65 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+class V<T> {
+  T v;
+  public V (T v) {this.v = v;}
+}
+
 abstract class Action {
   public abstract void action();
 }
 
+abstract class Action1<P> {
+  public abstract void action(P p);
+}
+
+abstract class Action2<P0,P1> {
+  public abstract void action(P0 p0, P1 p1);
+}
+
+abstract class Action3<P0,P1,P2> {
+  public abstract void action(P0 p0, P1 p1, P2 p2);
+}
+
+abstract class Action4<P0,P1,P2,P3> {
+  public abstract void action(P0 p0, P1 p1, P2 p2, P3 p3);
+}
+
+abstract class Action5<P0,P1,P2,P3,P4> {
+  public abstract void action(P0 p0, P1 p1, P2 p2, P3 p3, P4 p4);
+}
+
+abstract class Action6<P0,P1,P2,P3,P4,P5> {
+  public abstract void action(P0 p0, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5);
+}
+
 abstract class ValuedAction<R> {
   public abstract R action();
+}
+
+abstract class ValuedAction1<R,P> {
+  public abstract R action(P p);
+}
+
+abstract class ValuedAction2<R,P0,P1> {
+  public abstract R action(P0 p0, P1 p1);
+}
+
+abstract class ValuedAction3<R,P0,P1,P2> {
+  public abstract R action(P0 p0, P1 p1, P2 p2);
+}
+
+abstract class ValuedAction4<R,P0,P1,P2,P3> {
+  public abstract R action(P0 p0, P1 p1, P2 p2, P3 p3);
+}
+
+abstract class ValuedAction5<R,P0,P1,P2,P3,P4> {
+  public abstract R action(P0 p0, P1 p1, P2 p2, P3 p3, P4 p4);
+}
+
+abstract class ValuedAction6<R,P0,P1,P2,P3,P4,P5> {
+  public abstract R action(P0 p0, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5);
 }
 
 @SuppressWarnings("unchecked")
@@ -80,7 +133,7 @@ class Meta {
   public Meta(Interface i, String e) {this.i = i; this.e = e;};
 }
 
-class Runtime {
+class Runtime<R> {
   public List<ComponentBase> components;
   {
     this.components = new ArrayList<ComponentBase> ();
@@ -119,8 +172,7 @@ class Runtime {
       flush(c);
     }
     else {
-      //throw new Exception("component already handling an event");
-      assert("component already handling an event" == "");
+      throw new RuntimeException("component already handling an event");
     }
   }
   public static void callIn(Component c, Action f, Meta m) {
@@ -132,17 +184,18 @@ class Runtime {
     flush(c);
     traceOut(m.i, "return");
   }
-  // public static R callIn(Component c, ValuedAction<R> f, Meta m) {
-  //   traceIn(m.i, m.e);
-  //   if (c.handling) {
-  //     throw new Exception("a valued event cannot be deferred");
-  //   }
-  //   c.handling = true;
-  //   f.action();
-  //   c.handling = false;
-  //   flush(c);
-  //   traceOut(m.i, "return");
-  // };
+  public static <R extends Enum<R>> R callIn(Component c, ValuedAction<R> f, Meta m) throws RuntimeException {
+    traceIn(m.i, m.e);
+    if (c.handling) {
+      throw new RuntimeException("a valued event cannot be deferred");
+    }
+    c.handling = true;
+    R r = f.action();
+    c.handling = false;
+    flush(c);
+    traceOut(m.i, r.getClass().getSimpleName() + "_" + r.name());
+    return r;
+  };
   public static void callOut(Component c, Action f, Meta m) {
     traceOut(m.i, m.e);
     defer(m.i.in.self, c, f);

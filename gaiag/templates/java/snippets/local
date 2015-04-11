@@ -1,1 +1,1 @@
-#identifier
+#identifier #(string-if (not (eq? argument 'out)) #{.v#})

@@ -33,14 +33,14 @@ class #.model  extends Component {#
 (map
    (lambda (port)
      (map (define-on model port #{#'()
-  #port .#direction .#event  = new #(action-type return-type)() {public #return-type  action() {Runtime.call#(symbol-capitalize direction)(#.model .this, new #(action-type return-type) () {public #return-type  action() {#(string-if (not (eq? return-type 'void)) #{return #})#port _#event();}}, new Meta(#.model .this.#port , "#event"));};};
+  #port .#direction .#event  = new #(action-type return-type parameter-types)() {public #return-type  action(#parameters) {#(string-if (not (eq? return-type 'void)) #{return #})Runtime.call#(symbol-capitalize direction)(#.model .this, new #(action-type return-type '()) () {public #return-type  action() {#(string-if (not (eq? return-type 'void)) #{return #})#port _#event(#arguments);}}, new Meta(#.model .this.#port , "#event"));};};
    #}) (filter (gom:dir-matches? port) (gom:events port))))
    (gom:ports model))
   };#
 (map
    (lambda (port)
      (map (define-on model port #{#'()
-  public #return-type  #port _#event () {
+  public #return-type  #port _#event (#parameters) {
   #statement #(if (not (eq? type 'void))
 (list "return reply_" reply-type "_" reply-name ";\n")) };
 #}) (filter (gom:dir-matches? port) (gom:events port))))

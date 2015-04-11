@@ -2,7 +2,7 @@
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -34,9 +34,23 @@
   :use-module (oop goops describe)
   :use-module (gaiag gom)
 
-  :export (ast-> action-type))
+  :export (ast-> action-type ->type))
 
 (define ast-> ast:code)
 
-(define (action-type type)
-  (if (eq? type 'void) "Action" (list "ValuedAction<" type ">")))
+(define (action-type type parameter-types)
+  (let ((count (length parameter-types))
+        (parameter-types
+         (map
+          (lambda (p) (if (string-prefix? "final " p) (substring p 6) p))
+          parameter-types)))
+   (list
+    (if (eq? type 'void)
+        (list "Action" (if (>0 count) (list count "<" ((->join ", ") parameter-types) ">") ""))
+        (list "ValuedAction" (if (>0 count) (list count "<" type ", " ((->join ", ") parameter-types) ">") (list  "<" type ">")))))))
+
+(define (->type type)
+  (cond
+   ((equal? type "int") "Integer")
+   ((equal? type "boolean") "Boolean")
+   (else type)))
