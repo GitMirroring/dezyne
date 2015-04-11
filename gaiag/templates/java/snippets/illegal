@@ -1,1 +1,1 @@
-assert(false);
+throw new RuntimeException("illegal");
