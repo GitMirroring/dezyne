@@ -16,8 +16,11 @@
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (language dezyne parse)
-  #:use-module (ice-9 match)
   #:use-module (ice-9 and-let-star)
+  #:use-module (ice-9 match)
+  #:use-module (ice-9 receive)
+  #:use-module (srfi srfi-1)
+
 
   #:use-module (system base lalr)
   #:use-module (language tree-il)
@@ -64,40 +67,51 @@
     )
 
    (program
-    (model-list *eoi*) : (cons 'root $1))
+    (models *eoi*) : (cons 'root $1))
 
-   (model-list
+   (models
     () : '()
-    (model-list model-spec) : (append $1 (list $2)))
+    (models model) : (append $1 (list $2)))
 
-   (model-spec
-    (import-list) : $1
+   (model
+    (imports) : $1
     (interface-spec) : $1
-    (component-spec) : $1
-    (system-spec) : $1)
+    (component-spec) : $1)
 
-   (import-list
+   (imports
     () : '(imports)
-    (import-list import-spec) : (append $1 (list $2)))
+    (imports import-spec) : (append $1 (list $2)))
 
    (interface-spec
-    (interface Identifier lbrace type-list event-list optional-behaviour rbrace) :
-    (note-location `(,$1 ,$2 ,$4 ,$5 ,$6) @1))
+    (interface Identifier lbrace types events/types rbrace)
+    : (receive (e t)
+          (partition (lambda (x) (member (car x) '(in out))) (cdr $5))
+        (note-location `(,$1 ,$2 ,(append $4 t) ,(cons 'events e)) @1))
+    (interface Identifier lbrace types events/types behaviour-spec rbrace)
+    : (receive (e t)
+          (partition (lambda (x) (member (car x) '(in out))) (cdr $5))
+        (note-location `(,$1 ,$2 ,(append $4 t) ,(cons 'events e) ,$6) @1)))
 
    (component-spec
-    (component Identifier lbrace port-list optional-behaviour rbrace) :
-    (note-location `(,$1 ,$2 ,$4 ,$5) @1))
+    (component Identifier lbrace ports rbrace)
+    : (note-location `(,$1 ,$2 ,$4) @1)
+    (component Identifier lbrace ports behaviour-spec rbrace)
+    : (note-location `(,$1 ,$2 ,$4 ,$5) @1)
+    (component Identifier lbrace ports system lbrace instances/binds rbrace rbrace)
+    : (receive (instances binds)
+          (partition (lambda (x) (eq? (car x) 'instance)) $7)
+        (note-location `(system ,$2 ,$4 (instances ,instances) (bindings ,binds)) @1)))
 
-   (system-spec
-    (system Identifier lbrace port-list system-statement-list rbrace) : (note-location `(,$1 ,$2 ,$4 ,$5) @1))
+   (instances/binds
+    () : '()
+    (instances/binds instance/bind) : (append $1 (list $2)))
 
-   (system-statement-list
-    () : '(compound)
-    (system-statement-list system-statement) : (append $1 (list $2)))
+   (instance
+    (Identifier Identifier semicolon) : `(instance ,$1 ,$2))
 
-   (system-statement
-    (bind) : $1
-    (instance) : $1)
+   (instance/bind
+    (instance) : $1
+    (bind) : $1)
 
    (binding
     (*) : `(binding #f *)
@@ -107,22 +121,19 @@
    (bind
     (binding <=> binding semicolon) : `(bind ,$1 ,$3))
 
-   (instance
-    (Identifier Identifier semicolon) : `(instance ,$1 ,$2))
-
    (import-spec
     (import Identifier semicolon) : `(,$1 ,$2)
     (import Identifier dot Identifier semicolon) : `(,$1 ,(symbol-append $2 '. $4)))
 
-   (event-list
+   (events/types
     () : '(events)
-    (event-list event) : (append $1 (list $2))
-    (event-list type-spec) : (append $1 (list $2)))
+    (events/types event) : (append $1 (list $2))
+    (events/types type) : (append $1 (list $2)))
 
    (event
-    (event-direction type Identifier semicolon) : `(,$1 ,(note-location `(signature ,$2) @2) ,$3)
-    (event-direction type Identifier lparen rparen semicolon) : `(,$1 ,(note-location `(signature ,$2) @2) ,$3)
-    (event-direction type Identifier lparen parameter-list rparen semicolon) : `(,$1 ,(note-location `(signature ,$2 ,$5) @2) ,$3))
+    (event-direction variable-type Identifier semicolon) : `(,$1 ,(note-location `(signature ,$2) @2) ,$3)
+    (event-direction variable-type Identifier lparen rparen semicolon) : `(,$1 ,(note-location `(signature ,$2) @2) ,$3)
+    (event-direction variable-type Identifier lparen parameters rparen semicolon) : `(,$1 ,(note-location `(signature ,$2 ,$5) @2) ,$3))
 
    (parameter-direction
     (in) : 'in
@@ -133,9 +144,9 @@
     (in) : $1
     (out) : $1)
 
-   (port-list
+   (ports
     () : '(ports)
-    (port-list port) : (append $1 (list $2)))
+    (ports port) : (append $1 (list $2)))
 
    (port
     (port-direction Identifier Identifier semicolon) : `(,$1 ,$2 ,$3 #f)
@@ -145,16 +156,16 @@
     (provides) : 'provides
     (requires) : 'requires)
 
-   (type-list
+   (types
     () : '(types)
-    (type-list type-spec) : (append $1 (list $2)))
+    (types type) : (append $1 (list $2)))
 
-   (type-spec
+   (type
     (enum-spec) : $1
     (extern-spec) : $1
     (typedef-spec): $1)
 
-   (type
+   (variable-type
     (bool) : '(type bool)
     (int) : '(type int)
     (void) : '(type void)
@@ -162,14 +173,11 @@
     (Identifier dot Identifier) : (note-location `(type ,$3 ,$1) @1))
 
    (enum-spec
-    (enum Identifier lbrace enum-value-list rbrace semicolon) : `(,$1 ,$2 ,$4))
+    (enum Identifier lbrace enum-fields rbrace semicolon) : `(,$1 ,$2 ,$4))
 
-   (enum-value-list
-    (enum-value) : `(,$1)
-    (enum-value-list comma enum-value) : (append $1 (list $3)))
-
-   (enum-value
-    (Identifier) : $1)
+   (enum-fields
+    (Identifier) : `(,$1)
+    (enum-fields comma Identifier) : (append $1 (list $3)))
 
    (typedef-spec
     (typedef int lbracket NumericLiteral .. NumericLiteral rbracket Identifier semicolon) : `(int ,$8 (range ,$4 ,$6)))
@@ -178,76 +186,76 @@
     (extern Identifier = Data semicolon) : `(,$1 ,$2 ,$4))
 
    (expression
+    (expr): `(expression ,$1))
+
+   (expr
     (false) : $1
     (true) : $1
     (NumericLiteral) : $1
     (compound-identifier) : $1
     (Data) : (note-location `(data ,$1) @1)
 
-    (lparen expression rparen) : `(group ,$2)
+    (lparen expr rparen) : `(group ,$2)
 
-    (! expression) : `(! ,$2)
-    (expression and expression) : `(and ,$1 ,$3)
-    (expression or expression) : `(or ,$1 ,$3)
+    (! expr) : `(! ,$2)
+    (expr and expr) : `(and ,$1 ,$3)
+    (expr or expr) : `(or ,$1 ,$3)
 
-    (expression == expression) : `(== ,$1 ,$3)
-    (expression != expression) : `(!= ,$1 ,$3)
-    (expression < expression) : `(< ,$1 ,$3)
-    (expression <= expression) : `(<= ,$1 ,$3)
-    (expression > expression) : `(> ,$1 ,$3)
-    (expression >= expression) : `(>= ,$1 ,$3)
+    (expr == expr) : `(== ,$1 ,$3)
+    (expr != expr) : `(!= ,$1 ,$3)
+    (expr < expr) : `(< ,$1 ,$3)
+    (expr <= expr) : `(<= ,$1 ,$3)
+    (expr > expr) : `(> ,$1 ,$3)
+    (expr >= expr) : `(>= ,$1 ,$3)
 
-    (expression + expression) : `(+ ,$1 ,$3)
-    (expression - expression) : `(- ,$1 ,$3)
+    (expr + expr) : `(+ ,$1 ,$3)
+    (expr - expr) : `(- ,$1 ,$3)
 
-    (expression * expression) : `(* ,$1 ,$3)
-    (expression / expression) : `(/ ,$1 ,$3)
+    (expr * expr) : `(* ,$1 ,$3)
+    (expr / expr) : `(/ ,$1 ,$3)
 
     (function-call) : $1
     (action) : $1)
 
    (function-call
     (Identifier lparen rparen) : (note-location `(call ,$1) @1)
-    (Identifier lparen argument-list rparen) : (note-location `(call ,$1 ,$3) @1))
+    (Identifier lparen arguments rparen) : (note-location `(call ,$1 ,$3) @1))
 
-   (argument-list
-    (expression) : `(arguments (expression ,$1))
-    (argument-list comma expression) : (append $1 (list `(expression ,$3))))
+   (arguments
+    (expression) : `(arguments ,$1)
+    (arguments comma expression) : (append $1 (list $3)))
 
-   (optional-behaviour
-    () : '(no-behaviour)
-    (behaviour lbrace type-list variable-list function-list function-statement-list rbrace) : `(,$1 #f ,$3 ,$4 ,$5 ,$6)
-    (behaviour Identifier lbrace type-list variable-list function-list function-statement-list rbrace) : `(,$1 ,$2 ,$4 ,$5 ,$6 ,$7)
-    (system lbrace system-statement-list rbrace) : `(,$1 #f ,$3)
-    (system Identifier lbrace system-statement-list rbrace) : `(,$1 ,$2 ,$4))
+   (behaviour-spec
+    (behaviour lbrace types variables functions statements/functions rbrace) : `(,$1 #f ,$3 ,$4 ,$5 ,$6)
+    (behaviour Identifier lbrace types variables functions statements/functions rbrace) : `(,$1 ,$2 ,$4 ,$5 ,$6 ,$7))
 
-   (function
-    (type Identifier lparen rparen compound-statement) : (note-location `(function ,$2 ,(note-location `(signature ,$1) @1), $5) @1)
-
-    (type Identifier lparen parameter-list rparen compound-statement) : (note-location `(function ,$2 ,(note-location `(signature ,$1 ,$4) @1) ,$6) @1))
-
-   (parameter-list
-    (parameter) : `(parameters ,$1)
-    (parameter-list comma parameter) : (append $1 (list $3)))
-
-   (parameter
-    (type Identifier): (note-location `(parameter ,$2 ,$1) @1)
-    (parameter-direction type Identifier): (note-location `(parameter ,$3 ,$2 ,$1) @1))
-
-   (function-list
+   (functions
     () : '(functions)
     (function) : `(functions ,$1)
-    (function-list function) : (append $1 (list $2)))
+    (functions function) : (append $1 (list $2)))
 
-   (statement-list
+   (function
+    (variable-type Identifier lparen rparen compound-statement) : (note-location `(function ,$2 ,(note-location `(signature ,$1) @1), $5) @1)
+
+    (variable-type Identifier lparen parameters rparen compound-statement) : (note-location `(function ,$2 ,(note-location `(signature ,$1 ,$4) @1) ,$6) @1))
+
+   (parameters
+    (parameter) : `(parameters ,$1)
+    (parameters comma parameter) : (append $1 (list $3)))
+
+   (parameter
+    (variable-type Identifier): (note-location `(parameter ,$2 ,$1) @1)
+    (parameter-direction variable-type Identifier): (note-location `(parameter ,$3 ,$2 ,$1) @1))
+
+   (statements
     () : '(compound)
-    (statement-list statement) : (append $1 (list $2)))
+    (statements statement) : (append $1 (list $2)))
 
-   (function-statement-list
+   (statements/functions
     () : '(compound)
-    (function-statement-list function-statement) : (append $1 (list $2)))
+    (statements/functions statement/function) : (append $1 (list $2)))
 
-   (function-statement
+   (statement/function
     (function) : $1
     (statement) : $1)
 
@@ -271,11 +279,11 @@
     (lbracket guard rbracket statement) : (note-location `(guard ,$2 ,$4) @1))
 
    (guard
-    (expression) : `(expression ,$1)
+    (expression) : $1
     (otherwise) : `(,$1))
 
    (compound-statement
-    (lbrace statement-list rbrace) : (note-location $2 @1))
+    (lbrace statements rbrace) : (note-location $2 @1))
 
    (compound-identifier
     (Identifier) : (note-location `(var ,$1) @1)
@@ -286,61 +294,57 @@
     (on trigger-spec colon statement) : (note-location `(,$1 ,$2 ,$4) @1))
 
    (trigger-spec
-    (trigger-list) : (note-location (cons 'triggers $1) @1)
+    (triggers) : (note-location (cons 'triggers $1) @1)
     (optional) : (note-location `(triggers ,(note-location `(trigger #f ,$1) @1)) @1)
     (inevitable) : (note-location `(triggers ,(note-location `(trigger #f ,$1) @1)) @1))
 
-   (trigger-list
+   (triggers
     (trigger) : `(,$1)
-    (trigger-list comma trigger) : (append $1 (list $3)))
+    (triggers comma trigger) : (append $1 (list $3)))
 
    (trigger
     (Identifier) : (note-location `(trigger #f ,$1) @1)
     (Identifier lparen rparen) : (note-location `(trigger #f ,$1) @1)
     (Identifier dot Identifier) : (note-location `(trigger ,$1 ,$3) @1)
     (Identifier dot Identifier lparen rparen) : (note-location `(trigger ,$1 ,$3) @1)
-    (Identifier lparen argument-list rparen) : (note-location `(trigger #f ,$1 ,$3) @1)
-    (Identifier dot Identifier lparen argument-list rparen) : (note-location `(trigger ,$1 ,$3 ,$5) @1))
+    (Identifier lparen arguments rparen) : (note-location `(trigger #f ,$1 ,$3) @1)
+    (Identifier dot Identifier lparen arguments rparen) : (note-location `(trigger ,$1 ,$3 ,$5) @1))
 
    (illegal-statement
     (illegal semicolon) : (note-location `(illegal) @1))
 
    (assignment-statement
-    (Identifier = expression semicolon) : (note-location `(assign ,$1 (expression ,$3)) @1))
+    (Identifier = expression semicolon) : (note-location `(assign ,$1 ,$3) @1))
 
    (action
     (Identifier dot Identifier lparen rparen) : (note-location `(action (trigger ,$1 ,$3)) @1)
-    (Identifier dot Identifier lparen argument-list rparen) : (note-location `(action (trigger ,$1 ,$3 ,$5)) @1))
+    (Identifier dot Identifier lparen arguments rparen) : (note-location `(action (trigger ,$1 ,$3 ,$5)) @1))
 
    (action-statement
     (Identifier semicolon) : (note-location `(action (trigger #f ,$1)) @1)
     (Identifier dot Identifier semicolon) : (note-location `(action (trigger ,$1 ,$3)) @1)
     (action semicolon) : $1)
 
-   ;; (if-statement
-   ;;  (if lparen expression rparen statement) : (note-location `(if (expression ,$3) ,$5) @1)
-   ;;  (if lparen expression rparen statement else statement) : (note-location `(if (expression ,$3) ,$5 ,$7) @1))
-
    (if-statement
-    (if lparen expression rparen statement) : `(if (expression ,$3) ,$5)
-    (if lparen expression rparen statement else statement) : `(if (expression ,$3) ,$5 ,$7))
+    (if lparen expression rparen statement) : `(if ,$3 ,$5)
+    (if lparen expression rparen statement else statement) : `(if ,$3 ,$5 ,$7))
 
    (reply-statement
-    (reply lparen expression rparen semicolon) : `(,$1 (expression ,$3)))
+    (reply lparen expression rparen semicolon) : `(,$1 ,$3))
 
    (return-statement
     (return semicolon) : (note-location '(return) @1)
-    (return expression semicolon) : (note-location `(return (expression ,$2)) @1))
+    (return expression semicolon) : (note-location `(return ,$2) @1))
 
    (variable-statement
-    (type Identifier semicolon) : `(variable ,$2 ,$1 ,(note-location '(expression) @3))
+    (variable-type Identifier semicolon) : `(variable ,$2 ,$1 ,(note-location '(expression) @3))
     (Identifier dot Identifier Identifier semicolon) : `(variable ,$4 (type ,$3 ,$1) ,(note-location '(expression) @5))
-    (type Identifier = expression semicolon) : `(variable ,$2 ,$1 ,(note-location `(expression ,$4) @3))
-    (Identifier dot Identifier Identifier = expression semicolon) : `(variable ,$4 (type ,$3 ,$1) ,(note-location `(expression ,$6) @3)))
+    (variable-type Identifier = expression semicolon) : `(variable ,$2 ,$1 ,(note-location $4 @3))
+    (Identifier dot Identifier Identifier = expression semicolon) : `(variable ,$4 (type ,$3 ,$1) ,(note-location $6 @3)))
 
-   (variable-list
+   (variables
     () : '(variables)
-    (variable-list variable-statement) : (append $1 (list $2)))))
+    (variables variable-statement) : (append $1 (list $2)))))
 
 (define (compile-tree-il exp env opts)
   (values (parse-tree-il (comp exp '())) env env))

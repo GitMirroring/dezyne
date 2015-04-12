@@ -124,13 +124,6 @@
        :arguments (ast->gom- (or (null-is-#f arguments) '(arguments)))
        :last? last?))
 
-    (('component name ports ('system foo ('compound body ...)))
-     (and=> (assoc 'imported (cddr ast)) (mark-imported ast))
-      (make <system>
-        :name name
-        :ports (ast->gom- ports)
-        :instances (make <instances> :elements (ast->gom- body))))
-
     (('component name body ...)
      (and=> (assoc 'imported body) (mark-imported ast))
       (make <component>
@@ -263,13 +256,6 @@
 
     (('signature type parameters)
      (make <signature> :type (ast->gom- type) :parameters (ast->gom- parameters)))
-
-    (('system name ports ('compound body ...))
-     (and=> (assoc 'imported (cddr ast)) (mark-imported ast))
-     (make <system>
-        :name name
-        :ports (ast->gom- ports)
-        :instances (make <instances> :elements (ast->gom- body))))
 
     (('system name ports instances bindings)
      (and=> (assoc 'imported (cddr ast)) (mark-imported ast))

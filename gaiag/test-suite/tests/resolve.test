@@ -341,13 +341,6 @@
       (bind i (value u i))
       (bind (value u u) u)))))
 
-(pass-if "ast:resolve-system"
-         (gom-pretty-noisy-equal?
-          (ast:resolve-model
-           resolve-system
-           '(component c (ports) (system #f (compound))))
-          '(system c (ports) (instances) (bindings))))
-
 (pass-if "ast:resolve-member"
          (gom-pretty-noisy-equal?
           (ast:resolve-model
@@ -499,31 +492,6 @@
           '(function rbfa (signature (type void) (parameters))
                      recursive
                       (assign b (compound (call rbfb (expression #t)))))))
-
-(pass-if "ast:resolve-system"
-         (gom-pretty-noisy-equal?
-          (ast:resolve-model
-           '(system
-             AlarmSystem
-             (ports (provides Console console))
-             (compound
-              (instance alarm Alarm)
-              (instance sensor Sensor)
-              (instance siren Siren)
-              (bind (binding #f console) (binding alarm console))
-              (bind (binding alarm sensor) (binding sensor sensor))
-              (bind (binding alarm siren) (binding siren siren)))))
-          '(system
-            AlarmSystem
-            (ports (provides Console console))
-            (instances
-             (instance alarm Alarm)
-             (instance sensor Sensor)
-             (instance siren Siren))
-            (bindings
-             (bind (binding #f console) (binding alarm console))
-             (bind (binding alarm sensor) (binding sensor sensor))
-             (bind (binding alarm siren) (binding siren siren))))))
 
 (pass-if "ast:resolve-component-system"
          (gom-pretty-noisy-equal?
