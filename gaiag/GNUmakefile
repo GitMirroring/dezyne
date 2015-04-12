@@ -248,7 +248,7 @@ c-alarm:
 		examples/Sensor.dzn\
 		examples/ISiren.dzn\
 		examples/Siren.dzn\
-		examples/AlarmComponentSystem.dzn\
+		examples/AlarmSystem.dzn\
 		;\
 	do $(shell pwd)/../build/asdgenerator -l scm $$file && $(shell pwd)/gaiag -l c $$(basename $$file .dzn).scm; done
 	#do $(shell pwd)/gaiag -l c $$file; done

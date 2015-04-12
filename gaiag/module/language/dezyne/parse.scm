@@ -82,6 +82,10 @@
     () : '(imports)
     (imports import-spec) : (append $1 (list $2)))
 
+   (import-spec
+    (import Identifier semicolon) : `(,$1 ,$2)
+    (import Identifier dot Identifier semicolon) : `(,$1 ,(symbol-append $2 '. $4)))
+
    (interface-spec
     (interface Identifier lbrace types events/types rbrace)
     : (receive (e t)
@@ -100,7 +104,7 @@
     (component Identifier lbrace ports system lbrace instances/binds rbrace rbrace)
     : (receive (instances binds)
           (partition (lambda (x) (eq? (car x) 'instance)) $7)
-        (note-location `(system ,$2 ,$4 (instances ,instances) (bindings ,binds)) @1)))
+        (note-location `(system ,$2 ,$4 ,(cons 'instances instances) ,(cons 'bindings binds)) @1)))
 
    (instances/binds
     () : '()
@@ -120,10 +124,6 @@
 
    (bind
     (binding <=> binding semicolon) : `(bind ,$1 ,$3))
-
-   (import-spec
-    (import Identifier semicolon) : `(,$1 ,$2)
-    (import Identifier dot Identifier semicolon) : `(,$1 ,(symbol-append $2 '. $4)))
 
    (events/types
     () : '(events)
@@ -226,8 +226,16 @@
     (arguments comma expression) : (append $1 (list $3)))
 
    (behaviour-spec
-    (behaviour lbrace types variables functions statements/functions rbrace) : `(,$1 #f ,$3 ,$4 ,$5 ,$6)
-    (behaviour Identifier lbrace types variables functions statements/functions rbrace) : `(,$1 ,$2 ,$4 ,$5 ,$6 ,$7))
+    (behaviour lbrace types variables functions statements/functions rbrace)
+    : (receive
+          (f s)
+          (partition (lambda (x) (eq? (car x) 'function)) (cdr $6))
+        `(,$1 #f ,$3 ,$4 ,(append $5 f) ,(cons 'compound s)))
+    (behaviour Identifier lbrace types variables functions statements/functions rbrace)
+    : (receive
+          (f s)
+          (partition (lambda (x) (eq? (car x) 'function)) (cdr $7))
+        `(,$1 ,$2 ,$4 ,$5 ,(append $6 f) ,(cons 'compound s))))
 
    (functions
     () : '(functions)
