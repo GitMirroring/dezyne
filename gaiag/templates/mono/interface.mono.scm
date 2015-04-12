@@ -20,21 +20,27 @@
 ;;; 
 ;;; Code:
 
-class #.interface  extends Interface<#.interface .In, #.interface .Out> {#
+using System;
+
+public class #.interface  : Interface<#.interface .In, #.interface .Out> {#
 (->string (map declare-enum (gom:interface-enums model)))
-  class In extends Interface.In {
+  new public class In : Interface<#.model .In, #.model .Out>.In {
 #((->join "\n") (map (declare-io model #{
-    #(lambda-type return-type parameter-types)  #name ;#})
+    public #(lambda-type return-type parameter-types)  #name ;#})
  (filter gom:in? ((compose .elements .events) model)))
 )
   }
-    class Out extends Interface.Out {
+  new public class Out : Interface<#.model .In, #.model .Out>.Out {
 #((->join "\n") (map (declare-io model #{
-    #(lambda-type return-type parameter-types)  #name;#})
+    public #(lambda-type return-type parameter-types)  #name;#})
  (filter gom:out? ((compose .elements .events) model))))
   }
   public #.interface() {
-    in = new In();
-    out = new Out();
+    inport = new In();
+    outport = new Out();
+  }
+  public static void connect(#.model  provided, #.model  required) {
+   provided.outport = required.outport;
+   required.inport = provided.inport;
   }
 }

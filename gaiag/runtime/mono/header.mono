@@ -4,7 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-class RuntimeException : SystemException {
+public class V<T> {
+  public T v;
+  public V (T v) {this.v = v;}
+}
+
+public class RuntimeException : SystemException {
   public RuntimeException(String msg) : base(msg) {}
 };
 
@@ -108,9 +113,7 @@ public class Runtime {
     flush(c);
     traceOut(m.i, "return");
   }
-    enum X {a, b, c};
-
-  public static R callIn<R,I,O>(Component c, Func<R> f, Meta<I,O> m) where I: Interface<I,O>.In where O : Interface<I,O>.Out where R : struct, IComparable, IConvertible, IFormattable {
+  public static R callIn<I,O,R>(Component c, Func<R> f, Meta<I,O> m) where I: Interface<I,O>.In where O : Interface<I,O>.Out where R : struct, IComparable, IConvertible, IFormattable {
     traceIn(m.i, m.e);
     if (c.handling) {
       throw new RuntimeException("a valued event cannot be deferred");
@@ -119,10 +122,7 @@ public class Runtime {
     R r = f();
     c.handling = false;
     flush(c);
-    //traceOut(m.i, r.getClass().getSimpleName() + "_" + r.name());
-    X x = X.a;
-    traceOut(m.i, "_" + Enum.GetName(typeof(X),x));
-    traceOut(m.i, "_" + Enum.GetName(typeof(X),r));
+    traceOut(m.i, r.GetType().Name + "_" + Enum.GetName(r.GetType(),r));
     return r;
   }
   public static void callOut<I,O>(Component c, Action f, Meta<I,O> m) where I: Interface<I,O>.In where O : Interface<I,O>.Out {
@@ -148,238 +148,5 @@ public class Runtime {
   public static void traceOut<I,O>(Interface<I,O> i, String e) where I: Interface<I,O>.In where O : Interface<I,O>.Out {
     System.Console.Error.WriteLine(path(i.inport) + "." + e + " -> "
                                  + path(i.outport) + "." + e);
-  }
-}
-
-
-// end header
-class IConsole : Interface<IConsole.In, IConsole.Out> {
-  new public class In : Interface<IConsole.In, IConsole.Out>.In {
-    public Action arm;
-    public Action disarm;
-  }
-  new public class Out : Interface<IConsole.In, IConsole.Out>.Out {
-    public Action detected;
-    public Action deactivated;
-  }
-  public IConsole() {
-    inport = new In();
-    outport = new Out();
-  }
- public static void connect(IConsole provided, IConsole required) {
-   provided.outport = required.outport;
-   required.inport = provided.inport;
-  }
-}
-
-class ISiren : Interface<ISiren.In, ISiren.Out> {
-  new public class In : Interface<ISiren.In, ISiren.Out>.In {
-    public Action turnon;
-    public Action turnoff;
-  }
-  new public class Out : Interface<ISiren.In, ISiren.Out>.Out {
-
-  }
-  public ISiren() {
-    inport = new In();
-    outport = new Out();
-  }
- public static void connect(ISiren provided, ISiren required) {
-   provided.outport = required.outport;
-   required.inport = provided.inport;
-  }
-}
-class ISensor : Interface<ISensor.In, ISensor.Out> {
-  new public class In : Interface<ISensor.In, ISensor.Out>.In {
-    public Action enable;
-    public Action disable;
-  }
-  new public class Out : Interface<ISensor.In, ISensor.Out>.Out {
-    public Action triggered;
-    public Action disabled;
-  }
-  public ISensor() {
-    inport = new In();
-    outport = new Out();
-  }
- public static void connect(ISensor provided, ISensor required) {
-   provided.outport = required.outport;
-   required.inport = provided.inport;
-  }
-}
-class AlarmSystem {
-  public Alarm alarm;
-  public Sensor sensor;
-  public Siren siren;
-  public IConsole console;
-
-  public AlarmSystem() {
-    alarm = new Alarm();
-    sensor = new Sensor();
-    siren = new Siren();
-    console = alarm.console;
-
-    ISensor.connect(sensor.sensor, alarm.sensor);
-    ISiren.connect(siren.siren, alarm.siren);
-  }
-}
-class Alarm{
-  public enum States {
-    Disarmed, Armed, Triggered, Disarming
-  };
-
-  public States state;
-  public Boolean sounding;
-
-  public IConsole console;
-  public ISensor sensor;
-  public ISiren siren;
-
-  public Alarm() {
-    state = States.Disarmed;
-    sounding = false;
-    console = new IConsole();
-    sensor = new ISensor();
-    siren = new ISiren();
-    console.inport.arm = () => {console_arm();};
-    console.inport.disarm = () => console_disarm();
-    sensor.outport.triggered = () => { sensor_triggered(); };
-    sensor.outport.disabled = () => { sensor_disabled(); };
-  }
-  public void console_arm() {
-    System.Console.Error.WriteLine("Alarm.console_arm");
-    if (state == States.Disarmed) {
-      {
-        sensor.inport.enable();
-        state = States.Armed;
-      }
-    }
-    else if (state == States.Armed) {
-      Debug.Assert(false);
-    }
-    else if (state == States.Disarming) {
-      Debug.Assert(false);
-    }
-    else if (state == States.Triggered) {
-      Debug.Assert(false);
-    }
-  }
-
-  public void console_disarm() {
-    System.Console.Error.WriteLine("Alarm.console_disarm");
-    if (state == States.Disarmed) {
-      Debug.Assert(false);
-    }
-    else if (state == States.Armed) {
-      {
-        sensor.inport.disable();
-        state = States.Disarming;
-      }
-    }
-    else if (state == States.Disarming) {
-      Debug.Assert(false);
-    }
-    else if (state == States.Triggered) {
-      {
-        sensor.inport.disable();
-        siren.inport.turnoff();
-        sounding = false;
-        state = States.Disarming;
-      }
-    }
-  }
-
-  public void sensor_triggered() {
-    System.Console.Error.WriteLine("Alarm.sensor_triggered");
-    if (state == States.Disarmed) {
-      Debug.Assert(false);
-    }
-    else if (state == States.Armed) {
-      {
-        console.outport.detected();
-        siren.inport.turnon();
-        sounding = true;
-        state = States.Triggered;
-      }
-    }
-    else if (state == States.Disarming) {
-      { }
-    }
-    else if (state == States.Triggered) {
-      Debug.Assert(false);
-    }
-  }
-
-  public void sensor_disabled() {
-    System.Console.Error.WriteLine("Alarm.sensor_disabled");
-    if (state == States.Disarmed) {
-      Debug.Assert(false);
-    }
-    else if (state == States.Armed) {
-      Debug.Assert(false);
-    }
-    else if (state == States.Disarming) {
-      {
-        if (sounding) {
-          console.outport.deactivated();
-          siren.inport.turnoff();
-          state = States.Disarmed;
-          sounding = false;
-        }
-        else {
-          console.outport.deactivated();
-          state = States.Disarmed;
-        }
-      }
-    }
-    else if (state == States.Triggered) {
-      Debug.Assert(false);
-    }
-  }
-
-}
-// Handwritten
-class Console {
-  public IConsole console;
-  public Console() {
-    console = new IConsole();
-    console.outport.detected = () => {System.Console.Error.WriteLine("Alarm detected"); };
-    console.outport.deactivated = () => { System.Console.Error.WriteLine("Alarm deactivated"); };
-  }
-}
-
-class Sensor {
-  public ISensor sensor;
-  public Sensor() {
-    sensor = new ISensor();
-    sensor.inport.enable = () => { System.Console.Error.WriteLine("Sensor detected"); };
-    sensor.inport.disable = () => { System.Console.Error.WriteLine("Sensor deactivated"); };
-  }
-}
-
-class Siren {
-  public ISiren siren;
-  public Siren() {
-    siren = new ISiren();
-    siren.inport.turnon = () => { System.Console.Error.WriteLine("Siren detected"); };
-    siren.inport.turnoff = () => { System.Console.Error.WriteLine("Siren deactivated"); };
-  }
-}
-
-class header {
-  public static void Main(String[] args) {
-
-    System.Console.Error.WriteLine("alarm main");
-
-    AlarmSystem alarm = new AlarmSystem();
-    Console console = new Console();
-    IConsole.connect(alarm.console, console.console);
-
-    // Test trace
-
-    alarm.console.inport.arm();
-    alarm.sensor.sensor.outport.triggered();
-    alarm.console.inport.disarm();
-    alarm.sensor.sensor.outport.disabled();
   }
 }

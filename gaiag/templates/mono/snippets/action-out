@@ -1,1 +1,1 @@
-#port .#direction .#event .action(#arguments);
+#port .#direction port.#event(#arguments);

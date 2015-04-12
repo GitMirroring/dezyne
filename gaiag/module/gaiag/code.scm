@@ -634,9 +634,10 @@
          (provided-required (if (gom:provides? left-port)
                                 (cons left right)
                                 (cons right left)))
+         (interface (.type left-port))
          (provided (binding-name model (car provided-required)))
          (required (binding-name model (cdr provided-required))))
-    (animate snippet `((provided ,provided) (required ,required)))))
+    (animate snippet `((interface ,interface) (provided ,provided) (required ,required)))))
 
 (define ((declare-enum model) enum)
   (let* ((scope (or (.scope enum) (.name model)))

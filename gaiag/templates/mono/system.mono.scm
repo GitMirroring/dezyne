@@ -20,20 +20,17 @@
 ;;; 
 ;;; Code:
 
-class #.model  extends SystemComponent {
+using System;
+
+class #.model  : SystemComponent {
 #(map (init-instance #{
-    #component  #name;
+    public #component  #name;
 #}) ((compose .elements .instances) model))#
 (map (init-port #{
-    #interface  #name;
+    public #interface  #name;
 #}) ((compose .elements .ports) model))
 
-  public #.model(Runtime runtime) {this(runtime, "");};
-
-  public #.model(Runtime runtime, String name) {this(runtime, name, null);};
-
-  public #.model(Runtime runtime, String name, SystemComponent parent) {
-  super(runtime, name, parent);
+  public #.model(Runtime runtime, String name="", SystemComponent parent=null) : base(runtime, name, parent) {
 #(map (init-instance #{
     #name  = new #component(runtime, "#name ", this);
 #}) ((compose .elements .instances) model))#
@@ -41,6 +38,6 @@ class #.model  extends SystemComponent {
     #port  = #instance;
 #}) (filter bind-port? ((compose .elements .bindings) model)))
 # (map (connect-ports model #{
-    Interface.connect(#provided , #required);
-#}) (filter (negate bind-port?) ((compose .elements .bindings) model)))};
+    #interface .connect(#provided , #required);
+#}) (filter (negate bind-port?) ((compose .elements .bindings) model)))}
 }

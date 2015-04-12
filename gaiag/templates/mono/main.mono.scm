@@ -20,62 +20,37 @@
 ;;; 
 ;;; Code:
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.HashMap;
+using System;
+using System.Collections.Generic;
 
-class Reader {
-  BufferedReader reader;
-  String readLine() throws IOException {
-    if (System.console() != null) {
-      return System.console().readLine();
-    }
-    if (reader == null) {
-      reader = new BufferedReader(new InputStreamReader(System.in));
-    }
-    return reader.readLine();
-  }
-}  
+class EventMap : Dictionary<String, Action> {};
 
 class main {
-
-  private static class EventMap extends HashMap<String, Action> {};
                         
   private static EventMap fillEventMap(#.model  m) {
-  V<Integer> v = new V<Integer> (0);
+  V<int> v = new V<int> (0);
 #(map
     (lambda (port)
     (map (define-on model port #{
-    m.#port .#direction .#event  = (#parameters) -> {System.err.println("#port .#direction .#event");#(string-if (not (eq? return-type 'void)) #{ return new (#return-type)();#})};
+    m.#port .#direction port.#event  = (#parameters) => {System.Console.Error.WriteLine("#port .#direction .#event");#(string-if (not (eq? return-type 'void)) #{ return new (#return-type)();#})};
 #}) (filter (negate (gom:dir-matches? port))
        (gom:events port)))) (gom:ports model))     EventMap e = new EventMap();
 #(map
     (lambda (port)
     (map (define-on model port #{
-        e.put("#port .#event ", () -> {m.#port .#direction .#event .action(#((->join ", ") (map (lambda (p) (if (gom:out-or-inout? p) 'v 0)) parameter-objects)));});
+        e.Add("#port .#event ", () => {m.#port .#direction port.#event(#((->join ", ") (map (lambda (p) (if (gom:out-or-inout? p) 'v 0)) parameter-objects)));});
 #}) (filter (gom:dir-matches? port)
        (gom:events port)))) (gom:ports model)) return e;
 }
 
-  private static String readLine() throws IOException {
-    if (System.console() != null) {
-      return System.console().readLine();
-    }
-    BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-    return reader.readLine();
-  }
-
-  public static void main(String[] args) throws IOException {
+  public static void Main(String[] args) {
     Runtime runtime = new Runtime();
     #.model  sut = new #.model(runtime, "sut");
     EventMap e = fillEventMap(sut);
-    Reader reader = new Reader();
     String line;
-    while ((line = reader.readLine()) != null) {
-      Action a = e.get(line);
-      if (a != null) {
-        a.action();
+    while ((line = System.Console.ReadLine()) != null) {
+      if (e.ContainsKey(line)) {
+        e[line]();
       }
     }
   }

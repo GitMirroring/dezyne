@@ -1,4 +1,4 @@
 
-  enum #name  {
+  public enum #name  {
     #((->join ", ") fields)
   };

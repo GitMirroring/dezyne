@@ -1,1 +1,1 @@
-#(if out? "V<")#(->type type)#(if out? ">")
+#(if out? "V<")#type #(if out? ">")

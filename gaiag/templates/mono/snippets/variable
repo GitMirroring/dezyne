@@ -1,1 +1,1 @@
-#space V<#(->type type)> #name  = new V <#(->type type)>(#expression);
+#space V<#type > #name  = new V <#type >(#expression);

@@ -20,7 +20,9 @@
 ;;; 
 ;;; Code:
 
-class #.model  extends Component {#
+using System;
+
+public class #.model  : Component {#
 (->string (map declare-enum (gom:enums (.behaviour model))))#
 (->string (map declare-integer (gom:integers (.behaviour model))))
 #
@@ -29,46 +31,41 @@ class #.model  extends Component {#
     (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))
 #
     (map (init-port #{#'()
-  #interface  #name;#}) ((compose .elements .ports) model))
+  public #interface  #name;#}) ((compose .elements .ports) model))
 
-  public #.model(Runtime runtime) {this(runtime, "");};
-
-  public #.model(Runtime runtime, String name) {this(runtime, name, null);};
-
-  public #.model(Runtime runtime, String name, SystemComponent parent) {
-    super(runtime, name, parent);
+  public #.model(Runtime runtime, String name="", SystemComponent parent=null) : base(runtime, name, parent) {
     this.flushes = true;#
 (map (init-member model #{#'()
     #name  = #expression;#}) (gom:variables model))#
 (map (init-port #{#'()
     #name  = new #interface();
-    #name .in.name = "#name ";
-    #name .in.self = this;#})
+    #name .inport.name = "#name ";
+    #name .inport.self = this;#})
     (filter gom:provides? ((compose .elements .ports) model)))#
 (map (init-member model #{#'()
     #name  = #expression;#}) (gom:variables model))#
 (map (init-port #{#'()
     #name  = new #interface();
-    #name .out.name = "#name ";
-    #name .out.self = this;#})
+    #name .outport.name = "#name ";
+    #name .outport.self = this;#})
     (filter gom:requires? ((compose .elements .ports) model)))#
 (map
    (lambda (port)
      (map (define-on model port #{#'()
-  #port .#direction .#event  = (#parameters) -> {#(string-if (not (eq? return-type 'void)) #{return #})Runtime.call#(symbol-capitalize direction)(#.model .this, () -> {#(string-if (not (eq? return-type 'void)) #{return #})#port _#event(#arguments);}, new Meta(#.model .this.#port , "#event"));};
+  #port .#direction port.#event  = (#parameters) => {#(string-if (not (eq? return-type 'void)) #{return #})Runtime.call#(symbol-capitalize direction)<#interface .In,#interface .Out#(string-if (not (eq? return-type 'void)) #{, #return-type#})>(this, () => {#(string-if (not (eq? return-type 'void)) #{return #})#port _#event(#arguments);}, new Meta<#interface .In,#interface .Out>(this.#port , "#event"));};
    #}) (filter (gom:dir-matches? port) (gom:events port))))
    (gom:ports model))
-  };#
+  }#
 (map
    (lambda (port)
      (map (define-on model port #{#'()
   public #return-type  #port _#event (#parameters) {
   #statement #(if (not (eq? type 'void))
-(list "return reply_" reply-type "_" reply-name ";\n")) };
+(list "return reply_" reply-type "_" reply-name ";\n")) }
 #}) (filter (gom:dir-matches? port) (gom:events port))))
    (gom:ports model))#
 (map (define-function model #{
    public #return-type  #name  (#parameters) {
-#statements };
+#statements }
 #}) (gom:functions model))
 }

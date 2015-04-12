@@ -33,7 +33,7 @@
   :use-module (oop goops describe)
   :use-module (gaiag gom)
 
-  :export (ast-> lambda-type ->type))
+  :export (ast-> lambda-type))
 
 (define ast-> ast:code)
 
@@ -41,11 +41,5 @@
   (let ((count (length parameter-types)))
    (list
     (if (eq? type 'void)
-        (list "Action" (if (>0 count) (list count "<" ((->join ", ") parameter-types) ">") ""))
-        (list "Func" (if (>0 count) (list count "<" type ", " ((->join ", ") parameter-types) ">") (list  "<" type ">")))))))
-
-(define (->type type)
-  (cond
-   ((equal? type "int") "Integer")
-   ((equal? type "bool") "Boolean")
-   (else type)))
+        (list "Action" (if (>0 count) (list "<" ((->join ", ") parameter-types) ">") ""))
+        (list "Func" (if (>0 count) (list "<"((->join ", ") parameter-types) "," type ">") (list  "<" type ">")))))))
