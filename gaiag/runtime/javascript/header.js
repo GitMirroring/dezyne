@@ -39,6 +39,9 @@ var runtime = {
     if (m.component) {
       return runtime.path(m.component.meta, m.name + (p ? '.' + p : p));
     }
+    if ('component' in m) {
+      return '<external>.' + m.name + (p ? '.' + p : p);
+    }
     if (m.parent) {
       return runtime.path(m.parent.meta, m.name + (p ? '.' + p : p));
     }
