@@ -1,0 +1,1 @@
+#space V<#(->type type)> #alias  = #(string-if out? #{#name #} #{new V<#(->type type)>(#name);#})

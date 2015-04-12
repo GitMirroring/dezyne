@@ -201,6 +201,7 @@
                (goops . .scm)
                (java . .java)
                (javascript . .js)
+               (mono . .mono)
                (python . .py))
              (language)))
 
@@ -210,6 +211,7 @@
                (goops . .scm)
                (java . .java)
                (javascript . .js)
+               (mono . .mono)
                (python . .py))
              (language)))
 
