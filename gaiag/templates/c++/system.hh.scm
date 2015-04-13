@@ -22,9 +22,8 @@ struct #.model
 (map (init-instance #{
   #component  #name;
 #}) (non-injected-instances model))
-#(map (init-port #{
-  #interface & #name;
-#}) ((compose .elements .ports) model))
+#(map (init-bind model #{ #interface & #port;
+#}) (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model))))
   #.model (const dezyne::locator&);
   void check_bindings() const;
   void dump_tree() const;
