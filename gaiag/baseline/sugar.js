@@ -42,7 +42,7 @@ dezyne.sugar = function(rt, meta) {
       if(this.s === this.Enum.False) if(this.s === this.Enum.False) this.i.out.a();
       else {
         var t = {value: this.Enum.False};
-        if(t === this.Enum.True) this.i.out.a();
+        if(t.value === this.Enum.True) this.i.out.a();
       }
     }.bind(this), [this.i, 'e']);
   }.bind(this);

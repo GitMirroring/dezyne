@@ -52,7 +52,7 @@ class sugar:
                 self.i.outs.a ()
             else:
                 t = {'value': self.Enum.False}
-                if (t == self.Enum.True):
+                if (t['value'] == self.Enum.True):
                     self.i.outs.a ()
 
 

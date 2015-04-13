@@ -48,7 +48,7 @@
         (action o .i .out .a))
       (else 
         (let ((t (make <v> :v '(Enum False)))) 
-        (cond ((equal? t '(Enum True)) 
+        (cond ((equal? (.v t) '(Enum True)) 
           (action o .i .out .a)))))))))
 
 
