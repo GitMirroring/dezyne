@@ -42,7 +42,6 @@ class Choice extends Component {
     c = new IChoice();
     c.in.name = "c";
     c.in.self = this;
-    s = State.Off;
     c.in.e = new Action() {public void action() {Runtime.callIn(Choice.this, new Action() {public void action() {c_e();}}, new Meta(Choice.this.c, "e"));};};
 
   };

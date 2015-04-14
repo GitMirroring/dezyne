@@ -41,7 +41,6 @@ class imperative extends Component {
     i = new iimperative();
     i.in.name = "i";
     i.in.self = this;
-    state = States.I;
     i.in.e = new Action() {public void action() {Runtime.callIn(imperative.this, new Action() {public void action() {i_e();}}, new Meta(imperative.this.i, "e"));};};
 
   };

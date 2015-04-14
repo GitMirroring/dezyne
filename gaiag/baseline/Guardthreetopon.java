@@ -38,7 +38,6 @@ class Guardthreetopon extends Component {
     i = new IGuardthreetopon();
     i.in.name = "i";
     i.in.self = this;
-    b = false;
     r = new RGuardthreetopon();
     r.out.name = "r";
     r.out.self = this;

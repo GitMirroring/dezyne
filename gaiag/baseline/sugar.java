@@ -41,7 +41,6 @@ class sugar extends Component {
     i = new I();
     i.in.name = "i";
     i.in.self = this;
-    s = Enum.False;
     i.in.e = new Action() {public void action() {Runtime.callIn(sugar.this, new Action() {public void action() {i_e();}}, new Meta(sugar.this.i, "e"));};};
 
   };

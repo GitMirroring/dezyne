@@ -38,7 +38,6 @@ class argument2 extends Component {
     i = new I();
     i.in.name = "i";
     i.in.self = this;
-    b = false;
     i.in.e = new Action() {public void action() {Runtime.callIn(argument2.this, new Action() {public void action() {i_e();}}, new Meta(argument2.this.i, "e"));};};
 
   };

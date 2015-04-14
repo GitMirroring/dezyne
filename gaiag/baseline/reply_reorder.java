@@ -39,7 +39,6 @@ class reply_reorder extends Component {
     p = new Provides();
     p.in.name = "p";
     p.in.self = this;
-    first = true;
     r = new Requires();
     r.out.name = "r";
     r.out.self = this;

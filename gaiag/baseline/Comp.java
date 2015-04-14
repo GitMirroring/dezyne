@@ -46,7 +46,6 @@ class Comp extends Component {
     client = new IComp();
     client.in.name = "client";
     client.in.self = this;
-    s = State.Uninitialized;
     device_A = new IDevice();
     device_A.out.name = "device_A";
     device_A.out.self = this;

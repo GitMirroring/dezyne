@@ -39,8 +39,6 @@ class Topon extends Component {
     i = new ITopon();
     i.in.name = "i";
     i.in.self = this;
-    b = false;
-    c = false;
     i.in.e = new Action() {public void action() {Runtime.callIn(Topon.this, new Action() {public void action() {i_e();}}, new Meta(Topon.this.i, "e"));};};
 
     i.in.t = new Action() {public void action() {Runtime.callIn(Topon.this, new Action() {public void action() {i_t();}}, new Meta(Topon.this.i, "t"));};};

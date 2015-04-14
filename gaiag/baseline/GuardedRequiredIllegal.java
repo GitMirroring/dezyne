@@ -38,7 +38,6 @@ class GuardedRequiredIllegal extends Component {
     t = new Top();
     t.in.name = "t";
     t.in.self = this;
-    c = false;
     b = new Bottom();
     b.out.name = "b";
     b.out.self = this;

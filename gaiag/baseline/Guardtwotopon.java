@@ -37,7 +37,6 @@ class Guardtwotopon extends Component {
     i = new IGuardtwotopon();
     i.in.name = "i";
     i.in.self = this;
-    b = false;
     i.in.e = new Action() {public void action() {Runtime.callIn(Guardtwotopon.this, new Action() {public void action() {i_e();}}, new Meta(Guardtwotopon.this.i, "e"));};};
 
     i.in.t = new Action() {public void action() {Runtime.callIn(Guardtwotopon.this, new Action() {public void action() {i_t();}}, new Meta(Guardtwotopon.this.i, "t"));};};

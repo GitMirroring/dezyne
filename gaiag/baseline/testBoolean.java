@@ -38,7 +38,6 @@ class testBoolean extends Component {
     i = new TestBool();
     i.in.name = "i";
     i.in.self = this;
-    b = false;
     i.in.evt = new Action() {public void action() {Runtime.callIn(testBoolean.this, new Action() {public void action() {i_evt();}}, new Meta(testBoolean.this.i, "evt"));};};
 
   };

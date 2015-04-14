@@ -40,8 +40,6 @@ class expressions extends Component {
     i = new I();
     i.in.name = "i";
     i.in.self = this;
-    state = 3;
-    c = 0;
     i.in.e = new Action() {public void action() {Runtime.callIn(expressions.this, new Action() {public void action() {i_e();}}, new Meta(expressions.this.i, "e"));};};
 
   };

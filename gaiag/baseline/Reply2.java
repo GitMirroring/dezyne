@@ -43,7 +43,6 @@ class Reply2 extends Component {
     i = new I();
     i.in.name = "i";
     i.in.self = this;
-    dummy = false;
     u = new U();
     u.out.name = "u";
     u.out.self = this;

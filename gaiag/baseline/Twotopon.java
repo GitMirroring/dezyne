@@ -37,7 +37,6 @@ class Twotopon extends Component {
     i = new ITwotopon();
     i.in.name = "i";
     i.in.self = this;
-    b = false;
     i.in.e = new Action() {public void action() {Runtime.callIn(Twotopon.this, new Action() {public void action() {i_e();}}, new Meta(Twotopon.this.i, "e"));};};
 
     i.in.t = new Action() {public void action() {Runtime.callIn(Twotopon.this, new Action() {public void action() {i_t();}}, new Meta(Twotopon.this.i, "t"));};};

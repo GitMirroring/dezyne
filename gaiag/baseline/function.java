@@ -38,7 +38,6 @@ class function extends Component {
     i = new I();
     i.in.name = "i";
     i.in.self = this;
-    f = false;
     i.in.a = new Action() {public void action() {Runtime.callIn(function.this, new Action() {public void action() {i_a();}}, new Meta(function.this.i, "a"));};};
 
     i.in.b = new Action() {public void action() {Runtime.callIn(function.this, new Action() {public void action() {i_b();}}, new Meta(function.this.i, "b"));};};

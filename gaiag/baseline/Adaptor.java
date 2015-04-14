@@ -45,8 +45,6 @@ class Adaptor extends Component {
     runner = new IRun();
     runner.in.name = "runner";
     runner.in.self = this;
-    state = State.Idle;
-    count = 0;
     choice = new IChoice();
     choice.out.name = "choice";
     choice.out.self = this;

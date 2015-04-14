@@ -38,7 +38,6 @@ class function2 extends Component {
     i = new ifunction2();
     i.in.name = "i";
     i.in.self = this;
-    f = false;
     i.in.a = new Action() {public void action() {Runtime.callIn(function2.this, new Action() {public void action() {i_a();}}, new Meta(function2.this.i, "a"));};};
 
     i.in.b = new Action() {public void action() {Runtime.callIn(function2.this, new Action() {public void action() {i_b();}}, new Meta(function2.this.i, "b"));};};

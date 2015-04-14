@@ -38,7 +38,6 @@ class If extends Component {
     i = new I();
     i.in.name = "i";
     i.in.self = this;
-    t = false;
     i.in.a = new Action() {public void action() {Runtime.callIn(If.this, new Action() {public void action() {i_a();}}, new Meta(If.this.i, "a"));};};
 
   };

@@ -46,8 +46,6 @@ class Alarm extends Component {
     console = new IConsole();
     console.in.name = "console";
     console.in.self = this;
-    state = States.Disarmed;
-    sounding = false;
     sensor = new ISensor();
     sensor.out.name = "sensor";
     sensor.out.self = this;
