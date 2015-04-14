@@ -5,7 +5,7 @@
   (deferred? :accessor .deferred? :init-value ##f :init-keyword :deferred?)
   (q :accessor .q :init-form (make-q) :init-keyword :q)#
 (map (init-member model #{#'()
-  (#name  :accessor .#name  :init-value #expression)#})
+  (#name  :accessor .#name  :init-value #(if (eq? expression *unspecified*) "#f" expression))#})
      (gom:variables model))#
   (delete-duplicates (map (compose declare-replies code:import .type)
                           ((compose .elements .ports) model)))#

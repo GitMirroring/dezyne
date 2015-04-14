@@ -105,7 +105,7 @@ void #.model _init (#.model * self, locator* dezyne_locator, dzn_meta_t *dzn_met
 ((->join  ";\n")
  (filter (negate (compose string-null? string-trim))
    (map (init-member model #{
-   #(string-if (not (eq? expression *unspecified*)) #{ self->#name  = #expression #})#}) (gom:variables model))))#
+   #(string-if (not (eq? expression *unspecified*)) #{ self->#name  = #expression#})#}) (gom:variables model))))#
 (if (null? (gom:variables model)) "" ";")
 #
    (map

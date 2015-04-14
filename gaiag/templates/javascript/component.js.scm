@@ -6,8 +6,8 @@ dezyne.#.model  = function(rt, meta) {
 (->string (map declare-enum (gom:enums (.behaviour model))))
 #
     (map (init-member model #{
-  this.#name  = #expression;
-#}) (gom:variables model))#
+  #(string-if (eq? expression *unspecified*) "" #{this.#name  = #expression ;
+#})#}) (gom:variables model))#
     (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))
 #
     (map (init-port #{

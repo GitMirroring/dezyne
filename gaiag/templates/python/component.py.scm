@@ -18,8 +18,8 @@ class #.model :
 
 #
     (map (init-member model #{
-        self.#name  = #expression
-#}) (gom:variables model))#
+#(string-if (eq? expression *unspecified*) "" #{         self.#name  = #expression
+#})#}) (gom:variables model))#
     (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))#
     (map (init-port #{
         self.#name  = dezyne.#interface  (provides=('#name ', self))

@@ -17,14 +17,12 @@ class #.model  extends Component {#
     super(runtime, name, parent);
     this.flushes = true;#
 (map (init-member model #{#'()
-    #name  = #expression;#}) (gom:variables model))#
+    #(string-if (eq? expression (if #f #f)) "" #{#name  = #expression ;#})#}) (gom:variables model))#
 (map (init-port #{#'()
     #name  = new #interface();
     #name .in.name = "#name ";
     #name .in.self = this;#})
     (filter gom:provides? ((compose .elements .ports) model)))#
-(map (init-member model #{#'()
-    #name  = #expression;#}) (gom:variables model))#
 (map (init-port #{#'()
     #name  = new #interface();
     #name .out.name = "#name ";
