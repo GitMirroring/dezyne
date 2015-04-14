@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,7 +21,7 @@
 //
 // Code:
 
-class imperative{
+class imperative extends Component {
   enum States {
     I, II, III, IV
   };
@@ -30,35 +30,40 @@ class imperative{
 
   iimperative i;
 
-  public imperative() {
+  public imperative(Runtime runtime) {this(runtime, "");};
+
+  public imperative(Runtime runtime, String name) {this(runtime, name, null);};
+
+  public imperative(Runtime runtime, String name, SystemComponent parent) {
+    super(runtime, name, parent);
+    this.flushes = true;
     state = States.I;
     i = new iimperative();
-    i.getIn().e = new Action() {
-      public void action() {
-        i_e();
-      }
-    };
+    i.in.name = "i";
+    i.in.self = this;
+    state = States.I;
+    i.in.e = new Action() {public void action() {Runtime.callIn(imperative.this, new Action() {public void action() {i_e();}}, new Meta(imperative.this.i, "e"));};};
+
   };
   public void i_e() {
-    System.err.println("imperative.i_e");
     if (state == States.I) {
-      i.getOut().f.action();
-      i.getOut().g.action();
-      i.getOut().h.action();
+      i.out.f.action();
+      i.out.g.action();
+      i.out.h.action();
       state = States.II;
     }
     else if (state == States.II) {
       state = States.III;
     }
     else if (state == States.III) {
-      i.getOut().f.action();
-      i.getOut().g.action();
-      i.getOut().g.action();
-      i.getOut().f.action();
+      i.out.f.action();
+      i.out.g.action();
+      i.out.g.action();
+      i.out.f.action();
       state = States.IV;
     }
     else if (state == States.IV) {
-      i.getOut().h.action();
+      i.out.h.action();
       state = States.I;
     }
   };

@@ -21,10 +21,10 @@
 // Code:
 
 class Bottom extends Interface<Bottom.In, Bottom.Out> {
-  class In implements Interface.In {
+  class In extends Interface.In {
     Action e;
   }
-  class Out implements Interface.Out {
+  class Out extends Interface.Out {
     Action f;
   }
   public Bottom() {

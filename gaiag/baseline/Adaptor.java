@@ -22,7 +22,7 @@
 //
 // Code:
 
-class Adaptor{
+class Adaptor extends Component {
   enum State {
     Idle, Active, Terminating
   };
@@ -33,26 +33,31 @@ class Adaptor{
   IRun runner;
   IChoice choice;
 
-  public Adaptor() {
+  public Adaptor(Runtime runtime) {this(runtime, "");};
+
+  public Adaptor(Runtime runtime, String name) {this(runtime, name, null);};
+
+  public Adaptor(Runtime runtime, String name, SystemComponent parent) {
+    super(runtime, name, parent);
+    this.flushes = true;
     state = State.Idle;
     count = 0;
     runner = new IRun();
+    runner.in.name = "runner";
+    runner.in.self = this;
+    state = State.Idle;
+    count = 0;
     choice = new IChoice();
-    runner.getIn().run = new Action() {
-      public void action() {
-        runner_run();
-      }
-    };
-    choice.getOut().a = new Action() {
-      public void action() {
-        choice_a();
-      }
-    };
+    choice.out.name = "choice";
+    choice.out.self = this;
+    runner.in.run = new Action() {public void action() {Runtime.callIn(Adaptor.this, new Action() {public void action() {runner_run();}}, new Meta(Adaptor.this.runner, "run"));};};
+
+    choice.out.a = new Action() {public void action() {Runtime.callOut(Adaptor.this, new Action() {public void action() {choice_a();}}, new Meta(Adaptor.this.choice, "a"));};};
+
   };
   public void runner_run() {
-    System.err.println("Adaptor.runner_run");
     if (state == State.Idle && count < 2) {
-      choice.getIn().e.action();
+      choice.in.e.action();
       state = State.Active;
     }
     else if (state == State.Idle && ! (count < 2)) { }
@@ -63,17 +68,16 @@ class Adaptor{
   };
 
   public void choice_a() {
-    System.err.println("Adaptor.choice_a");
     if (state == State.Idle) { }
     else if (state == State.Active) {
       {
         count = count + 1;
-        choice.getIn().e.action();
+        choice.in.e.action();
         state = State.Terminating;
       }
     }
     else if (state == State.Terminating && count < 2) {
-      choice.getIn().e.action();
+      choice.in.e.action();
       state = State.Active;
     }
     else if (state == State.Terminating && ! (count < 2)) state = State.Idle;

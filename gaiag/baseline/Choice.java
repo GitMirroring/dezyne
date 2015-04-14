@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,7 +22,7 @@
 //
 // Code:
 
-class Choice{
+class Choice extends Component {
   enum State {
     Off, Idle, Busy
   };
@@ -30,28 +31,33 @@ class Choice{
 
   IChoice c;
 
-  public Choice() {
+  public Choice(Runtime runtime) {this(runtime, "");};
+
+  public Choice(Runtime runtime, String name) {this(runtime, name, null);};
+
+  public Choice(Runtime runtime, String name, SystemComponent parent) {
+    super(runtime, name, parent);
+    this.flushes = true;
     s = State.Off;
     c = new IChoice();
-    c.getIn().e = new Action() {
-      public void action() {
-        c_e();
-      }
-    };
+    c.in.name = "c";
+    c.in.self = this;
+    s = State.Off;
+    c.in.e = new Action() {public void action() {Runtime.callIn(Choice.this, new Action() {public void action() {c_e();}}, new Meta(Choice.this.c, "e"));};};
+
   };
   public void c_e() {
-    System.err.println("Choice.c_e");
     if (s == State.Off) {
       s = State.Idle;
-      c.getOut().a.action();
+      c.out.a.action();
     }
     else if (s == State.Idle) {
       s = State.Busy;
-      c.getOut().a.action();
+      c.out.a.action();
     }
     else if (s == State.Busy) {
       s = State.Idle;
-      c.getOut().a.action();
+      c.out.a.action();
     }
   };
 

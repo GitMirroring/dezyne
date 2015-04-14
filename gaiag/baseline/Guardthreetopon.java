@@ -20,62 +20,57 @@
 //
 // Code:
 
-class Guardthreetopon{
+class Guardthreetopon extends Component {
 
   Boolean b;
 
   IGuardthreetopon i;
   RGuardthreetopon r;
 
-  public Guardthreetopon() {
+  public Guardthreetopon(Runtime runtime) {this(runtime, "");};
+
+  public Guardthreetopon(Runtime runtime, String name) {this(runtime, name, null);};
+
+  public Guardthreetopon(Runtime runtime, String name, SystemComponent parent) {
+    super(runtime, name, parent);
+    this.flushes = true;
     b = false;
     i = new IGuardthreetopon();
+    i.in.name = "i";
+    i.in.self = this;
+    b = false;
     r = new RGuardthreetopon();
-    i.getIn().e = new Action() {
-      public void action() {
-        i_e();
-      }
-    };
-    i.getIn().t = new Action() {
-      public void action() {
-        i_t();
-      }
-    };
-    i.getIn().s = new Action() {
-      public void action() {
-        i_s();
-      }
-    };
-    r.getOut().a = new Action() {
-      public void action() {
-        r_a();
-      }
-    };
+    r.out.name = "r";
+    r.out.self = this;
+    i.in.e = new Action() {public void action() {Runtime.callIn(Guardthreetopon.this, new Action() {public void action() {i_e();}}, new Meta(Guardthreetopon.this.i, "e"));};};
+
+    i.in.t = new Action() {public void action() {Runtime.callIn(Guardthreetopon.this, new Action() {public void action() {i_t();}}, new Meta(Guardthreetopon.this.i, "t"));};};
+
+    i.in.s = new Action() {public void action() {Runtime.callIn(Guardthreetopon.this, new Action() {public void action() {i_s();}}, new Meta(Guardthreetopon.this.i, "s"));};};
+
+    r.out.a = new Action() {public void action() {Runtime.callOut(Guardthreetopon.this, new Action() {public void action() {r_a();}}, new Meta(Guardthreetopon.this.r, "a"));};};
+
   };
   public void i_e() {
-    System.err.println("Guardthreetopon.i_e");
     if (true && b) {
-      i.getOut().a.action();
+      i.out.a.action();
     }
     else if (true && ! (b)) {
-      Boolean c = true;
-      if (c) i.getOut().a.action();
+      V<Boolean> c = new V <Boolean>(true);
+      if (c.v) i.out.a.action();
     }
   };
 
   public void i_t() {
-    System.err.println("Guardthreetopon.i_t");
-    if (b) i.getOut().a.action();
-    else if (! (b)) i.getOut().a.action();
+    if (b) i.out.a.action();
+    else if (! (b)) i.out.a.action();
   };
 
   public void i_s() {
-    System.err.println("Guardthreetopon.i_s");
-    i.getOut().a.action();
+    i.out.a.action();
   };
 
   public void r_a() {
-    System.err.println("Guardthreetopon.r_a");
     { }
   };
 

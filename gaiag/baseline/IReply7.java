@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -25,10 +25,10 @@ class IReply7 extends Interface<IReply7.In, IReply7.Out> {
   enum E {
     A
   };
-  class In implements Interface.In {
+  class In extends Interface.In {
     ValuedAction<E> foo;
   }
-  class Out implements Interface.Out {
+  class Out extends Interface.Out {
 
   }
   public IReply7() {

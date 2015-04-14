@@ -21,34 +21,36 @@
 //
 // Code:
 
-class incomplete_with_modeling_event{
+class incomplete_with_modeling_event extends Component {
 
 
   iincomplete_with_modeling_event p;
   iincomplete_with_modeling_event r;
 
-  public incomplete_with_modeling_event() {
+  public incomplete_with_modeling_event(Runtime runtime) {this(runtime, "");};
+
+  public incomplete_with_modeling_event(Runtime runtime, String name) {this(runtime, name, null);};
+
+  public incomplete_with_modeling_event(Runtime runtime, String name, SystemComponent parent) {
+    super(runtime, name, parent);
+    this.flushes = true;
     p = new iincomplete_with_modeling_event();
+    p.in.name = "p";
+    p.in.self = this;
     r = new iincomplete_with_modeling_event();
-    p.getIn().e = new Action() {
-      public void action() {
-        p_e();
-      }
-    };
-    r.getOut().a = new Action() {
-      public void action() {
-        r_a();
-      }
-    };
+    r.out.name = "r";
+    r.out.self = this;
+    p.in.e = new Action() {public void action() {Runtime.callIn(incomplete_with_modeling_event.this, new Action() {public void action() {p_e();}}, new Meta(incomplete_with_modeling_event.this.p, "e"));};};
+
+    r.out.a = new Action() {public void action() {Runtime.callOut(incomplete_with_modeling_event.this, new Action() {public void action() {r_a();}}, new Meta(incomplete_with_modeling_event.this.r, "a"));};};
+
   };
   public void p_e() {
-    System.err.println("incomplete_with_modeling_event.p_e");
     { }
   };
 
   public void r_a() {
-    System.err.println("incomplete_with_modeling_event.r_a");
-    p.getOut().a.action();
+    p.out.a.action();
   };
 
 }

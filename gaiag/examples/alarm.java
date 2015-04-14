@@ -2,7 +2,7 @@
 //
 // This file is part of Gaiag.
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -24,14 +24,14 @@
 // Handwritten
 class Console {
   IConsole console;
-  public Console() {
+  public Console(Runtime runtime, String name, ComponentBase parent) {
     console = new IConsole();
-    console.getOut().detected = new Action() {
+    console.out.detected = new Action() {
         public void action() {
           System.err.println("Alarm detected");
         }
       };
-    console.getOut().deactivated = new Action() {
+    console.out.deactivated = new Action() {
         public void action() {
           System.err.println("Alarm deactivated");
         }
@@ -41,14 +41,14 @@ class Console {
 
 class Sensor {
   ISensor sensor;
-  public Sensor() {
+  public Sensor(Runtime runtime, String name, ComponentBase parent) {
     sensor = new ISensor();
-    sensor.getIn().enable = new Action() {
+    sensor.in.enable = new Action() {
         public void action() {
           System.err.println("Sensor detected");
         }
       };
-    sensor.getIn().disable = new Action() {
+    sensor.in.disable = new Action() {
         public void action() {
           System.err.println("Sensor deactivated");
         }
@@ -58,14 +58,14 @@ class Sensor {
 
 class Siren {
   ISiren siren;
-  public Siren() {
+  public Siren(Runtime runtime, String name, ComponentBase parent) {
     siren = new ISiren();
-    siren.getIn().turnon = new Action() {
+    siren.in.turnon = new Action() {
         public void action() {
           System.err.println("Siren detected");
         }
       };
-    siren.getIn().turnoff = new Action() {
+    siren.in.turnoff = new Action() {
         public void action() {
           System.err.println("Siren deactivated");
         }
@@ -75,16 +75,17 @@ class Siren {
 
 class alarm {
   public static void main(String[] args) {
+    Runtime runtime = new Runtime();
     System.err.println("alarm main");
-    AlarmSystem alarm = new AlarmSystem();
-    Console console = new Console();
+    AlarmSystem alarm = new AlarmSystem(runtime);
+    Console console = new Console(runtime, "", null);
     Interface.connect(alarm.console, console.console);
 
     // Test trace
 
-    alarm.console.getIn().arm.action();
-    alarm.sensor.sensor.getOut().triggered.action();
-    alarm.console.getIn().disarm.action();
-    alarm.sensor.sensor.getOut().disabled.action();
+    alarm.console.in.arm.action();
+    alarm.sensor.sensor.out.triggered.action();
+    alarm.console.in.disarm.action();
+    alarm.sensor.sensor.out.disabled.action();
   }
 }

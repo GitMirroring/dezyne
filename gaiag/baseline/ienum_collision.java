@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -28,11 +28,11 @@ class ienum_collision extends Interface<ienum_collision.In, ienum_collision.Out>
   enum Retval2 {
     OK, NOK
   };
-  class In implements Interface.In {
+  class In extends Interface.In {
     ValuedAction<Retval1> foo;
     ValuedAction<Retval2> bar;
   }
-  class Out implements Interface.Out {
+  class Out extends Interface.Out {
 
   }
   public ienum_collision() {

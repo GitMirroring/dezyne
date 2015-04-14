@@ -20,40 +20,41 @@
 //
 // Code:
 
-class Guardtwotopon{
+class Guardtwotopon extends Component {
 
   Boolean b;
 
   IGuardtwotopon i;
 
-  public Guardtwotopon() {
+  public Guardtwotopon(Runtime runtime) {this(runtime, "");};
+
+  public Guardtwotopon(Runtime runtime, String name) {this(runtime, name, null);};
+
+  public Guardtwotopon(Runtime runtime, String name, SystemComponent parent) {
+    super(runtime, name, parent);
+    this.flushes = true;
     b = false;
     i = new IGuardtwotopon();
-    i.getIn().e = new Action() {
-      public void action() {
-        i_e();
-      }
-    };
-    i.getIn().t = new Action() {
-      public void action() {
-        i_t();
-      }
-    };
+    i.in.name = "i";
+    i.in.self = this;
+    b = false;
+    i.in.e = new Action() {public void action() {Runtime.callIn(Guardtwotopon.this, new Action() {public void action() {i_e();}}, new Meta(Guardtwotopon.this.i, "e"));};};
+
+    i.in.t = new Action() {public void action() {Runtime.callIn(Guardtwotopon.this, new Action() {public void action() {i_t();}}, new Meta(Guardtwotopon.this.i, "t"));};};
+
   };
   public void i_e() {
-    System.err.println("Guardtwotopon.i_e");
     if (true && b) {
-      i.getOut().a.action();
+      i.out.a.action();
     }
     else if (true && ! (b)) {
-      Boolean c = true;
-      if (c) i.getOut().a.action();
+      V<Boolean> c = new V <Boolean>(true);
+      if (c.v) i.out.a.action();
     }
   };
 
   public void i_t() {
-    System.err.println("Guardtwotopon.i_t");
-    i.getOut().a.action();
+    i.out.a.action();
   };
 
 }

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,23 +21,28 @@
 //
 // Code:
 
-class testBoolean{
+class testBoolean extends Component {
 
   Boolean b;
 
   TestBool i;
 
-  public testBoolean() {
+  public testBoolean(Runtime runtime) {this(runtime, "");};
+
+  public testBoolean(Runtime runtime, String name) {this(runtime, name, null);};
+
+  public testBoolean(Runtime runtime, String name, SystemComponent parent) {
+    super(runtime, name, parent);
+    this.flushes = true;
     b = false;
     i = new TestBool();
-    i.getIn().evt = new Action() {
-      public void action() {
-        i_evt();
-      }
-    };
+    i.in.name = "i";
+    i.in.self = this;
+    b = false;
+    i.in.evt = new Action() {public void action() {Runtime.callIn(testBoolean.this, new Action() {public void action() {i_evt();}}, new Meta(testBoolean.this.i, "evt"));};};
+
   };
   public void i_evt() {
-    System.err.println("testBoolean.i_evt");
     if (true) { }
   };
 

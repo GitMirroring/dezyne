@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,16 +21,22 @@
 //
 // Code:
 
-class AlarmSystem {
+class AlarmSystem extends SystemComponent {
   Alarm alarm;
   Sensor sensor;
   Siren siren;
   IConsole console;
 
-  public AlarmSystem() {
-    alarm = new Alarm();
-    sensor = new Sensor();
-    siren = new Siren();
+
+  public AlarmSystem(Runtime runtime) {this(runtime, "");};
+
+  public AlarmSystem(Runtime runtime, String name) {this(runtime, name, null);};
+
+  public AlarmSystem(Runtime runtime, String name, SystemComponent parent) {
+    super(runtime, name, parent);
+    alarm = new Alarm(runtime, "alarm", this);
+    sensor = new Sensor(runtime, "sensor", this);
+    siren = new Siren(runtime, "siren", this);
     console = alarm.console;
 
     Interface.connect(sensor.sensor, alarm.sensor);

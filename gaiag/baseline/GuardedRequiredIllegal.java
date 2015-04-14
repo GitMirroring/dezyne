@@ -20,50 +20,49 @@
 //
 // Code:
 
-class GuardedRequiredIllegal{
+class GuardedRequiredIllegal extends Component {
 
   Boolean c;
 
   Top t;
   Bottom b;
 
-  public GuardedRequiredIllegal() {
+  public GuardedRequiredIllegal(Runtime runtime) {this(runtime, "");};
+
+  public GuardedRequiredIllegal(Runtime runtime, String name) {this(runtime, name, null);};
+
+  public GuardedRequiredIllegal(Runtime runtime, String name, SystemComponent parent) {
+    super(runtime, name, parent);
+    this.flushes = true;
     c = false;
     t = new Top();
+    t.in.name = "t";
+    t.in.self = this;
+    c = false;
     b = new Bottom();
-    t.getIn().unguarded = new Action() {
-      public void action() {
-        t_unguarded();
-      }
-    };
-    t.getIn().e = new Action() {
-      public void action() {
-        t_e();
-      }
-    };
-    b.getOut().f = new Action() {
-      public void action() {
-        b_f();
-      }
-    };
+    b.out.name = "b";
+    b.out.self = this;
+    t.in.unguarded = new Action() {public void action() {Runtime.callIn(GuardedRequiredIllegal.this, new Action() {public void action() {t_unguarded();}}, new Meta(GuardedRequiredIllegal.this.t, "unguarded"));};};
+
+    t.in.e = new Action() {public void action() {Runtime.callIn(GuardedRequiredIllegal.this, new Action() {public void action() {t_e();}}, new Meta(GuardedRequiredIllegal.this.t, "e"));};};
+
+    b.out.f = new Action() {public void action() {Runtime.callOut(GuardedRequiredIllegal.this, new Action() {public void action() {b_f();}}, new Meta(GuardedRequiredIllegal.this.b, "f"));};};
+
   };
   public void t_unguarded() {
-    System.err.println("GuardedRequiredIllegal.t_unguarded");
     { }
   };
 
   public void t_e() {
-    System.err.println("GuardedRequiredIllegal.t_e");
     if (! (c)) {
       c = true;
-      b.getIn().e.action();
+      b.in.e.action();
     }
     else if (c) { }
   };
 
   public void b_f() {
-    System.err.println("GuardedRequiredIllegal.b_f");
-    if (! (c)) assert(false);
+    if (! (c)) throw new RuntimeException("illegal");
     else if (c) {
       c = false;
     }

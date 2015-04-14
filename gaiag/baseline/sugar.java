@@ -21,7 +21,7 @@
 //
 // Code:
 
-class sugar{
+class sugar extends Component {
   enum Enum {
     False, True
   };
@@ -30,21 +30,26 @@ class sugar{
 
   I i;
 
-  public sugar() {
+  public sugar(Runtime runtime) {this(runtime, "");};
+
+  public sugar(Runtime runtime, String name) {this(runtime, name, null);};
+
+  public sugar(Runtime runtime, String name, SystemComponent parent) {
+    super(runtime, name, parent);
+    this.flushes = true;
     s = Enum.False;
     i = new I();
-    i.getIn().e = new Action() {
-      public void action() {
-        i_e();
-      }
-    };
+    i.in.name = "i";
+    i.in.self = this;
+    s = Enum.False;
+    i.in.e = new Action() {public void action() {Runtime.callIn(sugar.this, new Action() {public void action() {i_e();}}, new Meta(sugar.this.i, "e"));};};
+
   };
   public void i_e() {
-    System.err.println("sugar.i_e");
-    if (s == Enum.False) if (s == Enum.False) i.getOut().a.action();
+    if (s == Enum.False) if (s == Enum.False) i.out.a.action();
     else {
-      Enum t = Enum.False;
-      if (t == Enum.True) i.getOut().a.action();
+      V<Enum> t = new V <Enum>(Enum.False);
+      if (t.v == Enum.True) i.out.a.action();
     }
   };
 

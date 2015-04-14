@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,12 +22,18 @@
 //
 // Code:
 
-class ChoiceSystem {
+class ChoiceSystem extends SystemComponent {
   Choice choice;
   IChoice c;
 
-  public ChoiceSystem() {
-    choice = new Choice();
+
+  public ChoiceSystem(Runtime runtime) {this(runtime, "");};
+
+  public ChoiceSystem(Runtime runtime, String name) {this(runtime, name, null);};
+
+  public ChoiceSystem(Runtime runtime, String name, SystemComponent parent) {
+    super(runtime, name, parent);
+    choice = new Choice(runtime, "choice", this);
     c = choice.c;
 
   };

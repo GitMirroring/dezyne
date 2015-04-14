@@ -21,29 +21,35 @@
 //
 // Code:
 
-class expressions{
+class expressions extends Component {
 
   Integer state;
   Integer c;
 
   I i;
 
-  public expressions() {
+  public expressions(Runtime runtime) {this(runtime, "");};
+
+  public expressions(Runtime runtime, String name) {this(runtime, name, null);};
+
+  public expressions(Runtime runtime, String name, SystemComponent parent) {
+    super(runtime, name, parent);
+    this.flushes = true;
     state = 3;
     c = 0;
     i = new I();
-    i.getIn().e = new Action() {
-      public void action() {
-        i_e();
-      }
-    };
+    i.in.name = "i";
+    i.in.self = this;
+    state = 3;
+    c = 0;
+    i.in.e = new Action() {public void action() {Runtime.callIn(expressions.this, new Action() {public void action() {i_e();}}, new Meta(expressions.this.i, "e"));};};
+
   };
   public void i_e() {
-    System.err.println("expressions.i_e");
     if (true) {
       if (state == 0) {
         state = 3;
-        i.getOut().a.action();
+        i.out.a.action();
       }
       else {
         state = state - 1;
@@ -52,11 +58,11 @@ class expressions{
         }
         else {
           if (c <= (state + 1)) {
-            i.getOut().lo.action();
+            i.out.lo.action();
           }
           else {
             if (c > state) {
-              i.getOut().hi.action();
+              i.out.hi.action();
             }
           }
         }

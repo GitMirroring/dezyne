@@ -21,43 +21,46 @@
 //
 // Code:
 
-class reply_reorder{
+class reply_reorder extends Component {
 
   Boolean first;
 
   Provides p;
   Requires r;
 
-  public reply_reorder() {
+  public reply_reorder(Runtime runtime) {this(runtime, "");};
+
+  public reply_reorder(Runtime runtime, String name) {this(runtime, name, null);};
+
+  public reply_reorder(Runtime runtime, String name, SystemComponent parent) {
+    super(runtime, name, parent);
+    this.flushes = true;
     first = true;
     p = new Provides();
+    p.in.name = "p";
+    p.in.self = this;
+    first = true;
     r = new Requires();
-    p.getIn().start = new Action() {
-      public void action() {
-        p_start();
-      }
-    };
-    r.getOut().pong = new Action() {
-      public void action() {
-        r_pong();
-      }
-    };
+    r.out.name = "r";
+    r.out.self = this;
+    p.in.start = new Action() {public void action() {Runtime.callIn(reply_reorder.this, new Action() {public void action() {p_start();}}, new Meta(reply_reorder.this.p, "start"));};};
+
+    r.out.pong = new Action() {public void action() {Runtime.callOut(reply_reorder.this, new Action() {public void action() {r_pong();}}, new Meta(reply_reorder.this.r, "pong"));};};
+
   };
   public void p_start() {
-    System.err.println("reply_reorder.p_start");
     {
-      r.getIn().ping.action();
+      r.in.ping.action();
     }
   };
 
   public void r_pong() {
-    System.err.println("reply_reorder.r_pong");
     if (first) {
-      p.getOut().busy.action();
+      p.out.busy.action();
       first = ! (first);
     }
     else if (! (first)) {
-      p.getOut().finish.action();
+      p.out.finish.action();
       first = ! (first);
     }
   };

@@ -21,50 +21,50 @@
 //
 // Code:
 
-class requires_twice{
+class requires_twice extends Component {
 
 
   irequires_twice p;
   irequires_twice once;
   irequires_twice twice;
 
-  public requires_twice() {
+  public requires_twice(Runtime runtime) {this(runtime, "");};
+
+  public requires_twice(Runtime runtime, String name) {this(runtime, name, null);};
+
+  public requires_twice(Runtime runtime, String name, SystemComponent parent) {
+    super(runtime, name, parent);
+    this.flushes = true;
     p = new irequires_twice();
+    p.in.name = "p";
+    p.in.self = this;
     once = new irequires_twice();
+    once.out.name = "once";
+    once.out.self = this;
     twice = new irequires_twice();
-    p.getIn().e = new Action() {
-      public void action() {
-        p_e();
-      }
-    };
-    once.getOut().a = new Action() {
-      public void action() {
-        once_a();
-      }
-    };
-    twice.getOut().a = new Action() {
-      public void action() {
-        twice_a();
-      }
-    };
+    twice.out.name = "twice";
+    twice.out.self = this;
+    p.in.e = new Action() {public void action() {Runtime.callIn(requires_twice.this, new Action() {public void action() {p_e();}}, new Meta(requires_twice.this.p, "e"));};};
+
+    once.out.a = new Action() {public void action() {Runtime.callOut(requires_twice.this, new Action() {public void action() {once_a();}}, new Meta(requires_twice.this.once, "a"));};};
+
+    twice.out.a = new Action() {public void action() {Runtime.callOut(requires_twice.this, new Action() {public void action() {twice_a();}}, new Meta(requires_twice.this.twice, "a"));};};
+
   };
   public void p_e() {
-    System.err.println("requires_twice.p_e");
     {
-      once.getIn().e.action();
-      twice.getIn().e.action();
+      once.in.e.action();
+      twice.in.e.action();
     }
   };
 
   public void once_a() {
-    System.err.println("requires_twice.once_a");
     { }
   };
 
   public void twice_a() {
-    System.err.println("requires_twice.twice_a");
     {
-      p.getOut().a.action();
+      p.out.a.action();
     }
   };
 

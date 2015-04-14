@@ -21,11 +21,11 @@
 // Code:
 
 class Top extends Interface<Top.In, Top.Out> {
-  class In implements Interface.In {
+  class In extends Interface.In {
     Action unguarded;
     Action e;
   }
-  class Out implements Interface.Out {
+  class Out extends Interface.Out {
     Action f;
   }
   public Top() {

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,10 +22,10 @@
 // Code:
 
 class iincomplete_with_modeling_event extends Interface<iincomplete_with_modeling_event.In, iincomplete_with_modeling_event.Out> {
-  class In implements Interface.In {
+  class In extends Interface.In {
     Action e;
   }
-  class Out implements Interface.Out {
+  class Out extends Interface.Out {
     Action a;
   }
   public iincomplete_with_modeling_event() {

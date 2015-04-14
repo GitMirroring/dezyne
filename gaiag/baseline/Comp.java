@@ -21,7 +21,7 @@
 //
 // Code:
 
-class Comp{
+class Comp extends Component {
   enum State {
     Uninitialized, Initialized, Error
   };
@@ -35,35 +35,36 @@ class Comp{
   IComp client;
   IDevice device_A;
 
-  public Comp() {
+  public Comp(Runtime runtime) {this(runtime, "");};
+
+  public Comp(Runtime runtime, String name) {this(runtime, name, null);};
+
+  public Comp(Runtime runtime, String name, SystemComponent parent) {
+    super(runtime, name, parent);
+    this.flushes = true;
     s = State.Uninitialized;
     client = new IComp();
+    client.in.name = "client";
+    client.in.self = this;
+    s = State.Uninitialized;
     device_A = new IDevice();
-    client.getIn().initialize = new ValuedAction<IComp.result_t>() {
-      public IComp.result_t action() {
-        return client_initialize();
-      }
-    };
-    client.getIn().recover = new ValuedAction<IComp.result_t>() {
-      public IComp.result_t action() {
-        return client_recover();
-      }
-    };
-    client.getIn().perform_actions = new ValuedAction<IComp.result_t>() {
-      public IComp.result_t action() {
-        return client_perform_actions();
-      }
-    };
+    device_A.out.name = "device_A";
+    device_A.out.self = this;
+    client.in.initialize = new ValuedAction<IComp.result_t>() {public IComp.result_t action() {return Runtime.callIn(Comp.this, new ValuedAction<IComp.result_t>() {public IComp.result_t action() {return client_initialize();}}, new Meta(Comp.this.client, "initialize"));};};
+
+    client.in.recover = new ValuedAction<IComp.result_t>() {public IComp.result_t action() {return Runtime.callIn(Comp.this, new ValuedAction<IComp.result_t>() {public IComp.result_t action() {return client_recover();}}, new Meta(Comp.this.client, "recover"));};};
+
+    client.in.perform_actions = new ValuedAction<IComp.result_t>() {public IComp.result_t action() {return Runtime.callIn(Comp.this, new ValuedAction<IComp.result_t>() {public IComp.result_t action() {return client_perform_actions();}}, new Meta(Comp.this.client, "perform_actions"));};};
+
   };
   public IComp.result_t client_initialize() {
-    System.err.println("Comp.client_initialize");
     if (s == State.Uninitialized) {
       {
-        IDevice.result_t res = device_A.getIn().initialize.action();
-        if (res == IDevice.result_t.OK) {
-          res = device_A.getIn().calibrate.action();
+        V<IDevice.result_t> res = new V <IDevice.result_t>(device_A.in.initialize.action());
+        if (res.v == IDevice.result_t.OK) {
+          res.v = device_A.in.calibrate.action();
         }
-        if (res == IDevice.result_t.OK) {
+        if (res.v == IDevice.result_t.OK) {
           s = State.Initialized;
           reply_IDevice_result_t = IDevice.result_t.OK;
         }
@@ -74,26 +75,25 @@ class Comp{
       }
     }
     else if (s == State.Initialized) {
-      assert(false);
+      throw new RuntimeException("illegal");
     }
     else if (s == State.Error) {
-      assert(false);
+      throw new RuntimeException("illegal");
     }
     return reply_IComp_result_t;
   };
 
   public IComp.result_t client_recover() {
-    System.err.println("Comp.client_recover");
     if (s == State.Uninitialized) {
-      assert(false);
+      throw new RuntimeException("illegal");
     }
     else if (s == State.Initialized) {
-      assert(false);
+      throw new RuntimeException("illegal");
     }
     else if (s == State.Error) {
       {
-        IDevice.result_t res = device_A.getIn().calibrate.action();
-        if (res == IDevice.result_t.OK) {
+        V<IDevice.result_t> res = new V <IDevice.result_t>(device_A.in.calibrate.action());
+        if (res.v == IDevice.result_t.OK) {
           s = State.Initialized;
           reply_IDevice_result_t = IDevice.result_t.OK;
         }
@@ -107,17 +107,16 @@ class Comp{
   };
 
   public IComp.result_t client_perform_actions() {
-    System.err.println("Comp.client_perform_actions");
     if (s == State.Uninitialized) {
-      assert(false);
+      throw new RuntimeException("illegal");
     }
     else if (s == State.Initialized) {
       {
-        IDevice.result_t res = device_A.getIn().perform_action1.action();
-        if (res == IDevice.result_t.OK) {
-          res = device_A.getIn().perform_action2.action();
+        V<IDevice.result_t> res = new V <IDevice.result_t>(device_A.in.perform_action1.action());
+        if (res.v == IDevice.result_t.OK) {
+          res.v = device_A.in.perform_action2.action();
         }
-        if (res == IDevice.result_t.OK) {
+        if (res.v == IDevice.result_t.OK) {
           s = State.Initialized;
           reply_IDevice_result_t = IDevice.result_t.OK;
         }
@@ -128,7 +127,7 @@ class Comp{
       }
     }
     else if (s == State.Error) {
-      assert(false);
+      throw new RuntimeException("illegal");
     }
     return reply_IComp_result_t;
   };

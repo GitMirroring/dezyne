@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,10 +22,10 @@
 // Code:
 
 class TestBool extends Interface<TestBool.In, TestBool.Out> {
-  class In implements Interface.In {
+  class In extends Interface.In {
     Action evt;
   }
-  class Out implements Interface.Out {
+  class Out extends Interface.Out {
 
   }
   public TestBool() {

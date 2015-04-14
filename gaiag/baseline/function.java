@@ -21,28 +21,30 @@
 //
 // Code:
 
-class function{
+class function extends Component {
 
   Boolean f;
 
   I i;
 
-  public function() {
+  public function(Runtime runtime) {this(runtime, "");};
+
+  public function(Runtime runtime, String name) {this(runtime, name, null);};
+
+  public function(Runtime runtime, String name, SystemComponent parent) {
+    super(runtime, name, parent);
+    this.flushes = true;
     f = false;
     i = new I();
-    i.getIn().a = new Action() {
-      public void action() {
-        i_a();
-      }
-    };
-    i.getIn().b = new Action() {
-      public void action() {
-        i_b();
-      }
-    };
+    i.in.name = "i";
+    i.in.self = this;
+    f = false;
+    i.in.a = new Action() {public void action() {Runtime.callIn(function.this, new Action() {public void action() {i_a();}}, new Meta(function.this.i, "a"));};};
+
+    i.in.b = new Action() {public void action() {Runtime.callIn(function.this, new Action() {public void action() {i_b();}}, new Meta(function.this.i, "b"));};};
+
   };
   public void i_a() {
-    System.err.println("function.i_a");
     if (true) {
       {
         toggle();
@@ -51,18 +53,17 @@ class function{
   };
 
   public void i_b() {
-    System.err.println("function.i_b");
     if (true) {
       {
         toggle();
         toggle();
-        i.getOut().d.action();
+        i.out.d.action();
       }
     }
   };
   public void toggle () {
     if (f) {
-      i.getOut().c.action();
+      i.out.c.action();
     }
     f = ! (f);
   };

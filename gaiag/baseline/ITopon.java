@@ -21,11 +21,11 @@
 // Code:
 
 class ITopon extends Interface<ITopon.In, ITopon.Out> {
-  class In implements Interface.In {
+  class In extends Interface.In {
     Action e;
     Action t;
   }
-  class Out implements Interface.Out {
+  class Out extends Interface.Out {
     Action a;
   }
   public ITopon() {

@@ -21,34 +21,39 @@
 //
 // Code:
 
-class argument{
+class argument extends Component {
 
   Boolean b;
 
   I i;
 
-  public argument() {
+  public argument(Runtime runtime) {this(runtime, "");};
+
+  public argument(Runtime runtime, String name) {this(runtime, name, null);};
+
+  public argument(Runtime runtime, String name, SystemComponent parent) {
+    super(runtime, name, parent);
+    this.flushes = true;
     b = false;
     i = new I();
-    i.getIn().e = new Action() {
-      public void action() {
-        i_e();
-      }
-    };
+    i.in.name = "i";
+    i.in.self = this;
+    b = false;
+    i.in.e = new Action() {public void action() {Runtime.callIn(argument.this, new Action() {public void action() {i_e();}}, new Meta(argument.this.i, "e"));};};
+
   };
   public void i_e() {
-    System.err.println("argument.i_e");
     if (true) {
       b = ! (b);
-      Boolean c = this.g(b);
-      b = this.g(c);
-      if (c) {
-        i.getOut().f.action();
+      V<Boolean> c = new V <Boolean>(this.g(b));
+      b = this.g(c.v);
+      if (c.v) {
+        i.out.f.action();
       }
     }
   };
-  public Boolean g (Boolean gc) {
-    i.getOut().f.action();
+  public Boolean g (final Boolean gc) {
+    i.out.f.action();
     return (gc || b);
   };
 

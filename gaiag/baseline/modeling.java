@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,33 +21,35 @@
 //
 // Code:
 
-class modeling{
+class modeling extends Component {
 
 
   dummy p;
   imodeling r;
 
-  public modeling() {
+  public modeling(Runtime runtime) {this(runtime, "");};
+
+  public modeling(Runtime runtime, String name) {this(runtime, name, null);};
+
+  public modeling(Runtime runtime, String name, SystemComponent parent) {
+    super(runtime, name, parent);
+    this.flushes = true;
     p = new dummy();
+    p.in.name = "p";
+    p.in.self = this;
     r = new imodeling();
-    p.getIn().e = new Action() {
-      public void action() {
-        p_e();
-      }
-    };
-    r.getOut().f = new Action() {
-      public void action() {
-        r_f();
-      }
-    };
+    r.out.name = "r";
+    r.out.self = this;
+    p.in.e = new Action() {public void action() {Runtime.callIn(modeling.this, new Action() {public void action() {p_e();}}, new Meta(modeling.this.p, "e"));};};
+
+    r.out.f = new Action() {public void action() {Runtime.callOut(modeling.this, new Action() {public void action() {r_f();}}, new Meta(modeling.this.r, "f"));};};
+
   };
   public void p_e() {
-    System.err.println("modeling.p_e");
-    r.getIn().e.action();
+    r.in.e.action();
   };
 
   public void r_f() {
-    System.err.println("modeling.r_f");
     { }
   };
 

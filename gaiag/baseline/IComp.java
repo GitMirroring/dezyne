@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -25,12 +25,12 @@ class IComp extends Interface<IComp.In, IComp.Out> {
   enum result_t {
     OK, NOK
   };
-  class In implements Interface.In {
+  class In extends Interface.In {
     ValuedAction<result_t> initialize;
     ValuedAction<result_t> recover;
     ValuedAction<result_t> perform_actions;
   }
-  class Out implements Interface.Out {
+  class Out extends Interface.Out {
 
   }
   public IComp() {

@@ -22,7 +22,7 @@
 //
 // Code:
 
-class Alarm{
+class Alarm extends Component {
   enum States {
     Disarmed, Armed, Triggered, Disarming
   };
@@ -34,70 +34,70 @@ class Alarm{
   ISensor sensor;
   ISiren siren;
 
-  public Alarm() {
+  public Alarm(Runtime runtime) {this(runtime, "");};
+
+  public Alarm(Runtime runtime, String name) {this(runtime, name, null);};
+
+  public Alarm(Runtime runtime, String name, SystemComponent parent) {
+    super(runtime, name, parent);
+    this.flushes = true;
     state = States.Disarmed;
     sounding = false;
     console = new IConsole();
+    console.in.name = "console";
+    console.in.self = this;
+    state = States.Disarmed;
+    sounding = false;
     sensor = new ISensor();
+    sensor.out.name = "sensor";
+    sensor.out.self = this;
     siren = new ISiren();
-    console.getIn().arm = new Action() {
-      public void action() {
-        console_arm();
-      }
-    };
-    console.getIn().disarm = new Action() {
-      public void action() {
-        console_disarm();
-      }
-    };
-    sensor.getOut().triggered = new Action() {
-      public void action() {
-        sensor_triggered();
-      }
-    };
-    sensor.getOut().disabled = new Action() {
-      public void action() {
-        sensor_disabled();
-      }
-    };
+    siren.out.name = "siren";
+    siren.out.self = this;
+    console.in.arm = new Action() {public void action() {Runtime.callIn(Alarm.this, new Action() {public void action() {console_arm();}}, new Meta(Alarm.this.console, "arm"));};};
+
+    console.in.disarm = new Action() {public void action() {Runtime.callIn(Alarm.this, new Action() {public void action() {console_disarm();}}, new Meta(Alarm.this.console, "disarm"));};};
+
+    sensor.out.triggered = new Action() {public void action() {Runtime.callOut(Alarm.this, new Action() {public void action() {sensor_triggered();}}, new Meta(Alarm.this.sensor, "triggered"));};};
+
+    sensor.out.disabled = new Action() {public void action() {Runtime.callOut(Alarm.this, new Action() {public void action() {sensor_disabled();}}, new Meta(Alarm.this.sensor, "disabled"));};};
+
   };
   public void console_arm() {
-    System.err.println("Alarm.console_arm");
     if (state == States.Disarmed) {
       {
-        sensor.getIn().enable.action();
+        sensor.in.enable.action();
         state = States.Armed;
       }
     }
     else if (state == States.Armed) {
-      assert(false);
+      throw new RuntimeException("illegal");
     }
     else if (state == States.Disarming) {
-      assert(false);
+      throw new RuntimeException("illegal");
     }
     else if (state == States.Triggered) {
-      assert(false);
+      throw new RuntimeException("illegal");
     }
   };
 
   public void console_disarm() {
-    System.err.println("Alarm.console_disarm");
     if (state == States.Disarmed) {
-      assert(false);
+      throw new RuntimeException("illegal");
     }
     else if (state == States.Armed) {
       {
-        sensor.getIn().disable.action();
+        sensor.in.disable.action();
         state = States.Disarming;
       }
     }
     else if (state == States.Disarming) {
-      assert(false);
+      throw new RuntimeException("illegal");
     }
     else if (state == States.Triggered) {
       {
-        sensor.getIn().disable.action();
-        siren.getIn().turnoff.action();
+        sensor.in.disable.action();
+        siren.in.turnoff.action();
         sounding = false;
         state = States.Disarming;
       }
@@ -105,14 +105,13 @@ class Alarm{
   };
 
   public void sensor_triggered() {
-    System.err.println("Alarm.sensor_triggered");
     if (state == States.Disarmed) {
-      assert(false);
+      throw new RuntimeException("illegal");
     }
     else if (state == States.Armed) {
       {
-        console.getOut().detected.action();
-        siren.getIn().turnon.action();
+        console.out.detected.action();
+        siren.in.turnon.action();
         sounding = true;
         state = States.Triggered;
       }
@@ -121,30 +120,29 @@ class Alarm{
       { }
     }
     else if (state == States.Triggered) {
-      assert(false);
+      throw new RuntimeException("illegal");
     }
   };
 
   public void sensor_disabled() {
-    System.err.println("Alarm.sensor_disabled");
     if (state == States.Disarmed) {
-      assert(false);
+      throw new RuntimeException("illegal");
     }
     else if (state == States.Armed) {
-      assert(false);
+      throw new RuntimeException("illegal");
     }
     else if (state == States.Disarming && sounding) {
-      console.getOut().deactivated.action();
-      siren.getIn().turnoff.action();
+      console.out.deactivated.action();
+      siren.in.turnoff.action();
       state = States.Disarmed;
       sounding = false;
     }
     else if (state == States.Disarming && ! (sounding)) {
-      console.getOut().deactivated.action();
+      console.out.deactivated.action();
       state = States.Disarmed;
     }
     else if (state == States.Triggered) {
-      assert(false);
+      throw new RuntimeException("illegal");
     }
   };
 

@@ -21,28 +21,30 @@
 //
 // Code:
 
-class function2{
+class function2 extends Component {
 
   Boolean f;
 
   ifunction2 i;
 
-  public function2() {
+  public function2(Runtime runtime) {this(runtime, "");};
+
+  public function2(Runtime runtime, String name) {this(runtime, name, null);};
+
+  public function2(Runtime runtime, String name, SystemComponent parent) {
+    super(runtime, name, parent);
+    this.flushes = true;
     f = false;
     i = new ifunction2();
-    i.getIn().a = new Action() {
-      public void action() {
-        i_a();
-      }
-    };
-    i.getIn().b = new Action() {
-      public void action() {
-        i_b();
-      }
-    };
+    i.in.name = "i";
+    i.in.self = this;
+    f = false;
+    i.in.a = new Action() {public void action() {Runtime.callIn(function2.this, new Action() {public void action() {i_a();}}, new Meta(function2.this.i, "a"));};};
+
+    i.in.b = new Action() {public void action() {Runtime.callIn(function2.this, new Action() {public void action() {i_b();}}, new Meta(function2.this.i, "b"));};};
+
   };
   public void i_a() {
-    System.err.println("function2.i_a");
     if (true) {
       {
         f = vtoggle();
@@ -51,18 +53,17 @@ class function2{
   };
 
   public void i_b() {
-    System.err.println("function2.i_b");
     if (true) {
       {
         f = vtoggle();
-        Boolean bb = vtoggle();
-        f = bb;
-        i.getOut().d.action();
+        V<Boolean> bb = new V <Boolean>(vtoggle());
+        f = bb.v;
+        i.out.d.action();
       }
     }
   };
   public Boolean vtoggle () {
-    if (f) i.getOut().c.action();
+    if (f) i.out.c.action();
     return ! (f);
   };
 

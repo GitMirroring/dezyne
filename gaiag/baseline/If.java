@@ -21,29 +21,34 @@
 //
 // Code:
 
-class If{
+class If extends Component {
 
   Boolean t;
 
   I i;
 
-  public If() {
+  public If(Runtime runtime) {this(runtime, "");};
+
+  public If(Runtime runtime, String name) {this(runtime, name, null);};
+
+  public If(Runtime runtime, String name, SystemComponent parent) {
+    super(runtime, name, parent);
+    this.flushes = true;
     t = false;
     i = new I();
-    i.getIn().a = new Action() {
-      public void action() {
-        i_a();
-      }
-    };
+    i.in.name = "i";
+    i.in.self = this;
+    t = false;
+    i.in.a = new Action() {public void action() {Runtime.callIn(If.this, new Action() {public void action() {i_a();}}, new Meta(If.this.i, "a"));};};
+
   };
   public void i_a() {
-    System.err.println("If.i_a");
     {
       if (t) {
-        i.getOut().b.action();
+        i.out.b.action();
       }
       else {
-        i.getOut().c.action();
+        i.out.c.action();
       }
       t = ! (t);
     }

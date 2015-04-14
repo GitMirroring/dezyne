@@ -21,33 +21,35 @@
 //
 // Code:
 
-class incomplete{
+class incomplete extends Component {
 
 
   iincomplete p;
   iincomplete r;
 
-  public incomplete() {
+  public incomplete(Runtime runtime) {this(runtime, "");};
+
+  public incomplete(Runtime runtime, String name) {this(runtime, name, null);};
+
+  public incomplete(Runtime runtime, String name, SystemComponent parent) {
+    super(runtime, name, parent);
+    this.flushes = true;
     p = new iincomplete();
+    p.in.name = "p";
+    p.in.self = this;
     r = new iincomplete();
-    p.getIn().e = new Action() {
-      public void action() {
-        p_e();
-      }
-    };
-    r.getOut().a = new Action() {
-      public void action() {
-        r_a();
-      }
-    };
+    r.out.name = "r";
+    r.out.self = this;
+    p.in.e = new Action() {public void action() {Runtime.callIn(incomplete.this, new Action() {public void action() {p_e();}}, new Meta(incomplete.this.p, "e"));};};
+
+    r.out.a = new Action() {public void action() {Runtime.callOut(incomplete.this, new Action() {public void action() {r_a();}}, new Meta(incomplete.this.r, "a"));};};
+
   };
   public void p_e() {
-    System.err.println("incomplete.p_e");
     { }
   };
 
   public void r_a() {
-    System.err.println("incomplete.r_a");
     { }
   };
 

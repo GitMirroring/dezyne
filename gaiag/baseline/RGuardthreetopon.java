@@ -21,10 +21,10 @@
 // Code:
 
 class RGuardthreetopon extends Interface<RGuardthreetopon.In, RGuardthreetopon.Out> {
-  class In implements Interface.In {
+  class In extends Interface.In {
     Action e;
   }
-  class Out implements Interface.Out {
+  class Out extends Interface.Out {
     Action a;
   }
   public RGuardthreetopon() {

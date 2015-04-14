@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,7 +21,7 @@
 //
 // Code:
 
-class Reply{
+class Reply extends Component {
 
   Boolean dummy;
   I.Status reply_I_Status;
@@ -32,21 +32,28 @@ class Reply{
   I i;
   U u;
 
-  public Reply() {
+  public Reply(Runtime runtime) {this(runtime, "");};
+
+  public Reply(Runtime runtime, String name) {this(runtime, name, null);};
+
+  public Reply(Runtime runtime, String name, SystemComponent parent) {
+    super(runtime, name, parent);
+    this.flushes = true;
     dummy = false;
     i = new I();
+    i.in.name = "i";
+    i.in.self = this;
+    dummy = false;
     u = new U();
-    i.getIn().done = new ValuedAction<I.Status>() {
-      public I.Status action() {
-        return i_done();
-      }
-    };
+    u.out.name = "u";
+    u.out.self = this;
+    i.in.done = new ValuedAction<I.Status>() {public I.Status action() {return Runtime.callIn(Reply.this, new ValuedAction<I.Status>() {public I.Status action() {return i_done();}}, new Meta(Reply.this.i, "done"));};};
+
   };
   public I.Status i_done() {
-    System.err.println("Reply.i_done");
     if (true) {
-      U.Status s = u.getIn().what.action();
-      if (s == U.Status.Ok) {
+      V<U.Status> s = new V <U.Status>(u.in.what.action());
+      if (s.v == U.Status.Ok) {
         reply_I_Status = I.Status.Yes;
       }
       else {

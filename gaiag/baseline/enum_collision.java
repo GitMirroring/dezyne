@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,7 +21,7 @@
 //
 // Code:
 
-class enum_collision{
+class enum_collision extends Component {
 
   ienum_collision.Retval1 reply_ienum_collision_Retval1;
 
@@ -30,27 +30,27 @@ class enum_collision{
 
   ienum_collision i;
 
-  public enum_collision() {
+  public enum_collision(Runtime runtime) {this(runtime, "");};
+
+  public enum_collision(Runtime runtime, String name) {this(runtime, name, null);};
+
+  public enum_collision(Runtime runtime, String name, SystemComponent parent) {
+    super(runtime, name, parent);
+    this.flushes = true;
     i = new ienum_collision();
-    i.getIn().foo = new ValuedAction<ienum_collision.Retval1>() {
-      public ienum_collision.Retval1 action() {
-        return i_foo();
-      }
-    };
-    i.getIn().bar = new ValuedAction<ienum_collision.Retval2>() {
-      public ienum_collision.Retval2 action() {
-        return i_bar();
-      }
-    };
+    i.in.name = "i";
+    i.in.self = this;
+    i.in.foo = new ValuedAction<ienum_collision.Retval1>() {public ienum_collision.Retval1 action() {return Runtime.callIn(enum_collision.this, new ValuedAction<ienum_collision.Retval1>() {public ienum_collision.Retval1 action() {return i_foo();}}, new Meta(enum_collision.this.i, "foo"));};};
+
+    i.in.bar = new ValuedAction<ienum_collision.Retval2>() {public ienum_collision.Retval2 action() {return Runtime.callIn(enum_collision.this, new ValuedAction<ienum_collision.Retval2>() {public ienum_collision.Retval2 action() {return i_bar();}}, new Meta(enum_collision.this.i, "bar"));};};
+
   };
   public ienum_collision.Retval1 i_foo() {
-    System.err.println("enum_collision.i_foo");
     reply_ienum_collision_Retval1 = ienum_collision.Retval1.OK;
     return reply_ienum_collision_Retval1;
   };
 
   public ienum_collision.Retval2 i_bar() {
-    System.err.println("enum_collision.i_bar");
     reply_ienum_collision_Retval2 = ienum_collision.Retval2.NOK;
     return reply_ienum_collision_Retval2;
   };

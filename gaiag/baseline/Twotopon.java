@@ -20,39 +20,40 @@
 //
 // Code:
 
-class Twotopon{
+class Twotopon extends Component {
 
   Boolean b;
 
   ITwotopon i;
 
-  public Twotopon() {
+  public Twotopon(Runtime runtime) {this(runtime, "");};
+
+  public Twotopon(Runtime runtime, String name) {this(runtime, name, null);};
+
+  public Twotopon(Runtime runtime, String name, SystemComponent parent) {
+    super(runtime, name, parent);
+    this.flushes = true;
     b = false;
     i = new ITwotopon();
-    i.getIn().e = new Action() {
-      public void action() {
-        i_e();
-      }
-    };
-    i.getIn().t = new Action() {
-      public void action() {
-        i_t();
-      }
-    };
+    i.in.name = "i";
+    i.in.self = this;
+    b = false;
+    i.in.e = new Action() {public void action() {Runtime.callIn(Twotopon.this, new Action() {public void action() {i_e();}}, new Meta(Twotopon.this.i, "e"));};};
+
+    i.in.t = new Action() {public void action() {Runtime.callIn(Twotopon.this, new Action() {public void action() {i_t();}}, new Meta(Twotopon.this.i, "t"));};};
+
   };
   public void i_e() {
-    System.err.println("Twotopon.i_e");
     if (b) {
-      i.getOut().a.action();
+      i.out.a.action();
     }
     else if (! (b)) {
-      i.getOut().a.action();
+      i.out.a.action();
     }
   };
 
   public void i_t() {
-    System.err.println("Twotopon.i_t");
-    i.getOut().a.action();
+    i.out.a.action();
   };
 
 }

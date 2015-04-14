@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,10 +23,10 @@
 // Code:
 
 class IChoice extends Interface<IChoice.In, IChoice.Out> {
-  class In implements Interface.In {
+  class In extends Interface.In {
     Action e;
   }
-  class Out implements Interface.Out {
+  class Out extends Interface.Out {
     Action a;
   }
   public IChoice() {

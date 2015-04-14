@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,14 +22,20 @@
 //
 // Code:
 
-class Main {
+class Main extends SystemComponent {
   Adaptor adaptor;
   ChoiceSystem choice;
   IRun runner;
 
-  public Main() {
-    adaptor = new Adaptor();
-    choice = new ChoiceSystem();
+
+  public Main(Runtime runtime) {this(runtime, "");};
+
+  public Main(Runtime runtime, String name) {this(runtime, name, null);};
+
+  public Main(Runtime runtime, String name, SystemComponent parent) {
+    super(runtime, name, parent);
+    adaptor = new Adaptor(runtime, "adaptor", this);
+    choice = new ChoiceSystem(runtime, "choice", this);
     runner = adaptor.runner;
 
     Interface.connect(choice.c, adaptor.choice);

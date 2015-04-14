@@ -21,12 +21,12 @@
 // Code:
 
 class IGuardthreetopon extends Interface<IGuardthreetopon.In, IGuardthreetopon.Out> {
-  class In implements Interface.In {
+  class In extends Interface.In {
     Action e;
     Action t;
     Action s;
   }
-  class Out implements Interface.Out {
+  class Out extends Interface.Out {
     Action a;
   }
   public IGuardthreetopon() {

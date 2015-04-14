@@ -20,39 +20,41 @@
 //
 // Code:
 
-class Topon{
+class Topon extends Component {
 
   Boolean b;
   Boolean c;
 
   ITopon i;
 
-  public Topon() {
+  public Topon(Runtime runtime) {this(runtime, "");};
+
+  public Topon(Runtime runtime, String name) {this(runtime, name, null);};
+
+  public Topon(Runtime runtime, String name, SystemComponent parent) {
+    super(runtime, name, parent);
+    this.flushes = true;
     b = false;
     c = false;
     i = new ITopon();
-    i.getIn().e = new Action() {
-      public void action() {
-        i_e();
-      }
-    };
-    i.getIn().t = new Action() {
-      public void action() {
-        i_t();
-      }
-    };
+    i.in.name = "i";
+    i.in.self = this;
+    b = false;
+    c = false;
+    i.in.e = new Action() {public void action() {Runtime.callIn(Topon.this, new Action() {public void action() {i_e();}}, new Meta(Topon.this.i, "e"));};};
+
+    i.in.t = new Action() {public void action() {Runtime.callIn(Topon.this, new Action() {public void action() {i_t();}}, new Meta(Topon.this.i, "t"));};};
+
   };
   public void i_e() {
-    System.err.println("Topon.i_e");
-    if (b && ! (c)) i.getOut().a.action();
-    else if (! (b) && ! (c)) i.getOut().a.action();
-    else if (! (c) && ! (b)) i.getOut().a.action();
+    if (b && ! (c)) i.out.a.action();
+    else if (! (b) && ! (c)) i.out.a.action();
+    else if (! (c) && ! (b)) i.out.a.action();
   };
 
   public void i_t() {
-    System.err.println("Topon.i_t");
     {
-      i.getOut().a.action();
+      i.out.a.action();
     }
   };
 

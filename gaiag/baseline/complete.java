@@ -21,37 +21,39 @@
 //
 // Code:
 
-class complete{
+class complete extends Component {
 
 
   icomplete p;
   icomplete r;
 
-  public complete() {
+  public complete(Runtime runtime) {this(runtime, "");};
+
+  public complete(Runtime runtime, String name) {this(runtime, name, null);};
+
+  public complete(Runtime runtime, String name, SystemComponent parent) {
+    super(runtime, name, parent);
+    this.flushes = true;
     p = new icomplete();
+    p.in.name = "p";
+    p.in.self = this;
     r = new icomplete();
-    p.getIn().e = new Action() {
-      public void action() {
-        p_e();
-      }
-    };
-    r.getOut().a = new Action() {
-      public void action() {
-        r_a();
-      }
-    };
+    r.out.name = "r";
+    r.out.self = this;
+    p.in.e = new Action() {public void action() {Runtime.callIn(complete.this, new Action() {public void action() {p_e();}}, new Meta(complete.this.p, "e"));};};
+
+    r.out.a = new Action() {public void action() {Runtime.callOut(complete.this, new Action() {public void action() {r_a();}}, new Meta(complete.this.r, "a"));};};
+
   };
   public void p_e() {
-    System.err.println("complete.p_e");
     {
-      r.getIn().e.action();
+      r.in.e.action();
     }
   };
 
   public void r_a() {
-    System.err.println("complete.r_a");
     {
-      p.getOut().a.action();
+      p.out.a.action();
     }
   };
 

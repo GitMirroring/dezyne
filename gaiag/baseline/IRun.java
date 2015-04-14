@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,10 +23,10 @@
 // Code:
 
 class IRun extends Interface<IRun.In, IRun.Out> {
-  class In implements Interface.In {
+  class In extends Interface.In {
     Action run;
   }
-  class Out implements Interface.Out {
+  class Out extends Interface.Out {
 
   }
   public IRun() {
