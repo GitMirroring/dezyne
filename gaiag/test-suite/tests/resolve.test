@@ -14,7 +14,6 @@
 (eval-when (compile eval load) (read-hash-extend #\{ #f))
 
 (define resolve-model (@@ (gaiag resolve) resolve-model))
-(define resolve-mixed (@@ (gaiag resolve) resolve-mixed))
 
 (define-method (resolve-error (o <list>) (identifier <symbol>) (message <string>))
   ((@@ (gaiag resolve) resolve-error) (ast->gom o) identifier message))
@@ -26,26 +25,25 @@
   ((@@ (gaiag resolve) type-mismatch) (ast->gom o) expected actual))
 
 (define-method (ast:resolve-model o)
-  (let* ((gom (ast->gom o))
-         (m (resolve-mixed gom)))
+  (let* ((m (ast->gom o)))
     (resolve-model m m)))
 
 (define-method (ast:resolve-model (model <list>) o)
-  (let ((model (resolve-mixed (ast->gom model))))
-    (resolve-model model (ast->gom o))))
+  (let ((m (ast->gom model)))
+    (resolve-model m (ast->gom o))))
 
 (define-method (ast:resolve-root-model (root <list>) (model <list>) o)
   (let* ((root (ast:resolve root))
-         (model (resolve-mixed (ast->gom model))))
-    (resolve-model model (ast->gom o))))
+         (m (ast->gom model)))
+    (resolve-model m (ast->gom o))))
 
 (define resolve-ast
   '((interface
      ivar
       (types (enum e (v))
-             (extern xint int&))
+             (extern xint int&)
+             (enum mixed (v)))
       (events (in (signature (type e)) foo)
-              (enum mixed (v))
               (out (signature (type mixed)) bar)
               (in (signature
                    (type void)
@@ -111,8 +109,10 @@
         (function rbfb (signature (type void) (parameters (parameter a (type bool))))
                   (compound (assign b (call rbfc (expression #t)))))
         (function rbfc (signature (type void) (parameters (parameter a (type bool))))
-                  (compound (call fa (expression #t)) (call fb (expression #t)) (compound (call fc (expression #t)) (assign b (call rbfa (expression #t)))))))
-      (compound
+                  (compound (call fa (expression #t)) (call fb (expression #t)) (compound (call fc (expression #t)) (assign b (call rbfa (expression #t))))))
+        (function efun
+                  (signature (type state)) (compound (return (var m)))))
+       (compound
        (on (triggers (trigger i foo))
            (compound
             (variable e (type e ivar) (expression (value o foo)))
@@ -121,9 +121,7 @@
        (on (triggers
             (trigger i ei (arguments (expression (var i)))))
            (compound
-            (assign i (expression (data 0)))))
-       (function efun
-                 (signature (type state)) (compound (return (var m)))))))))
+            (assign i (expression (data 0))))))))))
 
 (pass-if "resolve-first-dummy-test"
          #t)
@@ -150,22 +148,6 @@
          (gom-pretty-noisy-equal?
           (ast:resolve-model
            (car resolve-ast)
-           '(assign m (expression (var efun))))
-          '(assign m (call efun))))
-
-(pass-if "ast:resolve-variable-valued-mixed-function-call-component"
-         (gom-pretty-noisy-equal?
-          (ast:resolve-root-model
-           resolve-ast
-           (cadr resolve-ast)
-           '(variable e (type e ivar) (expression (var efun))))
-          '(variable e (type e ivar) (call efun))))
-
-(pass-if "ast:resolve-assign-valued-mixed-function-call-component"
-         (gom-pretty-noisy-equal?
-          (ast:resolve-root-model
-           resolve-ast
-           (cadr resolve-ast)
            '(assign m (expression (var efun))))
           '(assign m (call efun))))
 
@@ -492,32 +474,6 @@
           '(function rbfa (signature (type void) (parameters))
                      recursive
                       (assign b (compound (call rbfb (expression #t)))))))
-
-(pass-if "ast:resolve-component-system"
-         (gom-pretty-noisy-equal?
-          (ast:resolve-model
-           '(system
-             AlarmComponentSystem
-            (ports (provides Console console))
-             (instances
-              (instance alarm Alarm)
-              (instance sensor Sensor)
-              (instance siren Siren)
-              (bind (binding #f console) (binding alarm console))
-              (bind (binding alarm sensor) (binding sensor sensor))
-              (bind (binding alarm siren) (binding siren siren)))
-             (bindings)))
-          '(system
-            AlarmComponentSystem
-            (ports (provides Console console))
-            (instances
-             (instance alarm Alarm)
-             (instance sensor Sensor)
-             (instance siren Siren))
-            (bindings
-             (bind (binding #f console) (binding alarm console))
-             (bind (binding alarm sensor) (binding sensor sensor))
-             (bind (binding alarm siren) (binding siren siren))))))
 
 (pass-if "ast:resolve-undefined-identifier"
   (gom-pretty-noisy-equal?

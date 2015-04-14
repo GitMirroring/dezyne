@@ -112,42 +112,10 @@
         (else (exit 1))))
 
 (define-method (resolve-top-model (o <model>))
-  ((compose gom:register-model (lambda (m) (resolve-model m m)) resolve-mixed) o))
+  ((compose gom:register-model (lambda (m) (resolve-model m m))) o))
 
 (define-method (resolve-top-model (o <ast>))
   (resolve-model o o))
-
-(define (resolve-mixed o)
-  (retain-source-properties o (resolve-mixed- o)))
-
-(define (resolve-mixed- o)
-  (match o
-
-    (($ <component> name ports behaviour)
-     (let ((cache-interfaces (map resolve:import (map .type ((compose .elements .ports) o)))))
-       (make <component>
-         :name name
-         :ports ports
-         :behaviour (resolve-mixed behaviour))))
-
-    (($ <interface> name ($ <types> types) ($ <events> types-events) behaviour)
-     (receive (types- events) (partition (lambda (x)
-                                           (or (is-a? x <enum>) (is-a? x <int>))) types-events)
-       (make <interface>
-         :name name
-         :types (make <types> :elements (append types types-))
-         :events (make <events> :elements events)
-         :behaviour (resolve-mixed behaviour))))
-
-    (($ <behaviour> name types variables ($ <functions> functions) ($ <compound> mixed))
-     (receive (functions- statements) (partition (is? <function>) mixed)
-       (make <behaviour>
-         :name name
-         :types types
-         :variables variables
-         :functions (make <functions> :elements (append functions functions-))
-         :statement (make <compound> :elements statements))))
-    (_ o)))
 
 (define-method (resolve-model (model <model>))
   (lambda (o) (resolve-model model o)))
@@ -495,14 +463,13 @@
          :ports ports
          :behaviour ((resolve-model model) behaviour)))
 
-    (($ <behaviour> name types variables ($ <functions> functions) ($ <compound> mixed))
-     (receive (functions- statements) (partition (is? <function>) mixed)
-       (make <behaviour>
-         :name name
-         :types types
-         :variables (resolve-model model variables)
-         :functions (gom:map (resolve-model model) (make <functions> :elements (append functions functions-)))
-         :statement (gom:map (resolve-model model) (make <compound> :elements statements)))))
+    (($ <behaviour> name types variables functions statement)
+     (make <behaviour>
+       :name name
+       :types types
+       :variables (resolve-model model variables)
+       :functions (gom:map (resolve-model model) functions)
+       :statement (gom:map (resolve-model model) statement)))
 
     (($ <variables> variables)
      (let ((variables (map (range-check model) variables)))
@@ -556,28 +523,7 @@
                      (map (recurses? model (cons name seen)) names)))))
 
 (define-method (resolve-model (model <system>) o)
-  (retain-source-properties o (resolve-model- model o)))
-
-(define-method (resolve-model- (model <system>) o)
-
-  (match o
-    (($ <system> name ports instances bindings)
-     (let* ((instances (gom:map (resolve-model model) instances))
-            (bindings (gom:map (resolve-model model) bindings))
-            (rinstances (append ((gom:collect <instance>) instances)
-                                ((gom:collect <instance>) bindings)))
-            (rbindings  (append ((gom:collect <bind>) instances)
-                                ((gom:collect <bind>) bindings))))
-       (make <system>
-         :name name
-         :ports ports
-         :instances (make <instances> :elements rinstances)
-         :bindings (make <bindings> :elements rbindings))))
-
-    ((? (is? <ast>)) (gom:map (resolve-model model) o))
-    ((h t ...) (map (resolve-model model) o))
-
-    (_ o)))
+  o)
 
 (define (ast-> ast)
   ((compose gom->list ast:resolve ast->gom ast->annotate) ast))
