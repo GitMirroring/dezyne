@@ -25,7 +25,7 @@ class main {
 #(map
     (lambda (port)
     (map (define-on model port #{
-    m.#port .#direction .#event  = new #(action-type return-type parameter-types)() {public #return-type  action(#parameters) {System.err.println("#port .#direction .#event");#(string-if (not (eq? return-type 'void)) #{ return new (#return-type)();#})}};
+    m.#port .#direction .#event  = new #(action-type return-type parameter-types)() {public #return-type  action(#parameters) {System.err.println("#port .#direction .#event");#(string-if (not (eq? return-type 'void)) #{ return (#return-type)null;#})}};
 #}) (filter (negate (gom:dir-matches? port))
        (gom:events port)))) (gom:ports model))     EventMap e = new EventMap();
 #(map
