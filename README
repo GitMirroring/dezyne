@@ -1,0 +1,54 @@
+TOPLEVEL DEZYNE README
+**********************
+
+BUILDING
+========
+
+Prerequisites
+-------------
+
+[TODO: list of packages]
+[TODO: ./configure ]
+
+g++-4.8 or newer
+guile-2.0 or newer
+nodejs
+postgresql
+
+Run:
+    make
+
+Try:
+    make help
+
+RUNNING
+=======
+
+Create fresh database and initialize 
+
+    make database
+
+Run dezyne server from the source tree
+
+    webapp/server/main.js --debug --config=localhost
+
+Run dezyne client from the source tree
+
+    webapp/client/dzn
+
+make sure to authenticate first
+
+    echo test | webapp/client/dzn -u test -s http://localhost:3000 hello
+
+INSTALLING
+==========
+
+Install client in $HOME:
+
+    make client
+
+PACKAGING AND DEPLOYMENT
+========================
+
+Run
+    make dezyne-server

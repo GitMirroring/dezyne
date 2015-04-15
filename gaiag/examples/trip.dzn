@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -24,7 +25,8 @@
 interface I
 {
   enum Status { Yes, No };
-
+  extern xint = $int$;
+  
   in void e;
   out void a;
   out void hi;
@@ -56,6 +58,29 @@ interface I
           a;
         }
       }
+    [otherwise]
+    {
+      on inevitable: a;
+      on optional: a;
+    }
+  }
+}
+
+interface ilogger
+{
+  in void log;
+  behaviour
+  {
+    on log:{}
+  }
+}
+
+component logger
+{
+  provides ilogger log;
+  behaviour
+  {
+    on log.log: {}
   }
 }
 
@@ -88,6 +113,7 @@ component trip
 {
   provides I i;
   requires U u;
+  requires injected ilogger l;
 
   behaviour
   {
@@ -169,9 +195,11 @@ component trap
 
   system
     {
-      trip u;
+      logger l;
+      trip t;
 
-      i <=> u.i;
-      u.u <=> u;
+      i <=> t.i;
+      t.u <=> u;
+      l.log <=> *;
     }
 }
