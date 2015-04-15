@@ -4,18 +4,8 @@ TOPLEVEL DEZYNE README
 BUILDING
 ========
 
-Prerequisites
--------------
-
-[TODO: list of packages]
-[TODO: ./configure ]
-
-g++-4.8 or newer
-guile-2.0 or newer
-nodejs
-postgresql
-
 Run:
+    ./configure
     make
 
 Try:
@@ -50,5 +40,8 @@ Install client in $HOME:
 PACKAGING AND DEPLOYMENT
 ========================
 
-Run
+Run:
+    make regression
+
+Run:
     make dezyne-server

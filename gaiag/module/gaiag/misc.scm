@@ -62,7 +62,6 @@
            gulp-port
            hash-read-string
            hash-table->alist
-           list<
            mkdir-p
            null-is-#f
            number->symbol
