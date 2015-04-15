@@ -3,6 +3,7 @@
 # This file is part of Gaiag.
 #
 # Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 # Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # Gaiag is free software: you can redistribute it and/or modify it
@@ -32,4 +33,4 @@ export GUILE_LOAD_PATH GUILE_LOAD_COMPILED_PATH
 spec=language/dezyne/spec
 [ -f $prefix/ccache/$spec.go ] || guile $prefix/module/$spec.scm
 ${GUILE-guile} $prefix/module/language/dezyne/spec.scm
-exec ${GUILE-guile} -e main test-suite/run-tests "$@"
+exec ${GUILE-guile} -e main test-suite/run-tests "$@" < /dev/null
