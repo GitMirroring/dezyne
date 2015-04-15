@@ -11,7 +11,7 @@ def #.model _fill_event_map (m):
 #(map
     (lambda (port)
     (map (define-on model port #{
-    m.#port .#direction s.#event  = lambda *args: sys.stderr.write ('#port .#direction .#event \n')
+    m.#port .#direction s.#event  = lambda *args: sys.stderr.write ('#port .#direction .#event \n') or 0
 #}) (filter (negate (gom:dir-matches? port))
        (gom:events port)))) (gom:ports model))     return {
 #(map

@@ -2,7 +2,7 @@ function #.model _fill_event_map(m) {
 #(map
     (lambda (port)
      (map (define-on model port #{
-        m.#port .#direction .#event  = function() {console.error('#port .#direction .#event ');};
+        m.#port .#direction .#event  = function() {console.error('#port .#direction .#event '); return 0;};
 #}) (filter (negate (gom:dir-matches? port))
        (gom:events port)))) (gom:ports model))   return {
 #(map

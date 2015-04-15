@@ -17,9 +17,11 @@ typedef struct {
 #(map
  (lambda (port)
    (map (define-on model port #{
-   void #.model _log_event_#port _#direction _#event (#interface * m) {
+   #(string-if (not (eq? type 'void)) #{int#} #{void#})  #.model _log_event_#port _#direction _#event (#interface * m) {
      (void)m;
-     fprintf(stderr, "%s\n", "#port .#direction .#event");
+     fprintf(stderr, "%s\n", "#port .#direction .#event");#
+     (string-if (not (eq? type 'void)) #{#'()
+     return 0;#})
    }
 #}) (filter (negate (gom:dir-matches? port))
        (gom:events port)))) (gom:ports model))
