@@ -1,0 +1,6 @@
+inline const #.model ::#name ::type to_#.model _#name(std::string s)
+{
+  static std::map<std::string, #.model ::#name ::type> m = {
+        #(->string (map (lambda (field) (->string (list "{" "\"" name "_" field "\"," .model "::" name "::" field "},\n"))) fields)) };
+  return m[s];
+}

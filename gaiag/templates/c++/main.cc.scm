@@ -8,7 +8,17 @@
 
 namespace dezyne
 {
-  typedef std::map<std::string, std::function<void()>> event_map;
+typedef std::map<std::string, std::function<void()>> event_map;
+
+std::string drop_prefix(std::string string, std::string prefix)
+{
+   auto len = prefix.size();
+   if (string.size() >= len && std::equal(prefix.begin(), prefix.begin() + len, string.begin()))
+   {
+     return string.erase(0, len);
+   }
+   return string;
+}
 
 
 void fill_event_map(#.model & m, event_map& e)
@@ -17,7 +27,7 @@ void fill_event_map(#.model & m, event_map& e)
   #(map
     (lambda (port)
     (map (define-on model port #{
-      m.#port .#direction .#event  = [] (#parameters) {std::clog << "#port .#direction .#event " << std::endl;#(string-if (not (eq? return-type 'void)) #{ return (#return-type)0;#})};
+      m.#port .#direction .#event  = [] (#parameters) {std::clog << "#port .#direction .#event " << std::endl;#(string-if (not (eq? return-type 'void)) #{std::string s; std::cin >> s; return to_#interface _#reply-name(drop_prefix(s,"#port ."));#})};
 #}) (filter (negate (gom:dir-matches? port))
        (gom:events port)))) (gom:ports model))
   #(map

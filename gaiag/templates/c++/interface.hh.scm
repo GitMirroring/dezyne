@@ -4,6 +4,7 @@
 ##include "meta.hh"
 
 ##include <cassert>
+##include <map>
 
 namespace dezyne
 {
@@ -44,5 +45,6 @@ struct #.interface
      required.meta.provides = provided.meta.provides;
    }
    #(->string (map enum-to-string (gom:interface-enums model)))
+   #(->string (map string-to-enum (gom:interface-enums model)))
 }
 ##endif // DEZYNE_#.INTERFACE _HH

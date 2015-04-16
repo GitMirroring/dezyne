@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -58,6 +59,7 @@
            define-on
            connect-ports
            enum-to-string
+           string-to-enum           
            include-component
            include-interface
            init-bind
@@ -626,6 +628,12 @@
   (let* ((fields ((compose .elements .fields) enum))
          (length (length fields)))
    (snippet 'enum-to-string
+            `((name ,(.name enum)) (fields ,fields) (length ,length)))))
+
+(define (string-to-enum enum)
+  (let* ((fields ((compose .elements .fields) enum))
+         (length (length fields)))
+   (snippet 'string-to-enum
             `((name ,(.name enum)) (fields ,fields) (length ,length)))))
 
 (define (declare-integer integer)
