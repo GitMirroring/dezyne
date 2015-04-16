@@ -1,1 +1,1 @@
-#space #alias  = #(string-if out? #{#name #} #{{'value': #name }#})
+#space #alias  = #(string-if out? #{#name #} #{V (#name)#})

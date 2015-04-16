@@ -3,6 +3,7 @@ import sys
 import dezyne.#interface
 #}) (gom:ports model))
 import runtime
+from runtime import V
 
 class #.model  (runtime.Component):
 #(->string (map declare-enum (gom:enums (.behaviour model))))

@@ -1,1 +1,1 @@
-#space #name  = {'value': #expression }
+#space #name  = V (#expression)

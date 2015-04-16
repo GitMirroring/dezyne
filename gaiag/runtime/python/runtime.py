@@ -23,6 +23,10 @@
 
 import sys
 
+class V:
+    def __init__ (self, v):
+        self.v = v
+
 class Runtime:
     def __init__ (self):
         self.components = []
