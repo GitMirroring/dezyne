@@ -1,17 +1,15 @@
 import dezyne
+import runtime
 
 def connect (provided, required):
-    provided.outs = required.outs
-    required.ins = provided.ins
+    provided.outport = required.outport
+    required.inport = provided.inport
 
-class #.model :
-    def __init__ (self, rt, parent=None, name=''):
-        self.rt = rt
-        rt.components += [self]
-        self.parent = parent
-        self.name = name
+class #.model (runtime.Component):
+    def __init__ (self, rt, name='', parent=None):
+        runtime.Component.__init__ (self, rt, name, parent)
 #(map (init-instance #{
-        self.#name  = dezyne.#component  (self.rt, parent=self, name='#name ')
+        self.#name  = dezyne.#component  (self.rt, name='#name ', parent=self)
 #}) ((compose .elements .instances) model))#
 (map (init-bind model #{
         self.#port  = self.#instance

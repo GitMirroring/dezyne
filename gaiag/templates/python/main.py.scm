@@ -11,18 +11,18 @@ def #.model _fill_event_map (m):
 #(map
     (lambda (port)
     (map (define-on model port #{
-    m.#port .#direction s.#event  = lambda *args: sys.stderr.write ('#port .#direction .#event \n') or 0
+    m.#port .#direction port.#event  = lambda *args: sys.stderr.write ('#port .#direction .#event \n') or 0
 #}) (filter (negate (gom:dir-matches? port))
        (gom:events port)))) (gom:ports model))     return {
 #(map
     (lambda (port)
     (map (define-on model port #{
-        '#port .#event ': m.#port .#direction s.#event ,
+        '#port .#event ': m.#port .#direction port.#event ,
 #}) (filter (gom:dir-matches? port)
        (gom:events port)))) (gom:ports model))     }
 
 def main ():
-    rt = runtime.runtime ()
+    rt = runtime.Runtime ()
     sut = dezyne.#.model  (rt, name='sut')
 
     event_map = #.model _fill_event_map (sut)

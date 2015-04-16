@@ -1,5 +1,6 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 #
 # This file is part of Dezyne.
 #
@@ -22,70 +23,92 @@
 
 import sys
 
-class runtime:
+class Runtime:
     def __init__ (self):
         self.components = []
+        self.info = {}
+    def flushes (self, c):
+        self.components += [c]
+        self.info[c] = self.info.get (c, Info ())
+        self.info[c].flushes = True
+    def external_p (self, c):
+        return c not in self.components
+    def flush (self, c):
+        if (self.external_p (c)):
+            return
+        while (self.info[c].q):
+            self.handle (c, self.info[c].q.pop ())
+        if (self.info[c].deferred):
+            t = self.info[c].deferred
+            self.info[c].deferred = None;
+            if (not self.info[t].handling):
+                self.flush (t)
+    def defer (self, i, o, f):
+        if (not i or (not self.info[i].flushes and not self.info[o].handling)):
+            self.handle (o, f)
+        else:
+            self.info[i].deferred = o
+            self.info[o].q.insert (0, f)
+    def valued_helper (self, c, f, m):
+        handle = self.info[c].handling
+        self.info[c].handling = True
+        r = f ()
+        if (handle and r != None):
+            throw ('a valued event cannot be deferred')
+        self.info[c].handling = False
+        self.flush (c)
+        return r
+    def handle (self, c, f):
+        if (not self.info[c].handling):
+            self.info[c].handling = True
+            f ()
+            self.info[c].handling = False
+            self.flush (c)
+        else:
+            throw ('component already handling an event')
 
-def external (c):
-    return c not in c.rt.components
+class Port:
+    def __init__ (self, name='', component=None):
+        self.name = name
+        self.component = component
 
-def flush (c):
-    if (external (c)):
-        return
-    while (c.queue):
-        handle (c, c.queue.pop ())
-    if (c.deferred):
-        t = c.deferred
-        c.deferred = None;
-        if (not t.handling):
-            flush (t)
+class Component:
+    def __init__ (self, rt=Runtime (), name='', parent=None):
+        self.rt = rt
+        self.name = name
+        self.parent = parent
 
-def defer (i, o, f):
-    if (not i or (not i.flushes and not o.handling)):
-        handle (o, f)
-    else:
-        i.deferred = o
-        o.queue.insert (0, f)
-
-def handle (c, f):
-    if (not c.handling):
-        c.handling = True
-        f ()
-        c.handling = False
-        flush (c)
-    else:
-        throw ('component already handling an event')
+class Info:
+    def __init__ (self):
+        self.handling = False
+        self.deferred = None
+        self.flushes = False
+        self.q = []
 
 def call_in (c, f, m):
     trace_in (m[0], m[1])
-    handle = c.handling
-    c.handling = True
-    r = f ()
-    if (handle):
-        throw ('a valued event cannot be deferred')
-    c.handling = False
-    flush (c)
+    r = c.rt.valued_helper (c, f, m)
     trace_out (m[0], 'return' if r == None else m[2][r])
     return r
 
 def call_out (c, f, m):
     trace_out (m[0], m[1])
-    defer (m[0].ins.self, c, f)
+    c.rt.defer (m[0].inport.component, c, f)
 
 def path (m, p=''):
     if (not m):
         return '<external>.' + p;
-    if ('self' in m.__dict__.keys ()):
-        return path (m.self, m.name + ('.' + p if p else p))
+    if ('component' in m.__dict__.keys ()):
+        return path (m.component, m.name + ('.' + p if p else p))
     if ('parent' in m.__dict__.keys () and m.parent):
         return path (m.parent, m.name + ('.' + p if p else p))
     return m.name + ('.' + p if p else p)
 
 def trace_in (i, e):
-    sys.stderr.write (path (i.outs) + '.' + e + ' -> '
-                      + path (i.ins) + '.' + e + '\n')
+    sys.stderr.write (path (i.outport) + '.' + e + ' -> '
+                      + path (i.inport) + '.' + e + '\n')
 
 def trace_out (i, e):
-    sys.stderr.write (path(i.ins) + '.' + e + ' -> '
-                      + path(i.outs) + '.' + e + '\n')
+    sys.stderr.write (path(i.inport) + '.' + e + ' -> '
+                      + path(i.outport) + '.' + e + '\n')
 
