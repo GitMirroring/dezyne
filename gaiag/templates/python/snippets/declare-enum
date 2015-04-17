@@ -1,2 +1,2 @@
     class #name  ():
-        #((->join ", ") fields)  = range (#length)
+        #((->join ", ") fields)  = #(string-if (< length 2) #{0#} #{range (#length)#})
