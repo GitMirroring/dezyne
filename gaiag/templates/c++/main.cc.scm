@@ -27,7 +27,7 @@ void fill_event_map(#.model & m, event_map& e)
   #(map
     (lambda (port)
     (map (define-on model port #{
-      m.#port .#direction .#event  = [] (#parameters) {std::clog << "#port .#direction .#event " << std::endl;#(string-if (not (eq? return-type 'void)) #{std::string s; while (std::cin >> s) {#reply-type ::#reply-name ::type  r = to_#interface _#reply-name(drop_prefix(s,"#port .")); if (r != (#reply-type ::#reply-name ::type)-1) {return r;};}#})};
+      m.#port .#direction .#event  = [] (#parameters) {std::clog << "#port .#direction .#event " << std::endl;#(string-if (and (eq? return-type 'void) (eq? direction 'in)) #{std::clog << "#port .#direction .return" << std::endl;#}) #(string-if (not (eq? return-type 'void)) #{std::string s; while (std::cin >> s) {#reply-type ::#reply-name ::type  r = to_#interface _#reply-name(drop_prefix(s,"#port .")); if (r != (#reply-type ::#reply-name ::type)-1) {std::clog << "#port .#direction ." << to_string (r) << std::endl; return r;};}#})};
 #}) (filter (negate (gom:dir-matches? port))
        (gom:events port)))) (gom:ports model))
   #(map
