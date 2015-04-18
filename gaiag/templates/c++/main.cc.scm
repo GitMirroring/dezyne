@@ -20,14 +20,47 @@ std::string drop_prefix(std::string string, std::string prefix)
    return string;
 }
 
+  void log_void(std::string prefix, std::string event)
+  {
+    std::clog << prefix << event << std::endl;
+    std::clog << prefix << "return" << std::endl;
+  }
 
+  template <typename R>
+  R get_value(std::function<R(std::string)> string_to_value)
+  {
+    std::string s;
+    while (std::cin >> s)
+      {
+        R r = string_to_value(s);
+        if ((int)r != -1)
+          {
+            return r;
+          }
+      }
+    return (R)0;
+  }
+  
+  template <typename R>
+  R log_valued(std::string prefix, std::string event, std::function<R(std::string)> string_to_value, std::function<std::string(R)> value_to_string)
+  {
+    std::clog << prefix << event << std::endl;
+    R r = get_value(string_to_value);
+    if ((int)r != -1)
+    {
+      std::clog << prefix << value_to_string(r) << std::endl;
+      return r;
+    }
+    return (R)0;
+  }
+               
 void fill_event_map(#.model & m, event_map& e)
 {
   int dzn_i = 0;
   #(map
     (lambda (port)
     (map (define-on model port #{
-      m.#port .#direction .#event  = [] (#parameters) {std::clog << "#port .#direction .#event " << std::endl;#(string-if (and (eq? return-type 'void) (eq? direction 'in)) #{std::clog << "#port .#direction .return" << std::endl;#}) #(string-if (not (eq? return-type 'void)) #{std::string s; while (std::cin >> s) {#reply-type ::#reply-name ::type  r = to_#interface _#reply-name(drop_prefix(s,"#port .")); if (r != (#reply-type ::#reply-name ::type)-1) {std::clog << "#port .#direction ." << to_string (r) << std::endl; return r;};}#})};
+      m.#port .#direction .#event  = [] (#parameters) {#(string-if (eq? return-type 'void) #{log_void("#port .#direction .", "#event ");#}#{return log_valued("#port .#direction .", "#event ", (std::function<#reply-type ::#reply-name ::type(std::string)>)([](std::string s) {return (#reply-type ::#reply-name ::type)to_#interface _#reply-name(drop_prefix(s,"#port ."));}), (std::function<std::string(#reply-type ::#reply-name ::type)>)([](#reply-type ::#reply-name ::type r) {return (std::string)to_string(r);}));#})};
 #}) (filter (negate (gom:dir-matches? port))
        (gom:events port)))) (gom:ports model))
   #(map
