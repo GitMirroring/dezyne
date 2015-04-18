@@ -1,4 +1,4 @@
-
+#(->string (map declare-enum (gom:interface-enums model)))
 (define-class <#.interface .in> (<port-base>)
   (name :accessor .name :init-value (symbol) :init-keyword :name)
   (self :accessor .self :init-value ##f :init-keyword :self)#

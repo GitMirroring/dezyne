@@ -27,7 +27,7 @@
     "              :name '" (.name port) "\n"
     "              :self o")
       (map (define-on model port #{#'()
-              :#event  (lambda (. args) (call-in o (lambda () (apply #port -#event  (cons o args))) `(,(.#port  o) #event))) #})
+              :#event  (lambda (. args) (call-in o (lambda () (apply #port -#event  (cons o args))) `(,(.#port  o) #event #(string-if (not (eq? 'void return-type)) #{  #reply-name  ,#interface -#reply-name -alist#}))))#})
     (filter gom:in? (gom:events port)))
     (list ")))")))
     (filter gom:provides? (gom:ports model)))#

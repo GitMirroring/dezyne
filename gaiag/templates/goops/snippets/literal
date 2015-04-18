@@ -1,1 +1,1 @@
-'(#type  #field)
+(assoc-ref #scope -#type -alist '#field)

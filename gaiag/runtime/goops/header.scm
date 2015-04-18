@@ -32,7 +32,8 @@
   :use-module (ice-9 optargs)
   :use-module (ice-9 rdelim)
   :use-module (ice-9 q)
-  :use-module (oop goops))
+  :use-module (oop goops)
+  :use-module (srfi srfi-1))
 
 (define-syntax assert
   (syntax-rules ()
@@ -44,6 +45,10 @@
 
 (define (stderr . args)
   (apply format (cons* (current-error-port) args)))
+
+(define (assoc-xref alist value)
+  (define (cdr-equal? x) (equal? (cdr x) value))
+  (and=> (find cdr-equal? alist) car))
 
 (define-class <model> ())
 
@@ -109,22 +114,22 @@
         (flush o))
       (throw 'handle "component already handling an event")))
 
-(define (return-value? r)
-  (and-let* (((list? r))
-             ((= (length r) 2))
-             ((symbol? (car r)))
-             ((symbol? (cadr r))))
-            (symbol-append (car r) '_ (cadr r))))
+(define (return-value? r m)
+  (and-let* (((number? r))
+             (type (car m))
+             (alist (cadr m))
+             (field (assoc-xref alist r)))
+            (symbol-append type '_ field)))
   
 (define-method (call-in (o <component>) f m)
-  (apply trace-in m)
+  (apply trace-in (take m 2))
   (let ((handle (.handling? o)))
     (set! (.handling? o) #t)
     (let ((r (f)))
       (if handle (throw 'defer "a valued event cannot be deferred"))
       (set! (.handling? o) #f)
       (flush o)
-      (trace-out (car m) (or (return-value? r) 'return))
+      (trace-out (car m) (or (return-value? r (cddr m)) 'return))
       r)))
 
 (define-method (call-out (o <component>) f m)

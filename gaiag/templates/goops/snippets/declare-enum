@@ -1,0 +1,3 @@
+
+(define #.model -#name -alist
+  '(#((->join "\n    ") (map (lambda (f i) `("(" ,f " . " ,i ")")) fields (iota length)))))

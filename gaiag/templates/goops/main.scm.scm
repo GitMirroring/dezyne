@@ -1,13 +1,39 @@
+(define (drop-prefix string prefix)
+  (if (string-prefix? prefix string)
+      (substring string (string-length prefix))
+      string))
+
+(define (log-void prefix event)
+  (stderr "~a~a\n" prefix event)
+  (stderr "~a~a\n" prefix 'return))
+
+(define (get-value string->value)
+  (let ((r ##f))
+    (while (and-let*
+            ((line (read-line))
+            ((not (eof-object? line))))
+           (set! r (string->value line))
+           (not r)))
+    r))
+
+(define (log-valued prefix event string->value value->symbol)
+  (stderr "~a~a\n" prefix event)
+  (let ((r (get-value string->value)))
+    (if r
+        (and (stderr "~a~a\n" prefix (value->symbol r))
+             r)
+        0)));; FIXME?
 
 (define (fill-event-alist o)
 #(map
     (lambda (port)
     (map (define-on model port #{
     (set! (.#event  (.#direction  (.#port  o)))
-      (lambda (. args)
-        (stderr "~a.~a.~a\n" '#port  '#direction  '#event)#
-       (string-if (not (eq? type 'void)) #{#'()
-       #(list "'(" (.name enum) " " (car (.elements (.fields enum))) ")")#})))#})
+      (lambda (. args)#
+        (string-if (eq? return-type 'void) #{#'()
+        (log-void "#port .#direction ." '#event)#}#{#'()
+        (log-valued "#port .#direction ." '#event (lambda (s) (assoc-ref #interface -#reply-name -alist (string->symbol (drop-prefix s "#port .#reply-name _")))) (lambda (r) (symbol-append '#reply-name _ (assoc-xref #interface -#reply-name -alist r))))#})))
+#})
           (filter (negate (gom:dir-matches? port))
             (gom:events port)))) (gom:ports model))
     `(#
