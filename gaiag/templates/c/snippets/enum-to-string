@@ -1,8 +1,5 @@
-static char const* #.interface _#name _to_string(#.interface _#name  v)
-{
-  switch(v)
-  {
-  #(->string (map (lambda (field) (->string (list "case " .interface "_" name "_" field ": return \"" name "_" field "\";\n"))) fields))
-  }
+char const* #.interface _#name _to_string(#.interface _#name  v) {
+  switch(v) {
+  #(->string (map (lambda (field) (->string (list "case " .interface "_" name "_" field ": return \"" name "_" field "\";\n"))) fields)) }
   return "";
 }

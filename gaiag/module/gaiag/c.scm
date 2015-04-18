@@ -45,8 +45,7 @@
   :use-module (oop goops describe)
   :use-module (gaiag gom)
 
-  :export (ast->
-           gen1-interfaces))
+  :export (ast->))
 
 (define (ast-> ast)
   (let ((gom ((gom:register code:gom) ast #t)))
@@ -57,7 +56,17 @@
 (define-method (dump (o <interface>))
   (let ((name (.name o)))
     (dump-indented (symbol-append name (code:extension o))
-                   (lambda () (c-file (c-name o) (code:module o))))))
+                   (lambda () (c-file (c-name o) (code:module o))))
+    (and-let* ((code-name (symbol-append name (code:extension (make <component>))))
+               ((stderr "code-name: ~a\n" code-name))
+               (template (template-file `(,(language) interface ,(symbol-append (code:extension (make <component>)) '.scm))))
+               ((stderr "template: ~a\n" template))
+               ((stderr "??:~a --> ~a\n" (components->file-name template) (file-exists? (components->file-name template))))
+               ((file-exists? (components->file-name template))))
+
+              (dump-indented ;;(symbol-append name (code:extension (make <component>)))
+               code-name
+               (lambda () (c-file (c-code o) (code:module o)))))))
 
 (define-method (dump (o <component>))
   (let ((name (.name o))
@@ -99,6 +108,9 @@
 
 (define-method (c-name (o <model>))
   (symbol-append (ast-name o) (code:extension o) '.scm))
+
+(define-method (c-code (o <model>))
+  (symbol-append (ast-name o) (code:extension (make <component>)) '.scm))
 
 (define-method (c-header (o <model>))
   (symbol-append (ast-name o) (code:extension (make <interface>)) '.scm))

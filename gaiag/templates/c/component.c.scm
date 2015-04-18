@@ -5,11 +5,6 @@
 ##include <assert.h>
 ##include <string.h>
 
-#(map (lambda (port)
-   (module-define! (current-module) '.interface port)
-   (->string (map enum-to-string (gom:interface-enums (gom:import port)))))
-  (delete-duplicates (map .type (gom:ports model))))
-
 #(->string (map declare-enum (gom:enums (.behaviour model))))
 
 #(map

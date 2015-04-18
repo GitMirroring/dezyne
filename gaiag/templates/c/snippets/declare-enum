@@ -1,3 +1,6 @@
 typedef enum {
     #((->join ", ") (map (lambda (f) (symbol-append .model '_ name '_ f)) fields))
 } #.model _#name;
+
+int string_to_#.model _#name(char* s);
+char const* #.model _#name _to_string(#.model _#name  v);
