@@ -5,18 +5,65 @@ import java.util.HashMap;
 
 class Reader {
   BufferedReader reader;
-  String readLine() throws IOException {
-    if (System.console() != null) {
-      return System.console().readLine();
+  String readLine() {
+    try {
+      if (System.console() != null) {
+        return System.console().readLine();
+      }
+      if (reader == null) {
+        reader = new BufferedReader(new InputStreamReader(System.in));
+      }
+      return reader.readLine();
     }
-    if (reader == null) {
-      reader = new BufferedReader(new InputStreamReader(System.in));
+    catch (IOException e) {
+      return null;
     }
-    return reader.readLine();
   }
-}  
+}
 
-class main {
+class main<R> {
+  static Reader reader;
+
+  static String drop_prefix(String string, String prefix) {
+    if (string.startsWith(prefix)) {
+      return string.substring(prefix.length());
+    }
+    return string;
+  }
+
+  static void log_void(String prefix, String event) {
+    System.err.println(prefix + event);
+    System.err.println(prefix + "return");
+  }
+
+  static <R extends Enum<R>> R string_to_value(Class<R> E, String s) {
+    for (Enum<R> e: E.getEnumConstants()) {
+      if (e.toString().equals(s)) {
+        return R.valueOf(E, s);
+      }
+    }
+    return null;
+  }
+
+  static <R extends Enum<R>> R get_value(Class<R> E, String prefix) {
+    String s;
+    while ((s = main.reader.readLine()) != null) {
+      R r = string_to_value(E, drop_prefix(s, prefix));
+      if (r != null) {
+        return r;
+      }
+    }
+    return null;
+  }
+
+  static <R extends Enum <R>> R log_valued(String prefix, String event, Class<R> E, String event_prefix) {
+    System.err.println(prefix + event);
+    R r = get_value(E, event_prefix);
+    if (r != null) {
+      System.err.println(prefix + r.getClass().getSimpleName() + "_" + E.getEnumConstants()[r.ordinal()]);
+    }
+    return r;
+  }
 
   private static class EventMap extends HashMap<String, Action> {};
                         
@@ -25,7 +72,7 @@ class main {
 #(map
     (lambda (port)
     (map (define-on model port #{
-    m.#port .#direction .#event  = new #(action-type return-type parameter-types)() {public #return-type  action(#parameters) {System.err.println("#port .#direction .#event");#(string-if (not (eq? return-type 'void)) #{return #return-type .#(car (.elements (.fields enum)));#})}};
+    m.#port .#direction .#event  = new #(action-type return-type parameter-types)() {public #return-type  action(#parameters) {#(string-if (eq? return-type 'void) #{log_void("#port .#direction .", "#event ");#}#{return log_valued("#port .#direction .", "#event ", #reply-type .#reply-name .class, "#port .#reply-name _");#})};};
 #}) (filter (negate (gom:dir-matches? port))
        (gom:events port)))) (gom:ports model))     EventMap e = new EventMap();
 #(map
@@ -36,21 +83,13 @@ class main {
        (gom:events port)))) (gom:ports model)) return e;
 }
 
-  private static String readLine() throws IOException {
-    if (System.console() != null) {
-      return System.console().readLine();
-    }
-    BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-    return reader.readLine();
-  }
-
   public static void main(String[] args) throws IOException {
     Runtime runtime = new Runtime();
     #.model  sut = new #.model(runtime, "sut");
     EventMap e = fillEventMap(sut);
-    Reader reader = new Reader();
+    main.reader = new Reader();
     String line;
-    while ((line = reader.readLine()) != null) {
+    while ((line = main.reader.readLine()) != null) {
       Action a = e.get(line);
       if (a != null) {
         a.action();
