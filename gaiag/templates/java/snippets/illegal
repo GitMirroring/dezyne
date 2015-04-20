@@ -1,1 +1,1 @@
-throw new RuntimeException("illegal");
+this.runtime.illegal.action();

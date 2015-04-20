@@ -139,6 +139,9 @@ class Runtime<R> {
   {
     this.components = new ArrayList<ComponentBase> ();
   }
+  public Action illegal;
+  public Runtime() {this(new Action() {public void action() {throw new RuntimeException("illegal");}});}
+  public Runtime(Action illegal) {this.illegal = illegal;}
   public static boolean external(Component c) {
     return !c.runtime.components.contains(c);
   }

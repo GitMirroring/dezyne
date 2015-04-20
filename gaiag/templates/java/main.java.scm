@@ -53,6 +53,7 @@ class main<R> {
         return r;
       }
     }
+    System.exit(0);
     return null;
   }
 
@@ -84,7 +85,7 @@ class main<R> {
 }
 
   public static void main(String[] args) throws IOException {
-    Runtime runtime = new Runtime();
+    Runtime runtime = new Runtime(new Action() {public void action() {System.err.println("illegal");System.exit(0);}});
     #.model  sut = new #.model(runtime, "sut");
     EventMap e = fillEventMap(sut);
     main.reader = new Reader();
