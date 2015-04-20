@@ -30,6 +30,7 @@
 
 #include "mem.h"
 #include "closure.h"
+#include "locator.h"
 #include "queue.h"
 
 typedef struct {
@@ -39,43 +40,49 @@ typedef struct {
 } arguments;
 
 void
+runtime_illegal_handler()
+{
+  assert(!"illegal");
+}
+
+void
 runtime_init (runtime* self)
 {
-  (void)self;
 }
 
 void
-runtime_sub_init (runtime* self, runtime_sub* sub)
+runtime_info_init (runtime_info* self, locator* loc)
 {
-  sub->rt = self;
-  sub->handling = false;
-  sub->performs_flush = false;
-  sub->deferred = 0;
-  queue_init(&sub->q);
+  self->rt = loc->rt;
+  self->locator = loc;
+  self->handling = false;
+  self->performs_flush = false;
+  self->deferred = 0;
+  queue_init(&self->q);
 }
 
-static void runtime_handle_event (runtime_sub* sub, void (*event)(void*), void* args);
+static void runtime_handle_event (runtime_info* info, void (*event)(void*), void* args);
 
 void
-runtime_flush (runtime_sub* sub)
+runtime_flush (runtime_info* info)
 {
-  queue* q = &sub->q;
+  queue* q = &info->q;
   while (!queue_empty (q))
   {
 #ifndef DZN_STATIC_QUEUES
     closure* c = queue_pop (q);
-    runtime_handle_event (sub, c->func, c->args);
+    runtime_handle_event (info, c->func, c->args);
     free (c->args);
     free (c);
 #else
     closure c = *(closure*)queue_pop (q);
-    runtime_handle_event (sub, c.func, c.args);
+    runtime_handle_event (info, c.func, c.args);
 #endif
   }
-  if (sub->deferred)
+  if (info->deferred)
   {
-    runtime_sub* tgt = sub->deferred;
-    sub->deferred = 0;
+    runtime_info* tgt = info->deferred;
+    info->deferred = 0;
     if (tgt && !tgt->handling)
       runtime_flush (tgt);
   }
@@ -86,8 +93,8 @@ runtime_defer (void* vsrc, void* vtgt, void (*event)(void*), void* args)
 {
   component* csrc = vsrc;
   component* ctgt = vtgt;
-  runtime_sub* src = csrc?&csrc->dzn_sub:0;
-  runtime_sub* tgt = ctgt?&ctgt->dzn_sub:0;
+  runtime_info* src = csrc?&csrc->dzn_info:0;
+  runtime_info* tgt = ctgt?&ctgt->dzn_info:0;
   if ((!(src && src->performs_flush)) && !(tgt->handling))
   {
     runtime_handle_event (tgt, event, args);
@@ -107,20 +114,20 @@ runtime_defer (void* vsrc, void* vtgt, void (*event)(void*), void* args)
   arguments *a = args;
   assert(a->size <= DZN_MAX_ARGS_SIZE);
   memcpy(&c.args, a, a->size);
-  queue_push (&tgt_sub->q, &c);
+  queue_push (&tgt_info->q, &c);
   src->deferred = tgt;
 #endif
 }
 
 static void
-runtime_handle_event (runtime_sub* sub, void (*event)(void*), void* args)
+runtime_handle_event (runtime_info* info, void (*event)(void*), void* args)
 {
-  if (!sub->handling)
+  if (!info->handling)
   {
-    sub->handling = true;
+    info->handling = true;
     event (args);
-    sub->handling = false;
-    runtime_flush (sub);
+    info->handling = false;
+    runtime_flush (info);
   }
   else
   {
@@ -133,7 +140,7 @@ runtime_event (void (*event)(void*), void* args)
 {
   arguments* a = args;
   component* c = a->self;
-  runtime_handle_event (&c->dzn_sub, event, args);
+  runtime_handle_event (&c->dzn_info, event, args);
 }
 
 char*

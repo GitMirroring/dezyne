@@ -1,1 +1,1 @@
-assert(false);
+self->dzn_info.locator->illegal();

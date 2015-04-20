@@ -2,7 +2,6 @@
 
 ##include "locator.h"
 ##include "runtime.h"
-##include <assert.h>
 ##include <string.h>
 
 #(->string (map declare-enum (gom:enums (.behaviour model))))
@@ -93,8 +92,8 @@
 #}) (filter gom:out? (gom:events port))))
     (filter gom:requires? (gom:ports model)))
 void #.model _init (#.model * self, locator* dezyne_locator, dzn_meta_t *dzn_meta) {
-  runtime_sub_init(dezyne_locator->rt, &self->dzn_sub);
-  self->dzn_sub.performs_flush = true;
+  runtime_info_init(&self->dzn_info, dezyne_locator);
+  self->dzn_info.performs_flush = true;
   memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
   #(map (lambda (port) (->string (list "self->" (.name port) " = locator_get(dezyne_locator, \"" (.type port) "\");\n"))) (filter .injected (gom:ports model)))#
 ((->join  ";\n")

@@ -31,39 +31,41 @@
 #include "queue.h"
 #include "map.h"
 
+typedef struct {
+	int dummy;
+} runtime;
 
 typedef struct {
   char const* name;
   void* parent;
 } dzn_meta_t;
 
-typedef struct {
-  int dummy;
-} runtime;
-
-typedef struct runtime_sub runtime_sub;
-struct runtime_sub {
+typedef struct locator locator;
+typedef struct runtime_info runtime_info;
+struct runtime_info {
   runtime* rt;
+  locator* locator;
   bool handling;
   bool performs_flush;
-  runtime_sub* deferred;
+  runtime_info* deferred;
   queue q;
 };
 
 typedef struct {
   dzn_meta_t dzn_meta;
-  runtime_sub dzn_sub;
+  runtime_info dzn_info;
 } component;
 
 typedef struct {
   dzn_meta_t dzn_meta;
-  runtime_sub dzn_sub;
+  runtime_info dzn_info;
   void* self;
 } component_header;
 
 void runtime_init (runtime*);
-void runtime_sub_init (runtime* self, runtime_sub* sub);
-void runtime_flush (runtime_sub* self);
+void runtime_illegal_handler();
+void runtime_info_init (runtime_info* info, locator* loc);
+void runtime_flush (runtime_info* self);
 void runtime_defer (void* src, void* tgt, void (*event)(void*), void* args);
 void runtime_event (void (*event)(void*), void* args);
 char* runtime_path (void* m, char* p);

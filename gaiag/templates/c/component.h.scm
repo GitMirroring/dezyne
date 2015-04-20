@@ -11,7 +11,7 @@
 
 typedef struct {
     dzn_meta_t dzn_meta;
-    runtime_sub dzn_sub;
+    runtime_info dzn_info;
     #(map (init-member model #{
 #type  #name;
 #}) (gom:variables model))#

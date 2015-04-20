@@ -25,12 +25,13 @@
 
 #include "runtime.h"
 
-typedef struct
-{
+typedef struct locator locator;
+struct locator {
 	runtime* rt;
+	void (*illegal)();
   	map services;
 
-} locator;
+};
 
 void locator_init(locator* self, runtime* rt);
 locator* locator_clone(locator* self);

@@ -29,6 +29,7 @@
 
 void locator_init(locator* self, runtime* rt) {
   self->rt = rt;
+  self->illegal = runtime_illegal_handler;  
   map_init (&self->services);
 }
 

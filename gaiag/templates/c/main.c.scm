@@ -1,3 +1,4 @@
+/* -*-c-style:linux;indent-tabs-mode:t-*- */
 
 ##include "runtime.h"
 ##include "locator.h"
@@ -49,6 +50,7 @@ int get_value(int (*string_to_value)(char*), char* event_prefix) {
 			return r;
 		}
 	}
+	exit(0);
         return 0;
 }
 
@@ -93,11 +95,17 @@ void #.model _fill_event_map(#.model * m, map* e) {
 #}) (filter (gom:dir-matches? port)
        (gom:events port)))) (gom:ports model)) }
 
+void illegal_print() {
+	fputs("illegal\n", stderr);
+	exit(0);
+}
+
 int main() {
 	runtime dezyne_runtime;
 	runtime_init(&dezyne_runtime);
 	locator dezyne_locator;
 	locator_init(&dezyne_locator, &dezyne_runtime);
+	dezyne_locator.illegal = illegal_print;
 
 	#.model  sut;
 	dzn_meta_t mt = {"sut", 0};
