@@ -31,8 +31,9 @@
 #include <typeinfo>
 
 namespace dezyne {
-class locator
+struct locator
 {
+private:
   typedef std::string Key;
   struct type_info
   {
