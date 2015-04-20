@@ -27,7 +27,8 @@
 // handwritten runtime header
 var dezyne = {};
 
-dezyne.runtime = function () {
+dezyne.runtime = function(illegal) {
+  this.illegal = illegal || function() {console.assert(!'illegal');};
 };
 
 var runtime = {

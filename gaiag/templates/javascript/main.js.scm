@@ -54,7 +54,7 @@ function #.model _fill_event_map(m) {
 }
 
 function main () {
-  var rt = new dezyne.runtime ();
+  var rt = new dezyne.runtime(function() {console.error("illegal");process.exit(0);});
   var sut = new dezyne.#.model (rt, {name: 'sut'});
   
   var event_map = #.model _fill_event_map(sut);
