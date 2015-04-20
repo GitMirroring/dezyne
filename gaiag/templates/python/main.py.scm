@@ -12,9 +12,12 @@ def drop_prefix (string, prefix):
         return string[len(prefix):]
     return string
 
-def log_void (prefix, event):
+def log_in (prefix, event):
     sys.stderr.write (prefix + event + '\n')
     sys.stderr.write (prefix + 'return' + '\n')    
+
+def log_out (prefix, event):
+    sys.stderr.write (prefix + event + '\n')
 
 def get_value (string_to_value):
     while True:
@@ -37,7 +40,7 @@ def #.model _fill_event_map (m):
 #(map
     (lambda (port)
     (map (define-on model port #{
-    m.#port .#direction port.#event  = lambda *args: #(string-if (eq? return-type 'void) #{log_void ('#port .#direction .', '#event ')#}#{log_valued ('#port .#direction .', '#event ', lambda s: dezyne.#interface .#reply-name .__dict__.get (drop_prefix(s, '#port .#reply-name _'), None), dezyne.#interface .#reply-name _to_string)#})
+    m.#port .#direction port.#event  = lambda *args: #(string-if (eq? return-type 'void) #{log_#direction ('#port .#direction .', '#event ')#}#{log_valued ('#port .#direction .', '#event ', lambda s: dezyne.#interface .#reply-name .__dict__.get (drop_prefix(s, '#port .#reply-name _'), None), dezyne.#interface .#reply-name _to_string)#})
 #}) (filter (negate (gom:dir-matches? port))
        (gom:events port)))) (gom:ports model))     return {
 #(map

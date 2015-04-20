@@ -31,9 +31,13 @@ class main<R> {
     return string;
   }
 
-  static void log_void(String prefix, String event) {
+  static void log_in(String prefix, String event) {
     System.err.println(prefix + event);
     System.err.println(prefix + "return");
+  }
+
+  static void log_out(String prefix, String event) {
+    System.err.println(prefix + event);
   }
 
   static <R extends Enum<R>> R string_to_value(Class<R> E, String s) {
@@ -73,7 +77,7 @@ class main<R> {
 #(map
     (lambda (port)
     (map (define-on model port #{
-    m.#port .#direction .#event  = new #(action-type return-type parameter-types)() {public #return-type  action(#parameters) {#(string-if (eq? return-type 'void) #{log_void("#port .#direction .", "#event ");#}#{return log_valued("#port .#direction .", "#event ", #reply-type .#reply-name .class, "#port .#reply-name _");#})};};
+    m.#port .#direction .#event  = new #(action-type return-type parameter-types)() {public #return-type  action(#parameters) {#(string-if (eq? return-type 'void) #{log_#direction("#port .#direction .", "#event ");#}#{return log_valued("#port .#direction .", "#event ", #reply-type .#reply-name .class, "#port .#reply-name _");#})};};
 #}) (filter (negate (gom:dir-matches? port))
        (gom:events port)))) (gom:ports model))     EventMap e = new EventMap();
 #(map

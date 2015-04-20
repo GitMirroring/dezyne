@@ -41,9 +41,13 @@ char* drop_prefix(char* string, char* prefix) {
 	return string;
 }
 
-void log_void(char* prefix, char* event) {
+void log_in(char* prefix, char* event) {
         fprintf(stderr, "%s%s\n", prefix, event);
         fprintf(stderr, "%s%s\n", prefix, "return");
+}
+
+void log_out(char* prefix, char* event) {
+        fprintf(stderr, "%s%s\n", prefix, event);
 }
 
 int get_value(int (*string_to_value)(char*), char* event_prefix) {
@@ -76,7 +80,7 @@ int log_valued(char* prefix, char* event, int (*string_to_value)(char*), char* e
    #(string-if (not (eq? type 'void)) #{int#} #{void#})  #.model _log_event_#port _#direction _#event (#interface * m) {
    (void)m;
    #(string-if (eq? return-type 'void) #{
-   log_void("#port .#direction .", "#event ");#}#{
+   log_#direction("#port .#direction .", "#event ");#}#{
    return log_valued("#port .#direction .", "#event ", string_to_#interface _#reply-name , "#port .", #interface _#reply-name _to_string);#})}
 #}) (filter (negate (gom:dir-matches? port))
        (gom:events port)))) (gom:ports model))

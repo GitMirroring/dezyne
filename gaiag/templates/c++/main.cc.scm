@@ -26,10 +26,15 @@ std::string drop_prefix(std::string string, std::string prefix)
    return string;
 }
 
-  void log_void(std::string prefix, std::string event)
+  void log_in(std::string prefix, std::string event)
   {
     std::clog << prefix << event << std::endl;
     std::clog << prefix << "return" << std::endl;
+  }
+
+  void log_out(std::string prefix, std::string event)
+  {
+    std::clog << prefix << event << std::endl;
   }
 
   template <typename R>
@@ -67,7 +72,7 @@ void fill_event_map(#.model & m, event_map& e)
   #(map
     (lambda (port)
     (map (define-on model port #{
-      m.#port .#direction .#event  = [] (#parameters) {#(string-if (eq? return-type 'void) #{log_void("#port .#direction .", "#event ");#}#{return log_valued("#port .#direction .", "#event ", (std::function<#reply-type ::#reply-name ::type(std::string)>)([](std::string s) {return (#reply-type ::#reply-name ::type)to_#interface _#reply-name(drop_prefix(s,"#port ."));}), (std::function<std::string(#reply-type ::#reply-name ::type)>)([](#reply-type ::#reply-name ::type r) {return (std::string)to_string(r);}));#})};
+      m.#port .#direction .#event  = [] (#parameters) {#(string-if (eq? return-type 'void) #{log_#direction("#port .#direction .", "#event ");#}#{return log_valued("#port .#direction .", "#event ", (std::function<#reply-type ::#reply-name ::type(std::string)>)([](std::string s) {return (#reply-type ::#reply-name ::type)to_#interface _#reply-name(drop_prefix(s,"#port ."));}), (std::function<std::string(#reply-type ::#reply-name ::type)>)([](#reply-type ::#reply-name ::type r) {return (std::string)to_string(r);}));#})};
 #}) (filter (negate (gom:dir-matches? port))
        (gom:events port)))) (gom:ports model))
   #(map

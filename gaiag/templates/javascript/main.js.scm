@@ -23,9 +23,13 @@ function get_value(string_to_value) {
   }
 }
 
-function log_void(prefix, event) {
+function log_in(prefix, event) {
   console.error(prefix + event);
   console.error(prefix + 'return');
+}
+
+function log_out(prefix, event) {
+  console.error(prefix + event);
 }
 
 function log_valued(prefix, event, string_to_value, value_to_string) {
@@ -42,7 +46,7 @@ function #.model _fill_event_map(m) {
 #(map
     (lambda (port)
      (map (define-on model port #{
-       m.#port .#direction .#event  = function() {#(string-if (eq? return-type 'void) #{log_void('#port .#direction .', '#event ');#}#{return log_valued('#port .#direction .', '#event ', function(s) {return new dezyne.#interface().#reply-name[drop_prefix(s, '#port .#reply-name _')];}, new dezyne.#interface().#reply-name _to_string)#})};
+       m.#port .#direction .#event  = function() {#(string-if (eq? return-type 'void) #{log_#direction('#port .#direction .', '#event ');#}#{return log_valued('#port .#direction .', '#event ', function(s) {return new dezyne.#interface().#reply-name[drop_prefix(s, '#port .#reply-name _')];}, new dezyne.#interface().#reply-name _to_string)#})};
 #}) (filter (negate (gom:dir-matches? port))
        (gom:events port)))) (gom:ports model))   return {
 #(map

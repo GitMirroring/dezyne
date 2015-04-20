@@ -3,9 +3,12 @@
       (substring string (string-length prefix))
       string))
 
-(define (log-void prefix event)
+(define (log-in prefix event)
   (stderr "~a~a\n" prefix event)
   (stderr "~a~a\n" prefix 'return))
+
+(define (log-out prefix event)
+  (stderr "~a~a\n" prefix event))
 
 (define (get-value string->value)
   (while (not (let* ((line (read-line)))
@@ -27,7 +30,7 @@
     (set! (.#event  (.#direction  (.#port  o)))
       (lambda (. args)#
         (string-if (eq? return-type 'void) #{#'()
-        (log-void "#port .#direction ." '#event)#}#{#'()
+        (log-#direction "#port .#direction ." '#event)#}#{#'()
         (log-valued "#port .#direction ." '#event (lambda (s) (assoc-ref #interface -#reply-name -alist (string->symbol (drop-prefix s "#port .#reply-name _")))) (lambda (r) (symbol-append '#reply-name _ (assoc-xref #interface -#reply-name -alist r))))#})))
 #})
           (filter (negate (gom:dir-matches? port))
