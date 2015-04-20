@@ -1,6 +1,8 @@
 ##ifndef DEZYNE_#.INTERFACE _H
 ##define DEZYNE_#.INTERFACE _H
 
+##include "runtime.h"
+
 #(->string (map declare-enum (gom:interface-enums model)))
 
 typedef struct #.model  #.model;

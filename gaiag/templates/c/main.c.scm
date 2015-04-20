@@ -16,6 +16,11 @@ typedef struct {
 } closure;
 
 
+int config(char* s) {
+	(void)s;
+	return 0;
+}
+
 char* read_line() {
 	char *line = 0;
 	size_t size;

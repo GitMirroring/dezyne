@@ -8,6 +8,12 @@
 
 namespace dezyne
 {
+
+int config(std::string)
+{
+  return 0;                          
+}
+
 typedef std::map<std::string, std::function<void()>> event_map;
 
 std::string drop_prefix(std::string string, std::string prefix)
