@@ -48,7 +48,10 @@ def #.model _fill_event_map (m):
        (gom:events port)))) (gom:ports model))     }
 
 def main ():
-    rt = runtime.Runtime ()
+    def illegal ():
+        sys.stderr.write('illegal')
+        sys.exit (0)
+    rt = runtime.Runtime (illegal)
     sut = dezyne.#.model  (rt, name='sut')
 
     event_map = #.model _fill_event_map (sut)

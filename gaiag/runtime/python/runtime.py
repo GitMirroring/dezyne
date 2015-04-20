@@ -27,9 +27,13 @@ class V:
     def __init__ (self, v):
         self.v = v
 
+def illegal ():
+    raise RuntimeError ('illegal')
+    
 class Runtime:
-    def __init__ (self):
+    def __init__ (self, illegal=illegal):
         self.components = []
+        self.illegal = illegal
         self.info = {}
     def flushes (self, c):
         self.components += [c]
