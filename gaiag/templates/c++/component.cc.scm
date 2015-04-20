@@ -10,6 +10,7 @@ namespace dezyne
 #.model ::#.model (const locator& dezyne_locator)
 : dzn_meta{"","#.model",reinterpret_cast<const component*>(this),0,{},{#((->join ",") (map (lambda (port) (list "[this]{" (.name port) ".check_bindings();}")) (gom:ports model)))}}
 , dzn_rt(dezyne_locator.get<runtime>())
+, dzn_locator(dezyne_locator)
 , #
 ((->join  "\n, ")
  (map (init-member model #{

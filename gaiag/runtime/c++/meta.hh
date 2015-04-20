@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -25,6 +26,7 @@
 #ifndef META_HH
 #define META_HH
 
+#include <cassert>
 #include <functional>
 #include <string>
 #include <stdexcept>
@@ -66,6 +68,8 @@ namespace dezyne
   {
     dezyne::meta dzn_meta;
   };
+
+  struct illegal_handler {std::function<void()> illegal = [] {assert(!"h:illegal");};};
 
   inline std::string path(meta const& m, std::string p="")
   {

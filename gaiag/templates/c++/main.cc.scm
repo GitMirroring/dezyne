@@ -38,6 +38,7 @@ std::string drop_prefix(std::string string, std::string prefix)
             return r;
           }
       }
+    exit(0);
     return (R)0;
   }
   
@@ -73,9 +74,12 @@ void fill_event_map(#.model & m, event_map& e)
 
 int main()
 {
-  dezyne::runtime rt;
   dezyne::locator l;
+  dezyne::runtime rt;
   l.set(rt);
+  dezyne::illegal_handler ih;
+  ih.illegal = [] {std::clog << "illegal" << std::endl;exit(0);};
+  l.set(ih);
 
   dezyne::event_map event_map;
   dezyne::#.model  sut(l);

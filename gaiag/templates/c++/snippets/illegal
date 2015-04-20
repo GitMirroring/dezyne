@@ -1,1 +1,1 @@
-assert(false);
+dzn_locator.get<illegal_handler>().illegal();
