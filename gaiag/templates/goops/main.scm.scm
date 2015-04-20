@@ -11,9 +11,11 @@
   (stderr "~a~a\n" prefix event))
 
 (define (get-value string->value)
-  (while (not (let* ((line (read-line)))
-                (if (eof-object? line) (exit 0))
-                (string->value line)))))
+  (let loop ((r ##f))
+    (or r
+        (let ((line (read-line)))
+          (if (eof-object? line) (exit 0))
+          (loop (string->value line))))))
 
 (define (log-valued prefix event string->value value->symbol)
   (stderr "~a~a\n" prefix event)
