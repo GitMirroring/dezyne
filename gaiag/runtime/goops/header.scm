@@ -84,7 +84,8 @@
   (apply ((compose event dir) o) args))
 
 (define-class <runtime> ()
-  (components :accessor .components :init-form (list) :init-keyword :components))
+  (components :accessor .components :init-form (list) :init-keyword :components)
+  (illegal :accessor .illegal :init-value illegal :init-keyword :illegal))
 
 (define (external? o)
   (not (member o (.components (.runtime o)))))

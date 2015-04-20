@@ -8,13 +8,9 @@
   (stderr "~a~a\n" prefix 'return))
 
 (define (get-value string->value)
-  (let ((r ##f))
-    (while (and-let*
-            ((line (read-line))
-            ((not (eof-object? line))))
-           (set! r (string->value line))
-           (not r)))
-    r))
+  (while (not (let* ((line (read-line)))
+                (if (eof-object? line) (exit 0))
+                (string->value line)))))
 
 (define (log-valued prefix event string->value value->symbol)
   (stderr "~a~a\n" prefix event)
@@ -22,7 +18,7 @@
     (if r
         (and (stderr "~a~a\n" prefix (value->symbol r))
              r)
-        0)));; FIXME?
+        0)))
 
 (define (fill-event-alist o)
 #(map
@@ -45,7 +41,9 @@
        (gom:events port)))) (gom:ports model))))
 
 (define (main . args)
-  (let* ((sut (make <#.model > :name 'sut))
+  (let* ((print-illegal (lambda () (stderr "illegal\n") (exit 0)))
+         (runtime (make <runtime> :illegal print-illegal))
+         (sut (make <#.model > :runtime runtime :name 'sut))
          (event-alist (fill-event-alist sut)))
     (while (and-let*
             ((line (read-line))
