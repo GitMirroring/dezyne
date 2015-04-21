@@ -101,6 +101,9 @@ Usage: ./configure [OPTION]...
         (set! required (cons (or deb command) required)))
     pass?))
 
+(define* (check-pkg-config package expected :optional (deb #f))
+  (check-version (format #f "pkg-config --modversion ~a" package) expected deb))
+
 (define (main args)
   (let* ((verum? (file-exists? "/verum"))
          (options (parse-opts args)))
@@ -114,6 +117,8 @@ Usage: ./configure [OPTION]...
     (check-version 'javac '(1 8) 'openjdk-8-jdk '-version)
     (check-version 'npm '())
     (check-version 'pkg-config '(0 25))
+    (check-pkg-config 'gtk+-3.0 '())
+    (check-pkg-config 'gtkmm-3.0 '())
     (check-version 'psql '(9 3) 'postgresql))
   (when (pair? required)
     (stderr "\nMissing dependencies, run\n\n")
