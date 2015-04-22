@@ -3,7 +3,7 @@ dezyne.#.model  = function(rt, meta) {
   rt.components = (rt.components || []).concat ([this]);
   this.meta = meta;
   this.flushes = true;#
-(->string (map declare-enum (gom:enums (.behaviour model))))
+(->string (map (declare-enum model) (append (gom:enums (.behaviour model)) (gom:enums))))
 #
     (map (init-member model #{
   #(string-if (eq? expression *unspecified*) "" #{this.#name  = #expression ;

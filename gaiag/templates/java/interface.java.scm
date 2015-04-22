@@ -1,5 +1,5 @@
 class #.interface  extends Interface<#.interface .In, #.interface .Out> {#
-(->string (map declare-enum (gom:interface-enums model)))
+(->string (map (declare-enum model) (gom:interface-enums model)))
   class In extends Interface.In {
 #((->join "\n") (map (declare-io model #{
     #(action-type return-type parameter-types)  #name ;#})

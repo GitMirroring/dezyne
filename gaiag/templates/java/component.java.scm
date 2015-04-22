@@ -1,5 +1,5 @@
 class #.model  extends Component {#
-(->string (map declare-enum (gom:enums (.behaviour model))))#
+(->string (map (declare-enum model) (gom:enums (.behaviour model))))#
 (->string (map declare-integer (gom:integers (.behaviour model))))
 #
     (map (init-member model #{#'()

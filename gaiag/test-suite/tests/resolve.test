@@ -6,6 +6,7 @@
   :use-module (test-suite lib)
   :use-module (test-suite misc)
 
+  :use-module (gaiag misc)
   :use-module (gaiag resolve)
 
   :use-module (oop goops)
@@ -16,7 +17,8 @@
 (define resolve-model (@@ (gaiag resolve) resolve-model))
 
 (define-method (resolve-error (o <list>) (identifier <symbol>) (message <string>))
-  ((@@ (gaiag resolve) resolve-error) (ast->gom o) identifier message))
+  (let ((e ((@@ (gaiag resolve) resolve-error) (ast->gom `(root ,o)) identifier message)))
+    (make <error> :ast (car (.elements (.ast e))) :message (.message e))))
 
 (define-method (undefined-error (o <list>) (identifier <symbol>))
   ((@@ (gaiag resolve) undefined-error) (ast->gom o) identifier))
@@ -141,8 +143,8 @@
          (gom-pretty-noisy-equal?
           (ast:resolve-model
            (car resolve-ast)
-           '(variable e (type e) (expression (var efun))))
-          '(variable e (type e) (call efun))))
+          '(root (variable e (type e) (expression (var efun)))))
+          '(root (variable e (type e) (call efun)))))
 
 (pass-if "ast:resolve-assign-valued-function-call"
          (gom-pretty-noisy-equal?
@@ -168,8 +170,8 @@
           (ast:resolve-root-model
            resolve-ast
            (cadr resolve-ast)
-           '(variable v (type e ivar) (expression (action (trigger eo o (arguments (data 0)))))))
-          '(variable v (type e ivar) (action (trigger eo o (arguments (data 0)))))))
+           '(root (variable v (type e ivar) (expression (action (trigger eo o (arguments (data 0))))))))
+          '(root (variable v (type e ivar) (action (trigger eo o (arguments (data 0))))))))
 
 (pass-if "ast:resolve-assign-valued-action"
          (gom-pretty-noisy-equal?
@@ -282,8 +284,8 @@
          (gom-pretty-noisy-equal?
           (ast:resolve-model
            (cadr resolve-ast)
-           '(variable v (type mixed ivar) (literal ivar mixed v)))
-          '(variable v (type mixed ivar) (literal ivar mixed v))))
+           '(root (variable v (type mixed ivar) (literal ivar mixed v))))
+          '(root (variable v (type mixed ivar) (literal ivar mixed v)))))
 
 (pass-if "ast:resolve-value-enum-value"
          (gom-pretty-noisy-equal?
@@ -400,8 +402,8 @@
          (gom-pretty-noisy-equal?
           (ast:resolve-model
            (car resolve-ast)
-           '(variable e (type xint) (expression)))
-          '(variable e (type xint #f) (expression *unspecified*))))
+           '(root (variable e (type xint) (expression))))
+          '(root (variable e (type xint #f) (expression *unspecified*)))))
 
 (pass-if "ast:resolve-extern-component"
          (gom-pretty-noisy-equal?
@@ -514,78 +516,78 @@
   (gom-pretty-noisy-equal?
    (ast:resolve-model
     (car resolve-ast)
-    '(variable c (type boolean) (expression true)))
-   (resolve-error '(type boolean #f) 'boolean "undefined type: ~a")))
+    '(root (variable c (type boolean) (expression true))))
+   `(root ,(resolve-error '(type boolean #f) 'boolean "undefined type: ~a"))))
 
 (pass-if "ast:resolve-undefined-enum-type"
   (gom-pretty-noisy-equal?
    (ast:resolve-model
     (car resolve-ast)
-    '(variable c (type status) (expression true)))
-   (resolve-error '(type status #f) 'status "undefined type: ~a")))
+    '(root (variable c (type status) (expression true))))
+   `(root ,(resolve-error '(type status #f) 'status "undefined type: ~a"))))
 
 (pass-if "ast:resolve-undefined-enum-interface"
   (gom-pretty-noisy-equal?
    (ast:resolve-model
     (cadr resolve-ast)
-    '(variable c (type status Q) (expression true)))
-   (resolve-error '(type status Q) 'Q "undefined type: ~a")))
+    '(root (variable c (type status Q) (expression true))))
+   `(root ,(resolve-error '(type status Q) 'Q.status "undefined type: ~a"))))
 
 (pass-if "ast:resolve-undefined-int-type"
   (gom-pretty-noisy-equal?
    (ast:resolve-model
     (car resolve-ast)
-    '(variable c (type made) (expression 0)))
-   (resolve-error '(type made #f) 'made "undefined type: ~a")))
+    '(root (variable c (type made) (expression 0))))
+   `(root ,(resolve-error '(type made #f) 'made "undefined type: ~a"))))
 
 (pass-if "ast:resolve-undefined-int-interface"
   (gom-pretty-noisy-equal?
    (ast:resolve-model
     (cadr resolve-ast)
-    '(variable c (type mode Q) (expression 0)))
-   (resolve-error '(type mode Q) 'Q "undefined type: ~a")))
+    '(root (variable c (type mode Q) (expression 0))))
+   `(root ,(resolve-error '(type mode Q) 'Q.mode "undefined type: ~a"))))
 
 (pass-if "ast:resolve-init-type-int"
   (gom-pretty-noisy-equal?
    (ast:resolve-model
     (car resolve-ast)
-    '(variable c (type mode) (expression 0)))
-    '(variable c (type mode) (expression 0))))
+    '(root (variable c (type mode) (expression 0))))
+   '(root (variable c (type mode) (expression 0)))))
 
 (pass-if "ast:resolve-init-type-mismatch"
   (gom-pretty-noisy-equal?
    (ast:resolve-model
     (car resolve-ast)
-    '(variable b (type bool) (expression 0)))
-   (type-mismatch '(expression 0) 'bool 'int)))
+    '(root (variable b (type bool) (expression 0))))
+   `(root ,(type-mismatch '(expression 0) 'bool 'int))))
 
 (pass-if "ast:resolve-init-enum-mismatch"
   (gom-pretty-noisy-equal?
    (ast:resolve-model
     (car resolve-ast)
-    '(variable b (type bool) (value state one)))
-   (type-mismatch '(value state one) 'bool 'state)))
+    '(root (variable b (type bool) (value state one))))
+   `(root ,(type-mismatch '(value state one) 'bool 'state))))
 
 (pass-if "ast:resolve-init-enum-mismatch"
   (gom-pretty-noisy-equal?
    (ast:resolve-model
     (cadr resolve-ast)
-    '(variable b (type bool) (literal ivar e v)))
-   (type-mismatch '(literal ivar e v) 'bool 'ivar.e)))
+    '(root (variable b (type bool) (literal ivar e v))))
+   `(root ,(type-mismatch '(literal ivar e v) 'bool 'ivar.e))))
 
 (pass-if "ast:resolve-extern-mismatch"
          (gom-pretty-noisy-equal?
           (ast:resolve-model
            (car resolve-ast)
-           '(variable e (type xint) (expression 0)))
-          (type-mismatch '(expression 0) 'xint 'int)))
+           '(root (variable e (type xint) (expression 0))))
+          `(root ,(type-mismatch '(expression 0) 'xint 'int))))
 
 (pass-if "ast:resolve-bool-unspecified-mismatch"
          (gom-pretty-noisy-equal?
           (ast:resolve-model
            (car resolve-ast)
-           '(variable e (type bool) (expression)))
-          (resolve-error '(variable e (type bool) (expression)) 'e "undefined variable value: ~a")))
+           '(root (variable e (type bool) (expression))))
+          `(root ,(resolve-error '(variable e (type bool) (expression)) 'e "undefined variable value: ~a"))))
 
 (pass-if "ast:resolve-argument-count-mismatch"
          (gom-pretty-noisy-equal?
@@ -619,8 +621,8 @@
               (types)
               (variables
                ,(resolve-error '(variable i (type I02) (expression 3))
-                              'i
-                              (format #f "variable ~a out of range, expected ~a..~a, found: ~a" "~a" 0 2 3)))
+                               'i
+                               (format #f "variable ~a out of range, expected ~a..~a, found: ~a" "~a" 0 2 3)))
               (functions)
               (compound)))))
 

@@ -1,9 +1,9 @@
-int string_to_#.interface _#name(char* s) {
+int string_to_#scope #(if scope '_)#name(char* s) {
   if (0) {
   ;
   }
   #((->join "\n") (map (lambda (field) (->string (list "else if (!strcmp (s, " "\"" name "_" field "\")) {\n"
-     "return " .interface '_ name '_ field ";\n"
+     "return " scope (if scope '_) name '_ field ";\n"
      "}"))) fields))
    return -1;
 }

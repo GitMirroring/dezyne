@@ -1,5 +1,5 @@
-char const* #.interface _#name _to_string(#.interface _#name  v) {
+char const* #scope #(if scope '_)#name _to_string(#scope #(if scope '_)#name  v) {
   switch(v) {
-  #(->string (map (lambda (field) (->string (list "case " .interface "_" name "_" field ": return \"" name "_" field "\";\n"))) fields)) }
+  #(->string (map (lambda (field) (->string (list "case " scope (if scope "_") name "_" field ": return \"" name "_" field "\";\n"))) fields)) }
   return "";
 }

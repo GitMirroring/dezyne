@@ -74,10 +74,12 @@
   (make <error> :ast o :message (format #f "type mismatch: ~a expected, found: ~a" expected actual)))
 
 (define-method (gom:resolve (o <root>))
+  (map gom:register-type (gom:types o))
   (let* ((resolved (make <root> :elements
                          (map resolve-top-model
                               (append
                                (gom:imports o)
+                               (gom:types o)
                                (gom:interfaces o)
                                (gom:components o)
                                (gom:systems o)))))
@@ -120,7 +122,10 @@
 (define-method (resolve-model (model <model>))
   (lambda (o) (resolve-model model o)))
 
-(define-method (resolve-model (model <imports>) (o <imports>))
+(define-method (resolve-model (model <import>) (o <import>))
+  o)
+
+(define-method (resolve-model (model <type>) (o <type>))
   o)
 
 (define-method (resolve-model (model <model>) o)
@@ -240,11 +245,11 @@
                           (format #f "function ~a expects ~a arguments, found: ~a" "~a" parameter-count argument-count)))))
 
     (($ <variable> name (and (? (negate type?)) (get! type)) expression)
-     (let ((name
-            (or (and-let* ((scope (.scope (type)))
-                           ((not (gom:port model scope))))
-                          scope)
-                (.name (type)))))
+     (let* ((scope (.scope (type)))
+            (name (.name (type)))
+            (name (if scope
+                      (symbol-append scope '. name)
+                      name)))
       (resolve-error (type) name "undefined type: ~a")))
 
     (($ <variable> name (and (? (negate extern?)) (get! type)) ($ <expression> (? unspecified?)))

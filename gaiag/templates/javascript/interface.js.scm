@@ -1,5 +1,5 @@
 dezyne.#.interface  = function(meta) {#
-(->string (map declare-enum (gom:interface-enums model)))
+(->string (map (declare-enum model) (append (gom:interface-enums model) (gom:enums))))
   this.in = {
 #((->join ",\n") (map (declare-io model #{
     #name  : null#})

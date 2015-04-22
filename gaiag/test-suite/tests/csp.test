@@ -768,7 +768,7 @@ assign_(\\ ((s,b,c),(stack')) @ ((S_S2,b,c),(stack'))))),
                     (variable s (type S) (expression (literal #f S S1)))
                     (variable b (type bool) (expression false))
                     (variable c (type bool) (expression true))
-                    (variable xi (type xint j) (data 0)))
+                    (variable xi (type xint i) (data 0)))
                    (compound
                     (on ((trigger j e))
                         (compound))))))))
@@ -2106,7 +2106,7 @@ assign_(\\ ((s,b,c),((stack',t))) @ ((s,b,c),((stack',(s == S_S1))))))"))
                              (trigger j ei
                                       (arguments (expression (var pi)))))
                             (compound
-                             (variable xl (type xint j) (data 0)))))
+                             (variable xl (type xint i) (data 0)))))
           '(on (triggers
                 (trigger j ei (arguments (expression (var pi)))))
                (compound (skip)))))

@@ -9,7 +9,7 @@ xfalse
 Checking IF_IExtern_(true,false) :[livelock free]
 true
 
-Checking CO_Extern_(true,true) :[deterministic]
+Checking CO_Extern_(true,true)[[IExtern_'.x<-port_'.x|x<-extensions(port_')]] :[deterministic]
 true
 
 Checking COMPLETE'({port.e}) [F= CO_Extern_(true,true)[[IExtern_'.x'<-port_'.x'|x'<-extensions(port_')]]\diff(Events,{port.e,illegal})
@@ -21,7 +21,7 @@ true
 Checking AS_Extern_(false) :[deadlock free]
 xfalse
 
-Checking IF_IExtern_(true,false)[[IExtern.x<-port.x|x<-extensions(port)]][[IExtern_'.x<-port_'.x|x<-extensions(port_')]]\{} [F= AS_Extern_(true)\diff(Events,{|illegal,port,port_'|})
+Checking IF_IExtern_(true,false)[[IExtern.x<-port.x|x<-extensions(port)]][[IExtern_'.x<-port_'.x|x<-extensions(port_')]]\{IExtern_'''.modeling} [F= AS_Extern_(true)\diff(Events,{|illegal,port,port_'|})
 true
 
 Checking AS_Extern_(true)\diff(Events,{|illegal,port,port_'|}) :[livelock free]

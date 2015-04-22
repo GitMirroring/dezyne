@@ -1,0 +1,28 @@
+Checking out/ExternTop.csp
+
+Checking COMPLETE'({IExternTop.e}) [F= IF_IExternTop_(true,true)\diff(Events,{IExternTop.e,illegal})
+true
+
+Checking IF_IExternTop_(false,false) :[deadlock free]
+xfalse
+
+Checking IF_IExternTop_(true,false) :[livelock free]
+true
+
+Checking CO_ExternTop_(true,true)[[IExternTop_'.x<-port_'.x|x<-extensions(port_')]] :[deterministic]
+true
+
+Checking COMPLETE'({port.e}) [F= CO_ExternTop_(true,true)[[IExternTop_'.x'<-port_'.x'|x'<-extensions(port_')]]\diff(Events,{port.e,illegal})
+true
+
+Checking STOP [T= AS_ExternTop_(false)\diff(Events,{illegal})
+true
+
+Checking AS_ExternTop_(false) :[deadlock free]
+xfalse
+
+Checking IF_IExternTop_(true,false)[[IExternTop.x<-port.x|x<-extensions(port)]][[IExternTop_'.x<-port_'.x|x<-extensions(port_')]]\{IExternTop_'''.modeling} [F= AS_ExternTop_(true)\diff(Events,{|illegal,port,port_'|})
+true
+
+Checking AS_ExternTop_(true)\diff(Events,{|illegal,port,port_'|}) :[livelock free]
+true

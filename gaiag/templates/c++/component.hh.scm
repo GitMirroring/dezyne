@@ -17,7 +17,7 @@ struct #.model
     dezyne::meta dzn_meta;
     runtime& dzn_rt;
     locator const& dzn_locator;
-    #(->string (map declare-enum (gom:enums (.behaviour model))))#
+    #(->string (map (declare-enum model) (gom:enums (.behaviour model))))#
     (->string (map declare-integer (gom:integers (.behaviour model))))#
     (map (init-member model #{
 #type  #name;

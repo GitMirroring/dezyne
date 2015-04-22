@@ -1,2 +1,2 @@
 
-  #type .#name  reply_#type _#name;
+  #(if scope scope 'DznGlobal).#name  reply_#scope _#name;

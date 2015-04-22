@@ -1,8 +1,8 @@
-inline const char* to_string(#.model ::#name ::type v)
+inline const char* to_string(#scope #(if scope "::")#name ::type v)
 {
   switch(v)
   {
-  #(->string (map (lambda (field) (->string (list "case " .model "::" name "::" field ": return \"" name "_" field "\";\n"))) fields))
+  #(->string (map (lambda (field) (->string (list "case " scope (if scope "::") name "::" field ": return \"" name "_" field "\";\n"))) fields))
   }
   return "";
 }

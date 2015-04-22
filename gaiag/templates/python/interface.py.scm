@@ -1,8 +1,8 @@
 import runtime
 
 class #.interface :
-#(->string (map declare-enum (gom:interface-enums model)))#'(
-)#(->string (map enum-to-string (gom:interface-enums model)))#'(
+#(->string (map (declare-enum model) (append (gom:interface-enums model) (gom:enums))))#'(
+)#(->string (map (enum-to-string model) (append (gom:interface-enums model) (gom:enums))))#'(
 )     def __init__ (self, provides=runtime.Port (), requires=runtime.Port ()):
         class In (runtime.Port):
             def __init__ (self, port):

@@ -88,10 +88,13 @@
            gom:requires?
            gom:register
            gom:register-model
+           gom:register-type
+           gom:reply-enums
            gom:statement
            gom:statements-of-type
            gom:system
            gom:systems
+           gom:types           
            gom:typed?
            gom:variable
            gom:variables
@@ -190,7 +193,8 @@
     (_ (throw 'match-error  (format #f "~a:gom:statements-of-type, type: ~a: no match: ~a\n" (current-source-location) type statement)))))
 
 (define-method (gom:typed? (o <event>))
-  (not (eq? (.name (.type (.signature o))) 'void)))
+  (let ((type ((compose .type .signature) o)))
+    (and (not (eq? (.name type) 'void)) type)))
 
 (define-method (gom:typed? (o <boolean>)) #f)
 
@@ -308,6 +312,14 @@
 (define ((make-interface-enum port) o)
   (make <enum> :name (.name o) :scope port :fields (.fields o)))
 
+(define-method (gom:reply-enums (o <interface>))
+  (let* ((events (filter gom:typed? ((compose .elements .events) o)))
+         (names (delete-duplicates (map (compose .name .type .signature) events))))
+    (map (lambda (n) (gom:enum o n)) names)))
+
+(define-method (gom:reply-enums o)
+  '())
+
 (define-method (gom:interface-enums (o <interface>))
   ((gom:filter <enum>) (.types o)))
 
@@ -339,20 +351,14 @@
   (gom:interface-enums (gom:import (.type port))))
 
 (define-method (gom:enum (o <model>) name)
-  (find (lambda (o) (eq? (.name o) name)) (gom:enums o)))
+  (find (lambda (o) (eq? (.name o) name)) (append (gom:enums o) (gom:enums))))
 
 (define-method (gom:enum (o <model>) (type <type>))
-  (find (lambda (o) (and (eq? (.name o) (.name type))
-                         (eq? (.scope o) (.scope type))))
-        (gom:enums o)))
+  (or (find (lambda (o) (and (eq? (.name o) (.name type))
+                             (eq? (.scope o) (.scope type))))
+            (append (gom:enums o) (gom:enums)))))
 
 (define-method (gom:enum (o <component>) (type <type>))
-  (or (next-method)
-      (find (lambda (o) (and (eq? (.name o) (.name type))
-                             (eq? (.scope o) (.scope type))))
-            (gom:interface-enums o))))
-
-(define-method (gom:enum (o <system>) (type <type>))
   (or (next-method)
       (find (lambda (o) (and (eq? (.name o) (.name type))
                              (eq? (.scope o) (.scope type))))
@@ -392,11 +398,14 @@
 (define-method (gom:externs (port <gom:port>))
   (gom:interface-externs (gom:import (.type port))))
 
+(define-method (gom:extern (o <model>) name)
+  (find (lambda (o) (eq? (.name o) name)) (append (gom:externs o) (gom:externs))))
+
 (define-method (gom:extern (o <model>) (type <type>))
   (find (lambda (o) (and (eq? (.name o) (.name type))
                          ;;(eq? (.scope o) (.scope type))
                          ))
-        (gom:externs o)))
+        (append (gom:externs o) (gom:externs))))
 
 (define-method (gom:extern (o <component>) (type <type>))
   (or (next-method)
@@ -404,18 +413,6 @@
                              ;;(eq? (.scope o) (.scope type))
                              ))
             (gom:interface-externs o))))
-
-(define-method (gom:extern (o <system>) (type <type>))
-  (or (next-method)
-      (find (lambda (o) (and (eq? (.name o) (.name type))
-                             ;;(eq? (.scope o) (.scope type))
-                             ))
-            (gom:interface-externs o))))
-
-(define-method (gom:extern- (o <model>) name)
-  (or
-   (find (lambda (o) (eq? (.name o) name)) (gom:externs o))
-   (find (lambda (o) (eq? (.name o) name)) (gom:interface-externs o))))
 ;;  end c&p
 
 ;; c&p enum
@@ -449,7 +446,7 @@
 (define-method (gom:integer (o <model>) (type <type>))
   (find (lambda (o) (and (eq? (.name o) (.name type))
                          (eq? (.scope o) (.scope type))))
-        (gom:integers o)))
+        (append (gom:integers o) (gom:integers))))
 
 (define-method (gom:integer (o <component>) (type <type>))
   (or (next-method)
@@ -458,7 +455,7 @@
             (gom:interface-integers o))))
 
 (define-method (gom:integer (o <model>) name)
-  (find (lambda (o) (eq? (.name o) name)) (gom:integers o)))
+  (find (lambda (o) (eq? (.name o) name)) (append (gom:integers o) (gom:integers))))
 ;;  end c&p
 
 (define-method (gom:variable (o <model>) name)
@@ -470,10 +467,18 @@
 (define-method (gom:model (o <component>)) o)
 (define-method (gom:model (o <interface>)) o)
 (define (gom:models o) ((gom:filter <model>) o))
-(define (gom:imports o) ((gom:filter <imports>) o))
+(define (gom:imports o) ((gom:filter <import>) o))
 (define (gom:interfaces o) ((gom:filter <interface>) o))
 (define (gom:components o) ((gom:filter <component>) o))
 (define (gom:systems o) ((gom:filter <system>) o))
+
+(define-method (gom:enums) ((gom:filter <enum>) (map cdr *ast-alist*)))
+(define-method (gom:externs) ((gom:filter <extern>) (map cdr *ast-alist*)))
+(define-method (gom:integers) ((gom:filter <int>) (map cdr *ast-alist*)))
+(define-method (gom:types) ((gom:filter <type>) (map cdr *ast-alist*)))
+(define-method (gom:types (o <list>)) ((gom:filter <type>) o))
+(define-method (gom:types (o <root>)) (gom:types (.elements o)))
+
 
 (define (gom:models-with-behaviour gom)
   (filter .behaviour (append ((gom:filter <component>) gom) ((gom:filter <interface>) gom))))
@@ -494,7 +499,7 @@
 (define (cached-model name)
   (assoc-ref *ast-alist* name))
 
-(define-method (cache-model name (o <model>))
+(define (cache-model name o)
   (set! *ast-alist* (assoc-set! *ast-alist* name o))
   o)
 
@@ -512,11 +517,19 @@
       (cache-model (.name o) o))
   o)
 
+(define cache-type cache-model)
+(define cached-type cached-model)
+(define (gom:register-type o)
+  (if (not (cached-type (.name o)))
+      (cache-type (.name o) o))
+  o)
+
 (define* ((gom:register transform) ast :optional (clear? #f))
   (let ((gom (transform ast)))
     (if clear?
-        (set! *ast-alist* '()))
+        (set! *ast-alist* (filter (lambda (x) (is-a? (cdr x) <type>)) *ast-alist*)))
     (for-each gom:register-model (gom:models gom))
+    (for-each gom:register-type (gom:types gom))
     gom))
 
 (define* (read-ast name #:optional (transform ast->gom))

@@ -73,7 +73,10 @@
         :functions ((compose .functions .behaviour) o)
         :statement statement))))
 
-(define-method (state-table (o <imports>))
+(define-method (state-table (o <import>))
+  #f)
+
+(define-method (state-table (o <type>))
   #f)
 
 (define-method (state-table (model <model>) (o <boolean>)) #f)

@@ -119,8 +119,17 @@
              ((file-exists? header)))
             (dump-file (basename header) (gulp-file header))))
 
+(define-method (dump-global (o <model>))
+  (and-let* (((null-is-#f (gom:enums)))
+             (template (template-file `(,(language) global ,(symbol-append (code:extension o) '.scm))))
+             ((file-exists? (components->file-name template))))
+            (dump-indented (list 'dezyne 'global (code:extension o))
+                           (lambda ()
+                             (code-file 'global (code:module o))))))
+
 (define-method (dump (o <interface>))
   (mkdir-p "dezyne")
+  (dump-global o)
   (let ((name (.name o)))
     (dump-indented (list 'dezyne name (code:extension o))
                    (lambda ()
@@ -128,6 +137,7 @@
 
 (define-method (dump (o <component>))
   (mkdir-p "dezyne")
+  (dump-global o)
   (let ((name (.name o))
         (interfaces (map code:import (map .type ((compose .elements .ports) o)))))
     (when (.behaviour o)
@@ -227,6 +237,7 @@
 
 (define* (->code- model src :optional (locals '()) (indent 1) (compound? #t))
   (define (enum? identifier) (gom:enum model identifier))
+  (define (global? identifier) (member identifier (map .name (gom:enums))))
   (define (extern? identifier) (gom:extern model identifier))
   (define (local? identifier) (assoc-ref locals identifier))
   (define (member? identifier) (and (not (local? identifier))
@@ -413,8 +424,10 @@
        (let* ((extern (extern? src))
               (value (.value extern)))
          (snippet 'type-extern `((space ,space) (value ,value)))))
+      (($ <type> (and (? enum?) (? global?) (get! name)) #f)
+       (snippet 'type-global-enum `((space ,space) (scope #f) (name ,(name)))))
       (($ <type> (and (? enum?) (get! name)) #f)
-       (snippet 'type-local-enum `((space ,space) (scope ,(.name model)) (name ,(name)))))
+       (snippet 'type-local-enum `((space ,space) (scope ,(.name model)) (name ,(name)))))      
       (($ <type> name #f)
        (snippet 'type-local `((space ,space) (scope ,(.name model)) (name ,name))))
       ((and (? enum?) ($ <type> name scope))
@@ -497,11 +510,14 @@
   (member o (gom:top-statements model)))
 
 (define (bool-expression->string model o)
+  (define (global? identifier) (member identifier (map .name (gom:enums))))
   (match o
     (($ <field> identifier field)
      (snippet 'field `((identifier ,identifier) (field ,field))))
+    (($ <literal> #f (and (? global?) (get! type)) field)
+     (snippet 'literal-global `((type ,(type)) (field ,field))))
     (($ <literal> #f type field)
-     (snippet 'literal-local `((type ,type) (field ,field))))
+     (snippet 'literal-local `((type ,type) (field ,field))))    
     (($ <literal> scope type field)
      (snippet 'literal `((scope ,scope) (type ,type) (field ,field))))
     (_ (expression->string model o))))
@@ -618,23 +634,30 @@
          (required (binding-name model (cdr provided-required))))
     (animate snippet `((provided ,provided) (required ,required)))))
 
-(define (declare-enum enum)
-  (let* ((fields ((compose .elements .fields) enum))
+(define ((declare-enum model) enum)
+  (let* ((scope (if (or (not model) (member enum (gom:enums)))
+                    (.scope enum)
+                    (or (.scope enum) (.name model))))
+         (fields ((compose .elements .fields) enum))
          (length (length fields)))
    (snippet 'declare-enum
-            `((name ,(.name enum)) (fields ,fields) (length ,length)))))
+            `((scope ,scope) (name ,(.name enum)) (fields ,fields) (length ,length)))))
 
-(define (enum-to-string enum)
+(define ((enum-to-string o) enum)
+  (define (global? type) (member type (gom:enums)))
   (let* ((fields ((compose .elements .fields) enum))
-         (length (length fields)))
-   (snippet 'enum-to-string
-            `((name ,(.name enum)) (fields ,fields) (length ,length)))))
+         (length (length fields))
+         (scope (if (global? enum) #f (.name o))))
+    (snippet 'enum-to-string
+             `((scope ,scope) (name ,(.name enum)) (fields ,fields) (length ,length)))))
 
-(define (string-to-enum enum)
+(define ((string-to-enum o) enum)
+  (define (global? type) (member type (gom:enums)))
   (let* ((fields ((compose .elements .fields) enum))
-         (length (length fields)))
+         (length (length fields))
+         (scope (if (global? enum) #f (.name o))))
    (snippet 'string-to-enum
-            `((name ,(.name enum)) (fields ,fields) (length ,length)))))
+            `((scope ,scope) (name ,(.name enum)) (fields ,fields) (length ,length)))))
 
 (define (declare-integer integer)
   (snippet 'declare-integer `((name ,(.name integer)))))
@@ -672,6 +695,7 @@
                        (statements ,statements)))))
 
 (define ((define-on model port snippet) event)
+  (define (global? identifier) (member identifier (map .name (gom:enums))))
   (let* ((signature (.signature event))
          (type (.type signature))
          (interface (.type port))
@@ -695,7 +719,7 @@
                                  (animate-snippet 'parameter-type `((type ,(->code model (.type parameter))) (out? ,(member (.direction parameter) '(inout out))))))
                                ((compose .elements .parameters) signature)))
          (reply-name (.name type))
-         (reply-type (.type port))
+         (reply-type (if (global? (.name type)) #f (.type port)))
          (statement
           (or (and-let*
                (((is-a? model <component>))
@@ -775,31 +799,36 @@
     (animate snippet `((name ,name) (direction ,direction) (interface ,interface)))))
 
 (define-method (declare-replies (o <interface>))
-  (map
-   (lambda (x) (snippet 'declare-reply `((type ,(.name o)) (name ,(.name x)))))
-   (gom:interface-enums o)))
+  (define (global? type) (member type (gom:enums)))
+  (map (lambda (x) (snippet 'declare-reply
+                            `((scope ,(if (global? x) #f (.name o)))
+                              (name ,(.name x)))))
+       (gom:reply-enums o)))
 
 (define-method (return-type port (event <event>))
-  (let ((type ((compose .type .signature) event))
-        (scope (and=> port .type)))
+  (define (global? identifier) (member identifier (map .name (gom:enums))))
+  (let* ((type ((compose .type .signature) event))
+         (scope (and=> port .type))
+         (name (.name type)))
     (cond
-      ((eq? (.name type) 'bool) (snippet 'bool '()))
-      ((eq? (.name type) 'void) 'void)
-      (scope
-       (snippet 'type-enum `((space "") (scope ,scope) (name ,(.name type)))))
+      ((eq? name 'bool) (snippet 'bool '()))
+      ((eq? name 'void) 'void)
+      ((global? name)
+       (snippet 'type-global-enum `((space "") (scope #f) (name ,name))))
+      (scope (snippet 'type-enum `((space "") (scope ,scope) (name ,name))))
       (else
-       (snippet 'type-local-enum `((space "") (scope ,scope) (name ,(.name type))))))))
+       (snippet 'type-local-enum `((space "") (scope ,scope) (name ,name)))))))
 
 (define (binding-name model bind)
   (let ((instance (gom:instance model bind))
         (port (gom:port model bind)))
     (snippet 'binding
-             `((instance . ,(match instance
-                              (($ <instance>) (.name instance))
-                              (($ <interface>) (.name instance))))
-               (port . ,(match port
-                          (($ <gom:port>) (.name port))
-                          (($ <interface>) (list "x" (.name port)))))))))
+               `((instance . ,(match instance
+                                (($ <instance>) (.name instance))
+                                (($ <interface>) (.name instance))))
+                 (port . ,(match port
+                            (($ <gom:port>) (.name port))
+                            (($ <interface>) (list "x" (.name port)))))))))
 
 (define (bind-port? binding)
   (or (not (.instance (.left binding))) (not (.instance (.right binding)))))

@@ -298,8 +298,8 @@
            (rhs (csp-expression->string model rhs locals))
            (op (car src)))
        (list "(" lhs " " op " " rhs ")")))
-
-    (_ (format #f "~a:no match: ~a" (current-source-location) src))))
+    (*unspecified* #f)
+    (_ (throw 'match-errorand (format #f "~a:no match: ~a" (current-source-location) src)))))
 
 (define* (port-events port :optional (predicate? identity)) ;; FIXME: no test
   (let ((interface (csp:import (.type port))))
@@ -339,7 +339,7 @@
    (next-method)))
 
 (define-method (enum-values (o <model>))
-  (apply append (map typed-elements (or (and=> (.behaviour o) gom:enums) '()))))
+  (apply append (map typed-elements (append (or (and=> (.behaviour o) gom:enums) '()) (gom:enums)))))
 
 (define-method (return-value (o <enum>))
   (map (lambda (value) (symbol-append (.name o) '_ value)) ((compose .elements .fields) o)))
@@ -354,7 +354,7 @@
     (return-values interface)))
 
 (define-method (return-values (o <interface>)) ;; FIMXE: no test
-  (add-return-if-empty (map return-value (gom:interface-enums o))))
+  (add-return-if-empty (map return-value (gom:reply-enums o))))
 
 (define-method (return-values (o <component>))
   (apply append (map (compose return-values gom:import .type) ((compose .elements .ports) o))))
@@ -479,7 +479,7 @@
         (if (null? arguments)
                 arguments
                 (append
-                 (if (gom:extern model (car types))
+                 (if (extern-type? (car types))
                      '()
                      (list (car arguments)))
                  (loop (cdr arguments) (cdr types)))))))

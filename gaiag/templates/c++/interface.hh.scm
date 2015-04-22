@@ -8,9 +8,10 @@
 
 namespace dezyne
 {
+ #(->string (map (declare-enum model) (gom:enums)))
 struct #.interface
 {
- #(->string (map declare-enum (gom:interface-enums model)))
+ #(->string (map (declare-enum model) (gom:interface-enums model)))
   struct
   {
    #(map (declare-io model
@@ -44,7 +45,9 @@ struct #.interface
      provided.meta.requires = required.meta.requires;
      required.meta.provides = provided.meta.provides;
    }
-   #(->string (map enum-to-string (gom:interface-enums model)))
-   #(->string (map string-to-enum (gom:interface-enums model)))
+   #(->string (map (enum-to-string model) (gom:interface-enums model)))
+   #(->string (map (enum-to-string model) (gom:enums)))
+   #(->string (map (string-to-enum model) (gom:interface-enums model)))
+   #(->string (map (string-to-enum model) (gom:enums)))
 }
 ##endif // DEZYNE_#.INTERFACE _HH

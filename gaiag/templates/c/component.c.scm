@@ -4,7 +4,7 @@
 ##include "runtime.h"
 ##include <string.h>
 
-#(->string (map declare-enum (gom:enums (.behaviour model))))
+#(->string (map (declare-enum model) (gom:enums (.behaviour model))))
 
 #(map
   (lambda (port)
@@ -73,7 +73,7 @@
     runtime_event(helper_#port _#event , &a);
 #(string-if (not (eq? type 'void))
 #{ #.model * self_ = self->#direction .self; 
-#}) runtime_trace_out(&self->in, &self->out, #(string-if (eq? type 'void) #{"return"#} #{#reply-type _#reply-name _to_string (self_->reply_#reply-type _#reply-name)#}));
+#}) runtime_trace_out(&self->in, &self->out, #(string-if (eq? type 'void) #{"return"#} #{#reply-type #(if reply-type '_)#reply-name _to_string (self_->reply_#reply-type _#reply-name)#}));
 #(string-if (not (eq? type 'void))
 #{ return self_->reply_#reply-type _#reply-name;
 #}) }

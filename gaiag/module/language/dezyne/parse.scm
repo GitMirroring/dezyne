@@ -74,13 +74,10 @@
     (models model) : (append $1 (list $2)))
 
    (model
-    (imports) : $1
+    (import-spec) : $1
+    (type) : $1
     (interface-spec) : $1
     (component-spec) : $1)
-
-   (imports
-    () : '(imports)
-    (imports import-spec) : (append $1 (list $2)))
 
    (import-spec
     (import Identifier semicolon) : `(,$1 ,$2)

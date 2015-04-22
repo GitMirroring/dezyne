@@ -59,7 +59,7 @@
     (_ ast)))
 
 (define (ast:model? x)
-  (and (pair? x) (member (car x) '(component imports interface system))))
+  (and (pair? x) (member (car x) '(component import interface system type))))
 
 (define (ast->gom ast)
   (let* ((ast (if (and (pair? ast)
@@ -192,11 +192,7 @@
 
     (('illegal) (make <illegal>))
 
-    (('imports import ...) (make <imports> :elements (map ast->gom- import)))
-
     (('import name) (make <import> :name name))
-
-    (('imports imports ...) ast)
 
     (('int name range) (make <int> :name name :range (ast->gom- range)))
 
@@ -305,20 +301,24 @@
 ;;  (stderr "public: ~a\n" ast)
   (match ast
     (($ <root>) ast)
+    (('enum name fields) `(enum ,name ,fields))
+    (('extern name value) `(extern ,name ,value))
+    (('int name range) `(int ,name ,range))
     (('interface name types events behaviour) `(interface ,name ,types ,events))
-    (('imports imports ...) '(imports))
-    (('component name body ...) '(imports))
-    (('system name body ...) '(imports))
+;;    (('component name body ...) '(import))
+;;    (('system name body ...) '(import))
     ((h t ...) (map ast:public ast))
-    (_ '(imports))))
+    (_ '(import))))
 
 (define (ast:interface ast)
 ;;  (stderr "interface: ~a\n" ast)
   (match ast
     (($ <root>) ast)
+;;    (('enum name fields) `(enum ,name ,fields))
+;;    (('extern name value) `(extern ,name ,value))
+;;    (('int name range) `(int ,name ,range))
     (('interface name body ...) ast)
-    (('imports imports ...) '(imports))
-    (('component name body ...) '(imports))
-    (('system name body ...) '(imports))
+;;    (('component name body ...) '(import))
+;;    (('system name body ...) '(import))
     ((h t ...) (map ast:interface ast))
-    (_ '(imports))))
+    (_ '(import))))

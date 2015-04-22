@@ -1,10 +1,10 @@
-inline const #.model ::#name ::type to_#.model _#name(std::string s)
+inline const #scope #(if scope "::")#name ::type to_#scope #(if scope '_)#name(std::string s)
 {
-  static std::map<std::string, #.model ::#name ::type> m = {
-        #(->string (map (lambda (field) (->string (list "{" "\"" name "_" field "\"," .model "::" name "::" field "},\n"))) fields)) };
+  static std::map<std::string, #scope #(if scope "::")#name ::type> m = {
+        #(->string (map (lambda (field) (->string (list "{" "\"" name "_" field "\"," scope (if scope "::") name "::" field "},\n"))) fields)) };
   if (m.find(s) != m.end())
   {
     return m[s];
   }
-  return (#.model ::#name ::type)-1;
+  return (#scope #(if scope "::")#name ::type)-1;
 }

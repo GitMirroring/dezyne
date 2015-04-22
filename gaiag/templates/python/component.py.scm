@@ -6,7 +6,7 @@ import runtime
 from runtime import V
 
 class #.model  (runtime.Component):
-#(->string (map declare-enum (gom:enums (.behaviour model))))
+#(->string (map (declare-enum model) (append (gom:enums (.behaviour model)) (gom:enums))))
     def __init__ (self, rt, name='', parent=None):
         runtime.Component.__init__ (self, rt, name, parent)
         self.rt.flushes (self)

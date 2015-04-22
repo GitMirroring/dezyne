@@ -73,7 +73,9 @@ int log_valued(char* prefix, char* event, int (*string_to_value)(char*), char* e
 	}
     return 0;
 }
-               
+
+#(->string (map (string-to-enum model) (gom:enums)))
+
 #(map
  (lambda (port)
    (map (define-on model port #{
@@ -81,7 +83,7 @@ int log_valued(char* prefix, char* event, int (*string_to_value)(char*), char* e
    (void)m;
    #(string-if (eq? return-type 'void) #{
    log_#direction("#port .#direction .", "#event ");#}#{
-   return log_valued("#port .#direction .", "#event ", string_to_#interface _#reply-name , "#port .", #interface _#reply-name _to_string);#})}
+   return log_valued("#port .#direction .", "#event ", string_to_#reply-type #(if reply-type '_)#reply-name , "#port .", #reply-type #(if reply-type '_)#reply-name _to_string);#})}
 #}) (filter (negate (gom:dir-matches? port))
        (gom:events port)))) (gom:ports model))
 void #.model _fill_event_map(#.model * m, map* e) {

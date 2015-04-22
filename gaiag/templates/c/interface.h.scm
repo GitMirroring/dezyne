@@ -3,7 +3,7 @@
 
 ##include "runtime.h"
 
-#(->string (map declare-enum (gom:interface-enums model)))
+#(->string (map (declare-enum model) (append (gom:interface-enums model) (gom:enums))))
 
 typedef struct #.model  #.model;
 

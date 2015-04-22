@@ -1,2 +1,2 @@
 
-  (reply-#type -#name  :accessor .reply-#type -#name  :init-value ##f)
+  (reply-#scope -#name  :accessor .reply-#scope -#name  :init-value ##f)
