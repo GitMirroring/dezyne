@@ -1,1 +1,1 @@
-        self.reply_#scope _#name  = None
+        self.reply_#(*scope* scope)_#name  = None

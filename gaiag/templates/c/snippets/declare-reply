@@ -1,1 +1,1 @@
-int reply_#scope _#name;
+int reply_#(*scope* scope)_#name;

@@ -1,1 +1,1 @@
-#scope .#name
+#(*scope* scope).#name

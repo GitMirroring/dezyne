@@ -8,7 +8,7 @@ dezyne.#.model  = function(rt, meta) {
 #}) ((compose .elements .instances) model))#
 (map (init-bind model #{
     this.#port  = this.#instance;
-#}) (filter bind-port? ((compose .elements .bindings) model)))#
+#}) (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model))))#
 '()this.children = [#((->join ", ") (map (init-instance #{ this.#name #}) ((compose .elements .instances) model)))];
 # (map (connect-ports model #{
     dezyne.connect(this.#provided , this.#required);

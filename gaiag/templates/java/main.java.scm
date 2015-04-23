@@ -77,7 +77,7 @@ class main<R> {
 #(map
     (lambda (port)
     (map (define-on model port #{
-    m.#port .#direction .#event  = new #(action-type return-type parameter-types)() {public #return-type  action(#parameters) {#(string-if (eq? return-type 'void) #{log_#direction("#port .#direction .", "#event ");#}#{return log_valued("#port .#direction .", "#event ", #(if reply-type reply-type 'DznGlobal).#reply-name .class, "#port .#reply-name _");#})};};
+    m.#port .#direction .#event  = new #(action-type return-type parameter-types)() {public #return-type  action(#parameters) {#(string-if (eq? return-type 'void) #{log_#direction("#port .#direction .", "#event ");#}#{return log_valued("#port .#direction .", "#event ", #(if (eq? reply-scope '*global*) 'DznGlobal reply-scope).#reply-name .class, "#port .#reply-name _");#})};};
 #}) (filter (negate (gom:dir-matches? port))
        (gom:events port)))) (gom:ports model))     EventMap e = new EventMap();
 #(map

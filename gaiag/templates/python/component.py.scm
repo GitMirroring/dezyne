@@ -39,7 +39,7 @@ class #.model  (runtime.Component):
      (map (define-on model port #{
     def #port _#event  (self#comma #arguments):
 #statement #(if (not (eq? type 'void))
-(list "        return self.reply_" reply-type "_" reply-name))
+(list "        return self.reply_" (*scope* reply-scope) "_" reply-name))
 
 #}) (filter (gom:dir-matches? port) (gom:events port))))
    (gom:ports model))#

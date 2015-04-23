@@ -8,7 +8,14 @@
 
 namespace dezyne
 {
- #(->string (map (declare-enum model) (gom:enums)))
+ #(string-if (pair? (gom:enums)) #{
+ namespace global
+ {
+#})#
+  (->string (map (declare-enum model) (gom:enums)))
+ #(string-if (pair? (gom:enums)) #{
+ }
+#})
 struct #.interface
 {
  #(->string (map (declare-enum model) (gom:interface-enums model)))

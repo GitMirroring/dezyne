@@ -45,7 +45,7 @@ namespace dezyne
   {
     #statement #
     (string-if (not (eq? type 'void))
-#{  return reply_#reply-type _#reply-name ;
+#{  return reply_#(*scope* reply-scope)_#reply-name ;
 #}) }
 
 #}) (filter (gom:dir-matches? port) (gom:events port))))

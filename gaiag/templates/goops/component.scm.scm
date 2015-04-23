@@ -27,7 +27,7 @@
     "              :name '" (.name port) "\n"
     "              :self o")
       (map (define-on model port #{#'()
-              :#event  (lambda (. args) (call-in o (lambda () (apply #port -#event  (cons o args))) `(,(.#port  o) #event #(string-if (not (eq? 'void return-type)) #{  #reply-name  ,#reply-type #(if reply-type '-)#reply-name -alist#}))))#})
+              :#event  (lambda (. args) (call-in o (lambda () (apply #port -#event  (cons o args))) `(,(.#port  o) #event #(string-if (not (eq? 'void return-type)) #{  #reply-name  ,#(*scope* reply-scope)-#reply-name -alist#}))))#})
     (filter gom:in? (gom:events port)))
     (list ")))")))
     (filter gom:provides? (gom:ports model)))#
@@ -52,7 +52,7 @@
      (map (define-on model port #{
 (define-method (#port -#event  (o <#.model >) #parameters)#
 statement #(if (not (eq? type 'void))
-(list "\n    (.reply-" reply-type "-" reply-name " o)")))
+(list "\n    (.reply-" (*scope* reply-scope) "-" reply-name " o)")))
 
 #}) (filter (gom:dir-matches? port) (gom:events port))))
    (gom:ports model))#

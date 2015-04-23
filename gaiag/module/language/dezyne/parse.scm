@@ -76,7 +76,7 @@
 
    (model
     (import-spec) : $1
-    (type) : $1
+    (type) : (note-location (append (list (car $1) '*global*) (cdr $1)) @1)
     (interface-spec) : $1
     (component-spec) : $1)
 

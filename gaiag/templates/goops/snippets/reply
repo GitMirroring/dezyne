@@ -1,2 +1,2 @@
 
-#space (set! (.reply-#type -#name  o) #expression)
+#space (set! (.reply-#(*scope* scope)-#name  o) #expression)

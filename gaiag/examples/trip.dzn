@@ -22,8 +22,12 @@
 //
 // Code:
 
+extern integer = $int$;
+enum Global { aap, noot };
+
 interface I
 {
+  in Global glob(integer p);
   enum Status { Yes, No };
   extern xint = $int$;
   
@@ -33,55 +37,58 @@ interface I
   out void lo;
 
   behaviour
-  {
-    bool b = false;
-    void h ()
     {
-      if (b) return;
-    }
-    bool g (bool ga, bool gb)
-    {
-      a;
-      return ga || gb;
-    }
-
-    [true]
-      on e:
+      bool b = false;
+      void h ()
       {
-        b = ! b;
-        bool c = g (b, b);
-
-        b = g (c, c);
-        h ();
-        if(c)
-        {
-          a;
-        }
+        if (b) return;
       }
-    [otherwise]
-    {
-      on inevitable: a;
-      on optional: a;
+      bool g (bool ga, bool gb)
+      {
+        a;
+        return ga || gb;
+      }
+
+      on glob: illegal;
+      {
+        [true]
+          on e:
+          {
+            b = ! b;
+            bool c = g (b, b);
+
+            b = g (c, c);
+            h ();
+            if(c)
+              {
+                a;
+              }
+          }
+        [otherwise]
+          {
+            on inevitable: a;
+            on optional: a;
+          }
+      }
     }
-  }
 }
 
 interface ilogger
 {
   in void log;
   behaviour
-  {
-    on log:{}
-  }
+    {
+      on log:{}
+    }
 }
 
 component logger
 {
   provides ilogger log;
   behaviour
-  {
-    on log.log: {}
-  }
+    {
+      on log.log: {}
+    }
 }
 
 interface U
@@ -91,22 +98,22 @@ interface U
   in Status what;
 
   behaviour
-  {
-    Status s = Status.Ok;
-    bool dummy = false;
+    {
+      Status s = Status.Ok;
+      bool dummy = false;
 
-    on what:
-      {
-        [s.Ok]
+      on what:
         {
-          reply(Status.Ok);
+          [s.Ok]
+            {
+              reply(Status.Ok);
+            }
+          [true]
+            {
+              reply(Status.Nok);
+            }
         }
-        [true]
-        {
-          reply(Status.Nok);
-        }
-      }
-  }
+    }
 }
 
 component trip
@@ -116,37 +123,39 @@ component trip
   requires injected ilogger l;
 
   behaviour
-  {
-    typedef int[0..3] State;
-
-    State state = 3;
-    State c = 0;
-
-    bool b = false;
-    bool g (bool ga, bool gb)
     {
-      i.a;
-      return ga || gb;
-    }
+      typedef int[0..3] State;
 
-    on i.e:
-    {
-      [b || state == 0]
+      integer m;
+      State state = 3;
+      State c = 0;
+
+      bool b = false;
+      bool g (bool ga, bool gb)
       {
-        b = ! b;
-        bool c = g (b, b);
+        i.a;
+        return ga || gb;
+      }
 
-        b = g (c, c);
+      on i.glob(p): {m = p; illegal;}
+      on i.e:
+      {
+        [b || state == 0]
+          {
+            b = ! b;
+            bool c = g (b, b);
 
-        if(c)
-        {
-          i.a;
-        }
+            b = g (c, c);
 
-        U.Status s = U.Status.Ok;
-        s = U.Status.Nok;
-        s = u.what;
-        b = s == U.Status.Ok;
+            if(c)
+              {
+                i.a;
+              }
+
+            U.Status s = U.Status.Ok;
+            s = U.Status.Nok;
+            s = u.what;
+            b = s == U.Status.Ok;
 
         if(s == U.Status.Ok)
         {

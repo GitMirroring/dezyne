@@ -1,10 +1,13 @@
-inline const #scope #(if scope "::")#name ::type to_#scope #(if scope '_)#name(std::string s)
+##ifndef STRING_TO_ENUM_#(*scope* scope)_#name
+##define STRING_TO_ENUM_#(*scope* scope)_#name  1
+inline const #(*scope* scope)::#name ::type to_#(*scope* scope)_#name(std::string s)
 {
-  static std::map<std::string, #scope #(if scope "::")#name ::type> m = {
-        #(->string (map (lambda (field) (->string (list "{" "\"" name "_" field "\"," scope (if scope "::") name "::" field "},\n"))) fields)) };
+  static std::map<std::string, #(*scope* scope)::#name ::type> m = {
+        #(->string (map (lambda (field) (->string (list "{" "\"" name "_" field "\"," (*scope* scope) "::" name "::" field "},\n"))) fields)) };
   if (m.find(s) != m.end())
   {
     return m[s];
   }
-  return (#scope #(if scope "::")#name ::type)-1;
+  return (#(*scope* scope)::#name ::type)-1;
 }
+##endif // STRING_TO_ENUM_#(*scope* scope)_#name

@@ -145,7 +145,9 @@
        (eq? (.name a) (.name b))))
 
 (define-method (type-equal? (a <enum>) (b <type>))
-  (and (eq? (.scope a) (.scope b))
+  (and (or (eq? (.scope a) (.scope b))
+           (and (eq? (.scope a) '*global*)
+                (not (.scope b))))
        (eq? (.name a) (.name b))))
 
 (define-method (type-equal? (a <symbol>) (b <type>))
@@ -277,6 +279,19 @@
      (make <call>
        :identifier identifier
        :arguments (resolve-model model (arguments) locals)))
+
+    (($ <type> (and (? enum?) (get! enum)) #f)
+     (make <type> :scope (.scope (enum? (enum))) :name (enum)))
+    
+    (($ <type> (and (? int?) (get! int)) #f)
+     (make <type> :scope (.scope (int? (int))) :name (int)))
+
+    (($ <event> name direction signature)
+     (make <event>
+       :name name
+       :direction direction
+       :signature (resolve-model model signature)))
+
     (($ <call>) o)
     (($ <data>) o)
     (($ <event>) o)
@@ -394,10 +409,10 @@
 
     (($ <value> (and (? enum?) (get! enum))
         (and (? (enum-field? (enum))) (get! field)))
-     (make <literal> :scope #f' :type (enum) :field (field)))
+     (make <literal> :scope (.scope (enum? (enum))) :type (enum) :field (field)))
 
     (($ <value> (and (? var?) (get! type)) (? (member-field? (type))))
-     (make <field> :identifier (type) :field (.field o)))
+     (make <field> :identifier (type) :field (.field o)))    
 
     (($ <value> (? enum?) field)
      (resolve-error o field "undefined enum field: ~a"))

@@ -1,7 +1,9 @@
-#(define _ (if scope '_))
+##ifndef ENUM_#(*scope* scope)_#name
+##define ENUM_#(*scope* scope)_#name  1
 typedef enum {
-    #((->join ", ") (map (lambda (f) (->string (list scope _ name '_ f))) fields))
-} #scope #_ #name;
+    #((->join ", ") (map (lambda (f) (->string (list (*scope* scope) '_ name '_ f))) fields))
+} #(*scope* scope)_#name;
 
-int string_to_#scope #_ #name(char* s);
-char const* #scope #_ #name _to_string(#scope #_ #name  v);
+int string_to_#(*scope* scope)_#name(char* s);
+#(if (eq? scope '*global*) "static ")char const* #(*scope* scope)_#name _to_string(#(*scope* scope)_#name  v);
+##endif // ENUM_#(*scope* scope)_#name

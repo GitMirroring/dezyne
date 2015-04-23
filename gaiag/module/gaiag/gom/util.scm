@@ -355,7 +355,9 @@
 
 (define-method (gom:enum (o <model>) (type <type>))
   (or (find (lambda (o) (and (eq? (.name o) (.name type))
-                             (eq? (.scope o) (.scope type))))
+                             (or (eq? (.scope o) (.scope type))
+                                 (and (eq? (.scope o) '*global*)
+                                      (not (.scope type))))))
             (append (gom:enums o) (gom:enums)))))
 
 (define-method (gom:enum (o <component>) (type <type>))
@@ -403,7 +405,8 @@
 
 (define-method (gom:extern (o <model>) (type <type>))
   (find (lambda (o) (and (eq? (.name o) (.name type))
-                         ;;(eq? (.scope o) (.scope type))
+                         ;;(or (eq? (.scope o) (.scope type)) (and (eq? (.scope o) '*global*) (not (.scope type))))
+                         ;;(eq? (.scope o) (.scope type)) NEW gone
                          ))
         (append (gom:externs o) (gom:externs))))
 
@@ -411,7 +414,7 @@
   (or (next-method)
       (find (lambda (o) (and (eq? (.name o) (.name type))
                              ;;(eq? (.scope o) (.scope type))
-                             ))
+                             )) ;; NEW
             (gom:interface-externs o))))
 ;;  end c&p
 
@@ -445,7 +448,9 @@
 
 (define-method (gom:integer (o <model>) (type <type>))
   (find (lambda (o) (and (eq? (.name o) (.name type))
-                         (eq? (.scope o) (.scope type))))
+                         (or (eq? (.scope o) (.scope type))
+                             (and (eq? (.scope o) '*global*)
+                                  (not (.scope type))))))
         (append (gom:integers o) (gom:integers))))
 
 (define-method (gom:integer (o <component>) (type <type>))

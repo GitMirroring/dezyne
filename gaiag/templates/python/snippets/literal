@@ -1,1 +1,1 @@
-dezyne.#scope .#type .#field
+dezyne.#(*scope* scope).#type .#field

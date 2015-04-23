@@ -4,7 +4,7 @@
      ((compose .elements .instances) model))#
 (map (init-bind model #{#'()
   (#port  :accessor .#port  :init-value ##f :init-keyword :#port)#})
-     (filter bind-port? ((compose .elements .bindings) model))))
+     (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model)))))
 
 (define-method (initialize (o <#.model >) args)
   (next-method)
@@ -15,14 +15,14 @@
             (parent ##f)
             #((->join "\n            ")
  (map (init-bind model #{(#port .#edir  (make <#interface .out>))#})
-      (filter bind-port? ((compose .elements .bindings) model)))))#
+      (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model))))))#
 (map (init-instance #{#'()
   (set! (.#name  o) (make <#component > :runtime (.runtime o) :parent o :name '#name))#})
   ((compose .elements .instances) model))#
 (map (init-bind model #{#'()
   (set! (.#port  o) #instance)
   (set! (.#edir  (.#port  o)) #port .#edir)#})
-     (filter bind-port? ((compose .elements .bindings) model))))#
+     (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model)))))#
 (map (connect-ports model #{#'()
   (connect-ports #provided  #required)#})
      (filter (negate bind-port?) ((compose .elements .bindings) model))))

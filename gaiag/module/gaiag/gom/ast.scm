@@ -136,10 +136,19 @@
 
     (('data value) (make <data> :value value))
 
+    (('enum scope name fields)
+     (make <enum>
+       :name name
+       :scope scope
+       :fields (make <fields> :elements fields)))
+
     (('enum name fields)
      (make <enum>
        :name name
        :fields (make <fields> :elements fields)))
+
+    (('extern scope name value)
+     (make <extern> :scope scope :name name :value value))
 
     (('extern name value) (make <extern> :name name :value value))
 
@@ -193,6 +202,9 @@
     (('illegal) (make <illegal>))
 
     (('import name) (make <import> :name name))
+
+    (('int scope name range)
+     (make <int> :scope scope :name name :range (ast->gom- range)))
 
     (('int name range) (make <int> :name name :range (ast->gom- range)))
 

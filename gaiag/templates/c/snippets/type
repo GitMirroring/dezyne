@@ -1,1 +1,1 @@
-#scope _#name _type
+#(*scope* scope)_#name _type

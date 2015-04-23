@@ -117,6 +117,16 @@
   (define ((drop count) string) (string-drop string count))
   ((compose string->symbol (drop count) symbol->string) symbol))
 
+(define (symbol-take symbol count)
+  (define ((take count) string) (string-take string count))
+  ((compose string->symbol (take count) symbol->string) symbol))
+
+(define (symbol-prefix? prefix string)
+  (string-prefix? (symbol->string prefix) (symbol->string string)))
+
+(define (symbol-suffix? suffix string)
+  (string-suffix? (symbol->string suffix) (symbol->string string)))
+
 (define (symbol< a b) (string< (symbol->string a) (symbol->string b)))
 
 (define (join-components components)

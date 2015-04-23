@@ -1,1 +1,1 @@
-#space self.reply_#type _#name  = #expression
+#space self.reply_#(*scope* scope)_#name  = #expression

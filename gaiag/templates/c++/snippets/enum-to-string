@@ -1,8 +1,11 @@
-inline const char* to_string(#scope #(if scope "::")#name ::type v)
+##ifndef ENUM_TO_STRING_#(*scope* scope)_#name
+##define ENUM_TO_STRING_#(*scope* scope)_#name  1
+inline const char* to_string(#(*scope* scope)::#name ::type v)
 {
   switch(v)
   {
-  #(->string (map (lambda (field) (->string (list "case " scope (if scope "::") name "::" field ": return \"" name "_" field "\";\n"))) fields))
+  #(->string (map (lambda (field) (->string (list "case " (*scope* scope) "::" name "::" field ": return \"" name "_" field "\";\n"))) fields))
   }
   return "";
 }
+##endif // ENUM_TO_STRING_#(*scope* scope)_#name

@@ -143,8 +143,8 @@
                           (in (signature (type Status)) f)
                           (out (signature (type void)) g)
                           (out (signature (type void)) h)
-                          (in (signature (type void))
-                              (parameters (parameter xint in))
+                          (in (signature (type void)
+                              (parameters (parameter in (type xint))))
                               ei))
                   (behaviour
                    B
