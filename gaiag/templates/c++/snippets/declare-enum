@@ -1,7 +1,10 @@
+#(string-if (eq? scope 'global) #{namespace global{
+#})
 struct #name
 {
   enum type
   {
     #((->join ", ") fields)
   };
-};
+};#(string-if (eq? scope 'global) #{}
+#})

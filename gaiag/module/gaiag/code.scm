@@ -398,6 +398,12 @@
                     (number ,number)
                     (comma ,comma)
                     (comma-space ,comma-space)))))
+      (($ <reply> (and ($ <expression> ($ <literal> #f (and (? global?) (get! type)) field)) (get! expression)))
+       (snippet 'reply
+                `((space ,space)
+                  (type global) ;; type/scope: FIXME
+                  (name ,(type))
+                  (expression ,(expression->string model (expression) locals)))))
       (($ <reply> (and ($ <expression> ($ <literal> scope type field)) (get! expression)))
        (snippet 'reply
                 `((space ,space)
@@ -425,7 +431,7 @@
               (value (.value extern)))
          (snippet 'type-extern `((space ,space) (value ,value)))))
       (($ <type> (and (? enum?) (? global?) (get! name)) #f)
-       (snippet 'type-global-enum `((space ,space) (scope #f) (name ,(name)))))
+       (snippet 'type-global-enum `((space ,space) (scope global) (name ,(name)))))
       (($ <type> (and (? enum?) (get! name)) #f)
        (snippet 'type-local-enum `((space ,space) (scope ,(.name model)) (name ,(name)))))      
       (($ <type> name #f)
@@ -636,7 +642,8 @@
 
 (define ((declare-enum model) enum)
   (let* ((scope (if (or (not model) (member enum (gom:enums)))
-                    (.scope enum)
+                    ;;;(.scope enum)
+                    'global
                     (or (.scope enum) (.name model))))
          (fields ((compose .elements .fields) enum))
          (length (length fields)))
@@ -647,7 +654,7 @@
   (define (global? type) (member type (gom:enums)))
   (let* ((fields ((compose .elements .fields) enum))
          (length (length fields))
-         (scope (if (global? enum) #f (.name o))))
+         (scope (if (global? enum) 'global (.name o))))
     (snippet 'enum-to-string
              `((scope ,scope) (name ,(.name enum)) (fields ,fields) (length ,length)))))
 
@@ -655,7 +662,7 @@
   (define (global? type) (member type (gom:enums)))
   (let* ((fields ((compose .elements .fields) enum))
          (length (length fields))
-         (scope (if (global? enum) #f (.name o))))
+         (scope (if (global? enum) 'global (.name o))))
    (snippet 'string-to-enum
             `((scope ,scope) (name ,(.name enum)) (fields ,fields) (length ,length)))))
 
@@ -719,7 +726,7 @@
                                  (animate-snippet 'parameter-type `((type ,(->code model (.type parameter))) (out? ,(member (.direction parameter) '(inout out))))))
                                ((compose .elements .parameters) signature)))
          (reply-name (.name type))
-         (reply-type (if (global? (.name type)) #f (.type port)))
+         (reply-type (if (global? (.name type)) 'global (.type port)))
          (statement
           (or (and-let*
                (((is-a? model <component>))
@@ -801,7 +808,7 @@
 (define-method (declare-replies (o <interface>))
   (define (global? type) (member type (gom:enums)))
   (map (lambda (x) (snippet 'declare-reply
-                            `((scope ,(if (global? x) #f (.name o)))
+                            `((scope ,(if (global? x) 'global (.name o)))
                               (name ,(.name x)))))
        (gom:reply-enums o)))
 
@@ -814,7 +821,7 @@
       ((eq? name 'bool) (snippet 'bool '()))
       ((eq? name 'void) 'void)
       ((global? name)
-       (snippet 'type-global-enum `((space "") (scope #f) (name ,name))))
+       (snippet 'type-global-enum `((space "") (scope global) (name ,name))))
       (scope (snippet 'type-enum `((space "") (scope ,scope) (name ,name))))
       (else
        (snippet 'type-local-enum `((space "") (scope ,scope) (name ,name)))))))
