@@ -39,20 +39,21 @@
    ;;(out-table: "dezyne.out")
    (
     lbrace rbrace lparen rparen rbracket semicolon colon dot comma
-    (left: on lbracket)
+    on lbracket
     inevitable optional
     otherwise
     if reply return
     true false
 
-    (left: in inout out)
-    (left: illegal)
-    (left: behaviour import interface component system)
-    (left: provides requires injected)
-    (left: bool enum extern int typedef void)
-    (left: Identifier NumericLiteral Data)
-    (left: dollar)
+    in inout out
+    illegal
+    behaviour import interface component system
+    provides requires injected
+    bool enum extern int typedef void
+    NumericLiteral Data    
+    dollar
 
+    (left: Identifier)
     (nonassoc: = <=> ..)
     (left: or)
     (left: and)
@@ -84,14 +85,14 @@
     (import Identifier dot Identifier semicolon) : `(,$1 ,(symbol-append $2 '. $4)))
 
    (interface-spec
-    (interface Identifier lbrace types events/types rbrace)
+    (interface Identifier lbrace events/types rbrace)
     : (receive (e t)
-          (partition (lambda (x) (member (car x) '(in out))) (cdr $5))
-        (note-location `(,$1 ,$2 ,(append $4 t) ,(cons 'events e)) @1))
-    (interface Identifier lbrace types events/types behaviour-spec rbrace)
+          (partition (lambda (x) (member (car x) '(in out))) $4)
+        (note-location `(,$1 ,$2 ,(cons 'types t) ,(cons 'events e)) @1))
+    (interface Identifier lbrace events/types behaviour-spec rbrace)
     : (receive (e t)
-          (partition (lambda (x) (member (car x) '(in out))) (cdr $5))
-        (note-location `(,$1 ,$2 ,(append $4 t) ,(cons 'events e) ,$6) @1)))
+          (partition (lambda (x) (member (car x) '(in out))) $4)
+        (note-location `(,$1 ,$2 ,(cons 'types t) ,(cons 'events e) ,$5) @1)))
 
    (component-spec
     (component Identifier lbrace ports rbrace)
@@ -123,7 +124,7 @@
     (binding <=> binding semicolon) : `(bind ,$1 ,$3))
 
    (events/types
-    () : '(events)
+    () : '()
     (events/types event) : (append $1 (list $2))
     (events/types type) : (append $1 (list $2)))
 
@@ -153,9 +154,9 @@
     (provides) : 'provides
     (requires) : 'requires)
 
-   (types
+   (optional-types
     () : '(types)
-    (types type) : (append $1 (list $2)))
+    (optional-types type) : (append $1 (list $2)))
 
    (type
     (enum-spec) : $1
@@ -223,21 +224,22 @@
     (arguments comma expression) : (append $1 (list $3)))
 
    (behaviour-spec
-    (behaviour lbrace types variables functions statements/functions rbrace)
-    : (receive
-          (f s)
-          (partition (lambda (x) (eq? (car x) 'function)) (cdr $6))
-        `(,$1 #f ,$3 ,$4 ,(append $5 f) ,(cons 'compound s)))
-    (behaviour Identifier lbrace types variables functions statements/functions rbrace)
-    : (receive
-          (f s)
-          (partition (lambda (x) (eq? (car x) 'function)) (cdr $7))
-        `(,$1 ,$2 ,$4 ,$5 ,(append $6 f) ,(cons 'compound s))))
-
-   (functions
-    () : '(functions)
-    (function) : `(functions ,$1)
-    (functions function) : (append $1 (list $2)))
+    (behaviour lbrace optional-types rbrace)
+    : `(,$1 #f ,$3)
+    (behaviour lbrace optional-types functions/statements/variables rbrace)
+    : (receive (f r)
+          (partition (lambda (x) (eq? (car x) 'function)) $4)
+        (receive (s v)
+            (partition (lambda (x) (not (eq? (car x) 'variable))) r)
+          `(,$1 #f ,$3 ,(cons 'variables v) ,(cons 'functions f) ,(cons 'compound s))))
+    (behaviour Identifier lbrace optional-types rbrace)
+    : `(,$1 ,$2 ,$4)
+    (behaviour Identifier lbrace optional-types functions/statements/variables rbrace)
+    : (receive (f r)
+          (partition (lambda (x) (eq? (car x) 'function)) $5)
+        (receive (s v)
+            (partition (lambda (x) (not (eq? (car x) 'variable))) r)
+          `(,$1 ,$2 ,$4 ,(cons 'variables v) ,(cons 'functions f) ,(cons 'compound s)))))
 
    (function
     (variable-type Identifier lparen rparen compound-statement) : (note-location `(function ,$2 ,(note-location `(signature ,$1) @1), $5) @1)
@@ -254,15 +256,20 @@
 
    (statements
     () : '(compound)
-    (statements statement) : (append $1 (list $2)))
+    (statements statement/variable) : (append $1 (list $2)))
 
-   (statements/functions
-    () : '(compound)
-    (statements/functions statement/function) : (append $1 (list $2)))
+   (statement/variable
+    (statement) : $1
+    (variable) : $1)
 
-   (statement/function
+   (functions/statements/variables
+    () : '()
+    (functions/statements/variables function/statement/variable) : (append $1 (list $2)))
+
+   (function/statement/variable
     (function) : $1
-    (statement) : $1)
+    (statement) : $1
+    (variable) : $1)
 
    (statement
     (function-call-statement) : $1
@@ -274,8 +281,7 @@
     (action-statement) : $1
     (if-statement) : $1
     (reply-statement) : $1
-    (return-statement) : $1
-    (variable-statement) : $1)
+    (return-statement) : $1)
 
    (function-call-statement
     (function-call semicolon) : $1)
@@ -341,15 +347,15 @@
     (return semicolon) : (note-location '(return) @1)
     (return expression semicolon) : (note-location `(return ,$2) @1))
 
-   (variable-statement
+   (variable
     (variable-type Identifier semicolon) : `(variable ,$2 ,$1 ,(note-location '(expression) @3))
     (Identifier dot Identifier Identifier semicolon) : `(variable ,$4 (type ,$3 ,$1) ,(note-location '(expression) @5))
     (variable-type Identifier = expression semicolon) : `(variable ,$2 ,$1 ,(note-location $4 @3))
     (Identifier dot Identifier Identifier = expression semicolon) : `(variable ,$4 (type ,$3 ,$1) ,(note-location $6 @3)))
 
    (variables
-    () : '(variables)
-    (variables variable-statement) : (append $1 (list $2)))))
+    (variable) : `(variables ,$1)
+    (variables variable) : (append $1 (list $2)))))
 
 (define (compile-tree-il exp env opts)
   (values (parse-tree-il (comp exp '())) env env))
