@@ -125,8 +125,11 @@
 
    (events/types
     () : '()
-    (events/types event) : (append $1 (list $2))
-    (events/types type) : (append $1 (list $2)))
+    (events/types event/type) : (append $1 (list $2)))
+
+   (event/type
+    (event) : $1
+    (type) : $1)
 
    (event
     (event-direction variable-type Identifier semicolon) : `(,$1 ,(note-location `(signature ,$2) @2) ,$3)
@@ -224,22 +227,18 @@
     (arguments comma expression) : (append $1 (list $3)))
 
    (behaviour-spec
-    (behaviour lbrace optional-types rbrace)
-    : `(,$1 #f ,$3)
-    (behaviour lbrace optional-types functions/statements/variables rbrace)
-    : (receive (f r)
-          (partition (lambda (x) (eq? (car x) 'function)) $4)
-        (receive (s v)
-            (partition (lambda (x) (not (eq? (car x) 'variable))) r)
-          `(,$1 #f ,$3 ,(cons 'variables v) ,(cons 'functions f) ,(cons 'compound s))))
-    (behaviour Identifier lbrace optional-types rbrace)
+    (behaviour optional-identifier lbrace optional-types rbrace)
     : `(,$1 ,$2 ,$4)
-    (behaviour Identifier lbrace optional-types functions/statements/variables rbrace)
+    (behaviour optional-identifier lbrace optional-types functions/statements/variables rbrace)
     : (receive (f r)
           (partition (lambda (x) (eq? (car x) 'function)) $5)
         (receive (s v)
             (partition (lambda (x) (not (eq? (car x) 'variable))) r)
           `(,$1 ,$2 ,$4 ,(cons 'variables v) ,(cons 'functions f) ,(cons 'compound s)))))
+
+   (optional-identifier
+    () : #f
+    (Identifier): $1)
 
    (function
     (variable-type Identifier lparen rparen compound-statement) : (note-location `(function ,$2 ,(note-location `(signature ,$1) @1), $5) @1)
