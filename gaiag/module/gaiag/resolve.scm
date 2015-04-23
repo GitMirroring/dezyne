@@ -453,14 +453,12 @@
          :triggers (resolve-model model triggers)
          :statement (resolve-model model statement locals))))
 
-    (($ <interface> name ($ <types> types) ($ <events> types-events) behaviour)
-     (receive (types- events) (partition (lambda (x)
-                                           (or (is-a? x <enum>) (is-a? x <int>))) types-events)
-       (make <interface>
-         :name name
-         :types (make <types> :elements (append types types-))
-         :events (make <events> :elements events)
-         :behaviour ((resolve-model model) behaviour))))
+    (($ <interface> name types events behaviour)
+     (make <interface>
+       :name name
+       :types types
+       :events (gom:map (resolve-model model) events)
+       :behaviour ((resolve-model model) behaviour)))
 
     (($ <component> name ports behaviour)
        (make <component>
