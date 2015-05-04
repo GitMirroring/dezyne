@@ -33,7 +33,7 @@ class main {
 #(map
     (lambda (port)
     (map (define-on model port #{
-    m.#port .#direction port.#event  = (#parameters) => {System.Console.Error.WriteLine("#port .#direction .#event");#(string-if (not (eq? return-type 'void)) #{ return new (#return-type)();#})};
+    m.#port .#direction port.#event  = (#parameters) => {System.Console.Error.WriteLine("#port .#direction .#event");#(string-if (not (eq? return-type 'void)) #{ return new #return-type();#})};
 #}) (filter (negate (gom:dir-matches? port))
        (gom:events port)))) (gom:ports model))     EventMap e = new EventMap();
 #(map

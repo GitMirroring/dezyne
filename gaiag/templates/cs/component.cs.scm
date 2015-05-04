@@ -24,7 +24,7 @@
 using System;
 
 public class #.model  : Component {#
-(->string (map declare-enum (gom:enums (.behaviour model))))#
+(->string (map (declare-enum model) (gom:enums (.behaviour model))))#
 (->string (map declare-integer (gom:integers (.behaviour model))))
 #
     (map (init-member model #{#'()
@@ -62,7 +62,7 @@ public class #.model  : Component {#
      (map (define-on model port #{#'()
   public #return-type  #port _#event (#parameters) {
   #statement #(if (not (eq? type 'void))
-(list "return reply_" reply-type "_" reply-name ";\n")) }
+(list "return reply_" (*scope* reply-scope) "_" reply-name ";\n")) }
 #}) (filter (gom:dir-matches? port) (gom:events port))))
    (gom:ports model))#
 (map (define-function model #{

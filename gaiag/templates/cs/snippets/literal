@@ -1,1 +1,1 @@
-#scope .#type .#field
+#(*scope* scope).#type .#field

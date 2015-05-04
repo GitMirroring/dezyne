@@ -24,7 +24,7 @@
 using System;
 
 public class #.interface  : Interface<#.interface .In, #.interface .Out> {#
-(->string (map declare-enum (gom:interface-enums model)))
+(->string (map (declare-enum model) (gom:interface-enums model)))
   new public class In : Interface<#.model .In, #.model .Out>.In {
 #((->join "\n") (map (declare-io model #{
     public #(lambda-type return-type parameter-types)  #name ;#})
