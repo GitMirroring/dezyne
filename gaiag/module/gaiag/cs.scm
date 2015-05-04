@@ -1,4 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
+;;;
 ;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -22,7 +23,7 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (gaiag mono)
+(define-module (gaiag cs)
   :use-module (ice-9 pretty-print)
 
   :use-module (gaiag code)

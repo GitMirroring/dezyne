@@ -1,4 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
+;;;
 ;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -22,25 +23,22 @@
 
 using System;
 
-public class #.interface  : Interface<#.interface .In, #.interface .Out> {#
-(->string (map declare-enum (gom:interface-enums model)))
-  new public class In : Interface<#.model .In, #.model .Out>.In {
-#((->join "\n") (map (declare-io model #{
-    public #(lambda-type return-type parameter-types)  #name ;#})
- (filter gom:in? ((compose .elements .events) model)))
-)
-  }
-  new public class Out : Interface<#.model .In, #.model .Out>.Out {
-#((->join "\n") (map (declare-io model #{
-    public #(lambda-type return-type parameter-types)  #name;#})
- (filter gom:out? ((compose .elements .events) model))))
-  }
-  public #.interface() {
-    inport = new In();
-    outport = new Out();
-  }
-  public static void connect(#.model  provided, #.model  required) {
-   provided.outport = required.outport;
-   required.inport = provided.inport;
-  }
+class #.model  : SystemComponent {
+#(map (init-instance #{
+    public #component  #name;
+#}) ((compose .elements .instances) model))#
+(map (init-port #{
+    public #interface  #name;
+#}) ((compose .elements .ports) model))
+
+  public #.model(Runtime runtime, String name="", SystemComponent parent=null) : base(runtime, name, parent) {
+#(map (init-instance #{
+    #name  = new #component(runtime, "#name ", this);
+#}) ((compose .elements .instances) model))#
+(map (init-bind model #{
+    #port  = #instance;
+#}) (filter bind-port? ((compose .elements .bindings) model)))
+# (map (connect-ports model #{
+    #interface .connect(#provided , #required);
+#}) (filter (negate bind-port?) ((compose .elements .bindings) model)))}
 }

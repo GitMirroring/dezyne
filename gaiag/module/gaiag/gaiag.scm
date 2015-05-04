@@ -72,7 +72,7 @@ Usage: gaiag [OPTION]... FILE
   -o, --output FILE    generate FILE containing the output
   -v, --version        display version
 
-Languages: c++ csp dezyne goops java javascript mono python
+Languages: c c++ cs csp dezyne goops java javascript python
            ast annotate gom normstate resolve simulate table wfc
 
 Examples:
