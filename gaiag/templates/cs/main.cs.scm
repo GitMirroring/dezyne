@@ -80,7 +80,7 @@ class main {
 #(map
     (lambda (port)
     (map (define-on model port #{
-    m.#port .#direction port.#event  = (#parameters) => {#(string-if (eq? return-type 'void) #{log_#direction("#port .#direction .", "#event ");#}#{return log_valued<#interface .#reply-name >("#port .#direction .", "#event ", "#port .#reply-name _");#})};
+    m.#port .#direction port.#event  = (#parameters) => {#(string-if (eq? return-type 'void) #{log_#direction("#port .#direction .", "#event ");#}#{return log_valued<#(if (eq? reply-scope '*global*) 'DznGlobal reply-scope).#reply-name >("#port .#direction .", "#event ", "#port .#reply-name _");#})};
 #}) (filter (negate (gom:dir-matches? port))
        (gom:events port)))) (gom:ports model))     EventMap e = new EventMap();
 #(map
