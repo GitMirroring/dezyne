@@ -26,14 +26,17 @@
 
 #include "locator.h"
 #include "runtime.h"
-#include <assert.h>
 #include <string.h>
 
-
-
+#ifndef ENUM_Alarm_States
+#define ENUM_Alarm_States 1
 typedef enum {
 	Alarm_States_Disarmed, Alarm_States_Armed, Alarm_States_Triggered, Alarm_States_Disarming
 } Alarm_States;
+
+int string_to_Alarm_States(char* s);
+char const* Alarm_States_to_string(Alarm_States v);
+#endif // ENUM_Alarm_States
 
 
 typedef struct {int size;void (*f)(IConsole*);Alarm* self;} args_console_detected;
@@ -93,20 +96,20 @@ static void console_arm(Alarm* self) {
 		}
 	}
 	else if (self->state == Alarm_States_Armed) {
-		assert(false);
+		self->dzn_info.locator->illegal();
 	}
 	else if (self->state == Alarm_States_Disarming) {
-		assert(false);
+		self->dzn_info.locator->illegal();
 	}
 	else if (self->state == Alarm_States_Triggered) {
-		assert(false);
+		self->dzn_info.locator->illegal();
 	}
 }
 
 static void console_disarm(Alarm* self) {
 	(void)self;
 	if (self->state == Alarm_States_Disarmed) {
-		assert(false);
+		self->dzn_info.locator->illegal();
 	}
 	else if (self->state == Alarm_States_Armed) {
 		{
@@ -115,7 +118,7 @@ static void console_disarm(Alarm* self) {
 		}
 	}
 	else if (self->state == Alarm_States_Disarming) {
-		assert(false);
+		self->dzn_info.locator->illegal();
 	}
 	else if (self->state == Alarm_States_Triggered) {
 		{
@@ -130,7 +133,7 @@ static void console_disarm(Alarm* self) {
 static void sensor_triggered(Alarm* self) {
 	(void)self;
 	if (self->state == Alarm_States_Disarmed) {
-		assert(false);
+		self->dzn_info.locator->illegal();
 	}
 	else if (self->state == Alarm_States_Armed) {
 		{
@@ -145,17 +148,17 @@ static void sensor_triggered(Alarm* self) {
 		}
 	}
 	else if (self->state == Alarm_States_Triggered) {
-		assert(false);
+		self->dzn_info.locator->illegal();
 	}
 }
 
 static void sensor_disabled(Alarm* self) {
 	(void)self;
 	if (self->state == Alarm_States_Disarmed) {
-		assert(false);
+		self->dzn_info.locator->illegal();
 	}
 	else if (self->state == Alarm_States_Armed) {
-		assert(false);
+		self->dzn_info.locator->illegal();
 	}
 	else if (self->state == Alarm_States_Disarming && self->sounding) {
 		self->console->out.deactivated(self->console);
@@ -168,7 +171,7 @@ static void sensor_disabled(Alarm* self) {
 		self->state = Alarm_States_Disarmed;
 	}
 	else if (self->state == Alarm_States_Triggered) {
-		assert(false);
+		self->dzn_info.locator->illegal();
 	}
 }
 
@@ -200,8 +203,8 @@ static void call_out_sensor_disabled(ISensor* self) {
 
 
 void Alarm_init (Alarm* self, locator* dezyne_locator, dzn_meta_t *dzn_meta) {
-	runtime_sub_init(dezyne_locator->rt, &self->dzn_sub);
-	self->dzn_sub.performs_flush = true;
+	runtime_info_init(&self->dzn_info, dezyne_locator);
+	self->dzn_info.performs_flush = true;
 	memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
 	self->state = Alarm_States_Disarmed;
 	self->sounding = false;

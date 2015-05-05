@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
+//
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -21,23 +21,10 @@
 //
 // Code:
 
-#ifndef DEZYNE_SENSOR_H
-#define DEZYNE_SENSOR_H
-
 #include "ISensor.h"
 
-
-#include "runtime.h"
-#include "locator.h"
+#include <string.h>
 
 
-typedef struct {
-	dzn_meta_t dzn_meta;
-	runtime_info dzn_info;
-	ISensor sensor_;
-	ISensor* sensor;
-} Sensor;
 
-void Sensor_init(Sensor* self, locator* dezyne_locator, dzn_meta_t* dzn_meta);
 
-#endif // DEZYNE_SENSOR_H

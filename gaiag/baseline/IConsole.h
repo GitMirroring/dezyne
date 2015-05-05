@@ -23,6 +23,8 @@
 #ifndef DEZYNE_ICONSOLE_H
 #define DEZYNE_ICONSOLE_H
 
+#include "runtime.h"
+
 
 
 typedef struct IConsole IConsole;

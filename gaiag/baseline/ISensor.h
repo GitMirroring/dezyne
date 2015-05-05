@@ -23,6 +23,8 @@
 #ifndef DEZYNE_ISENSOR_H
 #define DEZYNE_ISENSOR_H
 
+#include "runtime.h"
+
 
 
 typedef struct ISensor ISensor;

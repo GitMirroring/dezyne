@@ -23,6 +23,8 @@
 #ifndef DEZYNE_ISIREN_H
 #define DEZYNE_ISIREN_H
 
+#include "runtime.h"
+
 
 
 typedef struct ISiren ISiren;

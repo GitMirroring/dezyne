@@ -33,7 +33,7 @@
 
 typedef struct {
 	dzn_meta_t dzn_meta;
-	runtime_sub dzn_sub;
+	runtime_info dzn_info;
 	ISiren siren_;
 	ISiren* siren;
 } Siren;
