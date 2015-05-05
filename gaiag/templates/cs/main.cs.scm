@@ -92,7 +92,7 @@ class main {
 }
 
   public static void Main(String[] args) {
-    Runtime runtime = new Runtime();
+    Runtime runtime = new Runtime(() => {System.Console.Error.WriteLine("illegal"); Environment.Exit(0);});
     #.model  sut = new #.model(runtime, "sut");
     EventMap e = fillEventMap(sut);
     String line;

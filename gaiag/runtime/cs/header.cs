@@ -88,7 +88,12 @@ public class Meta<I,O> where I: Interface<I,O>.In where O : Interface<I,O>.Out {
 
 public class Runtime {
   public Queue<ComponentBase> components;
-  public Runtime () {
+  public Action illegal;
+  public Runtime (Action illegal=null) {
+    if (illegal == null) {
+      illegal = () => {throw new RuntimeException("illegal");};
+    }
+    this.illegal = illegal;
     this.components = new Queue<ComponentBase> ();
   }
   public static bool external(Component c) {
