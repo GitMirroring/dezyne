@@ -123,6 +123,7 @@ Usage: ./configure [OPTION]...
     (check-version 'bison '())
     (check-version 'flex '())
     (check-version 'guile '(2 0) 'guile-2.0)
+    (check-version 'guild '(2 0) 'guile-2.0-dev)
     (check-version 'fdr2 '() 'fdr2 'batch)
     (check-version 'java '(1 7) 'openjdk-7-jre-headless '-version)
     (check-version 'javac '(1 7) 'openjdk-7-jdk '-version)
