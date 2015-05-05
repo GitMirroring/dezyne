@@ -82,7 +82,8 @@
 (define-method (state-table (model <model>) (o <boolean>)) #f)
 
 (define-method (state-table (model <model>) (o <compound>))
-  (or (and-let* ((types ((compose .elements .types .behaviour) model))
+  (or (and-let* ((variables ((compose .elements .variables .behaviour) model))
+                 (types (map (gom:type model) variables))
                  (enum (or (find (is? <enum>) types)
                            (make <enum> :fields (make <fields> :elements '(Initial)))))
                  (fields ((compose .elements .fields) enum))

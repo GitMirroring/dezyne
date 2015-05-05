@@ -94,7 +94,8 @@
            gom:statements-of-type
            gom:system
            gom:systems
-           gom:types           
+           gom:type
+           gom:types
            gom:typed?
            gom:variable
            gom:variables
@@ -463,6 +464,9 @@
   (find (lambda (o) (eq? (.name o) name)) (append (gom:integers o) (gom:integers))))
 ;;  end c&p
 
+(define-method (gom:variable (o <model>))
+  (lambda (name) (gom:variable o name)))
+
 (define-method (gom:variable (o <model>) name)
   (find (lambda (o) (eq? (.name o) name)) (gom:variables o)))
 
@@ -484,6 +488,36 @@
 (define-method (gom:types (o <list>)) ((gom:filter <type>) o))
 (define-method (gom:types (o <root>)) (gom:types (.elements o)))
 
+;; WIP: refactor gom:enums, gom:integers, gom:externs into gom:types
+(define-method (gom:types (o <interface>))
+  (.elements (.types o)))
+
+(define-method (gom:types (o <component>))
+  (or (and=> (.behaviour o) (compose .elements .types))
+      '()))
+
+(define-method (gom:types o)
+  '())
+
+(define-method (gom:type (o <model>) name)
+  (find (lambda (o) (eq? (.name o) name)) (append (gom:types o) (gom:types))))
+
+(define-method (gom:type (o <model>) (type <type>))
+  (or (find (lambda (o) (and (eq? (.name o) (.name type))
+                             (or (eq? (.scope o) (.scope type))
+                                 (and (eq? (.scope o) '*global*)
+                                      (not (.scope type))))))
+            (append (gom:types o) (gom:types)))))
+
+(define-method (gom:type (o <model>))
+  (lambda (type) (gom:type o type)))
+
+(define-method (gom:type (model <model>) (variable <variable>))
+  (let ((type (.type variable)))
+    (or (gom:enum model type)
+        (gom:integer model type)
+        (gom:extern model type)
+      (gom:type model type))))
 
 (define (gom:models-with-behaviour gom)
   (filter .behaviour (append ((gom:filter <component>) gom) ((gom:filter <interface>) gom))))
