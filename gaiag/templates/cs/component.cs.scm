@@ -37,14 +37,12 @@ public class #.model  : Component {#
   public #.model(Runtime runtime, String name="", SystemComponent parent=null) : base(runtime, name, parent) {
     this.flushes = true;#
 (map (init-member model #{#'()
-    #name  = #expression;#}) (gom:variables model))#
+    #(string-if (eq? expression (if #f #f)) "" #{#name  = #expression ;#})#}) (gom:variables model))#
 (map (init-port #{#'()
     #name  = new #interface();
     #name .inport.name = "#name ";
     #name .inport.self = this;#})
     (filter gom:provides? ((compose .elements .ports) model)))#
-(map (init-member model #{#'()
-    #name  = #expression;#}) (gom:variables model))#
 (map (init-port #{#'()
     #name  = new #interface();
     #name .outport.name = "#name ";
