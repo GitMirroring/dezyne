@@ -69,7 +69,9 @@
            gom:integers
            gom:interface
            gom:interface-enums
+           gom:interface-externs           
            gom:interface-integers
+           gom:interface-types           
            gom:interfaces
            gom:model-with-behaviour
            gom:models-with-behaviour
@@ -103,7 +105,7 @@
            ))
 
 (define ((is? class) o)
-  (if (is-a? o class) o #f))
+  (and (is-a? o class) o))
 
 (define (gom->list gom)
   (with-input-from-string
@@ -333,41 +335,15 @@
 (define-method (gom:interface-enums (o <system>))
   (apply append (map gom:interface-enums ((compose .elements .ports) o))))
 
-(define-method (gom:enums (o <interface>))
-  (append ((gom:filter <enum>) (.types o))
-          ((gom:filter <enum>) (or (and=> (.behaviour o) .types) '()))))
-
-(define-method (gom:enums (o <component>))
-  ((gom:filter <enum>) (or (and=> (.behaviour o) .types) '())))
-
-(define-method (gom:enums (o <system>))
-  '())
-
-(define-method (gom:enums (o <behaviour>))
-  ((gom:filter <enum>) (.types o)))
-
-(define-method (gom:enums (o <boolean>)) '())
-
-(define-method (gom:enums (port <gom:port>))
-  (gom:interface-enums (gom:import (.type port))))
+(define-method (gom:enums o)
+  ((gom:filter <enum>) (gom:types o)))
 
 (define-method (gom:enum (o <model>) name)
-  (find (lambda (o) (eq? (.name o) name)) (append (gom:enums o) (gom:enums))))
+  ((is? <enum>) (gom:type o name)))
 
 (define-method (gom:enum (o <model>) (type <type>))
-  (or (find (lambda (o) (and (eq? (.name o) (.name type))
-                             (or (eq? (.scope o) (.scope type))
-                                 (and (eq? (.scope o) '*global*)
-                                      (not (.scope type))))))
-            (append (gom:enums o) (gom:enums)))))
+  ((is? <enum>) (gom:type o type)))
 
-(define-method (gom:enum (o <component>) (type <type>))
-  (or (next-method)
-      (find (lambda (o) (and (eq? (.name o) (.name type))
-                             (eq? (.scope o) (.scope type))))
-            (gom:interface-enums o))))
-
-;;; c&p enum
 (define ((make-interface-extern port) o)
   (make <extern> :name (.name o) :scope port :value (.value o)))
 
@@ -383,27 +359,16 @@
 (define-method (gom:interface-externs (o <system>))
   (apply append (map gom:interface-externs ((compose .elements .ports) o))))
 
-(define-method (gom:externs (o <interface>))
-  (append ((gom:filter <extern>) (.types o))
-          ((gom:filter <extern>) (or (and=> (.behaviour o) .types) '()))))
-
-(define-method (gom:externs (o <component>))
-  ((gom:filter <extern>) (or (and=> (.behaviour o) .types) '())))
-
-(define-method (gom:externs (o <system>))
-  '())
-
-(define-method (gom:externs (o <behaviour>))
-  ((gom:filter <extern>) (.types o)))
-
-(define-method (gom:externs (o <boolean>)) '())
-
-(define-method (gom:externs (port <gom:port>))
-  (gom:interface-externs (gom:import (.type port))))
+(define-method (gom:externs o)
+  ((gom:filter <extern>) (gom:types o)))
 
 (define-method (gom:extern (o <model>) name)
-  (find (lambda (o) (eq? (.name o) name)) (append (gom:externs o) (gom:externs))))
+  ((is? <extern>) (gom:type o name)))
 
+;; extern, *global*, TODO
+;; (define-method (gom:extern (o <model>) (type <type>))
+;;   ((is? <extern>) (gom:type o type)))
+  
 (define-method (gom:extern (o <model>) (type <type>))
   (find (lambda (o) (and (eq? (.name o) (.name type))
                          ;;(or (eq? (.scope o) (.scope type)) (and (eq? (.scope o) '*global*) (not (.scope type))))
@@ -417,9 +382,7 @@
                              ;;(eq? (.scope o) (.scope type))
                              )) ;; NEW
             (gom:interface-externs o))))
-;;  end c&p
 
-;; c&p enum
 (define ((make-interface-integer port) o)
   (make <int> :name (.name o) :scope port :range (.range o)))
 
@@ -432,37 +395,14 @@
 (define-method (gom:interface-integers (o <component>))
   (apply append (map gom:interface-integers ((compose .elements .ports) o))))
 
-(define-method (gom:integers (o <interface>))
-  (append ((gom:filter <int>) (.types o))
-          ((gom:filter <int>) (or (and=> (.behaviour o) .types) '()))))
-
-(define-method (gom:integers (o <component>))
-  ((gom:filter <int>) (or (and=> (.behaviour o) .types) '())))
-
-(define-method (gom:integers (o <behaviour>))
-  ((gom:filter <int>) (.types o)))
-
-(define-method (gom:integers (o <boolean>)) '())
-
-(define-method (gom:integers (port <gom:port>))
-  (gom:interface-integers (gom:import (.type port))))
-
-(define-method (gom:integer (o <model>) (type <type>))
-  (find (lambda (o) (and (eq? (.name o) (.name type))
-                         (or (eq? (.scope o) (.scope type))
-                             (and (eq? (.scope o) '*global*)
-                                  (not (.scope type))))))
-        (append (gom:integers o) (gom:integers))))
-
-(define-method (gom:integer (o <component>) (type <type>))
-  (or (next-method)
-      (find (lambda (o) (and (eq? (.name o) (.name type))
-                             (eq? (.scope o) (.scope type))))
-            (gom:interface-integers o))))
+(define-method (gom:integers o)
+  ((gom:filter <int>) (gom:types o)))
 
 (define-method (gom:integer (o <model>) name)
-  (find (lambda (o) (eq? (.name o) name)) (append (gom:integers o) (gom:integers))))
-;;  end c&p
+  ((is? <int>) (gom:type o name)))
+
+(define-method (gom:integer (o <model>) (type <type>))
+  ((is? <int>) (gom:type o type)))
 
 (define-method (gom:variable (o <model>))
   (lambda (name) (gom:variable o name)))
@@ -489,15 +429,46 @@
 (define-method (gom:types (o <root>)) (gom:types (.elements o)))
 
 ;; WIP: refactor gom:enums, gom:integers, gom:externs into gom:types
+(define-method (make-interface-type port)
+  (lambda (o) (make-interface-type port o)))
+
+(define-method (make-interface-type port (o <enum>))
+  ((make-interface-enum port) o))
+
+(define-method (make-interface-type port (o <extern>))
+  ((make-interface-extern port) o))
+
+(define-method (make-interface-type port (o <int>))
+  ((make-interface-integer port) o))
+
+(define-method (gom:interface-types (o <interface>))
+  ((compose .elements .types) o))
+
+(define-method (gom:interface-types (port <gom:port>))
+  (map (make-interface-type (.type port)) (gom:types port)))
+
+(define-method (gom:interface-types (o <component>))
+  (apply append (map gom:interface-types ((compose .elements .ports) o))))
+
+(define-method (gom:interface-types (o <system>))
+  (apply append (map gom:interface-types ((compose .elements .ports) o))))
+
 (define-method (gom:types (o <interface>))
-  (.elements (.types o)))
+  (append (.elements (.types o)) (or (and=> (.behaviour o) (compose .elements .types)) '())))
 
 (define-method (gom:types (o <component>))
-  (or (and=> (.behaviour o) (compose .elements .types))
-      '()))
+  (or (and=> (.behaviour o) (compose .elements .types)) '()))
 
-(define-method (gom:types o)
+(define-method (gom:types (o <system>))
   '())
+
+(define-method (gom:types (o <behaviour>))
+  (.types o))
+
+(define-method (gom:types (o <boolean>)) '())
+
+(define-method (gom:types (port <gom:port>))
+  (gom:interface-types (gom:import (.type port))))
 
 (define-method (gom:type (o <model>) name)
   (find (lambda (o) (eq? (.name o) name)) (append (gom:types o) (gom:types))))
@@ -509,15 +480,44 @@
                                       (not (.scope type))))))
             (append (gom:types o) (gom:types)))))
 
+(define-method (gom:type (o <component>) (type <type>))
+  (or (next-method)
+      (find (lambda (o) (and (eq? (.name o) (.name type))
+                             (eq? (.scope o) (.scope type))))
+            (gom:interface-types o))))
+
+;; (define-method (gom:types (o <interface>))
+;;   (.elements (.types o)))
+
+;; (define-method (gom:types (o <component>))
+;;   (or (and=> (.behaviour o) (compose .elements .types))
+;;       '()))
+
+;; (define-method (gom:types o)
+;;   '())
+
+;; (define-method (gom:type (o <model>) name)
+;;   (find (lambda (o) (eq? (.name o) name)) (append (gom:types o) (gom:types))))
+
+;; (define-method (gom:type (o <model>) (type <type>))
+;;   (or (find (lambda (o) (and (eq? (.name o) (.name type))
+;;                              (or (eq? (.scope o) (.scope type))
+;;                                  (and (eq? (.scope o) '*global*)
+;;                                       (not (.scope type))))))
+;;             (append (gom:types o) (gom:types)))))
+
+;; (define-method (gom:type (model <model>) (variable <variable>))
+;;   (let ((type (.type variable)))
+;;     (or (gom:enum model type)
+;;         (gom:integer model type)
+;;         (gom:extern model type)
+;;         (gom:type model type))))
+
 (define-method (gom:type (o <model>))
   (lambda (type) (gom:type o type)))
 
 (define-method (gom:type (model <model>) (variable <variable>))
-  (let ((type (.type variable)))
-    (or (gom:enum model type)
-        (gom:integer model type)
-        (gom:extern model type)
-      (gom:type model type))))
+  (gom:type model (.type variable)))
 
 (define (gom:models-with-behaviour gom)
   (filter .behaviour (append ((gom:filter <component>) gom) ((gom:filter <interface>) gom))))
