@@ -255,7 +255,7 @@ c-alarm:
 	cd out && ln -s ../examples/alarm.c .
 	#cp baseline/{AlarmSystem,Alarm,Sensor,Siren}.{h,c} out
 	#cp baseline/{IConsole,ISensor,ISiren}.h out
-	for i in out/*c; do ccache gcc -g -std=c99 -Wall -pedantic -pedantic-errors -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o && out/$@ 2> out/$@.trace
+	for i in out/*c; do ccache gcc -g -std=c99 -Wall -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o && out/$@ 2> out/$@.trace
 	$(diff) baseline/$@.trace out
 	for i in $$(find out -type f -a '(' -name '*.h' -o -name '*.c' ')'); do $(diff) baseline/$$(basename $$i) $$i; done
 
@@ -264,7 +264,7 @@ c-dataparam:
 	rm -f out/main.c
 	cd out && ../gaiag -l c ../examples/regression/Dataparam.dzn
 	cd out && ln -sf ../examples/dataparam.c .
-	for i in out/*c; do ccache gcc -g -std=c99 -Wall -pedantic -pedantic-errors -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o && out/$@ 2> out/$@.trace
+	for i in out/*c; do ccache gcc -g -std=c99 -Wall -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o && out/$@ 2> out/$@.trace
 	$(diff) baseline/$@.trace out
 	for i in $$(find out -type f -a '(' -name '*.h' -o -name '*.c' ')'); do $(diff) baseline/$$(basename $$i) $$i; done
 
@@ -273,7 +273,7 @@ c-inject:
 	rm -f out/main.c
 	cd out && ln -s ../examples/injected.c .
 	cd out && $(shell pwd)/gaiag -l c examples/Injected.dzn
-	for i in out/*c; do ccache gcc -g -std=c99 -Wall -pedantic -pedantic-errors -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o && out/$@ 2> out/$@.trace
+	for i in out/*c; do ccache gcc -g -std=c99 -Wall -c $$i -o out/$$(basename $$i .c).o; done && gcc -o out/$@ out/*.o && out/$@ 2> out/$@.trace
 	for i in $$(find out -type f -a '(' -name '*.h' -o -name '*.c' ')'); do $(diff) baseline/$$(basename $$i) $$i; done
 	$(diff) baseline/$@.trace out
 
@@ -283,7 +283,7 @@ rm -rf out && mkdir out && cd out && ln -s ../examples ../templates ../runtime/c
 cd out && $(shell pwd)/gaiag -l c examples/regression/$*.dzn
 -$(diff) baseline/$*.h out
 -$(diff) baseline/$*.c out
-ccache gcc -std=c99 -Wall -pedantic -pedantic-errors -o out/$*.o -c out/$*.c $(UPDATE)
+ccache gcc -std=c99 -Wall -o out/$*.o -c out/$*.c $(UPDATE)
 @$(diff) baseline/$*.h out >/dev/null
 @$(diff) baseline/$*.c out >/dev/null
 endef
