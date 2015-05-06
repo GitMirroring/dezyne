@@ -115,6 +115,7 @@ Usage: ./configure [OPTION]...
     (check-version 'fdr2 '() 'fdr2 'batch)
     (check-version 'java '(1 8) 'openjdk-8-jre-headless '-version)
     (check-version 'javac '(1 8) 'openjdk-8-jdk '-version)
+    (check-version 'mcs '(3) 'mono-mcs)
     (check-version 'npm '())
     (check-version 'pkg-config '(0 25))
     (check-pkg-config 'gtk+-3.0 '())
