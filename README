@@ -4,11 +4,11 @@ TOPLEVEL DEZYNE README
 BUILDING
 ========
 
-Run:
+Run
     ./configure
     make
 
-Try:
+Try
     make help
 
 RUNNING
@@ -20,6 +20,8 @@ Create fresh database and initialize
 
 Run dezyne server from the source tree
 
+    make run
+or
     webapp/server/main.js --debug --config=localhost
 
 Run dezyne client from the source tree
@@ -28,20 +30,42 @@ Run dezyne client from the source tree
 
 make sure to authenticate first
 
+    make hello
+or
     echo test | webapp/client/dzn -u test -s http://localhost:3000 hello
 
 INSTALLING
 ==========
 
-Install client in $HOME:
+Install client in $HOME
 
     make client
 
 PACKAGING AND DEPLOYMENT
 ========================
 
-Run:
+Run regression test
+
     make regression
 
-Run:
+Promote to blessed
+
+    git fetch blessed # or git fetch origin
+    git rebase blessed/master
+    git push public
+    make promote
+
+If your $USER is not your verum user name (on git.oban), in .local.mk
+add
+
+    VERUM_USER:=<your verum user name>
+
+In ~/.ssh/config, add something like
+
+    Host buildmaster.oban
+       User buildmaster
+       IdentityFile ~/.ssh/buildmaster.id_rsa
+
+Create tarball and executable shell archive
+
     make dezyne-server
