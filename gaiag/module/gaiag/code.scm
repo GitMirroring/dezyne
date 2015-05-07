@@ -59,7 +59,7 @@
            define-on
            connect-ports
            enum-to-string
-           string-to-enum           
+           string-to-enum
            include-component
            include-interface
            init-bind
@@ -74,6 +74,7 @@
            injected-instance-port
            injected-instance-type
            language
+           injected-instances
            non-injected-instances
            join
            dump-indented
@@ -344,7 +345,7 @@
        (snippet 'call `((space ,space) (function ,function))))
       (($ <call> function ($ <arguments> arguments))
        (let* ((parameters ((compose .elements .parameters .signature) (gom:function model function)))
-            (arguments ((join) 
+            (arguments ((join)
                         (map (lambda (e p)
                                (let ((out? (member (.direction p) '(inout out))))
                                  (snippet 'argument `((expression . ,(expression->string model e locals (if out? 'out 'in)))
@@ -388,7 +389,7 @@
               (comma-space (if (pair? arguments) `(,(sep) " ") ""))
               (number (number->string (length arguments)))
               (parameters ((compose .elements .parameters .signature) event))
-              (arguments ((join) 
+              (arguments ((join)
                           (map (lambda (e p)
                                  (let ((out? (member (.direction p) '(inout out))))
                                    (snippet 'argument `((expression . ,(expression->string model e locals (if out? 'out 'in)))
@@ -432,7 +433,7 @@
       (($ <type> name '*global*)
        (snippet 'type-global-enum `((space ,space) (scope global) (name ,name))))
       (($ <type> (and (? enum?) (get! name)) #f)
-       (snippet 'type-local-enum `((space ,space) (scope ,(.name model)) (name ,(name)))))      
+       (snippet 'type-local-enum `((space ,space) (scope ,(.name model)) (name ,(name)))))
       (($ <type> name #f)
        (snippet 'type-local `((space ,space) (scope ,(.name model)) (name ,name))))
       ((and (? enum?) ($ <type> name scope))
@@ -562,7 +563,7 @@
             (comma-space (if (pair? arguments) `(,(sep) " ") ""))
             (number (number->string (length arguments)))
             (parameters ((compose .elements .parameters .signature) event))
-            (arguments ((join) 
+            (arguments ((join)
                         (map (lambda (e p)
                                (let ((out? (member (.direction p) '(inout out))))
                                  (snippet 'argument `((expression . ,(expression->string model e locals (if out? 'out 'in)))
@@ -600,7 +601,7 @@
         (snippet 'call-expression `((function ,function))))
     (($ <call> function ($ <arguments> arguments))
      (let* ((parameters ((compose .elements .parameters .signature) (gom:function model function)))
-            (arguments ((join) 
+            (arguments ((join)
                         (map (lambda (e p)
                                (let ((out? (member (.direction p) '(inout out))))
                                  (snippet 'argument `((expression . ,(expression->string model e locals (if out? 'out 'in)))
@@ -760,16 +761,18 @@
   (let* ((left (.left bind))
          (left-port (gom:port model left))
          (right (.right bind))
+         (right-port (gom:port model right))
          (port (and (bind-port? bind)
                     (if (not (.instance left)) (.port left) (.port right))))
-         (direction (.direction (gom:port model port)))
-         (edir (if (eq? direction 'provides) 'out 'in))
-         (interface (.type (gom:port model port)))
+         (injected? (and (eq? port '*) port))
+         (direction (or injected? (.direction (gom:port model port))))
+         (edir (or injected? (if (eq? direction 'provides) 'out 'in)))
+         (interface (if injected? (if left-port (.type left-port) (.type right-port)) (.type (gom:port model port))))
          (instance (and (bind-port? bind)
                         (if (not (.instance left))
                             (binding-name model right)
                             (binding-name model left)))))
-    (animate snippet `((port ,port) (direction ,direction) (edir ,edir) (instance ,instance) (interface ,interface)))))
+    (animate snippet `((port ,port) (direction ,direction) (edir ,edir) (injected? ,injected?) (instance ,instance) (interface ,interface)))))
 
 (define ((init-instance snippet) instance)
   (let ((component (.component instance))
@@ -796,7 +799,7 @@
          (direction (.direction port))
          (interface (.type port))
          (injected? (.injected port)))
-    (animate snippet `((name ,name) (direction ,direction) (interface ,interface)))))
+    (animate snippet `((name ,name) (direction ,direction) (injected? ,injected?) (interface ,interface)))))
 
 (define-method (declare-replies (o <interface>))
   (map (lambda (x) (snippet 'declare-reply
@@ -858,6 +861,11 @@
 
 (define (injected-instance-interface model binding)
   (.type (gom:port (code:import (injected-instance-type model binding)))))
+
+(define (injected-instances model)
+  (let ((injected-instance-names (map injected-instance-name (injected-bindings model))))
+    (filter (lambda (instance) (member (.name instance) injected-instance-names))
+            ((compose .elements .instances) model))))
 
 (define (non-injected-instances model)
   (let ((injected-instance-names (map injected-instance-name (injected-bindings model))))

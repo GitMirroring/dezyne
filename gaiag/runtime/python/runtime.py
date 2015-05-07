@@ -29,7 +29,7 @@ class V:
 
 def illegal ():
     raise RuntimeError ('illegal')
-    
+
 class Runtime:
     def __init__ (self, illegal=illegal):
         self.components = []
@@ -81,8 +81,9 @@ class Port:
         self.component = component
 
 class Component:
-    def __init__ (self, rt=Runtime (), name='', parent=None):
-        self.rt = rt
+    def __init__ (self, loc, name='', parent=None):
+        self.loc = loc
+        self.rt = loc.get (Runtime)
         self.name = name
         self.parent = parent
 
@@ -119,4 +120,3 @@ def trace_in (i, e):
 def trace_out (i, e):
     sys.stderr.write (path(i.inport) + '.' + e + ' -> '
                       + path(i.outport) + '.' + e + '\n')
-

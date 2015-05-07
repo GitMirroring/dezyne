@@ -7,9 +7,9 @@ from runtime import V
 
 class #.model  (runtime.Component):
 #(->string (map (declare-enum model) (append (gom:enums (.behaviour model)) (gom:enums))))
-    def __init__ (self, rt, name='', parent=None):
-        runtime.Component.__init__ (self, rt, name, parent)
-        self.rt.flushes (self)
+    def __init__ (self, loc, name='', parent=None):
+        runtime.Component.__init__ (self, loc, name, parent)
+        loc.get (runtime.Runtime).flushes (self)
 #
     (map (init-member model #{
 #(string-if (eq? expression *unspecified*) "" #{         self.#name  = #expression
@@ -19,7 +19,13 @@ class #.model  (runtime.Component):
         self.#name  = dezyne.#interface  (provides=runtime.Port ('#name ', self))
 #}) (filter gom:provides? ((compose .elements .ports) model)))#
     (map (init-port #{
+#(string-if injected?
+#{
+        self.#name  = loc.get (dezyne.#interface)
+#}
+#{
         self.#name  = dezyne.#interface  (requires=runtime.Port ('#name ', self))
+#})
 #}) (filter gom:requires? ((compose .elements .ports) model)))
 #
    (map

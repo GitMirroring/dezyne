@@ -5,6 +5,7 @@ import os
 sys.path.insert (0, os.path.dirname (sys.argv[0]))
 ##
 import dezyne.#.model
+import locator
 import runtime
 
 def drop_prefix (string, prefix):
@@ -14,7 +15,7 @@ def drop_prefix (string, prefix):
 
 def log_in (prefix, event):
     sys.stderr.write (prefix + event + '\n')
-    sys.stderr.write (prefix + 'return' + '\n')    
+    sys.stderr.write (prefix + 'return' + '\n')
 
 def log_out (prefix, event):
     sys.stderr.write (prefix + event + '\n')
@@ -54,8 +55,9 @@ def main ():
     def illegal ():
         sys.stderr.write('illegal')
         sys.exit (0)
+    loc = locator.Locator ()
     rt = runtime.Runtime (illegal)
-    sut = dezyne.#.model  (rt, name='sut')
+    sut = dezyne.#.model  (loc.set (rt), name='sut')
 
     event_map = #.model _fill_event_map (sut)
 
