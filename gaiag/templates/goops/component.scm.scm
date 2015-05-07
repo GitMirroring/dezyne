@@ -1,9 +1,5 @@
 #(->string (map (declare-enum model) (gom:enums model)))
-(define-class <#.model > (<component>)
-  (handling? :accessor .handling? :init-value ##f :init-keyword :handling?)
-  (flushes? :accessor .flushes? :init-value ##f :init-keyword :flushes?)
-  (deferred? :accessor .deferred? :init-value ##f :init-keyword :deferred?)
-  (q :accessor .q :init-form (make-q) :init-keyword :q)#
+(define-class <#.model > (<component>)#
 (map (init-member model #{#'()
   (#name  :accessor .#name  :init-value #(if (eq? expression *unspecified*) "#f" expression))#})
      (gom:variables model))#
@@ -12,10 +8,8 @@
   (map (init-port #{#'()
   (#name  :accessor .#name  :init-value ##f)#})
        ((compose .elements .ports) model)))
-
 (define-method (initialize (o <#.model >) args)
-  (next-method)
-  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))#
+  (next-method)#
   (map
     (lambda (port)
     (append
@@ -33,6 +27,8 @@
     (filter gom:provides? (gom:ports model)))#
 (map
     (lambda (port)
+    (if (.injected port)
+    (list "\n  (set! (." (.name port) " o) (get (.locator o) <" (.type port) ">))")
     (append
      (list
     "\n"
@@ -44,7 +40,7 @@
       (map (define-on model port #{#'()
               :#event  (lambda (. args) (call-out o (lambda () (apply #port -#event  (cons o args))) `(,(.#port  o) #event))) #})
           (filter gom:out? (gom:events port)))
-   (list ")))")))
+   (list ")))"))))
    (filter gom:requires? (gom:ports model))))
 
 #(map

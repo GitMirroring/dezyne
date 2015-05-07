@@ -8,17 +8,23 @@
 
 (define-method (initialize (o <#.model >) args)
   (next-method)
-  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))
   (let-keywords
-   args ##f ((runtime ##f)
+   args ##f ((locator ##f)
             (name (symbol))
             (parent ##f)
             #((->join "\n            ")
  (map (init-bind model #{(#port .#edir  (make <#interface .out>))#})
       (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model))))))#
 (map (init-instance #{#'()
-  (set! (.#name  o) (make <#component > :runtime (.runtime o) :parent o :name '#name))#})
-  ((compose .elements .instances) model))#
+  (set! (.#name  o) (make <#component > :locator (.locator o) :parent o :name '#name))#})
+  (injected-instances model))#
+(string-if (pair? (injected-bindings model)) #{#'()
+  (set! (.locator o) (clone (.locator o)))#
+   (map (init-bind model #{#'()
+  (set (.locator o) #instance)#}) (injected-bindings model))#})#
+(map (init-instance #{#'()
+  (set! (.#name  o) (make <#component > :locator (.locator o) :parent o :name '#name))#})
+  (non-injected-instances model))#
 (map (init-bind model #{#'()
   (set! (.#port  o) #instance)
   (set! (.#edir  (.#port  o)) #port .#edir)#})

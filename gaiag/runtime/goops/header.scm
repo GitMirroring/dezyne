@@ -59,9 +59,15 @@
   (out :accessor .out :init-value #f :init-keyword :out))
 
 (define-class <component-base> (<model>)
- (runtime :accessor .runtime :init-form (make <runtime>) :init-keyword :runtime)
- (parent :accessor .parent :init-value #f :init-keyword :parent)
- (name :accessor .name :init-value (symbol) :init-keyword :name))
+  (locator :accessor .locator :init-value #f :init-keyword :locator)
+  (runtime :accessor .runtime :init-value #f)  
+  (parent :accessor .parent :init-value #f :init-keyword :parent)
+  (name :accessor .name :init-value (symbol) :init-keyword :name))
+
+(define-method (initialize (o <component-base>) args)
+  (next-method)
+  (set! (.runtime o) (get (.locator o) <runtime>))
+  (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o))))
 
 (define-class <component> (<component-base>)
  (handling? :accessor .handling? :init-value #f :init-keyword :handling?)
@@ -151,3 +157,35 @@
 
 (define (trace-out i e)
   (stderr "~a.~a -> ~a.~a\n" (path (.in i)) e (path (.out i)) e))
+
+
+(define-class <locator> ()
+  (services :accessor .services :init-form (list) :init-keyword :services))
+
+(define-method (locator-key (type <class>) (key <symbol>))
+  (symbol-append (class-name type) key))
+
+(define-method (locator-key (type <class>) (key <string>))
+  (locator-key type (string->symbol key)))
+
+(define-method (locator-key type (key <symbol>))
+  (locator-key (class-of type) key))
+
+(define-method (locator-key type (key <string>))
+  (locator-key type (string->symbol key)))
+
+(define-method (set (o <locator>) x)
+  (set o x ""))
+
+(define-method (set (o <locator>) x key)
+  (set! (.services o) (assoc-set! (.services o) (locator-key x key) x))
+  o)
+
+(define-method (get (o <locator>) x)
+  (get o x ""))
+
+(define-method (get (o <locator>) x key)
+  (assoc-ref (.services o) (locator-key x key)))
+
+(define-method (clone (o <locator>))
+  (make <locator> :services (list-copy (.services o))))
