@@ -34,7 +34,7 @@ public class #.model  : Component {#
     (map (init-port #{#'()
   public #interface  #name;#}) ((compose .elements .ports) model))
 
-  public #.model(Runtime runtime, String name="", SystemComponent parent=null) : base(runtime, name, parent) {
+  public #.model(Locator locator, String name="", SystemComponent parent=null) : base(locator, name, parent) {
     this.flushes = true;#
 (map (init-member model #{#'()
     #(string-if (eq? expression (if #f #f)) "" #{#name  = #expression ;#})#}) (gom:variables model))#
@@ -44,9 +44,15 @@ public class #.model  : Component {#
     #name .inport.self = this;#})
     (filter gom:provides? ((compose .elements .ports) model)))#
 (map (init-port #{#'()
+#(string-if injected?
+#{
+    #name  = locator.get(typeof(#interface));
+#}
+#{
     #name  = new #interface();
     #name .outport.name = "#name ";
     #name .outport.self = this;#})
+#})
     (filter gom:requires? ((compose .elements .ports) model)))#
 (map
    (lambda (port)

@@ -31,10 +31,17 @@ class #.model  : SystemComponent {
     public #interface  #name;
 #}) ((compose .elements .ports) model))
 
-  public #.model(Runtime runtime, String name="", SystemComponent parent=null) : base(runtime, name, parent) {
+  public #.model(Locator locator, String name="", SystemComponent parent=null) : base(locator, name, parent) {
 #(map (init-instance #{
-    #name  = new #component(runtime, "#name ", this);
-#}) ((compose .elements .instances) model))#
+    #name  = new #component(locator, "#name ", this);
+#}) (injected-instances model))#
+(string-if (pair? (injected-bindings model)) #{
+    locator = locator.clone()#
+    (map (init-bind model #{.set(#instance);#}) (injected-bindings model))
+#})#
+(map (init-instance #{
+    #name  = new #component(locator, "#name ", this);
+#}) (non-injected-instances model))#
 (map (init-bind model #{
     #port  = #instance;
 #}) (filter bind-port? ((compose .elements .bindings) model)))

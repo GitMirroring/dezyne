@@ -58,10 +58,11 @@ abstract public class Interface<I,O> where I: Interface<I,O>.In where O : Interf
 }
 
 abstract public class ComponentBase {
+  public Locator locator;
   public Runtime runtime;
   public SystemComponent parent;
   public String name;
-  public ComponentBase(Runtime runtime, String name, SystemComponent parent) {this.runtime = runtime; this.parent = parent; this.name = name; runtime.components.Enqueue(this);}
+  public ComponentBase(Locator locator, String name, SystemComponent parent) {this.locator = locator; this.parent = parent; this.name = name; this.runtime = locator.get<Runtime>(); this.runtime.components.Enqueue(this);}
 }
 
 abstract public class Component : ComponentBase {
@@ -69,14 +70,14 @@ abstract public class Component : ComponentBase {
   public bool flushes;
   public Component deferred;
   public Queue<Action> q;
-  public Component(Runtime runtime, String name, SystemComponent parent)
-    : base(runtime, name, parent)
+  public Component(Locator locator, String name, SystemComponent parent)
+    : base(locator, name, parent)
     {this.q = new Queue<Action>();}
 }
 
 abstract public class SystemComponent : ComponentBase {
-  public SystemComponent(Runtime runtime, String name, SystemComponent parent)
-    : base(runtime, name, parent)
+  public SystemComponent(Locator locator, String name, SystemComponent parent)
+    : base(locator, name, parent)
     {}
 }
 
@@ -177,4 +178,27 @@ public class Runtime {
     System.Console.Error.WriteLine(path(i.inport) + "." + e + " -> "
                                  + path(i.outport) + "." + e);
   }
+}
+
+public class Locator {
+  public class Services : Dictionary<String, Object> {public Services(){}public Services(Services o):base(o) {}};
+  Services services;
+  public Locator():this(new Services()) {}
+  public Locator(Services services) {this.services = services;}
+  public static String key(Type c, String key) {
+    //System.Console.Error.WriteLine("KEY<TYPE> " + c.Name);
+    return c.Name + key;
+  }
+  public static String key(Object o, String key) {
+    //System.Console.Error.WriteLine("KEY<object> " + o.GetType().Name);
+    return Locator.key(o.GetType(), key);
+  }
+  public Locator set(Object o, String key="") {
+    services.Add(Locator.key(o,key), o);
+    return this;
+  }  
+  public R get<R>(String key="") {
+    return (R)services[Locator.key(typeof(R), key)];
+  }  
+  public Locator clone() {return new Locator(new Services(services));}
 }

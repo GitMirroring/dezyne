@@ -92,8 +92,9 @@ class main {
 }
 
   public static void Main(String[] args) {
+    Locator locator = new Locator();
     Runtime runtime = new Runtime(() => {System.Console.Error.WriteLine("illegal"); Environment.Exit(0);});
-    #.model  sut = new #.model(runtime, "sut");
+    #.model  sut = new #.model(locator.set(runtime), "sut");
     EventMap e = fillEventMap(sut);
     String line;
     while ((line = System.Console.ReadLine()) != null) {
