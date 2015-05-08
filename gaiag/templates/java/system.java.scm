@@ -6,15 +6,22 @@ class #.model  extends SystemComponent {
     #interface  #name;
 #}) ((compose .elements .ports) model))
 
-  public #.model(Runtime runtime) {this(runtime, "");};
+  public #.model(Locator locator) {this(locator, "");};
 
-  public #.model(Runtime runtime, String name) {this(runtime, name, null);};
+  public #.model(Locator locator, String name) {this(locator, name, null);};
 
-  public #.model(Runtime runtime, String name, SystemComponent parent) {
-  super(runtime, name, parent);
+  public #.model(Locator locator, String name, SystemComponent parent) {
+  super(locator, name, parent);
 #(map (init-instance #{
-    #name  = new #component(runtime, "#name ", this);
-#}) ((compose .elements .instances) model))#
+    #name  = new #component(locator, "#name ", this);
+#}) (injected-instances model))#
+(string-if (pair? (injected-bindings model)) #{
+    locator = locator.clone()#
+    (map (init-bind model #{.set(#instance);#}) (injected-bindings model))
+#})#
+(map (init-instance #{
+    #name  = new #component(locator, "#name ", this);
+#}) (non-injected-instances model))#
 (map (init-bind model #{
     #port  = #instance;
 #}) (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model))))

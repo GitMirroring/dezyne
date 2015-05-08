@@ -24,6 +24,7 @@
 //package dezyne;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -109,11 +110,12 @@ abstract class Interface<I extends Interface.In, O extends Interface.Out> {
 }
 
 abstract class ComponentBase {
+  public Locator locator;
   public Runtime runtime;
   public SystemComponent parent;
   public String name;
   @SuppressWarnings("unchecked")
-  public ComponentBase(Runtime runtime, String name, SystemComponent parent) {this.runtime = runtime; this.parent = parent; this.name = name; runtime.components.add(this);};
+  public ComponentBase(Locator locator, String name, SystemComponent parent) {this.locator = locator; this.parent = parent; this.name = name; this.runtime = (Runtime)locator.get(Runtime.class); this.runtime.components.add(this);};
 }
 
 abstract class Component extends ComponentBase {
@@ -121,11 +123,11 @@ abstract class Component extends ComponentBase {
   public boolean flushes;
   public Component deferred;
   public Queue<Action> q;
-  public Component(Runtime runtime, String name, SystemComponent parent) {super(runtime, name, parent); this.q = new LinkedList<Action>();};
+  public Component(Locator locator, String name, SystemComponent parent) {super(locator, name, parent); this.q = new LinkedList<Action>();};
 }
 
 abstract class SystemComponent extends ComponentBase {
-  public SystemComponent(Runtime runtime, String name, SystemComponent parent) {super(runtime, name, parent);};
+  public SystemComponent(Locator locator, String name, SystemComponent parent) {super(locator, name, parent);};
 }
 
 class Meta {
@@ -227,5 +229,28 @@ class Runtime<R> {
     System.err.println(path(i.in) + "." + e + " -> "
                        + path(i.out) + "." + e);
   }
+}
+
+class Locator {
+  private static class Services extends HashMap<String, Object> {Services(){}Services(Services o){super(o);}}
+  Services services;
+  Locator() {this(new Services());}
+  Locator(Services services) {this.services = services;}
+  static String key(Class c, String key) {
+    return c.getName() + key;
+  }
+  static String key(Object o, String key) {
+    return key(o.getClass(), key);
+  }
+  public Locator set(Object o) {return set(o, "");}
+  public Locator set(Object o, String key) {
+    services.put(this.key(o,key), o);
+    return this;
+  }  
+  public Object get (Class c) {return get(c, "");}
+  public Object get (Class c, String key) {
+    return services.get(this.key(c, key));
+  }  
+  public Locator clone() {return new Locator(new Services(services));}
 }
 // end header

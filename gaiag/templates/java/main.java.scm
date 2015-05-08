@@ -89,8 +89,9 @@ class main<R> {
 }
 
   public static void main(String[] args) throws IOException {
+    Locator locator = new Locator();
     Runtime runtime = new Runtime(new Action() {public void action() {System.err.println("illegal");System.exit(0);}});
-    #.model  sut = new #.model(runtime, "sut");
+    #.model  sut = new #.model(locator.set(runtime), "sut");
     EventMap e = fillEventMap(sut);
     main.reader = new Reader();
     String line;

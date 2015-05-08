@@ -9,12 +9,12 @@ class #.model  extends Component {#
     (map (init-port #{#'()
   #interface  #name;#}) ((compose .elements .ports) model))
 
-  public #.model(Runtime runtime) {this(runtime, "");};
+  public #.model(Locator locator) {this(locator, "");};
 
-  public #.model(Runtime runtime, String name) {this(runtime, name, null);};
+  public #.model(Locator locator, String name) {this(locator, name, null);};
 
-  public #.model(Runtime runtime, String name, SystemComponent parent) {
-    super(runtime, name, parent);
+  public #.model(Locator locator, String name, SystemComponent parent) {
+    super(locator, name, parent);
     this.flushes = true;#
 (map (init-member model #{#'()
     #(string-if (eq? expression (if #f #f)) "" #{#name  = #expression ;#})#}) (gom:variables model))#
@@ -24,9 +24,15 @@ class #.model  extends Component {#
     #name .in.self = this;#})
     (filter gom:provides? ((compose .elements .ports) model)))#
 (map (init-port #{#'()
+#(string-if injected?
+#{
+    #name  = (#interface)locator.get(#interface .class);
+#}
+#{
     #name  = new #interface();
     #name .out.name = "#name ";
     #name .out.self = this;#})
+#})
     (filter gom:requires? ((compose .elements .ports) model)))#
 (map
    (lambda (port)
