@@ -236,21 +236,23 @@ class Locator {
   Services services;
   Locator() {this(new Services());}
   Locator(Services services) {this.services = services;}
-  static String key(Class c, String key) {
-    return c.getName() + key;
-  }
   static String key(Object o, String key) {
-    return key(o.getClass(), key);
+    Class c = (o instanceof Class) ? (Class)o : o.getClass();
+    return c.getName() + key;
   }
   public Locator set(Object o) {return set(o, "");}
   public Locator set(Object o, String key) {
     services.put(this.key(o,key), o);
     return this;
   }  
-  public Object get (Class c) {return get(c, "");}
-  public Object get (Class c, String key) {
+  @SuppressWarnings("unchecked")
+  public Object get(Object o) {return get(o, "");}
+  @SuppressWarnings("unchecked")
+  public Object get(Object o, String key) {
+    Class c = (o instanceof Class) ? (Class)o : o.getClass();
     return services.get(this.key(c, key));
   }  
   public Locator clone() {return new Locator(new Services(services));}
 }
+
 // end header
