@@ -46,7 +46,7 @@ public class #.model  : Component {#
 (map (init-port #{#'()
 #(string-if injected?
 #{
-    #name  = locator.get(typeof(#interface));
+    #name  = locator.get<#interface >();
 #}
 #{
     #name  = new #interface();

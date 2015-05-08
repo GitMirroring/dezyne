@@ -44,7 +44,7 @@ class #.model  : SystemComponent {
 #}) (non-injected-instances model))#
 (map (init-bind model #{
     #port  = #instance;
-#}) (filter bind-port? ((compose .elements .bindings) model)))
+#}) (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model))))
 # (map (connect-ports model #{
     #interface .connect(#provided , #required);
 #}) (filter (negate bind-port?) ((compose .elements .bindings) model)))}
