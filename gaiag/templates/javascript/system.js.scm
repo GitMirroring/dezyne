@@ -1,11 +1,19 @@
-dezyne.#.model  = function(rt, meta) {
-  rt.top = rt.top || this;
-  rt.components = (rt.components || []).concat ([this]);
-  this.rt = rt;
+function #.model(locator, meta) {
+  this.locator = locator;
+  this.rt = locator.get(dezyne.runtime);
+  this.rt.top = this.rt.top || this;
+  this.rt.components = (this.rt.components || []).concat ([this]);
   this.meta = meta;
 #(map (init-instance #{
-    this.#name  = new dezyne.#component (rt, {parent: this, name: '#name '});
-#}) ((compose .elements .instances) model))#
+    this.#name  = new dezyne.#component(locator, {parent: this, name: '#name '});
+#}) (injected-instances model))#
+(string-if (pair? (injected-bindings model)) #{
+   this.locator = locator.clone()#
+    (map (init-bind model #{.set(this.#instance)#}) (injected-bindings model))
+#})#
+(map (init-instance #{
+    this.#name  = new dezyne.#component(locator, {parent: this, name: '#name '});
+#}) (non-injected-instances model))#
 (map (init-bind model #{
     this.#port  = this.#instance;
 #}) (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model))))#
@@ -14,3 +22,5 @@ dezyne.#.model  = function(rt, meta) {
     dezyne.connect(this.#provided , this.#required);
 #}) (filter (negate bind-port?) ((compose .elements .bindings) model)))
 };
+
+dezyne.#.model  = #.model;

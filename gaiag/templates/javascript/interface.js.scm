@@ -1,4 +1,4 @@
-dezyne.#.interface  = function(meta) {#
+function #.interface(meta) {#
 (->string (map (declare-enum model) (append (gom:interface-enums model) (gom:enums))))
   this.in = {
 #((->join ",\n") (map (declare-io model #{
@@ -13,3 +13,5 @@ dezyne.#.interface  = function(meta) {#
   };
   this.meta = meta;
 };
+
+dezyne.#.interface  = #.interface;

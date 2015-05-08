@@ -24,87 +24,82 @@
 
 #! /usr/bin/nodejs
 
-// handwritten runtime header
-var dezyne = {};
+function runtime(illegal) {
+  this.illegal = illegal || function() {console.assert(!'illegal')};
 
-dezyne.runtime = function(illegal) {
-  this.illegal = illegal || function() {console.assert(!'illegal');};
-};
-
-var runtime = {
-  path : function(m, p) {
+  this.path = function(m, p) {
     p = p ? p : '';
     if (!m || !m.name) {
       return '<external>.' + p;
     }
     if (m.component) {
-      return runtime.path(m.component.meta, m.name + (p ? '.' + p : p));
+      return this.path(m.component.meta, m.name + (p ? '.' + p : p));
     }
     if ('component' in m) {
       return '<external>.' + m.name + (p ? '.' + p : p);
     }
     if (m.parent) {
-      return runtime.path(m.parent.meta, m.name + (p ? '.' + p : p));
+      return this.path(m.parent.meta, m.name + (p ? '.' + p : p));
     }
     return m.name + (p ? '.' + p : p);
-  },
+  };
 
-  external : function(c) {
+  this.external = function(c) {
     return c.rt.components.indexOf (c) == -1;
-  },
+  };
 
-  flush : function(c) {
-    if (runtime.external(c)) {
+  this.flush = function(c) {
+    if (this.external(c)) {
       return;
     }
     while (c.queue && c.queue.length) {
-      runtime.handle(c, c.queue.pop());
+      this.handle(c, c.queue.pop());
     }
     if (c.deferred) {
       var t = c.deferred;
       c.deferred = null;
       if (!t.handling) {
-        runtime.flush(t);
+        this.flush(t);
       }
     }
-  },
+  };
 
-  defer : function(i, o, f) {
+  this.defer = function(i, o, f) {
     if(!i || (!i.flushes && !o.handling)) {
-      runtime.handle(o, f);
+      this.handle(o, f);
     }
     else {
       i.deferred = o;
       o.queue = [f].concat (o.queue || []);
     }
-  },
+  };
 
-  handle : function(c, f) {
+  this.handle = function(c, f) {
     if (!c.handling) {
       {
         c.handling = true;
         f();
         c.handling = false;
       }
-      runtime.flush(c);
+      this.flush(c);
     }
     else {
       throw 'component already handling an event';
     }
-  },
+  };
 
-  trace_in : function(m, e) {
-    process.stderr.write(runtime.path(m[0].meta.requires) + '.' + e + ' -> '
-                         + runtime.path(m[0].meta.provides) + '.' + e + '\n');
-  },
+  this.trace_in = function(m, e) {
+    process.stderr.write(this.path(m[0].meta.requires) + '.' + e + ' -> '
+                         + this.path(m[0].meta.provides) + '.' + e + '\n');
+  };
 
-  trace_out : function(m, e) {
-    process.stderr.write(runtime.path(m[0].meta.provides) + '.' + e + ' -> '
-                         + runtime.path(m[0].meta.requires) + '.' + e + '\n');
-  },
+  this.trace_out = function(m, e) {
+    process.stderr.write(this.path(m[0].meta.provides) + '.' + e + ' -> '
+                         + this.path(m[0].meta.requires) + '.' + e + '\n');
+  };
 
-  call_in : function(c, f, m) {
-    runtime.trace_in(m, m[1]);
+  this.call_in = function(c, f, m) {
+    this.trace_in(m, m[1]);
     var handle = c.handling;
     c.handling = true;
     var r = f();
@@ -112,21 +107,41 @@ var runtime = {
       throw 'a valued event cannot be deferred';
     }
     c.handling = false;
-    runtime.flush(c);
-    runtime.trace_out(m, r === undefined ? 'return' : m[2][r]);
+    this.flush(c);
+    this.trace_out(m, r === undefined ? 'return' : m[2][r]);
     return r;
-  },
+  };
 
-  call_out : function(c, f, m) {
-    runtime.trace_out(m, m[1]);
-    runtime.defer(m[0].meta.provides.component, c, f);
-  },
+  this.call_out = function(c, f, m) {
+    this.trace_out(m, m[1]);
+    this.defer(m[0].meta.provides.component, c, f);
+  };
 };
 
-dezyne.connect = function(provided, required) {
+function locator (services) {
+  this.services = services || {};
+  this.key = function(type, key) {
+    return (type.prototype ? type.prototype : type).name + (key || '');
+  };
+  this.set = function(o, key) {
+    this.services[this.key(o, key)] = o;
+    return this;
+  };
+  this.get = function(o, key) {
+    return this.services[this.key(o, key)];
+  };
+  this.clone = function() {
+    c = {}
+    Object.keys(this.services).forEach(function (k,v) {c[k]=v;});
+    return new dezyne.locator(c);
+  };
+};
+
+function connect(provided, required) {
   provided.out = required.out;
   required.in = provided.in;
   provided.meta.requires = required.meta.requires;
   required.meta.provides = provided.meta.provides;
-}
-// end header
+};
+
+var dezyne = {connect:connect,locator:locator,runtime:runtime};
