@@ -8,12 +8,6 @@
 
 namespace dezyne
 {
-
-int config(std::string)
-{
-  return 0;                          
-}
-
 typedef std::map<std::string, std::function<void()>> event_map;
 
 std::string drop_prefix(std::string string, std::string prefix)
@@ -52,7 +46,7 @@ std::string drop_prefix(std::string string, std::string prefix)
     exit(0);
     return (R)0;
   }
-  
+
   template <typename R>
   R log_valued(std::string prefix, std::string event, std::function<R(std::string)> string_to_value, std::function<std::string(R)> value_to_string)
   {
@@ -65,7 +59,7 @@ std::string drop_prefix(std::string string, std::string prefix)
     }
     return (R)0;
   }
-               
+
 void fill_event_map(#.model & m, event_map& e)
 {
   int dzn_i = 0;

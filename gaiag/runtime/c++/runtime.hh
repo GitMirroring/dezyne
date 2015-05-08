@@ -39,7 +39,7 @@ namespace dezyne
 {
   void trace_in(port::meta const& m, const char* e);
   void trace_out(port::meta const& m, const char* e);
-  
+
   inline void apply(const component* t, const std::function<void(const dezyne::meta&)>& f)
   {
     f(t->dzn_meta);
@@ -133,6 +133,5 @@ namespace dezyne
     trace_out(std::get<0>(m)->meta, std::get<1>(m));
     c->dzn_rt.defer(std::get<0>(m)->meta.provides.address, c, f);
   }
-  int config(std::string);
 }
 #endif
