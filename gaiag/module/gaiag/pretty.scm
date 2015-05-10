@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;
@@ -82,8 +82,8 @@
      (->string (list 'system-as-component name ports instances bindings)))
     ((and (? pair?) (? dezyne-template?)) (apply dezyne-template->string src))
     ((? dezyne-template?) (apply dezyne-template->string
-                              (cons (ast-name src) (children src))))
-
+                                 (cons (ast-name src) (children src))))
+    
     ((? join?) (apply join-all (children src)))
     ((? symbol?) (symbol->string src))
     ((? string?) src)
@@ -113,14 +113,14 @@
     (('! ($ <expression> expression)) (->string (list "!" (paren expression))))
     (('or lhs rhs) (let ((lhs (->string lhs))
                          (rhs (->string rhs)))
-                     (list "(" lhs " " 'or " " rhs ")"))) ;; FIXME: do we need to add gratituous parens?
+                     (list lhs " " 'or " " rhs)
+                     ;;(list "(" lhs " " 'or " " rhs ")")
+                     )) ;; FIXME: do we need to add gratituous parens?
     (((or 'and '== '!= '< '<= '> '>= '+ '-) lhs rhs)
      (let ((lhs (->string lhs))
            (rhs (->string rhs))
            (op (car src)))
        (->string (list lhs " " op " " rhs ))))
-
-    ((h ...) (apply string-append (map ->string h)))
     ((? unspecified?) #f)
     (_ (format #f "~a" src))
     (_ (format #f "~a:->string:no match:~a\n" (current-source-location) src))))
