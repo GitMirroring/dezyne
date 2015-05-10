@@ -229,6 +229,8 @@
 
     (('otherwise) (make <otherwise> :value 'otherwise))
 
+    (('otherwise value) (make <otherwise> :value value))    
+
     (('parameter name type)
      (make <gom:parameter> :name name :type (ast->gom- type)))
 

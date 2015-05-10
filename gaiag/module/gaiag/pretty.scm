@@ -99,11 +99,7 @@
      (list (cons (->string type) (->string parameters))))
     (($ <type> name #f) (->string name))
     (($ <type> name scope) (->string (list scope '. name)))
-    (($ <otherwise> value) (=> failure)
-     (if (eq? value *unspecified*)
-         (failure)
-         (->string value)))
-    (($ <otherwise>) (->string 'otherwise))    
+    (($ <otherwise> value) (->string value))    
     (($ <triggers> triggers) (comma-space-join (map ->string triggers)))
 
     ;; FIXME: c&p from csp.scm (and...TODO: c++.scm) grmbl

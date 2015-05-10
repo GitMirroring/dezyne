@@ -125,12 +125,21 @@
   (let* ((statement (.statement o))
          (expression ((compose .value .expression) o))
          (state (if (is-a? expression <field>) expression (cadr expression)))
-         (var (.identifier state)))
-    (alist->hash-table
-     `((guard . ,(json-guard o))
-       (actions . ,(json-action statement))
-       (callbacks . ,(json-callback model statement))
-       (next . ,(json-next model var state statement))))))
+         (var (.identifier state))
+         (inner (.statement o)))
+    (match inner
+      (($ <guard> expression statement)
+       (alist->hash-table
+        `((guard . ,(json-guard o))
+          (inner . ,(json-guard inner))
+          (actions . ,(json-action statement))
+          (callbacks . ,(json-callback model statement))
+          (next . ,(json-next model var state statement)))))
+      (_ (alist->hash-table
+          `((guard . ,(json-guard o))
+            (actions . ,(json-action statement))
+            (callbacks . ,(json-callback model statement))
+            (next . ,(json-next model var state statement))))))))
 
 (define-method (json-table (model <model>) (var <symbol>) (state <field>) (o <on>))
   (match o
@@ -257,8 +266,8 @@
   (match o
     (#f 'false)
     (#t 'true)
-    (($ <expression> expression) (->symbol expression))
     (($ <otherwise>) 'otherwise)
+    (($ <expression> expression) (->symbol expression))
     (($ <var> identifier) identifier)
     (($ <field> type field) (->symbol (list (->symbol type) "." field)))
     ((identifier ($ <field> type field)) (->symbol (list (->symbol identifier) " = " (->symbol type) "." field)))

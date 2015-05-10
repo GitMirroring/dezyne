@@ -513,7 +513,7 @@ interface ISiren
 #})))
 "
 {
-  [state.Initial]
+  [state.<Initial>]
     {
       on start:
         [running]
@@ -522,10 +522,10 @@ interface ISiren
         [running]
         illegal;
       on start:
-        [otherwise]
+        [!running]
         illegal;
       on stop:
-        [otherwise]
+        [!running]
         running = !running;
     }
 }
@@ -619,7 +619,7 @@ interface i
     [b]
     a;
     on e:
-    [otherwise]
+    [!b]
     {
     }
   }
@@ -644,7 +644,7 @@ interface I
 #})))
 "
 {
-  [state.Initial]
+  [state.<Initial>]
   on e:
   [b]
   {
