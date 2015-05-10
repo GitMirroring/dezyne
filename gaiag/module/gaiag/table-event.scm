@@ -39,6 +39,7 @@
   :use-module (gaiag misc)
   :use-module (gaiag norm-event)
   :use-module (gaiag pretty)
+  :use-module (gaiag table-state)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
 
@@ -78,48 +79,11 @@
 (define-method (table-event (model <model>) (o <boolean>)) #f)
 
 (define-method (table-event (model <model>) (o <compound>))
-  (norm-event o))
-
-;;; shared with table
-(define-method (mangle-table (o <list>))
-  (map mangle-table o))
-
-(define-method (mangle-table (o <boolean>))
-  (if (option-ref (parse-opts (command-line)) 'json #f)
-      (list (make-hash-table))))
-
-(define-method (mangle-table (o <model>))
-  (let ((json? (option-ref (parse-opts (command-line)) 'json #f))
-        (statement ((compose .statement .behaviour) o)))
-    (if json?
-        (alist->hash-table
-         (append
-          (json-init o)
-          ((json-table o) statement)))
-        (demo-table statement))))
-
-(define-method (demo-table (o <compound>))
-  (gom:map demo-table o))
-
-(define-method (demo-table (o <list>))
-  (map demo-table o))
-
-(define-method (demo-table (o <guard>))
-  o)
-
-(define-method (demo-table (o <on>))
-  o)
-
-(define-method (pretty (o <ast>)) (ast->dezyne o))
-(define-method (pretty (o <list>))
-  (match o
-    (((? (is? <ast>)) ...) (string-join (map ast->dezyne o)))
-    (_ o)))
-(define-method (pretty o) o)
+  (norm-event (table-state model o)))
 
 (define (ast-> ast)
   ((compose
-    pretty
+    pretty-table
     mangle-table
     table-event
     ast:resolve) ast))

@@ -138,9 +138,10 @@
       (_ (list result)))))
 
 (define ((remove-otherwise statements) o)
+  (define (otherwise? x) (eq? x 'otherwise))
   (match o
-    (($ <guard> ($ <otherwise>)) (=> failure)
-     (if (null? statements)
+    (($ <guard> ($ <otherwise> value)) (=> failure)
+     (if (or ((negate otherwise?) value) (null? statements))
          (failure)
          (make <guard>
            :expression (guards-not-or statements)

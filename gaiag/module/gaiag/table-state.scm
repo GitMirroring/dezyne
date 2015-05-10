@@ -44,7 +44,7 @@
 
   :use-module (gaiag gom)
 
-  :export (ast-> table-state))
+  :export (ast-> mangle-table pretty-table table-state))
 
 (define-method (table-state (o <list>))
   (filter identity (map table-state o)))
@@ -388,16 +388,16 @@
 (define-method (demo-table (o <on>))
   o)
 
-(define-method (pretty (o <ast>)) (ast->dezyne o))
-(define-method (pretty (o <list>))
+(define-method (pretty-table (o <ast>)) (ast->dezyne o))
+(define-method (pretty-table (o <list>))
   (match o
     (((? (is? <ast>)) ...) (string-join (map ast->dezyne o)))
     (_ o)))
-(define-method (pretty o) o)
+(define-method (pretty-table o) o)
 
 (define (ast-> ast)
   ((compose
-    pretty
+    pretty-table
     mangle-table
     table-state
     ast:resolve) ast))

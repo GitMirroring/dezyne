@@ -122,8 +122,10 @@
                                             (next . ()))))))))))
 
 (define-method (json-table (model <model>) (var <symbol>) (state <field>) (o <guard>))
-  (let ((statement (.statement o))
-        (expression (.expression o)))
+  (let* ((statement (.statement o))
+         (expression ((compose .value .expression) o))
+         (state (if (is-a? expression <field>) expression (cadr expression)))
+         (var (.identifier state)))
     (alist->hash-table
      `((guard . ,(json-guard o))
        (actions . ,(json-action statement))
