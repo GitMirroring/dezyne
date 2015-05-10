@@ -59,7 +59,7 @@
     flatten-compound
     combine-ons
     passdown-guard
-;;    (remove-otherwise '())  ;; FIXME: breaks after table-state!?
+    (remove-otherwise '())
     add-skip)
    o))
 

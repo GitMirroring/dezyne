@@ -59,18 +59,49 @@
                    (models (null-is-#f (if name (and=> (find (gom:named name) models) list) models))))
                   (map table-state models)))))
 
-(define (has-enum? o)
-  (null-is-#f (gom:enums (.behaviour o))))
-
-(define-method (table-state (o <model>))
-  (let ((statement (table-state o ((compose .statement .behaviour) o))))
+(define-method (table-state (o <interface>))
+  (let* ((statement (table-state o ((compose .statement .behaviour) o)))
+         (statement (remove-initial statement)))
     (make (class-of o)
       :name (.name o)
+      :types (.types o)
+      :events (.events o)
       :behaviour
       (make <behaviour>
         :name ((compose .name .behaviour) o)
+        :types ((compose .types .behaviour) o)
+        :variables ((compose .variables .behaviour) o)
         :functions ((compose .functions .behaviour) o)
         :statement statement))))
+
+(define-method (table-state (o <component>))
+  (let* ((statement (table-state o ((compose .statement .behaviour) o)))
+         (statement (remove-initial statement)))
+    (make (class-of o)
+      :name (.name o)
+      :ports (.ports o)
+      :behaviour
+      (make <behaviour>
+        :name ((compose .name .behaviour) o)
+        :types ((compose .types .behaviour) o)
+        :variables ((compose .variables .behaviour) o)
+        :functions ((compose .functions .behaviour) o)
+        :statement statement))))
+
+(define (remove-initial statement)
+  (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))
+    (or (and-let* (((not json?))
+                   ((is-a? statement <compound>))
+                   ((=1 (length (.elements statement))))
+                   (statement ((compose car .elements) statement))
+                   ((is-a? statement <guard>))
+                   (field ((compose .value .expression) statement))
+                   ((is-a? field <field>))
+                   ((eq? (.identifier field) 'state))
+                   ((eq? (.field field) '<Initial>)))
+                  (make <compound> :elements (list (.statement statement))))
+     statement))
+  statement)
 
 (define-method (table-state (o <import>))
   #f)
@@ -84,7 +115,7 @@
   (or (and-let* ((variables ((compose .elements .variables .behaviour) model))
                  (types (map (gom:type model) variables))
                  (enum (or (find (is? <enum>) types)
-                           (make <enum> :fields (make <fields> :elements '(Initial)))))
+                           (make <enum> :fields (make <fields> :elements '(<Initial>)))))
                  (fields ((compose .elements .fields) enum))
                  (states (map (lambda (field)
                                 (make <literal>
@@ -358,7 +389,6 @@
      o
      )))
 
-;; shared with table-event
 (define-method (mangle-table (o <list>))
   (map mangle-table o))
 
@@ -374,7 +404,7 @@
          (append
           (json-init o)
           ((json-table o) statement)))
-        (demo-table statement))))
+        o)))
 
 (define-method (demo-table (o <compound>))
   (gom:map demo-table o))
@@ -391,7 +421,7 @@
 (define-method (pretty-table (o <ast>)) (ast->dezyne o))
 (define-method (pretty-table (o <list>))
   (match o
-    (((? (is? <ast>)) ...) (string-join (map ast->dezyne o)))
+    (((? (is? <ast>)) ...) (string-join (map ast->dezyne o) "\n"))
     (_ o)))
 (define-method (pretty-table o) o)
 

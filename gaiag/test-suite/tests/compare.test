@@ -12,8 +12,7 @@
   :use-module (gaiag gom)
   :use-module (gaiag pretty)
   :use-module (gaiag reader)
-  :use-module (gaiag resolve)
-  :use-module (gaiag table))
+  :use-module (gaiag resolve))
 
 (pass-if "compare-first-dummy-test"
          #t)
