@@ -74,7 +74,7 @@ Usage: gaiag [OPTION]... FILE
 
 Languages: c c++ cs csp dezyne goops java javascript python
            ast annotate gom norm-state norm-event resolve
-           simulate table-on table-state wfc
+           simulate table-event table-state wfc
 
 Examples:
   ./gaiag examples/Alarm.dzn

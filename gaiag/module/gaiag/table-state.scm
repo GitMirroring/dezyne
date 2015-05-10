@@ -1,21 +1,20 @@
-;;; Gaiag --- Guile in Asd In Asd in Guile.
+;;; Dezyne --- Dezyne command line tools
+;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
-;;; This file is part of Gaiag.
+;;; This file is part of Dezyne.
 ;;;
-;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
-;;;
-;;; Gaiag is free software: you can redistribute it and/or modify it
+;;; Dezyne is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
 ;;; published by the Free Software Foundation, either version 3 of the
 ;;; License, or (at your option) any later version.
 ;;;
-;;; Gaiag is distributed in the hope that it will be useful, but
+;;; Dezyne is distributed in the hope that it will be useful, but
 ;;; WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 ;;; Affero General Public License for more details.
 ;;;
 ;;; You should have received a copy of the GNU Affero General Public
-;;; License along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
+;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 ;;; 
 ;;; Commentary:
 ;;; 
@@ -25,7 +24,7 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (gaiag table)
+(define-module (gaiag table-state)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 match)
   :use-module (ice-9 getopt-long)
@@ -45,12 +44,12 @@
 
   :use-module (gaiag gom)
 
-  :export (ast-> state-table))
+  :export (ast-> table-state))
 
-(define-method (state-table (o <list>))
-  (filter identity (map state-table o)))
+(define-method (table-state (o <list>))
+  (filter identity (map table-state o)))
 
-(define-method (state-table (o <root>))
+(define-method (table-state (o <root>))
   ;; FIXME: c&p csp.scm
   (let ((name
          (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
@@ -58,13 +57,13 @@
     (or (and-let* ((models (null-is-#f (gom:models-with-behaviour o)))
                    (models (null-is-#f (filter (negate gom:imported?) models)))
                    (models (null-is-#f (if name (and=> (find (gom:named name) models) list) models))))
-                  (map state-table models)))))
+                  (map table-state models)))))
 
 (define (has-enum? o)
   (null-is-#f (gom:enums (.behaviour o))))
 
-(define-method (state-table (o <model>))
-  (let ((statement (state-table o ((compose .statement .behaviour) o))))
+(define-method (table-state (o <model>))
+  (let ((statement (table-state o ((compose .statement .behaviour) o))))
     (make (class-of o)
       :name (.name o)
       :behaviour
@@ -73,15 +72,15 @@
         :functions ((compose .functions .behaviour) o)
         :statement statement))))
 
-(define-method (state-table (o <import>))
+(define-method (table-state (o <import>))
   #f)
 
-(define-method (state-table (o <type>))
+(define-method (table-state (o <type>))
   #f)
 
-(define-method (state-table (model <model>) (o <boolean>)) #f)
+(define-method (table-state (model <model>) (o <boolean>)) #f)
 
-(define-method (state-table (model <model>) (o <compound>))
+(define-method (table-state (model <model>) (o <compound>))
   (or (and-let* ((variables ((compose .elements .variables .behaviour) model))
                  (types (map (gom:type model) variables))
                  (enum (or (find (is? <enum>) types)
@@ -93,12 +92,12 @@
                                   :field field)) fields))
                  (guards (filter identity
                                  (map (lambda (state)
-                                        (state-table model state o))
+                                        (table-state model state o))
                                       states))))
                 (retain-source-properties o (make <compound> :elements guards)))
       o))
 
-(define-method (state-table (model <model>) (state <literal>) (o <compound>))
+(define-method (table-state (model <model>) (state <literal>) (o <compound>))
   (and-let* ((statement (flatten-compound (evaluate model state (flatten-compound o)))))
             (let* ((field (make-field model state))
                    (expression (make <expression> :value (make-field model state)))
@@ -359,6 +358,7 @@
      o
      )))
 
+;; shared with table-event
 (define-method (mangle-table (o <list>))
   (map mangle-table o))
 
@@ -399,5 +399,5 @@
   ((compose
     pretty
     mangle-table
-    state-table
+    table-state
     ast:resolve) ast))

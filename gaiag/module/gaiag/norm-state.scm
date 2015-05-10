@@ -52,7 +52,7 @@
   ((compose
     remove-skip
     aggregate-on
-    expand-on
+    (expand-on port-equal?)
     aggregate-guard
     flatten-compound
     combine-guards
@@ -60,6 +60,9 @@
     (remove-otherwise '())
     add-skip)
    o))
+
+(define-method (port-equal? (lhs <trigger>) (rhs <trigger>))
+  (eq? (.port lhs) (.port rhs)))
 
 (define (aggregate-on o)
   "Aggregate triggers with matching port and statement into one on-statement."

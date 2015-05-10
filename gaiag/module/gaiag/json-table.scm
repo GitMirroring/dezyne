@@ -77,7 +77,7 @@
          (alist->hash-table
           `((state . ,(json-state (->symbol state) o))
             (rules . ,(apply append (map (json-table- model var state) (ons))))))))
-      (_ (stderr "catch all:\n")
+      (_ (stderr "catch all0:\n")
          (alist->hash-table `((state . ,(json-state (->symbol o) o))
                               (rules . ,(list
                                          (alist->hash-table
@@ -86,6 +86,49 @@
                                             (actions . ,(json-action '()))
                                             (callbacks . ,(json-callback model '()))
                                             (next . ()))))))))))
+
+(define-method (json-table (model <model>) (o <on>))
+    (match o
+      (($ <on> triggers (and ($ <guard> expression) (get! guard)))
+       (let ((var ((compose .identifier .value) expression))
+             (state (.value expression)))
+         (alist->hash-table
+          `((event . ,(json-triggers o))
+            (rules . ,(json-table model var state (guard)))))))
+      (($ <on> triggers ($ <compound> (and (($ <guard>) ...) (get! guards))))
+       (let* ((var 'unknown)
+              (state (make <field> :identifier var :field '<unknown>)))
+         (alist->hash-table
+          `((event . ,(json-triggers o))
+            (rules . ,(map (json-table- model var state) (guards)))))))
+      (($ <on> triggers statement)
+       (let ((var 'unknown)
+              (state (make <field> :identifier var :field '<unknown>)))
+        (alist->hash-table `((event . ,(json-triggers o))
+                               (rules . ,(list
+                                          (alist->hash-table
+                                           `((guard . ,(json-guard (make <guard> :expression 'true)))
+                                             (actions . ,(json-action statement))
+                                             (callbacks . ,(json-callback model statement))
+                                             (next . ,(json-next model var state statement))))))))))
+
+      (_ (stderr "catch all1:\n")
+         (alist->hash-table `((event . ,(json-data-location '() o))
+                              (rules . ,(list
+                                         (alist->hash-table
+                                          `((guard . ,(json-guard (make <guard> :expression 'true)))
+                                            (actions . ,(json-action '()))
+                                            (callbacks . ,(json-callback model '()))
+                                            (next . ()))))))))))
+
+(define-method (json-table (model <model>) (var <symbol>) (state <field>) (o <guard>))
+  (let ((statement (.statement o))
+        (expression (.expression o)))
+    (alist->hash-table
+     `((guard . ,(json-guard o))
+       (actions . ,(json-action statement))
+       (callbacks . ,(json-callback model statement))
+       (next . ,(json-next model var state statement))))))
 
 (define-method (json-table (model <model>) (var <symbol>) (state <field>) (o <on>))
   (match o
@@ -161,6 +204,9 @@
    `((data . ,data)
      (location . ,(json-location location)))))
 
+(define-method (json-event data (o <on>))
+  (json-data-location data o))
+
 (define-method (json-state data (o <guard>))
   (json-data-location data o))
 
@@ -199,6 +245,12 @@
 (define-method (json-triggers (o <triggers>))
   (json-data-location (map ->symbol (.elements o)) o))
 
+(define-method (json-triggers (o <on>))
+  (json-data-location (map ->symbol ((compose .elements .triggers) o)) o))
+
+(define-method (json-guard (o <guard>))
+  (json-data-location (->symbol (.expression o)) o))
+
 (define (->symbol o)
   (match o
     (#f 'false)
@@ -226,4 +278,5 @@
     ((? number?) (->symbol (number->string o)))
     ((? symbol?) o)
     (() (string->symbol ""))
+    (*unspecified* '<unknown>)
     (_ (throw 'match-error  (format #f "~a: ->symbol match: ~a\n"  (current-source-location) o)))))

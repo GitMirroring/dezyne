@@ -54,7 +54,7 @@
     aggregate-guard
     collapse-on
 ;;    aggregate-on    
-    expand-on
+    (expand-on equal?)
     aggregate-guard
     flatten-compound
     combine-ons

@@ -56,36 +56,36 @@
     ((h t ...) (map remove-skip o))
     (_ o)))
 
-(define (expand-on o)
+(define* ((expand-on :optional (compare equal?)) o)
   (match o
     (($ <compound> (($ <on>) ...))
      (make <compound>
-       :elements (apply append (map port-split-triggers (.elements o)))))
+       :elements (apply append (map (port-split-triggers compare) (.elements o)))))
     (($ <on> triggers statement)
-     (let ((ons (port-split-triggers o)))
+     (let ((ons ((port-split-triggers compare) o)))
        (if (=1 (length ons))
            o
            (make <compound> :elements ons))))
-    ((? (is? <ast>)) (gom:map expand-on o))
-    ((h t ...) (map expand-on o))
+    ((? (is? <ast>)) (gom:map (expand-on compare) o))
+    ((h t ...) (map (expand-on compare) o))
     (_ o)))
 
-(define-method (port-split-triggers (o <top>)) o)
+(define-method (port-split-triggers compare)
+  (lambda (o) (port-split-triggers compare o)))
 
-(define-method (port-split-triggers (o <on>))
+(define-method (port-split-triggers compare (o <top>)) o)
+
+(define-method (port-split-triggers compare (o <on>))
   (let loop ((triggers (.elements (.triggers o))))
     (if (null? triggers)
         '()
         (receive (shared-triggers remainder)
-            (partition (lambda (x) (port-equal? (car triggers) x)) triggers)
+            (partition (lambda (x) (compare (car triggers) x)) triggers)
           (let* ((triggers (append shared-triggers))
                  (shared-on (make <on>
                               :triggers (make <triggers> :elements triggers)
                               :statement (.statement o))))
             (cons shared-on (loop remainder)))))))
-
-(define-method (port-equal? (lhs <trigger>) (rhs <trigger>))
-  (eq? (.port lhs) (.port rhs)))
 
 (define (aggregate-guard o)
   "Aggregate on-statements with matching guard into one guard."
