@@ -91,7 +91,7 @@ component c
   (dezyne->ast dezyne))
  dezyne)))
 
-(pass-if "pretty-expression"  ;; FIXME: 878d54f Add normstate.scm broke pretty.
+(pass-if "pretty-expression"  ;; FIXME: 878d54f Add norm.scm broke pretty.
   (let ((dezyne #{
 interface i
 {

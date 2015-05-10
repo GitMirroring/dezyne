@@ -1,0 +1,87 @@
+;; -*-scheme-*-
+;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
+
+(read-set! keywords 'prefix)
+
+(define-module (test-handler)
+  :use-module (test-suite lib)
+  :use-module (test-suite misc)
+
+  :use-module (gaiag reader)
+  :use-module (gaiag norm)
+
+  :use-module (oop goops)
+  :use-module (gaiag gom))
+
+(pass-if "norm-first-dummy-test"
+         #t)
+
+(pass-if "norm-flatten-compound"
+         (gom-pretty-noisy-equal?
+          ((compose (@@ (gaiag norm) flatten-compound)
+                    (@@ (gaiag norm) ast->gom))
+           '(compound
+             (compound
+              (guard (expression (value state Disarmed))
+                     (on (triggers (trigger console arm))
+                         (compound
+                          (action (trigger sensor enable))
+                          (assign state (expression (value States Armed))))))
+              (guard (expression (value state Disarmed))
+                     (on (triggers
+                          (trigger console disarm)
+                          (trigger sensor triggered)
+                          (trigger sensor disabled))
+                         (illegal))))
+             (compound
+              (guard (expression (value state Armed))
+                     (on (triggers (trigger console arm)) (illegal))))))
+          '(compound
+            (guard (expression (value state Disarmed))
+                   (on (triggers (trigger console arm))
+                       (compound
+                        (action (trigger sensor enable))
+                        (assign state (expression (value States Armed))))))
+            (guard (expression (value state Disarmed))
+                   (on (triggers
+                        (trigger console disarm)
+                        (trigger sensor triggered)
+                        (trigger sensor disabled))
+                       (illegal)))
+            (guard (expression (value state Armed))
+                   (on (triggers (trigger console arm)) (illegal))))))
+
+(pass-if "norm-remove-otherwise"
+         (gom-pretty-noisy-equal?
+          ((compose ((@@ (gaiag norm) remove-otherwise) '())
+                    (@@ (gaiag norm) ast->gom))
+           '(compound
+             (guard (expression sounding)
+                    (compound
+                     (action (trigger console deactivated))
+                     (action (trigger siren turnoff))
+                     (assign
+                      state
+                      (expression (value States Disarmed)))
+                     (assign sounding (expression false))))
+             (guard (otherwise)
+                    (compound
+                     (action (trigger console deactivated))
+                     (assign
+                      state
+                      (expression (value States Disarmed)))))))
+          '(compound
+            (guard (expression sounding)
+                   (compound
+                    (action (trigger console deactivated))
+                    (action (trigger siren turnoff))
+                    (assign
+                     state
+                     (expression (value States Disarmed)))
+                    (assign sounding (expression false))))
+            (guard (expression (! sounding))
+                   (compound
+                    (action (trigger console deactivated))
+                    (assign
+                     state
+                     (expression (value States Disarmed))))))))

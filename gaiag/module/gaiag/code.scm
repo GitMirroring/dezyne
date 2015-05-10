@@ -31,7 +31,7 @@
   :use-module (gaiag gaiag)
   :use-module (gaiag indent)
   :use-module (gaiag misc)
-  :use-module (gaiag normstate)
+  :use-module (gaiag norm-state)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
   :use-module (gaiag wfc)
@@ -100,7 +100,7 @@
   (gom:import name code:gom))
 
 (define (code:gom ast)
-  ((compose normstate ast:wfc ast:resolve ast->gom) ast))
+  ((compose norm-state ast:wfc ast:resolve ast->gom) ast))
 
 (define (pipe producer consumer)
   (with-input-from-string (with-output-to-string producer) consumer))

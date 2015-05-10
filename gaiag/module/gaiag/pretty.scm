@@ -121,6 +121,8 @@
            (rhs (->string rhs))
            (op (car src)))
        (->string (list lhs " " op " " rhs ))))
+
+    ((h ...) (apply string-append (map ->string h)))
     ((? unspecified?) #f)
     (_ (format #f "~a" src))
     (_ (format #f "~a:->string:no match:~a\n" (current-source-location) src))))

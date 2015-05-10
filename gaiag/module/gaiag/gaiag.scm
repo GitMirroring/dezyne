@@ -73,7 +73,8 @@ Usage: gaiag [OPTION]... FILE
   -v, --version        display version
 
 Languages: c c++ cs csp dezyne goops java javascript python
-           ast annotate gom normstate resolve simulate table wfc
+           ast annotate gom norm-state norm-event resolve
+           simulate table-on table-state wfc
 
 Examples:
   ./gaiag examples/Alarm.dzn

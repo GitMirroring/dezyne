@@ -23,17 +23,17 @@
   :use-module (test-suite misc)
 
   :use-module (gaiag reader)
-  :use-module (gaiag normstate)
+  :use-module (gaiag norm-state)
 
   :use-module (oop goops)
   :use-module (gaiag gom))
 
-(pass-if "normstate-first-dummy-test"
+(pass-if "norm-state-first-dummy-test"
          #t)
 
-(pass-if "normstate-101"
+(pass-if "norm-state-101"
          (gom-pretty-noisy-equal?
-          (normstate
+          (norm-state
            (cadr (dezyne->ast
                            #{
                              interface i { in void a; out void b;
@@ -43,9 +43,9 @@
                                  (compound
                                   (guard (expression true) (on (triggers (trigger #f a)) (compound))))))))
 
-(pass-if "normstate-102"
+(pass-if "norm-state-102"
          (gom-pretty-noisy-equal?
-          (normstate
+          (norm-state
            (cadr (dezyne->ast
                            #{
                              interface i { in void a; out void b;
@@ -58,9 +58,9 @@
                                          (on (triggers (trigger #f a))
                                              (action (trigger #f b)))))))))
 
-(pass-if "normstate-aggregate-guard-passive"
+(pass-if "norm-state-aggregate-guard-passive"
          (gom-pretty-noisy-equal?
-          (normstate
+          (norm-state
            (cadr (dezyne->ast
                            #{
                              interface i { in void a; in void b; in void c;
@@ -75,9 +75,9 @@
                                          (on (triggers (trigger #f a) (trigger #f b) (trigger #f c))
                                              (action (trigger #f d)))))))))
 
-(pass-if "normstate-aggregate-guard-active"
+(pass-if "norm-state-aggregate-guard-active"
          (gom-pretty-noisy-equal?
-          (normstate
+          (norm-state
            (cadr (dezyne->ast
                            #{
                              interface i { in void a; in void b; in void c;
@@ -96,9 +96,9 @@
                                           (on (triggers (trigger #f b)) (action (trigger #f e)))
                                           (on (triggers (trigger #f c)) (action (trigger #f f))))))))))
 
-(pass-if "normstate-aggregate-guard-recurse"
+(pass-if "norm-state-aggregate-guard-recurse"
          (gom-pretty-noisy-equal?
-          (normstate
+          (norm-state
            '(compound
              (guard
               (expression (field state Disarming))
@@ -160,9 +160,9 @@
                    state
                    (expression (literal #f States Disarmed)))))))))
 
-(pass-if "normstate-function-call"
+(pass-if "norm-state-function-call"
          (gom-pretty-noisy-equal?
-          (normstate
+          (norm-state
            (cadr (dezyne->ast
                            #{
                              interface i { in void a; out void d;
@@ -181,9 +181,9 @@
                                          (on (triggers (trigger #f a) (trigger #f b) (trigger #f c))
                                              (action (trigger #f d)))))))))
 
-(pass-if "normstate-split-on-passive"
+(pass-if "norm-state-split-on-passive"
          (gom-pretty-noisy-equal?
-          (normstate
+          (norm-state
            (cadr (dezyne->ast
                            #{
                              interface i { in void a; in void b; in void c;
@@ -199,9 +199,9 @@
                                          (on (triggers (trigger #f a) (trigger #f b) (trigger #f c))
                                              (action (trigger #f d)))))))))
 
-(pass-if "normstate-split-on-active-single-on"
+(pass-if "norm-state-split-on-active-single-on"
          (gom-pretty-noisy-equal?
-          (normstate
+          (norm-state
            (cadr (dezyne->ast
                            #{
                              component c { behaviour { [true] on i.a: illegal;
@@ -226,9 +226,9 @@
                      (illegal))
                 (on (triggers (trigger j a)) (illegal)))))))))
 
-(pass-if "normstate-aggregate-on-interface-passive"
+(pass-if "norm-state-aggregate-on-interface-passive"
          (gom-pretty-noisy-equal?
-          (normstate
+          (norm-state
            (cadr (dezyne->ast
                            #{
                              interface i {  in void a; in void b; in void c;
@@ -242,9 +242,9 @@
                                   (guard (expression true)
                                          (on (triggers (trigger #f a) (trigger #f b) (trigger #f c)) (action (trigger #f d)))))))))
 
-(pass-if "normstate-aggregate-on-interface-active"
+(pass-if "norm-state-aggregate-on-interface-active"
          (gom-pretty-noisy-equal?
-          (normstate
+          (norm-state
            (cadr (dezyne->ast
                            #{
                              interface i {  in void a; in void b; in void c;
@@ -263,9 +263,9 @@
 
 ;; not modifying the input where it is already fine,
 ;; helps retaining more location information in AST.
-(pass-if "normstate-aggregate-on-component-passive"
+(pass-if "norm-state-aggregate-on-component-passive"
          (gom-pretty-noisy-equal?
-          (normstate
+          (norm-state
            (cadr (dezyne->ast
                            #{
                              component c { behaviour { on i.a,i.b: [true] j.d;
@@ -284,9 +284,9 @@
                                           (on (triggers (trigger j b))
                                               (action (trigger j e))))))))))
 
-(pass-if "normstate-aggregate-on-component-active"
+(pass-if "norm-state-aggregate-on-component-active"
          (gom-pretty-noisy-equal?
-          (normstate
+          (norm-state
            (cadr (dezyne->ast
                            #{
                              component c { behaviour { on i.a: [true] j.d;
@@ -306,44 +306,9 @@
                                           (on (triggers (trigger j b))
                                               (action (trigger j e))))))))))
 
-(pass-if "normstate-flatten-compound"
+(pass-if "norm-state-aggregate-on-component-active"
          (gom-pretty-noisy-equal?
-          ((compose (@@ (gaiag normstate) flatten-compound)
-                    (@@ (gaiag normstate) ast->gom))
-           '(compound
-             (compound
-              (guard (expression (value state Disarmed))
-                     (on (triggers (trigger console arm))
-                         (compound
-                          (action (trigger sensor enable))
-                          (assign state (expression (value States Armed))))))
-              (guard (expression (value state Disarmed))
-                     (on (triggers
-                          (trigger console disarm)
-                          (trigger sensor triggered)
-                          (trigger sensor disabled))
-                         (illegal))))
-             (compound
-              (guard (expression (value state Armed))
-                     (on (triggers (trigger console arm)) (illegal))))))
-          '(compound
-            (guard (expression (value state Disarmed))
-                   (on (triggers (trigger console arm))
-                       (compound
-                        (action (trigger sensor enable))
-                        (assign state (expression (value States Armed))))))
-            (guard (expression (value state Disarmed))
-                   (on (triggers
-                        (trigger console disarm)
-                        (trigger sensor triggered)
-                        (trigger sensor disabled))
-                       (illegal)))
-            (guard (expression (value state Armed))
-                   (on (triggers (trigger console arm)) (illegal))))))
-
-(pass-if "normstate-aggregate-on-component-active"
-         (gom-pretty-noisy-equal?
-          (normstate
+          (norm-state
            '(compound
              (compound
               (guard (expression (value state Disarmed))
@@ -381,101 +346,12 @@
              (on (triggers (trigger console arm))
                  (illegal))))))
 
-;; (pass-if "normstate-passdown-on"
-;;          (gom-pretty-noisy-equal?
-;;           ((compose (gom:map (@@ (gaiag normstate) passdown-on))
-;;                     (@@ (gaiag normstate) normstate:gom))
-;;            '(guard (expression (value state Disarming))
-;;                    (compound
-;;                     (on (triggers
-;;                          (trigger console arm)
-;;                          (trigger console disarm))
-;;                         (illegal))
-;;                     (on (triggers (trigger sensor triggered)) (compound))
-;;                     (on (triggers (trigger sensor disabled))
-;;                         (compound
-;;                          (guard (expression sounding)
-;;                                 (compound
-;;                                  (action (trigger console deactivated))
-;;                                  (action (trigger siren turnoff))
-;;                                  (assign
-;;                                   state
-;;                                   (expression (value States Disarmed)))
-;;                                  (assign sounding (expression false))))
-;;                          (guard (expression (! sounding))
-;;                                 (compound
-;;                                  (action (trigger console deactivated))
-;;                                  (assign
-;;                                   state
-;;                                   (expression (value States Disarmed))))))))))
-
-;;           '(guard (expression (value state Disarming))
-;;                   (compound
-;;                    (on (triggers
-;;                         (trigger console arm)
-;;                         (trigger console disarm))
-;;                        (illegal))
-;;                    (on (triggers (trigger sensor triggered)) (compound))
-;;                    (compound
-;;                     (guard (expression sounding)
-;;                            (on (triggers (trigger sensor disabled))
-;;                                (compound
-;;                                 (action (trigger console deactivated))
-;;                                 (action (trigger siren turnoff))
-;;                                 (assign
-;;                                  state
-;;                                  (expression (value States Disarmed)))
-;;                                 (assign sounding (expression false)))))
-;;                     (guard (expression (! sounding))
-;;                            (on (triggers (trigger sensor disabled))
-;;                                (compound
-;;                                 (action (trigger console deactivated))
-;;                                 (assign
-;;                                  state
-;;                                  (expression (value States Disarmed)))))))))))
-
-(pass-if "normstate-remove-otherwise"
+(pass-if "norm-state-nested-guards"
          (gom-pretty-noisy-equal?
-          ((compose ((@@ (gaiag normstate) remove-otherwise) '())
-                    (@@ (gaiag normstate) ast->gom))
-           '(compound
-             (guard (expression sounding)
-                    (compound
-                     (action (trigger console deactivated))
-                     (action (trigger siren turnoff))
-                     (assign
-                      state
-                      (expression (value States Disarmed)))
-                     (assign sounding (expression false))))
-             (guard (otherwise)
-                    (compound
-                     (action (trigger console deactivated))
-                     (assign
-                      state
-                      (expression (value States Disarmed)))))))
-          '(compound
-            (guard (expression sounding)
-                   (compound
-                    (action (trigger console deactivated))
-                    (action (trigger siren turnoff))
-                    (assign
-                     state
-                     (expression (value States Disarmed)))
-                    (assign sounding (expression false))))
-            (guard (expression (! sounding))
-                   (compound
-                    (action (trigger console deactivated))
-                    (assign
-                     state
-                     (expression (value States Disarmed))))))))
-
-
-(pass-if "normstate-nested-guards"
-         (gom-pretty-noisy-equal?
-          (normstate
+          (norm-state
            (cadr (dezyne->ast
                            #{
-interface normstate_nested_guards
+interface norm_nested_guards
 {
   enum Reply {Ok, Nok};
   in Reply e;
@@ -496,12 +372,12 @@ interface normstate_nested_guards
 }
 #})))
 '(interface*
-  normstate_nested_guards
-  (types* (enum* Reply #f (fields* Ok Nok)))
+  norm_nested_guards
+  (types* (enum* #f Reply (Ok Nok)))
   (events* (in* (signature* (type* Reply #f)) e))
   (behaviour*
     #f
-    (types* (enum* State #f (fields* Foo)))
+    (types* (enum* #f State (Foo)))
     (variables*
       (variable*
         state

@@ -38,7 +38,7 @@
   :use-module (gaiag gaiag)
   :use-module (gaiag json-table)
   :use-module (gaiag misc)
-  :use-module (gaiag normstate)
+  :use-module (gaiag norm)
   :use-module (gaiag pretty)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
