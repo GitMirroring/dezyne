@@ -67,6 +67,27 @@
   (display (.direction o) port)
   (star port))
 
+;; (define-method (display-slots (o <type>) port)
+;;   (sdisplay (.scope o) port)
+;;   (sdisplay (.name o) port))
+
+(define-method (display-slots (o <enum>) port)
+  (sdisplay (.scope o) port)
+  (sdisplay (.name o) port)
+  (sdisplay (.elements (.fields o)) port))
+
+(define-method (display-slots (o <int>) port)
+;;  (next-method)
+  (sdisplay (.scope o) port)
+  (sdisplay (.name o) port)
+  (sdisplay (.range o) port))
+
+(define-method (display-slots (o <extern>) port)
+;;  (next-method)
+  (sdisplay (.scope o) port)
+  (sdisplay (.name o) port)
+  (sdisplay (.value o) port))
+
 (define-method (display-slots (o <event>) port)
   (next-method)
   (sdisplay (.signature o) port)
