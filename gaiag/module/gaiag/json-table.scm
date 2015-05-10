@@ -100,7 +100,7 @@
               (state (make <field> :identifier var :field '<unknown>)))
          (alist->hash-table
           `((event . ,(json-triggers o))
-            (rules . ,(map (json-table- model var state) (guards)))))))
+            (rules . ,(apply append (map (json-table- model var state) (guards))))))))
       (($ <on> triggers statement)
        (let ((var 'unknown)
               (state (make <field> :identifier var :field '<unknown>)))
@@ -129,17 +129,30 @@
          (inner (.statement o)))
     (match inner
       (($ <guard> expression statement)
-       (alist->hash-table
-        `((guard . ,(json-guard o))
-          (inner . ,(json-guard inner))
-          (actions . ,(json-action statement))
-          (callbacks . ,(json-callback model statement))
-          (next . ,(json-next model var state statement)))))
-      (_ (alist->hash-table
-          `((guard . ,(json-guard o))
-            (actions . ,(json-action statement))
-            (callbacks . ,(json-callback model statement))
-            (next . ,(json-next model var state statement))))))))
+       (list
+        (alist->hash-table
+         `((guard . ,(json-guard o))
+           (inner . ,(json-guard inner))
+           (actions . ,(json-action statement))
+           (callbacks . ,(json-callback model statement))
+           (next . ,(json-next model var state statement))))))
+      (($ <guard> expression ($ <compound> (and (($ <guard>) ...) (get! guards))))
+       (map (lambda (inner)
+              (let ((expression (.expression inner))
+                    (statement (.statement inner)))
+                (alist->hash-table
+                 `((guard . ,(json-guard o))
+                   (inner . ,(json-guard inner))
+                   (actions . ,(json-action statement))
+                   (callbacks . ,(json-callback model statement))
+                   (next . ,(json-next model var state statement))))))
+            (guards)))
+      (_ (list
+          (alist->hash-table
+           `((guard . ,(json-guard o))
+             (actions . ,(json-action statement))
+             (callbacks . ,(json-callback model statement))
+             (next . ,(json-next model var state statement)))))))))
 
 (define-method (json-table (model <model>) (var <symbol>) (state <field>) (o <on>))
   (match o
