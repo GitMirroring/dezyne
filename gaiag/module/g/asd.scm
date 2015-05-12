@@ -2,6 +2,8 @@
 ;;
 ;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;; Copyright © 2014  "Mu Lei" known as "NalaGinrut" <NalaGinrut@gmail.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -24,9 +26,7 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (gaiag ast)
-  :use-module (ice-9 pretty-print)
-  :export (ast-> ast->ast))
+(define-module (g dzn)
+  :use-module (g pretty)
+  :re-export (ast-> ast->dzn))
 
-(define (ast->ast tree) (pretty-print tree) "")
-(define ast-> ast->ast)

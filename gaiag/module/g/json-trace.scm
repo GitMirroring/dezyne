@@ -15,114 +15,124 @@
 ;;
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
+;;; 
+;;; Commentary:
+;;; 
+;;; Code:
+
+;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
 (read-set! keywords 'prefix)
 
-(define-module (gaiag json-trace)
+(define-module (g json-trace)
   :use-module (ice-9 and-let-star)
-  :use-module (ice-9 curried-definitions)
 
   :use-module (srfi srfi-1)
 
-  :use-module (gaiag json)
-  :use-module (gaiag misc)
-  :use-module (gaiag pretty-print)
-  :use-module (gaiag reader)
-  :use-module (gaiag simulate)
+  :use-module (g ast-colon)
+  :use-module (g misc)
+  :use-module (language dezyne parse)
+  :use-module (g pretty-print)
+  :use-module (g reader)
+  :use-module (g simulate)
 
-  :use-module (oop goops)
-  :use-module (oop goops describe)
-  :use-module (gaiag gom)
-
-  :export (
-           json-init
+  :export (json-init
            json-state
-           json-trace
-           ))
+           json-trace))
 
 ;; JSON output mangling disaster area
 
 ;; FIXME: mangling the trace output into the current json format takes
 ;; about as much effort as producing it?
 
+(define *model* #f)
+
 (define (ast->node-alist ast)
-  `((key . ,(.name ast))
-    (name . ,(.name ast)) ;; duh!
+  `((key . ,(ast:name ast))
+    (name . ,(ast:name ast)) ;; duh!
     (state . "") ;; duh!
     ))
 
-(define-method (json-init (model <model>))
+(define (json-init model)
+  (set! *model* model)
   (alist->hash-table
    `((type . init)
      (nodes . ,(map alist->hash-table
-                    (map ast->node-alist (if (is-a? model <component>)
-                                             (cons model (.elements (.ports model)))
-                                             (list model))))))))
+                    (map ast->node-alist (cons *model* (ast:ports *model*))))))))
 
-(define-method (json-state (model <model>) state)
+(define (json-state state)
   (stderr "json-state: ~a\n" state)
   (alist->hash-table
    (append
     `((type . update)
-      (comp . ,(.name model)))
+      (comp . ,(ast:name *model*)))
     (map (lambda (variable) (cons (car variable) (->symbol (cdr variable))))
          state))))
 
-(define-method (from (model <model>) event statement)
-  (if (is-a? statement <on>)
-      (if (.port (event->ast event))
-          (.port (event->ast event))
+(define (from event statement)
+  (if (ast:on? statement)
+      (if (pair? event)
+          (ast:port-name event)
           'in)
-      (.name model)))
+      (ast:name *model*)))
 
-(define-method (to (model <model>) statement)
-  (if (is-a? statement <on>)
-      (.name model)
-      (or (and-let* (((is-a? statement <action>))
-                     (trigger (.trigger statement))
-                     ((.port trigger)))
-                    (.port trigger))
+(define (to statement)
+  (if (ast:on? statement)
+      (ast:name *model*)
+      (or (and-let* (((ast:action? statement))
+                     (trigger (ast:trigger statement))     
+                     ((pair? trigger)))
+                    (ast:port-name trigger))
           'out)))
 
 (define (event statement)
-  (if (is-a? statement <on>)
-      (.event (.trigger statement))
-      (or (and-let* (((is-a? statement <action>))
-                     (trigger (.trigger statement))
-                     ((.port trigger)))
-                    (.port trigger))
+  (if (ast:on? statement)
+      (ast:event-name (ast:trigger statement))
+      (or (and-let* (((ast:action? statement))
+                     (trigger (ast:trigger statement))     
+                     ((pair? trigger)))
+                    (ast:port-name trigger))
           'out)))
 
-(define ((json-trace model) tracepoint)
+(define (json-location ast)
+  (alist->hash-table
+   (or (and-let* ((loc (source-location ast))
+                  (properties (source-location->source-properties loc)))
+                 `((file . ,(assoc-ref properties 'filename))
+                   (line . ,(assoc-ref properties 'line))
+                   (colum . ,(assoc-ref properties 'column))))
+      '())))
+
+(define (json-trace tracepoint)
   (let* ((event (car tracepoint))
          (state (cadr tracepoint))
          (steps (cddr tracepoint))
-         (name (.name model)))
+         (model (ast:name *model*)))
     (let loop ((statements steps))
       (let* ((statement (if (null? statements) #f (car statements)))
-             (class (and=> statement ast-name))
+             (class (and=> statement ast:class))
              (type (if (eq? class 'assign) 'update 'transition))
              (message
               (alist->hash-table
                (if (eq? type 'update)
-                   (let ((variable (.identifier statement)))
+                   (let ((variable (ast:variable statement)))
                      `((type . update)
-                       (comp . ,name)
+                       (comp . ,model)
                        (,variable . ,(->symbol (var state variable)))))
-                   (let ((kind (assoc-ref '((#f . return)
+                   (let ((kind (assoc-ref '((#f . return) 
                                             (on . call)
                                             (action . call))
-                                          (and=> statement ast-name)))
-                         (json-event (cond
-                                      ((is-a? statement <on>) (->symbol event))
-                                      ((is-a? statement <action>) (->symbol (.trigger statement)))
+                                          (ast:class statement)))
+                         (json-event (cond 
+                                      ((ast:on? statement) (ast:event-name event))
+                                      ((ast:action? statement) (ast:event-name (ast:trigger statement)))
                                       (else 'return))))
                      `((type . transition)
                        (kind . ,kind)
-                       (from . ,(from model event statement))
-                       (to  . ,(to model statement))
+                       (from . ,(from event statement)) 
+                       (to  . ,(to statement))
                        (event . ,json-event)
-                       (location .
+                       (location . 
                                  ,(alist->hash-table
                                    `((begin . ,(json-location statement))
                                      (end . ,(json-location (or (and (pair? statements) (last statements)) statement))))))))))

@@ -38,6 +38,9 @@ SRCS := $(subst :,\:,$(filter-out $(FRST),$(GUILE_LIB_SRCS) $(MODULE_SRCS)))
 
 include make/guile.mk
 
+TARG := g
+include make/guile.mk
+
 TARG := scm2json
 include make/guile.mk
 

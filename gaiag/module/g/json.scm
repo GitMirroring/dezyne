@@ -24,22 +24,20 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (gaiag json)
+(define-module (g json)
   :use-module (ice-9 and-let-star)
 
   :use-module (srfi srfi-1)
-  :use-module (oop goops)
 
-  :use-module (gaiag gom)
-  :use-module (gaiag misc)
+  :use-module (g misc)
   :use-module (language dezyne location)
-  :use-module (gaiag reader)
+  :use-module (g reader)
 
   :export (
            json-location
            ))
 
-(define-method (json-location (o <ast>))
+(define (json-location o)
   (alist->hash-table
    (or (and-let* ((loc (source-location o))
                   (properties (source-location->user-source-properties loc)))
@@ -50,5 +48,5 @@
                    (length . ,(assoc-ref properties 'length))))
       '())))
 
-(define-method (json-location (o <top>))
-  '())
+;; (define-method (json-location (o <top>))
+;;   '())

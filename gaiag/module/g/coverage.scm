@@ -17,16 +17,22 @@
 ;;;
 ;;; You should have received a copy of the GNU Affero General Public
 ;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+;;; 
+;;; Commentary:
+;;; 
+;;; Code:
+
+;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
 (read-set! keywords 'prefix)
 
-(define-module (gaiag coverage)
+(define-module (g coverage)
   :use-module (ice-9 getopt-long)
 
   :use-module (system vm coverage)
   :use-module (system vm vm)
 
-  :use-module (gaiag misc)
+  :use-module (g misc)
   :export (cover main))
 
 (define (parse-opts args)
@@ -68,7 +74,7 @@ Examples:
   (let* ((options (parse-opts args))
 	 (command (option-ref options '() '()))
          (script (string->symbol (car command)))
-         (module (resolve-module (list 'gaiag script)))
+         (module (resolve-module (list 'g script)))
          (procedure (module-ref module 'main))
          (args command))
     (cover (lambda () (procedure args)) (->string (list script '.info)))))

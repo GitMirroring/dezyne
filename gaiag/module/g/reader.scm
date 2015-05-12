@@ -16,26 +16,32 @@
 ;;
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
+;;; 
+;;; Commentary:
+;;; 
+;;; Code:
+
+;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
 (read-set! keywords 'prefix)
 
-(define-module (gaiag reader)
+(define-module (g reader)
   :use-module (ice-9 and-let-star)
   :use-module (srfi srfi-1)
 
   :use-module (system base language)
 
-  :use-module (gaiag misc)
-  :use-module (language dezyne parse)
+  :use-module (g misc)
   :use-module (language dezyne location)
+  :use-module (language dezyne parse)  
   :use-module (language dezyne tokenize)
-  :export (dezyne->ast find-file try-find-file parse-dezyne read-dezyne read-ast))
+  :export (dzn->ast parse-dzn read-dzn read-ast))
 
-(define (dezyne->ast x)
+(define (dzn->ast x)
   (or (and-let* ((file-name (->string x))
                  ((file-exists? file-name)))
-                (read-dezyne file-name))
-      (parse-dezyne x)))
+                (read-dzn file-name))
+      (parse-dzn x)))
 
 (define (read-and-parse lang port cenv)
   (let ((exp ((language-reader lang) port cenv)))
@@ -44,53 +50,34 @@
      ((language-parser lang) => (lambda (parse) (parse exp)))
      (else exp))))
 
-(define (dezyne-reader port env)
+(define (dzn-reader port env)
   ((make-parser) (make-tokenizer port) syntax-error-handler))
 
-(define (read-dezyne- file-name)
-  (dezyne-reader (open-file file-name "r") (current-module)))
+(define (read-dzn- file-name)
+  (dzn-reader (open-file file-name "r") (current-module)))
 
-(define *include-path* '("." "examples"))
-(define (path-find-file path file-name)
-  (search-path path (components->file-name file-name)))
-
-(define* (find-file file-name :optional (extensions '(.dezyne .dzn)))
-  (let* ((file-name (if (pair? file-name) file-name (list file-name)))
-         (resolved
-          (or (path-find-file *include-path* file-name)
-              (let loop ((extensions extensions))
-                (if (null? extensions)
-                    #f
-                    (or (path-find-file *include-path*
-                                        (append file-name (take extensions 1)))
-                        (loop (cdr extensions)))))))
-         (file-name (components->file-name file-name))
+(define *include-path* '("."))
+(define* (find-file file-name)
+  (let* ((file-name (components->file-name file-name))
+         (resolved (search-path *include-path* file-name))
          (dir (or (and=> resolved dirname)
-                  (let ((message (format #f "gaiag: No such file or directory: ~a [~a]\n" file-name *include-path*)))
-                    (stderr message)
-                    (throw 'file-not-found message)))))
+                  (begin
+                    (stderr "No such file or directory: ~a [~a]\n" file-name *include-path*)
+                    (exit 2)))))
     (when (not (member dir *include-path*))
       (set! *include-path* (cons dir *include-path*)))
     resolved))
 
-(define* (try-find-file file-name :optional (extensions '(.dzni .dzn .dznc .dzn)))
-  (catch #t
-    (lambda () (with-error-to-port
-                   (open-output-file "/dev/null")
-                 (lambda ()
-                   (find-file file-name extensions))))
-    (lambda (key . args) #f)))
-
-(define* (read-dezyne file-name :optional (register identity))
-  (register (read-dezyne- (find-file file-name))))
+(define* (read-dzn file-name :optional (register (@ (g ast) register)))
+  (register (read-dzn- (find-file file-name))))
 
 (define (read-ast- file-name)
   (let ((file-name (find-file file-name)))
     (if (string-suffix? ".scm" file-name)
         (read (open-input-file file-name))
-        (read-dezyne- file-name))))
+        (read-dzn- file-name))))
 
-(define* (read-ast file-name :optional (register identity))
+(define* (read-ast file-name :optional (register (@ (g ast) register)))
   "Read contents of FILE-NAME and return the AST.
 
 If FILE-NAME ends with `.scm', assume plain AST scheme content and
@@ -98,10 +85,10 @@ only perform a read, otherwise assume ASD content and also invoke
 the parser."
   (register (read-ast- file-name)))
 
-(define (parse-dezyne- string)
+(define (parse-dzn- string)
   (read-hash-extend #\{ hash-read-string)
   (with-input-from-string string
-    (lambda () (dezyne-reader (current-input-port) (current-module)))))
+    (lambda () (dzn-reader (current-input-port) (current-module)))))
 
-(define* (parse-dezyne string :optional (register identity))
-  (register (parse-dezyne- string)))
+(define* (parse-dzn string :optional (register (@ (g ast) register)))
+  (register (parse-dzn- string)))

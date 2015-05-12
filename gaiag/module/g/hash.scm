@@ -15,18 +15,24 @@
 ;;
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
+;;; 
+;;; Commentary:
+;;; 
+;;; Code:
+
+;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
 (read-set! keywords 'prefix)
 
 (define (main . args)
-  (eval '(main (command-line)) (resolve-module '(gaiag hash))))
+  (eval '(main (command-line)) (resolve-module '(g hash))))
 
-(define-module (gaiag hash)
+(define-module (g hash)
   :use-module (srfi srfi-10)
 
-  :use-module (gaiag misc)
-  :use-module (gaiag pretty-print)
-  :use-module (gaiag reader)
+  :use-module (g misc)
+  :use-module (g pretty-print)
+  :use-module (g reader)
   :re-export (hash define-reader-ctor))
 
 (define-reader-ctor 'hash
