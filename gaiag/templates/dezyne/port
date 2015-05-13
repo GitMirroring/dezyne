@@ -1,1 +1,1 @@
-#direction  #type  #name ;
+#direction  #(if injected (string-append injected " "))#type  #name ;

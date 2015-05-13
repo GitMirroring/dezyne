@@ -62,6 +62,7 @@
 (define (->string src)
   (define (unspecified? x) (eq? x *unspecified*))
 
+  (if (is-a? src <expression>) (stderr "->string: ~a\n" src))
   (match src
     (#f "false")
     (#t "true")
@@ -104,19 +105,20 @@
 
     ;; FIXME: c&p from csp.scm (and...TODO: c++.scm) grmbl
     (('group expression) (->string (list "(" (->string expression) ")")))
-    (($ <expression> expression) (->string expression))
+    (($ <expression> expression) (expression->string expression))
     (($ <var> identifier) (->string identifier))
     (($ <data> data) (->string (list "$" data "$")))
     (($ <literal> #f type field) (->string (list type "." field)))
     (($ <literal> scope type field) (->string (list scope "." (->string type) "." field)))
     (($ <field> type field) (->string (list (->string type) "." field)))
     (('! ($ <expression> expression)) (->string (list "!" (paren expression))))
-    (('or lhs rhs) (let ((lhs (->string lhs))
-                         (rhs (->string rhs)))
-                     (list lhs " " 'or " " rhs)
-                     ;;(list "(" lhs " " 'or " " rhs ")")
-                     )) ;; FIXME: do we need to add gratituous parens?
-    (((or 'and '== '!= '< '<= '> '>= '+ '-) lhs rhs)
+    (('! expression) (->string (list "!" (paren expression))))
+    ;; (('or lhs rhs) (let ((lhs (->string lhs))
+    ;;                      (rhs (->string rhs)))
+    ;;                  ;;(list lhs " || " rhs)
+    ;;                  (list "(" lhs " " 'or " " rhs ")")
+    ;;                  )) ;; FIXME: do we need to add gratituous parens?
+    (((or '== '!= '< '<= '> '>= '+ '-) lhs rhs)
      (let ((lhs (->string lhs))
            (rhs (->string rhs))
            (op (car src)))
@@ -128,12 +130,14 @@
     (_ (format #f "~a:->string:no match:~a\n" (current-source-location) src))))
 
 (define (paren expression)
-  (if (or (number? expression) (symbol? expression))
+  (if (or (number? expression) (symbol? expression)
+          (is-a? expression <field>) (is-a? expression <literal>) (is-a? expression <var>))
       (->string expression)
       (->string (list "(" (->string expression) ")"))))
 
 (define (expression->string src)
-  (let ((unparen (lambda (s) (if (and (string-prefix? "(" s)
+  (let ((unparen (lambda (s) (if (and s
+                                      (string-prefix? "(" s)
                                       (string-postfix? ")" s))
                                  (string-drop (string-drop-right s 1) 1)
                                  s))))
@@ -173,8 +177,9 @@
                   (ports . ,->string)
                   (behaviour . ,(lambda (x) (or (and=> x ->string) "")))))
     (port . ((name . ,identity)
-                 (direction . ,->string)
-                 (type . ,->string)))
+             (direction . ,->string)
+             (type . ,->string)
+             (injected . ,(lambda (x) (and=> x ->string)))))
     (bind . ((left . ,->string)
              (right . ,->string)))
     (binding . ((instance . ,identity)
