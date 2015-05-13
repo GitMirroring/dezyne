@@ -60,13 +60,30 @@
                    (models (null-is-#f (if name (and=> (find (gom:named name) models) list) models))))
                   (map table-event models)))))
 
-(define-method (table-event (o <model>))
+(define-method (table-event (o <interface>))
   (let ((statement (table-event o ((compose .statement .behaviour) o))))
     (make (class-of o)
       :name (.name o)
+      :types (.types o)
+      :events (.events o)
       :behaviour
       (make <behaviour>
         :name ((compose .name .behaviour) o)
+        :types ((compose .types .behaviour) o)
+        :variables ((compose .variables .behaviour) o)
+        :functions ((compose .functions .behaviour) o)
+        :statement statement))))
+
+(define-method (table-event (o <component>))
+  (let ((statement (table-event o ((compose .statement .behaviour) o))))
+    (make (class-of o)
+      :name (.name o)
+      :ports (.ports o)
+      :behaviour
+      (make <behaviour>
+        :name ((compose .name .behaviour) o)
+        :types ((compose .types .behaviour) o)
+        :variables ((compose .variables .behaviour) o)
         :functions ((compose .functions .behaviour) o)
         :statement statement))))
 
