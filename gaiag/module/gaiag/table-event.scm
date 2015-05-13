@@ -55,7 +55,8 @@
   (let ((name
          (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
                      string->symbol))))
-    (or (and-let* ((models (null-is-#f (filter .behaviour (gom:models o))))
+    (or (and-let* ((models (filter (lambda (x) (or ((is? <interface>) x) ((is? <component>) x))) (gom:models o)))
+                   (models (null-is-#f (filter .behaviour models)))
                    (models (null-is-#f (filter (negate gom:imported?) models)))
                    (models (null-is-#f (if name (and=> (find (gom:named name) models) list) models))))
                   (map table-event models)))))
