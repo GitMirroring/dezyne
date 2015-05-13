@@ -1,7 +1,3 @@
 behaviour #name 
 {
-  #types 
-  #variables 
-  #functions
-  #compound
-}
+  #types  #variables #functions #compound }

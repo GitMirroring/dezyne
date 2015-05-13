@@ -283,7 +283,7 @@
     (($ <expression> expression) (->symbol expression))
     (($ <var> identifier) identifier)
     (($ <field> type field) (->symbol (list (->symbol type) "." field)))
-    (('! <expression>) (symbol-append '! (->symbol expression)))
+    (('! ($ <expression> value)) (symbol-append '! (->symbol value)))
     ((identifier ($ <field> type field)) (->symbol (list (->symbol identifier) " = " (->symbol type) "." field)))
     ((identifier ($ <literal> scope type field)) (->symbol (list (->symbol identifier) " = " (->symbol type) "." (->symbol field))))
     (($ <literal> scope type field) (->symbol (list (->symbol type) "." (->symbol field))))

@@ -1,6 +1,5 @@
 interface #name 
 {
-  #types 
-  #ports 
+  #types #ports
   #behaviour
 }

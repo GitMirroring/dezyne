@@ -91,7 +91,7 @@
     (($ <arguments> '()) "")
     (($ <arguments> arguments) (->string (list "(" (comma-join (map ->string arguments)) ")")))
     (($ <parameters> parameters) (->string (list "(" (comma-join (map ->string parameters)) ")")))
-    (($ <gom:parameter> name type #f) (->string (list type " " name)))
+    (($ <gom:parameter> name type (or #f 'in)) (->string (list type " " name)))
     (($ <gom:parameter> name type dir) (->string (list dir " " type " " name)))
     (($ <signature> type ($ <parameters> '()))
      (list (cons (->string (->string type)) "")))

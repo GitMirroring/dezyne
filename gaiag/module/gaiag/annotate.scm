@@ -36,7 +36,7 @@
   :use-module (gaiag misc)
   :use-module (gaiag reader)
 
-  :export (ast-> ast->annotate extract-locations))
+  :export (ast-> ast:annotate ast->annotate extract-locations))
 
 (define (annotate-locations o)
   (match o
@@ -44,6 +44,7 @@
     (_ o)))
 
 (define ast->annotate annotate-locations)
+(define ast:annotate annotate-locations)
 
 (define (loc? o)
   (match o (('location t ...) o) (_ #f)))
