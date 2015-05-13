@@ -513,7 +513,7 @@ interface ISiren
 #})))
 "
 {
-  [state.<Initial>]
+  [<state>.<Initial>]
     {
       on start:
         [running]
@@ -644,7 +644,7 @@ interface I
 #})))
 "
 {
-  [state.<Initial>]
+  [<state>.<Initial>]
   on e:
   [b]
   {

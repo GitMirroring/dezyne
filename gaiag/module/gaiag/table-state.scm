@@ -98,7 +98,7 @@
                    ((is-a? statement <guard>))
                    (field ((compose .value .expression) statement))
                    ((is-a? field <field>))
-                   ((eq? (.identifier field) 'state))
+                   ((eq? (.identifier field) '<state>))
                    ((eq? (.field field) '<Initial>)))
                   (make <compound> :elements (list (.statement statement))))
      statement))
@@ -152,7 +152,7 @@
   (find type? (gom:variables o)))
 
 (define-method (state-identifier (o <model>) (state <literal>))
-  (or (and=> (state-var o state) .name) 'state))
+  (or (and=> (state-var o state) .name) '<state>))
 
 (define-method (make-field (model <model>) (state <literal>))
   (make <field> :identifier (state-identifier model state) :field (.field state)))
