@@ -153,7 +153,7 @@
   (match o
     (($ <compound>) (->string o))
     (#f #f)
-    (_ (->string (make <compound> :elements (list o))))))
+    (_ (->string o))))
 
 (define dezyne-template-dir (append (prefix-dir) '(templates dezyne)))
 (define dezyne-templates
