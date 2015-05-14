@@ -1,0 +1,9 @@
+component #name
+{
+  #ports
+  system
+  {
+    #instances
+    #bindings
+  }
+}

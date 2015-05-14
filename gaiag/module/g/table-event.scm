@@ -53,17 +53,9 @@
      (let ((name
             (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
                         string->symbol))))
-       (or (and-let* ((models (null-is-#f (filter ast:model? models)))
-                      (models (null-is-#f (filter (compose null-is-#f ast:behaviour) models)))
-                      ;;(models (null-is-#f (filter (negate gom:imported?) models)))
-                      (models (null-is-#f (if name (and=> (find (ast:named name) models) list) models)))
-                      )
+       (or (and-let* ((models (null-is-#f (filter (negate ast:imported?) models)))
+                      (models (null-is-#f (if name (and=> (find (ast:named name) models) list) models))))
                      (cons 'root (filter identity (map table-event models)))))))
-    (('import _ ...) #f)
-    (('enum _ ...) #f)
-    (('extern _ ...) #f)
-    (('int _ ...) #f)
-
     (('interface name types events ('behaviour b btypes variables functions statement))
      (let* ((statement (table-event-statement o statement)))
        (list 'interface name types events
@@ -72,8 +64,7 @@
      (let* ((statement (table-event-statement o statement)))
        (list 'component name ports
              (list 'behaviour b types variables functions statement))))
-    (('system _ ...) #f)
-    (('locations _ ...) #f)    
+    (((or 'enum 'extern 'int 'import 'system) _ ...) o)
     (_ (throw 'match-error (format #f "~a:right: no match: ~a\n" (current-source-location) o)))))
 
 (define (table-event-statement model o)
@@ -100,7 +91,8 @@
                (json-init o)
                ((json-table-event o) statement)))
              o)))
-      ((h t ...) (map mangle-table o))
+      (((or 'enum 'extern 'int 'import 'system) _ ...) (and (not json?) o))
+      ;;((h t ...) (map mangle-table o))
       ((or #t #f) (and json? (list (make-hash-table)))))))
 
 (define (ast-> ast)

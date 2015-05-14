@@ -46,10 +46,19 @@
         (cons 'root resolved)
         resolved)))
 
+(define (mark-imported o imported?)
+  (set-source-property! o 'imported? imported?))
+
 (define ((ast:resolve- ast) src)
   (match src
-    (('interface name ...) ((ast:resolve-model src) src))
-    (('component name ...) ((ast:resolve-model src) src))
+    (('interface body ... (and ('imported . imported)))
+     (mark-imported ((ast:resolve- #f) (cons 'interface body)) imported))
+    (('component body ... (and ('imported . imported)))
+     (mark-imported ((ast:resolve- #f) (cons 'component body)) imported))
+    (('system body ... (and ('imported . imported)))
+     (mark-imported ((ast:resolve- #f) (cons 'system body)) imported))    
+    (('interface name body ... ) ((ast:resolve-model src) src))
+    (('component name body ...) ((ast:resolve-model src) src))
     ((h ...) (map (lambda (x) ((ast:resolve- ast) x)) src))
     (_ src)))
 

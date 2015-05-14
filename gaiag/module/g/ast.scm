@@ -166,6 +166,7 @@
 (define-module (g ast)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
+  :use-module (ice-9 getopt-long)
   :use-module (ice-9 match)
   :use-module (ice-9 optargs)
   :use-module (ice-9 pretty-print)
@@ -175,6 +176,7 @@
   :use-module (system foreign)
 
   :use-module (g misc)
+  :use-module (g g)
   :use-module (language dezyne parse)
   :use-module (g reader)
 
