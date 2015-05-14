@@ -94,7 +94,7 @@
 (define ((passdown-guard expression) statement)
   (match statement
     (('compound s ...) (cons 'compound (map (passdown-guard expression) (cdr statement))))
-    (('guard g s) ((passdown-guard (list 'and expression g)) s))
+    (('guard e s) ((passdown-guard (if (equal? expression e) expression (list 'and expression e))) s))
     (_ (list 'guard expression statement))))
 
 (define (passdown-on ast)

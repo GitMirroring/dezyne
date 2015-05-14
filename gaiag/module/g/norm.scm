@@ -125,7 +125,9 @@
   (let* ((expressions (map ast:expression statements))
          (others (remove (ast:is? 'otherwise) expressions))
          (values (map ast:value others)))
-    (list 'expression (list '! (reduce (lambda (g0 g1) (list 'or g0 g1)) '() values)))))
+    (list 'expression (list '! (reduce (lambda (g0 g1)
+                                         (if (equal? g0 g1) g0 (list 'or g0 g1)) )
+                                       '() values)))))
 
 (define (add-skip ast)
   (match ast
