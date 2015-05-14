@@ -21,6 +21,10 @@
 (define-module (gaiag gom gom)
   :use-module (oop goops)
   :export (
+           .ast
+           .message
+           <error>
+
            .arguments
            .behaviour
            .bindings
@@ -287,3 +291,7 @@
 
 (define-class <instance> (<named> <statement>)
   (component :accessor .component :init-value #f :init-keyword :component))
+
+(define-class <error> (<ast>)
+  (ast :accessor .ast :init-value #f :init-keyword :ast)
+  (message :accessor .message :init-value "" :init-keyword :message))

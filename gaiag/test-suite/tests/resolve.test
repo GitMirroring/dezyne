@@ -28,16 +28,16 @@
 
 (define-method (ast:resolve-model o)
   (let* ((m (ast->gom o)))
-    (resolve-model m m)))
+    ((resolve-model m '()) m)))
 
 (define-method (ast:resolve-model (model <list>) o)
   (let ((m (ast->gom model)))
-    (resolve-model m (ast->gom o))))
+    ((resolve-model m '()) (ast->gom o))))
 
 (define-method (ast:resolve-root-model (root <list>) (model <list>) o)
   (let* ((root (ast:resolve root))
          (m (ast->gom model)))
-    (resolve-model m (ast->gom o))))
+    ((resolve-model m '()) (ast->gom o))))
 
 (define resolve-ast
   '((interface

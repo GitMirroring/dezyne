@@ -32,9 +32,6 @@
 
   :use-module (gaiag fifo)
 
-  :use-module (oop goops)
-  :use-module (oop goops describe)
-
   :export (
            *eof*
            *eof*-is-#f
