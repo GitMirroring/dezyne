@@ -158,7 +158,9 @@
          (others (remove (is? <otherwise>) expressions))
          (values (map .value others)))
     (make <expression>
-      :value (list '! (reduce (lambda (g0 g1) (list 'or g0 g1)) '() values)))))
+      :value (list '! (reduce (lambda (g0 g1)
+                                (if (equal? g0 g1) g0 (list 'or g0 g1)))
+                              '() values)))))
 
 (define (add-skip o)
   (match o

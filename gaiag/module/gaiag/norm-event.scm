@@ -78,7 +78,7 @@
                  (partition (lambda (x) (guard-same-statement? (car guards) x)) guards)
                (let* ((expression
                        (reduce (lambda (x y)
-                                 (list 'or x y))
+                                 (if (equal? x y) x (list 'or x y)))
                                '()
                                (map (compose .value .expression) shared-guards)))
                       (statement (.statement (car guards)))

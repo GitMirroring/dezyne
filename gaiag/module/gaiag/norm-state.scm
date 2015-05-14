@@ -111,9 +111,13 @@
 
 (define-method (passdown-guard (o <guard>) (expression <expression>))
   ((passdown-guard
-    (make <expression> :value (list 'and
-                                    (.value expression)
-                                    (.value (.expression o)))))
+    (make <expression> :value
+          (if (equal? (.value expression)
+                      (.value (.expression o)))
+              (.value expression)
+              (list 'and
+                    (.value expression)
+                    (.value (.expression o))))))
    (.statement o)))
 
 ;; ONLY difference with passdown-guard
