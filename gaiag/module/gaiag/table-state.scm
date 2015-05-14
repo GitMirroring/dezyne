@@ -77,18 +77,20 @@
         :statement statement))))
 
 (define-method (table-state (o <component>))
-  (let* ((statement (table-state o ((compose .statement .behaviour) o)))
-         (statement (remove-initial statement)))
-    (make (class-of o)
-      :name (.name o)
-      :ports (.ports o)
-      :behaviour
-      (make <behaviour>
-        :name ((compose .name .behaviour) o)
-        :types ((compose .types .behaviour) o)
-        :variables ((compose .variables .behaviour) o)
-        :functions ((compose .functions .behaviour) o)
-        :statement statement))))
+  (or (and-let* ((behaviour (.behaviour o))
+                 (statement (table-state o (.statement behaviour)))
+                 (statement (remove-initial statement)))
+                (make (class-of o)
+                  :name (.name o)
+                  :ports (.ports o)
+                  :behaviour
+                  (make <behaviour>
+                    :name ((compose .name .behaviour) o)
+                    :types ((compose .types .behaviour) o)
+                    :variables ((compose .variables .behaviour) o)
+                    :functions ((compose .functions .behaviour) o)
+                    :statement statement)))
+      o))
 
 (define (handle-initial statement)
   (or (and-let* (((is-a? statement <guard>))
@@ -410,13 +412,14 @@
       (list (make-hash-table))))
 
 (define-method (mangle-table (o <model>))
-  (let ((json? (option-ref (parse-opts (command-line)) 'json #f))
-        (statement ((compose .statement .behaviour) o)))
+  (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))
     (if json?
-        (alist->hash-table
-         (append
-          (json-init o)
-          ((json-table o) statement)))
+        (and-let* ((behaviour (.behaviour o))
+                   (statement (.statement behaviour)))
+         (alist->hash-table
+          (append
+           (json-init o)
+           ((json-table o) statement))))
         o)))
 
 (define-method (pretty-table (o <ast>)) (ast->dezyne o))

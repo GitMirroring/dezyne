@@ -78,18 +78,20 @@
         :statement statement))))
 
 (define-method (table-event (o <component>))
-  (let* ((statement (table-event o ((compose .statement .behaviour) o)))
-         (statement (remove-initial statement)))
-    (make (class-of o)
-      :name (.name o)
-      :ports (.ports o)
-      :behaviour
-      (make <behaviour>
-        :name ((compose .name .behaviour) o)
-        :types ((compose .types .behaviour) o)
-        :variables ((compose .variables .behaviour) o)
-        :functions ((compose .functions .behaviour) o)
-        :statement statement))))
+  (or (and-let* ((behaviour (.behaviour o))
+                 (statement (table-event o (.statement behaviour)))
+                 (statement (remove-initial statement)))
+                (make (class-of o)
+                  :name (.name o)
+                  :ports (.ports o)
+                  :behaviour
+                  (make <behaviour>
+                    :name ((compose .name .behaviour) o)
+                    :types ((compose .types .behaviour) o)
+                    :variables ((compose .variables .behaviour) o)
+                    :functions ((compose .functions .behaviour) o)
+                    :statement statement)))
+      o))
 
 (define-method (table-event (model <model>) (o <compound>))
   (norm-event (table-state model o)))
