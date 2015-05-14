@@ -1,5 +1,5 @@
 component #name 
 {
   #ports 
-  #behaviour 
+  #(if (defined? 'behaviour) behaviour)
 }

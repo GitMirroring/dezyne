@@ -57,13 +57,16 @@
                       (models (null-is-#f (if name (and=> (find (ast:named name) models) list) models))))
                      (cons 'root (filter identity (map table-event models)))))))
     (('interface name types events ('behaviour b btypes variables functions statement))
-     (let* ((statement (table-event-statement o statement)))
+     (let* ((statement (table-event-statement o statement))
+            (statement (remove-initial statement)))
        (list 'interface name types events
              (list 'behaviour b btypes variables functions statement))))
     (('component name ports ('behaviour b types variables functions statement))
-     (let* ((statement (table-event-statement o statement)))
+     (let* ((statement (table-event-statement o statement))
+            (statement (remove-initial statement)))
        (list 'component name ports
              (list 'behaviour b types variables functions statement))))
+    (('component name ports) o)
     (((or 'enum 'extern 'int 'import 'system) _ ...) o)
     (_ (throw 'match-error (format #f "~a:right: no match: ~a\n" (current-source-location) o)))))
 
@@ -79,18 +82,17 @@
            (map mangle-table models)
            (cons 'root (map mangle-table models))))
       ((or
-        ;;('interface types events behaviour)
-        ;;('component ports behaviour)
         (? ast:interface?)
         (? ast:component?)
         )
-       (let ((statement ((compose ast:statement ast:behaviour) o)))
-         (if json?
-             (alist->hash-table
-              (append
-               (json-init o)
-               ((json-table-event o) statement)))
-             o)))
+       (if json?
+           (and-let* ((behaviour (null-is-#f (ast:behaviour o)))
+                      (statement (ast:statement behaviour)))
+                     (alist->hash-table
+                      (append
+                       (json-init o)
+                       ((json-table-event o) statement))))
+           o))
       (((or 'enum 'extern 'int 'import 'system) _ ...) (and (not json?) o))
       ;;((h t ...) (map mangle-table o))
       ((or #t #f) (and json? (list (make-hash-table)))))))
@@ -101,4 +103,5 @@
     mangle-table
     table-event
     ast:resolve
+    ast:reorder-for-gaiag-equiv
     ast:annotate) ast))

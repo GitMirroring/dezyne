@@ -166,7 +166,6 @@
 (define-module (g ast)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
-  :use-module (ice-9 getopt-long)
   :use-module (ice-9 match)
   :use-module (ice-9 optargs)
   :use-module (ice-9 pretty-print)
@@ -176,8 +175,7 @@
   :use-module (system foreign)
 
   :use-module (g misc)
-  :use-module (g g)
-  :use-module (language dezyne parse)
+  :use-module (language dezyne parse)  
   :use-module (g reader)
 
   :export (
@@ -250,9 +248,7 @@
            identifier
            if?
            illegal?
-           import-list
-           import-list?
-           imported?
+           import?
            in?
            instance
            instance-list
@@ -263,6 +259,7 @@
            int?
            integers
            interface
+           interface-types           
            interface?
            interfaces
            is?
@@ -320,6 +317,7 @@
            typed?
            types
            types?
+           user-type?
            value
            value?
            var?
@@ -354,7 +352,6 @@
 (define (binding-list ast) (element ast 'bindings))
 (define (event-list ast) (element ast 'events))
 (define (function-list ast) (element ast 'functions))
-(define (import-list ast) (element ast 'imports))
 (define (instance-list ast) (element ast 'instances))
 (define (parameter-list ast) (or (assoc 'parameters (body ast)) '()))
 (define (port-list ast) (element ast 'ports))
@@ -363,6 +360,7 @@
 (define (variable-list ast) (element ast 'variables))
 
 (define (model? ast) (or (interface? ast) (component? ast) (system? ast)))
+(define (user-type? ast) (or (enum? ast) (extern? ast) (int? ast)))
 
 (define (is-a? ast type)
   ((is? type) ast))
@@ -409,8 +407,7 @@
 (define (guard? ast) (type-helper? 'guard ast))
 (define (illegal? ast) (type-helper? 'illegal ast))
 (define (if? ast) (type-helper? 'if ast))
-(define (import-list? ast) (type-helper? 'imports ast))
-(define (imports? ast) (type-helper? 'imports ast))
+(define (import? ast) (type-helper? 'import ast))
 (define (instance? ast) (type-helper? 'instance ast))
 (define (instance-list? ast) (type-helper? 'instances ast))
 (define (instances? ast) (type-helper? 'instances ast))
@@ -447,12 +444,11 @@
   (match ast
     ((or (? behaviour?) (? call?) (? model?))
      (or (and (>2 (length ast)) (cddr ast)) '()))
-    ((or  (? arguments?) (? bindings?) (? compound?) (? events?) (? functions?) (? guard?) (? imports?) (? instances?) (? on?) (? parameters?) (? ports?) (? root?) (? signature?) (? triggers?) (? types?) (? variables?))
+    ((or  (? arguments?) (? bindings?) (? compound?) (? events?) (? functions?) (? guard?) (? instances?) (? on?) (? parameters?) (? ports?) (? root?) (? signature?) (? triggers?) (? types?) (? variables?))
      (cdr ast))
     ;; be permissive for events, imports ports, types, variable
     ((('in type name) t ...) ast)
     ((('out type name) t ...) ast)
-    ((('imports type name expression) t ...) ast)
     ((('requires type name) t ...) ast)
     ((('provides type name) t ...) ast)
     ((('enum type elements) t ...) ast)
@@ -665,7 +661,7 @@
     ((? interface?) '())
     (_ (throw 'match-error  (format #f "~a:ports: no match: ~a\n" (current-source-location) ast)))))
 
-(define (imports ast) (body (import-list ast)))
+(define (imports ast) (filter import? ast))
 
 (define (function ast identifier)
   (find (lambda (p) (eq? (name p) identifier))
@@ -852,12 +848,29 @@
     ((? port?) (functions (import-ast (type ast))))
                (_ (throw 'match-error  (format #f "~a:functions: no match: ~a\n" (current-source-location) ast)))))
 
+(define (interface-types port)
+  (let ((scope (type port)))
+   (map (lambda (o)
+          (match o
+            (('enum name fields) (list 'enum scope name fields))
+            (('extern name value) (list 'extern scope name fields))
+            (('int name range) (list 'int scope name range))))
+        ((compose public-types ast type) port))))
+
+(define (public-types ast)
+  (match ast
+    ((? interface?) (body (type-list ast)))
+    (_ (throw 'match-error  (format #f "~a:public-types: no match: ~a\n" (current-source-location) ast)))))
+
 (define (types ast)
   (match ast
     ((? behaviour?) (body (type-list ast)))
-    ((? component?) (types (behaviour ast)))
+    ((? component?) (append (types (behaviour ast))
+                            (apply append (map interface-types (ports ast)))
+                            (filter user-type? *ast-alist*)))
     ((? interface?) (append (types (behaviour ast))
-                            (body (type-list ast))))
+                            (body (type-list ast))
+                            (filter user-type? *ast-alist*)))
     ((? port?) (types (import-ast (type ast))))
     ((? system?) '())
     ('() ast)
@@ -1031,21 +1044,3 @@ Read and parse the ASD source file for MODEL-NAME, return its AST.
 ;;
 ;; Read and parse the ASD source file for MODEL-NAME, return its AST.
 (define ast import-ast)
-
-(define (basename- o)
-  (string->symbol (basename (symbol->string o))))
-
-(define (in-file? o file)
-  (let ((file (if (string? file) (string->symbol file) file)))
-    (and-let* ((model-file (source-file o))
-               (model-file (if (string? model-file) (string->symbol model-file) model-file)))
-              (eq? (basename- file) (basename- model-file)))))
-
-(define (imported? o)
-  (if (assoc 'imported? (source-properties o))
-      (source-property o 'imported?)
-      (and-let* (((>2 (length (command-line))))
-                 (file (car (option-ref (parse-opts (command-line)) '() '(#f))))
-                 ((not (string-suffix? ".scm" file))))
-                (not (in-file? o file)))))
-

@@ -24,6 +24,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
 (define-module (g g)
+  :use-module (ice-9 and-let-star)
   :use-module (ice-9 getopt-long)
   :use-module (ice-9 match)
 

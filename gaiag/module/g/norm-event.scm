@@ -95,11 +95,8 @@
              '()
              (receive (shared-ons remainder)
                  (partition (lambda (x) (triggers-equal? (car ons) x)) ons)
-               (let* ((triggers
-                       (delete-duplicates
-                        (apply append
-                               (map ast:triggers shared-ons))))
-                          (statement (on-statement (map ast:statement shared-ons)))
+               (let* ((triggers (ast:triggers (car shared-ons)))
+                      (statement (on-statement (map ast:statement shared-ons)))
                       (collapsed-on (list 'on
                                           (cons 'triggers triggers)
                                           statement)))
@@ -108,9 +105,14 @@
      ((h t ...) (map collapse-on o))
      (_ o)))
 
+(define (remove-arguments o)
+  (match o
+    (('trigger p e arguments) (list 'trigger p e))
+    (_ o)))
+
 (define (triggers-equal? a b)
-  (equal? (ast:triggers a)
-          (ast:triggers b)))
+  (equal? (map remove-arguments (ast:triggers a))
+          (map remove-arguments (ast:triggers b))))
 
 (define (on-statement statements)
   (if (every identity (map (lambda (x) (equal? x (car statements))) statements))

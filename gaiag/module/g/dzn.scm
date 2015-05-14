@@ -25,6 +25,7 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (gaiag dzn)
-  :use-module (gaiag pretty)
-  :re-export (ast-> ast->dezyne ast->dzn))
+(define-module (g dzn)
+  :use-module (g pretty)
+  :re-export (ast-> ast->dzn))
+

@@ -44,7 +44,7 @@
   :use-module (gaiag annotate)
 
   :export (ast-> ;;;mangle-table
-                 pretty-table table-state table-state-statement))
+                 pretty-table remove-initial table-state table-state-statement))
 
 (define (table-state o)
   (match o
@@ -65,24 +65,20 @@
             (statement (remove-initial statement)))
        (list 'component name ports
              (list 'behaviour b types variables functions statement))))
+    (('component name ports) o)
     (((or 'enum 'extern 'int 'import 'system) _ ...) o)
     (_ (throw 'match-error (format #f "~a:table-state: no match: ~a\n" (current-source-location) o)))))
 
-(define (remove-initial statement)
+(define (remove-initial o)
   (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))
-    (or (and-let* (((not json?))
-                   ((ast:is-a? statement 'compound))
-                   ((=1 (length (ast:elements statement))))
-                   (statement ((compose car ast:elements) statement))
-                   ((ast:is-a? statement 'guard))
-                   (field ((compose ast:value ast:expression) statement))
-                   ((ast:is-a? field 'field))
-                   ((eq? (ast:identifier field) '<state>))
-                   ((eq? (ast:field field) '<Initial>)))
-                  ;;;(make <compound> :elements (list (.statement statement)))
-                  (list 'compound statement))
-     statement))
-  statement)
+    (if json?
+        o
+        (match o
+          (('compound statements ...)
+           (cons 'compound  (map remove-initial statements)))
+          (('on t s) (list 'on t (remove-initial s)))
+          (('guard ('expression ('field '<state> '<Initial>)) s) s)
+          (_ o)))))
 
 (define (retain-source-properties o t)
   (and-let* (((supports-source-properties? o))
@@ -370,18 +366,17 @@
            (map mangle-table models)
            (cons 'root (map mangle-table models))))
       ((or
-        ;;('interface types events behaviour)
-        ;;('component ports behaviour)
         (? ast:interface?)
         (? ast:component?)
         )
-       (let ((statement ((compose ast:statement ast:behaviour) o)))
-         (if json?
-             (alist->hash-table
-              (append
-               (json-init o)
-               ((json-table-state o) statement)))
-             o)))
+       (if json?
+           (and-let* ((behaviour (null-is-#f (ast:behaviour o)))
+                      (statement (ast:statement behaviour)))
+                     (alist->hash-table
+                      (append
+                       (json-init o)
+                       ((json-table-state o) statement))))
+           o))
       (((or 'enum 'extern 'int 'import 'system) _ ...) (and (not json?) o))
       ;; ((h t ...) (map mangle-table o))
       ((or #t #f) (and json? (list (make-hash-table)))))))
@@ -397,5 +392,6 @@
     pretty-table
     mangle-table
     table-state
+    ast:reorder-for-gaiag-equiv
     ast:resolve
     ast:annotate) ast))

@@ -22,16 +22,21 @@
 (define-module (g resolve)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
+  :use-module (ice-9 getopt-long)  
   :use-module (ice-9 match)
   :use-module (ice-9 pretty-print)
   :use-module (srfi srfi-1)
+  :use-module (language dezyne location)
 
   :use-module (g ast-colon)
+  :use-module (g g)  
   :use-module (g misc)
   :use-module (g reader)
 
   :export (
            ast->
+           ast:imported?
+           ast:reorder-for-gaiag-equiv
            ast:resolve
            ast:resolve-model
            ))
@@ -46,8 +51,35 @@
         (cons 'root resolved)
         resolved)))
 
+(define (source-file o)
+  (and-let* (((supports-source-properties? o))
+             (loc (source-property o 'loc))
+             (properties (source-location->user-source-properties loc))
+             (file-name (assoc-ref properties 'filename)))
+            (string->symbol file-name)))
+
+(define (basename- o)
+  (string->symbol (basename (symbol->string o))))
+
+(define (in-file? o file)
+  (let ((file (if (string? file) (string->symbol file) file)))
+    (and-let* ((model-file (source-file o))
+               (model-file (if (string? model-file) (string->symbol model-file) model-file)))
+              (eq? (basename- file) (basename- model-file)))))
+
+;; (define (parse-opts x)  ((@@ (g g) parse-opts) x))
+
+(define (ast:imported? o)
+  (if (assoc 'imported? (source-properties o))
+      (source-property o 'imported?)
+      (and-let* (((>2 (length (command-line))))
+                 (file (car (option-ref (parse-opts (command-line)) '() '(#f))))
+                 ((not (string-suffix? ".scm" file))))
+                (not (in-file? o file)))))
+
 (define (mark-imported o imported?)
-  (set-source-property! o 'imported? imported?))
+  (set-source-property! o 'imported? imported?)
+  o)
 
 (define ((ast:resolve- ast) src)
   (match src
@@ -58,6 +90,7 @@
     (('system body ... (and ('imported . imported)))
      (mark-imported ((ast:resolve- #f) (cons 'system body)) imported))    
     (('interface name body ... ) ((ast:resolve-model src) src))
+    (('component name ports (no-behaviour)) (list 'component name ports))
     (('component name body ...) ((ast:resolve-model src) src))
     ((h ...) (map (lambda (x) ((ast:resolve- ast) x)) src))
     (_ src)))
@@ -71,7 +104,7 @@
 (define (interface-enums port)
   (map (lambda (enum)
          (list 'enum (list (ast:type port) (ast:name enum)) (ast:fields enum)))
-   ((compose ast:enums ast:ast ast:type) port)))
+       ((compose ast:enums ast:ast ast:type) port)))
 
 (define* ((ast:resolve-model model) src :optional (locals '()))
   (let ((resolved ((ast:resolve-model- model) src locals)))
@@ -197,5 +230,17 @@
       ((h ...) (map (lambda (x) ((ast:resolve-model model) x locals)) src))
 
       (_ src))))
+
+(define (ast:reorder-for-gaiag-equiv o)
+  (match o
+    (('root models ...)
+     (cons 'root
+           (append
+            (filter ast:import? models)
+            (filter ast:user-type? models)
+            (filter ast:interface? models)
+            (filter ast:component? models)
+            (filter ast:system? models))))
+    (_ o)))
 
 (define ast-> ast:resolve)
