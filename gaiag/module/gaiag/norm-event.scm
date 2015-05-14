@@ -106,13 +106,10 @@
              '()
              (receive (shared-ons remainder)
                  (partition (lambda (x) (triggers-equal? (car ons) x)) ons)
-               (let* ((triggers
-                       (delete-duplicates
-                        (apply append
-                               (map (compose .elements .triggers) shared-ons))))
+               (let* ((triggers (.triggers (car shared-ons)))
                       (statement (on-statement (map .statement shared-ons)))
                       (collapsed-on (make <on>
-                                       :triggers (make <triggers> :elements triggers)
+                                       :triggers triggers
                                        :statement statement)))
                  (cons collapsed-on (loop remainder))))))))
      (($ <functions>) o)
