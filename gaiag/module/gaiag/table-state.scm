@@ -44,7 +44,7 @@
 
   :use-module (gaiag gom)
 
-  :export (ast-> mangle-table pretty-table table-state))
+  :export (ast-> mangle-table pretty-table remove-initial table-state))
 
 (define-method (table-state (o <list>))
   (filter identity (map table-state o)))
@@ -90,20 +90,29 @@
         :functions ((compose .functions .behaviour) o)
         :statement statement))))
 
+(define (handle-initial statement)
+  (or (and-let* (((is-a? statement <guard>))
+                 (field ((compose .value .expression) statement))
+                 ((is-a? field <field>))
+                 ((eq? (.identifier field) '<state>))
+                 ((eq? (.field field) '<Initial>)))
+                (.statement statement))
+      (and-let* (((is-a? statement <on>)))
+                (make <on>
+                  :triggers (.triggers statement)
+                  :statement (handle-initial (.statement statement))))
+      (and-let* (((is-a? statement <compound>)))
+                (make <compound>
+                  :elements (map handle-initial (.elements statement))))
+      statement))
+
 (define (remove-initial statement)
   (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))
     (or (and-let* (((not json?))
                    ((is-a? statement <compound>))
-                   ((=1 (length (.elements statement))))
-                   (statement ((compose car .elements) statement))
-                   ((is-a? statement <guard>))
-                   (field ((compose .value .expression) statement))
-                   ((is-a? field <field>))
-                   ((eq? (.identifier field) '<state>))
-                   ((eq? (.field field) '<Initial>)))
-                  (make <compound> :elements (list (.statement statement))))
-     statement))
-  statement)
+                   (elements (map handle-initial (.elements statement))))
+                  (make <compound> :elements elements))
+     statement)))
 
 (define-method (table-state o) o)
 

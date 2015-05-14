@@ -63,7 +63,8 @@
 (define-method (table-event o) o)
 
 (define-method (table-event (o <interface>))
-  (let ((statement (table-event o ((compose .statement .behaviour) o))))
+  (let* ((statement (table-event o ((compose .statement .behaviour) o)))
+         (statement (remove-initial statement)))
     (make (class-of o)
       :name (.name o)
       :types (.types o)
@@ -77,7 +78,8 @@
         :statement statement))))
 
 (define-method (table-event (o <component>))
-  (let ((statement (table-event o ((compose .statement .behaviour) o))))
+  (let* ((statement (table-event o ((compose .statement .behaviour) o)))
+         (statement (remove-initial statement)))
     (make (class-of o)
       :name (.name o)
       :ports (.ports o)
