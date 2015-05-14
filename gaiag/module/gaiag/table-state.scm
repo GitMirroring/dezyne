@@ -54,11 +54,12 @@
   (let ((name
          (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
                      string->symbol))))
-    (or (and-let* ((models (filter (lambda (x) (or ((is? <interface>) x) ((is? <component>) x))) (gom:models o)))
-                   (models (null-is-#f (filter .behaviour models)))
+    (or (and-let* ((models (.elements o))
                    (models (null-is-#f (filter (negate gom:imported?) models)))
                    (models (null-is-#f (if name (and=> (find (gom:named name) models) list) models))))
                   (map table-state models)))))
+
+(define-method (table-state o) o)
 
 (define-method (table-state (o <interface>))
   (let* ((statement (table-state o ((compose .statement .behaviour) o)))
@@ -104,13 +105,7 @@
      statement))
   statement)
 
-(define-method (table-state (o <import>))
-  #f)
-
-(define-method (table-state (o <type>))
-  #f)
-
-(define-method (table-state (model <model>) (o <boolean>)) #f)
+(define-method (table-state o) o)
 
 (define-method (table-state (model <model>) (o <compound>))
   (or (and-let* ((variables ((compose .elements .variables .behaviour) model))
@@ -390,6 +385,14 @@
      o
      )))
 
+(define-method (mangle-table o)
+  (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))
+    (and (not json?) o)))
+
+(define-method (mangle-table (o <system>))
+  (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))
+    (and (not json?) o)))
+
 (define-method (mangle-table (o <list>))
   (map mangle-table o))
 
@@ -406,18 +409,6 @@
           (json-init o)
           ((json-table o) statement)))
         o)))
-
-(define-method (demo-table (o <compound>))
-  (gom:map demo-table o))
-
-(define-method (demo-table (o <list>))
-  (map demo-table o))
-
-(define-method (demo-table (o <guard>))
-  o)
-
-(define-method (demo-table (o <on>))
-  o)
 
 (define-method (pretty-table (o <ast>)) (ast->dezyne o))
 (define-method (pretty-table (o <list>))

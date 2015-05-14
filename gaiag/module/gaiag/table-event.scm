@@ -55,11 +55,12 @@
   (let ((name
          (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
                      string->symbol))))
-    (or (and-let* ((models (filter (lambda (x) (or ((is? <interface>) x) ((is? <component>) x))) (gom:models o)))
-                   (models (null-is-#f (filter .behaviour models)))
+    (or (and-let* ((models (.elements o))
                    (models (null-is-#f (filter (negate gom:imported?) models)))
                    (models (null-is-#f (if name (and=> (find (gom:named name) models) list) models))))
                   (map table-event models)))))
+
+(define-method (table-event o) o)
 
 (define-method (table-event (o <interface>))
   (let ((statement (table-event o ((compose .statement .behaviour) o))))
@@ -87,14 +88,6 @@
         :variables ((compose .variables .behaviour) o)
         :functions ((compose .functions .behaviour) o)
         :statement statement))))
-
-(define-method (table-event (o <import>))
-  #f)
-
-(define-method (table-event (o <type>))
-  #f)
-
-(define-method (table-event (model <model>) (o <boolean>)) #f)
 
 (define-method (table-event (model <model>) (o <compound>))
   (norm-event (table-state model o)))

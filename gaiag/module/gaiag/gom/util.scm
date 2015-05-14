@@ -612,6 +612,11 @@
 (define-method (in-file? (o <model>) (file <string>))
   (in-file? o (string->symbol file)))
 
+(define-method (gom:imported? o)
+  (and-let* (((supports-source-properties? o))
+             ((assoc 'imported? (source-properties o))))
+            (source-property o 'imported?)))
+
 (define-method (gom:imported? (o <model>))
   (if (assoc 'imported? (source-properties o))
       (source-property o 'imported?)

@@ -62,7 +62,6 @@
 (define (->string src)
   (define (unspecified? x) (eq? x *unspecified*))
 
-  (if (is-a? src <expression>) (stderr "->string: ~a\n" src))
   (match src
     (#f "false")
     (#t "true")
@@ -185,7 +184,7 @@
     (binding . ((instance . ,identity)
                 (port . ,identity)))
     (instance . ((name . ,->string)
-                 (type . ,->string)))
+                 (component . ,->string)))
     (behaviour . ((name . ,(lambda (name) (if name name "")))
                   (types . ,->string)
                   (variables . ,->string)
