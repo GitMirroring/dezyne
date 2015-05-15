@@ -24,29 +24,49 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (g json)
-  :use-module (ice-9 and-let-star)
-
+(define-module
+   (g json)
   :use-module (srfi srfi-1)
 
-  :use-module (g misc)
-  :use-module (language dezyne location)
-  :use-module (g reader)
+  :use-module (ice-9 and-let-star)
+  :use-module (ice-9 match)  
+
+;;  :use-module (language dezyne location)
+  :use-module (gaiag misc)
+
+   :use-module (g ast gom)
+   :use-module (g ast goops)
+   :use-module (g reader)
 
   :export (
            json-location
            ))
 
-(define (json-location o)
-  (alist->hash-table
-   (or (and-let* ((loc (source-location o))
-                  (properties (source-location->user-source-properties loc)))
-                 `((file . ,(assoc-ref properties 'filename))
-                   (line . ,(assoc-ref properties 'line))
-                   (column . ,(assoc-ref properties 'column))
-                   (offset . ,(assoc-ref properties 'offset))
-                   (length . ,(assoc-ref properties 'length))))
-      '())))
+(use-modules (system base lalr))
+(define (source-location src)
+  (and-let* (((supports-source-properties? src))
+	     (loc (source-property src 'loc)))
+	    (if (source-location? loc)
+		loc
+		(source-location loc))))
 
-;; (define-method (json-location (o <top>))
-;;   '())
+(define (source-location->user-source-properties loc)
+  `((filename . ,(source-location-input loc))
+    (line . ,(+ 1 (source-location-line loc)))
+    (column . ,(+ 1 (source-location-column loc)))
+    (offset . ,(source-location-offset loc))
+    (length . ,(source-location-length loc))))
+
+(define (json-location o)
+  (match o
+    ((? (is? <ast>))
+     (alist->hash-table
+      (or (and-let* ((loc (source-location o))
+                     (properties (source-location->user-source-properties loc)))
+                    `((file . ,(assoc-ref properties 'filename))
+                      (line . ,(assoc-ref properties 'line))
+                      (column . ,(assoc-ref properties 'column))
+                      (offset . ,(assoc-ref properties 'offset))
+                      (length . ,(assoc-ref properties 'length))))
+          '())))
+    (_ '())))

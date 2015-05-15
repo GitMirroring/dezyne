@@ -25,7 +25,7 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (gaiag annotate)
+(define-module (g annotate)
   :use-module (ice-9 pretty-print)
 
   :use-module (ice-9 match)

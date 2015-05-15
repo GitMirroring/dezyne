@@ -1,6 +1,5 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -31,10 +30,3 @@ interface ISimple
 
 }
 
-component Simple
-{
-  provides ISimple i;
-  requires ISimple j;
-
-  behaviour { enum S {On, Off}; S s = S.On; on i.e: i.a; }
-}

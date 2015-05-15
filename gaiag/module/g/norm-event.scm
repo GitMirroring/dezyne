@@ -22,7 +22,9 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (g norm-event)
+(define-module
+   (g norm-event)
+  :use-module (ice-9 and-let-star)
   :use-module (ice-9 pretty-print)
   :use-module (ice-9 receive)
   :use-module (ice-9 match)
@@ -30,132 +32,143 @@
 
   :use-module (srfi srfi-1)
 
-  :use-module (g ast-colon)
-  :use-module (g norm)
-  :use-module (g resolve)    
-  :use-module (g misc)
-  :use-module (g reader)
+  :use-module (gaiag misc)
 
-  :export (ast-> norm-event))
 
-(define (norm-event ast)
-  ((compose
-    remove-skip
-    aggregate-guard
-    collapse-on
-;;   aggregate-on    
-    (expand-on equal?)
-    aggregate-guard
-    flatten-compound
-    combine-ons
-    passdown-guard
-    (remove-otherwise '())
-    add-skip)
-   ast))
+   :use-module (g ast goops)
+   :use-module (g ast gom)
+   :use-module (g norm)
+   :use-module (g reader)
+   :use-module (g resolve)
 
-(define (aggregate-guard o)
+  :export (
+           ast->
+           norm-event
+           ))
+
+(define (norm-event o)
+  (match o
+    ((and (negate (is? <ast>)) (h t ...))
+     ((compose norm-event ast:resolve ast->gom) o))
+    ((? (is? <ast>))
+     ((compose
+       remove-skip
+       aggregate-guard-s
+       collapse-on
+       ;;    aggregate-on    
+       (expand-on equal?)
+       aggregate-guard-g
+       flatten-compound
+       combine-ons
+       passdown-guard
+       (remove-otherwise '())
+       add-skip)
+      o))))
+
+(define (aggregate-guard-s o)
   "Aggregate guards with matching statement into one guard-statement."
   ;; find all guands with matching statement
   ;; push all guards into first guard, discard the rest
   (match o
-    (('compound ('guard _ _) ...)
-     (cons 'compound
-           (let loop ((guards (ast:elements o)))
-             (if (null? guards)
-                 '()
-                 (receive (shared-guards remainder)
-                     (partition (lambda (x) (guard-same-statement? (car guards) x)) guards)
-                       (let* ((expression
-                           (reduce (lambda (x y)
-                                     (if (equal? x y) x (list 'or x y)))
-                                   '()
-                                   (map (compose ast:value ast:expression) shared-guards)))
-                          (statement (ast:statement (car guards)))
-                          (aggregated-guard (list 'guard
-                                                  (list 'expression
-                                                        expression)
-                                                  statement)))
-                     (cons aggregated-guard (loop remainder))))))))
-     (('functions) o)
-     ((h t ...) (map aggregate-guard o))
+    (
+      ('compound ('guard _ ___) ...)
+     (make <compound>
+       :elements
+       (let loop ((guards (.elements o)))
+         (if (null? guards)
+             '()
+             (receive (shared-guards remainder)
+                 (partition (lambda (x) (guard-same-statement? (car guards) x)) guards)
+               (let* ((expression
+                       (reduce (lambda (x y)
+                                 (if (equal? x y) x (list 'or x y)))
+                               '()
+                               (map (compose .value .expression) shared-guards)))
+                      (statement (.statement (car guards)))
+                      (aggregated-guard (make <guard>
+                                          :expression (make <expression>
+                                                        :value expression)
+                                          :statement statement)))
+                 (cons aggregated-guard (loop remainder))))))))
+     (('functions _ ___) o)
+     ((? (is? <ast>)) (gom:map aggregate-guard-s o))
+     ((h t ...) (map aggregate-guard-s o))
      (_ o)))
 
 (define (guard-same-statement? lhs rhs)
-  (and (ast:is-a? lhs 'guard)
-       (ast:is-a? rhs 'guard)
-       (equal? (ast:statement lhs) (ast:statement rhs))))
+  (and (is-a? lhs <guard>) (is-a? rhs <guard>)
+   (equal? (.statement lhs) (.statement rhs))))
 
 (define (collapse-on o)
   "Collapse matching triggers into one on-statement."
   (match o
-    (('compound ('on _ _) ...)
-     (cons 'compound
-       (let loop ((ons (ast:elements o)))
+    (
+      ('compound ('on _ ___) ...)
+     (make <compound>
+       :elements
+       (let loop ((ons (.elements o)))
          (if (null? ons)
              '()
              (receive (shared-ons remainder)
-                 (partition (lambda (x) (triggers-equal? (car ons) x)) ons)
-               (let* ((triggers (ast:triggers (car shared-ons)))
-                      (statement (on-statement (map ast:statement shared-ons)))
-                      (collapsed-on (list 'on
-                                          (cons 'triggers triggers)
-                                          statement)))
+                 (partition (lambda (x) (gom:triggers-equal? (car ons) x)) ons)
+               (let* ((triggers (.triggers (car shared-ons)))
+                      (statement (on-statement (map .statement shared-ons)))
+                      (collapsed-on (make <on>
+                                       :triggers triggers
+                                       :statement statement)))
                  (cons collapsed-on (loop remainder))))))))
-     (('functions) o)
+     (('functions _ ___) o)
+     ((? (is? <ast>)) (gom:map collapse-on o))
      ((h t ...) (map collapse-on o))
      (_ o)))
-
-(define (remove-arguments o)
-  (match o
-    (('trigger p e arguments) (list 'trigger p e))
-    (_ o)))
-
-(define (triggers-equal? a b)
-  (equal? (map remove-arguments (ast:triggers a))
-          (map remove-arguments (ast:triggers b))))
 
 (define (on-statement statements)
   (if (every identity (map (lambda (x) (equal? x (car statements))) statements))
       (car statements))
   (match statements
-    ((('guard _ _) ...) (cons 'compound statements))
-    ((h t ...) (cons 'compound statements))))
+    ((('guard _ ___) ...) (make <compound> :elements statements))
+    ((h t ...) (make <compound> :elements statements))))
 
 (define (combine-ons o)
   (match o
-    (('on)
-     ((passdown-triggers (ast:trigger-list o)) (ast:statement o)))
+    (('on _ ___)
+     ((passdown-triggers (.triggers o)) (.statement o)))
+    ((? (is? <ast>)) (gom:map combine-ons o))
     ((h t ...) (map combine-ons o))
     (_ o)))
 
 (define ((passdown-triggers triggers) o)
   (match o
-    (('compound statements ...)
-     (cons 'compound (map (passdown-triggers triggers) statements)))
-    (('on t s)
-     ((passdown-triggers (cons 'triggers (append triggers t))) s))
-    (_ (list 'on triggers o))))
+    (('on _ ___)
+     ((passdown-triggers
+       (make <triggers> :elements (append triggers (.triggers o))))
+      (.statement o)))
+    (('compound _ ___)
+     (make <compound> :elements (map (passdown-triggers triggers) (.elements o))))
+    (_ (make <on> :triggers triggers :statement o))))
 
 (define (passdown-guard o) ;; FIXME: almost identical to combine-guards
   (match o
-    (('guard expression statement)
-     ((passdown-expression expression) statement))
+    (('guard _ ___)
+     ((passdown-expression (.expression o)) (.statement o)))
+    ((? (is? <ast>)) (gom:map passdown-guard o))
     ((h t ...) (map passdown-guard o))
     (_ o)))
 
 (define ((passdown-expression expression) o)
   (match o
-    (('compound statements ...)
-     ;; ONLY difference with combine-guards
-     (match statements
-       ((('on _ _) ...)
-        (cons 'compound
-              (map (passdown-expression expression) statements)))
-       (_ (list 'guard expression o))))
-    (('on t s)
-     (list 'on t ((passdown-expression expression) s)))
-    (_
-     (list 'guard expression o))))
+    (('on _ ___)
+     (make <on>
+       :triggers (.triggers o)
+       :statement ((passdown-expression expression) (.statement o))))
+    (('compound _ ___)
+     (let ((statements (.elements o)))
+       (match statements
+         ((('on _ ___) ...)
+          (make <compound>
+            :elements (map (passdown-expression expression) statements)))
+         (_ (make <guard> :expression expression :statement o)))))
+    (_ (make <guard> :expression expression :statement o))))
 
 (define (ast-> ast)
-  ((compose norm-event ast:resolve) ast))
+  ((compose gom->list norm-event ast:resolve) ast))

@@ -24,7 +24,8 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (g table-event)
+(define-module
+   (g table-event)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 match)
   :use-module (ice-9 getopt-long)
@@ -32,76 +33,27 @@
   :use-module (srfi srfi-1)
 
   :use-module (language dezyne location)
-  :use-module (g g)
-  :use-module (g ast-colon)
-  :use-module (g json-table)
-  :use-module (g misc)
-  :use-module (g norm-event)
-  :use-module (g pretty)
-  :use-module (g reader)
-  :use-module (g resolve)
-  :use-module (g table-state)
+  :use-module (gaiag misc)
+  
 
-  :use-module (gaiag annotate)
+   :use-module (g ast goops)
+   :use-module (g ast gom)
+   :use-module (g g)
+   :use-module (g json-table)
+   :use-module (g norm-event)
+   :use-module (g pretty)
+   :use-module (g reader)
+   :use-module (g resolve)
+   :use-module (g table-state)  
 
   :export (ast-> table-event))
 
-;; FIMXE C&P
-(define (table-event o)
-  (match o
-    (('root models ...)
-     (let ((name
-            (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
-                        string->symbol))))
-       (or (and-let* ((models (null-is-#f (filter (negate ast:imported?) models)))
-                      (models (null-is-#f (if name (and=> (find (ast:named name) models) list) models))))
-                     (cons 'root (filter identity (map table-event models)))))))
-    (('interface name types events ('behaviour b btypes variables functions statement))
-     (let* ((statement (table-event-statement o statement))
-            (statement (remove-initial statement)))
-       (list 'interface name types events
-             (list 'behaviour b btypes variables functions statement))))
-    (('component name ports ('behaviour b types variables functions statement))
-     (let* ((statement (table-event-statement o statement))
-            (statement (remove-initial statement)))
-       (list 'component name ports
-             (list 'behaviour b types variables functions statement))))
-    (('component name ports) o)
-    (((or 'enum 'extern 'int 'import 'system) _ ...) o)
-    (_ (throw 'match-error (format #f "~a:right: no match: ~a\n" (current-source-location) o)))))
-
-(define (table-event-statement model o)
+(define (table-event model o)
   (norm-event (table-state-statement model o)))
-
-;; FIXME
-(define (mangle-table o)
-  (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))
-    (match o
-      (('root models ...)
-       (if json?
-           (map mangle-table models)
-           (cons 'root (map mangle-table models))))
-      ((or
-        (? ast:interface?)
-        (? ast:component?)
-        )
-       (if json?
-           (and-let* ((behaviour (null-is-#f (ast:behaviour o)))
-                      (statement (ast:statement behaviour)))
-                     (alist->hash-table
-                      (append
-                       (json-init o)
-                       ((json-table-event o) statement))))
-           o))
-      (((or 'enum 'extern 'int 'import 'system) _ ...) (and (not json?) o))
-      ;;((h t ...) (map mangle-table o))
-      ((or #t #f) (and json? (list (make-hash-table)))))))
 
 (define (ast-> ast)
   ((compose
     pretty-table
-    mangle-table
-    table-event
-    ast:resolve
-    ast:reorder-for-gaiag-equiv
-    ast:annotate) ast))
+    (mangle-table json-table-event)
+    (table table-event)
+    ast:resolve) ast))

@@ -824,3 +824,21 @@ out/test: out/argument.c++ out/main.o out/runtime.o
 #out/test: out/argument.o out/main.o out/runtime.o
 	g++ -o out/test out/*o
 	echo 'i.e' | out/test
+
+.PHONY: g
+GOEPS=-e "s/<gom:parameter>/<parameter>/g" -e "s/<gom:port>/<port>/g" -e "s/[(][$$] <([^>]*)>[)]/(\'\1 _ ___)/g" -e "s/[(][$$] <([^>]*)> ([a-z]+)[)]/(\'\1 \2 ___)/g" -e "s/[(][$$] <([a-z]+)> '[(][)][)]/(\'\1)/g" -e "s/[(][$$] <([^>]*)>/(\'\1/g" -e "s/;;[+]goeps//"
+module/g/%.scm: module/gaiag/%.scm
+	sed -r $(GOEPS) $< | grep -v ';;-goeps' > $@
+
+GOEPS_FILES:=\
+ json.scm\
+ json-table.scm\
+ norm.scm\
+ norm-event.scm\
+ pretty.scm\
+ resolve.scm\
+ table-state.scm\
+ table-event.scm\
+
+g: $(GOEPS_FILES:%=module/g/%)
+

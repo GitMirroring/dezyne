@@ -6,6 +6,7 @@ GUILE_LOAD_PATH="$prefix:$prefix/module:$GUILE_LOAD_PATH"
 GUILE_LOAD_COMPILED_PATH="$prefix/ccache:$GUILE_LOAD_COMPILED_PATH"
 export GUILE_LOAD_PATH GUILE_LOAD_COMPILED_PATH
 spec=language/dezyne/spec
+#[ "$(basename $(cd $(dirname $0); pwd))" = "gaiag" ] && type guile-2.2 >/dev/null && GUILE=${GUILE-guile-2.2}
 [ -f $prefix/ccache/$spec.go ] || ${GUILE-guile} $prefix/module/$spec.scm
 exec ${GUILE-guile} --debug -e main -s $0 "$@"
 !#
