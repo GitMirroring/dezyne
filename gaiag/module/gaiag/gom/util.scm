@@ -45,6 +45,7 @@
            is?
            gom->list
            gom:booleans
+           gom:children
            gom:component
            gom:components
            gom:declarative?
@@ -509,6 +510,9 @@
 
 (define-method (gom:guard-equal? (lhs <guard>) (rhs <guard>))
   (equal? (gom->list (.expression lhs)) (gom->list (.expression rhs))))
+
+(define-method (gom:children (o <ast>))
+  (map (lambda (slot) (slot-ref o (slot-definition-name slot))) ((compose class-slots class-of) o)))
 
 ;;;; reading/caching
 (define *ast-alist* '())

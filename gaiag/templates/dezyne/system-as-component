@@ -4,6 +4,5 @@ component #name
   system
   {
     #instances
-    #bindings
-  }
+    #bindings }
 }

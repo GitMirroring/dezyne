@@ -19,35 +19,40 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (gaiag pretty)
+(define-module
+  (gaiag pretty) ;;-goeps
+  ;;+goeps (g pretty)
   :use-module (ice-9 match)
   :use-module (srfi srfi-1)
 
-  :use-module (gaiag animate)
-  :use-module (gaiag indent)
   :use-module (gaiag misc)
-  :use-module (gaiag reader)
-  :use-module (gaiag wfc)
 
-  :use-module (gaiag resolve)
+  :use-module (oop goops) ;;-goeps
+  :use-module (gaiag gom) ;;-goeps
+  :use-module (gaiag animate) ;;-goeps
+  :use-module (gaiag indent) ;;-goeps
+  :use-module (gaiag reader) ;;-goeps
+  :use-module (gaiag wfc) ;;-goeps
+  :use-module (gaiag resolve) ;;-goeps
 
-  :use-module (oop goops)
-  :use-module (oop goops describe)
-  :use-module (gaiag gom)
+  ;;+goeps :use-module (g ast goops)
+  ;;+goeps :use-module (g ast gom)
+  ;;+goeps :use-module (g animate)
+  ;;+goeps :use-module (g indent)
+  ;;+goeps :use-module (g reader)
+  ;;+goeps :use-module (g resolve)
 
   :export (ast-> ast->dezyne ast->dzn ast->pretty pretty:gom))
 
-(define-method (ast->dezyne (o <list>))
-  (let ((gom ((gom:register pretty:gom) o #t)))
-    (ast->dezyne gom)))
-
-(define-method (ast->dezyne (o <null>)) "")
-
-(define-method (ast->dezyne (o <root>))
-  (indent-string (apply string-append (map ast->dezyne (.elements o)))))
-
-(define-method (ast->dezyne (o <ast>))
-  (indent-string (->string o)))
+(define (ast->dezyne o)
+  (match o
+    (($ <root>)
+     (indent-string (apply string-append (map ast->dezyne (.elements o)))))
+    ((and (negate (is? <ast>)) (h t ...))
+     (let ((gom ((gom:register pretty:gom) o #t)))
+       (ast->dezyne gom)))
+    ((? (is? <ast>)) (indent-string (->string o)))
+    (_ "")))
 
 (define ast-> ast->dezyne)
 (define ast->dzn ast->dezyne)
@@ -55,9 +60,6 @@
 
 (define (pretty:gom ast)
   ((compose ast:wfc ast:resolve ast->gom) ast))
-
-(define-method (children (o <ast>))
-  (map (lambda (slot) (slot-ref o (slot-definition-name slot))) ((compose class-slots class-of) o)))
 
 (define (->string src)
   (define (unspecified? x) (eq? x *unspecified*))
@@ -70,10 +72,14 @@
     (($ <compound> elements) (string-join (append '("{\n") (map ->string elements) '("}\n") ) ""))
     (($ <assign> var ($ <call> function arguments))
      (->string (list 'assign var (list 'assign-call function arguments))))
+    (($ <assign> var ($ <call> function))
+     (->string (list 'assign var (list 'assign-call function))))
     (($ <assign> var ($ <action> trigger))
      (->string (list 'assign var (list 'assign-action trigger))))
     (($ <variable> name type ($ <call> function arguments))
      (->string (list 'variable name (->string type) (list 'assign-call function arguments))))
+    (($ <variable> name type ($ <call> function))
+     (->string (list 'variable name (->string type) (list 'assign-call function))))    
     (($ <variable> name type ($ <action> trigger))
      (->string (list 'variable name (->string type) (list 'assign-action trigger))))
 
@@ -82,9 +88,9 @@
      (->string (list 'system-as-component name ports instances bindings)))
     ((and (? pair?) (? dezyne-template?)) (apply dezyne-template->string src))
     ((? dezyne-template?) (apply dezyne-template->string
-                                 (cons (ast-name src) (children src))))
+                                 (cons (ast-name src) (gom:children src))))
     
-    ((? join?) (apply join-all (children src)))
+    ((? join?) (apply join-all (gom:children src)))
     ((? symbol?) (symbol->string src))
     ((? string?) src)
     ((? integer?) (number->string src))
@@ -93,13 +99,17 @@
     (($ <parameters> parameters) (->string (list "(" (comma-join (map ->string parameters)) ")")))
     (($ <gom:parameter> name type (or #f 'in)) (->string (list type " " name)))
     (($ <gom:parameter> name type dir) (->string (list dir " " type " " name)))
+    (($ <gom:parameter> name type) (->string (list type " " name)))    
     (($ <signature> type ($ <parameters> '()))
      (list (cons (->string (->string type)) "")))
     (($ <signature> type parameters)
      (list (cons (->string type) (->string parameters))))
+    (($ <signature> type)
+     (list (cons (->string (->string type)) "")))
     (($ <type> name #f) (->string name))
     (($ <type> name '*global*) (->string name))    
     (($ <type> name scope) (->string (list scope '. name)))
+    (($ <type> name) (->string name))
     (($ <otherwise> value) (->string value))    
     (($ <triggers> triggers) (comma-space-join (map ->string triggers)))
 
@@ -215,7 +225,7 @@
     (value . ((type . ,identity)
               (field . ,identity)))
     (function . ((name . ,identity)
-                 (signature . ,identity)
+                 (signature . ,->string)
                  (recursive? . ,identity)
                  (body . ,->string)))
     (return . ((expression . ,expression->string)))

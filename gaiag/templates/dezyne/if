@@ -1,2 +1,2 @@
 if (#expression )
-  #statement #(if else (string-append "else\n" else))
+  #statement #(if (and (defined? 'else) else) (string-append "else\n" else))

@@ -31,11 +31,18 @@
 
   #:export (
             note-location
+            retain-source-properties
             source-location
             source-location->user-source-properties
             source-location->system-source-properties
             syntax-error-handler
             ))
+
+(define (retain-source-properties o t)
+  (and-let* (((supports-source-properties? o))
+             ((supports-source-properties? t)))
+            (set-source-properties! t (source-properties o)))
+  t)
 
 (define* (syntax-error-handler message #:optional token)
   (if (lexical-token? token)

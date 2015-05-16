@@ -1,5 +1,4 @@
 component #name 
 {
-  #ports
-  #behaviour 
-}
+  #ports #
+(if (defined? 'behaviour) (list "\n  " behaviour "\n"))}

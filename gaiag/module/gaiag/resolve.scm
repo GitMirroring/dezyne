@@ -120,13 +120,6 @@
      ((compose gom:register-model (lambda (m) ((resolve-model m '()) m))) o))
     (_ ((resolve-model o '()) o))))
 
-;; FIXME: gom/ast.scm
-(define (retain-source-properties o t)
-  (and-let* (((supports-source-properties? o))
-             ((supports-source-properties? t)))
-            (set-source-properties! t (source-properties o)))
-  t)
-
 (define ((resolve-model model locals) o)
   (match o
     (($ <system>) o)
@@ -197,7 +190,7 @@
                  (enum (gom:enum model type)))
                 (member field (.elements (.fields enum))))))
 
-  (define (type? type) (gom:type model type))
+  (define (type? type) ((gom:type model) type))
 
   (define (fake:type model o)
     (match o

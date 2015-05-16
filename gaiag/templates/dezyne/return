@@ -1,1 +1,1 @@
-return#(if expression (list " " expression));
+return#(if (and (defined? 'expression) expression) (list " " expression));

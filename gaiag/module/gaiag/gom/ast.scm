@@ -34,13 +34,14 @@
   :use-module (oop goops describe)
   :use-module (gaiag gom gom)
 
+  :use-module (language dezyne location)
+
   :export (
            ast->gom
            ast->sugar
            ast->trigger-sugar
            ast:public
            ast:interface
-           retain-source-properties
            ))
 
 (define (ast->sugar ast)
@@ -82,12 +83,6 @@
          (ast (if (and (pair? ast) (assoc-ref ast 'locations))
                   (ast->annotate ast) ast)))
     (ast->gom- ast)))
-
-(define (retain-source-properties o t)
-  (and-let* (((supports-source-properties? o))
-             ((supports-source-properties? t)))
-            (set-source-properties! t (source-properties o)))
-  t)
 
 (define (ast->gom- ast)
   (retain-source-properties ast ((compose ast->gom-- ast->sugar) ast)))

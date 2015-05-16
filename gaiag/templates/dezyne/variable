@@ -1,1 +1,1 @@
-#type  #var #(if value  (list " = " value));
+#type  #var #(if (and value ((negate string-null?) value)) (list " = " value));
