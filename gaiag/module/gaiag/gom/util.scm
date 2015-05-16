@@ -98,6 +98,7 @@
            gom:statements-of-type
            gom:system
            gom:systems
+           gom:triggers-equal?
            gom:type
            gom:types
            gom:typed?
@@ -513,6 +514,10 @@
 
 (define-method (gom:children (o <ast>))
   (map (lambda (slot) (slot-ref o (slot-definition-name slot))) ((compose class-slots class-of) o)))
+
+(define-method (gom:triggers-equal? (a <on>) (b <on>))
+  (equal? ((compose .elements .triggers) a)
+          ((compose .elements .triggers) b)))
 
 ;;;; reading/caching
 (define *ast-alist* '())
