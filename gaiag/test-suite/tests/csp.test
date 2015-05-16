@@ -2,7 +2,7 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (test-handler)
+(define-module (test-suite tests csp)
   :use-module (test-suite lib)
   :use-module (test-suite misc)
 
@@ -137,29 +137,29 @@
          #t)
 
 (define i-ast '((interface i
-                  (types (enum Status (Yes No))
-                         (extern xint int&))
-                  (events (in (signature (type void)) e)
-                          (in (signature (type Status)) f)
-                          (out (signature (type void)) g)
-                          (out (signature (type void)) h)
-                          (in (signature (type void)
+                  (types (enum Status #f (fields Yes No))
+                         (extern xint #f int&))
+                  (events (event e (signature (type void)) in)
+                          (event f (signature (type Status)) in)
+                          (event g (signature (type void)) out)
+                          (event h (signature (type void)) out)
+                          (event ei (signature (type void)
                               (parameters (parameter in (type xint))))
-                              ei))
+                              in))
                   (behaviour
                    B
-                   (types (enum S (S1 S2))
-                          (int I02 (range 0 2)))
+                   (types (enum S #f (fields S1 S2))
+                          (int I02 #f (range 0 2)))
                    (variables
                     (variable s (type S) (action (trigger S S1)))
                     (variable b (type bool) (expression false))
                     (variable c (type I02) (expression 0)))
                    (functions
                     (function toggle (signature (type void)) #f (compound))
-                    (function vtoggle (signature (type bool)) (compound))
+                    (function vtoggle (signature (type bool)) #f (compound))
                     (function f (signature (type IO2)) #f (compound))
                     (function g (signature (type void) (parameters (parameter b1 (type bool)) (parameter b2 (type bool)))) #f (compound))
-                    (function funx (signature (type S) (parameters (parameter xi (type xint)))) (compound)))
+                    (function funx (signature (type S) (parameters (parameter xi (type xint)))) #f (compound)))
                    (compound)))))
 
 (define ast-return-ast
@@ -759,11 +759,11 @@ assign_(\\ ((s,b,c),(stack')) @ ((S_S2,b,c),(stack'))))),
                i-ast
                '((component
                   c
-                  (ports (provides i j)
-                         (requires i k))
+                  (ports (port j i provides)
+                         (port k i requires))
                   (behaviour
                    B
-                   (types (enum S (S1 S2)))
+                   (types (enum S #f (fields S1 S2)))
                    (variables
                     (variable s (type S) (expression (literal #f S S1)))
                     (variable b (type bool) (expression false))
@@ -879,13 +879,12 @@ skip_(\\ V' @ transition_end -> c_B(V'),((s,b,c),(stack')))"))
 (define alarm-ast
   '((component
      Alarm
-     (ports (provides IConsole console)
-            (requires ISensor sensor)
-            (requires ISiren siren))
+     (ports (port console IConsole provides)
+            (port sensor ISensor requires)
+            (port siren ISiren requires))
      (behaviour
       d
-      (types (enum States
-                   (Disarmed Armed Triggered Disarming)))
+      (types (enum States #f (fields Disarmed Armed Triggered Disarming)))
       (variables
        (variable state (type States) (expression (literal #f States Disarmed)))
        (variable sounding (type bool) (expression false)))
@@ -945,9 +944,9 @@ skip_)(\\ V' @ transition_end -> Alarm_d(V'),((state,sounding),(stack')))"
 (define reply-ast
   '((interface
         I
-   (types (enum Status (Yes No)))
-   (events (in (signature (type Status)) done)
-           (in (signature (type void)) e))
+   (types (enum Status #f (fields Yes No)))
+   (events (event done (signature (type Status)) in)
+           (event e (signature (type void)) in))
    (behaviour
     #f
     (types)
@@ -964,8 +963,8 @@ skip_)(\\ V' @ transition_end -> Alarm_d(V'),((state,sounding),(stack')))"
                   (compound (reply (expression (value Status No))))))))))
     (interface
         U
-      (types (enum Status (Ok Nok)))
-      (events (in (signature (type Status)) what))
+      (types (enum Status #f (fields Ok Nok)))
+      (events (event what (signature (type Status)) in))
       (behaviour
        #f
        (types)
@@ -982,7 +981,7 @@ skip_)(\\ V' @ transition_end -> Alarm_d(V'),((state,sounding),(stack')))"
                      (reply (expression (value Status Nok))))))))))
     (component
      Reply
-     (ports (provides I i) (requires U u))
+     (ports (port i I provides) (port u U requires))
      (behaviour
       #f
       (types)
@@ -1004,9 +1003,9 @@ skip_)(\\ V' @ transition_end -> Alarm_d(V'),((state,sounding),(stack')))"
 (define var-ast
   '((interface
         ivar
-      (types (enum E (v)))
-      (events (in (signature (type E)) foo)
-              (out (signature (type void)) bar))
+      (types (enum E #f (fields v)))
+      (events (event foo (signature (type E)) in)
+              (event bar (signature (type void)) out))
       (behaviour
        #f
        (types)
@@ -1017,7 +1016,7 @@ skip_)(\\ V' @ transition_end -> Alarm_d(V'),((state,sounding),(stack')))"
             (reply (expression (literal #f E v)))))))
     (component
      var
-     (ports (provides ivar i) (requires ivar o))
+     (ports (port i ivar provides) (port o ivar requires))
      (behaviour
       #f
       (types)
@@ -1460,12 +1459,12 @@ reply_(I_', (\\ ((dummy),((stack',s))) @ Status_No))
 (define return-variable-c-ast
   '((interface I
       (types)
-      (events (in void e)
-              (out void f))
+      (events (event e (signature (type void)) in)
+              (event f (signature (type void)) out))
       (behaviour))
     (component
      arguments
-     (ports (provides I i))
+     (ports (port i I provides))
      (behaviour
       #f
       (types)
@@ -1603,12 +1602,12 @@ skip_
 
 (define callvalued-c-ast
   '((interface I
-      (events (in void e)
-              (out void f))
+      (events (event e (signature (type void)) in)
+              (event f (signature (type void)) out))
       (behaviour))
     (component
      arguments
-     (ports (provides I i))
+     (ports (port i I provides))
      (behaviour
       #f
       (types)
@@ -2004,7 +2003,7 @@ assign_active_(semi_(send_(u,what),recv_(u_',what)),
 (define member-i-ast
   '((interface i
       (types)
-      (events (in (signature (type void)) e))
+      (events (event e (signature (type void)) in))
       (behaviour
        B
        (compound)))))
@@ -2070,19 +2069,19 @@ assign_(\\ ((s,b,c),((stack',t))) @ ((s,b,c),((stack',(s == S_S1))))))"))
 
 (define behaviourless-component-ast
   '((interface I
-      (events (in (signature (type void)) e))
+      (events (event e (signature (type void)) in))
       (behaviour
        #f
        (compound (on ((e)) (compound)))))
     (component
      C
-     (ports (provides I i)))))
+     (ports (port i I provides)))))
 
 (pass-if "behaviourless-component-ast"
          (csp-noisy-equal? (gom:model-with-behaviour
                             (ast->gom behaviourless-component-ast))
                            '(interface I
-                              (events (in (signature (type void)) e))
+                              (events (event e (signature (type void)) in))
                               (behaviour
                                #f
                                (compound (on ((e)) (compound)))))))
@@ -2114,8 +2113,8 @@ assign_(\\ ((s,b,c),((stack',t))) @ ((s,b,c),((stack',(s == S_S1))))))"))
 (pass-if "purge-data-parameter"
          (csp-pretty-noisy-equal?
           (purge-data* i-ast
-                       '(function funx (signature (type S) (parameters (parameter xi (type xint)))) (compound)))
-          '(function funx (signature (type S) (parameters)) (compound))))
+                       '(function funx (signature (type S) (parameters (parameter xi (type xint)))) #f (compound)))
+          '(function funx (signature (type S) (parameters)) #f (compound))))
 
 (pass-if "purge-data-argument"
          (csp-pretty-noisy-equal?
@@ -2131,7 +2130,7 @@ assign_(\\ ((s,b,c),((stack',t))) @ ((s,b,c),((stack',(s == S_S1))))))"))
          (csp-pretty-noisy-equal?
           (tail-call
            (csp->gom
-            '(function fun (signature (type void) (parameters))
+            '(function fun (signature (type void) (parameters)) #f
                        (compound (call rgun)))))
           '(function fun (signature (type void #f)) #f
                      (compound
@@ -2141,7 +2140,7 @@ assign_(\\ ((s,b,c),((stack',t))) @ ((s,b,c),((stack',(s == S_S1))))))"))
          (csp-pretty-noisy-equal?
           (tail-call
            (csp->gom
-            '(function fun (signature (type void) (parameters))
+            '(function fun (signature (type void) (parameters)) #f
                        (compound
                         (assign s (call rgun))))))
           '(function fun (signature (type void #f)) #f
@@ -2152,7 +2151,7 @@ assign_(\\ ((s,b,c),((stack',t))) @ ((s,b,c),((stack',(s == S_S1))))))"))
          (csp-pretty-noisy-equal?
           (tail-call
            (csp->gom
-            '(function fun (signature (type void) (parameters))
+            '(function fun (signature (type void) (parameters)) #f
                        (compound
                         (variable b (type bool) (call rgun))))))
           '(function fun (signature (type void #f)) #f
@@ -2163,8 +2162,7 @@ assign_(\\ ((s,b,c),((stack',t))) @ ((s,b,c),((stack',(s == S_S1))))))"))
          (csp-pretty-noisy-equal?
           (tail-call
            (csp->gom
-            '(function fun (signature (type void #f))
-                       #f
+            '(function fun (signature (type void #f)) #f
                        (compound
                         (call rgun)
                         (assign s #t)))))
@@ -2177,8 +2175,7 @@ assign_(\\ ((s,b,c),((stack',t))) @ ((s,b,c),((stack',(s == S_S1))))))"))
          (csp-pretty-noisy-equal?
           (tail-call
            (csp->gom
-            '(function fun (signature (type void #f))
-                       #f
+            '(function fun (signature (type void #f)) #f
                        (compound
                         (call rgun)
                         (compound)))))

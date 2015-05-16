@@ -33,6 +33,8 @@
             make-parser
             ))
 
+(define (event? x) (eq? (car x) 'event))
+
 (define (make-parser)
   (lalr-parser
    (driver: lr)
@@ -76,7 +78,7 @@
 
    (model
     (import-spec) : $1
-    (type) : (note-location (append (list (car $1) '*global*) (cdr $1)) @1)
+    (type) : (note-location (append (take $1 2) '(*global*) (drop $1 3)) @1)
     (interface-spec) : $1
     (component-spec) : $1)
 
@@ -87,11 +89,11 @@
    (interface-spec
     (interface Identifier lbrace events/types rbrace)
     : (receive (e t)
-          (partition (lambda (x) (member (car x) '(in out))) $4)
+          (partition event? $4)
         (note-location `(,$1 ,$2 ,(cons 'types t) ,(cons 'events e)) @1))
     (interface Identifier lbrace events/types behaviour-spec rbrace)
     : (receive (e t)
-          (partition (lambda (x) (member (car x) '(in out))) $4)
+          (partition event? $4)
         (note-location `(,$1 ,$2 ,(cons 'types t) ,(cons 'events e) ,$5) @1)))
 
    (component-spec
@@ -109,7 +111,7 @@
     (instances/binds instance/bind) : (append $1 (list $2)))
 
    (instance
-    (Identifier Identifier semicolon) : `(instance ,$1 ,$2))
+    (Identifier Identifier semicolon) : `(instance ,$2 ,$1))
 
    (instance/bind
     (instance) : $1
@@ -132,9 +134,9 @@
     (type) : $1)
 
    (event
-    (event-direction variable-type Identifier semicolon) : `(,$1 ,(note-location `(signature ,$2) @2) ,$3)
-    (event-direction variable-type Identifier lparen rparen semicolon) : `(,$1 ,(note-location `(signature ,$2) @2) ,$3)
-    (event-direction variable-type Identifier lparen parameters rparen semicolon) : `(,$1 ,(note-location `(signature ,$2 ,$5) @2) ,$3))
+    (event-direction variable-type Identifier semicolon) : `(event ,$3 ,(note-location `(signature ,$2) @2) ,$1)
+    (event-direction variable-type Identifier lparen rparen semicolon) : `(event , $3 ,(note-location `(signature ,$2) @2) ,$1)
+    (event-direction variable-type Identifier lparen parameters rparen semicolon) : `(event ,$3 ,(note-location `(signature ,$2 ,$5) @2) ,$1))
 
    (parameter-direction
     (in) : 'in
@@ -150,8 +152,8 @@
     (ports port) : (append $1 (list $2)))
 
    (port
-    (port-direction Identifier Identifier semicolon) : `(,$1 ,$2 ,$3 #f)
-    (port-direction injected Identifier Identifier semicolon) : `(,$1 ,$3 ,$4 ,$2))
+    (port-direction Identifier Identifier semicolon) : `(port ,$3 ,$2 ,$1 #f)
+    (port-direction injected Identifier Identifier semicolon) : `(port ,$4 ,$3 ,$1 ,$2))
 
    (port-direction
     (provides) : 'provides
@@ -174,17 +176,17 @@
     (Identifier dot Identifier) : (note-location `(type ,$3 ,$1) @1))
 
    (enum-spec
-    (enum Identifier lbrace enum-fields rbrace semicolon) : `(,$1 ,$2 ,$4))
+    (enum Identifier lbrace enum-fields rbrace semicolon) : `(enum ,$2 #f ,$4))
 
    (enum-fields
-    (Identifier) : `(,$1)
+    (Identifier) : `(fields ,$1)
     (enum-fields comma Identifier) : (append $1 (list $3)))
 
    (typedef-spec
-    (typedef int lbracket NumericLiteral .. NumericLiteral rbracket Identifier semicolon) : `(int ,$8 (range ,$4 ,$6)))
+    (typedef int lbracket NumericLiteral .. NumericLiteral rbracket Identifier semicolon) : `(int ,$8 #f (range ,$4 ,$6)))
 
    (extern-spec
-    (extern Identifier = Data semicolon) : `(,$1 ,$2 ,$4))
+    (extern Identifier = Data semicolon) : `(extern ,$2 #f ,$4))
 
    (expression
     (expr): `(expression ,$1))
@@ -241,9 +243,8 @@
     (Identifier): $1)
 
    (function
-    (variable-type Identifier lparen rparen compound-statement) : (note-location `(function ,$2 ,(note-location `(signature ,$1) @1), $5) @1)
-
-    (variable-type Identifier lparen parameters rparen compound-statement) : (note-location `(function ,$2 ,(note-location `(signature ,$1 ,$4) @1) ,$6) @1))
+    (variable-type Identifier lparen rparen compound-statement) : (note-location `(function ,$2 ,(note-location `(signature ,$1) @1), #f ,$5) @1)
+    (variable-type Identifier lparen parameters rparen compound-statement) : (note-location `(function ,$2 ,(note-location `(signature ,$1 ,$4) @1) #f ,$6) @1))
 
    (parameters
     (parameter) : `(parameters ,$1)

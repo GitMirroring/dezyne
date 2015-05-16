@@ -175,7 +175,7 @@
   (define (function? identifier) (gom:function model identifier))
   (define (int? identifier) (gom:integer model identifier))
   (define (member? identifier) (gom:variable model identifier))
-  (define (port? name) (gom:port model name))
+  (define (port? name) (and (is-a? model <component>) (gom:port model name)))
 
   (define (local? identifier) (assoc-ref locals identifier))
   (define (var? identifier) (or (member? identifier) (local? identifier)))
@@ -196,15 +196,11 @@
                  (enum (gom:enum model type)))
                 (member field (.elements (.fields enum))))))
 
-  (define (type? type) (or (and (not (.scope type))
-                                (member (.name type) '(bool void)))
-                           (gom:enum model type)
-                           (gom:integer model type)
-                           (gom:extern model type)))
+  (define (type? type) (gom:type model type))
 
-  (define (gom:type model o)
+  (define (fake:type model o)
     (match o
-      (($ <expression> expression) (gom:type model expression))
+      (($ <expression> expression) (fake:type model expression))
       ('false (make <type> :name 'bool))
       ('true (make <type> :name 'bool))
       (($ <data>) (make <type> :name 'data))
@@ -258,7 +254,7 @@
       (resolve-error o name "undefined variable value: ~a"))
 
     (($ <variable> name type expression) (=> failure)
-     (or (and-let* ((e-type (gom:type model expression))
+     (or (and-let* ((e-type (fake:type model expression))
                     ((not (type-equal? e-type type)))
                     ((if (eq? (.name e-type) 'data)
                          (not (gom:extern model type))))
@@ -286,19 +282,27 @@
     (($ <type> (and (? int?) (get! int)) #f)
      (make <type> :scope (.scope (int? (int))) :name (int)))
 
-    (($ <event> name direction signature)
+    (($ <event> name signature direction)
      (make <event>
        :name name
-       :direction direction
-       :signature (resolve-model model signature)))
+       :signature (resolve-model model signature)
+       :direction direction))
 
     (($ <call>) o)
     (($ <data>) o)
+    (($ <enum>) o)
     (($ <event>) o)
+    (($ <extern>) o)    
     (($ <field>) o)
+    (($ <illegal>) o)
+    (($ <int>) o)
     (($ <literal>) o)
     (($ <otherwise>) o)
     (($ <port>) o)
+    (($ <signature> type parameters)
+     (make <signature>
+       :type ((resolve-model model locals) type)
+       :parameters ((resolve-model model locals) parameters)))
     (($ <trigger>) o)
     (($ <type>) o)
     (($ <var>) o)
@@ -307,6 +311,8 @@
 
     (($ <action> ($ <trigger> #f (and (? function?) (get! identifier))))
      (make <call> :identifier (identifier)))
+
+    (($ <action>) o)
 
     (($ <assign> identifier
         ($ <expression> ($ <call> (and (? event?) (get! event)))))
@@ -386,13 +392,11 @@
        :name name
        :expression (resolve-model model (action) locals)))
 
-    (($ <variable> name type
-        ($ <expression> ($ <value> (and (? port?) (get! port)) event)))
+    (($ <variable> name type ($ <expression> ($ <value> (and (? port?) (get! port)) event)))
      (make <variable>
        :type (resolve-model model type locals)
        :name name
-       :expression (make <action> :trigger
-                         (make <trigger> :port (port) :event event))))
+       :expression (make <action> :trigger (make <trigger> :port (port) :event event))))
 
     (($ <variable> name type
         ($ <expression> ($ <var> (and (? function?) (get! function)))))
@@ -442,6 +446,14 @@
          :recursive (and ((recurses? model) name) 'recursive)
          :statement (resolve-model model statement locals))))
 
+    ;; no parameters... ugh?
+    (($ <function> name ($ <signature> type) recursive? statement)
+     (make <function>
+       :name name
+       :signature ((resolve-model model locals) (.signature o))
+       :recursive (and ((recurses? model) name) 'recursive)
+       :statement ((resolve-model model '()) statement)))
+
     (($ <compound> statements)
      (make <compound>
        :elements
@@ -488,6 +500,12 @@
        :variables (resolve-model model variables)
        :functions (gom:map (resolve-model model) functions)
        :statement (gom:map (resolve-model model) statement)))
+
+    (($ <functions> functions)
+     (make <functions> :elements (map (resolve-model model '()) functions)))
+
+    (($ <parameters> parameters)
+     (make <parameters> :elements (map (resolve-model model '()) parameters)))
 
     (($ <variables> variables)
      (let ((variables (map (range-check model) variables)))

@@ -38,7 +38,7 @@
                            #{
                              interface i { in void a; out void b;
                                           behaviour { on a: [true] { } } } #})))
-          '(interface i (types) (events (in void a) (out void b))
+          '(interface i (types) (events (event a (signature (type void #f)) in) (event b (signature (type void #f)) out))
                       (behaviour #f (types) (variables) (functions)
                                  (compound
                                   (guard (expression true) (on (triggers (trigger #f a)) (compound))))))))
@@ -51,7 +51,7 @@
                              interface i { in void a; out void b;
                                               behaviour { on a: [true] b;
                                                              } } #})))
-          '(interface i (types) (events (in void a) (out void b))
+          '(interface i (types) (events (event a (signature (type void #f)) in) (event b (signature (type void #f)) out))
                       (behaviour #f (types) (variables) (functions)
                                  (compound
                                   (guard (expression true)
@@ -67,8 +67,8 @@
                                               out void d;
                                               behaviour { on a,b,c: [true] d;
                                                           } } #})))
-          '(interface i (types) (events (in void a) (in void b) (in void c)
-                                        (out void d))
+          '(interface i (types) (events (event a (signature (type void #f)) in) (event b (signature (type void #f)) in) (event c (signature (type void #f)) in)
+                                        (event d (signature (type void #f)) out))
                       (behaviour #f (types) (variables) (functions)
                                  (compound
                                   (guard (expression true)
@@ -86,8 +86,8 @@
                                                           on b: [true] e;
                                                           on c: [true] f;
                                                           } } #})))
-          '(interface i (types) (events (in void a) (in void b) (in void c)
-                                        (out void d) (out void e) (out void f))
+          '(interface i (types) (events (event a (signature (type void #f)) in) (event b (signature (type void #f)) in) (event c (signature (type void #f)) in)
+                                        (event d (signature (type void #f)) out) (event e (signature (type void #f)) out) (event f (signature (type void #f)) out))
                       (behaviour #f (types) (variables) (functions)
                                  (compound
                                   (guard (expression true)
@@ -169,7 +169,7 @@
                                               behaviour
                                               { void foo(){ if(true){}} on a,b,c: [true] d ;
                                                      } } #})))
-          '(interface i (types) (events (in void a) (out void d))
+          '(interface i (types) (events (event a (signature (type void #f)) in) (event d (signature (type void #f)) out))
                       (behaviour #f
                                  (types)
                                  (variables)
@@ -191,8 +191,8 @@
                                               behaviour
                                               { on a,b,c: [true] d ;
                                                    } } #})))
-          '(interface i (types) (events (in void a) (in void b) (in void c)
-                                        (out void d))
+          '(interface i (types) (events (event a (signature (type void #f)) in) (event b (signature (type void #f)) in) (event c (signature (type void #f)) in)
+                                        (event d (signature (type void #f)) out))
                       (behaviour #f (types) (variables) (functions)
                                  (compound
                                   (guard (expression true)
@@ -235,8 +235,8 @@
                                               out void d;
                                               behaviour { on a,b,c: [true] d;
                                                           } } #})))
-          '(interface i (types) (events (in void a) (in void b) (in void c)
-                                        (out void d))
+          '(interface i (types) (events (event a (signature (type void #f)) in) (event b (signature (type void #f)) in) (event c (signature (type void #f)) in)
+                                        (event d (signature (type void #f)) out))
                       (behaviour #f (types) (variables) (functions)
                                  (compound
                                   (guard (expression true)
@@ -253,8 +253,8 @@
                                                           on b: [true] d;
                                                           on c: [true] d;
                                                           } } #})))
-          '(interface i (types) (events (in void a) (in void b) (in void c)
-                                        (out void d))
+          '(interface i (types) (events (event a (signature (type void #f)) in) (event b (signature (type void #f)) in) (event c (signature (type void #f)) in)
+                                        (event d (signature (type void #f)) out))
                       (behaviour #f (types) (variables) (functions)
                                  (compound
                                   (guard (expression true)
@@ -371,31 +371,31 @@ interface norm_nested_guards
   }
 }
 #})))
-'(interface*
+'(interface
   norm_nested_guards
-  (types* (enum* #f Reply (Ok Nok)))
-  (events* (in* (signature* (type* Reply #f)) e))
-  (behaviour*
+  (types (enum Reply #f (fields Ok Nok)))
+  (events (event e (signature (type Reply #f)) in))
+  (behaviour
     #f
-    (types* (enum* #f State (Foo)))
-    (variables*
-      (variable*
+    (types (enum State #f (fields Foo)))
+    (variables
+      (variable
         state
-        (type* State #f)
-        (expression* (literal* #f State Foo)))
-      (variable*
+        (type State #f)
+        (expression (literal #f State Foo)))
+      (variable
         bar
-        (type* bool #f)
-        (expression* true)))
-    (functions*)
-    (compound*
-      (guard*
-        (expression*
-          (and (and (field* state Foo) (var* bar)) true))
-        (compound*
-          (on* (triggers* (trigger* #f e (arguments*)))
-               (compound*
-                 (reply* (expression* (literal* #f Reply Ok)))))
-          (on* (triggers* (trigger* #f e (arguments*)))
-               (compound*
-                 (reply* (expression* (literal* #f Reply Nok))))))))))))
+        (type bool #f)
+        (expression true)))
+    (functions)
+    (compound
+      (guard
+        (expression
+          (and (and (field state Foo) (var bar)) true))
+        (compound
+          (on (triggers (trigger #f e (arguments)))
+               (compound
+                 (reply (expression (literal #f Reply Ok)))))
+          (on (triggers (trigger #f e (arguments)))
+               (compound
+                 (reply (expression (literal #f Reply Nok))))))))))))

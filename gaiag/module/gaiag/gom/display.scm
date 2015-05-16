@@ -63,51 +63,10 @@
                       (sdisplay (slot-ref o name) port)))))
             (class-slots (class-of o))))
 
-(define-method (display-slots (o <dir-ast>) port)
-  (display (.direction o) port)
-  (star port))
-
-;; (define-method (display-slots (o <type>) port)
-;;   (sdisplay (.scope o) port)
-;;   (sdisplay (.name o) port))
-
-(define-method (display-slots (o <enum>) port)
-  (sdisplay (.scope o) port)
-  (sdisplay (.name o) port)
-  (sdisplay (.elements (.fields o)) port))
-
-(define-method (display-slots (o <int>) port)
-;;  (next-method)
-  (sdisplay (.scope o) port)
-  (sdisplay (.name o) port)
-  (sdisplay (.range o) port))
-
-(define-method (display-slots (o <extern>) port)
-;;  (next-method)
-  (sdisplay (.scope o) port)
-  (sdisplay (.name o) port)
-  (sdisplay (.value o) port))
-
-(define-method (display-slots (o <event>) port)
-  (next-method)
-  (sdisplay (.signature o) port)
-  (sdisplay (.name o) port))
-
 (define-method (display-slots (o <expression>) port)
   (if (eq? (.value o) *unspecified*)
       (sdisplay "*unspecified*" port)
       (sdisplay (.value o) port)))
-
-(define-method (display-slots (o <gom:port>) port)
-  (next-method)
-  (sdisplay (.type o) port)
-  (sdisplay (.name o) port)
-  (sdisplay (.injected o) port))
-
-(define-method (write (o <dir-ast>) port)
-  (display #\( port)
-  (display-slots o port)
-  (display #\) port))
 
 (define-method (display-slots (o <if>) port)
   (sdisplay (.expression o) port)

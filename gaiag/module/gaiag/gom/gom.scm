@@ -73,7 +73,6 @@
            <compound>
            <data>
            <declarative>
-           <dir-ast>
            <enum>
            <event>
            <events>
@@ -155,14 +154,13 @@
   (type :accessor .type :init-value (make <type>) :init-keyword :type)
   (parameters :accessor .parameters :init-form (make <parameters>) :init-keyword :parameters))
 
-(define-class <dir-ast> (<named>)
+(define-class <event> (<named>)
+  (signature :accessor .signature :init-form (make <signature>) :init-keyword :signature)
   (direction :accessor .direction :init-value #f :init-keyword :direction))
 
-(define-class <event> (<dir-ast>)
-  (signature :accessor .signature :init-form (make <signature>) :init-keyword :signature))
-
-(define-class <gom:port> (<dir-ast>)
+(define-class <gom:port> (<named>)
   (type :accessor .type :init-value #f :init-keyword :type)
+  (direction :accessor .direction :init-value #f :init-keyword :direction)  
   (injected :accessor .injected :init-value #f :init-keyword :injected))
 
 (define-class <trigger> (<ast>)

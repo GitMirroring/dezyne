@@ -42,78 +42,79 @@
 (define resolve-ast
   '((interface
      ivar
-      (types (enum e (v))
-             (extern xint int&)
-             (enum mixed (v)))
-      (events (in (signature (type e)) foo)
-              (out (signature (type mixed)) bar)
-              (in (signature
+      (types (enum e #f (fields v))
+             (extern xint #f int&)
+             (enum mixed #f (fields v)))
+      (events (event foo (signature (type e)) in)
+              (event bar (signature (type mixed)) out)
+              (event ei (signature
                    (type void)
                    (parameters (parameter i (type xint) out)))
-                  ei)
-              (out (signature
+                  in)
+              (event eo (signature
                    (type e)
                    (parameters (parameter i (type xint) in)))
-                  eo))
+                  out))
       (behaviour
        #f
        (types
-        (enum state (one two))
-        (int mode (range 0 3)))
+        (enum state #f (fields one two))
+        (int mode #f (range 0 3)))
        (variables
         (variable m (type state) (expression (value state one)))
         (variable b (type bool) (expression true))
         (variable x (type mixed) (expression (value mixed v))))
-       (functions (function toggle (signature (type void)) (compound))
+       (functions (function toggle (signature (type void)) #f (compound))
                   (function g
                             (signature (type bool)
                                        (parameters (parameter ga (type bool))
                                                    (parameter gb (type bool))))
+                            #f
                             (compound))
                   (function efun
-                            (signature (type state)) (compound (return (var m)))))
+                            (signature (type state)) #f (compound (return (var m)))))
        (compound
         (on (triggers (trigger #f foo))
             (reply (expression (value e v)))))))
     (component
      var
-     (ports (provides ivar i) (requires ivar o))
+     (ports (port i ivar provides) (port o ivar requires))
      (behaviour
       #f
       (types
-       (enum state (one two))
-       (int mode (range 0 3)))
+       (enum state #f (fields one two))
+       (int mode #f (range 0 3)))
       (variables
        (variable m (type state) (expression (value state one)))
        (variable e (type e ivar) (expression (literal ivar e v)))
        (variable b (type bool) true))
        (functions
-        (function fun (signature (type void) (parameters (parameter a (type bool))))
+        (function fun (signature (type void) (parameters (parameter a (type bool)))) #f
                   (compound (assign a (expression true))))
-        (function rfun (signature (type void) (parameters))
+        (function rfun (signature (type void) (parameters)) #f
                   (compound (call rgun (expression #t))))
-        (function rgun (signature (type void) (parameters (parameter a (type bool))))
+        (function rgun (signature (type void) (parameters (parameter a (type bool)))) #f
                   (compound (call rgun (expression #t))))
-        (function fa (signature (type void) (parameters (parameter a (type bool))))
+        (function fa (signature (type void) (parameters (parameter a (type bool)))) #f
                   (compound (call fb (expression #t))))
-        (function fb (signature (type void) (parameters (parameter a (type bool))))
+        (function fb (signature (type void) (parameters (parameter a (type bool)))) #f
                   (compound (call fc (expression #t))))
-        (function fc (signature (type void) (parameters (parameter a (type bool))))
+        (function fc (signature (type void) (parameters (parameter a (type bool)))) #f
                   (compound (assign b (expression true))))
-        (function rfa (signature (type void) (parameters (parameter a (type bool))))
+        (function rfa (signature (type void) (parameters (parameter a (type bool)))) #f
                   (compound (call rfb (expression #t))))
-        (function rfb (signature (type void) (parameters (parameter a (type bool))))
+        (function rfb (signature (type void) (parameters (parameter a (type bool)))) #f
                   (compound (call rfc (expression #t))))
-        (function rfc (signature (type void) (parameters (parameter a (type bool))))
+        (function rfc (signature (type void) (parameters (parameter a (type bool)))) #f
                   (compound (call rfa (expression #t))))
-        (function rbfa (signature (type void) (parameters (parameter a (type bool))))
+        (function rbfa (signature (type void) (parameters (parameter a (type bool)))) #f
                   (assign b (call rbfb (expression #t))))
-        (function rbfb (signature (type void) (parameters (parameter a (type bool))))
+        (function rbfb (signature (type void) (parameters (parameter a (type bool)))) #f
                   (compound (assign b (call rbfc (expression #t)))))
-        (function rbfc (signature (type void) (parameters (parameter a (type bool))))
+        (function rbfc (signature (type void) (parameters (parameter a (type bool)))) #f
                   (compound (call fa (expression #t)) (call fb (expression #t)) (compound (call fc (expression #t)) (assign b (call rbfa (expression #t))))))
         (function efun
-                  (signature (type state)) (compound (return (var m)))))
+                  (signature (type state)) #f (compound (return (var m)))))
        (compound
        (on (triggers (trigger i foo))
            (compound
@@ -369,7 +370,7 @@
          (gom-pretty-noisy-equal?
           (ast:resolve-model
            (cadr resolve-ast)
-           '(function fun (signature (type void) (parameters (parameter a (type bool))))
+           '(function fun (signature (type void) (parameters (parameter a (type bool)))) #f
                             (compound (assign b (expression (var a))))))
           '(function fun (signature (type void) (parameters (parameter a (type bool))))
                      #f
@@ -379,7 +380,7 @@
          (gom-pretty-noisy-equal?
           (ast:resolve-model
            (cadr resolve-ast)
-           '(function fun (signature (type bool) (parameters (parameter a (type bool))))
+           '(function fun (signature (type bool) (parameters (parameter a (type bool)))) #f
                       (compound (return (expression (var a))))))
           '(function
             fun
@@ -431,7 +432,7 @@
          (gom-pretty-noisy-equal?
           (ast:resolve-model
            (cadr resolve-ast)
-           '(function rgun (signature (type void) (parameters))
+           '(function rgun (signature (type void) (parameters)) #f
                       (compound (call rgun (expression #t)))))
           '(function rgun (signature (type void) (parameters))
                      recursive
@@ -441,7 +442,7 @@
          (gom-pretty-noisy-equal?
           (ast:resolve-model
            (cadr resolve-ast)
-           '(function rfun (signature (type void) (parameters))
+           '(function rfun (signature (type void) (parameters)) #f
                       (compound (call rgun (expression #t)))))
           '(function rfun (signature (type void) (parameters))
                      recursive
@@ -451,7 +452,7 @@
          (gom-pretty-noisy-equal?
           (ast:resolve-model
            (cadr resolve-ast)
-           '(function fa (signature (type void) (parameters))
+           '(function fa (signature (type void) (parameters)) #f
                       (compound (call fb (expression #t)))))
           '(function fa (signature (type void) (parameters))
                      #f
@@ -461,7 +462,7 @@
          (gom-pretty-noisy-equal?
           (ast:resolve-model
            (cadr resolve-ast)
-           '(function rfa (signature (type void) (parameters))
+           '(function rfa (signature (type void) (parameters)) #f
                       (compound (call rfb (expression #t)))))
           '(function rfa (signature (type void) (parameters))
                      recursive
@@ -471,7 +472,7 @@
          (gom-pretty-noisy-equal?
           (ast:resolve-model
            (cadr resolve-ast)
-           '(function rbfa (signature (type void) (parameters))
+           '(function rbfa (signature (type void) (parameters)) #f
                       (assign b (compound (call rbfb (expression #t))))))
           '(function rbfa (signature (type void) (parameters))
                      recursive
@@ -603,7 +604,7 @@
           (ast:resolve-model
            '(interface
              I
-             (types (int I02 (range 0 2)))
+             (types (int I02 #f (range 0 2)))
              (events)
              (behaviour
               #f
@@ -614,7 +615,7 @@
               (compound))))
            `(interface
              I
-             (types (int I02 (range 0 2)))
+             (types (int I02 #f (range 0 2)))
              (events)
              (behaviour
               #f

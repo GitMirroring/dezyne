@@ -470,15 +470,16 @@
 (define-method (gom:types (port <gom:port>))
   (gom:interface-types (gom:import (.type port))))
 
+(define builtin-types (list (make <type> :name 'bool) (make <type> :name 'void)))
 (define-method (gom:type (o <model>) name)
-  (find (lambda (o) (eq? (.name o) name)) (append (gom:types o) (gom:types))))
+  (find (lambda (o) (eq? (.name o) name)) (append (gom:types o) (gom:types) builtin-types)))
 
 (define-method (gom:type (o <model>) (type <type>))
   (or (find (lambda (o) (and (eq? (.name o) (.name type))
                              (or (eq? (.scope o) (.scope type))
                                  (and (eq? (.scope o) '*global*)
                                       (not (.scope type))))))
-            (append (gom:types o) (gom:types)))))
+            (append (gom:types o) (gom:types) builtin-types))))
 
 (define-method (gom:type (o <component>) (type <type>))
   (or (next-method)

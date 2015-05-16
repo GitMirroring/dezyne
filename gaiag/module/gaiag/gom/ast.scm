@@ -45,11 +45,22 @@
 
 (define (ast->sugar ast)
   (match ast
-    (('in 'void name) `(in (signature (type void)) ,name))
-    (('out 'void name) `(out (signature (type void)) ,name))
+    ;; (('in 'void name) `(event ,name (signature (type void)) in))
+    ;; (('out 'void name) `(event ,name (signature (type void)) out))
+    ;; (('in signature name) `(event ,name ,signature in))
+    ;; (('out signature name) `(event ,name ,signature out))
+    ;; (('enum name scope ('fields fields ...)) `(enum ,name ,scope (fields ,fields)))
+    ;; (('enum name scope fields) `(enum ,name ,scope (fields ,fields)))
+    ;; (('enum name ('fields fields ...)) `(enum ,name #f (fields ,fields)))
+    ;; (('enum name fields) `(enum ,name #f (fields ,fields)))
+    ;; (('extern name value) `(extern ,name #f ,value))
+    ;; (('int name range) `(int ,name #f ,range))    
+    ;; (('events events ...) (cons 'events (map ast->sugar events)))
+
+    (('provides type name) `(port ,name ,type provides))
+    (('requires type name injected ...) `(port ,name ,type requires ,injected))
     (('on ('triggers t ...) statement) ast)
     (('on triggers statement) (list 'on (cons 'triggers (map ast->trigger-sugar triggers)) statement))
-    (('events events ...) (cons 'events (map ast->sugar events)))
     (_ ast)))
 
 (define (ast->trigger-sugar ast)
@@ -136,27 +147,20 @@
 
     (('data value) (make <data> :value value))
 
-    (('enum scope name fields)
+    (('enum name scope fields)
      (make <enum>
        :name name
        :scope scope
-       :fields (make <fields> :elements fields)))
+       :fields (ast->gom- fields)))
 
-    (('enum name fields)
-     (make <enum>
-       :name name
-       :fields (make <fields> :elements fields)))
+    (('extern name scope value)
+     (make <extern> :name name :scope scope :value value))
 
-    (('extern scope name value)
-     (make <extern> :scope scope :name name :value value))
-
-    (('extern name value) (make <extern> :name name :value value))
-
-    (((and (or 'in 'out) (get! direction)) signature name)
+    (('event name signature direction)
      (make <event>
        :name name
        :signature (ast->gom- signature)
-       :direction (direction)))
+       :direction direction))
 
     (('events events ...) (make <events> :elements (map ast->gom- events)))
 
@@ -166,12 +170,7 @@
 
     (('field identifier field) (make <field> :identifier identifier :field field))
 
-    (('function name signature statement) ;; pre-resolving
-     (make <function>
-       :name name
-       :signature (ast->gom- signature)
-       :recursive #f
-       :statement (ast->gom- statement)))
+    (('fields fields ...) (make <fields> :elements fields))    
 
     (('function name signature recursive? statement)
      (make <function>
@@ -203,12 +202,10 @@
 
     (('import name) (make <import> :name name))
 
-    (('int scope name range)
-     (make <int> :scope scope :name name :range (ast->gom- range)))
+    (('int name scope range)
+     (make <int> :name name :scope scope :range (ast->gom- range)))
 
-    (('int name range) (make <int> :name name :range (ast->gom- range)))
-
-    (('instance component name) (make <instance> :name name :component component))
+    (('instance name component) (make <instance> :name name :component component))
 
     (('instances instances ...)
      (make <instances> :elements (map ast->gom- instances)))
@@ -240,11 +237,11 @@
     (('parameters parameters ...)
      (make <parameters> :elements (map ast->gom- parameters)))
 
-    (((and (or 'provides 'requires) (get! direction)) type name injected ...)
+    (('port name type direction injected ...)
      (make <gom:port>
        :name name
        :type type
-       :direction (direction)
+       :direction direction
        :injected (and=> (null-is-#f injected) car)))
 
     (('ports ports ...) (make <ports> :elements (map ast->gom- ports)))

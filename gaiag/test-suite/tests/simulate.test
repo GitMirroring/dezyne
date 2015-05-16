@@ -38,9 +38,9 @@
      i
      (types)
      (events
-      (in (signature (type void)) a)
-      (out (signature (type void)) b)
-      (out (signature (type void)) c))
+      (event a (signature (type void #f)) in)
+      (event b (signature (type void #f)) out)
+      (event c (signature (type void #f)) out))
      (behaviour
       #f
       (types)

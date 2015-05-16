@@ -20,8 +20,8 @@
         iloc
         (types)
         (events
-          (in (signature (type void)) e)
-          (out (signature (type void)) a))
+          (event e (signature (type void)) in)
+          (event a (signature (type void)) out))
         (behaviour
           #f
           (types)
@@ -32,7 +32,7 @@
                 (action (trigger #f a))))))
       (component
         loc
-        (ports (provides iloc i #f))
+        (ports (port i iloc provides #f))
         (behaviour
           #f
           (types)
@@ -49,16 +49,18 @@
          iloc
          (types)
          (events
-           (in (signature
-                 ((location "examples/loc.dzn" 2 5 22 #f)
-                  type
-                  void))
-               e)
-           (out (signature
-                  ((location "examples/loc.dzn" 2 5 22 #f)
-                   type
-                   void))
-                a))
+           (event e
+                  (signature
+                    ((location "examples/loc.dzn" 2 5 22 #f)
+                     type
+                     void))
+                  in)
+           (event a
+                  (signature
+                    ((location "examples/loc.dzn" 2 5 22 #f)
+                     type
+                     void))
+                  out))
          (behaviour
            #f
            (types)
@@ -78,7 +80,7 @@
         ((location "examples/loc.dzn" 10 0 80 #f)
          component
          loc
-         (ports (provides iloc i #f))
+         (ports (port i iloc provides #f))
          (behaviour
            #f
            (types)
