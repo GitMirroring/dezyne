@@ -60,6 +60,7 @@
            gom:function
            gom:function-names
            gom:functions
+           gom:guard-equal?
            gom:import
            gom:imports
            gom:imported?
@@ -505,6 +506,9 @@
     (($ <interface>) (.elements (.events ast)))
     (($ <gom:port>) (gom:events (gom:import (.type ast))))
     (_ (throw 'match-error  (format #f "~a:events: no match: ~a\n" (current-source-location) ast)))))
+
+(define-method (gom:guard-equal? (lhs <guard>) (rhs <guard>))
+  (equal? (gom->list (.expression lhs)) (gom->list (.expression rhs))))
 
 ;;;; reading/caching
 (define *ast-alist* '())

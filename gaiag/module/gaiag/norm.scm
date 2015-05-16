@@ -22,7 +22,9 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (gaiag norm)
+(define-module
+  (gaiag norm) ;;-goeps
+  ;;+goeps (g norm)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 pretty-print)
   :use-module (ice-9 receive)
@@ -32,16 +34,20 @@
   :use-module (srfi srfi-1)
 
   :use-module (gaiag misc)
-  :use-module (gaiag reader)
-  :use-module (gaiag resolve)
 
-  :use-module (oop goops)
-  :use-module (oop goops describe)
-  :use-module (gaiag gom)
+  :use-module (oop goops) ;;-goeps
+  :use-module (gaiag gom) ;;-goeps
+  :use-module (gaiag reader) ;;-goeps
+  :use-module (gaiag resolve) ;;-goeps
+
+  ;;+goeps :use-module (g ast goops)
+  ;;+goeps :use-module (g ast gom)
+  ;;+goeps :use-module (g reader)
+  ;;+goeps :use-module (g resolve)
 
   :export (
            add-skip
-           aggregate-guard
+           aggregate-guard-g
            expand-on
            flatten-compound
            guards-not-or
@@ -58,7 +64,10 @@
 
 (define* ((expand-on :optional (compare equal?)) o)
   (match o
-    (($ <compound> (($ <on>) ...))
+    (
+     ($ <compound> (($ <on>) ...)) ;;-goeps
+     ;;-goeps ;;($ <compound> (($ <on>) ...))
+     ;;+goeps($ <compound> ($ <on>) ...)
      (make <compound>
        :elements (apply append (map (port-split-triggers compare) (.elements o)))))
     (($ <on> triggers statement)
@@ -70,36 +79,36 @@
     ((h t ...) (map (expand-on compare) o))
     (_ o)))
 
-(define-method (port-split-triggers compare)
-  (lambda (o) (port-split-triggers compare o)))
+(define ((port-split-triggers compare) o)
+  (match o
+    (($ <on>)
+     (let loop ((triggers (.elements (.triggers o))))
+       (if (null? triggers)
+           '()
+           (receive (shared-triggers remainder)
+               (partition (lambda (x) (compare (car triggers) x)) triggers)
+             (let* ((triggers (append shared-triggers))
+                    (shared-on (make <on>
+                                 :triggers (make <triggers> :elements triggers)
+                                 :statement (.statement o))))
+               (cons shared-on (loop remainder)))))))
+    (_ o)))
 
-(define-method (port-split-triggers compare (o <top>)) o)
-
-(define-method (port-split-triggers compare (o <on>))
-  (let loop ((triggers (.elements (.triggers o))))
-    (if (null? triggers)
-        '()
-        (receive (shared-triggers remainder)
-            (partition (lambda (x) (compare (car triggers) x)) triggers)
-          (let* ((triggers (append shared-triggers))
-                 (shared-on (make <on>
-                              :triggers (make <triggers> :elements triggers)
-                              :statement (.statement o))))
-            (cons shared-on (loop remainder)))))))
-
-(define (aggregate-guard o)
+(define (aggregate-guard-g o)
   "Aggregate on-statements with matching guard into one guard."
 ;; find all ons with matching guards
 ;; push all ons into first guard, discard the rest
   (match o
-    (($ <compound> (($ <guard>) ...))
+    (
+     ($ <compound> (($ <guard>) ...)) ;;-goeps
+      ;;+goeps ($ <compound> ($ <guard>) ...)
      (make <compound>
        :elements
        (let loop ((guards (.elements o)))
          (if ( null? guards)
              '()
              (receive (shared-guards remainder)
-                 (partition (lambda (x) (guard-equal? (car guards) x)) guards)
+                 (partition (lambda (x) (gom:guard-equal? (car guards) x)) guards)
                (let* ((expression (.expression (car shared-guards)))
                       (aggregated-guard
                        (make <guard>
@@ -107,12 +116,9 @@
                          :statement (wrap-compound-as-needed (map .statement shared-guards)))))
                  (cons aggregated-guard (loop remainder))))))))
      (($ <functions>) o)
-     ((? (is? <ast>)) (gom:map aggregate-guard o))
-     ((h t ...) (map aggregate-guard o))
+     ((? (is? <ast>)) (gom:map aggregate-guard-g o))
+     ((h t ...) (map aggregate-guard-g o))
      (_ o)))
-
-(define-method (guard-equal? (lhs <guard>) (rhs <guard>))
-  (equal? (gom->list (.expression lhs)) (gom->list (.expression rhs))))
 
 (define (wrap-compound-as-needed statements)
   (if (or (null? statements) (>1 (length statements)))
@@ -153,7 +159,7 @@
     ((h t ...) (map (remove-otherwise statements) o))
     (_ o)))
 
-(define-method (guards-not-or (o <list>))
+(define (guards-not-or o)
   (let* ((expressions (map .expression o))
          (others (remove (is? <otherwise>) expressions))
          (values (map .value others)))
