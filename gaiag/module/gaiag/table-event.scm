@@ -94,7 +94,7 @@
       o))
 
 (define-method (table-event (model <model>) (o <compound>))
-  (norm-event (table-state model o)))
+  (norm-event (table-state-statement model o)))
 
 (define-method (mangle-table o)
   (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))

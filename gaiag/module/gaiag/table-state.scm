@@ -24,73 +24,82 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (gaiag table-state)
+(define-module
+  (gaiag table-state) ;;-goeps
+  ;;+goeps (g table-state)
   :use-module (ice-9 and-let-star)
+  :use-module (ice-9 curried-definitions)  
   :use-module (ice-9 match)
   :use-module (ice-9 getopt-long)
   :use-module (ice-9 pretty-print)
   :use-module (srfi srfi-1)
 
-  :use-module (oop goops)
-
   :use-module (language dezyne location)
-  :use-module (gaiag gaiag)
-  :use-module (gaiag json-table)
   :use-module (gaiag misc)
-  :use-module (gaiag norm)
-  :use-module (gaiag pretty)
-  :use-module (gaiag reader)
-  :use-module (gaiag resolve)
+  
+  :use-module (oop goops) ;;-goeps
+  :use-module (gaiag gom) ;;-goeps
+  :use-module (gaiag gaiag) ;;-goeps
+  :use-module (gaiag json-table) ;;-goeps
+  :use-module (gaiag norm) ;;-goeps
+  :use-module (gaiag reader) ;;-goeps
+  :use-module (gaiag resolve) ;;-goeps
+  :use-module (gaiag pretty) ;;-goeps
 
-  :use-module (gaiag gom)
+  ;;+goeps :use-module (g ast goops)
+  ;;+goeps :use-module (g ast gom)
+  ;;+goeps :use-module (g g)
+  ;;+goeps :use-module (g json-table)
+  ;;+goeps :use-module (g norm)
+  ;;+goeps :use-module (g reader)
+  ;;+goeps :use-module (g resolve)
+  ;;+goeps :use-module (g pretty)
 
-  :export (ast-> pretty-table remove-initial table-state))
+  :export (ast-> pretty-table remove-initial table table-state-statement))
 
-(define-method (table-state (o <list>))
-  (filter identity (map table-state o)))
+;;(define debug stderr)
+(define (debug . args) #t)
 
-(define-method (table-state (o <root>))
-  ;; FIXME: c&p csp.scm
-  (let ((name
-         (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
-                     string->symbol))))
-    (or (and-let* ((models (.elements o))
-                   (models (null-is-#f (filter (negate gom:imported?) models)))
-                   (models (null-is-#f (if name (and=> (find (gom:named name) models) list) models))))
-                  (map table-state models)))))
-
-(define-method (table-state o) o)
-
-(define-method (table-state (o <interface>))
-  (let* ((statement (table-state o ((compose .statement .behaviour) o)))
-         (statement (remove-initial statement)))
-    (make (class-of o)
-      :name (.name o)
-      :types (.types o)
-      :events (.events o)
-      :behaviour
-      (make <behaviour>
-        :name ((compose .name .behaviour) o)
-        :types ((compose .types .behaviour) o)
-        :variables ((compose .variables .behaviour) o)
-        :functions ((compose .functions .behaviour) o)
-        :statement statement))))
-
-(define-method (table-state (o <component>))
-  (or (and-let* ((behaviour (.behaviour o))
-                 (statement (table-state o (.statement behaviour)))
-                 (statement (remove-initial statement)))
-                (make (class-of o)
-                  :name (.name o)
-                  :ports (.ports o)
-                  :behaviour
-                  (make <behaviour>
-                    :name ((compose .name .behaviour) o)
-                    :types ((compose .types .behaviour) o)
-                    :variables ((compose .variables .behaviour) o)
-                    :functions ((compose .functions .behaviour) o)
-                    :statement statement)))
-      o))
+(define ((table table-statement) o)
+  (match o
+    (($ <root> models)
+     (let ((name
+            (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
+                        string->symbol))))
+       (or (and-let* ((models (.elements o))
+                      (models (null-is-#f (filter (negate gom:imported?) models)))
+                      (models (null-is-#f (if name (and=> (find (gom:named name) models) list) models))))
+                     (make <root> :elements (map (table table-statement) models))))))
+    (($ <interface>)
+     (let* ((statement (table-statement o ((compose .statement .behaviour) o)))
+            (statement (remove-initial statement)))
+       (make <interface>
+         :name (.name o)
+         :types (.types o)
+         :events (.events o)
+         :behaviour
+         (make <behaviour>
+           :name ((compose .name .behaviour) o)
+           :types ((compose .types .behaviour) o)
+           :variables ((compose .variables .behaviour) o)
+           :functions ((compose .functions .behaviour) o)
+           :statement statement))))
+    (($ <component>)
+     (or (and-let* ((behaviour (.behaviour o))
+                    (statement (table-statement o ((compose .statement .behaviour) o)))
+                    (statement (remove-initial statement)))
+                   (make <component>
+                     :name (.name o)
+                     :ports (.ports o)
+                     :behaviour
+                     (make <behaviour>
+                       :name ((compose .name .behaviour) o)
+                       :types ((compose .types .behaviour) o)
+                       :variables ((compose .variables .behaviour) o)
+                       :functions ((compose .functions .behaviour) o)
+                       :statement statement)))
+         o))
+    (_ o)))
 
 (define (handle-initial statement)
   (or (and-let* (((is-a? statement <guard>))
@@ -116,26 +125,28 @@
                   (make <compound> :elements elements))
      statement)))
 
-(define-method (table-state o) o)
+(define (table-state-statement model o)
+  (match o
+    (($ <compound>)
+     (or (and-let* ((variables ((compose .elements .variables .behaviour) model))
+                    (types (map (gom:type model) variables))
+                    (enum (or (find (is? <enum>) types)
+                              (make <enum> :fields (make <fields> :elements '(<Initial>)))))
+                    (fields ((compose .elements .fields) enum))
+                    (states (map (lambda (field)
+                                   (make <literal>
+                                     :type (.name enum)
+                                     :field field)) fields))
+                    (guards (filter identity
+                                    (map (lambda (state)
+                                           (table-state-state model state o))
+                                         states))))
+                   (retain-source-properties o (make <compound> :elements guards)))
+         o))
+    (_ o)
+    ))
 
-(define-method (table-state (model <model>) (o <compound>))
-  (or (and-let* ((variables ((compose .elements .variables .behaviour) model))
-                 (types (map (gom:type model) variables))
-                 (enum (or (find (is? <enum>) types)
-                           (make <enum> :fields (make <fields> :elements '(<Initial>)))))
-                 (fields ((compose .elements .fields) enum))
-                 (states (map (lambda (field)
-                                (make <literal>
-                                  :type (.name enum)
-                                  :field field)) fields))
-                 (guards (filter identity
-                                 (map (lambda (state)
-                                        (table-state model state o))
-                                      states))))
-                (retain-source-properties o (make <compound> :elements guards)))
-      o))
-
-(define-method (table-state (model <model>) (state <literal>) (o <compound>))
+(define (table-state-state model state o)
   (and-let* ((statement (flatten-compound (evaluate model state (flatten-compound o)))))
             (let* ((field (make-field model state))
                    (expression (make <expression> :value (make-field model state)))
@@ -153,28 +164,31 @@
                           :expression expression
                           :statement statement)))))
 
-(define-method (state-var (o <model>) (state <literal>))
+(define (state-var o state)
   (define (type? v) (eq? ((compose .name .type) v) (.type state)))
-  (find type? (gom:variables o)))
+  (find type? ((compose .elements .variables .behaviour) o)))
 
-(define-method (state-identifier (o <model>) (state <literal>))
+(define (state-identifier o state)
   (or (and=> (state-var o state) .name) '<state>))
 
-(define-method (make-field (model <model>) (state <literal>))
+(define (make-field model state)
   (make <field> :identifier (state-identifier model state) :field (.field state)))
 
-(define-method (declarative? (o <statement>))
+(define (declarative? o)
   (or (is-a? o <guard>)
       (is-a? o <on>)
       (and (is-a? o <compound>)
            (>0 (length (.elements o)))
            (declarative? (car (.elements o))))))
 
-(define-method (evaluate (model <model>) (state <literal>) o)
+(define (evaluate model state o)
+  (debug "evaluate\n")
+  ;;(pretty-print (gom->list o));;-goeps
   (match o
     (($ <compound> statements)
      (let* ((statements
              (let loop ((statements (.elements o)))
+               (debug "loop\n")
                (if (null? statements)
                    '()
                    (let* ((statement (annotate-otherwise o (car statements)))
@@ -192,7 +206,10 @@
          (retain-source-properties o (make <compound> :elements 
                                            (map (lambda (o) (evaluate model state o)) statements)))))))
 
-    (($ <guard> expression ($ <on> triggers (and ($ <compound> (($ <guard> e s) ..1)) (get! compound))))
+    (
+     ($ <guard> expression ($ <on> triggers (and ($ <compound> (($ <guard> e s) ..1)) (get! compound)))) ;;-goeps
+     ;;+goeps ($ <guard> expression ($ <on> triggers (and ($ <compound> ($ <guard>) ..1) (get! compound)))) 
+     (debug "GUARD: 1\n")
      (let ((ons
             (map (lambda (e s)
                    (let ((e (annotate-otherwise (compound) e)))
@@ -200,20 +217,30 @@
                                (make <on>
                                  :triggers triggers
                                  :statement (make <guard> :expression e :statement s)))))
-                 e s)))
+                 e s;;-goeps
+                 ;;+goeps (map .expression (.elements (compound)))
+                 ;;+goeps (map .statement (.elements (compound)))
+                 )))
        (evaluate model state (make <guard>
                                :expression expression
                                :statement (retain-source-properties (compound) (make <compound> :elements ons))))))
 
     (($ <guard> expression ($ <on> triggers statement))
+     (debug "GUARD: 2\n")
      (and-let*
       ((guard (make <guard> :expression expression :statement statement))
        (guard (evaluate model state guard)))
       (evaluate model state (make <on> :triggers triggers :statement guard))))
 
-    (($ <guard> expression (and ($ <compound> (and (($ <on>) ..1) (get! ons))) (get! compound)))
+    (
+     ($ <guard> expression (and ($ <compound> (and (($ <on>) ..1) (get! ons))) (get! compound))) ;;-goeps
+     ;;+goeps ($ <guard> expression (and ($ <compound> ($ <on>) ..1) (get! compound)))
+     (debug "GUARD: 3\n")
      (and-let*
-      ((guards (null-is-#f (filter identity (map (lambda (on) (make <guard> :expression expression :statement on)) (ons)))))
+      ((guards (null-is-#f (filter identity (map (lambda (on) (make <guard> :expression expression :statement on))
+                                                 (ons) ;;-goeps
+                                                 ;;+goeps (.elements (compound))
+                                                 ))))
        (guards (null-is-#f (filter identity (map (lambda (guard) (evaluate model state guard)) guards)))))
       (if (=1 (length guards))
           (car guards)
@@ -222,6 +249,7 @@
            (evaluate model state (make <compound> :elements guards))))))
 
     (($ <guard> expression1 ($ <guard> expression2 statement))
+     (debug "GUARD: 4\n")
      (and-let*
       ((statement (evaluate model state statement))
        (value (eval-expression model state (list 'and (.value expression1) (.value expression2))))
@@ -236,6 +264,7 @@
       (evaluate model state guard)))
 
     (($ <guard> expression statement)
+     (debug "GUARD: 5\n")
      (and-let* ((value (eval-expression model state expression))
                 (expression (if (is-a? value <otherwise>)
                                 value
@@ -252,7 +281,9 @@
                  (_ (make <guard> :expression expression :statement statement)))))
 
     (($ <on> triggers ($ <guard> expression statement))
+     (debug "ON: 1\n")
      (and-let* ((guard (.statement o))
+                ((debug "VAL: ~a\n"(eval-expression model state expression) ))
                 (value (eval-expression model state expression)))
                (match value
                  (#t (evaluate model state (make <on> :triggers triggers :statement statement)))
@@ -264,10 +295,13 @@
                  (_ (make <on> :triggers triggers :statement (evaluate model state guard))))))
 
     (($ <on> triggers statement)
+     (debug "ON: 2\n")
      (and-let* ((statement (evaluate model state statement)))
                (make <on> :triggers triggers :statement statement)))
 
-    (($ <if> expression then #f)
+    (
+     ($ <if> expression then #f) ;;-goeps
+      ;;+goeps ($ <if> expression then)
      (and-let* ((value (eval-expression model state expression))
                 (expression (make <expression> :value value))
                 (then (evaluate model state then)))
@@ -291,36 +325,35 @@
 
     (_ o)))
 
-(define-method (annotate-otherwise (o <compound>) (guard <guard>))
-  (or (and-let* ((expression (.expression guard))
-                 ((is-a? expression <otherwise>))
-                 (expression (annotate-otherwise o expression))
-                 (statement (.statement guard)))
-                (retain-source-properties
-                 guard
-                 (make <guard> :expression expression :statement statement)))
-      guard))
+(define (annotate-otherwise compound o)
+  (match o
+    (($ <guard>)
+     (or (and-let* ((expression (.expression o))
+                    ((is-a? expression <otherwise>))
+                    (expression (annotate-otherwise compound expression))
+                    (statement (.statement o)))
+                   (retain-source-properties
+                    o
+                    (make <guard> :expression expression :statement statement)))
+         o))
+    (($ <otherwise>)
+     (or (and-let* ((guards ((gom:filter <guard>) (.elements compound)))
+                    (value (.value (guards-not-or guards))))
+                   (make <otherwise> :value value))
+         o))
+    (_ o)))
 
-(define-method (annotate-otherwise (o <compound>) (expression <expression>))
-  (or (and-let* ((guards ((gom:filter <guard>) (.elements o)))
-                 ((is-a? expression <otherwise>))
-                 (value (.value (guards-not-or guards))))
-                (make <otherwise> :value value))
-      expression))
-
-(define-method (annotate-otherwise (o <compound>) (statement <statement>))
-  statement)
-
-(define-method (annotate-otherwise (o <compound>) (statement <boolean>))
-  statement)
-
-(define-method (eval-expression (model <model>) (state <literal>) o)
+(define (eval-expression model state o)
 
   (define (state-var? identifier) (eq? identifier (state-identifier model state)))
 
   (match o
 
-    (($ <expression> expression) (eval-expression model state expression))
+    (
+     ($ <expression> expression) ;;-goeps
+     ;;+goeps ;;($ <expression> expression)
+     ;;+goeps ('expression expression)
+     (eval-expression model state expression))
 
     (($ <otherwise> expression)
      (let ((value (eval-expression model state expression)))
@@ -392,46 +425,39 @@
     ('true #t)
 
     (_
-     ;;(stderr "eval-expression: TODO: ~a\n" o)
+     ;;(debug "eval-expression: TODO: ~a\n" o)
      o
      )))
 
-(define-method (mangle-table o)
+(define ((mangle-table json-table) o)
   (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))
-    (and (not json?) o)))
+    (match o
+      (($ <root> models)
+       (if json?
+           (map (mangle-table json-table) models)
+           (make <root> :elements (map (mangle-table json-table) models))))
+      (($ <system>) (and (not json?) o))
+      ((? (is? <model>))
+       (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))
+         (if json?
+             (and-let* ((behaviour (.behaviour o))
+                        (statement (.statement behaviour)))
+                       (alist->hash-table
+                        (append
+                         (json-init o)
+                         ((json-table o) statement))))
+             o)))
+      ((or #t #f) (and json? (list (make-hash-table))))
+      (_ (and (not json?) o)))))
 
-(define-method (mangle-table (o <system>))
-  (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))
-    (and (not json?) o)))
-
-(define-method (mangle-table (o <list>))
-  (map mangle-table o))
-
-(define-method (mangle-table (o <boolean>))
-  (if (option-ref (parse-opts (command-line)) 'json #f)
-      (list (make-hash-table))))
-
-(define-method (mangle-table (o <model>))
-  (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))
-    (if json?
-        (and-let* ((behaviour (.behaviour o))
-                   (statement (.statement behaviour)))
-         (alist->hash-table
-          (append
-           (json-init o)
-           ((json-table-state o) statement))))
-        o)))
-
-(define-method (pretty-table (o <ast>)) (ast->dezyne o))
-(define-method (pretty-table (o <list>))
+(define (pretty-table o)
   (match o
-    (((? (is? <ast>)) ...) (string-join (map ast->dezyne o) "\n"))
+    (($ <root>) (ast->dzn o))
     (_ o)))
-(define-method (pretty-table o) o)
 
 (define (ast-> ast)
   ((compose
     pretty-table
-    mangle-table
-    table-state
+    (mangle-table json-table-state)
+    (table table-state-statement)
     ast:resolve) ast))
