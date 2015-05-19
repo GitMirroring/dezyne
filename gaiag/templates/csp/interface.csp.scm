@@ -4,7 +4,7 @@
 ;;;
 ;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2014, 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -35,11 +35,18 @@ channel #(.name model)_''': {modeling}
 
 IF_#(.name model) _#((compose .name .behaviour) model)(IG,CS) = let
 # (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (om:functions model)))
-#(.name model) _#((compose .name .behaviour) model) ((#(->csp model (make <context> :members ((compose om:member-names csp:import) (.name model)))))) =
+#(.name model) _#((compose .name .behaviour) model) =
 # (behaviour->csp (csp:import (.name model)))
 []
 CS & #(.name model)?x:{#(comma-join (delete-duplicates (map .event (modeling-events model))))} -> illegal_(STOP,<>)
 
+forward =
+  wait(call_return.f_forward,
+    call_return.f_forward?p -> 
+    call_return.f_call!p -> 
+    forward
+  )
+                                                                                                          
 REORDER' = #(.name model)?x' -> (#(.name model)_in'?y' -> #(.name model).the_end' -> #(.name model)_out'!y' -> REORDER' [] #(.name model).the_end' -> REORDER')
 
 compress(x) = let

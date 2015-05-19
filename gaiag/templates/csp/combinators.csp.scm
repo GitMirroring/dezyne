@@ -4,7 +4,7 @@
 ;;;
 ;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2014, 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -71,6 +71,9 @@ context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_loca
 -- Paul, HELP! context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ let b' = B'((M',r')) within not b' & range_error -> STOP [] b' & S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
 --context_int_active_(C', B', S')(P', V') = (\ (C', B', S') @ context_active_(C', S'))
 context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
+                                           
+wait(e', P') = (P' [] [] x : diff({|call_return|},{|e'|}) @ x-> wait(e', P'))
+                                           
 
 channel illegal
 channel range_error
@@ -88,3 +91,10 @@ datatype event_enumeration_alphabet = #
      (return-values model)
      (list 'the_end' 'modeling))
     symbol<)))
+
+datatype call_return_alphabet =
+   f_call.counter_t
+  |f_forward.counter_t
+  |f_return
+
+channel call_return: call_return_alphabet

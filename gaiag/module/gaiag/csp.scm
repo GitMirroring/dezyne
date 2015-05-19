@@ -1,7 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014  Rutger van Beusekom
-;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;; Copyright © 2014, 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
@@ -871,7 +871,7 @@
                (channel (if (is-a? model <interface>) model-name  (.port trigger)))
                (channel-return (if ((requires-event? model) trigger) (list " -> " channel "_'.return")))
                (channel (list channel suffix)))
-          (list "(\\ P',V' @ " channel "!" event-name channel-return " -> P'(V'))")))
+          (list channel "!" event-name channel-return " ->\n")))
 
 
        (($ <csp-assign> context identifier ($ <action> (and ($ <trigger> port event) (get! trigger))) expressions)
@@ -898,19 +898,18 @@
          (list "assign_int_((\\ (" expression ") @ (" expressions ")),(\\ (" expression ") @ " lo "<=" (identifier) " and " (identifier) "<=" hi "))")))
 
        (($ <csp-assign> context identifier expression expressions)
-        (list "assign_(\\ (" expression ") @ (" expressions "))"))
+        (list "let " expression " = " expressions " within\n"))
 
        (($ <csp-call> context identifier (or ('arguments) (? unspecified?)) last?)
         (let ((continuation-p (if last? "PF'" "P'")))
          (list "call_(\\ P',V' @ " identifier "(" continuation-p ",V'))")))
 
-       (($ <csp-call> context identifier arguments last?)
-        (let ((continuation-p (if last? "PF'" "P'")))
-         (list "call_args_(\\ P',V' @ " identifier "(" continuation-p ",V'),(\\ (" context ") @ (" arguments ")))")))
+       (($ <csp-call> context identifier arguments lmodel?)
+         (list "call_return." identifier "_call!" arguments " -> "))
 
        (($ <function> name ($ <signature> type ('formals)) recursive? statement)
         (let ((transformed (csp-transform-model model statement inevitable-optional? channel provided-on? locals)))
-          (list name "(PF',V') = (" transformed ")(PF',V')\n")))
+          (list name " = wait_(call_return." name "_call,\ncall_return." name "_call -> \n" transformed ")")))
 
        (($ <function> name ($ <signature> type ('formals formals ...)) recursive? statement)
         (let* ((locals (let loop ((formals formals) (locals locals))
@@ -919,13 +918,14 @@
                              (loop (cdr formals)
                                    (acons (.name (car formals)) (car formals) locals)))))
                (transformed (csp-transform-model model statement inevitable-optional? channel provided-on? locals)))
-          (list name "(PF',V') = (" transformed ")(PF',V')\n")))
+          (list name " = wait_(call_return." name "_call,\ncall_return." name "_call?" "counter" " -> \n" transformed ")")))
 
-       (($ <csp-if> context expression then else)
-        (let ((expression (csp-expression->string model expression locals))
-              (then (csp-transform-model model then inevitable-optional? channel provided-on? locals))
-              (else (csp-transform-model model else inevitable-optional? channel provided-on? locals)))
-          (list "ifthenelse_(\\ (" context ") @ (" expression "),\n" then ",\n" else "\n)")))
+       (($ <csp-if>)
+        (let ((context (.context src))
+              (expression (csp-expression->string model (.expression src) locals))
+              (then (csp-transform-model model (.then src) inevitable-optional? channel provided-on? locals))
+              (else (csp-transform-model model (.else src) inevitable-optional? channel provided-on? locals)))
+          (list "if (" expression ") then \n" then "\nelse\n" else "\n")))
 
        (($ <illegal>) "illegal_")
 
@@ -991,14 +991,14 @@
                           (acons name statement locals))
                          (_ locals)))
                (continuation (csp-transform-model model continuation inevitable-optional? channel provided-on? locals)))
-          (list "semi_(" transformed ",\n" continuation ")")))
+          (list transformed "\n" continuation)))
 
        (($ <skip>) "skip_")
 
        (($ <csp-variable> context name type ($ <action> ($ <trigger> port event)) continuation)
         (let* ((locals (acons name src locals))
                (continuation (csp-transform-model model continuation inevitable-optional? channel provided-on? locals)))
-          (list "context_active_(semi_(send_(" (or port channel) "," event "),recv_(" (or port channel) "_'," event ")),\n" continuation ")")))
+          (list (or port channel) " -> " event " -> " (or port channel) "_'?" name "->\n" continuation )))
 
        (($ <csp-variable> context name (and (? int-type?) (get! type)) ($ <call> identifier arguments) continuation)
         (let* ((range (.range (int-type? (type))))
@@ -1032,15 +1032,15 @@
        (($ <voidreply>)
         (let ((channel-return
                (if (and (not inevitable-optional?) provided-on?)
-                       (list "(\\ P',V' @ " channel "_'.return -> P'(V'))")
+                       (list channel "_'.return ->\n")
                        (if (is-a? model <component>)
                            (list "skip_")
-                           (list "(\\ P',V' @ " channel "_'''.modeling -> P'(V'))")))))
+                           (list channel "_'''.modeling ->\n")))))
           (list channel-return)))
 
        (($ <the-end> context)
         (let* ((end (if component? "transition_end -> " (list channel ".the_end' -> "))))
-          (list "(\\ V' @ " end model-name "_" behaviour "(V'),(" context "))")))
+          (list end model-name "_" behaviour)))
 
        ('() "skip_")
 
