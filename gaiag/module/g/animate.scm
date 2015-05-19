@@ -25,15 +25,21 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (g animate)
+(define-module (gaiag animate)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 match)
   :use-module (ice-9 optargs)
   :use-module (ice-9 rdelim)
   :use-module (srfi srfi-1)
 
-  :use-module (g misc)
-  :export (animate-file
+  :use-module (gaiag misc)
+
+  ;;:use-module (oop goops)
+  ;;:use-module (oop goops describe)
+   :use-module (g om)
+
+  :export (animate
+           animate-file
            animate-input
            animate-module-populate
            animate-string
@@ -42,8 +48,8 @@
            line-column-location
            gulp-template
            prefix-dir
-           string-if
            template?
+           template-file
            template->string
            template-dir
            templates))
@@ -66,7 +72,7 @@
      '(gaiag))))
 
 (define template-dir (make-parameter (append (prefix-dir) '(templates))))
-(define (template-file name) (string-join (map symbol->string (append (template-dir) (list name))) "/"))
+(define (template-file name) (append (template-dir) (if (pair? name) name (list name))))
 (define (gulp-template name) (gulp-file (template-file name)))
 
 (define templates (make-parameter
@@ -75,7 +81,9 @@
                              (baz . "blaat"))))))
 
 (define (template? x)
-  (and (list? x) (pair? (assoc (car x) (templates)))))
+  (or (and (is-a? x <ast>)
+           (pair? (assoc (ast-name x) (templates))))
+      (and (list? x) (pair? (assoc (car x) (templates))))))
 
 (define (animate-module-populate module parameter key-procedure-pairs)
   (let loop ((pairs key-procedure-pairs))
@@ -85,21 +93,19 @@
                (key (car pair))
                (procedure-or-data (cdr pair))
                (value (if (procedure? procedure-or-data)
-                          (procedure-or-data parameter) 
+                          (procedure-or-data parameter)
                           procedure-or-data)))
           (module-define! module key value)
           (loop (cdr pairs))))))
 
 (define (template->string name . key-procedure-pairs)
   (let ((template (assoc-ref (templates) name)))
-    (animate-template name (map (lambda (x)
-                               (let* ((pair (car x))
-                                      (key (car pair))
+    (animate-template name (map (lambda (pair data)
+                               (let* ((key (car pair))
                                       (procedure (cdr pair))
-                                      (data (cadr x))
                                       (value (procedure data)))
                                  (cons key value)))
-                             (zip template key-procedure-pairs)))))
+                                template key-procedure-pairs))))
 
 (define (pairs->module pairs)
   (let ((module (make-module 31 (list (current-module)))))
@@ -115,10 +121,16 @@
 
 (define (animate-template name key-value-pairs)
   (with-output-to-string
-    (lambda () (animate-file
-                ;; name in gaiag
-                (template-file name)
-                (pairs->module key-value-pairs)))))
+    (lambda () (animate-file name (pairs->module key-value-pairs)))))
+
+(define* (animate string :optional (o #f))
+  (match o
+    ((? list?) (animate o (pairs->module o)))
+    ((? module?)
+     (with-output-to-string
+       (lambda ()
+         (with-input-from-string o (lambda () (animate-input- module))))))
+    (_ (animate o (current-module)))))
 
 (define* (line-column-location tell :optional (port (current-input-port)))
   (seek port 0 SEEK_SET)
@@ -138,7 +150,8 @@
   (with-input-from-file file-name (lambda () (line-column-location tell))))
 
 (define (animate-file file-name module)
-  (with-input-from-file (->string file-name) (lambda () (animate-input module file-name))))
+  (let ((file-name (components->file-name (template-file file-name))))
+      (with-input-from-file file-name (lambda () (animate-input module file-name)))))
 
 (define* (animate-input module :optional (file-name "<input>"))
   (catch 'parse-error
@@ -150,7 +163,7 @@
              (start (assoc-ref (car args) 'start))
              (scm (assoc-ref (car args) 'scm))
              (pos (let loop ((tell (if (>1 (length tell)) (cdr tell) tell)) (start start))
-                    (if (null? tell) 
+                    (if (null? tell)
                         0
                         (+ (car tell) (car start)
                            (loop (cdr tell) (cdr start))))))
@@ -166,10 +179,10 @@
              (error-message (or (car args) (cadr args)))
              (error-args (if (car args) '() (caddr args)))
              (error-string (apply format (append (list #f error-message) error-args)))
-             (message 
+             (message
               (if (string? string)
                   (if (string-contains file-string string)
-                      (format #f "~a:~a:~a: parse error: ~a\n~a\n~a~a...\n" file-name line column error-string (string-take file-string column) (make-string column #\space) 
+                      (format #f "~a:~a:~a: parse error: ~a\n~a\n~a~a...\n" file-name line column error-string (string-take file-string column) (make-string column #\space)
                               (string-drop file-string column))
                       (format #f "~a:~a: parse error: ~a\n    just before: ~a\n" file-name line error-string string))
                   (format #f "~a:~a: parse error: *eof*: ~a\n" file-name line error-string))))
@@ -201,13 +214,13 @@
                (let* ((xstart (ftell (current-input-port)))
                       (expr (read (current-input-port)))
                       (end (ftell (current-input-port))))
-                 (catch (if (batch-mode?) #t 'no-funky-exceptions)
+                 (catch 'boo ;;(if (batch-mode?) #t 'no-funky-exceptions)
                    (lambda ()
                      (let ((result (eval expr module)))
                        (display (->string result))
                        (eat-one-space)))
                    (lambda (key . args)
-                     (let* ((tell (cons 
+                     (let* ((tell (cons
                                    (ftell (current-input-port))
                                    (f-is-null (assoc-ref (car args) 'tell))))
                             (line (or (assoc-ref (car args) 'line)
@@ -226,10 +239,3 @@
                             (args (car (or (assoc-ref (car args) 'args)
                                        (list args)))))
                        (throw 'parse-error (append `((tell . ,tell) (start . ,start) (size . ,size) (line . ,line) (args ,args))))))))))))))
-
-(define-syntax string-if
-  (syntax-rules ()
-    ((_ condition then)
-     (animate-string (if (null-is-#f condition) then "") (current-module)))
-    ((_ condition then else)
-     (animate-string (if (null-is-#f condition) then else) (current-module)))))

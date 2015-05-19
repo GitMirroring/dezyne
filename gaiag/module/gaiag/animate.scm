@@ -49,9 +49,9 @@
 
   :use-module (gaiag misc)
 
-  :use-module (oop goops)
-  :use-module (oop goops describe)
-  :use-module (gaiag gom)
+  :use-module (oop goops) ;;-goeps
+  :use-module (gaiag gom) ;;-goeps
+  ;;+goeps :use-module (g om)
 
   :export (animate
            animate-file
@@ -138,16 +138,14 @@
   (with-output-to-string
     (lambda () (animate-file name (pairs->module key-value-pairs)))))
 
-(define-method (animate (o <string>) (pairs <list>))
-  (animate o (pairs->module pairs)))
-
-(define-method (animate (o <string>) (module <module>))
-  (with-output-to-string
-    (lambda ()
-      (with-input-from-string o (lambda () (animate-input- module))))))
-
-(define-method (animate (o <string>))
-  (animate o (current-module)))
+(define* (animate string :optional (o #f))
+  (match o
+    ((? list?) (animate o (pairs->module o)))
+    ((? module?)
+     (with-output-to-string
+       (lambda ()
+         (with-input-from-string o (lambda () (animate-input- module))))))
+    (_ (animate o (current-module)))))
 
 (define* (line-column-location tell :optional (port (current-input-port)))
   (seek port 0 SEEK_SET)
