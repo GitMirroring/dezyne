@@ -121,7 +121,6 @@
      statement)))
 
 (define (table-state-statement model o)
-  (stderr "table-state-statement: ~a\n" o)
   (match o
     (('compound _ ___)
      (or (and-let* ((variables ((compose .elements .variables .behaviour) model))
@@ -419,10 +418,9 @@
      )))
 
 (define ((mangle-table json-table) o)
-  (stderr "mange: ~a\n" o)
   (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))
     (match o
-      (('root models)
+      (('root models ___)
        (if json?
            (map (mangle-table json-table) models)
            (make <root> :elements (map (mangle-table json-table) models))))

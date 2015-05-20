@@ -696,7 +696,7 @@
   (match ast
     (('call name) '())
     (('call name arguments) arguments)
-    (('trigger port event) '(arguments ()))
+    (('trigger port event) '(arguments))
     (('trigger port event arguments) arguments)))
 
 (define (.instances ast)
@@ -715,7 +715,7 @@
 
 (define (.parameters ast)
   (match ast
-    (('signature type) '(parameters ()))
+    (('signature type) '(parameters))
     (('signature type parameters) parameters)))
 
 (define (.events ast)
@@ -748,7 +748,7 @@
 
 (define (.elements ast)
   ;;(stderr "elements of: ~a\n" ast)
-  (cadr ast))
+  (cdr ast))
 
 (define (.recursive ast)
   (match ast

@@ -138,7 +138,7 @@
 (define (flatten-compound-compound o)
   (let ((result (flatten-compound o)))
     (match result
-      (('compound statements) statements)
+      (('compound statements ___) statements)
       (_ (list result)))))
 
 (define ((remove-otherwise statements) o)

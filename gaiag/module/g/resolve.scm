@@ -58,10 +58,14 @@
  (else #t))
 
 (define (ast:resolve o)
-  (stderr "ast:resolve: ~a\n" o)
   (match o
+<<<<<<< HEAD
     (('root _ ___) (resolve-root o))
     ((h t ...) ((compose gom:resolve ast->om) o))
+=======
+    ((h t ...) ((compose gom:resolve ast->om) o))
+    (('root _ ___) (resolve-root o))
+>>>>>>> 8a412d1... Undo (list ()) experiment.
     ((or ('interface _ ___) ('component _ ___)) ((resolve-model o '()) o))
     (_  o)))
 
@@ -85,22 +89,22 @@
 (define gom:resolve resolve-root)
 
 (define (ast:reorder o)
-  (stderr "ast:reorder: ~a\n" o)
+(stderr "ast:reorder: ~a\n" o)
   (match o
-    (('root models) (make <root> :elements (ast:reorder models)))
+    (('root models ___) (make <root> :elements (ast:reorder models)))
     ((models ...)
-     (stderr "MODELS: ~a\n"     (append
-      (filter (is? <import>) models)
-      (filter (is? <type>) models)
-      (filter (is? <interface>) models)
-      (filter (is? <component>) models)
-      (filter (is? <system>) models)))
+     (stderr "MODELS: ~a\n"      (append
+                   (filter (is? <import>) models)
+                   (filter (is? <type>) models)
+                   (filter (is? <interface>) models)
+                   (filter (is? <component>) models)
+                   (filter (is? <system>) models)))
      (append
-      (filter (is? <import>) models)
-      (filter (is? <type>) models)
-      (filter (is? <interface>) models)
-      (filter (is? <component>) models)
-      (filter (is? <system>) models)))
+                   (filter (is? <import>) models)
+                   (filter (is? <type>) models)
+                   (filter (is? <interface>) models)
+                   (filter (is? <component>) models)
+                   (filter (is? <system>) models)))
     (_ o)))
 
 (define (report-error o)
@@ -464,7 +468,7 @@
        :recursive (and ((recurses? model) name) 'recursive)
        :statement ((resolve-model model '()) statement)))
 
-    (('compoundx statements)
+    (('compound statements ___)
      (make <compound>
        :elements
        (let loop ((statements statements) (locals locals))
@@ -518,12 +522,10 @@
        :functions (gom:map (resolve-model model '()) functions)
        :statement (gom:map (resolve-model model '()) statement)))
 
-    (('functions functions)
+    (('functions functions ___)
      (make <functions> :elements (map (resolve-model model '()) functions)))
 
-    (('variables variables)
-     (stderr "variables: o:~a\n" o)
-     (stderr "variables: v:~a\n" variables)     
+    (('variables variables ___)
      (let ((variables (map (range-check model) variables)))
        (make <variables> :elements (map (resolve-model model '()) variables))))
 
@@ -533,8 +535,6 @@
 
 (define ((range-check model) variable)
   (define (int-type? type) (gom:integer model type))
-  (stderr "TYPES: ~a\n" (gom:types model))
-  (stderr "VAR: ~a\n" variable)
   (or (and-let* ((int (int-type? (.type variable)))
                  (range (.range int))
                  (expression (.expression variable))
@@ -577,4 +577,4 @@
                      (map (recurses? model (cons name seen)) names)))))
 
 (define (ast-> ast)
-  ((compose gom->list ast:resolve ast->gom ast->annotate) ast))
+  ((compose gom->list ast:resolve ast->om ast->annotate) ast))
