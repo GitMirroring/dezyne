@@ -923,9 +923,12 @@
           ;; simple statements
           (($ <csp-call> context identifier arguments lmodel?)
            (let ((arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals)))
-            (cons
-             (->string space "call_return." identifier "_" call "!" arguments " ->\n")
-             tail)))
+            (append (list
+                     (->string space "call_return." identifier "_" call "!" arguments " ->\n")
+                     (->string space "wait(call_return." identifier "_" call ",\n")
+                     (->string space "call_return." identifier "_" call " ->\n"))
+                     tail
+                     '(")"))))
 
           (($ <action> trigger)
            (let* ((event-name (.event trigger))
