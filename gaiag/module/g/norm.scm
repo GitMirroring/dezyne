@@ -37,8 +37,7 @@
   :use-module (gaiag misc)
 
 
-   :use-module (g ast goops)
-   :use-module (g ast gom)
+   :use-module (g om)
    :use-module (g reader)
    :use-module (g resolve)
 
@@ -51,6 +50,11 @@
            remove-otherwise
            remove-skip
            ))
+
+(cond-expand
+ (goops-om
+  (use-modules (oop goops)))
+ (else #t))
 
 (define (remove-skip o)
   (match o
@@ -134,7 +138,7 @@
 (define (flatten-compound-compound o)
   (let ((result (flatten-compound o)))
     (match result
-      (('compound statements ___) statements)
+      (('compound statements) statements)
       (_ (list result)))))
 
 (define ((remove-otherwise statements) o)

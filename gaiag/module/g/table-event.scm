@@ -36,8 +36,7 @@
   :use-module (gaiag misc)
   
 
-   :use-module (g ast goops)
-   :use-module (g ast gom)
+   :use-module (g om)
    :use-module (g g)
    :use-module (g json-table)
    :use-module (g norm-event)

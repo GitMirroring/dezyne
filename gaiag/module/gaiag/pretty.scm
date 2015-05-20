@@ -35,8 +35,7 @@
   :use-module (gaiag wfc) ;;-goeps
   :use-module (gaiag resolve) ;;-goeps
 
-  ;;+goeps :use-module (g ast goops)
-  ;;+goeps :use-module (g ast gom)
+  ;;+goeps :use-module (g om)
   ;;+goeps :use-module (g animate)
   ;;+goeps :use-module (g indent)
   ;;+goeps :use-module (g reader)

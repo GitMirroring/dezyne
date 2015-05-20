@@ -46,8 +46,7 @@
   :use-module (gaiag pretty) ;;-goeps
   :use-module (gaiag table-state) ;;-goeps  
 
-  ;;+goeps :use-module (g ast goops)
-  ;;+goeps :use-module (g ast gom)
+  ;;+goeps :use-module (g om)
   ;;+goeps :use-module (g g)
   ;;+goeps :use-module (g json-table)
   ;;+goeps :use-module (g norm-event)

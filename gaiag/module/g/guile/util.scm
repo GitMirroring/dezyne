@@ -23,7 +23,7 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (g ast goops)
+(define-module (g guile util)
 
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 match)
@@ -121,6 +121,7 @@
            <type>
            <types>
            <var>
+           <value>           
            <variable>
            <variables>           
 
@@ -173,12 +174,14 @@
            make-<trigger>
            make-<triggers>
            make-<var>
+           make-<value>           
            make-<variable>
            make-<variables>           
 
            is?
            is-a?
            ast?
+           ast-list?           
            expression?
            model?
            statement?
@@ -257,6 +260,7 @@
     system
     trigger
     type
+    value
     var
     variable
     ))
@@ -312,6 +316,7 @@
   (define (test x) (and (pair? ast) (eq? (car ast) type) ast))
   (match type
     ('ast (ast? ast))
+    ('ast-list (ast-list? ast))    
     ('model (model? ast))
     ('statement (statement? ast))
     ('type (type? ast))
@@ -358,6 +363,9 @@
 (define (ast? ast)
   (and (pair? ast) (member (car ast) (append ast-leafs ast-lists)) ast))
 
+(define (ast-list? ast)
+  (and (pair? ast) (member (car ast) ast-lists) ast))
+
 (define (make-<named> . args)
   (let-keywords
    args #f
@@ -379,7 +387,7 @@
    args #f
    ((type <list>)
     (elements '()))
-   (cons type elements)))
+   (cons type (list elements))))
 
 (define (make-<import> . args)
   (let-keywords
@@ -613,6 +621,13 @@
    ((name #f))   
    (cons <var> (list (make <named> :name name)))))
 
+(define (make-<value> . args)
+  (let-keywords
+   args #f
+   ((type #f)
+    (field #f))
+   (cons <value> (list type field))))
+
 (define (make-<expression> . args)
   (let-keywords
    args #f
@@ -677,7 +692,42 @@
 
 ;;(for-each accessors)
 
+(define (.arguments ast)
+  (match ast
+    (('call name) '())
+    (('call name arguments) arguments)
+    (('trigger port event) '(arguments ()))
+    (('trigger port event arguments) arguments)))
+
+(define (.instances ast)
+  (match ast
+    (('system name ports instances bindings) instances)))
+
+(define (.bindings ast)
+  (match ast
+    (('system name ports instances bindings) bindings)))
+
+(define (.ports ast)
+  (match ast
+    (('component name ports) ports)
+    (('component name ports behaviour) ports)
+    (('system name ports instances bindings) ports)))
+
+(define (.parameters ast)
+  (match ast
+    (('signature type) '(parameters ()))
+    (('signature type parameters) parameters)))
+
+(define (.events ast)
+  (match ast
+    (('interface name types events behaviour) events)))
+
+(define (.triggers ast)
+  (match ast
+    (('on triggers statement) triggers)))
+
 (define (.name ast)
+  ;;(stderr "NAME: ~a\n" ast)
   (match ast
     (_ (cadr ast))
     
@@ -697,18 +747,12 @@
     (('type name scope) scope)))
 
 (define (.elements ast)
-  (cdr ast))
+  ;;(stderr "elements of: ~a\n" ast)
+  (cadr ast))
 
 (define (.recursive ast)
   (match ast
     (('function name signature recursive statement) recursive)))
-
-(define (.arguments ast)
-  (match ast
-    (('call name) '())
-    (('call name arguments) arguments)
-    (('trigger port event) '(arguments))
-    (('trigger port event arguments) arguments)))
 
 (define (.value ast)
   (match ast
@@ -725,19 +769,6 @@
   (match ast
     (('bind left right) right)))
 
-(define (.instances ast)
-  (match ast
-    (('system name ports instances bindings) instances)))
-
-(define (.bindings ast)
-  (match ast
-    (('system name ports instances bindings) bindings)))
-
-(define (.ports ast)
-  (match ast
-    (('component name ports) ports)
-    (('component name ports behaviour) ports)
-    (('system name ports instances bindings) ports)))
 
 (define (.behaviour ast)
   (match ast
@@ -748,11 +779,6 @@
 (define (.trigger ast)
   (match ast
     (('action trigger) trigger)))
-
-(define (.parameters ast)
-  (match ast
-    (('signature type) '(parameters))
-    (('signature type parameters) parameters)))
 
 (define (.signature ast)
   (match ast
@@ -765,14 +791,6 @@
     (('call identifier) identifier)
     (('call identifier arguments) identifier)    
     (('field identifier field) identifier)))
-
-(define (.events ast)
-  (match ast
-    (('interface name types events behaviour) events)))
-
-(define (.triggers ast)
-  (match ast
-    (('on triggers statement) triggers)))
 
 (define (.from ast)
   (match ast
@@ -829,8 +847,8 @@
 
 (define (.types ast)
   (match ast
-    (('behaviour name types variables functions statement) types)
-    (('interface name types events behaviour) types)
+    (('behaviour name types variables functions statement) (.elements types))
+    (('interface name types events behaviour) (.elements types))
     (('root models ...) (filter type? models))))
 
 (define (.direction ast)
@@ -849,7 +867,7 @@
     (('parameter name type) #f)
     (('parameter name direction type) direction)    
     (('signature type parameters) type)
-    (('value type field) type)
+    (('value type field) type)    
     (('variable name type expression) type)))
 
 (define (.injected ast)

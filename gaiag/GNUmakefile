@@ -826,7 +826,7 @@ out/test: out/argument.c++ out/main.o out/runtime.o
 	echo 'i.e' | out/test
 
 .PHONY: g
-GOEPS=-e "s/<gom:parameter>/<parameter>/g" -e "s/<gom:port>/<port>/g" -e "s/[(][$$] <([^>]*)>[)]/(\'\1 _ ___)/g" -e "s/[(][$$] <([^>]*)> ([a-z]+)[)]/(\'\1 \2 ___)/g" -e "s/[(][$$] <([a-z]+)> '[(][)][)]/(\'\1)/g" -e "s/[(][$$] <([^>]*)>/(\'\1/g" -e "s/;;[+]goeps//"
+GOEPS=-e "s/<gom:parameter>/<parameter>/g" -e "s/<gom:port>/<port>/g" -e "s/[(][$$] <([^>]*)>[)]/(\'\1 _ ___)/g" -e "s/[(][$$] <(arguments|bindings|compound|events|fields|functions|instances|parameters|ports|root|triggers|types|variables|expression|otherwise|reply|return|var)> ([a-z]+)[)]/(\'\1 \2)/g"  -e "s/[(][$$] <([^>]*)> ([a-z]+)[)]/(\'\1 \2 ___)/g" -e "s/[(][$$] <([a-z]+)> '[(][)][)]/(\'\1)/g" -e "s/[(][$$] <([^>]*)>/(\'\1/g" -e "s/;;[+]goeps//"
 module/g/%.scm: module/gaiag/%.scm
 	sed -r $(GOEPS) $< | grep -v ';;-goeps' > $@
 

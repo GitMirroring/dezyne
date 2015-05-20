@@ -38,8 +38,7 @@
 
 ;;;;  :use-module (gaiag simulate)
 
-   :use-module (g ast goops)
-   :use-module (g ast gom)
+   :use-module (g om)
    :use-module (g json)
    :use-module (g pretty)
    :use-module (g reader)
@@ -47,6 +46,11 @@
   :export (json-init
            json-table-event           
            json-table-state))
+
+(cond-expand
+ (goops-om
+  (use-modules (oop goops)))
+ (else #t))
 
 (define (json-init o)
   `((name . ,(.name o))
@@ -69,7 +73,7 @@
        (alist->hash-table
         `((event . ,(json-triggers o))
           (rules . ,(apply append (map (json-table- model var state)
-                                       (.elements (compound)) 
+                                        (.elements (compound))
                                        )))))))
     (('on triggers statement)
      (let* ((var 'unknown)
@@ -240,15 +244,15 @@
   (define (recursive? identifier) (.recursive (function? identifier)))
   (define (non-recursive? identifier)
     (not (recursive? identifier)))
-
+  
   (define (return-action o)
     (match o
       (('action _ ___) (list o))
-       (('assign name (and ('action _ ___) (get! action))) (list (action)))
-       (('variable name type (and ('action _ ___) (get! action))) (list (action)))
-       (('call (and (? non-recursive?) (get! function))) (return-actions (function? (function))))
-       (('function name signature #f statement) (return-actions statement))
-       (_ (list #f))))
+      (('assign name (and ('action _ ___) (get! action))) (list (action)))
+      (('variable name type (and ('action _ ___) (get! action))) (list (action)))
+      (('call (and (? non-recursive?) (get! function))) (return-actions (function? (function))))
+      (('function name signature #f statement) (return-actions statement))
+      (_ (list #f))))
 
   (define (return-actions o)
     (filter identity

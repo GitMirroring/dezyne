@@ -46,8 +46,7 @@
   :use-module (gaiag resolve) ;;-goeps
   :use-module (gaiag pretty) ;;-goeps
 
-  ;;+goeps :use-module (g ast goops)
-  ;;+goeps :use-module (g ast gom)
+  ;;+goeps :use-module (g om)
   ;;+goeps :use-module (g g)
   ;;+goeps :use-module (g json-table)
   ;;+goeps :use-module (g norm)

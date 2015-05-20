@@ -23,7 +23,7 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (g ast gom)
+(define-module (g guile om)
   :use-module (srfi srfi-1)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
@@ -38,7 +38,8 @@
   :use-module (g g)  
   :use-module (g reader)
   :use-module (g misc)
-  :use-module (g ast goops)   
+  :use-module (g guile util)   
+
   :export (
            ast->gom
            ast-name
@@ -71,10 +72,34 @@
            gom:variable
            ))
 
-(cond-expand-provide (current-module) '(goeps))
+(cond-expand-provide (current-module) '(guile-om))
 
-(define (gom:map f lst)
-  (cons (car lst) (map f (.elements lst))))
+(define (xgom:map f o)
+  (stderr "gom map: ~a ==> ~a\n" o (ast-list? o))
+  (match o
+    ((? ast-list?)
+     (list (car o) (map f (.elements o))))
+    ;; ?? ((h t ...) (map (lambda (x) (gom:map f x)) o))
+    (_ (f o))))
+
+(define (xgom:map f o)
+  (stderr "gom map: ~a ==> ~a\n" o (ast-list? o))
+  (match o
+    ;;    ((? ast-list?) (list (car o) (map f (.elements o))))
+    ((? ast?) (cons (car o) (gom:map f (cdr o))))
+    ((h t ...) (map (lambda (x) (gom:map f x)) o))
+    (_ o)))
+
+(define (xgom:map f lst)
+  (stderr "gom map: ~a ==> ~a\n" lst (ast-list? lst))
+  (list (car lst) (map f (.elements lst))))
+
+(define (gom:map f o)
+  (stderr "gom map: ~a ==> ~a\n" o (ast-list? o))
+  (match o
+    ((? ast-list?) (list (car o) (map f (.elements o))))
+    ((h t ...) (cons (car o) (map f (cdr o))))
+    (_ o)))
 
 (define ast->gom ast:annotate)
 (define gom->list identity)
@@ -116,9 +141,9 @@
   (append
    (match model
      (#f '())
-     (('interface name ('types types ...) events ('behaviour b ('types btypes ...) _ ...)) (append btypes types))
-     (('component name ('ports ports ...) ('behaviour b ('types btypes ...) _ ...))
-      (append btypes (apply append (map interface-types ports))))
+     (('interface name types events ('behaviour b btypes _ ...)) (append (.elements btypes) (.elements types)))
+     (('component name ports ('behaviour b btypes _ ...))
+      (append (.elements btypes) (apply append (map interface-types ports))))
      (('root models ...) (filter type? models))) 
    (globals)))
 

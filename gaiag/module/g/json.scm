@@ -34,13 +34,17 @@
 ;;  :use-module (language dezyne location)
   :use-module (gaiag misc)
 
-   :use-module (g ast gom)
-   :use-module (g ast goops)
+   :use-module (g om)
    :use-module (g reader)
 
   :export (
            json-location
            ))
+
+(cond-expand
+ (goops-om
+  (use-modules (oop goops)))
+ (else #t))
 
 (use-modules (system base lalr))
 (define (source-location src)

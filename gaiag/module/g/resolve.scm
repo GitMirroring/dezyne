@@ -23,12 +23,13 @@
 
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
-;; goops --> goeps
+;; goops --> goeps sed -ri -e "s/[(][$] <([^>]*)>[)]/(\'\1 _ ___)/g" -e "s/[(][$] <([^>]*)> ([a-z]+)[)]/(\'\1 \2 ___)/g" -e "s/[(][$] <([^>]*)> /(\'\1 /g" module/g/resolve.scm
+;; goeps --> goops sed -ri -e "s/[(]\' ([a-z]+) _ ___[)]/('\1 _ ___)/g" -e "s/[(]\' ([a-z]+) ([a-z]+) ___[)]/('\1 \2)/g"
 
 (read-set! keywords 'prefix)
 
 (define-module
-  (g resolve)
+   (g resolve)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 match)
@@ -38,13 +39,12 @@
 
   :use-module (language dezyne location)
 
-
-   :use-module (g ast goops)
-   :use-module (g ast gom)  
-   :use-module (g reader)
-
   :use-module (gaiag annotate)
-  :use-module (gaiag misc)  
+  :use-module (gaiag misc)
+  
+
+   :use-module (g om)
+   :use-module (g reader)
 
   :export (
            ast:resolve
@@ -52,12 +52,18 @@
            report-errors
            ))
 
+(cond-expand
+ (goops-om
+  (use-modules (oop goops)))
+ (else #t))
+
 (define (ast:resolve o)
+  (stderr "ast:resolve: ~a\n" o)
   (match o
-    ((h t ...) ((compose gom:resolve ast->gom) o))
     (('root _ ___) (resolve-root o))
+    ((h t ...) ((compose gom:resolve ast->om) o))
     ((or ('interface _ ___) ('component _ ___)) ((resolve-model o '()) o))
-    (_ o)))
+    (_  o)))
 
 (define (resolve-error o symbol message)
   (make <error> :ast o :message (format #f message symbol)))
@@ -79,31 +85,39 @@
 (define gom:resolve resolve-root)
 
 (define (ast:reorder o)
+  (stderr "ast:reorder: ~a\n" o)
   (match o
-    (('root models ___) (make <root> :elements (ast:reorder models)))
-    ((models ...) (append
-                   (filter (is? <import>) models)
-                   (filter (is? <type>) models)
-                   (filter (is? <interface>) models)
-                   (filter (is? <component>) models)
-                   (filter (is? <system>) models)))
+    (('root models) (make <root> :elements (ast:reorder models)))
+    ((models ...)
+     (stderr "MODELS: ~a\n"     (append
+      (filter (is? <import>) models)
+      (filter (is? <type>) models)
+      (filter (is? <interface>) models)
+      (filter (is? <component>) models)
+      (filter (is? <system>) models)))
+     (append
+      (filter (is? <import>) models)
+      (filter (is? <type>) models)
+      (filter (is? <interface>) models)
+      (filter (is? <component>) models)
+      (filter (is? <system>) models)))
     (_ o)))
 
 (define (report-error o)
-  (let* ((ast (.ast o))
-         (message (.message o))
-         (message
-          (or (and-let* (((supports-source-properties? ast))
-                         (loc (source-property ast 'loc))
-                         (loc (if (list? loc) (source-property loc 'loc) loc))
-                         (properties (source-location->user-source-properties loc)))
-                        (format #f "~a:~a:~a: error: ~a\n"
-                                (or (assoc-ref properties 'filename) "<unknown file>")
-                                (assoc-ref properties 'line)
-                                (assoc-ref properties 'column)
-                                message))
-              (format #f "<unknown location>: error: ~a: ~a\n" ast message))))
-    (stderr message)))
+  (and-let* ((ast (.ast o))
+             (message (.message o))
+             (message
+              (or (and-let* (((supports-source-properties? ast))
+                             (loc (source-property ast 'loc))
+                             (loc (if (list? loc) (source-property loc 'loc) loc))
+                             (properties (source-location->user-source-properties loc)))
+                            (format #f "~a:~a:~a: error: ~a\n"
+                                    (or (assoc-ref properties 'filename) "<unknown file>")
+                                    (assoc-ref properties 'line)
+                                    (assoc-ref properties 'column)
+                                    message))
+                  (format #f "<unknown location>: error: ~a: ~a\n" ast message))))
+            (stderr message)))
 
 (define (report-errors errors)
   (for-each report-error errors)
@@ -280,9 +294,10 @@
     (('event name signature direction)
      (make <event>
        :name name
-       :signature ((resolve-model model '()) signature)
-       :direction direction))
+       :direction direction
+       :signature ((resolve-model model '()) signature)))
 
+    (('action _ ___) o)
     (('call _ ___) o)    
     (('data _ ___) o)
     (('enum _ ___) o)
@@ -427,7 +442,7 @@
        :name name
        :signature ((resolve-model model locals) (.signature o))
        :recursive (and ((recurses? model) name) 'recursive)
-       :statement ((resolve-model model '()) statement)))    
+       :statement ((resolve-model model '()) statement)))
 
     (('function name ('signature type ('parameters parameters ___)) recursive? statement)
      (let ((locals (let loop ((parameters parameters) (locals locals))
@@ -449,7 +464,7 @@
        :recursive (and ((recurses? model) name) 'recursive)
        :statement ((resolve-model model '()) statement)))
 
-    (('compound statements ___)
+    (('compoundx statements)
      (make <compound>
        :elements
        (let loop ((statements statements) (locals locals))
@@ -503,10 +518,12 @@
        :functions (gom:map (resolve-model model '()) functions)
        :statement (gom:map (resolve-model model '()) statement)))
 
-    (('functions functions ___)
+    (('functions functions)
      (make <functions> :elements (map (resolve-model model '()) functions)))
 
-    (('variables variables ___)
+    (('variables variables)
+     (stderr "variables: o:~a\n" o)
+     (stderr "variables: v:~a\n" variables)     
      (let ((variables (map (range-check model) variables)))
        (make <variables> :elements (map (resolve-model model '()) variables))))
 
@@ -516,6 +533,8 @@
 
 (define ((range-check model) variable)
   (define (int-type? type) (gom:integer model type))
+  (stderr "TYPES: ~a\n" (gom:types model))
+  (stderr "VAR: ~a\n" variable)
   (or (and-let* ((int (int-type? (.type variable)))
                  (range (.range int))
                  (expression (.expression variable))

@@ -35,8 +35,7 @@
   :use-module (gaiag misc)
 
 
-   :use-module (g ast goops)
-   :use-module (g ast gom)
+   :use-module (g om)
    :use-module (g norm)
    :use-module (g reader)
    :use-module (g resolve)
@@ -57,7 +56,7 @@
        collapse-on
        ;;    aggregate-on    
        (expand-on equal?)
-       aggregate-guard-s
+       aggregate-guard-g
        flatten-compound
        combine-ons
        passdown-guard

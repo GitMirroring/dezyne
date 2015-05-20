@@ -23,8 +23,8 @@
 (read-set! keywords 'prefix)
 
 (define-module
-  (gaiag resolve)  
-;;  (g resolve)
+  (gaiag resolve) ;;-goeps
+  ;;+goeps (g resolve)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 match)
@@ -43,7 +43,13 @@
   ;; :use-module (g reader)
 
   :use-module (gaiag annotate)
-  :use-module (gaiag misc)  
+  :use-module (gaiag misc)
+  
+  :use-module (gaiag om) ;;-goeps
+  :use-module (gaiag reader) ;;-goeps
+
+  ;;+goeps :use-module (g om)
+  ;;+goeps :use-module (g reader)
 
   :export (
            ast:resolve

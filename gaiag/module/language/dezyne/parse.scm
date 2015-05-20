@@ -70,7 +70,7 @@
     )
 
    (program
-    (models *eoi*) : (cons 'root $1))
+    (models *eoi*) : (list 'root $1))
 
    (models
     () : '()
@@ -90,11 +90,11 @@
     (interface Identifier lbrace events/types rbrace)
     : (receive (e t)
           (partition event? $4)
-        (note-location `(,$1 ,$2 ,(cons 'types t) ,(cons 'events e)) @1))
+        (note-location `(,$1 ,$2 ,(list 'types t) ,(list 'events e)) @1))
     (interface Identifier lbrace events/types behaviour-spec rbrace)
     : (receive (e t)
           (partition event? $4)
-        (note-location `(,$1 ,$2 ,(cons 'types t) ,(cons 'events e) ,$5) @1)))
+        (note-location `(,$1 ,$2 ,(list 'types t) ,(list 'events e) ,$5) @1)))
 
    (component-spec
     (component Identifier lbrace ports rbrace)
@@ -148,8 +148,11 @@
     (out) : $1)
 
    (ports
-    () : '(ports)
-    (ports port) : (append $1 (list $2)))
+    (port-list) : (list 'ports $1))
+
+   (port-list
+    () : '()
+    (port-list port) : (append $1 (list $2)))
 
    (port
     (port-direction Identifier Identifier semicolon) : `(port ,$3 ,$2 ,$1 #f)
@@ -160,8 +163,11 @@
     (requires) : 'requires)
 
    (optional-types
-    () : '(types)
-    (optional-types type) : (append $1 (list $2)))
+    (optional-type-list) : (list 'types $1))
+
+   (optional-type-list
+    () : '()
+    (optional-type-list type) : (append $1 (list $2)))
 
    (type
     (enum-spec) : $1
@@ -179,8 +185,11 @@
     (enum Identifier lbrace enum-fields rbrace semicolon) : `(enum ,$2 #f ,$4))
 
    (enum-fields
-    (Identifier) : `(fields ,$1)
-    (enum-fields comma Identifier) : (append $1 (list $3)))
+    (enum-field-list) : (list 'fields $1))
+
+   (enum-field-list
+    (Identifier) : `(,$1)
+    (enum-field-list comma Identifier) : (append $1 (list $3)))
 
    (typedef-spec
     (typedef int lbracket NumericLiteral .. NumericLiteral rbracket Identifier semicolon) : `(int ,$8 #f (range ,$4 ,$6)))
@@ -225,8 +234,11 @@
     (Identifier lparen arguments rparen) : (note-location `(call ,$1 ,$3) @1))
 
    (arguments
-    (expression) : `(arguments ,$1)
-    (arguments comma expression) : (append $1 (list $3)))
+    (argument-list) : (list 'arguments $1))
+
+   (argument-list
+    (expression) : `(,$1)
+    (argument-list comma expression) : (append $1 (list $3)))
 
    (behaviour-spec
     (behaviour optional-identifier lbrace optional-types rbrace)
@@ -236,7 +248,7 @@
           (partition (lambda (x) (eq? (car x) 'function)) $5)
         (receive (s v)
             (partition (lambda (x) (not (eq? (car x) 'variable))) r)
-          `(,$1 ,$2 ,$4 ,(cons 'variables v) ,(cons 'functions f) ,(cons 'compound s)))))
+          `(,$1 ,$2 ,$4 ,(list 'variables v) ,(list 'functions f) ,(list 'compound s)))))
 
    (optional-identifier
     () : #f
@@ -247,15 +259,18 @@
     (variable-type Identifier lparen parameters rparen compound-statement) : (note-location `(function ,$2 ,(note-location `(signature ,$1 ,$4) @1) #f ,$6) @1))
 
    (parameters
-    (parameter) : `(parameters ,$1)
-    (parameters comma parameter) : (append $1 (list $3)))
+    (parameter-list) : (list 'parameters $1))
+
+   (parameter-list
+    (parameter) : `(,$1)
+    (parameter-list comma parameter) : (append $1 (list $3)))   
 
    (parameter
     (variable-type Identifier): (note-location `(parameter ,$2 ,$1) @1)
     (parameter-direction variable-type Identifier): (note-location `(parameter ,$3 ,$2 ,$1) @1))
 
    (statements
-    () : '(compound)
+    () : '()
     (statements statement/variable) : (append $1 (list $2)))
 
    (statement/variable
@@ -294,7 +309,7 @@
     (otherwise) : `(,$1))
 
    (compound-statement
-    (lbrace statements rbrace) : (note-location $2 @1))
+    (lbrace statements rbrace) : (note-location (list 'compound $2) @1))
 
    (compound-identifier
     (Identifier) : (note-location `(var ,$1) @1)
@@ -305,13 +320,16 @@
     (on trigger-spec colon statement) : (note-location `(,$1 ,$2 ,$4) @1))
 
    (trigger-spec
-    (triggers) : (note-location (cons 'triggers $1) @1)
-    (optional) : (note-location `(triggers ,(note-location `(trigger #f ,$1) @1)) @1)
-    (inevitable) : (note-location `(triggers ,(note-location `(trigger #f ,$1) @1)) @1))
+    (triggers) : (note-location $1 @1)
+    (optional) : (note-location `(triggers (,(note-location `(trigger #f ,$1) @1))) @1)
+    (inevitable) : (note-location `(triggers (,(note-location `(trigger #f ,$1) @1))) @1))
 
    (triggers
+    (trigger-list) : (list 'triggers $1))
+
+   (trigger-list
     (trigger) : `(,$1)
-    (triggers comma trigger) : (append $1 (list $3)))
+    (trigger-list comma trigger) : (append $1 (list $3)))
 
    (trigger
     (Identifier) : (note-location `(trigger #f ,$1) @1)
@@ -354,8 +372,11 @@
     (Identifier dot Identifier Identifier = expression semicolon) : `(variable ,$4 (type ,$3 ,$1) ,(note-location $6 @3)))
 
    (variables
-    (variable) : `(variables ,$1)
-    (variables variable) : (append $1 (list $2)))))
+    (variable-list) : (list 'variables $1))
+
+   (variable-list
+    (variable) : `(,$1)
+    (variable-list variable) : (append $1 (list $2)))))
 
 (define (compile-tree-il exp env opts)
   (values (parse-tree-il (comp exp '())) env env))

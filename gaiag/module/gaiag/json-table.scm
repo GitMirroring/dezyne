@@ -44,8 +44,7 @@
   :use-module (gaiag reader) ;;-goeps
 ;;;;  :use-module (gaiag simulate)
 
-  ;;+goeps :use-module (g ast goops)
-  ;;+goeps :use-module (g ast gom)
+  ;;+goeps :use-module (g om)
   ;;+goeps :use-module (g json)
   ;;+goeps :use-module (g pretty)
   ;;+goeps :use-module (g reader)
