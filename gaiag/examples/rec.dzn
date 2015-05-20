@@ -32,11 +32,18 @@ interface I
     {
       if(counter < 2)
         f(counter + 1);
+      e;
+      e;
+      e;
     }
 
     on i.e:
     {
       f(0);
+      e;
+      e;
+      e;
+      e;
     }
   }
 }
