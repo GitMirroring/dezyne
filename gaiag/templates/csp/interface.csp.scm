@@ -41,11 +41,21 @@ IF_#(.name model) _#((compose .name .behaviour) model)(IG,CS) = let
 CS & #(.name model)?x:{#(comma-join (delete-duplicates (map .event (modeling-events model))))} -> illegal_(STOP,<>)
 
 forward =
-  wait(call_return.f_forward,
-    call_return.f_forward?p -> 
-    call_return.f_call!p -> 
-    forward
-  )
+#((->join "\n  []\n  ")
+ (map
+  (lambda (f)
+   (->string
+    (list "  wait(call_return." (.name f) "_forward,\n")
+    (list "    call_return." (.name f) "_forward"
+       (if (pair? ((compose .elements .parameters .signature) f))
+           (list "?" ((->join ".") (map .name ((compose .elements .parameters .signature) f)))))
+       " ->\n")
+    (list "    call_call." (.name f) "_forward"
+       (if (pair? ((compose .elements .parameters .signature) f))
+           (list "!" ((->join ".") (map .name ((compose .elements .parameters .signature) f)))))
+       " ->\n")
+    "  )\n"))
+   (gom:functions model)))
                                                                                                           
 REORDER' = #(.name model)?x' -> (#(.name model)_in'?y' -> #(.name model).the_end' -> #(.name model)_out'!y' -> REORDER' [] #(.name model).the_end' -> REORDER')
 

@@ -2,7 +2,7 @@
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2014, 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
@@ -81,6 +81,10 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
+#(->string
+  (map (lambda (x) (list (.name x) " = {" ((compose .from .range) x) ".." ((compose .to .range) x) "}\n"))
+      (filter (is? <int>) (gom:types model))))
+            
 datatype event_enumeration_alphabet = #
 (pipe-join
   (delete-duplicates
@@ -92,11 +96,17 @@ datatype event_enumeration_alphabet = #
      (list 'the_end' 'modeling))
     symbol<)))
 
-counter_t = {0..2}
-            
+#(stderr "F: ~a\n" (gom:functions model))
+#(string-if (pair? (gom:functions model)) #{
 datatype call_return_alphabet =
-   f_call.counter_t
-  |f_forward.counter_t
-  |f_return
-
+#(->string
+  (map (lambda (f)
+   ((->join "\n  |")
+     (append
+       (list (->string "  " (.name f) "_return"))
+       (map (lambda (x) (->string (list (.name f) "_call." (.name x) "\n")
+                                  (list "  |" (.name f) "_forward." (.name x) "\n")))
+                                  (filter (is? <int>) (gom:types model))))))
+     (gom:functions model)))
 channel call_return: call_return_alphabet
+#})

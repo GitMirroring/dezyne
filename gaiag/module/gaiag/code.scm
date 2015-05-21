@@ -84,7 +84,6 @@
            sep
            statements.event
            statements.port
-           string-if
            *scope*
            ))
 
@@ -899,13 +898,6 @@
   (let ((injected-instance-names (map injected-instance-name (injected-bindings model))))
     (filter (lambda (instance) (not (member (.name instance) injected-instance-names)))
             ((compose .elements .instances) model))))
-
-(define-syntax string-if
-  (syntax-rules ()
-    ((_ condition then)
-     (animate-string (if (null-is-#f condition) then "") (current-module)))
-    ((_ condition then else)
-     (animate-string (if (null-is-#f condition) then else) (current-module)))))
 
 (define (code:identifier? name)
   (let* ((name (->string name))

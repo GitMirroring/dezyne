@@ -60,6 +60,7 @@
            extend
            provides?
            requires?
+           string-if
            ))
 
 (define (om->csp om)
@@ -1190,4 +1191,9 @@
 
        (_ (throw 'match-error (format #f "~a:csp-transform-: no match: ~a\n" (current-source-location) src)))) locals)))
 
-
+(define-syntax string-if
+  (syntax-rules ()
+    ((_ condition then)
+     (animate-string (if (null-is-#f condition) then "") (current-module)))
+    ((_ condition then else)
+     (animate-string (if (null-is-#f condition) then else) (current-module)))))
