@@ -882,7 +882,7 @@
                                (->string "  wait(call_return." name "_call,\n")
                                (->string "    call_return." name "_call ->\n"))
                          transformed
-                         '(")"))))
+                         '("  )\n"))))
           
           (($ <function> name ($ <signature> type ('formals formals ...)) recursive? statement)
            (let* ((locals (let loop ((formals formals) (locals locals))
@@ -897,7 +897,7 @@
                                 (->string "  wait(call_return." name "_call" ",\n")
                                 (->string "    call_return." name "_call?" "counter" " ->\n"))
                           transformed
-                          '("  )"))))
+                          '("  )\n"))))
           
           ;; compound statements
           (('compound statements ...)
