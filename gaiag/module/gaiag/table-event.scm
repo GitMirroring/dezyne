@@ -58,7 +58,7 @@
     (or (and-let* ((models (.elements o))
                    (models (null-is-#f (filter (negate gom:imported?) models)))
                    (models (null-is-#f (if name (and=> (find (gom:named name) models) list) models))))
-                  (map table-event models)))))
+                  (make <root> :elements (map table-event models))))))
 
 (define-method (table-event o) o)
 
@@ -95,6 +95,32 @@
 
 (define-method (table-event (model <model>) (o <compound>))
   (norm-event (table-state model o)))
+
+(define-method (mangle-table o)
+  (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))
+    (and (not json?) o)))
+
+(define-method (mangle-table (o <system>))
+  (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))
+    (and (not json?) o)))
+
+(define-method (mangle-table (o <list>))
+  (map mangle-table o))
+
+(define-method (mangle-table (o <boolean>))
+  (if (option-ref (parse-opts (command-line)) 'json #f)
+      (list (make-hash-table))))
+
+(define-method (mangle-table (o <model>))
+  (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))
+    (if json?
+        (and-let* ((behaviour (.behaviour o))
+                   (statement (.statement behaviour)))
+         (alist->hash-table
+          (append
+           (json-init o)
+           ((json-table-event o) statement))))
+        o)))
 
 (define (ast-> ast)
   ((compose

@@ -44,7 +44,7 @@
 
   :use-module (gaiag gom)
 
-  :export (ast-> mangle-table pretty-table remove-initial table-state))
+  :export (ast-> pretty-table remove-initial table-state))
 
 (define-method (table-state (o <list>))
   (filter identity (map table-state o)))
@@ -419,7 +419,7 @@
          (alist->hash-table
           (append
            (json-init o)
-           ((json-table o) statement))))
+           ((json-table-state o) statement))))
         o)))
 
 (define-method (pretty-table (o <ast>)) (ast->dezyne o))

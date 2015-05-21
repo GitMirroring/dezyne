@@ -24,31 +24,53 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (gaiag json)
-  :use-module (ice-9 and-let-star)
-
+(define-module
+  (gaiag json) ;;-goeps
+  ;;+goeps (g json)
   :use-module (srfi srfi-1)
-  :use-module (oop goops)
 
-  :use-module (gaiag gom)
+  :use-module (ice-9 and-let-star)
+  :use-module (ice-9 match)  
+
+;;  :use-module (language dezyne location)
   :use-module (gaiag misc)
-  :use-module (language dezyne location)
-  :use-module (gaiag reader)
+
+  :use-module (oop goops) ;;-goeps  
+  :use-module (gaiag gom) ;;-goeps
+  :use-module (gaiag reader) ;;-goeps
+  ;;+goeps :use-module (g ast gom)
+  ;;+goeps :use-module (g ast goops)
+  ;;+goeps :use-module (g reader)
 
   :export (
            json-location
            ))
 
-(define-method (json-location (o <ast>))
-  (alist->hash-table
-   (or (and-let* ((loc (source-location o))
-                  (properties (source-location->user-source-properties loc)))
-                 `((file . ,(assoc-ref properties 'filename))
-                   (line . ,(assoc-ref properties 'line))
-                   (column . ,(assoc-ref properties 'column))
-                   (offset . ,(assoc-ref properties 'offset))
-                   (length . ,(assoc-ref properties 'length))))
-      '())))
+(use-modules (system base lalr))
+(define (source-location src)
+  (and-let* (((supports-source-properties? src))
+	     (loc (source-property src 'loc)))
+	    (if (source-location? loc)
+		loc
+		(source-location loc))))
 
-(define-method (json-location (o <top>))
-  '())
+(define (source-location->user-source-properties loc)
+  `((filename . ,(source-location-input loc))
+    (line . ,(+ 1 (source-location-line loc)))
+    (column . ,(+ 1 (source-location-column loc)))
+    (offset . ,(source-location-offset loc))
+    (length . ,(source-location-length loc))))
+
+(define (json-location o)
+  (match o
+    ((? (is? <ast>))
+     (alist->hash-table
+      (or (and-let* ((loc (source-location o))
+                     (properties (source-location->user-source-properties loc)))
+                    `((file . ,(assoc-ref properties 'filename))
+                      (line . ,(assoc-ref properties 'line))
+                      (column . ,(assoc-ref properties 'column))
+                      (offset . ,(assoc-ref properties 'offset))
+                      (length . ,(assoc-ref properties 'length))))
+          '())))
+    (_ '())))
