@@ -55,7 +55,7 @@
   ;;+goeps :use-module (g resolve)
   ;;+goeps :use-module (g pretty)
 
-  :export (ast-> pretty-table remove-initial table table-state-statement))
+  :export (ast-> mangle-table pretty-table remove-initial table table-state-statement))
 
 ;;(define debug stderr)
 (define (debug . args) #t)
