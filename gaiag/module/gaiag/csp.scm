@@ -724,12 +724,12 @@
                                        context)))
                  (cons transformed (loop (cdr statements) new-context)))))))
 
-      (($ <assign> identifier ($ <expression> value))
-       (make <csp-assign>
-         :identifier identifier
-         :context (make <context> :members '(unused))
-         :expression context
-         :expressions (assign context identifier value)))
+;      (($ <assign> identifier ($ <expression> value))
+;       (make <csp-assign>
+;         :identifier identifier
+;         :context (make <context> :members '(unused))
+;         :expression context
+;         :expressions (assign context identifier value)))
 
       (($ <assign> identifier expression)
        (make <csp-assign>
@@ -936,8 +936,20 @@
                           (->string space s "call_return." identifier "_return" " ->\n"))
                          tail
                          (list
-                          (->string space ")"))))))
+                          (->string space ")\n"))))))
            
+          (($ <csp-assign> context identifier expression expressions)
+           (let* ((expression (csp-expression->string model expression locals)))
+             (append (list
+                      (->string space "let " identifier " = " expression " within\n"))
+                     tail)))
+          
+          (($ <csp-variable> context name type expression)
+           (let* ((expression (csp-expression->string model expression locals)))
+             (append (list
+                      (->string space "let " name " = " expression " within\n"))
+                     tail)))
+          
           (($ <action> trigger)
            (let* ((event-name (.event trigger))
                   (suffix (if (om:out? (om:event model trigger)) "_''" ""))
@@ -1056,7 +1068,7 @@
 
        (($ <function> name ($ <signature> type ('formals)) recursive? statement)
         (let ((transformed (csp-transform-model model statement inevitable-optional? channel provided-on? locals)))
-          (list name " = wait_(call_return." name "_call,\ncall_return." name "_call -> \n" transformed ")")))
+          (list name " = wait_(call_return." name "_call,\ncall_return." name "_call -> \n" transformed ")\n")))
 
        (($ <function> name ($ <signature> type ('formals formals ...)) recursive? statement)
         (let* ((locals (let loop ((formals formals) (locals locals))
@@ -1065,7 +1077,7 @@
                              (loop (cdr formals)
                                    (acons (.name (car formals)) (car formals) locals)))))
                (transformed (csp-transform-model model statement inevitable-optional? channel provided-on? locals)))
-          (list name " = wait_(call_return." name "_call,\ncall_return." name "_call?" "counter" " -> \n" transformed ")")))
+          (list name " = wait_(call_return." name "_call,\ncall_return." name "_call?" "counter" " -> \n" transformed ")\n")))
 
        (($ <if> expression then else)
         (let ((expression (csp-expression->string model expression locals))

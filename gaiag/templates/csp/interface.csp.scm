@@ -54,7 +54,7 @@ forward =
        (if (pair? ((compose .elements .parameters .signature) f))
            (list "!" ((->join ".") (map .name ((compose .elements .parameters .signature) f)))))
        " ->\n")
-    "  )\n"))
+    "    forward\n  )\n"))
    (gom:functions model)))
                                                                                                           
 REORDER' = #(.name model)?x' -> (#(.name model)_in'?y' -> #(.name model).the_end' -> #(.name model)_out'!y' -> REORDER' [] #(.name model).the_end' -> REORDER')

@@ -81,10 +81,6 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-#(->string
-  (map (lambda (x) (list (.name x) " = {" ((compose .from .range) x) ".." ((compose .to .range) x) "}\n"))
-      (filter (is? <int>) (gom:types model))))
-            
 datatype event_enumeration_alphabet = #
 (pipe-join
   (delete-duplicates
@@ -96,17 +92,16 @@ datatype event_enumeration_alphabet = #
      (list 'the_end' 'modeling))
     symbol<)))
 
-#(stderr "F: ~a\n" (gom:functions model))
-#(string-if (pair? (gom:functions model)) #{
+counter_t = {0..2}
+            
 datatype call_return_alphabet =
-#(->string
-  (map (lambda (f)
-   ((->join "\n  |")
+  #((->join "  |")
+  (apply append
+    (map (lambda (f)
      (append
-       (list (->string "  " (.name f) "_return"))
+       (list (->string (.name f) "_return\n"))
        (map (lambda (x) (->string (list (.name f) "_call." (.name x) "\n")
                                   (list "  |" (.name f) "_forward." (.name x) "\n")))
-                                  (filter (is? <int>) (gom:types model))))))
-     (gom:functions model)))
+                                  (filter (is? <int>) (gom:types model)))))
+     (gom:functions model))))
 channel call_return: call_return_alphabet
-#})
