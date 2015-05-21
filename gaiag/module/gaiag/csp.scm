@@ -701,8 +701,8 @@
 
 
 (define* (ast-transform- ast o :optional (return #t) (context #f))
-  (let* ((model (or (gom:component ast) (gom:interface ast)))
-         (context (or context (make <context> :members (gom:member-names model))))
+  (let* ((model (or (om:component ast) (om:interface ast)))
+         (context (or context (make <context> :members (om:member-names model))))
          (port? (lambda (port)
                   (if ((is? <interface>) model) #f
                       (member port (map .name (.elements (.ports model)))))))
@@ -819,11 +819,10 @@
 
 (define* (csp-transform-model ast o :optional (inevitable-optional? #f) (channel #f) (provided-on? #t) (locals '()) (indent 0) (tail '()))
   (stderr "TRANSFORM: ~a\n" o)
-  (let* ((model (or (gom:component ast) (gom:interface ast)))
+  (let* ((model (or (om:component ast) (om:interface ast)))
          (model-name (.name model))
-         (channel (or channel (if (is-a? model <interface>) model-name (.type (gom:port model)))))
-         (space (make-string (* indent 2) #\space))
-         (call "call"))
+         (channel (or channel (if (is-a? model <interface>) model-name (.type (om:port model)))))
+         (space (make-string (* indent 2) #\space)))
 
     (if (null? o)
         tail
@@ -835,7 +834,7 @@
                   (real-triggers (filter (negate modeling-event?) triggers))
                   (modeling-triggers (filter modeling-event? triggers))
                   (modeling-triggers (map .event modeling-triggers))
-                  (trigger-in? (lambda (trigger) (gom:in? (gom:event model trigger)))))
+                  (trigger-in? (lambda (trigger) (om:in? (om:event model trigger)))))
              (receive (ins outs) (partition trigger-in? real-triggers)
                (let* ((the-end (make <the-end> :context context))
                       (inevitable-optional?
@@ -846,10 +845,10 @@
                        (or (and (is-a? model <interface>) (not inevitable-optional?))
                            (or (is-a? model <interface>) ((provides-event? model) (car triggers)))))
                       (event-names (comma-join (map .event triggers)))
-                      
-                      ;;(transformed (csp-transform-model model statement inevitable-optional? channel provided-on? locals))
+
+                      ;;(transformed (csp-transform model statement inevitable-optional? channel provided-on? locals))
                       (transformed-end (csp-transform-model model the-end inevitable-optional? channel provided-on? locals)))
-                 
+
                  ((->join "\n[]\n")
                   (list (if (pair? ins)
                             (list
@@ -875,13 +874,14 @@
              ))
 
           (($ <function> name ($ <signature> type ('formals)) recursive? statement)
-           (let ((transformed (csp-transform-model model statement inevitable-optional? channel provided-on? locals 2 (list (->string "    " name "\n"))))
-                 (call "call")) ;; FIXME: what condition?
-             (append (list (->string name " = \n")
-                           (->string "  wait(call_return." name "_" call ",\n")
-                           (->string "    call_return." name "_" call " ->\n"))
-                     transformed
-                     '(")"))))
+           (let ((transformed (csp-transform-model model statement inevitable-optional? channel provided-on? locals 2
+                                             (list (->string "    " "call_return." name "_return ->\n")
+                                                   (->string "    " name "\n")))))
+                 (append (list (->string name " = \n")
+                               (->string "  wait(call_return." name "_call,\n")
+                               (->string "    call_return." name "_call ->\n"))
+                         transformed
+                         '(")"))))
           
           (($ <function> name ($ <signature> type ('formals formals ...)) recursive? statement)
            (let* ((locals (let loop ((formals formals) (locals locals))
@@ -889,13 +889,14 @@
                                 locals
                                 (loop (cdr formals)
                                       (acons (.name (car formals)) (car formals) locals)))))
-                  (transformed (csp-transform-model model statement inevitable-optional? channel provided-on? locals 2 (list (->string "    " name "\n"))))
-                  (call "call")) ;; FIXME: what condition?
-             (append (list (->string name " = \n")
-                           (->string "  wait(call_return." name "_" "call" ",\n")
-                           (->string "    call_return." name "_" call "?" "counter" " ->\n"))
-                     transformed
-                     '(")"))))
+                  (transformed (csp-transform-model model statement inevitable-optional? channel provided-on? locals 2
+                                              (list (->string "    " "call_return." name "_return ->\n")
+                                                    (->string "    " name "\n")))))
+                  (append (list (->string name " = \n")
+                                (->string "  wait(call_return." name "_call" ",\n")
+                                (->string "    call_return." name "_call?" "counter" " ->\n"))
+                          transformed
+                          '("  )"))))
           
           ;; compound statements
           (('compound statements ...)
@@ -907,32 +908,38 @@
 
           (($ <csp-if> context expression then else)
            (let* ((expression (csp-expression->string model expression locals))
-                  (then (csp-transform-model model then inevitable-optional? channel provided-on? locals (1+ indent)))
-                  (else (csp-transform-model model else inevitable-optional? channel provided-on? locals (1+ indent)))
                   (s (make-string 2 #\space))
-                  (tail (map (lambda (x) (if (pair? x) (cons s x) (list s x))) tail)))
-             (append (list
-                      (->string space "if " expression " then \n")
-                      (->string then "\n"))
-                     tail
-                     (list
-                      (->string space "else\n")
-                      (->string else "\n"))
-                     tail)))
+                  (tail (map (lambda (x) (if (pair? x) (cons s x) (list s x))) tail))
+                  (then (csp-transform-model model then inevitable-optional? channel provided-on? locals (1+ indent) tail))
+                  (else (csp-transform-model model else inevitable-optional? channel provided-on? locals (1+ indent) tail)))
+             (list
+               (->string space "if " expression " then \n")
+               (->string then "\n")
+               (->string space "else\n")
+               (->string else "\n")
+              )))
 
           ;; simple statements
-          (($ <csp-call> context identifier arguments lmodel?)
-           (let ((arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals)))
-            (append (list
-                     (->string space "call_return." identifier "_" call "!" arguments " ->\n")
-                     (->string space "wait(call_return." identifier "_" call ",\n")
-                     (->string space "call_return." identifier "_" call " ->\n"))
-                     tail
-                     '(")"))))
-
+          (($ <csp-call> context identifier arguments last?)
+           (let* ((arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals))
+                  (tailrec? (and last? (.recursive (om:function model identifier))))
+                  (s (make-string 2 #\space))
+                  (tail (map (lambda (x) (if (pair? x) (cons s x) (list s x))) tail)))
+             (if tailrec? 
+                 (list
+                  (->string space "call_return." identifier "_forward!" arguments " ->\n")
+                  (->string space identifier))
+                 (append (list
+                          (->string space "call_return." identifier "_call!" arguments " ->\n")
+                          (->string space "wait(call_return." identifier "_return" ",\n")
+                          (->string space s "call_return." identifier "_return" " ->\n"))
+                         tail
+                         (list
+                          (->string space ")"))))))
+           
           (($ <action> trigger)
            (let* ((event-name (.event trigger))
-                  (suffix (if (gom:out? (gom:event model trigger)) "_''" ""))
+                  (suffix (if (om:out? (om:event model trigger)) "_''" ""))
                   (channel (if (is-a? model <interface>) model-name  (.port trigger)))
                   (channel-return (if ((requires-event? model) trigger) (list " -> " channel "_'.return")))
                   (channel (list channel suffix)))
@@ -943,7 +950,7 @@
        (($ <voidreply>)
         (let ((channel-return
                (if (and (not inevitable-optional?) provided-on?)
-                       (list channel "_'.return ->\n")
+                       (list channel "_'.return -> SKIP\n")
                        (if (is-a? model <component>)
                            (list "skip_")
                            (list channel "_'''.modeling ->\n")))))
@@ -959,7 +966,7 @@
        (($ <the-end> context)
         (let* ((behaviour (.name (.behaviour model)))
                (component? (is-a? model <component>))
-               (end (if component? "transition_end -> " (list channel ".the_end' -> "))))
+               (end (if component? "; transition_end -> " (list "; " channel ".the_end' -> "))))
           (list end model-name "_" behaviour)))
        
        (#f (list space "skip_\n"))

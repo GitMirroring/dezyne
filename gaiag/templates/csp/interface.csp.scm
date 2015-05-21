@@ -54,10 +54,10 @@ transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
 
-within compress((if CS
-                 then #
-(.name model) _#((compose .name .behaviour) model) ((#(->csp model (make <context> :members ((compose om:member-values csp:import) (.name model)) :locals '(<>)))))
-                 else #
-(.name model) _#((compose .name .behaviour) model) ((#(->csp model (make <context> :members ((compose om:member-values csp:import) (.name model)) :locals '(<>)))))#(optional-chaos model)) [[x<-#(.name model)_in'.x|x<-extensions(#(.name model)_in')]] [|{|#(.name model),#(.name model)_in',#(.name model).the_end'|}|] REORDER' [[#(.name model)_out'.x<-x|x<-extensions(#(.name model)_out')]] \ {|#(.name model)_in',#(.name model).the_end'|})
+within compress(if CS
+                then #
+(.name model) _#((compose .name .behaviour) model) 
+                else #
+(.name model) _#((compose .name .behaviour) model)[[x<-#(.name model)_in'.x|x<-extensions(#(.name model)_in')]] [|{|#(.name model),#(.name model)_in',#(.name model).the_end'|}|] REORDER' [[#(.name model)_out'.x<-x|x<-extensions(#(.name model)_out')]] \ {|#(.name model)_in',#(.name model).the_end'|})
 
 -- end of interface.csp.scm

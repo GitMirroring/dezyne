@@ -92,6 +92,8 @@ datatype event_enumeration_alphabet = #
      (list 'the_end' 'modeling))
     symbol<)))
 
+counter_t = {0..2}
+            
 datatype call_return_alphabet =
    f_call.counter_t
   |f_forward.counter_t
