@@ -46,22 +46,23 @@ CO_#(.name model) _#((compose .name .behaviour) model) (IIG,IG) = let
 #(behaviour->csp model)
 )
 
-forward =
+forward = 
 #((->join "\n  []\n  ")
- (map
-  (lambda (f)
-   (->string
-    (list "  wait(call_return." (.name f) "_forward,\n")
-    (list "    call_return." (.name f) "_forward"
-       (if (pair? ((compose .elements .parameters .signature) f))
-           (list "?" (csp-comma-list (map .name ((compose .elements .parameters .signature) f)))))
-       " ->\n")
-    (list "    call_return." (.name f) "_call"
-       (if (pair? ((compose .elements .parameters .signature) f))
-           (list "!" (csp-comma-list (map .name ((compose .elements .parameters .signature) f)))))
-       " ->\n")
-    "    forward\n  )\n"))
-   (om:functions model)))
+ (cons "COMPLETE'({|call_return|})" 
+  (map
+   (lambda (f)
+    (->string
+     (list "  wait(call_return." (.name f) "_forward,\n")
+     (list "    call_return." (.name f) "_forward"
+        (if (pair? ((compose .elements .parameters .signature) f))
+            (list "?" (csp-comma-list (map .name ((compose .elements .parameters .signature) f)))))
+        " ->\n")
+     (list "    call_return." (.name f) "_call"
+        (if (pair? ((compose .elements .parameters .signature) f))
+            (list "!" (csp-comma-list (map .name ((compose .elements .parameters .signature) f)))))
+        " ->\n")
+     "    forward\n  )\n"))
+    (filter .recursive (om:functions model)))))
 
 global = let
   glob_set_get = glob.set?#(csp-comma-list (om:member-names model))  -> glob.get!#(csp-comma-list (om:member-names model))  -> glob_set_get
