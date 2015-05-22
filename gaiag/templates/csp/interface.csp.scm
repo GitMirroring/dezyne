@@ -48,15 +48,20 @@ forward =
     (list "  wait(call_return." (.name f) "_forward,\n")
     (list "    call_return." (.name f) "_forward"
        (if (pair? ((compose .elements .parameters .signature) f))
-           (list "?" ((->join ".") (map .name ((compose .elements .parameters .signature) f)))))
+           (list "?" (csp-comma-list (map .name ((compose .elements .parameters .signature) f)))))
        " ->\n")
     (list "    call_return." (.name f) "_call"
        (if (pair? ((compose .elements .parameters .signature) f))
-           (list "!" ((->join ".") (map .name ((compose .elements .parameters .signature) f)))))
+           (list "!" (csp-comma-list (map .name ((compose .elements .parameters .signature) f)))))
        " ->\n")
     "    forward\n  )\n"))
-   (gom:functions model)))
-                                                                                                          
+   (om:functions model)))
+
+global = let
+  glob_set_get = glob.set?#(csp-comma-list (om:member-names model))  -> glob.get!#(csp-comma-list (om:member-names model))  -> glob_set_get
+within
+  glob.get!#(csp-comma-list (om:member-values model))  -> glob_set_get
+
 REORDER' = #(.name model)?x' -> (#(.name model)_in'?y' -> #(.name model).the_end' -> #(.name model)_out'!y' -> REORDER' [] #(.name model).the_end' -> REORDER')
 
 compress(x) = let

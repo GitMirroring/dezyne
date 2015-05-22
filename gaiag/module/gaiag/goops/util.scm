@@ -84,6 +84,12 @@
            om:model-with-behaviour
            om:models-with-behaviour
            om:modeling?
+<<<<<<< HEAD
+=======
+           om:member-names
+           om:member-types
+           om:member-values
+>>>>>>> gaiag: csp: add global.
            om:models
            om:named
            om:out?

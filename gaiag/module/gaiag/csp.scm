@@ -48,6 +48,7 @@
            ast->
            behaviour->csp
            csp:import
+           csp-comma-list
            csp-component
            csp-module
 	   ast-transform
@@ -366,6 +367,9 @@
                 (map (lambda (event) (->string (list (.name port) '. (.event event))))
                      (modeling-events (csp:import (.type port)))))
               (filter om:requires? (om:ports o)))))
+
+(define (om:member-types model)
+  (map (compose .name .type) (filter (negate (extern? model)) (om:variables model))))
 
 (define (typed-elements o)
    (map (lambda (x) (symbol-append (.name o) '_ x)) ((compose .elements .fields) o)))
@@ -1220,3 +1224,8 @@
      (animate-string (if (null-is-#f condition) then "") (current-module)))
     ((_ condition then else)
      (animate-string (if (null-is-#f condition) then else) (current-module)))))
+
+(define (csp-comma-list x)
+  (let ((s ((->join ",") x)))
+    (if (if (>1 (length x)) (->string "(" s ")"))
+        s)))

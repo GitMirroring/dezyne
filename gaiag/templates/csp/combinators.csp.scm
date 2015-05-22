@@ -83,7 +83,7 @@ COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
 #(->string
   (map (lambda (x) (list (.name x) " = {" ((compose .from .range) x) ".." ((compose .to .range) x) "}\n"))
-      (filter (is? <int>) (gom:types model))))
+      (filter (is? <int>) (om:types model))))
             
 datatype event_enumeration_alphabet = #
 (pipe-join
@@ -96,8 +96,7 @@ datatype event_enumeration_alphabet = #
      (list 'the_end' 'modeling))
     symbol<)))
 
-#(stderr "F: ~a\n" (gom:functions model))
-#(string-if (pair? (gom:functions model)) #{
+#(string-if (pair? (om:functions model)) #{
 datatype call_return_alphabet =
   #((->join "  |")
   (apply append
@@ -106,7 +105,15 @@ datatype call_return_alphabet =
        (list (->string (.name f) "_return\n"))
        (map (lambda (x) (->string (list (.name f) "_call." (.name x) "\n")
                                   (list "  |" (.name f) "_forward." (.name x) "\n")))
-                                  (filter (is? <int>) (gom:types model)))))
-     (gom:functions model))))
+                                  (filter (is? <int>) (om:types model)))))
+     (om:functions model))))
 channel call_return: call_return_alphabet
+#})
+#(string-if (pair? (om:member-types model)) #{
+datatype glob_alphabet = get.#(csp-comma-list (om:member-types model))  | set.#(csp-comma-list (om:member-types model))
+channel glob: glob_alphabet
+#}
+#{
+datatype glob_alphabet = <> -- FIXME no globals
+channel glob: glob_alphabet
 #})
