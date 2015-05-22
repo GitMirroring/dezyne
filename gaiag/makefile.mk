@@ -54,6 +54,6 @@ TEST := $(TEST) $(CDIR)-check
 
 $(CDIR)-check: CDIR:=$(CDIR)
 $(CDIR)-check:
-	cd $(CDIR) && ./test.sh
+	cd $(CDIR) && GUILE_AUTO_COMPILE=0 GUILE_LOAD_COMPILED_PATH=$(shell cd $(BUILD) && pwd)/ccache ./test.sh
 
 include make/check.mk
