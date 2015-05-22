@@ -56,12 +56,10 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-Reply = {0..9}
 
             
-datatype event_enumeration_alphabet = a | e | modeling | return | the_end'
-
-
+datatype event_enumeration_alphabet = Reply_A0 | Reply_A1 | a | e | modeling | return | the_end'
+nametype Reply = { Reply_A0 , Reply_A1 }
 datatype call_return_alphabet =
   f_return
   |f_call.Reply
@@ -76,31 +74,29 @@ datatype call_return_alphabet =
 channel call_return: call_return_alphabet
 
 datatype glob_alphabet = get.Reply | set.Reply
-
-channel glob: glob_alphabet  
-
+channel glob: glob_alphabet
 
 -- interface.csp.scm
 
 channel nep: {e,the_end'}
 channel nep_'': {a}
-channel nep_': {return}
-channel nep_in',nep_out': {nep_'.return}
+channel nep_': {Reply_A0,Reply_A1,return}
+channel nep_in',nep_out': {nep_'.Reply_A0,nep_'.Reply_A1,nep_'.return}
 channel nep_''': {modeling}
 
 IF_nep_(IG,CS) = let
 f = 
   wait(call_return.f_call,
     call_return.f_call?p ->
-    glob.get?b -> 
+    glob.get?b ->
     let b = p within
     nep_''!a ->
-    glob.set!b -> 
+    glob.set!b ->
     call_return.f2_call!b ->
     wait(call_return.f2_return,
       call_return.f2_return ->
-      glob.get?b -> 
-      glob.set!b -> 
+      glob.get?b ->
+      glob.set!b ->
       call_return.f_return ->
       f
     )
@@ -108,15 +104,15 @@ f =
 f2 = 
   wait(call_return.f2_call,
     call_return.f2_call?p ->
-    glob.get?b -> 
+    glob.get?b ->
     let b = p within
     nep_''!a ->
-    glob.set!b -> 
+    glob.set!b ->
     call_return.f3_call!b ->
     wait(call_return.f3_return,
       call_return.f3_return ->
-      glob.get?b -> 
-      glob.set!b -> 
+      glob.get?b ->
+      glob.set!b ->
       call_return.f2_return ->
       f2
     )
@@ -124,25 +120,25 @@ f2 =
 f3 = 
   wait(call_return.f3_call,
     call_return.f3_call?p ->
-    glob.get?b -> 
+    glob.get?b ->
     let b = p within
     nep_''!a ->
-    glob.set!b -> 
+    glob.set!b ->
     call_return.f3_return ->
     f3
   )
 
 nep_=
 nep?x:{e} ->
-  glob.get?b -> 
-  let r = 1 within
-  glob.set!b -> 
+glob.get?b ->
+  let r = Reply_A0 within
+  glob.set!b ->
   call_return.f_call!r ->
   wait(call_return.f_return,
     call_return.f_return ->
-    glob.get?b -> 
-    glob.set!b -> 
-    nep_'.return -> SKIP
+    glob.get?b ->
+    glob.set!b ->
+    nep_'!r -> SKIP
   )
 ; nep.the_end' -> nep_
 []
@@ -169,11 +165,12 @@ forward =
     forward
   )
 
+
 global = let
   glob_set_get = glob.set?b -> glob.get!b -> glob_set_get
-within 
-  glob.get!0 -> glob_set_get
-                                                                                                          
+within
+  glob.get!Reply_A0 -> glob_set_get
+
 REORDER' = nep?x' -> (nep_in'?y' -> nep.the_end' -> nep_out'!y' -> REORDER' [] nep.the_end' -> REORDER')
 
 compress(x) = let

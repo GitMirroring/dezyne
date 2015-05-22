@@ -69,7 +69,7 @@ transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
 
-#(.name model) _#((compose .name .behaviour) model)_ = compress((([|{|call_return|}|] x:{#((->join ",") (append (map .name (gom:functions model)) (list (->string (.name model) "_" ((compose .name .behaviour) model)))))} @ x) [|{|glob|}|] global) \ {|glob|})
+#(.name model) _#((compose .name .behaviour) model)_ = compress((([|{|call_return|}|] x:{#((->join ",") (append (map .name (om:functions model)) (list (->string (.name model) "_" ((compose .name .behaviour) model)))))} @ x) [|{|glob|}|] global) \ {|glob|})
 
 within compress(if CS
                 then #

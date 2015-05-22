@@ -23,7 +23,7 @@
 
 interface nep
 {
-  typedef int[0..9] Reply;
+  typedef int[0..99] Reply;
 
   in void e;
   out void a;

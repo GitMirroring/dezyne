@@ -964,7 +964,13 @@
              (append (list
                       (->string space "let " name " = " expression " within\n"))
                      tail)))
-          
+
+          (($ <csp-reply> context expression)
+           (let* ((expression (csp-expression->string model expression locals)))
+             (list
+              (->string space "glob.set!" member-name-list " ->\n")
+              (->string space channel "_'!" expression " -> SKIP\n"))))
+             
           (($ <action> trigger)
            (let* ((event-name (.event trigger))
                   (suffix (if (om:out? (om:event model trigger)) "_''" ""))

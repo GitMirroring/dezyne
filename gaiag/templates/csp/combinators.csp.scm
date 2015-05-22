@@ -105,7 +105,7 @@ datatype call_return_alphabet =
        (list (->string (.name f) "_return\n"))
        (map (lambda (x) (->string (list (.name f) "_call." (.name x) "\n")
                                   (list "  |" (.name f) "_forward." (.name x) "\n")))
-                                  (filter (is? <int>) (om:types model)))))
+                                  (filter (negate (is? <extern>)) (om:types model)))))
      (om:functions model))))
 channel call_return: call_return_alphabet
 #})
