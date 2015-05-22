@@ -1,24 +1,25 @@
-;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
-;;
-;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
-;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;
-;; Gaiag is free software: you can redistribute it and/or modify
-;; it under the terms of the GNU Affero General Public License as
-;; published by the Free Software Foundation, either version 3 of the
-;; License, or (at your option) any later version.
-;;
-;; Gaiag is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU Affero General Public License for more details.
-;;
-;; You should have received a copy of the GNU Affero General Public License
-;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
+;;; Dezyne --- Dezyne command line tools
+;;;
+;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;;
+;;; This file is part of Dezyne.
+;;;
+;;; Dezyne is free software: you can redistribute it and/or modify it
+;;; under the terms of the GNU Affero General Public License as
+;;; published by the Free Software Foundation, either version 3 of the
+;;; License, or (at your option) any later version.
+;;;
+;;; Dezyne is distributed in the hope that it will be useful, but
+;;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;;; Affero General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU Affero General Public
+;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 
 (read-set! keywords 'prefix)
 
-(define-module (gaiag gom ast)
+(define-module (gr om)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 pretty-print)
@@ -30,37 +31,51 @@
   :use-module (gaiag misc)
   :use-module (gaiag reader)
 
-  :use-module (oop goops)
-  :use-module (oop goops describe)
-  :use-module (gaiag gom gom)
-
   :use-module (language dezyne location)
+  
+  ;; :use-module (gr goops compare)
+  ;; :use-module (gr goops om)
+  ;; :use-module (gr goops display)
+  ;; :use-module (gr goops util)
+
+  :use-module (gr record om)
+  :use-module (gr record util)
 
   ;; :use-module (g guile om)
   ;; :use-module (g guile util)
 
   :export (
-           ast->gom
+           ast->om
            ast->sugar
            ast->trigger-sugar
            ast:public
            ast:interface
            ))
 
+(cond-expand
+ (goops-om
+  (cond-expand-provide (current-module) '(goops-om))
+  (use-modules (oop goops))
+  (re-export-modules
+   (gaiag goops compare)
+   (gaiag goops om)
+   (gaiag goops display)
+   (gaiag goops map)
+   (gaiag goops util)))
+ (record-om
+  (cond-expand-provide (current-module) '(record-om))
+  (re-export-modules
+   (gr record om)
+   (gr record util))
+  )
+ (list-om
+  (cond-expand-provide (current-module) '(list-om))
+  (re-export-modules
+   (g guile om)
+   (g guile util))))
+
 (define (ast->sugar ast)
   (match ast
-    ;; (('in 'void name) `(event ,name (signature (type void)) in))
-    ;; (('out 'void name) `(event ,name (signature (type void)) out))
-    ;; (('in signature name) `(event ,name ,signature in))
-    ;; (('out signature name) `(event ,name ,signature out))
-    ;; (('enum name scope ('fields fields ...)) `(enum ,name ,scope (fields ,fields)))
-    ;; (('enum name scope fields) `(enum ,name ,scope (fields ,fields)))
-    ;; (('enum name ('fields fields ...)) `(enum ,name #f (fields ,fields)))
-    ;; (('enum name fields) `(enum ,name #f (fields ,fields)))
-    ;; (('extern name value) `(extern ,name #f ,value))
-    ;; (('int name range) `(int ,name #f ,range))    
-    ;; (('events events ...) (cons 'events (map ast->sugar events)))
-
     (('provides type name) `(port ,name ,type provides))
     (('requires type name injected ...) `(port ,name ,type requires ,injected))
     (('on ('triggers t ...) statement) ast)
@@ -76,7 +91,7 @@
 (define (ast:model? x)
   (and (pair? x) (member (car x) '(component import interface system type))))
 
-(define (ast->gom ast)
+(define (ast->om ast)
   (let* ((ast (if (and (pair? ast)
                       (not (ast:model? ast))
                       (not (eq? (car ast) 'root))
@@ -85,63 +100,63 @@
                   ast))
          (ast (if (and (pair? ast) (assoc-ref ast 'locations))
                   (ast->annotate ast) ast)))
-    (ast->gom- ast)))
+    (ast->om- ast)))
 
-(define (ast->gom- ast)
-  (retain-source-properties ast ((compose ast->gom-- ast->sugar) ast)))
+(define (ast->om- ast)
+  (retain-source-properties ast ((compose ast->om-- ast->sugar) ast)))
 
-(define (ast->gom-- ast)
+(define (ast->om-- ast)
   (match ast
 
-    (('action trigger) (make <action> :trigger (ast->gom- trigger)))
+    (('action trigger) (make <action> :trigger (ast->om- trigger)))
 
     (('arguments arguments ...) (make <arguments>
-                                  :elements (map ast->gom- arguments)))
+                                  :elements (map ast->om- arguments)))
 
     (('assign identifier expression) (make <assign>
                                        :identifier identifier
-                                       :expression (ast->gom- expression)))
+                                       :expression (ast->om- expression)))
 
     (('behaviour) (make <behaviour>))
 
     (('behaviour name body ...)
      (make <behaviour>
        :name name
-       :types (ast->gom- (or (null-is-#f (assoc 'types body)) '(types)))
-       :variables (ast->gom- (or (null-is-#f (assoc 'variables body)) '(variables)))
-       :functions (ast->gom- (or (null-is-#f (assoc 'functions body)) '(functions)))
-       :statement (ast->gom- (or (null-is-#f (assoc 'compound body)) '(compound)))))
+       :types (ast->om- (or (null-is-#f (assoc 'types body)) '(types)))
+       :variables (ast->om- (or (null-is-#f (assoc 'variables body)) '(variables)))
+       :functions (ast->om- (or (null-is-#f (assoc 'functions body)) '(functions)))
+       :statement (ast->om- (or (null-is-#f (assoc 'compound body)) '(compound)))))
 
     (('bind left right)
-     (make <bind> :left (ast->gom- left) :right (ast->gom- right)))
+     (make <bind> :left (ast->om- left) :right (ast->om- right)))
 
     (('binding instance port) (make <binding> :instance instance :port port))
 
     (('bindings bindings ...)
-     (make <bindings> :elements (map ast->gom- bindings)))
+     (make <bindings> :elements (map ast->om- bindings)))
 
     (('call identifier) (make <call> :identifier identifier))
 
     (('call identifier arguments)
      (make <call>
        :identifier identifier
-       :arguments (ast->gom- (or (null-is-#f arguments) '(arguments)))))
+       :arguments (ast->om- (or (null-is-#f arguments) '(arguments)))))
 
     (('call identifier arguments last?)
      (make <call>
        :identifier identifier
-       :arguments (ast->gom- (or (null-is-#f arguments) '(arguments)))
+       :arguments (ast->om- (or (null-is-#f arguments) '(arguments)))
        :last? last?))
 
     (('component name body ...)
      (and=> (assoc 'imported body) (mark-imported ast))
       (make <component>
         :name name
-        :ports (ast->gom- (or (null-is-#f (assoc 'ports body)) '(ports)))
-        :behaviour (and=> (null-is-#f (assoc 'behaviour body)) ast->gom-)))
+        :ports (ast->om- (or (null-is-#f (assoc 'ports body)) '(ports)))
+        :behaviour (and=> (null-is-#f (assoc 'behaviour body)) ast->om-)))
 
     (('compound statements ...)
-     (make <compound> :elements (map ast->gom- statements)))
+     (make <compound> :elements (map ast->om- statements)))
 
     (('data value) (make <data> :value value))
 
@@ -149,7 +164,7 @@
      (make <enum>
        :name name
        :scope scope
-       :fields (ast->gom- fields)))
+       :fields (ast->om- fields)))
 
     (('extern name scope value)
      (make <extern> :name name :scope scope :value value))
@@ -157,14 +172,14 @@
     (('event name signature direction)
      (make <event>
        :name name
-       :signature (ast->gom- signature)
+       :signature (ast->om- signature)
        :direction direction))
 
-    (('events events ...) (make <events> :elements (map ast->gom- events)))
+    (('events events ...) (make <events> :elements (map ast->om- events)))
 
     (('expression) (make <expression>))
 
-    (('expression expression) (make <expression> :value (ast->gom- expression)))
+    (('expression expression) (make <expression> :value (ast->om- expression)))
 
     (('field identifier field) (make <field> :identifier identifier :field field))
 
@@ -173,102 +188,102 @@
     (('function name signature recursive? statement)
      (make <function>
        :name name
-       :signature (ast->gom- signature)
+       :signature (ast->om- signature)
        :recursive recursive?
-       :statement (ast->gom- statement)))
+       :statement (ast->om- statement)))
 
     (('functions functions ...)
-     (make <functions> :elements (map ast->gom- functions)))
+     (make <functions> :elements (map ast->om- functions)))
 
     (('guard expression statement)
      (make <guard>
-       :expression (ast->gom- expression)
-       :statement (ast->gom- statement)))
+       :expression (ast->om- expression)
+       :statement (ast->om- statement)))
 
     (('if expression then)
      (make <if>
-       :expression (ast->gom- expression)
-       :then (ast->gom- then)))
+       :expression (ast->om- expression)
+       :then (ast->om- then)))
 
     (('if expression then else)
      (make <if>
-       :expression (ast->gom- expression)
-       :then (ast->gom- then)
-       :else (ast->gom- else)))
+       :expression (ast->om- expression)
+       :then (ast->om- then)
+       :else (ast->om- else)))
 
     (('illegal) (make <illegal>))
 
     (('import name) (make <import> :name name))
 
     (('int name scope range)
-     (make <int> :name name :scope scope :range (ast->gom- range)))
+     (make <int> :name name :scope scope :range (ast->om- range)))
 
     (('instance name component) (make <instance> :name name :component component))
 
     (('instances instances ...)
-     (make <instances> :elements (map ast->gom- instances)))
+     (make <instances> :elements (map ast->om- instances)))
 
     (('interface name body ...)
      (and=> (assoc 'imported body) (mark-imported ast))
      (make <interface>
        :name name
-       :types (ast->gom- (or (null-is-#f (assoc 'types body)) '(types)))
-       :events (ast->gom- (or (null-is-#f (assoc 'events body)) '(events)))
-       :behaviour (and=> (null-is-#f (assoc 'behaviour body)) ast->gom-)))
+       :types (ast->om- (or (null-is-#f (assoc 'types body)) '(types)))
+       :events (ast->om- (or (null-is-#f (assoc 'events body)) '(events)))
+       :behaviour (and=> (null-is-#f (assoc 'behaviour body)) ast->om-)))
 
     (('literal scope type field)
      (make <literal> :scope scope :type type :field field))
 
     (('on triggers statement)
-     (make <on> :triggers (ast->gom- triggers) :statement (ast->gom- statement)))
+     (make <on> :triggers (ast->om- triggers) :statement (ast->om- statement)))
 
     (('otherwise) (make <otherwise> :value 'otherwise))
 
     (('otherwise value) (make <otherwise> :value value))    
 
     (('parameter name type)
-     (make <gom:parameter> :name name :type (ast->gom- type)))
+     (make <om:parameter> :name name :type (ast->om- type)))
 
     (('parameter name type direction)
-     (make <gom:parameter> :name name :type (ast->gom- type) :direction direction))
+     (make <om:parameter> :name name :type (ast->om- type) :direction direction))
 
     (('parameters parameters ...)
-     (make <parameters> :elements (map ast->gom- parameters)))
+     (make <parameters> :elements (map ast->om- parameters)))
 
     (('port name type direction injected ...)
-     (make <gom:port>
+     (make <om:port>
        :name name
        :type type
        :direction direction
        :injected (and=> (null-is-#f injected) car)))
 
-    (('ports ports ...) (make <ports> :elements (map ast->gom- ports)))
+    (('ports ports ...) (make <ports> :elements (map ast->om- ports)))
 
     (('range from to) (make <range> :from from :to to))
 
-    (('reply expression) (make <reply> :expression (ast->gom- expression)))
+    (('reply expression) (make <reply> :expression (ast->om- expression)))
 
     (('return) (make <return>))
 
-    (('return expression) (make <return> :expression (ast->gom- expression)))
+    (('return expression) (make <return> :expression (ast->om- expression)))
 
-    (('root elements ...) (make <root> :elements (map ast->gom- elements)))
-
-    (('signature type parameters)
-     (make <signature> :type (ast->gom- type) :parameters (ast->gom- parameters)))
-
-    (('signature type) (make <signature> :type (ast->gom- type)))
+    (('root elements ...) (make <root> :elements (map ast->om- elements)))
 
     (('signature type parameters)
-     (make <signature> :type (ast->gom- type) :parameters (ast->gom- parameters)))
+     (make <signature> :type (ast->om- type) :parameters (ast->om- parameters)))
+
+    (('signature type) (make <signature> :type (ast->om- type)))
+
+    (('signature type parameters)
+     (make <signature> :type (ast->om- type) :parameters (ast->om- parameters)))
 
     (('system name ports instances bindings)
      (and=> (assoc 'imported (cddr ast)) (mark-imported ast))
      (make <system>
         :name name
-        :ports (ast->gom- ports)
-        :instances (ast->gom- instances)
-        :bindings (ast->gom- bindings)))
+        :ports (ast->om- ports)
+        :instances (ast->om- instances)
+        :bindings (ast->om- bindings)))
 
     (('trigger port event) (make <trigger> :port port :event event))
 
@@ -276,10 +291,10 @@
      (make <trigger>
        :port port
        :event event
-       :arguments (ast->gom- arguments)))
+       :arguments (ast->om- arguments)))
 
     (('triggers triggers ...)
-     (make <triggers> :elements (map ast->gom- triggers)))
+     (make <triggers> :elements (map ast->om- triggers)))
 
     (('type scope ('type name)) (make <type> :name name :scope scope))
 
@@ -287,19 +302,19 @@
 
     (('type name scope) (make <type> :name name :scope scope))
 
-    (('types types ...) (make <types> :elements (map ast->gom- types)))
+    (('types types ...) (make <types> :elements (map ast->om- types)))
 
     (('var name) (make <var> :name name))
 
     (('variable name type expression)
-     (make <variable> :name name :type (ast->gom- type) :expression (ast->gom- expression)))
+     (make <variable> :name name :type (ast->om- type) :expression (ast->om- expression)))
 
     (('variables variables ...)
-     (make <variables> :elements (map ast->gom- variables)))
+     (make <variables> :elements (map ast->om- variables)))
 
     (('value type field) (make <value> :type type :field field))
 
-    ((h t ...) (map ast->gom- ast))
+    ((h t ...) (map ast->om- ast))
 
     (_ ast)))
 
@@ -331,3 +346,10 @@
 ;;    (('system name body ...) '(import))
     ((h t ...) (map ast:interface ast))
     (_ '(import))))
+
+(define (ast-> ast)
+  ((compose
+    om->list
+    ast->om
+    ast->annotate
+    ) ast))

@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2013, 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2013, 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -25,13 +25,13 @@
   :use-module (gaiag misc)
 
   :use-module (oop goops)
-  :use-module (gaiag gom)
+  :use-module (gaiag om)
   :use-module (gaiag csp)
 
   :export (fail
            diff-noisy-equal?
-	   gom-noisy-equal?
-           gom-pretty-noisy-equal?
+	   om-noisy-equal?
+           om-pretty-noisy-equal?
 	   noisy-equal?
            pretty-noisy-equal?
            whitespace-noisy-equal?)
@@ -49,15 +49,15 @@
   (or (equal? actual expected)
       (fail "~a!=\n~a" (pretty-string expected) (pretty-string actual))))
 
-(define (gom-noisy-equal? actual expected)
-  (let ((actual* (gom->list (ast->gom actual)))
-        (expected* (gom->list (ast->gom expected))))
+(define (om-noisy-equal? actual expected)
+  (let ((actual* (om->list (ast->om actual)))
+        (expected* (om->list (ast->om expected))))
    (or (equal? actual* expected*)
        (fail "~a\n!=\n~a\n" expected* actual*))))
 
-(define (gom-pretty-noisy-equal? actual expected)
-  (let ((actual* (gom->list (ast->gom actual)))
-        (expected* (gom->list (ast->gom expected))))
+(define (om-pretty-noisy-equal? actual expected)
+  (let ((actual* (om->list (ast->om actual)))
+        (expected* (om->list (ast->om expected))))
   (or (equal? actual* expected*)
       (fail "~a!=\n~a" (pretty-string expected*) (pretty-string actual*)))))
 

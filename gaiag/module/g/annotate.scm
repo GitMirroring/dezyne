@@ -44,6 +44,7 @@
     (_ o)))
 
 (define (ast:annotate o)
+  (stderr "annotate: ~a\n" o)
   ((compose
     annotate-imported
     annotate-locations   
@@ -104,6 +105,7 @@
   o)
 
 (define (annotate-imported o)
+  (stderr "annotating: ~a\n" o)
   (match o
     (('root models ...) (cons 'root (map annotate-imported models)))
     (('interface body ... (and ('imported . imported)))

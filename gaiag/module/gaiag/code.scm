@@ -37,11 +37,10 @@
   :use-module (gaiag wfc)
 
   :use-module (oop goops)
-  :use-module (oop goops describe)
-  :use-module (gaiag gom)
+  :use-module (gaiag om)
 
   :export (ast:code
-           code:gom
+           code:om
            code:identifier?
            code:import
            code:->code
@@ -90,17 +89,17 @@
            ))
 
 (define (ast:code ast)
-  (let ((gom ((gom:register code:gom) ast #t)))
-    (map dump (filter (negate gom:imported?) ((gom:filter <model>) gom)))
+  (let ((om ((om:register code:om) ast #t)))
+    (map dump (filter (negate om:imported?) ((om:filter <model>) om)))
     (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
       (dump-header)))
   "")
 
 (define (code:import name)
-  (gom:import name code:gom))
+  (om:import name code:om))
 
-(define (code:gom ast)
-  ((compose norm-state ast:wfc ast:resolve ast->gom) ast))
+(define (code:om ast)
+  ((compose norm-state ast:wfc ast:resolve ast->om) ast))
 
 (define (pipe producer consumer)
   (with-input-from-string (with-output-to-string producer) consumer))
@@ -125,7 +124,7 @@
             (dump-file (basename header) (gulp-file header))))
 
 (define-method (dump-global (o <model>))
-  (and-let* (((null-is-#f (gom:enums)))
+  (and-let* (((null-is-#f (om:enums)))
              (template (template-file `(,(language) global ,(symbol-append (code:extension o) '.scm))))
              ((file-exists? (components->file-name template))))
             (dump-indented (list 'dezyne 'global (code:extension o))
@@ -243,20 +242,20 @@
         (->string statement))))
 
 (define* (->code- model src :optional (locals '()) (indent 1) (compound? #t))
-  (define (enum? identifier) (gom:enum model identifier))
-  (define (extern? identifier) (gom:extern model identifier))
+  (define (enum? identifier) (om:enum model identifier))
+  (define (extern? identifier) (om:extern model identifier))
   (define (local? identifier) (assoc-ref locals identifier))
   (define (member? identifier) (and (not (local? identifier))
-                                    (gom:variable model identifier)))
+                                    (om:variable model identifier)))
   (define (var? identifier) (or (member? identifier) (local? identifier)))
-  (define (parameter? identifier) (and=> (var? identifier) (is? <gom:parameter>)))
+  (define (parameter? identifier) (and=> (var? identifier) (is? <om:parameter>)))
   (define (identifier-snippet identifier)
     (cond ((member? identifier)
            (snippet 'member `((identifier ,identifier))))
           ((parameter? identifier)
            (snippet 'parameter-identifier
                     `((identifier ,identifier)
-                      (out? ,(gom:out-or-inout? (parameter? identifier)))
+                      (out? ,(om:out-or-inout? (parameter? identifier)))
                       (argument . #f))))
           ((local? identifier)
            (snippet 'local `((identifier ,identifier) (argument #f))))
@@ -344,7 +343,7 @@
       (($ <call> function ($ <arguments> '()))
        (snippet 'call `((space ,space) (function ,function))))
       (($ <call> function ($ <arguments> arguments))
-       (let* ((parameters ((compose .elements .parameters .signature) (gom:function model function)))
+       (let* ((parameters ((compose .elements .parameters .signature) (om:function model function)))
             (arguments ((join)
                         (map (lambda (e p)
                                (let ((out? (member (.direction p) '(inout out))))
@@ -380,10 +379,10 @@
                           (cons statement continuation))))))))))
       (($ <illegal>) (snippet 'illegal `((space ,space))))
       (($ <action> ($ <trigger> port-name event-name ($ <arguments> arguments)))
-       (let* ((port (gom:port model port-name))
+       (let* ((port (om:port model port-name))
               (name (.type port))
-              (interface (gom:import name))
-              (event (gom:event interface event-name))
+              (interface (om:import name))
+              (event (om:event interface event-name))
               (direction (.direction event))
               (comma (if (pair? arguments) (sep) ""))
               (comma-space (if (pair? arguments) `(,(sep) " ") ""))
@@ -460,7 +459,7 @@
                   (expression ,(expression->string model expression locals)))))
       (($ <parameters> parameters)
        ((join) (map (lambda (x) (->code model x)) parameters)))
-      (($ <gom:parameter> name type direction)
+      (($ <om:parameter> name type direction)
        (snippet 'parameter `((name ,name) (type ,(->code model type)) (out? ,(member direction '(inout out))))))
       (($ <data> value) value)
       ((? char?) (make-string 1 src))
@@ -473,21 +472,21 @@
       ((h t ...) (map (lambda (x) (->code model x locals indent)) src))
       (_ (throw 'match-error (format #f "~a:code:->code: no match: ~a\n" (current-source-location) src))))))
 
-(define-method (find-trigger (o <on>) (port <gom:port>) (event <event>))
+(define-method (find-trigger (o <on>) (port <om:port>) (event <event>))
   (find (lambda (t) (and (eq? (.port t) (.name port))
                          (eq? (.event t) (.name event))))
         ((compose .elements .triggers) o)))
 
-(define-method (find-trigger (o <guard>) (port <gom:port>) (event <event>))
+(define-method (find-trigger (o <guard>) (port <om:port>) (event <event>))
   (find-trigger (.statement o) port event))
 
-(define-method (find-trigger (o <ast>) (port <gom:port>) (event <event>))
+(define-method (find-trigger (o <ast>) (port <om:port>) (event <event>))
   #f)
 
-(define-method (find-trigger (o <compound>) (port <gom:port>) (event <event>))
+(define-method (find-trigger (o <compound>) (port <om:port>) (event <event>))
   (null-is-#f (filter identity (map (find-trigger port event) (.elements o)))))
 
-(define-method (find-trigger (port <gom:port>) (event <event>))
+(define-method (find-trigger (port <om:port>) (event <event>))
   (lambda (o) (find-trigger o port event)))
 
 (define-method (expr->clause (model <model>) (o <guard>) expression)
@@ -496,24 +495,24 @@
       (let* ((c-expression (bool-expression->string model expression))
              (if-clause (snippet 'clause-if `((expression ,c-expression))))
              (else-if-clause (snippet 'clause-else-if `((expression ,c-expression)))))
-        (->string (list (if (gom:first-guard? model o) if-clause else-if-clause))))))
+        (->string (list (if (om:first-guard? model o) if-clause else-if-clause))))))
 
-(define-method (gom:top-statements (o <model>))
+(define-method (om:top-statements (o <model>))
   ((compose .elements .statement .behaviour) o))
 
-(define-method (gom:first-guard? (model <model>) (o <guard>))
+(define-method (om:first-guard? (model <model>) (o <guard>))
   (not
-   (and-let* ((parent (gom:parent model o))
+   (and-let* ((parent (om:parent model o))
               (parent (cond ((is-a? parent <guard>) (.statement parent))
-                            ((is-a? parent <on>) (gom:parent model parent))
+                            ((is-a? parent <on>) (om:parent model parent))
                             (else parent)))
-              (guards ((gom:statements-of-type 'guard) parent))
+              (guards ((om:statements-of-type 'guard) parent))
               (guards (filter (find-trigger (statements.port) (statements.event)) guards))
               (guards (null-is-#f guards)))
              (not (eq? o (car guards))))))
 
-(define-method (gom:top-guard? (model <model>) (o <guard>))
-  (member o (gom:top-statements model)))
+(define-method (om:top-guard? (model <model>) (o <guard>))
+  (member o (om:top-statements model)))
 
 (define (bool-expression->string model o)
   (match o
@@ -529,12 +528,12 @@
 
 (define* (expression->string model o :optional (locals '()) (argument #f))
 
-  (define (enum? identifier) (gom:enum model identifier))
+  (define (enum? identifier) (om:enum model identifier))
   (define (local? identifier) (assoc-ref locals identifier))
   (define (member? identifier) (and (not (local? identifier))
-                                    (gom:variable model identifier)))
+                                    (om:variable model identifier)))
   (define (var? identifier) (or (local? identifier) (member? identifier)))
-  (define (parameter? identifier) (and=> (var? identifier) (is? <gom:parameter>)))
+  (define (parameter? identifier) (and=> (var? identifier) (is? <om:parameter>)))
   (define (unspecified? x) (eq? x *unspecified*))
 
   (define (enum-type o field)
@@ -554,10 +553,10 @@
     (($ <expression> (? unspecified?)) *unspecified*)
     (($ <expression>) (expression->string model (.value o) locals argument))
     (($ <action> ($ <trigger> port-name event-name ($ <arguments> arguments)))
-     (let* ((port (gom:port model port-name))
+     (let* ((port (om:port model port-name))
             (name (.type port))
-            (interface (gom:import name))
-            (event (gom:event interface event-name))
+            (interface (om:import name))
+            (event (om:event interface event-name))
             (direction (.direction event))
             (comma (if (pair? arguments) (sep) ""))
             (comma-space (if (pair? arguments) `(,(sep) " ") ""))
@@ -582,7 +581,7 @@
     (($ <var> (and (? parameter?) (get! identifier)))
      (snippet 'parameter-identifier
               `((identifier ,(identifier))
-                (out? ,(gom:out-or-inout? (parameter? (identifier))))
+                (out? ,(om:out-or-inout? (parameter? (identifier))))
                 (argument ,argument))))
     (($ <var> (and (? local?) (get! identifier)))
      (snippet 'local `((identifier ,(identifier)) (argument ,argument))))
@@ -600,7 +599,7 @@
     (($ <call> function ($ <arguments> '()))
         (snippet 'call-expression `((function ,function))))
     (($ <call> function ($ <arguments> arguments))
-     (let* ((parameters ((compose .elements .parameters .signature) (gom:function model function)))
+     (let* ((parameters ((compose .elements .parameters .signature) (om:function model function)))
             (arguments ((join)
                         (map (lambda (e p)
                                (let ((out? (member (.direction p) '(inout out))))
@@ -629,10 +628,10 @@
 
 (define ((connect-ports model snippet) bind)
   (let* ((left (.left bind))
-         (left-port (gom:port model left))
+         (left-port (om:port model left))
          (right (.right bind))
-         (right-port (gom:port model right))
-         (provided-required (if (gom:provides? left-port)
+         (right-port (om:port model right))
+         (provided-required (if (om:provides? left-port)
                                 (cons left right)
                                 (cons right left)))
          (interface (.type left-port))
@@ -699,7 +698,7 @@
 (define ((define-on model port snippet) event)
   (let* ((signature (.signature event))
          (type (.type signature))
-         (enum (if (eq? (.name type) 'void) #f (gom:enum model type)))
+         (enum (if (eq? (.name type) 'void) #f (om:enum model type)))
          (interface (.type port))
          (return-type (return-type port event))
          (parameters (.parameters signature))
@@ -727,9 +726,9 @@
                 (component model)
                 (behaviour (.behaviour component))
                 (statement (.statement behaviour))
-                (guards ((gom:statements-of-type 'guard) statement))
+                (guards ((om:statements-of-type 'guard) statement))
                 (guards (filter (find-trigger port event) guards))
-                (ons ((gom:statements-of-type 'on) statement))
+                (ons ((om:statements-of-type 'on) statement))
                 (ons (filter (find-trigger port event) ons)))
                (parameterize ((statements.port port)
                               (statements.event event))
@@ -759,15 +758,15 @@
 
 (define ((init-bind model snippet) bind)
   (let* ((left (.left bind))
-         (left-port (gom:port model left))
+         (left-port (om:port model left))
          (right (.right bind))
-         (right-port (gom:port model right))
+         (right-port (om:port model right))
          (port (and (bind-port? bind)
                     (if (not (.instance left)) (.port left) (.port right))))
          (injected? (and (eq? port '*) port))
-         (direction (or injected? (.direction (gom:port model port))))
+         (direction (or injected? (.direction (om:port model port))))
          (edir (or injected? (if (eq? direction 'provides) 'out 'in)))
-         (interface (if injected? (if left-port (.type left-port) (.type right-port)) (.type (gom:port model port))))
+         (interface (if injected? (if left-port (.type left-port) (.type right-port)) (.type (om:port model port))))
          (instance (and (bind-port? bind)
                         (if (not (.instance left))
                             (binding-name model right)
@@ -805,7 +804,7 @@
   (map (lambda (x) (snippet 'declare-reply
                             `((scope ,(or (.scope x) (.name o)))
                               (name ,(.name x)))))
-       (gom:reply-enums o)))
+       (om:reply-enums o)))
 
 (define-method (return-type port (event <event>))
   (let* ((type ((compose .type .signature) event))
@@ -821,14 +820,14 @@
        (snippet 'type-local-enum `((space "") (scope ,scope) (name ,name)))))))
 
 (define (binding-name model bind)
-  (let ((instance (gom:instance model bind))
-        (port (gom:port model bind)))
+  (let ((instance (om:instance model bind))
+        (port (om:port model bind)))
     (snippet 'binding
                `((instance . ,(match instance
                                 (($ <instance>) (.name instance))
                                 (($ <interface>) (.name instance))))
                  (port . ,(match port
-                            (($ <gom:port>) (.name port))
+                            (($ <om:port>) (.name port))
                             (($ <interface>) (list "x" (.name port)))))))))
 
 (define (bind-port? binding)
@@ -855,12 +854,12 @@
       (.port (.right binding))))
 
 (define (injected-instance-type model binding)
-  (.component (gom:instance model (if (.instance (.left binding))
+  (.component (om:instance model (if (.instance (.left binding))
                                       (.left binding)
                                       (.right binding)))))
 
 (define (injected-instance-interface model binding)
-  (.type (gom:port (code:import (injected-instance-type model binding)))))
+  (.type (om:port (code:import (injected-instance-type model binding)))))
 
 (define (injected-instances model)
   (let ((injected-instance-names (map injected-instance-name (injected-bindings model))))

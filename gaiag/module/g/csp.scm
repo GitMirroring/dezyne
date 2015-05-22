@@ -33,7 +33,7 @@
   :use-module (g animate)
   :use-module (g asserts)
   :use-module (g ast-colon)
-  :use-module (g g)
+  :use-module (g gaiag)
   :use-module (g misc)
   :use-module (g reader)
   :use-module (g norm-state)

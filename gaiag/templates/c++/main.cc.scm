@@ -67,14 +67,14 @@ void fill_event_map(#.model & m, event_map& e)
     (lambda (port)
     (map (define-on model port #{
       m.#port .#direction .#event  = [] (#parameters) {#(string-if (eq? return-type 'void) #{log_#direction("#port .#direction .", "#event ");#}#{return log_valued("#port .#direction .", "#event ", (std::function<#(*scope* reply-scope)::#reply-name ::type(std::string)>)([](std::string s) {return (#(*scope* reply-scope)::#reply-name ::type)to_#(*scope* reply-scope)_#reply-name(drop_prefix(s,"#port ."));}), (std::function<std::string(#(*scope* reply-scope)::#reply-name ::type)>)([](#(*scope* reply-scope)::#reply-name ::type r) {return (std::string)to_string(r);}));#})};
-#}) (filter (negate (gom:dir-matches? port))
-       (gom:events port)))) (gom:ports model))
+#}) (filter (negate (om:dir-matches? port))
+       (om:events port)))) (om:ports model))
   #(map
     (lambda (port)
     (map (define-on model port #{
        e["#port .#event "] = #(string-if (null? argument-list) #{m.#port .#direction .#event; #} #{ [m,&dzn_i] {m.#port .#direction .#event (#(comma-join (map (lambda (i) "dzn_i") argument-list)));};#})
-#}) (filter (gom:dir-matches? port)
-       (gom:events port)))) (gom:ports model)) }
+#}) (filter (om:dir-matches? port)
+       (om:events port)))) (om:ports model)) }
 }
 
 int main()

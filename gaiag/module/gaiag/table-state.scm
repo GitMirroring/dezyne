@@ -24,9 +24,7 @@
 
 (read-set! keywords 'prefix)
 
-(define-module
-  (gaiag table-state) ;;-goeps
-  ;;+goeps (g table-state)
+(define-module (gaiag table-state)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)  
   :use-module (ice-9 match)
@@ -37,24 +35,20 @@
   :use-module (language dezyne location)
   :use-module (gaiag misc)
   
-  :use-module (oop goops) ;;-goeps
-  :use-module (gaiag gom) ;;-goeps
-  :use-module (gaiag gaiag) ;;-goeps
-  :use-module (gaiag json-table) ;;-goeps
-  :use-module (gaiag norm) ;;-goeps
-  :use-module (gaiag reader) ;;-goeps
-  :use-module (gaiag resolve) ;;-goeps
-  :use-module (gaiag pretty) ;;-goeps
-
-  ;;+goeps :use-module (g om)
-  ;;+goeps :use-module (g g)
-  ;;+goeps :use-module (g json-table)
-  ;;+goeps :use-module (g norm)
-  ;;+goeps :use-module (g reader)
-  ;;+goeps :use-module (g resolve)
-  ;;+goeps :use-module (g pretty)
+  :use-module (gaiag om)
+  :use-module (gaiag gaiag)
+  :use-module (gaiag json-table)
+  :use-module (gaiag norm)
+  :use-module (gaiag reader)
+  :use-module (gaiag resolve)
+  :use-module (gaiag pretty)
 
   :export (ast-> mangle-table pretty-table remove-initial table table-state-statement))
+
+(cond-expand
+ (goops-om
+  (use-modules (oop goops)))
+ (else #t))
 
 ;;(define debug stderr)
 (define (debug . args) #t)
@@ -66,8 +60,8 @@
             (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
                         string->symbol))))
        (or (and-let* ((models (.elements o))
-                      (models (null-is-#f (filter (negate gom:imported?) models)))
-                      (models (null-is-#f (if name (and=> (find (gom:named name) models) list) models))))
+                      (models (null-is-#f (filter (negate om:imported?) models)))
+                      (models (null-is-#f (if name (and=> (find (om:named name) models) list) models))))
                      (make <root> :elements (map (table table-statement) models))))))
     (($ <interface>)
      (let* ((statement (table-statement o ((compose .statement .behaviour) o)))
@@ -128,7 +122,7 @@
   (match o
     (($ <compound>)
      (or (and-let* ((variables ((compose .elements .variables .behaviour) model))
-                    (types (map (gom:type model) variables))
+                    (types (map (om:type model) variables))
                     (enum (or (find (is? <enum>) types)
                               (make <enum> :fields (make <fields> :elements '(<Initial>)))))
                     (fields ((compose .elements .fields) enum))
@@ -147,8 +141,8 @@
 
 (define (table-state-state model state o)
   (and-let* ((statement (flatten-compound (evaluate model state (flatten-compound o)))))
-            (let* ((field (make-field model state))
-                   (expression (make <expression> :value (make-field model state)))
+            (let* ((field (make-state-field model state))
+                   (expression (make <expression> :value (make-state-field model state)))
                    (expression2 (make <expression>
                                   :value (list '== (make <var>
                                                      :name (.identifier field))
@@ -156,7 +150,7 @@
                    (guards (filter (lambda (g) (let ((e (.expression g)))
                                                  (or (equal? e expression)
                                                      (equal? e expression2))))
-                                   ((gom:collect <guard>) o)))
+                                   ((om:collect <guard>) o)))
                    (location (and (pair? guards) (car guards))))
               (retain-source-properties
                location (make <guard>
@@ -170,7 +164,7 @@
 (define (state-identifier o state)
   (or (and=> (state-var o state) .name) '<state>))
 
-(define (make-field model state)
+(define (make-state-field model state)
   (make <field> :identifier (state-identifier model state) :field (.field state)))
 
 (define (declarative? o)
@@ -182,7 +176,7 @@
 
 (define (evaluate model state o)
   (debug "evaluate\n")
-  ;;(pretty-print (gom->list o));;-goeps
+  ;;(pretty-print (om->list o));;-goeps
   (match o
     (($ <compound> statements)
      (let* ((statements
@@ -336,7 +330,7 @@
                     (make <guard> :expression expression :statement statement)))
          o))
     (($ <otherwise>)
-     (or (and-let* ((guards ((gom:filter <guard>) (.elements compound)))
+     (or (and-let* ((guards ((om:filter <guard>) (.elements compound)))
                     (value (.value (guards-not-or guards))))
                    (make <otherwise> :value value))
          o))

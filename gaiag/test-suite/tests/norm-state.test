@@ -26,13 +26,13 @@
   :use-module (gaiag norm-state)
 
   :use-module (oop goops)
-  :use-module (gaiag gom))
+  :use-module (gaiag om))
 
 (pass-if "norm-state-first-dummy-test"
          #t)
 
 (pass-if "norm-state-101"
-         (gom-pretty-noisy-equal?
+         (om-pretty-noisy-equal?
           (norm-state
            (cadr (dezyne->ast
                            #{
@@ -44,7 +44,7 @@
                                   (guard (expression true) (on (triggers (trigger #f a)) (compound))))))))
 
 (pass-if "norm-state-102"
-         (gom-pretty-noisy-equal?
+         (om-pretty-noisy-equal?
           (norm-state
            (cadr (dezyne->ast
                            #{
@@ -59,7 +59,7 @@
                                              (action (trigger #f b)))))))))
 
 (pass-if "norm-state-aggregate-guard-passive"
-         (gom-pretty-noisy-equal?
+         (om-pretty-noisy-equal?
           (norm-state
            (cadr (dezyne->ast
                            #{
@@ -76,7 +76,7 @@
                                              (action (trigger #f d)))))))))
 
 (pass-if "norm-state-aggregate-guard-active"
-         (gom-pretty-noisy-equal?
+         (om-pretty-noisy-equal?
           (norm-state
            (cadr (dezyne->ast
                            #{
@@ -97,7 +97,7 @@
                                           (on (triggers (trigger #f c)) (action (trigger #f f))))))))))
 
 (pass-if "norm-state-aggregate-guard-recurse"
-         (gom-pretty-noisy-equal?
+         (om-pretty-noisy-equal?
           (norm-state
            '(compound
              (guard
@@ -161,7 +161,7 @@
                    (expression (literal #f States Disarmed)))))))))
 
 (pass-if "norm-state-function-call"
-         (gom-pretty-noisy-equal?
+         (om-pretty-noisy-equal?
           (norm-state
            (cadr (dezyne->ast
                            #{
@@ -182,7 +182,7 @@
                                              (action (trigger #f d)))))))))
 
 (pass-if "norm-state-split-on-passive"
-         (gom-pretty-noisy-equal?
+         (om-pretty-noisy-equal?
           (norm-state
            (cadr (dezyne->ast
                            #{
@@ -200,7 +200,7 @@
                                              (action (trigger #f d)))))))))
 
 (pass-if "norm-state-split-on-active-single-on"
-         (gom-pretty-noisy-equal?
+         (om-pretty-noisy-equal?
           (norm-state
            (cadr (dezyne->ast
                            #{
@@ -227,7 +227,7 @@
                 (on (triggers (trigger j a)) (illegal)))))))))
 
 (pass-if "norm-state-aggregate-on-interface-passive"
-         (gom-pretty-noisy-equal?
+         (om-pretty-noisy-equal?
           (norm-state
            (cadr (dezyne->ast
                            #{
@@ -243,7 +243,7 @@
                                          (on (triggers (trigger #f a) (trigger #f b) (trigger #f c)) (action (trigger #f d)))))))))
 
 (pass-if "norm-state-aggregate-on-interface-active"
-         (gom-pretty-noisy-equal?
+         (om-pretty-noisy-equal?
           (norm-state
            (cadr (dezyne->ast
                            #{
@@ -264,7 +264,7 @@
 ;; not modifying the input where it is already fine,
 ;; helps retaining more location information in AST.
 (pass-if "norm-state-aggregate-on-component-passive"
-         (gom-pretty-noisy-equal?
+         (om-pretty-noisy-equal?
           (norm-state
            (cadr (dezyne->ast
                            #{
@@ -285,7 +285,7 @@
                                               (action (trigger j e))))))))))
 
 (pass-if "norm-state-aggregate-on-component-active"
-         (gom-pretty-noisy-equal?
+         (om-pretty-noisy-equal?
           (norm-state
            (cadr (dezyne->ast
                            #{
@@ -307,7 +307,7 @@
                                               (action (trigger j e))))))))))
 
 (pass-if "norm-state-aggregate-on-component-active"
-         (gom-pretty-noisy-equal?
+         (om-pretty-noisy-equal?
           (norm-state
            '(compound
              (compound
@@ -347,7 +347,7 @@
                  (illegal))))))
 
 (pass-if "norm-state-nested-guards"
-         (gom-pretty-noisy-equal?
+         (om-pretty-noisy-equal?
           (norm-state
            (cadr (dezyne->ast
                            #{

@@ -2,7 +2,7 @@
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
@@ -25,8 +25,8 @@
 
 -- interface.csp.scm
 
-channel #(.name model): {#(comma-join (append (interface-events model gom:in?) (list "the_end'") ))}
-#(let ((events (interface-events model gom:out?)))
+channel #(.name model): {#(comma-join (append (interface-events model om:in?) (list "the_end'") ))}
+#(let ((events (interface-events model om:out?)))
    (if (pair? events)
        (list "channel " (.name model) "_'': {" (comma-join events) "}")))
 channel #(.name model)_': {#(comma-join (return-values model))}
@@ -34,8 +34,8 @@ channel #(.name model)_in',#(.name model)_out': {#(comma-join (map (lambda (x) (
 channel #(.name model)_''': {modeling}
 
 IF_#(.name model) _#((compose .name .behaviour) model)(IG,CS) = let
-# (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (gom:functions (.behaviour model))))
-#(.name model) _#((compose .name .behaviour) model) ((#(->csp model (make <context> :members ((compose gom:member-names csp:import) (.name model)))))) =
+# (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (om:functions (.behaviour model))))
+#(.name model) _#((compose .name .behaviour) model) ((#(->csp model (make <context> :members ((compose om:member-names csp:import) (.name model)))))) =
 # (behaviour->csp (csp:import (.name model)))
 []
 CS & #(.name model)?x:{#(comma-join (delete-duplicates (map .event (modeling-events model))))} -> illegal_(STOP,<>)
@@ -49,8 +49,8 @@ within sbisim(diamond(x))
 
 within compress((if CS
                  then #
-(.name model) _#((compose .name .behaviour) model) ((#(->csp model (make <context> :members ((compose gom:member-values csp:import) (.name model)) :locals '(<>)))))
+(.name model) _#((compose .name .behaviour) model) ((#(->csp model (make <context> :members ((compose om:member-values csp:import) (.name model)) :locals '(<>)))))
                  else #
-(.name model) _#((compose .name .behaviour) model) ((#(->csp model (make <context> :members ((compose gom:member-values csp:import) (.name model)) :locals '(<>)))))#(optional-chaos model)) [[x<-#(.name model)_in'.x|x<-extensions(#(.name model)_in')]] [|{|#(.name model),#(.name model)_in',#(.name model).the_end'|}|] REORDER' [[#(.name model)_out'.x<-x|x<-extensions(#(.name model)_out')]] \ {|#(.name model)_in',#(.name model).the_end'|})
+(.name model) _#((compose .name .behaviour) model) ((#(->csp model (make <context> :members ((compose om:member-values csp:import) (.name model)) :locals '(<>)))))#(optional-chaos model)) [[x<-#(.name model)_in'.x|x<-extensions(#(.name model)_in')]] [|{|#(.name model),#(.name model)_in',#(.name model).the_end'|}|] REORDER' [[#(.name model)_out'.x<-x|x<-extensions(#(.name model)_out')]] \ {|#(.name model)_in',#(.name model).the_end'|})
 
 -- end of interface.csp.scm

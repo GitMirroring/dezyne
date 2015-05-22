@@ -37,8 +37,7 @@
 
   :use-module (gaiag misc)
 
-  :use-module (oop goops) ;;-goeps
-  :use-module (gaiag gom) ;;-goeps
+  :use-module (gaiag om) ;;-goeps
   :use-module (gaiag reader) ;;-goeps
   :use-module (gaiag resolve) ;;-goeps
 
@@ -56,10 +55,15 @@
            remove-skip
            ))
 
+(cond-expand
+ (goops-om
+  (use-modules (oop goops)))
+ (else #t))
+
 (define (remove-skip o)
   (match o
     (('skip) (make <compound>))
-    ((? (is? <ast>)) (gom:map remove-skip o))
+    ((? (is? <ast>)) (om:map remove-skip o))
     ((h t ...) (map remove-skip o))
     (_ o)))
 
@@ -76,7 +80,7 @@
        (if (=1 (length ons))
            o
            (make <compound> :elements ons))))
-    ((? (is? <ast>)) (gom:map (expand-on compare) o))
+    ((? (is? <ast>)) (om:map (expand-on compare) o))
     ((h t ...) (map (expand-on compare) o))
     (_ o)))
 
@@ -109,7 +113,7 @@
          (if ( null? guards)
              '()
              (receive (shared-guards remainder)
-                 (partition (lambda (x) (gom:guard-equal? (car guards) x)) guards)
+                 (partition (lambda (x) (om:guard-equal? (car guards) x)) guards)
                (let* ((expression (.expression (car shared-guards)))
                       (aggregated-guard
                        (make <guard>
@@ -117,7 +121,7 @@
                          :statement (wrap-compound-as-needed (map .statement shared-guards)))))
                  (cons aggregated-guard (loop remainder))))))))
      (($ <functions>) o)
-     ((? (is? <ast>)) (gom:map aggregate-guard-g o))
+     ((? (is? <ast>)) (om:map aggregate-guard-g o))
      ((h t ...) (map aggregate-guard-g o))
      (_ o)))
 
@@ -134,7 +138,7 @@
       (make <compound> :elements 
             (apply append (map flatten-compound-compound (.elements o))))))
     (($ <on>) o)
-    ((? (is? <ast>)) (gom:map flatten-compound o))
+    ((? (is? <ast>)) (om:map flatten-compound o))
     ((h t ...) (map flatten-compound o))
     (_ o)))
 
@@ -152,11 +156,11 @@
          (failure)
          (make <guard>
            :expression (guards-not-or statements)
-           :statement (gom:map (remove-otherwise '()) (.statement o)))))
+           :statement (om:map (remove-otherwise '()) (.statement o)))))
     (($ <compound> statements)
      (make <compound>
        :elements (map (remove-otherwise statements) statements)))
-    ((? (is? <ast>)) (gom:map (remove-otherwise statements) o))
+    ((? (is? <ast>)) (om:map (remove-otherwise statements) o))
     ((h t ...) (map (remove-otherwise statements) o))
     (_ o)))
 
@@ -172,6 +176,6 @@
 (define (add-skip o)
   (match o
     (($ <compound> '()) (list 'skip)) ;; FIXME: not an <AST>
-    ((? (is? <ast>)) (gom:map add-skip o))
+    ((? (is? <ast>)) (om:map add-skip o))
     ((h t ...) (map add-skip o))
     (_ o)))

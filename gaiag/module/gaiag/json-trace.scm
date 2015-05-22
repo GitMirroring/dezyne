@@ -31,8 +31,8 @@
   :use-module (gaiag simulate)
 
   :use-module (oop goops)
-  :use-module (oop goops describe)
-  :use-module (gaiag gom)
+  ;;:use-module (oop goops describe)
+  :use-module (gaiag om)
 
   :export (
            json-init

@@ -37,8 +37,8 @@
   :use-module (gaiag resolve)
 
   :use-module (oop goops)
-  :use-module (oop goops describe)
-  :use-module (gaiag gom)
+  ;;:use-module (oop goops describe)
+  :use-module (gaiag om)
 
   :export (
            ast->
@@ -46,14 +46,14 @@
            ))
 
 (define-method (norm-state (o <list>))
-  ((compose norm-state ast:resolve ast->gom) o))
+  ((compose norm-state ast:resolve ast->om) o))
 
 (define-method (norm-state (o <ast>))
   ((compose
     remove-skip
     aggregate-on
     (expand-on port-equal?)
-    aggregate-guard
+    aggregate-guard-g
     flatten-compound
     combine-guards
     passdown-on
@@ -86,7 +86,7 @@
                                        :statement statement)))
                  (cons aggregated-on (loop remainder))))))))
      (($ <functions>) o)
-     ((? (is? <ast>)) (gom:map aggregate-on o))
+     ((? (is? <ast>)) (om:map aggregate-on o))
      ((h t ...) (map aggregate-on o))
      (_ o)))
 
@@ -99,7 +99,7 @@
   (match o
     (($ <guard>)
      ((passdown-guard (.expression o)) (.statement o)))
-    ((? (is? <ast>)) (gom:map combine-guards o))
+    ((? (is? <ast>)) (om:map combine-guards o))
     ((h t ...) (map combine-guards o))
     (_ o)))
 
@@ -128,7 +128,7 @@
   (match o
     (($ <on>)
      ((passdown-triggers (.triggers o)) (.statement o)))
-    ((? (is? <ast>)) (gom:map passdown-on o))
+    ((? (is? <ast>)) (om:map passdown-on o))
     ((h t ...) (map passdown-on o))
     (_ o)))
 
@@ -152,4 +152,4 @@
       (_ (make <on> :triggers triggers :statement o)))))
 
 (define (ast-> ast)
-  ((compose gom->list norm-state ast:resolve) ast))
+  ((compose om->list norm-state ast:resolve) ast))

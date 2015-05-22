@@ -35,8 +35,7 @@
 ;;  :use-module (language dezyne location)
   :use-module (gaiag misc)
 
-  :use-module (oop goops) ;;-goeps  
-  :use-module (gaiag gom) ;;-goeps
+  :use-module (gaiag om) ;;-goeps
   :use-module (gaiag reader) ;;-goeps
   ;;+goeps :use-module (g om)
   ;;+goeps :use-module (g reader)
@@ -44,6 +43,11 @@
   :export (
            json-location
            ))
+
+(cond-expand
+ (goops-om
+  (use-modules (oop goops)))
+ (else #t))
 
 (use-modules (system base lalr))
 (define (source-location src)

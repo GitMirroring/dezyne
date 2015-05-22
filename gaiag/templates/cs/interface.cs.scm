@@ -24,17 +24,17 @@
 using System;
 
 public class #.interface  : Interface<#.interface .In, #.interface .Out> {#
-(->string (map (declare-enum model) (gom:interface-enums model)))
+(->string (map (declare-enum model) (om:interface-enums model)))
   new public class In : Interface<#.model .In, #.model .Out>.In {
 #((->join "\n") (map (declare-io model #{
     public #(lambda-type return-type parameter-types)  #name ;#})
- (filter gom:in? ((compose .elements .events) model)))
+ (filter om:in? ((compose .elements .events) model)))
 )
   }
   new public class Out : Interface<#.model .In, #.model .Out>.Out {
 #((->join "\n") (map (declare-io model #{
     public #(lambda-type return-type parameter-types)  #name;#})
- (filter gom:out? ((compose .elements .events) model))))
+ (filter om:out? ((compose .elements .events) model))))
   }
   public #.interface() {
     inport = new In();

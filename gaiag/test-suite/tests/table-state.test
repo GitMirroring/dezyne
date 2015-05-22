@@ -9,7 +9,7 @@
   :use-module (test-suite lib)
   :use-module (test-suite misc)
 
-  :use-module (gaiag gom)
+  :use-module (gaiag om)
   :use-module (gaiag pretty)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
@@ -17,14 +17,19 @@
 
 (define eval-expression (@@ (gaiag table-state) eval-expression))
 
+(module-define! (resolve-module '(gaiag table-state))
+                'command-line
+                        (lambda () '("test-suite/run-tests" "foo" "bar")))
+
 (define-method (model (o <root>))
-  (car (gom:models o)))
+  (car (om:models o)))
 
 (define-method (table-state (o <root>))
-  ((compose .statement .behaviour) (table-state (model o))))
+  ((compose .statement .behaviour) ((table table-state-statement) (model o))))
 
 (define-method (pretty-table-state (o <root>))
-  ((compose ast->dezyne .statement .behaviour) (table-state (model o))))
+  ((compose ast->dezyne .statement .behaviour)
+  ((table table-state-statement) (model o))))
 
 (pass-if "table-state-dummy-test"
          #t)
@@ -54,31 +59,31 @@ interface i
 #}))))
 
 (define idle-init-busy-statement
-  ((compose .statement .behaviour gom:interface) idle-init-busy-ast))
+  ((compose .statement .behaviour om:interface) idle-init-busy-ast))
 
 (pass-if "table-state-expression-state-field"
   (let ((state (make <literal> :type 'S :field 'idle)))
-   (gom-pretty-noisy-equal?
+   (om-pretty-noisy-equal?
     (eval-expression
-     (gom:interface idle-init-busy-ast)
+     (om:interface idle-init-busy-ast)
      state
      (make <field> :identifier 's :field 'idle))
     #t)))
 
 (pass-if "table-state-expression-state-var"
   (let ((state (make <literal> :type 'S :field 'idle)))
-   (gom-pretty-noisy-equal?
+   (om-pretty-noisy-equal?
     (eval-expression
-     (gom:interface idle-init-busy-ast)
+     (om:interface idle-init-busy-ast)
      state
      (make <var> :name 's))
     state)))
 
 (pass-if "table-state-expression-state-b-not-b"
   (let ((state (make <literal> :type 'S :field 'idle)))
-   (gom-pretty-noisy-equal?
+   (om-pretty-noisy-equal?
     (eval-expression
-     (gom:interface idle-init-busy-ast)
+     (om:interface idle-init-busy-ast)
      state
      (list
       'or
@@ -87,7 +92,7 @@ interface i
     #t)))
 
 (pass-if "table-state-static"
-  (gom-pretty-noisy-equal?
+  (om-pretty-noisy-equal?
    (table-state
     (ast:resolve
      (dezyne->ast
@@ -113,7 +118,7 @@ interface i
    idle-init-busy-statement))
 
 (pass-if "table-state-first-enum-variable"
-  (gom-pretty-noisy-equal?
+  (om-pretty-noisy-equal?
    (table-state
     (ast:resolve
      (dezyne->ast
@@ -159,7 +164,7 @@ interface i
 )))
 
 (pass-if "table-state-state-var-equals"
-  (gom-pretty-noisy-equal?
+  (om-pretty-noisy-equal?
    (table-state
     (ast:resolve
      (dezyne->ast
@@ -185,7 +190,7 @@ interface i
    idle-init-busy-statement))
 
 (pass-if "table-state-state-on"
-  (gom-pretty-noisy-equal?
+  (om-pretty-noisy-equal?
    (table-state
     (ast:resolve
      (dezyne->ast
@@ -226,7 +231,7 @@ interface i
            (assign s (expression (literal #f S busy)))))))))
 
 (pass-if "table-state-expressions"
-  (gom-pretty-noisy-equal?
+  (om-pretty-noisy-equal?
    (table-state
     (ast:resolve
      (dezyne->ast
@@ -513,7 +518,6 @@ interface ISiren
 #})))
 "
 {
-  [<state>.<Initial>]
     {
       on start:
         [running]
@@ -644,7 +648,6 @@ interface I
 #})))
 "
 {
-  [<state>.<Initial>]
   on e:
   [b]
   {

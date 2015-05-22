@@ -35,15 +35,15 @@
         (log-#direction "#port .#direction ." '#event)#}#{#'()
         (log-valued "#port .#direction ." '#event (lambda (s) (assoc-ref #interface -#reply-name -alist (string->symbol (drop-prefix s "#port .#reply-name _")))) (lambda (r) (symbol-append '#reply-name _ (assoc-xref #interface -#reply-name -alist r))))#})))
 #})
-          (filter (negate (gom:dir-matches? port))
-            (gom:events port)))) (gom:ports model))
+          (filter (negate (om:dir-matches? port))
+            (om:events port)))) (om:ports model))
     `(#
 (map
     (lambda (port)
     (map (define-on model port #{#'()
       (#port .#event  . ,(.#event  (.#direction  (.#port  o))))#})
-    (filter (gom:dir-matches? port)
-       (gom:events port)))) (gom:ports model))))
+    (filter (om:dir-matches? port)
+       (om:events port)))) (om:ports model))))
 
 (define (main . args)
   (let* ((print-illegal (lambda () (stderr "illegal\n") (exit 0)))

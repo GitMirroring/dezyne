@@ -14,7 +14,7 @@
   :use-module (gaiag csp)
   :use-module (gaiag misc)
   :use-module (gaiag resolve)
-  :use-module (gaiag gom))
+  :use-module (gaiag om))
 
 (define ast-transform- (@@ (gaiag csp) ast-transform-))
 (define ast-transform-return (@@ (gaiag csp) ast-transform-return))
@@ -24,96 +24,96 @@
 (define csp-expression->string (@@ (gaiag csp) csp-expression->string))
 
 (define (csp-expression->string* ast expression locals)
-  (csp-expression->string (csp->gom ast) (csp->sugar expression) locals))
+  (csp-expression->string (csp->om ast) (csp->sugar expression) locals))
 
 (define (ast-transform* ast src)
-  (let ((root (csp->gom ast)))
-    ((gom:register csp:norm) root #t)
+  (let ((root (csp->om ast)))
+    ((om:register csp:norm) root #t)
     (ast-transform- root
                     (ast-transform-return root
-                                          (purge-data root (csp->gom src))))))
+                                          (purge-data root (csp->om src))))))
 
 (define (purge-data* ast src)
-  (let ((root (csp->gom ast)))
-    ((gom:register csp:norm) root #t)
-    (purge-data root (csp->gom src))))
+  (let ((root (csp->om ast)))
+    ((om:register csp:norm) root #t)
+    (purge-data root (csp->om src))))
 
 (define (ast-transform-return* ast src)
-  (let ((root (csp->gom ast)))
-    ((gom:register csp->gom) root #t)
-    (ast-transform-return root (csp->gom src))))
+  (let ((root (csp->om ast)))
+    ((om:register csp->om) root #t)
+    (ast-transform-return root (csp->om src))))
 
 (define (csp-transform* ast src)
-  (let ((root (csp->gom ast)))
-    ((gom:register csp->gom) root #t)
-    (csp-transform root (csp->gom src))))
+  (let ((root (csp->om ast)))
+    ((om:register csp->om) root #t)
+    (csp-transform root (csp->om src))))
 
-(define (csp->gom ast)
-  ((compose ast->gom csp->sugar ast->sugar) ast))
+(define (csp->om ast)
+  ((compose ast->om csp->sugar ast->sugar) ast))
 
 (define (csp->sugar ast)
   (match ast
     (('expression expression)
-     (make <expression> :value (csp->gom expression)))
+     (make <expression> :value (csp->om expression)))
     (('csp-on context ('triggers triggers) statement)
      (make <csp-on>
-       :context (csp->gom context)
-       :triggers (csp->gom (caddr ast))
-       :statement (csp->gom statement)))
+       :context (csp->om context)
+       :triggers (csp->om (caddr ast))
+       :statement (csp->om statement)))
     (('csp-on context triggers statement)
      (make <csp-on>
-       :context (csp->gom context)
+       :context (csp->om context)
        :triggers (make <triggers>
-                   :elements (csp->gom (map ast->trigger-sugar triggers)))
-       :statement (csp->gom statement)))
+                   :elements (csp->om (map ast->trigger-sugar triggers)))
+       :statement (csp->om statement)))
     (('csp-if context expression then else)
      (make <csp-if>
-       :context (csp->gom context)
-       :expression (csp->gom expression)
-       :then (csp->gom then)
-       :else (csp->gom else)))
+       :context (csp->om context)
+       :expression (csp->om expression)
+       :then (csp->om then)
+       :else (csp->om else)))
     (('csp-call context name)
      (make <csp-call>
-       :context (csp->gom context)
+       :context (csp->om context)
        :identifier name))
     (('csp-call context name arguments)
      (make <csp-call>
-       :context (csp->gom context)
+       :context (csp->om context)
        :identifier name
-       :arguments (csp->gom arguments)))
+       :arguments (csp->om arguments)))
     (('csp-call context name arguments last?)
      (make <csp-call>
-       :context (csp->gom context)
+       :context (csp->om context)
        :identifier name
-       :arguments (csp->gom arguments)
+       :arguments (csp->om arguments)
        :last? last?))
     (('csp-reply context expression)
      (make <csp-reply>
-       :context (csp->gom context)
-       :expression (csp->gom expression)))
+       :context (csp->om context)
+       :expression (csp->om expression)))
     (('csp-return context expression)
      (make <csp-return>
-       :context (csp->gom context)
-       :expression (csp->gom expression)))
+       :context (csp->om context)
+       :expression (csp->om expression)))
     (('context) (make <context>))
-    (('context members) (make <context> :members (csp->gom members)))
-    (('context members locals) (make <context> :members (csp->gom members) :locals (csp->gom locals)))
+    (('context members) (make <context> :members (csp->om members)))
+    (('context members locals) (make <context> :members (csp->om members) :locals (csp->om locals)))
     (('literal scope type field) (make <literal> :scope scope :type type :field field))
     (('csp-variable context name type expression continuation)
      (make <csp-variable>
-       :context (csp->gom context)
+       :context (csp->om context)
        :name name
-       :type (csp->gom type)
-       :expression (csp->gom expression)
-       :continuation (csp->gom continuation)))
+       :type (csp->om type)
+       :expression (csp->om expression)
+       :continuation (csp->om continuation)))
     (('csp-assign context identifier expression expressions)
      (make <csp-assign>
-       :context (csp->gom context)
+       :context (csp->om context)
        :identifier identifier
-       :expression (csp->gom expression)
-       :expressions (csp->gom expressions)))
+       :expression (csp->om expression)
+       :expressions (csp->om expressions)))
     (('semi statement continuation)
-     (make <semi> :statement (csp->gom statement) :continuation (csp->gom continuation)))
+     (make <semi> :statement (csp->om statement) :continuation (csp->om continuation)))
     (('voidreply) (make <voidreply>))
     (('vector identifiers ...) (make <context-vector> :elements identifiers))
     (('skip) (make <skip>))
@@ -121,14 +121,14 @@
     (_ ast)))
 
 (define (csp-noisy-equal? actual expected)
-  (let ((actual* (gom->list (csp->gom actual)))
-        (expected* (gom->list (csp->gom expected))))
+  (let ((actual* (om->list (csp->om actual)))
+        (expected* (om->list (csp->om expected))))
    (or (equal? actual* expected*)
        (fail "~a\n!=\n~a\n" expected* actual*))))
 
 (define (csp-pretty-noisy-equal? actual expected)
-  (let ((actual* (gom->list (csp->gom actual)))
-        (expected* (gom->list (csp->gom expected))))
+  (let ((actual* (om->list (csp->om actual)))
+        (expected* (om->list (csp->om expected))))
   (or (equal? actual* expected*)
       (fail "~a!=\n~a" (pretty-string expected*) (pretty-string actual*)))))
 
@@ -302,7 +302,7 @@ semi_(reply_(i_', (\\ ((s,b,c),(stack')) @ Status_Yes)),
            '(action (trigger #f h)))
 
           ;; via:
-          (ast->gom '(action (trigger #f h)))))
+          (ast->om '(action (trigger #f h)))))
 
 (pass-if "csp-transform-action"
          (diff-noisy-equal?
@@ -1953,50 +1953,50 @@ assign_active_(semi_(send_(u,what),recv_(u_',what)),
 
 ;; '
 
-(define component (gom:component (ast->gom c-ast)))
+(define component (om:component (ast->om c-ast)))
 
 (pass-if "provides?"
   (csp-pretty-noisy-equal?
    ((provides? component)
-    (ast->gom '(trigger j e)))
+    (ast->om '(trigger j e)))
    #t))
 
 (pass-if "not provides?"
   (csp-pretty-noisy-equal?
    ((provides? component)
-    (ast->gom '(trigger k e)))
+    (ast->om '(trigger k e)))
    #f))
 
 (pass-if "requires?"
   (csp-pretty-noisy-equal?
    ((requires? component)
-    (ast->gom '(trigger k e)))
+    (ast->om '(trigger k e)))
    #t))
 
 (pass-if "not requires?"
   (csp-pretty-noisy-equal?
    ((requires? component)
-    (ast->gom '(trigger j e)))
+    (ast->om '(trigger j e)))
    #f))
 
 (pass-if "statement-on-p/r"
   (csp-pretty-noisy-equal?
    ((statement-on-p/r- identity)
-    (ast->gom
+    (ast->om
      '(on (arm) (compound))))
    '(on (arm) (compound))))
 
 (pass-if "statement-on-p/r-filter"
   (csp-pretty-noisy-equal?
    ((statement-on-p/r- (provides? component))
-    (ast->gom
+    (ast->om
      '(on (arm) (compound))))
    #f))
 
 (pass-if "statement-on-p/r-filter"
   (csp-pretty-noisy-equal?
    ((statement-on-p/r- (provides? component))
-    (ast->gom
+    (ast->om
      '(on ((j e)) (compound))))
    '(on ((j e)) (compound))))
 
@@ -2025,7 +2025,7 @@ assign_active_(semi_(send_(u,what),recv_(u_',what)),
 
 (pass-if "unbehaved"
          (diff-noisy-equal?
-          (behaviour->csp (gom:component (ast->gom member-c-ast)))
+          (behaviour->csp (om:component (ast->om member-c-ast)))
           "STOP"))
 
 (define guard-i-ast
@@ -2038,7 +2038,7 @@ assign_active_(semi_(send_(u,what),recv_(u_',what)),
 
 (pass-if "behaviour-guard-true"
   (diff-noisy-equal?
-   (behaviour->csp (gom:interface (ast->gom guard-i-ast)))
+   (behaviour->csp (om:interface (ast->om guard-i-ast)))
    "(true) & (
 STOP)"))
 
@@ -2078,8 +2078,8 @@ assign_(\\ ((s,b,c),((stack',t))) @ ((s,b,c),((stack',(s == S_S1))))))"))
      (ports (port i I provides)))))
 
 (pass-if "behaviourless-component-ast"
-         (csp-noisy-equal? (gom:model-with-behaviour
-                            (ast->gom behaviourless-component-ast))
+         (csp-noisy-equal? (om:model-with-behaviour
+                            (ast->om behaviourless-component-ast))
                            '(interface I
                               (events (event e (signature (type void)) in))
                               (behaviour
@@ -2129,7 +2129,7 @@ assign_(\\ ((s,b,c),((stack',t))) @ ((s,b,c),((stack',(s == S_S1))))))"))
 (pass-if "tail-call"
          (csp-pretty-noisy-equal?
           (tail-call
-           (csp->gom
+           (csp->om
             '(function fun (signature (type void) (parameters)) #f
                        (compound (call rgun)))))
           '(function fun (signature (type void #f)) #f
@@ -2139,7 +2139,7 @@ assign_(\\ ((s,b,c),((stack',t))) @ ((s,b,c),((stack',(s == S_S1))))))"))
 (pass-if "tail-call-assign"
          (csp-pretty-noisy-equal?
           (tail-call
-           (csp->gom
+           (csp->om
             '(function fun (signature (type void) (parameters)) #f
                        (compound
                         (assign s (call rgun))))))
@@ -2150,7 +2150,7 @@ assign_(\\ ((s,b,c),((stack',t))) @ ((s,b,c),((stack',(s == S_S1))))))"))
 (pass-if "tail-call-variable"
          (csp-pretty-noisy-equal?
           (tail-call
-           (csp->gom
+           (csp->om
             '(function fun (signature (type void) (parameters)) #f
                        (compound
                         (variable b (type bool) (call rgun))))))
@@ -2161,7 +2161,7 @@ assign_(\\ ((s,b,c),((stack',t))) @ ((s,b,c),((stack',(s == S_S1))))))"))
 (pass-if "non-tail-call"
          (csp-pretty-noisy-equal?
           (tail-call
-           (csp->gom
+           (csp->om
             '(function fun (signature (type void #f)) #f
                        (compound
                         (call rgun)
@@ -2174,7 +2174,7 @@ assign_(\\ ((s,b,c),((stack',t))) @ ((s,b,c),((stack',(s == S_S1))))))"))
 (pass-if "tail-call-compound"
          (csp-pretty-noisy-equal?
           (tail-call
-           (csp->gom
+           (csp->om
             '(function fun (signature (type void #f)) #f
                        (compound
                         (call rgun)
@@ -2187,7 +2187,7 @@ assign_(\\ ((s,b,c),((stack',t))) @ ((s,b,c),((stack',(s == S_S1))))))"))
 (pass-if "tail-call-if"
          (csp-pretty-noisy-equal?
           (tail-call
-           (csp->gom
+           (csp->om
             '(function fun (signature (type void #f)) #f
                        (compound
                         (if (expression #t)
@@ -2204,7 +2204,7 @@ assign_(\\ ((s,b,c),((stack',t))) @ ((s,b,c),((stack',(s == S_S1))))))"))
 (pass-if "tail-call-hairy"
          (csp-pretty-noisy-equal?
           (tail-call
-           (csp->gom
+           (csp->om
             '(function fun (signature (type void #f)) #f
                        (compound
                         (if (expression #t)

@@ -31,8 +31,8 @@
   :use-module (gaiag reader)
 
   :use-module (oop goops)
-  :use-module (oop goops describe)
-  :use-module (gaiag gom)
+  ;;:use-module (oop goops describe)
+  :use-module (gaiag om)
 
   :export (ast-> lambda-type))
 

@@ -7,13 +7,13 @@
 
 #(map (include-interface #{
 ##include "#interface .h"
-#}) (gom:ports model))
+#}) (om:ports model))
 
 ##include "locator.h"
 
 typedef struct {
     dzn_meta_t dzn_meta;
-#(map (lambda (binding) (list (.component (gom:instance model (injected-instance-name binding))) " "
+#(map (lambda (binding) (list (.component (om:instance model (injected-instance-name binding))) " "
                               (injected-instance-name binding) ";\n")) (injected-bindings model)) #
 (if (pair? (injected-bindings model)) (list "locator local_locator;\n")) #
 (map (init-instance #{

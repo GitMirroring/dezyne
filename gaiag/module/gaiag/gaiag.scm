@@ -29,8 +29,7 @@
   :use-module (gaiag pretty-print)
   :use-module (gaiag reader)
 
-  :use-module (oop goops)
-  :use-module (gaiag gom)
+  :use-module (gaiag om)
 
   :export (main parse-opts))
 
@@ -73,7 +72,7 @@ Usage: gaiag [OPTION]... FILE
   -v, --version        display version
 
 Languages: c c++ cs csp dezyne goops java javascript python
-           ast annotate gom norm-state norm-event resolve
+           ast annotate om norm-state norm-event resolve
            simulate table-event table-state wfc
 
 Examples:
@@ -109,7 +108,7 @@ Examples:
       ((? string?) (display result))
       ((? pair?) (pretty-print result))
       ((? null?) (display result))
-      ((? (is? <ast>)) (pretty-print (gom->list result)))
+      ((? (is? <ast>)) (pretty-print (om->list result)))
       (_ #t))))
 
 (define (main args)

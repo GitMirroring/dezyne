@@ -13,12 +13,12 @@
                 "virtual ~" interface "(){}\n"
                 (map
                  (lambda (entry)
-                   (let* ((event (gom:event model (first entry)))
+                   (let* ((event (om:event model (first entry)))
                           (return-type (return-type #f event)))
                      (list "virtual " return-type " " (third entry) "() = 0;\n")))
                  alist)
                 "};\n")))
-      ((gen1-interfaces gom:in?) model))
+      ((gen1-interfaces om:in?) model))
 
 #(map (lambda (alist)
         (let* ((entry (car alist))
@@ -28,12 +28,12 @@
                 "virtual ~" interface "(){}\n"
                 (map
                  (lambda (entry)
-                   (let* ((event (gom:event model (first entry)))
+                   (let* ((event (om:event model (first entry)))
                           (return-type (return-type #f event)))
                      (list "virtual " return-type " " (third entry) "() = 0;\n")))
                  alist)
                 "};\n")))
-      ((gen1-interfaces gom:out?) model))
+      ((gen1-interfaces om:out?) model))
 
 struct #.model Interface
 {
@@ -41,12 +41,12 @@ struct #.model Interface
         (let* ((entry (car alist))
                (interface (second entry)))
           (list "virtual void GetAPI(boost::shared_ptr<" interface ">*) = 0 ;\n")))
-      ((gen1-interfaces gom:in?) model))#
+      ((gen1-interfaces om:in?) model))#
 (map (lambda (alist)
         (let* ((entry (car alist))
                (interface (second entry)))
           (list "virtual void RegisterCB(boost::shared_ptr<" interface ">) = 0;\n")))
-      ((gen1-interfaces gom:out?) model))
+      ((gen1-interfaces om:out?) model))
 virtual void RegisterCB (boost::shared_ptr<asd::channels::ISingleThreaded>) = 0;
 };
 ##endif // #.INTERFACE _INTERFACE_H

@@ -3,7 +3,7 @@
 
 #(map (include-interface #{
 ##include "#interface .hh"
-#}) (delete-duplicates (gom:ports model) (lambda (x y) (eq? (.type x) (.type y)))))
+#}) (delete-duplicates (om:ports model) (lambda (x y) (eq? (.type x) (.type y)))))
 
 ##include "runtime.hh"
 
@@ -17,11 +17,11 @@ struct #.model
     dezyne::meta dzn_meta;
     runtime& dzn_rt;
     locator const& dzn_locator;
-    #(->string (map (declare-enum model) (gom:enums (.behaviour model))))#
-    (->string (map declare-integer (gom:integers (.behaviour model))))#
+    #(->string (map (declare-enum model) (om:enums (.behaviour model))))#
+    (->string (map declare-integer (om:integers (.behaviour model))))#
     (map (init-member model #{
 #type  #name;
-#}) (gom:variables model))#
+#}) (om:variables model))#
     (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))#
     (map (init-port #{
 #interface  #name;
@@ -35,16 +35,16 @@ private:
   (lambda (port)
     (map (define-on model port #{
 #return-type  #port _#event (#parameters);
-#}) (filter gom:in? (gom:events port))))
-  (filter gom:provides? (gom:ports model)))#
+#}) (filter om:in? (om:events port))))
+  (filter om:provides? (om:ports model)))#
 (map
   (lambda (port)
     (map (define-on model port #{
 #return-type  #port _#event (#parameters);
-#}) (filter gom:out? (gom:events port))))
-  (filter gom:requires? (gom:ports model)))#
+#}) (filter om:out? (om:events port))))
+  (filter om:requires? (om:ports model)))#
 (map (define-function model #{
   #return-type  #name (#parameters);
-#}) (gom:functions model)) };
+#}) (om:functions model)) };
 }
 ##endif // DEZYNE_#.COMPONENT _HH

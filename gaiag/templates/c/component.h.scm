@@ -3,7 +3,7 @@
 
 #(map (include-interface #{
 ##include "#interface .h"
-#}) (gom:ports model))
+#}) (om:ports model))
 
 ##include "runtime.h"
 ##include "locator.h"
@@ -14,7 +14,7 @@ typedef struct {
     runtime_info dzn_info;
     #(map (init-member model #{
 #type  #name;
-#}) (gom:variables model))#
+#}) (om:variables model))#
     (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))#
     (map (init-port #{
 #interface  #name _;

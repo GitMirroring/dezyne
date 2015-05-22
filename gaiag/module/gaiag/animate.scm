@@ -49,8 +49,7 @@
 
   :use-module (gaiag misc)
 
-  :use-module (oop goops) ;;-goeps
-  :use-module (gaiag gom) ;;-goeps
+  :use-module (gaiag om) ;;-goeps
   ;;+goeps :use-module (g om)
 
   :export (animate
@@ -68,6 +67,11 @@
            template->string
            template-dir
            templates))
+
+(cond-expand
+ (goops-om
+  (use-modules (oop goops)))
+ (else #t))
 
 (define (prefix-dir)
   (let* ((canary "gaiag/gaiag")
@@ -140,12 +144,12 @@
 
 (define* (animate string :optional (o #f))
   (match o
-    ((? list?) (animate o (pairs->module o)))
+    ((? list?) (animate string (pairs->module o)))
     ((? module?)
      (with-output-to-string
        (lambda ()
-         (with-input-from-string o (lambda () (animate-input- module))))))
-    (_ (animate o (current-module)))))
+         (with-input-from-string string (lambda () (animate-input- o))))))
+    (_ (animate string (current-module)))))
 
 (define* (line-column-location tell :optional (port (current-input-port)))
   (seek port 0 SEEK_SET)

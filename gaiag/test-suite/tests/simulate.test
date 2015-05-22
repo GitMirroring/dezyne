@@ -28,7 +28,7 @@
 
   :use-module (oop goops)
 
-  :use-module (gaiag gom))
+  :use-module (gaiag om))
 
 (pass-if "simulator-first-dummy-test"
 	 #t)
@@ -58,7 +58,7 @@
 
 (pass-if "simulator-state-vector"
   (pretty-noisy-equal?
-   ((@@ (gaiag simulate) state-vector) (simulate:gom (car if-ast)))
+   ((@@ (gaiag simulate) state-vector) (simulate:om (car if-ast)))
    '((t . #f))))
 
 (pass-if "simulator-var!"
@@ -67,10 +67,10 @@
    '((t . #t))))
 
 (pass-if "simulator-simple-trail"
-  (gom-pretty-noisy-equal?
+  (om-pretty-noisy-equal?
    (walk-trail
-    (gom:interface
-     (simulate:gom
+    (om:interface
+     (simulate:om
       (dezyne->ast
        #{
          interface i { in void a; out void b;
@@ -82,9 +82,9 @@
     '(a a a))))
 
 (pass-if "simulator-guard-trail"
-   (gom-pretty-noisy-equal?
+   (om-pretty-noisy-equal?
     (walk-trail
-     (simulate:gom
+     (simulate:om
       (cadr
        (dezyne->ast
         #{ interface i
@@ -128,8 +128,8 @@
 
 (pass-if "walk-trail-arguments"
   (let* ((arguments-ast (read-ast 'examples/arguments.dzn))
-         (gom ((gom:register simulate:gom) arguments-ast #t))
-         (model (gom:component gom))
+         (om ((om:register simulate:om) arguments-ast #t))
+         (model (om:component om))
          (trail '(i.e i.e i.e))
          (foobar (set-program-arguments '("gaiag" "--json" "foobar")))
          (arguments-trace (with-output-to-string (lambda () (pretty-print (mangle-trace model (walk-trail model trail))))))
@@ -138,8 +138,8 @@
 
 (pass-if "walk-trail-pauls"
   (let* ((pauls-ast (read-ast 'examples/regression/Comp.dzn))
-         (gom ((gom:register simulate:gom) pauls-ast #t))
-         (model (gom:component gom))
+         (om ((om:register simulate:om) pauls-ast #t))
+         (model (om:component om))
          (trail '(client.initialize result_t.OK result_t.OK client.perform_actions result_t.OK result_t.OK client.perform_actions result_t.NOK client.recover result_t.OK client.perform_actions))
          (pauls-trace (walk-trail model trail))
          (baseline-trace 'baseline-trace))
@@ -147,8 +147,8 @@
 
 ;; (pass-if "explore-space-pauls"
 ;;   (let* ((pauls-ast (read-ast 'examples/regression/Comp.dzn))
-;;          (gom ((gom:register simulate:gom) pauls-ast #t))
-;;          (model (gom:component gom))
+;;          (om ((om:register simulate:om) pauls-ast #t))
+;;          (model (om:component om))
 ;;          (pauls-space (explore-space model))
 ;;          (baseline-space 'baseline-space))
 ;;     #t))

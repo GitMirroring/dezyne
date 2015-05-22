@@ -35,15 +35,15 @@
   :use-module (gaiag wfc)
 
   :use-module (oop goops)
-  :use-module (oop goops describe)
-  :use-module (gaiag gom)
+  ;;:use-module (oop goops describe)
+  :use-module (gaiag om)
 
   :export (ast->
            gen1-interfaces))
 
 (define (ast-> ast)
-  (let ((gom ((gom:register code:gom) ast #t)))
-    (map dump (filter (negate gom:imported?) ((gom:filter <model>) gom))))
+  (let ((om ((om:register code:om) ast #t)))
+    (map dump (filter (negate om:imported?) ((om:filter <model>) om))))
   "")
 
 (define-method (dump (o <interface>))
@@ -65,7 +65,7 @@
     (if (map-file o)
         (dump-indented (symbol-append name 'Interface.h)
                        (lambda ()
-                         (c++-file 'glue-top-system-interface.hh.scm (code:module (gom:interface (gom:port o)))))))
+                         (c++-file 'glue-top-system-interface.hh.scm (code:module (om:interface (om:port o)))))))
     (when (map-file o)
       (dump-indented (symbol-append name 'Component.h)
                      (lambda ()
@@ -98,5 +98,5 @@
     (if (pair? gen1-provided) (list gen1-provided) '())))
 
 (define-method (map-file (o <model>))
-  (and (gom:port o)
-       (try-find-file (.type (gom:port o)) '(.map))))
+  (and (om:port o)
+       (try-find-file (.type (om:port o)) '(.map))))

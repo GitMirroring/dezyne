@@ -33,7 +33,7 @@
   :use-module (srfi srfi-1)
 
   :use-module(g ast-colon)
-  :use-module(g g)
+  :use-module(g gaiag)
   :use-module(g json-trace)
   :use-module(g misc)
   :use-module (language dezyne parse)

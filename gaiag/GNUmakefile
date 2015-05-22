@@ -825,12 +825,14 @@ out/test: out/argument.c++ out/main.o out/runtime.o
 	g++ -o out/test out/*o
 	echo 'i.e' | out/test
 
-.PHONY: g
-GOEPS=-e "s/<gom:parameter>/<parameter>/g" -e "s/<gom:port>/<port>/g" -e "s/[(][$$] <([^>]*)>[)]/(\'\1 _ ___)/g" -e "s/[(][$$] X<(arguments|bindings|compound|events|fields|functions|instances|parameters|ports|root|triggers|types|variables|expression|otherwise|reply|return|var)> ([a-z]+)[)]/(\'\1 \2)/g"  -e "s/[(][$$] <([^>]*)> ([a-z]+)[)]/(\'\1 \2 ___)/g" -e "s/[(][$$] <([a-z]+)> '[(][)][)]/(\'\1)/g" -e "s/[(][$$] <([^>]*)>/(\'\1/g" -e "s/;;[+]goeps//"
-module/g/%.scm: module/gaiag/%.scm
-	sed -r $(GOEPS) $< | grep -v ';;-goeps' > $@
+.PHONY: g gr
+GSED=-e "s/<om:parameter>/<parameter>/g" -e "s/<om:port>/<port>/g" -e "s/[(]gaiag (animate|gaiag|guile|json|json-table|norm|norm-event|norm-state|om|pretty|record|resolve|table-event|table-state)([) ])/(g \1\2/" -e "s/[(][$$] <([^>]*)>[)]/(\'\1 _ ___)/g" -e "s/[(][$$] X<(arguments|bindings|compound|events|fields|functions|instances|parameters|ports|root|triggers|types|variables|expression|otherwise|reply|return|var)> ([a-z]+)[)]/(\'\1 \2)/g"  -e "s/[(][$$] <([^>]*)> ([a-z]+)[)]/(\'\1 \2 ___)/g" -e "s/[(][$$] <([a-z]+)> '[(][)][)]/(\'\1)/g" -e "s/[(][$$] <([^>]*)>/(\'\1/g" -e "s/;;[+]goeps//"
 
-GOEPS_FILES:=\
+module/g/%.scm: module/gaiag/%.scm
+	sed -r $(GSED) $< | grep -v ';;-goeps' > $@
+
+G_FILES:=\
+ animate.scm\
  json.scm\
  json-table.scm\
  norm.scm\
@@ -840,5 +842,22 @@ GOEPS_FILES:=\
  table-state.scm\
  table-event.scm\
 
-g: $(GOEPS_FILES:%=module/g/%)
+g: $(G_FILES:%=module/g/%)
 
+GRSED=-e "s/xx<om:parameter>/xx<parameter>/g" -e "s/xx<om:port>/<port>/g" -e "s/[(]gaiag (animate|gaiag|record|json|json-table|norm|norm-event|norm-state|om|pretty|record|resolve|table-event|table-state)([ )])/(gr \1\2/" -e "s/;;[+]gr//"
+
+module/gr/%.scm: module/gaiag/%.scm
+	sed -r $(GRSED) $< | grep -v ';;-gr' > $@
+
+GR_FILES:=\
+ animate.scm\
+ json.scm\
+ json-table.scm\
+ norm.scm\
+ norm-event.scm\
+ pretty.scm\
+ resolve.scm\
+ table-state.scm\
+ table-event.scm\
+
+gr: $(GR_FILES:%=module/gr/%)

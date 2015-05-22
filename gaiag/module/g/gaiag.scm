@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -23,40 +24,34 @@
 
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
-(define-module (g g)
-  :use-module (ice-9 and-let-star)
+(define-module (g gaiag)
   :use-module (ice-9 getopt-long)
   :use-module (ice-9 match)
 
   :use-module (system repl error-handling)
 
-  :use-module (g misc)
-  :use-module (g reader)
+  :use-module (gaiag coverage)
+  :use-module (gaiag misc)
+  :use-module (gaiag pretty-print)
+  :use-module (gaiag reader)
 
-  :use-module (g asserts)
-  :use-module (g c++)
-  :use-module (g coverage)
-  :use-module (g csp)
-  :use-module (g mangle)
-  :use-module (g pretty-print)
-  :use-module (g resolve)
-  :use-module (g scheme)
-  :use-module (g simulate)
-  :use-module (g wfc)
+  :use-module (g om)
 
   :export (main parse-opts))
 
 (define (parse-opts args)
   (let* ((option-spec
-	  '((assert (single-char #\a) (value #t))
+	  '((assert (single-char #\a))
 	    (coverage (single-char #\c))
 	    (debug (single-char #\d))
             (help (single-char #\h))
             (json (single-char #\j))
             (language (single-char #\l) (value #t))
+            (lts)
             (model (single-char #\m) (value #t))
             (trail (single-char #\t) (value #t))
             (output (single-char #\o) (value #t))
+            (queue-size (single-char #\q) (value #t))
 	    (version (single-char #\v))))
 	 (options (getopt-long args option-spec
 		   :stop-at-first-non-option #t))
@@ -70,29 +65,31 @@
 	  (exit 0))
       (and (or help? usage?)
 	   ((or (and usage? stderr) stdout) "\
-Usage:(g [OPTION]... FILE
-  -a, --assert=ASSERT  select assert ASSERT to generate
-  -c, --coverage       write lcov coverage data to g.info
+Usage: gaiag [OPTION]... FILE
+  -a, --assert         generate all asserts inline, not in asserts.csp
+  -c, --coverage       write lcov coverage data to gaiag.info
   -d, --debug          run with debugging
   -h, --help           display this help
   -j, --json           use json-friendly format; strings and hash tables
   -m, --model=MODEL    use model named MODEL
-  -l, --language=LANG  generate output for language=LANG [scheme]
+  -l, --language=LANG  generate output for language=LANG [ast]
   -t, --trail=TRAIL    specify trail TRAIL for trail-walker
   -o, --output FILE    generate FILE containing the output
   -v, --version        display version
 
-Languages: dzn c++ csp norm-state resolve scheme simulate wfc
+Languages: c c++ cs csp dezyne goops java javascript python
+           ast annotate om norm-state norm-event resolve
+           simulate table-event table-state wfc
 
 Examples:
-  ./g examples/Alarm.dzn
-  ./g -l dzn examples/if.dzn
-  ./g -l dzn examples/Alarm.scm
-  ./g -l csp examples/Alarm.dzn
-  ./g -l csp -o alarm.csp examples/Alarm.dzn
-  ./g -l wfc examples/double-on.dzn
-  ./g -l simulate -t '(a a a a)' examples/if.dzn
-  ./g -l simulate -t '(a a a a)' -j examples/if.dzn | ./scm2json
+  ./gaiag examples/Alarm.dzn
+  ./gaiag -l dezyne examples/Alarm.scm
+  ./gaiag -l csp examples/Alarm.dzn
+  ./gaiag -l csp -o alarm.csp examples/Alarm.dzn
+  ./gaiag -l c++ examples/Alarm.dzn
+  ./gaiag -l wfc examples/wfc/wfc-double-on.dzn
+  ./gaiag -l simulate -t '(a a a a)' examples/regression/If.dzn
+  ./gaiag -l simulate -t '(a a a a)' -j examples/regression/If.dzn | ./scm2json
 ")
 	   (exit (or (and usage? 2) 0)))
      options)))
@@ -110,12 +107,14 @@ Examples:
 (define (main- args)
   (let* ((options (parse-opts args))
 	 (file-name (car (option-ref options '() '())))
-         (language (string->symbol (option-ref options 'language "scheme")))
+         (language (string->symbol (option-ref options 'language "ast")))
          (result (file->lang file-name language)))
     (match result
       ("" #t)
       ((? string?) (display result))
       ((? pair?) (pretty-print result))
+      ((? null?) (display result))
+      ((? (is? <ast>)) (pretty-print (om->list result)))
       (_ #t))))
 
 (define (main args)
@@ -123,6 +122,7 @@ Examples:
          (debug? (option-ref options 'debug #f))
          (coverage? (option-ref options 'coverage #f)))
     (if coverage?
-        (cover (lambda () (main- args)) (list 'g '.info))
-        (call-with-error-handling (lambda () (main- args))
-                                  :on-error (if debug? 'debug 'backtrace)))))
+        (cover (lambda () (main- args)) (list 'gaiag '.info))
+        (if debug?
+         (call-with-error-handling (lambda () (main- args)))
+         (main- args)))))

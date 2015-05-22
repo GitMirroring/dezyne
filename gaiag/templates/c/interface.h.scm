@@ -3,7 +3,7 @@
 
 ##include "runtime.h"
 
-#(->string (map (declare-enum model) (append (gom:interface-enums model) (gom:enums))))
+#(->string (map (declare-enum model) (append (om:interface-enums model) (om:enums))))
 
 typedef struct #.model  #.model;
 
@@ -13,7 +13,7 @@ struct #.model {
      void* self;
    #(map (declare-io model
           #{ #return-type  (*#name)(#.model * self#comma #parameters);
-#}) (filter gom:in? ((compose .elements .events) model)))
+#}) (filter om:in? ((compose .elements .events) model)))
    } in;
 
   struct {
@@ -21,7 +21,7 @@ struct #.model {
      void* self;
    #(map (declare-io model
           #{ #return-type  (*#name) (#.model * self#comma #parameters);
-#}) (filter gom:out? ((compose .elements .events) model)))
+#}) (filter om:out? ((compose .elements .events) model)))
  } out;
 };
 

@@ -4,16 +4,16 @@ function #.model(locator, meta) {
   this.rt.components = (this.rt.components || []).concat ([this]);
   this.meta = meta;
   this.flushes = true;#
-(->string (map (declare-enum model) (append (gom:enums (.behaviour model)) (gom:enums))))
+(->string (map (declare-enum model) (append (om:enums (.behaviour model)) (om:enums))))
 #
     (map (init-member model #{
   #(string-if (eq? expression *unspecified*) "" #{this.#name  = #expression ;
-#})#}) (gom:variables model))#
+#})#}) (om:variables model))#
     (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))
 #
     (map (init-port #{
   this.#name  = new dezyne.#interface({provides: {name: '#name ', component: this}, requires: {}});
-#}) (filter gom:provides? ((compose .elements .ports) model)))#
+#}) (filter om:provides? ((compose .elements .ports) model)))#
     (map (init-port #{
 #(string-if injected?
 #{
@@ -22,7 +22,7 @@ function #.model(locator, meta) {
 #{
     this.#name  = new dezyne.#interface({provides: {}, requires: {name: '#name ', component: this}});
 #})
-#}) (filter gom:requires? ((compose .elements .ports) model)))#
+#}) (filter om:requires? ((compose .elements .ports) model)))#
 (map
    (lambda (port)
      (map (define-on model port #{
@@ -32,13 +32,13 @@ function #.model(locator, meta) {
 #{ return this.reply_#(*scope* reply-scope)_#reply-name;
 #}) }.bind(this), [this.#port , '#event '#(string-if (not (eq? type 'void))#{, this.#port .#reply-name _to_string#})]);
 }.bind(this);
-#}) (filter (gom:dir-matches? port) (gom:events port))))
-   (gom:ports model))
+#}) (filter (om:dir-matches? port) (om:events port))))
+   (om:ports model))
 #
 (map (define-function model #{
    this.#name  = function (#parameters) {
 #statements }.bind(this);
-#}) (gom:functions model))
+#}) (om:functions model))
 };
 
 dezyne.#.model  = #.model;

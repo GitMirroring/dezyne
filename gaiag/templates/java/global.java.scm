@@ -1,3 +1,3 @@
 class DznGlobal {
-  #(->string (map (declare-enum model) (gom:enums)))
+  #(->string (map (declare-enum model) (om:enums)))
 }

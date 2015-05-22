@@ -24,14 +24,14 @@
 
   :use-module (gaiag reader)
   :use-module (gaiag wfc)
-  :use-module (gaiag gom)
+  :use-module (gaiag om)
   :use-module (oop goops))
 
-(define (dezyne->gom o)
-  ((compose gom:resolve ast->gom dezyne->ast) o))
+(define (dezyne->om o)
+  ((compose om:resolve ast->om dezyne->ast) o))
 
 (define-method (wfc-error (o <list>) (message <string>))
-  ((@@ (gaiag wfc) wfc-error) (ast->gom o) message))
+  ((@@ (gaiag wfc) wfc-error) (ast->om o) message))
 
 (define second-on (@@ (gaiag wfc) second-on))
 (define mixing-declarative-imperative (@@ (gaiag wfc) mixing-declarative-imperative))
@@ -42,9 +42,9 @@
 	 #t)
 
 (pass-if "wfc-second-on"
-  (gom-pretty-noisy-equal?
+  (om-pretty-noisy-equal?
    (second-on
-    (dezyne->gom
+    (dezyne->om
      #{
        interface i { in void a; out void b;
                         behaviour
@@ -55,9 +55,9 @@
                     "second on"))))
 
 (pass-if "wfc-mixing-declarative-imperative"
-  (gom-pretty-noisy-equal?
+  (om-pretty-noisy-equal?
    (mixing-declarative-imperative
-    (dezyne->gom
+    (dezyne->om
      #{
        interface i { in void a; out void c;
                         behaviour
@@ -68,17 +68,17 @@
    (list (wfc-error '(assign b (expression true)) "mixing imperative"))))
 
 (pass-if "wfc-interface"
-  (gom-pretty-noisy-equal?
+  (om-pretty-noisy-equal?
    (interface
-    (dezyne->gom
+    (dezyne->om
      #{ interface i { } #} ))
    (list
     (wfc-error '(interface i) "interface must have a behaviour"))))
 
 (pass-if "wfc-component"
-  (gom-pretty-noisy-equal?
+  (om-pretty-noisy-equal?
    (component
-    (dezyne->gom
+    (dezyne->om
      #{ component c { behaviour { } } #}))
    (list
     (wfc-error '(component c (ports) (behaviour #f)) "component with behaviour must have one provides port"))))

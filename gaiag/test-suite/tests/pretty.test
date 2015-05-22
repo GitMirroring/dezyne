@@ -65,7 +65,7 @@ interface i
 #}))
 (diff-noisy-equal?
  (ast->pretty
-  (dezyne->ast dezyne))
+   (dezyne->ast dezyne))
  dezyne)))
 
 (pass-if "pretty-provides"
@@ -88,7 +88,7 @@ component c
 #}))
 (diff-noisy-equal?
  (ast->pretty
-  (dezyne->ast dezyne))
+   (dezyne->ast dezyne))
  dezyne)))
 
 (pass-if "pretty-expression"  ;; FIXME: 878d54f Add norm.scm broke pretty.
@@ -105,5 +105,5 @@ interface i
 #}))
 (diff-noisy-equal?
  (ast->pretty
-  (dezyne->ast dezyne))
+   (dezyne->ast dezyne))
  dezyne)))

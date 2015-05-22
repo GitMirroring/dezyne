@@ -11,15 +11,15 @@
   :use-module (gaiag norm)
 
   :use-module (oop goops)
-  :use-module (gaiag gom))
+  :use-module (gaiag om))
 
 (pass-if "norm-first-dummy-test"
          #t)
 
 (pass-if "norm-flatten-compound"
-         (gom-pretty-noisy-equal?
+         (om-pretty-noisy-equal?
           ((compose (@@ (gaiag norm) flatten-compound)
-                    (@@ (gaiag norm) ast->gom))
+                    (@@ (gaiag norm) ast->om))
            '(compound
              (compound
               (guard (expression (value state Disarmed))
@@ -52,9 +52,9 @@
                    (on (triggers (trigger console arm)) (illegal))))))
 
 (pass-if "norm-remove-otherwise"
-         (gom-pretty-noisy-equal?
+         (om-pretty-noisy-equal?
           ((compose ((@@ (gaiag norm) remove-otherwise) '())
-                    (@@ (gaiag norm) ast->gom))
+                    (@@ (gaiag norm) ast->om))
            '(compound
              (guard (expression sounding)
                     (compound

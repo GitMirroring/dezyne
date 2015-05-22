@@ -28,7 +28,7 @@ struct #.model Glue
         (let* ((entry (car alist))
                (interface (second entry))
                (component (symbol-drop interface 1))
-               (port-type (.type (gom:port model))))
+               (port-type (.type (om:port model))))
           (list "struct " component "\n: public " interface "\n"
                 "{\n"
                 "dezyne::" port-type "& api;\n"
@@ -37,8 +37,8 @@ struct #.model Glue
                 "{}\n"
                 (map
                  (lambda (entry)
-                   (let* ((event (gom:event (gom:interface model) (first entry)))
-                          (port (gom:port model))
+                   (let* ((event (om:event (om:interface model) (first entry)))
+                          (port (om:port model))
                           (return-type (return-type port event)))
                      (list return-type " " (third entry) "()\n"
                            "{\n"
@@ -46,18 +46,18 @@ struct #.model Glue
                            "}\n")))
                  alist)
                 "};\n")))
-      ((gen1-interfaces gom:in?) (gom:interface model)))
+      ((gen1-interfaces om:in?) (om:interface model)))
 
 #(map (lambda (alist)
         (let* ((entry (car alist))
                (interface (second entry)))
           (list "boost::shared_ptr<" interface "> api_" interface ";\n")))
-      ((gen1-interfaces gom:in?) (gom:interface model)))
+      ((gen1-interfaces om:in?) (om:interface model)))
 #(map (lambda (alist)
         (let* ((entry (car alist))
                (interface (second entry)))
           (list "boost::shared_ptr<" interface "> cb_" interface ";\n")))
-      ((gen1-interfaces gom:out?) (gom:interface model)))
+      ((gen1-interfaces om:out?) (om:interface model)))
 boost::shared_ptr<asd::channels::ISingleThreaded> st;
 
 #.model Glue (const dezyne::locator& l)
@@ -66,44 +66,44 @@ boost::shared_ptr<asd::channels::ISingleThreaded> st;
         (let* ((entry (car alist))
                (interface (second entry))
                (component (symbol-drop interface 1))
-               (port-name (.name (gom:port model))))
+               (port-name (.name (om:port model))))
           (list ", api_" interface
                 "(boost::make_shared<" component ">(boost::ref(component." port-name ")))\n")))
-      ((gen1-interfaces gom:in?) (gom:interface model)))
+      ((gen1-interfaces om:in?) (om:interface model)))
 {
 #(map (lambda (alist)
         (let* ((entry (car alist))
                (interface (second entry))
-               (port (gom:port model))
+               (port (om:port model))
                (port-name (.name port)))
           (map
            (lambda (entry)
              (list "component." port-name ".out." (first entry)
                    " = boost::bind(push, boost::ref(st), boost::function<void()>(boost::bind(&" interface "::" (third entry) ", boost::ref(cb_" interface "))));\n"))
            alist)))
-      ((gen1-interfaces gom:out?) (gom:interface model)))
+      ((gen1-interfaces om:out?) (om:interface model)))
 }
 
 #(map (lambda (alist)
         (let* ((entry (car alist))
                (interface (second entry))
-               (port-type (.type (gom:port model))))
+               (port-type (.type (om:port model))))
           (list "void GetAPI(boost::shared_ptr<" interface ">* api)\n"
                "{\n"
                "*api = api_" interface ";\n"
                "}\n")))
-      ((gen1-interfaces gom:in?) (gom:interface model)))
+      ((gen1-interfaces om:in?) (om:interface model)))
 
 
 #(map (lambda (alist)
         (let* ((entry (car alist))
                (interface (second entry))
-               (port-type (.type (gom:port model))))
+               (port-type (.type (om:port model))))
           (list "void RegisterCB(boost::shared_ptr<" interface "> cb)\n"
                "{\n"
                "cb_" interface " = cb;\n"
                "}\n")))
-      ((gen1-interfaces gom:out?) (gom:interface model)))
+      ((gen1-interfaces om:out?) (om:interface model)))
 
 void RegisterCB (boost::shared_ptr<asd::channels::ISingleThreaded> st)
 {
@@ -114,7 +114,7 @@ void RegisterCB (boost::shared_ptr<asd::channels::ISingleThreaded> st)
 dezyne::locator dezyne_locator;
 dezyne::runtime dezyne_runtime;
 
-boost::shared_ptr<#(.type (gom:port model)) Interface> #.model Component::GetInstance ()
+boost::shared_ptr<#(.type (om:port model)) Interface> #.model Component::GetInstance ()
 {
   dezyne_locator.set(dezyne_runtime);
   return boost::make_shared<#.model Glue> (dezyne_locator);

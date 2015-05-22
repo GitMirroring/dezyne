@@ -81,14 +81,14 @@ class main {
     (lambda (port)
     (map (define-on model port #{
     m.#port .#direction port.#event  = (#parameters) => {#(string-if (eq? return-type 'void) #{log_#direction("#port .#direction .", "#event ");#}#{return log_valued<#(if (eq? reply-scope '*global*) 'DznGlobal reply-scope).#reply-name >("#port .#direction .", "#event ", "#port .#reply-name _");#})};
-#}) (filter (negate (gom:dir-matches? port))
-       (gom:events port)))) (gom:ports model))     EventMap e = new EventMap();
+#}) (filter (negate (om:dir-matches? port))
+       (om:events port)))) (om:ports model))     EventMap e = new EventMap();
 #(map
     (lambda (port)
     (map (define-on model port #{
-        e.Add("#port .#event ", () => {m.#port .#direction port.#event(#((->join ", ") (map (lambda (p) (if (gom:out-or-inout? p) 'v 0)) parameter-objects)));});
-#}) (filter (gom:dir-matches? port)
-       (gom:events port)))) (gom:ports model)) return e;
+        e.Add("#port .#event ", () => {m.#port .#direction port.#event(#((->join ", ") (map (lambda (p) (if (om:out-or-inout? p) 'v 0)) parameter-objects)));});
+#}) (filter (om:dir-matches? port)
+       (om:events port)))) (om:ports model)) return e;
 }
 
   public static void Main(String[] args) {

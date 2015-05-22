@@ -6,13 +6,13 @@
   :use-module (test-suite lib)
   :use-module (test-suite misc)
 
-  :use-module (gaiag gom))
+  :use-module (gaiag om))
 
-(pass-if "gom-first-dummy-test"
+(pass-if "om-first-dummy-test"
          #t)
 
 (pass-if "find-triggers"
-  (gom-pretty-noisy-equal?
-   (gom:find-triggers
-    (ast->gom '(on (arm) (compound))))
+  (om-pretty-noisy-equal?
+   (om:find-triggers
+    (ast->om '(on (arm) (compound))))
    '((trigger #f arm))))

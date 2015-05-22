@@ -4,9 +4,9 @@
 ##include "#.model Interface.h"
 
 struct #.model Component
-  : public #(.type (gom:port model))Interface
+  : public #(.type (om:port model))Interface
 {
-  static boost::shared_ptr<#(.type (gom:port model))Interface> GetInstance();
+  static boost::shared_ptr<#(.type (om:port model))Interface> GetInstance();
   static void ReleaseInstance();
 };
 ##endif

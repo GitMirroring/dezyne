@@ -1,7 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
-;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -18,7 +17,7 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (gaiag gom gom)
+(define-module (gaiag goops om)
   :use-module (oop goops)
   :export (
            .ast
@@ -100,9 +99,9 @@
            <named>
            <on>
            <otherwise>
-           <gom:parameter>
+           <om:parameter>
            <parameters>
-           <gom:port>
+           <om:port>
            <ports>
            <range>
            <reply>
@@ -114,12 +113,15 @@
            <trigger>
            <triggers>
            <type>
+           <*type*>
            <types>
            <value>
            <var>
            <variable>
            <variables>
            ))
+
+(cond-expand-provide (current-module) '(goops-om))
 
 (define-class <ast> ())
 
@@ -151,7 +153,10 @@
   (events :accessor .events :init-form (make <events>) :init-keyword :events)
   (behaviour :accessor .behaviour :init-value #f :init-keyword :behaviour))
 
-(define-class <type> (<named>)
+(define-class <*type*> (<ast>)
+  (scope :accessor .scope :init-value #f :init-keyword :scope))
+
+(define-class <type> (<named> <*type*>)
   (scope :accessor .scope :init-value #f :init-keyword :scope))
 
 (define-class <signature> (<ast>)
@@ -162,9 +167,9 @@
   (signature :accessor .signature :init-form (make <signature>) :init-keyword :signature)
   (direction :accessor .direction :init-value #f :init-keyword :direction))
 
-(define-class <gom:port> (<named>)
+(define-class <om:port> (<named>)
   (type :accessor .type :init-value #f :init-keyword :type)
-  (direction :accessor .direction :init-value #f :init-keyword :direction)  
+  (direction :accessor .direction :init-value #f :init-keyword :direction)
   (injected :accessor .injected :init-value #f :init-keyword :injected))
 
 (define-class <trigger> (<ast>)
@@ -177,8 +182,7 @@
 
 (define-class <otherwise> (<expression>))
 
-(define-class <var> (<named>)
-  (name :accessor .name :init-value #f :init-keyword :name))
+(define-class <var> (<named>))
 
 (define-class <field> (<ast>)
   (identifier :accessor .identifier :init-value #f :init-keyword :identifier)
@@ -197,7 +201,7 @@
   (type :accessor .type :init-value #f :init-keyword :type)
   (field :accessor .field :init-value #f :init-keyword :field))
 
-(define-class <gom:parameter> (<named>)
+(define-class <om:parameter> (<named>)
   (type :accessor .type :init-value (make <type>) :init-keyword :type)
   (direction :accessor .direction :init-value #f :init-keyword :direction))
 

@@ -9,8 +9,8 @@
   :use-module (test-suite lib)
   :use-module (test-suite misc)
 
-  :use-module (gaiag gom)
-  :use-module (gaiag json-table)
+  :use-module (gaiag om)
+;;  :use-module (gaiag json-table)
   :use-module (gaiag pretty)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
@@ -23,7 +23,7 @@
          #t)
 
 (define i-ast
- (gom:interface
+ (om:interface
   (ast:resolve
    (dezyne->ast
 #{
@@ -88,7 +88,7 @@ interface I
           '()))
 
 (define if-ast
- (gom:interface
+ (om:interface
   (ast:resolve
    (dezyne->ast
 #{
@@ -117,7 +117,7 @@ interface I {
            if-ast 
            's
            (make <field> :identifier 's :field 'one) 
-           (ast->gom
+           (ast->om
             '(if (expression (var b)) 
                  (compound)
                  (assign s (expression (literal #f S three))))))
@@ -129,7 +129,7 @@ interface I {
            if-ast 
            's
            (make <field> :identifier 's :field 'one) 
-           (ast->gom
+           (ast->om
             '(if (expression (var b))
                  (assign s (expression (literal #f S two)))
                  (assign s (expression (literal #f S three))))))
@@ -141,6 +141,6 @@ interface I {
            if-ast 
            's
            (make <field> :identifier 's :field 'one) 
-           (ast->gom
+           (ast->om
             '(if (expression (var b)) (call fun (arguments) #f) (assign s (expression (literal #f S three))))))
           '(s.one s.three)))

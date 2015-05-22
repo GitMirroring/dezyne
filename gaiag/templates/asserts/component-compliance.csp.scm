@@ -4,7 +4,7 @@
 ;;;
 ;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -23,10 +23,10 @@
 ;;; 
 ;;; Code:
 
-assert IF_#((compose .type gom:port) model) _#((compose .name .behaviour gom:import .type gom:port) model)(true,false) [[#((compose .type gom:port) model) .x<-#((compose .name gom:port) model) .x|x<-extensions(#((compose .name gom:port) model))]][[#((compose .type gom:port) model)_'.x<-#((compose .name gom:port) model)_'.x|x<-extensions(#((compose .name gom:port) model)_')]]#
-(->string (if (not (null? (filter gom:out? (gom:events (gom:port model))))) (list "[["((compose .type gom:port) model) "_''.x<-" ((compose .name gom:port) model) "_''.x|x<-extensions("((compose .name gom:port) model) "_'')]]"))) \ {#
+assert IF_#((compose .type om:port) model) _#((compose .name .behaviour om:import .type om:port) model)(true,false) [[#((compose .type om:port) model) .x<-#((compose .name om:port) model) .x|x<-extensions(#((compose .name om:port) model))]][[#((compose .type om:port) model)_'.x<-#((compose .name om:port) model)_'.x|x<-extensions(#((compose .name om:port) model)_')]]#
+(->string (if (not (null? (filter om:out? (om:events (om:port model))))) (list "[["((compose .type om:port) model) "_''.x<-" ((compose .name om:port) model) "_''.x|x<-extensions("((compose .name om:port) model) "_'')]]"))) \ {#
    (comma-join
-       (append (list (->string (list (.type (gom:port model)) "_'''.modeling"))) (map (lambda (x) (map ->string (list ((compose .name gom:port) model) "." x))) (filter
+       (append (list (->string (list (.type (om:port model)) "_'''.modeling"))) (map (lambda (x) (map ->string (list ((compose .name om:port) model) "." x))) (filter
          (lambda (x) (or (eq? x 'optional) (eq? x 'inevitable)))
-         (port-events (gom:port model))))))} [F= AS_#(.name model) _#((compose .name .behaviour) model) (true) \ diff(Events,{|illegal,#((compose .name gom:port)model),#((compose .name gom:port)model)_'#
-(->string (if (not (null? (filter gom:out? (gom:events (gom:port model))))) (list "," ((compose .name gom:port) model) "_''")))|})
+         (port-events (om:port model))))))} [F= AS_#(.name model) _#((compose .name .behaviour) model) (true) \ diff(Events,{|illegal,#((compose .name om:port)model),#((compose .name om:port)model)_'#
+(->string (if (not (null? (filter om:out? (om:events (om:port model))))) (list "," ((compose .name om:port) model) "_''")))|})

@@ -3,6 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -25,7 +26,7 @@
 
 (define-module (gaiag csp-asserts)
   :use-module (oop goops)
-  :use-module (gaiag gom)
+  :use-module (gaiag om)
 
   :use-module (gaiag csp)
   :use-module (gaiag asserts)
@@ -34,9 +35,9 @@
            ast->
            ))
 
-(define-method (gom->csp-asserts (o <top>))
-  (let ((gom ((gom:register ast->gom) o #t)))
-    (gom->csp gom)
-    (assert-list gom)))
+(define-method (om->csp-asserts (o <top>))
+  (let ((om ((om:register ast->om) o #t)))
+    (om->csp om)
+    (assert-list om)))
 
-(define ast-> gom->csp-asserts)
+(define ast-> om->csp-asserts)

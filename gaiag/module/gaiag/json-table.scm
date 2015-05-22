@@ -37,8 +37,7 @@
   :use-module (gaiag misc)
   :use-module (gaiag pretty-print)  
 
-  :use-module (oop goops) ;;-goeps
-  :use-module (gaiag gom) ;;-goeps
+  :use-module (gaiag om) ;;-goeps
   :use-module (gaiag json) ;;-goeps  
   :use-module (gaiag pretty) ;;-goeps
   :use-module (gaiag reader) ;;-goeps
@@ -52,6 +51,11 @@
   :export (json-init
            json-table-event           
            json-table-state))
+
+(cond-expand
+ (goops-om
+  (use-modules (oop goops)))
+ (else #t))
 
 (define (json-init o)
   `((name . ,(.name o))
@@ -76,7 +80,7 @@
         `((event . ,(json-triggers o))
           (rules . ,(apply append (map (json-table- model var state)
                                        (guards) ;;-goeps
-                                        ;;+goeps (.elements (compound))
+                                       ;;+goeps (.elements (compound))
                                        )))))))
     (($ <on> triggers statement)
      (let* ((var 'unknown)
@@ -213,8 +217,9 @@
       (list (make <field> :identifier var :field field)))
      (($ <assign> (? var?) expression)
       (list unknown))
-     (($ <call> identifier)
-      (let ((function (gom:function model identifier)))
+     (($ <call>)
+      (let* ((identifier (.identifier o))
+             (function (om:function model identifier)))
         (if (member identifier functions)
             next
             (json-next- model var next (.statement function) (cons identifier functions)))))
@@ -249,24 +254,24 @@
   (json-data-location (ast->dezyne o) o))
 
 (define (json-callback model o)
-  (define (function? identifier) (gom:function model identifier))
+  (define (function? identifier) (om:function model identifier))
   (define (recursive? identifier) (.recursive (function? identifier)))
   (define (non-recursive? identifier)
     (not (recursive? identifier)))
-
+  
   (define (return-action o)
     (match o
       (($ <action>) (list o))
-       (($ <assign> name (and ($ <action>) (get! action))) (list (action)))
-       (($ <variable> name type (and ($ <action>) (get! action))) (list (action)))
-       (($ <call> (and (? non-recursive?) (get! function))) (return-actions (function? (function))))
-       (($ <function> name signature #f statement) (return-actions statement))
-       (_ (list #f))))
+      (($ <assign> name (and ($ <action>) (get! action))) (list (action)))
+      (($ <variable> name type (and ($ <action>) (get! action))) (list (action)))
+      (($ <call> (and (? non-recursive?) (get! function))) (return-actions (function? (function))))
+      (($ <function> name signature #f statement) (return-actions statement))
+      (_ (list #f))))
 
   (define (return-actions o)
     (filter identity
             (apply append
-                   (map return-action ((gom:collect return-action) o)))))
+                   (map return-action ((om:collect return-action) o)))))
 
   (or (and-let* (((is-a? o <statement>))
                  (actions (return-actions o))
@@ -301,7 +306,7 @@
     (($ <triggers> triggers) (->symbol ((->join ",") (map ->symbol triggers))))
     (($ <trigger> #f event) (->symbol event))
     (($ <trigger> port event) (->symbol (list port "." event)))
-    ((? (is? <ast>)) (->symbol (gom->list o)))
+    ((? (is? <ast>)) (->symbol (om->list o)))
     (('and lhs rhs) (->symbol (list '&& lhs rhs)))
     (('or lhs rhs) (->symbol (list '#{||}# lhs rhs)))
     (((or '< '<= '> '>= '+ '- '&& '#{||}# '== '!=) lhs rhs)

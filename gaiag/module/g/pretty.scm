@@ -39,7 +39,7 @@
    :use-module (g reader)
    :use-module (g resolve)
 
-  :export (ast-> ast->dezyne ast->dzn ast->pretty pretty:gom))
+  :export (ast-> ast->dezyne ast->dzn ast->pretty pretty:om))
 
 (cond-expand
  (goops-om
@@ -51,8 +51,8 @@
     (('root _ ___)
      (indent-string (apply string-append (map ast->dezyne (.elements o)))))
     ((and (negate (is? <ast>)) (h t ...))
-     (let ((gom ((gom:register pretty:gom) o #t)))
-       (ast->dezyne gom)))
+     (let ((om ((om:register pretty:om) o #t)))
+       (ast->dezyne om)))
     ((? (is? <ast>)) (indent-string (->string o)))
     (_ "")))
 
@@ -60,8 +60,8 @@
 (define ast->dzn ast->dezyne)
 (define ast->pretty ast->dezyne)
 
-(define (pretty:gom ast)
-  ((compose ast:wfc ast:resolve ast->gom) ast))
+(define (pretty:om ast)
+  ((compose ast:wfc ast:resolve ast->om) ast))
 
 (define (->string src)
   (define (unspecified? x) (eq? x *unspecified*))
@@ -90,9 +90,9 @@
      (->string (list 'system-as-component name ports instances bindings)))
     ((and (? pair?) (? dezyne-template?)) (apply dezyne-template->string src))
     ((? dezyne-template?) (apply dezyne-template->string
-                                 (cons (ast-name src) (gom:children src))))
+                                 (cons (ast-name src) (om:children src))))
     
-    ((? join?) (apply join-all (gom:children src)))
+    ((? join?) (apply join-all (om:children src)))
     ((? symbol?) (symbol->string src))
     ((? string?) src)
     ((? integer?) (number->string src))

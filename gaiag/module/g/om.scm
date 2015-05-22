@@ -51,7 +51,7 @@
   :use-module (g guile util)
 
   :export (
-           ast->om
+           ;;ast->om
            ast->sugar
            ast->trigger-sugar
            ast:public
@@ -247,16 +247,16 @@
     (('otherwise value) (make <otherwise> :value value))    
 
     (('parameter name type)
-     (make <gom:parameter> :name name :type (ast->om- type)))
+     (make <om:parameter> :name name :type (ast->om- type)))
 
     (('parameter name type direction)
-     (make <gom:parameter> :name name :type (ast->om- type) :direction direction))
+     (make <om:parameter> :name name :type (ast->om- type) :direction direction))
 
     (('parameters parameters ...)
      (make <parameters> :elements (map ast->om- parameters)))
 
     (('port name type direction injected ...)
-     (make <gom:port>
+     (make <om:port>
        :name name
        :type type
        :direction direction
@@ -353,4 +353,4 @@
     (_ '(import))))
 
 (define (ast-> ast)
-  ((compose gom->list ast->om ast->annotate) ast))
+  ((compose om->list ast->om ast->annotate) ast))

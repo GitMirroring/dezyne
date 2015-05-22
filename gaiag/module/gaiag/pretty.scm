@@ -27,13 +27,12 @@
 
   :use-module (gaiag misc)
 
-  :use-module (oop goops) ;;-goeps
-  :use-module (gaiag gom) ;;-goeps
+  :use-module (gaiag om) ;;-goeps
   :use-module (gaiag animate) ;;-goeps
   :use-module (gaiag indent) ;;-goeps
   :use-module (gaiag reader) ;;-goeps
-  :use-module (gaiag wfc) ;;-goeps
   :use-module (gaiag resolve) ;;-goeps
+  :use-module (gaiag wfc) ;;-goeps  
 
   ;;+goeps :use-module (g om)
   ;;+goeps :use-module (g animate)
@@ -41,15 +40,22 @@
   ;;+goeps :use-module (g reader)
   ;;+goeps :use-module (g resolve)
 
-  :export (ast-> ast->dezyne ast->dzn ast->pretty pretty:gom))
+  :export (ast-> ast->dezyne ast->dzn ast->pretty pretty:om))
+
+(cond-expand
+ (goops-om
+  (use-modules (oop goops)))
+ (else #t))
 
 (define (ast->dezyne o)
   (match o
     (($ <root>)
      (indent-string (apply string-append (map ast->dezyne (.elements o)))))
-    ((and (negate (is? <ast>)) (h t ...))
-     (let ((gom ((gom:register pretty:gom) o #t)))
-       (ast->dezyne gom)))
+    (
+     (h t ...) ;;-goeps
+     ;;+goeps (and (negate (is? <ast>)) (h t ...))
+     (let ((om ((om:register pretty:om) o #t)))
+       (ast->dezyne om)))
     ((? (is? <ast>)) (indent-string (->string o)))
     (_ "")))
 
@@ -57,8 +63,8 @@
 (define ast->dzn ast->dezyne)
 (define ast->pretty ast->dezyne)
 
-(define (pretty:gom ast)
-  ((compose ast:wfc ast:resolve ast->gom) ast))
+(define (pretty:om ast)
+  ((compose ast:wfc ast:resolve ast->om) ast))
 
 (define (->string src)
   (define (unspecified? x) (eq? x *unspecified*))
@@ -87,18 +93,18 @@
      (->string (list 'system-as-component name ports instances bindings)))
     ((and (? pair?) (? dezyne-template?)) (apply dezyne-template->string src))
     ((? dezyne-template?) (apply dezyne-template->string
-                                 (cons (ast-name src) (gom:children src))))
+                                 (cons (ast-name src) (om:children src))))
     
-    ((? join?) (apply join-all (gom:children src)))
+    ((? join?) (apply join-all (om:children src)))
     ((? symbol?) (symbol->string src))
     ((? string?) src)
     ((? integer?) (number->string src))
     (($ <arguments> '()) "")
     (($ <arguments> arguments) (->string (list "(" (comma-join (map ->string arguments)) ")")))
     (($ <parameters> parameters) (->string (list "(" (comma-join (map ->string parameters)) ")")))
-    (($ <gom:parameter> name type (or #f 'in)) (->string (list type " " name)))
-    (($ <gom:parameter> name type dir) (->string (list dir " " type " " name)))
-    (($ <gom:parameter> name type) (->string (list type " " name)))    
+    (($ <om:parameter> name type (or #f 'in)) (->string (list type " " name)))
+    (($ <om:parameter> name type dir) (->string (list dir " " type " " name)))
+    (($ <om:parameter> name type) (->string (list type " " name)))    
     (($ <signature> type ($ <parameters> '()))
      (list (cons (->string (->string type)) "")))
     (($ <signature> type parameters)

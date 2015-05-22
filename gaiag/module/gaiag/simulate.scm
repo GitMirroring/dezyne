@@ -39,8 +39,8 @@
   :use-module (gaiag wfc)
 
   :use-module (oop goops)
-  :use-module (oop goops describe)
-  :use-module (gaiag gom)
+  ;;:use-module (oop goops describe)
+  :use-module (gaiag om)
 
   :export (ast->a
            explore-space
@@ -48,7 +48,7 @@
            walk-trail
            event->ast
            ->symbol
-           simulate:gom
+           simulate:om
            var))
 
 (define debug? #f)
@@ -58,15 +58,15 @@
     (set! debug stderr))
 
 (define (ast-> ast)
-  (let ((gom ((gom:register simulate:gom) ast #t)))
-    (and=> (gom:model-with-behaviour gom) simulate-model)
+  (let ((om ((om:register simulate:om) ast #t)))
+    (and=> (om:model-with-behaviour om) simulate-model)
     ""))
 
 (define (simulate:import name)
-  (gom:import name simulate:gom))
+  (om:import name simulate:om))
 
-(define (simulate:gom ast)
-  ((compose ast:wfc ast:resolve ast->gom) ast))
+(define (simulate:om ast)
+  ((compose ast:wfc ast:resolve ast->om) ast))
 
 (define ((variable-state model) variable . value)
   (cons (.name variable)
@@ -85,7 +85,7 @@
   (set! *state-alist* (assoc-set! *state-alist* (.name o) state)))
 
 (define (state-vector model)
-  (map (variable-state model) (gom:variables model)))
+  (map (variable-state model) (om:variables model)))
 
 (define (var state identifier) (assoc-ref state identifier))
 
@@ -98,7 +98,7 @@
 (define *state-space* '(()))
 
 (define (simulate-model model)
-  (stderr "\n\n>>>simulating: ~a ~a --> ~a\n" (ast-name model) (.name model) (map ->string (gom:find-triggers model)))
+  (stderr "\n\n>>>simulating: ~a ~a --> ~a\n" (ast-name model) (.name model) (map ->string (om:find-triggers model)))
   (and-let* ((((is? <component>) model))
              (interfaces (map simulate:import
                               (map .type ((compose .elements .ports) model))))))
@@ -158,7 +158,7 @@
       (make <trigger> :port #f :event event)))
 
 (define-method (seen-key (model <model>) state ast)
-  (when (not (equal? (gom->list ast) (gom->list (.statement (.behaviour model)))))
+  (when (not (equal? (om->list ast) (om->list (.statement (.behaviour model)))))
     ;; it's a bug -for now- if we store a 'seen' state with a non-top
     ;; AST: only actions return mid-statements and they are continued
     ;; we alway continue until the end
@@ -182,7 +182,7 @@
   (find (lambda (x) (equal? x event)) (seen model state ast)))
 
 (define-method (seen! (model <model>) state ast event)
-  (when (not (equal? (gom->list ast) (gom->list (.statement (.behaviour model)))))
+  (when (not (equal? (om->list ast) (om->list (.statement (.behaviour model)))))
     (stderr "seen! --> AST:~a\n" ast)
     (throw 'seen!-with-non-top-ast))
 
@@ -200,7 +200,7 @@
 
 ;; FIXME: TODO: implement next-value for state explorer
 (define (next-todo-space-explorer model state ast)
-  (let ((events (gom:find-triggers model)))
+  (let ((events (om:find-triggers model)))
     (if (or (null? *state-space*)
             (null? (car *state-space*)))
         (cons (state-vector model) events)
@@ -277,7 +277,7 @@
             (continue state ast action t))))))
 
 ;; AST: curry me
-(define ((variable? model) identifier) (gom:variable model identifier))
+(define ((variable? model) identifier) (om:variable model identifier))
 
 (define-method (eval-expression (model <model>) ast state expression)
   (match expression
@@ -301,8 +301,8 @@
             (r (equal? lhs rhs)))
      r))
     (($ <otherwise>)
-     (let* ((parent (gom:parent model ast))
-            (guards ((gom:statements-of-type 'guard) parent))
+     (let* ((parent (om:parent model ast))
+            (guards ((om:statements-of-type 'guard) parent))
             (expressions (map .expression guards)))
        (receive (otherwise rest)
            (partition (lambda (x) (is-a? x <otherwise>)) expressions)
@@ -323,13 +323,13 @@
 
 (define-method (eval-function-expression (model <model>) ast state event trace expression)
   ;; FIMXE: c&p from csp.csm:ast-transform
-  (let* ((members (gom:member-names model))
+  (let* ((members (om:member-names model))
          (port? (lambda (port) (member port (map .name ((compose .elements .ports) model)))))
          (valued-action? (valued-action? port?)))
     (match expression
       (($ <call> function ($ <arguments> arguments))
        (receive (new-state new-ast new-action return new-trace)
-           (let* ((f (gom:function model function))
+           (let* ((f (om:function model function))
                   (parameters (map .name ((compose .elements .parameters .signature) f)))
                   (statement (.statement f))
                   (pairs (zip parameters arguments))
@@ -368,7 +368,7 @@
           (let* ((trace (cons ast trace))
                  (port (.port trigger)))
             (if port
-                (let* ((interface (simulate:import (.type (gom:port model port))))
+                (let* ((interface (simulate:import (.type (om:port model port))))
                        (i-ast (.statement (.behaviour interface)))
                        (event (.event trigger))
                        (i-trigger (make <trigger> :port #f :event event))
@@ -399,7 +399,7 @@
          (($ <compound> '()) (values state '() #f #f trace))
          (#f (values state '() #f #f trace))
          (($ <compound> elements)
-          (let ((declarative? (gom:declarative? (car elements))))
+          (let ((declarative? (om:declarative? (car elements))))
             (let loop ((statements elements) (loop-state state) (loop-return #f) (loop-trace (cons ast trace)) (frame 0))
               (if (null? statements)
                   (values (drop loop-state frame) statements #f loop-return loop-trace)

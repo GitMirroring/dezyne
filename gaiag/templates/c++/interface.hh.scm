@@ -8,28 +8,28 @@
 
 namespace dezyne
 {
- #(string-if (pair? (gom:enums)) #{
+ #(string-if (pair? (om:enums)) #{
  namespace global
  {
 #})#
-  (->string (map (declare-enum model) (gom:enums)))
- #(string-if (pair? (gom:enums)) #{
+  (->string (map (declare-enum model) (om:enums)))
+ #(string-if (pair? (om:enums)) #{
  }
 #})
 struct #.interface
 {
- #(->string (map (declare-enum model) (gom:interface-enums model)))
+ #(->string (map (declare-enum model) (om:interface-enums model)))
   struct
   {
    #(map (declare-io model
           #{std::function<#return-type  (#parameters)> #name;
-#}) (filter gom:in? ((compose .elements .events) model))) } in;
+#}) (filter om:in? ((compose .elements .events) model))) } in;
 
   struct
   {
    #(map (declare-io model
           #{std::function<#return-type  (#parameters)> #name;
-#}) (filter gom:out? ((compose .elements .events) model))) } out;
+#}) (filter om:out? ((compose .elements .events) model))) } out;
 
    port::meta meta;
    inline #.interface(port::meta m) : meta(m) {}
@@ -38,10 +38,10 @@ struct #.interface
    {
    #(map (declare-io model
          #{if (not in.#name) throw dezyne::binding_error_in(meta, "in.#name");
-#}) (filter gom:in? ((compose .elements .events) model)))
+#}) (filter om:in? ((compose .elements .events) model)))
    #(map (declare-io model
          #{if (not out.#name) throw dezyne::binding_error_out(meta, "out.#name");
-#}) (filter gom:out? ((compose .elements .events) model)))
+#}) (filter om:out? ((compose .elements .events) model)))
    }
   };
 
@@ -52,9 +52,9 @@ struct #.interface
      provided.meta.requires = required.meta.requires;
      required.meta.provides = provided.meta.provides;
    }
-   #(->string (map (enum-to-string model) (gom:interface-enums model)))
-   #(->string (map (enum-to-string model) (gom:enums)))
-   #(->string (map (string-to-enum model) (gom:interface-enums model)))
-   #(->string (map (string-to-enum model) (gom:enums)))
+   #(->string (map (enum-to-string model) (om:interface-enums model)))
+   #(->string (map (enum-to-string model) (om:enums)))
+   #(->string (map (string-to-enum model) (om:interface-enums model)))
+   #(->string (map (string-to-enum model) (om:enums)))
 }
 ##endif // DEZYNE_#.INTERFACE _HH

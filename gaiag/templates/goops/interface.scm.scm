@@ -1,17 +1,17 @@
-#(->string (map (declare-enum model) (gom:interface-enums model)))
-#(->string (map (declare-enum model) (gom:enums)))
+#(->string (map (declare-enum model) (om:interface-enums model)))
+#(->string (map (declare-enum model) (om:enums)))
 (define-class <#.interface .in> (<port-base>)
   (name :accessor .name :init-value (symbol) :init-keyword :name)
   (self :accessor .self :init-value ##f :init-keyword :self)#
 (map (declare-io model #{#'()
   (#name  :accessor .#name  :init-value ##f :init-keyword :#name)#})
-  (filter gom:in? ((compose .elements .events) model))))
+  (filter om:in? ((compose .elements .events) model))))
 (define-class <#.interface .out> (<port-base>)
   (name :accessor .name :init-value (symbol) :init-keyword :name)
   (self :accessor .self :init-value ##f :init-keyword :self)#
 (map (declare-io model #{#'()
   (#name  :accessor .#name  :init-value ##f :init-keyword :#name)#})
-  (filter gom:out? ((compose .elements .events) model))))
+  (filter om:out? ((compose .elements .events) model))))
 (define-class <#.interface > (<interface>))
 
 (define-method (initialize (o <#.model >) args)

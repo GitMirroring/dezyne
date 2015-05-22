@@ -24,284 +24,870 @@
 (read-set! keywords 'prefix)
 
 (define-module (g guile om)
-  :use-module (srfi srfi-1)
-  :use-module (ice-9 and-let-star)
+
   :use-module (ice-9 curried-definitions)
-  :use-module (ice-9 getopt-long)    
-  :use-module (ice-9 match) 
-  :use-module (ice-9 optargs)
+  :use-module (ice-9 match)
+  :use-module (ice-9 optargs)  
   :use-module (ice-9 pretty-print)
 
-;;  :use-module (language dezyne location)
-  :use-module (gaiag annotate)
-  
-  :use-module (g g)  
-  :use-module (g reader)
-  :use-module (g misc)
-  :use-module (g guile util)   
-
+  :use-module (g misc)  
   :export (
-           ast->gom
-           ast-name
-           gom->list
-           gom:children
-           collect
-           gom:collect
-           gom:filter
-           gom:guard-equal?
-           gom:map
+           .arguments
+           .ast
+           .behaviour           
+           .bindings
+           .direction           
+           .elements
+           .else
+           .events
+           .expression           
+           .field
+           .fields    
+           .from
+           .functions
+           .identifier
+           .instances           
+           .left           
+           .message
+           .name
+           .parameters
+           .ports
+           .range
+           .recursive
+           .right           
+           .scope
+           .signature
+           .statement
+           .then
+           .to
+           .trigger
+           .triggers           
+           .type
+           .types
+           .value
+           .variables
+    
+           <action>
+           <assign>
+           <ast>
+           <behaviour>           
+           <bind>
+           <binding>
+           <bindings>
+           <call>
+           <component>
+           <data>
+           <error>
+           <enum>
+           <event>
+           <events>
+           <expression>
+           <extern>
+           <field>
+           <fields>           
+           <function>
+           <guard>
+           <if>
+           <illegal>
+           <import>
+           <instance>
+           <instances>           
+           <int>
+           <interface>
+           <literal>
+           <named>
+           <system>
+           <bindings>
+           <compound>
+           <functions>
+           <instances>
+           <model>
+           <on>
+           <otherwise>           
+           <parameter>           
+           <parameters>           
+           <port>
+           <ports>
+           <range>
+           <reply>
+           <return>           
+           <root>
+           <scoped>
+           <signature>           
+           <statement>
+           <trigger>
+           <triggers>
+           <type>
+           <*type*>           
+           <types>
+           <var>
+           <value>           
+           <variable>
+           <variables>           
 
-           gom:register
+           make
+           make-<action>
+           make-<assign>
+           make-<arguments>           
+           make-<behaviour>
+           make-<bind>
+           make-<binding>
+           make-<bindings>           
+           make-<call>
+           make-<component>
+           make-<data>           
+           make-<enum>
+           make-<error>           
+           make-<event>
+           make-<events>           
+           make-<extern>
+           make-<expression>
+           make-<field>
+           make-<fields>
+           make-<function>
+           make-<guard>
+           make-<instance>
+           make-<if>           
+           make-<illegal>
+           make-<instances>           
+           make-<int>
+           make-<interface>
+           make-<named>
+           make-<system>
+           make-<bindings>
+           make-<compound>
+           make-<functions>
+           make-<import>
+           make-<instances>           
+           make-<instance>
+           make-<literal>           
+           make-<on>
+           make-<otherwise>
+           make-<parameter>
+           make-<parameters>           
+           make-<port>
+           make-<ports>
+           make-<range>
+           make-<reply>           
+           make-<return>
+           make-<root>
+           make-<scoped>
+           make-<signature>           
+           make-<type>
+           make-<types>           
+           make-<trigger>
+           make-<triggers>
+           make-<var>
+           make-<value>           
+           make-<variable>
+           make-<variables>           
 
-           gom:import
-           gom:imported?
-
-           gom:enum
-           gom:event           
-           gom:extern
-           gom:function           
-           gom:integer
-
-           gom:port
+           is?
+           is-a?
+           ast?
+           ast-list?           
+           expression?
+           model?
+           statement?
            
-           gom:register-model
-           gom:register-type
-           gom:triggers-equal?
-           gom:type
-           gom:types           
-           gom:variable
+           behaviour?
+           bindings?
+           component?
+           compound?
+           enum?
+           expression?
+           extern?
+           field?
+           function?           
+           functions?
+           import?
+           instances?
+           int?
+           interface?
+           literal?
+           named?
+           otherwise?
+           om:parameter?           
+           parameters?
+           om:port?
+           ports?
+           range?
+           root?
+           scoped?
+           signature?
+           system?
+           trigger?
+           triggers?
+           type?
+           *type*?           
+           types?           
+           var?
+           variable?
+           variables?
            ))
 
 (cond-expand-provide (current-module) '(guile-om))
 
-(define (xgom:map f o)
-  (stderr "gom map: ~a ==> ~a\n" o (ast-list? o))
-  (match o
-    ((? ast-list?)
-     (list (car o) (map f (.elements o))))
-    ;; ?? ((h t ...) (map (lambda (x) (gom:map f x)) o))
-    (_ (f o))))
 
-(define (xgom:map f o)
-  (stderr "gom map: ~a ==> ~a\n" o (ast-list? o))
-  (match o
-    ;;    ((? ast-list?) (list (car o) (map f (.elements o))))
-    ((? ast?) (cons (car o) (gom:map f (cdr o))))
-    ((h t ...) (map (lambda (x) (gom:map f x)) o))
-    (_ o)))
+(define <list> 'list)
+(define ast-leafs
+  '(
+    assign
+    action
+    ast
+    behaviour
+    bind
+    binding
+    call
+    component
+    data
+    enum
+    event
+    error
+    expression
+    extern
+    field
+    function
+    guard
+    if
+    illegal
+    import
+    instance
+    int    
+    interface
+    literal
+    model
+    named
+    on
+    otherwise
+    parameter
+    port
+    range
+    reply
+    return
+    scoped
+    signature
+    system
+    trigger
+    type
+    value
+    var
+    variable
+    ))
 
-(define (xgom:map f lst)
-  (stderr "gom map: ~a ==> ~a\n" lst (ast-list? lst))
-  (list (car lst) (map f (.elements lst))))
+(define ast-lists
+  '(
+    arguments
+    bindings
+    compound
+    events
+    fields
+    functions
+    instances
+    parameters
+    ports
+    root
+    triggers
+    types
+    variables
+    ))
 
-(define (gom:map f o)
-  (stderr "gom map: ~a ==> ~a\n" o (ast-list? o))
-  (match o
-    ((? ast-list?) (list (car o) (map f (.elements o))))
-    ((h t ...) (cons (car o) (map f (cdr o))))
-    (_ o)))
+(define ast-statements
+  '(
+    action
+    assign
+    behaviour
+    bind
+    call
+    compound
+    enum
+    extern
+    guard
+    if
+    illegal
+    instance
+    int    
+    on
+    otherwise
+    reply
+    return
+    variable
+    ))
 
-(define ast->gom ast:annotate)
-(define gom->list identity)
-(define ((gom:type model) o)
-  (match o
-    ((? symbol?) (find (named o) (gom:types model)))
-    (('type 'bool) o)
-    (('type 'void) o)    
-    (('type name) (find (named name) (gom:types model)))
-    (('type name scope) (find (scoped name scope) (gom:types model)))
-    (('variable name type expression) ((gom:type model) type))))
+;;(define ast-nodes (delete-duplicates (append ast-leafs ast-statements ast-lists)))
+(define ast-nodes (append ast-leafs ast-lists))
+(define (is-a? ast type)
+  ((is? type) ast))
 
-(define ((named name) ast)
-  (eq? (.name ast) name))
+;; this is kinda ugly: we simulate inheritance
+;; interface, component, system are models
+;; otherwise is an expression
+(define ((is? type) ast)
+  (define (test x) (and (pair? ast) (eq? (car ast) type) ast))
+  (match type
+    ('ast (ast? ast))
+    ('ast-list (ast-list? ast))    
+    ('model (model? ast))
+    ('statement (statement? ast))
+    ('*type* (*type*? ast))
+    ('expression (or (test type) (test 'otherwise)))
+    (_ (test type))))
 
-(define ((scoped name scope) ast)
-  (and (eq? (.name ast) name)
-       (or (eq? (.scope ast) scope)
-           (and (not scope)
-                (eq? (.scope ast) '*global*)))))
+(define (symbol->class x) (symbol-append '< x '>))
+(let ((module (current-module)))
+  (for-each (lambda (x) (module-define! module (symbol->class x) x))
+            (append ast-leafs ast-lists))
+  (for-each (lambda (x) (module-define! module (symbol-append x '?) (is? x)))
+            (append ast-leafs ast-lists))
+  (for-each
+   (lambda (x)
+     (module-define!
+      module
+      (symbol-append 'make- (symbol->class x))
+      (lambda (. args) (apply make-<list> (append (list :type x) args)))))
+   ast-lists))
 
-(define* (gom:port model :optional (name #f))
-  (find
-   (if name (named name) (lambda (x) (eq? (.direction x) 'provides)))
-   (.elements (.ports model))))
+;;(define <om:parameter> <parameter>)
+;;(define <om:port> <port>)
 
-(define (gom:event model o)
-  (find (named o) ((compose .elements .events) model)))
-(define (gom:variable model o)
-  (find (named o) (or (and=> (.behaviour model) (compose .elements .variables)) '())))
-(define (gom:function model o)
-  (find (named o) (or (and=> (.behaviour model) (compose .elements .functions)) '())))
+(define ast-types (map symbol->class ast-nodes))
 
-(define (gom:enum model identifier)
-  (enum? ((gom:type model) identifier)))
-(define (gom:extern model identifier) (extern? ((gom:type model) identifier)))
-(define (gom:integer model identifier) (integer? ((gom:type model) identifier)))
-(define* (gom:types :optional (model #f))
-  (append
-   (match model
-     (#f '())
-     (('interface name types events ('behaviour b btypes _ ...)) (append (.elements btypes) (.elements types)))
-     (('component name ports ('behaviour b btypes _ ...))
-      (append (.elements btypes) (apply append (map interface-types ports))))
-     (('root models ...) (filter type? models))) 
-   (globals)))
+(define-syntax make
+  (lambda (s)
+    (syntax-case s ()
+      ((_ 'parameter args ...)
+       (with-syntax
+           ((m (datum->syntax #'parameter #'make-<om:parameter>))) #'(m args ...)))
+      ((_ type args ...)
+       (with-syntax
+           ((m (datum->syntax #'type (symbol-append 'make- (syntax->datum #'type))))) #'(m args ...))))))
 
-(define (interface-types port)
-  (let ((scope (.type port)))
-   (map (lambda (o)
-          (match o
-            (('enum name _ fields) (list 'enum name scope fields))
-            (('extern name _ value) (list 'extern name scope value))
-            (('int name _ range) (list 'int name scope range))))
-        ((compose public-types ast .type) port))))
+(define <model> 'model)
+(define <statement> 'statement)
+(define <*type*> '*type*)
+(define (model? ast)
+  (or (interface? ast) (component? ast) (system? ast)))
 
-(define (public-types ast)
+(define (statement? ast)
+  (and (pair? ast) (member (car ast) ast-statements) ast))
+
+(define (*type*? ast)
+  (or (enum? ast) (extern? ast) (int? ast) (type? ast)))
+
+(define (ast? ast)
+  (and (pair? ast) (member (car ast) (append ast-leafs ast-lists)) ast))
+
+(define (ast-list? ast)
+  (and (pair? ast) (member (car ast) ast-lists) ast))
+
+(define (make-<named> . args)
+  (let-keywords
+   args #f
+   ((name #f))
+   ;;`(name ,name)
+   name
+   ))
+
+(define (make-<scoped> . args)
+  (let-keywords
+   args #f
+   ((scope #f))
+   ;;`(scope ,scope)
+   scope
+   ))
+
+(define (make-<list> . args)
+  (let-keywords
+   args #f
+   ((type <list>)
+    (elements '()))
+   (cons type elements)))
+
+(define (make-<import> . args)
+  (let-keywords
+   args #f
+   ((name #f))
+   (cons <import> (list (make-<named> :name name)))))
+
+(define (make-<interface> . args)
+  (let-keywords
+   args #f
+   ((name #f)
+    (types (make <types>))
+    (events (make <events>))
+    (behaviour (make <behaviour>)))
+   (cons <interface> (list (make-<named> :name name) types events behaviour))))
+
+(define (make-<component> . args)
+  (let-keywords
+   args #f
+   ((name #f)
+    (ports (make <ports>))
+    (behaviour (make <behaviour>)))
+   (cons <component> (list (make-<named> :name name) ports behaviour))))
+
+(define (make-<system> . args)
+  (let-keywords
+   args #f
+   ((name #f)
+    (ports (make <ports>))
+    (instances (make <instances>))
+    (bindings (make <bindings>)))
+   (cons <system> (list (make-<named> :name name) ports instances bindings))))
+
+(define (make-<event> . args)
+  (let-keywords
+   args #f
+   ((name #f)
+    (signature (make <signature>))
+    (direction #f))
+   (cons <event> (list (make <named> :name name) signature direction))))
+
+(define (make-<trigger> . args)
+  (let-keywords
+   args #f
+   ((port #f)
+    (event #f)
+    (arguments (make <arguments>)))
+   (cons <trigger> (list port event arguments))))
+
+(define (make-<port> . args)
+  (let-keywords
+   args #f
+   ((name #f)
+    (type #f)
+    (direction #f)
+    (injected #f))
+   (cons <port> (list (make <named> :name name) type direction injected))))
+
+(define (make-<behaviour> . args)
+  (let-keywords
+   args #f
+   ((name #f)
+    (types (make <types>))
+    (variables (make <variables>))
+    (functions (make <functions>))
+    (statement (make <compound>)))
+   (cons <behaviour> (list (make <named> :name name) types variables functions statement))))
+
+(define (make-<data> . args)
+  (let-keywords
+   args #f
+   ((value #f))
+   (cons <data> (list value))))
+
+(define (make-<enum> . args)
+  (let-keywords
+   args #f
+   ((name #f)
+    (scope #f)
+    (fields (make <fields>)))
+   (cons <enum> (list (make <named> :name name) (make <scoped> :scope scope) fields))))
+
+(define (make-<extern> . args)
+  (let-keywords
+   args #f
+   ((name #f)
+    (scope #f)
+    (value #f))
+   (cons <extern> (list (make <named> :name name) (make <scoped> :scope scope) value))))
+
+(define (make-<expression> . args)
+  (let-keywords
+   args #f
+   ((value #f))
+   (cons <expression> (list value))))
+
+(define (make-<extern> . args)
+  (let-keywords
+   args #f
+   ((name #f)
+    (scope #f)
+    (value #f))
+   (cons <extern> (list (make <named> :name name) (make <scoped> :scope scope) value))))
+
+(define (make-<function> . args)
+  (let-keywords
+   args #f
+   ((name #f)
+    (recursive #f)
+    (signature (make <signature>))
+    (statement (make <compound>)))
+   (cons <function> (list (make <named> :name name) signature recursive statement))))
+
+(define (make-int> . args)
+  (let-keywords
+   args #f
+   ((name #f)
+    (scope #f)
+    (range (make <range>)))
+   (cons <int> (list (make <named> :name name) (make <scoped> :scope scope) range))))
+
+(define (make-<parameter> . args)
+  (let-keywords
+   args #f
+   ((name #f)
+    (type '(type void))
+    (direction #f))
+   (cons <parameter> (list (make <named> :name name) ;;`(type ,type) `(direction ,direction)
+                           type direction
+                           ))))
+
+(define (make-<range> . args)
+  (let-keywords
+   args #f
+   ((from 0)
+    (to 0))
+   (cons <range> ;;(list `(from ,from) `(to ,to))
+         (list from to)
+         )))
+
+(define (make-<signature> . args)
+  (let-keywords
+   args #f
+   ((type '(type void))
+    (parameters (make <parameters>)))
+   (cons <signature> (list type parameters))))
+
+(define (make-<action> . args)
+  (let-keywords
+   args #f
+   ((trigger #f))
+   (cons <action> trigger)))
+
+(define (make-<assign> . args)
+  (let-keywords
+   args #f
+   ((identifier #f)
+    (expression (make <expression>)))
+   (cons <assign> (list identifier expression))))
+
+(define (make-<call> . args)
+  (let-keywords
+   args #f
+   ((identifier #f)
+    (arguments (make <arguments>)))
+   (cons <call> (list identifier arguments))))
+
+(define (make-<guard> . args)
+  (let-keywords
+   args #f
+   ((expression (make <expression>))
+    (statement #f))
+   (cons <guard> (list expression statement))))
+
+(define (make-<if> . args)
+  (let-keywords
+   args #f
+   ((expression (make <expression>))
+    (then #f)
+    (else #f))
+   (cons <if> (list expression then else))))
+
+(define (make-<illegal> . args)
+  (list <illegal>))
+
+(define (make-<on> . args)
+  (let-keywords
+   args #f
+   ((triggers (make <triggers>))
+    (statement #f))
+   (cons <on> (list triggers statement))))
+
+(define (make-<reply> . args)
+  (let-keywords
+   args #f
+   ((expression #f))
+   (cons <return> (list expression))))
+
+(define (make-<return> . args)
+  (let-keywords
+   args #f
+   ((expression #f))
+   (cons <return> (list expression))))
+
+(define (make-<bind> . args)
+  (let-keywords
+   args #f
+   ((left #f)
+    (right #f))
+   (cons <bind> (list left right))))
+
+(define (make-<binding> . args)
+  (let-keywords
+   args #f
+   ((instance #f)
+    (port #f))
+   (cons <binding> (list instance port))))
+
+(define (make-<instance> . args)
+  (let-keywords
+   args #f
+   ((name #f)
+    (component #f))
+   (cons <instance> (list (make <named> :name name) component))))
+
+(define (make-<variable> . args)
+  (let-keywords
+   args #f
+   ((name #f)
+    (type #f)
+    (expression (make <expression>)))   
+   (cons <variable> (list (make <named> :name name) type expression))))
+
+(define (make-<var> . args)
+  (let-keywords
+   args #f
+   ((name #f))   
+   (cons <var> (list (make <named> :name name)))))
+
+(define (make-<value> . args)
+  (let-keywords
+   args #f
+   ((type #f)
+    (field #f))
+   (cons <value> (list type field))))
+
+(define (make-<expression> . args)
+  (let-keywords
+   args #f
+   ((value #f))
+   (cons <expression> (list value))))
+
+(define (make-<otherwise> . args)
+  (let-keywords
+   args #f
+   ((value 'otherwise))
+   (cons <otherwise> (list value))))
+
+(define (make-<field> . args)
+  (let-keywords
+   args #f
+   ((identifier #f)
+    (field #f))
+   (cons <field> (list identifier field))))
+
+(define (make-<literal> . args)
+  (let-keywords
+   args #f
+   ((scope #f)
+    (type #f)
+    (field #f))
+   (cons <literal> (list scope type field))))
+
+(define (make-<type> . args)
+  (let-keywords
+   args #f
+   ((name #f)
+    (scope #f))
+   (cons <type> (list (make <named> :name name) scope))))
+
+(define (make-<error> . args)
+  (let-keywords
+   args #f
+   ((ast #f)
+    (message ""))
+   (cons <error> (list ast message))))
+
+(define (.arguments ast)
   (match ast
-    ((? interface?) ((compose .elements .types) ast))))
+    (('call name) '())
+    (('call name arguments) arguments)
+    (('trigger port event) '(arguments))
+    (('trigger port event arguments) arguments)))
 
-(define ((collect predicate) o)
+(define (.instances ast)
+  (match ast
+    (('system name ports instances bindings) instances)))
+
+(define (.bindings ast)
+  (match ast
+    (('system name ports instances bindings) bindings)))
+
+(define (.ports ast)
+  (match ast
+    (('component name ports) ports)
+    (('component name ports behaviour) ports)
+    (('system name ports instances bindings) ports)))
+
+(define (.parameters ast)
+  (match ast
+    (('signature type) '(parameters))
+    (('signature type parameters) parameters)))
+
+(define (.events ast)
+  (match ast
+    (('interface name types events behaviour) events)))
+
+(define (.triggers ast)
+  (match ast
+    (('on triggers statement) triggers)))
+
+(define (.name ast)
+  (match ast
+    (_ (cadr ast))
+    
+    (('enum name scope fields) name)
+    (('int name scope range) name)
+    (('extern name scope value) name)))
+
+(define (.scope ast)
+  (match ast
+    (('literal scope type field) scope)
+    (('type name) #f)
+    (_ (caddr ast))    
+
+    (('enum name scope fields) scope)
+    (('extern name scope value) scope)
+    (('int name scope range) scope)
+    (('type name scope) scope)))
+
+(define (.elements ast)
+  (cdr ast))
+
+(define (.recursive ast)
+  (match ast
+    (('function name signature recursive statement) recursive)))
+
+(define (.value ast)
+  (match ast
+    (('expression value) value)
+    (('extern name scope value) value)
+    (('otherwise) 'otherwise)
+    (('otherwise value) value)))
+
+(define (.left ast)
+  (match ast
+    (('bind left right) left)))
+
+(define (.right ast)
+  (match ast
+    (('bind left right) right)))
+
+
+(define (.behaviour ast)
+  (match ast
+    (('component name ports) #f)
+    (('component name ports behaviour) behaviour)    
+    (('interface name types events behaviour) behaviour)))
+
+(define (.trigger ast)
+  (match ast
+    (('action trigger) trigger)))
+
+(define (.signature ast)
+  (match ast
+    (('event name signature direction) signature)
+    (('function name signature recursive statement) signature)))
+
+(define (.identifier ast)
+  (match ast
+    (('assign identifier expression) identifier)
+    (('call identifier) identifier)
+    (('call identifier arguments) identifier)    
+    (('field identifier field) identifier)))
+
+(define (.from ast)
+  (match ast
+    (('range from to) from)))
+
+(define (.to ast)
+  (match ast
+    (('range from to) to)))
+
+(define (.range ast)
+  (match ast
+    (('int name scope range) range)))
+
+(define (.fields ast)
+  (match ast
+    (('enum name scope fields) fields)))
+
+(define (.expression ast)
+  (match ast
+    (('assign identifier expression) expression)
+    (('guard expression statement) expression)
+    (('if expression then) expression)
+    (('if expression then else) expression)    
+    (('reply) #f)
+    (('reply expression) expression)
+    (('return) #f)
+    (('return expression) expression)
+    ((variable name type expression) expression)))
+
+(define (.then ast)
+  (match ast
+    (('if expression then) then)
+    (('if expression then else) then)))
+
+(define (.else ast)
+  (match ast
+    (('if expression then) #f)
+    (('if expression then else) else)))
+
+(define (.statement ast)
+  (match ast
+    (('guard expression statement) statement)
+    (('on triggers statement) statement)
+    (('behaviour name types variables functions statement) statement)
+    (('function name signature recursive statement) statement)))
+
+(define (.functions ast)
+  (match ast
+    (('behaviour name types variables functions statement) functions)))
+
+(define (.variables ast)
+  (match ast
+    (('behaviour name types variables functions statement) variables)))
+
+(define (.types ast)
+  (match ast
+    (('behaviour name types variables functions statement) types)
+    (('interface name types events behaviour) types)
+    (('root models ...) (filter type? models))))
+
+(define (.direction ast)
+  (match ast
+    (('event name signature direction) direction)
+    (('parameter name type) #f)
+    (('parameter name type direction) direction)
+    (('port name type direction) direction)
+    (('port name type direction injected) direction)))
+
+(define (.type ast)
+  (match ast
+    (('literal scope type field) type)
+    (('port name type direction) type)
+    (('port name type direction injected) type)
+    (('parameter name type) #f)
+    (('parameter name direction type) direction)    
+    (('signature type parameters) type)
+    (('value type field) type)    
+    (('variable name type expression) type)))
+
+(define (.injected ast)
+  (match ast
+    (('port name type direction) #f)
+    (('port name type direction injected) injected)))
+
+(define (.field ast)
+  (match ast
+    (('field identifier field) field)
+    (('literal scope type field) field)
+    (('value type field) field)))
+
+(define (.message ast)
+  (match ast
+    (('error ast message) message)))
+
+(define (.ast o)
   (match o
-    (('compound t ...)
-     (filter identity (apply append (map (collect predicate) t))))
-    (('guard e s) (filter identity ((collect predicate) s)))
-    (('on t s) (filter identity ((collect predicate) s)))
-    ((? (compose null-is-#f predicate)) (list o))
-    ;; TODO: component, interface, behaviour?
-    ;; (('root models ...)
-    ;;  (filter identity (apply append (map (collect predicate) models))))
-    ;; sharp axe method
-    ((h t ...)
-     (filter identity (apply append (map (collect predicate) o))))
-    (_ '())))
+    (('error o message) o)))
 
-(define ((gom:collect x) o)
-  (match x
-    (symbol? ((collect (is? x)) o))
-    (procedure? ((collect x) o))))
-
-(define ((gom:filter x) o)
-  (match x
-    (symbol? (filter (is? x) o))
-    (procedure? (filter x o))))
-
-(define (gom:guard-equal? lhs rhs)
-  (and (is-a? lhs <guard>) (is-a? rhs <guard>)
-   (equal? (.expression lhs) (.expression rhs))))
-
-(define (gom:children o)
-  (cdr o))
-
-(define (ast-name o) (car o))
-
-(define (remove-arguments o)
-  (match o
-    (('trigger p e arguments) (list 'trigger p e))
-    (_ o)))
-
-(define (gom:triggers-equal? a b)
-  (equal? (map remove-arguments (.triggers a))
-          (map remove-arguments (.triggers b))))
-
-;;;; OM handling
-
-(use-modules (system base lalr))
-
-(define (source-location src)
-  (and-let* (((supports-source-properties? src))
-	     (loc (source-property src 'loc)))
-	    (if (source-location? loc)
-		loc
-		(source-location loc))))
-
-(define (source-location->user-source-properties loc)
-  `((filename . ,(source-location-input loc))
-    (line . ,(+ 1 (source-location-line loc)))
-    (column . ,(+ 1 (source-location-column loc)))
-    (offset . ,(source-location-offset loc))
-    (length . ,(source-location-length loc))))
-
-
-(define (source-file o)
-  (and-let* (((supports-source-properties? o))
-             (loc (source-property o 'loc))
-             (properties (source-location->user-source-properties loc))
-             (file-name (assoc-ref properties 'filename)))
-            (string->symbol file-name)))
-
-(define (basename- o)
-  (string->symbol (basename (symbol->string o))))
-
-(define (in-file? o file)
-  (let ((file (if (string? file) (string->symbol file) file)))
-    (and-let* ((model-file (source-file o))
-               (model-file (if (string? model-file) (string->symbol model-file) model-file)))
-              (eq? (basename- file) (basename- model-file)))))
-
-;; (define (parse-opts x)  ((@@ (g g) parse-opts) x))
-
-(define (gom:imported? o)
-  (if (assoc 'imported? (source-properties o))
-      (source-property o 'imported?)
-      (and-let* (((>2 (length (command-line))))
-                 (file (car (option-ref (parse-opts (command-line)) '() '(#f))))
-                 ((not (string-suffix? ".scm" file))))
-                (not (in-file? o file)))))
-
-;;;; reading/caching
-(define *ast-alist* '())
-(define (ast-add name ast)
-  (set! *ast-alist* (assoc-set! *ast-alist* name ast))
-  ast)
-
-(define (register-model m)
-  (and-let* ((name (.name m)))
-            (if (not (assoc-ref *ast-alist* name))
-                (ast-add name m))
-            m))
-
-(define (register-type t)
-  (and-let* ((name (.name t)))
-            (if (not (assoc-ref *ast-alist* name))
-                (ast-add name t))
-            t))
-
-(define (globals)
-  (filter type? (map cdr *ast-alist*)))
-
-(define* (register ast :optional (clear? #f))
-  (if clear?
-      (set! *ast-alist* '()))
-  (for-each register-model (filter model? ast))
-  (for-each register-type (filter type? ast))
-  ast)
-
-;; procedure: ast:import MODEL-NAME
-;;
-;; Read and parse the ASD source file for MODEL-NAME, return its AST.
-(define (read-ast model-name)
-  (and-let* ((ast (null-is-#f (read-dzn (list model-name '.dzn))))
-             (models (null-is-#f (filter model? ast))))
-            (find (lambda (model) (eq? (.name model) model-name)) models)))
-
-(define* (import-ast name #:optional (transform identity))
-  "
-procedure: ast:import MODEL-NAME
-
-Read and parse the ASD source file for MODEL-NAME, return its AST.
-
-"
-  (or (assoc-ref *ast-alist* name)
-      (and-let* ((ast (transform (read-ast name))))
-                (ast-add name ast))))
-
-;; procedure: ast:ast MODEL-NAME
-;;
-;; Read and parse the ASD source file for MODEL-NAME, return its AST.
-(define ast import-ast)
-
-;; 
-(define gom:register-type register-type)
-(define gom:register-model register-model)
-(define gom:register register)
-
+(define (foo)
+  (pretty-print
+   (make <root>
+     :elements (list
+                (make <interface>)
+                (make <component>)
+                (make <system>)))))

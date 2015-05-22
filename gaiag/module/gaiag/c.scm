@@ -42,15 +42,15 @@
   :use-module (gaiag wfc)
 
   :use-module (oop goops)
-  :use-module (oop goops describe)
-  :use-module (gaiag gom)
+  ;;:use-module (oop goops describe)
+  :use-module (gaiag om)
 
   :export (ast->))
 
 (define (ast-> ast)
-  (let ((gom ((gom:register code:gom) ast #t)))
+  (let ((om ((om:register code:om) ast #t)))
     (parameterize ((indenter (lambda () (indent 1))))
-      (map dump (filter (negate gom:imported?) ((gom:filter <model>) gom)))))
+      (map dump (filter (negate om:imported?) ((om:filter <model>) om)))))
   "")
 
 (define-method (dump (o <interface>))

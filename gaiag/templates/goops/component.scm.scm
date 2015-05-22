@@ -1,8 +1,8 @@
-#(->string (map (declare-enum model) (gom:enums model)))
+#(->string (map (declare-enum model) (om:enums model)))
 (define-class <#.model > (<component>)#
 (map (init-member model #{#'()
   (#name  :accessor .#name  :init-value #(if (eq? expression *unspecified*) "#f" expression))#})
-     (gom:variables model))#
+     (om:variables model))#
   (delete-duplicates (map (compose declare-replies code:import .type)
                           ((compose .elements .ports) model)))#
   (map (init-port #{#'()
@@ -22,9 +22,9 @@
     "              :self o")
       (map (define-on model port #{#'()
               :#event  (lambda (. args) (call-in o (lambda () (apply #port -#event  (cons o args))) `(,(.#port  o) #event #(string-if (not (eq? 'void return-type)) #{  #reply-name  ,#(*scope* reply-scope)-#reply-name -alist#}))))#})
-    (filter gom:in? (gom:events port)))
+    (filter om:in? (om:events port)))
     (list ")))")))
-    (filter gom:provides? (gom:ports model)))#
+    (filter om:provides? (om:ports model)))#
 (map
     (lambda (port)
     (if (.injected port)
@@ -39,9 +39,9 @@
     "              :self o")
       (map (define-on model port #{#'()
               :#event  (lambda (. args) (call-out o (lambda () (apply #port -#event  (cons o args))) `(,(.#port  o) #event))) #})
-          (filter gom:out? (gom:events port)))
+          (filter om:out? (om:events port)))
    (list ")))"))))
-   (filter gom:requires? (gom:ports model))))
+   (filter om:requires? (om:ports model))))
 
 #(map
    (lambda (port)
@@ -50,11 +50,11 @@
 statement #(if (not (eq? type 'void))
 (list "\n    (.reply-" (*scope* reply-scope) "-" reply-name " o)")))
 
-#}) (filter (gom:dir-matches? port) (gom:events port))))
-   (gom:ports model))#
+#}) (filter (om:dir-matches? port) (om:events port))))
+   (om:ports model))#
 (map (define-function model #{
 (define-method (#name  (o <#.model >) #parameters)
   (call/cc
    (lambda (return) #statements)))
 
-#}) (gom:functions model))
+#}) (om:functions model))

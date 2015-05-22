@@ -1,21 +1,21 @@
-;;; Gaiag --- Guile in Asd In Asd in Guile.
+;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; This file is part of Gaiag.
+;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
-;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; This file is part of Dezyne.
 ;;;
-;;; Gaiag is free software: you can redistribute it and/or modify it
+;;; Dezyne is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
 ;;; published by the Free Software Foundation, either version 3 of the
 ;;; License, or (at your option) any later version.
 ;;;
-;;; Gaiag is distributed in the hope that it will be useful, but
+;;; Dezyne is distributed in the hope that it will be useful, but
 ;;; WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 ;;; Affero General Public License for more details.
 ;;;
 ;;; You should have received a copy of the GNU Affero General Public
-;;; License along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
+;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 ;;; 
 ;;; Commentary:
 ;;; 
@@ -25,16 +25,14 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (gaiag gom compare)
+(define-module (gaiag goops compare)
   :use-module (oop goops)
-  :use-module (oop goops describe)
 
   :use-module (gaiag misc)
   :use-module (gaiag reader)
-  :use-module (gaiag gom ast)
-  :use-module (gaiag gom display)
-  :use-module (gaiag gom gom)
-  :use-module (gaiag gom util)
+  :use-module (gaiag goops display)
+  :use-module (gaiag goops om)
+  :use-module (gaiag goops util)
 
   :re-export (< equal?))
 
@@ -70,7 +68,7 @@
   #f)
 
 (define-method (equal? (a <statement>) (b <statement>))
-  (equal? (gom->list a) (gom->list b)))
+  (equal? (om2list a) (om2list b)))
 
 (define-method (equal? (a <trigger>) (b <trigger>))
   (and (eq? (.port a) (.port b))
@@ -89,4 +87,4 @@
   (eq? (.name a) (.name b)))
 
 (define-method (equal? (a <expression>) (b <expression>))
-  (equal? (gom->list (.value a)) (gom->list (.value b))))
+  (equal? (om2list (.value a)) (om2list (.value b))))

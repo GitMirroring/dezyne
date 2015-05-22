@@ -47,14 +47,14 @@ function #.model _fill_event_map(m) {
     (lambda (port)
      (map (define-on model port #{
        m.#port .#direction .#event  = function() {#(string-if (eq? return-type 'void) #{log_#direction('#port .#direction .', '#event ');#}#{return log_valued('#port .#direction .', '#event ', function(s) {return new dezyne.#interface().#reply-name[drop_prefix(s, '#port .#reply-name _')];}, new dezyne.#interface().#reply-name _to_string)#})};
-#}) (filter (negate (gom:dir-matches? port))
-       (gom:events port)))) (gom:ports model))   return {
+#}) (filter (negate (om:dir-matches? port))
+       (om:events port)))) (om:ports model))   return {
 #(map
     (lambda (port)
     (map (define-on model port #{
       '#port .#event ': m.#port .#direction .#event ,
-#}) (filter (gom:dir-matches? port)
-       (gom:events port)))) (gom:ports model)) };
+#}) (filter (om:dir-matches? port)
+       (om:events port)))) (om:ports model)) };
 }
 
 function main () {

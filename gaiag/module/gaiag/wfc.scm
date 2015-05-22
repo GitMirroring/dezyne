@@ -36,17 +36,21 @@
   :use-module (gaiag misc)
   :use-module (gaiag reader)
 
-  :use-module (oop goops)
-  :use-module (gaiag gom)
+  :use-module (gaiag om)
   :use-module (gaiag resolve)
 
   :export (
            ast:wfc
            ))
 
+(cond-expand
+ (goops-om
+  (use-modules (oop goops)))
+ (else #t))
+
 (define-method (ast:wfc (o <ast>))
   (and-let* ((errors (null-is-#f
-                      ((gom:collect <error>)
+                      ((om:collect <error>)
                        (append
                         (interface o)
                         (component o)
@@ -69,10 +73,10 @@
   (match o
     (($ <root> elements) '(()) (apply append (map component elements)))
     (($ <component> name ($ <ports> ports) ($ <behaviour>))
-     ((gom:filter <error>)
+     ((om:filter <error>)
       (append
        (list
-        (if (!= (length (filter gom:provides? ports)) 1)
+        (if (!= (length (filter om:provides? ports)) 1)
             (wfc-error o "component with behaviour must have one provides port")))
        '())))
     (_ '())))
@@ -109,13 +113,13 @@
         (match first
           ((? (is? <imperative>))
            (or (and-let* ((declarative
-                           (null-is-#f ((gom:filter <declarative>) statements)))
+                           (null-is-#f ((om:filter <declarative>) statements)))
                           (ast (car declarative)))
                          (list (wfc-error ast "mixing declarative")))
                '()))
           ((? (is? <declarative>))
            (or (and-let* ((imperative
-                           (null-is-#f ((gom:filter <imperative>) statements)))
+                           (null-is-#f ((om:filter <imperative>) statements)))
                           (ast (car imperative)))
                          (list (wfc-error ast "mixing imperative")))
                '()))
@@ -137,4 +141,4 @@
         first)))
 
 (define (ast-> ast)
-  ((compose gom->list ast:wfc ast:resolve ast->gom) ast))
+  ((compose om->list ast:wfc ast:resolve ast->om) ast))

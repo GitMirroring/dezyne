@@ -42,8 +42,8 @@
   :use-module (gaiag wfc)
 
   :use-module (oop goops)
-  :use-module (oop goops describe)
-  :use-module (gaiag gom)
+  ;;:use-module (oop goops describe)
+  :use-module (gaiag om)
 
   :export (
            ast->
@@ -55,7 +55,7 @@
 	   csp-transform
            csp:norm
            csp-queue-size
-           gom->csp
+           om->csp
 
            assign
            extend
@@ -77,13 +77,13 @@
            <skip>
            ))
 
-(define-method (gom->csp (gom <ast>))
+(define-method (om->csp (om <ast>))
   (let ((name (and=> (option-ref (parse-opts (command-line)) 'model #f)
                      string->symbol)))
-    (or (and-let* ((models (null-is-#f (gom:models-with-behaviour gom)))
-                   (model (if name (find (gom:named name) models) (car models))))
+    (or (and-let* ((models (null-is-#f (om:models-with-behaviour om)))
+                   (model (if name (find (om:named name) models) (car models))))
                   (generate-csp model))
-        (let* ((models ((gom:filter <model>) gom))
+        (let* ((models ((om:filter <model>) om))
                (models (comma-join (map .name models)))
                (message (if name
                             "gaiag: no model [name=~a] with behaviour: ~a\n"
@@ -93,8 +93,8 @@
           (throw 'csp message)))))
 
 (define (ast-> ast)
-  (let ((gom ((gom:register ast->gom) ast #t)))
-    (gom->csp gom))
+  (let ((om ((om:register ast->om) ast #t)))
+    (om->csp om))
   "")
 
 (define-method (generate-csp (o <interface>))
@@ -114,9 +114,9 @@
 
 (define-method (generate-csp (o <model>) (root <root>))
   (let ((separate-asserts? (option-ref (parse-opts (command-line)) 'assert #f)))
-    (and-let* ((norm ((gom:register csp:norm) root #t))
+    (and-let* ((norm ((om:register csp:norm) root #t))
                (name (.name o))
-               (model (gom:model-with-behaviour norm))
+               (model (om:model-with-behaviour norm))
                (file-name (option-ref (parse-opts (command-line)) 'output (list name '.csp))))
               (dump-output file-name (lambda ()
                                        (csp-file 'combinators.csp.scm (csp-module model))
@@ -131,16 +131,16 @@
               (if separate-asserts? (dump-output "asserts.csp" (lambda () (csp-asserts model)))))))
 
 (define (csp:import name)
-  (gom:import name csp:norm))
+  (om:import name csp:norm))
 
 (define (csp:norm ast)
-  ((compose norm-state mangle ast:wfc ast:resolve ast->gom ast:interface) ast))
+  ((compose norm-state mangle ast:wfc ast:resolve ast->om ast:interface) ast))
 
 (define (mangle ast)
   "experimental mangling"
-  (or (and-let* ((component (gom:component ast))
+  (or (and-let* ((component (om:component ast))
                  ((member (.name component) '(mangle argument2))))
-                (gom:mangle ast))
+                (om:mangle ast))
       ast))
 
 (define ((demangle-var model) var)
@@ -154,7 +154,7 @@
   '())
 
 (define-method (interfaces (o <component>))
-  (map gom:import (delete-duplicates (sort (map .type ((compose .elements .ports) o)) symbol<))))
+  (map om:import (delete-duplicates (sort (map .type ((compose .elements .ports) o)) symbol<))))
 
 (define-method (assembly-lts (o <component>))
   (csp-file 'assembly-lts.csp.scm (csp-module o)))
@@ -193,10 +193,10 @@
   `(
     ((component completeness) . ,(gulp-template 'asserts/component-completeness.csp.scm))
     ((component illegal) . "assert STOP [T= AS_#(.name model) _#((compose .name .behaviour) model) (false) \\ diff(Events,{illegal})\n")
-    ((component deterministic) . "assert CO_#(.name model) _#((compose .name .behaviour) model)(true,true)[[#(.type (gom:port model))_'.x<-#(.name (gom:port model))_'.x|x<-extensions(#(.name (gom:port model))_')]] :[deterministic]\n")
+    ((component deterministic) . "assert CO_#(.name model) _#((compose .name .behaviour) model)(true,true)[[#(.type (om:port model))_'.x<-#(.name (om:port model))_'.x|x<-extensions(#(.name (om:port model))_')]] :[deterministic]\n")
     ((component deadlock)  . "assert AS_#(.name model) _#((compose .name .behaviour) model) (false) :[deadlock free]\n")
     ((component compliance) . ,(gulp-template 'asserts/component-compliance.csp.scm))
-    ((component livelock)  .  "assert AS_#(.name model) _#((compose .name .behaviour) model) (true) \\ diff(Events,{|#(comma-join (append (required-modeling-events model) (list \"illegal\" ((compose .name gom:port) model) ((compose .name gom:port) model))))_'#(->string (if (not (null? (filter gom:out? (gom:events (gom:port model))))) (list \",\" ((compose .name gom:port) model)\"_''\")))|}) :[livelock free]\n")
+    ((component livelock)  .  "assert AS_#(.name model) _#((compose .name .behaviour) model) (true) \\ diff(Events,{|#(comma-join (append (required-modeling-events model) (list \"illegal\" ((compose .name om:port) model) ((compose .name om:port) model))))_'#(->string (if (not (null? (filter om:out? (om:events (om:port model))))) (list \",\" ((compose .name om:port) model)\"_''\")))|}) :[livelock free]\n")
     ((interface completeness) . ,(gulp-template 'asserts/interface-completeness.csp.scm))
     ((interface deadlock) . ,(gulp-template 'asserts/interface-deadlock.csp.scm))
     ((interface livelock) . ,(gulp-template 'asserts/interface-livelock.csp.scm))))
@@ -213,13 +213,13 @@
     (animate-file file-name module)))
 
 (define-method (valued? (model <model>) (o <on>))
-  (gom:typed? model (car ((compose .elements .triggers) o))))
+  (om:typed? model (car ((compose .elements .triggers) o))))
 
 
 (define (behaviour->csp model)
 
   (define (void? o)
-    (gom:void? model o))
+    (om:void? model o))
 
   (define (split-valued-void o)
     (receive (valued void) (partition void? ((compose .elements .triggers) o))
@@ -239,7 +239,7 @@
         (append void-on valued-on))))
 
   (define (splitted-ons statement)
-    (apply append (map split-valued-void ((gom:statements-of-type 'on) statement))))
+    (apply append (map split-valued-void ((om:statements-of-type 'on) statement))))
 
   (let ((default "STOP"))
     (or (string-null-is-#f
@@ -264,13 +264,13 @@
                               ons))))
                      default)
                  ")")))
-            ((gom:statements-of-type 'guard) (gom:statement (.behaviour model))))
+            ((om:statements-of-type 'guard) (om:statement (.behaviour model))))
            (map (lambda (on) (csp-transform model (ast-transform model on)))
-                (splitted-ons (gom:statement (.behaviour model)))))))
+                (splitted-ons (om:statement (.behaviour model)))))))
         default)))
 
 (define-method (csp-expression->string (model <model>) src locals)
-  (define (member? identifier) (gom:variable model identifier))
+  (define (member? identifier) (om:variable model identifier))
   (define (local? identifier) (assoc-ref locals identifier))
   (define (var? identifier) (or (member? identifier) (local? identifier)))
 
@@ -306,7 +306,7 @@
     (interface-events interface predicate?)))
 
 (define-method (interface-events (o <component>) predicate?) ;; FIXME: no test
-  (apply append (map (compose (lambda (x) (interface-events x predicate?)) gom:import .type) ((compose .elements .ports) o))))
+  (apply append (map (compose (lambda (x) (interface-events x predicate?)) om:import .type) ((compose .elements .ports) o))))
 
 (define-method (interface-events (o <interface>) predicate?)
   (let* ((events ((compose .elements .events) o))
@@ -321,25 +321,25 @@
   (member (.event event) '(optional inevitable)))
 
 (define-method (modeling-events (o <interface>))
-  (filter modeling-event? (gom:find-triggers o)))
+  (filter modeling-event? (om:find-triggers o)))
 
 (define-method (required-modeling-events (o <component>))
   (apply append
          (map (lambda (port)
                 (map (lambda (event) (->string (list (.name port) '. (.event event))))
                      (modeling-events (csp:import (.type port)))))
-              (filter gom:requires? (gom:ports o)))))
+              (filter om:requires? (om:ports o)))))
 
 (define-method (typed-elements (o <enum>))
    (map (lambda (x) (symbol-append (.name o) '_ x)) ((compose .elements .fields) o)))
 
 (define-method (enum-values (o <component>))
   (append
-   (apply append (map (compose enum-values gom:import .type) ((compose .elements .ports) o)))
+   (apply append (map (compose enum-values om:import .type) ((compose .elements .ports) o)))
    (next-method)))
 
 (define-method (enum-values (o <model>))
-  (apply append (map typed-elements (append (or (and=> (.behaviour o) gom:enums) '()) (gom:enums)))))
+  (apply append (map typed-elements (append (or (and=> (.behaviour o) om:enums) '()) (om:enums)))))
 
 (define-method (return-value (o <enum>))
   (map (lambda (value) (symbol-append (.name o) '_ value)) ((compose .elements .fields) o)))
@@ -354,10 +354,10 @@
     (return-values interface)))
 
 (define-method (return-values (o <interface>)) ;; FIMXE: no test
-  (add-return-if-empty (map return-value (gom:reply-enums o))))
+  (add-return-if-empty (map return-value (om:reply-enums o))))
 
 (define-method (return-values (o <component>))
-  (apply append (map (compose return-values gom:import .type) ((compose .elements .ports) o))))
+  (apply append (map (compose return-values om:import .type) ((compose .elements .ports) o))))
 
 (define ((statement-on-p/r- predicate) on)
   (statement-on-p/r predicate on))
@@ -417,7 +417,7 @@
 
 (define-method (optional-chaos (o <interface>)) ;; FIXME: no test
   (let ((name (.name o)))
-    (if (member 'optional (map .event (gom:find-triggers o)))
+    (if (member 'optional (map .event (om:find-triggers o)))
         (list " [|{" name ".optional}|] " "CHAOS({" name ".optional})")
         "")))
 
@@ -460,18 +460,18 @@
   (ast-transform- ast (ast-transform-return ast (purge-data ast (tail-call src)))))
 
 (define-method (purge-data (root <root>) o)
-  (let ((model (or (gom:component root) (gom:interface root))))
+  (let ((model (or (om:component root) (om:interface root))))
     (purge-data model o)))
 
 (define-method (purge-data (model <model>) o . locals)
 
-  (define (member? identifier) (gom:variable model identifier))
+  (define (member? identifier) (om:variable model identifier))
   (define (local? identifier) (assoc-ref locals identifier))
   (define (var? identifier) (or (member? identifier) (local? identifier)))
   (define (extern? identifier) (and=> (var? identifier)
                                       (lambda (var)
-                                        (gom:extern model (.type var)))))
-  (define (extern-type? type) (gom:extern model type))
+                                        (om:extern model (.type var)))))
+  (define (extern-type? type) (om:extern model type))
 
   (define (purge-parameter-list function arguments)
     (let ((types (map .type ((compose .elements .parameters .signature) function))))
@@ -503,7 +503,7 @@
     (($ <call> identifier ($ <arguments> arguments) last?)
        (make <call>
          :identifier identifier
-         :arguments (make <arguments> :elements (purge-parameter-list (gom:function model identifier) arguments))
+         :arguments (make <arguments> :elements (purge-parameter-list (om:function model identifier) arguments))
          :last? last?))
 
     (($ <function> name ($ <signature> type ($ <parameters> parameters)) recursive? statement)
@@ -531,7 +531,7 @@
     (($ <type>) o)
     (($ <var>) o)
 
-    ((? (is? <ast>)) (gom:map (lambda (o) (purge-data model o locals)) o))
+    ((? (is? <ast>)) (om:map (lambda (o) (purge-data model o locals)) o))
     ((h t ...) (map (lambda (o) (purge-data model o locals)) o))
     (_ o)))
 
@@ -598,9 +598,9 @@
            (car result)
            (make <compound> :elements result))))
     (($ <on> triggers statement)
-     (let* ((model (or (gom:component ast) (gom:interface ast)))
-            (members (gom:member-names model))
-            (valued-triggers? (lambda (x) (gom:typed? model ((compose car .elements) triggers)))))
+     (let* ((model (or (om:component ast) (om:interface ast)))
+            (members (om:member-names model))
+            (valued-triggers? (lambda (x) (om:typed? model ((compose car .elements) triggers)))))
        (let ((result (ast-transform-return ast statement)))
          (match result
            (($ <compound> '())
@@ -697,8 +697,8 @@
     (list "(" members "),(" locals ")")))
 
 (define* (ast-transform- ast o :optional (return #t) (context #f))
-  (let* ((model (or (gom:component ast) (gom:interface ast)))
-         (context (or context (make <context> :members (gom:member-names model))))
+  (let* ((model (or (om:component ast) (om:interface ast)))
+         (context (or context (make <context> :members (om:member-names model))))
          (port? (lambda (port)
                   (if ((is? <interface>) model) #f
                       (member port (map .name (.elements (.ports model)))))))
@@ -840,21 +840,21 @@
     (_ (->string src))))
 
 (define* (csp-transform ast src :optional (inevitable-optional? #f) (channel #f) (provided-on? #t) (locals '()))
-  (let ((model (or (gom:component ast) (gom:interface ast))))
+  (let ((model (or (om:component ast) (om:interface ast))))
     (csp-transform model src inevitable-optional? channel provided-on? locals)))
 
 (define-generic csp-transform)
 
 (define-method (csp-transform (model <model>) src inevitable-optional? channel provided-on? locals)
-  (define (member? identifier) (gom:variable model identifier))
+  (define (member? identifier) (om:variable model identifier))
   (define (local? identifier) (assoc-ref locals identifier))
   (define (var? identifier) (or (member? identifier) (local? identifier)))
-  (define (int-type? type) (gom:integer model type))
+  (define (int-type? type) (om:integer model type))
   (define (int? identifier) (and=> (var? identifier)
                                    (lambda (var) (int-type? (.type var)))))
 
   (let* ((model-name (.name model))
-         (channel (if (is-a? model <interface>) model-name (.type (gom:port model))))
+         (channel (if (is-a? model <interface>) model-name (.type (om:port model))))
 	 (behaviour (.name (.behaviour model)))
          (component? (is-a? model <component>)))
 
@@ -866,7 +866,7 @@
 
        (($ <action> trigger)
         (let* ((event-name (.event trigger))
-               (suffix (if (gom:out? (gom:event model trigger)) "_''" ""))
+               (suffix (if (om:out? (om:event model trigger)) "_''" ""))
                (channel (if (is-a? model <interface>) model-name  (.port trigger)))
                (channel-return (if ((requires-event? model) trigger) (list " -> " channel "_'.return")))
                (channel (list channel suffix)))
@@ -874,7 +874,7 @@
 
 
        (($ <csp-assign> context identifier ($ <action> (and ($ <trigger> port event) (get! trigger))) expressions)
-        (let ((action (list "semi_(send_(" (list (or port channel) (if (gom:out? (gom:event model (trigger))) "_''")) "," event "),recv_(" (or port channel) "_'," event "))")))
+        (let ((action (list "semi_(send_(" (list (or port channel) (if (om:out? (om:event model (trigger))) "_''")) "," event "),recv_(" (or port channel) "_'," event "))")))
           (list "assign_active_(" action ",\n\\ (" context ")," "r'" " @ (" expressions "))" )))
 
        (($ <csp-assign> context (and (? int?) (get! identifier)) ($ <call> function arguments) expressions)
@@ -933,7 +933,7 @@
         (let* ((real-triggers (filter (negate modeling-event?) triggers))
                (modeling-triggers (filter modeling-event? triggers))
                (modeling-triggers (map .event modeling-triggers))
-               (trigger-in? (lambda (trigger) (gom:in? (gom:event model trigger)))))
+               (trigger-in? (lambda (trigger) (om:in? (om:event model trigger)))))
           (receive (ins outs) (partition trigger-in? real-triggers)
             (let* ((channel (if (is-a? model <interface>) model-name (.port (car triggers))))
                    (IG (if ((provides-event? model) (car triggers)) "IIG & "  "IG & "))
@@ -953,7 +953,7 @@
         (let* ((real-triggers (filter (negate modeling-event?) triggers))
                (modeling-triggers (filter modeling-event? triggers))
                (modeling-triggers (map .event modeling-triggers))
-               (trigger-in? (lambda (trigger) (gom:in? (gom:event model trigger)))))
+               (trigger-in? (lambda (trigger) (om:in? (om:event model trigger)))))
           (receive (ins outs) (partition trigger-in? real-triggers)
            (let* ((the-end (make <the-end> :context context))
                   (inevitable-optional? (or (member 'inevitable (map .event triggers))

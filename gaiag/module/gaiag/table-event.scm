@@ -24,9 +24,7 @@
 
 (read-set! keywords 'prefix)
 
-(define-module
-  (gaiag table-event) ;;-goeps
-  ;;+goeps (g table-event)
+(define-module (gaiag table-event)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 match)
   :use-module (ice-9 getopt-long)
@@ -36,26 +34,21 @@
   :use-module (language dezyne location)
   :use-module (gaiag misc)
   
-  :use-module (oop goops) ;;-goeps
-  :use-module (gaiag gom) ;;-goeps
-  :use-module (gaiag gaiag) ;;-goeps
-  :use-module (gaiag json-table) ;;-goeps
-  :use-module (gaiag norm-event) ;;-goeps
-  :use-module (gaiag reader) ;;-goeps
-  :use-module (gaiag resolve) ;;-goeps
-  :use-module (gaiag pretty) ;;-goeps
-  :use-module (gaiag table-state) ;;-goeps  
-
-  ;;+goeps :use-module (g om)
-  ;;+goeps :use-module (g g)
-  ;;+goeps :use-module (g json-table)
-  ;;+goeps :use-module (g norm-event)
-  ;;+goeps :use-module (g pretty)
-  ;;+goeps :use-module (g reader)
-  ;;+goeps :use-module (g resolve)
-  ;;+goeps :use-module (g table-state)  
+  :use-module (gaiag om)
+  :use-module (gaiag gaiag)
+  :use-module (gaiag json-table)
+  :use-module (gaiag norm-event)
+  :use-module (gaiag reader)
+  :use-module (gaiag resolve)
+  :use-module (gaiag pretty)
+  :use-module (gaiag table-state)
 
   :export (ast-> table-event))
+
+(cond-expand
+ (goops-om
+  (use-modules (oop goops)))
+ (else #t))
 
 (define (table-event model o)
   (norm-event (table-state-statement model o)))

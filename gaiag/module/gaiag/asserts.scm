@@ -36,7 +36,7 @@
   :use-module (gaiag resolve)
 
   :use-module (oop goops)
-  :use-module (gaiag gom)
+  :use-module (gaiag om)
 
   :export (
            ast->
@@ -45,7 +45,7 @@
 
 (define ((assert model) check)
   (if (eq? check 'compliance)
-      (list (ast-name model) (.name model) check (.type (gom:port model)))
+      (list (ast-name model) (.name model) check (.type (om:port model)))
       (list (ast-name model) (.name model) check)))
 
 (define-method (assert-list (o <component>))
@@ -60,7 +60,7 @@
 
 (define-method (assert-list-all (o <component>))
   (append
-   (let ((interfaces (map gom:import (delete-duplicates (sort (map .type ((compose .elements .ports) o)) symbol<)))))
+   (let ((interfaces (map om:import (delete-duplicates (sort (map .type ((compose .elements .ports) o)) symbol<)))))
      (apply append (map assert-list interfaces)))
    (assert-list o)))
 
@@ -68,11 +68,11 @@
   (assert-list o))
 
 (define-method (assert-list (o <ast>))
-  (or (and-let* ((model (gom:model-with-behaviour o)))
+  (or (and-let* ((model (om:model-with-behaviour o)))
                 (assert-list-all model))
       '()))
 
 (define-method (assert-list (o <top>))
-  (assert-list ((gom:register (compose ast->gom ast:resolve)) o #t)))
+  (assert-list ((om:register (compose ast->om ast:resolve)) o #t)))
 
 (define ast-> assert-list)

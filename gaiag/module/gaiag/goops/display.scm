@@ -1,7 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
-;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -18,13 +17,11 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (gaiag gom display)
+(define-module (gaiag goops display)
   :use-module (ice-9 pretty-print)
 
   :use-module (oop goops)
-  :use-module (oop goops describe)
-  :use-module (gaiag gom gom)
-  :use-module (gaiag gom ast)
+  :use-module (gaiag goops om)
 
   :export (
            ast-name
@@ -36,7 +33,7 @@
 (define-method (ast-name (o <ast>))
   (let ((name (string-drop (string-drop-right (symbol->string (class-name (class-of o))) 1) 1)))
     (string->symbol
-     (if (string-prefix? "gom:" name) (string-drop name 4) name))))
+     (if (string-prefix? "om:" name) (string-drop name 3) name))))
 
 ;; AST printing
 (define (star port) (display #\* port))

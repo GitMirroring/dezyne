@@ -24,8 +24,7 @@
 
 (read-set! keywords 'prefix)
 
-(define-module
-   (g table-event)
+(define-module (g table-event)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 match)
   :use-module (ice-9 getopt-long)
@@ -35,17 +34,21 @@
   :use-module (language dezyne location)
   :use-module (gaiag misc)
   
-
-   :use-module (g om)
-   :use-module (g g)
-   :use-module (g json-table)
-   :use-module (g norm-event)
-   :use-module (g pretty)
-   :use-module (g reader)
-   :use-module (g resolve)
-   :use-module (g table-state)  
+  :use-module (g om)
+  :use-module (g gaiag)
+  :use-module (g json-table)
+  :use-module (g norm-event)
+  :use-module (gaiag reader)
+  :use-module (g resolve)
+  :use-module (g pretty)
+  :use-module (g table-state)
 
   :export (ast-> table-event))
+
+(cond-expand
+ (goops-om
+  (use-modules (oop goops)))
+ (else #t))
 
 (define (table-event model o)
   (norm-event (table-state-statement model o)))

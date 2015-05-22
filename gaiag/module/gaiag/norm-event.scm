@@ -35,8 +35,7 @@
 
   :use-module (gaiag misc)
 
-  :use-module (oop goops) ;;-goeps
-  :use-module (gaiag gom) ;;-goeps
+  :use-module (gaiag om) ;;-goeps
   :use-module (gaiag norm) ;;-goeps
   :use-module (gaiag reader) ;;-goeps
   :use-module (gaiag resolve) ;;-goeps
@@ -51,10 +50,15 @@
            norm-event
            ))
 
+(cond-expand
+ (goops-om
+  (use-modules (oop goops)))
+ (else #t))
+
 (define (norm-event o)
   (match o
     ((and (negate (is? <ast>)) (h t ...))
-     ((compose norm-event ast:resolve ast->gom) o))
+     ((compose norm-event ast:resolve ast->om) o))
     ((? (is? <ast>))
      ((compose
        remove-skip
@@ -97,7 +101,7 @@
                                           :statement statement)))
                  (cons aggregated-guard (loop remainder))))))))
      (($ <functions>) o)
-     ((? (is? <ast>)) (gom:map aggregate-guard-s o))
+     ((? (is? <ast>)) (om:map aggregate-guard-s o))
      ((h t ...) (map aggregate-guard-s o))
      (_ o)))
 
@@ -117,7 +121,7 @@
          (if (null? ons)
              '()
              (receive (shared-ons remainder)
-                 (partition (lambda (x) (gom:triggers-equal? (car ons) x)) ons)
+                 (partition (lambda (x) (om:triggers-equal? (car ons) x)) ons)
                (let* ((triggers (.triggers (car shared-ons)))
                       (statement (on-statement (map .statement shared-ons)))
                       (collapsed-on (make <on>
@@ -125,7 +129,7 @@
                                        :statement statement)))
                  (cons collapsed-on (loop remainder))))))))
      (($ <functions>) o)
-     ((? (is? <ast>)) (gom:map collapse-on o))
+     ((? (is? <ast>)) (om:map collapse-on o))
      ((h t ...) (map collapse-on o))
      (_ o)))
 
@@ -140,7 +144,7 @@
   (match o
     (($ <on>)
      ((passdown-triggers (.triggers o)) (.statement o)))
-    ((? (is? <ast>)) (gom:map combine-ons o))
+    ((? (is? <ast>)) (om:map combine-ons o))
     ((h t ...) (map combine-ons o))
     (_ o)))
 
@@ -158,7 +162,7 @@
   (match o
     (($ <guard>)
      ((passdown-expression (.expression o)) (.statement o)))
-    ((? (is? <ast>)) (gom:map passdown-guard o))
+    ((? (is? <ast>)) (om:map passdown-guard o))
     ((h t ...) (map passdown-guard o))
     (_ o)))
 
@@ -178,4 +182,4 @@
     (_ (make <guard> :expression expression :statement o))))
 
 (define (ast-> ast)
-  ((compose gom->list norm-event ast:resolve) ast))
+  ((compose om->list norm-event ast:resolve) ast))

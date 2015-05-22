@@ -28,47 +28,47 @@
   :use-module (gaiag resolve)
 
   :use-module (oop goops)
-  :use-module (oop goops describe)
-  :use-module (gaiag gom)
+  ;;:use-module (oop goops describe)
+  :use-module (gaiag om)
 
-  :export (ast-> gom:mangle mangle-prefix-alist))
+  :export (ast-> om:mangle mangle-prefix-alist))
 
 (define-method (mangle (o <top>)) o)
 (define-method (mangle (o <named>))
   (define ((mangle-name-initializer o) name)
     (let* ((element (slot-ref o name))
-           (p (gom:prefix o)))
+           (p (om:prefix o)))
       (list (symbol->keyword name)
             (if (and (eq? name 'name)
                      p)
                 ((prefix p) element)
                 element))))
-  (gom:clone o mangle-name-initializer))
+  (om:clone o mangle-name-initializer))
 
-(define-method (mangle (o <gom:port>))
-  (make <gom:port>
-    :name ((prefix (gom:prefix o)) (.name o))
+(define-method (mangle (o <om:port>))
+  (make <om:port>
+    :name ((prefix (om:prefix o)) (.name o))
     :direction (.direction o)
-    :type ((prefix (gom:prefix 'interface)) (.type o))))
+    :type ((prefix (om:prefix 'interface)) (.type o))))
 
 (define-method (mangle (o <trigger>))
   (make <trigger>
-    :port (and=> (.port o) (prefix (gom:prefix 'port)))
-    :event ((prefix (gom:prefix 'event)) (.event o))))
+    :port (and=> (.port o) (prefix (om:prefix 'port)))
+    :event ((prefix (om:prefix 'event)) (.event o))))
 
 (define-method (mangle (o <binding>))
   (make <binding>
-    :instance (and=> (.instance o) (prefix (gom:prefix 'instance)))
-    :port (and=> (.port o) (prefix (gom:prefix 'port)))))
+    :instance (and=> (.instance o) (prefix (om:prefix 'instance)))
+    :port (and=> (.port o) (prefix (om:prefix 'port)))))
 
 (define-method (mangle (o <instance>))
   (make <instance>
-    :name (and=> (.name o) (prefix (gom:prefix 'instance)))
-    :component (and=> (.component o) (prefix (gom:prefix 'component)))))
+    :name (and=> (.name o) (prefix (om:prefix 'instance)))
+    :component (and=> (.component o) (prefix (om:prefix 'component)))))
 
 (define-method (mangle (o <variable>))
   (make <variable>
-    :name ((prefix (gom:prefix 'var)) (.name o))
+    :name ((prefix (om:prefix 'var)) (.name o))
     :type (.type o)
     :expression (.expression o)))
 
@@ -81,13 +81,13 @@
                     (port . po)
                     (var . va))))
 
-(define-method (gom:prefix (o <top>)) #f)
-(define-method (gom:prefix (o <symbol>))
+(define-method (om:prefix (o <top>)) #f)
+(define-method (om:prefix (o <symbol>))
   (assoc-ref (mangle-prefix-alist) o))
-(define-method (gom:prefix (o <ast>)) (gom:prefix (ast-name o)))
+(define-method (om:prefix (o <ast>)) (om:prefix (ast-name o)))
 
 (define ((prefix p) name) (if p (symbol-append p '_ name) name))
 
-(define (gom:mangle ast) (gom:map* mangle ast))
+(define (om:mangle ast) (om:map* mangle ast))
 (define (ast-> ast)
-  ((compose gom->list gom:mangle ast:resolve ast->gom) ast))
+  ((compose om->list om:mangle ast:resolve ast->om) ast))

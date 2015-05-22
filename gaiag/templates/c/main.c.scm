@@ -74,8 +74,8 @@ int log_valued(char* prefix, char* event, int (*string_to_value)(char*), char* e
     return 0;
 }
 
-#(->string (map (string-to-enum model) (gom:enums)))
-#(->string (map (enum-to-string model) (gom:enums)))
+#(->string (map (string-to-enum model) (om:enums)))
+#(->string (map (enum-to-string model) (om:enums)))
 
 #(map
  (lambda (port)
@@ -85,8 +85,8 @@ int log_valued(char* prefix, char* event, int (*string_to_value)(char*), char* e
    #(string-if (eq? return-type 'void) #{
    log_#direction("#port .#direction .", "#event ");#}#{
    return log_valued("#port .#direction .", "#event ", string_to_#(*scope* reply-scope)_#reply-name , "#port .", #(*scope* reply-scope)_#reply-name _to_string);#})}
-#}) (filter (negate (gom:dir-matches? port))
-       (gom:events port)))) (gom:ports model))
+#}) (filter (negate (om:dir-matches? port))
+       (om:events port)))) (om:ports model))
 void #.model _fill_event_map(#.model * m, map* e) {
    int dzn_i = 0;
    void *p;
@@ -95,8 +95,8 @@ void #.model _fill_event_map(#.model * m, map* e) {
      (lambda (port)
        (map (define-on model port #{
           m->#port ->#direction .#event  = #.model _log_event_#port _#direction _#event;
-#}) (filter (negate (gom:dir-matches? port))
-       (gom:events port)))) (gom:ports model))
+#}) (filter (negate (om:dir-matches? port))
+       (om:events port)))) (om:ports model))
    #(map
      (lambda (port)
        (map (define-on model port #{
@@ -104,8 +104,8 @@ void #.model _fill_event_map(#.model * m, map* e) {
            c->f = (void (*))m->#port ->#direction .#event;
            c->self = m->#port;
            map_put(e, "#port .#event ", c);
-#}) (filter (gom:dir-matches? port)
-       (gom:events port)))) (gom:ports model)) }
+#}) (filter (om:dir-matches? port)
+       (om:events port)))) (om:ports model)) }
 
 void illegal_print() {
 	fputs("illegal\n", stderr);

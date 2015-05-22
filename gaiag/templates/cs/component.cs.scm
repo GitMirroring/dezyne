@@ -24,11 +24,11 @@
 using System;
 
 public class #.model  : Component {#
-(->string (map (declare-enum model) (gom:enums (.behaviour model))))#
-(->string (map declare-integer (gom:integers (.behaviour model))))
+(->string (map (declare-enum model) (om:enums (.behaviour model))))#
+(->string (map declare-integer (om:integers (.behaviour model))))
 #
     (map (init-member model #{#'()
-  #type  #name;#}) (gom:variables model))#
+  #type  #name;#}) (om:variables model))#
     (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))
 #
     (map (init-port #{#'()
@@ -37,12 +37,12 @@ public class #.model  : Component {#
   public #.model(Locator locator, String name="", SystemComponent parent=null) : base(locator, name, parent) {
     this.flushes = true;#
 (map (init-member model #{#'()
-    #(string-if (eq? expression (if #f #f)) "" #{#name  = #expression ;#})#}) (gom:variables model))#
+    #(string-if (eq? expression (if #f #f)) "" #{#name  = #expression ;#})#}) (om:variables model))#
 (map (init-port #{#'()
     #name  = new #interface();
     #name .inport.name = "#name ";
     #name .inport.self = this;#})
-    (filter gom:provides? ((compose .elements .ports) model)))#
+    (filter om:provides? ((compose .elements .ports) model)))#
 (map (init-port #{#'()
 #(string-if injected?
 #{
@@ -53,13 +53,13 @@ public class #.model  : Component {#
     #name .outport.name = "#name ";
     #name .outport.self = this;#})
 #})
-    (filter gom:requires? ((compose .elements .ports) model)))#
+    (filter om:requires? ((compose .elements .ports) model)))#
 (map
    (lambda (port)
      (map (define-on model port #{#'()
   #port .#direction port.#event  = (#parameters) => {#(string-if (not (eq? return-type 'void)) #{return #})Runtime.call#(symbol-capitalize direction)<#interface .In,#interface .Out#(string-if (not (eq? return-type 'void)) #{, #return-type#})>(this, () => {#(string-if (not (eq? return-type 'void)) #{return #})#port _#event(#arguments);}, new Meta<#interface .In,#interface .Out>(this.#port , "#event"));};
-   #}) (filter (gom:dir-matches? port) (gom:events port))))
-   (gom:ports model))
+   #}) (filter (om:dir-matches? port) (om:events port))))
+   (om:ports model))
   }#
 (map
    (lambda (port)
@@ -67,10 +67,10 @@ public class #.model  : Component {#
   public #return-type  #port _#event (#parameters) {
   #statement #(if (not (eq? type 'void))
 (list "return reply_" (*scope* reply-scope) "_" reply-name ";\n")) }
-#}) (filter (gom:dir-matches? port) (gom:events port))))
-   (gom:ports model))#
+#}) (filter (om:dir-matches? port) (om:events port))))
+   (om:ports model))#
 (map (define-function model #{
    public #return-type  #name  (#parameters) {
 #statements }
-#}) (gom:functions model))
+#}) (om:functions model))
 }

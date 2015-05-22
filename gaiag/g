@@ -15,4 +15,4 @@ exec ${GUILE-guile} --debug -e main -s $0 "$@"
 ;;(format (current-error-port) "%load-path ~a\n" %load-path )
 ;;(format (current-error-port) "%load-compiled-path ~a\n" %load-compiled-path )
 (define (main . args)
-  ((@ (g g) main) (command-line)))
+  ((@ (g gaiag) main) (command-line)))

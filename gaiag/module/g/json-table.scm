@@ -204,8 +204,9 @@
       (list (make <field> :identifier var :field field)))
      (('assign (? var?) expression)
       (list unknown))
-     (('call identifier ___)
-      (let ((function (gom:function model identifier)))
+     (('call _ ___)
+      (let* ((identifier (.identifier o))
+             (function (om:function model identifier)))
         (if (member identifier functions)
             next
             (json-next- model var next (.statement function) (cons identifier functions)))))
@@ -240,7 +241,7 @@
   (json-data-location (ast->dezyne o) o))
 
 (define (json-callback model o)
-  (define (function? identifier) (gom:function model identifier))
+  (define (function? identifier) (om:function model identifier))
   (define (recursive? identifier) (.recursive (function? identifier)))
   (define (non-recursive? identifier)
     (not (recursive? identifier)))
@@ -257,7 +258,7 @@
   (define (return-actions o)
     (filter identity
             (apply append
-                   (map return-action ((gom:collect return-action) o)))))
+                   (map return-action ((om:collect return-action) o)))))
 
   (or (and-let* (((is-a? o <statement>))
                  (actions (return-actions o))
@@ -290,7 +291,7 @@
     (('triggers triggers ___) (->symbol ((->join ",") (map ->symbol triggers))))
     (('trigger #f event) (->symbol event))
     (('trigger port event) (->symbol (list port "." event)))
-    ((? (is? <ast>)) (->symbol (gom->list o)))
+    ((? (is? <ast>)) (->symbol (om->list o)))
     (('and lhs rhs) (->symbol (list '&& lhs rhs)))
     (('or lhs rhs) (->symbol (list '#{||}# lhs rhs)))
     (((or '< '<= '> '>= '+ '- '&& '#{||}# '== '!=) lhs rhs)

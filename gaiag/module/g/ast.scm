@@ -312,7 +312,7 @@
            type
            type-list
            type-list?
-           type-name-component
+           type-component
            type?
            typed?
            types
@@ -899,7 +899,7 @@
 
 ;;;;; FIXME
 
-(define (type-name-component type component) (symbol-append (name component) (type type)))
+(define (type-component type component) (symbol-append (name component) (type type)))
 
 (define (enum-name enum) (cadr enum))
 
