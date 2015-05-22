@@ -4,7 +4,7 @@
 ;;;
 ;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2014, 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -42,11 +42,33 @@
 
 CO_#(.name model) _#((compose .name .behaviour) model) (IIG,IG) = let
 # (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (om:functions model)))
-#(.name model) _#((compose .name .behaviour) model) ((#(->csp model (make <context> :members ((compose om:member-names) model))))) = transition_begin -> (
+#(.name model) _#((compose .name .behaviour) model) = transition_begin -> (
 #(behaviour->csp model)
 )
 
-within #(.name model) _#((compose .name .behaviour) model) ((#(->csp model (make <context> :members ((compose om:member-values) model) :locals '(<>)))))
+forward =
+#((->join "\n  []\n  ")
+ (map
+  (lambda (f)
+   (->string
+    (list "  wait(call_return." (.name f) "_forward,\n")
+    (list "    call_return." (.name f) "_forward"
+       (if (pair? ((compose .elements .parameters .signature) f))
+           (list "?" (csp-comma-list (map .name ((compose .elements .parameters .signature) f)))))
+       " ->\n")
+    (list "    call_return." (.name f) "_call"
+       (if (pair? ((compose .elements .parameters .signature) f))
+           (list "!" (csp-comma-list (map .name ((compose .elements .parameters .signature) f)))))
+       " ->\n")
+    "    forward\n  )\n"))
+   (om:functions model)))
+
+global = let
+  glob_set_get = glob.set?#(csp-comma-list (om:member-names model))  -> glob.get!#(csp-comma-list (om:member-names model))  -> glob_set_get
+within
+  glob.get!#(csp-comma-list (om:member-values model))  -> glob_set_get
+                                                                          
+within compress((([|{|call_return|}|] x:{#((->join ",") (append (map .name (om:functions model)) (list (->string (.name model) "_" ((compose .name .behaviour) model)))))} @ x) [|{|glob|}|] global) \ {|glob|})
 
 channel extensions_over_empty_channels_is_undefined
 channel IN',OUT' : {#
