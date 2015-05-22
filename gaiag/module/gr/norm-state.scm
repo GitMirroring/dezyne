@@ -23,7 +23,7 @@
 (read-set! keywords 'prefix)
 
 (define-module
-  (gaiag norm-state) ;;-goeps
+  (gr norm-state) ;;-goeps
   ;;+goeps (g norm-state)
 
   :use-module (ice-9 and-let-star)
@@ -36,11 +36,11 @@
 
   :use-module (gaiag misc)
 
-  :use-module (gaiag om) ;;-goeps
-  :use-module (gaiag norm) ;;-goeps
-;;  :use-module (gaiag norm-event) ;;-goeps  
+  :use-module (gr om) ;;-goeps
+  :use-module (gr norm) ;;-goeps
+;;  :use-module (gr norm-event) ;;-goeps  
   :use-module (gaiag reader) ;;-goeps
-  :use-module (gaiag resolve) ;;-goeps
+  :use-module (gr resolve) ;;-goeps
 
   ;;+goeps :use-module (g om)
   ;;+goeps :use-module (g norm)

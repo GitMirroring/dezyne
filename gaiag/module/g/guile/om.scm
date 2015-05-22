@@ -39,6 +39,7 @@
            .direction           
            .elements
            .else
+           .event
            .events
            .expression           
            .field
@@ -51,6 +52,7 @@
            .message
            .name
            .parameters
+           .port
            .ports
            .range
            .recursive
@@ -709,6 +711,14 @@
     (('component name ports) ports)
     (('component name ports behaviour) ports)
     (('system name ports instances bindings) ports)))
+
+(define (.event ast)
+  (match ast
+    (('trigger port event) event)))
+
+(define (.port ast)
+  (match ast
+    (('trigger port event) port)))
 
 (define (.parameters ast)
   (match ast

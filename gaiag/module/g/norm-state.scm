@@ -22,7 +22,10 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (g norm-state)
+(define-module
+   (g norm-state)
+
+  :use-module (ice-9 and-let-star)
   :use-module (ice-9 pretty-print)
   :use-module (ice-9 receive)
   :use-module (ice-9 match)
@@ -30,84 +33,126 @@
 
   :use-module (srfi srfi-1)
 
-  :use-module (g ast-colon)
-  :use-module (g norm)
-  :use-module (g resolve)    
-  :use-module (g misc)
-  :use-module (g reader)
+  :use-module (gaiag misc)
 
-  :export (ast-> norm-state))
 
-(define (norm-state ast)
-  ((compose
-    remove-skip
-    aggregate-on
-    (expand-on port-equal?)
-    aggregate-guard
-    flatten-compound
-    combine-guards
-    passdown-on
-    (remove-otherwise '())
-    add-skip)
-   ast))
+   :use-module (g om)
+   :use-module (g norm)
+;;   :use-module (g norm-event)  
+   :use-module (g reader)
+   :use-module (g resolve)
+
+  :export (
+           ast->
+           norm-state
+           ))
+
+(cond-expand
+ (goops-om
+  (use-modules (oop goops)))
+ (else #t))
+
+(define (norm-state o)
+  (match o
+    ((and (negate (is? <ast>)) (h t ...))
+     ((compose norm-state ast:resolve ast->om) o))
+    ((? (is? <ast>))
+     ((compose
+       remove-skip
+       aggregate-on
+       (expand-on port-equal?)
+       aggregate-guard-g
+       flatten-compound
+       combine-guards
+       passdown-on
+       (remove-otherwise '())
+       add-skip)
+      o))))
 
 (define (port-equal? lhs rhs)
-  (port-equal?- lhs rhs))
+  (and (is-a? lhs <trigger>) (is-a? rhs <trigger>)
+       (eq? (.port lhs) (.port rhs))))
 
-(define (port-equal?- lhs rhs)
-  (or (and (symbol? lhs) (symbol? rhs))
-      (and (ast:trigger? lhs) (ast:trigger? lhs)
-           (eq? (ast:port-name lhs) (ast:port-name rhs)))))
-
-(define (aggregate-on ast)
+(define (aggregate-on o)
   "Aggregate triggers with matching port and statement into one on-statement."
-;; find all ons with matching port and statement
-;; push all ons into first on, discard the rest
-  (match ast
-    (('compound ('on triggers statement) ...)
-     (cons 'compound
-               (let loop ((ons (cdr ast)))
-                 (if (null? ons)
-                     '()
-                     (receive (shared-ons remainder)
-                         (partition (lambda (x) (on-equal? (car ons) x)) ons)
-                       (let* ((triggers (apply append (map ast:triggers shared-ons)))
-                              (statement (ast:statement (car ons)))
-                              (aggregated-on (list 'on (cons 'triggers triggers) statement)))
-                         (cons aggregated-on (loop remainder))))))))
-    (('functions f ...) ast)
-    ((h ...) (map aggregate-on ast))
-    (_ ast)))
+  ;; find all ons with matching port and statement
+  ;; push all ons into first on, discard the rest
+  (match o
+    (('compound (('on _ ___) ...))
+     (make <compound>
+       :elements
+       (let loop ((ons (.elements o)))
+         (if (null? ons)
+             '()
+             (receive (shared-ons remainder)
+                 (partition (lambda (x) (on-same-port-statement? (car ons) x)) ons)
+               (let* ((triggers
+                       (apply append
+                              (map (compose .elements .triggers) shared-ons)))
+                      (statement (.statement (car ons)))
+                      (aggregated-on (make <on>
+                                       :triggers (make <triggers> :elements triggers)
+                                       :statement statement)))
+                 (cons aggregated-on (loop remainder))))))))
+     (('functions _ ___) o)
+     ((? (is? <ast>)) (om:map aggregate-on o))
+     ((h t ...) (map aggregate-on o))
+     (_ o)))
 
-(define (on-equal? lhs rhs)
-  (and (ast:on? lhs) (ast:on? rhs)
-       (and
-        (port-equal? (car (ast:triggers lhs)) (car (ast:triggers rhs)))
-        (equal? (ast:statement lhs) (ast:statement rhs)))))
+(define (on-same-port-statement? lhs rhs)
+  (and (is-a? lhs <on>) (is-a? rhs <on>)
+       (eq? ((compose .port car .elements .triggers) lhs)
+            ((compose .port car .elements .triggers) rhs))
+       (equal? (.statement lhs) (.statement rhs))))
 
-(define (combine-guards ast)
-  (match ast
-    (('guard expression statement) ((passdown-guard expression) statement))
-    ((h ...) (map combine-guards ast))
-    (_ ast)))
+(define (combine-guards o)
+  (match o
+    (('guard _ ___)
+     ((passdown-expression (.expression o)) (.statement o)))
+    ((? (is? <ast>)) (om:map combine-guards o))
+    ((h t ...) (map combine-guards o))
+    (_ o)))
 
-(define ((passdown-guard expression) statement)
-  (match statement
-    (('compound s ...) (cons 'compound (map (passdown-guard expression) (cdr statement))))
-    (('guard e s) ((passdown-guard (if (equal? expression e) expression (list 'and expression e))) s))
-    (_ (list 'guard expression statement))))
+(define ((passdown-expression expression) o)
+  (match o
+    (('guard _ ___)
+     ((passdown-expression
+       (make <expression> :value
+             (if (equal? (.value expression)
+                         (.value (.expression o)))
+                 (.value expression)
+                 (list 'and
+                       (.value expression)
+                       (.value (.expression o))))))
+      (.statement o)))
+    (('compound _ ___)
+     (let ((statements (.elements o)))
+       (make <compound>
+         :elements (map (passdown-expression expression) statements))))
+    (_ (make <guard> :expression expression :statement o))))
 
-(define (passdown-on ast)
-  (match ast
-    (('on ('triggers triggers ...) statement) ((passdown-triggers triggers) statement))
-    ((h ...) (map passdown-on ast))
-    (_ ast)))
+(define (passdown-on o)
+  (match o
+    (('on _ ___)
+     ((passdown-triggers (.triggers o)) (.statement o)))
+    ((? (is? <ast>)) (om:map passdown-on o))
+    ((h t ...) (map passdown-on o))
+    (_ o)))
 
-(define ((passdown-triggers triggers) statement)
-  (match statement
-    (('compound ('guard e s) ...) (cons 'compound (map (passdown-triggers triggers) (cdr statement))))
-    (('guard e s) (list 'guard e ((passdown-triggers triggers) s)))
-    (_ (list 'on (cons 'triggers triggers) statement))))
+(define ((passdown-triggers triggers) o)
+  (match o
+    (('compound _ ___)
+     (let ((statements (.elements o)))
+       (match statements
+         ((('guard _ ___) ...)
+          (make <compound>
+            :elements (map (passdown-triggers triggers) statements)))
+         (_ (make <on> :triggers triggers :statement o)))))
+    (('guard _ ___)
+     (make <guard>
+       :expression (.expression o)
+       :statement ((passdown-triggers triggers) (.statement o))))
+    (_ (make <on> :triggers triggers :statement o))))
 
 (define (ast-> ast)
-  ((compose norm-state ast:resolve) ast))
+  ((compose om->list norm-state ast:resolve) ast))
