@@ -195,12 +195,15 @@
 		(source-location loc))))
 
 (define (source-location->user-source-properties loc)
-  `((filename . ,(source-location-input loc))
-    (line . ,(+ 1 (source-location-line loc)))
-    (column . ,(+ 1 (source-location-column loc)))
-    (offset . ,(source-location-offset loc))
-    (length . ,(source-location-length loc))))
-
+  (if (not (source-location? loc))
+      (begin
+        (stderr "programming error: not a source location: ~a\n" loc)
+        '((filename . "unknown") (line . 0 )))
+      `((filename . ,(source-location-input loc))
+        (line . ,(+ 1 (source-location-line loc)))
+        (column . ,(+ 1 (source-location-column loc)))
+        (offset . ,(source-location-offset loc))
+        (length . ,(source-location-length loc)))))
 
 (define (source-file o)
   (and-let* (((supports-source-properties? o))

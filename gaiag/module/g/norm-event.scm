@@ -165,6 +165,7 @@
      (make <on>
        :triggers (.triggers o)
        :statement ((passdown-expression expression) (.statement o))))
+    ;; ONLY difference with combine-guard
     (('compound _ ___)
      (let ((statements (.elements o)))
        (match statements

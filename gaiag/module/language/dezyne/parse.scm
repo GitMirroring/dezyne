@@ -78,7 +78,7 @@
 
    (model
     (import-spec) : $1
-    (type) : (note-location (append (take $1 2) '(*global*) (drop $1 3)) @1)
+    (type) : (retain-source-properties $1 (append (take $1 2) '(*global*) (drop $1 3)))
     (interface-spec) : $1
     (component-spec) : $1)
 
@@ -176,17 +176,17 @@
     (Identifier dot Identifier) : (note-location `(type ,$3 ,$1) @1))
 
    (enum-spec
-    (enum Identifier lbrace enum-fields rbrace semicolon) : `(enum ,$2 #f ,$4))
+    (enum Identifier lbrace enum-fields rbrace semicolon) : (note-location `(enum ,$2 #f ,$4) @1))
 
    (enum-fields
     (Identifier) : `(fields ,$1)
     (enum-fields comma Identifier) : (append $1 (list $3)))
 
    (typedef-spec
-    (typedef int lbracket NumericLiteral .. NumericLiteral rbracket Identifier semicolon) : `(int ,$8 #f (range ,$4 ,$6)))
+    (typedef int lbracket NumericLiteral .. NumericLiteral rbracket Identifier semicolon) : (note-location `(int ,$8 #f (range ,$4 ,$6)) @1))
 
    (extern-spec
-    (extern Identifier = Data semicolon) : `(extern ,$2 #f ,$4))
+    (extern Identifier = Data semicolon) : (note-location `(extern ,$2 #f ,$4) @1))
 
    (expression
     (expr): `(expression ,$1))

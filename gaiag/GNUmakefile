@@ -63,7 +63,7 @@ compile-all: clean
 	for i in $(SCM_TEST_SOURCES); do $(GUILE) $(GUILE_FLAGS) $$i; done
 
 clean:
-	rm -rf ~/.cache/guile out
+	rm -rf ~/.cache/guile out ../build/ccache
 
 test: check
 check: compile
@@ -826,7 +826,7 @@ out/test: out/argument.c++ out/main.o out/runtime.o
 	echo 'i.e' | out/test
 
 .PHONY: g gr
-GSED=-e "s/<om:parameter>/<parameter>/g" -e "s/<om:port>/<port>/g" -e "s/[(]gaiag (animate|gaiag|guile|json|json-table|norm|norm-event|norm-state|om|pretty|record|resolve|table-event|table-state)([) ])/(g \1\2/" -e "s/[(][$$] <([^>]*)>[)]/(\'\1 _ ___)/g" -e "s/[(][$$] X<(arguments|bindings|compound|events|fields|functions|instances|parameters|ports|root|triggers|types|variables|expression|otherwise|reply|return|var)> ([a-z]+)[)]/(\'\1 \2)/g"  -e "s/[(][$$] <([^>]*)> ([a-z]+)[)]/(\'\1 \2 ___)/g" -e "s/[(][$$] <([a-z]+)> '[(][)][)]/(\'\1)/g" -e "s/[(][$$] <([^>]*)>/(\'\1/g" -e "s/;;[+]goeps//"
+GSED=-e "s/<om:parameter>/<parameter>/g" -e "s/<om:port>/<port>/g" -e "s/[(]gaiag (animate|gaiag|guile|json|json-table|norm|norm-event|norm-state|om|pretty|record|resolve|table-event|table-state)([) ])/(g \1\2/" -e "s/[(][$$] <([^>]*)>[)]/(\'\1 _ ___)/g" -e "s/[(][$$] X<(arguments|bindings|compound|events|fields|functions|instances|parameters|ports|root|triggers|types|variables)> ([a-z]+)[)]/(\'\1 \2)/g" -e "s/[(][$$] <(expression|otherwise|reply|return|var)> ([a-z]+)[)]/(\'\1 \2)/g" -e "s/[(][$$] <([^>]*)> ([a-z]+)[)]/(\'\1 \2 ___)/g" -e "s/[(][$$] <([a-z]+)> '[(][)][)]/(\'\1)/g" -e "s/[(][$$] <([^>]*)>/(\'\1/g" -e "s/;;[+]goeps//"
 
 module/g/%.scm: module/gaiag/%.scm
 	sed -r $(GSED) $< | grep -v ';;-goeps' > $@
@@ -837,6 +837,7 @@ G_FILES:=\
  json-table.scm\
  norm.scm\
  norm-event.scm\
+ norm-state.scm\
  pretty.scm\
  resolve.scm\
  table-state.scm\
@@ -855,6 +856,7 @@ GR_FILES:=\
  json-table.scm\
  norm.scm\
  norm-event.scm\
+ norm-state.scm\
  pretty.scm\
  resolve.scm\
  table-state.scm\

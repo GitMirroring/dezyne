@@ -121,6 +121,7 @@
     ;; FIXME: c&p from csp.scm (and...TODO: c++.scm) grmbl
     (('group expression) (->string (list "(" (->string expression) ")")))
     (($ <expression> expression) (expression->string expression))
+    (($ <expression>) #f)
     (($ <var> identifier) (->string identifier))
     (($ <data> data) (->string (list "$" data "$")))
     (($ <literal> #f type field) (->string (list type "." field)))

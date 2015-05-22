@@ -39,6 +39,7 @@
   :use-module (gr gaiag)
   :use-module (gr json-table)
   :use-module (gr norm)
+  :use-module (gr norm-state)
   :use-module (gaiag reader)
   :use-module (gr resolve)
   :use-module (gr pretty)

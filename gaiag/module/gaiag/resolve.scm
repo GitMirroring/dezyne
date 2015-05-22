@@ -124,7 +124,7 @@
 (define (resolve-top-model o)
   (match o
     ((? (is? <model>))
-     ((compose om:register-model (lambda (m) ((resolve-model m '()) m))) o))
+     ((compose om:register-model (resolve-model o '())) o))
     (_ ((resolve-model o '()) o))))
 
 (define ((resolve-model model locals) o)
@@ -301,7 +301,7 @@
     (($ <type>) o)
     (($ <var>) o)
 
-    ((? symbol?) (undefined-error #f o))
+    ((? symbol?) (undefined-error 'programming-error o))
 
     (($ <action> ($ <trigger> #f (and (? function?) (get! identifier))))
      (make <call> :identifier (identifier)))
@@ -357,6 +357,17 @@
      (make <assign>
        :identifier identifier
        :expression ((resolve-model model locals) expression)))
+
+    (($ <om:parameter> name type direction)
+     (make <om:parameter>
+       :name name
+       :type ((resolve-model model locals) type)
+       :direction direction))
+
+    (($ <om:parameter> name type)
+     (make <om:parameter>
+       :name name
+       :type ((resolve-model model locals) type)))
 
     (($ <variable> name type
         ($ <expression> ($ <call> (and (? event?) (get! event)))))
@@ -482,17 +493,6 @@
          :triggers ((resolve-model model locals) triggers)
          :statement ((resolve-model model locals) statement))))
 
-    (($ <if> expression then else)
-     (make <if>
-       :expression ((resolve-model model locals) expression)
-       :then ((resolve-model model locals) then)
-       :else ((resolve-model model locals) else)))
-    
-    (($ <if> expression then)
-     (make <if>
-       :expression ((resolve-model model locals) expression)
-       :then ((resolve-model model locals) then)))
-
     (($ <interface> name types events behaviour)
      (make <interface>
        :name name
@@ -513,27 +513,35 @@
        :name name
        :types types
        :variables ((resolve-model model '()) variables)
-       :functions ((resolve-model model '()) functions)
-       :statement ((resolve-model model '()) statement)))
+       ;; om:map denx0r?
+       ;; :functions ((resolve-model model '()) functions)
+       ;; :statement ((resolve-model model '()) statement)))
+       :functions (om:map (resolve-model model '()) functions)
+       :statement (om:map (resolve-model model '()) statement)))
 
-    (($ <arguments> arguments)
-     (make <arguments> :elements (map (resolve-model model locals) arguments)))
-    
-    (($ <functions> functions)
-     (make <functions> :elements (map (resolve-model model '()) functions)))
-
-    (($ <parameters> parameters)
-     (make <parameters> :elements (map (resolve-model model '()) parameters)))
-
+    ;; om:map denx0r?
+    ;; (($ <if> expression then else)
+    ;;  (make <if>
+    ;;    :expression ((resolve-model model locals) expression)
+    ;;    :then ((resolve-model model locals) then)
+    ;;    :else ((resolve-model model locals) else)))
+    ;; (($ <if> expression then)
+    ;;  (make <if>
+    ;;    :expression ((resolve-model model locals) expression)
+    ;;    :then ((resolve-model model locals) then)))
+    ;; (($ <arguments> arguments)
+    ;;  (make <arguments> :elements (map (resolve-model model locals) arguments)))
+    ;; (($ <functions> functions)
+    ;;  (make <functions> :elements (map (resolve-model model '()) functions)))
+    ;; (($ <parameters> parameters)
+    ;;  (make <parameters> :elements (map (resolve-model model '()) parameters)))
     (($ <variables> variables)
      (let ((variables (map (range-check model) variables)))
        (make <variables> :elements (map (resolve-model model '()) variables))))
-
-    (($ <reply> expression)
-     (make <reply> :expression ((resolve-model model locals) expression)))
-
-    (($ <return> expression)
-     (make <return> :expression ((resolve-model model locals) expression)))
+    ;; (($ <reply> expression)
+    ;;  (make <reply> :expression ((resolve-model model locals) expression)))
+    ;; (($ <return> expression)
+    ;;  (make <return> :expression ((resolve-model model locals) expression)))
 
     ((? (is? <ast>)) (om:map (lambda (o) ((resolve-model model locals) o)) o))
     ((h t ...) (map (lambda (o) ((resolve-model model locals) o)) o))

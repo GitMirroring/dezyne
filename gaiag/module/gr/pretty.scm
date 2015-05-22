@@ -38,6 +38,7 @@
   :use-module (gaiag indent) ;;-goeps
   :use-module (gaiag reader) ;;-goeps
   :use-module (gr resolve) ;;-goeps
+  :use-module (gaiag wfc) ;;-goeps  
 
   ;;+goeps :use-module (g om)
   ;;+goeps :use-module (g animate)
@@ -56,7 +57,9 @@
   (match o
     (($ <root>)
      (indent-string (apply string-append (map ast->dezyne (.elements o)))))
-    ((and (negate (is? <ast>)) (h t ...))
+    (
+     (h t ...) ;;-goeps
+     ;;+goeps (and (negate (is? <ast>)) (h t ...))
      (let ((om ((om:register pretty:om) o #t)))
        (ast->dezyne om)))
     ((? (is? <ast>)) (indent-string (->string o)))
@@ -124,6 +127,7 @@
     ;; FIXME: c&p from csp.scm (and...TODO: c++.scm) grmbl
     (('group expression) (->string (list "(" (->string expression) ")")))
     (($ <expression> expression) (expression->string expression))
+    (($ <expression>) #f)
     (($ <var> identifier) (->string identifier))
     (($ <data> data) (->string (list "$" data "$")))
     (($ <literal> #f type field) (->string (list type "." field)))

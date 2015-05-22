@@ -39,6 +39,7 @@
   :use-module (g gaiag)
   :use-module (g json-table)
   :use-module (g norm)
+  :use-module (g norm-state)
   :use-module (gaiag reader)
   :use-module (g resolve)
   :use-module (g pretty)
@@ -337,11 +338,11 @@
   (match o
 
     (
-      ;;('expression expression ___)
+      ;;('expression expression)
       ('expression expression)
      (eval-expression model state expression))
 
-    (('otherwise expression ___)
+    (('otherwise expression)
      (let ((value (eval-expression model state expression)))
        (match value
          (#t #t)

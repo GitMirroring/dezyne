@@ -125,7 +125,7 @@
 (define (resolve-top-model o)
   (match o
     ((? (is? <model>))
-     ((compose om:register-model (lambda (m) ((resolve-model m '()) m))) o))
+     ((compose om:register-model (resolve-model o '())) o))
     (_ ((resolve-model o '()) o))))
 
 (define ((resolve-model model locals) o)
@@ -202,7 +202,7 @@
 
   (define (fake:type model o)
     (match o
-      (('expression expression ___) (fake:type model expression))
+      (('expression expression) (fake:type model expression))
       ('false (make <type> :name 'bool))
       ('true (make <type> :name 'bool))
       (('data _ ___) (make <type> :name 'data))
@@ -282,7 +282,6 @@
     (('event name signature direction)
      (make <event> :name name :signature ((resolve-model model '()) signature) :direction direction))
 
-    (('action _ ___) o)
     (('call _ ___) o)
     (('data _ ___) o)
     (('enum _ ___) o)
@@ -294,13 +293,16 @@
     (('literal _ ___) o)
     (('otherwise _ ___) o)
     (('port _ ___) o)
-    (('signature _ ___) o)
+    (('signature type parameters)
+     (make <signature>
+       :type ((resolve-model model locals) type)
+       :parameters ((resolve-model model locals) parameters)))
     (('trigger _ ___) o)
     (('triggers _ ___) o)    
     (('type _ ___) o)
     (('var _ ___) o)
 
-    ((? symbol?) (undefined-error #f o))
+    ((? symbol?) (undefined-error 'programming-error o))
 
     (('action ('trigger #f (and (? function?) (get! identifier))))
      (make <call> :identifier (identifier)))
@@ -356,6 +358,17 @@
      (make <assign>
        :identifier identifier
        :expression ((resolve-model model locals) expression)))
+
+    (('parameter name type direction)
+     (make <parameter>
+       :name name
+       :type ((resolve-model model locals) type)
+       :direction direction))
+
+    (('parameter name type)
+     (make <parameter>
+       :name name
+       :type ((resolve-model model locals) type)))
 
     (('variable name type
         ('expression ('call (and (? event?) (get! event)))))
@@ -418,7 +431,7 @@
      (resolve-error o field "undefined enum field: ~a"))
 
     (
-      ;;('expression value ___)
+      ;;('expression value)
       ('expression value)
      (make <expression> :value ((resolve-model model locals) value)))
 
@@ -480,17 +493,6 @@
          :triggers ((resolve-model model locals) triggers)
          :statement ((resolve-model model locals) statement))))
 
-    (('if expression then else)
-     (make <if>
-       :expression ((resolve-model model locals) expression)
-       :then ((resolve-model model locals) then)
-       :else ((resolve-model model locals) else)))
-    
-    (('if expression then)
-     (make <if>
-       :expression ((resolve-model model locals) expression)
-       :then ((resolve-model model locals) then)))
-
     (('interface name types events behaviour)
      (make <interface>
        :name name
@@ -511,24 +513,35 @@
        :name name
        :types types
        :variables ((resolve-model model '()) variables)
-       :functions ((resolve-model model '()) functions)
-       :statement ((resolve-model model '()) statement)))
+       ;; om:map denx0r?
+       ;; :functions ((resolve-model model '()) functions)
+       ;; :statement ((resolve-model model '()) statement)))
+       :functions (om:map (resolve-model model '()) functions)
+       :statement (om:map (resolve-model model '()) statement)))
 
-    (('arguments arguments ___)
-     (make <arguments> :elements (map (resolve-model model locals) arguments)))
-    
-    (('functions functions ___)
-     (make <functions> :elements (map (resolve-model model '()) functions)))
-
+    ;; om:map denx0r?
+    ;; (('if expression then else)
+    ;;  (make <if>
+    ;;    :expression ((resolve-model model locals) expression)
+    ;;    :then ((resolve-model model locals) then)
+    ;;    :else ((resolve-model model locals) else)))
+    ;; (('if expression then)
+    ;;  (make <if>
+    ;;    :expression ((resolve-model model locals) expression)
+    ;;    :then ((resolve-model model locals) then)))
+    ;; (('arguments arguments ___)
+    ;;  (make <arguments> :elements (map (resolve-model model locals) arguments)))
+    ;; (('functions functions ___)
+    ;;  (make <functions> :elements (map (resolve-model model '()) functions)))
+    ;; (('parameters parameters ___)
+    ;;  (make <parameters> :elements (map (resolve-model model '()) parameters)))
     (('variables variables ___)
      (let ((variables (map (range-check model) variables)))
        (make <variables> :elements (map (resolve-model model '()) variables))))
-
-    (('reply expression ___)
-     (make <reply> :expression ((resolve-model model locals) expression)))
-
-    (('return expression ___)
-     (make <return> :expression ((resolve-model model locals) expression)))
+    ;; (('reply expression)
+    ;;  (make <reply> :expression ((resolve-model model locals) expression)))
+    ;; (('return expression)
+    ;;  (make <return> :expression ((resolve-model model locals) expression)))
 
     ((? (is? <ast>)) (om:map (lambda (o) ((resolve-model model locals) o)) o))
     ((h t ...) (map (lambda (o) ((resolve-model model locals) o)) o))
@@ -551,13 +564,13 @@
 (define (evaluate model o)
   (define (member? identifier) (om:variable model identifier))
   (match o
-    (('expression expression ___) (evaluate model expression))
+    (('expression expression) (evaluate model expression))
     ((? number?) o)
     (('+ a b) (+ (evaluate model a) (evaluate model b)))
     (('- a b) (- (evaluate model a) (evaluate model b)))
     (('* a b) (* (evaluate model a) (evaluate model b)))
     (('/ a b) (/ (evaluate model a) (evaluate model b)))
-    (('var name ___) (evaluate model (.expression (member? name))))
+    (('var name) (evaluate model (.expression (member? name))))
     (('group g) g)))
 
 (define* ((recurses? model :optional (seen '())) name)
@@ -581,4 +594,4 @@
   ((compose
     om->list
     ast:resolve
-    ast->om ast->annotate) ast))
+    ast->om) ast))
