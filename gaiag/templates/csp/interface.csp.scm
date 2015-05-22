@@ -69,10 +69,12 @@ transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
 
+#(.name model) _#((compose .name .behaviour) model)_ = compress((([|{|call_return|}|] x:{#((->join ",") (append (map .name (gom:functions model)) (list (->string (.name model) "_" ((compose .name .behaviour) model)))))} @ x) [|{|glob|}|] global) \ {|glob|})
+
 within compress(if CS
                 then #
-(.name model) _#((compose .name .behaviour) model) 
+(.name model) _#((compose .name .behaviour) model)_
                 else #
-(.name model) _#((compose .name .behaviour) model)[[x<-#(.name model)_in'.x|x<-extensions(#(.name model)_in')]] [|{|#(.name model),#(.name model)_in',#(.name model).the_end'|}|] REORDER' [[#(.name model)_out'.x<-x|x<-extensions(#(.name model)_out')]] \ {|#(.name model)_in',#(.name model).the_end'|})
+(.name model) _#((compose .name .behaviour) model)_[[x<-#(.name model)_in'.x|x<-extensions(#(.name model)_in')]] [|{|#(.name model),#(.name model)_in',#(.name model).the_end'|}|] REORDER' [[#(.name model)_out'.x<-x|x<-extensions(#(.name model)_out')]] \ {|#(.name model)_in',#(.name model).the_end'|})
 
 -- end of interface.csp.scm
