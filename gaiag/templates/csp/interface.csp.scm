@@ -60,7 +60,7 @@ forward =
 global = let
   glob_set_get = glob.set?#(csp-comma-list (om:member-names model))  -> glob.get!#(csp-comma-list (om:member-names model))  -> glob_set_get
 within
-  glob.get!#(csp-comma-list (om:member-values model))  -> glob_set_get
+  glob.get!#(csp-comma-list (map (lambda (x) (csp-expression->string model x '())) (om:member-values model)))  -> glob_set_get
 
 REORDER' = #(.name model)?x' -> (#(.name model)_in'?y' -> #(.name model).the_end' -> #(.name model)_out'!y' -> REORDER' [] #(.name model).the_end' -> REORDER')
 

@@ -368,8 +368,14 @@
                      (modeling-events (csp:import (.type port)))))
               (filter om:requires? (om:ports o)))))
 
+(define (om:member-names model)
+  (map .name (filter (negate (is? <extern>)) (om:variables model))))
+
+(define (om:member-values model)
+  (map (compose .value .expression) (filter (negate (is? <extern>)) (om:variables model))))
+
 (define (om:member-types model)
-  (map (compose .name .type) (filter (negate (extern? model)) (om:variables model))))
+  (map (compose .name .type) (filter (negate (is? <extern>)) (om:variables model))))
 
 (define (typed-elements o)
    (map (lambda (x) (symbol-append (.name o) '_ x)) ((compose .elements .fields) o)))

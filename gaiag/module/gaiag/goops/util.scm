@@ -195,6 +195,12 @@
     (#f '())
     (_ (throw 'match-error  (format #f "~a:om:variables: no match: ~a\n" (current-source-location) ast)))))
 
+(define (om:member-names model)
+  (map .name (filter (negate (is? <extern>)) (om:variables model))))
+
+(define (om:member-values model)
+  (map (compose .value .expression) (filter (negate (is? <extern>)) (om:variables model))))
+
 (define (om:statement ast)
   (match ast
     (($ <model>) (or (and=> (.behaviour ast) om:statement) (make <compound>)))
