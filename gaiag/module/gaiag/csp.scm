@@ -385,9 +385,10 @@
     (($ <interface>)
       (apply append (map typed-elements (om:enums o))))
     (($ <component>)
-     (append
-      (apply append (map (compose enum-values om:import .type) ((compose .elements .ports) o)))
-      (apply append (map typed-elements (om:enums o)))))))
+     (delete-duplicates
+      (append
+       (apply append (map (compose enum-values om:import .type) ((compose .elements .ports) o)))
+       (apply append (map typed-elements (om:enums o))))))))
 
 (define (enum-types o)
   (match o
