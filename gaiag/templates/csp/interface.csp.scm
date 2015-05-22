@@ -50,7 +50,7 @@ forward =
        (if (pair? ((compose .elements .parameters .signature) f))
            (list "?" ((->join ".") (map .name ((compose .elements .parameters .signature) f)))))
        " ->\n")
-    (list "    call_call." (.name f) "_forward"
+    (list "    call_return." (.name f) "_call"
        (if (pair? ((compose .elements .parameters .signature) f))
            (list "!" ((->join ".") (map .name ((compose .elements .parameters .signature) f)))))
        " ->\n")

@@ -1,28 +1,3 @@
-;;; Gaiag --- Guile in Asd In Asd in Guile.
-;;;
-;;; This file is part of Gaiag.
-;;;
-;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2014, 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;;
-;;; Gaiag is free software: you can redistribute it and/or modify it
-;;; under the terms of the GNU Affero General Public License as
-;;; published by the Free Software Foundation, either version 3 of the
-;;; License, or (at your option) any later version.
-;;;
-;;; Gaiag is distributed in the hope that it will be useful, but
-;;; WITHOUT ANY WARRANTY; without even the implied warranty of
-;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;;; Affero General Public License for more details.
-;;;
-;;; You should have received a copy of the GNU Affero General Public
-;;; License along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
-;;; 
-;;; Commentary:
-;;; 
-;;; Code:
-
 -- drop_one_local: V => V
 drop_one_local_((M', (L', L0'))) = (M', L')
 
@@ -81,32 +56,138 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-#(->string
-  (map (lambda (x) (list (.name x) " = {" ((compose .from .range) x) ".." ((compose .to .range) x) "}\n"))
-      (filter (is? <int>) (gom:types model))))
-            
-datatype event_enumeration_alphabet = #
-(pipe-join
-  (delete-duplicates
-   (sort
-    (append
-     (interface-events model identity)
-     (enum-values model)
-     (return-values model)
-     (list 'the_end' 'modeling))
-    symbol<)))
+Reply = {0..9}
 
-#(stderr "F: ~a\n" (gom:functions model))
-#(string-if (pair? (gom:functions model)) #{
+            
+datatype event_enumeration_alphabet = a | e | modeling | return | the_end'
+
+
 datatype call_return_alphabet =
-  #((->join "  |")
-  (apply append
-    (map (lambda (f)
-     (append
-       (list (->string (.name f) "_return\n"))
-       (map (lambda (x) (->string (list (.name f) "_call." (.name x) "\n")
-                                  (list "  |" (.name f) "_forward." (.name x) "\n")))
-                                  (filter (is? <int>) (gom:types model)))))
-     (gom:functions model))))
+  f_return
+  |f_call.Reply
+  |f_forward.Reply
+  |f2_return
+  |f2_call.Reply
+  |f2_forward.Reply
+  |f3_return
+  |f3_call.Reply
+  |f3_forward.Reply
+
 channel call_return: call_return_alphabet
-#})
+
+datatype glob_alphabet = get.Reply | set.Reply
+
+channel glob: glob_alphabet  
+
+
+-- interface.csp.scm
+
+channel nep: {e,the_end'}
+channel nep_'': {a}
+channel nep_': {return}
+channel nep_in',nep_out': {nep_'.return}
+channel nep_''': {modeling}
+
+IF_nep_(IG,CS) = let
+f = 
+  wait(call_return.f_call,
+    call_return.f_call?p ->
+    glob.get?b -> 
+    let b = p within
+    nep_''!a ->
+    glob.set!b -> 
+    call_return.f2_call!b ->
+    wait(call_return.f2_return,
+      call_return.f2_return ->
+      glob.get?b -> 
+      glob.set!b -> 
+      call_return.f_return ->
+      f
+    )
+  )
+f2 = 
+  wait(call_return.f2_call,
+    call_return.f2_call?p ->
+    glob.get?b -> 
+    let b = p within
+    nep_''!a ->
+    glob.set!b -> 
+    call_return.f3_call!b ->
+    wait(call_return.f3_return,
+      call_return.f3_return ->
+      glob.get?b -> 
+      glob.set!b -> 
+      call_return.f2_return ->
+      f2
+    )
+  )
+f3 = 
+  wait(call_return.f3_call,
+    call_return.f3_call?p ->
+    glob.get?b -> 
+    let b = p within
+    nep_''!a ->
+    glob.set!b -> 
+    call_return.f3_return ->
+    f3
+  )
+
+nep_=
+nep?x:{e} ->
+  glob.get?b -> 
+  let r = 1 within
+  glob.set!b -> 
+  call_return.f_call!r ->
+  wait(call_return.f_return,
+    call_return.f_return ->
+    glob.get?b -> 
+    glob.set!b -> 
+    nep_'.return -> SKIP
+  )
+; nep.the_end' -> nep_
+[]
+CS & nep?x:{} -> illegal_(STOP,<>)
+
+forward =
+  wait(call_return.f_forward,
+    call_return.f_forward?p ->
+    call_return.f_call!p ->
+    forward
+  )
+
+  []
+    wait(call_return.f2_forward,
+    call_return.f2_forward?p ->
+    call_return.f2_call!p ->
+    forward
+  )
+
+  []
+    wait(call_return.f3_forward,
+    call_return.f3_forward?p ->
+    call_return.f3_call!p ->
+    forward
+  )
+
+global = let
+  glob_set_get = glob.set?b -> glob.get!b -> glob_set_get
+within 
+  glob.get!0 -> glob_set_get
+                                                                                                          
+REORDER' = nep?x' -> (nep_in'?y' -> nep.the_end' -> nep_out'!y' -> REORDER' [] nep.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+nep__ = compress((([|{|call_return|}|] x:{f,f2,f3,nep_} @ x) [|{|glob|}|] global) \ {|glob|})
+
+within compress(if CS
+                then nep__
+                else nep__[[x<-nep_in'.x|x<-extensions(nep_in')]] [|{|nep,nep_in',nep.the_end'|}|] REORDER' [[nep_out'.x<-x|x<-extensions(nep_out')]] \ {|nep_in',nep.the_end'|})
+
+-- end of interface.csp.scm
+assert COMPLETE'({nep.e}) [F= IF_nep_(true,true) \ diff(Events,{nep.e,illegal})
+assert IF_nep_(false,false) :[deadlock free]
+assert IF_nep_(true,false) :[livelock free]
