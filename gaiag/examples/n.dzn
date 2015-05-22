@@ -1,0 +1,67 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface nep
+{
+  typedef int[0..9] Reply;
+
+  in void e;
+  out void a;
+
+  behaviour
+  {
+    Reply b = 0;
+    void f(Reply p)
+    {
+      b = p;
+      a;
+      f2(b);
+    }
+    void f2(Reply p)
+    {
+      b = p;
+      a;
+      f3(b);
+    }
+    void f3(Reply p)
+    {
+      b = p;
+      a;
+      //f4(b);
+    }
+    // void f4(Reply p)
+    // {
+    //   b = p;
+    //   a;
+    //   f5(b);
+    // }
+    // void f5(Reply p)
+    // {
+    // }
+    on e:
+    {
+      Reply r = 1;
+      f(r);
+    }
+  }
+}
