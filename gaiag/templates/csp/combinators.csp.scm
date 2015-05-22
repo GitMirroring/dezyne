@@ -72,9 +72,6 @@ context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_loca
 --context_int_active_(C', B', S')(P', V') = (\ (C', B', S') @ context_active_(C', S'))
 context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
                                            
-wait(e', P') = (P' [] [] x : diff({|call_return|},{|e'|}) @ x-> wait(e', P'))
-                                           
-
 channel illegal
 channel range_error
 channel transition_begin, transition_end
@@ -101,30 +98,3 @@ datatype event_enumeration_alphabet = #
    (list "nametype " (.name e) " = {" ((->join ", ") (map (lambda (f) (list (.name e) "_" f)) ((compose .elements .fields) e))) "}\n"))
 (filter (is? <enum>) (enum-types model)))
 
-#(string-if (pair? (om:functions model)) #{
-datatype call_return_alphabet =
-  #((->join "  |")
-    (apply
-     append
-     (map
-      (lambda (f)
-        (let* ((parameters ((compose .elements .parameters .signature) f))
-               (p-types (if (pair? parameters)
-                            (->string (list "." (csp-comma-list (map (compose .name .type) ((compose .elements .parameters .signature) f)))  "\n"))
-                            "")))
-     (append
-      (list (->string (.name f) "_return\n")
-            (->string (.name f) "_call" p-types)
-            (list (if (.recursive f)
-                      (->string (list (.name f) "_forward" p-types))))))))
-     (om:functions model))))
-channel call_return: call_return_alphabet
-#})
-#(string-if (pair? (om:member-types model)) #{
-datatype glob_alphabet = get.#(csp-comma-list (om:member-types model))  | set.#(csp-comma-list (om:member-types model))
-channel glob: glob_alphabet
-#}
-#{
-datatype glob_alphabet = <> -- FIXME no globals
-channel glob: glob_alphabet
-#})

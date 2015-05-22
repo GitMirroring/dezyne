@@ -34,6 +34,7 @@ channel #(.name model)_in',#(.name model)_out': {#(comma-join (map (lambda (x) (
 channel #(.name model)_''': {modeling}
 
 IF_#(.name model) _#((compose .name .behaviour) model)(IG,CS) = let
+wait(e', P') = (P' [] [] x : diff({|#(.name model)_call_return|},{|e'|}) @ x-> wait(e', P'))
 # (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (om:functions model)))
 #(.name model) _#((compose .name .behaviour) model) =
 # (behaviour->csp (csp:import (.name model)))
@@ -42,7 +43,7 @@ CS & #(.name model)?x:{#(comma-join (delete-duplicates (map .event (modeling-eve
 
 forward = 
 #((->join "\n  []\n  ")
- (cons "COMPLETE'({|call_return|})" 
+ (cons (->string "COMPLETE'({|" (.name model) "_call_return|})")
   (map
    (lambda (f)
     (->string
@@ -59,9 +60,9 @@ forward =
     (filter .recursive (om:functions model)))))
 
 global = let
-  glob_set_get = glob.set?#(csp-comma-list (om:member-names model))  -> glob.get!#(csp-comma-list (om:member-names model))  -> glob_set_get
+  glob_set_get = #(.name model)_glob.#(.name model)_set?#(csp-comma-list (om:member-names model))  -> #(.name model)_glob.#(.name model)_get!#(csp-comma-list (om:member-names model))  -> glob_set_get
 within
-  glob.get!#(csp-comma-list (map (lambda (x) (csp-expression->string model x '())) (om:member-values model)))  -> glob_set_get
+  #(.name model)_glob.#(.name model)_get!#(csp-comma-list (map (lambda (x) (csp-expression->string model x '())) (om:member-values model)))  -> glob_set_get
 
 REORDER' = #(.name model)?x' -> (#(.name model)_in'?y' -> #(.name model).the_end' -> #(.name model)_out'!y' -> REORDER' [] #(.name model).the_end' -> REORDER')
 
@@ -70,7 +71,7 @@ transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
 
-#(.name model) _#((compose .name .behaviour) model)_ = compress((([|{|call_return|}|] x:{#((->join ",") (append (map .name (om:functions model)) (list (->string (.name model) "_" ((compose .name .behaviour) model)))))} @ x) [|{|glob|}|] global) \ {|glob|})
+#(.name model) _#((compose .name .behaviour) model)_ = compress((([|{|#(.name model)_call_return|}|] x:{#((->join ",") (append (map .name (om:functions model)) (list (->string (.name model) "_" ((compose .name .behaviour) model)))))} @ x) [|{|#(.name model)_glob|}|] global) \ {|#(.name model)_glob, #(.name model)_call_return|})
 
 within compress(if CS
                 then #

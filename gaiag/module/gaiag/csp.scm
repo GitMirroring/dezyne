@@ -155,6 +155,7 @@
     (($ <component>)
      (map om:import (delete-duplicates (sort (map .type ((compose .elements .ports) o)) symbol<))))))
 
+<<<<<<< HEAD
 (define (assembly-lts o)
   (match o
     (($ <interface>) *unspecified*)
@@ -167,6 +168,16 @@
      (csp-file 'interface-lts.csp.scm (csp-module o)))
     (($ <component>)
      (csp-file 'component-lts.csp.scm (csp-module o)))))
+=======
+(define-method (csp-model (o <component>))
+  (for-each csp-model (interfaces o))
+  (csp-file 'both.csp.scm (csp-module o))
+  (csp-file 'component.csp.scm (csp-module o)))
+
+(define-method (csp-model (o <interface>))
+  (csp-file 'both.csp.scm (csp-module o))
+  (csp-file 'interface.csp.scm (csp-module o)))
+>>>>>>> generate nepext.csp -- similar to nepextref.csp but reordered, factored template code out into both.csp.scm.
 
 (define (csp-model o)
   (match o
@@ -875,14 +886,14 @@
                             (list
                              (if (is-a? model <interface>) model-name (.port (car ins)))
                              (->string "?x:{" (comma-join (append modeling-triggers (map .event ins))) "} ->\n")
-                             (->string "glob.get?" member-name-list " ->\n")
+                             (->string model-name "_glob." model-name "_get?" member-name-list " ->\n")
                              tail
                              transformed-end)
                             (if (pair? modeling-triggers)
                                 (list
                                  (if (is-a? model <interface>) model-name channel)
                                  (->string "?x:{" (comma-join modeling-triggers) "} ->\n")
-                                 (->string "glob.get?" member-name-list " ->\n")
+                                 (->string model-name "_glob." model-name "_get?" member-name-list " ->\n")
                                  tail
                                  transformed-end)
                                 '()))
@@ -890,7 +901,7 @@
                             (list
                              (if (is-a? model <interface>) model-name (.port (car outs)))
                              (->string "_''?x:{" (comma-join (map .event outs)) "} ->\n")
-                             (->string "glob.get?" member-name-list " ->\n")
+                             (->string model-name "_glob." model-name "_get?" member-name-list " ->\n")
                              tail
                              transformed-end)
                             '())))))
@@ -899,13 +910,13 @@
 
           (($ <function> name ($ <signature> type ('formals)) recursive? statement)
            (let ((transformed (csp-transform-model model statement inevitable-optional? channel provided-on? locals 2
-                                             (list (->string "    " "glob.set!" member-name-list " ->\n")
-                                                   (->string "    " "call_return." name "_return ->\n")
+                                             (list (->string "    " model-name "_glob." model-name "_set!" member-name-list " ->\n")
+                                                   (->string "    " model-name "_call_return." model-name "_" name "_return ->\n")
                                                    (->string "    " name "\n")))))
                  (append (list (->string name " = \n")
-                               (->string "  wait(call_return." name "_call,\n")
-                               (->string "    call_return." name "_call ->\n")
-                               (->string "    glob.get?" member-name-list " ->\n"))                           
+                               (->string "  wait(" model-name "_call_return." model-name "_" name "_call,\n")
+                               (->string "    " model-name "_call_return." model-name "_" name "_call ->\n")
+                               (->string "    " model-name "_glob." model-name "_get?" member-name-list " ->\n"))                           
                          transformed
                          '("  )\n"))))
           
@@ -916,14 +927,14 @@
                                 (loop (cdr formals)
                                       (acons (.name (car formals)) (car formals) locals)))))
                   (formal-name-list (csp-comma-list (map .name formals)))
-                  (transformed (csp-transform-model model statement inevitable-optional? channel provided-on? locals 2
-                                              (list (->string "    " "glob.set!" member-name-list " ->\n")
-                                                    (->string "    " "call_return." name "_return ->\n")
+                  (transformed (csp-transform model statement inevitable-optional? channel provided-on? locals 2
+                                              (list (->string "    " model-name "_glob." model-name "_set!" member-name-list " ->\n")
+                                                    (->string "    " model-name "_call_return." model-name "_" name "_return ->\n")
                                                     (->string "    " name "\n")))))
                   (append (list (->string name " = \n")
-                                (->string "  wait(call_return." name "_call" ",\n")
-                                (->string "    call_return." name "_call?" formal-name-list " ->\n")
-                                (->string "    glob.get?" member-name-list " ->\n"))                           
+                                (->string "  wait(" model-name "_call_return." model-name "_" name "_call" ",\n")
+                                (->string "    " model-name "_call_return." model-name "_" name "_call?" formal-name-list " ->\n")
+                                (->string "    " model-name "_glob." model-name "_get?" member-name-list " ->\n"))                           
                           transformed
                           '("  )\n"))))
           
@@ -956,14 +967,14 @@
                   (tail (map (lambda (x) (if (pair? x) (cons s x) (list s x))) tail)))
              (if tailrec? 
                  (list
-                  (->string space "call_return." identifier "_forward!" arguments " ->\n")
+                  (->string space model-name "_call_return." identifier "_forward!" arguments " ->\n")
                   (->string space identifier))
                  (append (list
-                          (->string space "glob.set!" member-name-list " ->\n")
-                          (->string space "call_return." identifier "_call!" arguments " ->\n")
-                          (->string space "wait(call_return." identifier "_return" ",\n")
-                          (->string space s "call_return." identifier "_return" " ->\n")
-                          (->string space s "glob.get?" member-name-list " ->\n"))
+                          (->string space model-name "_glob." model-name "_set!" member-name-list " ->\n")
+                          (->string space model-name "_call_return." model-name "_" identifier "_call!" arguments " ->\n")
+                          (->string space "wait(" model-name "_call_return." model-name "_" identifier "_return" ",\n")
+                          (->string space s model-name "_call_return." model-name "_" identifier "_return" " ->\n")
+                          (->string space s model-name "_glob." model-name "_get?" member-name-list " ->\n"))
                          tail
                          (list
                           (->string space ")\n"))))))
@@ -983,7 +994,7 @@
           (($ <csp-reply> context expression)
            (let* ((expression (csp-expression->string model expression locals)))
              (list
-              (->string space "glob.set!" member-name-list " ->\n")
+              (->string space model-name "_glob." model-name "_set!" member-name-list " ->\n")
               (->string space channel "_'!" expression " -> SKIP\n"))))
              
           (($ <action> trigger)
@@ -1000,7 +1011,7 @@
         (let ((channel-return
                (if (and (not inevitable-optional?) provided-on?)
                        (list 
-                        (->string "glob.set!" member-name-list " ->\n")
+                        (->string model-name "_glob." model-name "_set!" member-name-list " ->\n")
                         (->string channel "_'.return -> SKIP\n"))
                        (if (is-a? model <component>)
                            (list "skip_")
