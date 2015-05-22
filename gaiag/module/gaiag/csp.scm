@@ -389,6 +389,14 @@
       (apply append (map (compose enum-values om:import .type) ((compose .elements .ports) o)))
       (apply append (map typed-elements (om:enums o)))))))
 
+(define (enum-types o)
+  (match o
+    (($ <interface>) (append (or (and=> (.behaviour o) om:enums) '()) (om:enums)))
+    (($ <component>)
+     (append
+      (apply append (map (compose enum-types om:import .type) ((compose .elements .ports) o)))
+      (append (or (and=> (.behaviour o) om:enums) '()) (om:enums))))))
+
 (define (return-value o)
   (map (lambda (value) (symbol-append (.name o) '_ value)) ((compose .elements .fields) o)))
 
