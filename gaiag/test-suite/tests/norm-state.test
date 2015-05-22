@@ -28,12 +28,12 @@
   :use-module (oop goops)
   :use-module (gaiag om))
 
-(pass-if "norm-state-first-dummy-test"
+(pass-if "csp-norm-state-first-dummy-test"
          #t)
 
-(pass-if "norm-state-101"
+(pass-if "csp-norm-state-101"
          (om-pretty-noisy-equal?
-          (norm-state
+          (csp-norm-state
            (cadr (dezyne->ast
                            #{
                              interface i { in void a; out void b;
@@ -43,9 +43,9 @@
                                  (compound
                                   (guard (expression true) (on (triggers (trigger #f a)) (compound))))))))
 
-(pass-if "norm-state-102"
+(pass-if "csp-norm-state-102"
          (om-pretty-noisy-equal?
-          (norm-state
+          (csp-norm-state
            (cadr (dezyne->ast
                            #{
                              interface i { in void a; out void b;
@@ -58,9 +58,9 @@
                                          (on (triggers (trigger #f a))
                                              (action (trigger #f b)))))))))
 
-(pass-if "norm-state-aggregate-guard-passive"
+(pass-if "csp-norm-state-aggregate-guard-passive"
          (om-pretty-noisy-equal?
-          (norm-state
+          (csp-norm-state
            (cadr (dezyne->ast
                            #{
                              interface i { in void a; in void b; in void c;
@@ -75,9 +75,9 @@
                                          (on (triggers (trigger #f a) (trigger #f b) (trigger #f c))
                                              (action (trigger #f d)))))))))
 
-(pass-if "norm-state-aggregate-guard-active"
+(pass-if "csp-norm-state-aggregate-guard-active"
          (om-pretty-noisy-equal?
-          (norm-state
+          (csp-norm-state
            (cadr (dezyne->ast
                            #{
                              interface i { in void a; in void b; in void c;
@@ -96,9 +96,9 @@
                                           (on (triggers (trigger #f b)) (action (trigger #f e)))
                                           (on (triggers (trigger #f c)) (action (trigger #f f))))))))))
 
-(pass-if "norm-state-aggregate-guard-recurse"
+(pass-if "csp-norm-state-aggregate-guard-recurse"
          (om-pretty-noisy-equal?
-          (norm-state
+          (csp-norm-state
            '(compound
              (guard
               (expression (field state Disarming))
@@ -160,9 +160,9 @@
                    state
                    (expression (literal #f States Disarmed)))))))))
 
-(pass-if "norm-state-function-call"
+(pass-if "csp-norm-state-function-call"
          (om-pretty-noisy-equal?
-          (norm-state
+          (csp-norm-state
            (cadr (dezyne->ast
                            #{
                              interface i { in void a; out void d;
@@ -181,9 +181,9 @@
                                          (on (triggers (trigger #f a) (trigger #f b) (trigger #f c))
                                              (action (trigger #f d)))))))))
 
-(pass-if "norm-state-split-on-passive"
+(pass-if "csp-norm-state-split-on-passive"
          (om-pretty-noisy-equal?
-          (norm-state
+          (csp-norm-state
            (cadr (dezyne->ast
                            #{
                              interface i { in void a; in void b; in void c;
@@ -199,9 +199,9 @@
                                          (on (triggers (trigger #f a) (trigger #f b) (trigger #f c))
                                              (action (trigger #f d)))))))))
 
-(pass-if "norm-state-split-on-active-single-on"
+(pass-if "csp-norm-state-split-on-active-single-on"
          (om-pretty-noisy-equal?
-          (norm-state
+          (csp-norm-state
            (cadr (dezyne->ast
                            #{
                              component c { behaviour { [true] on i.a: illegal;
@@ -226,9 +226,9 @@
                      (illegal))
                 (on (triggers (trigger j a)) (illegal)))))))))
 
-(pass-if "norm-state-aggregate-on-interface-passive"
+(pass-if "csp-norm-state-aggregate-on-interface-passive"
          (om-pretty-noisy-equal?
-          (norm-state
+          (csp-norm-state
            (cadr (dezyne->ast
                            #{
                              interface i {  in void a; in void b; in void c;
@@ -242,9 +242,9 @@
                                   (guard (expression true)
                                          (on (triggers (trigger #f a) (trigger #f b) (trigger #f c)) (action (trigger #f d)))))))))
 
-(pass-if "norm-state-aggregate-on-interface-active"
+(pass-if "csp-norm-state-aggregate-on-interface-active"
          (om-pretty-noisy-equal?
-          (norm-state
+          (csp-norm-state
            (cadr (dezyne->ast
                            #{
                              interface i {  in void a; in void b; in void c;
@@ -263,9 +263,9 @@
 
 ;; not modifying the input where it is already fine,
 ;; helps retaining more location information in AST.
-(pass-if "norm-state-aggregate-on-component-passive"
+(pass-if "csp-norm-state-aggregate-on-component-passive"
          (om-pretty-noisy-equal?
-          (norm-state
+          (csp-norm-state
            (cadr (dezyne->ast
                            #{
                              component c { behaviour { on i.a,i.b: [true] j.d;
@@ -284,9 +284,9 @@
                                           (on (triggers (trigger j b))
                                               (action (trigger j e))))))))))
 
-(pass-if "norm-state-aggregate-on-component-active"
+(pass-if "csp-norm-state-aggregate-on-component-active"
          (om-pretty-noisy-equal?
-          (norm-state
+          (csp-norm-state
            (cadr (dezyne->ast
                            #{
                              component c { behaviour { on i.a: [true] j.d;
@@ -306,9 +306,9 @@
                                           (on (triggers (trigger j b))
                                               (action (trigger j e))))))))))
 
-(pass-if "norm-state-aggregate-on-component-active"
+(pass-if "csp-norm-state-aggregate-on-component-active"
          (om-pretty-noisy-equal?
-          (norm-state
+          (csp-norm-state
            '(compound
              (compound
               (guard (expression (value state Disarmed))
@@ -346,9 +346,9 @@
              (on (triggers (trigger console arm))
                  (illegal))))))
 
-(pass-if "norm-state-nested-guards"
+(pass-if "csp-norm-state-nested-guards"
          (om-pretty-noisy-equal?
-          (norm-state
+          (csp-norm-state
            (cadr (dezyne->ast
                            #{
 interface norm_nested_guards
@@ -394,8 +394,6 @@ interface norm_nested_guards
           (and (and (field state Foo) (var bar)) true))
         (compound
           (on (triggers (trigger #f e (arguments)))
-               (compound
-                 (reply (expression (literal #f Reply Ok)))))
+              (reply (expression (literal #f Reply Ok))))
           (on (triggers (trigger #f e (arguments)))
-               (compound
-                 (reply (expression (literal #f Reply Nok))))))))))))
+              (reply (expression (literal #f Reply Nok)))))))))))

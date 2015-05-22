@@ -37,7 +37,9 @@
   :use-module (gaiag om)
   :use-module (gaiag gaiag)
   :use-module (gaiag json-table)
+  :use-module (gaiag norm)
   :use-module (gaiag norm-event)
+  :use-module (gaiag norm-state)    
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
   :use-module (gaiag pretty)
@@ -51,7 +53,13 @@
  (else #t))
 
 (define (table-event model o)
-  (norm-event (table-state-statement model o)))
+  ((compose
+    norm-event
+    remove-initial
+    (annotate-otherwise)
+    (prepend-guards model)
+    (annotate-otherwise)
+    ) o))
 
 (define (ast-> ast)
   ((compose

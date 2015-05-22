@@ -157,15 +157,12 @@ reply_(i630_iCruiseController_', (\ ((i355_state),(stack')) @ i336_result_NOK))(
 illegal_(STOP,<>))
 []
 ((i355_state == i347_States_Busy)) & (
-IG & i630_iCruiseController?x:{i337_SpeedTooLow} ->
+IG & i630_iCruiseController?x:{i337_SpeedTooLow,i340_HandleError} ->
 illegal_(STOP,<>)
  []
   i630_iCruiseController?x:{i339_BrakeHit} ->
 semi_(assign_(\ ((i355_state),(stack')) @ ((i347_States_Idle),(stack'))),
 (\ P',V' @ i630_iCruiseController_'.return -> P'(V')))(\ V' @ i630_iCruiseController.the_end' -> i630_iCruiseController_(V'),((i355_state),(stack')))
- []
-  IG & i630_iCruiseController?x:{i340_HandleError} ->
-illegal_(STOP,<>)
  []
   i630_iCruiseController?x:{inevitable} ->
 semi_(semi_((\ P',V' @ i630_iCruiseController_''!i341_SpeedReached -> P'(V')),
@@ -248,10 +245,7 @@ reply_(i630_iCruiseController_', (\ ((i648_state,i658_MotorUnitOk,i662_IsFatalEr
   IIG & i631_cc?x:{i340_HandleError} ->
 illegal_(STOP,<>)
  []
-  IG & i634_mu_''?x:{i11_MotorUnitDone} ->
-illegal_(STOP,<>)
- []
-  IG & i634_mu_''?x:{i12_MotorUnitError} ->
+  IG & i634_mu_''?x:{i11_MotorUnitDone,i12_MotorUnitError} ->
 illegal_(STOP,<>))
 []
 ((i648_state == i640_States_Busy)) & (

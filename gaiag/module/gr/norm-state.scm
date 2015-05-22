@@ -51,6 +51,7 @@
   :export (
            ast->
            norm-state
+           csp-norm-state
            ))
 
 (cond-expand
@@ -60,56 +61,51 @@
 
 (define (norm-state o)
   (match o
-    ((and (negate (is? <ast>)) (h t ...))
+    ((and (? (negate (is? <ast>))) (h t ...))
      ((compose norm-state ast:resolve ast->om) o))
     ((? (is? <ast>))
      ((compose
        remove-skip
-       aggregate-on
+       (aggregate-on)
        (expand-on port-equal?)
        aggregate-guard-g
        flatten-compound
        combine-guards
        passdown-on
-       (remove-otherwise '())
+       (remove-otherwise)
        add-skip)
       o))))
 
-(define (port-equal? lhs rhs)
-  (and (is-a? lhs <trigger>) (is-a? rhs <trigger>)
-       (eq? (.port lhs) (.port rhs))))
-
-(define (aggregate-on o)
-  "Aggregate triggers with matching port and statement into one on-statement."
-  ;; find all ons with matching port and statement
-  ;; push all ons into first on, discard the rest
+(define (csp-norm-state o)
   (match o
-    (($ <compound> (($ <on>) ...))
-     (make <compound>
-       :elements
-       (let loop ((ons (.elements o)))
-         (if (null? ons)
-             '()
-             (receive (shared-ons remainder)
-                 (partition (lambda (x) (on-same-port-statement? (car ons) x)) ons)
-               (let* ((triggers
-                       (apply append
-                              (map (compose .elements .triggers) shared-ons)))
-                      (statement (.statement (car ons)))
-                      (aggregated-on (make <on>
-                                       :triggers (make <triggers> :elements triggers)
-                                       :statement statement)))
-                 (cons aggregated-on (loop remainder))))))))
-     (($ <functions>) o)
-     ((? (is? <ast>)) (om:map aggregate-on o))
-     ((h t ...) (map aggregate-on o))
-     (_ o)))
+    ((and (? (negate (is? <ast>))) (h t ...))
+     ((compose csp-norm-state ast:resolve ast->om) o))
+    ((? (is? <ast>))
+     ((compose
+       remove-skip
+       (aggregate-on on-same-port-statement?)
+       (expand-on port-equal?)
+       aggregate-guard-g
+       flatten-compound
+       combine-guards
+       passdown-on
+       (remove-otherwise)
+       add-skip)
+      o))))
 
 (define (on-same-port-statement? lhs rhs)
   (and (is-a? lhs <on>) (is-a? rhs <on>)
        (eq? ((compose .port car .elements .triggers) lhs)
             ((compose .port car .elements .triggers) rhs))
        (equal? (.statement lhs) (.statement rhs))))
+
+(define (port-equal? lhs rhs)
+  (and (is-a? lhs <trigger>) (is-a? rhs <trigger>)
+       (eq? (.port lhs) (.port rhs))))
+
+(define (port-equal? lhs rhs)
+  (and (is-a? lhs <trigger>) (is-a? rhs <trigger>)
+       (eq? (.port lhs) (.port rhs))))
 
 (define (combine-guards o)
   (match o

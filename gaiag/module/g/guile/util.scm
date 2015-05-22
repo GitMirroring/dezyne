@@ -32,7 +32,7 @@
   :use-module (ice-9 optargs)
   :use-module (ice-9 pretty-print)
 
-;;  :use-module (language dezyne location)
+  :use-module (language dezyne location)
   :use-module (gaiag annotate)
   
   :use-module (g gaiag)  
@@ -52,6 +52,8 @@
            om:map
            om:named
            om:scoped           
+           om:declarative?
+           om:imperative?
 
            om:register
 
@@ -72,12 +74,15 @@
            om:type
            om:types           
            om:variable
+           om:<
+           om:equal?
            ))
 
 (define (om:map f o)
   (match o
-    ((? ast-list?) (cons (car o) (map f (.elements o))))
-    ((h t ...) (cons (car o) (map f (cdr o))))
+    ((? ast-list?)
+     (retain-source-properties o (cons (car o) (map f (.elements o)))))
+    ((h t ...) (retain-source-properties o (cons (car o) (map f (cdr o)))))
     (_ o)))
 
 
@@ -174,6 +179,16 @@
 
 (define (ast-name o) (car o))
 
+(define (om:declarative? o)
+  (or (is-a? o <guard>)
+      (is-a? o <on>)
+      (and (is-a? o <compound>)
+           (>0 (length (.elements o)))
+           (om:declarative? (car (.elements o))))))
+
+(define om:imperative? (negate om:declarative?))
+
+;; compare
 (define (remove-arguments o)
   (match o
     (('trigger p e arguments) (list 'trigger p e))
@@ -182,6 +197,14 @@
 (define (om:triggers-equal? a b)
   (equal? (map remove-arguments (.triggers a))
           (map remove-arguments (.triggers b))))
+
+(define om:< <)
+
+(define (om:equal? a b)
+  (or (and (is-a? a <trigger>)
+           (is-a? b <trigger>)
+           (equal? (remove-arguments a) (remove-arguments b)))
+      (equal? a b)))
 
 ;;;; OM handling
 

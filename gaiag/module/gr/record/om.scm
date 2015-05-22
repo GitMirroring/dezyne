@@ -31,6 +31,8 @@
   :use-module (ice-9 optargs)
   :use-module (ice-9 pretty-print)
 
+  :use-module (language dezyne location)
+
   :use-module (srfi srfi-9)
   :use-module (srfi srfi-9 gnu)
 
@@ -1614,7 +1616,8 @@
 
 (define* (om:clone o :optional (f #f))
   (if f
-      (apply (ast-constructor o) (map f (om:children o)))
+      (retain-source-properties
+       o (apply (ast-constructor o) (map f (om:children o))))
       o))
 
 (define (foo)

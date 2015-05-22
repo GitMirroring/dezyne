@@ -121,7 +121,7 @@
     (($ <type> name '*global*) (->string name))    
     (($ <type> name scope) (->string (list scope '. name)))
     (($ <type> name) (->string name))
-    (($ <otherwise> value) (->string value))    
+    (($ <otherwise> value) (->string 'otherwise))
     (($ <triggers> triggers) (comma-space-join (map ->string triggers)))
 
     ;; FIXME: c&p from csp.scm (and...TODO: c++.scm) grmbl

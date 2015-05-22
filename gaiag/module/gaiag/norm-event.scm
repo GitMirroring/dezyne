@@ -57,20 +57,19 @@
 
 (define (norm-event o)
   (match o
-    ((and (negate (is? <ast>)) (h t ...))
+    ((and (? (negate (is? <ast>))) (h t ...))
      ((compose norm-event ast:resolve ast->om) o))
     ((? (is? <ast>))
      ((compose
        remove-skip
        aggregate-guard-s
-       collapse-on
-       ;;    aggregate-on    
+       (aggregate-on om:triggers-equal?)
        (expand-on equal?)
        aggregate-guard-s
        flatten-compound
        combine-ons
        passdown-guard
-       (remove-otherwise '())
+       (remove-otherwise)
        add-skip)
       o))))
 
@@ -89,17 +88,19 @@
              '()
              (receive (shared-guards remainder)
                  (partition (lambda (x) (guard-same-statement? (car guards) x)) guards)
-               (let* ((expression
-                       (reduce (lambda (x y)
-                                 (if (equal? x y) x (list 'or x y)))
-                               '()
-                               (map (compose .value .expression) shared-guards)))
-                      (statement (.statement (car guards)))
-                      (aggregated-guard (make <guard>
-                                          :expression (make <expression>
-                                                        :value expression)
-                                          :statement statement)))
-                 (cons aggregated-guard (loop remainder))))))))
+               (if (=1 (length shared-guards))
+                   (cons (car shared-guards) (loop remainder))
+                   (let* ((expression
+                           (reduce (lambda (x y)
+                                     (if (equal? x y) x (list 'or x y)))
+                                   '()
+                                   (map (compose .value .expression) shared-guards)))
+                          (statement (.statement (car guards)))
+                          (aggregated-guard (make <guard>
+                                              :expression (make <expression>
+                                                            :value expression)
+                                              :statement statement)))
+                     (cons aggregated-guard (loop remainder)))))))))
      (($ <functions>) o)
      ((? (is? <ast>)) (om:map aggregate-guard-s o))
      ((h t ...) (map aggregate-guard-s o))
@@ -107,38 +108,7 @@
 
 (define (guard-same-statement? lhs rhs)
   (and (is-a? lhs <guard>) (is-a? rhs <guard>)
-   (equal? (.statement lhs) (.statement rhs))))
-
-(define (collapse-on o)
-  "Collapse matching triggers into one on-statement."
-  (match o
-    (
-     ($ <compound> (($ <on>) ...)) ;;-goeps
-     ;;+goeps ($ <compound> ($ <on>) ...)
-     (make <compound>
-       :elements
-       (let loop ((ons (.elements o)))
-         (if (null? ons)
-             '()
-             (receive (shared-ons remainder)
-                 (partition (lambda (x) (om:triggers-equal? (car ons) x)) ons)
-               (let* ((triggers (.triggers (car shared-ons)))
-                      (statement (on-statement (map .statement shared-ons)))
-                      (collapsed-on (make <on>
-                                       :triggers triggers
-                                       :statement statement)))
-                 (cons collapsed-on (loop remainder))))))))
-     (($ <functions>) o)
-     ((? (is? <ast>)) (om:map collapse-on o))
-     ((h t ...) (map collapse-on o))
-     (_ o)))
-
-(define (on-statement statements)
-  (if (every identity (map (lambda (x) (equal? x (car statements))) statements))
-      (car statements))
-  (match statements
-    ((($ <guard>) ...) (make <compound> :elements statements))
-    ((h t ...) (make <compound> :elements statements))))
+       (equal? (om->list (.statement lhs)) (om->list (.statement rhs)))))
 
 (define (combine-ons o)
   (match o
@@ -158,27 +128,40 @@
      (make <compound> :elements (map (passdown-triggers triggers) (.elements o))))
     (_ (make <on> :triggers triggers :statement o))))
 
-(define (passdown-guard o) ;; FIXME: almost identical to combine-guards
+(define (passdown-guard o)
   (match o
     (($ <guard>)
-     ((passdown-expression (.expression o)) (.statement o)))
+     ((passdown-expression (.expression o))
+      (.statement o)))
     ((? (is? <ast>)) (om:map passdown-guard o))
     ((h t ...) (map passdown-guard o))
     (_ o)))
 
-(define ((passdown-expression expression) o)
+(define* ((passdown-expression expression :optional (seen-on? #f)) o)
   (match o
     (($ <on>)
      (make <on>
        :triggers (.triggers o)
-       :statement ((passdown-expression expression) (.statement o))))
-    ;; ONLY difference with combine-guard
-    (($ <compound>)
-     (let ((statements (.elements o)))
-       (match statements
-         ((($ <on>) ...)
+       :statement ((passdown-expression expression #t) (.statement o))))
+    (
+     ($ <compound> (($ <guard>) ..1)) (=> failure) ;;-goeps
+     ;;+goeps (('compound ('guard _ _) ..1)) (=> failure)
+     (if seen-on?
+         (make <guard> :expression expression :statement o)
+         (failure)))
+    ((and ($ <compound> t) (? om:declarative?))
+     (make <compound> :elements (map (passdown-expression expression seen-on?) t)))    
+    (($ <compound>) (make <guard> :expression expression :statement o))
+    (($ <guard> e s)
+     (let ((o ((passdown-expression e seen-on?) s)))
+       (match o
+         (($ <on> t s)
+          (make <on>
+            :triggers t
+            :statement (make <guard> :expression expression :statement s)))
+         (($ <compound> t)
           (make <compound>
-            :elements (map (passdown-expression expression) statements)))
+            :elements (map (passdown-expression expression seen-on?) t)))
          (_ (make <guard> :expression expression :statement o)))))
     (_ (make <guard> :expression expression :statement o))))
 

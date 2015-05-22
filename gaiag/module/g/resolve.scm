@@ -291,7 +291,7 @@
     (('illegal _ ___) o)
     (('int _ ___) o)
     (('literal _ ___) o)
-    (('otherwise _ ___) o)
+    (('otherwise _ ___) (make <otherwise>))
     (('port _ ___) o)
     (('signature type parameters)
      (make <signature>

@@ -30,8 +30,8 @@
 
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
-  :use-module (ice-9 getopt-long)    
-  :use-module (ice-9 match) 
+  :use-module (ice-9 getopt-long)
+  :use-module (ice-9 match)
   :use-module (ice-9 optargs)
   :use-module (ice-9 pretty-print)
 
@@ -50,6 +50,8 @@
            om:collect
            om:filter
            om:guard-equal?
+           om:declarative?
+           om:imperative?
            om:map
 
            om:register
@@ -58,19 +60,21 @@
            om:imported?
 
            om:enum
-           om:event           
+           om:event
            om:extern
-           om:function           
+           om:function
            om:integer
 
            om:port
-           
+
            om:register-model
            om:register-type
            om:triggers-equal?
            om:type
            om:types
            om:variable
+           om:<
+           om:equal?
            ))
 
 (define ((om:named name) model)
@@ -122,7 +126,7 @@
   (match o
     ((? symbol?) (find (named o) (om:types model)))
     (($ <type> 'bool) o)
-    (($ <type> 'void) o)    
+    (($ <type> 'void) o)
     (($ <type> name #f) (find (named name) (om:types model)))
     (($ <type> name scope) (find (scoped name scope) (om:types model)))
     (($ <variable> name type expression) ((om:type model) type))))
@@ -172,9 +176,20 @@
     (symbol? (filter (is? x) o))
     (procedure? (filter x o))))
 
+(define (om:declarative? o)
+  (or (is-a? o <guard>)
+      (is-a? o <on>)
+      (and (is-a? o <compound>)
+           (>0 (length (.elements o)))
+           (om:declarative? (car (.elements o))))))
+
+(define om:imperative? (negate om:declarative?))
+
+;; compare
 (define (om:guard-equal? lhs rhs)
   (and (is-a? lhs <guard>) (is-a? rhs <guard>)
-       (equal? (.expression lhs) (.expression rhs)))) ;; FIXME
+       (equal? (om->list (.expression lhs))
+               (om->list (.expression rhs)))))
 
 (define (om:triggers-equal? lhs rhs)
   (and (is-a? lhs <on>) (is-a? rhs <on>)
@@ -185,6 +200,53 @@
   (match o
     (($ <trigger> p e arguments) (list 'trigger p e))
     (_ o)))
+
+(define (om:equal? a b)
+  (cond
+   ((is-a? a <ast>)
+    (and (is-a? b <ast>)
+         (eq? (ast-name a) (ast-name b))
+         (match (cons a b)
+           ((($ <trigger>) . ($ <trigger>))
+            (equal? (remove-arguments a) (remove-arguments b))))))
+   (else (equal? a b))))
+
+(define (om:< a b)
+  (match (cons a b)
+    ((($ <guard> ea sa) . ($ <on> tb sb)) #t)
+    ((($ <on> ta sa) . ($ <guard> eb sb)) #f)
+    
+    ((($ <guard> ea sa) . ($ <guard> eb sb)) (om:< ea eb))
+    ((($ <on> ta sa) . ($ <on> tb sb)) (om:< ta tb))
+
+    ((($ <expression> va) . ($ <otherwise> vb)) #t)
+    ((($ <otherwise> va) . ($ <expression> vb)) #f)
+    ((($ <expression> va) . ($ <expression> vb))
+     (om:< (om->list va) (om->list vb)))
+
+    ((($ <triggers> ta) . ($ <triggers> tb))
+     (om:< (stable-sort ta om:<) (stable-sort tb om:<)))
+
+    ((($ <trigger>) . ($ <trigger>))
+     (om:< (remove-arguments a) (remove-arguments b)))
+
+    ((() . ()) #f)
+    ((() . (hb tb ...)) #t)
+    (((ha ta ...) . ()) #f)
+    (((ha ta ...) . (hb tb ...))
+     (cond
+      ((and (not (om:< (car a) (car b)))
+            (not (om:< (car b) (car a))))
+       (om:< (cdr a) (cdr b)))
+      (else (om:< (car a) (car b)))))
+    (((? symbol?) . (? symbol?)) (symbol< a b))
+    (((? symbol?) . (? boolean?)) #f)
+    (((? boolean?) . (? symbol?)) #t)
+    ((#t . #t) #f)
+    ((#f . #f) #f)
+    ((#f . #t) #t)
+    ((#t . #f) #f)
+    (_ (< a b))))
 
 ;;;; OM handling
 
@@ -287,9 +349,8 @@ Read and parse the ASD source file for MODEL-NAME, return its AST.
 ;; Read and parse the ASD source file for MODEL-NAME, return its AST.
 (define ast import-ast)
 
-;; 
+;;
 (define om:register-type register-type)
 (define om:register-model register-model)
 (define* ((om:register :optional (translate identity)) o :optional (clear? #f))
   (register o clear?))
-

@@ -290,7 +290,7 @@
     (($ <illegal>) o)
     (($ <int>) o)
     (($ <literal>) o)
-    (($ <otherwise>) o)
+    (($ <otherwise>) (make <otherwise>))
     (($ <om:port>) o)
     (($ <signature> type parameters)
      (make <signature>

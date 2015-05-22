@@ -43,7 +43,9 @@
 
   :export (
            add-skip
+           annotate-otherwise
            aggregate-guard-g
+           aggregate-on
            expand-on
            flatten-compound
            guards-not-or
@@ -62,6 +64,43 @@
     ((? (is? <ast>)) (om:map remove-skip o))
     ((h t ...) (map remove-skip o))
     (_ o)))
+
+(define* ((aggregate-on :optional (aggregate? om:on-statement-equal?)) o)
+  "Aggregate ONs with same statement AND (AGGREGATE? a b) into one ON-statement."
+  (match o
+    (
+     ('compound ('on _ ___) ...)
+     (make <compound>
+       :elements
+       (let loop ((ons (.elements o)))
+         (if (null? ons)
+             '()
+             (receive (shared-ons remainder)
+                 (partition (lambda (x) (aggregate? (car ons) x)) ons)
+               (let* ((triggers
+                       (delete-duplicates
+                        (apply append
+                               (map (compose .elements .triggers) shared-ons))
+                        om:equal?))
+                      (statement (on-statement (map .statement shared-ons)))
+                      (aggregated-on (make <on>
+                                       :triggers (make <triggers> :elements triggers)
+                                       :statement statement)))
+                 (cons aggregated-on (loop remainder))))))))
+     (('functions _ ___) o)
+     ((? (is? <ast>)) (om:map (aggregate-on aggregate?) o))
+     ((h t ...) (map (aggregate-on aggregate?) o))
+     (_ o)))
+
+(define (om:on-statement-equal? a b)
+  (and (is-a? a <on>) (is-a? b <on>)
+       (equal? (om->list (.statement a)) (om->list (.statement b)))))
+
+(define (on-statement statements)
+  (if (every identity (map (lambda (x) (equal? (om->list x) (om->list (car statements)))) statements))
+      (car statements)
+      (make <compound> :elements statements)))
+
 
 (define* ((expand-on :optional (compare equal?)) o)
   (match o
@@ -126,35 +165,80 @@
 (define (flatten-compound o)
   (match o
     (('compound _ ___)
-     (retain-source-properties
-      o 
-      (make <compound> :elements 
-            (apply append (map flatten-compound-compound (.elements o))))))
-    (('on _ ___) o)
+     (let ((top (flatten-compound- o)))
+       (retain-source-properties
+        o
+        (if (is-a? top <compound>)
+            top
+            (make <compound> :elements (list top))))))
+    ;; (('guard e s) o)
+    ;; (('on t s) o)    
     ((? (is? <ast>)) (om:map flatten-compound o))
     ((h t ...) (map flatten-compound o))
     (_ o)))
 
+(define (flatten-compound- o)
+  (match o
+    (
+      (('compound statement))
+     (flatten-compound- statement))
+    (('compound _ ___)
+     (retain-source-properties
+      o 
+      (make <compound> :elements 
+            (apply append (map flatten-compound-compound (.elements o))))))
+    ((? (is? <ast>)) (om:map flatten-compound- o))
+    ((h t ...) (map flatten-compound- o))
+    (_ o)))
+
 (define (flatten-compound-compound o)
-  (let ((result (flatten-compound o)))
+  (let ((result (flatten-compound- o)))
     (match result
       (('compound statements ___) statements)
       (_ (list result)))))
 
-(define ((remove-otherwise statements) o)
-  (define (otherwise? x) (eq? x 'otherwise))
+(define* ((annotate-otherwise :optional (statements '())) o) ;; FIXME *unspecified*
+  (define (virgin-otherwise? x) (or (eq? x 'otherwise) (eq? x *unspecified*)))
   (match o
-    (('guard ('otherwise value)) (=> failure)
-     (if (or ((negate otherwise?) value) (null? statements))
+    (('guard ('otherwise value) statement) (=> failure)
+     (if (or (not (virgin-otherwise? value)) (null? statements))
          (failure)
          (make <guard>
-           :expression (guards-not-or statements)
-           :statement (om:map (remove-otherwise '()) (.statement o)))))
+           :expression ((annotate-otherwise statements) (.expression o))
+           :statement statement)))
+    (('otherwise _ ___)
+     (or (and-let* ((guards ((om:filter <guard>) statements))
+                    (value (.value (guards-not-or guards))))
+                   (make <otherwise> :value value))
+         o))
+    (('compound statements ___)
+     (retain-source-properties
+      o (make <compound>
+          :elements (map (annotate-otherwise statements) statements))))
+    ((? (is? <ast>)) (om:map (annotate-otherwise statements) o))
+    ((h t ...) (map (annotate-otherwise statements) o))
+    (_ o)))
+
+(define* ((remove-otherwise :optional (keep-annotated? #t) (statements '())) o)
+  (define (virgin-otherwise? x) (or (eq? x 'otherwise) (eq? x *unspecified*))) ;; FIXME *unspecified*
+  (match o
+    (('guard ('otherwise value) statement) (=> failure)
+     ;;(stderr "otherwise[~a] virgin? ~a\n" o (virgin-otherwise? value))
+     (if (or (and keep-annotated?
+                  (not (virgin-otherwise? value)))
+             (null? statements))
+         (failure)
+         (begin
+           ;;(stderr "REMOVING OTHERWISE: ~a\n" o)
+           ;;(stderr "STATEMENTS: ~a\n" statements)
+          (make <guard>
+             :expression (guards-not-or statements)
+             :statement (om:map (remove-otherwise keep-annotated?) statement)))))
     (('compound statements ___)
      (make <compound>
-       :elements (map (remove-otherwise statements) statements)))
-    ((? (is? <ast>)) (om:map (remove-otherwise statements) o))
-    ((h t ...) (map (remove-otherwise statements) o))
+       :elements (map (remove-otherwise keep-annotated? statements) statements)))
+    ((? (is? <ast>)) (om:map (remove-otherwise keep-annotated? statements) o))
+    ((h t ...) (map (remove-otherwise keep-annotated? statements) o))
     (_ o)))
 
 (define (guards-not-or o)

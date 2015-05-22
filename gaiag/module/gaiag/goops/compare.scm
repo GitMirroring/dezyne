@@ -34,10 +34,32 @@
   :use-module (gaiag goops om)
   :use-module (gaiag goops util)
 
+  :export (om:< om:equal?)
   :re-export (< equal?))
+
+(define om:< <)
+(define om:equal? equal?)
 
 (define-method (< (a <on>) (b <on>))
   (< (.triggers a) (.triggers b)))
+
+(define-method (< (a <on>) (b <guard>))
+  #f)
+
+(define-method (< (a <guard>) (b <on>))
+  #t)
+
+(define-method (< (a <guard>) (b <guard>))
+  (< (.expression a) (.expression b)))
+
+(define-method (< (a <expression>) (b <expression>))
+  (< (om->list (.expression a)) (om->list (.expression b))))
+
+(define-method (< (a <expression>) (b <otherwise>))
+  #t)
+
+(define-method (< (a <otherwise>) (b <expression>))
+  #f)
 
 (define-method (< (a <triggers>) (b <triggers>))
   (< (stable-sort (.elements a) <)

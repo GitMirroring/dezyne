@@ -61,8 +61,11 @@
     (('compound _ ___)
      `((table . ,(map (json-table-event model) (.elements o)))))
     (('on triggers (and ('guard expression ___) (get! guard)))
-     (let ((var ((compose .identifier .value) expression))
-           (state (.value expression)))
+     (let* ((state (.value expression))
+            (var (match state
+                   (('field identifier field) identifier)
+                   (('or ('field identifier field) __1) identifier)
+                   (_ '<state>))))
        (alist->hash-table
         `((event . ,(json-triggers o))
           (rules . ,((json-table- model var state) (guard)))))))
@@ -85,7 +88,6 @@
                                           (actions . ,(json-action statement))
                                           (callbacks . ,(json-callback model statement))
                                           (next . ,(json-next model var state statement))))))))))
-
     (_ (stderr "catch all1:\n")
        (alist->hash-table `((event . ,(json-data-location '() o))
                             (rules . ,(list
@@ -130,7 +132,7 @@
      (let* ((statement (.statement o))
             (expression ((compose .value .expression) o))
             (state (if (is-a? expression <field>) expression (cadr expression)))
-            (var (.identifier state))
+            (var (if (is-a? <field> state) (.identifier state) '<state>))
             (inner (.statement o)))
        (match inner
          (('guard expression statement)
@@ -141,6 +143,28 @@
               (actions . ,(json-action statement))
               (callbacks . ,(json-callback model statement))
               (next . ,(json-next model var state statement))))))
+         (('compound ())
+          (list
+           (alist->hash-table
+            `((guard . ,(json-guard o))
+              ;;(inner . ,(json-data-location '() '()))
+              (actions . ,(json-action inner))
+              (callbacks . ,(json-callback model inner))
+              (next . ,(json-next model var state inner))
+              ))))
+         (
+           (and ('compound ('guard _ ___) ...) (get! compound))
+          (map (lambda (inner)
+                 (let ((expression (.expression inner))
+                       (statement (.statement inner)))
+                   (alist->hash-table
+                    `((guard . ,(json-guard o))
+                      (inner . ,(json-guard inner))
+                      (actions . ,(json-action statement))
+                      (callbacks . ,(json-callback model statement))
+                      (next . ,(json-next model var state statement))))))
+                (.elements (compound))
+               ))
          (
            ('guard expression (and ('compound ('guard _ ___) (get! compound))))
           (map (lambda (inner)
@@ -154,6 +178,7 @@
                       (next . ,(json-next model var state statement))))))
                 (.elements (compound))
                ))
+
          (_ (list
              (alist->hash-table
               `((guard . ,(json-guard o))
@@ -222,7 +247,7 @@
 
 (define (add-state o state)
   (match state
-    ((h t ...)
+    ((h ...)
      (append o state))
     (('field _ ___) (add-state o (list state)))))
 

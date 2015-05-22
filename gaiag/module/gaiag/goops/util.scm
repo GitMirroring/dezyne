@@ -55,6 +55,7 @@
            om:component
            om:components
            om:declarative?
+           om:imperative?
            om:dir-matches?
            om:enum
            om:enums
@@ -583,9 +584,14 @@
 (define* (om:parse-dezyne string :optional (register (om:register ast->om)))
   (parse-dezyne string register))
 
-(define-method (om:declarative? (o <statement>)) #f)
-(define-method (om:declarative? (o <on>)) #t)
-(define-method (om:declarative? (o <guard>)) #t)
+(define (om:declarative? o)
+  (or (is-a? o <guard>)
+      (is-a? o <on>)
+      (and (is-a? o <compound>)
+           (>0 (length (.elements o)))
+           (om:declarative? (car (.elements o))))))
+
+(define om:imperative? (negate om:declarative?))
 
 (define-method (om:id (o <top>)) ((compose pointer-address scm->pointer) o))
 

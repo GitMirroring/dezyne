@@ -37,7 +37,9 @@
   :use-module (gr om)
   :use-module (gr gaiag)
   :use-module (gr json-table)
+  :use-module (gr norm)
   :use-module (gr norm-event)
+  :use-module (gr norm-state)    
   :use-module (gaiag reader)
   :use-module (gr resolve)
   :use-module (gr pretty)
@@ -51,7 +53,13 @@
  (else #t))
 
 (define (table-event model o)
-  (norm-event (table-state-statement model o)))
+  ((compose
+    norm-event
+    remove-initial
+    (annotate-otherwise)
+    (prepend-guards model)
+    (annotate-otherwise)
+    ) o))
 
 (define (ast-> ast)
   ((compose
