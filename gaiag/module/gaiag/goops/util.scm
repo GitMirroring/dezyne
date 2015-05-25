@@ -115,6 +115,7 @@
            om:variable
            om:variables
            om:void?
+           make-interface-enum
            ))
 
 (define ((is? class) o)

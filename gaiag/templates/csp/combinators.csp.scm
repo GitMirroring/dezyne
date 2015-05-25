@@ -95,8 +95,9 @@ datatype event_enumeration_alphabet = #
      (list 'the_end' 'modeling))
     symbol<)))
 
+#(stderr "types: ~a\n" (enum-types model))
 #(map
  (lambda (e)
-   (list "nametype " (.name e) " = {" ((->join ", ") (map (lambda (f) (list (.name e) "_" f)) ((compose .elements .fields) e))) "}\n"))
+   (list "nametype " (enum-scope model e) " = {" ((->join ", ") (map (lambda (f) (list (enum-scope model e) "_" f)) ((compose .elements .fields) e))) "}\n"))
 (filter (is? <enum>) (enum-types model)))
 

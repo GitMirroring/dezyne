@@ -39,10 +39,14 @@ datatype #(.name model)_call_return_alphabet =
             (list (if (.recursive f)
                       (->string (list (.name model) "_" (.name f) "_forward" p-types))))))))
      (om:functions model))))
+#}
+#{
+-- FIXME: no functions
+datatype #(.name model)_call_return_alphabet = #(.name model)_empty_call_return_alphabet
 channel #(.name model)_call_return: #(.name model)_call_return_alphabet
 #})
 #(string-if (pair? (om:member-types model)) #{
-datatype #(.name model)_glob_alphabet = #(.name model)_get.#(csp-comma-list (om:member-types model))  | #(.name model)_set.#(csp-comma-list (om:member-types model))
+datatype #(.name model)_glob_alphabet = #(.name model)_get.#(.name model)_#(csp-comma-list (om:member-types model))  | #(.name model)_set.#(.name model)_#(csp-comma-list (om:member-types model))
 channel #(.name model)_glob: #(.name model)_glob_alphabet
 #}
 #{

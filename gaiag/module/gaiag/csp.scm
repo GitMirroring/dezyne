@@ -290,32 +290,32 @@
       (if (or (number? value) (symbol? value) (is-a? value <var>))
           (csp-expression->string model expression locals)
           (list "(" (csp-expression->string model expression locals) ")"))))
-  (match src
-    (($ <var> identifier) identifier)
-    (($ <expression>) (csp-expression->string model (.value src) locals))
-    ((or (? number?) (? string?) (? symbol?)) src)
-    (($ <field> identifier field)
-     (let* ((var (var? identifier))
-            (type (and=> var .type))
-            (name (and=> type .name)))
-       (list "(" identifier " == " name "_" field ")")))
-    (($ <literal> scope type field) (list type "_" field))
-
-    (($ <var> identifier) identifier)
-    (('group expression) (list "(" (csp-expression->string model expression locals) ")"))
-    (('! expression) (->string (list "(" "not " (paren expression) ")")))
-    (((or 'and 'or '== '!= '< '<= '> '>= '+ '-) lhs rhs)
-     (let ((lhs (csp-expression->string model lhs locals))
-           (rhs (csp-expression->string model rhs locals))
-           (op (car src)))
-       (list "(" lhs " " op " " rhs ")")))
-    ((? unspecified?) #f)
-    (($ <formal> name type) name)
-    (() #f)
-    ((? symbol?) src)
-    ((h) (csp-expression->string model h locals))
-    ((h t ...) (map (lambda (x) (csp-expression->string model x locals)) src))
-    (_ (stderr "SKIPPING: ~a\n" src) #f)))
+  
+  (let* ((model-name (.name model))
+         (model- (symbol-append model-name '_)))
+    (match src
+      (($ <var> identifier) identifier)
+      ;;(($ <var> identifier) (->string model- identifier))      
+      (($ <expression>) (csp-expression->string model (.value src) locals))
+      ((or (? number?) (? string?) (? symbol?)) src)
+      (($ <field> identifier field)
+       (let* ((var (var? identifier))
+              (type (and=> var .type))
+              (name (and=> type .name)))
+         (list "(" ;; model- state not in scope, IConsole_state not in scope
+               identifier " == " model- name "_" field ")")))
+      (($ <literal> #f type field) (list model- type "_" field))
+      (($ <literal> scope type field) (list (*scope* scope) '_ type '_ field))
+      
+      (('group expression) (list "(" (csp-expression->string model expression locals) ")"))
+      (('! expression) (->string (list "(" "not " (paren expression) ")")))
+      (((or 'and 'or '== '!= '< '<= '> '>= '+ '-) lhs rhs)
+       (let ((lhs (csp-expression->string model lhs locals))
+             (rhs (csp-expression->string model rhs locals))
+             (op (car src)))
+         (list "(" lhs " " op " " rhs ")")))
+      (*unspecified* #f)
+      (_ (throw 'match-errorand (format #f "~a:no match: ~a" (current-source-location) src))))))
 
 (define* (port-events port :optional (predicate? identity)) ;; FIXME: no test
   (let ((interface (csp:import (.type port))))
@@ -382,23 +382,33 @@
 (define (typed-elements o)
    (map (lambda (x) (symbol-append (.name o) '_ x)) ((compose .elements .fields) o)))
 
+(define (*scope* s)
+  (if (eq? s '*global*) 'global s)) ;; FIXME: interface global
+
+(define (enum-scope model e)
+  (symbol-append (*scope* (or (.scope e) (.name model))) '_ (.name e)))
+
 (define (enum-values o)
   (match o
     (($ <interface>)
-      (apply append (map typed-elements (om:enums o))))
+      (apply append (map typed-elements (enum-types o))))
+    (($ <component>)
+      (apply append (map typed-elements (enum-types o))))
     (($ <component>)
      (delete-duplicates
       (append
        (apply append (map (compose enum-values om:import .type) ((compose .elements .ports) o)))
-       (apply append (map typed-elements (om:enums o))))))))
+       (apply append (map typed-elements (enum-types o))))))))
 
 (define (enum-types o)
   (match o
-    (($ <interface>) (append (or (and=> (.behaviour o) om:enums) '()) (om:enums)))
+    (($ <interface>) (append (map (make-interface-enum (.name o)) (om:enums o)) (om:enums)))
     (($ <component>)
      (append
-      (apply append (map (compose enum-types om:import .type) ((compose .elements .ports) o)))
-      (append (or (and=> (.behaviour o) om:enums) '()) (om:enums))))))
+      (apply append
+           (map enum-types
+                (map (compose om:import .type) ((compose .elements .ports) o))))
+      (append (map (make-interface-enum (.name o)) (om:enums o)) (om:enums))))))
 
 (define (return-value o)
   (map (lambda (value) (symbol-append (.name o) '_ value)) ((compose .elements .fields) o)))
@@ -843,6 +853,7 @@
   (stderr "TRANSFORM: ~a\n" o)
   (let* ((model (or (om:component ast) (om:interface ast)))
          (model-name (.name model))
+         (model- (symbol-append model-name '_))
          (channel (or channel (if (is-a? model <interface>) model-name (.type (om:port model)))))
          (space (make-string (* indent 2) #\space))
          (member-name-list (csp-comma-list (om:member-names model))))
