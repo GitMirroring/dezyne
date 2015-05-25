@@ -28,12 +28,12 @@
 (define-module (gaiag evaluate)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
-  :use-module (ice-9 optargs)  
+  :use-module (ice-9 optargs)
   :use-module (ice-9 match)
   :use-module (srfi srfi-1)
 
   :use-module (gaiag om)
-  :use-module (gaiag misc)  
+  :use-module (gaiag misc)
 
   :export (
            eval-expression
@@ -82,9 +82,9 @@
 
       (_ *unspecified*)
       (($ <enum> name scope field) (make <literal> :scope scope :type name :field *unspecified*))
-      (($ <int> name scope range) *unspecified*)      
+      (($ <int> name scope range) *unspecified*)
       ;;(($ <type> 'bool) *unspecified*)
-      (($ <type> 'bool) (make <var> :name (.name o)))      
+      (($ <type> 'bool) (make <var> :name (.name o)))
       (_ (stderr "FIXME: INIT VAR: a\n" o))
       )))
 
@@ -101,7 +101,7 @@
 (define (eval-expression model state o)
   (match o
     (($ <expression> value) (eval-expression model state value))
-    (($ <otherwise> value) (eval-expression model state value))    
+    (($ <otherwise> value) (eval-expression model state value))
     (#f #f)
     (#t #t)
     ('false #f)
@@ -189,8 +189,11 @@
                           ((or (eq? a #t) (eq? b #t)) #t)
                           ((om:equal? (list '! a) b) #t)
                           ((om:equal? (list '! b) a) #t)
+                          ((om:equal? (simplify-expression model state (list '! a)) b) #t)
+                          ((om:equal? (simplify-expression model state (list '! b)) a) #t)
                           ((eq? a #f) b)
                           ((eq? b #f) a)
+                          ((om:equal? a b) a)
                           (else (list 'or a b))))))
 
     (('! expression)

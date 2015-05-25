@@ -36,7 +36,7 @@
   :use-module (gaiag misc)
   :use-module (gaiag pretty-print)  
 
-;;;;  :use-module (gaiag simulate)
+;;;;  :use-module (g simulate)
 
    :use-module (g om)
    :use-module (g json)

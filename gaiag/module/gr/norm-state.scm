@@ -120,8 +120,8 @@
     (($ <guard>)
      ((passdown-expression
        (make <expression> :value
-             (if (equal? (.value expression)
-                         (.value (.expression o)))
+             (if (om:equal? (.value expression)
+                            (.value (.expression o)))
                  (.value expression)
                  (list 'and
                        (.value expression)

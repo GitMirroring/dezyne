@@ -212,10 +212,11 @@
          (eq? (ast-name a) (ast-name b))
          (match (cons a b)
            ((($ <trigger> p e) . ($ <trigger> p e)) #t)
+           ((($ <trigger> p e) . ($ <trigger> p e)) #t)
            ((($ <trigger>) . ($ <trigger>)) (equal? (remove-arguments a) (remove-arguments b)))
            ((($ <literal> scope type field) . ($ <literal> scope type field)) #t)
-           (_ (equal? (om->list a) (equal? om->list b))))))
-   (else (equal? a b))))
+           (_ (equal? (om->list a) (om->list b))))))
+   (else (equal? (om->list a) (om->list b)))))
 
 (define (om:< a b)
   (match (cons a b)

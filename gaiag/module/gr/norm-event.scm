@@ -92,9 +92,9 @@
                    (cons (car shared-guards) (loop remainder))
                    (let* ((expression
                            (reduce (lambda (x y)
-                                     (if (equal? x y) x (list 'or x y)))
+                                     (list 'or x y))
                                    '()
-                                   (map (compose .value .expression) shared-guards)))
+                                   (delete-duplicates (map (compose .value .expression) shared-guards) om:equal?)))
                           (statement (.statement (car guards)))
                           (aggregated-guard (make <guard>
                                               :expression (make <expression>

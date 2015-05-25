@@ -151,8 +151,8 @@
                                            :name (.identifier field))
                                      state)))
                    (guards (filter (lambda (g) (let ((e (.expression g)))
-                                                 (or (equal? e expression)
-                                                     (equal? e expression2))))
+                                                 (or (om:equal? e expression)
+                                                     (om:equal? e expression2))))
                                    ((om:collect <guard>) o))))
     (and (pair? guards) (car guards))))
 
@@ -204,10 +204,10 @@
      (and-let*
       ((statement ((simplify model state) statement))
        (value (simplify-literal model state (list 'and (.value expression1) (.value expression2))))
-       (expression (cond ((and (equal? (.value expression1) value)
+       (expression (cond ((and (om:equal? (.value expression1) value)
                                (is-a? expression1 <otherwise>))
                           expression1)
-                         ((and (equal? (.value expression2) value) 
+                         ((and (om:equal? (.value expression2) value) 
                                (is-a? expression2 <otherwise>))
                           expression2)
                          (else (make <expression> :value value))))
@@ -224,7 +224,7 @@
                  (#t (if (om:declarative? statement) 
                          statement
                          (make <guard> :expression expression :statement statement)))
-                 (($ <literal>) (and (equal? value state) 
+                 (($ <literal>) (and (om:equal? value state) 
                                      (if (om:declarative? statement) 
                                          statement
                                          (make <guard> :expression expression :statement statement))))
@@ -243,7 +243,7 @@
                     (then ((simplify model state) then)))
                    (match value
                      (#t then)
-                     (($ <literal>) (and (equal? value state) then))
+                     (($ <literal>) (and (om:equal? value state) then))
                      (_ (retain-source-properties o (make <if> :expression expression :then then)))))
          (make <compound>)))
 
@@ -254,7 +254,7 @@
                          (else ((simplify model state) else)))
                      (match value
                        (#t then)
-                       (($ <literal>) (and (equal? value state) then))
+                       (($ <literal>) (and (om:equal? value state) then))
                        (_ (retain-source-properties o (make <if> :expression expression :then then :else else))))))
          (and-let* ((then ((simplify model state) else))
                     (expression (list '! (.value expression))))
