@@ -329,6 +329,9 @@
            variables?
            ))
 
+(define (ast->ast tree) (pretty-print tree) "")
+(define ast-> ast->ast)
+
 (define (make type ast)
   ((@@ (language dezyne parse) ast:make) type ast))
 

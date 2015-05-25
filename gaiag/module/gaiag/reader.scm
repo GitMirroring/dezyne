@@ -85,9 +85,11 @@
   (register (read-dezyne- (find-file file-name))))
 
 (define (read-ast- file-name)
-  (let ((file-name (find-file file-name)))
-    (if (string-suffix? ".scm" file-name)
-        (read (open-input-file file-name))
+  (let* ((file-name (->string file-name))
+         (file-name  (if (string= file-name "-") "/dev/stdin" (find-file file-name)))
+         (file (open-input-file file-name)))
+    (if (eq? (peek-char file) #\()
+        (read file)
         (read-dezyne- file-name))))
 
 (define* (read-ast file-name :optional (register identity))
