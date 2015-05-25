@@ -84,12 +84,6 @@
            om:model-with-behaviour
            om:models-with-behaviour
            om:modeling?
-<<<<<<< HEAD
-=======
-           om:member-names
-           om:member-types
-           om:member-values
->>>>>>> gaiag: csp: add global.
            om:models
            om:named
            om:out?
@@ -195,12 +189,6 @@
     (($ <port>) (om:variables (om:import (.type ast) ast->om)))
     (#f '())
     (_ (throw 'match-error  (format #f "~a:om:variables: no match: ~a\n" (current-source-location) ast)))))
-
-(define (om:member-names model)
-  (map .name (filter (negate (is? <extern>)) (om:variables model))))
-
-(define (om:member-values model)
-  (map (compose .value .expression) (filter (negate (is? <extern>)) (om:variables model))))
 
 (define (om:statement ast)
   (match ast

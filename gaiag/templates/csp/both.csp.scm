@@ -46,7 +46,7 @@ datatype #(.name model)_call_return_alphabet = #(.name model)_empty_call_return_
 channel #(.name model)_call_return: #(.name model)_call_return_alphabet
 #})
 #(string-if (pair? (om:member-types model)) #{
-datatype #(.name model)_glob_alphabet = #(.name model)_get.#(.name model)_#(csp-comma-list (om:member-types model))  | #(.name model)_set.#(.name model)_#(csp-comma-list (om:member-types model))
+datatype #(.name model)_glob_alphabet = #(.name model)_get.#(csp-comma-list (map (lambda (x) (if (is-a? x <enum>) (->string (.name model) '_ (.name x)) (.name x))) (om:member-types model)))  | #(.name model)_set.#(csp-comma-list (map (lambda (x) (if (is-a? x <enum>) (->string (.name model) '_ (.name x)) (.name x))) (om:member-types model)))
 channel #(.name model)_glob: #(.name model)_glob_alphabet
 #}
 #{

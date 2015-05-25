@@ -377,7 +377,7 @@
   (map (compose .value .expression) (filter (negate (is? <extern>)) (om:variables model))))
 
 (define (om:member-types model)
-  (map (compose .name .type) (filter (negate (is? <extern>)) (om:variables model))))
+  (map (om:type model) (filter (negate (is? <extern>)) (om:variables model))))
 
 (define (typed-elements o)
    (map (lambda (x) (symbol-append (.name o) '_ x)) ((compose .elements .fields) o)))
