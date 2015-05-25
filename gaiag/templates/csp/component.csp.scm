@@ -43,7 +43,7 @@
 CO_#(.name model) _#((compose .name .behaviour) model) (IIG,IG) = let
 wait(e', P') = (P' [] [] x : diff({|#(.name model)_call_return|},{|e'|}) @ x-> wait(e', P'))
 # (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (om:functions model)))
-#(.name model) _#((compose .name .behaviour) model) = transition_begin -> (
+#(.name model) _#((compose .name .behaviour) model) = transition_begin -> #(->string (.name model) "_glob." (.name model) "_get?" (csp-comma-list (om:member-names model))) -> (
 #(behaviour->csp model)
 )
 

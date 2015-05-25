@@ -863,6 +863,38 @@
         (match o
 
           ;; Entry points
+          (($ <csp-on> 'IG ($ <triggers> triggers) statement)
+           (let* ((tail (csp-transform model statement inevitable-optional? channel provided-on? locals (1+ indent) tail))
+                  (real-triggers (filter (negate modeling-event?) triggers))
+                  (modeling-triggers (filter modeling-event? triggers))
+                  (modeling-triggers (map .event modeling-triggers))
+                  (trigger-in? (lambda (trigger) (om:in? (om:event model trigger)))))
+             (receive (ins outs) (partition trigger-in? real-triggers)
+               (let* ((channel (if (is-a? model <interface>) model-name (.port (car triggers))))
+                      (IG (if ((provides-event? model) (car triggers)) "IIG & "  "IG & "))
+                      (event-names (comma-join (map .event triggers))))
+                 ((->join "\n[]\n")
+                  (list (if (pair? ins)
+                            (list 
+                             IG 
+                             (if (is-a? model <interface>) model-name (.port (car ins))) 
+                             (->string "?x:{" (comma-join (append modeling-triggers (map .event ins))) "} ->\n") 
+                             tail)
+                            (if (pair? modeling-triggers)
+                                (list 
+                                 IG 
+                                 (if (is-a? model <interface>) model-name channel) 
+                                 (->string "?x:{" (comma-join modeling-triggers) "} ->\n")
+                                 tail)
+                                '()))
+                        (if (pair? outs)
+                            (list 
+                             IG 
+                             (if (is-a? model <interface>) model-name (.port (car outs))) 
+                             (->string "_''?x:{" (comma-join (map .event outs)) "} ->\n")
+                             tail)
+                            '())))))))
+
           (($ <csp-on> context ($ <triggers> triggers) statement)
            (let* ((tail (csp-transform-model model statement inevitable-optional? channel provided-on? locals (1+ indent) tail))
                   (real-triggers (filter (negate modeling-event?) triggers))
@@ -888,14 +920,12 @@
                             (list
                              (if (is-a? model <interface>) model-name (.port (car ins)))
                              (->string "?x:{" (comma-join (append modeling-triggers (map .event ins))) "} ->\n")
-                             (->string model-name "_glob." model-name "_get?" member-name-list " ->\n")
                              tail
                              transformed-end)
                             (if (pair? modeling-triggers)
                                 (list
                                  (if (is-a? model <interface>) model-name channel)
                                  (->string "?x:{" (comma-join modeling-triggers) "} ->\n")
-                                 (->string model-name "_glob." model-name "_get?" member-name-list " ->\n")
                                  tail
                                  transformed-end)
                                 '()))
@@ -903,7 +933,6 @@
                             (list
                              (if (is-a? model <interface>) model-name (.port (car outs)))
                              (->string "_''?x:{" (comma-join (map .event outs)) "} ->\n")
-                             (->string model-name "_glob." model-name "_get?" member-name-list " ->\n")
                              tail
                              transformed-end)
                             '())))))

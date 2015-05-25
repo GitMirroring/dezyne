@@ -36,11 +36,12 @@ channel #(.name model)_''': {modeling}
 IF_#(.name model) _#((compose .name .behaviour) model)(IG,CS) = let
 wait(e', P') = (P' [] [] x : diff({|#(.name model)_call_return|},{|e'|}) @ x-> wait(e', P'))
 # (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (om:functions model)))
-#(.name model) _#((compose .name .behaviour) model) =
+#(.name model) _#((compose .name .behaviour) model) =  #(->string (.name model) "_glob." (.name model) "_get?" (csp-comma-list (om:member-names model))) -> (
 # (behaviour->csp (csp:import (.name model)))
 []
 CS & #(.name model)?x:{#(comma-join (delete-duplicates (map .event (modeling-events model))))} -> illegal_(STOP,<>)
-
+)
+                                                                                                                                                            
 forward = 
 #((->join "\n  []\n  ")
  (cons (->string "COMPLETE'({|" (.name model) "_call_return|})")
