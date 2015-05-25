@@ -28,10 +28,8 @@
   :use-module (gaiag misc)
   :use-module (gaiag pretty-print)
   :use-module (gaiag reader)
-  :use-module (gaiag simulate)
+  :use-module (gaiag evaluate)
 
-  :use-module (oop goops)
-  ;;:use-module (oop goops describe)
   :use-module (gaiag om)
 
   :export (
@@ -39,6 +37,11 @@
            json-state
            json-trace
            ))
+
+(cond-expand
+ (goops-om
+  (use-modules (oop goops)))
+ (else #t))
 
 ;; JSON output mangling disaster area
 
@@ -51,7 +54,7 @@
     (state . "") ;; duh!
     ))
 
-(define-method (json-init (model <model>))
+(define (json-init model)
   (alist->hash-table
    `((type . init)
      (nodes . ,(map alist->hash-table
@@ -59,7 +62,7 @@
                                              (cons model (.elements (.ports model)))
                                              (list model))))))))
 
-(define-method (json-state (model <model>) state)
+(define (json-state model state)
   (stderr "json-state: ~a\n" state)
   (alist->hash-table
    (append
@@ -68,14 +71,14 @@
     (map (lambda (variable) (cons (car variable) (->symbol (cdr variable))))
          state))))
 
-(define-method (from (model <model>) event statement)
+(define (from model event statement)
   (if (is-a? statement <on>)
       (if (.port (event->ast event))
           (.port (event->ast event))
           'in)
       (.name model)))
 
-(define-method (to (model <model>) statement)
+(define (to model statement)
   (if (is-a? statement <on>)
       (.name model)
       (or (and-let* (((is-a? statement <action>))

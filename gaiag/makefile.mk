@@ -27,13 +27,15 @@ FRST :=\
   gaiag/module/language/dezyne/parse.scm\
   gaiag/module/language/dezyne/tokenize.scm\
   gaiag/module/language/dezyne/spec.scm\
+  gaiag/module/language/dezyne/location.scm\
 
 GUILE_LIB_PREFIX := /usr/share/guile/site
 GUILE_LIB_FILES :=\
  os/process.scm\
  compat/guile-2.scm\
 
-MODULE_SRCS := $(filter %.scm,$(shell git ls-files $(CDIR)/module))
+MODULE_SRCS := $(filter %.scm,$(shell git ls-files $(CDIR)/module | grep -Ev 'module/g/|module/gr/' ))
+#MODULE_SRCS := $(filter %.scm,$(shell git ls-files $(CDIR)/module | grep -Ev 'module/g/|module/gr/' ))
 SRCS := $(subst :,\:,$(filter-out $(FRST),$(GUILE_LIB_SRCS) $(MODULE_SRCS)))
 
 include make/guile.mk

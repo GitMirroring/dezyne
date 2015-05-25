@@ -32,7 +32,7 @@
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 match)  
 
-;;  :use-module (language dezyne location)
+  :use-module (language dezyne location)
   :use-module (gaiag misc)
 
   :use-module (gaiag om) ;;-goeps

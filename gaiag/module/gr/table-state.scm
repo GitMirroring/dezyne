@@ -38,6 +38,7 @@
   
   :use-module (gr om)
   :use-module (gr gaiag)
+  :use-module (gr evaluate)
   :use-module (gr json-table)
   :use-module (gr norm)
   :use-module (gr norm-event)
@@ -155,12 +156,12 @@
                                    ((om:collect <guard>) o))))
     (and (pair? guards) (car guards))))
 
-(define (state-var o state)
+(define (state-var model state)
   (define (type? v) (eq? ((compose .name .type) v) (.type state)))
-  (find type? ((compose .elements .variables .behaviour) o)))
+  (find type? ((compose .elements .variables .behaviour) model)))
 
-(define (state-identifier o state)
-  (or (and=> (state-var o state) .name) '<state>))
+(define (state-identifier model state)
+  (or (and=> (state-var model state) .name) '<state>))
 
 (define (make-state-field model state)
   (make <field> :identifier (state-identifier model state) :field (.field state)))
@@ -202,7 +203,7 @@
     (($ <guard> expression1 ($ <guard> expression2 statement))
      (and-let*
       ((statement ((simplify model state) statement))
-       (value (eval-expression model state (list 'and (.value expression1) (.value expression2))))
+       (value (simplify-literal model state (list 'and (.value expression1) (.value expression2))))
        (expression (cond ((and (equal? (.value expression1) value)
                                (is-a? expression1 <otherwise>))
                           expression1)
@@ -214,7 +215,7 @@
       ((simplify model state) guard)))
 
     (($ <guard> expression statement)
-     (and-let* ((value (eval-expression model state expression))
+     (and-let* ((value (simplify-literal model state expression))
                 (expression (if (is-a? value <otherwise>)
                                 value
                                 (make <expression> :value value)))
@@ -237,7 +238,7 @@
     (
      ($ <if> expression then #f) ;;-goeps
       ;;+goeps ($ <if> expression then) ;; FIXOZOR ME
-     (or (and-let* ((value (eval-expression model state expression))
+     (or (and-let* ((value (simplify-literal model state expression))
                     (expression (make <expression> :value value))
                     (then ((simplify model state) then)))
                    (match value
@@ -247,7 +248,7 @@
          (make <compound>)))
 
     (($ <if> expression then else)
-     (or (and-let* ((value (eval-expression model state expression))
+     (or (and-let* ((value (simplify-literal model state expression))
                     (expression (make <expression> :value value)))
                    (let ((then ((simplify model state) then))
                          (else ((simplify model state) else)))
@@ -263,88 +264,10 @@
     ((h t ...) (map (simplify model state) o))
     (_ o)))
 
-(define (eval-expression model state o)
-
-  (define (state-var? identifier) (eq? identifier (state-identifier model state)))
-
-  (match o
-
-    (($ <expression> expression)
-     (eval-expression model state expression))
-
-    (($ <otherwise> expression)
-     (let ((value (eval-expression model state expression)))
-       (match value
-         (#t #t)
-         (#f #f)
-         (_ o))))
-
-    (($ <literal>) o)
-
-    (($ <field> (? state-var?) field)
-     (eq? field (.field state)))
-
-    (($ <field>) o)
-
-    (('== lhs rhs)
-     (let ((lhs (eval-expression model state lhs))
-           (rhs (eval-expression model state rhs)))
-       (or (equal? lhs rhs)
-           (if (and (is-a? lhs <literal>) (is-a? rhs <literal>))
-               #f
-               (list '== lhs rhs)))))
-
-    (('!= lhs rhs)
-     (let ((lhs (eval-expression model state lhs))
-           (rhs (eval-expression model state rhs)))
-       (or (not (equal? lhs rhs))
-           (list '!= lhs rhs))))
-
-    (('and lhs rhs)
-     (let ((lhs (eval-expression model state lhs))
-           (rhs (eval-expression model state rhs)))
-       (and lhs rhs (cond
-                     ((and (eq? lhs #t) (eq? rhs #t)) #t)
-                     ((eq? lhs #t) rhs)
-                     ((eq? rhs #t) lhs)
-                     (else (list 'and lhs rhs))))))
-
-    (('or lhs rhs)
-     (let ((lhs (eval-expression model state lhs))
-           (rhs (eval-expression model state rhs)))
-       (and (or lhs rhs) (cond
-                          ((or (eq? lhs #t) (eq? rhs #t)) #t)
-                          ((equal? (list '! lhs) rhs) #t)
-                          ((equal? (list '! rhs) lhs) #t)
-                          ((eq? lhs #f) rhs)
-                          ((eq? rhs #f) lhs)
-                          (else (list 'or lhs rhs))))))
-
-    (('! expression)
-     (let ((expression (eval-expression model state expression)))
-       (cond
-        ((eq? expression #t) #f)
-        ((eq? expression #f) #t)
-        (else (list '! expression)))))
-
-    (('group expression)
-     (let ((expression (eval-expression model state expression)))
-       (cond
-        ((eq? expression #t) #t)
-        ((eq? expression #f) #f)
-        (else (list 'group expression)))))
-
-    (($ <var> (? state-var?)) state)
-
-    (($ <var>) o)
-
-    ('false #f)
-    ('true #t)
-
-    (_
-     ;;(debug "eval-expression: TODO: ~a\n" o)
-     o
-     )))
+(define (simplify-literal model literal o)
+  (let* ((state (append `((,(state-identifier model literal) . ,literal))
+                        (undefined-state-vector model))))
+    (simplify-expression model state o)))
 
 (define ((mangle-table json-table) o)
   (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))

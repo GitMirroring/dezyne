@@ -73,6 +73,7 @@
            om:type
            om:types
            om:variable
+           om:variables           
            om:<
            om:equal?
            ))
@@ -143,6 +144,9 @@
 (define (om:function model o)
   (find (named o) (or (and=> (.behaviour model) (compose .elements .functions)) '())))
 
+(define (om:variables model)
+  ((compose .elements .variables .behaviour) model))
+
 (define (om:enum model identifier)
   ((is? <enum>) ((om:type model) identifier)))
 (define (om:extern model identifier) ((is? <extern>) ((om:type model) identifier)))
@@ -207,8 +211,10 @@
     (and (is-a? b <ast>)
          (eq? (ast-name a) (ast-name b))
          (match (cons a b)
-           ((($ <trigger>) . ($ <trigger>))
-            (equal? (remove-arguments a) (remove-arguments b))))))
+           ((($ <trigger> p e) . ($ <trigger> p e)) #t)
+           ((($ <trigger>) . ($ <trigger>)) (equal? (remove-arguments a) (remove-arguments b)))
+           ((($ <literal> scope type field) . ($ <literal> scope type field)) #t)
+           (_ (equal? (om->list a) (equal? om->list b))))))
    (else (equal? a b))))
 
 (define (om:< a b)
@@ -353,4 +359,4 @@ Read and parse the ASD source file for MODEL-NAME, return its AST.
 (define om:register-type register-type)
 (define om:register-model register-model)
 (define* ((om:register :optional (translate identity)) o :optional (clear? #f))
-  (register o clear?))
+  (register (translate o) clear?))

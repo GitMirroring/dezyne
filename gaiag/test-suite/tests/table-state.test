@@ -15,7 +15,7 @@
   :use-module (gaiag resolve)
   :use-module (gaiag table-state))
 
-(define eval-expression (@@ (gaiag table-state) eval-expression))
+(define simplify-literal (@@ (gaiag table-state) simplify-literal))
 
 (module-define! (resolve-module '(gaiag table-state))
                 'command-line
@@ -63,7 +63,7 @@ interface i
 (pass-if "table-state-expression-state-field"
   (let ((state (make <literal> :type 'S :field 'idle)))
    (om-pretty-noisy-equal?
-    (eval-expression
+    (simplify-literal
      (om:interface idle-init-busy-ast)
      state
      (make <field> :identifier 's :field 'idle))
@@ -72,7 +72,7 @@ interface i
 (pass-if "table-state-expression-state-var"
   (let ((state (make <literal> :type 'S :field 'idle)))
    (om-pretty-noisy-equal?
-    (eval-expression
+    (simplify-literal
      (om:interface idle-init-busy-ast)
      state
      (make <var> :name 's))
@@ -81,7 +81,7 @@ interface i
 (pass-if "table-state-expression-state-b-not-b"
   (let ((state (make <literal> :type 'S :field 'idle)))
    (om-pretty-noisy-equal?
-    (eval-expression
+    (simplify-literal
      (om:interface idle-init-busy-ast)
      state
      (list

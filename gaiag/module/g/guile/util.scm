@@ -74,6 +74,7 @@
            om:type
            om:types           
            om:variable
+           om:variables           
            om:<
            om:equal?
            ))
@@ -117,6 +118,9 @@
   (find (om:named o) (or (and=> (.behaviour model) (compose .elements .variables)) '())))
 (define (om:function model o)
   (find (om:named o) (or (and=> (.behaviour model) (compose .elements .functions)) '())))
+
+(define (om:variables model)
+  ((compose .elements .variables .behaviour) model))
 
 (define (om:enum model identifier)
   (enum? ((om:type model) identifier)))
