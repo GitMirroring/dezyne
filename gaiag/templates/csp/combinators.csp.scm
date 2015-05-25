@@ -71,7 +71,9 @@ context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_loca
 -- Paul, HELP! context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ let b' = B'((M',r')) within not b' & range_error -> STOP [] b' & S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
 --context_int_active_(C', B', S')(P', V') = (\ (C', B', S') @ context_active_(C', S'))
 context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
-                                           
+
+nametype bool = {false, true}   
+                
 channel illegal
 channel range_error
 channel transition_begin, transition_end

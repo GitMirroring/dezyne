@@ -155,7 +155,6 @@
     (($ <component>)
      (map om:import (delete-duplicates (sort (map .type ((compose .elements .ports) o)) symbol<))))))
 
-<<<<<<< HEAD
 (define (assembly-lts o)
   (match o
     (($ <interface>) *unspecified*)
@@ -168,23 +167,15 @@
      (csp-file 'interface-lts.csp.scm (csp-module o)))
     (($ <component>)
      (csp-file 'component-lts.csp.scm (csp-module o)))))
-=======
-(define-method (csp-model (o <component>))
-  (for-each csp-model (interfaces o))
-  (csp-file 'both.csp.scm (csp-module o))
-  (csp-file 'component.csp.scm (csp-module o)))
-
-(define-method (csp-model (o <interface>))
-  (csp-file 'both.csp.scm (csp-module o))
-  (csp-file 'interface.csp.scm (csp-module o)))
->>>>>>> generate nepext.csp -- similar to nepextref.csp but reordered, factored template code out into both.csp.scm.
 
 (define (csp-model o)
   (match o
     (($ <interface>)
+     (csp-file 'both.csp.scm (csp-module o))
      (csp-file 'interface.csp.scm (csp-module o)))
     (($ <component>)
      (for-each csp-model (interfaces o))
+     (csp-file 'both.csp.scm (csp-module o))
      (csp-file 'component.csp.scm (csp-module o)))))
 
 (define (csp-asserts o)
@@ -1006,35 +997,38 @@
              (cons
               (->string space channel "!" event-name channel-return " ->\n")
               tail)))
-          
-       (($ <voidreply>)
-        (let ((channel-return
-               (if (and (not inevitable-optional?) provided-on?)
-                       (list 
-                        (->string model-name "_glob." model-name "_set!" member-name-list " ->\n")
-                        (->string channel "_'.return -> SKIP\n"))
-                       (if (is-a? model <component>)
-                           (list "skip_")
-                           (list channel "_'''.modeling ->\n")))))
-          (cons (->string space channel-return) tail)))
+
+          (($ <illegal>) 
+           (->string space"illegal -> STOP"))
+
+          (($ <voidreply>)
+           (let ((channel-return
+                  (if (and (not inevitable-optional?) provided-on?)
+                      (list
+                       (->string model-name "_glob." model-name "_set!" member-name-list " ->\n")
+                       (->string channel "_'.return -> SKIP\n"))
+                      (if (is-a? model <component>)
+                          (list "skip_")
+                          (list channel "_'''.modeling ->\n")))))
+             (cons (->string space channel-return) tail)))
 
        
-       ;; other bits
-       (($ <arguments> arguments) (comma-join (map (lambda (x) (csp-transform-model model x inevitable-optional? channel provided-on? locals)) arguments)))
-       
-       (($ <expression> (and ($ <csp-call>) (get! call))) (csp-transform-model model (call)))
-       (($ <expression>) (csp-expression->string model o locals))
-       
-       (($ <the-end> context)
-        (let* ((behaviour (.name (.behaviour model)))
-               (component? (is-a? model <component>))
-               (end (if component? "; transition_end -> " (list "; " channel ".the_end' -> "))))
-          (list end model-name "_" behaviour)))
-       
-       (#f (list space "skip_\n"))
-       
-       (_ (stderr "TODO: ~a\n" o)
-          (list (format #f "-- TODO: ~a\n" o)))))))
+          ;; other bits
+          (($ <arguments> arguments) (comma-join (map (lambda (x) (csp-transform-model model x inevitable-optional? channel provided-on? locals)) arguments)))
+
+          (($ <expression> (and ($ <csp-call>) (get! call))) (csp-transform-model model (call)))
+          (($ <expression>) (csp-expression->string model o locals))
+
+          (($ <the-end> context)
+           (let* ((behaviour (.name (.behaviour model)))
+                  (component? (is-a? model <component>))
+                  (end (if component? "; transition_end -> " (list "; " channel ".the_end' -> "))))
+             (list end model-name "_" behaviour)))
+
+          (#f (list space "skip_\n"))
+
+          (_ (stderr "TODO: ~a\n" o)
+             (list (format #f "-- TODO: ~a\n" o)))))))
 
 (define (csp-queue-size) (option-ref (parse-opts (command-line)) 'queue-size 3))
 
@@ -1261,5 +1255,6 @@
 
 (define (csp-comma-list x)
   (let ((s ((->join ",") x)))
-    (if (if (>1 (length x)) (->string "(" s ")"))
+    (if (>1 (length x)) 
+        (->string "(" s ")")
         s)))
