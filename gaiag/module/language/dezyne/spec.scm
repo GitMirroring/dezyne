@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2014  "Mu Lei" known as "NalaGinrut" <NalaGinrut@gmail.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -20,6 +20,7 @@
   #:use-module (system base language)
   #:use-module (language dezyne parse)
   #:use-module (language dezyne tokenize)
+  #:use-module (language dezyne location)
   #:export (dezyne))
 
 (define-language dezyne

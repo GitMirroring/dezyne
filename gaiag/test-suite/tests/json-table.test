@@ -4,15 +4,16 @@
 (read-set! keywords 'prefix)
 
 (define-module (test-handler)
-  :use-module (oop goops)
-
   :use-module (test-suite lib)
   :use-module (test-suite misc)
 
-  :use-module (gaiag om)
-;;  :use-module (gaiag json-table)
+  :use-module (gaiag json-table)
   :use-module (gaiag pretty)
+  :use-module (gaiag misc)  
   :use-module (gaiag reader)
+
+  :use-module (oop goops)
+  :use-module (gaiag om)
   :use-module (gaiag resolve)
   )
 

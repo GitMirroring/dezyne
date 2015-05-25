@@ -32,7 +32,6 @@
   :use-module (ice-9 receive)
   :use-module (srfi srfi-1)
 
-  :use-module (system base lalr)
   :use-module (language dezyne location)
 
   :use-module (g gaiag)

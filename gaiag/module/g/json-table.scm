@@ -25,23 +25,22 @@
 
 (read-set! keywords 'prefix)
 
-(define-module
-   (g json-table)  
+(define-module (g json-table)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 match)
 
   :use-module (srfi srfi-1)
-
+  :use-module (srfi srfi-9)
+  
   :use-module (gaiag misc)
   :use-module (gaiag pretty-print)  
 
-;;;;  :use-module (g simulate)
-
-   :use-module (g om)
-   :use-module (g json)
-   :use-module (g pretty)
-   :use-module (g reader)
+  :use-module (g om)
+  :use-module (g json)
+  :use-module (g pretty)
+  :use-module (gaiag reader)
+  :use-module (g simulate)
 
   :export (json-init
            json-table-event           

@@ -28,21 +28,38 @@
 
   #:use-module (ice-9 match)
   #:use-module (ice-9 and-let-star)
+  #:use-module (srfi srfi-9)
 
   #:export (
             note-location
             retain-source-properties
+            rsp
+            source-file
             source-location
             source-location->user-source-properties
             source-location->system-source-properties
             syntax-error-handler
-            ))
+            )
+  #:re-export (make-source-location source-location?))
+
+
+(define (stderr string . rest)
+  (apply format (cons* (current-error-port) string rest)))
 
 (define (retain-source-properties o t)
   (and-let* (((supports-source-properties? o))
              ((supports-source-properties? t)))
             (set-source-properties! t (source-properties o)))
   t)
+
+(define rsp retain-source-properties)
+
+(define (source-file o)
+  (and-let* (((supports-source-properties? o))
+             (loc (source-property o 'loc))
+             (properties (source-location->user-source-properties loc))
+             (file-name (assoc-ref properties 'filename)))
+            (string->symbol file-name)))
 
 (define* (syntax-error-handler message #:optional token)
   (if (lexical-token? token)

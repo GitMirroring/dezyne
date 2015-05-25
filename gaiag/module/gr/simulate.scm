@@ -32,13 +32,12 @@
   :use-module (ice-9 receive)
   :use-module (srfi srfi-1)
 
-  :use-module (system base lalr)
   :use-module (language dezyne location)
 
   :use-module (gr gaiag)
   :use-module (gaiag json-trace)
   :use-module (gaiag misc)
-  :use-module (gaiag evaluate)
+  :use-module (gr evaluate)
 
   :use-module (gaiag pretty-print)
   :use-module (gaiag reader)

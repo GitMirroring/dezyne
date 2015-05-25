@@ -26,7 +26,6 @@
   :use-module (ice-9 match)
   :use-module (srfi srfi-1)
 
-  :use-module (system base lalr)
   :use-module (gaiag annotate)
   :use-module (gaiag misc)
   :use-module (gaiag reader)

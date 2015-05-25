@@ -25,28 +25,22 @@
 
 (read-set! keywords 'prefix)
 
-(define-module
-  (gr json-table) ;;-goeps
-  ;;+goeps (g json-table)  
+(define-module (gr json-table)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 match)
 
   :use-module (srfi srfi-1)
-
+  :use-module (srfi srfi-9)
+  
   :use-module (gaiag misc)
   :use-module (gaiag pretty-print)  
 
-  :use-module (gr om) ;;-goeps
-  :use-module (gr json) ;;-goeps  
-  :use-module (gr pretty) ;;-goeps
-  :use-module (gaiag reader) ;;-goeps
-;;;;  :use-module (gaiag simulate)
-
-  ;;+goeps :use-module (g om)
-  ;;+goeps :use-module (g json)
-  ;;+goeps :use-module (g pretty)
-  ;;+goeps :use-module (g reader)
+  :use-module (gr om)
+  :use-module (gr json)
+  :use-module (gr pretty)
+  :use-module (gaiag reader)
+  :use-module (gr simulate)
 
   :export (json-init
            json-table-event           

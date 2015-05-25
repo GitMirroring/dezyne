@@ -212,33 +212,6 @@
 
 ;;;; OM handling
 
-(use-modules (system base lalr))
-
-(define (source-location src)
-  (and-let* (((supports-source-properties? src))
-	     (loc (source-property src 'loc)))
-	    (if (source-location? loc)
-		loc
-		(source-location loc))))
-
-(define (source-location->user-source-properties loc)
-  (if (not (source-location? loc))
-      (begin
-        (stderr "programming error: not a source location: ~a\n" loc)
-        '((filename . "unknown") (line . 0 )))
-      `((filename . ,(source-location-input loc))
-        (line . ,(+ 1 (source-location-line loc)))
-        (column . ,(+ 1 (source-location-column loc)))
-        (offset . ,(source-location-offset loc))
-        (length . ,(source-location-length loc)))))
-
-(define (source-file o)
-  (and-let* (((supports-source-properties? o))
-             (loc (source-property o 'loc))
-             (properties (source-location->user-source-properties loc))
-             (file-name (assoc-ref properties 'filename)))
-            (string->symbol file-name)))
-
 (define (basename- o)
   (string->symbol (basename (symbol->string o))))
 

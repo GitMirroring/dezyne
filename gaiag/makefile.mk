@@ -38,6 +38,11 @@ MODULE_SRCS := $(filter %.scm,$(shell git ls-files $(CDIR)/module | grep -Ev 'mo
 #MODULE_SRCS := $(filter %.scm,$(shell git ls-files $(CDIR)/module | grep -Ev 'module/g/|module/gr/' ))
 SRCS := $(subst :,\:,$(filter-out $(FRST),$(GUILE_LIB_SRCS) $(MODULE_SRCS)))
 
+CLEAN:=$(CLEAN) $(BUILD)/module
+
+$(BUILD)/module:
+	ln -s $(shell pwd)/gaiag/module $(BUILD)/module
+
 include make/guile.mk
 
 TARG := g
