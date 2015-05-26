@@ -1,5 +1,4 @@
 #! /bin/sh
-# -*- scheme -*-
 self=$(readlink -f $(cut -d '' -f2 < /proc/$$/cmdline))
 prefix=$(cd $(dirname $self) && pwd)
 GUILE_LOAD_PATH="$prefix:$prefix/module:$GUILE_LOAD_PATH"
