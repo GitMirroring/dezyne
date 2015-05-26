@@ -62,15 +62,16 @@
     ((? (is? <ast>))
      ((compose
        remove-skip
-       aggregate-guard-s
-       (aggregate-on om:triggers-equal?)
-       (expand-on equal?)
-       aggregate-guard-s
-       flatten-compound
-       combine-ons
-       passdown-guard
+       ;; aggregate-guard-s
+       ;; (aggregate-on om:triggers-equal?)
+       ;; (expand-on equal?)
+       ;; aggregate-guard-s
+       ;; flatten-compound
+       ;; combine-ons
+       ;; passdown-guard
        (remove-otherwise)
-       add-skip)
+       add-skip
+       )
       o))))
 
 (define (aggregate-guard-s o)

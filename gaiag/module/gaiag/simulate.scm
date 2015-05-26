@@ -67,7 +67,7 @@
                                  (.elements om)))
                  (models (null-is-#f (filter .behaviour models)))
                  (components (filter (is? <component>) models)))
-                (simulate (car (pair? components) components models)))
+                (simulate (car (if (pair? components) components models))))
       ""))
 
 (define (simulate:import name)

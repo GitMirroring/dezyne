@@ -297,8 +297,8 @@
 
 (define (table-state model o)
   ((compose
-    flatten-compound
-    (aggregate-on)
+;;    flatten-compound
+;;    (aggregate-on)
     (prepend-guards model)
     norm-event
     (annotate-otherwise)

@@ -235,8 +235,7 @@
              :expression (guards-not-or statements)
              :statement (om:map (remove-otherwise keep-annotated?) statement)))))
     (('compound statements ___)
-     (make <compound>
-       :elements (map (remove-otherwise keep-annotated? statements) statements)))
+     (rsp o (make <compound> :elements (map (remove-otherwise keep-annotated? statements) statements))))
     ((? (is? <ast>)) (om:map (remove-otherwise keep-annotated? statements) o))
     ((h t ...) (map (remove-otherwise keep-annotated? statements) o))
     (_ o)))
