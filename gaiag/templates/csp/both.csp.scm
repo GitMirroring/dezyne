@@ -29,12 +29,17 @@ datatype #(.name model)_call_return_alphabet =
      append
      (map
       (lambda (f)
-        (let* ((parameters ((compose .elements .parameters .signature) f))
+        (let* ((signature (.signature f))
+               (parameters ((compose .elements .parameters) signature))
                (p-types (if (pair? parameters)
                             (->string (list "." (csp-comma-list (map (compose .name .type) ((compose .elements .parameters .signature) f)))  "\n"))
+                            ""))
+               (type ((compose .name .type) signature))
+               (r-type (if (not (eq? type 'void))
+                            (->string (list "." type))
                             "")))
      (append
-      (list (->string (.name model) "_" (.name f) "_return\n")
+      (list (->string (.name model) "_" (.name f) "_return" r-type "\n")
             (->string (.name model) "_" (.name f) "_call" p-types)
             (list (if (.recursive f)
                       (->string (list (.name model) "_" (.name f) "_forward" p-types))))))))
