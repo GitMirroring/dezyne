@@ -864,7 +864,13 @@
 
           ;; Entry points
           (($ <csp-on> 'IG ($ <triggers> triggers) statement)
-           (let* ((tail (csp-transform model statement inevitable-optional? channel provided-on? locals (1+ indent) tail))
+           (let* ((inevitable-optional?
+                   (or (member 'inevitable (map .event triggers))
+                       (member 'optional (map .event triggers))))
+                  (provided-on?
+                   (or (and (is-a? model <interface>) (not inevitable-optional?))
+                       (or (is-a? model <interface>) ((provides-event? model) (car triggers)))))
+                  (tail (csp-transform model statement inevitable-optional? channel provided-on? locals (1+ indent) tail))
                   (real-triggers (filter (negate modeling-event?) triggers))
                   (modeling-triggers (filter modeling-event? triggers))
                   (modeling-triggers (map .event modeling-triggers))
@@ -878,63 +884,67 @@
                             (list 
                              IG 
                              (if (is-a? model <interface>) model-name (.port (car ins))) 
-                             (->string "?x:{" (comma-join (append modeling-triggers (map .event ins))) "} ->\n") 
-                             tail)
+                             (->string "?x:{" (comma-join (append modeling-triggers (map .event ins))) "} -> (\n") 
+                             tail
+                             ")")
                             (if (pair? modeling-triggers)
                                 (list 
                                  IG 
                                  (if (is-a? model <interface>) model-name channel) 
-                                 (->string "?x:{" (comma-join modeling-triggers) "} ->\n")
-                                 tail)
+                                 (->string "?x:{" (comma-join modeling-triggers) "} -> (\n")
+                                 tail
+                                 ")")
                                 '()))
                         (if (pair? outs)
                             (list 
                              IG 
                              (if (is-a? model <interface>) model-name (.port (car outs))) 
-                             (->string "_''?x:{" (comma-join (map .event outs)) "} ->\n")
-                             tail)
+                             (->string "_''?x:{" (comma-join (map .event outs)) "} -> (\n")
+                             tail
+                             ")")
                             '())))))))
 
           (($ <csp-on> context ($ <triggers> triggers) statement)
-           (let* ((tail (csp-transform-model model statement inevitable-optional? channel provided-on? locals (1+ indent) tail))
+           (let* ((inevitable-optional?
+                   (or (member 'inevitable (map .event triggers))
+                       (member 'optional (map .event triggers))))
+                  (provided-on?
+                   (or (and (is-a? model <interface>) (not inevitable-optional?))
+                       (or (is-a? model <interface>) ((provides-event? model) (car triggers)))))
+                  (tail (csp-transform-model model statement inevitable-optional? channel provided-on? locals (1+ indent) tail))
                   (real-triggers (filter (negate modeling-event?) triggers))
                   (modeling-triggers (filter modeling-event? triggers))
                   (modeling-triggers (map .event modeling-triggers))
                   (trigger-in? (lambda (trigger) (om:in? (om:event model trigger)))))
              (receive (ins outs) (partition trigger-in? real-triggers)
                (let* ((the-end (make <the-end> :context context))
-                      (inevitable-optional?
-                       (or (member 'inevitable (map .event triggers))
-                           (member 'optional (map .event triggers))))
                       (channel (if (is-a? model <interface>) model-name (.port (car triggers))))
-                      (provided-on?
-                       (or (and (is-a? model <interface>) (not inevitable-optional?))
-                           (or (is-a? model <interface>) ((provides-event? model) (car triggers)))))
                       (event-names (comma-join (map .event triggers)))
-
-                      ;;(transformed (csp-transform model statement inevitable-optional? channel provided-on? locals))
                       (transformed-end (csp-transform-model model the-end inevitable-optional? channel provided-on? locals)))
 
                  ((->join "\n[]\n")
                   (list (if (pair? ins)
                             (list
                              (if (is-a? model <interface>) model-name (.port (car ins)))
-                             (->string "?x:{" (comma-join (append modeling-triggers (map .event ins))) "} ->\n")
+                             (->string "?x:{" (comma-join (append modeling-triggers (map .event ins))) "} -> (\n")
                              tail
-                             transformed-end)
+                             transformed-end
+                             ")")
                             (if (pair? modeling-triggers)
                                 (list
                                  (if (is-a? model <interface>) model-name channel)
-                                 (->string "?x:{" (comma-join modeling-triggers) "} ->\n")
+                                 (->string "?x:{" (comma-join modeling-triggers) "} ->(\n")
                                  tail
-                                 transformed-end)
+                                 transformed-end
+                                 ")")
                                 '()))
                         (if (pair? outs)
                             (list
                              (if (is-a? model <interface>) model-name (.port (car outs)))
-                             (->string "_''?x:{" (comma-join (map .event outs)) "} ->\n")
+                             (->string "_''?x:{" (comma-join (map .event outs)) "} -> (\n")
                              tail
-                             transformed-end)
+                             transformed-end
+                             ")")
                             '())))))
              ;;(->string model-name "_ =\n" tail)
              ))
@@ -1045,11 +1055,14 @@
            (let ((channel-return
                   (if (and (not inevitable-optional?) provided-on?)
                       (list
-                       (->string model-name "_glob." model-name "_set!" member-name-list " ->\n")
-                       (->string channel "_'.return -> SKIP\n"))
+                       (->string space model-name "_glob." model-name "_set!" member-name-list " ->\n")
+                       (->string space channel "_'.return -> SKIP\n"))
                       (if (is-a? model <component>)
-                          (list "skip_")
-                          (list channel "_'''.modeling ->\n")))))
+                          (list
+                           (->string space model-name "_glob." model-name "_set!" member-name-list " -> SKIP\n"))
+                          (list 
+                           (->string space model-name "_glob." model-name "_set!" member-name-list " ->\n")
+                           (->string space channel "_'''.modeling -> SKIP\n"))))))
              (cons (->string space channel-return) tail)))
 
        
