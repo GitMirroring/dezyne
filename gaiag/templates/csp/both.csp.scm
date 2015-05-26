@@ -1,5 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -44,6 +45,7 @@ datatype #(.name model)_call_return_alphabet =
             (list (if (.recursive f)
                       (->string (list (.name model) "_" (.name f) "_forward" p-types))))))))
      (om:functions model))))
+channel #(.name model)_call_return: #(.name model)_call_return_alphabet  
 #}
 #{
 -- FIXME: no functions
