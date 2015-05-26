@@ -9,14 +9,14 @@
 #(map
   (lambda (port)
     (map (define-on model port #{
-  typedef struct {int size;#return-type  (*f)(#interface *#comma #((->join ", ") parameter-types));#.model * self;#((->join ";") parameter-list)#(if (null? parameter-list) "" ";")} args_#port _#event;
+  typedef struct {int size;#return-type  (*f)(#interface *#comma #((->join ", ") formal-types));#.model * self;#((->join ";") formal-list)#(if (null? formal-list) "" ";")} args_#port _#event;
 #}) (filter (negate (om:dir-matches? port)) (om:events port))))
   (filter om:provides? (om:ports model)))
 
 #(map
   (lambda (port)
     (map (define-on model port #{
-  typedef struct {int size;#return-type  (*f)(#.model *#comma #((->join ", ") parameter-types));#.model * self;#((->join ";") parameter-list)#(if (null? parameter-list) "" ";")} args_#port _#event;
+  typedef struct {int size;#return-type  (*f)(#.model *#comma #((->join ", ") formal-types));#.model * self;#((->join ";") formal-list)#(if (null? formal-list) "" ";")} args_#port _#event;
 #}) (filter (om:dir-matches? port) (om:events port))))
   (om:ports model))
 
@@ -43,11 +43,11 @@
   (om:ports model))
 
 #(map (define-function model #{
-  static #return-type  #name (#.model * self#comma #parameters);
+  static #return-type  #name (#.model * self#comma #formals);
 #}) (om:functions model))
 
 #((->join "\n  ")(map (define-function model #{
-  static #return-type  #name (#.model * self#comma #parameters) {
+  static #return-type  #name (#.model * self#comma #formals) {
    (void)self;
     #statements }
 #}) (om:functions model)))
@@ -55,7 +55,7 @@
 #(map
   (lambda (port)
     (map (define-on model port #{
-  static #return-type  #port _#event(#.model * self#comma #parameters) {
+  static #return-type  #port _#event(#.model * self#comma #formals) {
     (void)self;
     #statement #
     (if (not (eq? type 'void))
@@ -67,7 +67,7 @@
 (map
   (lambda (port)
     (map (define-on model port #{
-    static #return-type  call_#direction _#port _#event(#interface * self#comma #parameters) {
+    static #return-type  call_#direction _#port _#event(#interface * self#comma #formals) {
                                                                                               runtime_trace_#direction(&self->in, &self->out, "#event ");
     args_#port _#event  a = {sizeof(args_#port _#event), #port _#event , self->#direction .self#comma #(comma-space-join argument-list)};
     runtime_event(helper_#port _#event , &a);
@@ -82,7 +82,7 @@
 (map
   (lambda (port)
     (map (define-on model port #{
-    static #return-type  call_#direction _#port _#event(#interface * self#comma #parameters) {
+    static #return-type  call_#direction _#port _#event(#interface * self#comma #formals) {
     runtime_trace_#direction(&self->in, &self->out, "#event ");
     args_#port _#event  a = {sizeof(args_#port _#event), #port _#event , self->#direction .self#comma #(comma-space-join argument-list)};
     component *c = self->out.self;

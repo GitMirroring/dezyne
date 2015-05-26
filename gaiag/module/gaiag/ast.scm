@@ -25,8 +25,27 @@
 (read-set! keywords 'prefix)
 
 (define-module (gaiag ast)
-  :use-module (ice-9 pretty-print)
-  :export (ast-> ast->ast))
+  :use-module (gaiag misc)
 
-(define (ast->ast tree) (pretty-print tree) "")
-(define ast-> ast->ast)
+  :use-module (gaiag goops goops)
+  ;;:use-module (gaiag list goops)
+
+  :export (
+           ))
+
+(cond-expand
+ (goops-om
+  (cond-expand-provide (current-module) '(goops-om))
+  (re-export-modules
+   (gaiag goops goops)))
+ (list-om
+  (cond-expand-provide (current-module) '(list-om))
+  (re-export-modules
+   (gaiag list goops)))
+ (else
+  (re-export-modules
+   (gaiag goops goops)
+   ;;(gaiag list goops)
+   )))
+
+(define ast-> identity)

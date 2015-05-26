@@ -1,5 +1,4 @@
 ;;; Dezyne --- Dezyne command line tools
-;;;
 ;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -25,9 +24,23 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (g ast-colon)
-  :use-module ((g ast) :renamer (symbol-prefix-proc 'ast:)))
+(define-module (gaiag goops goops)
+  :use-module (gaiag misc)
+  :use-module (gaiag goops ast)
+  :use-module (gaiag goops compare)
+  :use-module (gaiag goops csp)  
+  :use-module (gaiag goops display)
+  :use-module (gaiag goops map)
+  :use-module (gaiag goops om)
+  :use-module (gaiag goops util))
 
-(eval `(re-export ,@(module-map (lambda (key x) key)
-                                (resolve-interface '(g ast)
-                                                   :renamer (symbol-prefix-proc 'ast:)))) (current-module))
+(cond-expand-provide (current-module) '(goops-om))
+
+(re-export-modules
+ (gaiag goops ast)
+ (gaiag goops compare)
+ (gaiag goops csp)  
+ (gaiag goops display)
+ (gaiag goops map)
+ (gaiag goops om)
+ (gaiag goops util))

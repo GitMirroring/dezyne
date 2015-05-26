@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 (define-module (gaiag json2scm)
   :use-module (system repl error-handling)
   :use-module (ice-9 getopt-long)
-  :use-module (ice-9 match)
+  :use-module (gaiag list match)
   :use-module (ice-9 pretty-print)
 
   :use-module (json)

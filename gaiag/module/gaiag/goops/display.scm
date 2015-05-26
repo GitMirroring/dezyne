@@ -20,7 +20,6 @@
 (define-module (gaiag goops display)
   :use-module (ice-9 pretty-print)
 
-  :use-module (oop goops)
   :use-module (gaiag goops om)
 
   :export (
@@ -75,8 +74,8 @@
 
 (define-method (display-slots (o <signature>) port)
   (sdisplay (.type o) port)
-  (if (pair? (.elements (.parameters o)))
-      (sdisplay (.parameters o) port)))
+  (if (pair? (.elements (.formals o)))
+      (sdisplay (.formals o) port)))
 
 (define-method (write (o <ast>) port)
   (display "(" port)

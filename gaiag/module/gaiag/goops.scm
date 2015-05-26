@@ -31,13 +31,8 @@
   :use-module (gaiag misc)
   :use-module (gaiag reader)
 
-  :use-module (gaiag om)
+  :use-module (gaiag ast)
   :export (ast->))
-
-(cond-expand
- (goops-om
-  (use-modules (oop goops)))
- (else #t))
 
 (define (ast-> ast)
   (parameterize ((indenter #f) (sep " ") (join (->join " "))) (ast:code ast)))

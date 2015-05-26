@@ -27,9 +27,8 @@
   :use-module (gaiag evaluate)
   :use-module (gaiag simulate)
 
-  :use-module (oop goops)
 
-  :use-module (gaiag om))
+  :use-module (gaiag ast))
 
 (pass-if "simulator-first-dummy-test"
 	 #t)

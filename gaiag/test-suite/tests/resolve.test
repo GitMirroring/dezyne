@@ -9,8 +9,7 @@
   :use-module (gaiag misc)
   :use-module (gaiag resolve)
 
-  :use-module (oop goops)
-  :use-module (gaiag om))
+  :use-module (gaiag ast))
 
 (eval-when (compile eval load) (read-hash-extend #\{ #f))
 
@@ -49,11 +48,11 @@
               (event bar (signature (type mixed)) out)
               (event ei (signature
                    (type void)
-                   (parameters (parameter i (type xint) out)))
+                   (formals (formal i (type xint) out)))
                   in)
               (event eo (signature
                    (type e)
-                   (parameters (parameter i (type xint) in)))
+                   (formals (formal i (type xint) in)))
                   out))
       (behaviour
        #f
@@ -67,8 +66,8 @@
        (functions (function toggle (signature (type void)) #f (compound))
                   (function g
                             (signature (type bool)
-                                       (parameters (parameter ga (type bool))
-                                                   (parameter gb (type bool))))
+                                       (formals (formal ga (type bool))
+                                                   (formal gb (type bool))))
                             #f
                             (compound))
                   (function efun
@@ -89,29 +88,29 @@
        (variable e (type e ivar) (expression (literal ivar e v)))
        (variable b (type bool) true))
        (functions
-        (function fun (signature (type void) (parameters (parameter a (type bool)))) #f
+        (function fun (signature (type void) (formals (formal a (type bool)))) #f
                   (compound (assign a (expression true))))
-        (function rfun (signature (type void) (parameters)) #f
+        (function rfun (signature (type void) (formals)) #f
                   (compound (call rgun (expression #t))))
-        (function rgun (signature (type void) (parameters (parameter a (type bool)))) #f
+        (function rgun (signature (type void) (formals (formal a (type bool)))) #f
                   (compound (call rgun (expression #t))))
-        (function fa (signature (type void) (parameters (parameter a (type bool)))) #f
+        (function fa (signature (type void) (formals (formal a (type bool)))) #f
                   (compound (call fb (expression #t))))
-        (function fb (signature (type void) (parameters (parameter a (type bool)))) #f
+        (function fb (signature (type void) (formals (formal a (type bool)))) #f
                   (compound (call fc (expression #t))))
-        (function fc (signature (type void) (parameters (parameter a (type bool)))) #f
+        (function fc (signature (type void) (formals (formal a (type bool)))) #f
                   (compound (assign b (expression true))))
-        (function rfa (signature (type void) (parameters (parameter a (type bool)))) #f
+        (function rfa (signature (type void) (formals (formal a (type bool)))) #f
                   (compound (call rfb (expression #t))))
-        (function rfb (signature (type void) (parameters (parameter a (type bool)))) #f
+        (function rfb (signature (type void) (formals (formal a (type bool)))) #f
                   (compound (call rfc (expression #t))))
-        (function rfc (signature (type void) (parameters (parameter a (type bool)))) #f
+        (function rfc (signature (type void) (formals (formal a (type bool)))) #f
                   (compound (call rfa (expression #t))))
-        (function rbfa (signature (type void) (parameters (parameter a (type bool)))) #f
+        (function rbfa (signature (type void) (formals (formal a (type bool)))) #f
                   (assign b (call rbfb (expression #t))))
-        (function rbfb (signature (type void) (parameters (parameter a (type bool)))) #f
+        (function rbfb (signature (type void) (formals (formal a (type bool)))) #f
                   (compound (assign b (call rbfc (expression #t)))))
-        (function rbfc (signature (type void) (parameters (parameter a (type bool)))) #f
+        (function rbfc (signature (type void) (formals (formal a (type bool)))) #f
                   (compound (call fa (expression #t)) (call fb (expression #t)) (compound (call fc (expression #t)) (assign b (call rbfa (expression #t))))))
         (function efun
                   (signature (type state)) #f (compound (return (var m)))))
@@ -366,27 +365,27 @@
            '(assign b (expression true)))
           '(assign b (expression true))))
 
-(pass-if "ast:resolve-parameter"
+(pass-if "ast:resolve-formal"
          (om-pretty-noisy-equal?
           (ast:resolve-model
            (cadr resolve-ast)
-           '(function fun (signature (type void) (parameters (parameter a (type bool)))) #f
+           '(function fun (signature (type void) (formals (formal a (type bool)))) #f
                             (compound (assign b (expression (var a))))))
-          '(function fun (signature (type void) (parameters (parameter a (type bool))))
+          '(function fun (signature (type void) (formals (formal a (type bool))))
                      #f
                      (compound (assign b (expression (var a)))))))
 
-(pass-if "ast:resolve-return-parameter"
+(pass-if "ast:resolve-return-formal"
          (om-pretty-noisy-equal?
           (ast:resolve-model
            (cadr resolve-ast)
-           '(function fun (signature (type bool) (parameters (parameter a (type bool)))) #f
+           '(function fun (signature (type bool) (formals (formal a (type bool)))) #f
                       (compound (return (expression (var a))))))
           '(function
             fun
             (signature
              (type bool #f)
-             (parameters (parameter a (type bool #f))))
+             (formals (formal a (type bool #f))))
             #f
             (compound (return (expression (var a)))))))
 
@@ -432,9 +431,9 @@
          (om-pretty-noisy-equal?
           (ast:resolve-model
            (cadr resolve-ast)
-           '(function rgun (signature (type void) (parameters)) #f
+           '(function rgun (signature (type void) (formals)) #f
                       (compound (call rgun (expression #t)))))
-          '(function rgun (signature (type void) (parameters))
+          '(function rgun (signature (type void) (formals))
                      recursive
                       (compound (call rgun (expression #t))))))
 
@@ -442,9 +441,9 @@
          (om-pretty-noisy-equal?
           (ast:resolve-model
            (cadr resolve-ast)
-           '(function rfun (signature (type void) (parameters)) #f
+           '(function rfun (signature (type void) (formals)) #f
                       (compound (call rgun (expression #t)))))
-          '(function rfun (signature (type void) (parameters))
+          '(function rfun (signature (type void) (formals))
                      recursive
                      (compound (call rgun (expression #t))))))
 
@@ -452,9 +451,9 @@
          (om-pretty-noisy-equal?
           (ast:resolve-model
            (cadr resolve-ast)
-           '(function fa (signature (type void) (parameters)) #f
+           '(function fa (signature (type void) (formals)) #f
                       (compound (call fb (expression #t)))))
-          '(function fa (signature (type void) (parameters))
+          '(function fa (signature (type void) (formals))
                      #f
                      (compound (call fb (expression #t))))))
 
@@ -462,9 +461,9 @@
          (om-pretty-noisy-equal?
           (ast:resolve-model
            (cadr resolve-ast)
-           '(function rfa (signature (type void) (parameters)) #f
+           '(function rfa (signature (type void) (formals)) #f
                       (compound (call rfb (expression #t)))))
-          '(function rfa (signature (type void) (parameters))
+          '(function rfa (signature (type void) (formals))
                      recursive
                      (compound (call rfb (expression #t))))))
 
@@ -472,9 +471,9 @@
          (om-pretty-noisy-equal?
           (ast:resolve-model
            (cadr resolve-ast)
-           '(function rbfa (signature (type void) (parameters)) #f
+           '(function rbfa (signature (type void) (formals)) #f
                       (assign b (compound (call rbfb (expression #t))))))
-          '(function rbfa (signature (type void) (parameters))
+          '(function rbfa (signature (type void) (formals))
                      recursive
                       (assign b (compound (call rbfb (expression #t)))))))
 

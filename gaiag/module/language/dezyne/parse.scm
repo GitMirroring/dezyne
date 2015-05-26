@@ -136,9 +136,9 @@
    (event
     (event-direction variable-type Identifier semicolon) : `(event ,$3 ,(note-location `(signature ,$2) @2) ,$1)
     (event-direction variable-type Identifier lparen rparen semicolon) : `(event , $3 ,(note-location `(signature ,$2) @2) ,$1)
-    (event-direction variable-type Identifier lparen parameters rparen semicolon) : `(event ,$3 ,(note-location `(signature ,$2 ,$5) @2) ,$1))
+    (event-direction variable-type Identifier lparen formals rparen semicolon) : `(event ,$3 ,(note-location `(signature ,$2 ,$5) @2) ,$1))
 
-   (parameter-direction
+   (formal-direction
     (in) : 'in
     (out) : 'out
     (inout) : 'inout)
@@ -244,15 +244,15 @@
 
    (function
     (variable-type Identifier lparen rparen compound-statement) : (note-location `(function ,$2 ,(note-location `(signature ,$1) @1), #f ,$5) @1)
-    (variable-type Identifier lparen parameters rparen compound-statement) : (note-location `(function ,$2 ,(note-location `(signature ,$1 ,$4) @1) #f ,$6) @1))
+    (variable-type Identifier lparen formals rparen compound-statement) : (note-location `(function ,$2 ,(note-location `(signature ,$1 ,$4) @1) #f ,$6) @1))
 
-   (parameters
-    (parameter) : `(parameters ,$1)
-    (parameters comma parameter) : (append $1 (list $3)))
+   (formals
+    (formal) : `(formals ,$1)
+    (formals comma formal) : (append $1 (list $3)))
 
-   (parameter
-    (variable-type Identifier): (note-location `(parameter ,$2 ,$1) @1)
-    (parameter-direction variable-type Identifier): (note-location `(parameter ,$3 ,$2 ,$1) @1))
+   (formal
+    (variable-type Identifier): (note-location `(formal ,$2 ,$1) @1)
+    (formal-direction variable-type Identifier): (note-location `(formal ,$3 ,$2 ,$1) @1))
 
    (statements
     () : '(compound)

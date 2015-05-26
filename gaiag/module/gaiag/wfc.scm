@@ -27,7 +27,7 @@
 (define-module (gaiag wfc)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
-  :use-module (ice-9 match)
+  :use-module (gaiag list match)
   :use-module (ice-9 optargs)
   :use-module (ice-9 pretty-print)
 
@@ -36,7 +36,7 @@
   :use-module (gaiag misc)
   :use-module (gaiag reader)
 
-  :use-module (gaiag om)
+  :use-module (gaiag ast)
   :use-module (gaiag resolve)
 
   :export (
@@ -45,7 +45,7 @@
 
 (cond-expand
  (goops-om
-  (use-modules (oop goops)))
+  (use-modules (gaiag goops om)))
  (else #t))
 
 (define-method (ast:wfc (o <ast>))

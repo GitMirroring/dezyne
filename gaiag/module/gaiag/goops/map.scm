@@ -33,8 +33,6 @@
   
   :use-module (gaiag reader)
 
-  :use-module (oop goops)
-
   :use-module (gaiag goops om)
   :use-module (gaiag goops display)
   :use-module (gaiag goops util)
@@ -95,7 +93,9 @@
   (om:clone o (om:map-initializer f)))
 
 (define-method (om:map f (o <list>))
-  (map (om:map f) o))
+  (if (is-a? o <ast-list>)
+      (cons (car o) (map (om:map f) (cdr o)))
+      (map (om:map f) o)))
 
 (define-method (om:map f (o <ast>) make-initializer)
   (f (om:clone o make-initializer)))
@@ -118,6 +118,9 @@
 
 (define-method (om:collect (predicate <procedure>) (o <list>))
   (apply append (map (lambda (o) (om:collect predicate o)) o)))
+
+(define-method (om:collect (predicate <procedure>) (o <symbol>))
+  '())
 
 (define-method (om:collect (predicate <procedure>))
   (lambda (o) (om:collect predicate o)))

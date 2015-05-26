@@ -77,13 +77,13 @@ class main<R> {
 #(map
     (lambda (port)
     (map (define-on model port #{
-    m.#port .#direction .#event  = new #(action-type return-type parameter-types)() {public #return-type  action(#parameters) {#(string-if (eq? return-type 'void) #{log_#direction("#port .#direction .", "#event ");#}#{return log_valued("#port .#direction .", "#event ", #(if (eq? reply-scope '*global*) 'DznGlobal reply-scope).#reply-name .class, "#port .#reply-name _");#})};};
+    m.#port .#direction .#event  = new #(action-type return-type formal-types)() {public #return-type  action(#formals) {#(string-if (eq? return-type 'void) #{log_#direction("#port .#direction .", "#event ");#}#{return log_valued("#port .#direction .", "#event ", #(if (eq? reply-scope '*global*) 'DznGlobal reply-scope).#reply-name .class, "#port .#reply-name _");#})};};
 #}) (filter (negate (om:dir-matches? port))
        (om:events port)))) (om:ports model))     EventMap e = new EventMap();
 #(map
     (lambda (port)
     (map (define-on model port #{
-        e.put("#port .#event ", new Action() {public void action() {m.#port .#direction .#event .action(#((->join ", ") (map (lambda (p) (if (om:out-or-inout? p) 'v 0)) parameter-objects)));}});
+        e.put("#port .#event ", new Action() {public void action() {m.#port .#direction .#event .action(#((->join ", ") (map (lambda (p) (if (om:out-or-inout? p) 'v 0)) formal-objects)));}});
 #}) (filter (om:dir-matches? port)
        (om:events port)))) (om:ports model)) return e;
 }

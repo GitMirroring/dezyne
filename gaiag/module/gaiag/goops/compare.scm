@@ -26,7 +26,7 @@
 (read-set! keywords 'prefix)
 
 (define-module (gaiag goops compare)
-  :use-module (oop goops)
+  :use-module (gaiag goops om)
 
   :use-module (gaiag misc)
   :use-module (gaiag reader)

@@ -28,7 +28,7 @@
 (define-module (gaiag annotate)
   :use-module (ice-9 pretty-print)
 
-  :use-module (ice-9 match)
+  :use-module (gaiag list match)
   :use-module (ice-9 and-let-star)
   :use-module (srfi srfi-9)  
 
@@ -38,7 +38,7 @@
   :use-module (gaiag misc)
   :use-module (gaiag reader)
 
-  :export (ast-> ast:annotate ast->annotate extract-locations))
+  :export (ast:annotate ast->annotate extract-locations))
 
 (define (annotate-locations o)
   (match o

@@ -36,7 +36,7 @@ function #.model(locator, meta) {
    (om:ports model))
 #
 (map (define-function model #{
-   this.#name  = function (#parameters) {
+   this.#name  = function (#formals) {
 #statements }.bind(this);
 #}) (om:functions model))
 };

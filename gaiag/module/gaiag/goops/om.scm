@@ -18,8 +18,54 @@
 (read-set! keywords 'prefix)
 
 (define-module (gaiag goops om)
-  :use-module (oop goops)
+  :use-module (ice-9 optargs)
+  :use-module ((oop goops;;the only spot
+                    )
+               :select
+               ((make . goops:make)
+                (is-a? . goops:is-a?)
+                <boolean>
+                <class>
+                <integer>
+                <list>
+                <null>
+                <procedure>
+                <string>
+                <symbol>
+                <top>
+                class-name
+                class-of
+                class-slots
+                define-class
+                define-generic
+                define-method
+                slot-definition-name
+                slot-ref
+                slot-set!
+                ))
+  :re-export (
+              <boolean>
+              <class>
+              <integer>
+              <list>
+              <null>
+              <procedure>
+              <string>
+              <symbol>
+              <top>
+              class-name
+              class-of
+              class-slots
+              define-class
+              define-generic
+              define-method
+              slot-definition-name
+              slot-ref
+              slot-set!
+              )
   :export (
+           make
+           is-a?
            .ast
            .message
            <error>
@@ -45,7 +91,7 @@
            .last?
            .left
            .name
-           .parameters
+           .formals
            .port
            .ports
            .range
@@ -99,9 +145,9 @@
            <named>
            <on>
            <otherwise>
-           <om:parameter>
-           <parameters>
-           <om:port>
+           <formal>
+           <formals>
+           <port>
            <ports>
            <range>
            <reply>
@@ -121,15 +167,15 @@
            <variables>
            ))
 
-(cond-expand-provide (current-module) '(goops-om))
-
 (define-class <ast> ())
 
 (define-class <named> (<ast>)
   (name :accessor .name :init-value #f :init-keyword :name))
 
 (define-class <ast-list> (<ast>)
-  (elements :accessor .elements :init-form (list) :init-keyword :elements))
+  (elements :accessor @elements :init-form (list) :init-keyword :elements))
+
+(define .elements cdr)
 
 (define-class <arguments> (<ast-list>))
 (define-class <bindings> (<ast-list>))
@@ -137,12 +183,48 @@
 (define-class <fields> (<ast-list>))
 (define-class <functions> (<ast-list>))
 (define-class <instances> (<ast-list>))
-(define-class <parameters> (<ast-list>))
+(define-class <formals> (<ast-list>))
 (define-class <ports> (<ast-list>))
 (define-class <root> (<ast-list>))
 (define-class <triggers> (<ast-list>))
 (define-class <types> (<ast-list>))
 (define-class <variables> (<ast-list>))
+
+(define-class <statement> (<ast>))
+(define-class <compound> (<ast-list> <statement>))
+
+(define ast-lists
+  (list
+    <arguments>
+    <ast-list>
+    <bindings>
+    <compound>    
+    <events>
+    <fields>
+    <functions>
+    <instances>
+    <formals>
+    <ports>
+    <root>
+    <triggers>
+    <types>
+    <variables>
+    ))
+
+(define (ast-name class)
+  (string->symbol (string-drop (string-drop-right (symbol->string (class-name class)) 1) 1)))
+
+(define (make class . args)
+  (if (member class ast-lists)
+      (let-keywords
+       args #f ((elements '()))
+       (cons (ast-name class) elements))
+      (apply goops:make (cons class args))))
+
+(define (is-a? o class)
+  (if (member class ast-lists)
+      (and (pair? o) (or (eq? class <ast-list>) (eq? (ast-name class) (car o))))
+      (goops:is-a? o class)))
 
 (define-class <model> (<named>))
 
@@ -161,13 +243,13 @@
 
 (define-class <signature> (<ast>)
   (type :accessor .type :init-value (make <type>) :init-keyword :type)
-  (parameters :accessor .parameters :init-form (make <parameters>) :init-keyword :parameters))
+  (formals :accessor .formals :init-form (make <formals>) :init-keyword :formals))
 
 (define-class <event> (<named>)
   (signature :accessor .signature :init-form (make <signature>) :init-keyword :signature)
   (direction :accessor .direction :init-value #f :init-keyword :direction))
 
-(define-class <om:port> (<named>)
+(define-class <port> (<named>)
   (type :accessor .type :init-value #f :init-keyword :type)
   (direction :accessor .direction :init-value #f :init-keyword :direction)
   (injected :accessor .injected :init-value #f :init-keyword :injected))
@@ -201,7 +283,7 @@
   (type :accessor .type :init-value #f :init-keyword :type)
   (field :accessor .field :init-value #f :init-keyword :field))
 
-(define-class <om:parameter> (<named>)
+(define-class <formal> (<named>)
   (type :accessor .type :init-value (make <type>) :init-keyword :type)
   (direction :accessor .direction :init-value #f :init-keyword :direction))
 
@@ -242,7 +324,6 @@
   (statement :accessor .statement :init-value #f :init-keyword :statement))
 
 ;;; statements
-(define-class <statement> (<ast>))
 (define-class <declarative> (<statement>))
 (define-class <imperative> (<statement>))
 
@@ -258,7 +339,6 @@
   (arguments :accessor .arguments :init-form (make <arguments>) :init-keyword :arguments)
   (last? :accessor .last? :init-value #f :init-keyword :last?))
 
-(define-class <compound> (<ast-list> <statement>))
 
 (define-class <guard> (<declarative>)
   (expression :accessor .expression :init-form (make <expression>) :init-keyword :expression)

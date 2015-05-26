@@ -24,9 +24,8 @@
   :use-module (gaiag misc)
   :use-module (gaiag reader)
 
-  :use-module (oop goops)
-  ;;:use-module (oop goops describe)
-  :use-module (gaiag om)
+    ;;:use-module (oop goops describe)
+  :use-module (gaiag ast)
 
   :export (ast->))
 

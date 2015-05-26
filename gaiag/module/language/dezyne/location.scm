@@ -71,11 +71,6 @@
              #f)
       (throw 'syntax-error #f message #f token #f)))
 
-(when (not (defined? 'supports-source-properties?)) ;; guile-2.0.5/Ubuntu 12.04
-      (use-modules (oop goops))
-      (module-define! (current-module) 'supports-source-properties?
-                      (lambda (x) (or (pair? x) (instance? x)))))
-
 (define (note-location ast loc)
   (when (supports-source-properties? ast)
     (set-source-property! ast 'loc loc))

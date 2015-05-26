@@ -22,13 +22,13 @@ struct #.interface
   struct
   {
    #(map (declare-io model
-          #{std::function<#return-type  (#parameters)> #name;
+          #{std::function<#return-type  (#formals)> #name;
 #}) (filter om:in? ((compose .elements .events) model))) } in;
 
   struct
   {
    #(map (declare-io model
-          #{std::function<#return-type  (#parameters)> #name;
+          #{std::function<#return-type  (#formals)> #name;
 #}) (filter om:out? ((compose .elements .events) model))) } out;
 
    port::meta meta;

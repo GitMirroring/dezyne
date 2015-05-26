@@ -56,7 +56,7 @@
 ;;;;
 ;;;; If you change the #! line at the top of this script to point at
 ;;;; the Guile interpreter you want to test, you can call this script
-;;;; as an executable instead of having to pass it as a parameter to
+;;;; as an executable instead of having to pass it as a formal to
 ;;;; guile via "guile -e main -s guile-test".  Further, you can edit
 ;;;; the definition of default-test-suite to point to the parent
 ;;;; directory of the `tests' tree, which makes it unnecessary to set

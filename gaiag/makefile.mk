@@ -45,12 +45,6 @@ $(BUILD)/module:
 
 include make/guile.mk
 
-TARG := g
-include make/guile.mk
-
-TARG := gr
-include make/guile.mk
-
 TARG := scm2json
 include make/guile.mk
 

@@ -23,7 +23,7 @@ namespace dezyne
    (map
     (lambda (port)
       (map (define-on model port #{
-#port .#direction .#event  = [&] (#parameters) {
+#port .#direction .#event  = [&] (#formals) {
     #(if (eq? return-type 'void) "" "return ")call_in(this, #(string-if (and (eq? return-type 'void) (null? argument-list)) #{ [this] {#port _#event();}#} #{std::function<#return-type ()>([&] {#(if (eq? return-type 'void) "" "return ")#port _#event (#arguments);})#}), std::make_tuple(&#port , "#event ", "return"));
 };
 #}) (filter om:in? (om:events port))))
@@ -31,7 +31,7 @@ namespace dezyne
 (map
     (lambda (port)
       (map (define-on model port #{
-#port .#direction .#event  = [&] (#parameters) {
+#port .#direction .#event  = [&] (#formals) {
     call_out(this, #(string-if (null? argument-list) #{[this] {#port _#event();}#} #{ std::function<void()>([&#comma #arguments] {this->#port _#event (#arguments);}) #}), std::make_tuple(&#port , "#event ", "return"));
 };
 #}) (filter om:out? (om:events port))))
@@ -41,7 +41,7 @@ namespace dezyne
 #(map
   (lambda (port)
     (map (define-on model port #{
-  #return-type  #.model ::#port _#event (#parameters)
+  #return-type  #.model ::#port _#event (#formals)
   {
     #statement #
     (string-if (not (eq? type 'void))
@@ -51,7 +51,7 @@ namespace dezyne
 #}) (filter (om:dir-matches? port) (om:events port))))
   (om:ports model))#
 ((->join "\n  ")(map (define-function model #{
-  #return-type  #.model ::#name (#parameters)
+  #return-type  #.model ::#name (#formals)
   {
     #statements }
 #}) (om:functions model)))

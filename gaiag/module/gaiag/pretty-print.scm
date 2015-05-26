@@ -42,7 +42,7 @@
 ;;;; Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 ;;;;
 (define-module (gaiag pretty-print)
-  #:use-module (ice-9 match)
+  #:use-module (gaiag list match)
   #:use-module (srfi srfi-1)
   #:export (pretty-print))
 

@@ -2,7 +2,7 @@
 #include <iostream>
 
 #include <boost/function_types/function_type.hpp>
-#include <boost/function_types/parameter_types.hpp>
+#include <boost/function_types/formal_types.hpp>
 #include <boost/function_types/function_arity.hpp>
 
 struct S
@@ -45,10 +45,10 @@ std::function<T> prep_handle_event(const std::function<T>& f)
 {
   using namespace std::placeholders;
   //return std::function<void(double)>([f](double d){  std::cout << "daaro" << std::endl; handle_event(std::bind(f, d));});
-  //typename boost::function_types::parameter_types<T>::type a = 0;
+  //typename boost::function_types::formal_types<T>::type a = 0;
 
-  typedef typename boost::mpl::at_c<typename boost::function_types::parameter_types<T>::type, 0>::type A0;
-  typedef typename boost::mpl::at_c<typename boost::function_types::parameter_types<T>::type, 1>::type A1;
+  typedef typename boost::mpl::at_c<typename boost::function_types::formal_types<T>::type, 0>::type A0;
+  typedef typename boost::mpl::at_c<typename boost::function_types::formal_types<T>::type, 1>::type A1;
 return std::function<void(A0,A1)>(std::bind(indirection<A0,A1>, f, _1, _2));
 }
 
@@ -66,7 +66,7 @@ std::function<void(double, int)> port_event = prep_handle_event(std::function<vo
 
   //std::cout << port_event(0.123) << std::endl;
 
-port_event(0.123, 123);// capture parameter_list, store in queue
+port_event(0.123, 123);// capture formal_list, store in queue
 
   flush();// execute s.foo(0.123);
 }

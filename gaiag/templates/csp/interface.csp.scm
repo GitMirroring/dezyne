@@ -34,7 +34,7 @@ channel #(.name model)_in',#(.name model)_out': {#(comma-join (map (lambda (x) (
 channel #(.name model)_''': {modeling}
 
 IF_#(.name model) _#((compose .name .behaviour) model)(IG,CS) = let
-# (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (om:functions (.behaviour model))))
+# (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (om:functions model)))
 #(.name model) _#((compose .name .behaviour) model) ((#(->csp model (make <context> :members ((compose om:member-names csp:import) (.name model)))))) =
 # (behaviour->csp (csp:import (.name model)))
 []

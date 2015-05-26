@@ -25,8 +25,7 @@
   :use-module (gaiag reader)
   :use-module (gaiag mangle)
 
-  :use-module (oop goops)
-  :use-module (gaiag om))
+  :use-module (gaiag ast))
 
 (pass-if "mangle-first-dummy-test"
 	 #t)

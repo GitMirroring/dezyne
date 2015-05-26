@@ -37,20 +37,20 @@ class #.model  extends Component {#
 (map
    (lambda (port)
      (map (define-on model port #{#'()
-  #port .#direction .#event  = new #(action-type return-type parameter-types)() {public #return-type  action(#parameters) {#(string-if (not (eq? return-type 'void)) #{return #})Runtime.call#(symbol-capitalize direction)(#.model .this, new #(action-type return-type '()) () {public #return-type  action() {#(string-if (not (eq? return-type 'void)) #{return #})#port _#event(#arguments);}}, new Meta(#.model .this.#port , "#event"));};};
+  #port .#direction .#event  = new #(action-type return-type formal-types)() {public #return-type  action(#formals) {#(string-if (not (eq? return-type 'void)) #{return #})Runtime.call#(symbol-capitalize direction)(#.model .this, new #(action-type return-type '()) () {public #return-type  action() {#(string-if (not (eq? return-type 'void)) #{return #})#port _#event(#arguments);}}, new Meta(#.model .this.#port , "#event"));};};
    #}) (filter (om:dir-matches? port) (om:events port))))
    (om:ports model))
   };#
 (map
    (lambda (port)
      (map (define-on model port #{#'()
-  public #return-type  #port _#event (#parameters) {
+  public #return-type  #port _#event (#formals) {
   #statement #(if (not (eq? type 'void))
 (list "return reply_" (*scope* reply-scope) "_" reply-name ";\n")) };
 #}) (filter (om:dir-matches? port) (om:events port))))
    (om:ports model))#
 (map (define-function model #{
-   public #return-type  #name  (#parameters) {
+   public #return-type  #name  (#formals) {
 #statements };
 #}) (om:functions model))
 }

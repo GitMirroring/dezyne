@@ -26,8 +26,8 @@
 
 (define-module (gaiag asserts)
   :use-module (ice-9 and-let-star)
-  :use-module (ice-9 curried-definitions)
-  :use-module (ice-9 pretty-print)
+  :use-module (ice-9 curried-definitions)  
+  :use-module (gaiag list match)  
   :use-module (srfi srfi-1)
 
   :use-module (gaiag csp)
@@ -35,8 +35,7 @@
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
 
-  :use-module (oop goops)
-  :use-module (gaiag om)
+    :use-module (gaiag ast)
 
   :export (
            ast->
@@ -48,31 +47,29 @@
       (list (ast-name model) (.name model) check (.type (om:port model)))
       (list (ast-name model) (.name model) check)))
 
-(define-method (assert-list (o <component>))
-   (or (and-let* ((component-checks '(deterministic completeness illegal deadlock compliance livelock)))
-                 (map (assert o) component-checks))
-       '()))
+(define (assert-list o)
+  (match o
+    (($ <component>)
+     (or (and-let* ((component-checks '(deterministic completeness illegal deadlock compliance livelock)))
+                   (map (assert o) component-checks))
+         '()))
+    (($ <interface>)
+     (or (and-let* ((interface-checks '(completeness deadlock livelock)))
+                   (map (assert o) interface-checks))
+         '()))
+    ((? (is? <ast>))
+     (or (and-let* ((model (om:model-with-behaviour o)))
+                   (assert-list-all model))
+         '()))
+    (_ (assert-list ((om:register (compose ast->om ast:resolve)) o #t)))))
 
-(define-method (assert-list (o <interface>))
-  (or (and-let* ((interface-checks '(completeness deadlock livelock)))
-                (map (assert o) interface-checks))
-      '()))
-
-(define-method (assert-list-all (o <component>))
-  (append
-   (let ((interfaces (map om:import (delete-duplicates (sort (map .type ((compose .elements .ports) o)) symbol<)))))
-     (apply append (map assert-list interfaces)))
-   (assert-list o)))
-
-(define-method (assert-list-all (o <interface>))
-  (assert-list o))
-
-(define-method (assert-list (o <ast>))
-  (or (and-let* ((model (om:model-with-behaviour o)))
-                (assert-list-all model))
-      '()))
-
-(define-method (assert-list (o <top>))
-  (assert-list ((om:register (compose ast->om ast:resolve)) o #t)))
+(define (assert-list-all o)
+  (match o
+    (($ <component>)
+     (append
+      (let ((interfaces (map om:import (delete-duplicates (sort (map .type ((compose .elements .ports) o)) symbol<)))))
+        (apply append (map assert-list interfaces)))
+      (assert-list o)))
+    (($ <interface>) (assert-list o))))
 
 (define ast-> assert-list)

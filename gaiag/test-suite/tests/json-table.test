@@ -12,8 +12,7 @@
   :use-module (gaiag misc)  
   :use-module (gaiag reader)
 
-  :use-module (oop goops)
-  :use-module (gaiag om)
+  :use-module (gaiag ast)
   :use-module (gaiag resolve)
   )
 

@@ -12,7 +12,7 @@ struct #.model {
      char const* name;
      void* self;
    #(map (declare-io model
-          #{ #return-type  (*#name)(#.model * self#comma #parameters);
+          #{ #return-type  (*#name)(#.model * self#comma #formals);
 #}) (filter om:in? ((compose .elements .events) model)))
    } in;
 
@@ -20,7 +20,7 @@ struct #.model {
      char const* name;
      void* self;
    #(map (declare-io model
-          #{ #return-type  (*#name) (#.model * self#comma #parameters);
+          #{ #return-type  (*#name) (#.model * self#comma #formals);
 #}) (filter om:out? ((compose .elements .events) model)))
  } out;
 };

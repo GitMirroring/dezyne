@@ -30,24 +30,23 @@
   :use-module (gaiag misc)
   :use-module (gaiag reader)
 
-  :use-module (oop goops)
-  ;;:use-module (oop goops describe)
-  :use-module (gaiag om)
+    ;;:use-module (oop goops describe)
+  :use-module (gaiag ast)
 
   :export (ast-> action-type ->type))
 
 (define ast-> ast:code)
 
-(define (action-type type parameter-types)
-  (let ((count (length parameter-types))
-        (parameter-types
+(define (action-type type formal-types)
+  (let ((count (length formal-types))
+        (formal-types
          (map
           (lambda (p) (if (string-prefix? "final " p) (substring p 6) p))
-          parameter-types)))
+          formal-types)))
    (list
     (if (eq? type 'void)
-        (list "Action" (if (>0 count) (list count "<" ((->join ", ") parameter-types) ">") ""))
-        (list "ValuedAction" (if (>0 count) (list count "<" type ", " ((->join ", ") parameter-types) ">") (list  "<" type ">")))))))
+        (list "Action" (if (>0 count) (list count "<" ((->join ", ") formal-types) ">") ""))
+        (list "ValuedAction" (if (>0 count) (list count "<" type ", " ((->join ", ") formal-types) ">") (list  "<" type ">")))))))
 
 (define (->type type)
   (cond

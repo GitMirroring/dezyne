@@ -50,6 +50,6 @@ class #.model  (runtime.Component):
 #}) (filter (om:dir-matches? port) (om:events port))))
    (om:ports model))#
 (map (define-function model #{
-    def #name  (self#comma #parameters):
+    def #name  (self#comma #formals):
 #statements
 #}) (om:functions model))

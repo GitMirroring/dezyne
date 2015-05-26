@@ -21,15 +21,14 @@
 (define-module (gaiag mangle)
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 pretty-print)
-  :use-module (ice-9 match)
+  :use-module (gaiag list match)
 
   :use-module (gaiag misc)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
 
-  :use-module (oop goops)
-  ;;:use-module (oop goops describe)
-  :use-module (gaiag om)
+    ;;:use-module (oop goops describe)
+  :use-module (gaiag ast)
 
   :export (ast-> om:mangle mangle-prefix-alist))
 
@@ -45,8 +44,8 @@
                 element))))
   (om:clone o mangle-name-initializer))
 
-(define-method (mangle (o <om:port>))
-  (make <om:port>
+(define-method (mangle (o <port>))
+  (make <port>
     :name ((prefix (om:prefix o)) (.name o))
     :direction (.direction o)
     :type ((prefix (om:prefix 'interface)) (.type o))))
@@ -77,7 +76,7 @@
                     (instance . is)
                     (interface . if)
                     (component . co)
-                    (parameter . va)
+                    (formal . va)
                     (port . po)
                     (var . va))))
 

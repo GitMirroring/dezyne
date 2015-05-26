@@ -10,8 +10,7 @@
   :use-module (gaiag reader)
   :use-module (gaiag norm)
 
-  :use-module (oop goops)
-  :use-module (gaiag om))
+  :use-module (gaiag ast))
 
 (pass-if "norm-first-dummy-test"
          #t)

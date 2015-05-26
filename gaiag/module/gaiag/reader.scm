@@ -29,12 +29,12 @@
   :use-module (language dezyne parse)
   :use-module (language dezyne location)
   :use-module (language dezyne tokenize)
-  :export (dezyne->ast find-file try-find-file parse-dezyne read-dezyne read-ast))
+  :export (dezyne->ast find-file try-find-file parse-dezyne read-dzn read-ast))
 
 (define (dezyne->ast x)
   (or (and-let* ((file-name (->string x))
                  ((file-exists? file-name)))
-                (read-dezyne file-name))
+                (read-dzn file-name))
       (parse-dezyne x)))
 
 (define (read-and-parse lang port cenv)
@@ -47,7 +47,7 @@
 (define (dezyne-reader port env)
   ((make-parser) (make-tokenizer port) syntax-error-handler))
 
-(define (read-dezyne- file-name)
+(define (read-dzn- file-name)
   (dezyne-reader (open-file file-name "r") (current-module)))
 
 (define *include-path* '("." "examples"))
@@ -81,8 +81,8 @@
                    (find-file file-name extensions))))
     (lambda (key . args) #f)))
 
-(define* (read-dezyne file-name :optional (register identity))
-  (register (read-dezyne- (find-file file-name))))
+(define* (read-dzn file-name :optional (register identity))
+  (register (read-dzn- (find-file file-name))))
 
 (define (read-ast- file-name)
   (let* ((file-name (->string file-name))
@@ -90,7 +90,7 @@
          (file (open-input-file file-name)))
     (if (eq? (peek-char file) #\()
         (read file)
-        (read-dezyne- file-name))))
+        (read-dzn- file-name))))
 
 (define* (read-ast file-name :optional (register identity))
   "Read contents of FILE-NAME and return the AST.

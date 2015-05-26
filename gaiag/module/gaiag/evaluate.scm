@@ -29,10 +29,10 @@
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 optargs)
-  :use-module (ice-9 match)
+  :use-module (gaiag list match)
   :use-module (srfi srfi-1)
 
-  :use-module (gaiag om)
+  :use-module (gaiag ast)
   :use-module (gaiag misc)
 
   :export (
@@ -45,10 +45,6 @@
            var!
            ))
 
-(cond-expand
- (goops-om
-  (use-modules (oop goops)))
- (else #t))
 
 (define* ((variable-state model :optional (init .expression)) variable)
   (cons

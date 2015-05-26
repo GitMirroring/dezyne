@@ -22,13 +22,11 @@
 
 (read-set! keywords 'prefix)
 
-(define-module
-  (gaiag norm) ;;-goeps
-  ;;+goeps (g norm)
+(define-module (gaiag norm)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 pretty-print)
   :use-module (ice-9 receive)
-  :use-module (ice-9 match)
+  :use-module (gaiag list match)
   :use-module (ice-9 curried-definitions)
 
   :use-module (language dezyne location)
@@ -37,13 +35,9 @@
 
   :use-module (gaiag misc)
 
-  :use-module (gaiag om) ;;-goeps
-  :use-module (gaiag reader) ;;-goeps
-  :use-module (gaiag resolve) ;;-goeps
-
-  ;;+goeps :use-module (g om)
-  ;;+goeps :use-module (g reader)
-  ;;+goeps :use-module (g resolve)
+  :use-module (gaiag ast)
+  :use-module (gaiag reader)
+  :use-module (gaiag resolve)
 
   :export (
            add-skip
@@ -57,11 +51,6 @@
            remove-skip
            ))
 
-(cond-expand
- (goops-om
-  (use-modules (oop goops)))
- (else #t))
-
 (define (remove-skip o)
   (match o
     (('skip) (make <compound>))
@@ -72,12 +61,10 @@
 (define* ((aggregate-on :optional (aggregate? om:on-statement-equal?)) o)
   "Aggregate ONs with same statement AND (AGGREGATE? a b) into one ON-statement."
   (match o
-    (
-     ($ <compound> (($ <on>) ...));;-goeps
-     ;;+goeps($ <compound> ($ <on>) ...)
+    (('compound (and (($ <on>) ...) (get! ons)))
      (make <compound>
        :elements
-       (let loop ((ons (.elements o)))
+       (let loop ((ons (ons)))
          (if (null? ons)
              '()
              (receive (shared-ons remainder)
@@ -92,7 +79,7 @@
                                        :triggers (make <triggers> :elements triggers)
                                        :statement statement)))
                  (cons aggregated-on (loop remainder))))))))
-     (($ <functions>) o)
+     (('functions functions ...) o)
      ((? (is? <ast>)) (om:map (aggregate-on aggregate?) o))
      ((h t ...) (map (aggregate-on aggregate?) o))
      (_ o)))
@@ -109,12 +96,9 @@
 
 (define* ((expand-on :optional (compare equal?)) o)
   (match o
-    (
-     ($ <compound> (($ <on>) ...)) ;;-goeps
-     ;;-goeps ;;($ <compound> (($ <on>) ...))
-     ;;+goeps($ <compound> ($ <on>) ...)
+    (('compound (and (($ <on>) ...) (get! ons)))
      (make <compound>
-       :elements (apply append (map (port-split-triggers compare) (.elements o)))))
+       :elements (apply append (map (port-split-triggers compare) (ons)))))
     (($ <on> triggers statement)
      (let ((ons ((port-split-triggers compare) o)))
        (if (=1 (length ons))
@@ -144,12 +128,10 @@
 ;; find all ons with matching guards
 ;; push all ons into first guard, discard the rest
   (match o
-    (
-     ($ <compound> (($ <guard>) ...)) ;;-goeps
-      ;;+goeps ($ <compound> ($ <guard>) ...)
+    (('compound (and (($ <guard>) ...) (get! guards)))
      (make <compound>
        :elements
-       (let loop ((guards (.elements o)))
+       (let loop ((guards (guards)))
          (if ( null? guards)
              '()
              (receive (shared-guards remainder)
@@ -172,30 +154,24 @@
 
 (define (flatten-compound o)
   (match o
-    (($ <compound>)
+    (('compound statements ...)
      (let ((top (flatten-compound- o)))
        (retain-source-properties
         o
         (if (is-a? top <compound>)
             top
             (make <compound> :elements (list top))))))
-    ;; (($ <guard> e s) o)
-    ;; (($ <on> t s) o)    
     ((? (is? <ast>)) (om:map flatten-compound o))
     ((h t ...) (map flatten-compound o))
     (_ o)))
 
 (define (flatten-compound- o)
   (match o
-    (
-     ($ <compound> (statement)) ;;-goeps
-     ;;+goeps (('compound statement))
-     (flatten-compound- statement))
-    (($ <compound>)
+    (('compound statements ...)
      (retain-source-properties
       o 
       (make <compound> :elements 
-            (apply append (map flatten-compound-compound (.elements o))))))
+            (apply append (map flatten-compound-compound statements)))))
     ((? (is? <ast>)) (om:map flatten-compound- o))
     ((h t ...) (map flatten-compound- o))
     (_ o)))
@@ -203,7 +179,7 @@
 (define (flatten-compound-compound o)
   (let ((result (flatten-compound- o)))
     (match result
-      (($ <compound> statements) statements)
+      (('compound statements ...) statements)
       (_ (list result)))))
 
 (define* ((annotate-otherwise :optional (statements '())) o) ;; FIXME *unspecified*
@@ -220,7 +196,7 @@
                     (value (.value (guards-not-or guards))))
                    (make <otherwise> :value value))
          o))
-    (($ <compound> statements)
+    (('compound statements ...)
      (retain-source-properties
       o (make <compound>
           :elements (map (annotate-otherwise statements) statements))))
@@ -243,7 +219,7 @@
           (make <guard>
              :expression (guards-not-or statements)
              :statement (om:map (remove-otherwise keep-annotated?) statement)))))
-    (($ <compound> statements)
+    (('compound statements ...)
      (rsp o (make <compound> :elements (map (remove-otherwise keep-annotated? statements) statements))))
     ((? (is? <ast>)) (om:map (remove-otherwise keep-annotated? statements) o))
     ((h t ...) (map (remove-otherwise keep-annotated? statements) o))
@@ -260,7 +236,7 @@
 
 (define (add-skip o)
   (match o
-    (($ <compound> '()) (list 'skip)) ;; FIXME: not an <AST>
+    (('compound) (list 'skip))
     ((? (is? <ast>)) (om:map add-skip o))
     ((h t ...) (map add-skip o))
     (_ o)))

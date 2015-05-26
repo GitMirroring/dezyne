@@ -21,7 +21,7 @@
 (define-module (gaiag simulate)
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 getopt-long)
-  :use-module (ice-9 match)
+  :use-module (gaiag list match)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 receive)
   :use-module (srfi srfi-1)
@@ -37,9 +37,9 @@
   :use-module (gaiag reader)
 
   :use-module (gaiag resolve)
-  :use-module (gaiag wfc)
+;;  :use-module (gaiag wfc)
 
-  :use-module (gaiag om)
+  :use-module (gaiag ast)
 
   :export (ast->
            explore-space
@@ -48,11 +48,6 @@
            event->ast
            ->symbol
            simulate:om))
-
-(cond-expand
- (goops-om
-  (use-modules (oop goops)))
- (else #t))
 
 (define debug? #f)
 ;;(define debug? #t)
@@ -279,9 +274,9 @@
       (($ <call> function ($ <arguments> arguments))
        (receive (new-state new-ast new-action return new-trace)
            (let* ((f (om:function model function))
-                  (parameters (map .name ((compose .elements .parameters .signature) f)))
+                  (formals (map .name ((compose .elements .formals .signature) f)))
                   (statement (.statement f))
-                  (pairs (zip parameters arguments))
+                  (pairs (zip formals arguments))
                   (state (let loop ((pairs pairs) (state state))
                            (if (null? pairs)
                                state

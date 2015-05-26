@@ -24,46 +24,30 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (gr table-event)
-  :use-module (ice-9 and-let-star)
+(define-module (gaiag list ast)
   :use-module (ice-9 match)
-  :use-module (ice-9 getopt-long)
-  :use-module (ice-9 pretty-print)
-  :use-module (srfi srfi-1)
 
-  :use-module (language dezyne location)
   :use-module (gaiag misc)
-  
-  :use-module (gr om)
-  :use-module (gr gaiag)
-  :use-module (gr json-table)
-  :use-module (gr norm)
-  :use-module (gr norm-event)
-  :use-module (gr norm-state)    
-  :use-module (gaiag reader)
-  :use-module (gr resolve)
-  :use-module (gr pretty)
-  :use-module (gr table-state)
+  :use-module (gaiag list om)
+  :use-module (gaiag list util)
 
-  :export (ast-> table-event))
+  :export (
+           ast:interface
+           ast:public           
+           ))
 
-(cond-expand
- (goops-om
-  (use-modules (oop goops)))
- (else #t))
+(define (ast:public ast)
+  (match ast
+    (('enum name fields) `(enum ,name ,fields))
+    (('extern name value) `(extern ,name ,value))
+    (('int name range) `(int ,name ,range))
+    (('interface name types events behaviour) `(interface ,name ,types ,events))
+    ((h t ...) (map ast:public ast))
+    (_ '(import))))
 
-(define (table-event model o)
-  ((compose
-    norm-event
-    remove-initial
-    (annotate-otherwise)
-    (prepend-guards model)
-    (annotate-otherwise)
-    ) o))
-
-(define (ast-> ast)
-  ((compose
-    pretty-table
-    (mangle-table json-table-event)
-    (table table-event)
-    ast:resolve) ast))
+(define (ast:interface ast)
+  (match ast
+    (('root models ...) ast)
+    (('interface name body ...) ast)
+    ((h t ...) (map ast:interface ast))
+    (_ '(import))))

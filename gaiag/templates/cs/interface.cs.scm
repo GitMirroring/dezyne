@@ -27,13 +27,13 @@ public class #.interface  : Interface<#.interface .In, #.interface .Out> {#
 (->string (map (declare-enum model) (om:interface-enums model)))
   new public class In : Interface<#.model .In, #.model .Out>.In {
 #((->join "\n") (map (declare-io model #{
-    public #(lambda-type return-type parameter-types)  #name ;#})
+    public #(lambda-type return-type formal-types)  #name ;#})
  (filter om:in? ((compose .elements .events) model)))
 )
   }
   new public class Out : Interface<#.model .In, #.model .Out>.Out {
 #((->join "\n") (map (declare-io model #{
-    public #(lambda-type return-type parameter-types)  #name;#})
+    public #(lambda-type return-type formal-types)  #name;#})
  (filter om:out? ((compose .elements .events) model))))
   }
   public #.interface() {

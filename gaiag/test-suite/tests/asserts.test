@@ -8,7 +8,7 @@
 
   :use-module (gaiag reader)
   :use-module (gaiag asserts)
-  :use-module (gaiag om))
+  :use-module (gaiag ast))
 
 (pass-if "asserts-first-dummy-test"
 	 #t)

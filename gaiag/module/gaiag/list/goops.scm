@@ -24,46 +24,17 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (g table-event)
-  :use-module (ice-9 and-let-star)
-  :use-module (ice-9 match)
-  :use-module (ice-9 getopt-long)
-  :use-module (ice-9 pretty-print)
-  :use-module (srfi srfi-1)
-
-  :use-module (language dezyne location)
+(define-module (gaiag list goops)
   :use-module (gaiag misc)
-  
-  :use-module (g om)
-  :use-module (g gaiag)
-  :use-module (g json-table)
-  :use-module (g norm)
-  :use-module (g norm-event)
-  :use-module (g norm-state)    
-  :use-module (gaiag reader)
-  :use-module (g resolve)
-  :use-module (g pretty)
-  :use-module (g table-state)
+  :use-module (gaiag list ast)
+  :use-module (gaiag list csp)
+  :use-module (gaiag list om)  
+  :use-module (gaiag list util))
 
-  :export (ast-> table-event))
+(cond-expand-provide (current-module) '(list-om))
 
-(cond-expand
- (goops-om
-  (use-modules (oop goops)))
- (else #t))
-
-(define (table-event model o)
-  ((compose
-    norm-event
-    remove-initial
-    (annotate-otherwise)
-    (prepend-guards model)
-    (annotate-otherwise)
-    ) o))
-
-(define (ast-> ast)
-  ((compose
-    pretty-table
-    (mangle-table json-table-event)
-    (table table-event)
-    ast:resolve) ast))
+(re-export-modules
+ (gaiag list ast)
+ (gaiag list csp)
+ (gaiag list om)
+ (gaiag list util))

@@ -30,7 +30,7 @@
   :use-module (gaiag reader)
   :use-module (gaiag evaluate)
 
-  :use-module (gaiag om)
+  :use-module (gaiag ast)
 
   :export (
            json-init
@@ -40,7 +40,7 @@
 
 (cond-expand
  (goops-om
-  (use-modules (oop goops)))
+  (use-modules (gaiag goops om)))
  (else #t))
 
 ;; JSON output mangling disaster area

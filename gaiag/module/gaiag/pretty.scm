@@ -19,41 +19,28 @@
 
 (read-set! keywords 'prefix)
 
-(define-module
-  (gaiag pretty) ;;-goeps
-  ;;+goeps (g pretty)
-  :use-module (ice-9 match)
+(define-module (gaiag pretty)
+  :use-module (gaiag list match)
   :use-module (srfi srfi-1)
 
   :use-module (gaiag misc)
 
-  :use-module (gaiag om) ;;-goeps
-  :use-module (gaiag animate) ;;-goeps
-  :use-module (gaiag indent) ;;-goeps
-  :use-module (gaiag reader) ;;-goeps
-  :use-module (gaiag resolve) ;;-goeps
-  :use-module (gaiag wfc) ;;-goeps  
-
-  ;;+goeps :use-module (g om)
-  ;;+goeps :use-module (g animate)
-  ;;+goeps :use-module (g indent)
-  ;;+goeps :use-module (g reader)
-  ;;+goeps :use-module (g resolve)
+  :use-module (gaiag ast)
+  :use-module (gaiag animate)
+  :use-module (gaiag indent)
+  :use-module (gaiag reader)
+  :use-module (gaiag resolve)
+;;  :use-module (gaiag wfc)
 
   :export (ast-> ast->dezyne ast->dzn ast->pretty pretty:om))
 
-(cond-expand
- (goops-om
-  (use-modules (oop goops)))
- (else #t))
-
 (define (ast->dezyne o)
   (match o
-    (($ <root>)
+    (('root t ...)
      (indent-string (apply string-append (map ast->dezyne (.elements o)))))
     (
-     (h t ...) ;;-goeps
-     ;;+goeps (and (negate (is? <ast>)) (h t ...))
+;;     (h t ...) ;;-goeps
+     (and (negate (is? <ast>)) (h t ...))
      (let ((om ((om:register pretty:om) o #t)))
        (ast->dezyne om)))
     ((? (is? <ast>)) (indent-string (->string o)))
@@ -64,17 +51,19 @@
 (define ast->pretty ast->dezyne)
 
 (define (pretty:om ast)
-  ((compose ast:wfc ast:resolve ast->om) ast))
+  ((compose
+    ;;ast:wfc
+    ast:resolve ast->om) ast))
 
-(define (->string src)
+(define (->string o)
   (define (unspecified? x) (eq? x *unspecified*))
 
-  (match src
+  (match o
     (#f "false")
     (#t "true")
     ('() "")
-    (($ <behaviour> "" ($ <types> '()) ($ <variables> '()) ($ <functions> '()) ($ <compound> '())) "")
-    (($ <compound> elements) (string-join (append '("{\n") (map ->string elements) '("}\n") ) ""))
+    (($ <behaviour> "" ('types) ('variables) ('functions) ('compound)) "")
+    (('compound s ...) (string-join (append '("{\n") (map ->string s) '("}\n") ) ""))
     (($ <assign> var ($ <call> function arguments))
      (->string (list 'assign var (list 'assign-call function arguments))))
     (($ <assign> var ($ <call> function))
@@ -89,34 +78,37 @@
      (->string (list 'variable name (->string type) (list 'assign-action trigger))))
 
     ;; comment this out to get ol style system as system
-    (($ <system> name ($ <ports> ports) ($ <instances> instances) ($ <bindings> bindings))
+    (($ <system> name ('ports ports ...) ('instances instances ...) ('bindings bindings ...))
      (->string (list 'system-as-component name ports instances bindings)))
-    ((and (? pair?) (? dezyne-template?)) (apply dezyne-template->string src))
+    ((and (? pair?) (? dezyne-template?)) (apply dezyne-template->string o))
     ((? dezyne-template?) (apply dezyne-template->string
-                                 (cons (ast-name src) (om:children src))))
+                                 (cons (ast-name o) (om:children o))))
     
-    ((? join?) (apply join-all (om:children src)))
-    ((? symbol?) (symbol->string src))
-    ((? string?) src)
-    ((? integer?) (number->string src))
-    (($ <arguments> '()) "")
-    (($ <arguments> arguments) (->string (list "(" (comma-join (map ->string arguments)) ")")))
-    (($ <parameters> parameters) (->string (list "(" (comma-join (map ->string parameters)) ")")))
-    (($ <om:parameter> name type (or #f 'in)) (->string (list type " " name)))
-    (($ <om:parameter> name type dir) (->string (list dir " " type " " name)))
-    (($ <om:parameter> name type) (->string (list type " " name)))    
-    (($ <signature> type ($ <parameters> '()))
+    ((? join?) (apply join-all (om:children o)))
+    ((? symbol?) (symbol->string o))
+    ((? string?) o)
+    ((? integer?) (number->string o))
+    (('arguments) "")
+    (('arguments arguments ...) (->string (list "(" (comma-join (map ->string arguments)) ")")))
+    (('formals formals ...) (->string (list "(" (comma-join (map ->string formals)) ")")))
+    (($ <formal> name type (or #f 'in)) (->string (list type " " name)))
+    (($ <formal> name type dir) (->string (list dir " " type " " name)))
+    (($ <formal> name type) (->string (list type " " name)))    
+    (($ <signature> type ('formals))
      (list (cons (->string (->string type)) "")))
-    (($ <signature> type parameters)
-     (list (cons (->string type) (->string parameters))))
+    (($ <signature> type formals)
+     (list (cons (->string type) (->string formals))))
     (($ <signature> type)
      (list (cons (->string (->string type)) "")))
     (($ <type> name #f) (->string name))
+    (($ <type> name (? unspecified?)) (->string name))    
     (($ <type> name '*global*) (->string name))    
-    (($ <type> name scope) (->string (list scope '. name)))
+    (($ <type> name scope)
+     (stderr  "TYPE: ~a\n" o)
+     (->string (list scope '. name)))
     (($ <type> name) (->string name))
     (($ <otherwise> value) (->string 'otherwise))
-    (($ <triggers> triggers) (comma-space-join (map ->string triggers)))
+    (('triggers triggers ...) (comma-space-join (map ->string triggers)))
 
     ;; FIXME: c&p from csp.scm (and...TODO: c++.scm) grmbl
     (('group expression) (->string (list "(" (->string expression) ")")))
@@ -138,13 +130,13 @@
     (((or '== '!= '< '<= '> '>= '+ '-) lhs rhs)
      (let ((lhs (->string lhs))
            (rhs (->string rhs))
-           (op (car src)))
+           (op (car o)))
        (->string (list lhs " " op " " rhs ))))
 
     ((h ...) (apply string-append (map ->string h)))
-    ((? unspecified?) #f)
-    (_ (format #f "~a" src))
-    (_ (format #f "~a:->string:no match:~a\n" (current-source-location) src))))
+    ((? unspecified?) "")
+    (_ (format #f "~a" o))
+    (_ (format #f "~a:->string:no match:~a\n" (current-source-location) o))))
 
 (define (paren expression)
   (if (or (number? expression) (symbol? expression)

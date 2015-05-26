@@ -42,15 +42,13 @@
 
 (define-module (gaiag animate)
   :use-module (ice-9 and-let-star)
-  :use-module (ice-9 match)
+  :use-module (gaiag list match)
   :use-module (ice-9 optargs)
   :use-module (ice-9 rdelim)
   :use-module (srfi srfi-1)
 
   :use-module (gaiag misc)
-
-  :use-module (gaiag om) ;;-goeps
-  ;;+goeps :use-module (g om)
+  :use-module (gaiag ast)
 
   :export (animate
            animate-file
@@ -67,11 +65,6 @@
            template->string
            template-dir
            templates))
-
-(cond-expand
- (goops-om
-  (use-modules (oop goops)))
- (else #t))
 
 (define (prefix-dir)
   (let* ((canary "gaiag/gaiag")
@@ -104,7 +97,7 @@
            (pair? (assoc (ast-name x) (templates))))
       (and (list? x) (pair? (assoc (car x) (templates))))))
 
-(define (animate-module-populate module parameter key-procedure-pairs)
+(define (animate-module-populate module formal key-procedure-pairs)
   (let loop ((pairs key-procedure-pairs))
     (if (null? pairs)
         module
@@ -112,7 +105,7 @@
                (key (car pair))
                (procedure-or-data (cdr pair))
                (value (if (procedure? procedure-or-data)
-                          (procedure-or-data parameter)
+                          (procedure-or-data formal)
                           procedure-or-data)))
           (module-define! module key value)
           (loop (cdr pairs))))))

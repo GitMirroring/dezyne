@@ -310,7 +310,7 @@ int map_get(map* m, char* key, void* *arg){
 }
 
 /*
- * Iterate the function parameter over each element in the map.  The
+ * Iterate the function formal over each element in the map.  The
  * additional void* argument is passed to the function as its first
  * argument and the map element is the second.
  */

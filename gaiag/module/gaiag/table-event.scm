@@ -26,16 +26,16 @@
 
 (define-module (gaiag table-event)
   :use-module (ice-9 and-let-star)
-  :use-module (ice-9 match)
+  :use-module (gaiag list match)
   :use-module (ice-9 getopt-long)
   :use-module (ice-9 pretty-print)
   :use-module (srfi srfi-1)
 
   :use-module (language dezyne location)
   :use-module (gaiag misc)
-  
-  :use-module (gaiag om)
   :use-module (gaiag gaiag)
+  
+  :use-module (gaiag ast)
   :use-module (gaiag json-table)
   :use-module (gaiag norm)
   :use-module (gaiag norm-event)
@@ -46,11 +46,6 @@
   :use-module (gaiag table-state)
 
   :export (ast-> table-event))
-
-(cond-expand
- (goops-om
-  (use-modules (oop goops)))
- (else #t))
 
 (define (table-event model o)
   ((compose
@@ -66,4 +61,6 @@
     pretty-table
     (mangle-table json-table-event)
     (table table-event)
-    ast:resolve) ast))
+    ast:resolve
+    ast->om
+    ) ast))

@@ -41,7 +41,7 @@
 
 
 CO_#(.name model) _#((compose .name .behaviour) model) (IIG,IG) = let
-# (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (om:functions (.behaviour model))))
+# (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (om:functions model)))
 #(.name model) _#((compose .name .behaviour) model) ((#(->csp model (make <context> :members ((compose om:member-names) model))))) = transition_begin -> (
 #(behaviour->csp model)
 )

@@ -21,7 +21,7 @@
 (define-module (gaiag misc)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
-  :use-module (ice-9 match)
+  :use-module (gaiag list match)
   :use-module (ice-9 pretty-print)
   :use-module (ice-9 rdelim)
   :use-module (ice-9 regex)

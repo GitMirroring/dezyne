@@ -17,33 +17,23 @@
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
 
-;; goops --> goeps sed -ri -e "s/[(][$] <([^>]*)>[)]/(\'\1 _ ___)/g" -e "s/[(][$] <([^>]*)> ([a-z]+)[)]/(\'\1 \2 ___)/g" -e "s/[(][$] <([^>]*)> /(\'\1 /g" module/g/resolve.scm
-;; goeps --> goops sed -ri -e "s/[(]\' ([a-z]+) _ ___[)]/('\1 _ ___)/g" -e "s/[(]\' ([a-z]+) ([a-z]+) ___[)]/('\1 \2)/g"
-
 (read-set! keywords 'prefix)
 
-(define-module
-  (gaiag resolve) ;;-goeps
-  ;;+goeps (g resolve)
+(define-module (gaiag resolve)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
-  :use-module (ice-9 match)
+  :use-module (gaiag list match)
   :use-module (ice-9 pretty-print)
   :use-module (ice-9 receive)
   :use-module (srfi srfi-1)
 
   :use-module (language dezyne location)
 
-  :use-module (gaiag om)
+  :use-module (gaiag ast)
   :use-module (gaiag reader)
   :use-module (gaiag annotate)
   :use-module (gaiag misc)
-  
-  :use-module (gaiag om) ;;-goeps
-  :use-module (gaiag reader) ;;-goeps
-
-  ;;+goeps :use-module (g om)
-  ;;+goeps :use-module (g reader)
+  :use-module (gaiag reader)
 
   :export (
            ast:resolve
@@ -51,16 +41,9 @@
            report-errors
            ))
 
-(cond-expand
- (goops-om
-  (use-modules (oop goops)))
- (else #t))
-
 (define (ast:resolve o)
   (match o
-    ((h t ...) ((compose om:resolve ast->om) o)) ;;-goeps
-    ;;+goeps (('root models ...) ((compose om:resolve ast->om) o))
-    (($ <root>) (resolve-root o)) ;;-goeps
+    (('root models ...) (resolve-root o))
     ((or ($ <interface>) ($ <component>)) ((resolve-model o '()) o))
     (_  o)))
 
@@ -81,11 +64,10 @@
     (and=> errors report-errors)
     resolved))
 
-(define om:resolve resolve-root)
-
 (define (ast:reorder o)
   (match o
-    (($ <root> models) (make <root> :elements (ast:reorder models)))
+    (($ <root>)
+     (make <root> :elements (ast:reorder (.elements o))))
     ((models ...)
      (append
                    (filter (is? <import>) models)
@@ -217,6 +199,7 @@
       (_ #f)))
 
   (match o
+    ('root o)
     (($ <var> (and (? (negate var?)) (get! identifier)))
      (undefined-error o (identifier)))
 
@@ -230,15 +213,15 @@
     (($ <call> (and (? symbol?) (? (negate event-or-function?)) (get! identifier)))
      (resolve-error o (identifier) "undefined function or event: ~a"))
 
-    (($ <call> identifier ($ <arguments> arguments)) (=> failure)
+    (($ <call> identifier ('arguments arguments ...)) (=> failure)
      (let* ((function (function? identifier))
-            (parameters ((compose .elements .parameters .signature) function))
+            (formals ((compose .elements .formals .signature) function))
             (argument-count (length arguments))
-            (parameter-count (length parameters)))
-       (if (= argument-count parameter-count)
+            (formal-count (length formals)))
+       (if (= argument-count formal-count)
            (failure)
            (resolve-error o identifier
-                          (format #f "function ~a expects ~a arguments, found: ~a" "~a" parameter-count argument-count)))))
+                          (format #f "function ~a expects ~a arguments, found: ~a" "~a" formal-count argument-count)))))
 
     (($ <variable> name (and (? (negate type?)) (get! type)) expression)
      (let* ((scope (.scope (type)))
@@ -266,8 +249,8 @@
     ((or '! '+ '- '/ '*) o)
     ((or '== '!= '< '<= '> '>= 'group) o)
 
-    (($ <om:parameter> name type direction)
-     (make <om:parameter> :name name :type ((resolve-model model locals) type) :direction direction))
+    (($ <formal> name type direction)
+     (make <formal> :name name :type ((resolve-model model locals) type) :direction direction))
 
     (($ <call> identifier (and ($ <arguments>) (get! arguments)))
      (make <call> :identifier identifier :arguments ((resolve-model model locals) (arguments))))
@@ -291,13 +274,12 @@
     (($ <int>) o)
     (($ <literal>) o)
     (($ <otherwise>) (make <otherwise>))
-    (($ <om:port>) o)
-    (($ <signature> type parameters)
+    (($ <port>) o)
+    (($ <signature> type formals)
      (make <signature>
        :type ((resolve-model model locals) type)
-       :parameters ((resolve-model model locals) parameters)))
+       :formals ((resolve-model model locals) formals)))
     (($ <trigger>) o)
-    (($ <triggers>) o)    
     (($ <type>) o)
     (($ <var>) o)
 
@@ -358,14 +340,14 @@
        :identifier identifier
        :expression ((resolve-model model locals) expression)))
 
-    (($ <om:parameter> name type direction)
-     (make <om:parameter>
+    (($ <formal> name type direction)
+     (make <formal>
        :name name
        :type ((resolve-model model locals) type)
        :direction direction))
 
-    (($ <om:parameter> name type)
-     (make <om:parameter>
+    (($ <formal> name type)
+     (make <formal>
        :name name
        :type ((resolve-model model locals) type)))
 
@@ -429,40 +411,29 @@
     (($ <value> (? var?) field)
      (resolve-error o field "undefined enum field: ~a"))
 
-    (
-     ($ <expression> value);;-goeps
-     ;;+goeps ;;($ <expression> value)
-     ;;+goeps ('expression value)
+    (($ <expression> value)
      (make <expression> :value ((resolve-model model locals) value)))
 
-    (($ <function> name ($ <signature> type ($ <parameters> '())) recursive? statement)
+    (($ <function> name ($ <signature> type ('formals)) recursive? statement)
      (make <function>
        :name name
        :signature ((resolve-model model locals) (.signature o))
        :recursive (and ((recurses? model) name) 'recursive)
        :statement ((resolve-model model locals) statement)))
 
-    (($ <function> name ($ <signature> type ($ <parameters> parameters)) recursive? statement)
-     (let ((locals (let loop ((parameters parameters) (locals locals))
-                     (if (null? parameters)
+    (($ <function> name ($ <signature> type ('formals formals ...)) recursive? statement)
+     (let ((locals (let loop ((formals (.elements formals)) (locals locals))
+                     (if (null? formals)
                          locals
-                         (loop (cdr parameters)
-                               (acons (.name (car parameters)) (car parameters) locals))))))
+                         (loop (cdr formals)
+                               (acons (.name (car formals)) (car formals) locals))))))
        (make <function>
          :name name
          :signature ((resolve-model model locals) (.signature o))
          :recursive (and ((recurses? model) name) 'recursive)
          :statement ((resolve-model model locals) statement))))
 
-    ;; no parameters... ugh?
-    (($ <function> name ($ <signature> type) recursive? statement)
-     (make <function>
-       :name name
-       :signature ((resolve-model model locals) (.signature o))
-       :recursive (and ((recurses? model) name) 'recursive)
-       :statement ((resolve-model model locals) statement)))
-
-    (($ <compound> statements)
+    (('compound statements ...)
      (make <compound>
        :elements
        (let loop ((statements statements) (locals locals))
@@ -482,13 +453,13 @@
          :statement ((resolve-model model locals) statement)))
 
     (($ <on> triggers statement)
-     (let* ((parameters (apply append (map (compose .elements .arguments)
+     (let* ((formals (apply append (map (compose .elements .arguments)
                                            (.elements triggers))))
-            (locals (let loop ((parameters parameters) (locals locals))
-                      (if (null? parameters)
+            (locals (let loop ((formals formals) (locals locals))
+                      (if (null? formals)
                           locals
-                          (loop (cdr parameters)
-                                (acons ((compose .name .value car) parameters) (car parameters) locals))))))
+                          (loop (cdr formals)
+                                (acons ((compose .name .value car) formals) (car formals) locals))))))
        (make <on>
          :triggers ((resolve-model model locals) triggers)
          :statement ((resolve-model model locals) statement))))
@@ -497,7 +468,8 @@
      (make <interface>
        :name name
        :types types
-       :events (om:map (resolve-model model '()) events)
+       ;;:events (om:map (resolve-model model '()) events)
+       :events ((resolve-model model '()) events)
        :behaviour ((resolve-model model '()) behaviour)))
 
     (($ <component> name ports behaviour)
@@ -514,10 +486,11 @@
        :types types
        :variables ((resolve-model model '()) variables)
        ;; om:map denx0r?
-       ;; :functions ((resolve-model model '()) functions)
-       ;; :statement ((resolve-model model '()) statement)))
-       :functions (om:map (resolve-model model '()) functions)
-       :statement (om:map (resolve-model model '()) statement)))
+       :functions ((resolve-model model '()) functions)
+       :statement ((resolve-model model '()) statement)
+       ;;:functions (om:map (resolve-model model '()) functions)
+       ;;:statement (om:map (resolve-model model '()) statement)
+     ))
 
     ;; om:map denx0r?
     ;; (($ <if> expression then else)
@@ -531,11 +504,14 @@
     ;;    :then ((resolve-model model locals) then)))
     ;; (($ <arguments> arguments)
     ;;  (make <arguments> :elements (map (resolve-model model locals) arguments)))
-    ;; (($ <functions> functions)
-    ;;  (make <functions> :elements (map (resolve-model model '()) functions)))
-    ;; (($ <parameters> parameters)
-    ;;  (make <parameters> :elements (map (resolve-model model '()) parameters)))
-    (($ <variables> variables)
+    (('events events ...)
+     (cons 'events (map (resolve-model model '()) events)))
+    (('triggers triggers ...) o)
+    (('functions functions ...)
+     (make <functions> :elements (map (resolve-model model '()) functions)))
+    (('formals formals ...)
+     (make <formals> :elements (map (resolve-model model '()) formals)))
+    (('variables variables ...)
      (let ((variables (map (range-check model) variables)))
        (make <variables> :elements (map (resolve-model model '()) variables))))
     ;; (($ <reply> expression)
@@ -594,4 +570,5 @@
   ((compose
     om->list
     ast:resolve
-    ast->om) ast))
+    ast->om
+    ) ast))

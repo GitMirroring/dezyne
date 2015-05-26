@@ -34,17 +34,17 @@ private:
 #(map
   (lambda (port)
     (map (define-on model port #{
-#return-type  #port _#event (#parameters);
+#return-type  #port _#event (#formals);
 #}) (filter om:in? (om:events port))))
   (filter om:provides? (om:ports model)))#
 (map
   (lambda (port)
     (map (define-on model port #{
-#return-type  #port _#event (#parameters);
+#return-type  #port _#event (#formals);
 #}) (filter om:out? (om:events port))))
   (filter om:requires? (om:ports model)))#
 (map (define-function model #{
-  #return-type  #name (#parameters);
+  #return-type  #name (#formals);
 #}) (om:functions model)) };
 }
 ##endif // DEZYNE_#.COMPONENT _HH

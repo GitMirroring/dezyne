@@ -6,7 +6,7 @@
   :use-module (test-suite lib)
   :use-module (test-suite misc)
 
-  :use-module (gaiag om))
+  :use-module (gaiag ast))
 
 (pass-if "om-first-dummy-test"
          #t)

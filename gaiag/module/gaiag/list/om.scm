@@ -1,5 +1,4 @@
 ;;; Dezyne --- Dezyne command line tools
-;;;
 ;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -23,15 +22,17 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (g guile om)
+(define-module (gaiag list om)
 
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 match)
   :use-module (ice-9 optargs)  
   :use-module (ice-9 pretty-print)
 
-  :use-module (g misc)  
+  :use-module (gaiag misc)  
   :export (
+           symbol->class
+
            .arguments
            .ast
            .behaviour           
@@ -51,7 +52,7 @@
            .left           
            .message
            .name
-           .parameters
+           .formals
            .port
            .ports
            .range
@@ -70,8 +71,10 @@
            .variables
     
            <action>
+           <arguments>           
            <assign>
            <ast>
+           <ast-list>
            <behaviour>           
            <bind>
            <binding>
@@ -95,9 +98,12 @@
            <instance>
            <instances>           
            <int>
+           <integer>
            <interface>
+           <list>
            <literal>
            <named>
+           <null>
            <system>
            <bindings>
            <compound>
@@ -106,9 +112,10 @@
            <model>
            <on>
            <otherwise>           
-           <parameter>           
-           <parameters>           
-           <port>
+           <formal>
+           <formal>
+           <formals>           
+           <port>           
            <ports>
            <range>
            <reply>
@@ -162,11 +169,12 @@
            make-<import>
            make-<instances>           
            make-<instance>
-           make-<literal>           
+           make-<literal>
+           make-<list>
            make-<on>
            make-<otherwise>
-           make-<parameter>
-           make-<parameters>           
+           make-<formal>
+           make-<formals>           
            make-<port>
            make-<ports>
            make-<range>
@@ -186,52 +194,52 @@
 
            is?
            is-a?
-           ast?
-           ast-list?           
-           expression?
-           model?
-           statement?
+           ;; ast?
+           ;; ast-list?           
+           ;; expression?
+           ;; model?
+           ;; statement?
            
-           behaviour?
-           bindings?
-           component?
-           compound?
-           enum?
-           expression?
-           extern?
-           field?
-           function?           
-           functions?
-           import?
-           instances?
-           int?
-           interface?
-           literal?
-           named?
-           otherwise?
-           om:parameter?           
-           parameters?
-           om:port?
-           ports?
-           range?
-           root?
-           scoped?
-           signature?
-           system?
-           trigger?
-           triggers?
-           type?
-           *type*?           
-           types?           
-           var?
-           variable?
-           variables?
+           ;; behaviour?
+           ;; bindings?
+           ;; component?
+           ;; compound?
+           ;; enum?
+           ;; expression?
+           ;; extern?
+           ;; field?
+           ;; function?           
+           ;; functions?
+           ;; import?
+           ;; instances?
+           ;; int?
+           ;; interface?
+           ;; literal?
+           ;; named?
+           ;; otherwise?
+           ;; om:formal?           
+           ;; formals?
+           ;; om:port?
+           ;; ports?
+           ;; range?
+           ;; root?
+           ;; scoped?
+           ;; signature?
+           ;; system?
+           ;; trigger?
+           ;; triggers?
+           ;; type?
+           ;; *type*?           
+           ;; types?           
+           ;; var?
+           ;; variable?
+           ;; variables?
            ))
 
-(cond-expand-provide (current-module) '(guile-om))
-
-
+(define <ast-list> 'ast-list)
 (define <list> 'list)
+(define <integer> 'integer)
+(define <null> '())
 (define ast-leafs
   '(
     assign
@@ -262,8 +270,10 @@
     named
     on
     otherwise
-    parameter
+    formal
     port
+    om:formal
+    om:port
     range
     reply
     return
@@ -286,7 +296,7 @@
     fields
     functions
     instances
-    parameters
+    formals
     ports
     root
     triggers
@@ -327,11 +337,19 @@
 (define ((is? type) ast)
   (define (test x) (and (pair? ast) (eq? (car ast) type) ast))
   (match type
-    ('ast (ast? ast))
-    ('ast-list (ast-list? ast))    
-    ('model (model? ast))
-    ('statement (statement? ast))
-    ('*type* (*type*? ast))
+
+    ;; ('ast (ast? ast))
+    ;; ('ast-list (ast-list? ast))    
+    ;; ('model (model? ast))
+    ;; ('statement (statement? ast))
+    ;; ('*type* (*type*? ast))
+
+    ('ast (and (pair? ast) (member (car ast) (append ast-leafs ast-lists)) ast))
+    ('ast-list (and (pair? ast) (member (car ast) ast-lists) ast))
+    ('model (or (is-a? ast <interface>) (is-a? ast <component>) (is-a? ast <system>)))
+    ('statement (and (pair? ast) (member (car ast) ast-statements) ast))
+    ('*type* (or (is-a? ast <enum>) (is-a? ast <extern>) (is-a? ast <int>) (is-a? ast <type>)))
+    
     ('expression (or (test type) (test 'otherwise)))
     (_ (test type))))
 
@@ -339,8 +357,8 @@
 (let ((module (current-module)))
   (for-each (lambda (x) (module-define! module (symbol->class x) x))
             (append ast-leafs ast-lists))
-  (for-each (lambda (x) (module-define! module (symbol-append x '?) (is? x)))
-            (append ast-leafs ast-lists))
+  ;; (for-each (lambda (x) (module-define! module (symbol-append x '?) (is? x)))
+  ;;           (append ast-leafs ast-lists))
   (for-each
    (lambda (x)
      (module-define!
@@ -349,17 +367,17 @@
       (lambda (. args) (apply make-<list> (append (list :type x) args)))))
    ast-lists))
 
-;;(define <om:parameter> <parameter>)
-;;(define <om:port> <port>)
+;;(define <formal> <formal>)
+;;(define <port> <port>)
 
 (define ast-types (map symbol->class ast-nodes))
 
 (define-syntax make
   (lambda (s)
     (syntax-case s ()
-      ((_ 'parameter args ...)
+      ((_ 'formal args ...)
        (with-syntax
-           ((m (datum->syntax #'parameter #'make-<om:parameter>))) #'(m args ...)))
+           ((m (datum->syntax #'formal #'make-<formal>))) #'(m args ...)))
       ((_ type args ...)
        (with-syntax
            ((m (datum->syntax #'type (symbol-append 'make- (syntax->datum #'type))))) #'(m args ...))))))
@@ -367,20 +385,17 @@
 (define <model> 'model)
 (define <statement> 'statement)
 (define <*type*> '*type*)
-(define (model? ast)
-  (or (interface? ast) (component? ast) (system? ast)))
 
-(define (statement? ast)
-  (and (pair? ast) (member (car ast) ast-statements) ast))
-
-(define (*type*? ast)
-  (or (enum? ast) (extern? ast) (int? ast) (type? ast)))
-
-(define (ast? ast)
-  (and (pair? ast) (member (car ast) (append ast-leafs ast-lists)) ast))
-
-(define (ast-list? ast)
-  (and (pair? ast) (member (car ast) ast-lists) ast))
+;; (define (model? ast)
+;;   (or (interface? ast) (component? ast) (system? ast)))
+;; (define (statement? ast)
+;;   (and (pair? ast) (member (car ast) ast-statements) ast))
+;; (define (*type*? ast)
+;;   (or (enum? ast) (extern? ast) (int? ast) (type? ast)))
+;; (define (ast? ast)
+;;   (and (pair? ast) (member (car ast) (append ast-leafs ast-lists)) ast))
+;; (define (ast-list? ast)
+;;   (and (pair? ast) (member (car ast) ast-lists) ast))
 
 (define (make-<named> . args)
   (let-keywords
@@ -525,13 +540,13 @@
     (range (make <range>)))
    (cons <int> (list (make <named> :name name) (make <scoped> :scope scope) range))))
 
-(define (make-<parameter> . args)
+(define (make-<formal> . args)
   (let-keywords
    args #f
    ((name #f)
     (type '(type void))
     (direction #f))
-   (cons <parameter> (list (make <named> :name name) ;;`(type ,type) `(direction ,direction)
+   (cons <formal> (list (make <named> :name name) ;;`(type ,type) `(direction ,direction)
                            type direction
                            ))))
 
@@ -548,8 +563,8 @@
   (let-keywords
    args #f
    ((type '(type void))
-    (parameters (make <parameters>)))
-   (cons <signature> (list type parameters))))
+    (formals (make <formals>)))
+   (cons <signature> (list type formals))))
 
 (define (make-<action> . args)
   (let-keywords
@@ -720,10 +735,10 @@
   (match ast
     (('trigger port event) port)))
 
-(define (.parameters ast)
+(define (.formals ast)
   (match ast
-    (('signature type) '(parameters))
-    (('signature type parameters) parameters)))
+    (('signature type) '(formals))
+    (('signature type formals) formals)))
 
 (define (.events ast)
   (match ast
@@ -854,13 +869,13 @@
   (match ast
     (('behaviour name types variables functions statement) types)
     (('interface name types events behaviour) types)
-    (('root models ...) (filter type? models))))
+    (('root models ...) (filter (is? <*type*>) models))))
 
 (define (.direction ast)
   (match ast
     (('event name signature direction) direction)
-    (('parameter name type) #f)
-    (('parameter name type direction) direction)
+    (('formal name type) #f)
+    (('formal name type direction) direction)
     (('port name type direction) direction)
     (('port name type direction injected) direction)))
 
@@ -869,9 +884,10 @@
     (('literal scope type field) type)
     (('port name type direction) type)
     (('port name type direction injected) type)
-    (('parameter name type) #f)
-    (('parameter name direction type) direction)    
-    (('signature type parameters) type)
+    (('formal name type) #f)
+    (('formal name direction type) direction)    
+    (('signature type) type)
+    (('signature type formals) type)    
     (('value type field) type)    
     (('variable name type expression) type)))
 

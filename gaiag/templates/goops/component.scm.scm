@@ -46,14 +46,14 @@
 #(map
    (lambda (port)
      (map (define-on model port #{
-(define-method (#port -#event  (o <#.model >) #parameters)#
+(define-method (#port -#event  (o <#.model >) #formals)#
 statement #(if (not (eq? type 'void))
 (list "\n    (.reply-" (*scope* reply-scope) "-" reply-name " o)")))
 
 #}) (filter (om:dir-matches? port) (om:events port))))
    (om:ports model))#
 (map (define-function model #{
-(define-method (#name  (o <#.model >) #parameters)
+(define-method (#name  (o <#.model >) #formals)
   (call/cc
    (lambda (return) #statements)))
 

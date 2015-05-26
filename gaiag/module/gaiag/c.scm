@@ -27,7 +27,7 @@
 (define-module (gaiag c)
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 getopt-long)
-  :use-module (ice-9 match)
+  :use-module (gaiag list match)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 pretty-print)
   :use-module (srfi srfi-1)
@@ -41,9 +41,8 @@
   :use-module (gaiag resolve)
   :use-module (gaiag wfc)
 
-  :use-module (oop goops)
-  ;;:use-module (oop goops describe)
-  :use-module (gaiag om)
+    ;;:use-module (oop goops describe)
+  :use-module (gaiag ast)
 
   :export (ast->))
 

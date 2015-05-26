@@ -30,17 +30,16 @@
   :use-module (gaiag misc)
   :use-module (gaiag reader)
 
-  :use-module (oop goops)
-  ;;:use-module (oop goops describe)
-  :use-module (gaiag om)
+    ;;:use-module (oop goops describe)
+  :use-module (gaiag ast)
 
   :export (ast-> lambda-type))
 
 (define ast-> ast:code)
 
-(define (lambda-type type parameter-types)
-  (let ((count (length parameter-types)))
+(define (lambda-type type formal-types)
+  (let ((count (length formal-types)))
    (list
     (if (eq? type 'void)
-        (list "Action" (if (>0 count) (list "<" ((->join ", ") parameter-types) ">") ""))
-        (list "Func" (if (>0 count) (list "<"((->join ", ") parameter-types) "," type ">") (list  "<" type ">")))))))
+        (list "Action" (if (>0 count) (list "<" ((->join ", ") formal-types) ">") ""))
+        (list "Func" (if (>0 count) (list "<"((->join ", ") formal-types) "," type ">") (list  "<" type ">")))))))

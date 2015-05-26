@@ -22,31 +22,22 @@
 
 (read-set! keywords 'prefix)
 
-(define-module
-  (gaiag norm-state) ;;-goeps
-  ;;+goeps (g norm-state)
+(define-module (gaiag norm-state)
 
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 pretty-print)
   :use-module (ice-9 receive)
-  :use-module (ice-9 match)
+  :use-module (gaiag list match)
   :use-module (ice-9 curried-definitions)
 
   :use-module (srfi srfi-1)
 
   :use-module (gaiag misc)
 
-  :use-module (gaiag om) ;;-goeps
-  :use-module (gaiag norm) ;;-goeps
-;;  :use-module (gaiag norm-event) ;;-goeps  
-  :use-module (gaiag reader) ;;-goeps
-  :use-module (gaiag resolve) ;;-goeps
-
-  ;;+goeps :use-module (g om)
-  ;;+goeps :use-module (g norm)
-;;  ;;+goeps :use-module (g norm-event)  
-  ;;+goeps :use-module (g reader)
-  ;;+goeps :use-module (g resolve)
+  :use-module (gaiag ast)
+  :use-module (gaiag norm)
+  :use-module (gaiag reader)
+  :use-module (gaiag resolve)
 
   :export (
            ast->
@@ -54,44 +45,33 @@
            csp-norm-state
            ))
 
-(cond-expand
- (goops-om
-  (use-modules (oop goops)))
- (else #t))
-
 (define (norm-state o)
-  (match o
-    ((and (? (negate (is? <ast>))) (h t ...))
-     ((compose norm-state ast:resolve ast->om) o))
-    ((? (is? <ast>))
-     ((compose
-       remove-skip
-       (aggregate-on)
-       (expand-on port-equal?)
-       aggregate-guard-g
-       flatten-compound
-       combine-guards
-       passdown-on
-       (remove-otherwise)
-       add-skip)
-      o))))
+  ((compose
+    remove-skip
+    (aggregate-on)
+    (expand-on port-equal?)
+    aggregate-guard-g
+    flatten-compound
+    combine-guards
+    passdown-on
+    (remove-otherwise)
+    add-skip
+    )
+   o))
 
 (define (csp-norm-state o)
-  (match o
-    ((and (? (negate (is? <ast>))) (h t ...))
-     ((compose csp-norm-state ast:resolve ast->om) o))
-    ((? (is? <ast>))
-     ((compose
-       remove-skip
-       (aggregate-on on-same-port-statement?)
-       (expand-on port-equal?)
-       aggregate-guard-g
-       flatten-compound
-       combine-guards
-       passdown-on
-       (remove-otherwise)
-       add-skip)
-      o))))
+  ((compose
+    remove-skip
+    (aggregate-on on-same-port-statement?)
+    (expand-on port-equal?)
+    aggregate-guard-g
+    flatten-compound
+    combine-guards
+    passdown-on
+    (remove-otherwise)
+    add-skip
+    )
+   o))
 
 (define (on-same-port-statement? lhs rhs)
   (and (is-a? lhs <on>) (is-a? rhs <on>)
@@ -127,8 +107,8 @@
                        (.value expression)
                        (.value (.expression o))))))
       (.statement o)))
-    (($ <compound>)
-     (let ((statements (.elements o)))
+    (('compound statements ...)
+     (let ((statements statements))
        (make <compound>
          :elements (map (passdown-expression expression) statements))))
     (_ (make <guard> :expression expression :statement o))))
@@ -143,8 +123,8 @@
 
 (define ((passdown-triggers triggers) o)
   (match o
-    (($ <compound>)
-     (let ((statements (.elements o)))
+    (('compound statements ...)
+     (let ((statements statements))
        (match statements
          ((($ <guard>) ...)
           (make <compound>
@@ -157,4 +137,9 @@
     (_ (make <on> :triggers triggers :statement o))))
 
 (define (ast-> ast)
-  ((compose om->list norm-state ast:resolve) ast))
+  ((compose
+    om->list
+    norm-state
+    ast:resolve
+    ast->om
+    ) ast))

@@ -10,11 +10,10 @@
   :use-module (ice-9 pretty-print)
   :use-module (ice-9 match)
 
-  :use-module (oop goops)
   :use-module (gaiag csp)
   :use-module (gaiag misc)
   :use-module (gaiag resolve)
-  :use-module (gaiag om))
+  :use-module (gaiag ast))
 
 (define ast-transform- (@@ (gaiag csp) ast-transform-))
 (define ast-transform-return (@@ (gaiag csp) ast-transform-return))
@@ -144,7 +143,7 @@
                           (event g (signature (type void)) out)
                           (event h (signature (type void)) out)
                           (event ei (signature (type void)
-                              (parameters (parameter in (type xint))))
+                              (formals (formal in (type xint))))
                               in))
                   (behaviour
                    B
@@ -158,8 +157,8 @@
                     (function toggle (signature (type void)) #f (compound))
                     (function vtoggle (signature (type bool)) #f (compound))
                     (function f (signature (type IO2)) #f (compound))
-                    (function g (signature (type void) (parameters (parameter b1 (type bool)) (parameter b2 (type bool)))) #f (compound))
-                    (function funx (signature (type S) (parameters (parameter xi (type xint)))) #f (compound)))
+                    (function g (signature (type void) (formals (formal b1 (type bool)) (formal b2 (type bool)))) #f (compound))
+                    (function funx (signature (type S) (formals (formal xi (type xint)))) #f (compound)))
                    (compound)))))
 
 (define ast-return-ast
@@ -1278,7 +1277,7 @@ context_active_(call_(\\ P',V' @ vtoggle(P',V')),
 (define csp-transform-function-arguments
   '(function
     g
-    (signature (type bool) (parameters (parameter c (type bool)))) #f
+    (signature (type bool) (formals (formal c (type bool)))) #f
     (semi (action (trigger #f f))
           (csp-return (context (s b hide_member2') (c)) (expression c)))))
 
@@ -1289,7 +1288,7 @@ context_active_(call_(\\ P',V' @ vtoggle(P',V')),
           (ast-transform* i-ast
                           '(function
                             g
-                            (signature (type bool) (parameters (parameter c (type bool)))) #f
+                            (signature (type bool) (formals (formal c (type bool)))) #f
                             (compound (action (trigger #f f))
                                       (return (expression c)))))
 
@@ -1418,18 +1417,18 @@ reply_(I_', (\\ ((dummy),((stack',s))) @ Status_No))
           "reply_fun(PF',V') = (reply_(I_', (\\ ((dummy),(stack')) @ Status_Yes)))(PF',V')
 "))
 
-(define csp-reply-function-parameter-ast-via
+(define csp-reply-function-formal-ast-via
   '(function
     reply_fun_arg
     (signature
      (type void)
-     (parameters
-      (parameter s (type I (type Status)))))
+     (formals
+      (formal s (type I (type Status)))))
     #f
     (csp-reply (context (dummy) (s))
                (expression (var s)))))
 
-(pass-if "ast-transform-reply-function-parameter"
+(pass-if "ast-transform-reply-function-formal"
          (csp-pretty-noisy-equal?
 
           ;; from:
@@ -1439,18 +1438,18 @@ reply_(I_', (\\ ((dummy),((stack',s))) @ Status_No))
               reply_fun_arg
               (signature
                 (type void)
-                (parameters (parameter s (type I (type Status)))))
+                (formals (formal s (type I (type Status)))))
               #f
               (compound (reply (expression (var s))))))
 
           ;; via:
-          csp-reply-function-parameter-ast-via))
+          csp-reply-function-formal-ast-via))
 
-(pass-if "csp-transform-reply-function-parameter"
+(pass-if "csp-transform-reply-function-formal"
          (diff-noisy-equal?
 
           ;; from/via:
-          (csp-transform* reply-ast csp-reply-function-parameter-ast-via)
+          (csp-transform* reply-ast csp-reply-function-formal-ast-via)
 
           ;; to:
           "reply_fun_arg(PF',V') = (reply_(I_', (\\ ((dummy),((stack',s))) @ s)))(PF',V')
@@ -1472,7 +1471,7 @@ reply_(I_', (\\ ((dummy),((stack',s))) @ Status_No))
       (functions
        (function
         g
-        (signature (type bool) (parameters (parameter c (type bool)))) #f
+        (signature (type bool) (formals (formal c (type bool)))) #f
         (compound (return (expression (var c))))))
       (compound
        (on ((trigger i e))
@@ -1615,11 +1614,11 @@ skip_
       (functions
        (function
         g
-        (signature (type bool) (parameters (parameter c (type bool)))) #f
+        (signature (type bool) (formals (formal c (type bool)))) #f
         (compound (action (trigger i f)) (return (expression (var c)))))
        (function
         h
-        (signature (type bool) (parameters (parameter c (type bool)) (parameter d (type bool)))) #f
+        (signature (type bool) (formals (formal c (type bool)) (formal d (type bool)))) #f
         (compound (action (trigger i f)) (return (expression (and (var c) (var d)))))))
       (compound
        (guard (expression true)
@@ -2110,11 +2109,11 @@ assign_(\\ ((s,b,c),((stack',t))) @ ((s,b,c),((stack',(s == S_S1))))))"))
                 (trigger j ei (arguments (expression (var pi)))))
                (compound (skip)))))
 
-(pass-if "purge-data-parameter"
+(pass-if "purge-data-formal"
          (csp-pretty-noisy-equal?
           (purge-data* i-ast
-                       '(function funx (signature (type S) (parameters (parameter xi (type xint)))) #f (compound)))
-          '(function funx (signature (type S) (parameters)) #f (compound))))
+                       '(function funx (signature (type S) (formals (formal xi (type xint)))) #f (compound)))
+          '(function funx (signature (type S) (formals)) #f (compound))))
 
 (pass-if "purge-data-argument"
          (csp-pretty-noisy-equal?
@@ -2130,7 +2129,7 @@ assign_(\\ ((s,b,c),((stack',t))) @ ((s,b,c),((stack',(s == S_S1))))))"))
          (csp-pretty-noisy-equal?
           (tail-call
            (csp->om
-            '(function fun (signature (type void) (parameters)) #f
+            '(function fun (signature (type void) (formals)) #f
                        (compound (call rgun)))))
           '(function fun (signature (type void #f)) #f
                      (compound
@@ -2140,7 +2139,7 @@ assign_(\\ ((s,b,c),((stack',t))) @ ((s,b,c),((stack',(s == S_S1))))))"))
          (csp-pretty-noisy-equal?
           (tail-call
            (csp->om
-            '(function fun (signature (type void) (parameters)) #f
+            '(function fun (signature (type void) (formals)) #f
                        (compound
                         (assign s (call rgun))))))
           '(function fun (signature (type void #f)) #f
@@ -2151,7 +2150,7 @@ assign_(\\ ((s,b,c),((stack',t))) @ ((s,b,c),((stack',(s == S_S1))))))"))
          (csp-pretty-noisy-equal?
           (tail-call
            (csp->om
-            '(function fun (signature (type void) (parameters)) #f
+            '(function fun (signature (type void) (formals)) #f
                        (compound
                         (variable b (type bool) (call rgun))))))
           '(function fun (signature (type void #f)) #f

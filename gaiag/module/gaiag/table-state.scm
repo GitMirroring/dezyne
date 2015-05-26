@@ -28,7 +28,7 @@
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 optargs)    
-  :use-module (ice-9 match)
+  :use-module (gaiag list match)
   :use-module (ice-9 getopt-long)
   :use-module (ice-9 pretty-print)
   :use-module (srfi srfi-1)
@@ -36,7 +36,7 @@
   :use-module (language dezyne location)
   :use-module (gaiag misc)
   
-  :use-module (gaiag om)
+  :use-module (gaiag ast)
   :use-module (gaiag gaiag)
   :use-module (gaiag evaluate)
   :use-module (gaiag json-table)
@@ -51,17 +51,12 @@
            ;;annotate-otherwise
            mangle-table prepend-guards pretty-table remove-initial simplify table table-state))
 
-(cond-expand
- (goops-om
-  (use-modules (oop goops)))
- (else #t))
-
 ;;(define debug stderr)
 (define (debug . args) #t)
 
 (define ((table table-statement) o)
   (match o
-    (($ <root> models)
+    (('root models ...)
      (let ((name
             (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
                         string->symbol))))
@@ -272,7 +267,7 @@
 (define ((mangle-table json-table) o)
   (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))
     (match o
-      (($ <root> models)
+      (('root models ...)
        (if json?
            (map (mangle-table json-table) models)
            (make <root> :elements (map (mangle-table json-table) models))))
@@ -292,7 +287,7 @@
 
 (define (pretty-table o)
   (match o
-    (($ <root>) (ast->dzn o))
+    (('root t ...) (ast->dzn o))
     (_ o)))
 
 (define (table-state model o)
@@ -309,4 +304,6 @@
     pretty-table
     (mangle-table json-table-state)
     (table table-state)
-    ast:resolve) ast))
+    ast:resolve
+    ast->om
+    ) ast))

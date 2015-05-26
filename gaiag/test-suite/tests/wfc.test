@@ -24,8 +24,8 @@
 
   :use-module (gaiag reader)
   :use-module (gaiag wfc)
-  :use-module (gaiag om)
-  :use-module (oop goops))
+  :use-module (gaiag ast)
+  :use-module (gaiag goops om))
 
 (define (dezyne->om o)
   ((compose om:resolve ast->om dezyne->ast) o))

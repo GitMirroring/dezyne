@@ -24,8 +24,7 @@
 
   :use-module (gaiag misc)
 
-  :use-module (oop goops)
-  :use-module (gaiag om)
+  :use-module (gaiag ast)
   :use-module (gaiag csp)
 
   :export (fail

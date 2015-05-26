@@ -25,8 +25,7 @@
 (read-set! keywords 'prefix)
 
 (define-module (gaiag csp-asserts)
-  :use-module (oop goops)
-  :use-module (gaiag om)
+    :use-module (gaiag ast)
 
   :use-module (gaiag csp)
   :use-module (gaiag asserts)
@@ -35,7 +34,7 @@
            ast->
            ))
 
-(define-method (om->csp-asserts (o <top>))
+(define (om->csp-asserts o)
   (let ((om ((om:register ast->om) o #t)))
     (om->csp om)
     (assert-list om)))
