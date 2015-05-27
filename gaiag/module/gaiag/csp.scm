@@ -303,9 +303,9 @@
               (type (and=> var .type))
               (name (and=> type .name)))
          (list "(" ;; model- state not in scope, IConsole_state not in scope
-               identifier " == " model- name "_" field ")")))
-      (($ <literal> #f type field) (list model- type "_" field))
-      (($ <literal> scope type field) (list (*scope* scope) '_ type '_ field))
+               identifier " == " name "_" field ")")))
+      (($ <literal> #f type field) (list type "_" field))
+      (($ <literal> scope type field) (list type '_ field))
       
       (('group expression) (list "(" (csp-expression->string model expression locals) ")"))
       (('! expression) (->string (list "(" "not " (paren expression) ")")))
@@ -391,9 +391,9 @@
 (define (enum-values o)
   (match o
     (($ <interface>)
-      (apply append (map typed-elements (enum-types o))))
+      (apply append (map (compose .elements .fields) (enum-types o))))
     (($ <component>)
-      (apply append (map typed-elements (enum-types o))))
+      (apply append (map (compose .elements .fields) (enum-types o))))
     (($ <component>)
      (delete-duplicates
       (append
@@ -1049,7 +1049,7 @@
               (->string space "let " identifier " = " "tmp'" " within\n")
               tail)))
 
-          (($ <csp-variable> context identifier ($ <action> (and ($ <trigger> port event) (get! trigger))))
+          (($ <csp-variable> context identifier type ($ <action> (and ($ <trigger> port event) (get! trigger))))
            (list 
             (->string space (or port channel) (if (om:out? (om:event model (trigger))) "_''") "!" event " ->\n")
             (->string space (or port channel) "_'" "?" identifier " ->\n")
