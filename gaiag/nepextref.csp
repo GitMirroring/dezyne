@@ -46,19 +46,39 @@ context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_loca
 -- Paul, HELP! context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ let b' = B'((M',r')) within not b' & range_error -> STOP [] b' & S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
 --context_int_active_(C', B', S')(P', V') = (\ (C', B', S') @ context_active_(C', S'))
 context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
-                                           
 
+nametype bool = {false, true}   
+                
 channel illegal
 channel range_error
 channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
+
             
 datatype event_enumeration_alphabet = Reply_A0 | Reply_A1 | a | e | modeling | return | the_end'
-nametype Reply = {Reply_A0, Reply_A1}
 
 
+nametype I_Reply = {Reply_A0, Reply_A1}
+
+-- end of combinators
+-- both.csp.scm
+
+datatype I_call_return_alphabet =
+  I_f_return
+  |I_f_call.I_Reply
+  |I_f2_return
+  |I_f2_call.I_Reply
+  |I_f3_return
+  |I_f3_call.I_Reply
+
+channel I_call_return: I_call_return_alphabet  
+
+datatype I_glob_alphabet = I_get.I_Reply | I_set.I_Reply
+channel I_glob: I_glob_alphabet
+
+-- end of both.csp.scm
 -- interface.csp.scm
 
 channel I: {e,the_end'}
@@ -67,21 +87,14 @@ channel I_': {Reply_A0,Reply_A1,return}
 channel I_in',I_out': {I_'.Reply_A0,I_'.Reply_A1,I_'.return}
 channel I_''': {modeling}
 
-datatype I_call_return_alphabet = I_f_call.Reply | I_f_return | I_f2_call.Reply | I_f2_return | I_f3_call.Reply | I_f3_return 
-channel I_call_return: I_call_return_alphabet
-
-datatype I_glob_alphabet = I_get.Reply | I_set.Reply
-channel I_glob: I_glob_alphabet
-
-                                           
-
 IF_I_(IG,CS) = let
 wait(e', P') = (P' [] [] x : diff({|I_call_return|},{|e'|}) @ x-> wait(e', P'))
 f = 
   wait(I_call_return.I_f_call,
     I_call_return.I_f_call?p ->
     I_glob.I_get?b ->
-    let b = p within
+    let tmp' = p within
+    let b = tmp' within
     I_''!a ->
     I_glob.I_set!b ->
     I_call_return.I_f2_call!b ->
@@ -97,7 +110,8 @@ f2 =
   wait(I_call_return.I_f2_call,
     I_call_return.I_f2_call?p ->
     I_glob.I_get?b ->
-    let b = p within
+    let tmp' = p within
+    let b = tmp' within
     I_''!a ->
     I_glob.I_set!b ->
     I_call_return.I_f3_call!b ->
@@ -113,16 +127,16 @@ f3 =
   wait(I_call_return.I_f3_call,
     I_call_return.I_f3_call?p ->
     I_glob.I_get?b ->
-    let b = p within
+    let tmp' = p within
+    let b = tmp' within
     I_''!a ->
     I_glob.I_set!b ->
     I_call_return.I_f3_return ->
     f3
   )
 
-I_=
-I?x:{e} ->
-I_glob.I_get?b ->
+I_=  I_glob.I_get?b-> (
+I?x:{e} -> (
   let r = Reply_A0 within
   I_glob.I_set!b ->
   I_call_return.I_f_call!r ->
@@ -132,10 +146,11 @@ I_glob.I_get?b ->
     I_glob.I_set!b ->
     I_'!r -> SKIP
   )
-; I.the_end' -> I_
+; I.the_end' -> I_)
 []
 CS & I?x:{} -> illegal_(STOP,<>)
-
+)
+                                                                                                                                                            
 forward = 
 COMPLETE'({|I_call_return|})
 
@@ -158,6 +173,22 @@ within compress(if CS
                 else I__[[x<-I_in'.x|x<-extensions(I_in')]] [|{|I,I_in',I.the_end'|}|] REORDER' [[I_out'.x<-x|x<-extensions(I_out')]] \ {|I_in',I.the_end'|})
 
 -- end of interface.csp.scm
+-- both.csp.scm
+
+datatype nepext_call_return_alphabet =
+  nepext_f_return
+  |nepext_f_call.I_Reply
+  |nepext_f2_return
+  |nepext_f2_call.I_Reply
+  |nepext_f3_return
+  |nepext_f3_call.I_Reply
+
+channel nepext_call_return: nepext_call_return_alphabet  
+
+datatype nepext_glob_alphabet = nepext_get.I_Reply | nepext_set.I_Reply
+channel nepext_glob: nepext_glob_alphabet
+
+-- end of both.csp.scm
 -- component.csp.scm
 
 channel i: extensions(I)
@@ -168,11 +199,6 @@ channel i_'': extensions(I_'')
 
 channel i_''': extensions(I_''')
 
-datatype nepext_call_return_alphabet =  nepext_f_return | nepext_f_call.Reply | nepext_f2_return | nepext_f2_call.Reply | nepext_f3_return | nepext_f3_call.Reply
-channel nepext_call_return: nepext_call_return_alphabet
-
-datatype nepext_glob_alphabet = nepext_get.Reply | nepext_set.Reply
-channel nepext_glob: nepext_glob_alphabet
 
 
 CO_nepext_(IIG,IG) = let
@@ -181,7 +207,8 @@ f =
   wait(nepext_call_return.nepext_f_call,
     nepext_call_return.nepext_f_call?p ->
     nepext_glob.nepext_get?b ->
-    let b = p within
+    let tmp' = p within
+    let b = tmp' within
     i_''!a ->
     nepext_glob.nepext_set!b ->
     nepext_call_return.nepext_f2_call!b ->
@@ -197,7 +224,8 @@ f2 =
   wait(nepext_call_return.nepext_f2_call,
     nepext_call_return.nepext_f2_call?p ->
     nepext_glob.nepext_get?b ->
-    let b = p within
+    let tmp' = p within
+    let b = tmp' within
     i_''!a ->
     nepext_glob.nepext_set!b ->
     nepext_call_return.nepext_f3_call!b ->
@@ -213,16 +241,16 @@ f3 =
   wait(nepext_call_return.nepext_f3_call,
     nepext_call_return.nepext_f3_call?p ->
     nepext_glob.nepext_get?b ->
-    let b = p within
+    let tmp' = p within
+    let b = tmp' within
     i_''!a ->
     nepext_glob.nepext_set!b ->
     nepext_call_return.nepext_f3_return ->
     f3
   )
 
-nepext_= transition_begin -> (
-i?x:{e} ->
-nepext_glob.nepext_get?b ->
+nepext_= transition_begin -> nepext_glob.nepext_get?b-> (
+i?x:{e} -> (
   let r = Reply_A0 within
   nepext_glob.nepext_set!b ->
   nepext_call_return.nepext_f_call!r ->
@@ -232,7 +260,7 @@ nepext_glob.nepext_get?b ->
     nepext_glob.nepext_set!b ->
     I_'!r -> SKIP
   )
-; transition_end -> nepext_
+; transition_end -> nepext_)
 )
 
 forward = 
