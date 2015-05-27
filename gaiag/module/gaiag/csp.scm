@@ -391,9 +391,9 @@
 (define (enum-values o)
   (match o
     (($ <interface>)
-      (apply append (map (compose .elements .fields) (enum-types o))))
+      (apply append (map typed-elements (enum-types o))))
     (($ <component>)
-      (apply append (map (compose .elements .fields) (enum-types o))))
+      (apply append (map typed-elements (enum-types o))))
     (($ <component>)
      (delete-duplicates
       (append

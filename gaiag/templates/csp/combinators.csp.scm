@@ -98,6 +98,6 @@ datatype event_enumeration_alphabet = #
 #(stderr "types: ~a\n" (enum-types model))
 #(map
  (lambda (e)
-   (list "nametype " (enum-scope model e) " = {" ((->join ", ") ((compose .elements .fields) e)) "}\n"))
+   (list "nametype " (enum-scope model e) " = {" ((->join ", ") (typed-elements e)) "}\n"))
 (filter (is? <enum>) (enum-types model)))
 -- end of combinators
