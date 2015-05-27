@@ -1003,8 +1003,9 @@
           (($ <csp-call> context identifier arguments last?)
            (stderr "arguments: ~a ~a\n" arguments (pair? arguments))
            (stderr "locals1: ~a\n" locals)
-           (let* ((exclam (if (pair? (.elements arguments)) "!" ""))
-                  (arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals))
+           (let* ((arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals))
+                  ;;(exclam (if (pair? (.elements arguments)) "!" ""))
+                  (exclam (if (not (string-null? arguments)) "!" ""))
                   (tailrec? (and last? (.recursive (om:function model identifier))))
                   (s (make-string 2 #\space))
                   (tail (map (lambda (x) (if (pair? x) (cons s x) (list s x))) tail)))
@@ -1152,7 +1153,9 @@
                   (list (->string space "SKIP"))))))
        
           ;; other bits
-          (('arguments arguments ...) (csp-comma-list (map (lambda (x) (csp-transform-model model x inevitable-optional? channel provided-on? locals)) arguments)))
+          (('arguments arguments ...)
+           (stderr "translating arguments ...: ~a\n" arguments)
+           (csp-comma-list (map (lambda (x) (csp-transform-model model x inevitable-optional? channel provided-on? locals)) arguments)))
 
           (($ <expression> (and ($ <csp-call>) (get! call))) (csp-transform-model model (call)))
           (($ <expression>) (csp-expression->string model o locals))
