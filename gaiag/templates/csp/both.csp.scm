@@ -33,10 +33,11 @@ datatype #(.name model)_call_return_alphabet =
         (let* ((signature (.signature f))
                (parameters ((compose .elements .parameters) signature))
                (p-types (if (pair? parameters)
-                            (->string (list "." (csp-comma-list (map (lambda (x) (if (is-a? x <enum>) (->string (or (.scope x) (.name model)) '_ (.name x)) (.name x))) (map (compose (om:type model) .type) ((compose .elements .parameters .signature) f))))  "\n"))
+                            (->string (list "." (csp-comma-list (map (lambda (x) (if (is-a? x <enum>) (->string (or (.scope x) (.name model)) '_ (.name x)) (.name x))) (map (compose (om:type model) .type) (filter (negate (is? <extern>))  ((compose .elements .parameters .signature) f)))))  "\n"))
                             ""))
                (type (.type signature))
-               (r-type (if (not (eq? (.name type) 'void))
+               (r-type (if (and (not (eq? (.name type) 'void))
+                                (not (is-a? type <extern>)))
                             (->string (list "." (if (is-a? type <enum>) (->string (.name model) '_ (.name type)) (.name type))))
                             "")))
      (append

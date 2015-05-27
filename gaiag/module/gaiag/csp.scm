@@ -1005,16 +1005,17 @@
           ;; simple statements
           (($ <csp-call> context identifier arguments last?)
            (let* ((arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals))
+                  (exclam (if (pair? arguments) "!" ""))
                   (tailrec? (and last? (.recursive (om:function model identifier))))
                   (s (make-string 2 #\space))
                   (tail (map (lambda (x) (if (pair? x) (cons s x) (list s x))) tail)))
              (if tailrec? 
                  (list
-                  (->string space model-name "_call_return." identifier "_forward!" arguments " ->\n")
+                  (->string space model-name "_call_return." identifier "_forward" exclam arguments " ->\n")
                   (->string space identifier))
                  (append (list
                           (->string space model-name "_glob." model-name "_set!" member-name-list " ->\n")
-                          (->string space model-name "_call_return." model-name "_" identifier "_call!" arguments " ->\n")
+                          (->string space model-name "_call_return." model-name "_" identifier "_call" exclam arguments " ->\n")
                           (->string space "wait(" model-name "_call_return." model-name "_" identifier "_return" ",\n")
                           (->string space s model-name "_call_return." model-name "_" identifier "_return" " ->\n")
                           (->string space s model-name "_glob." model-name "_get?" member-name-list " ->\n"))
