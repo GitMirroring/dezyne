@@ -294,10 +294,10 @@
   (let* ((model-name (.name model))
          (model- (symbol-append model-name '_)))
     (match src
-      (($ <var> identifier) 
+      (($ <var> identifier)
        (if (var? identifier)
            (list identifier)
-           (list "false")))
+           (list "false" (stderr "locals: ~a " locals) (stderr "var: ~a\n" identifier))))
       ;;(($ <var> identifier) (->string model- identifier))      
       (($ <expression>) (csp-expression->string model (.value src) locals))
       ((or (? number?) (? string?) (? symbol?)) (list src))
@@ -1001,7 +1001,9 @@
 
           ;; simple statements
           (($ <csp-call> context identifier arguments last?)
-           (let* ((exclam (if (pair? arguments) "!" ""))
+           (stderr "arguments: ~a ~a\n" arguments (pair? arguments))
+           (stderr "locals1: ~a\n" locals)
+           (let* ((exclam (if (pair? (.elements arguments)) "!" ""))
                   (arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals))
                   (tailrec? (and last? (.recursive (om:function model identifier))))
                   (s (make-string 2 #\space))
@@ -1029,7 +1031,8 @@
             tail))
 
           (($ <csp-assign> context identifier ($ <call> function arguments) expressions)
-           (let* ((exclam (if (pair? arguments) "!" ""))
+           (stderr "arguments: ~a ~a\n" arguments (pair? arguments))
+           (let* ((exclam (if (pair? (.elements arguments)) "!" ""))
                   (arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals))
                   (s (make-string 2 #\space))
                   (tail (map (lambda (x) (if (pair? x) (cons s x) (list s x))) tail)))
@@ -1063,8 +1066,8 @@
                 (list (->string space "SKIP")))))
           
           (($ <csp-variable> context name type ($ <call> identifier arguments))
-           (stderr "arg: ~a\n" arguments)
-           (let* ((exclam (if (pair? arguments) "!" ""))
+           (stderr "arguments: ~a ~a\n" arguments (pair? arguments))
+           (let* ((exclam (if (pair? (.elements arguments)) "!" ""))
                   (arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals))
                   (s (make-string 2 #\space))
                   (tail (map (lambda (x) (if (pair? x) (cons s x) (list s x))) tail)))

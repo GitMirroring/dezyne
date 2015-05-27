@@ -4,7 +4,6 @@
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -112,7 +111,17 @@ component Dataparam
       return $(xi + xj) / 2$;
     }
 
-    on port.e0(): { port.a6($0$,$1$,$2$,$3$,$4$,$5$); }
+    void g(IDataparam.Status x) 
+    {
+    }
+
+    void f(IDataparam.Status x) 
+    {
+      IDataparam.Status y = x;
+      g(x);
+    }
+
+    on port.e0: { port.a6($0$,$1$,$2$,$3$,$4$,$5$); }
 
     on port.e0r(): {port.a0;reply(IDataparam.Status.Yes);}
 
@@ -123,7 +132,7 @@ component Dataparam
       mi = pi;
       // mi = xfunx (pi, $pi + mi$);  // member in $: Ok for C++ but C: self->mi, Python: self.mi
       //mi = xfunx (pi, $pi + pi$); // javascript: foobar NaN
-      mi = xfunx (pi, pi);
+      mi = xfunx (pi, mi);
       port.a (mi);
       port.aa (mi, pi);
     }
