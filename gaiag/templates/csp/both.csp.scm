@@ -31,14 +31,20 @@ datatype #(.name model)_call_return_alphabet =
      (map
       (lambda (f)
         (let* ((signature (.signature f))
-               (parameters ((compose .elements .parameters) signature))
+               (parameters (filter (lambda (x) (not (is-a? (om:extern model (.type x)) <extern>))) ((compose .elements .parameters) signature)))
                (p-types (if (pair? parameters)
-                            (->string (list "." (csp-comma-list (map (lambda (x) (if (is-a? x <enum>) (->string (or (.scope x) (.name model)) '_ (.name x)) (.name x))) (map (compose (om:type model) .type) (filter (negate (is? <extern>))  ((compose .elements .parameters .signature) f)))))  "\n"))
+                            (->string 
+                             (list 
+                              "."
+                              (csp-comma-list
+                                (map (lambda (x) (if (is-a? x <enum>) (->string (or (.scope x) (.name model)) '_ (.name x)) (.name x))) 
+                                     (map (compose (om:type model) .type) parameters)))
+                              "\n"))
                             ""))
                (type (.type signature))
                (r-type (if (and (not (eq? (.name type) 'void))
-                                (not (is-a? type <extern>)))
-                            (->string (list "." (if (is-a? type <enum>) (->string (.name model) '_ (.name type)) (.name type))))
+                                (not (is-a? (om:extern model type) <extern>)))
+                            (->string (list "." (if (is-a? (om:type model type) <enum>) (->string (or (.scope type) (.name model)) '_ (.name type)) (.name type))))
                             "")))
      (append
       (list (->string (.name model) "_" (.name f) "_return" r-type "\n")
@@ -54,11 +60,17 @@ datatype #(.name model)_call_return_alphabet = #(.name model)_empty_call_return_
 channel #(.name model)_call_return: #(.name model)_call_return_alphabet
 #})
 #(string-if (pair? (om:member-types model)) #{
-datatype #(.name model)_glob_alphabet = #(.name model)_get.#(csp-comma-list (map (lambda (x) (if (is-a? x <enum>) (->string (or (.scope x) (.name model)) '_ (.name x)) (.name x))) (om:member-types model)))  | #(.name model)_set.#(csp-comma-list (map (lambda (x) (if (is-a? x <enum>) (->string (or (.scope x) (.name model)) '_ (.name x)) (.name x))) (om:member-types model)))
+datatype #(.name model)_glob_alphabet = 
+  #(.name model)_get.#
+  (csp-comma-list 
+   (map (lambda (x) (if (is-a? x <enum>) (->string (or (.scope x) (.name model)) '_ (.name x)) (.name x))) (om:member-types model)))  | 
+  #(.name model)_set.#
+  (csp-comma-list 
+   (map (lambda (x) (if (is-a? x <enum>) (->string (or (.scope x) (.name model)) '_ (.name x)) (.name x))) (om:member-types model)))
 channel #(.name model)_glob: #(.name model)_glob_alphabet
 #}
 #{
-datatype #(.name model)_glob_alphabet = <> -- FIXME no globals
+datatype #(.name model)_glob_alphabet = false
 channel #(.name model)_glob: #(.name model)_glob_alphabet
 #})
 -- end of both.csp.scm

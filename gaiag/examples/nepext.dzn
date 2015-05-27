@@ -61,8 +61,8 @@ interface I
     on e:
     {
       Reply r = Reply.A0;
-      f(r);
       reply(r);
+      f(r);
     }
   }
 }
@@ -104,8 +104,8 @@ component nepext
     on i.e:
     {
       I.Reply r = I.Reply.A0;
-      f(r);
-      reply(r);
+      //reply(r);
+      f(I.Reply.A0);
     }
   }
 }
