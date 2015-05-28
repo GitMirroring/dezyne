@@ -41,7 +41,6 @@
   :use-module (gaiag resolve)
   :use-module (gaiag wfc)
 
-    ;;:use-module (oop goops describe)
   :use-module (gaiag ast)
 
   :export (ast->))
@@ -52,7 +51,13 @@
       (map dump (filter (negate om:imported?) ((om:filter <model>) om)))))
   "")
 
-(define-method (dump (o <interface>))
+(define (dump o)
+  (match o
+    (($ <interface>) (dump-interface o))
+    (($ <component>) (dump-component o))
+    (($ <system>) (dump-system o))))
+
+(define (dump-interface)
   (let ((name (.name o)))
     (dump-indented (symbol-append name (code:extension o))
                    (lambda () (c-file (c-name o) (code:module o))))
@@ -63,7 +68,7 @@
               (dump-indented code-name
                              (lambda () (c-file (c-code o) (code:module o)))))))
 
-(define-method (dump (o <component>))
+(define (dump-component)
   (let ((name (.name o))
         (interfaces (map code:import (map .type ((compose .elements .ports) o)))))
     (dump-indented (symbol-append name (code:extension (make <interface>)))
@@ -75,7 +80,7 @@
                          (c-file (c-name o) (code:module o)))))
     (dump-main o)))
 
-(define-method (dump (o <system>))
+(define (dump-system o)
   (let ((name (.name o))
         (interfaces (map code:import (map .type ((compose .elements .ports) o))))
         (components (map code:import (map .component ((compose .elements .instances) o)))))
@@ -87,7 +92,7 @@
                      (c-file (c-name o) (code:module o))))
     (dump-main o)))
 
-(define-method (dump-main (o <model>))
+(define (dump-main o)
   (and-let* ((name (.name o))
              (model (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
                                 string->symbol)))
@@ -101,11 +106,11 @@
   (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
     (animate-file file-name module)))
 
-(define-method (c-name (o <model>))
+(define (c-name o)
   (symbol-append (ast-name o) (code:extension o) '.scm))
 
-(define-method (c-code (o <model>))
+(define (c-code o)
   (symbol-append (ast-name o) (code:extension (make <component>)) '.scm))
 
-(define-method (c-header (o <model>))
+(define (c-header o)
   (symbol-append (ast-name o) (code:extension (make <interface>)) '.scm))
