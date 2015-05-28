@@ -34,9 +34,9 @@
   :use-module (gaiag norm-state)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
-  :use-module (gaiag wfc)
+;;  :use-module (gaiag wfc)
 
-    :use-module (gaiag ast)
+  :use-module (gaiag ast)
 
   :export (ast:code
            code:om
@@ -98,7 +98,9 @@
   (om:import name code:om))
 
 (define (code:om ast)
-  ((compose norm-state ast:wfc ast:resolve ast->om) ast))
+  ((compose norm-state
+            ;;ast:wfc
+            ast:resolve ast->om) ast))
 
 (define (pipe producer consumer)
   (with-input-from-string (with-output-to-string producer) consumer))
@@ -122,7 +124,7 @@
              ((file-exists? header)))
             (dump-file (basename header) (gulp-file header))))
 
-(define-method (dump-global (o <model>))
+(define (dump-global o)
   (and-let* (((null-is-#f (om:enums)))
              (template (template-file `(,(language) global ,(symbol-append (code:extension o) '.scm))))
              ((file-exists? (components->file-name template))))
@@ -130,7 +132,13 @@
                            (lambda ()
                              (code-file 'global (code:module o))))))
 
-(define-method (dump (o <interface>))
+(define (dump o)
+  (match o
+    (($ <interface>) (dump-interface o))
+    (($ <component>) (dump-component o))
+    (($ <system>) (dump-system o))))
+
+(define (dump-interface o)
   (mkdir-p "dezyne")
   (dump-global o)
   (let ((name (.name o)))
@@ -138,7 +146,7 @@
                    (lambda ()
                      (code-file 'interface (code:module o))))))
 
-(define-method (dump (o <component>))
+(define (dump-component o)
   (mkdir-p "dezyne")
   (dump-global o)
   (let ((name (.name o))
@@ -150,7 +158,7 @@
                      (code-file 'component (code:module o)))))
     (dump-main o)))
 
-(define-method (dump-main (o <model>))
+(define (dump-main o)
   (and-let* ((name (.name o))
              (model (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
                                 string->symbol)))
@@ -162,7 +170,7 @@
                            (lambda ()
                              (code-file 'main (code:module o))))))
 
-(define-method (dump (o <system>))
+(define (dump-system o)
   (mkdir-p "dezyne")
   (let ((name (.name o))
         (model (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
@@ -194,45 +202,40 @@
 (define (language)
   (string->symbol (option-ref (parse-opts (command-line)) 'language 'c++)))
 
-(define-method (code:extension (o <interface>))
-  (assoc-ref `((c . .h)
-               (c++ . .hh)
-               (goops . .scm)
-               (java . .java)
-               (javascript . .js)
-               (cs . .cs)
-               (python . .py))
-             (language)))
+(define (code:extension o)
+  (match o
+    (($ <interface>)
+     (assoc-ref `((c . .h)
+                  (c++ . .hh)
+                  (goops . .scm)
+                  (java . .java)
+                  (javascript . .js)
+                  (cs . .cs)
+                  (python . .py))
+                (language)))
+    (($ <component>)
+     (assoc-ref '((c . .c)
+                  (c++ . .cc)
+                  (goops . .scm)
+                  (java . .java)
+                  (javascript . .js)
+                  (cs . .cs)
+                  (python . .py))
+                (language)))))
 
-(define-method (code:extension (o <model>))
-  (assoc-ref '((c . .c)
-               (c++ . .cc)
-               (goops . .scm)
-               (java . .java)
-               (javascript . .js)
-               (cs . .cs)
-               (python . .py))
-             (language)))
-
-(define-method (code:module)
-  (make-module 31 (list
-                   (resolve-module (list 'gaiag (language)))
-                   (resolve-module '(gaiag misc)))))
-
-(define-method (code:module (o <interface>))
-  (let* ((module (code:module)))
+(define (code:module o)
+  (let ((module (make-module 31 (list
+                                 (resolve-module (list 'gaiag (language)))
+                                 (resolve-module '(gaiag misc))))))
     (module-define! module 'model o)
-    (module-define! module '.interface (.name o))
-    (module-define! module '.INTERFACE (string-upcase (symbol->string (.name o))))
     (module-define! module '.model (.name o))
-    module))
-
-(define-method (code:module (o <model>))
-  (let ((module (code:module)))
-    (module-define! module 'model o)
-    (module-define! module '.COMPONENT (string-upcase (symbol->string (.name o))))
-    (module-define! module '.model (.name o))
-    module))
+    (match o
+      (($ <interface>)
+       (module-define! module '.interface (.name o))
+       (module-define! module '.INTERFACE (string-upcase (symbol->string (.name o)))))
+      ((? (is? <model>))
+       (module-define! module '.COMPONENT (string-upcase (symbol->string (.name o)))))
+      module)))
 
 (define* (->code model src :optional (locals '()) (indent 1) (compound? #t))
   (let ((statement (->code- model src locals indent compound?)))
@@ -339,9 +342,9 @@
                                            statement)))
                        statement))
            '$empty-statement$))
-      (($ <call> function ($ <arguments> '()))
+      (($ <call> function ('arguments))
        (snippet 'call `((space ,space) (function ,function))))
-      (($ <call> function ($ <arguments> arguments))
+      (($ <call> function ('arguments arguments ...))
        (let* ((formals ((compose .elements .formals .signature) (om:function model function)))
             (arguments ((join)
                         (map (lambda (e p)
@@ -351,11 +354,11 @@
                              arguments formals))))
          (snippet 'call-arguments
                   `((space ,space) (function ,function) (arguments ,arguments)))))
-      (($ <arguments> arguments)
+      (('arguments arguments ...)
        ((join)
         (map (lambda (o) (expression->string model o locals)) arguments)))
-      (($ <compound> '()) (snippet 'compound-empty `((space ,space))))
-      (($ <compound> statements)
+      (('compound) (snippet 'compound-empty `((space ,space))))
+      (('compound statements ...)
        (snippet
         (symbol-append
          (if compound? 'compound 'statements)
@@ -456,7 +459,7 @@
                   (name ,name)
                   (type ,(->code model type))
                   (expression ,(expression->string model expression locals)))))
-      (($ <formals> formals)
+      (('formals formals ...)
        ((join) (map (lambda (x) (->code model x)) formals)))
       (($ <formal> name type direction)
        (snippet 'formal `((name ,name) (type ,(->code model type)) (out? ,(member direction '(inout out))))))
@@ -471,47 +474,41 @@
       ((h t ...) (map (lambda (x) (->code model x locals indent)) src))
       (_ (throw 'match-error (format #f "~a:code:->code: no match: ~a\n" (current-source-location) src))))))
 
-(define-method (find-trigger (o <on>) (port <port>) (event <event>))
-  (find (lambda (t) (and (eq? (.port t) (.name port))
-                         (eq? (.event t) (.name event))))
-        ((compose .elements .triggers) o)))
+(define ((find-trigger port event) o)
+  (match o
+    (($ <on>)
+     (find (lambda (t) (and (eq? (.port t) (.name port))
+                            (eq? (.event t) (.name event))))
+           ((compose .elements .triggers) o)))
+    (($ <guard>) (find-trigger (.statement o) port event))
+    (('compound)
+     (null-is-#f (filter identity (map (find-trigger port event) (.elements o)))))
+    (_ #f)))
 
-(define-method (find-trigger (o <guard>) (port <port>) (event <event>))
-  (find-trigger (.statement o) port event))
-
-(define-method (find-trigger (o <ast>) (port <port>) (event <event>))
-  #f)
-
-(define-method (find-trigger (o <compound>) (port <port>) (event <event>))
-  (null-is-#f (filter identity (map (find-trigger port event) (.elements o)))))
-
-(define-method (find-trigger (port <port>) (event <event>))
-  (lambda (o) (find-trigger o port event)))
-
-(define-method (expr->clause (model <model>) (o <guard>) expression)
+(define (expr->clause model guard expression)
   (if (is-a? expression <otherwise>)
       (snippet 'clause-else '())
       (let* ((c-expression (bool-expression->string model expression))
              (if-clause (snippet 'clause-if `((expression ,c-expression))))
              (else-if-clause (snippet 'clause-else-if `((expression ,c-expression)))))
-        (->string (list (if (om:first-guard? model o) if-clause else-if-clause))))))
+        (->string (list (if (om:first-guard? model guard) if-clause else-if-clause))))))
 
-(define-method (om:top-statements (o <model>))
+(define (om:top-statements o)
   ((compose .elements .statement .behaviour) o))
 
-(define-method (om:first-guard? (model <model>) (o <guard>))
+(define (om:first-guard? model guard)
   (not
-   (and-let* ((parent (om:parent model o))
+   (and-let* ((parent (om:parent model guard))
               (parent (cond ((is-a? parent <guard>) (.statement parent))
                             ((is-a? parent <on>) (om:parent model parent))
                             (else parent)))
               (guards ((om:statements-of-type 'guard) parent))
               (guards (filter (find-trigger (statements.port) (statements.event)) guards))
               (guards (null-is-#f guards)))
-             (not (eq? o (car guards))))))
+             (not (eq? guard (car guards))))))
 
-(define-method (om:top-guard? (model <model>) (o <guard>))
-  (member o (om:top-statements model)))
+(define (om:top-guard? model guard)
+  (member guard (om:top-statements model)))
 
 (define (bool-expression->string model o)
   (match o
@@ -551,7 +548,7 @@
   (match o
     (($ <expression> (? unspecified?)) *unspecified*)
     (($ <expression>) (expression->string model (.value o) locals argument))
-    (($ <action> ($ <trigger> port-name event-name ($ <arguments> arguments)))
+    (($ <action> ($ <trigger> port-name event-name ('arguments arguments ...)))
      (let* ((port (om:port model port-name))
             (name (.type port))
             (interface (om:import name))
@@ -595,9 +592,9 @@
     (($ <field> identifier field)
      (snippet 'field-expression `((identifier ,identifier)
                                   (expression ,(enum-type identifier field)))))
-    (($ <call> function ($ <arguments> '()))
+    (($ <call> function ('arguments))
         (snippet 'call-expression `((function ,function))))
-    (($ <call> function ($ <arguments> arguments))
+    (($ <call> function ('arguments arguments ...))
      (let* ((formals ((compose .elements .formals .signature) (om:function model function)))
             (arguments ((join)
                         (map (lambda (e p)
@@ -799,13 +796,13 @@
          (injected? (.injected port)))
     (animate snippet `((name ,name) (direction ,direction) (injected? ,injected?) (interface ,interface)))))
 
-(define-method (declare-replies (o <interface>))
+(define (declare-replies o)
   (map (lambda (x) (snippet 'declare-reply
                             `((scope ,(or (.scope x) (.name o)))
                               (name ,(.name x)))))
        (om:reply-enums o)))
 
-(define-method (return-type port (event <event>))
+(define (return-type port event)
   (let* ((type ((compose .type .signature) event))
          (scope (or (.scope type) (and=> port .type)))
          (name (.name type)))
