@@ -127,6 +127,8 @@
      (or (find (om:scoped name scope) (om:types model))
          (find (om:scoped-extern name scope) (om:types model))))
     (('variable name type expression) ((om:type model) type))
+    (('formal name type) ((om:type model) type))
+    (('formal name type direction) ((om:type model) type))
     (#f #f)))
 
 (define ((om:named name) ast)

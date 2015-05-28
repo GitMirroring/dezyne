@@ -352,6 +352,12 @@
 (define-method (om:extern (o <model>) name)
   ((is? <extern>) (om:type o name)))
 
+(define-method (om:extern (o <model>))
+  (lambda (name) (om:extern o name)))
+
+(define-method (om:extern (model <model>) (formal <formal>))
+  (om:extern model (.type formal)))
+
 ;; extern, *global*, TODO
 ;; (define-method (om:extern (o <model>) (type <type>))
 ;;   ((is? <extern>) (om:type o type)))
@@ -466,7 +472,7 @@
 (define-method (om:type (o <model>) (type <type>))
   (or (find (lambda (o) (and (eq? (.name o) (.name type))
                              (or (eq? (.scope o) (.scope type))
-                                 (and (eq? (.scope o) '*global*)
+                                 (and (or (eq? (.scope o) '*global*))
                                       (not (.scope type))))))
             (append (om:types o) (om:types) builtin-types))))
 
@@ -481,6 +487,9 @@
 
 (define-method (om:type (model <model>) (variable <variable>))
   (om:type model (.type variable)))
+
+(define-method (om:type (model <model>) (formal <formal>))
+  (om:type model (.type formal)))
 
 (define (om:models-with-behaviour om)
   (filter .behaviour (append ((om:filter <component>) om) ((om:filter <interface>) om))))

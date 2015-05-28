@@ -295,7 +295,7 @@
          (model- (symbol-append model-name '_)))
     (match src
       (($ <var> identifier)
-       (if (var? identifier)
+       (if (or #t (var? identifier))
            (list identifier)
            (list "false" (stderr "locals: ~a " locals) (stderr "var: ~a\n" identifier))))
       ;;(($ <var> identifier) (->string model- identifier))      
@@ -496,9 +496,7 @@
   (define (member? identifier) (om:variable model identifier))
   (define (local? identifier) (assoc-ref locals identifier))
   (define (var? identifier) (or (member? identifier) (local? identifier)))
-  (define (extern? identifier) (and=> (var? identifier)
-                                      (lambda (var)
-                                        (om:extern model (.type var)))))
+  (define (extern? identifier) (and=> (var? identifier) (om:extern model)))
   (define (extern-type? type) (om:extern model type))
 
   
@@ -526,7 +524,7 @@
                               (($ <variable> name type expression)
                                (acons name statement locals))
                               (_ locals))))
-               (let ((purged (model-purge-data model (car statements) locals)))
+               (let ((purged (model-purge-data model statement locals)))
                  (cons purged (loop (cdr statements) locals))))))))
 
     (($ <call> identifier ('arguments arguments ...) last?)
@@ -535,15 +533,32 @@
          :arguments (make <arguments> :elements (purge-formal-list (om:function model identifier) arguments))
          :last? last?))
 
+    (($ <on> triggers statement)
+     (let* ((events (map (om:event model) (.elements triggers)))
+            (formals (apply append (map (compose .elements .formals .signature)
+ events)))
+            (locals (let loop ((formals formals) (locals locals))
+                      (if (null? formals)
+                          locals
+                          (loop (cdr formals)
+                                (acons ((compose .name car) formals) (car formals) locals))))))
+       (make <on>
+         :triggers triggers
+         :statement (model-purge-data model statement locals))))
+
     (($ <function> name ($ <signature> type ('formals formals ...)) recursive? statement)
-     ;; FIXME: extend locals?
-     (make <function>
-       :name name
-       :signature (make <signature>
-                    :type type
-                    :formals (make <formals> :elements (purge-formal-list o formals)))
-       :recursive recursive?
-       :statement (model-purge-data model statement locals)))
+     (let* ((locals (let loop ((formals formals) (locals locals))
+                      (if (null? formals)
+                          locals
+                          (loop (cdr formals)
+                                (acons (.name (car formals)) (car formals) locals))))))
+       (make <function>
+         :name name
+         :signature (make <signature>
+                      :type type
+                      :formals (make <formals> :elements (purge-formal-list o formals)))
+         :recursive recursive?
+         :statement (model-purge-data model statement locals))))
 
     (($ <assign> (? extern?) expression) (make <skip>))
 
