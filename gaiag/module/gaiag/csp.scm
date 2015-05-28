@@ -534,7 +534,8 @@
          :last? last?))
 
     (($ <on> triggers statement)
-     (let* ((events (map (om:event model) (.elements triggers)))
+     (let* ((t (filter (negate om:modeling?) (.elements triggers)))
+            (events (map (om:event model) t))
             (formals (apply append (map (compose .elements .formals .signature)
  events)))
             (locals (let loop ((formals formals) (locals locals))

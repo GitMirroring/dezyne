@@ -210,14 +210,17 @@
     (#f '())
     (_ (throw 'match-error  (format #f "~a:om:statements-of-type, type: ~a: no match: ~a\n" (current-source-location) type statement)))))
 
-(define* (om:typed? o :optional (trigger #f))
-  (if trigger
-      (om:typed? (om:event o trigger))
-      (match o
-        (($ <event>)
-         (let ((type ((compose .type .signature) o)))
-           (and (not (eq? (.name type) 'void)) type)))
-        ((? boolean?) #f))))
+(define-method (om:typed? (o <event>))
+  (let ((type ((compose .type .signature) o)))
+    (and (not (eq? (.name type) 'void)) type)))
+
+(define-method (om:typed? (o <boolean>)) #f)
+
+(define-method (om:typed? (m <model>) (o <trigger>))
+  (om:typed? (om:event m o)))
+
+(define-method (om:modeling? (o <trigger>))
+  (and (not (.port o)) (member (.event o) '(optional inevitable))))
 
 (define-method (om:dir-matches? (p <port>) (e <event>))
   (or (and (eq? (.direction p) 'provides)
