@@ -27,8 +27,9 @@
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
 
-    ;;:use-module (oop goops describe)
-  :use-module (gaiag ast)
+  ;;  :use-module (gaiag ast)
+  :use-module (gaiag goops om)
+  :use-module (gaiag goops map)  
 
   :export (ast-> om:mangle mangle-prefix-alist))
 

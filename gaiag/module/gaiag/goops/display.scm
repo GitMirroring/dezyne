@@ -34,6 +34,9 @@
     (string->symbol
      (if (string-prefix? "om:" name) (string-drop name 3) name))))
 
+(define-method (ast-name (o <list>))
+  (car o))
+
 ;; AST printing
 (define (star port) (display #\* port))
 

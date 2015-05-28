@@ -1,5 +1,0 @@
-component #name 
-{
-  #ports 
-  #(if (defined? 'behaviour) behaviour)
-}

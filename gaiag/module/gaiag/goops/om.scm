@@ -39,6 +39,7 @@
                 define-class
                 define-generic
                 define-method
+                make-class
                 slot-definition-name
                 slot-ref
                 slot-set!
@@ -59,6 +60,7 @@
               define-class
               define-generic
               define-method
+              make-class
               slot-definition-name
               slot-ref
               slot-set!
@@ -165,6 +167,8 @@
            <var>
            <variable>
            <variables>
+
+           <context-vector> ;; ugh
            ))
 
 (define-class <ast> ())
@@ -193,6 +197,8 @@
 (define-class <statement> (<ast>))
 (define-class <compound> (<ast-list> <statement>))
 
+(define-class <context-vector> (<ast-list>)) ;; ugh
+
 (define ast-lists
   (list
     <arguments>
@@ -209,10 +215,13 @@
     <triggers>
     <types>
     <variables>
+    <context-vector> ;; URG
     ))
 
 (define (ast-name class)
   (string->symbol (string-drop (string-drop-right (symbol->string (class-name class)) 1) 1)))
+
+(define (symbol->class x) (symbol-append '< x '>))
 
 (define (make class . args)
   (if (member class ast-lists)
@@ -222,8 +231,12 @@
       (apply goops:make (cons class args))))
 
 (define (is-a? o class)
-  (if (member class ast-lists)
-      (and (pair? o) (or (eq? class <ast-list>) (eq? (ast-name class) (car o))))
+  (if (or (member class ast-lists)
+          ;;(and (pair? o) (eq? class <ast>)) breaks resolver
+          )
+      (and (pair? o) (or (eq? class <ast-list>)
+                         (eq? class <ast>)
+                         (eq? (ast-name class) (car o))))
       (goops:is-a? o class)))
 
 (define-class <model> (<named>))

@@ -252,8 +252,8 @@
     (($ <formal> name type direction)
      (make <formal> :name name :type ((resolve-model model locals) type) :direction direction))
 
-    (($ <call> identifier (and ($ <arguments>) (get! arguments)))
-     (make <call> :identifier identifier :arguments ((resolve-model model locals) (arguments))))
+    (($ <call> identifier (and ('arguments arguments ...) (get! arguments)) last?)
+     (make <call> :identifier identifier :arguments ((resolve-model model locals) (arguments)) :last? last?))
 
     (($ <type> (and (? enum?) (get! enum)) #f)
      (make <type> :name (enum) :scope (.scope (enum? (enum)))))
@@ -264,7 +264,6 @@
     (($ <event> name signature direction)
      (make <event> :name name :signature ((resolve-model model '()) signature) :direction direction))
 
-    (($ <call>) o)
     (($ <data>) o)
     (($ <enum>) o)
     (($ <event>) o)
@@ -275,10 +274,18 @@
     (($ <literal>) o)
     (($ <otherwise>) (make <otherwise>))
     (($ <port>) o)
+    (($ <signature> type (? unspecified?))
+     (make <signature>
+       :type ((resolve-model model locals) type)
+       :formals '(formals)))
     (($ <signature> type formals)
      (make <signature>
        :type ((resolve-model model locals) type)
        :formals ((resolve-model model locals) formals)))
+    ;; (($ <signature> type)
+    ;;  (make <signature>
+    ;;    :type ((resolve-model model locals) type)
+    ;;    :formals '(formals)))
     (($ <trigger>) o)
     (($ <type>) o)
     (($ <var>) o)
@@ -297,6 +304,15 @@
        :expression (make <action> :trigger (make <trigger> :event (event)))))
 
     (($ <assign> identifier ($ <expression> (and ($ <call>) (get! call))))
+     (make <assign> :identifier identifier
+           :expression ((resolve-model model locals) (call))))
+
+    (($ <assign> identifier ($ <call> (and (? event?) (get! event))))
+     (make <assign>
+       :identifier identifier
+       :expression (make <action> :trigger (make <trigger> :event (event)))))
+
+    (($ <assign> identifier (and ($ <call>) (get! call)))
      (make <assign> :identifier identifier
            :expression ((resolve-model model locals) (call))))
 
@@ -422,7 +438,7 @@
        :statement ((resolve-model model locals) statement)))
 
     (($ <function> name ($ <signature> type ('formals formals ...)) recursive? statement)
-     (let ((locals (let loop ((formals (.elements formals)) (locals locals))
+     (let ((locals (let loop ((formals formals) (locals locals))
                      (if (null? formals)
                          locals
                          (loop (cdr formals)
@@ -432,6 +448,13 @@
          :signature ((resolve-model model locals) (.signature o))
          :recursive (and ((recurses? model) name) 'recursive)
          :statement ((resolve-model model locals) statement))))
+
+    (($ <function> name ($ <signature> type) recursive? statement)
+     (make <function>
+       :name name
+       :signature ((resolve-model model locals) (.signature o))
+       :recursive (and ((recurses? model) name) 'recursive)
+       :statement ((resolve-model model locals) statement)))
 
     (('compound statements ...)
      (make <compound>
@@ -472,13 +495,14 @@
        :events ((resolve-model model '()) events)
        :behaviour ((resolve-model model '()) behaviour)))
 
+    (($ <component> name ports (? unspecified?))
+     (make <component> :name name :ports ports))
+
     (($ <component> name ports behaviour)
        (make <component>
          :name name
          :ports ports
          :behaviour ((resolve-model model '()) behaviour)))
-
-    (($ <component> name ports) o)    
 
     (($ <behaviour> name types variables functions statement)
      (make <behaviour>
@@ -492,18 +516,14 @@
        ;;:statement (om:map (resolve-model model '()) statement)
      ))
 
-    ;; om:map denx0r?
-    ;; (($ <if> expression then else)
-    ;;  (make <if>
-    ;;    :expression ((resolve-model model locals) expression)
-    ;;    :then ((resolve-model model locals) then)
-    ;;    :else ((resolve-model model locals) else)))
-    ;; (($ <if> expression then)
-    ;;  (make <if>
-    ;;    :expression ((resolve-model model locals) expression)
-    ;;    :then ((resolve-model model locals) then)))
-    ;; (($ <arguments> arguments)
-    ;;  (make <arguments> :elements (map (resolve-model model locals) arguments)))
+    (($ <if> expression then else)
+     (make <if>
+       :expression ((resolve-model model locals) expression)
+       :then ((resolve-model model locals) then)
+       :else (and (not (eq? else *unspecified*))
+                  else ((resolve-model model locals) else))))
+    (('arguments arguments ...)
+     (make <arguments> :elements (map (resolve-model model locals) arguments)))
     (('events events ...)
      (cons 'events (map (resolve-model model '()) events)))
     (('triggers triggers ...) o)

@@ -6,6 +6,9 @@
   :use-module (test-suite lib)
   :use-module (test-suite misc)
 
+  :use-module (ice-9 optargs)
+  :use-module (ice-9 match)  
+
   :use-module (gaiag misc)
   :use-module (gaiag resolve)
 
@@ -15,26 +18,27 @@
 
 (define resolve-model (@@ (gaiag resolve) resolve-model))
 
-(define-method (resolve-error (o <list>) (identifier <symbol>) (message <string>))
+(define (resolve-error o identifier message)
   (let ((e ((@@ (gaiag resolve) resolve-error) (ast->om `(root ,o)) identifier message)))
     (make <error> :ast (car (.elements (.ast e))) :message (.message e))))
 
-(define-method (undefined-error (o <list>) (identifier <symbol>))
+(define (undefined-error o identifier)
   ((@@ (gaiag resolve) undefined-error) (ast->om o) identifier))
 
-(define-method (type-mismatch (o <list>) (expected <symbol>) (actual <symbol>))
+(define (type-mismatch o expected actual)
   ((@@ (gaiag resolve) type-mismatch) (ast->om o) expected actual))
 
-(define-method (ast:resolve-model o)
-  (let* ((m (ast->om o)))
-    ((resolve-model m '()) m)))
+(define* (ast:resolve-model* m :optional (o #f))
+  (match o
+    (#f
+     (let* ((m (ast->om m)))
+       ((resolve-model m '()) m)))
+    (_
+      (let ((m (ast->om m)))
+        ((resolve-model m '()) (ast->om o))))))
 
-(define-method (ast:resolve-model (model <list>) o)
-  (let ((m (ast->om model)))
-    ((resolve-model m '()) (ast->om o))))
-
-(define-method (ast:resolve-root-model (root <list>) (model <list>) o)
-  (let* ((root (ast:resolve root))
+(define (ast:resolve-root-model root model o)
+  (let* ((root ((compose ast:resolve ast->om) root))
          (m (ast->om model)))
     ((resolve-model m '()) (ast->om o))))
 
@@ -91,27 +95,27 @@
         (function fun (signature (type void) (formals (formal a (type bool)))) #f
                   (compound (assign a (expression true))))
         (function rfun (signature (type void) (formals)) #f
-                  (compound (call rgun (expression #t))))
+                  (compound (call rgun (arguments (expression #t)))))
         (function rgun (signature (type void) (formals (formal a (type bool)))) #f
-                  (compound (call rgun (expression #t))))
+                  (compound (call rgun (arguments (expression #t)))))
         (function fa (signature (type void) (formals (formal a (type bool)))) #f
-                  (compound (call fb (expression #t))))
+                  (compound (call fb (arguments (expression #t)))))
         (function fb (signature (type void) (formals (formal a (type bool)))) #f
-                  (compound (call fc (expression #t))))
+                  (compound (call fc (arguments (expression #t)))))
         (function fc (signature (type void) (formals (formal a (type bool)))) #f
                   (compound (assign b (expression true))))
         (function rfa (signature (type void) (formals (formal a (type bool)))) #f
-                  (compound (call rfb (expression #t))))
+                  (compound (call rfb (arguments (expression #t)))))
         (function rfb (signature (type void) (formals (formal a (type bool)))) #f
-                  (compound (call rfc (expression #t))))
+                  (compound (call rfc (arguments (expression #t)))))
         (function rfc (signature (type void) (formals (formal a (type bool)))) #f
-                  (compound (call rfa (expression #t))))
+                  (compound (call rfa (arguments (expression #t)))))
         (function rbfa (signature (type void) (formals (formal a (type bool)))) #f
-                  (assign b (call rbfb (expression #t))))
+                  (assign b (call rbfb (arguments (expression #t)))))
         (function rbfb (signature (type void) (formals (formal a (type bool)))) #f
-                  (compound (assign b (call rbfc (expression #t)))))
+                  (compound (assign b (call rbfc (arguments (expression #t))))))
         (function rbfc (signature (type void) (formals (formal a (type bool)))) #f
-                  (compound (call fa (expression #t)) (call fb (expression #t)) (compound (call fc (expression #t)) (assign b (call rbfa (expression #t))))))
+                  (compound (call fa (arguments (expression #t))) (call fb (arguments (expression #t))) (compound (call fc (arguments (expression #t))) (assign b (call rbfa (arguments (expression #t)))))))
         (function efun
                   (signature (type state)) #f (compound (return (var m)))))
        (compound
@@ -130,7 +134,7 @@
 
 (pass-if "ast:resolve-function-call"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (car resolve-ast)
            '(on (triggers (trigger #f e))
                 (compound
@@ -141,14 +145,14 @@
 
 (pass-if "ast:resolve-variable-valued-function-call"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (car resolve-ast)
           '(root (variable e (type e) (expression (var efun)))))
           '(root (variable e (type e) (call efun)))))
 
 (pass-if "ast:resolve-assign-valued-function-call"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (car resolve-ast)
            '(assign m (expression (var efun))))
           '(assign m (call efun))))
@@ -160,10 +164,10 @@
            (cadr resolve-ast)
            '(on (triggers (trigger o foo))
                 (compound
-                 (variable e (type ivar (type e)) (expression (value o foo))))))
+                 (variable e (type e ivar) (expression (value o foo))))))
           '(on (triggers (trigger o foo))
                (compound
-                (variable e (type ivar (type e)) (action (trigger o foo)))))))
+                (variable e (type e ivar) (action (trigger o foo)))))))
 
 (pass-if "ast:resolve-variable-valued-action-arguments"
          (om-pretty-noisy-equal?
@@ -175,7 +179,7 @@
 
 (pass-if "ast:resolve-assign-valued-action"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (cadr resolve-ast)
            '(on (triggers (trigger o foo))
                 (compound
@@ -194,7 +198,7 @@
 
 (pass-if "ast:resolve-variable-valued-action-interface"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (car resolve-ast)
            '(on (triggers (trigger #f foo))
                 (compound
@@ -205,7 +209,7 @@
 
 (pass-if "ast:resolve-assign-valued-action-interface"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (car resolve-ast)
            '(on (triggers (trigger #f foo))
                 (compound
@@ -216,7 +220,7 @@
 
 (pass-if "ast:resolve-variable-valued-action-call-interface"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (car resolve-ast)
            '(on (triggers (trigger #f foo))
                 (compound
@@ -227,7 +231,7 @@
 
 (pass-if "ast:resolve-assign-valued-action-call-interface"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (car resolve-ast)
            '(on (triggers (trigger #f foo))
                 (compound
@@ -238,7 +242,7 @@
 
 (pass-if "ast:resolve-reply-value-interface"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (car resolve-ast)
            '(on (triggers (trigger #f foo))
                 (compound
@@ -249,7 +253,7 @@
 
 (pass-if "ast:resolve-guarded-reply-value-interface"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (car resolve-ast)
            '(guard (expression false)
                    (on (triggers (trigger #f foo))
@@ -270,7 +274,7 @@
 
 (pass-if "ast:resolve-reply-value-component"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (cadr resolve-ast)
            '(on (triggers (trigger o foo))
                 (compound
@@ -282,14 +286,14 @@
 
 (pass-if "ast:resolve-mixed-type-component"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (cadr resolve-ast)
            '(root (variable v (type mixed ivar) (literal ivar mixed v))))
           '(root (variable v (type mixed ivar) (literal ivar mixed v)))))
 
 (pass-if "ast:resolve-value-enum-value"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (cadr resolve-ast)
            '(variables
              (variable m (type state) (expression (value state one)))))
@@ -298,14 +302,14 @@
 
 (pass-if "ast:resolve-value-field-interface"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (car resolve-ast)
            '(guard (expression (value m one)) (illegal)))
           '(guard (expression (field m one)) (illegal))))
 
 (pass-if "ast:resolve-shadow-event"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (car resolve-ast)
            '(compound
              (variable foo (type bool) (expression true))
@@ -327,14 +331,14 @@
 
 (pass-if "ast:resolve-member"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (cadr resolve-ast)
            '(assign m (expression (var m))))
           '(assign m (expression (var m)))))
 
 (pass-if "ast:resolve-local"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (cadr resolve-ast)
            '(compound
              (variable e (type ivar (type e)) (expression (value o foo)))
@@ -345,7 +349,7 @@
 
 (pass-if "ast:resolve-local-if"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (car resolve-ast)
            '(compound
              (variable c (type bool) (expression true))
@@ -360,14 +364,14 @@
 
 (pass-if "ast:resolve-true"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (cadr resolve-ast)
            '(assign b (expression true)))
           '(assign b (expression true))))
 
 (pass-if "ast:resolve-formal"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (cadr resolve-ast)
            '(function fun (signature (type void) (formals (formal a (type bool)))) #f
                             (compound (assign b (expression (var a))))))
@@ -377,7 +381,7 @@
 
 (pass-if "ast:resolve-return-formal"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (cadr resolve-ast)
            '(function fun (signature (type bool) (formals (formal a (type bool)))) #f
                       (compound (return (expression (var a))))))
@@ -391,7 +395,7 @@
 
 (pass-if "ast:resolve-extern"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (car resolve-ast)
            '(compound
              (variable e (type xint) (expression (data 0)))))
@@ -400,14 +404,14 @@
 
 (pass-if "ast:resolve-extern-unspecified"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (car resolve-ast)
            '(root (variable e (type xint) (expression))))
-          '(root (variable e (type xint #f) (expression *unspecified*)))))
+          `(root (variable e (type xint #f) (expression ,*unspecified*)))))
 
 (pass-if "ast:resolve-extern-component"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (cadr resolve-ast)
            '(compound
              (variable i (type xint ivar) (expression (data 0)))))
@@ -416,7 +420,7 @@
 
 (pass-if "ast:resolve-extern-on"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (cadr resolve-ast)
            '(on (triggers
                  (trigger i ei (arguments (expression (var i)))))
@@ -429,169 +433,169 @@
 
 (pass-if "ast:resolve-recursive"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (cadr resolve-ast)
            '(function rgun (signature (type void) (formals)) #f
-                      (compound (call rgun (expression #t)))))
+                      (compound (call rgun (arguments (expression #t))))))
           '(function rgun (signature (type void) (formals))
                      recursive
-                      (compound (call rgun (expression #t))))))
+                      (compound (call rgun (arguments (expression #t)))))))
 
 (pass-if "ast:resolve-recursive-indirect"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (cadr resolve-ast)
            '(function rfun (signature (type void) (formals)) #f
-                      (compound (call rgun (expression #t)))))
+                      (compound (call rgun (arguments (expression #t))))))
           '(function rfun (signature (type void) (formals))
                      recursive
-                     (compound (call rgun (expression #t))))))
+                     (compound (call rgun (arguments (expression #t)))))))
 
 (pass-if "ast:resolve-non-recursive-deep"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (cadr resolve-ast)
            '(function fa (signature (type void) (formals)) #f
-                      (compound (call fb (expression #t)))))
+                      (compound (call fb (arguments (expression #t))))))
           '(function fa (signature (type void) (formals))
                      #f
-                     (compound (call fb (expression #t))))))
+                     (compound (call fb (arguments (expression #t)))))))
 
 (pass-if "ast:resolve-recursive-3"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (cadr resolve-ast)
            '(function rfa (signature (type void) (formals)) #f
-                      (compound (call rfb (expression #t)))))
+                      (compound (call rfb (arguments (expression #t))))))
           '(function rfa (signature (type void) (formals))
                      recursive
-                     (compound (call rfb (expression #t))))))
+                     (compound (call rfb (arguments (expression #t)))))))
 
 (pass-if "ast:resolve-recursive-3-assign"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (cadr resolve-ast)
            '(function rbfa (signature (type void) (formals)) #f
-                      (assign b (compound (call rbfb (expression #t))))))
+                      (assign b (compound (call rbfb (arguments (expression #t)))))))
           '(function rbfa (signature (type void) (formals))
                      recursive
-                      (assign b (compound (call rbfb (expression #t)))))))
+                      (assign b (compound (call rbfb (arguments (expression #t))))))))
 
 (pass-if "ast:resolve-undefined-identifier"
   (om-pretty-noisy-equal?
-   (ast:resolve-model
+   (ast:resolve-model*
     (car resolve-ast)
     '(assign q true))
    (undefined-error '(assign q true) 'q)))
 
 (pass-if "ast:resolve-undefined-action"
   (om-pretty-noisy-equal?
-   (ast:resolve-model
+   (ast:resolve-model*
     (car resolve-ast)
     '(action (trigger #f q)))
    (resolve-error '(action (trigger #f q)) 'q "undefined function or event: ~a")))
 
 (pass-if "ast:resolve-undefined-call"
   (om-pretty-noisy-equal?
-   (ast:resolve-model
+   (ast:resolve-model*
     (car resolve-ast)
     '(call q))
    (resolve-error '(call q) 'q "undefined function or event: ~a")))
 
 (pass-if "ast:resolve-undefined-enum-field"
   (om-pretty-noisy-equal?
-   (ast:resolve-model
+   (ast:resolve-model*
     (car resolve-ast)
     '(value state three))
    (resolve-error '(value state three) 'three "undefined enum field: ~a")))
 
 (pass-if "ast:resolve-undefined-enum-var-field"
   (om-pretty-noisy-equal?
-   (ast:resolve-model
+   (ast:resolve-model*
     (car resolve-ast)
     '(value m three))
    (resolve-error '(value m three) 'three "undefined enum field: ~a")))
 
 (pass-if "ast:resolve-undefined-type"
   (om-pretty-noisy-equal?
-   (ast:resolve-model
+   (ast:resolve-model*
     (car resolve-ast)
     '(root (variable c (type boolean) (expression true))))
    `(root ,(resolve-error '(type boolean #f) 'boolean "undefined type: ~a"))))
 
 (pass-if "ast:resolve-undefined-enum-type"
   (om-pretty-noisy-equal?
-   (ast:resolve-model
+   (ast:resolve-model*
     (car resolve-ast)
     '(root (variable c (type status) (expression true))))
    `(root ,(resolve-error '(type status #f) 'status "undefined type: ~a"))))
 
 (pass-if "ast:resolve-undefined-enum-interface"
   (om-pretty-noisy-equal?
-   (ast:resolve-model
+   (ast:resolve-model*
     (cadr resolve-ast)
     '(root (variable c (type status Q) (expression true))))
    `(root ,(resolve-error '(type status Q) 'Q.status "undefined type: ~a"))))
 
 (pass-if "ast:resolve-undefined-int-type"
   (om-pretty-noisy-equal?
-   (ast:resolve-model
+   (ast:resolve-model*
     (car resolve-ast)
     '(root (variable c (type made) (expression 0))))
    `(root ,(resolve-error '(type made #f) 'made "undefined type: ~a"))))
 
 (pass-if "ast:resolve-undefined-int-interface"
   (om-pretty-noisy-equal?
-   (ast:resolve-model
+   (ast:resolve-model*
     (cadr resolve-ast)
     '(root (variable c (type mode Q) (expression 0))))
    `(root ,(resolve-error '(type mode Q) 'Q.mode "undefined type: ~a"))))
 
 (pass-if "ast:resolve-init-type-int"
   (om-pretty-noisy-equal?
-   (ast:resolve-model
+   (ast:resolve-model*
     (car resolve-ast)
     '(root (variable c (type mode) (expression 0))))
    '(root (variable c (type mode) (expression 0)))))
 
 (pass-if "ast:resolve-init-type-mismatch"
   (om-pretty-noisy-equal?
-   (ast:resolve-model
+   (ast:resolve-model*
     (car resolve-ast)
     '(root (variable b (type bool) (expression 0))))
    `(root ,(type-mismatch '(expression 0) 'bool 'int))))
 
 (pass-if "ast:resolve-init-enum-mismatch"
   (om-pretty-noisy-equal?
-   (ast:resolve-model
+   (ast:resolve-model*
     (car resolve-ast)
     '(root (variable b (type bool) (value state one))))
    `(root ,(type-mismatch '(value state one) 'bool 'state))))
 
 (pass-if "ast:resolve-init-enum-mismatch"
   (om-pretty-noisy-equal?
-   (ast:resolve-model
+   (ast:resolve-model*
     (cadr resolve-ast)
     '(root (variable b (type bool) (literal ivar e v))))
    `(root ,(type-mismatch '(literal ivar e v) 'bool 'ivar.e))))
 
 (pass-if "ast:resolve-extern-mismatch"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (car resolve-ast)
            '(root (variable e (type xint) (expression 0))))
           `(root ,(type-mismatch '(expression 0) 'xint 'int))))
 
 (pass-if "ast:resolve-bool-unspecified-mismatch"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (car resolve-ast)
            '(root (variable e (type bool) (expression))))
           `(root ,(resolve-error '(variable e (type bool) (expression)) 'e "undefined variable value: ~a"))))
 
 (pass-if "ast:resolve-argument-count-mismatch"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            (cadr resolve-ast)
            '(call rfun (arguments (expression true))))
           (resolve-error '(call rfun (arguments (expression true)))
@@ -600,7 +604,7 @@
 
 (pass-if "ast:resolve-variable-range-error"
          (om-pretty-noisy-equal?
-          (ast:resolve-model
+          (ast:resolve-model*
            '(interface
              I
              (types (int I02 #f (range 0 2)))

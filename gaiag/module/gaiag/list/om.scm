@@ -26,30 +26,34 @@
 
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 match)
-  :use-module (ice-9 optargs)  
+  :use-module (ice-9 optargs)
   :use-module (ice-9 pretty-print)
 
-  :use-module (gaiag misc)  
+  :use-module (gaiag misc)
   :export (
            symbol->class
 
            .arguments
            .ast
-           .behaviour           
+           .behaviour
            .bindings
-           .direction           
+           .component
+           .direction
            .elements
            .else
            .event
            .events
-           .expression           
+           .expression
            .field
-           .fields    
+           .fields
            .from
            .functions
            .identifier
-           .instances           
-           .left           
+           .injected
+           .instance
+           .instances
+           .last?
+           .left
            .message
            .name
            .formals
@@ -57,25 +61,25 @@
            .ports
            .range
            .recursive
-           .right           
+           .right
            .scope
            .signature
            .statement
            .then
            .to
            .trigger
-           .triggers           
+           .triggers
            .type
            .types
            .value
            .variables
-    
+
            <action>
-           <arguments>           
+           <arguments>
            <assign>
            <ast>
            <ast-list>
-           <behaviour>           
+           <behaviour>
            <bind>
            <binding>
            <bindings>
@@ -89,14 +93,14 @@
            <expression>
            <extern>
            <field>
-           <fields>           
+           <fields>
            <function>
            <guard>
            <if>
            <illegal>
            <import>
            <instance>
-           <instances>           
+           <instances>
            <int>
            <integer>
            <interface>
@@ -111,44 +115,44 @@
            <instances>
            <model>
            <on>
-           <otherwise>           
+           <otherwise>
            <formal>
            <formal>
-           <formals>           
-           <port>           
+           <formals>
+           <port>
            <ports>
            <range>
            <reply>
-           <return>           
+           <return>
            <root>
            <scoped>
-           <signature>           
+           <signature>
            <statement>
            <trigger>
            <triggers>
            <type>
-           <*type*>           
+           <*type*>
            <types>
            <var>
-           <value>           
+           <value>
            <variable>
-           <variables>           
+           <variables>
 
            make
            make-<action>
            make-<assign>
-           make-<arguments>           
+           make-<arguments>
            make-<behaviour>
            make-<bind>
            make-<binding>
-           make-<bindings>           
+           make-<bindings>
            make-<call>
            make-<component>
-           make-<data>           
+           make-<data>
            make-<enum>
-           make-<error>           
+           make-<error>
            make-<event>
-           make-<events>           
+           make-<events>
            make-<extern>
            make-<expression>
            make-<field>
@@ -156,9 +160,9 @@
            make-<function>
            make-<guard>
            make-<instance>
-           make-<if>           
+           make-<if>
            make-<illegal>
-           make-<instances>           
+           make-<instances>
            make-<int>
            make-<interface>
            make-<named>
@@ -167,39 +171,39 @@
            make-<compound>
            make-<functions>
            make-<import>
-           make-<instances>           
+           make-<instances>
            make-<instance>
            make-<literal>
            make-<list>
            make-<on>
            make-<otherwise>
            make-<formal>
-           make-<formals>           
+           make-<formals>
            make-<port>
            make-<ports>
            make-<range>
-           make-<reply>           
+           make-<reply>
            make-<return>
            make-<root>
            make-<scoped>
-           make-<signature>           
+           make-<signature>
            make-<type>
-           make-<types>           
+           make-<types>
            make-<trigger>
            make-<triggers>
            make-<var>
-           make-<value>           
+           make-<value>
            make-<variable>
-           make-<variables>           
+           make-<variables>
 
            is?
            is-a?
            ;; ast?
-           ;; ast-list?           
+           ;; ast-list?
            ;; expression?
            ;; model?
            ;; statement?
-           
+
            ;; behaviour?
            ;; bindings?
            ;; component?
@@ -208,7 +212,7 @@
            ;; expression?
            ;; extern?
            ;; field?
-           ;; function?           
+           ;; function?
            ;; functions?
            ;; import?
            ;; instances?
@@ -217,7 +221,7 @@
            ;; literal?
            ;; named?
            ;; otherwise?
-           ;; om:formal?           
+           ;; om:formal?
            ;; formals?
            ;; om:port?
            ;; ports?
@@ -229,8 +233,8 @@
            ;; trigger?
            ;; triggers?
            ;; type?
-           ;; *type*?           
-           ;; types?           
+           ;; *type*?
+           ;; types?
            ;; var?
            ;; variable?
            ;; variables?
@@ -263,7 +267,7 @@
     illegal
     import
     instance
-    int    
+    int
     interface
     literal
     model
@@ -318,7 +322,7 @@
     if
     illegal
     instance
-    int    
+    int
     on
     otherwise
     reply
@@ -339,7 +343,7 @@
   (match type
 
     ;; ('ast (ast? ast))
-    ;; ('ast-list (ast-list? ast))    
+    ;; ('ast-list (ast-list? ast))
     ;; ('model (model? ast))
     ;; ('statement (statement? ast))
     ;; ('*type* (*type*? ast))
@@ -349,7 +353,7 @@
     ('model (or (is-a? ast <interface>) (is-a? ast <component>) (is-a? ast <system>)))
     ('statement (and (pair? ast) (member (car ast) ast-statements) ast))
     ('*type* (or (is-a? ast <enum>) (is-a? ast <extern>) (is-a? ast <int>) (is-a? ast <type>)))
-    
+
     ('expression (or (test type) (test 'otherwise)))
     (_ (test type))))
 
@@ -440,7 +444,7 @@
    args #f
    ((name #f)
     (ports (make <ports>))
-    (behaviour (make <behaviour>)))
+    (behaviour #f))
    (cons <component> (list (make-<named> :name name) ports behaviour))))
 
 (define (make-<system> . args)
@@ -509,10 +513,18 @@
     (value #f))
    (cons <extern> (list (make <named> :name name) (make <scoped> :scope scope) value))))
 
+(define (make-<int> . args)
+  (let-keywords
+   args #f
+   ((name #f)
+    (scope #f)
+    (range (make <range>)))
+   (cons <int> (list (make <named> :name name) (make <scoped> :scope scope) range))))
+
 (define (make-<expression> . args)
   (let-keywords
    args #f
-   ((value #f))
+   ((value *unspecified*))
    (cons <expression> (list value))))
 
 (define (make-<extern> . args)
@@ -555,9 +567,7 @@
    args #f
    ((from 0)
     (to 0))
-   (cons <range> ;;(list `(from ,from) `(to ,to))
-         (list from to)
-         )))
+   (cons <range> (list from to))))
 
 (define (make-<signature> . args)
   (let-keywords
@@ -570,7 +580,7 @@
   (let-keywords
    args #f
    ((trigger #f))
-   (cons <action> trigger)))
+   (cons <action> (list trigger))))
 
 (define (make-<assign> . args)
   (let-keywords
@@ -583,8 +593,9 @@
   (let-keywords
    args #f
    ((identifier #f)
-    (arguments (make <arguments>)))
-   (cons <call> (list identifier arguments))))
+    (arguments (make <arguments>))
+    (last? #f))
+   (cons <call> (list identifier arguments last?))))
 
 (define (make-<guard> . args)
   (let-keywords
@@ -615,7 +626,7 @@
   (let-keywords
    args #f
    ((expression #f))
-   (cons <return> (list expression))))
+   (cons <reply> (list expression))))
 
 (define (make-<return> . args)
   (let-keywords
@@ -649,13 +660,13 @@
    args #f
    ((name #f)
     (type #f)
-    (expression (make <expression>)))   
+    (expression (make <expression>)))
    (cons <variable> (list (make <named> :name name) type expression))))
 
 (define (make-<var> . args)
   (let-keywords
    args #f
-   ((name #f))   
+   ((name #f))
    (cons <var> (list (make <named> :name name)))))
 
 (define (make-<value> . args)
@@ -664,12 +675,6 @@
    ((type #f)
     (field #f))
    (cons <value> (list type field))))
-
-(define (make-<expression> . args)
-  (let-keywords
-   args #f
-   ((value #f))
-   (cons <expression> (list value))))
 
 (define (make-<otherwise> . args)
   (let-keywords
@@ -708,10 +713,17 @@
 
 (define (.arguments ast)
   (match ast
-    (('call name) '())
+    (('call name) '(arguments))
     (('call name arguments) arguments)
+    (('call name arguments last?) arguments)
     (('trigger port event) '(arguments))
     (('trigger port event arguments) arguments)))
+
+(define (.last? ast)
+  (match ast
+    (('call name) #f)
+    (('call name arguments) #f)
+    (('call name arguments last?) last?)))
 
 (define (.instances ast)
   (match ast
@@ -729,15 +741,25 @@
 
 (define (.event ast)
   (match ast
-    (('trigger port event) event)))
+    (('trigger port event) event)
+    (('trigger port event arguments) event)))
 
 (define (.port ast)
   (match ast
-    (('trigger port event) port)))
+    (('binding instance port) port)
+    (('trigger port event) port)
+    (('trigger port event arguments) port)))
+
+(define (.instance ast)
+  (match ast
+    (('binding instance port) instance)))
+
+(define (unspecified? x) (eq? x *unspecified*))
 
 (define (.formals ast)
   (match ast
     (('signature type) '(formals))
+    ;;(('signature type (? unspecified?)) '(formals))  ;; Hmm?
     (('signature type formals) formals)))
 
 (define (.events ast)
@@ -751,7 +773,7 @@
 (define (.name ast)
   (match ast
     (_ (cadr ast))
-    
+
     (('enum name scope fields) name)
     (('int name scope range) name)
     (('extern name scope value) name)))
@@ -760,7 +782,7 @@
   (match ast
     (('literal scope type field) scope)
     (('type name) #f)
-    (_ (caddr ast))    
+    (_ (caddr ast))
 
     (('enum name scope fields) scope)
     (('extern name scope value) scope)
@@ -768,7 +790,9 @@
     (('type name scope) scope)))
 
 (define (.elements ast)
-  (cdr ast))
+  (if (pair? ast)
+      (cdr ast)
+      '()))
 
 (define (.recursive ast)
   (match ast
@@ -789,11 +813,13 @@
   (match ast
     (('bind left right) right)))
 
-
 (define (.behaviour ast)
   (match ast
     (('component name ports) #f)
-    (('component name ports behaviour) behaviour)    
+    ;;(('component name ports (? unspecified?)) #f)    
+    (('component name ports behaviour) behaviour)
+    ;;(('interface name types events (? unspecified?)) #f)
+    (('interface name types events) #f)
     (('interface name types events behaviour) behaviour)))
 
 (define (.trigger ast)
@@ -809,7 +835,8 @@
   (match ast
     (('assign identifier expression) identifier)
     (('call identifier) identifier)
-    (('call identifier arguments) identifier)    
+    (('call identifier arguments) identifier)
+    (('call identifier arguments last?) identifier)
     (('field identifier field) identifier)))
 
 (define (.from ast)
@@ -833,7 +860,7 @@
     (('assign identifier expression) expression)
     (('guard expression statement) expression)
     (('if expression then) expression)
-    (('if expression then else) expression)    
+    (('if expression then else) expression)
     (('reply) #f)
     (('reply expression) expression)
     (('return) #f)
@@ -859,14 +886,17 @@
 
 (define (.functions ast)
   (match ast
+    (#f '())
     (('behaviour name types variables functions statement) functions)))
 
 (define (.variables ast)
   (match ast
+    (#f '())
     (('behaviour name types variables functions statement) variables)))
 
 (define (.types ast)
   (match ast
+    (#f '())
     (('behaviour name types variables functions statement) types)
     (('interface name types events behaviour) types)
     (('root models ...) (filter (is? <*type*>) models))))
@@ -879,22 +909,34 @@
     (('port name type direction) direction)
     (('port name type direction injected) direction)))
 
+(define (.injected ast)
+  (match ast
+    (('port name type direction) #f)
+    (('port name type direction injected) injected)))
+
 (define (.type ast)
   (match ast
     (('literal scope type field) type)
     (('port name type direction) type)
     (('port name type direction injected) type)
     (('formal name type) #f)
-    (('formal name direction type) direction)    
+    (('formal name direction type) direction)
     (('signature type) type)
-    (('signature type formals) type)    
-    (('value type field) type)    
-    (('variable name type expression) type)))
+    (('signature type formals) type)
+    (('value type field) type)
+    (('variable name type expression) type)
+    
+    (('csp-variable context name type expression continuation) type) ;; URGR
+    ))
 
 (define (.injected ast)
   (match ast
     (('port name type direction) #f)
     (('port name type direction injected) injected)))
+
+(define (.component ast)
+  (match ast
+    (('instance name component) component)))
 
 (define (.field ast)
   (match ast
@@ -908,7 +950,7 @@
 
 (define (.ast o)
   (match o
-    (('error o message) o)))
+    (('error ast message) ast)))
 
 (define (foo)
   (pretty-print

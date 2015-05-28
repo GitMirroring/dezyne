@@ -38,15 +38,11 @@
   (match o
     (('root t ...)
      (indent-string (apply string-append (map ast->dezyne (.elements o)))))
-    (
-;;     (h t ...) ;;-goeps
-     (and (negate (is? <ast>)) (h t ...))
-     (let ((om ((om:register pretty:om) o #t)))
-       (ast->dezyne om)))
+    (('compound statements ...) (indent-string (->string o)))
     ((? (is? <ast>)) (indent-string (->string o)))
+    ((h t ...) (apply string-append (map ast->dezyne o)))
     (_ "")))
 
-(define ast-> ast->dezyne)
 (define ast->dzn ast->dezyne)
 (define ast->pretty ast->dezyne)
 
@@ -84,7 +80,7 @@
     ((? dezyne-template?) (apply dezyne-template->string
                                  (cons (ast-name o) (om:children o))))
     
-    ((? join?) (apply join-all (om:children o)))
+    ((? join?) (apply join-all (cdr o)))
     ((? symbol?) (symbol->string o))
     ((? string?) o)
     ((? integer?) (number->string o))
@@ -183,7 +179,7 @@
                             (bindings . ,->string)))
     (interface . ((name . ,identity)
                   (types . ,->string)
-                  (ports . ,->string)
+                  (events . ,->string)
                   (behaviour . ,(lambda (x) (or (and=> x ->string) "")))))
     (port . ((name . ,identity)
              (type . ,->string)
@@ -255,4 +251,11 @@
 
 (define (join-all . rest) (string-join (map ->string rest) ""))
 (define join '(bindings events functions imports instances ports types variables))
-(define (join? x) (and (is-a? x <ast>) (member (ast-name x) join)))
+(define (join? x) (and (pair? x) (member (car x) join)))
+
+(define (ast-> ast)
+  ((compose
+    ast->dzn
+    ast:resolve
+    ast->om
+    ) ast))

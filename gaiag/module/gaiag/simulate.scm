@@ -61,8 +61,8 @@
                                                  (is-a? x <component>)))
                                  (.elements om)))
                  (models (null-is-#f (filter .behaviour models)))
-                 (components (filter (is? <component>) models)))
-                (simulate (car (if (pair? components) components models))))
+                 (c-i (append (filter (is? <component>) models) models)))
+                (simulate (car c-i)))
       ""))
 
 (define (simulate:import name)
@@ -265,13 +265,18 @@
     (($ <assign> identifier ($ <action>)) #t)
     (_ #f)))
 
+(define ((extern? model) var) (om:extern model (.type var)))
+
+(define (om:member-names model)
+  (map .name (filter (negate (extern? model)) (om:variables model))))
+
 (define (eval-function-expression model ast state event trace expression)
   ;; FIMXE: c&p from csp.csm:ast-transform
   (let* ((members (om:member-names model))
          (port? (lambda (port) (member port (map .name ((compose .elements .ports) model)))))
          (valued-action? (valued-action? port?)))
     (match expression
-      (($ <call> function ($ <arguments> arguments))
+      (($ <call> function ('arguments arguments ...))
        (receive (new-state new-ast new-action return new-trace)
            (let* ((f (om:function model function))
                   (formals (map .name ((compose .elements .formals .signature) f)))
@@ -296,7 +301,7 @@
                             (length *state-space*)))
   (and state
        (match ast
-         (($ <on> ($ <triggers> t) statement)
+         (($ <on> ('triggers t ...) statement)
           (debug "on: t=~a, event=~a --> ~a\n" t event (member event t equal?))
           (if (member event t equal?)
               (process model statement state event (cons ast trace))
@@ -340,11 +345,11 @@
           (if (eval-expression model state expression)
               (process model statement state event (cons ast trace))
               (values state #f #f #f (cons ast trace))))
-         (($ <compound> '()) (values state '() #f #f trace))
+         (('compound) (values state '() #f #f trace))
          (#f (values state '() #f #f trace))
-         (($ <compound> elements)
-          (let ((declarative? (om:declarative? (car elements))))
-            (let loop ((statements elements) (loop-state state) (loop-return #f) (loop-trace (cons ast trace)) (frame 0))
+         (('compound statements ...)
+          (let ((declarative? (om:declarative? (car statements))))
+            (let loop ((statements statements) (loop-state state) (loop-return #f) (loop-trace (cons ast trace)) (frame 0))
               (if (null? statements)
                   (values (drop loop-state frame) statements #f loop-return loop-trace)
                   (let ((statement (car statements)))
@@ -384,7 +389,7 @@
     (($ <trigger> #f event) (->string event))
     (($ <trigger> port event) (->string (list port "." event)))
     (('type name) (->string name))
-    (($ <call> function ($ <arguments> arguments)) (->string (list function "("  (comma-join arguments) ")" )))
+    (($ <call> function ('arguments arguments ...)) (->string (list function "("  (comma-join arguments) ")" )))
     ((h ... t) (apply string-append (map ->string src)))
     ((h . t) (string-join (list (->string h) "=" (->string t))))
     (((h ... t)) (->string (car src)))

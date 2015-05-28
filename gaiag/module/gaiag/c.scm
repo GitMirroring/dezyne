@@ -39,7 +39,7 @@
   :use-module (gaiag misc)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
-  :use-module (gaiag wfc)
+;;  :use-module (gaiag wfc)
 
   :use-module (gaiag ast)
 
@@ -57,7 +57,7 @@
     (($ <component>) (dump-component o))
     (($ <system>) (dump-system o))))
 
-(define (dump-interface)
+(define (dump-interface o)
   (let ((name (.name o)))
     (dump-indented (symbol-append name (code:extension o))
                    (lambda () (c-file (c-name o) (code:module o))))
@@ -68,7 +68,7 @@
               (dump-indented code-name
                              (lambda () (c-file (c-code o) (code:module o)))))))
 
-(define (dump-component)
+(define (dump-component o)
   (let ((name (.name o))
         (interfaces (map code:import (map .type ((compose .elements .ports) o)))))
     (dump-indented (symbol-append name (code:extension (make <interface>)))

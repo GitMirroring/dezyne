@@ -42,8 +42,8 @@
 
 (define (ast->sugar ast)
   (match ast
-    (('provides type name) `(port ,name ,type provides))
-    (('requires type name injected ...) `(port ,name ,type requires ,injected))
+    ;; (('provides type name) `(port ,name ,type provides))
+    ;; (('requires type name injected ...) `(port ,name ,type requires ,injected))
     (('on ('triggers t ...) statement) ast)
     (('on triggers statement) (list 'on (cons 'triggers (map ast->trigger-sugar triggers)) statement))
     (_ ast)))

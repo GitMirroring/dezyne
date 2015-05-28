@@ -24,7 +24,9 @@
 
 (define-module (gaiag list util)
   :use-module (srfi srfi-1)
-  :use-module (ice-9 and-let-star)
+  
+  :use-module (system foreign)
+  :use-module (ice-9 and-let-star)  
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 getopt-long)    
   :use-module (gaiag list match) 
@@ -37,10 +39,10 @@
   :use-module (gaiag gaiag)  
   :use-module (gaiag reader)
   :use-module (gaiag misc)
-  :use-module (gaiag list om)   
+  :use-module (gaiag list om)
+  :use-module (gaiag list ast)  
 
   :export (
-           ast->om
            ast-name
            om->list
            om:children
@@ -80,14 +82,26 @@
            om:<
            om:equal?
 
+           om:parent
+           om:dir-matches?
            om:in?
            om:out?
            om:out-or-inout?
            om:provides?
            om:requires?
            om:ports
-           om:interface           
-
+           om:enums
+           om:events
+           om:externs
+           om:integers
+           om:interface-enums
+           om:interface
+           om:reply-enums
+           om:instance
+           om:model-with-behaviour
+           om:models-with-behaviour           
+           om:typed?
+           om:parse-dezyne
            
            ))
 
@@ -99,16 +113,20 @@
     (_ o)))
 
 
-(define ast->om ast:annotate)
 (define om->list identity)
 (define ((om:type model) o)
   (match o
     ((? symbol?) (find (om:named o) (om:types model)))
     (('type 'bool) o)
-    (('type 'void) o)    
+    (('type 'bool #f) o)    
+    (('type 'void) o)
+    (('type 'void #f) o)    
     (('type name) (find (om:named name) (om:types model)))
-    (('type name scope) (find (om:scoped name scope) (om:types model)))
-    (('variable name type expression) ((om:type model) type))))
+    (('type name scope) (=> failure)
+     (or (find (om:scoped name scope) (om:types model))
+         (find (om:scoped-extern name scope) (om:types model))))
+    (('variable name type expression) ((om:type model) type))
+    (#f #f)))
 
 (define ((om:named name) ast)
   (eq? (.name ast) name))
@@ -119,10 +137,28 @@
            (and (not scope)
                 (eq? (.scope ast) '*global*)))))
 
-(define* (om:port model :optional (name #f))
-  (find
-   (if name (om:named name) (lambda (x) (eq? (.direction x) 'provides)))
-   (.elements (.ports model))))
+(define ((om:scoped-extern name scope) ast)
+  (and (eq? (.name ast) name)
+       (or (is-a? ast <extern>) ;; ignore scope on extern...
+           (eq? (.scope ast) scope)
+           (and (not scope)
+                (eq? (.scope ast) '*global*)))))
+
+(define* (om:port model :optional (o #f))
+  (match o
+    (($ <binding>)
+     (let* ((port (.port o)))
+       (or
+        (and-let* ((name (.instance o))
+                   (instance (om:instance model name))
+                   (type (and=> instance .component))
+                   (component (om:import type)))
+                  (om:port component port))
+        (om:port model port))))
+    (_
+     (find
+      (if o (om:named o) (lambda (x) (eq? (.direction x) 'provides)))
+      (.elements (.ports model))))))
 
 (define (om:event model o)
   (find (om:named o) ((compose .elements .events) model)))
@@ -156,16 +192,22 @@
     (('skip) '())
     ('() ast)))
 
-(define (om:enum model identifier) (is-a? ((om:type model) identifier) <enum>))
+(define (unspecified? x) (eq? x *unspecified*))
+(define (om:enum model identifier)
+  (is-a? ((om:type model) identifier) <enum>))
 (define (om:extern model identifier) (is-a? ((om:type model) identifier) <extern>))
 (define (om:integer model identifier) (is-a? ((om:type model) identifier) <int>))
 (define* (om:types :optional (model #f))
   (append
    (match model
      (#f '())
+     ((? unspecified?) '())
+     (('behaviour b types _ ...) (.elements types))
      (('interface name types events ('behaviour b btypes _ ...)) (append (.elements btypes) (.elements types)))
      (('component name ports ('behaviour b btypes _ ...))
       (append (.elements btypes) (apply append (map interface-types (.elements ports)))))
+     (('component name ports) (apply append (map interface-types (.elements ports))))
+     (('component name ports #f) (apply append (map interface-types (.elements ports))))
      (('root models ...) (filter (is? <*type*>) models))
      (('import file) '()))
    (globals)))
@@ -177,7 +219,7 @@
             (('enum name _ fields) (list 'enum name scope fields))
             (('extern name _ value) (list 'extern name scope value))
             (('int name _ range) (list 'int name scope range))))
-        ((compose public-types ast .type) port))))
+        ((compose public-types om:import .type) port))))
 
 (define (public-types ast)
   (match ast
@@ -185,11 +227,14 @@
 
 (define ((collect predicate) o)
   (match o
-    (('compound t ...)
-     (filter identity (apply append (map (collect predicate) t))))
-    (('guard e s) (filter identity ((collect predicate) s)))
-    (('on t s) (filter identity ((collect predicate) s)))
     ((? (compose null-is-#f predicate)) (list o))
+    (('compound statements ...)
+     (filter identity (apply append (map (collect predicate) statements))))
+    (($ <guard> e s) (filter identity ((collect predicate) s)))
+    (($ <on> t s) (filter identity ((collect predicate) s)))
+    (($ <if> e t f) (append (filter identity ((collect predicate) t))
+                            (filter identity ((collect predicate) f))))
+    ;;;; ((? (compose null-is-#f predicate)) (list o))
     ;; TODO: component, interface, behaviour?
     ;; (('root models ...)
     ;;  (filter identity (apply append (map (collect predicate) models))))
@@ -200,8 +245,8 @@
 
 (define ((om:collect x) o)
   (match x
-    (symbol? ((collect (is? x)) o))
-    (procedure? ((collect x) o))))
+    ((? procedure?) ((collect x) o))
+    (_ ((collect (is? x)) o))))
 
 (define ((om:filter x) o)
   (match x
@@ -236,6 +281,19 @@
      (om:event (om:interface (om:port o (.port trigger))) (.event trigger)))
     (_ #f)))
 
+;; ugh
+
+(define* (om:parse-dezyne string :optional (register (om:register ast->om)))
+  (parse-dezyne string register))
+
+;; JUNK ME
+(define (om:models-with-behaviour om)
+  (filter .behaviour (append ((om:filter <component>) om) ((om:filter <interface>) om))))
+
+(define (om:model-with-behaviour om)
+  (and-let* ((models (null-is-#f (om:models-with-behaviour om))))
+            (car models)))
+
 (define (om:in? o)
   (match o
     (($ <event>)
@@ -260,11 +318,103 @@
 (define (om:requires? o)
   (eq? (.direction o) 'requires))
 
+(define* (om:typed? o :optional (trigger #f))
+  (if trigger
+      (om:typed? (om:event o trigger))
+      (match o
+        (($ <event>)
+         (let ((type ((compose .type .signature) o)))
+           (and (not (eq? (.name type) 'void)) type)))
+        ((? boolean?) #f))))
+
+(define ((om:dir-matches? port) event)
+  (or (and (eq? (.direction port) 'provides)
+           (eq? (.direction event) 'in))
+      (and (eq? (.direction port) 'requires)
+           (eq? (.direction event) 'out))))
+
 ;; ugh
+(define (om:id o) ((compose pointer-address scm->pointer) o))
+(define (om:parent o t)
+  (match o
+    ((? (is? <model>))
+     (om:parent ((compose .statement .behaviour) o) t))
+    (($ <guard>) (or (and (eq? (om:id (.statement o)) (om:id t)) o)
+                     (om:parent (.statement o) t)))
+    (($ <on>) (or (and (eq? (om:id (.statement o)) (om:id t)) o)
+                  (om:parent (.statement o) t)))
+    ((? (is? <ast-list>))
+     (if (member (om:id t) (map om:id (.elements o)))
+         o
+         (let loop ((elements (.elements o)))
+           (if (null? elements)
+               #f
+               (let ((parent (om:parent (car elements) t)))
+                 (if parent parent
+                     (loop (cdr elements))))))))
+    (_ #f)))
+
+(define* (om:enums :optional (model #f))
+(filter (is? <enum>) (om:types model)))
+(define* (om:externs :optional (model #f))
+  (filter (is? <extern>) (om:types model)))
+(define* (om:integers :optional (model #f))
+  (filter (is? <int>) (om:types model)))
+
+(define* (om:events ast)
+  (match ast
+    (($ <interface>) (.elements (.events ast)))
+    (($ <port>) (om:events (om:import (.type ast))))))
+
+(define ((make-interface-enum port) o)
+  (make <enum> :name (.name o) :scope port :fields (.fields o)))
+
+(define (om:interface-enums o)
+  (match o
+    (($ <interface>)
+     ((om:filter <enum>) (.types o)))
+    (($ <port>) (map (make-interface-enum (.type o)) (om:enums o)))
+    (($ <component>)
+     (apply append (map om:interface-enums ((compose .elements .ports) o))))
+    (($ <system>)
+     (apply append (map om:interface-enums ((compose .elements .ports) o))))))
+
+(define (om:reply-enums o)
+  (match o
+    (($ <interface>)
+     (let* ((events (filter om:typed? ((compose .elements .events) o)))
+            (names (delete-duplicates (map (compose .name .type .signature) events))))
+       (map (lambda (n) (om:enum o n)) names)))
+    (_ '())))
+
+(define (om:instance model o) 
+  (match o
+    ((? symbol?)
+     (find (lambda (x) (eq? (.name x) o)) ((compose .elements .instances) model)))
+    (($ <binding>) (or (om:instance model (.instance o))
+                       (om:import (.type (om:port model (.port bind))))))
+    ((? boolean?) #f)))
+
+(define (om:ports o)
+  (match o
+    (($ <interface>) '())
+    (($ <component> name ('ports ports ...)) ports)
+    (($ <system> name ('ports ports ...)) ports)))
+
+(define* (om:typed? o :optional (trigger #f))
+  (if trigger
+      (om:typed? (om:event o trigger))
+      (match o
+        (($ <event>)
+         (let ((type ((compose .type .signature) o)))
+           (and (not (eq? (.name type) 'void)) type)))
+        ((? boolean?) #f))))
+
 (define (om:interface o)
   (match o
     (($ <port>) (om:import (.type o)))
     (($ <interface>) o)
+    ((? (is? <model>)) (om:interface (om:port o)))
     ((h t ...) (find (is? <interface>) o))))
 
 ;; compare
@@ -293,9 +443,6 @@
     ((($ <triggers> ta) . ($ <triggers> tb))
      (om:< (stable-sort ta om:<) (stable-sort tb om:<)))
 
-    ((($ <trigger>) . ($ <trigger>))
-     (om:< (remove-arguments a) (remove-arguments b)))
-
     ((() . ()) #f)
     ((() . (hb tb ...)) #t)
     (((ha ta ...) . ()) #f)
@@ -305,6 +452,8 @@
             (not (om:< (car b) (car a))))
        (om:< (cdr a) (cdr b)))
       (else (om:< (car a) (car b)))))
+    (((ha ta ...) . _) #f)
+    ((_ . (hb tb ...)) #t)
     (((? symbol?) . (? symbol?)) (symbol< a b))
     (((? symbol?) . (? boolean?)) #f)
     (((? boolean?) . (? symbol?)) #t)
@@ -312,6 +461,10 @@
     ((#f . #f) #f)
     ((#f . #t) #t)
     ((#t . #f) #f)
+
+    ((($ <trigger>) . ($ <trigger>))
+     (om:< (remove-arguments a) (remove-arguments b)))
+
     (_ (< a b))))
 
 (define (om:equal? a b)
@@ -354,16 +507,6 @@
 (define (globals)
   (filter (is? <*type*>) (map cdr *ast-alist*)))
 
-;; (define* (register ast :optional (clear? #f))
-;;   (if clear?
-;;       (set! *ast-alist* '()))
-;;   (for-each register-model (filter (is? <model>) ast))
-;;   (for-each register-type (filter (is? <*type*>) ast))
-;;   ast)
-
-;; (define om:register-type register-type)
-;; (define om:register-model register-model)
-
 (define (om:register-model o)
   (if (not (cached-model (.name o)))
       (cache-model (.name o) o))
@@ -375,33 +518,17 @@
   (let ((om (transform ast)))
     (if clear?
         (set! *ast-alist* (filter (lambda (x) (is-a? (cdr x) <*type*>)) *ast-alist*)))
-    (for-each om:register-model (filter (is? <model>) ast))
-    (for-each om:register-type (filter (is? <*type*>) ast))
+    (for-each om:register-model (filter (is? <model>) om))
+    (for-each om:register-type (filter (is? <*type*>) om))
     om))
 
 (define* (read-ast name #:optional (transform ast->om))
   (and-let* ((ast (null-is-#f (read-dzn name (om:register transform))))
-             (models (null-is-#f (find (is? <model>) ast))))
+             (models (null-is-#f (filter (is? <model>) ast))))
             (find (lambda (model) (eq? (.name model) name)) models)))
 
 (define* (om:import name #:optional (transform ast->om))
   (or (cached-model name)
       (and-let* ((ast (read-ast name transform)))
                 (cache-model name ast))))
-
-(define* (import-ast name #:optional (transform identity))
-  "
-procedure: ast:import MODEL-NAME
-
-Read and parse the ASD source file for MODEL-NAME, return its AST.
-
-"
-  (or (assoc-ref *ast-alist* name)
-      (and-let* ((ast (transform (read-ast name))))
-                (cache-model name ast))))
-
-;; procedure: ast:ast MODEL-NAME
-;;
-;; Read and parse the ASD source file for MODEL-NAME, return its AST.
-(define ast import-ast)
 

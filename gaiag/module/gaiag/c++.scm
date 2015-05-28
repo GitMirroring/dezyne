@@ -32,7 +32,7 @@
   :use-module (gaiag misc)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
-  :use-module (gaiag wfc)
+;;  :use-module (gaiag wfc)
 
   :use-module (gaiag ast)
 

@@ -25,6 +25,7 @@
   :use-module (gaiag reader)
   :use-module (gaiag pretty))
 
+(define (ast->pretty* ast) ((compose ast->pretty ast->om) ast))
 (pass-if "pretty-first-dummy-test"
 	 #t)
 
@@ -38,7 +39,7 @@ interface i
 }
 #}))
     (diff-noisy-equal?
-     (ast->pretty
+     (ast->pretty*
       (dezyne->ast dezyne))
      dezyne)))
 
@@ -49,7 +50,7 @@ component c
 }
 #}))
 (diff-noisy-equal?
- (ast->pretty
+ (ast->pretty*
   (dezyne->ast dezyne))
  dezyne)))
 
@@ -64,7 +65,7 @@ interface i
 }
 #}))
 (diff-noisy-equal?
- (ast->pretty
+ (ast->pretty*
    (dezyne->ast dezyne))
  dezyne)))
 
@@ -87,7 +88,7 @@ component c
 }
 #}))
 (diff-noisy-equal?
- (ast->pretty
+ (ast->pretty*
    (dezyne->ast dezyne))
  dezyne)))
 
@@ -104,6 +105,6 @@ interface i
 }
 #}))
 (diff-noisy-equal?
- (ast->pretty
+ (ast->pretty*
    (dezyne->ast dezyne))
  dezyne)))

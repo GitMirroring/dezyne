@@ -40,6 +40,7 @@
   :use-module (gaiag json)
   :use-module (gaiag pretty)
   :use-module (gaiag reader)
+  :use-module (gaiag resolve)  
   :use-module (gaiag simulate)
 
   :export (json-init
@@ -275,7 +276,7 @@
       (($ <variable> name type (and ($ <action>) (get! action))) (list (action)))
       (($ <call> (and (? non-recursive?) (get! function))) (return-actions (function? (function))))
       (($ <function> name signature #f statement) (return-actions statement))
-      (_ (list #f))))
+      (_ '())))
 
   (define (return-actions o)
     (filter identity

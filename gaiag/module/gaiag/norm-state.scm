@@ -87,36 +87,9 @@
   (and (is-a? lhs <trigger>) (is-a? rhs <trigger>)
        (eq? (.port lhs) (.port rhs))))
 
-(define (combine-guards o)
-  (match o
-    (($ <guard>)
-     ((passdown-expression (.expression o)) (.statement o)))
-    ((? (is? <ast>)) (om:map combine-guards o))
-    ((h t ...) (map combine-guards o))
-    (_ o)))
-
-(define ((passdown-expression expression) o)
-  (match o
-    (($ <guard>)
-     ((passdown-expression
-       (make <expression> :value
-             (if (om:equal? (.value expression)
-                            (.value (.expression o)))
-                 (.value expression)
-                 (list 'and
-                       (.value expression)
-                       (.value (.expression o))))))
-      (.statement o)))
-    (('compound statements ...)
-     (let ((statements statements))
-       (make <compound>
-         :elements (map (passdown-expression expression) statements))))
-    (_ (make <guard> :expression expression :statement o))))
-
 (define (passdown-on o)
   (match o
-    (($ <on>)
-     ((passdown-triggers (.triggers o)) (.statement o)))
+    (($ <on>) ((passdown-triggers (.triggers o)) (.statement o)))
     ((? (is? <ast>)) (om:map passdown-on o))
     ((h t ...) (map passdown-on o))
     (_ o)))
@@ -126,7 +99,7 @@
     (('compound statements ...)
      (let ((statements statements))
        (match statements
-         ((($ <guard>) ...)
+         ((($ <guard>) ..1)
           (make <compound>
             :elements (map (passdown-triggers triggers) statements)))
          (_ (make <on> :triggers triggers :statement o)))))

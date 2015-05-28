@@ -65,17 +65,11 @@
 (define (om->csp om)
   (let* ((name (and=> (option-ref (parse-opts (command-line)) 'model #f)
                       string->symbol)))
-    (stderr "om: ~a\n" om)
     (or (and-let* ((models (filter (lambda (x) (or (is-a? x <interface>) (is-a? x <component>))) om))
-                   ((stderr "iface/comp: ~a\n" models))
                    (models (null-is-#f (filter .behaviour models)))
-                   ((stderr "behav: ~a\n" models))
-                   ((stderr "name: ~a\n" name))                   
                    (models (if name (filter (om:named name) models) models))
-                   ((stderr "named: ~a\n" models))
                    (c-i (append (filter (is? <component>) models) models)))
-                  (stderr "MODEL: ~a\n" (car models))
-                  (generate-csp (car models)))
+                  (generate-csp (car c-i)))
         (let* ((models (filter (is? <model>) om))
                (models (comma-join (map .name models)))
                (message (if name
@@ -97,29 +91,17 @@
                (model-generate-csp root o)))
     (($ <component>)
      (and-let* ((interfaces (map csp:import (map .type ((compose .elements .ports) o))))
-
-              (root (make <root> :elements (append interfaces (list o)))))
-             (and-let* ((no-behaviour (null-is-#f (filter (negate .behaviour) interfaces)))
-                        (message (format #f "gaiag: interface without behaviour: ~a\n"
-                                         (comma-join (map .name no-behaviour)))))
-                       (stderr message)
-                       (throw 'csp message))
-             (model-generate-csp root o)))))
-
-;; JUNK ME
-(define (om:models-with-behaviour om)
-  (filter .behaviour (append ((om:filter <component>) om) ((om:filter <interface>) om))))
-
-(define (om:model-with-behaviour om)
-  (and-let* ((models (null-is-#f (om:models-with-behaviour om))))
-            (car models)))
+                
+                (root (make <root> :elements (append interfaces (list o)))))
+               (and-let* ((no-behaviour (null-is-#f (filter (negate .behaviour) interfaces)))
+                          (message (format #f "gaiag: interface without behaviour: ~a\n"
+                                           (comma-join (map .name no-behaviour)))))
+                         (stderr message)
+                         (throw 'csp message))
+               (model-generate-csp root o)))))
 
 (define (model-generate-csp root o)
   (let ((separate-asserts? (option-ref (parse-opts (command-line)) 'assert #f)))
-    (stderr "ROOT: ~a\n" root)
-    (stderr "NORM: ~a\n" ((om:register csp:norm) root #t))
-    (stderr "CSP-NORM: ~a\n" (csp:norm root))    
-    
     (and-let* ((norm ((om:register csp:norm) root #t))
                (name (.name o))
                (model
@@ -142,17 +124,12 @@
 
 (define (csp:norm ast)
   ;;((compose csp-norm-state mangle ast:wfc ast:resolve ast->om ast:interface) ast)
-  (stderr "CSP:NORM: ~a\n" ast)
   ((compose
     ;;;;mangle
     ;;;;ast:wfc
-    (lambda (x) (stderr "AST:NORM: ~a\n" x) x)
     csp-norm-state
-    (lambda (x) (stderr "AST:RES: ~a\n" x) x)
     ast:resolve
-    (lambda (x) (stderr "AST:OM: ~a\n" x) x)
     ast->om
-    (lambda (x) (stderr "AST:INT: ~a\n" x) x)
     ast:interface
     ) ast))
 
@@ -264,8 +241,9 @@
   (define (splitted-ons statement)
     (apply append (map split-valued-void
                        ;;((om:statements-of-type 'on) statement)
-                       (filter (is? <on>) statement))))
-
+                       (if (is-a? statement <on>)
+                           (list statement)
+                           (filter (is? <on>) statement)))))
   (let ((default "STOP"))
     (or (string-null-is-#f
          ((->join "\n[]\n")
@@ -284,14 +262,16 @@
                                    (if (is-a? model <interface>)
                                        ons
                                        (append
-                                        (filter identity (map (statement-on-p/r- (provides? model)) ons))
-                                        (filter identity (map (statement-on-p/r- (requires? model)) ons))))))
+                                        (filter identity (map (statement-on-p/r (provides? model)) ons))
+                                        (filter identity (map (statement-on-p/r (requires? model)) ons))))))
                               ons))))
                      default)
                  ")")))
             ;;((om:statements-of-type 'guard) (om:statement (.behaviour model)))
-            (filter (is? <guard>) ((compose .statement .behaviour) model))
-            )
+            (let ((statement ((compose .statement .behaviour) model)))
+              (if (is-a? statement <guard>)
+                  (list statement)
+                  (filter (is? <guard>) statement))))
            (map (lambda (on) (csp-transform model (ast-transform model on)))
                 (splitted-ons ((compose .statement .behaviour) model))))))
         default)))
@@ -325,8 +305,13 @@
            (rhs (csp-expression->string model rhs locals))
            (op (car src)))
        (list "(" lhs " " op " " rhs ")")))
-    (*unspecified* #f)
-    (_ (throw 'match-errorand (format #f "~a:no match: ~a" (current-source-location) src)))))
+    ((? unspecified?) #f)
+    (($ <formal> name type) name)
+    (() #f)
+    ((? symbol?) src)
+    ((h) (csp-expression->string model h locals))
+    ((h t ...) (map (lambda (x) (csp-expression->string model x locals)) src))
+    (_ (stderr "SKIPPING: ~a\n" src) #f)))
 
 (define* (port-events port :optional (predicate? identity)) ;; FIXME: no test
   (let ((interface (csp:import (.type port))))
@@ -356,38 +341,12 @@
 (define (om:member-values model)
   (map (compose .value .expression) (filter (negate (extern? model)) (om:variables model))))
 
-(define (om:reply-enums o)
-  (match o
-    (($ <interface>)
-     (let* ((events (filter om:typed? ((compose .elements .events) o)))
-            (names (delete-duplicates (map (compose .name .type .signature) events))))
-       (map (lambda (n) (om:enum o n)) names)))
-    (_ '())))
-
-(define* (om:enums :optional (model #f))
-  (filter (is? <enum>) (om:types model)))
-
 ;; ugh
-(define (om:ports o)
-  (match o
-    (($ <interface>) '())
-    (($ <component> name ports) ports)
-    (($ <system> name ports) ports)))
-
 (define (om:component o)
   (match o
     (($ <component>) o)
     ((h t ...) (find (is? <component>) o))
     (_ #f)))
-
-(define* (om:typed? o :optional (trigger #f))
-  (if trigger
-      (om:typed? (om:event o trigger))
-      (match o
-        (($ <event>)
-         (let ((type ((compose .type .signature) o)))
-           (and (not (eq? (.name type) 'void)) type)))
-        ((? boolean?) #f))))
 
 (define (om:modeling? o)
   (match o
@@ -438,10 +397,7 @@
     (($ <component>)
      (apply append (map (compose return-values om:import .type) ((compose .elements .ports) o))))))
 
-(define ((statement-on-p/r- predicate) on)
-  (statement-on-p/r predicate on))
-
-(define (statement-on-p/r predicate o)
+(define ((statement-on-p/r predicate) o)
   (let* ((triggers (.elements (.triggers o)))
          (filtered-triggers (filter predicate triggers))
          (statement (.statement o)))
@@ -683,30 +639,30 @@
                   (string->symbol (format #f "~a~a'" prefix index))
                   i)
               (loop (cdr frame) (1+ index))))
-            (($ <context-vector> identifiers)
+            (('context-vector identifiers ...)
              (cons (make <context-vector> :elements (loop identifiers index))
-                   (loop (cdr frame) (+ index (length identifiers)))))
-            (_ (throw 'match-error (format #f "~a:frame-hide: no match: ~a\n" (current-source-location) i))))))))
+                   (loop (cdr frame) (+ index (length identifiers))))))))))
 
 (define (extend o extension)
   (let ((members (.members o))
         (locals (.locals o)))
     (match extension
       ('() o)
-      ((h) (extend o h))
+      (($ <formal> name type) (extend o name))
       (('formals formals ...) (extend o (map .name formals)))
-      ((identifiers ...)
-       (extend o (make <context-vector> :elements extension)))
-      (($ <context-vector> identifiers)
+      (('context-vector identifiers ...)
        (make <context>
          :members (frame-hide members 'hide_member identifiers)
          :locals (append (frame-hide locals 'hide_local identifiers)
                          (list extension))))
+      ((h) (extend o h))
       ((? symbol?)
        (make <context>
          :members (frame-hide members 'hide_member (list extension))
          :locals (append (frame-hide locals 'hide_local (list extension))
-                         (list extension)))))))
+                         (list extension))))
+      ((identifiers ...)
+       (extend o (make <context-vector> :elements identifiers))))))
 
 (define ((assign- identifier expression) x)
   (match x
@@ -716,9 +672,11 @@
     (_ (if (eq? x identifier) expression x))))
 
 (define (assign o identifier expression)
-  (make <context>
-    :members (map (assign- identifier expression) (.members o))
-    :locals (map (assign- identifier expression) (.locals o))))
+  (if (pair? (.locals o))
+      (make <context>
+        :members (map (assign- identifier expression) (.members o))
+        :locals (map (assign- identifier expression) (.locals o)))
+      (make <context> :members (map (assign- identifier expression) (.members o)))))
 
 (define (element->csp ast o locals)
   (match o
@@ -753,7 +711,6 @@
 
       (('compound statements ...)
        (let loop ((statements statements) (context context))
-         (stderr "AST-T: loop\n")
          (if (null? statements)
              '()
              (let* ((statement (car statements))
@@ -761,11 +718,6 @@
                     (new-context (if (is-a? statement <variable>)
                                      (extend context (.name statement))
                                      context))
-                    (var? (is-a? statement <variable>))
-                    (class (if var? <csp-variable> <semi>))
-                    (name (if var? (.name statement)))
-                    (type (if var? (.type statement)))
-                    (expression (if var? (.expression statement)))
                     (count (length statements))
                     (continuation (if (>1 count)
                                            (loop (cdr statements) new-context)
@@ -774,21 +726,18 @@
                             (is-a? statement <variable>))
                        (and (>1 count)
                             (not (is-a? transformed <illegal>))))
-                   (if var?
-                       (make <csp-variable>
-                         :context context
-                         :name name
-                         :type type
-                         :expression expression
-                         :statement transformed
-                         :continuation continuation)
-                       (make <semi>
-                         :context context
-                         :name name
-                         :type type
-                         :expression expression
-                         :statement transformed
-                         :continuation continuation))
+                   (match statement
+                     (($ <variable> name type expression)
+                      (make <csp-variable>
+                        :context context
+                        :name name
+                        :type type
+                        :expression expression
+                        :continuation continuation))
+                     (_
+                      (make <semi>
+                        :statement transformed
+                        :continuation continuation)))
                    transformed)))))
 
       (($ <assign> identifier ($ <expression> value))
@@ -951,12 +900,12 @@
        (($ <csp-assign> context identifier expression expressions)
         (list "assign_(\\ (" expression ") @ (" expressions "))"))
 
-       (($ <csp-call> context identifier ('arguments) lmodel?)
-        (let ((continuation-p (if lmodel? "PF'" "P'")))
+       (($ <csp-call> context identifier (or ('arguments) (? unspecified?)) last?)
+        (let ((continuation-p (if last? "PF'" "P'")))
          (list "call_(\\ P',V' @ " identifier "(" continuation-p ",V'))")))
 
-       (($ <csp-call> context identifier arguments lmodel?)
-        (let ((continuation-p (if lmodel? "PF'" "P'")))
+       (($ <csp-call> context identifier arguments last?)
+        (let ((continuation-p (if last? "PF'" "P'")))
          (list "call_args_(\\ P',V' @ " identifier "(" continuation-p ",V'),(\\ (" context ") @ (" arguments ")))")))
 
        (($ <function> name ($ <signature> type ('formals)) recursive? statement)
@@ -972,11 +921,10 @@
                (transformed (csp-transform-model model statement inevitable-optional? channel provided-on? locals)))
           (list name "(PF',V') = (" transformed ")(PF',V')\n")))
 
-       (($ <csp-if>)
-        (let ((context (.context src))
-              (expression (csp-expression->string model (.expression src) locals))
-              (then (csp-transform-model model (.then src) inevitable-optional? channel provided-on? locals))
-              (else (csp-transform-model model (.else src) inevitable-optional? channel provided-on? locals)))
+       (($ <csp-if> context expression then else)
+        (let ((expression (csp-expression->string model expression locals))
+              (then (csp-transform-model model then inevitable-optional? channel provided-on? locals))
+              (else (csp-transform-model model else inevitable-optional? channel provided-on? locals)))
           (list "ifthenelse_(\\ (" context ") @ (" expression "),\n" then ",\n" else "\n)")))
 
        (($ <illegal>) "illegal_")
@@ -1039,7 +987,7 @@
        (($ <semi> statement continuation)
         (let* ((transformed (csp-transform-model model statement inevitable-optional? channel provided-on? locals))
                (locals (match statement
-                         (($ <csp-variable> name type expression)
+                         (($ <csp-variable> context name type expression)
                           (acons name statement locals))
                          (_ locals)))
                (continuation (csp-transform-model model continuation inevitable-optional? channel provided-on? locals)))
@@ -1100,6 +1048,6 @@
 
        ((? string?) src)
 
-       (_ (throw 'match-error (format #f "~a:csp-transform: no match: ~a\n" (current-source-location) src)))) locals)))
+       ) locals)))
 
 (define (csp-queue-size) (option-ref (parse-opts (command-line)) 'queue-size 3))

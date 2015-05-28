@@ -97,6 +97,7 @@
            om:register
            om:register-model
            om:register-type
+           om:reply-enums
            om:statement
            om:statements-of-type
            om:system
@@ -168,8 +169,16 @@
     ;; (_ (throw 'match-error  (format #f "~a:om:functions: no match: ~a\n" (current-source-location) ast)))))
     ))
 
-;; (define-method (om:ports (o <interface>)) '())
-;; (define-method (om:ports (o <model>)) ((compose .elements .ports) o))
+(define-method (om:ports (o <interface>)) '())
+(define-method (om:ports (o <model>)) ((compose .elements .ports) o))
+
+(define (om:reply-enums o)
+  (match o
+    (($ <interface>)
+     (let* ((events (filter om:typed? ((compose .elements .events) o)))
+            (names (delete-duplicates (map (compose .name .type .signature) events))))
+       (map (lambda (n) (om:enum o n)) names)))
+    (_ '())))
 
 (define (om:variables ast)
   (match ast
@@ -200,6 +209,15 @@
     (#f '())
     (_ (throw 'match-error  (format #f "~a:om:statements-of-type, type: ~a: no match: ~a\n" (current-source-location) type statement)))))
 
+(define* (om:typed? o :optional (trigger #f))
+  (if trigger
+      (om:typed? (om:event o trigger))
+      (match o
+        (($ <event>)
+         (let ((type ((compose .type .signature) o)))
+           (and (not (eq? (.name type) 'void)) type)))
+        ((? boolean?) #f))))
+
 (define-method (om:dir-matches? (p <port>) (e <event>))
   (or (and (eq? (.direction p) 'provides)
            (eq? (.direction e) 'in))
@@ -221,11 +239,11 @@
 (define-method (om:interface (o <ast-list>))
   (find (is? <interface>) (.elements o)))
 
-;; (define-method (om:interface (o <port>))
-;;   (om:import (.type o)))
+(define-method (om:interface (o <port>))
+  (om:import (.type o)))
 
-;; (define-method (om:interface (o <model>))
-;;   (om:interface (om:port o)))
+(define-method (om:interface (o <model>))
+  (om:interface (om:port o)))
 
 (define-method (om:system (o <top>)) #f)
 (define-method (om:system (o <system>)) o)
@@ -243,7 +261,7 @@
   #f)
 
 (define-method (om:port (o <model>))
-  (and=> (null-is-#f ((om:filter om:provides?) (.ports o))) car))
+  (and=> (null-is-#f (filter om:provides? ((compose .elements .ports) o))) car))
 
 (define-method (om:port (o <system>) (bind <binding>))
   (let* ((port (.port bind)))
@@ -422,10 +440,12 @@
   (apply append (map om:interface-types ((compose .elements .ports) o))))
 
 (define-method (om:types (o <interface>))
-  (append (.elements (.types o)) (or (and=> (.behaviour o) (compose .elements .types)) '())))
+  (append (.elements (.types o)) (or (and=> (.behaviour o) (compose .elements .types)) '()) (om:types)))
 
 (define-method (om:types (o <component>))
-  (or (and=> (.behaviour o) (compose .elements .types)) '()))
+  (append
+   (or (and=> (.behaviour o) (compose .elements .types)) '())
+   (om:types)))
 
 (define-method (om:types (o <system>))
   '())

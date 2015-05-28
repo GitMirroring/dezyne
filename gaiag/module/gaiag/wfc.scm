@@ -36,8 +36,10 @@
   :use-module (gaiag misc)
   :use-module (gaiag reader)
 
-  :use-module (gaiag ast)
+  :use-module (gaiag goops om)
+  ;;:use-module (gaiag ast)
   :use-module (gaiag resolve)
+
 
   :export (
            ast:wfc

@@ -27,7 +27,7 @@
   :use-module (gaiag goops om)
   :export (
            <context>
-           <context-vector>
+;;           <context-vector>
            <csp-assign>           
            <csp-call>
            <csp-variable>
@@ -51,7 +51,7 @@
   (members :accessor .members :init-form (list) :init-keyword :members)
   (locals :accessor .locals :init-form (list) :init-keyword :locals))
 
-(define-class <context-vector> (<ast-list>))
+;;(define-class <context-vector> (<ast-list>))
 
 (define-class <contexted> (<ast>)
   (context :accessor .context :init-value #f :init-keyword :context))

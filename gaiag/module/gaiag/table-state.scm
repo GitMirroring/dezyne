@@ -165,9 +165,9 @@
   (debug "simplify: ~a\n" o)
   ;;(pretty-print (om->list o));;-goeps
   (match o
-    (($ <compound> statements)
+    (('compound statements ...)
      (let* ((statements
-             (let loop ((statements (.elements o)))
+             (let loop ((statements statements))
                (debug "loop\n")
                (if (null? statements)
                    '()

@@ -25,6 +25,7 @@
 (define i-ast
  (om:interface
   (ast:resolve
+   (ast->om
    (dezyne->ast
 #{
 interface I
@@ -46,7 +47,7 @@ interface I
     on e: {}
   }
 }
-#}))))
+#})))))
 
 (pass-if "json-table-json-callback"
          (pretty-noisy-equal?
@@ -90,6 +91,7 @@ interface I
 (define if-ast
  (om:interface
   (ast:resolve
+  (ast->om
    (dezyne->ast
 #{
 interface I {
@@ -109,7 +111,7 @@ interface I {
       on g: if (b) fun(); else s = S.three;
     }
 }
-#}))))
+#})))))
 
 (pass-if "json-table-if-one"
          (pretty-noisy-equal?

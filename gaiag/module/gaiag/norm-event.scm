@@ -40,6 +40,7 @@
 
   :export (
            ast->
+           code-norm-event
            norm-event
            ))
 
@@ -58,12 +59,27 @@
     )
    o))
 
+(define (code-norm-event o)
+  ((compose
+    remove-skip
+    combine-guards
+    (aggregate-on om:triggers-equal?)
+    (expand-on equal?)
+    aggregate-guard-s
+    flatten-compound
+    combine-ons
+    passdown-guard
+    (remove-otherwise)
+    add-skip
+    )
+   o))
+
 (define (aggregate-guard-s o)
   "Aggregate guards with matching statement into one guard-statement."
   ;; find all guands with matching statement
   ;; push all guards into first guard, discard the rest
   (match o
-    (('compound ($ <guard>) ...)
+    (('compound ($ <guard>) ..1)
      (make <compound>
        :elements
        (let loop ((guards (.elements o)))
@@ -84,7 +100,7 @@
                                                             :value expression)
                                               :statement statement)))
                      (cons aggregated-guard (loop remainder)))))))))
-     (($ <functions>) o)
+     (('functions functions ...) o)
      ((? (is? <ast>)) (om:map aggregate-guard-s o))
      ((h t ...) (map aggregate-guard-s o))
      (_ o)))

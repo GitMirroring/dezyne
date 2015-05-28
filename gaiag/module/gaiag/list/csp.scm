@@ -111,8 +111,9 @@
    args #f
    ((context #f)
     (identifier #f)
-    (arguments (make <arguments>)))
-   (cons <csp-call> (list context identifier arguments))))
+    (arguments (make <arguments>))
+    (last? #f))
+   (cons <csp-call> (list context identifier arguments last?))))
 
 (define (make-<csp-variable> . args)
   (let-keywords
@@ -122,15 +123,16 @@
     (type #f)
     (expression (make <expression>))
     (continuation #f))
-   (cons <csp-variable> (list context name expression continuation))))
+   (cons <csp-variable> (list context name type expression continuation))))
 
 (define (make-<csp-assign> . args)
   (let-keywords
    args #f
    ((context #f)
     (identifier #f)
-    (expression (make <expression>)))
-   (cons <assign> (list context identifier expression))))
+    (expression (make <expression>))
+    (expressions (make <context>)))
+   (cons <csp-assign> (list context identifier expression expressions))))
 
 (define (make-<skip> . args)
   '(skip))
@@ -157,20 +159,20 @@
    args #f
    ((context #f)
     (expression #f))
-   (cons <return> (list context expression))))
+   (cons <csp-reply> (list context expression))))
 
 (define (make-<csp-return> . args)
   (let-keywords
    args #f
    ((context #f)
     (expression #f))
-   (cons <return> (list context expression))))
+   (cons <csp-return> (list context expression))))
 
 (define (make-<semi> . args)
   (let-keywords
-   args #t
-   ((continuation #f)
-    (statement #f))
+   args #f
+   ((statement #f)
+    (continuation #f))
    (cons <semi> (list statement continuation))))
 
 (define (make-<the-end> . args)

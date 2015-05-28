@@ -28,6 +28,7 @@
   :use-module (srfi srfi-1)
 
   :use-module (gaiag animate)
+  :use-module (gaiag annotate)  
   :use-module (gaiag gaiag)
   :use-module (gaiag indent)
   :use-module (gaiag misc)
@@ -98,9 +99,11 @@
   (om:import name code:om))
 
 (define (code:om ast)
-  ((compose norm-state
+  ((compose csp-norm-state
             ;;ast:wfc
-            ast:resolve ast->om) ast))
+            ast:resolve
+            ast->om
+            ) ast))
 
 (define (pipe producer consumer)
   (with-input-from-string (with-output-to-string producer) consumer))
@@ -213,7 +216,7 @@
                   (cs . .cs)
                   (python . .py))
                 (language)))
-    (($ <component>)
+    ((or ($ <component>) ($ <system>))
      (assoc-ref '((c . .c)
                   (c++ . .cc)
                   (goops . .scm)
@@ -234,14 +237,16 @@
        (module-define! module '.interface (.name o))
        (module-define! module '.INTERFACE (string-upcase (symbol->string (.name o)))))
       ((? (is? <model>))
-       (module-define! module '.COMPONENT (string-upcase (symbol->string (.name o)))))
-      module)))
+       (module-define! module '.COMPONENT (string-upcase (symbol->string (.name o))))))
+      module))
 
 (define* (->code model src :optional (locals '()) (indent 1) (compound? #t))
   (let ((statement (->code- model src locals indent compound?)))
     (if (eq? statement '$empty-statement$)
         ""
         (->string statement))))
+
+(define (unspecified? x) (eq? x *unspecified*))
 
 (define* (->code- model src :optional (locals '()) (indent 1) (compound? #t))
   (define (enum? identifier) (om:enum model identifier))
@@ -314,7 +319,7 @@
                   (identifier ,(identifier-snippet identifier))
                   (expression ,(expression->string model expression locals)))))
       (($ <on> triggers statement)
-       (or (and-let* ((trigger (find-trigger src port event)))
+       (or (and-let* ((trigger ((find-trigger port event) src)))
                      (let* ((aliases
                              (let loop ((formals ((compose .elements .formals .signature) event))
                                         (arguments (map (compose .name .value) ((compose .elements .arguments) trigger))))
@@ -380,7 +385,7 @@
                                                     (continuation ,continuation))))
                           (cons statement continuation))))))))))
       (($ <illegal>) (snippet 'illegal `((space ,space))))
-      (($ <action> ($ <trigger> port-name event-name ($ <arguments> arguments)))
+      (($ <action> ($ <trigger> port-name event-name ('arguments arguments ...)))
        (let* ((port (om:port model port-name))
               (name (.type port))
               (interface (om:import name))
@@ -427,7 +432,7 @@
       (($ <signature> type) (->code model type locals indent))
       (($ <type> 'bool #f) (snippet 'bool '()))
       (($ <type> 'void #f) 'void)
-      ((and (? (is? <type>)) (? extern?))
+      ((and (? (is? <*type*>)) (? extern?))
        (let* ((extern (extern? src))
               (value (.value extern)))
          (snippet 'type-extern `((space ,space) (value ,value)))))
@@ -437,7 +442,7 @@
        (snippet 'type-local-enum `((space ,space) (scope ,(.name model)) (name ,(name)))))
       (($ <type> name #f)
        (snippet 'type-local `((space ,space) (scope ,(.name model)) (name ,name))))
-      ((and (? enum?) ($ <type> name scope))
+      ((and ($ <type> name scope) (? enum?))
        (snippet 'type-enum `((space ,space) (scope ,scope) (name ,name))))
       (($ <type> name scope)
        (snippet 'type `((space ,space) (scope ,scope) (name ,name))))
@@ -472,6 +477,7 @@
       (#f (snippet 'false '()))
       ((? symbol?) src)
       ((h t ...) (map (lambda (x) (->code model x locals indent)) src))
+      ((? unspecified?) #f)
       (_ (throw 'match-error (format #f "~a:code:->code: no match: ~a\n" (current-source-location) src))))))
 
 (define ((find-trigger port event) o)
@@ -480,9 +486,9 @@
      (find (lambda (t) (and (eq? (.port t) (.name port))
                             (eq? (.event t) (.name event))))
            ((compose .elements .triggers) o)))
-    (($ <guard>) (find-trigger (.statement o) port event))
-    (('compound)
-     (null-is-#f (filter identity (map (find-trigger port event) (.elements o)))))
+    (($ <guard>) ((find-trigger port event) ( .statement o)))
+    (('compound statements ...)
+     (null-is-#f (filter identity (map (find-trigger port event) statements))))
     (_ #f)))
 
 (define (expr->clause model guard expression)
@@ -502,7 +508,10 @@
               (parent (cond ((is-a? parent <guard>) (.statement parent))
                             ((is-a? parent <on>) (om:parent model parent))
                             (else parent)))
-              (guards ((om:statements-of-type 'guard) parent))
+              (guards
+               ;;((om:statements-of-type 'guard) parent)
+               (filter (is? <guard>) parent)
+               )
               (guards (filter (find-trigger (statements.port) (statements.event)) guards))
               (guards (null-is-#f guards)))
              (not (eq? guard (car guards))))))
@@ -691,6 +700,18 @@
                        (comma ,comma) (comma-space ,comma-space) (formals ,formals)
                        (statements ,statements)))))
 
+(define ((om:statement-of-type type) statement)
+  (and statement
+   (eq? (ast-name statement) type)))
+
+(define ((om:statements-of-type type) statement)
+  (match statement
+    ((? (om:statement-of-type type)) (list statement))
+    (('compound s ...) (filter identity (apply append (map (om:statements-of-type type) s))))
+    (($ <on> triggers statement) (filter identity ((om:statements-of-type type) statement)))
+    ((? (is? <statement>)) '())
+    (#f '())))
+
 (define ((define-on model port snippet) event)
   (let* ((signature (.signature event))
          (type (.type signature))
@@ -722,9 +743,19 @@
                 (component model)
                 (behaviour (.behaviour component))
                 (statement (.statement behaviour))
-                (guards ((om:statements-of-type 'guard) statement))
+                (guards
+                 ;;((om:statements-of-type 'guard) statement)
+                 (if (is-a? statement <guard>)
+                     (list statement)
+                     (filter (is? <guard>) statement))
+                 )
+                (ons
+                 ((om:statements-of-type 'on) statement)
+                 ;; (if (is-a? statement <on>)
+                 ;;     (list statement)
+                 ;;     (filter (is? <on>) statement))
+                 )
                 (guards (filter (find-trigger port event) guards))
-                (ons ((om:statements-of-type 'on) statement))
                 (ons (filter (find-trigger port event) ons)))
                (parameterize ((statements.port port)
                               (statements.event event))

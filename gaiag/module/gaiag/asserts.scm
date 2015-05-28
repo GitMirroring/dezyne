@@ -57,7 +57,7 @@
      (or (and-let* ((interface-checks '(completeness deadlock livelock)))
                    (map (assert o) interface-checks))
          '()))
-    ((? (is? <ast>))
+    (('root models ...)
      (or (and-let* ((model (om:model-with-behaviour o)))
                    (assert-list-all model))
          '()))

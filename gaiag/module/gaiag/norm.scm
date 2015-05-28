@@ -44,6 +44,7 @@
            annotate-otherwise
            aggregate-guard-g
            aggregate-on
+           combine-guards
            expand-on
            flatten-compound
            guards-not-or
@@ -61,10 +62,10 @@
 (define* ((aggregate-on :optional (aggregate? om:on-statement-equal?)) o)
   "Aggregate ONs with same statement AND (AGGREGATE? a b) into one ON-statement."
   (match o
-    (('compound (and (($ <on>) ...) (get! ons)))
+    (('compound ($ <on>) ..1)
      (make <compound>
        :elements
-       (let loop ((ons (ons)))
+       (let loop ((ons (cdr o)))
          (if (null? ons)
              '()
              (receive (shared-ons remainder)
@@ -96,9 +97,9 @@
 
 (define* ((expand-on :optional (compare equal?)) o)
   (match o
-    (('compound (and (($ <on>) ...) (get! ons)))
+    (('compound ($ <on>) ..1)
      (make <compound>
-       :elements (apply append (map (port-split-triggers compare) (ons)))))
+       :elements (apply append (map (port-split-triggers compare) (cdr o)))))
     (($ <on> triggers statement)
      (let ((ons ((port-split-triggers compare) o)))
        (if (=1 (length ons))
@@ -128,10 +129,10 @@
 ;; find all ons with matching guards
 ;; push all ons into first guard, discard the rest
   (match o
-    (('compound (and (($ <guard>) ...) (get! guards)))
+    (('compound ($ <guard>) ..1)
      (make <compound>
        :elements
-       (let loop ((guards (guards)))
+       (let loop ((guards (cdr o)))
          (if ( null? guards)
              '()
              (receive (shared-guards remainder)
@@ -142,7 +143,7 @@
                          :expression (.expression (car guards))
                          :statement (wrap-compound-as-needed (map .statement shared-guards)))))
                  (cons aggregated-guard (loop remainder))))))))
-     (($ <functions>) o)
+     (('functions functions ...) o)
      ((? (is? <ast>)) (om:map aggregate-guard-g o))
      ((h t ...) (map aggregate-guard-g o))
      (_ o)))
@@ -151,6 +152,32 @@
   (if (or (null? statements) (>1 (length statements)))
       (make <compound> :elements statements)
       (car statements)))
+
+(define (combine-guards o)
+  (match o
+    (($ <guard>)
+     ((passdown-expression (.expression o)) (.statement o)))
+    ((? (is? <ast>)) (om:map combine-guards o))
+    ((h t ...) (map combine-guards o))
+    (_ o)))
+
+(define ((passdown-expression expression) o)
+  (match o
+    (($ <guard>)
+     ((passdown-expression
+       (make <expression> :value
+             (if (om:equal? (.value expression)
+                            (.value (.expression o)))
+                 (.value expression)
+                 (list 'and
+                       (.value expression)
+                       (.value (.expression o))))))
+      (.statement o)))
+    (('compound statements ...)
+     (let ((statements statements))
+       (make <compound>
+         :elements (map (passdown-expression expression) statements))))
+    (_ (make <guard> :expression expression :statement o))))
 
 (define (flatten-compound o)
   (match o
@@ -167,6 +194,8 @@
 
 (define (flatten-compound- o)
   (match o
+    (('compound statement)
+     (flatten-compound- statement))
     (('compound statements ...)
      (retain-source-properties
       o 

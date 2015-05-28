@@ -14,19 +14,22 @@
   :use-module (gaiag resolve)
   :use-module (gaiag table-state))
 
+(define (ast:resolve* ast)
+  ((compose ast:resolve ast->om) ast))
+
 (define simplify-literal (@@ (gaiag table-state) simplify-literal))
 
 (module-define! (resolve-module '(gaiag table-state))
                 'command-line
                         (lambda () '("test-suite/run-tests" "foo" "bar")))
 
-(define-method (model (o <root>))
-  (car (om:models o)))
+(define (model o)
+  (car (filter (is? <model>) o)))
 
-(define-method (test-table-state (o <root>))
+(define (test-table-state o)
   ((compose .statement .behaviour) ((table table-state) (model o))))
 
-(define-method (pretty-table-state (o <root>))
+(define (pretty-table-state o)
  (ast->dezyne (test-table-state o)))
 
 (pass-if "table-state-dummy-test"
@@ -34,7 +37,7 @@
 
 (define idle-init-busy-ast
   (model
-   (ast:resolve
+   (ast:resolve*
     (dezyne->ast
 #{
 interface i
@@ -92,7 +95,7 @@ interface i
 (pass-if "table-state-static"
   (om-pretty-noisy-equal?
    (test-table-state
-    (ast:resolve
+    (ast:resolve*
      (dezyne->ast
 #{
 interface i
@@ -124,7 +127,7 @@ interface i
 (pass-if "table-state-first-enum-variable"
   (om-pretty-noisy-equal?
    (test-table-state
-    (ast:resolve
+    (ast:resolve*
      (dezyne->ast
 #{
 interface i
@@ -170,7 +173,7 @@ interface i
 (pass-if "table-state-state-var-equals"
   (om-pretty-noisy-equal?
    (test-table-state
-    (ast:resolve
+    (ast:resolve*
      (dezyne->ast
 #{
 interface i
@@ -196,7 +199,7 @@ interface i
 (pass-if "table-state-state-on"
   (om-pretty-noisy-equal?
    (test-table-state
-    (ast:resolve
+    (ast:resolve*
      (dezyne->ast
 #{
 interface i
@@ -237,7 +240,7 @@ interface i
 (pass-if "table-state-expressions"
   (om-pretty-noisy-equal?
    (test-table-state
-    (ast:resolve
+    (ast:resolve*
      (dezyne->ast
 #{
 interface i
@@ -286,7 +289,7 @@ interface i
 (pass-if "table-state-expressions-pretty"
   (diff-noisy-equal?
    (pretty-table-state
-    (ast:resolve
+    (ast:resolve*
      (dezyne->ast
 #{
 interface i
@@ -349,7 +352,7 @@ interface i
   (or #t
   (diff-noisy-equal?
    (pretty-table-state
-    (ast:resolve
+    (ast:resolve*
      (dezyne->ast
 #{
 interface i
@@ -454,7 +457,7 @@ interface i
 (pass-if "table-state-choice"
   (diff-noisy-equal?
    (pretty-table-state
-    (ast:resolve
+    (ast:resolve*
      (dezyne->ast
 #{
 interface i
@@ -498,7 +501,7 @@ interface i
 (pass-if "table-state-sort-triggers"
   (diff-noisy-equal?
    (pretty-table-state
-    (ast:resolve
+    (ast:resolve*
      (dezyne->ast
 #{
 interface ISiren
@@ -548,7 +551,7 @@ interface ISiren
 (pass-if "table-state-resolve-deep-otherwise"
   (diff-noisy-equal?
    (pretty-table-state
-    (ast:resolve
+    (ast:resolve*
      (dezyne->ast
 #{
 interface i
@@ -597,7 +600,7 @@ interface i
 (pass-if "table-state-expand-deep-otherwise"
   (diff-noisy-equal?
    (pretty-table-state
-    (ast:resolve
+    (ast:resolve*
      (dezyne->ast
 #{
 interface i
@@ -641,7 +644,7 @@ interface i
 (pass-if "table-state-nested-compound"
   (diff-noisy-equal?
    (pretty-table-state
-    (ast:resolve
+    (ast:resolve*
      (dezyne->ast
 #{
 interface I
@@ -667,7 +670,7 @@ interface I
 (pass-if "table-state-other-enum"
   (diff-noisy-equal?
    (pretty-table-state
-    (ast:resolve
+    (ast:resolve*
      (dezyne->ast
 #{
 interface I {
@@ -709,7 +712,7 @@ interface I {
 (pass-if "table-state-collapse-inevitable"
   (diff-noisy-equal?
    (pretty-table-state
-    (ast:resolve
+    (ast:resolve*
      (dezyne->ast
 #{
 interface I {
@@ -774,7 +777,7 @@ interface I {
 (pass-if "table-state-expression-otherwise"
   (diff-noisy-equal?
    (pretty-table-state
-    (ast:resolve
+    (ast:resolve*
      (dezyne->ast
 #{
 interface I {
@@ -815,7 +818,7 @@ interface I {
 (pass-if "table-state-non-det"
   (diff-noisy-equal?
    (pretty-table-state
-    (ast:resolve
+    (ast:resolve*
      (dezyne->ast
 #{interface IDevice {
  

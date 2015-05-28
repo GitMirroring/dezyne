@@ -17,27 +17,27 @@
          #t)
 
 (pass-if "compare-list<"
-         (not (< '() '())))
+         (not (om:< '() '())))
 
 (pass-if "compare-list<"
-         (not (< '(a) '())))
+         (not (om:< '(a) '())))
 
 (pass-if "compare-list<"
-         (< '() '(b)))
+         (om:< '() '(b)))
 
 (pass-if "compare-list<"
-         (< '(a) '(b)))
+         (om:< '(a) '(b)))
 
 (pass-if "compare-trigger"
-         (< (make <trigger> :event 'a)
+         (om:< (make <trigger> :event 'a)
             (make <trigger> :event 'b)))
 
 (pass-if "compare-trigger"
-         (< (make <trigger> :port 'a :event 'b)
+         (om:< (make <trigger> :port 'a :event 'b)
             (make <trigger> :port 'b :event 'a)))
 
 (pass-if "compare-on"
-         (< (make <on>
+         (om:< (make <on>
               :triggers (make <triggers>
                           :elements
                           (list (make <trigger> :event 'a))))
