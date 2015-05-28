@@ -102,24 +102,14 @@ component Dataparam
 
     IDataparam.Status funx (IDataparam.xint xi)
     {
-      xi = xi;
+      // xi = xi; Java: final parameter may not be assigned
       return IDataparam.Status.Yes;
     }
 
-    IDataparam.xint xfunx (IDataparam.xint xi, IDataparam.xint xj)
-    {
-      return $(xi + xj) / 2$;
-    }
-
-    void g(IDataparam.Status x) 
-    {
-    }
-
-    void f(IDataparam.Status x) 
-    {
-      IDataparam.Status y = x;
-      g(x);
-    }
+    // IDataparam.xint xfunx (IDataparam.xint xi, IDataparam.xint xj)
+    // {
+    //   return $(xi + xj) / 2$;
+    // }
 
     on port.e0: { port.a6($0$,$1$,$2$,$3$,$4$,$5$); }
 
@@ -132,7 +122,7 @@ component Dataparam
       mi = pi;
       // mi = xfunx (pi, $pi + mi$);  // member in $: Ok for C++ but C: self->mi, Python: self.mi
       //mi = xfunx (pi, $pi + pi$); // javascript: foobar NaN
-      mi = xfunx (pi, mi);
+      //mi = xfunx (pi, pi);
       port.a (mi);
       port.aa (mi, pi);
     }
@@ -161,14 +151,16 @@ component Dataparam
     on port.eio(i,j): { j = i; }
     // on port.eio2(i): { i = $i + 123$; } // formal in $: Ok for C++ but C: *i
     // on port.eio2(i): { IDataparam.xint t = i; i = $t + 123$; } // Ok for C, C++; not portable to javascript
-    on port.eio2(i): { IDataparam.xint t = i; i = $123 + 123$; }
+    //on port.eio2(i): { IDataparam.xint t = i; i = $123 + 123$; } // Ok for C, C++, Python, Javascript, not portable to Scheme
+    on port.eio2(i): { IDataparam.xint t = i; i = $246$; }
 
     on port.eor(i): { i = $234$; reply(IDataparam.Status.Yes); }
     on port.eoor(i,j): { i = $123$; j = $456$; reply(IDataparam.Status.Yes); }
     on port.eior(i,j): { j = i; reply(IDataparam.Status.Yes); }
     // on port.eio2r(i): { i = $i + 123$; reply(IDataparam.Status.Yes); } // formal in $: Ok for C++ but C: *i
     // on port.eio2r(i): { IDataparam.xint t = i; i = $t + 123$; reply(IDataparam.Status.Yes); }
-    on port.eio2r(i): { IDataparam.xint t = i; i = $123 + 123$; reply(IDataparam.Status.Yes); }
+    //on port.eio2r(i): { IDataparam.xint t = i; i = $123 + 123$; reply(IDataparam.Status.Yes); }
+    on port.eio2r(i): { IDataparam.xint t = i; i = $246$; reply(IDataparam.Status.Yes); }
   }
 }
 

@@ -536,6 +536,7 @@
     (($ <on> triggers statement)
      (let* ((t (filter (negate om:modeling?) (.elements triggers)))
             (events (map (om:event model) t))
+<<<<<<< HEAD
             (formals (apply append (map (compose .elements .formals .signature)
  events)))
             (locals (let loop ((formals formals) (locals locals))
@@ -543,6 +544,21 @@
                           locals
                           (loop (cdr formals)
                                 (acons ((compose .name car) formals) (car formals) locals))))))
+=======
+            (parameters (apply append (map (compose .elements .parameters .signature) events)))
+            (arguments (apply append (map (compose .elements .arguments) t)))
+            (arguments (if (pair? arguments)
+                           (map (compose .name .value) arguments)
+                           (map .name parameters)))
+            (locals (let loop ((parameters parameters)
+                               (arguments arguments)
+                               (locals locals))
+                      (if (null? parameters)
+                          locals
+                          (loop (cdr parameters)
+                                (cdr arguments)
+                                (acons (car arguments) (car parameters) locals))))))
+>>>>>>> csp: use aliased on-parameter name as new local variable.  Fixes asdgenerator mangled data parameter assignment purging.
        (make <on>
          :triggers triggers
          :statement (model-purge-data model statement locals))))
@@ -975,7 +991,7 @@
                          '("  )\n"))))
           
           (($ <function> name ($ <signature> type ('formals formals ...)) recursive? statement)
-           (stderr "rec: ~a: ~a\n" name recursive?)
+           ;;(stderr "rec: ~a: ~a\n" name recursive?)
            (let* ((locals (let loop ((formals formals) (locals locals))
                             (if (null? formals)
                                 locals
@@ -1017,8 +1033,8 @@
 
           ;; simple statements
           (($ <csp-call> context identifier arguments last?)
-           (stderr "arguments: ~a ~a\n" arguments (pair? arguments))
-           (stderr "locals1: ~a\n" locals)
+           ;;(stderr "arguments: ~a ~a\n" arguments (pair? arguments))
+           ;;(stderr "locals1: ~a\n" locals)
            (let* ((arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals))
                   ;;(exclam (if (pair? (.elements arguments)) "!" ""))
                   (exclam (if (not (string-null? arguments)) "!" ""))
@@ -1048,7 +1064,7 @@
             tail))
 
           (($ <csp-assign> context identifier ($ <call> function arguments) expressions)
-           (stderr "arguments: ~a ~a\n" arguments (pair? arguments))
+           ;;(stderr "arguments: ~a ~a\n" arguments (pair? arguments))
            (let* ((exclam (if (pair? (.elements arguments)) "!" ""))
                   (arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals))
                   (s (make-string 2 #\space))
@@ -1083,7 +1099,7 @@
                 (list (->string space "SKIP")))))
           
           (($ <csp-variable> context name type ($ <call> identifier arguments))
-           (stderr "arguments: ~a ~a\n" arguments (pair? arguments))
+           ;;(stderr "arguments: ~a ~a\n" arguments (pair? arguments))
            (let* ((exclam (if (pair? (.elements arguments)) "!" ""))
                   (arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals))
                   (s (make-string 2 #\space))
@@ -1170,7 +1186,7 @@
        
           ;; other bits
           (('arguments arguments ...)
-           (stderr "translating arguments ...: ~a\n" arguments)
+           ;;(stderr "translating arguments ...: ~a\n" arguments)
            (csp-comma-list (map (lambda (x) (csp-transform-model model x inevitable-optional? channel provided-on? locals)) arguments)))
 
           (($ <expression> (and ($ <csp-call>) (get! call))) (csp-transform-model model (call)))
@@ -1183,9 +1199,11 @@
              (list end model-name "_" behaviour)))
 
           (#f (list space "SKIP\n"))
-
+          (#t (list space "SKIP\n")) ;; FIXME: who produces #t?
+          
           (_ (stderr "TODO: ~a\n" o)
-             (list (format #f "-- TODO: ~a\n" o)))))))
+             (list
+              (format #f "-- TODO: ~a\n" o)))))))
 
 (define (csp-queue-size) (option-ref (parse-opts (command-line)) 'queue-size 3))
 

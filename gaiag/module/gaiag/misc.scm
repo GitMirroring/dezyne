@@ -72,6 +72,7 @@
            string-sub ;; FIXME: look at guile-lib string-substitute sugar
            symbol<
            symbol-null?
+           symbol-prefix?           
            symbol-capitalize
            symbol-drop
 
