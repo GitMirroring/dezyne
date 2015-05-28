@@ -34,7 +34,6 @@
   :use-module (gaiag resolve)
   :use-module (gaiag wfc)
 
-    ;;:use-module (oop goops describe)
   :use-module (gaiag ast)
 
   :export (ast->
@@ -45,21 +44,26 @@
     (map dump (filter (negate om:imported?) ((om:filter <model>) om))))
   "")
 
-(define-method (dump (o <interface>))
-  ((@@ (gaiag c) dump) o))
+(define (dump o)
+  (match o
+    (($ <interface>) (dump-interface o))
+    (($ <component>) (dump-component o))
+    (($ <system>) (dump-system o))))
 
-(define-method (dump (o <component>))
-  ((@@ (gaiag c) dump) o)
+(define (dump-interface o)
+  ((@@ (gaiag c) dump-interface) o))
+
+(define (dump-component o)
+  ((@@ (gaiag c) dump-component) o)
   (let ((name (.name o)))
     (if (and (not (.behaviour o))
              (map-file o))
         (dump-indented (symbol-append 'glue- name '.cc)
                        (lambda ()
-                         (c++-file 'glue-bottom-component.cc.scm (code:module o))))
-)))
+                         (c++-file 'glue-bottom-component.cc.scm (code:module o)))))))
 
-(define-method (dump (o <system>))
-  ((@@ (gaiag c) dump) o)
+(define (dump-system o)
+  ((@@ (gaiag c) dump-system) o)
   (let ((name (.name o)))
     (if (map-file o)
         (dump-indented (symbol-append name 'Interface.h)
@@ -67,8 +71,8 @@
                          (c++-file 'glue-top-system-interface.hh.scm (code:module (om:interface (om:port o)))))))
     (when (map-file o)
       (dump-indented (symbol-append name 'Component.h)
-                     (lambda ()
-                       (c++-file 'glue-top-system.hh.scm (code:module o))))
+                    (lambda ()
+                      (c++-file 'glue-top-system.hh.scm (code:module o))))
       (dump-indented (symbol-append name 'Component.cpp)
                      (lambda ()
                        (c++-file 'glue-top-system.cc.scm (code:module o)))))))
@@ -96,6 +100,6 @@
          (gen1-provided (filter identity (map (lambda (x) (assoc (.name x) alist)) provided))))
     (if (pair? gen1-provided) (list gen1-provided) '())))
 
-(define-method (map-file (o <model>))
+(define (map-file o)
   (and (om:port o)
        (try-find-file (.type (om:port o)) '(.map))))
