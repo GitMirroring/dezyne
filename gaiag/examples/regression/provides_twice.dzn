@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -23,8 +23,8 @@
 
 interface iprovides_once
 {
-  in void foo;
-  out void bar;
+  in void foo();
+  out void bar();
 
   behaviour
   {
@@ -34,8 +34,8 @@ interface iprovides_once
 
 interface iprovides_twice
 {
-  in void foo;
-  out void bar;
+  in void foo();
+  out void bar();
 
   behaviour
   {
@@ -48,7 +48,7 @@ component component_provides_twice
   provides iprovides_once i;
   behaviour
   {
-    on i.foo: illegal;
+    on i.foo(): illegal;
   }
 }
 

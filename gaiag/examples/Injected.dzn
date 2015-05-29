@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -23,8 +23,8 @@
 
 interface itop
 {
-  in void e;
-  out void f;
+  in void e();
+  out void f();
   behaviour
   {
     on e: f;
@@ -33,8 +33,8 @@ interface itop
 
 interface imiddle
 {
-  in void e;
-  out void f;
+  in void e();
+  out void f();
   behaviour
   {
     on e: f;
@@ -43,8 +43,8 @@ interface imiddle
 
 interface ibottom
 {
-  in void e;
-  out void f;
+  in void e();
+  out void f();
   behaviour
   {
     on e: f;
@@ -53,7 +53,7 @@ interface ibottom
 
 interface ilogger
 {
-  in void log;
+  in void log();
   behaviour
   {
     on log:{}
@@ -65,7 +65,7 @@ component logger
   provides ilogger log;
   behaviour
   {
-    on log.log: {}
+    on log.log(): {}
   }
 }
 
@@ -77,8 +77,8 @@ component middle
 
   behaviour
   {
-    on t.e: {l.log; b.e;}
-    on b.f: {l.log; t.f;}
+    on t.e(): {l.log(); b.e();}
+    on b.f(): {l.log(); t.f();}
   }
 }
 
@@ -87,7 +87,7 @@ component bottom
   provides ibottom b;
   behaviour
   {
-    on b.e: b.f;
+    on b.e(): b.f();
   }
 }
 

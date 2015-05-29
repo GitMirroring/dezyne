@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -25,7 +25,7 @@ interface I
 {
   enum Status { Yes, No };
 
-  in Status done;
+  in Status done();
 
   behaviour
   {
@@ -50,7 +50,7 @@ interface U
 {
   enum Status { Ok, Nok };
 
-  in Status what;
+  in Status what();
 
   behaviour
   {
@@ -95,10 +95,10 @@ component Reply3
     }
     [true]
     {
-      on i.done:
+      on i.done():
       {
-        U.Status s = u.what;
-        s = u.what;
+        U.Status s = u.what();
+        s = u.what();
 
         if(s == U.Status.Ok)
         {

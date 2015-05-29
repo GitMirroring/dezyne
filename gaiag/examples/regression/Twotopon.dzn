@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -23,9 +24,9 @@
 
 interface ITwotopon
 {
-  in void e;
-  in void t;
-  out void a;
+  in void e();
+  in void t();
+  out void a();
   behaviour
     {
       bool b = false;
@@ -42,8 +43,8 @@ component Twotopon
   behaviour
     {
       bool b = false;
-      on i.e: [b] { i.a; }
-      on i.e: [!b] { i.a; }
-      on i.t: i.a;
+      on i.e(): [b] { i.a(); }
+      on i.e(): [!b] { i.a(); }
+      on i.t(): i.a();
     }
 }

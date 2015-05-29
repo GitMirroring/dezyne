@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -27,11 +27,11 @@ import ISiren.dzn;
 
 interface IConsole
 {
-    in void arm;
-    in void disarm;
+    in void arm();
+    in void disarm();
 
-    out void detected;
-    out void deactivated;
+    out void detected();
+    out void deactivated();
 
   behaviour a
   {
@@ -106,71 +106,71 @@ component Alarm
 
     [state.Disarmed]
     {
-      on console.arm:
+      on console.arm():
       {
-        sensor.enable;
+        sensor.enable();
         state = States.Armed;
       }
-      on console.disarm, sensor.triggered, sensor.disabled:
+      on console.disarm(), sensor.triggered(), sensor.disabled():
         illegal;
     }
     [state.Armed]
     {
-      on console.arm:
+      on console.arm():
 
         illegal;
-      on console.disarm:
+      on console.disarm():
       {
-        sensor.disable;
+        sensor.disable();
         state = States.Disarming;
       }
-      on sensor.triggered:
+      on sensor.triggered():
       {
-        console.detected;
-        siren.turnon;
+        console.detected();
+        siren.turnon();
         sounding = true;
         state = States.Triggered;
       }
-      on sensor.disabled:
+      on sensor.disabled():
         illegal;
     }
     [state.Disarming]
     {
-      on console.arm, console.disarm:
+      on console.arm(), console.disarm():
         illegal;
-      on sensor.triggered:
+      on sensor.triggered():
       {
         //illegal;
       }
-      on sensor.disabled:
+      on sensor.disabled():
       {
         [sounding]
         {
-          console.deactivated;
-          siren.turnoff;
+          console.deactivated();
+          siren.turnoff();
           state = States.Disarmed;
           sounding = false;
         }
         [otherwise]
         {
-          console.deactivated;
+          console.deactivated();
           state = States.Disarmed;
         }
       }
     }
     [state.Triggered]
     {
-      on console.arm:
+      on console.arm():
         illegal;
 
-      on console.disarm:
+      on console.disarm():
       {
-        sensor.disable;
-        siren.turnoff;
+        sensor.disable();
+        siren.turnoff();
         sounding = false;
         state = States.Disarming;
       }
-      on sensor.triggered, sensor.disabled:
+      on sensor.triggered(), sensor.disabled():
         illegal;
     }
   }

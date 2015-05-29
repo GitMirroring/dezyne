@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -26,8 +26,8 @@ interface Typedef
   enum Enum { one, two };
   typedef int[0..3] Typedef;
 
-  in Enum e;
-  out Typedef o;
+  in Enum e();
+  out Typedef o();
 
   behaviour
   {

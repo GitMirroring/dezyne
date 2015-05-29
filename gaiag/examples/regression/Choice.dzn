@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -23,8 +24,8 @@
 
 interface IChoice
 {
-  in void e;
-  out void a;
+  in void e();
+  out void a();
 
   behaviour
     { 
@@ -48,11 +49,11 @@ component Choice
       enum State { Off, Idle, Busy };
       State s = State.Off;
       
-      on c.e: 
+      on c.e(): 
       {     
-        [s.Off] { s = State.Idle; c.a; }
-        [s.Idle] { s = State.Busy; c.a; }
-        [s.Busy] { s = State.Idle; c.a; }
+        [s.Off] { s = State.Idle; c.a(); }
+        [s.Idle] { s = State.Busy; c.a(); }
+        [s.Busy] { s = State.Idle; c.a(); }
       }
     }
 }
@@ -71,7 +72,7 @@ component ChoiceSystem
 
 interface IRun
 {
-  in void run;
+  in void run();
   behaviour{ on run:{}}
 }
 
@@ -90,25 +91,25 @@ component Adaptor
 
       [state.Idle]
         {
-          on runner.run:
+          on runner.run():
           {
             [count < 2]
               {
-                choice.e; state = State.Active;
+                choice.e(); state = State.Active;
               }
             [otherwise] {}
           }
-          on choice.a: {}
+          on choice.a(): {}
         }
       [state.Active]
         {
-          on runner.run: {}
-          on choice.a: { count = count +1; choice.e; state = State.Terminating; }
+          on runner.run(): {}
+          on choice.a(): { count = count +1; choice.e(); state = State.Terminating; }
         }
       [state.Terminating]
         {
-          on runner.run: {}
-          on choice.a: { [count < 2] { choice.e; state = State.Active; } [otherwise] state = State.Idle; }
+          on runner.run(): {}
+          on choice.a(): { [count < 2] { choice.e(); state = State.Active; } [otherwise] state = State.Idle; }
         }
     }
 }

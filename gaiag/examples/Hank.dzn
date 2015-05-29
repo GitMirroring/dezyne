@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -27,12 +27,12 @@
 interface ICallEmitMulti
 {
   enum EmitResult {One, Two};
-  in void req;
-  in EmitResult reqValued;
-  in void ack;
-  in void done;
-  out void ntfA;
-  out void ntfB;
+  in void req();
+  in EmitResult reqValued();
+  in void ack();
+  in void done();
+  out void ntfA();
+  out void ntfB();
 
   behaviour
   {
@@ -71,8 +71,8 @@ interface ICallEmitMulti
 
 interface ICallTrigger
 {
-  in void start;
-  out void notLiveLock;
+  in void start();
+  out void notLiveLock();
 
   behaviour
   {
@@ -82,8 +82,8 @@ interface ICallTrigger
 
 interface ITauTrigger
 {
-  in void noDeadlock;
-  out void start;
+  in void noDeadlock();
+  out void start();
 
   behaviour
   {
@@ -108,25 +108,25 @@ component Hank
       {
         [useVoid]
         {
-          on ict.start: {src.req;}
-          on itt.start: {src.req;}
-          on src.ntfA: {src.ack;} // Allowed! ntfA + ntfB post is atomic action
-          on src.ntfB: {src.ack; src.done; useVoid = false;}
+          on ict.start(): {src.req();}
+          on itt.start(): {src.req();}
+          on src.ntfA(): {src.ack();} // Allowed! ntfA + ntfB post is atomic action
+          on src.ntfB(): {src.ack(); src.done(); useVoid = false;}
         }
         [otherwise]
         {
-          on ict.start: {ICallEmitMulti.EmitResult ignored = src.reqValued;}
-          on itt.start: {ICallEmitMulti.EmitResult ignored = src.reqValued;}
-          on src.ntfA: {src.ack;} // Allowed! ntfA + ntfB post is atomic action
-          on src.ntfB: {src.ack; src.done; behave = false;}
+          on ict.start(): {ICallEmitMulti.EmitResult ignored = src.reqValued();}
+          on itt.start(): {ICallEmitMulti.EmitResult ignored = src.reqValued();}
+          on src.ntfA(): {src.ack();} // Allowed! ntfA + ntfB post is atomic action
+          on src.ntfB(): {src.ack(); src.done(); behave = false;}
         }
       }
       [otherwise] // misbehave
       {
-        on ict.start: {src.req;}
-        on itt.start: {src.req;}
-        on src.ntfA: {src.ack; src.done;} // Illegal:  ntfA + ntfB post is atomic action => done after ntfB ack.
-        on src.ntfB: {src.ack;}
+        on ict.start(): {src.req();}
+        on itt.start(): {src.req();}
+        on src.ntfA(): {src.ack(); src.done();} // Illegal:  ntfA + ntfB post is atomic action => done after ntfB ack.
+        on src.ntfB(): {src.ack();}
       }
     }
   }

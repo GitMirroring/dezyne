@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -27,9 +27,9 @@ interface IComp {
         NOK
     };
 
-    in result_t initialize;
-    in result_t recover;
-    in result_t perform_actions;
+    in result_t initialize();
+    in result_t recover();
+    in result_t perform_actions();
 
     behaviour {
         enum State { 
@@ -91,10 +91,10 @@ interface IDevice {
         NOK
     };
     
-    in result_t initialize;
-    in result_t calibrate;
-    in result_t perform_action1;
-    in result_t perform_action2;
+    in result_t initialize();
+    in result_t calibrate();
+    in result_t perform_action1();
+    in result_t perform_action2();
     
     behaviour {
         enum State {
@@ -171,10 +171,10 @@ component Comp {
         State s = State.Uninitialized;
         
         [s.Uninitialized] {
-            on client.initialize: {
-                IDevice.result_t res = device_A.initialize;
+            on client.initialize(): {
+                IDevice.result_t res = device_A.initialize();
                 if (res == IDevice.result_t.OK) {
-                    res = device_A.calibrate;
+                    res = device_A.calibrate();
                 }
                 
                 if (res == IDevice.result_t.OK) {
@@ -185,15 +185,15 @@ component Comp {
                     reply(IDevice.result_t.NOK);
                 }
             }
-            on client.recover,
-               client.perform_actions:
+            on client.recover(),
+               client.perform_actions():
                  illegal; 
         }   
         [s.Initialized] {
-            on client.perform_actions: {
-                IDevice.result_t res = device_A.perform_action1;
+            on client.perform_actions(): {
+                IDevice.result_t res = device_A.perform_action1();
                 if (res == IDevice.result_t.OK) {
-                    res = device_A.perform_action2;
+                    res = device_A.perform_action2();
                 }
                 
                 if (res == IDevice.result_t.OK) {
@@ -204,13 +204,13 @@ component Comp {
                     reply(IDevice.result_t.NOK);
                 }
             }
-            on client.initialize,
-               client.recover:
+            on client.initialize(),
+               client.recover():
                     illegal; 
         }   
         [s.Error] {
-            on client.recover: {
-                IDevice.result_t res = device_A.calibrate;
+            on client.recover(): {
+                IDevice.result_t res = device_A.calibrate();
                 if (res == IDevice.result_t.OK) {
                     s = State.Initialized;
                     reply(IDevice.result_t.OK);
@@ -219,8 +219,8 @@ component Comp {
                     reply(IDevice.result_t.NOK);
                 }
             }
-            on client.initialize,
-               client.perform_actions:
+            on client.initialize(),
+               client.perform_actions():
                     illegal; 
         }   
     }

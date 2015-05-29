@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -23,8 +23,8 @@
 
 interface irequires_twice
 {
-  in void e;
-  out void a;
+  in void e();
+  out void a();
   behaviour
     {
       on e: a;
@@ -37,12 +37,12 @@ component requires_twice
   requires irequires_twice once;
   requires irequires_twice twice;
   behaviour
-    { on p.e:
+    { on p.e():
       {
-        once.e;
-        twice.e;
+        once.e();
+        twice.e();
       }
-      on once.a: {}
-      on twice.a: {p.a;}
+      on once.a(): {}
+      on twice.a(): {p.a();}
     }
 }

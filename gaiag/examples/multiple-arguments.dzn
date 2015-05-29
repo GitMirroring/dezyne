@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -22,7 +22,7 @@
 // Code:
 
 interface I {
-  in void start;
+  in void start();
   behaviour {
   
     bool b = false;
@@ -32,7 +32,7 @@ interface I {
 }
 
 interface E {
-  in void notok;
+  in void notok();
   
   behaviour {
     bool dummy = false;
@@ -54,7 +54,7 @@ component Comp {
       
     void expect(T seen, T expected) {
       if (seen!=expected) {
-        err.notok;
+        err.notok();
       }     
     }
       
@@ -74,7 +74,7 @@ component Comp {
       return e;
     }
   
-    [true] on i.start: {
+    [true] on i.start(): {
       T g = f(T.e0, T.e1);
       expect(g, T.e3);
     }

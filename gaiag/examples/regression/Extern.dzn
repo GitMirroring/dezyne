@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -25,7 +25,7 @@ interface IExtern
 {
   extern xint = $int$;
 
-  in void e;
+  in void e();
 
   behaviour
   {
@@ -41,6 +41,6 @@ component Extern
   {
     IExtern.xint i = $0$;
     IExtern.xint j;
-    on port.e: illegal;
+    on port.e(): illegal;
   }
 }

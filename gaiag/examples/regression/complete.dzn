@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -23,8 +23,8 @@
 
 interface icomplete
 {
-  in void e;
-  out void a;
+  in void e();
+  out void a();
   behaviour
   {
     on e: a;
@@ -37,10 +37,10 @@ component complete
   requires icomplete r;
   behaviour
   {
-    on p.e:
+    on p.e():
     {
-      r.e;
+      r.e();
     }
-    on r.a: {p.a;}
+    on r.a(): {p.a();}
   }
 }

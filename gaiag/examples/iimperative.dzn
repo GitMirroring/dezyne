@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -23,11 +23,11 @@
 
 interface iimperative
 {
-  in void e;
+  in void e();
 
-  out void f;
-  out void g;
-  out void h;
+  out void f();
+  out void g();
+  out void h();
 
   behaviour
   {

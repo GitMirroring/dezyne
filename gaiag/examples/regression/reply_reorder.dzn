@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -23,9 +23,9 @@
 
 // interface Provides
 // {
-//   in void start;
-//   out void busy;
-//   out void finish;
+//   in void start();
+//   out void busy();
+//   out void finish();
 //   behaviour
 //   {
 //     enum State {Idle, Busy, Finishing};
@@ -57,9 +57,9 @@
 
 interface Provides
 {
-  in void start;
-  out void busy;
-  out void finish;
+  in void start();
+  out void busy();
+  out void finish();
   behaviour
   {
     on start: {busy; finish;}
@@ -68,8 +68,8 @@ interface Provides
 
 interface Requires
 {
-  in void ping;
-  out void pong;
+  in void ping();
+  out void pong();
 
 
   behaviour
@@ -87,20 +87,20 @@ component reply_reorder
   {
     bool first = true;
 
-    on p.start:
+    on p.start():
     {
-      r.ping;
+      r.ping();
     }
-    on r.pong:
+    on r.pong():
     {
       [first]
       {
-        p.busy;
+        p.busy();
         first = !first;
       }
       [!first]
       {
-        p.finish;
+        p.finish();
         first = !first;
       }
     }

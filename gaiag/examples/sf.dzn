@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -23,9 +23,9 @@
 
 interface I
 {
-  in void a;
-  in void b;
-  out void e;
+  in void a();
+  in void b();
+  out void e();
 }
 
 component sf
@@ -37,11 +37,11 @@ component sf
       function f ()
       {
       }
-      on i.a: i.e;
+      on i.a(): i.e();
       function g ()
       {
       }
-      on i.b: i.e;
+      on i.b(): i.e();
       function h ()
       {
       }

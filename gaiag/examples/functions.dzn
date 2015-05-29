@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -25,7 +25,7 @@ interface Aap
 {
   enum AapValues {yes, no};
 
-  in AapValues is_aap;
+  in AapValues is_aap();
 }
 
 component Noot
@@ -47,7 +47,7 @@ component Noot
       reply(State.S1);
     }
 
-    on aap.is_aap:
+    on aap.is_aap():
     {
       if (true)
       {

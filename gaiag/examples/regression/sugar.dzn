@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -24,8 +24,8 @@
 
 interface I
 {
-  in void e;
-  out void a;
+  in void e();
+  out void a();
   behaviour
     {
       enum Enum { False, True };
@@ -49,14 +49,14 @@ component sugar
     {
       enum Enum { False, True };
       Enum s = Enum.False;
-      [s.False] on i.e: 
+      [s.False] on i.e(): 
         if (s.False) 
-          i.a;
+          i.a();
         else
           {
             Enum t = Enum.False;
             if (t.True)
-              i.a;
+              i.a();
           }
     }
 }

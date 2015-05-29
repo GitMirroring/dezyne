@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -23,8 +23,8 @@
 
 interface I
 {
-  in void e;
-  out void f;
+  in void e();
+  out void f();
 
   behaviour
   {
@@ -54,16 +54,16 @@ component hide
   {
     bool b = false;
     bool c = true;
-    bool g (bool b, bool d) { bool b = d; bool d = c; i.f; return b || d; }
+    bool g (bool b, bool d) { bool b = d; bool d = c; i.f(); return b || d; }
 
-    [true] on i.e:
+    [true] on i.e():
       {
         bool b = b;
         bool c = g (b, c);
 
         if(c)
         {
-          i.f;
+          i.f();
         }
       }
   }

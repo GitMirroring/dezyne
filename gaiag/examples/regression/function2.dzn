@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -23,11 +23,11 @@
 
 interface ifunction2
 {
-  in void a;
-  in void b;
+  in void a();
+  in void b();
 
-  out void c;
-  out void d;
+  out void c();
+  out void d();
 
   behaviour
   {
@@ -67,21 +67,21 @@ component function2
     bool vtoggle ()
     {
       if (f)
-        i.c;
+        i.c();
       return !f;
     }
     [true]
     {
-      on i.a:
+      on i.a():
       {
 	f = vtoggle();
       }
-      on i.b:
+      on i.b():
       {
 	f = vtoggle();
 	bool bb = vtoggle();
         f = bb;
-	i.d;
+	i.d();
       }
     }
   }

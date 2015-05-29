@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -23,7 +23,7 @@
 
 interface ilivelock
 {
-  in void dummy;
+  in void dummy();
 
   behaviour
   {
@@ -35,7 +35,7 @@ interface ilivelock
 
 interface nolivelock
 {
-  out void dummy;
+  out void dummy();
 
   behaviour
   {
@@ -50,7 +50,7 @@ component livelock2
 
   behaviour
   {
-    on l.dummy: illegal;
-    on n.dummy: {}
+    on l.dummy(): illegal;
+    on n.dummy(): {}
   }
 }

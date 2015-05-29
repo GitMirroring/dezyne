@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -23,11 +23,11 @@
 
 interface iimperative
 {
-  in void e;
+  in void e();
 
-  out void f;
-  out void g;
-  out void h;
+  out void f();
+  out void g();
+  out void h();
 
   behaviour
   {
@@ -107,32 +107,32 @@ component imperative
     States state = States.I;
     [state.I]
     {
-      on i.e:
+      on i.e():
       {
-        i.f; i.g; i.h;
+        i.f(); i.g(); i.h();
         state = States.II;
       }
     }
     [state.II]
     {
-      on i.e:
+      on i.e():
       {
         state = States.III;
       }
     }
     [state.III]
     {
-      on i.e:
+      on i.e():
       {
-        i.f; i.g; i.g; i.f;
+        i.f(); i.g(); i.g(); i.f();
         state = States.IV;
       }
     }
     [state.IV]
     {
-      on i.e:
+      on i.e():
       {
-        i.h;
+        i.h();
         state = States.I;
       }
     }

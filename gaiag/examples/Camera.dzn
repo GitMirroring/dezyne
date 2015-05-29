@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -24,13 +25,13 @@
 
 interface IControl
 {
-  in void setup;
-  in void shoot;
-  in void release;
+  in void setup();
+  in void shoot();
+  in void release();
 
-  out void ready;
-  out void focus;
-  out void image;
+  out void ready();
+  out void focus();
+  out void image();
 
   behaviour
   {
@@ -120,85 +121,85 @@ component Driver
 
     [state.Idle]
     {
-      on control.setup: {optics.prepare; acquisition.contrast_gradient; state = State.Setup;}
-      on control.shoot,
-      control.release,
-      acquisition.image,
-      acquisition.higher_contrast,
-      acquisition.lower_contrast,
-      optics.ready: illegal;
+      on control.setup(): {optics.prepare(); acquisition.contrast_gradient(); state = State.Setup;}
+      on control.shoot(),
+      control.release(),
+      acquisition.image(),
+      acquisition.higher_contrast(),
+      acquisition.lower_contrast(),
+      optics.ready(): illegal;
     }
     [state.Setup]
     {
-      on acquisition.lower_contrast:
+      on acquisition.lower_contrast():
       {
         [contrast.Up]
         {
-          if(zoom.In) {optics.zoom_out; zoom = Zoom.Out;}
-          else        {optics.zoom_in; zoom = Zoom.In;}
+          if(zoom.In) {optics.zoom_out(); zoom = Zoom.Out;}
+          else        {optics.zoom_in(); zoom = Zoom.In;}
 
           contrast = Contrast.Max;
 
-          if(ready)   {contrast = Contrast.Down; control.ready; ready = false; state = State.Ready;}
-          else        {control.focus;}
+          if(ready)   {contrast = Contrast.Down; control.ready(); ready = false; state = State.Ready;}
+          else        {control.focus();}
         }
         [contrast.Down]
         {
-          if(zoom.In) {optics.zoom_out; zoom = Zoom.Out;}
-          else        {optics.zoom_in; zoom = Zoom.In;}
+          if(zoom.In) {optics.zoom_out(); zoom = Zoom.Out;}
+          else        {optics.zoom_in(); zoom = Zoom.In;}
           contrast = Contrast.Down;
-          control.focus;
+          control.focus();
         }
-        [otherwise]   {control.focus;}
+        [otherwise]   {control.focus();}
       }
-      on acquisition.higher_contrast:
+      on acquisition.higher_contrast():
       {
-        if(zoom.In) {optics.zoom_in;}
-        else        {optics.zoom_out;}
+        if(zoom.In) {optics.zoom_in();}
+        else        {optics.zoom_out();}
         contrast = Contrast.Up;
-        control.focus;
+        control.focus();
       }
-      on optics.ready:
+      on optics.ready():
       {
-        if(contrast.Max) {control.ready; ready = false; state = State.Ready;}
+        if(contrast.Max) {control.ready(); ready = false; state = State.Ready;}
         else             {ready = true;}
       }
-      on control.release: {acquisition.cancel; optics.cancel; state = State.Idle;}
-      on control.shoot: {acquisition.acquire; optics.capture; state = State.Acquire;}
-      on control.setup,
-      acquisition.image: illegal;
+      on control.release(): {acquisition.cancel(); optics.cancel(); state = State.Idle;}
+      on control.shoot(): {acquisition.acquire(); optics.capture(); state = State.Acquire;}
+      on control.setup(),
+      acquisition.image(): illegal;
     }
     [state.Ready]
     {
-      on control.shoot: {acquisition.acquire; optics.capture; state = State.Acquire;}
-      on control.release: {acquisition.cancel; optics.cancel; state = State.Idle;}
-      on control.setup,
-      acquisition.image: illegal;
-      on acquisition.lower_contrast,
-      acquisition.higher_contrast,
-      optics.ready: {control.focus;}
+      on control.shoot(): {acquisition.acquire(); optics.capture(); state = State.Acquire;}
+      on control.release(): {acquisition.cancel(); optics.cancel(); state = State.Idle;}
+      on control.setup(),
+      acquisition.image(): illegal;
+      on acquisition.lower_contrast(),
+      acquisition.higher_contrast(),
+      optics.ready(): {control.focus();}
     }
     [state.Acquire]
     {
-      on acquisition.image: {control.image; state = State.Idle;}
-      on control.setup,
-      control.shoot,
-      control.release,
-      acquisition.higher_contrast,
-      acquisition.lower_contrast: illegal;
-      on optics.ready: {}
+      on acquisition.image(): {control.image(); state = State.Idle;}
+      on control.setup(),
+      control.shoot(),
+      control.release(),
+      acquisition.higher_contrast(),
+      acquisition.lower_contrast(): illegal;
+      on optics.ready(): {}
     }
   }
 }
 
 interface IAcquisition
 {
-  in void contrast_gradient;
-  in void cancel;
-  in void acquire;
-  out void image;
-  out void higher_contrast;
-  out void lower_contrast;
+  in void contrast_gradient();
+  in void cancel();
+  in void acquire();
+  out void image();
+  out void higher_contrast();
+  out void lower_contrast();
 
   behaviour
   {
@@ -241,53 +242,53 @@ component Acquisition
 
     [state.Idle]
     {
-      on port.contrast_gradient:
+      on port.contrast_gradient():
       {
-        sensor.enable;
+        sensor.enable();
         state = State.Contrast;
       }
-      on port.acquire,
-      port.cancel,
-      sensor.higher_contrast,
-      sensor.lower_contrast,
-      sensor.image: illegal;
+      on port.acquire(),
+      port.cancel(),
+      sensor.higher_contrast(),
+      sensor.lower_contrast(),
+      sensor.image(): illegal;
     }
     [state.Contrast]
     {
-      on port.contrast_gradient: illegal;
-      on port.acquire: {sensor.acquire; state = State.Acquire;}
-      on port.cancel: {sensor.cancel; state = State.Idle;}
-      on sensor.higher_contrast:
+      on port.contrast_gradient(): illegal;
+      on port.acquire(): {sensor.acquire(); state = State.Acquire;}
+      on port.cancel(): {sensor.cancel(); state = State.Idle;}
+      on sensor.higher_contrast():
       {
-        port.higher_contrast;
+        port.higher_contrast();
       }
-      on sensor.lower_contrast:
+      on sensor.lower_contrast():
       {
-        port.lower_contrast;
+        port.lower_contrast();
       }
-      on sensor.image: illegal;
+      on sensor.image(): illegal;
     }
     [state.Acquire]
     {
-      on port.cancel: {sensor.cancel; state = State.Idle;}
-      on sensor.image:{memory.store; port.image; state = State.Idle;}
-      on port.contrast_gradient,
-      port.acquire,
-      sensor.higher_contrast,
-      sensor.lower_contrast: illegal;
+      on port.cancel(): {sensor.cancel(); state = State.Idle;}
+      on sensor.image():{memory.store(); port.image(); state = State.Idle;}
+      on port.contrast_gradient(),
+      port.acquire(),
+      sensor.higher_contrast(),
+      sensor.lower_contrast(): illegal;
     }
   }
 }
 
 interface IOptics
 {
-  in void prepare;
-  in void capture;
-  in void cancel;
-  out void ready;
+  in void prepare();
+  in void capture();
+  in void cancel();
+  out void ready();
 
-  in void zoom_in;
-  in void zoom_out;
+  in void zoom_in();
+  in void zoom_out();
 
   behaviour
   {
@@ -326,33 +327,33 @@ component Optics
     enum State {Idle, Prepare, Ready};
     State state = State.Idle;
     bool ready = false;
-    on port.prepare:
+    on port.prepare():
     {
-      [state.Idle] {state = State.Prepare; flash.prepare;}
+      [state.Idle] {state = State.Prepare; flash.prepare();}
       [otherwise]  illegal;
     }
-    on port.cancel:
+    on port.cancel():
     {
-      flash.cancel;
+      flash.cancel();
       state = State.Idle;
     }
-    on flash.ready:
+    on flash.ready():
     {
-      if(state.Prepare) {state = State.Ready; port.ready;}
+      if(state.Prepare) {state = State.Ready; port.ready();}
     }
-    on port.capture:
+    on port.capture():
     {
       [state.Idle]    illegal;
-      [state.Prepare] {state = State.Idle; flash.cancel; shutter.expose;}
-      [state.Ready]   {state = State.Idle; flash.flash;  shutter.expose; }
+      [state.Prepare] {state = State.Idle; flash.cancel(); shutter.expose();}
+      [state.Ready]   {state = State.Idle; flash.flash();  shutter.expose(); }
     }
-    on port.zoom_in: lens.zoom_in;
-    on port.zoom_out: lens.zoom_out;
+    on port.zoom_in(): lens.zoom_in();
+    on port.zoom_out(): lens.zoom_out();
   }
 }
 interface IMemory
 {
-  in void store;
+  in void store();
   behaviour
   {
     on store:{}
@@ -361,13 +362,13 @@ interface IMemory
 
 interface ISensor
 {
-  in void enable;
-  in void acquire;
-  in void cancel;
-  in void lock;
-  out void higher_contrast;
-  out void lower_contrast;
-  out void image;
+  in void enable();
+  in void acquire();
+  in void cancel();
+  in void lock();
+  out void higher_contrast();
+  out void lower_contrast();
+  out void image();
 
   behaviour
   {
@@ -407,10 +408,10 @@ interface ISensor
 
 interface IFlash
 {
-  in void prepare;
-  in void flash;
-  in void cancel;
-  out void ready;
+  in void prepare();
+  in void flash();
+  in void cancel();
+  out void ready();
 
   behaviour
   {
@@ -436,8 +437,8 @@ interface IFlash
 
 interface ILens
 {
-  in void zoom_in;
-  in void zoom_out;
+  in void zoom_in();
+  in void zoom_out();
   behaviour
   {
     on zoom_in:{}
@@ -447,7 +448,7 @@ interface ILens
 
 interface IShutter
 {
-  in void expose;
+  in void expose();
   behaviour
   {
     on expose: {}
@@ -459,7 +460,7 @@ component Memory
   provides IMemory port;
   behaviour
   {
-    on port.store: {}
+    on port.store(): {}
   }
 }
 
@@ -478,49 +479,49 @@ component CMOS
 
     void reset() {
        contrast = Contrast.Left;
-       contrast_hardware.cancel;
-       acquire_hardware.cancel;
+       contrast_hardware.cancel();
+       acquire_hardware.cancel();
        state = State.Idle;
     }
 
     [state.Idle]
     {
-      on port.enable: {state = State.Ready; contrast_hardware.kick;}
-      on port.acquire,
-      port.cancel,
-      port.lock: illegal;
-      on contrast_hardware.interrupt,
-      acquire_hardware.interrupt: illegal;
+      on port.enable(): {state = State.Ready; contrast_hardware.kick();}
+      on port.acquire(),
+      port.cancel(),
+      port.lock(): illegal;
+      on contrast_hardware.interrupt(),
+      acquire_hardware.interrupt(): illegal;
     }
     [state.Ready]
     {
-      on port.enable: illegal;
-      on port.acquire: {state = State.Acquire; contrast_hardware.cancel; acquire_hardware.kick;}
-      on port.cancel: { reset(); }
-      on port.lock: {contrast_hardware.cancel;}
-      on contrast_hardware.interrupt:
+      on port.enable(): illegal;
+      on port.acquire(): {state = State.Acquire; contrast_hardware.cancel(); acquire_hardware.kick();}
+      on port.cancel(): { reset(); }
+      on port.lock(): {contrast_hardware.cancel();}
+      on contrast_hardware.interrupt():
       {
         if (contrast.Left) {
-          contrast = Contrast.Max; port.higher_contrast;
+          contrast = Contrast.Max; port.higher_contrast();
         }
         else if (contrast.Max) {
-          contrast = Contrast.Right; port.lower_contrast;
+          contrast = Contrast.Right; port.lower_contrast();
         }
         else if (contrast.Right) {
-          contrast = Contrast.Max; port.higher_contrast;
+          contrast = Contrast.Max; port.higher_contrast();
         }
-        contrast_hardware.kick;
+        contrast_hardware.kick();
       }
-      on acquire_hardware.interrupt: illegal;
+      on acquire_hardware.interrupt(): illegal;
     }
     [state.Acquire]
     {
-      on port.enable,
-      port.acquire,
-      port.lock: illegal;
-      on port.cancel: { reset(); }
-      on acquire_hardware.interrupt: {port.image; reset();}
-      on contrast_hardware.interrupt: illegal;
+      on port.enable(),
+      port.acquire(),
+      port.lock(): illegal;
+      on port.cancel(): { reset(); }
+      on acquire_hardware.interrupt(): {port.image(); reset();}
+      on contrast_hardware.interrupt(): illegal;
     }
   }
 }
@@ -530,8 +531,8 @@ component Lens
   provides ILens port;
   behaviour
   {
-    on port.zoom_in:{}
-    on port.zoom_out:{}
+    on port.zoom_in(): {}
+    on port.zoom_out(): {}
   }
 }
 
@@ -540,7 +541,7 @@ component Shutter
   provides IShutter port;
   behaviour
   {
-    on port.expose:{}
+    on port.expose(): {}
   }
 }
 
@@ -553,34 +554,34 @@ component Flash
     enum State {Idle, Prepare, Ready};
     State state = State.Idle;
     bool pending = false;
-    on port.prepare:
+    on port.prepare():
     {
       [state.Idle]
       {
         [pending]   {state = State.Prepare;}
-        [otherwise] {state = State.Prepare; hardware.kick; pending = true;}
+        [otherwise] {state = State.Prepare; hardware.kick(); pending = true;}
       }
       [otherwise] illegal;
     }
-    on hardware.interrupt:
+    on hardware.interrupt():
     {
-      [state.Prepare] {pending = false; port.ready; state = State.Ready;}
+      [state.Prepare] {pending = false; port.ready(); state = State.Ready;}
       [otherwise]     illegal;
     }
-    on port.flash:
+    on port.flash():
     {
       [state.Ready] {state = State.Idle;}
       [otherwise]   illegal;
     }
-    on port.cancel: {pending = false; hardware.cancel; state = State.Idle;}
+    on port.cancel(): {pending = false; hardware.cancel(); state = State.Idle;}
   }
 }
 
 interface IHardware
 {
-  in void kick;
-  in void cancel;
-  out void interrupt;
+  in void kick();
+  in void cancel();
+  out void interrupt();
 
   behaviour
   {

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -23,10 +23,10 @@
 
 interface I
 {
-  in void e;
-  out void a;
-  out void hi;
-  out void lo;
+  in void e();
+  out void a();
+  out void hi();
+  out void lo();
 
   behaviour
   {
@@ -81,12 +81,12 @@ component expressions
     State c = 0;
 
     [true]
-      on i.e:
+      on i.e():
       {
         if (state == 0)
         {
           state = 3;
-          i.a;
+          i.a();
         }
         else
         {
@@ -99,13 +99,13 @@ component expressions
           {
             if (c <= (state + 1))
             {
-              i.lo;
+              i.lo();
             }
             else
             {
               if (c > state)
               {
-                i.hi;
+                i.hi();
               }
             }
           }

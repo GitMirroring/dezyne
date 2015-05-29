@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -23,11 +23,11 @@
 
 interface Console
 {
-    in void arm;
-    in void disarm;
+    in void arm();
+    in void disarm();
 
-    out void detected;
-    out void deactivated;
+    out void detected();
+    out void deactivated();
 }
 
 component Alarm

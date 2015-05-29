@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -27,8 +28,8 @@ interface IDataparam
   extern xint = $int$;
   enum Status {Yes, No};
 
-  in void e0;
-  in Status e0r;
+  in void e0();
+  in Status e0r();
   in void e (in xint i);
   in Status er (in xint i);
   in Status eer (in xint i, in xint j);
@@ -43,7 +44,7 @@ interface IDataparam
   in Status eior(in xint i, out xint j);
   in Status eio2r(inout xint i);
 
-  out void a0;
+  out void a0();
   out void a (in xint i);
   out void aa (in xint i, in xint j);
   out void a6 (in xint a0,in xint a1,in xint a2,in xint a3,in xint a4,in xint a5);
@@ -106,9 +107,9 @@ component Dataparam
       return $(xi + xj) / 2$;
     }
 
-    on port.e0: { port.a6($0$,$1$,$2$,$3$,$4$,$5$); }
+    on port.e0(): { port.a6($0$,$1$,$2$,$3$,$4$,$5$); }
 
-    on port.e0r: {port.a0;reply(IDataparam.Status.Yes);}
+    on port.e0r(): {port.a0;reply(IDataparam.Status.Yes);}
 
     on port.e (pi):
     {
@@ -174,8 +175,8 @@ component proxy
     {
       top.a(i);
     }
-    on top.e0: bottom.e0;
-    on top.e0r: {IDataparam.Status r = bottom.e0r; reply(r);}
+    on top.e0(): bottom.e0();
+    on top.e0r(): {IDataparam.Status r = bottom.e0r(); reply(r);}
     on top.e(pi): bottom.e(pi);
     on top.er(pi): {IDataparam.Status r = bottom.er(pi); reply(r);}
     on top.eer(i,j): {IDataparam.Status r = bottom.eer(i,j); reply(r);}
@@ -190,7 +191,7 @@ component proxy
     on top.eior(i,j): { IDataparam.Status s = bottom.eior(i,j); reply(s); }
     on top.eio2r(i): { IDataparam.Status s = bottom.eio2r(i); reply(s); }
 
-    on bottom.a0: top.a0;
+    on bottom.a0(): top.a0();
     on bottom.a6(A0,A1,A2,A3,A4,A5): top.a6(A0,A1,A2,A3,A4,A5);
     on bottom.a(i): deferfunc(i);
     on bottom.aa(i,j): top.aa(i,j);

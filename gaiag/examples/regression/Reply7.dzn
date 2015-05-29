@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -24,7 +24,7 @@
 interface IReply7
 {
   enum E {A};
-  in E foo;
+  in E foo();
 
   behaviour
   {
@@ -42,9 +42,9 @@ component Reply7
   {
     void f()
     {
-      IReply7.E v = r.foo;
+      IReply7.E v = r.foo();
       reply(v);
     }
-    on p.foo: f();
+    on p.foo(): f();
   }
 }

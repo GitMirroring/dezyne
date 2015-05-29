@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -24,10 +24,10 @@
 interface ienum_collision
 {
   enum Retval1 {OK,NOK};
-  in Retval1 foo;
+  in Retval1 foo();
 
   enum Retval2 {OK,NOK};
-  in Retval2 bar;
+  in Retval2 bar();
 
   behaviour
   {
@@ -42,7 +42,7 @@ component enum_collision
 
   behaviour
   {
-    on i.foo: reply(ienum_collision.Retval1.OK);
-    on i.bar: reply(ienum_collision.Retval2.NOK);
+    on i.foo(): reply(ienum_collision.Retval1.OK);
+    on i.bar(): reply(ienum_collision.Retval2.NOK);
   }
 }

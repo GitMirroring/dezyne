@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -23,7 +23,7 @@
 
 interface dummy
 {
-  in void e;
+  in void e();
   behaviour
   {
     [true] on e:{}
@@ -32,8 +32,8 @@ interface dummy
 
 interface imodeling
 {
-  in void e;
-  out void f;
+  in void e();
+  out void f();
   behaviour
   {
     on optional: f;
@@ -48,7 +48,7 @@ component modeling
 
   behaviour
   {
-    on p.e: r.e;
-    on r.f: {}
+    on p.e(): r.e();
+    on r.f(): {}
   }
 }

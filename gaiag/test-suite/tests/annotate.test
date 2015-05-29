@@ -67,17 +67,17 @@
            (variables)
            (functions)
            (compound
-             ((location "examples/loc.dzn" 6 4 64 #f)
+             ((location "examples/loc.dzn" 6 4 68 #f)
               on
               (triggers
-                ((location "examples/loc.dzn" 6 7 67 #f)
+                ((location "examples/loc.dzn" 6 7 71 #f)
                  trigger
                  #f
                  e))
-              ((location "examples/loc.dzn" 6 10 70 #f)
+              ((location "examples/loc.dzn" 6 10 74 #f)
                action
                (trigger #f a))))))
-        ((location "examples/loc.dzn" 10 0 80 #f)
+        ((location "examples/loc.dzn" 10 0 84 #f)
          component
          loc
          (ports (port i iloc provides #f))
@@ -87,14 +87,14 @@
            (variables)
            (functions)
            (compound
-             ((location "examples/loc.dzn" 15 4 135 #f)
+             ((location "examples/loc.dzn" 15 4 139 #f)
               on
               (triggers
-                ((location "examples/loc.dzn" 15 7 138 #f)
+                ((location "examples/loc.dzn" 15 7 142 #f)
                  trigger
                  i
                  e))
-              ((location "examples/loc.dzn" 15 12 143 #f)
+              ((location "examples/loc.dzn" 15 14 149 #f)
                action
                (trigger i a)))))))))
 

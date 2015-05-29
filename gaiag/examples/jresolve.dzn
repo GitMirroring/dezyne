@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -24,9 +24,9 @@
 interface jresolve
 {
   enum first { value };
-  in void foo;
+  in void foo();
   enum mixed { value };
-  in mixed e;
+  in mixed e();
   behaviour
   {
     on foo: illegal;
