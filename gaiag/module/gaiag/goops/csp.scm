@@ -1,5 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -78,6 +79,6 @@
   (statement :accessor .statement :init-value #f :init-keyword :statement)
   (continuation :accessor .continuation :init-value #f :init-keyword :continuation))
 
-(define-class <the-end> (<contexted>))
+(define-class <the-end> ())
 
 (define-class <voidreply> (<ast>))

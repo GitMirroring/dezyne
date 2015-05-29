@@ -43,7 +43,9 @@
 CO_#(.name model) _#((compose .name .behaviour) model) (IIG,IG) = let
 wait(e', P') = (P' [] [] x : diff({|#(.name model)_call_return|},{|e'|}) @ x-> wait(e', P'))
 # (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (om:functions model)))
-#(.name model) _#((compose .name .behaviour) model) = transition_begin -> #(->string (.name model) "_glob." (.name model) "_get?" (csp-comma-list (om:member-names model))) -> (
+#(.name model) _#((compose .name .behaviour) model) = transition_begin ->  #(let* ((m (om:member-names model))
+                                                                                   (question (if (pair? m) "?" "")))
+                                                                              (list (->string (.name model) "_glob." (.name model) "_get" question  (csp-comma-list m)))) -> (
 #(behaviour->csp model)
 )
 
@@ -66,10 +68,9 @@ forward =
     (filter .recursive (om:functions model)))))
 
 global = let
-  glob_set_get = #(.name model)_glob.#(.name model)_set?#(csp-comma-list (om:member-names model))  -> #(.name model)_glob.#(.name model)_get!#(csp-comma-list (om:member-names model))  -> glob_set_get
+  glob_set_get = #(.name model)_glob.#(.name model)_set#(if (pair? (om:member-names model)) "?" "")#(csp-comma-list (om:member-names model))  -> #(.name model)_glob.#(.name model)_get#(if (pair? (om:member-names model)) "!" "")#(csp-comma-list (om:member-names model))  -> glob_set_get
 within
-  #(.name model)_glob.#(.name model)_get!#(csp-comma-list (map (lambda (x) (csp-expression->string model x '())) (om:member-values model)))  -> glob_set_get
-                                                                          
+  #(.name model)_glob.#(.name model)_get#(if (pair? (om:member-names model)) "?" "")#(csp-comma-list (map (lambda (x) (csp-expression->string model x '())) (om:member-values model)))  -> glob_set_get                                                                          
 within (([|{|#(.name model)_call_return|}|] x:{#((->join ",") (append (map .name (om:functions model)) (list (->string (.name model) "_" ((compose .name .behaviour) model)))))} @ x) [|{|#(.name model)_glob|}|] global) \ {|#(.name model)_glob, #(.name model)_call_return|}
 
 channel extensions_over_empty_channels_is_undefined

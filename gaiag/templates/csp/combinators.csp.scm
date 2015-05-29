@@ -95,9 +95,8 @@ datatype event_enumeration_alphabet = #
      (list 'the_end' 'modeling))
     symbol<)))
 
-#(stderr "types: ~a\n" (enum-types model))
-#(map
+#(delete-duplicates (map
  (lambda (e)
    (list "nametype " (enum-scope model e) " = {" ((->join ", ") (typed-elements e)) "}\n"))
-(filter (is? <enum>) (enum-types model)))
+(filter (is? <enum>) (enum-types model)))) -- FIXME - Jan
 -- end of combinators

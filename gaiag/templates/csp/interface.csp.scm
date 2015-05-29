@@ -36,10 +36,12 @@ channel #(.name model)_''': {modeling}
 IF_#(.name model) _#((compose .name .behaviour) model)(IG,CS) = let
 wait(e', P') = (P' [] [] x : diff({|#(.name model)_call_return|},{|e'|}) @ x-> wait(e', P'))
 # (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (om:functions model)))
-#(.name model) _#((compose .name .behaviour) model) =  #(->string (.name model) "_glob." (.name model) "_get?" (csp-comma-list (om:member-names model))) -> (
+#(.name model) _#((compose .name .behaviour) model) =  #(let* ((m (om:member-names model))
+                                                               (question (if (pair? m) "?" "")))
+                                                          (list (->string (.name model) "_glob." (.name model) "_get" question  (csp-comma-list m)))) -> (
 # (behaviour->csp (csp:import (.name model)))
 []
-CS & #(.name model)?x:{#(comma-join (delete-duplicates (map .event (modeling-events model))))} -> illegal_(STOP,<>)
+CS & #(.name model)?x:{#(comma-join (delete-duplicates (map .event (modeling-events model))))} -> illegal -> STOP
 )
                                                                                                                                                             
 forward = 
@@ -61,9 +63,9 @@ forward =
     (filter .recursive (om:functions model)))))
 
 global = let
-  glob_set_get = #(.name model)_glob.#(.name model)_set?#(csp-comma-list (om:member-names model))  -> #(.name model)_glob.#(.name model)_get!#(csp-comma-list (om:member-names model))  -> glob_set_get
+  glob_set_get = #(.name model)_glob.#(.name model)_set#(if (pair? (om:member-names model)) "?" "")#(csp-comma-list (om:member-names model))  -> #(.name model)_glob.#(.name model)_get#(if (pair? (om:member-names model)) "!" "")#(csp-comma-list (om:member-names model))  -> glob_set_get
 within
-  #(.name model)_glob.#(.name model)_get!#(csp-comma-list (map (lambda (x) (csp-expression->string model x '())) (om:member-values model)))  -> glob_set_get
+  #(.name model)_glob.#(.name model)_get#(if (pair? (om:member-names model)) "?" "")#(csp-comma-list (map (lambda (x) (csp-expression->string model x '())) (om:member-values model)))  -> glob_set_get
 
 REORDER' = #(.name model)?x' -> (#(.name model)_in'?y' -> #(.name model).the_end' -> #(.name model)_out'!y' -> REORDER' [] #(.name model).the_end' -> REORDER')
 

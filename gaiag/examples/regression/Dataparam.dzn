@@ -54,7 +54,6 @@ interface IDataparam
 
   behaviour
   {
-    bool dummy = false;
     on e0: a6;
     on e0r: {a0;reply(Status.Yes);}
     on e:

@@ -1,5 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -178,8 +179,8 @@
 (define (make-<the-end> . args)
   (let-keywords
    args #f
-   ((context #f))
-   (cons <the-end> (list context))))
+   ()
+   (cons <the-end> '())))
 
 (define (make-<voidreply> . args)
   '(voidreply))

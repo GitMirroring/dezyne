@@ -55,22 +55,15 @@ datatype #(.name model)_call_return_alphabet =
 channel #(.name model)_call_return: #(.name model)_call_return_alphabet  
 #}
 #{
--- FIXME: no functions
-datatype #(.name model)_call_return_alphabet = #(.name model)_empty_call_return_alphabet
+datatype #(.name model)_call_return_alphabet = #(.name model)_ty_empcall_return_alphabet
 channel #(.name model)_call_return: #(.name model)_call_return_alphabet
 #})
-#(string-if (pair? (om:member-types model)) #{
 datatype #(.name model)_glob_alphabet = 
-  #(.name model)_get.#
+  #(.name model)_get#(if (pair? (om:member-types model)) "." "")#
   (csp-comma-list 
    (map (lambda (x) (if (is-a? x <enum>) (->string (or (.scope x) (.name model)) '_ (.name x)) (.name x))) (om:member-types model)))  | 
-  #(.name model)_set.#
+  #(.name model)_set#(if (pair? (om:member-types model)) "." "")#
   (csp-comma-list 
    (map (lambda (x) (if (is-a? x <enum>) (->string (or (.scope x) (.name model)) '_ (.name x)) (.name x))) (om:member-types model)))
 channel #(.name model)_glob: #(.name model)_glob_alphabet
-#}
-#{
-datatype #(.name model)_glob_alphabet = false
-channel #(.name model)_glob: #(.name model)_glob_alphabet
-#})
 -- end of both.csp.scm

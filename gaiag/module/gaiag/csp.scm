@@ -294,11 +294,7 @@
   (let* ((model-name (.name model))
          (model- (symbol-append model-name '_)))
     (match src
-      (($ <var> identifier)
-       (if (or #t (var? identifier))
-           (list identifier)
-           (list "false" (stderr "locals: ~a " locals) (stderr "var: ~a\n" identifier))))
-      ;;(($ <var> identifier) (->string model- identifier))      
+      (($ <var> identifier) (list (->string identifier)))
       (($ <expression>) (csp-expression->string model (.value src) locals))
       ((or (? number?) (? string?) (? symbol?)) (list src))
       (($ <field> identifier field)
@@ -536,29 +532,19 @@
     (($ <on> triggers statement)
      (let* ((t (filter (negate om:modeling?) (.elements triggers)))
             (events (map (om:event model) t))
-<<<<<<< HEAD
-            (formals (apply append (map (compose .elements .formals .signature)
- events)))
-            (locals (let loop ((formals formals) (locals locals))
-                      (if (null? formals)
-                          locals
-                          (loop (cdr formals)
-                                (acons ((compose .name car) formals) (car formals) locals))))))
-=======
-            (parameters (apply append (map (compose .elements .parameters .signature) events)))
+            (formals (apply append (map (compose .elements .formals .signature) events)))
             (arguments (apply append (map (compose .elements .arguments) t)))
             (arguments (if (pair? arguments)
                            (map (compose .name .value) arguments)
-                           (map .name parameters)))
-            (locals (let loop ((parameters parameters)
+                           (map .name formals)))
+            (locals (let loop ((formals formals)
                                (arguments arguments)
                                (locals locals))
-                      (if (null? parameters)
+                      (if (null? formals)
                           locals
-                          (loop (cdr parameters)
+                          (loop (cdr formals)
                                 (cdr arguments)
-                                (acons (car arguments) (car parameters) locals))))))
->>>>>>> csp: use aliased on-parameter name as new local variable.  Fixes asdgenerator mangled data parameter assignment purging.
+                                (acons (car arguments) (car formals) locals))))))
        (make <on>
          :triggers triggers
          :statement (model-purge-data model statement locals))))
@@ -884,86 +870,90 @@
          (model- (symbol-append model-name '_))
          (channel (or channel (if (is-a? model <interface>) model-name (.type (om:port model)))))
          (space (make-string (* indent 2) #\space))
-         (member-name-list (csp-comma-list (om:member-names model))))
+         (member-name-list (csp-comma-list (om:member-names model)))
+         (members-set (let* ((m (om:member-names model))
+                             (exclam (if (pair? m) "!" "")))
+                        (list (->string (.name model) "_glob." (.name model) "_set" exclam  (csp-comma-list m)))))
+         (members-get (let* ((m (om:member-names model))
+                             (question (if (pair? m) "?" "")))
+                        (list (->string (.name model) "_glob." (.name model) "_get" question  (csp-comma-list m)))))
+         )
 
     (if (null? o)
         tail
         (match o
 
           ;; Entry points
-          (($ <csp-on> 'IG ($ <triggers> triggers) statement)
+          (($ <csp-on> 'IG ('triggers triggers ...) statement)
            (let* ((inevitable-optional?
                    (or (member 'inevitable (map .event triggers))
                        (member 'optional (map .event triggers))))
                   (provided-on?
                    (or (and (is-a? model <interface>) (not inevitable-optional?))
                        (or (is-a? model <interface>) ((provides-event? model) (car triggers)))))
-                  (tail (csp-transform-model model statement inevitable-optional? channel provided-on? locals (1+ indent) tail function))
+                  (the-end (make <the-end>))
+                  (transformed-end (csp-transform-model model the-end inevitable-optional? channel provided-on? locals (1+ indent)))
+                  (tail (csp-transform-model model statement inevitable-optional? channel provided-on? locals (1+ indent) transformed-end function))
                   (real-triggers (filter (negate modeling-event?) triggers))
                   (modeling-triggers (filter modeling-event? triggers))
                   (modeling-triggers (map .event modeling-triggers))
-                  (trigger-in? (lambda (trigger) (om:in? (om:event model trigger)))))
+                  (trigger-in? (lambda (trigger) (om:in? (om:event model trigger))))
+                  (channel (if (is-a? model <interface>) model-name (.port (car triggers))))
+                  (IG (if ((provides-event? model) (car triggers)) "IIG & "  "IG & ")))
              (receive (ins outs) (partition trigger-in? real-triggers)
-               (let* ((channel (if (is-a? model <interface>) model-name (.port (car triggers))))
-                      (IG (if ((provides-event? model) (car triggers)) "IIG & "  "IG & "))
-                      (event-names (comma-join (map .event triggers))))
                  ((->join "\n[]\n")
                   (list (if (pair? ins)
-                            (list 
-                             IG 
-                             (if (is-a? model <interface>) model-name (.port (car ins))) 
-                             (->string "?x:{" (comma-join (append modeling-triggers (map .event ins))) "} -> (\n") 
+                            (list
+                             IG
+                             (if (is-a? model <interface>) model-name (.port (car ins)))
+                             (->string "?x:{" (comma-join (append modeling-triggers (map .event ins))) "} -> (\n")
                              tail
                              ")")
                             (if (pair? modeling-triggers)
-                                (list 
-                                 IG 
-                                 (if (is-a? model <interface>) model-name channel) 
+                                (list
+                                 IG
+                                 (if (is-a? model <interface>) model-name channel)
                                  (->string "?x:{" (comma-join modeling-triggers) "} -> (\n")
                                  tail
                                  ")")
                                 '()))
                         (if (pair? outs)
-                            (list 
-                             IG 
-                             (if (is-a? model <interface>) model-name (.port (car outs))) 
+                            (list
+                             IG
+                             (if (is-a? model <interface>) model-name (.port (car outs)))
                              (->string "_''?x:{" (comma-join (map .event outs)) "} -> (\n")
                              tail
                              ")")
-                            '())))))))
+                            '()))))))
 
-          (($ <csp-on> context ($ <triggers> triggers) statement)
+          (($ <csp-on> context ('triggers triggers ...) statement)
            (let* ((inevitable-optional?
                    (or (member 'inevitable (map .event triggers))
                        (member 'optional (map .event triggers))))
                   (provided-on?
                    (or (and (is-a? model <interface>) (not inevitable-optional?))
                        (or (is-a? model <interface>) ((provides-event? model) (car triggers)))))
-                  (tail (csp-transform-model model statement inevitable-optional? channel provided-on? locals (1+ indent) tail function))
+                  (the-end (make <the-end>))
+                  (transformed-end (csp-transform-model model the-end inevitable-optional? channel provided-on? locals (1+ indent)))
+                  (tail (csp-transform-model model statement inevitable-optional? channel provided-on? locals (1+ indent) transformed-end function))
                   (real-triggers (filter (negate modeling-event?) triggers))
                   (modeling-triggers (filter modeling-event? triggers))
                   (modeling-triggers (map .event modeling-triggers))
-                  (trigger-in? (lambda (trigger) (om:in? (om:event model trigger)))))
+                  (trigger-in? (lambda (trigger) (om:in? (om:event model trigger))))
+                  (channel (if (is-a? model <interface>) model-name (.port (car triggers)))))
              (receive (ins outs) (partition trigger-in? real-triggers)
-               (let* ((the-end (make <the-end> :context context))
-                      (channel (if (is-a? model <interface>) model-name (.port (car triggers))))
-                      (event-names (comma-join (map .event triggers)))
-                      (transformed-end (csp-transform-model model the-end inevitable-optional? channel provided-on? locals)))
-
                  ((->join "\n[]\n")
                   (list (if (pair? ins)
                             (list
                              (if (is-a? model <interface>) model-name (.port (car ins)))
                              (->string "?x:{" (comma-join (append modeling-triggers (map .event ins))) "} -> (\n")
                              tail
-                             transformed-end
                              ")")
                             (if (pair? modeling-triggers)
                                 (list
                                  (if (is-a? model <interface>) model-name channel)
                                  (->string "?x:{" (comma-join modeling-triggers) "} ->(\n")
                                  tail
-                                 transformed-end
                                  ")")
                                 '()))
                         (if (pair? outs)
@@ -971,22 +961,19 @@
                              (if (is-a? model <interface>) model-name (.port (car outs)))
                              (->string "_''?x:{" (comma-join (map .event outs)) "} -> (\n")
                              tail
-                             transformed-end
                              ")")
-                            '())))))
-             ;;(->string model-name "_ =\n" tail)
-             ))
+                            '()))))))
 
           (($ <function> name ($ <signature> type ('formals)) recursive? statement)
            (let ((transformed (csp-transform-model model statement inevitable-optional? channel provided-on? locals 2
-                                             (list (->string "    " model-name "_glob." model-name "_set!" member-name-list " ->\n")
+                                             (list (->string "    " members-set " ->\n")
                                                    (->string "    " model-name "_call_return." model-name "_" name "_return ->\n")
                                                    (->string "    " name "\n"))
                                              name)))
                  (append (list (->string name " = \n")
                                (->string "  wait(" model-name "_call_return." model-name "_" name "_call,\n")
                                (->string "    " model-name "_call_return." model-name "_" name "_call ->\n")
-                               (->string "    " model-name "_glob." model-name "_get?" member-name-list " ->\n"))                           
+                               (->string "    " members-get " ->\n"))                           
                          transformed
                          '("  )\n"))))
           
@@ -999,14 +986,14 @@
                                       (acons (.name (car formals)) (car formals) locals)))))
                   (formal-name-list (csp-comma-list (map .name formals)))
                   (transformed (csp-transform-model model statement inevitable-optional? channel provided-on? locals 2
-                                              (list (->string "    " model-name "_glob." model-name "_set!" member-name-list " ->\n")
+                                              (list (->string "    " members-set " ->\n")
                                                     (->string "    " model-name "_call_return." model-name "_" name "_return ->\n")
                                                     (->string "    " name "\n"))
                                               name)))
                   (append (list (->string name " = \n")
                                 (->string "  wait(" model-name "_call_return." model-name "_" name "_call" ",\n")
                                 (->string "    " model-name "_call_return." model-name "_" name "_call?" formal-name-list " ->\n")
-                                (->string "    " model-name "_glob." model-name "_get?" member-name-list " ->\n"))                           
+                                (->string "    " members-get " ->\n"))                           
                           transformed
                           '("  )\n"))))
           
@@ -1025,10 +1012,10 @@
                   (then (csp-transform-model model then inevitable-optional? channel provided-on? locals (1+ indent) tail function))
                   (else (csp-transform-model model else inevitable-optional? channel provided-on? locals (1+ indent) tail function)))
              (list
-               (->string space "if " expression " then \n")
+               (->string space "(if " expression " then \n")
                (->string then "\n")
                (->string space "else\n")
-               (->string else "\n")
+               (->string else ")\n")
               )))
 
           ;; simple statements
@@ -1046,11 +1033,11 @@
                   (->string space model-name "_call_return." identifier "_forward" exclam arguments " ->\n")
                   (->string space identifier))
                  (append (list
-                          (->string space model-name "_glob." model-name "_set!" member-name-list " ->\n")
+                          (->string space members-set " ->\n")
                           (->string space model-name "_call_return." model-name "_" identifier "_call" exclam arguments " ->\n")
                           (->string space "wait(" model-name "_call_return." model-name "_" identifier "_return" ",\n")
                           (->string space s model-name "_call_return." model-name "_" identifier "_return" " ->\n")
-                          (->string space s model-name "_glob." model-name "_get?" member-name-list " ->\n"))
+                          (->string space s members-get " ->\n"))
                          (if (pair? tail) 
                              tail 
                              (list (->string space s "SKIP")))
@@ -1070,11 +1057,11 @@
                   (s (make-string 2 #\space))
                   (tail (map (lambda (x) (if (pair? x) (cons s x) (list s x))) tail)))
              (list
-              (->string space model-name "_glob." model-name "_set!" member-name-list " ->\n")
+              (->string space members-set " ->\n")
               (->string space model-name "_call_return." model-name "_" function "_call" exclam arguments " ->\n")
               (->string space "wait(" model-name "_call_return." model-name "_" function "_return" ",\n")
               (->string space s model-name "_call_return." model-name "_" function "_return?" "tmp'" " ->\n")
-              (->string space s model-name "_glob." model-name "_get?" member-name-list " ->\n")
+              (->string space s members-get " ->\n")
               (->string space s "let " identifier " = " "tmp'" " within\n")
               (if (pair? tail)
                   tail
@@ -1084,8 +1071,9 @@
           (($ <csp-assign> context identifier expression expressions)
            (let* ((expression (csp-expression->string model expression locals)))
              (list 
-              (->string space "let " "tmp'" " = " expression " within\n")
-              (->string space "let " identifier " = " "tmp'" " within\n")
+;;              (->string space "let " "tmp'" " = " expression " within\n")
+;;              (->string space "let " identifier " = " "tmp'" " within\n")
+              (->string space "let " identifier " = " expression " within\n")
               (if (pair? tail)
                   tail
                   (list (->string space "SKIP"))))))
@@ -1105,11 +1093,11 @@
                   (s (make-string 2 #\space))
                   (tail (map (lambda (x) (if (pair? x) (cons s x) (list s x))) tail)))
              (list
-              (->string space model-name "_glob." model-name "_set!" member-name-list " ->\n")
+              (->string space members-set " ->\n")
               (->string space model-name "_call_return." model-name "_" identifier "_call" exclam arguments " ->\n")
               (->string space "wait(" model-name "_call_return." model-name "_" identifier "_return" ",\n")
               (->string space s model-name "_call_return." model-name "_" identifier "_return?" "tmp'" " ->\n")
-              (->string space s model-name "_glob." model-name "_get?" member-name-list " ->\n")
+              (->string space s members-get " ->\n")
               (->string space s "let " name " = " "tmp'" " within\n")
               (if (pair? tail)
                   tail
@@ -1127,7 +1115,6 @@
           (($ <csp-reply> context expression)
            (let* ((expression (csp-expression->string model expression locals)))
              (list
-              (->string space model-name "_glob." model-name "_set!" member-name-list " ->\n")
               (->string space channel "_'!" expression " -> \n")
               (if (pair? tail)
                   tail
@@ -1150,13 +1137,13 @@
             (->string space "illegal -> STOP\n")))
           
           (($ <return>)
-           (list (->string space model-name "_glob." model-name "_set!" member-name-list " ->\n")
+           (list (->string space members-set " ->\n")
                  (->string space model-name "_call_return." model-name "_" function "_return ->\n")
                  (->string space function "\n")))
 
           (($ <csp-return> context ($ <expression> expression))
            (let ((expression (csp-expression->string model expression locals)))
-             (list (->string space model-name "_glob." model-name "_set!" member-name-list " ->\n")
+             (list (->string space members-set " ->\n")
                    (->string space model-name "_call_return." model-name "_" function "_return!" expression " ->\n")
                    (->string space function "\n"))))
           
@@ -1170,13 +1157,9 @@
            (let ((channel-return
                   (if (and (not inevitable-optional?) provided-on?)
                       (list
-                       (->string space model-name "_glob." model-name "_set!" member-name-list " ->\n")
                        (->string space channel "_'.return ->\n"))
-                      (if (is-a? model <component>)
-                          (list
-                           (->string space model-name "_glob." model-name "_set!" member-name-list " ->\n"))
+                      (if (not (is-a? model <component>))
                           (list 
-                           (->string space model-name "_glob." model-name "_set!" member-name-list " ->\n")
                            (->string space channel "_'''.modeling ->\n"))))))
              (list
               (->string space channel-return) 
@@ -1192,11 +1175,19 @@
           (($ <expression> (and ($ <csp-call>) (get! call))) (csp-transform-model model (call)))
           (($ <expression>) (csp-expression->string model o locals))
 
-          (($ <the-end> context)
+          (($ <the-end>)
            (let* ((behaviour (.name (.behaviour model)))
-                  (component? (is-a? model <component>))
-                  (end (if component? "; transition_end -> " (list "; " channel ".the_end' -> "))))
-             (list end model-name "_" behaviour)))
+                  (component? (is-a? model <component>)))
+             (if component?
+                 (list
+                  (->string space members-set " ->\n")
+                  (->string space "transition_end ->\n")
+                  (->string space model-name "_" behaviour "\n"))
+                 (list
+                  (->string space members-set " ->\n")
+                  (->string space channel ".the_end' ->\n")
+                  (->string space model-name "_" behaviour "\n"))
+                 )))
 
           (#f (list space "SKIP\n"))
           (#t (list space "SKIP\n")) ;; FIXME: who produces #t?
@@ -1433,3 +1424,4 @@
     (if (>1 (length x)) 
         (->string "(" s ")")
         s)))
+
