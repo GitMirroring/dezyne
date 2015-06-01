@@ -1,0 +1,16 @@
+##ifndef STRING_TO_ENUM_#(*scope* scope)_#name
+##define STRING_TO_ENUM_#(*scope* scope)_#name  1
+inline #(*scope* scope)::#name ::type to_#(*scope* scope)_#name(std::string s)
+{
+  static std::map<std::string, #(*scope* scope)::#name ::type> m;
+  if(m.empty())
+  {
+    #(->string (map (lambda (field) (->string (list "m[" "\"" name "_" field "\"] = " (*scope* scope) "::" name "::" field ";\n"))) fields))
+  }
+  if (m.find(s) != m.end())
+  {
+    return m[s];
+  }
+  return (#(*scope* scope)::#name ::type)-1;
+}
+##endif // STRING_TO_ENUM_#(*scope* scope)_#name

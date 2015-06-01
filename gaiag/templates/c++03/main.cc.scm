@@ -8,7 +8,7 @@
 
 namespace dezyne
 {
-typedef std::map<std::string, std::function<void()>> event_map;
+typedef std::map<std::string, boost::function<void()> > event_map;
 
   void log_in(std::string prefix, std::string event)
   {
@@ -48,15 +48,21 @@ typedef std::map<std::string, std::function<void()>> event_map;
 
  #(map
    (lambda (port)
-     (map (define-on model port #{m.#port .#direction .#event  = [] (#formals) {#(string-if (eq? return-type 'void) #{log_#direction("#port .", "#event ");#}
-                                                                                                                 #{return log_valued<#(*scope* reply-scope)::#reply-name ::type>("#port .", "#event ", to_#(*scope* reply-scope)_#reply-name , static_cast<const char*(*)(#(*scope* reply-scope)::#reply-name ::type)>(to_string));#})};
+     (map (define-on model port #{m.#port .#direction .#event  = boost::bind(#(string-if (eq? return-type 'void) #{&log_#direction , "#port .", "#event "#}
+                                                                                                                 #{&log_valued<#(*scope* reply-scope)::#reply-name ::type>, "#port .", "#event ", to_#(*scope* reply-scope)_#reply-name , static_cast<const char*(*)(#(*scope* reply-scope)::#reply-name ::type)>(to_string)#}));
      #}) (filter (negate (om:dir-matches? port)) (om:events port)))) (om:ports model))
- #(map
+  #(map
     (lambda (port)
     (map (define-on model port #{
-       e["#port .#event "] = #(string-if (null? argument-list) #{m.#port .#direction .#event; #} #{ [m,&dzn_i] {m.#port .#direction .#event (#(comma-join (map (lambda (i) "dzn_i") argument-list)));};#})
+       e["#port .#event "] = #(string-if (null? argument-list) #{m.#port .#direction .#event; #} #{ boost::bind(m.#port .#direction .#event , #(comma-join (map (lambda (i) "dzn_i") argument-list))); #})
 #}) (filter (om:dir-matches? port)
        (om:events port)))) (om:ports model)) }
+  }
+
+void illegal_handler()
+{
+  std::clog << "illegal" << std::endl;
+  exit(0);
 }
 
 int main()
@@ -64,8 +70,9 @@ int main()
   dezyne::locator l;
   dezyne::runtime rt;
   l.set(rt);
+
   dezyne::illegal_handler ih;
-  ih.illegal = [] {std::clog << "illegal" << std::endl; exit(0);};
+  ih.illegal = illegal_handler;
   l.set(ih);
 
   dezyne::event_map event_map;

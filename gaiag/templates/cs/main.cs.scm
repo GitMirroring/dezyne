@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2015 Henk Katerberg <henk.katerberg@yahoo.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -82,7 +83,7 @@ class main {
 #(map
     (lambda (port)
     (map (define-on model port #{
-    m.#port .#direction port.#event  = (#formals) => {#(string-if (eq? return-type 'void) #{log_#direction("#port .#direction .", "#event ");#}#{return log_valued<#(if (eq? reply-scope '*global*) 'DznGlobal reply-scope).#reply-name >("#port .#direction .", "#event ", "#port .#reply-name _");#})};
+    m.#port .#direction port.#event  = (#formals) => {#(string-if (eq? return-type 'void) #{log_#direction("#port .", "#event ");#}#{return log_valued<#(if (eq? reply-scope '*global*) 'DznGlobal reply-scope).#reply-name >("#port .", "#event ", "#port .#reply-name _");#})};
 #}) (filter (negate (om:dir-matches? port))
        (om:events port)))) (om:ports model))     EventMap e = new EventMap();
 #(map

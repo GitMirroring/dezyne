@@ -71,13 +71,13 @@ class main<R> {
   }
 
   private static class EventMap extends HashMap<String, Action> {};
-                        
+
   private static EventMap fillEventMap(final #.model  m) {
   final V<Integer> v = new V<Integer> (0);
 #(map
     (lambda (port)
     (map (define-on model port #{
-    m.#port .#direction .#event  = new #(action-type return-type formal-types)() {public #return-type  action(#formals) {#(string-if (eq? return-type 'void) #{log_#direction("#port .#direction .", "#event ");#}#{return log_valued("#port .#direction .", "#event ", #(if (eq? reply-scope '*global*) 'DznGlobal reply-scope).#reply-name .class, "#port .#reply-name _");#})};};
+    m.#port .#direction .#event  = new #(action-type return-type formal-types)() {public #return-type  action(#formals) {#(string-if (eq? return-type 'void) #{log_#direction("#port .", "#event ");#}#{return log_valued("#port .", "#event ", #(if (eq? reply-scope '*global*) 'DznGlobal reply-scope).#reply-name .class, "#port .#reply-name _");#})};};
 #}) (filter (negate (om:dir-matches? port))
        (om:events port)))) (om:ports model))     EventMap e = new EventMap();
 #(map

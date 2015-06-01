@@ -1,0 +1,10 @@
+##ifndef ENUM_#(*scope* scope)_#name
+##define ENUM_#(*scope* scope)_#name  1
+struct #name
+{
+  enum type
+  {
+    #((->join ", ") fields)
+  };
+};
+##endif // ENUM_#(*scope* scope)_#name

@@ -83,8 +83,8 @@ int log_valued(char* prefix, char* event, int (*string_to_value)(char*), char* e
    #(string-if (not (eq? type 'void)) #{int#} #{void#})  #.model _log_event_#port _#direction _#event (#interface * m) {
    (void)m;
    #(string-if (eq? return-type 'void) #{
-   log_#direction("#port .#direction .", "#event ");#}#{
-   return log_valued("#port .#direction .", "#event ", string_to_#(*scope* reply-scope)_#reply-name , "#port .", #(*scope* reply-scope)_#reply-name _to_string);#})}
+   log_#direction("#port .", "#event ");#}#{
+   return log_valued("#port .", "#event ", string_to_#(*scope* reply-scope)_#reply-name , "#port .", #(*scope* reply-scope)_#reply-name _to_string);#})}
 #}) (filter (negate (om:dir-matches? port))
        (om:events port)))) (om:ports model))
 void #.model _fill_event_map(#.model * m, map* e) {

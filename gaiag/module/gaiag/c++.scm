@@ -1,7 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
-;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -78,7 +78,7 @@
                        (c++-file 'glue-top-system.cc.scm (code:module o)))))))
 
 (define (c++-file file-name module)
-  (parameterize ((template-dir (append (prefix-dir) '(templates c++))))
+  (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
     (animate-file file-name module)))
 
 (define (event2->interface1-event1-alist port)

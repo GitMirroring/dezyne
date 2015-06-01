@@ -32,8 +32,8 @@
     (set! (.#event  (.#direction  (.#port  o)))
       (lambda (. args)#
         (string-if (eq? return-type 'void) #{#'()
-        (log-#direction "#port .#direction ." '#event)#}#{#'()
-        (log-valued "#port .#direction ." '#event (lambda (s) (assoc-ref #interface -#reply-name -alist (string->symbol (drop-prefix s "#port .#reply-name _")))) (lambda (r) (symbol-append '#reply-name _ (assoc-xref #interface -#reply-name -alist r))))#})))
+        (log-#direction "#port ." '#event)#}#{#'()
+        (log-valued "#port ." '#event (lambda (s) (assoc-ref #interface -#reply-name -alist (string->symbol (drop-prefix s "#port .#reply-name _")))) (lambda (r) (symbol-append '#reply-name _ (assoc-xref #interface -#reply-name -alist r))))#})))
 #})
           (filter (negate (om:dir-matches? port))
             (om:events port)))) (om:ports model))
