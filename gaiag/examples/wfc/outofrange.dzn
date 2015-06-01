@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -23,10 +24,10 @@
 
 interface outofrange
 {
-  typedef int[0..2] I02;
+  subint I02 {0..2};
   behaviour
     {
-      typedef int[4..7] I47;
+      subint I47 {4..7};
       I02 i = 5;
       I47 i = 1+ 0 + i/5;
     }

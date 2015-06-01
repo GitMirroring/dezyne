@@ -29,7 +29,7 @@ interface range
 
   behaviour
   {
-    typedef int[0..3] State;
+    subint State {0..3};
 
     State state = 3; //4; // TODO: static resolver/wfc check
 

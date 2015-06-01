@@ -33,7 +33,7 @@ interface iimperative
   {
     enum S {S1, S2};
 
-    //typedef int[0..1] count;
+    //subint count {0..1};
 
     S s = S.S1;
 

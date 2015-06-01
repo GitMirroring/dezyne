@@ -24,7 +24,7 @@
 interface Typedef
 {
   enum Enum { one, two };
-  typedef int[0..3] Typedef;
+  subint Typedef {0..3};
 
   in Enum e();
   out Typedef o();

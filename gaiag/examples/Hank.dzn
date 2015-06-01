@@ -36,7 +36,7 @@ interface ICallEmitMulti
 
   behaviour
   {
-    typedef int[0..2] Counter;
+    subint Counter {0..2};
 
     bool isWaiting = false;
     Counter pending = 0;

@@ -124,7 +124,7 @@ component trip
 
   behaviour
     {
-      typedef int[0..3] State;
+      subint State {0..3};
 
       integer m;
       State state = 3;

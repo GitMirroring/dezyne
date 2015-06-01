@@ -30,7 +30,7 @@ interface I
 
   behaviour
   {
-    typedef int[0..3] State;
+    subint State {0..3};
 
     State state = 3;
     State c = 0;
@@ -75,7 +75,7 @@ component expressions
 
   behaviour
   {
-    typedef int[0..3] State;
+    subint State {0..3};
 
     State state = 3;
     State c = 0;

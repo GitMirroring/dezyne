@@ -84,7 +84,7 @@ component Adaptor
   behaviour
     {
       enum State {Idle, Active, Terminating};
-      typedef int[0..2] Twice;
+      subint Twice {0..2};
 
       State state = State.Idle;
       Twice count = 0;
