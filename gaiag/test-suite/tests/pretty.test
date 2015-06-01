@@ -58,7 +58,7 @@ component c
   (let ((dezyne #{
 interface i
 {
-  in void identifier;
+  in void identifier();
   behaviour
   {
   }
@@ -82,7 +82,7 @@ component c
   provides Interface identifier;
   behaviour
   {
-    on i.a:
+    on i.a():
        illegal;
   }
 }

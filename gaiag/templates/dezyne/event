@@ -1,1 +1,1 @@
-#direction  #(car signature)  #name #(if (not (string-null? (cdr signature))) (list (cdr signature)));
+#direction  #(car signature)  #name #(cdr signature);

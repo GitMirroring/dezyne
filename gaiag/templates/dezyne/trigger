@@ -1,1 +1,1 @@
-#port #(if port ".")#event #(if (defined? 'arguments) arguments)
+#port #(if port ".")#event #(if (and port (defined? 'arguments)) arguments)
