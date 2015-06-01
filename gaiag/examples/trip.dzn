@@ -22,14 +22,14 @@
 //
 // Code:
 
-extern integer = $int$;
+extern integer $int$;
 enum Global { aap, noot };
 
 interface I
 {
   in Global glob(integer p);
   enum Status { Yes, No };
-  extern xint = $int$;
+  extern xint $int$;
   
   in void e();
   out void a();

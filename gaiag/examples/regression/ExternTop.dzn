@@ -22,12 +22,12 @@
 //
 // Code:
 
-extern xint32 = $int32_t$;
+extern xint32 $int32_t$;
 enum Global { a, b, c };
 
 interface IExternTop
 {
-  extern xint = $int$;
+  extern xint $int$;
 
   in void e();
 

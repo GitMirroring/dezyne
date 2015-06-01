@@ -25,7 +25,9 @@
 
 interface IDataparam
 {
-  extern xint = $int$;
+  
+  
+  extern xint $int$;
   enum Status {Yes, No};
 
   in void e0();
