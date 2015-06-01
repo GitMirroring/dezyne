@@ -55,15 +55,16 @@ datatype #(.name model)_call_return_alphabet =
 channel #(.name model)_call_return: #(.name model)_call_return_alphabet  
 #}
 #{
-datatype #(.name model)_call_return_alphabet = #(.name model)_ty_empcall_return_alphabet
+datatype #(.name model)_call_return_alphabet = #(.name model)_empty_call_return_alphabet
 channel #(.name model)_call_return: #(.name model)_call_return_alphabet
 #})
-datatype #(.name model)_glob_alphabet = 
-  #(.name model)_get#(if (pair? (om:member-types model)) "." "")#
-  (csp-comma-list 
-   (map (lambda (x) (if (is-a? x <enum>) (->string (or (.scope x) (.name model)) '_ (.name x)) (.name x))) (om:member-types model)))  | 
-  #(.name model)_set#(if (pair? (om:member-types model)) "." "")#
-  (csp-comma-list 
-   (map (lambda (x) (if (is-a? x <enum>) (->string (or (.scope x) (.name model)) '_ (.name x)) (.name x))) (om:member-types model)))
-channel #(.name model)_glob: #(.name model)_glob_alphabet
+#(string-if (pair? (csp-members-get-set-alphabet model)) #{
+datatype #(.name model)_glob_alphabet  = #((->join "|\n  ") (csp-members-get-set-alphabet model))
+channel #(.name model)_set: #(.name model)_glob_alphabet
+channel #(.name model)_get: #(.name model)_glob_alphabet
+#}
+#{
+channel #(.name model)_set
+channel #(.name model)_get
+#})
 -- end of both.csp.scm

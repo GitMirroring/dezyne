@@ -51,8 +51,12 @@
            csp-comma-list
            csp-component
            csp-module
-	   ast-transform
-	   csp-transform
+           csp-members-get
+           csp-members-set
+           csp-members-get-set-alphabet
+           csp-members-init
+           ast-transform
+           csp-transform
            csp:norm
            csp-queue-size
            om->csp
@@ -871,12 +875,8 @@
          (channel (or channel (if (is-a? model <interface>) model-name (.type (om:port model)))))
          (space (make-string (* indent 2) #\space))
          (member-name-list (csp-comma-list (om:member-names model)))
-         (members-set (let* ((m (om:member-names model))
-                             (exclam (if (pair? m) "!" "")))
-                        (list (->string (.name model) "_glob." (.name model) "_set" exclam  (csp-comma-list m)))))
-         (members-get (let* ((m (om:member-names model))
-                             (question (if (pair? m) "?" "")))
-                        (list (->string (.name model) "_glob." (.name model) "_get" question  (csp-comma-list m)))))
+         (members-set ((->join (string-append " ->\n" space)) (csp-members-set model)))
+         (members-get ((->join (string-append " ->\n" space)) (csp-members-get model)))
          )
 
     (if (null? o)
@@ -1071,9 +1071,9 @@
           (($ <csp-assign> context identifier expression expressions)
            (let* ((expression (csp-expression->string model expression locals)))
              (list 
-;;              (->string space "let " "tmp'" " = " expression " within\n")
-;;              (->string space "let " identifier " = " "tmp'" " within\n")
-              (->string space "let " identifier " = " expression " within\n")
+              (->string space "let " "tmp'" " = " expression " within\n")
+              (->string space "let " identifier " = " "tmp'" " within\n")
+;;              (->string space "let " identifier " = " expression " within\n")
               (if (pair? tail)
                   tail
                   (list (->string space "SKIP"))))))
@@ -1425,3 +1425,34 @@
         (->string "(" s ")")
         s)))
 
+(define* (csp-members-get model :optional (quest "?"))
+  (let* ((m (filter (lambda (x) (not (is-a? (om:extern model (.type x)) <extern>))) (om:variables model))))
+    (if (pair? m)
+        (map (lambda (x) (list (->string (.name model) "_get." (.name model) "__" (.name x) quest (.name x)))) m)
+        (list (->string (.name model) "_get")))))
+
+(define* (csp-members-set model :optional (exclam "!"))
+  (let* ((m (filter (lambda (x) (not (is-a? (om:extern model (.type x)) <extern>))) (om:variables model))))
+    (if (pair? m)
+        (map (lambda (x) (list (->string (.name model) "_set." (.name model) "__" (.name x) exclam (.name x)))) m)
+        (list (->string (.name model) "_set")))))
+
+(define* (csp-members-get-set-alphabet model)
+  (let* ((m (filter (lambda (x) (not (is-a? (om:extern model (.type x)) <extern>))) (om:variables model))))
+    (map (lambda (x)
+           (let* ((t ((om:type model) x)))
+             (->string (.name model) "__" (.name x) "."
+                       (if (is-a? t <enum>) (->string (or (.scope t) (.name model)) "_"))
+                       (.name t))))
+         m)))
+
+    (define* (csp-members-init model)
+  (let* ((m (filter (lambda (x) (not (is-a? (om:extern model (.type x)) <extern>))) (om:variables model))))
+    (if (pair? m)
+        (map (lambda (x)
+               (list
+                (->string
+                 (.name model) "_get."
+                 (.name model) "__" (.name x) "!"
+                 (csp-expression->string model (.value (.expression x)) '())))) m)
+        (list (->string (.name model) "_get")))))
