@@ -50,12 +50,12 @@ forward =
     (->string
      (list "  wait(call_return." (.name f) "_forward,\n")
      (list "    call_return." (.name f) "_forward"
-        (if (pair? ((compose .elements .parameters .signature) f))
-            (list "?" (csp-comma-list (map .name ((compose .elements .parameters .signature) f)))))
+        (if (pair? ((compose .elements .formals .signature) f))
+            (list "?" (csp-comma-list (map .name ((compose .elements .formals .signature) f)))))
         " ->\n")
      (list "    call_return." (.name f) "_call"
-        (if (pair? ((compose .elements .parameters .signature) f))
-            (list "!" (csp-comma-list (map .name ((compose .elements .parameters .signature) f)))))
+        (if (pair? ((compose .elements .formals .signature) f))
+            (list "!" (csp-comma-list (map .name ((compose .elements .formals .signature) f)))))
         " ->\n")
      "    forward\n  )\n"))
     (filter .recursive (om:functions model)))))
