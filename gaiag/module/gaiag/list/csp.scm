@@ -45,7 +45,6 @@
            .members
            .locals
            .context
-           .continuation
            .expressions
 
            make-<context>
@@ -73,7 +72,6 @@
 
 (define .context cadr)
 
-(define .continuation #f)
 (define .expressions #f)
 
 (define csp-classes
@@ -122,9 +120,8 @@
    ((context #f)
     (name #f)
     (type #f)
-    (expression (make <expression>))
-    (continuation #f))
-   (cons <csp-variable> (list context name type expression continuation))))
+    (expression (make <expression>)))
+   (cons <csp-variable> (list context name type expression))))
 
 (define (make-<csp-assign> . args)
   (let-keywords
@@ -168,13 +165,6 @@
    ((context #f)
     (expression #f))
    (cons <csp-return> (list context expression))))
-
-(define (make-<semi> . args)
-  (let-keywords
-   args #f
-   ((statement #f)
-    (continuation #f))
-   (cons <semi> (list statement continuation))))
 
 (define (make-<the-end> . args)
   (let-keywords

@@ -103,7 +103,7 @@
            om:models-with-behaviour           
            om:typed?
            om:parse-dezyne
-           
+           make-interface-enum
            ))
 
 (define (om:map f o)

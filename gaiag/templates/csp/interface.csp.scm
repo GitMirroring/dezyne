@@ -34,39 +34,12 @@ channel #(.name model)_in',#(.name model)_out': {#(comma-join (map (lambda (x) (
 channel #(.name model)_''': {modeling}
 
 IF_#(.name model) _#((compose .name .behaviour) model)(IG,CS) = let
-wait(e', P') = (P' [] [] x : diff({|#(.name model)_call_return|},{|e'|}) @ x-> wait(e', P'))
 # (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (om:functions model)))
-#(.name model) _#((compose .name .behaviour) model) = #((->join " ->\n") (csp-members-get model))  -> (
+#(.name model) _#((compose .name .behaviour) model) ((#(csp-comma-list (om:member-names model)))) = (
 # (behaviour->csp (csp:import (.name model)))
 []
 CS & #(.name model)?x:{#(comma-join (delete-duplicates (map .event (modeling-events model))))} -> illegal -> STOP
 )
-                                                                                                                                                            
-forward = 
-#((->join "\n  []\n  ")
- (cons (->string "COMPLETE'({|" (.name model) "_call_return|})")
-  (map
-   (lambda (f)
-    (->string
-     (list "  wait(call_return." (.name f) "_forward,\n")
-     (list "    call_return." (.name f) "_forward"
-        (if (pair? ((compose .elements .formals .signature) f))
-            (list "?" (csp-comma-list (map .name ((compose .elements .formals .signature) f)))))
-        " ->\n")
-     (list "    call_return." (.name f) "_call"
-        (if (pair? ((compose .elements .formals .signature) f))
-            (list "!" (csp-comma-list (map .name ((compose .elements .formals .signature) f)))))
-        " ->\n")
-     "    forward\n  )\n"))
-    (filter .recursive (om:functions model)))))
-
-global = let
-  glob_set_get = 
-    #((->join " ->\n    ") (csp-members-set model "?"))  ->
-    #((->join " ->\n    ") (csp-members-get model "!"))  ->
-    glob_set_get                            
-within
-  #((->join " ->\n  ") (csp-members-init model))  -> glob_set_get
 
 REORDER' = #(.name model)?x' -> (#(.name model)_in'?y' -> #(.name model).the_end' -> #(.name model)_out'!y' -> REORDER' [] #(.name model).the_end' -> REORDER')
 
@@ -75,12 +48,10 @@ transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
 
-#(.name model) _#((compose .name .behaviour) model)_ = compress((([|{|#(.name model)_call_return|}|] x:{#((->join ",") (append (map .name (om:functions model)) (list (->string (.name model) "_" ((compose .name .behaviour) model)))))} @ x) [|{|#(.name model)_get, #(.name model)_set|}|] global) \ {|#(.name model)_get, #(.name model)_set, #(.name model)_call_return|})
-
 within compress(if CS
                 then #
-(.name model) _#((compose .name .behaviour) model)_
+(.name model) _#((compose .name .behaviour) model) (#(csp-comma-list (om:member-values (csp:import (.name model)))))
                 else #
-(.name model) _#((compose .name .behaviour) model)_[[x<-#(.name model)_in'.x|x<-extensions(#(.name model)_in')]] [|{|#(.name model),#(.name model)_in',#(.name model).the_end'|}|] REORDER' [[#(.name model)_out'.x<-x|x<-extensions(#(.name model)_out')]] \ {|#(.name model)_in',#(.name model).the_end'|})
+(.name model) _#((compose .name .behaviour) model) (#(csp-comma-list (om:member-values (csp:import (.name model)))))[[x<-#(.name model)_in'.x|x<-extensions(#(.name model)_in')]] [|{|#(.name model),#(.name model)_in',#(.name model).the_end'|}|] REORDER' [[#(.name model)_out'.x<-x|x<-extensions(#(.name model)_out')]] \ {|#(.name model)_in',#(.name model).the_end'|})
 
 -- end of interface.csp.scm

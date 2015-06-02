@@ -219,9 +219,6 @@
 (define-method (om:typed? (m <model>) (o <trigger>))
   (om:typed? (om:event m o)))
 
-(define-method (om:modeling? (o <trigger>))
-  (and (not (.port o)) (member (.event o) '(optional inevitable))))
-
 (define-method (om:dir-matches? (p <port>) (e <event>))
   (or (and (eq? (.direction p) 'provides)
            (eq? (.direction e) 'in))

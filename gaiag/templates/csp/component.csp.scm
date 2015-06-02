@@ -43,37 +43,11 @@
 CO_#(.name model) _#((compose .name .behaviour) model) (IIG,IG) = let
 wait(e', P') = (P' [] [] x : diff({|#(.name model)_call_return|},{|e'|}) @ x-> wait(e', P'))
 # (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (om:functions model)))
-#(.name model) _#((compose .name .behaviour) model) = transition_begin -> 
-#((->join " ->\n") (csp-members-get model))  -> (
+#(.name model) _#((compose .name .behaviour) model) ((#(csp-comma-list om:member-names) model)) = transition_begin -> (
 #(behaviour->csp model)
 )
 
-forward = 
-#((->join "\n  []\n  ")
- (cons (->string "COMPLETE'({|" (.name model) "_call_return|})")
-  (map
-   (lambda (f)
-    (->string
-     (list "  wait(call_return." (.name f) "_forward,\n")
-     (list "    call_return." (.name f) "_forward"
-        (if (pair? ((compose .elements .formals .signature) f))
-            (list "?" (csp-comma-list (map .name ((compose .elements .formals .signature) f)))))
-        " ->\n")
-     (list "    call_return." (.name f) "_call"
-        (if (pair? ((compose .elements .formals .signature) f))
-            (list "!" (csp-comma-list (map .name ((compose .elements .formals .signature) f)))))
-        " ->\n")
-     "    forward\n  )\n"))
-    (filter .recursive (om:functions model)))))
-
-global = let
-  glob_set_get = 
-    #((->join " ->\n    ") (csp-members-set model "?"))  ->
-    #((->join " ->\n    ") (csp-members-get model "!"))  ->
-    glob_set_get                            
-within
-  #((->join " ->\n  ") (csp-members-init model))  -> glob_set_get
-within (([|{|#(.name model)_call_return|}|] x:{#((->join ",") (append (map .name (om:functions model)) (list (->string (.name model) "_" ((compose .name .behaviour) model)))))} @ x) [|{|#(.name model)_get, #(.name model)_set|}|] global) \ {|#(.name model)_get, #(.name model)_set, #(.name model)_call_return|}
+within #(.name model) _#((compose .name .behaviour) model) ((#(csp-comma-list om:member-values) model))
                                                      
 channel extensions_over_empty_channels_is_undefined
 channel IN',OUT' : {#
