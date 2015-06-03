@@ -101,7 +101,6 @@
         `((state . ,(json-state (->symbol state) o))
           (rules . ,((json-table- model var state) (on)))))))
     (($ <guard> expression (and ('compound ($ <on>) ...) (get! compound)))
-     (stderr "YES\n")
      (let ((var ((compose .identifier .value) expression))
            (state (.value expression)))
        (alist->hash-table

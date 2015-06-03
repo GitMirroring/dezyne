@@ -179,9 +179,7 @@
         ((and (not top?) (=1 (length statements))) (car statements))
         ((and (null? statements) 
               (not (null? (.elements o)))
-              (om:declarative? o)
-              ;;#f
-              )
+              (om:declarative? o))
          #f)
         (else
          (retain-source-properties o (make <compound>
@@ -193,8 +191,8 @@
          (retain-source-properties o (make <on>
                                        :triggers triggers
                                        :statement statement))
-         (failure)))
-    
+         (failure)))    
+
     (($ <guard> expression1 ($ <guard> expression2 statement))
      (and-let*
       ((statement ((simplify model state) statement))
@@ -256,7 +254,7 @@
                    (retain-source-properties o (make <if> :expression expression :then then)))
          (make <compound>)))
 
-    ((h t ...) (map (simplify model state) o))
+    ((and (? (negate (is? <ast>))) (h t ...)) (map (simplify model state) o))
     (_ o)))
 
 (define (simplify-literal model literal o)
