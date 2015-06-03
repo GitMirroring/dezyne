@@ -144,9 +144,7 @@
               (callbacks . ,(json-callback model inner))
               (next . ,(json-next model var state inner))
               ))))
-         (
-          ('compound (and (($ <guard>)...) (get! guards))) ;;-goeps
-          ;;+goeps (and ($ <compound> ($ <guard>) ...) (get! compound))
+         ((and ($ <compound> ($ <guard>) ...) (get! compound))
           (map (lambda (inner)
                  (let ((expression (.expression inner))
                        (statement (.statement inner)))
@@ -156,12 +154,8 @@
                       (actions . ,(json-action statement))
                       (callbacks . ,(json-callback model statement))
                       (next . ,(json-next model var state statement))))))
-               (guards) ;;-goeps
-               ;;+goeps (.elements (compound))
-               ))
-         (
-          ($ <guard> expression ('compound (and (($ <guard>) ...) (get! guards)))) ;;-goeps
-          ;;+goeps ($ <guard> expression (and ($ <compound> ($ <guard>) (get! compound))))
+               (.elements (compound))))
+         (($ <guard> expression (and ($ <compound> ($ <guard>) (get! compound))))
           (map (lambda (inner)
                  (let ((expression (.expression inner))
                        (statement (.statement inner)))
@@ -171,9 +165,7 @@
                       (actions . ,(json-action statement))
                       (callbacks . ,(json-callback model statement))
                       (next . ,(json-next model var state statement))))))
-               (guards) ;;-goeps
-               ;;+goeps (.elements (compound))
-               ))
+               (.elements (compound))))
 
          (_ (list
              (alist->hash-table
@@ -181,14 +173,10 @@
                 (actions . ,(json-action statement))
                 (callbacks . ,(json-callback model statement))
                 (next . ,(json-next model var state statement)))))))))
-    (
-     ($ <on> triggers ('compound ($ <guard> expression statement) ..1)) ;;-goeps
-     ;;+goeps ($ <on> triggers (and ($ <compound> ($ <guard> expression statement) ..1) (get! compound)))
+    (($ <on> triggers (and ($ <compound> ($ <guard> expression statement) ..1) (get! compound)))
      (map (json-inner-guard model var state triggers)
-          expression statement ;;-goeps
-          ;;+goeps (map .expression (.elements (compound)))
-          ;;+goeps (map .statement (.elements (compound)))          
-          ))
+          (map .expression (.elements (compound)))
+          (map .statement (.elements (compound)))))
     (($ <on> triggers ($ <guard> guard statement))
      (list ((json-inner-guard model var state triggers) guard statement)))
     (_
@@ -304,10 +292,8 @@
     (#f 'false)
     (#t 'true)
     (($ <otherwise>) 'otherwise)
-    (($ <expression> expression) (->symbol expression)) ;;-goeps
-    ;;+goeps (('expression expression) (->symbol expression))
-    (($ <var> identifier) identifier);;-goeps
-    ;;+goeps (('var identifier) identifier)
+    (($ <expression> expression) (->symbol expression))
+    (($ <var> identifier) identifier)
     (($ <field> type field) (->symbol (list (->symbol type) "." field)))
     (('! ($ <expression> value)) (symbol-append '! (->symbol value)))
     ((identifier ($ <field> type field)) (->symbol (list (->symbol identifier) " = " (->symbol type) "." field)))
