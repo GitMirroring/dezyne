@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -94,7 +95,9 @@
 
 (define-method (equal? (a <trigger>) (b <trigger>))
   (and (eq? (.port a) (.port b))
-       (eq? (.event a ) (.event b))))
+       (eq? (.event a ) (.event b))
+       (equal? (om->list (.arguments a))
+               (om->list (.arguments b)))))
 
 (define-method (equal? (a <literal>) (b <literal>))
   (and (eq? (.scope a) (.scope b))

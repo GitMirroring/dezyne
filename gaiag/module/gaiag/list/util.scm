@@ -1,5 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -424,8 +425,8 @@
     (_ o)))
 
 (define (om:triggers-equal? a b)
-  (equal? (map remove-arguments (.triggers a))
-          (map remove-arguments (.triggers b))))
+  (stderr "equal? ~a ~a ==> ~a\n" a b   (equal? (.triggers a) (.triggers b)))
+  (equal? (.triggers a) (.triggers b)))
 
 (define (om:< a b)
   (match (cons a b)
@@ -462,16 +463,10 @@
     ((#f . #t) #t)
     ((#t . #f) #f)
 
-    ((($ <trigger>) . ($ <trigger>))
-     (om:< (remove-arguments a) (remove-arguments b)))
-
     (_ (< a b))))
 
 (define (om:equal? a b)
-  (or (and (is-a? a <trigger>)
-           (is-a? b <trigger>)
-           (equal? (remove-arguments a) (remove-arguments b)))
-      (equal? a b)))
+  (equal? a b))
 
 ;;;; OM handling
 
