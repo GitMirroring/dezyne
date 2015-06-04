@@ -80,10 +80,6 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
-#(->string
-  (map (lambda (x) (list (.name x) " = {" ((compose .from .range) x) ".." ((compose .to .range) x) "}\n"))
-      (filter (is? <int>) (om:types model))))
-            
 datatype event_enumeration_alphabet = #
 (pipe-join
   (delete-duplicates
@@ -95,8 +91,4 @@ datatype event_enumeration_alphabet = #
      (list 'the_end' 'modeling))
     symbol<)))
 
-#(delete-duplicates (map
- (lambda (e)
-   (list "nametype " (enum-scope model e) " = {" ((->join ", ") (typed-elements e)) "}\n"))
-(filter (is? <enum>) (enum-types model)))) -- FIXME - Jan
 -- end of combinators

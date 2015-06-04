@@ -35,7 +35,7 @@ channel #(.name model)_''': {modeling}
 
 IF_#(.name model) _#((compose .name .behaviour) model)(IG,CS) = let
 # (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (om:functions model)))
-#(.name model) _#((compose .name .behaviour) model) ((#(csp-comma-list (om:member-names model)))) = (
+#(.name model) _#((compose .name .behaviour) model) (#(comma-space-join (om:member-names model))) = (
 # (behaviour->csp (csp:import (.name model)))
 []
 CS & #(.name model)?x:{#(comma-join (delete-duplicates (map .event (modeling-events model))))} -> illegal -> STOP
@@ -50,8 +50,8 @@ within sbisim(diamond(x))
 
 within compress(if CS
                 then #
-(.name model) _#((compose .name .behaviour) model) (#(csp-comma-list (om:member-values (csp:import (.name model)))))
+(.name model) _#((compose .name .behaviour) model) (#(comma-space-join (map (lambda (x) (csp-expression->string model x '())) (om:member-values (csp:import (.name model))))))
                 else #
-(.name model) _#((compose .name .behaviour) model) (#(csp-comma-list (om:member-values (csp:import (.name model)))))[[x<-#(.name model)_in'.x|x<-extensions(#(.name model)_in')]] [|{|#(.name model),#(.name model)_in',#(.name model).the_end'|}|] REORDER' [[#(.name model)_out'.x<-x|x<-extensions(#(.name model)_out')]] \ {|#(.name model)_in',#(.name model).the_end'|})
+(.name model) _#((compose .name .behaviour) model) (#(comma-space-join (map (lambda (x) (csp-expression->string model x '())) (om:member-values (csp:import (.name model))))))[[x<-#(.name model)_in'.x|x<-extensions(#(.name model)_in')]] [|{|#(.name model),#(.name model)_in',#(.name model).the_end'|}|] REORDER' [[#(.name model)_out'.x<-x|x<-extensions(#(.name model)_out')]] \ {|#(.name model)_in',#(.name model).the_end'|})
 
 -- end of interface.csp.scm

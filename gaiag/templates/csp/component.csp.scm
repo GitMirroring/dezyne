@@ -42,13 +42,12 @@
 
 
 CO_#(.name model) _#((compose .name .behaviour) model) (IIG,IG) = let
-wait(e', P') = (P' [] [] x : diff({|#(.name model)_call_return|},{|e'|}) @ x-> wait(e', P'))
 # (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (om:functions model)))
-#(.name model) _#((compose .name .behaviour) model) ((#(csp-comma-list (om:member-names model)))) = transition_begin -> (
+#(.name model) _#((compose .name .behaviour) model) (#(comma-space-join (om:member-names model))) = transition_begin -> (
 #(behaviour->csp model)
 )
 
-within #(.name model) _#((compose .name .behaviour) model) ((#(csp-comma-list (om:member-values model))))
+within #(.name model) _#((compose .name .behaviour) model)(#(comma-space-join (map (lambda (x) (csp-expression->string model x '())) (om:member-values (csp:import (.name model))))))
                                                      
 channel extensions_over_empty_channels_is_undefined
 channel IN',OUT' : {#

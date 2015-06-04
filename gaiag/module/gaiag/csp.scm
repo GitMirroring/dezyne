@@ -4,7 +4,6 @@
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;; Copyright © 2014, 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -875,7 +874,7 @@
          (model- (symbol-append model-name '_))
          (channel (or channel (if (is-a? model <interface>) model-name (.type (om:port model)))))
          (space (make-string (* indent 2) #\space))
-         (member-name-list (csp-comma-list (om:member-names model)))
+         (member-name-list (comma-join (om:member-names model)))
          )
 
     (if (null? o)
@@ -964,15 +963,11 @@
                             '()))))))
 
           (($ <function> name ($ <signature> type ('formals)) recursive? statement)
-           (let ((transformed (csp-transform-model model statement inevitable-optional? channel provided-on? locals 2
-                                             (list (->string "    " model-name "_call_return." model-name "_" name "_return ->\n")
-                                                   (->string "    " name "\n"))
-                                             name)))
-                 (append (list (->string name " = \n")
-                               (->string "  wait(" model-name "_call_return." model-name "_" name "_call,\n")
-                               (->string "    " model-name "_call_return." model-name "_" name "_call ->\n")
-                         transformed
-                         '("  )\n")))))
+           (let* ((tail (list (->string "    " "P'(" (comma-space-join (om:member-names model)) ")\n" )))
+                  (transformed (csp-transform-model model statement inevitable-optional? channel provided-on? locals 2 tail name)))
+             (list
+              (->string name "(" "P'" ")" "("(comma-space-join (om:member-names model)) ")\n"" = \n")
+              transformed)))
           
           (($ <function> name ($ <signature> type ('formals formals ...)) recursive? statement)
            ;;(stderr "rec: ~a: ~a\n" name recursive?)
@@ -981,16 +976,11 @@
                                 locals
                                 (loop (cdr formals)
                                       (acons (.name (car formals)) (car formals) locals)))))
-                  (formal-name-list (csp-comma-list (map .name formals)))
-                  (transformed (csp-transform-model model statement inevitable-optional? channel provided-on? locals 2
-                                              (list (->string "    " model-name "_call_return." model-name "_" name "_return ->\n")
-                                                    (->string "    " name "\n"))
-                                              name)))
-                  (append (list (->string name " = \n")
-                                (->string "  wait(" model-name "_call_return." model-name "_" name "_call" ",\n")
-                                (->string "    " model-name "_call_return." model-name "_" name "_call?" formal-name-list " ->\n"))
-                          transformed
-                          '("  )\n"))))
+                  (tail (list (->string "    " "P'(" (comma-space-join (om:member-names model)) ")\n" )))
+                  (transformed (csp-transform-model model statement inevitable-optional? channel provided-on? locals 2 tail name)))
+             (list
+              (->string name "(" (comma-space-join (append (om:member-names model) (map .name formals) (list "P'"))) ")\n"" = \n")
+              transformed)))
           
           ;; compound statements
           (('compound statements ...)
@@ -1011,28 +1001,20 @@
 
           ;; simple statements
           (($ <csp-call> context identifier arguments last?)
-           ;;(stderr "arguments: ~a ~a\n" arguments (pair? arguments))
-           ;;(stderr "locals1: ~a\n" locals)
            (let* ((arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals))
-                  ;;(exclam (if (pair? (.elements arguments)) "!" ""))
-                  (exclam (if (not (string-null? arguments)) "!" ""))
                   (tailrec? (and last? (.recursive (om:function model identifier))))
                   (s (make-string 2 #\space))
-                  (tail (map (lambda (x) (if (pair? x) (cons s x) (list s x))) tail)))
+                  (tail (map (lambda (x) (if (pair? x) (cons s x) (list s x))) tail))
+;;                  (continuation (list (->string "Cont_" (fresh-number) "'"))))
+                  (continuation (list (->string "C'" ))))
              (if tailrec? 
+                 (->string space identifier "(" (comma-space-join (append (om:member-names model) arguments (list "P'"))) ")" "\n")
                  (list
-                  (->string space model-name "_call_return." identifier "_forward" exclam arguments " ->\n")
-                  (->string space identifier))
-                 (append (list
-                          (->string space model-name "_call_return." model-name "_" identifier "_call" exclam arguments " ->\n")
-                          (->string space "wait(" model-name "_call_return." model-name "_" identifier "_return" ",\n")
-                          (->string space s model-name "_call_return." model-name "_" identifier "_return" " ->\n"))
-                         (if (pair? tail) 
-                             tail 
-                             (list (->string space s "SKIP")))
-                         (list
-                          (->string space ")\n"))))))
-          
+;;                  (->string space "let " continuation "(" (comma-space-join (om:member-names model)) ")" " =\n")
+;;                  tail
+;;                  (->string space "within\n")
+                  (->string space identifier "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n")))))
+             
           (($ <csp-assign> context identifier ($ <action> (and ($ <trigger> port event) (get! trigger))) expressions)
            (list 
             (->string space (or port channel) (if (om:out? (om:event model (trigger))) "_''") "!" event " ->\n")
@@ -1041,19 +1023,13 @@
 
           (($ <csp-assign> context identifier ($ <call> function arguments) expressions)
            ;;(stderr "arguments: ~a ~a\n" arguments (pair? arguments))
-           (let* ((exclam (if (pair? (.elements arguments)) "!" ""))
-                  (arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals))
+           (let* ((arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals))
                   (s (make-string 2 #\space))
                   (tail (map (lambda (x) (if (pair? x) (cons s x) (list s x))) tail)))
              (list
-              (->string space model-name "_call_return." model-name "_" function "_call" exclam arguments " ->\n")
-              (->string space "wait(" model-name "_call_return." model-name "_" function "_return" ",\n")
-              (->string space s model-name "_call_return." model-name "_" function "_return?" "tmp'" " ->\n")
+              (->string space function "(" (comma-space-join (append arguments (list "P'"))) ")" " ->\n")
               (->string space s "let " identifier " = " "tmp'" " within\n")
-              (if (pair? tail)
-                  tail
-                  (list (->string space s "SKIP")))
-              (->string space ")\n"))))
+              tail)))
            
           (($ <csp-assign> context identifier expression expressions)
            (let* ((expression (csp-expression->string model expression locals)))
@@ -1061,49 +1037,38 @@
               (->string space "let " "tmp'" " = " expression " within\n")
               (->string space "let " identifier " = " "tmp'" " within\n")
 ;;              (->string space "let " identifier " = " expression " within\n")
-              (if (pair? tail)
-                  tail
-                  (list (->string space "SKIP"))))))
+              tail)))
 
           (($ <csp-variable> context identifier type ($ <action> (and ($ <trigger> port event) (get! trigger))))
            (list 
             (->string space (or port channel) (if (om:out? (om:event model (trigger))) "_''") "!" event " ->\n")
             (->string space (or port channel) "_'" "?" identifier " ->\n")
-            (if (pair? tail)
-                tail
-                (list (->string space "SKIP")))))
+            tail))
           
           (($ <csp-variable> context name type ($ <call> identifier arguments))
            ;;(stderr "arguments: ~a ~a\n" arguments (pair? arguments))
-           (let* ((exclam (if (pair? (.elements arguments)) "!" ""))
-                  (arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals))
+           (let* ((arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals))
                   (s (make-string 2 #\space))
-                  (tail (map (lambda (x) (if (pair? x) (cons s x) (list s x))) tail)))
+                  (tail (map (lambda (x) (if (pair? x) (cons s x) (list s x))) tail))
+;;                  (continuation (list (->string "Cont_" (fresh-number) "'"))))
+                  (continuation (list (->string "Cont_" "'"))))
              (list
-              (->string space model-name "_call_return." model-name "_" identifier "_call" exclam arguments " ->\n")
-              (->string space "wait(" model-name "_call_return." model-name "_" identifier "_return" ",\n")
-              (->string space s model-name "_call_return." model-name "_" identifier "_return?" "tmp'" " ->\n")
-              (->string space s "let " name " = " "tmp'" " within\n")
-              (if (pair? tail)
-                  tail
-                  (list (->string space s "SKIP")))
-              (->string space ")\n"))))
-           
+;;             (->string space "let " continuation "(" (comma-space-join (om:member-names model)) ")" " =\n")
+;;              tail
+;;              (->string space "within\n")
+              (->string space identifier "(" (comma-space-join (om:member-names model)) ", " arguments ", " continuation ")" "\n"))))
+          
           (($ <csp-variable> context name type expression)
            (let* ((expression (csp-expression->string model expression locals)))
              (list
               (->string space "let " name " = " expression " within\n")
-              (if (pair? tail)
-                  tail
-                  (list (->string space "SKIP"))))))
+              tail)))
 
           (($ <csp-reply> context expression)
            (let* ((expression (csp-expression->string model expression locals)))
              (list
               (->string space channel "_'!" expression " -> \n")
-              (if (pair? tail)
-                  tail
-                  (list (->string space "SKIP"))))))
+              tail)))
           
           (($ <action> trigger)
            (let* ((event-name (.event trigger))
@@ -1113,28 +1078,20 @@
                   (channel (list channel suffix)))
              (list
               (->string space channel "!" event-name channel-return " ->\n")
-              (if (pair? tail)
-                  tail
-                  (list (->string space "SKIP"))))))
+              tail)))
 
           (($ <illegal>) 
            (list
             (->string space "illegal -> STOP\n")))
           
           (($ <return>)
-           (list (->string space model-name "_call_return." model-name "_" function "_return ->\n")
-                 (->string space function "\n")))
+           (list (->string "    " "P'(" (comma-space-join (om:member-names model)) ")\n" )))
 
           (($ <csp-return> context ($ <expression> expression))
            (let ((expression (csp-expression->string model expression locals)))
-             (list (->string space model-name "_call_return." model-name "_" function "_return!" expression " ->\n")
-                   (->string space function "\n"))))
+             (list (->string "    " "P'(" (comma-space-join (append (om:member-names model) (list expression)) ) ")\n" ))))
           
-          
-          (($ <skip>)
-           (if (pair? tail)
-               tail
-               (list (->string space "SKIP"))))
+          (($ <skip>) tail)
           
           (($ <voidreply>)
            (let ((channel-return
@@ -1146,14 +1103,12 @@
                            (->string space channel "_'''.modeling ->\n"))))))
              (list
               (->string space channel-return) 
-              (if (pair? tail)
-                  tail
-                  (list (->string space "SKIP"))))))
+              tail)))
        
           ;; other bits
           (('arguments arguments ...)
            ;;(stderr "translating arguments ...: ~a\n" arguments)
-           (csp-comma-list (map (lambda (x) (csp-transform-model model x inevitable-optional? channel provided-on? locals)) arguments)))
+           (map (lambda (x) (csp-transform-model model x inevitable-optional? channel provided-on? locals)) arguments))
 
           (($ <expression> (and ($ <csp-call>) (get! call))) (csp-transform-model model (call)))
           (($ <expression>) (csp-expression->string model o locals))
@@ -1164,10 +1119,10 @@
              (if component?
                  (list
                   (->string space "transition_end ->\n")
-                  (->string space model-name "_" behaviour "\n"))
+                  (->string space model-name "_" behaviour "(" (comma-join (om:member-names model)) ")\n"))
                  (list
                   (->string space channel ".the_end' ->\n")
-                  (->string space model-name "_" behaviour "\n"))
+                  (->string space model-name "_" behaviour "(" (comma-join (om:member-names model)) ")\n"))
                  )))
 
           (#f (list space "SKIP\n"))
@@ -1413,3 +1368,8 @@
         (->string "(" s ")")
         s)))
 
+(define fresh-number #f)
+(let ((counter 0))
+  (set! fresh-number (lambda () (set! counter (1+ counter)) counter)))
+      
+      
