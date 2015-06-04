@@ -3,8 +3,10 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2014, 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -43,11 +45,11 @@
 CO_#(.name model) _#((compose .name .behaviour) model) (IIG,IG) = let
 wait(e', P') = (P' [] [] x : diff({|#(.name model)_call_return|},{|e'|}) @ x-> wait(e', P'))
 # (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (om:functions model)))
-#(.name model) _#((compose .name .behaviour) model) ((#(csp-comma-list om:member-names) model)) = transition_begin -> (
+#(.name model) _#((compose .name .behaviour) model) ((#(csp-comma-list (om:member-names model)))) = transition_begin -> (
 #(behaviour->csp model)
 )
 
-within #(.name model) _#((compose .name .behaviour) model) ((#(csp-comma-list om:member-values) model))
+within #(.name model) _#((compose .name .behaviour) model) ((#(csp-comma-list (om:member-values model))))
                                                      
 channel extensions_over_empty_channels_is_undefined
 channel IN',OUT' : {#
