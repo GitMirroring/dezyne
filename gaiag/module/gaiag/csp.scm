@@ -1,8 +1,10 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014  Rutger van Beusekom
+;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;; Copyright © 2014, 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -1394,6 +1396,9 @@
        ((? string?) src)
 
        (_ (throw 'match-error (format #f "~a:csp-transform-: no match: ~a\n" (current-source-location) src)))) locals)))
+
+(define (def? x) (and (pair? x) (eq? (car x) 'def)))
+(define (undef o) (match o (('def t ...) t) ((h t ...) (map undef o)) (_ o)))
 
 (define-syntax string-if
   (syntax-rules ()

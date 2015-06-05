@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -221,6 +222,7 @@
 (define (->string h . t)
   (let ((src (if (pair? t) (cons h t) h)))
     (match src
+      (('def t ...) "")
       ((? char?) (make-string 1 src))
       ((? string?) src)
       ((? symbol?) (symbol->string src))
