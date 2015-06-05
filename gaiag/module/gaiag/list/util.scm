@@ -425,7 +425,6 @@
     (_ o)))
 
 (define (om:triggers-equal? a b)
-  (stderr "equal? ~a ~a ==> ~a\n" a b   (equal? (.triggers a) (.triggers b)))
   (equal? (.triggers a) (.triggers b)))
 
 (define (om:< a b)
