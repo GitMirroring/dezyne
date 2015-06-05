@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -186,7 +187,7 @@
     (typedef int lbracket NumericLiteral .. NumericLiteral rbracket Identifier semicolon) : (note-location `(int ,$8 #f (range ,$4 ,$6)) @1))
 
    (extern-spec
-    (extern Identifier = Data semicolon) : (note-location `(extern ,$2 #f ,$4) @1))
+    (extern Identifier Data semicolon) : (note-location `(extern ,$2 #f ,$3) @1))
 
    (expression
     (expr): `(expression ,$1))
