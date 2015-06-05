@@ -52,7 +52,7 @@
     illegal
     behaviour import interface component system
     provides requires injected
-    bool enum extern int typedef void
+    bool enum extern subint void
     NumericLiteral Data    
     dollar
 
@@ -167,11 +167,10 @@
    (type
     (enum-spec) : $1
     (extern-spec) : $1
-    (typedef-spec): $1)
+    (subint-spec): $1)
 
    (variable-type
     (bool) : '(type bool)
-    (int) : '(type int)
     (void) : '(type void)
     (Identifier) : (note-location `(type ,$1) @1)
     (Identifier dot Identifier) : (note-location `(type ,$3 ,$1) @1))
@@ -183,8 +182,8 @@
     (Identifier) : `(fields ,$1)
     (enum-fields comma Identifier) : (append $1 (list $3)))
 
-   (typedef-spec
-    (typedef int lbracket NumericLiteral .. NumericLiteral rbracket Identifier semicolon) : (note-location `(int ,$8 #f (range ,$4 ,$6)) @1))
+   (subint-spec
+    (subint Identifier lbrace NumericLiteral .. NumericLiteral rbrace semicolon) : (note-location `(int ,$2 #f (range ,$4 ,$6)) @1))
 
    (extern-spec
     (extern Identifier Data semicolon) : (note-location `(extern ,$2 #f ,$3) @1))

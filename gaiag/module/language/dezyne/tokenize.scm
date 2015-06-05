@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;; Copyright © 2009, 2010, 2011 Free Software Foundation, Inc.
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -47,7 +48,6 @@
          inevitable
          injected
          inout
-         int
          interface
          on
          optional
@@ -57,9 +57,9 @@
          reply
          requires
          return
+         subint
          system
          true
-         typedef
          void
          )))
 
