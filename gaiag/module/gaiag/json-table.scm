@@ -3,6 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -301,15 +302,14 @@
     (('triggers triggers ...) (->symbol ((->join ",") (map ->symbol triggers))))
     (($ <trigger> #f event) (->symbol event))
     (($ <trigger> port event) (->symbol (list port "." event)))
-    ((? (is? <ast>)) (->symbol (om->list o)))
     (('and lhs rhs) (->symbol (list '&& lhs rhs)))
     (('or lhs rhs) (->symbol (list '#{||}# lhs rhs)))
     (((or '< '<= '> '>= '+ '- '&& '#{||}# '== '!=) lhs rhs)
      (let ((op (car o)))
        (->symbol (list lhs " " op " " rhs))))
-    ((h ... t) (apply symbol-append (map ->symbol o)))
-;;    ((h . t) (list (->symbol h) '= (->symbol t)))
-    (((h ... t)) (->symbol (car o)))
+    (((h t ...)) (->symbol (car o)))
+    ((h t ...) (apply symbol-append (map ->symbol o)))
+    ((? (is? <ast>)) (->symbol (om->list o)))
     ((? string?) (string->symbol o))
     ((? number?) (->symbol (number->string o)))
     ((? symbol?) o)
