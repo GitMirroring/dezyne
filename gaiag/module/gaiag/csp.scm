@@ -965,8 +965,11 @@
           (($ <function> name ($ <signature> type ('formals)) recursive? statement)
            (let* ((tail (list (->string "    " "P'(" (comma-space-join (om:member-names model)) ")\n" )))
                   (transformed (csp-transform-model model statement inevitable-optional? channel provided-on? locals 2 tail name)))
+             (stderr "t:~a\n" transformed)
              (list
-              (->string name "(" "P'" ")" "("(comma-space-join (om:member-names model)) ")\n"" = \n")
+              (->string name "(" "P'" ")" "("(comma-space-join (om:member-names model)) ") = \n")
+              ((->join "\n") (undef ((om:collect def?) transformed)))
+              (->string "within\n")
               transformed)))
           
           (($ <function> name ($ <signature> type ('formals formals ...)) recursive? statement)
@@ -978,8 +981,11 @@
                                       (acons (.name (car formals)) (car formals) locals)))))
                   (tail (list (->string "    " "P'(" (comma-space-join (om:member-names model)) ")\n" )))
                   (transformed (csp-transform-model model statement inevitable-optional? channel provided-on? locals 2 tail name)))
+             (stderr "t:~a\n" transformed)
              (list
-              (->string name "(" (comma-space-join (append (om:member-names model) (map .name formals) (list "P'"))) ")\n"" = \n")
+              (->string name "(" (comma-space-join (append (om:member-names model) (map .name formals) (list "P'"))) ") =\n")
+              ((->join "\n") (undef ((om:collect def?) transformed)))
+              (->string "within\n")
               transformed)))
           
           ;; compound statements
@@ -1005,14 +1011,14 @@
                   (tailrec? (and last? (.recursive (om:function model identifier))))
                   (s (make-string 2 #\space))
                   (tail (map (lambda (x) (if (pair? x) (cons s x) (list s x))) tail))
-;;                  (continuation (list (->string "Cont_" (fresh-number) "'"))))
-                  (continuation (list (->string "C'" ))))
+                  (continuation (list (->string "Cont_" (fresh-number) "'"))))
              (if tailrec? 
                  (->string space identifier "(" (comma-space-join (append (om:member-names model) arguments (list "P'"))) ")" "\n")
                  (list
-;;                  (->string space "let " continuation "(" (comma-space-join (om:member-names model)) ")" " =\n")
-;;                  tail
-;;                  (->string space "within\n")
+                    (list 
+                     'def
+                     (->string space "let " continuation "(" (comma-space-join (om:member-names model)) ")" " =\n")
+                     tail)
                   (->string space identifier "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n")))))
              
           (($ <csp-assign> context identifier ($ <action> (and ($ <trigger> port event) (get! trigger))) expressions)
