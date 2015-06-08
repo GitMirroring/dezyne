@@ -250,8 +250,8 @@
                            (list statement)
                            (filter (is? <on>) statement)))))
   (let ((default "STOP"))
-    (or (string-null-is-#f
-         ((->join "\n[]\n")
+    (or (null-is-#f
+         ((->list-join "\n[]\n")
           (append
            (map
             (lambda (guard)
@@ -259,8 +259,8 @@
                     (ons (splitted-ons (.statement guard))))
                 (list
                  "(" expression ") & (\n"
-                 (or (string-null-is-#f
-                      ((->join "\n []\n  ")
+                 (or (null-is-#f
+                      ((->list-join "\n []\n  ")
                        (map (lambda (on)
                               (csp-transform model (ast-transform model on)))
                             (let ((ons
@@ -281,6 +281,49 @@
                 (splitted-ons ((compose .statement .behaviour) model))))))
         default)))
 
+(define (behaviour-component->csp model)
+  (let* ((behaviour (behaviour->csp model))
+         (lets (collect-def behaviour))
+         (inside #f))
+
+    (list
+     (if (not inside)
+         (if (pair? lets)
+             (list
+              ((->join "\n") lets))))
+         (list (.name model) "_" ((compose .name .behaviour) model) "(" (comma-space-join (om:member-names model)) ")" " =\n")                 
+     (if inside
+         (if (pair? lets)
+             (list
+              "let\n"
+              ((->join "\n") lets)
+              "within\n")))
+     "transition_begin -> ("
+     behaviour
+     ")")))
+  
+(define (behaviour-interface->csp model)
+  (let* ((behaviour (behaviour->csp (csp:import (.name model))))
+         (lets (collect-def behaviour))
+         (inside #f))
+    (list
+     (if (not inside)
+         (if (pair? lets)
+             (list
+              ((->join "\n") lets))))
+     (list (.name model) "_" ((compose .name .behaviour) model) "(" (comma-space-join (om:member-names model))")" " =\n")
+     (if inside
+         (if (pair? lets)
+             (list
+              "let\n"
+              ((->join "\n") lets)
+              "within\n")))
+     "(\n"
+     behaviour
+     "\n[]\n"
+     (list "CS & " (.name model) "?x:{" (comma-join (delete-duplicates (map .event (modeling-events model)))) "} -> illegal -> STOP\n")
+     ")")))
+  
 (define (csp-expression->string model src locals)
   (define (member? identifier) (om:variable model identifier))
   (define (local? identifier) (assoc-ref locals identifier))
@@ -899,30 +942,34 @@
                   (channel (if (is-a? model <interface>) model-name (.port (car triggers))))
                   (IG (if ((provides-event? model) (car triggers)) "IIG & "  "IG & ")))
              (receive (ins outs) (partition trigger-in? real-triggers)
-                 ((->join "\n[]\n")
-                  (list (if (pair? ins)
+                 ((->list-join "\n[]\n")
+                  (append
+                   (if (pair? ins)
+                       (list
+                        (list
+                         IG
+                         (if (is-a? model <interface>) model-name (.port (car ins)))
+                         (list "?x:{" (comma-join (append modeling-triggers (map .event ins))) "} -> (\n")
+                         tail
+                         ")"))
+                       (if (pair? modeling-triggers)
+                           (list
                             (list
                              IG
-                             (if (is-a? model <interface>) model-name (.port (car ins)))
-                             (->string "?x:{" (comma-join (append modeling-triggers (map .event ins))) "} -> (\n")
+                             (if (is-a? model <interface>) model-name channel)
+                             (list "?x:{" (comma-join modeling-triggers) "} -> (\n")
                              tail
-                             ")")
-                            (if (pair? modeling-triggers)
-                                (list
-                                 IG
-                                 (if (is-a? model <interface>) model-name channel)
-                                 (->string "?x:{" (comma-join modeling-triggers) "} -> (\n")
-                                 tail
-                                 ")")
-                                '()))
-                        (if (pair? outs)
-                            (list
-                             IG
-                             (if (is-a? model <interface>) model-name (.port (car outs)))
-                             (->string "_''?x:{" (comma-join (map .event outs)) "} -> (\n")
-                             tail
-                             ")")
-                            '()))))))
+                             ")"))
+                           '()))
+                   (if (pair? outs)
+                       (list
+                        (list
+                         IG
+                         (if (is-a? model <interface>) model-name (.port (car outs)))
+                         (list "_''?x:{" (comma-join (map .event outs)) "} -> (\n")
+                         tail
+                         ")"))
+                        '()))))))
 
           (($ <csp-on> context ('triggers triggers ...) statement)
            (let* ((inevitable-optional?
@@ -940,54 +987,63 @@
                   (trigger-in? (lambda (trigger) (om:in? (om:event model trigger))))
                   (channel (if (is-a? model <interface>) model-name (.port (car triggers)))))
              (receive (ins outs) (partition trigger-in? real-triggers)
-                 ((->join "\n[]\n")
-                  (list (if (pair? ins)
+                 ((->list-join "\n[]\n")
+                  (append 
+                   (if (pair? ins)
+                       (list
+                        (list
+                         (if (is-a? model <interface>) model-name (.port (car ins)))
+                         (list "?x:{" (comma-join (append modeling-triggers (map .event ins))) "} -> (\n")
+                         tail
+                         ")"))
+                       (if (pair? modeling-triggers)
+                           (list
                             (list
-                             (if (is-a? model <interface>) model-name (.port (car ins)))
-                             (->string "?x:{" (comma-join (append modeling-triggers (map .event ins))) "} -> (\n")
+                             (if (is-a? model <interface>) model-name channel)
+                             (list "?x:{" (comma-join modeling-triggers) "} ->(\n")
                              tail
-                             ")")
-                            (if (pair? modeling-triggers)
-                                (list
-                                 (if (is-a? model <interface>) model-name channel)
-                                 (->string "?x:{" (comma-join modeling-triggers) "} ->(\n")
-                                 tail
-                                 ")")
-                                '()))
-                        (if (pair? outs)
-                            (list
-                             (if (is-a? model <interface>) model-name (.port (car outs)))
-                             (->string "_''?x:{" (comma-join (map .event outs)) "} -> (\n")
-                             tail
-                             ")")
-                            '()))))))
+                             ")"))
+                            '()))
+                   (if (pair? outs)
+                       (list
+                        (list
+                         (if (is-a? model <interface>) model-name (.port (car outs)))
+                         (list "_''?x:{" (comma-join (map .event outs)) "} -> (\n")
+                         tail
+                         ")"))
+                       '()))))))
 
-          (($ <function> name ($ <signature> type ('formals)) recursive? statement)
-           (let* ((tail (list (->string "    " "P'(" (comma-space-join (om:member-names model)) ")\n" )))
-                  (transformed (csp-transform-model model statement inevitable-optional? channel provided-on? locals 2 tail name)))
-             (stderr "t:~a\n" transformed)
-             (list
-              (->string name "(" "P'" ")" "("(comma-space-join (om:member-names model)) ") = \n")
-              ((->join "\n") (undef ((om:collect def?) transformed)))
-              (->string "within\n")
-              transformed)))
-          
           (($ <function> name ($ <signature> type ('formals formals ...)) recursive? statement)
-           ;;(stderr "rec: ~a: ~a\n" name recursive?)
            (let* ((locals (let loop ((formals formals) (locals locals))
                             (if (null? formals)
                                 locals
                                 (loop (cdr formals)
                                       (acons (.name (car formals)) (car formals) locals)))))
-                  (tail (list (->string "    " "P'(" (comma-space-join (om:member-names model)) ")\n" )))
-                  (transformed (csp-transform-model model statement inevitable-optional? channel provided-on? locals 2 tail name)))
-             (stderr "t:~a\n" transformed)
-             (list
-              (->string name "(" (comma-space-join (append (om:member-names model) (map .name formals) (list "P'"))) ") =\n")
-              ((->join "\n") (undef ((om:collect def?) transformed)))
-              (->string "within\n")
-              transformed)))
-          
+                  (tail (list (list "    " "P'(" (comma-space-join (om:member-names model)) ")\n" )))
+                  (transformed (csp-transform-model model statement inevitable-optional? channel provided-on? locals 2 tail name))
+                  (lets (collect-def transformed))
+                  (split #f))
+              (if split
+                  (list
+                   (list name "(" "P'" ") = \n")
+                   (if (pair? lets)
+                      (list
+                       "let\n"
+                       ((->join "\n") lets)
+                       "within\n"))
+                  (list "let " name "_" "(" (comma-space-join (append (om:member-names model) (map .name formals))) ") = \n")
+                  transformed
+                  (list "within " "\\ " (comma-space-join (append (om:member-names model) (map .name formals))) " @ "
+                    name "_" "(" (comma-space-join (append (om:member-names model) (map .name formals))) ")\n"))
+                  (list
+                   (list name "(" "P'" ")" "(" (comma-space-join (append (om:member-names model) (map .name formals))) ") = \n")
+                   (if (pair? lets)
+                      (list
+                       "let\n"
+                       ((->join "\n") lets)
+                       "within\n"))
+                   transformed))))
+                  
           ;; compound statements
           (('compound statements ...)
            (csp-transform-model model statements inevitable-optional? channel provided-on? locals indent tail function))
@@ -995,14 +1051,14 @@
           (($ <csp-if> context expression then else)
            (let* ((expression (csp-expression->string model expression locals))
                   (s (make-string 2 #\space))
-                  (tail (map (lambda (x) (if (pair? x) (cons s x) (list s x))) tail))
+                  (tail (map (lambda (x) (if (def? x) x (if (pair? x) (cons s x) (list s x)))) tail))
                   (then (csp-transform-model model then inevitable-optional? channel provided-on? locals (1+ indent) tail function))
                   (else (csp-transform-model model else inevitable-optional? channel provided-on? locals (1+ indent) tail function)))
              (list
-               (->string space "(if " expression " then \n")
-               (->string then "\n")
-               (->string space "else\n")
-               (->string else ")\n")
+               (list space "(if " expression " then \n")
+               (list then "\n")
+               (list space "else\n")
+               (list else ")\n")
               )))
 
           ;; simple statements
@@ -1010,70 +1066,74 @@
            (let* ((arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals))
                   (tailrec? (and last? (.recursive (om:function model identifier))))
                   (s (make-string 2 #\space))
-                  (tail (map (lambda (x) (if (pair? x) (cons s x) (list s x))) tail))
-                  (continuation (list (->string "Cont_" (fresh-number) "'"))))
+                  (tail (map (lambda (x) (if (def? x) x (if (pair? x) (cons s x) (list s x)))) tail))
+                  (continuation (list (list "Cont_" (fresh-number) "'"))))
              (if tailrec? 
-                 (->string space identifier "(" (comma-space-join (append (om:member-names model) arguments (list "P'"))) ")" "\n")
-                 (list
-                    (list 
-                     'def
-                     (->string space "let " continuation "(" (comma-space-join (om:member-names model)) ")" " =\n")
-                     tail)
-                  (->string space identifier "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n")))))
+                 (list space identifier "(" (comma-space-join (append (om:member-names model) arguments (list "P'"))) ")" "\n")
+                 (list 
+                  (def-cont
+                   (list
+                    (list space continuation "(" (comma-space-join (om:member-names model)) ")" " =\n")
+                    tail))
+                  (list space identifier "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n")))))
              
           (($ <csp-assign> context identifier ($ <action> (and ($ <trigger> port event) (get! trigger))) expressions)
            (list 
-            (->string space (or port channel) (if (om:out? (om:event model (trigger))) "_''") "!" event " ->\n")
-            (->string space (or port channel) "_'" "?" identifier " ->\n")
+            (list space (or port channel) (if (om:out? (om:event model (trigger))) "_''") "!" event " ->\n")
+            (list space (or port channel) "_'" "?" identifier " ->\n")
             tail))
 
           (($ <csp-assign> context identifier ($ <call> function arguments) expressions)
            ;;(stderr "arguments: ~a ~a\n" arguments (pair? arguments))
            (let* ((arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals))
                   (s (make-string 2 #\space))
-                  (tail (map (lambda (x) (if (pair? x) (cons s x) (list s x))) tail)))
+                  (tail (map (lambda (x) (if (def? x) x (if (pair? x) (cons s x) (list s x)))) tail))
+                  (continuation (list (list "Cont_" (fresh-number) "'"))))
              (list
-              (->string space function "(" (comma-space-join (append arguments (list "P'"))) ")" " ->\n")
-              (->string space s "let " identifier " = " "tmp'" " within\n")
-              tail)))
+              (def-cont
+               (list
+                (list space continuation "(" (comma-space-join (append (om:member-names model) (list "res'"))) ")" " =\n")
+                (list "let " identifier " = res' within ")
+                tail))
+              (list space function "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n"))))
            
           (($ <csp-assign> context identifier expression expressions)
            (let* ((expression (csp-expression->string model expression locals)))
              (list 
-              (->string space "let " "tmp'" " = " expression " within\n")
-              (->string space "let " identifier " = " "tmp'" " within\n")
-;;              (->string space "let " identifier " = " expression " within\n")
+              (list space "let " "tmp'" " = " expression " within\n")
+              (list space "let " identifier " = " "tmp'" " within\n")
+;;              (list space "let " identifier " = " expression " within\n")
               tail)))
 
           (($ <csp-variable> context identifier type ($ <action> (and ($ <trigger> port event) (get! trigger))))
            (list 
-            (->string space (or port channel) (if (om:out? (om:event model (trigger))) "_''") "!" event " ->\n")
-            (->string space (or port channel) "_'" "?" identifier " ->\n")
+            (list space (or port channel) (if (om:out? (om:event model (trigger))) "_''") "!" event " ->\n")
+            (list space (or port channel) "_'" "?" identifier " ->\n")
             tail))
           
           (($ <csp-variable> context name type ($ <call> identifier arguments))
-           ;;(stderr "arguments: ~a ~a\n" arguments (pair? arguments))
            (let* ((arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals))
                   (s (make-string 2 #\space))
-                  (tail (map (lambda (x) (if (pair? x) (cons s x) (list s x))) tail))
-;;                  (continuation (list (->string "Cont_" (fresh-number) "'"))))
-                  (continuation (list (->string "Cont_" "'"))))
+                  (tail (map (lambda (x) (if (def? x) x (if (pair? x) (cons s x) (list s x)))) tail))
+                  (continuation (list (list "Cont_" (fresh-number) "'"))))
              (list
-;;             (->string space "let " continuation "(" (comma-space-join (om:member-names model)) ")" " =\n")
-;;              tail
-;;              (->string space "within\n")
-              (->string space identifier "(" (comma-space-join (om:member-names model)) ", " arguments ", " continuation ")" "\n"))))
+              (def-cont
+               (list
+                (list space continuation "(" (comma-space-join (append (om:member-names model) (list "res'"))) ")" " =\n")
+                (list "let " name " = res' within ")
+                tail))
+              (list space identifier "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n"))))
           
           (($ <csp-variable> context name type expression)
            (let* ((expression (csp-expression->string model expression locals)))
              (list
-              (->string space "let " name " = " expression " within\n")
+              (list space "let " name " = " expression " within\n")
               tail)))
 
           (($ <csp-reply> context expression)
            (let* ((expression (csp-expression->string model expression locals)))
              (list
-              (->string space channel "_'!" expression " -> \n")
+              (list space channel "_'!" expression " -> \n")
               tail)))
           
           (($ <action> trigger)
@@ -1083,19 +1143,19 @@
                   (channel-return (if ((requires-event? model) trigger) (list " -> " channel "_'.return")))
                   (channel (list channel suffix)))
              (list
-              (->string space channel "!" event-name channel-return " ->\n")
+              (list space channel "!" event-name channel-return " ->\n")
               tail)))
 
           (($ <illegal>) 
            (list
-            (->string space "illegal -> STOP\n")))
+            (list space "illegal -> STOP\n")))
           
           (($ <return>)
-           (list (->string "    " "P'(" (comma-space-join (om:member-names model)) ")\n" )))
+           (list (list "    " "P'(" (comma-space-join (om:member-names model)) ")\n" )))
 
           (($ <csp-return> context ($ <expression> expression))
            (let ((expression (csp-expression->string model expression locals)))
-             (list (->string "    " "P'(" (comma-space-join (append (om:member-names model) (list expression)) ) ")\n" ))))
+             (list (list "    " "P'(" (comma-space-join (append (om:member-names model) (list expression)) ) ")\n" ))))
           
           (($ <skip>) tail)
           
@@ -1103,12 +1163,12 @@
            (let ((channel-return
                   (if (and (not inevitable-optional?) provided-on?)
                       (list
-                       (->string space channel "_'.return ->\n"))
+                       (list space channel "_'.return ->\n"))
                       (if (not (is-a? model <component>))
                           (list 
-                           (->string space channel "_'''.modeling ->\n"))))))
+                           (list space channel "_'''.modeling ->\n"))))))
              (list
-              (->string space channel-return) 
+              (list space channel-return) 
               tail)))
        
           ;; other bits
@@ -1124,11 +1184,11 @@
                   (component? (is-a? model <component>)))
              (if component?
                  (list
-                  (->string space "transition_end ->\n")
-                  (->string space model-name "_" behaviour "(" (comma-join (om:member-names model)) ")\n"))
+                  (list space "transition_end ->\n")
+                  (list space model-name "_" behaviour "(" (comma-join (om:member-names model)) ")\n"))
                  (list
-                  (->string space channel ".the_end' ->\n")
-                  (->string space model-name "_" behaviour "(" (comma-join (om:member-names model)) ")\n"))
+                  (list space channel ".the_end' ->\n")
+                  (list space model-name "_" behaviour "(" (comma-join (om:member-names model)) ")\n"))
                  )))
 
           (#f (list space "SKIP\n"))
@@ -1252,15 +1312,16 @@
                    (IG (if ((provides-event? model) (car triggers)) "IIG & "  "IG & "))
                    (event-names (comma-join (map .event triggers)))
                    (transformed (csp-transform-model model statement inevitable-optional? channel provided-on? locals)))
-              ((->join "\n[]\n")
-               (list (if (pair? ins)
-                         (list IG (if (is-a? model <interface>) model-name (.port (car ins))) "?x:{" (comma-join (append modeling-triggers (map .event ins))) "} ->\n" transformed "(STOP,<>)")
-                         (if (pair? modeling-triggers)
-                             (list IG (if (is-a? model <interface>) model-name channel) "?x:{" (comma-join modeling-triggers) "} ->\n" transformed "(STOP,<>)")
-                             '()))
-                     (if (pair? outs)
-                         (list IG (if (is-a? model <interface>) model-name (.port (car outs))) "_''?x:{" (comma-join (map .event outs)) "} ->\n" transformed "(STOP,<>)")
-                         '())))))))
+              ((->list-join "\n[]\n")
+               (append
+                (if (pair? ins)
+                    (list IG (if (is-a? model <interface>) model-name (.port (car ins))) "?x:{" (comma-join (append modeling-triggers (map .event ins))) "} ->\n" transformed "(STOP,<>)")
+                    (if (pair? modeling-triggers)
+                        (list IG (if (is-a? model <interface>) model-name channel) "?x:{" (comma-join modeling-triggers) "} ->\n" transformed "(STOP,<>)")
+                        '()))
+                (if (pair? outs)
+                    (list IG (if (is-a? model <interface>) model-name (.port (car outs))) "_''?x:{" (comma-join (map .event outs)) "} ->\n" transformed "(STOP,<>)")
+                    '())))))))
 
        (($ <csp-on> context ('triggers triggers ...) statement)
         (let* ((real-triggers (filter (negate modeling-event?) triggers))
@@ -1278,15 +1339,16 @@
                   (transformed (csp-transform-model model statement inevitable-optional? channel provided-on? locals))
                   (transformed-end (csp-transform-model model the-end inevitable-optional? channel provided-on? locals)))
              ;;(list channel "?x:{" event-names "}" " ->\n" transformed transformed-end)
-             ((->join "\n[]\n")
-              (list  (if (pair? ins)
-                         (list (if (is-a? model <interface>) model-name (.port (car ins))) "?x:{" (comma-join (append modeling-triggers (map .event ins))) "} ->\n" transformed transformed-end)
-                         (if (pair? modeling-triggers)
-                             (list (if (is-a? model <interface>) model-name channel) "?x:{" (comma-join modeling-triggers) "} ->\n" transformed transformed-end)
-                             '()))
-                     (if (pair? outs)
-                         (list (if (is-a? model <interface>) model-name (.port (car outs))) "_''?x:{" (comma-join (map .event outs)) "} ->\n" transformed transformed-end)
-                         '())))))))
+             ((->list-join "\n[]\n")
+              (append
+               (if (pair? ins)
+                   (list (if (is-a? model <interface>) model-name (.port (car ins))) "?x:{" (comma-join (append modeling-triggers (map .event ins))) "} ->\n" transformed transformed-end)
+                   (if (pair? modeling-triggers)
+                       (list (if (is-a? model <interface>) model-name channel) "?x:{" (comma-join modeling-triggers) "} ->\n" transformed transformed-end)
+                       '()))
+               (if (pair? outs)
+                   (list (if (is-a? model <interface>) model-name (.port (car outs))) "_''?x:{" (comma-join (map .event outs)) "} ->\n" transformed transformed-end)
+                   '())))))))
 
        (($ <csp-reply> context expression)
         (list "reply_(" channel "_', " "(\\ (" context ") @ " expression "))"))
@@ -1359,7 +1421,7 @@
        (_ (throw 'match-error (format #f "~a:csp-transform-: no match: ~a\n" (current-source-location) src)))) locals)))
 
 (define (def? x) (and (pair? x) (eq? (car x) 'def)))
-(define (undef o) (match o (('def t ...) t) ((h t ...) (map undef o)) (_ o)))
+(define (def-delete o) (match o (('def t ...) '()) ((h t ...) (map def-delete o)) (_ o)))
 
 (define-syntax string-if
   (syntax-rules ()
@@ -1378,4 +1440,31 @@
 (let ((counter 0))
   (set! fresh-number (lambda () (set! counter (1+ counter)) counter)))
       
-      
+(define ((->list-join str) l)
+  (cdr (apply append (map (lambda (x) (list str x)) l))))
+
+(define (res r)
+  (stderr "res:~a\n" r)
+  r)
+
+(define (collect-def l)
+      (match l
+             (('def t ...) (remove-def (append (list t) (apply append (map collect-def t)))))
+             ((h t ...) (remove-def (apply append (map collect-def l))))
+             (_ '()))) 
+
+(define (remove-def l)
+      (match l
+             (('def t ...) '())
+             ((h t ...) (map remove-def l))
+             (_ l))) 
+  
+(define (def-cont l)
+  (let ((inline #t))
+    (if inline
+        (append
+         (list "let ")
+         l
+         (list "\nwithin\n")
+         )
+        (append (list 'def) l))))

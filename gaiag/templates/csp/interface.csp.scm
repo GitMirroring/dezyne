@@ -35,11 +35,7 @@ channel #(.name model)_''': {modeling}
 
 IF_#(.name model) _#((compose .name .behaviour) model)(IG,CS) = let
 # (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (om:functions model)))
-#(.name model) _#((compose .name .behaviour) model) (#(comma-space-join (om:member-names model))) = (
-# (behaviour->csp (csp:import (.name model)))
-[]
-CS & #(.name model)?x:{#(comma-join (delete-duplicates (map .event (modeling-events model))))} -> illegal -> STOP
-)
+#(behaviour-interface->csp model)
 
 REORDER' = #(.name model)?x' -> (#(.name model)_in'?y' -> #(.name model).the_end' -> #(.name model)_out'!y' -> REORDER' [] #(.name model).the_end' -> REORDER')
 
