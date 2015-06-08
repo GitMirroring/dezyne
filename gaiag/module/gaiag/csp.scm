@@ -1069,7 +1069,7 @@
                   (tail (map (lambda (x) (if (def? x) x (if (pair? x) (cons s x) (list s x)))) tail))
                   (continuation (list (list "Cont_" (fresh-number) "'"))))
              (if tailrec? 
-                 (list space identifier "(" (comma-space-join (append (om:member-names model) arguments (list "P'"))) ")" "\n")
+                 (list space identifier "(" "P'" ")" "(" (comma-space-join (append (om:member-names model) arguments (list ))) ") -- tail recursion" "\n")
                  (list 
                   (def-cont
                    (list
