@@ -1195,7 +1195,12 @@
           (#t (list space "SKIP\n")) ;; FIXME: who produces #t?
           
           ((h t ...)
-           (let ((tail (csp-transform-model model t inevitable-optional? channel provided-on? locals indent tail function)))
+           (stderr "")
+           (let ((tail
+                  (let ((locals (match h
+                                  (($ <csp-variable> context name) (acons name h locals))
+                                  (_ locals))))
+                     (csp-transform-model model t inevitable-optional? channel provided-on? locals indent tail function))))
              (csp-transform-model model h inevitable-optional? channel provided-on? locals indent tail function)))
 
           (_ (stderr "TODO: ~a\n" o)

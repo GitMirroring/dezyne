@@ -37,7 +37,6 @@
            <csp-on>
            <csp-reply>
            <csp-return>
-           <semi>
            <voidreply>
            <the-end>           
 
@@ -59,8 +58,7 @@
 
 (define-class <csp-call> (<call> <contexted>))
 
-(define-class <csp-variable> (<variable> <contexted>)
-  (continuation :accessor .continuation :init-value #f :init-keyword :continuation))
+(define-class <csp-variable> (<variable> <contexted>))
 
 (define-class <csp-assign> (<assign> <contexted>)
   (expressions :accessor .expressions :init-value #f :init-keyword :expressions))
@@ -74,10 +72,6 @@
 (define-class <csp-reply> (<reply> <contexted>))
 
 (define-class <csp-return> (<return> <contexted>))
-
-(define-class <semi> (<ast>)
-  (statement :accessor .statement :init-value #f :init-keyword :statement)
-  (continuation :accessor .continuation :init-value #f :init-keyword :continuation))
 
 (define-class <the-end> ())
 

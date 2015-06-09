@@ -927,7 +927,7 @@
     (('value type field) type)
     (('variable name type expression) type)
     
-    (('csp-variable context name type expression continuation) type) ;; URGR
+    (('csp-variable context name type expression) type) ;; URGR
     ))
 
 (define (.injected ast)
