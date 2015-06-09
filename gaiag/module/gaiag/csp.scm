@@ -1064,11 +1064,10 @@
           ;; simple statements
           (($ <csp-call> context identifier arguments last?)
            (let* ((arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals))
-                  (tailrec? (and last? (.recursive (om:function model identifier))))
                   (s (make-string 2 #\space))
                   (tail (map (lambda (x) (if (def? x) x (if (pair? x) (cons s x) (list s x)))) tail))
                   (continuation (list (list "Cont_" (fresh-number) "'"))))
-             (if tailrec? 
+             (if last? 
                  (list space identifier "(" "P'" ")" "(" (comma-space-join (append (om:member-names model) arguments (list ))) ") -- tail recursion" "\n")
                  (list 
                   (def-cont
