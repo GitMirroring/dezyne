@@ -76,9 +76,13 @@
                                (map (compose .elements .triggers) shared-ons))
                         om:equal?))
                       (statement (on-statement (map .statement shared-ons)))
-                      (aggregated-on (make <on>
-                                       :triggers (make <triggers> :elements triggers)
-                                       :statement statement)))
+                      (aggregated-on
+                       (make <on>
+                         :triggers
+                         (retain-source-properties
+                          (car ons)
+                          (make <triggers> :elements triggers))
+                         :statement statement)))
                  (cons aggregated-on (loop remainder))))))))
      (('functions functions ...) o)
      ((? (is? <ast>)) (om:map (aggregate-on aggregate?) o))
@@ -118,9 +122,13 @@
            (receive (shared-triggers remainder)
                (partition (lambda (x) (compare (car triggers) x)) triggers)
              (let* ((triggers (append shared-triggers))
-                    (shared-on (make <on>
-                                 :triggers (make <triggers> :elements triggers)
-                                 :statement (.statement o))))
+                    (shared-on
+                     (make <on>
+                       :triggers
+                       (retain-source-properties
+                        (.triggers o)
+                        (make <triggers> :elements triggers))
+                       :statement (.statement o))))
                (cons shared-on (loop remainder)))))))
     (_ o)))
 
@@ -183,11 +191,9 @@
   (match o
     (('compound statements ...)
      (let ((top (flatten-compound- o)))
-       (retain-source-properties
-        o
-        (if (is-a? top <compound>)
-            top
-            (make <compound> :elements (list top))))))
+       (if (is-a? top <compound>)
+           top
+           (make <compound> :elements (list top)))))
     ((? (is? <ast>)) (om:map flatten-compound o))
     ((h t ...) (map flatten-compound o))
     (_ o)))
@@ -197,10 +203,8 @@
     (('compound statement)
      (flatten-compound- statement))
     (('compound statements ...)
-     (retain-source-properties
-      o 
-      (make <compound> :elements 
-            (apply append (map flatten-compound-compound statements)))))
+     (make <compound> :elements 
+           (apply append (map flatten-compound-compound statements))))
     ((? (is? <ast>)) (om:map flatten-compound- o))
     ((h t ...) (map flatten-compound- o))
     (_ o)))
@@ -227,8 +231,9 @@
          o))
     (('compound statements ...)
      (retain-source-properties
-      o (make <compound>
-          :elements (map (annotate-otherwise statements) statements))))
+      o
+      (make <compound>
+        :elements (map (annotate-otherwise statements) statements))))
     ((? (is? <ast>)) (om:map (annotate-otherwise statements) o))
     ((h t ...) (map (annotate-otherwise statements) o))
     (_ o)))

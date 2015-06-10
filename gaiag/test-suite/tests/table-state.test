@@ -9,6 +9,7 @@
   :use-module (test-suite misc)
 
   :use-module (gaiag ast)
+  :use-module (gaiag annotate)  
   :use-module (gaiag pretty)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
@@ -349,7 +350,7 @@ interface i
 "))
 
 (pass-if "table-state-guards"
-  (or #t
+  (or (stderr "disabled: ~a\n" "table-state-guards")
   (diff-noisy-equal?
    (pretty-table-state
     (ast:resolve*
@@ -499,7 +500,8 @@ interface i
 
 
 (pass-if "table-state-sort-triggers"
-  (diff-noisy-equal?
+  (or ;;(stderr "disabled: ~a\n" "table-state-sort-triggers")
+   (diff-noisy-equal?
    (pretty-table-state
     (ast:resolve*
      (dezyne->ast
@@ -545,7 +547,7 @@ interface ISiren
       }
    }
 }
-"))
+")))
 
 
 (pass-if "table-state-resolve-deep-otherwise"
@@ -816,7 +818,8 @@ interface I {
 "))
 
 (pass-if "table-state-non-det"
-  (diff-noisy-equal?
+  (or ;; (stderr "disabled: ~a\n" "table-state-non-det")
+   (diff-noisy-equal?
    (pretty-table-state
     (ast:resolve*
      (dezyne->ast
@@ -873,4 +876,71 @@ interface I {
     s = State.Off;
   }
 }
-"))
+")))
+
+(pass-if "table-state-locations"
+  (or (stderr "disabled: ~a\n" "table-state-locations")
+   (pretty-noisy-equal?
+   (extract-locations
+    (test-table-state
+     (ast:resolve*
+      (dezyne->ast
+#{interface table
+{
+  in void e();
+  out void a();
+
+  behaviour 
+  {
+    enum S { init, idle };
+    S s = S.init;
+    [s.init]
+    on e:
+    {
+      s = S.idle;
+      a;
+    }
+    [s.idle]
+    on e:
+    a;
+  }
+}
+#}))))
+'(compound
+  ((location #f 9 4 116 #f)
+   guard
+   (expression (field s init))
+   ((location #f 10 4 129 #f)
+    on
+    (triggers
+      ((location #f 10 7 132 #f)
+       trigger
+       #f
+       e
+       (arguments)))
+    ((location #f 11 4 139 #f)
+     compound
+     ((location #f 12 6 147 #f)
+      assign
+      s
+      (expression
+        ((location #f 12 11 152 #f) literal #f S idle)))
+     ((location #f 13 6 165 #f)
+      action
+      (trigger #f a (arguments))))))
+  ((location #f 15 4 178 #f)
+   guard
+   (expression (field s idle))
+   ((location #f 16 4 191 #f)
+    on
+    (triggers
+      ((location #f 16 7 194 #f)
+       trigger
+       #f
+       e
+       (arguments)))
+    ((location #f 17 4 201 #f)
+     action
+     (trigger #f a (arguments)))))))))
+
+

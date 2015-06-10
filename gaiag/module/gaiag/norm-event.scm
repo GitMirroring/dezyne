@@ -31,6 +31,7 @@
 
   :use-module (srfi srfi-1)
 
+  :use-module (language dezyne location)
   :use-module (gaiag misc)
 
   :use-module (gaiag ast)
@@ -111,8 +112,7 @@
 
 (define (combine-ons o)
   (match o
-    (($ <on>)
-     ((passdown-triggers (.triggers o)) (.statement o)))
+    (($ <on>) ((passdown-triggers (.triggers o)) (.statement o)))
     ((? (is? <ast>)) (om:map combine-ons o))
     ((h t ...) (map combine-ons o))
     (_ o)))
@@ -121,17 +121,20 @@
   (match o
     (($ <on>)
      ((passdown-triggers
-       (make <triggers> :elements (append triggers (.triggers o))))
+       (retain-source-properties
+        (.triggers o)
+        (make <triggers> :elements (append triggers (.triggers o)))))
       (.statement o)))
     (('compound statements ...)
      (make <compound> :elements (map (passdown-triggers triggers) statements)))
-    (_ (make <on> :triggers triggers :statement o))))
+    (_
+     (retain-source-properties
+      triggers
+      (make <on> :triggers triggers :statement o)))))
 
 (define (passdown-guard o)
   (match o
-    (($ <guard>)
-     ((passdown-expression (.expression o))
-      (.statement o)))
+    (($ <guard>) ((passdown-expression (.expression o)) (.statement o)))
     ((? (is? <ast>)) (om:map passdown-guard o))
     ((h t ...) (map passdown-guard o))
     (_ o)))
@@ -141,26 +144,46 @@
     (($ <on>)
      (make <on>
        :triggers (.triggers o)
-       :statement ((passdown-expression expression #t) (.statement o))))
+       :statement
+       (retain-source-properties
+        expression
+        ((passdown-expression expression #t) (.statement o)))))
     (('compound ($ <guard>) ..1) (=> failure)
      (if seen-on?
-         (make <guard> :expression expression :statement o)
+         (retain-source-properties
+          o
+          (make <guard> :expression expression :statement o))
          (failure)))
     ((and ('compound s ...) (? om:declarative?))
-     (make <compound> :elements (map (passdown-expression expression seen-on?) s)))    
-    (('compound s ...) (make <guard> :expression expression :statement o))
+     (retain-source-properties
+      o
+      (make <compound> :elements (map (passdown-expression expression seen-on?) s))))    
+    (('compound s ...)
+     (retain-source-properties
+      expression
+      (make <guard> :expression expression :statement o)))
     (($ <guard> e s)
      (let ((o ((passdown-expression e seen-on?) s)))
        (match o
          (($ <on> t s)
           (make <on>
             :triggers t
-            :statement (make <guard> :expression expression :statement s)))
+            :statement
+            (retain-source-properties
+             expression
+             (make <guard> :expression expression :statement s))))
          (('compound t ...)
-          (make <compound>
-            :elements (map (passdown-expression expression seen-on?) t)))
-         (_ (make <guard> :expression expression :statement o)))))
-    (_ (make <guard> :expression expression :statement o))))
+          (retain-source-properties
+           o
+           (make <compound>
+             :elements (map (passdown-expression expression seen-on?) t))))
+         (_
+          (retain-source-properties
+           expression
+           (make <guard> :expression expression :statement o))))))
+    (_ (retain-source-properties
+        expression
+        (make <guard> :expression expression :statement o)))))
 
 (define (ast-> ast)
   ((compose
