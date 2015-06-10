@@ -63,27 +63,27 @@
   "Aggregate ONs with same statement AND (AGGREGATE? a b) into one ON-statement."
   (match o
     (('compound ($ <on>) ..1)
-     (make <compound>
-       :elements
-       (let loop ((ons (cdr o)))
-         (if (null? ons)
-             '()
-             (receive (shared-ons remainder)
-                 (partition (lambda (x) (aggregate? (car ons) x)) ons)
-               (let* ((triggers
-                       (delete-duplicates
-                        (apply append
-                               (map (compose .elements .triggers) shared-ons))
-                        om:equal?))
-                      (statement (on-statement (map .statement shared-ons)))
-                      (aggregated-on
-                       (make <on>
-                         :triggers
-                         (retain-source-properties
-                          (car ons)
-                          (make <triggers> :elements triggers))
-                         :statement statement)))
-                 (cons aggregated-on (loop remainder))))))))
+     (if (=1 (length (cdr o)))
+         o
+         (make <compound>
+           :elements
+           (let loop ((ons (cdr o)))
+             (if (null? ons)
+                 '()
+                 (receive (shared-ons remainder)
+                     (partition (lambda (x) (aggregate? (car ons) x)) ons)
+                   (let* ((triggers
+                           (delete-duplicates
+                            (apply append
+                                   (map (compose .elements .triggers) shared-ons))
+                            om:equal?))
+                          (statement (on-statement (map .statement shared-ons)))
+                          (aggregated-on
+                           (make <on>
+                             :triggers
+                             (make <triggers> :elements triggers)
+                             :statement statement)))
+                     (cons aggregated-on (loop remainder)))))))))
      (('functions functions ...) o)
      ((? (is? <ast>)) (om:map (aggregate-on aggregate?) o))
      ((h t ...) (map (aggregate-on aggregate?) o))
@@ -138,23 +138,25 @@
 ;; push all ons into first guard, discard the rest
   (match o
     (('compound ($ <guard>) ..1)
-     (make <compound>
-       :elements
-       (let loop ((guards (cdr o)))
-         (if ( null? guards)
-             '()
-             (receive (shared-guards remainder)
-                 (partition (lambda (x) (om:guard-equal? (car guards) x)) guards)
-               (let* ((expression (.expression (car shared-guards)))
-                      (aggregated-guard
-                       (make <guard>
-                         :expression (.expression (car guards))
-                         :statement (wrap-compound-as-needed (map .statement shared-guards)))))
-                 (cons aggregated-guard (loop remainder))))))))
-     (('functions functions ...) o)
-     ((? (is? <ast>)) (om:map aggregate-guard-g o))
-     ((h t ...) (map aggregate-guard-g o))
-     (_ o)))
+     (if (=1 (length (cdr o)))
+         o
+         (make <compound>
+           :elements
+           (let loop ((guards (cdr o)))
+             (if ( null? guards)
+                 '()
+                 (receive (shared-guards remainder)
+                     (partition (lambda (x) (om:guard-equal? (car guards) x)) guards)
+                   (let* ((expression (.expression (car shared-guards)))
+                          (aggregated-guard
+                           (make <guard>
+                             :expression (.expression (car guards))
+                             :statement (wrap-compound-as-needed (map .statement shared-guards)))))
+                     (cons aggregated-guard (loop remainder)))))))))
+    (('functions functions ...) o)
+    ((? (is? <ast>)) (om:map aggregate-guard-g o))
+    ((h t ...) (map aggregate-guard-g o))
+    (_ o)))
 
 (define (wrap-compound-as-needed statements)
   (if (or (null? statements) (>1 (length statements)))

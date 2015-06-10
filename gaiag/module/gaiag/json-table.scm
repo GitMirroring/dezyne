@@ -34,6 +34,7 @@
   :use-module (srfi srfi-1)
   :use-module (srfi srfi-9)
   
+  :use-module (language dezyne location)
   :use-module (gaiag misc)
   :use-module (gaiag pretty-print)  
 
@@ -190,7 +191,8 @@
 
 (define ((json-inner-guard model var state triggers) guard statement)
   (alist->hash-table
-   `((triggers . ,(json-triggers triggers))
+   `((triggers . ,(json-triggers triggers
+                                 (if (source-location triggers) triggers statement)))
      (guard . ,(->symbol guard))
      (actions . ,(json-action statement))
      (callbacks . ,(json-callback model statement))
@@ -277,12 +279,12 @@
                 (map ast->dezyne actions))
       '()))
 
-(define (json-triggers o)
+(define* (json-triggers o :optional (location o))
   (match o
     (('triggers triggers ...)
-     (json-data-location (map ->symbol triggers) o))
+     (json-data-location (map ->symbol triggers) location))
     (($ <on>)
-     (json-data-location (map ->symbol ((compose .elements .triggers) o)) o))))
+     (json-data-location (map ->symbol ((compose .elements .triggers) o)) location))))
 
 (define (json-guard o)
   (json-data-location (->symbol (.expression o)) o))
