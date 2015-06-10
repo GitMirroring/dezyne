@@ -43,9 +43,26 @@
            ast->
            code-norm-event
            norm-event
+           table-norm-event           
            ))
 
 (define (norm-event o)
+  ((compose
+    remove-skip
+    aggregate-guard-s
+    (group-ons)
+    (aggregate-on)
+    (expand-on equal?)
+    aggregate-guard-s
+    flatten-compound
+    combine-ons
+    passdown-guard
+    (remove-otherwise)
+    add-skip
+    )
+   o))
+
+(define (table-norm-event o)
   ((compose
     remove-skip
     aggregate-guard-s
@@ -74,6 +91,25 @@
     add-skip
     )
    o))
+
+(define* ((group-ons :optional (group? om:triggers-equal?)) o)
+  "stable place ons with same group? next to eachother"
+  (match o
+    (('compound ($ <on>) ..1)
+     (if (=1 (length (cdr o)))
+         o
+         (make <compound>
+           :elements
+           (let loop ((ons (cdr o)))
+             (if (null? ons)
+                 '()
+                 (receive (grouped-ons remainder)
+                     (partition (lambda (x) (group? (car ons) x)) ons)
+                   (append grouped-ons (loop remainder))))))))
+     (('functions functions ...) o)
+     ((? (is? <ast>)) (om:map (group-ons group?) o))
+     ((h t ...) (map (group-ons group?) o))
+     (_ o)))
 
 (define (aggregate-guard-s o)
   "Aggregate guards with matching statement into one guard-statement."
@@ -125,8 +161,10 @@
         (.triggers o)
         (make <triggers> :elements (append triggers (.triggers o)))))
       (.statement o)))
+    ((and ('compound s ...) (? om:declarative?))
+     (make <compound> :elements (map (passdown-triggers triggers) s)))
     (('compound statements ...)
-     (make <compound> :elements (map (passdown-triggers triggers) statements)))
+     (make <on> :triggers triggers :statement o))
     (_
      (retain-source-properties
       triggers

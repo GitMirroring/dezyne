@@ -192,7 +192,8 @@
 (define ((json-inner-guard model var state triggers) guard statement)
   (alist->hash-table
    `((triggers . ,(json-triggers triggers
-                                 (if (source-location triggers) triggers statement)))
+                                 (if (source-location triggers) triggers statement)
+                                 ))
      (guard . ,(->symbol guard))
      (actions . ,(json-action statement))
      (callbacks . ,(json-callback model statement))

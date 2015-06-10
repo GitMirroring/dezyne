@@ -49,7 +49,7 @@
 
 (define (table-event model o)
   ((compose
-    norm-event
+    table-norm-event
     remove-initial
     (annotate-otherwise)
     (prepend-guards model)

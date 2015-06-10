@@ -72,17 +72,22 @@
                  '()
                  (receive (shared-ons remainder)
                      (partition (lambda (x) (aggregate? (car ons) x)) ons)
-                   (let* ((triggers
-                           (delete-duplicates
-                            (apply append
-                                   (map (compose .elements .triggers) shared-ons))
-                            om:equal?))
-                          (statement (on-statement (map .statement shared-ons)))
-                          (aggregated-on
-                           (make <on>
-                             :triggers
-                             (make <triggers> :elements triggers)
-                             :statement statement)))
+                   (let ((aggregated-on
+                          (if (>1 (length shared-ons))
+                              (let* ((triggers
+                                      (retain-source-properties
+                                       (.triggers (car ons))
+                                       (make <triggers>
+                                         :elements
+                                         (delete-duplicates
+                                          (apply append
+                                                 (map (compose .elements .triggers) shared-ons))
+                                          om:equal?))))
+                                     (statement (on-statement (map .statement shared-ons))))
+                                (make <on>
+                                  :triggers triggers
+                                  :statement statement))
+                              (car shared-ons))))
                      (cons aggregated-on (loop remainder)))))))))
      (('functions functions ...) o)
      ((? (is? <ast>)) (om:map (aggregate-on aggregate?) o))
@@ -147,11 +152,12 @@
                  '()
                  (receive (shared-guards remainder)
                      (partition (lambda (x) (om:guard-equal? (car guards) x)) guards)
-                   (let* ((expression (.expression (car shared-guards)))
-                          (aggregated-guard
-                           (make <guard>
-                             :expression (.expression (car guards))
-                             :statement (wrap-compound-as-needed (map .statement shared-guards)))))
+                   (let ((aggregated-guard
+                          (if (>1 (length shared-guards))
+                              (make <guard>
+                                :expression (.expression (car shared-guards))
+                                :statement (wrap-compound-as-needed (map .statement shared-guards)))
+                              (car shared-guards))))
                      (cons aggregated-guard (loop remainder)))))))))
     (('functions functions ...) o)
     ((? (is? <ast>)) (om:map aggregate-guard-g o))

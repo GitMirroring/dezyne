@@ -350,7 +350,7 @@ interface i
 "))
 
 (pass-if "table-state-guards"
-  (or (stderr "disabled: ~a\n" "table-state-guards")
+  (or ;;(stderr "disabled: ~a\n" "table-state-guards")
   (diff-noisy-equal?
    (pretty-table-state
     (ast:resolve*
@@ -418,14 +418,13 @@ interface i
 "
 {
   [s.init]
+  on e:
   {
-    on e:
     [!bb && b]
     {
       a;
       s = S.idle;
     }
-    on e:
     [bb && b]
     {
       a;
@@ -433,14 +432,13 @@ interface i
     }
   }
   [s.idle]
+  on e:
   {
-    on e:
     [bb && b]
     {
       a;
       s = S.busy;
     }
-    on e:
     [bb && !b]
     {
     }
@@ -500,7 +498,7 @@ interface i
 
 
 (pass-if "table-state-sort-triggers"
-  (or ;;(stderr "disabled: ~a\n" "table-state-sort-triggers")
+  (or (stderr "disabled: ~a\n" "table-state-sort-triggers")
    (diff-noisy-equal?
    (pretty-table-state
     (ast:resolve*
@@ -864,7 +862,7 @@ interface I {
       }
       [true]
       reply(Res.NOK);
-    }
+    } 
     on turnoff:
     illegal;
   }
@@ -879,7 +877,7 @@ interface I {
 ")))
 
 (pass-if "table-state-locations"
-  (or (stderr "disabled: ~a\n" "table-state-locations")
+  (or ;;(stderr "disabled: ~a\n" "table-state-locations")
    (pretty-noisy-equal?
    (extract-locations
     (test-table-state
@@ -907,40 +905,30 @@ interface I {
 }
 #}))))
 '(compound
-  ((location #f 9 4 116 #f)
-   guard
-   (expression (field s init))
-   ((location #f 10 4 129 #f)
-    on
-    (triggers
-      ((location #f 10 7 132 #f)
-       trigger
-       #f
-       e
-       (arguments)))
-    ((location #f 11 4 139 #f)
-     compound
-     ((location #f 12 6 147 #f)
-      assign
-      s
-      (expression
-        ((location #f 12 11 152 #f) literal #f S idle)))
-     ((location #f 13 6 165 #f)
-      action
-      (trigger #f a (arguments))))))
-  ((location #f 15 4 178 #f)
-   guard
-   (expression (field s idle))
-   ((location #f 16 4 191 #f)
-    on
-    (triggers
-      ((location #f 16 7 194 #f)
-       trigger
-       #f
-       e
-       (arguments)))
-    ((location #f 17 4 201 #f)
-     action
-     (trigger #f a (arguments)))))))))
-
+  (guard (expression (field s init))
+         (on (triggers
+               ((location #f 10 7 132 #f)
+                trigger
+                #f
+                e
+                (arguments)))
+             (compound
+               ((location #f 12 6 147 #f)
+                assign
+                s
+                (expression
+                  ((location #f 12 11 152 #f) literal #f S idle)))
+               ((location #f 13 6 165 #f)
+                action
+                (trigger #f a (arguments))))))
+  (guard (expression (field s idle))
+         (on (triggers
+               ((location #f 10 7 132 #f)
+                trigger
+                #f
+                e
+                (arguments)))
+             ((location #f 17 4 201 #f)
+              action
+              (trigger #f a (arguments)))))))))
 

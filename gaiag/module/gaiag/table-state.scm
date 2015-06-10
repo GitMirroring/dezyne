@@ -189,7 +189,7 @@
     (($ <on> triggers ($ <guard> ($ <expression> #t) statement)) (=> failure)
      (if (.field state)
          (make <on> :triggers triggers :statement statement)
-         (failure)))    
+         (failure)))
 
     (($ <guard> expression1 ($ <guard> expression2 statement))
      (and-let*
@@ -286,12 +286,18 @@
     (('root t ...) (ast->dzn o))
     (_ o)))
 
+(define (switch-norm-event o)
+  (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))
+    (if json?
+        (norm-event o)
+        (table-norm-event o))))
+
 (define (table-state model o)
   ((compose
     flatten-compound
     (aggregate-on)
     (prepend-guards model)
-    norm-event
+    switch-norm-event
     (annotate-otherwise)
     ) o))
 
