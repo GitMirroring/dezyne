@@ -199,9 +199,11 @@
   (match o
     (('compound statements ...)
      (let ((top (flatten-compound- o)))
-       (if (is-a? top <compound>)
-           top
-           (make <compound> :elements (list top)))))
+       (retain-source-properties
+        o
+        (if (is-a? top <compound>)
+            top
+            (make <compound> :elements (list top))))))
     ((? (is? <ast>)) (om:map flatten-compound o))
     ((h t ...) (map flatten-compound o))
     (_ o)))
@@ -211,8 +213,10 @@
     (('compound statement)
      (flatten-compound- statement))
     (('compound statements ...)
-     (make <compound> :elements 
-           (apply append (map flatten-compound-compound statements))))
+     (retain-source-properties
+      o 
+      (make <compound> :elements 
+            (apply append (map flatten-compound-compound statements)))))
     ((? (is? <ast>)) (om:map flatten-compound- o))
     ((h t ...) (map flatten-compound- o))
     (_ o)))
@@ -239,9 +243,8 @@
          o))
     (('compound statements ...)
      (retain-source-properties
-      o
-      (make <compound>
-        :elements (map (annotate-otherwise statements) statements))))
+      o (make <compound>
+          :elements (map (annotate-otherwise statements) statements))))
     ((? (is? <ast>)) (om:map (annotate-otherwise statements) o))
     ((h t ...) (map (annotate-otherwise statements) o))
     (_ o)))
