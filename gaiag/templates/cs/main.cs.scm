@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015 Henk Katerberg <henk.katerberg@yahoo.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -68,6 +69,7 @@ class main {
     R? r = get_value<R>(event_prefix);
     if (r != null) {
       System.Console.Error.WriteLine(prefix + typeof(R).Name + "_" + r.ToString());
+      return (R)r;
     }
     return default(R);
   }
