@@ -574,11 +574,8 @@
          :last? last?))
 
     (($ <on> triggers statement)
-     (stderr "triggers: ~a\n" triggers)
      (let* ((t (filter (negate om:modeling?) (.elements triggers)))
-            (foo (stderr "t: ~a\n" t))
             (events (map (lambda (x) (om:event model x)) t))
-            (foo (stderr "events: ~a\n" events))
             (formals (apply append (map (compose .elements .formals .signature) events)))
             (arguments (apply append (map (compose .elements .arguments) t)))
             (arguments (if (pair? arguments)
@@ -910,10 +907,23 @@
 (define (csp-transform ast src)
   (csp-transform-model (or (om:component ast) (om:interface ast)) src))
 
-(define* (csp-transform-model ast o :optional (inevitable-optional? #f) (channel #f) (provided-on? #t) (locals '()) (indent 0) (tail '()) (function #f))
-  (stderr "TRANSFORM: ~a\n" o)
-  (let* ((model (or (om:component ast) (om:interface ast)))
-         (model-name (.name model))
+(define* (csp-transform-model model o :optional (inevitable-optional? #f) (channel #f) (provided-on? #t) (locals '()) (indent 0) (tail '()) (function #f))
+  (define (member? identifier) (om:variable model identifier))
+  (define (local? identifier) (assoc-ref locals identifier))
+  (define (var? identifier) (or (local? identifier) (member? identifier)))
+  (define (int-type? type) (om:integer model type))
+  (define (int? identifier) (and=> (var? identifier)
+                                   (lambda (var) (int-type? (.type var)))))
+  (define (check-range space identifier)
+    (if (int? identifier)
+        (let* ((range (.range (int? identifier)))
+               (lo (.from range))
+               (hi (.to range)))
+          (list
+           space "(if (" lo " <= " identifier " and " identifier " <= " hi ") then SKIP else illegal -> STOP);\n"))
+          '()))
+  
+  (let* ((model-name (.name model))
          (model- (symbol-append model-name '_))
          (channel (or channel (if (is-a? model <interface>) model-name (.type (om:port model)))))
          (space (make-string (* indent 2) #\space))
@@ -1032,6 +1042,7 @@
                        ((->join "\n") lets)
                        "within\n"))
                   (list "let " name "_" "(" (comma-space-join (append (om:member-names model) (map .name formals))) ") = \n")
+                  (append (map (lambda (x) (check-range space x)) (map .name formals)))
                   transformed
                   (list "within " "\\ " (comma-space-join (append (om:member-names model) (map .name formals))) " @ "
                     name "_" "(" (comma-space-join (append (om:member-names model) (map .name formals))) ")\n"))
@@ -1070,9 +1081,10 @@
              (if last? 
                  (list space identifier "(" "P'" ")" "(" (comma-space-join (append (om:member-names model) arguments (list ))) ") -- tail recursion" "\n")
                  (list 
-                  (def-cont
-                   (list
-                    (list space continuation "(" (comma-space-join (om:member-names model)) ")" " =\n")
+                  (def-cont 
+                   space
+                   (list 
+                    (list continuation "(" (comma-space-join (om:member-names model)) ")" " =\n")
                     tail))
                   (list space identifier "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n")))))
              
@@ -1080,6 +1092,7 @@
            (list 
             (list space (or port channel) (if (om:out? (om:event model (trigger))) "_''") "!" event " ->\n")
             (list space (or port channel) "_'" "?" identifier " ->\n")
+            (check-range space identifier)
             tail))
 
           (($ <csp-assign> context identifier ($ <call> function arguments) expressions)
@@ -1089,11 +1102,13 @@
                   (tail (map (lambda (x) (if (def? x) x (if (pair? x) (cons s x) (list s x)))) tail))
                   (continuation (list (list "Cont_" (fresh-number) "'"))))
              (list
-              (def-cont
-               (list
-                (list space continuation "(" (comma-space-join (append (om:member-names model) (list "res'"))) ")" " =\n")
-                (list "let " identifier " = res' within ")
-                tail))
+              (def-cont 
+               space
+               (list 
+                (list continuation "(" (comma-space-join (append (om:member-names model) (list "res'"))) ")" " =\n")
+                (list space "let " identifier " = res' within\n")
+                (check-range space identifier)
+               tail))
               (list space function "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n"))))
            
           (($ <csp-assign> context identifier expression expressions)
@@ -1101,13 +1116,14 @@
              (list 
               (list space "let " "tmp'" " = " expression " within\n")
               (list space "let " identifier " = " "tmp'" " within\n")
-;;              (list space "let " identifier " = " expression " within\n")
+              (check-range space identifier)
               tail)))
 
           (($ <csp-variable> context identifier type ($ <action> (and ($ <trigger> port event) (get! trigger))))
            (list 
             (list space (or port channel) (if (om:out? (om:event model (trigger))) "_''") "!" event " ->\n")
             (list space (or port channel) "_'" "?" identifier " ->\n")
+            (check-range space identifier)
             tail))
           
           (($ <csp-variable> context name type ($ <call> identifier arguments))
@@ -1116,10 +1132,12 @@
                   (tail (map (lambda (x) (if (def? x) x (if (pair? x) (cons s x) (list s x)))) tail))
                   (continuation (list (list "Cont_" (fresh-number) "'"))))
              (list
-              (def-cont
-               (list
-                (list space continuation "(" (comma-space-join (append (om:member-names model) (list "res'"))) ")" " =\n")
-                (list "let " name " = res' within ")
+              (def-cont 
+               space
+               (list 
+                (list continuation "(" (comma-space-join (append (om:member-names model) (list "res'"))) ")" " =\n")
+                (list space "let " name " = res' within\n")
+                (check-range space name)
                 tail))
               (list space identifier "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n"))))
           
@@ -1127,6 +1145,7 @@
            (let* ((expression (csp-expression->string model expression locals)))
              (list
               (list space "let " name " = " expression " within\n")
+              (check-range space name)
               tail)))
 
           (($ <csp-reply> context expression)
@@ -1172,7 +1191,6 @@
        
           ;; other bits
           (('arguments arguments ...)
-           ;;(stderr "translating arguments ...: ~a\n" arguments)
            (map (lambda (x) (csp-transform-model model x inevitable-optional? channel provided-on? locals)) arguments))
 
           (($ <expression> (and ($ <csp-call>) (get! call))) (csp-transform-model model (call)))
@@ -1194,12 +1212,10 @@
           (#t (list space "SKIP\n")) ;; FIXME: who produces #t?
           
           ((h t ...)
-           (stderr "")
-           (let ((tail
-                  (let ((locals (match h
-                                  (($ <csp-variable> context name) (acons name h locals))
-                                  (_ locals))))
-                     (csp-transform-model model t inevitable-optional? channel provided-on? locals indent tail function))))
+           (let* ((locals (match h
+                                 (($ <csp-variable> context name) (acons name h locals))
+                                 (_ locals)))
+                  (tail (csp-transform-model model t inevitable-optional? channel provided-on? locals indent tail function)))
              (csp-transform-model model h inevitable-optional? channel provided-on? locals indent tail function)))
 
           (_ (stderr "TODO: ~a\n" o)
@@ -1447,10 +1463,6 @@
 (define ((->list-join str) l)
   (cdr (apply append (map (lambda (x) (list str x)) l))))
 
-(define (res r)
-  (stderr "res:~a\n" r)
-  r)
-
 (define (collect-def l)
       (match l
              (('def t ...) (remove-def (append (list t) (apply append (map collect-def t)))))
@@ -1463,12 +1475,12 @@
              ((h t ...) (map remove-def l))
              (_ l))) 
   
-(define (def-cont l)
+(define (def-cont space l)
   (let ((inline #t))
     (if inline
         (append
-         (list "let ")
+         (list space "let ")
          l
-         (list "\nwithin\n")
+         (list space "within\n")
          )
         (append (list 'def) l))))
