@@ -172,7 +172,7 @@
 
 (define (passdown-guard o)
   (match o
-    (($ <guard>) ((passdown-expression (.expression o)) (.statement o)))
+    (($ <guard>) ((passdown-expression (retain-source-properties o (.expression o))) (.statement o)))
     ((? (is? <ast>)) (om:map passdown-guard o))
     ((h t ...) (map passdown-guard o))
     (_ o)))
@@ -189,7 +189,7 @@
     (('compound ($ <guard>) ..1) (=> failure)
      (if seen-on?
          (retain-source-properties
-          o
+          expression
           (make <guard> :expression expression :statement o))
          (failure)))
     ((and ('compound s ...) (? om:declarative?))

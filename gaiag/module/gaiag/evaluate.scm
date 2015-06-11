@@ -93,6 +93,9 @@
 
 (define ((var? model) identifier) (om:variable model identifier))
 
+(define (bool? x) (and (is-a? x <*type*>) (eq? (.name x) 'bool)))
+(define ((bool-var? model) x) (let ((v ((var? model) x)))
+                                (and (is-a? v <variable>) (bool? (.type v)))))
 
 (define (eval-expression model state o)
   (match o
@@ -145,7 +148,15 @@
          (#f #f)
          (_ o))))
 
-    (($ <var> identifier) (or (var state identifier) o))
+    (($ <var> (and (? (bool-var? model)) (get! identifier)))
+     (let ((var (var state (identifier))))
+       (match var
+         (($ <literal> scope type field) (eq? field 'true))
+         (#f o)
+         (_ var))))
+
+    (($ <var> identifier)
+     (or (var state identifier) o))
 
     (($ <field> (and (? (var? model)) (get! identifier)) field)
      (let ((v (var state (identifier))))

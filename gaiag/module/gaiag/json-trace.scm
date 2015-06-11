@@ -63,7 +63,6 @@
                                              (list model))))))))
 
 (define (json-state model state)
-  (stderr "json-state: ~a\n" state)
   (alist->hash-table
    (append
     `((type . update)

@@ -72,7 +72,7 @@ Usage: gaiag [OPTION]... FILE
   -v, --version        display version
 
 Languages: c c++ cs csp dezyne goops java javascript python
-           ast annotate om norm-state norm-event resolve
+           ast annotate om norm-event norm-state resolve
            simulate table-event table-state wfc
 
 Examples:

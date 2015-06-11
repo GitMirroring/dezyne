@@ -350,6 +350,7 @@
 
     ('ast (and (pair? ast) (member (car ast) (append ast-leafs ast-lists)) ast))
     ('ast-list (and (pair? ast) (member (car ast) ast-lists) ast))
+    ('expression (or (and (pair? ast) (member (car ast) '(expression otherwise)) ast)))
     ('model (or (is-a? ast <interface>) (is-a? ast <component>) (is-a? ast <system>)))
     ('statement (and (pair? ast) (member (car ast) ast-statements) ast))
     ('*type* (or (is-a? ast <enum>) (is-a? ast <extern>) (is-a? ast <int>) (is-a? ast <type>)))

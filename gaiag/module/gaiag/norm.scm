@@ -233,9 +233,11 @@
     (($ <guard> ($ <otherwise> value) statement) (=> failure)
      (if (or (not (virgin-otherwise? value)) (null? statements))
          (failure)
-         (make <guard>
-           :expression ((annotate-otherwise statements) (.expression o))
-           :statement statement)))
+         (retain-source-properties
+          o
+          (make <guard>
+            :expression ((annotate-otherwise statements) (.expression o))
+            :statement statement))))
     (($ <otherwise>)
      (or (and-let* ((guards ((om:filter <guard>) statements))
                     (value (.value (guards-not-or guards))))
@@ -261,9 +263,11 @@
          (begin
            ;;(stderr "REMOVING OTHERWISE: ~a\n" o)
            ;;(stderr "STATEMENTS: ~a\n" statements)
-          (make <guard>
-             :expression (guards-not-or statements)
-             :statement (om:map (remove-otherwise keep-annotated?) statement)))))
+           (retain-source-properties
+            o
+            (make <guard>
+              :expression (guards-not-or statements)
+              :statement (om:map (remove-otherwise keep-annotated?) statement))))))
     (('compound statements ...)
      (rsp o (make <compound> :elements (map (remove-otherwise keep-annotated? statements) statements))))
     ((? (is? <ast>)) (om:map (remove-otherwise keep-annotated? statements) o))
@@ -273,11 +277,14 @@
 (define (guards-not-or o)
   (let* ((expressions (map .expression o))
          (others (remove (is? <otherwise>) expressions))
-         (values (map .value others)))
-    (make <expression>
-      :value (list '! (reduce (lambda (g0 g1)
-                                (if (equal? g0 g1) g0 (list 'or g0 g1)))
-                              '() values)))))
+         (values (map .value others))
+         (expression (reduce (lambda (g0 g1)
+                               (if (equal? g0 g1) g0 (list 'or g0 g1)))
+                             '() values)))
+    (match expression
+      (('! expression)
+       (make <expression> :value expression))
+      (_ (make <expression> :value (list '! expression))))))
 
 (define (add-skip o)
   (match o

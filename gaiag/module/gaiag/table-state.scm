@@ -114,28 +114,44 @@
                                  :statement (.statement statement)))))
         o)))
 
+
+(define (bool? x) (and (is-a? x <*type*>) (eq? (.name x) 'bool)))
+(define (var-bool? x) (and (is-a? x <variable>) (bool? (.type x))))
+
+(define ((var? model) identifier) (om:variable model identifier))
+(define ((bool-var? model) x) (let ((v ((var? model) x)))
+                                (and (is-a? v <variable>) (bool? (.type v)))))
+
 (define ((prepend-guards model) o)
-  (or (and-let* ((variables ((compose .elements .variables .behaviour) model))
-                 (types (map (om:type model) variables))
-                 (enum (or (find (is? <enum>) types)
-                           (make <enum> :fields (make <fields> :elements '(<Initial>)))))
-                 (fields ((compose .elements .fields) enum))
-                 (states (map (lambda (field)
-                                (make <literal>
-                                  :type (.name enum)
-                                  :field field)) fields))
-                 (guards (filter identity
-                                 (map (lambda (state)
-                                        (prepend-guard model state o))
-                                      states))))
-                (retain-source-properties o (make <compound> :elements guards)))
-      o))
+  (let* ((variables ((compose .elements .variables .behaviour) model))
+         (types (map (om:type model) variables))
+         (type (find (lambda (t) (or (is-a? t <enum>) (bool? t))) types))
+         (enum (or (is-a? type <enum>)
+                   (and-let* ((bool (find var-bool? variables)))
+                             (make <enum> :name (.name bool) :fields (make <fields> :elements '(false true))))
+                   (make <enum> :fields (make <fields> :elements '(<Initial>)))))
+         (fields ((compose .elements .fields) enum))
+         (states (map (lambda (field)
+                        (make <literal>
+                          :type (.name enum)
+                          :field field)) fields))
+         (guards (filter identity
+                         (map (lambda (state)
+                                (prepend-guard model state o))
+                              states))))
+    (retain-source-properties o (make <compound> :elements guards))))
 
 (define (prepend-guard model state o)
   (and-let* ((statement o)
              (statement (flatten-compound ((simplify model state #t) (flatten-compound o))))
              (field (make-state-field model state))
-             (expression (make <expression> :value (make-state-field model state))))
+             (expression
+              (match state
+                (($ <literal> #f (and (? (bool-var? model)) (get! type)) 'true)
+                 (make <expression> :value (make <var> :name (type))))
+                (($ <literal> #f (and (? (bool-var? model)) (get! type)) 'false)
+                 (make <expression> :value (list '! (make <var> :name (type)))))
+                (_ (make <expression> :value (make-state-field model state))))))
             (retain-source-properties
              (salvage-source-location model state expression field o)
              (make <guard> :expression expression :statement statement))))
@@ -145,15 +161,18 @@
                         :value (list '== (make <var>
                                            :name (.identifier field))
                                      state)))
-                   (guards (filter (lambda (g) (let ((e (.expression g)))
-                                                 (or (om:equal? e expression)
-                                                     (om:equal? e expression2))))
-                                   ((om:collect <guard>) o))))
+         (guards (filter (lambda (g)
+                           (let ((e (.expression g)))
+                             (and (source-location g)
+                                  (or (om:equal? e expression)
+                                      (om:equal? e expression2)))))
+                         ((om:collect <guard>) o))))
     (and (pair? guards) (car guards))))
 
 (define (state-var model state)
   (define (type? v) (eq? ((compose .name .type) v) (.type state)))
-  (find type? ((compose .elements .variables .behaviour) model)))
+  (find (lambda (v)
+          (or (type? v) (var-bool? v))) ((compose .elements .variables .behaviour) model)))
 
 (define (state-identifier model state)
   (or (and=> (state-var model state) .name) '<state>))
@@ -191,7 +210,7 @@
          (retain-source-properties o (make <on>
                                        :triggers triggers
                                        :statement statement))
-         (failure)))    
+         (failure)))
 
     (($ <guard> expression1 ($ <guard> expression2 statement))
      (and-let*
@@ -204,7 +223,7 @@
                                (is-a? expression2 <otherwise>))
                           expression2)
                          (else (make <expression> :value value))))
-       (guard (make <guard> :expression expression :statement statement)))
+       (guard (retain-source-properties o (make <guard> :expression expression :statement statement))))
       ((simplify model state) guard)))
 
     (($ <guard> expression statement)
@@ -213,15 +232,18 @@
                                 value
                                 (make <expression> :value value)))
                 (statement ((simplify model state) statement)))
-               (match value
-                 (#t (if (om:declarative? statement) 
-                         statement
-                         (make <guard> :expression expression :statement statement)))
-                 (($ <literal>) (and (om:equal? value state) 
-                                     (if (om:declarative? statement) 
-                                         statement
-                                         (make <guard> :expression expression :statement statement))))
-                 (_ (make <guard> :expression expression :statement statement)))))
+               (retain-source-properties
+                o
+                (match value
+                  (#t (if (om:declarative? statement) 
+                          statement
+                          (make <guard> :expression expression :statement statement)))
+                  (($ <literal>)
+                   (and (om:equal? value state) 
+                        (if (om:declarative? statement) 
+                            statement
+                            (make <guard> :expression expression :statement statement))))
+                  (_ (make <guard> :expression expression :statement statement))))))
 
     (($ <on> triggers statement)
      (debug "ON: 2\n")

@@ -659,9 +659,8 @@ interface I
 #})))
 "
 {
-  [true]
-  on e:
   [b]
+  on e:
   {
   }
 }
@@ -785,9 +784,10 @@ interface I {
  
  behaviour {
   enum S { init };
+  S s = S.init;
+
   bool b = false;
   
-  S s = S.init;
   S o = S.init;
   
   [o.init] {
@@ -905,30 +905,35 @@ interface I {
 }
 #}))))
 '(compound
-  (guard (expression (field s init))
-         (on (triggers
-               ((location #f 10 7 132 #f)
-                trigger
-                #f
-                e
-                (arguments)))
-             (compound
-               ((location #f 12 6 147 #f)
-                assign
-                s
-                (expression
-                  ((location #f 12 11 152 #f) literal #f S idle)))
-               ((location #f 13 6 165 #f)
-                action
-                (trigger #f a (arguments))))))
-  (guard (expression (field s idle))
-         (on (triggers
-               ((location #f 10 7 132 #f)
-                trigger
-                #f
-                e
-                (arguments)))
-             ((location #f 17 4 201 #f)
-              action
-              (trigger #f a (arguments)))))))))
+  ((location #f 9 4 116 #f)
+   guard
+   (expression (field s init))
+   (on (triggers
+         ((location #f 10 7 132 #f)
+          trigger
+          #f
+          e
+          (arguments)))
+       ((location #f 11 4 139 #f)
+        compound
+        ((location #f 12 6 147 #f)
+         assign
+         s
+         (expression
+           ((location #f 12 11 152 #f) literal #f S idle)))
+        ((location #f 13 6 165 #f)
+         action
+         (trigger #f a (arguments))))))
+  ((location #f 15 4 178 #f)
+   guard
+   (expression (field s idle))
+   (on (triggers
+         ((location #f 10 7 132 #f)
+          trigger
+          #f
+          e
+          (arguments)))
+       ((location #f 17 4 201 #f)
+        action
+        (trigger #f a (arguments)))))))))
 

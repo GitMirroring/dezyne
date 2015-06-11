@@ -59,10 +59,7 @@
      `((table . ,(map (json-table-event model) s))))
     (($ <on> triggers (and ($ <guard> expression) (get! guard)))
      (let* ((state (.value expression))
-            (var (match state
-                   (($ <field> identifier field) identifier)
-                   (('or ($ <field> identifier field) __1) identifier)
-                   (_ '<state>))))
+            (var (state-var model expression)))
        (alist->hash-table
         `((event . ,(json-triggers o))
           (rules . ,((json-table- model var state) (guard)))))))
@@ -92,18 +89,27 @@
                                           (callbacks . ,(json-callback model '()))
                                           (next . ()))))))))))
 
+(define (state-var model o)
+  (match o
+    (($ <expression> value) (state-var model value))
+    (($ <field> identifier) identifier)
+    (('or ($ <field> identifier field) __1) identifier)    
+    (($ <var> identifier) identifier)
+    ((! ($ <var> identifier)) identifier)  
+    (_ '<state>)))
+
 (define ((json-table-state model) o)
   (match o
     (('compound statements ...)
      `((table . ,(map (json-table-state model) statements))))
     (($ <guard> expression (and ($ <on> triggers statement) (get! on)))
-     (let ((var ((compose .identifier .value) expression))
+     (let ((var (state-var model expression))
            (state (.value expression)))
        (alist->hash-table
         `((state . ,(json-state (->symbol state) o))
           (rules . ,((json-table- model var state) (on)))))))
     (($ <guard> expression (and ('compound ($ <on>) ...) (get! compound)))
-     (let ((var ((compose .identifier .value) expression))
+     (let ((var (state-var model expression))
            (state (.value expression)))
        (alist->hash-table
         `((state . ,(json-state (->symbol state) o))
@@ -125,7 +131,7 @@
      (let* ((statement (.statement o))
             (expression ((compose .value .expression) o))
             (state (if (is-a? expression <field>) expression (cadr expression)))
-            (var (if (is-a? <field> state) (.identifier state) '<state>))
+            (var (state-var model state))
             (inner (.statement o)))
        (match inner
          (($ <guard> expression statement)
@@ -216,6 +222,14 @@
             (loop (cdr statements) (json-next- model var next (car statements) functions)))))
      (($ <assign> (? var?) ($ <expression> ($ <literal> scope type field)))
       (list (make <field> :identifier var :field field)))
+     (($ <assign> (? var?) ($ <expression> ('! ($ <var> (? var?)))))
+      (match next
+        ((('! ($ <var> (? var?)))) (list (make <var> :name var)))
+        (_ (list (list '! (make <var> :name var))))))
+     (($ <assign> (? var?) ($ <expression> 'false))
+      (list (list '! (make <var> :name var))))
+     (($ <assign> (? var?) ($ <expression> 'true))
+      (list (make <var> :name var)))     
      (($ <assign> (? var?) expression)
       (list unknown))
      (($ <call>)

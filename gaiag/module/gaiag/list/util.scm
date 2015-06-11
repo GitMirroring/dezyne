@@ -465,7 +465,9 @@
     (_ (< a b))))
 
 (define (om:equal? a b)
-  (equal? a b))
+  (match (cons a b)
+    (((? (is? <expression>)) . (? (is? <expression>))) (equal? (.value a) (.value b)))
+    (_ (equal? a b))))
 
 ;;;; OM handling
 
