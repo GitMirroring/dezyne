@@ -10,36 +10,43 @@ namespace dezyne
 {
 typedef std::map<std::string, std::function<void()>> event_map;
 
-  void log_in(std::string prefix, std::string event)
+  std::string consume_synchronous_out_events(event_map& event_map)
+  {
+    std::string s;
+    std::cin >> s;
+    while (std::cin >> s)
+    {
+      if (event_map.find(s) == event_map.end()) break;
+      event_map[s]();
+    }
+    return s;
+  }
+
+  void log_in(std::string prefix, std::string event, event_map& event_map)
   {
     std::clog << prefix << event << std::endl;
+    consume_synchronous_out_events(event_map);
     std::clog << prefix << "return" << std::endl;
   }
 
-  void log_out(std::string prefix, std::string event)
+  void log_out(std::string prefix, std::string event, event_map& event_map)
   {
     std::clog << prefix << event << std::endl;
-  }
-
-  template <typename R>
-  R get_value(const std::string& prefix, R (*string_to_value)(std::string))
-  {
-    std::string s;
-    while (std::cin >> s)
-    {
-      R r = string_to_value(s.erase(std::min(s.size(), s.find(prefix)), prefix.size()));
-      if (static_cast<int>(r) != -1) return r;
-    }
-    throw std::runtime_error("\"" + s + "\" is not a reply value");
   }
 
   template <typename R>
   R log_valued(std::string prefix, std::string event, R (*string_to_value)(std::string), const char* (*value_to_string)(R))
   {
     std::clog << prefix << event << std::endl;
-    R r = get_value(prefix, string_to_value);
-    std::clog << prefix << value_to_string(r) << std::endl;
-    return r;
+    std::string s = consume_synchronous_out_events(event_map);
+    
+    R r = string_to_value(s.erase(std::min(s.size(), s.find(prefix)), prefix.size()));
+    if (static_cast<int>(r) != -1)
+    {
+      std::clog << prefix << value_to_string(r) << std::endl;
+      return r;
+    }
+    throw std::runtime_error("\"" + s + "\" is not a reply value");  
   }
 
   void fill_event_map(#.model & m, event_map& e)
@@ -48,8 +55,8 @@ typedef std::map<std::string, std::function<void()>> event_map;
 
  #(map
    (lambda (port)
-     (map (define-on model port #{m.#port .#direction .#event  = [] (#formals) {#(string-if (eq? return-type 'void) #{log_#direction("#port .", "#event ");#}
-                                                                                                                 #{return log_valued<#(*scope* reply-scope)::#reply-name ::type>("#port .", "#event ", to_#(*scope* reply-scope)_#reply-name , static_cast<const char*(*)(#(*scope* reply-scope)::#reply-name ::type)>(to_string));#})};
+     (map (define-on model port #{m.#port .#direction .#event  = [&] (#formals) {#(string-if (eq? return-type 'void) #{log_#direction("#port .", "#event ", e);#}
+                                                                                                                 #{return log_valued<#(*scope* reply-scope)::#reply-name ::type>("#port .", "#event ", e, to_#(*scope* reply-scope)_#reply-name , static_cast<const char*(*)(#(*scope* reply-scope)::#reply-name ::type)>(to_string));#})};
      #}) (filter (negate (om:dir-matches? port)) (om:events port)))) (om:ports model))
  #(map
     (lambda (port)
