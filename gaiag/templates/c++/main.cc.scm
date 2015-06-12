@@ -35,7 +35,7 @@ typedef std::map<std::string, std::function<void()>> event_map;
   }
 
   template <typename R>
-  R log_valued(std::string prefix, std::string event, R (*string_to_value)(std::string), const char* (*value_to_string)(R))
+  R log_valued(std::string prefix, std::string event, event_map& event_map, R (*string_to_value)(std::string), const char* (*value_to_string)(R))
   {
     std::clog << prefix << event << std::endl;
     std::string s = consume_synchronous_out_events(event_map);
