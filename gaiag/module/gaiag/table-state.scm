@@ -220,9 +220,11 @@
 
     (($ <on> triggers ($ <guard> ($ <expression> #t) statement)) (=> failure)
      (if (.field state)
-         (retain-source-properties o (make <on>
-                                       :triggers triggers
-                                       :statement statement))
+         (retain-source-properties
+          o
+          (make <on>
+            :triggers triggers
+            :statement ((simplify model state) statement)))
          (failure)))
 
     (($ <guard> expression1 ($ <guard> expression2 statement))
