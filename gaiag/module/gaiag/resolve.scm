@@ -1,8 +1,10 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014  Rutger van Beusekom
+;; Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -545,7 +547,8 @@
 
 (define ((range-check model) variable)
   (define (int-type? type) (om:integer model type))
-  (or (and-let* ((int (int-type? (.type variable)))
+  (or variable 
+      (and-let* ((int (int-type? (.type variable)))
                  (range (.range int))
                  (expression (.expression variable))
                  (value (evaluate model expression))
