@@ -48,7 +48,6 @@
   :use-module (gaiag pretty)
 
   :export (ast->
-           ;;annotate-otherwise
            mangle-table prepend-guards pretty-table remove-initial simplify table table-state))
 
 ;;(define debug stderr)
@@ -121,15 +120,27 @@
 (define ((var? model) identifier) (om:variable model identifier))
 (define ((bool-var? model) x) (let ((v ((var? model) x)))
                                 (and (is-a? v <variable>) (bool? (.type v)))))
+(define ((int? model) x)
+  (is-a? ((om:type model) x) <int>))
+(define ((int-var? model) x)
+  (let ((v ((var? model) x)))
+    (and (is-a? v <variable>) ((int? model) v))))
 
 (define ((prepend-guards model) o)
   (let* ((variables ((compose .elements .variables .behaviour) model))
          (types (map (om:type model) variables))
-         (type (find (lambda (t) (or (is-a? t <enum>) (bool? t))) types))
-         (enum (or (is-a? type <enum>)
-                   (and-let* ((bool (find var-bool? variables)))
-                             (make <enum> :name (.name bool) :fields (make <fields> :elements '(false true))))
-                   (make <enum> :fields (make <fields> :elements '(<Initial>)))))
+         (type (find (lambda (t) (negate (is? <extern>))) types))
+         (enum
+          (match type
+            (($ <enum>) type)
+            (($ <int>)
+             (let* ((var (find int-var? variables))
+                    (range (.range type)))
+               (make <enum> :name (.name type) :fields (make <fields> :elements (iota (- (.to range) (.from range) -1) (.from range))))))
+            (($ <type> 'bool)
+             (let ((var (find var-bool? variables)))
+               (make <enum> :name (.name var) :fields (make <fields> :elements '(false true)))))
+            (_  (make <enum> :fields (make <fields> :elements '(<Initial>))))))
          (fields ((compose .elements .fields) enum))
          (states (map (lambda (field)
                         (make <literal>
@@ -151,6 +162,8 @@
                  (make <expression> :value (make <var> :name (type))))
                 (($ <literal> #f (and (? (bool-var? model)) (get! type)) 'false)
                  (make <expression> :value (list '! (make <var> :name (type)))))
+                (($ <literal> #f (and (? (int? model)) (get! type)) v)
+                 (make <expression> :value (list '== (make <var> :name (.identifier field)) v)))
                 (_ (make <expression> :value (make-state-field model state))))))
             (retain-source-properties
              (salvage-source-location model state expression field o)

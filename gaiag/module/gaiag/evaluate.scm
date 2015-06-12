@@ -96,6 +96,11 @@
 (define (bool? x) (and (is-a? x <*type*>) (eq? (.name x) 'bool)))
 (define ((bool-var? model) x) (let ((v ((var? model) x)))
                                 (and (is-a? v <variable>) (bool? (.type v)))))
+(define ((int? model) x)
+  (is-a? ((om:type model) x) <int>))
+(define ((int-var? model) x)
+  (let ((v ((var? model) x)))
+    (and (is-a? v <variable>) ((int? model) v))))
 
 (define (eval-expression model state o)
   (match o
@@ -155,6 +160,13 @@
          (#f o)
          (_ var))))
 
+    (($ <var> (and (? (int-var? model)) (get! identifier)))
+     (let ((var (var state (identifier))))
+       (match var
+         (($ <literal> scope type field) field)
+         ((? number?) var)
+         (_ var))))
+
     (($ <var> identifier)
      (or (var state identifier) o))
 
@@ -170,9 +182,10 @@
      (let ((a (simplify-expression model state a))
            (b (simplify-expression model state b)))
        (or (om:equal? a b)
-           (if (and (is-a? a <literal>) (is-a? b <literal>))
-               #f
-               (list '== a b)))))
+           (match (cons a b)
+             ((($ <literal>) . ($ <literal>)) #f)
+             (((? number?) . (? number?)) (eq? a b))
+             (_ (list '== a b))))))
 
     (('!= a b)
      (let ((a (simplify-expression model state a))

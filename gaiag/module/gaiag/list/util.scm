@@ -486,9 +486,12 @@
   (if (assoc 'imported? (source-properties o))
       (source-property o 'imported?)
       (and-let* (((>2 (length (command-line))))
-                 (file (car (option-ref (parse-opts (command-line)) '() '(#f))))
-                 ((not (string-suffix? ".scm" file))))
-                (not (in-file? o file)))))
+                 (file (car (option-ref (parse-opts (command-line)) '() '(#f)))))
+                (cond
+                 ((string= file "-") #f)
+                 ((string= file "/dev/stdin") #f)                 
+                 ((string-suffix? ".scm" file) #f)
+                 (else (not (in-file? o file)))))))
 
 ;;;; reading/caching
 (define *ast-alist* '())

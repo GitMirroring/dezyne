@@ -95,7 +95,8 @@
     (($ <field> identifier) identifier)
     (('or ($ <field> identifier field) __1) identifier)    
     (($ <var> identifier) identifier)
-    ((! ($ <var> identifier)) identifier)  
+    ((! ($ <var> identifier)) identifier)
+    (('== ($ <var> identifier) (and (? number?) (get! number))) identifier)    
     (_ '<state>)))
 
 (define ((json-table-state model) o)
@@ -130,7 +131,10 @@
     (($ <guard>)
      (let* ((statement (.statement o))
             (expression ((compose .value .expression) o))
-            (state (if (is-a? expression <field>) expression (cadr expression)))
+            (state (match expression
+                     (($ <field>) expression)
+                     (('== ($ <var> name) number) expression)
+                     ((h t ...) (cadr expression))))
             (var (state-var model state))
             (inner (.statement o)))
        (match inner
@@ -229,7 +233,9 @@
      (($ <assign> (? var?) ($ <expression> 'false))
       (list (list '! (make <var> :name var))))
      (($ <assign> (? var?) ($ <expression> 'true))
-      (list (make <var> :name var)))     
+      (list (make <var> :name var)))
+     (($ <assign> (? var?) ($ <expression> (and (? number?) (get! number))))
+      (list (list '== (make <var> :name var) (number))))
      (($ <assign> (? var?) expression)
       (list unknown))
      (($ <call>)

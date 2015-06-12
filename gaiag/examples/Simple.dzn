@@ -27,14 +27,23 @@ interface ISimple
   in void e();
   out void a();
 
-  behaviour { on e: a; }
-
+  behaviour
+  {
+    bool On = false;
+    on e: [On] { On = !On; }
+    on e: [!On] { a; On = !On; }
+  }
 }
 
 component Simple
 {
-  provides ISimple i;
-  requires ISimple j;
+  provides ISimple p;
 
-  behaviour { enum S {On, Off}; S s = S.On; on i.e(): i.a(); }
+  behaviour
+  {
+    enum S {On, Off};
+    S s = S.On;
+    on p.e(): [s.On] { s = S.On; }
+    on e: [s.Off] { p.a; s =  S.Off; }
+  }
 }
