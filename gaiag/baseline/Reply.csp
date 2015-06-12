@@ -1,52 +1,5 @@
--- drop_one_local: V => V
-drop_one_local_((M', (L', L0'))) = (M', L')
-
-illegal_(P',V') = illegal -> STOP
--- send_: (c: channel, e:event) => (P,V)->Proc
-send_(c',e')(P', V') = c'!e' -> P'(V')
--- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
--- skip_: () => (P,V)->Proc
-skip_(P', V') = P'(V')
--- call_: (B': (P,V)->Proc) => (P,V)->Proc
-call_(B')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', <>))
--- call_args_: (B': (P,V)->Proc, F': V'->V') => (P,V)->Proc
-call_args_(B', F')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', (<>, F'((M1',L1')))))
--- assign_: (F': V -> V) => (P,V) -> Proc
-assign_(F')(P', V') = P'(F'(V'))
--- assign_int_: (F': V -> V) => (P,V) -> Proc
-assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & range_error -> STOP [] b' & P'(F'(V'))
--- assign_int_: (F': V -> V, B': V -> bool) => (P,V) -> Proc
-assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & illegal -> STOP [] b' & P'(F'(V'))
--- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
-assign_active_(C', A')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
--- assign_int_active_: C':(P,V)->Proc, A: (V,val)->V, B': V -> bool => (P,V)->Proc
--- Paul, HELP! assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ not b' & range_error -> STOP [] b' & P'(A'((M',L'),r')), V')
--- assign_int_active_(C',A',b')(P', V') = assign_active_(C', A')
--- assign_int_active_(C',A',b')(P', V') = (\ (C', A', b') @ assign_active_(C', A'))
-assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
-
-reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
--- returnvalue_: (F: V->val) => (P,V)->Proc
-returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
--- the_end_: P => V->Proc
-the_end_(P', V') = transition_end -> P'(V')
-
--- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
-semi_(S1',S2')(P', V') = S1'(\V'' @ S2'(P', V''),V')
--- ifthenelse: (F': V->val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
-ifthenelse_(F',S1',S2')(P', V') =  if F'(V') then S1'(P', V') else S2'(P', V')
--- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
-context_(F', S')(P', (M', L')) = S'((\ (M',L2') @ P'((M',L'))), (M', (L', F'((M', L')))))
--- context_int_: (F': V->val, B: bool, S': (P,V)->Proc) => (P,V)->Proc
-context_int_(F', B', S')(P', (M', L')) = S'((\ (M',L2') @ let b' = B'((M',L2')) within not b' & range_error -> STOP [] b' & P'((M',L'))), (M', (L', F'((M', L')))))
--- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
-context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
--- context_int_active_: (C':(P,V)->Proc, B': bool, S: (P,V)->Proc) => (P,V)->Proc
--- Paul, HELP! context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ let b' = B'((M',r')) within not b' & range_error -> STOP [] b' & S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
---context_int_active_(C', B', S')(P', V') = (\ (C', B', S') @ context_active_(C', S'))
-context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
-
+nametype bool = {false, true}   
+                
 channel illegal
 channel range_error
 channel transition_begin, transition_end
@@ -54,6 +7,10 @@ channel transition_begin, transition_end
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
 datatype event_enumeration_alphabet = Status_No | Status_Nok | Status_Ok | Status_Yes | done | modeling | return | the_end' | what
+
+-- end of combinators
+-- both.csp.scm
+-- end of both.csp.scm
 -- interface.csp.scm
 
 channel I: {done,the_end'}
@@ -64,15 +21,22 @@ channel I_''': {modeling}
 
 IF_I_(IG,CS) = let
 
-I_(((dummy),(stack'))) =
-(true) & (
-I?x:{done} ->
-reply_(I_', (\ ((dummy),(stack')) @ Status_Yes))(\ V' @ I.the_end' -> I_(V'),((dummy),(stack')))
+I_(dummy) =
+((true) & (
+I?x:{done} -> (
+  I_'!Status_Yes -> 
+  I.the_end' ->
+  I_(dummy)
+)
  []
-  I?x:{done} ->
-reply_(I_', (\ ((dummy),(stack')) @ Status_No))(\ V' @ I.the_end' -> I_(V'),((dummy),(stack'))))
+  I?x:{done} -> (
+  I_'!Status_No -> 
+  I.the_end' ->
+  I_(dummy)
+))
 []
-CS & I?x:{} -> illegal_(STOP,<>)
+CS & I?x:{} -> illegal -> STOP
+)
 
 REORDER' = I?x' -> (I_in'?y' -> I.the_end' -> I_out'!y' -> REORDER' [] I.the_end' -> REORDER')
 
@@ -82,10 +46,13 @@ transparent diamond
 within sbisim(diamond(x))
 
 within compress((if CS
-                 then I_(((false),(<>)))
-                 else I_(((false),(<>)))) [[x<-I_in'.x|x<-extensions(I_in')]] [|{|I,I_in',I.the_end'|}|] REORDER' [[I_out'.x<-x|x<-extensions(I_out')]] \ {|I_in',I.the_end'|})
+                then I_(false)
+                else I_(false) )
+               [[x<-I_in'.x|x<-extensions(I_in')]] [|{|I,I_in',I.the_end'|}|] REORDER' [[I_out'.x<-x|x<-extensions(I_out')]] \ {|I_in',I.the_end'|})
 
 -- end of interface.csp.scm
+-- both.csp.scm
+-- end of both.csp.scm
 -- interface.csp.scm
 
 channel U: {what,the_end'}
@@ -96,15 +63,22 @@ channel U_''': {modeling}
 
 IF_U_(IG,CS) = let
 
-U_(((dummy),(stack'))) =
-(true) & (
-U?x:{what} ->
-reply_(U_', (\ ((dummy),(stack')) @ Status_Ok))(\ V' @ U.the_end' -> U_(V'),((dummy),(stack')))
+U_(dummy) =
+((true) & (
+U?x:{what} -> (
+  U_'!Status_Ok -> 
+  U.the_end' ->
+  U_(dummy)
+)
  []
-  U?x:{what} ->
-reply_(U_', (\ ((dummy),(stack')) @ Status_Nok))(\ V' @ U.the_end' -> U_(V'),((dummy),(stack'))))
+  U?x:{what} -> (
+  U_'!Status_Nok -> 
+  U.the_end' ->
+  U_(dummy)
+))
 []
-CS & U?x:{} -> illegal_(STOP,<>)
+CS & U?x:{} -> illegal -> STOP
+)
 
 REORDER' = U?x' -> (U_in'?y' -> U.the_end' -> U_out'!y' -> REORDER' [] U.the_end' -> REORDER')
 
@@ -114,10 +88,13 @@ transparent diamond
 within sbisim(diamond(x))
 
 within compress((if CS
-                 then U_(((false),(<>)))
-                 else U_(((false),(<>)))) [[x<-U_in'.x|x<-extensions(U_in')]] [|{|U,U_in',U.the_end'|}|] REORDER' [[U_out'.x<-x|x<-extensions(U_out')]] \ {|U_in',U.the_end'|})
+                then U_(false)
+                else U_(false) )
+               [[x<-U_in'.x|x<-extensions(U_in')]] [|{|U,U_in',U.the_end'|}|] REORDER' [[U_out'.x<-x|x<-extensions(U_out')]] \ {|U_in',U.the_end'|})
 
 -- end of interface.csp.scm
+-- both.csp.scm
+-- end of both.csp.scm
 -- component.csp.scm
 
 channel i: extensions(I)
@@ -134,18 +111,26 @@ channel u_''': extensions(U_''')
 
 CO_Reply_(IIG,IG) = let
 
-Reply_(((dummy),(stack'))) = transition_begin -> (
+Reply_(dummy) =
+transition_begin -> (
 (true) & (
-i?x:{done} ->
-context_active_(semi_(send_(u,what),recv_(u_',what)),
-ifthenelse_(\ ((dummy),((stack',s))) @ ((s == Status_Ok)),
-reply_(I_', (\ ((dummy),((stack',s))) @ Status_Yes)),
-reply_(I_', (\ ((dummy),((stack',s))) @ Status_No))
-))(\ V' @ transition_end -> Reply_(V'),((dummy),(stack'))))
+i?x:{done} -> (
+  u!what ->
+  u_'?s ->
+  (if (s == Status_Ok) then 
+    I_'!Status_Yes -> 
+    transition_end ->
+    Reply_(dummy)
+
+  else
+    I_'!Status_No -> 
+    transition_end ->
+    Reply_(dummy)
 )
+)))
 
-within Reply_(((false),(<>)))
-
+within Reply_(false)
+                                                     
 channel extensions_over_empty_channels_is_undefined
 channel IN',OUT' : {extensions_over_empty_channels_is_undefined}
 

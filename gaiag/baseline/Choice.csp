@@ -1,52 +1,5 @@
--- drop_one_local: V => V
-drop_one_local_((M', (L', L0'))) = (M', L')
-
-illegal_(P',V') = illegal -> STOP
--- send_: (c: channel, e:event) => (P,V)->Proc
-send_(c',e')(P', V') = c'!e' -> P'(V')
--- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
--- skip_: () => (P,V)->Proc
-skip_(P', V') = P'(V')
--- call_: (B': (P,V)->Proc) => (P,V)->Proc
-call_(B')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', <>))
--- call_args_: (B': (P,V)->Proc, F': V'->V') => (P,V)->Proc
-call_args_(B', F')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', (<>, F'((M1',L1')))))
--- assign_: (F': V -> V) => (P,V) -> Proc
-assign_(F')(P', V') = P'(F'(V'))
--- assign_int_: (F': V -> V) => (P,V) -> Proc
-assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & range_error -> STOP [] b' & P'(F'(V'))
--- assign_int_: (F': V -> V, B': V -> bool) => (P,V) -> Proc
-assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & illegal -> STOP [] b' & P'(F'(V'))
--- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
-assign_active_(C', A')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
--- assign_int_active_: C':(P,V)->Proc, A: (V,val)->V, B': V -> bool => (P,V)->Proc
--- Paul, HELP! assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ not b' & range_error -> STOP [] b' & P'(A'((M',L'),r')), V')
--- assign_int_active_(C',A',b')(P', V') = assign_active_(C', A')
--- assign_int_active_(C',A',b')(P', V') = (\ (C', A', b') @ assign_active_(C', A'))
-assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
-
-reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
--- returnvalue_: (F: V->val) => (P,V)->Proc
-returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
--- the_end_: P => V->Proc
-the_end_(P', V') = transition_end -> P'(V')
-
--- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
-semi_(S1',S2')(P', V') = S1'(\V'' @ S2'(P', V''),V')
--- ifthenelse: (F': V->val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
-ifthenelse_(F',S1',S2')(P', V') =  if F'(V') then S1'(P', V') else S2'(P', V')
--- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
-context_(F', S')(P', (M', L')) = S'((\ (M',L2') @ P'((M',L'))), (M', (L', F'((M', L')))))
--- context_int_: (F': V->val, B: bool, S': (P,V)->Proc) => (P,V)->Proc
-context_int_(F', B', S')(P', (M', L')) = S'((\ (M',L2') @ let b' = B'((M',L2')) within not b' & range_error -> STOP [] b' & P'((M',L'))), (M', (L', F'((M', L')))))
--- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
-context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
--- context_int_active_: (C':(P,V)->Proc, B': bool, S: (P,V)->Proc) => (P,V)->Proc
--- Paul, HELP! context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ let b' = B'((M',r')) within not b' & range_error -> STOP [] b' & S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
---context_int_active_(C', B', S')(P', V') = (\ (C', B', S') @ context_active_(C', S'))
-context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
-
+nametype bool = {false, true}   
+                
 channel illegal
 channel range_error
 channel transition_begin, transition_end
@@ -54,6 +7,10 @@ channel transition_begin, transition_end
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
 datatype event_enumeration_alphabet = State_Busy | State_Idle | State_Off | a | e | modeling | return | the_end'
+
+-- end of combinators
+-- both.csp.scm
+-- end of both.csp.scm
 -- interface.csp.scm
 
 channel IChoice: {e,the_end'}
@@ -64,26 +21,39 @@ channel IChoice_''': {modeling}
 
 IF_IChoice_(IG,CS) = let
 
-IChoice_(((s),(stack'))) =
-((s == State_Off)) & (
-IChoice?x:{e} ->
-semi_(semi_(assign_(\ ((s),(stack')) @ ((State_Idle),(stack'))),
-(\ P',V' @ IChoice_''!a -> P'(V'))),
-(\ P',V' @ IChoice_'.return -> P'(V')))(\ V' @ IChoice.the_end' -> IChoice_(V'),((s),(stack'))))
+IChoice_(s) =
+(((s == State_Off)) & (
+IChoice?x:{e} -> (
+  let tmp' = State_Idle within
+  let s = tmp' within
+  IChoice_''!a ->
+    IChoice_'.return ->
+  IChoice.the_end' ->
+  IChoice_(s)
+))
 []
 ((s == State_Idle)) & (
-IChoice?x:{e} ->
-semi_(semi_(assign_(\ ((s),(stack')) @ ((State_Busy),(stack'))),
-(\ P',V' @ IChoice_''!a -> P'(V'))),
-(\ P',V' @ IChoice_'.return -> P'(V')))(\ V' @ IChoice.the_end' -> IChoice_(V'),((s),(stack'))))
+IChoice?x:{e} -> (
+  let tmp' = State_Busy within
+  let s = tmp' within
+  IChoice_''!a ->
+    IChoice_'.return ->
+  IChoice.the_end' ->
+  IChoice_(s)
+))
 []
 ((s == State_Busy)) & (
-IChoice?x:{e} ->
-semi_(semi_(assign_(\ ((s),(stack')) @ ((State_Idle),(stack'))),
-(\ P',V' @ IChoice_''!a -> P'(V'))),
-(\ P',V' @ IChoice_'.return -> P'(V')))(\ V' @ IChoice.the_end' -> IChoice_(V'),((s),(stack'))))
+IChoice?x:{e} -> (
+  let tmp' = State_Idle within
+  let s = tmp' within
+  IChoice_''!a ->
+    IChoice_'.return ->
+  IChoice.the_end' ->
+  IChoice_(s)
+))
 []
-CS & IChoice?x:{} -> illegal_(STOP,<>)
+CS & IChoice?x:{} -> illegal -> STOP
+)
 
 REORDER' = IChoice?x' -> (IChoice_in'?y' -> IChoice.the_end' -> IChoice_out'!y' -> REORDER' [] IChoice.the_end' -> REORDER')
 
@@ -93,10 +63,13 @@ transparent diamond
 within sbisim(diamond(x))
 
 within compress((if CS
-                 then IChoice_(((State_Off),(<>)))
-                 else IChoice_(((State_Off),(<>)))) [[x<-IChoice_in'.x|x<-extensions(IChoice_in')]] [|{|IChoice,IChoice_in',IChoice.the_end'|}|] REORDER' [[IChoice_out'.x<-x|x<-extensions(IChoice_out')]] \ {|IChoice_in',IChoice.the_end'|})
+                then IChoice_(State_Off)
+                else IChoice_(State_Off) )
+               [[x<-IChoice_in'.x|x<-extensions(IChoice_in')]] [|{|IChoice,IChoice_in',IChoice.the_end'|}|] REORDER' [[IChoice_out'.x<-x|x<-extensions(IChoice_out')]] \ {|IChoice_in',IChoice.the_end'|})
 
 -- end of interface.csp.scm
+-- both.csp.scm
+-- end of both.csp.scm
 -- component.csp.scm
 
 channel c: extensions(IChoice)
@@ -111,28 +84,40 @@ channel c_''': extensions(IChoice_''')
 
 CO_Choice_(IIG,IG) = let
 
-Choice_(((s),(stack'))) = transition_begin -> (
+Choice_(s) =
+transition_begin -> (
 ((s == State_Off)) & (
-c?x:{e} ->
-semi_(semi_(assign_(\ ((s),(stack')) @ ((State_Idle),(stack'))),
-(\ P',V' @ c_''!a -> P'(V'))),
-(\ P',V' @ IChoice_'.return -> P'(V')))(\ V' @ transition_end -> Choice_(V'),((s),(stack'))))
+c?x:{e} -> (
+  let tmp' = State_Idle within
+  let s = tmp' within
+  c_''!a ->
+    IChoice_'.return ->
+  transition_end ->
+  Choice_(s)
+))
 []
 ((s == State_Idle)) & (
-c?x:{e} ->
-semi_(semi_(assign_(\ ((s),(stack')) @ ((State_Busy),(stack'))),
-(\ P',V' @ c_''!a -> P'(V'))),
-(\ P',V' @ IChoice_'.return -> P'(V')))(\ V' @ transition_end -> Choice_(V'),((s),(stack'))))
+c?x:{e} -> (
+  let tmp' = State_Busy within
+  let s = tmp' within
+  c_''!a ->
+    IChoice_'.return ->
+  transition_end ->
+  Choice_(s)
+))
 []
 ((s == State_Busy)) & (
-c?x:{e} ->
-semi_(semi_(assign_(\ ((s),(stack')) @ ((State_Idle),(stack'))),
-(\ P',V' @ c_''!a -> P'(V'))),
-(\ P',V' @ IChoice_'.return -> P'(V')))(\ V' @ transition_end -> Choice_(V'),((s),(stack'))))
-)
+c?x:{e} -> (
+  let tmp' = State_Idle within
+  let s = tmp' within
+  c_''!a ->
+    IChoice_'.return ->
+  transition_end ->
+  Choice_(s)
+)))
 
-within Choice_(((State_Off),(<>)))
-
+within Choice_(State_Off)
+                                                     
 channel extensions_over_empty_channels_is_undefined
 channel IN',OUT' : {extensions_over_empty_channels_is_undefined}
 

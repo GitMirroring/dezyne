@@ -1,52 +1,5 @@
--- drop_one_local: V => V
-drop_one_local_((M', (L', L0'))) = (M', L')
-
-illegal_(P',V') = illegal -> STOP
--- send_: (c: channel, e:event) => (P,V)->Proc
-send_(c',e')(P', V') = c'!e' -> P'(V')
--- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
--- skip_: () => (P,V)->Proc
-skip_(P', V') = P'(V')
--- call_: (B': (P,V)->Proc) => (P,V)->Proc
-call_(B')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', <>))
--- call_args_: (B': (P,V)->Proc, F': V'->V') => (P,V)->Proc
-call_args_(B', F')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', (<>, F'((M1',L1')))))
--- assign_: (F': V -> V) => (P,V) -> Proc
-assign_(F')(P', V') = P'(F'(V'))
--- assign_int_: (F': V -> V) => (P,V) -> Proc
-assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & range_error -> STOP [] b' & P'(F'(V'))
--- assign_int_: (F': V -> V, B': V -> bool) => (P,V) -> Proc
-assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & illegal -> STOP [] b' & P'(F'(V'))
--- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
-assign_active_(C', A')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
--- assign_int_active_: C':(P,V)->Proc, A: (V,val)->V, B': V -> bool => (P,V)->Proc
--- Paul, HELP! assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ not b' & range_error -> STOP [] b' & P'(A'((M',L'),r')), V')
--- assign_int_active_(C',A',b')(P', V') = assign_active_(C', A')
--- assign_int_active_(C',A',b')(P', V') = (\ (C', A', b') @ assign_active_(C', A'))
-assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
-
-reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
--- returnvalue_: (F: V->val) => (P,V)->Proc
-returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
--- the_end_: P => V->Proc
-the_end_(P', V') = transition_end -> P'(V')
-
--- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
-semi_(S1',S2')(P', V') = S1'(\V'' @ S2'(P', V''),V')
--- ifthenelse: (F': V->val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
-ifthenelse_(F',S1',S2')(P', V') =  if F'(V') then S1'(P', V') else S2'(P', V')
--- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
-context_(F', S')(P', (M', L')) = S'((\ (M',L2') @ P'((M',L'))), (M', (L', F'((M', L')))))
--- context_int_: (F': V->val, B: bool, S': (P,V)->Proc) => (P,V)->Proc
-context_int_(F', B', S')(P', (M', L')) = S'((\ (M',L2') @ let b' = B'((M',L2')) within not b' & range_error -> STOP [] b' & P'((M',L'))), (M', (L', F'((M', L')))))
--- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
-context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
--- context_int_active_: (C':(P,V)->Proc, B': bool, S: (P,V)->Proc) => (P,V)->Proc
--- Paul, HELP! context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ let b' = B'((M',r')) within not b' & range_error -> STOP [] b' & S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
---context_int_active_(C', B', S')(P', V') = (\ (C', B', S') @ context_active_(C', S'))
-context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
-
+nametype bool = {false, true}   
+                
 channel illegal
 channel range_error
 channel transition_begin, transition_end
@@ -54,6 +7,10 @@ channel transition_begin, transition_end
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
 datatype event_enumeration_alphabet = a | e | modeling | return | the_end'
+
+-- end of combinators
+-- both.csp.scm
+-- end of both.csp.scm
 -- interface.csp.scm
 
 channel range: {e,the_end'}
@@ -63,19 +20,35 @@ channel range_in',range_out': {range_'.return}
 channel range_''': {modeling}
 
 IF_range_(IG,CS) = let
-f(PF',V') = (returnvalue_(\ ((state),(stack')) @ 5))(PF',V')
+f(P')(state) = 
+    P'(state, 5)
 
-range_(((state),(stack'))) =
-range?x:{e} ->
-semi_(semi_(assign_int_((\ ((state),(stack')) @ ((4),(stack'))),(\ ((state),(stack')) @ 0<=state and state<=3)),
-semi_(let f_result' = call_(\ P',V' @ f(P',V')) within assign_int_active_(f_result',
-\ ((state),(stack')),r' @ ((r'),(stack')),0<=0 and 3<=3),
-context_int_(\ ((state),(stack')) @ 6,\ ((state),(stack')) @ 0 <= 6 and 6<=3,
-let f_result' = call_(\ P',V' @ f(P',V')) within context_int_active_(f_result',0<= 0 and 3<=3,
-(\ P',V' @ range_''!a -> P'(V')))))),
-(\ P',V' @ range_'.return -> P'(V')))(\ V' @ range.the_end' -> range_(V'),((state),(stack')))
+range_(state) =
+(if not ((0 <= state and state <= 3)) then illegal -> STOP else
+range?x:{e} -> (
+  let tmp' = 4 within
+  let state = tmp' within
+  if not ((0 <= state and state <= 3)) then illegal -> STOP else
+  let Cont_2'(state, res') =
+  let state = res' within
+  if not ((0 <= state and state <= 3)) then illegal -> STOP else
+    let x = 6 within
+    if not ((0 <= x and x <= 3)) then illegal -> STOP else
+  let Cont_1'(state, res') =
+  let y = res' within
+  if not ((0 <= y and y <= 3)) then illegal -> STOP else
+    range_''!a ->
+      range_'.return ->
+  range.the_end' ->
+  range_(state)
+  within
+  f(Cont_1')(state)
+  within
+  f(Cont_2')(state)
+)
 []
-CS & range?x:{} -> illegal_(STOP,<>)
+CS & range?x:{} -> illegal -> STOP
+)
 
 REORDER' = range?x' -> (range_in'?y' -> range.the_end' -> range_out'!y' -> REORDER' [] range.the_end' -> REORDER')
 
@@ -85,8 +58,9 @@ transparent diamond
 within sbisim(diamond(x))
 
 within compress((if CS
-                 then range_(((3),(<>)))
-                 else range_(((3),(<>)))) [[x<-range_in'.x|x<-extensions(range_in')]] [|{|range,range_in',range.the_end'|}|] REORDER' [[range_out'.x<-x|x<-extensions(range_out')]] \ {|range_in',range.the_end'|})
+                then range_(3)
+                else range_(3) )
+               [[x<-range_in'.x|x<-extensions(range_in')]] [|{|range,range_in',range.the_end'|}|] REORDER' [[range_out'.x<-x|x<-extensions(range_out')]] \ {|range_in',range.the_end'|})
 
 -- end of interface.csp.scm
 assert COMPLETE'({range.e}) [F= IF_range_(true,true) \ diff(Events,{range.e,illegal})

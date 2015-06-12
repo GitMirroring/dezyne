@@ -1,52 +1,5 @@
--- drop_one_local: V => V
-drop_one_local_((M', (L', L0'))) = (M', L')
-
-illegal_(P',V') = illegal -> STOP
--- send_: (c: channel, e:event) => (P,V)->Proc
-send_(c',e')(P', V') = c'!e' -> P'(V')
--- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
--- skip_: () => (P,V)->Proc
-skip_(P', V') = P'(V')
--- call_: (B': (P,V)->Proc) => (P,V)->Proc
-call_(B')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', <>))
--- call_args_: (B': (P,V)->Proc, F': V'->V') => (P,V)->Proc
-call_args_(B', F')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', (<>, F'((M1',L1')))))
--- assign_: (F': V -> V) => (P,V) -> Proc
-assign_(F')(P', V') = P'(F'(V'))
--- assign_int_: (F': V -> V) => (P,V) -> Proc
-assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & range_error -> STOP [] b' & P'(F'(V'))
--- assign_int_: (F': V -> V, B': V -> bool) => (P,V) -> Proc
-assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & illegal -> STOP [] b' & P'(F'(V'))
--- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
-assign_active_(C', A')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
--- assign_int_active_: C':(P,V)->Proc, A: (V,val)->V, B': V -> bool => (P,V)->Proc
--- Paul, HELP! assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ not b' & range_error -> STOP [] b' & P'(A'((M',L'),r')), V')
--- assign_int_active_(C',A',b')(P', V') = assign_active_(C', A')
--- assign_int_active_(C',A',b')(P', V') = (\ (C', A', b') @ assign_active_(C', A'))
-assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
-
-reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
--- returnvalue_: (F: V->val) => (P,V)->Proc
-returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
--- the_end_: P => V->Proc
-the_end_(P', V') = transition_end -> P'(V')
-
--- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
-semi_(S1',S2')(P', V') = S1'(\V'' @ S2'(P', V''),V')
--- ifthenelse: (F': V->val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
-ifthenelse_(F',S1',S2')(P', V') =  if F'(V') then S1'(P', V') else S2'(P', V')
--- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
-context_(F', S')(P', (M', L')) = S'((\ (M',L2') @ P'((M',L'))), (M', (L', F'((M', L')))))
--- context_int_: (F': V->val, B: bool, S': (P,V)->Proc) => (P,V)->Proc
-context_int_(F', B', S')(P', (M', L')) = S'((\ (M',L2') @ let b' = B'((M',L2')) within not b' & range_error -> STOP [] b' & P'((M',L'))), (M', (L', F'((M', L')))))
--- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
-context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
--- context_int_active_: (C':(P,V)->Proc, B': bool, S: (P,V)->Proc) => (P,V)->Proc
--- Paul, HELP! context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ let b' = B'((M',r')) within not b' & range_error -> STOP [] b' & S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
---context_int_active_(C', B', S')(P', V') = (\ (C', B', S') @ context_active_(C', S'))
-context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
-
+nametype bool = {false, true}   
+                
 channel illegal
 channel range_error
 channel transition_begin, transition_end
@@ -54,6 +7,10 @@ channel transition_begin, transition_end
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
 datatype event_enumeration_alphabet = busy | finish | modeling | ping | pong | return | start | the_end'
+
+-- end of combinators
+-- both.csp.scm
+-- end of both.csp.scm
 -- interface.csp.scm
 
 channel Provides: {start,the_end'}
@@ -64,13 +21,17 @@ channel Provides_''': {modeling}
 
 IF_Provides_(IG,CS) = let
 
-Provides_(((<>),(stack'))) =
-Provides?x:{start} ->
-semi_(semi_((\ P',V' @ Provides_''!busy -> P'(V')),
-(\ P',V' @ Provides_''!finish -> P'(V'))),
-(\ P',V' @ Provides_'.return -> P'(V')))(\ V' @ Provides.the_end' -> Provides_(V'),((<>),(stack')))
+Provides_() =
+(Provides?x:{start} -> (
+  Provides_''!busy ->
+  Provides_''!finish ->
+    Provides_'.return ->
+  Provides.the_end' ->
+  Provides_()
+)
 []
-CS & Provides?x:{} -> illegal_(STOP,<>)
+CS & Provides?x:{} -> illegal -> STOP
+)
 
 REORDER' = Provides?x' -> (Provides_in'?y' -> Provides.the_end' -> Provides_out'!y' -> REORDER' [] Provides.the_end' -> REORDER')
 
@@ -80,10 +41,13 @@ transparent diamond
 within sbisim(diamond(x))
 
 within compress((if CS
-                 then Provides_(((<>),(<>)))
-                 else Provides_(((<>),(<>)))) [[x<-Provides_in'.x|x<-extensions(Provides_in')]] [|{|Provides,Provides_in',Provides.the_end'|}|] REORDER' [[Provides_out'.x<-x|x<-extensions(Provides_out')]] \ {|Provides_in',Provides.the_end'|})
+                then Provides_()
+                else Provides_() )
+               [[x<-Provides_in'.x|x<-extensions(Provides_in')]] [|{|Provides,Provides_in',Provides.the_end'|}|] REORDER' [[Provides_out'.x<-x|x<-extensions(Provides_out')]] \ {|Provides_in',Provides.the_end'|})
 
 -- end of interface.csp.scm
+-- both.csp.scm
+-- end of both.csp.scm
 -- interface.csp.scm
 
 channel Requires: {ping,the_end'}
@@ -94,13 +58,17 @@ channel Requires_''': {modeling}
 
 IF_Requires_(IG,CS) = let
 
-Requires_(((<>),(stack'))) =
-Requires?x:{ping} ->
-semi_(semi_((\ P',V' @ Requires_''!pong -> P'(V')),
-(\ P',V' @ Requires_''!pong -> P'(V'))),
-(\ P',V' @ Requires_'.return -> P'(V')))(\ V' @ Requires.the_end' -> Requires_(V'),((<>),(stack')))
+Requires_() =
+(Requires?x:{ping} -> (
+  Requires_''!pong ->
+  Requires_''!pong ->
+    Requires_'.return ->
+  Requires.the_end' ->
+  Requires_()
+)
 []
-CS & Requires?x:{} -> illegal_(STOP,<>)
+CS & Requires?x:{} -> illegal -> STOP
+)
 
 REORDER' = Requires?x' -> (Requires_in'?y' -> Requires.the_end' -> Requires_out'!y' -> REORDER' [] Requires.the_end' -> REORDER')
 
@@ -110,10 +78,13 @@ transparent diamond
 within sbisim(diamond(x))
 
 within compress((if CS
-                 then Requires_(((<>),(<>)))
-                 else Requires_(((<>),(<>)))) [[x<-Requires_in'.x|x<-extensions(Requires_in')]] [|{|Requires,Requires_in',Requires.the_end'|}|] REORDER' [[Requires_out'.x<-x|x<-extensions(Requires_out')]] \ {|Requires_in',Requires.the_end'|})
+                then Requires_()
+                else Requires_() )
+               [[x<-Requires_in'.x|x<-extensions(Requires_in')]] [|{|Requires,Requires_in',Requires.the_end'|}|] REORDER' [[Requires_out'.x<-x|x<-extensions(Requires_out')]] \ {|Requires_in',Requires.the_end'|})
 
 -- end of interface.csp.scm
+-- both.csp.scm
+-- end of both.csp.scm
 -- component.csp.scm
 
 channel p: extensions(Provides)
@@ -132,26 +103,35 @@ channel r_''': extensions(Requires_''')
 
 CO_reply_reorder_(IIG,IG) = let
 
-reply_reorder_(((first),(stack'))) = transition_begin -> (
+reply_reorder_(first) =
+transition_begin -> (
 (first) & (
-r_''?x:{pong} ->
-semi_(semi_((\ P',V' @ p_''!busy -> P'(V')),
-assign_(\ ((first),(stack')) @ (((not first)),(stack')))),
-skip_)(\ V' @ transition_end -> reply_reorder_(V'),((first),(stack'))))
+r_''?x:{pong} -> (
+  p_''!busy ->
+  let tmp' = (not first) within
+  let first = tmp' within
+    transition_end ->
+  reply_reorder_(first)
+))
 []
 ((not first)) & (
-r_''?x:{pong} ->
-semi_(semi_((\ P',V' @ p_''!finish -> P'(V')),
-assign_(\ ((first),(stack')) @ (((not first)),(stack')))),
-skip_)(\ V' @ transition_end -> reply_reorder_(V'),((first),(stack'))))
+r_''?x:{pong} -> (
+  p_''!finish ->
+  let tmp' = (not first) within
+  let first = tmp' within
+    transition_end ->
+  reply_reorder_(first)
+))
 []
-p?x:{start} ->
-semi_((\ P',V' @ r!ping -> r_'.return -> P'(V')),
-(\ P',V' @ Provides_'.return -> P'(V')))(\ V' @ transition_end -> reply_reorder_(V'),((first),(stack')))
-)
+p?x:{start} -> (
+  r!ping -> r_'.return ->
+    Provides_'.return ->
+  transition_end ->
+  reply_reorder_(first)
+))
 
-within reply_reorder_(((true),(<>)))
-
+within reply_reorder_(true)
+                                                     
 channel extensions_over_empty_channels_is_undefined
 channel IN',OUT' : {r_''.pong,extensions_over_empty_channels_is_undefined}
 

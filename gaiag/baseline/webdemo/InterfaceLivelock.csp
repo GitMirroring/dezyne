@@ -1,52 +1,5 @@
--- drop_one_local: V => V
-drop_one_local_((M', (L', L0'))) = (M', L')
-
-illegal_(P',V') = illegal -> STOP
--- send_: (c: channel, e:event) => (P,V)->Proc
-send_(c',e')(P', V') = c'!e' -> P'(V')
--- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
--- skip_: () => (P,V)->Proc
-skip_(P', V') = P'(V')
--- call_: (B': (P,V)->Proc) => (P,V)->Proc
-call_(B')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', <>))
--- call_args_: (B': (P,V)->Proc, F': V'->V') => (P,V)->Proc
-call_args_(B', F')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', (<>, F'((M1',L1')))))
--- assign_: (F': V -> V) => (P,V) -> Proc
-assign_(F')(P', V') = P'(F'(V'))
--- assign_int_: (F': V -> V) => (P,V) -> Proc
-assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & range_error -> STOP [] b' & P'(F'(V'))
--- assign_int_: (F': V -> V, B': V -> bool) => (P,V) -> Proc
-assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & illegal -> STOP [] b' & P'(F'(V'))
--- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
-assign_active_(C', A')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
--- assign_int_active_: C':(P,V)->Proc, A: (V,val)->V, B': V -> bool => (P,V)->Proc
--- Paul, HELP! assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ not b' & range_error -> STOP [] b' & P'(A'((M',L'),r')), V')
--- assign_int_active_(C',A',b')(P', V') = assign_active_(C', A')
--- assign_int_active_(C',A',b')(P', V') = (\ (C', A', b') @ assign_active_(C', A'))
-assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
-
-reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
--- returnvalue_: (F: V->val) => (P,V)->Proc
-returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
--- the_end_: P => V->Proc
-the_end_(P', V') = transition_end -> P'(V')
-
--- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
-semi_(S1',S2')(P', V') = S1'(\V'' @ S2'(P', V''),V')
--- ifthenelse: (F': V->val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
-ifthenelse_(F',S1',S2')(P', V') =  if F'(V') then S1'(P', V') else S2'(P', V')
--- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
-context_(F', S')(P', (M', L')) = S'((\ (M',L2') @ P'((M',L'))), (M', (L', F'((M', L')))))
--- context_int_: (F': V->val, B: bool, S': (P,V)->Proc) => (P,V)->Proc
-context_int_(F', B', S')(P', (M', L')) = S'((\ (M',L2') @ let b' = B'((M',L2')) within not b' & range_error -> STOP [] b' & P'((M',L'))), (M', (L', F'((M', L')))))
--- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
-context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
--- context_int_active_: (C':(P,V)->Proc, B': bool, S: (P,V)->Proc) => (P,V)->Proc
--- Paul, HELP! context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ let b' = B'((M',r')) within not b' & range_error -> STOP [] b' & S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
---context_int_active_(C', B', S')(P', V') = (\ (C', B', S') @ context_active_(C', S'))
-context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
-
+nametype bool = {false, true}   
+                
 channel illegal
 channel range_error
 channel transition_begin, transition_end
@@ -54,6 +7,10 @@ channel transition_begin, transition_end
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
 datatype event_enumeration_alphabet = i3_start | i7_States_InBusiness | i7_States_InitialState | i7_States_Started | inevitable | modeling | return | the_end'
+
+-- end of combinators
+-- both.csp.scm
+-- end of both.csp.scm
 -- interface.csp.scm
 
 channel i138_BlindLoop: {i3_start,inevitable,the_end'}
@@ -64,29 +21,44 @@ channel i138_BlindLoop_''': {modeling}
 
 IF_i138_BlindLoop_(IG,CS) = let
 
-i138_BlindLoop_(((i15_state),(stack'))) =
-((i15_state == i7_States_InitialState)) & (
-i138_BlindLoop?x:{i3_start} ->
-semi_(assign_(\ ((i15_state),(stack')) @ ((i7_States_Started),(stack'))),
-(\ P',V' @ i138_BlindLoop_'.return -> P'(V')))(\ V' @ i138_BlindLoop.the_end' -> i138_BlindLoop_(V'),((i15_state),(stack'))))
+i138_BlindLoop_(i15_state) =
+(((i15_state == i7_States_InitialState)) & (
+i138_BlindLoop?x:{i3_start} -> (
+  let tmp' = i7_States_Started within
+  let i15_state = tmp' within
+    i138_BlindLoop_'.return ->
+  i138_BlindLoop.the_end' ->
+  i138_BlindLoop_(i15_state)
+))
 []
 ((i15_state == i7_States_Started)) & (
-i138_BlindLoop?x:{inevitable} ->
-semi_(assign_(\ ((i15_state),(stack')) @ ((i7_States_InBusiness),(stack'))),
-(\ P',V' @ i138_BlindLoop_'''.modeling -> P'(V')))(\ V' @ i138_BlindLoop.the_end' -> i138_BlindLoop_(V'),((i15_state),(stack')))
+i138_BlindLoop?x:{inevitable} ->(
+  let tmp' = i7_States_InBusiness within
+  let i15_state = tmp' within
+    i138_BlindLoop_'''.modeling ->
+  i138_BlindLoop.the_end' ->
+  i138_BlindLoop_(i15_state)
+)
  []
-  IG & i138_BlindLoop?x:{i3_start} ->
-illegal_(STOP,<>))
+  IG & i138_BlindLoop?x:{i3_start} -> (
+  illegal -> STOP
+))
 []
 ((i15_state == i7_States_InBusiness)) & (
-i138_BlindLoop?x:{inevitable} ->
-semi_(assign_(\ ((i15_state),(stack')) @ ((i7_States_Started),(stack'))),
-(\ P',V' @ i138_BlindLoop_'''.modeling -> P'(V')))(\ V' @ i138_BlindLoop.the_end' -> i138_BlindLoop_(V'),((i15_state),(stack')))
+i138_BlindLoop?x:{inevitable} ->(
+  let tmp' = i7_States_Started within
+  let i15_state = tmp' within
+    i138_BlindLoop_'''.modeling ->
+  i138_BlindLoop.the_end' ->
+  i138_BlindLoop_(i15_state)
+)
  []
-  IG & i138_BlindLoop?x:{i3_start} ->
-illegal_(STOP,<>))
+  IG & i138_BlindLoop?x:{i3_start} -> (
+  illegal -> STOP
+))
 []
-CS & i138_BlindLoop?x:{inevitable} -> illegal_(STOP,<>)
+CS & i138_BlindLoop?x:{inevitable} -> illegal -> STOP
+)
 
 REORDER' = i138_BlindLoop?x' -> (i138_BlindLoop_in'?y' -> i138_BlindLoop.the_end' -> i138_BlindLoop_out'!y' -> REORDER' [] i138_BlindLoop.the_end' -> REORDER')
 
@@ -96,10 +68,13 @@ transparent diamond
 within sbisim(diamond(x))
 
 within compress((if CS
-                 then i138_BlindLoop_(((i7_States_InitialState),(<>)))
-                 else i138_BlindLoop_(((i7_States_InitialState),(<>)))) [[x<-i138_BlindLoop_in'.x|x<-extensions(i138_BlindLoop_in')]] [|{|i138_BlindLoop,i138_BlindLoop_in',i138_BlindLoop.the_end'|}|] REORDER' [[i138_BlindLoop_out'.x<-x|x<-extensions(i138_BlindLoop_out')]] \ {|i138_BlindLoop_in',i138_BlindLoop.the_end'|})
+                then i138_BlindLoop_(i7_States_InitialState)
+                else i138_BlindLoop_(i7_States_InitialState) )
+               [[x<-i138_BlindLoop_in'.x|x<-extensions(i138_BlindLoop_in')]] [|{|i138_BlindLoop,i138_BlindLoop_in',i138_BlindLoop.the_end'|}|] REORDER' [[i138_BlindLoop_out'.x<-x|x<-extensions(i138_BlindLoop_out')]] \ {|i138_BlindLoop_in',i138_BlindLoop.the_end'|})
 
 -- end of interface.csp.scm
+-- both.csp.scm
+-- end of both.csp.scm
 -- component.csp.scm
 
 channel i139_LoopingInterface: extensions(i138_BlindLoop)
@@ -113,13 +88,16 @@ channel i139_LoopingInterface_''': extensions(i138_BlindLoop_''')
 
 CO_i152_TestComponent_(IIG,IG) = let
 
-i152_TestComponent_(((<>),(stack'))) = transition_begin -> (
-i139_LoopingInterface?x:{i3_start} ->
-(\ P',V' @ i138_BlindLoop_'.return -> P'(V'))(\ V' @ transition_end -> i152_TestComponent_(V'),((<>),(stack')))
-)
+i152_TestComponent_() =
+transition_begin -> (
+i139_LoopingInterface?x:{i3_start} -> (
+    i138_BlindLoop_'.return ->
+  transition_end ->
+  i152_TestComponent_()
+))
 
-within i152_TestComponent_(((<>),(<>)))
-
+within i152_TestComponent_()
+                                                     
 channel extensions_over_empty_channels_is_undefined
 channel IN',OUT' : {extensions_over_empty_channels_is_undefined}
 

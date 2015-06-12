@@ -1,0 +1,109 @@
+// Dezyne --- Dezyne command line tools
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+extern integer $int$;
+interface iunguarded
+{
+  in void calibrate();
+  in void stop();
+  in void move(integer x, integer y);
+  out void moved();
+  out void calibrated();  
+  behaviour
+  {
+    on calibrate: {}
+    on stop: {}
+  }
+}
+
+interface iaxis
+{
+  in void calibrate();
+  in void stop();  
+  out void calibrated();
+  in void move(integer x);
+  out void moved();
+  behaviour
+  {
+    on calibrate: {}
+    on stop: {}
+  }
+}
+
+component unguarded
+{
+  provides iunguarded ctrl;
+  requires iaxis x;
+  requires iaxis y;  
+	
+  behaviour
+  {
+    enum state { init, idle, busy};
+    subint I2 {0..2};
+    bool calibrating = false;
+    I2 calibrate = 0;
+    I2 move = 0;    
+    state s = state.init;
+
+    void calibrated()
+    {
+      if (calibrate == 2) illegal;
+      calibrate = calibrate + 1;
+      if (calibrate == 2)
+      {
+        s = state.idle;
+        calibrating = false;
+        ctrl.calibrated();
+      }
+    }
+    void moved()
+    {
+      move = move - 1;
+      if (move == 0) ctrl.moved();
+    }
+    on ctrl.stop():
+      {
+        s = state.init;
+        calibrating = false;
+        calibrate = 0;
+        move = 0;
+      }
+        
+    on ctrl.calibrate(): [calibrate == 0 && !calibrating]
+    {
+      x.calibrate();
+      y.calibrate();
+      calibrating = true;
+    }
+    on ctrl.calibrate(): [calibrate !=0 || calibrating] { }
+    on x.calibrated(), y.calibrated(): calibrated();
+    on ctrl.move(a, b): [move == 0 && calibrate == 2]
+    {
+      move = 2;
+      x.move(a);
+      y.move(b);
+    }
+    on ctrl.move(c, d): [move != 0 || calibrate != 2] { c = d; }
+    on x.moved(), y.moved(): [move > 0] moved();
+    on x.moved(), y.moved(): [move == 0] illegal;
+  }
+}

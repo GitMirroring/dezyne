@@ -1,52 +1,5 @@
--- drop_one_local: V => V
-drop_one_local_((M', (L', L0'))) = (M', L')
-
-illegal_(P',V') = illegal -> STOP
--- send_: (c: channel, e:event) => (P,V)->Proc
-send_(c',e')(P', V') = c'!e' -> P'(V')
--- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
--- skip_: () => (P,V)->Proc
-skip_(P', V') = P'(V')
--- call_: (B': (P,V)->Proc) => (P,V)->Proc
-call_(B')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', <>))
--- call_args_: (B': (P,V)->Proc, F': V'->V') => (P,V)->Proc
-call_args_(B', F')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', (<>, F'((M1',L1')))))
--- assign_: (F': V -> V) => (P,V) -> Proc
-assign_(F')(P', V') = P'(F'(V'))
--- assign_int_: (F': V -> V) => (P,V) -> Proc
-assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & range_error -> STOP [] b' & P'(F'(V'))
--- assign_int_: (F': V -> V, B': V -> bool) => (P,V) -> Proc
-assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & illegal -> STOP [] b' & P'(F'(V'))
--- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
-assign_active_(C', A')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
--- assign_int_active_: C':(P,V)->Proc, A: (V,val)->V, B': V -> bool => (P,V)->Proc
--- Paul, HELP! assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ not b' & range_error -> STOP [] b' & P'(A'((M',L'),r')), V')
--- assign_int_active_(C',A',b')(P', V') = assign_active_(C', A')
--- assign_int_active_(C',A',b')(P', V') = (\ (C', A', b') @ assign_active_(C', A'))
-assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
-
-reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
--- returnvalue_: (F: V->val) => (P,V)->Proc
-returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
--- the_end_: P => V->Proc
-the_end_(P', V') = transition_end -> P'(V')
-
--- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
-semi_(S1',S2')(P', V') = S1'(\V'' @ S2'(P', V''),V')
--- ifthenelse: (F': V->val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
-ifthenelse_(F',S1',S2')(P', V') =  if F'(V') then S1'(P', V') else S2'(P', V')
--- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
-context_(F', S')(P', (M', L')) = S'((\ (M',L2') @ P'((M',L'))), (M', (L', F'((M', L')))))
--- context_int_: (F': V->val, B: bool, S': (P,V)->Proc) => (P,V)->Proc
-context_int_(F', B', S')(P', (M', L')) = S'((\ (M',L2') @ let b' = B'((M',L2')) within not b' & range_error -> STOP [] b' & P'((M',L'))), (M', (L', F'((M', L')))))
--- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
-context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
--- context_int_active_: (C':(P,V)->Proc, B': bool, S: (P,V)->Proc) => (P,V)->Proc
--- Paul, HELP! context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ let b' = B'((M',r')) within not b' & range_error -> STOP [] b' & S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
---context_int_active_(C', B', S')(P', V') = (\ (C', B', S') @ context_active_(C', S'))
-context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
-
+nametype bool = {false, true}   
+                
 channel illegal
 channel range_error
 channel transition_begin, transition_end
@@ -54,6 +7,10 @@ channel transition_begin, transition_end
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
 datatype event_enumeration_alphabet = i243_enable | i244_disable | i245_triggered | i246_disabled | i251_States_Disabled | i251_States_Disabling | i251_States_Enabled | i251_States_Triggered | inevitable | modeling | optional | return | the_end'
+
+-- end of combinators
+-- both.csp.scm
+-- end of both.csp.scm
 -- interface.csp.scm
 
 channel i482_ISensor: {i243_enable,i244_disable,inevitable,optional,the_end'}
@@ -64,46 +21,71 @@ channel i482_ISensor_''': {modeling}
 
 IF_i482_ISensor_(IG,CS) = let
 
-i482_ISensor_(((i259_state),(stack'))) =
-((i259_state == i251_States_Disabled)) & (
-i482_ISensor?x:{i243_enable} ->
-semi_(assign_(\ ((i259_state),(stack')) @ ((i251_States_Enabled),(stack'))),
-(\ P',V' @ i482_ISensor_'.return -> P'(V')))(\ V' @ i482_ISensor.the_end' -> i482_ISensor_(V'),((i259_state),(stack')))
+i482_ISensor_(i259_state) =
+(((i259_state == i251_States_Disabled)) & (
+i482_ISensor?x:{i243_enable} -> (
+  let tmp' = i251_States_Enabled within
+  let i259_state = tmp' within
+    i482_ISensor_'.return ->
+  i482_ISensor.the_end' ->
+  i482_ISensor_(i259_state)
+)
  []
-  IG & i482_ISensor?x:{i244_disable} ->
-illegal_(STOP,<>))
+  IG & i482_ISensor?x:{i244_disable} -> (
+  illegal -> STOP
+))
 []
 ((i259_state == i251_States_Enabled)) & (
-IG & i482_ISensor?x:{i243_enable} ->
-illegal_(STOP,<>)
+IG & i482_ISensor?x:{i243_enable} -> (
+  illegal -> STOP
+)
  []
-  i482_ISensor?x:{i244_disable} ->
-semi_(assign_(\ ((i259_state),(stack')) @ ((i251_States_Disabling),(stack'))),
-(\ P',V' @ i482_ISensor_'.return -> P'(V')))(\ V' @ i482_ISensor.the_end' -> i482_ISensor_(V'),((i259_state),(stack')))
+  i482_ISensor?x:{i244_disable} -> (
+  let tmp' = i251_States_Disabling within
+  let i259_state = tmp' within
+    i482_ISensor_'.return ->
+  i482_ISensor.the_end' ->
+  i482_ISensor_(i259_state)
+)
  []
-  i482_ISensor?x:{optional} ->
-semi_(semi_((\ P',V' @ i482_ISensor_''!i245_triggered -> P'(V')),
-assign_(\ ((i259_state),(stack')) @ ((i251_States_Triggered),(stack')))),
-(\ P',V' @ i482_ISensor_'''.modeling -> P'(V')))(\ V' @ i482_ISensor.the_end' -> i482_ISensor_(V'),((i259_state),(stack'))))
+  i482_ISensor?x:{optional} ->(
+  i482_ISensor_''!i245_triggered ->
+  let tmp' = i251_States_Triggered within
+  let i259_state = tmp' within
+    i482_ISensor_'''.modeling ->
+  i482_ISensor.the_end' ->
+  i482_ISensor_(i259_state)
+))
 []
 ((i259_state == i251_States_Disabling)) & (
-IG & i482_ISensor?x:{i243_enable,i244_disable} ->
-illegal_(STOP,<>)
+IG & i482_ISensor?x:{i243_enable,i244_disable} -> (
+  illegal -> STOP
+)
  []
-  i482_ISensor?x:{inevitable} ->
-semi_(semi_((\ P',V' @ i482_ISensor_''!i246_disabled -> P'(V')),
-assign_(\ ((i259_state),(stack')) @ ((i251_States_Disabled),(stack')))),
-(\ P',V' @ i482_ISensor_'''.modeling -> P'(V')))(\ V' @ i482_ISensor.the_end' -> i482_ISensor_(V'),((i259_state),(stack'))))
+  i482_ISensor?x:{inevitable} ->(
+  i482_ISensor_''!i246_disabled ->
+  let tmp' = i251_States_Disabled within
+  let i259_state = tmp' within
+    i482_ISensor_'''.modeling ->
+  i482_ISensor.the_end' ->
+  i482_ISensor_(i259_state)
+))
 []
 ((i259_state == i251_States_Triggered)) & (
-IG & i482_ISensor?x:{i243_enable} ->
-illegal_(STOP,<>)
+IG & i482_ISensor?x:{i243_enable} -> (
+  illegal -> STOP
+)
  []
-  i482_ISensor?x:{i244_disable} ->
-semi_(assign_(\ ((i259_state),(stack')) @ ((i251_States_Disabling),(stack'))),
-(\ P',V' @ i482_ISensor_'.return -> P'(V')))(\ V' @ i482_ISensor.the_end' -> i482_ISensor_(V'),((i259_state),(stack'))))
+  i482_ISensor?x:{i244_disable} -> (
+  let tmp' = i251_States_Disabling within
+  let i259_state = tmp' within
+    i482_ISensor_'.return ->
+  i482_ISensor.the_end' ->
+  i482_ISensor_(i259_state)
+))
 []
-CS & i482_ISensor?x:{inevitable,optional} -> illegal_(STOP,<>)
+CS & i482_ISensor?x:{inevitable,optional} -> illegal -> STOP
+)
 
 REORDER' = i482_ISensor?x' -> (i482_ISensor_in'?y' -> i482_ISensor.the_end' -> i482_ISensor_out'!y' -> REORDER' [] i482_ISensor.the_end' -> REORDER')
 
@@ -113,10 +95,13 @@ transparent diamond
 within sbisim(diamond(x))
 
 within compress((if CS
-                 then i482_ISensor_(((i251_States_Disabled),(<>)))
-                 else i482_ISensor_(((i251_States_Disabled),(<>))) [|{i482_ISensor.optional}|] CHAOS({i482_ISensor.optional})) [[x<-i482_ISensor_in'.x|x<-extensions(i482_ISensor_in')]] [|{|i482_ISensor,i482_ISensor_in',i482_ISensor.the_end'|}|] REORDER' [[i482_ISensor_out'.x<-x|x<-extensions(i482_ISensor_out')]] \ {|i482_ISensor_in',i482_ISensor.the_end'|})
+                then i482_ISensor_(i251_States_Disabled)
+                else i482_ISensor_(i251_States_Disabled)  [|{i482_ISensor.optional}|] CHAOS({i482_ISensor.optional}))
+               [[x<-i482_ISensor_in'.x|x<-extensions(i482_ISensor_in')]] [|{|i482_ISensor,i482_ISensor_in',i482_ISensor.the_end'|}|] REORDER' [[i482_ISensor_out'.x<-x|x<-extensions(i482_ISensor_out')]] \ {|i482_ISensor_in',i482_ISensor.the_end'|})
 
 -- end of interface.csp.scm
+-- both.csp.scm
+-- end of both.csp.scm
 -- component.csp.scm
 
 channel i483_sensor: extensions(i482_ISensor)
@@ -131,18 +116,24 @@ channel i483_sensor_''': extensions(i482_ISensor_''')
 
 CO_i525_Sensor_(IIG,IG) = let
 
-i525_Sensor_(((<>),(stack'))) = transition_begin -> (
-i483_sensor?x:{i243_enable} ->
-semi_((\ P',V' @ i483_sensor_''!i245_triggered -> P'(V')),
-(\ P',V' @ i482_ISensor_'.return -> P'(V')))(\ V' @ transition_end -> i525_Sensor_(V'),((<>),(stack')))
-[]
-i483_sensor?x:{i244_disable} ->
-semi_((\ P',V' @ i483_sensor_''!i246_disabled -> P'(V')),
-(\ P',V' @ i482_ISensor_'.return -> P'(V')))(\ V' @ transition_end -> i525_Sensor_(V'),((<>),(stack')))
+i525_Sensor_() =
+transition_begin -> (
+i483_sensor?x:{i243_enable} -> (
+  i483_sensor_''!i245_triggered ->
+    i482_ISensor_'.return ->
+  transition_end ->
+  i525_Sensor_()
 )
+[]
+i483_sensor?x:{i244_disable} -> (
+  i483_sensor_''!i246_disabled ->
+    i482_ISensor_'.return ->
+  transition_end ->
+  i525_Sensor_()
+))
 
-within i525_Sensor_(((<>),(<>)))
-
+within i525_Sensor_()
+                                                     
 channel extensions_over_empty_channels_is_undefined
 channel IN',OUT' : {extensions_over_empty_channels_is_undefined}
 

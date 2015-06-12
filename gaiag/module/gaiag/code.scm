@@ -85,6 +85,7 @@
            statements.event
            statements.port
            *scope*
+           string-if
            ))
 
 (define (ast:code ast)
@@ -905,3 +906,10 @@
     (and (or (char-alphabetic? first)
              (eq? first #\_))
          (string-every (char-set-adjoin char-set:letter+digit #\_) name))))
+
+(define-syntax string-if
+  (syntax-rules ()
+    ((_ condition then)
+     (animate-string (if (null-is-#f condition) then "") (current-module)))
+    ((_ condition then else)
+     (animate-string (if (null-is-#f condition) then else) (current-module)))))

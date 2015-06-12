@@ -458,7 +458,9 @@ out/assert/%.refines: $(DEPTH)/examples/assert/%.dzn
 
 CSP_BROKEN=\
  argument2.dzn\
+ hide.dzn\
  provides_twice.dzn\
+ unguarded.dzn\
 
 CSP_SOURCES = $(filter-out $(CSP_BROKEN),$(REGRESSION_SOURCES))
 

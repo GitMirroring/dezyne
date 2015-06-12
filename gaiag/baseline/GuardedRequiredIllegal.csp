@@ -1,52 +1,5 @@
--- drop_one_local: V => V
-drop_one_local_((M', (L', L0'))) = (M', L')
-
-illegal_(P',V') = illegal -> STOP
--- send_: (c: channel, e:event) => (P,V)->Proc
-send_(c',e')(P', V') = c'!e' -> P'(V')
--- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
--- skip_: () => (P,V)->Proc
-skip_(P', V') = P'(V')
--- call_: (B': (P,V)->Proc) => (P,V)->Proc
-call_(B')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', <>))
--- call_args_: (B': (P,V)->Proc, F': V'->V') => (P,V)->Proc
-call_args_(B', F')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', (<>, F'((M1',L1')))))
--- assign_: (F': V -> V) => (P,V) -> Proc
-assign_(F')(P', V') = P'(F'(V'))
--- assign_int_: (F': V -> V) => (P,V) -> Proc
-assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & range_error -> STOP [] b' & P'(F'(V'))
--- assign_int_: (F': V -> V, B': V -> bool) => (P,V) -> Proc
-assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & illegal -> STOP [] b' & P'(F'(V'))
--- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
-assign_active_(C', A')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
--- assign_int_active_: C':(P,V)->Proc, A: (V,val)->V, B': V -> bool => (P,V)->Proc
--- Paul, HELP! assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ not b' & range_error -> STOP [] b' & P'(A'((M',L'),r')), V')
--- assign_int_active_(C',A',b')(P', V') = assign_active_(C', A')
--- assign_int_active_(C',A',b')(P', V') = (\ (C', A', b') @ assign_active_(C', A'))
-assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
-
-reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
--- returnvalue_: (F: V->val) => (P,V)->Proc
-returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
--- the_end_: P => V->Proc
-the_end_(P', V') = transition_end -> P'(V')
-
--- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
-semi_(S1',S2')(P', V') = S1'(\V'' @ S2'(P', V''),V')
--- ifthenelse: (F': V->val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
-ifthenelse_(F',S1',S2')(P', V') =  if F'(V') then S1'(P', V') else S2'(P', V')
--- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
-context_(F', S')(P', (M', L')) = S'((\ (M',L2') @ P'((M',L'))), (M', (L', F'((M', L')))))
--- context_int_: (F': V->val, B: bool, S': (P,V)->Proc) => (P,V)->Proc
-context_int_(F', B', S')(P', (M', L')) = S'((\ (M',L2') @ let b' = B'((M',L2')) within not b' & range_error -> STOP [] b' & P'((M',L'))), (M', (L', F'((M', L')))))
--- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
-context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
--- context_int_active_: (C':(P,V)->Proc, B': bool, S: (P,V)->Proc) => (P,V)->Proc
--- Paul, HELP! context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ let b' = B'((M',r')) within not b' & range_error -> STOP [] b' & S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
---context_int_active_(C', B', S')(P', V') = (\ (C', B', S') @ context_active_(C', S'))
-context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
-
+nametype bool = {false, true}   
+                
 channel illegal
 channel range_error
 channel transition_begin, transition_end
@@ -54,6 +7,10 @@ channel transition_begin, transition_end
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
 datatype event_enumeration_alphabet = e | f | inevitable | modeling | optional | return | the_end' | unguarded
+
+-- end of combinators
+-- both.csp.scm
+-- end of both.csp.scm
 -- interface.csp.scm
 
 channel Bottom: {e,inevitable,the_end'}
@@ -64,22 +21,32 @@ channel Bottom_''': {modeling}
 
 IF_Bottom_(IG,CS) = let
 
-Bottom_(((c),(stack'))) =
-((not c)) & (
-Bottom?x:{e} ->
-semi_(assign_(\ ((c),(stack')) @ ((true),(stack'))),
-(\ P',V' @ Bottom_'.return -> P'(V')))(\ V' @ Bottom.the_end' -> Bottom_(V'),((c),(stack'))))
+Bottom_(c) =
+(((not c)) & (
+Bottom?x:{e} -> (
+  let tmp' = true within
+  let c = tmp' within
+    Bottom_'.return ->
+  Bottom.the_end' ->
+  Bottom_(c)
+))
 []
 (c) & (
-IG & Bottom?x:{e} ->
-illegal_(STOP,<>)
+IG & Bottom?x:{e} -> (
+  illegal -> STOP
+)
  []
-  Bottom?x:{inevitable} ->
-semi_(semi_(assign_(\ ((c),(stack')) @ ((false),(stack'))),
-(\ P',V' @ Bottom_''!f -> P'(V'))),
-(\ P',V' @ Bottom_'''.modeling -> P'(V')))(\ V' @ Bottom.the_end' -> Bottom_(V'),((c),(stack'))))
+  Bottom?x:{inevitable} ->(
+  let tmp' = false within
+  let c = tmp' within
+  Bottom_''!f ->
+    Bottom_'''.modeling ->
+  Bottom.the_end' ->
+  Bottom_(c)
+))
 []
-CS & Bottom?x:{inevitable} -> illegal_(STOP,<>)
+CS & Bottom?x:{inevitable} -> illegal -> STOP
+)
 
 REORDER' = Bottom?x' -> (Bottom_in'?y' -> Bottom.the_end' -> Bottom_out'!y' -> REORDER' [] Bottom.the_end' -> REORDER')
 
@@ -89,10 +56,13 @@ transparent diamond
 within sbisim(diamond(x))
 
 within compress((if CS
-                 then Bottom_(((false),(<>)))
-                 else Bottom_(((false),(<>)))) [[x<-Bottom_in'.x|x<-extensions(Bottom_in')]] [|{|Bottom,Bottom_in',Bottom.the_end'|}|] REORDER' [[Bottom_out'.x<-x|x<-extensions(Bottom_out')]] \ {|Bottom_in',Bottom.the_end'|})
+                then Bottom_(false)
+                else Bottom_(false) )
+               [[x<-Bottom_in'.x|x<-extensions(Bottom_in')]] [|{|Bottom,Bottom_in',Bottom.the_end'|}|] REORDER' [[Bottom_out'.x<-x|x<-extensions(Bottom_out')]] \ {|Bottom_in',Bottom.the_end'|})
 
 -- end of interface.csp.scm
+-- both.csp.scm
+-- end of both.csp.scm
 -- interface.csp.scm
 
 channel Top: {e,optional,unguarded,the_end'}
@@ -103,15 +73,22 @@ channel Top_''': {modeling}
 
 IF_Top_(IG,CS) = let
 
-Top_(((<>),(stack'))) =
-Top?x:{unguarded,e} ->
-(\ P',V' @ Top_'.return -> P'(V'))(\ V' @ Top.the_end' -> Top_(V'),((<>),(stack')))
+Top_() =
+(Top?x:{unguarded,e} -> (
+    Top_'.return ->
+  Top.the_end' ->
+  Top_()
+)
 []
-Top?x:{optional} ->
-semi_((\ P',V' @ Top_''!f -> P'(V')),
-(\ P',V' @ Top_'''.modeling -> P'(V')))(\ V' @ Top.the_end' -> Top_(V'),((<>),(stack')))
+Top?x:{optional} ->(
+  Top_''!f ->
+    Top_'''.modeling ->
+  Top.the_end' ->
+  Top_()
+)
 []
-CS & Top?x:{optional} -> illegal_(STOP,<>)
+CS & Top?x:{optional} -> illegal -> STOP
+)
 
 REORDER' = Top?x' -> (Top_in'?y' -> Top.the_end' -> Top_out'!y' -> REORDER' [] Top.the_end' -> REORDER')
 
@@ -121,10 +98,13 @@ transparent diamond
 within sbisim(diamond(x))
 
 within compress((if CS
-                 then Top_(((<>),(<>)))
-                 else Top_(((<>),(<>))) [|{Top.optional}|] CHAOS({Top.optional})) [[x<-Top_in'.x|x<-extensions(Top_in')]] [|{|Top,Top_in',Top.the_end'|}|] REORDER' [[Top_out'.x<-x|x<-extensions(Top_out')]] \ {|Top_in',Top.the_end'|})
+                then Top_()
+                else Top_()  [|{Top.optional}|] CHAOS({Top.optional}))
+               [[x<-Top_in'.x|x<-extensions(Top_in')]] [|{|Top,Top_in',Top.the_end'|}|] REORDER' [[Top_out'.x<-x|x<-extensions(Top_out')]] \ {|Top_in',Top.the_end'|})
 
 -- end of interface.csp.scm
+-- both.csp.scm
+-- end of both.csp.scm
 -- component.csp.scm
 
 channel t: extensions(Top)
@@ -143,32 +123,46 @@ channel b_''': extensions(Bottom_''')
 
 CO_GuardedRequiredIllegal_(IIG,IG) = let
 
-GuardedRequiredIllegal_(((c),(stack'))) = transition_begin -> (
+GuardedRequiredIllegal_(c) =
+transition_begin -> (
 ((not c)) & (
-t?x:{e} ->
-semi_(semi_(assign_(\ ((c),(stack')) @ ((true),(stack'))),
-(\ P',V' @ b!e -> b_'.return -> P'(V'))),
-(\ P',V' @ Top_'.return -> P'(V')))(\ V' @ transition_end -> GuardedRequiredIllegal_(V'),((c),(stack'))))
+t?x:{e} -> (
+  let tmp' = true within
+  let c = tmp' within
+  b!e -> b_'.return ->
+    Top_'.return ->
+  transition_end ->
+  GuardedRequiredIllegal_(c)
+))
 []
 ((not c)) & (
-IG & b_''?x:{f} ->
-illegal_(STOP,<>))
+IG & b_''?x:{f} -> (
+  illegal -> STOP
+))
 []
 (c) & (
-t?x:{e} ->
-(\ P',V' @ Top_'.return -> P'(V'))(\ V' @ transition_end -> GuardedRequiredIllegal_(V'),((c),(stack'))))
+t?x:{e} -> (
+    Top_'.return ->
+  transition_end ->
+  GuardedRequiredIllegal_(c)
+))
 []
 (c) & (
-b_''?x:{f} ->
-semi_(assign_(\ ((c),(stack')) @ ((false),(stack'))),
-skip_)(\ V' @ transition_end -> GuardedRequiredIllegal_(V'),((c),(stack'))))
+b_''?x:{f} -> (
+  let tmp' = false within
+  let c = tmp' within
+    transition_end ->
+  GuardedRequiredIllegal_(c)
+))
 []
-t?x:{unguarded} ->
-(\ P',V' @ Top_'.return -> P'(V'))(\ V' @ transition_end -> GuardedRequiredIllegal_(V'),((c),(stack')))
-)
+t?x:{unguarded} -> (
+    Top_'.return ->
+  transition_end ->
+  GuardedRequiredIllegal_(c)
+))
 
-within GuardedRequiredIllegal_(((false),(<>)))
-
+within GuardedRequiredIllegal_(false)
+                                                     
 channel extensions_over_empty_channels_is_undefined
 channel IN',OUT' : {b_''.f,extensions_over_empty_channels_is_undefined}
 

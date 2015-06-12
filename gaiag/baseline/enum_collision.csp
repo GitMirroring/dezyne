@@ -1,52 +1,5 @@
--- drop_one_local: V => V
-drop_one_local_((M', (L', L0'))) = (M', L')
-
-illegal_(P',V') = illegal -> STOP
--- send_: (c: channel, e:event) => (P,V)->Proc
-send_(c',e')(P', V') = c'!e' -> P'(V')
--- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
--- skip_: () => (P,V)->Proc
-skip_(P', V') = P'(V')
--- call_: (B': (P,V)->Proc) => (P,V)->Proc
-call_(B')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', <>))
--- call_args_: (B': (P,V)->Proc, F': V'->V') => (P,V)->Proc
-call_args_(B', F')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', (<>, F'((M1',L1')))))
--- assign_: (F': V -> V) => (P,V) -> Proc
-assign_(F')(P', V') = P'(F'(V'))
--- assign_int_: (F': V -> V) => (P,V) -> Proc
-assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & range_error -> STOP [] b' & P'(F'(V'))
--- assign_int_: (F': V -> V, B': V -> bool) => (P,V) -> Proc
-assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & illegal -> STOP [] b' & P'(F'(V'))
--- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
-assign_active_(C', A')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
--- assign_int_active_: C':(P,V)->Proc, A: (V,val)->V, B': V -> bool => (P,V)->Proc
--- Paul, HELP! assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ not b' & range_error -> STOP [] b' & P'(A'((M',L'),r')), V')
--- assign_int_active_(C',A',b')(P', V') = assign_active_(C', A')
--- assign_int_active_(C',A',b')(P', V') = (\ (C', A', b') @ assign_active_(C', A'))
-assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
-
-reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
--- returnvalue_: (F: V->val) => (P,V)->Proc
-returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
--- the_end_: P => V->Proc
-the_end_(P', V') = transition_end -> P'(V')
-
--- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
-semi_(S1',S2')(P', V') = S1'(\V'' @ S2'(P', V''),V')
--- ifthenelse: (F': V->val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
-ifthenelse_(F',S1',S2')(P', V') =  if F'(V') then S1'(P', V') else S2'(P', V')
--- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
-context_(F', S')(P', (M', L')) = S'((\ (M',L2') @ P'((M',L'))), (M', (L', F'((M', L')))))
--- context_int_: (F': V->val, B: bool, S': (P,V)->Proc) => (P,V)->Proc
-context_int_(F', B', S')(P', (M', L')) = S'((\ (M',L2') @ let b' = B'((M',L2')) within not b' & range_error -> STOP [] b' & P'((M',L'))), (M', (L', F'((M', L')))))
--- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
-context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
--- context_int_active_: (C':(P,V)->Proc, B': bool, S: (P,V)->Proc) => (P,V)->Proc
--- Paul, HELP! context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ let b' = B'((M',r')) within not b' & range_error -> STOP [] b' & S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
---context_int_active_(C', B', S')(P', V') = (\ (C', B', S') @ context_active_(C', S'))
-context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
-
+nametype bool = {false, true}   
+                
 channel illegal
 channel range_error
 channel transition_begin, transition_end
@@ -54,6 +7,10 @@ channel transition_begin, transition_end
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
 datatype event_enumeration_alphabet = Retval1_NOK | Retval1_OK | Retval2_NOK | Retval2_OK | bar | foo | modeling | return | the_end'
+
+-- end of combinators
+-- both.csp.scm
+-- end of both.csp.scm
 -- interface.csp.scm
 
 channel ienum_collision: {bar,foo,the_end'}
@@ -64,14 +21,21 @@ channel ienum_collision_''': {modeling}
 
 IF_ienum_collision_(IG,CS) = let
 
-ienum_collision_(((<>),(stack'))) =
-ienum_collision?x:{foo} ->
-reply_(ienum_collision_', (\ ((<>),(stack')) @ Retval1_OK))(\ V' @ ienum_collision.the_end' -> ienum_collision_(V'),((<>),(stack')))
+ienum_collision_() =
+(ienum_collision?x:{foo} -> (
+  ienum_collision_'!Retval1_OK -> 
+  ienum_collision.the_end' ->
+  ienum_collision_()
+)
 []
-ienum_collision?x:{bar} ->
-reply_(ienum_collision_', (\ ((<>),(stack')) @ Retval2_NOK))(\ V' @ ienum_collision.the_end' -> ienum_collision_(V'),((<>),(stack')))
+ienum_collision?x:{bar} -> (
+  ienum_collision_'!Retval2_NOK -> 
+  ienum_collision.the_end' ->
+  ienum_collision_()
+)
 []
-CS & ienum_collision?x:{} -> illegal_(STOP,<>)
+CS & ienum_collision?x:{} -> illegal -> STOP
+)
 
 REORDER' = ienum_collision?x' -> (ienum_collision_in'?y' -> ienum_collision.the_end' -> ienum_collision_out'!y' -> REORDER' [] ienum_collision.the_end' -> REORDER')
 
@@ -81,10 +45,13 @@ transparent diamond
 within sbisim(diamond(x))
 
 within compress((if CS
-                 then ienum_collision_(((<>),(<>)))
-                 else ienum_collision_(((<>),(<>)))) [[x<-ienum_collision_in'.x|x<-extensions(ienum_collision_in')]] [|{|ienum_collision,ienum_collision_in',ienum_collision.the_end'|}|] REORDER' [[ienum_collision_out'.x<-x|x<-extensions(ienum_collision_out')]] \ {|ienum_collision_in',ienum_collision.the_end'|})
+                then ienum_collision_()
+                else ienum_collision_() )
+               [[x<-ienum_collision_in'.x|x<-extensions(ienum_collision_in')]] [|{|ienum_collision,ienum_collision_in',ienum_collision.the_end'|}|] REORDER' [[ienum_collision_out'.x<-x|x<-extensions(ienum_collision_out')]] \ {|ienum_collision_in',ienum_collision.the_end'|})
 
 -- end of interface.csp.scm
+-- both.csp.scm
+-- end of both.csp.scm
 -- component.csp.scm
 
 channel i: extensions(ienum_collision)
@@ -98,16 +65,22 @@ channel i_''': extensions(ienum_collision_''')
 
 CO_enum_collision_(IIG,IG) = let
 
-enum_collision_(((<>),(stack'))) = transition_begin -> (
-i?x:{foo} ->
-reply_(ienum_collision_', (\ ((<>),(stack')) @ Retval1_OK))(\ V' @ transition_end -> enum_collision_(V'),((<>),(stack')))
-[]
-i?x:{bar} ->
-reply_(ienum_collision_', (\ ((<>),(stack')) @ Retval2_NOK))(\ V' @ transition_end -> enum_collision_(V'),((<>),(stack')))
+enum_collision_() =
+transition_begin -> (
+i?x:{foo} -> (
+  ienum_collision_'!Retval1_OK -> 
+  transition_end ->
+  enum_collision_()
 )
+[]
+i?x:{bar} -> (
+  ienum_collision_'!Retval2_NOK -> 
+  transition_end ->
+  enum_collision_()
+))
 
-within enum_collision_(((<>),(<>)))
-
+within enum_collision_()
+                                                     
 channel extensions_over_empty_channels_is_undefined
 channel IN',OUT' : {extensions_over_empty_channels_is_undefined}
 

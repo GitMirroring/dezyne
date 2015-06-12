@@ -1,0 +1,37 @@
+Checking out/webdemo/ReturnValues.csp
+
+Checking COMPLETE'({i301_IDevice.i6_initialize,i301_IDevice.i8_calibrate,i301_IDevice.i10_perform_action1,i301_IDevice.i12_perform_action2}) [F= IF_i301_IDevice_(true,true)\diff(Events,{i301_IDevice.i6_initialize,i301_IDevice.i8_calibrate,i301_IDevice.i10_perform_action1,i301_IDevice.i12_perform_action2,illegal})
+true
+
+Checking IF_i301_IDevice_(false,false) :[deadlock free]
+true
+
+Checking IF_i301_IDevice_(true,false) :[livelock free]
+true
+
+Checking COMPLETE'({i565_IComp.i302_initialize,i565_IComp.i304_recover,i565_IComp.i306_perform_actions}) [F= IF_i565_IComp_(true,true)\diff(Events,{i565_IComp.i302_initialize,i565_IComp.i304_recover,i565_IComp.i306_perform_actions,illegal})
+true
+
+Checking IF_i565_IComp_(false,false) :[deadlock free]
+true
+
+Checking IF_i565_IComp_(true,false) :[livelock free]
+true
+
+Checking CO_i1028_OK_NOK_(true,true)[[i565_IComp_'.x<-i566_client_'.x|x<-extensions(i566_client_')]] :[deterministic]
+true
+
+Checking COMPLETE'({i566_client.i302_initialize,i566_client.i304_recover,i566_client.i306_perform_actions}) [F= CO_i1028_OK_NOK_(true,true)[[i565_IComp_'.x'<-i566_client_'.x'|x'<-extensions(i566_client_')]]\diff(Events,{i566_client.i302_initialize,i566_client.i304_recover,i566_client.i306_perform_actions,illegal})
+true
+
+Checking STOP [T= AS_i1028_OK_NOK_(false)\diff(Events,{illegal})
+true
+
+Checking AS_i1028_OK_NOK_(false) :[deadlock free]
+true
+
+Checking IF_i565_IComp_(true,false)[[i565_IComp.x<-i566_client.x|x<-extensions(i566_client)]][[i565_IComp_'.x<-i566_client_'.x|x<-extensions(i566_client_')]]\{i565_IComp_'''.modeling} [F= AS_i1028_OK_NOK_(true)\diff(Events,{|illegal,i566_client,i566_client_'|})
+true
+
+Checking AS_i1028_OK_NOK_(true)\diff(Events,{|illegal,i566_client,i566_client_'|}) :[livelock free]
+true

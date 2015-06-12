@@ -1,52 +1,5 @@
--- drop_one_local: V => V
-drop_one_local_((M', (L', L0'))) = (M', L')
-
-illegal_(P',V') = illegal -> STOP
--- send_: (c: channel, e:event) => (P,V)->Proc
-send_(c',e')(P', V') = c'!e' -> P'(V')
--- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
--- skip_: () => (P,V)->Proc
-skip_(P', V') = P'(V')
--- call_: (B': (P,V)->Proc) => (P,V)->Proc
-call_(B')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', <>))
--- call_args_: (B': (P,V)->Proc, F': V'->V') => (P,V)->Proc
-call_args_(B', F')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', (<>, F'((M1',L1')))))
--- assign_: (F': V -> V) => (P,V) -> Proc
-assign_(F')(P', V') = P'(F'(V'))
--- assign_int_: (F': V -> V) => (P,V) -> Proc
-assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & range_error -> STOP [] b' & P'(F'(V'))
--- assign_int_: (F': V -> V, B': V -> bool) => (P,V) -> Proc
-assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & illegal -> STOP [] b' & P'(F'(V'))
--- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
-assign_active_(C', A')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
--- assign_int_active_: C':(P,V)->Proc, A: (V,val)->V, B': V -> bool => (P,V)->Proc
--- Paul, HELP! assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ not b' & range_error -> STOP [] b' & P'(A'((M',L'),r')), V')
--- assign_int_active_(C',A',b')(P', V') = assign_active_(C', A')
--- assign_int_active_(C',A',b')(P', V') = (\ (C', A', b') @ assign_active_(C', A'))
-assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
-
-reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
--- returnvalue_: (F: V->val) => (P,V)->Proc
-returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
--- the_end_: P => V->Proc
-the_end_(P', V') = transition_end -> P'(V')
-
--- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
-semi_(S1',S2')(P', V') = S1'(\V'' @ S2'(P', V''),V')
--- ifthenelse: (F': V->val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
-ifthenelse_(F',S1',S2')(P', V') =  if F'(V') then S1'(P', V') else S2'(P', V')
--- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
-context_(F', S')(P', (M', L')) = S'((\ (M',L2') @ P'((M',L'))), (M', (L', F'((M', L')))))
--- context_int_: (F': V->val, B: bool, S': (P,V)->Proc) => (P,V)->Proc
-context_int_(F', B', S')(P', (M', L')) = S'((\ (M',L2') @ let b' = B'((M',L2')) within not b' & range_error -> STOP [] b' & P'((M',L'))), (M', (L', F'((M', L')))))
--- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
-context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
--- context_int_active_: (C':(P,V)->Proc, B': bool, S: (P,V)->Proc) => (P,V)->Proc
--- Paul, HELP! context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ let b' = B'((M',r')) within not b' & range_error -> STOP [] b' & S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
---context_int_active_(C', B', S')(P', V') = (\ (C', B', S') @ context_active_(C', S'))
-context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
-
+nametype bool = {false, true}   
+                
 channel illegal
 channel range_error
 channel transition_begin, transition_end
@@ -54,6 +7,10 @@ channel transition_begin, transition_end
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
 datatype event_enumeration_alphabet = a | e | modeling | return | s | t | the_end'
+
+-- end of combinators
+-- both.csp.scm
+-- end of both.csp.scm
 -- interface.csp.scm
 
 channel IGuardthreetopon: {e,s,t,the_end'}
@@ -64,37 +21,56 @@ channel IGuardthreetopon_''': {modeling}
 
 IF_IGuardthreetopon_(IG,CS) = let
 
-IGuardthreetopon_(((b),(stack'))) =
-((true and b)) & (
-IGuardthreetopon?x:{e} ->
-semi_((\ P',V' @ IGuardthreetopon_''!a -> P'(V')),
-(\ P',V' @ IGuardthreetopon_'.return -> P'(V')))(\ V' @ IGuardthreetopon.the_end' -> IGuardthreetopon_(V'),((b),(stack'))))
+IGuardthreetopon_(b) =
+(((true and b)) & (
+IGuardthreetopon?x:{e} -> (
+  IGuardthreetopon_''!a ->
+    IGuardthreetopon_'.return ->
+  IGuardthreetopon.the_end' ->
+  IGuardthreetopon_(b)
+))
 []
 ((true and (not b))) & (
-IGuardthreetopon?x:{e} ->
-semi_((\ P',V' @ IGuardthreetopon_''!a -> P'(V')),
-(\ P',V' @ IGuardthreetopon_'.return -> P'(V')))(\ V' @ IGuardthreetopon.the_end' -> IGuardthreetopon_(V'),((b),(stack'))))
+IGuardthreetopon?x:{e} -> (
+  IGuardthreetopon_''!a ->
+    IGuardthreetopon_'.return ->
+  IGuardthreetopon.the_end' ->
+  IGuardthreetopon_(b)
+))
 []
 ((not b)) & (
-IGuardthreetopon?x:{t} ->
-semi_((\ P',V' @ IGuardthreetopon_''!a -> P'(V')),
-(\ P',V' @ IGuardthreetopon_'.return -> P'(V')))(\ V' @ IGuardthreetopon.the_end' -> IGuardthreetopon_(V'),((b),(stack'))))
+IGuardthreetopon?x:{t} -> (
+  IGuardthreetopon_''!a ->
+    IGuardthreetopon_'.return ->
+  IGuardthreetopon.the_end' ->
+  IGuardthreetopon_(b)
+))
 []
 (b) & (
-IGuardthreetopon?x:{t} ->
-semi_((\ P',V' @ IGuardthreetopon_''!a -> P'(V')),
-(\ P',V' @ IGuardthreetopon_'.return -> P'(V')))(\ V' @ IGuardthreetopon.the_end' -> IGuardthreetopon_(V'),((b),(stack'))))
+IGuardthreetopon?x:{t} -> (
+  IGuardthreetopon_''!a ->
+    IGuardthreetopon_'.return ->
+  IGuardthreetopon.the_end' ->
+  IGuardthreetopon_(b)
+))
 []
 ((not b)) & (
-IGuardthreetopon?x:{t} ->
-semi_((\ P',V' @ IGuardthreetopon_''!a -> P'(V')),
-(\ P',V' @ IGuardthreetopon_'.return -> P'(V')))(\ V' @ IGuardthreetopon.the_end' -> IGuardthreetopon_(V'),((b),(stack'))))
+IGuardthreetopon?x:{t} -> (
+  IGuardthreetopon_''!a ->
+    IGuardthreetopon_'.return ->
+  IGuardthreetopon.the_end' ->
+  IGuardthreetopon_(b)
+))
 []
-IGuardthreetopon?x:{s} ->
-semi_((\ P',V' @ IGuardthreetopon_''!a -> P'(V')),
-(\ P',V' @ IGuardthreetopon_'.return -> P'(V')))(\ V' @ IGuardthreetopon.the_end' -> IGuardthreetopon_(V'),((b),(stack')))
+IGuardthreetopon?x:{s} -> (
+  IGuardthreetopon_''!a ->
+    IGuardthreetopon_'.return ->
+  IGuardthreetopon.the_end' ->
+  IGuardthreetopon_(b)
+)
 []
-CS & IGuardthreetopon?x:{} -> illegal_(STOP,<>)
+CS & IGuardthreetopon?x:{} -> illegal -> STOP
+)
 
 REORDER' = IGuardthreetopon?x' -> (IGuardthreetopon_in'?y' -> IGuardthreetopon.the_end' -> IGuardthreetopon_out'!y' -> REORDER' [] IGuardthreetopon.the_end' -> REORDER')
 
@@ -104,10 +80,13 @@ transparent diamond
 within sbisim(diamond(x))
 
 within compress((if CS
-                 then IGuardthreetopon_(((false),(<>)))
-                 else IGuardthreetopon_(((false),(<>)))) [[x<-IGuardthreetopon_in'.x|x<-extensions(IGuardthreetopon_in')]] [|{|IGuardthreetopon,IGuardthreetopon_in',IGuardthreetopon.the_end'|}|] REORDER' [[IGuardthreetopon_out'.x<-x|x<-extensions(IGuardthreetopon_out')]] \ {|IGuardthreetopon_in',IGuardthreetopon.the_end'|})
+                then IGuardthreetopon_(false)
+                else IGuardthreetopon_(false) )
+               [[x<-IGuardthreetopon_in'.x|x<-extensions(IGuardthreetopon_in')]] [|{|IGuardthreetopon,IGuardthreetopon_in',IGuardthreetopon.the_end'|}|] REORDER' [[IGuardthreetopon_out'.x<-x|x<-extensions(IGuardthreetopon_out')]] \ {|IGuardthreetopon_in',IGuardthreetopon.the_end'|})
 
 -- end of interface.csp.scm
+-- both.csp.scm
+-- end of both.csp.scm
 -- interface.csp.scm
 
 channel RGuardthreetopon: {e,the_end'}
@@ -118,11 +97,13 @@ channel RGuardthreetopon_''': {modeling}
 
 IF_RGuardthreetopon_(IG,CS) = let
 
-RGuardthreetopon_(((<>),(stack'))) =
-IG & RGuardthreetopon?x:{e} ->
-illegal_(STOP,<>)
+RGuardthreetopon_() =
+(IG & RGuardthreetopon?x:{e} -> (
+  illegal -> STOP
+)
 []
-CS & RGuardthreetopon?x:{} -> illegal_(STOP,<>)
+CS & RGuardthreetopon?x:{} -> illegal -> STOP
+)
 
 REORDER' = RGuardthreetopon?x' -> (RGuardthreetopon_in'?y' -> RGuardthreetopon.the_end' -> RGuardthreetopon_out'!y' -> REORDER' [] RGuardthreetopon.the_end' -> REORDER')
 
@@ -132,10 +113,13 @@ transparent diamond
 within sbisim(diamond(x))
 
 within compress((if CS
-                 then RGuardthreetopon_(((<>),(<>)))
-                 else RGuardthreetopon_(((<>),(<>)))) [[x<-RGuardthreetopon_in'.x|x<-extensions(RGuardthreetopon_in')]] [|{|RGuardthreetopon,RGuardthreetopon_in',RGuardthreetopon.the_end'|}|] REORDER' [[RGuardthreetopon_out'.x<-x|x<-extensions(RGuardthreetopon_out')]] \ {|RGuardthreetopon_in',RGuardthreetopon.the_end'|})
+                then RGuardthreetopon_()
+                else RGuardthreetopon_() )
+               [[x<-RGuardthreetopon_in'.x|x<-extensions(RGuardthreetopon_in')]] [|{|RGuardthreetopon,RGuardthreetopon_in',RGuardthreetopon.the_end'|}|] REORDER' [[RGuardthreetopon_out'.x<-x|x<-extensions(RGuardthreetopon_out')]] \ {|RGuardthreetopon_in',RGuardthreetopon.the_end'|})
 
 -- end of interface.csp.scm
+-- both.csp.scm
+-- end of both.csp.scm
 -- component.csp.scm
 
 channel i: extensions(IGuardthreetopon)
@@ -154,41 +138,62 @@ channel r_''': extensions(RGuardthreetopon_''')
 
 CO_Guardthreetopon_(IIG,IG) = let
 
-Guardthreetopon_(((b),(stack'))) = transition_begin -> (
+Guardthreetopon_(b) =
+transition_begin -> (
 ((true and b)) & (
-i?x:{e} ->
-semi_((\ P',V' @ i_''!a -> P'(V')),
-(\ P',V' @ IGuardthreetopon_'.return -> P'(V')))(\ V' @ transition_end -> Guardthreetopon_(V'),((b),(stack'))))
+i?x:{e} -> (
+  i_''!a ->
+    IGuardthreetopon_'.return ->
+  transition_end ->
+  Guardthreetopon_(b)
+))
 []
 ((true and (not b))) & (
-i?x:{e} ->
-semi_(context_(\ ((b),(stack')) @ true,
-ifthenelse_(\ ((b),((stack',c))) @ (c),
-(\ P',V' @ i_''!a -> P'(V')),
-skip_
-)),
-(\ P',V' @ IGuardthreetopon_'.return -> P'(V')))(\ V' @ transition_end -> Guardthreetopon_(V'),((b),(stack'))))
+i?x:{e} -> (
+  let c = true within
+  (if c then 
+    i_''!a ->
+      IGuardthreetopon_'.return ->
+    transition_end ->
+  Guardthreetopon_(b)
+
+  else
+      IGuardthreetopon_'.return ->
+    transition_end ->
+  Guardthreetopon_(b)
+)
+))
 []
 (b) & (
-i?x:{t} ->
-semi_((\ P',V' @ i_''!a -> P'(V')),
-(\ P',V' @ IGuardthreetopon_'.return -> P'(V')))(\ V' @ transition_end -> Guardthreetopon_(V'),((b),(stack'))))
+i?x:{t} -> (
+  i_''!a ->
+    IGuardthreetopon_'.return ->
+  transition_end ->
+  Guardthreetopon_(b)
+))
 []
 ((not b)) & (
-i?x:{t} ->
-semi_((\ P',V' @ i_''!a -> P'(V')),
-(\ P',V' @ IGuardthreetopon_'.return -> P'(V')))(\ V' @ transition_end -> Guardthreetopon_(V'),((b),(stack'))))
+i?x:{t} -> (
+  i_''!a ->
+    IGuardthreetopon_'.return ->
+  transition_end ->
+  Guardthreetopon_(b)
+))
 []
-r_''?x:{a} ->
-skip_(\ V' @ transition_end -> Guardthreetopon_(V'),((b),(stack')))
-[]
-i?x:{s} ->
-semi_((\ P',V' @ i_''!a -> P'(V')),
-(\ P',V' @ IGuardthreetopon_'.return -> P'(V')))(\ V' @ transition_end -> Guardthreetopon_(V'),((b),(stack')))
+r_''?x:{a} -> (
+    transition_end ->
+  Guardthreetopon_(b)
 )
+[]
+i?x:{s} -> (
+  i_''!a ->
+    IGuardthreetopon_'.return ->
+  transition_end ->
+  Guardthreetopon_(b)
+))
 
-within Guardthreetopon_(((false),(<>)))
-
+within Guardthreetopon_(false)
+                                                     
 channel extensions_over_empty_channels_is_undefined
 channel IN',OUT' : {r_''.a,extensions_over_empty_channels_is_undefined}
 

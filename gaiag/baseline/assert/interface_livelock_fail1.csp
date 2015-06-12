@@ -1,52 +1,5 @@
--- drop_one_local: V => V
-drop_one_local_((M', (L', L0'))) = (M', L')
-
-illegal_(P',V') = illegal -> STOP
--- send_: (c: channel, e:event) => (P,V)->Proc
-send_(c',e')(P', V') = c'!e' -> P'(V')
--- recv_: (c: channel, e:event) => (P,V)->Proc
-recv_(c',e')(P', V') =  c'?r' -> returnvalue_(\V' @ r')(P', V')
--- skip_: () => (P,V)->Proc
-skip_(P', V') = P'(V')
--- call_: (B': (P,V)->Proc) => (P,V)->Proc
-call_(B')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', <>))
--- call_args_: (B': (P,V)->Proc, F': V'->V') => (P,V)->Proc
-call_args_(B', F')(P', (M1', L1')) = B'(\(M2',V2')@ P'((M2',L1')), (M1', (<>, F'((M1',L1')))))
--- assign_: (F': V -> V) => (P,V) -> Proc
-assign_(F')(P', V') = P'(F'(V'))
--- assign_int_: (F': V -> V) => (P,V) -> Proc
-assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & range_error -> STOP [] b' & P'(F'(V'))
--- assign_int_: (F': V -> V, B': V -> bool) => (P,V) -> Proc
-assign_int_(F',B')(P', V') = let b' = B'(V') within not b' & illegal -> STOP [] b' & P'(F'(V'))
--- assign_active_: C':(P,V)->Proc, A: (V,val)->V) => (P,V)->Proc
-assign_active_(C', A')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
--- assign_int_active_: C':(P,V)->Proc, A: (V,val)->V, B': V -> bool => (P,V)->Proc
--- Paul, HELP! assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ not b' & range_error -> STOP [] b' & P'(A'((M',L'),r')), V')
--- assign_int_active_(C',A',b')(P', V') = assign_active_(C', A')
--- assign_int_active_(C',A',b')(P', V') = (\ (C', A', b') @ assign_active_(C', A'))
-assign_int_active_(C',A',b')(P', V') = C'(\ ((M', r'),L') @ P'(A'((M',L'),r')), V')
-
-reply_(C', F')(P', V') = C'.F'(V') -> P'(V')
--- returnvalue_: (F: V->val) => (P,V)->Proc
-returnvalue_(F')(P', (M',L')) = P'(((M',  F'((M', L'))), L'))
--- the_end_: P => V->Proc
-the_end_(P', V') = transition_end -> P'(V')
-
--- semi_: (S1,S2: (P,V)->Proc) => (P,V) -> Proc
-semi_(S1',S2')(P', V') = S1'(\V'' @ S2'(P', V''),V')
--- ifthenelse: (F': V->val,  S1,S2: (P,V)->Proc) => (P,V) -> Proc
-ifthenelse_(F',S1',S2')(P', V') =  if F'(V') then S1'(P', V') else S2'(P', V')
--- context_: (F': V->val, S': (P,V)->Proc) => (P,V)->Proc
-context_(F', S')(P', (M', L')) = S'((\ (M',L2') @ P'((M',L'))), (M', (L', F'((M', L')))))
--- context_int_: (F': V->val, B: bool, S': (P,V)->Proc) => (P,V)->Proc
-context_int_(F', B', S')(P', (M', L')) = S'((\ (M',L2') @ let b' = B'((M',L2')) within not b' & range_error -> STOP [] b' & P'((M',L'))), (M', (L', F'((M', L')))))
--- context_active_: (C':(P,V)->Proc, S: (P,V)->Proc) => (P,V)->Proc
-context_active_(C', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
--- context_int_active_: (C':(P,V)->Proc, B': bool, S: (P,V)->Proc) => (P,V)->Proc
--- Paul, HELP! context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ let b' = B'((M',r')) within not b' & range_error -> STOP [] b' & S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
---context_int_active_(C', B', S')(P', V') = (\ (C', B', S') @ context_active_(C', S'))
-context_int_active_(C', B', S')(P', V') = C'(\((M', r'),L') @ S'(\V2' @ P'(drop_one_local_(V2')), (M', (L',r'))), V')
-
+nametype bool = {false, true}   
+                
 channel illegal
 channel range_error
 channel transition_begin, transition_end
@@ -54,6 +7,10 @@ channel transition_begin, transition_end
 COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
 
 datatype event_enumeration_alphabet = i3_e | i6_States_S0 | i6_States_S1 | i76_e | modeling | optional | return | the_end'
+
+-- end of combinators
+-- both.csp.scm
+-- end of both.csp.scm
 -- interface.csp.scm
 
 channel i75_I: {i3_e,optional,the_end'}
@@ -64,20 +21,31 @@ channel i75_I_''': {modeling}
 
 IF_i75_I_(IG,CS) = let
 
-i75_I_(((i14_s),(stack'))) =
-((i14_s == i6_States_S0)) & (
-i75_I?x:{i3_e} ->
-semi_(assign_(\ ((i14_s),(stack')) @ ((i6_States_S1),(stack'))),
-(\ P',V' @ i75_I_'.return -> P'(V')))(\ V' @ i75_I.the_end' -> i75_I_(V'),((i14_s),(stack'))))
+i75_I_(i14_s) =
+(((i14_s == i6_States_S0)) & (
+i75_I?x:{i3_e} -> (
+  let tmp' = i6_States_S1 within
+  let i14_s = tmp' within
+    i75_I_'.return ->
+  i75_I.the_end' ->
+  i75_I_(i14_s)
+))
 []
 ((i14_s == i6_States_S1)) & (
-i75_I?x:{i3_e} ->
-(\ P',V' @ i75_I_'.return -> P'(V'))(\ V' @ i75_I.the_end' -> i75_I_(V'),((i14_s),(stack')))
+i75_I?x:{optional} ->(
+    i75_I_'''.modeling ->
+  i75_I.the_end' ->
+  i75_I_(i14_s)
+)
  []
-  i75_I?x:{optional} ->
-(\ P',V' @ i75_I_'''.modeling -> P'(V'))(\ V' @ i75_I.the_end' -> i75_I_(V'),((i14_s),(stack'))))
+  i75_I?x:{i3_e} -> (
+    i75_I_'.return ->
+  i75_I.the_end' ->
+  i75_I_(i14_s)
+))
 []
-CS & i75_I?x:{optional} -> illegal_(STOP,<>)
+CS & i75_I?x:{optional} -> illegal -> STOP
+)
 
 REORDER' = i75_I?x' -> (i75_I_in'?y' -> i75_I.the_end' -> i75_I_out'!y' -> REORDER' [] i75_I.the_end' -> REORDER')
 
@@ -87,10 +55,13 @@ transparent diamond
 within sbisim(diamond(x))
 
 within compress((if CS
-                 then i75_I_(((i6_States_S0),(<>)))
-                 else i75_I_(((i6_States_S0),(<>))) [|{i75_I.optional}|] CHAOS({i75_I.optional})) [[x<-i75_I_in'.x|x<-extensions(i75_I_in')]] [|{|i75_I,i75_I_in',i75_I.the_end'|}|] REORDER' [[i75_I_out'.x<-x|x<-extensions(i75_I_out')]] \ {|i75_I_in',i75_I.the_end'|})
+                then i75_I_(i6_States_S0)
+                else i75_I_(i6_States_S0)  [|{i75_I.optional}|] CHAOS({i75_I.optional}))
+               [[x<-i75_I_in'.x|x<-extensions(i75_I_in')]] [|{|i75_I,i75_I_in',i75_I.the_end'|}|] REORDER' [[i75_I_out'.x<-x|x<-extensions(i75_I_out')]] \ {|i75_I_in',i75_I.the_end'|})
 
 -- end of interface.csp.scm
+-- both.csp.scm
+-- end of both.csp.scm
 -- interface.csp.scm
 
 channel i92_DummyI: {i76_e,the_end'}
@@ -101,12 +72,16 @@ channel i92_DummyI_''': {modeling}
 
 IF_i92_DummyI_(IG,CS) = let
 
-i92_DummyI_(((<>),(stack'))) =
-(true) & (
-i92_DummyI?x:{i76_e} ->
-(\ P',V' @ i92_DummyI_'.return -> P'(V'))(\ V' @ i92_DummyI.the_end' -> i92_DummyI_(V'),((<>),(stack'))))
+i92_DummyI_() =
+((true) & (
+i92_DummyI?x:{i76_e} -> (
+    i92_DummyI_'.return ->
+  i92_DummyI.the_end' ->
+  i92_DummyI_()
+))
 []
-CS & i92_DummyI?x:{} -> illegal_(STOP,<>)
+CS & i92_DummyI?x:{} -> illegal -> STOP
+)
 
 REORDER' = i92_DummyI?x' -> (i92_DummyI_in'?y' -> i92_DummyI.the_end' -> i92_DummyI_out'!y' -> REORDER' [] i92_DummyI.the_end' -> REORDER')
 
@@ -116,10 +91,13 @@ transparent diamond
 within sbisim(diamond(x))
 
 within compress((if CS
-                 then i92_DummyI_(((<>),(<>)))
-                 else i92_DummyI_(((<>),(<>)))) [[x<-i92_DummyI_in'.x|x<-extensions(i92_DummyI_in')]] [|{|i92_DummyI,i92_DummyI_in',i92_DummyI.the_end'|}|] REORDER' [[i92_DummyI_out'.x<-x|x<-extensions(i92_DummyI_out')]] \ {|i92_DummyI_in',i92_DummyI.the_end'|})
+                then i92_DummyI_()
+                else i92_DummyI_() )
+               [[x<-i92_DummyI_in'.x|x<-extensions(i92_DummyI_in')]] [|{|i92_DummyI,i92_DummyI_in',i92_DummyI.the_end'|}|] REORDER' [[i92_DummyI_out'.x<-x|x<-extensions(i92_DummyI_out')]] \ {|i92_DummyI_in',i92_DummyI.the_end'|})
 
 -- end of interface.csp.scm
+-- both.csp.scm
+-- end of both.csp.scm
 -- component.csp.scm
 
 channel i93_i: extensions(i92_DummyI)
@@ -136,14 +114,17 @@ channel i96_ii_''': extensions(i75_I_''')
 
 CO_i115_DummyC_(IIG,IG) = let
 
-i115_DummyC_(((<>),(stack'))) = transition_begin -> (
+i115_DummyC_() =
+transition_begin -> (
 (true) & (
-i93_i?x:{i76_e} ->
-(\ P',V' @ i92_DummyI_'.return -> P'(V'))(\ V' @ transition_end -> i115_DummyC_(V'),((<>),(stack'))))
-)
+i93_i?x:{i76_e} -> (
+    i92_DummyI_'.return ->
+  transition_end ->
+  i115_DummyC_()
+)))
 
-within i115_DummyC_(((<>),(<>)))
-
+within i115_DummyC_()
+                                                     
 channel extensions_over_empty_channels_is_undefined
 channel IN',OUT' : {extensions_over_empty_channels_is_undefined}
 
