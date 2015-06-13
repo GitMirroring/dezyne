@@ -925,10 +925,7 @@
     (('signature type) type)
     (('signature type formals) type)
     (('value type field) type)
-    (('variable name type expression) type)
-    
-    (('csp-variable context name type expression) type) ;; URGR
-    ))
+    (('variable name type expression) type)))
 
 (define (.injected ast)
   (match ast

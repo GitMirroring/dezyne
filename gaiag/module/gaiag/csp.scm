@@ -59,7 +59,6 @@
            om->csp
 
            assign
-           extend
            provides?
            requires?
            string-if
@@ -525,7 +524,7 @@
         "")))
 
 (define (ast-transform ast src)
-  (ast-transform- ast (ast-transform-return ast (purge-data ast (tail-call src)))))
+  (ast-transform-return ast (purge-data ast (tail-call src))))
 
 (define (purge-data root o)
   (let ((model (or (om:component root) (om:interface root))))
@@ -695,214 +694,18 @@
        (let ((result (ast-transform-return ast statement)))
          (match result
            (('compound)
-            (make <csp-on>
+            (make <on>
               :triggers triggers
-              :statement (make <compound> :elements (list (make <voidreply>)))
-              :context (make <context> :members members)))
+              :statement (make <compound> :elements (list (make <voidreply>)))))
            ((? valued-triggers?)
-            (make <csp-on>
+            (make <on>
               :triggers triggers
-              :statement (make <compound> :elements (list result))
-              :context (make <context> :members members)))
+              :statement (make <compound> :elements (list result))))
            (_
-            (make <csp-on>
+            (make <on>
               :triggers triggers
-              :statement (make <compound> :elements (list result (make <voidreply>)))
-              :context (make <context> :members members)))))))
+              :statement (make <compound> :elements (list result (make <voidreply>)))))))))
     (_ o)))
-
-(define ((valued-action? port?) src)
-  (match src
-    (($ <variable> name type ($ <action>)) #t)
-    (($ <assign> identifier ($ <action>)) #t)
-    (_ #f)))
-
-(define (frame-hide frame prefix extension)
-  (let loop ((frame frame) (index 0))
-    (if (null? frame)
-        '()
-        (let ((i (car frame)))
-          (match i
-            ((? symbol?)
-             (cons
-              (if (member i extension)
-                  (string->symbol (format #f "~a~a'" prefix index))
-                  i)
-              (loop (cdr frame) (1+ index))))
-            (('context-vector identifiers ...)
-             (cons (make <context-vector> :elements (loop identifiers index))
-                   (loop (cdr frame) (+ index (length identifiers))))))))))
-
-(define (extend o extension)
-  (let ((members (.members o))
-        (locals (.locals o)))
-    (match extension
-      ('() o)
-      (($ <formal> name type) (extend o name))
-      (('formals formals ...) (extend o (map .name formals)))
-      (('context-vector identifiers ...)
-       (make <context>
-         :members (frame-hide members 'hide_member identifiers)
-         :locals (append (frame-hide locals 'hide_local identifiers)
-                         (list extension))))
-      ((h) (extend o h))
-      ((? symbol?)
-       (make <context>
-         :members (frame-hide members 'hide_member (list extension))
-         :locals (append (frame-hide locals 'hide_local (list extension))
-                         (list extension))))
-      ((identifiers ...)
-       (extend o (make <context-vector> :elements identifiers))))))
-
-(define ((assign- identifier expression) x)
-  (match x
-    (('context-vector expressions ...)
-     (make <context-vector>
-       :elements (map (assign- identifier expression) expressions)))
-    (_ (if (eq? x identifier) expression x))))
-
-(define (assign o identifier expression)
-  (if (pair? (.locals o))
-      (make <context>
-        :members (map (assign- identifier expression) (.members o))
-        :locals (map (assign- identifier expression) (.locals o)))
-      (make <context> :members (map (assign- identifier expression) (.members o)))))
-
-(define (element->csp ast o locals)
-  (match o
-    (('context-vector expressions ...)
-     (let ((expressions
-            (map (lambda (o) (csp-expression->string ast o locals)) expressions)))
-       (string-append "(" (comma-join expressions) ")")))
-    (_ (->string (csp-expression->string ast o locals)))))
-
-(define (->csp ast o)
-  (let* ((members (.members o))
-         (locals (.locals o))
-         (members (comma-join (map (lambda (x) (csp-expression->string ast x locals)) members)))
-         (members (if (string-null? members) '<> members))
-         (locals (if (equal? locals '(<>))
-                     '<>
-                     (reduce (lambda (x y)
-                               (string-append "(" (element->csp ast y locals) ","
-                                              (element->csp ast x locals) ")"))
-                             #f (cons "stack'" locals)))))
-    (list "(" members "),(" locals ")")))
-
-
-(define* (ast-transform- ast o :optional (return #t) (context #f))
-  (let* ((model (or (om:component ast) (om:interface ast)))
-         (context (or context (make <context> :members (om:member-names model))))
-         (port? (lambda (port)
-                  (if ((is? <interface>) model) #f
-                      (member port (map .name (.elements (.ports model)))))))
-         (valued-action? (valued-action? port?)))
-
-    (match o
-
-      (('compound statements ...)
-       (make <compound>
-         :elements
-         (let loop ((statements statements) (context context))
-           (if (null? statements)
-               '()
-               (let* ((statement (car statements))
-                      (transformed (ast-transform- ast statement #f context))
-                      (new-context (if (is-a? statement <variable>)
-                                       (extend context (.name statement))
-                                       context)))
-                 (cons transformed (loop (cdr statements) new-context)))))))
-
-;      (($ <assign> identifier ($ <expression> value))
-;       (make <csp-assign>
-;         :identifier identifier
-;         :context (make <context> :members '(unused))
-;         :expression context
-;         :expressions (assign context identifier value)))
-
-      (($ <assign> identifier expression)
-       (make <csp-assign>
-         :context context
-         :identifier identifier
-         :expression expression
-         :expressions (assign context identifier 'r')))
-
-      (($ <call> identifier arguments last?)
-       (make <csp-call>
-         :context context
-         :identifier identifier
-         :arguments arguments
-         :last? last?))
-
-      (($ <function> name signature recursive statement)
-       (let* ((context (extend context (.formals signature))))
-         (make <function> :name name
-               :signature signature
-               :recursive recursive
-               :statement (ast-transform- ast statement return context))))
-
-      (($ <if> ($ <expression> expr) then else)
-       (let* ((then-illegal? (prefix-illegal? then))
-              (else-illegal? (prefix-illegal? else))
-              (pred-then (if then-illegal? (list 'and 'IG expr) expr))
-              (pred (if else-illegal? (list 'and '(! IG) pred-then) pred-then))
-              (then-context (if (is-a? then <variable>)
-                                (extend context (.name then))
-                                context))
-              (else-context (if (is-a? else <variable>)
-                                (extend context (.name else))
-                                context))
-              (then-transformed (ast-transform- ast then return then-context))
-              (else-transformed (ast-transform- ast else return else-context))
-              (then (if (is-a? then <variable>)
-                        (make <csp-variable>
-                          :context then-context
-                          :name (.name then)
-                          :type (.type then)
-                          :expression (.expression then))
-                        then-transformed))
-              (else (if (is-a? else <variable>)
-                        (make <csp-variable>
-                          :context else-context
-                          :name (.name else)
-                          :type (.type else)
-                          :expression (.expression else))
-                        else-transformed)))
-         (make <csp-if>
-           :context context
-           :expression (make <expression> :value expr)
-           :then then
-           :else (or else '()))))
-
-      (($ <csp-on> context triggers statement)
-       (let ((result (ast-transform- ast statement)))
-         (if (prefix-illegal? statement)
-             (make <csp-on> :context 'IG :triggers triggers :statement result)
-             (make <csp-on> :context context :triggers triggers :statement result))))
-
-      (($ <reply> expression)
-       (make <csp-reply>
-         :context context
-         :expression (ast-transform- ast expression return context)))
-
-      (($ <return> #f) o)
-
-      (($ <return> expression)
-       (make <csp-return>
-         :context context
-         :expression (ast-transform- ast expression return context)))
-
-      (($ <variable> name type expression)
-       (make <csp-variable>
-         :context context
-         :name name
-         :type type
-         :expression expression))
-
-      (($ <expression> (and ($ <call>) (get! call)))
-       (make <expression> :value (ast-transform- ast (call) return context)))
-
-      (_ o))))
 
 (define (csp-transform ast src)
   (csp-transform-model (or (om:component ast) (om:interface ast)) src))
@@ -920,7 +723,7 @@
         (match o
 
           ;; Entry points
-          (($ <csp-on> 'IG ('triggers triggers ...) statement)
+          (($ <on> ('triggers triggers ...) (and (? prefix-illegal?) (get! statement)))
            (let* ((inevitable-optional?
                    (or (member 'inevitable (map .event triggers))
                        (member 'optional (map .event triggers))))
@@ -929,7 +732,7 @@
                        (or (is-a? model <interface>) ((provides-event? model) (car triggers)))))
                   (the-end (make <the-end>))
                   (transformed-end (csp-transform-model model the-end inevitable-optional? channel provided-on? locals (1+ indent)))
-                  (tail (csp-transform-model model statement inevitable-optional? channel provided-on? locals (1+ indent) transformed-end function))
+                  (tail (csp-transform-model model (statement) inevitable-optional? channel provided-on? locals (1+ indent) transformed-end function))
                   (real-triggers (filter (negate modeling-event?) triggers))
                   (modeling-triggers (filter modeling-event? triggers))
                   (modeling-triggers (map .event modeling-triggers))
@@ -966,7 +769,7 @@
                          ")"))
                         '()))))))
 
-          (($ <csp-on> context ('triggers triggers ...) statement)
+          (($ <on> ('triggers triggers ...) statement)
            (let* ((inevitable-optional?
                    (or (member 'inevitable (map .event triggers))
                        (member 'optional (map .event triggers))))
@@ -1036,12 +839,12 @@
           (('compound statements ...)
            (csp-transform-model model statements inevitable-optional? channel provided-on? locals indent tail function))
 
-          (($ <csp-if> context expression then else)
+          (($ <if> expression then else)
            (let* ((expression (csp-expression->string model expression locals))
                   (s (make-string 2 #\space))
                   (tail (map (lambda (x) (if (def? x) x (if (pair? x) (cons s x) (list s x)))) tail))
                   (then (csp-transform-model model then inevitable-optional? channel provided-on? locals (1+ indent) tail function))
-                  (else (csp-transform-model model else inevitable-optional? channel provided-on? locals (1+ indent) tail function)))
+                  (else (csp-transform-model model (or else '()) inevitable-optional? channel provided-on? locals (1+ indent) tail function)))
              (list
                (list space "(if " expression " then \n")
                (list then "\n")
@@ -1050,7 +853,7 @@
               )))
 
           ;; simple statements
-          (($ <csp-call> context identifier arguments last?)
+          (($ <call> identifier arguments last?)
            (let* ((arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals))
                   (s (make-string 2 #\space))
                   (tail (map (lambda (x) (if (def? x) x (if (pair? x) (cons s x) (list s x)))) tail))
@@ -1065,13 +868,13 @@
                     tail))
                   (list space identifier "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n")))))
              
-          (($ <csp-assign> context identifier ($ <action> (and ($ <trigger> port event) (get! trigger))) expressions)
+          (($ <assign> identifier ($ <action> (and ($ <trigger> port event) (get! trigger))) expressions)
            (list 
             (list space (or port channel) (if (om:out? (om:event model (trigger))) "_''") "!" event " ->\n")
             (list space (or port channel) "_'" "?" identifier " ->\n")
             (check-range (list identifier) tail model locals indent)))
 
-          (($ <csp-assign> context identifier ($ <call> function arguments) expressions)
+          (($ <assign> identifier ($ <call> function arguments))
            ;;(stderr "arguments: ~a ~a\n" arguments (pair? arguments))
            (let* ((arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals))
                   (s (make-string 2 #\space))
@@ -1086,20 +889,20 @@
                 (check-range (list identifier) tail model locals indent)))
               (list space function "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n"))))
            
-          (($ <csp-assign> context identifier expression expressions)
+          (($ <assign> identifier expression)
            (let* ((expression (csp-expression->string model expression locals)))
              (list 
               (list space "let " "tmp'" " = " expression " within\n")
               (list space "let " identifier " = " "tmp'" " within\n")
               (check-range (list identifier) tail model locals indent))))
 
-          (($ <csp-variable> context identifier type ($ <action> (and ($ <trigger> port event) (get! trigger))))
+          (($ <variable> identifier type ($ <action> (and ($ <trigger> port event) (get! trigger))))
            (list 
             (list space (or port channel) (if (om:out? (om:event model (trigger))) "_''") "!" event " ->\n")
             (list space (or port channel) "_'" "?" identifier " ->\n")
             (check-range (list identifier) tail model locals indent)))
           
-          (($ <csp-variable> context name type ($ <call> identifier arguments))
+          (($ <variable> name type ($ <call> identifier arguments))
            (let* ((arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals))
                   (s (make-string 2 #\space))
                   (tail (map (lambda (x) (if (def? x) x (if (pair? x) (cons s x) (list s x)))) tail))
@@ -1113,13 +916,13 @@
                 (check-range (list name) tail model locals indent)))
               (list space identifier "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n"))))
           
-          (($ <csp-variable> context name type expression)
+          (($ <variable> name type expression)
            (let* ((expression (csp-expression->string model expression locals)))
              (list
               (list space "let " name " = " expression " within\n")
               (check-range (list name) tail model locals indent))))
 
-          (($ <csp-reply> context expression)
+          (($ <reply> expression)
            (let* ((expression (csp-expression->string model expression locals)))
              (list
               (list space channel "_'!" expression " -> \n")
@@ -1139,10 +942,10 @@
            (list
             (list space "illegal -> STOP\n")))
           
-          (($ <return>)
+          (($ <return> #f)
            (list (list "    " "P'(" (comma-space-join (om:member-names model)) ")\n" )))
 
-          (($ <csp-return> context ($ <expression> expression))
+          (($ <return> ($ <expression> expression))
            (let ((expression (csp-expression->string model expression locals)))
              (list (list "    " "P'(" (comma-space-join (append (om:member-names model) (list expression)) ) ")\n" ))))
           
@@ -1164,7 +967,7 @@
           (('arguments arguments ...)
            (map (lambda (x) (csp-transform-model model x inevitable-optional? channel provided-on? locals)) arguments))
 
-          (($ <expression> (and ($ <csp-call>) (get! call))) (csp-transform-model model (call)))
+          (($ <expression> (and ($ <call>) (get! call))) (csp-transform-model model (call)))
           (($ <expression>) (csp-expression->string model o locals))
 
           (($ <the-end>)
@@ -1184,7 +987,7 @@
           
           ((h t ...)
            (let* ((locals (match h
-                                 (($ <csp-variable> context name) (acons name h locals))
+                                 (($ <variable> name) (acons name h locals))
                                  (_ locals)))
                   (tail (csp-transform-model model t inevitable-optional? channel provided-on? locals indent tail function)))
              (csp-transform-model model h inevitable-optional? channel provided-on? locals indent tail function)))

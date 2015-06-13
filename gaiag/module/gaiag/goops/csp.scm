@@ -27,52 +27,13 @@
   :use-module (ice-9 optargs)
   :use-module (gaiag goops om)
   :export (
-           <context>
-;;           <context-vector>
-           <csp-assign>           
-           <csp-call>
-           <csp-variable>
            <skip>
-           <csp-if>
-           <csp-on>
-           <csp-reply>
-           <csp-return>
            <voidreply>
            <the-end>           
-
-           .members
-           .locals
-           .context
-           .continuation
-           .expressions
            ))
-
-(define-class <context> (<ast>)
-  (members :accessor .members :init-form (list) :init-keyword :members)
-  (locals :accessor .locals :init-form (list) :init-keyword :locals))
-
-;;(define-class <context-vector> (<ast-list>))
-
-(define-class <contexted> (<ast>)
-  (context :accessor .context :init-value #f :init-keyword :context))
-
-(define-class <csp-call> (<call> <contexted>))
-
-(define-class <csp-variable> (<variable> <contexted>))
-
-(define-class <csp-assign> (<assign> <contexted>)
-  (expressions :accessor .expressions :init-value #f :init-keyword :expressions))
 
 (define-class <skip> (<ast>))
 
-(define-class <csp-if> (<if> <contexted>))
-
-(define-class <csp-on> (<on> <contexted>))
-
-(define-class <csp-reply> (<reply> <contexted>))
-
-(define-class <csp-return> (<return> <contexted>))
-
-(define-class <the-end> ())
+(define-class <the-end> (<ast>))
 
 (define-class <voidreply> (<ast>))
