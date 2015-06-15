@@ -1,0 +1,80 @@
+// Dezyne --- Dezyne command line tools
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface IConstrainedMove
+{
+  extern position_t $int32_t$;
+  in void calibrate();
+  out void homed();
+  in void stop();
+  in void move(position_t target);
+  out void arrived();
+
+  behaviour 
+  {
+    enum State { lost, idle, calibrating, moving };
+    State s = State.lost;
+    void notifyHomed()
+    {
+      s = State.idle;
+      homed;
+      return;
+    }
+
+    void notifyArrived()
+    {
+      s = State.idle;
+      arrived;
+      return;
+    }
+
+    on calibrate:
+    {
+      [s.lost]
+      s = State.calibrating;
+      [s.lost]
+      notifyHomed();
+      [s.moving || s.calibrating || s.idle]
+      illegal;
+    }
+    on move:
+    {
+      [s.moving || s.calibrating || s.lost]
+      illegal;
+      [s.idle]
+      s = State.moving;
+    }
+    on stop:
+    {
+      [s.moving || s.calibrating || s.idle || s.lost]
+      s = State.lost;
+    }
+    on inevitable:
+    {
+      [s.calibrating]
+      notifyHomed();
+      [s.moving]
+      notifyArrived();
+    }
+  }
+}
+

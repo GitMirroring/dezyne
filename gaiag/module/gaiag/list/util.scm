@@ -211,6 +211,7 @@
       (append (.elements btypes) (apply append (map interface-types (.elements ports)))))
      (('component name ports) (apply append (map interface-types (.elements ports))))
      (('component name ports #f) (apply append (map interface-types (.elements ports))))
+     (('system name ports body ...) (apply append (map interface-types (.elements ports))))     
      (('root models ...) (filter (is? <*type*>) models))
      (('import file) '()))
    (globals)))

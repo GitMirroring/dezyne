@@ -1,0 +1,5 @@
+verify: IShutter: check: completeness: ok
+
+verify: IShutter: check: deadlock: ok
+
+verify: IShutter: check: livelock: ok

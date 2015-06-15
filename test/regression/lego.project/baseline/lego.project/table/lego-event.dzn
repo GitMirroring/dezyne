@@ -1,0 +1,561 @@
+// Dezyne --- Dezyne command line tools
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface imotor
+{
+  extern boolean $bool$;
+  extern position_t $int32_t$;
+  extern power_t $uint8_t$;
+  enum result_t { yes, no };
+  in void move(power_t power,position_t position);
+  in void run(power_t power,boolean invert);
+  in void stop();
+  in void coast();
+  in void zero();
+  in void position(out position_t pos);
+  in result_t at(position_t pos);
+
+  behaviour 
+  {
+    on move:
+    [true]
+    {
+    }
+    on run:
+    [true]
+    {
+    }
+    on stop:
+    [true]
+    {
+    }
+    on coast:
+    [true]
+    {
+    }
+    on zero:
+    [true]
+    {
+    }
+    on position:
+    [true]
+    {
+    }
+    on at:
+    {
+      [true]
+      reply(result_t.yes);
+      [true]
+      reply(result_t.no);
+    }
+  }
+}
+interface itouch
+{
+  enum status { pressed, released };
+  in status detect();
+
+  behaviour 
+  {
+    on detect:
+    {
+      [true]
+      reply(status.pressed);
+      [true]
+      reply(status.released);
+    }
+  }
+}
+interface ilight
+{
+  enum status { accept, reject };
+  in void turnon();
+  in void turnoff();
+  in status detect();
+
+  behaviour 
+  {
+    on turnon:
+    [true]
+    {
+    }
+    on turnoff:
+    [true]
+    {
+    }
+    on detect:
+    {
+      [true]
+      reply(status.accept);
+      [true]
+      reply(status.reject);
+    }
+  }
+}
+interface itimer
+{
+  extern milliseconds_t $uint32_t$;
+  in void create(milliseconds_t ms);
+  in void cancel();
+  out void timeout();
+
+  behaviour 
+  {
+    enum State { Idle, Pending };
+    State state = State.Idle;
+    on create:
+    {
+      [state.Idle]
+      state = State.Pending;
+      [state.Pending]
+      illegal;
+    }
+    on cancel:
+    {
+      [state.Idle]
+      {
+      }
+      [state.Pending]
+      state = State.Idle;
+    }
+    on inevitable:
+    [state.Pending]
+    {
+      timeout;
+      state = State.Idle;
+    }
+  }
+}
+interface itest
+{
+  in void test();
+
+  behaviour 
+  {
+    on test:
+    [true]
+    {
+    }
+  }
+}
+interface iactive_motor
+{
+  extern boolean $bool$;
+  extern position_t $int32_t$;
+  extern power_t $uint8_t$;
+  in void move(power_t power,position_t position);
+  out void arrived();
+  in void run(power_t power,boolean invert);
+  in void stop();
+  in void coast();
+  in void zero();
+
+  behaviour 
+  {
+    bool moving = false;
+    on move:
+    {
+      [!moving]
+      moving = true;
+      [moving]
+      illegal;
+    }
+    on zero:
+    {
+      [!moving]
+      {
+      }
+      [moving]
+      illegal;
+    }
+    on run:
+    {
+      [moving || !moving]
+      {
+      }
+    }
+    on stop:
+    {
+      [moving || !moving]
+      {
+      }
+    }
+    on coast:
+    {
+      [moving || !moving]
+      {
+      }
+    }
+    on inevitable:
+    [moving]
+    {
+      moving = false;
+      arrived;
+    }
+  }
+}
+interface iactive_touch
+{
+  in void enable();
+  out void pressed();
+  out void released();
+  in void disable();
+
+  behaviour 
+  {
+    bool disabled = true;
+    on enable:
+    {
+      [!disabled]
+      illegal;
+      [disabled]
+      disabled = false;
+    }
+    on disable:
+    {
+      [!disabled]
+      disabled = true;
+      [disabled]
+      illegal;
+    }
+    on inevitable:
+    {
+      [!disabled]
+      pressed;
+      [!disabled]
+      released;
+    }
+  }
+}
+interface iactive_light
+{
+  in void enable();
+  out void accepted();
+  out void rejected();
+  in void disable();
+
+  behaviour 
+  {
+    bool disabled = true;
+    on enable:
+    {
+      [!disabled]
+      illegal;
+      [disabled]
+      disabled = false;
+    }
+    on disable:
+    {
+      [!disabled]
+      disabled = true;
+      [disabled]
+      illegal;
+    }
+    on inevitable:
+    {
+      [!disabled]
+      accepted;
+      [!disabled]
+      rejected;
+    }
+  }
+}
+component test
+{
+  provides itest port;
+  requires imotor motor0;
+  requires imotor motor1;
+  requires itouch touch;
+  requires ilight light;
+  requires itimer timer;
+
+  behaviour 
+  {
+    enum State { Idle, Forward, Backward, Home };
+    State state = State.Idle;
+    itimer.milliseconds_t time = $50$;
+    imotor.position_t home0;
+    imotor.position_t home1;
+    on port.test():
+    {
+      [state.Idle]
+      {
+        motor0.run($20$,$true$);
+        motor1.run($20$,$true$);
+        timer.create(time);
+        state = State.Forward;
+      }
+      [state.Home || state.Backward || state.Forward]
+      {
+      }
+    }
+    on timer.timeout():
+    {
+      [state.Idle]
+      illegal;
+      [state.Forward]
+      {
+        itouch.status s = touch.detect();
+        if (s == itouch.status.pressed)
+        {
+          motor0.stop();
+          motor1.stop();
+          motor0.zero();
+          motor1.zero();
+          light.turnon();
+          motor0.run($20$,$false$);
+          motor1.run($20$,$false$);
+          state = State.Backward;
+        }
+        timer.create(time);
+      }
+      [state.Backward]
+      {
+        ilight.status s = light.detect();
+        if (s == ilight.status.accept)
+        {
+          light.turnoff();
+          motor0.stop();
+          motor1.stop();
+          imotor.position_t p0;
+          motor0.position(p0);
+          imotor.position_t p1;
+          motor1.position(p1);
+          home0 = $p0/2$;
+          home1 = $p1/2$;
+          motor0.move($50$,home0);
+          motor1.move($50$,home1);
+          state = State.Home;
+        }
+        timer.create(time);
+      }
+      [state.Home]
+      {
+        imotor.result_t at0 = motor0.at(home0);
+        imotor.result_t at1 = motor1.at(home1);
+        if (at0 == imotor.result_t.yes)
+        motor0.stop();
+        if (at1 == imotor.result_t.yes)
+        motor1.stop();
+        if (at0 == imotor.result_t.yes && at1 == imotor.result_t.yes)
+        state = State.Idle;
+        else
+        timer.create(time);
+      }
+    }
+  }
+}
+component timer
+{
+  provides itimer port;
+
+
+}
+component active_motor
+{
+  provides iactive_motor port;
+  requires imotor motor;
+  requires itimer timer;
+
+  behaviour 
+  {
+    bool moving = false;
+    itimer.milliseconds_t time = $50$;
+    imotor.position_t destination;
+    on port.move(power,position):
+    {
+      [!moving]
+      {
+        destination = position;
+        timer.create(time);
+        motor.move(power,destination);
+        moving = true;
+      }
+      [moving]
+      illegal;
+    }
+    on timer.timeout():
+    {
+      [!moving]
+      illegal;
+      [moving]
+      {
+        imotor.result_t arrive = motor.at(destination);
+        if (arrive == imotor.result_t.yes)
+        {
+          port.arrived();
+          moving = false;
+        }
+        else
+        timer.create(time);
+      }
+    }
+    on port.zero():
+    {
+      [!moving]
+      motor.zero();
+      [moving]
+      illegal;
+    }
+    on port.run(power,invert):
+    {
+      [moving || !moving]
+      motor.run(power,invert);
+    }
+    on port.stop():
+    {
+      [moving || !moving]
+      motor.stop();
+    }
+    on port.coast():
+    {
+      [moving || !moving]
+      motor.coast();
+    }
+  }
+}
+component active_touch
+{
+  provides iactive_touch port;
+  requires itouch touch;
+  requires itimer timer;
+
+  behaviour 
+  {
+    itouch.status previous = itouch.status.released;
+    itimer.milliseconds_t time = $50$;
+    bool disabled = true;
+    on port.enable():
+    {
+      [previous.released || previous.pressed]
+      [disabled]
+      {
+        previous = touch.detect();
+        timer.create(time);
+        disabled = false;
+      }
+      [previous.released || previous.pressed]
+      [!disabled]
+      illegal;
+    }
+    on port.disable():
+    {
+      [previous.released || previous.pressed]
+      [disabled]
+      illegal;
+      [previous.released || previous.pressed]
+      [!disabled]
+      {
+        timer.cancel();
+        disabled = true;
+      }
+    }
+    on timer.timeout():
+    {
+      [previous.released || previous.pressed]
+      [disabled]
+      illegal;
+      [previous.released || previous.pressed]
+      [!disabled]
+      {
+        itouch.status current = touch.detect();
+        previous = current;
+        timer.create(time);
+      }
+    }
+  }
+}
+component active_light
+{
+  provides iactive_light port;
+  requires ilight light;
+  requires itimer timer;
+
+  behaviour 
+  {
+    ilight.status previous = ilight.status.reject;
+    itimer.milliseconds_t time = $50$;
+    bool disabled = true;
+    on port.enable():
+    {
+      [previous.reject || previous.accept]
+      [disabled]
+      {
+        light.turnon();
+        previous = light.detect();
+        timer.create(time);
+        disabled = false;
+      }
+      [previous.reject || previous.accept]
+      [!disabled]
+      illegal;
+    }
+    on port.disable():
+    {
+      [previous.reject || previous.accept]
+      [disabled]
+      illegal;
+      [previous.reject || previous.accept]
+      [!disabled]
+      {
+        light.turnoff();
+        timer.cancel();
+        disabled = true;
+      }
+    }
+    on timer.timeout():
+    {
+      [previous.reject || previous.accept]
+      [disabled]
+      illegal;
+      [previous.reject || previous.accept]
+      [!disabled]
+      {
+        ilight.status current = light.detect();
+        previous = current;
+        timer.create(time);
+      }
+    }
+  }
+}
+component sut
+{
+  provides itest port;
+  requires imotor motor0;
+  requires imotor motor1;
+  requires itouch touch;
+  requires ilight light;
+
+  system
+  {
+    test tst;
+    timer tmr;
+
+    tst.timer <=> tmr.port;
+    tst.port <=> port;
+    tst.motor0 <=> motor0;
+    tst.motor1 <=> motor1;
+    tst.touch <=> touch;
+    tst.light <=> light;
+  }
+}
+

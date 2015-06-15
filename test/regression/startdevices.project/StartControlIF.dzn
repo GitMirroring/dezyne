@@ -1,0 +1,49 @@
+// Dezyne --- Dezyne command line tools
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface StartControlIF
+{
+	enum Result { OK, NOK };
+	in void startAll();
+	in void stopAll();
+	out void allStarted();
+	out void startFailed();
+	
+	behaviour
+	{
+		enum States { Idle, Starting, Started };
+		States state = States.Idle; 
+		
+		[state.Idle]
+		{
+			on startAll: {}
+			on stopAll: illegal;
+			on inevitable: { state = States.Idle; startFailed; }
+			on inevitable: { state = States.Started; allStarted; }
+		}
+		[state.Started]
+		{
+			on startAll: illegal;
+			on stopAll: state = States.Idle; 
+		}	
+	}
+}

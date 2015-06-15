@@ -1,0 +1,17 @@
+verify: I: check: completeness: ok
+
+verify: I: check: deadlock: ok
+
+verify: I: check: livelock: ok
+
+verify: sugar: check: deterministic: ok
+
+verify: sugar: check: completeness: ok
+
+verify: sugar: check: illegal: ok
+
+verify: sugar: check: deadlock: ok
+
+verify: sugar: check: compliance: ok
+
+verify: sugar: check: livelock: ok

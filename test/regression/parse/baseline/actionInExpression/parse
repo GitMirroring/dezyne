@@ -1,0 +1,3 @@
+actionInExpression.dzn:12:23: Well-formedness error: Actions are not allowed here
+actionInExpression.dzn:15:11: Well-formedness error: Actions are not allowed here
+actionInExpression.dzn:16:13: Well-formedness error: Actions are not allowed here

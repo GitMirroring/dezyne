@@ -1,0 +1,5 @@
+verify: IExternTop: check: completeness: ok
+
+verify: IExternTop: check: deadlock: ok
+
+verify: IExternTop: check: livelock: ok

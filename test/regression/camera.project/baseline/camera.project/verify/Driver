@@ -1,0 +1,65 @@
+verify: IAcquisition: check: completeness: ok
+
+verify: IAcquisition: check: deadlock: ok
+
+verify: IAcquisition: check: livelock: ok
+
+verify: IOptics: check: completeness: ok
+
+verify: IOptics: check: deadlock: ok
+
+verify: IOptics: check: livelock: ok
+
+verify: IControl: check: completeness: ok
+
+verify: IControl: check: deadlock: ok
+
+verify: IControl: check: livelock: ok
+
+verify: Driver: check: deterministic: ok
+
+verify: Driver: check: completeness: ok
+
+verify: Driver: check: illegal: fail
+control.setup
+optics.prepare
+optics.return
+acquisition.contrast_gradient
+acquisition.return
+control.return
+control.release
+acquisition.cancel
+acquisition.return
+control.return
+control.setup
+optics.prepare
+
+verify: Driver: check: deadlock: fail
+control.setup
+optics.prepare
+optics.return
+acquisition.contrast_gradient
+acquisition.return
+control.return
+control.release
+acquisition.cancel
+acquisition.return
+control.return
+control.setup
+optics.prepare
+
+verify: Driver: check: compliance: fail
+control.setup
+optics.prepare
+optics.return
+acquisition.contrast_gradient
+acquisition.return
+control.return
+control.release
+acquisition.cancel
+acquisition.return
+control.return
+control.setup
+optics.prepare
+
+verify: Driver: check: livelock: ok

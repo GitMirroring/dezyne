@@ -1,0 +1,17 @@
+verify: I: check: completeness: ok
+
+verify: I: check: deadlock: ok
+
+verify: I: check: livelock: ok
+
+verify: argument2: check: deterministic: ok
+
+verify: argument2: check: completeness: ok
+
+verify: argument2: check: illegal: ok
+
+verify: argument2: check: deadlock: ok
+
+verify: argument2: check: compliance: ok
+
+verify: argument2: check: livelock: ok

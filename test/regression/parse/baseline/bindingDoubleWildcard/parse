@@ -1,0 +1,4 @@
+SyntaxError: regression/parse/bindingDoubleWildcard.dzn:26:parse error:
+...            comp1.* <=> comp2.*;  }}
+---------------------^
+Expecting 'Identifier', got '*'

@@ -1,0 +1,1 @@
+dataOutInOutEvent.dzn:5:25: Well-formedness error: Out Parameter is not allowed for out Event: val

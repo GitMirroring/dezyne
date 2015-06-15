@@ -1,0 +1,10 @@
+#! /bin/bash
+
+grep -Ev ' -> <xexternal>[.][.]return'\
+  | grep -Eo 'sut.[^ ]+ -> | -> sut.[^ ]+|^\w+[.]\w+$|^illegal$'\
+  | sed -r\
+    -e s', -> ,,'\
+    -e s',^sut[.],,'\
+  | grep -Ev '[.]xout[.]return$'\
+  | sed -r\
+    -e s',^(\w+)[.](\w+)$,\1.\2,'

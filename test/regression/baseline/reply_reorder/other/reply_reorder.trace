@@ -1,0 +1,12 @@
+<external>..start -> sut.p.start
+r.ping
+r.return
+sut.p.return -> <external>..return
+<external>..pong -> sut.r.pong
+p.busy
+<external>..start -> sut.p.start
+r.ping
+r.return
+sut.p.return -> <external>..return
+<external>..pong -> sut.r.pong
+p.finish

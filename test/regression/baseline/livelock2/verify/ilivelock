@@ -1,0 +1,5 @@
+verify: ilivelock: check: completeness: ok
+
+verify: ilivelock: check: deadlock: ok
+
+verify: ilivelock: check: livelock: ok

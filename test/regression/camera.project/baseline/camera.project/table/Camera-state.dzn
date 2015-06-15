@@ -1,0 +1,568 @@
+// Dezyne --- Dezyne command line tools
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface IControl
+{
+  in void setup();
+  in void shoot();
+  in void release();
+  out void ready();
+  out void focus();
+  out void image();
+
+  behaviour 
+  {
+    enum State { Idle, Setup, Ready, Acquire };
+    State state = State.Idle;
+    [state.Idle]
+    {
+      on setup:
+      state = State.Setup;
+      on shoot, release:
+      illegal;
+    }
+    [state.Setup]
+    {
+      on setup:
+      illegal;
+      on shoot:
+      state = State.Acquire;
+      on release:
+      state = State.Idle;
+      on inevitable:
+      {
+        [true]
+        focus;
+        [true]
+        {
+          ready;
+          state = State.Ready;
+        }
+      }
+    }
+    [state.Ready]
+    {
+      on setup:
+      illegal;
+      on shoot:
+      state = State.Acquire;
+      on release:
+      state = State.Idle;
+      on inevitable:
+      focus;
+    }
+    [state.Acquire]
+    {
+      on setup, shoot, release:
+      illegal;
+      on inevitable:
+      {
+        image;
+        state = State.Idle;
+      }
+    }
+  }
+}
+interface IAcquisition
+{
+  in void contrast_gradient();
+  in void cancel();
+  in void acquire();
+  out void image();
+  out void higher_contrast();
+  out void lower_contrast();
+
+  behaviour 
+  {
+    enum State { Idle, Contrast, Acquire };
+    State state = State.Idle;
+    [state.Idle]
+    {
+      on contrast_gradient:
+      state = State.Contrast;
+      on acquire, cancel:
+      illegal;
+    }
+    [state.Contrast]
+    {
+      on contrast_gradient:
+      illegal;
+      on acquire:
+      state = State.Acquire;
+      on cancel:
+      state = State.Idle;
+      on inevitable:
+      {
+        [true]
+        lower_contrast;
+        [true]
+        higher_contrast;
+      }
+    }
+    [state.Acquire]
+    {
+      on contrast_gradient, acquire:
+      illegal;
+      on cancel:
+      state = State.Idle;
+      on inevitable:
+      {
+        image;
+        state = State.Idle;
+      }
+    }
+  }
+}
+interface IOptics
+{
+  in void prepare();
+  in void capture();
+  in void cancel();
+  out void ready();
+  in void focus_in();
+  in void focus_out();
+
+  behaviour 
+  {
+    enum State { Idle, Prepare, Ready };
+    State state = State.Idle;
+    [state.Idle]
+    {
+      on prepare:
+      state = State.Prepare;
+      on cancel:
+      state = State.Idle;
+      on capture:
+      illegal;
+      on focus_in, focus_out:
+      {
+      }
+    }
+    [state.Prepare]
+    {
+      on prepare:
+      illegal;
+      on cancel, capture:
+      state = State.Idle;
+      on inevitable:
+      {
+        ready;
+        state = State.Ready;
+      }
+      on focus_in, focus_out:
+      {
+      }
+    }
+    [state.Ready]
+    {
+      on prepare:
+      illegal;
+      on cancel, capture:
+      state = State.Idle;
+      on focus_in, focus_out:
+      {
+      }
+    }
+  }
+}
+component Driver
+{
+  provides IControl control;
+  requires IAcquisition acquisition;
+  requires IOptics optics;
+
+  behaviour 
+  {
+    enum State { Idle, Setup, Ready, Acquire };
+    enum Contrast { Down, Up, Max };
+    enum Zoom { In, Out };
+    State state = State.Idle;
+    Contrast contrast = Contrast.Down;
+    Zoom zoom = Zoom.In;
+    bool ready = false;
+    [state.Idle]
+    {
+      on control.setup():
+      {
+        optics.prepare();
+        acquisition.contrast_gradient();
+        state = State.Setup;
+      }
+      on control.shoot(), control.release(), acquisition.image(), acquisition.higher_contrast(), acquisition.lower_contrast(), optics.ready():
+      illegal;
+    }
+    [state.Setup]
+    {
+      on control.setup(), acquisition.image():
+      illegal;
+      on control.shoot():
+      {
+        acquisition.acquire();
+        optics.capture();
+        state = State.Acquire;
+      }
+      on control.release():
+      {
+        acquisition.cancel();
+        state = State.Idle;
+      }
+      on acquisition.higher_contrast():
+      {
+        if (zoom.In)
+        optics.focus_in();
+        else
+        optics.focus_out();
+        contrast = Contrast.Up;
+        control.focus();
+      }
+      on acquisition.lower_contrast():
+      {
+        [contrast.Up]
+        {
+          if (zoom.In)
+          {
+            optics.focus_out();
+            zoom = Zoom.Out;
+          }
+          else
+          {
+            optics.focus_in();
+            zoom = Zoom.In;
+          }
+          contrast = Contrast.Max;
+          if (ready)
+          {
+            contrast = Contrast.Down;
+            control.ready();
+            ready = false;
+            state = State.Ready;
+          }
+          else
+          control.focus();
+        }
+        [contrast.Down]
+        {
+          if (zoom.In)
+          {
+            optics.focus_out();
+            zoom = Zoom.Out;
+          }
+          else
+          {
+            optics.focus_in();
+            zoom = Zoom.In;
+          }
+          contrast = Contrast.Down;
+          control.focus();
+        }
+        [otherwise]
+        control.focus();
+      }
+      on optics.ready():
+      if (contrast.Max)
+      {
+        control.ready();
+        ready = false;
+        state = State.Ready;
+      }
+      else
+      ready = true;
+    }
+    [state.Ready]
+    {
+      on control.setup(), acquisition.image():
+      illegal;
+      on control.shoot():
+      {
+        acquisition.acquire();
+        optics.capture();
+        state = State.Acquire;
+      }
+      on control.release():
+      {
+        acquisition.cancel();
+        state = State.Idle;
+      }
+      on acquisition.higher_contrast(), acquisition.lower_contrast(), optics.ready():
+      control.focus();
+    }
+    [state.Acquire]
+    {
+      on control.setup(), control.shoot(), control.release(), acquisition.higher_contrast(), acquisition.lower_contrast():
+      illegal;
+      on acquisition.image():
+      {
+        control.image();
+        state = State.Idle;
+      }
+      on optics.ready():
+      {
+      }
+    }
+  }
+}
+component Acquire
+{
+  provides IAcquisition port;
+  requires IMemory memory;
+  requires ISensor sensor;
+
+  behaviour 
+  {
+    enum State { Idle, Contrast, Acquire };
+    State state = State.Idle;
+    [state.Idle]
+    {
+      on port.contrast_gradient():
+      {
+        sensor.enable();
+        state = State.Contrast;
+      }
+      on port.acquire(), port.cancel(), sensor.higher_contrast(), sensor.lower_contrast(), sensor.image():
+      illegal;
+    }
+    [state.Contrast]
+    {
+      on port.contrast_gradient(), sensor.image():
+      illegal;
+      on port.acquire():
+      {
+        sensor.acquire();
+        state = State.Acquire;
+      }
+      on port.cancel():
+      {
+        sensor.cancel();
+        state = State.Idle;
+      }
+      on sensor.higher_contrast():
+      port.higher_contrast();
+      on sensor.lower_contrast():
+      port.lower_contrast();
+    }
+    [state.Acquire]
+    {
+      on port.contrast_gradient(), port.acquire(), sensor.higher_contrast(), sensor.lower_contrast():
+      illegal;
+      on port.cancel():
+      {
+        sensor.cancel();
+        state = State.Idle;
+      }
+      on sensor.image():
+      {
+        port.image();
+        state = State.Idle;
+      }
+    }
+  }
+}
+component OpticsControl
+{
+  provides IOptics port;
+  requires ILens lens;
+  requires IShutter shutter;
+  requires IFlash flash;
+
+  behaviour 
+  {
+    enum State { Idle, Prepare, Ready };
+    State state = State.Idle;
+    bool ready = false;
+    [state.Idle]
+    {
+      on port.prepare():
+      {
+        state = State.Prepare;
+        flash.prepare();
+      }
+      on port.cancel():
+      {
+        flash.cancel();
+        state = State.Idle;
+      }
+      on flash.ready():
+      {
+      }
+      on port.capture():
+      illegal;
+      on port.focus_in():
+      lens.zoom_in();
+      on port.focus_out():
+      lens.zoom_out();
+    }
+    [state.Prepare]
+    {
+      on port.prepare():
+      illegal;
+      on port.cancel():
+      {
+        flash.cancel();
+        state = State.Idle;
+      }
+      on flash.ready():
+      {
+        state = State.Ready;
+        port.ready();
+      }
+      on port.capture():
+      {
+        state = State.Idle;
+        flash.cancel();
+        shutter.expose();
+      }
+      on port.focus_in():
+      lens.zoom_in();
+      on port.focus_out():
+      lens.zoom_out();
+    }
+    [state.Ready]
+    {
+      on port.prepare():
+      illegal;
+      on port.cancel():
+      {
+        flash.cancel();
+        state = State.Idle;
+      }
+      on flash.ready():
+      {
+      }
+      on port.capture():
+      {
+        state = State.Idle;
+        flash.flash();
+        shutter.expose();
+      }
+      on port.focus_in():
+      lens.zoom_in();
+      on port.focus_out():
+      lens.zoom_out();
+    }
+  }
+}
+component Acquisition
+{
+  provides IAcquisition port;
+  requires IHardware acquire_hardware;
+  requires IHardware contrast_hardware;
+
+  system
+  {
+    Acquire acquire;
+    Memory memory;
+    CMOS sensor;
+
+    port <=> acquire.port;
+    acquire.memory <=> memory.port;
+    acquire.sensor <=> sensor.port;
+    acquire_hardware <=> sensor.acquire_hardware;
+    contrast_hardware <=> sensor.contrast_hardware;
+  }
+}
+component Optics
+{
+  provides IOptics port;
+  requires IHardware flash_hardware;
+
+  system
+  {
+    OpticsControl optics;
+    Lens lens;
+    Shutter shutter;
+    Flash flash;
+
+    port <=> optics.port;
+    optics.lens <=> lens.port;
+    optics.shutter <=> shutter.port;
+    optics.flash <=> flash.port;
+    flash_hardware <=> flash.hardware;
+  }
+}
+component HardwareLayer
+{
+  provides IHardware acquire;
+  provides IHardware contrast;
+  provides IHardware flash;
+
+  system
+  {
+    Hardware acquire_hardware;
+    Hardware contrast_hardware;
+    Hardware flash_hardware;
+
+    acquire <=> acquire_hardware.port;
+    contrast <=> contrast_hardware.port;
+    flash <=> flash_hardware.port;
+  }
+}
+component Camera
+{
+  provides IControl control;
+
+  system
+  {
+    Driver driver;
+    Acquisition acquisition;
+    Optics optics;
+    HardwareLayer hardware;
+
+    control <=> driver.control;
+    driver.acquisition <=> acquisition.port;
+    driver.optics <=> optics.port;
+    hardware.acquire <=> acquisition.acquire_hardware;
+    hardware.contrast <=> acquisition.contrast_hardware;
+    hardware.flash <=> optics.flash_hardware;
+  }
+}
+component Camera2
+{
+  provides IControl control;
+
+  system
+  {
+    Driver driver;
+    Acquire acquisition;
+    Memory memory;
+    CMOS sensor;
+    Hardware acquire_hardware;
+    Hardware contrast_hardware;
+    OpticsControl optics;
+    Lens lens;
+    Shutter shutter;
+    Flash flash;
+    Hardware flash_hardware;
+
+    control <=> driver.control;
+    driver.acquisition <=> acquisition.port;
+    driver.optics <=> optics.port;
+    acquisition.memory <=> memory.port;
+    acquisition.sensor <=> sensor.port;
+    acquire_hardware.port <=> sensor.acquire_hardware;
+    contrast_hardware.port <=> sensor.contrast_hardware;
+    optics.lens <=> lens.port;
+    optics.shutter <=> shutter.port;
+    optics.flash <=> flash.port;
+    flash_hardware.port <=> flash.hardware;
+  }
+}
+

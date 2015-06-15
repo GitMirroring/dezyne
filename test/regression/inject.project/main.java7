@@ -1,0 +1,14 @@
+class main {
+  public static void main(String[] args) {
+    Locator locator = new Locator();
+    Runtime runtime = new Runtime();
+    Injected sut = new Injected(locator.set(runtime), "sut");
+
+    sut.t.out.f = new Action() {public void action() {System.err.println("f");};};
+
+    //sut.check_bindings ();
+    //sut.dump_tree ();
+    
+    sut.t.in.e.action();
+  }
+}

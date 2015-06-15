@@ -1,0 +1,309 @@
+// Dezyne --- Dezyne command line tools
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface IInspect
+{
+  in void calibrate();
+  out void calibrated();
+  in void stop();
+  in void inspect();
+  out void accepted();
+  out void rejected();
+  in void prepare();
+  out void prepared();
+
+  behaviour 
+  {
+    enum State { Lost, Ready, Calibrating, Inspecting, Waiting, Preparing };
+    State s = State.Lost;
+    [s.Lost]
+    {
+      on stop:
+      s = State.Lost;
+      on calibrate:
+      {
+        [true]
+        s = State.Calibrating;
+        [true]
+        {
+          calibrated;
+          s = State.Ready;
+        }
+      }
+      on inspect, prepare:
+      illegal;
+    }
+    [s.Ready]
+    {
+      on stop:
+      s = State.Lost;
+      on calibrate, prepare:
+      illegal;
+      on inspect:
+      s = State.Inspecting;
+    }
+    [s.Calibrating]
+    {
+      on stop:
+      s = State.Lost;
+      on calibrate, inspect, prepare:
+      illegal;
+      on inevitable:
+      {
+        calibrated;
+        s = State.Ready;
+      }
+    }
+    [s.Inspecting]
+    {
+      on stop:
+      s = State.Lost;
+      on calibrate, inspect, prepare:
+      illegal;
+      on inevitable:
+      {
+        [true]
+        {
+          accepted;
+          s = State.Waiting;
+        }
+        [true]
+        {
+          rejected;
+          s = State.Waiting;
+        }
+      }
+    }
+    [s.Waiting]
+    {
+      on stop:
+      s = State.Lost;
+      on calibrate, inspect:
+      illegal;
+      on prepare:
+      {
+        [true]
+        s = State.Preparing;
+        [true]
+        {
+          prepared;
+          s = State.Ready;
+        }
+      }
+    }
+    [s.Preparing]
+    {
+      on stop:
+      s = State.Lost;
+      on calibrate, inspect, prepare:
+      illegal;
+      on inevitable:
+      {
+        prepared;
+        s = State.Ready;
+      }
+    }
+  }
+}
+component Inspect
+{
+  provides IInspect ctrl;
+  requires ilight sensor;
+  requires IMove2D stage;
+  requires itimer sensorSettleTimer;
+
+  behaviour 
+  {
+    enum State { Lost, Ready, Calibrating, Inspecting, Waiting, Preparing };
+    enum InspectPosition { Unknown, Receive, Inspect, Accept, Reject };
+    State s = State.Lost;
+    InspectPosition p = InspectPosition.Unknown;
+    IMove2D.MovePosition receiveX = $config("Position::Inspector::ReceiveX")$;
+    IMove2D.MovePosition receiveY = $config("Position::Inspector::ReceiveY")$;
+    IMove2D.MovePosition inspectX = $config("Position::Inspector::InspectX")$;
+    IMove2D.MovePosition inspectY = $config("Position::Inspector::InspectY")$;
+    IMove2D.MovePosition acceptX = $config("Position::Inspector::AcceptX")$;
+    IMove2D.MovePosition acceptY = $config("Position::Inspector::AcceptY")$;
+    IMove2D.MovePosition rejectX = $config("Position::Inspector::RejectX")$;
+    IMove2D.MovePosition rejectY = $config("Position::Inspector::RejectY")$;
+    void stop()
+    {
+      sensorSettleTimer.cancel();
+      stage.stop();
+      sensor.turnoff();
+      p = InspectPosition.Unknown;
+      s = State.Lost;
+      return;
+    }
+
+    [s.Lost]
+    {
+      on sensorSettleTimer.timeout(), ctrl.inspect(), ctrl.prepare(), stage.arrived(), stage.calibrated():
+      illegal;
+      on ctrl.stop():
+      stop();
+      on ctrl.calibrate():
+      {
+        s = State.Calibrating;
+        p = InspectPosition.Unknown;
+        stage.calibrate();
+      }
+    }
+    [s.Ready]
+    {
+      on sensorSettleTimer.timeout(), ctrl.calibrate(), ctrl.prepare(), stage.arrived(), stage.calibrated():
+      illegal;
+      on ctrl.stop():
+      stop();
+      on ctrl.inspect():
+      {
+        s = State.Inspecting;
+        stage.move(inspectX,inspectY);
+      }
+    }
+    [s.Calibrating]
+    {
+      on sensorSettleTimer.timeout(), ctrl.calibrate(), ctrl.inspect(), ctrl.prepare():
+      illegal;
+      on ctrl.stop():
+      stop();
+      on stage.arrived():
+      {
+        [p.Receive]
+        {
+          ctrl.calibrated();
+          s = State.Ready;
+        }
+        [!p.Receive]
+        illegal;
+      }
+      on stage.calibrated():
+      {
+        [p.Unknown]
+        {
+          stage.move(receiveX,receiveY);
+          p = InspectPosition.Receive;
+        }
+        [!p.Unknown]
+        illegal;
+      }
+    }
+    [s.Inspecting]
+    {
+      on sensorSettleTimer.timeout():
+      {
+        ilight.status ballStatus = sensor.detect();
+        sensor.turnoff();
+        if (ballStatus == ilight.status.accept)
+        {
+          stage.move(acceptX,acceptY);
+          p = InspectPosition.Accept;
+        }
+        else
+        {
+          stage.move(rejectX,rejectY);
+          p = InspectPosition.Reject;
+        }
+      }
+      on ctrl.stop():
+      stop();
+      on ctrl.calibrate(), ctrl.inspect(), ctrl.prepare(), stage.calibrated():
+      illegal;
+      on stage.arrived():
+      {
+        [p.Receive]
+        {
+          p = InspectPosition.Inspect;
+          sensor.turnon();
+          sensorSettleTimer.create($100$);
+        }
+        [p.Accept]
+        {
+          ctrl.accepted();
+          s = State.Waiting;
+        }
+        [p.Reject]
+        {
+          ctrl.rejected();
+          s = State.Waiting;
+        }
+        [p.Inspect]
+        illegal;
+      }
+    }
+    [s.Waiting]
+    {
+      on sensorSettleTimer.timeout(), ctrl.calibrate(), ctrl.inspect(), stage.arrived(), stage.calibrated():
+      illegal;
+      on ctrl.stop():
+      stop();
+      on ctrl.prepare():
+      {
+        s = State.Preparing;
+        p = InspectPosition.Receive;
+        stage.move(receiveX,receiveY);
+      }
+    }
+    [s.Preparing]
+    {
+      on sensorSettleTimer.timeout(), ctrl.calibrate(), ctrl.inspect(), ctrl.prepare(), stage.calibrated():
+      illegal;
+      on ctrl.stop():
+      stop();
+      on stage.arrived():
+      {
+        ctrl.prepared();
+        s = State.Ready;
+      }
+    }
+  }
+}
+component Inspector
+{
+  provides IInspect ctrl;
+  requires ilight sensor;
+  requires imotor stageXMotorHw;
+  requires itouch stageXHomeSensorHw;
+  requires itouch stageXEndSensorHw;
+  requires imotor stageYMotorHw;
+  requires itouch stageYHomeSensorHw;
+  requires itouch stageYEndSensorHw;
+
+  system
+  {
+    Inspect bhv;
+    Stage stage;
+    timer sensorSettletimer;
+
+    ctrl <=> bhv.ctrl;
+    bhv.sensor <=> sensor;
+    bhv.stage <=> stage.ctrl;
+    stage.xMotorHw <=> stageXMotorHw;
+    stage.xHomeSensorHw <=> stageXHomeSensorHw;
+    stage.xEndSensorHw <=> stageXEndSensorHw;
+    stage.yMotorHw <=> stageYMotorHw;
+    stage.yHomeSensorHw <=> stageYHomeSensorHw;
+    stage.yEndSensorHw <=> stageYEndSensorHw;
+    bhv.sensorSettleTimer <=> sensorSettletimer.port;
+  }
+}
+

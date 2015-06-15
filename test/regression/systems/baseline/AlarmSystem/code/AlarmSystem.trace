@@ -1,0 +1,16 @@
+<external>..arm -> sut.alarm.console.arm
+sut.alarm.sensor.enable -> sut.sensor.sensor.enable
+sut.sensor.sensor.return -> sut.alarm.sensor.return
+sut.alarm.console.return -> <external>..return
+<external>..triggered -> sut.sensor.hw.triggered
+sut.sensor.sensor.triggered -> sut.alarm.sensor.triggered
+console.detected
+sut.alarm.siren.turnon -> sut.siren.siren.turnon
+sut.siren.siren.return -> sut.alarm.siren.return
+<external>..disarm -> sut.alarm.console.disarm
+sut.alarm.sensor.disable -> sut.sensor.sensor.disable
+sut.sensor.sensor.return -> sut.alarm.sensor.return
+sut.alarm.console.return -> <external>..return
+<external>..disabled -> sut.sensor.hw.disabled
+sut.sensor.sensor.disabled -> sut.alarm.sensor.disabled
+console.deactivated

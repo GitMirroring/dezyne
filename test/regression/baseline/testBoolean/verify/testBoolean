@@ -1,0 +1,17 @@
+verify: TestBool: check: completeness: ok
+
+verify: TestBool: check: deadlock: ok
+
+verify: TestBool: check: livelock: ok
+
+verify: testBoolean: check: deterministic: ok
+
+verify: testBoolean: check: completeness: ok
+
+verify: testBoolean: check: illegal: ok
+
+verify: testBoolean: check: deadlock: ok
+
+verify: testBoolean: check: compliance: ok
+
+verify: testBoolean: check: livelock: ok

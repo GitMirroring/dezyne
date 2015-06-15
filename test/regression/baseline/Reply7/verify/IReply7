@@ -1,0 +1,5 @@
+verify: IReply7: check: completeness: ok
+
+verify: IReply7: check: deadlock: ok
+
+verify: IReply7: check: livelock: ok

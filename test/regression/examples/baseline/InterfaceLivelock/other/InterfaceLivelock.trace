@@ -1,0 +1,2 @@
+<external>..start -> sut.LoopingInterface.start
+sut.LoopingInterface.return -> <external>..return

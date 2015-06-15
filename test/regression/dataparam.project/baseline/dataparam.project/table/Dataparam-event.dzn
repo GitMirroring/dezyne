@@ -1,0 +1,313 @@
+// Dezyne --- Dezyne command line tools
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface IDataparam
+{
+  extern xint $int$;
+  enum Status { Yes, No };
+  in void e0();
+  in Status e0r();
+  in void e(xint i);
+  in Status er(xint i);
+  in Status eer(xint i,xint j);
+  in void eo(out xint i);
+  in void eoo(out xint i,out xint j);
+  in void eio(xint i,out xint j);
+  in void eio2(inout xint i);
+  in Status eor(out xint i);
+  in Status eoor(out xint i,out xint j);
+  in Status eior(xint i,out xint j);
+  in Status eio2r(inout xint i);
+  out void a0();
+  out void a(xint i);
+  out void aa(xint i,xint j);
+  out void a6(xint a0,xint a1,xint a2,xint a3,xint a4,xint a5);
+
+  behaviour 
+  {
+    on e0:
+    [true]
+    a6;
+    on e0r:
+    [true]
+    {
+      a0;
+      reply(Status.Yes);
+    }
+    on e:
+    [true]
+    {
+      a;
+      aa;
+    }
+    on er:
+    [true]
+    {
+      a;
+      aa;
+      reply(Status.Yes);
+    }
+    on eer:
+    [true]
+    {
+      a;
+      aa;
+      reply(Status.No);
+    }
+    on eo:
+    [true]
+    {
+    }
+    on eoo:
+    [true]
+    {
+    }
+    on eio:
+    [true]
+    {
+    }
+    on eio2:
+    [true]
+    {
+    }
+    on eor:
+    [true]
+    reply(Status.Yes);
+    on eoor:
+    [true]
+    reply(Status.Yes);
+    on eior:
+    [true]
+    reply(Status.Yes);
+    on eio2r:
+    [true]
+    reply(Status.Yes);
+  }
+}
+component Dataparam
+{
+  provides IDataparam port;
+
+  behaviour 
+  {
+    IDataparam.xint mi = $0$;
+    IDataparam.Status s = IDataparam.Status.Yes;
+    IDataparam.Status fun()
+    {
+      return IDataparam.Status.Yes;
+    }
+
+    IDataparam.Status funx(IDataparam.xint xi)
+    {
+      return IDataparam.Status.Yes;
+    }
+
+    on port.e0():
+    [true]
+    port.a6($0$,$1$,$2$,$3$,$4$,$5$);
+    on port.e0r():
+    [true]
+    {
+      port.a0();
+      reply(IDataparam.Status.Yes);
+    }
+    on port.e(pi):
+    [true]
+    {
+      IDataparam.Status s = funx(pi);
+      s = s;
+      mi = pi;
+      port.a(mi);
+      port.aa(mi,pi);
+    }
+    on port.er(pi):
+    [true]
+    {
+      IDataparam.Status s = IDataparam.Status.No;
+      mi = pi;
+      port.a(mi);
+      port.aa(mi,pi);
+      reply(IDataparam.Status.Yes);
+    }
+    on port.eer(i,j):
+    [true]
+    {
+      IDataparam.Status s = IDataparam.Status.No;
+      port.a(j);
+      port.aa(j,i);
+      reply(s);
+    }
+    on port.eo(i):
+    [true]
+    i = $234$;
+    on port.eoo(i,j):
+    [true]
+    {
+      i = $123$;
+      j = $456$;
+    }
+    on port.eio(i,j):
+    [true]
+    j = i;
+    on port.eio2(i):
+    [true]
+    {
+      IDataparam.xint t = i;
+      i = $246$;
+    }
+    on port.eor(i):
+    [true]
+    {
+      i = $234$;
+      reply(IDataparam.Status.Yes);
+    }
+    on port.eoor(i,j):
+    [true]
+    {
+      i = $123$;
+      j = $456$;
+      reply(IDataparam.Status.Yes);
+    }
+    on port.eior(i,j):
+    [true]
+    {
+      j = i;
+      reply(IDataparam.Status.Yes);
+    }
+    on port.eio2r(i):
+    [true]
+    {
+      IDataparam.xint t = i;
+      i = $246$;
+      reply(IDataparam.Status.Yes);
+    }
+  }
+}
+component proxy
+{
+  provides IDataparam top;
+  requires IDataparam bottom;
+
+  behaviour 
+  {
+    void outfunc(out IDataparam.xint i)
+    {
+      IDataparam.xint j = i;
+      bottom.eo(j);
+      i = j;
+      return;
+    }
+
+    void deferfunc(IDataparam.xint i)
+    {
+      top.a(i);
+      return;
+    }
+
+    on top.e0():
+    [true]
+    bottom.e0();
+    on top.e0r():
+    [true]
+    {
+      IDataparam.Status r = bottom.e0r();
+      reply(r);
+    }
+    on top.e(pi):
+    [true]
+    bottom.e(pi);
+    on top.er(pi):
+    [true]
+    {
+      IDataparam.Status r = bottom.er(pi);
+      reply(r);
+    }
+    on top.eer(i,j):
+    [true]
+    {
+      IDataparam.Status r = bottom.eer(i,j);
+      reply(r);
+    }
+    on top.eo(i):
+    [true]
+    outfunc(i);
+    on top.eoo(i,j):
+    [true]
+    bottom.eoo(i,j);
+    on top.eio(i,j):
+    [true]
+    bottom.eio(i,j);
+    on top.eio2(i):
+    [true]
+    bottom.eio2(i);
+    on top.eor(i):
+    [true]
+    {
+      IDataparam.Status s = bottom.eor(i);
+      reply(s);
+    }
+    on top.eoor(i,j):
+    [true]
+    {
+      IDataparam.Status s = bottom.eoor(i,j);
+      reply(s);
+    }
+    on top.eior(i,j):
+    [true]
+    {
+      IDataparam.Status s = bottom.eior(i,j);
+      reply(s);
+    }
+    on top.eio2r(i):
+    [true]
+    {
+      IDataparam.Status s = bottom.eio2r(i);
+      reply(s);
+    }
+    on bottom.a0():
+    [true]
+    top.a0();
+    on bottom.a6(A0,A1,A2,A3,A4,A5):
+    [true]
+    top.a6(A0,A1,A2,A3,A4,A5);
+    on bottom.a(i):
+    [true]
+    deferfunc(i);
+    on bottom.aa(i,j):
+    [true]
+    top.aa(i,j);
+  }
+}
+component Datasystem
+{
+  provides IDataparam port;
+
+  system
+  {
+    proxy p;
+    Dataparam c;
+
+    p.top <=> port;
+    c.port <=> p.bottom;
+  }
+}
+

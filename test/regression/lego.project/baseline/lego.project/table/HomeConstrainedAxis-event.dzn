@@ -1,0 +1,160 @@
+// Dezyne --- Dezyne command line tools
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+component HomeConstrainedMove
+{
+  provides IConstrainedMove ctrl;
+  requires IMove motor;
+  requires ITouchSense homeSensor;
+
+  behaviour 
+  {
+    enum State { lost, idle, moving, calibratingHome };
+    State s = State.lost;
+    void slowBackward()
+    {
+      motor.run($config("Power::CalibrationSpeed")$,$true$);
+      return;
+    }
+
+    void recordHome()
+    {
+      homeSensor.disable();
+      motor.stop();
+      motor.zero();
+      return;
+    }
+
+    void startAbsoluteMove(IConstrainedMove.position_t target)
+    {
+      ITouchSense.TouchState ignore = ITouchSense.TouchState.Released;
+      ignore = homeSensor.enable();
+      motor.move($config("Power::OperationalSpeed")$,target);
+      s = State.moving;
+      return;
+    }
+
+    void notifyArrived()
+    {
+      motor.stop();
+      homeSensor.disable();
+      s = State.idle;
+      ctrl.arrived();
+      return;
+    }
+
+    on ctrl.stop():
+    {
+      [s.calibratingHome || s.moving || s.idle || s.lost]
+      {
+        motor.stop();
+        homeSensor.disable();
+        s = State.lost;
+      }
+    }
+    on ctrl.calibrate():
+    {
+      [s.lost]
+      {
+        ITouchSense.TouchState hss = homeSensor.enable();
+        if (hss == ITouchSense.TouchState.Pressed)
+        {
+          recordHome();
+          s = State.idle;
+          ctrl.homed();
+        }
+        else
+        {
+          slowBackward();
+          s = State.calibratingHome;
+        }
+      }
+      [s.calibratingHome || s.moving || s.idle]
+      illegal;
+    }
+    on ctrl.move():
+    {
+      [s.calibratingHome || s.moving || s.lost]
+      illegal;
+    }
+    on homeSensor.pressed():
+    {
+      [s.idle || s.lost]
+      illegal;
+      [s.moving]
+      {
+        motor.stop();
+        recordHome();
+        notifyArrived();
+      }
+      [s.calibratingHome]
+      {
+        recordHome();
+        s = State.idle;
+        ctrl.homed();
+      }
+    }
+    on homeSensor.released():
+    {
+      [s.calibratingHome || s.idle || s.lost]
+      illegal;
+      [s.moving]
+      {
+      }
+    }
+    on motor.arrived():
+    {
+      [s.calibratingHome || s.idle || s.lost]
+      illegal;
+      [s.moving]
+      notifyArrived();
+    }
+    on ctrl.move(target):
+    [s.idle]
+    {
+      ITouchSense.TouchState ignore = ITouchSense.TouchState.Released;
+      ignore = homeSensor.enable();
+      motor.move($config("Power::OperationalSpeed")$,target);
+      s = State.moving;
+    }
+  }
+}
+component HomeConstrainedAxis
+{
+  provides IConstrainedMove ctrl;
+  requires imotor motorHw;
+  requires itouch homeSensorHw;
+
+  system
+  {
+    HomeConstrainedMove bhv;
+    Motor motor;
+    TouchSensor homeSensor;
+
+    ctrl <=> bhv.ctrl;
+    bhv.motor <=> motor.ctrl;
+    bhv.homeSensor <=> homeSensor.ctrl;
+    motor.hw <=> motorHw;
+    homeSensor.hw <=> homeSensorHw;
+  }
+}
+

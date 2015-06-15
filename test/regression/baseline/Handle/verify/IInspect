@@ -1,0 +1,5 @@
+verify: IInspect: check: completeness: ok
+
+verify: IInspect: check: deadlock: ok
+
+verify: IInspect: check: livelock: ok

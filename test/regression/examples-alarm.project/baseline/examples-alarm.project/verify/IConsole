@@ -1,0 +1,5 @@
+verify: IConsole: check: completeness: ok
+
+verify: IConsole: check: deadlock: ok
+
+verify: IConsole: check: livelock: ok

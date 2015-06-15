@@ -1,0 +1,71 @@
+DZN TEST FRAMEWORK
+==================
+
+Try:
+    make help
+
+Many convenience targets are avialable, such as,
+
+    make check-out/Component
+
+    make code-out/Component
+    make verify-out/Component
+    make check-out/dir.project
+
+    make update-out/Component
+
+    make update-code-out/Component
+    make update-verify-out/Component
+    make update-out/dir.project
+
+running
+
+    make VERBOSE=debug
+
+lists them all.
+
+Run server:
+
+    make -C .. run
+
+Authenticate dzn client:
+
+    make -C .. hello
+
+Go:
+  make
+
+CHECKS
+======
+
+  * code
+
+regression/*.dzn
+   - single-component code+CSP verification files (argument*.dzn)
+
+regression/adapters
+   - old IRun-Adapter-Main based single-file dzn tests AlarmSystem, Choice, camera
+
+regression/parse
+   - wellformdness and parser checks
+
+regression/systems
+   - system components
+
+regression/dataparam.project/
+   - non-generic main
+
+regression/glue.project/
+   - ASD-Dezyne project
+
+regression/injected.project/
+   - non-generic main
+
+regression/lego.project/
+   - multi-file project [c, c++]
+
+EXTERNAL PROJECTS
+=================
+
+regression/autocryocycle.project/
+   - convert and glue project [c++]

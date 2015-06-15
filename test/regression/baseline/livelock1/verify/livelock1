@@ -1,0 +1,23 @@
+verify: nolivelock: check: completeness: ok
+
+verify: nolivelock: check: deadlock: ok
+
+verify: nolivelock: check: livelock: ok
+
+verify: ilivelock: check: completeness: ok
+
+verify: ilivelock: check: deadlock: ok
+
+verify: ilivelock: check: livelock: ok
+
+verify: livelock1: check: deterministic: ok
+
+verify: livelock1: check: completeness: ok
+
+verify: livelock1: check: illegal: ok
+
+verify: livelock1: check: deadlock: ok
+
+verify: livelock1: check: compliance: ok
+
+verify: livelock1: check: livelock: ok

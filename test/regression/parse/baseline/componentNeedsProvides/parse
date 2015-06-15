@@ -1,0 +1,2 @@
+componentNeedsProvides.dzn:11:11: Well-formedness error: Component with behaviour must have one provides port: Alarm1
+componentNeedsProvides.dzn:18:11: Well-formedness error: Component with behaviour must have one provides port: SensorComp

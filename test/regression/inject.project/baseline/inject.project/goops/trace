@@ -1,0 +1,10 @@
+<external>..e -> sut.m.t.e
+<external>..log -> sut.l.log.log
+sut.l.log.return -> <external>..return
+sut.m.b.e -> sut.b.b.e
+sut.b.b.f -> sut.m.b.f
+sut.b.b.return -> sut.m.b.return
+<external>..log -> sut.l.log.log
+sut.l.log.return -> <external>..return
+f
+sut.m.t.return -> <external>..return

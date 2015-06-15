@@ -1,0 +1,159 @@
+// Dezyne --- Dezyne command line tools
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+component FeedConvey
+{
+  provides IFeed ctrl;
+  requires IFeed feeder;
+  requires IConvey conveyor;
+
+  behaviour 
+  {
+    enum State { Lost, Calibrating, Idle, Preparing, Prepared };
+    enum FeedPhase { None, Feeding, ConveyingNext, ConveyingLast };
+    State s = State.Lost;
+    FeedPhase p = FeedPhase.None;
+    on ctrl.stop():
+    {
+      [s.Prepared || s.Preparing || s.Idle || s.Calibrating || s.Lost]
+      {
+        feeder.stop();
+        conveyor.stop();
+        s = State.Lost;
+        p = FeedPhase.None;
+      }
+    }
+    on ctrl.calibrate():
+    {
+      [s.Lost]
+      {
+        feeder.calibrate();
+        s = State.Calibrating;
+      }
+      [s.Prepared || s.Preparing || s.Idle || s.Calibrating]
+      illegal;
+    }
+    on ctrl.produceBall():
+    {
+      [s.Preparing || s.Calibrating || s.Lost]
+      illegal;
+      [s.Prepared || s.Idle]
+      {
+        feeder.produceBall();
+        s = State.Preparing;
+        p = FeedPhase.Feeding;
+      }
+    }
+    on feeder.calibrated():
+    {
+      [s.Prepared || s.Preparing || s.Idle || s.Lost]
+      illegal;
+      [s.Calibrating]
+      {
+        ctrl.calibrated();
+        s = State.Idle;
+      }
+      [s.Preparing]
+      [p.ConveyingNext]
+      illegal;
+      [s.Preparing]
+      [p.ConveyingLast]
+      illegal;
+    }
+    on feeder.consumeNextBall():
+    {
+      [s.Prepared || s.Idle || s.Calibrating || s.Lost]
+      illegal;
+      [s.Preparing]
+      [p.Feeding]
+      {
+        conveyor.convey();
+        p = FeedPhase.ConveyingNext;
+      }
+      [s.Preparing]
+      [p.ConveyingNext]
+      illegal;
+      [s.Preparing]
+      [p.ConveyingLast]
+      illegal;
+    }
+    on feeder.consumeLastBall():
+    {
+      [s.Prepared || s.Idle || s.Calibrating || s.Lost]
+      illegal;
+      [s.Preparing]
+      [p.Feeding]
+      {
+        conveyor.convey();
+        p = FeedPhase.ConveyingLast;
+      }
+      [s.Preparing]
+      [p.ConveyingNext]
+      illegal;
+      [s.Preparing]
+      [p.ConveyingLast]
+      illegal;
+    }
+    on conveyor.conveyed():
+    {
+      [s.Prepared || s.Idle || s.Calibrating || s.Lost]
+      illegal;
+      [s.Preparing]
+      [p.Feeding]
+      illegal;
+      [s.Preparing]
+      [p.ConveyingNext]
+      {
+        ctrl.consumeNextBall();
+        s = State.Prepared;
+        p = FeedPhase.None;
+      }
+      [s.Preparing]
+      [p.ConveyingLast]
+      {
+        ctrl.consumeLastBall();
+        s = State.Prepared;
+        p = FeedPhase.None;
+      }
+    }
+  }
+}
+component FeedPort
+{
+  provides IFeed ctrl;
+  requires IFeed feeder;
+  requires imotor motorHw;
+  requires itouch sensorHw;
+
+  system
+  {
+    FeedConvey bhv;
+    Conveyor conveyor;
+
+    ctrl <=> bhv.ctrl;
+    bhv.conveyor <=> conveyor.ctrl;
+    bhv.feeder <=> feeder;
+    conveyor.motorHw <=> motorHw;
+    conveyor.sensorHw <=> sensorHw;
+  }
+}
+

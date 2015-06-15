@@ -1,0 +1,14 @@
+<external>..arm -> .alarm.console.arm
+.alarm.sensor.enable -> .sensor.sensor.enable
+.sensor.sensor.triggered -> .alarm.sensor.triggered
+.sensor.sensor.return -> .alarm.sensor.return
+ConsoleCB.Tripped
+.alarm.siren.turnon -> .siren.siren.turnon
+.siren.siren.return -> .alarm.siren.return
+.alarm.console.return -> <external>..return
+<external>..disarm -> .alarm.console.disarm
+.alarm.sensor.disable -> .sensor.sensor.disable
+.sensor.sensor.disabled -> .alarm.sensor.disabled
+.sensor.sensor.return -> .alarm.sensor.return
+ConsoleCB.Deactivated
+.alarm.console.return -> <external>..return

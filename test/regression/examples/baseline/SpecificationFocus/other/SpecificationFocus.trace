@@ -1,0 +1,15 @@
+<external>..Activate -> sut.sensors.Activate
+aSensor.Activate
+aSensor.return
+bSensor.Activate
+bSensor.return
+sut.sensors.return -> <external>..return
+<external>..DetectedMovement -> sut.aSensor.DetectedMovement
+sensors.DetectedMovement
+<external>..DetectedMovement -> sut.bSensor.DetectedMovement
+<external>..Deactivate -> sut.sensors.Deactivate
+aSensor.Deactivate
+aSensor.return
+bSensor.Deactivate
+bSensor.return
+sut.sensors.return -> <external>..return

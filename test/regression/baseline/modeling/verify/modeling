@@ -1,0 +1,23 @@
+verify: dummy: check: completeness: ok
+
+verify: dummy: check: deadlock: ok
+
+verify: dummy: check: livelock: ok
+
+verify: imodeling: check: completeness: ok
+
+verify: imodeling: check: deadlock: ok
+
+verify: imodeling: check: livelock: ok
+
+verify: modeling: check: deterministic: ok
+
+verify: modeling: check: completeness: ok
+
+verify: modeling: check: illegal: ok
+
+verify: modeling: check: deadlock: ok
+
+verify: modeling: check: compliance: ok
+
+verify: modeling: check: livelock: ok

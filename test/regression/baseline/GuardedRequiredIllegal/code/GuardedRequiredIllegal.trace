@@ -1,0 +1,6 @@
+<external>..unguarded -> sut.t.unguarded
+sut.t.return -> <external>..return
+<external>..e -> sut.t.e
+b.e
+b.return
+sut.t.return -> <external>..return

@@ -1,0 +1,29 @@
+verify: IMemory: check: completeness: ok
+
+verify: IMemory: check: deadlock: ok
+
+verify: IMemory: check: livelock: ok
+
+verify: IAcquisition: check: completeness: ok
+
+verify: IAcquisition: check: deadlock: ok
+
+verify: IAcquisition: check: livelock: ok
+
+verify: ISensor: check: completeness: ok
+
+verify: ISensor: check: deadlock: ok
+
+verify: ISensor: check: livelock: ok
+
+verify: Acquire: check: deterministic: ok
+
+verify: Acquire: check: completeness: ok
+
+verify: Acquire: check: illegal: ok
+
+verify: Acquire: check: deadlock: ok
+
+verify: Acquire: check: compliance: ok
+
+verify: Acquire: check: livelock: ok

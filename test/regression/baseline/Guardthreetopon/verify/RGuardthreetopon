@@ -1,0 +1,5 @@
+verify: RGuardthreetopon: check: completeness: ok
+
+verify: RGuardthreetopon: check: deadlock: ok
+
+verify: RGuardthreetopon: check: livelock: ok

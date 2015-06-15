@@ -1,0 +1,22 @@
+<external>..run -> sut.adaptor.runner.run
+sut.adaptor.console.arm -> sut.alarm.alarm.console.arm
+sut.alarm.alarm.sensor.enable -> sut.alarm.sensor.sensor.enable
+sut.alarm.sensor.sensor.triggered -> sut.alarm.alarm.sensor.triggered
+sut.alarm.sensor.sensor.return -> sut.alarm.alarm.sensor.return
+sut.alarm.alarm.console.detected -> sut.adaptor.console.detected
+sut.alarm.alarm.siren.turnon -> sut.alarm.siren.siren.turnon
+sut.alarm.siren.siren.return -> sut.alarm.alarm.siren.return
+sut.alarm.alarm.console.return -> sut.adaptor.console.return
+sut.adaptor.console.disarm -> sut.alarm.alarm.console.disarm
+sut.alarm.alarm.sensor.disable -> sut.alarm.sensor.sensor.disable
+sut.alarm.sensor.sensor.disabled -> sut.alarm.alarm.sensor.disabled
+sut.alarm.sensor.sensor.return -> sut.alarm.alarm.sensor.return
+sut.alarm.alarm.console.deactivated -> sut.adaptor.console.deactivated
+sut.alarm.alarm.console.return -> sut.adaptor.console.return
+sut.adaptor.console.arm -> sut.alarm.alarm.console.arm
+sut.alarm.alarm.sensor.enable -> sut.alarm.sensor.sensor.enable
+sut.alarm.sensor.sensor.triggered -> sut.alarm.alarm.sensor.triggered
+sut.alarm.sensor.sensor.return -> sut.alarm.alarm.sensor.return
+sut.alarm.alarm.console.detected -> sut.adaptor.console.detected
+sut.alarm.alarm.siren.turnon -> sut.alarm.siren.siren.turnon
+illegal

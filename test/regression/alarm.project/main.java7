@@ -1,0 +1,72 @@
+// // Handwritten
+// class Console {
+//   IConsole console;
+//   public Console() {
+//     console = new IConsole();
+//     console.getOut().detected = new Action() {
+//         public void action() {
+//           System.err.println("Alarm detected");
+//         }
+//       };
+//     console.getOut().deactivated = new Action() {
+//         public void action() {
+//           System.err.println("Alarm deactivated");
+//         }
+//       };
+//   }
+// }
+
+// class Sensor {
+//   ISensor sensor;
+//   public Sensor() {
+//     sensor = new ISensor();
+//     sensor.getIn().enable = new Action() {
+//         public void action() {
+//           System.err.println("Sensor detected");
+//         }
+//       };
+//     sensor.getIn().disable = new Action() {
+//         public void action() {
+//           System.err.println("Sensor deactivated");
+//         }
+//       };
+//   }
+// }
+
+// class Siren {
+//   ISiren siren;
+//   public Siren() {
+//     siren = new ISiren();
+//     siren.getIn().turnon = new Action() {
+//         public void action() {
+//           System.err.println("Siren detected");
+//         }
+//       };
+//     siren.getIn().turnoff = new Action() {
+//         public void action() {
+//           System.err.println("Siren deactivated");
+//         }
+//       };
+//   }
+// }
+
+class main {
+  public static void main(String[] args) {
+    Locator locator = new Locator();
+    Runtime runtime = new Runtime();
+    AlarmSystem sut = new AlarmSystem(locator.set(runtime), "sut");
+    //Console console = new Console();
+    //Interface.connect(sut.console, console.console);
+    sut.console.out.detected = new Action() {public void action() {System.err.println("Console.detected");}};
+    sut.console.out.deactivated = new Action() {public void action() {System.err.println("Console.deactivated");}};
+
+    // Test trace
+
+    sut.console.in.arm.action();
+    sut.sensor.sensor.out.triggered.action();
+    Runtime.flush(sut.sensor);
+    sut.console.in.disarm.action();
+    sut.sensor.sensor.out.disabled.action();
+    Runtime.flush(sut.sensor);
+  }
+}

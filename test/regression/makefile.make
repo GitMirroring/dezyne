@@ -1,0 +1,84 @@
+# Dezyne --- Dezyne command line tools
+# Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+#
+# This file is part of Dezyne.
+#
+# Dezyne is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# Dezyne is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public
+# License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+# 
+# Commentary:
+# 
+# Code:
+
+# provides_twice: external component, does not link...
+# hide: variable shadowing!?
+# iincomplete: does not parse...
+# Comp, Reply: main generates different reply values per language
+# dollar_escape: gaiag parse error due to incorrect escaping of dollar expression $sss;xxx$ (zoho6839)
+# FDR void reply instead of valued reply (component ValuedReturn.dzn!ConstrainedAxis) (zoho6834)
+# unguarded: shadowing: c++: x.in.move () instead of this->x.in.move()
+BROKEN:=\
+ regression/iincomplete.dzn\
+ regression/externaltypesbroken.dzn\
+ regression/provides_twice.dzn\
+ regression/dollar_escape.dzn\
+ regression/ValuedReturn.dzn\
+ regression/unguarded.dzn\
+ regression/hide.dzn\
+ regression/BrokenComp.dzn\
+
+# int32_t
+BROKEN_cs:=\
+ regression/Handle.dzn\
+ regression/Reply5.dzn\
+
+# c++ is main language, can never be broken
+# int32_t
+# error: Reply5: variable s is already defined in method i_done()
+BROKEN_java:=\
+ regression/Handle.dzn\
+ regression/Reply5.dzn\
+
+# function function()
+BROKEN_javascript:=\
+ regression/Handle.dzn\
+ regression/function.dzn\
+
+BROKEN_python:=\
+ regression/Handle.dzn\
+
+# TypeError: Cannot call method 'replace' of undefined
+BROKEN_trace:=\
+ regression/Extern.dzn\
+
+BROKEN_verify:=
+
+out/Handle/c++/Handle.o: CXXFLAGS:=-std=c++11 -include MachineConstants.hh $(CXXFLAGS)
+out/Handle/c++03/Handle.o: CXXFLAGS:=-std=c++0x -include MachineConstants.hh $(CXXFLAGS)
+
+DZN_FILES:=$(wildcard $(CDIR)*.dzn)
+DZN_FILES:=$(filter-out $(BROKEN),$(DZN_FILES))
+LANGUAGES:=$(ALL_LANGUAGES)
+include make/files.make
+
+##DZN_FILES:=$(CDIR)Alarm.dzn $(CDIR)Comp.dzn $(CDIR)Reply.dzn $(CDIR)Handle.dzn $(CDIR)SynchronousOut.dzn
+#DZN_FILES:=$(CDIR)Handle.dzn #$(CDIR)Comp.dzn $(CDIR)Reply.dzn
+$(foreach lang,$(CODE_LANGUAGES) run,\
+	$(foreach i,$(filter-out $(BROKEN_$(lang)),$(DZN_FILES)),\
+		$(eval LOCAL_TRACE_ILLEGAL:=--illegal)\
+		$(eval LOCAL_LANGUAGE:=$(lang))\
+		$(eval LOCAL_DZN_FILES:=$(i))\
+		$(eval include make/common.make)\
+		$(eval include make/triangle.make)\
+		$(eval include make/reset.make)))
+DZN_FILES:=

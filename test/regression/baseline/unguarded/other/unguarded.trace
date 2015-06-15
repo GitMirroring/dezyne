@@ -1,0 +1,6 @@
+<external>..calibrate -> sut.ctrl.calibrate
+x.calibrate
+x.return
+y.calibrate
+y.return
+sut.ctrl.return -> <external>..return

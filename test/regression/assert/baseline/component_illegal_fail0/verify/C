@@ -1,0 +1,26 @@
+verify: I: check: completeness: ok
+
+verify: I: check: deadlock: ok
+
+verify: I: check: livelock: ok
+
+verify: C: check: deterministic: ok
+
+verify: C: check: completeness: ok
+
+verify: C: check: illegal: fail
+i.e
+ii.e
+ii.return
+
+verify: C: check: deadlock: fail
+i.e
+ii.e
+ii.return
+
+verify: C: check: compliance: fail
+i.e
+ii.e
+ii.return
+
+verify: C: check: livelock: ok

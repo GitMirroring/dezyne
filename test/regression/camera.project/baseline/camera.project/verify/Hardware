@@ -1,0 +1,5 @@
+verify: IHardware: check: completeness: ok
+
+verify: IHardware: check: deadlock: ok
+
+verify: IHardware: check: livelock: ok

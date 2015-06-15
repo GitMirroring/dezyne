@@ -1,0 +1,188 @@
+// Dezyne --- Dezyne command line tools
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+component FeedConvey
+{
+  provides IFeed ctrl;
+  requires IFeed feeder;
+  requires IConvey conveyor;
+
+  behaviour 
+  {
+    enum State { Lost, Calibrating, Idle, Preparing, Prepared };
+    enum FeedPhase { None, Feeding, ConveyingNext, ConveyingLast };
+    State s = State.Lost;
+    FeedPhase p = FeedPhase.None;
+    [s.Lost]
+    {
+      on ctrl.stop():
+      {
+        feeder.stop();
+        conveyor.stop();
+        s = State.Lost;
+        p = FeedPhase.None;
+      }
+      on ctrl.calibrate():
+      {
+        feeder.calibrate();
+        s = State.Calibrating;
+      }
+      on ctrl.produceBall(), feeder.calibrated(), feeder.consumeNextBall(), feeder.consumeLastBall(), conveyor.conveyed():
+      illegal;
+    }
+    [s.Calibrating]
+    {
+      on ctrl.stop():
+      {
+        feeder.stop();
+        conveyor.stop();
+        s = State.Lost;
+        p = FeedPhase.None;
+      }
+      on ctrl.calibrate(), ctrl.produceBall(), feeder.consumeNextBall(), feeder.consumeLastBall(), conveyor.conveyed():
+      illegal;
+      on feeder.calibrated():
+      {
+        ctrl.calibrated();
+        s = State.Idle;
+      }
+    }
+    [s.Idle]
+    {
+      on ctrl.stop():
+      {
+        feeder.stop();
+        conveyor.stop();
+        s = State.Lost;
+        p = FeedPhase.None;
+      }
+      on ctrl.calibrate(), feeder.calibrated(), feeder.consumeNextBall(), feeder.consumeLastBall(), conveyor.conveyed():
+      illegal;
+      on ctrl.produceBall():
+      {
+        feeder.produceBall();
+        s = State.Preparing;
+        p = FeedPhase.Feeding;
+      }
+    }
+    [s.Preparing]
+    {
+      on ctrl.stop():
+      {
+        feeder.stop();
+        conveyor.stop();
+        s = State.Lost;
+        p = FeedPhase.None;
+      }
+      on ctrl.calibrate(), ctrl.produceBall():
+      illegal;
+      on feeder.calibrated():
+      {
+        [true]
+        illegal;
+        [p.ConveyingNext]
+        illegal;
+        [p.ConveyingLast]
+        illegal;
+      }
+      on feeder.consumeNextBall():
+      {
+        [p.Feeding]
+        {
+          conveyor.convey();
+          p = FeedPhase.ConveyingNext;
+        }
+        [p.ConveyingNext]
+        illegal;
+        [p.ConveyingLast]
+        illegal;
+      }
+      on feeder.consumeLastBall():
+      {
+        [p.Feeding]
+        {
+          conveyor.convey();
+          p = FeedPhase.ConveyingLast;
+        }
+        [p.ConveyingNext]
+        illegal;
+        [p.ConveyingLast]
+        illegal;
+      }
+      on conveyor.conveyed():
+      {
+        [p.Feeding]
+        illegal;
+        [p.ConveyingNext]
+        {
+          ctrl.consumeNextBall();
+          s = State.Prepared;
+          p = FeedPhase.None;
+        }
+        [p.ConveyingLast]
+        {
+          ctrl.consumeLastBall();
+          s = State.Prepared;
+          p = FeedPhase.None;
+        }
+      }
+    }
+    [s.Prepared]
+    {
+      on ctrl.stop():
+      {
+        feeder.stop();
+        conveyor.stop();
+        s = State.Lost;
+        p = FeedPhase.None;
+      }
+      on ctrl.calibrate(), feeder.calibrated(), feeder.consumeNextBall(), feeder.consumeLastBall(), conveyor.conveyed():
+      illegal;
+      on ctrl.produceBall():
+      {
+        feeder.produceBall();
+        s = State.Preparing;
+        p = FeedPhase.Feeding;
+      }
+    }
+  }
+}
+component FeedPort
+{
+  provides IFeed ctrl;
+  requires IFeed feeder;
+  requires imotor motorHw;
+  requires itouch sensorHw;
+
+  system
+  {
+    FeedConvey bhv;
+    Conveyor conveyor;
+
+    ctrl <=> bhv.ctrl;
+    bhv.conveyor <=> conveyor.ctrl;
+    bhv.feeder <=> feeder;
+    conveyor.motorHw <=> motorHw;
+    conveyor.sensorHw <=> sensorHw;
+  }
+}
+

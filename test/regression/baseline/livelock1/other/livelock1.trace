@@ -1,0 +1,2 @@
+<external>..dummy -> sut.n.dummy
+sut.n.return -> <external>..return

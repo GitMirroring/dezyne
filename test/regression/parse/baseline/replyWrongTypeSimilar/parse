@@ -1,0 +1,1 @@
+replyWrongTypeSimilar.dzn:20:7: Well-formedness error: Reply expression type does not match return type of Event: activate

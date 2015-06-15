@@ -1,0 +1,5 @@
+verify: II: check: completeness: ok
+
+verify: II: check: deadlock: ok
+
+verify: II: check: livelock: ok

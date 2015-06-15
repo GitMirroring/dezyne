@@ -1,0 +1,17 @@
+verify: IExternTop: check: completeness: ok
+
+verify: IExternTop: check: deadlock: ok
+
+verify: IExternTop: check: livelock: ok
+
+verify: ExternTop: check: deterministic: ok
+
+verify: ExternTop: check: completeness: ok
+
+verify: ExternTop: check: illegal: ok
+
+verify: ExternTop: check: deadlock: ok
+
+verify: ExternTop: check: compliance: ok
+
+verify: ExternTop: check: livelock: ok

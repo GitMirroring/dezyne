@@ -1,0 +1,149 @@
+// Dezyne --- Dezyne command line tools
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ITouchSense
+{
+  enum TouchState { Pressed, Released };
+  in TouchState enable();
+  out void pressed();
+  out void released();
+  in void disable();
+
+  behaviour 
+  {
+    bool disabled = true;
+    TouchState ts = TouchState.Released;
+    on enable:
+    {
+      [!disabled]
+      illegal;
+      [disabled]
+      {
+        ts = TouchState.Pressed;
+        reply(ts);
+        disabled = false;
+      }
+      [disabled]
+      {
+        ts = TouchState.Released;
+        reply(ts);
+        disabled = false;
+      }
+    }
+    on disable:
+    {
+      [!disabled]
+      disabled = true;
+      [disabled]
+      {
+      }
+    }
+    on inevitable:
+    {
+      [!disabled]
+      [ts.Released]
+      {
+        ts = TouchState.Pressed;
+        pressed;
+      }
+      [!disabled]
+      [ts.Pressed]
+      {
+        ts = TouchState.Released;
+        released;
+      }
+    }
+  }
+}
+component TouchSense
+{
+  provides ITouchSense ctrl;
+  requires itimer timer;
+  requires itouch sensor;
+
+  behaviour 
+  {
+    ITouchSense.TouchState previous = ITouchSense.TouchState.Released;
+    itimer.milliseconds_t time = $50$;
+    bool disabled = true;
+    ITouchSense.TouchState getStatus()
+    {
+      itouch.status val = sensor.detect();
+      if (val == itouch.status.released)
+      return ITouchSense.TouchState.Released;
+      else
+      return ITouchSense.TouchState.Pressed;
+    }
+
+    on ctrl.disable():
+    {
+      [previous.Released || previous.Pressed]
+      {
+        timer.cancel();
+        disabled = true;
+      }
+    }
+    on ctrl.enable():
+    {
+      [previous.Released || previous.Pressed]
+      [disabled]
+      {
+        previous = getStatus();
+        timer.create(time);
+        disabled = false;
+        reply(previous);
+      }
+      [previous.Released || previous.Pressed]
+      [!disabled]
+      illegal;
+    }
+    on timer.timeout():
+    {
+      [previous.Released || previous.Pressed]
+      [disabled]
+      illegal;
+      [previous.Released || previous.Pressed]
+      [!disabled]
+      {
+        ITouchSense.TouchState current = getStatus();
+        previous = current;
+        timer.create(time);
+      }
+    }
+  }
+}
+component TouchSensor
+{
+  provides ITouchSense ctrl;
+  requires itouch hw;
+
+  system
+  {
+    timer pollTimer;
+    TouchSense bhv;
+
+    ctrl <=> bhv.ctrl;
+    bhv.timer <=> pollTimer.port;
+    bhv.sensor <=> hw;
+  }
+}
+

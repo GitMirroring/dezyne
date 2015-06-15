@@ -1,0 +1,17 @@
+verify: IDataparam: check: completeness: ok
+
+verify: IDataparam: check: deadlock: ok
+
+verify: IDataparam: check: livelock: ok
+
+verify: proxy: check: deterministic: ok
+
+verify: proxy: check: completeness: ok
+
+verify: proxy: check: illegal: ok
+
+verify: proxy: check: deadlock: ok
+
+verify: proxy: check: compliance: ok
+
+verify: proxy: check: livelock: ok

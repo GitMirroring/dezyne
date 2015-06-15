@@ -1,0 +1,7 @@
+verify: I: check: completeness: ok
+
+verify: I: check: deadlock: ok
+
+verify: I: check: livelock: fail
+I.e
+I.return

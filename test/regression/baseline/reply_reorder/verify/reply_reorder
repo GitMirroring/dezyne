@@ -1,0 +1,23 @@
+verify: Provides: check: completeness: ok
+
+verify: Provides: check: deadlock: ok
+
+verify: Provides: check: livelock: ok
+
+verify: Requires: check: completeness: ok
+
+verify: Requires: check: deadlock: ok
+
+verify: Requires: check: livelock: ok
+
+verify: reply_reorder: check: deterministic: ok
+
+verify: reply_reorder: check: completeness: ok
+
+verify: reply_reorder: check: illegal: ok
+
+verify: reply_reorder: check: deadlock: ok
+
+verify: reply_reorder: check: compliance: ok
+
+verify: reply_reorder: check: livelock: ok
