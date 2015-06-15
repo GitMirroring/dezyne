@@ -546,14 +546,19 @@
   (define (enum-type o field)
     (or (and-let* ((decl (var? o))
                    (type (.type decl)))
-                  (if (.scope type)
-                      (snippet 'literal
-                               `((scope ,(.scope type))
-                                 (type ,(.name type))
-                                         (field ,field)))
-                      (snippet 'literal-local
-                               `((type ,(.name type))
-                                 (field ,field)))))
+                  (match (.scope type)
+                    (#f (snippet 'literal-local
+                                 `((type ,(.name type))
+                                   (field ,field))))
+                    ('*global*
+                     (snippet 'literal-global
+                              `((scope . ,(.scope type))
+                                (type ,(.name type))
+                                (field ,field))))
+                    (_ (snippet 'literal
+                                `((scope ,(.scope type))
+                                  (type ,(.name type))
+                                  (field ,field))))))
         ""))
 
   (match o
