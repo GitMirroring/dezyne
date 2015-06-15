@@ -294,7 +294,8 @@
             (apply append
                    (map return-action ((om:collect return-action) o)))))
 
-  (or (and-let* (((is-a? o <statement>))
+  (or (and-let* (((is-a? model <interface>))
+                 ((is-a? o <statement>))
                  (actions (return-actions o))
                  (actions (delete-duplicates actions)))
                 (map ast->dezyne actions))
