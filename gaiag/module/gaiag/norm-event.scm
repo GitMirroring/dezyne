@@ -59,6 +59,7 @@
     passdown-guard
     (remove-otherwise)
     add-skip
+    identity
     )
    o))
 
@@ -108,6 +109,7 @@
                    (append grouped-ons (loop remainder))))))))
      (('functions functions ...) o)
      ((? (is? <ast>)) (om:map (group-ons group?) o))
+     (('skip) o)
      ((h t ...) (map (group-ons group?) o))
      (_ o)))
 
@@ -139,6 +141,7 @@
                      (cons aggregated-guard (loop remainder)))))))))
      (('functions functions ...) o)
      ((? (is? <ast>)) (om:map aggregate-guard-s o))
+     (('skip) o)
      ((h t ...) (map aggregate-guard-s o))
      (_ o)))
 
@@ -150,6 +153,7 @@
   (match o
     (($ <on>) ((passdown-triggers (.triggers o)) (.statement o)))
     ((? (is? <ast>)) (om:map combine-ons o))
+    (('skip) o)
     ((h t ...) (map combine-ons o))
     (_ o)))
 
@@ -162,7 +166,9 @@
         (make <triggers> :elements (append triggers (.triggers o)))))
       (.statement o)))
     ((and ('compound s ...) (? om:declarative?))
-     (make <compound> :elements (map (passdown-triggers triggers) s)))
+     (retain-source-properties
+      o
+      (make <compound> :elements (map (passdown-triggers triggers) s))))
     (('compound statements ...)
      (make <on> :triggers triggers :statement o))
     (_
@@ -174,6 +180,7 @@
   (match o
     (($ <guard>) ((passdown-expression (retain-source-properties o (.expression o))) (.statement o)))
     ((? (is? <ast>)) (om:map passdown-guard o))
+    (('skip) o)
     ((h t ...) (map passdown-guard o))
     (_ o)))
 

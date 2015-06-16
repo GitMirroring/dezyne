@@ -54,7 +54,7 @@
 
 (define (remove-skip o)
   (match o
-    (('skip) (make <compound>))
+    (('skip) (retain-source-properties o (make <compound>)))
     ((? (is? <ast>)) (om:map remove-skip o))
     ((h t ...) (map remove-skip o))
     (_ o)))
@@ -91,6 +91,7 @@
                      (cons aggregated-on (loop remainder)))))))))
      (('functions functions ...) o)
      ((? (is? <ast>)) (om:map (aggregate-on aggregate?) o))
+     (('skip) o)
      ((h t ...) (map (aggregate-on aggregate?) o))
      (_ o)))
 
@@ -115,6 +116,7 @@
            o
            (make <compound> :elements ons))))
     ((? (is? <ast>)) (om:map (expand-on compare) o))
+    (('skip) o)
     ((h t ...) (map (expand-on compare) o))
     (_ o)))
 
@@ -161,6 +163,7 @@
                      (cons aggregated-guard (loop remainder)))))))))
     (('functions functions ...) o)
     ((? (is? <ast>)) (om:map aggregate-guard-g o))
+    (('skip) o)
     ((h t ...) (map aggregate-guard-g o))
     (_ o)))
 
@@ -174,6 +177,7 @@
     (($ <guard>)
      ((passdown-expression (.expression o)) (.statement o)))
     ((? (is? <ast>)) (om:map combine-guards o))
+    (('skip) o)
     ((h t ...) (map combine-guards o))
     (_ o)))
 
@@ -191,8 +195,10 @@
       (.statement o)))
     (('compound statements ...)
      (let ((statements statements))
-       (make <compound>
-         :elements (map (passdown-expression expression) statements))))
+       (retain-source-properties
+        o
+        (make <compound>
+          :elements (map (passdown-expression expression) statements)))))
     (_ (make <guard> :expression expression :statement o))))
 
 (define (flatten-compound o)
@@ -205,6 +211,7 @@
             top
             (make <compound> :elements (list top))))))
     ((? (is? <ast>)) (om:map flatten-compound o))
+    (('skip) o)
     ((h t ...) (map flatten-compound o))
     (_ o)))
 
@@ -218,6 +225,7 @@
       (make <compound> :elements 
             (apply append (map flatten-compound-compound statements)))))
     ((? (is? <ast>)) (om:map flatten-compound- o))
+    (('skip) o)
     ((h t ...) (map flatten-compound- o))
     (_ o)))
 
@@ -248,6 +256,7 @@
       o (make <compound>
           :elements (map (annotate-otherwise statements) statements))))
     ((? (is? <ast>)) (om:map (annotate-otherwise statements) o))
+    (('skip) o)
     ((h t ...) (map (annotate-otherwise statements) o))
     (_ o)))
 
@@ -271,6 +280,7 @@
     (('compound statements ...)
      (rsp o (make <compound> :elements (map (remove-otherwise keep-annotated? statements) statements))))
     ((? (is? <ast>)) (om:map (remove-otherwise keep-annotated? statements) o))
+    (('skip) o)
     ((h t ...) (map (remove-otherwise keep-annotated? statements) o))
     (_ o)))
 
@@ -288,7 +298,7 @@
 
 (define (add-skip o)
   (match o
-    (('compound) (list 'skip))
+    (('compound) (retain-source-properties o (list 'skip)))
     ((? (is? <ast>)) (om:map add-skip o))
     ((h t ...) (map add-skip o))
     (_ o)))
