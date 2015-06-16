@@ -31,12 +31,26 @@ class main<R> {
     return string;
   }
 
-  static void log_in(String prefix, String event) {
+  static String consume_synchronous_out_events(EventMap event_map) {
+    main.reader.readLine();
+    String line;
+    while ((line = main.reader.readLine()) != null) {
+      Action a = event_map.get(line);
+      if (a == null) {
+        break;
+      }
+      a.action();
+    }
+    return line;
+  }
+
+  static void log_in(String prefix, String event, EventMap event_map) {
     System.err.println(prefix + event);
+    consume_synchronous_out_events(event_map);
     System.err.println(prefix + "return");
   }
 
-  static void log_out(String prefix, String event) {
+  static void log_out(String prefix, String event, EventMap event_map) {
     System.err.println(prefix + event);
   }
 
@@ -49,21 +63,10 @@ class main<R> {
     return null;
   }
 
-  static <R extends Enum<R>> R get_value(Class<R> E, String prefix) {
-    String s;
-    while ((s = main.reader.readLine()) != null) {
-      R r = string_to_value(E, drop_prefix(s, prefix));
-      if (r != null) {
-        return r;
-      }
-    }
-    System.exit(0);
-    return null;
-  }
-
-  static <R extends Enum <R>> R log_valued(String prefix, String event, Class<R> E, String event_prefix) {
+  static <R extends Enum <R>> R log_valued(String prefix, String event, EventMap event_map, String event_prefix, Class<R> E) {
     System.err.println(prefix + event);
-    R r = get_value(E, event_prefix);
+    String s = consume_synchronous_out_events(event_map);
+    R r = string_to_value(E, drop_prefix(s, event_prefix));
     if (r != null) {
       System.err.println(prefix + r.getClass().getSimpleName() + "_" + E.getEnumConstants()[r.ordinal()]);
     }
@@ -74,12 +77,13 @@ class main<R> {
 
   private static EventMap fillEventMap(final #.model  m) {
   final V<Integer> v = new V<Integer> (0);
+  final EventMap e = new EventMap();
 #(map
     (lambda (port)
     (map (define-on model port #{
-    m.#port .#direction .#event  = new #(action-type return-type formal-types)() {public #return-type  action(#formals) {#(string-if (eq? return-type 'void) #{log_#direction("#port .", "#event ");#}#{return log_valued("#port .", "#event ", #(if (eq? reply-scope '*global*) 'DznGlobal reply-scope).#reply-name .class, "#port .#reply-name _");#})};};
+    m.#port .#direction .#event  = new #(action-type return-type formal-types)() {public #return-type  action(#formals) {#(string-if (eq? return-type 'void) #{log_#direction("#port .", "#event ", e);#}#{return log_valued("#port .", "#event ", e, "#port .#reply-name _", #(if (eq? reply-scope '*global*) 'DznGlobal reply-scope).#reply-name .class);#})};};
 #}) (filter (negate (om:dir-matches? port))
-       (om:events port)))) (om:ports model))     EventMap e = new EventMap();
+       (om:events port)))) (om:ports model))
 #(map
     (lambda (port)
     (map (define-on model port #{

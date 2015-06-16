@@ -162,14 +162,26 @@ class Runtime<R> {
     }
   }
   public static void defer(Component i, Component o, Action f) {
-    if (i == null || (!i.flushes && !o.handling)) {
+    if (!(i != null && i.flushes) && !o.handling) {
       handle(o, f);
     }
     else {
-      i.deferred = o;
       o.q.add(f);
+      if (i != null) {
+        i.deferred = o;
+      }
     }
   }
+  public static <R extends Enum<R>> R valued_helper(Component c, ValuedAction<R> f, Meta m) throws RuntimeException {
+    if (c.handling) {
+      throw new RuntimeException("a valued event cannot be deferred");
+    }
+    c.handling = true;
+    R r = f.action();
+    c.handling = false;
+    flush(c);
+    return r;
+  };
   public static void handle(Component c, Action f) {
     if (!c.handling) {
       c.handling = true;
@@ -183,22 +195,12 @@ class Runtime<R> {
   }
   public static void callIn(Component c, Action f, Meta m) {
     traceIn(m.i, m.e);
-    boolean handle = c.handling;
-    c.handling = true;
-    f.action();
-    c.handling = false;
-    flush(c);
+    handle(c, f);
     traceOut(m.i, "return");
   }
   public static <R extends Enum<R>> R callIn(Component c, ValuedAction<R> f, Meta m) throws RuntimeException {
     traceIn(m.i, m.e);
-    if (c.handling) {
-      throw new RuntimeException("a valued event cannot be deferred");
-    }
-    c.handling = true;
-    R r = f.action();
-    c.handling = false;
-    flush(c);
+    R r = valued_helper(c, f, m);
     traceOut(m.i, r.getClass().getSimpleName() + "_" + r.name());
     return r;
   };

@@ -21,9 +21,10 @@
     "              :name '" (.name port) "\n"
     "              :self o")
       (map (define-on model port #{#'()
-              :#event  (lambda (. args) (call-in o (lambda () (apply #port -#event  (cons o args))) `(,(.#port  o) #event #(string-if (not (eq? 'void return-type)) #{  #reply-name  ,#(*scope* reply-scope)-#reply-name -alist#}))))#})
+              :#event  (lambda (. args) (#(string-if (eq? return-type 'void) "" "r")call-in o (lambda () (apply #port -#event  (cons o args))) `(,(.#port  o) #event #(string-if (not (eq? 'void return-type)) #{  #reply-name  ,#(*scope* reply-scope)-#reply-name -alist#}))))#})
     (filter om:in? (om:events port)))
-    (list ")))")))
+    (list ")\n"
+     "       :out (make <" (.type port) ".out>)))")))
     (filter om:provides? (om:ports model)))#
 (map
     (lambda (port)
@@ -34,6 +35,7 @@
     "\n"
     "  (set! (." (.name port) " o)\n"
     "     (make <"(.type port)">\n"
+    "       :in (make <" (.type port) ".in>)\n"
     "       :out (make <" (.type port) ".out>\n"
     "              :name '" (.name port) "\n"
     "              :self o")

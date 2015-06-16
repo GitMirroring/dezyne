@@ -52,17 +52,17 @@ class Runtime:
             if (not self.info[t].handling):
                 self.flush (t)
     def defer (self, i, o, f):
-        if (not i or (not self.info[i].flushes and not self.info[o].handling)):
+        if (not (i and self.info[i].flushes) and not self.info[o].handling):
             self.handle (o, f)
         else:
-            self.info[i].deferred = o
             self.info[o].q.insert (0, f)
+            if i:
+                self.info[i].deferred = o
     def valued_helper (self, c, f, m):
-        handle = self.info[c].handling
+        if (self.info[c].handling):
+            raise Exception ('a valued event cannot be deferred')
         self.info[c].handling = True
         r = f ()
-        if (handle and r != None):
-            throw ('a valued event cannot be deferred')
         self.info[c].handling = False
         self.flush (c)
         return r
@@ -73,7 +73,7 @@ class Runtime:
             self.info[c].handling = False
             self.flush (c)
         else:
-            throw ('component already handling an event')
+            raise Exception ('component already handling an event')
 
 class Port:
     def __init__ (self, name='', component=None):
@@ -96,8 +96,13 @@ class Info:
 
 def call_in (c, f, m):
     trace_in (m[0], m[1])
+    c.rt.handle (c, f)
+    trace_out (m[0], 'return')
+
+def rcall_in (c, f, m):
+    trace_in (m[0], m[1])
     r = c.rt.valued_helper (c, f, m)
-    trace_out (m[0], 'return' if r == None else m[2][r])
+    trace_out (m[0], m[2][r])
     return r
 
 def call_out (c, f, m):

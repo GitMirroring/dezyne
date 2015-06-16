@@ -3,47 +3,54 @@
       (substring string (string-length prefix))
       string))
 
-(define (log-in prefix event)
+(define (consume_synchronous_out_events event-alist)
+  (read-line)
+  (let loop ((line (read-line)))
+    (and-let* ((line line) 
+               ((not (eof-object? line)))
+               (event (assoc-ref event-alist (string->symbol line))))
+              (event)
+              (loop (read-line)))
+    line))
+
+(define (log-in prefix event event-alist)
   (stderr "~a~a\n" prefix event)
-  (stderr "~a~a\n" prefix 'return))
+  (consume_synchronous_out_events event-alist)
+  (stderr "~a~a\n" prefix 'return)
+  ##f)
 
-(define (log-out prefix event)
-  (stderr "~a~a\n" prefix event))
-
-(define (get-value string->value)
-  (let loop ((r ##f))
-    (or r
-        (let ((line (read-line)))
-          (if (eof-object? line) (exit 0))
-          (loop (string->value line))))))
-
-(define (log-valued prefix event string->value value->symbol)
+(define (log-out prefix event event-alist)
   (stderr "~a~a\n" prefix event)
-  (let ((r (get-value string->value)))
+  ##f)
+
+(define (log-valued prefix event event-alist string->value value->symbol)
+  (stderr "~a~a\n" prefix event)
+  (let* ((s (consume_synchronous_out_events event-alist))
+         (r (string->value s)))
     (if r
         (and (stderr "~a~a\n" prefix (value->symbol r))
              r)
-        0)))
+        ##f)))
 
 (define (fill-event-alist o)
-#(map
-    (lambda (port)
-    (map (define-on model port #{
-    (set! (.#event  (.#direction  (.#port  o)))
-      (lambda (. args)#
+  (let ((e `(#
+     (map
+        (lambda (port)
+          (map (define-on model port #{#'()
+             (#port .#event  . ,(.#event  (.#direction  (.#port  o))))#})
+     (filter (om:dir-matches? port)
+     (om:events port)))) (om:ports model)))))
+    #(map
+      (lambda (port)
+        (map (define-on model port #{
+      (set! (.#event  (.#direction  (.#port  o)))
+       (lambda (. args)#
         (string-if (eq? return-type 'void) #{#'()
-        (log-#direction "#port ." '#event)#}#{#'()
-        (log-valued "#port ." '#event (lambda (s) (assoc-ref #interface -#reply-name -alist (string->symbol (drop-prefix s "#port .#reply-name _")))) (lambda (r) (symbol-append '#reply-name _ (assoc-xref #interface -#reply-name -alist r))))#})))
+      (log-#direction  "#port ." '#event  e)#}#{#'()
+    (log-valued "#port ." '#event  e (lambda (s) (assoc-ref #(if (eq? reply-scope '*global*) 'global reply-scope) -#reply-name -alist (string->symbol (drop-prefix s "#port .#reply-name _")))) (lambda (r) (symbol-append '#reply-name _ (assoc-xref #(if (eq? reply-scope '*global*) 'global reply-scope) -#reply-name -alist r))))#})))
 #})
-          (filter (negate (om:dir-matches? port))
-            (om:events port)))) (om:ports model))
-    `(#
-(map
-    (lambda (port)
-    (map (define-on model port #{#'()
-      (#port .#event  . ,(.#event  (.#direction  (.#port  o))))#})
-    (filter (om:dir-matches? port)
-       (om:events port)))) (om:ports model))))
+                (filter (negate (om:dir-matches? port))
+                        (om:events port)))) (om:ports model))       e))
 
 (define (main . args)
   (let* ((print-illegal (lambda () (stderr "illegal\n") (exit 0)))
@@ -53,8 +60,7 @@
          (event-alist (fill-event-alist sut)))
     (while (and-let*
             ((line (read-line))
-             ((not (eof-object? line)))
-             (event (string->symbol line)))
-            (and-let* ((event (assoc-ref event-alist (string->symbol line))))
-                      (event))
-            ##t))))
+             ((not (eof-object? line))))
+            (or (and-let* ((event (assoc-ref event-alist (string->symbol line))))
+                          (event))
+                ##t)))))

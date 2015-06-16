@@ -31,7 +31,7 @@ class #.model  (runtime.Component):
    (map
     (lambda (port)
       (map (define-on model port #{
-        self.#port .#direction port.#event  = lambda *args: runtime.call_in (self, lambda: self.#port _#event  (*args), (self.#port , '#event '#(string-if (not (eq? type 'void))#{, self.#port .#reply-name _to_string#})))
+        self.#port .#direction port.#event  = lambda *args: runtime.#(string-if (eq? return-type 'void) "" "r")call_in (self, lambda: self.#port _#event  (*args), (self.#port , '#event '#(string-if (not (eq? type 'void))#{, self.#port .#reply-name _to_string#})))
 #}) (filter om:in? (om:events port))))
     (filter om:provides? (om:ports model)))#
    (map

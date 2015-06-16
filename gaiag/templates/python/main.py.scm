@@ -13,43 +13,48 @@ def drop_prefix (string, prefix):
         return string[len(prefix):]
     return string
 
-def log_in (prefix, event):
+def consume_synchronous_out_events (event_map):
+    sys.stdin.readline ()
+    event = sys.stdin.readline ().strip ()
+    while event:
+        if event not in event_map.keys ():
+            break
+        event_map[event] ()
+        event = sys.stdin.readline ().strip ()
+    return event
+
+def log_in (prefix, event, event_map):
     sys.stderr.write (prefix + event + '\n')
+    consume_synchronous_out_events (event_map)
     sys.stderr.write (prefix + 'return' + '\n')
 
-def log_out (prefix, event):
+def log_out (prefix, event, event_map):
     sys.stderr.write (prefix + event + '\n')
 
-def get_value (string_to_value):
-    while True:
-        s = sys.stdin.readline ().strip ()
-        if not s:
-            return 0
-        r = string_to_value (s)
-        if (r != None):
-            return r
-
-def log_valued (prefix, event, string_to_value, value_to_string):
+def log_valued (prefix, event, event_map, string_to_value, value_to_string):
     sys.stderr.write (prefix + event + '\n')
-    r = get_value (string_to_value)
+    s = consume_synchronous_out_events (event_map)
+    r = string_to_value(s)
     if (r != None):
         sys.stderr.write (prefix + value_to_string[r] + '\n')
         return r
-    return 0
+    raise Exception ('"%s" is not a reply value' % s)
 
 def #.model _fill_event_map (m):
-#(map
-    (lambda (port)
-    (map (define-on model port #{
-    m.#port .#direction port.#event  = lambda *args: #(string-if (eq? return-type 'void) #{log_#direction ('#port .', '#event ')#}#{log_valued ('#port .', '#event ', lambda s: dezyne.#interface .#reply-name .__dict__.get (drop_prefix(s, '#port .#reply-name _'), None), dezyne.#interface .#reply-name _to_string)#})
-#}) (filter (negate (om:dir-matches? port))
-       (om:events port)))) (om:ports model))     return {
+    e = {
 #(map
     (lambda (port)
     (map (define-on model port #{
         '#port .#event ': m.#port .#direction port.#event ,
 #}) (filter (om:dir-matches? port)
        (om:events port)))) (om:ports model))     }
+#(map
+    (lambda (port)
+    (map (define-on model port #{
+    m.#port .#direction port.#event  = lambda *args: #(string-if (eq? return-type 'void) #{log_#direction ('#port .', '#event ', e)#}#{log_valued ('#port .', '#event ', e, lambda s: dezyne.#interface .#reply-name .__dict__.get (drop_prefix(s, '#port .#reply-name _'), None), dezyne.#interface .#reply-name _to_string)#})
+#}) (filter (negate (om:dir-matches? port))
+       (om:events port)))) (om:ports model))     return e
+    return e
 
 def main ():
     def illegal ():

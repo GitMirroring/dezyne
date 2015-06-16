@@ -1,4 +1,0 @@
-<external>..authenticate -> sut.dezyneApplication.iDezyne.authenticate
-userDB.checkUser
-userDB.return
-sut.dezyneApplication.iDezyne.return -> <external>..return

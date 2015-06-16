@@ -65,13 +65,26 @@ function runtime(illegal) {
   };
 
   this.defer = function(i, o, f) {
-    if(!i || (!i.flushes && !o.handling)) {
+    if(!(i && i.flushes) && !o.handling) {
       this.handle(o, f);
     }
     else {
-      i.deferred = o;
       o.queue = [f].concat (o.queue || []);
+      if (i) {
+        i.deferred = o;
+      }
     }
+  };
+
+  this.valued_helper = function(c, f, m) {
+    if (c.handling) {
+      throw 'runtime error: a valued event cannot be deferred';
+    }
+    c.handling = true;
+    var r = f();
+    c.handling = false;
+    this.flush(c);
+    return r;
   };
 
   this.handle = function(c, f) {
@@ -84,7 +97,7 @@ function runtime(illegal) {
       this.flush(c);
     }
     else {
-      throw 'component already handling an event';
+      throw 'runtime error: component already handling an event';
     }
   };
 
@@ -100,15 +113,14 @@ function runtime(illegal) {
 
   this.call_in = function(c, f, m) {
     this.trace_in(m, m[1]);
-    var handle = c.handling;
-    c.handling = true;
-    var r = f();
-    if (handle) {
-      throw 'a valued event cannot be deferred';
-    }
-    c.handling = false;
-    this.flush(c);
-    this.trace_out(m, r === undefined ? 'return' : m[2][r]);
+    this.handle(c, f);
+    this.trace_out(m, 'return');
+  }
+
+  this.rcall_in = function(c, f, m) {
+    this.trace_in(m, m[1]);
+    var r = this.valued_helper(c, f, m);
+    this.trace_out(m, m[2][r]);
     return r;
   };
 
@@ -131,11 +143,14 @@ function locator (services) {
     return this.services[this.key(o, key)];
   };
   this.clone = function() {
-    c = {}
-    Object.keys(this.services).forEach(function (k,v) {c[k]=v;});
-    return new dezyne.locator(c);
+    return new dezyne.locator(extend({}, this.services));
   };
 };
+
+function extend (o, u) {
+  Object.keys(u).forEach(function (k,v,x) {o[k]=u[k];});
+  return o;
+}
 
 function connect(provided, required) {
   provided.out = required.out;

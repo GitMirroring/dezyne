@@ -35,12 +35,25 @@ class main {
     return str;
   }
 
-  static void log_in(String prefix, String e) {
+  static String consume_synchronous_out_events(EventMap event_map) {
+    System.Console.ReadLine();
+    String line;
+    while ((line = System.Console.ReadLine()) != null) {
+      if (!event_map.ContainsKey(line)) {
+        break;
+      }
+      event_map[line]();
+    }
+    return line;
+  }
+
+  static void log_in(String prefix, String e, EventMap event_map) {
     System.Console.Error.WriteLine(prefix + e);
+    consume_synchronous_out_events(event_map);
     System.Console.Error.WriteLine(prefix + "return");
   }
 
-  static void log_out(String prefix, String e) {
+  static void log_out(String prefix, String e, EventMap event_map) {
     System.Console.Error.WriteLine(prefix + e);
   }
 
@@ -53,21 +66,10 @@ class main {
     return null;
   }
 
-  static R? get_value<R>(String prefix) where R: struct, IComparable, IConvertible, IFormattable {
-    String s;
-    while ((s = System.Console.ReadLine()) != null) {
-      R? r = string_to_value<R>(drop_prefix(s, prefix));
-      if (r != null) {
-        return r;
-        }
-    }
-    Environment.Exit(0);
-    return null;
-  }
-
-  static R log_valued<R>(String prefix, String e, String event_prefix) where R: struct, IComparable, IConvertible, IFormattable {
+  static R log_valued<R>(String prefix, String e, EventMap event_map, String event_prefix) where R: struct, IComparable, IConvertible, IFormattable {
     System.Console.Error.WriteLine(prefix + e);
-    R? r = get_value<R>(event_prefix);
+    String s = consume_synchronous_out_events(event_map);
+    R? r = string_to_value<R>(drop_prefix(s, event_prefix));
     if (r != null) {
       System.Console.Error.WriteLine(prefix + typeof(R).Name + "_" + r.ToString());
       return (R)r;
@@ -80,12 +82,13 @@ class main {
 
   private static EventMap fillEventMap(#.model  m) {
   V<int> v = new V<int> (0);
+  EventMap e = new EventMap();
 #(map
     (lambda (port)
     (map (define-on model port #{
-    m.#port .#direction port.#event  = (#formals) => {#(string-if (eq? return-type 'void) #{log_#direction("#port .", "#event ");#}#{return log_valued<#(if (eq? reply-scope '*global*) 'DznGlobal reply-scope).#reply-name >("#port .", "#event ", "#port .#reply-name _");#})};
+    m.#port .#direction port.#event  = (#formals) => {#(string-if (eq? return-type 'void) #{log_#direction("#port .", "#event ", e);#}#{return log_valued<#(if (eq? reply-scope '*global*) 'DznGlobal reply-scope).#reply-name >("#port .", "#event ", e, "#port .#reply-name _");#})};
 #}) (filter (negate (om:dir-matches? port))
-       (om:events port)))) (om:ports model))     EventMap e = new EventMap();
+       (om:events port)))) (om:ports model))
 #(map
     (lambda (port)
     (map (define-on model port #{

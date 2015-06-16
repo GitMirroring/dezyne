@@ -115,13 +115,25 @@ public class Runtime {
     }
   }
   public static void defer(Component i, Component o, Action f) {
-    if (i == null || (!i.flushes && !o.handling)) {
+    if (!(i !=null && i.flushes) && !o.handling) {
       handle(o, f);
     }
     else {
-      i.deferred = o;
       o.q.Enqueue(f);
+      if (i != null) {
+        i.deferred = o;
+      }
     }
+  }
+  public static R valued_helper<I,O,R>(Component c, Func<R> f, Meta<I,O> m) where I: Interface<I,O>.In where O : Interface<I,O>.Out where R : struct, IComparable, IConvertible, IFormattable {
+    if (c.handling) {
+      throw new RuntimeException("a valued event cannot be deferred");
+    }
+    c.handling = true;
+    R r = f();
+    c.handling = false;
+    flush(c);
+    return r;
   }
   public static void handle(Component c, Action f) {
     if (!c.handling) {
@@ -136,21 +148,12 @@ public class Runtime {
   }
   public static void callIn<I,O>(Component c, Action f, Meta<I,O> m) where I: Interface<I,O>.In where O : Interface<I,O>.Out {
     traceIn(m.i, m.e);
-    c.handling = true;
-    f();
-    c.handling = false;
-    flush(c);
+    handle(c, f);
     traceOut(m.i, "return");
   }
   public static R callIn<I,O,R>(Component c, Func<R> f, Meta<I,O> m) where I: Interface<I,O>.In where O : Interface<I,O>.Out where R : struct, IComparable, IConvertible, IFormattable {
     traceIn(m.i, m.e);
-    if (c.handling) {
-      throw new RuntimeException("a valued event cannot be deferred");
-    }
-    c.handling = true;
-    R r = f();
-    c.handling = false;
-    flush(c);
+    R r = valued_helper(c, f, m);
     traceOut(m.i, r.GetType().Name + "_" + Enum.GetName(r.GetType(),r));
     return r;
   }

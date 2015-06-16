@@ -13,8 +13,3 @@
   (#name  :accessor .#name  :init-value ##f :init-keyword :#name)#})
   (filter om:out? ((compose .elements .events) model))))
 (define-class <#.interface > (<interface>))
-
-(define-method (initialize (o <#.model >) args)
-  (set! (.in o) (make <#.model .in>))
-  (set! (.out o) (make <#.model .out>))
-  (next-method))

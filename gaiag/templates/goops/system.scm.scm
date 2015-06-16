@@ -13,7 +13,7 @@
             (name (symbol))
             (parent ##f)
             #((->join "\n            ")
- (map (init-bind model #{(#port .#edir  (make <#interface .out>))#})
+ (map (init-bind model #{(#port .#edir  (make <#interface .#edir >))#})
       (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model))))))#
 (map (init-instance #{#'()
   (set! (.#name  o) (make <#component > :locator (.locator o) :parent o :name '#name))#})

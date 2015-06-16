@@ -15,6 +15,7 @@ typedef struct {
   void *self;
 } closure;
 
+map* global_event_map;
 
 int config(char* s) {
 	(void)s;
@@ -41,32 +42,35 @@ char* drop_prefix(char* string, char* prefix) {
 	return string;
 }
 
-void log_in(char* prefix, char* event) {
+char* consume_synchronous_out_events(map* event_map) {
+        read_line();
+	char* line;
+	while ((line = read_line()) != 0) {
+		void *p = 0;
+		if (map_get(event_map, line, &p)) break;
+                closure *c = p;
+                c->f(c->self);
+		free(line);
+    	}
+        return line;
+}
+
+void log_in(char* prefix, char* event, map* event_map) {
         fprintf(stderr, "%s%s\n", prefix, event);
+        consume_synchronous_out_events(event_map);
         fprintf(stderr, "%s%s\n", prefix, "return");
 }
 
-void log_out(char* prefix, char* event) {
+void log_out(char* prefix, char* event, map* event_map) {
+	(void)event_map;
         fprintf(stderr, "%s%s\n", prefix, event);
 }
 
-int get_value(int (*string_to_value)(char*), char* event_prefix) {
-	char* line;
-	while ((line = read_line()) != 0) {
-		int r = string_to_value(drop_prefix(line, event_prefix));
-		free(line);
-		if (r != -1) {
-			return r;
-		}
-	}
-	exit(0);
-        return 0;
-}
-
-int log_valued(char* prefix, char* event, int (*string_to_value)(char*), char* event_prefix, char* (*value_to_string)(int))
+int log_valued(char* prefix, char* event, map* event_map, int (*string_to_value)(char*), char* (*value_to_string)(int))
 {
         fprintf(stderr, "%s%s\n", prefix, event);
-	int r = get_value(string_to_value, event_prefix);
+        char* s = consume_synchronous_out_events(event_map);
+	int r = string_to_value(drop_prefix(s, prefix));
 	if ((int)r != -1) {
 		fprintf(stderr, "%s%s\n", prefix, value_to_string(r));
 		return r;
@@ -83,8 +87,8 @@ int log_valued(char* prefix, char* event, int (*string_to_value)(char*), char* e
    #(string-if (not (eq? type 'void)) #{int#} #{void#})  #.model _log_event_#port _#direction _#event (#interface * m) {
    (void)m;
    #(string-if (eq? return-type 'void) #{
-   log_#direction("#port .", "#event ");#}#{
-   return log_valued("#port .", "#event ", string_to_#(*scope* reply-scope)_#reply-name , "#port .", #(*scope* reply-scope)_#reply-name _to_string);#})}
+   log_#direction("#port .", "#event ", global_event_map);#}#{
+   return log_valued("#port .", "#event ", global_event_map, string_to_#(*scope* reply-scope)_#reply-name , #(*scope* reply-scope)_#reply-name _to_string);#})}
 #}) (filter (negate (om:dir-matches? port))
        (om:events port)))) (om:ports model))
 void #.model _fill_event_map(#.model * m, map* e) {
@@ -125,6 +129,7 @@ int main() {
 
 	map event_map;
 	map_init(&event_map);
+        global_event_map = &event_map;
 	#.model _fill_event_map(&sut, &event_map);
 
 	char* line;

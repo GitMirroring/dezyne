@@ -37,25 +37,19 @@ BROKEN:=\
  regression/hide.dzn\
  regression/BrokenComp.dzn\
 
-# int32_t
+# error: Reply5: variable s is already defined in method i_done()
 BROKEN_cs:=\
- regression/Handle.dzn\
  regression/Reply5.dzn\
 
 # c++ is main language, can never be broken
-# int32_t
+
 # error: Reply5: variable s is already defined in method i_done()
 BROKEN_java:=\
- regression/Handle.dzn\
  regression/Reply5.dzn\
 
 # function function()
 BROKEN_javascript:=\
- regression/Handle.dzn\
  regression/function.dzn\
-
-BROKEN_python:=\
- regression/Handle.dzn\
 
 # TypeError: Cannot call method 'replace' of undefined
 BROKEN_trace:=\
@@ -63,17 +57,14 @@ BROKEN_trace:=\
 
 BROKEN_verify:=
 
-out/Handle/c++/Handle.o: CXXFLAGS:=-std=c++11 -include MachineConstants.hh $(CXXFLAGS)
-out/Handle/c++03/Handle.o: CXXFLAGS:=-std=c++0x -include MachineConstants.hh $(CXXFLAGS)
-
 DZN_FILES:=$(wildcard $(CDIR)*.dzn)
 DZN_FILES:=$(filter-out $(BROKEN),$(DZN_FILES))
 LANGUAGES:=$(ALL_LANGUAGES)
 include make/files.make
 
 ##DZN_FILES:=$(CDIR)Alarm.dzn $(CDIR)Comp.dzn $(CDIR)Reply.dzn $(CDIR)Handle.dzn $(CDIR)SynchronousOut.dzn
-#DZN_FILES:=$(CDIR)Handle.dzn #$(CDIR)Comp.dzn $(CDIR)Reply.dzn
-$(foreach lang,$(CODE_LANGUAGES) run,\
+DZN_FILES:=$(CDIR)Handle.dzn #$(CDIR)Comp.dzn $(CDIR)Reply.dzn
+$(foreach lang,$(CODE_LANGUAGES) $(filter run,$(PSEUDO_LANGUAGES)),\
 	$(foreach i,$(filter-out $(BROKEN_$(lang)),$(DZN_FILES)),\
 		$(eval LOCAL_TRACE_ILLEGAL:=--illegal)\
 		$(eval LOCAL_LANGUAGE:=$(lang))\

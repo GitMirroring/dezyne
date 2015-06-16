@@ -22,15 +22,15 @@
 
 interface IHandle
 {
-	in void calibrate();
-	out void calibrated();
+  in void calibrate();
+  out void calibrated();
   in void stop();
 
-	in void operate(); // start next batch
-	out void finished(); // batch finished
+  in void operate(); // start next batch
+  out void finished(); // batch finished
 
-	behaviour
-	{
+  behaviour
+  {
     enum State {Lost, Calibrating, Idle, Operating};
     State s = State.Lost;
 
@@ -42,7 +42,7 @@ interface IHandle
       on calibrate: {calibrated; s = State.Idle;}
       on operate: illegal;
       on operate: {}
-		}
+    }
     [s.Calibrating]
     {
       on calibrate: illegal;
@@ -66,12 +66,12 @@ interface IHandle
       on operate: {}
       on inevitable: {s = State.Idle; finished;}
     }
-	}
+  }
 }
 
 interface ITransfer
 {
-  extern TrPosition $int32_t$;
+  extern TrPosition $int$;
 
   in void calibrate();
   out void calibrated();
@@ -83,8 +83,8 @@ interface ITransfer
   out void picked();
   out void placed();
 
-	behaviour
-	{
+  behaviour
+  {
     enum State {Lost, Calibrating, Ready, Moving, Transferring};
     State s = State.Lost;
     bool isPicked = false;
@@ -96,15 +96,15 @@ interface ITransfer
       on calibrate: s = State.Calibrating;
       on calibrate: {calibrated; s = State.Ready;}
       on move, transfer: illegal;
-		}
-		[s.Calibrating]
-		{
+    }
+    [s.Calibrating]
+    {
       on inevitable: {calibrated; s = State.Ready;}
 
       on calibrate, move, transfer: illegal;
-		}
-		[s.Ready]
- 		{
+    }
+    [s.Ready]
+    {
       on move: s = State.Moving;
       on move: arrived;
 
@@ -113,21 +113,21 @@ interface ITransfer
       on transfer: {s = State.Ready; picked; placed;}
 
       on calibrate: illegal;
-		}
-		[s.Moving]
-		{
+    }
+    [s.Moving]
+    {
       on inevitable: {arrived; s = State.Ready;}
 
       on calibrate, move, transfer: illegal;
-		}
-		[s.Transferring]
-		{
+    }
+    [s.Transferring]
+    {
       on inevitable: [!isPicked] {picked; isPicked = true;}
       on inevitable: [isPicked] {placed; s = State.Ready;}
 
       on calibrate, move, transfer: illegal;
-		}
-	}
+    }
+  }
 }
 
 interface IInspect
@@ -142,8 +142,8 @@ interface IInspect
   in void prepare(); // move to input take-over and prepare to receive next ball
   out void prepared(); // at input take-over ready to receive next ball
 
-	behaviour
-	{
+  behaviour
+  {
     enum State {Lost, Ready, Calibrating, Inspecting, Waiting, Preparing};
     State s = State.Lost;
 
@@ -182,95 +182,95 @@ interface IInspect
       on calibrate, prepare, inspect: illegal;
       on inevitable: {prepared; s = State.Ready;}
     }
-	}
+  }
 }
 
 interface IFeed
 {
-    in void calibrate();
-    out void calibrated();
-    in void stop();
+  in void calibrate();
+  out void calibrated();
+  in void stop();
 
-    in void produceBall();
-    out void consumeNextBall();
-    out void consumeLastBall();
+  in void produceBall();
+  out void consumeNextBall();
+  out void consumeLastBall();
     
-    behaviour
+  behaviour
+  {
+    enum State {Lost, Calibrating, Idle, Preparing, Prepared};
+    State s = State.Lost;
+        
+    on stop: s = State.Lost;
+        
+    [s.Lost]
     {
-        enum State {Lost, Calibrating, Idle, Preparing, Prepared};
-        State s = State.Lost;
-        
-        on stop: s = State.Lost;
-        
-        [s.Lost]
-        {
-            on calibrate: {s = State.Calibrating;}      
-            on calibrate: {calibrated; s = State.Idle;}      
-            on produceBall: illegal;  
-        }
-        [s.Calibrating]
-        {
-            on inevitable: {calibrated; s = State.Idle;}
-            on calibrate, produceBall: illegal;
-        }
-        [s.Idle]
-        {
-            on produceBall: {s = State.Preparing;}
-            on produceBall: {consumeNextBall; s = State.Prepared;}
-            on produceBall: {consumeLastBall; s = State.Idle;}
-            on calibrate: illegal;
-        }
-        [s.Preparing]
-        {
-            on inevitable: {consumeNextBall; s = State.Prepared;}
-            on inevitable: {consumeLastBall; s = State.Idle;}
-            on calibrate, produceBall: illegal;
-        }
-        [s.Prepared]
-        {
-            on produceBall: {s = State.Preparing;}
-            on produceBall: {consumeNextBall; s = State.Prepared;}
-            on produceBall: {consumeLastBall; s = State.Idle;}
-            on calibrate: illegal;
-        }
+      on calibrate: {s = State.Calibrating;}      
+      on calibrate: {calibrated; s = State.Idle;}      
+      on produceBall: illegal;  
     }
+    [s.Calibrating]
+    {
+      on inevitable: {calibrated; s = State.Idle;}
+      on calibrate, produceBall: illegal;
+    }
+    [s.Idle]
+    {
+      on produceBall: {s = State.Preparing;}
+      on produceBall: {consumeNextBall; s = State.Prepared;}
+      on produceBall: {consumeLastBall; s = State.Idle;}
+      on calibrate: illegal;
+    }
+    [s.Preparing]
+    {
+      on inevitable: {consumeNextBall; s = State.Prepared;}
+      on inevitable: {consumeLastBall; s = State.Idle;}
+      on calibrate, produceBall: illegal;
+    }
+    [s.Prepared]
+    {
+      on produceBall: {s = State.Preparing;}
+      on produceBall: {consumeNextBall; s = State.Prepared;}
+      on produceBall: {consumeLastBall; s = State.Idle;}
+      on calibrate: illegal;
+    }
+  }
 }
 
 interface IConvey
 {
-    in void convey();
-    out void conveyed();
-    in void stop();
+  in void convey();
+  out void conveyed();
+  in void stop();
 
-	behaviour
-	{
-	    enum State {Idle, Conveying};
-	    State s = State.Idle;
+  behaviour
+  {
+    enum State {Idle, Conveying};
+    State s = State.Idle;
 
-        on stop: s = State.Idle;
+    on stop: s = State.Idle;
 
-        [s.Idle] on convey: s = State.Conveying;
-        [s.Idle] on convey: conveyed;
-        [s.Conveying]
-        {
-            on convey: illegal;
-            on inevitable: {conveyed; s = State.Idle;}
-        }
-	}
+    [s.Idle] on convey: s = State.Conveying;
+    [s.Idle] on convey: conveyed;
+    [s.Conveying]
+    {
+      on convey: illegal;
+      on inevitable: {conveyed; s = State.Idle;}
+    }
+  }
 }
 
 component Handle
 {
-	provides IHandle ctrl;
-	requires ITransfer robot;
-	requires IInspect inspector;
-	requires IFeed feedPort;
-	requires IConvey acceptPort;
-	requires IConvey rejectPort;
+  provides IHandle ctrl;
+  requires ITransfer robot;
+  requires IInspect inspector;
+  requires IFeed feedPort;
+  requires IConvey acceptPort;
+  requires IConvey rejectPort;
 
 
-	behaviour
-	{
+  behaviour
+  {
     enum State {Lost, Calibrating, Idle, Operating};
     subint usedCount {0..4};
 
@@ -324,24 +324,24 @@ component Handle
       tryInputTransfer();
     }
     void sendRobotToInputPick() {
-      robot.move($config("Position::Robot::X::InputPick")$, $config("Position::Robot::Y::InputPick")$);
+      robot.move($0$, $0$);
       isRobotAtOutput = false;
       isRobotAtInput = false;
     }
     void tryInputTransfer() {
       if (isBallAtInput && isRobotAtInput && isInspectorAtInput) {
-        robot.transfer($config("Position::Robot::X::InputDrop")$, $config("Position::Robot::Y::InputDrop")$);
+        robot.transfer($0$, $0$);
         o = Operation.TransferringInput;
       }
     }
     void tryOutputTransfer() {
       if (isRobotAtOutput && isInspectorAtOutput) {
         if (isAcceptEmpty && isBallAccepted) {
-          robot.transfer($config("Position::Robot::X::OutputDrop")$, $config("Position::Robot::Y::AcceptDrop")$);
+          robot.transfer($0$, $0$);
           o = Operation.TransferringOutput;
         }
         if (isRejectEmpty && !isBallAccepted) {
-          robot.transfer($config("Position::Robot::X::OutputDrop")$, $config("Position::Robot::Y::RejectDrop")$);
+          robot.transfer($0$, $0$);
           o = Operation.TransferringOutput;
         }
       }
@@ -359,16 +359,16 @@ component Handle
     }
 
     on ctrl.stop():
-    {
-      robot.stop();
-      inspector.stop();
-      feedPort.stop();
-      acceptPort.stop();
-      rejectPort.stop();
-      s = State.Lost;
+      {
+        robot.stop();
+        inspector.stop();
+        feedPort.stop();
+        acceptPort.stop();
+        rejectPort.stop();
+        s = State.Lost;
 
-      manuallyRemoveStrayMaterial();
-    }
+        manuallyRemoveStrayMaterial();
+      }
 
     on ctrl.calibrate(): [s.Lost]
     {
@@ -411,7 +411,7 @@ component Handle
         on inspector.prepared(), inspector.accepted(), inspector.rejected(): illegal;
         on robot.picked(): [!isLastBall] {feedPort.produceBall(); isBallAtInput = false;}
         on robot.picked(): [isLastBall] {isBallAtInput = false;}
-        on robot.placed(): {isInspectorAtInput = false; inspector.inspect(); isRobotAtInput = false; robot.move($config("Position::Robot::X::OutputPick")$, $config("Position::Robot::Y::OutputPick")$); o = Operation.PreparingOutput;}
+        on robot.placed(): {isInspectorAtInput = false; inspector.inspect(); isRobotAtInput = false; robot.move($0$, $0$); o = Operation.PreparingOutput;}
         on robot.arrived(): illegal;
         on acceptPort.conveyed(): isAcceptEmpty = true;
         on rejectPort.conveyed(): isRejectEmpty = true;
@@ -466,6 +466,6 @@ component Handle
     {
       on inspector.calibrated(), feedPort.calibrated(), robot.calibrated(): illegal;
     }
-	}
+  }
 }
 

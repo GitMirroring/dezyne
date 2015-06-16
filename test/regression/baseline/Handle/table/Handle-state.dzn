@@ -115,7 +115,7 @@ interface IHandle
 }
 interface ITransfer
 {
-  extern TrPosition $int32_t$;
+  extern TrPosition $int$;
   in void calibrate();
   out void calibrated();
   in void stop();
@@ -559,7 +559,7 @@ component Handle
 
     void sendRobotToInputPick()
     {
-      robot.move($config("Position::Robot::X::InputPick")$,$config("Position::Robot::Y::InputPick")$);
+      robot.move($0$,$0$);
       isRobotAtOutput = false;
       isRobotAtInput = false;
       return;
@@ -569,7 +569,7 @@ component Handle
     {
       if ((isBallAtInput && isRobotAtInput) && isInspectorAtInput)
       {
-        robot.transfer($config("Position::Robot::X::InputDrop")$,$config("Position::Robot::Y::InputDrop")$);
+        robot.transfer($0$,$0$);
         o = Operation.TransferringInput;
       }
       return;
@@ -581,12 +581,12 @@ component Handle
       {
         if (isAcceptEmpty && isBallAccepted)
         {
-          robot.transfer($config("Position::Robot::X::OutputDrop")$,$config("Position::Robot::Y::AcceptDrop")$);
+          robot.transfer($0$,$0$);
           o = Operation.TransferringOutput;
         }
         if (isRejectEmpty && !isBallAccepted)
         {
-          robot.transfer($config("Position::Robot::X::OutputDrop")$,$config("Position::Robot::Y::RejectDrop")$);
+          robot.transfer($0$,$0$);
           o = Operation.TransferringOutput;
         }
       }
@@ -847,7 +847,7 @@ component Handle
           isInspectorAtInput = false;
           inspector.inspect();
           isRobotAtInput = false;
-          robot.move($config("Position::Robot::X::OutputPick")$,$config("Position::Robot::Y::OutputPick")$);
+          robot.move($0$,$0$);
           o = Operation.PreparingOutput;
         }
         [o.PreparingOutput]

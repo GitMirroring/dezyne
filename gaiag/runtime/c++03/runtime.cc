@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -95,7 +96,7 @@ void runtime::defer(void* src, void* tgt, const boost::function<void()>& event)
   std::cout << path(tgt) << " defer" << std::endl;
 #endif
 
-  if(!performs_flush(src) && !handling(tgt))
+  if(!(src && performs_flush(src)) && !handling(tgt))
   {
     handle(tgt, event);
   }

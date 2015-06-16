@@ -30,8 +30,7 @@ CCACHE:=$(shell type -p ccache)
 TRIANGLE_MAX:=head -30 # use `cat' for all
 VERBOSE:=
 
-#CODE_LANGUAGES=c c++ c++03 cs goops java javascript python
-CODE_LANGUAGES=c c++ c++03 cs java javascript python
+CODE_LANGUAGES=c c++ c++03 cs goops java javascript python
 # PSEUDO_LANGUAGES=convert parse run table verify
 PSEUDO_LANGUAGES=run table verify
 ALL_LANGUAGES=$(CODE_LANGUAGES) $(PSEUDO_LANGUAGES)

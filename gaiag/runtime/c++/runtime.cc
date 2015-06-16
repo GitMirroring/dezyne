@@ -98,7 +98,7 @@ void runtime::defer(void* src, void* tgt, const std::function<void()>& event)
   std::cout << path(tgt) << " defer" << std::endl;
 #endif
 
-  if(!performs_flush(src) && !handling(tgt))
+  if(!(src && performs_flush(src)) && !handling(tgt))
   {
     handle(tgt, event);
   }

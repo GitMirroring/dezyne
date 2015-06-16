@@ -95,7 +95,7 @@ runtime_defer (void* vsrc, void* vtgt, void (*event)(void*), void* args)
   component* ctgt = vtgt;
   runtime_info* src = csrc?&csrc->dzn_info:0;
   runtime_info* tgt = ctgt?&ctgt->dzn_info:0;
-  if ((!(src && src->performs_flush)) && !(tgt->handling))
+  if (!(src && src->performs_flush) && !(tgt->handling))
   {
     runtime_handle_event (tgt, event, args);
     return;
@@ -107,7 +107,8 @@ runtime_defer (void* vsrc, void* vtgt, void (*event)(void*), void* args)
   c->args = dzn_malloc (a->size);
   memcpy (c->args, a, a->size);
   queue_push (&tgt->q, c);
-  src->deferred = tgt;
+  if (src)
+    src->deferred = tgt;
 #else
   closure c;
   c.func = event;
@@ -115,7 +116,8 @@ runtime_defer (void* vsrc, void* vtgt, void (*event)(void*), void* args)
   assert(a->size <= DZN_MAX_ARGS_SIZE);
   memcpy(&c.args, a, a->size);
   queue_push (&tgt_info->q, &c);
-  src->deferred = tgt;
+  if (src)
+    src->deferred = tgt;
 #endif
 }
 

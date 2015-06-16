@@ -106,11 +106,20 @@
                   (flush t)))))
 
 (define (defer i o f)
-  (if (or (not i) (and (not (.flushes? i)) (not (.handling? o))))
+  (if (and (not (and i (.flushes? i))) (not (.handling? o)))
       (handle o f)
       (begin
-        (set! (.deferred? i) o)
-        (enq! (.q o) f))))
+        (enq! (.q o) f)
+        (if i
+            (set! (.deferred? i) o)))))
+
+(define-method (valued-helper o f m)
+  (if (.handling? o) (throw 'defer "a valued event cannot be deferred"))
+  (set! (.handling? o) #t)
+  (let ((r (f)))
+    (set! (.handling? o) #f)
+    (flush o)
+    r))
 
 (define (handle o f)
   (if (not (.handling? o))
@@ -123,21 +132,22 @@
 
 (define (return-value? r m)
   (and-let* (((number? r))
-             (type (car m))
+             (type (and (pair? m) (car m)))
              (alist (cadr m))
              (field (assoc-xref alist r)))
             (symbol-append type '_ field)))
   
 (define-method (call-in (o <component>) f m)
   (apply trace-in (take m 2))
-  (let ((handle (.handling? o)))
-    (set! (.handling? o) #t)
-    (let ((r (f)))
-      (if handle (throw 'defer "a valued event cannot be deferred"))
-      (set! (.handling? o) #f)
-      (flush o)
-      (trace-out (car m) (or (return-value? r (cddr m)) 'return))
-      r)))
+  (handle o f)
+  (trace-out (car m) 'return)
+  #f)
+
+(define-method (rcall-in (o <component>) f m)
+  (apply trace-in (take m 2))
+  (let ((r (valued-helper o f m)))
+    (trace-out (car m) (or (return-value? r (cddr m)) 'return))
+    r))
 
 (define-method (call-out (o <component>) f m)
   (apply trace-out m)
