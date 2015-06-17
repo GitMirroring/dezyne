@@ -54,7 +54,6 @@ def #.model _fill_event_map (m):
     m.#port .#direction port.#event  = lambda *args: #(string-if (eq? return-type 'void) #{log_#direction ('#port .', '#event ', e)#}#{log_valued ('#port .', '#event ', e, lambda s: dezyne.#interface .#reply-name .__dict__.get (drop_prefix(s, '#port .#reply-name _'), None), dezyne.#interface .#reply-name _to_string)#})
 #}) (filter (negate (om:dir-matches? port))
        (om:events port)))) (om:ports model))     return e
-    return e
 
 def main ():
     def illegal ():

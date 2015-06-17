@@ -55,11 +55,11 @@ component FeedConvey
   behaviour
   {
     enum State {Lost, Calibrating, Idle, Preparing, Prepared};
-    enum FeedPhase {None, Feeding, ConveyingNext, ConveyingLast};
+    enum FeedPhase {Idle, Feeding, ConveyingNext, ConveyingLast};
     State s = State.Lost;
-    FeedPhase p = FeedPhase.None;
+    FeedPhase p = FeedPhase.Idle;
 
-    on ctrl.stop(): {feeder.stop(); conveyor.stop(); s = State.Lost; p = FeedPhase.None;}
+    on ctrl.stop(): {feeder.stop(); conveyor.stop(); s = State.Lost; p = FeedPhase.Idle;}
         
     [s.Lost]
     {
@@ -92,12 +92,12 @@ component FeedConvey
       }
       [p.ConveyingNext]
       {
-        on conveyor.conveyed(): {ctrl.consumeNextBall(); s = State.Prepared; p = FeedPhase.None;} 
+        on conveyor.conveyed(): {ctrl.consumeNextBall(); s = State.Prepared; p = FeedPhase.Idle;} 
         on feeder.calibrated(), feeder.consumeNextBall(), feeder.consumeLastBall(): illegal;
       }
       [p.ConveyingLast]
       {
-        on conveyor.conveyed(): {ctrl.consumeLastBall(); s = State.Prepared; p = FeedPhase.None;} 
+        on conveyor.conveyed(): {ctrl.consumeLastBall(); s = State.Prepared; p = FeedPhase.Idle;} 
         on feeder.calibrated(), feeder.consumeNextBall(), feeder.consumeLastBall(): illegal;
       }
       on ctrl.calibrate(), ctrl.produceBall(): illegal;
