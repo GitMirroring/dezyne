@@ -213,7 +213,7 @@ component timer
 {
   provides itimer port;
   // use dzn code -m timer lego.dzn to generate stub
-  // behaviour {on port.create(ms): {} on port.cancel(): {}}
+  //behaviour {on port.create(ms): {} on port.cancel(): {}}
 }
 
 component sut

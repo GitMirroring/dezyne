@@ -38,7 +38,7 @@ class timer (runtime.Component):
         self.port.inport.cancel = lambda *args: runtime.call_in (self, lambda: self.port_cancel (*args), (self.port, 'cancel'))
 
     def port_create (self,ms):
-        port.timeout()
+        pass
 
     def port_cancel (self):
         pass

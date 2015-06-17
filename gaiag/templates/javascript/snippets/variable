@@ -1,1 +1,1 @@
-var #name  = {value: #expression };
+var #name  = {value: #(string-if (eq? expression (if #f #f)) "undefined" expression)};
