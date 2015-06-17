@@ -43,6 +43,8 @@ import dezyne.LegoBallSorter
 import locator
 import runtime
 
+relaxed = True;
+
 def drop_prefix (string, prefix):
     if string.startswith (prefix):
         return string[len(prefix):]
@@ -60,6 +62,7 @@ def consume_synchronous_out_events (event_map):
 
 def log_in (prefix, event, event_map):
     sys.stderr.write (prefix + event + '\n')
+    if relaxed: return
     consume_synchronous_out_events (event_map)
     sys.stderr.write (prefix + 'return' + '\n')
 
@@ -68,6 +71,7 @@ def log_out (prefix, event, event_map):
 
 def log_valued (prefix, event, event_map, string_to_value, value_to_string):
     sys.stderr.write (prefix + event + '\n')
+    if relaxed: return 0
     s = consume_synchronous_out_events (event_map)
     r = string_to_value(s)
     if (r != None):
@@ -169,21 +173,6 @@ def LegoBallSorter_fill_event_map (m):
     m.brick4_s2.inport.detect = lambda *args: log_valued ('brick4_s2.', 'detect', e, lambda s: dezyne.itouch.status.__dict__.get (drop_prefix(s, 'brick4_s2.status_'), None), dezyne.itouch.status_to_string)
     m.brick4_s3.inport.detect = lambda *args: log_valued ('brick4_s3.', 'detect', e, lambda s: dezyne.itouch.status.__dict__.get (drop_prefix(s, 'brick4_s3.status_'), None), dezyne.itouch.status_to_string)
     return e
-    return e
-
-def consume_synchronous_out_events (event_map):
-    return sys.stdin.readline ().strip ()
-
-def log_in (prefix, event, event_map):
-    sys.stderr.write (prefix + 'in.' + event + '\n')
-
-def log_out (prefix, event, event_map):
-    sys.stderr.write (prefix + 'out.' + event + '\n')
-
-def log_valued (prefix, event, event_map, string_to_value, value_to_string):
-    sys.stderr.write (prefix + 'in.' + event + '\n')
-    #sys.stderr.write (prefix + value_to_string[0] + '\n')
-    return 0
 
 def main ():
     def illegal ():

@@ -22,6 +22,8 @@ class Reader {
 }
 
 class main<R> {
+  static boolean relaxed = false;
+
   static Reader reader;
 
   static String drop_prefix(String string, String prefix) {
@@ -46,6 +48,7 @@ class main<R> {
 
   static void log_in(String prefix, String event, EventMap event_map) {
     System.err.println(prefix + event);
+    if (relaxed) return;
     consume_synchronous_out_events(event_map);
     System.err.println(prefix + "return");
   }
@@ -65,6 +68,7 @@ class main<R> {
 
   static <R extends Enum <R>> R log_valued(String prefix, String event, EventMap event_map, String event_prefix, Class<R> E) {
     System.err.println(prefix + event);
+    if (relaxed) return E.getEnumConstants()[0];
     String s = consume_synchronous_out_events(event_map);
     R r = string_to_value(E, drop_prefix(s, event_prefix));
     if (r != null) {

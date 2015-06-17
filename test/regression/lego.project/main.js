@@ -21,6 +21,11 @@
 //
 // Code:
 
+var config = {
+  get: function(x) { return 0; }
+};
+
+var relaxed = true;
 var lines = [];
 function read_line() {
   if (lines.length) {
@@ -50,6 +55,7 @@ function consume_synchronous_out_events(event_map) {
 
 function log_in(prefix, event, event_map) {
   console.error(prefix + event);
+  if (relaxed) return;
   consume_synchronous_out_events(event_map);
   console.error(prefix + 'return');
 }
@@ -60,6 +66,7 @@ function log_out(prefix, event) {
 
 function log_valued(prefix, event, event_map, string_to_value, value_to_string) {
   console.error(prefix + event);
+  if (relaxed) return 0;
   var s = consume_synchronous_out_events(event_map);
   var r = string_to_value(s);
   if (r !== undefined) {
@@ -69,7 +76,8 @@ function log_valued(prefix, event, event_map, string_to_value, value_to_string) 
   throw 'runtime error: "' + s + '" is not a reply value'
 }
 
-function LegoBallSorter_fill_event_map(m) {
+function LegoBallSorter_fill_event_map(m) 
+{
   var e = {
     'ctrl.calibrate': m.ctrl.in.calibrate,
     'ctrl.stop': m.ctrl.in.stop,
@@ -164,24 +172,6 @@ function LegoBallSorter_fill_event_map(m) {
   m.brick4_s3.in.detect = function() {return log_valued('brick4_s3.', 'detect', e, function(s) {return new dezyne.itouch().status[drop_prefix(s, 'brick4_s3.status_')];}, new dezyne.itouch().status_to_string)};
   return e;
 }
-
-function log_in(prefix, event, event_map) {
-  console.error(prefix + 'in.' + event);
-}
-
-function log_out(prefix, event) {
-  console.error(prefix + 'out.' + event);
-}
-
-function log_valued(prefix, event, event_map, string_to_value, value_to_string) {
-  console.error(prefix + 'in.' + event);
-  //console.error(prefix + value_to_string[r]);
-  return 0;
-}
-
-var config = {
-  get: function(x) { return 0; }
-};
 
 function main () {
   var loc = new dezyne.locator();

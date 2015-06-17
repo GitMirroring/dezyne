@@ -1,3 +1,5 @@
+(define relaxed? ##f)
+
 (define (drop-prefix string prefix)
   (if (string-prefix? prefix string)
       (substring string (string-length prefix))
@@ -15,8 +17,9 @@
 
 (define (log-in prefix event event-alist)
   (stderr "~a~a\n" prefix event)
-  (consume_synchronous_out_events event-alist)
-  (stderr "~a~a\n" prefix 'return)
+  (when (not relaxed?)
+    (consume_synchronous_out_events event-alist)
+    (stderr "~a~a\n" prefix 'return))
   ##f)
 
 (define (log-out prefix event event-alist)
@@ -25,12 +28,14 @@
 
 (define (log-valued prefix event event-alist string->value value->symbol)
   (stderr "~a~a\n" prefix event)
-  (let* ((s (consume_synchronous_out_events event-alist))
-         (r (string->value s)))
-    (if r
-        (and (stderr "~a~a\n" prefix (value->symbol r))
-             r)
-        ##f)))
+  (if (not relaxed?)
+      (let* ((s (consume_synchronous_out_events event-alist))
+             (r (string->value s)))
+        (if r
+            (and (stderr "~a~a\n" prefix (value->symbol r))
+                 r)
+            0))
+      0))
 
 (define (fill-event-alist o)
   (let ((e `(#

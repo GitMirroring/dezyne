@@ -8,7 +8,8 @@
 
 namespace dezyne
 {
-typedef std::map<std::string, std::function<void()>> event_map;
+  static bool relaxed = false;
+  typedef std::map<std::string, std::function<void()>> event_map;
 
   std::string consume_synchronous_out_events(event_map& event_map)
   {
@@ -25,6 +26,7 @@ typedef std::map<std::string, std::function<void()>> event_map;
   void log_in(std::string prefix, std::string event, event_map& event_map)
   {
     std::clog << prefix << event << std::endl;
+    if (relaxed) return;
     consume_synchronous_out_events(event_map);
     std::clog << prefix << "return" << std::endl;
   }
@@ -38,6 +40,7 @@ typedef std::map<std::string, std::function<void()>> event_map;
   R log_valued(std::string prefix, std::string event, event_map& event_map, R (*string_to_value)(std::string), const char* (*value_to_string)(R))
   {
     std::clog << prefix << event << std::endl;
+    if (relaxed) return (R)0;
     std::string s = consume_synchronous_out_events(event_map);
     
     R r = string_to_value(s.erase(std::min(s.size(), s.find(prefix)), prefix.size()));

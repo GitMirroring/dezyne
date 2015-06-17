@@ -90,7 +90,7 @@ component Convey
         }
         else
         {
-          motor.run($50$,$false$);
+          motor.run($(config.get("power::50"))$,$false$);
           s = State.Conveying;
         }
       }
@@ -104,7 +104,7 @@ component Convey
       [s.Conveying]
       {
         sensor.disable();
-        motor.pulse($15$,$false$,$2000$);
+        motor.pulse($(config.get("power::15"))$,$false$,$2000$);
         ctrl.conveyed();
         s = State.Idle;
       }
@@ -116,7 +116,7 @@ component Convey
       [s.Conveying]
       {
         sensor.disable();
-        motor.pulse($15$,$false$,$2000$);
+        motor.pulse($(config.get("power::15"))$,$false$,$2000$);
         ctrl.conveyed();
         s = State.Idle;
       }

@@ -17,10 +17,7 @@ typedef struct {
 
 map* global_event_map;
 
-int config(char* s) {
-	(void)s;
-	return 0;
-}
+static bool relaxed = false;
 
 char* read_line() {
 	char *line = 0;
@@ -57,6 +54,7 @@ char* consume_synchronous_out_events(map* event_map) {
 
 void log_in(char* prefix, char* event, map* event_map) {
         fprintf(stderr, "%s%s\n", prefix, event);
+	if (relaxed) return;
         consume_synchronous_out_events(event_map);
         fprintf(stderr, "%s%s\n", prefix, "return");
 }
@@ -69,6 +67,7 @@ void log_out(char* prefix, char* event, map* event_map) {
 int log_valued(char* prefix, char* event, map* event_map, int (*string_to_value)(char*), char* (*value_to_string)(int))
 {
         fprintf(stderr, "%s%s\n", prefix, event);
+	if (relaxed) return 0;
         char* s = consume_synchronous_out_events(event_map);
 	int r = string_to_value(drop_prefix(s, prefix));
 	if ((int)r != -1) {

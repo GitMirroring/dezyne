@@ -25,13 +25,14 @@ include make/binary.make
 
 define CODE.rule
 code-$(LOCAL_TARGET)/$(notdir $(1)): CDIR:=$$(CDIR)
+code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_LANGUAGE:=$$(LOCAL_LANGUAGE)
 code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_NAME:=$$(LOCAL_NAME)
 code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_OUT:=$$(LOCAL_OUT)
 code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TARGET:=$$(LOCAL_TARGET)
 code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TRACE_FILES:=$$(LOCAL_TRACE_FILES)
 code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TRACE_LANGUAGE:=$$(LOCAL_TRACE_LANGUAGE)
 # grep out Asserts; these show source code lines: makes baseline fragile
-code-$(LOCAL_TARGET)/$(notdir $(1)): $$(LOCAL_OUT)/test
+code-$(LOCAL_TARGET)/$(notdir $(1)): $(LOCAL_OUT)/test
 	diff -u $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_TRACE_LANGUAGE)/$(notdir $(1)) <(cat "$(1)" 2>/dev/null | tr ' ,' '\n\n' | $(LOCAL_TARGET) 2>&1 | grep -iEv ':|assert|[ |\t] at |^Exception in thread|traceback|GLib|^;;;|^$$$$|\^|^ ')
 check-$(OUT)/$(LOCAL_NAME): code-$(LOCAL_TARGET)/$(notdir $(1))
 code-$(OUT)/$(LOCAL_NAME): code-$(LOCAL_TARGET)/$(notdir $(1))
@@ -46,12 +47,13 @@ $$(info target code-$(LOCAL_TARGET)/$(notdir $(1)))
 endif
 
 update-code-$(LOCAL_TARGET)/$(notdir $(1)): CDIR:=$$(CDIR)
+update-code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_LANGUAGE:=$$(LOCAL_LANGUAGE)
 update-code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_NAME:=$$(LOCAL_NAME)
 update-code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_OUT:=$$(LOCAL_OUT)
 update-code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TARGET:=$$(LOCAL_TARGET)
 update-code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TRACE_FILES:=$$(LOCAL_TRACE_FILES)
 update-code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TRACE_LANGUAGE:=$$(LOCAL_TRACE_LANGUAGE)
-update-code-$(LOCAL_TARGET)/$(notdir $(1)): $$(LOCAL_OUT)/test
+update-code-$(LOCAL_TARGET)/$(notdir $(1)): $(LOCAL_OUT)/test
 	mkdir -p $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_TRACE_LANGUAGE)/
 	cat "$(1)" 2>/dev/null | tr ' ,' '\n\n' | $(LOCAL_TARGET) 2>&1 | grep -iEv ':|assert|[ |\t] at |^Exception in thread|traceback|GLib|^;;;|^$$$$|\^|^ ' > $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_TRACE_LANGUAGE)/$(notdir $(i))
 update-$(OUT)/$(LOCAL_NAME): update-code-$(LOCAL_TARGET)/$(notdir $(1))

@@ -101,3 +101,13 @@ $(LOCAL_TARGET): LOCAL_LANGUAGE:=$(LOCAL_LANGUAGE)
 $(LOCAL_TARGET): LOCAL_NAME:=$(LOCAL_NAME)
 all: LOCAL_LANGUAGE:=$(LOCAL_LANGUAGE)
 all: LOCAL_TARGET:=$(LOCAL_TARGET)
+
+$(LOCAL_OUT)/%: CDIR:=$(CDIR)
+$(LOCAL_OUT)/%: $(CDIR)%
+	@mkdir -p $(dir $@)
+	cp $< $@
+
+$(LOCAL_OUT)/dezyne/%: CDIR:=$(CDIR)
+$(LOCAL_OUT)/dezyne/%: $(CDIR)%
+	@mkdir -p $(dir $@)
+	cp $< $@

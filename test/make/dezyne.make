@@ -96,11 +96,6 @@ endif
 	$(DZN) depends -l $(LOCAL_LANGUAGE) -m $(LOCAL_SUT) -o $(LOCAL_OUT) $< >> $@
 	echo -e '\t$(DZN) code -l $(LOCAL_LANGUAGE) -m $(LOCAL_SUT) -o $(LOCAL_OUT) $< $(LOCAL_MAP_FILES)' >> $@
 
-#$(LOCAL_OUT)/%.dzn: $(CDIR)%.dzn
-$(LOCAL_OUT)/%: $(CDIR)%
-	@mkdir -p $(dir $@)
-	cp $^ $@
-
 depend: $(LOCAL_D_FILES)
 ifeq ($(strip $(filter-out clean depend help run verify,$(MAKECMDGOALS))),$(MAKECMDGOALS))
 -include $(LOCAL_D_FILES)
@@ -144,7 +139,6 @@ $(foreach i,$(LOCAL_RUNTIME),$(eval $(call RUNTIME.rule,$(i))))
 $(foreach i,$(LOCAL_RUNTIME_DEZYNE),$(eval $(call RUNTIME_DEZYNE.rule,$(i))))
 $(foreach i,$(LOCAL_RUNTIME_SOURCES:%=$(LOCAL_OUT)/%),$(eval $(call RUNTIME_SOURCE.dep,$(basename $(i)))))
 $(foreach i,$(LOCAL_O_FILES),$(eval $(call RUNTIME_SOURCE.dep,$(basename $(i)))))
-
 
 $(LOCAL_OUT)/main.o: LOCAL_O_FILES:=$(LOCAL_O_FILES)
 $(LOCAL_OUT)/main.o: LOCAL_SUT:=$(LOCAL_SUT)

@@ -52,6 +52,8 @@ class Reader {
 }
 
 class main<R> {
+  static boolean relaxed = true;
+
   static Reader reader;
 
   static String drop_prefix(String string, String prefix) {
@@ -75,11 +77,14 @@ class main<R> {
   }
 
   static void log_in(String prefix, String event, EventMap event_map) {
-    System.err.println(prefix + "in." + event);
+    System.err.println(prefix + event);
+    if (relaxed) return;
+    consume_synchronous_out_events(event_map);
+    System.err.println(prefix + "return");
   }
 
   static void log_out(String prefix, String event, EventMap event_map) {
-    System.err.println(prefix + "out." + event);
+    System.err.println(prefix + event);
   }
 
   static <R extends Enum<R>> R string_to_value(Class<R> E, String s) {
@@ -92,9 +97,14 @@ class main<R> {
   }
 
   static <R extends Enum <R>> R log_valued(String prefix, String event, EventMap event_map, String event_prefix, Class<R> E) {
-    System.err.println(prefix + "in." + event);
-    //System.err.println(prefix + E.getSimpleName() + "_" + E.getEnumConstants()[0]);
-    return E.getEnumConstants()[0];
+    System.err.println(prefix + event);
+    if (relaxed) return E.getEnumConstants()[0];
+    String s = consume_synchronous_out_events(event_map);
+    R r = string_to_value(E, drop_prefix(s, event_prefix));
+    if (r != null) {
+      System.err.println(prefix + r.getClass().getSimpleName() + "_" + E.getEnumConstants()[r.ordinal()]);
+    }
+    return r;
   }
 
   private static class EventMap extends HashMap<String, Action> {};

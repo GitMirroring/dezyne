@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 
 class main {
+  static bool relaxed = false;
 
   static String drop_prefix(String str, String prefix) {
     if (str.StartsWith(prefix)) {
@@ -49,6 +50,7 @@ class main {
 
   static void log_in(String prefix, String e, EventMap event_map) {
     System.Console.Error.WriteLine(prefix + e);
+    if (relaxed) return;
     consume_synchronous_out_events(event_map);
     System.Console.Error.WriteLine(prefix + "return");
   }
@@ -68,6 +70,10 @@ class main {
 
   static R log_valued<R>(String prefix, String e, EventMap event_map, String event_prefix) where R: struct, IComparable, IConvertible, IFormattable {
     System.Console.Error.WriteLine(prefix + e);
+    if (relaxed) {
+        R[] values = (R[])Enum.GetValues(typeof(R));
+        return values[0];
+    }
     String s = consume_synchronous_out_events(event_map);
     R? r = string_to_value<R>(drop_prefix(s, event_prefix));
     if (r != null) {

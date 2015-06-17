@@ -69,10 +69,10 @@
                 (make <IConsole.out>
                  :detected (lambda () (stderr "Console.detected\n"))
                  :deactivated (lambda () (stderr "Console.deactivated\n"))))))
-    (action sut .alarm .console .in .arm)
-    (action sut .sensor .sensor .out .triggered)
+    (action (.alarm sut) .console .in .arm)
+    (action (.sensor sut) .sensor .out .triggered)
     (flush (.sensor sut))
-    (action sut .alarm .console .in .disarm)
-    (action sut .sensor .sensor .out .disabled)
+    (action (.alarm sut) .console .in .disarm)
+    (action (.sensor sut) .sensor .out .disabled)
     (flush (.sensor sut))))
 

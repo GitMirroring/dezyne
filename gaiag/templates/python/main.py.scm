@@ -8,6 +8,8 @@ import dezyne.#.model
 import locator
 import runtime
 
+relaxed = False;
+
 def drop_prefix (string, prefix):
     if string.startswith (prefix):
         return string[len(prefix):]
@@ -25,6 +27,7 @@ def consume_synchronous_out_events (event_map):
 
 def log_in (prefix, event, event_map):
     sys.stderr.write (prefix + event + '\n')
+    if relaxed: return
     consume_synchronous_out_events (event_map)
     sys.stderr.write (prefix + 'return' + '\n')
 
@@ -33,6 +36,7 @@ def log_out (prefix, event, event_map):
 
 def log_valued (prefix, event, event_map, string_to_value, value_to_string):
     sys.stderr.write (prefix + event + '\n')
+    if relaxed: return 0
     s = consume_synchronous_out_events (event_map)
     r = string_to_value(s)
     if (r != None):

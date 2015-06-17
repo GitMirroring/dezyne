@@ -32,7 +32,7 @@ component EndConstrainedMove
     State s = State.lost;
     void slowForward()
     {
-      motor.run($(config("Power::CalibrationSpeed"))$,$false$);
+      motor.run($(config.get("Power::CalibrationSpeed"))$,$false$);
       return;
     }
 
@@ -47,7 +47,7 @@ component EndConstrainedMove
     void startAbsoluteMove(IConstrainedMove.position_t target)
     {
       ITouchSense.TouchState ignore = endSensor.enable();
-      motor.move($(config("Power::OperationalSpeed"))$,target);
+      motor.move($(config.get("Power::OperationalSpeed"))$,target);
       s = State.moving;
       return;
     }
@@ -131,7 +131,7 @@ component EndConstrainedMove
     {
       ITouchSense.TouchState ignore = ITouchSense.TouchState.Released;
       ignore = endSensor.enable();
-      motor.move($(config("Power::OperationalSpeed"))$,target);
+      motor.move($(config.get("Power::OperationalSpeed"))$,target);
       s = State.moving;
     }
   }

@@ -22,7 +22,7 @@
 
 LOCAL_SOURCE_EXT:=.cs
 LOCAL_HEADER_EXT:=
-LOCAL_CS_FILES+=$(wildcard $(LOCAL_DIR)*.cs)
+LOCAL_CS_FILES+=$(wildcard $(CDIR)*.cs)
 LOCAL_SOURCE_FILES+=$(LOCAL_CS_FILES)
 LOCAL_HEADER:=$(LOCAL_OUT)/header.cs
 LOCAL_FOOTER:=$(wildcard $(LOCAL_DIR)/main.cs)
@@ -30,13 +30,10 @@ ifeq ($(LOCAL_FOOTER),)
 LOCAL_FOOTER:=$(LOCAL_OUT)/main.cs
 endif
 
-$(LOCAL_OUT)/%.cs: LOCAL_DIR:=$(LOCAL_DIR)
-$(LOCAL_OUT)/%.cs: LOCAL_OUT:=$(LOCAL_OUT)
-$(LOCAL_OUT)/%.cs: $(LOCAL_DIR)/%.cs
-	cp $< $@
-
 LOCAL_DEZYNE_FILES+=$(patsubst %,$(LOCAL_OUT)/dezyne/%$(LOCAL_SOURCE_EXT),$(LOCAL_INTERFACES) $(LOCAL_COMPONENTS))
+$(LOCAL_TARGET).exe: CDIR:=$(CDIR)
 $(LOCAL_TARGET).exe: $(LOCAL_HEADER) $(LOCAL_DEZYNE_FILES) $(LOCAL_FOOTER) $(LOCAL_OUT)/main.cs
+#	-cp $(CDIR)*.cs $(LOCAL_OUT)
 	cp --force --backup $(LOCAL_FOOTER) $(LOCAL_OUT)/$(notdir $(LOCAL_FOOTER))
 	mcs -debug -out:$@ $(LOCAL_OUT)/*.cs $(LOCAL_OUT)/dezyne/*.cs
 

@@ -21,6 +21,8 @@
 ;;; 
 ;;; Code:
 
+(define relaxed? #t)
+
 (define (drop-prefix string prefix)
   (if (string-prefix? prefix string)
       (substring string (string-length prefix))
@@ -38,8 +40,9 @@
 
 (define (log-in prefix event event-alist)
   (stderr "~a~a\n" prefix event)
-  (consume_synchronous_out_events event-alist)
-  (stderr "~a~a\n" prefix 'return)
+  (when (not relaxed?)
+    (consume_synchronous_out_events event-alist)
+    (stderr "~a~a\n" prefix 'return))
   #f)
 
 (define (log-out prefix event event-alist)
@@ -48,12 +51,14 @@
 
 (define (log-valued prefix event event-alist string->value value->symbol)
   (stderr "~a~a\n" prefix event)
-  (let* ((s (consume_synchronous_out_events event-alist))
-         (r (string->value s)))
-    (if r
-        (and (stderr "~a~a\n" prefix (value->symbol r))
-             r)
-        #f)))
+  (if (not relaxed?)
+      (let* ((s (consume_synchronous_out_events event-alist))
+             (r (string->value s)))
+        (if r
+            (and (stderr "~a~a\n" prefix (value->symbol r))
+                 r)
+            0))
+      0))
 
 (define (fill-event-alist o)
   (let ((e `(
@@ -322,19 +327,6 @@
        (lambda (. args)
     (log-valued "brick4_s3." 'detect e (lambda (s) (assoc-ref itouch-status-alist (string->symbol (drop-prefix s "brick4_s3.status_")))) (lambda (r) (symbol-append 'status_ (assoc-xref itouch-status-alist r))))))
       e))
-
-(define (log-in prefix event event-alist)
-  (stderr "~ain.~a\n" prefix event)
-  #f)
-
-(define (log-out prefix event event-alist)
-  (stderr "~aout.~a\n" prefix event)
-  #f)
-
-(define (log-valued prefix event event-alist string->value value->symbol)
-  (stderr "~ain.~a\n" prefix event)
-  ;;(stderr "~a~a\n" prefix (value->symbol 0))
-  0)
 
 (define (main . args)
   (let* ((print-illegal (lambda () (stderr "illegal\n") (exit 0)))

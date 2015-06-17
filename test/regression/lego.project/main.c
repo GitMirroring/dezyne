@@ -126,355 +126,332 @@ typedef struct {
 	void *self;
 } closure;
 
+map* global_event_map;
+
+static bool relaxed = true;
+
+char* read_line() {
+	char *line = 0;
+	size_t size;
+	if (getline(&line, &size, stdin) != -1) {
+		if (strlen(line) > 1 && line[strlen(line)-1] == '\n') {
+			line[strlen(line)-1] = 0;
+		}
+		return line;
+	}
+	return 0;
+}
+
+char* drop_prefix(char* string, char* prefix) {
+	size_t len = strlen(prefix);
+	if (strlen(string) >= len && !strncmp(string, prefix, len)) {
+		return string + len;
+	}
+	return string;
+}
+
+char* consume_synchronous_out_events(map* event_map) {
+	read_line();
+	char* line;
+	while ((line = read_line()) != 0) {
+		void *p = 0;
+		if (map_get(event_map, line, &p)) break;
+		closure *c = p;
+		c->f(c->self);
+		free(line);
+	}
+	return line;
+}
+
+void log_in(char* prefix, char* event, map* event_map) {
+	fprintf(stderr, "%s%s\n", prefix, event);
+	if (relaxed) return;
+	consume_synchronous_out_events(event_map);
+	fprintf(stderr, "%s%s\n", prefix, "return");
+}
+
+void log_out(char* prefix, char* event, map* event_map) {
+	(void)event_map;
+	fprintf(stderr, "%s%s\n", prefix, event);
+}
+
+int log_valued(char* prefix, char* event, map* event_map, int (*string_to_value)(char*), char* (*value_to_string)(int))
+{
+	fprintf(stderr, "%s%s\n", prefix, event);
+	if (relaxed) return 0;
+	char* s = consume_synchronous_out_events(event_map);
+	int r = string_to_value(drop_prefix(s, prefix));
+	if ((int)r != -1) {
+		fprintf(stderr, "%s%s\n", prefix, value_to_string(r));
+		return r;
+	}
+	return 0;
+}
+
+
+
 
 void LegoBallSorter_log_event_ctrl_out_calibrated(IHandle* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "ctrl.out.calibrated");
-}
+	log_out("ctrl.", "calibrated", global_event_map);}
 void LegoBallSorter_log_event_ctrl_out_finished(IHandle* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "ctrl.out.finished");
-}
+	log_out("ctrl.", "finished", global_event_map);}
 void LegoBallSorter_log_event_brick1_aA_in_move(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick1_aA.in.move");
-}
+	log_in("brick1_aA.", "move", global_event_map);}
 void LegoBallSorter_log_event_brick1_aA_in_run(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick1_aA.in.run");
-}
+	log_in("brick1_aA.", "run", global_event_map);}
 void LegoBallSorter_log_event_brick1_aA_in_stop(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick1_aA.in.stop");
-}
+	log_in("brick1_aA.", "stop", global_event_map);}
 void LegoBallSorter_log_event_brick1_aA_in_coast(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick1_aA.in.coast");
-}
+	log_in("brick1_aA.", "coast", global_event_map);}
 void LegoBallSorter_log_event_brick1_aA_in_zero(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick1_aA.in.zero");
-}
+	log_in("brick1_aA.", "zero", global_event_map);}
 void LegoBallSorter_log_event_brick1_aA_in_position(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick1_aA.in.position");
-}
-void LegoBallSorter_log_event_brick1_aA_in_at(imotor* m) {
+	log_in("brick1_aA.", "position", global_event_map);}
+int LegoBallSorter_log_event_brick1_aA_in_at(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick1_aA.in.at");
-}
+	return log_valued("brick1_aA.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);}
 void LegoBallSorter_log_event_brick1_aB_in_move(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick1_aB.in.move");
-}
+	log_in("brick1_aB.", "move", global_event_map);}
 void LegoBallSorter_log_event_brick1_aB_in_run(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick1_aB.in.run");
-}
+	log_in("brick1_aB.", "run", global_event_map);}
 void LegoBallSorter_log_event_brick1_aB_in_stop(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick1_aB.in.stop");
-}
+	log_in("brick1_aB.", "stop", global_event_map);}
 void LegoBallSorter_log_event_brick1_aB_in_coast(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick1_aB.in.coast");
-}
+	log_in("brick1_aB.", "coast", global_event_map);}
 void LegoBallSorter_log_event_brick1_aB_in_zero(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick1_aB.in.zero");
-}
+	log_in("brick1_aB.", "zero", global_event_map);}
 void LegoBallSorter_log_event_brick1_aB_in_position(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick1_aB.in.position");
-}
-void LegoBallSorter_log_event_brick1_aB_in_at(imotor* m) {
+	log_in("brick1_aB.", "position", global_event_map);}
+int LegoBallSorter_log_event_brick1_aB_in_at(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick1_aB.in.at");
-}
+	return log_valued("brick1_aB.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);}
 void LegoBallSorter_log_event_brick1_aC_in_move(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick1_aC.in.move");
-}
+	log_in("brick1_aC.", "move", global_event_map);}
 void LegoBallSorter_log_event_brick1_aC_in_run(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick1_aC.in.run");
-}
+	log_in("brick1_aC.", "run", global_event_map);}
 void LegoBallSorter_log_event_brick1_aC_in_stop(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick1_aC.in.stop");
-}
+	log_in("brick1_aC.", "stop", global_event_map);}
 void LegoBallSorter_log_event_brick1_aC_in_coast(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick1_aC.in.coast");
-}
+	log_in("brick1_aC.", "coast", global_event_map);}
 void LegoBallSorter_log_event_brick1_aC_in_zero(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick1_aC.in.zero");
-}
+	log_in("brick1_aC.", "zero", global_event_map);}
 void LegoBallSorter_log_event_brick1_aC_in_position(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick1_aC.in.position");
-}
-void LegoBallSorter_log_event_brick1_aC_in_at(imotor* m) {
+	log_in("brick1_aC.", "position", global_event_map);}
+int LegoBallSorter_log_event_brick1_aC_in_at(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick1_aC.in.at");
-}
-void LegoBallSorter_log_event_brick1_s1_in_detect(itouch* m) {
+	return log_valued("brick1_aC.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);}
+int LegoBallSorter_log_event_brick1_s1_in_detect(itouch* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick1_s1.in.detect");
-}
-void LegoBallSorter_log_event_brick1_s2_in_detect(itouch* m) {
+	return log_valued("brick1_s1.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);}
+int LegoBallSorter_log_event_brick1_s2_in_detect(itouch* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick1_s2.in.detect");
-}
-void LegoBallSorter_log_event_brick1_s3_in_detect(itouch* m) {
+	return log_valued("brick1_s2.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);}
+int LegoBallSorter_log_event_brick1_s3_in_detect(itouch* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick1_s3.in.detect");
-}
-void LegoBallSorter_log_event_brick1_s4_in_detect(itouch* m) {
+	return log_valued("brick1_s3.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);}
+int LegoBallSorter_log_event_brick1_s4_in_detect(itouch* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick1_s4.in.detect");
-}
+	return log_valued("brick1_s4.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);}
 void LegoBallSorter_log_event_brick2_aA_in_move(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick2_aA.in.move");
-}
+	log_in("brick2_aA.", "move", global_event_map);}
 void LegoBallSorter_log_event_brick2_aA_in_run(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick2_aA.in.run");
-}
+	log_in("brick2_aA.", "run", global_event_map);}
 void LegoBallSorter_log_event_brick2_aA_in_stop(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick2_aA.in.stop");
-}
+	log_in("brick2_aA.", "stop", global_event_map);}
 void LegoBallSorter_log_event_brick2_aA_in_coast(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick2_aA.in.coast");
-}
+	log_in("brick2_aA.", "coast", global_event_map);}
 void LegoBallSorter_log_event_brick2_aA_in_zero(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick2_aA.in.zero");
-}
+	log_in("brick2_aA.", "zero", global_event_map);}
 void LegoBallSorter_log_event_brick2_aA_in_position(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick2_aA.in.position");
-}
-void LegoBallSorter_log_event_brick2_aA_in_at(imotor* m) {
+	log_in("brick2_aA.", "position", global_event_map);}
+int LegoBallSorter_log_event_brick2_aA_in_at(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick2_aA.in.at");
-}
+	return log_valued("brick2_aA.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);}
 void LegoBallSorter_log_event_brick2_aB_in_move(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick2_aB.in.move");
-}
+	log_in("brick2_aB.", "move", global_event_map);}
 void LegoBallSorter_log_event_brick2_aB_in_run(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick2_aB.in.run");
-}
+	log_in("brick2_aB.", "run", global_event_map);}
 void LegoBallSorter_log_event_brick2_aB_in_stop(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick2_aB.in.stop");
-}
+	log_in("brick2_aB.", "stop", global_event_map);}
 void LegoBallSorter_log_event_brick2_aB_in_coast(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick2_aB.in.coast");
-}
+	log_in("brick2_aB.", "coast", global_event_map);}
 void LegoBallSorter_log_event_brick2_aB_in_zero(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick2_aB.in.zero");
-}
+	log_in("brick2_aB.", "zero", global_event_map);}
 void LegoBallSorter_log_event_brick2_aB_in_position(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick2_aB.in.position");
-}
-void LegoBallSorter_log_event_brick2_aB_in_at(imotor* m) {
+	log_in("brick2_aB.", "position", global_event_map);}
+int LegoBallSorter_log_event_brick2_aB_in_at(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick2_aB.in.at");
-}
-void LegoBallSorter_log_event_brick2_s2_in_detect(itouch* m) {
+	return log_valued("brick2_aB.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);}
+int LegoBallSorter_log_event_brick2_s2_in_detect(itouch* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick2_s2.in.detect");
-}
-void LegoBallSorter_log_event_brick2_s3_in_detect(itouch* m) {
+	return log_valued("brick2_s2.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);}
+int LegoBallSorter_log_event_brick2_s3_in_detect(itouch* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick2_s3.in.detect");
-}
-void LegoBallSorter_log_event_brick2_s4_in_detect(itouch* m) {
+	return log_valued("brick2_s3.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);}
+int LegoBallSorter_log_event_brick2_s4_in_detect(itouch* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick2_s4.in.detect");
-}
+	return log_valued("brick2_s4.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);}
 void LegoBallSorter_log_event_brick3_aA_in_move(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick3_aA.in.move");
-}
+	log_in("brick3_aA.", "move", global_event_map);}
 void LegoBallSorter_log_event_brick3_aA_in_run(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick3_aA.in.run");
-}
+	log_in("brick3_aA.", "run", global_event_map);}
 void LegoBallSorter_log_event_brick3_aA_in_stop(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick3_aA.in.stop");
-}
+	log_in("brick3_aA.", "stop", global_event_map);}
 void LegoBallSorter_log_event_brick3_aA_in_coast(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick3_aA.in.coast");
-}
+	log_in("brick3_aA.", "coast", global_event_map);}
 void LegoBallSorter_log_event_brick3_aA_in_zero(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick3_aA.in.zero");
-}
+	log_in("brick3_aA.", "zero", global_event_map);}
 void LegoBallSorter_log_event_brick3_aA_in_position(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick3_aA.in.position");
-}
-void LegoBallSorter_log_event_brick3_aA_in_at(imotor* m) {
+	log_in("brick3_aA.", "position", global_event_map);}
+int LegoBallSorter_log_event_brick3_aA_in_at(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick3_aA.in.at");
-}
+	return log_valued("brick3_aA.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);}
 void LegoBallSorter_log_event_brick3_aC_in_move(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick3_aC.in.move");
-}
+	log_in("brick3_aC.", "move", global_event_map);}
 void LegoBallSorter_log_event_brick3_aC_in_run(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick3_aC.in.run");
-}
+	log_in("brick3_aC.", "run", global_event_map);}
 void LegoBallSorter_log_event_brick3_aC_in_stop(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick3_aC.in.stop");
-}
+	log_in("brick3_aC.", "stop", global_event_map);}
 void LegoBallSorter_log_event_brick3_aC_in_coast(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick3_aC.in.coast");
-}
+	log_in("brick3_aC.", "coast", global_event_map);}
 void LegoBallSorter_log_event_brick3_aC_in_zero(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick3_aC.in.zero");
-}
+	log_in("brick3_aC.", "zero", global_event_map);}
 void LegoBallSorter_log_event_brick3_aC_in_position(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick3_aC.in.position");
-}
-void LegoBallSorter_log_event_brick3_aC_in_at(imotor* m) {
+	log_in("brick3_aC.", "position", global_event_map);}
+int LegoBallSorter_log_event_brick3_aC_in_at(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick3_aC.in.at");
-}
+	return log_valued("brick3_aC.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);}
 void LegoBallSorter_log_event_brick3_s1_in_turnon(ilight* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick3_s1.in.turnon");
-}
+	log_in("brick3_s1.", "turnon", global_event_map);}
 void LegoBallSorter_log_event_brick3_s1_in_turnoff(ilight* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick3_s1.in.turnoff");
-}
-void LegoBallSorter_log_event_brick3_s1_in_detect(ilight* m) {
+	log_in("brick3_s1.", "turnoff", global_event_map);}
+int LegoBallSorter_log_event_brick3_s1_in_detect(ilight* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick3_s1.in.detect");
-}
-void LegoBallSorter_log_event_brick3_s2_in_detect(itouch* m) {
+	return log_valued("brick3_s1.", "detect", global_event_map, string_to_ilight_status, ilight_status_to_string);}
+int LegoBallSorter_log_event_brick3_s2_in_detect(itouch* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick3_s2.in.detect");
-}
-void LegoBallSorter_log_event_brick3_s3_in_detect(itouch* m) {
+	return log_valued("brick3_s2.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);}
+int LegoBallSorter_log_event_brick3_s3_in_detect(itouch* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick3_s3.in.detect");
-}
+	return log_valued("brick3_s3.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);}
 void LegoBallSorter_log_event_brick4_aA_in_move(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick4_aA.in.move");
-}
+	log_in("brick4_aA.", "move", global_event_map);}
 void LegoBallSorter_log_event_brick4_aA_in_run(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick4_aA.in.run");
-}
+	log_in("brick4_aA.", "run", global_event_map);}
 void LegoBallSorter_log_event_brick4_aA_in_stop(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick4_aA.in.stop");
-}
+	log_in("brick4_aA.", "stop", global_event_map);}
 void LegoBallSorter_log_event_brick4_aA_in_coast(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick4_aA.in.coast");
-}
+	log_in("brick4_aA.", "coast", global_event_map);}
 void LegoBallSorter_log_event_brick4_aA_in_zero(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick4_aA.in.zero");
-}
+	log_in("brick4_aA.", "zero", global_event_map);}
 void LegoBallSorter_log_event_brick4_aA_in_position(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick4_aA.in.position");
-}
-void LegoBallSorter_log_event_brick4_aA_in_at(imotor* m) {
+	log_in("brick4_aA.", "position", global_event_map);}
+int LegoBallSorter_log_event_brick4_aA_in_at(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick4_aA.in.at");
-}
+	return log_valued("brick4_aA.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);}
 void LegoBallSorter_log_event_brick4_aB_in_move(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick4_aB.in.move");
-}
+	log_in("brick4_aB.", "move", global_event_map);}
 void LegoBallSorter_log_event_brick4_aB_in_run(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick4_aB.in.run");
-}
+	log_in("brick4_aB.", "run", global_event_map);}
 void LegoBallSorter_log_event_brick4_aB_in_stop(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick4_aB.in.stop");
-}
+	log_in("brick4_aB.", "stop", global_event_map);}
 void LegoBallSorter_log_event_brick4_aB_in_coast(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick4_aB.in.coast");
-}
+	log_in("brick4_aB.", "coast", global_event_map);}
 void LegoBallSorter_log_event_brick4_aB_in_zero(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick4_aB.in.zero");
-}
+	log_in("brick4_aB.", "zero", global_event_map);}
 void LegoBallSorter_log_event_brick4_aB_in_position(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick4_aB.in.position");
-}
-void LegoBallSorter_log_event_brick4_aB_in_at(imotor* m) {
+	log_in("brick4_aB.", "position", global_event_map);}
+int LegoBallSorter_log_event_brick4_aB_in_at(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick4_aB.in.at");
-}
+	return log_valued("brick4_aB.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);}
 void LegoBallSorter_log_event_brick4_aC_in_move(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick4_aC.in.move");
-}
+	log_in("brick4_aC.", "move", global_event_map);}
 void LegoBallSorter_log_event_brick4_aC_in_run(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick4_aC.in.run");
-}
+	log_in("brick4_aC.", "run", global_event_map);}
 void LegoBallSorter_log_event_brick4_aC_in_stop(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick4_aC.in.stop");
-}
+	log_in("brick4_aC.", "stop", global_event_map);}
 void LegoBallSorter_log_event_brick4_aC_in_coast(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick4_aC.in.coast");
-}
+	log_in("brick4_aC.", "coast", global_event_map);}
 void LegoBallSorter_log_event_brick4_aC_in_zero(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick4_aC.in.zero");
-}
+	log_in("brick4_aC.", "zero", global_event_map);}
 void LegoBallSorter_log_event_brick4_aC_in_position(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick4_aC.in.position");
-}
-void LegoBallSorter_log_event_brick4_aC_in_at(imotor* m) {
+	log_in("brick4_aC.", "position", global_event_map);}
+int LegoBallSorter_log_event_brick4_aC_in_at(imotor* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick4_aC.in.at");
-}
-void LegoBallSorter_log_event_brick4_s1_in_detect(itouch* m) {
+	return log_valued("brick4_aC.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);}
+int LegoBallSorter_log_event_brick4_s1_in_detect(itouch* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick4_s1.in.detect");
-}
-void LegoBallSorter_log_event_brick4_s2_in_detect(itouch* m) {
+	return log_valued("brick4_s1.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);}
+int LegoBallSorter_log_event_brick4_s2_in_detect(itouch* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick4_s2.in.detect");
-}
-void LegoBallSorter_log_event_brick4_s3_in_detect(itouch* m) {
+	return log_valued("brick4_s2.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);}
+int LegoBallSorter_log_event_brick4_s3_in_detect(itouch* m) {
 	(void)m;
-	fprintf(stderr, "%s\n", "brick4_s3.in.detect");
-}
+	return log_valued("brick4_s3.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);}
 
 void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 	int dzn_i = 0;
@@ -582,11 +559,18 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 	map_put(e, "ctrl.operate", c);
 }
 
+void illegal_print() {
+	fputs("illegal\n", stderr);
+	exit(0);
+}
+
 int main() {
 	runtime dezyne_runtime;
 	runtime_init(&dezyne_runtime);
 	locator dezyne_locator;
 	locator_init(&dezyne_locator, &dezyne_runtime);
+	dezyne_locator.illegal = illegal_print;
+
 	locator_set (&dezyne_locator, "timer.create", create_timer_impl);
 
 	LegoBallSorter sut;
@@ -595,25 +579,17 @@ int main() {
 
 	map event_map;
 	map_init(&event_map);
+	global_event_map = &event_map;
 	LegoBallSorter_fill_event_map(&sut, &event_map);
-        
-#if 1
-	char *event = 0;
-	size_t size;
-	while (getline(&event, &size, stdin) != -1) {
-		if (strlen(event) > 1 && event[strlen(event)-1] == '\n') {
-			void *p = 0;
-			event[strlen(event)-1] = 0;
-			map_get(&event_map, event, &p);
+
+	char* line;
+	while ((line = read_line()) != 0) {
+		void *p = 0;
+		if (!map_get(&event_map, line, &p)) {
 			closure *c = p;
 			c->f(c->self);
 		}
-		free(event);
-		event = 0;
+		free(line);
 	}
-#else
-	sut.ctrl->in.calibrate(sut.ctrl);
-        sut.ctrl->in.operate(sut.ctrl);
-#endif
 	return 0;
 }

@@ -30,20 +30,6 @@ LANGUAGES:=
 out/lego.project/c++03/main.o: CXXFLAGS:=-std=c++11 $(CXXFLAGS)
 out/lego.project/c++03/timer.o: CXXFLAGS:=-std=c++11 $(CXXFLAGS)
 
-out/lego.project/cs/dezyne/%.cs: $(CDIR)%.cs
-	cp $< $@
-out/lego.project/goops/dezyne/%.scm: $(CDIR)%.scm
-	cp $< $@
-out/lego.project/goops/dezyne/main.scm: $(CDIR)main.scm
-	cp $< $@
-out/lego.project/java/dezyne/%.java: $(CDIR)%.java
-	cp $< $@
-out/lego.project/javascript/dezyne/%.js: $(CDIR)%.js
-	cp $< $@
-
-out/lego.project/cs/test: out/lego.project/cs/timer.cs
-out/lego.project/java/main.java: out/lego.project/java/timer.java
-
 LANGUAGES:=table
 include make/files.make
 # DZN_FILES:=$(wildcard $(CDIR)*.dzn)

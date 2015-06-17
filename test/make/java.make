@@ -35,16 +35,11 @@ ifeq ($(LOCAL_FOOTER),)
 LOCAL_FOOTER:=$(LOCAL_OUT)/main.java
 endif
 
-$(LOCAL_OUT)/%.java: CDIR:=$(CDIR)
-$(LOCAL_OUT)/%.java: LOCAL_OUT:=$(LOCAL_OUT)
-$(LOCAL_OUT)/%.java: $(CDIR)%.java
-	cp $< $@
-
 $(LOCAL_OUT)/main.class: LOCAL_OUT:=$(LOCAL_OUT)
 $(LOCAL_OUT)/main.class: LOCAL_FOOTER:=$(LOCAL_FOOTER)
 $(LOCAL_OUT)/main.class: LOCAL_MODELS:=$(LOCAL_MODELS)
 $(LOCAL_OUT)/main.class: $(LOCAL_FOOTER) $(LOCAL_MODELS:%=$(LOCAL_OUT)/dezyne/%.java)
-	cp $(LOCAL_OUT)/dezyne/*.java $(LOCAL_OUT)
+	-cp $(LOCAL_OUT)/dezyne/*.java $(LOCAL_OUT)
 	cp --force --backup $(LOCAL_FOOTER) $(LOCAL_OUT)/$(basename $(notdir $(LOCAL_FOOTER))).java
 #	cd $(LOCAL_OUT) && javac -Xlint:unchecked *.java
 	javac -d $(LOCAL_OUT) $(LOCAL_OUT)/*.java

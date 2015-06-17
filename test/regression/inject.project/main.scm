@@ -27,4 +27,4 @@
                 :locator (set locator runtime)
                 :name 'sut
                 :t.out (make <itop.out> :f (lambda () (stderr "f\n"))))))
-    (action (.t sut) .in .e)))
+    (action sut .t .in .e)))
