@@ -1,4 +1,5 @@
 // Dezyne --- Dezyne command line tools
+//
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -20,35 +21,29 @@
 //
 // Code:
 
-interface IConstrainedMove
-{
-  extern position_t $Integer$;
-	
-  in void calibrate();
-  out void homed();
-  in void stop();
+using System;
 
-  in void move(position_t target);
-  out void arrived();
+public class timer : Component {
 
-	
-  behaviour
-  {
-    enum State {lost, idle, calibrating, moving};
-    State s = State.lost;
-		
-    void notifyHomed() { s = State.idle; homed; }
-    void notifyArrived() { s = State.idle; arrived; }
-		
-    on calibrate: [s.lost] s = State.calibrating;
-    on calibrate: [s.lost] notifyHomed();
-    on calibrate: [!s.lost] illegal;
-		
-    on move: [s.idle] s = State.moving;
-    on move: [!s.idle] illegal;
-    on stop: s = State.lost;
-		
-    [s.moving] on inevitable: notifyArrived;
-    [s.calibrating] on inevitable: notifyHomed;
+
+  public itimer port;
+
+  public timer(Locator locator, String name="", SystemComponent parent=null) : base(locator, name, parent) {
+    this.flushes = true;
+    port = new itimer();
+    port.inport.name = "port";
+    port.inport.self = this;
+    port.inport.create = (uint32_t ms) => {Runtime.callIn<itimer.In,itimer.Out>(this, () => {port_create(ms);}, new Meta<itimer.In,itimer.Out>(this.port, "create"));};
+
+    port.inport.cancel = () => {Runtime.callIn<itimer.In,itimer.Out>(this, () => {port_cancel();}, new Meta<itimer.In,itimer.Out>(this.port, "cancel"));};
+
   }
+  public void port_create(uint32_t ms) {
+    { }
+  }
+
+  public void port_cancel() {
+    { }
+  }
+
 }

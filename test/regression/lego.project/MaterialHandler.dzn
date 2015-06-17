@@ -335,7 +335,7 @@ component Handle
 
 interface ITransfer
 {
-  extern TrPosition $int32_t$;
+  extern TrPosition $Integer$;
 
   in void calibrate();
   out void calibrated();

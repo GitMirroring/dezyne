@@ -20,6 +20,8 @@
 //
 // Code:
 
+#include "MachineConstants.hh"
+
 #include "imotor.hh"
 #include "ilight.hh"
 #include "itouch.hh"
@@ -30,6 +32,8 @@
 
 #include "runtime.hh"
 #include "locator.hh"
+
+#include "MaterialHandler.hh"
 
 #include <gtkmm.h>
 
@@ -69,88 +73,88 @@ namespace dezyne
     int dzn_i = 0;
     m.ctrl.out.calibrated = [] () {std::clog << "ctrl.out.calibrated" << std::endl;};
     m.ctrl.out.finished = [] () {std::clog << "ctrl.out.finished" << std::endl;};
-    m.brick1_aA.in.move = [] (uint8_t power, int32_t position) {std::clog << "brick1_aA.in.move" << std::endl;};
+    m.brick1_aA.in.move = [] (uint8_t power, Integer position) {std::clog << "brick1_aA.in.move" << std::endl;};
     m.brick1_aA.in.run = [] (uint8_t power, bool invert) {std::clog << "brick1_aA.in.run" << std::endl;};
     m.brick1_aA.in.stop = [] () {std::clog << "brick1_aA.in.stop" << std::endl;};
     m.brick1_aA.in.coast = [] () {std::clog << "brick1_aA.in.coast" << std::endl;};
     m.brick1_aA.in.zero = [] () {std::clog << "brick1_aA.in.zero" << std::endl;};
-    m.brick1_aA.in.position = [] (int32_t& pos) {std::clog << "brick1_aA.in.position" << std::endl;};
-    m.brick1_aA.in.at = [] (int32_t pos) {std::clog << "brick1_aA.in.at" << std::endl;return (imotor::result_t::type)0;};
-    m.brick1_aB.in.move = [] (uint8_t power, int32_t position) {std::clog << "brick1_aB.in.move" << std::endl;};
+    m.brick1_aA.in.position = [] (Integer& pos) {std::clog << "brick1_aA.in.position" << std::endl;};
+    m.brick1_aA.in.at = [] (Integer pos) {std::clog << "brick1_aA.in.at" << std::endl;return (imotor::result_t::type)0;};
+    m.brick1_aB.in.move = [] (uint8_t power, Integer position) {std::clog << "brick1_aB.in.move" << std::endl;};
     m.brick1_aB.in.run = [] (uint8_t power, bool invert) {std::clog << "brick1_aB.in.run" << std::endl;};
     m.brick1_aB.in.stop = [] () {std::clog << "brick1_aB.in.stop" << std::endl;};
     m.brick1_aB.in.coast = [] () {std::clog << "brick1_aB.in.coast" << std::endl;};
     m.brick1_aB.in.zero = [] () {std::clog << "brick1_aB.in.zero" << std::endl;};
-    m.brick1_aB.in.position = [] (int32_t& pos) {std::clog << "brick1_aB.in.position" << std::endl;};
-    m.brick1_aB.in.at = [] (int32_t pos) {std::clog << "brick1_aB.in.at" << std::endl;return (imotor::result_t::type)0;};
-    m.brick1_aC.in.move = [] (uint8_t power, int32_t position) {std::clog << "brick1_aC.in.move" << std::endl;};
+    m.brick1_aB.in.position = [] (Integer& pos) {std::clog << "brick1_aB.in.position" << std::endl;};
+    m.brick1_aB.in.at = [] (Integer pos) {std::clog << "brick1_aB.in.at" << std::endl;return (imotor::result_t::type)0;};
+    m.brick1_aC.in.move = [] (uint8_t power, Integer position) {std::clog << "brick1_aC.in.move" << std::endl;};
     m.brick1_aC.in.run = [] (uint8_t power, bool invert) {std::clog << "brick1_aC.in.run" << std::endl;};
     m.brick1_aC.in.stop = [] () {std::clog << "brick1_aC.in.stop" << std::endl;};
     m.brick1_aC.in.coast = [] () {std::clog << "brick1_aC.in.coast" << std::endl;};
     m.brick1_aC.in.zero = [] () {std::clog << "brick1_aC.in.zero" << std::endl;};
-    m.brick1_aC.in.position = [] (int32_t& pos) {std::clog << "brick1_aC.in.position" << std::endl;};
-    m.brick1_aC.in.at = [] (int32_t pos) {std::clog << "brick1_aC.in.at" << std::endl;return (imotor::result_t::type)0;};
+    m.brick1_aC.in.position = [] (Integer& pos) {std::clog << "brick1_aC.in.position" << std::endl;};
+    m.brick1_aC.in.at = [] (Integer pos) {std::clog << "brick1_aC.in.at" << std::endl;return (imotor::result_t::type)0;};
     m.brick1_s1.in.detect = [] () {std::clog << "brick1_s1.in.detect" << std::endl;return (itouch::status::type)0;};
     m.brick1_s2.in.detect = [] () {std::clog << "brick1_s2.in.detect" << std::endl;return (itouch::status::type)0;};
     m.brick1_s3.in.detect = [] () {std::clog << "brick1_s3.in.detect" << std::endl;return (itouch::status::type)0;};
     m.brick1_s4.in.detect = [] () {std::clog << "brick1_s4.in.detect" << std::endl;return (itouch::status::type)0;};
-    m.brick2_aA.in.move = [] (uint8_t power, int32_t position) {std::clog << "brick2_aA.in.move" << std::endl;};
+    m.brick2_aA.in.move = [] (uint8_t power, Integer position) {std::clog << "brick2_aA.in.move" << std::endl;};
     m.brick2_aA.in.run = [] (uint8_t power, bool invert) {std::clog << "brick2_aA.in.run" << std::endl;};
     m.brick2_aA.in.stop = [] () {std::clog << "brick2_aA.in.stop" << std::endl;};
     m.brick2_aA.in.coast = [] () {std::clog << "brick2_aA.in.coast" << std::endl;};
     m.brick2_aA.in.zero = [] () {std::clog << "brick2_aA.in.zero" << std::endl;};
-    m.brick2_aA.in.position = [] (int32_t& pos) {std::clog << "brick2_aA.in.position" << std::endl;};
-    m.brick2_aA.in.at = [] (int32_t pos) {std::clog << "brick2_aA.in.at" << std::endl;return (imotor::result_t::type)0;};
-    m.brick2_aB.in.move = [] (uint8_t power, int32_t position) {std::clog << "brick2_aB.in.move" << std::endl;};
+    m.brick2_aA.in.position = [] (Integer& pos) {std::clog << "brick2_aA.in.position" << std::endl;};
+    m.brick2_aA.in.at = [] (Integer pos) {std::clog << "brick2_aA.in.at" << std::endl;return (imotor::result_t::type)0;};
+    m.brick2_aB.in.move = [] (uint8_t power, Integer position) {std::clog << "brick2_aB.in.move" << std::endl;};
     m.brick2_aB.in.run = [] (uint8_t power, bool invert) {std::clog << "brick2_aB.in.run" << std::endl;};
     m.brick2_aB.in.stop = [] () {std::clog << "brick2_aB.in.stop" << std::endl;};
     m.brick2_aB.in.coast = [] () {std::clog << "brick2_aB.in.coast" << std::endl;};
     m.brick2_aB.in.zero = [] () {std::clog << "brick2_aB.in.zero" << std::endl;};
-    m.brick2_aB.in.position = [] (int32_t& pos) {std::clog << "brick2_aB.in.position" << std::endl;};
-    m.brick2_aB.in.at = [] (int32_t pos) {std::clog << "brick2_aB.in.at" << std::endl;return (imotor::result_t::type)0;};
+    m.brick2_aB.in.position = [] (Integer& pos) {std::clog << "brick2_aB.in.position" << std::endl;};
+    m.brick2_aB.in.at = [] (Integer pos) {std::clog << "brick2_aB.in.at" << std::endl;return (imotor::result_t::type)0;};
     m.brick2_s2.in.detect = [] () {std::clog << "brick2_s2.in.detect" << std::endl;return (itouch::status::type)0;};
     m.brick2_s3.in.detect = [] () {std::clog << "brick2_s3.in.detect" << std::endl;return (itouch::status::type)0;};
     m.brick2_s4.in.detect = [] () {std::clog << "brick2_s4.in.detect" << std::endl;return (itouch::status::type)0;};
-    m.brick3_aA.in.move = [] (uint8_t power, int32_t position) {std::clog << "brick3_aA.in.move" << std::endl;};
+    m.brick3_aA.in.move = [] (uint8_t power, Integer position) {std::clog << "brick3_aA.in.move" << std::endl;};
     m.brick3_aA.in.run = [] (uint8_t power, bool invert) {std::clog << "brick3_aA.in.run" << std::endl;};
     m.brick3_aA.in.stop = [] () {std::clog << "brick3_aA.in.stop" << std::endl;};
     m.brick3_aA.in.coast = [] () {std::clog << "brick3_aA.in.coast" << std::endl;};
     m.brick3_aA.in.zero = [] () {std::clog << "brick3_aA.in.zero" << std::endl;};
-    m.brick3_aA.in.position = [] (int32_t& pos) {std::clog << "brick3_aA.in.position" << std::endl;};
-    m.brick3_aA.in.at = [] (int32_t pos) {std::clog << "brick3_aA.in.at" << std::endl;return (imotor::result_t::type)0;};
-    m.brick3_aC.in.move = [] (uint8_t power, int32_t position) {std::clog << "brick3_aC.in.move" << std::endl;};
+    m.brick3_aA.in.position = [] (Integer& pos) {std::clog << "brick3_aA.in.position" << std::endl;};
+    m.brick3_aA.in.at = [] (Integer pos) {std::clog << "brick3_aA.in.at" << std::endl;return (imotor::result_t::type)0;};
+    m.brick3_aC.in.move = [] (uint8_t power, Integer position) {std::clog << "brick3_aC.in.move" << std::endl;};
     m.brick3_aC.in.run = [] (uint8_t power, bool invert) {std::clog << "brick3_aC.in.run" << std::endl;};
     m.brick3_aC.in.stop = [] () {std::clog << "brick3_aC.in.stop" << std::endl;};
     m.brick3_aC.in.coast = [] () {std::clog << "brick3_aC.in.coast" << std::endl;};
     m.brick3_aC.in.zero = [] () {std::clog << "brick3_aC.in.zero" << std::endl;};
-    m.brick3_aC.in.position = [] (int32_t& pos) {std::clog << "brick3_aC.in.position" << std::endl;};
-    m.brick3_aC.in.at = [] (int32_t pos) {std::clog << "brick3_aC.in.at" << std::endl;return (imotor::result_t::type)0;};
+    m.brick3_aC.in.position = [] (Integer& pos) {std::clog << "brick3_aC.in.position" << std::endl;};
+    m.brick3_aC.in.at = [] (Integer pos) {std::clog << "brick3_aC.in.at" << std::endl;return (imotor::result_t::type)0;};
     m.brick3_s1.in.turnon = [] () {std::clog << "brick3_s1.in.turnon" << std::endl;};
     m.brick3_s1.in.turnoff = [] () {std::clog << "brick3_s1.in.turnoff" << std::endl;};
     m.brick3_s1.in.detect = [] () {std::clog << "brick3_s1.in.detect" << std::endl;return (ilight::status::type)0;};
     m.brick3_s2.in.detect = [] () {std::clog << "brick3_s2.in.detect" << std::endl;return (itouch::status::type)0;};
     m.brick3_s3.in.detect = [] () {std::clog << "brick3_s3.in.detect" << std::endl;return (itouch::status::type)0;};
-    m.brick4_aA.in.move = [] (uint8_t power, int32_t position) {std::clog << "brick4_aA.in.move" << std::endl;};
+    m.brick4_aA.in.move = [] (uint8_t power, Integer position) {std::clog << "brick4_aA.in.move" << std::endl;};
     m.brick4_aA.in.run = [] (uint8_t power, bool invert) {std::clog << "brick4_aA.in.run" << std::endl;};
     m.brick4_aA.in.stop = [] () {std::clog << "brick4_aA.in.stop" << std::endl;};
     m.brick4_aA.in.coast = [] () {std::clog << "brick4_aA.in.coast" << std::endl;};
     m.brick4_aA.in.zero = [] () {std::clog << "brick4_aA.in.zero" << std::endl;};
-    m.brick4_aA.in.position = [] (int32_t& pos) {std::clog << "brick4_aA.in.position" << std::endl;};
-    m.brick4_aA.in.at = [] (int32_t pos) {std::clog << "brick4_aA.in.at" << std::endl;return (imotor::result_t::type)0;};
-    m.brick4_aB.in.move = [] (uint8_t power, int32_t position) {std::clog << "brick4_aB.in.move" << std::endl;};
+    m.brick4_aA.in.position = [] (Integer& pos) {std::clog << "brick4_aA.in.position" << std::endl;};
+    m.brick4_aA.in.at = [] (Integer pos) {std::clog << "brick4_aA.in.at" << std::endl;return (imotor::result_t::type)0;};
+    m.brick4_aB.in.move = [] (uint8_t power, Integer position) {std::clog << "brick4_aB.in.move" << std::endl;};
     m.brick4_aB.in.run = [] (uint8_t power, bool invert) {std::clog << "brick4_aB.in.run" << std::endl;};
     m.brick4_aB.in.stop = [] () {std::clog << "brick4_aB.in.stop" << std::endl;};
     m.brick4_aB.in.coast = [] () {std::clog << "brick4_aB.in.coast" << std::endl;};
     m.brick4_aB.in.zero = [] () {std::clog << "brick4_aB.in.zero" << std::endl;};
-    m.brick4_aB.in.position = [] (int32_t& pos) {std::clog << "brick4_aB.in.position" << std::endl;};
-    m.brick4_aB.in.at = [] (int32_t pos) {std::clog << "brick4_aB.in.at" << std::endl;return (imotor::result_t::type)0;};
-    m.brick4_aC.in.move = [] (uint8_t power, int32_t position) {std::clog << "brick4_aC.in.move" << std::endl;};
+    m.brick4_aB.in.position = [] (Integer& pos) {std::clog << "brick4_aB.in.position" << std::endl;};
+    m.brick4_aB.in.at = [] (Integer pos) {std::clog << "brick4_aB.in.at" << std::endl;return (imotor::result_t::type)0;};
+    m.brick4_aC.in.move = [] (uint8_t power, Integer position) {std::clog << "brick4_aC.in.move" << std::endl;};
     m.brick4_aC.in.run = [] (uint8_t power, bool invert) {std::clog << "brick4_aC.in.run" << std::endl;};
     m.brick4_aC.in.stop = [] () {std::clog << "brick4_aC.in.stop" << std::endl;};
     m.brick4_aC.in.coast = [] () {std::clog << "brick4_aC.in.coast" << std::endl;};
     m.brick4_aC.in.zero = [] () {std::clog << "brick4_aC.in.zero" << std::endl;};
-    m.brick4_aC.in.position = [] (int32_t& pos) {std::clog << "brick4_aC.in.position" << std::endl;};
-    m.brick4_aC.in.at = [] (int32_t pos) {std::clog << "brick4_aC.in.at" << std::endl;return (imotor::result_t::type)0;};
+    m.brick4_aC.in.position = [] (Integer& pos) {std::clog << "brick4_aC.in.position" << std::endl;};
+    m.brick4_aC.in.at = [] (Integer pos) {std::clog << "brick4_aC.in.at" << std::endl;return (imotor::result_t::type)0;};
     m.brick4_s1.in.detect = [] () {std::clog << "brick4_s1.in.detect" << std::endl;return (itouch::status::type)0;};
     m.brick4_s2.in.detect = [] () {std::clog << "brick4_s2.in.detect" << std::endl;return (itouch::status::type)0;};
     m.brick4_s3.in.detect = [] () {std::clog << "brick4_s3.in.detect" << std::endl;return (itouch::status::type)0;};

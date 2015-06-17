@@ -29,8 +29,15 @@ LANGUAGES:=
 
 out/lego.project/c++03/main.o: CXXFLAGS:=-std=c++11 $(CXXFLAGS)
 out/lego.project/c++03/timer.o: CXXFLAGS:=-std=c++11 $(CXXFLAGS)
+out/lego.project/cs/dezyne/timer.cs: $(CDIR)/timer.cs
+	cp $< $@
+out/lego.project/goops/dezyne/timer.scm: $(CDIR)/timer.scm
+	cp $< $@
+out/lego.project/java/dezyne/timer.java: $(CDIR)/timer.java
+	cp $< $@
 out/lego.project/javascript/dezyne/timer.js: $(CDIR)/timer.js
 	cp $< $@
+
 
 LANGUAGES:=table
 include make/files.make

@@ -40,6 +40,10 @@ namespace std
 using std::uint8_t;
 using std::int32_t;
 
+typedef bool Boolean;
+typedef std::uint8_t Byte;
+typedef std::int32_t Integer;
+
 int config(const std::string& key);
 
 #endif

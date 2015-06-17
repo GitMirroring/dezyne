@@ -24,10 +24,10 @@ import lego.dzn;
 
 interface IMove
 {
-  extern imove_boolean $bool$;
-  extern imove_position_t $int32_t$;
-  extern imove_milliseconds_t $uint32_t$;
-  extern imove_power_t $uint8_t$; // [0,100]
+  extern imove_boolean $Boolean$;
+  extern imove_position_t $Integer$;
+  extern imove_milliseconds_t $Byte$;
+  extern imove_power_t $Byte$; // [0,100]
 
   in void move(imove_power_t power, imove_position_t position);  //regulated, absolute position
   out void arrived();

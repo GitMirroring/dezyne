@@ -26,6 +26,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+typedef bool Boolean;
+typedef uint8_t Byte;
+typedef int32_t Integer;
+
 int config (char* key);
 
 #endif
