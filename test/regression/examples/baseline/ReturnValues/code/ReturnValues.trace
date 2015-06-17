@@ -1,5 +1,5 @@
-<external>..initialize -> sut.client.initialize
-device_A.initialize
+<external>..initialise -> sut.client.initialise
+device_A.initialise
 device_A.result_t_OK
 device_B.initialize
 device_B.result_t_OK
