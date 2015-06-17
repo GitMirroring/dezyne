@@ -2,7 +2,7 @@
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
-;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
@@ -22,4 +22,4 @@
 ;;; 
 ;;; Code:
 
-assert IF_#(.name model) _#((compose .name .behaviour) model) (true,false) #(hide-modeling model) :[livelock free]
+assert IF_#(.name model) _#((compose .name .behaviour) model) (true,false) :[livelock free]
