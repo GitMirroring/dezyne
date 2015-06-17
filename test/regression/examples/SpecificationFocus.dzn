@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -67,6 +68,9 @@ interface ISensor
   }
 }
 
+// In this component the behaviour is specified in a pure state based style.
+// It follows the pattern:
+// [state.XX] on sensors.YY(): { <actions> }
 component SpecificationFocus
 {
   provides ISensor sensors;
@@ -124,6 +128,8 @@ component SpecificationFocus
   }
 }
 
+// In this version the common behaviour for 'sensors.Deactivate()' has been isolated
+// and is handled in the '[state.Activated || state.Triggered]' guard.
 component SpecificationFocus2
 {
   provides ISensor sensors;
@@ -179,6 +185,8 @@ component SpecificationFocus2
   }
 }
 
+// In version 3 the 'Activated' and 'Triggered' states are combined completely.
+// The small variation in behaviour in the two states leads to an 'if (state.Activated)' condition.
 component SpecificationFocus3
 {
   provides ISensor sensors;
@@ -211,10 +219,6 @@ component SpecificationFocus3
         bSensor.Deactivate();
         state = States.Deactivated;
       }
-    }  
-    [state.Activated
-     || state.Triggered] 
-    { 
       on aSensor.DetectedMovement(),
         bSensor.DetectedMovement():
       {
@@ -230,6 +234,9 @@ component SpecificationFocus3
   }
 }
 
+// In the last version the events are leading, leading to the pattern:
+// 'on sensors.XX(): [state.YY] { <actions> }'
+// Note the use of '[otherwise]' to gather common behaviour.
 component SpecificationFocus4
 {
   provides ISensor sensors;

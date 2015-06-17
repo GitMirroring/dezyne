@@ -31,6 +31,9 @@ enum result_t {
 };
 
 
+// This interface specifies the protocol of a device which has to be initialsised and 
+// calibrated before it can perform actions.
+// Each of these activities can succeed (OK) or fail (NOK). 
 interface IDevice {
 
     in result_t initialize();
@@ -82,6 +85,9 @@ interface IDevice {
     }
 }
 
+// This interface specifies the protocol of a component which, after being intitialised,
+// can perform actions and recover from error situations.
+// Each of these activities can succeed (OK) or fail (NOK). 
 interface IComp {
     in result_t initialize();
     in result_t recover();
@@ -125,6 +131,8 @@ interface IComp {
     }
 }
 
+// This component initialises and controls two devices, and tries to recover
+// from errors reported by these devices
 component ReturnValues {
     provides IComp client;
     requires IDevice device_A;
@@ -140,6 +148,8 @@ component ReturnValues {
 
         [s.Uninitialized] {
             on client.initialize(): {
+                // try to initialise and calibrate both devices.
+                // reply NOK in case of an error
                 result_t res = device_A.initialize();
                 if (res.OK) {
                     res = device_B.initialize();
@@ -164,6 +174,8 @@ component ReturnValues {
         }
         [s.Initialized] {
             on client.perform_actions(): {
+                // try to perform two actions on both devides.
+                // reply NOK in case of an error
                 result_t res = device_A.perform_action1();
                 if (res.OK) {
                     res = device_B.perform_action1();
@@ -188,6 +200,7 @@ component ReturnValues {
         }
         [s.Error] {
             on client.recover(): {
+                // try to revover from a previous error by recalibrating both devices.
                 result_t res = device_A.calibrate();
                 if (res.OK) {
                     res = device_B.calibrate();
@@ -207,6 +220,9 @@ component ReturnValues {
     }
 }
 
+// This component provides an implementation of the IDevice interface.
+// Pperformance of action1 will succeed, but action2 will fail, after which
+// the component has to be re-calibrated.
 component Device
 {
   provides IDevice i;
@@ -238,6 +254,8 @@ component Device
     }
 }
 
+// This system component combines the ReturnValues component
+// with two identical Device components.
 component TwoDevices 
 {
   provides IComp client;
