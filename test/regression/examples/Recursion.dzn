@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -24,7 +25,7 @@
 // This example shows the specification of a recursion using a function
 ///////////////////////////////////////////////////////////////////////////////
 
-
+// A trivial interface
 interface I
 {
   in void e();
@@ -41,6 +42,7 @@ component Recursion
 
   behaviour
   {
+    // A recursive function definition
     void f()
     {
       f();
@@ -48,6 +50,7 @@ component Recursion
 
     on i.e():
     {
+      // this triggers infinite recursion:
       f();
     }
   }

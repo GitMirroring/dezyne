@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -28,6 +29,7 @@ enum result_t {
    OK,
    NOK
 };
+
 
 interface IDevice {
 
@@ -205,7 +207,7 @@ component ReturnValues {
     }
 }
 
-component DeviceA
+component Device
 {
   provides IDevice i;
   behaviour
@@ -234,4 +236,20 @@ component DeviceA
         [otherwise] illegal;
       }
     }
+}
+
+component TwoDevices 
+{
+  provides IComp client;
+  system 
+  {
+    ReturnValues rv;
+    Device deviceA;
+    Device deviceB;
+    
+    client <=> rv.client;
+    rv.device_A <=> deviceA.i;
+    rv.device_B <=> deviceB.i;
+  }
+  
 }
