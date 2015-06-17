@@ -55,35 +55,35 @@
                           :a6 a6)))
          (i (make <v> :v 0))
          (j (make <v> :v 0)))
-    ;;(set! (.self (.out (.port d))) d) ;;hmm
+    ;;(set! (.self (.out d .port)) d) ;;hmm
   
-    (assert (eq? (assoc-ref IDataparam-Status-alist 'Yes) (action (.port d) .in .e0r)))
-    (action (.port d) .in .e0)
-    (assert (eq? (assoc-ref IDataparam-Status-alist 'Yes) (action (.port d) .in .er 123)))
-    (action (.port d) .in .e 123)
-    (assert (eq? (assoc-ref IDataparam-Status-alist 'No) (action (.port d) .in .eer 123 345)))
+    (assert (eq? (assoc-ref IDataparam-Status-alist 'Yes) (action d .port .in .e0r)))
+    (action d .port .in .e0)
+    (assert (eq? (assoc-ref IDataparam-Status-alist 'Yes) (action d .port .in .er 123)))
+    (action d .port .in .e 123)
+    (assert (eq? (assoc-ref IDataparam-Status-alist 'No) (action d .port .in .eer 123 345)))
 
-    (action (.port d) .in .eo i)
+    (action d .port .in .eo i)
     (assert (= (.v i) 234))
 
-     (action (.port d) .in .eoo i j)
+     (action d .port .in .eoo i j)
      (assert (and (= (.v i) 123) (= (.v j) 456)))
 
-     (action (.port d) .in .eio (.v i) j)
+     (action d .port .in .eio (.v i) j)
      (assert (and (= (.v i) 123) (= (.v j) (.v i))))
 
-     (action (.port d) .in .eio2 i)
+     (action d .port .in .eio2 i)
      (assert (= (.v i) 246))
 
 
-     (assert (eq? (assoc-ref IDataparam-Status-alist 'Yes) (action (.port d) .in .eor i)))
+     (assert (eq? (assoc-ref IDataparam-Status-alist 'Yes) (action d .port .in .eor i)))
      (assert (= (.v i) 234))
 
-     (assert (eq? (assoc-ref IDataparam-Status-alist 'Yes) (action (.port d) .in .eoor i j)))
+     (assert (eq? (assoc-ref IDataparam-Status-alist 'Yes) (action d .port .in .eoor i j)))
      (assert (and (= (.v i) 123) (= (.v j) 456)))
 
-     (assert (eq? (assoc-ref IDataparam-Status-alist 'Yes) (action (.port d) .in .eior (.v i) j)))
+     (assert (eq? (assoc-ref IDataparam-Status-alist 'Yes) (action d .port .in .eior (.v i) j)))
      (assert (and (= (.v i) 123) (= (.v j) (.v i))))
 
-     (assert (eq? (assoc-ref IDataparam-Status-alist 'Yes) (action (.port d) .in .eio2r i)))
+     (assert (eq? (assoc-ref IDataparam-Status-alist 'Yes) (action d .port .in .eio2r i)))
      (assert (= (.v i) 246)) ))

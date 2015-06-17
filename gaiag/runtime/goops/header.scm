@@ -35,10 +35,8 @@
   :use-module (oop goops)
   :use-module (srfi srfi-1))
 
-(define-syntax assert
-  (syntax-rules ()
-    ((assert e)
-     (or e (throw 'assert 'e)))))
+(define-syntax-rule (assert e)
+  (or e (throw 'assert 'e)))
 
 (define-class <v> ()
   (v :accessor .v :init-value 0 :init-keyword :v))
@@ -83,11 +81,11 @@
 
 (define (illegal) (throw 'assert 'illegal))
 
-(define-method (action (o <component>) (port <accessor>) (dir <accessor>) (event <accessor>) . args)
-  (apply ((compose event dir port) o) args))
+(define-method (action-method (o <component>) (port <accessor>) (dir <accessor>) (event <accessor>) . args)
+  (apply (event (dir (port o))) args))
 
-(define-method (action (o <interface>) (dir <accessor>) (event <accessor>) . args)
-  (apply ((compose event dir) o) args))
+(define (action o port dir event . args)
+  (apply ((compose event dir port) o) args))
 
 (define-class <runtime> ()
   (components :accessor .components :init-form (list) :init-keyword :components)

@@ -188,24 +188,24 @@ component Handle
       tryInputTransfer();
     }
     void sendRobotToInputPick() {
-      robot.move($config("Position::Robot::X::InputPick")$, $config("Position::Robot::Y::InputPick")$);
+      robot.move($(config("Position::Robot::X::InputPick"))$, $(config("Position::Robot::Y::InputPick"))$);
       isRobotAtOutput = false;
       isRobotAtInput = false;
     }
     void tryInputTransfer() {
       if (isBallAtInput && isRobotAtInput && isInspectorAtInput) {
-        robot.transfer($config("Position::Robot::X::InputDrop")$, $config("Position::Robot::Y::InputDrop")$);
+        robot.transfer($(config("Position::Robot::X::InputDrop"))$, $(config("Position::Robot::Y::InputDrop"))$);
         o = Operation.TransferringInput;
       }
     }
     void tryOutputTransfer() {
       if (isRobotAtOutput && isInspectorAtOutput) {
         if (isAcceptEmpty && isBallAccepted) {
-          robot.transfer($config("Position::Robot::X::OutputDrop")$, $config("Position::Robot::Y::AcceptDrop")$);
+          robot.transfer($(config("Position::Robot::X::OutputDrop"))$, $(config("Position::Robot::Y::AcceptDrop"))$);
           o = Operation.TransferringOutput;
         }
         if (isRejectEmpty && !isBallAccepted) {
-          robot.transfer($config("Position::Robot::X::OutputDrop")$, $config("Position::Robot::Y::RejectDrop")$);
+          robot.transfer($(config("Position::Robot::X::OutputDrop"))$, $(config("Position::Robot::Y::RejectDrop"))$);
           o = Operation.TransferringOutput;
         }
       }
@@ -275,7 +275,7 @@ component Handle
         on inspector.prepared(), inspector.accepted(), inspector.rejected(): illegal;
         on robot.picked(): [!isLastBall] {feedPort.produceBall(); isBallAtInput = false;}
         on robot.picked(): [isLastBall] {isBallAtInput = false;}
-        on robot.placed(): {isInspectorAtInput = false; inspector.inspect(); isRobotAtInput = false; robot.move($config("Position::Robot::X::OutputPick")$, $config("Position::Robot::Y::OutputPick")$); o = Operation.PreparingOutput;}
+        on robot.placed(): {isInspectorAtInput = false; inspector.inspect(); isRobotAtInput = false; robot.move($(config("Position::Robot::X::OutputPick"))$, $(config("Position::Robot::Y::OutputPick"))$); o = Operation.PreparingOutput;}
         on robot.arrived(): illegal;
         on acceptPort.conveyed(): isAcceptEmpty = true;
         on rejectPort.conveyed(): isRejectEmpty = true;
@@ -703,7 +703,7 @@ component Lift
     }
     [s.Calibrating]
     {
-      on winch.homed(): {winch.move($config("Position::Robot::Z::Up")$);} // end sensor pressed position
+      on winch.homed(): {winch.move($(config("Position::Robot::Z::Up"))$);} // end sensor pressed position
       on winch.arrived(): {ctrl.calibrated(); s = State.Ready; isHolding = true;}
       on ctrl.calibrate(), ctrl.retain(), ctrl.release(): illegal;
     }
@@ -711,12 +711,12 @@ component Lift
     {
       [!isHolding]
       {
-        on ctrl.retain(): {winch.move($config("Position::Robot::Z::Up")$); s = State.Moving;}
+        on ctrl.retain(): {winch.move($(config("Position::Robot::Z::Up"))$); s = State.Moving;}
         on ctrl.calibrate(), ctrl.release(), winch.arrived(): illegal;
       }
       [isHolding]
       {
-        on ctrl.release(): {winch.move($config("Position::Robot::Z::Down")$); s = State.Moving;}
+        on ctrl.release(): {winch.move($(config("Position::Robot::Z::Down"))$); s = State.Moving;}
         on ctrl.calibrate(), ctrl.retain(), winch.arrived(): illegal;
       }
     }
@@ -776,7 +776,7 @@ component Grip
     }
     [s.Calibrating]
     {
-      on gripper.homed(): {gripper.move($config("Position::Robot::Gripper::Closed")$);}
+      on gripper.homed(): {gripper.move($(config("Position::Robot::Gripper::Closed"))$);}
       on gripper.arrived(): {ctrl.calibrated(); s = State.Ready; isHolding = true;}
       on ctrl.calibrate(), ctrl.retain(), ctrl.release(): illegal;
     }
@@ -784,12 +784,12 @@ component Grip
     {
       [!isHolding]
       {
-        on ctrl.retain(): {s = State.Moving; gripper.move($config("Position::Robot::Gripper::Closed")$);}
+        on ctrl.retain(): {s = State.Moving; gripper.move($(config("Position::Robot::Gripper::Closed"))$);}
         on ctrl.release(): illegal;
       }
       [isHolding]
       {
-        on ctrl.release(): {s = State.Moving; gripper.move($config("Position::Robot::Gripper::Open")$);}
+        on ctrl.release(): {s = State.Moving; gripper.move($(config("Position::Robot::Gripper::Open"))$);}
         on ctrl.retain(): illegal;
       }
       on ctrl.calibrate(), gripper.homed(), gripper.arrived(): illegal;

@@ -22,6 +22,10 @@
 
 LOCAL_DZN_FILES:=$(wildcard $(CDIR)*.dzn)
 
+ifeq ($(LOCAL_LANGUAGE),goops)
+LOCAL_HEADER:=$(CDIR)header.scm
+endif
+
 include make/common.make
 include make/$(LOCAL_LANGUAGE).make
 

@@ -59,15 +59,15 @@ component Feed
     Count inventory = 0; // number of balls in store
         
     void feedNext() {
-      if (inventory == 4) {axis.move($config("Position::Feeder::DropFirst")$);}
-      if (inventory == 3) {axis.move($config("Position::Feeder::DropSecond")$);}
-      if (inventory == 2) {axis.move($config("Position::Feeder::DropThird")$);}
-      if (inventory == 1) {axis.move($config("Position::Feeder::DropLast")$);}
+      if (inventory == 4) {axis.move($(config("Position::Feeder::DropFirst"))$);}
+      if (inventory == 3) {axis.move($(config("Position::Feeder::DropSecond"))$);}
+      if (inventory == 2) {axis.move($(config("Position::Feeder::DropThird"))$);}
+      if (inventory == 1) {axis.move($(config("Position::Feeder::DropLast"))$);}
       s = State.Preparing;
       inventory = inventory - 1;
     }
     void retract() {
-      axis.move($config("Position::Feeder::Retracted")$);
+      axis.move($(config("Position::Feeder::Retracted"))$);
       isRetracting = true;
     }
     void refill() {

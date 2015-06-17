@@ -20,22 +20,24 @@
 # 
 # Code:
 
-LANGUAGES:=$(filter c c++ c++03 javascript python, $(CODE_LANGUAGES))
+LANGUAGES:=$(filter c c++ c++03 goops javascript python, $(CODE_LANGUAGES))
 $(foreach LOCAL_LANGUAGE,$(LANGUAGES),\
-        $(eval LOCAL_SUT:=LegoBallSorter)\
 	$(eval include $(CDIR)project.make))
 DZN_FILES:=
 LANGUAGES:=
 
 out/lego.project/c++03/main.o: CXXFLAGS:=-std=c++11 $(CXXFLAGS)
 out/lego.project/c++03/timer.o: CXXFLAGS:=-std=c++11 $(CXXFLAGS)
-out/lego.project/cs/dezyne/timer.cs: $(CDIR)/timer.cs
+
+out/lego.project/cs/dezyne/%.cs: $(CDIR)/%.cs
 	cp $< $@
-out/lego.project/goops/dezyne/timer.scm: $(CDIR)/timer.scm
+out/lego.project/goops/dezyne/%.scm: $(CDIR)/%.scm
 	cp $< $@
-out/lego.project/java/dezyne/timer.java: $(CDIR)/timer.java
+out/lego.project/goops/dezyne/main.scm: $(CDIR)/main.scm
 	cp $< $@
-out/lego.project/javascript/dezyne/timer.js: $(CDIR)/timer.js
+out/lego.project/java/dezyne/%.java: $(CDIR)/%.java
+	cp $< $@
+out/lego.project/javascript/dezyne/%.js: $(CDIR)/%.js
 	cp $< $@
 
 
