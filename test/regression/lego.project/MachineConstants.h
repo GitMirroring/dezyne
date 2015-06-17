@@ -30,6 +30,10 @@ typedef bool Boolean;
 typedef uint8_t Byte;
 typedef int32_t Integer;
 
-int config (char* key);
+typedef struct {
+  int (*get)(char*);
+} config_scope;
+
+extern config_scope config;
 
 #endif

@@ -32,7 +32,7 @@ component HomeConstrainedMove
     State s = State.lost;
     void slowBackward()
     {
-      motor.run($config("Power::CalibrationSpeed")$,$true$);
+      motor.run($(config("Power::CalibrationSpeed"))$,$true$);
       return;
     }
 
@@ -48,7 +48,7 @@ component HomeConstrainedMove
     {
       ITouchSense.TouchState ignore = ITouchSense.TouchState.Released;
       ignore = homeSensor.enable();
-      motor.move($config("Power::OperationalSpeed")$,target);
+      motor.move($(config("Power::OperationalSpeed"))$,target);
       s = State.moving;
       return;
     }
@@ -133,7 +133,7 @@ component HomeConstrainedMove
     {
       ITouchSense.TouchState ignore = ITouchSense.TouchState.Released;
       ignore = homeSensor.enable();
-      motor.move($config("Power::OperationalSpeed")$,target);
+      motor.move($(config("Power::OperationalSpeed"))$,target);
       s = State.moving;
     }
   }

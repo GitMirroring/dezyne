@@ -36,12 +36,12 @@ class timer extends Component {
     port = new itimer();
     port.in.name = "port";
     port.in.self = this;
-    port.in.create = new Action1<Integer>() {public void action(final Byte ms) {Runtime.callIn(timer.this, new Action() {public void action() {port_create(ms);}}, new Meta(timer.this.port, "create"));};};
+    port.in.create = new Action1<Integer>() {public void action(final Integer ms) {Runtime.callIn(timer.this, new Action() {public void action() {port_create(ms);}}, new Meta(timer.this.port, "create"));};};
 
     port.in.cancel = new Action() {public void action() {Runtime.callIn(timer.this, new Action() {public void action() {port_cancel();}}, new Meta(timer.this.port, "cancel"));};};
 
   };
-  public void port_create(final Byte ms) {
+  public void port_create(final Integer ms) {
     { }
   };
 

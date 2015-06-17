@@ -20,7 +20,8 @@
 # 
 # Code:
 
-LANGUAGES:=$(filter c c++ c++03 goops javascript python, $(CODE_LANGUAGES))
+#LANGUAGES:=$(filter c c++ c++03 goops javascript python, $(CODE_LANGUAGES))
+LANGUAGES:=$(CODE_LANGUAGES)
 $(foreach LOCAL_LANGUAGE,$(LANGUAGES),\
 	$(eval include $(CDIR)project.make))
 DZN_FILES:=
@@ -29,17 +30,19 @@ LANGUAGES:=
 out/lego.project/c++03/main.o: CXXFLAGS:=-std=c++11 $(CXXFLAGS)
 out/lego.project/c++03/timer.o: CXXFLAGS:=-std=c++11 $(CXXFLAGS)
 
-out/lego.project/cs/dezyne/%.cs: $(CDIR)/%.cs
+out/lego.project/cs/dezyne/%.cs: $(CDIR)%.cs
 	cp $< $@
-out/lego.project/goops/dezyne/%.scm: $(CDIR)/%.scm
+out/lego.project/goops/dezyne/%.scm: $(CDIR)%.scm
 	cp $< $@
-out/lego.project/goops/dezyne/main.scm: $(CDIR)/main.scm
+out/lego.project/goops/dezyne/main.scm: $(CDIR)main.scm
 	cp $< $@
-out/lego.project/java/dezyne/%.java: $(CDIR)/%.java
+out/lego.project/java/dezyne/%.java: $(CDIR)%.java
 	cp $< $@
-out/lego.project/javascript/dezyne/%.js: $(CDIR)/%.js
+out/lego.project/javascript/dezyne/%.js: $(CDIR)%.js
 	cp $< $@
 
+out/lego.project/cs/test: out/lego.project/cs/timer.cs
+out/lego.project/java/main.java: out/lego.project/java/timer.java
 
 LANGUAGES:=table
 include make/files.make

@@ -33,12 +33,12 @@ public class timer : Component {
     port = new itimer();
     port.inport.name = "port";
     port.inport.self = this;
-    port.inport.create = (uint32_t ms) => {Runtime.callIn<itimer.In,itimer.Out>(this, () => {port_create(ms);}, new Meta<itimer.In,itimer.Out>(this.port, "create"));};
+    port.inport.create = (Integer ms) => {Runtime.callIn<itimer.In,itimer.Out>(this, () => {port_create(ms);}, new Meta<itimer.In,itimer.Out>(this.port, "create"));};
 
     port.inport.cancel = () => {Runtime.callIn<itimer.In,itimer.Out>(this, () => {port_cancel();}, new Meta<itimer.In,itimer.Out>(this.port, "cancel"));};
 
   }
-  public void port_create(uint32_t ms) {
+  public void port_create(Integer ms) {
     { }
   }
 

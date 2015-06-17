@@ -98,7 +98,7 @@ component Convey
             sensor.disable();
             ctrl.conveyed();
           } else {
-            motor.run($50$, $false$); // (power, invert)
+            motor.run($(config.get("power::50"))$, $false$); // (power, invert)
             s = State.Conveying;
           }
         }
@@ -112,7 +112,7 @@ component Convey
       on sensor.pressed(), sensor.released():
         {
           sensor.disable();
-          motor.pulse($15$,$false$,$2000$);
+          motor.pulse($(config.get("power::15"))$,$false$,$2000$);
           ctrl.conveyed();
           s = State.Idle;
         }

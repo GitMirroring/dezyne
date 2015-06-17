@@ -37,19 +37,19 @@ component Feed
     {
       if (inventory == 4)
       {
-        axis.move($config("Position::Feeder::DropFirst")$);
+        axis.move($(config("Position::Feeder::DropFirst"))$);
       }
       if (inventory == 3)
       {
-        axis.move($config("Position::Feeder::DropSecond")$);
+        axis.move($(config("Position::Feeder::DropSecond"))$);
       }
       if (inventory == 2)
       {
-        axis.move($config("Position::Feeder::DropThird")$);
+        axis.move($(config("Position::Feeder::DropThird"))$);
       }
       if (inventory == 1)
       {
-        axis.move($config("Position::Feeder::DropLast")$);
+        axis.move($(config("Position::Feeder::DropLast"))$);
       }
       s = State.Preparing;
       inventory = inventory - 1;
@@ -58,7 +58,7 @@ component Feed
 
     void retract()
     {
-      axis.move($config("Position::Feeder::Retracted")$);
+      axis.move($(config("Position::Feeder::Retracted"))$);
       isRetracting = true;
       return;
     }

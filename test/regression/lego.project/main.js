@@ -179,7 +179,9 @@ function log_valued(prefix, event, event_map, string_to_value, value_to_string) 
   return 0;
 }
 
-function config(x) { return 0; }
+var config = {
+  get: function(x) { return 0; }
+};
 
 function main () {
   var loc = new dezyne.locator();

@@ -29,9 +29,9 @@ component FeedConvey
   behaviour 
   {
     enum State { Lost, Calibrating, Idle, Preparing, Prepared };
-    enum FeedPhase { None, Feeding, ConveyingNext, ConveyingLast };
+    enum FeedPhase { Idle, Feeding, ConveyingNext, ConveyingLast };
     State s = State.Lost;
-    FeedPhase p = FeedPhase.None;
+    FeedPhase p = FeedPhase.Idle;
     [s.Lost]
     {
       on ctrl.stop():
@@ -39,7 +39,7 @@ component FeedConvey
         feeder.stop();
         conveyor.stop();
         s = State.Lost;
-        p = FeedPhase.None;
+        p = FeedPhase.Idle;
       }
       on ctrl.calibrate():
       {
@@ -56,7 +56,7 @@ component FeedConvey
         feeder.stop();
         conveyor.stop();
         s = State.Lost;
-        p = FeedPhase.None;
+        p = FeedPhase.Idle;
       }
       on ctrl.calibrate(), ctrl.produceBall(), feeder.consumeNextBall(), feeder.consumeLastBall(), conveyor.conveyed():
       illegal;
@@ -73,7 +73,7 @@ component FeedConvey
         feeder.stop();
         conveyor.stop();
         s = State.Lost;
-        p = FeedPhase.None;
+        p = FeedPhase.Idle;
       }
       on ctrl.calibrate(), feeder.calibrated(), feeder.consumeNextBall(), feeder.consumeLastBall(), conveyor.conveyed():
       illegal;
@@ -91,7 +91,7 @@ component FeedConvey
         feeder.stop();
         conveyor.stop();
         s = State.Lost;
-        p = FeedPhase.None;
+        p = FeedPhase.Idle;
       }
       on ctrl.calibrate(), ctrl.produceBall():
       illegal;
@@ -136,13 +136,13 @@ component FeedConvey
         {
           ctrl.consumeNextBall();
           s = State.Prepared;
-          p = FeedPhase.None;
+          p = FeedPhase.Idle;
         }
         [p.ConveyingLast]
         {
           ctrl.consumeLastBall();
           s = State.Prepared;
-          p = FeedPhase.None;
+          p = FeedPhase.Idle;
         }
       }
     }
@@ -153,7 +153,7 @@ component FeedConvey
         feeder.stop();
         conveyor.stop();
         s = State.Lost;
-        p = FeedPhase.None;
+        p = FeedPhase.Idle;
       }
       on ctrl.calibrate(), feeder.calibrated(), feeder.consumeNextBall(), feeder.consumeLastBall(), conveyor.conveyed():
       illegal;

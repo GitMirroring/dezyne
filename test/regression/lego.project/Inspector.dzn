@@ -127,14 +127,14 @@ component Inspect
 
     State s = State.Lost;
     InspectPosition p = InspectPosition.Unknown;
-    IMove2D.MovePosition receiveX = $(config("Position::Inspector::ReceiveX"))$;
-    IMove2D.MovePosition receiveY = $(config("Position::Inspector::ReceiveY"))$;
-    IMove2D.MovePosition inspectX = $(config("Position::Inspector::InspectX"))$;
-    IMove2D.MovePosition inspectY = $(config("Position::Inspector::InspectY"))$;
-    IMove2D.MovePosition acceptX = $(config("Position::Inspector::AcceptX"))$;
-    IMove2D.MovePosition acceptY = $(config("Position::Inspector::AcceptY"))$;
-    IMove2D.MovePosition rejectX = $(config("Position::Inspector::RejectX"))$;
-    IMove2D.MovePosition rejectY = $(config("Position::Inspector::RejectY"))$;
+    IMove2D.MovePosition receiveX = $(config.get("Position::Inspector::ReceiveX"))$;
+    IMove2D.MovePosition receiveY = $(config.get("Position::Inspector::ReceiveY"))$;
+    IMove2D.MovePosition inspectX = $(config.get("Position::Inspector::InspectX"))$;
+    IMove2D.MovePosition inspectY = $(config.get("Position::Inspector::InspectY"))$;
+    IMove2D.MovePosition acceptX = $(config.get("Position::Inspector::AcceptX"))$;
+    IMove2D.MovePosition acceptY = $(config.get("Position::Inspector::AcceptY"))$;
+    IMove2D.MovePosition rejectX = $(config.get("Position::Inspector::RejectX"))$;
+    IMove2D.MovePosition rejectY = $(config.get("Position::Inspector::RejectY"))$;
 
     void stop()
     {

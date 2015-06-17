@@ -28,9 +28,11 @@ import os
 sys.path.insert (0, os.path.dirname (sys.argv[0]))
 #
 
-def config (x):
+def config_get (x):
     return 0
 
+config = {'get': config_get}
+              
 try:
      builtins = sys.modules['__builtin__'].__dict__
 except KeyError:

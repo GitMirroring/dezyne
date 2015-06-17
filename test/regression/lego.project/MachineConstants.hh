@@ -44,6 +44,11 @@ typedef bool Boolean;
 typedef std::uint8_t Byte;
 typedef std::int32_t Integer;
 
-int config(const std::string& key);
+struct config_scope
+{
+  static int get(const std::string& key);
+};
+
+extern config_scope config;
 
 #endif

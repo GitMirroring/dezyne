@@ -49,7 +49,7 @@ map_get_int (map* self, char* key, int **p)
 }
 
 int
-config (char* key)
+config_get (char* key)
 {
   static map* m = 0;
   if (!m)
@@ -100,6 +100,9 @@ config (char* key)
     map_put_int (m, "Position::Feeder::DropLast", -2700);
 
 
+    map_put_int (m, "Power::15", 15);
+    map_put_int (m, "Power::50", 50);
+
     map_put_int (m, "Power::CalibrationSpeed", 20);
     map_put_int (m, "Power::OperationalSpeed", 60);
 
@@ -115,3 +118,5 @@ config (char* key)
   map_get_int (m, key, &i);
   return *i;
 }
+
+config_scope config = {config_get};

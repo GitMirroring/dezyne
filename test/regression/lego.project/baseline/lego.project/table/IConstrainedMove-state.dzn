@@ -22,7 +22,7 @@
 
 interface IConstrainedMove
 {
-  extern position_t $int32_t$;
+  extern position_t $Integer$;
   in void calibrate();
   out void homed();
   in void stop();

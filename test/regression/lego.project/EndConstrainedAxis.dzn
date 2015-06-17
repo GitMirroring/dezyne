@@ -60,7 +60,7 @@ component EndConstrainedMove
     enum State {lost, idle, moving, calibratingEnd};
     State s = State.lost;
 		
-    void slowForward() {motor.run($(config("Power::CalibrationSpeed"))$, $false$);}
+    void slowForward() {motor.run($(config.get("Power::CalibrationSpeed"))$, $false$);}
     void recordHome() {
       endSensor.disable();
       motor.stop(); // brake
@@ -68,7 +68,7 @@ component EndConstrainedMove
     }
     void startAbsoluteMove(IConstrainedMove.position_t target) {
       ITouchSense.TouchState ignore = endSensor.enable();
-      motor.move($(config("Power::OperationalSpeed"))$, target);
+      motor.move($(config.get("Power::OperationalSpeed"))$, target);
       s = State.moving;
     }
     void notifyArrived() {
@@ -126,7 +126,7 @@ component EndConstrainedMove
         {
           ITouchSense.TouchState ignore = ITouchSense.TouchState.Released;
           ignore = endSensor.enable();
-          motor.move($(config("Power::OperationalSpeed"))$, target);
+          motor.move($(config.get("Power::OperationalSpeed"))$, target);
           s = State.moving;
         }
 			

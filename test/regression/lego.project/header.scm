@@ -20,10 +20,10 @@
 ;;; 
 ;;; Code:
 
-(define-syntax-rule (config (string))
-  (get-config string))
+(define-syntax-rule (config.get (string))
+  (config string))
 
-(define (get-config string) 0)
+(define (config string) 0)
 
 (define true #t)
 (define false #t)

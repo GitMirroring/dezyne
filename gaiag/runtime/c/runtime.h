@@ -72,7 +72,6 @@ void runtime_event (void (*event)(void*), void* args);
 char* runtime_path (void* m, char* p);
 void runtime_trace_in (void* in, void *out, char const* e);
 void runtime_trace_out (void* in, void *out, char const* e);
-int config(char*);
 
 #define DZN_TRACE(msg) fprintf (stderr, "%s\n", msg)
 

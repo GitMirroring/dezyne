@@ -22,10 +22,10 @@
 
 interface IMove
 {
-  extern imove_boolean $bool$;
-  extern imove_position_t $int32_t$;
-  extern imove_milliseconds_t $uint32_t$;
-  extern imove_power_t $uint8_t$;
+  extern imove_boolean $Boolean$;
+  extern imove_position_t $Integer$;
+  extern imove_milliseconds_t $Byte$;
+  extern imove_power_t $Byte$;
   in void move(imove_power_t power,imove_position_t position);
   out void arrived();
   in void run(imove_power_t power,imove_boolean invert);
@@ -102,7 +102,7 @@ component Move
   {
     bool moving = false;
     bool pulsing = false;
-    itimer.milliseconds_t time = $config("Duration::PollInterval")$;
+    itimer.milliseconds_t time = $(config("Duration::PollInterval"))$;
     imotor.position_t destination;
     on ctrl.move(power,position):
     {

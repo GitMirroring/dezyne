@@ -22,7 +22,7 @@
 
 interface IMove2D
 {
-  extern MovePosition $int32_t$;
+  extern MovePosition $Integer$;
   in void calibrate();
   out void calibrated();
   in void stop();

@@ -64,8 +64,8 @@ component ConstrainedMove
     enum State {lost, idle, moving, calibratingHome, calibratingLength};
     State s = State.lost;
 
-    void slowForward() {motor.run($(config("Power::CalibrationSpeed"))$, $false$);}
-    void slowBackward() {motor.run($(config("Power::CalibrationSpeed"))$, $true$);}
+    void slowForward() {motor.run($(config.get("Power::CalibrationSpeed"))$, $false$);}
+    void slowBackward() {motor.run($(config.get("Power::CalibrationSpeed"))$, $true$);}
     void recordHome() {
       homeSensor.disable();
       motor.stop(); // brake
@@ -79,7 +79,7 @@ component ConstrainedMove
       ITouchSense.TouchState ignore = ITouchSense.TouchState.Released;
       ignore = homeSensor.enable();
       ignore = endSensor.enable();
-      motor.move($(config("Power::OperationalSpeed"))$, target);
+      motor.move($(config.get("Power::OperationalSpeed"))$, target);
       s = State.moving;
     }
     void notifyArrived() {
@@ -175,7 +175,7 @@ component ConstrainedMove
           ITouchSense.TouchState ignore = ITouchSense.TouchState.Released;
           ignore = homeSensor.enable();
           ignore = endSensor.enable();
-          motor.move($(config("Power::OperationalSpeed"))$, target);
+          motor.move($(config.get("Power::OperationalSpeed"))$, target);
           s = State.moving;
         }
 

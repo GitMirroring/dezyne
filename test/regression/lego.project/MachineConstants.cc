@@ -26,7 +26,8 @@
 #include <iostream>
 #include <stdexcept>
 
-int config(const std::string& key)
+int
+config_scope::get(const std::string& key)
 {
   static std::map<std::string, int> map;
   if(map.empty())
@@ -73,6 +74,8 @@ int config(const std::string& key)
     map["Position::Feeder::DropThird"] = -1950;
     map["Position::Feeder::DropLast"] = -2700;
 
+    map["Power::15"] = 15;    
+    map["Power::50"] = 50;
 
     map["Power::CalibrationSpeed"] = 20;
     map["Power::OperationalSpeed"] = 60;
@@ -91,3 +94,5 @@ int config(const std::string& key)
   }
   return map[key];
 }
+
+config_scope config;

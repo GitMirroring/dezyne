@@ -81,7 +81,7 @@ interface IHandle
 }
 interface ITransfer
 {
-  extern TrPosition $int32_t$;
+  extern TrPosition $Integer$;
   in void calibrate();
   out void calibrated();
   in void stop();
@@ -347,7 +347,7 @@ component Handle
 
     void sendRobotToInputPick()
     {
-      robot.move($config("Position::Robot::X::InputPick")$,$config("Position::Robot::Y::InputPick")$);
+      robot.move($(config("Position::Robot::X::InputPick"))$,$(config("Position::Robot::Y::InputPick"))$);
       isRobotAtOutput = false;
       isRobotAtInput = false;
       return;
@@ -357,7 +357,7 @@ component Handle
     {
       if ((isBallAtInput && isRobotAtInput) && isInspectorAtInput)
       {
-        robot.transfer($config("Position::Robot::X::InputDrop")$,$config("Position::Robot::Y::InputDrop")$);
+        robot.transfer($(config("Position::Robot::X::InputDrop"))$,$(config("Position::Robot::Y::InputDrop"))$);
         o = Operation.TransferringInput;
       }
       return;
@@ -369,12 +369,12 @@ component Handle
       {
         if (isAcceptEmpty && isBallAccepted)
         {
-          robot.transfer($config("Position::Robot::X::OutputDrop")$,$config("Position::Robot::Y::AcceptDrop")$);
+          robot.transfer($(config("Position::Robot::X::OutputDrop"))$,$(config("Position::Robot::Y::AcceptDrop"))$);
           o = Operation.TransferringOutput;
         }
         if (isRejectEmpty && !isBallAccepted)
         {
-          robot.transfer($config("Position::Robot::X::OutputDrop")$,$config("Position::Robot::Y::RejectDrop")$);
+          robot.transfer($(config("Position::Robot::X::OutputDrop"))$,$(config("Position::Robot::Y::RejectDrop"))$);
           o = Operation.TransferringOutput;
         }
       }
@@ -505,7 +505,7 @@ component Handle
         isInspectorAtInput = false;
         inspector.inspect();
         isRobotAtInput = false;
-        robot.move($config("Position::Robot::X::OutputPick")$,$config("Position::Robot::Y::OutputPick")$);
+        robot.move($(config("Position::Robot::X::OutputPick"))$,$(config("Position::Robot::Y::OutputPick"))$);
         o = Operation.PreparingOutput;
       }
       [s.Operating]
@@ -1099,7 +1099,7 @@ component Lift
       [s.Ready]
       [!isHolding]
       {
-        winch.move($config("Position::Robot::Z::Up")$);
+        winch.move($(config("Position::Robot::Z::Up"))$);
         s = State.Moving;
       }
       [s.Ready]
@@ -1116,7 +1116,7 @@ component Lift
       [s.Ready]
       [isHolding]
       {
-        winch.move($config("Position::Robot::Z::Down")$);
+        winch.move($(config("Position::Robot::Z::Down"))$);
         s = State.Moving;
       }
     }
@@ -1148,7 +1148,7 @@ component Lift
       [s.Moving || s.Ready || s.Lost]
       illegal;
       [s.Calibrating]
-      winch.move($config("Position::Robot::Z::Up")$);
+      winch.move($(config("Position::Robot::Z::Up"))$);
     }
   }
 }
@@ -1189,7 +1189,7 @@ component Grip
       [!isHolding]
       {
         s = State.Moving;
-        gripper.move($config("Position::Robot::Gripper::Closed")$);
+        gripper.move($(config("Position::Robot::Gripper::Closed"))$);
       }
       [s.Ready]
       [isHolding]
@@ -1206,7 +1206,7 @@ component Grip
       [isHolding]
       {
         s = State.Moving;
-        gripper.move($config("Position::Robot::Gripper::Open")$);
+        gripper.move($(config("Position::Robot::Gripper::Open"))$);
       }
     }
     on gripper.homed():
@@ -1214,7 +1214,7 @@ component Grip
       [s.Moving || s.Ready || s.Lost]
       illegal;
       [s.Calibrating]
-      gripper.move($config("Position::Robot::Gripper::Closed")$);
+      gripper.move($(config("Position::Robot::Gripper::Closed"))$);
     }
     on gripper.arrived():
     {
