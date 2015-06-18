@@ -107,32 +107,4 @@ component StartControl
 			on startIF.startAll(), device1IF.ok(), device1IF.nok(): illegal;
 		}	
 	}
-} 
-
-component FirstDevice 
-{
-	provides Device1IF device1;
-}
-
-component SecondDevice
-{
-	provides Device2IF device2;}
-
-component DeviceStarter 
-{
-    provides StartControlIF devicestarter;
-	
-    system 
-    {
-
-    StartControl startcontroller;
-    FirstDevice firstdevice;
-    SecondDevice seconddevice;
-    
-    
-    devicestarter <=> startcontroller.startIF;
-    startcontroller.device1IF <=> firstdevice.device1;
-    startcontroller.device2IF <=> seconddevice.device2;
-    
-    }
 }
