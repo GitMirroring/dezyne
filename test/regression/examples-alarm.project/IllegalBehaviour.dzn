@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Ladislau Posta <ladislau.posta@verum.com>
 // Copyright © 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
@@ -201,4 +202,35 @@ Undo the commenting, press Update and re-run verification.
          sensor.disabled():       illegal;
     }
   }
+}
+
+component Sensor 
+{
+	
+	provides ISensor sensor;
+}
+
+component Siren 
+{
+	
+	provides ISiren siren;
+}
+
+component AlarmSystem 
+{
+    provides IConsole console;
+	
+    system 
+    {
+
+    Alarm alarmsystem;
+    Sensor movementsensor;
+    Siren siren;
+    
+    
+    console <=> alarmsystem.console;
+    alarmsystem.sensor <=> movementsensor.sensor;
+    alarmsystem.siren <=> siren.siren;
+    
+    }
 }
