@@ -203,31 +203,3 @@ Undo the commenting, press Update and re-run verification.
     }
   }
 }
-
-component MovementSensor 
-{
-	provides ISensor sensor;
-}
-
-component SoundingSiren 
-{
-	provides ISiren siren;
-}
-
-component WatchDogAlarmSystem 
-{
-    provides IConsole console;
-	
-    system 
-    {
-
-    Alarm alarmsystem;
-    MovementSensor movementsensor;
-    SoundingSiren siren;
-    
-    console <=> alarmsystem.console;
-    alarmsystem.sensor <=> movementsensor.sensor;
-    alarmsystem.siren <=> siren.siren;
-    
-    }
-}
