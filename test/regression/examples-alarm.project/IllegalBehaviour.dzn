@@ -204,19 +204,17 @@ Undo the commenting, press Update and re-run verification.
   }
 }
 
-component Sensor 
+component MovementSensor 
 {
-	
 	provides ISensor sensor;
 }
 
-component Siren 
+component SoundingSiren 
 {
-	
 	provides ISiren siren;
 }
 
-component AlarmSystem 
+component WatchDogAlarmSystem 
 {
     provides IConsole console;
 	
@@ -224,9 +222,8 @@ component AlarmSystem
     {
 
     Alarm alarmsystem;
-    Sensor movementsensor;
-    Siren siren;
-    
+    MovementSensor movementsensor;
+    SoundingSiren siren;
     
     console <=> alarmsystem.console;
     alarmsystem.sensor <=> movementsensor.sensor;
