@@ -75,11 +75,12 @@
         (let* ((models (filter (is? <model>) om))
                (models (comma-join (map .name models)))
                (message (if name
-                            "gaiag: no model [name=~a] with behaviour: ~a\n"
-                            "gaiag: no model with behaviour: ~a\n"))
-               (message (format #f message name models)))
+                            "gaiag: no model [name=~a] with behaviour\n"
+                            "gaiag: no model with behaviour\n"))
+               (message (format #f message name)))
           (stderr message)
-          (throw 'csp message)))))
+          (if name ;; only exit with failure if name was given
+           (throw 'csp message))))))
 
 (define (ast-> ast)
   (let ((om ((om:register ast->om) ast #t)))
