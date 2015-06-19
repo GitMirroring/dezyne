@@ -20,8 +20,13 @@
 # 
 # Code:
 
-#LANGUAGES:=$(filter c c++ c++03 goops javascript python, $(CODE_LANGUAGES))
+#LANGUAGES:=$(filter c c++ c++03 cs goops javascript python, $(CODE_LANGUAGES))
+JAVA7:=$(shell /usr/bin/javac -version 2>&1 | grep -oe 'javac 1.7' >/dev/null && echo 7 || echo '')
+ifeq ($(JAVA7),7)
+LANGUAGES:=$(filter-out java, $(CODE_LANGUAGES))
+else
 LANGUAGES:=$(CODE_LANGUAGES)
+endif
 $(foreach LOCAL_LANGUAGE,$(LANGUAGES),\
 	$(eval include $(CDIR)project.make))
 DZN_FILES:=
