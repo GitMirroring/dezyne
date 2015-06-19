@@ -1,5 +1,6 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -80,9 +81,8 @@ else # LOCAL_LANGUAGE!=run
 triangle-$(LOCAL_TARGET): $(TRACE0) $(OUT)/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/test
 	for i in $$(ls -1 $(LOCAL_TRACE).* | sort -t. -k3 -k4 -n | $(TRIANGLE_MAX) 2>/dev/null); do\
 		set -e;\
-		nn=$$(cat $$i | wc -l);\
 		echo trace[$(LOCAL_LANGUAGE)]: $$i;\
-		diff -wy $$i <(cat $$i | $(OUT)/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/test |& bin/code2fdr | head -n $$nn);\
+		diff -wy $$i <(cat $$i | $(OUT)/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/test |& bin/code2fdr);\
 		echo -e '\n---------------------------------------------------------------------------------';\
 		set +e;\
 	done
