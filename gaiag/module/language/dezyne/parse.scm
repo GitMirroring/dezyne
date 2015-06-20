@@ -241,7 +241,7 @@
           (partition (lambda (x) (eq? (car x) 'function)) $5)
         (receive (s v)
             (partition (lambda (x) (not (eq? (car x) 'variable))) r)
-          `(,$1 ,$2 ,$4 ,(cons 'variables v) ,(cons 'functions f) ,(cons 'compound s)))))
+          `(,$1 ,$2 ,$4 ,(cons 'variables v) ,(cons 'functions f) ,(note-location (cons 'compound s) @1)))))
 
    (optional-identifier
     () : #f

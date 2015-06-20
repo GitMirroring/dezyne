@@ -30,7 +30,8 @@ SHELL:=/bin/bash
 DZN:=../webapp/client/dzn
 OUT:=out
 CCACHE:=$(shell type -p ccache)
-TRIANGLE_MAX:=head -30 # use 'cat' for unlimitted number of traces
+#TRIANGLE_MAX:=cat
+TRIANGLE_MAX:=head -50 # use `cat' for all
 VERBOSE:=
 
 CODE_LANGUAGES=c c++ c++03 cs goops java javascript python
