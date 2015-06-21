@@ -97,6 +97,14 @@
                     (.port trigger))
           'out)))
 
+(define (state->hash state)
+   (alist->hash-table
+    (map
+     (lambda (s)
+       (cons ((@@(gaiag simulate) ->string) (car s))
+             ((@@(gaiag simulate) ->string) (cdr s))))
+     state)))
+
 (define ((json-trace model) tracepoint)
   (let* ((event (car tracepoint))
          (state (cadr tracepoint))
@@ -108,13 +116,17 @@
       (let* ((statement (car statements))
              (class (and=> statement ast-name))
              (type (if (eq? class 'assign) 'update 'transition))
+             (location (alist->hash-table
+                        `((begin . ,(json-location statement))
+                          (end . ,(json-location (or (and (pair? statements) (last statements)) statement))))))
              (message
               (alist->hash-table
                (if (eq? type 'update)
                    (let ((variable (.identifier statement)))
                      `((type . update)
                        (comp . ,name)
-                       (,variable . ,(->symbol (var state variable)))))
+                       (,variable . ,(->symbol (var state variable)))
+                       (location . ,location)))
                    (let ((kind
                           (match statement
                             (($ <compound>) 'step)
@@ -129,8 +141,6 @@
                        (from . ,(from model event statement))
                        (to  . ,(to model statement))
                        (event . ,json-event)
-                       (location .
-                                 ,(alist->hash-table
-                                   `((begin . ,(json-location statement))
-                                     (end . ,(json-location (or (and (pair? statements) (last statements)) statement))))))))))))
+                       (state . ,(state->hash state))
+                       (location . ,location)))))))
         (cons message (loop (cdr statements))))))))
