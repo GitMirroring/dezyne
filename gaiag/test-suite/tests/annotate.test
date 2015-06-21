@@ -66,17 +66,18 @@
            (types)
            (variables)
            (functions)
-           (compound
-             ((location "examples/loc.dzn" 6 4 68 #f)
-              on
-              (triggers
-                ((location "examples/loc.dzn" 6 7 71 #f)
-                 trigger
-                 #f
-                 e))
-              ((location "examples/loc.dzn" 6 10 74 #f)
-               action
-               (trigger #f a))))))
+           ((location "examples/loc.dzn" 4 2 50 #f)
+            compound
+            ((location "examples/loc.dzn" 6 4 68 #f)
+             on
+             (triggers
+               ((location "examples/loc.dzn" 6 7 71 #f)
+                trigger
+                #f
+                e))
+             ((location "examples/loc.dzn" 6 10 74 #f)
+              action
+              (trigger #f a))))))
         ((location "examples/loc.dzn" 10 0 84 #f)
          component
          loc
@@ -86,17 +87,18 @@
            (types)
            (variables)
            (functions)
-           (compound
-             ((location "examples/loc.dzn" 15 4 139 #f)
-              on
-              (triggers
-                ((location "examples/loc.dzn" 15 7 142 #f)
-                 trigger
-                 i
-                 e))
-              ((location "examples/loc.dzn" 15 14 149 #f)
-               action
-               (trigger i a)))))))))
+           ((location "examples/loc.dzn" 13 2 121 #f)
+            compound
+            ((location "examples/loc.dzn" 15 4 139 #f)
+             on
+             (triggers
+               ((location "examples/loc.dzn" 15 7 142 #f)
+                trigger
+                i
+                e))
+             ((location "examples/loc.dzn" 15 14 149 #f)
+              action
+              (trigger i a)))))))))
 
 (pass-if "annotate-extract"
   (pretty-noisy-equal?

@@ -110,7 +110,7 @@
   (simulate ast))
 
 (define (walk-trail model trail)
-   (simulate model (next-todo-trail-walker model (map event->ast trail))))
+  (simulate model (next-todo-trail-walker model (map event->ast trail))))
 
 (define (trace-location ast)
   (or (and-let* ((loc (source-location ast))
@@ -136,11 +136,16 @@
   "if EVENT is of form INTERFACE.TRIGGER, produce (trigger PORT EVENT)"
   (or (and-let* ((string (symbol->string event))
                  (port-event (string-split string #\.))
-                 ((=2 (length port-event))))
-               (make <trigger>
-                 :port (string->symbol (car port-event))
-                 :event (string->symbol (cadr port-event))))
-      (make <trigger> :port #f :event event)))
+                 ((=2 (length port-event)))
+                 (port-event (map string->symbol port-event)))
+                (if (eq? (cadr port-event) 'return)
+                    event
+                    (make <trigger>
+                      :port (car port-event)
+                      :event (cadr port-event))))
+      (if (eq? event 'return)
+          event
+          (make <trigger> :port #f :event event))))
 
 (define (seen-key model state ast)
   (when (not (equal? (om->list ast) (om->list (.statement (.behaviour model))))
@@ -188,6 +193,7 @@
     (filter (negate (lambda (x) (member x done equal?))) events)))
 
 (define (next-value action) #t)
+(define (next-return port) #t)
 
 ;; FIXME: TODO: implement next-value for state explorer
 (define (next-todo-space-explorer model state ast)
@@ -223,6 +229,21 @@
                   (stderr "****value := ~a\n" (->string value))
                   (set! trail (cdr trail))
                   value))))
+    (set! next-return
+          (lambda (port)
+            (stderr "RETURN[~a]: ~a\n" port trail)
+            (if (null? trail)
+                #f
+                (let* ((next (car trail))
+                       (return (if port (symbol-append port '.return) 'return))
+                       (matches? (lambda (x) (eq? x return))))
+                  (stderr "return: ~a\n" return)
+                  (match return
+                    ((? matches?)
+                     (stderr "****return := ~a\n" (->string return))
+                     (set! trail (cdr trail))
+                     return)
+                    (_ #f))))))
     (lambda (model state ast-dont-care)
       (if (null? trail)
           (cons #f '())
@@ -307,7 +328,8 @@
               (receive (new-state new-ast new-action new-return new-trace)
                   (process model statement state event '())
                 (if (pair? new-trace)
-                    (values new-state new-ast new-action new-return (append new-trace (cons ast trace)))
+                    (let ((return (next-return (.port event))))
+                      (values new-state new-ast new-action new-return (append (list (list 'return return)) new-trace (cons ast trace))))
                     (values state #f #f #f '())))
               (values state #f #f #f '())))
          (($ <guard> expression statement)

@@ -21,6 +21,7 @@
 (define-module (gaiag json-trace)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
+  :use-module (gaiag list match)
 
   :use-module (srfi srfi-1)
 
@@ -29,6 +30,7 @@
   :use-module (gaiag pretty-print)
   :use-module (gaiag reader)
   :use-module (gaiag evaluate)
+  :use-module (gaiag simulate)  
 
   :use-module (gaiag ast)
 
@@ -101,7 +103,9 @@
          (steps (cddr tracepoint))
          (name (.name model)))
     (let loop ((statements steps))
-      (let* ((statement (if (null? statements) #f (car statements)))
+      (if (null? statements)
+          (list (alist->hash-table '()))
+      (let* ((statement (car statements))
              (class (and=> statement ast-name))
              (type (if (eq? class 'assign) 'update 'transition))
              (message
@@ -111,14 +115,15 @@
                      `((type . update)
                        (comp . ,name)
                        (,variable . ,(->symbol (var state variable)))))
-                   (let ((kind (assoc-ref '((#f . return)
-                                            (on . call)
-                                            (action . call))
-                                          (and=> statement ast-name)))
-                         (json-event (cond
-                                      ((is-a? statement <on>) (->symbol event))
-                                      ((is-a? statement <action>) (->symbol (.trigger statement)))
-                                      (else 'return))))
+                   (let ((kind
+                          (match statement
+                            (($ <compound>) 'step)
+                            (_ class)))
+                         (json-event
+                          (match statement
+                            (($ <on>) (->symbol event))
+                            (($ <action>) (->symbol (.trigger statement)))
+                            (_ #f))))
                      `((type . transition)
                        (kind . ,kind)
                        (from . ,(from model event statement))
@@ -127,8 +132,5 @@
                        (location .
                                  ,(alist->hash-table
                                    `((begin . ,(json-location statement))
-                                     (end . ,(json-location (or (and (pair? statements) (last statements)) statement))))))))))
-              )) ;;TODO
-        (if (not statement)
-            (list message)
-            (cons message (loop (cdr statements))))))))
+                                     (end . ,(json-location (or (and (pair? statements) (last statements)) statement))))))))))))
+        (cons message (loop (cdr statements))))))))

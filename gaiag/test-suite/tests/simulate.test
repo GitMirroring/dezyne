@@ -76,10 +76,31 @@
          interface i { in void a; out void b;
                           behaviour { on a: b;
                                          } } #})))
-    '(a a a))
-   (map
-    (lambda (x) (cons x (cons '() '((on (triggers (trigger #f a)) (action (trigger #f b))) (action (trigger #f b))))))
-    '(a a a))))
+    '(a return a return a return))
+   '((a ()
+        (compound
+         (on (triggers (trigger #f a (arguments)))
+             (action (trigger #f b (arguments)))))
+        (on (triggers (trigger #f a (arguments)))
+            (action (trigger #f b (arguments))))
+        (action (trigger #f b (arguments)))
+        (return return))
+     (a ()
+        (compound
+         (on (triggers (trigger #f a (arguments)))
+             (action (trigger #f b (arguments)))))
+        (on (triggers (trigger #f a (arguments)))
+            (action (trigger #f b (arguments))))
+        (action (trigger #f b (arguments)))
+        (return return))
+     (a ()
+        (compound
+         (on (triggers (trigger #f a (arguments)))
+             (action (trigger #f b (arguments)))))
+        (on (triggers (trigger #f a (arguments)))
+            (action (trigger #f b (arguments))))
+        (action (trigger #f b (arguments)))
+        (return return)))))
 
 (pass-if "simulator-guard-trail"
    (om-pretty-noisy-equal?
@@ -100,31 +121,76 @@
                         }
                        }
                       } #})))
-     '(a a a))
-    '((a
-       ((t . #t))
-       (on (triggers (trigger #f a))
-           (compound
-            (guard (expression (var t)) (assign t (expression (! (var t)))))
-            (guard (expression (! (var t))) (action (trigger #f b)))))
-       (guard (expression (var t)) (assign t (expression (! (var t)))))
-       (assign t (expression (! (var t)))))
-      (a
-       ((t . #f))
-       (on (triggers (trigger #f a))
-           (compound
-            (guard (expression (var t)) (assign t (expression (! (var t)))))
-            (guard (expression (! (var t))) (action (trigger #f b)))))
-       (guard (expression (! (var t))) (action (trigger #f b)))
-       (action (trigger #f b)))
-      (a
-       ((t . #f))
-       (on (triggers (trigger #f a))
-           (compound
-            (guard (expression (var t)) (assign t (expression (! (var t)))))
-            (guard (expression (! (var t))) (action (trigger #f b)))))
-       (guard (expression (! (var t))) (action (trigger #f b)))
-       (action (trigger #f b))))))
+     '(a return a return a return))
+    '((a ((t . #t))
+    (compound
+      (on (triggers (trigger #f a (arguments)))
+          (compound
+            (guard (expression (var t))
+                   (assign t (expression (! (var t)))))
+            (guard (expression (! (var t)))
+                   (action (trigger #f b (arguments)))))))
+    (on (triggers (trigger #f a (arguments)))
+        (compound
+          (guard (expression (var t))
+                 (assign t (expression (! (var t)))))
+          (guard (expression (! (var t)))
+                 (action (trigger #f b (arguments))))))
+    (compound
+      (guard (expression (var t))
+             (assign t (expression (! (var t)))))
+      (guard (expression (! (var t)))
+             (action (trigger #f b (arguments)))))
+    (guard (expression (var t))
+           (assign t (expression (! (var t)))))
+    (assign t (expression (! (var t))))
+    (return return))
+ (a ((t . #f))
+    (compound
+      (on (triggers (trigger #f a (arguments)))
+          (compound
+            (guard (expression (var t))
+                   (assign t (expression (! (var t)))))
+            (guard (expression (! (var t)))
+                   (action (trigger #f b (arguments)))))))
+    (on (triggers (trigger #f a (arguments)))
+        (compound
+          (guard (expression (var t))
+                 (assign t (expression (! (var t)))))
+          (guard (expression (! (var t)))
+                 (action (trigger #f b (arguments))))))
+    (compound
+      (guard (expression (var t))
+             (assign t (expression (! (var t)))))
+      (guard (expression (! (var t)))
+             (action (trigger #f b (arguments)))))
+    (guard (expression (! (var t)))
+           (action (trigger #f b (arguments))))
+    (action (trigger #f b (arguments)))
+    (return return))
+ (a ((t . #f))
+    (compound
+      (on (triggers (trigger #f a (arguments)))
+          (compound
+            (guard (expression (var t))
+                   (assign t (expression (! (var t)))))
+            (guard (expression (! (var t)))
+                   (action (trigger #f b (arguments)))))))
+    (on (triggers (trigger #f a (arguments)))
+        (compound
+          (guard (expression (var t))
+                 (assign t (expression (! (var t)))))
+          (guard (expression (! (var t)))
+                 (action (trigger #f b (arguments))))))
+    (compound
+      (guard (expression (var t))
+             (assign t (expression (! (var t)))))
+      (guard (expression (! (var t)))
+             (action (trigger #f b (arguments)))))
+    (guard (expression (! (var t)))
+           (action (trigger #f b (arguments))))
+    (action (trigger #f b (arguments)))
+    (return return)))))
 
 (pass-if "walk-trail-arguments"
 (or #t (let* ((arguments-ast (read-ast 'examples/arguments.dzn))
