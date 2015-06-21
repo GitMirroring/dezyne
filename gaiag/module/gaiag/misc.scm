@@ -42,6 +42,8 @@
            =0
            =1
            =2
+           >=1
+           >=2
            >0
            >1
            >2
@@ -108,8 +110,10 @@
 (define (>0 x) (> x 0))
 (define (=1 x) (= x 1))
 (define (>1 x) (> x 1))
+(define (>=1 x) (>= x 1))
 (define (=2 x) (= x 2))
 (define (>2 x) (> x 2))
+(define (>=2 x) (>= x 2))
 (define (2+ x) (+ x 2))
 (define (2- x) (- x 2))
 

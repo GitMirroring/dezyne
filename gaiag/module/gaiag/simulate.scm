@@ -136,14 +136,16 @@
   "if EVENT is of form INTERFACE.TRIGGER, produce (trigger PORT EVENT)"
   (or (and-let* ((string (symbol->string event))
                  (port-event (string-split string #\.))
-                 ((=2 (length port-event)))
-                 (port-event (map string->symbol port-event)))
-                (if (eq? (cadr port-event) 'return)
+                 (port-event (map string->symbol port-event))
+                 ((=2 (length port-event))))
+                (if (or (eq? (car port-event) 'return)
+                        (eq? (cadr port-event) 'return))
                     event
                     (make <trigger>
                       :port (car port-event)
                       :event (cadr port-event))))
-      (if (eq? event 'return)
+      (if (or (eq? event 'return)
+              (=2 (length (string-split (symbol->string event) #\_))))
           event
           (make <trigger> :port #f :event event))))
 
@@ -194,6 +196,7 @@
 
 (define (next-value action) #t)
 (define (next-return port) #t)
+(define (set-return! value) #t)
 
 ;; FIXME: TODO: implement next-value for state explorer
 (define (next-todo-space-explorer model state ast)
@@ -217,7 +220,8 @@
                           (loop (cdr entries)))))))))))
 
 (define (next-todo-trail-walker model trail)
-  (let ((trail trail))
+  (let ((trail trail)
+        (return-value 'return))
     (set! next-value
           (lambda (action)
             (if (null? trail)
@@ -231,19 +235,24 @@
                   value))))
     (set! next-return
           (lambda (port)
-            (stderr "RETURN[~a]: ~a\n" port trail)
+            (stderr "RETURN[~a.~a]: ~a\n" port return-value trail)
             (if (null? trail)
                 #f
                 (let* ((next (car trail))
-                       (return (if port (symbol-append port '.return) 'return))
+                       (return (if port (symbol-append port '. return-value) return-value))
                        (matches? (lambda (x) (eq? x return))))
+                  (stderr "NEXT: ~a\n" next)
+                  (set! return-value 'return)
                   (stderr "return: ~a\n" return)
-                  (match return
+                  (match next
                     ((? matches?)
                      (stderr "****return := ~a\n" (->string return))
                      (set! trail (cdr trail))
                      return)
                     (_ #f))))))
+    (set! set-return! (lambda (value)
+                        (stderr "SETTING: ~a\n" (->symbol value))
+                        (set! return-value (->symbol value))))
     (lambda (model state ast-dont-care)
       (if (null? trail)
           (cons #f '())
@@ -407,7 +416,8 @@
           (let ((return (eval-expression model state expression)))
             (values state #f #f return (cons ast trace))))
          (($ <reply> expression)
-          (let ((reply (eval-expression model state expression)))
+          (let ((return (eval-expression model state expression)))
+            (set-return! return)
             (values state ast #f #f (cons ast trace))))))))
 
 (define (->string src)
@@ -417,7 +427,7 @@
     (($ <expression> expression) (->string expression))
     (($ <var> identifier) (symbol->string identifier))
     (($ <field> type field) (->string (list (->string type) "." field)))
-    (($ <literal> scope type field) (->string (list (->string type) "." (->string field))))
+    (($ <literal> scope type field) (->string (list (->string type) "_" (->string field))))
     (($ <trigger> #f event) (->string event))
     (($ <trigger> port event) (->string (list port "." event)))
     (('type name) (->string name))
@@ -433,14 +443,14 @@
     (($ <expression> expression) (->symbol expression))
     (($ <var> identifier) identifier)
     (($ <field> type field) (->symbol (list (->symbol type) "." field)))
-    ((identifier ($ <field> type field)) (->symbol (list (->symbol identifier) " = " (->symbol type) "." field)))
-    ((identifier ($ <literal> scope type field)) (->symbol (list (->symbol identifier) " = " (->symbol type) "." (->symbol field))))
-    (($ <literal> scope type field) (->symbol (list (->symbol type) "." (->symbol field))))
+;;    ((identifier ($ <field> type field)) (->symbol (list (->symbol identifier) " = " (->symbol type) "." field)))
+;;    ((identifier ($ <literal> scope type field)) (->symbol (list (->symbol identifier) " = " (->symbol type) "." (->symbol field))))
+    (($ <literal> scope type field) (->symbol (list (->symbol type) "_" (->symbol field))))
     (($ <trigger> #f event) (->symbol event))
     (($ <trigger> port event) (->symbol (list port "." event)))
 
     ((h ... t) (apply symbol-append (map ->symbol src)))
-    ((h . t) (list (->symbol h) '= (->symbol t)))
+;;    ((h . t) (list (->symbol h) '= (->symbol t)))
     (((h ... t)) (->symbol (car src)))
     ((? string?) (string->symbol src))
     ((? symbol?) src)))

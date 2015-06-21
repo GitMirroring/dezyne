@@ -346,7 +346,7 @@
     (if lparen expression rparen statement else statement) : `(if ,$3 ,$5 ,$7))
 
    (reply-statement
-    (reply lparen expression rparen semicolon) : `(,$1 ,$3))
+    (reply lparen expression rparen semicolon) : (note-location `(,$1 ,$3) @1))
 
    (return-statement
     (return semicolon) : (note-location '(return) @1)
