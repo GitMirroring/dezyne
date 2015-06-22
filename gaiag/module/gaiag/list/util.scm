@@ -265,7 +265,8 @@
 (define (om:children o)
   (cdr o))
 
-(define (ast-name o) (car o))
+(define (ast-name o)
+  (and (pair? o) (car o)))
 
 (define (om:declarative? o)
   (or (is-a? o <guard>)
