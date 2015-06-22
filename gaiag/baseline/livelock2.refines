@@ -6,8 +6,8 @@ true
 Checking IF_ilivelock_(false,false) :[deadlock free]
 true
 
-Checking IF_ilivelock_(true,false)\{|ilivelock.inevitable,ilivelock_'''|} :[livelock free]
-xfalse
+Checking IF_ilivelock_(true,false) :[livelock free]
+true
 
 Checking COMPLETE'({nolivelock.inevitable}) [F= IF_nolivelock_(true,true)\diff(Events,{nolivelock.inevitable,illegal})
 true
@@ -15,7 +15,7 @@ true
 Checking IF_nolivelock_(false,false) :[deadlock free]
 true
 
-Checking IF_nolivelock_(true,false)\{|nolivelock.inevitable,nolivelock_'''|} :[livelock free]
+Checking IF_nolivelock_(true,false) :[livelock free]
 true
 
 Checking CO_livelock2_(true,true)[[ilivelock_'.x<-l_'.x|x<-extensions(l_')]] :[deterministic]

@@ -197,7 +197,7 @@ within compress((CO_i66_DummyC_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<
 -- end of component.csp.scm
 assert COMPLETE'({i26_I.optional,i26_I.i3_e}) [F= IF_i26_I_(true,true) \ diff(Events,{i26_I.optional,i26_I.i3_e,illegal})
 assert IF_i26_I_(false,false) :[deadlock free]
-assert IF_i26_I_(true,false)  \ {|i26_I.optional,i26_I_'''|} :[livelock free]
+assert IF_i26_I_(true,false) :[livelock free]
 assert COMPLETE'({i43_DummyI.i27_e}) [F= IF_i43_DummyI_(true,true) \ diff(Events,{i43_DummyI.i27_e,illegal})
 assert IF_i43_DummyI_(false,false) :[deadlock free]
 assert IF_i43_DummyI_(true,false) :[livelock free]

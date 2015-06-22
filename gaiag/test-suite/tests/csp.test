@@ -1099,7 +1099,7 @@ Alarm_d(state,sounding)
           ;; to:
           "o_''?x:{bar} -> (
 i_''!bar ->
-i_'?e ->
+i_'?e:{E_v} ->
 transition_end ->
 var_()
 )"))
@@ -1116,7 +1116,7 @@ var_()
           ;; via:
           "o_''?x:{bar} -> (
 i_''!bar ->
-i_'?e ->
+i_'?e:{E_v} ->
 transition_end ->
 var_()
 )"))
@@ -1155,7 +1155,7 @@ var_()
           "o_''?x:{bar} -> (
 (if true then
 i_''!bar ->
-i_'?e ->
+i_'?e:{E_v} ->
 transition_end ->
 var_()
 else
@@ -1200,7 +1200,7 @@ var_()
           "o_''?x:{bar} -> (
 (if true then
 i_''!bar ->
-i_'?e ->
+i_'?e:{E_v} ->
 transition_end ->
 var_()
 else
@@ -1221,7 +1221,7 @@ var_()
           ;; via:
           "o_''?x:{bar} -> (
 i_''!bar ->
-i_'?e ->
+i_'?e:{E_v} ->
 transition_end ->
 var_()
 )"))
@@ -1496,7 +1496,7 @@ g(Cont_6')(s, b, c, b, b)
           ;; to:
           "i?x:{done} -> (
 u!what ->
-u_'?s ->
+u_'?s:{Status_Ok,Status_Nok} ->
 (if (s == Status_Ok) then
 I_'!Status_Yes ->
 transition_end ->
@@ -2027,7 +2027,7 @@ h(Cont_10')(b, s, b)
           ;; to:
           "i?x:{e} -> (
 u!what ->
-u_'?s ->
+u_'?s:{Status_Ok,Status_Nok} ->
 I_'.return ->
 transition_end ->
 Reply_(dummy)
@@ -2066,7 +2066,7 @@ Reply_(dummy)
           ;; to:
           "i?x:{e} -> (
 u!what ->
-u_'?s ->
+u_'?s:{Status_Ok,Status_Nok} ->
 I_'.return ->
 transition_end ->
 Reply_(dummy)

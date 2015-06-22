@@ -230,7 +230,7 @@ transition_begin -> (
 ((s == State_Uninitialized)) & (
 client?x:{initialize} -> (
   device_A!initialize ->
-  device_A_'?res ->
+  device_A_'?res:{result_t_OK,result_t_NOK} ->
   (if (res == result_t_OK) then 
     device_A!calibrate ->
     device_A_'?res ->
@@ -274,7 +274,7 @@ client?x:{initialize} -> (
 ((s == State_Initialized)) & (
 client?x:{perform_actions} -> (
   device_A!perform_action1 ->
-  device_A_'?res ->
+  device_A_'?res:{result_t_OK,result_t_NOK} ->
   (if (res == result_t_OK) then 
     device_A!perform_action2 ->
     device_A_'?res ->
@@ -318,7 +318,7 @@ client?x:{perform_actions} -> (
 ((s == State_Error)) & (
 client?x:{recover} -> (
   device_A!calibrate ->
-  device_A_'?res ->
+  device_A_'?res:{result_t_OK,result_t_NOK} ->
   (if (res == result_t_OK) then 
     let tmp' = State_Initialized within
     let s = tmp' within

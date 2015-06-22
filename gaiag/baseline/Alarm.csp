@@ -454,10 +454,10 @@ within compress((CO_Alarm_d(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reo
 -- end of component.csp.scm
 assert COMPLETE'({IConsole.inevitable,IConsole.optional,IConsole.arm,IConsole.disarm}) [F= IF_IConsole_a(true,true) \ diff(Events,{IConsole.inevitable,IConsole.optional,IConsole.arm,IConsole.disarm,illegal})
 assert IF_IConsole_a(false,false) :[deadlock free]
-assert IF_IConsole_a(true,false)  \ {|IConsole.inevitable,IConsole.optional,IConsole_'''|} :[livelock free]
+assert IF_IConsole_a(true,false) :[livelock free]
 assert COMPLETE'({ISensor.inevitable,ISensor.optional,ISensor.enable,ISensor.disable}) [F= IF_ISensor_b(true,true) \ diff(Events,{ISensor.inevitable,ISensor.optional,ISensor.enable,ISensor.disable,illegal})
 assert IF_ISensor_b(false,false) :[deadlock free]
-assert IF_ISensor_b(true,false)  \ {|ISensor.inevitable,ISensor.optional,ISensor_'''|} :[livelock free]
+assert IF_ISensor_b(true,false) :[livelock free]
 assert COMPLETE'({ISiren.turnon,ISiren.turnoff}) [F= IF_ISiren_c(true,true) \ diff(Events,{ISiren.turnon,ISiren.turnoff,illegal})
 assert IF_ISiren_c(false,false) :[deadlock free]
 assert IF_ISiren_c(true,false) :[livelock free]

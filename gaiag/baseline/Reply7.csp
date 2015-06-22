@@ -63,7 +63,7 @@ channel r_''': extensions(IReply7_''')
 CO_Reply7_(IIG,IG) = let
 f(P')() = 
     r!foo ->
-    r_'?v ->
+    r_'?v:{E_A} ->
     IReply7_'!v -> 
     P'()
 

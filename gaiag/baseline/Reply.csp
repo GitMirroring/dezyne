@@ -116,7 +116,7 @@ transition_begin -> (
 (true) & (
 i?x:{done} -> (
   u!what ->
-  u_'?s ->
+  u_'?s:{Status_Ok,Status_Nok} ->
   (if (s == Status_Ok) then 
     I_'!Status_Yes -> 
     transition_end ->

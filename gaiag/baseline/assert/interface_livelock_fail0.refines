@@ -6,8 +6,8 @@ true
 Checking IF_i26_I_(false,false) :[deadlock free]
 true
 
-Checking IF_i26_I_(true,false)\{|i26_I.optional,i26_I_'''|} :[livelock free]
-xfalse
+Checking IF_i26_I_(true,false) :[livelock free]
+true
 
 Checking COMPLETE'({i43_DummyI.i27_e}) [F= IF_i43_DummyI_(true,true)\diff(Events,{i43_DummyI.i27_e,illegal})
 true

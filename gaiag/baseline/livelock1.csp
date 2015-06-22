@@ -195,7 +195,7 @@ within compress((CO_livelock1_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-
 -- end of component.csp.scm
 assert COMPLETE'({ilivelock.inevitable}) [F= IF_ilivelock_(true,true) \ diff(Events,{ilivelock.inevitable,illegal})
 assert IF_ilivelock_(false,false) :[deadlock free]
-assert IF_ilivelock_(true,false)  \ {|ilivelock.inevitable,ilivelock_'''|} :[livelock free]
+assert IF_ilivelock_(true,false) :[livelock free]
 assert COMPLETE'({nolivelock.dummy}) [F= IF_nolivelock_(true,true) \ diff(Events,{nolivelock.dummy,illegal})
 assert IF_nolivelock_(false,false) :[deadlock free]
 assert IF_nolivelock_(true,false) :[livelock free]

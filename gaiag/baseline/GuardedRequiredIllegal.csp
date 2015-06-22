@@ -244,10 +244,10 @@ within compress((CO_GuardedRequiredIllegal_(IIG,true) [[x<-OUT'.x|x<-extensions(
 -- end of component.csp.scm
 assert COMPLETE'({Bottom.inevitable,Bottom.e}) [F= IF_Bottom_(true,true) \ diff(Events,{Bottom.inevitable,Bottom.e,illegal})
 assert IF_Bottom_(false,false) :[deadlock free]
-assert IF_Bottom_(true,false)  \ {|Bottom.inevitable,Bottom_'''|} :[livelock free]
+assert IF_Bottom_(true,false) :[livelock free]
 assert COMPLETE'({Top.optional,Top.unguarded,Top.e}) [F= IF_Top_(true,true) \ diff(Events,{Top.optional,Top.unguarded,Top.e,illegal})
 assert IF_Top_(false,false) :[deadlock free]
-assert IF_Top_(true,false)  \ {|Top.optional,Top_'''|} :[livelock free]
+assert IF_Top_(true,false) :[livelock free]
 assert CO_GuardedRequiredIllegal_(true,true)[[Top_'.x<-t_'.x|x<-extensions(t_')]] :[deterministic]
 assert COMPLETE'({t.unguarded,t.e,b_''.f}) [F= CO_GuardedRequiredIllegal_(true,true)[[Top_'.x'<-t_'.x'|x'<-extensions(t_')]] \ diff(Events,{t.unguarded,t.e,b_''.f,illegal})
 assert STOP [T= AS_GuardedRequiredIllegal_(false) \ diff(Events,{illegal})

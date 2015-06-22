@@ -214,7 +214,7 @@ within compress((CO_i143_C_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reo
 -- end of component.csp.scm
 assert COMPLETE'({i102_II.inevitable,i102_II.i21_a}) [F= IF_i102_II_(true,true) \ diff(Events,{i102_II.inevitable,i102_II.i21_a,illegal})
 assert IF_i102_II_(false,false) :[deadlock free]
-assert IF_i102_II_(true,false)  \ {|i102_II.inevitable,i102_II_'''|} :[livelock free]
+assert IF_i102_II_(true,false) :[livelock free]
 assert COMPLETE'({i20_I.i3_e}) [F= IF_i20_I_(true,true) \ diff(Events,{i20_I.i3_e,illegal})
 assert IF_i20_I_(false,false) :[deadlock free]
 assert IF_i20_I_(true,false) :[livelock free]

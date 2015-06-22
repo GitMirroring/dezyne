@@ -201,7 +201,7 @@ assert IF_i20_I_(false,false) :[deadlock free]
 assert IF_i20_I_(true,false) :[livelock free]
 assert COMPLETE'({i47_II.inevitable}) [F= IF_i47_II_(true,true) \ diff(Events,{i47_II.inevitable,illegal})
 assert IF_i47_II_(false,false) :[deadlock free]
-assert IF_i47_II_(true,false)  \ {|i47_II.inevitable,i47_II_'''|} :[livelock free]
+assert IF_i47_II_(true,false) :[livelock free]
 assert CO_i78_C_(true,true)[[i20_I_'.x<-i48_i_'.x|x<-extensions(i48_i_')]] :[deterministic]
 assert COMPLETE'({i48_i.i3_e,i51_ii_''.i21_e}) [F= CO_i78_C_(true,true)[[i20_I_'.x'<-i48_i_'.x'|x'<-extensions(i48_i_')]] \ diff(Events,{i48_i.i3_e,i51_ii_''.i21_e,illegal})
 assert STOP [T= AS_i78_C_(false) \ diff(Events,{illegal})
