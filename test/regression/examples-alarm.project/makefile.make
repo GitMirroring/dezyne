@@ -22,6 +22,10 @@
 
 LANGUAGES:=$(ALL_LANGUAGES)
 # cs has different trace...?!
-LANGUAGES:=$(filter-out cs,$(LANGUAGES))
+LANGUAGES:=$(filter-out cs run verify,$(LANGUAGES))
 SUT:=AlarmSystem
+include make/project.make
+LANGUAGES:=run verify
+SUT:=Alarm
+DZN_FILES:=$(CDIR)Alarm.dzn
 include make/project.make

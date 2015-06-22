@@ -20,7 +20,7 @@
 //
 // Code:
 
-import AlarmSystem.dzn;
+import Alarm.dzn;
 //import ILogger.dzn;
 
 component Sensor

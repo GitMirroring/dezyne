@@ -20,7 +20,7 @@
 //
 // Code:
 
-import IllegalBehaviour.dzn;
+import Alarm.dzn;
 import External.dzn;
 
 component AlarmSystem

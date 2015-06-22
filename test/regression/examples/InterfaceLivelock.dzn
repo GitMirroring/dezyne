@@ -21,10 +21,7 @@
 //
 // Code:
 
-///////////////////////////////////////////////////////////////////////////////
-// This example shows a livelock-ed interface, i.e. it shows the specification 
-// of continuous behaviour without externally visible communication.
-///////////////////////////////////////////////////////////////////////////////
+//purpose: Show an interface with a livelock
 
 interface BlindLoop
 {
