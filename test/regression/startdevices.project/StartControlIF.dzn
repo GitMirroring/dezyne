@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
 // Copyright © 2015 Ladislau Posta <ladislau.posta@verum.com>
 //
 // This file is part of Dezyne.
@@ -30,33 +31,33 @@
 
 interface StartControlIF
 {
-	enum Result { OK, NOK };
-	in void startAll();
-	in void stopAll();
-	out void allStarted();
-	out void startFailed();
-	
-	behaviour
-	{
-		enum States { Idle, Starting, Started };
-		States state = States.Idle; 
-		
-		[state.Idle]
-		{
-			on startAll: state = States.Starting;
-			on stopAll: illegal;
-		}
-		[state.Starting]
-		{
-			on startAll, stopAll: illegal;
-			on inevitable: { state = States.Idle; startFailed; }
-			on inevitable: { state = States.Started; allStarted; }
-		}
-		[state.Started]
-		{
-			on startAll: illegal;
-			on stopAll: state = States.Idle; 
-		}	
-	}
+  enum Result { OK, NOK };
+  in void startAll();
+  in void stopAll();
+  out void allStarted();
+  out void startFailed();
+
+  behaviour
+  {
+    enum States { Idle, Starting, Started };
+    States state = States.Idle; 
+
+    [state.Idle]
+    {
+      on startAll: state = States.Starting;
+      on stopAll: illegal;
+    }
+    [state.Starting]
+    {
+      on startAll, stopAll: illegal;
+      on inevitable: { state = States.Idle; startFailed; }
+      on inevitable: { state = States.Started; allStarted; }
+    }
+    [state.Started]
+    {
+      on startAll: illegal;
+      on stopAll: state = States.Idle; 
+    } 
+  }
 }
 

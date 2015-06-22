@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -536,10 +537,10 @@ component Transfer
       on ctrl.calibrate(), ctrl.move(), ctrl.transfer(): illegal;
       on hoist.calibrated(), gripper.calibrated(), trolley.homed(), truck.homed(): illegal;
       on hoist.ready(), gripper.ready(): illegal;
-		}
+    }
 
-		[s.Transferring]
-		{
+    [s.Transferring]
+    {
       [ts.Picking]
       {
         on hoist.ready(): gripper.retain();
@@ -601,22 +602,22 @@ component Transfer
 
       on ctrl.calibrate(), ctrl.move(), ctrl.transfer(): illegal;
       on hoist.calibrated(), gripper.calibrated(), trolley.homed(), truck.homed(): illegal;
-		}
-	}
+    }
+  }
 }
 
 interface IRetain
 {
   in void stop();
-	in void calibrate();
-	out void calibrated();
+  in void calibrate();
+  out void calibrated();
 
-	in void retain(); // raise, close
-	in void release(); // lower, open
-	out void ready();
+  in void retain(); // raise, close
+  in void release(); // lower, open
+  out void ready();
 
-	behaviour
-	{
+  behaviour
+  {
     enum State {Lost, Calibrating, Ready, Moving};
     State s = State.Lost;
     bool isHolding = false; // true => up/closed, false => down/open
@@ -666,27 +667,27 @@ interface IRetain
 
 component Hoist
 {
-	provides IRetain ctrl;
+  provides IRetain ctrl;
 
-	requires imotor motorHw; // required by HalfConstrainedAxis winch
-	requires itouch endSensorHw; // required by HalfConstrainedAxis winch
+  requires imotor motorHw; // required by HalfConstrainedAxis winch
+  requires itouch endSensorHw; // required by HalfConstrainedAxis winch
 
-	system
-	{
-		Lift bhv;
-		EndConstrainedAxis winch;
+  system
+  {
+    Lift bhv;
+    EndConstrainedAxis winch;
 
-		ctrl <=> bhv.ctrl;
-		bhv.winch <=> winch.ctrl;
-		winch.motorHw <=> motorHw;
-		winch.endSensorHw <=> endSensorHw;
-	}
+    ctrl <=> bhv.ctrl;
+    bhv.winch <=> winch.ctrl;
+    winch.motorHw <=> motorHw;
+    winch.endSensorHw <=> endSensorHw;
+  }
 }
 
 component Lift
 {
-	provides IRetain ctrl;
-	requires IConstrainedMove winch;
+  provides IRetain ctrl;
+  requires IConstrainedMove winch;
 
   behaviour
   {
@@ -738,27 +739,27 @@ component Lift
 
 component Gripper
 {
-	provides IRetain ctrl;
+  provides IRetain ctrl;
 
-	requires imotor motorHw; // required by motor
+  requires imotor motorHw; // required by motor
   requires itouch endSensorHw;
 
-	system
-	{
-		Grip bhv;
-		EndConstrainedAxis gripper;
+  system
+  {
+    Grip bhv;
+    EndConstrainedAxis gripper;
 
-		ctrl <=> bhv.ctrl;
-		bhv.gripper <=> gripper.ctrl;
+    ctrl <=> bhv.ctrl;
+    bhv.gripper <=> gripper.ctrl;
 
-		gripper.motorHw <=> motorHw;
+    gripper.motorHw <=> motorHw;
     gripper.endSensorHw <=> endSensorHw;
-	}
+  }
 }
 
 component Grip
 {
-	provides IRetain ctrl;
+  provides IRetain ctrl;
   requires IConstrainedMove gripper;
 
   behaviour

@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -45,28 +46,28 @@ interface IBackend
 
    on checkModel:                         
    {
-   	[!ModelCheckOngoing] ModelCheckOngoing = true;      // indicate that a model check transaction is ongoing
-   	[otherwise] illegal;                                // starting another model check is not allowed when there is already one ongoing
+     [!ModelCheckOngoing] ModelCheckOngoing = true;      // indicate that a model check transaction is ongoing
+     [otherwise] illegal;                                // starting another model check is not allowed when there is already one ongoing
    }
 
    on verifyModel:
    {
-   	[!VerificationOngoing] VerificationOngoing = true;  // indicate that a verification transaction is ongoing
-   	[otherwise] illegal;                                // starting another verification is not allowed when there is already one ongoing
+     [!VerificationOngoing] VerificationOngoing = true;  // indicate that a verification transaction is ongoing
+     [otherwise] illegal;                                // starting another verification is not allowed when there is already one ongoing
    }
 
    on inevitable:
    {
-   	[ModelCheckOngoing]                                 // eventually the server will return the result of the model check
-   	{
-   		ModelCheckOngoing = false;
-   		checkModelRes;
-   	}
-   	[VerificationOngoing]                               // eventually the server will return the result of the verification
-   	{
-   		VerificationOngoing = false;
-   		verifyModelRes;
-   	}
+     [ModelCheckOngoing]                                 // eventually the server will return the result of the model check
+     {
+       ModelCheckOngoing = false;
+       checkModelRes;
+     }
+     [VerificationOngoing]                               // eventually the server will return the result of the verification
+     {
+       VerificationOngoing = false;
+       verifyModelRes;
+     }
    }
   }
 }

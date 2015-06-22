@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -37,132 +38,132 @@ interface IDezyne
  * When this session is expired, users have to re-authenticate.
  */
 
-  enum res                        // result return type for transactions
+  enum res                                               // result return type for transactions
   {
-    Ok,                           // this result indicates that the transaction is started
-    Nok                           // this result indicates that the transaction is not started, 
-                                  // e.g. because the user is not authenticated or another server error
+    Ok,                                                  // this result indicates that the transaction is started
+    Nok                                                  // this result indicates that the transaction is not started, 
+                                                         // e.g. because the user is not authenticated or another server error
   };
-  
-  in void authenticate();           // start authentication
-  out void authenticateSuccess();   // authentication was successful
-  out void authenticateFailed();    // authentication failed
-  out void reauthenticateNeeded();  // re-authentication needed, session expired.
-  
-  in res checkModel();              // perform a model check (well-formedness check)
-  in res verifyModel();             // perform a verification
-  out void checkModelRes();         // result of the model check
-  out void verifyModelRes();        // result of the verification
+
+  in void authenticate();                                // start authentication
+  out void authenticateSuccess();                        // authentication was successful
+  out void authenticateFailed();                         // authentication failed
+  out void reauthenticateNeeded();                       // re-authentication needed, session expired.
+
+  in res checkModel();                                   // perform a model check (well-formedness check)
+  in res verifyModel();                                  // perform a verification
+  out void checkModelRes();                              // result of the model check
+  out void verifyModelRes();                             // result of the verification
 
   behaviour
   {
     enum AuthState
-    {   Unknown,                         // initial state: user unknown
-    	Authenticating,                  // authentication ongoing
-    	Authorized                       // user is authenticated and authorized 
+    { Unknown,                                           // initial state: user unknown
+      Authenticating,                                    // authentication ongoing
+      Authorized                                         // user is authenticated and authorized 
     };
-    bool ModelCheckOngoing = false;      // indicates if model check transaction is ongoing
-    bool VerificationOngoing = false;    // indicates if verification transaction is ongoing
-    bool SessionExpired = false;         // indicates if the Session has expired
+    bool ModelCheckOngoing = false;                      // indicates if model check transaction is ongoing
+    bool VerificationOngoing = false;                    // indicates if verification transaction is ongoing
+    bool SessionExpired = false;                         // indicates if the Session has expired
 
-    AuthState state = AuthState.Unknown; // state variable representing the state of the interface
+    AuthState state = AuthState.Unknown;                 // state variable representing the state of the interface
 
-    [state.Unknown]                      // initial state, user is unknown
+    [state.Unknown]                                      // initial state, user is unknown
     {
       on checkModel, verifyModel: illegal;
       on authenticate:state = AuthState.Authenticating;
     }
 
-    [state.Authenticating]               // authentication has started
+    [state.Authenticating]                               // authentication has started
     {
       on checkModel, verifyModel: illegal;
       on authenticate: illegal;
- 
+
       // below the possible results of authentication are defined
-      on inevitable:                           // in case authentication successful
+      on inevitable:                                     // in case authentication successful
         {
            state = AuthState.Authorized;
            authenticateSuccess;
         }
-      on inevitable:                           // in case authentication failed 
+      on inevitable:                                     // in case authentication failed 
         {
           authenticateFailed;
           state = AuthState.Unknown;
         }
     }
 
-    [state.Authorized]                    // user is authorized
+    [state.Authorized]                                   // user is authorized
     {
       on authenticate: illegal;
 
       on checkModel:
       {
-      	[!SessionExpired]                    // check if the session has not expired
-      	{
-        	[!ModelCheckOngoing]             // in case model check can be started
-        	{
-        		reply(res.Ok);
-      	    	ModelCheckOngoing = true;
-      	    }
-         	[!ModelCheckOngoing]             // in case model check can not be started due to an error
-         	{
-            	reply(res.Nok);
-        	}
-        	[ModelCheckOngoing]              // in case a transaction is already ongoing
-         	{
-        		illegal;
-      	    }
-      	}
-      	[otherwise]                          // in case the session has expired and there is still another transaction ongoing
-      	{
-      		reply(res.Nok);
-      	}
+        [!SessionExpired]                                // check if the session has not expired
+        {
+          [!ModelCheckOngoing]                           // in case model check can be started
+          {
+            reply(res.Ok);
+              ModelCheckOngoing = true;
+            }
+          [!ModelCheckOngoing]                           // in case model check can not be started due to an error
+          {
+              reply(res.Nok);
+          }
+          [ModelCheckOngoing]                            // in case a transaction is already ongoing
+          {
+            illegal;
+            }
+        }
+        [otherwise]                                      // in case the session has expired and there is still another transaction ongoing
+        {
+          reply(res.Nok);
+        }
       }
       on verifyModel:
       {
-      	[!SessionExpired]                    // check if the session has not expired
-      	{
-         	[!VerificationOngoing]
-         	{
-        		reply(res.Ok);
-      	        VerificationOngoing = true;
-   	    	}
-        	[!VerificationOngoing]
-        	{
-	        	reply(res.Nok);
-         	}
-        	[VerificationOngoing]
-        	{
-      	    	illegal;
-         	}
-      	}
-      	[otherwise]
-      	{
-      		reply(res.Nok);
-      	}
+        [!SessionExpired]                                // check if the session has not expired
+        {
+          [!VerificationOngoing]
+          {
+            reply(res.Ok);
+                VerificationOngoing = true;
+          }
+          [!VerificationOngoing]
+          {
+            reply(res.Nok);
+          }
+          [VerificationOngoing]
+          {
+              illegal;
+          }
+        }
+        [otherwise]
+        {
+          reply(res.Nok);
+        }
 /*
  * More complex behaviour must be programmed using declarative statements
  * using guards, see above.
  * The following way to program the behaviour using imperative statements
  * can not be used. 
- 
-    	if (SessionExpired)
-    	{
-    		illegal;
-    	}
-    	else
-    	{
-    		if (VerificationOngoing)
-    		{
-    			illegal;
-    		}
-    		else
-    		{
-    			VerificationOngoing = true;
-    			ibackend.verifyModel;
-    			reply(IDezyne.res.Ok);
-    		}
-    	}
+
+      if (SessionExpired)
+      {
+        illegal;
+      }
+      else
+      {
+        if (VerificationOngoing)
+        {
+          illegal;
+        }
+        else
+        {
+          VerificationOngoing = true;
+          ibackend.verifyModel;
+          reply(IDezyne.res.Ok);
+        }
+      }
  */
 
       }
@@ -170,42 +171,41 @@ interface IDezyne
       // below the possible results and events than can occur are defined
       on inevitable:
       {
-      	[ModelCheckOngoing]                             // model check is ready
-      	{
+        [ModelCheckOngoing]                              // model check is ready
+        {
           ModelCheckOngoing = false;
           if (SessionExpired && !VerificationOngoing)
           {
-          	  SessionExpired = false;
-        	  state = AuthState.Unknown;
+              SessionExpired = false;
+            state = AuthState.Unknown;
           }
           checkModelRes;
-      	}
-        [VerificationOngoing]                          // verification is ready
+        }
+        [VerificationOngoing]                            // verification is ready
         {
           VerificationOngoing = false;
           if (SessionExpired && !ModelCheckOngoing)
           {
-        	  SessionExpired = false;
-        	  state = AuthState.Unknown;
+            SessionExpired = false;
+            state = AuthState.Unknown;
           }
           verifyModelRes;
         }
 
-      	[!SessionExpired]                              // session expires
-      	{
-      		[!ModelCheckOngoing && !VerificationOngoing]   // in case there is no transaction ongoing
-      		{
-        		reauthenticateNeeded;                      // indicate a reauthentication is needed
-       		    state = AuthState.Unknown;  			   // and return to the Unknown state
-      		}
-      		[otherwise]                                    // in case a transation is ongoing
-      		{
-        		SessionExpired = true;                     // mark that the session has expired
-        		reauthenticateNeeded;                      // indicate a reauthentication is needed
-      		}
-      	}
+        [!SessionExpired]                                // session expires
+        {
+          [!ModelCheckOngoing && !VerificationOngoing]   // in case there is no transaction ongoing
+          {
+            reauthenticateNeeded;                        // indicate a reauthentication is needed
+              state = AuthState.Unknown;                 // and return to the Unknown state
+          }
+          [otherwise]                                    // in case a transation is ongoing
+          {
+            SessionExpired = true;                       // mark that the session has expired
+            reauthenticateNeeded;                        // indicate a reauthentication is needed
+          }
+        }
       }
-
     }
   }
 }

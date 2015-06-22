@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -29,14 +30,14 @@ interface IFeed
   in void produceBall();
   out void consumeNextBall();
   out void consumeLastBall();
-    
+
   behaviour
   {
     enum State {Lost, Calibrating, Idle, Preparing, Prepared};
     State s = State.Lost;
-        
+
     on stop: s = State.Lost;
-        
+
     [s.Lost]
     {
       on calibrate: {s = State.Calibrating;}      

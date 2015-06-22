@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -90,7 +91,7 @@ component DezyneApplication
         }
         else
         {
-        	state = AuthState.Unknown;
+          state = AuthState.Unknown;
             iDezyne.authenticateFailed();                     // license was not available
         }
       }
@@ -110,70 +111,70 @@ component DezyneApplication
     [state.Authorized]                   // user is authorized
     {
       on iDezyne.authenticate():
-    	{
-    		illegal;
-    	}
+      {
+        illegal;
+      }
       on timer.timeout():                                 // session timer expires
-    	{
-    		[ModelCheckOngoing || VerificationOngoing]  // in case a transaction is ongoing:
-    		{                                           // component waits for the result
-    			SessionExpired = true;                  // of the transaction before
-    			iDezyne.reauthenticateNeeded();           // jumping to the Unknown state
-    		}
-    		[otherwise]                                 // in case no transaction is ongoing
-    		{                                           // component can immediately jump
-    			state = AuthState.Unknown;              // to the Unknown state.
-    			iDezyne.reauthenticateNeeded();
-    		}
-    	}
+      {
+        [ModelCheckOngoing || VerificationOngoing]  // in case a transaction is ongoing:
+        {                                           // component waits for the result
+          SessionExpired = true;                  // of the transaction before
+          iDezyne.reauthenticateNeeded();           // jumping to the Unknown state
+        }
+        [otherwise]                                 // in case no transaction is ongoing
+        {                                           // component can immediately jump
+          state = AuthState.Unknown;              // to the Unknown state.
+          iDezyne.reauthenticateNeeded();
+        }
+      }
       on iDezyne.checkModel():
       {
-    	[!SessionExpired]                               // check if the session has not expired
-    	{
-        	[ModelCheckOngoing]                         // if a model check is already ongoing
-        	{                                           // another one is not allowed.
-    	    	illegal;
-    	    }
-    	    [!ModelCheckOngoing]
-        	{
-    	    	ModelCheckOngoing = true;
+      [!SessionExpired]                               // check if the session has not expired
+      {
+          [ModelCheckOngoing]                         // if a model check is already ongoing
+          {                                           // another one is not allowed.
+            illegal;
+          }
+          [!ModelCheckOngoing]
+          {
+            ModelCheckOngoing = true;
                 ibackend.checkModel();
                 reply(IDezyne.res.Ok);
-    	    }
-    	}
-    	[otherwise]                                      // the session expired
-    	{
-    		reply(IDezyne.res.Nok);                      // reply that model check could not be done
-    	}
+          }
+      }
+      [otherwise]                                      // the session expired
+      {
+        reply(IDezyne.res.Nok);                      // reply that model check could not be done
+      }
       }
       on iDezyne.verifyModel():
       {
 
-    	[!SessionExpired]
-    	{
-        	[VerificationOngoing]
-        	{
-    	    	illegal;
-        	}
-        	[!VerificationOngoing]
-        	{
-    	    	VerificationOngoing = true;
+      [!SessionExpired]
+      {
+          [VerificationOngoing]
+          {
+            illegal;
+          }
+          [!VerificationOngoing]
+          {
+            VerificationOngoing = true;
                 ibackend.verifyModel();
                 reply(IDezyne.res.Ok);
-    	    }
-    	}
-    	[otherwise]
-    	{
-    		reply(IDezyne.res.Nok);
-    	}
+          }
+      }
+      [otherwise]
+      {
+        reply(IDezyne.res.Nok);
+      }
       }
       on ibackend.checkModelRes():
       {
         ModelCheckOngoing = false;
         if (SessionExpired && !VerificationOngoing)    // in case session is expired and
         {                                              // there is no other transaction ongoing
-        	SessionExpired = false;
-        	state = AuthState.Unknown;
+          SessionExpired = false;
+          state = AuthState.Unknown;
         }
         iDezyne.checkModelRes();
       }
@@ -182,15 +183,14 @@ component DezyneApplication
         VerificationOngoing = false;
         if (SessionExpired && !ModelCheckOngoing)      // in case session is expired and
         {                                              // there is no other transaction ongoing
-        	SessionExpired = false;
-        	state = AuthState.Unknown;
+          SessionExpired = false;
+          state = AuthState.Unknown;
         }
         iDezyne.verifyModelRes();
       }
       on userDB.UserCredentialsOK(),
         userDB.UserCredentialsNOK(),
         userDB.UserUnknown(): illegal;
-
     }
   }
 }

@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
 // Copyright © 2015 Ladislau Posta <ladislau.posta@verum.com>
 //
 // This file is part of Dezyne.
@@ -39,72 +40,72 @@ import DeviceIF.dzn;
 
 component StartControl
 {
-	provides StartControlIF startIF;
-	requires Device1IF device1IF;
-	requires Device2IF device2IF;
-	
-	behaviour
-	{
-		subint Count {0..5};
-		enum States { Idle, Starting, Started };
-		Device2IF.Result result2 = Device2IF.Result.NOK;
-		States state = States.Idle;
-		Count count = 0;
-		
-		[state.Idle]
-		{
-			on startIF.startAll():
-			{
-				count = 0;
-				state = States.Starting;				
-				device1IF.turnon();
-			}
-			on device1IF.ok(), device1IF.nok(), startIF.stopAll(): illegal;
-		}
-		
-		[state.Starting]
-		{
-			on startIF.startAll(), startIF.stopAll(): illegal;
-			on device1IF.ok(): 
-			{
-				result2 = device2IF.turnon(); 
-				if (  result2 == Device2IF.Result.OK )
-				{
-					state = States.Started;
-					startIF.allStarted();					
-				}
-				else
-				{
-//					device1IF.turnoff();
-					state = States.Idle;
-					startIF.startFailed();
-				}
-				
-			} 
-			on device1IF.nok():
-			{
-				if ( count < 5 )
-				{
-					count = count + 1;
-					device1IF.turnon();
-				}
-				else
-				{
-					state = States.Idle;
-					startIF.startFailed();
-				}
-			}
-		}
-			
-		[state.Started]
-		{
-			on startIF.stopAll(): 
-			{ 
-				device1IF.turnoff(); 
-				device2IF.turnoff();
-				state = States.Idle;
-			}
-			on startIF.startAll(), device1IF.ok(), device1IF.nok(): illegal;
-		}	
-	}
+  provides StartControlIF startIF;
+  requires Device1IF device1IF;
+  requires Device2IF device2IF;
+
+  behaviour
+  {
+    subint Count {0..5};
+    enum States { Idle, Starting, Started };
+    Device2IF.Result result2 = Device2IF.Result.NOK;
+    States state = States.Idle;
+    Count count = 0;
+
+    [state.Idle]
+    {
+      on startIF.startAll():
+      {
+        count = 0;
+        state = States.Starting;        
+        device1IF.turnon();
+      }
+      on device1IF.ok(), device1IF.nok(), startIF.stopAll(): illegal;
+    }
+
+    [state.Starting]
+    {
+      on startIF.startAll(), startIF.stopAll(): illegal;
+      on device1IF.ok(): 
+      {
+        result2 = device2IF.turnon(); 
+        if (  result2 == Device2IF.Result.OK )
+        {
+          state = States.Started;
+          startIF.allStarted();         
+        }
+        else
+        {
+//          device1IF.turnoff();
+          state = States.Idle;
+          startIF.startFailed();
+        }
+
+      } 
+      on device1IF.nok():
+      {
+        if ( count < 5 )
+        {
+          count = count + 1;
+          device1IF.turnon();
+        }
+        else
+        {
+          state = States.Idle;
+          startIF.startFailed();
+        }
+      }
+    }
+
+    [state.Started]
+    {
+      on startIF.stopAll(): 
+      { 
+        device1IF.turnoff(); 
+        device2IF.turnoff();
+        state = States.Idle;
+      }
+      on startIF.startAll(), device1IF.ok(), device1IF.nok(): illegal;
+    } 
+  }
 }
