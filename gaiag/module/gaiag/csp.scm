@@ -37,7 +37,7 @@
   :use-module (gaiag gaiag)
 ;;  :use-module (gaiag mangle)
   :use-module (gaiag misc)
-  :use-module (gaiag norm)  
+  :use-module (gaiag norm)
   :use-module (gaiag norm-state)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
@@ -94,7 +94,7 @@
                (model-generate-csp root o)))
     (($ <component>)
      (and-let* ((interfaces (map csp:import (map .type ((compose .elements .ports) o))))
-                
+
                 (root (make <root> :elements (append interfaces (list o)))))
                (and-let* ((no-behaviour (null-is-#f (filter (negate .behaviour) interfaces)))
                           (message (format #f "gaiag: interface without behaviour: ~a\n"
@@ -291,7 +291,7 @@
          (if (pair? lets)
              (list
               ((->join "\n") lets))))
-         (list (.name model) "_" ((compose .name .behaviour) model) "(" (comma-space-join (om:member-names model)) ")" " =\n")                 
+         (list (.name model) "_" ((compose .name .behaviour) model) "(" (comma-space-join (om:member-names model)) ")" " =\n")
      (if inside
          (if (pair? lets)
              (list
@@ -301,7 +301,7 @@
      "transition_begin -> (\n"
      (check-range (om:member-names model) behaviour model)
      ")")))
-  
+
 (define (behaviour-interface->csp model)
   (let* ((behaviour (behaviour->csp (csp:import (.name model))))
          (lets (collect-def behaviour))
@@ -323,7 +323,7 @@
      "\n[]\n"
      (list "CS & " (.name model) "?x:{" (comma-join (delete-duplicates (map .event (modeling-events model)))) "} -> illegal -> STOP\n")
      ")")))
-  
+
 (define (csp-expression->string model src locals)
   (define (member? identifier) (om:variable model identifier))
   (define (local? identifier) (assoc-ref locals identifier))
@@ -334,7 +334,7 @@
       (if (or (number? value) (symbol? value) (is-a? value <var>))
           (csp-expression->string model expression locals)
           (list "(" (csp-expression->string model expression locals) ")"))))
-  
+
   (let* ((model-name (.name model))
          (model- (symbol-append model-name '_)))
     (match src
@@ -349,7 +349,7 @@
                identifier " == " name "_" field ")")))
       (($ <literal> #f type field) (list type "_" field))
       (($ <literal> scope type field) (list type '_ field))
-      
+
       (('group expression) (list "(" (csp-expression->string model expression locals) ")"))
       (('! expression) (->string (list "(" "not " (paren expression) ")")))
       (((or 'and 'or '== '!= '< '<= '> '>= '+ '-) lhs rhs)
@@ -539,7 +539,7 @@
   (define (extern? identifier) (and=> (var? identifier) (lambda (x) (om:extern model x))))
   (define (extern-type? type) (om:extern model type))
 
-  
+
   (define (purge-formal-list function arguments)
     (let ((types (map .type ((compose .elements .formals .signature) function))))
       (let loop ((arguments arguments) (types types))
@@ -787,7 +787,7 @@
                   (channel (if (is-a? model <interface>) model-name (.port (car triggers)))))
              (receive (ins outs) (partition trigger-in? real-triggers)
                  ((->list-join "\n[]\n")
-                  (append 
+                  (append
                    (if (pair? ins)
                        (list
                         (list
@@ -835,7 +835,7 @@
                model
                locals
                indent))))
-                  
+
           ;; compound statements
           (('compound statements ...)
            (csp-transform-model model statements inevitable-optional? channel provided-on? locals indent tail function))
@@ -859,18 +859,18 @@
                   (s (make-string 2 #\space))
                   (tail (map (lambda (x) (if (def? x) x (if (pair? x) (cons s x) (list s x)))) tail))
                   (continuation (list (list "Cont_" (fresh-number) "'"))))
-             (if last? 
+             (if last?
                  (list space identifier "(" "P'" ")" "(" (comma-space-join (append (om:member-names model) arguments (list ))) ") -- tail recursion" "\n")
-                 (list 
-                  (def-cont 
+                 (list
+                  (def-cont
                    space
-                   (list 
+                   (list
                     (list continuation "(" (comma-space-join (om:member-names model)) ")" " =\n")
                     tail))
                   (list space identifier "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n")))))
-             
+
           (($ <assign> identifier ($ <action> (and ($ <trigger> port event) (get! trigger))) expressions)
-           (list 
+           (list
             (list space (or port channel) (if (om:out? (om:event model (trigger))) "_''") "!" event " ->\n")
             (list space (or port channel) "_'" "?" identifier " ->\n")
             (check-range (list identifier) tail model locals indent)))
@@ -882,41 +882,43 @@
                   (tail (map (lambda (x) (if (def? x) x (if (pair? x) (cons s x) (list s x)))) tail))
                   (continuation (list (list "Cont_" (fresh-number) "'"))))
              (list
-              (def-cont 
+              (def-cont
                space
-               (list 
+               (list
                 (list continuation "(" (comma-space-join (append (om:member-names model) (list "res'"))) ")" " =\n")
                 (list space "let " identifier " = res' within\n")
                 (check-range (list identifier) tail model locals indent)))
               (list space function "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n"))))
-           
+
           (($ <assign> identifier expression)
            (let* ((expression (csp-expression->string model expression locals)))
-             (list 
+             (list
               (list space "let " "tmp'" " = " expression " within\n")
               (list space "let " identifier " = " "tmp'" " within\n")
               (check-range (list identifier) tail model locals indent))))
 
           (($ <variable> identifier type ($ <action> (and ($ <trigger> port event) (get! trigger))))
-           (list 
-            (list space (or port channel) (if (om:out? (om:event model (trigger))) "_''") "!" event " ->\n")
-            (list space (or port channel) "_'" "?" identifier " ->\n")
-            (check-range (list identifier) tail model locals indent)))
-          
+           (let ((type ((compose .type .signature) (om:event model (trigger))))
+                 (values (if (eq? (.name type) 'void) 'return (comma-join (typed-elements ((om:type model) type))))))
+            (list
+             (list space (or port channel) (if (om:out? (om:event model (trigger))) "_''") "!" event " ->\n")
+             (list space (or port channel) "_'" "?" identifier ":{" values "} ->\n")
+             (check-range (list identifier) tail model locals indent))))
+
           (($ <variable> name type ($ <call> identifier arguments))
            (let* ((arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals))
                   (s (make-string 2 #\space))
                   (tail (map (lambda (x) (if (def? x) x (if (pair? x) (cons s x) (list s x)))) tail))
                   (continuation (list (list "Cont_" (fresh-number) "'"))))
              (list
-              (def-cont 
+              (def-cont
                space
-               (list 
+               (list
                 (list continuation "(" (comma-space-join (append (om:member-names model) (list "res'"))) ")" " =\n")
                 (list space "let " name " = res' within\n")
                 (check-range (list name) tail model locals indent)))
               (list space identifier "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n"))))
-          
+
           (($ <variable> name type expression)
            (let* ((expression (csp-expression->string model expression locals)))
              (list
@@ -928,7 +930,7 @@
              (list
               (list space channel "_'!" expression " -> \n")
               tail)))
-          
+
           (($ <action> trigger)
            (let* ((event-name (.event trigger))
                   (suffix (if (om:out? (om:event model trigger)) "_''" ""))
@@ -939,31 +941,31 @@
               (list space channel "!" event-name channel-return " ->\n")
               tail)))
 
-          (($ <illegal>) 
+          (($ <illegal>)
            (list
             (list space "illegal -> STOP\n")))
-          
+
           (($ <return> #f)
            (list (list "    " "P'(" (comma-space-join (om:member-names model)) ")\n" )))
 
           (($ <return> ($ <expression> expression))
            (let ((expression (csp-expression->string model expression locals)))
              (list (list "    " "P'(" (comma-space-join (append (om:member-names model) (list expression)) ) ")\n" ))))
-          
+
           (($ <skip>) tail)
-          
+
           (($ <voidreply>)
            (let ((channel-return
                   (if (and (not inevitable-optional?) provided-on?)
                       (list
                        (list space channel "_'.return ->\n"))
                       (if (not (is-a? model <component>))
-                          (list 
+                          (list
                            (list space channel "_'''.modeling ->\n"))))))
              (list
-              (list space channel-return) 
+              (list space channel-return)
               tail)))
-       
+
           ;; other bits
           (('arguments arguments ...)
            (map (lambda (x) (csp-transform-model model x inevitable-optional? channel provided-on? locals)) arguments))
@@ -985,7 +987,7 @@
 
           (#f (list space "SKIP\n"))
           (#t (list space "SKIP\n")) ;; FIXME: who produces #t?
-          
+
           ((h t ...)
            (let* ((locals (match h
                                  (($ <variable> name) (acons name h locals))
@@ -1034,14 +1036,14 @@
 
 (define (csp-comma-list x)
   (let ((s ((->join ",") x)))
-    (if (>1 (length x)) 
+    (if (>1 (length x))
         (->string "(" s ")")
         s)))
 
 (define fresh-number #f)
 (let ((counter 0))
   (set! fresh-number (lambda () (set! counter (1+ counter)) counter)))
-      
+
 (define ((->list-join str) l)
   (let ((x (apply append (map (lambda (x) (list str x)) l))))
     (if (pair? x)
@@ -1052,14 +1054,14 @@
       (match l
              (('def t ...) (remove-def (append (list t) (apply append (map collect-def t)))))
              ((h t ...) (remove-def (apply append (map collect-def l))))
-             (_ '()))) 
+             (_ '())))
 
 (define (remove-def l)
       (match l
              (('def t ...) '())
              ((h t ...) (map remove-def l))
-             (_ l))) 
-  
+             (_ l)))
+
 (define (def-cont space l)
   (let ((inline #t))
     (if inline
