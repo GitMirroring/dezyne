@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -92,8 +93,7 @@ component Convey
     {
       on ctrl.convey():
         {
-          ITouchSense.TouchState ss = ITouchSense.TouchState.Released;
-          ss = sensor.enable();
+          ITouchSense.TouchState ss = sensor.enable();
           if(ss == ITouchSense.TouchState.Pressed) {
             sensor.disable();
             ctrl.conveyed();
@@ -112,7 +112,6 @@ component Convey
       on sensor.pressed(), sensor.released():
         {
           sensor.disable();
-          motor.pulse($(config.get("power::15"))$,$false$,$2000$);
           ctrl.conveyed();
           s = State.Idle;
         }
