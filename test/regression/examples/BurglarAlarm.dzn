@@ -20,7 +20,7 @@
 //
 // Code:
 
-// Burglar alarm implementation for a micro-controller.
+//purpose: An Alarm implementation for a micro-controller
 
 component BareSiliconAlarmSystem
 {

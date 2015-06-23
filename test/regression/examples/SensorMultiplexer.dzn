@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
+//
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -20,6 +20,8 @@
 // Commentary:
 //
 // Code:
+
+//purpose: Show different normalisations of same specification
 
 ///////////////////////////////////////////////////////////////////////////////
 // This example shows 4 different ways of specifying the same behaviour. 
@@ -71,7 +73,7 @@ interface ISensor
 // In this component the behaviour is specified in a pure state based style.
 // It follows the pattern:
 // [state.XX] on sensors.YY(): { <actions> }
-component SpecificationFocus
+component SensorMultiplexer
 {
   provides ISensor sensors;
   requires ISensor aSensor;
@@ -130,7 +132,7 @@ component SpecificationFocus
 
 // In this version the common behaviour for 'sensors.Deactivate()' has been isolated
 // and is handled in the '[state.Activated || state.Triggered]' guard.
-component SpecificationFocus2
+component SensorMultiplexer2
 {
   provides ISensor sensors;
   requires ISensor aSensor;
@@ -187,7 +189,7 @@ component SpecificationFocus2
 
 // In version 3 the 'Activated' and 'Triggered' states are combined completely.
 // The small variation in behaviour in the two states leads to an 'if (state.Activated)' condition.
-component SpecificationFocus3
+component SensorMultiplexer3
 {
   provides ISensor sensors;
   requires ISensor aSensor;
@@ -237,7 +239,7 @@ component SpecificationFocus3
 // In the last version the events are leading, leading to the pattern:
 // 'on sensors.XX(): [state.YY] { <actions> }'
 // Note the use of '[otherwise]' to gather common behaviour.
-component SpecificationFocus4
+component SensorMultiplexer4
 {
   provides ISensor sensors;
   requires ISensor aSensor;
