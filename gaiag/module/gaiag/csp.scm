@@ -249,7 +249,8 @@
                        (if (is-a? statement <on>)
                            (list statement)
                            (filter (is? <on>) statement)))))
-  (let ((default "STOP"))
+  (let ((default "STOP")
+        (model (flatten-compound model)))
     (or (null-is-#f
          ((->list-join "\n[]\n")
           (append
