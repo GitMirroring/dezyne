@@ -14,5 +14,6 @@ verify: C: check: deadlock: ok
 
 verify: C: check: compliance: fail
 i.f
+compliance: in C
 
 verify: C: check: livelock: ok

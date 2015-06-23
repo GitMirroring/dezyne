@@ -2,5 +2,6 @@ verify: range: check: completeness: ok
 
 verify: range: check: deadlock: fail
 range.e
+deadlock: in range
 
 verify: range: check: livelock: ok

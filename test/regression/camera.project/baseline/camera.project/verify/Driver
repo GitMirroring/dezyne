@@ -33,6 +33,7 @@ acquisition.return
 control.return
 control.setup
 optics.prepare
+illegal
 
 verify: Driver: check: deadlock: fail
 control.setup
@@ -47,6 +48,7 @@ acquisition.return
 control.return
 control.setup
 optics.prepare
+deadlock: in Driver
 
 verify: Driver: check: compliance: fail
 control.setup
@@ -61,5 +63,6 @@ acquisition.return
 control.return
 control.setup
 optics.prepare
+compliance: in Driver
 
 verify: Driver: check: livelock: ok

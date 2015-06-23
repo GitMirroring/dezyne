@@ -6,6 +6,7 @@ verify: I: check: livelock: ok
 
 verify: C: check: deterministic: fail
 i.e
+deterministic: in C
 
 verify: C: check: completeness: ok
 

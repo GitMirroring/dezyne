@@ -8,6 +8,7 @@ verify: C: check: deterministic: fail
 i.e
 i.return
 i.e
+deterministic: in C
 
 verify: C: check: completeness: ok
 

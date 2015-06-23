@@ -15,5 +15,6 @@ verify: Simpleint: check: deadlock: ok
 verify: Simpleint: check: compliance: fail
 p.e
 p.return
+p.return not allowed by port p
 
 verify: Simpleint: check: livelock: ok

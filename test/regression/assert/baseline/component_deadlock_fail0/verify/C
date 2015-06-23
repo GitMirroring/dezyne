@@ -10,9 +10,11 @@ verify: C: check: completeness: ok
 
 verify: C: check: illegal: ok
 
-verify: C: check: deadlock: ok
+verify: C: check: deadlock: fail
+deadlock: in C
 
 verify: C: check: compliance: fail
 i.e
+compliance: in C
 
 verify: C: check: livelock: ok

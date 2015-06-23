@@ -6,7 +6,8 @@ verify: IGuardthreetopon: check: livelock: ok
 
 verify: RGuardthreetopon: check: completeness: ok
 
-verify: RGuardthreetopon: check: deadlock: ok
+verify: RGuardthreetopon: check: deadlock: fail
+deadlock: in RGuardthreetopon
 
 verify: RGuardthreetopon: check: livelock: ok
 

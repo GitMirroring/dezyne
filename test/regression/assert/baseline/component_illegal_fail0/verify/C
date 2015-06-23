@@ -12,15 +12,18 @@ verify: C: check: illegal: fail
 i.e
 ii.e
 ii.return
+illegal
 
 verify: C: check: deadlock: fail
 i.e
 ii.e
 ii.return
+deadlock: in C
 
 verify: C: check: compliance: fail
 i.e
 ii.e
 ii.return
+compliance: in C
 
 verify: C: check: livelock: ok

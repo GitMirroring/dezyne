@@ -1,6 +1,7 @@
 verify: IExtern: check: completeness: ok
 
-verify: IExtern: check: deadlock: ok
+verify: IExtern: check: deadlock: fail
+deadlock: in IExtern
 
 verify: IExtern: check: livelock: ok
 
@@ -10,7 +11,8 @@ verify: Extern: check: completeness: ok
 
 verify: Extern: check: illegal: ok
 
-verify: Extern: check: deadlock: ok
+verify: Extern: check: deadlock: fail
+deadlock: in Extern
 
 verify: Extern: check: compliance: ok
 
