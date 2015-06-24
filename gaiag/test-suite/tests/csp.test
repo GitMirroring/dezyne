@@ -482,11 +482,11 @@ let s = tmp' within
          (csp-noisy-equal?
 
           (csp-transform* i-ast
-                          '(assign c (context (s b c))))
+                          '(assign c (expression 0)))
 
-          "let tmp' =  within
+          "let tmp' = 0 within
 let c = tmp' within
-if not ((0 <= c and c <= 2)) then illegal -> STOP else
+if not ((0 <= c and c <= 2)) then range_error -> STOP else
 "))
 
 (pass-if "csp-transform-variable-int"
@@ -499,7 +499,7 @@ if not ((0 <= c and c <= 2)) then illegal -> STOP else
              (skip)))
 
           "let i = 2 within
-if not ((0 <= i and i <= 2)) then illegal -> STOP else
+if not ((0 <= i and i <= 2)) then range_error -> STOP else
 "))
 
 (pass-if "csp-transform-assign-int-function"
@@ -510,7 +510,7 @@ if not ((0 <= i and i <= 2)) then illegal -> STOP else
 
           "let Cont_1'(s, b, c, res') =
 let c = res' within
-if not ((0 <= c and c <= 2)) then illegal -> STOP else
+if not ((0 <= c and c <= 2)) then range_error -> STOP else
 within
 f(Cont_1')(s, b, c)
 "))
@@ -538,10 +538,10 @@ f(Cont_2')(s, b, c)
              (assign i 1)))
 
           "let i = 2 within
-if not ((0 <= i and i <= 2)) then illegal -> STOP else
+if not ((0 <= i and i <= 2)) then range_error -> STOP else
 let tmp' = 1 within
 let i = tmp' within
-if not ((0 <= i and i <= 2)) then illegal -> STOP else
+if not ((0 <= i and i <= 2)) then range_error -> STOP else
 "))
 
 (pass-if "csp-transform-expression"
@@ -693,7 +693,7 @@ i_''!g ->
 i_''!g ->
 let tmp' = false within
 let c = tmp' within
-if not ((0 <= c and c <= 2)) then illegal -> STOP else
+if not ((0 <= c and c <= 2)) then range_error -> STOP else
 i!f ->
 let tmp' = S_S2 within
 let s = tmp' within
@@ -703,7 +703,7 @@ i_B(s,b,c)
 else
 let tmp' = false within
 let c = tmp' within
-if not ((0 <= c and c <= 2)) then illegal -> STOP else
+if not ((0 <= c and c <= 2)) then range_error -> STOP else
 i!f ->
 let tmp' = S_S2 within
 let s = tmp' within
@@ -738,7 +738,7 @@ else
 i_''!g ->
 let tmp' = false within
 let c = tmp' within
-if not ((0 <= c and c <= 2)) then illegal -> STOP else
+if not ((0 <= c and c <= 2)) then range_error -> STOP else
 i!f ->
 let tmp' = S_S2 within
 let s = tmp' within
@@ -748,7 +748,7 @@ i_B(s,b,c)
 else
 let tmp' = false within
 let c = tmp' within
-if not ((0 <= c and c <= 2)) then illegal -> STOP else
+if not ((0 <= c and c <= 2)) then range_error -> STOP else
 i!f ->
 let tmp' = S_S2 within
 let s = tmp' within

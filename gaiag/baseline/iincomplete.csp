@@ -4,7 +4,7 @@ channel illegal
 channel range_error
 channel transition_begin, transition_end
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
 datatype event_enumeration_alphabet = e | modeling | return | the_end'
 
@@ -40,6 +40,6 @@ within compress((if CS
                [[x<-iincomplete_in'.x|x<-extensions(iincomplete_in')]] [|{|iincomplete,iincomplete_in',iincomplete.the_end'|}|] REORDER' [[iincomplete_out'.x<-x|x<-extensions(iincomplete_out')]] \ {|iincomplete_in',iincomplete.the_end'|})
 
 -- end of interface.csp.scm
-assert COMPLETE'({iincomplete.e}) [F= IF_iincomplete_(true,true) \ diff(Events,{iincomplete.e,illegal})
+assert COMPLETE'({iincomplete.e}) [F= IF_iincomplete_(true,true)[[range_error<-illegal]] \ diff(Events,{iincomplete.e,illegal})
 assert IF_iincomplete_(false,false) :[deadlock free]
 assert IF_iincomplete_(true,false) :[livelock free]

@@ -4,7 +4,7 @@ channel illegal
 channel range_error
 channel transition_begin, transition_end
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
 datatype event_enumeration_alphabet = a | e | hi | lo | modeling | return | the_end'
 
@@ -23,13 +23,13 @@ IF_I_(IG,CS) = let
 
 I_(state, c) =
 (if not ((0 <= state and state <= 3) and
-(0 <= c and c <= 3)) then illegal -> STOP else
+(0 <= c and c <= 3)) then range_error -> STOP else
 (true) & (
 I?x:{e} -> (
   (if (state == 0) then 
     let tmp' = 3 within
     let state = tmp' within
-    if not ((0 <= state and state <= 3)) then illegal -> STOP else
+    if not ((0 <= state and state <= 3)) then range_error -> STOP else
     I_''!a ->
       I_'.return ->
     I.the_end' ->
@@ -38,11 +38,11 @@ I?x:{e} -> (
   else
     let tmp' = (state - 1) within
     let state = tmp' within
-    if not ((0 <= state and state <= 3)) then illegal -> STOP else
+    if not ((0 <= state and state <= 3)) then range_error -> STOP else
     (if (c < state) then 
       let tmp' = (c + 1) within
       let c = tmp' within
-      if not ((0 <= c and c <= 3)) then illegal -> STOP else
+      if not ((0 <= c and c <= 3)) then range_error -> STOP else
         I_'.return ->
       I.the_end' ->
   I_(state,c)
@@ -106,13 +106,13 @@ CO_expressions_(IIG,IG) = let
 expressions_(state, c) =
 transition_begin -> (
 if not ((0 <= state and state <= 3) and
-(0 <= c and c <= 3)) then illegal -> STOP else
+(0 <= c and c <= 3)) then range_error -> STOP else
 (true) & (
 i?x:{e} -> (
   (if (state == 0) then 
     let tmp' = 3 within
     let state = tmp' within
-    if not ((0 <= state and state <= 3)) then illegal -> STOP else
+    if not ((0 <= state and state <= 3)) then range_error -> STOP else
     i_''!a ->
       I_'.return ->
     transition_end ->
@@ -121,11 +121,11 @@ i?x:{e} -> (
   else
     let tmp' = (state - 1) within
     let state = tmp' within
-    if not ((0 <= state and state <= 3)) then illegal -> STOP else
+    if not ((0 <= state and state <= 3)) then range_error -> STOP else
     (if (c < state) then 
       let tmp' = (c + 1) within
       let c = tmp' within
-      if not ((0 <= c and c <= 3)) then illegal -> STOP else
+      if not ((0 <= c and c <= 3)) then range_error -> STOP else
         I_'.return ->
       transition_end ->
   expressions_(state,c)
@@ -165,7 +165,7 @@ SINGLETHREADED = true
 
 channel reorder_in  : {I_'.return}
 channel reorder_out : {i_'.return}
-channel queue_full'
+channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
 
@@ -177,7 +177,7 @@ external chase
 
 Cell = link'.in'?x' -> link'.out'!x' -> Cell
 
-Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full' -> illegal -> STOP)
+Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full -> STOP)
 
 Front = Cell[[link'.out' <- out']]
 
@@ -235,12 +235,12 @@ within compress((CO_expressions_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({I.e}) [F= IF_I_(true,true) \ diff(Events,{I.e,illegal})
+assert COMPLETE'({I.e}) [F= IF_I_(true,true)[[range_error<-illegal]] \ diff(Events,{I.e,illegal})
 assert IF_I_(false,false) :[deadlock free]
 assert IF_I_(true,false) :[livelock free]
 assert CO_expressions_(true,true)[[I_'.x<-i_'.x|x<-extensions(i_')]] :[deterministic]
-assert COMPLETE'({i.e}) [F= CO_expressions_(true,true)[[I_'.x'<-i_'.x'|x'<-extensions(i_')]] \ diff(Events,{i.e,illegal})
-assert STOP [T= AS_expressions_(false) \ diff(Events,{illegal})
+assert COMPLETE'({i.e}) [F= CO_expressions_(true,true)[[I_'.x'<-i_'.x'|x'<-extensions(i_')]][[range_error<-illegal]] \ diff(Events,{i.e,illegal})
+assert STOP [T= AS_expressions_(false) \ diff(Events,{illegal,queue_full})
 assert AS_expressions_(false) :[deadlock free]
 assert IF_I_(true,false) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]][[I_''.x<-i_''.x|x<-extensions(i_'')]]\ {I_'''.modeling} [F= AS_expressions_(true) \ diff(Events,{|illegal,i,i_',i_''|})
 assert AS_expressions_(true) \ diff(Events,{|illegal,i,i_',i_''|}) :[livelock free]

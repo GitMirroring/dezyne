@@ -4,7 +4,7 @@ channel illegal
 channel range_error
 channel transition_begin, transition_end
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
 datatype event_enumeration_alphabet = Global_a | Global_b | Global_c | X_y | X_z | e | modeling | return | the_end'
 
@@ -74,7 +74,7 @@ SINGLETHREADED = true
 
 channel reorder_in  : {IExternTop_'.return}
 channel reorder_out : {port_'.return}
-channel queue_full'
+channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
 
@@ -86,7 +86,7 @@ external chase
 
 Cell = link'.in'?x' -> link'.out'!x' -> Cell
 
-Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full' -> illegal -> STOP)
+Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full -> STOP)
 
 Front = Cell[[link'.out' <- out']]
 
@@ -144,12 +144,12 @@ within compress((CO_ExternTop_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({IExternTop.e}) [F= IF_IExternTop_(true,true) \ diff(Events,{IExternTop.e,illegal})
+assert COMPLETE'({IExternTop.e}) [F= IF_IExternTop_(true,true)[[range_error<-illegal]] \ diff(Events,{IExternTop.e,illegal})
 assert IF_IExternTop_(false,false) :[deadlock free]
 assert IF_IExternTop_(true,false) :[livelock free]
 assert CO_ExternTop_(true,true)[[IExternTop_'.x<-port_'.x|x<-extensions(port_')]] :[deterministic]
-assert COMPLETE'({port.e}) [F= CO_ExternTop_(true,true)[[IExternTop_'.x'<-port_'.x'|x'<-extensions(port_')]] \ diff(Events,{port.e,illegal})
-assert STOP [T= AS_ExternTop_(false) \ diff(Events,{illegal})
+assert COMPLETE'({port.e}) [F= CO_ExternTop_(true,true)[[IExternTop_'.x'<-port_'.x'|x'<-extensions(port_')]][[range_error<-illegal]] \ diff(Events,{port.e,illegal})
+assert STOP [T= AS_ExternTop_(false) \ diff(Events,{illegal,queue_full})
 assert AS_ExternTop_(false) :[deadlock free]
 assert IF_IExternTop_(true,false) [[IExternTop.x<-port.x|x<-extensions(port)]][[IExternTop_'.x<-port_'.x|x<-extensions(port_')]]\ {IExternTop_'''.modeling} [F= AS_ExternTop_(true) \ diff(Events,{|illegal,port,port_'|})
 assert AS_ExternTop_(true) \ diff(Events,{|illegal,port,port_'|}) :[livelock free]

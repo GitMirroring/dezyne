@@ -4,7 +4,7 @@ channel illegal
 channel range_error
 channel transition_begin, transition_end
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
 datatype event_enumeration_alphabet = i2134_Result_Failed | i2134_Result_OK | i2138_SwitchOn | i2143_SwitchOff | i2144_Tripped | i2145_SwitchedOff | i2149_SwitchOffFailed | i2153_States_Activated_AlarmMode | i2153_States_Activated_Idle | i2153_States_NotActivated | i2415_SignalTripped | i2416_SignalArmed | i2417_SignalUnarmed | i2418_SignalTrippedWrongCode | i2465_KeyPressed | i2466_Initialize | i2489_Result_BufferCleared | i2489_Result_CharAdded | i2489_Result_CodeComplete | i2489_Result_InvalidChar | i2493_AddDigit | i2498_GetCode | i2501_States_Building | i2501_States_Complete | i279_States_Armed | i279_States_Disarming | i279_States_Tripped | i279_States_Unarmed | i279_States_Uninitialized | modeling | optional | return | the_end'
 
@@ -311,11 +311,11 @@ i262_alarmConsole?x:{i2466_Initialize} -> (
  []
   i262_alarmConsole?x:{i2465_KeyPressed} -> (
   i271_codestore!i2493_AddDigit ->
-  i271_codestore_'?i408_val ->
+  i271_codestore_'?i408_val:{i2489_Result_CharAdded,i2489_Result_InvalidChar,i2489_Result_CodeComplete,i2489_Result_BufferCleared} ->
   (if (i408_val == i2489_Result_CodeComplete) then 
     i271_codestore!i2498_GetCode -> i271_codestore_'.return ->
     i265_alarmSystem!i2138_SwitchOn ->
-    i265_alarmSystem_'?i460_val ->
+    i265_alarmSystem_'?i460_val:{i2134_Result_OK,i2134_Result_Failed} ->
     (if (i460_val == i2134_Result_OK) then 
       i268_statusUI!i2416_SignalArmed -> i268_statusUI_'.return ->
       let tmp' = i279_States_Armed within
@@ -350,7 +350,7 @@ i262_alarmConsole?x:{i2466_Initialize} -> (
  []
   i262_alarmConsole?x:{i2465_KeyPressed} -> (
   i271_codestore!i2493_AddDigit ->
-  i271_codestore_'?i588_val ->
+  i271_codestore_'?i588_val:{i2489_Result_CharAdded,i2489_Result_InvalidChar,i2489_Result_CodeComplete,i2489_Result_BufferCleared} ->
   (if (i588_val == i2489_Result_CodeComplete) then 
     i271_codestore!i2498_GetCode -> i271_codestore_'.return ->
     i265_alarmSystem!i2143_SwitchOff -> i265_alarmSystem_'.return ->
@@ -416,7 +416,7 @@ i262_alarmConsole?x:{i2466_Initialize} -> (
  []
   i262_alarmConsole?x:{i2465_KeyPressed} -> (
   i271_codestore!i2493_AddDigit ->
-  i271_codestore_'?i858_val ->
+  i271_codestore_'?i858_val:{i2489_Result_CharAdded,i2489_Result_InvalidChar,i2489_Result_CodeComplete,i2489_Result_BufferCleared} ->
   (if (i858_val == i2489_Result_CodeComplete) then 
     i271_codestore!i2498_GetCode -> i271_codestore_'.return ->
     i265_alarmSystem!i2143_SwitchOff -> i265_alarmSystem_'.return ->
@@ -448,7 +448,7 @@ SINGLETHREADED = true
 
 channel reorder_in  : {i2482_IAlarmConsole_'.return}
 channel reorder_out : {i262_alarmConsole_'.return}
-channel queue_full'
+channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
 
@@ -460,7 +460,7 @@ external chase
 
 Cell = link'.in'?x' -> link'.out'!x' -> Cell
 
-Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full' -> illegal -> STOP)
+Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full -> STOP)
 
 Front = Cell[[link'.out' <- out']]
 
@@ -520,21 +520,21 @@ within compress((CO_i969_AlarmConsole_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({i2414_IAlarmSystem.optional,i2414_IAlarmSystem.i2138_SwitchOn,i2414_IAlarmSystem.i2143_SwitchOff}) [F= IF_i2414_IAlarmSystem_(true,true) \ diff(Events,{i2414_IAlarmSystem.optional,i2414_IAlarmSystem.i2138_SwitchOn,i2414_IAlarmSystem.i2143_SwitchOff,illegal})
+assert COMPLETE'({i2414_IAlarmSystem.optional,i2414_IAlarmSystem.i2138_SwitchOn,i2414_IAlarmSystem.i2143_SwitchOff}) [F= IF_i2414_IAlarmSystem_(true,true)[[range_error<-illegal]] \ diff(Events,{i2414_IAlarmSystem.optional,i2414_IAlarmSystem.i2138_SwitchOn,i2414_IAlarmSystem.i2143_SwitchOff,illegal})
 assert IF_i2414_IAlarmSystem_(false,false) :[deadlock free]
-assert IF_i2414_IAlarmSystem_(true,false)  \ {|i2414_IAlarmSystem.optional,i2414_IAlarmSystem_'''|} :[livelock free]
-assert COMPLETE'({i2437_IAlarmStatusUI.i2415_SignalTripped,i2437_IAlarmStatusUI.i2416_SignalArmed,i2437_IAlarmStatusUI.i2417_SignalUnarmed,i2437_IAlarmStatusUI.i2418_SignalTrippedWrongCode}) [F= IF_i2437_IAlarmStatusUI_(true,true) \ diff(Events,{i2437_IAlarmStatusUI.i2415_SignalTripped,i2437_IAlarmStatusUI.i2416_SignalArmed,i2437_IAlarmStatusUI.i2417_SignalUnarmed,i2437_IAlarmStatusUI.i2418_SignalTrippedWrongCode,illegal})
+assert IF_i2414_IAlarmSystem_(true,false) :[livelock free]
+assert COMPLETE'({i2437_IAlarmStatusUI.i2415_SignalTripped,i2437_IAlarmStatusUI.i2416_SignalArmed,i2437_IAlarmStatusUI.i2417_SignalUnarmed,i2437_IAlarmStatusUI.i2418_SignalTrippedWrongCode}) [F= IF_i2437_IAlarmStatusUI_(true,true)[[range_error<-illegal]] \ diff(Events,{i2437_IAlarmStatusUI.i2415_SignalTripped,i2437_IAlarmStatusUI.i2416_SignalArmed,i2437_IAlarmStatusUI.i2417_SignalUnarmed,i2437_IAlarmStatusUI.i2418_SignalTrippedWrongCode,illegal})
 assert IF_i2437_IAlarmStatusUI_(false,false) :[deadlock free]
 assert IF_i2437_IAlarmStatusUI_(true,false) :[livelock free]
-assert COMPLETE'({i2482_IAlarmConsole.i2465_KeyPressed,i2482_IAlarmConsole.i2466_Initialize}) [F= IF_i2482_IAlarmConsole_(true,true) \ diff(Events,{i2482_IAlarmConsole.i2465_KeyPressed,i2482_IAlarmConsole.i2466_Initialize,illegal})
+assert COMPLETE'({i2482_IAlarmConsole.i2465_KeyPressed,i2482_IAlarmConsole.i2466_Initialize}) [F= IF_i2482_IAlarmConsole_(true,true)[[range_error<-illegal]] \ diff(Events,{i2482_IAlarmConsole.i2465_KeyPressed,i2482_IAlarmConsole.i2466_Initialize,illegal})
 assert IF_i2482_IAlarmConsole_(false,false) :[deadlock free]
 assert IF_i2482_IAlarmConsole_(true,false) :[livelock free]
-assert COMPLETE'({i2646_ICodeBuilder.i2493_AddDigit,i2646_ICodeBuilder.i2498_GetCode}) [F= IF_i2646_ICodeBuilder_(true,true) \ diff(Events,{i2646_ICodeBuilder.i2493_AddDigit,i2646_ICodeBuilder.i2498_GetCode,illegal})
+assert COMPLETE'({i2646_ICodeBuilder.i2493_AddDigit,i2646_ICodeBuilder.i2498_GetCode}) [F= IF_i2646_ICodeBuilder_(true,true)[[range_error<-illegal]] \ diff(Events,{i2646_ICodeBuilder.i2493_AddDigit,i2646_ICodeBuilder.i2498_GetCode,illegal})
 assert IF_i2646_ICodeBuilder_(false,false) :[deadlock free]
 assert IF_i2646_ICodeBuilder_(true,false) :[livelock free]
 assert CO_i969_AlarmConsole_(true,true)[[i2482_IAlarmConsole_'.x<-i262_alarmConsole_'.x|x<-extensions(i262_alarmConsole_')]] :[deterministic]
-assert COMPLETE'({i262_alarmConsole.i2465_KeyPressed,i262_alarmConsole.i2466_Initialize,i265_alarmSystem_''.i2144_Tripped,i265_alarmSystem_''.i2145_SwitchedOff,i265_alarmSystem_''.i2149_SwitchOffFailed}) [F= CO_i969_AlarmConsole_(true,true)[[i2482_IAlarmConsole_'.x'<-i262_alarmConsole_'.x'|x'<-extensions(i262_alarmConsole_')]] \ diff(Events,{i262_alarmConsole.i2465_KeyPressed,i262_alarmConsole.i2466_Initialize,i265_alarmSystem_''.i2144_Tripped,i265_alarmSystem_''.i2145_SwitchedOff,i265_alarmSystem_''.i2149_SwitchOffFailed,illegal})
-assert STOP [T= AS_i969_AlarmConsole_(false) \ diff(Events,{illegal})
+assert COMPLETE'({i262_alarmConsole.i2465_KeyPressed,i262_alarmConsole.i2466_Initialize,i265_alarmSystem_''.i2144_Tripped,i265_alarmSystem_''.i2145_SwitchedOff,i265_alarmSystem_''.i2149_SwitchOffFailed}) [F= CO_i969_AlarmConsole_(true,true)[[i2482_IAlarmConsole_'.x'<-i262_alarmConsole_'.x'|x'<-extensions(i262_alarmConsole_')]][[range_error<-illegal]] \ diff(Events,{i262_alarmConsole.i2465_KeyPressed,i262_alarmConsole.i2466_Initialize,i265_alarmSystem_''.i2144_Tripped,i265_alarmSystem_''.i2145_SwitchedOff,i265_alarmSystem_''.i2149_SwitchOffFailed,illegal})
+assert STOP [T= AS_i969_AlarmConsole_(false) \ diff(Events,{illegal,queue_full})
 assert AS_i969_AlarmConsole_(false) :[deadlock free]
 assert IF_i2482_IAlarmConsole_(true,false) [[i2482_IAlarmConsole.x<-i262_alarmConsole.x|x<-extensions(i262_alarmConsole)]][[i2482_IAlarmConsole_'.x<-i262_alarmConsole_'.x|x<-extensions(i262_alarmConsole_')]]\ {i2482_IAlarmConsole_'''.modeling} [F= AS_i969_AlarmConsole_(true) \ diff(Events,{|illegal,i262_alarmConsole,i262_alarmConsole_'|})
 assert AS_i969_AlarmConsole_(true) \ diff(Events,{|i265_alarmSystem.optional,illegal,i262_alarmConsole,i262_alarmConsole_'|}) :[livelock free]

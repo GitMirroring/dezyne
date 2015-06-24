@@ -4,7 +4,7 @@ channel illegal
 channel range_error
 channel transition_begin, transition_end
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
 datatype event_enumeration_alphabet = a | b | c | d | modeling | return | the_end'
 
@@ -139,7 +139,7 @@ SINGLETHREADED = true
 
 channel reorder_in  : {ifunction2_'.return}
 channel reorder_out : {i_'.return}
-channel queue_full'
+channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
 
@@ -151,7 +151,7 @@ external chase
 
 Cell = link'.in'?x' -> link'.out'!x' -> Cell
 
-Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full' -> illegal -> STOP)
+Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full -> STOP)
 
 Front = Cell[[link'.out' <- out']]
 
@@ -209,12 +209,12 @@ within compress((CO_function2_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({ifunction2.a,ifunction2.b}) [F= IF_ifunction2_(true,true) \ diff(Events,{ifunction2.a,ifunction2.b,illegal})
+assert COMPLETE'({ifunction2.a,ifunction2.b}) [F= IF_ifunction2_(true,true)[[range_error<-illegal]] \ diff(Events,{ifunction2.a,ifunction2.b,illegal})
 assert IF_ifunction2_(false,false) :[deadlock free]
 assert IF_ifunction2_(true,false) :[livelock free]
 assert CO_function2_(true,true)[[ifunction2_'.x<-i_'.x|x<-extensions(i_')]] :[deterministic]
-assert COMPLETE'({i.a,i.b}) [F= CO_function2_(true,true)[[ifunction2_'.x'<-i_'.x'|x'<-extensions(i_')]] \ diff(Events,{i.a,i.b,illegal})
-assert STOP [T= AS_function2_(false) \ diff(Events,{illegal})
+assert COMPLETE'({i.a,i.b}) [F= CO_function2_(true,true)[[ifunction2_'.x'<-i_'.x'|x'<-extensions(i_')]][[range_error<-illegal]] \ diff(Events,{i.a,i.b,illegal})
+assert STOP [T= AS_function2_(false) \ diff(Events,{illegal,queue_full})
 assert AS_function2_(false) :[deadlock free]
 assert IF_ifunction2_(true,false) [[ifunction2.x<-i.x|x<-extensions(i)]][[ifunction2_'.x<-i_'.x|x<-extensions(i_')]][[ifunction2_''.x<-i_''.x|x<-extensions(i_'')]]\ {ifunction2_'''.modeling} [F= AS_function2_(true) \ diff(Events,{|illegal,i,i_',i_''|})
 assert AS_function2_(true) \ diff(Events,{|illegal,i,i_',i_''|}) :[livelock free]

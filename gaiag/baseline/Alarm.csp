@@ -4,7 +4,7 @@ channel illegal
 channel range_error
 channel transition_begin, transition_end
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
 datatype event_enumeration_alphabet = States_Armed | States_Disabled | States_Disabling | States_Disarmed | States_Disarming | States_Enabled | States_Off | States_On | States_Triggered | arm | deactivated | detected | disable | disabled | disarm | enable | inevitable | modeling | optional | return | the_end' | triggered | turnoff | turnon
 
@@ -381,7 +381,7 @@ SINGLETHREADED = true
 
 channel reorder_in  : {IConsole_'.return}
 channel reorder_out : {console_'.return}
-channel queue_full'
+channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
 
@@ -393,7 +393,7 @@ external chase
 
 Cell = link'.in'?x' -> link'.out'!x' -> Cell
 
-Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full' -> illegal -> STOP)
+Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full -> STOP)
 
 Front = Cell[[link'.out' <- out']]
 
@@ -452,18 +452,18 @@ within compress((CO_Alarm_d(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reo
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({IConsole.inevitable,IConsole.optional,IConsole.arm,IConsole.disarm}) [F= IF_IConsole_a(true,true) \ diff(Events,{IConsole.inevitable,IConsole.optional,IConsole.arm,IConsole.disarm,illegal})
+assert COMPLETE'({IConsole.inevitable,IConsole.optional,IConsole.arm,IConsole.disarm}) [F= IF_IConsole_a(true,true)[[range_error<-illegal]] \ diff(Events,{IConsole.inevitable,IConsole.optional,IConsole.arm,IConsole.disarm,illegal})
 assert IF_IConsole_a(false,false) :[deadlock free]
 assert IF_IConsole_a(true,false) :[livelock free]
-assert COMPLETE'({ISensor.inevitable,ISensor.optional,ISensor.enable,ISensor.disable}) [F= IF_ISensor_b(true,true) \ diff(Events,{ISensor.inevitable,ISensor.optional,ISensor.enable,ISensor.disable,illegal})
+assert COMPLETE'({ISensor.inevitable,ISensor.optional,ISensor.enable,ISensor.disable}) [F= IF_ISensor_b(true,true)[[range_error<-illegal]] \ diff(Events,{ISensor.inevitable,ISensor.optional,ISensor.enable,ISensor.disable,illegal})
 assert IF_ISensor_b(false,false) :[deadlock free]
 assert IF_ISensor_b(true,false) :[livelock free]
-assert COMPLETE'({ISiren.turnon,ISiren.turnoff}) [F= IF_ISiren_c(true,true) \ diff(Events,{ISiren.turnon,ISiren.turnoff,illegal})
+assert COMPLETE'({ISiren.turnon,ISiren.turnoff}) [F= IF_ISiren_c(true,true)[[range_error<-illegal]] \ diff(Events,{ISiren.turnon,ISiren.turnoff,illegal})
 assert IF_ISiren_c(false,false) :[deadlock free]
 assert IF_ISiren_c(true,false) :[livelock free]
 assert CO_Alarm_d(true,true)[[IConsole_'.x<-console_'.x|x<-extensions(console_')]] :[deterministic]
-assert COMPLETE'({console.arm,console.disarm,sensor_''.triggered,sensor_''.disabled}) [F= CO_Alarm_d(true,true)[[IConsole_'.x'<-console_'.x'|x'<-extensions(console_')]] \ diff(Events,{console.arm,console.disarm,sensor_''.triggered,sensor_''.disabled,illegal})
-assert STOP [T= AS_Alarm_d(false) \ diff(Events,{illegal})
+assert COMPLETE'({console.arm,console.disarm,sensor_''.triggered,sensor_''.disabled}) [F= CO_Alarm_d(true,true)[[IConsole_'.x'<-console_'.x'|x'<-extensions(console_')]][[range_error<-illegal]] \ diff(Events,{console.arm,console.disarm,sensor_''.triggered,sensor_''.disabled,illegal})
+assert STOP [T= AS_Alarm_d(false) \ diff(Events,{illegal,queue_full})
 assert AS_Alarm_d(false) :[deadlock free]
 assert IF_IConsole_a(true,false) [[IConsole.x<-console.x|x<-extensions(console)]][[IConsole_'.x<-console_'.x|x<-extensions(console_')]][[IConsole_''.x<-console_''.x|x<-extensions(console_'')]]\ {IConsole_'''.modeling,console.inevitable,console.optional} [F= AS_Alarm_d(true) \ diff(Events,{|illegal,console,console_',console_''|})
 assert AS_Alarm_d(true) \ diff(Events,{|sensor.inevitable,sensor.optional,illegal,console,console_',console_''|}) :[livelock free]

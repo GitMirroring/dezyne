@@ -4,7 +4,7 @@ channel illegal
 channel range_error
 channel transition_begin, transition_end
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
 datatype event_enumeration_alphabet = Status_Nok | Status_Ok | e | modeling | return | the_end'
 
@@ -63,6 +63,6 @@ within compress((if CS
                [[x<-ifreply_in'.x|x<-extensions(ifreply_in')]] [|{|ifreply,ifreply_in',ifreply.the_end'|}|] REORDER' [[ifreply_out'.x<-x|x<-extensions(ifreply_out')]] \ {|ifreply_in',ifreply.the_end'|})
 
 -- end of interface.csp.scm
-assert COMPLETE'({ifreply.e}) [F= IF_ifreply_(true,true) \ diff(Events,{ifreply.e,illegal})
+assert COMPLETE'({ifreply.e}) [F= IF_ifreply_(true,true)[[range_error<-illegal]] \ diff(Events,{ifreply.e,illegal})
 assert IF_ifreply_(false,false) :[deadlock free]
 assert IF_ifreply_(true,false) :[livelock free]

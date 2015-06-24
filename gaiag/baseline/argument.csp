@@ -4,7 +4,7 @@ channel illegal
 channel range_error
 channel transition_begin, transition_end
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
 datatype event_enumeration_alphabet = e | f | modeling | return | the_end'
 
@@ -123,7 +123,7 @@ SINGLETHREADED = true
 
 channel reorder_in  : {I_'.return}
 channel reorder_out : {i_'.return}
-channel queue_full'
+channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
 
@@ -135,7 +135,7 @@ external chase
 
 Cell = link'.in'?x' -> link'.out'!x' -> Cell
 
-Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full' -> illegal -> STOP)
+Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full -> STOP)
 
 Front = Cell[[link'.out' <- out']]
 
@@ -193,12 +193,12 @@ within compress((CO_argument_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-r
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({I.e}) [F= IF_I_(true,true) \ diff(Events,{I.e,illegal})
+assert COMPLETE'({I.e}) [F= IF_I_(true,true)[[range_error<-illegal]] \ diff(Events,{I.e,illegal})
 assert IF_I_(false,false) :[deadlock free]
 assert IF_I_(true,false) :[livelock free]
 assert CO_argument_(true,true)[[I_'.x<-i_'.x|x<-extensions(i_')]] :[deterministic]
-assert COMPLETE'({i.e}) [F= CO_argument_(true,true)[[I_'.x'<-i_'.x'|x'<-extensions(i_')]] \ diff(Events,{i.e,illegal})
-assert STOP [T= AS_argument_(false) \ diff(Events,{illegal})
+assert COMPLETE'({i.e}) [F= CO_argument_(true,true)[[I_'.x'<-i_'.x'|x'<-extensions(i_')]][[range_error<-illegal]] \ diff(Events,{i.e,illegal})
+assert STOP [T= AS_argument_(false) \ diff(Events,{illegal,queue_full})
 assert AS_argument_(false) :[deadlock free]
 assert IF_I_(true,false) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]][[I_''.x<-i_''.x|x<-extensions(i_'')]]\ {I_'''.modeling} [F= AS_argument_(true) \ diff(Events,{|illegal,i,i_',i_''|})
 assert AS_argument_(true) \ diff(Events,{|illegal,i,i_',i_''|}) :[livelock free]

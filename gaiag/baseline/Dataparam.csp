@@ -4,7 +4,7 @@ channel illegal
 channel range_error
 channel transition_begin, transition_end
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
 datatype event_enumeration_alphabet = Status_No | Status_Yes | a | a0 | a6 | aa | e | e0 | e0r | eer | eio | eio2 | eio2r | eior | eo | eoo | eoor | eor | er | modeling | return | the_end'
 
@@ -222,7 +222,7 @@ SINGLETHREADED = true
 
 channel reorder_in  : {IDataparam_'.Status_Yes,IDataparam_'.Status_No,IDataparam_'.return}
 channel reorder_out : {port_'.Status_Yes,port_'.Status_No,port_'.return}
-channel queue_full'
+channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
 
@@ -234,7 +234,7 @@ external chase
 
 Cell = link'.in'?x' -> link'.out'!x' -> Cell
 
-Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full' -> illegal -> STOP)
+Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full -> STOP)
 
 Front = Cell[[link'.out' <- out']]
 
@@ -292,12 +292,12 @@ within compress((CO_Dataparam_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({IDataparam.e0,IDataparam.e0r,IDataparam.e,IDataparam.er,IDataparam.eer,IDataparam.eo,IDataparam.eoo,IDataparam.eio,IDataparam.eio2,IDataparam.eor,IDataparam.eoor,IDataparam.eior,IDataparam.eio2r}) [F= IF_IDataparam_(true,true) \ diff(Events,{IDataparam.e0,IDataparam.e0r,IDataparam.e,IDataparam.er,IDataparam.eer,IDataparam.eo,IDataparam.eoo,IDataparam.eio,IDataparam.eio2,IDataparam.eor,IDataparam.eoor,IDataparam.eior,IDataparam.eio2r,illegal})
+assert COMPLETE'({IDataparam.e0,IDataparam.e0r,IDataparam.e,IDataparam.er,IDataparam.eer,IDataparam.eo,IDataparam.eoo,IDataparam.eio,IDataparam.eio2,IDataparam.eor,IDataparam.eoor,IDataparam.eior,IDataparam.eio2r}) [F= IF_IDataparam_(true,true)[[range_error<-illegal]] \ diff(Events,{IDataparam.e0,IDataparam.e0r,IDataparam.e,IDataparam.er,IDataparam.eer,IDataparam.eo,IDataparam.eoo,IDataparam.eio,IDataparam.eio2,IDataparam.eor,IDataparam.eoor,IDataparam.eior,IDataparam.eio2r,illegal})
 assert IF_IDataparam_(false,false) :[deadlock free]
 assert IF_IDataparam_(true,false) :[livelock free]
 assert CO_Dataparam_(true,true)[[IDataparam_'.x<-port_'.x|x<-extensions(port_')]] :[deterministic]
-assert COMPLETE'({port.e0,port.e0r,port.e,port.er,port.eer,port.eo,port.eoo,port.eio,port.eio2,port.eor,port.eoor,port.eior,port.eio2r}) [F= CO_Dataparam_(true,true)[[IDataparam_'.x'<-port_'.x'|x'<-extensions(port_')]] \ diff(Events,{port.e0,port.e0r,port.e,port.er,port.eer,port.eo,port.eoo,port.eio,port.eio2,port.eor,port.eoor,port.eior,port.eio2r,illegal})
-assert STOP [T= AS_Dataparam_(false) \ diff(Events,{illegal})
+assert COMPLETE'({port.e0,port.e0r,port.e,port.er,port.eer,port.eo,port.eoo,port.eio,port.eio2,port.eor,port.eoor,port.eior,port.eio2r}) [F= CO_Dataparam_(true,true)[[IDataparam_'.x'<-port_'.x'|x'<-extensions(port_')]][[range_error<-illegal]] \ diff(Events,{port.e0,port.e0r,port.e,port.er,port.eer,port.eo,port.eoo,port.eio,port.eio2,port.eor,port.eoor,port.eior,port.eio2r,illegal})
+assert STOP [T= AS_Dataparam_(false) \ diff(Events,{illegal,queue_full})
 assert AS_Dataparam_(false) :[deadlock free]
 assert IF_IDataparam_(true,false) [[IDataparam.x<-port.x|x<-extensions(port)]][[IDataparam_'.x<-port_'.x|x<-extensions(port_')]][[IDataparam_''.x<-port_''.x|x<-extensions(port_'')]]\ {IDataparam_'''.modeling} [F= AS_Dataparam_(true) \ diff(Events,{|illegal,port,port_',port_''|})
 assert AS_Dataparam_(true) \ diff(Events,{|illegal,port,port_',port_''|}) :[livelock free]

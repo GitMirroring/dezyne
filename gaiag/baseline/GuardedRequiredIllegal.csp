@@ -4,7 +4,7 @@ channel illegal
 channel range_error
 channel transition_begin, transition_end
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
 datatype event_enumeration_alphabet = e | f | inevitable | modeling | optional | return | the_end' | unguarded
 
@@ -172,7 +172,7 @@ SINGLETHREADED = true
 
 channel reorder_in  : {Top_'.return}
 channel reorder_out : {t_'.return}
-channel queue_full'
+channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
 
@@ -184,7 +184,7 @@ external chase
 
 Cell = link'.in'?x' -> link'.out'!x' -> Cell
 
-Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full' -> illegal -> STOP)
+Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full -> STOP)
 
 Front = Cell[[link'.out' <- out']]
 
@@ -242,15 +242,15 @@ within compress((CO_GuardedRequiredIllegal_(IIG,true) [[x<-OUT'.x|x<-extensions(
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({Bottom.inevitable,Bottom.e}) [F= IF_Bottom_(true,true) \ diff(Events,{Bottom.inevitable,Bottom.e,illegal})
+assert COMPLETE'({Bottom.inevitable,Bottom.e}) [F= IF_Bottom_(true,true)[[range_error<-illegal]] \ diff(Events,{Bottom.inevitable,Bottom.e,illegal})
 assert IF_Bottom_(false,false) :[deadlock free]
 assert IF_Bottom_(true,false) :[livelock free]
-assert COMPLETE'({Top.optional,Top.unguarded,Top.e}) [F= IF_Top_(true,true) \ diff(Events,{Top.optional,Top.unguarded,Top.e,illegal})
+assert COMPLETE'({Top.optional,Top.unguarded,Top.e}) [F= IF_Top_(true,true)[[range_error<-illegal]] \ diff(Events,{Top.optional,Top.unguarded,Top.e,illegal})
 assert IF_Top_(false,false) :[deadlock free]
 assert IF_Top_(true,false) :[livelock free]
 assert CO_GuardedRequiredIllegal_(true,true)[[Top_'.x<-t_'.x|x<-extensions(t_')]] :[deterministic]
-assert COMPLETE'({t.unguarded,t.e,b_''.f}) [F= CO_GuardedRequiredIllegal_(true,true)[[Top_'.x'<-t_'.x'|x'<-extensions(t_')]] \ diff(Events,{t.unguarded,t.e,b_''.f,illegal})
-assert STOP [T= AS_GuardedRequiredIllegal_(false) \ diff(Events,{illegal})
+assert COMPLETE'({t.unguarded,t.e,b_''.f}) [F= CO_GuardedRequiredIllegal_(true,true)[[Top_'.x'<-t_'.x'|x'<-extensions(t_')]][[range_error<-illegal]] \ diff(Events,{t.unguarded,t.e,b_''.f,illegal})
+assert STOP [T= AS_GuardedRequiredIllegal_(false) \ diff(Events,{illegal,queue_full})
 assert AS_GuardedRequiredIllegal_(false) :[deadlock free]
 assert IF_Top_(true,false) [[Top.x<-t.x|x<-extensions(t)]][[Top_'.x<-t_'.x|x<-extensions(t_')]][[Top_''.x<-t_''.x|x<-extensions(t_'')]]\ {Top_'''.modeling,t.optional} [F= AS_GuardedRequiredIllegal_(true) \ diff(Events,{|illegal,t,t_',t_''|})
 assert AS_GuardedRequiredIllegal_(true) \ diff(Events,{|b.inevitable,illegal,t,t_',t_''|}) :[livelock free]

@@ -4,7 +4,7 @@ channel illegal
 channel range_error
 channel transition_begin, transition_end
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
 datatype event_enumeration_alphabet = a | e | modeling | return | the_end'
 
@@ -91,7 +91,7 @@ SINGLETHREADED = true
 
 channel reorder_in  : {icomplete_'.return}
 channel reorder_out : {p_'.return}
-channel queue_full'
+channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
 
@@ -103,7 +103,7 @@ external chase
 
 Cell = link'.in'?x' -> link'.out'!x' -> Cell
 
-Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full' -> illegal -> STOP)
+Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full -> STOP)
 
 Front = Cell[[link'.out' <- out']]
 
@@ -161,12 +161,12 @@ within compress((CO_complete_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-r
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({icomplete.e}) [F= IF_icomplete_(true,true) \ diff(Events,{icomplete.e,illegal})
+assert COMPLETE'({icomplete.e}) [F= IF_icomplete_(true,true)[[range_error<-illegal]] \ diff(Events,{icomplete.e,illegal})
 assert IF_icomplete_(false,false) :[deadlock free]
 assert IF_icomplete_(true,false) :[livelock free]
 assert CO_complete_(true,true)[[icomplete_'.x<-p_'.x|x<-extensions(p_')]] :[deterministic]
-assert COMPLETE'({p.e,r_''.a}) [F= CO_complete_(true,true)[[icomplete_'.x'<-p_'.x'|x'<-extensions(p_')]] \ diff(Events,{p.e,r_''.a,illegal})
-assert STOP [T= AS_complete_(false) \ diff(Events,{illegal})
+assert COMPLETE'({p.e,r_''.a}) [F= CO_complete_(true,true)[[icomplete_'.x'<-p_'.x'|x'<-extensions(p_')]][[range_error<-illegal]] \ diff(Events,{p.e,r_''.a,illegal})
+assert STOP [T= AS_complete_(false) \ diff(Events,{illegal,queue_full})
 assert AS_complete_(false) :[deadlock free]
 assert IF_icomplete_(true,false) [[icomplete.x<-p.x|x<-extensions(p)]][[icomplete_'.x<-p_'.x|x<-extensions(p_')]][[icomplete_''.x<-p_''.x|x<-extensions(p_'')]]\ {icomplete_'''.modeling} [F= AS_complete_(true) \ diff(Events,{|illegal,p,p_',p_''|})
 assert AS_complete_(true) \ diff(Events,{|illegal,p,p_',p_''|}) :[livelock free]

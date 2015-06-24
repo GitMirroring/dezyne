@@ -4,7 +4,7 @@ channel illegal
 channel range_error
 channel transition_begin, transition_end
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
 datatype event_enumeration_alphabet = States_State1 | States_State2 | evt | modeling | return | the_end'
 
@@ -130,7 +130,7 @@ SINGLETHREADED = true
 
 channel reorder_in  : {TestBool_'.return}
 channel reorder_out : {i_'.return}
-channel queue_full'
+channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
 
@@ -142,7 +142,7 @@ external chase
 
 Cell = link'.in'?x' -> link'.out'!x' -> Cell
 
-Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full' -> illegal -> STOP)
+Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full -> STOP)
 
 Front = Cell[[link'.out' <- out']]
 
@@ -200,12 +200,12 @@ within compress((CO_testBoolean_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({TestBool.evt}) [F= IF_TestBool_(true,true) \ diff(Events,{TestBool.evt,illegal})
+assert COMPLETE'({TestBool.evt}) [F= IF_TestBool_(true,true)[[range_error<-illegal]] \ diff(Events,{TestBool.evt,illegal})
 assert IF_TestBool_(false,false) :[deadlock free]
 assert IF_TestBool_(true,false) :[livelock free]
 assert CO_testBoolean_(true,true)[[TestBool_'.x<-i_'.x|x<-extensions(i_')]] :[deterministic]
-assert COMPLETE'({i.evt}) [F= CO_testBoolean_(true,true)[[TestBool_'.x'<-i_'.x'|x'<-extensions(i_')]] \ diff(Events,{i.evt,illegal})
-assert STOP [T= AS_testBoolean_(false) \ diff(Events,{illegal})
+assert COMPLETE'({i.evt}) [F= CO_testBoolean_(true,true)[[TestBool_'.x'<-i_'.x'|x'<-extensions(i_')]][[range_error<-illegal]] \ diff(Events,{i.evt,illegal})
+assert STOP [T= AS_testBoolean_(false) \ diff(Events,{illegal,queue_full})
 assert AS_testBoolean_(false) :[deadlock free]
 assert IF_TestBool_(true,false) [[TestBool.x<-i.x|x<-extensions(i)]][[TestBool_'.x<-i_'.x|x<-extensions(i_')]]\ {TestBool_'''.modeling} [F= AS_testBoolean_(true) \ diff(Events,{|illegal,i,i_'|})
 assert AS_testBoolean_(true) \ diff(Events,{|illegal,i,i_'|}) :[livelock free]

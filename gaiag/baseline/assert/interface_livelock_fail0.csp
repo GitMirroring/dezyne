@@ -4,7 +4,7 @@ channel illegal
 channel range_error
 channel transition_begin, transition_end
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
 datatype event_enumeration_alphabet = i27_e | i3_e | modeling | optional | return | the_end'
 
@@ -125,7 +125,7 @@ SINGLETHREADED = true
 
 channel reorder_in  : {i43_DummyI_'.return}
 channel reorder_out : {i44_i_'.return}
-channel queue_full'
+channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
 
@@ -137,7 +137,7 @@ external chase
 
 Cell = link'.in'?x' -> link'.out'!x' -> Cell
 
-Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full' -> illegal -> STOP)
+Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full -> STOP)
 
 Front = Cell[[link'.out' <- out']]
 
@@ -195,15 +195,15 @@ within compress((CO_i66_DummyC_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({i26_I.optional,i26_I.i3_e}) [F= IF_i26_I_(true,true) \ diff(Events,{i26_I.optional,i26_I.i3_e,illegal})
+assert COMPLETE'({i26_I.optional,i26_I.i3_e}) [F= IF_i26_I_(true,true)[[range_error<-illegal]] \ diff(Events,{i26_I.optional,i26_I.i3_e,illegal})
 assert IF_i26_I_(false,false) :[deadlock free]
 assert IF_i26_I_(true,false) :[livelock free]
-assert COMPLETE'({i43_DummyI.i27_e}) [F= IF_i43_DummyI_(true,true) \ diff(Events,{i43_DummyI.i27_e,illegal})
+assert COMPLETE'({i43_DummyI.i27_e}) [F= IF_i43_DummyI_(true,true)[[range_error<-illegal]] \ diff(Events,{i43_DummyI.i27_e,illegal})
 assert IF_i43_DummyI_(false,false) :[deadlock free]
 assert IF_i43_DummyI_(true,false) :[livelock free]
 assert CO_i66_DummyC_(true,true)[[i43_DummyI_'.x<-i44_i_'.x|x<-extensions(i44_i_')]] :[deterministic]
-assert COMPLETE'({i44_i.i27_e}) [F= CO_i66_DummyC_(true,true)[[i43_DummyI_'.x'<-i44_i_'.x'|x'<-extensions(i44_i_')]] \ diff(Events,{i44_i.i27_e,illegal})
-assert STOP [T= AS_i66_DummyC_(false) \ diff(Events,{illegal})
+assert COMPLETE'({i44_i.i27_e}) [F= CO_i66_DummyC_(true,true)[[i43_DummyI_'.x'<-i44_i_'.x'|x'<-extensions(i44_i_')]][[range_error<-illegal]] \ diff(Events,{i44_i.i27_e,illegal})
+assert STOP [T= AS_i66_DummyC_(false) \ diff(Events,{illegal,queue_full})
 assert AS_i66_DummyC_(false) :[deadlock free]
 assert IF_i43_DummyI_(true,false) [[i43_DummyI.x<-i44_i.x|x<-extensions(i44_i)]][[i43_DummyI_'.x<-i44_i_'.x|x<-extensions(i44_i_')]]\ {i43_DummyI_'''.modeling} [F= AS_i66_DummyC_(true) \ diff(Events,{|illegal,i44_i,i44_i_'|})
 assert AS_i66_DummyC_(true) \ diff(Events,{|i47_ii.optional,illegal,i44_i,i44_i_'|}) :[livelock free]

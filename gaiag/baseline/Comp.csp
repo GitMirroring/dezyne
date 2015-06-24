@@ -4,7 +4,7 @@ channel illegal
 channel range_error
 channel transition_begin, transition_end
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
 datatype event_enumeration_alphabet = State_Calibrated | State_Error | State_Initialized | State_Uninitialized | calibrate | initialize | modeling | perform_action1 | perform_action2 | perform_actions | recover | result_t_NOK | result_t_OK | return | the_end'
 
@@ -350,7 +350,7 @@ SINGLETHREADED = true
 
 channel reorder_in  : {IComp_'.result_t_OK,IComp_'.result_t_NOK,IComp_'.return}
 channel reorder_out : {client_'.result_t_OK,client_'.result_t_NOK,client_'.return}
-channel queue_full'
+channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
 
@@ -362,7 +362,7 @@ external chase
 
 Cell = link'.in'?x' -> link'.out'!x' -> Cell
 
-Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full' -> illegal -> STOP)
+Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full -> STOP)
 
 Front = Cell[[link'.out' <- out']]
 
@@ -420,15 +420,15 @@ within compress((CO_Comp_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reord
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({IComp.initialize,IComp.recover,IComp.perform_actions}) [F= IF_IComp_(true,true) \ diff(Events,{IComp.initialize,IComp.recover,IComp.perform_actions,illegal})
+assert COMPLETE'({IComp.initialize,IComp.recover,IComp.perform_actions}) [F= IF_IComp_(true,true)[[range_error<-illegal]] \ diff(Events,{IComp.initialize,IComp.recover,IComp.perform_actions,illegal})
 assert IF_IComp_(false,false) :[deadlock free]
 assert IF_IComp_(true,false) :[livelock free]
-assert COMPLETE'({IDevice.initialize,IDevice.calibrate,IDevice.perform_action1,IDevice.perform_action2}) [F= IF_IDevice_(true,true) \ diff(Events,{IDevice.initialize,IDevice.calibrate,IDevice.perform_action1,IDevice.perform_action2,illegal})
+assert COMPLETE'({IDevice.initialize,IDevice.calibrate,IDevice.perform_action1,IDevice.perform_action2}) [F= IF_IDevice_(true,true)[[range_error<-illegal]] \ diff(Events,{IDevice.initialize,IDevice.calibrate,IDevice.perform_action1,IDevice.perform_action2,illegal})
 assert IF_IDevice_(false,false) :[deadlock free]
 assert IF_IDevice_(true,false) :[livelock free]
 assert CO_Comp_(true,true)[[IComp_'.x<-client_'.x|x<-extensions(client_')]] :[deterministic]
-assert COMPLETE'({client.initialize,client.recover,client.perform_actions}) [F= CO_Comp_(true,true)[[IComp_'.x'<-client_'.x'|x'<-extensions(client_')]] \ diff(Events,{client.initialize,client.recover,client.perform_actions,illegal})
-assert STOP [T= AS_Comp_(false) \ diff(Events,{illegal})
+assert COMPLETE'({client.initialize,client.recover,client.perform_actions}) [F= CO_Comp_(true,true)[[IComp_'.x'<-client_'.x'|x'<-extensions(client_')]][[range_error<-illegal]] \ diff(Events,{client.initialize,client.recover,client.perform_actions,illegal})
+assert STOP [T= AS_Comp_(false) \ diff(Events,{illegal,queue_full})
 assert AS_Comp_(false) :[deadlock free]
 assert IF_IComp_(true,false) [[IComp.x<-client.x|x<-extensions(client)]][[IComp_'.x<-client_'.x|x<-extensions(client_')]]\ {IComp_'''.modeling} [F= AS_Comp_(true) \ diff(Events,{|illegal,client,client_'|})
 assert AS_Comp_(true) \ diff(Events,{|illegal,client,client_'|}) :[livelock free]

@@ -4,7 +4,7 @@ channel illegal
 channel range_error
 channel transition_begin, transition_end
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
 datatype event_enumeration_alphabet = e | modeling | return | the_end'
 
@@ -74,7 +74,7 @@ SINGLETHREADED = true
 
 channel reorder_in  : {IExtern_'.return}
 channel reorder_out : {port_'.return}
-channel queue_full'
+channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
 
@@ -86,7 +86,7 @@ external chase
 
 Cell = link'.in'?x' -> link'.out'!x' -> Cell
 
-Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full' -> illegal -> STOP)
+Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full -> STOP)
 
 Front = Cell[[link'.out' <- out']]
 
@@ -144,12 +144,12 @@ within compress((CO_Extern_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reo
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({IExtern.e}) [F= IF_IExtern_(true,true) \ diff(Events,{IExtern.e,illegal})
+assert COMPLETE'({IExtern.e}) [F= IF_IExtern_(true,true)[[range_error<-illegal]] \ diff(Events,{IExtern.e,illegal})
 assert IF_IExtern_(false,false) :[deadlock free]
 assert IF_IExtern_(true,false) :[livelock free]
 assert CO_Extern_(true,true)[[IExtern_'.x<-port_'.x|x<-extensions(port_')]] :[deterministic]
-assert COMPLETE'({port.e}) [F= CO_Extern_(true,true)[[IExtern_'.x'<-port_'.x'|x'<-extensions(port_')]] \ diff(Events,{port.e,illegal})
-assert STOP [T= AS_Extern_(false) \ diff(Events,{illegal})
+assert COMPLETE'({port.e}) [F= CO_Extern_(true,true)[[IExtern_'.x'<-port_'.x'|x'<-extensions(port_')]][[range_error<-illegal]] \ diff(Events,{port.e,illegal})
+assert STOP [T= AS_Extern_(false) \ diff(Events,{illegal,queue_full})
 assert AS_Extern_(false) :[deadlock free]
 assert IF_IExtern_(true,false) [[IExtern.x<-port.x|x<-extensions(port)]][[IExtern_'.x<-port_'.x|x<-extensions(port_')]]\ {IExtern_'''.modeling} [F= AS_Extern_(true) \ diff(Events,{|illegal,port,port_'|})
 assert AS_Extern_(true) \ diff(Events,{|illegal,port,port_'|}) :[livelock free]

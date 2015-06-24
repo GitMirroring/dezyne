@@ -4,7 +4,7 @@ channel illegal
 channel range_error
 channel transition_begin, transition_end
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
 datatype event_enumeration_alphabet = busy | finish | modeling | ping | pong | return | start | the_end'
 
@@ -141,7 +141,7 @@ SINGLETHREADED = true
 
 channel reorder_in  : {Provides_'.return}
 channel reorder_out : {p_'.return}
-channel queue_full'
+channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
 
@@ -153,7 +153,7 @@ external chase
 
 Cell = link'.in'?x' -> link'.out'!x' -> Cell
 
-Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full' -> illegal -> STOP)
+Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full -> STOP)
 
 Front = Cell[[link'.out' <- out']]
 
@@ -211,15 +211,15 @@ within compress((CO_reply_reorder_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({Provides.start}) [F= IF_Provides_(true,true) \ diff(Events,{Provides.start,illegal})
+assert COMPLETE'({Provides.start}) [F= IF_Provides_(true,true)[[range_error<-illegal]] \ diff(Events,{Provides.start,illegal})
 assert IF_Provides_(false,false) :[deadlock free]
 assert IF_Provides_(true,false) :[livelock free]
-assert COMPLETE'({Requires.ping}) [F= IF_Requires_(true,true) \ diff(Events,{Requires.ping,illegal})
+assert COMPLETE'({Requires.ping}) [F= IF_Requires_(true,true)[[range_error<-illegal]] \ diff(Events,{Requires.ping,illegal})
 assert IF_Requires_(false,false) :[deadlock free]
 assert IF_Requires_(true,false) :[livelock free]
 assert CO_reply_reorder_(true,true)[[Provides_'.x<-p_'.x|x<-extensions(p_')]] :[deterministic]
-assert COMPLETE'({p.start,r_''.pong}) [F= CO_reply_reorder_(true,true)[[Provides_'.x'<-p_'.x'|x'<-extensions(p_')]] \ diff(Events,{p.start,r_''.pong,illegal})
-assert STOP [T= AS_reply_reorder_(false) \ diff(Events,{illegal})
+assert COMPLETE'({p.start,r_''.pong}) [F= CO_reply_reorder_(true,true)[[Provides_'.x'<-p_'.x'|x'<-extensions(p_')]][[range_error<-illegal]] \ diff(Events,{p.start,r_''.pong,illegal})
+assert STOP [T= AS_reply_reorder_(false) \ diff(Events,{illegal,queue_full})
 assert AS_reply_reorder_(false) :[deadlock free]
 assert IF_Provides_(true,false) [[Provides.x<-p.x|x<-extensions(p)]][[Provides_'.x<-p_'.x|x<-extensions(p_')]][[Provides_''.x<-p_''.x|x<-extensions(p_'')]]\ {Provides_'''.modeling} [F= AS_reply_reorder_(true) \ diff(Events,{|illegal,p,p_',p_''|})
 assert AS_reply_reorder_(true) \ diff(Events,{|illegal,p,p_',p_''|}) :[livelock free]

@@ -4,7 +4,7 @@ channel illegal
 channel range_error
 channel transition_begin, transition_end
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
 datatype event_enumeration_alphabet = a | e | modeling | return | the_end'
 
@@ -84,7 +84,7 @@ SINGLETHREADED = true
 
 channel reorder_in  : {iincomplete_'.return}
 channel reorder_out : {p_'.return}
-channel queue_full'
+channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
 
@@ -96,7 +96,7 @@ external chase
 
 Cell = link'.in'?x' -> link'.out'!x' -> Cell
 
-Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full' -> illegal -> STOP)
+Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full -> STOP)
 
 Front = Cell[[link'.out' <- out']]
 
@@ -154,12 +154,12 @@ within compress((CO_incomplete_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({iincomplete.e}) [F= IF_iincomplete_(true,true) \ diff(Events,{iincomplete.e,illegal})
+assert COMPLETE'({iincomplete.e}) [F= IF_iincomplete_(true,true)[[range_error<-illegal]] \ diff(Events,{iincomplete.e,illegal})
 assert IF_iincomplete_(false,false) :[deadlock free]
 assert IF_iincomplete_(true,false) :[livelock free]
 assert CO_incomplete_(true,true)[[iincomplete_'.x<-p_'.x|x<-extensions(p_')]] :[deterministic]
-assert COMPLETE'({p.e,r_''.a}) [F= CO_incomplete_(true,true)[[iincomplete_'.x'<-p_'.x'|x'<-extensions(p_')]] \ diff(Events,{p.e,r_''.a,illegal})
-assert STOP [T= AS_incomplete_(false) \ diff(Events,{illegal})
+assert COMPLETE'({p.e,r_''.a}) [F= CO_incomplete_(true,true)[[iincomplete_'.x'<-p_'.x'|x'<-extensions(p_')]][[range_error<-illegal]] \ diff(Events,{p.e,r_''.a,illegal})
+assert STOP [T= AS_incomplete_(false) \ diff(Events,{illegal,queue_full})
 assert AS_incomplete_(false) :[deadlock free]
 assert IF_iincomplete_(true,false) [[iincomplete.x<-p.x|x<-extensions(p)]][[iincomplete_'.x<-p_'.x|x<-extensions(p_')]][[iincomplete_''.x<-p_''.x|x<-extensions(p_'')]]\ {iincomplete_'''.modeling} [F= AS_incomplete_(true) \ diff(Events,{|illegal,p,p_',p_''|})
 assert AS_incomplete_(true) \ diff(Events,{|illegal,p,p_',p_''|}) :[livelock free]

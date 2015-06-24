@@ -1,0 +1,284 @@
+nametype bool = {false, true}   
+                
+channel illegal
+channel range_error
+channel transition_begin, transition_end
+
+COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
+
+datatype event_enumeration_alphabet = i195_States_Activated | i195_States_Deactivated | i195_States_Triggered | i3_Activate | i4_Deactivate | i5_DetectedMovement | i9_States_Activated | i9_States_Deactivated | i9_States_Triggered | modeling | optional | return | the_end'
+
+-- end of combinators
+-- both.csp.scm
+-- end of both.csp.scm
+-- interface.csp.scm
+
+channel i182_ISensor: {i3_Activate,i4_Deactivate,optional,the_end'}
+channel i182_ISensor_'': {i5_DetectedMovement}
+channel i182_ISensor_': {return}
+channel i182_ISensor_in',i182_ISensor_out': {i182_ISensor_'.return}
+channel i182_ISensor_''': {modeling}
+
+IF_i182_ISensor_(IG,CS) = let
+
+i182_ISensor_(i17_state) =
+(((i17_state == i9_States_Deactivated)) & (
+i182_ISensor?x:{i3_Activate} -> (
+  let tmp' = i9_States_Activated within
+  let i17_state = tmp' within
+    i182_ISensor_'.return ->
+  i182_ISensor.the_end' ->
+  i182_ISensor_(i17_state)
+)
+ []
+  IG & i182_ISensor?x:{i4_Deactivate} -> (
+  illegal -> STOP
+))
+[]
+((i17_state == i9_States_Activated)) & (
+i182_ISensor?x:{i4_Deactivate} -> (
+  let tmp' = i9_States_Deactivated within
+  let i17_state = tmp' within
+    i182_ISensor_'.return ->
+  i182_ISensor.the_end' ->
+  i182_ISensor_(i17_state)
+)
+ []
+  i182_ISensor?x:{optional} ->(
+  i182_ISensor_''!i5_DetectedMovement ->
+  let tmp' = i9_States_Triggered within
+  let i17_state = tmp' within
+    i182_ISensor_'''.modeling ->
+  i182_ISensor.the_end' ->
+  i182_ISensor_(i17_state)
+)
+ []
+  IG & i182_ISensor?x:{i3_Activate} -> (
+  illegal -> STOP
+))
+[]
+((i17_state == i9_States_Triggered)) & (
+i182_ISensor?x:{i4_Deactivate} -> (
+  let tmp' = i9_States_Deactivated within
+  let i17_state = tmp' within
+    i182_ISensor_'.return ->
+  i182_ISensor.the_end' ->
+  i182_ISensor_(i17_state)
+)
+ []
+  IG & i182_ISensor?x:{i3_Activate} -> (
+  illegal -> STOP
+))
+[]
+CS & i182_ISensor?x:{optional} -> illegal -> STOP
+)
+
+REORDER' = i182_ISensor?x' -> (i182_ISensor_in'?y' -> i182_ISensor.the_end' -> i182_ISensor_out'!y' -> REORDER' [] i182_ISensor.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                then i182_ISensor_(i9_States_Deactivated)
+                else i182_ISensor_(i9_States_Deactivated)  [|{i182_ISensor.optional}|] CHAOS({i182_ISensor.optional}))
+               [[x<-i182_ISensor_in'.x|x<-extensions(i182_ISensor_in')]] [|{|i182_ISensor,i182_ISensor_in',i182_ISensor.the_end'|}|] REORDER' [[i182_ISensor_out'.x<-x|x<-extensions(i182_ISensor_out')]] \ {|i182_ISensor_in',i182_ISensor.the_end'|})
+
+-- end of interface.csp.scm
+-- both.csp.scm
+-- end of both.csp.scm
+-- component.csp.scm
+
+channel i183_sensors: extensions(i182_ISensor)
+channel i186_aSensor: extensions(i182_ISensor)
+channel i189_bSensor: extensions(i182_ISensor)
+
+channel i183_sensors_': extensions(i182_ISensor_')
+channel i186_aSensor_': extensions(i182_ISensor_')
+channel i189_bSensor_': extensions(i182_ISensor_')
+
+channel i183_sensors_'': extensions(i182_ISensor_'')
+channel i186_aSensor_'': extensions(i182_ISensor_'')
+channel i189_bSensor_'': extensions(i182_ISensor_'')
+
+channel i183_sensors_''': extensions(i182_ISensor_''')
+channel i186_aSensor_''': extensions(i182_ISensor_''')
+channel i189_bSensor_''': extensions(i182_ISensor_''')
+
+
+
+CO_i468_SensorMultiplexer_(IIG,IG) = let
+
+i468_SensorMultiplexer_(i203_state) =
+transition_begin -> (
+((i203_state == i195_States_Deactivated)) & (
+i183_sensors?x:{i3_Activate} -> (
+  i186_aSensor!i3_Activate -> i186_aSensor_'.return ->
+  i189_bSensor!i3_Activate -> i189_bSensor_'.return ->
+  let tmp' = i195_States_Activated within
+  let i203_state = tmp' within
+    i182_ISensor_'.return ->
+  transition_end ->
+  i468_SensorMultiplexer_(i203_state)
+)
+ []
+  IIG & i183_sensors?x:{i4_Deactivate} -> (
+  illegal -> STOP
+)
+ []
+  IG & i186_aSensor_''?x:{i5_DetectedMovement} -> (
+  illegal -> STOP
+)
+ []
+  IG & i189_bSensor_''?x:{i5_DetectedMovement} -> (
+  illegal -> STOP
+))
+[]
+((i203_state == i195_States_Activated)) & (
+i183_sensors?x:{i4_Deactivate} -> (
+  i186_aSensor!i4_Deactivate -> i186_aSensor_'.return ->
+  i189_bSensor!i4_Deactivate -> i189_bSensor_'.return ->
+  let tmp' = i195_States_Deactivated within
+  let i203_state = tmp' within
+    i182_ISensor_'.return ->
+  transition_end ->
+  i468_SensorMultiplexer_(i203_state)
+)
+ []
+  IIG & i183_sensors?x:{i3_Activate} -> (
+  illegal -> STOP
+)
+ []
+  i186_aSensor_''?x:{i5_DetectedMovement} -> (
+  i183_sensors_''!i5_DetectedMovement ->
+  let tmp' = i195_States_Triggered within
+  let i203_state = tmp' within
+    transition_end ->
+  i468_SensorMultiplexer_(i203_state)
+)
+ []
+  i189_bSensor_''?x:{i5_DetectedMovement} -> (
+  i183_sensors_''!i5_DetectedMovement ->
+  let tmp' = i195_States_Triggered within
+  let i203_state = tmp' within
+    transition_end ->
+  i468_SensorMultiplexer_(i203_state)
+))
+[]
+((i203_state == i195_States_Triggered)) & (
+i183_sensors?x:{i4_Deactivate} -> (
+  i186_aSensor!i4_Deactivate -> i186_aSensor_'.return ->
+  i189_bSensor!i4_Deactivate -> i189_bSensor_'.return ->
+  let tmp' = i195_States_Deactivated within
+  let i203_state = tmp' within
+    i182_ISensor_'.return ->
+  transition_end ->
+  i468_SensorMultiplexer_(i203_state)
+)
+ []
+  IIG & i183_sensors?x:{i3_Activate} -> (
+  illegal -> STOP
+)
+ []
+  i186_aSensor_''?x:{i5_DetectedMovement} -> (
+    transition_end ->
+  i468_SensorMultiplexer_(i203_state)
+)
+ []
+  i189_bSensor_''?x:{i5_DetectedMovement} -> (
+    transition_end ->
+  i468_SensorMultiplexer_(i203_state)
+)))
+
+within i468_SensorMultiplexer_(i195_States_Deactivated)
+                                                     
+channel extensions_over_empty_channels_is_undefined
+channel IN',OUT' : {i186_aSensor_''.i5_DetectedMovement,i189_bSensor_''.i5_DetectedMovement,extensions_over_empty_channels_is_undefined}
+
+channel LINK' : {|IN',OUT'|}
+
+SINGLETHREADED = true
+
+channel reorder_in  : {i182_ISensor_'.return}
+channel reorder_out : {i183_sensors_'.return}
+channel queue_full
+
+SEMANTICS(in',out',link',client',modeling',end') = let
+
+Q' = let
+
+N' = 3
+
+external chase
+
+Cell = link'.in'?x' -> link'.out'!x' -> Cell
+
+Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full -> STOP)
+
+Front = Cell[[link'.out' <- out']]
+
+within
+       if (N'==1) then (Back[[link'.out' <- out']])
+       else if(N'==2) then chase(Back [link'.out' <-> link'.in'] Front  \ {|link'|})
+       else chase((Back [link'.out' <-> link'.in'] ([link'.out'<->link'.in'] x : <1..N'-2> @ Cell)) [link'.out' <-> link'.in'] Front \ {|link'|})
+
+R'(A') = ([] x' : A' @ x' -> R'(A'))
+       []
+       reorder_in?i182_ISensor_'.x' -> reorder_out!i183_sensors_'.x' -> R'(A')
+
+S'    = let
+
+N' = 3
+
+
+Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
+
+FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
+            []
+            ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
+            []
+            (r' == <> & reorder_in?i182_ISensor_'.x' -> Busy(c',<x'>))
+
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i183_sensors_'.head(r') -> Idle(0)))
+              []
+              (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
+              []
+              (c' <= N' & in'?x' -> Busy(c'+1,r'))
+              []
+              (c' > 0 & out'?x' -> Busy(c'-1,r'))
+              []
+              (r' != <> & reorder_in?i182_ISensor_'.x' -> illegal -> STOP)
+
+within Idle(0)
+
+within Q' [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
+
+AS_i468_SensorMultiplexer_(IIG) = let
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+ClientCalls = {i183_sensors.i3_Activate,i183_sensors.i4_Deactivate}
+UsedModeling = {i186_aSensor.optional,i189_bSensor.optional}
+TheEnd = {|i186_aSensor_''',i189_bSensor_'''|}
+within compress((CO_i468_SensorMultiplexer_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+                 [|{|OUT',transition_begin,transition_end,reorder_in,i183_sensors,i183_sensors_'|}|]
+                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
+                [|{|IN',i186_aSensor,i186_aSensor_',i186_aSensor_''',i189_bSensor,i189_bSensor_',i189_bSensor_'''|}|]
+                (IF_i182_ISensor_(true,false) [[i182_ISensor.x<-i186_aSensor.x|x<-extensions(i186_aSensor)]][[i182_ISensor_'.x<-i186_aSensor_'.x|x<-extensions(i186_aSensor_')]][[i182_ISensor_''.x<-i186_aSensor_''.x|x<-extensions(i186_aSensor_'')]][[i182_ISensor_'''.x<-i186_aSensor_'''.x|x<-extensions(i186_aSensor_''')]]
+                 ||| IF_i182_ISensor_(true,false) [[i182_ISensor.x<-i189_bSensor.x|x<-extensions(i189_bSensor)]][[i182_ISensor_'.x<-i189_bSensor_'.x|x<-extensions(i189_bSensor_')]][[i182_ISensor_''.x<-i189_bSensor_''.x|x<-extensions(i189_bSensor_'')]][[i182_ISensor_'''.x<-i189_bSensor_'''.x|x<-extensions(i189_bSensor_''')]]
+)[[x<-IN'.x|x<-extensions(IN')]])
+
+-- end of component.csp.scm
+assert COMPLETE'({i182_ISensor.optional,i182_ISensor.i3_Activate,i182_ISensor.i4_Deactivate}) [F= IF_i182_ISensor_(true,true)[[range_error<-illegal]] \ diff(Events,{i182_ISensor.optional,i182_ISensor.i3_Activate,i182_ISensor.i4_Deactivate,illegal})
+assert IF_i182_ISensor_(false,false) :[deadlock free]
+assert IF_i182_ISensor_(true,false) :[livelock free]
+assert CO_i468_SensorMultiplexer_(true,true)[[i182_ISensor_'.x<-i183_sensors_'.x|x<-extensions(i183_sensors_')]] :[deterministic]
+assert COMPLETE'({i183_sensors.i3_Activate,i183_sensors.i4_Deactivate,i186_aSensor_''.i5_DetectedMovement,i189_bSensor_''.i5_DetectedMovement}) [F= CO_i468_SensorMultiplexer_(true,true)[[i182_ISensor_'.x'<-i183_sensors_'.x'|x'<-extensions(i183_sensors_')]][[range_error<-illegal]] \ diff(Events,{i183_sensors.i3_Activate,i183_sensors.i4_Deactivate,i186_aSensor_''.i5_DetectedMovement,i189_bSensor_''.i5_DetectedMovement,illegal})
+assert STOP [T= AS_i468_SensorMultiplexer_(false) \ diff(Events,{illegal,queue_full})
+assert AS_i468_SensorMultiplexer_(false) :[deadlock free]
+assert IF_i182_ISensor_(true,false) [[i182_ISensor.x<-i183_sensors.x|x<-extensions(i183_sensors)]][[i182_ISensor_'.x<-i183_sensors_'.x|x<-extensions(i183_sensors_')]][[i182_ISensor_''.x<-i183_sensors_''.x|x<-extensions(i183_sensors_'')]]\ {i182_ISensor_'''.modeling,i183_sensors.optional} [F= AS_i468_SensorMultiplexer_(true) \ diff(Events,{|illegal,i183_sensors,i183_sensors_',i183_sensors_''|})
+assert AS_i468_SensorMultiplexer_(true) \ diff(Events,{|i186_aSensor.optional,i189_bSensor.optional,illegal,i183_sensors,i183_sensors_',i183_sensors_''|}) :[livelock free]

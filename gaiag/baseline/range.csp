@@ -4,7 +4,7 @@ channel illegal
 channel range_error
 channel transition_begin, transition_end
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
 datatype event_enumeration_alphabet = a | e | modeling | return | the_end'
 
@@ -24,19 +24,19 @@ f(P')(state) =
     P'(state, 5)
 
 range_(state) =
-(if not ((0 <= state and state <= 3)) then illegal -> STOP else
+(if not ((0 <= state and state <= 3)) then range_error -> STOP else
 range?x:{e} -> (
   let tmp' = 4 within
   let state = tmp' within
-  if not ((0 <= state and state <= 3)) then illegal -> STOP else
+  if not ((0 <= state and state <= 3)) then range_error -> STOP else
   let Cont_2'(state, res') =
   let state = res' within
-  if not ((0 <= state and state <= 3)) then illegal -> STOP else
+  if not ((0 <= state and state <= 3)) then range_error -> STOP else
     let x = 6 within
-    if not ((0 <= x and x <= 3)) then illegal -> STOP else
+    if not ((0 <= x and x <= 3)) then range_error -> STOP else
   let Cont_1'(state, res') =
   let y = res' within
-  if not ((0 <= y and y <= 3)) then illegal -> STOP else
+  if not ((0 <= y and y <= 3)) then range_error -> STOP else
     range_''!a ->
       range_'.return ->
   range.the_end' ->
@@ -63,6 +63,6 @@ within compress((if CS
                [[x<-range_in'.x|x<-extensions(range_in')]] [|{|range,range_in',range.the_end'|}|] REORDER' [[range_out'.x<-x|x<-extensions(range_out')]] \ {|range_in',range.the_end'|})
 
 -- end of interface.csp.scm
-assert COMPLETE'({range.e}) [F= IF_range_(true,true) \ diff(Events,{range.e,illegal})
+assert COMPLETE'({range.e}) [F= IF_range_(true,true)[[range_error<-illegal]] \ diff(Events,{range.e,illegal})
 assert IF_range_(false,false) :[deadlock free]
 assert IF_range_(true,false) :[livelock free]

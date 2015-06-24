@@ -4,7 +4,7 @@ channel illegal
 channel range_error
 channel transition_begin, transition_end
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
 datatype event_enumeration_alphabet = a | e | modeling | return | s | t | the_end'
 
@@ -203,7 +203,7 @@ SINGLETHREADED = true
 
 channel reorder_in  : {IGuardthreetopon_'.return}
 channel reorder_out : {i_'.return}
-channel queue_full'
+channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
 
@@ -215,7 +215,7 @@ external chase
 
 Cell = link'.in'?x' -> link'.out'!x' -> Cell
 
-Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full' -> illegal -> STOP)
+Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full -> STOP)
 
 Front = Cell[[link'.out' <- out']]
 
@@ -273,15 +273,15 @@ within compress((CO_Guardthreetopon_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({IGuardthreetopon.e,IGuardthreetopon.t,IGuardthreetopon.s}) [F= IF_IGuardthreetopon_(true,true) \ diff(Events,{IGuardthreetopon.e,IGuardthreetopon.t,IGuardthreetopon.s,illegal})
+assert COMPLETE'({IGuardthreetopon.e,IGuardthreetopon.t,IGuardthreetopon.s}) [F= IF_IGuardthreetopon_(true,true)[[range_error<-illegal]] \ diff(Events,{IGuardthreetopon.e,IGuardthreetopon.t,IGuardthreetopon.s,illegal})
 assert IF_IGuardthreetopon_(false,false) :[deadlock free]
 assert IF_IGuardthreetopon_(true,false) :[livelock free]
-assert COMPLETE'({RGuardthreetopon.e}) [F= IF_RGuardthreetopon_(true,true) \ diff(Events,{RGuardthreetopon.e,illegal})
+assert COMPLETE'({RGuardthreetopon.e}) [F= IF_RGuardthreetopon_(true,true)[[range_error<-illegal]] \ diff(Events,{RGuardthreetopon.e,illegal})
 assert IF_RGuardthreetopon_(false,false) :[deadlock free]
 assert IF_RGuardthreetopon_(true,false) :[livelock free]
 assert CO_Guardthreetopon_(true,true)[[IGuardthreetopon_'.x<-i_'.x|x<-extensions(i_')]] :[deterministic]
-assert COMPLETE'({i.e,i.t,i.s,r_''.a}) [F= CO_Guardthreetopon_(true,true)[[IGuardthreetopon_'.x'<-i_'.x'|x'<-extensions(i_')]] \ diff(Events,{i.e,i.t,i.s,r_''.a,illegal})
-assert STOP [T= AS_Guardthreetopon_(false) \ diff(Events,{illegal})
+assert COMPLETE'({i.e,i.t,i.s,r_''.a}) [F= CO_Guardthreetopon_(true,true)[[IGuardthreetopon_'.x'<-i_'.x'|x'<-extensions(i_')]][[range_error<-illegal]] \ diff(Events,{i.e,i.t,i.s,r_''.a,illegal})
+assert STOP [T= AS_Guardthreetopon_(false) \ diff(Events,{illegal,queue_full})
 assert AS_Guardthreetopon_(false) :[deadlock free]
 assert IF_IGuardthreetopon_(true,false) [[IGuardthreetopon.x<-i.x|x<-extensions(i)]][[IGuardthreetopon_'.x<-i_'.x|x<-extensions(i_')]][[IGuardthreetopon_''.x<-i_''.x|x<-extensions(i_'')]]\ {IGuardthreetopon_'''.modeling} [F= AS_Guardthreetopon_(true) \ diff(Events,{|illegal,i,i_',i_''|})
 assert AS_Guardthreetopon_(true) \ diff(Events,{|illegal,i,i_',i_''|}) :[livelock free]

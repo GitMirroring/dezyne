@@ -4,7 +4,7 @@ channel illegal
 channel range_error
 channel transition_begin, transition_end
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
 datatype event_enumeration_alphabet = dummy | inevitable | modeling | return | the_end'
 
@@ -125,7 +125,7 @@ SINGLETHREADED = true
 
 channel reorder_in  : {ilivelock_'.return}
 channel reorder_out : {l_'.return}
-channel queue_full'
+channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
 
@@ -137,7 +137,7 @@ external chase
 
 Cell = link'.in'?x' -> link'.out'!x' -> Cell
 
-Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full' -> illegal -> STOP)
+Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full -> STOP)
 
 Front = Cell[[link'.out' <- out']]
 
@@ -195,15 +195,15 @@ within compress((CO_livelock2_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({ilivelock.inevitable,ilivelock.dummy}) [F= IF_ilivelock_(true,true) \ diff(Events,{ilivelock.inevitable,ilivelock.dummy,illegal})
+assert COMPLETE'({ilivelock.inevitable,ilivelock.dummy}) [F= IF_ilivelock_(true,true)[[range_error<-illegal]] \ diff(Events,{ilivelock.inevitable,ilivelock.dummy,illegal})
 assert IF_ilivelock_(false,false) :[deadlock free]
 assert IF_ilivelock_(true,false) :[livelock free]
-assert COMPLETE'({nolivelock.inevitable}) [F= IF_nolivelock_(true,true) \ diff(Events,{nolivelock.inevitable,illegal})
+assert COMPLETE'({nolivelock.inevitable}) [F= IF_nolivelock_(true,true)[[range_error<-illegal]] \ diff(Events,{nolivelock.inevitable,illegal})
 assert IF_nolivelock_(false,false) :[deadlock free]
 assert IF_nolivelock_(true,false) :[livelock free]
 assert CO_livelock2_(true,true)[[ilivelock_'.x<-l_'.x|x<-extensions(l_')]] :[deterministic]
-assert COMPLETE'({l.dummy,n_''.dummy}) [F= CO_livelock2_(true,true)[[ilivelock_'.x'<-l_'.x'|x'<-extensions(l_')]] \ diff(Events,{l.dummy,n_''.dummy,illegal})
-assert STOP [T= AS_livelock2_(false) \ diff(Events,{illegal})
+assert COMPLETE'({l.dummy,n_''.dummy}) [F= CO_livelock2_(true,true)[[ilivelock_'.x'<-l_'.x'|x'<-extensions(l_')]][[range_error<-illegal]] \ diff(Events,{l.dummy,n_''.dummy,illegal})
+assert STOP [T= AS_livelock2_(false) \ diff(Events,{illegal,queue_full})
 assert AS_livelock2_(false) :[deadlock free]
 assert IF_ilivelock_(true,false) [[ilivelock.x<-l.x|x<-extensions(l)]][[ilivelock_'.x<-l_'.x|x<-extensions(l_')]]\ {ilivelock_'''.modeling,l.inevitable} [F= AS_livelock2_(true) \ diff(Events,{|illegal,l,l_'|})
 assert AS_livelock2_(true) \ diff(Events,{|n.inevitable,illegal,l,l_'|}) :[livelock free]

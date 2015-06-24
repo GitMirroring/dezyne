@@ -4,7 +4,7 @@ channel illegal
 channel range_error
 channel transition_begin, transition_end
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
 datatype event_enumeration_alphabet = e | f | modeling | optional | return | the_end'
 
@@ -132,7 +132,7 @@ SINGLETHREADED = true
 
 channel reorder_in  : {dummy_'.return}
 channel reorder_out : {p_'.return}
-channel queue_full'
+channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
 
@@ -144,7 +144,7 @@ external chase
 
 Cell = link'.in'?x' -> link'.out'!x' -> Cell
 
-Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full' -> illegal -> STOP)
+Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full -> STOP)
 
 Front = Cell[[link'.out' <- out']]
 
@@ -202,15 +202,15 @@ within compress((CO_modeling_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-r
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({dummy.e}) [F= IF_dummy_(true,true) \ diff(Events,{dummy.e,illegal})
+assert COMPLETE'({dummy.e}) [F= IF_dummy_(true,true)[[range_error<-illegal]] \ diff(Events,{dummy.e,illegal})
 assert IF_dummy_(false,false) :[deadlock free]
 assert IF_dummy_(true,false) :[livelock free]
-assert COMPLETE'({imodeling.optional,imodeling.e}) [F= IF_imodeling_(true,true) \ diff(Events,{imodeling.optional,imodeling.e,illegal})
+assert COMPLETE'({imodeling.optional,imodeling.e}) [F= IF_imodeling_(true,true)[[range_error<-illegal]] \ diff(Events,{imodeling.optional,imodeling.e,illegal})
 assert IF_imodeling_(false,false) :[deadlock free]
 assert IF_imodeling_(true,false) :[livelock free]
 assert CO_modeling_(true,true)[[dummy_'.x<-p_'.x|x<-extensions(p_')]] :[deterministic]
-assert COMPLETE'({p.e,r_''.f}) [F= CO_modeling_(true,true)[[dummy_'.x'<-p_'.x'|x'<-extensions(p_')]] \ diff(Events,{p.e,r_''.f,illegal})
-assert STOP [T= AS_modeling_(false) \ diff(Events,{illegal})
+assert COMPLETE'({p.e,r_''.f}) [F= CO_modeling_(true,true)[[dummy_'.x'<-p_'.x'|x'<-extensions(p_')]][[range_error<-illegal]] \ diff(Events,{p.e,r_''.f,illegal})
+assert STOP [T= AS_modeling_(false) \ diff(Events,{illegal,queue_full})
 assert AS_modeling_(false) :[deadlock free]
 assert IF_dummy_(true,false) [[dummy.x<-p.x|x<-extensions(p)]][[dummy_'.x<-p_'.x|x<-extensions(p_')]]\ {dummy_'''.modeling} [F= AS_modeling_(true) \ diff(Events,{|illegal,p,p_'|})
 assert AS_modeling_(true) \ diff(Events,{|r.optional,illegal,p,p_'|}) :[livelock free]

@@ -4,7 +4,7 @@ channel illegal
 channel range_error
 channel transition_begin, transition_end
 
-COMPLETE'(A') = []x:A' @ x-> (COMPLETE'(A') |~| illegal->STOP)
+COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
 datatype event_enumeration_alphabet = State_Busy | State_Idle | State_Off | a | e | modeling | return | the_end'
 
@@ -127,7 +127,7 @@ SINGLETHREADED = true
 
 channel reorder_in  : {IChoice_'.return}
 channel reorder_out : {c_'.return}
-channel queue_full'
+channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
 
@@ -139,7 +139,7 @@ external chase
 
 Cell = link'.in'?x' -> link'.out'!x' -> Cell
 
-Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full' -> illegal -> STOP)
+Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full -> STOP)
 
 Front = Cell[[link'.out' <- out']]
 
@@ -197,12 +197,12 @@ within compress((CO_Choice_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reo
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({IChoice.e}) [F= IF_IChoice_(true,true) \ diff(Events,{IChoice.e,illegal})
+assert COMPLETE'({IChoice.e}) [F= IF_IChoice_(true,true)[[range_error<-illegal]] \ diff(Events,{IChoice.e,illegal})
 assert IF_IChoice_(false,false) :[deadlock free]
 assert IF_IChoice_(true,false) :[livelock free]
 assert CO_Choice_(true,true)[[IChoice_'.x<-c_'.x|x<-extensions(c_')]] :[deterministic]
-assert COMPLETE'({c.e}) [F= CO_Choice_(true,true)[[IChoice_'.x'<-c_'.x'|x'<-extensions(c_')]] \ diff(Events,{c.e,illegal})
-assert STOP [T= AS_Choice_(false) \ diff(Events,{illegal})
+assert COMPLETE'({c.e}) [F= CO_Choice_(true,true)[[IChoice_'.x'<-c_'.x'|x'<-extensions(c_')]][[range_error<-illegal]] \ diff(Events,{c.e,illegal})
+assert STOP [T= AS_Choice_(false) \ diff(Events,{illegal,queue_full})
 assert AS_Choice_(false) :[deadlock free]
 assert IF_IChoice_(true,false) [[IChoice.x<-c.x|x<-extensions(c)]][[IChoice_'.x<-c_'.x|x<-extensions(c_')]][[IChoice_''.x<-c_''.x|x<-extensions(c_'')]]\ {IChoice_'''.modeling} [F= AS_Choice_(true) \ diff(Events,{|illegal,c,c_',c_''|})
 assert AS_Choice_(true) \ diff(Events,{|illegal,c,c_',c_''|}) :[livelock free]
