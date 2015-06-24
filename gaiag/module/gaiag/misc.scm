@@ -74,9 +74,12 @@
            symbol<
            symbol-null?
            pair??
+           eq??
+           equal??
            symbol-prefix?           
            symbol-capitalize
            symbol-drop
+           symbol-split
 
            ;; FIXME
 
@@ -92,6 +95,8 @@
 (define *eof* (call-with-input-string "" read-char))
 (define (null-is-#f o) (if (null? o) #f o))
 (define (pair?? o) (and (pair? o) o))
+(define (eq?? h . t) (and (apply eq? (cons h t)) h))
+(define (equal?? h . t) (and (apply equal? (cons h t) h)))
 (define (string-null-is-#f o) (if (string-null? o) #f o))
 (define (f-is-null o) (if o o '()))
 (define (*eof*-is-#f o) (if (eq? *eof* o) #f o))
@@ -110,6 +115,9 @@
 (define null-symbol (string->symbol ""))
 (define (symbol-null? x) (eq? x null-symbol))
 (define (number->symbol x) (string->symbol (number->string x)))
+
+(define (symbol-split symbol char)
+  (map string->symbol (string-split (symbol->string symbol) char)))
 
 (define (symbol-capitalize symbol)
   ((compose string->symbol string-capitalize symbol->string) symbol))
