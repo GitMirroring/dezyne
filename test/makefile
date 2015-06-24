@@ -21,6 +21,7 @@
 # Code:
 
 ## common
+.PHONY: bugs regression
 .SECONDARY:
 .SUFFIXES:
 SHELL:=/bin/bash
@@ -81,13 +82,18 @@ $(OUT)/.gitignore:
 clean:
 	rm -rf $(OUT)
 
-ifeq ($(strip $(filter-out clean help smoke smoke-clean,$(MAKECMDGOALS))),$(MAKECMDGOALS))
+ifeq ($(strip $(filter-out bugs clean help smoke smoke-clean,$(MAKECMDGOALS))),$(MAKECMDGOALS))
 MAKEFILES:=regression/makefile.make $(sort $(wildcard regression/*/makefile.make regression/*/*/makefile.make))
 endif
 ifeq ($(MAKECMDGOALS),smoke)
 MAKEFILES:=regression/alarm.project/makefile.make
 CODE_LANGUAGES:=c c++
 ALL_LANGUAGES:=$(CODE_LANGUAGES) run verify
+endif
+ifeq ($(strip $(filter bugs,$(MAKECMDGOALS:update-bugs=bugs))),bugs)
+MAKEFILES:=bugs/makefile.make
+bugs: check
+update-bugs: update
 endif
 
 $(foreach i,$(MAKEFILES),$(eval CDIR:=$(dir $(i))) $(info Entering $(i:%/makefile.make=%)) $(eval -include $(i)))

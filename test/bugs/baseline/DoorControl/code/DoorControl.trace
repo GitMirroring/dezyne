@@ -1,0 +1,20 @@
+<external>..initialise -> sut.doorControl.initialise
+limitSw.initialise
+limitSw.return
+motorControl.initialise
+motorControl.return
+sut.doorControl.return -> <external>..return
+<external>..switchPressed -> sut.switchPress.switchPressed
+limitSw.queryPosition
+limitSw.Position_Unknown
+motorControl.setOpen
+motorControl.return
+motorControl.start
+motorControl.return
+limitSw.motorActive
+limitSw.return
+<external>..doorOpened -> sut.limitSw.doorOpened
+motorControl.stop
+motorControl.return
+limitSw.motorStopped
+limitSw.return
