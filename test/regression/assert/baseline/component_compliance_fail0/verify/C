@@ -14,6 +14,6 @@ verify: C: check: deadlock: ok
 
 verify: C: check: compliance: fail
 i.f
-compliance: in C
+Component C is non-compliant with interface of provided port
 
 verify: C: check: livelock: ok

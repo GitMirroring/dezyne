@@ -11,10 +11,10 @@ verify: C: check: completeness: ok
 verify: C: check: illegal: ok
 
 verify: C: check: deadlock: fail
-deadlock: in C
+deadlock in model C
 
 verify: C: check: compliance: fail
 i.e
-compliance: in C
+Component C is non-compliant with interface of provided port
 
 verify: C: check: livelock: ok

@@ -1,0 +1,95 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface I
+{
+  in void e();
+
+  behaviour 
+  {
+    [true]
+    on e:
+    {
+    }
+  }
+}
+interface II
+{
+  in void e();
+  out void add();
+
+  behaviour 
+  {
+    [true]
+    on e:
+    {
+    }
+  }
+}
+component range_runaway
+{
+  provides I p;
+  requires II r;
+
+  behaviour 
+  {
+    subint Sub {0..4};
+    Sub n = 5;
+    [n == 0]
+    {
+      on p.e():
+      r.e();
+      on r.add():
+      n = n + 1;
+    }
+    [n == 1]
+    {
+      on p.e():
+      r.e();
+      on r.add():
+      n = n + 1;
+    }
+    [n == 2]
+    {
+      on p.e():
+      r.e();
+      on r.add():
+      n = n + 1;
+    }
+    [n == 3]
+    {
+      on p.e():
+      r.e();
+      on r.add():
+      n = n + 1;
+    }
+    [n == 4]
+    {
+      on p.e():
+      r.e();
+      on r.add():
+      n = n + 1;
+    }
+  }
+}
+

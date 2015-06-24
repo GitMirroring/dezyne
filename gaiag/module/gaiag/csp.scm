@@ -198,7 +198,7 @@
 (define asserts-alist
   `(
     ((component completeness) . ,(gulp-template 'asserts/component-completeness.csp.scm))
-    ((component illegal) . "assert STOP [T= AS_#(.name model) _#((compose .name .behaviour) model) (false) \\ diff(Events,{illegal})\n")
+    ((component illegal) . "assert STOP [T= AS_#(.name model) _#((compose .name .behaviour) model) (false) \\ diff(Events,{illegal,queue_full})\n")
     ((component deterministic) . "assert CO_#(.name model) _#((compose .name .behaviour) model)(true,true)[[#(.type (om:port model))_'.x<-#(.name (om:port model))_'.x|x<-extensions(#(.name (om:port model))_')]] :[deterministic]\n")
     ((component deadlock)  . "assert AS_#(.name model) _#((compose .name .behaviour) model) (false) :[deadlock free]\n")
     ((component compliance) . ,(gulp-template 'asserts/component-compliance.csp.scm))
@@ -1021,7 +1021,7 @@
          (guards (apply append (map (lambda(x) (range-guard x)) identifiers))))
     (if (pair? guards)
         (list
-         (list space "if not (" ((->join (string-append " and\n" space)) guards) ") then illegal -> STOP else\n")
+         (list space "if not (" ((->join (string-append " and\n" space)) guards) ") then range_error -> STOP else\n")
          statement)
         statement)))
 

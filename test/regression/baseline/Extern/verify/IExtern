@@ -1,6 +1,6 @@
 verify: IExtern: check: completeness: ok
 
 verify: IExtern: check: deadlock: fail
-deadlock: in IExtern
+deadlock in model IExtern
 
 verify: IExtern: check: livelock: ok

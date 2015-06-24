@@ -3,6 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
@@ -24,5 +25,5 @@
 
 assert COMPLETE'({#
 (comma-join (append (map (lambda (event-name) (list (.name model) "." event-name)) (delete-duplicates (map .event (modeling-events model)))) (map (lambda (event) (list (.name model) "." (.name event))) (filter om:in? (.elements (.events model))))))}) [F= IF_#(.name model) _#
-((compose .name .behaviour) model) (true,true) \ diff(Events,{#
+((compose .name .behaviour) model) (true,true)[[range_error<-illegal]] \ diff(Events,{#
 (comma-join (append (map (lambda (event-name) (list (.name model) "." event-name)) (delete-duplicates (map .event (modeling-events model)))) (map (lambda (event) (list (.name model) "." (.name event))) (filter om:in? (.elements (.events model)))) (list 'illegal)))})

@@ -6,7 +6,7 @@ verify: I: check: livelock: ok
 
 verify: C: check: deterministic: fail
 i.e
-deterministic: in C
+Component C is non-deterministic due to overlapping guards
 
 verify: C: check: completeness: ok
 

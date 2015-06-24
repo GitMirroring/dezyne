@@ -2,6 +2,6 @@ verify: range: check: completeness: ok
 
 verify: range: check: deadlock: fail
 range.e
-deadlock: in range
+integer range error in model range
 
 verify: range: check: livelock: ok

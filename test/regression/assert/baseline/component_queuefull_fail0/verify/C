@@ -8,17 +8,38 @@ verify: C: check: deterministic: ok
 
 verify: C: check: completeness: ok
 
-verify: C: check: illegal: ok
+verify: C: check: illegal: fail
+p.e
+r.e
+r.c
+r.c
+r.c
+r.c
+queue full
 
 verify: C: check: deadlock: fail
-i.e
-i.return
-deadlock in model C
+p.e
+r.e
+r.c
+r.c
+r.c
+r.c
+r.return
+p.c
+p.c
+queue full
 
 verify: C: check: compliance: fail
-i.e
-i.return
-i.e
-Component C is non-compliant with interface of provided port
+p.e
+r.e
+r.c
+r.c
+r.c
+r.c
+r.return
+queue_full
+p.c
+p.c
+p.c not performed by component
 
 verify: C: check: livelock: ok

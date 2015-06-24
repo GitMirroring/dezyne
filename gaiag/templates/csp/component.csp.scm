@@ -60,7 +60,7 @@ SINGLETHREADED = true
 
 channel reorder_in  : {# (comma-join (map (lambda (x) (symbol-append (.type (om:port model)) (string->symbol "_'.") x)) (return-values-port (om:port model))))}
 channel reorder_out : {# (comma-join (map (lambda (x) (symbol-append (.name (om:port model)) (string->symbol "_'.") x)) (return-values-port (om:port model))))}
-channel queue_full'
+channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
 
@@ -72,7 +72,7 @@ external chase
 
 Cell = link'.in'?x' -> link'.out'!x' -> Cell
 
-Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full' -> illegal -> STOP)
+Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full -> STOP)
 
 Front = Cell[[link'.out' <- out']]
 

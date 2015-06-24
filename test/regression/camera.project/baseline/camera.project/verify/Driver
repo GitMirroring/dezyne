@@ -48,7 +48,7 @@ acquisition.return
 control.return
 control.setup
 optics.prepare
-deadlock: in Driver
+deadlock in model Driver
 
 verify: Driver: check: compliance: fail
 control.setup
@@ -63,6 +63,6 @@ acquisition.return
 control.return
 control.setup
 optics.prepare
-compliance: in Driver
+Component Driver is non-compliant with interface of provided port
 
 verify: Driver: check: livelock: ok

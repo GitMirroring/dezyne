@@ -1,6 +1,6 @@
 verify: RGuardthreetopon: check: completeness: ok
 
 verify: RGuardthreetopon: check: deadlock: fail
-deadlock: in RGuardthreetopon
+deadlock in model RGuardthreetopon
 
 verify: RGuardthreetopon: check: livelock: ok
