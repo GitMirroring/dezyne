@@ -73,6 +73,7 @@
            string-sub ;; FIXME: look at guile-lib string-substitute sugar
            symbol<
            symbol-null?
+           pair??
            symbol-prefix?           
            symbol-capitalize
            symbol-drop
@@ -90,6 +91,7 @@
 
 (define *eof* (call-with-input-string "" read-char))
 (define (null-is-#f o) (if (null? o) #f o))
+(define (pair?? o) (and (pair? o) o))
 (define (string-null-is-#f o) (if (string-null? o) #f o))
 (define (f-is-null o) (if o o '()))
 (define (*eof*-is-#f o) (if (eq? *eof* o) #f o))
