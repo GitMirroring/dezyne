@@ -325,28 +325,6 @@
 (define (state->string state)
   (comma-space-join (map (lambda (s) (->string (list (car s) "=" (cdr s)))) state)))
 
-;; (define-class <info> ()
-;;   (trail :accessor .trail :init-form (list) :init-keyword :trail)
-;;   (ast :accessor .ast :init-form (list) :init-keyword :ast)
-;;   (state :accessor .state :init-form (list) :init-keyword :state)
-;;   (reply :accessor .reply :init-form (list) :init-keyword :reply)
-;;   (return :accessor .return :init-form (list) :init-keyword :return)
-;;   (state-alist :accessor .state-alist :init-form (list) :init-keyword :state-alist)
-;;   (trace :accessor .trace :init-form (list) :init-keyword :trace)))
-
-(define <info> 'info)
-(define (make-<info> . args)
-  (let-keywords
-   args #f
-   ((trail '())
-    (ast '())
-    (state '())
-    (reply 'return)
-    (return #f)
-    (state-alist '())
-    (trace '()))
-   (cons <info> (list trail ast state reply return state-alist trace))))
-
 (define (clone <info> o . args)
   (let-keywords
    args #f
@@ -357,37 +335,7 @@
     (return (.return o))
     (state-alist (.state-alist o))
     (trace (.trace o)))
-   ;;(cons <info> (list trail ast state reply return state-alist trace))
    (make <info> :trail trail :ast ast :state state :reply reply :return return :state-alist state-alist :trace trace)))
-
-(define (.trail o)
-  (match o
-    (('info trail ast state reply return state-alist trace) trail)))
-
-(define (.ast o)
-  (match o
-    (('error ast message) ast)
-    (('info trail ast state reply return state-alist trace) ast)))
-
-(define (.state o)
-  (match o
-    (('info trail ast state reply return state-alist trace) state)))
-
-(define (.reply o)
-  (match o
-    (('info trail ast state reply return state-alist trace) reply)))
-
-(define (.return o)
-  (match o
-    (('info trail ast state reply return state-alist trace) return)))
-
-(define (.state-alist o)
-  (match o
-    (('info trail ast state reply return state-alist trace) state-alist)))
-
-(define (.trace o)
-  (match o
-    (('info trail ast state reply return state-alist trace) trace)))
 
 (define* (process-event model event info :optional (reverse identity))
   ;; (stderr "process-event[~a ~a] " (.name model) (state->string (.state info)))
@@ -604,7 +552,6 @@
     (($ <literal> scope type field) (->symbol (list (->symbol type) "_" (->symbol field))))
     (($ <trigger> #f event) (->symbol event))
     (($ <trigger> port event) (->symbol (list port "." event)))
-
     ((h ... t) (apply symbol-append (map ->symbol src)))
     (((h ... t)) (->symbol (car src)))
     ((? string?) (string->symbol src))

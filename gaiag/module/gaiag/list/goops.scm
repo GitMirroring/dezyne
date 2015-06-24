@@ -28,7 +28,8 @@
   :use-module (gaiag misc)
   :use-module (gaiag list ast)
   :use-module (gaiag list csp)
-  :use-module (gaiag list om)  
+  :use-module (gaiag list om)
+    :use-module (gaiag list simulate)
   :use-module (gaiag list util))
 
 (cond-expand-provide (current-module) '(list-om))
@@ -37,4 +38,5 @@
  (gaiag list ast)
  (gaiag list csp)
  (gaiag list om)
+ (gaiag list simulate) 
  (gaiag list util))
