@@ -312,10 +312,13 @@
   (let* ((ast ((compose .statement .behaviour) model))
          (info (make <info> :trail trail :ast ast :state 'initial :reply 'return :return #f :state-alist '() :trace '())))
     (let loop ((info info) (path '()))
+      (stderr "SIM0: ~a\n" (.trail info))
       (let* ((state-todo (next-todo model info))
              (state (car state-todo)) ;; FIXME? What about state-alist?
-             (todo (null-is-#f (cdr state-todo))))
-        (if (null? (.trail info))
+             (todo (cdr state-todo)))
+        (stderr "SIM[~a]: ~a\n" todo (.trail info))
+        (if (null? todo ;;(.trail info)
+             )
             (reverse path)
             (let* ((event (car todo))
                    (infos (process-event model event (clone <info> info :ast ast :state state)))
@@ -354,8 +357,8 @@
    (make <info> :trail trail :ast ast :state state :reply reply :return return :state-alist state-alist :trace trace)))
 
 (define* (process-event model event info :optional (reverse identity))
-  ;; (stderr "process-event[~a ~a] " (.name model) (state->string (.state info)))
-  ;; (stderr "event: ~a\n" (->string event))
+  (stderr "process-event[~a ~a] " (.name model) (state->string (.state info)))
+  (stderr "event: ~a\n" (->string event))
   (seen! model (.state info) (.ast info) event)
   (map
    (lambda (info)
@@ -422,7 +425,8 @@
            (let* ((port (.port event))
                   (o-info (clone <info> info :ast statement :trace '()))
                   (infos
-                   (if port
+                   (if (and port
+                            (eq? (.name (om:port model)) port))
                        (let*
                            ((interface (simulate:import (.type (om:port model))))
                             (i-ast (.statement (.behaviour interface)))
@@ -473,7 +477,8 @@
        (let ((port (.port trigger))
              (o-info (clone <info> info)))
          (stderr "POOORT[~a]: ~a\n" trigger port)
-         (if port
+         (if (and port
+                  (not (eq? port (.name (om:port model)))))
              (let* ((interface (simulate:import (.type (om:port model port))))
                     (i-ast (.statement (.behaviour interface)))
                     (i-trigger (make <trigger> :port #f :event (.event trigger)))
