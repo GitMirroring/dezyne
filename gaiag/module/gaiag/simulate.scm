@@ -92,6 +92,8 @@
          (trace (if trail
                     (walk-trail model (with-input-from-string trail read))
                     (explore-space model)))
+         ;; (foo (stderr "RESULT:\n"))
+         ;; (foo (pretty-print trace (current-error-port)))
          (trace (filter (lambda (tp) (pair? (cddr tp))) trace)))
     (pretty-print (mangle-trace model trace)))
   (newline)
@@ -296,12 +298,12 @@
   (set! i 0)
   (let* ((ast ((compose .statement .behaviour) model))
          (info (make <info> :trail trail :ast ast :state 'initial :reply 'return :return #f :state-alist '() :trace '())))
-    (let loop ((info info))
+    (let loop ((info info) (path '()))
       (let* ((state-todo (next-todo model info))
              (state (car state-todo)) ;; FIXME? What about state-alist?
              (todo (null-is-#f (cdr state-todo))))
-        (if (or (not state) (not todo))
-            '()
+        (if (null? (.trail info))
+            (reverse path)
             (let* ((event (car todo))
                    (infos (process-event model event (clone <info> info :ast ast :state state)))
                    (foo (stderr "TRACES: ~a\n" (length infos)))
@@ -313,11 +315,15 @@
                             (lambda (info count)
                               (stderr "R ~a:\n" count)
                               (map trace-location (.trace (car infos))) (current-error-port))
-                            infos (iota (length infos))))
-                   (info (if (and infos (pair? infos)) (car infos) (make <info>))))
-              (cons
-               (cons (->symbol event) (cons state (.trace info)))
-               (loop info))))))))
+                            infos (iota (length infos)))))
+              (apply append
+                     (map
+                      (lambda (info)
+                        (loop info
+                              (cons
+                               (cons (->symbol event) (cons state (.trace info)))
+                               path)))
+                      infos))))))))
 
 (define (state->string state)
   (comma-space-join (map (lambda (s) (->string (list (car s) "=" (cdr s)))) state)))
@@ -458,7 +464,7 @@
       (($ <action> trigger)
        (if (.port trigger)
            ;; trace interface to explore non-determinic paths
-           (let* ((interface (simulate:import (.type (om:port model port))))
+           (let* ((interface (simulate:import (.type (om:port model (.port trigger)))))
                   (i-ast (.statement (.behaviour interface)))
                   (i-trigger (make <trigger> :port #f :event (.event trigger)))
                   (i-state (get-state info interface))
