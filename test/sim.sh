@@ -29,5 +29,9 @@ TRACE='init error return stop ok return recover error return recover ok return w
 diff -u <(echo trace:$TRACE|tr ' ' ,) <(dzn run --gaiag -t <(echo $TRACE) regression/NonDet.dzn | grep ^trace:)
 
 # Need extra: SENSOR.RETURN ??
+TRACE='console.arm sensor.enable sensor.return console.return console.disarm sensor.disable sensor.return console.return sensor.disabled console.deactivated SENSOR.RETURN'
+diff -u <(echo trace:$TRACE|tr [A-Z] [a-z] | tr ' ' ,) <(dzn run --gaiag -t <(echo $TRACE |tr [A-Z] [a-z]) regression/Alarm.dzn | grep ^trace:)
+
+# Need extra: SENSOR.RETURN ??
 TRACE='console.arm sensor.enable sensor.return console.return sensor.triggered console.detected siren.turnon siren.return SENSOR.RETURN console.disarm sensor.disable sensor.return siren.turnoff siren.return console.return sensor.disabled console.deactivated SENSOR.RETURN'
 diff -u <(echo trace:$TRACE|tr [A-Z] [a-z] | tr ' ' ,) <(dzn run --gaiag -t <(echo $TRACE |tr [A-Z] [a-z]) regression/Alarm.dzn | grep ^trace:)
