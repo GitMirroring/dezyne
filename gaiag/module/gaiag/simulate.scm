@@ -447,11 +447,6 @@
                             (let* ((return (next-return model info (.port event)))
                                    (trace (.trace info))
                                    (return (rsp ast (make <return> :expression return)))
-                                   (port (if ((compose .port car .elements .triggers) ast)
-                                             (.name (om:port model))
-                                             (or (.port event) (.name model))))
-                                   (foo (set-source-property! return 'port port))
-                                   ;;(foo (if (null? trace) (stderr "PRUNED: ~a\n" count) (stderr "VALID: ~a\n" count)))
                                    (trace (if (or (null? trace)
                                                   (eq? (ast-name trace) 'error))
                                               trace
@@ -477,6 +472,7 @@
       (($ <action> trigger)
        (let ((port (.port trigger))
              (o-info (clone <info> info)))
+         (stderr "POOORT[~a]: ~a\n" trigger port)
          (if port
              (let* ((interface (simulate:import (.type (om:port model port))))
                     (i-ast (.statement (.behaviour interface)))
