@@ -348,6 +348,7 @@
     ((? (is? <model>))
      (om:parent ((compose .statement .behaviour) o) t))
     (($ <guard>) (or (and (eq? (om:id (.statement o)) (om:id t)) o)
+                     (and (eq? (om:id (.expression o)) (om:id t)) o)
                      (om:parent (.statement o) t)))
     (($ <on>) (or (and (eq? (om:id (.statement o)) (om:id t)) o)
                   (om:parent (.statement o) t)))

@@ -34,6 +34,7 @@
 
   :use-module (gaiag ast)
   :use-module (gaiag misc)
+  :use-module (gaiag norm)
 
   :export (
            eval-expression
@@ -105,6 +106,11 @@
 (define (eval-expression model state o)
   (match o
     (($ <expression> value) (eval-expression model state value))
+    (($ <otherwise> 'otherwise)
+     (let* ((guard (om:parent model o))
+            (compound (om:parent model guard))
+            (guards (filter (is? <guard>) compound)))
+       (eval-expression model state (guards-not-or guards))))
     (($ <otherwise> value) (eval-expression model state value))
     (#t #t)
     ('false #f)

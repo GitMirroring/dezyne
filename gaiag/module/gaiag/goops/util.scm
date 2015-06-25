@@ -619,6 +619,7 @@
 
 (define-method (om:parent (o <guard>) (t <ast>))
   (or (and (eq? (om:id (.statement o)) (om:id t)) o)
+      (and (eq? (om:id (.expression o)) (om:id t)) o)
       (om:parent (.statement o) t)))
 
 (define-method (om:parent (o <on>) (t <ast>))
