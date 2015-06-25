@@ -228,7 +228,7 @@
   (set! next-action
         (lambda (info trigger)
           (let ((trail (.trail info)))
-            (stderr "ACTION[~a]: ~a\n" trigger trail)    
+            ;;(stderr "ACTION[~a]: ~a\n" trigger trail)    
             (if (null? trail)
                 #f
                 (let* ((action (car trail)))
@@ -412,15 +412,14 @@
                             (i-info (clone <info> o-info :ast i-ast :state i-state :trace '()))
                             (i-infos (process-event interface i-trigger i-info reverse))
                             (i-infos (prune i-infos))
-                            (i-infos (map
-                                      (lambda (i-info)
-                                        (set-state! i-info interface (.state i-info))
-                                        (clone <info> info :ast #f :state-alist (.state-alist i-info) :trace (append (reverse (.trace i-info)) trace)))
-                                      i-infos))
-                            (i-infos (prune i-infos))
+                            (infos (map
+                                    (lambda (i-info)
+                                      (set-state! i-info interface (.state i-info))
+                                      (clone <info> o-info :state-alist (.state-alist i-info)))
+                                    i-infos))
                             (infos (apply append
                                           (map (lambda (info)
-                                                 (process model event (clone <info> info :ast statement))) i-infos))))
+                                                 (process model event info)) infos))))
                          infos)
                        (process model event o-info)))
                   (infos (prune infos))
@@ -456,6 +455,38 @@
              infos)
            '()))
       (($ <illegal>) (list (clone <info> info :ast #f :trace (cons ast trace))))
+      (($ <action> trigger)
+       (if (.port trigger)
+           ;; trace interface to explore non-determinic paths
+           (let* ((interface (simulate:import (.type (om:port model port))))
+                  (i-ast (.statement (.behaviour interface)))
+                  (i-trigger (make <trigger> :port #f :event (.event trigger)))
+                  (i-state (get-state info interface))
+                  (i-info (clone <info> info :ast i-ast :state i-state :trace '()))
+                  (i-infos (process-event interface i-trigger i-info reverse))
+                  (i-infos (filter trace? i-infos))
+                  (i-infos (map
+                            (lambda (i-info)
+                              (let ((port (.port trigger))
+                                    (return (car (.trace i-info))))
+                                (set-source-property! return 'port port))
+                              (next-action i-info trigger) 
+                              (set-state! i-info interface (.state i-info))
+                              (clone <info> info :trail (.trail i-info) :ast #f :state-alist (.state-alist i-info) :trace (append (cons ast trace) (reverse (.trace i-info)))))
+                            i-infos))
+                  (i-infos (filter trace? i-infos))
+                  ;; junk interface trace, keep state
+                  (infos (map (lambda (info)
+                                (next-action info trigger)
+                                info) i-infos))
+                  (infos (filter trace? infos)))
+             infos)
+           (let ((info (clone <info> info
+                              ;;:ast #f
+                              :trace (cons ast trace))))
+             (next-action info trigger)
+             (list info))))
+      ;; no cycle interface
       (($ <action> trigger)
        (let* ((info (clone <info> info :trace (cons ast trace))))
          (next-action info trigger)
