@@ -33,6 +33,7 @@
 
            .trail
            ;;.ast
+           .error
            .q
            .state
            .reply
@@ -61,39 +62,44 @@
     (reply 'return)
     (return #f)
     (state-alist '())
-    (trace '()))
-   (cons <info> (list trail ast state q reply return state-alist trace))))
+    (trace '())
+    (error #f))
+   (cons <info> (list trail ast state q reply return state-alist trace error))))
 
 
 (define (.trail o)
   (match o
-    (('info trail ast state q reply return state-alist trace) trail)))
+    (('info trail ast state q reply return state-alist trace error) trail)))
 
 (define (.ast o)
   (match o
     (('error ast message) ast)
-    (('info trail ast state q reply return state-alist trace) ast)))
+    (('info trail ast state q reply return state-alist trace error) ast)))
 
 (define (.state o)
   (match o
-    (('info trail ast state q reply return state-alist trace) state)))
+    (('info trail ast state q reply return state-alist trace error) state)))
 
 (define (.q o)
   (match o
-    (('info trail ast state q reply return state-alist trace) q)))
+    (('info trail ast state q reply return state-alist trace error) q)))
 
 (define (.reply o)
   (match o
-    (('info trail ast state q reply return state-alist trace) reply)))
+    (('info trail ast state q reply return state-alist trace error) reply)))
 
 (define (.return o)
   (match o
-    (('info trail ast state q reply return state-alist trace) return)))
+    (('info trail ast state q reply return state-alist trace error) return)))
 
 (define (.state-alist o)
   (match o
-    (('info trail ast state q reply return state-alist trace) state-alist)))
+    (('info trail ast state q reply return state-alist trace error) state-alist)))
 
 (define (.trace o)
   (match o
-    (('info trail ast state q reply return state-alist trace) trace)))
+    (('info trail ast state q reply return state-alist trace error) trace)))
+
+(define (.error o)
+  (match o
+    (('info trail ast state q reply return state-alist trace error) error)))

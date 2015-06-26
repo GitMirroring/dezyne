@@ -63,7 +63,7 @@
                    (models (null-is-#f (filter .behaviour models)))
                    (models (if name (filter (om:named name) models) models))
                    (c-i (append (filter (is? <component>) models) models)))
-                  (simulate-model (car c-i)))
+                  (simulate (car c-i)))
         "")))
 
 (define (simulate:import name)
@@ -73,17 +73,10 @@
   ((compose ;;ast:wfc
     ast:resolve ast->om) ast))
 
-(define (get-state info o)
-  (or (assoc-ref (.state-alist info) (.name o))
-      (state-vector o)))
-
-(define (set-state info o state)
-  (clone <info> info :state-alist (assoc-set! (.state-alist info) (.name o) state)))
-
 (define i 0)
 (define *state-space* '(()))
 
-(define (simulate-model model)
+(define (simulate model)
   (stderr "\n\n>>>simulating: ~a ~a --> ~a\n" (ast-name model) (.name model) (map ->string (om:find-triggers model)))
   (and-let* ((((is? <component>) model))
              (interfaces (map simulate:import
@@ -93,235 +86,24 @@
                     (walk-trail model (with-input-from-string trail read))
                     (explore-space model)))
          (foo (stderr "RESULT:\n"))
-         (foo (pretty-print trace (current-error-port)))
+         ;;(foo (pretty-print trace (current-error-port)))
          (trace (filter (lambda (tp) (pair? (cddr tp))) trace)))
     (pretty-print (mangle-trace model trace)))
   (newline)
   (stderr "state space: ~a\n" (length *state-space*))
   "")
 
-(define (mangle-trace model trace)
-  (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))
-    (if json?
-        (append
-         (list
-          (json-init model)
-          (json-state model (state-vector model)))
-         (apply append (map (json-trace model) trace)))
-        (map (demo-trace model) trace))))
-
-(define (explore-space ast)
-  (simulate ast))
+(define (explore-space model)
+  (simulate-model model))
 
 (define (walk-trail model trail)
-  (simulate model (next-todo-trail-walker) (map event->ast trail)))
+  (simulate-model model (next-todo-trail-walker) (map event->ast trail)))
 
-(define (trace-location ast)
-  (or (and-let* ((loc (source-location ast))
-                 (properties (source-location->user-source-properties loc)))
-                (format #f "~a:~a:~a"
-                        (assoc-ref properties 'filename)
-                        (assoc-ref properties 'line)
-                        (assoc-ref properties 'column)))
-      ast))
-
-(define ((demo-trace model) tracepoint)
-  (let ((event (car tracepoint))
-        (state (cadr tracepoint))
-        (steps (cddr tracepoint))
-        (model (.name model)))
-    ;; (stderr "\ndemo-trace: ~a, ~a\n" event (class-of (car steps)))
-    (cons (->symbol event)
-          (list
-           (list 'state (map (lambda (x) (list (car x) (cdr x))) state))
-           (list 'trace (map trace-location steps))))))
-
-(define (event->ast event)
-  "if EVENT is of form INTERFACE.TRIGGER, produce (trigger PORT EVENT)"
-  (or (and-let* ((string (symbol->string event))
-                 (port-event (string-split string #\.))
-                 (port-event (map string->symbol port-event))
-                 ((=2 (length port-event))))
-                (if (or (eq? (car port-event) 'return)
-                        (eq? (cadr port-event) 'return))
-                    event
-                    (make <trigger>
-                      :port (car port-event)
-                      :event (cadr port-event))))
-      (if (or (eq? event 'return)
-              (=2 (length (string-split (symbol->string event) #\_))))
-          event
-          (make <trigger> :port #f :event event))))
-
-(define (seen-key model state ast)
-  (when (not (equal? (om->list ast) (om->list (.statement (.behaviour model))))
-             )
-    ;; it's a bug -for now- if we store a 'seen' state with a non-top
-    ;; AST: only actions return mid-statements and they are continued
-    ;; we alway continue until the end
-    ;;(stderr "AST:~a\n" ast)
-    (stderr "NOT EQUAL\n")
-    (stderr "ast:\n")
-    (pretty-print (om->list ast))
-    (stderr "statement\n")
-    (pretty-print (om->list (.statement (.behaviour model))))
-    (throw 'barf-seen-about-non-top-ast))
-  (list state ast))
-
-(define (seen-key-state key) (caar key))
-(define (seen-key-ast key) (cadar key))
-
-(define (seen model state ast)
-  (set! i (1+ i))
-  (if (> i MAX-ITERATIONS)
-      (throw 'break (format #f "too many iterations: ~a, state space: ~a\n" i
-                            (length *state-space*))))
-  (let* ((key (seen-key model state ast))
-         (events (f-is-null (assoc-ref *state-space* key))))
-    events))
-
-(define (seen? model state ast event)
-  (find (lambda (x) (equal? x event)) (seen model state ast)))
-
-(define (seen! model state ast event)
-  (when (not (equal? (om->list ast) (om->list (.statement (.behaviour model)))))
-    (stderr "seen! --> AST:~a\n" ast)
-    (throw 'seen!-with-non-top-ast))
-
-  (let* ((key (seen-key model state ast))
-         (events (seen model state ast)))
-    (if (not (seen? model state ast event))
-        (let ((value (delete-duplicates (sort (cons event events) om:<))))
-          (set! *state-space* (assoc-set! *state-space* key value))))))
-
-(define (state-ast-todo model state ast events)
-  (let ((done (seen model state ast)))
-    (filter (negate (lambda (x) (member x done equal?))) events)))
-
-(define (next-action model info trigger)
-  (let ((trail (.trail info)))
-    (stderr "ACTION[~a ~a]: ~a\n" (.name model) trigger trail)
-    (if (null? trail)
-        info
-        (let* ((action (car trail)))
-          (stderr "ACTION: ~a\n" action)
-          (stderr "TRIGGER: ~a\n" trigger)
-          (if (or (equal? action trigger)
-                  (and (is-a? trigger <trigger>)
-                       (is-a? action <trigger>)
-                       (not (.port trigger))
-                       (eq? (.event trigger) (.event action))))
-              (clone <info> info :trail (cdr (.trail info)))
-              (begin
-                (stderr "REJECT-TRACE: ACTION[~a ~a]: ~a\n" (.name model) action trigger)
-                (clone <info> info :trail (cdr (.trail info)) :trace '())))))))
-
-(define (next-value info action)
-  (lambda (info action)
-    (let ((trail (.trail info)))
-      (if (null? trail)
-          info
-          (let* ((trigger (car trail))
-                 (value (make <literal>
-                          :type (.port trigger)
-                          :field (.event trigger))))
-            (clone <info> info :trail (cdr (.trail info)) :return value))))))
-
-(define (next-reply model info port)
-  (let* ((trail (.trail info))
-         (reply (.reply info))
-         (foo (stderr "REPLY[~a ~a.~a]: ~a\n" (.name model) port reply trail))
-         (next (let loop () ;; WIP/FIXME: skip from trail if port does not match
-                 ;; Alarm: enable has sensor.enable
-                 ;; Alarm: IConsole: enable must skip SENSOR.enable
-                 (stderr "REPLY-LOOP: ~a\n" trail)
-                 (let ((event (and (pair? trail) (car trail))))
-                   (if (or (is-a? model <component>)
-                           (not (is-a? event <trigger>))
-                           (not (.port event))
-                           (eq? port (.port event)))
-                       event
-                       (begin
-                         (set! trail (cdr trail)) ;; URG
-                         (loop)))))))
-    (stderr "RN: ~a\n" next)
-    (if (null? trail)
-        (clone <info> info :reply #f)
-        (let* ((next (if (or (pair? next) port) next (last (symbol-split next #\.))))
-               (reply (if port (symbol-append port '. reply) reply))
-               (matches? (lambda (x) (eq? x reply))))
-          (match next
-            ((? matches?)
-             (clone <info> info :trail (cdr trail) :reply reply))
-            (_
-             (stderr "REJECT-TRACE: REPLY[~a ~a]: ~a\n" (.name model) reply next)
-             (clone <info> info :reply #f :trace '())))))))
-
-(define (next-todo-space-explorer model info)
-  (let ((events (om:find-triggers model))
-        (state (.state info))
-        (ast (.ast info)))
-    (if (or (null? *state-space*)
-            (null? (car *state-space*)))
-        (cons (state-vector model) events)
-        (let ((todo (state-ast-todo model state ast events)))
-          (if (pair? todo)
-              (cons state todo)
-              (let loop ((entries *state-space*))
-                (if (or (null? entries)
-                        (null? (car entries)))
-                    (cons #f '())
-                    (let* ((key-events (car entries))
-                           (state (seen-key-state key-events))
-                           (ast (seen-key-ast key-events))
-                           (todo (state-ast-todo model state ast events)))
-                      (if (pair? todo)
-                          (cons state todo)
-                          (loop (cdr entries)))))))))))
-
-(define (next-todo-trail-walker)
-  (lambda (model info)
-    (let ((trail (.trail info))
-          (state (.state info)))
-      (if (null? trail)
-          (cons #f '())
-          (let ((event (car trail)))
-            (list-set! info 1 (cdr trail)) ;; FIXME
-            (cons (if (eq? state 'initial) (state-vector model) state)
-                  (list event)))))))
-
-(define (clone <info> o . args)
-  (let-keywords
-   args #f
-   ((trail (.trail o))
-    (ast (.ast o))
-    (state (.state o))
-    (q (.q o))
-    (reply (.reply o))
-    (return (.return o))
-    (state-alist (.state-alist o))
-    (trace (.trace o)))
-   (make <info> :trail trail :ast ast :state state :q q :reply reply :return return :state-alist state-alist :trace trace)))
-
-(define (enq info trigger)
-  (if (and (pair? (.trail info))
-           (equal? trigger (car (.trail info))))
-      (clone <info> info :trail (cdr (.trail info)) :q (append (.q info) (list trigger)))
-      (begin
-        (stderr "REJECT-ENQ[~a]: ~a\n" trigger (and (pair? (.trail info)) (car (.trail info))))
-        (clone <info> info :q (append (.q info) (list trigger)) :trace '()))))
-
-(define (deq info)
-  (clone <info> info :q (cdr (.q info))))
-
-(define (peeq info)
-  (and (pair? (.q info)) (car (.q info))))
-
-(define* (simulate model :optional (next-todo next-todo-space-explorer) (trail '()))
+(define* (simulate-model model :optional (next-todo next-todo-space-explorer) (trail '()))
   (set! *state-space* '(()))
   (set! i 0)
   (let* ((ast ((compose .statement .behaviour) model))
-         (info (make <info> :trail trail :ast ast :state 'initial :q '() :reply 'return :return #f :state-alist '() :trace '())))
+         (info (make <info> :trail trail :ast ast :state 'initial)))
     (let loop ((info info) (path '()))
       (stderr "SIM0: ~a\n" (.trail info))
       (let* ((state-todo (next-todo model info))
@@ -351,9 +133,6 @@
                                (cons (->symbol event) (cons state (.trace info)))
                                path)))
                       infos))))))))
-
-(define (state->string state)
-  (comma-space-join (map (lambda (s) (->string (list (car s) "=" (cdr s)))) state)))
 
 (define* (process-event model event info :optional (reverse identity))
   (stderr "process-event[~a ~a] " (.name model) (state->string (.state info)))
@@ -408,6 +187,15 @@
 ;;(define (trace? info) ((negate (is? <error>)) (null-is-#f (.trace info))))
 (define (trace? info) (null-is-#f (.trace info)))
 (define (prune infos) (filter trace? infos))
+
+(define (sort-infos infos)
+  (let ((infos (stable-sort infos (lambda (a b)
+                                    (cond
+                                     ((and (not (.error a)) (.error b)) #t)
+                                     ((not (.error b)) #f)
+                                     (else (> (length (.trace a))
+                                              (length (.trace b)))))))))
+    (if (null? infos) '()  (car infos))))
 
 (define (process model event info)
   (stderr "PROCESS[~a]: ~a ~a\n" (.name model) (ast-name (.ast info)) (map ->symbol (.trail info)))
@@ -585,6 +373,229 @@
       (($ <reply> expression)
        (let ((reply (eval-expression model state expression)))
          (list (clone <info> info :reply reply :trace (cons ast trace))))))))
+
+(define (mangle-trace model trace)
+  (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))
+    (if json?
+        (append
+         (list
+          (json-init model)
+          (json-state model (state-vector model)))
+         (apply append (map (json-trace model) trace)))
+        (map (demo-trace model) trace))))
+
+(define (trace-location ast)
+  (or (and-let* ((loc (source-location ast))
+                 (properties (source-location->user-source-properties loc)))
+                (format #f "~a:~a:~a"
+                        (assoc-ref properties 'filename)
+                        (assoc-ref properties 'line)
+                        (assoc-ref properties 'column)))
+      ast))
+
+(define ((demo-trace model) tracepoint)
+  (let ((event (car tracepoint))
+        (state (cadr tracepoint))
+        (steps (cddr tracepoint))
+        (model (.name model)))
+    ;; (stderr "\ndemo-trace: ~a, ~a\n" event (class-of (car steps)))
+    (cons (->symbol event)
+          (list
+           (list 'state (map (lambda (x) (list (car x) (cdr x))) state))
+           (list 'trace (map trace-location steps))))))
+
+(define (event->ast event)
+  "if EVENT is of form INTERFACE.TRIGGER, produce (trigger PORT EVENT)"
+  (or (and-let* ((string (symbol->string event))
+                 (port-event (string-split string #\.))
+                 (port-event (map string->symbol port-event))
+                 ((=2 (length port-event))))
+                (if (or (eq? (car port-event) 'return)
+                        (eq? (cadr port-event) 'return))
+                    event
+                    (make <trigger>
+                      :port (car port-event)
+                      :event (cadr port-event))))
+      (if (or (eq? event 'return)
+              (=2 (length (string-split (symbol->string event) #\_))))
+          event
+          (make <trigger> :port #f :event event))))
+
+(define (seen-key model state ast)
+  (when (not (equal? (om->list ast) (om->list (.statement (.behaviour model))))
+             )
+    ;; it's a bug -for now- if we store a 'seen' state with a non-top
+    ;; AST: only actions return mid-statements and they are continued
+    ;; we alway continue until the end
+    ;;(stderr "AST:~a\n" ast)
+    (stderr "NOT EQUAL\n")
+    (stderr "ast:\n")
+    (pretty-print (om->list ast))
+    (stderr "statement\n")
+    (pretty-print (om->list (.statement (.behaviour model))))
+    (throw 'barf-seen-about-non-top-ast))
+  (list state ast))
+
+(define (seen-key-state key) (caar key))
+(define (seen-key-ast key) (cadar key))
+
+(define (seen model state ast)
+  (set! i (1+ i))
+  (if (> i MAX-ITERATIONS)
+      (throw 'break (format #f "too many iterations: ~a, state space: ~a\n" i
+                            (length *state-space*))))
+  (let* ((key (seen-key model state ast))
+         (events (f-is-null (assoc-ref *state-space* key))))
+    events))
+
+(define (seen? model state ast event)
+  (find (lambda (x) (equal? x event)) (seen model state ast)))
+
+(define (seen! model state ast event)
+  (when (not (equal? (om->list ast) (om->list (.statement (.behaviour model)))))
+    (stderr "seen! --> AST:~a\n" ast)
+    (throw 'seen!-with-non-top-ast))
+
+  (let* ((key (seen-key model state ast))
+         (events (seen model state ast)))
+    (if (not (seen? model state ast event))
+        (let ((value (delete-duplicates (sort (cons event events) om:<))))
+          (set! *state-space* (assoc-set! *state-space* key value))))))
+
+(define (state-ast-todo model state ast events)
+  (let ((done (seen model state ast)))
+    (filter (negate (lambda (x) (member x done equal?))) events)))
+
+(define (next-action model info trigger)
+  (let ((trail (.trail info)))
+    (stderr "ACTION[~a ~a]: ~a\n" (.name model) trigger trail)
+    (if (null? trail)
+        info
+        (let* ((action (car trail)))
+          (stderr "ACTION: ~a\n" action)
+          (stderr "TRIGGER: ~a\n" trigger)
+          (if (or (equal? action trigger)
+                  (and (is-a? trigger <trigger>)
+                       (is-a? action <trigger>)
+                       (not (.port trigger))
+                       (eq? (.event trigger) (.event action))))
+              (clone <info> info :trail (cdr (.trail info)))
+              (begin
+                (stderr "REJECT-TRACE: ACTION[~a ~a]: ~a\n" (.name model) action trigger)
+                (clone <info> info :trail (cdr (.trail info)) :error #t)))))))
+
+(define (next-value info action)
+  (lambda (info action)
+    (let ((trail (.trail info)))
+      (if (null? trail)
+          info
+          (let* ((trigger (car trail))
+                 (value (make <literal>
+                          :type (.port trigger)
+                          :field (.event trigger))))
+            (clone <info> info :trail (cdr (.trail info)) :return value))))))
+
+(define (next-reply model info port)
+  (let* ((trail (.trail info))
+         (reply (.reply info))
+         (foo (stderr "REPLY[~a ~a.~a]: ~a\n" (.name model) port reply trail))
+         (next (let loop () ;; WIP/FIXME: skip from trail if port does not match
+                 ;; Alarm: enable has sensor.enable
+                 ;; Alarm: IConsole: enable must skip SENSOR.enable
+                 (stderr "REPLY-LOOP: ~a\n" trail)
+                 (let ((event (and (pair? trail) (car trail))))
+                   (if (or (is-a? model <component>)
+                           (not (is-a? event <trigger>))
+                           (not (.port event))
+                           (eq? port (.port event)))
+                       event
+                       (begin
+                         (set! trail (cdr trail)) ;; URG
+                         (loop)))))))
+    (stderr "RN: ~a\n" next)
+    (if (null? trail)
+        (clone <info> info :reply #f)
+        (let* ((next (if (or (pair? next) port) next (last (symbol-split next #\.))))
+               (reply (if port (symbol-append port '. reply) reply))
+               (matches? (lambda (x) (eq? x reply))))
+          (match next
+            ((? matches?)
+             (clone <info> info :trail (cdr trail) :reply reply))
+            (_
+             (stderr "REJECT-TRACE: REPLY[~a ~a]: ~a\n" (.name model) reply next)
+             (clone <info> info :reply #f :error #t)))))))
+
+(define (next-todo-space-explorer model info)
+  (let ((events (om:find-triggers model))
+        (state (.state info))
+        (ast (.ast info)))
+    (if (or (null? *state-space*)
+            (null? (car *state-space*)))
+        (cons (state-vector model) events)
+        (let ((todo (state-ast-todo model state ast events)))
+          (if (pair? todo)
+              (cons state todo)
+              (let loop ((entries *state-space*))
+                (if (or (null? entries)
+                        (null? (car entries)))
+                    (cons #f '())
+                    (let* ((key-events (car entries))
+                           (state (seen-key-state key-events))
+                           (ast (seen-key-ast key-events))
+                           (todo (state-ast-todo model state ast events)))
+                      (if (pair? todo)
+                          (cons state todo)
+                          (loop (cdr entries)))))))))))
+
+(define (next-todo-trail-walker)
+  (lambda (model info)
+    (let ((trail (.trail info))
+          (state (.state info)))
+      (if (null? trail)
+          (cons #f '())
+          (let ((event (car trail)))
+            (list-set! info 1 (cdr trail)) ;; FIXME
+            (cons (if (eq? state 'initial) (state-vector model) state)
+                  (list event)))))))
+
+
+(define (get-state info o)
+  (or (assoc-ref (.state-alist info) (.name o))
+      (state-vector o)))
+
+(define (set-state info o state)
+  (clone <info> info :state-alist (assoc-set! (.state-alist info) (.name o) state)))
+
+(define (state->string state)
+  (comma-space-join (map (lambda (s) (->string (list (car s) "=" (cdr s)))) state)))
+
+(define (clone <info> o . args)
+  (let-keywords
+   args #f
+   ((trail (.trail o))
+    (ast (.ast o))
+    (state (.state o))
+    (q (.q o))
+    (reply (.reply o))
+    (return (.return o))
+    (state-alist (.state-alist o))
+    (trace (.trace o))
+    (error (.error o)))
+   (make <info> :trail trail :ast ast :state state :q q :reply reply :return return :state-alist state-alist :trace trace :error error)))
+
+(define (enq info trigger)
+  (if (and (pair? (.trail info))
+           (equal? trigger (car (.trail info))))
+      (clone <info> info :trail (cdr (.trail info)) :q (append (.q info) (list trigger)))
+      (begin
+        (stderr "REJECT-ENQ[~a]: ~a\n" trigger (and (pair? (.trail info)) (car (.trail info))))
+        (clone <info> info :q (append (.q info) (list trigger)) :error #t))))
+
+(define (deq info)
+  (clone <info> info :q (cdr (.q info))))
+
+(define (peeq info)
+  (and (pair? (.q info)) (car (.q info))))
 
 (define (->string h . t)
   (let ((src (if (pair? t) (cons h t) h)))

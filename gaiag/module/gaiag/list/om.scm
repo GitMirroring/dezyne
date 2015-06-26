@@ -909,7 +909,7 @@
 (define (.ast o)
   (match o
     (('error ast message) ast)
-    (('info trail ast state q reply return state-alist trace) ast))) ;; FIXME
+    (('info trail ast state q reply return state-alist trace error) ast))) ;; FIXME
 
 (define (foo)
   (pretty-print

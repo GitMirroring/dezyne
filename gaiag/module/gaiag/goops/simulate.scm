@@ -36,6 +36,7 @@
            .return
            .state-alist
            .trace
+           .error
            ))
 
 (define-class <info> ()
@@ -46,4 +47,5 @@
   (return :accessor .return :init-form #f :init-keyword :return)
   (q :accessor .q :init-form (list) :init-keyword :q)  
   (state-alist :accessor .state-alist :init-form (list) :init-keyword :state-alist)
-  (trace :accessor .trace :init-form (list) :init-keyword :trace))
+  (trace :accessor .trace :init-form (list) :init-keyword :trace)
+  (error :accessor .error :init-form (list) :init-keyword :error))
