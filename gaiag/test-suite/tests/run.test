@@ -25,7 +25,7 @@
   :use-module (gaiag reader)
   :use-module (gaiag pretty-print)
   :use-module (gaiag evaluate)
-  :use-module (gaiag simulate)
+  :use-module (gaiag run)
 
 
   :use-module (gaiag ast))
@@ -58,19 +58,19 @@
 
 (pass-if "simulator-state-vector"
   (pretty-noisy-equal?
-   ((@@ (gaiag simulate) state-vector) (simulate:om (car if-ast)))
+   ((@@ (gaiag run) state-vector) (run:om (car if-ast)))
    '((t . #f))))
 
 (pass-if "simulator-var!"
   (pretty-noisy-equal?
-   ((@@ (gaiag simulate) var!) '((t . #f)) 't #t)
+   ((@@ (gaiag run) var!) '((t . #f)) 't #t)
    '((t . #t))))
 
 (pass-if "simulator-simple-trail"
   (om-pretty-noisy-equal?
    (walk-trail
     (om:interface
-     (simulate:om
+     (run:om
       (dezyne->ast
        #{
          interface i { in void a; out void b;
@@ -105,7 +105,7 @@
 (pass-if "simulator-guard-trail"
    (om-pretty-noisy-equal?
     (walk-trail
-     (simulate:om
+     (run:om
       (cadr
        (dezyne->ast
         #{ interface i
@@ -194,7 +194,7 @@
 
 (pass-if "walk-trail-arguments"
 (or #t (let* ((arguments-ast (read-ast 'examples/arguments.dzn))
-          (om ((om:register simulate:om) arguments-ast #t))
+          (om ((om:register run:om) arguments-ast #t))
           (model (om:component om))
           (trail '(i.e i.e i.e))
           (foobar (set-program-arguments '("gaiag" "--json" "foobar")))
@@ -204,7 +204,7 @@
 
 (pass-if "walk-trail-pauls"
 (or #t  (let* ((pauls-ast (read-ast 'examples/regression/Comp.dzn))
-          (om ((om:register simulate:om) pauls-ast #t))
+          (om ((om:register run:om) pauls-ast #t))
           (model (om:component om))
           (trail '(client.initialize result_t.OK result_t.OK client.perform_actions result_t.OK result_t.OK client.perform_actions result_t.NOK client.recover result_t.OK client.perform_actions))
           (pauls-trace (walk-trail model trail))
@@ -213,7 +213,7 @@
 
 ;; (pass-if "explore-space-pauls"
 ;;   (let* ((pauls-ast (read-ast 'examples/regression/Comp.dzn))
-;;          (om ((om:register simulate:om) pauls-ast #t))
+;;          (om ((om:register run:om) pauls-ast #t))
 ;;          (model (om:component om))
 ;;          (pauls-space (explore-space model))
 ;;          (baseline-space 'baseline-space))

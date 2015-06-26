@@ -68,7 +68,7 @@ clean:
 test: check
 check: compile
 	./test.sh </dev/null
-	$(MAKE) csp asserts c c++ pretty loc goops java javascript python simulate wfc
+	$(MAKE) csp asserts c c++ pretty loc goops java javascript python run wfc
 
 REGRESSION_SOURCES = $(shell cd examples/regression && ls *.dzn)
 WFC_SOURCES = $(shell cd examples/wfc && ls -1 *.dzn)
@@ -482,13 +482,13 @@ csp-assert-update: $(ASSERT_SOURCES:%.dzn=out/assert/%.update)
 csp: csp-regression csp-demo csp-assert
 csp-update: csp-regression-update csp-assert-update csp-demo-update csp-assert-update
 
-simulate: compile
-	./gaiag -l simulate -t '(a a a)' examples/simulate.dzn
-	./gaiag -l simulate -t '(a a a a a)' examples/regression/If.dzn
-	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" examples/alarm-component.dzn
-	./gaiag -l simulate -t "$(shell cat examples/Alarm-trail.scm)" -j examples/alarm-component.dzn | ./scm2json | sed -e 's/, /,\n /g'
-	./gaiag -l simulate -t '(i.e i.e i.e)' examples/arguments.dzn
-	./gaiag -l simulate -t '(client.initialize result_t.OK result_t.OK client.perform_actions result_t.OK result_t.OK client.perform_actions result_t.NOK client.recover result_t.OK client.perform_actions)' examples/regression/Comp.dzn
+run: compile
+	./gaiag -l run -t '(a a a)' examples/run.dzn
+	./gaiag -l run -t '(a a a a a)' examples/regression/If.dzn
+	./gaiag -l run -t "$(shell cat examples/Alarm-trail.scm)" examples/alarm-component.dzn
+	./gaiag -l run -t "$(shell cat examples/Alarm-trail.scm)" -j examples/alarm-component.dzn | ./scm2json | sed -e 's/, /,\n /g'
+	./gaiag -l run -t '(i.e i.e i.e)' examples/arguments.dzn
+	./gaiag -l run -t '(client.initialize result_t.OK result_t.OK client.perform_actions result_t.OK result_t.OK client.perform_actions result_t.NOK client.recover result_t.OK client.perform_actions)' examples/regression/Comp.dzn
 
 asserts:
 	rm -rf out && mkdir out
@@ -827,48 +827,3 @@ out/test: out/argument.c++ out/main.o out/runtime.o
 #out/test: out/argument.o out/main.o out/runtime.o
 	g++ -o out/test out/*o
 	echo 'i.e' | out/test
-
-.PHONY: g gr
-GSED=-e "s/<formal>/<formal>/g" -e "s/<port>/<port>/g" -e "s/[(]gaiag (animate|evaluate|gaiag|guile|json|json-table|norm|norm-event|norm-state|om|pretty|simulate|record|resolve|table-event|table-state)([) ])/(g \1\2/" -e "s/[(][$$] <([^>]*)>[)]/(\'\1 _ ___)/g" -e "s/[(][$$] X<(arguments|bindings|compound|events|fields|functions|instances|formals|ports|root|triggers|types|variables)> ([a-z]+)[)]/(\'\1 \2)/g" -e "s/[(][$$] <(expression|otherwise|reply|return|var)> ([a-z]+)[)]/(\'\1 \2)/g" -e "s/[(][$$] <([^>]*)> ([a-z]+)[)]/(\'\1 \2 ___)/g" -e "s/[(][$$] <([a-z]+)> '[(][)][)]/(\'\1)/g" -e "s/[(][$$] <([^>]*)>/(\'\1/g" -e "s/;;[+]goeps//"
-
-module/g/%.scm: module/gaiag/%.scm
-	sed -r $(GSED) $< | grep -v ';;-goeps' > $@
-
-G_FILES:=\
- animate.scm\
- evaluate.scm\
- json.scm\
- json-table.scm\
- norm.scm\
- norm-event.scm\
- norm-state.scm\
- pretty.scm\
- resolve.scm\
- simulate.scm\
- table-state.scm\
- table-event.scm\
-
-g: $(G_FILES:%=module/g/%)
-
-GRSED=-e "s/xx<formal>/xx<formal>/g" -e "s/xx<port>/<port>/g" -e "s/[(]gaiag (animate|evaluate|gaiag|record|json|json-table|norm|norm-event|norm-state|om|pretty|record|resolve|simulate|table-event|table-state)([ )])/(gr \1\2/" -e "s/;;[+]gr//"
-
-module/gr/%.scm: module/gaiag/%.scm
-	sed -r $(GRSED) $< | grep -v ';;-gr' > $@
-
-GR_FILES:=\
- animate.scm\
- evaluate.scm\
- json.scm\
- json-table.scm\
- norm.scm\
- norm-event.scm\
- norm-state.scm\
- pretty.scm\
- resolve.scm\
- simulate.scm\
- table-state.scm\
- table-event.scm\
-
-# evaluate.scm\
-
-gr: $(GR_FILES:%=module/gr/%)

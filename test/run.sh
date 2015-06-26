@@ -1,4 +1,5 @@
 # Dezyne --- Dezyne command line tools
+#
 # Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
@@ -22,14 +23,32 @@
 
 #! /bin/bash
 
+TRACE='console.arm'
+echo running $TRACE
+dzn run --gaiag -t <(echo $TRACE) regression/Alarm.dzn | grep ^trace: | sed 's/trace:/  => /'
+
+TRACE='init'
+echo running $TRACE
+dzn run --gaiag -t <(echo $TRACE) regression/NonDet.dzn | grep ^trace: | sed 's/trace:/  => /'
+
+echo
+
 TRACE='console.arm sensor.enable sensor.return console.return'
+echo running $TRACE
 diff -u <(echo trace:$TRACE|tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/Alarm.dzn | grep ^trace: | tr , '\n')
 
 TRACE='init error return stop ok return recover error return recover ok return work return inevitable ok return work return stop return inevitable ok return'
+echo running $TRACE
 diff -u <(echo trace:$TRACE|tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/NonDet.dzn | grep ^trace: | tr , '\n')
 
 TRACE='console.arm sensor.enable sensor.return console.return console.disarm sensor.disable sensor.return console.return sensor.disabled console.deactivated'
-diff -u <(echo trace:$TRACE|tr [A-Z] [a-z] | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE | tr [A-Z] [a-z]) regression/Alarm.dzn | grep ^trace: | tr , '\n')
+echo running $TRACE
+diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/Alarm.dzn | grep ^trace: | tr , '\n')
 
 TRACE='console.arm sensor.enable sensor.return console.return sensor.triggered console.detected siren.turnon siren.return console.disarm sensor.disable sensor.return siren.turnoff siren.return console.return sensor.disabled console.deactivated'
-diff -u <(echo trace:$TRACE|tr [A-Z] [a-z] | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE |tr [A-Z] [a-z]) regression/Alarm.dzn | grep ^trace: | tr , '\n')
+echo running $TRACE
+diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/Alarm.dzn | grep ^trace: | tr , '\n')
+
+TRACE='i.done u.what u.Status_Ok i.Status_Yes'
+echo running $TRACE
+diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/Reply.dzn | grep ^trace: | tr , '\n')

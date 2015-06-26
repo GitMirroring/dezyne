@@ -30,7 +30,7 @@
   :use-module (gaiag pretty-print)
   :use-module (gaiag reader)
   :use-module (gaiag evaluate)
-  :use-module (gaiag simulate)  
+  :use-module (gaiag run)  
 
   :use-module (gaiag ast)
 
@@ -94,8 +94,8 @@
   (alist->hash-table
    (map
     (lambda (s)
-      (cons ((@@(gaiag simulate) ->string) (car s))
-            ((@@(gaiag simulate) ->string) (cdr s))))
+      (cons ((@@(gaiag run) ->string) (car s))
+            ((@@(gaiag run) ->string) (cdr s))))
     state)))
 
 (define (json-trace model trace)
@@ -123,15 +123,28 @@
                            (($ <action>) (->symbol (.trigger statement)))
                            (($ <return> #f)
                             (let ((port (source-property statement 'port)))
-                              (if (and port (is-a? model <component>))
+                              (if port
                                   (symbol-append port '.return)
                                   'return)))
                            (($ <return> 'return)
-                            (let ((port (source-property statement 'port)))
-                              (if (and port (is-a? model <component>))
+                            (let ((port (or (source-property statement 'port)
+                                            (and (is-a? model <component>)
+                                                 (.name (om:port model))))))
+                              (if (and port ;;(is-a? model <component>)
+                                       )
                                   (symbol-append (source-property statement 'port) '.return)
                                   'return)))
-                           (($ <return> value) value)
+                           (($ <return> value)
+                            (let ((port (and (source-property statement 'port)
+                                             (is-a? model <component>)
+                                             (.name (om:port model)))))
+                              (if (and port
+                                       (is-a? model <component>)
+                                       (=1 (length (symbol-split value #\.))) ;; FIXME AARRGH
+                                       )
+                                  (symbol-append (source-property statement 'port) '. value)
+                                  value)))
+                           (($ <literal> scope type field) (symbol-append scope '. type '_ field))
                            (_ #f))))
                    `((type . step)
                      (type . ,type)

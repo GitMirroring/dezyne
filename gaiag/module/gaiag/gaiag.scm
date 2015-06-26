@@ -73,7 +73,7 @@ Usage: gaiag [OPTION]... FILE
 
 Languages: c c++ cs csp dezyne goops java javascript python
            ast annotate om norm-event norm-state resolve
-           simulate table-event table-state wfc
+           run table-event table-state wfc
 
 Examples:
   ./gaiag examples/Alarm.dzn
@@ -82,8 +82,8 @@ Examples:
   ./gaiag -l csp -o alarm.csp examples/Alarm.dzn
   ./gaiag -l c++ examples/Alarm.dzn
   ./gaiag -l wfc examples/wfc/wfc-double-on.dzn
-  ./gaiag -l simulate -t '(a a a a)' examples/regression/If.dzn
-  ./gaiag -l simulate -t '(a a a a)' -j examples/regression/If.dzn | ./scm2json
+  ./gaiag -l run -t '(arm)' examples/IConsole.dzn
+  ./gaiag -l run -t '(console.arm)' -j examples/Alarm.dzn | ./scm2json | ../webapp/client/pretty
 ")
 	   (exit (or (and usage? 2) 0)))
      options)))

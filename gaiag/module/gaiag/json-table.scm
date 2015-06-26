@@ -44,7 +44,7 @@
   :use-module (gaiag pretty)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)  
-  :use-module (gaiag simulate)
+  :use-module (gaiag run)
 
   :export (json-init
            json-table-event           
