@@ -45,11 +45,7 @@
   (use-modules (gaiag goops om)))
  (else #t))
 
-;; JSON output mangling disaster area
-
-;; FIXME: mangling the trace output into the current json format takes
-;; about as much effort as producing it?
-
+;; FIXME: remove accidental complexity from JSON spec
 (define (model->node-alist model)
   `((model . ,(.name model))
     (type . ,(ast-name model))
@@ -102,47 +98,47 @@
             ((@@(gaiag simulate) ->string) (cdr s))))
     state)))
 
-(define ((json-trace model) tracepoint)
-  (let* ((event (car tracepoint))
-         (state (cadr tracepoint))
-         (steps (cddr tracepoint))
-         (name (.name model)))
-    (let loop ((statements steps) (state state))
-      (if (null? statements)
-          (list (alist->hash-table '()))
-          (let* ((statement (car statements))
-                 (type (and=> statement ast-name))
-                 (state (if (eq? type 'assign)
-                            (var! state (.identifier statement) (eval-expression model state (.expression statement))) ;; FIXME
-                            state))
-                 (location (alist->hash-table
-                            `((begin . ,(json-location statement))
-                              (end . ,(json-location (or (and (pair? statements) (last statements)) statement))))))
-                 (message
-                  (alist->hash-table
-                   (let* ((instance (and (om:parent model statement) name))
-                          (trigger
-                           (match statement
-                             (($ <on>) (->symbol event))
-                             (($ <action>) (->symbol (.trigger statement)))
-                             (($ <return> #f)
-                              (let ((port (source-property statement 'port)))
-                               (if (and port (is-a? model <component>))
-                                   (symbol-append port '.return)
-                                   'return)))
-                             (($ <return> 'return)
-                              (let ((port (source-property statement 'port)))
-                                (if (and port (is-a? model <component>))
-                                    (symbol-append (source-property statement 'port) '.return)
-                                    'return)))
-                             (($ <return> event) event)
-                             (_ #f))))
-                     `((type . step)
-                       (type . ,type)
-                       (instance . ,instance)
-                       (from . ,(from model event statement))
-                       (to . ,(to model statement))
-                       (event . ,trigger)
-                       (state . ,(state->json state))
-                       (location . ,location))))))
-            (cons message (loop (cdr statements) state)))))))
+(define (json-trace model trace)
+  (let ((name (.name model)))
+    (let loop ((trace trace) (trigger (make <trigger>)) (state (state-vector model)))
+      (stderr "JSON: ~a\n" (if (pair? trace) (car trace)))
+      (cond
+       ((null? trace) (list (alist->hash-table '())))
+       ((eq? (ast-name (car trace)) 'state)
+        (loop (cdr trace) trigger (cadr trace)))
+       ((is-a? (car trace) <trigger>)
+        (loop (cdr trace) (car trace) state))
+       (else
+        (let* ((statement (car trace))
+               (type (and=> statement ast-name))
+               (location (alist->hash-table
+                          `((begin . ,(json-location statement))
+                            (end . ,(json-location (or (and (pair? trace) (last trace)) statement))))))
+               (message
+                (alist->hash-table
+                 (let* ((instance (and (om:parent model statement) name))
+                        (event
+                         (match statement
+                           (($ <on> ('triggers t h ...)) (->symbol t))
+                           (($ <action>) (->symbol (.trigger statement)))
+                           (($ <return> #f)
+                            (let ((port (source-property statement 'port)))
+                              (if (and port (is-a? model <component>))
+                                  (symbol-append port '.return)
+                                  'return)))
+                           (($ <return> 'return)
+                            (let ((port (source-property statement 'port)))
+                              (if (and port (is-a? model <component>))
+                                  (symbol-append (source-property statement 'port) '.return)
+                                  'return)))
+                           (($ <return> value) value)
+                           (_ #f))))
+                   `((type . step)
+                     (type . ,type)
+                     (instance . ,instance)
+                     (from . ,(from model trigger statement))
+                     (to . ,(to model statement))
+                     (event . ,event)
+                     (state . ,(state->json state))
+                     (location . ,location))))))
+          (cons message (loop (cdr trace) trigger state))))))))
