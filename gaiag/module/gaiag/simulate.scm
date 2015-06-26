@@ -77,8 +77,8 @@
   (or (assoc-ref (.state-alist info) (.name o))
       (state-vector o)))
 
-(define (set-state! info o state)
-  (list-set! info 7 (assoc-set! (.state-alist info) (.name o) state))) ;; FIXME
+(define (set-state info o state)
+  (clone <info> info :state-alist (assoc-set! (.state-alist info) (.name o) state)))
 
 (define i 0)
 (define *state-space* '(()))
@@ -198,12 +198,65 @@
   (let ((done (seen model state ast)))
     (filter (negate (lambda (x) (member x done equal?))) events)))
 
-(define (next-action model info trigger) #t)
-(define (next-value info action) #t)
-(define (next-return model info port) #t)
-(define (set-return! info value) #t)
+(define (next-action model info trigger)
+  (let ((trail (.trail info)))
+    (stderr "ACTION[~a ~a]: ~a\n" (.name model) trigger trail)
+    (if (null? trail)
+        info
+        (let* ((action (car trail)))
+          (stderr "ACTION: ~a\n" action)
+          (stderr "TRIGGER: ~a\n" trigger)
+          (if (or (equal? action trigger)
+                  (and (is-a? trigger <trigger>)
+                       (is-a? action <trigger>)
+                       (not (.port trigger))
+                       (eq? (.event trigger) (.event action))))
+              (clone <info> info :trail (cdr (.trail info)))
+              (begin
+                (stderr "REJECT-TRACE: ACTION[~a ~a]: ~a\n" (.name model) action trigger)
+                (clone <info> info :trail (cdr (.trail info)) :trace '())))))))
 
-;; FIXME: TODO: implement next-value for state explorer
+(define (next-value info action)
+  (lambda (info action)
+    (let ((trail (.trail info)))
+      (if (null? trail)
+          info
+          (let* ((trigger (car trail))
+                 (value (make <literal>
+                          :type (.port trigger)
+                          :field (.event trigger))))
+            (clone <info> info :trail (cdr (.trail info)) :return value))))))
+
+(define (next-reply model info port)
+  (let* ((trail (.trail info))
+         (reply (.reply info))
+         (foo (stderr "REPLY[~a ~a.~a]: ~a\n" (.name model) port reply trail))
+         (next (let loop () ;; WIP/FIXME: skip from trail if port does not match
+                 ;; Alarm: enable has sensor.enable
+                 ;; Alarm: IConsole: enable must skip SENSOR.enable
+                 (stderr "REPLY-LOOP: ~a\n" trail)
+                 (let ((event (and (pair? trail) (car trail))))
+                   (if (or (is-a? model <component>)
+                           (not (is-a? event <trigger>))
+                           (not (.port event))
+                           (eq? port (.port event)))
+                       event
+                       (begin
+                         (set! trail (cdr trail)) ;; URG
+                         (loop)))))))
+    (stderr "RN: ~a\n" next)
+    (if (null? trail)
+        (clone <info> info :reply #f)
+        (let* ((next (if (or (pair? next) port) next (last (symbol-split next #\.))))
+               (reply (if port (symbol-append port '. reply) reply))
+               (matches? (lambda (x) (eq? x reply))))
+          (match next
+            ((? matches?)
+             (clone <info> info :trail (cdr trail) :reply reply))
+            (_
+             (stderr "REJECT-TRACE: REPLY[~a ~a]: ~a\n" (.name model) reply next)
+             (clone <info> info :reply #f :trace '())))))))
+
 (define (next-todo-space-explorer model info)
   (let ((events (om:find-triggers model))
         (state (.state info))
@@ -227,75 +280,6 @@
                           (loop (cdr entries)))))))))))
 
 (define (next-todo-trail-walker)
-  (set! next-action
-        (lambda (model info trigger)
-          (let ((trail (.trail info)))
-            (stderr "ACTION[~a ~a]: ~a\n" (.name model) trigger trail)
-            (if (null? trail)
-                #f
-                (let* ((action (car trail)))
-                  (stderr "ACTION: ~a\n" action)
-                  (stderr "TRIGGER: ~a\n" trigger)
-                  (list-set! info 1 (cdr trail))
-                  (if (or (equal? action trigger)
-                          (and (is-a? trigger <trigger>)
-                               (is-a? action <trigger>)
-                               (not (.port trigger))
-                               (eq? (.event trigger) (.event action))))
-                      #t
-                      (begin
-                        (stderr "REJECT-TRACE: ACTION[~a ~a]: ~a\n" (.name model) action trigger)
-                        (list-set! info 8 '()) ;; FIXME
-                        ))
-                  action)))))
-  (set! next-value
-        (lambda (info action)
-          (let ((trail (.trail info)))
-            (if (null? trail)
-                #f
-                (let* ((trigger (car trail))
-                       (value (make <literal>
-                                :type (.port trigger)
-                                :field (.event trigger))))
-                  (list-set! info 1 (cdr trail))
-                  value)))))
-  (set! next-return
-        (lambda (model info port)
-          (let* ((trail (.trail info))
-                 (reply (.reply info))
-                 (foo (stderr "RETURN[~a ~a.~a]: ~a\n" (.name model) port reply trail))
-                 (next (let loop () ;; WIP/FIXME: skip from trail if port does not match
-                         ;; Alarm: enable has sensor.enable
-                         ;; Alarm: IConsole: enable must skip SENSOR.enable
-                         (stderr "RETURN-LOOP: ~a\n" trail)
-                         (let ((event (and (pair? trail) (car trail))))
-                           (if (or (is-a? model <component>)
-                                   (not (is-a? event <trigger>))
-                                   (not (.port event))
-                                   (eq? port (.port event)))
-                               event
-                               (begin
-                                 (set! trail (cdr trail)) ;; URG
-                                 (loop)))))))
-            (stderr "RN: ~a\n" next)
-            (if (null? trail)
-                #f
-                (let* ((next (if (or (pair? next) port) next (last (symbol-split next #\.))))
-                       (return (if port (symbol-append port '. reply) reply))
-                       (matches? (lambda (x) (eq? x return))))
-                  (set! reply 'return)
-                  (list-set! info 5 'return) ;; FIXME
-                  (match next
-                    ((? matches?)
-                     (list-set! info 1 (cdr trail))
-                     return)
-                    (_
-                     (stderr "REJECT-TRACE: RETURN[~a ~a]: ~a\n" (.name model) return next)
-                     (list-set! info 8 '()) ;; FIXME
-                     #f)))))))
-  (set! set-return!
-        (lambda (info value)
-          (list-set! info 5 (->symbol value))));; FIXME
   (lambda (model info)
     (let ((trail (.trail info))
           (state (.state info)))
@@ -344,11 +328,11 @@
              (state (car state-todo)) ;; FIXME? What about state-alist?
              (todo (cdr state-todo)))
         (stderr "SIM[~a]: ~a\n" todo (.trail info))
-        (if (null? todo ;;(.trail info)
-             )
+        (if (null? todo)
             (reverse path)
             (let* ((event (car todo))
                    (infos (process-event model event (clone <info> info :ast ast :state state)))
+                   (infos (if (null? (prune infos)) (list (clone <info> info :trail '())) infos))
                    (foo (stderr "TRACES: ~a\n" (length infos)))
                    (infos (stable-sort infos (lambda (a b) (< (length (.trace a))
                                                               (length (.trace b))))))
@@ -383,9 +367,10 @@
                      (()
                       (stderr "EMPTY\n")
                       (list 'error (->string "invalid event: " event)))
-                     (_ (reverse trace)))))
-       (if (not (eq? reverse identity))
-           (set-state! info model (.state info)))
+                     (_ (reverse trace))))
+            (info (if (not (eq? reverse identity))
+                      (set-state info model (.state info))
+                      info)))
        (clone <info> info :trace trace)))
    (process model event info)))
 
@@ -414,7 +399,8 @@
               (infos (prune infos)))
          infos))
       (($ <action> ($ <trigger> port event))
-       (let ((return (eval-expression model (.state info) (next-value info event))))
+       (let* ((info (next-value info event))
+              (return (eval-expression model (.state info) (.return info))))
          (list (clone <info> info :ast #f :return return))))
       (_ (let ((return (eval-expression model (.state info) expression)))
            (list (clone <info> info :ast #f :return return)))))))
@@ -452,8 +438,8 @@
                             (i-infos (prune i-infos))
                             (infos (map
                                     (lambda (i-info)
-                                      (set-state! i-info interface (.state i-info))
-                                      (clone <info> o-info :state-alist (.state-alist i-info)))
+                                      (let ((i-info (set-state i-info interface (.state i-info))))
+                                        (clone <info> o-info :state-alist (.state-alist i-info))))
                                     i-infos))
                             (infos (apply append
                                           (map (lambda (info)
@@ -478,9 +464,11 @@
                              (map (lambda (info) (clone <info> info :trace (cons ast (.trace info)))) infos)
                              (map
                               (lambda (info count)
-                                (let* ((return (next-return model info (.port event)))
+                                (let* ((info (next-reply model info (.port event)))
+                                       (reply (.reply info))
+                                       (info (clone <info> info :reply 'return))
                                        (trace (.trace info))
-                                       (return (rsp ast (make <return> :expression return)))
+                                       (return (rsp ast (make <return> :expression reply)))
                                        (trace (if (or (null? trace)
                                                       (eq? (ast-name trace) 'error))
                                                   trace
@@ -517,26 +505,23 @@
                     (i-infos (filter trace? i-infos))
                     (i-infos (map
                               (lambda (i-info)
-                                (let ((port (.port trigger))
-                                      (return (car (.trace i-info))))
-                                  (set-source-property! return 'port port))
-                                (set-state! i-info interface (.state i-info))
-                                (clone <info> info :trail (.trail i-info) :ast #f :state-alist (.state-alist i-info) :trace (append (cons ast trace) (reverse (.trace i-info)))))
+                                (let* ((port (.port trigger))
+                                       (return (car (.trace i-info)))
+                                       (i-info (set-state i-info interface (.state i-info))))
+                                  (set-source-property! return 'port port)
+                                  (clone <info> info :trail (.trail i-info) :ast #f :state-alist (.state-alist i-info) :trace (append (cons ast trace) (reverse (.trace i-info))))))
                               i-infos))
                     (i-infos (filter trace? i-infos)))
                i-infos)
              (let ((info (clone <info> info :trace (cons ast trace))))
                (if port ;; <action>: required out
                    (list (enq info trigger))
-                   ;;(list info)
-                   (begin
-                     (next-action model info trigger)
-                     (list info)))))))
+                   (list (next-action model info trigger)))))))
       ;; no cycle interface
       (($ <action> trigger)
-       (let* ((info (clone <info> info :trace (cons ast trace))))
-         (next-action model info trigger)
-         (list (clone <info> info :ast #f :trace (.trace info)))))
+       (let* ((info (clone <info> info :trace (cons ast trace)))
+              (info (next-action model info trigger)))
+         (list (clone <info> info :ast #f))))
       (($ <assign> identifier expression)
        (let* ((info (clone <info> info :ast expression :trace (cons ast trace)))
               (infos (eval-function-expression model event info)))
@@ -598,9 +583,8 @@
        (let ((return (eval-expression model state expression)))
          (list (clone <info> info :ast #f :return return :trace (cons ast trace)))))
       (($ <reply> expression)
-       (let ((return (eval-expression model state expression)))
-         (set-return! info return)
-         (list (clone <info> info :trace (cons ast trace))))))))
+       (let ((reply (eval-expression model state expression)))
+         (list (clone <info> info :reply reply :trace (cons ast trace))))))))
 
 (define (->string h . t)
   (let ((src (if (pair? t) (cons h t) h)))
