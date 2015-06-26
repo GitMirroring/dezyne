@@ -1,1 +1,1 @@
-dataInoutInOutEvent.dzn:5:27: Well-formedness error: Inout Parameter is not allowed for out Event: val
+dataInoutInOutEvent.dzn:5:27: Well-formedness error: Inout Parameter is not allowed for out Event: 'val'

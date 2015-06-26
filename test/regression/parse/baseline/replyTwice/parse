@@ -1,1 +1,1 @@
-replyTwice.dzn:13:7: Well-formedness error: Only one Reply allowed on Event: activate
+replyTwice.dzn:13:7: Well-formedness error: Only one Reply allowed on Event: 'activate'

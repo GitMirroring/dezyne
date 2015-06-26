@@ -1,1 +1,1 @@
-bindingPortBoundTwice.dzn:22:5: Well-formedness error: Port is bound twice: i1
+bindingPortBoundTwice.dzn:22:5: Well-formedness error: Port is bound twice: 'i1'

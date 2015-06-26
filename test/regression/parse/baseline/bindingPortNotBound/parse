@@ -1,2 +1,2 @@
-bindingPortNotBound.dzn:16:17: Well-formedness error: Port is not bound: i
-bindingPortNotBound.dzn:19:5: Well-formedness error: Port is not bound: comp.i
+bindingPortNotBound.dzn:16:17: Well-formedness error: Port is not bound: 'i'
+bindingPortNotBound.dzn:19:5: Well-formedness error: Port is not bound: 'comp.i'

@@ -1,1 +1,1 @@
-interfaceMustDefineEvent.dzn:1:11: Well-formedness error: Interface must define at least one event: Sensor
+interfaceMustDefineEvent.dzn:1:11: Well-formedness error: Interface must define at least one event: 'Sensor'
