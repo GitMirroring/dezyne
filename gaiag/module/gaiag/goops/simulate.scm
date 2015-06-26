@@ -30,6 +30,7 @@
            <info>
            .trail
            .ast
+           .q
            .state
            .reply
            .return
@@ -41,7 +42,8 @@
   (trail :accessor .trail :init-form (list) :init-keyword :trail)
   (ast :accessor .ast :init-form (list) :init-keyword :ast)
   (state :accessor .state :init-form (list) :init-keyword :state)
-  (reply :accessor .reply :init-form (list) :init-keyword :reply)
-  (return :accessor .return :init-form (list) :init-keyword :return)
+  (reply :accessor .reply :init-form 'return :init-keyword :reply)
+  (return :accessor .return :init-form #f :init-keyword :return)
+  (q :accessor .q :init-form (list) :init-keyword :q)  
   (state-alist :accessor .state-alist :init-form (list) :init-keyword :state-alist)
   (trace :accessor .trace :init-form (list) :init-keyword :trace))
