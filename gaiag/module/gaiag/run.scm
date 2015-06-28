@@ -42,7 +42,7 @@
 
   :export (ast->
            explore-space
-           mangle-trace
+           mangle-traces
            walk-trail
            symbol->trigger
            ->symbol
@@ -81,12 +81,14 @@
              (interfaces (map run:import
                               (map .type ((compose .elements .ports) model))))))
   (let* ((trail (option-ref (parse-opts (command-line)) 'trail #f))
-         (trace (if trail
-                    (walk-trail model (with-input-from-string trail read))
-                    (explore-space model)))
-         (foo (stderr "RESULT:\n"))
-         (foo (pretty-print trace (current-error-port))))
-    (pretty-print (mangle-trace model trace)))
+         (traces (if trail
+                     (walk-trail model (with-input-from-string trail read))
+                     (explore-space model)))
+         ;;(foo (stderr "RESULT:\n"))
+         ;;(foo (pretty-print trace (current-error-port)))
+         (trace (if (pair? traces) (car traces) '()))
+         )
+    (pretty-print (mangle-traces model traces)))
   (newline)
   (stderr "state space: ~a\n" (length *state-space*))
   "")
@@ -103,7 +105,7 @@
   (let* ((info (make <info> :trail trail :state (state-vector model))))
     (let loop ((info info) (trace '()))
       (stderr "trail: <-- ~a\n" (.trail info))
-      (stderr "TRACE: ~a\n\n\n" (map trace-location (.trace info)) (current-error-port))
+      ;;(stderr "TRACE: ~a\n\n\n" (map trace-location (.trace info)) (current-error-port))
       (let* ((info (next-info model info))
              (trail (.trail info)))
         (if (null? trail)
@@ -113,22 +115,17 @@
                    (info (clone <info> info :reply 'return));; FIXME reset
                    (infos (run-trigger model trigger info))
                    (infos (if (null? (prune infos)) (list (clone <info> info :trail '())) infos))
-                   (foo (stderr "TRACES: ~a\n" (length infos)))
+                   ;;(foo (stderr "TRACES: ~a\n" (length infos)))
                    (infos (sort-infos infos))
                    (infos (delete-duplicates infos equal?))
-                   (foo (stderr "UNIQUE: ~a\n" (length infos)))
+                   ;;(foo (stderr "UNIQUE: ~a\n" (length infos)))
                    (foo (map
                             (lambda (info count)
                               (stderr "R ~a:\n" count)
                               (map trace-location (.trace (car infos))) (current-error-port))
-                            infos (iota (length infos))))
-                   (infos (filter error? infos))
-                   (foo (stderr "SUCCESS: ~a\n" (length infos)))
-                   ;;(infos (take infos 1))
-                   )
-              (append-map (lambda (info)
-                            (loop info (append trace (.trace info))))
-                          infos)))))))
+                            infos (iota (length infos)))))
+               (append-map (lambda (info) (loop info (list (append trace (.trace info))))) infos)
+              ))))))
 
 (define* (run-trigger model trigger info :optional (reverse identity))
   (stderr "run-trigger[~a ~a] " (.name model) (state->string (.state info)))
@@ -382,15 +379,16 @@
        (let* ((reply (eval-expression model state expression)))
          (list (clone <info> info+ast :reply reply)))))))
 
-(define (mangle-trace model trace)
+(define (mangle-traces model traces)
   (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))
     (if json?
         (append
          (list
           (json-init model)
           (json-state model (state-vector model)))
-         (json-trace model trace))
-        (map demo-trace trace))))
+         (let ((trace (if (null? traces) '() (car traces)))) ;; FIXME JSON
+           (json-trace model trace)))
+        (map demo-trace traces (iota (length traces))))))
 
 (define (trace-location ast)
   (or (and-let* ((loc (source-location ast))
@@ -402,7 +400,13 @@
       ast))
 
 (define <state> 'state)
-(define (demo-trace step)
+(define (demo-trace trace count)
+  (stderr "\n\nRESULT: ~a\n" count)
+  ;;(pretty-print trace (current-error-port))
+  (pretty-print (map demo-tracepoint trace) (current-error-port))
+  (stderr "END RESULT[~a]\n" count))
+
+(define (demo-tracepoint step)
   (match step
     (($ <state> state ...) (state->string step))
     (($ <trigger>) (->symbol step))
