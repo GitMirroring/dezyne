@@ -565,12 +565,11 @@
          (port (and (=2 (length port-value)) (car port-value)))
          (value (if (=2 (length port-value)) (cadr port-value) (car port-value)))
          (type-field (symbol-split value #\_))
+         (type (and (=2 (length type-field)) (car type-field)))
+         (field (if (=1 (length type-field)) (car type-field) (cadr type-field)))
          (port (and port (is-a? model <component>) (om:port model port)))
          (scope (and port (.type port))))
-    (make <literal>
-      :scope scope
-      :type (car type-field)
-      :field (cadr type-field))))
+    (make <literal> :scope scope :type type :field field)))
 
 (define (skip-trail model info port)
   (let loop ((info info))
