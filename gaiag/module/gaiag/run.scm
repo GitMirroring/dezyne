@@ -192,13 +192,18 @@
 (define (prune infos) (filter trace? infos))
 
 (define (sort-infos infos)
-  (let* ((infos (stable-sort
-                 infos (lambda (a b)
-                         (cond
-                          ((and (not (.error a)) (.error b)) #t)
-                          ((not (.error b)) #f)
-                          (else (> (length (.trace a))
-                                   (length (.trace b)))))))))
+  (define (optimist< a b) ;; non-error trace found: that's GREAT!
+    (cond
+     ((and (not (.error a)) (.error b)) #t)
+     ((not (.error b)) #f)
+     (else (> (length (.trace a)) (length (.trace b))))))
+  (define (pessimist< a b) ;; amongst best-matches error trace found: oh no!
+    (cond
+     ((!= (length (.trail a)) (length (.trail b)))
+      (< (length (.trail a)) (length (.trail b))))
+     (else (cond ((.error a) #t)
+                 ((.error b) #f)))))
+  (let* ((infos (stable-sort infos pessimist<)))
     (if (and (pair? infos) (not (.error (car infos))))
         (filter error? infos)
         infos)))
@@ -292,7 +297,8 @@
                   (infos (map (append-trace (cons ast trace)) infos)))
              infos)
            '()))
-      (($ <illegal>) (list info+ast))
+      (($ <illegal>)
+       (list (clone <info> info+ast :ast #f :error #t)))
       (($ <action> trigger)
        (let ((port (.port trigger))
              (o-info (clone <info> info)))
