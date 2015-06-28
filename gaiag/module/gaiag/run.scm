@@ -271,7 +271,7 @@
                                        (return (rsp ast (make <return> :expression reply)))
                                        (x (set-source-property! return 'port (.port trigger)))
                                        (trace (if (or (null? trace)
-                                                      (eq? (ast-name trace) 'error))
+                                                      (.error info))
                                                   trace
                                                   (append (cons ast trace) (list return)))))
                                   ((set-trace trace) info)))
@@ -486,7 +486,8 @@
               (clone <info> info :trail (cdr (.trail info)))
               (and
                (stderr "REJECT-TRACE: ACTION[~a expect:~a]: next:~a\n" (.name model) action next)
-               (clone <info> info :trail (cdr (.trail info)) :error #t)))))))
+               ;;(map trace-location (.trace info))
+               (clone <info> info :error #t)))))))
 
 (define (next-value model info action)
   "eat a ENUM_FIELD or PORT.ENUM_FIELD from trail, or error"
@@ -524,10 +525,18 @@
          (trail (.trail info)))
     (if (null? trail)
         info
-        (let* ((reply (symbol->literal model (car trail))))
+        (let* ((next (symbol->literal model (car trail)))
+               (reply (.reply info)))
+          (stderr "NEXT: ~a\n" next)
+          (stderr "EXPECT REPLY: ~a\n" reply)
           ;; FIXME TODO: reject
-          (clone <info> info :trail (cdr trail) :reply reply  ;;; FIXME VALUE :trace (cons reply (.trace info))
-                 )))))
+          (if (equal? next reply)
+              (clone <info> info :trail (cdr trail) ;; :reply reply
+                     )
+              (and
+               (stderr "REJECT-TRACE: REPLY[~a expect:~a]: next:~a\n" (.name model) reply next)
+               (stderr "trace: ~a\n" (map trace-location (.trace info)))
+               (clone <info> info :error #t)))))))
 
 (define (symbol->literal model literal)
   (let* ((port-value (symbol-split literal #\.))
