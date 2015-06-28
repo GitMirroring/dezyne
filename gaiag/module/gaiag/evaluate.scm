@@ -103,6 +103,8 @@
   (let ((v ((var? model) x)))
     (and (is-a? v <variable>) ((int? model) v))))
 
+(define (unspecified? x) (eq? x *unspecified*))
+
 (define (eval-expression model state o)
   (match o
     (($ <expression> value) (eval-expression model state value))
@@ -133,7 +135,9 @@
      (eval-expression model state expression))
     ((? symbol?) (eval-expression model state (var state o)))
     ((? boolean?) o)
-    ((? number?) o)))
+    ((? number?) o)
+    (($ <data> value) o)
+    ((? unspecified?) o)))
 
 (define (simplify-expression model state o)
   (let ((e (simplify-expression- model state o)))

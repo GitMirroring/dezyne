@@ -12,6 +12,22 @@
 *** add to triangle traces? code traces?  user input?
 ** nice to have: eligible events
 
+ctrl.calibrate robot.calibrate robot.return inspector.calibrate inspector.return feedPort.calibrate feedPort.return ctrl.return ctrl.calibrate ctrl.return
+
+./gaiag -l run -t '(stop return recover)' ../test/regression/NonDet2.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
+./gaiag -l run -t '(port.e)' ../test/regression/External.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
+
+
+# FIXME: wrong non-det choice
+./gaiag -l run -t '(ctrl.calibrate robot.calibrate robot.return inspector.calibrate inspector.return feedPort.calibrate feedPort.return ctrl.return ctrl.calibrate ctrl.return)' -m Handle ../test/regression/Handle.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
+# FIXME: NO TRACE
+./gaiag -l run -t '(ctrl.calibrate robot.calibrate robot.return inspector.calibrate inspector.return feedPort.calibrate feedPort.return ctrl.return robot.calibrated inspector.calibrated feedPort.calibrated ctrl.calibrated ctrl.calibrate ctrl.return)' -m Handle ../test/regression/Handle.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
+
+
 ./gaiag -l run -t '(arm)' -m IConsole ../test/regression/Alarm.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
 
 ./gaiag -l run -t '(console.arm)' ../test/regression/alarm.project/Alarm.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
