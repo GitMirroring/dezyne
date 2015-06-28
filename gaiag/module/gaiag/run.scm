@@ -133,9 +133,7 @@
                       (let* ((inevitable (prune (run model (make <trigger> :event 'inevitable) info)))
                              (optional (prune (run model (make <trigger> :event 'optional) info)))
                              (modelling (append inevitable optional))
-                             (infos (run-trigger-from-trail info))
-                             ;;;(modelling (append-map (lambda (info) (run model trigger info)) infos))
-                             )
+                             (infos (run-trigger-from-trail info)))
                         (append infos modelling)))))
       (map
        (lambda (info)
@@ -203,7 +201,10 @@
       (< (length (.trail a)) (length (.trail b))))
      (else (cond ((.error a) #t)
                  ((.error b) #f)))))
-  (let* ((infos (stable-sort infos pessimist<)))
+  (let* ((infos (stable-sort infos
+                             ;;pessimist< ;; fixes -- *almost* NonDet2, breaks Alarm
+                             optimist<                             
+                             )))
     (if (and (pair? infos) (not (.error (car infos))))
         (filter error? infos)
         infos)))
