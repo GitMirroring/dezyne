@@ -194,7 +194,10 @@
     (cond
      ((and (not (.error a)) (.error b)) #t)
      ((not (.error b)) #f)
-     (else (> (length (.trace a)) (length (.trace b))))))
+     (else
+      ;;(> (length (.trace a)) (length (.trace b)))
+      (< (length (.trail a)) (length (.trail b)))
+      )))
   (define (pessimist< a b) ;; amongst best-matches error trace found: oh no!
     (cond
      ((!= (length (.trail a)) (length (.trail b)))
@@ -202,8 +205,8 @@
      (else (cond ((.error a) #t)
                  ((.error b) #f)))))
   (let* ((infos (stable-sort infos
-                             ;;pessimist< ;; fixes -- *almost* NonDet2, breaks Alarm
-                             optimist<                             
+                             pessimist< ;; fixes -- *almost* NonDet2, breaks Alarm
+                             ;;optimist<                             
                              )))
     (if (and (pair? infos) (not (.error (car infos))))
         (filter error? infos)
@@ -229,7 +232,7 @@
       (($ <on> ('triggers triggers ...) statement)
        (if (find trigger-matches? triggers)
            (let* ((port (.port trigger))
-                  (o-info (clone <info> info :ast statement :trace (list trigger)))
+                  (o-info (clone <info> info :ast statement :trace '()))
                   (infos
                    (if (and (is-a? model <component>)
                             (eq? (.name (om:port model)) port))
@@ -283,9 +286,9 @@
                                        (trace (.trace info))
                                        (return (rsp ast (make <return> :expression reply)))
                                        (x (set-source-property! return 'port (.port trigger)))
-                                       (trace (cond ((null? trace) trace)
-                                                    ((.error info) (cons ast trace))
-                                                    (else (append (cons ast trace) (list return))))))
+                                       (trace (cond ((null? trace) (list trigger))
+                                                    ((.error info) (append (list trigger ast) trace))
+                                                    (else (append (list trigger ast) trace (list return))))))
                                   ((set-trace trace) info)))
                               infos (iota (length infos))))))
              infos)
@@ -494,7 +497,7 @@
 
 (define (next-action model info action)
   (let ((trail (.trail info)))
-    (stderr "ACTION[~a ~a]: ~a\n" (.name model) action trail)
+    (stderr "next-action[~a ~a]: ~a\n" (.name model) action trail)
     (if (null? trail)
         info
         (let* ((next (symbol->trigger (car trail))))
@@ -515,7 +518,7 @@
   "eat a ENUM_FIELD or PORT.ENUM_FIELD from trail, or error"
   (let* ((info (next-action model info action))
          (trail (.trail info)))
-    (stderr "VALUE[~a]: ~a\n" action trail)
+    (stderr "next-value[~a ~a]: ~a\n" (.name model) action trail)
     (if (null? trail)
         info
         (let* ((value (car trail))
@@ -558,10 +561,8 @@
                (reply (.reply info)))
           (stderr "NEXT: ~a\n" next)
           (stderr "EXPECT REPLY: ~a\n" reply)
-          ;; FIXME TODO: reject
           (if (equal? next reply)
-              (clone <info> info :trail (cdr trail) ;; :reply reply
-                     )
+              (clone <info> info :trail (cdr trail))
               (and
                (stderr "REJECT-TRACE: REPLY[~a expect:~a]: next:~a\n" (.name model) reply next)
                (stderr "trace: ~a\n" (map trace-location (.trace info)))
@@ -646,6 +647,7 @@
    (make <info> :trail trail :ast ast :state state :q q :reply reply :return return :state-alist state-alist :trace trace :error error)))
 
 (define (enq model info trigger)
+  (stderr "ENQ!: ~a\n" trigger)
   (let* ((trail (.trail info))
          (next (and (pair? trail) (symbol->trigger (car (.trail info))))))
     (if (equal? trigger next)

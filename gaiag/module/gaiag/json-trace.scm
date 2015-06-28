@@ -131,7 +131,7 @@
                  (let* ((instance (and (om:parent model statement) name))
                         (event
                          (match statement
-                           (($ <on> ('triggers t h ...)) (->symbol t))
+                           (($ <on> ('triggers t h ...)) (->symbol trigger))
                            (($ <action>) (->symbol (.trigger statement)))
                            (($ <illegal>) 'illegal)
                            (($ <literal> scope type field) (symbol-append scope '. type '_ field))
