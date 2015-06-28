@@ -147,7 +147,7 @@
                             (let ((port (source-property statement 'port)))
                               (if port
                                   (symbol-append port '.return)
-                                  'return)))
+                                  (and (is-a? model <interface>) 'return))))
                            (($ <return> 'return)
                             (let ((port (or (source-property statement 'port)
                                             (and (is-a? model <component>)
@@ -155,7 +155,7 @@
                               (if (and port ;;(is-a? model <component>)
                                        )
                                   (symbol-append (source-property statement 'port) '.return)
-                                  'return)))
+                                  (and (is-a? model <interface>) 'return))))
                            (($ <return> value)
                             (let ((port (and (source-property statement 'port)
                                              (is-a? model <component>)
