@@ -179,7 +179,7 @@
          (stderr "R: ~a\n" reply)
          (list (clone <info> info :return reply))))
       (_ (let ((return (eval-expression model (.state info) expression)))
-           (list (clone <info> info :ast #f :return return)))))))
+           (list (clone <info> info :return return)))))))
 
 (define ((append-trace trace) info)
   (clone <info> info :trace (append trace (.trace info))))
@@ -328,7 +328,7 @@
             (clone <info> info :state (var! (.state info) identifier (.return info))))
           infos)))
       (($ <call> function ('arguments arguments ...))
-       (let* ((info (clone <info> info (cons ast trace))))
+       (let* ((info (clone <info> info+ast :ast #f)))
          (eval-function-expression model trigger info)))
       (($ <variable> identifier type expression)
        (let* ((info info+ast)
