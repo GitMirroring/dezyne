@@ -270,8 +270,8 @@
                                 (let* ((foo (stderr "TYPED[~a]: ~a\n" trigger (om:typed? model trigger)))
                                        (info
                                         (if (om:typed? model trigger)
-                                            (next-reply model info (.port trigger))
-                                            (next-return model info (.port trigger))))
+                                            (next-reply model info trigger)
+                                            (next-return model info trigger)))
                                        (reply (->symbol (.reply info)))
                                        (info (clone <info> info :reply 'return))
                                        (trace (.trace info))
@@ -519,24 +519,31 @@
               (set-source-property! return 'port (.name (om:port model))))
           (clone <info> info :trail (cdr (.trail info)) :reply reply)))))
 
-(define (next-return model info port)
+(define (next-return model info trigger)
   "eat a 'RETURN or PORT.'RETURN from trail, or error"
   (stderr "next-return[~a]: ~a\n" (.name model) (.trail info))
-  (let* ((trail (.trail info))
+  (let* ((port (.port trigger))
+         (trail (.trail info))
          (info (skip-trail model info port))
-         (return (make <trigger> :port port :event 'return)))
+         (event (.event trigger))
+         (return (make <trigger> :port port :event 'return))
+         (port (if (member event '(inevitable optional)) event port))
+         (reply (make <trigger> :port port :event 'return)))
     (if (null? (.trail info))
-        (clone <info> info :reply return) ;; FIMXE: no trail -->OKAY
+        (clone <info> info :reply reply) ;; FIMXE: no trail -->OKAY
         (let ((next (symbol->trigger (car (.trail info)))))
-          (if (equal? next return)
-              (clone <info> info :trail (cdr trail) :reply return)
-              (and (stderr "REJECT-TRACE: RETURN[~a expect:~a] next: ~a\n" (.name model) return next)
-                   (clone <info> info :reply #f :error #t)))))))
+          (cond ((equal? next return)
+                 (clone <info> info :trail (cdr trail) :reply reply))
+                ((member event '(inevitable optional))
+                 (clone <info> info :reply reply))
+                (else (and (stderr "REJECT-TRACE: RETURN[~a expect:~a] next: ~a\n" (.name model) return next)
+                           (clone <info> info :reply #f :error #t))))))))
 
-(define (next-reply model info port)
+(define (next-reply model info trigger)
   "eat a 'RETURN or PORT.'RETURN from trail, or error"
   (stderr "next-reply[~a]: ~a\n" (.name model) (.reply info))
-  (let* ((info (skip-trail model info port))
+  (let* ((port (.port trigger))
+         (info (skip-trail model info port))
          (trail (.trail info)))
     (if (null? trail)
         info
