@@ -12,6 +12,11 @@
 *** add to triangle traces? code traces?  user input?
 ** nice to have: eligible events
 
+./gaiag -l run -t '(console.arm sensor.enable sensor.return console.return sensor.triggered console.detected siren.turnon siren.return console.disarm sensor.disable sensor.return siren.turnoff siren.return console.return sensor.disabled console.deactivated)' examples/Alarm.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
+
+
+
 ./gaiag -l run -t '(p.e r.e r.f r.return p.return)' ../test/regression/modeling.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
 
 

@@ -57,24 +57,15 @@ TRACE='init error return stop ok return recover error return recover ok return w
 echo running $TRACE
 diff -u <(echo trace:$TRACE|tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/NonDet.dzn | grep ^trace: | tr , '\n')
 
-# TRACE='init error return stop ok return recover error return recover ok return work return ok work return stop return ok'
-# echo running $TRACE
-# diff -u <(echo trace:$TRACE|tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/NonDet.dzn | grep ^trace: | tr , '\n')
-
-#TODO: 
-#TRACE='echo init ok return work return ok return'
-#diff -u <(echo trace:$TRACE|tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/NonDet.dzn | grep ^trace: | tr , '\n')
-
-#TRACE='init error return stop ok return recover error return recover ok return work return ok return work return stop return ok return'
-#echo running $TRACE
-#diff -u <(echo trace:$TRACE|tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/NonDet.dzn | grep ^trace: | tr , '\n')
-
-
 TRACE='console.arm sensor.enable sensor.return console.return console.disarm sensor.disable sensor.return console.return sensor.disabled console.deactivated'
 echo running $TRACE
 diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/Alarm.dzn | grep ^trace: | tr , '\n')
 
 TRACE='console.arm sensor.enable sensor.return console.return sensor.triggered console.detected siren.turnon siren.return console.disarm sensor.disable sensor.return siren.turnoff siren.return console.return sensor.disabled console.deactivated'
+echo running $TRACE
+diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/Alarm.dzn | grep ^trace: | tr , '\n')
+
+TRACE='console.arm sensor.enable sensor.return console.return console.arm illegal'
 echo running $TRACE
 diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/Alarm.dzn | grep ^trace: | tr , '\n')
 

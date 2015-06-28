@@ -252,7 +252,7 @@
                             (infos (map
                                     (lambda (i-info)
                                       (let ((i-info (set-state i-info interface (.state i-info))))
-                                        (clone <info> o-info :state-alist (.state-alist i-info))))
+                                        (clone <info> o-info :state-alist (.state-alist i-info) :error (.error i-info))))
                                     i-infos))
                             (infos (apply append
                                           (map (lambda (info)
@@ -332,7 +332,7 @@
                                        (return (car (.trace i-info)))
                                        (i-info (set-state i-info interface (.state i-info))))
                                   (set-source-property! return 'port port)
-                                  (clone <info> info :trail (.trail i-info) :ast #f :state-alist (.state-alist i-info) :trace (append (cons ast trace) (reverse (.trace i-info))))))
+                                  (clone <info> info :trail (.trail i-info) :ast #f :state-alist (.state-alist i-info) :trace (append (cons ast trace) (reverse (.trace i-info))) :error (.error info))))
                               i-infos))
                     (i-infos (filter trace? i-infos)))
                (stderr "FIXME: trigger???: ~a\n" trigger)
@@ -393,7 +393,8 @@
                    (loop (cdr statements) loop-infos))))))
       (('compound statements ...)
        (let loop ((statements statements) (loop-info info+ast) (frame 0))
-         (if (null? statements)
+         (if (or (null? statements)
+                 (.error loop-info))
              (list (clone <info> loop-info :ast '() :state (drop (.state loop-info) frame)))
              (let ((statement (car statements)))
                (let* ((state (if (is-a? statement <variable>)
