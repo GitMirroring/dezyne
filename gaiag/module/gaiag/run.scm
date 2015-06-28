@@ -48,7 +48,7 @@
            ->symbol
            run:om))
 
-(define MAX-ITERATIONS 10000)
+(define MAX-ITERATIONS 100000)
 (define (debug . x) #t)
 ;;(define debug stderr)
 
