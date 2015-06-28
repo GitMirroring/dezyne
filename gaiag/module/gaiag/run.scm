@@ -232,7 +232,7 @@
       (($ <on> ('triggers triggers ...) statement)
        (if (find trigger-matches? triggers)
            (let* ((port (.port trigger))
-                  (o-info (clone <info> info :ast statement :trace '()))
+                  (o-info (clone <info> info :ast statement :trace (list '(foobar not empty))))
                   (infos
                    (if (and (is-a? model <component>)
                             (eq? (.name (om:port model)) port))

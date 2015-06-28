@@ -18,6 +18,8 @@ ctrl.calibrate robot.calibrate robot.return inspector.calibrate inspector.return
 
 ./gaiag -l run -t '(port.e)' ../test/regression/External.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
 
+./gaiag -l run -t '(p.e)' ../test/regression/combinedon.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
 
 
 # FIXME: wrong non-det choice
