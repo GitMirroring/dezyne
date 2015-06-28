@@ -23,6 +23,10 @@
 
 #! /bin/bash
 
+TRACE='arm'
+echo running $TRACE
+dzn run --gaiag -t <(echo $TRACE) regression/IConsole.dzn | grep ^trace: | sed 's/trace:/  => /'
+
 TRACE='console.arm'
 echo running $TRACE
 dzn run --gaiag -t <(echo $TRACE) regression/Alarm.dzn | grep ^trace: | sed 's/trace:/  => /'

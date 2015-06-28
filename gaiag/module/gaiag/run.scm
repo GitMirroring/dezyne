@@ -109,7 +109,7 @@
       (stderr "trail: <-- ~a\n" (.trail info))
       (if (or (null? (.trail info))
               (.error info))
-          (list trace)
+          (list (append trace (list (eligible model info))))
           (let* ((info (next-info model info))
                  (trail (.trail info)))
             (let* ((infos (run-trigger model info))
@@ -407,6 +407,20 @@
       (($ <reply> expression)
        (let* ((reply (eval-expression model state expression)))
          (list (clone <info> info+ast :reply reply)))))))
+
+(define (eligible model info)
+  (cons
+   'eligible
+   (if (.error info)
+       '()
+       (filter identity
+               (map
+                (lambda (trigger)
+                  (let* ((infos (run-trigger model (clone <info> info :trail (list (->symbol trigger)))))
+                         (infos (prune infos))
+                         (infos (filter error? infos)))
+                    (and (pair? infos) trigger)))
+                (om:find-triggers model))))))
 
 (define (mangle-traces model traces)
   (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))

@@ -104,13 +104,20 @@
       (stderr "JSON: ~a\n" (if (pair? trace) (car trace)))
       (cond
        ((null? trace) (list (alist->hash-table '())))
+       ((eq? (ast-name (car trace)) 'eligible)
+        (let ((eligible (cdar trace)))
+          (cons
+           (alist->hash-table
+            `((type . eligible)
+              (events . ,(map ->symbol eligible))))
+           (loop (cdr trace) trigger state trail))))
        ((eq? (ast-name (car trace)) 'state)
         (let ((state (car trace)))
          (cons
           (alist->hash-table
            `((type . state)
              (state . ,(state->json state))))
-          (loop (cdr trace) trigger state trail))))
+          (loop (cdr trace) trigger state trail))))       
        ((eq? (caar trace) 'trail)
         (let ((trail (car trace)))
           (cons
