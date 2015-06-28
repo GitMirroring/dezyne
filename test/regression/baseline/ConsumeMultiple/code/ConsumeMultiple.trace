@@ -1,0 +1,9 @@
+<external>..ntfA -> sut.src.ntfA
+src.ack
+src.return
+<external>..ntfB -> sut.src.ntfB
+src.done
+src.return
+<external>..ntfA -> sut.src.ntfA
+src.done
+src.return

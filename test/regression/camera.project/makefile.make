@@ -23,6 +23,8 @@
 # Hardware.o is missing
 #LANGUAGES:=$(ALL_LANGUAGES)
 LANGUAGES:=$(PSEUDO_LANGUAGES)
+#Camera is a system, cannot run
+LANGUAGES:=$(filter-out run,$(LANGUAGES))
 # lock is a keyword
 LANGUAGES:=$(filter-out cs,$(LANGUAGES))
 SUT:=Camera
