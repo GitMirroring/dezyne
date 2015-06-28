@@ -5,7 +5,10 @@
 ** verify that trace (STATE AST AST AST .. STATE AST AST) etc has all state updates
 ** move <info>'s model :state into <info>'s state-alist (that now only holds states for a component's ports) and rename again to STATE
 ** Q esp: flushing, tracing interface
-** optional/inevitable!?
+** handle recursion
+** modelling: optional/inevitable
+*** synthesize DONE(?!)
+**** upon synthesize: assert that inevitable did fire(?)...HELP Rutger/Paul?
 *** add to triangle traces? code traces?  user input?
 ** nice to have: eligible events
 
@@ -25,6 +28,11 @@
 
 # non-matching traces
 ./gaiag -l run -t '(i.done u.what u.Status_Ok i.Status_No foo bar)' examples/regression/Reply.dzn 2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
+# synthesize modelling
+./gaiag -l run -t '(e a return b)' examples/ioptional.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
+./gaiag -l run -t '(e a return b)' examples/iinevitable.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
 
 
 
