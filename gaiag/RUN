@@ -27,6 +27,11 @@ ctrl.calibrate robot.calibrate robot.return inspector.calibrate inspector.return
 ./gaiag -l run -t '(i.e i.f i.f i.f i.return)' ../test/regression/argument2.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
 
 
+./gaiag -l run -t '(r.a p.a r.a p.a)' ../test/regression/incomplete_with_modeling_event.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
+
+
+
 
 
 

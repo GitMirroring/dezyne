@@ -274,7 +274,7 @@
                   (infos (prune infos))
                   (infos (if (and (is-a? model <component>)
                                   (not (eq? port (.name (om:port model)))))
-                             (map (cons-trace ast) infos)
+                             (map (append-trace (cons trigger (list ast))) infos)
                              (map
                               (lambda (info count)
                                 (let* ((foo (stderr "TYPED[~a]: ~a\n" trigger (om:typed? model trigger)))
