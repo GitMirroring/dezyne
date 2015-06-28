@@ -120,7 +120,7 @@
                (lambda (info)
                  (loop info (append trace (.trace info) (list (cons 'trail (.trail info)))))) infos)))))))
 
-(define* (run-trigger model info :optional (reverse identity))
+(define* (run-trigger model info :optional (reverse identity) (active? #f))
   (define (run-trigger-from-trail info)
     (let* ((info (next-trigger model info))
            (trigger (.reply info))
@@ -132,7 +132,8 @@
   (let* ((ast ((compose .statement .behaviour) model))
          (info (clone <info> info :ast ast)))
     (let* ((trigger (symbol->trigger (car (.trail info))))
-           (infos (if (is-a? model <component>)
+           (infos (if (or (is-a? model <component>)
+                          active?)
                       (run-trigger-from-trail info)
                       (let* ((inevitable (prune (run model (make <trigger> :event 'inevitable) info)))
                              (optional (prune (run model (make <trigger> :event 'optional) info)))
