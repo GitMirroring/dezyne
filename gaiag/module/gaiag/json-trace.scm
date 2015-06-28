@@ -135,6 +135,7 @@
                            (($ <action>) (->symbol (.trigger statement)))
                            (($ <illegal>) 'illegal)
                            (($ <literal> scope type field) (symbol-append scope '. type '_ field))
+                           (($ <return> ($ <expression>)) #f)
                            (($ <return> #f)
                             (let ((port (source-property statement 'port)))
                               (if port

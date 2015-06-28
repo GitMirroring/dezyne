@@ -20,6 +20,14 @@ ctrl.calibrate robot.calibrate robot.return inspector.calibrate inspector.return
 
 ./gaiag -l run -t '(p.e)' ../test/regression/combinedon.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
 
+./gaiag -l run -t '(p.foo r.foo r.E_A p.E_A)' ../test/regression/Reply7.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
+./gaiag -l run -t '(i.done u.what u.Status_Ok u.what u.Status_Nok i.Status_No)' ../test/regression/Reply4.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
+./gaiag -l run -t '(i.e i.f i.f i.f i.return)' ../test/regression/argument2.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
+
+
 
 
 # FIXME: wrong non-det choice
