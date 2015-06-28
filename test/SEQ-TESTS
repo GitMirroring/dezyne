@@ -1,0 +1,84 @@
+Administrate test added to test/ framework.
+
+Test framework currently runs on one model in a file: first component,
+or else first interface:
+
+   ISensor.dzn: ISensor.trace 
+   Alarm.dzn: Alarm.trace, Alarm.trace.2, Alarm.trace.3
+
+This means that tests for multiple models in one file, files must be
+split or copied, or adding can be skipped (postponed).
+
+x: added
+s: skipped
+
+x PASSED Test case [IConsole.dzn, IConsole, Console.net]
+x PASSED Test case [Alarm.dzn, Alarm, Alarm_Impl.net]
+x PASSED Test case [Alarm.dzn, Alarm, AlarmHappyFlow.net]
+x PASSED Test case [ISensor.dzn, ISensor, Sensor.net]
+x PASSED Test case [alarmsystem.dzn, Siren, Siren.net]
+x PASSED Test case [alarmsystem.dzn, Siren, SirenError.net]
+x PASSED Test case [alarmsystem.dzn, Sensor, SensorEmpty.net]
+
+s PASSED Test case [alarmsystem.dzn, Alarm, AlarmEmpty.net]
+
+x PASSED Test case [non-deterministic.dzn, NonDet, non-deterministic.net]
+x PASSED Test case [non-deterministic2.dzn, NonDet, non-deterministic2MultiMatch.net]
+
+x PASSED Test case [webdemo.dzn, Alarm_Impl, webdemo.net]
+# look lots like from Reply..Reply7  skip for now
+PASSED Test case [reply_event.dzn, I, IntfValuedInEvent.net]
+PASSED test case [reply_event.dzn, IIf, IntfIfStatement.net]
+PASSED test case [reply_event.dzn, IVar, IntfLocalVariable.net]
+PASSED test case [reply_event.dzn, C3, CompValuedEvents.net]
+PASSED test case [reply_event.dzn, CValuedActionAssign, CompValuedAction.net]
+
+PASSED Test case [functioncall.dzn, IFunctionCall, functioncall.interface.net]
+PASSED Test case [functioncall.dzn, IFunctionCallArgs, functioncall.interfaceargs.net]
+PASSED test case [functioncall.dzn, IFunctionCallNest, functioncall.interfacenest.net]
+PASSED Test case [functioncall.dzn, IFunctionCallAssignment, functioncall.interfaceassign.net]
+PASSED Test case [functioncall.dzn, IFunctionCallVarDecl, functioncall.interfacevardecl.net]
+PASSED Test case [invalidvalue.dzn, TestInt, invalidvalue.net]
+
+PASSED test case [queuedTauTriggeredOutEvent.dzn, CConsumeMulti, TauEmitOutEvent.net]
+PASSED Test case [queuedCallTriggeredOutEvent.dzn, CComp, CallTriggeredCallTriggeredOutEvent.net]
+PASSED test case [queuedCallTriggeredOutEvent.dzn, CComp, TauTriggeredCallTriggeredOutEvent.net]
+PASSED Test case [choice.dzn, Choice, choice.net]
+PASSED Test case [choice2.dzn, Choice, choice2.net]
+PASSED Test case [dataVariables.dzn, DataVariables, dataVariables.net]
+PASSED Test case [incomplete.dzn, Incomplete, incomplete.net]
+PASSED Test case [BurglarAlarm.dzn, AlarmConsole, BurglarAlarm.net]
+PASSED Test case [synchronous_livelock.dzn, Synchronous_Livelock, synchronous_livelock.net]
+PASSED test case [NonDetHiddenTransition.dzn, NonDetHiddenTransition,
+NonDetHiddenTransition.net]
+PASSED test case [MultipleOutEventsOnSingleTau.dzn, MultipleOutEventsOnSingleTau, MultipleOutEventsOnSingleTau.net]
+PASSED test case [MultipleOutEventsOnSingleTau.dzn, IMultipleOutEventsOnSingleTau, IMultipleOutEventsOnSingleTau.net]
+PASSED test case [TauEmitMultiOut.dzn, CConsumeMulti, TauEmitMultipleOut.net]
+PASSED Test case [OutEventSetReply.dzn, OutEventSetReply, OutEventSetReply.net]
+PASSED Test case [ignoreNotification.dzn, C, ignoreNotification.net]
+PASSED test case [errorModels/ComplianceErrors/ExecuteWithoutCommunicate.dzn, Able, ExecuteWithoutCommunicate.net]
+PASSED test case [errorModels/ComplianceErrors/IllegalAsynchronousOutEvent.dzn, IllegalAsynchronousOutEvent, IllegalAsynchronousOutEvent.net]
+PASSED Test case [errorModels/ComplianceErrors/IllegalInEvent.dzn, IllegalIn, IllegalInEvent.net]
+PASSED test case [errorModels/ComplianceErrors/IllegalReturnValue.dzn, IllegalReturnValue, IllegalReturnValue.net]
+PASSED test case [errorModels/ComplianceErrors/IllegalSynchronousOutEvent.dzn, IllegalOutEvent, IllegalOutEvent.net]
+PASSED test case [errorModels/ComplianceErrors/RefusedAsynchronousOutEvent.dzn, RefusedAsynchronousOut, RefusedAsynchronousOut.net]
+PASSED test case [errorModels/ComplianceErrors/RefusedAsynchronousOutEvent.dzn,
+RefusedAsynchronousOut2, RefusedAsynchronousOut2.net]
+PASSED test case [errorModels/ComplianceErrors/RefusedAsynchronousOutEvent.dzn,
+RefusedAsynchronousOut3, RefusedAsynchronousOut3.net]
+PASSED test case [errorModels/ComplianceErrors/RefusedInEvent.dzn, RefusedInEvent, RefusedInEvent.net]
+PASSED test case [errorModels/ComplianceErrors/RefusedInevitableOutEvent.dzn, RefusedInevitableOut, RefusedInevitableOut.net]
+PASSED test case [errorModels/ComplianceErrors/RefusedInevitableOutEvent.dzn,
+RefusedInevitableOut2, RefusedInevitableOut2.net]
+PASSED test case [errorModels/ComplianceErrors/RefusedMultipleOutEvents.dzn, Factory, RefusedMultipleOutEvents.net]
+PASSED test case [errorModels/ComplianceErrors/RefusedReturnValue.dzn, RefusedReturnValue, RefusedReturnValue.net]
+PASSED test case [errorModels/ComplianceErrors/RefusedSynchronousOutEvent.dzn,
+RefusedOut, RefusedSynchronousOutEvent.net]
+PASSED test case [errorModels/IllegalErrors/DeepIllegal.dzn, DeepIllegalInternal, DeepIllegalInternal.net]
+PASSED test case [errorModels/IllegalErrors/DeepIllegal.dzn, DeepIllegalOut,
+DeepIllegalOut.net]
+PASSED test case [errorModels/IllegalErrors/IllegalProvidedIn.dzn, IllegalRequiredIn_compliance, IllegalProvidedIn_compliance.net]
+PASSED Test case [errorModels/IllegalErrors/IllegalProvidedIn.dzn, IllegalRequiredIn_deadlock, IllegalProvidedIn_deadlock.net]
+PASSED Test case [errorModels/IllegalErrors/IllegalRequiredInput.dzn, IllegalRequiredOut, IllegalRequiredInput.net]
+PASSED test case [errorModels/IllegalErrors/IllegalRequiredOutput.dzn, IllegalRequiredOut, IllegalRequiredOutput.net]
+PASSED test case [errorModels/LivelockErrors/LivelockInifiniteRecursion.dzn, ListConsumer, LivelockInifiniteRecursion.net]

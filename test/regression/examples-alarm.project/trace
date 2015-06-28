@@ -1,5 +1,10 @@
 console.arm
+sensor.enable
+sensor.return
+console.return
 console.disarm
+sensor.disable
+sensor.return
+console.return
 console.arm
-sensor.triggered
-console.disarm
+illegal
