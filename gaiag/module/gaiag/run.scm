@@ -54,16 +54,20 @@
 
 (define (ast-> ast)
   (let ((name (and=> (option-ref (parse-opts (command-line)) 'model #f)
-                     string->symbol)))
+                     string->symbol))
+        (json? (option-ref (parse-opts (command-line)) 'json #f)))
     (or (and-let* ((om ((om:register run:om) ast #t))
                    (models (filter (lambda (x) (or (is-a? x <interface>)
                                                    (is-a? x <component>)))
                                    (.elements om)))
                    (models (null-is-#f (filter .behaviour models)))
                    (models (if name (filter (om:named name) models) models))
-                   (c-i (append (filter (is? <component>) models) models)))
+                   (c-i (append (filter (is? <component>) models) models))
+                   ((pair? c-i)))
                   (run-top (car c-i)))
-        "")))
+        (if json?
+            '()
+            ""))))
 
 (define (run:import name)
   (om:import name run:om))
