@@ -84,10 +84,7 @@
          (traces (if trail
                      (walk-trail model (with-input-from-string trail read))
                      (explore-space model)))
-         ;;(foo (stderr "RESULT:\n"))
-         ;;(foo (pretty-print trace (current-error-port)))
-         (trace (if (pair? traces) (car traces) '()))
-         )
+         (trace (if (pair? traces) (car traces) '())))
     (pretty-print (mangle-traces model traces)))
   (newline)
   (stderr "state space: ~a\n" (length *state-space*))
@@ -103,29 +100,24 @@
   (set! *state-space* '(()))
   (set! i 0)
   (let* ((info (make <info> :trail trail :state (state-vector model))))
-    (let loop ((info info) (trace '()))
+    (let loop ((info info) (trace '() ;;(list (cons 'trail trail))
+                            ))
       (stderr "trail: <-- ~a\n" (.trail info))
-      ;;(stderr "TRACE: ~a\n\n\n" (map trace-location (.trace info)) (current-error-port))
-      (let* ((info (next-info model info))
-             (trail (.trail info)))
-        (if (null? trail)
-            trace
+      (if (or (null? (.trail info))
+              (.error info))
+          trace
+          (let* ((info (next-info model info))
+                 (trail (.trail info)))
             (let* ((info (next-trigger model info))
                    (trigger (.reply info))
                    (info (clone <info> info :reply 'return));; FIXME reset
                    (infos (run-trigger model trigger info))
-                   (infos (if (null? (prune infos)) (list (clone <info> info :trail '())) infos))
-                   ;;(foo (stderr "TRACES: ~a\n" (length infos)))
+                   (infos (prune infos))
                    (infos (sort-infos infos))
-                   (infos (delete-duplicates infos equal?))
-                   ;;(foo (stderr "UNIQUE: ~a\n" (length infos)))
-                   (foo (map
-                            (lambda (info count)
-                              (stderr "R ~a:\n" count)
-                              (map trace-location (.trace (car infos))) (current-error-port))
-                            infos (iota (length infos)))))
-               (append-map (lambda (info) (loop info (list (append trace (.trace info))))) infos)
-              ))))))
+                   (infos (delete-duplicates infos equal?)))
+              (append-map
+               (lambda (info)
+                 (loop info (list (append trace (.trace info) (list (cons 'trail (.trail info))))))) infos)))))))
 
 (define* (run-trigger model trigger info :optional (reverse identity))
   (stderr "run-trigger[~a ~a] " (.name model) (state->string (.state info)))
@@ -388,7 +380,9 @@
           (json-state model (state-vector model)))
          (let ((trace (if (null? traces) '() (car traces)))) ;; FIXME JSON
            (json-trace model trace)))
-        (map demo-trace traces (iota (length traces))))))
+        (if (null? traces)
+            (stderr "ERROR: no matching trace\n")
+            (map demo-trace traces (iota (length traces)))))))
 
 (define (trace-location ast)
   (or (and-let* ((loc (source-location ast))
@@ -402,7 +396,7 @@
 (define <state> 'state)
 (define (demo-trace trace count)
   (stderr "\n\nRESULT: ~a\n" count)
-  ;;(pretty-print trace (current-error-port))
+  (pretty-print trace (current-error-port))
   (pretty-print (map demo-tracepoint trace) (current-error-port))
   (stderr "END RESULT[~a]\n" count))
 

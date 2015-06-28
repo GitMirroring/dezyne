@@ -100,14 +100,26 @@
 
 (define (json-trace model trace)
   (let ((name (.name model)))
-    (let loop ((trace trace) (trigger (make <trigger>)) (state (state-vector model)))
+    (let loop ((trace trace) (trigger (make <trigger>)) (state (state-vector model)) (trail '()))
       (stderr "JSON: ~a\n" (if (pair? trace) (car trace)))
       (cond
        ((null? trace) (list (alist->hash-table '())))
        ((eq? (ast-name (car trace)) 'state)
-        (loop (cdr trace) trigger (cadr trace)))
+        (let ((state (car trace)))
+         (cons
+          (alist->hash-table
+           `((type . state)
+             (state . ,(state->json state))))
+          (loop (cdr trace) trigger state trail))))
+       ((eq? (caar trace) 'trail)
+        (let ((trail (car trace)))
+          (cons
+           (alist->hash-table
+            `((type . trail)
+              (trail . ,trail)))
+           (loop (cdr trace) trigger state trail))))
        ((is-a? (car trace) <trigger>)
-        (loop (cdr trace) (car trace) state))
+        (loop (cdr trace) (car trace) state trail))
        (else
         (let* ((statement (car trace))
                (type (and=> statement ast-name))
@@ -121,6 +133,7 @@
                          (match statement
                            (($ <on> ('triggers t h ...)) (->symbol t))
                            (($ <action>) (->symbol (.trigger statement)))
+                           (($ <literal> scope type field) (symbol-append scope '. type '_ field))
                            (($ <return> #f)
                             (let ((port (source-property statement 'port)))
                               (if port
@@ -144,7 +157,6 @@
                                        )
                                   (symbol-append (source-property statement 'port) '. value)
                                   value)))
-                           (($ <literal> scope type field) (symbol-append scope '. type '_ field))
                            (_ #f))))
                    `((type . step)
                      (type . ,type)
@@ -153,5 +165,6 @@
                      (to . ,(to model statement))
                      (event . ,event)
                      (state . ,(state->json state))
+                     (trail . ,trail)
                      (location . ,location))))))
-          (cons message (loop (cdr trace) trigger state))))))))
+          (cons message (loop (cdr trace) trigger state trail))))))))

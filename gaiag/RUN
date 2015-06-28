@@ -12,46 +12,46 @@
 ** nice to have: eligible events
 
 
-./gaiag -l simulate -t '(arm)' -m IConsole ../test/regression/Alarm.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+./gaiag -l run -t '(arm)' -m IConsole ../test/regression/Alarm.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
 
-./gaiag -l simulate -t '(console.arm)' ../test/regression/alarm.project/Alarm.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+./gaiag -l run -t '(console.arm)' ../test/regression/alarm.project/Alarm.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
 
-./gaiag -l simulate -t '(init)' ../test/regression/NonDet.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+./gaiag -l run -t '(init)' ../test/regression/NonDet.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
 
-./gaiag -l simulate -t '(init error return)' ../test/regression/NonDet.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+./gaiag -l run -t '(init error return)' ../test/regression/NonDet.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
 
-./gaiag -l simulate -t '(init error return stop ok return)' ../test/regression/NonDet.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+./gaiag -l run -t '(init error return stop ok return)' ../test/regression/NonDet.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
 
 
 # henk: needs inevitable+return
 #OK
-./gaiag -l simulate -t '(init error return stop ok return recover error return recover ok return work return inevitable ok return work return stop return inevitable ok return)' ../test/regression/NonDet.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+./gaiag -l run -t '(init error return stop ok return recover error return recover ok return work return inevitable ok return work return stop return inevitable ok return)' ../test/regression/NonDet.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
 
 
 #OK
-./gaiag -l simulate -t '(console.arm sensor.enable sensor.return console.return)' examples/Alarm.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+./gaiag -l run -t '(console.arm sensor.enable sensor.return console.return)' examples/Alarm.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
 
 #OK
-./gaiag -l simulate -t '(console.arm sensor.enable sensor.return console.return sensor.triggered console.detected siren.turnon siren.return)' examples/Alarm.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+./gaiag -l run -t '(console.arm sensor.enable sensor.return console.return sensor.triggered console.detected siren.turnon siren.return)' examples/Alarm.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
 
-./gaiag -l simulate -t '(console.arm sensor.enable sensor.return console.return sensor.triggered console.detected siren.turnon siren.return sensor.return console.disarm sensor.disable sensor.return siren.turnoff siren.return console.return)' examples/Alarm.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+./gaiag -l run -t '(console.arm sensor.enable sensor.return console.return sensor.triggered console.detected siren.turnon siren.return sensor.return console.disarm sensor.disable sensor.return siren.turnoff siren.return console.return)' examples/Alarm.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
 
-./gaiag -l simulate -t '(console.arm sensor.enable sensor.return console.return console.disarm sensor.disable sensor.return console.return sensor.disabled console.deactivated)' examples/Alarm.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
-
-
-./gaiag -l simulate -t '(console.arm sensor.enable sensor.return console.return sensor.triggered console.detected siren.turnon siren.return console.disarm sensor.disable sensor.return siren.turnoff siren.return console.return sensor.disabled console.deactivated)' examples/Alarm.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+./gaiag -l run -t '(console.arm sensor.enable sensor.return console.return console.disarm sensor.disable sensor.return console.return sensor.disabled console.deactivated)' examples/Alarm.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
 
 
-./gaiag -l simulate -t '(i.done)' examples/regression/Reply.dzn 2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
-
-./gaiag -l simulate -t '(i.done u.what u.Status_Ok i.Status_Yes)' examples/regression/Reply.dzn 2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+./gaiag -l run -t '(console.arm sensor.enable sensor.return console.return sensor.triggered console.detected siren.turnon siren.return console.disarm sensor.disable sensor.return siren.turnoff siren.return console.return sensor.disabled console.deactivated)' examples/Alarm.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
 
 
+./gaiag -l run -t '(i.done)' examples/regression/Reply.dzn 2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
+./gaiag -l run -t '(i.done u.what u.Status_Ok i.Status_Yes)' examples/regression/Reply.dzn 2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
 
 
-./gaiag -l simulate -t '(ctrl.calibrate ctrl.return)' ../test/regression/Handle.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
+
+./gaiag -l run -t '(ctrl.calibrate ctrl.return)' ../test/regression/Handle.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
 
 dzn run -m nd -t <(echo p.e,p.a,p.return,p.e,p.a,p.return) examples/nd.dzn
 
-./gaiag -l simulate -t '(p.e p.a p.return p.e p.a p.return)' examples/nd.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+./gaiag -l run -t '(p.e p.a p.return p.e p.a p.return)' examples/nd.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
 
