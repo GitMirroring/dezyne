@@ -259,10 +259,9 @@
                                        (trace (.trace info))
                                        (return (rsp ast (make <return> :expression reply)))
                                        (x (set-source-property! return 'port (.port trigger)))
-                                       (trace (if (or (null? trace)
-                                                      (.error info))
-                                                  trace
-                                                  (append (cons ast trace) (list return)))))
+                                       (trace (cond ((null? trace) trace)
+                                                    ((.error info) (cons ast trace))
+                                                    (else (append (cons ast trace) (list return))))))
                                   ((set-trace trace) info)))
                               infos (iota (length infos))))))
              infos)
