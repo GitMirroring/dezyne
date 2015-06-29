@@ -292,17 +292,26 @@
                                            (map (lambda (info)
                                                   (run model trigger info))
                                                 infos)))
-                             (infos (map (lambda (info)
-                                           (let loop ((i info))
-                                             (debug "q: ~a\n" (.q info))
-                                             (if (not (peeq i))
-                                                 i
-                                                 (begin
-                                                   (stderr "flushing: ~a\n" (peeq i))
-                                                   ;; TODO: run trigger
-                                                   (loop (deq i)))
-                                                 )))
-                                         infos))
+
+                             (infos (append-map
+                                     (lambda (info)
+                                       (let loop ((info info))
+                                         (stderr "q: ~a\n" (.q info))
+                                         (stderr "q info: ~a\n" info)
+                                         (if (not (peeq info))
+                                             ;;infos
+                                             (list info)
+                                            (let* ((debug (stderr "flushing: ~a\n" (peeq info)))
+                                                   (trigger (peeq info))
+                                                   (info (deq info))
+                                                   (port (.port trigger))
+                                                   (interface (run:import (.type (om:port model port))))
+                                                   (i-state (get-state o-info interface))
+                                                   (i-info (clone <info> info :trail (cons (->symbol trigger) (.trail info)) :state i-state :trace '()))
+                                                   (infos (run-trigger interface i-info reverse #t))
+                                                   (infos (prune infos)))
+                                              (append-map (lambda (info) (loop info)) infos)))))
+                                     infos))
                              (foobar-infos (map (lambda (info)
                                                   (let* ((reply (.reply info))
                                                          (return (rsp ast (make <return> :expression reply))))
