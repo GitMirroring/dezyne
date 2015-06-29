@@ -105,7 +105,9 @@
 (define* (run-trail model :optional (next-info next-info-space-explorer) (trail '()))
   (set! *state-space* '(()))
   (set! i 0)
-  (let* ((info (make <info> :trail trail :state (state-vector model))))
+  (let* ((ports (if (is-a? model <interface>) '() ((compose .elements .ports) model)))
+         (state-alist (map (lambda (port) (cons (.name port) (state-vector (run:import (.type port))))) ports))
+         (info (make <info> :trail trail :state (state-vector model) :state-alist state-alist)))
     (let loop ((info info) (trace '() ;;(list (cons 'trail trail))
                             ))
       (stderr "trail: <-- ~a\n" (.trail info))
@@ -271,13 +273,13 @@
                              )
                         (let*
                             ((interface (run:import (.type (om:port model port))))
-                             (i-state (get-state o-info interface))
+                             (i-state (get-state o-info port))
                              (i-info (clone <info> o-info :trail (cons (->symbol trigger) (.trail o-info)) :state i-state :trace '()))
                              (i-infos (run-trigger interface i-info reverse))
                              (i-infos (prune i-infos))
                              (infos (map
                                      (lambda (i-info)
-                                       (let ((i-info (set-state i-info interface (.state i-info))))
+                                       (let ((i-info (set-state i-info port (.state i-info))))
                                          ;; huh?
                                          ;; (clone <info> o-info :state-alist (.state-alist i-info) :trace (.trace i-info) :error (.error i-info)) ;; vroegah
                                          ;; (clone <info> info :trail (.trail i-info) :ast #f :state-alist (.state-alist i-info) :trace (append (cons ast trace) (reverse (.trace i-info))) :error (.error info)) ;; action
@@ -373,7 +375,7 @@
                    ;;(not (eq? a-port (.name (om:port model))))
                    )
               (let* ((interface (run:import (.type (om:port model a-port))))
-                     (i-state (get-state info interface))
+                     (i-state (get-state info a-port))
                      (trail (.trail o-info))
                      (i-trail (if (pair? trail) (cdr trail) '()))
                      (i-info (clone <info> o-info :trail (cons (->symbol a-trigger) i-trail) :state i-state :trace '()))
@@ -391,7 +393,7 @@
                                                         (not (member (.event a-trigger) triggers)))
                                                     (make <return> :expression #f) return))
                                         (i-trace (cons return (cdr (.trace i-info))))
-                                        (i-info (set-state i-info interface (.state i-info))))
+                                        (i-info (set-state i-info port (.state i-info))))
                                    (clone <info> info :trail (.trail i-info) :ast #f :state-alist (.state-alist i-info) :trace (append (cons ast trace) (reverse i-trace)) :error (.error info))))
                                i-infos))
                      (i-infos (filter trace? i-infos)))
@@ -720,12 +722,11 @@
   (lambda (model info)
     info))
 
-(define (get-state info o)
-  (or (assoc-ref (.state-alist info) (.name o))
-      (state-vector o)))
+(define (get-state info name)
+  (assoc-ref (.state-alist info) name))
 
-(define (set-state info o state)
-  (clone <info> info :state-alist (assoc-set! (.state-alist info) (.name o) state)))
+(define (set-state info name state)
+  (clone <info> info :state-alist (assoc-set! (.state-alist info) name state)))
 
 (define (state->string state)
   (comma-space-join (map (lambda (s) (->string (list (car s) "=" (cdr s)))) state)))
