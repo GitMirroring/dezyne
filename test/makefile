@@ -1,5 +1,6 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 # Copyright © 2015 Henk Katerberg <henk.katerberg@yahoo.com>
 #
 # This file is part of Dezyne.
@@ -29,7 +30,7 @@ SHELL:=/bin/bash
 DZN:=../webapp/client/dzn
 OUT:=out
 CCACHE:=$(shell type -p ccache)
-TRIANGLE_MAX:=cat # use 'head -30' to limit number of traces
+TRIANGLE_MAX:=head -30 # use 'cat' for unlimitted number of traces
 VERBOSE:=
 
 CODE_LANGUAGES=c c++ c++03 cs goops java javascript python
