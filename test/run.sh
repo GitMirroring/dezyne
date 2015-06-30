@@ -77,3 +77,12 @@ TRACE='i.done u.what u.Status_Ok i.Status_No foo bar baz'
 RESULT='i.done u.what u.Status_Ok Invalid event: i.Status_No'
 echo running $TRACE
 diff -u <(echo trace:$RESULT | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/Reply.dzn | grep -E '^(trace|Invalid event):' | tr '[, ]' '[\n\n]')
+
+TRACE='p.e r.e r.a r.return p.a p.return'
+echo running $TRACE
+diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/q.dzn | grep ^trace: | tr , '\n')
+
+TRACE='ctrl.hcalibrate robot.tcalibrate robot.tcalibrated robot.return ctrl.return'
+diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/h.dzn | grep ^trace: | tr , '\n')
+
+## ../webapp/client/dzn --debug run -g -t <(echo ctrl.hcalibrate robot.tcalibrate robot.tcalibrated robot.return ctrl.return) regression/h.dzn

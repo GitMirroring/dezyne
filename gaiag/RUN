@@ -10,6 +10,38 @@
 ** verify that trace (STATE AST AST AST .. STATE AST AST) etc has all state updates
 ** move <info>'s model :state into <info>'s state-alist (that now only holds states for a component's ports) and rename again to STATE
 
+ctrl.hcalibrate robot.tcalibrate robot.tcalibrated robot.return ctrl.return
+
+
+
+
+## 
+./gaiag -l run -t '(ctrl.hcalibrate robot.tcalibrate robot.tcalibrated robot.return ctrl.return)' examples/h.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
+
+
+
+
+# werkt met robot hack
+./gaiag -l run -t '(ctrl.calibrate robot.calibrate robot.calibrated robot.return ctrl.return)' examples/h.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
+./gaiag -l run -t '(ctrl.calibrate robot.calibrate robot.calibrated robot.return inspector.calibrate inspector.calibrated inspector.return feedPort.calibrate feedPort.calibrated feedPort.return ctrl.calibrated ctrl.return)' ../test/regression/Handle.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
+
+
+
+
+
+# triangle: only ctrl.calibrate
+./gaiag -l run -t '(ctrl.calibrate robot.calibrate robot.return inspector.calibrate inspector.return feedPort.calibrate feedPort.return ctrl.return ctrl.calibrate ctrl.return)' ../test/regression/Handle.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
+
+
+
+# with Q robot hack: okay-ish
+./gaiag -l run -t '(ctrl.calibrate robot.calibrate robot.calibrated robot.return ctrl.return)' ../test/regression/Handle.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
+
 ./gaiag -l run -t '(p.e r.e r.Status_Ok p.Status_Ok p.e r.e r.Status_Nok p.Status_Nok p.e r.e r.Status_Nok p.Status_Nok)' examples/V.dzn 2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - -e 's/\(p.e /p.e\n/' | tr -d '"'
 
 
