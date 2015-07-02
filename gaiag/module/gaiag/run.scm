@@ -222,9 +222,7 @@
               (infos (prune infos)))
          infos))
       (($ <action> action)
-       (map (lambda (info)
-              (clone info :return (.reply info)))
-            ((run model trigger) info)))
+       (map (modify-field :return .reply) ((run model trigger) info)))
       (_ (let ((return (eval-expression model (.state info) expression)))
            (list (clone info :return return)))))))
 
@@ -236,6 +234,8 @@
   (clone info :trace (cons trace (.trace info))))
 (define ((modify-trace modify) info)
   (clone info :trace (modify (.trace info))))
+(define ((modify-field field modify) info)
+  (clone info field (modify info)))
 (define ((set-fields . args) info)
   (apply clone (cons info args)))
 (define (trace? info) (null-is-#f (.trace info)))
@@ -297,11 +297,10 @@
                                (infos (if (pair? i-infos) i-infos
                                           ;; if no interface trace succeeds
                                           ;; clear error for component trace
-                                          (map (lambda (info) (clone info :error #f)) infos)))
+                                          (map (set-fields :error #f) infos)))
                                (infos (append-map (run model trigger) infos))
                                (infos (if (pair? i-infos) infos
-                                          ;; set error
-                                          (map (lambda (info) (clone info :error #t)) infos))))
+                                          (map (set-fields :error #t) infos))))
                           (append-map (flush model ast) infos))))
                    (infos (prune infos))
                    (infos (map (handle-return model trigger ast) infos)))
@@ -351,24 +350,17 @@
            infos)))
        (($ <assign> identifier expression)
         (let* ((info info+ast)
-               (infos (eval-function-expression model trigger (clone info :ast expression))))
-          (map
-           (lambda (info)
-             (debug "ASSIGN ~a = ~a => ~a\n" identifier expression (.return info))
-             (clone info :state (var! (.state info) identifier (.return info))))
-           infos)))
+               (infos (eval-function-expression model trigger (clone info :ast expression)))
+               (set-var (lambda (info) (var! (.state info) identifier (.return info)))))
+          (map (modify-field :state set-var) infos)))
        (($ <call> function ('arguments arguments ...))
         (eval-function-expression model trigger info))
-       ;; FIXME
        (($ <variable> identifier type expression)
         (stderr "VAR: trail: ~a\n" (.trail info))
         (let* ((info info+ast)
-               (infos (eval-function-expression model trigger (clone info :ast expression))))
-          (map
-           (lambda (info)
-             (stderr "VAR ~a = ~a => ~a\n" identifier expression (.return info))
-             (clone info :state (var! (.state info) identifier (.return info))))
-           infos)))
+               (infos (eval-function-expression model trigger (clone info :ast expression)))
+               (set-var (lambda (info) (var! (.state info) identifier (.return info)))))
+          (map (modify-field :state set-var) infos)))
        (($ <if> expression then #f)
         (let ((info info+ast)
               (value (eval-expression model state expression)))
@@ -398,8 +390,7 @@
                      (infos ((run model trigger) info))
                      (infos (prune infos)))
                 (if (pair? infos)
-                    (apply append
-                           (map (lambda (info) (loop (cdr statements) (cons info loop-infos))) infos))
+                    (append-map (lambda (info) (loop (cdr statements) (cons info loop-infos))) infos)
                     (loop (cdr statements) loop-infos))))))
        (('compound statements ...)
         (let loop ((statements statements) (loop-info info+ast) (frame 0))
@@ -417,7 +408,7 @@
                        (infos ((run model trigger) info))
                        (infos (prune infos))
                        (infos (map (append-trace (.trace loop-info)) infos)))
-                  (apply append (map (lambda (info) (loop (cdr statements) info frame)) infos)))))))
+                  (append-map (lambda (info) (loop (cdr statements) info frame)) infos))))))
        (($ <return> expression)
         (let ((return (eval-expression model state expression)))
           (debug "EVAL RET: ~a\n" return)
@@ -471,13 +462,9 @@
                (infos (run-trigger model info))
                (infos (prune infos))
                (return (rsp ast (make <return> :expression (symbol-append port '.return))))
-               (infos (map
-                       (lambda (info)
-                         ((set-trace
-                           (append (.trace component-info) (.trace info) (list return)))
-                          info))
-                       infos)))
-          (append-map (lambda (info) (loop info)) infos)))))
+               (complete-trace (lambda (t) (append (.trace component-info) t (list return))))
+               (infos (map (modify-trace complete-trace) infos)))
+          (append-map loop infos)))))
 
 (define ((handle-return model trigger ast) info)
   (let* ((port (.port trigger))
