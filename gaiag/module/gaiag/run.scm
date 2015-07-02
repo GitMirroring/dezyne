@@ -112,13 +112,15 @@
   (let* ((ports (if (is-a? model <interface>) '() ((compose .elements .ports) model)))
          (state-alist (map (lambda (port) (cons (.name port) (state-vector (run:import (.type port))))) ports))
          (info (make <info> :trail trail :state (state-vector model) :state-alist state-alist)))
-    (let loop ((info info) (trace '() ;;(list (cons 'trail trail))
-                            ))
+    (let loop ((info info) (trace '()))
       (stderr "trail: <-- ~a\n" (.trail info))
       (print-state model info)
       (if (or (null? (.trail info))
               (.error info))
-          (list (append trace (list (eligible model info))))
+          (let ((eligible (list (eligible model info)))
+                (error (if (not (.error info)) '()
+                           (list (cons 'error (.trail info))))))
+            (list (append trace error eligible)))
           (let* ((info (next-info model info))
                  (trail (.trail info)))
             (let* ((infos (run-trigger model info identity #t))
@@ -133,7 +135,8 @@
                        (for-each (lambda (s) (stderr "      [~a]: ~a\n" (car s) (state->string (cdr s)))) (.state-alist info))))
               (append-map
                (lambda (info)
-                 (loop info (append trace (.trace info) (list (cons 'trail (.trail info)))))) infos)))))))
+                 (let ((trail (list (cons 'trail (.trail info)))))
+                  (loop info (append trace (.trace info) trail)))) infos)))))))
 
 (define (print-state model info)
   (stderr "state[~a]: ~a\n" (.name model) (state->string (.state info)))
@@ -498,18 +501,22 @@
               ((set-trace (append (.trace info) (list return))) info))))))
 
 (define (eligible model info)
-  (cons
-   'eligible
-   (if (.error info)
-       '()
-       (filter identity
-               (map
-                (lambda (trigger)
-                  (let* ((infos (run-trigger model (clone info :trail (list (->symbol trigger)))))
-                         (infos (prune infos))
-                         (infos (filter no-error? infos)))
-                    (and (pair? infos) trigger)))
-                (om:find-triggers model))))))
+  (set! next-trail-empty next-trail-empty-allow)
+  (let ((eligible
+         (cons
+          'eligible
+          (if (.error info)
+              '()
+              (filter identity
+                      (map
+                       (lambda (trigger)
+                         (let* ((infos (run-trigger model (clone info :trail (list (->symbol trigger)))))
+                                (infos (prune infos))
+                                (infos (filter no-error? infos)))
+                           (and (pair? infos) (->symbol trigger))))
+                       (om:find-triggers model)))))))
+    (set! next-trail-empty next-trail-empty-reject)
+    eligible))
 
 (define (mangle-traces model traces)
   (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))
@@ -612,9 +619,7 @@
   (let ((trail (.trail info)))
     (stderr "next-action[~a ~a]: ~a\n" (.name model) action trail)
     (cond
-     ((null? trail)
-      (stderr "REJECT-TRACE: ACTION[~a expect:~a]: next:~a\n" (.name model) action '())
-      (clone info :error #t))
+     ((null? trail) (next-trail-empty model info 'action (->symbol action)))
      ((and *component* (modeling? trigger)) info)
      (else
       (let* ((next (symbol->trigger (car trail))))
@@ -714,9 +719,11 @@
           (stderr "SETTING reply: ~a\n" reply)
           (clone info :trail (cdr (.trail info)) :reply reply)))))
 
-(define (next-trail-empty model info name o)
+(define (next-trail-empty-reject model info name o)
   (stderr "REJECT-TRACE ~a[~a]: ~a NULL\n" (.name model) name o)
   (clone info :error #t))
+(define (next-trail-empty-allow model info name o) info)
+(define next-trail-empty next-trail-empty-reject)
 
 (define (symbol->literal model literal)
   (let* ((port-value (symbol-split literal #\.))
