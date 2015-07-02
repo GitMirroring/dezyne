@@ -468,12 +468,12 @@
        (i-infos (filter trace? i-infos)))
     (map
      (lambda (i-info)
-       (let* ((info (clone component-info :reply (.reply i-info) :trace (append trace (reverse (.trace i-info))) :error (.error i-info)))
-              (info (set-state info port (.state i-info))))
-         (debug "run-interface[~a, ~a]\n" port (->symbol trigger))
-         (debug-state model info)
-         info))
-     i-infos)))
+       (let* ((reply (.reply i-info))
+              (info (clone component-info
+                           :reply (make <literal> :scope scope :type (.type reply) :field (.field reply))
+                           :trace (append trace (reverse (.trace i-info))) :error (.error i-info))))
+         (set-state info port (.state i-info))))
+    i-infos)))
 
 (define ((flush model ast) component-info)
   (let loop ((info component-info))
