@@ -48,7 +48,7 @@
            ->symbol
            run:om))
 
-(define MAX-ITERATIONS 100000)
+(define MAX-ITERATIONS 200000)
 (define (debug . x) #t)
 (define (pretty-debug . x) #t)
 (define (debug-state . x) #t)
