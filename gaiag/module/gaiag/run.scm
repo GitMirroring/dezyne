@@ -488,11 +488,7 @@
                 (if (om:typed? model trigger)
                     (next-reply model info trigger)
                     (next-return model info trigger)))
-               ;; FIXME...[k]ugh
-               (return (->symbol
-                        (if (om:typed? model trigger)
-                            (.return info)   ;; Yes this is
-                            (.reply info)))) ;; swapped, will fix
+               (return (->symbol (.return info)))
                (return (rsp ast (make <return> :expression return))))
           (if (or (.error info)
                   (and (.port trigger) (is-a? model <interface>)))
@@ -645,7 +641,6 @@
                       (eq? (.event next) (.event action)))
                  (clone info :trail (cdr trail)))
                 ((and (is-a? model <component>)
-                      ;;(not (om:typed? model next))
                       (not (om:typed? model action))
                       (not (eq? (.direction (om:port model port)) 'provides))
                       (not (eq? (.event next) 'return)))
@@ -653,15 +648,6 @@
                 (else
                  (stderr "REJECT-TRACE: QUEUE[~a expect:~a]: next:~a\n" (.name model) "??" next)
                  (clone info :error #t)))))))
-
-;; :return - general return value field
-;;         - port-based name for output trail
-;;         - set by next-reply, because we need to set return??
-;;
-;; :reply  - a literal: i.e. not port based
-;;         - result of <action>
-;;         - result of <on>
-;;         - result of next-reply
 
 (define (next-reply model info trigger)
   "eat a 'RETURN or PORT.'RETURN from trail, or error"
@@ -671,51 +657,16 @@
          (trail (.trail info)))
     (if (null? trail)
         (next-trail-empty model info 'reply (->symbol trigger))
-        (let* ((return (.reply info))
-               (reply (.reply info))
-               
+        (let* ((reply (.reply info))
                (next (symbol->literal model (car trail)))
-               ;;(port (and (is-a? model <component>) (.scope return)))
                (port (and (is-a? model <component>) (.scope next)))
-
-               ;; FIXME
-               (port (.scope next))
                (scope (and port (is-a? model <component>) (.type (om:port model port))))
-
-
-               ;; FIXME
-               (compare-return (if (not scope) return
-                                   (make <literal> :scope scope :type (.type return) :field (.field return))))
-
-               ;; FIXME
-               (return compare-return)
-
-               ;; FIXME
-               (compare-next (if (is-a? model <interface>)
-                                 (make <literal> :type (.type next) :field (.field next))
-                                 (make <literal> :scope scope :type (.type next) :field (.field next))))
-               
-               ;;;;;(reply (make <literal> :scope scope :type (.type return) :field (.field return)))
-               )
-          (stderr "XXXXXXXX: next:   ~a ==> compare-next:   ~a\n" (->symbol next) (->symbol compare-next))
-          (stderr "XXXXXXXX: return: ~a ==> compare-return: ~a\n" (->symbol return) (->symbol compare-return))
-          (stderr "XXXXXXXX: reply:  ~a\n" (->symbol reply))
-
-          (stderr "COMPONENT: ~a\n" (and (is-a? model <component>) 'YES))
-
-          (stderr "NEXT-REPLY: ==>: ~a\n" reply)
-          (stderr "NEXT-REPLY-RETURN: ==>: ~a\n" next)
-
-          (if (and (is-a? model <interface>) (.scope reply)) barf-scoped-reply)
-          (if (and (is-a? model <component>) (eq? (car trail) 'u.what)) barf-xxx)
-          (if (equal? compare-next compare-return)
-              (clone info :trail (cdr trail) :return next :reply compare-return
-                     
-                     )
+               (reply (make <literal> :scope scope :type (.type reply) :field (.field reply)))
+               (next-reply (make <literal> :scope scope :type (.type next) :field (.field next))))
+          (if (equal? next-reply reply)
+              (clone info :trail (cdr trail) :return next :reply reply)
               (and
-               (stderr "REJECT-TRACE: REPLY[~a expect:~a]: next:~a\n" (.name model) return compare-next)
-               ;;barfme
-               ;;(if (eq? (car trail) 'u.what) barf)
+               (stderr "REJECT-TRACE: REPLY[~a expect:~a]: next:~a\n" (.name model) reply next-reply)
                (stderr "trace: ~a\n" (map trace-location (.trace info)))
                (clone info :error #t)))))))
 
@@ -727,19 +678,19 @@
         (let* ((port (.port trigger))
                (trail (.trail info))
                (port (and (is-a? model <component>) (.port trigger)))
-               (reply (make <trigger> :port port :event 'return))
+               (return (make <trigger> :port port :event 'return))
                (port (.port trigger))
                (port (if (member event '(inevitable optional)) event port))
-               (return (make <trigger> :port port :event 'return)))
+               (reply (make <trigger> :port port :event 'return)))
           (stderr "next-return: trigger: ~a\n" (->symbol trigger))
           (if (null? trail)
               (next-trail-empty model info 'return (->symbol trigger))
               (let ((next (symbol->trigger (car trail))))
-                (cond ((or (equal? next return)
-                           (and (not (.port return))
-                                (eq? (.event next) (.event return))))
-                       (clone info :trail (cdr trail) :reply reply))
-                      (else (and (stderr "REJECT-TRACE: RETURN[~a expect:~a] next: ~a\n" (.name model) return next)
+                (cond ((or (equal? next reply)
+                           (and (not (.port reply))
+                                (eq? (.event next) (.event reply))))
+                       (clone info :trail (cdr trail) :return return))
+                      (else (and (stderr "REJECT-TRACE: RETURN[~a expect:~a] next: ~a\n" (.name model) reply next)
                                  (stderr "trail: ~a\n" (.trail info))
                                  (clone info :reply #f :error #t))))))))))
 
