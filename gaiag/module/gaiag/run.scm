@@ -465,8 +465,7 @@
        (i-info (clone i-info :trail (cons (->symbol trigger) (.trail i-info))))
        (i-infos (run-trigger interface i-info reverse))
        (i-infos (prune i-infos))
-       (i-infos (filter trace? i-infos))
-       (i-infos (if (pair? i-infos) (list (car i-infos)) '())))
+       (i-infos (filter trace? i-infos)))
     (map
      (lambda (i-info)
        (let* ((info (clone component-info :reply (.reply i-info) :trace (append trace (reverse (.trace i-info))) :error (.error i-info)))
