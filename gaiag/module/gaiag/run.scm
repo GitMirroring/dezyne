@@ -261,7 +261,7 @@
 (define ((modify-trace modify) info)
   (clone <info> info :trace (modify (.trace info))))
 (define (trace? info) (null-is-#f (.trace info)))
-(define (error? info) (not (.error info)))
+(define (no-error? info) (not (.error info)))
 (define (prune infos) (filter trace? infos))
 
 (define (sort-infos infos)
@@ -283,7 +283,7 @@
                              ;;optimist<                             
                              )))
     (if (and (pair? infos) (not (.error (car infos))))
-        (filter error? infos)
+        (filter no-error? infos)
         infos)))
 
 (define ((run model trigger) info)
@@ -315,10 +315,33 @@
                     (if (is-a? model <interface>)
                         ((run model trigger) on-info)
                         (let* ((infos (run-interface model trigger on-info))
-                               ;;(foo (stderr "ON 0[~a, ~a]: ~a trail: ~a\n" (.name model) (->symbol trigger) (length infos) (and (pair? infos) (.trail (car infos)))))
-                               (infos (append-map (run model trigger) infos)))
+                               (foo (stderr "...continue component run[~a, ~a]: ~a ~a trail: ~a\n" (.name model) (->symbol trigger) (ast-name ast) (length infos) (and (pair? infos) (.trail (car infos)))))
+
+                               ;;; FIXME, huh?
+                               (foo (stderr "INFO AST\n"))
+                               (foo (pretty-print (.ast (car infos)) (current-error-port)))
+                               (i-infos (filter no-error? infos))
+                               (foo (stderr "i-infos: ~a\n" (length i-infos)))
+                               (foo (stderr "infos: ~a\n" (length infos)))
+                               (foo (stderr "ERROR: ~a\n" (.error (car infos))))
+                               (foo (stderr "INFO: ~a\n" (car infos)))
+                               (infos (if (pair? i-infos) i-infos
+                                          ;; if no interface trace succeeds
+                                          ;; clear error for component trace
+                                          (let ()
+                                            (stderr "CLEARING ERROR BITS\n")
+                                           (map (lambda (info) (clone <info> info :error #f)) infos))))
+                               ;;;(on-infos (map (lambda (info) (clone <info> info :ast statement)) infos))
+                               (infos (append-map (run model trigger) infos))
+                               (infos (if (pair? i-infos) infos
+                                          ;; set error
+                                          (map (lambda (info) (clone <info> info :error #t)) infos))))
                           (append-map (flush model ast) infos))))
                    (infos (prune infos))
+                   (foo (stderr "end of on, about to return[~a]\n" (.name model)))
+                   (foo (pretty-print ast (current-error-port)))
+                   (foo (stderr "INFO AST:\n"))
+                   (foo (pretty-print ast (current-error-port)))
                    (infos (map (handle-return model trigger ast) infos)))
               (map
                (lambda (info)
@@ -420,7 +443,8 @@
        (('compound statements ...)
         (let loop ((statements statements) (loop-info info+ast) (frame 0))
           (if (or (null? statements)
-                  (.error loop-info))
+                  (and (.error loop-info)
+                       (stderr "COMPOUND[~a]: BAIL ERROR\n" (.name model))))
               (list (clone <info> loop-info :ast '() :state (drop (.state loop-info) frame)))
               (let ((statement (car statements)))
                 (let* ((state (if (is-a? statement <variable>)
@@ -531,7 +555,7 @@
                 (lambda (trigger)
                   (let* ((infos (run-trigger model (clone <info> info :trail (list (->symbol trigger)))))
                          (infos (prune infos))
-                         (infos (filter error? infos)))
+                         (infos (filter no-error? infos)))
                     (and (pair? infos) trigger)))
                 (om:find-triggers model))))))
 
@@ -729,6 +753,7 @@
           (stderr "NEXT-REPLY-RETURN: ==>: ~a\n" next)
 
           (if (and (is-a? model <interface>) (.scope reply)) barf-scoped-reply)
+          (if (and (is-a? model <component>) (eq? (car trail) 'u.what)) barf-xxx)
           (if (equal? compare-next compare-return)
               (clone <info> info :trail (cdr trail) :return next :reply compare-return
                      
