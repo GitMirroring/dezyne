@@ -22,7 +22,7 @@
 
 
 ** eligible events: grok modeling events/out events, returns, reply values
-** error trace reporting (console.foo), (console.arm sensor.foo) etc
+** ?? error trace reporting (console.foo), (console.arm sensor.foo) etc
 ** verify that trace (STATE AST AST AST .. STATE AST AST) etc has all state updates
 ** move <info>'s model :state into <info>'s state-alist (that now only holds states for a component's ports) and rename again to STATE
 

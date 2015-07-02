@@ -541,7 +541,8 @@
                             (.reply info)))) ;; swapped, will fix
                (foo (stderr "REPLY[~a, ~a]: ~a\n" (.name model) (->symbol trigger) return))
                (return (rsp ast (make <return> :expression return))))
-          (if (and (.port trigger) (is-a? model <interface>))
+          (if (or (.error info)
+                  (and (.port trigger) (is-a? model <interface>)))
               ((set-trace (.trace info)) info)
               ((set-trace (append (.trace info) (list return))) info))))))
 
