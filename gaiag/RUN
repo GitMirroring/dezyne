@@ -6,15 +6,22 @@
 ** handle recursion, deadlock
 
 ** BROKEN: 2 errors for now
-*** Q
 
-    ./gaiag -l run -t '(ctrl.hcalibrate robot.tcalibrate robot.tcalibrated robot.return ctrl.return)' examples/h.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+*** nondet + values:
+
+./gaiag -l run -t '(i.done u.what u.Status_Ok i.Status_Yes)' examples/Reply.dzn 2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - -e 's/\(p.e /p.e\n/' | tr -d '"'
+
+*** Q
 
 ... and (OR is this example broken?? [it works with Henk...])
 
     ./gaiag -l run -t '(p.e r.e r.a r.return p.a p.return)' ../test/regression/q.dzn 2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
 
      
+*** Weird fix (see comment in <action>) for
+
+    ./gaiag -l run -t '(ctrl.hcalibrate robot.tcalibrate robot.tcalibrated robot.return ctrl.return)' examples/h.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
 
 
 ** eligible events: grok modeling events/out events, returns, reply values
