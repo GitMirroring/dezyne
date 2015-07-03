@@ -69,7 +69,6 @@ echo running $TRACE
 diff -u <(echo trace:$TRACE|tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/NonDet3.dzn | grep ^trace: | tr , '\n')
 
 echo
-echo Non-Det broken...
 TRACE='init ok return work return ok'
 echo running $TRACE
 diff -u <(echo trace:$TRACE|tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/NonDet.dzn | grep ^trace: | tr , '\n')
@@ -99,7 +98,6 @@ echo running $TRACE
 diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/R.dzn | grep ^trace: | tr , '\n')
 
 echo
-echo Non-Det [with values]: broken...
 echo running $TRACE
 diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/Reply.dzn | grep ^trace: | tr , '\n')
 
@@ -111,13 +109,16 @@ echo running $TRACE
 diff -u <(echo trace:$RESULT | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/R.dzn | grep -E '^(trace|Invalid event):' | tr '[, ]' '[\n\n]')
 
 echo
-echo Non-Det [with values]: broken...
 echo running $TRACE
 diff -u <(echo trace:$RESULT | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/Reply.dzn | grep -E '^(trace|Invalid event):' | tr '[, ]' '[\n\n]')
 
 echo
-echo FIXME: is this Q example broken??
 TRACE='p.e r.e r.a r.return p.a p.return'
+echo running $TRACE
+diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/q.dzn | grep ^trace: | tr , '\n')
+
+echo
+TRACE='p.f r.e r.a r.return r.f r.b r.return p.a p.b p.return'
 echo running $TRACE
 diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/q.dzn | grep ^trace: | tr , '\n')
 
@@ -125,6 +126,23 @@ TRACE='ctrl.hcalibrate robot.tcalibrate robot.tcalibrated robot.return ctrl.retu
 echo
 echo running $TRACE
 diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/h.dzn | grep ^trace: | tr , '\n')
+
+echo
+TRACE='a a'
+echo running $TRACE
+diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/ir2.dzn | grep ^trace: | tr , '\n')
+
+
+echo
+TRACE='p.e p.a p.return'
+echo running $TRACE
+diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/q2.dzn | grep ^trace: | tr , '\n')
+
+echo
+TRACE='r.a'
+echo running $TRACE
+diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/q2.dzn | grep ^trace: | tr , '\n')
+
 
 ## ../webapp/client/dzn --debug run -g -t <(echo ctrl.hcalibrate robot.tcalibrate robot.tcalibrated robot.return ctrl.return) regression/h.dzn
 
