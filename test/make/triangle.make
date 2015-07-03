@@ -71,8 +71,8 @@ triangle-$(LOCAL_TARGET): LOCAL_TRACE:=$(LOCAL_TRACE)
 ifeq ($(LOCAL_LANGUAGE),run)
 triangle-$(LOCAL_TARGET): $(LOCAL_TARGET:%/triangle/test=%/$(LOCAL_LANGUAGE)/test)
 triangle-$(LOCAL_TARGET): $(TRACE0)
-	-for i in $$(ls -1 $(LOCAL_TRACE).* | sort -t. -k3 -k4 -n | $(TRIANGLE_MAX) 2>/dev/null); do\
-		set +e;\
+	for i in $$(ls -1 $(LOCAL_TRACE).* | sort -t. -k3 -k4 -n | $(TRIANGLE_MAX) 2>/dev/null); do\
+		set -e;\
 		echo trace[$(LOCAL_LANGUAGE)]: $$i;\
 		diff -wy $$i <($(DZN) run -m $(LOCAL_SUT) -t $$i $(LOCAL_DZN_TOP) | grep ^trace:| sed 's,^trace:,,' | tr ',' '\n');\
 		echo -e '\n---------------------------------------------------------------------------------';\
