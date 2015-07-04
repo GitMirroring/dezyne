@@ -50,10 +50,10 @@
 
 (define MAX-ITERATIONS 200000)
 (define (debug . x) #t)
-;;(define (debug-pretty . x) #t)
+(define (debug-pretty . x) #t)
 (define (debug-state . x) #t)
-(define debug-pretty pretty-print)
-(define debug stderr)
+;;(define debug-pretty pretty-print)
+;;(define debug stderr)
 
 (define (ast-> ast)
   (let ((name (and=> (option-ref (parse-opts (command-line)) 'model #f)
@@ -135,7 +135,7 @@
   (stderr "state[~a]: ~a\n" (.name model) (state->string (.state info)))
   (for-each (lambda (s) (stderr "  [~a]: ~a\n" (car s) (state->string (cdr s)))) (.state-alist info)))
 
-(define debug-state print-state)
+;;(define debug-state print-state)
 
 (define (modeling? trigger) (member (.event trigger) '(inevitable optional)))
 (define (i-action? model trigger)
@@ -267,6 +267,16 @@
         infos)))
 
 (define* ((run model trigger :optional (flushing? #f)) info)
+  (let* ((ast (.ast info))
+         (r ((run- model trigger flushing?) info)))
+    (and (pair? r) (eq? (ast-name r) 'info) (debug "INFO: ~a\n" r) BARF-SINGLE-INFO)
+    (debug "   ==> infos: ~a\n" (length r))
+    (debug "   ==> done[~a, ~a]: ~a (car infos): ~a\n" (.name model) (->symbol trigger) (ast-name ast) (and (pair? r) (car r)))
+    (debug "   ==> trail[~a, ~a]: ~a ~a\n" (.name model) (->symbol trigger) (ast-name ast) (and (pair? r) (.trail (car r))))
+    (debug "   ==> ") (if (pair? r) (debug-state model (car r)) '())
+    r))
+
+(define* ((run- model trigger :optional (flushing? #f)) info)
   (define (trigger-matches? t)
     (debug "MATCH?: ~a == ~a ==> ~a\n" (->symbol t) (->symbol trigger) (if (is-a? model <component>) (equal? t trigger) (eq? (.event t) (.event trigger))))
     (if (is-a? model <component>) (equal? t trigger) (eq? (.event t) (.event trigger))))
@@ -280,8 +290,6 @@
          (info+ast ((cons-trace ast) info))
          (state (.state info))
          (trace (.trace info)))
-    (let
-        ((r
           (match (.ast info)
             (#f '())
             (() (debug "NULL AST?!") '())
@@ -444,14 +452,6 @@
              (let* ((reply (eval-expression model state expression)))
                (debug "SETTING REPLY0[~a]: ~a\n" (.name model) reply)
                (list (clone info+ast :reply reply)))))))
-      (and (pair? r) (eq? (ast-name r) 'info) (stderr "INFO: ~a\n" r) BARF-SINGLE-INFO)
-      (and )
-      (debug "   ==> infos: ~a\n" (length r))
-      (debug "   ==> done[~a, ~a]: ~a (car infos): ~a\n" (.name model) (->symbol trigger) (ast-name ast) (and (pair? r) (car r)))
-      (debug "   ==> trail[~a, ~a]: ~a ~a\n" (.name model) (->symbol trigger) (ast-name ast) (and (pair? r) (.trail (car r))))
-      (debug "   ==> ") (if (pair? r) (debug-state model (car r)) '())
-      r
-      )))
 
 (define (run-interface model trigger component-info flushing?)
   (debug "run-interface[~a, ~a]\n" (.name model) (->symbol trigger))
@@ -489,8 +489,8 @@
     (set-state info port (.state i-info))))
 
 (define ((flush model ast) component-info)
-  (stderr "flush: component-info: q: ~a\n" (.q component-info))
-  (stderr "flush: component-info: trail: ~a\n" (.trail component-info))
+  (debug "flush: component-info: q: ~a\n" (.q component-info))
+  (debug "flush: component-info: trail: ~a\n" (.trail component-info))
   (let loop ((info component-info))
     (debug "q: ~a\n" (.q info))
     (debug "q info: ~a\n" info)
@@ -500,7 +500,7 @@
                (info (deq info))
                (port (.port trigger))
                (info (clone info :trail (cons (->symbol trigger) (.trail info)) :trace '()))
-               (foo (stderr "flush feeding: ~a\n" (.trail info)))
+               (foo (debug "flush feeding: ~a\n" (.trail info)))
                (info (clone info :trace '() ))
                (infos (run-trigger model info #t))
                (infos (prune infos))
