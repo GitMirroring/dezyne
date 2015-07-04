@@ -465,28 +465,26 @@
        (i-info (clone i-info :trail (cons (->symbol trigger) (.trail i-info))))
        (i-infos (run-trigger interface i-info flushing?))
        (i-infos (map (modify-trace reverse) i-infos))
-       (infos
-        (map
-         (lambda (i-info)
-           (let* ((reply (.reply i-info))
-                  (reply (make <literal> :scope scope :type (.type reply) :field (.field reply)))
-                  (trail (.trail i-info))
-                  (trail (if (null? (.q i-info)) (.trail component-info)
-                             (let ((action (peeq i-info))) ;; hmm, only one?
-                               (debug "PEEQED: ~a\n" action)
-                               (.trail (next-queue? model component-info action action)))))
-                  (q (append (.q component-info) (.q i-info)))
-                  (info (clone i-info
-                               :trail trail
-                               :ast (.ast component-info)
-                               :state (.state component-info)
-                               :q q
-                               :return (.return component-info)
-                               :reply reply
-                               :trace (append trace (reverse (.trace i-info))))))
-             (set-state info port (.state i-info))))
-         i-infos)))
+       (infos (map (transfer-interface-info model component-info trigger) i-infos)))
     infos))
+
+(define ((transfer-interface-info model component-info action) i-info)
+  (let* ((port (.port action))
+         (scope (.type (om:port model port)))
+         (trail (.trail i-info))
+         (trail (if (null? (.q i-info)) (.trail component-info)
+                    (let ((action (peeq i-info))) ;; hmm, only one?
+                      (debug "PEEQED: ~a\n" action)
+                      (.trail (next-queue? model component-info action action)))))
+         (q (append (.q component-info) (.q i-info)))
+         (reply (.reply i-info))
+         (trace (.trace component-info))         
+         (info (clone component-info
+                      :trail trail
+                      :q q
+                      :reply (make <literal> :scope scope :type (.type reply) :field (.field reply))
+                      :trace (append trace (reverse (.trace i-info))) :error (.error i-info))))
+    (set-state info port (.state i-info))))
 
 (define ((flush model ast) component-info)
   (stderr "flush: component-info: q: ~a\n" (.q component-info))
