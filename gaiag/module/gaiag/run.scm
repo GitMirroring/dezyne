@@ -348,10 +348,12 @@
                               (info ((cons-trace synth-ast) info)))
                          (list info)))
                       ((and (is-a? model <interface>)
-                            *component*
-                            (not (modeling? trigger))
-                            (member (.event action) (map .event (action-triggers model))))
-                       (list info))
+                            *component*)
+                       (let ((info
+                              (if (or (not (.port trigger))
+                                      (eq? (.direction (om:port *component* (.port trigger))) 'requires)) info
+                                      (next-action model info trigger action))))
+                         (list info)))
                       ((is-a? model <interface>)
                        (let* ((info (next-action model info trigger action))
                               (info (if (or (.port action) flushing?) info
@@ -660,7 +662,7 @@
              (debug "REJECT-TRACE: ACTION[~a expect:~a]: next:~a\n" (.name model) action next)
              ;;(map trace-location (.trace info))
              ((cons-trace
-               (list 'reject 'action (.name model) 'next next-reply 'expected action))
+               (list 'reject 'action (.name model) 'next next 'expected action))
               (clone info :error #t)))))))))
 
 (define (next-queue? model info trigger action)
@@ -739,6 +741,7 @@
                       (else (and (debug "REJECT-TRACE: RETURN[~a expect:~a] next: ~a\n" (.name model) reply next)
                                  (debug "trail: ~a\n" (.trail info))
                                  ;;(if (equal? (.trail info) '(p.a p.return)) barf)
+                                 (if (and (eq? (.name model) 'iq) (equal? (.trail info) '(p.a p.return))) barf)
                                  ;;(if (and (eq? 'q  (.name model)) (equal? (.trail info) '(r.a r.return p.a p.return))) barf)
                                  ;;(if (and (eq? 'Handle  (.name model)) (equal? (.trail info) '(robot.tcalibrated robot.return ctrl.return))) barf)
                                  
@@ -789,7 +792,9 @@
               (let ((trigger (symbol->trigger (car trail))))
                 (or (not trigger)
                     (not (.port trigger))
-                    (eq? (.port trigger) port))))
+                    (eq? (.port trigger) port)
+                    ;;(equal? trigger (make <trigger> :port port :event 'return))
+                    )))
           info
           (loop (clone info :trail (cdr trail)))))))
 
