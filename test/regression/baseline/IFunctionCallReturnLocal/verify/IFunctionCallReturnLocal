@@ -1,0 +1,5 @@
+verify: IFunctionCallReturnLocal: check: completeness: ok
+
+verify: IFunctionCallReturnLocal: check: deadlock: ok
+
+verify: IFunctionCallReturnLocal: check: livelock: ok

@@ -1,0 +1,5 @@
+verify: IDataVariables: check: completeness: ok
+
+verify: IDataVariables: check: deadlock: ok
+
+verify: IDataVariables: check: livelock: ok

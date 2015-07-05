@@ -1,0 +1,126 @@
+// Dezyne --- Dezyne command line tools
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ClientIF
+{
+  enum Result { OK, NOK };
+  in Result startAll();
+
+  behaviour 
+  {
+    enum States { All };
+    on startAll:
+    {
+      [true]
+      reply(Result.OK);
+      [true]
+      reply(Result.NOK);
+    }
+  }
+}
+interface DeviceIF
+{
+  enum Result { OK, NOK };
+  in void turnon();
+  in void turnoff();
+  out void ok();
+  out void nok();
+
+  behaviour 
+  {
+    enum State { Off, On };
+    State state = State.Off;
+    on turnon:
+    {
+      [state.Off]
+      {
+        ok;
+        state = State.On;
+      }
+      [state.Off]
+      nok;
+      [state.On]
+      illegal;
+    }
+    on turnoff:
+    {
+      [state.Off]
+      illegal;
+      [state.On]
+      state = State.Off;
+    }
+  }
+}
+component OutEventSetReply
+{
+  provides ClientIF clientIF;
+  requires DeviceIF deviceIF;
+
+  behaviour 
+  {
+    subint Count {0..5};
+    enum States { Idle, Starting, Retrying, Started };
+    States state = States.Idle;
+    Count count = 0;
+    on clientIF.startAll():
+    {
+      [state.Idle]
+      {
+        count = 0;
+        deviceIF.turnon();
+        state = States.Starting;
+      }
+      [state.Retrying || state.Starting]
+      illegal;
+    }
+    on deviceIF.ok():
+    {
+      [state.Idle]
+      illegal;
+      [state.Starting]
+      state = States.Started;
+      [state.Retrying]
+      {
+      }
+    }
+    on deviceIF.nok():
+    {
+      [state.Idle]
+      illegal;
+      [state.Starting]
+      {
+        state = States.Retrying;
+        count = count + 1;
+        deviceIF.turnon();
+      }
+      [state.Retrying]
+      if (count < 5)
+      {
+        count = count + 1;
+        deviceIF.turnon();
+      }
+      else
+      reply(ClientIF.Result.NOK);
+    }
+  }
+}
+

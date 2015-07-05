@@ -1,0 +1,5 @@
+verify: IIncomplete: check: completeness: ok
+
+verify: IIncomplete: check: deadlock: ok
+
+verify: IIncomplete: check: livelock: ok

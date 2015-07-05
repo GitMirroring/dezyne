@@ -1,0 +1,5 @@
+verify: IFunctionCallNest: check: completeness: ok
+
+verify: IFunctionCallNest: check: deadlock: ok
+
+verify: IFunctionCallNest: check: livelock: ok

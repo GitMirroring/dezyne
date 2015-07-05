@@ -1,0 +1,59 @@
+// Dezyne --- Dezyne command line tools
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface IChoice
+{
+  enum Style {State, Mixed, Event};
+  in Style choose();
+  out void ss();
+  out void sm();
+  out void se();
+  out void es();
+  out void em();
+  out void ee();
+  out void ms();
+  out void mm();
+  out void me();
+
+  behaviour
+  {
+    Style preference = Style.State;
+
+    [preference.State]
+    {
+      on choose: {preference = Style.State; ss; reply(preference);}
+      on choose: {preference = Style.Mixed; sm; reply(preference);}
+      on choose: {preference = Style.Event; se; reply(preference);}
+    }
+
+    on choose: [preference.Event] {preference = Style.State; es; reply(preference);}
+    on choose: [preference.Event] {preference = Style.Mixed; em; reply(preference);}
+    on choose: [preference.Event] {preference = Style.Event; ee; reply(preference);}
+
+    [preference.Mixed] on choose: {preference = Style.State; ms; reply(preference);}
+    on choose: 
+      {
+        [preference.Mixed] {preference = Style.Mixed; mm; reply(preference);}
+        {[preference.Mixed] {preference = Style.Event; me; reply(preference);}}
+      }
+  }
+}

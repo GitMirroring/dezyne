@@ -1,0 +1,6 @@
+verify: INotifier: check: completeness: ok
+
+verify: INotifier: check: deadlock: fail
+deadlock in model INotifier
+
+verify: INotifier: check: livelock: ok

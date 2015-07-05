@@ -1,0 +1,5 @@
+verify: IFunctionCallAssignment: check: completeness: ok
+
+verify: IFunctionCallAssignment: check: deadlock: ok
+
+verify: IFunctionCallAssignment: check: livelock: ok
