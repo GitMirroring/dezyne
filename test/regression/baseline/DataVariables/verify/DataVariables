@@ -1,0 +1,17 @@
+verify: IDataVariables: check: completeness: ok
+
+verify: IDataVariables: check: deadlock: ok
+
+verify: IDataVariables: check: livelock: ok
+
+verify: DataVariables: check: deterministic: ok
+
+verify: DataVariables: check: completeness: ok
+
+verify: DataVariables: check: illegal: ok
+
+verify: DataVariables: check: deadlock: ok
+
+verify: DataVariables: check: compliance: ok
+
+verify: DataVariables: check: livelock: ok

@@ -1,0 +1,5 @@
+verify: ClientIF: check: completeness: ok
+
+verify: ClientIF: check: deadlock: ok
+
+verify: ClientIF: check: livelock: ok

@@ -1,0 +1,6 @@
+verify: ITauEmitSingle: check: completeness: ok
+
+verify: ITauEmitSingle: check: deadlock: fail
+deadlock in model ITauEmitSingle
+
+verify: ITauEmitSingle: check: livelock: ok

@@ -1,0 +1,5 @@
+verify: IMultipleOutEventsOnSingleTau: check: completeness: ok
+
+verify: IMultipleOutEventsOnSingleTau: check: deadlock: ok
+
+verify: IMultipleOutEventsOnSingleTau: check: livelock: ok

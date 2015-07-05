@@ -1,0 +1,5 @@
+verify: IHandle: check: completeness: ok
+
+verify: IHandle: check: deadlock: ok
+
+verify: IHandle: check: livelock: ok

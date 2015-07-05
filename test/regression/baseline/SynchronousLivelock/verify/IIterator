@@ -1,0 +1,5 @@
+verify: IIterator: check: completeness: ok
+
+verify: IIterator: check: deadlock: ok
+
+verify: IIterator: check: livelock: ok

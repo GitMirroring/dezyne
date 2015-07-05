@@ -1,0 +1,5 @@
+verify: iq: check: completeness: ok
+
+verify: iq: check: deadlock: ok
+
+verify: iq: check: livelock: ok

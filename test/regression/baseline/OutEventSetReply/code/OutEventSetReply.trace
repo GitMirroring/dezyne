@@ -1,0 +1,7 @@
+<external>..startAll -> sut.clientIF.startAll
+deviceIF.turnon
+<external>..ok -> sut.deviceIF.ok
+deviceIF.return
+sut.clientIF. -> <external>..
+<external>..startAll -> sut.clientIF.startAll
+sut.clientIF. -> <external>..

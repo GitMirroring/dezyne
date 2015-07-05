@@ -1,0 +1,4 @@
+clientIF.startAll
+deviceIF.turnon
+deviceIF.ok
+deviceIF.return

@@ -1,0 +1,9 @@
+<external>..a -> sut.rpa.a
+rpa.c
+rpa.return
+<external>..d -> sut.rpa.d
+rpa.e
+rpa.return
+<external>..a -> sut.rps.a
+rps.c
+rps.return
