@@ -54,6 +54,21 @@ diff -u <(echo trace:$TRACE|tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) reg
 # diff -u <(echo trace:$TRACE|tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/NonDet.dzn | grep ^trace: | tr , '\n')
 
 echo
+TRACE='work return'
+echo running $TRACE
+diff -u <(echo trace:$TRACE|tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/NonDet3.dzn | grep ^trace: | tr , '\n')
+
+echo
+TRACE='ok'
+echo running $TRACE
+diff -u <(echo trace:$TRACE|tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/NonDet4.dzn | grep ^trace: | tr , '\n')
+
+echo
+TRACE='work return ok'
+echo running $TRACE
+diff -u <(echo trace:$TRACE|tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/NonDet3.dzn | grep ^trace: | tr , '\n')
+
+echo
 echo Non-Det broken...
 TRACE='init ok return work return ok'
 echo running $TRACE

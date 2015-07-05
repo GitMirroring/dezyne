@@ -81,12 +81,15 @@
 
 (define i 0)
 (define *state-space* '(()))
+(define *component* #f)  ;; FIXME
 
 (define (run-top model)
   (stderr "\n\n>>>running: ~a ~a {~a}\n" (ast-name model) (.name model) (map ->string (om:find-triggers model)))
   (and-let* ((((is? <component>) model))
              (interfaces (map run:import
                               (map .type ((compose .elements .ports) model))))))
+  (set! *component* ((is? <component>) model))
+  (stderr "*component* ~a\n" (and *component* (.name *component*)))
   (let* ((trail (option-ref (parse-opts (command-line)) 'trail #f))
          (traces (if trail
                      (walk-trail model (with-input-from-string trail read))
@@ -138,12 +141,15 @@
 
 ;;(define debug-state print-state)
 
-(define (modeling? model trigger)
-  (let ((event (.event trigger)))
-    (or (member event '(inevitable optional))
-        (and (is-a? model <interface>)
-             (let ((triggers (map .event (om:find-triggers model))))
-               (not (member event triggers)))))))
+(define (modeling? trigger) (member (.event trigger) '(inevitable optional)))
+(define (i-action? model trigger)
+  (and (is-a? model <interface>) ;; eh? FIXME
+       (let ((triggers (map .event (om:find-triggers model))))
+         (not (member (.event trigger) triggers)))))
+
+(define (modeling-or-action? model trigger)
+    (or (modeling? trigger)
+        (i-action? model trigger)))
 
 (define (triggers-for-action model action)
   (let* ((ons ((collect (is? <on>)) model))
@@ -158,18 +164,14 @@
     (let* ((info (next-trigger model info))
            (trigger (.return info))
            (info (clone info :return 'return)))
-      (if (not (modeling? model trigger))
+      (if (not (modeling-or-action? model trigger))
           (begin (seen! model (.state info) (.ast info) trigger)
                  ((run model trigger) info))
           
           (let ((triggers (map (lambda (e) (make <trigger> :port (.port trigger) :event e)) '(inevitable optional)))
                 (action-triggers (if top? '()
                                      (triggers-for-action model trigger))))
-
-            (stderr "MODELING: ~a\n" (map ->symbol triggers))
-            (stderr "ACTION TRIGGERS: ~a\n" (map ->symbol action-triggers))
-            
-            (if (not (member (.event trigger) '(inevitable optional)))
+            (if (not (modeling? trigger))
                 (append-map (lambda (t) ((run model t) info)) action-triggers)
 
                 ;; FIXME: if we use action from trail: `OK' as trigger
@@ -326,12 +328,22 @@
         (let* ((q-info #f)
                (infos
                 (cond ((and (is-a? model <interface>)
-                            (not (member (.event trigger) '(inevitable optional)))
+                            (.port trigger);;FIXME: NOE!
+                            (.port action);;FIXME: NOE!
+                            (not (modeling? trigger))
                             (let* ((info (next-queue? model info trigger action)))
                               (and (not (.error info))
                                    (set! q-info info))))
                        (list q-info))
-                      ((is-a? model <interface>) (list (next-action model info trigger action)))
+                      ;;;((is-a? model <interface>) (list (next-action model info trigger action)))
+                      ((is-a? model <interface>)
+                       (stderr "HIERO: port: ~a\n" (.port action))
+                       (let* ((info (next-action model info trigger action))
+                              (foo (stderr "after action: ~a\n" (.trail info)))
+                              (info (if (.port action) info
+                                        ((handle-return model action ast) info))))
+                         (stderr "after handle: ~a\n" (.trail info))
+                         (list info)))
                      ((let* ((info (next-action model info trigger action))
                              (info (next-queue? model info trigger action)))
                         (and (not (.error info))
@@ -433,7 +445,7 @@
        (interface (run:import (.type (om:port model port))))
        (i-state (get-state component-info port))
        (i-info (clone component-info :state i-state :trace '()))
-       (i-info (if (modeling? interface trigger) i-info
+       (i-info (if (modeling-or-action? interface trigger) i-info
                    (skip-trail i-info port)))
        (i-info (clone i-info :trail (cons (->symbol trigger) (.trail i-info))))
        (i-infos (run-trigger interface i-info reverse))
@@ -470,7 +482,10 @@
   (let* ((port (.port trigger))
          (interface (if (is-a? model <interface>) model
                         (run:import (.type (om:port model port))))))
-    (if (modeling? interface trigger) info
+    (stderr "TRIGGER: ~a\n" (->symbol trigger))
+    (if (or (and *component* (modeling-or-action? interface trigger))
+            (and (not *component*) (modeling-or-action? interface trigger)))
+        info
         (let* ((info
                 (if (om:typed? model trigger)
                     (next-reply model info trigger)
@@ -596,12 +611,11 @@
 (define (next-action model info trigger action)
   (let ((trail (.trail info)))
     (stderr "next-action[~a ~a]: ~a\n" (.name model) action trail)
-;;    (if (or (null? trail) (member (.event trigger) '(inevitable optional))) info
     (cond
      ((null? trail)
       (stderr "REJECT-TRACE: ACTION[~a expect:~a]: next:~a\n" (.name model) action '())
       (clone info :error #t))
-     ((member (.event trigger) '(inevitable optional)) info)
+     ((and *component* (modeling? trigger)) info)
      (else
       (let* ((next (symbol->trigger (car trail))))
            (debug "NEXT: ~a\n" next)
@@ -661,15 +675,17 @@
   "eat a 'RETURN or PORT.'RETURN from trail, or error"
   (stderr "next-return[~a]: ~a\n" (.name model) (.trail info))
   (let* ((event (.event trigger)))
-    (if (member event '(inevitable optional)) info
+    (if (modeling? trigger) info
         (let* ((port (.port trigger))
                (trail (.trail info))
                (port (and (is-a? model <component>) (.port trigger)))
                (return (make <trigger> :port port :event 'return))
                (port (.port trigger))
-               (port (if (member event '(inevitable optional)) event port))
+               (port (if (modeling? trigger) event port))
                (reply (make <trigger> :port port :event 'return)))
           (stderr "next-return: trigger: ~a\n" (->symbol trigger))
+          ;;          (if (and (pair? trail) (eq? (car trail) 'ok)) barf-OK)
+          ;; (if (equal? trail '(work return ok)) barf-work-return-ok)
           (if (null? trail)
               (next-trail-empty model info 'return (->symbol trigger))
               (let ((next (symbol->trigger (car trail))))
