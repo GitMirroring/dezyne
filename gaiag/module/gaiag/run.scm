@@ -93,6 +93,7 @@
          (traces (if trail
                      (walk-trail model (with-input-from-string trail read))
                      (explore-space model)))
+         (traces (sort-traces traces))
          (trace (if (pair? traces) (car traces) '())))
     (pretty-print (mangle-traces model traces)))
   (newline)
@@ -266,6 +267,27 @@
         (filter success? infos)
         infos)))
 
+(define (sort-traces traces)
+  (define (.error o) (assq 'error o))
+  (define (error? o) (assoc-ref o 'error))
+  (define (.trail o) (or (assq-ref o 'error) '()))
+  (define (.trace o) o)
+  (define success? (negate .error))
+  (define (pessimist< a b)
+  (cond
+     ((not (eq? (and (error? a) #t) (and (error? b) #t)))
+      (error? b))
+     ((= (length (.trail a)) (length (.trail b)))
+      (< (length (.trace a)) (length (.trace b))))
+     ((!= (length (.trail a)) (length (.trail b)))
+      (< (length (.trail a)) (length (.trail b))))
+     (else
+      (cond ((error? a) #t)
+                 ((error? b) #f)))))
+  (let* ((traces (stable-sort traces pessimist<)))
+    (if (or (null? traces) (error? (car traces))) traces
+        (filter success? traces))))
+
 (define* ((run model trigger :optional (flushing? #f)) info)
   (let* ((ast (.ast info))
          (r ((run- model trigger flushing?) info)))
@@ -337,8 +359,7 @@
                    infos)
                  '()))
             (($ <illegal>)
-             ;;(next-illegal info) ;; FIXME?
-             (list (clone info+ast :ast #f :error #t)))
+             (list (clone (next-illegal model info+ast) :error #t)))
             (($ <action> action)
              (debug "action[~a, ~a]: ~a\n" (.name model) (->symbol action) (.trail info))
              (let* ((q-info #f)
@@ -474,6 +495,8 @@
   (let* ((port (.port action))
          (scope (.type (om:port model port)))
          (trail (.trail i-info))
+         (trail (if (or (null? trail) (not (eq? (car trail) 'illegal))) trail
+                    (cdr trail)))
          (trail (if (null? (.q i-info)) (.trail component-info)
                     (let ((action (peeq i-info))) ;; hmm, only one?
                       (debug "PEEQED: ~a\n" action)
@@ -513,7 +536,9 @@
          (interface (if (is-a? model <interface>) model
                         (run:import (.type (om:port model port))))))
     (if (or (and *component* (modeling-or-action? interface trigger))
-            (and (not *component*) (modeling-or-action? interface trigger)))
+            (and (not *component*) (modeling-or-action? interface trigger))
+            ;;(and (pair? (.trace info)) (is-a? (car (.trace info)) <illegal>))
+            )
         info
         (let* ((info
                 (if (om:typed? model trigger)
@@ -665,6 +690,20 @@
                (list 'reject 'action (.name model) 'next next 'expected action))
               (clone info :error #t)))))))))
 
+(define (next-illegal model info)
+  (let* ((trail (.trail info)))
+    (debug "next-illegal[~a]: ~a\n" (.name model) trail)
+    (if (null? trail)
+        (next-trail-empty model info 'illegal 'illegal)
+        (let* ((next (car trail)))
+          (if (eq? next 'illegal)
+              (clone info :trail (cdr trail) :return next)
+              (and
+               (debug "REJECT-TRACE: ILLEGAL[~a expect:~a]: next:~a\n" (.name model) 'illegal next)
+               ((cons-trace
+                 (list 'reject 'illegal (.name model) 'next next 'expected 'illegal))
+                (clone info :error #t))))))))
+
 (define (next-queue? model info trigger action)
   (let ((trail (.trail info))
         (port (.port action))
@@ -740,10 +779,7 @@
                        (clone info :trail (cdr trail) :return return))
                       (else (and (debug "REJECT-TRACE: RETURN[~a expect:~a] next: ~a\n" (.name model) reply next)
                                  (debug "trail: ~a\n" (.trail info))
-                                 ;;(if (equal? (.trail info) '(p.a p.return)) barf)
-                                 (if (and (eq? (.name model) 'iq) (equal? (.trail info) '(p.a p.return))) barf)
-                                 ;;(if (and (eq? 'q  (.name model)) (equal? (.trail info) '(r.a r.return p.a p.return))) barf)
-                                 ;;(if (and (eq? 'Handle  (.name model)) (equal? (.trail info) '(robot.tcalibrated robot.return ctrl.return))) barf)
+                                 ;;(if (eq? (car trail) 'illegal) barf-illegal)
                                  
                                  ((cons-trace
                                    (list 'reject 'return (.name model) 'next next 'expected reply))
@@ -792,9 +828,7 @@
               (let ((trigger (symbol->trigger (car trail))))
                 (or (not trigger)
                     (not (.port trigger))
-                    (eq? (.port trigger) port)
-                    ;;(equal? trigger (make <trigger> :port port :event 'return))
-                    )))
+                    (eq? (.port trigger) port))))
           info
           (loop (clone info :trail (cdr trail)))))))
 
