@@ -88,9 +88,8 @@
 (define (var state identifier) (assoc-ref state identifier))
 
 (define (var! state identifier value)
-  (assoc-set!
-   (map (lambda (x) (if (eq? identifier (car x)) (cons (car x) (cdr x)) x)) state)
-   identifier value))
+  ;;; FIXME (map (lambda (x) (if (eq? identifier (car x)) (cons (car x) (cdr x)) x)) state)
+  (assoc-set! (copy-tree state) identifier value))
 
 (define ((var? model) identifier) (om:variable model identifier))
 
