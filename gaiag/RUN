@@ -2,6 +2,10 @@
 ** test/run.sh runs all known success and failure traces
 * TODO
 ** handle recursion, deadlock
+** BROKEN:
+
+    ./gaiag -l run -t '(pp.step listIt.getFirstElmt listIt.IsPastEnd_No listIt.getNextElmt listIt.IsPastEnd_No listIt.getNextElmt listIt.IsPastEnd_No listIt.getNextElmt listIt.IsPastEnd_No listIt.getNextElmt listIt.IsPastEnd_No listIt.getNextElmt listIt.IsPastEnd_Yes pp.return)' ../test/regression/SynchronousLivelock.dzn 2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
 ** test framework, run:
     cd test && make -k run GAIAG=true
 

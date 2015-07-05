@@ -927,6 +927,7 @@
       (((h ... t)) (->string (car src)))
       (_ ((@ (gaiag misc) ->string) src)))))
 
+(define (unspecified? x) (eq? x *unspecified*))
 (define (->symbol src)
   (match src
     (#f 'false)
@@ -946,6 +947,7 @@
     ((h . t) (->symbol (list (->symbol h) '. (->symbol t))))
     ((h . t) 'URG-CONS-BUG)
     (() 'URG-NULL-BUG)
+    ((? unspecified?) '*unspecfied*)
     ))
 
 ;; (define debug-pretty pretty-print)
