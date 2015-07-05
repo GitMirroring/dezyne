@@ -37,6 +37,10 @@ TRACE='console.arm sensor.enable sensor.return console.return'
 echo running $TRACE
 diff -u <(echo trace:$TRACE|tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/Alarm.dzn | grep ^trace: | tr , '\n')
 
+TRACE='init error return'
+echo running $TRACE
+diff -u <(echo trace:$TRACE|tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/NonDet.dzn | grep ^trace: | tr , '\n')
+
 TRACE='init error return stop ok return recover error return recover ok return work return inevitable ok return work return stop return inevitable ok return'
 echo running $TRACE
 diff -u <(echo trace:$TRACE|tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/NonDet.dzn | grep ^trace: | tr , '\n')
@@ -52,3 +56,8 @@ diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) r
 TRACE='i.done u.what u.Status_Ok i.Status_Yes'
 echo running $TRACE
 diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/Reply.dzn | grep ^trace: | tr , '\n')
+
+TRACE='i.done u.what u.Status_Ok i.Status_No foo bar baz'
+RESULT='i.done u.what u.Status_Ok Invalid event: i.Status_No'
+echo running $TRACE
+diff -u <(echo trace:$RESULT | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/Reply.dzn | grep -E '^(trace|Invalid event):' | tr '[, ]' '[\n\n]')

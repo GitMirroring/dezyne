@@ -105,7 +105,7 @@
       (stderr "trail: <-- ~a\n" (.trail info))
       (if (or (null? (.trail info))
               (.error info))
-          trace
+          (list trace)
           (let* ((info (next-info model info))
                  (trail (.trail info)))
             (let* ((info (next-trigger model info))
@@ -117,7 +117,7 @@
                    (infos (delete-duplicates infos equal?)))
               (append-map
                (lambda (info)
-                 (loop info (list (append trace (.trace info) (list (cons 'trail (.trail info))))))) infos)))))))
+                 (loop info (append trace (.trace info) (list (cons 'trail (.trail info)))))) infos)))))))
 
 (define* (run-trigger model trigger info :optional (reverse identity))
   (stderr "run-trigger[~a ~a] " (.name model) (state->string (.state info)))
