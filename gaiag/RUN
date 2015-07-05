@@ -1,16 +1,23 @@
 * STATUS
 ** test/run.sh runs all known success and failure traces
 * TODO
+** Q esp: flushing: trace interface
+** Valued action: eval-function-expression: trace interface
+** handle recursion
+** eligible events: grok modeling events/out events, returns, reply values
+** Symmetry of <on> and <action> (call + return)
 ** error trace reporting (console.foo), (console.arm sensor.foo) etc
 ** verify that trace (STATE AST AST AST .. STATE AST AST) etc has all state updates
 ** move <info>'s model :state into <info>'s state-alist (that now only holds states for a component's ports) and rename again to STATE
-** Q esp: flushing, tracing interface
-** handle recursion
-** modelling: optional/inevitable
-*** synthesize DONE(?!)
-**** upon synthesize: assert that inevitable did fire(?)...HELP Rutger/Paul?
-*** add to triangle traces? code traces?  user input?
-** nice to have: eligible events
+
+./gaiag -l run -t '(console.arm sensor.enable sensor.return console.return console.arm illegal)' ../test/regression/Alarm.dzn 2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
+
+./gaiag -l run -t '(init ok return work return ok)' ../test/regression/NonDet.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
+./gaiag -l run -t '(console.arm sensor.enable sensor.return console.return sensor.triggered console.detected siren.turnon siren.return console.disarm sensor.disable sensor.return siren.turnoff siren.return console.return sensor.disabled console.deactivated console.arm sensor.enable sensor.return console.return sensor.triggered console.detected siren.turnon siren.return)' examples/Alarm.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
+
 
 ./gaiag -l run -t '(console.arm sensor.enable sensor.return console.return sensor.triggered console.detected siren.turnon siren.return console.disarm sensor.disable sensor.return siren.turnoff siren.return console.return sensor.disabled console.deactivated)' examples/Alarm.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
 
