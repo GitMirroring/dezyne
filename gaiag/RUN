@@ -1,30 +1,12 @@
 * STATUS
 ** test/run.sh runs all known success and failure traces
 * TODO
-** refactor return/reply values
-** cleanup action-triggers/synthesized events
 ** handle recursion, deadlock
+** test framework, run:
+    cd test && make -k run GAIAG=true
 
-** BROKEN: 2 errors for now
-
-*** nondet + values:
-
-./gaiag -l run -t '(i.done u.what u.Status_Ok i.Status_Yes)' examples/Reply.dzn 2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - -e 's/\(p.e /p.e\n/' | tr -d '"'
-
-*** Q
-
-... and (OR is this example broken?? [it works with Henk...])
-
-    ./gaiag -l run -t '(p.e r.e r.a r.return p.a p.return)' ../test/regression/q.dzn 2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
-
-   ./gaiag -l run -t '(p.f r.e r.a r.return r.f r.b r.return p.a p.b p.return)' ../test/regression/q.dzn   2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
-   
-  
-*** Weird fix (see comment in <action>) for
-
-    ./gaiag -l run -t '(ctrl.hcalibrate robot.tcalibrate robot.tcalibrated robot.return ctrl.return)' examples/h.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
-
-
+** test framework, triangle:  Handle is broken from trace.9 on
+    cd test && make triangle CODE_LANGUAGES=
 
 ** eligible events: grok modeling events/out events, returns, reply values
 ** ?? error trace reporting (console.foo), (console.arm sensor.foo) etc

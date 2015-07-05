@@ -52,8 +52,6 @@
 (define (debug . x) #t)
 (define (debug-pretty . x) #t)
 (define (debug-state . x) #t)
-;;(define debug-pretty pretty-print)
-;;(define debug stderr)
 
 (define (ast-> ast)
   (let ((name (and=> (option-ref (parse-opts (command-line)) 'model #f)
@@ -136,8 +134,6 @@
   (stderr "state[~a]: ~a\n" (.name model) (state->string (.state info)))
   (for-each (lambda (s) (stderr "  [~a]: ~a\n" (car s) (state->string (cdr s)))) (.state-alist info)))
 
-;;(define debug-state print-state)
-
 (define (modeling? trigger) (member (.event trigger) '(inevitable optional)))
 (define (i-action? model trigger)
   (and (is-a? model <interface>) ;; eh? FIXME
@@ -207,6 +203,7 @@
          (expression (.ast info)))
     (match expression
       (($ <call> function ('arguments arguments ...))
+       (debug "valued call[~a, ~a]: ~a\n" (.name model) function (.trail info))
        (let* ((f (om:function model function))
               (formals (map .name ((compose .elements .formals .signature) f)))
               (statement (.statement f))
@@ -219,7 +216,9 @@
               (info ((cons-trace f) info))
               (info (clone info :ast statement :state state))
               (infos ((run model trigger) info))
-              (infos (prune infos)))
+              (infos (prune infos))
+              (drop-formals (lambda (info) (clone info :state (drop (.state info) (length formals)))))
+              (infos (map drop-formals infos)))
          infos))
       (($ <action> action)
        (map (modify-field :return .reply) ((run model trigger) info)))
@@ -310,6 +309,7 @@
                             (length *state-space*))))
   (let* ((ast (.ast info))
          (info+ast ((cons-trace ast) info))
+         (orig-states (copy-tree (.state-alist info)))
          (state (.state info))
          (trace (.trace info)))
           (match (.ast info)
@@ -329,9 +329,8 @@
                              (let* ((port (.port trigger))
                                     (infos
                                      (if (and flushing?
-                                              (eq? (.direction (om:port model port)) 'requires))
-                                         (list info)
-                                         (run-interface model trigger on-info flushing?)))
+                                              (eq? (.direction (om:port model port)) 'requires)) (list info)
+                                              (run-interface model trigger on-info flushing?)))
                                     (i-infos (filter success? infos))
                                     (infos (if (pair? i-infos) i-infos
                                                ;; if no interface trace succeeds
@@ -362,7 +361,8 @@
              (list (clone (next-illegal model info+ast) :error #t)))
             (($ <action> action)
              (debug "action[~a, ~a]: ~a\n" (.name model) (->symbol action) (.trail info))
-             (let* ((q-info #f)
+             (let* ((port (.port action))
+                    (q-info #f)
                     (infos
                      (cond
                       ((and (is-a? model <interface>)
@@ -385,13 +385,14 @@
                          (list info)))
                       ((is-a? model <interface>)
                        (let* ((info (next-action model info trigger action))
-                              (info (if (or (.port action) flushing?) info
+                              (info (if (or port flushing?) info
                                         ((handle-return model action ast) info))))
                          (list info)))
                       (else
                        (let* ((info (next-action model info trigger action))
                               (action-info (clone info :trace '()))
-                              (infos (run-interface model action action-info flushing?)))
+                              (infos (if (eq? (.direction (om:port model port)) 'provides) (list info)
+                                           (run-interface model action action-info flushing?))))
                          (if flushing? infos
                              (map (handle-return model action ast) infos)))))))
                (map
@@ -400,36 +401,36 @@
                                                (.trace info+ast)))) info))
                 infos)))
             (($ <assign> identifier expression)
-             (debug "action[~a, ~a]: ~a\n" (.name model) identifier (.trail info))
+             (debug "assign[~a, ~a]: ~a\n" (.name model) identifier (.trail info))
              (let* ((info info+ast)
                     (infos (eval-function-expression model trigger (clone info :ast expression)))
                     (set-var (lambda (info)
-                               (debug "ASSIGN[~a]: ~a := ~a\n" (.name model) identifier (.return info))
+                               (debug "  set var[~a]: ~a := ~a\n" (.name model) identifier (.return info))
                                (var! (.state info) identifier (.return info)))))
                (map (modify-field :state set-var) infos)))
             (($ <call> function ('arguments arguments ...))
+             (debug "void call[~a, ~a]: ~a\n" (.name model) function (.trail info))
              (eval-function-expression model trigger info+ast))
             (($ <variable> identifier type expression)
+             (debug "variable[~a, ~a]: ~a\n" (.name model) identifier (.trail info))
              (let* ((info info+ast)
                     (infos (eval-function-expression model trigger (clone info :ast expression)))
                     (set-var (lambda (info)
-                               (debug "VAR[~a]: ~a := ~a\n" (.name model) identifier (.return info))
+                               (debug "  set var[~a]: ~a := ~a\n" (.name model) identifier (.return info))
                                (var! (.state info) identifier (.return info)))))
                (map (modify-field :state set-var) infos)))
             (($ <if> expression then #f)
              (let ((info info+ast)
                    (value (eval-expression model state expression)))
                (debug "<if>[~a] at: ~a\n" (.name model) (trace-location ast))
-               (debug "var s: ~a\n" (var (.state info) 's))
                (debug "expr ~a ==> ~a\n" expression value)
-               (if (eval-expression model state expression)
+               (if value ;;(eval-expression model state expression)
                    ((run model trigger flushing?) (clone info :ast then))
                    (list info))))
             (($ <if> expression then else)
              (let ((info info+ast)
                    (value (eval-expression model state expression)))
                (debug "<if>[~a] at: ~a\n" (.name model) (trace-location ast))
-               (debug "var s: ~a\n" (var (.state info) 's))
                (debug "expr ~a ==> ~a\n" expression value)
                (if value ;;(eval-expression model state expression)
                    ((run model trigger flushing?) (clone info :ast then))
@@ -466,12 +467,13 @@
                             (infos (map (append-trace (.trace loop-info)) infos)))
                        (append-map (lambda (info) (loop (cdr statements) info frame)) infos))))))
             (($ <return> expression)
+             
              (let ((return (eval-expression model state expression)))
-               (debug "EVAL RET: ~a\n" return)
+               (debug "return[~a, ~a]: ~a\n" (.name model) expression (.trail info))
                (list (clone info+ast :return return))))
             (($ <reply> expression)
              (let* ((reply (eval-expression model state expression)))
-               (debug "SETTING REPLY0[~a]: ~a\n" (.name model) reply)
+               (debug "reply[~a]: ~a\n" (.name model) reply)
                (list (clone info+ast :reply reply)))))))
 
 (define (run-interface model trigger component-info flushing?)
@@ -727,7 +729,8 @@
                      (clone info :trail (cdr trail))) ;; FIXME: only one action to remove?
                  )
                 (else
-                 (debug "REJECT-TRACE: QUEUE[~a expect:~a]: next:~a\n" (.name model) "??" next)
+                 ;; asymmetry: next-* must be called if we expect it to succeed
+                 (debug "NOT-Q-ABLE: QUEUE[~a expect:~a]: next:~a\n" (.name model) "??" next)
                  (clone info :error #t)))))))
 
 (define (next-reply model info trigger)
@@ -779,8 +782,7 @@
                        (clone info :trail (cdr trail) :return return))
                       (else (and (debug "REJECT-TRACE: RETURN[~a expect:~a] next: ~a\n" (.name model) reply next)
                                  (debug "trail: ~a\n" (.trail info))
-                                 ;;(if (eq? (car trail) 'illegal) barf-illegal)
-                                 
+                                 (debug "AT: ~a\n" (trace-location (.ast info)))
                                  ((cons-trace
                                    (list 'reject 'return (.name model) 'next next 'expected reply))
                                   (clone info :reply (make <literal>) :error #t)))))))))))
@@ -945,4 +947,8 @@
     ((h . t) 'URG-CONS-BUG)
     (() 'URG-NULL-BUG)
     ))
+
+;; (define debug-pretty pretty-print)
+;; (define debug stderr)
+;; (define debug-state print-state)
 
