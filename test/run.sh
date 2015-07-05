@@ -24,10 +24,12 @@
 #! /bin/bash
 
 TRACE='arm'
+echo
 echo running $TRACE
 dzn run --gaiag -t <(echo $TRACE) regression/IConsole.dzn | grep ^trace: | sed 's/trace:/  => /'
 
 TRACE='console.arm'
+echo
 echo running $TRACE
 dzn run --gaiag -t <(echo $TRACE) regression/Alarm.dzn | grep ^trace: | sed 's/trace:/  => /'
 
@@ -38,10 +40,12 @@ dzn run --gaiag -t <(echo $TRACE) regression/NonDet.dzn | grep ^trace: | sed 's/
 echo
 
 TRACE='console.arm sensor.enable sensor.return console.return'
+echo
 echo running $TRACE
 diff -u <(echo trace:$TRACE|tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/Alarm.dzn | grep ^trace: | tr , '\n')
 
 TRACE='init error return'
+echo
 echo running $TRACE
 diff -u <(echo trace:$TRACE|tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/NonDet.dzn | grep ^trace: | tr , '\n')
 
@@ -49,6 +53,8 @@ diff -u <(echo trace:$TRACE|tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) reg
 # echo running $TRACE
 # diff -u <(echo trace:$TRACE|tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/NonDet.dzn | grep ^trace: | tr , '\n')
 
+echo
+echo Non-Det broken...
 TRACE='init ok return work return ok'
 echo running $TRACE
 diff -u <(echo trace:$TRACE|tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/NonDet.dzn | grep ^trace: | tr , '\n')
@@ -58,31 +64,53 @@ diff -u <(echo trace:$TRACE|tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) reg
 # diff -u <(echo trace:$TRACE|tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/NonDet.dzn | grep ^trace: | tr , '\n')
 
 TRACE='console.arm sensor.enable sensor.return console.return console.disarm sensor.disable sensor.return console.return sensor.disabled console.deactivated'
+echo
 echo running $TRACE
 diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/Alarm.dzn | grep ^trace: | tr , '\n')
 
 TRACE='console.arm sensor.enable sensor.return console.return sensor.triggered console.detected siren.turnon siren.return console.disarm sensor.disable sensor.return siren.turnoff siren.return console.return sensor.disabled console.deactivated'
+echo
 echo running $TRACE
 diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/Alarm.dzn | grep ^trace: | tr , '\n')
 
 TRACE='console.arm sensor.enable sensor.return console.return console.arm illegal'
+echo
 echo running $TRACE
 diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/Alarm.dzn | grep ^trace: | tr , '\n')
 
 TRACE='i.done u.what u.Status_Ok i.Status_Yes'
+echo
+echo running $TRACE
+diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/R.dzn | grep ^trace: | tr , '\n')
+
+echo
+echo Non-Det [with values]: broken...
 echo running $TRACE
 diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/Reply.dzn | grep ^trace: | tr , '\n')
 
+
 TRACE='i.done u.what u.Status_Ok i.Status_No foo bar baz'
 RESULT='i.done u.what u.Status_Ok Invalid event: i.Status_No'
+echo
+echo running $TRACE
+diff -u <(echo trace:$RESULT | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/R.dzn | grep -E '^(trace|Invalid event):' | tr '[, ]' '[\n\n]')
+
+echo
+echo Non-Det [with values]: broken...
 echo running $TRACE
 diff -u <(echo trace:$RESULT | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/Reply.dzn | grep -E '^(trace|Invalid event):' | tr '[, ]' '[\n\n]')
 
+echo
+echo FIXME: is this Q example broken??
 TRACE='p.e r.e r.a r.return p.a p.return'
 echo running $TRACE
 diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/q.dzn | grep ^trace: | tr , '\n')
 
 TRACE='ctrl.hcalibrate robot.tcalibrate robot.tcalibrated robot.return ctrl.return'
+echo
+echo running $TRACE
 diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/h.dzn | grep ^trace: | tr , '\n')
 
 ## ../webapp/client/dzn --debug run -g -t <(echo ctrl.hcalibrate robot.tcalibrate robot.tcalibrated robot.return ctrl.return) regression/h.dzn
+
+##../webapp/client/dzn --debug run --gaiag -t <(echo i.done u.what u.Status_Ok i.Status_Yes) regression/R.dzn 

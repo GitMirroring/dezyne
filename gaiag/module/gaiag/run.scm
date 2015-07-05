@@ -222,13 +222,33 @@
               (infos (prune infos)))
          infos))
       (($ <action> action)
-       (stderr "INFO0: ~a\n" info)
-       (let* ((info (next-action model info trigger action))
-              (info (next-value model info trigger action))
-              (reply (.reply info)))
-         (if (is-a? model <interface>) (list ((cons-trace expression) info))
-             (let ((info (clone <info> info :trail (cons (->symbol reply) (.trail info)) :ast expression)))
-               ((run model trigger) info)))))
+       (stderr "EX action[~a]: ~a trail: ~a\n" (.name model) (->symbol action) (.trail info))
+       (map (lambda (info)
+              (clone <info> info :return (.reply info)))
+            ((run model trigger) info)))
+      (($ <action> action)
+       (stderr "EX action[~a]: ~a trail: ~a\n" (.name model) (->symbol action) (.trail info))
+       (if (is-a? model <component>) ;;((run model trigger) (clone <info> info :trail (cons (->symbol action) (.trail info))))
+           ;;((run model trigger) info)
+;; werx0rt?
+;; -           (let ((info (next-value model info trigger action))
+;; -                 (reply (.reply info)))
+
+
+           (let* ((reply (.reply info))
+                  (x-info (next-value model info trigger action))
+                  (x-info ((cons-trace expression) x-info))
+                  (infos ((run model trigger) info)))
+             (map (lambda (info)
+                    (stderr "MY reply is: ~a\n" (.reply info))
+                    (clone <info> info :return (.reply info))) infos))
+           (let* ((info (next-action model info trigger action))
+                  (info (next-value model info trigger action))
+                  (reply (.reply info))
+                  (info (clone <info> info :return reply)))
+             (stderr "EX reply[~a]: ~a trail: ~a\n" (.name model) (->symbol reply) (.trail info))
+             (stderr "EX action[~a]: ~a trail: ~a\n" (.name model) (->symbol action) (.trail info))
+             (list ((cons-trace expression) info)))))
       (_ (let ((return (eval-expression model (.state info) expression)))
            (list (clone <info> info :return return)))))))
 
@@ -299,7 +319,6 @@
                                (infos (append-map (run model trigger) infos)))
                           (append-map (flush model ast) infos))))
                    (infos (prune infos))
-                   
                    (infos (map (handle-return model trigger ast) infos)))
               (map
                (lambda (info)
@@ -356,29 +375,31 @@
            infos)))
        (($ <call> function ('arguments arguments ...))
         (eval-function-expression model trigger info))
+       ;; FIXME
        (($ <variable> identifier type expression)
+        (stderr "VAR: trail: ~a\n" (.trail info))
         (let* ((info info+ast)
                (infos (eval-function-expression model trigger (clone <info> info :ast expression))))
           (map
            (lambda (info)
-             (debug "VAR ~a = ~a => ~a\n" identifier expression (.return info))
+             (stderr "VAR ~a = ~a => ~a\n" identifier expression (.return info))
              (clone <info> info :state (var! (.state info) identifier (.return info))))
            infos)))
        (($ <if> expression then #f)
         (let ((info info+ast)
               (value (eval-expression model state expression)))
-          (debug "<if> at: ~a\n" (trace-location ast))
-          (debug "var s: ~a\n" (var (.state info) 's))
-          (debug "expr ~a ==> ~a\n" expression value)
+          (stderr "<if>[~a] at: ~a\n" (.name model) (trace-location ast))
+          (stderr "var s: ~a\n" (var (.state info) 's))
+          (stderr "expr ~a ==> ~a\n" expression value)
           (if (eval-expression model state expression)
               ((run model trigger) (clone <info> info :ast then))
               (list info))))
        (($ <if> expression then else)
         (let ((info info+ast)
               (value (eval-expression model state expression)))
-          (debug "<if> at: ~a\n" (trace-location ast))
-          (debug "var s: ~a\n" (var (.state info) 's))
-          (debug "expr ~a ==> ~a\n" expression value)
+          (stderr "<if>[~a] at: ~a\n" (.name model) (trace-location ast))
+          (stderr "var s: ~a\n" (var (.state info) 's))
+          (stderr "expr ~a ==> ~a\n" expression value)
           (if value ;;(eval-expression model state expression)
               ((run model trigger) (clone <info> info :ast then))
               ((run model trigger) (clone <info> info :ast else)))))
@@ -417,6 +438,7 @@
           (debug "EVAL RET: ~a\n" return)
           (list (clone <info> info+ast :return return))))
        (($ <reply> expression)
+        (stderr "REPLY: ~a\n" (trace-location ast))
         (let* ((reply (eval-expression model state expression)))
           (stderr "SETTING REPLY0: ~a\n" reply)
           (list (clone <info> info+ast :reply reply)))))))
@@ -487,12 +509,14 @@
                 (if (om:typed? model trigger)
                     (next-reply model info trigger)
                     (next-return model info trigger)))
-               (reply (if (and (is-a? model <component>)
-                             (is-a? (.reply info) <literal>))
-                        (->symbol (list port '. (.reply info)))
-                        (->symbol (.reply info))))
-               (foo (stderr "REPLY[~a, ~a]: ~a\n" (.name model) (->symbol trigger) reply))
-               (return (rsp ast (make <return> :expression reply))))
+
+               ;; FIXME...[k]ugh
+               (return (->symbol
+                        (if (om:typed? model trigger)
+                            (.return info)   ;; Yes this is
+                            (.reply info)))) ;; swapped, will fix
+               (foo (stderr "REPLY[~a, ~a]: ~a\n" (.name model) (->symbol trigger) return))
+               (return (rsp ast (make <return> :expression return))))
           (if (and (.port trigger) (is-a? model <interface>))
               ((set-trace (.trace info)) info)
               ((set-trace (append (.trace info) (list return))) info))))))
@@ -642,14 +666,24 @@
           (cond ((and (is-a? model <interface>)
                       (eq? (.event next) (.event action)))
                  (clone <info> info :trail (cdr trail)))
-
                 ((and (is-a? model <component>)
+                      ;;(not (om:typed? model next))
+                      (not (om:typed? model action))
                       (not (eq? (.direction (om:port model port)) 'provides))
                       (not (eq? (.event next) 'return)))
                  (clone <info> info :trail (cdr trail) :return next))
                 (else
                  (stderr "REJECT-TRACE: QUEUE[~a expect:~a]: next:~a\n" (.name model) "??" next)
                  (clone <info> info :error #t)))))))
+
+;; :return - general return value field
+;;         - port-based name for output trail
+;;         - set by next-reply, because we need to set return??
+;;
+;; :reply  - a literal: i.e. not port based
+;;         - result of <action>
+;;         - result of <on>
+;;         - result of next-reply
 
 (define (next-reply model info trigger)
   "eat a 'RETURN or PORT.'RETURN from trail, or error"
@@ -659,13 +693,50 @@
          (trail (.trail info)))
     (if (null? trail)
         (next-trail-empty model info 'reply (->symbol trigger))
-        (let* ((reply (.reply info))
+        (let* ((return (.reply info))
+               (reply (.reply info))
+               
                (next (symbol->literal model (car trail)))
-               (next (make <literal> :scope (.scope reply) :type (.type next) :field (.field next))))
-          (if (equal? next reply)
-              (clone <info> info :trail (cdr trail))
+               ;;(port (and (is-a? model <component>) (.scope return)))
+               (port (and (is-a? model <component>) (.scope next)))
+
+               ;; FIXME
+               (port (.scope next))
+               (scope (and port (is-a? model <component>) (.type (om:port model port))))
+
+
+               ;; FIXME
+               (compare-return (if (not scope) return
+                                   (make <literal> :scope scope :type (.type return) :field (.field return))))
+
+               ;; FIXME
+               (return compare-return)
+
+               ;; FIXME
+               (compare-next (if (is-a? model <interface>)
+                                 (make <literal> :type (.type next) :field (.field next))
+                                 (make <literal> :scope scope :type (.type next) :field (.field next))))
+               
+               ;;;;;(reply (make <literal> :scope scope :type (.type return) :field (.field return)))
+               )
+          (stderr "XXXXXXXX: next:   ~a ==> compare-next:   ~a\n" (->symbol next) (->symbol compare-next))
+          (stderr "XXXXXXXX: return: ~a ==> compare-return: ~a\n" (->symbol return) (->symbol compare-return))
+          (stderr "XXXXXXXX: reply:  ~a\n" (->symbol reply))
+
+          (stderr "COMPONENT: ~a\n" (and (is-a? model <component>) 'YES))
+
+          (stderr "NEXT-REPLY: ==>: ~a\n" reply)
+          (stderr "NEXT-REPLY-RETURN: ==>: ~a\n" next)
+
+          (if (and (is-a? model <interface>) (.scope reply)) barf-scoped-reply)
+          (if (equal? compare-next compare-return)
+              (clone <info> info :trail (cdr trail) :return next :reply compare-return
+                     
+                     )
               (and
-               (stderr "REJECT-TRACE: REPLY[~a expect:~a]: next:~a\n" (.name model) reply next)
+               (stderr "REJECT-TRACE: REPLY[~a expect:~a]: next:~a\n" (.name model) return compare-next)
+               ;;barfme
+               ;;(if (eq? (car trail) 'u.what) barf)
                (stderr "trace: ~a\n" (map trace-location (.trace info)))
                (clone <info> info :error #t)))))))
 
@@ -701,8 +772,12 @@
     (if (null? trail)
         (next-trail-empty model info 'value (->symbol action))
         (let* ((value (car trail))
-               (reply (symbol->literal model value))
-               (return (make <return> :expression value)))
+               (return (symbol->literal model value))
+               (reply (if (and #f (is-a? model <interface>)) return
+                          (let* ((port (.port action))
+                                 (scope (.type (om:port model port))))
+                           (make <literal> :scope scope :type (.type return) :field (.field return)))))
+               (return (make <return> :expression return)))
           (stderr "SETTING reply: ~a\n" reply)
           (clone <info> info :trail (cdr (.trail info)) :reply reply)))))
 
@@ -717,8 +792,8 @@
          (type-field (symbol-split value #\_))
          (type (and (=2 (length type-field)) (car type-field)))
          (field (if (=1 (length type-field)) (car type-field) (cadr type-field)))
-         (port (and port (is-a? model <component>) (om:port model port)))
-         (scope (and port (.type port))))
+         (port-def (and port (is-a? model <component>) (om:port model port)))
+         (scope (or (and port-def (.name port-def)) port)))
     (make <literal> :scope scope :type type :field field)))
 
 (define (skip-trail info port)
@@ -825,7 +900,8 @@
     (($ <expression> expression) (->symbol expression))
     (($ <var> identifier) identifier)
     (($ <field> type field) (->symbol (list (->symbol type) "." field)))
-    (($ <literal> scope type field) (->symbol (list (->symbol type) "_" (->symbol field))))
+    (($ <literal> #f type field) (->symbol (list (->symbol type) "_" (->symbol field))))
+    (($ <literal> scope type field) (->symbol (list scope '. type '_  field)))
     (($ <trigger> #f event) (->symbol event))
     (($ <trigger> port event) (->symbol (list port "." event)))
     ((h ... t) (apply symbol-append (map ->symbol src)))
