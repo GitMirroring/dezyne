@@ -38,14 +38,10 @@ BROKEN:=\
  regression/hide.dzn\
  regression/BrokenComp.dzn\
 
-BROKEN_c:=\
- regression/OutEventSetReply.dzn\
-
 # error: Reply5: variable s is already defined in method i_done()
 BROKEN_cs:=\
  regression/DataVariables.dzn\
  regression/List.dzn\
- regression/OutEventSetReply.dzn\
  regression/Reply5.dzn\
  regression/SynchronousLivelock.dzn\
 
@@ -53,7 +49,6 @@ BROKEN_cs:=\
 
 BROKEN_goops:=\
  regression/DataVariables.dzn\
- regression/OutEventSetReply.dzn\
  regression/QTriggerModeling.dzn\
  regression/SynchronousLivelock.dzn\
  regression/SynchronousOut.dzn\
@@ -63,7 +58,6 @@ BROKEN_goops:=\
 BROKEN_java:=\
  regression/DataVariables.dzn\
  regression/List.dzn\
- regression/OutEventSetReply.dzn\
  regression/Reply5.dzn\
  regression/R.dzn\
  regression/SynchronousLivelock.dzn\
@@ -72,11 +66,9 @@ BROKEN_java:=\
 BROKEN_javascript:=\
  regression/DataVariables.dzn\
  regression/function.dzn\
- regression/OutEventSetReply.dzn\
 
 BROKEN_python:=\
  regression/DataVariables.dzn\
- regression/OutEventSetReply.dzn\
  regression/SynchronousLivelock.dzn\
 
 # TypeError: Cannot call method 'replace' of undefined
