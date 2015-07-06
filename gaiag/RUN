@@ -4,7 +4,17 @@
 ** handle recursion, deadlock
 ** BROKEN:
 
-    ./gaiag -l run -t '(pp.step listIt.getFirstElmt listIt.IsPastEnd_No listIt.getNextElmt listIt.IsPastEnd_No listIt.getNextElmt listIt.IsPastEnd_No listIt.getNextElmt listIt.IsPastEnd_No listIt.getNextElmt listIt.IsPastEnd_No listIt.getNextElmt listIt.IsPastEnd_Yes pp.return)' ../test/regression/SynchronousLivelock.dzn 2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+WORKS:
+
+./gaiag -l run -t '(p.e p.a r.e r.a r.b r.return p.return)' ../test/regression/q3.dzn 2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
+TODO (more than this):
+
+./gaiag -l run -t '(p.e r.e r.a r.return p.a p.return)' ../test/regression/q.dzn 2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
+
+
+
 
 ** test framework, run:
     cd test && make -k run GAIAG=true

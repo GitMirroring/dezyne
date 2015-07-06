@@ -347,8 +347,7 @@
                                                (map (set-fields :error #t) infos))))
                                (append-map (flush model ast) infos))))
                         (infos (prune infos))
-                        (infos (if flushing? infos
-                                   (map (handle-return model trigger ast) infos))))
+                        (infos (map (handle-return model trigger ast) infos)))
                    (map
                     (lambda (info)
                       ((set-trace (reverse (append (reverse (.trace info))
@@ -383,23 +382,22 @@
                          (list info)))
                       ((and (is-a? model <interface>)
                             *component*)
-                       (let ((info
-                              (if (or (not (.port trigger))
-                                      (eq? (.direction (om:port *component* (.port trigger))) 'requires)) info
-                                      (next-action model info trigger action))))
+                       (let* ((info
+                               (if (or (not (.port trigger))
+                                       (eq? (.direction (om:port *component* (.port trigger))) 'requires)) info
+                                       (next-action model info trigger action)))
+                             (info (skip-trail info (.port trigger))))
                          (list info)))
                       ((is-a? model <interface>)
                        (let* ((info (next-action model info trigger action))
-                              (info (if (or port flushing?) info
-                                        ((handle-return model action ast) info))))
+                              (info ((handle-return model action ast) info)))
                          (list info)))
                       (else
                        (let* ((info (next-action model info trigger action))
                               (action-info (clone info :trace '()))
                               (infos (if (eq? (.direction (om:port model port)) 'provides) (list info)
                                            (run-interface model action action-info flushing?))))
-                         (if flushing? infos
-                             (map (handle-return model action ast) infos)))))))
+                         (map (handle-return model action ast) infos))))))
                (map
                 (lambda (info)
                   ((set-trace (reverse (append (reverse (.trace info))
@@ -456,6 +454,7 @@
                          (append-map (lambda (info) (loop (cdr statements) (cons info loop-infos))) infos)
                          (loop (cdr statements) loop-infos))))))
             (('compound statements ...)
+             (debug "ENTER IMPERATIVE[~a, ~a]: ~a\n" (.name model) (length statements) (and (pair? statements) (ast-name (car statements))))
              (let loop ((statements statements) (loop-info info+ast) (frame 0))
                (if (or (null? statements)
                        (and
@@ -463,7 +462,8 @@
                         (debug "BAILING COMPOUND[~a]: ~a\n" (.name model) (if (null? statements) '()  (car statements)))))
                    (list (clone loop-info :ast '() :state (drop (.state loop-info) frame)))
                    (let ((statement (car statements)))
-                     (let* ((state (if (is-a? statement <variable>)
+                     (let* ((foo (debug "IMPERATIVE[~a, ~a]: ~a\n" (.name model) (length statements) (ast-name statement)))
+                            (state (if (is-a? statement <variable>)
                                        (acons (.name statement)
                                               #f (.state loop-info)) (.state loop-info)))
                             (frame (if (is-a? statement <variable>)
@@ -506,10 +506,8 @@
          (trail (.trail i-info))
          (trail (if (or (null? trail) (not (eq? (car trail) 'illegal))) trail
                     (cdr trail)))
-         (trail (if (null? (.q i-info)) (.trail component-info)
-                    (let ((action (peeq i-info))) ;; hmm, only one?
-                      (debug "PEEQED: ~a\n" action)
-                      (.trail (next-queue? model component-info action action)))))
+         (component-info (clone component-info :trail (drop (.trail component-info) (length (.q i-info)))))
+         (trail (.trail component-info))
          (q (append (.q component-info) (.q i-info)))
          (reply (.reply i-info))
          (trace (.trace component-info))
@@ -532,6 +530,7 @@
                (info (deq info))
                (port (.port trigger))
                (info (clone info :trail (cons (->symbol trigger) (.trail info)) :trace '()))
+               (info (clone info :trace '()))
                (foo (debug "flush feeding: ~a\n" (.trail info)))
                (info (clone info :trace '() ))
                (infos (run-trigger model info #t))
@@ -545,16 +544,12 @@
          (interface (if (is-a? model <interface>) model
                         (run:import (.type (om:port model port))))))
     (if (or (and *component* (modeling-or-action? interface trigger))
-            (and (not *component*) (modeling-or-action? interface trigger))
-            ;;(and (pair? (.trace info)) (is-a? (car (.trace info)) <illegal>))
-            )
+            (and (not *component*) (modeling-or-action? interface trigger)))
         info
-        (let* ((info
-                (if (om:typed? model trigger)
-                    (next-reply model info trigger)
-                    (next-return model info trigger)))
+        (let* ((info (if (om:typed? model trigger)
+                         (next-reply model info trigger)
+                         (next-return model info trigger)))
                (return (->symbol (.return info)))
-               ;;(return (symbol-append 'h return))
                (return (rsp ast (make <return> :expression return))))
           (if (or (.error info)
                   (and (.port trigger) (is-a? model <interface>)))
@@ -793,9 +788,12 @@
                       (else (and (debug "REJECT-TRACE: RETURN[~a expect:~a] next: ~a\n" (.name model) reply next)
                                  (debug "trail: ~a\n" (.trail info))
                                  (debug "AT: ~a\n" (trace-location (.ast info)))
-                                 ((cons-trace
-                                   (list 'reject 'return (.name model) 'next next 'expected reply))
-                                  (clone info :reply (make <literal>) :error #t)))))))))))
+                                 ;;barf
+                                 (if #f
+                                     info
+                                     ((cons-trace
+                                       (list 'reject 'return (.name model) 'next next 'expected reply))
+                                      (clone info :reply (make <literal>) :error #t))))))))))))
 
 (define (next-value model info trigger action)
   "eat a ENUM_FIELD or PORT.ENUM_FIELD from trail, or error"
@@ -960,6 +958,7 @@
     ((? unspecified?) '*unspecfied*)
     ))
 
-;;(define debug-pretty pretty-print)
-;;(define debug stderr)
-;;(define debug-state print-state)
+;; (define debug-pretty pretty-print)
+;; (define debug stderr)
+;; (define debug-state print-state)
+
