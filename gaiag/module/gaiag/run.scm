@@ -295,9 +295,10 @@
 (define* ((run model trigger :optional (flushing? #f)) info)
   (let* ((ast (.ast info))
          (r ((run- model trigger flushing?) info)))
+    (debug "   RUN DONE\n")
     (and (pair? r) (eq? (ast-name r) 'info) (debug "INFO: ~a\n" r) BARF-SINGLE-INFO)
     (debug "   ==> infos: ~a\n" (length r))
-    (debug "   ==> done[~a, ~a]: ~a (car infos): ~a\n" (.name model) (->symbol trigger) (ast-name ast) (and (pair? r) (car r)))
+    ;;;(debug "   ==> done[~a, ~a]: ~a (car infos): ~a\n" (.name model) (->symbol trigger) (ast-name ast) (and (pair? r) (car r)))
     (debug "   ==> trail[~a, ~a]: ~a ~a\n" (.name model) (->symbol trigger) (ast-name ast) (and (pair? r) (.trail (car r))))
     (debug "   ==> ") (if (pair? r) (debug-state model (car r)) '())
     r))
@@ -306,7 +307,8 @@
   (define (trigger-matches? t)
     (debug "MATCH?: ~a == ~a ==> ~a\n" (->symbol t) (->symbol trigger) (if (is-a? model <component>) (equal? t trigger) (eq? (.event t) (.event trigger))))
     (if (is-a? model <component>) (equal? t trigger) (eq? (.event t) (.event trigger))))
-  (debug "run[~a, ~a]: ~a trail:~a\n" (.name model) (->symbol trigger) (ast-name (.ast info)) (map ->symbol (.trail info)))
+  (debug "\nrun[~a, ~a]: ~a trail:~a\n" (.name model) (->symbol trigger) (ast-name (.ast info)) (map ->symbol (.trail info)))
+  (debug-state model info)
   (debug-pretty (map trace-location (.trace info)) (current-error-port))
   (set! i (1+ i))
   (if (> i MAX-ITERATIONS)
@@ -958,7 +960,8 @@
     ((? unspecified?) '*unspecfied*)
     ))
 
-;; (define debug-pretty pretty-print)
-;; (define debug stderr)
-;; (define debug-state print-state)
+;;(define debug-pretty pretty-print)
+;;(define debug stderr)
+;;(define debug-state print-state)
+
 
