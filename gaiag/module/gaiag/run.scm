@@ -49,7 +49,7 @@
            ->symbol
            run:om))
 
-(define MAX-ITERATIONS 200000)
+(define MAX-ITERATIONS 400000)
 (define (debug . x) #t)
 (define (debug-pretty . x) #t)
 (define (debug-state . x) #t)
@@ -499,7 +499,8 @@
        (i-info (clone i-info :trail (cons (->symbol trigger) (.trail i-info))))
        (i-infos (run-trigger interface i-info flushing?))
        (i-infos (map (modify-trace reverse) i-infos))
-       (infos (map (transfer-interface-info model component-info trigger) i-infos)))
+       (infos (map (transfer-interface-info model component-info trigger) i-infos))
+       (infos (prune infos)))
     infos))
 
 (define ((transfer-interface-info model component-info action) i-info)
@@ -525,7 +526,7 @@
   (debug "flush: component-info: trail: ~a\n" (.trail component-info))
   (let loop ((info component-info))
     (debug "q: ~a\n" (.q info))
-    (debug "q info: ~a\n" info)
+    ;; (debug "q info: ~a\n" info)
     (if (not (peeq info))
         (list info)
         (let* ((trigger (peeq info))
@@ -963,5 +964,3 @@
 ;;(define debug-pretty pretty-print)
 ;;(define debug stderr)
 ;;(define debug-state print-state)
-
-
