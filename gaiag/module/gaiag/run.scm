@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -115,7 +116,10 @@
       (debug-state model info)
       (if (or (null? (.trail info))
               (.error info))
-          (let ((eligible (list (eligible model info)))
+          (let ((eligible (if (.error info) '((eligible))
+                              (list (cons 'eligible (map ->symbol (om:find-triggers model)))
+                                    ;;(eligible model info) ;; FIXME
+                                    )))
                 (error (if (not (.error info)) '()
                            (list (cons 'error (.trail info))))))
             (list (append trace error eligible)))
@@ -132,7 +136,8 @@
 
 (define (print-state model info)
   (stderr "state[~a]: ~a\n" (.name model) (state->string (.state info)))
-  (for-each (lambda (s) (stderr "  [~a]: ~a\n" (car s) (state->string (cdr s)))) (.state-alist info)))
+  (if (is-a? model <component>)
+      (for-each (lambda (s) (stderr "  [~a]: ~a\n" (car s) (state->string (cdr s)))) (.state-alist info))))
 
 (define (modeling? trigger) (member (.event trigger) '(inevitable optional)))
 (define (i-action? model trigger)
@@ -405,18 +410,20 @@
              (let* ((info info+ast)
                     (infos (eval-function-expression model trigger (clone info :ast expression)))
                     (set-var (lambda (info)
-                               (debug "  set var[~a]: ~a := ~a\n" (.name model) identifier (.return info))
-                               (var! (.state info) identifier (.return info)))))
-               (map (modify-field :state set-var) infos)))
+                               (debug "  assign var[~a]: ~a := ~a\n" (.name model) identifier (.return info))
+                               (var! (.state info) identifier (.return info))))
+                    (infos (map (modify-field :state set-var) infos)))
+               infos))
             (($ <call> function ('arguments arguments ...))
              (debug "void call[~a, ~a]: ~a\n" (.name model) function (.trail info))
-             (eval-function-expression model trigger info+ast))
+             (let ((infos (eval-function-expression model trigger info+ast)))
+               infos))
             (($ <variable> identifier type expression)
              (debug "variable[~a, ~a]: ~a\n" (.name model) identifier (.trail info))
              (let* ((info info+ast)
                     (infos (eval-function-expression model trigger (clone info :ast expression)))
                     (set-var (lambda (info)
-                               (debug "  set var[~a]: ~a := ~a\n" (.name model) identifier (.return info))
+                               (debug "  init var[~a]: ~a := ~a\n" (.name model) identifier (.return info))
                                (var! (.state info) identifier (.return info)))))
                (map (modify-field :state set-var) infos)))
             (($ <if> expression then #f)
@@ -467,7 +474,7 @@
                             (infos (map (append-trace (.trace loop-info)) infos)))
                        (append-map (lambda (info) (loop (cdr statements) info frame)) infos))))))
             (($ <return> expression)
-             
+
              (let ((return (eval-expression model state expression)))
                (debug "return[~a, ~a]: ~a\n" (.name model) expression (.trail info))
                (list (clone info+ast :return return))))
@@ -505,7 +512,7 @@
                       (.trail (next-queue? model component-info action action)))))
          (q (append (.q component-info) (.q i-info)))
          (reply (.reply i-info))
-         (trace (.trace component-info))         
+         (trace (.trace component-info))
          (info (clone component-info
                       :trail trail
                       :q q
@@ -679,7 +686,7 @@
       (let* ((next (symbol->trigger (car trail))))
         (debug "NEXT: ~a\n" next)
         (debug "EXPECT ACTION: ~a\n" action)
-        (if (or (equal? next action)
+        (if (or (trigger-equal? next action)
                 (and (is-a? action <trigger>)
                      (is-a? next <trigger>)
                      (not (.port action))
@@ -705,6 +712,9 @@
                ((cons-trace
                  (list 'reject 'illegal (.name model) 'next next 'expected 'illegal))
                 (clone info :error #t))))))))
+
+(define (trigger-equal? a b)
+  (and (eq? (.port a) (.port b)) (eq? (.event a) (.event b))))
 
 (define (next-queue? model info trigger action)
   (let ((trail (.trail info))
@@ -776,7 +786,7 @@
           (if (null? trail)
               (next-trail-empty model info 'return (->symbol trigger))
               (let ((next (symbol->trigger (car trail))))
-                (cond ((or (equal? next reply)
+                (cond ((or (trigger-equal? next reply)
                            (and (not (.port reply))
                                 (eq? (.event next) (.event reply))))
                        (clone info :trail (cdr trail) :return return))
@@ -809,7 +819,7 @@
   (clone info :error #t))
 (define (next-trail-empty-allow model info name o) info)
 (define next-trail-empty next-trail-empty-reject)
-                                        ;(define next-trail-empty next-trail-empty-allow)
+;;(define next-trail-empty next-trail-empty-allow)
 
 (define (symbol->literal model literal)
   (let* ((port-value (symbol-split literal #\.))
@@ -894,7 +904,7 @@
          (next (and (pair? trail) (symbol->trigger (car (.trail info))))))
     (if (null? trail)
         (clone info :q (append (.q info) (list trigger)))
-        (if (or #t (equal? trigger next))
+        (if (or #t (trigger-equal? trigger next))
             (clone info ;;:trail (cdr trail)
                    :q (append (.q info) (list trigger)))
             (and
@@ -950,7 +960,6 @@
     ((? unspecified?) '*unspecfied*)
     ))
 
-;; (define debug-pretty pretty-print)
-;; (define debug stderr)
-;; (define debug-state print-state)
-
+;;(define debug-pretty pretty-print)
+;;(define debug stderr)
+;;(define debug-state print-state)
