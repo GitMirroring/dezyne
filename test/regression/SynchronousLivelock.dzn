@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -29,7 +30,7 @@ interface IIterator
   enum IsPastEnd {Yes, No};
   in IsPastEnd getFirstElmt(ListElement elmt);
   in IsPastEnd getNextElmt(ListElement elmt);
-    
+
   behaviour
   {
     IsPastEnd isPastEnd = IsPastEnd.Yes;
@@ -43,7 +44,7 @@ interface IIterator
 interface IDriver
 {
   in void step();
-    
+
   behaviour
   {
     on step:{}
@@ -54,16 +55,16 @@ component SynchronousLivelock
 {
   provides IDriver pp;
   requires IIterator listIt;
-    
+
   behaviour
   {
     IIterator.IsPastEnd consumeListHead()
     {
       IIterator.ListElement elmt;
-      IIterator.IsPastEnd ipe = listIt.getFirstElmt(elmt);
-      return ipe;
+      IIterator.IsPastEnd v = listIt.getFirstElmt(elmt);
+      return v;
     }
-        
+
     void consumeListTail(IIterator.IsPastEnd pastEnd)
     {
       if (pastEnd == IIterator.IsPastEnd.No)
@@ -73,12 +74,11 @@ component SynchronousLivelock
         consumeListTail(pastEnd);
       }
     }
-    
-    on pp.step(): 
+
+    on pp.step():
     {
       IIterator.IsPastEnd ipe = consumeListHead();
       consumeListTail(ipe);
     }
   }
 }
-

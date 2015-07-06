@@ -1,5 +1,6 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -43,6 +44,7 @@ BROKEN_c:=\
 # error: Reply5: variable s is already defined in method i_done()
 BROKEN_cs:=\
  regression/DataVariables.dzn\
+ regression/List.dzn\
  regression/OutEventSetReply.dzn\
  regression/Reply5.dzn\
  regression/SynchronousLivelock.dzn\
@@ -60,6 +62,7 @@ BROKEN_goops:=\
 # error: R: non-static type variable R cannot be referenced from a static context
 BROKEN_java:=\
  regression/DataVariables.dzn\
+ regression/List.dzn\
  regression/OutEventSetReply.dzn\
  regression/Reply5.dzn\
  regression/R.dzn\
