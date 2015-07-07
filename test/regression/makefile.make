@@ -71,6 +71,8 @@ BROKEN_python:=\
  regression/DataVariables.dzn\
  regression/SynchronousLivelock.dzn\
 
+BROKEN_run:=\
+
 # TypeError: Cannot call method 'replace' of undefined
 BROKEN_trace:=\
  regression/Extern.dzn\

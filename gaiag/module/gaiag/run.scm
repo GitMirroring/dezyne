@@ -188,10 +188,10 @@
                       (let* ((triggers (map .event (om:find-triggers model)))
                              (inevitable (if (or (not top?)
                                                  (not (member 'inevitable triggers))) '()
-                                             (prune ((run model (make <trigger> :port port :event 'inevitable) flushing?) info))))
+                                                 (prune ((run model (make <trigger> :port port :event 'inevitable) flushing?) info) info)))
                              (optional (if (or (not top?)
                                                (not (member 'optional triggers))) '()
-                                           (prune ((run model (make <trigger> :port port :event 'optional) flushing?) info))))
+                                               (prune ((run model (make <trigger> :port port :event 'optional) flushing?) info) info)))
                              (modelling (append inevitable optional))
                              (infos (run-trigger-from-trail info)))
                         (append infos modelling)))))
@@ -244,8 +244,14 @@
   (apply clone (cons info args)))
 (define (trace? info) (null-is-#f (.trace info)))
 (define (success? info) (not (.error info)))
-(define (prune infos)
+(define* (prune infos :optional (info #f))
+  (define (progress? i) (or (< (length (.trail i)) (length (.trail info)))
+                            (not (equal? (.state i) (.state info)))
+                            (if (is-a? <interface>) #f
+                                (not (equal? (.state-alist i) (.state-alist info))))))
   (let* ((infos (filter trace? infos))
+         (infos (if (not info) infos
+                    (filter progress? infos)))
          (success (filter success? infos)))
     (if (pair? success) success infos)))
 
@@ -364,7 +370,8 @@
                    infos)
                  '()))
             (($ <illegal>)
-             (list (clone (next-illegal model info+ast) :error #t)))
+             (let ((info (clone (next-illegal model info+ast))))
+               (list info)))
             (($ <action> action)
              (debug "action[~a, ~a]: ~a\n" (.name model) (->symbol action) (.trail info))
              (let* ((port (.port action))
@@ -889,3 +896,5 @@
 ;;(define debug-pretty pretty-print)
 ;;(define debug stderr)
 ;;(define debug-state print-state)
+
+
