@@ -163,3 +163,8 @@ echo
 TRACE='p.start r.ping r.pong r.pong r.return p.busy p.finish p.return'
 echo running $TRACE
 diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/reply_reorder.dzn | grep ^trace: | tr , '\n')
+
+echo
+TRACE='r.a p.a'
+echo running $TRACE
+diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/RequiredOptional.dzn | grep ^trace: | tr , '\n')

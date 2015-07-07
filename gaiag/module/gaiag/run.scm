@@ -140,14 +140,16 @@
       (for-each (lambda (s) (stderr "  [~a]: ~a\n" (car s) (state->string (cdr s)))) (.state-alist info))))
 
 (define (modeling? trigger) (member (.event trigger) '(inevitable optional)))
-(define (i-action? model trigger)
-  (and (is-a? model <interface>) ;; eh? FIXME
-       (let ((triggers (map .event (om:find-triggers model))))
-         (not (member (.event trigger) triggers)))))
+
+(define (action? model trigger)
+  (let* ((interface (if (is-a? model <interface>) model
+                        (run:import (.type (om:port model)))))
+         (triggers (map .event (om:find-triggers interface))))
+    (not (member (.event trigger) triggers))))
 
 (define (modeling-or-action? model trigger)
   (or (modeling? trigger)
-      (i-action? model trigger)))
+      (action? model trigger)))
 
 (define (action-triggers o)
   (map .trigger ((collect (is? <action>)) o)))
@@ -164,22 +166,19 @@
     (let* ((info (next-trigger model info))
            (trigger (.return info))
            (info (clone info :return 'return)))
-      (if (not (modeling-or-action? model trigger))
+      (if (or (and (is-a? model <interface>)
+                   (not (modeling-or-action? model trigger)))
+              (is-a? model <component>))
           (begin (seen! model (.state info) (.ast info) trigger)
                  ((run model trigger flushing?) info))
-
           (let ((triggers (map (lambda (e) (make <trigger> :port (.port trigger) :event e)) '(inevitable optional)))
                 (action-triggers (if top? '()
                                      (triggers-for-action model trigger))))
             (if (not (modeling? trigger))
                 (append-map (lambda (t) ((run model t flushing?) info)) action-triggers)
-
-                ;; FIXME: if we use action from trail: `OK' as trigger
-                ;; and synthesize inevitable/optional
-                ;; we must re-add OK to trail be read as next action
                 (append-map (lambda (t) ((run model t flushing?) (clone info :trail (cons (->symbol trigger) (.trail info))))) triggers))))))
 
-  (debug "run-trigger[~a, ~a] " (.name model) (->symbol (car (.trail info))))
+  (debug "\n\nrun-trigger[~a, ~a] " (.name model) (->symbol (car (.trail info))))
   (debug-state model info)
   (debug "trigger: ~a\n" (->string (car (.trail info))))
   (let* ((ast ((compose .statement .behaviour) model))
@@ -188,9 +187,11 @@
            (port (.port trigger))
            (infos (if (is-a? model <component>) (run-trigger-from-trail info)
                       (let* ((triggers (map .event (om:find-triggers model)))
-                             (inevitable (if (or (not top?) (not (member 'inevitable triggers))) '()
+                             (inevitable (if (or (not top?)
+                                                 (not (member 'inevitable triggers))) '()
                                              (prune ((run model (make <trigger> :port port :event 'inevitable) flushing?) info))))
-                             (optional (if (or (not top?) (not (member 'optional triggers))) '()
+                             (optional (if (or (not top?)
+                                               (not (member 'optional triggers))) '()
                                            (prune ((run model (make <trigger> :port port :event 'optional) flushing?) info))))
                              (modelling (append inevitable optional))
                              (infos (run-trigger-from-trail info)))
@@ -388,7 +389,8 @@
                                (if (or (not (.port trigger))
                                        (eq? (.direction (om:port *component* (.port trigger))) 'requires)) info
                                        (next-action model info trigger action)))
-                             (info (skip-trail info (.port trigger))))
+                              (port (or (.port trigger) (.name (om:port *component*))))
+                              (info (skip-trail info port)))
                          (list info)))
                       ((is-a? model <interface>)
                        (let* ((info (next-action model info trigger action))
@@ -397,8 +399,11 @@
                       (else
                        (let* ((info (next-action model info trigger action))
                               (action-info (clone info :trace '()))
-                              (infos (if (eq? (.direction (om:port model port)) 'provides) (list info)
-                                           (run-interface model action action-info flushing?))))
+                              ;; FIXME: should skip simple provided on e: f<<--
+                              (infos (if (or flushing?
+                                             (and (eq? (.direction (om:port model (.port trigger))) 'provides)
+                                                  (eq? (.direction (om:port model port)) 'provides))) (list info)
+                                                  (run-interface model action action-info flushing?))))
                          (map (handle-return model action ast) infos))))))
                (map
                 (lambda (info)
@@ -834,6 +839,7 @@
     (make <literal> :scope scope :type type :field field)))
 
 (define (skip-trail info port)
+  (if (not port) barf-no-port)
   (let loop ((info info))
     (debug "SKIP-LOOP[~a]: ~a\n" port (.trail info))
     (let ((trail (.trail info)))
@@ -841,6 +847,7 @@
               (let ((trigger (symbol->trigger (car trail))))
                 (or (not trigger)
                     (not (.port trigger))
+                    ;;;(and (not port) (eq? (.event trigger) 'return))
                     (eq? (.port trigger) port))))
           info
           (loop (clone info :trail (cdr trail)))))))
@@ -901,16 +908,7 @@
 
 (define (enq model info trigger)
   (debug "ENQ!: ~a\n" trigger)
-  (let* ((trail (.trail info))
-         (next (and (pair? trail) (symbol->trigger (car (.trail info))))))
-    (if (null? trail)
-        (clone info :q (append (.q info) (list trigger)))
-        (if (or #t (trigger-equal? trigger next))
-            (clone info ;;:trail (cdr trail)
-                   :q (append (.q info) (list trigger)))
-            (and
-             (debug "REJECT-ENQ[~a expect:~a]: ~a\n" (.name model) trigger next)
-             (clone info :trail :error #t))))))
+  (clone info :q (append (.q info) (list trigger))))
 
 (define (deq info)
   (clone info :q (cdr (.q info))))
