@@ -113,7 +113,7 @@
               (events . ,(map ->symbol eligible))))
            (loop (cdr trace) trigger state trail))))
        ((eq? (ast-name (car trace)) 'state)
-        (let ((state (car trace)))
+        (let ((state (cadar trace)))
          (cons
           (alist->hash-table
            `((type . state)
