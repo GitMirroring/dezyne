@@ -169,8 +169,7 @@
       (if (or (and (is-a? model <interface>)
                    (not (modeling-or-action? model trigger)))
               (is-a? model <component>))
-          (begin (seen! model (.state info) (.ast info) trigger)
-                 ((run model trigger flushing?) info))
+          ((run model trigger flushing?) info)
           (let ((triggers (map (lambda (e) (make <trigger> :port (.port trigger) :event e)) '(inevitable optional)))
                 (action-triggers (if top? '()
                                      (triggers-for-action model trigger))))
@@ -626,51 +625,6 @@
      (debug "not a trigger: ~a\n" event)
      #f)))
 
-(define (seen-key model state ast)
-  (when (not (equal? (om->list ast) (om->list (.statement (.behaviour model))))
-             )
-    ;; it's a bug -for now- if we store a 'seen' state with a non-top
-    ;; AST: only actions return mid-statements and they are continued
-    ;; we alway continue until the end
-    ;;(debug "AST:~a\n" ast)
-    (debug "NOT EQUAL\n")
-    (debug "ast:\n")
-    (pretty-print (om->list ast))
-    (debug "statement\n")
-    (pretty-print (om->list (.statement (.behaviour model))))
-    (throw 'barf-seen-about-non-top-ast))
-  (list state ast))
-
-(define (seen-key-state key) (caar key))
-(define (seen-key-ast key) (cadar key))
-
-(define (seen model state ast)
-  (set! i (1+ i))
-  (if (> i MAX-ITERATIONS)
-      (throw 'break (format #f "too many iterations: ~a, state space: ~a\n" i
-                            (length *state-space*))))
-  (let* ((key (seen-key model state ast))
-         (events (f-is-null (assoc-ref *state-space* key))))
-    events))
-
-(define (seen? model state ast event)
-  (find (lambda (x) (equal? x event)) (seen model state ast)))
-
-(define (seen! model state ast event)
-  (when (not (equal? (om->list ast) (om->list (.statement (.behaviour model)))))
-    (debug "seen! --> AST:~a\n" ast)
-    (throw 'seen!-with-non-top-ast))
-
-  (let* ((key (seen-key model state ast))
-         (events (seen model state ast)))
-    (if (not (seen? model state ast event))
-        (let ((value (delete-duplicates (sort (cons event events) om:<))))
-          (set! *state-space* (assoc-set! *state-space* key value))))))
-
-(define (state-ast-todo model state ast events)
-  (let ((done (seen model state ast)))
-    (filter (negate (lambda (x) (member x done equal?))) events)))
-
 (define (next-trigger model info)
   (let* ((trail (.trail info)))
     (if (null? trail)
@@ -697,7 +651,6 @@
             (clone info :trail (cdr (.trail info)))
             (and
              (debug "REJECT-TRACE: ACTION[~a expect:~a]: next:~a\n" (.name model) action next)
-             ;;(map trace-location (.trace info))
              ((cons-trace
                (list 'reject 'action (.name model) 'next next 'expected action))
               (clone info :error #t)))))))))
@@ -784,8 +737,6 @@
                (port (if (modeling? trigger) event port))
                (reply (make <trigger> :port port :event 'return)))
           (debug "next-return: trigger: ~a\n" (->symbol trigger))
-          ;;          (if (and (pair? trail) (eq? (car trail) 'ok)) barf-OK)
-          ;; (if (equal? trail '(work return ok)) barf-work-return-ok)
           (if (null? trail)
               (next-trail-empty model info 'return (->symbol trigger))
               (let ((next (symbol->trigger (car trail))))
@@ -793,15 +744,13 @@
                            (and (not (.port reply))
                                 (eq? (.event next) (.event reply))))
                        (clone info :trail (cdr trail) :return return))
-                      (else (and (debug "REJECT-TRACE: RETURN[~a expect:~a] next: ~a\n" (.name model) reply next)
-                                 (debug "trail: ~a\n" (.trail info))
-                                 (debug "AT: ~a\n" (trace-location (.ast info)))
-                                 ;;barf
-                                 (if #f
-                                     info
-                                     ((cons-trace
-                                       (list 'reject 'return (.name model) 'next next 'expected reply))
-                                      (clone info :reply (make <literal>) :error #t))))))))))))
+                      (else
+                       (debug "REJECT-TRACE: RETURN[~a expect:~a] next: ~a\n" (.name model) reply next)
+                       (debug "trail: ~a\n" (.trail info))
+                       (debug "AT: ~a\n" (trace-location (.ast info)))
+                       ((cons-trace
+                         (list 'reject 'return (.name model) 'next next 'expected reply))
+                        (clone info :reply (make <literal>) :error #t))))))))))
 
 (define (next-value model info trigger action)
   "eat a ENUM_FIELD or PORT.ENUM_FIELD from trail, or error"
@@ -852,29 +801,6 @@
           info
           (loop (clone info :trail (cdr trail)))))))
 
-;; model checker...broken for now
-(define (next-info-space-explorer model info)
-  (let ((events (om:find-triggers model))
-        (state (.state info))
-        (ast (.ast info)))
-    (if (or (null? *state-space*)
-            (null? (car *state-space*)))
-        (cons (state-vector model) events)
-        (let ((todo (state-ast-todo model state ast events)))
-          (if (pair? todo)
-              (cons state todo)
-              (let loop ((entries *state-space*))
-                (if (or (null? entries)
-                        (null? (car entries)))
-                    (cons #f '())
-                    (let* ((key-events (car entries))
-                           (state (seen-key-state key-events))
-                           (ast (seen-key-ast key-events))
-                           (todo (state-ast-todo model state ast events)))
-                      (if (pair? todo)
-                          (cons state todo)
-                          (loop (cdr entries)))))))))))
-
 (define (next-info-trail-walker)
   (lambda (model info)
     info))
@@ -883,10 +809,6 @@
   (assoc-ref (.state-alist info) name))
 
 (define (set-state info name state)
-  ;;MODIFIES entries, ie, other alists!
-  ;;(clone info :state-alist (assoc-set! (.state-alist info) name state))
-  ;; expensive?
-  ;;(clone info :state-alist (assoc-set! (copy-tree (.state-alist info)) name state))
   (clone info :state-alist (acons name state (filter (lambda (x) (not (eq? (car x) name))) (.state-alist info)))))
 
 (define (state->string state)
@@ -958,6 +880,11 @@
     (() 'URG-NULL-BUG)
     ((? unspecified?) '*unspecfied*)
     ))
+
+;; model checker...broken for now -- keep interface
+(define (next-info-space-explorer model info)
+  (lambda (model info)
+    info))
 
 ;;(define debug-pretty pretty-print)
 ;;(define debug stderr)
