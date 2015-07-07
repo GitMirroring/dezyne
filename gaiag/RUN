@@ -1,26 +1,21 @@
 * STATUS
-** test/run.sh runs all known success and failure traces
+** test/run.sh runs smoke test with known tricky success cases
+** triangle (in test/)
+
+    make triangle CODE_LANGUAGES= GAIAG=true
+
+succeeds, but gradually gets too slow (too many branches?) and
+ultimately goes beyond 400,000 call to ((run)), bailing out.
+
 * TODO
 ** handle recursion, deadlock
-** BROKEN:
+** BROKEN
+*** SEE (in test/)
 
-WORKS:
-
-./gaiag -l run -t '(p.e p.a r.e r.a r.b r.return p.return)' ../test/regression/q3.dzn 2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
-
-TODO (more than this):
-
-./gaiag -l run -t '(p.e r.e r.a r.return p.a p.return)' ../test/regression/q.dzn 2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
-
-
-
-
-
+   make -k run GAIAG=true
+   
 ** test framework, run:
     cd test && make -k run GAIAG=true
-
-** test framework, triangle:  Handle is broken from trace.9 on
-    cd test && make triangle CODE_LANGUAGES=
 
 ** eligible events: grok modeling events/out events, returns, reply values
 ** ?? error trace reporting (console.foo), (console.arm sensor.foo) etc
