@@ -117,9 +117,7 @@
       (if (or (null? (.trail info))
               (.error info))
           (let ((eligible (if (.error info) '((eligible))
-                              (list (cons 'eligible (map ->symbol (om:find-triggers model)))
-                                    ;;(eligible model info) ;; FIXME
-                                    )))
+                              (list (eligible model info))))
                 (error (if (not (.error info)) '()
                            (list (cons 'error (.trail info))))))
             (list (append trace error eligible)))
@@ -135,7 +133,7 @@
                    (loop info (append trace (.trace info) trail)))) infos)))))))
 
 (define (print-state model info)
-  (stderr "state[~a]: ~a\n" (.name model) (state->string (.state info)))
+  (stderr "state[~a]\n    ~a\n" (.name model) (string-sub ", " "\n     " (state->string (.state info))))
   (if (is-a? model <component>)
       (for-each (lambda (s) (stderr "  [~a]: ~a\n" (car s) (state->string (cdr s)))) (.state-alist info))))
 
@@ -174,8 +172,9 @@
                 (action-triggers (if top? '()
                                      (triggers-for-action model trigger))))
             (if (not (modeling? trigger))
-                (append-map (lambda (t) ((run model t flushing?) info)) action-triggers)
-                (append-map (lambda (t) ((run model t flushing?) (clone info :trail (cons (->symbol trigger) (.trail info))))) triggers))))))
+                (append-map (lambda (t) (prune ((run model t flushing?) info))) action-triggers)
+                (let ((info (clone info :trail (cons (->symbol trigger) (.trail info)))))
+                  (append-map (lambda (t) (prune ((run model t flushing?) info) info)) triggers)))))))
 
   (debug "\n\nrun-trigger[~a, ~a] " (.name model) (->symbol (car (.trail info))))
   (debug-state model info)
@@ -207,17 +206,21 @@
   (let* ((members (om:member-names model))
          (expression (.ast info)))
     (match expression
+      (($ <call>) (=> failure)
+       (if (or (pair? (.trail info)) (eq? next-trail-empty next-trail-empty-reject)) (failure)
+           (and (debug "BAIL RECURSION\n") (list info))))
       (($ <call> function ('arguments arguments ...))
        (debug "valued call[~a, ~a]: ~a\n" (.name model) function (.trail info))
        (let* ((f (om:function model function))
               (formals (map .name ((compose .elements .formals .signature) f)))
               (statement (.statement f))
               (pairs (zip formals arguments))
-              (state (let loop ((pairs pairs) (state (.state info)))
-                       (if (null? pairs)
-                           state
-                           (loop (cdr pairs) (acons (caar pairs)
-                                                    (eval-expression model state (cadar pairs)) state)))))
+              (state (.state info))
+              (state (let loop ((pairs pairs) (state state))
+                           (if (null? pairs)
+                               state
+                               (loop (cdr pairs) (acons (caar pairs)
+                                                        (eval-expression model state (cadar pairs)) state)))))
               (info ((cons-trace f) info))
               (info (clone info :ast statement :state state))
               (infos ((run model trigger) info))
@@ -245,10 +248,11 @@
 (define (trace? info) (null-is-#f (.trace info)))
 (define (success? info) (not (.error info)))
 (define* (prune infos :optional (info #f))
-  (define (progress? i) (or (< (length (.trail i)) (length (.trail info)))
-                            (not (equal? (.state i) (.state info)))
-                            (if (is-a? <interface>) #f
-                                (not (equal? (.state-alist i) (.state-alist info))))))
+  (define (progress? i)
+    (or (< (length (.trail i)) (length (.trail info)))
+        (not (equal? (.state i) (.state info)))
+        (if (is-a? info <interface>) #f
+            (not (equal? (.state-alist i) (.state-alist info))))))
   (let* ((infos (filter trace? infos))
          (infos (if (not info) infos
                     (filter progress? infos)))
@@ -524,12 +528,11 @@
          (trail (.trail component-info))
          (q (append (.q component-info) (.q i-info)))
          (reply (.reply i-info))
+         (reply (if (is-a? reply <literal>) reply
+                    (make <literal> :field 'return)))
          (trace (.trace component-info))
-         (info (clone component-info
-                      :trail trail
-                      :q q
-                      :reply (make <literal> :scope scope :type (.type reply) :field (.field reply))
-                      :trace (append trace (reverse (.trace i-info))) :error (.error i-info))))
+         (trace (append trace (reverse (.trace i-info))))
+         (info (clone component-info :trail trail :q q :reply (make <literal> :scope scope :type (.type reply) :field (.field reply)) :trace trace :error (.error i-info))))
     (set-state info port (.state i-info))))
 
 (define ((flush model ast) component-info)
@@ -581,7 +584,7 @@
                       (map
                        (lambda (trigger)
                          (let* ((infos (run-trigger model (clone info :trail (list (->symbol trigger)))))
-                                (infos (prune infos)))
+                                (infos (prune infos info)))
                            (and (pair? infos) (->symbol trigger))))
                        (om:find-triggers model)))))))
     (set! next-trail-empty next-trail-empty-reject)
