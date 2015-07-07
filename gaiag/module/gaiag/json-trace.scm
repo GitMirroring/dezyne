@@ -143,11 +143,14 @@
                             (end . ,(json-location (or (and (pair? trace) (last trace)) statement))))))
                (message
                 (alist->hash-table
-                 (let* ((instance (if (is-a? model <interface>) name
-                                      (and (om:parent model statement) name)))
+                 (let* ((component (and (om:parent model statement) name))
+                        (instance (if (is-a? model <interface>) name
+                                      (or component (.port trigger))))
                         (event
                          (match statement
-                           (($ <on> ('triggers t h ...)) (->symbol trigger))
+                           (($ <on> ('triggers t h ...))
+                            (if component (->symbol trigger)
+                                (.event trigger)))
                            (($ <action> trigger)
                             (if (and (is-a? model <component>)
                                      (.port trigger))
