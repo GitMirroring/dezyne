@@ -149,15 +149,17 @@ TRACE='r.a'
 echo running $TRACE
 diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/q2.dzn | grep ^trace: | tr , '\n')
 
+echo
 TRACE='i.e i.f i.f i.f i.return'
 echo running $TRACE
 diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/argument2.dzn | grep ^trace: | tr , '\n')
 
+echo
 TRACE='p.e p.a r.e r.a r.b r.return p.return'
 echo running $TRACE
 diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/q3.dzn | grep ^trace: | tr , '\n')
 
-
-## ../webapp/client/dzn --debug run -g -t <(echo ctrl.hcalibrate robot.tcalibrate robot.tcalibrated robot.return ctrl.return) regression/h.dzn
-
-##../webapp/client/dzn --debug run --gaiag -t <(echo i.done u.what u.Status_Ok i.Status_Yes) regression/R.dzn 
+echo
+TRACE='p.start r.ping r.pong r.pong r.return p.busy p.finish p.return'
+echo running $TRACE
+diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/reply_reorder.dzn | grep ^trace: | tr , '\n')
