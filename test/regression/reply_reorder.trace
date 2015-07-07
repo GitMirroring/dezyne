@@ -3,4 +3,6 @@ r.ping
 r.pong
 r.pong
 r.return
+p.busy
+p.finish
 p.return

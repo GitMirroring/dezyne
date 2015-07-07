@@ -20,6 +20,8 @@
 //
 // Code:
 
+// reply_reorder: p.start r.ping r.pong r.pong r.return p.busy p.finish p.return
+
 // interface Provides
 // {
 //   in void start();
