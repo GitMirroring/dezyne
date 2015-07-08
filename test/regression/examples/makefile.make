@@ -1,5 +1,6 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015 Ladislau Posta <ladislau.posta@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -28,6 +29,18 @@ DZN_FILES:=$(wildcard $(CDIR)*.dzn)
 BROKEN_code:=\
   $(CDIR)BurglarAlarm.dzn\
   $(CDIR)Recursion.dzn\
+
+BROKEN_c:=\
+  $(CDIR)GarageDoorControl.dzn\
+
+BROKEN_goops:=\
+  $(CDIR)GarageDoorControl.dzn\
+
+BROKEN_java:=\
+  $(CDIR)GarageDoorControl.dzn\
+
+BROKEN_javascript:=\
+  $(CDIR)GarageDoorControl.dzn\
 
 $(foreach lang,$(LANGUAGES), $(eval BROKEN_$(lang)+=$(BROKEN_code)))
 

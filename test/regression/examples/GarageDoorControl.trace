@@ -1,0 +1,6 @@
+doorControl.initialise
+limitSw.initialise
+limitSw.return
+motorControl.initialise
+motorControl.return
+doorControl.return
