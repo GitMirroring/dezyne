@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -27,7 +28,7 @@ interface ITauEmitMulti
 	in void c();
 	out void d();
 	in void e();
-	
+
 	behaviour
 	{
 		bool isWaiting = false;
@@ -46,11 +47,11 @@ interface ITauEmitSingle
 {
     out void a();
     in void c();
-    
+
     behaviour
     {
         bool isWaiting = false;
-        [!isWaiting] on optional: {a; isWaiting = true;}
+        [!isWaiting] on inevitable: {a; isWaiting = true;}
         [isWaiting] on c: isWaiting = false;
         [!isWaiting] on c: illegal;
     }
@@ -61,7 +62,7 @@ component TauEmitMultiple
 	provides IDummy ctrl;
 	requires ITauEmitMulti rpa;
 	requires ITauEmitSingle rps;
-	
+
 	behaviour
 	{
 		bool expect_b = false;
@@ -78,7 +79,7 @@ component TauEmitMultiple
 			[expect_d] {rpa.e();}
 			[otherwise] illegal;
 		}
-		
+
 		on rps.a(): rps.c();
 	}
 }
