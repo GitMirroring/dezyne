@@ -23,72 +23,114 @@
 
 interface ITauEmitMulti
 {
-	out void a();
-	out void b();
-	in void c();
-	out void d();
-	in void e();
+  out void a();
+  out void b();
+  in void c();
+  out void d();
+  in void e();
 
-	behaviour
-	{
-		bool isWaiting = false;
-		[!isWaiting] on inevitable: {a; isWaiting = true; b;}
-		[isWaiting] on c: {d; isWaiting = false;}
-		[!isWaiting] on c: illegal;
-		on e:
-		{
-			[isWaiting] illegal;
-			[otherwise] {}
-		}
-	}
+  behaviour
+  {
+    bool isWaiting = false;
+    [!isWaiting]
+      on inevitable:
+      {
+        a;
+        isWaiting = true;
+        b;
+      }
+    [isWaiting]
+      on c:
+      {
+        d;
+        isWaiting = false;
+      }
+    [!isWaiting]
+      on c:
+      illegal;
+    on e:
+      {
+        [isWaiting]
+          illegal;
+        [otherwise]
+        {
+        }
+      }
+  }
 }
 
 interface ITauEmitSingle
 {
-    out void a();
-    in void c();
+  out void a();
+  in void c();
 
-    behaviour
-    {
-        bool isWaiting = false;
-        [!isWaiting] on inevitable: {a; isWaiting = true;}
-        [isWaiting] on c: isWaiting = false;
-        [!isWaiting] on c: illegal;
-    }
+  behaviour
+  {
+    bool isWaiting = false;
+    [!isWaiting]
+      on inevitable:
+      {
+        a;
+        isWaiting = true;
+      }
+    [isWaiting]
+      on c:
+      isWaiting = false;
+    [!isWaiting]
+      on c:
+      illegal;
+  }
 }
 
 component TauEmitMultiple
 {
-	provides IDummy ctrl;
-	requires ITauEmitMulti rpa;
-	requires ITauEmitSingle rps;
+  provides IDummy ctrl;
+  requires ITauEmitMulti rpa;
+  requires ITauEmitSingle rps;
 
-	behaviour
-	{
-		bool expect_b = false;
-		bool expect_d = false;
-		on ctrl.start(): {}
-		on rpa.a(): {expect_b = true; rpa.c(); expect_d = true;}
-		on rpa.b():
-		{
-			[expect_b] {}
-			[otherwise] illegal;
-		}
-		on rpa.d():
-		{
-			[expect_d] {rpa.e();}
-			[otherwise] illegal;
-		}
+  behaviour
+  {
+    bool expect_b = false;
+    bool expect_d = false;
+    on ctrl.start():
+      {
+      }
+    on rpa.a():
+      {
+        expect_b = true;
+        rpa.c();
+        expect_d = true;
+      }
+    on rpa.b():
+      {
+        [expect_b]
+        {
+        }
+        [otherwise]
+          illegal;
+      }
+    on rpa.d():
+      {
+        [expect_d]
+        {
+          rpa.e();
+        }
+        [otherwise]
+          illegal;
+      }
 
-		on rps.a(): rps.c();
-	}
+    on rps.a():
+      rps.c();
+  }
 }
 
 interface IDummy
 {
-	in void start();
-	behaviour
-	{
-		on start: {}
-	}
+  in void start();
+  behaviour
+  {
+    on start:
+      {
+      }
+  }
 }

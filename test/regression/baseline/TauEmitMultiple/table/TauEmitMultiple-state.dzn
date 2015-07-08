@@ -67,7 +67,7 @@ interface ITauEmitSingle
     bool isWaiting = false;
     [!isWaiting]
     {
-      on optional:
+      on inevitable:
       {
         a;
         isWaiting = true;
