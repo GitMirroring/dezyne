@@ -1,0 +1,5 @@
+verify: ISimple: check: completeness: ok
+
+verify: ISimple: check: deadlock: ok
+
+verify: ISimple: check: livelock: ok
