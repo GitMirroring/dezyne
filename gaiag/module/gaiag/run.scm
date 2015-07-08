@@ -683,7 +683,7 @@
         (next-trail-empty model info 'illegal 'illegal)
         (let* ((next (car trail)))
           (if (eq? next 'illegal)
-              (clone info :trail (cdr trail) :return next)
+              (clone info :trail (cdr trail) :return next :error #t) ;; FIXME: illegal was matched, is that an error?
               (and
                (debug "REJECT-TRACE: ILLEGAL[~a expect:~a]: next:~a\n" (.name model) 'illegal next)
                ((cons-trace
@@ -910,5 +910,3 @@
 ;;(define debug-pretty pretty-print)
 ;;(define debug stderr)
 ;;(define debug-state print-state)
-
-
