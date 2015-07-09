@@ -384,15 +384,16 @@
        (debug "action[~a, ~a]: ~a\n" (.name model) (->symbol action) (.trail info))
        (let* ((port (.port action))
               ;; FIXME: FIRST-IN-Q?? See also: below and run-interface
-              (info+ast (if (and flushing?
-                                 (is-a? model <component>)
-                                 (pair? (.trail info))
-                                 (pair? (.q info))
-                                 (eq? (.direction (om:port model (.port trigger)))
-                                      (.direction (om:port model port))
-                                      'requires))
-                            ((cons-trace '((queue in))) info)
-                            info+ast))
+              ;; misguided TauEmitMultiple
+              ;; (info+ast (if (and flushing?
+              ;;                    (is-a? model <component>)
+              ;;                    (pair? (.trail info))
+              ;;                    (pair? (.q info))
+              ;;                    (eq? (.direction (om:port model (.port trigger)))
+              ;;                         (.direction (om:port model port))
+              ;;                         'requires))
+              ;;               ((cons-trace '((queue in))) info)
+              ;;               info+ast))
               (q-info #f)
               (infos
                (cond
@@ -413,10 +414,12 @@
                    (list info)))
                 ((and (is-a? model <interface>)
                       *component*)
-                 (let* ((info
-                         (if (or (not (.port trigger))
-                                 (eq? (.direction (om:port *component* (.port trigger))) 'requires)) info
-                                 (next-action model info trigger action)))
+                 (let* ((info (next-action model info trigger action))
+                        ;; misguided TauEmitMultiple
+                        ;; (info
+                        ;;  (if (or (not (.port trigger))
+                        ;;          (eq? (.direction (om:port *component* (.port trigger))) 'requires)) info
+                        ;;          (next-action model info trigger action)))
                         (port (or (.port trigger) (.name (om:port *component*))))
                         (info (skip-trail info port)))
                    (list info)))
@@ -425,12 +428,14 @@
                         (info ((handle-return model trigger action ast flushing?) info)))
                    (list info)))
                 (else
-                 (let* ((info (if (and flushing?
-                                       (pair? (.q info))
-                                       (eq? (.direction (om:port model (.port trigger)))
-                                            (.direction (om:port model port))
-                                            'requires)) info
-                                            (next-action model info trigger action)))
+                 (let* ((info (next-action model info trigger action))
+                        ;; misguided TauEmitMultiple
+                        ;; (info (if (and flushing?
+                        ;;                (pair? (.q info))
+                        ;;                (eq? (.direction (om:port model (.port trigger)))
+                        ;;                     (.direction (om:port model port))
+                        ;;                     'requires)) info
+                        ;;                     (next-action model info trigger action)))
                         (action-info (clone info :trace '()))
                         ;; FIXME: should skip simple provided on e: f<<--
                         (infos (if (or flushing?
@@ -611,8 +616,9 @@
     (if (or (and *component* (modeling-or-action? interface action))
             (and (not *component*) (modeling-or-action? interface action))
             (and flushing?
-                 (or (is-a? model <interface>)
-                     (pair? (.q info)))
+                 ;;misguided TauEmitMultiple
+                 #f
+                 (or (is-a? model <interface>) (pair? (.q info)))
                  (eq? (.direction (om:port model (.port trigger)))
                       (.direction (om:port model port))
                       'requires)))
