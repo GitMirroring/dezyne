@@ -19,6 +19,8 @@
 (read-set! keywords 'prefix)
 
 (define-module (test-handler)
+  :use-module (srfi srfi-1)  
+
   :use-module (test-suite lib)
   :use-module (test-suite misc)
 
@@ -77,30 +79,20 @@
                           behaviour { on a: b;
                                          } } #})))
     '(a return a return a return))
-   '((a ()
-        (compound
-         (on (triggers (trigger #f a (arguments)))
-             (action (trigger #f b (arguments)))))
-        (on (triggers (trigger #f a (arguments)))
-            (action (trigger #f b (arguments))))
-        (action (trigger #f b (arguments)))
-        (return return))
-     (a ()
-        (compound
-         (on (triggers (trigger #f a (arguments)))
-             (action (trigger #f b (arguments)))))
-        (on (triggers (trigger #f a (arguments)))
-            (action (trigger #f b (arguments))))
-        (action (trigger #f b (arguments)))
-        (return return))
-     (a ()
-        (compound
-         (on (triggers (trigger #f a (arguments)))
-             (action (trigger #f b (arguments)))))
-        (on (triggers (trigger #f a (arguments)))
-            (action (trigger #f b (arguments))))
-        (action (trigger #f b (arguments)))
-        (return return)))))
+   '(((trigger #f a (arguments))
+  (on (triggers (trigger #f a (arguments)))
+      (action (trigger #f b (arguments))))
+  (action (trigger #f b (arguments)))
+  (reject
+    action
+    i
+    next
+    (trigger #f return (arguments))
+    expected
+    (trigger #f b (arguments)))
+  (trail a return a return)
+  (error a return a return)
+  (eligible)))))
 
 (pass-if "simulator-guard-trail"
    (om-pretty-noisy-equal?
@@ -122,90 +114,54 @@
                        }
                       } #})))
      '(a return a return a return))
-    '((a ((t . #t))
-    (compound
-      (on (triggers (trigger #f a (arguments)))
-          (compound
-            (guard (expression (var t))
-                   (assign t (expression (! (var t)))))
-            (guard (expression (! (var t)))
-                   (action (trigger #f b (arguments)))))))
-    (on (triggers (trigger #f a (arguments)))
-        (compound
-          (guard (expression (var t))
-                 (assign t (expression (! (var t)))))
-          (guard (expression (! (var t)))
-                 (action (trigger #f b (arguments))))))
-    (compound
-      (guard (expression (var t))
-             (assign t (expression (! (var t)))))
-      (guard (expression (! (var t)))
-             (action (trigger #f b (arguments)))))
-    (guard (expression (var t))
-           (assign t (expression (! (var t)))))
-    (assign t (expression (! (var t))))
-    (return return))
- (a ((t . #f))
-    (compound
-      (on (triggers (trigger #f a (arguments)))
-          (compound
-            (guard (expression (var t))
-                   (assign t (expression (! (var t)))))
-            (guard (expression (! (var t)))
-                   (action (trigger #f b (arguments)))))))
-    (on (triggers (trigger #f a (arguments)))
-        (compound
-          (guard (expression (var t))
-                 (assign t (expression (! (var t)))))
-          (guard (expression (! (var t)))
-                 (action (trigger #f b (arguments))))))
-    (compound
-      (guard (expression (var t))
-             (assign t (expression (! (var t)))))
-      (guard (expression (! (var t)))
-             (action (trigger #f b (arguments)))))
-    (guard (expression (! (var t)))
-           (action (trigger #f b (arguments))))
-    (action (trigger #f b (arguments)))
-    (return return))
- (a ((t . #f))
-    (compound
-      (on (triggers (trigger #f a (arguments)))
-          (compound
-            (guard (expression (var t))
-                   (assign t (expression (! (var t)))))
-            (guard (expression (! (var t)))
-                   (action (trigger #f b (arguments)))))))
-    (on (triggers (trigger #f a (arguments)))
-        (compound
-          (guard (expression (var t))
-                 (assign t (expression (! (var t)))))
-          (guard (expression (! (var t)))
-                 (action (trigger #f b (arguments))))))
-    (compound
-      (guard (expression (var t))
-             (assign t (expression (! (var t)))))
-      (guard (expression (! (var t)))
-             (action (trigger #f b (arguments)))))
-    (guard (expression (! (var t)))
-           (action (trigger #f b (arguments))))
-    (action (trigger #f b (arguments)))
-    (return return)))))
+    '(((trigger #f a (arguments))
+  (on (triggers (trigger #f a (arguments)))
+      (compound
+        (guard (expression (var t))
+               (assign t (expression (! (var t)))))
+        (guard (expression (! (var t)))
+               (action (trigger #f b (arguments))))))
+  (guard (expression (var t))
+         (assign t (expression (! (var t)))))
+  (assign t (expression (! (var t))))
+  (state ((t . #f)))
+  (return return)
+  (trail a return a return)
+  (trigger #f a (arguments))
+  (on (triggers (trigger #f a (arguments)))
+      (compound
+        (guard (expression (var t))
+               (assign t (expression (! (var t)))))
+        (guard (expression (! (var t)))
+               (action (trigger #f b (arguments))))))
+  (guard (expression (! (var t)))
+         (action (trigger #f b (arguments))))
+  (action (trigger #f b (arguments)))
+  (reject
+    action
+    i
+    next
+    (trigger #f return (arguments))
+    expected
+    (trigger #f b (arguments)))
+  (trail a return)
+  (error a return)
+  (eligible)))))
 
 (pass-if "walk-trail-arguments"
-(or #t (let* ((arguments-ast (read-ast 'examples/arguments.dzn))
+(or #f (let* ((arguments-ast (read-ast 'examples/arguments.dzn))
           (om ((om:register run:om) arguments-ast #t))
-          (model (om:component om))
+          (model (find (is? <component>) om))
           (trail '(i.e i.e i.e))
           (foobar (set-program-arguments '("gaiag" "--json" "foobar")))
-          (arguments-trace (with-output-to-string (lambda () (pretty-print (mangle-trace model (walk-trail model trail))))))
+          (arguments-trace (with-output-to-string (lambda () (pretty-print (mangle-traces model (walk-trail model trail))))))
           (baseline-trace 'baseline-trace))
      #t)))
 
 (pass-if "walk-trail-pauls"
 (or #t  (let* ((pauls-ast (read-ast 'examples/regression/Comp.dzn))
           (om ((om:register run:om) pauls-ast #t))
-          (model (om:component om))
+          (model (find (is? <component>) om))
           (trail '(client.initialize result_t.OK result_t.OK client.perform_actions result_t.OK result_t.OK client.perform_actions result_t.NOK client.recover result_t.OK client.perform_actions))
           (pauls-trace (walk-trail model trail))
           (baseline-trace 'baseline-trace))

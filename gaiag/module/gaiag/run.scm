@@ -107,6 +107,7 @@
 
 (define* (run-trail model :optional (next-info next-info-space-explorer) (trail '()))
   (set! *state-space* '(()))
+  (set! *component* ((is? <component>) model))
   (set! i 0)
   (let* ((ports (if (is-a? model <interface>) '() ((compose .elements .ports) model)))
          (state-alist (map (lambda (port) (cons (.name port) (state-vector (run:import (.type port))))) ports))
