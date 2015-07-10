@@ -340,33 +340,29 @@
       (($ <on> ('triggers triggers ...) statement)
        (debug "on[~a, ~a]: ~a, ~a\n" (.name model) (->symbol (car triggers)) (->symbol trigger) (.trail info))
        (if (not (find trigger-matches? triggers)) '()
-           (let* ((info+ast (if flushing? info
-                                ((cons-trace trigger) info)))
-                  (info+ast (if flushing? info
-                                ((cons-trace ast) info+ast)))
-                  (on-info (clone info :ast statement :trace '()))
+           (let* ((on-info (clone info :ast statement :trace '()))
+                  (info+ast ((cons-trace ast) ((cons-trace trigger) info)))
+                  (port (.port trigger))
                   (infos
-                   (if (is-a? model <interface>) ((run model trigger flushing? top?) on-info)
-                       (let* ((port (.port trigger))
-                              (infos
-                               (if (and flushing? (eq? (.direction (om:port model port)) 'requires))
-                                   (list info)
-                                   (run-interface model trigger on-info flushing? top?)))
-                              (i-infos (filter success? infos))
-                              (infos (if (pair? i-infos) i-infos
-                                         ;; if no interface trace succeeds
-                                         ;; clear error for component trace
-                                         (map (set-fields :error #f) infos)))
-                              (infos (map (set-fields :ast statement) infos))
-                              (infos (append-map (run model trigger flushing? top?) infos))
-                              (infos (if (pair? i-infos) infos
-                                         (map (set-fields :error #t) infos))))
-                         (append-map (flush model ast) infos))))
+                   (cond
+                    ((is-a? model <interface>)
+                     ((run model trigger flushing? top?) on-info))
+                    ((and flushing? (eq? (.direction (om:port model port)) 'requires))
+                     (let* ((infos ((run model trigger flushing? top?) on-info)))
+                       (set! info+ast info)
+                       (append-map (flush model ast) infos)))
+                    (else
+                     (let* ((infos (run-interface model trigger on-info flushing? top?))
+                            (i-infos (filter success? infos))
+                            (any-interface-success? (pair? i-infos))
+                            (infos (if any-interface-success? i-infos
+                                       (map (set-fields :error #f) infos)))
+                            (infos (map (set-fields :ast statement) infos))
+                            (infos (append-map (run model trigger flushing? top?) infos))
+                            (infos (if any-interface-success? infos
+                                       (map (set-fields :error #t) infos))))
+                       (append-map (flush model ast) infos)))))
                   (infos (prune infos))
-                  (foo (debug "trigger: ~a\n" (->symbol trigger)))
-                  (foo (debug "flushing: ~a\n" flushing?))
-                  (foo (debug "infos: ~a\n" (length infos)))
-                  (foo (debug "q: ~a\n" (and (pair? infos) (map ->symbol (.q (car infos))))))
                   (infos (map (handle-return model trigger trigger ast flushing?) infos)))
              (map
               (lambda (info)
