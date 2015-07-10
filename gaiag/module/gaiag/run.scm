@@ -170,10 +170,10 @@
       (if (or (and (is-a? model <interface>) (not (modeling-or-action? model trigger))) (is-a? model <component>)) ((run model trigger flushing? top?) info)
           (let ((triggers (map (lambda (e) (make <trigger> :port (.port trigger) :event e)) '(inevitable optional)))
                 (action-triggers (triggers-for-action model trigger)))
-            (if (not (modeling? trigger)) (append-map (lambda (t) (prune ((run model t flushing? top?) info))) action-triggers)
-                (let ((info (clone info :trail (cons (->symbol trigger) (.trail info)))))
+            (let ((info (clone info :trail (cons (->symbol trigger) (.trail info)))))
+              (if (not (modeling? trigger)) (append-map (lambda (t) (prune ((run model t flushing? top?) info))) action-triggers)
                   (append-map (lambda (t) (prune ((run model t flushing? top?) info) info)) triggers)))))))
-
+  
   (debug "\n\nrun-trigger[~a, ~a]:~a\n" (.name model) (->symbol (car (.trail info))) top?)
   (debug-state model info)
   (debug "trigger: ~a\n" (->string (car (.trail info))))
@@ -323,6 +323,7 @@
       (debug "MATCH?: ~a == ~a ==> ~a\n" (->symbol t) (->symbol trigger) r)
       r))
   (debug "\nrun[~a, ~a]: ~a trail:~a\n" (.name model) (->symbol trigger) (ast-name (.ast info)) (map ->symbol (.trail info)))
+  (debug "flushing: ~a, q: \n" flushing? (.q info))
   (debug-state model info)
   (debug-pretty (map trace-location (.trace info)) (current-error-port))
   (set! i (1+ i))
@@ -332,6 +333,7 @@
   (let* ((ast (.ast info))
          (info+ast ((cons-trace ast) info))
          (orig-states (copy-tree (.state-alist info)))
+         (port (.port trigger))
          (state (.state info))
          (trace (.trace info)))
     (match (.ast info)
@@ -342,14 +344,13 @@
        (if (not (find trigger-matches? triggers)) '()
            (let* ((on-info (clone info :ast statement :trace '()))
                   (info+ast ((cons-trace ast) ((cons-trace trigger) info)))
-                  (port (.port trigger))
                   (infos
                    (cond
                     ((is-a? model <interface>)
                      ((run model trigger flushing? top?) on-info))
                     ((and flushing? (eq? (.direction (om:port model port)) 'requires))
                      (let* ((infos ((run model trigger flushing? top?) on-info)))
-                       (set! info+ast info)
+                       (set! info+ast info) ;;Q-out, do not add to trace
                        (append-map (flush model ast) infos)))
                     (else
                      (let* ((infos (run-interface model trigger on-info flushing? top?))
@@ -369,6 +370,62 @@
                 ((set-trace (reverse (append (reverse (.trace info))
                                              (.trace info+ast)))) info))
               infos))))
+      (($ <action> action)
+       (debug "action[~a, ~a]: ~a\n" (.name model) (->symbol action) (.trail info))
+       (let* ((infos
+               (if (is-a? model <interface>)
+                   (cond
+                    ((not *component*)
+                     (let* ((info (next-action model info trigger action))
+                            (info ((handle-return model trigger action ast flushing?) info)))
+                       (list info)))
+                    ((and flushing?
+                          (eq? (.direction (om:port *component* port)) 'requires))
+                     (let* ((port (or port (.name (om:port *component*))))
+                            (info (skip-trail info port)))
+                       (list info)))
+                    ((eq? (.direction (om:port *component* port)) 'requires)
+                     (let ((info (next-queue? model info trigger action)))
+                       (if (.error info) '()
+                           (let* ((info (enq model info (.return info)))
+                                  (q-trigger (.return info))
+                                  (synth-ast (rsp ast (make <action> :trigger q-trigger)))
+                                  (q (.q info))
+                                  (info ((cons-trace `((q ,q-trigger))) info))
+                                  ;; FIXME: FIRST-IN-Q?? See also: above and run-interface
+                                  (info (if (and (modeling? trigger) (=1 (length q))) info
+                                            ((cons-trace synth-ast) info))))
+                             (list info)))))
+                    (else
+                     (let* ((info (next-action model info trigger action))
+                            (port (or (.port trigger) (.name (om:port *component*))))
+                            (info (skip-trail info port)))
+                       (list info))))
+                   (let* ((action-port (.port action))
+                          (infos
+                           (cond
+                            ;; TauEmitMultiple
+                            ((and flushing?
+                                  #f ;; must be #f for QTriggerModeling, #t fo TauEmitMultiple
+                                  (pair? (.q info))
+                                  (eq? (.direction (om:port model port))
+                                       (.direction (om:port model action-port))
+                                       'requires))
+                             (list info))
+                            ;; TauEmitMultiple hax0r
+                            ;; ((or flushing?
+                            ;;      (and (eq? (.direction (om:port model port)) 'provides)
+                            ;;           (eq? (.direction (om:port model action-port)) 'provides)))
+                            ;;  (list (next-action model info trigger action)))
+                            (else
+                             (let* ((info (next-action model info trigger action))
+                                    (action-info (clone info :trace '())))
+                               (run-interface model action action-info flushing?))))))
+                     (map (handle-return model trigger action ast flushing?) infos)))))
+         (map (lambda (info)
+                ((set-trace (reverse (append (reverse (.trace info))
+                                             (.trace info+ast)))) info))
+              infos)))
       (($ <guard> expression statement)
        (if (eval-expression model state expression)
            (let* ((g-info (clone info :ast statement :trace '()))
@@ -380,75 +437,6 @@
       (($ <illegal>)
        (let ((info (clone (next-illegal model info+ast))))
          (list info)))
-      (($ <action> action)
-       (debug "action[~a, ~a]: ~a\n" (.name model) (->symbol action) (.trail info))
-       (let* ((port (.port action))
-              ;; FIXME: FIRST-IN-Q?? See also: below and run-interface
-              ;; misguided TauEmitMultiple
-              ;; (info+ast (if (and flushing?
-              ;;                    (is-a? model <component>)
-              ;;                    (pair? (.trail info))
-              ;;                    (pair? (.q info))
-              ;;                    (eq? (.direction (om:port model (.port trigger)))
-              ;;                         (.direction (om:port model port))
-              ;;                         'requires))
-              ;;               ((cons-trace '((queue in))) info)
-              ;;               info+ast))
-              (q-info #f)
-              (infos
-               (cond
-                ((and (is-a? model <interface>)
-                      (.port trigger) ;;; *component*
-                      (or (modeling? trigger) (eq? (.direction (om:port *component* (.port trigger))) 'requires))
-                      (let* ((info (next-queue? model info trigger action)))
-                        (and (not (.error info))
-                             (set! q-info info))))
-                 (let* ((info (enq model q-info (.return q-info)))
-                        (q-trigger (.return info))
-                        (synth-ast (rsp ast (make <action> :trigger q-trigger)))
-                        (q (.q info))
-                        (info ((cons-trace `((q ,q-trigger))) info))
-                        ;; FIXME: FIRST-IN-Q?? See also: above and run-interface
-                        (info (if (and (modeling? trigger) (=1 (length q))) info
-                                  ((cons-trace synth-ast) info))))
-                   (list info)))
-                ((and (is-a? model <interface>)
-                      *component*)
-                 (let* ((info (next-action model info trigger action))
-                        ;; misguided TauEmitMultiple
-                        ;; (info
-                        ;;  (if (or (not (.port trigger))
-                        ;;          (eq? (.direction (om:port *component* (.port trigger))) 'requires)) info
-                        ;;          (next-action model info trigger action)))
-                        (port (or (.port trigger) (.name (om:port *component*))))
-                        (info (skip-trail info port)))
-                   (list info)))
-                ((is-a? model <interface>)
-                 (let* ((info (next-action model info trigger action))
-                        (info ((handle-return model trigger action ast flushing?) info)))
-                   (list info)))
-                (else
-                 (let* ((info (next-action model info trigger action))
-                        ;; misguided TauEmitMultiple
-                        ;; (info (if (and flushing?
-                        ;;                (pair? (.q info))
-                        ;;                (eq? (.direction (om:port model (.port trigger)))
-                        ;;                     (.direction (om:port model port))
-                        ;;                     'requires)) info
-                        ;;                     (next-action model info trigger action)))
-                        (action-info (clone info :trace '()))
-                        ;; FIXME: should skip simple provided on e: f<<--
-                        (infos (if (or flushing?
-                                       (and (eq? (.direction (om:port model (.port trigger))) 'provides)
-                                            (eq? (.direction (om:port model port)) 'provides))) (list info)
-                                            (run-interface model action action-info flushing?)))
-                        (infos (map (handle-return model trigger action ast flushing?) infos)))
-                   infos)))))
-         (map
-          (lambda (info)
-            ((set-trace (reverse (append (reverse (.trace info))
-                                         (.trace info+ast)))) info))
-          infos)))
       (($ <assign> identifier expression)
        (debug "assign[~a, ~a]: ~a\n" (.name model) identifier (.trail info))
        (let* ((infos (eval-function-expression model trigger (clone info :ast expression)))
@@ -616,8 +604,7 @@
     (if (or (and *component* (modeling-or-action? interface action))
             (and (not *component*) (modeling-or-action? interface action))
             (and flushing?
-                 ;;misguided TauEmitMultiple
-                 #f
+                 #f ;; #f for QTriggerModeling, #t for TauEmitMultiple
                  (or (is-a? model <interface>) (pair? (.q info)))
                  (eq? (.direction (om:port model (.port trigger)))
                       (.direction (om:port model port))
@@ -750,21 +737,13 @@
         (clone info :error #t)
         (let* ((next (symbol->trigger (car trail)))
                (n-port (.port next)))
-          (cond ((and (is-a? model <interface>)
-                      (eq? (.event next) event)
-                      n-port
-                      *component*
-                      (eq? (.direction (om:port *component* n-port)) 'requires)
-                      ;;(eq? (.direction (om:event model event)) 'out)
-                      )
-                 (clone info :trail (cdr trail) :return next))
-                ((is-a? model <component>)
-                 (if (not (eq? n-port port)) info
-                     (clone info :trail (cdr trail))))
-                (else
-                 ;; asymmetry: next-* must be called if we expect it to succeed
-                 (debug "NOT-Q-ABLE: QUEUE[~a expect:~a]: next:~a\n" (.name model) "??" next)
-                 (clone info :error #t)))))))
+          (if (and (eq? (.event next) event)
+                   n-port
+                   (eq? (.direction (om:port *component* n-port)) 'requires))
+              (clone info :trail (cdr trail) :return next)
+              (and
+               (debug "NOT-Q-ABLE: QUEUE[~a expect:~a]: next:~a\n" (.name model) "??" next)
+               (clone info :error #t)))))))
 
 (define (next-reply model info trigger)
   "eat a 'RETURN or PORT.'RETURN from trail, or error"
@@ -954,5 +933,5 @@
     info))
 
 ;;(define debug-pretty pretty-print)
-;;(define debug stderr)
-;;(define debug-state print-state)
+(define debug stderr)
+(define debug-state print-state)

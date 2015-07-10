@@ -183,3 +183,8 @@ echo
 TRACE='rpa.a rpa.b rpa.c rpa.d rpa.return rpa.e rpa.return rps.a rps.c rps.return'
 echo running $TRACE
 diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/TauEmitMultiple.dzn | grep ^trace: | tr , '\n')
+
+echo
+TRACE='ict.start src.req src.ntfA src.ntfB src.return src.ack src.return src.ack src.return src.done src.return ict.return'
+echo running $TRACE
+diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/QTriggerModeling.dzn | grep ^trace: | tr , '\n')
