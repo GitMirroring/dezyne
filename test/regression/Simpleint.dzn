@@ -39,7 +39,7 @@ component Simpleint
 
   behaviour
   {
-    subint S {0..1};
+    subint S {-1..1};
     S s = 0;
     on p.e(): [s == 0] { s = 1; }
     on p.e(): [s == 1] { p.a(); s = 0; }

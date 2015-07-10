@@ -183,7 +183,11 @@
     (enum-fields comma Identifier) : (append $1 (list $3)))
 
    (subint-spec
-    (subint Identifier lbrace NumericLiteral .. NumericLiteral rbrace semicolon) : (note-location `(int ,$2 #f (range ,$4 ,$6)) @1))
+    (subint Identifier lbrace integer .. integer rbrace semicolon) : (note-location `(int ,$2 #f (range ,$4 ,$6)) @1))
+
+   (integer
+    (NumericLiteral): $1
+    (- NumericLiteral): (- $2))
 
    (extern-spec
     (extern Identifier Data semicolon) : (note-location `(extern ,$2 #f ,$3) @1))
@@ -194,7 +198,7 @@
    (expr
     (false) : $1
     (true) : $1
-    (NumericLiteral) : $1
+    (integer) : $1
     (compound-identifier) : $1
     (Data) : (note-location `(data ,$1) @1)
 
@@ -219,6 +223,7 @@
 
     (function-call) : $1
     (action) : $1)
+
 
    (function-call
     (Identifier lparen rparen) : (note-location `(call ,$1) @1)
