@@ -370,8 +370,9 @@
                   (infos (map (handle-return model trigger trigger ast flushing?) infos)))
              (map
               (lambda (info)
-                ((set-trace (reverse (append (reverse (.trace info))
-                                             (.trace info+ast)))) info))
+                ((set-trace (reverse (append
+                                      (reverse (.trace info))
+                                      (.trace info+ast)))) info))
               infos))))
       (($ <action> action)
        (debug "action[~a, ~a]: ~a\n" (.name model) (->symbol action) (.trail info))
@@ -379,9 +380,7 @@
                (if (is-a? model <interface>)
                    (cond
                     ((not *component*)
-                     (let* ((info (next-action model info trigger action))
-                            (info ((handle-return model trigger action ast flushing?) info)))
-                       (list info)))
+                     (list (next-action model info trigger action)))
                     ((and flushing?
                           (eq? (.direction (om:port *component* port)) 'requires))
                      (let* ((port (or port (.name (om:port *component*))))
@@ -404,37 +403,39 @@
                             (port (or (.port trigger) (.name (om:port *component*))))
                             (info (skip-trail info port)))
                        (list info))))
+                   ;; else: component
                    (let* ((action-port (.port action))
+                          (on-dir (.direction (om:port model port)))
+                          (action-dir (.direction (om:port model action-port)))
                           (infos
                            (cond
-                            ((and (eq? (.direction (om:port model port)) 'provides)
-                                  (eq? (.direction (om:port model action-port)) 'provides))
+                            ((and (eq? on-dir action-dir 'provides))
                              (list (next-action model info trigger action)))
                             ((and flushing?
-                                  (eq? (.direction (om:port model port)) 'requires)
-                                  (eq? (.direction (om:port model action-port)) 'requires)
+                                  (eq? on-dir 'requires)
+                                  (eq? action-dir 'provides))
+                             (list (next-action model info trigger action)))
+                            ((and flushing?
+                                  (eq? on-dir action-dir 'requires)
                                   ;; FIXME: 1ST Q
                                   (>1 (length (.q info))))
                              ;; Q-out: must not have AST in trace
                              (set! info+ast ((cons-trace '((q skip))) info))
-                             ;; ??
-                             (if (null? (.q info))
-                                 (list (next-action model info trigger action))
-                                 (list info)))
-                            ((and flushing?
-                                  (eq? (.direction (om:port model port)) 'requires)
-                                  (eq? (.direction (om:port model action-port)) 'provides))
-                                (list (next-action model info trigger action)))
+                             ;; FIXME: 1ST Q
+                             (let ((info (if (pair? (.q info)) info
+                                             (next-action model info trigger action))))
+                               (list info)))
                             (else
                              (let* ((action-info (clone info :trace '()))
                                     (info (next-action model info trigger action))
-                                    (action-info (if (and flushing?
-                                                      (eq? (.direction (om:port model port)) 'requires)
-                                                      (eq? (.direction (om:port model action-port)) 'provides))
-
-                                                  action-info (clone info :trace '()))))
-                               (run-interface model action action-info flushing?))))))
-                     (map (handle-return model trigger action ast flushing?) infos)))))
+                                    (action-info
+                                     (if (and flushing?
+                                              (eq? on-dir 'requires)
+                                              (eq? action-dir 'provides)) action-info
+                                              (clone info :trace '())))
+                                    (infos (run-interface model action action-info flushing?)))
+                               (map (handle-return model trigger action ast flushing?) infos))))))
+                     infos))))
          (map (lambda (info)
                 ((set-trace (reverse (append (reverse (.trace info))
                                              (.trace info+ast)))) info))
@@ -564,7 +565,9 @@
 
          (foo (debug "\nQQQ FLUSH before trail: ~a\n" trail))
          (foo (debug "QQQ FLUSH before q: ~a\n" q))
-         ;; FIXME: 1ST Q "Sometimes"
+         ;; FIXME: 1ST When head of Q does not match trail already
+         ;; processing this ON?, must remove if or else removal of
+         ;; other Q-actions from trail will fail.
          (q (if (or (null? q) (null? trail) (eq? (->symbol (car q)) (car trail))) q
                 (cdr q)))
          (trail (let loop ((q q) (trail trail))
@@ -589,7 +592,6 @@
   (debug "flush: component-info: trail: ~a\n" (.trail component-info))
   (let loop ((info component-info))
     (debug "q: ~a\n" (.q info))
-    ;; (debug "q info: ~a\n" info)
     (if (not (peeq info))
         (list info)
         (let* ((trigger (peeq info))
@@ -600,33 +602,16 @@
                (foo (debug "flush feeding: ~a\n" (.trail info)))
                (info (clone info :trace '() ))
                (infos (run-trigger model info #t))
-               (foo (debug "FLUSH DONE: infos: ~a\n" (length infos)))
                (infos (prune infos))
-               (foo (debug "FLUSH DONE: pruned infos: ~a\n" (length infos)))
-               (foo (debug "FLUSH DONE: trail: ~a\n" (and (pair? infos) (.trail (car infos)))))               
                (complete-trace (lambda (t) (append (.trace component-info) t)))
                (infos (map (modify-trace complete-trace) infos)))
           (append-map loop infos)))))
 
-;; FIXME: we don't do anything in a very complicated set of cases
-;; see when that is, and don't call us?
 (define ((handle-return model trigger action ast flushing?) info)
   (let* ((port (.port action))
          (interface (if (is-a? model <interface>) model
                         (run:import (.type (om:port model port))))))
-    (if (or (and *component* (modeling-or-action? interface action))
-            (and (not *component*) (modeling-or-action? interface action))
-            (and flushing?
-
-                 (or (is-a? model <interface>)
-                     (pair? (.q info)))
-                 (or (is-a? model <interface>)
-                     (eq? (.direction (om:port model (.port trigger)))
-                          (.direction (om:port model (.port action)))
-                          'requires))
-
-                 ;; FIXME: 1ST Q
-                 (>1 (length (.q info)))))
+    (if (modeling-or-action? interface action)
         info
         (let* ((info (if (om:typed? model action)
                          (next-reply model info action)
@@ -810,7 +795,7 @@
                        (clone info :trail (cdr trail) :return return))
                       ((and (eq? (car trail) 'illegal)
                             (is-a? model <component>))
-                        ;; interface already matched illegal, we need a return!
+                       ;; interface already matched illegal, we need a return!
                        (clone info :trail (cdr trail) :return return))
                       (else
                        (debug "REJECT-TRACE: RETURN[~a expect:~a] next: ~a\n" (.name model) reply next)
