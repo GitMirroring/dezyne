@@ -6,15 +6,12 @@ verify: ISimple: check: livelock: ok
 
 verify: Simpleint2: check: deterministic: ok
 
-verify: Simpleint2: check: completeness: fail
-Simpleint2 is incomplete: 'p.e' not handled
+verify: Simpleint2: check: completeness: ok
 
 verify: Simpleint2: check: illegal: ok
 
-verify: Simpleint2: check: deadlock: fail
-deadlock in model Simpleint2
+verify: Simpleint2: check: deadlock: ok
 
-verify: Simpleint2: check: compliance: fail
-p.e not performed by component
+verify: Simpleint2: check: compliance: ok
 
 verify: Simpleint2: check: livelock: ok

@@ -63,7 +63,11 @@ interface Provides
   out void finish();
   behaviour
   {
-    on start: {busy; finish;}
+    on start:
+      {
+        busy;
+        finish;
+      }
   }
 }
 
@@ -75,7 +79,11 @@ interface Requires
 
   behaviour
   {
-    on ping: { pong; pong; }
+    on ping:
+      {
+        pong;
+        pong;
+      }
   }
 }
 

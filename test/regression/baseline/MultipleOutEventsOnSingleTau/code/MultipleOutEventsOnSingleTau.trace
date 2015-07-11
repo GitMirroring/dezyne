@@ -6,7 +6,3 @@ pp.ob
 rp.ca
 rp.return
 sut.pp.return -> <external>..return
-<external>..ca -> sut.pp.ca
-rp.ca
-rp.return
-sut.pp.return -> <external>..return

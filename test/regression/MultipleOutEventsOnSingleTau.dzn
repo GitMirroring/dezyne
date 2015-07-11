@@ -26,46 +26,87 @@ interface IMultipleOutEventsOnSingleTau
   out void oa();
   out void ob();
 
-  behaviour
+  behaviour 
   {
-    enum States {Closed, Emitting, Open};
+    enum States { Closed, Emitting, Open };
     States state = States.Closed;
-
     [state.Closed]
+    {
+      on ca:
+      illegal;
+      on ca:
       {
-        on ca: illegal;
-        on ca: {}
-        on inevitable: {oa; ob; state = States.Open;}
-        on inevitable: {oa; state = States.Emitting;}
       }
+      on inevitable:
+      {
+        oa;
+        ob;
+        state = States.Open;
+      }
+      on inevitable:
+      {
+        oa;
+        state = States.Emitting;
+      }
+    }
     [state.Emitting]
+    {
+      on ca:
+      illegal;
+      on ca:
       {
-        on ca: illegal;
-        on ca: {}
-        on inevitable: {ob; state = States.Open;}
       }
+      on inevitable:
+      {
+        ob;
+        state = States.Open;
+      }
+    }
     [state.Open]
-      {
-        on ca: state = States.Closed;
-      }
+    {
+      on ca:
+      state = States.Closed;
+    }
   }
 }
-
-
 component MultipleOutEventsOnSingleTau
 {
   provides IMultipleOutEventsOnSingleTau pp;
   requires IMultipleOutEventsOnSingleTau rp;
 
-  behaviour
+  behaviour 
   {
     bool combine_out = false;
     bool ca_enabled = false;
-
-    on pp.ca(): {if (ca_enabled) {rp.ca(); combine_out = !combine_out;}}
-    on rp.oa(): [combine_out] {}
-    on rp.oa(): [!combine_out] {pp.oa();}
-    on rp.ob(): [combine_out] {pp.oa(); pp.ob(); ca_enabled = true;}
-    on rp.ob(): [!combine_out] {pp.ob(); ca_enabled = true;}
+    on pp.ca():
+    {
+      if (ca_enabled)
+      {
+        rp.ca();
+        combine_out = !combine_out;
+      }
+    }
+    on rp.oa():
+    [combine_out]
+    {
+    }
+    on rp.oa():
+    [!combine_out]
+    {
+      pp.oa();
+    }
+    on rp.ob():
+    [combine_out]
+    {
+      pp.oa();
+      pp.ob();
+      ca_enabled = true;
+    }
+    on rp.ob():
+    [!combine_out]
+    {
+      pp.ob();
+      ca_enabled = true;
+    }
   }
 }

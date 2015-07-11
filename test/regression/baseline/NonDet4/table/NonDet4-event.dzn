@@ -20,7 +20,7 @@
 //
 // Code:
 
-interface NonDet3
+interface NonDet4
 {
   in void init();
   in void work();

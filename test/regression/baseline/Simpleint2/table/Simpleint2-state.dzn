@@ -48,6 +48,9 @@ component Simpleint2
   {
     subint S {0..1};
     S s = 0;
+    [s == 0]
+    on p.e():
+    s = 1;
     [s == 1]
     on p.e():
     {

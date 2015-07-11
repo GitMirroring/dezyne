@@ -20,7 +20,7 @@
 //
 // Code:
 
-interface NonDet3
+interface NonDet4
 {
   in void init();
   in void work();
@@ -64,7 +64,7 @@ interface NonDet3
     {
       on work:
       mainState = States.Working;
-        
+
       {
         [true]
           on stop:
@@ -90,7 +90,7 @@ interface NonDet3
       // {
       //   {error; mainState = States.Error;}
       // }
-        
+
       on stop:
         mainState = States.Stopping;
 

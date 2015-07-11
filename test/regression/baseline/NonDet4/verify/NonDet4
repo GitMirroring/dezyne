@@ -1,0 +1,5 @@
+verify: NonDet4: check: completeness: ok
+
+verify: NonDet4: check: deadlock: ok
+
+verify: NonDet4: check: livelock: ok
