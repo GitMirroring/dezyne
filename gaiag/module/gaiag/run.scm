@@ -317,8 +317,11 @@
 
 (define* ((run- model trigger :optional (flushing? #f) (top? #f)) info)
   (define (trigger-matches? t)
-    (debug "MATCH?: ~a == ~a ==> ~a\n" (->symbol t) (->symbol trigger) (if (is-a? model <component>) (equal? t trigger) (eq? (.event t) (.event trigger))))
-    (if (is-a? model <component>) (equal? t trigger) (eq? (.event t) (.event trigger))))
+    (let ((r (if (is-a? model <interface>) (eq? (.event t) (.event trigger))
+                 (and (eq? (.port t) (.port trigger))
+                      (eq? (.event t) (.event trigger))))))
+      (debug "MATCH?: ~a == ~a ==> ~a\n" (->symbol t) (->symbol trigger) r)
+      r))
   (debug "\nrun[~a, ~a]: ~a trail:~a\n" (.name model) (->symbol trigger) (ast-name (.ast info)) (map ->symbol (.trail info)))
   (debug-state model info)
   (debug-pretty (map trace-location (.trace info)) (current-error-port))
