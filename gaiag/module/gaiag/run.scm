@@ -164,16 +164,15 @@
 
 (define* (run-trigger model info :optional (flushing? #f) (top? #f))
   (define (run-trigger-from-trail info)
-    (let* ((info (next-trigger model info))
+    (let* ((info (next-trigger model info flushing?))
            (trigger (.return info))
            (info (clone info :return 'return)))
       (if (or (and (is-a? model <interface>) (not (modeling-or-action? model trigger))) (is-a? model <component>)) ((run model trigger flushing? top?) info)
           (let ((triggers (map (lambda (e) (make <trigger> :port (.port trigger) :event e)) '(inevitable optional)))
                 (action-triggers (triggers-for-action model trigger)))
-            ;; X-INFO: FIXME 1ST Q
-            (let ((x-info (if (or #t (not flushing?)) info (clone info :trail (cons (->symbol trigger) (.trail info))))))
-              (if (not (modeling? trigger)) (append-map (lambda (t) (prune ((run model t flushing? top?) x-info))) action-triggers)
-                  (append-map (lambda (t) (prune ((run model t flushing? top?) x-info) info)) triggers)))))))
+            (if (not (modeling? trigger)) (append-map (lambda (t) (prune ((run model t flushing? top?) info))) action-triggers)
+                (append-map (lambda (t) (prune ((run model t flushing? top?) info) info)) triggers))
+))))
   
   (debug "\n\nrun-trigger[~a, ~a]:~a\n" (.name model) (->symbol (car (.trail info))) top?)
   (debug-state model info)
@@ -309,6 +308,7 @@
   (let* ((ast (.ast info))
          (r ((run- model trigger flushing? top?) info)))
     (debug "   RUN DONE\n")
+    (if (null? r) (stderr "NOTHING MATCHES: ~a\n" (.trail info)))
     (and (pair? r) (eq? (ast-name r) 'info) (debug "INFO: ~a\n" r) BARF-SINGLE-INFO)
     (debug "   ==> infos: ~a\n" (length r))
     ;;;(debug "   ==> done[~a, ~a]: ~a (car infos): ~a\n" (.name model) (->symbol trigger) (ast-name ast) (and (pair? r) (car r)))
@@ -414,6 +414,9 @@
                             ((and flushing?
                                   (eq? on-dir 'requires)
                                   (eq? action-dir 'provides))
+                             (stderr "Q: ~a\n" (.q info))
+                             (stderr "flushing: ~a\n" flushing?)
+                             (stderr "trail: ~a\n" (.trail info))
                              (list (next-action model info trigger action)))
                             ((and flushing?
                                   (eq? on-dir action-dir 'requires)
@@ -685,12 +688,18 @@
      (debug "not a trigger: ~a\n" event)
      #f)))
 
-(define (next-trigger model info)
+(define (next-trigger model info flushing?)
   (let* ((trail (.trail info)))
     (if (null? trail)
         info
-        (let ((return (symbol->trigger (car trail))))
-          (clone info :trail (cdr (.trail info)) :return return :trace (cons return (.trace info)))))))
+        (let* ((trigger (symbol->trigger (car trail)))
+               (info (clone info :return trigger :trace (cons trigger (.trace info))))
+               (modeling-or-action? (modeling-or-action? model trigger))
+               (foo (debug "MODELING-OR-ACTION[~a, ~a]: ~a\n" (.name model) (car trail) modeling-or-action?)))
+          (if (and (is-a? model <interface>)
+                   modeling-or-action?)
+              info
+              (clone info :trail (cdr (.trail info))))))))
 
 (define (next-action model info trigger action)
   (let ((trail (.trail info)))
@@ -710,6 +719,7 @@
             (clone info :trail (cdr (.trail info)))
             (and
              (debug "REJECT-TRACE: ACTION[~a expect:~a]: next:~a\n" (.name model) action next)
+             ;;(if (and (eq? (car trail) 'pp.ob) (eq? (->symbol action) 'pp.oa)) barf)
              ((cons-trace
                (list 'reject 'action (.name model) 'next next 'expected action))
               (clone info :error #t)))))))))
