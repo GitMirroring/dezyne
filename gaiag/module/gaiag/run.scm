@@ -173,7 +173,7 @@
             (if (not (modeling? trigger)) (append-map (lambda (t) (prune ((run model t flushing? top?) info))) action-triggers)
                 (append-map (lambda (t) (prune ((run model t flushing? top?) info) info)) triggers))
 ))))
-  
+
   (debug "\n\nrun-trigger[~a, ~a]:~a\n" (.name model) (->symbol (car (.trail info))) top?)
   (debug-state model info)
   (debug "trigger: ~a\n" (->string (car (.trail info))))
@@ -316,8 +316,6 @@
     (debug "   ==> ") (if (pair? r) (debug-state model (car r)) '())
     r))
 
-(define urgcount 0)
-
 (define* ((run- model trigger :optional (flushing? #f) (top? #f)) info)
   (define (trigger-matches? t)
     (let ((r (if (is-a? model <interface>) (eq? (.event t) (.event trigger))
@@ -353,7 +351,10 @@
                      ((run model trigger flushing? top?) on-info))
                     ((and flushing? (eq? (.direction (om:port model port)) 'requires))
                      (let* ((infos ((run model trigger flushing? top?) on-info)))
-                       (set! info+ast info) ;;Q-out, do not add to trace
+                       ;; FIXME: mark this info+ast with a NULL trigger
+                       ;; so that it will be omitted from the ouput trail.
+                       ;; We do want the AST, however, in the trace output.
+                       (set! info+ast ((cons-trace ast) ((cons-trace (make <trigger>)) info)))
                        (append-map (flush model ast) infos)))
                     (else
                      (let* ((infos (run-interface model trigger on-info flushing? top?))
@@ -364,7 +365,11 @@
                             (infos (map (set-fields :ast statement) infos))
                             (infos (append-map (run model trigger flushing? top?) infos))
                             (infos (if any-interface-success? infos
-                                       (map (set-fields :error #t) infos))))
+                                       (map (set-fields :error #t) infos)))
+                            (infos (map (lambda (info)
+                                          (if (or (null? (.q info)) (not (trigger-matches? (car (.q info))))) info
+                                              (deq info)))
+                                        infos)))
                        (append-map (flush model ast) infos)))))
                   (infos (prune infos))
                   (infos (map (handle-return model trigger trigger ast flushing?) infos)))
@@ -394,8 +399,7 @@
                                   (synth-ast (rsp ast (make <action> :trigger q-trigger)))
                                   (q (.q info))
                                   (info ((cons-trace `((q ,q-trigger))) info))
-                                  ;; FIXME: 1ST Q?? See also: above and run-interface
-                                  (info (if (and (modeling? trigger) (=1 (length q))) info
+                                  (info (if (null? (.q info)) info
                                             ((cons-trace synth-ast) info))))
                              (list info)))))
                     (else
@@ -407,38 +411,16 @@
                    (let* ((action-port (.port action))
                           (on-dir (.direction (om:port model port)))
                           (action-dir (.direction (om:port model action-port)))
+                          (info (next-action model info trigger action))
                           (infos
-                           (cond
-                            ((and (eq? on-dir action-dir 'provides))
-                             (list (next-action model info trigger action)))
-                            ((and flushing?
-                                  (eq? on-dir 'requires)
-                                  (eq? action-dir 'provides))
-                             (stderr "Q: ~a\n" (.q info))
-                             (stderr "flushing: ~a\n" flushing?)
-                             (stderr "trail: ~a\n" (.trail info))
-                             (list (next-action model info trigger action)))
-                            ((and flushing?
-                                  (eq? on-dir action-dir 'requires)
-                                  ;; FIXME: 1ST Q
-                                  (>1 (length (.q info))))
-                             ;; Q-out: must not have AST in trace
-                             (set! info+ast ((cons-trace '((q skip))) info))
-                             ;; FIXME: 1ST Q
-                             (let ((info (if (pair? (.q info)) info
-                                             (next-action model info trigger action))))
-                               (list info)))
-                            (else
-                             (let* ((action-info (clone info :trace '()))
-                                    (info (next-action model info trigger action))
-                                    (action-info
-                                     (if (and flushing?
-                                              (eq? on-dir 'requires)
-                                              (eq? action-dir 'provides)) action-info
-                                              (clone info :trace '())))
-                                    (infos (run-interface model action action-info flushing?)))
-                               (map (handle-return model trigger action ast flushing?) infos))))))
-                     infos))))
+                           (if (and (eq? action-dir 'provides)
+                                    (or (eq? on-dir 'provides)
+                                        (and (eq? on-dir 'requires)
+                                             flushing?)))
+                               (list info)
+                               (let ((action-info (clone info :trace '())))
+                                 (run-interface model action action-info flushing?)))))
+                     (map (handle-return model trigger action ast flushing?) infos)))))
          (map (lambda (info)
                 ((set-trace (reverse (append (reverse (.trace info))
                                              (.trace info+ast)))) info))
@@ -719,7 +701,6 @@
             (clone info :trail (cdr (.trail info)))
             (and
              (debug "REJECT-TRACE: ACTION[~a expect:~a]: next:~a\n" (.name model) action next)
-             ;;(if (and (eq? (car trail) 'pp.ob) (eq? (->symbol action) 'pp.oa)) barf)
              ((cons-trace
                (list 'reject 'action (.name model) 'next next 'expected action))
               (clone info :error #t)))))))))

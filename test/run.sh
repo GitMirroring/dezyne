@@ -170,6 +170,11 @@ echo running $TRACE
 diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/RequiredOptional.dzn | grep ^trace: | tr , '\n')
 
 echo
+TRACE='console.arm sensor.enable sensor.return console.return sensor.triggered console.detected siren.turnon siren.return console.disarm sensor.disable sensor.return siren.turnoff siren.return console.return sensor.disabled console.deactivated console.arm sensor.enable sensor.return console.return sensor.triggered console.detected siren.turnon siren.return'
+echo running $TRACE
+diff -u <(echo trace:$TRACE|tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/Alarm.dzn | grep ^trace: | tr , '\n')
+
+echo
 TRACE='rpa.a rpa.b rpa.c rpa.d rpa.return rpa.e rpa.return'
 echo running $TRACE
 diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/TauEmitMultiple.dzn | grep ^trace: | tr , '\n')
@@ -186,5 +191,10 @@ diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) r
 
 echo
 TRACE='ict.start src.req src.ntfA src.ntfB src.return src.ack src.return src.ack src.return src.done src.return ict.return'
+echo running $TRACE
+diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/QTriggerModeling.dzn | grep ^trace: | tr , '\n')
+
+echo
+TRACE='ict.start src.req src.ntfA src.ntfB src.return src.ack src.return src.ack src.return src.done src.return ict.return ict.start src.reqValued src.ntfA src.ntfB src.EmitResult_Two src.ack src.return src.ack src.return src.done src.return ict.return'
 echo running $TRACE
 diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/QTriggerModeling.dzn | grep ^trace: | tr , '\n')

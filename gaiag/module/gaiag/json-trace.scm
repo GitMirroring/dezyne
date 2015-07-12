@@ -30,7 +30,7 @@
   :use-module (gaiag pretty-print)
   :use-module (gaiag reader)
   :use-module (gaiag evaluate)
-  :use-module (gaiag run)  
+  :use-module (gaiag run)
 
   :use-module (gaiag ast)
 
@@ -118,7 +118,7 @@
           (alist->hash-table
            `((type . state)
              (state . ,(state->json state))))
-          (loop (cdr trace) trigger state trail))))       
+          (loop (cdr trace) trigger state trail))))
        ((eq? (caar trace) 'trail)
         (let ((trail (cdar trace)))
           (cons
@@ -132,7 +132,7 @@
            (alist->hash-table
             `((type . error)
               (trail . ,trail)))
-           (loop (cdr trace) trigger state trail))))       
+           (loop (cdr trace) trigger state trail))))
        ((is-a? (car trace) <trigger>)
         (loop (cdr trace) (car trace) state trail))
        (else
@@ -145,11 +145,11 @@
                 (alist->hash-table
                  (let* ((component (and (om:parent model statement) name))
                         (instance (if (is-a? model <interface>) name
-                                      (or component (.port trigger))))
+                                      component))
                         (event
                          (match statement
                            (($ <on> ('triggers t h ...))
-                            (if component (->symbol trigger)
+                            (if (and component (.event trigger)) (->symbol trigger)
                                 (.event trigger)))
                            (($ <action> trigger)
                             (if (and (is-a? model <component>)
