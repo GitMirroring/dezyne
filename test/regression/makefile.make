@@ -44,10 +44,8 @@ BROKEN_cs:=\
 # c++ is main language, can never be broken
 
 # error: Reply5: variable s is already defined in method i_done()
-# error: R: non-static type variable R cannot be referenced from a static context
 BROKEN_java:=\
  regression/Reply5.dzn\
- regression/R.dzn\
 
 # function function()
 BROKEN_javascript:=\

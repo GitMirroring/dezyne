@@ -1,6 +1,4 @@
 <external>..e -> sut.p.e
 r.e
-<external>..a -> sut.r.a
 r.return
-p.a
 sut.p.return -> <external>..return

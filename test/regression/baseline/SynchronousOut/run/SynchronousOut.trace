@@ -1,6 +1,1 @@
-pp.valued_event
-rp.valued_event
-rp.out_event
-rp.Val_One
-pp.out_event
-pp.Val_One
+pp.void_event

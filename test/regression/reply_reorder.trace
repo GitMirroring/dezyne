@@ -1,6 +1,4 @@
 p.start
-r.ping
 r.pong
+p.start
 r.pong
-r.return
-p.return
