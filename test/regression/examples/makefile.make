@@ -32,15 +32,19 @@ BROKEN_code:=\
 
 BROKEN_c:=\
   $(CDIR)GarageDoorControl.dzn\
+  $(CDIR)GarageDoorControlErr.dzn\
 
 BROKEN_goops:=\
   $(CDIR)GarageDoorControl.dzn\
+  $(CDIR)GarageDoorControlErr.dzn\
 
 BROKEN_java:=\
   $(CDIR)GarageDoorControl.dzn\
+  $(CDIR)GarageDoorControlErr.dzn\
 
 BROKEN_javascript:=\
   $(CDIR)GarageDoorControl.dzn\
+  $(CDIR)GarageDoorControlErr.dzn\
 
 $(foreach lang,$(LANGUAGES), $(eval BROKEN_$(lang)+=$(BROKEN_code)))
 
