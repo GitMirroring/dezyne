@@ -7,11 +7,7 @@ or else first interface:
    Alarm.dzn: Alarm.trace, Alarm.trace.2, Alarm.trace.3
 
 This means that tests for multiple models in one file, files must be
-split and copied; imports do not play nice with the naive grepping in
-the test framework.
-
-Also the base name of the file and the base name of the trace files
-must match the name of the model under test.
+split or copied, or adding can be skipped (postponed).
 
 x: added
 s: skipped
@@ -30,44 +26,36 @@ x PASSED Test case [non-deterministic.dzn, NonDet, non-deterministic.net]
 x PASSED Test case [non-deterministic2.dzn, NonDet, non-deterministic2MultiMatch.net]
 
 x PASSED Test case [webdemo.dzn, Alarm_Impl, webdemo.net]
-# look lots like from Reply..Reply7, need many renames, skip for now
-s PASSED Test case [reply_event.dzn, I, IntfValuedInEvent.net]
-s PASSED test case [reply_event.dzn, IIf, IntfIfStatement.net]
-s PASSED test case [reply_event.dzn, IVar, IntfLocalVariable.net]
-s PASSED test case [reply_event.dzn, C3, CompValuedEvents.net]
-s PASSED test case [reply_event.dzn, CValuedActionAssign, CompValuedAction.net]
+# look lots like from Reply..Reply7  skip for now
+PASSED Test case [reply_event.dzn, I, IntfValuedInEvent.net]
+PASSED test case [reply_event.dzn, IIf, IntfIfStatement.net]
+PASSED test case [reply_event.dzn, IVar, IntfLocalVariable.net]
+PASSED test case [reply_event.dzn, C3, CompValuedEvents.net]
+PASSED test case [reply_event.dzn, CValuedActionAssign, CompValuedAction.net]
 
-x PASSED Test case [functioncall.dzn, IFunctionCall, functioncall.interface.net]
-x PASSED Test case [functioncall.dzn, IFunctionCallArgs, functioncall.interfaceargs.net]
-x PASSED test case [functioncall.dzn, IFunctionCallNest, functioncall.interfacenest.net]
-x PASSED Test case [functioncall.dzn, IFunctionCallAssignment, functioncall.interfaceassign.net]
-x PASSED Test case [functioncall.dzn, IFunctionCallVarDecl, functioncall.interfacevardecl.net]
-x PASSED Test case [invalidvalue.dzn, TestInt, invalidvalue.net]
+PASSED Test case [functioncall.dzn, IFunctionCall, functioncall.interface.net]
+PASSED Test case [functioncall.dzn, IFunctionCallArgs, functioncall.interfaceargs.net]
+PASSED test case [functioncall.dzn, IFunctionCallNest, functioncall.interfacenest.net]
+PASSED Test case [functioncall.dzn, IFunctionCallAssignment, functioncall.interfaceassign.net]
+PASSED Test case [functioncall.dzn, IFunctionCallVarDecl, functioncall.interfacevardecl.net]
+PASSED Test case [invalidvalue.dzn, TestInt, invalidvalue.net]
 
-x PASSED test case [queuedTauTriggeredOutEvent.dzn, CConsumeMulti, TauEmitOutEvent.net]
-x PASSED Test case [queuedCallTriggeredOutEvent.dzn, CComp, CallTriggeredCallTriggeredOutEvent.net]
-x PASSED test case [queuedCallTriggeredOutEvent.dzn, CComp, TauTriggeredCallTriggeredOutEvent.net]
-
-x PASSED Test case [choice.dzn, Choice, choice.net]
-x PASSED Test case [choice2.dzn, Choice, choice2.net]
-
-x PASSED Test case [dataVariables.dzn, DataVariables, dataVariables.net]
-x PASSED Test case [incomplete.dzn, Incomplete, incomplete.net]
-
-s PASSED Test case [BurglarAlarm.dzn, AlarmConsole, BurglarAlarm.net]
-x PASSED Test case [synchronous_livelock.dzn, Synchronous_Livelock, synchronous_livelock.net]
-
-x PASSED test case [NonDetHiddenTransition.dzn, NonDetHiddenTransition, NonDetHiddenTransition.net]
-
-x PASSED test case [MultipleOutEventsOnSingleTau.dzn, MultipleOutEventsOnSingleTau, MultipleOutEventsOnSingleTau.net]
-x PASSED test case [MultipleOutEventsOnSingleTau.dzn, IMultipleOutEventsOnSingleTau, IMultipleOutEventsOnSingleTau.net]
-
-x PASSED test case [TauEmitMultiOut.dzn, CConsumeMulti, TauEmitMultipleOut.net]
-
-x PASSED Test case [OutEventSetReply.dzn, OutEventSetReply, OutEventSetReply.net]
-
-x PASSED Test case [ignoreNotification.dzn, C, ignoreNotification.net]
-
+PASSED test case [queuedTauTriggeredOutEvent.dzn, CConsumeMulti, TauEmitOutEvent.net]
+PASSED Test case [queuedCallTriggeredOutEvent.dzn, CComp, CallTriggeredCallTriggeredOutEvent.net]
+PASSED test case [queuedCallTriggeredOutEvent.dzn, CComp, TauTriggeredCallTriggeredOutEvent.net]
+PASSED Test case [choice.dzn, Choice, choice.net]
+PASSED Test case [choice2.dzn, Choice, choice2.net]
+PASSED Test case [dataVariables.dzn, DataVariables, dataVariables.net]
+PASSED Test case [incomplete.dzn, Incomplete, incomplete.net]
+PASSED Test case [BurglarAlarm.dzn, AlarmConsole, BurglarAlarm.net]
+PASSED Test case [synchronous_livelock.dzn, Synchronous_Livelock, synchronous_livelock.net]
+PASSED test case [NonDetHiddenTransition.dzn, NonDetHiddenTransition,
+NonDetHiddenTransition.net]
+PASSED test case [MultipleOutEventsOnSingleTau.dzn, MultipleOutEventsOnSingleTau, MultipleOutEventsOnSingleTau.net]
+PASSED test case [MultipleOutEventsOnSingleTau.dzn, IMultipleOutEventsOnSingleTau, IMultipleOutEventsOnSingleTau.net]
+PASSED test case [TauEmitMultiOut.dzn, CConsumeMulti, TauEmitMultipleOut.net]
+PASSED Test case [OutEventSetReply.dzn, OutEventSetReply, OutEventSetReply.net]
+PASSED Test case [ignoreNotification.dzn, C, ignoreNotification.net]
 PASSED test case [errorModels/ComplianceErrors/ExecuteWithoutCommunicate.dzn, Able, ExecuteWithoutCommunicate.net]
 PASSED test case [errorModels/ComplianceErrors/IllegalAsynchronousOutEvent.dzn, IllegalAsynchronousOutEvent, IllegalAsynchronousOutEvent.net]
 PASSED Test case [errorModels/ComplianceErrors/IllegalInEvent.dzn, IllegalIn, IllegalInEvent.net]

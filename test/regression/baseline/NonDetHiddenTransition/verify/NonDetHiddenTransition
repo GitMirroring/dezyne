@@ -1,5 +1,0 @@
-verify: NonDetHiddenTransition: check: completeness: ok
-
-verify: NonDetHiddenTransition: check: deadlock: ok
-
-verify: NonDetHiddenTransition: check: livelock: ok

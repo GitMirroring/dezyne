@@ -1,5 +1,0 @@
-verify: U: check: completeness: ok
-
-verify: U: check: deadlock: ok
-
-verify: U: check: livelock: ok
