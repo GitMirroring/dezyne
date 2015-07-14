@@ -1,6 +1,6 @@
 # Gaiag --- Guile in Asd In Asd in Guile.
 # Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
-# Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+# Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 # Copyright © 2014 Jan Nieuwenhuizen <jan@avatar.nl>
 # Copyright © 2014, 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 # Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
@@ -43,7 +43,7 @@ GUILE_LOAD_PATH = $(GAIAG_PREFIX):$(GAIAG_PREFIX)/module
 GUILE_FLAGS := $(patsubst %,-L %, $(subst :, ,$(GUILE_LOAD_PATH)))
 PYTHON = PYTHONPATH=out python
 WFC = true
-#WFC = $(TOPDIR)/$(BUILD)/asdgenerator
+#WFC = $(TOPDIR)/$(BUILD)/generator
 
 default: all
 
@@ -250,7 +250,7 @@ c-alarm:
 		examples/Siren.dzn\
 		examples/AlarmSystem.dzn\
 		;\
-	do $(shell pwd)/../build/asdgenerator -l scm $$file && $(shell pwd)/gaiag -l c $$(basename $$file .dzn).scm; done
+	do $(shell pwd)/../build/generator -l scm $$file && $(shell pwd)/gaiag -l c $$(basename $$file .dzn).scm; done
 	#do $(shell pwd)/gaiag -l c $$file; done
 	cd out && ln -s ../examples/alarm.c .
 	#cp baseline/{AlarmSystem,Alarm,Sensor,Siren}.{h,c} out
@@ -413,7 +413,7 @@ out/%.refines: examples/regression/%.dzn
 
 define .WEBDEMO_REFINES
 rm -rf out && mkdir -p out/webdemo && ln -s ../../$(DEPTH)/webapp/server/commands ../../templates out/webdemo && ln -s commands/examples out/webdemo/examples && ln -s commands out/webdemo/webdemo && ln -s ../$(DEPTH)/webapp out
-cd out/webdemo && $(TOPDIR)/$(BUILD)/asdgenerator -M -l scm $<
+cd out/webdemo && $(TOPDIR)/$(BUILD)/generator -M -l scm $<
 cd out/webdemo && $(shell pwd)/gaiag -l csp $*.scm
 [ -f out/webdemo/$*.csp ] || mv out/webdemo/*.csp out/webdemo/$*.csp
 $(diff) baseline/webdemo/$*.csp out/webdemo || true
@@ -437,7 +437,7 @@ out/webdemo/%.refines: examples/regression/%.dzn
 define .ASSERT_REFINES
 rm -rf out && mkdir -p out/assert && ln -s ../../examples ../templates ../../$(DEPTH)/examples/assert out/assert
 ln -s assert out/examples
-cd out/assert && $(TOPDIR)/$(BUILD)/asdgenerator -M -l scm $<
+cd out/assert && $(TOPDIR)/$(BUILD)/generator -M -l scm $<
 cd out/assert && $(shell pwd)/gaiag -l csp $*.scm
 [ -f out/assert/$*.csp ] || mv out/assert/*.csp out/assert/$*.csp
 $(diff) baseline/assert/$*.csp out/assert || true
@@ -499,7 +499,7 @@ compare:
 	rm -rf out && mkdir out && ln -s ../examples ../templates . out
 	make -C ../..
 	./gaiag -l resolve examples/regression/trip.dzn > out/gaiag-trip.scm
-	cd out && ../$(DEPTH)/build/asdgenerator -l scm examples/trip.dzn
+	cd out && ../$(DEPTH)/build/generator -l scm examples/trip.dzn
 	sed -i 's/i[0-9]\+_//g' out/trip.scm
 	./gaiag out/trip.scm > out/om-trip-pretty.scm
 #	guile -c '(use-modules (ice-9 pretty-print)) (pretty-print (read))' < out/trip.scm > out/om-trip-pretty.scm
@@ -775,15 +775,15 @@ update: csp-update code-update
 data-csp:
 	cd out && ../gaiag -l csp ../examples/Dataparam.dzn
 	$(CSPMCHECKER) out/Dataparam.csp
-	cd out && ../../build/asdgenerator -l scm ../examples/Dataparam.dzn
+	cd out && ../../build/generator -l scm ../examples/Dataparam.dzn
 	./gaiag out/Dataparam.scm > out/Dataparam-om.scm
 	./gaiag examples/Dataparam.dzn > out/Dataparam.scm
 	diff -uw out/Dataparam.scm out/Dataparam-om.scm
 
 loc:
-	make -C .. build/asdgenerator
+	make -C .. build/generator
 	rm -rf out && mkdir -p out && cd out && ln -s ../examples .
-	cd out && ../../build/asdgenerator -L -l scm examples/loc.dzn
+	cd out && ../../build/generator -L -l scm examples/loc.dzn
 	./gaiag out/loc.scm | sed -re 's@ [0-9]+[)]@ #f)@g' > out/om-loc.scm
 	$(diff) baseline/om-loc.scm out/om-loc.scm
 	./gaiag -l annotate examples/loc.dzn | sed -e s@[.]/@@g > out/loc.scm
