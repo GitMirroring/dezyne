@@ -116,11 +116,16 @@
       (debug-state model info)
       (if (or (null? (.trail info))
               (.error info))
-          (let ((eligible (if (.error info) '((eligible))
-                              (list (eligible model info))))
-                (error (if (not (.error info)) '()
-                           (list (cons 'error (.trail info))))))
-            (list (append trace error eligible)))
+          (let* ((eligible (if (.error info) '((eligible))
+                               (list (eligible model info))))
+                 (remaining (.trail info))
+                 (error (if (not (.error info)) '()
+                            (list (cons 'error remaining))))
+                 (matched (drop-right trail (length remaining)))
+                 (matched (if (not (eq? (.error info) 'illegal)) matched
+                              (append (drop-right matched 1) (list (.error info)))))
+                 (matched (list (cons 'matched matched))))
+            (list (append trace error eligible matched)))
           (let* ((info (next-info model info))
                  (trail (.trail info)))
             (let* ((infos (run-trigger model info #f #t))
@@ -229,14 +234,14 @@
                        (append-map (flush model ast) infos)))
                     (else
                      (let* ((infos (run-interface model trigger on-info flushing? top?))
-                            (i-infos (filter success? infos))
-                            (any-interface-success? (pair? i-infos))
-                            (infos (if any-interface-success? i-infos
+                            (i-success (filter success? infos))
+                            (i-infos (if (pair? i-success) i-success infos))
+                            (infos (if (pair? i-success) i-infos
                                        (map (set-fields :error #f) infos)))
                             (infos (map (set-fields :ast statement) infos))
                             (infos (append-map (run model trigger flushing? top?) infos))
-                            (infos (if any-interface-success? infos
-                                       (map (set-fields :error #t) infos))))
+                            (infos (if (pair? i-success) infos
+                                       (map (lambda (info error) (clone info :error (.error error))) infos i-infos))))
                        (append-map (flush model ast) infos)))))
                   (infos (prune infos))
                   (infos (map (handle-return model trigger trigger ast flushing?) infos)))
@@ -658,7 +663,7 @@
                (debug "REJECT-TRACE: ILLEGAL[~a expect:~a]: next:~a\n" (.name model) 'illegal next)
                ((cons-trace
                  (list 'reject 'illegal (.name model) 'next next 'expected 'illegal))
-                (clone info :error #t))))))))
+                (clone info :error 'illegal))))))))
 
 (define (trigger-equal? a b)
   (and (eq? (.port a) (.port b)) (eq? (.event a) (.event b))))
@@ -735,7 +740,7 @@
                        (debug "AT: ~a\n" (trace-location (.ast info)))
                        ((cons-trace
                          (list 'reject 'return (.name model) 'next next 'expected reply))
-                        (clone info :reply (make <literal>) :error #t))))))))))
+                        (clone info :reply (make <literal>) :error (or (.error info) #t)))))))))))
 
 (define (next-value model info trigger action)
   "eat a ENUM_FIELD or PORT.ENUM_FIELD from trail, or error"
@@ -756,7 +761,7 @@
 
 (define (next-trail-empty-reject model info name o)
   (debug "REJECT-TRACE ~a[~a]: ~a NULL\n" (.name model) name o)
-  (clone info :error #t))
+  (clone info :error (or (.error info) name)))
 (define (next-trail-empty-allow model info name o) info)
 (define next-trail-empty next-trail-empty-reject)
 ;;(define next-trail-empty next-trail-empty-allow)

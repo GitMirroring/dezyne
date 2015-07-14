@@ -105,6 +105,8 @@
       ;;(stderr "JSON: ~a\n" (if (pair? trace) (car trace)))
       (cond
        ((null? trace) (list (alist->hash-table '())))
+
+       ;; FIXME
        ((eq? (ast-name (car trace)) 'eligible)
         (let ((eligible (cdar trace)))
           (cons
@@ -126,12 +128,19 @@
             `((type . trail)
               (trail . ,trail)))
            (loop (cdr trace) trigger state trail))))
+       ((eq? (caar trace) 'matched)
+        (let ((matched (cdar trace)))
+          (cons
+           (alist->hash-table
+            `((type . matched)
+              (trail . ,matched)))
+           (loop (cdr trace) trigger state trail))))
        ((eq? (caar trace) 'error)
-        (let ((trail (cdar trace)))
+        (let ((error (cdar trace)))
           (cons
            (alist->hash-table
             `((type . error)
-              (trail . ,trail)))
+              (trail . ,error)))
            (loop (cdr trace) trigger state trail))))
        ((is-a? (car trace) <trigger>)
         (loop (cdr trace) (car trace) state trail))
