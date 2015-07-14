@@ -365,11 +365,7 @@
                             (infos (map (set-fields :ast statement) infos))
                             (infos (append-map (run model trigger flushing? top?) infos))
                             (infos (if any-interface-success? infos
-                                       (map (set-fields :error #t) infos)))
-                            (infos (map (lambda (info)
-                                          (if (or (null? (.q info)) (not (trigger-matches? (car (.q info))))) info
-                                              (deq info)))
-                                        infos)))
+                                       (map (set-fields :error #t) infos))))
                        (append-map (flush model ast) infos)))))
                   (infos (prune infos))
                   (infos (map (handle-return model trigger trigger ast flushing?) infos)))
@@ -540,28 +536,16 @@
 (define ((transfer-interface-info model trigger component-info) i-info)
   (let* ((port (.port trigger))
          (scope (.type (om:port model port)))
-         (q (.q i-info))
-         (trail (.trail component-info))
-
-         ;; FIXME: FIRST-IN-Q?  See also <action> in (run-)
-         ;; any events in Q must be stripped from component trail.
-         ;; That can be done fairly easily by cdr'ing through both and
-         ;; stripping from trail anything that matches Q.
-
-         (foo (debug "\nQQQ FLUSH before trail: ~a\n" trail))
-         (foo (debug "QQQ FLUSH before q: ~a\n" q))
-         ;; FIXME: 1ST When head of Q does not match trail already
-         ;; processing this ON?, must remove if or else removal of
-         ;; other Q-actions from trail will fail.
-         (q (if (or (null? q) (null? trail) (eq? (->symbol (car q)) (car trail))) q
-                (cdr q)))
-         (trail (let loop ((q q) (trail trail))
+         ;; D-Q [first] action that we have just processed in ON
+         (i-info  (if (or (null? (.q i-info)) (not (trigger-equal? trigger (car (.q i-info))))) i-info
+                      (deq i-info)))
+         ;; Strip any events in Q from component trail.
+         (trail (let loop ((q (.q i-info)) (trail (.trail component-info)))
                   (if (or (null? q) (null? trail)) trail
                       (let ((a (->symbol (car q)))
                             (t (car trail)))
                         (if (eq? a t) (loop (cdr q) (cdr trail))
-                            (cons t (loop q (cdr trail))))))))
-         (foo (debug "QQQ FLUSH after trail: ~a\n" trail))
+                            (loop q (cdr trail)))))))
          (component-info (clone component-info :trail trail))
          (q (append (.q component-info) (.q i-info)))
          (reply (.reply i-info))
@@ -688,7 +672,6 @@
     (debug "next-action[~a ~a]: ~a\n" (.name model) action trail)
     (cond
      ((null? trail) (next-trail-empty model info 'action (->symbol action)))
-     ((and *component* (modeling? trigger)) info)
      (else
       (let* ((next (symbol->trigger (car trail))))
         (debug "NEXT: ~a\n" next)
