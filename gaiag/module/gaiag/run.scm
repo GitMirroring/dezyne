@@ -128,7 +128,6 @@
                  (trail (.trail info)))
             (let* ((infos (run-trigger model info #f #t))
                    (infos (prune infos))
-                   (infos (sort-infos infos))
                    (infos (delete-duplicates infos equal?)))
               (append-map
                (lambda (info)
@@ -260,28 +259,6 @@
                     (filter progress? infos)))
          (success (filter success? infos)))
     (if (pair? success) success infos)))
-
-(define (sort-infos infos)
-  (define (optimist< a b) ;; non-error trace found: that's GREAT!
-    (cond ((and (not (.error a)) (.error b)) #t)
-          ((not (.error b)) #f)
-          (else (< (length (.trail a)) (length (.trail b))))))
-  (define (pessimist< a b) ;; amongst best-matches error trace found: oh no!
-    (cond
-     ((not (eq? (.error a) (.error b))) (.error b))
-     ((= (length (.trail a)) (length (.trail b)))
-      (< (length (.trace a)) (length (.trace b))))
-     ((!= (length (.trail a)) (length (.trail b)))
-      (< (length (.trail a)) (length (.trail b))))
-     (else (cond ((.error a) #t)
-                 ((.error b) #f)))))
-  (let* ((infos (stable-sort infos
-                             pessimist<
-                             ;;optimist<
-                             )))
-    (if (and (pair? infos) (not (.error (car infos))))
-        (filter success? infos)
-        infos)))
 
 (define (sort-traces traces)
   (define (.error o) (assq 'error o))
