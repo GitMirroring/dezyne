@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Ladislau Posta <ladislau.posta@verum.com>
+// Copyright © 2015 Henk Katerberg <henk.katerberg@yahoo.com>
 //
 // This file is part of Dezyne.
 //
@@ -62,6 +63,7 @@ namespace dezyne
   int cnt = 0;
   Hardware::Hardware(const locator& l)
   : dzn_rt(l.get<runtime>())
+  , dzn_locator(l)
   , port({{"port", this},{}})
   {
     port.in.kick = [this]{port_kick();};
