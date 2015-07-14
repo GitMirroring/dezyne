@@ -7,6 +7,9 @@
 succeeds, but gradually gets too slow (too many branches?) and
 ultimately goes beyond 400,000 call to ((run)), bailing out.
 
+
+./gaiag -l run -t '(rpa.a rpa.b rpa.c rpa.d rpa.return rpa.e rpa.return)' ../test/regression/TauEmitMultiple.dzn 2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
 * ERROR traces
 
    ../webapp/client/dzn run -t <(echo rp.oa rp.ob pp.oa pp.ob pp.ca rp.ca rp.return pp.return pp.ca rp.ca) regression/MultipleOutEventsOnSingleTau.dzn
@@ -43,7 +46,7 @@ rp.ca
 *** SEE (in test/)
 
    make -k run GAIAG=true
-   
+
 ** test framework, run:
     cd test && make -k run GAIAG=true
 
@@ -244,5 +247,3 @@ dzn run -m nd -t <(echo p.e,p.a,p.return,p.e,p.a,p.return) examples/nd.dzn
     ./gaiag -l run -t '(p.start r.ping r.pong r.pong r.return p.busy p.finish p.return)' ../test/regression/reply_reorder.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
 
     ./gaiag -l run -t '(p.f r.e r.a r.return r.f r.b r.return p.a p.b p.return)' ../test/regression/q.dzn  2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
-
-
