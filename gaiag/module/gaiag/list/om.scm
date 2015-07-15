@@ -198,46 +198,6 @@
 
            is?
            is-a?
-           ;; ast?
-           ;; ast-list?
-           ;; expression?
-           ;; model?
-           ;; statement?
-
-           ;; behaviour?
-           ;; bindings?
-           ;; component?
-           ;; compound?
-           ;; enum?
-           ;; expression?
-           ;; extern?
-           ;; field?
-           ;; function?
-           ;; functions?
-           ;; import?
-           ;; instances?
-           ;; int?
-           ;; interface?
-           ;; literal?
-           ;; named?
-           ;; otherwise?
-           ;; om:formal?
-           ;; formals?
-           ;; om:port?
-           ;; ports?
-           ;; range?
-           ;; root?
-           ;; scoped?
-           ;; signature?
-           ;; system?
-           ;; trigger?
-           ;; triggers?
-           ;; type?
-           ;; *type*?
-           ;; types?
-           ;; var?
-           ;; variable?
-           ;; variables?
            ))
 
 (define <ast-list> 'ast-list)
@@ -817,7 +777,7 @@
 (define (.behaviour ast)
   (match ast
     (('component name ports) #f)
-    ;;(('component name ports (? unspecified?)) #f)    
+    ;;(('component name ports (? unspecified?)) #f)
     (('component name ports behaviour) behaviour)
     ;;(('interface name types events (? unspecified?)) #f)
     (('interface name types events) #f)

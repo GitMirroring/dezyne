@@ -41,14 +41,14 @@
 
   :use-module (gaiag goops ast)
   :use-module (gaiag goops compare)
-  :use-module (gaiag goops om)  
+  :use-module (gaiag goops om)
   :use-module (gaiag goops display)
   :use-module (gaiag goops map)
 
   :export (
            is?
            om->list
-           om2list           
+           om2list
            om:booleans
            om:children
            om:component
@@ -77,9 +77,9 @@
            om:integers
            om:interface
            om:interface-enums
-           om:interface-externs           
+           om:interface-externs
            om:interface-integers
-           om:interface-types           
+           om:interface-types
            om:interfaces
            om:model-with-behaviour
            om:models-with-behaviour
@@ -120,9 +120,9 @@
       (with-output-to-string (lambda () (write om)))
     read))
 
-(define (om2list o)
+(define* (om2list o :optional (marker null-symbol))
   (match o
-    ((? (is? <ast>)) (cons (symbol-append (ast-name o) '*) (map om2list (om:children o))))
+    ((? (is? <ast>)) (cons (symbol-append (ast-name o) marker) (map om2list (om:children o))))
     ((h t ...) (map om2list o))
     (_ o)))
 
@@ -294,7 +294,7 @@
 
 (define-method (om:out? (o <trigger>)) #f)
 
-(define-method (om:out-or-inout? (o <formal>)) 
+(define-method (om:out-or-inout? (o <formal>))
   (or (eq? (.direction o) 'out)
       (eq? (.direction o) 'inout)))
 
@@ -361,7 +361,7 @@
 ;; extern, *global*, TODO
 ;; (define-method (om:extern (o <model>) (type <type>))
 ;;   ((is? <extern>) (om:type o type)))
-  
+
 (define-method (om:extern (o <model>) (type <type>))
   (find (lambda (o) (and (eq? (.name o) (.name type))
                          ;;(or (eq? (.scope o) (.scope type)) (and (eq? (.scope o) '*global*) (not (.scope type))))
@@ -659,6 +659,6 @@
                  (file (car (option-ref (parse-opts (command-line)) '() '(#f)))))
                 (cond
                  ((string= file "-") #f)
-                 ((string= file "/dev/stdin") #f)                 
+                 ((string= file "/dev/stdin") #f)
                  ((string-suffix? ".scm" file) #f)
                  (else (not (in-file? o file)))))))

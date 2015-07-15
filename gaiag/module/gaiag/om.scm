@@ -26,8 +26,7 @@
 (read-set! keywords 'prefix)
 
 (define-module (gaiag om)
-  ;;  :use-module (gaiag goops goops)
-  :use-module (gaiag ast)  
+  :use-module (gaiag ast)
   :use-module (gaiag annotate))
 
 (define (ast-> ast)

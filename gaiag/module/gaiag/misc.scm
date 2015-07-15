@@ -72,11 +72,12 @@
            string-postfix?
            string-sub ;; FIXME: look at guile-lib string-substitute sugar
            symbol<
+           null-symbol
            symbol-null?
            pair??
            eq??
            equal??
-           symbol-prefix?           
+           symbol-prefix?
            symbol-capitalize
            symbol-drop
            symbol-split

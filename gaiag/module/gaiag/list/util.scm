@@ -25,27 +25,28 @@
 
 (define-module (gaiag list util)
   :use-module (srfi srfi-1)
-  
+
   :use-module (system foreign)
-  :use-module (ice-9 and-let-star)  
+  :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
-  :use-module (ice-9 getopt-long)    
-  :use-module (gaiag list match) 
+  :use-module (ice-9 getopt-long)
+  :use-module (gaiag list match)
   :use-module (ice-9 optargs)
   :use-module (ice-9 pretty-print)
 
   :use-module (language dezyne location)
   :use-module (gaiag annotate)
-  
-  :use-module (gaiag gaiag)  
+
+  :use-module (gaiag gaiag)
   :use-module (gaiag reader)
   :use-module (gaiag misc)
   :use-module (gaiag list om)
-  :use-module (gaiag list ast)  
+  :use-module (gaiag list ast)
 
   :export (
            ast-name
            om->list
+           om2list
            om:children
            collect
            om:collect
@@ -54,7 +55,7 @@
            om:guard-equal?
            om:map
            om:named
-           om:scoped           
+           om:scoped
            om:declarative?
            om:imperative?
 
@@ -62,24 +63,24 @@
            om:imported?
 
            om:enum
-           om:event           
+           om:event
            om:extern
-           om:function           
+           om:function
            om:integer
 
            om:port
-           
+
            om:register
            om:register-model
            om:register-type
            om:triggers-equal?
            om:type
-           om:types           
+           om:types
            om:variable
 
            om:variables
            om:functions
-           
+
            om:<
            om:equal?
 
@@ -100,7 +101,7 @@
            om:reply-enums
            om:instance
            om:model-with-behaviour
-           om:models-with-behaviour           
+           om:models-with-behaviour
            om:typed?
            om:parse-dezyne
            make-interface-enum
@@ -113,15 +114,15 @@
     ((h t ...) (retain-source-properties o (cons (car o) (map f (cdr o)))))
     (_ o)))
 
-
 (define om->list identity)
+(define om2list identity)
 (define ((om:type model) o)
   (match o
     ((? symbol?) (find (om:named o) (om:types model)))
     (('type 'bool) o)
-    (('type 'bool #f) o)    
+    (('type 'bool #f) o)
     (('type 'void) o)
-    (('type 'void #f) o)    
+    (('type 'void #f) o)
     (('type name) (find (om:named name) (om:types model)))
     (('type name scope) (=> failure)
      (or (find (om:scoped name scope) (om:types model))
@@ -211,7 +212,7 @@
       (append (.elements btypes) (apply append (map interface-types (.elements ports)))))
      (('component name ports) (apply append (map interface-types (.elements ports))))
      (('component name ports #f) (apply append (map interface-types (.elements ports))))
-     (('system name ports body ...) (apply append (map interface-types (.elements ports))))     
+     (('system name ports body ...) (apply append (map interface-types (.elements ports))))
      (('root models ...) (filter (is? <*type*>) models))
      (('import file) '()))
    (globals)))
@@ -391,7 +392,7 @@
        (map (lambda (n) (om:enum o n)) names)))
     (_ '())))
 
-(define (om:instance model o) 
+(define (om:instance model o)
   (match o
     ((? symbol?)
      (find (lambda (x) (eq? (.name x) o)) ((compose .elements .instances) model)))
@@ -434,7 +435,7 @@
   (match (cons a b)
     ((($ <guard> ea sa) . ($ <on> tb sb)) #t)
     ((($ <on> ta sa) . ($ <guard> eb sb)) #f)
-    
+
     ((($ <guard> ea sa) . ($ <guard> eb sb)) (om:< ea eb))
     ((($ <on> ta sa) . ($ <on> tb sb)) (om:< ta tb))
 
@@ -492,7 +493,7 @@
                  (file (car (option-ref (parse-opts (command-line)) '() '(#f)))))
                 (cond
                  ((string= file "-") #f)
-                 ((string= file "/dev/stdin") #f)                 
+                 ((string= file "/dev/stdin") #f)
                  ((string-suffix? ".scm" file) #f)
                  (else (not (in-file? o file)))))))
 
@@ -533,4 +534,3 @@
   (or (cached-model name)
       (and-let* ((ast (read-ast name transform)))
                 (cache-model name ast))))
-

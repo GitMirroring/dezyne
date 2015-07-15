@@ -27,8 +27,8 @@
 (define-module (gaiag ast)
   :use-module (gaiag misc)
 
-  ;;:use-module (gaiag goops goops)
-  :use-module (gaiag list goops)
+  ;;:use-module (gaiag goops goops) ;; GOOPS backend
+  :use-module (gaiag list goops)  ;; LIST backend
 
   :export (
            ))
@@ -43,10 +43,6 @@
   (re-export-modules
    (gaiag list goops)))
  (else
-  (re-export-modules
-   ;;(gaiag goops goops)
-   (gaiag list goops)
-   ))
-  )
+  ))
 
 (define ast-> identity)
