@@ -54,28 +54,31 @@
 (define (debug-pretty . x) #t)
 (define (debug-state . x) #t)
 
-(define (ast-> ast)
+(define (ast:run ast)
+  (or (and=> (model-with-behaviour ast) run-model)
+      (and (option-ref (parse-opts (command-line)) 'json #f) '())
+      ""))
+
+(define (model-with-behaviour ast)
   (let ((name (and=> (option-ref (parse-opts (command-line)) 'model #f)
-                     string->symbol))
-        (json? (option-ref (parse-opts (command-line)) 'json #f)))
-    (or (and-let* ((om ((om:register run:om) ast #t))
-                   (models (filter (lambda (x) (or (is-a? x <interface>)
-                                                   (is-a? x <component>)))
-                                   (.elements om)))
-                   (models (null-is-#f (filter .behaviour models)))
-                   (models (if name (filter (om:named name) models) models))
-                   (c-i (append (filter (is? <component>) models) models))
-                   ((pair? c-i)))
-                  (run-model (car c-i)))
-        (if json? '()
-            ""))))
+                     string->symbol)))
+    (and-let* ((models (filter (lambda (x) (or (is-a? x <interface>)
+                                               (is-a? x <component>)))
+                               (.elements ast)))
+               (models (null-is-#f (filter .behaviour models)))
+               (models (if name (filter (om:named name) models) models))
+               (c-i (append (filter (is? <component>) models) models))
+               ((pair? c-i)))
+              (car c-i))))
 
 (define (run:import name)
   (om:import name run:om))
 
 (define (run:om ast)
-  ((compose ;;ast:wfc
-    ast:resolve ast->om) ast))
+  ((compose
+    ;;ast:wfc
+    ast:resolve
+    ast->om) ast))
 
 (define i 0)
 (define *state-space* '(()))
@@ -423,23 +426,18 @@
 (define (om:member-names model)
   (map .name (filter (negate (extern? model)) (om:variables model))))
 
-(define* (run-port-action model trigger component-info :optional (top? #f))
+(define* (run-port-action model trigger info :optional (top? #f))
   (debug "run-port-action[~a, ~a]\n" (.name model) (->symbol trigger))
-  (let*
-      ((port (.port trigger))
-       (scope (.type (om:port model port)))
-       (interface (run:import scope))
-       (trace (.trace component-info))
-       (i-state (get-state component-info port))
-       (i-info (clone component-info :q '() :state i-state :trace '()))
-       ;;
-       (i-info (clone i-info :trail (cons (->symbol trigger) (.trail i-info))))
-       (i-infos (run-to-completion interface i-info top?))
-       (i-infos (map (modify-trace reverse) i-infos))
-       (infos (map (transfer-port-info model trigger component-info) i-infos))
-       ;;(infos (map (lambda (info) (next-action model info trigger trigger)) infos))
-       (infos (prune infos)))
-    infos))
+  (let* ((port (.port trigger))
+         (scope (.type (om:port model port)))
+         (interface (run:import scope))
+         (i-state (get-state info port))
+         (i-info (clone info :q '() :state i-state :trace '()))
+         (i-info (clone i-info :trail (cons (->symbol trigger) (.trail i-info))))
+         (i-infos (run-to-completion interface i-info top?))
+         (i-infos (map (modify-trace reverse) i-infos))
+         (infos (map (transfer-port-info model trigger info) i-infos)))
+    (prune infos)))
 
 (define ((transfer-port-info model trigger component-info) i-info)
   (let* ((port (.port trigger))
@@ -514,7 +512,7 @@
     (set! next-trail-empty next-trail-empty-reject)
     eligible))
 
-(define (eligible model info) '((eligible)))
+;;(define (eligible model info) '((eligible)))
 
 (define (modeling? trigger) (member (.event trigger) '(inevitable optional)))
 
@@ -926,3 +924,9 @@
 ;;(define debug-pretty pretty-print)
 (define debug stderr)
 (define debug-state print-state)
+
+(define (ast-> ast)
+  ((compose
+    ast:run
+    (om:register run:om)
+    ) ast))
