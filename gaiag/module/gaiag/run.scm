@@ -128,7 +128,7 @@
             (list (append trace error eligible matched)))
           (let* ((info (next-info model info))
                  (trail (.trail info)))
-            (let* ((infos (run-trigger model info #f #t))
+            (let* ((infos (run-trigger model info #t))
                    (infos (prune infos))
                    (infos (delete-duplicates infos equal?)))
               (append-map
@@ -136,11 +136,11 @@
                  (let ((trail (list (cons 'trail (.trail info)))))
                    (loop info (append trace (.trace info) trail)))) infos)))))))
 
-(define* (run-trigger model info :optional (flushing? #f) (top? #f))
+(define* (run-trigger model info :optional (top? #f))
 
   (define (run-modeling model info)
     (let* ((triggers (modeling-triggers model info)))
-      (append-map (lambda (t) (prune ((run model t flushing? top?) info) info)) triggers)))
+      (append-map (lambda (t) (prune ((run model t top?) info) info)) triggers)))
 
   (define (modeling-triggers model info)
     (let* ((trigger (symbol->trigger (car (.trail info))))
@@ -152,7 +152,7 @@
            (filter identity (list inevitable optional)))))
 
   (define (run-trigger-from-trail info)
-    (let* ((info (next-trigger model info flushing?))
+    (let* ((info (next-trigger model info))
            (trigger (.return info))
            (info (if (not (and *component* (is-a? model <interface>))) info
                      (skip-trail info (.port trigger))))
@@ -160,12 +160,12 @@
            (triggers (if (or (and (is-a? model <interface>) (trigger? model trigger))
                              (not (and *component* (is-a? model <interface>)))) (list trigger)
                              (modeling-triggers model info))))
-      (prune (append-map (lambda (t) ((run model t flushing? #t) info)) triggers))))
+      (prune (append-map (lambda (t) ((run model t #t) info)) triggers))))
 
   (define (run-from-trail info)
     (let* ((trigger (symbol->trigger (car (.trail info))))
            (i-info (clone info :trace '()))
-           (i-infos (run-interface model trigger i-info #f #t))
+           (i-infos (run-interface model trigger i-info #t))
            (i-success (filter success? i-infos))
            (i-infos (if (pair? i-success) i-success i-infos))
            (foo (and (pair? i-infos) (debug-pretty (map trace-location (.trace (car i-infos))) (current-error-port))))
@@ -185,13 +185,13 @@
              ((set-trace (append (.trace i-info) (.trace info))) info))
            i-infos infos))))
 
-  (debug "\n\nrun-trigger[~a, ~a]: flushing?:~a top:~a\n" (.name model) (->symbol (car (.trail info))) flushing? top?)
+  (debug "\n\nrun-trigger[~a, ~a]: top:~a\n" (.name model) (->symbol (car (.trail info))) top?)
   (debug-state model info)
   (debug "trigger: ~a\n" (->string (car (.trail info))))
   (let* ((ast ((compose .statement .behaviour) model))
          (info (clone info :ast ast))
          (trigger (symbol->trigger (car (.trail info))))
-         (infos (if (and (is-a? model <component>) (not flushing?)) (run-from-trail info)
+         (infos (if (and (is-a? model <component>) top?) (run-from-trail info)
                     (run-trigger-from-trail info))))
     (if (is-a? model <component>) infos
         (let* ((trigger (symbol->trigger (car (.trail info))))
@@ -202,7 +202,7 @@
           (if (not run-modeling?) infos
               (append infos (run-modeling model info)))))))
 
-(define* ((run model trigger :optional (flushing? #f) (top? #f)) info)
+(define* ((run model trigger :optional (top? #f)) info)
   (define (trigger-matches? t)
     (let ((r (if (is-a? model <interface>) (eq? (.event t) (.event trigger))
                  (and (eq? (.port t) (.port trigger))
@@ -210,7 +210,7 @@
       (debug "MATCH?: ~a == ~a ==> ~a\n" (->symbol t) (->symbol trigger) r)
       r))
   (debug "\nrun[~a, ~a]: ~a trail:~a\n" (.name model) (->symbol trigger) (ast-name (.ast info)) (map ->symbol (.trail info)))
-  (debug "flushing: ~a, top: ~a, q: ~a\n" flushing? top? (.q info))
+  (debug "top: ~a, q: ~a\n" top? (.q info))
   (debug-state model info)
   (debug-pretty (map trace-location (.trace info)) (current-error-port))
   (set! i (1+ i))
@@ -231,7 +231,7 @@
                loop-infos)
              (let* ((statement (car statements))
                     (info (clone info :ast statement :trace '()))
-                    (infos ((run model trigger flushing? top?) info))
+                    (infos ((run model trigger top?) info))
                     (infos (prune infos)))
                (if (pair? infos)
                    (append-map (lambda (info) (loop (cdr statements) (cons info loop-infos))) infos)
@@ -239,7 +239,7 @@
       (($ <guard> expression statement)
        (if (eval-expression model state expression)
            (let* ((g-info (clone info :ast statement :trace '()))
-                  (infos ((run model trigger flushing? top?) g-info))
+                  (infos ((run model trigger top?) g-info))
                   (infos (prune infos))
                   (infos (map (append-trace (cons ast trace)) infos)))
              infos)
@@ -252,16 +252,16 @@
                   (infos
                    (cond
                     ((is-a? model <interface>)
-                     ((run model trigger flushing? top?) on-info))
-                    ((and flushing? (eq? (.direction (om:port model port)) 'requires))
-                     (let* ((infos ((run model trigger flushing? top?) on-info)))
+                     ((run model trigger top?) on-info))
+                    ((eq? (.direction (om:port model port)) 'requires)
+                     (let* ((infos ((run model trigger top?) on-info)))
                        ;; FIXME: mark this info+ast with a NULL trigger
                        ;; so that it will be omitted from the ouput trail.
                        ;; We do want the AST, however, in the trace output.
                        (set! info+ast ((cons-trace ast) ((cons-trace (make <trigger>)) info)))
                        (append-map (flush model) infos)))
                     (else
-                     (let* ((infos ((run model trigger flushing? top?) on-info)))
+                     (let* ((infos ((run model trigger top?) on-info)))
                        (append-map (flush model) infos)))))
                   (infos (prune infos))
                   (infos (if (and *component*
@@ -290,7 +290,7 @@
                       (frame (if (is-a? statement <variable>)
                                  (1+ frame) frame))
                       (info (clone loop-info :ast statement :state state :trace '()))
-                      (infos ((run model trigger flushing?) info))
+                      (infos ((run model trigger) info))
                       (infos (prune infos))
                       (infos (map (append-trace (.trace loop-info)) infos)))
                  (append-map (lambda (info) (loop (cdr statements) info frame)) infos))))))
@@ -334,7 +334,7 @@
                                         (not (modeling-triggered? model action))))
                                (list info)
                                (let* ((action-info-TODO (clone info :trace '())))
-                                 (run-interface-action model action action-info-TODO flushing?)))))
+                                 (run-interface-action model action action-info-TODO)))))
                      (map (handle-return model trigger action ast) infos)))))
          (map (lambda (info)
                 (if (.error info) info
@@ -361,7 +361,7 @@
          (debug "<if>[~a] at: ~a\n" (.name model) (trace-location ast))
          (debug "expr ~a ==> ~a\n" expression value)
          (if value
-             ((run model trigger flushing?) (clone info :ast then))
+             ((run model trigger) (clone info :ast then))
              (list info))))
       (($ <if> expression then else)
        (let ((info info+ast)
@@ -369,8 +369,8 @@
          (debug "<if>[~a] at: ~a\n" (.name model) (trace-location ast))
          (debug "expr ~a ==> ~a\n" expression value)
          (if value
-             ((run model trigger flushing?) (clone info :ast then))
-             ((run model trigger flushing?) (clone info :ast else)))))
+             ((run model trigger) (clone info :ast then))
+             ((run model trigger) (clone info :ast else)))))
       (($ <illegal>)
        (let ((info (clone (next-illegal model info+ast))))
          (list info)))
@@ -430,7 +430,7 @@
 (define (om:member-names model)
   (map .name (filter (negate (extern? model)) (om:variables model))))
 
-(define* (run-interface model trigger component-info flushing? :optional (top? #f))
+(define* (run-interface model trigger component-info :optional (top? #f))
   (debug "run-interface[~a, ~a]\n" (.name model) (->symbol trigger))
   (let*
       ((port (.port trigger))
@@ -439,13 +439,13 @@
        (trace (.trace component-info))
        (i-state (get-state component-info port))
        (i-info (clone component-info :q '() :state i-state :trace '()))
-       (i-infos (run-trigger interface i-info flushing? top?))
+       (i-infos (run-trigger interface i-info top?))
        (i-infos (map (modify-trace reverse) i-infos))
        (infos (map (transfer-interface-info model trigger component-info) i-infos))
        (infos (prune infos)))
     infos))
 
-(define* (run-interface-action model trigger component-info flushing? :optional (top? #f))
+(define* (run-interface-action model trigger component-info :optional (top? #f))
   (debug "run-interface-action[~a, ~a]\n" (.name model) (->symbol trigger))
   (let*
       ((port (.port trigger))
@@ -456,7 +456,7 @@
        (i-info (clone component-info :q '() :state i-state :trace '()))
        ;;
        (i-info (clone i-info :trail (cons (->symbol trigger) (.trail i-info))))
-       (i-infos (run-trigger interface i-info flushing? top?))
+       (i-infos (run-trigger interface i-info top?))
        (i-infos (map (modify-trace reverse) i-infos))
        (infos (map (transfer-interface-info model trigger component-info) i-infos))
        ;;(infos (map (lambda (info) (next-action model info trigger trigger)) infos))
@@ -497,7 +497,7 @@
                (info (clone info :trace '()))
                (foo (debug "flush feeding: ~a\n" (.trail info)))
                (info (clone info :trace '() ))
-               (infos (run-trigger model info #t))
+               (infos (run-trigger model info))
                (infos (prune infos))
                (complete-trace (lambda (t) (append (.trace component-info) t)))
                (infos (map (modify-trace complete-trace) infos)))
@@ -684,7 +684,7 @@
      (debug "not a trigger: ~a\n" event)
      #f)))
 
-(define (next-trigger model info flushing?)
+(define (next-trigger model info)
   (let* ((trail (.trail info)))
     (if (null? trail)
         info
