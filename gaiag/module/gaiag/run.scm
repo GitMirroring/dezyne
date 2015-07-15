@@ -337,8 +337,9 @@
                                  (run-interface-action model action action-info-TODO flushing?)))))
                      (map (handle-return model trigger action ast) infos)))))
          (map (lambda (info)
-                ((set-trace (reverse (append (reverse (.trace info))
-                                             (.trace info+ast)))) info))
+                (if (.error info) info
+                    ((set-trace (reverse (append (reverse (.trace info))
+                                                 (.trace info+ast)))) info)))
               infos)))
       (($ <assign> identifier expression)
        (debug "assign[~a, ~a]: ~a\n" (.name model) identifier (.trail info))
