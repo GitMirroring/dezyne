@@ -248,21 +248,12 @@
        (debug "on[~a, ~a]: ~a, ~a\n" (.name model) (->symbol (car triggers)) (->symbol trigger) (.trail info))
        (if (not (find trigger-matches? triggers)) '()
            (let* ((on-info (clone info :ast statement :trace '()))
-                  (info+ast ((cons-trace ast) ((cons-trace trigger) info)))
-                  (infos
-                   (cond
-                    ((is-a? model <interface>)
-                     ((run model trigger top?) on-info))
-                    ((eq? (.direction (om:port model port)) 'requires)
-                     (let* ((infos ((run model trigger top?) on-info)))
-                       ;; FIXME: mark this info+ast with a NULL trigger
-                       ;; so that it will be omitted from the ouput trail.
-                       ;; We do want the AST, however, in the trace output.
-                       (set! info+ast ((cons-trace ast) ((cons-trace (make <trigger>)) info)))
-                       (append-map (flush model) infos)))
-                    (else
-                     (let* ((infos ((run model trigger top?) on-info)))
-                       (append-map (flush model) infos)))))
+                  (marking-trigger (if (or (is-a? model <interface>) (eq? (.direction (om:port model port)) 'provides)) trigger
+                                       (make <trigger>)))
+                  (info+trigger+ast ((cons-trace ast) ((cons-trace marking-trigger) info)))
+                  (infos (if (is-a? model <interface>) ((run model trigger top?) on-info)
+                             (let* ((infos ((run model trigger top?) on-info)))
+                               (append-map (flush model) infos))))
                   (infos (prune infos))
                   (infos (if (and *component*
                                   (is-a? model <interface>)
@@ -272,7 +263,7 @@
               (lambda (info)
                 ((set-trace (reverse (append
                                       (reverse (.trace info))
-                                      (.trace info+ast)))) info))
+                                      (.trace info+trigger+ast)))) info))
               infos))))
       (('compound statements ...)
        (debug "ENTER IMPERATIVE[~a, ~a]: ~a\n" (.name model) (length statements) (and (pair? statements) (ast-name (car statements))))
