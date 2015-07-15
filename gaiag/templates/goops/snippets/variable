@@ -1,1 +1,1 @@
-(#name  (make <v> :v #expression))
+(#name  (make <v> :v #(string-if (eq? expression (if #f #f)) "*unspecified*" expression)))
