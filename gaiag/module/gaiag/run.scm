@@ -160,7 +160,7 @@
   (define (run-with-port info)
     (let* ((trigger (symbol->trigger (car (.trail info))))
            (i-info (clone info :trace '()))
-           (i-infos (run-port trigger i-info))
+           (i-infos (run-port model trigger i-info #t))
            (i-success (filter success? i-infos))
            (i-infos (if (pair? i-success) i-success i-infos))
            (infos (if (pair? i-success) i-infos
@@ -173,18 +173,6 @@
                          i-infos infos)))))
       (if (or (null? i-infos) (pair? i-success)) infos
           (map (set-fields :error (.error (car i-infos))) infos))))
-
-  (define* (run-port trigger info)
-    (debug "run-port[~a, ~a]\n" (.name model) (->symbol trigger))
-    (let* ((port (.port trigger))
-           (scope (.type (om:port model port)))
-           (interface (run:import scope))
-           (i-state (get-state info port))
-           (i-info (clone info :q '() :state i-state :trace '()))
-           (i-infos (run-to-completion interface i-info #t))
-           (i-infos (map (modify-trace reverse) i-infos))
-           (infos (map (transfer-port-info model trigger info) i-infos)))
-      (prune infos)))
 
   (define (modeling-triggers model trigger info)
     (let* ((trigger (symbol->trigger (car (.trail info))))
@@ -206,6 +194,39 @@
                         (run-trigger- info)))))
     (prune infos)))
 
+(define* (run-port model trigger info :optional (top? #f))
+  (debug "run-port-action[~a, ~a]\n" (.name model) (->symbol trigger))
+  (let* ((port (.port trigger))
+         (scope (.type (om:port model port)))
+         (interface (run:import scope))
+         (i-state (get-state info port))
+         (i-info (clone info :q '() :state i-state :trace '()))
+         (i-info (if top? i-info
+                     (clone i-info :trail (cons (->symbol trigger) (.trail i-info)))))
+         (i-infos (run-to-completion interface i-info top?))
+         (i-infos (map (modify-trace reverse) i-infos))
+         (infos (map (transfer-port-info model trigger info) i-infos)))
+    (prune infos)))
+
+(define ((transfer-port-info model trigger component-info) i-info)
+  (let* ((port (.port trigger))
+         (scope (.type (om:port model port)))
+         ;; Strip any events in Q from component trail.
+         (trail (let loop ((q (.q i-info)) (trail (.trail component-info)))
+                  (if (or (null? q) (null? trail)) trail
+                      (let ((a (->symbol (car q)))
+                            (t (car trail)))
+                        (if (eq? a t) (loop (cdr q) (cdr trail))
+                            (loop q (cdr trail)))))))
+         (component-info (clone component-info :trail trail))
+         (q (append (.q component-info) (.q i-info)))
+         (reply (.reply i-info))
+         (reply (if (is-a? reply <literal>) reply
+                    (make <literal> :field 'return)))
+         (trace (.trace component-info))
+         (trace (append trace (reverse (.trace i-info))))
+         (info (clone component-info :trail trail :q q :reply (make <literal> :scope scope :type (.type reply) :field (.field reply)) :trace trace :error (.error i-info))))
+    (set-state info port (.state i-info))))
 
 (define* ((run model trigger) info)
   (define (trigger-matches? t)
@@ -321,7 +342,6 @@
                    (let* ((action-port (.port action))
                           (on-dir (.direction (om:port model port)))
                           (action-dir (.direction (om:port model action-port)))
-                          (action-info (clone info :trace '()))
                           (info (next-action model info trigger action))
                           (infos
                            (if (or (eq? on-dir action-dir 'provides)
@@ -329,8 +349,8 @@
                                         (eq? action-dir 'provides)
                                         (not (modeling-triggered? model action))))
                                (list info)
-                               (let* ((action-info-TODO (clone info :trace '())))
-                                 (run-port-action model action action-info-TODO)))))
+                               (let* ((action-info (clone info :trace '())))
+                                 (run-port model action action-info)))))
                      (map (handle-return model trigger action ast) infos)))))
          (map (lambda (info)
                 (if (.error info) info
@@ -425,39 +445,6 @@
 (define ((extern? model) var) (om:extern model (.type var)))
 (define (om:member-names model)
   (map .name (filter (negate (extern? model)) (om:variables model))))
-
-(define* (run-port-action model trigger info :optional (top? #f))
-  (debug "run-port-action[~a, ~a]\n" (.name model) (->symbol trigger))
-  (let* ((port (.port trigger))
-         (scope (.type (om:port model port)))
-         (interface (run:import scope))
-         (i-state (get-state info port))
-         (i-info (clone info :q '() :state i-state :trace '()))
-         (i-info (clone i-info :trail (cons (->symbol trigger) (.trail i-info))))
-         (i-infos (run-to-completion interface i-info top?))
-         (i-infos (map (modify-trace reverse) i-infos))
-         (infos (map (transfer-port-info model trigger info) i-infos)))
-    (prune infos)))
-
-(define ((transfer-port-info model trigger component-info) i-info)
-  (let* ((port (.port trigger))
-         (scope (.type (om:port model port)))
-         ;; Strip any events in Q from component trail.
-         (trail (let loop ((q (.q i-info)) (trail (.trail component-info)))
-                  (if (or (null? q) (null? trail)) trail
-                      (let ((a (->symbol (car q)))
-                            (t (car trail)))
-                        (if (eq? a t) (loop (cdr q) (cdr trail))
-                            (loop q (cdr trail)))))))
-         (component-info (clone component-info :trail trail))
-         (q (append (.q component-info) (.q i-info)))
-         (reply (.reply i-info))
-         (reply (if (is-a? reply <literal>) reply
-                    (make <literal> :field 'return)))
-         (trace (.trace component-info))
-         (trace (append trace (reverse (.trace i-info))))
-         (info (clone component-info :trail trail :q q :reply (make <literal> :scope scope :type (.type reply) :field (.field reply)) :trace trace :error (.error i-info))))
-    (set-state info port (.state i-info))))
 
 (define ((flush model) component-info)
   (debug "flush: component-info: q: ~a\n" (.q component-info))
