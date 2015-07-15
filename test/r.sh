@@ -59,6 +59,11 @@ echo running $TRACE
 diff -u <(echo trace:$TRACE|tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/Alarm.dzn | grep ^trace: | tr , '\n')
 
 echo
+TRACE='ok'
+echo running $TRACE
+diff -u <(echo trace:$TRACE|tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/NonDet4.dzn | grep ^trace: | tr , '\n')
+
+echo
 TRACE='rpa.a rpa.b rpa.c rpa.d rpa.return rpa.e rpa.return'
 echo running $TRACE
 diff -u <(echo trace:$TRACE | tr ' ' '\n') <(dzn run --gaiag -t <(echo $TRACE) regression/TauEmitMultiple.dzn | grep ^trace: | tr , '\n')
