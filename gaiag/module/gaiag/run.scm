@@ -267,7 +267,7 @@
                   (infos (if (and *component*
                                   (is-a? model <interface>)
                                   (eq? (.direction (om:port *component* port)) 'requires)) infos
-                          (map (handle-return model trigger trigger ast flushing?) infos))))
+                          (map (handle-return model trigger trigger ast) infos))))
              (map
               (lambda (info)
                 ((set-trace (reverse (append
@@ -335,7 +335,7 @@
                                (list info)
                                (let* ((action-info-TODO (clone info :trace '())))
                                  (run-interface-action model action action-info-TODO flushing?)))))
-                     (map (handle-return model trigger action ast flushing?) infos)))))
+                     (map (handle-return model trigger action ast) infos)))))
          (map (lambda (info)
                 ((set-trace (reverse (append (reverse (.trace info))
                                              (.trace info+ast)))) info))
@@ -502,11 +502,11 @@
                (infos (map (modify-trace complete-trace) infos)))
           (append-map loop infos)))))
 
-(define ((handle-return model trigger action ast flushing?) info)
+(define ((handle-return model trigger action ast) info)
   (let* ((port (.port action))
          (interface (if (is-a? model <interface>) model
                         (run:import (.type (om:port model port))))))
-    (if (modeling-or-i-action? interface action)
+    (if (modeling-or-required-out? interface action)
         info
         (let* ((info (if (om:typed? model action)
                          (next-reply model info action)
@@ -560,14 +560,6 @@
         (find (lambda (t) (eq? (.event t) (.event trigger))) triggers)
         (find (lambda (t) (trigger-equal? t trigger)) triggers))))
 
-(define (i-action? model trigger)
-  (let* ((interface (if (is-a? model <interface>) model
-                        (let* ((port (.port trigger))
-                               (scope (om:port model port)))
-                          (run:import (.type scope)))))
-        (triggers (map .event (om:find-triggers interface))))
-    (not (member (.event trigger) triggers))))
-
 (define (required-out? model trigger)
   (let* ((port (.port trigger))
          (scope (om:port model port)))
@@ -576,9 +568,10 @@
                     (event (om:event interface (.event trigger))))
                    (eq? (.direction event) 'out)))))
 
-(define (modeling-or-i-action? model trigger)
+(define (modeling-or-required-out? model trigger)
   (or (modeling? trigger)
-      (i-action? model trigger)))
+      (if (is-a? model <interface>) (not (trigger? model trigger))
+          (required-out? model trigger))))
 
 (define (modeling-triggered? model trigger)
   (let* ((port (.port trigger))
@@ -696,10 +689,10 @@
         info
         (let* ((trigger (symbol->trigger (car trail)))
                (info (clone info :return trigger :trace (cons trigger (.trace info))))
-               (modeling-or-i-action? (modeling-or-i-action? model trigger))
-               (foo (debug "MODELING-OR-I-ACTION[~a, ~a]: ~a\n" (.name model) (car trail) modeling-or-i-action?)))
+               (modeling-or-required-out? (modeling-or-required-out? model trigger))
+               (foo (debug "MODELING-OR-REQUIRED-OUT?[~a, ~a]: ~a\n" (.name model) (car trail) modeling-or-required-out?)))
           (if (and (is-a? model <interface>)
-                   modeling-or-i-action?)
+                   modeling-or-required-out?)
               info
               (clone info :trail (cdr (.trail info))))))))
 
