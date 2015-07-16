@@ -60,9 +60,9 @@
 
 (define (main . args)
   (let* ((print-illegal (lambda () (stderr "illegal\n") (exit 0)))
-         (locator (make <locator>))
-         (runtime (make <runtime> :illegal print-illegal))
-         (sut (make <#.model > :locator (set locator runtime) :name 'sut))
+         (locator (make <dezyne:locator>))
+         (runtime (make <dezyne:runtime> :illegal print-illegal))
+         (sut (make <dezyne:#.model > :locator (set locator runtime) :name 'sut))
          (event-alist (fill-event-alist sut)))
     (while (and-let*
             ((line (read-line))

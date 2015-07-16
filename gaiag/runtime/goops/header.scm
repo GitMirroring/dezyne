@@ -48,46 +48,46 @@
   (define (cdr-equal? x) (equal? (cdr x) value))
   (and=> (find cdr-equal? alist) car))
 
-(define-class <model> ())
+(define-class <dezyne:model> ())
 
-(define-class <port-base> ())
+(define-class <dezyne:port-base> ())
 
-(define-class <interface> (<model>)
+(define-class <dezyne:interface> (<dezyne:model>)
   (in :accessor .in :init-value #f :init-keyword :in)
   (out :accessor .out :init-value #f :init-keyword :out))
 
-(define-class <component-base> (<model>)
+(define-class <dezyne:component-base> (<dezyne:model>)
   (locator :accessor .locator :init-value #f :init-keyword :locator)
-  (runtime :accessor .runtime :init-value #f)  
+  (runtime :accessor .runtime :init-value #f)
   (parent :accessor .parent :init-value #f :init-keyword :parent)
   (name :accessor .name :init-value (symbol) :init-keyword :name))
 
-(define-method (initialize (o <component-base>) args)
+(define-method (initialize (o <dezyne:component-base>) args)
   (next-method)
-  (set! (.runtime o) (get (.locator o) <runtime>))
+  (set! (.runtime o) (get (.locator o) <dezyne:runtime>))
   (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o))))
 
-(define-class <component> (<component-base>)
+(define-class <dezyne:component> (<dezyne:component-base>)
  (handling? :accessor .handling? :init-value #f :init-keyword :handling?)
  (flushes? :accessor .flushes? :init-value #f :init-keyword :flushes?)
  (deferred? :accessor .deferred? :init-value #f :init-keyword :deferred?)
  (q :accessor .q :init-form (make-q) :init-keyword :q))
 
-(define-class <system> (<component-base>))
+(define-class <dezyne:system> (<dezyne:component-base>))
 
-(define-method (connect-ports (provided <interface>) (required <interface>))
+(define-method (connect-ports (provided <dezyne:interface>) (required <dezyne:interface>))
   (set! (.out provided) (.out required))
   (set! (.in required) (.in provided)))
 
 (define (illegal) (throw 'assert 'illegal))
 
-(define-method (action-method (o <component>) (port <accessor>) (dir <accessor>) (event <accessor>) . args)
+(define-method (action-method (o <dezyne:component>) (port <accessor>) (dir <accessor>) (event <accessor>) . args)
   (apply (event (dir (port o))) args))
 
 (define (action o port dir event . args)
   (apply ((compose event dir port) o) args))
 
-(define-class <runtime> ()
+(define-class <dezyne:runtime> ()
   (components :accessor .components :init-form (list) :init-keyword :components)
   (illegal :accessor .illegal :init-value illegal :init-keyword :illegal))
 
@@ -134,20 +134,20 @@
              (alist (cadr m))
              (field (assoc-xref alist r)))
             (symbol-append type '_ field)))
-  
-(define-method (call-in (o <component>) f m)
+
+(define-method (call-in (o <dezyne:component>) f m)
   (apply trace-in (take m 2))
   (handle o f)
   (trace-out (car m) 'return)
   #f)
 
-(define-method (rcall-in (o <component>) f m)
+(define-method (rcall-in (o <dezyne:component>) f m)
   (apply trace-in (take m 2))
   (let ((r (valued-helper o f m)))
     (trace-out (car m) (or (return-value? r (cddr m)) 'return))
     r))
 
-(define-method (call-out (o <component>) f m)
+(define-method (call-out (o <dezyne:component>) f m)
   (apply trace-out m)
   (defer (.self (.in (car m))) o f))
 
@@ -156,8 +156,8 @@
                                   (if (string-null? p) p ".") p))))
     (cond
      ((not o) (string-append "<external>." p))
-     ((is-a? o <port-base>) (path (.self o) pp))
-     ((and (is-a? o <model>) (.parent o)) (path (.parent o) pp))
+     ((is-a? o <dezyne:port-base>) (path (.self o) pp))
+     ((and (is-a? o <dezyne:model>) (.parent o)) (path (.parent o) pp))
      (else pp))))
 
 (define (trace-in i e)
@@ -167,7 +167,7 @@
   (stderr "~a.~a -> ~a.~a\n" (path (.in i)) e (path (.out i)) e))
 
 
-(define-class <locator> ()
+(define-class <dezyne:locator> ()
   (services :accessor .services :init-form (list) :init-keyword :services))
 
 (define-method (locator-key (type <class>) (key <symbol>))
@@ -182,18 +182,18 @@
 (define-method (locator-key type (key <string>))
   (locator-key type (string->symbol key)))
 
-(define-method (set (o <locator>) x)
+(define-method (set (o <dezyne:locator>) x)
   (set o x ""))
 
-(define-method (set (o <locator>) x key)
+(define-method (set (o <dezyne:locator>) x key)
   (set! (.services o) (assoc-set! (.services o) (locator-key x key) x))
   o)
 
-(define-method (get (o <locator>) x)
+(define-method (get (o <dezyne:locator>) x)
   (get o x ""))
 
-(define-method (get (o <locator>) x key)
+(define-method (get (o <dezyne:locator>) x key)
   (assoc-ref (.services o) (locator-key x key)))
 
-(define-method (clone (o <locator>))
-  (make <locator> :services (list-copy (.services o))))
+(define-method (clone (o <dezyne:locator>))
+  (make <dezyne:locator> :services (list-copy (.services o))))

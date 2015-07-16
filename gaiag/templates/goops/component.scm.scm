@@ -1,5 +1,5 @@
 #(->string (map (declare-enum model) (om:enums model)))
-(define-class <#.model > (<component>)#
+(define-class <dezyne:#.model > (<dezyne:component>)#
 (map (init-member model #{#'()
   (#name  :accessor .#name  :init-value #(if (eq? expression *unspecified*) "#f" expression))#})
      (om:variables model))#
@@ -8,7 +8,7 @@
   (map (init-port #{#'()
   (#name  :accessor .#name  :init-value ##f)#})
        ((compose .elements .ports) model)))
-(define-method (initialize (o <#.model >) args)
+(define-method (initialize (o <dezyne:#.model >) args)
   (next-method)#
   (map
     (lambda (port)
@@ -16,27 +16,27 @@
      (list
     "\n"
     "  (set! (." (.name port) " o)\n"
-    "    (make <"(.type port)">\n"
-    "       :in (make <" (.type port) ".in>\n"
+    "    (make <dezyne:"(.type port)">\n"
+    "       :in (make <dezyne:" (.type port) ".in>\n"
     "              :name '" (.name port) "\n"
     "              :self o")
       (map (define-on model port #{#'()
               :#event  (lambda (. args) (#(string-if (eq? return-type 'void) "" "r")call-in o (lambda () (apply #port -#event  (cons o args))) `(,(.#port  o) #event #(string-if (not (eq? 'void return-type)) #{  #reply-name  ,#(*scope* reply-scope)-#reply-name -alist#}))))#})
     (filter om:in? (om:events port)))
     (list ")\n"
-     "       :out (make <" (.type port) ".out>)))")))
+     "       :out (make <dezyne:" (.type port) ".out>)))")))
     (filter om:provides? (om:ports model)))#
 (map
     (lambda (port)
     (if (.injected port)
-    (list "\n  (set! (." (.name port) " o) (get (.locator o) <" (.type port) ">))")
+    (list "\n  (set! (." (.name port) " o) (get (.locator o) <dezyne:" (.type port) ">))")
     (append
      (list
     "\n"
     "  (set! (." (.name port) " o)\n"
-    "     (make <"(.type port)">\n"
-    "       :in (make <" (.type port) ".in>)\n"
-    "       :out (make <" (.type port) ".out>\n"
+    "     (make <dezyne:"(.type port)">\n"
+    "       :in (make <dezyne:" (.type port) ".in>)\n"
+    "       :out (make <dezyne:" (.type port) ".out>\n"
     "              :name '" (.name port) "\n"
     "              :self o")
       (map (define-on model port #{#'()
@@ -48,14 +48,14 @@
 #(map
    (lambda (port)
      (map (define-on model port #{
-(define-method (#port -#event  (o <#.model >) #formals)#
+(define-method (#port -#event  (o <dezyne:#.model >) #formals)#
 statement #(if (not (eq? type 'void))
 (list "\n    (.reply-" (*scope* reply-scope) "-" reply-name " o)")))
 
 #}) (filter (om:dir-matches? port) (om:events port))))
    (om:ports model))#
 (map (define-function model #{
-(define-method (#name  (o <#.model >) #formals)
+(define-method (#name  (o <dezyne:#.model >) #formals)
   (call/cc
    (lambda (return) #statements)))
 
