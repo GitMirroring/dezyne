@@ -24,6 +24,7 @@
                :select
                ((make . goops:make)
                 (is-a? . goops:is-a?)
+                <accessor>
                 <boolean>
                 <class>
                 <integer>
@@ -45,6 +46,7 @@
                 slot-set!
                 ))
   :re-export (
+              <accessor>
               <boolean>
               <class>
               <integer>
@@ -204,7 +206,7 @@
     <arguments>
     <ast-list>
     <bindings>
-    <compound>    
+    <compound>
     <events>
     <fields>
     <functions>
