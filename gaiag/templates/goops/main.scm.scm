@@ -8,7 +8,7 @@
 (define (consume_synchronous_out_events event-alist)
   (read-line)
   (let loop ((line (read-line)))
-    (and-let* ((line line) 
+    (and-let* ((line line)
                ((not (eof-object? line)))
                (event (assoc-ref event-alist (string->symbol line))))
               (event)
@@ -38,11 +38,12 @@
       0))
 
 (define (fill-event-alist o)
-  (let ((e `(#
+  (let* ((dzn-i 0)
+         (e `(#
      (map
         (lambda (port)
           (map (define-on model port #{#'()
-             (#port .#event  . ,(.#event  (.#direction  (.#port  o))))#})
+             (#port .#event  . ,#(string-if (null? argument-list) #{(.#event  (.#direction  (.#port  o)))#} #{(lambda () ((.#event  (.#direction  (.#port  o))) #((->join " ") (map (lambda (i) "dzn-i") argument-list)))) #}))#})
      (filter (om:dir-matches? port)
      (om:events port)))) (om:ports model)))))
     #(map
