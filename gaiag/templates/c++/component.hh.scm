@@ -22,7 +22,7 @@ struct #.model
     (map (init-member model #{
 #type  #name;
 #}) (om:variables model))#
-    (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))#
+    (delete-duplicates (append-map (compose declare-replies code:import .type) ((compose .elements .ports) model)))#
     (map (init-port #{
 #interface  #name;
 #}) ((compose .elements .ports) model))
