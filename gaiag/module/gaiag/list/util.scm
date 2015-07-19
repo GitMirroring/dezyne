@@ -272,7 +272,9 @@
       (is-a? o <on>)
       (and (is-a? o <compound>)
            (>0 (length (.elements o)))
-           (om:declarative? (car (.elements o))))))
+           (om:declarative? (car (.elements o))))
+      (and (pair? o)
+           (om:declarative? (car o)))))
 
 (define om:imperative? (negate om:declarative?))
 

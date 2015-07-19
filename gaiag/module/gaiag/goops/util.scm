@@ -122,7 +122,7 @@
 
 (define* (om2list o :optional (marker null-symbol))
   (match o
-    ((? (is? <ast>)) (cons (symbol-append (ast-name o) marker) (map om2list (om:children o))))
+    ((and (? (is? <ast>)) (? (negate (is? <ast-list>)))) (cons (symbol-append (ast-name o) marker) (map om2list (om:children o))))
     ((h t ...) (map om2list o))
     (_ o)))
 
@@ -592,7 +592,9 @@
       (is-a? o <on>)
       (and (is-a? o <compound>)
            (>0 (length (.elements o)))
-           (om:declarative? (car (.elements o))))))
+           (om:declarative? (car (.elements o))))
+      (and (pair? o)
+           (om:declarative? (car o)))))
 
 (define om:imperative? (negate om:declarative?))
 
