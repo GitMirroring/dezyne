@@ -121,21 +121,21 @@
            `((type . state)
              (state . ,(state->json state))))
           (loop (cdr trace) trigger state trail))))
-       ((eq? (caar trace) 'trail)
+       ((eq? (ast-name (car trace)) 'trail)
         (let ((trail (cdar trace)))
           (cons
            (alist->hash-table
             `((type . trail)
               (trail . ,trail)))
            (loop (cdr trace) trigger state trail))))
-       ((eq? (caar trace) 'matched)
+       ((eq? (ast-name (car trace)) 'matched)
         (let ((matched (cdar trace)))
           (cons
            (alist->hash-table
             `((type . matched)
               (trail . ,matched)))
            (loop (cdr trace) trigger state trail))))
-       ((eq? (caar trace) 'error)
+       ((eq? (ast-name (car trace)) 'error)
         (let ((error (cdar trace)))
           (cons
            (alist->hash-table

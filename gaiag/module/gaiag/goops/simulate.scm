@@ -39,13 +39,13 @@
            .error
            ))
 
-(define-class <info> ()
+(define-class <info> (<ast>)
   (trail :accessor .trail :init-form (list) :init-keyword :trail)
   (ast :accessor .ast :init-form (list) :init-keyword :ast)
   (state :accessor .state :init-form (list) :init-keyword :state)
+  (q :accessor .q :init-form (list) :init-keyword :q)
   (reply :accessor .reply :init-form 'return :init-keyword :reply)
   (return :accessor .return :init-form #f :init-keyword :return)
-  (q :accessor .q :init-form (list) :init-keyword :q)  
   (state-alist :accessor .state-alist :init-form (list) :init-keyword :state-alist)
   (trace :accessor .trace :init-form (list) :init-keyword :trace)
-  (error :accessor .error :init-form (list) :init-keyword :error))
+  (error :accessor .error :init-form #f :init-keyword :error))

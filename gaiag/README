@@ -1,0 +1,8 @@
+;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
+
+Gaiag runs or GOOPS or plain list backends.  Default is the--
+with guile-2.2-- much faster list backend.
+
+    module/gaiag/ast.scm -- edit manually to switch to GOOPS
+    module/gaiag/goops/  -- the GOOPS backend
+    module/gaiag/goops/  -- the plain list backend

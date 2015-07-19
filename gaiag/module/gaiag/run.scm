@@ -94,7 +94,7 @@
          (traces (if trail
                      (walk-trail model (with-input-from-string trail read))
                      (explore-space model)))
-         (traces (sort-traces traces))
+         (traces (sort-traces traces)) ;; not with GOOPS for now
          (trace (if (pair? traces) (car traces) '())))
     (pretty-print (mangle-traces model traces)))
   (newline)
@@ -114,6 +114,9 @@
   (let* ((ports (if (is-a? model <interface>) '() ((compose .elements .ports) model)))
          (state-alist (map (lambda (port) (cons (.name port) (state-vector (run:import (.type port))))) ports))
          (info (make <info> :trail trail :state (state-vector model) :state-alist state-alist)))
+    (stderr "info: ~a\n" info)
+    (stderr "model: ~a\n" model)
+    (stderr "error: ~a\n" (.error info))
     (let loop ((info info) (trace '()))
       (debug "trail: <-- ~a\n" (.trail info))
       (debug-state model info)
@@ -545,12 +548,12 @@
     (null-is-#f (filter modeling? (triggers-for-action interface trigger)))))
 
 (define (action-triggers o)
-  (map .trigger ((collect (is? <action>)) o)))
+  (map .trigger ((om:collect (is? <action>)) o)))
 
 (define (triggers-for-action model action)
-  (let* ((ons ((collect (is? <on>)) model))
+  (let* ((ons ((om:collect (is? <on>)) model))
          (event (.event action))
-         (on-actions (map (lambda (on) (cons ((compose car .elements .triggers) on) (map (compose .event .trigger) ((collect (is? <action>)) on)))) ons))
+         (on-actions (map (lambda (on) (cons ((compose car .elements .triggers) on) (map (compose .event .trigger) ((om:collect (is? <action>)) on)))) ons))
          (on-actions (filter (lambda (x) (member event (cdr x))) on-actions)))
     (map car on-actions)))
 
