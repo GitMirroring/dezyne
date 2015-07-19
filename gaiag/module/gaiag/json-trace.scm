@@ -50,34 +50,31 @@
 ;; FIXME: mangling the trace output into the current json format takes
 ;; about as much effort as producing it?
 
-(define (ast->node-alist ast)
-  `((key . ,(.name ast))
-    (name . ,(.name ast)) ;; duh!
-    (state . "") ;; duh!
-    ))
+(define (model->node-alist model)
+  `((model . ,(.name model))
+    (type . ,(ast-name model))
+    (state . ,(state->json (state-vector model)))))
 
 (define (json-init model)
   (alist->hash-table
    `((type . init)
-     (nodes . ,(map alist->hash-table
-                    (map ast->node-alist (if (is-a? model <component>)
-                                             (cons model (.elements (.ports model)))
-                                             (list model))))))))
+     (models . ,(map alist->hash-table
+                     (map model->node-alist
+                          (if (is-a? model <component>)
+                              (cons model (map (compose om:import .type) (.elements (.ports model))))
+                              (list model))))))))
 
 (define (json-state model state)
   (alist->hash-table
    (append
     `((type . update)
-      (comp . ,(.name model)))
-    (map (lambda (variable) (cons (car variable) (->symbol (cdr variable))))
-         state))))
+      (comp . ,(.name model))
+      (state . ,(state->json state))))))
 
 (define (from model event statement)
   (if (is-a? statement <on>)
-      (if (.port (event->ast event))
-          (.port (event->ast event))
-          'in)
-      (.name model)))
+      (.name model)
+      #f))
 
 (define (to model statement)
   (if (is-a? statement <on>)
@@ -97,50 +94,47 @@
                     (.port trigger))
           'out)))
 
-(define (state->hash state)
-   (alist->hash-table
-    (map
-     (lambda (s)
-       (cons ((@@(gaiag simulate) ->string) (car s))
-             ((@@(gaiag simulate) ->string) (cdr s))))
-     state)))
+(define (state->json state)
+  (alist->hash-table
+   (map
+    (lambda (s)
+      (cons ((@@(gaiag simulate) ->string) (car s))
+            ((@@(gaiag simulate) ->string) (cdr s))))
+    state)))
 
 (define ((json-trace model) tracepoint)
   (let* ((event (car tracepoint))
          (state (cadr tracepoint))
          (steps (cddr tracepoint))
          (name (.name model)))
-    (let loop ((statements steps))
+    (let loop ((statements steps) (state state))
       (if (null? statements)
           (list (alist->hash-table '()))
-      (let* ((statement (car statements))
-             (class (and=> statement ast-name))
-             (type (if (eq? class 'assign) 'update 'transition))
-             (location (alist->hash-table
-                        `((begin . ,(json-location statement))
-                          (end . ,(json-location (or (and (pair? statements) (last statements)) statement))))))
-             (message
-              (alist->hash-table
-               (if (eq? type 'update)
-                   (let ((variable (.identifier statement)))
-                     `((type . update)
-                       (comp . ,name)
-                       (,variable . ,(->symbol (var state variable)))
-                       (location . ,location)))
-                   (let ((kind
-                          (match statement
-                            (($ <compound>) 'step)
-                            (_ class)))
-                         (json-event
-                          (match statement
-                            (($ <on>) (->symbol event))
-                            (($ <action>) (->symbol (.trigger statement)))
-                            (_ #f))))
-                     `((type . transition)
-                       (kind . ,kind)
+          (let* ((statement (car statements))
+                 (type (and=> statement ast-name))
+                 (state (if (eq? type 'assign)
+                            (var! state (.identifier statement) (eval-expression model state (.expression statement))) ;; FIXME
+                            state))
+                 (location (alist->hash-table
+                            `((begin . ,(json-location statement))
+                              (end . ,(json-location (or (and (pair? statements) (last statements)) statement))))))
+                 (message
+                  (alist->hash-table
+                   (let* ((instance (and (om:parent model statement) name))
+                          (trigger
+                           (match statement
+                             (($ <on>) (->symbol event))
+                             (($ <action>) (->symbol (.trigger statement)))
+                             (($ <return> #f)
+                              (symbol-append (source-property statement 'port) '.return))
+                             (($ <return> event) event)
+                             (_ #f))))
+                     `((type . step)
+                       (type . ,type)
+                       (instance . ,instance)
                        (from . ,(from model event statement))
-                       (to  . ,(to model statement))
-                       (event . ,json-event)
-                       (state . ,(state->hash state))
-                       (location . ,location)))))))
-        (cons message (loop (cdr statements))))))))
+                       (to . ,(to model statement))
+                       (event . ,trigger)
+                       (state . ,(state->json state))
+                       (location . ,location))))))
+            (cons message (loop (cdr statements) state)))))))
