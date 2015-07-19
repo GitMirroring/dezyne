@@ -18,6 +18,7 @@
 (read-set! keywords 'prefix)
 
 (define-module (gaiag goops om)
+  :use-module (ice-9 and-let-star)
   :use-module (ice-9 optargs)
   :use-module ((oop goops;;the only spot
                     )
@@ -220,6 +221,8 @@
     <context-vector> ;; URG
     ))
 
+(define ast-list-names (map class-name ast-lists))
+
 (define (ast-name class)
   (string->symbol (string-drop (string-drop-right (symbol->string (class-name class)) 1) 1)))
 
@@ -233,13 +236,13 @@
       (apply goops:make (cons class args))))
 
 (define (is-a? o class)
-  (if (or (member class ast-lists)
-          ;;(and (pair? o) (eq? class <ast>)) breaks resolver
-          )
-      (and (pair? o) (or (eq? class <ast-list>)
-                         (eq? class <ast>)
-                         (eq? (ast-name class) (car o))))
-      (goops:is-a? o class)))
+  (if (not (pair? o)) (goops:is-a? o class)
+      (and-let* ((type (car o))
+                 ((symbol? type))
+                 (name (symbol->class type)))
+                (if (or (eq? class <ast>) (eq? class <ast-list>))
+                    (member name ast-list-names)
+                 (eq? name (class-name class))))))
 
 (define-class <model> (<named>))
 
