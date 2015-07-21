@@ -72,7 +72,7 @@ interface I
            (make <if>
              :then (make <action> :trigger (make <trigger> :event 'e))
              :else (make <action> :trigger (make <trigger> :event 'e))))
-          '("e;\n")))
+          '("e;\n" "e;\n")))
 
 (pass-if "json-table-json-callback-function"
          (pretty-noisy-equal?
