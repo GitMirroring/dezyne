@@ -3,6 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
@@ -296,8 +297,7 @@
 
   (or (and-let* (((is-a? model <interface>))
                  ((is-a? o <statement>))
-                 (actions (return-actions o))
-                 (actions (delete-duplicates actions)))
+                 (actions (return-actions o)))
                 (map ast->dezyne actions))
       '()))
 
