@@ -25,25 +25,23 @@ LANGUAGES:=$(CODE_LANGUAGES)
 DZN_FILES:=$(wildcard $(CDIR)*.dzn)
 
 # BurglarAlarm: does not compile
+# GarageDoorControl does not compile due to system component specification
 # Recursion: segfaults on stack overflow
 BROKEN_code:=\
   $(CDIR)BurglarAlarm.dzn\
+  $(CDIR)GarageDoorControl.dzn\
   $(CDIR)Recursion.dzn\
 
 BROKEN_c:=\
-  $(CDIR)GarageDoorControl.dzn\
   $(CDIR)GarageDoorControlErr.dzn\
 
 BROKEN_goops:=\
-  $(CDIR)GarageDoorControl.dzn\
   $(CDIR)GarageDoorControlErr.dzn\
 
 BROKEN_java:=\
-  $(CDIR)GarageDoorControl.dzn\
   $(CDIR)GarageDoorControlErr.dzn\
 
 BROKEN_javascript:=\
-  $(CDIR)GarageDoorControl.dzn\
   $(CDIR)GarageDoorControlErr.dzn\
 
 $(foreach lang,$(LANGUAGES), $(eval BROKEN_$(lang)+=$(BROKEN_code)))

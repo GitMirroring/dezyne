@@ -30,7 +30,7 @@
 /* certain things differently, e.g. the timer on the switch press. Note that I'm also sure that*/
 /* the purists will argue that the whole thing could have been done differently. But my        */
 /* purpose here is to illustrate how a simple minded ex-programmer like me might go about      */
-/* solving this problem.
+/* solving this problem.                                                                       */               
 /*                                                                                             */
 /* Robert Howe                                                                                 */
 /* ******************************************************************************************* */
@@ -119,7 +119,7 @@ interface LimitSwitchIF
 // The motor control is pretty dumb. With the motor off, we can select either the open or close direction
 // Then we can turn it on. If the motor is working too hard - for instance if the counter balance spring
 // on the door has weakened, then the motor will report a "power warning". If the motor hits a hard stop,
-// for instance if a limit switch fails, then it will immediate shutoff and send a drive fault message
+// for instance if a limit switch fails, then it will immediately shutoff and send a drive fault message
 
 interface MotorControlIF
 {
@@ -200,7 +200,7 @@ interface SwitchPressIF
 	}
 }
 
-// Interface to a one shot timer
+// Interface to an one shot timer
 // The Timer can be started via CreateTimer, CreateTimerEx, or via CreateTimerMSec
 // The Timer is stopped via CancelTimer
 // The Timer reports expiration via Timeout
@@ -457,4 +457,33 @@ component GarageDoorControl
 			state = State.Error;
 		}				
 	}
+}
+
+// Wrappers for hand written components
+component MotorControl {provides MotorControlIF motorIF;}
+component LimitSwitch {provides LimitSwitchIF limitIF;}
+component WallSwitch {provides SwitchPressIF switchIF;}
+component Timer {provides ITimer iTimer;}
+
+// System composition
+
+component GarageDoorSystem
+{
+	provides DoorControlIF iDoorCtrl;
+	
+	system
+	{
+		GarageDoorControl doorCtrl;
+		MotorControl m;
+		LimitSwitch l;
+		WallSwitch s;
+		Timer z;
+		
+		iDoorCtrl <=> doorCtrl.doorControl;
+		doorCtrl.switchPress <=> s.switchIF;
+		doorCtrl.motorControl <=> m.motorIF;
+		doorCtrl.limitSw <=> l.limitIF;
+		doorCtrl.timer <=> z.iTimer;		
+		
+	}	
 }
