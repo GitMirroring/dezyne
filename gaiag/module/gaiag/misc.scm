@@ -37,6 +37,7 @@
            *eof*
            *eof*-is-#f
            ->join
+           ->symbol-join
            ->string
            !=
            <1
@@ -124,6 +125,13 @@
 (define null-symbol (string->symbol ""))
 (define (symbol-null? x) (eq? x null-symbol))
 (define (number->symbol x) (string->symbol (number->string x)))
+
+(define ((->symbol-join infix) lst)
+  (let loop ((lst lst) (result '()))
+    (if (null? lst) (apply symbol-append result)
+        (if (null? result)
+            (loop (cdr lst) (take lst 1))
+            (loop (cdr lst) (append result (list infix) (take lst 1)))))))
 
 (define (symbol-split symbol char)
   (map string->symbol (string-split (symbol->string symbol) char)))

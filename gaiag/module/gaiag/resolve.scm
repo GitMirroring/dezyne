@@ -114,7 +114,7 @@
   (match o
     (($ <system>) o)
     (($ <*type*>) o)
-    (($ <import>) o)    
+    (($ <import>) o)
     (_ (retain-source-properties o (resolve-model- model o locals)))))
 
 (define (resolve:import name)
@@ -142,12 +142,22 @@
 
 (define (->symbol o)
   (match o
-    (($ <type> name #f) name)
-    (($ <type> name scope) (symbol-append scope '. name))
-    (($ <value> type field)  (symbol-append type '. field))
-    (($ <enum> name #f field) name)
-    (($ <enum> name scope field)  (symbol-append scope '. name))
+    (($ <type> ('name name ...)) ((->symbol-join '.) name))
+    (($ <enum> name field) ((->symbol-join '.) name))
+    ;; (($ <type> name #f) name)
+    ;; (($ <type> name scope) (symbol-append scope '. name))
+    ;; (($ <value> type field)  (symbol-append type '. field))
     (_ o)))
+
+;; hmm
+(define (scoped-types model)
+  (let ((scope (.scope (.name model))))
+    (map (lambda (o)
+           (match o
+             (('enum name fields) (list 'enum name scope fields))
+             (('extern name value) (list 'extern name scope value))
+             (('int name range) (list 'int name scope range))))
+         ((compose public-types om:import .type) port))))
 
 (define (resolve-model- model o locals)
 
@@ -199,6 +209,7 @@
                  enum))
       (_ #f)))
 
+  (stderr "resolving: ~a\n" o)
   (match o
     ('root o)
     (($ <var> (and (? (negate var?)) (get! identifier)))
@@ -225,6 +236,7 @@
                           (format #f "function ~a expects ~a arguments, found: ~a" "~a" formal-count argument-count)))))
 
     (($ <variable> name (and (? (negate type?)) (get! type)) expression)
+     (stderr "TYPE: ~a ==> ~a\n" (type) (type? (type)))
      (let* ((scope (.scope (type)))
             (name (.name (type)))
             (name (if scope
@@ -256,10 +268,10 @@
     (($ <call> identifier (and ('arguments arguments ...) (get! arguments)) last?)
      (make <call> :identifier identifier :arguments ((resolve-model model locals) (arguments)) :last? last?))
 
-    (($ <type> (and (? enum?) (get! enum)) #f)
+    (($ <type> ($ <name> (and (? enum?) (get! enum))) #f)
      (make <type> :name (enum) :scope (.scope (enum? (enum)))))
-    
-    (($ <type> (and (? int?) (get! int)) #f)
+
+    (($ <type> ($ <name> (and (? int?) (get! int))) #f)
      (make <type> :name (int) :scope (.scope (int? (int)))))
 
     (($ <event> name signature direction)
@@ -268,7 +280,7 @@
     (($ <data>) o)
     (($ <enum>) o)
     (($ <event>) o)
-    (($ <extern>) o)    
+    (($ <extern>) o)
     (($ <field>) o)
     (($ <illegal>) o)
     (($ <int>) o)
@@ -415,12 +427,14 @@
        :type ((resolve-model model locals) type)
        :expression ((resolve-model model locals) expression)))
 
+    (($ <name> name ...) o)
+
     (($ <value> (and (? enum?) (get! enum))
         (and (? (enum-field? (enum))) (get! field)))
      (make <literal> :scope (.scope (enum? (enum))) :type (enum) :field (field)))
 
     (($ <value> (and (? var?) (get! type)) (? (member-field? (type))))
-     (make <field> :identifier (type) :field (.field o)))    
+     (make <field> :identifier (type) :field (.field o)))
 
     (($ <value> (? enum?) field)
      (resolve-error o field "undefined enum field: ~a"))
@@ -546,7 +560,7 @@
 
 (define ((range-check model) variable)
   (define (int-type? type) (om:integer model type))
-  (or variable 
+  (or variable
       (and-let* ((int (int-type? (.type variable)))
                  (range (.range int))
                  (expression (.expression variable))

@@ -18,6 +18,7 @@
 
 (define-module (language dezyne parse)
   #:use-module (ice-9 and-let-star)
+  #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
   #:use-module (ice-9 receive)
   #:use-module (srfi srfi-1)
@@ -34,15 +35,13 @@
             make-parser
             ))
 
-(define (event? x) (eq? (car x) 'event))
-
 (define (make-parser)
   (lalr-parser
    (driver: lr)
-   ;;(out-table: "dezyne.out")
+   (out-table: "dezyne.out")
    (
-    lbrace rbrace lparen rparen rbracket semicolon colon dot comma
-    on lbracket
+    lbrace rbrace rparen rbracket semicolon colon comma
+    on namespace lbracket
     inevitable optional
     otherwise
     if reply return
@@ -53,10 +52,11 @@
     behaviour import interface component system
     provides requires injected
     bool enum extern subint void
-    NumericLiteral Data    
+    NumericLiteral Data
     dollar
 
-    (left: Identifier)
+    Identifier
+    (left: dot lparen)
     (nonassoc: = <=> ..)
     (left: or)
     (left: and)
@@ -75,11 +75,12 @@
 
    (models
     () : '()
-    (models model) : (append $1 (list $2)))
+    (models model) : (append $1 (list $2))
+    (models namespace name lbrace models rbrace) : (append $1 (map (add-scope $3) $5)))
 
    (model
     (import-spec) : $1
-    (type) : (retain-source-properties $1 (append (take $1 2) '(*global*) (drop $1 3)))
+    (type) : $1
     (interface-spec) : $1
     (component-spec) : $1)
 
@@ -88,21 +89,21 @@
     (import Identifier dot Identifier semicolon) : `(,$1 ,(symbol-append $2 '. $4)))
 
    (interface-spec
-    (interface Identifier lbrace events/types rbrace)
+    (interface name lbrace events/types rbrace)
     : (receive (e t)
           (partition event? $4)
-        (note-location `(,$1 ,$2 ,(cons 'types t) ,(cons 'events e)) @1))
-    (interface Identifier lbrace events/types behaviour-spec rbrace)
+        (note-location `(,$1 ,$2 ,(cons 'types (map (add-scope $2) t)) ,(cons 'events e)) @1))
+    (interface name lbrace events/types behaviour-spec rbrace)
     : (receive (e t)
           (partition event? $4)
-        (note-location `(,$1 ,$2 ,(cons 'types t) ,(cons 'events e) ,$5) @1)))
+        (note-location `(,$1 ,$2 ,(cons 'types (map (add-scope $2) t)) ,(cons 'events e) ,((add-scope $2) $5)) @1)))
 
    (component-spec
-    (component Identifier lbrace ports rbrace)
+    (component name lbrace ports rbrace)
     : (note-location `(,$1 ,$2 ,$4) @1)
-    (component Identifier lbrace ports behaviour-spec rbrace)
-    : (note-location `(,$1 ,$2 ,$4 ,$5) @1)
-    (component Identifier lbrace ports system lbrace instances/binds rbrace rbrace)
+    (component name lbrace ports behaviour-spec rbrace)
+    : (note-location `(,$1 ,$2 ,$4 ,((add-scope $2) $5)) @1)
+    (component name lbrace ports system lbrace instances/binds rbrace rbrace)
     : (receive (instances binds)
           (partition (lambda (x) (eq? (car x) 'instance)) $7)
         (note-location `(system ,$2 ,$4 ,(cons 'instances instances) ,(cons 'bindings binds)) @1)))
@@ -153,8 +154,8 @@
     (ports port) : (append $1 (list $2)))
 
    (port
-    (port-direction Identifier Identifier semicolon) : `(port ,$3 ,$2 ,$1 #f)
-    (port-direction injected Identifier Identifier semicolon) : `(port ,$4 ,$3 ,$1 ,$2))
+    (port-direction name Identifier semicolon) : `(port ,$3 ,$2 ,$1 #f)
+    (port-direction injected name Identifier semicolon) : `(port ,$4 ,$3 ,$1 ,$2))
 
    (port-direction
     (provides) : 'provides
@@ -172,25 +173,24 @@
    (variable-type
     (bool) : '(type bool)
     (void) : '(type void)
-    (Identifier) : (note-location `(type ,$1) @1)
-    (Identifier dot Identifier) : (note-location `(type ,$3 ,$1) @1))
+    (name) : (note-location `(type ,$1) @1))
 
    (enum-spec
-    (enum Identifier lbrace enum-fields rbrace semicolon) : (note-location `(enum ,$2 #f ,$4) @1))
+    (enum Identifier lbrace enum-fields rbrace semicolon) : (note-location `(enum (name ,$2) ,$4) @1))
 
    (enum-fields
     (Identifier) : `(fields ,$1)
     (enum-fields comma Identifier) : (append $1 (list $3)))
 
    (subint-spec
-    (subint Identifier lbrace integer .. integer rbrace semicolon) : (note-location `(int ,$2 #f (range ,$4 ,$6)) @1))
+    (subint Identifier lbrace integer .. integer rbrace semicolon) : (note-location `(int (name ,$2) (range ,$4 ,$6)) @1))
 
    (integer
     (NumericLiteral): $1
     (- NumericLiteral): (- $2))
 
    (extern-spec
-    (extern Identifier Data semicolon) : (note-location `(extern ,$2 #f ,$3) @1))
+    (extern Identifier Data semicolon) : (note-location `(extern (name ,$2) ,$3) @1))
 
    (expression
     (expr): `(expression ,$1))
@@ -199,7 +199,7 @@
     (false) : $1
     (true) : $1
     (integer) : $1
-    (compound-identifier) : $1
+    (name) : $1
     (Data) : (note-location `(data ,$1) @1)
 
     (lparen expr rparen) : `(group ,$2)
@@ -301,10 +301,13 @@
    (compound-statement
     (lbrace statements rbrace) : (note-location $2 @1))
 
-   (compound-identifier
-    (Identifier) : (note-location `(var ,$1) @1)
-    (Identifier dot Identifier) : `(value ,$1 ,$3)
-    (Identifier dot Identifier dot Identifier) : `(literal ,$1 ,$3 ,$5))
+   (name
+    (name-pair) : $1
+    (name dot Identifier) : (append $1 `(,$3)))
+
+   (name-pair
+    (Identifier) : (note-location `(name ,$1) @1)
+    (Identifier dot Identifier) : (note-location `(name ,$1 ,$3) @1))
 
    (on-event-statement
     (on trigger-spec colon statement) : (note-location `(,$1 ,$2 ,$4) @1))
@@ -333,12 +336,11 @@
     (Identifier = expression semicolon) : (note-location `(assign ,$1 ,$3) @1))
 
    (action
-    (Identifier dot Identifier lparen rparen) : (note-location `(action (trigger ,$1 ,$3)) @1)
-    (Identifier dot Identifier lparen arguments rparen) : (note-location `(action (trigger ,$1 ,$3 ,$5)) @1))
+    (name-pair lparen rparen) : (rsp $1 `(action ,(make-trigger $1)))
+    (name-pair lparen arguments rparen) : (rsp $1 `(action ,(append (make-trigger $1) (list $3)))))
 
    (action-statement
-    (Identifier semicolon) : (note-location `(action (trigger #f ,$1)) @1)
-    (Identifier dot Identifier semicolon) : (note-location `(action (trigger ,$1 ,$3)) @1)
+    (name-pair semicolon) : (rsp $1 `(action ,(make-trigger $1)))
     (action semicolon) : $1)
 
    (if-statement
@@ -353,14 +355,40 @@
     (return expression semicolon) : (note-location `(return ,$2) @1))
 
    (variable
-    (variable-type Identifier semicolon) : `(variable ,$2 ,$1 ,(note-location '(expression) @3))
-    (Identifier dot Identifier Identifier semicolon) : `(variable ,$4 (type ,$3 ,$1) ,(note-location '(expression) @5))
-    (variable-type Identifier = expression semicolon) : `(variable ,$2 ,$1 ,(note-location $4 @3))
-    (Identifier dot Identifier Identifier = expression semicolon) : `(variable ,$4 (type ,$3 ,$1) ,(note-location $6 @3)))
+    (variable-type Identifier semicolon) : `(variable ,$2 ,$1)
+    (variable-type Identifier = expression semicolon) : `(variable ,$2 ,$1 ,(note-location $4 @2)))
 
    (variables
     (variable) : `(variables ,$1)
     (variables variable) : (append $1 (list $2)))))
+
+(define (event? x) (eq? (car x) 'event))
+
+(define (stderr string . rest)
+  (apply format (cons* (current-error-port) string rest)))
+
+(define (make-trigger o)
+  (match o
+    ((? symbol?) `(trigger #f o))
+    (('name event) `(trigger #f ,event))
+    (('name port event) `(trigger ,port ,event))))
+
+(define ((add-scope scope) o)
+  (rsp o ((add-scope- scope) o)))
+
+(define ((add-scope- scope) o)
+  (match o
+    (('interface name types events behaviour)
+     (rsp o `(interface ,((add-scope scope) name) ,((add-scope scope) types) ,events ,((add-scope scope) behaviour))))
+    (('component name ports behaviour)
+     `(component ,((add-scope scope) name) ,ports ,((add-scope scope) behaviour)))
+    (('behaviour name types variables functions statement)
+     `(behaviour ,name ,((add-scope scope) types) ,variables ,functions ,statement))
+    (('name name ...) (append scope name))
+    (('types types ...) (cons 'types (map (add-scope scope) types)))
+    (((and (or 'enum 'extern 'int) (get! type)) ('name name ...) spec)
+     (list (type) (append scope name) spec))
+    (_ o)))
 
 (define (compile-tree-il exp env opts)
   (values (parse-tree-il (comp exp '())) env env))

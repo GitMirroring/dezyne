@@ -66,7 +66,7 @@
       (throw 'syntax-error #f message
              (and=> (lexical-token-source token)
                     source-location->user-source-properties)
-             (or (lexical-token-value token)
+             (or (and=> (lexical-token-value token) symbol->string)
                  (lexical-token-category token))
              #f)
       (throw 'syntax-error #f message #f token #f)))

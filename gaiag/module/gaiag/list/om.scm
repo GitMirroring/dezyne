@@ -106,7 +106,7 @@
            <interface>
            <list>
            <literal>
-           <named>
+           <name>
            <null>
            <system>
            <bindings>
@@ -125,7 +125,6 @@
            <reply>
            <return>
            <root>
-           <scoped>
            <signature>
            <statement>
            <trigger>
@@ -165,7 +164,7 @@
            make-<instances>
            make-<int>
            make-<interface>
-           make-<named>
+           make-<name>
            make-<system>
            make-<bindings>
            make-<compound>
@@ -185,7 +184,6 @@
            make-<reply>
            make-<return>
            make-<root>
-           make-<scoped>
            make-<signature>
            make-<type>
            make-<types>
@@ -231,7 +229,6 @@
     interface
     literal
     model
-    named
     on
     otherwise
     formal
@@ -241,7 +238,6 @@
     range
     reply
     return
-    scoped
     signature
     system
     trigger
@@ -258,9 +254,10 @@
     compound
     events
     fields
+    formals
     functions
     instances
-    formals
+    name
     ports
     root
     triggers
@@ -362,22 +359,6 @@
 ;; (define (ast-list? ast)
 ;;   (and (pair? ast) (member (car ast) ast-lists) ast))
 
-(define (make-<named> . args)
-  (let-keywords
-   args #f
-   ((name #f))
-   ;;`(name ,name)
-   name
-   ))
-
-(define (make-<scoped> . args)
-  (let-keywords
-   args #f
-   ((scope #f))
-   ;;`(scope ,scope)
-   scope
-   ))
-
 (define (make-<list> . args)
   (let-keywords
    args #f
@@ -389,41 +370,41 @@
   (let-keywords
    args #f
    ((name #f))
-   (cons <import> (list (make-<named> :name name)))))
+   (cons <import> (list (make-<name> :name name)))))
 
 (define (make-<interface> . args)
   (let-keywords
    args #f
-   ((name #f)
+   ((name (make <name>))
     (types (make <types>))
     (events (make <events>))
     (behaviour (make <behaviour>)))
-   (cons <interface> (list (make-<named> :name name) types events behaviour))))
+   (cons <interface> (list name types events behaviour))))
 
 (define (make-<component> . args)
   (let-keywords
    args #f
-   ((name #f)
+   ((name (make <name>))
     (ports (make <ports>))
     (behaviour #f))
-   (cons <component> (list (make-<named> :name name) ports behaviour))))
+   (cons <component> (list name ports behaviour))))
 
 (define (make-<system> . args)
   (let-keywords
    args #f
-   ((name #f)
+   ((name (make <name>))
     (ports (make <ports>))
     (instances (make <instances>))
     (bindings (make <bindings>)))
-   (cons <system> (list (make-<named> :name name) ports instances bindings))))
+   (cons <system> (list name ports instances bindings))))
 
 (define (make-<event> . args)
   (let-keywords
    args #f
-   ((name #f)
+   ((name (make <name>))
     (signature (make <signature>))
     (direction #f))
-   (cons <event> (list (make <named> :name name) signature direction))))
+   (cons <event> (list name signature direction))))
 
 (define (make-<trigger> . args)
   (let-keywords
@@ -436,11 +417,11 @@
 (define (make-<port> . args)
   (let-keywords
    args #f
-   ((name #f)
+   ((name (make <name>))
     (type #f)
     (direction #f)
     (injected #f))
-   (cons <port> (list (make <named> :name name) type direction injected))))
+   (cons <port> (list name type direction injected))))
 
 (define (make-<behaviour> . args)
   (let-keywords
@@ -450,7 +431,7 @@
     (variables (make <variables>))
     (functions (make <functions>))
     (statement (make <compound>)))
-   (cons <behaviour> (list (make <named> :name name) types variables functions statement))))
+   (cons <behaviour> (list name types variables functions statement))))
 
 (define (make-<data> . args)
   (let-keywords
@@ -461,40 +442,29 @@
 (define (make-<enum> . args)
   (let-keywords
    args #f
-   ((name #f)
-    (scope #f)
+   ((name (make <name>))
     (fields (make <fields>)))
-   (cons <enum> (list (make <named> :name name) (make <scoped> :scope scope) fields))))
+   (cons <enum> (list name fields))))
 
 (define (make-<extern> . args)
   (let-keywords
    args #f
-   ((name #f)
-    (scope #f)
+   ((name (make <name>))
     (value #f))
-   (cons <extern> (list (make <named> :name name) (make <scoped> :scope scope) value))))
+   (cons <extern> (list name value))))
 
 (define (make-<int> . args)
   (let-keywords
    args #f
-   ((name #f)
-    (scope #f)
+   ((name (make <name>))
     (range (make <range>)))
-   (cons <int> (list (make <named> :name name) (make <scoped> :scope scope) range))))
+   (cons <int> (list name range))))
 
 (define (make-<expression> . args)
   (let-keywords
    args #f
    ((value *unspecified*))
    (cons <expression> (list value))))
-
-(define (make-<extern> . args)
-  (let-keywords
-   args #f
-   ((name #f)
-    (scope #f)
-    (value #f))
-   (cons <extern> (list (make <named> :name name) (make <scoped> :scope scope) value))))
 
 (define (make-<function> . args)
   (let-keywords
@@ -503,15 +473,7 @@
     (recursive #f)
     (signature (make <signature>))
     (statement (make <compound>)))
-   (cons <function> (list (make <named> :name name) signature recursive statement))))
-
-(define (make-int> . args)
-  (let-keywords
-   args #f
-   ((name #f)
-    (scope #f)
-    (range (make <range>)))
-   (cons <int> (list (make <named> :name name) (make <scoped> :scope scope) range))))
+   (cons <function> (list name signature recursive statement))))
 
 (define (make-<formal> . args)
   (let-keywords
@@ -519,9 +481,7 @@
    ((name #f)
     (type '(type void))
     (direction #f))
-   (cons <formal> (list (make <named> :name name) ;;`(type ,type) `(direction ,direction)
-                           type direction
-                           ))))
+   (cons <formal> (list name type direction))))
 
 (define (make-<range> . args)
   (let-keywords
@@ -614,7 +574,7 @@
    args #f
    ((name #f)
     (component #f))
-   (cons <instance> (list (make <named> :name name) component))))
+   (cons <instance> (list name component))))
 
 (define (make-<variable> . args)
   (let-keywords
@@ -622,13 +582,13 @@
    ((name #f)
     (type #f)
     (expression (make <expression>)))
-   (cons <variable> (list (make <named> :name name) type expression))))
+   (cons <variable> (list name type expression))))
 
 (define (make-<var> . args)
   (let-keywords
    args #f
-   ((name #f))
-   (cons <var> (list (make <named> :name name)))))
+   ((name (make <name>)))
+   (cons <var> (list name))))
 
 (define (make-<value> . args)
   (let-keywords
@@ -661,9 +621,8 @@
 (define (make-<type> . args)
   (let-keywords
    args #f
-   ((name #f)
-    (scope #f))
-   (cons <type> (list (make <named> :name name) scope))))
+   ((name (make <name>)))
+   (cons <type> (list name))))
 
 (define (make-<error> . args)
   (let-keywords
@@ -733,22 +692,14 @@
 
 (define (.name ast)
   (match ast
-    (_ (cadr ast))
-
-    (('enum name scope fields) name)
-    (('int name scope range) name)
-    (('extern name scope value) name)))
+    (('name scope ... name) name)
+    (_ (cadr ast))))
 
 (define (.scope ast)
   (match ast
     (('literal scope type field) scope)
     (('type name) #f)
-    (_ (caddr ast))
-
-    (('enum name scope fields) scope)
-    (('extern name scope value) scope)
-    (('int name scope range) scope)
-    (('type name scope) scope)))
+    (('name scope ... name) scope)))
 
 (define (.elements ast)
   (if (pair? ast)
@@ -762,7 +713,7 @@
 (define (.value ast)
   (match ast
     (('expression value) value)
-    (('extern name scope value) value)
+    (('extern name value) value)
     (('otherwise) 'otherwise)
     (('otherwise value) value)))
 
@@ -810,11 +761,11 @@
 
 (define (.range ast)
   (match ast
-    (('int name scope range) range)))
+    (('int name range) range)))
 
 (define (.fields ast)
   (match ast
-    (('enum name scope fields) fields)))
+    (('enum name fields) fields)))
 
 (define (.expression ast)
   (match ast

@@ -116,37 +116,43 @@
 
 (define om->list identity)
 (define om2list identity)
+
 (define ((om:type model) o)
+  (let ((r ((om:type- model) o)))
+    (stderr "\nom:type[~a]: ~a ==> ~a\n" (.name model) o r)
+    r))
+
+(define ((om:type- model) o)
+  (stderr "  om:type-[~a]: ~a\n" (.name model) o)
   (match o
     ((? symbol?) (find (om:named o) (om:types model)))
+    (($ <type> ('name scope ... name)) ((om:type- model) `(type ,name ,(cons 'name scope))))
     (('type 'bool) o)
     (('type 'bool #f) o)
     (('type 'void) o)
     (('type 'void #f) o)
     (('type name) (find (om:named name) (om:types model)))
     (('type name scope) (=> failure)
+     (stderr "TYPES: ~a\n" (om:types model))
      (or (find (om:scoped name scope) (om:types model))
          (find (om:scoped-extern name scope) (om:types model))))
-    (('variable name type expression) ((om:type model) type))
-    (('formal name type) ((om:type model) type))
-    (('formal name type direction) ((om:type model) type))
+    (('variable name type expression) ((om:type- model) type))
+    (('formal name type) ((om:type- model) type))
+    (('formal name type direction) ((om:type- model) type))
     (#f #f)))
 
 (define ((om:named name) ast)
-  (eq? (.name ast) name))
+  (equal? (.name ast) name))
 
 (define ((om:scoped name scope) ast)
-  (and (eq? (.name ast) name)
-       (or (eq? (.scope ast) scope)
-           (and (not scope)
-                (eq? (.scope ast) '*global*)))))
+  (equal? (append scope (list name)) (.name ast)))
 
 (define ((om:scoped-extern name scope) ast)
-  (and (eq? (.name ast) name)
+  (and (equal? (.name ast) name)
        (or (is-a? ast <extern>) ;; ignore scope on extern...
-           (eq? (.scope ast) scope)
+           (equal? (.scope ast) scope)
            (and (not scope)
-                (eq? (.scope ast) '*global*)))))
+                (equal? (.scope ast) '*global*)))))
 
 (define* (om:port model :optional (o #f))
   (match o
@@ -218,13 +224,7 @@
    (globals)))
 
 (define (interface-types port)
-  (let ((scope (.type port)))
-   (map (lambda (o)
-          (match o
-            (('enum name _ fields) (list 'enum name scope fields))
-            (('extern name _ value) (list 'extern name scope value))
-            (('int name _ range) (list 'int name scope range))))
-        ((compose public-types om:import .type) port))))
+  ((compose public-types om:import .type) port))
 
 (define (public-types ast)
   (match ast
@@ -378,7 +378,11 @@
 (define ((make-interface-enum port) o)
   (make <enum> :name (.name o) :scope port :fields (.fields o)))
 
+(define ((make-scoped-enum model) o)
+  (make <enum> :name (make <name> :name (append ((compose .scope .name) model) (list ((compose .name .name) o)))) :fields (.fields o)))
+
 (define (om:interface-enums o)
+  (stderr "om:interface-enums[~a]\n: ~a\n" o (map (make-scoped-enum o) (om:enums o)))
   (match o
     (($ <interface>)
      ((om:filter <enum>) (.types o)))
