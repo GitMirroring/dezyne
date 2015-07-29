@@ -114,9 +114,9 @@
   (let* ((ports (if (is-a? model <interface>) '() ((compose .elements .ports) model)))
          (state-alist (map (lambda (port) (cons (.name port) (state-vector (run:import (.type port))))) ports))
          (info (make <info> :trail trail :state (state-vector model) :state-alist state-alist)))
-    (stderr "info: ~a\n" info)
-    (stderr "model: ~a\n" model)
-    (stderr "error: ~a\n" (.error info))
+    (debug "info: ~a\n" info)
+    (debug "model: ~a\n" model)
+    (debug "error: ~a\n" (.error info))
     (let loop ((info info) (trace '()))
       (debug "trail: <-- ~a\n" (.trail info))
       (debug-state model info)
@@ -912,8 +912,8 @@
       (for-each (lambda (s) (stderr "  [~a]: ~a\n" (car s) (state->string (cdr s)))) (.state-alist info))))
 
 ;;(define debug-pretty pretty-print)
-(define debug stderr)
-(define debug-state print-state)
+;;(define debug stderr)
+;;(define debug-state print-state)
 
 (define (ast-> ast)
   ((compose

@@ -19,7 +19,7 @@
 (read-set! keywords 'prefix)
 
 (define-module (test-handler)
-  :use-module (srfi srfi-1)  
+  :use-module (srfi srfi-1)
 
   :use-module (test-suite lib)
   :use-module (test-suite misc)
@@ -82,7 +82,6 @@
    '(((trigger #f a (arguments))
   (on (triggers (trigger #f a (arguments)))
       (action (trigger #f b (arguments))))
-  (action (trigger #f b (arguments)))
   (reject
     action
     i
@@ -92,7 +91,8 @@
     (trigger #f b (arguments)))
   (trail a return a return)
   (error a return a return)
-  (eligible)))))
+  (eligible)
+  (matched a return)))))
 
 (pass-if "simulator-guard-trail"
    (om-pretty-noisy-equal?
@@ -136,7 +136,6 @@
                (action (trigger #f b (arguments))))))
   (guard (expression (! (var t)))
          (action (trigger #f b (arguments))))
-  (action (trigger #f b (arguments)))
   (reject
     action
     i
@@ -146,7 +145,8 @@
     (trigger #f b (arguments)))
   (trail a return)
   (error a return)
-  (eligible)))))
+  (eligible)
+  (matched a return a return)))))
 
 (pass-if "walk-trail-arguments"
 (or #f (let* ((arguments-ast (read-ast 'examples/arguments.dzn))
